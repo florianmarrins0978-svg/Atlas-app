@@ -31,7 +31,7 @@ async function main() {
   await page.goto(`${BASE}/reglages/prix`, { waitUntil: "networkidle" });
   await page.screenshot({ path: `${OUT}/02-grille-fermee.png`, fullPage: true });
 
-  await page.getByRole("button", { name: /Arbre 15 à 20 m/ }).click();
+  await page.getByRole("button", { name: /Fût 15 à 20 m/ }).click();
   await page.waitForTimeout(300);
   await page.screenshot({ path: `${OUT}/03-grille-ouverte.png`, fullPage: true });
 

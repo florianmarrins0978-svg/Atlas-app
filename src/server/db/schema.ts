@@ -8,6 +8,10 @@
 // RLS, contraintes composites, triggers et CHECK sont des mécanismes PostgreSQL,
 // indépendants de l'ORM utilisé pour les déclarer.
 
+import type { LigneAvoirStockee } from "../../lib/avoir";
+import type { AttestationLue } from "../../lib/attestation-lue";
+import type { PrestationContrat } from "../../lib/contrats-entretien";
+
 import {
   pgTable,
   uuid,
@@ -15,6 +19,7 @@ import {
   timestamp,
   date,
   integer,
+  smallint,
   numeric,
   unique,
   index,
@@ -34,6 +39,22 @@ import { sql } from "drizzle-orm";
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
+  /**
+   * La civilité de la personne (migration 0077), avec les mêmes codes que ceux
+   * de ses clients — `src/lib/civilite.ts` décide seule de ce qu'ils valent à
+   * l'écran. NULL : elle ne l'a pas dite, et rien ne l'y oblige.
+   */
+  civilite: text("civilite", { enum: ["mr", "mme"] }),
+  /** Le prénom, séparé du nom de famille (migration 0077). */
+  prenom: text("prenom"),
+  /**
+   * Le NOM DE FAMILLE depuis la migration 0077.
+   *
+   * **Sur un compte antérieur, il porte encore le nom COMPLET** : `prenom` est
+   * alors NULL, et l'affichage retombe dessus
+   * (`src/lib/identite-personne.ts`). Aucun découpage automatique n'a été
+   * fait — « Jean-Pierre de La Fontaine » ne se coupe pas par un espace.
+   */
   nom: text("nom"),
   emailVerified: timestamp("email_verified", { withTimezone: true }),
   image: text("image"),
@@ -90,12 +111,60 @@ export const entreprises = pgTable("entreprises", {
   id: uuid("id").primaryKey().defaultRandom(),
   nom: text("nom").notNull(),
   siret: text("siret"),
+  /**
+   * La mention du répertoire des métiers, libre et facultative (migration
+   * 0128) : « RM 33 », ou ce que sa chambre des métiers demandera. Aucun texte
+   * trouvé ne dit ce qu'un artisan écrit à côté du SIREN depuis le RNE (2023) :
+   * elle s'imprime telle qu'écrite après le SIRET, et rien si elle est vide.
+   */
+  numeroRm: text("numero_rm"),
   adresse: text("adresse"),
   telephone: text("telephone"),
   email: text("email"),
   iban: text("iban"),
   /** « SASU », « EI », « EURL »… Figure sur les documents (migration 0039). */
   formeJuridique: text("forme_juridique"),
+  /**
+   * Le capital social et le RCS (migration 0072) — n'ont de sens que pour une
+   * société, jamais une EI ou une micro-entreprise (`formeADuCapital`).
+   * Le RCS n'a pas de second numéro : c'est le SIREN, déjà dans le SIRET.
+   */
+  capitalSocial: numeric("capital_social", { precision: 12, scale: 2 }),
+  villeRcs: text("ville_rcs"),
+  /**
+   * LA DÉCENNALE ET LE MÉDIATEUR (migration 0094) — son accord du 14 septembre
+   * 2026. Saisis une fois, comme le SIRET : les articles 9 et 11 des conditions
+   * générales s'en remplissent, et le bas du devis comme celui de la facture
+   * les portent. Avant, c'étaient deux crochets à retaper dans le texte.
+   *
+   * Le NOM commande, dans les deux cas : un numéro de contrat sans compagnie ne
+   * prouve rien (`src/lib/mentions-obligatoires.ts`).
+   */
+  assureurDecennale: text("assureur_decennale"),
+  // Migration 0121, son choix A du 5 octobre 2026 : les coordonnées de
+  // l'assureur (loi 96-603, art. 22-2) et l'attestation jointe à chaque devis
+  // et facture (C. ass. L243-2). La clé désigne un fichier qu'on ne supprime
+  // jamais : les pièces déjà parties la citent.
+  adresseAssureurDecennale: text("adresse_assureur_decennale"),
+  attestationDecennaleCle: text("attestation_decennale_cle"),
+  attestationDecennaleMime: text("attestation_decennale_mime"),
+  // Migration 0124 : ce que l'IA a lu sur ce fichier, au dépôt. `null` : rien
+  // n'a été lu (pas de clé, fichier déposé avant). Ne bloque jamais rien.
+  attestationDecennaleLue: jsonb("attestation_decennale_lue").$type<AttestationLue>(),
+  contratDecennale: text("contrat_decennale"),
+  couvertureDecennale: text("couverture_decennale"),
+  mediateurNom: text("mediateur_nom"),
+  mediateurCoordonnees: text("mediateur_coordonnees"),
+  /**
+   * Où — ou si — la forme juridique, le capital et le RCS s'impriment
+   * (migration 0072). Par défaut « aucune » : ces champs existaient déjà
+   * (`formeJuridique`, migration 0039) sans jamais s'imprimer nulle part —
+   * les faire apparaître d'un coup surprendrait qui les avait déjà saisis
+   * sans le savoir.
+   */
+  mentionsLegalesPosition: text("mentions_legales_position", { enum: ["sous_nom", "bas", "aucune"] })
+    .notNull()
+    .default("aucune"),
   /**
    * Le régime de TVA, **déclaré et jamais déduit** (migration 0039).
    *
@@ -129,6 +198,14 @@ export const entreprises = pgTable("entreprises", {
   moyensPaiement: text("moyens_paiement"),
   rappelerPenalitesDevis: boolean("rappeler_penalites_devis").notNull().default(false),
   textePiedDocuments: text("texte_pied_documents"),
+  /**
+   * Ses conditions générales de vente et de règlement (migration 0090),
+   * imprimées après le bon pour accord. **Encodage inversé** par rapport au
+   * texte de pied, parce que la case arrive REMPLIE : `null` = le texte
+   * d'origine d'Atlas, `""` = tout effacé, du texte = le sien
+   * (`src/lib/conditions-documents.ts`).
+   */
+  conditionsGenerales: text("conditions_generales"),
 
   /**
    * Le message qui part au client avec le devis, la facture ou le rapport
@@ -142,6 +219,22 @@ export const entreprises = pgTable("entreprises", {
    * pour l'écran comme pour le serveur.
    */
   messageClient: text("message_client"),
+
+  /**
+   * Les deux autres messages (migration 0075, sa décision du 7 septembre 2026).
+   *
+   * **`message_client` est devenu celui du DEVIS**, et ces deux-là complètent :
+   * la facture et le compte rendu de passage. Un seul message pour trois
+   * documents (0062) obligeait Atlas à écrire lui-même la phrase du milieu —
+   * le seul morceau qu'il ne pouvait pas toucher, et celui qu'il voulait écrire.
+   *
+   * **`null` veut dire « celui d'Atlas »**, comme pour le devis. Et le nom
+   * `passage` suit le dépôt — `composerMessageEntretien`, la fiche de passage —
+   * plutôt que « fiche client », le mot du patron : le renommer se décide d'un
+   * bloc (`TODO.md`), ça ne se glisse pas dans une colonne.
+   */
+  messageClientFacture: text("message_client_facture"),
+  messageClientPassage: text("message_client_passage"),
 
   /**
    * L'allure de son devis et de sa facture (migration 0063, 23 août 2026).
@@ -163,6 +256,14 @@ export const entreprises = pgTable("entreprises", {
   docTypographie: text("doc_typographie"),
   docFond: text("doc_fond"),
   docAccent: text("doc_accent"),
+  /**
+   * Les quatre couleurs du planning (migration 0113). `null` : celle de
+   * l'apparence. Les règles vivent dans `src/lib/couleurs-planning.ts`.
+   */
+  planningRien: text("planning_rien"),
+  planningIncomplet: text("planning_incomplet"),
+  planningComplet: text("planning_complet"),
+  planningAuDela: text("planning_au_dela"),
   /** Le logo vit dans le stockage, comme une photo — la base garde sa clef. */
   logoStorageKey: text("logo_storage_key"),
   logoMime: text("logo_mime"),
@@ -204,6 +305,31 @@ export const entreprises = pgTable("entreprises", {
   // saisie : il n'a personne à affilier, et lui proposer une case à cocher lui
   // inventerait une organisation qu'il n'a pas.
   nombreSalaries: integer("nombre_salaries").notNull().default(0),
+  /**
+   * Le patron exige-t-il un retour d'intervention en fin de chantier ?
+   *
+   * *« Ça sera au patron de décider »*, 8 septembre 2026. **Éteint par défaut**,
+   * et ce n'est pas une timidité : l'allumer d'office bloquerait, dès la mise à
+   * jour, un salarié dont le téléphone est mort à 18 h — sur un chantier, sans
+   * personne à qui demander (migration 0080).
+   */
+  retourDemande: boolean("retour_demande").notNull().default(false),
+  /**
+   * Le retour exige-t-il au moins une photo ?
+   *
+   * N'a de sens que si `retourDemande` est vrai — c'est `ceQuiManque`
+   * (`src/lib/retour-intervention.ts`) qui tient cette dépendance, et elle seule :
+   * un second endroit qui la redirait finirait par exiger une photo pour un
+   * retour que personne ne demande.
+   */
+  retourPhotoExigee: boolean("retour_photo_exigee").notNull().default(false),
+  /**
+   * Le patron a-t-il masqué, sur son Planning, la phrase qui propose de relier
+   * un agenda ? (migration 0102, sa demande du 26 septembre 2026). Masquée,
+   * elle ne revient jamais. La PANNE d'un agenda relié, elle, s'affiche quoi
+   * qu'il ait masqué : ce n'est pas la même phrase.
+   */
+  rappelAgendaMasque: boolean("rappel_agenda_masque").notNull().default(false),
   // Comment le relevé de TVA découpe l'année. **Le mois est le défaut LÉGAL**
   // (déclaration CA3 mensuelle ; le trimestre est une option sous condition de
   // TVA due), pas une préférence d'écran — voir `drizzle/0035_periodicite_tva.sql`.
@@ -371,10 +497,35 @@ export const equipes = pgTable(
     /** 1 à 20. Porte la lettre de repli (1 → A) et l'ordre d'affichage. */
     rang: integer("rang").notNull(),
     nom: text("nom"),
+    /**
+     * La tête du salarié, dans le stockage : la base ne garde que la clef,
+     * comme pour le logo (migration 0111). NULL est l'état normal.
+     */
+    photoStorageKey: text("photo_storage_key"),
+    /**
+     * Le titre de chef d'équipe (migration 0110). Un titre sur l'organigramme,
+     * rien de plus : sa décision du 27 septembre 2026, « le chef ne voit rien
+     * de plus ».
+     */
+    estChef: boolean("est_chef").notNull().default(false),
+    /**
+     * Sous qui est ce gars : UN seul chef (sa réponse du 27 septembre 2026).
+     * La clé étrangère porte l'entreprise : un chef d'ailleurs est refusé par
+     * la base.
+     */
+    chefId: uuid("chef_id"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [unique("equipes_entreprise_rang_uk").on(t.entrepriseId, t.rang)]
+  (t) => [
+    unique("equipes_entreprise_rang_uk").on(t.entrepriseId, t.rang),
+    unique("equipes_id_entreprise_uk").on(t.id, t.entrepriseId),
+    foreignKey({
+      columns: [t.chefId, t.entrepriseId],
+      foreignColumns: [t.id, t.entrepriseId],
+      name: "equipes_chef_fk",
+    }),
+  ]
 );
 
 /**
@@ -395,6 +546,14 @@ export const equipes = pgTable(
  *
  * Une ligne absente n'est pas « personne y va » au sens d'un choix : c'est
  * « reste à décider ». C'est ce que le planning peint en hachuré.
+ *
+ * **ET DEPUIS LE 15 SEPTEMBRE 2026, UNE LIGNE PORTE SON JOUR** (migration
+ * 0093) — sa plainte sur un chantier de huit jours : *« si le 4ᵉ jour je
+ * décide de ne pas mettre Julien, ça l'enlève partout, et ça faut pas »*.
+ * `jour` NULL est la ligne d'avant, et garde son sens : elle vaut pour
+ * chaque jour posé. Une seule fonction la lit ainsi — `deplierEquipes`,
+ * `src/lib/equipes-par-jour.ts` — et le premier geste sur le chantier la
+ * remplace par des lignes datées.
  */
 export const equipesDuChantier = pgTable(
   "equipes_du_chantier",
@@ -406,13 +565,16 @@ export const equipesDuChantier = pgTable(
     chantierId: uuid("chantier_id").notNull(),
     /** `matin` ou `apres_midi` — le même vocabulaire que `creneauDebut`. */
     demi: text("demi").notNull(),
+    /** Le jour, ou NULL = tous les jours posés (les lignes d'avant 0093). */
+    jour: date("jour"),
     equipeId: uuid("equipe_id")
       .notNull()
       .references(() => equipes.id, { onDelete: "cascade" }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    unique("equipes_du_chantier_uk").on(t.chantierId, t.demi, t.equipeId),
+    // NULLS NOT DISTINCT en base (0093) : deux lignes sans jour restent un doublon.
+    unique("equipes_du_chantier_uk").on(t.chantierId, t.jour, t.demi, t.equipeId),
     index("equipes_du_chantier_idx").on(t.entrepriseId, t.chantierId),
     foreignKey({
       columns: [t.chantierId, t.entrepriseId],
@@ -436,6 +598,49 @@ export const equipesDuChantier = pgTable(
  * (`ARCHITECTURE.md` §88). Le motif ne sert qu'à ce que le patron se
  * souvienne ; aucun calcul ne le lit.
  */
+/**
+ * OÙ UN CHANTIER EST POSÉ — une ligne par demi-journée (10 septembre 2026).
+ *
+ * **Sa demande, devant la planche `appli/liberer-une-demi-journee.html` :**
+ * *« je clique sur le matin, il devient vert et le matin du vendredi devient
+ * libre, et une demi-journée de Mr Julien sort ; à la place on ajoute un
+ * chantier comme d'habitude, et la demi-journée retirée peut être replacée. »*
+ *
+ * **Les trois colonnes de `chantiers` ne savent décrire qu'un bloc d'un seul
+ * tenant** — « deux jours à partir du vendredi après-midi ». Libérer une
+ * demi-journée au milieu casse cette forme, et aucune colonne de plus ne la
+ * réparerait : ce n'est pas une valeur qui manque, c'est un ENSEMBLE.
+ *
+ * **`dureeDemiJournees` garde son sens : ce que le chantier DEMANDE**, lu de la
+ * dictée ou du devis. Cette table dit où il est POSÉ. Leur écart est exactement
+ * ce qui attend une place dans « Sans date ».
+ *
+ * **Aucune ligne = le chantier d'avant**, calculé de ses trois colonnes
+ * (`creneauxDuChantier`). Rien n'a été recopié à la migration : le lire
+ * autrement libérerait d'un coup des demi-journées déjà prises
+ * (migration 0085).
+ */
+export const creneauxChantier = pgTable(
+  "creneaux_chantier",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    chantierId: uuid("chantier_id")
+      .notNull()
+      .references(() => chantiers.id, { onDelete: "cascade" }),
+    jour: date("jour").notNull(),
+    /** `matin` ou `apres_midi` — le même vocabulaire que `creneauDebut`. */
+    demi: text("demi").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("creneaux_chantier_unique").on(t.chantierId, t.jour, t.demi),
+    index("creneaux_chantier_entreprise_jour_idx").on(t.entrepriseId, t.jour),
+  ]
+);
+
 export const absencesEquipe = pgTable("absences_equipe", {
   id: uuid("id").primaryKey().defaultRandom(),
   entrepriseId: uuid("entreprise_id")
@@ -448,6 +653,22 @@ export const absencesEquipe = pgTable("absences_equipe", {
   premierJour: date("premier_jour").notNull(),
   /** Dernier jour d'absence, inclus. */
   dernierJour: date("dernier_jour").notNull(),
+  /**
+   * ─── L'ABSENCE PEUT NE PRENDRE QU'UNE DEMI-JOURNÉE — 8 septembre 2026 ────
+   *
+   * Sa question : *« je peux les mettre seulement le matin ou seulement
+   * l'après-midi ? Sinon il faut corriger ça. »* La réponse était non, et un
+   * rendez-vous d'une heure lui coûtait la journée entière de son gars.
+   *
+   * **Deux bornes, pas deux booléens** : « du jeudi après-midi au lundi matin »
+   * n'a pas de sens en booléens (ils excluraient TOUS les matins de la
+   * période). Voir `drizzle/0076_absence_demi_journee.sql`.
+   *
+   * Par défaut la journée entière — les absences déjà notées ne changent pas
+   * de sens, et aucune date bloquée ne se rouvre.
+   */
+  premierDemi: text("premier_demi").notNull().default("matin"),
+  dernierDemi: text("dernier_demi").notNull().default("apres_midi"),
   motif: text("motif"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -476,6 +697,12 @@ export const entrepriseCompteurs = pgTable("entreprise_compteurs", {
    */
   anneeDevis: integer("annee_devis"),
   anneeFacture: integer("annee_facture"),
+  /**
+   * La suite des avoirs (migration 0101), à part de celle des factures : un
+   * avoir numéroté dans la suite des factures y laisserait un trou.
+   */
+  prochainNumeroAvoir: integer("prochain_numero_avoir").notNull().default(1),
+  anneeAvoir: integer("annee_avoir"),
 });
 
 // Correction v2.1 §1 : remplace le lien direct utilisateur → entreprise.
@@ -490,15 +717,21 @@ export const membresEntreprise = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     /**
-     * **Trois rôles depuis la migration 0065**, et `membre` n'existe plus :
-     * il a été repris en `salarie`, le plus fermé des trois. La contrainte qui
-     * les tient vit en BASE, pas seulement ici — cette énumération-ci ne produit
-     * aucun garde-fou côté PostgreSQL.
+     * **Quatre rôles depuis la migration 0071**, et `membre` n'existe plus : il
+     * a été repris en `salarie` (migration 0065), le plus fermé de tous. La
+     * contrainte qui les tient vit en BASE, pas seulement ici — cette
+     * énumération-ci ne produit aucun garde-fou côté PostgreSQL.
+     *
+     * **Le défaut reste `salarie`, et il ne bougera pas.** Une ligne insérée
+     * sans rôle explicite doit naître avec le moins de droits possible : c'est
+     * le seul défaut qui ne puisse jamais élargir un accès par distraction.
      *
      * Ce que chaque rôle atteint est décidé une seule fois, dans
      * `src/lib/acces-roles.ts` : ni cet écran-ci ni cette table ne le savent.
      */
-    role: text("role", { enum: ["proprietaire", "commercial", "salarie"] }).notNull().default("salarie"),
+    role: text("role", { enum: ["proprietaire", "facturation", "commercial", "salarie"] })
+      .notNull()
+      .default("salarie"),
     /**
      * Ce que la personne voit du planning — un réglage PAR PERSONNE, jamais par
      * rôle (sa décision du 13 août 2026). Le défaut est « tout » : restreindre
@@ -511,6 +744,14 @@ export const membresEntreprise = pgTable(
      * une équipe est une file du planning, pas un groupe de personnes.
      */
     equipeId: uuid("equipe_id").references(() => equipes.id, { onDelete: "set null" }),
+    /**
+     * QUI est cette personne dans la liste des salariés — posé une fois par le
+     * patron (migration 0111). Distinct d'`equipeId`, qui dit ce qu'elle VOIT.
+     * Relié, sa photo est celle de la ligne ; sinon, `photoStorageKey`.
+     */
+    salarieId: uuid("salarie_id").references(() => equipes.id, { onDelete: "set null" }),
+    /** La photo d'un compte qui n'est relié à aucun nom (patron, commercial…). */
+    photoStorageKey: text("photo_storage_key"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [unique("membres_entreprise_uk").on(t.entrepriseId, t.utilisateurId)]
@@ -530,10 +771,19 @@ export const clients = pgTable(
     // ni « Mr » ni « Mme », et un client saisi à la volée n'a pas toujours eu
     // droit à un appui de plus. Ce que NULL vaut à l'écran est décidé dans
     // `src/lib/civilite.ts`, jamais ici (migration 0038).
-    civilite: text("civilite", { enum: ["mr", "mme"] }),
+    civilite: text("civilite", { enum: ["mr", "mme", "entreprise"] }),
     telephone: text("telephone"),
     adresse: text("adresse"),
     email: text("email"),
+    /**
+     * Le numéro de TVA d'une entreprise cliente (migration 0118). Retenu ici
+     * pour être proposé sur sa prochaine facture en sous-traitance, et toujours
+     * modifiable sur la facture (son choix 5B du 3 octobre 2026). NUL : un
+     * particulier, ou un numéro jamais donné.
+     */
+    numeroTva: text("numero_tva"),
+    /** Le SIRET d'une entreprise cliente (migration 0119), recopié sous son nom. */
+    siret: text("siret"),
     // Canal convenu avec le client pour l'envoi du devis (docs/AGENT.md §2.1).
     // Sans lui, l'envoi est impossible : mieux vaut bloquer qu'envoyer dans le vide.
     canalCommunication: text("canal_communication", { enum: ["sms", "email"] }),
@@ -551,6 +801,90 @@ export const clients = pgTable(
     unique("clients_id_entreprise_uk").on(t.id, t.entrepriseId), // support des FK composites enfants
     index("clients_entreprise_deleted_idx").on(t.entrepriseId, t.deletedAt),
     index("clients_entreprise_nom_idx").on(t.entrepriseId, t.nom),
+  ]
+);
+
+// --- Contrats d'entretien (migration 0107) ---
+
+/**
+ * Le contrat d'entretien d'un client : ses prestations, sa période, sa
+ * facturation. Sa demande du 26 septembre 2026, planches 128 et 129.
+ *
+ * **Les prestations en jsonb**, tenues par `relireContrat` : un contrat envoyé
+ * se fige avec ses lignes, comme un avoir (0101). Ses passages sont des
+ * chantiers, rattachés par `chantiers.contratEntretienId`.
+ */
+export const contratsEntretien = pgTable(
+  "contrats_entretien",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    clientId: uuid("client_id").notNull(),
+    statut: text("statut", { enum: ["brouillon", "envoye", "accepte", "refuse"] }).notNull().default("brouillon"),
+    debut: date("debut").notNull(),
+    dureeMois: integer("duree_mois").notNull(),
+    reconduit: boolean("reconduit").notNull().default(true),
+    facturation: text("facturation", { enum: ["passage", "mois"] }).notNull().default("passage"),
+    avecCompteRendu: boolean("avec_compte_rendu").notNull().default(false),
+    prestations: jsonb("prestations").$type<PrestationContrat[]>().notNull().default([]),
+    tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }).notNull(),
+    jeton: text("jeton").unique(),
+    empreinte: char("empreinte", { length: 64 }),
+    envoyeLe: timestamp("envoye_le", { withTimezone: true }),
+    reponduLe: timestamp("repondu_le", { withTimezone: true }),
+    reponseAdresseIp: text("reponse_adresse_ip"),
+    reponseAgent: text("reponse_agent"),
+    // Retiré de « Vos chantiers » par un glissement, sans rien effacer : le
+    // lien du client reste ouvert (migration 0114).
+    retireDeLaListeAt: timestamp("retire_de_la_liste_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+  },
+  (t) => [
+    unique("contrats_entretien_id_entreprise_uk").on(t.id, t.entrepriseId),
+    index("contrats_entretien_client_idx").on(t.entrepriseId, t.clientId),
+    index("contrats_entretien_statut_idx").on(t.entrepriseId, t.statut),
+    foreignKey({
+      columns: [t.clientId, t.entrepriseId],
+      foreignColumns: [clients.id, clients.entrepriseId],
+      name: "contrats_entretien_client_entreprise_fk",
+    }),
+  ]
+);
+
+/**
+ * L'envoi des dates d'un mois au client d'un contrat : un lien pour tous ses
+ * passages du mois (migration 0108, planche 130). Les dates elles-mêmes sont
+ * celles des passages posés au planning ; cette ligne ne les recopie pas.
+ */
+export const envoisDatesContrat = pgTable(
+  "envois_dates_contrat",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    contratEntretienId: uuid("contrat_entretien_id").notNull(),
+    mois: date("mois").notNull(),
+    jeton: text("jeton").notNull().unique(),
+    canal: text("canal", { enum: ["sms", "email"] }).notNull(),
+    autreDateAutorisee: boolean("autre_date_autorisee").notNull().default(true),
+    envoyeLe: timestamp("envoye_le", { withTimezone: true }).notNull().defaultNow(),
+    reponduLe: timestamp("repondu_le", { withTimezone: true }),
+    reponseAdresseIp: text("reponse_adresse_ip"),
+    reponseAgent: text("reponse_agent"),
+  },
+  (t) => [
+    unique("envois_dates_contrat_mois_uk").on(t.contratEntretienId, t.mois),
+    index("envois_dates_contrat_entreprise_idx").on(t.entrepriseId, t.mois),
+    foreignKey({
+      columns: [t.contratEntretienId, t.entrepriseId],
+      foreignColumns: [contratsEntretien.id, contratsEntretien.entrepriseId],
+      name: "envois_dates_contrat_contrat_fk",
+    }).onDelete("cascade"),
   ]
 );
 
@@ -586,6 +920,17 @@ export const chantiers = pgTable(
     prixValideAt: timestamp("prix_valide_at", { withTimezone: true }),
     devisGenereAt: timestamp("devis_genere_at", { withTimezone: true }),
     devisEnvoyeAt: timestamp("devis_envoye_at", { withTimezone: true }),
+    /**
+     * Le chantier en sous-traitance, sans TVA (migration 0119) — son choix B
+     * du 4 octobre 2026 : décoché d'office. Basculer met à zéro les taux de
+     * ses lignes de prix et du devis, et garde ceux d'avant
+     * (`tauxAvantAutoliquidation`) ; chaque version du devis en repart.
+     */
+    autoliquidation: boolean("autoliquidation").notNull().default(false),
+    tauxAvantAutoliquidation: jsonb("taux_avant_autoliquidation").$type<{
+      facture: string;
+      lignes: Record<string, string | null>;
+    }>(),
     datePlanifiee: date("date_planifiee"), // non-null = "planifié"
     // Le moment où l'intervention commence, et sa durée réservée en
     // demi-journées. NULL sur tout chantier planifié avant la migration 0019 :
@@ -609,6 +954,14 @@ export const chantiers = pgTable(
      * sans qu'on perde rien — et l'invariant comptable reste entier.
      */
     rappelFactureRepousseLe: date("rappel_facture_repousse_le"),
+    /**
+     * Le contrat d'entretien dont ce chantier est un PASSAGE (migration 0107),
+     * et sa clé « prestation-année-mois-rang » (`passagesArrives`). Les deux
+     * ensemble ou aucun ; la base tient la paire unique, ce qui rend l'arrivée
+     * des passages idempotente.
+     */
+    contratEntretienId: uuid("contrat_entretien_id"),
+    contratPassage: text("contrat_passage"),
     tailleEquipe: text("taille_equipe"),
     /**
      * Le pense-bête de CE chantier — « penser à prendre le broyeur ».
@@ -625,12 +978,32 @@ export const chantiers = pgTable(
      * chaque lecture.
      */
     note: text("note"),
+    /**
+     * Les travaux écrits à la main, pour un client posé au planning sans
+     * devis — sa réponse du 7 octobre 2026 (`appli/travaux-sans-devis.html`).
+     * Lus seulement tant qu'aucun devis n'est parti : ensuite, les lignes du
+     * devis prennent leur place (`travauxAffiches`). Migration 0126.
+     */
+    travauxALaMain: text("travaux_a_la_main").array().notNull().default(sql`'{}'::text[]`),
     // **Qui tient ce chantier vit dans `equipesDuChantier`, plus ici.** La
     // colonne `equipe_id` portait UNE équipe, pour le chantier entier ; il en
     // veut plusieurs, et différentes le matin et l'après-midi (migration 0058).
     // La garder à côté aurait fait deux vérités sur la même question — celle du
     // planning et celle de la feuille de route, qui auraient divergé au premier
     // retrait (`CLAUDE.md` §3).
+
+    /**
+     * Ses deux réponses sur un devis repris par « Dernier devis » (migration
+     * 0106) : « oui » ou « non » au tarif du jour, et la hausse appliquée aux
+     * lignes reprises. NULL sur tout chantier qui n'est pas une reprise.
+     */
+    repriseGrille: text("reprise_grille").$type<"oui" | "non">(),
+    hausseReprise: numeric("hausse_reprise", { precision: 4, scale: 1 }),
+
+    // Retiré de « Vos chantiers » par un glissement quand son devis attend le
+    // client : rien n'est effacé, le lien reste ouvert, et la ligne revient à
+    // sa réponse (migration 0114, `retireDeLaListe`).
+    retireDeLaListeAt: timestamp("retire_de_la_liste_at", { withTimezone: true }),
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -649,6 +1022,11 @@ export const chantiers = pgTable(
       foreignColumns: [clients.id, clients.entrepriseId],
       name: "chantiers_client_entreprise_fk",
     }).onDelete("set null"),
+    foreignKey({
+      columns: [t.contratEntretienId, t.entrepriseId],
+      foreignColumns: [contratsEntretien.id, contratsEntretien.entrepriseId],
+      name: "chantiers_contrat_entretien_fk",
+    }),
   ]
 );
 
@@ -838,9 +1216,30 @@ export const lignesPrix = pgTable(
      * **Ni gratuit, ni oublié.** Une ligne qu'on ne savait pas chiffrer
      * s'écrivait « 0 € » — un montant, donc une décision, là où il n'y a qu'une
      * ignorance. Tant que ce drapeau est vrai, le devis ne peut pas être
-     * préparé ni envoyé (`peutPreparerDevis`).
+     * préparé ni envoyé (`peutPreparerLaPiece`).
      */
     aChiffrer: boolean("a_chiffrer").notNull().default(false),
+    /**
+     * Le taux de SA catégorie de TVA (migration 0073).
+     *
+     * **Nul veut dire « suit le taux du devis »**, et c'est ce qui protège
+     * l'existant : toutes les lignes écrites avant restent nulles, donc pas un
+     * devis émis ne change d'un centime.
+     *
+     * Sa règle du 1er septembre 2026 : le taux ne se pose pas ligne par ligne
+     * mais par catégorie — l'écran groupe les lignes qui partagent le même
+     * taux. La catégorie est donc une VUE, jamais une table : deux sources
+     * auraient fini par diverger (`CLAUDE.md` §3).
+     */
+    tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
+    /**
+     * Une ligne reprise par « Dernier devis » (migration 0106) : son prix sur
+     * l'ancien devis, et le tarif du jour quand il diffère. `prixAncien` NULL
+     * veut dire « pas reprise, ou retouchée à la main » : la hausse et la
+     * question du tarif du jour ne la touchent pas (`src/lib/hausse-du-devis.ts`).
+     */
+    prixAncien: numeric("prix_ancien", { precision: 10, scale: 2 }),
+    prixGrille: numeric("prix_grille", { precision: 10, scale: 2 }),
     ordre: integer("ordre").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -974,15 +1373,64 @@ export const devis = pgTable(
     entrepriseNom: text("entreprise_nom").notNull(),
     entrepriseAdresse: text("entreprise_adresse"),
     entrepriseSiret: text("entreprise_siret"),
+    /** La mention du répertoire des métiers, figée comme le SIRET (migration 0128). */
+    entrepriseNumeroRm: text("entreprise_numero_rm"),
+    /** Le numéro de TVA de l'artisan, figé comme sur la facture (migration 0127). */
+    entrepriseNumeroTva: text("entreprise_numero_tva"),
     entrepriseEmail: text("entreprise_email"),
     entrepriseTelephone: text("entreprise_telephone"),
     entrepriseIban: text("entreprise_iban"),
+    /**
+     * Les trois mentions légales, et leur emplacement (migration 0072) —
+     * recopiées comme le reste de l'identité. Nulles pour les devis
+     * antérieurs à la migration : rien de plus ne s'imprime.
+     */
+    entrepriseFormeJuridique: text("entreprise_forme_juridique"),
+    entrepriseCapitalSocial: numeric("entreprise_capital_social", { precision: 12, scale: 2 }),
+    entrepriseVilleRcs: text("entreprise_ville_rcs"),
+    entrepriseMentionsLegalesPosition: text("entreprise_mentions_legales_position", {
+      enum: ["sous_nom", "bas", "aucune"],
+    }),
+    /**
+     * Le régime de TVA au jour du devis (migration 0118), comme sur la facture
+     * (0039). En franchise, la mention de l'article 293 B s'imprime au pied ;
+     * nul sur les devis d'avant, qui se lisent à leur taux (`sousFranchise`).
+     */
+    entrepriseRegimeTva: text("entreprise_regime_tva", { enum: ["assujettie", "franchise"] }),
+    /**
+     * La décennale et le médiateur AU JOUR DU DOCUMENT (migration 0094).
+     *
+     * Figés comme le SIRET, et pour une raison qui compte davantage : un numéro
+     * de contrat d'assurance change, et c'est cette pièce-là qui prouve la
+     * couverture au moment du chantier. Les lire en direct réécrirait le passé.
+     *
+     * Nuls sur tout ce qui existait avant : rien de plus ne s'imprime.
+     */
+    entrepriseAssureurDecennale: text("entreprise_assureur_decennale"),
+    // Figées avec l'assureur (migration 0121) : c'est l'attestation du jour de
+    // la pièce qui prouve la couverture du chantier.
+    entrepriseAdresseAssureurDecennale: text("entreprise_adresse_assureur_decennale"),
+    entrepriseAttestationDecennaleCle: text("entreprise_attestation_decennale_cle"),
+    entrepriseAttestationDecennaleMime: text("entreprise_attestation_decennale_mime"),
+    entrepriseContratDecennale: text("entreprise_contrat_decennale"),
+    entrepriseCouvertureDecennale: text("entreprise_couverture_decennale"),
+    entrepriseMediateurNom: text("entreprise_mediateur_nom"),
+    entrepriseMediateurCoordonnees: text("entreprise_mediateur_coordonnees"),
 
     clientNom: text("client_nom"),
     // Recopiée comme le nom : un document dit comment on s'adressait à son
     // destinataire LE JOUR OÙ il a été établi. Corriger une fiche client ne
     // doit pas réécrire un devis déjà parti (migration 0038).
-    clientCivilite: text("client_civilite", { enum: ["mr", "mme"] }),
+    clientCivilite: text("client_civilite", { enum: ["mr", "mme", "entreprise"] }),
+    /** Le SIRET d'une entreprise cliente, figé comme son nom (migration 0119). */
+    clientSiret: text("client_siret"),
+    /**
+     * Le devis en sous-traitance, sans TVA (migration 0119), et le numéro du
+     * donneur d'ordre, figés au jour du devis. Les taux de ses lignes sont
+     * déjà à zéro : l'état vit sur le chantier (`chantiers.autoliquidation`).
+     */
+    autoliquidation: boolean("autoliquidation").notNull().default(false),
+    clientNumeroTva: text("client_numero_tva"),
     clientAdresse: text("client_adresse"),
     clientTelephone: text("client_telephone"),
     clientEmail: text("client_email"),
@@ -1018,7 +1466,20 @@ export const devis = pgTable(
     moyensPaiement: text("moyens_paiement"),
     rappelerPenalites: boolean("rappeler_penalites").notNull().default(false),
     textePied: text("texte_pied"),
+    /** Figées à la création comme les cinq autres (migration 0090) ; `null` = le texte d'origine. */
+    conditionsGenerales: text("conditions_generales"),
     conditionsPaiement: text("conditions_paiement"),
+    /**
+     * « dont main d'œuvre HT » — la lecture B du 12 septembre 2026 (migration
+     * 0090). Déjà comprise dans les lignes : elle se NOMME sous le total HT,
+     * elle ne change aucun total. `null` = pas de ligne.
+     */
+    mainDoeuvreHt: numeric("main_doeuvre_ht", { precision: 12, scale: 2 }),
+    /**
+     * Un titre, s'il en veut un (migration 0092) : « Aménagement du jardin ».
+     * Jamais d'office ; vide, rien ne s'imprime. Recopié sur la facture.
+     */
+    titre: text("titre"),
     devise: char("devise", { length: 3 }).notNull().default("EUR"),
 
     // TVA — correction v2.1 §4
@@ -1083,6 +1544,14 @@ export const lignesDevis = pgTable(
      * prix — qui ont pu bouger depuis que le devis a été préparé.
      */
     aChiffrer: boolean("a_chiffrer").notNull().default(false),
+    /**
+     * Le taux de sa catégorie, recopié de la ligne de prix (migration 0073).
+     *
+     * Recopié, et non relu : un document garde ce qu'il portait le jour de son
+     * émission — même règle que l'identité de l'entreprise ou la durée de
+     * validité. Nul sur les devis d'avant : ils suivent `devis.tauxTva`.
+     */
+    tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
     ordre: integer("ordre").notNull().default(0),
   },
   (t) => [
@@ -1093,6 +1562,37 @@ export const lignesDevis = pgTable(
       name: "lignes_devis_devis_entreprise_fk",
     }).onDelete("cascade"),
   ]
+);
+
+/**
+ * Les acomptes d'un devis — une ligne des totaux par acompte (migration 0088).
+ *
+ * Sa demande du 12 septembre 2026, planche `appli/l-acompte-sur-le-devis.html`
+ * (la B) : posé d'office avec le taux des Réglages, un deuxième à mi-parcours,
+ * un troisième à l'avancement. **Le taux est CUMULÉ** — « 50 » au rang 2 veut
+ * dire qu'à mi-parcours la moitié du devis est réglée ; ce qui tombe ce jour-là
+ * se calcule (`src/lib/acomptes-devis.ts`), jamais stocké.
+ *
+ * **`devis.acomptePourcent` reste à côté, et ce n'est pas un doublon :** c'est
+ * le réglage recopié, la phrase des notes et conditions — qui reste imprimée
+ * quand la ligne des totaux est retirée (*« quoi qu'il arrive »*).
+ */
+export const acomptesDevis = pgTable(
+  "acomptes_devis",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    devisId: uuid("devis_id")
+      .notNull()
+      .references(() => devis.id, { onDelete: "cascade" }),
+    /** 1 à la signature, 2 à mi-parcours, 3 à l'avancement. */
+    rang: smallint("rang").notNull(),
+    tauxCumule: numeric("taux_cumule", { precision: 5, scale: 2 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("acomptes_devis_unique").on(t.devisId, t.rang)]
 );
 
 // --- Catalogue intelligent (lot IA-05) ---------------------------------
@@ -1425,7 +1925,7 @@ export const rappelsVus = pgTable(
       .notNull()
       .references(() => chantiers.id, { onDelete: "cascade" }),
     genre: text("genre", {
-      enum: ["chantier-sans-devis", "devis-sans-reponse", "chantier-non-facture"],
+      enum: ["chantier-sans-devis", "devis-sans-reponse", "chantier-non-facture", "retour-pas-recu"],
     }).notNull(),
     vuLe: timestamp("vu_le", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -1480,6 +1980,87 @@ export const acceptationsDocuments = pgTable(
   ]
 );
 
+// --- Vérification de l'adresse e-mail d'un compte créé par la porte ---
+
+// **Une ligne = un compte en attente.** C'est sa présence qui ferme la porte,
+// pas `users.emailVerified` vide : les comptes déjà là n'en ont pas, et rien ne
+// change pour eux. Elle s'efface quand le code est entré (migration 0091).
+export const codesVerificationEmail = pgTable("codes_verification_email", {
+  utilisateurId: uuid("utilisateur_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  // HMAC du code, jamais le code : voir `src/lib/code-verification.ts`.
+  empreinte: text("empreinte").notNull(),
+  expireLe: timestamp("expire_le", { withTimezone: true }).notNull(),
+  essais: integer("essais").notNull().default(0),
+  envois: integer("envois").notNull().default(1),
+  dernierEnvoi: timestamp("dernier_envoi", { withTimezone: true }).notNull().defaultNow(),
+  creeLe: timestamp("cree_le", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Mot de passe oublié (migration 0100) : mêmes colonnes et mêmes règles que
+// `codes_verification_email`, mais une ligne ici ne ferme aucune porte. Le
+// code juste donne un jeton, qui sert une fois à poser le nouveau mot de passe.
+export const codesMotDePasse = pgTable("codes_mot_de_passe", {
+  utilisateurId: uuid("utilisateur_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  empreinte: text("empreinte").notNull(),
+  expireLe: timestamp("expire_le", { withTimezone: true }).notNull(),
+  essais: integer("essais").notNull().default(0),
+  envois: integer("envois").notNull().default(1),
+  dernierEnvoi: timestamp("dernier_envoi", { withTimezone: true }).notNull().defaultNow(),
+  creeLe: timestamp("cree_le", { withTimezone: true }).notNull().defaultNow(),
+  jetonEmpreinte: text("jeton_empreinte"),
+  jetonExpireLe: timestamp("jeton_expire_le", { withTimezone: true }),
+});
+
+// --- La double vérification (migration 0125, `src/lib/double-verification.ts`) ---
+// Quatre tables liées à une PERSONNE : le contexte est `app.utilisateur_id`.
+export const doubleVerification = pgTable("double_verification", {
+  utilisateurId: uuid("utilisateur_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  // Chiffré au repos, jamais en clair : `src/server/secret-au-repos.ts`.
+  secretChiffre: text("secret_chiffre").notNull(),
+  // Vide tant que l'artisan n'a pas tapé un premier code juste : la porte n'est
+  // fermée qu'une fois son appli prouvée.
+  activeLe: timestamp("active_le", { withTimezone: true }),
+  dernierPas: bigint("dernier_pas", { mode: "number" }),
+  creeLe: timestamp("cree_le", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const codesSecours = pgTable("codes_secours", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  utilisateurId: uuid("utilisateur_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  empreinte: text("empreinte").notNull(),
+  utiliseLe: timestamp("utilise_le", { withTimezone: true }),
+  creeLe: timestamp("cree_le", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const appareilsRetenus = pgTable("appareils_retenus", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  utilisateurId: uuid("utilisateur_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  empreinte: text("empreinte").notNull().unique(),
+  expireLe: timestamp("expire_le", { withTimezone: true }).notNull(),
+  creeLe: timestamp("cree_le", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const connexionsEnAttente = pgTable("connexions_en_attente", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  utilisateurId: uuid("utilisateur_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  empreinte: text("empreinte").notNull().unique(),
+  expireLe: timestamp("expire_le", { withTimezone: true }).notNull(),
+  essais: integer("essais").notNull().default(0),
+  creeLe: timestamp("cree_le", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // --- Envoi du devis au client et réponse (voir docs/AGENT.md §2.1 à §2.3) ---
 
 // Une ligne par ENVOI, jamais par devis : un devis refusé puis corrigé et
@@ -1519,6 +2100,35 @@ export const envoisDevis = pgTable(
      */
     datesForcees: date("dates_forcees").array().notNull().default([]),
     /**
+     * LES JOURS DE CHAQUE PROPOSITION — sa règle du 17 septembre 2026 : *« un
+     * chantier de deux jours, je veux lui proposer le premier jour le 18 et on
+     * vient finir le chantier le 22 »*. Une liste par proposition, dans
+     * l'ordre de `dates_proposees`, dont chaque entrée reste le PREMIER jour
+     * de sa liste : le client répond toujours par ce premier jour, et le code
+     * d'avant continue de lire des dates là où il en lisait.
+     *
+     * Absente (envois d'avant la migration 0095) : le chantier prend le bloc
+     * d'affilée depuis la date retenue, comme toujours. Expand/contract —
+     * `.claude/rules/deployment-safety.md`.
+     */
+    joursProposes: jsonb("jours_proposes").$type<string[][]>(),
+    /**
+     * LES JOURS QUE LE CLIENT A RETENUS — sa demande du 20 septembre 2026 :
+     * elle choisit ses jours un à un, et ils peuvent ne pas se suivre.
+     *
+     * `date_retenue` n'en porte qu'un ; il ne suffit plus à redire ce qu'elle a
+     * proposé, ni sur l'écran de retour qu'elle rouvre depuis son SMS, ni dans
+     * la notification que le patron lit. Le PLANNING, lui, ne dépend pas de
+     * cette colonne : `ecrireLesCreneaux` pose les créneaux à l'acceptation, et
+     * c'est lui qui fait foi. Ceci est la mémoire de la réponse.
+     *
+     * Absente (réponses d'avant la migration 0097) : les jours se redéduisent
+     * comme toujours — la liste de `jours_proposes` quand elle a pris une date
+     * offerte, le bloc d'affilée depuis `date_retenue` sinon. Expand/contract —
+     * `.claude/rules/deployment-safety.md`.
+     */
+    joursRetenus: jsonb("jours_retenus").$type<string[]>(),
+    /**
      * Le client peut-il proposer une autre date que celles offertes ?
      *
      * Décidé par le patron **avant l'envoi** (17 août 2026), puis FIGÉ ici :
@@ -1526,6 +2136,24 @@ export const envoisDevis = pgTable(
      * défaut — c'est le comportement qu'ont connu les envois déjà partis.
      */
     autreDateAutorisee: boolean("autre_date_autorisee").notNull().default(true),
+    /**
+     * LE PATRON A POSÉ LUI-MÊME LE CHANTIER — son choix B du 7 octobre 2026,
+     * pour le client qui n'arrive pas à choisir ses dates (migration 0122).
+     *
+     * Vrai : le lien n'offre plus de dates, il montre celles où le chantier
+     * est POSÉ et ne demande que l'accord. Les jours se lisent au planning à
+     * chaque ouverture, jamais recopiés ici : un chantier déplacé ensuite
+     * montre sa nouvelle place, et non celle d'hier.
+     */
+    datesFixeesParArtisan: boolean("dates_fixees_par_artisan").notNull().default(false),
+    /**
+     * L'accord vient d'un devis PAPIER signé, saisi par le patron, jamais d'un
+     * clic du client. C'est ce qui le distingue d'une signature en ligne, et
+     * ce qu'il faut pouvoir dire le jour d'un litige (migration 0122).
+     */
+    accordSurPapier: boolean("accord_sur_papier").notNull().default(false),
+    /** Le compte qui a saisi l'accord papier. Une trace, sans clé étrangère. */
+    accordPapierPar: uuid("accord_papier_par"),
 
 
     empreinteDevis: char("empreinte_devis", { length: 64 }).notNull(),
@@ -1539,6 +2167,13 @@ export const envoisDevis = pgTable(
     dateRetenue: date("date_retenue"),
     dateContreProposee: boolean("date_contre_proposee").notNull().default(false),
     precisionClient: text("precision_client"),
+    /**
+     * Les jours que le client a touchés en demandant une CORRECTION : un
+     * souhait, jamais une date retenue (migration 0109). C'est ce que la
+     * feuille « Choisir la date » pose d'office au renvoi, pour que le patron
+     * ne lui repropose pas les mêmes dates sans les avoir vues.
+     */
+    joursSouhaites: jsonb("jours_souhaites").$type<string[]>(),
     demarrageAnticipe: boolean("demarrage_anticipe").notNull().default(false),
 
     adresseIp: text("adresse_ip"),
@@ -1568,6 +2203,37 @@ export const envoisDevis = pgTable(
 // que le planificateur — qui n'a le contexte d'aucune — puisse adopter celui de
 // chacune avant d'écrire dans notes_vocales, sans jamais contourner
 // l'isolation.
+/**
+ * Une acceptation de devis que le patron a défaite — son choix 3 du 7 octobre
+ * 2026. L'acceptation effacée de `envois_devis` se recopie ici d'abord : c'est
+ * la seule preuve qu'un accord a existé (migration 0123). `atlas_app` n'y a ni
+ * UPDATE ni DELETE.
+ */
+export const acceptationsDefaites = pgTable(
+  "acceptations_defaites",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    envoiId: uuid("envoi_id")
+      .notNull()
+      .references(() => envoisDevis.id, { onDelete: "cascade" }),
+    chantierId: uuid("chantier_id").notNull(),
+    vers: text("vers", { enum: ["attente", "refusee"] }).notNull(),
+    responduAt: timestamp("repondu_at", { withTimezone: true }).notNull(),
+    dateRetenue: date("date_retenue"),
+    joursRetenus: jsonb("jours_retenus").$type<string[]>(),
+    demarrageAnticipe: boolean("demarrage_anticipe").notNull(),
+    accordSurPapier: boolean("accord_sur_papier").notNull(),
+    adresseIp: text("adresse_ip"),
+    agentUtilisateur: text("agent_utilisateur"),
+    defaitePar: uuid("defaite_par").notNull(),
+    defaiteAt: timestamp("defaite_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("acceptations_defaites_entreprise_envoi_idx").on(t.entrepriseId, t.envoiId)]
+);
+
 export const audiosAPurger = pgTable(
   "audios_a_purger",
   {
@@ -1602,7 +2268,20 @@ export const factures = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     entrepriseId: uuid("entreprise_id").notNull(),
     chantierId: uuid("chantier_id").notNull(),
-    devisId: uuid("devis_id").notNull(),
+    /**
+     * Le devis dont la facture reprend les lignes.
+     *
+     * **NUL = facture directe (migration 0086)**, faite sans devis — sa demande
+     * du 10 septembre 2026 : un dépannage réglé sur place n'en a pas, et n'en
+     * aura jamais. Il n'y a alors rien à reprendre, et toutes les lignes se
+     * saisissent à la main (`src/lib/lignes-corrigeables.ts`).
+     *
+     * Le nul n'est pas un trou dans les données : c'est le fait qu'il n'y a pas
+     * eu de devis. L'alternative — un devis fantôme derrière chaque facture
+     * directe — aurait consommé un numéro de la suite commerciale et fait
+     * apparaître au relevé de TVA des références que personne ne peut produire.
+     */
+    devisId: uuid("devis_id"),
 
     numeroCommercial: text("numero_commercial").notNull(),
     statut: text("statut", { enum: ["brouillon", "emise"] }).notNull().default("brouillon"),
@@ -1612,6 +2291,8 @@ export const factures = pgTable(
     entrepriseNom: text("entreprise_nom").notNull(),
     entrepriseAdresse: text("entreprise_adresse"),
     entrepriseSiret: text("entreprise_siret"),
+    /** La mention du répertoire des métiers, figée comme le SIRET (migration 0128). */
+    entrepriseNumeroRm: text("entreprise_numero_rm"),
     /**
      * Le régime de TVA **au jour de l'émission** (migration 0039).
      *
@@ -1624,15 +2305,79 @@ export const factures = pgTable(
      * sur le taux appliqué, exactement comme avant.
      */
     entrepriseRegimeTva: text("entreprise_regime_tva", { enum: ["assujettie", "franchise"] }),
+    /**
+     * Le numéro de TVA intracommunautaire de l'émetteur, **au jour de
+     * l'émission** (migration 0117).
+     *
+     * Mention obligatoire de toute facture d'un assujetti (CGI, ann. II,
+     * art. 242 nonies A, I-4°). Il se saisissait dans Réglages depuis la
+     * création du compte et ne partait sur AUCUNE facture : `identiteDeLEmetteur`
+     * ne le recopiait pas. Constaté le 3 octobre 2026 en vérifiant la facture en
+     * autoliquidation, où il est doublement attendu.
+     *
+     * NUL sur les factures d'avant : elles sont émises, donc immuables, et rien
+     * ne s'imprime de plus sur elles.
+     */
+    entrepriseNumeroTva: text("entreprise_numero_tva"),
     entrepriseEmail: text("entreprise_email"),
     entrepriseTelephone: text("entreprise_telephone"),
     entrepriseIban: text("entreprise_iban"),
+    /**
+     * À qui le chèque est libellé, quand le compte n'est pas au nom de
+     * l'enseigne (migration 0076). `NULL` = aucun titulaire distinct, et
+     * l'ordre retombe sur le nom de l'entreprise — la règle vit dans
+     * `src/lib/modalites-paiement.ts`, appelée par la page du client comme par
+     * le PDF.
+     */
+    entrepriseTitulaireCompte: text("entreprise_titulaire_compte"),
+    /**
+     * L'IBAN dont le client a été prévenu pour CETTE facture (migration 0078).
+     *
+     * Rangé **nu**, et c'est ce qui referme la question à chaque changement de
+     * banque : s'il ne vaut pas l'IBAN d'aujourd'hui, il reste à prévenir. Un
+     * simple drapeau resterait levé au second changement, et le client ne
+     * saurait jamais où virer.
+     */
+    ibanSignale: text("iban_signale"),
+    /**
+     * Les trois mentions légales, et leur emplacement (migration 0072) —
+     * lues sur l'ENTREPRISE à la création de la facture depuis la migration
+     * 0076, comme le reste de l'identité de l'émetteur. Nulles pour les
+     * factures antérieures à 0072.
+     */
+    entrepriseFormeJuridique: text("entreprise_forme_juridique"),
+    entrepriseCapitalSocial: numeric("entreprise_capital_social", { precision: 12, scale: 2 }),
+    entrepriseVilleRcs: text("entreprise_ville_rcs"),
+    entrepriseMentionsLegalesPosition: text("entreprise_mentions_legales_position", {
+      enum: ["sous_nom", "bas", "aucune"],
+    }),
+    /**
+     * La décennale et le médiateur AU JOUR DU DOCUMENT (migration 0094).
+     *
+     * Figés comme le SIRET, et pour une raison qui compte davantage : un numéro
+     * de contrat d'assurance change, et c'est cette pièce-là qui prouve la
+     * couverture au moment du chantier. Les lire en direct réécrirait le passé.
+     *
+     * Nuls sur tout ce qui existait avant : rien de plus ne s'imprime.
+     */
+    entrepriseAssureurDecennale: text("entreprise_assureur_decennale"),
+    // Figées avec l'assureur (migration 0121) : c'est l'attestation du jour de
+    // la pièce qui prouve la couverture du chantier.
+    entrepriseAdresseAssureurDecennale: text("entreprise_adresse_assureur_decennale"),
+    entrepriseAttestationDecennaleCle: text("entreprise_attestation_decennale_cle"),
+    entrepriseAttestationDecennaleMime: text("entreprise_attestation_decennale_mime"),
+    entrepriseContratDecennale: text("entreprise_contrat_decennale"),
+    entrepriseCouvertureDecennale: text("entreprise_couverture_decennale"),
+    entrepriseMediateurNom: text("entreprise_mediateur_nom"),
+    entrepriseMediateurCoordonnees: text("entreprise_mediateur_coordonnees"),
 
     clientNom: text("client_nom"),
     // Recopiée comme le nom : un document dit comment on s'adressait à son
     // destinataire LE JOUR OÙ il a été établi. Corriger une fiche client ne
     // doit pas réécrire un devis déjà parti (migration 0038).
-    clientCivilite: text("client_civilite", { enum: ["mr", "mme"] }),
+    clientCivilite: text("client_civilite", { enum: ["mr", "mme", "entreprise"] }),
+    /** Le SIRET d'une entreprise cliente, figé comme son nom (migration 0119). */
+    clientSiret: text("client_siret"),
     clientAdresse: text("client_adresse"),
     clientTelephone: text("client_telephone"),
     clientEmail: text("client_email"),
@@ -1641,6 +2386,27 @@ export const factures = pgTable(
 
     dateEmission: date("date_emission").notNull(),
     dateEcheance: date("date_echeance"),
+    /**
+     * La date des travaux (migration 0118), mention obligatoire quand elle
+     * diffère de la date de la facture (CGI, ann. II, art. 242 nonies A).
+     * Remplie d'après le planning à la création, modifiable en brouillon : son
+     * choix 6A du 3 octobre 2026. NUL sur les factures d'avant.
+     */
+    dateTravaux: date("date_travaux"),
+    /**
+     * Sous-traitance du bâtiment, sans TVA : l'autoliquidation (CGI,
+     * art. 283-2 nonies), migration 0118. Basculer met les taux de la pièce à
+     * zéro, EN BASE, et range ceux d'avant dans `tauxAvantAutoliquidation` :
+     * tout ce qui lit une facture (écran, PDF, page du client, paiements,
+     * avoirs, relevé) la lit donc sans TVA sans avoir à connaître ce drapeau.
+     */
+    autoliquidation: boolean("autoliquidation").notNull().default(false),
+    /** Le numéro de TVA du donneur d'ordre, imprimé sous son nom (242 nonies A, I-4°). */
+    clientNumeroTva: text("client_numero_tva"),
+    tauxAvantAutoliquidation: jsonb("taux_avant_autoliquidation").$type<{
+      facture: string;
+      lignes: Record<string, string | null>;
+    }>(),
     conditionsPaiement: text("conditions_paiement"),
     devise: char("devise", { length: 3 }).notNull().default("EUR"),
 
@@ -1658,9 +2424,41 @@ export const factures = pgTable(
      */
     reductionPourcent: numeric("reduction_pourcent", { precision: 5, scale: 2 }),
     reductionMontant: numeric("reduction_montant", { precision: 10, scale: 2 }),
+    /**
+     * « dont main d'œuvre HT », recopiée du devis à la création (migration
+     * 0092) et retouchable en brouillon. Nommée, jamais comptée.
+     */
+    mainDoeuvreHt: numeric("main_doeuvre_ht", { precision: 12, scale: 2 }),
+    /** Le titre du devis, recopié — c'est le même papier (migration 0092). */
+    titre: text("titre"),
 
     pdfStorageKey: text("pdf_storage_key"),
     pdfChecksum: text("pdf_checksum"),
+
+    /**
+     * L'ALLURE DE SES DOCUMENTS, FIGÉE AU MOMENT DE L'ENVOI (migration 0074).
+     *
+     * **Sa décision du 4 septembre 2026 :** *« une facture partie ne change plus
+     * d'aspect : mon client doit retrouver en ligne exactement ce qu'il a reçu
+     * en PDF, y compris six mois plus tard. Un changement de réglage ne rattrape
+     * pas les anciennes, c'est voulu. »*
+     *
+     * C'est la même règle que l'identité de l'entreprise, le régime de TVA
+     * (0039) et les mentions légales (0072) : ce qui part figé reste figé.
+     * L'aspect était le dernier à ne pas l'être — la page du client le lisait
+     * sur l'entreprise, donc à l'instant de la consultation.
+     *
+     * **Les trois NULLES ensemble** veulent dire « facture antérieure à 0074 » :
+     * son aspect n'a jamais été relevé, et la page retombe sur l'allure vivante
+     * de l'entreprise. Ce repli porte l'historique — ne pas le retirer.
+     *
+     * **Écrites, elles valent le DÉFAUT en clair** quand il n'avait rien réglé —
+     * l'inverse de ce que fait `entreprises`, et pour la raison inverse : là-bas
+     * c'est une préférence vivante, ici un constat. Voir la migration.
+     */
+    docTypographie: text("doc_typographie"),
+    docFond: text("doc_fond"),
+    docAccent: text("doc_accent"),
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     createdBy: uuid("created_by").references(() => users.id),
@@ -1680,6 +2478,73 @@ export const factures = pgTable(
       foreignColumns: [devis.id, devis.entrepriseId],
       name: "factures_devis_entreprise_fk",
     }).onDelete("restrict"),
+  ]
+);
+
+/**
+ * Les avoirs (migration 0101) : la facture rectificative, qui ne se modifie
+ * jamais. BOFiP BOI-TVA-DECLA-30-20-20-20, §220 et §260 : la facture visée,
+ * sa date, le HT et la TVA de la réduction. Le verrou est en base
+ * (`trg_avoir_immuable`) ; ses lignes vivent dans `lignes` pour être verrouillées
+ * avec lui.
+ */
+export const avoirs = pgTable(
+  "avoirs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    factureId: uuid("facture_id").notNull(),
+    numero: text("numero").notNull(),
+    dateEmission: date("date_emission").notNull(),
+    motif: text("motif").notNull(),
+    /** La ligne de la facture visée ; `null` = toute la facture. */
+    ligneFactureId: uuid("ligne_facture_id"),
+    totalHt: numeric("total_ht", { precision: 12, scale: 2 }).notNull(),
+    totalTva: numeric("total_tva", { precision: 12, scale: 2 }).notNull(),
+    totalTtc: numeric("total_ttc", { precision: 12, scale: 2 }).notNull(),
+    lignes: jsonb("lignes").$type<LigneAvoirStockee[]>().notNull(),
+    pdfStorageKey: text("pdf_storage_key").notNull(),
+    pdfChecksum: text("pdf_checksum").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+  },
+  (t) => [
+    unique("avoirs_entreprise_numero_uk").on(t.entrepriseId, t.numero),
+    unique("avoirs_id_entreprise_uk").on(t.id, t.entrepriseId),
+    index("avoirs_facture_idx").on(t.factureId),
+    index("avoirs_entreprise_date_idx").on(t.entrepriseId, t.dateEmission),
+    foreignKey({
+      name: "avoirs_facture_entreprise_fk",
+      columns: [t.factureId, t.entrepriseId],
+      foreignColumns: [factures.id, factures.entrepriseId],
+    }),
+  ]
+);
+
+/**
+ * Les factures qu'il a déclarées « Il ne me paiera pas » (migration 0101).
+ *
+ * Une table à part, parce qu'une facture émise ne se modifie pas (et le BOFiP
+ * le dit pour l'impayé, §310). La ligne s'efface quand il paie.
+ */
+export const facturesNonPayees = pgTable(
+  "factures_non_payees",
+  {
+    factureId: uuid("facture_id").primaryKey(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    declareeLe: timestamp("declaree_le", { withTimezone: true }).notNull().defaultNow(),
+    declareePar: uuid("declaree_par").references(() => users.id, { onDelete: "set null" }),
+  },
+  (t) => [
+    foreignKey({
+      name: "factures_non_payees_facture_entreprise_fk",
+      columns: [t.factureId, t.entrepriseId],
+      foreignColumns: [factures.id, factures.entrepriseId],
+    }),
   ]
 );
 
@@ -1712,6 +2577,25 @@ export const paiementsFacture = pgTable(
     montant: numeric("montant", { precision: 12, scale: 2 }).notNull(),
     moyen: text("moyen", { enum: ["virement", "cheque", "especes", "carte", "autre"] }),
     note: text("note"),
+    /** Le numéro du chèque (migration 0092) — « chèque n° 1806028 » sur la facture. */
+    numero: text("numero"),
+    /**
+     * Ce que CE règlement est, écrit par lui (migration 0098).
+     *
+     * `null` : le nom se déduit du rang et des acomptes du devis — « Acompte
+     * 30 % » (`nomAcompte`). Dès qu'il écrit quelque chose, c'est ce mot-là
+     * qui s'affiche et qui s'imprime : des arrhes ou un avoir ne sont pas des
+     * acomptes, et le deviner à sa place mettrait un mot faux sur la pièce
+     * comptable de sa cliente.
+     */
+    libelle: text("libelle"),
+    /**
+     * Le versement qui termine le paiement : posé par l'interrupteur « Facture
+     * acquittée » (migration 0092), ou par un règlement de Terminés qui ne
+     * laisse plus rien à payer. Il s'écrit « Solde » (`nomAcompte`). Celui de
+     * l'interrupteur se retire quand on éteint.
+     */
+    solde: boolean("solde").notNull().default(false),
     origine: text("origine", { enum: ["saisi", "reprise", "banque"] }).notNull().default("saisi"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -1719,6 +2603,33 @@ export const paiementsFacture = pgTable(
     index("paiements_facture_facture_idx").on(t.entrepriseId, t.factureId),
     index("paiements_facture_date_idx").on(t.entrepriseId, t.datePaiement),
   ]
+);
+
+/**
+ * Les règlements retirés d'une facture (migration 0103), gardés pour leur
+ * trace : sa planche du 26 septembre 2026, « la B ». Un règlement retiré
+ * quitte `paiements_facture`, donc aucun total ne le compte plus, et
+ * « Remettre » l'y ramène avec le même identifiant.
+ */
+export const reglementsRetires = pgTable(
+  "reglements_retires",
+  {
+    id: uuid("id").primaryKey(),
+    entrepriseId: uuid("entreprise_id").notNull(),
+    factureId: uuid("facture_id").notNull(),
+    datePaiement: date("date_paiement").notNull(),
+    montant: numeric("montant", { precision: 12, scale: 2 }).notNull(),
+    moyen: text("moyen", { enum: ["virement", "cheque", "especes", "carte", "autre"] }),
+    note: text("note"),
+    numero: text("numero"),
+    libelle: text("libelle"),
+    solde: boolean("solde").notNull().default(false),
+    origine: text("origine", { enum: ["saisi", "reprise", "banque"] }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+    retireLe: timestamp("retire_le", { withTimezone: true }).notNull().defaultNow(),
+    retirePar: uuid("retire_par"),
+  },
+  (t) => [index("reglements_retires_facture_idx").on(t.entrepriseId, t.factureId)]
 );
 
 export const lignesFacture = pgTable(
@@ -1731,10 +2642,31 @@ export const lignesFacture = pgTable(
     quantite: numeric("quantite", { precision: 10, scale: 2 }).notNull().default("1"),
     prixUnitaire: numeric("prix_unitaire", { precision: 10, scale: 2 }).notNull(),
     montant: numeric("montant", { precision: 10, scale: 2 }).notNull(),
+    /**
+     * Le taux de sa catégorie, recopié du devis (migration 0073).
+     *
+     * **Sans lui, une facture née d'un devis à deux TVA se réglerait sur un
+     * seul taux** — et l'écart partirait dans une déclaration trimestrielle.
+     */
+    tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
+    /** Recopiée du devis (migration 0092) : « 3 ml », pas « 3 ». */
+    unite: text("unite"),
     ordre: integer("ordre").notNull().default(0),
+    /**
+     * D'où vient cette ligne — du devis accepté, ou du travail ajouté après
+     * (migration 0082).
+     *
+     * **Sans elle, reprendre le devis effacerait les travaux supplémentaires en
+     * silence** : `reprendreLeDevisSurLaFacture` vide les lignes pour recopier
+     * le dernier devis envoyé. C'est le défaut que cette colonne rend
+     * impossible, et c'est sa seule raison d'exister — le montant, le taux et
+     * l'ordre, eux, se portent déjà comme n'importe quelle ligne.
+     */
+    supplement: boolean("supplement").notNull().default(false),
   },
   (t) => [
     index("lignes_facture_facture_idx").on(t.factureId),
+    index("lignes_facture_bloc_idx").on(t.factureId, t.supplement, t.ordre),
     foreignKey({
       columns: [t.factureId, t.entrepriseId],
       foreignColumns: [factures.id, factures.entrepriseId],
@@ -1767,6 +2699,28 @@ export const envoisFactures = pgTable(
     expireAt: timestamp("expire_at", { withTimezone: true }).notNull(),
     canal: text("canal", { enum: ["sms", "email"] }).notNull(),
     envoyeAt: timestamp("envoye_at", { withTimezone: true }).notNull().defaultNow(),
+
+    /**
+     * **Quand le client a ouvert son lien** (migration 0081), et Atlas la note
+     * tout seul.
+     *
+     * C'est la date qui vaut, parce qu'elle ne dépend pas de sa bonne volonté :
+     * `accuse_at` ci-dessous peut ne jamais venir. Écrite **une seule fois** —
+     * ce qu'on oppose à « je ne l'ai jamais reçue », c'est la PREMIÈRE fois.
+     */
+    ouverteAt: timestamp("ouverte_at", { withTimezone: true }),
+    /** La case qu'il coche. Un geste volontaire, donc plus parlant, mais facultatif. */
+    accuseAt: timestamp("accuse_at", { withTimezone: true }),
+    adresseIp: text("adresse_ip"),
+    agentUtilisateur: text("agent_utilisateur"),
+    /**
+     * N'efface que la CARTE de l'accueil, jamais les deux dates ci-dessus.
+     *
+     * Sa question du 9 septembre 2026 : *« en cas de litige, où est-ce que
+     * l'utilisateur va rechercher cette info ? »* — une preuve qui disparaît
+     * avec l'alerte qui l'annonçait ne prouve rien.
+     */
+    vuParPatronAt: timestamp("vu_par_patron_at", { withTimezone: true }),
   },
   (t) => [
     unique("envois_factures_jeton_uk").on(t.jeton),
@@ -2430,8 +3384,27 @@ export const diagnostics = pgTable(
     moteur: text("moteur"),
     modele: text("modele"),
     versionBase: text("version_base"),
-    /** Vient d'une liste fermée du code — jamais d'un modèle. */
-    motifRefus: text("motif_refus"),
+    /**
+     * QUEL refus — la clé de `MOTIFS_REFUS`, tenue par une contrainte (0087).
+     *
+     * La clé et non la phrase : c'est elle qui permet à l'écran de dire le
+     * geste propre à ce refus-là, au lieu du même pour tous. Jamais un texte
+     * de modèle.
+     */
+    refus: text("refus", {
+      enum: [
+        "base_vide",
+        "aucune_piste",
+        "trop_faible",
+        "trop_proches",
+        "photo_illisible",
+        "diagnostic_photo_impossible",
+        "hote_incertain",
+      ],
+    }),
+    /** Ce que le fournisseur a dit quand personne n'a regardé — une trace,
+     *  pas une donnée du dépôt. Affichée en petit, pour qui dépanne. */
+    panne: text("panne"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
     renduAt: timestamp("rendu_at", { withTimezone: true }),
@@ -2651,4 +3624,276 @@ export const executionsPurge = pgTable("executions_purge", {
   audiosPurges: integer("audios_purges").notNull().default(0),
   photosPurgees: integer("photos_purgees").notNull().default(0),
   preuvesPurgees: integer("preuves_purgees").notNull().default(0),
+});
+
+/**
+ * LE RETOUR D'INTERVENTION — ce que le salarié laisse en partant du chantier.
+ *
+ * Sa décision du 8 septembre 2026, prise sur maquette
+ * (`appli/retours-d-intervention.html`). Le pourquoi de chaque colonne est dans
+ * `drizzle/0080_retour_d_intervention.sql` ; ce qui suit en est le reflet.
+ *
+ * **Aucun montant, et c'est structurel** : un salarié ne voit pas un euro, et
+ * un retour ne facture rien. Son « c'est fini » n'est PAS `terminerChantier`,
+ * qui crée la facture (`ARCHITECTURE.md` §285, décision C).
+ */
+export const retoursIntervention = pgTable(
+  "retours_intervention",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    chantierId: uuid("chantier_id")
+      .notNull()
+      .references(() => chantiers.id, { onDelete: "cascade" }),
+    /** Qui l'a posé. NULL quand la personne a quitté l'entreprise : son départ
+     *  n'efface pas la preuve du travail fait. */
+    posePar: uuid("pose_par").references(() => users.id, { onDelete: "set null" }),
+    poseLe: timestamp("pose_le", { withTimezone: true }).notNull().defaultNow(),
+    /** Son mot, s'il en a écrit un. NULL est le cas ordinaire. */
+    aSignaler: text("a_signaler"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    // PLUSIEURS retours par chantier — un par soir (migration 0096, sa règle
+    // du 19 septembre 2026 : « un chantier de 8 jours, il faut pouvoir faire
+    // plusieurs retours d'intervention jour après jour »). L'index unique de
+    // 0080 est tombé ; celui-ci sert à lire le DERNIER retour d'un chantier.
+    index("retours_intervention_par_chantier_idx").on(t.chantierId, t.poseLe),
+    index("retours_intervention_recents_idx").on(t.entrepriseId, t.poseLe),
+  ]
+);
+
+/**
+ * Les tâches d'un retour — **recopiées du devis**, jamais référencées.
+ *
+ * Le devis change ; un retour qui pointerait dessus raconterait un chantier qui
+ * n'a pas eu lieu. Même raison que les lignes d'un passage d'entretien.
+ *
+ * **Celles qui n'ont pas été faites restent, à `faite = false`.** Ne garder que
+ * les cochées donnerait un chantier qui paraît complet — et c'est sur cette
+ * impression qu'une facture part pour un travail qui n'a pas eu lieu.
+ */
+export const retoursInterventionTaches = pgTable(
+  "retours_intervention_taches",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    retourId: uuid("retour_id")
+      .notNull()
+      .references(() => retoursIntervention.id, { onDelete: "cascade" }),
+    libelle: text("libelle").notNull(),
+    faite: boolean("faite").notNull().default(false),
+    ordre: integer("ordre").notNull().default(0),
+  },
+  (t) => [index("retours_intervention_taches_idx").on(t.retourId, t.ordre)]
+);
+
+/**
+ * Les photos qu'un retour montre — **celles du chantier, pas des copies**.
+ *
+ * **C'est cette table qui les protège de la purge.** `supprimerPhoto` met la
+ * clé de rangement en file (`fichiers_a_purger`) : sans la question posée ici,
+ * effacer une photo depuis la pellicule du chantier détruirait le fichier que
+ * le retour montre encore — des mois plus tard, sans que personne fasse le
+ * lien. C'est le même piège que la reprise des photos du lot 1, dans l'autre
+ * sens.
+ */
+export const retoursInterventionPhotos = pgTable(
+  "retours_intervention_photos",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    retourId: uuid("retour_id")
+      .notNull()
+      .references(() => retoursIntervention.id, { onDelete: "cascade" }),
+    photoId: uuid("photo_id")
+      .notNull()
+      .references(() => photos.id, { onDelete: "cascade" }),
+    ordre: integer("ordre").notNull().default(0),
+  },
+  (t) => [
+    unique("retours_intervention_photos_uk").on(t.retourId, t.photoId),
+    index("retours_intervention_photos_par_photo_idx").on(t.photoId),
+  ]
+);
+
+/**
+ * QUI A DÉJÀ OUVERT CE RETOUR — une ligne par lecteur.
+ *
+ * **Sa demande du 9 septembre 2026** : *« il faut qu’on puisse distinguer du
+ * premier coup d’œil ceux pas ouverts — comme pour les SMS »*, et que la
+ * pastille compte **ce qu’il n’a pas lu**, non le total.
+ *
+ * **Une table, et pas une colonne `vu_le` sur le retour.** Une colonne dirait
+ * « vu » sans dire PAR QUI : `/termines` est ouvert au propriétaire ET au rôle
+ * facturation, et la première personne qui ouvre effacerait la pastille de
+ * l’autre. Le patron regarderait son téléphone le soir, ne verrait rien à lire,
+ * et le retour lui serait passé sous le nez.
+ */
+export const retoursInterventionVus = pgTable(
+  "retours_intervention_vus",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    retourId: uuid("retour_id")
+      .notNull()
+      .references(() => retoursIntervention.id, { onDelete: "cascade" }),
+    utilisateurId: uuid("utilisateur_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    vuLe: timestamp("vu_le", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    // Il rouvre le même retour trois fois dans la soirée : c’est la même
+    // lecture, pas trois. Sans cette unicité la table deviendrait un journal
+    // que personne n’a demandé.
+    unique("retours_intervention_vus_uk").on(t.retourId, t.utilisateurId),
+    index("retours_intervention_vus_par_lecteur_idx").on(t.utilisateurId, t.retourId),
+  ]
+);
+
+/**
+ * L'ABONNEMENT DE L'ENTREPRISE — migration 0084.
+ *
+ * **Les prix ne sont PAS ici.** Ils vivent dans `src/lib/abonnements.ts`, avec
+ * les trois formules : une seule source, sans quoi ce que l'écran affiche et
+ * ce que le prestataire débite finiraient par différer, sur le seul écran où
+ * cela ne se pardonne pas.
+ *
+ * **Les colonnes du prestataire sont nommées « prestataire », pas « stripe ».**
+ * Le jour où l'on en change, c'est le contenu qui change et non le schéma — un
+ * nom de fournisseur dans une colonne finit toujours par mentir.
+ */
+export const abonnements = pgTable(
+  "abonnements",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    formule: text("formule", { enum: ["artisan", "entreprise", "illimite"] }).notNull(),
+    periodicite: text("periodicite", { enum: ["mensuelle", "annuelle"] }).notNull(),
+    // « essai » depuis la migration 0089 — quinze jours sans carte, puis lecture seule.
+    statut: text("statut", { enum: ["essai", "actif", "impaye", "resilie"] }).notNull(),
+    periodeFin: timestamp("periode_fin", { withTimezone: true }),
+    annulationDemandee: boolean("annulation_demandee").notNull().default(false),
+    clientPrestataire: text("client_prestataire"),
+    abonnementPrestataire: text("abonnement_prestataire"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    // Un seul abonnement par entreprise : deux lignes donneraient deux
+    // prélèvements et deux plafonds contradictoires.
+    unique("abonnements_entreprise_uk").on(t.entrepriseId),
+  ]
+);
+
+/**
+ * LES ÉVÉNEMENTS DÉJÀ TRAITÉS — ce qui empêche de compter deux fois le même
+ * paiement.
+ *
+ * Stripe RÉPÈTE ses notifications tant qu'il n'a pas reçu un 200 : c'est une
+ * garantie « au moins une fois », jamais « exactement une fois ». Sans cette
+ * table, un réseau lent prolongerait trois fois la période payée d'un seul
+ * prélèvement.
+ */
+export const evenementsPaiement = pgTable(
+  "evenements_paiement",
+  {
+    id: text("id").primaryKey(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    recuAt: timestamp("recu_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("evenements_paiement_entreprise_idx").on(t.entrepriseId, t.recuAt)]
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LA FICHE DE SÉCURITÉ — la fiche d'intervention du décret 2021-1833, migration
+// 0099. Une par chantier : elle se prépare, se signe au doigt, se transmet, et
+// se garde deux ans à compter de sa signature (`src/lib/fiche-securite.ts`).
+//
+// **Pourquoi UNE colonne jsonb, et pas trente colonnes.** La fiche est un
+// formulaire de quatre pages dont chaque case est un mot de la MSA que l'artisan
+// complète des siens ; ce que le patron lit, ce n'est jamais une case isolée,
+// c'est la fiche entière, sur son PDF. Rien ne se compte ni ne se trie sur une
+// case : la seule lecture SQL est « la fiche de ce chantier », et « les fiches
+// de ce mois ». Une colonne par case aurait figé les mots de la MSA dans le
+// schéma, et le premier mot qu'il ajoute aurait demandé une migration.
+export const fichesSecurite = pgTable(
+  "fiches_securite",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    chantierId: uuid("chantier_id")
+      .notNull()
+      .references(() => chantiers.id, { onDelete: "cascade" }),
+    /** Le contenu entier — `ContenuFiche` de `src/lib/fiche-securite.ts`. */
+    contenu: jsonb("contenu").notNull(),
+    /** La dernière étape passée avec « Suivant » : le bandeau dit « 3 sur 6 ». */
+    etapeVue: integer("etape_vue").notNull().default(0),
+    /** L'écran « ce que demande la loi » a été lu une fois ; il ne revient plus. */
+    loiLue: boolean("loi_lue").notNull().default(false),
+    /** La signature au doigt, en PNG (data URL). NULL tant qu'elle n'est pas signée. */
+    signaturePng: text("signature_png"),
+    signataire: text("signataire"),
+    signeePar: uuid("signee_par").references(() => users.id, { onDelete: "set null" }),
+    signeeLe: timestamp("signee_le", { withTimezone: true }),
+    transmiseLe: timestamp("transmise_le", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("fiches_securite_chantier_uk").on(t.chantierId),
+    index("fiches_securite_signees_idx").on(t.entrepriseId, t.signeeLe),
+  ]
+);
+
+// Les photos d'une fiche sont celles du chantier : cette table dit lesquelles,
+// pour que `supprimerPhoto` ne mette jamais en purge un fichier qu'une fiche
+// montre encore — le même piège que les retours (migration 0080).
+export const fichesSecuritePhotos = pgTable(
+  "fiches_securite_photos",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    ficheId: uuid("fiche_id")
+      .notNull()
+      .references(() => fichesSecurite.id, { onDelete: "cascade" }),
+    photoId: uuid("photo_id")
+      .notNull()
+      .references(() => photos.id, { onDelete: "cascade" }),
+    ordre: integer("ordre").notNull().default(0),
+  },
+  (t) => [
+    unique("fiches_securite_photos_uk").on(t.ficheId, t.photoId),
+    index("fiches_securite_photos_par_photo_idx").on(t.photoId),
+  ]
+);
+
+// Ce qui est gardé d'une fiche à l'autre, par entreprise — `MemoireDesFiches`.
+// Sa règle du 21 septembre 2026 : la main d'œuvre, la trousse, les deux textes
+// de la co-activité, les observations, et ses ajouts aux listes.
+export const fichesSecuriteMemoire = pgTable("fiches_securite_memoire", {
+  entrepriseId: uuid("entreprise_id")
+    .primaryKey()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  contenu: jsonb("contenu").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

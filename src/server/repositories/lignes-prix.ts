@@ -3,9 +3,14 @@ import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
 import type { DbOrTx } from "../db/client";
 import { and, asc as _asc } from "drizzle-orm";
-import { lignesPrix, lignesPrixPrestations, prestations } from "../db/schema";
+import { chantiers, lignesPrix, lignesPrixPrestations, prestations } from "../db/schema";
 import type { Ctx } from "./context";
 import { membresDuLibelle } from "../../lib/lignes-vendables";
+import { reprendreLaLigne, reprendreLesLignes, type LigneReprise } from "../../lib/reprise-des-prix";
+import { listerTarifs } from "./tarifs";
+import { montantDeLaLigne } from "../../lib/montant-de-ligne";
+import { memeValeur } from "../../lib/hausse-du-devis";
+import { uniteAdmise } from "../../lib/unite-de-ligne";
 
 export async function listerLignesPrix(ctx: Ctx, chantierId: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
@@ -28,15 +33,44 @@ export async function listerLignesPrix(ctx: Ctx, chantierId: string) {
  * NULL — mais le drapeau dit que ce zéro n'est pas un prix, et le devis ne peut
  * pas partir tant qu'il est levé.
  */
+/**
+ * LE CHANTIER EST-IL EN SOUS-TRAITANCE, SANS TVA ? (migration 0119)
+ *
+ * Tant qu'il l'est, ses lignes suivent le taux du devis, à zéro : aucun taux ne
+ * s'y pose, ni par « Ajouter une TVA », ni par une catégorie, ni par la
+ * reprise d'un ancien devis. **Une seule garde, ici, pour tous les écrivains
+ * des lignes de prix** : une ligne à 20 % glissée sous un devis en
+ * sous-traitance réclamerait une TVA que le client ne paie pas.
+ */
+async function sansTvaSurLeChantier(tx: DbOrTx, chantierId: string): Promise<boolean> {
+  const [c] = await tx
+    .select({ autoliquidation: chantiers.autoliquidation })
+    .from(chantiers)
+    .where(eq(chantiers.id, chantierId))
+    .limit(1);
+  return c?.autoliquidation ?? false;
+}
+
 export async function ajouterLignePrix(
   ctx: Ctx,
   chantierId: string,
   libelle: string,
   montant: string,
-  options?: { quantite?: string; prixUnitaire?: string; unite?: string | null; aChiffrer?: boolean }
+  options?: {
+    quantite?: string;
+    prixUnitaire?: string;
+    unite?: string | null;
+    aChiffrer?: boolean;
+    /** Le taux de sa catégorie (migration 0073). Absent : la ligne suit le devis. */
+    tauxTva?: string | null;
+    /** Une ligne reprise (migration 0106) : son prix sur l'ancien devis, et le tarif du jour s'il diffère. */
+    prixAncien?: string | null;
+    prixGrille?: string | null;
+  }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const existantes = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
+    const sansTva = await sansTvaSurLeChantier(tx, chantierId);
     const [row] = await tx
       .insert(lignesPrix)
       .values({
@@ -46,8 +80,11 @@ export async function ajouterLignePrix(
         montant,
         quantite: options?.quantite ?? "1",
         prixUnitaire: options?.prixUnitaire ?? montant,
-        unite: options?.unite ?? undefined,
+        unite: uniteAdmise(options?.unite),
         aChiffrer: options?.aChiffrer ?? false,
+        tauxTva: sansTva ? null : (options?.tauxTva ?? null),
+        prixAncien: options?.prixAncien ?? null,
+        prixGrille: options?.prixGrille ?? null,
         ordre: existantes.length,
       })
       .returning();
@@ -63,8 +100,16 @@ export async function modifierLignePrix(
     montant?: string;
     quantite?: string;
     prixUnitaire?: string;
-    unite?: string;
+    /** `null` retire l'unité — une chaîne vide en base se lirait « 4  » sur le papier. */
+    unite?: string | null;
     aChiffrer?: boolean;
+    /**
+     * Déplacer la ligne d'une catégorie de TVA à l'autre (migration 0073).
+     *
+     * `null` la renvoie au taux du devis — c'est ce que fait le retrait d'une
+     * catégorie, plutôt que de supprimer les lignes qu'elle portait.
+     */
+    tauxTva?: string | null;
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -78,23 +123,76 @@ export async function modifierLignePrix(
     // tilleuls à 250 € donnaient un montant resté à 0,00 €, donc un devis à
     // zéro alors que l'écran affichait 750 €. Une ligne dont le total ne
     // correspond pas à son détail ne se rattrape que par un avoir.
-    const patch: typeof data = { ...data };
-    // **Poser un prix, c'est répondre à « à chiffrer ».** Sans cela le devis
-    // resterait bloqué après qu'il a fait exactement ce qu'on lui demandait, et
-    // il n'aurait aucun moyen de comprendre pourquoi.
-    if (data.aChiffrer === undefined && data.montant !== undefined && Number(data.montant) > 0) {
-      patch.aChiffrer = false;
+    const patch: typeof data & { prixAncien?: null; prixGrille?: null } = { ...data };
+    if (data.unite !== undefined) patch.unite = uniteAdmise(data.unite);
+    const [avant] = await tx.select().from(lignesPrix).where(eq(lignesPrix.id, id)).limit(1);
+    if (data.tauxTva !== undefined && avant && (await sansTvaSurLeChantier(tx, avant.chantierId))) {
+      delete patch.tauxTva;
     }
     if (data.montant !== undefined && data.prixUnitaire === undefined && data.quantite === undefined) {
       patch.prixUnitaire = data.montant;
       patch.quantite = "1";
     } else if (data.montant === undefined && (data.prixUnitaire !== undefined || data.quantite !== undefined)) {
-      const [avant] = await tx.select().from(lignesPrix).where(eq(lignesPrix.id, id)).limit(1);
       if (avant) {
-        const q = new Decimal(patch.quantite ?? avant.quantite);
-        const pu = new Decimal(patch.prixUnitaire ?? avant.prixUnitaire);
-        patch.montant = q.times(pu).toFixed(2);
+        // **La multiplication vit dans `src/lib/montant-de-ligne.ts`, et nulle
+        // part ailleurs — 13 septembre 2026.** Elle était écrite ici ET dans le
+        // dépôt des factures, dont le commentaire affirmait pourtant l'appeler.
+        // Deux écritures d'une règle qui décide de ce que le client paie.
+        patch.montant = montantDeLaLigne(patch.quantite ?? avant.quantite, patch.prixUnitaire ?? avant.prixUnitaire);
       }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // **POSER UN PRIX, C'EST RÉPONDRE À « À CHIFFRER » — QUEL QUE SOIT LE
+    // CHAMP PAR LEQUEL ON L'A POSÉ.**
+    //
+    // **Le défaut du 31 août 2026, dans ses mots :** *« je suis revenu en
+    // arrière, j'ai mis les prix pour chaque ligne, mais il ne veut quand même
+    // pas que j'envoie mon devis »*. Et il avait raison de ne rien comprendre :
+    // l'écran affichait 2 280,00 € de total, plus aucune ligne marquée « à
+    // chiffrer », et l'envoi nommait pourtant deux lignes qu'il venait de
+    // chiffrer.
+    //
+    // Cette extinction lisait `data.montant` — l'ENTRÉE. Or il y a deux
+    // chemins d'écriture, et un seul envoie un montant :
+    //
+    // | Écran | Ce qu'il poste | Le drapeau |
+    // |---|---|---|
+    // | Prix | `{ montant }` | s'éteignait |
+    // | Devis complet | `{ libelle, quantite, prixUnitaire }` | **restait levé** |
+    //
+    // Sur le second, le montant est CALCULÉ quinze lignes plus haut
+    // (quantité × prix unitaire) : le total du devis devenait juste, l'étiquette
+    // « à chiffrer » disparaissait de l'écran — elle ne s'affiche qu'à montant
+    // nul —, et rien ne trahissait le drapeau resté en base. La photographie du
+    // devis le recopiait à la régénération suivante (`devis.ts`), et l'envoi
+    // refusait en le renvoyant vers un écran Prix où tout paraissait normal.
+    // **Une boucle sans sortie : aucun geste ne pouvait la rouvrir.**
+    //
+    // On lit donc `patch.montant` — le RÉSULTAT, après calcul —, seul chiffre
+    // qui vaille pour la question « cette ligne est-elle chiffrée ».
+    //
+    // **Et l'extinction reste à sens unique.** Un montant qui retombe à zéro ne
+    // relève pas le drapeau : `aChiffrer` dit « le prix n'a pas été trouvé »,
+    // pas « la ligne vaut zéro ». Le rallumer ferait d'une remise gratuite
+    // délibérée un devis impossible à envoyer.
+    // ═══════════════════════════════════════════════════════════════════════
+    if (data.aChiffrer === undefined && patch.montant !== undefined && Number(patch.montant) > 0) {
+      patch.aChiffrer = false;
+    }
+
+    // **UN PRIX TAPÉ SORT LA LIGNE DE LA REPRISE** (migration 0106, sa règle
+    // du 26 septembre 2026). C'est un prix d'aujourd'hui, le sien : ni le
+    // tarif du jour ni la hausse ne doivent le réécrire ensuite. On compare en
+    // valeur, pas en chaîne : l'écran renvoie le prix à chaque champ quitté,
+    // et « 17.5 » n'est pas une retouche de « 17.50 ».
+    if (
+      avant?.prixAncien != null &&
+      patch.prixUnitaire !== undefined &&
+      !memeValeur(patch.prixUnitaire, avant.prixUnitaire)
+    ) {
+      patch.prixAncien = null;
+      patch.prixGrille = null;
     }
     const [row] = await tx
       .update(lignesPrix)
@@ -245,4 +343,242 @@ export async function prestationsDeLaLigneDans(tx: DbOrTx, lignePrixId: string) 
       .where(eq(lignesPrixPrestations.lignePrixId, lignePrixId))
       .orderBy(_asc(lignesPrixPrestations.ordre))
   );
+}
+
+// ─── Les catégories de TVA (migration 0073) ─────────────────────────────────
+//
+// **Sa demande du 1er septembre 2026** : *« quand j'appuie sur ajouter une TVA,
+// une catégorie s'ajoute, et là je mets toutes mes lignes qui seront en TVA à
+// 10 »*. Une catégorie n'est pas une table : c'est l'ensemble des lignes qui
+// partagent un taux. Les trois gestes ci-dessous sont donc des écritures sur
+// des LIGNES — mais groupées ici, parce qu'ils portent tous sur plusieurs à la
+// fois et qu'un écran qui les ferait une par une laisserait une catégorie à
+// moitié déplacée si le réseau lâche au milieu.
+
+/**
+ * Changer le taux d'une catégorie entière.
+ *
+ * **Toutes ses lignes suivent, et c'est tout l'intérêt du geste** : c'est
+ * précisément ce qu'il ne voulait pas refaire ligne par ligne.
+ *
+ * `ancien` est le taux tel que l'écran l'affiche ; les lignes qui suivent le
+ * devis (taux nul) sont concernées quand `ancien` est le taux du document —
+ * d'où le paramètre `tauxDuDevis`, sans lequel changer la première catégorie
+ * d'un devis existant n'aurait touché aucune ligne.
+ */
+export async function changerTauxCategorie(
+  ctx: Ctx,
+  chantierId: string,
+  ancien: string,
+  nouveau: string,
+  tauxDuDevis: string
+) {
+  const avant = new Decimal(ancien).toFixed(2);
+  const apres = new Decimal(nouveau).toFixed(2);
+  const suitLeDevis = new Decimal(tauxDuDevis).toFixed(2) === avant;
+
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    if (await sansTvaSurLeChantier(tx, chantierId)) return;
+    const lignes = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
+    for (const ligne of lignes) {
+      const sien = ligne.tauxTva === null ? (suitLeDevis ? avant : null) : new Decimal(ligne.tauxTva).toFixed(2);
+      if (sien !== avant) continue;
+      await tx.update(lignesPrix).set({ tauxTva: apres, updatedAt: new Date() }).where(eq(lignesPrix.id, ligne.id));
+    }
+  });
+}
+
+/**
+ * Retirer une catégorie — SES LIGNES NE SONT PAS SUPPRIMÉES.
+ *
+ * Elles reviennent à la catégorie d'accueil, celle du taux du devis. Supprimer
+ * les lignes serait la faute : il retirerait une TVA posée par erreur et
+ * perdrait du même geste le travail qu'il venait de chiffrer, sans qu'aucun
+ * écran ne le prévienne.
+ */
+export async function retirerCategorieTva(
+  ctx: Ctx,
+  chantierId: string,
+  taux: string,
+  tauxDuDevis: string
+) {
+  const vise = new Decimal(taux).toFixed(2);
+  // Retirer la catégorie d'accueil n'a pas de sens : c'est celle où tout
+  // retombe. L'écran ne propose d'ailleurs pas le geste sur elle.
+  if (new Decimal(tauxDuDevis).toFixed(2) === vise) return;
+
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const lignes = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
+    for (const ligne of lignes) {
+      if (ligne.tauxTva === null || new Decimal(ligne.tauxTva).toFixed(2) !== vise) continue;
+      await tx.update(lignesPrix).set({ tauxTva: null, updatedAt: new Date() }).where(eq(lignesPrix.id, ligne.id));
+    }
+  });
+}
+
+/**
+ * Déplacer UNE ligne d'une catégorie de TVA à l'autre — son appui long.
+ *
+ * **La ligne rejoint la FIN de son nouveau groupe, et ce n'est pas un détail.**
+ * L'ordre des catégories suit celui des lignes : sans ce déplacement de rang,
+ * déplacer la PREMIÈRE ligne du devis faisait remonter toute sa nouvelle
+ * catégorie au-dessus de l'autre — on croyait avoir bougé le tableau entier
+ * alors qu'on n'avait bougé qu'une ligne. Trouvé en JOUANT la planche
+ * (`appli/devis-tva-deplacer-ligne.html`), avant d'écrire ce code.
+ *
+ * **Vers le taux du devis, on écrit `null`** plutôt que la valeur : c'est ce que
+ * porte la catégorie d'accueil, et ce que `retirerCategorieTva` y remet. Deux
+ * façons d'être « au taux du devis » se seraient mises à diverger le jour où il
+ * change ce taux — les lignes marquées « 20.00 » y seraient restées pendant que
+ * les nulles suivaient.
+ */
+export async function deplacerLigneVersCategorie(
+  ctx: Ctx,
+  ligneId: string,
+  taux: string,
+  tauxDuDevis: string
+) {
+  const vise = new Decimal(taux).toFixed(2);
+  const versLAccueil = new Decimal(tauxDuDevis).toFixed(2) === vise;
+
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [ligne] = await tx.select().from(lignesPrix).where(eq(lignesPrix.id, ligneId)).limit(1);
+    if (!ligne) return null;
+    if (await sansTvaSurLeChantier(tx, ligne.chantierId)) return ligne;
+
+    const soeurs = await tx
+      .select()
+      .from(lignesPrix)
+      .where(eq(lignesPrix.chantierId, ligne.chantierId));
+    const dernier = soeurs.reduce((max, l) => Math.max(max, l.ordre), 0);
+
+    const [row] = await tx
+      .update(lignesPrix)
+      .set({
+        tauxTva: versLAccueil ? null : vise,
+        ordre: dernier + 1,
+        updatedAt: new Date(),
+      })
+      .where(eq(lignesPrix.id, ligneId))
+      .returning();
+    return row ?? null;
+  });
+}
+
+/**
+ * Reprendre le détail d'un chantier passé sur un chantier neuf, AUX TARIFS
+ * D'AUJOURD'HUI.
+ *
+ * **Sa décision du 8 septembre 2026 :** *« si on clique sur refaire il faut que
+ * ça se mette au prix d'aujourd'hui, la 1 »*. La règle qui décide du prix de
+ * chaque ligne est pure et vit dans `src/lib/reprise-des-prix.ts` — ici on ne
+ * fait que lire, appeler, écrire.
+ *
+ * **Rien ne se recalcule ici, et surtout pas la quantité** : quarante mètres de
+ * haie la dernière fois n'en font pas quarante cette fois-ci, mais c'est un
+ * relevé de chantier, et un relevé ne s'invente pas (`CLAUDE.md` §4). Il le
+ * corrige sur la vraie page du devis — celle qu'il a exigée le 8 septembre
+ * précisément pour pouvoir tout reprendre à la main.
+ *
+ * **Les prestations liées ne suivent PAS** (`lignes_prix_prestations`) : elles
+ * décrivent le découpage d'un travail dicté ce jour-là, et les recopier
+ * prêterait au chantier neuf une dictée qui n'a pas eu lieu. Une ligne reprise
+ * est une ligne écrite à la main, du point de vue du découpage.
+ *
+ * Rend le détail de ce qui a été repris — c'est ce que l'écran affiche.
+ */
+export async function reprendreLesLignesPrix(
+  ctx: Ctx,
+  depuisChantierId: string,
+  versChantierId: string
+): Promise<LigneReprise[]> {
+  const [anciennes, grille] = await Promise.all([
+    listerLignesPrix(ctx, depuisChantierId),
+    listerTarifs(ctx),
+  ]);
+
+  // **Les anciens prix, le tarif du jour PROPOSÉ** (sa règle du 26 septembre
+  // 2026) : rien ne change sans son oui, et la page du devis le lui demande.
+  const reprises = reprendreLesLignes(
+    anciennes.map((l) => ({
+      libelle: l.libelle,
+      quantite: l.quantite,
+      prixUnitaire: l.prixUnitaire,
+      unite: l.unite,
+      aChiffrer: l.aChiffrer,
+      tauxTva: l.tauxTva,
+      ordre: l.ordre,
+    })),
+    grille.map((t) => ({ intitule: t.intitule, prix: t.prix, unite: t.unite }))
+  );
+
+  // **En série, jamais en parallèle.** `ajouterLignePrix` compte les lignes
+  // déjà posées pour se donner un `ordre` : lancées ensemble, elles liraient
+  // toutes le même compte et se retrouveraient toutes à la même place — le
+  // devis sortirait dans un ordre arbitraire, et ce désordre-là ne se voit
+  // qu'à l'écran.
+  for (const l of reprises) {
+    await ajouterLignePrix(ctx, versChantierId, l.libelle, l.montant, {
+      quantite: l.quantite,
+      prixUnitaire: l.prixUnitaire,
+      unite: l.unite,
+      aChiffrer: l.sort === "attend-son-prix",
+      tauxTva: l.tauxTva,
+      // Une ligne qui attend son prix n'a pas d'ancien prix : zéro n'en est pas un.
+      prixAncien: l.sort === "attend-son-prix" ? null : l.prixUnitaire,
+      prixGrille: l.sort === "grille-proposee" ? l.prixGrille : null,
+    });
+  }
+
+  return reprises;
+}
+
+/**
+ * RELIRE UN DEVIS EXPIRÉ À SES PRIX DU JOUR — sa demande du 7 octobre 2026.
+ *
+ * Un client rappelle six mois après : ses lignes portent les prix d'alors.
+ * Elles deviennent des lignes « reprises » (`prixAncien`), et le tarif du jour
+ * est PROPOSÉ là où sa grille a changé (`prixGrille`), exactement comme pour
+ * « Dernier devis » : la page du devis lui pose alors ses deux cadres du
+ * 26 septembre, et rien ne change sans son oui.
+ *
+ * **La même règle que `reprendreLesLignesPrix`** (`reprendreLaLigne`), appliquée
+ * aux lignes du chantier lui-même au lieu de celles d'un autre. Le prix
+ * unitaire ne bouge pas ici : c'est `appliquerLaReprise` qui l'écrit, à sa
+ * réponse.
+ */
+export async function proposerLaGrilleDuJour(ctx: Ctx, chantierId: string): Promise<void> {
+  const [lignes, grille] = await Promise.all([listerLignesPrix(ctx, chantierId), listerTarifs(ctx)]);
+  const tarifs = grille.map((t) => ({ intitule: t.intitule, prix: t.prix, unite: t.unite }));
+  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // **Une question neuve** : une réponse ou une hausse d'une reprise passée
+    // s'appliquerait sans qu'il l'ait redonnée.
+    await tx
+      .update(chantiers)
+      .set({ repriseGrille: null, hausseReprise: null, updatedAt: new Date() })
+      .where(eq(chantiers.id, chantierId));
+    for (const l of lignes) {
+      const r = reprendreLaLigne(
+        {
+          libelle: l.libelle,
+          quantite: l.quantite,
+          prixUnitaire: l.prixUnitaire,
+          unite: l.unite,
+          aChiffrer: l.aChiffrer,
+          tauxTva: l.tauxTva,
+          ordre: l.ordre,
+        },
+        tarifs
+      );
+      await tx
+        .update(lignesPrix)
+        .set({
+          // Une ligne qui attend son prix n'a pas d'ancien prix : zéro n'en est pas un.
+          prixAncien: r.sort === "attend-son-prix" ? null : l.prixUnitaire,
+          prixGrille: r.sort === "grille-proposee" ? r.prixGrille : null,
+          updatedAt: new Date(),
+        })
+        .where(eq(lignesPrix.id, l.id));
+    }
+  });
 }

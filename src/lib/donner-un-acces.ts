@@ -24,6 +24,10 @@ export type RefusAcces =
   | "role-inconnu"
   /** Le mot de passe provisoire ne tient pas la règle du dépôt. */
   | "mot-de-passe-trop-court"
+  /** Assez long, mais fait de ce qu'un attaquant essaie en premier. */
+  | "mot-de-passe-trop-courant"
+  /** Assez long, mais fait du nom ou de l'adresse du salarié. */
+  | "mot-de-passe-trop-personnel"
   /** La seconde saisie ne redit pas la première. */
   | "mot-de-passe-confirmation"
   /** Le dernier patron ne peut ni se rétrograder ni se retirer. */
@@ -31,7 +35,17 @@ export type RefusAcces =
   /** On ne se retire pas soi-même : ce serait s'enfermer dehors. */
   | "soi-meme"
   /** Une portée resserrée sans équipe rattachée ne montrerait rien. */
-  | "equipe-manquante";
+  | "equipe-manquante"
+  /**
+   * La formule souscrite ne comprend pas une personne de plus qui FABRIQUE des
+   * documents — sa règle du 9 septembre 2026 : *« limiter à 5 commerciaux, et
+   * si on veut commerciaux illimités faut payer genre 120 »*.
+   *
+   * **Ne concerne jamais les salariés** : ils ne fabriquent rien, et les
+   * compter reviendrait à facturer la taille de ses chantiers au lieu de
+   * l'usage de l'outil (`src/lib/abonnements.ts`).
+   */
+  | "plafond-atteint";
 
 /**
  * L'adresse est-elle envoyable ?
@@ -98,8 +112,10 @@ export function refusDeLAcces(saisie: {
    * `actuel` est laissé vide : il n'y a pas d'ancien mot de passe à comparer
    * pour un compte qui n'existe pas encore.
    */
-  const refusMdp = verifierNouveauMotDePasse(saisie.motDePasse, saisie.confirmation);
+  const refusMdp = verifierNouveauMotDePasse(saisie.motDePasse, saisie.confirmation, [saisie.nom, saisie.email]);
   if (refusMdp === "trop-court") return "mot-de-passe-trop-court";
+  if (refusMdp === "trop-courant") return "mot-de-passe-trop-courant";
+  if (refusMdp === "trop-personnel") return "mot-de-passe-trop-personnel";
   if (refusMdp === "confirmation-differente") return "mot-de-passe-confirmation";
 
   if (saisie.emailDejaPris) return "email-deja-pris";
@@ -181,6 +197,10 @@ export function messageRefusAcces(refus: RefusAcces): string {
     // l'impression de deux applications.
     case "mot-de-passe-trop-court":
       return messageRefus("trop-court");
+    case "mot-de-passe-trop-courant":
+      return messageRefus("trop-courant");
+    case "mot-de-passe-trop-personnel":
+      return messageRefus("trop-personnel");
     case "mot-de-passe-confirmation":
       return messageRefus("confirmation-differente");
     case "dernier-patron":
@@ -189,5 +209,9 @@ export function messageRefusAcces(refus: RefusAcces): string {
       return "Vous ne pouvez pas retirer votre propre accès.";
     case "equipe-manquante":
       return "Choisissez l'équipe dont il voit les chantiers.";
+    // **La phrase dit quoi faire ensuite**, et c'est le point : un refus qui ne
+    // mène nulle part se lit comme une panne, et il appellerait.
+    case "plafond-atteint":
+      return "Votre formule ne comprend pas une personne de plus aux devis et aux factures. Changez de formule dans Réglages, Abonnement.";
   }
 }

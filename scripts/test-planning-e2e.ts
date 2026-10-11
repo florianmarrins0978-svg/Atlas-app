@@ -18,11 +18,15 @@
 // équipe cochée le matin n'a pas été écrite sur l'après-midi.
 
 import { lancerNavigateur } from "./e2e-browser";
+import { ouvrirLeTiroirDuPlanning } from "./_tiroir-planning-e2e";
 import assert from "node:assert";
+import type { Locator } from "playwright";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
+import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 // DATABASE_URL, jamais une base codée en dur : la suite doit viser la même base
 // que le serveur qu'elle pilote (atlas_dev en local, atlas_test en CI).
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -75,9 +79,9 @@ async function main() {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "05 56 00 00 12");
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15_000 });
-  const chantierId = page.url().split("/").pop()!;
+  const chantierId = idChantier;
 
   const r = await pool.query(
     `UPDATE chantiers SET devis_envoye_at = now(), adresse_chantier = '4 rue des Ormes, Nantes'
@@ -219,6 +223,30 @@ async function main() {
     await page.waitForSelector('[data-atlas="grille-mois"]', { timeout: 30_000 });
   };
 
+  /** Le tiroir du bas — la règle et son pourquoi vivent dans la pièce commune. */
+  const ouvrirLeTiroir = () => ouvrirLeTiroirDuPlanning(page);
+
+  /**
+   * TOUCHER UNE CIBLE EN L'AMENANT AU CENTRE DE L'ÉCRAN D'ABORD.
+   *
+   * **C'est la précaution de `test-rien-de-recouvert-e2e.ts`, et pour la même
+   * raison.** Deux choses flottent au-dessus de cet écran : la barre du bas, et
+   * depuis le 3 septembre 2026 le tiroir des chantiers sans date. Le défilement
+   * automatique du navigateur est MINIMAL — il amène la cible au bord le plus
+   * proche, c'est-à-dire dessous. Le doigt du patron, lui, fait défiler jusqu'à
+   * voir ce qu'il touche.
+   *
+   * **Sans cela, le contrôle accuserait le produit d'un défaut qui est le
+   * sien** : un bouton posé sous le mobilier fixe n'est pas hors d'atteinte, il
+   * attend qu'on défile (`AGENTS.md` — une erreur qui accuse à tort coûte plus
+   * cher que pas d'erreur du tout).
+   */
+  const toucherAuCentre = async (cible: import("playwright").Locator) => {
+    await cible.evaluate((e) => e.scrollIntoView({ block: "center", behavior: "instant" }));
+    await page.waitForTimeout(120);
+    await cible.click();
+  };
+
   /**
    * Amener le calendrier sur le mois du jour visé, puis toucher ce jour.
    *
@@ -241,6 +269,26 @@ async function main() {
     await page.waitForSelector(`[data-atlas="carte-jour"][data-jour="${jour}"]`, {
       timeout: 15_000,
     });
+  };
+
+  /**
+   * Amener la liste du bas jusqu'au chantier, par les flèches des sept jours.
+   *
+   * **Toucher un jour ne l'y amène plus** : sa réponse du 7 octobre 2026, « la
+   * B » (`appli/planning-sans-doublon.html`), retire la liste tant qu'un jour
+   * est ouvert. Les flèches sont le seul chemin qui reste vers une semaine
+   * lointaine, et c'est celui-là que ces contrôles empruntent.
+   */
+  const amenerLaListeSur = async (nomCherche: string) => {
+    await allerAuPlanning();
+    await page.click('[data-atlas="point-semaine"]');
+    const ligne = page.locator(`[data-atlas="ligne-planifiee"]:has-text("${nomCherche}")`);
+    for (let i = 0; i < 20 && !(await ligne.count()); i++) {
+      await page.click('button[aria-label="Sept jours après"]');
+      await page.waitForTimeout(200);
+    }
+    assert.ok(await ligne.count(), `les flèches n'amènent pas la liste jusqu'à « ${nomCherche} »`);
+    return ligne.first();
   };
 
   // ─── LE MOIS ────────────────────────────────────────────────────────────
@@ -301,11 +349,13 @@ async function main() {
   // ─── POSER, DEPUIS « SANS DATE » ────────────────────────────────────────
 
   await essai("tant qu'aucun jour n'est touché, « Sans date » le dit", async () => {
+    await ouvrirLeTiroir();
     const dit = await page.locator('[data-atlas="ou-poser"]').innerText();
     assert.match(dit, /Touchez d’abord un jour/, `lu : « ${dit} »`);
   });
 
   await essai("le chantier attend son jour dans « Sans date »", async () => {
+    await ouvrirLeTiroir();
     await page.locator(`[data-atlas="sans-date"]:has-text("${nom}")`).first().waitFor({
       state: "visible",
       timeout: 15_000,
@@ -321,17 +371,30 @@ async function main() {
     assert.ok(dit.includes("libre"), `la fiche ne dit pas « libre » : « ${dit} »`);
   });
 
-  await essai("poser sur la journée écrit la date ET la durée en base", async () => {
-    await page
-      .locator(`[data-atlas="sans-date"]:has-text("${nom}")`)
-      .first()
-      .locator('[data-poser="journee"]')
-      .click();
+  // **UN SEUL APPUI POSE LE CHANTIER — sa remarque du 9 septembre 2026.**
+  // Le tiroir offrait « Matin · Ap.-m. · Journée » ; ces trois-là ne comblaient
+  // aucun trou — la durée est en base — et écrasaient ce que le devis avait
+  // fixé. Ce qui est éprouvé ici, c'est donc les DEUX moitiés de sa phrase :
+  // qu'un appui suffise, et que la durée du chantier survive au geste.
+  await essai("un appui pose le chantier, sans demander quand", async () => {
+    await ouvrirLeTiroir();
+    const ligne = page.locator(`[data-atlas="sans-date"]:has-text("${nom}")`).first();
+    const boutons = ligne.locator("[data-poser]");
+    assert.equal(
+      await boutons.count(),
+      1,
+      "poser un chantier ne doit plus demander de choisir un moment"
+    );
+    await boutons.click();
     await attendre("la date est écrite", async () => (await enBase()).jour === JOUR);
     const c = await enBase();
     assert.equal(c.jour, JOUR, "la date n'est pas celle du jour touché");
-    assert.equal(c.creneau_debut, "matin", "une journée part le matin");
-    assert.equal(c.duree_demi_journees, 2, "une journée fait deux demi-journées");
+    assert.equal(c.creneau_debut, "matin", "une journée vide se prend par le matin");
+    assert.equal(
+      c.duree_demi_journees,
+      2,
+      "la durée du chantier a été réécrite par la pose"
+    );
   });
 
   // ─── LA FICHE DU JOUR — sa correction du 21 août au soir ────────────────
@@ -346,7 +409,17 @@ async function main() {
     await toucherLeJour(JOUR);
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
     const noms = await carte.locator('[data-atlas="nom-du-jour"]').allInnerTexts();
-    assert.deepEqual(noms, [nom], `le nom est écrit ${noms.length} fois : ${JSON.stringify(noms)}`);
+    // **Ce qui est éprouvé, c'est le COMPTE, plus le texte exact.** Le bouton
+    // portait le seul nom ; depuis le 3 septembre 2026 il porte aussi la durée
+    // et la commune (`ARCHITECTURE.md` §243). Exiger l'égalité stricte, c'était
+    // réclamer une mise en page — et rendre son écran impossible à changer
+    // (`CLAUDE.md` §5 bis). La règle, elle, n'a pas bougé : un chantier à la
+    // journée occupe ses deux moitiés et ne s'écrit qu'une fois.
+    assert.equal(noms.length, 1, `le nom est écrit ${noms.length} fois : ${JSON.stringify(noms)}`);
+    assert.ok(
+      noms[0].startsWith(nom),
+      `la première ligne du bloc n'est pas le nom du chantier : ${JSON.stringify(noms[0])}`
+    );
   });
 
   // **Le compte gris a été RETIRÉ à sa demande du 22 août** — *« supprime-moi
@@ -445,7 +518,8 @@ async function main() {
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
     const pastille = carte.locator('[data-bloc="apres_midi"] [data-atlas="equipe"]');
     assert.equal(await pastille.getAttribute("data-vide"), "1");
-    assert.equal((await pastille.innerText()).trim(), "Qui ?");
+    // « + Salarié » — son choix du 18 septembre 2026 à la place de « Qui ? ».
+    assert.match((await pastille.innerText()).replace(/\s+/g, " ").trim(), /^\+\s*Salarié$/);
   });
 
   // ─── DÉPLACER ───────────────────────────────────────────────────────────
@@ -468,10 +542,15 @@ async function main() {
       const carte = document.querySelector(`[data-atlas="carte-jour"][data-jour="${jour}"]`);
       if (!carte) return null;
       return [...carte.querySelectorAll('[data-atlas="demi"]')].map((d) => {
+        // **Le CENTRE de chaque boîte, pas son bord haut.** Depuis le
+        // 19 septembre 2026, le geste d'équipe est un mot de 44 px de haut à
+        // côté d'une pastille de 11 : alignés sur la même ligne, leurs hauts
+        // diffèrent de 16 px sans qu'aucun repli n'ait eu lieu. Un repli, lui,
+        // décale les centres d'une ligne entière — c'est cela qu'on mesure.
         const hauts = [...d.children]
           .map((e) => e.getBoundingClientRect())
           .filter((b) => b.width > 0 && b.height > 0)
-          .map((b) => Math.round(b.top));
+          .map((b) => Math.round(b.top + b.height / 2));
         const larg = [...d.children]
           .map((e) => e.getBoundingClientRect())
           .filter((b) => b.width > 0)
@@ -499,48 +578,82 @@ async function main() {
     }
   });
 
-  await essai("« Déplacer » propose les trois moments, et écrit le choix", async () => {
+  // ─── « DÉPLACER » OUVRE LE CALENDRIER — 17 septembre 2026 ──────────────
+  //
+  // **Ce contrôle défendait le geste d'avant**, et il aurait réclamé ce que le
+  // patron vient de faire retirer (`CLAUDE.md` §5 bis) : l'interrupteur
+  // matin / après-midi rendait une demi-journée au tiroir du bas, d'où il
+  // fallait aller la reprendre. Sa demande : *« c'est trop de clics à faire »*.
+  //
+  // **Ce qu'il tient ici, c'est la place du geste dans le parcours** : il
+  // s'ouvre, il fait taire les deux autres, il se referme. Ce que la base écrit
+  // alors est tenu par `test-deplacer-sur-le-calendrier-e2e.ts`, qui parcourt le
+  // geste en entier — le redire ici en ferait deux écritures d'une même règle.
+  await essai("« Déplacer » ouvre le geste, et les deux autres se taisent", async () => {
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
-    await carte.locator('[data-bloc="matin"] [data-atlas="deplacer"]').click();
-    const moments = await carte.locator("[data-vers]").allInnerTexts();
-    assert.deepEqual(moments, ["Matin", "Après-midi", "Journée"], `lu : ${JSON.stringify(moments)}`);
-    await carte.locator('[data-vers="apres"]').click();
-    await attendre("le chantier passe l'après-midi", async () =>
-      (await enBase()).creneau_debut === "apres_midi"
+    await carte.locator('[data-atlas="bloc-chantier"] [data-atlas="deplacer"]').first().click();
+    const bandeau = page.locator('[data-atlas="deplacement-en-cours"]');
+    await attendre("le bandeau s'ouvre", async () => (await bandeau.count()) === 1);
+    // **Les deux gestes de la carte se taisent** : les laisser offerts pendant
+    // qu'un troisième attend sa réponse, c'est inviter à l'erreur.
+    assert.equal(await page.locator('[data-atlas="deplacer"]').count(), 0);
+    assert.equal(await page.locator('[data-atlas="retirer"]').count(), 0);
+    // **Aucun moment tant qu'aucun jour n'est touché** : la question ne se pose
+    // pas avant d'avoir sa destination.
+    assert.equal(await page.locator('[data-atlas^="vers-"]').count(), 0);
+
+    // **Et le geste se referme sans rien écrire**, sa règle du 16 septembre.
+    const avant = (await enBase()).creneau_debut;
+    await page.locator('[data-atlas="annuler-deplacer"]').click();
+    await attendre("« Déplacer » est revenu", async () =>
+      (await carte.locator('[data-atlas="deplacer"]').count()) > 0
     );
-    const c = await enBase();
-    assert.equal(c.creneau_debut, "apres_midi");
-    assert.equal(c.duree_demi_journees, 1);
+    assert.equal(await page.locator('[data-atlas="deplacement-en-cours"]').count(), 0);
+    assert.equal((await enBase()).creneau_debut, avant, "« Annuler » a touché la base");
   });
 
-  await essai("déplacé sur l'après-midi, le matin redevient libre", async () => {
-    await allerAuPlanning();
-    await toucherLeJour(JOUR);
-    const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
-    const libres = carte.locator('[data-sans-chantier="1"]');
-    assert.equal(await libres.count(), 1, "une seule demi-journée devrait être libre");
-    assert.equal(await libres.first().getAttribute("data-bloc"), "matin");
-  });
-
-  // **Le nom passe devant ce qui reste libre** — *« fais pareil pour les
-  // autres, le nom toujours en premier ! »*
-  await essai("le nom du client passe AVANT la demi-journée libre", async () => {
+  // **LA JOURNÉE SE LIT DANS SON ORDRE — matin, puis après-midi.** Sa décision
+  // du 10 septembre 2026 : *« oui, matin puis aprèm »*.
+  //
+  // **Ce contrôle défendait exactement l'inverse**, et c'est lui qui l'a
+  // retourné : il fixait sa règle du 21 août — *« le nom toujours en premier ! »*
+  // — sans que personne ait mesuré ce qu'elle produisait. Les chantiers passant
+  // avant les moitiés libres, un chantier de l'APRÈS-MIDI faisait lire la fiche
+  // « après-midi puis matin » : les deux lignes échangeaient leur place selon
+  // l'heure du chantier, et l'appui sur « Matin » les faisait sauter. *« J'ai
+  // l'impression que c'est inversé »*, le 9 septembre.
+  //
+  // On mesure donc la PLACE des deux moitiés, et non celle du nom : c'est la
+  // règle qu'il a tranchée, et elle ne dépend d'aucun libellé
+  // (`CLAUDE.md` §5 bis).
+  await essai("le matin se lit AU-DESSUS de l'après-midi, chantier ou pas", async () => {
+    // **Aucune fonction imbriquée ici** : `tsx` les instrumente, et le corps
+    // envoyé au navigateur appelle alors un `__name` qui n'y existe pas — le
+    // contrôle rougit sur son propre outillage, jamais sur le produit.
     const ordre = await page.evaluate((jour) => {
       const carte = document.querySelector(`[data-atlas="carte-jour"][data-jour="${jour}"]`)!;
-      const nom = carte.querySelector('[data-atlas="nom-du-jour"]')!.getBoundingClientRect().top;
-      const libre = carte.querySelector('[data-sans-chantier="1"]')!.getBoundingClientRect().top;
-      return { nom: Math.round(nom), libre: Math.round(libre) };
+      const matin = carte.querySelector('[data-bloc="matin"]')!.getBoundingClientRect().top;
+      const apres = carte.querySelector('[data-bloc="apres_midi"]')!.getBoundingClientRect().top;
+      return { matin: Math.round(matin), apres: Math.round(apres) };
     }, JOUR);
     assert.ok(
-      ordre.nom < ordre.libre,
-      `« libre » (${ordre.libre} px) ouvre la fiche avant le nom (${ordre.nom} px)`
+      ordre.matin < ordre.apres,
+      `l'après-midi (${ordre.apres} px) passe avant le matin (${ordre.matin} px)`
     );
   });
 
   // ─── LA FEUILLE DE CHANTIER — le devis sans les prix ────────────────────
 
-  await essai("le nom du client ouvre la feuille de chantier", async () => {
-    await page.locator('[data-atlas="nom-du-jour"]').first().click();
+  // **Seul ce jour-là, elle est DÉJÀ ouverte** — sa réponse du 3 octobre
+  // 2026, « la C » (`appli/ouvrir-la-fiche.html`) : toucher le nom la
+  // refermerait. À plusieurs, c'est le nom (et son chevron) qui l'ouvre.
+  await essai("la feuille de chantier s'ouvre seule, ou par le nom du client", async () => {
+    const noms = page.locator('[data-atlas="nom-du-jour"]');
+    assert.ok(
+      (await page.locator('[data-atlas="chevron-fiche"]').count()) === (await noms.count()),
+      "un nom sans chevron : rien ne dit que la fiche s'ouvre"
+    );
+    if ((await noms.count()) > 1) await noms.first().click();
     await page.waitForSelector('[data-atlas="feuille"]', { timeout: 15_000 });
   });
 
@@ -548,22 +661,28 @@ async function main() {
   // mettre trois —, la possibilité d'appeler le client et de copier
   // l'adresse. »* On éprouve les ADRESSES des liens, pas leurs libellés : un
   // bouton nommé « Waze » qui pointe ailleurs se lit juste et ne mène nulle part.
-  await essai("la feuille porte Maps, Waze, et l'appel — pas Google", async () => {
+  //
+  // **« Maps » est Google Maps depuis le 31 août 2026** — sa demande, capture à
+  // l'appui. Le contrôle exigeait jusque-là l'inverse (`maps.apple.com`, et
+  // l'absence de Google) : il aurait rougi sur du code exaucé, ce que le §5 bis
+  // de `CLAUDE.md` interdit. On garde ce qu'il a vraiment demandé — DEUX
+  // destinations, pas trois — en refusant cette fois Plans.
+  await essai("la feuille porte Google Maps, Waze, et l'appel — pas Plans", async () => {
     const feuille = page.locator('[data-atlas="feuille"]');
     const liens = await feuille.locator("a").evaluateAll((n) =>
       n.map((e) => (e as HTMLAnchorElement).getAttribute("href") ?? "")
     );
     assert.ok(
-      liens.some((h) => h.startsWith("https://maps.apple.com/")),
-      `Maps manque : ${JSON.stringify(liens)}`
+      liens.some((h) => h.startsWith("https://www.google.com/maps/")),
+      `Google Maps manque : ${JSON.stringify(liens)}`
     );
     assert.ok(
       liens.some((h) => h.startsWith("https://waze.com/")),
       `Waze manque : ${JSON.stringify(liens)}`
     );
     assert.ok(
-      !liens.some((h) => h.includes("google.com/maps")),
-      "Google Maps est revenu : il en voulait deux, pas trois"
+      !liens.some((h) => h.includes("maps.apple.com")),
+      "Plans est revenu : « Maps », c'est Google Maps, et il en veut deux"
     );
     assert.ok(
       liens.some((h) => h.startsWith("tel:")),
@@ -592,6 +711,17 @@ async function main() {
     await attendre("la feuille a fini de lire le devis", async () =>
       !(await page.locator('[data-atlas="feuille"]').innerText()).includes("Lecture du devis")
     );
+    // **Les lignes vivent DANS le bandeau « Travaux à faire », fermé par
+    // défaut** — sa règle du 19 septembre 2026 : *« un devis de trois pages, ça
+    // va faire trop long sur le planning si c'est visible tout le temps »*.
+    // Fermé, il dit combien ; on l'ouvre pour lire quoi.
+    const ferme = await page.locator('[data-atlas="feuille"]').innerText();
+    assert.ok(
+      !ferme.includes("Taille de haie de laurier"),
+      `les lignes du devis s'étalent sur le planning avant qu'on ouvre les travaux : « ${ferme} »`
+    );
+    await page.locator('[data-atlas="ouvrir-travaux"]').click();
+    await page.locator('[data-atlas="tache-du-retour"]').first().waitFor({ state: "visible", timeout: 15_000 });
     const dit = await page.locator('[data-atlas="feuille"]').innerText();
     assert.ok(dit.trim().length > 0, "la feuille est vide : il n'y a rien à mesurer");
     assert.ok(
@@ -606,11 +736,25 @@ async function main() {
     );
   });
 
-  await essai("le PDF de la feuille répond, et ne porte aucun prix", async () => {
+  await essai("le PDF de la feuille s'ouvre DANS l'application, et ne porte aucun prix", async () => {
     const lien = page.locator('[data-atlas="pdf-sans-prix"]');
-    const href = await lien.getAttribute("href");
-    assert.equal(href, `/api/chantiers/${chantierId}/feuille/pdf`);
-    const reponse = await page.request.get(`${BASE}${href}`);
+    const href = (await lien.getAttribute("href")) ?? "";
+    // **Plus d'onglet de Safari — 13 septembre 2026.** Ce geste remettait
+    // encore la feuille au navigateur : ni en-tête, ni flèche de retour, sur
+    // le seul écran qu'il ouvre au milieu d'un chantier. Il passe désormais par
+    // la visionneuse, comme les trois autres PDF (`ARCHITECTURE.md` §341).
+    //
+    // Le contrôle vise donc la RÈGLE — le document se sert, et c'est bien le
+    // sien — plutôt que la forme de l'adresse : c'est `visionneuse-pdf.ts` qui
+    // sait la relire, et une seconde lecture ici finirait par diverger.
+    const fichier = fichierDemandeALaVisionneuse(href);
+    assert.equal(
+      fichier,
+      `/api/chantiers/${chantierId}/feuille/pdf`,
+      `« Ouvrir le devis sans les prix » ne mène pas à la visionneuse de l'application : ${href}`
+    );
+    assert.equal(await lien.getAttribute("target"), null, "la feuille repart dans un onglet : pas de flèche de retour");
+    const reponse = await page.request.get(`${BASE}${fichier}`);
     assert.equal(reponse.status(), 200, `le PDF répond ${reponse.status()}`);
     const octets = Buffer.from(await reponse.body());
     assert.ok(octets.length > 500, `le PDF ne fait que ${octets.length} octets`);
@@ -626,35 +770,66 @@ async function main() {
   await essai("« Retirer » rend le chantier à « Sans date », sans l'effacer", async () => {
     await allerAuPlanning();
     await toucherLeJour(JOUR);
-    await page.locator('[data-atlas="carte-jour"] [data-atlas="retirer"]').first().click();
+    await toucherAuCentre(page.locator('[data-atlas="carte-jour"] [data-atlas="retirer"]').first());
     await attendre("le chantier quitte le jour", async () => (await enBase()).jour === null);
     const c = await enBase();
     assert.equal(c.jour, null, "la date est restée");
     await allerAuPlanning();
+    await ouvrirLeTiroir();
     await page.locator(`[data-atlas="sans-date"]:has-text("${nom}")`).first().waitFor({
       state: "visible",
       timeout: 15_000,
     });
   });
 
-  // ─── AJOUTER DEPUIS LA FICHE : d'abord QUI, ensuite QUAND ───────────────
+  // ─── AJOUTER DEPUIS LA FICHE : ON TOUCHE LE NOM, C'EST POSÉ ─────────────
 
-  await essai("« Ajouter un chantier » demande d'abord QUI", async () => {
+  await essai("« Ajouter » demande D'ABORD la voie, puis QUI — et rien d'autre", async () => {
+    // **Un temps de plus depuis le 10 septembre 2026**, et c'est sa planche
+    // `appli/bloquer-sans-devis.html` : « Ajouter » propose un chantier qui
+    // attend une date, ou un client à écrire. Ce contrôle passe donc par la
+    // première voie — celle qui existait déjà — et vérifie qu'après elle, la
+    // liste des noms suffit à poser (`CLAUDE.md` §5 bis).
     await toucherLeJour(JOUR);
-    await page.locator('[data-atlas="carte-jour"] [data-atlas="ajouter"]').click();
+    await toucherAuCentre(page.locator('[data-atlas="carte-jour"] [data-atlas="ajouter"]'));
+    await page.waitForSelector('[data-atlas="voie-chantier"]', { timeout: 10_000 });
+    await toucherAuCentre(page.locator('[data-atlas="voie-chantier"]').first());
     await page.waitForSelector(`[data-qui="${chantierId}"]`, { timeout: 10_000 });
   });
 
-  await essai("puis QUAND — et le geste atteint la base", async () => {
-    await page.locator(`[data-qui="${chantierId}"]`).click();
-    const moments = await page.locator("[data-quand]").allInnerTexts();
-    assert.deepEqual(moments, ["Matin", "Après-midi", "Journée"], `lu : ${JSON.stringify(moments)}`);
-    await page.locator('[data-quand="matin"]').click();
+  // **LA DEMI-JOURNÉE DU DEVIS SURVIT À LA POSE.** Le chantier vaut UNE
+  // demi-journée à ce moment de la suite — l'essai « Déplacer » l'y a mis, et
+  // « Retirer » ne lui a pris que sa date. L'ancienne version touchait ensuite
+  // « Matin », donc écrivait elle-même la durée qu'elle allait vérifier : elle
+  // aurait été verte même sur un chantier d'une journée réduit de moitié en
+  // silence, ce qu'il a signalé le 9 septembre 2026. On ne touche plus qu'un
+  // nom, et c'est la base qui doit avoir gardé la durée.
+  await essai("toucher le nom pose le chantier, et lui laisse sa durée", async () => {
+    // **Ce que la durée vaut AVANT le geste, plutôt qu'un chiffre écrit ici.**
+    // Le contrôle attendait « 1 » — un chiffre qu'il tenait du raccourcissement
+    // silencieux de « Déplacer », retiré le 10 septembre 2026. Fixer le chiffre
+    // revenait à réclamer le défaut ; ce qu'il faut fixer, c'est la RÈGLE : la
+    // durée vient du devis, et aucun geste du planning n'y touche
+    // (`CLAUDE.md` §5 bis).
+    const dureeAvant = (await enBase()).duree_demi_journees;
+    // **La liste est déjà ouverte** : le cas précédent l'a laissée là, par la
+    // voie « Un chantier en attente ». On ne rouvre donc rien — appuyer sur le
+    // « + » la refermerait, et l'on mesurerait un écran qu'il ne voit jamais.
+    await toucherAuCentre(page.locator(`[data-qui="${chantierId}"]`));
     await attendre("le chantier est reposé", async () => (await enBase()).jour === JOUR);
+    assert.equal(
+      await page.locator("[data-quand]").count(),
+      0,
+      "un second choix est réapparu entre le nom et la pose"
+    );
     const c = await enBase();
     assert.equal(c.jour, JOUR);
     assert.equal(c.creneau_debut, "matin");
-    assert.equal(c.duree_demi_journees, 1);
+    assert.equal(
+      c.duree_demi_journees,
+      dureeAvant,
+      "la durée du chantier est devenue autre chose en le posant"
+    );
   });
 
   // ─── RIEN À POSER : LE GESTE DISPARAÎT ──────────────────────────────────
@@ -672,7 +847,7 @@ async function main() {
   // chantiers le temps d'une mesure est le seul moyen d'atteindre le cas zéro
   // sans dépendre de ce qu'une autre suite y a laissé. Les dates retirées sont
   // relevées AVANT, et remises après, y compris si la mesure échoue.
-  await essai("aucun chantier en attente : plus de « Ajouter un chantier »", async () => {
+  await essai("aucun chantier en attente : « Ajouter » ne mène plus qu'au client", async () => {
     // ─── POURQUOI LA PORTÉE N'EST PAS « CETTE ENTREPRISE » ────────────────
     //
     // **Vérifié dans le code, pas supposé.** Une première version datait les
@@ -745,13 +920,41 @@ async function main() {
       const carte = await page.locator('[data-atlas="carte-jour"]').count();
       assert.ok(carte >= 1, "la fiche du jour ne s'est pas ouverte : il n'y a rien à mesurer");
 
+      // ─── CE CONTRÔLE A CHANGÉ DE CIBLE LE 10 SEPTEMBRE 2026 ───────────
+      //
+      // **Sa règle du 23 août reste, et c'est ELLE qui commande le changement :**
+      // *« lorsqu'aucun chantier n'attend de jour, il ne faudrait pas que le
+      // bouton apparaisse, car il peut nous induire en erreur »*. Le geste ne
+      // créait alors rien — sans chantier en attente, il ne menait qu'à un
+      // cul-de-sac.
+      //
+      // Depuis sa planche `appli/bloquer-sans-devis.html`, il CRÉE : « Un
+      // client » pose un chantier neuf sur la journée, sans devis. Un jour vide
+      // n'est plus un cul-de-sac. Exiger l'absence du bouton reviendrait à
+      // réclamer ce qu'il vient de faire ajouter (`CLAUDE.md` §5 bis).
+      //
+      // **Ce qui se mesure, c'est donc la règle elle-même** : aucune voie qui
+      // ne mène nulle part. Le geste est là, et il n'offre PAS « Un chantier en
+      // attente » quand aucun n'attend.
       const boutons = await page.locator('[data-atlas="ajouter"]').count();
-      assert.equal(
-        boutons,
-        0,
-        `${boutons} bouton(s) « Ajouter un chantier » sur un écran où rien n'attend de jour : ` +
-          "il promet un chantier de plus et ne rend qu'une phrase"
+      assert.ok(
+        boutons >= 1,
+        "« Ajouter » a disparu alors qu'il mène toujours quelque part : poser un client"
       );
+      await page.locator('[data-atlas="ajouter"]').first().click();
+      await page.waitForTimeout(400);
+      assert.equal(
+        await page.locator('[data-atlas="voie-chantier"]').count(),
+        0,
+        "« Client en attente » s'offre alors qu'aucun n'attend : un cul-de-sac de plus"
+      );
+      assert.ok(
+        (await page.locator('[data-atlas="voie-client"]').count()) >= 1,
+        "« Un client » manque : le geste ne mène alors nulle part, et devrait disparaître"
+      );
+      // On referme par « Ajouter » devenu « Fermer » — sa réponse C du 17 septembre.
+      await page.locator('[data-atlas="ajouter"]').first().click();
+      await page.waitForTimeout(300);
 
       // ─── ET LA SECTION ELLE-MÊME S'EFFACE ─────────────────────────────
       //
@@ -760,17 +963,12 @@ async function main() {
       // d'où un chantier reçoit sa date —, mais VIDE elle ne rendait qu'un
       // titre et « Aucun chantier n'attend de jour », sur un écran déjà long.
       //
-      // **Le contrôle vise l'ATTRIBUT, pas le mot.** Chercher le texte « Sans
-      // date » ferait rougir cette suite le jour où il fait renommer la
-      // section — sur du code juste, et pour une demande exaucée
-      // (`CLAUDE.md` §5 bis).
-      const titre = await page.locator('[data-atlas="titre-sans-date"]').count();
-      assert.equal(
-        titre,
-        0,
-        "le titre « Sans date » reste sur un écran où rien n'attend de jour : " +
-          "il annonce une liste vide, suivie d'un refus"
-      );
+      // **Le contrôle vise l'ATTRIBUT, pas le mot.** Chercher un texte ferait
+      // rougir cette suite le jour où il fait renommer la section — sur du
+      // code juste, et pour une demande exaucée (`CLAUDE.md` §5 bis). Le titre
+      // « Sans date » est parti le 12 septembre 2026 ; la consigne « Touchez
+      // d'abord un jour » est ce qui reste de la section, et c'est elle qu'on
+      // cherche.
       const phrase = await page.locator('[data-atlas="ou-poser"]').count();
       assert.equal(
         phrase,
@@ -804,20 +1002,36 @@ async function main() {
     const boutons = await page.locator('[data-atlas="ajouter"]').count();
     assert.ok(boutons >= 1, "le geste d'ajout n'est pas revenu alors qu'un chantier attend un jour");
     // On rend le chantier à sa journée pour la suite du parcours.
+    await pool.query(`DELETE FROM creneaux_chantier WHERE chantier_id = $1`, [chantierId]);
     await pool.query(`UPDATE chantiers SET date_planifiee = $2 WHERE id = $1`, [chantierId, JOUR]);
   });
 
   // ─── LA SEMAINE — elle ne gouverne QUE les planifiés ────────────────────
 
-  await essai("toucher un jour du mois amène la liste sur SA semaine", async () => {
+  // **SA QUESTION DU 7 OCTOBRE 2026**, capture à l'appui : *« Pourquoi il est
+  // inscrit deux fois ? »*. Toucher un jour ouvrait sa fiche sous la case ET
+  // amenait la liste du bas sur ce jour : Lafonte se lisait dans les deux. Il a
+  // choisi « la B » : un jour ouvert retire la liste.
+  await essai("un jour ouvert : son chantier ne se lit qu'une fois", async () => {
     await allerAuPlanning();
     await toucherLeJour(JOUR);
-    const titre = await page.locator('[data-atlas="semaine-titre"]').innerText();
-    const jour = new Date(`${JOUR}T12:00:00Z`).getUTCDate();
+    // D'abord, la fiche le porte : sans cela, « absent de la liste » serait
+    // vrai d'un écran vide.
+    const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
     assert.ok(
-      titre.startsWith(`${jour} `) || titre.startsWith(`${jour} –`),
-      `la semaine du ${JOUR} devrait s'ouvrir sur le ${jour} — lu : « ${titre} »`
+      (await carte.innerText()).includes(nom),
+      "la fiche du jour ne porte pas le chantier : rien à compter"
     );
+    assert.equal(
+      await page.locator('[data-atlas="liste-planifies"]').count(),
+      0,
+      "la liste du bas est encore là sous la fiche : le chantier se lit deux fois"
+    );
+  });
+
+  await essai("refermer le jour rend la liste", async () => {
+    await page.click(`[data-atlas="grille-mois"] [data-jour="${JOUR}"]`);
+    await page.locator('[data-atlas="liste-planifies"]').waitFor({ state: "visible", timeout: 10_000 });
   });
 
   // **La ligne dit la DURÉE, plus le moment** — sa demande du 22 août 2026,
@@ -825,8 +1039,7 @@ async function main() {
   // a marqué le matin et l'après-midi »*. La demi-journée se lit toujours, mais
   // sur la ligne MATIN du volet, une fois déplié.
   await essai("le chantier posé figure dans les planifiés, avec sa DURÉE", async () => {
-    const ligne = page.locator(`[data-atlas="ligne-planifiee"]:has-text("${nom}")`).first();
-    await ligne.waitFor({ state: "visible", timeout: 15_000 });
+    const ligne = await amenerLaListeSur(nom);
     const duree = (
       await ligne.locator('[data-atlas="duree-planifiee"]').innerText()
     ).toLowerCase();
@@ -856,10 +1069,7 @@ async function main() {
       `UPDATE chantiers SET creneau_debut = 'matin', duree_demi_journees = 1 WHERE id = $1`,
       [chantierId]
     );
-    await allerAuPlanning();
-    await toucherLeJour(JOUR);
-    const ligne = page.locator(`[data-atlas="ligne-planifiee"]:has-text("${nom}")`).first();
-    await ligne.waitFor({ state: "visible", timeout: 15_000 });
+    const ligne = await amenerLaListeSur(nom);
     await ligne.locator('[data-atlas="nom-planifie"]').click();
     await ligne.locator('[data-atlas="feuille"]').waitFor({ state: "visible", timeout: 15_000 });
 
@@ -906,16 +1116,110 @@ async function main() {
     await toucherLeJour(JOUR);
   });
 
+  // **SA CORRECTION DU 10 SEPTEMBRE 2026**, capture à l'appui : *« quand il y a
+  // plusieurs chantiers le même jour on a un problème ! Quand je clique sur sa
+  // fiche d'intervention, ça doit se coller en dessous, pas en dessous de
+  // Frédéric, ça porte à confusion. »*
+  //
+  // La fiche était rendue APRÈS la boucle des blocs : sur un jour à deux
+  // chantiers, toucher le premier ouvrait une fiche posée sous le SECOND — et
+  // elle porte le nom du client en gros, ce qui donne deux noms qui se
+  // contredisent à trois centimètres.
+  //
+  // **Le contrôle pur tient la règle** (`test-planning-jour.ts`) ; celui-ci
+  // tient le CHEMIN qu'il emprunte, lui — deux chantiers dans la même journée,
+  // et le doigt sur le nom du premier (`CLAUDE.md` §5 quater).
+  await essai("la fiche d'intervention se colle sous SON chantier", async () => {
+    // Une copie du chantier existant : elle hérite de ses colonnes quelles
+    // qu'elles soient, donc ce montage survit à la prochaine migration. **Une
+    // seule instruction** — `pg` refuse plusieurs commandes dans une requête
+    // préparée, et le montage rougissait alors sur lui-même, en accusant le
+    // produit d'un défaut qui était le sien.
+    const voisin = await pool.query<{ id: string }>(
+      `INSERT INTO chantiers
+         SELECT (jsonb_populate_record(NULL::chantiers,
+                  to_jsonb(c) || jsonb_build_object('id', gen_random_uuid()::text,
+                                                    'nom', 'M. Voisin du jour'))).*
+           FROM chantiers c WHERE c.id = $1
+       RETURNING id`,
+      [chantierId]
+    );
+    const idVoisin = voisin.rows?.[0]?.id ?? null;
+    try {
+      assert.ok(idVoisin, "le second chantier n'a pas été créé : rien à mesurer");
+      // Les deux tiennent la journée entière : la journée n'a alors AUCUNE
+      // moitié libre, et c'est le cas de sa capture.
+      await pool.query(
+        `UPDATE chantiers SET date_planifiee = $2, creneau_debut = 'matin',
+                              duree_demi_journees = 2
+          WHERE id = ANY($1::uuid[])`,
+        [[chantierId, idVoisin], JOUR]
+      );
+
+      await allerAuPlanning();
+      await toucherLeJour(JOUR);
+      const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`).first();
+      await carte.waitFor({ state: "visible", timeout: 15_000 });
+      const blocs = carte.locator('[data-atlas="bloc-chantier"]');
+      await attendre("les deux chantiers du jour sont là", async () => (await blocs.count()) === 2);
+
+      // On touche le nom du PREMIER, comme lui sur « Mr. Julien ».
+      await blocs.first().locator('[data-atlas="nom-du-jour"]').click();
+      await carte.locator('[data-atlas="feuille"]').waitFor({ state: "visible", timeout: 15_000 });
+
+      const m = await carte.evaluate((n) => {
+        const b = Array.from(n.querySelectorAll('[data-atlas="bloc-chantier"]'));
+        const f = n.querySelector('[data-atlas="feuille"]');
+        return {
+          premier: b[0] ? Math.round(b[0].getBoundingClientRect().top) : null,
+          second: b[1] ? Math.round(b[1].getBoundingClientRect().top) : null,
+          fiche: f ? Math.round(f.getBoundingClientRect().top) : null,
+          hauteur: f ? Math.round(f.getBoundingClientRect().height) : 0,
+        };
+      });
+
+      // **Un contrôle qui mesure zéro ne mesure rien** (`CLAUDE.md` §5).
+      assert.ok(m.premier !== null, "le premier chantier du jour est absent");
+      assert.ok(m.second !== null, "le second chantier du jour est absent");
+      assert.ok(m.fiche !== null, "la fiche d'intervention ne s'est pas ouverte");
+      assert.ok(m.hauteur >= 60, `la fiche est écrasée : ${m.hauteur} px`);
+
+      assert.ok(
+        m.premier! < m.fiche!,
+        `la fiche (${m.fiche}) est passée AU-DESSUS de son chantier (${m.premier})`
+      );
+      assert.ok(
+        m.fiche! < m.second!,
+        `la fiche (${m.fiche}) est retombée sous le second chantier (${m.second}) : ` +
+          "c'est le défaut du 10 septembre 2026"
+      );
+    } finally {
+      // La journée redevient ce que les contrôles suivants attendent.
+      if (idVoisin) await pool.query(`DELETE FROM chantiers WHERE id = $1`, [idVoisin]);
+      await pool.query(
+        `UPDATE chantiers SET creneau_debut = 'matin', duree_demi_journees = 2 WHERE id = $1`,
+        [chantierId]
+      );
+      await allerAuPlanning();
+      await toucherLeJour(JOUR);
+    }
+  });
+
   await essai("la flèche de la semaine ne change PAS le mois", async () => {
+    // Les chevrons ne se montrent que sur les sept jours, et jamais sous un
+    // jour ouvert : la page repart donc d'un calendrier sans jour touché.
+    await allerAuPlanning();
+    await page.click('[data-atlas="point-semaine"]');
+    await page.waitForTimeout(300);
     const moisAvant = await page.locator('[data-atlas="mois-titre"]').innerText();
-    await page.click('button[aria-label="Semaine suivante"]');
+    await page.click('button[aria-label="Sept jours après"]');
     await page.waitForTimeout(400);
     assert.equal(
       await page.locator('[data-atlas="mois-titre"]').innerText(),
       moisAvant,
       "la flèche de la semaine a fait bouger le calendrier : deux navigations qui se marchent dessus"
     );
-    await page.click('button[aria-label="Semaine précédente"]');
+    await page.click('button[aria-label="Sept jours avant"]');
     await page.waitForTimeout(400);
   });
 
@@ -924,11 +1228,7 @@ async function main() {
   // clique sur un chiffre du planning du mois [...] il faut que les deux
   // s'affichent »* — la journée ET la feuille.
   await essai("un nom des planifiés ouvre SA journée et SA feuille", async () => {
-    await page
-      .locator(`[data-atlas="ligne-planifiee"]:has-text("${nom}")`)
-      .first()
-      .locator('[data-atlas="nom-planifie"]')
-      .click();
+    await (await amenerLaListeSur(nom)).locator('[data-atlas="nom-planifie"]').click();
     await page.waitForSelector('[data-atlas="feuille"]', { timeout: 15_000 });
     const cartes = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
     assert.ok((await cartes.count()) >= 1, "la journée ne s'est pas ouverte sous la ligne");
@@ -985,11 +1285,19 @@ async function main() {
   // marche toujours ; c'est l'enregistrement qui casse en silence, et il ne se
   // voit qu'en revenant. Une note perdue sans un mot, c'est le broyeur oublié
   // alors qu'il croit l'avoir noté.
+  // **La fiche peut être DÉJÀ ouverte** : seule ce jour-là, elle s'ouvre avec
+  // la journée (« la C », 3 octobre 2026). Toucher le nom la refermerait.
+  const ouvrirLaFiche = async (carte: Locator) => {
+    if ((await carte.locator('[data-atlas="feuille"]').count()) === 0) {
+      await carte.locator('[data-atlas="nom-du-jour"]').first().click();
+    }
+  };
+
   await essai("la note de la feuille s'écrit et survit au rechargement", async () => {
     await allerAuPlanning();
     await toucherLeJour(JOUR);
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
-    await carte.locator('[data-atlas="nom-du-jour"]').first().click();
+    await ouvrirLaFiche(carte);
     const champ = page.locator('[data-atlas="note-chantier"]').first();
     await champ.waitFor({ state: "visible", timeout: 15_000 });
 
@@ -1010,7 +1318,7 @@ async function main() {
 
     await allerAuPlanning();
     await toucherLeJour(JOUR);
-    await carte.locator('[data-atlas="nom-du-jour"]').first().click();
+    await ouvrirLaFiche(carte);
     const relu = page.locator('[data-atlas="note-chantier"]').first();
     await relu.waitFor({ state: "visible", timeout: 15_000 });
     assert.equal(
@@ -1038,23 +1346,25 @@ async function main() {
       return d.toISOString().slice(0, 10);
     })();
 
+    // **LE DÉCOR POSE COMME LE PRODUIT POSE — 10 septembre 2026.** Depuis que
+    // le chantier porte OÙ chacune de ses demi-journées est posée
+    // (`ARCHITECTURE.md` §322), écrire `date_planifiee` seule ne le déplace
+    // plus : ses créneaux le tiennent encore à son ancien jour, et l'écran les
+    // croit — à raison. On efface donc les créneaux, ce qui rend le chantier à
+    // son bloc calculé, exactement comme un chantier d'avant la migration.
+    await pool.query(`DELETE FROM creneaux_chantier WHERE chantier_id = $1`, [chantierId]);
     const r = await pool.query(`UPDATE chantiers SET date_planifiee = $2 WHERE id = $1`, [
       chantierId,
       samedi,
     ]);
     assert.equal(r.rowCount, 1, "le décor n'a pas pu poser la date du samedi");
 
-    await allerAuPlanning();
-    await toucherLeJour(samedi);
     // Visé par le NOM plutôt que par un lien : le chevron de la ligne pivote
     // désormais au lieu de mener au chantier (planche 86), et un contrôle qui
     // s'accroche à un `href` se casse au premier remaniement d'apparence.
-    const ligne = page.locator(`[data-atlas="ligne-planifiee"]:has-text("${nom}")`);
-    await ligne.first().waitFor({ state: "visible", timeout: 15_000 });
-    assert.ok(
-      (await ligne.count()) >= 1,
-      "un chantier posé un samedi n'apparaît plus dans les planifiés : il est perdu"
-    );
+    // `amenerLaListeSur` refuse déjà de conclure si la ligne n'y est pas.
+    await amenerLaListeSur(nom);
+    await toucherLeJour(samedi);
 
     // **Et la fiche du jour l'OUVRE, au lieu de le refuser.** Sa règle du
     // 23 août 2026 : *« le samedi et le dimanche, l'utilisateur doit pouvoir le
@@ -1078,8 +1388,17 @@ async function main() {
   await essai("un samedi offre les mêmes gestes qu'un mardi", async () => {
     const samedi = new Date(`${JOUR}T12:00:00Z`);
     samedi.setUTCDate(samedi.getUTCDate() + 5);
-    await toucherLeJour(samedi.toISOString().slice(0, 10));
-    const carte = page.locator('[data-atlas="carte-jour"]').first();
+    const jourSamedi = samedi.toISOString().slice(0, 10);
+    await toucherLeJour(jourSamedi);
+    // **LE SAMEDI, PAS « LA PREMIÈRE CARTE ».** `.first()` prenait la carte la
+    // plus haute du document — celle d'une ligne des planifiés restée dépliée
+    // par un contrôle précédent, quand il y en avait une. Le contrôle rougissait
+    // alors une fois sur deux, sur du code juste, en annonçant « le samedi
+    // n'affiche pas ses deux demi-journées » : payé le 11 septembre 2026, une
+    // suite entière rejouée pour l'apprendre. Un contrôle qui rougit au hasard
+    // s'apprend à être ignoré, et l'on perd le garde-fou sans s'en apercevoir.
+    const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${jourSamedi}"]`).first();
+    await carte.waitFor({ state: "visible", timeout: 15_000 });
     const dit = await carte.innerText();
     assert.ok(!/Jamais proposé/.test(dit), `le samedi est encore un cul-de-sac : « ${dit} »`);
     assert.equal(
@@ -1110,39 +1429,63 @@ async function main() {
   // (`CLAUDE.md` §3). Ce qu'il a demandé, c'est l'identité — c'est donc
   // l'identité qu'on mesure.
   // ─────────────────────────────────────────────────────────────────────
-  await essai("« Sans date » porte la même pastille qu'un jour", async () => {
-    // **Le décor est POSÉ, pas espéré.** Il faut les deux à l'écran en même
-    // temps : une pastille de jour (donc la liste amenée sur la semaine de
-    // `JOUR`) et un titre encadré (donc au moins un chantier sans date). Sans
-    // ce montage, le contrôle refuse de conclure — et il a raison, mais il ne
-    // prouve alors plus rien.
-    const { rows: libres } = await pool.query<{ id: string }>(
-      `UPDATE chantiers SET date_planifiee = NULL
-        WHERE id = (SELECT id FROM chantiers
-                     WHERE date_planifiee IS NOT NULL AND deleted_at IS NULL AND id <> $1
-                     ORDER BY created_at LIMIT 1)
-        RETURNING id, $2::text AS rendu`,
-      [chantierId, JOUR]
+  await essai("la poignée annonce EXACTEMENT le titre de la liste qu'elle ouvre", async () => {
+    /*
+     * **Sa remarque du 7 septembre 2026 :** *« que veut dire "1 chez le
+     * client" ? On comprend pas bien ! »* La poignée abrégeait « En attente du
+     * client » en « chez le client » — un raccourci qui ne dit ni ce qui est
+     * chez lui, ni ce qu'on attend. Son choix : la poignée écrit le titre.
+     *
+     * **On ne fixe AUCUN des deux textes** (`CLAUDE.md` §5 bis) : s'il fait
+     * renommer cette liste demain, ce contrôle doit défendre encore quelque
+     * chose. Ce qu'il défend, c'est qu'ils ne puissent pas DIVERGER — le
+     * défaut d'origine, et le seul qui compte.
+     */
+    await allerAuPlanning();
+    const poignee = page.locator('[data-atlas="poignee-tiroir"]');
+    if ((await poignee.count()) === 0) return; // pas de tiroir : rien à mesurer
+    const annonce = ((await poignee.textContent()) ?? "").toLowerCase();
+    const ouvert = await ouvrirLeTiroirDuPlanning(page);
+    if (!ouvert) return;
+    const titre = page.locator('[data-atlas="titre-attente-client"]');
+    if ((await titre.count()) === 0) return; // aucune attente en cours
+    const mot = ((await titre.textContent()) ?? "").trim();
+    assert.ok(mot.length > 0, "le titre est vide : rien n'est mesuré");
+    assert.ok(
+      annonce.includes(mot.toLowerCase()),
+      `la poignée annonce « ${annonce.trim()} » et la liste s'appelle « ${mot} »`
     );
-    try {
-      await allerAuPlanning();
-      await toucherLeJour(JOUR);
-      await mesurerLesDeuxPastilles();
-    } finally {
-      // On redate EXACTEMENT ce qu'on a libéré : une suite qui abîme le décor
-      // des suivantes coûte plus cher que la mesure ne rapporte.
-      if (libres.length > 0) {
-        await pool.query(`UPDATE chantiers SET date_planifiee = $2 WHERE id = ANY($1::uuid[])`, [
-          libres.map((r) => r.id),
-          JOUR,
-        ]);
-      }
+  });
+
+  await essai("« En attente du client » porte la même pastille qu'un jour", async () => {
+    // **Le titre « Sans date » n'existe plus** — sa demande du 12 septembre
+    // 2026 : la poignée le disait déjà. Le seul titre encadré du tiroir est
+    // désormais « En attente du client », qui ne se fabrique pas en libérant
+    // une date : il faut un devis parti et pas encore répondu. On mesure donc
+    // sur ce que le décor offre, et l'on refuse de conclure s'il n'offre rien
+    // — un vert sur zéro pastille ne prouverait rien (`CLAUDE.md` §5).
+    await allerAuPlanning();
+    // **Une journée ordinaire de la liste, sans toucher de jour** : depuis sa
+    // réponse « la B » du 7 octobre 2026, un jour ouvert retire la liste du bas,
+    // et la pastille avec elle. Les sept jours, puis les flèches, jusqu'à une
+    // journée posée qui n'est pas aujourd'hui.
+    await page.click('[data-atlas="point-semaine"]');
+    const ordinaire = page.locator('[data-atlas="date-planifiee"]:not([data-aujourdhui])');
+    for (let i = 0; i < 8 && !(await ordinaire.count()); i++) {
+      await page.click('button[aria-label="Sept jours après"]');
+      await page.waitForTimeout(200);
     }
+    const ouvert = await ouvrirLeTiroirDuPlanning(page);
+    if (!ouvert) return; // pas de tiroir : rien à mesurer
+    if ((await page.locator('[data-atlas="titre-attente-client"]').count()) === 0) return; // aucune attente en cours
+    await mesurerLesDeuxPastilles();
   });
 
   async function mesurerLesDeuxPastilles() {
     const vu = await page.evaluate(() => {
-      const jour = document.querySelector('[data-atlas="date-planifiee"]') as HTMLElement | null;
+      // Une journée ORDINAIRE : celle d'aujourd'hui porte une autre encre et une
+      // autre taille depuis le 9 septembre 2026, et c'est voulu.
+      const jour = document.querySelector('[data-atlas="date-planifiee"]:not([data-aujourdhui])') as HTMLElement | null;
       const titres = [...document.querySelectorAll('[data-atlas="titre-encadre"]')] as HTMLElement[];
       if (!jour || titres.length === 0) return null;
       // **Aucune fonction NOMMÉE dans ce bloc**, et ce n'est pas du style :

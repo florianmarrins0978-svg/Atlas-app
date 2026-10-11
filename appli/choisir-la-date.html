@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Choisir la date — avec le calendrier du planning</title>
+<title>Choisir la date : avec le calendrier du planning</title>
 <!--
   ════════════════════════════════════════════════════════════════════════════
   SA DEMANDE DU 22 AOÛT 2026 — codée depuis, et AMENDÉE LE 25.
@@ -222,7 +222,7 @@
 <body>
 
 <p class="bandeau">
-  <b>Votre demande du 22 août</b> — le calendrier du planning à la place du calendrier nu,
+  <b>Votre demande du 22 août</b>, le calendrier du planning à la place du calendrier nu,
   quand vous proposez une date. <b>C’est codé, et amendé le 25 :</b> toucher un jour le
   propose, le retoucher le retire. Plus de bouton « Proposer ce jour ».
   Touchez les jours, changez de mois, changez la durée.
@@ -254,14 +254,14 @@
 <p class="note">
   <b>Ce que le calendrier nu ne pouvait pas dire.</b> Il refusait un jour sans jamais montrer
   ce qui s’y trouvait : impossible de juger si l’on pouvait quand même s’y glisser. Ici, un jour
-  complet <b>reste touchable</b> — c’est justement celui sur lequel vous voulez regarder avant de
+  complet <b>reste touchable</b> : c’est justement celui sur lequel vous voulez regarder avant de
   décider. Il ne se propose simplement pas au client tant que la place manque.
 </p>
 
 <script>
 /* ═══════════════════════════════════════════════════════════════════════════
-   Les règles de charge sont celles de l'application (`src/lib/planning-jour.ts`)
-   — recopiées ici parce qu'une maquette ne peut pas l'importer, et écrites en
+   Les règles de charge sont celles de l'application (`src/lib/planning-jour.ts`),
+   recopiées ici parce qu'une maquette ne peut pas l'importer, et écrites en
    une seule fonction pour qu'on voie tout de suite qu'elles n'ont pas dérivé :
 
      charge = chantiers pris ÷ nombre d'équipes
@@ -285,7 +285,7 @@ const MAINTENANT = new Date();
 const AUJOURDHUI = iso(new Date(Date.UTC(
   MAINTENANT.getFullYear(), MAINTENANT.getMonth(), MAINTENANT.getDate())));
 
-/* Le prochain jour ouvré à partir d'un décalage — les chantiers de
+/* Le prochain jour ouvré à partir d'un décalage : les chantiers de
    démonstration ne tombent jamais un dimanche, ce qui se verrait tout de suite
    comme une planche fausse. */
 function ouvre(decalage) {
@@ -324,7 +324,7 @@ function etatDe(jour, demi) {
 }
 
 /* Les demi-journées qu'un chantier occuperait à partir d'un jour, en sautant
-   les week-ends — la même règle que l'application : un chantier de deux jours
+   les week-ends : la même règle que l'application : un chantier de deux jours
    posé un vendredi finit le lundi. */
 function demiesOccupees(jour, nbDemies) {
   const suite = [];
@@ -469,7 +469,7 @@ function dessinerFicheDuJour() {
 
   // Un chantier occupe souvent les deux demi-journées : on le nomme UNE fois,
   // et ses demi-journées se lisent dessous. Deux lignes pour le même client se
-  // lisaient comme deux chantiers — sa correction du 21 août, sur le planning.
+  // lisaient comme deux chantiers, sa correction du 21 août, sur le planning.
   const noms = [];
   for (const p of POSES.filter((p) => p.jour === jourTouche)) {
     let bloc = noms.find((b) => b.nom === p.nom);
@@ -568,7 +568,7 @@ $("#calendrier").addEventListener("click", (e) => {
   }
   if (cible.dataset.jour) {
     // **Le calendrier nu n'a pas de fiche du jour** : y toucher un jour, c'est
-    // le retenir tout de suite. C'est justement ce qu'il reproche — on choisit
+    // le retenir tout de suite. C'est justement ce qu'il reproche : on choisit
     // sans avoir rien vu.
     if (vue === "avant") jourRetenu = cible.dataset.jour;
     else {

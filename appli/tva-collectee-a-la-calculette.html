@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ma TVA à la calculette : Atlas</title>
+<style>
+/*
+  TVA COLLECTÉE À LA CALCULETTE, 25 septembre 2026
+
+  Sa demande, capture de Ma TVA (septembre 2026) à l'appui : « quand je clique
+  sur TVA collectée j'aimerais qu'une page s'ouvre avec les montants des
+  factures d'un côté qui s'additionnent et de l'autre les montants de la TVA
+  qui s'additionnent. L'idée c'est que l'utilisateur puisse rapidement
+  vérifier si l'appli n'a pas fait d'erreur, s'il a sa calculette à portée de
+  main. »
+
+  CE QUI EXISTE DÉJÀ (page.tsx, section « preuve-collectee ») : plus bas sur
+  Ma TVA, chaque règlement dit son TTC et sa TVA, l'un sous l'autre, et la
+  liste finit sur « Total collectée ». Deux manques pour la calculette :
+  le TTC n'est jamais additionné, et les deux chiffres d'une ligne sont
+  empilés, donc aucune colonne ne se descend d'un doigt.
+
+  CE QUI EST NEUF : un appui sur la ligne « TVA collectée » ouvre une page à
+  deux colonnes alignées à droite (Encaissé à gauche, TVA à droite, comme il l'a dit), chacune finie par son
+  total, copiable. La variante B ajoute le HT : HT + TVA = encaissé se vérifie
+  alors ligne par ligne.
+
+  POURQUOI PAS UNE VÉRIFICATION PAR LE TAUX (TTC ÷ 6) : ses factures mêlent
+  10 % et 20 % (296 € encaissés portent 43,39 € de TVA, pas 49,33). Diviser le
+  total par six donnerait un faux écart. L'addition, elle, ne ment jamais.
+
+  Aux encaissements, une ligne est un RÈGLEMENT : la colonne dit « Encaissé »,
+  pas « Facture », parce qu'un acompte n'est qu'une part de sa facture.
+
+  LA MÊME PAGE POUR LA TVA DÉDUCTIBLE, sa demande du même jour : « et pareil
+  pour la TVA déductible ». Fournisseur, Payé, TVA. Un achat écrit à la main
+  peut n'avoir que sa TVA (`AchatsTva`, `achats-tva.ts`) : sa case Payé dit
+  « non noté », le total Payé ne compte que ce qui est noté, et la ligne du
+  bas dit combien d'achats n'ont pas de montant. Sans cela le total Payé
+  serait juste à la calculette et faux sur le ticket.
+
+  SA RÉPONSE : « la A, mais il faudrait savoir c'est une TVA à combien ».
+  Donc la B (colonne HT) est retirée, et une colonne Taux entre entre les deux
+  montants. Chaque ligne se vérifie alors seule : à 20 %, encaissé ÷ 6 ; à
+  10 %, encaissé ÷ 11. Sous le total, un récapitulatif par taux, qui est
+  aussi ce que la déclaration demande.
+
+  PIÈGE TROUVÉ DANS LE CODE : `tauxDeLaFacture` (factures.ts) rend TVA ÷ HT de
+  la facture ENTIÈRE. Sur une facture qui mêle 10 % et 20 %, il rend une
+  moyenne (17,18 % pour ses 296 €), un taux qui n'existe pas. Le taux vrai vit
+  sur chaque ligne de facture (`lignesFacture.tauxTva`, migration 0073). La
+  page coupe donc une facture mixte en une ligne par taux, avec la même
+  référence, et c'est cela qu'il faudra coder, pas l'affichage de la moyenne.
+  Les parts à 10 % et 20 % de ses règlements sont ici des EXEMPLES, choisies
+  pour retomber au centime sur ses montants.
+
+  Un achat sans taux (le taux d'un ticket est facultatif, `achatsTva.tauxTva`)
+  dit « non noté » et forme son propre groupe au récapitulatif.
+
+  SA RETOUCHE, même jour : « la page doit s'ouvrir seulement si je clique sur
+  le mot TVA déductible et collectée ; si on clique sur les chiffres à côté,
+  ça doit copier comme ça le fait déjà ». Aujourd'hui la rangée ENTIÈRE est
+  le bouton de copie (`LigneMontant.tsx`) : il faudra la couper en deux.
+
+  RIEN N'EST CODÉ. Les quatre premières lignes sont celles de ses captures ;
+  la cinquième est un exemple, posé pour que le total tombe sur son 1 689,52.
+  Les achats sont des exemples : sa capture porte 0,00 € de déductible.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+  --scene:#e6e3dc; --plein:#7f9a6f; --surPlein:#fff; --papier:#ece9e1;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);padding:0 0 40px}
+.serif{font-family:ui-serif,Georgia,"Times New Roman",serif}
+.chiffre{font-family:ui-serif,Georgia,serif;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+/* Sa retouche du 25 septembre : « centre tous les chiffres dans leur colonne ». */
+table .chiffre,table th{text-align:center}
+
+.commandes{position:sticky;top:0;z-index:5;background:var(--scene);padding:8px 10px;
+  border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13px;padding:8px 14px;margin:2px;border:1px solid var(--trait);
+  background:var(--plage);color:var(--encre);border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);border-color:var(--encre)}
+
+.tete{max-width:620px;margin:0 auto;padding:18px 20px 0}
+.tete h1{font-size:26px;line-height:1.15;margin:0 0 8px}
+.tete p{margin:0 0 6px;font-size:14px;color:var(--encre-douce)}
+
+.scene{display:flex;justify-content:center;padding:14px 12px}
+.tel{width:390px;max-width:100%;height:664px;background:var(--fond);border:1px solid var(--trait);
+  border-radius:10px;overflow:hidden;position:relative}
+.ecran{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.px{padding-left:24px;padding-right:24px}
+
+.barre{display:flex;justify-content:space-between;align-items:center;padding-top:14px}
+.rond{width:44px;height:44px;border-radius:999px;border:0;background:var(--papier);color:var(--encre);font-size:22px;cursor:pointer}
+.rond.vert{background:var(--plein);color:var(--surPlein);font-size:18px}
+h2.titre{font-weight:400;font-size:32px;line-height:1.1;margin:16px 0 0}
+.caps{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--or);margin:8px 0 0}
+
+/* Ma TVA, telle qu'il l'a photographiée. */
+.montant{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;gap:10px}
+.montant .quoi{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+.montant .combien{font-size:22px}
+.montant.total{border-top:1px solid var(--trait)}
+.montant.total .quoi{color:var(--or)}
+.montant.total .combien{font-size:30px}
+/* Sa retouche du 25 septembre : le MOT ouvre la page, le CHIFFRE copie. */
+button.quoi,button.combien{border:0;background:none;font-family:inherit;cursor:pointer;min-height:44px}
+button.combien{font-family:ui-serif,Georgia,serif;color:var(--encre);display:inline-flex;align-items:center;gap:10px;padding:0}
+.icone{color:var(--or);flex:none}
+.appui{border-radius:6px;margin:0 -8px;padding:0 8px;text-align:left}
+.appui:active{background:var(--trait-doux)}
+.doigt{animation:doigt 2.4s ease-in-out 3}
+@keyframes doigt{0%,100%{background:transparent}50%{background:rgba(185,139,71,.14)}}
+.ombre{height:44px;border-radius:999px;border:1px solid var(--trait);background:var(--plage);flex:1}
+
+/* La page ouverte : deux colonnes qui s'additionnent. */
+table{width:100%;border-collapse:collapse;margin-top:18px}
+th{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gris);
+  text-align:right;padding:0 4px 8px;vertical-align:bottom}
+th:first-child{text-align:left;padding-left:0}
+th.tva{color:var(--or)}
+td{padding:11px 4px;border-top:1px solid var(--trait-doux);vertical-align:top}
+td:first-child{padding-left:0}
+td .nom{font-size:15px;margin:0;line-height:1.25}
+td .petit{font-size:11px;color:var(--gris);margin:2px 0 0;line-height:1.3}
+td.chiffre{font-size:15.5px}
+td.tva{color:var(--or)}
+th.taux,td.taux{text-align:center}
+td.taux{font-family:ui-serif,Georgia,serif;font-size:15px;color:var(--encre-douce);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.suite td{border-top:0;padding-top:0}
+tr.titre-recap td{border-top:0;padding:30px 0 6px;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gris)}
+td.vide{font-family:inherit;font-size:12px;color:var(--gris);font-style:italic}
+tr.ligne{cursor:pointer}
+tr.ligne:active td{background:var(--trait-doux)}
+tr.somme td{border-top:1.5px solid var(--encre);padding-top:12px}
+.mot{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+tr.somme td.chiffre{font-size:17px;font-weight:700}
+.copier{display:block;margin:6px auto 0;border:0;background:none;color:var(--gris);font:inherit;font-size:11px;
+  padding:6px 0;min-height:32px;cursor:pointer}
+.copie{color:var(--plein)}
+.bas{margin:26px 0 0;font-size:12px;color:var(--encre-douce);text-align:center}
+
+.onglets{position:sticky;bottom:0;background:var(--fond);border-top:1px solid var(--trait);display:flex;
+  justify-content:space-around;font-size:10.5px;letter-spacing:.14em;color:var(--gris);padding:16px 4px}
+.onglets b{color:var(--encre);font-weight:600}
+</style>
+</head>
+<body>
+
+
+<div class="tete">
+  <h1 class="serif">Ma TVA à la calculette</h1>
+  <p>Appuyez sur le mot « TVA collectée » ou « TVA déductible » pour ouvrir la page ; sur le chiffre, il se copie.</p>
+</div>
+
+<div class="scene">
+  <div class="tel">
+
+    <!-- Ma TVA -->
+    <div class="ecran" id="tva">
+      <div class="px">
+        <div class="barre"><button class="rond" aria-label="Retour">‹</button><button class="rond vert" aria-label="Assistant">✦</button></div>
+        <h2 class="titre serif">Septembre 2026</h2>
+        <p class="caps">Ma TVA</p>
+
+        <div style="margin-top:22px">
+          <div class="montant">
+            <button type="button" class="quoi appui doigt" data-ouvrir="collectee">TVA collectée</button>
+            <button type="button" class="combien chiffre copiable" data-valeur="1 689,52 €">1 689,52 €<svg class="icone" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2.4"/><path d="M15 5.6A2.6 2.6 0 0 0 12.4 3H6.6A2.6 2.6 0 0 0 4 5.6v5.8A2.6 2.6 0 0 0 6.6 14" stroke-linecap="round"/></svg></button>
+          </div>
+          <div class="montant">
+            <button type="button" class="quoi appui doigt" data-ouvrir="deductible">TVA déductible</button>
+            <button type="button" class="combien chiffre copiable" data-valeur="154,09 €">&minus;&nbsp;154,09 €<svg class="icone" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2.4"/><path d="M15 5.6A2.6 2.6 0 0 0 12.4 3H6.6A2.6 2.6 0 0 0 4 5.6v5.8A2.6 2.6 0 0 0 6.6 14" stroke-linecap="round"/></svg></button>
+          </div>
+          <div class="montant total"><span class="quoi">TVA à payer</span><button type="button" class="combien chiffre copiable" data-valeur="1 535,43 €">1 535,43 €<svg class="icone" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2.4"/><path d="M15 5.6A2.6 2.6 0 0 0 12.4 3H6.6A2.6 2.6 0 0 0 4 5.6v5.8A2.6 2.6 0 0 0 6.6 14" stroke-linecap="round"/></svg></button></div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:6px"><div class="ombre"></div><div class="ombre"></div></div>
+        <div style="height:240px"></div>
+      </div>
+      <div class="onglets"><span>CHANTIERS</span><span>PLANNING</span><b>TERMINÉS</b><span>PAYSAGE</span><span>RÉGLAGES</span></div>
+    </div>
+
+    <!-- La page de vérification -->
+    <div class="ecran" id="detail" hidden>
+      <div class="px">
+        <div class="barre"><button class="rond" id="retour" aria-label="Retour">‹</button><button class="rond vert" aria-label="Assistant">✦</button></div>
+        <h2 class="titre serif">Septembre 2026</h2>
+        <p class="caps" id="surtitre"></p>
+
+        <table style="table-layout:fixed">
+          <colgroup><col style="width:33%"><col style="width:26%"><col style="width:15%"><col style="width:26%"></colgroup>
+          <thead><tr id="entetes"></tr></thead>
+          <tbody id="lignes"></tbody>
+        </table>
+        <p class="bas" id="bas"></p>
+        <div style="height:30px"></div>
+      </div>
+      <div class="onglets"><span>CHANTIERS</span><span>PLANNING</span><b>TERMINÉS</b><span>PAYSAGE</span><span>RÉGLAGES</span></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Le dernier encaissé en tête, comme la preuve de Ma TVA (factures.ts).
+// Montants en centimes : l'addition de la planche ne doit pas se tromper
+// d'un centime là où l'on demande justement de la vérifier.
+// Une facture qui mêle deux taux donne une ligne par taux (même numéro) :
+// la moyenne des deux n'est pas un taux, et elle ne se vérifie pas.
+const REGLEMENTS = [
+  { client: "Julien",   numero: "F2026-000012", jour: "24/09", parts: [{ taux: 20, ttc: 21755, tva: 3626 }, { taux: 10, ttc: 7845, tva: 713 }] },
+  { client: "Julien",   numero: "F2026-000012", jour: "24/09", parts: [{ taux: 20, ttc: 51445, tva: 8574 }, { taux: 10, ttc: 18555, tva: 1687 }] },
+  { client: "Frédéric", numero: "F2026-000015", jour: "23/09", parts: [{ taux: 20, ttc: 850344, tva: 141724 }] },
+  { client: "Julien",   numero: "F2026-000014", jour: "22/09", parts: [{ taux: 20, ttc: 13210, tva: 2202 }, { taux: 10, ttc: 12390, tva: 1126 }] },
+  { client: "Frédéric", numero: "F2026-000013", jour: "17/09", parts: [{ taux: 20, ttc: 55800, tva: 9300 }] },
+];
+const euros = (c) => (c / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\u202f/g, "\u00a0") + "\u00a0€";
+
+// Les achats : aucun n'est à lui (sa capture porte 0,00 €), ce sont des
+// exemples. Le dernier, écrit à la main, n'a que sa TVA : ni montant ni taux,
+// et la page ne les invente pas.
+const ACHATS = [
+  { client: "Pépinière",           jour: "23/09", parts: [{ taux: 10,   ttc: 54000, tva: 4909 }] },
+  { client: "Station service",     jour: "18/09", parts: [{ taux: 20,   ttc: 9240,  tva: 1540 }] },
+  { client: "Quincaillerie",       jour: "11/09", parts: [{ taux: 20,   ttc: 17760, tva: 2960 }] },
+  { client: "Location mini pelle", jour: "04/09", parts: [{ taux: null, ttc: null,  tva: 6000 }] },
+];
+
+// Une seule façon de dessiner les deux pages : si l'une gagnait une règle
+// que l'autre n'a pas, elles ne s'additionneraient plus de la même façon.
+const PAGES = {
+  collectee:  { surtitre: "TVA collectée",  qui: "Client",      montant: "Encaissé", lignes: REGLEMENTS },
+  deductible: { surtitre: "TVA déductible", qui: "Fournisseur", montant: "Payé",     lignes: ACHATS },
+};
+
+let page = "collectee";
+
+function dessiner() {
+  const P = PAGES[page];
+  document.getElementById("surtitre").textContent = P.surtitre;
+  document.getElementById("entetes").innerHTML =
+    `<th>${P.qui}</th><th>${P.montant}</th><th class="taux">Taux</th><th class="tva">TVA</th>`;
+
+  // Un montant absent s'écrit, il ne compte pas pour zéro en silence.
+  const montant = (c, tva) => c === null
+    ? `<td class="chiffre vide">non noté</td>`
+    : `<td class="chiffre${tva ? " tva" : ""}">${euros(c)}</td>`;
+  const taux = (t) => t === null ? `<td class="taux vide">non noté</td>` : `<td class="taux">${t} %</td>`;
+
+  const somme = { tva: 0, ttc: 0 };
+  const parTaux = new Map();
+  let sansMontant = 0;
+  const rangs = P.lignes.map((r) => r.parts.map((x, k) => {
+    if (x.ttc === null) sansMontant++; else somme.ttc += x.ttc;
+    somme.tva += x.tva;
+    const g = parTaux.get(x.taux) ?? { ttc: 0, tva: 0, sansMontant: false };
+    if (x.ttc === null) g.sansMontant = true; else g.ttc += x.ttc;
+    g.tva += x.tva; parTaux.set(x.taux, g);
+    const qui = k === 0
+      ? `<p class="nom">${r.client}</p><p class="petit">${r.numero ? `${r.numero}<br>` : ``}le ${r.jour}</p>`
+      : ``;
+    return `<tr class="ligne${k > 0 ? " suite" : ""}"><td>${qui}</td>${montant(x.ttc)}${taux(x.taux)}${montant(x.tva, true)}</tr>`;
+  }).join("")).join("");
+
+  const total = (c, tva) => `<td class="chiffre${tva ? " tva" : ""}">${euros(c)}<button class="copier" data-valeur="${euros(c)}">Copier</button></td>`;
+
+  // Le récapitulatif par taux : ce que la déclaration demande, et la
+  // vérification la plus rapide (à 20 %, montant ÷ 6 ; à 10 %, ÷ 11).
+  const ordre = [...parTaux.keys()].sort((a, b) => (b ?? -1) - (a ?? -1));
+  const recap = ordre.map((t) => {
+    const g = parTaux.get(t);
+    return `<tr><td><span class="mot">${t === null ? "Sans taux" : `À ${t} %`}</span></td>${g.sansMontant && g.ttc === 0 ? montant(null) : montant(g.ttc)}${t === null ? `<td class="taux"></td>` : taux(t)}${montant(g.tva, true)}</tr>`;
+  }).join("");
+
+  document.getElementById("lignes").innerHTML = rangs + `<tr class="somme">
+      <td><span class="mot">Total</span></td>${total(somme.ttc)}<td></td>${total(somme.tva, true)}
+    </tr><tr class="titre-recap"><td colspan="4">Par taux</td></tr>` + recap;
+
+  const n = P.lignes.length;
+  document.getElementById("bas").textContent = page === "collectee"
+    ? `${n} règlements encaissés en septembre.`
+    : `${n} achats en septembre` + (sansMontant ? `, dont ${sansMontant} sans montant payé.` : `.`);
+}
+
+const tva = document.getElementById("tva"), detail = document.getElementById("detail");
+document.querySelectorAll("[data-ouvrir]").forEach((b) => b.addEventListener("click", () => {
+  page = b.dataset.ouvrir; dessiner();
+  tva.hidden = true; detail.hidden = false; detail.scrollTop = 0;
+}));
+// Le chiffre copie, et le mot à gauche dit qu'il a copié, comme aujourd'hui
+// (`LigneMontant.tsx`).
+document.querySelectorAll(".copiable").forEach((b) => b.addEventListener("click", () => {
+  navigator.clipboard?.writeText(b.dataset.valeur);
+  const mot = b.parentElement.querySelector(".quoi");
+  if (mot.dataset.avant) return;
+  mot.dataset.avant = mot.textContent; mot.textContent = "Copié"; mot.style.color = "var(--or)";
+  setTimeout(() => { mot.textContent = mot.dataset.avant; mot.style.color = ""; delete mot.dataset.avant; }, 1600);
+}));
+document.getElementById("retour").addEventListener("click", () => { detail.hidden = true; tva.hidden = false; });
+
+detail.addEventListener("click", (e) => {
+  const b = e.target.closest(".copier");
+  if (!b) return;
+  navigator.clipboard?.writeText(b.dataset.valeur);
+  b.textContent = "Copié"; b.classList.add("copie");
+  setTimeout(() => { b.textContent = "Copier"; b.classList.remove("copie"); }, 1400);
+});
+
+
+dessiner();
+</script>
+</body>
+</html>

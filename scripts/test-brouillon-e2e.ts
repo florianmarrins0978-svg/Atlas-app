@@ -2,6 +2,9 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
+
+const BASE = ADRESSE;
 
 // Parcours mobile principal du lot : dictée transcrite → brouillon structuré →
 // correction humaine → persistance → confirmation explicite → le chantier
@@ -21,18 +24,18 @@ async function main() {
   const context = await browser.newContext({ deviceScaleFactor: 3 });
   const page = await context.newPage();
 
-  await page.goto("http://localhost:3000/login", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
   await page.fill('input[name="email"]', "demo@atlas.local");
   await page.fill('input[name="password"]', "demo1234");
   await page.click('button[type="submit"]');
-  await page.waitForURL("http://localhost:3000/", { timeout: 10000 });
+  await page.waitForURL(`${BASE}/`, { timeout: 10000 });
 
   const nomUnique = `Chantier brouillon e2e ${Date.now()}`;
-  await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nomUnique);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
-  const chantierUrl = page.url();
+  const chantierUrl = `${BASE}/chantiers/${idChantier}`;
   const chantierId = chantierUrl.split("/").pop()!;
 
   // --- Sans transcription : l'écran invite à la note vocale, aucun brouillon ---
@@ -122,10 +125,16 @@ async function main() {
   await page.click("text=Valider et calculer le prix");
   await page.waitForURL(/\/prix$/, { timeout: 10000 });
 
+  // **ELLE LE DIT EN Y MENANT, plus en l'écrivant sous l'anneau — 4 septembre
+  // 2026.** La fiche du chantier est retirée (`ARCHITECTURE.md` §254) : son
+  // adresse ne montre plus rien, elle REDIRIGE sur l'étape où il en est. C'est
+  // la même promesse, tenue d'un cran plus loin — au lieu de nommer ce qui
+  // suit, elle l'ouvre.
   await page.goto(chantierUrl, { waitUntil: "networkidle" });
-  assert.ok(
-    await page.locator('[data-atlas="mon-devis"]').first().isVisible(),
-    "Une fois les informations vérifiées, la fiche ne dit plus ce qui suit : « Mon devis » devrait être sous l'anneau"
+  assert.match(
+    page.url(),
+    /\/devis-complet$/,
+    `Une fois le prix posé, rouvrir le chantier ne mène pas au devis mais à « ${page.url()} »`
   );
 
   await browser.close();

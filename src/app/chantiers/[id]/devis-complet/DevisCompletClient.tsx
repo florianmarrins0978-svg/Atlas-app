@@ -1,25 +1,74 @@
 "use client";
 
+import { DEBUT_DES_TRAVAUX } from "@/lib/retractation";
 import Link from "next/link";
-import { useLayoutEffect, useRef, useState } from "react";
+import { ligneAttendSonPrix, lignesEnAttenteDePrix, prixAEcrire } from "@/lib/preparation-devis";
+import {
+  LIGNE_OUVERTE,
+  estLigneOuverte,
+  ligneOuverteAEcrire,
+  ligneOuverteAPoser,
+} from "@/lib/ligne-ouverte-devis";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, voile } from "@/lib/design-tokens";
+import {
+  Cellule,
+  ChampNu,
+  ChiffreSaisi,
+  Colonne,
+  Intertitre,
+  Reference,
+  ZoneQuiGrandit,
+  montantDeLaLigne,
+  nombre,
+  normaliser,
+  sansZerosInutiles,
+} from "./ChampsDuDevis";
 import { adressesDuDocument } from "@/lib/adresses";
 import { enEuros } from "@/lib/euros";
 import { jourNumerique } from "@/lib/jour";
+import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
-import { CIVILITES, type Civilite } from "@/lib/civilite";
+import { CIVILITES, estUneEntreprise, type CiviliteClient } from "@/lib/civilite";
 import type { Changement } from "@/lib/retouches-devis";
-import { LIBELLE_REDUCTION, pourcentValide, totauxAvecReduction } from "@/lib/reduction-devis";
+import {
+  LIBELLE_REDUCTION,
+  lignesParCategorie,
+  pourcentValide,
+  tauxDeLaLigne,
+  tauxLisible,
+  tauxTvaPropose,
+  tauxTvaValide,
+  totauxAvecReduction,
+} from "@/lib/reduction-devis";
+import {
+  BoutonRemise,
+  LigneRemise,
+  REMISE_PAR_DEFAUT,
+} from "@/components/atlas/Remise";
+import { useEcrituresALaSuite } from "@/components/atlas/useEcrituresALaSuite";
 import DicterDansLeDevis from "./DicterDansLeDevis";
+import RepriseDuDevis from "./RepriseDuDevis";
+import { memeValeur } from "@/lib/hausse-du-devis";
+import LigneAcompte from "./LigneAcompte";
+import LigneMainDoeuvre from "./LigneMainDoeuvre";
+import ChampUnite from "./ChampUnite";
+import { acompteSuivantPropose, echeancierDevis, phrasesAcomptesDuDevis, type AcompteDevis } from "@/lib/acomptes-devis";
+import { lignesConditionsDevis, lireConditions, type ConditionsLues } from "@/lib/conditions-documents";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
+import FlecheRetour from "@/components/atlas/FlecheRetour";
+import { coordonneesDepuisLeDevis } from "@/lib/retour-du-devis";
+import BottomSheet from "@/components/atlas/BottomSheet";
+import { useAppuiLong } from "@/components/atlas/useAppuiLong";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import EnvoiAuClient from "../export/EnvoiAuClient";
 import { ouvrirLaMessagerie } from "@/lib/ouvrir-messagerie";
 import {
+  majAutoliquidationDevisAction,
   appliquerRetouchesAction,
   majEmetteurAction,
   majClientDuDevisAction,
@@ -28,6 +77,13 @@ import {
   ajouterLigneAction,
   retirerLigneAction,
   majEnTeteDevisAction,
+  ajouterCategorieTvaAction,
+  changerTauxCategorieAction,
+  retirerCategorieTvaAction,
+  deplacerLigneVersTvaAction,
+  ajouterAcompteAction,
+  changerTauxAcompteAction,
+  retirerAcompteAction,
 } from "./actions";
 
 // **Le devis, seul sur sa page — et à l'image du papier.**
@@ -61,6 +117,12 @@ type Ligne = {
   unite?: string | null;
   /** Le travail est identifié, son prix ne l'est pas (migration 0070). */
   aChiffrer?: boolean | null;
+  /** Le taux de sa catégorie. `null` : la ligne suit le taux du devis (migration 0073). */
+  tauxTva?: string | null;
+  /** Reprise par « Dernier devis » et jamais retouchée : son prix sur l'ancien devis (migration 0106). */
+  prixAncien?: string | null;
+  /** Le tarif du jour, quand il diffère de l'ancien prix (migration 0106). */
+  prixGrille?: string | null;
 };
 
 /**
@@ -74,13 +136,31 @@ type Ligne = {
  */
 const CLE_REDUCTION = "prix-accorde-au-client";
 
+
 type Props = {
   chantierId: string;
+  /**
+   * Le chantier est-il en sous-traitance, sans TVA (migration 0119) ? Et
+   * l'interrupteur s'offre-t-il : un client Entreprise, hors franchise — son
+   * choix B du 4 octobre 2026, décoché d'office.
+   */
+  sousTraitance: boolean;
+  sousTraitancePossible: boolean;
   devisId: string;
   numeroCommercial: string;
   dateEmission: string;
   validite: string;
   statut: "brouillon" | "envoye";
+  /**
+   * Un lien est-il RÉELLEMENT parti pour ce devis ?
+   *
+   * **Ce n'est pas la même question que `statut`**, et les confondre faisait
+   * mentir cet écran. Le départ s'écrit en deux temps — le devis se fige
+   * (`envoyerDevis`), puis le lien se crée (`creerEnvoi`) — et il existe entre
+   * les deux un état où le document est immuable et où le client n'a rien reçu.
+   * L'écran y annonçait pourtant « parti chez votre client ».
+   */
+  lienParti?: boolean;
   /**
    * La clef de son logo dans le stockage, ou `null`.
    *
@@ -91,7 +171,19 @@ type Props = {
   logo: string | null;
   emetteur: { nom: string; adresse: string; siret: string; telephone: string; email: string; iban: string };
   clientId: string | null;
-  client: { nom: string; civilite: Civilite | null; adresse: string; telephone: string; email: string };
+  /**
+   * Où mène la flèche, et ce qu'elle annonce — décidé par la page
+   * (`retour-du-devis.ts`), parce que cela dépend de l'adresse par laquelle on
+   * est entré et qu'un écran ne décide de rien (`CLAUDE.md` §3).
+   */
+  retour: { href: string; libelle: string };
+  /**
+   * Relu depuis la carte d'un jour du planning — un devis expiré qui revient
+   * (7 octobre 2026). Présent, « Choisir la date » devient « Continuer » : le
+   * jour est déjà choisi, et c'est là-bas qu'il dit comment le client signe.
+   */
+  continuerVers?: string | null;
+  client: { nom: string; civilite: CiviliteClient | null; adresse: string; telephone: string; email: string };
   /**
    * Par où l'on écrit au client, et depuis quelle adresse.
    *
@@ -106,9 +198,31 @@ type Props = {
   adresseChantier: string;
   lignesInitiales: Ligne[];
   tauxTva: string;
-  /** Le prix accordé au client, en pourcentage. `null` : aucun. */
+  /** La remise, en pourcentage. `null` : aucune. */
   reductionPourcent: string | null;
+  /** « dont main d'œuvre HT » (migration 0090). `null` : pas de ligne. */
+  mainDoeuvreHt: string | null;
+  /** Son titre, s'il en a donné un (migration 0092). */
+  titre: string | null;
+  /** Sur un devis repris : sa réponse au tarif du jour, et la hausse posée (migration 0106). */
+  repriseGrille: "oui" | "non" | null;
+  hausseReprise: number;
+  /** Les acomptes posés sur ce devis, taux cumulés (migration 0088). */
+  acomptesInitiaux: AcompteDevis[];
+  /** Le réglage recopié à la création — ce que « + Ajouter un acompte » propose d'abord. */
+  acompteReglage: string | null;
+  /** Les cinq conditions figées sur ce devis (migration 0064) : ce que le PDF écrira sous ses notes. */
+  conditionsReglees: ConditionsLues;
   conditionsPaiement: string;
+  /**
+   * La chaîne va reprendre sa dictée pour écrire ce devis (`devis-a-preparer.ts`).
+   *
+   * **Elle retient la ligne ouverte d'avance**, et c'est la seule raison pour
+   * laquelle cet écran a besoin de le savoir : la chaîne n'écrit les
+   * prestations dictées que sur un devis vide, et une ligne remplie pendant
+   * qu'elle tourne lui ferait tout abandonner — la panne du 7 août 2026.
+   */
+  dicteeAPreparer?: boolean;
   /** La dictée n'a pas été comprise, seulement recopiée — voir `lecture-litterale.ts`. */
   /**
    * Ce que l'agent a retenu des devis passés, par ligne.
@@ -127,6 +241,22 @@ type Props = {
 export default function DevisCompletClient(props: Props) {
   const fige = props.statut === "envoye";
   const router = useRouter();
+  const [sousTraitanceEnCours, setSousTraitanceEnCours] = useState(false);
+  const [refusSousTraitance, setRefusSousTraitance] = useState<string | null>(null);
+  // Les taux viennent d'être réécrits côté serveur : la page se relit, et la
+  // clé de l'écran (`page.tsx`) le fait repartir des lignes réelles plutôt que
+  // de l'état d'avant.
+  async function basculerSousTraitance() {
+    setSousTraitanceEnCours(true);
+    setRefusSousTraitance(null);
+    try {
+      const r = await majAutoliquidationDevisAction(props.chantierId, !props.sousTraitance);
+      if (!r.ok) setRefusSousTraitance(r.raison);
+      else router.refresh();
+    } finally {
+      setSousTraitanceEnCours(false);
+    }
+  }
 
   /**
    * La feuille des dates, ouverte ICI et non deux écrans plus loin.
@@ -147,12 +277,84 @@ export default function DevisCompletClient(props: Props) {
    */
   const [feuilleOuverte, setFeuilleOuverte] = useState(false);
 
+  /**
+   * La ligne qu'un appui long vient de saisir, et celle qui se soulève.
+   *
+   * **Deux états et non un** : `saisie` s'allume dès que le doigt se pose et
+   * s'éteint au relâchement — c'est le retour du geste, sans lui on ne sait pas
+   * que l'appui a été compris. `aDeplacer` ne s'allume qu'au bout des 500 ms,
+   * et c'est elle qui ouvre la feuille.
+   */
+  const [ligneSaisie, setLigneSaisie] = useState<string | null>(null);
+  const [aDeplacer, setADeplacer] = useState<Ligne | null>(null);
+  const appuiLong = useAppuiLong();
+
   const [emetteur, setEmetteur] = useState(props.emetteur);
   const [client, setClient] = useState(props.client);
   const [adresseChantier, setAdresseChantier] = useState(props.adresseChantier);
-  const [lignes, setLignes] = useState<Ligne[]>(
-    props.lignesInitiales.map((l) => ({ ...l, quantite: sansZerosInutiles(l.quantite), prixUnitaire: sansZerosInutiles(l.prixUnitaire) }))
-  );
+  const [lignes, setLignes] = useState<Ligne[]>(() => {
+    const ecrites = props.lignesInitiales.map((l) => ({
+      ...l,
+      quantite: sansZerosInutiles(l.quantite),
+      // Un prix jamais posé n'arrive PAS dans le champ : la règle est celle
+      // du montant « à chiffrer », et elle n'est écrite qu'une fois.
+      prixUnitaire: prixAEcrire(sansZerosInutiles(l.prixUnitaire)),
+    }));
+    // **La feuille s'ouvre avec sa première ligne** — sa demande du
+    // 20 septembre 2026. Elle n'est PAS en base : `src/lib/ligne-ouverte-devis.ts`
+    // dit pourquoi, et ce qui la fait naître.
+    return ligneOuverteAPoser({
+      statut: props.statut,
+      nombreDeLignes: ecrites.length,
+      dicteeAPreparer: props.dicteeAPreparer ?? false,
+    })
+      ? [...ecrites, { id: LIGNE_OUVERTE, libelle: "", quantite: "1", prixUnitaire: "", montant: "0.00", tauxTva: null }]
+      : ecrites;
+  });
+
+  /**
+   * L'écriture de la ligne ouverte, une fois pour toutes.
+   *
+   * **Une seule, quoi qu'il arrive** : il remplit la description, passe au
+   * prix, et les deux sorties de champ partent avant que la première réponse
+   * revienne. Sans cette promesse gardée, chacune écrirait sa ligne — il en
+   * verrait deux au rechargement, dont une vide.
+   *
+   * Un refus ne la condamne pas : la promesse est oubliée, et la frappe
+   * suivante réessaie plutôt que de se heurter à un échec devenu définitif.
+   *
+   * ═════════════════════════════════════════════════════════════════════════
+   * **L'IDENTIFIANT DE LA LIGNE NE CHANGE JAMAIS À L'ÉCRAN — et c'est un prix
+   * perdu qui l'a appris.**
+   *
+   * La première version remplaçait `ligne-ouverte` par l'identifiant rendu par
+   * la base. La clé de la rangée changeait donc sous React, qui démonte alors
+   * la rangée et en monte une neuve : **le champ où le doigt est en train
+   * d'écrire disparaît**, sa sortie n'a jamais lieu, et ce qu'il venait de
+   * taper ne part nulle part. Écrire la description puis le prix laissait le
+   * devis à 0,00 € — une facture au bouton « Envoyer » éteint, trois écrans
+   * plus loin.
+   *
+   * Le contrôle rendu bavard l'a nommé en une ligne : une seule requête partie,
+   * celle de la description, avec `"prixUnitaire":"0"`.
+   *
+   * L'identifiant réel vit donc ICI, en référence, et ne remonte jamais à
+   * l'écran. Tout appel serveur passe par `idEnBase()`.
+   * ═════════════════════════════════════════════════════════════════════════
+   */
+  const ecritureDeLaLigneOuverte = useRef<Promise<string> | null>(null);
+
+  async function idEnBase(l: Ligne): Promise<string> {
+    if (!estLigneOuverte(l.id)) return l.id;
+    if (!ecritureDeLaLigneOuverte.current) {
+      const envoi = ajouterLigneAction(props.chantierId, l.tauxTva ?? null).then((creee) => creee.id);
+      envoi.catch(() => {
+        if (ecritureDeLaLigneOuverte.current === envoi) ecritureDeLaLigneOuverte.current = null;
+      });
+      ecritureDeLaLigneOuverte.current = envoi;
+    }
+    return ecritureDeLaLigneOuverte.current;
+  }
   const [tauxTva, setTauxTva] = useState(sansZerosInutiles(props.tauxTva));
   // Le prix accordé au client — son geste commercial, arrangement B du 16 août.
   const [reduction, setReduction] = useState(
@@ -171,10 +373,25 @@ export default function DevisCompletClient(props: Props) {
    * referme qu'une fois le retrait enregistré.
    */
   const [remiseOuverte, setRemiseOuverte] = useState(props.reductionPourcent !== null);
+  /** Les écritures de la remise se suivent : voir `enregistrerRemise`. */
+  const aLaSuite = useEcrituresALaSuite();
 
-  async function enregistrerRemise() {
-    const valeur = reduction.trim() || null;
-    await majEnTeteDevisAction(props.devisId, { reductionPourcent: valeur });
+  /**
+   * **L'UNIQUE écriture du prix accordé.** Elle prend la valeur en argument
+   * pour que le bouton « + » puisse s'en servir sans attendre un tour de rendu :
+   * l'état de React n'est pas encore à jour dans le clic qui vient de l'appeler.
+   *
+   * Avant, ce bouton écrivait lui-même, avec son propre littéral — deux chemins
+   * pour un seul fait métier, et l'un des deux ne passait par aucune des règles
+   * ci-dessous.
+   */
+  async function enregistrerRemise(valeurBrute: string = reduction) {
+    const valeur = valeurBrute.trim() || null;
+    // **À LA SUITE, jamais en même temps** — mesuré le 11 septembre 2026 :
+    // effacer la remise puis la reposer aussitôt laissait la base à `null`, une
+    // fois sur trois. Le champ quitté et le bouton lançaient deux écritures
+    // dont l'ordre d'arrivée n'était pas garanti (`useEcrituresALaSuite`).
+    await aLaSuite(() => majEnTeteDevisAction(props.devisId, { reductionPourcent: valeur }));
     // **On se referme sur ce que le serveur a RETENU, pas sur ce qu'il a tapé.**
     // La case vide n'est pas le seul moyen d'annuler : « 0 », « 0,00 », ou une
     // saisie illisible valent tous « aucune réduction » (`reduction-devis.ts`).
@@ -189,6 +406,80 @@ export default function DevisCompletClient(props: Props) {
     }
   }
   const [conditions, setConditions] = useState(props.conditionsPaiement);
+
+  /**
+   * ─── « DONT MAIN D'ŒUVRE HT » — la lecture B du 12 septembre 2026 ────────
+   *
+   * Nommée, jamais comptée : les totaux ne bougent pas. Le champ porte ce
+   * qu'il tape ; la borne (jamais plus que le brut HT) se pose quand le doigt
+   * quitte le champ, et l'on se referme sur ce que le serveur a RETENU — comme
+   * la remise. `null` rendu par le serveur veut dire « rien à nommer », et la
+   * ligne se retire d'elle-même.
+   */
+  // Lue comme elle se réécrit après une saisie (`sansZerosInutiles`) : la base
+  // porte « 450.00 », et un point sous un total écrit « 1 160,00 » se voyait au
+  // rechargement (14 septembre 2026).
+  const [mainDoeuvre, setMainDoeuvre] = useState(sansZerosInutiles(props.mainDoeuvreHt ?? ""));
+  // Son titre — « Aménagement du jardin ». Jamais d'office ; vide, rien ne
+  // s'imprime (sa demande du 14 septembre 2026).
+  const [titre, setTitre] = useState(props.titre ?? "");
+  const [mainDoeuvreOuverte, setMainDoeuvreOuverte] = useState(props.mainDoeuvreHt !== null);
+
+  async function enregistrerMainDoeuvre(valeurBrute: string) {
+    const valeur = valeurBrute.trim() || null;
+    const retenu = await aLaSuite(() => majEnTeteDevisAction(props.devisId, { mainDoeuvreHt: valeur }));
+    const montant = retenu?.mainDoeuvreHt ?? null;
+    if (montant === null) {
+      setMainDoeuvre("");
+      setMainDoeuvreOuverte(false);
+    } else {
+      setMainDoeuvre(sansZerosInutiles(montant));
+    }
+  }
+
+  /**
+   * ─── LES ACOMPTES — sa demande du 12 septembre 2026 ─────────────────────
+   *
+   * Ce que porte l'écran, c'est ce que le champ porte : le taux tel qu'il l'a
+   * tapé. Ce qui s'AFFICHE en face — le montant, le reste — passe par la règle
+   * commune (`echeancierDevis`), qui borne : pendant la frappe, « 7 » sur le
+   * troisième ne fait jamais un reste négatif. Et quand le doigt quitte le
+   * champ, on se referme sur ce que le serveur a RETENU — borné, réaligné —,
+   * exactement comme la remise juste au-dessus.
+   */
+  const [acomptes, setAcomptes] = useState<AcompteDevis[]>(props.acomptesInitiaux);
+  const acompteAProposer = acompteSuivantPropose(acomptes, props.acompteReglage);
+
+  /**
+   * **Un appui sans effet et sans un mot se lit comme une panne — 17 septembre
+   * 2026.** Sa phrase : *« je n'arrive pas à les remettre »*. Le serveur
+   * refusait (devis parti, trois acomptes déjà, 100 % atteint) et l'écran ne
+   * disait rien. Le refus s'affiche désormais sous le geste, avec ce qu'il
+   * doit faire.
+   */
+  const [refusAcompte, setRefusAcompte] = useState<string | null>(null);
+
+  async function ajouterUnAcompte() {
+    setRefusAcompte(null);
+    const pose = await aLaSuite(() => ajouterAcompteAction(props.devisId));
+    if (!pose) return;
+    if (pose.ok) setAcomptes(pose.acomptes);
+    else setRefusAcompte(pose.raison);
+  }
+
+  async function changerAcompte(rang: number, tauxDuChamp: string) {
+    const retenus = await aLaSuite(() => changerTauxAcompteAction(props.devisId, rang, tauxDuChamp));
+    // Un taux illisible n'est pas écrit : l'écran revient sur ce qu'il portait.
+    setAcomptes((cur) => retenus ?? cur.map((a) => ({ ...a })));
+  }
+
+  async function retirerUnAcompte(rang: number) {
+    // La ligne part tout de suite : sur un téléphone, un « − » qui attend le
+    // serveur se lit comme un bouton qui n'a pas marché, et on appuie deux fois.
+    setAcomptes((cur) => cur.filter((a) => a.rang !== rang));
+    const retenus = await aLaSuite(() => retirerAcompteAction(props.devisId, rang));
+    if (retenus) setAcomptes(retenus);
+  }
 
   // Deux adresses identiques ne s'impriment pas deux fois. Comparaison
   // indulgente : ce sont deux champs saisis à la main, à deux moments
@@ -219,7 +510,12 @@ export default function DevisCompletClient(props: Props) {
         await majEnTeteDevisAction(props.devisId, { reductionPourcent: null });
         return;
       }
-      await retirerLigneAction(id);
+      // La ligne ouverte d'avance peut n'avoir jamais été écrite : il n'y a
+      // alors rien à retirer, et la réclamer ferait échouer le retrait sur un
+      // identifiant que la base ne connaît pas. Si elle vient de partir, on
+      // attend son identifiant plutôt que de laisser une ligne orpheline.
+      const enBase = estLigneOuverte(id) ? await ecritureDeLaLigneOuverte.current : id;
+      if (enBase) await retirerLigneAction(enBase);
       setLignes((cur) => cur.filter((l) => l.id !== id));
     },
   });
@@ -229,6 +525,18 @@ export default function DevisCompletClient(props: Props) {
   // porterait sur un total qui n'a pas bougé — et le geste semblerait sans
   // effet, ce qui est précisément la plainte du 17 août.
   const remiseVisible = remiseOuverte && !retraits.estRetire(CLE_REDUCTION);
+  // La ligne « dont main d'œuvre HT » se pose sous le PREMIER « Total HT »
+  // écrit — brut avec une remise, net sans —, d'où une seule définition pour
+  // les deux branches du rendu.
+  const ligneMainDoeuvre = mainDoeuvreOuverte ? (
+    <LigneMainDoeuvre
+      montant={mainDoeuvre}
+      fige={fige}
+      onChange={setMainDoeuvre}
+      onFini={(v) => void enregistrerMainDoeuvre(v)}
+      onRetirer={() => void enregistrerMainDoeuvre("")}
+    />
+  ) : null;
 
   // Les totaux se recalculent sous ses yeux, à chaque frappe : un devis dont le
   // total n'apparaît qu'après enregistrement se relit deux fois.
@@ -242,25 +550,190 @@ export default function DevisCompletClient(props: Props) {
   // ferait diverger l'écran du PDF au premier arrondi — et c'est le client qui
   // verrait la différence (`CLAUDE.md` §3).
   const lignesVisibles = lignes.filter((l) => !retraits.estRetire(l.id));
+
+  /**
+   * ═══════════════════════════════════════════════════════════════════════════
+   * **LE REFUS « À CHIFFRER » ARRIVE ICI, ET PLUS APRÈS LA FEUILLE DES DATES.**
+   *
+   * Sa règle du 27 août 2026 — *« le devis ne doit pas pouvoir être considéré
+   * comme prêt à envoyer tant qu'une ligne nécessitant un prix n'est pas
+   * chiffrée »* — était tenue, mais **au dernier moment et au mauvais endroit** :
+   *
+   *   1. le bouton « Choisir la date » s'ouvrait sans condition ;
+   *   2. la feuille d'envoi ne connaît pas ce blocage — elle n'en porte que
+   *      quatre (`preparation-envoi.ts`), et celui-là n'en fait pas partie ;
+   *   3. le patron choisissait donc une date, parfois deux, appuyait
+   *      « Envoyer », et **le serveur refusait alors** (`envoyerDevis`).
+   *
+   * **Et la phrase du refus l'envoyait où il se tenait déjà** : « Posez leur
+   * montant sur l'écran du devis, puis revenez ici. » Elle a été écrite quand
+   * la feuille vivait sur `/export` ; depuis le 20 août, elle s'ouvre d'ici.
+   *
+   * Or **cet écran sait déjà** : il écrit « à chiffrer » en or, en face de la
+   * ligne, quelques centimètres plus haut. Il refusait de conclure ce qu'il
+   * affichait.
+   *
+   * **AUCUNE SECONDE RÈGLE N'EST ÉCRITE POUR AUTANT** (`CLAUDE.md` §3) : c'est
+   * la fonction pure du dépôt qui répond, celle-là même que le serveur oppose
+   * au refus, et c'est donc mot pour mot la même phrase. Le contrôle du serveur
+   * reste en place — cacher un bouton ne ferme rien, et l'action est appelable.
+   *
+   * **Les lignes retirées ne comptent pas**, comme pour les totaux : refuser
+   * l'envoi au nom d'une ligne qu'il vient de retirer, et qui n'est plus à
+   * l'écran, serait un refus qu'on ne peut pas comprendre.
+   * ═══════════════════════════════════════════════════════════════════════════
+   */
+  const lignesAJuger = lignesVisibles.map((l) => ({
+    id: l.id,
+    libelle: l.libelle,
+    montant: montantDeLaLigne(l).toFixed(2),
+    aChiffrer: l.aChiffrer,
+  }));
+  const refusDePrix = lignesEnAttenteDePrix(lignesAJuger);
+  const sansPrix = lignesAJuger.filter(ligneAttendSonPrix);
+
   const totaux = totauxAvecReduction(
-    lignesVisibles.map((l) => ({ montant: montantDeLaLigne(l).toFixed(2) })),
+    lignesVisibles.map((l) => ({ montant: montantDeLaLigne(l).toFixed(2), tauxTva: l.tauxTva })),
     String(nombre(tauxTva)),
     remiseVisible ? reduction : null
   );
   const brutHt = Number(totaux.brutHt);
   const totalHt = Number(totaux.totalHt);
   const totalTva = Number(totaux.totalTva);
+  const echeancier = echeancierDevis(acomptes, (totalHt + totalTva).toFixed(2));
+  // Ce que le PDF écrira sous ses notes : la MÊME fonction que le papier. Ligne
+  // retirée, la phrase part aussi (sa décision du 7 octobre 2026).
+  const conditionsImprimees = lignesConditionsDevis(
+    lireConditions(props.conditionsReglees),
+    totalHt + totalTva,
+    phrasesAcomptesDuDevis(props.statut, acomptes, (totalHt + totalTva).toFixed(2)),
+    estUneEntreprise(props.client.nom, props.client.civilite)
+  );
+
+  // ─── Les catégories de TVA (migration 0073) ──────────────────────────────
+  //
+  // **Le groupement passe par la MÊME fonction que le PDF.** Deux tris écrits
+  // séparément auraient fini par ranger différemment, et il aurait relu un
+  // document qui ne ressemble plus à son écran (`CLAUDE.md` §3).
+  //
+  // Le taux du devis reste la catégorie d'accueil : c'est là que retombent les
+  // lignes sans taux — toutes celles écrites avant ce lot.
+  // **NORMALISÉ À DEUX DÉCIMALES, et ce n'est pas cosmétique.** `String(nombre())`
+  // rendait « 20 » pendant que les catégories portent « 20.00 » : la comparaison
+  // qui masque le « − » sur la catégorie d'accueil échouait, et un bouton
+  // « retirer » s'affichait sur elle — un bouton qui ne pouvait rien faire, le
+  // dépôt refusant de retirer la catégorie où tout retombe. Vu à la capture,
+  // pas au test (`CLAUDE.md` §5).
+  const tauxDuDevis = tauxTvaValide(tauxTva) ?? "20.00";
+  const categories = lignesParCategorie(lignes, tauxDuDevis);
+  // **Une seule catégorie ne se DESSINE pas.** Son écran d'aujourd'hui ne
+  // change pas d'un pixel tant qu'il n'a pas appuyé sur « Ajouter une TVA » —
+  // un titre « TVA 20 % » au-dessus d'un tableau qui n'a qu'un taux serait du
+  // bruit sur tous ses devis (`CLAUDE.md` §3, le moins de mots possible).
+  const plusieursTva = categories.length > 1;
+  /**
+   * Le taux proposé quand il ouvre une catégorie de plus.
+   *
+   * **10 % d'abord, et ce n'est pas un chiffre au hasard** : c'est l'exemple
+   * qu'il a donné deux fois, et le taux des végétaux qu'il achète. Les suivants
+   * sont les autres taux français usuels. Calculé une seule fois — « Ajouter une
+   * TVA » et la feuille de déplacement doivent proposer LE MÊME, sinon le même
+   * geste ouvre deux catégories différentes selon la porte empruntée.
+   */
+  const tauxNeuf = tauxTvaPropose(categories.map((c) => c.taux));
 
   function majLigneLocale(id: string, champ: keyof Ligne, valeur: string) {
     setLignes((cur) => cur.map((l) => (l.id === id ? { ...l, [champ]: valeur } : l)));
   }
 
-  async function persisterLigne(l: Ligne) {
-    await majLigneAction(l.id, {
-      libelle: l.libelle,
-      quantite: normaliser(l.quantite, "1"),
-      prixUnitaire: normaliser(l.prixUnitaire, "0"),
-    });
+  /**
+   * Emmener le doigt sur le prix qui manque.
+   *
+   * **Un refus nomme sa raison ET le geste qui le débloque** (`CLAUDE.md`). Ici
+   * le geste est un endroit : sur un devis de dix lignes, « posez leur montant »
+   * laisse chercher laquelle, et le tableau fait plusieurs hauteurs d'écran.
+   *
+   * `block: "center"` et non `"start"` : le clavier du téléphone monte sur la
+   * moitié basse de l'écran dès que le champ prend le focus, et une ligne
+   * amenée en haut de page se retrouve alors hors de vue.
+   */
+  function allerAuPrix(ligneId: string) {
+    const champ = document.querySelector<HTMLInputElement>(`[data-prix-ligne="${ligneId}"]`);
+    if (!champ) return;
+    champ.scrollIntoView({ block: "center", behavior: "smooth" });
+    // `preventScroll` : le navigateur ferait sinon son propre saut, sec, par
+    // dessus celui qu'on vient de lancer en douceur.
+    champ.focus({ preventScroll: true });
+  }
+
+  /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * **UN PRIX TAPÉ PUIS QUITTÉ PARTAIT À ZÉRO — 30 août 2026.**
+   *
+   * `onFini` se déclenche à la perte du focus, et il lisait `l` — la ligne du
+   * DERNIER RENDU. Or React ne rend pas au moment de la frappe : il le
+   * programme. Entre la dernière touche et la sortie du champ, rien ne
+   * garantit que `l` porte ce qui vient d'être tapé.
+   *
+   * Sur une machine reposée, le rendu arrive à temps. Sous charge, non — et le
+   * serveur reçoit alors l'ANCIENNE valeur, un zéro sur une ligne neuve,
+   * **pendant que l'écran continue d'afficher le prix tapé**. Rien ne dit
+   * qu'il est perdu : on le découvre au rechargement, ou sur le devis parti
+   * chez le client.
+   *
+   * ═══════════════════════════════════════════════════════════════════════
+   * **CE DÉFAUT A COÛTÉ SIX ENQUÊTES, ET IL A ÉTÉ MANQUÉ UNE FOIS DE PLUS.**
+   *
+   * `test-lecons-prix-e2e` tombait depuis le 26 août sur « le prix 1400 n'est
+   * arrivé sur aucune ligne », et six fois de suite on a conclu à la lenteur de
+   * la machine — le contrôle ne disait pas ce que le navigateur avait envoyé.
+   * Le 30 août, une hypothèse juste a même été écrite **puis retirée**, faute
+   * d'une sonde capable de la reproduire.
+   *
+   * C'est le contrôle rendu bavard qui l'a nommé en une ligne, à l'occurrence
+   * suivante : `{"prixUnitaire":"0"}` posté, réponse 200. La requête partait
+   * bien — avec la mauvaise valeur.
+   *
+   * ═══════════════════════════════════════════════════════════════════════
+   * **LA VALEUR VIENT DU CHAMP, PLUS D'UN RENDU.** Le DOM porte déjà ce qui a
+   * été tapé au moment où l'on quitte le champ : c'est la seule source qui ne
+   * puisse pas être en retard. Le reste de la ligne continue de venir de
+   * l'état — seul le champ qu'on quitte a pu changer sans être encore rendu.
+   *
+   * **Ce n'est pas une attente qu'on allonge, c'est une course qu'on retire.**
+   * Allonger aurait déplacé le seuil sans le supprimer : le piège que
+   * `TODO.md` décrit depuis le 26 août, et qui accusait la machine.
+   */
+  async function persisterLigne(
+    l: Ligne,
+    frais?: Partial<Pick<Ligne, "libelle" | "quantite" | "prixUnitaire" | "unite">>
+  ) {
+    const ligne = { ...l, ...frais };
+    // **La ligne ouverte d'avance ne s'écrit qu'une fois qu'elle porte quelque
+    // chose.** Sans quoi le doigt posé sur la description puis retiré laisserait
+    // une ligne vide en base — celle qui fait disparaître une dictée
+    // (`src/lib/ligne-ouverte-devis.ts`).
+    if (estLigneOuverte(ligne.id) && !ligneOuverteAEcrire(ligne)) return;
+    // **À LA SUITE, jamais en parallèle — et c'est un prix qui se perdait.**
+    // Chaque sortie de champ envoie la ligne ENTIÈRE, bâtie sur le rendu du
+    // moment : deux sorties rapprochées — la description, puis le prix —
+    // arrivent dans l'ordre que le réseau choisit, et celle de la description
+    // repose alors un prix à zéro par-dessus les 850 € qu'il vient de taper.
+    // La file existe déjà pour l'en-tête et les acomptes
+    // (`src/lib/file-d-ecritures.ts`) ; les lignes lui manquaient.
+    //
+    // L'écriture de la ligne ouverte vit DANS la file : sans cela, les deux
+    // sorties attendraient la même création puis repartiraient ensemble.
+    await aLaSuite(async () =>
+      majLigneAction(await idEnBase(ligne), {
+        libelle: ligne.libelle,
+        quantite: normaliser(ligne.quantite, "1"),
+        prixUnitaire: normaliser(ligne.prixUnitaire, "0"),
+        // Ce qui est hors de la rangée, vide compris, le dépôt le rend sans
+        // unité (`uniteAdmise`) : la règle ne se redit pas ici.
+        unite: ligne.unite ?? null,
+      })
+    );
   }
 
   /**
@@ -276,19 +749,123 @@ export default function DevisCompletClient(props: Props) {
     // Le serveur l'éteint aussi (`modifierLignePrix`) ; l'écran ne doit pas
     // continuer d'annoncer « à chiffrer » sur une ligne qu'il vient de chiffrer.
     if (Number(prix) > 0) setLignes((cur) => cur.map((x) => (x.id === l.id ? { ...x, aChiffrer: false } : x)));
-    await majLigneAction(l.id, {
-      libelle: l.libelle,
-      quantite: normaliser(l.quantite, "1"),
-      prixUnitaire: prix,
-    });
+    await aLaSuite(async () =>
+      majLigneAction(await idEnBase(l), {
+        libelle: l.libelle,
+        quantite: normaliser(l.quantite, "1"),
+        prixUnitaire: prix,
+      })
+    );
   }
 
-  async function ajouter() {
-    const creee = await ajouterLigneAction(props.chantierId);
+  async function ajouter(tauxDeLaCategorie?: string | null) {
+    // **La ligne ouverte d'avance prend sa place AVANT la nouvelle.** Son rang
+    // en base se décide à l'écriture : écrite après, elle passerait sous une
+    // ligne qui s'affiche sous elle, et les deux se croiseraient au
+    // rechargement — sur un devis, l'ordre est celui que le client lira.
+    const ouverte = lignes.find((l) => estLigneOuverte(l.id));
+    const creee = await aLaSuite(async () => {
+      if (ouverte) await idEnBase(ouverte);
+      return ajouterLigneAction(props.chantierId, tauxDeLaCategorie ?? null);
+    });
     setLignes((cur) => [
       ...cur,
-      { id: creee.id, libelle: "", quantite: "1", prixUnitaire: "", montant: "0.00", aChiffrer: false },
+      {
+        id: creee.id,
+        libelle: "",
+        quantite: "1",
+        prixUnitaire: "",
+        montant: "0.00",
+        aChiffrer: false,
+        tauxTva: creee.tauxTva ?? null,
+      },
     ]);
+  }
+
+  /**
+   * « Ajouter une TVA » — sa demande du 1er septembre 2026.
+   *
+   * *« Lorsque j'ai plusieurs choses à rajouter ou une seule en TVA à 10,
+   * j'appuie sur ajouter une TVA, une catégorie s'ajoute et là je mets toutes
+   * mes lignes qui seront en TVA à 10. »*
+   *
+   * **10 % par défaut, et ce n'est pas un chiffre pris au hasard** : c'est
+   * l'exemple qu'il a donné deux fois, et le taux des végétaux qu'il achète.
+   * S'il en veut un autre, le champ du titre se corrige d'un doigt — proposer
+   * une liste de taux aurait fait un écran de plus avant le premier mot écrit.
+   */
+  async function ajouterUneTva() {
+    // Comme pour « + Ajouter une ligne » : la ligne ouverte garde son rang.
+    const ouverte = lignes.find((l) => estLigneOuverte(l.id));
+    const propose = tauxNeuf;
+    const creee = await aLaSuite(async () => {
+      if (ouverte) await idEnBase(ouverte);
+      return ajouterCategorieTvaAction(props.chantierId, propose);
+    });
+    if (!creee) return;
+    setLignes((cur) => [
+      ...cur,
+      {
+        id: creee.id,
+        libelle: "",
+        quantite: "1",
+        prixUnitaire: "",
+        montant: "0.00",
+        aChiffrer: false,
+        tauxTva: creee.tauxTva ?? propose,
+      },
+    ]);
+  }
+
+  /** Le taux d'une catégorie change : toutes ses lignes suivent, d'un geste. */
+  async function changerTaux(ancien: string, saisi: string) {
+    const nouveau = tauxTvaValide(saisi);
+    if (nouveau === null || nouveau === ancien) return;
+    setLignes((cur) =>
+      cur.map((l) =>
+        tauxDeLaLigne({ tauxTva: l.tauxTva }, tauxDuDevis) === ancien ? { ...l, tauxTva: nouveau } : l
+      )
+    );
+    await changerTauxCategorieAction(props.chantierId, ancien, nouveau, tauxDuDevis);
+  }
+
+  /**
+   * Déplacer la ligne saisie vers une autre TVA — ce que son appui long ouvre.
+   *
+   * **Elle rejoint la FIN de son nouveau groupe**, comme sur la planche : sans
+   * cela, déplacer la première ligne du devis fait remonter toute sa nouvelle
+   * catégorie au-dessus de l'autre, et l'on croit avoir bougé le tableau entier.
+   */
+  async function deplacerVers(taux: string) {
+    const ligne = aDeplacer;
+    setADeplacer(null);
+    if (!ligne) return;
+    const propre = tauxTvaValide(taux);
+    if (propre === null) return;
+    const versLAccueil = propre === tauxDuDevis;
+
+    setLignes((cur) => [
+      ...cur.filter((l) => l.id !== ligne.id),
+      { ...ligne, tauxTva: versLAccueil ? null : propre },
+    ]);
+    // Une ligne déplacée porte le taux de sa catégorie : elle doit exister en
+    // base pour le porter, fût-elle encore vide.
+    await aLaSuite(async () => deplacerLigneVersTvaAction(await idEnBase(ligne), propre, tauxDuDevis));
+  }
+
+  /**
+   * Retirer une catégorie — SES LIGNES RESTENT, elles reviennent au taux du devis.
+   *
+   * Les supprimer serait la faute : il retirerait une TVA posée par erreur et
+   * perdrait du même geste le travail qu'il venait de chiffrer.
+   */
+  async function retirerLaTva(taux: string) {
+    setLignes((cur) =>
+      cur.map((l) =>
+        tauxDeLaLigne({ tauxTva: l.tauxTva }, tauxDuDevis) === taux ? { ...l, tauxTva: null } : l
+      )
+    );
+    await retirerCategorieTvaAction(props.chantierId, taux, tauxDuDevis);
   }
 
 
@@ -305,7 +882,7 @@ export default function DevisCompletClient(props: Props) {
       apres.lignes.map((l) => ({
         ...l,
         quantite: sansZerosInutiles(l.quantite),
-        prixUnitaire: sansZerosInutiles(l.prixUnitaire),
+        prixUnitaire: prixAEcrire(sansZerosInutiles(l.prixUnitaire)),
       }))
     );
     // **Le prix accordé se recale lui aussi**, et il ne s'en déduit pas : il ne
@@ -332,18 +909,23 @@ export default function DevisCompletClient(props: Props) {
           Le micro disparaît sur un devis parti : cet écran ne se modifie plus,
           et un micro qui écouterait pour ne rien pouvoir changer serait une
           promesse fausse. L'assistant, lui, reste utile même figé — relire un
-          prix passé ne modifie rien. */}
+          prix passé ne modifie rien.
+
+          **LE RETOUR RAMÈNE OÙ IL ÉTAIT — 9 septembre 2026.** *« J'ai cliqué
+          sur ouvrir le devis, une fois sur le devis je clique sur retour,
+          j'arrive sur la page de la fiche client — or le bouton retour doit
+          marcher comme un vrai bouton marche arrière. »* C'est cet écran-là
+          qu'il regardait, et c'est le cinquième signalement de la même racine
+          (`src/lib/journal-de-navigation.ts`).
+
+          **Sa règle du 31 août 2026 devient le repli**, et elle n'est pas
+          abandonnée : *« je veux tout le temps revenir à cette page et
+          seulement celle-là ! La page fiche client »*. Quand il n'y a pas de
+          page d'avant — l'application ouverte droit sur ce devis —, la flèche y
+          va toujours (`src/lib/retour-du-devis.ts`). Ce qui a disparu, c'est le
+          détour imposé alors qu'il venait d'ailleurs. */}
       <div className="mx-auto mb-3 flex w-full max-w-[820px] items-start justify-between sm:mb-4">
-        <a
-          href={`/chantiers/${props.chantierId}`}
-          aria-label="Revenir au chantier"
-          className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ backgroundColor: colors.rustTint }}
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
-            <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </a>
+        <FlecheRetour repli={props.retour} diametre={36} fleche={15} marque="retour-du-devis" />
         <div className="flex items-start gap-2">
           <BoutonAssistant />
           {!fige && <DicterDansLeDevis chantierId={props.chantierId} onApplique={appliquerRetouches} />}
@@ -352,7 +934,31 @@ export default function DevisCompletClient(props: Props) {
 
       <article
       className="mx-auto w-full max-w-[820px] rounded-[10px] px-5 py-7 sm:px-12 sm:py-12"
-      style={{ backgroundColor: colors.card, boxShadow: "0 12px 40px rgba(28,28,26,0.10)" }}
+      /* **L'ombre et le voile de saisie SUIVENT la charte** (`CLAUDE.md` §3).
+         Ils étaient écrits en clair — `rgba(28,28,26,…)`, l'encre d'Origine —
+         et c'est la faute exacte du 22 août 2026 : sur Nuit et sur Sylve, du
+         noir posé sur du noir n'existe pas. L'ombre s'y perdait, mais surtout
+         le voile : ces champs n'ont volontairement aucun cadre, si bien qu'il
+         est le SEUL signe qu'on écrit dedans — et le champ en cours de saisie
+         devenait identique au champ au repos.
+
+         **Deux voiles et non un**, parce que le fond n'est pas le même : les
+         champs de la feuille reposent sur `card`, ceux du titre d'une catégorie
+         de TVA sur `rustTint`, déjà teinté, où il faut un peu plus pour se
+         voir. C'était déjà le cas avant (0,03 et 0,04) ; c'est simplement
+         nommé.
+
+         Posés ici, sur la feuille, plutôt que sur chaque champ : une propriété
+         personnalisée descend, et `ChampsDuDevis.tsx` n'a pas à savoir quelle
+         charte est en place. */
+      style={
+        {
+          backgroundColor: colors.card,
+          boxShadow: `0 12px 40px ${voile(colors.ink, 0.1)}`,
+          "--voile-champ": voile(colors.ink, 0.03),
+          "--voile-champ-teinte": voile(colors.ink, 0.04),
+        } as React.CSSProperties
+      }
     >
       {props.lectureLitterale && !fige && (
         <p className="mb-6 rounded-lg px-4 py-3 text-[13px]" style={{ backgroundColor: colors.rustTint, color: colors.rust }}>
@@ -383,15 +989,46 @@ export default function DevisCompletClient(props: Props) {
           cette phrase il ne se passerait rien et rien ne dirait pourquoi. */}
       {fige && (
         <div className="mb-6 rounded-lg px-4 py-3" style={{ backgroundColor: colors.rustTint, color: colors.rust }}>
-          <p className="text-[13px]">Ce devis est parti chez votre client : il ne se modifie plus.</p>
+          {/* **Deux phrases, parce que ce sont deux situations.** Un devis figé
+              dont aucun lien n'est parti n'est pas un devis envoyé : le
+              document est immuable, et son client n'a rien reçu. Lui dire
+              « parti chez votre client » l'enverrait attendre une réponse qui
+              ne viendra jamais. Dans les deux cas la porte est la même — une
+              nouvelle version —, mais elle ne se pousse pas pour la même raison. */}
+          <p className="text-[13px]">
+            {props.lienParti === false
+              ? "Ce devis a été figé, mais aucun lien n'est parti : votre client n'a rien reçu."
+              : "Ce devis est parti chez votre client : il ne se modifie plus."}
+          </p>
           <Link
             href={`/chantiers/${props.chantierId}/export`}
             className="mt-2 block text-[13px] font-semibold"
             style={{ color: colors.rust }}
           >
-            Le corriger et le renvoyer
+            {props.lienParti === false ? "Reprendre et envoyer" : "Le corriger et le renvoyer"}
           </Link>
         </div>
+      )}
+
+      {/* --- Le devis repris : le tarif du jour demandé, et la hausse ------- */}
+      {!fige && (
+        <RepriseDuDevis
+          chantierId={props.chantierId}
+          lignes={lignes
+            .filter((l) => !estLigneOuverte(l.id))
+            .map((l) => ({ id: l.id, libelle: l.libelle, prixAncien: l.prixAncien ?? null, prixGrille: l.prixGrille ?? null }))}
+          reponseInitiale={props.repriseGrille}
+          hausseInitiale={props.hausseReprise}
+          ecrire={aLaSuite}
+          onPrix={(maj) =>
+            setLignes((cur) =>
+              cur.map((l) => {
+                const m = maj.find((x) => x.id === l.id);
+                return m ? { ...l, prixUnitaire: prixAEcrire(sansZerosInutiles(m.prixUnitaire)), montant: m.montant } : l;
+              })
+            )
+          }
+        />
       )}
 
       {/* --- En-tête : l'entreprise à gauche, les références à droite -------- */}
@@ -418,7 +1055,7 @@ export default function DevisCompletClient(props: Props) {
             aria="Nom de l'entreprise"
             grand
             onChange={(v) => setEmetteur({ ...emetteur, nom: v })}
-            onFini={() => majEmetteurAction({ nom: emetteur.nom })}
+            onFini={(duChamp) => majEmetteurAction({ nom: duChamp })}
           />
           {/* **Toute son identité ICI, et une seule fois** (25 août 2026). Sa
               question : *« pourquoi il y a deux fois l'émetteur sur l'aperçu ? »*
@@ -428,30 +1065,49 @@ export default function DevisCompletClient(props: Props) {
               SIRET, **une ligne par information**. */}
           <ChampNu long valeur={emetteur.adresse} fige={fige} placeholder="Adresse du siège social" aria="Adresse de l'entreprise"
             onChange={(v) => setEmetteur({ ...emetteur, adresse: v })}
-            onFini={() => majEmetteurAction({ adresse: emetteur.adresse })} />
+            onFini={(duChamp) => majEmetteurAction({ adresse: duChamp })} />
           <ChampNu valeur={emetteur.telephone} fige={fige} placeholder="Téléphone" aria="Téléphone de l'entreprise"
             onChange={(v) => setEmetteur({ ...emetteur, telephone: v })}
-            onFini={() => majEmetteurAction({ telephone: emetteur.telephone })} />
+            onFini={(duChamp) => majEmetteurAction({ telephone: duChamp })} />
           <ChampNu valeur={emetteur.email} fige={fige} placeholder="E-mail" aria="E-mail de l'entreprise"
             onChange={(v) => setEmetteur({ ...emetteur, email: v })}
-            onFini={() => majEmetteurAction({ email: emetteur.email })} />
+            onFini={(duChamp) => majEmetteurAction({ email: duChamp })} />
           <ChampNu valeur={emetteur.siret} fige={fige} placeholder="N° SIREN / SIRET" aria="SIREN / SIRET"
             onChange={(v) => setEmetteur({ ...emetteur, siret: v })}
-            onFini={() => majEmetteurAction({ siret: emetteur.siret })} />
+            onFini={(duChamp) => majEmetteurAction({ siret: duChamp })} />
         </div>
 
         <div className="w-full sm:w-[280px] sm:shrink-0">
           <Reference libelle="Devis n°" valeur={<NumeroDeDocument valeur={props.numeroCommercial} />} />
           <Reference libelle="Date" valeur={jourNumerique(props.dateEmission)} />
           <Reference libelle="Validité" valeur={props.validite} />
+          {/* Le même délai que le PDF (L111-1, choix 2A du 3 octobre 2026). */}
+          <Reference libelle="Début des travaux" valeur={DEBUT_DES_TRAVAUX} />
         </div>
       </header>
 
       <div className="my-6" style={{ borderTop: `2px solid ${colors.ink}` }} />
 
-      <h1 className="mb-8 text-center text-[26px] tracking-[0.14em] sm:text-[30px]" style={{ fontFamily: font.display }}>
+      <h1 className="mb-3 text-center text-[26px] tracking-[0.14em] sm:text-[30px]" style={{ fontFamily: font.display }}>
         DEVIS
       </h1>
+      {/* Le titre qu'il donne au devis, sous DEVIS comme sur le papier — en
+          italique, et rien tant qu'il n'a rien écrit. */}
+      {(!fige || titre) && (
+        <div className="mb-8 text-center">
+          <input
+            value={titre}
+            readOnly={fige}
+            placeholder="Titre (optionnel)"
+            aria-label="Titre du devis"
+            data-atlas="titre-devis"
+            onChange={(e) => setTitre(e.target.value)}
+            onBlur={(e) => void majEnTeteDevisAction(props.devisId, { titre: e.currentTarget.value })}
+            className="w-full max-w-[420px] border-0 bg-transparent p-0 text-center italic outline-none focus:bg-[var(--voile-champ)]"
+            style={{ color: colors.inkSoft, fontFamily: font.display, fontSize: "17px" }}
+          />
+        </div>
+      )}
 
       {/* --- Le client, seul : l'émetteur est déjà en haut ------------------
           Sa question du 25 août 2026 : *« est-ce que c'est normal qu'il y ait
@@ -492,9 +1148,9 @@ export default function DevisCompletClient(props: Props) {
                 fige={fige}
                 placeholder="Nom complet"
                 aria="Nom du client"
-                prefixe={client.civilite ? CIVILITES[client.civilite] : ""}
+                prefixe={client.civilite && client.civilite !== "entreprise" ? CIVILITES[client.civilite] : ""}
                 onChange={(v) => setClient({ ...client, nom: v })}
-                onFini={() => majClientDuDevisAction(props.clientId!, { nom: client.nom })} />
+                onFini={(duChamp) => majClientDuDevisAction(props.clientId!, { nom: duChamp })} />
               {/* **L'ordre est celui d'une lettre, et le patron l'a demandé
                   ainsi le 6 août 2026 : « le numéro de téléphone devrait être
                   en dernier ».** C'est aussi l'ordre du modèle d'Arborea — on
@@ -502,18 +1158,39 @@ export default function DevisCompletClient(props: Props) {
                   joindre vient après. */}
               <ChampNu long valeur={client.adresse} fige={fige} placeholder="Adresse" aria="Adresse du client"
                 onChange={(v) => setClient({ ...client, adresse: v })}
-                onFini={() => majClientDuDevisAction(props.clientId!, { adresse: client.adresse })} />
+                onFini={(duChamp) => majClientDuDevisAction(props.clientId!, { adresse: duChamp })} />
               <ChampNu valeur={client.email} fige={fige} placeholder="E-mail" aria="E-mail du client"
                 onChange={(v) => setClient({ ...client, email: v })}
-                onFini={() => majClientDuDevisAction(props.clientId!, { email: client.email })} />
+                onFini={(duChamp) => majClientDuDevisAction(props.clientId!, { email: duChamp })} />
               <ChampNu valeur={client.telephone} fige={fige} placeholder="Téléphone" aria="Téléphone du client"
                 onChange={(v) => setClient({ ...client, telephone: v })}
-                onFini={() => majClientDuDevisAction(props.clientId!, { telephone: client.telephone })} />
+                onFini={(duChamp) => majClientDuDevisAction(props.clientId!, { telephone: duChamp })} />
             </>
           ) : (
-            <p className="text-[13px]" style={{ color: colors.muted }}>
-              Aucun client rattaché à ce chantier.
-            </p>
+            <>
+              <p className="text-[13px]" style={{ color: colors.muted }}>
+                Aucun client rattaché à ce chantier.
+              </p>
+              {/* **LE CHEMIN VERS LA FICHE VIT ICI, PLUS DANS LA FLÈCHE —
+                  9 septembre 2026.** Le 31 août, la flèche de retour avait été
+                  détournée vers le formulaire de fiche client parce que cette
+                  phrase était un cul-de-sac : elle disait ce qui manquait sans
+                  dire où le réparer. La flèche est redevenue un retour ; le
+                  chemin, lui, se pose là où le manque se lit — et il s'annonce,
+                  au lieu de se cacher derrière un chevron qui dit « reculer ».
+
+                  Sur un devis figé, rien : le document ne se modifie plus, et
+                  remplir la fiche ne le changerait pas. */}
+              {!fige && (
+                <Link
+                  href={coordonneesDepuisLeDevis(props.chantierId)}
+                  className="mt-2 inline-block text-[13px] underline"
+                  style={{ color: colors.rust }}
+                >
+                  Renseigner la fiche client
+                </Link>
+              )}
+            </>
           )}
           {/* **L'adresse des travaux ne s'affiche que si elle diffère.**
               Sinon elle réapparaissait plus bas, sans étiquette, comme une
@@ -526,7 +1203,7 @@ export default function DevisCompletClient(props: Props) {
               <Intertitre>Chantier</Intertitre>
               <ChampNu long valeur={adresseChantier} fige={fige} placeholder="Adresse des travaux" aria="Adresse du chantier"
                 onChange={setAdresseChantier}
-                onFini={() => majAdresseChantierAction(props.chantierId, adresseChantier)} />
+                onFini={(duChamp) => majAdresseChantierAction(props.chantierId, duChamp)} />
             </div>
           )}
         </div>
@@ -538,13 +1215,15 @@ export default function DevisCompletClient(props: Props) {
             tablette : sur six pouces, chaque cellule porte son propre libellé,
             comme le fait le modèle d'origine. */}
         <div
-          className="hidden pb-2 sm:grid sm:grid-cols-[1fr_70px_130px_130px_28px] sm:gap-3"
+          className="hidden pb-2 sm:grid sm:grid-cols-[1fr_70px_84px_130px_130px_28px] sm:gap-3"
           style={{ borderBottom: `1px solid ${colors.ink}` }}
         >
           <Colonne>Description</Colonne>
           <Colonne droite>Qté</Colonne>
+          {/* Après Qté — sa demande du 12 septembre 2026 : ml, kg, m³… */}
+          <Colonne droite>Unité</Colonne>
           <Colonne droite>Prix unitaire HT</Colonne>
-          <Colonne droite>Total HT</Colonne>
+          <Colonne droite>Montant HT</Colonne>
           <span />
         </div>
 
@@ -554,14 +1233,61 @@ export default function DevisCompletClient(props: Props) {
           </p>
         )}
 
-        {lignes.map((l, i) => (
+        {categories.map((categorie) => (
+        <div key={categorie.taux}>
+
+        {/* **Le titre de la catégorie — seulement s'il y en a plusieurs.**
+            Sa demande du 1er septembre 2026 : le taux se pose par catégorie, pas
+            par ligne. Le champ est nu comme le reste de la feuille : c'est un
+            document, pas un formulaire. */}
+        {plusieursTva && (
+          <div
+            className="mt-5 flex items-center justify-between gap-3 rounded-md px-3 py-1.5"
+            style={{ backgroundColor: colors.rustTint }}
+          >
+            <span
+              className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.12em]"
+              style={{ color: colors.rust }}
+            >
+              TVA
+              <input
+                defaultValue={tauxLisible(categorie.taux)}
+                readOnly={fige}
+                inputMode="decimal"
+                aria-label={`Taux de TVA de la catégorie ${tauxLisible(categorie.taux)} %`}
+                onBlur={(e) => void changerTaux(categorie.taux, e.target.value)}
+                className="w-9 border-0 bg-transparent p-0 text-right outline-none focus:bg-[var(--voile-champ-teinte)]"
+                style={{ color: colors.ink, fontSize: "16px" }}
+              />
+              %
+            </span>
+            {/* **Le « − », comme celui du prix accordé** (sa proposition B du
+                17 août 2026) : 26 px, sans quoi on le rate au doigt. Il ne
+                s'affiche pas sur la catégorie d'accueil — c'est là que les
+                lignes retombent, elle n'a nulle part où aller. */}
+            {!fige && categorie.taux !== tauxDuDevis && (
+              <button
+                type="button"
+                aria-label={`Retirer la TVA à ${tauxLisible(categorie.taux)} %`}
+                onClick={() => void retirerLaTva(categorie.taux)}
+                className="flex h-[26px] w-[26px] flex-none items-center justify-center rounded-full text-[15px] leading-none"
+                style={{ border: `1px solid ${colors.or}`, color: colors.or }}
+              >
+                −
+              </button>
+            )}
+          </div>
+        )}
+
+        {categorie.lignes.map((l) => {
+          const i = lignes.indexOf(l);
+          const nomDeLaLigne = l.libelle ? `« ${l.libelle.split("\n")[0]} »` : `la ligne ${i + 1}`;
+          return (
           <LigneRetirable
             key={l.id}
-            libelle={l.libelle ? `« ${l.libelle.split("\n")[0]} »` : `la ligne ${i + 1}`}
+            libelle={nomDeLaLigne}
             retiree={retraits.estRetire(l.id)}
-            onRetirer={() =>
-              retraits.retirer(l.id, l.libelle ? `« ${l.libelle.split("\n")[0]} »` : `la ligne ${i + 1}`)
-            }
+            onRetirer={() => retraits.retirer(l.id, nomDeLaLigne)}
             // Une ligne de devis porte un libellé sur plusieurs lignes, une
             // quantité, un prix : elle monte bien au-delà des 170 px par défaut,
             // et l'enveloppe la tronquerait au repos.
@@ -569,23 +1295,61 @@ export default function DevisCompletClient(props: Props) {
             className="flex"
           >
           <div
-            className="grid w-full gap-2 py-3 sm:grid-cols-[1fr_70px_130px_130px] sm:items-start sm:gap-3"
-            style={{ borderBottom: `1px solid ${colors.lineSoft}` }}
+            className="grid w-full gap-2 py-3 sm:grid-cols-[1fr_70px_84px_130px_130px] sm:items-start sm:gap-3"
+            style={{
+              borderBottom: `1px solid ${colors.lineSoft}`,
+              // Le retour du geste : la ligne se soulève PENDANT l'appui, avant
+              // que la feuille s'ouvre. Sans lui, on ne sait pas que l'appui a
+              // été compris, et on relâche trop tôt.
+              backgroundColor: ligneSaisie === l.id ? colors.rustTint : undefined,
+              transform: ligneSaisie === l.id ? "scale(0.99)" : undefined,
+              borderRadius: ligneSaisie === l.id ? 6 : undefined,
+              transition: "background-color .18s, transform .18s",
+            }}
+            {...appuiLong.pour(() => setADeplacer(l), {
+              // **Rien à proposer tant qu'il n'a qu'une TVA** : une feuille qui
+              // s'ouvrirait sur un seul choix — celui où la ligne est déjà —
+              // ferait croire à un geste cassé. Et un devis parti ne se retouche
+              // plus, comme le reste de cet écran.
+              actif: plusieursTva && !fige,
+              onEtat: (enCours) => setLigneSaisie(enCours ? l.id : null),
+            })}
           >
             {/* La ligne principale réunit plusieurs travaux, un par ligne
                 (« abattage / broyage / évacuation »). Compter les retours à la
                 ligne ne suffisait pas : un seul travail au libellé long en
                 occupe deux à l'écran. Voir `ZoneQuiGrandit`. */}
-            <ZoneQuiGrandit
-              valeur={l.libelle}
-              fige={fige}
-              aria={`Description ${i + 1}`}
-              placeholder="Ex : Élagage d'un tilleul — taille architecturée"
-              onChange={(v) => majLigneLocale(l.id, "libelle", v)}
-              onFini={() => persisterLigne(l)}
-              className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[rgba(0,0,0,0.03)]"
-              style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.45 }}
-            />
+            <div className="flex items-start gap-2">
+              <ZoneQuiGrandit
+                valeur={l.libelle}
+                fige={fige}
+                aria={`Description ${i + 1}`}
+                placeholder="Ex : Élagage d'un tilleul, taille architecturée"
+                onChange={(v) => majLigneLocale(l.id, "libelle", v)}
+                onFini={(fraiche) => {
+                  void persisterLigne(l, { libelle: fraiche });
+                }}
+                className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[var(--voile-champ)]"
+                style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.45 }}
+              />
+              {/* **La croix, au bout de la description — sa réponse « A » du
+                  3 octobre 2026**, le glissement restant. Sur la rangée du
+                  TEXTE, jamais sur celle des chiffres : c'est sur la quantité
+                  et le prix que « Retirer » se posait sous son doigt. Même
+                  retrait que le glissement, donc même « Annuler ». */}
+              {!fige && (
+                <button
+                  type="button"
+                  aria-label={`Retirer ${nomDeLaLigne}`}
+                  data-atlas="croix-ligne"
+                  onClick={() => retraits.retirer(l.id, nomDeLaLigne)}
+                  className="-mr-2.5 -mt-2.5 flex h-11 w-11 flex-none items-center justify-center text-[22px] leading-none"
+                  style={{ color: colors.muted }}
+                >
+                  ×
+                </button>
+              )}
+            </div>
 
             <Cellule libelle="Qté">
               <ChiffreSaisi
@@ -594,7 +1358,21 @@ export default function DevisCompletClient(props: Props) {
                 aria={`Quantité ${i + 1}`}
                 placeholder="1"
                 onChange={(v) => majLigneLocale(l.id, "quantite", v)}
-                onFini={() => persisterLigne(l)}
+                onFini={(fraiche) => {
+                  void persisterLigne(l, { quantite: fraiche });
+                }}
+              />
+            </Cellule>
+
+            <Cellule libelle="Unité">
+              <ChampUnite
+                valeur={l.unite ?? ""}
+                fige={fige}
+                aria={`Unité ${i + 1}`}
+                onChange={(v) => majLigneLocale(l.id, "unite", v)}
+                onFini={(fraiche) => {
+                  void persisterLigne(l, { unite: fraiche });
+                }}
               />
             </Cellule>
 
@@ -602,18 +1380,38 @@ export default function DevisCompletClient(props: Props) {
               <ChiffreSaisi
                 valeur={l.prixUnitaire}
                 fige={fige}
+                marqueLigne={l.id}
                 aria={`Prix unitaire ${i + 1}`}
                 placeholder="0,00"
-                onChange={(v) => majLigneLocale(l.id, "prixUnitaire", v)}
-                onFini={() => persisterLigne(l)}
+                onChange={(v) => {
+                  majLigneLocale(l.id, "prixUnitaire", v);
+                  // Un prix tapé sort la ligne de la reprise, comme en base
+                  // (`modifierLignePrix`) : ni la grille ni la hausse ne le
+                  // réécriront, et l'ancien prix barré s'efface.
+                  if (l.prixAncien != null && !memeValeur(v, l.prixUnitaire)) {
+                    setLignes((cur) => cur.map((x) => (x.id === l.id ? { ...x, prixAncien: null, prixGrille: null } : x)));
+                  }
+                }}
+                onFini={(fraiche) => {
+                  void persisterLigne(l, { prixUnitaire: fraiche });
+                }}
               />
             </Cellule>
+            {/* L'ancien prix, barré, tant qu'une ligne reprise porte un autre
+                prix : le tarif du jour ou la hausse ont changé ce qu'il avait
+                écrit, et il le voit. */}
+            {!fige && l.prixAncien != null && !memeValeur(l.prixAncien, l.prixUnitaire) && (
+              <p className="-mt-1 text-right text-[12.5px] tabular-nums sm:col-span-5" data-atlas="ancien-prix">
+                <span style={{ color: colors.muted }}>Ancien prix </span>
+                <s style={{ color: colors.muted }}>{enEuros(Number(l.prixAncien))}</s>
+              </p>
+            )}
 
-            <Cellule libelle="Total HT">
+            <Cellule libelle="Montant HT">
               {/* **« À chiffrer » n'est pas « 0,00 € ».** Un zéro se lit
                   « gratuit », et le devis pouvait partir ainsi (26 août 2026).
                   Dès qu'il pose un montant, l'état tombe de lui-même. */}
-              {l.aChiffrer && montantDeLaLigne(l) <= 0 ? (
+              {ligneAttendSonPrix({ libelle: l.libelle, montant: montantDeLaLigne(l).toFixed(2), aChiffrer: l.aChiffrer }) ? (
                 <span className="text-[16px]" style={{ color: colors.or }}>
                   à chiffrer
                 </span>
@@ -643,11 +1441,63 @@ export default function DevisCompletClient(props: Props) {
 
           </div>
           </LigneRetirable>
-        ))}
+          );
+        })}
 
         {!fige && (
-          <button type="button" onClick={ajouter} className="mt-4 text-[14px] font-medium" style={{ color: colors.rust }}>
+          <button
+            type="button"
+            onClick={() => void ajouter(plusieursTva ? categorie.taux : null)}
+            className="mt-4 text-[14px] font-medium"
+            style={{ color: colors.rust }}
+          >
             + Ajouter une ligne
+          </button>
+        )}
+
+        {/* **Le sous-total permet au client de refaire le calcul de SA TVA.**
+            Sans lui, la ligne « TVA (10 %) » des totaux ne se vérifie qu'en
+            additionnant soi-même les montants de la catégorie. */}
+        {plusieursTva && (
+          <div className="mt-2 flex justify-end gap-4 text-[13px]" style={{ color: colors.muted }}>
+            <span>Sous-total HT</span>
+            <span style={{ color: colors.ink }}>
+              {enEuros(
+                categorie.lignes
+                  .filter((l) => !retraits.estRetire(l.id))
+                  .reduce((somme, l) => somme + montantDeLaLigne(l), 0)
+              )}
+            </span>
+          </div>
+        )}
+        </div>
+        ))}
+
+        {/* **« Ajouter une TVA » — le geste qu'il a décrit.** Discret et sous
+            le tableau, même vocabulaire que « + Ajouter une ligne ». */}
+        {/* En sous-traitance, il n'y a aucune TVA à ajouter. */}
+        {!fige && !props.sousTraitance && (
+          <button
+            type="button"
+            onClick={() => void ajouterUneTva()}
+            className="mt-5 block text-[14px] font-medium"
+            style={{ color: colors.or }}
+          >
+            + Ajouter une TVA
+          </button>
+        )}
+        {/* **« + Main d'œuvre », comme « + Ajouter une TVA »** — sa demande du
+            12 septembre 2026. Il ouvre la ligne « dont main d'œuvre HT » sous le
+            total HT, vide : le chiffre est à lui, pas à nous. */}
+        {!fige && !mainDoeuvreOuverte && (
+          <button
+            type="button"
+            data-atlas="poser-main-doeuvre"
+            onClick={() => setMainDoeuvreOuverte(true)}
+            className="mt-2.5 block text-[14px] font-medium"
+            style={{ color: colors.or }}
+          >
+            + Main d’œuvre
           </button>
         )}
 
@@ -658,6 +1508,48 @@ export default function DevisCompletClient(props: Props) {
           className="mt-4 !mx-0"
         />
       </section>
+
+      {/* ── SOUS-TRAITANCE, SANS TVA — son choix B du 4 octobre 2026 ─────────
+          Pour un client Entreprise, décoché d'office : une entreprise en
+          direct paie la TVA (`docs/QUESTIONS.md` §31). Le même cadre doré que
+          sur la facture. Les taux changent EN BASE, et l'écran se relit. */}
+      {props.sousTraitancePossible && !fige && (
+        <div
+          className="mt-8 px-4 py-3.5"
+          data-atlas="carte-sous-traitance-devis"
+          style={{ backgroundColor: colors.card, boxShadow: `0 0 0 2px ${colors.or}`, borderRadius: 14 }}
+        >
+          <div className="flex items-center justify-between gap-3 text-[15px]" style={{ color: colors.ink }}>
+            <span>
+              Sous-traitance, sans TVA
+              <small className="block text-[12.5px]" style={{ color: colors.muted }}>
+                Seulement si vous êtes sous-traitant d’une autre entreprise.
+              </small>
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={props.sousTraitance}
+              aria-label="Sous-traitance, sans TVA"
+              data-atlas="sous-traitance-devis"
+              disabled={sousTraitanceEnCours}
+              onClick={() => void basculerSousTraitance()}
+              className="relative h-7 w-[46px] flex-none rounded-full"
+              style={{ backgroundColor: props.sousTraitance ? colors.rust : colors.line }}
+            >
+              <span
+                className="absolute top-[3px] h-[22px] w-[22px] rounded-full transition-[left]"
+                style={{ left: props.sousTraitance ? 21 : 3, backgroundColor: colors.card }}
+              />
+            </button>
+          </div>
+          {refusSousTraitance && (
+            <p role="alert" className="mt-2 text-[12px]" style={{ color: colors.alert }}>
+              {refusSousTraitance}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* --- Les totaux, alignés à droite comme sur le papier ---------------- */}
       <section className="mt-8 flex justify-end">
@@ -689,40 +1581,21 @@ export default function DevisCompletClient(props: Props) {
                 <span className="text-[15px]">Total HT</span>
                 <span className="text-[15px]">{enEuros(brutHt)}</span>
               </div>
-              <div className="flex items-center justify-between py-1.5" style={{ color: colors.or }}>
-                <span className="flex items-center gap-1 text-[15px]">
-                  {/* **Le « − », sa proposition B, retenue le 17 août 2026.**
-                      26 px : en dessous de 24, on le rate au doigt, et c'est sur
-                      un téléphone qu'il s'en sert. Il ne paraît pas sur un devis
-                      parti — cet écran ne se modifie plus. */}
-                  {!fige && (
-                    <button
-                      type="button"
-                      aria-label={`Retirer le ${LIBELLE_REDUCTION.toLowerCase()}`}
-                      onClick={() => retraits.retirer(CLE_REDUCTION, `le ${LIBELLE_REDUCTION.toLowerCase()}`)}
-                      className="mr-1 flex h-[26px] w-[26px] flex-none items-center justify-center rounded-full text-[15px] leading-none"
-                      style={{ border: `1px solid ${colors.or}`, color: colors.or }}
-                    >
-                      −
-                    </button>
-                  )}
-                  {LIBELLE_REDUCTION}
-                  <input
-                    value={reduction}
-                    readOnly={fige}
-                    inputMode="decimal"
-                    aria-label="Prix accordé au client, en pourcentage"
-                    onChange={(e) => setReduction(e.target.value)}
-                    onBlur={enregistrerRemise}
-                    className="w-9 border-0 bg-transparent p-0 text-right outline-none focus:bg-[rgba(0,0,0,0.03)]"
-                    style={{ color: colors.or, fontSize: "16px" }}
-                  />
-                  %
-                </span>
-                <span className="text-[15px]">
-                  {totaux.reductionMontant === null ? "" : `− ${enEuros(Number(totaux.reductionMontant))}`}
-                </span>
-              </div>
+              {ligneMainDoeuvre}
+              {/* **La même pièce que la facture, et ce n'est pas un partage de
+                  confort** : « reprends exactement celle du devis — couleur,
+                  forme, mots » (11 septembre 2026). Recopiée, elle aurait
+                  divergé au premier ajustement. */}
+              <LigneRemise
+                pourcent={reduction}
+                montantRetire={totaux.reductionMontant}
+                fige={fige}
+                onChange={setReduction}
+                onFini={(duChamp) => void enregistrerRemise(duChamp)}
+                onRetirer={() =>
+                  retraits.retirer(CLE_REDUCTION, `le ${LIBELLE_REDUCTION.toLowerCase()}`)
+                }
+              />
               <div className="flex items-center justify-between py-1.5">
                 <span className="text-[15px]">
                   {totaux.reductionPourcent === null ? "Total HT" : "Total HT après remise"}
@@ -731,52 +1604,134 @@ export default function DevisCompletClient(props: Props) {
               </div>
             </>
           ) : (
+            <>
+              <div className="flex items-center justify-between py-1.5">
+                <span className="text-[15px]">Total HT</span>
+                <span className="text-[15px]">{enEuros(totalHt)}</span>
+              </div>
+              {ligneMainDoeuvre}
+            </>
+          )}
+          {/* **UNE LIGNE PAR CATÉGORIE — sa demande du 1er septembre 2026.**
+
+              À un seul taux, c'est EXACTEMENT la ligne d'avant : le champ y
+              reste modifiable, et son écran d'aujourd'hui ne bouge pas.
+
+              Dès qu'il y a deux catégories, le taux ne se corrige plus ici mais
+              dans le titre de sa catégorie — le laisser modifiable aux deux
+              endroits aurait donné deux façons de changer la même chose, dont
+              une qui écrase silencieusement l'autre. */}
+          {props.sousTraitance ? (
             <div className="flex items-center justify-between py-1.5">
-              <span className="text-[15px]">Total HT</span>
-              <span className="text-[15px]">{enEuros(totalHt)}</span>
+              <span className="text-[15px]">TVA, autoliquidation</span>
+              <span className="text-[15px]">{enEuros(0)}</span>
+            </div>
+          ) : plusieursTva ? (
+            totaux.parTaux.map((categorie) => (
+              <div key={categorie.taux} className="flex items-center justify-between py-1.5">
+                <span className="text-[15px]">TVA ({tauxLisible(categorie.taux)} %)</span>
+                <span className="text-[15px]">{enEuros(Number(categorie.tva))}</span>
+              </div>
+            ))
+          ) : (
+            <div className="flex items-center justify-between py-1.5">
+              <span className="flex items-center gap-1 text-[15px]">
+                TVA (
+                <input
+                  value={tauxTva}
+                  readOnly={fige}
+                  inputMode="decimal"
+                  aria-label="Taux de TVA"
+                  onChange={(e) => setTauxTva(e.target.value)}
+                  onBlur={() => majEnTeteDevisAction(props.devisId, { tauxTva })}
+                  // Collé au « ( » : aligné à droite dans une boîte fixe, le taux
+                  // laissait un blanc et se lisait « TVA (    20 %) ».
+                  className="w-9 border-0 bg-transparent p-0 text-left outline-none focus:bg-[var(--voile-champ)]"
+                  style={{ color: colors.ink, fontSize: "16px" }}
+                />
+                %)
+              </span>
+              <span className="text-[15px]">{enEuros(totalTva)}</span>
             </div>
           )}
-          <div className="flex items-center justify-between py-1.5">
-            <span className="flex items-center gap-1 text-[15px]">
-              TVA (
-              <input
-                value={tauxTva}
-                readOnly={fige}
-                inputMode="decimal"
-                aria-label="Taux de TVA"
-                onChange={(e) => setTauxTva(e.target.value)}
-                onBlur={() => majEnTeteDevisAction(props.devisId, { tauxTva })}
-                // Collé au « ( » : aligné à droite dans une boîte fixe, le taux
-                // laissait un blanc et se lisait « TVA (    20 %) ».
-                className="w-9 border-0 bg-transparent p-0 text-left outline-none focus:bg-[rgba(0,0,0,0.03)]"
-                style={{ color: colors.ink, fontSize: "16px" }}
-              />
-              %)
-            </span>
-            <span className="text-[15px]">{enEuros(totalTva)}</span>
-          </div>
           <div className="mt-1 flex items-center justify-between pt-2.5" style={{ borderTop: `2px solid ${colors.ink}` }}>
-            <span className="text-[17px] font-semibold">Total TTC</span>
+            <span className="text-[17px] font-semibold">{props.sousTraitance ? "Total à payer" : "Total TTC"}</span>
             <span className="text-[20px] font-semibold" style={{ fontFamily: font.display }}>
               {enEuros(totalHt + totalTva)}
             </span>
           </div>
 
+          {/* **L'ÉCHÉANCIER, SOUS LE TOTAL DONT IL DÉCOULE — la B, choisie le
+              12 septembre 2026.** Une ligne dorée par acompte, comme le prix
+              accordé ; puis « Reste à régler après acompte » et le montant —
+              *« chez le client il faut marquer reste à régler après acompte et
+              le montant »*. Le taux est CUMULÉ ; le montant est ce qui tombe ce
+              jour-là. Rien ici tant qu'il n'y a pas d'acompte : le retirer du
+              « − » ne retire pas la phrase des notes (`acomptePourcent`). */}
+          {echeancier.lignes.length > 0 && (
+            <div className="mt-1.5" data-atlas="echeancier-devis">
+              {echeancier.lignes.map((ligne) => (
+                <LigneAcompte
+                  key={ligne.rang}
+                  ligne={ligne}
+                  tauxSaisi={acomptes.find((a) => a.rang === ligne.rang)?.tauxCumule ?? ligne.tauxCumule}
+                  fige={fige}
+                  onChange={(v) =>
+                    setAcomptes((cur) => cur.map((a) => (a.rang === ligne.rang ? { ...a, tauxCumule: v } : a)))
+                  }
+                  onFini={(duChamp) => void changerAcompte(ligne.rang, duChamp)}
+                  onRetirer={() => void retirerUnAcompte(ligne.rang)}
+                />
+              ))}
+              <div className="flex items-center justify-between py-1.5">
+                <span className="text-[15px]">{echeancier.libelleReste}</span>
+                <span className="text-[15px] font-semibold tabular-nums" data-atlas="reste-a-regler">
+                  {enEuros(echeancier.reste)}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* « + Ajouter un acompte » — même vocabulaire que « + Ajouter une
+              TVA », et il se tait dès qu'il n'y a plus rien à poser : trois
+              acomptes, ou un devis déjà réglé à 100 %. */}
+          {!fige && acompteAProposer && (
+            <button
+              type="button"
+              data-atlas="ajouter-acompte"
+              onClick={() => void ajouterUnAcompte()}
+              className="mt-2.5 block text-[13.5px]"
+              style={{ color: colors.or }}
+            >
+              + Ajouter un acompte
+            </button>
+          )}
+          {/* **Le refus du serveur, sous le geste** — 17 septembre 2026. Un
+              appui sans effet et sans un mot se lit comme une panne, et il
+              rappuie. */}
+          {refusAcompte && (
+            <p
+              role="alert"
+              data-atlas="refus-acompte"
+              className="mt-1 text-[13px] leading-[1.45]"
+              style={{ color: colors.alert }}
+            >
+              {refusAcompte}
+            </p>
+          )}
+
           {/* Discret, et seulement quand il n'y en a pas : un devis qui porte
               déjà sa remise n'a pas besoin qu'on lui propose d'en poser une. */}
           {!fige && !remiseOuverte && (
-            <button
-              type="button"
-              onClick={() => {
+            <BoutonRemise
+              onPoser={() => {
                 setRemiseOuverte(true);
-                setReduction("5");
-                majEnTeteDevisAction(props.devisId, { reductionPourcent: "5" });
+                setReduction(REMISE_PAR_DEFAUT);
+                // Le même écrivain que la saisie et que le retrait : une remise
+                // n'a qu'une façon d'arriver en base.
+                void enregistrerRemise(REMISE_PAR_DEFAUT);
               }}
-              className="mt-2.5 text-[13.5px]"
-              style={{ color: colors.or }}
-            >
-              + {LIBELLE_REDUCTION}
-            </button>
+            />
           )}
         </div>
       </section>
@@ -788,12 +1743,23 @@ export default function DevisCompletClient(props: Props) {
           valeur={conditions}
           fige={fige}
           aria="Notes et conditions"
-          placeholder="Acompte de 30 % à la signature, solde à réception des travaux. Devis gratuit et sans engagement."
+          // L'acompte ne se tape plus ici : il vit dans les totaux, et sa phrase
+          // s'écrit toute seule dessous. L'inviter à l'écrire à la main l'aurait
+          // fait apparaître deux fois sur le devis du client.
+          placeholder="Accès par le portail de gauche, cour à dégager la veille. Devis gratuit et sans engagement."
           onChange={setConditions}
-          onFini={() => majEnTeteDevisAction(props.devisId, { conditionsPaiement: conditions })}
-          className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[rgba(0,0,0,0.03)]"
+          onFini={(duChamp) => majEnTeteDevisAction(props.devisId, { conditionsPaiement: duChamp })}
+          className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[var(--voile-champ)]"
           style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.5 }}
         />
+        {/* Les conditions réglées, telles que le PDF les écrira sous son texte —
+            en retrait, parce qu'elles ne se corrigent pas ici mais dans les
+            Réglages, et dans les totaux pour l'acompte. */}
+        {conditionsImprimees.length > 0 && (
+          <p className="mt-2 text-[15px] leading-normal" style={{ color: colors.inkSoft }} data-atlas="conditions-imprimees">
+            {conditionsImprimees.join(" ")}
+          </p>
+        )}
       </section>
 
       <section className="mt-7">
@@ -805,7 +1771,7 @@ export default function DevisCompletClient(props: Props) {
           placeholder="IBAN : FR76 …"
           aria="IBAN"
           onChange={(v) => setEmetteur({ ...emetteur, iban: v })}
-          onFini={() => majEmetteurAction({ iban: emetteur.iban })}
+          onFini={(duChamp) => majEmetteurAction({ iban: duChamp })}
         />
       </section>
 
@@ -818,42 +1784,217 @@ export default function DevisCompletClient(props: Props) {
         <div className="sm:w-[300px]">
           <div className="h-24 rounded" style={{ border: `1px dashed ${colors.line}` }} aria-hidden="true" />
           <p className="mt-1.5 text-center text-[12px]" style={{ color: colors.muted }}>
-            Bon pour accord — signature du client
+            Bon pour accord, signature du client
           </p>
         </div>
       </footer>
 
-      {/* Les seules actions de la page, discrètes, sous le document. */}
-      <div className="mt-10 flex flex-col items-center gap-3" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
-        {/* **« Choisir la date » EN PREMIER, et l'aperçu en dessous** — sa
-            demande du 20 août 2026, planche `docs/maquettes/82`, proposition A.
-            Un seul geste saute aux yeux : c'est celui qu'il fait neuf fois sur
-            dix. L'aperçu reste un lien parce que ce n'est pas une action, c'est
-            une vérification.
+      {/* L'aperçu reste DANS le document : ce n'est pas une action, c'est une
+          vérification. On le lit une fois, à la fin, comme le reste du papier.
 
-            **Sans flèche**, il l'a dit en toutes lettres. La flèche annonçait
-            un écran de plus ; il n'y en a justement plus. */}
-        {!fige && (
-          <div className="w-full px-6 pt-6">
-            <PrimaryButton onClick={() => setFeuilleOuverte(true)}>Choisir la date</PrimaryButton>
-          </div>
-        )}
-        <a
-          href={`/api/devis/${props.devisId}/pdf`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`${fige ? "pt-6" : "pt-3"} text-[14px] font-medium`}
+          **Et il s'ouvre DANS l'application** — sa capture du 11 septembre 2026,
+          sur la facture : *« j'ai pas de touche retour »*. Un onglet neuf n'a
+          ni en-tête ni flèche (`src/lib/visionneuse-pdf.ts`). */}
+      <div className="mt-10 flex flex-col items-center" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
+        <Link
+          href={adresseDeLaVisionneuse(`/api/devis/${props.devisId}/pdf`, { surtitre: "Devis", titre: props.numeroCommercial })}
+          data-atlas="apercu-pdf"
+          className="pt-6 text-[14px] font-medium"
           style={{ color: colors.rust }}
         >
           Aperçu du PDF
-        </a>
+        </Link>
       </div>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          **LE PREMIER ARRÊT RESTE SOUS LE POUCE — sa lettre du 4 septembre 2026.**
+
+          *« La B »*, choisie sur `appli/devis-le-premier-arret.html`.
+
+          **Le défaut mesuré :** « Choisir la date » était le tout DERNIER
+          élément de la page — après les conditions, après l'IBAN, après le
+          cadre de signature. À 390 × 664, **2,59 hauteurs d'écran** de
+          défilement avant de l'atteindre, sur l'écran qu'il traverse à chaque
+          devis.
+
+          **Pourquoi B et pas A.** La planche proposait aussi de replier le
+          document derrière « Voir le document » : un seul écran, et le bouton
+          d'emblée. Il a écarté ce chemin, et il a eu raison — c'est ICI qu'il
+          relit ce qu'il engage. Un premier arrêt qui cache ce qu'on signe
+          n'arrête plus rien. **B ne retire pas un mot du document** : il rend
+          seulement le geste atteignable à toute hauteur.
+
+          **Ce que « Voir le document » aurait coûté, et pourquoi on ne le
+          rouvre pas :** cette proposition traînait dans `TODO.md` comme si
+          elle était tranchée. Elle ne l'était pas — `docs/QUESTIONS.md` §23 se
+          termine sur la question, restée sans réponse jusqu'à ce soir. La
+          réponse est venue, et elle est non.
+
+          **`sticky` et non `fixed` :** la barre appartient à la feuille. Fixée
+          à la fenêtre, elle flotterait aussi par-dessus la feuille des dates et
+          celle de l'appui long ; collée, elle s'arrête d'elle-même au bas du
+          document et laisse le reste tranquille.
+
+          **Le dégradé n'est pas un ornement** : sans lui, le texte du document
+          passe derrière le bouton et se lit à moitié. Il fond vers `card` — le
+          fond de la feuille, qui suit la charte —, jamais vers un crème écrit
+          en clair qui serait faux sur Nuit et sur Sylve.
+
+          **Les marges négatives** annulent le rembourrage de la feuille
+          (`px-5 sm:px-12`), pour que le dégradé aille d'un bord à l'autre : un
+          dégradé qui s'arrête avant le bord laisse deux rubans de texte visible
+          de chaque côté du bouton.
+          ═══════════════════════════════════════════════════════════════════ */}
+      {!fige && (
+        <div
+          /* **La réserve s'efface là où la barre n'existe pas.**
+             Mesuré le 5 septembre 2026, et c'est ce qui a rendu ce défaut si
+             long à voir : sur son téléphone, l'écran du devis PORTE la barre
+             d'onglets — sa capture le montre — tandis qu'ici, sur le même
+             commit, il ne la porte pas. Réserver sa hauteur dans tous les cas
+             corrigeait son écran et laissait, sur le mien, le bouton flotter
+             quatre-vingts pixels au-dessus du vide.
+
+             D'où la question posée au DOM plutôt qu'au code : la barre est-elle
+             là ? Si oui, on lui laisse sa place ; sinon le bouton descend.
+
+             **Le sens de la dégradation est choisi.** `:has()` manque aux
+             navigateurs d'avant 2022 : la règle est alors ignorée, et l'on garde
+             la réserve — c'est-à-dire le cas de SON téléphone, le seul où le
+             bouton était intouchable. Un vieux navigateur voit donc un bouton
+             un peu haut, jamais un bouton caché. */
+          className="sticky bottom-0 z-10 -mx-5 mt-6 px-5 pt-8 pb-[calc(12px+var(--atlas-barre))] sm:-mx-12 sm:px-12 [body:not(:has(.atlas-nav-basse))_&]:pb-3"
+          style={{
+            background: `linear-gradient(to top, ${colors.card} 68%, ${voile(colors.card, 0)})`,
+            // ═══════════════════════════════════════════════════════════════
+            // **LA BARRE D'ONGLETS PASSAIT PAR-DESSUS LE BOUTON — sa capture du
+            // 5 septembre 2026 : « le sous le pouce est caché par le menu du
+            // bas ».** Le bouton était bien collé au bas de la FENÊTRE, et la
+            // barre du bas de l'application s'y trouvait déjà : elle en cachait
+            // la moitié, sur le geste le plus important de l'écran.
+            //
+            // **On réserve donc sa hauteur, et on la lit là où elle est écrite**
+            // — `--atlas-barre` (`globals.css`), qui porte la barre ET la marge
+            // de sécurité de l'iPhone. Un nombre écrit à la main ici vieillirait
+            // au premier changement de la barre, et personne ne le verrait : la
+            // faute du 31 août, où « Me déconnecter partout » finissait dessous
+            // pour huit pixels.
+            //
+            // **Le rembourrage plutôt qu'un `bottom` décalé**, et ce n'est pas
+            // équivalent : posé sur `bottom`, le bouton remonterait mais le
+            // dégradé s'arrêterait avec lui, laissant une bande de texte du
+            // document défiler entre le bouton et la barre. Ici l'aplat descend
+            // jusqu'à la barre.
+            //
+            // **Il vit dans les classes, pas ici** : un style en ligne l'emporte
+            // sur toute feuille, et la réserve n'aurait plus pu s'effacer là où
+            // la barre n'existe pas (voir le `className`).
+            // ═══════════════════════════════════════════════════════════════
+          }}
+        >
+          {/* **Le refus prend la place du bouton, il ne le grise pas.** Un bouton
+              éteint sans un mot est un défaut, pas une protection — et un bouton
+              éteint AVEC un mot laisserait quand même le doigt appuyer dans le
+              vide. Ce qui s'affiche à sa place dit ce qui manque, et emmène
+              dessus. Le bouton revient de lui-même dès que le prix est posé.
+
+              **Sans flèche**, il l'a dit en toutes lettres. */}
+          {refusDePrix ? (
+            <div className="rounded-lg px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
+              <p className="text-[13px]" style={{ color: colors.rust }}>
+                {refusDePrix}
+              </p>
+              <button
+                type="button"
+                onClick={() => sansPrix[0] && allerAuPrix(sansPrix[0].id)}
+                className="mt-2 text-[13px] font-semibold underline"
+                style={{ color: colors.rust }}
+              >
+                {sansPrix.length > 1 ? "Poser les prix" : "Poser le prix"}
+              </button>
+            </div>
+          ) : (
+            // Pleine largeur, comme sur la planche qu'il a choisie : une barre
+            // qui reste sous le pouce et un bouton qui n'occupe que son milieu
+            // se contredisent — la cible doit valoir la place qu'on lui garde.
+            props.continuerVers ? (
+              <PrimaryButton pleineLargeur onClick={() => props.continuerVers && router.push(props.continuerVers)}>
+                Continuer
+              </PrimaryButton>
+            ) : (
+              <PrimaryButton pleineLargeur onClick={() => setFeuilleOuverte(true)}>
+                Choisir la date
+              </PrimaryButton>
+            )
+          )}
+        </div>
+      )}
       </article>
 
       {/* **La feuille des dates, montée ici.** Elle vivait sur l'écran
           récapitulatif ; c'est le même composant, ouvert plus tôt. Après
           l'envoi, on mène à l'écran du devis parti — c'est lui qui porte le
           lien à transmettre au client, et il n'a pas bougé. */}
+      {/* ─── La feuille de l'appui long ──────────────────────────────────
+          Sa demande du 1ᵉʳ septembre 2026 : déplacer une ligne d'une TVA à
+          l'autre par un appui long. La feuille est celle de la maison
+          (`BottomSheet`) — en écrire une seconde aurait donné deux tiroirs à
+          tenir d'accord sur les mêmes écrans (`CLAUDE.md` §3). */}
+      <BottomSheet open={aDeplacer !== null} onBackdropClick={() => setADeplacer(null)}>
+        <h2 className="text-[17px] font-semibold" style={{ color: colors.ink }}>
+          Déplacer cette ligne
+        </h2>
+        {/* Le libellé rappelle CE QU'ON DÉPLACE : sur un devis de dix lignes,
+            une feuille anonyme ne dit pas laquelle le doigt a saisie. */}
+        <p className="mt-0.5 text-[14px]" style={{ color: colors.muted }}>
+          {aDeplacer?.libelle?.split("\n")[0] || "Ligne sans description"}
+        </p>
+
+        <div className="mt-4">
+          {categories
+            .map((c) => c.taux)
+            .filter((t) => t !== tauxDeLaLigne({ tauxTva: aDeplacer?.tauxTva ?? null }, tauxDuDevis))
+            .map((taux) => (
+              <button
+                key={taux}
+                type="button"
+                onClick={() => void deplacerVers(taux)}
+                className="block w-full py-4 text-left text-[17px]"
+                style={{ borderTop: `1px solid ${colors.lineSoft}`, color: colors.ink }}
+              >
+                Vers la <span className="font-semibold">TVA {tauxLisible(taux)} %</span>
+              </button>
+            ))}
+
+          {/* **Une catégorie de plus, depuis la feuille.** Sans elle, déplacer
+              une ligne vers un taux qui n'existe pas encore obligerait à fermer,
+              ajouter la TVA, puis recommencer le geste. */}
+          <button
+            type="button"
+            onClick={() => void deplacerVers(tauxNeuf)}
+            className="block w-full py-4 text-left text-[17px]"
+            style={{ borderTop: `1px solid ${colors.lineSoft}`, color: colors.ink }}
+          >
+            Vers une <span className="font-semibold">TVA {tauxLisible(tauxNeuf)} %</span>
+            <span className="mt-0.5 block text-[13px]" style={{ color: colors.muted }}>
+              une catégorie de plus s&apos;ouvre
+            </span>
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setADeplacer(null)}
+          // `rounded-full` : sa règle du 12 août 2026, la même forme partout.
+          // Un rayon de 10 px avait été repris de la planche — mais une planche
+          // n'est pas tenue par `test-boutons-arrondis.ts`, et l'écran l'est.
+          className="mt-4 w-full rounded-full py-3.5 text-[15px] font-semibold"
+          style={{ backgroundColor: colors.rustTint, color: colors.rust }}
+        >
+          Annuler
+        </button>
+      </BottomSheet>
+
       <EnvoiAuClient
         chantierId={props.chantierId}
         devisId={props.devisId}
@@ -893,6 +2034,8 @@ export default function DevisCompletClient(props: Props) {
             clientNom: client.nom,
             clientCivilite: client.civilite,
             entrepriseNom: emetteur.nom,
+            modele: envoi.modeleMessage,
+            envoi: envoi.envoiDuDevis,
           });
 
           // **UNE ADRESSE LOCALE NE RAMÈNE PAS À L'ACCUEIL — posé le 24 août
@@ -921,303 +2064,5 @@ export default function DevisCompletClient(props: Props) {
         }}
       />
     </>
-  );
-}
-
-/** Le montant d'une ligne — quantité × prix unitaire, comme sur le modèle. */
-function montantDeLaLigne(l: { quantite: string; prixUnitaire: string }): number {
-  return nombre(l.quantite) * nombre(l.prixUnitaire);
-}
-
-/**
- * « 3.00 » s'écrit « 3 », « 250.00 » s'écrit « 250 ».
- *
- * La base stocke deux décimales — c'est juste pour de l'argent, et illisible
- * sur un devis : personne n'écrit « 3,00 tilleuls ». Le patron voit donc le
- * nombre tel qu'il l'aurait écrit, et reste libre de taper « 1,5 ».
- */
-function sansZerosInutiles(valeur: string): string {
-  if (!valeur) return "";
-  const n = Number(String(valeur).replace(",", "."));
-  if (!Number.isFinite(n)) return valeur;
-  return String(n).replace(".", ",");
-}
-
-/** Lit un nombre saisi à la française (« 1,5 ») comme à l'anglaise (« 1.5 »). */
-function nombre(valeur: string): number {
-  const n = Number(String(valeur).replace(",", ".").trim());
-  return Number.isFinite(n) ? n : 0;
-}
-
-/** Une valeur vide vaut le défaut, jamais `NaN` en base. */
-function normaliser(valeur: string, defaut: string): string {
-  const n = nombre(valeur);
-  return valeur.trim() === "" ? defaut : String(n);
-}
-
-/**
- * Une zone de texte HAUTE DE CE QU'ELLE CONTIENT — jamais de ce qu'on estime.
- *
- * **Les trois zones du devis estimaient leur hauteur, et les trois estimaient
- * mal.** L'adresse comptait les caractères (`ceil(longueur / 34)`), la
- * description comptait les retours à la ligne, les conditions ne comptaient
- * rien du tout (`rows={2}`). Or un texte ne se coupe ni au caractère ni au
- * retour à la ligne : il se coupe au mot, quand il touche le bord. Deux lignes
- * estimées en font trois à l'écran, la zone se met à défiler, et le patron
- * relit un devis amputé du bas.
- *
- * C'est très exactement le défaut que la zone d'adresse existait pour
- * corriger — *« le patron lit une adresse amputée sur son propre devis »* —
- * revenu par une autre porte.
- *
- * **Trouvé le 11 août 2026 par le balayage des barres de défilement**, qui
- * cherchait tout autre chose. La barre grise était le symptôme ; le texte caché
- * était le défaut. La masquer aurait rendu la coupure silencieuse — c'eût été
- * le pire des deux.
- *
- * On mesure donc au lieu d'estimer. `scrollHeight` donne la hauteur réelle une
- * fois le texte reporté à la ligne. La remise à `auto` avant de lire est
- * indispensable : sans elle la hauteur ne redescend jamais quand on efface.
- */
-function ZoneQuiGrandit({
-  valeur,
-  onChange,
-  onFini,
-  placeholder,
-  aria,
-  fige,
-  className,
-  style,
-}: {
-  valeur: string;
-  onChange: (v: string) => void;
-  onFini: () => void;
-  placeholder: string;
-  aria: string;
-  fige: boolean;
-  className: string;
-  style: React.CSSProperties;
-}) {
-  const zone = useRef<HTMLTextAreaElement>(null);
-
-  // À chaque frappe ET au premier rendu : le contenu vient du serveur, il est
-  // déjà long avant qu'on ait touché quoi que ce soit.
-  //
-  // `useLayoutEffect` et non `useEffect` : la mesure doit être posée avant que
-  // le navigateur peigne, sinon la feuille sursaute au chargement.
-  useLayoutEffect(() => {
-    const el = zone.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${el.scrollHeight}px`;
-  }, [valeur]);
-
-  return (
-    <textarea
-      ref={zone}
-      value={valeur}
-      readOnly={fige}
-      placeholder={placeholder}
-      aria-label={aria}
-      rows={1}
-      onChange={(e) => onChange(e.target.value)}
-      onBlur={onFini}
-      className={className}
-      style={style}
-    />
-  );
-}
-
-/**
- * Un champ sans cadre : le devis reste une feuille, pas un formulaire.
- * Il ne se signale qu'au moment où on écrit dedans.
- */
-function ChampNu({
-  valeur,
-  onChange,
-  onFini,
-  placeholder,
-  aria,
-  fige,
-  grand,
-  long,
-  prefixe,
-}: {
-  valeur: string;
-  onChange: (v: string) => void;
-  onFini: () => void;
-  placeholder: string;
-  aria: string;
-  fige: boolean;
-  grand?: boolean;
-  /**
-   * Écrit devant la valeur, et **hors du champ** : c'est ce que le document
-   * porte sans qu'on l'ait tapé — la civilité, aujourd'hui. Le mettre DANS le
-   * champ le rendrait modifiable, et le patron enregistrerait « Mr. Roux »
-   * comme nom du client : la civilité s'y retrouverait deux fois au premier
-   * document suivant.
-   */
-  prefixe?: string;
-  /**
-   * Passe à plusieurs lignes plutôt que de couper. Réservé aux adresses : dans
-   * un `<input>`, « 10 rue Denfert-Rochereau 78200 Mantes-la-Jolie » s'arrête
-   * au bord de l'écran, et le patron lit une adresse amputée sur son propre
-   * devis. Le PDF, lui, la reporte à la ligne depuis toujours — l'écran devait
-   * dire la même chose que le papier.
-   */
-  long?: boolean;
-}) {
-  if (long) {
-    return (
-      <ZoneQuiGrandit
-        valeur={valeur}
-        onChange={onChange}
-        onFini={onFini}
-        placeholder={placeholder}
-        aria={aria}
-        fige={fige}
-        className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 py-0.5 outline-none focus:bg-[rgba(0,0,0,0.03)]"
-        style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.4 }}
-      />
-    );
-  }
-  const champ = (
-    <input
-      value={valeur}
-      readOnly={fige}
-      placeholder={placeholder}
-      aria-label={aria}
-      onChange={(e) => onChange(e.target.value)}
-      onBlur={onFini}
-      className="block w-full border-0 bg-transparent p-0 py-0.5 outline-none focus:bg-[rgba(0,0,0,0.03)]"
-      style={{
-        color: colors.ink,
-        // 16 px au minimum : en dessous, iOS agrandit la page au premier appui.
-        fontSize: grand ? "22px" : "16px",
-        fontFamily: grand ? font.display : undefined,
-      }}
-    />
-  );
-
-  if (!prefixe) return champ;
-
-  // `items-baseline` : le mot et le nom reposent sur la même ligne d'écriture,
-  // comme sur le papier. Alignés par le haut, « Mr. » flotterait au-dessus du
-  // nom dès que les deux n'ont pas exactement la même taille.
-  return (
-    <span className="flex items-baseline gap-1.5">
-      <span
-        style={{
-          color: colors.ink,
-          fontSize: grand ? "22px" : "16px",
-          fontFamily: grand ? font.display : undefined,
-        }}
-      >
-        {prefixe}
-      </span>
-      {champ}
-    </span>
-  );
-}
-
-function Intertitre({ children }: { children: React.ReactNode }) {
-  return (
-    <p
-      className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.12em]"
-      style={{ color: colors.rust }}
-    >
-      {children}
-    </p>
-  );
-}
-
-function Colonne({ children, droite }: { children: React.ReactNode; droite?: boolean }) {
-  return (
-    <span
-      className={`text-[11px] font-semibold uppercase tracking-[0.1em] ${droite ? "text-right" : ""}`}
-      style={{ color: colors.muted }}
-    >
-      {children}
-    </span>
-  );
-}
-
-/** Sur téléphone, chaque cellule porte son libellé — comme le modèle d'origine. */
-/**
- * Un chiffre qu'on saisit — et qu'on VOIT qu'on peut saisir.
- *
- * Le 6 août 2026, le patron : « quand j'essaye de cliquer pour mettre un prix,
- * ce n'est pas cliquable ». Il l'était pourtant. Mais le champ était vide, sans
- * repère, sans placeholder, et haut de 24 pixels dans un coin de l'écran —
- * mesuré : 96 × 24. Apple recommande 44 pixels pour une cible tactile, et un
- * champ invisible n'invite personne à le toucher. Un contrôle automatique
- * répondait « éditable : oui » et n'y voyait donc rien.
- *
- * D'où les trois changements, tous nécessaires ensemble : une hauteur de doigt,
- * un trait sous le champ tant qu'il est vide, et un exemple en gris. Le trait
- * disparaît dès qu'un chiffre est écrit — sur le papier, un devis rempli n'a
- * pas de cases.
- */
-function ChiffreSaisi({
-  valeur,
-  onChange,
-  onFini,
-  placeholder,
-  aria,
-  fige,
-}: {
-  valeur: string;
-  onChange: (v: string) => void;
-  onFini: () => void;
-  placeholder: string;
-  aria: string;
-  fige: boolean;
-}) {
-  const vide = valeur.trim() === "";
-  return (
-    <input
-      value={valeur}
-      readOnly={fige}
-      inputMode="decimal"
-      placeholder={placeholder}
-      aria-label={aria}
-      onChange={(e) => onChange(e.target.value)}
-      onBlur={onFini}
-      className="w-24 border-0 bg-transparent px-1 text-right outline-none focus:bg-[rgba(0,0,0,0.03)] sm:w-full"
-      style={{
-        color: colors.ink,
-        fontSize: "16px",
-        minHeight: 44,
-        borderBottom: vide && !fige ? `1px solid ${colors.lineSoft}` : "1px solid transparent",
-      }}
-    />
-  );
-}
-
-function Cellule({ libelle, children }: { libelle: string; children: React.ReactNode }) {
-  return (
-    <div className="flex items-baseline justify-between gap-3 sm:block sm:text-right">
-      <span
-        className="text-[11px] font-semibold uppercase tracking-[0.1em] sm:hidden"
-        style={{ color: colors.muted }}
-      >
-        {libelle}
-      </span>
-      {children}
-    </div>
-  );
-}
-
-function Reference({ libelle, valeur }: { libelle: string; valeur: React.ReactNode }) {
-  return (
-    <div
-      className="flex items-baseline justify-between gap-4 py-1"
-      style={{ borderBottom: `1px solid ${colors.lineSoft}` }}
-    >
-      <span className="text-[12px] font-semibold uppercase tracking-[0.08em]" style={{ color: colors.muted }}>
-        {libelle}
-      </span>
-      <span className="text-[14px]">{valeur}</span>
-    </div>
   );
 }

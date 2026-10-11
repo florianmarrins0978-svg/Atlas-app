@@ -50,6 +50,10 @@ relues à chaque session) :
 25. [Peut-on ouvrir Atlas avec Face ID, au lieu d'un mot de passe ?](#25-peut-on-ouvrir-atlas-avec-face-id-au-lieu-dun-mot-de-passe-)
 26. [Combien d'heures avons-nous passé à créer Atlas ?](#26-combien-dheures-avons-nous-passé-à-créer-atlas-)
 27. [Le format de mes numéros de facture, c'est obligatoire ?](#27-le-format-de-mes-numéros-de-facture-cest-obligatoire-)
+28. [Pourquoi la page que reçoit mon client n'a pas les couleurs de mon devis ?](#28-pourquoi-la-page-que-reçoit-mon-client-na-pas-les-couleurs-de-mon-devis-)
+29. [Mon client peut-il modifier le devis ou la facture qu'il reçoit ?](#29-mon-client-peut-il-modifier-le-devis-ou-la-facture-quil-reçoit-)
+30. [Combien de temps dois-je garder mes factures, et Atlas les garde-t-il ?](#30-combien-de-temps-dois-je-garder-mes-factures-et-atlas-les-garde-t-il-)
+31. [Si je facture une entreprise ou une mairie, la TVA disparaît-elle de la facture ?](#31-si-je-facture-une-entreprise-ou-une-mairie-la-tva-disparaît-elle-de-la-facture-)
 
 ---
 
@@ -591,6 +595,34 @@ n'engage pas.
 | **Le commercial** | Les chantiers, le planning, les devis **et les prix** — il en a besoin pour vendre. Ni les factures, ni la TVA, ni l'IBAN, ni les accès, ni l'abonnement. Il lit les tarifs, il ne les change pas |
 | **Le salarié** | Le planning et ses chantiers, les devis **sans aucun montant**. Le patron choisit s'il voit tout le planning ou ses seuls chantiers |
 
+### Le 30 août 2026 : un cinquième niveau, et une règle enfin appliquée
+
+**Ce qui est AJOUTÉ : le rôle « Facturation ».** Une entreprise a souvent
+plusieurs personnes au service administratif, chacune avec son compte. Elles
+tiennent les clients, les devis et les factures — le relevé de TVA, les
+paiements, les achats — et rien d'autre : ni les tarifs, ni l'IBAN, ni les
+accès. Elles voient le planning, en lecture, pour savoir quand un chantier a eu
+lieu avant de le facturer.
+
+**Ce qui est CORRIGÉ, et c'est plus important.** La ligne « ni les factures, ni
+la TVA » du tableau ci-dessus n'avait **jamais été appliquée** : jusqu'à cette
+date, un commercial pouvait émettre une facture, la porter au relevé de TVA et
+noter un paiement. Pire, l'écran qui donne les accès lui promettait « Les
+factures et le relevé de TVA » — le patron lisait donc l'inverse de sa propre
+décision au moment de la prendre.
+
+**Ce que cela coûte, en une phrase :** un commercial ne peut plus clôturer un
+chantier, parce que le bouton « Créer la facture » crée pour de bon la facture.
+
+| Qui | Les factures | Le planning | Les devis |
+|---|---|---|---|
+| **Le patron** | oui | écriture | oui |
+| **La facturation** | oui | **lecture seule** | oui |
+| **Le commercial** | **non** | écriture, suppression comprise | oui |
+| **Le salarié** | non | **lecture seule** | sa feuille, sans un prix |
+
+Le détail est dans `docs/modele-des-roles.md`.
+
 **Attention à un mot qui trompe :** dans Atlas, une « équipe » n'est pas un
 groupe de personnes, c'est une **file du planning** — combien de chantiers
 partent en même temps. « Équipe B » peut désigner deux ouvriers qui n'ouvriront
@@ -746,10 +778,19 @@ c'est ce que vous lui payez.
 
 ### Où ça en est
 
-**Vous n'avez aucun logiciel de comptabilité aujourd'hui** (réponse du 8 août
-2026). La question devient donc : lequel prendre. Elle est ouverte au point 6
-de [`A-FAIRE.md`](A-FAIRE.md), avec ce que je peux préparer et ce que vous seul
-pouvez signer.
+**La réponse a changé le 26 septembre 2026.** Ce qui suit, écrit le 8 août,
+supposait qu'Atlas choisirait UN outil pour tous. Votre décision : *« Pennylane
+et toutes les applis compatibles avec la nôtre. L'utilisateur connecte son
+compte de facturation à notre appli, et après elles communiquent entre elles
+lors de l'envoi de la facture. »*
+
+Chaque artisan branche donc **son propre compte**, une fois, dans Réglages ; à
+l'envoi d'une facture, Atlas la transmet et c'est son outil qui l'émet.
+Pennylane d'abord, les autres ensuite, un par un. Ce qu'il vous reste à faire
+est au point 6 de [`A-FAIRE.md`](A-FAIRE.md).
+
+*Le 8 août :* **vous n'aviez aucun logiciel de comptabilité** ; la question
+était alors « lequel prendre ».
 
 **Ce que ça ne bloque pas** : ni l'essai d'Atlas, ni sa finition. Comme les
 autres points de `A-FAIRE.md`, cela bloque le fait de le confier à un vrai
@@ -1574,6 +1615,48 @@ depuis votre page habituelle, **« À essayer »** — c'est le premier lien.
 **La seule chose à me dire : ces trois écrans vous vont-ils ?** Si un seul vous
 va, on ne fait que celui-là.
 
+### Ce qui a été décidé — 6 septembre 2026
+
+**Cette question est restée sans réponse dix-sept jours**, et le 5 septembre
+vous avez demandé qu'elle soit tranchée plutôt que reposée une troisième fois,
+avec cette consigne : *« imagine que la plupart des patrons qui vont utiliser
+l'app sont des vieux qui ont du mal à se servir de leur téléphone »*.
+
+**Verdict : oui pour les réglages, et c'est codé.** Les douze phrases sous les
+titres sont parties. Le motif était déjà dans votre question du 19 août — une
+phrase d'explication ne répare jamais un mauvais titre, elle le cache : on a
+donc corrigé les titres, puis retiré les phrases.
+
+Quatre titres ont changé parce qu'ils **mentaient**, pas parce qu'ils sonnaient
+mal :
+
+| Avant | Après | Ce qu'il promettait de faux |
+|---|---|---|
+| Intégrations | **Mon agenda** | « calendrier, comptabilité et services connectés » — les deux derniers n'existent pas, et l'écran derrière s'appelle « Mon agenda » |
+| Sécurité & données | **Mes données** | aucune sécurité ne s'y règle : on y télécharge un fichier |
+| Connexion | **Mot de passe** | nomme un mécanisme, pas ce qu'on vient y faire |
+| Apparence | **Couleurs** | plus large que l'écran : on n'y choisit que des couleurs |
+
+**Ce qui n'a pas été touché :** « Tarifs & catalogue » et « Devis & factures ».
+Ce sont vos mots, ils sont justes, et neuf contrôles les lisent.
+
+**Mesuré sur votre écran**, à 390 × 664 : 1 310 px de haut → **1 145**, six
+rubriques atteintes sans défiler → **huit**, 89 mots → **30**. L'écran ne tient
+toujours pas en une seule fenêtre, et il ne le tiendra pas — douze rubriques à
+56 px de haut, plus la version en bas, font davantage que 664. Serrer les
+lignes rendrait au pouce ce qu'on gagnerait à l'œil.
+
+**Les deux autres écrans de la maquette « Moins de mots » — la fiche client et
+l'accueil — ne sont pas faits.** Ils appartiennent à des zones reprises entre
+le 2 et le 5 septembre par d'autres lots ; les refaire au jugé serait
+exactement l'erreur que cette question cherchait à arrêter.
+
+**Et le compteur de mots qui empêche de regrossir n'existe toujours pas.**
+C'était la vraie réponse à « il y aura une quatrième fois ». Il reste à écrire.
+
+Détail complet : `docs/lot-sommaire-des-reglages.md`.
+Planche : `https://florianmarrins0978-svg.github.io/Atlas-app/sommaire-des-reglages.html`
+
 ---
 
 ## 24. Faut-il une licence pour se servir des données de l'INRAE ?
@@ -1806,3 +1889,219 @@ possible, et le dit là où ça ne l'est pas.
 **Changer de format ne renumérote rien.** Vos factures déjà émises gardent leur
 numéro. Les réécrire creuserait un trou dans la suite — exactement ce qu'on
 cherche à éviter.
+
+---
+
+## 28. Pourquoi la page que reçoit mon client n'a pas les couleurs de mon devis ?
+
+**Parce que vous l'avez décidé ainsi, le 4 septembre 2026** — *« non, garde les
+couleurs d'origine »*.
+
+### Ce qui vous avait été signalé
+
+Votre client reçoit deux choses, à une minute d'intervalle : **la page** qu'il
+ouvre depuis son SMS, puis **le PDF** qu'il télécharge depuis cette page.
+
+Le PDF suit le papier et la couleur d'accent que vous réglez dans « Devis &
+factures ». La page, non : ses couleurs sont fixées dans le code. Les deux ne se
+ressemblent donc pas tout à fait, et le fond que vous choisissez n'atteint pas
+cet écran-là.
+
+### Ce que vous avez répondu, et ce que ça veut dire
+
+On ne touche à rien. Les deux identités cohabitent, et c'est assumé.
+
+| | |
+|---|---|
+| votre **PDF** | suit l'allure que vous réglez |
+| la **page** de votre client | garde ses couleurs, quoi que vous régliez |
+
+### Ce qui n'a jamais été en cause
+
+**Votre charte de couleurs à vous ne part pas chez le client, et n'a jamais
+risqué de partir.** Si vous mettez Atlas en « Nuit », votre devis ne devient pas
+noir chez lui : l'application coupe délibérément la charte sur les deux pages
+que votre client reçoit. C'est vérifié, et ce n'est pas ce dont il s'agissait
+ici.
+
+### Si vous changez d'avis
+
+C'est une demi-journée, pas plus : la page passerait par le même endroit que le
+PDF. Mais tant que vous ne le demandez pas, **personne ne doit le faire « pour
+faire propre »** — c'est écrit dans le dépôt (`ARCHITECTURE.md` §248), pour
+qu'une session ne défasse pas votre choix en croyant bien faire.
+
+---
+
+## 29. Mon client peut-il modifier le devis ou la facture qu'il reçoit ?
+
+**Posée le 11 septembre 2026**, juste après le correctif du téléchargement :
+*« mais si on ouvre le PDF avec un logiciel, on ne peut pas le modifier ? »*
+
+### La réponse courte : non, pas avec un lecteur ordinaire
+
+Vos documents sortent **chiffrés**. Le lecteur les ouvre sans rien demander,
+mais ses outils d'écriture sont éteints — Acrobat affiche « SÉCURISÉ » en haut.
+
+| Ce que votre client peut faire | Ce qu'il ne peut plus |
+|---|---|
+| ouvrir, lire, faire défiler | **modifier un montant, un texte** |
+| imprimer, même en pleine définition | **annoter, surligner, écrire par-dessus** |
+| recopier une adresse, un numéro | **remplir un champ** |
+| | **retirer une page** |
+
+Il n'a **aucun mot de passe à taper** : c'est voulu. Un mot de passe d'ouverture
+coûterait un coup de fil par devis, et la moitié des chantiers.
+
+### Ce que ça ne fait pas, et je préfère l'écrire
+
+**Ce n'est pas un coffre-fort.** Le format PDF est public : un outil spécialisé
+réécrit n'importe quel fichier, quoi qu'on y mette. Aucun format au monde ne
+tient cette promesse-là, et vous la vendre serait mentir.
+
+Ce que ça garantit, c'est l'essentiel au quotidien : **personne ne change un
+montant d'un doigt, par mégarde ou par facilité.** Et la pièce qui fait foi
+reste celle qu'Atlas archive au moment de l'envoi — c'est elle qu'on ressort en
+cas de litige, pas le fichier qui traîne dans les téléchargements d'un client.
+
+### Sur quoi ça vaut
+
+Les trois documents, par un seul endroit du code : **le devis, la facture, et la
+feuille de chantier**. Un document oublié ne se verrait pas — on l'apprendrait
+chez le client.
+
+Vérifié le 11 septembre 2026 sur la version en ligne
+(`scripts/test-devis-non-modifiable.ts`, six contrôles) : le chiffrement est
+réel, pas une simple étiquette, et le contrôle le prouve sur le devis **et** sur
+la facture.
+
+---
+
+## 30. Combien de temps dois-je garder mes factures, et Atlas les garde-t-il ?
+
+*Question du 26 septembre 2026, en remontant sa TVA aux années précédentes.*
+
+### Ce que dit la loi (France)
+
+| Quoi | Combien de temps | Texte |
+|---|---|---|
+| Factures et pièces comptables, tickets d'achat compris | **10 ans** | Code de commerce, L123-22 |
+| Ce que le fisc peut vous demander de montrer | **6 ans** | Livre des procédures fiscales, L102 B |
+| Période pendant laquelle le fisc peut corriger votre TVA | **3 ans** : l'année en cours et les 3 précédentes | Livre des procédures fiscales, L169 et L176 |
+
+Ce sont les délais ordinaires. En cas de fraude ou d'activité non déclarée, ils
+s'allongent. La règle simple : **tout garder 10 ans**. Votre comptable confirme
+pour votre cas.
+
+### Ce que le code d'Atlas fait (vérifié le 26 septembre 2026)
+
+| | Verdict | Où |
+|---|---|---|
+| Une facture émise ne se supprime pas | tenu : aucun chemin du code n'efface une facture | `src/server/repositories/factures.ts` |
+| Une facture émise ne se modifie plus | tenu : ses lignes ne se retirent qu'en brouillon ; une erreur se corrige par un avoir | idem, `factureEncoreEnBrouillon` |
+| Le PDF de la facture reste celui envoyé | tenu : il est archivé à l'émission, jamais reconstruit, avec l'identité de l'entreprise figée ce jour là | idem |
+| Un achat supprimé (TVA déductible) | tenu : il est masqué, pas effacé, et sa photo reste | `src/server/repositories/achats-tva.ts` |
+| Effacer un client (RGPD) | tenu : ses factures et devis acceptés restent, et l'écran le dit | `src/server/retention.ts`, `donnees-client.ts` |
+| Rien ne s'efface tout seul avec le temps | tenu : les purges automatiques ne visent que l'audio des dictées, les photos de diagnostic et les fichiers orphelins | `src/server/retention.ts` |
+| Remonter aux années précédentes à l'écran | tenu : le calendrier de la TVA recule sans limite (sur iPhone, il ne s'ouvrait pas avant le correctif du 26 septembre) | `CalendrierPeriodes.tsx` |
+
+**Un point faible, corrigé le 26 septembre 2026 :** la petite croix d'un
+acompte (écran TVA) l'effaçait pour de bon, et la TVA d'un mois déjà déclaré
+baissait sans trace. Désormais la ligne reste, barrée et datée, aussi dans la
+TVA collectée du mois, et « Remettre » la rend (sa planche, la B). La
+correction attend la batterie pour arriver chez vous.
+
+### Là où ce n'est PAS tenu : l'endroit où vivent les données
+
+Le code garde tout. **Mais les données vivent aujourd'hui dans votre espace de
+travail GitHub, et il n'existe aucune sauvegarde automatique.** Un espace
+supprimé (par vous, ou par GitHub : par défaut, un espace arrêté et inutilisé
+pendant 30 jours est effacé) emporte toutes les factures avec lui.
+
+Donc, tant qu'Atlas n'est pas hébergé (Scaleway, décidé, voir
+`docs/lot-sauvegarde-cloture.md`) :
+
+1. **ne pas y mettre de vraies factures comme seule copie** ;
+2. si c'est déjà le cas : **Réglages, Télécharger mes données**, après chaque
+   série de factures, et ranger le fichier ailleurs (il contient les tables et
+   les fichiers joints, PDF et tickets compris) ;
+3. sur `github.com/settings/codespaces`, régler la durée de conservation des
+   espaces inutilisés au maximum (30 jours) et ouvrir l'espace au moins une
+   fois par mois.
+
+La sauvegarde automatique est le point 0 de `TODO.md` et figure dans
+`docs/A-FAIRE.md` : elle attend l'hébergement.
+
+## 31. Si je facture une entreprise ou une mairie, la TVA disparaît-elle de la facture ?
+
+*Question du 28 septembre 2026 : « si je facture une entreprise, il ne paie pas
+la TVA, donc elle ne doit pas apparaître sur la facture ; et vérifier pour les
+mairies ».*
+
+**Non.** Une entreprise **paie** la TVA que vous lui facturez, puis elle la
+récupère sur sa propre déclaration. C'est pour ça que, pour elle, seul le HT
+compte, et que l'on entend souvent « une entreprise ne paie pas la TVA ». Sur
+votre facture, la TVA figure bien, et vous la reversez.
+
+| Votre client | TVA sur la facture | Ce qui change |
+|---|---|---|
+| Un particulier | oui | rien |
+| Une entreprise | **oui, 20 %** | son numéro SIREN doit figurer sur la facture |
+| Une mairie | **oui, 20 %** | elle ne la récupère pas (l'État lui en rembourse une partie plus tard). La facture se dépose sur **Chorus Pro**, avec le SIRET de la mairie et le numéro d'engagement de la commande. Délai de paiement : 30 jours au plus |
+
+**Les deux seuls cas où la TVA disparaît de la facture :**
+
+| Le cas | Ce qui s'écrit à la place |
+|---|---|
+| Vous êtes en franchise (auto-entrepreneur sous le seuil) | « TVA non applicable, art. 293 B du CGI ». **Atlas le fait déjà** |
+| Vous êtes **sous-traitant** d'une autre entreprise du bâtiment, sur un chantier lié à un bâtiment ou un terrain | la facture est en HT, avec la mention « Autoliquidation ». C'est l'entreprise principale qui déclare la TVA (art. 283-2 nonies du CGI). **Atlas ne sait pas le faire** |
+
+Le taux de 10 % sur les travaux ne vaut que pour les logements : jamais pour
+une mairie.
+
+**Une société peut-elle facturer sans TVA, ou seulement un auto-entrepreneur ?**
+*Sa question du même jour, « faut être sûr à 100 % ».* Les deux cas ne
+concernent pas les mêmes :
+
+| Le cas | Qui | Les conditions |
+|---|---|---|
+| Franchise (293 B) | les petites entreprises sous le seuil, surtout les auto-entrepreneurs | sous le seuil de chiffre d'affaires |
+| Autoliquidation | **toute entreprise assujettie à la TVA, quelle que soit sa forme** : SARL, SAS, EURL, entreprise individuelle | vous êtes **sous-traitant**, votre donneur d'ordre est **assujetti**, et ce sont des **travaux liés à un bien immobilier** (construction, réparation, aménagement, entretien) |
+
+Deux conséquences :
+
+- un auto-entrepreneur **en franchise** n'autoliquide jamais : sa facture
+  porte seulement « TVA non applicable, article 293 B du CGI ». Dans
+  Atlas, l'interrupteur « Je suis son sous-traitant » ne doit donc pas
+  s'afficher pour un compte en franchise ;
+- si vous travaillez **directement** pour une entreprise ou une mairie (vous
+  n'êtes le sous-traitant de personne), la TVA est normale.
+
+**Comment ça a été vérifié, et ce qui ne l'a pas été.** Les sites officiels
+(impots.gouv.fr, BOFiP, Légifrance, service-public) sont bloqués depuis
+l'environnement de travail de l'assistant : la réponse repose sur leurs
+extraits via un moteur de recherche (fiche service-public F31983) et sur des
+cabinets comptables concordants. Règle de base : confiance très élevée.
+
+**Le seul point incertain, et c'est le vôtre : l'entretien régulier
+d'espaces verts** (tonte, taille) en sous-traitance. L'aménagement (création,
+plantations) est concerné ; pour l'entretien, une source l'exclut, les
+autres ne tranchent pas. Pour en être sûr :
+
+1. le demander à votre comptable, en citant l'article 283-2 nonies du CGI et
+   le BOFiP BOI-TVA-DECLA-10-10-20 ;
+2. s'il hésite, une **demande de rescrit** depuis votre espace professionnel
+   impots.gouv.fr : la réponse écrite engage l'administration.
+
+**À savoir aussi :** la facture électronique entre entreprises devient
+obligatoire à l'émission pour les petites entreprises le 1er septembre 2027.
+Depuis le 1er septembre 2026, toutes doivent déjà savoir en recevoir.
+
+**Ce qu'Atlas ne fait pas encore (vérifié le 28 septembre 2026) :** la fiche
+client ne distingue pas particulier, entreprise et mairie, et ne porte pas de
+SIRET (`src/server/db/schema.ts`, table `clients`) ; aucune mention
+d'autoliquidation ; pas d'envoi vers Chorus Pro. La maquette
+`appli/tva-entreprise-et-mairie.html` propose de quoi le faire, sur vos vrais
+écrans. **Votre décision du 2 octobre 2026** : un seul bouton sur la facture,
+« Sous-traitance, sans TVA », sans rien changer à la fiche client. En attendant, une mairie se facture dans Atlas à 20 %, et le PDF
+se dépose à la main sur chorus-pro.gouv.fr.

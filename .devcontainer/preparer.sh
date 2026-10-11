@@ -45,9 +45,49 @@ else
   echo "     pour réessayer plus tard : npm install -g @anthropic-ai/claude-code"
 fi
 
-echo "→ Insertion des données de démonstration…"
-# Le seed vide puis reconstruit : il lui faut un rôle qui traverse RLS.
-DATABASE_URL="$DATABASE_SUPER_URL" npx tsx src/server/db/seed.ts
+# ─────────────────────────────────────────────────────────────────────────────
+# **ON N'AMORCE QUE SUR UNE BASE VIERGE — sa question du 13 septembre 2026.**
+#
+# *« Ça va pas supprimer toutes mes données ? »*, devant la reconstruction du
+# conteneur que je venais de lui conseiller pour réparer son port. La réponse
+# était OUI, et c'est lui qui l'a vue — **pour la deuxième fois** : le 10 août,
+# devant « supprime ton espace », il répondait déjà *« ça va effacer tout ce
+# qu'il y a en mémoire »*.
+#
+# Ce fichier est le `postCreateCommand` : il tourne à chaque CRÉATION de
+# conteneur, donc à chaque reconstruction. Le seed, lui, VIDE la base
+# (`TRUNCATE … CASCADE`). Et la base **survit** à la reconstruction : elle vit
+# sur le volume nommé `atlas-pgdata` (`docker-compose.yml`). Ce script supposait
+# donc une base vierge devant une base habitée, et l'écrasait sans rien demander.
+#
+# **Le seed n'a pas changé, et ne doit pas changer** : vider puis reconstruire
+# est son contrat, et les suites en dépendent. Ce qui change, c'est QUI décide
+# de l'appeler.
+#
+# **Le doute ne vide pas.** Quand la question ne peut pas être posée (code 2),
+# on s'abstient : se tromper en n'amorçant pas coûte une commande, se tromper en
+# amorçant coûte ses chantiers.
+echo "→ Données de démonstration…"
+# **`set -e` tuerait le script sur le code de sortie de la sonde**, qui est
+# justement sa réponse : 1 et 2 ne sont pas des pannes, ce sont des verdicts.
+HABITEE=0
+node scripts/base-habitee.mjs || HABITEE=$?
+case "$HABITEE" in
+  0)
+    echo "   ⏭ La base porte déjà du travail — on n'y touche pas."
+    echo "     Pour repartir des données de démonstration : npm run db:seed"
+    ;;
+  1)
+    # Le seed vide puis reconstruit : il lui faut un rôle qui traverse RLS.
+    DATABASE_URL="$DATABASE_SUPER_URL" npx tsx src/server/db/seed.ts
+    ;;
+  *)
+    echo "   ⚠ Impossible de savoir si la base contient déjà quelque chose."
+    echo "     On n'amorce PAS : une base habitée qu'on vide ne se rend pas."
+    echo "     Si cet espace est neuf et que la connexion est refusée :"
+    echo "     npm run db:seed"
+    ;;
+esac
 
 cat <<'FIN'
 

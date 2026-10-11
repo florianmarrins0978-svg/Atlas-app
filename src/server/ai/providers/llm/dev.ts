@@ -1,4 +1,4 @@
-import type { FournisseurLLM, ResultatLLM, ResultatLLMAvecOutils, MessageConversation, DefinitionOutil } from "./interface";
+import { unAppel, type FournisseurLLM, type ResultatLLM, type ResultatLLMAvecOutils, type MessageConversation, type DefinitionOutil } from "./interface";
 import { erreurIA } from "../../errors";
 import { NOM_OUTIL_PROPOSITION } from "../../propositions";
 import { lireLitteralement } from "../../lecture-litterale";
@@ -29,7 +29,7 @@ export const fournisseurLLMDev: FournisseurLLM = {
   // fournisseur répond à côté, le défaut atteindrait la production.
   async genererTexte(_systeme: string, message: string, _contexte?: string): Promise<ResultatLLM> {
     if (!message || message.trim().length === 0) {
-      return { succes: false, erreur: erreurIA("reponse_invalide", "Message vide — rien à traiter.") };
+      return { succes: false, erreur: erreurIA("reponse_invalide", "Message vide, rien à traiter.") };
     }
 
     return { succes: true, texte: JSON.stringify(lireLitteralement(message)) };
@@ -58,15 +58,20 @@ export const fournisseurLLMDev: FournisseurLLM = {
     // supprimer un client ? » tombait dans la branche des suppressions plus
     // bas : le fournisseur allait lire les prestations du chantier et proposait
     // d'en retirer une. Il demandait un geste, on lui modifiait ses données.
+    //
+    // **Et une question sur la façon dont Atlas se COMPORTE en est une aussi**
+    // (sa capture du 28 septembre 2026) : « combien de temps tu conserve les
+    // données », « qui peut voir mes données ». Elles ne commencent pas par
+    // « comment », et tombaient hors du mode d'emploi.
     const estQuestionModeEmploi =
-      /\bcomment\b|\bo[uù] (est|se trouve|je (trouve|vois|clique))\b|[aà] quoi sert/i.test(texte) &&
+      /\bcomment\b|\bo[uù] (est|sont|se trouve|je (trouve|vois|clique|range))\b|[aà] quoi sert|combien de temps|\bqui (peut |peuvent )?voi|que deviennent|que (veut|veulent) dire|signifie/i.test(texte) &&
       outils.some((o) => o.nom === "RechercherModeEmploi");
     if (estQuestionModeEmploi) {
       if (dernier && dernier.role === "outil" && dernier.outil === "RechercherModeEmploi") {
         return { succes: true, type: "texte", texte: expliquerModeEmploi(dernier.resultat) };
       }
       if (!dernier || dernier.role !== "outil") {
-        return { succes: true, type: "appel_outil", outil: "RechercherModeEmploi", parametres: { question: texte } };
+        return unAppel("RechercherModeEmploi", { question: texte });
       }
     }
 
@@ -96,12 +101,7 @@ export const fournisseurLLMDev: FournisseurLLM = {
         return propositionCopieDeLigne(dernier.resultat);
       }
       if (!dernier || dernier.role !== "outil") {
-        return {
-          succes: true,
-          type: "appel_outil",
-          outil: "RechercherLignesDevis",
-          parametres: { motCle: motCleDeLaLigne(texte), client: clientDeLaLigne(texte) },
-        };
+        return unAppel("RechercherLignesDevis", { motCle: motCleDeLaLigne(texte), client: clientDeLaLigne(texte) });
       }
     }
 
@@ -132,24 +132,14 @@ export const fournisseurLLMDev: FournisseurLLM = {
             "contenu" in m && m.role === "user" && REGEX_TRIGGER_WORKFLOW.test(m.contenu)
         );
       if (demandeAnterieure && outils.some((o) => o.nom === "ExecuterWorkflowDemande")) {
-        return {
-          succes: true,
-          type: "appel_outil",
-          outil: "ExecuterWorkflowDemande",
-          parametres: { demande: demandeAnterieure.contenu.replace(REGEX_TRIGGER_WORKFLOW, "") },
-        };
+        return unAppel("ExecuterWorkflowDemande", { demande: demandeAnterieure.contenu.replace(REGEX_TRIGGER_WORKFLOW, "") });
       }
       return { succes: true, type: "texte", texte: "Aucun workflow n'a encore été exécuté dans cette conversation." };
     }
 
     if (estDemandeWorkflow && outils.some((o) => o.nom === "ExecuterWorkflowDemande")) {
       if (!dernier || dernier.role !== "outil") {
-        return {
-          succes: true,
-          type: "appel_outil",
-          outil: "ExecuterWorkflowDemande",
-          parametres: { demande: texte.replace(REGEX_TRIGGER_WORKFLOW, "") },
-        };
+        return unAppel("ExecuterWorkflowDemande", { demande: texte.replace(REGEX_TRIGGER_WORKFLOW, "") });
       }
     }
 
@@ -159,7 +149,7 @@ export const fournisseurLLMDev: FournisseurLLM = {
       outils.some((o) => o.nom === "RechercherDocuments");
     if (estQuestionDocumentaire) {
       if (!dernier || dernier.role !== "outil") {
-        return { succes: true, type: "appel_outil", outil: "RechercherDocuments", parametres: { motCle: extraireMotCleDocument(texte) } };
+        return unAppel("RechercherDocuments", { motCle: extraireMotCleDocument(texte) });
       }
       if (dernier.outil === "RechercherDocuments") {
         return { succes: true, type: "texte", texte: expliquerRechercheDocuments(dernier.resultat) };
@@ -172,7 +162,7 @@ export const fournisseurLLMDev: FournisseurLLM = {
       /conseill|propos|estimation|estimer|combien|pourquoi|calcul/.test(texteMinuscule);
     if (estQuestionChiffrage && outils.some((o) => o.nom === "CalculerChiffrage")) {
       if (!dernier || dernier.role !== "outil") {
-        return { succes: true, type: "appel_outil", outil: "CalculerChiffrage", parametres: {} };
+        return unAppel("CalculerChiffrage", {});
       }
       if (dernier.outil === "CalculerChiffrage") {
         return { succes: true, type: "texte", texte: expliquerChiffrage(dernier.resultat) };
@@ -222,7 +212,7 @@ export const fournisseurLLMDev: FournisseurLLM = {
       if (resultat?.erreur && /RechercherChantier/.test(resultat.erreur) && !chantierDejaCherche) {
         const cherche = nomCite(texte);
         if (cherche) {
-          return { succes: true, type: "appel_outil", outil: "RechercherChantier", parametres: { nom: cherche } };
+          return unAppel("RechercherChantier", { nom: cherche });
         }
         return { succes: true, type: "texte", texte: "De quel client parlez-vous ?" };
       }
@@ -234,7 +224,7 @@ export const fournisseurLLMDev: FournisseurLLM = {
           .reverse()
           .find((m): m is Extract<MessageConversation, { role: "outil" }> => m.role === "outil" && m.outil !== "RechercherChantier");
         if (cible && aRappeler) {
-          return { succes: true, type: "appel_outil", outil: aRappeler.outil, parametres: { chantierId: cible.id } };
+          return unAppel(aRappeler.outil, { chantierId: cible.id });
         }
         if (!cible) {
           return { succes: true, type: "texte", texte: "Je n'ai trouvé aucun chantier à ce nom." };
@@ -262,11 +252,7 @@ export const fournisseurLLMDev: FournisseurLLM = {
       }
       const dureeMatch = texte.match(/(\d+)\s*jours?/i);
       if (dureeMatch && /dur[eé]e/.test(texteMinuscule)) {
-        return {
-          succes: true,
-          type: "appel_outil",
-          outil: NOM_OUTIL_PROPOSITION,
-          parametres: {
+        return unAppel(NOM_OUTIL_PROPOSITION, {
             texteIntroduction: "Voici la modification proposée :",
             propositions: [
               {
@@ -275,16 +261,11 @@ export const fournisseurLLMDev: FournisseurLLM = {
                 donnees: { nouvelleDuree: dureeMatch[0] },
               },
             ],
-          },
-        };
+          });
       }
       const equipeMatch = texte.match(/(\d+)\s*(?:hommes?|personnes?|ouvriers?)/i);
       if (equipeMatch && /[eé]quipe/.test(texteMinuscule)) {
-        return {
-          succes: true,
-          type: "appel_outil",
-          outil: NOM_OUTIL_PROPOSITION,
-          parametres: {
+        return unAppel(NOM_OUTIL_PROPOSITION, {
             texteIntroduction: "Voici la modification proposée :",
             propositions: [
               {
@@ -293,16 +274,15 @@ export const fournisseurLLMDev: FournisseurLLM = {
                 donnees: { nouvelleEquipe: equipeMatch[0] },
               },
             ],
-          },
-        };
+          });
       }
 
       // --- Suppression/modification : nécessite d'abord une lecture ciblée ---
       if ((estSuppression || estModification) && /prestation/.test(texteMinuscule) && outils.some((o) => o.nom === "LirePrestations")) {
-        return { succes: true, type: "appel_outil", outil: "LirePrestations", parametres: {} };
+        return unAppel("LirePrestations", {});
       }
       if ((estSuppression || estModification) && /mat[eé]riel/.test(texteMinuscule) && outils.some((o) => o.nom === "LireMateriels")) {
-        return { succes: true, type: "appel_outil", outil: "LireMateriels", parametres: {} };
+        return unAppel("LireMateriels", {});
       }
     }
 
@@ -320,7 +300,7 @@ export const fournisseurLLMDev: FournisseurLLM = {
 
     for (const [motif, nomOutil] of correspondances) {
       if (motif.test(texteMinuscule) && outils.some((o) => o.nom === nomOutil) && !dejaAppeles.has(nomOutil)) {
-        return { succes: true, type: "appel_outil", outil: nomOutil, parametres: {} };
+        return unAppel(nomOutil, {});
       }
     }
 
@@ -337,11 +317,7 @@ function propositionAjout(
   libelleType: string,
   valeur: string
 ): ResultatLLMAvecOutils {
-  return {
-    succes: true,
-    type: "appel_outil",
-    outil: NOM_OUTIL_PROPOSITION,
-    parametres: {
+  return unAppel(NOM_OUTIL_PROPOSITION, {
       texteIntroduction: "Voici la modification proposée :",
       propositions: [
         {
@@ -350,8 +326,7 @@ function propositionAjout(
           donnees: { libelle: valeur },
         },
       ],
-    },
-  };
+    });
 }
 
 function propositionSuppressionOuModification(
@@ -367,11 +342,7 @@ function propositionSuppressionOuModification(
       ? "modifier_prestation"
       : "modifier_materiel";
   const verbe = suppression ? "Supprimer" : "Modifier";
-  return {
-    succes: true,
-    type: "appel_outil",
-    outil: NOM_OUTIL_PROPOSITION,
-    parametres: {
+  return unAppel(NOM_OUTIL_PROPOSITION, {
       texteIntroduction: "Voici la modification proposée :",
       propositions: [
         {
@@ -380,8 +351,7 @@ function propositionSuppressionOuModification(
           donnees: { id: cible.id, libelle: cible.libelle },
         },
       ],
-    },
-  };
+    });
 }
 
 // Flux dédié à la préparation d'un devis (lot IA-04). Le contenu analysé
@@ -397,8 +367,8 @@ function traiterDemandeDevis(
 
   if (!dernier || dernier.role !== "outil") {
     return veutTranscription
-      ? { succes: true, type: "appel_outil", outil: "LireTranscription", parametres: {} }
-      : { succes: true, type: "appel_outil", outil: "LireDevis", parametres: {} };
+      ? unAppel("LireTranscription", {})
+      : unAppel("LireDevis", {});
   }
 
   if (dernier.outil === "LireTranscription") {
@@ -412,7 +382,7 @@ function traiterDemandeDevis(
           "Fournissez un texte libre ou le contenu de l'e-mail à la place.",
       };
     }
-    return { succes: true, type: "appel_outil", outil: "LireDevis", parametres: {} };
+    return unAppel("LireDevis", {});
   }
 
   // Le texte réellement analysé est la transcription (si lue et disponible),
@@ -427,7 +397,7 @@ function traiterDemandeDevis(
   const texteSourceMinuscule = texteSource.toLowerCase();
 
   if (dernier.outil === "LireDevis") {
-    return { succes: true, type: "appel_outil", outil: "RechercherPrestation", parametres: { motCle: texteSourceMinuscule } };
+    return unAppel("RechercherPrestation", { motCle: texteSourceMinuscule });
   }
 
   // Après consultation du catalogue (lot IA-05) : le rapprochement tarifaire
@@ -437,12 +407,12 @@ function traiterDemandeDevis(
     const donnees = dernier.resultat as { correspondances?: { nomCanonique: string }[] };
     const motCleTarif = donnees.correspondances?.[0]?.nomCanonique ?? null;
     if (motCleTarif) {
-      return { succes: true, type: "appel_outil", outil: "RechercherTarifsCompatibles", parametres: { motCle: motCleTarif } };
+      return unAppel("RechercherTarifsCompatibles", { motCle: motCleTarif });
     }
     // Aucune correspondance catalogue : impossible de chercher un tarif par nom
     // canonique, mais un chiffrage calculé reste possible si durée/équipe sont
     // connues (lot IA-06) — jamais abandonné silencieusement.
-    return { succes: true, type: "appel_outil", outil: "CalculerChiffrage", parametres: {} };
+    return unAppel("CalculerChiffrage", {});
   }
 
   if (dernier.outil === "RechercherTarifsCompatibles") {
@@ -451,17 +421,19 @@ function traiterDemandeDevis(
       // Aucun tarif existant : le moteur de chiffrage (lot IA-06) peut proposer
       // un prix calculé, clairement distingué d'un tarif réel — jamais un choix
       // arbitraire, toujours expliqué.
-      return { succes: true, type: "appel_outil", outil: "CalculerChiffrage", parametres: {} };
+      return unAppel("CalculerChiffrage", {});
     }
-    return construirePropositionDevis(texteSource, resultatDevisPourFinal(historique), correspondances);
+    return enAppel(construirePropositionDevis(texteSource, resultatDevisPourFinal(historique), correspondances));
   }
 
   if (dernier.outil === "CalculerChiffrage") {
-    return construirePropositionDevis(
-      texteSource,
-      resultatDevisPourFinal(historique),
-      null,
-      dernier.resultat as ResultatChiffragePourDevis
+    return enAppel(
+      construirePropositionDevis(
+        texteSource,
+        resultatDevisPourFinal(historique),
+        null,
+        dernier.resultat as ResultatChiffragePourDevis
+      )
     );
   }
 
@@ -497,7 +469,7 @@ function expliquerChiffrage(resultat: unknown): string {
   const s = r.variantes.standard;
   const lignes = [
     `Prix conseillé (variante standard) : ${s.prixConseille} € HT, soit ${s.prixTtc} € TTC.`,
-    `Sous-total des coûts : ${s.sousTotal} € — marge appliquée : ${s.margePourcent} %.`,
+    `Sous-total des coûts : ${s.sousTotal} €, marge appliquée : ${s.margePourcent} %.`,
     ...s.explications.map((e) => `${e.libelle} : ${e.detail}`),
   ];
   if (r.historique) {
@@ -508,7 +480,7 @@ function expliquerChiffrage(resultat: unknown): string {
   if (s.avertissements.length > 0) {
     lignes.push(...s.avertissements);
   }
-  lignes.push("Ce prix est une proposition à vérifier — je ne l'applique jamais moi-même.");
+  lignes.push("Ce prix est une proposition à vérifier. Je ne l'applique jamais moi-même.");
   return lignes.join("\n");
 }
 
@@ -542,6 +514,11 @@ function expliquerRechercheDocuments(resultat: unknown): string {
 // Sur arrêt : jamais de proposition, uniquement une explication. Sur succès :
 // réutilise exactement le même mécanisme de proposition que le reste de
 // l'assistant (l'outil réservé) — aucune écriture directe, jamais.
+/** La proposition de l'orchestrateur, remise au service comme un appel du modèle. */
+function enAppel(p: { outil: string; parametres: unknown }): ResultatLLMAvecOutils {
+  return unAppel(p.outil, p.parametres);
+}
+
 function construireReponseWorkflow(resultat: unknown): ResultatLLMAvecOutils {
   const r = resultat as ResultatWorkflow;
   if (r.statut === "arrete") {
@@ -551,12 +528,7 @@ function construireReponseWorkflow(resultat: unknown): ResultatLLMAvecOutils {
       texte: `${r.raisonArret}\n${r.prochaineAction ?? ""}`.trim(),
     };
   }
-  return {
-    succes: true,
-    type: "appel_outil",
-    outil: NOM_OUTIL_PROPOSITION,
-    parametres: r.propositionFinale,
-  };
+  return unAppel(NOM_OUTIL_PROPOSITION, r.propositionFinale);
 }
 
 // Répond à une question de suivi sur un workflow déjà exécuté DANS LA MÊME
@@ -595,9 +567,9 @@ function expliquerSuiviWorkflow(resultat: unknown, texteMinuscule: string): stri
       return `Aucun tarif existant ne correspondait : le prix proposé a été calculé par le moteur de chiffrage. Détail : ${JSON.stringify(etapeChiffrage?.resultat)}.`;
     }
     if (sourcePrix === "tarifs_ambigus") {
-      return "Aucun prix n'a été proposé : plusieurs tarifs correspondent à cette demande, et l'assistant ne choisit jamais arbitrairement entre eux — une décision de votre part est nécessaire.";
+      return "Aucun prix n'a été proposé : plusieurs tarifs correspondent à cette demande, et l'assistant ne choisit jamais arbitrairement entre eux. Une décision de votre part est nécessaire.";
     }
-    return "Aucun prix n'a été proposé pour cette demande (aucun tarif trouvé, aucun calcul possible) — le prix reste à renseigner manuellement.";
+    return "Aucun prix n'a été proposé pour cette demande (aucun tarif trouvé, aucun calcul possible). Le prix reste à renseigner manuellement.";
   }
   return "Je n'ai pas d'information supplémentaire à ce sujet.";
 }
@@ -615,11 +587,16 @@ function expliquerSuiviWorkflow(resultat: unknown, texteMinuscule: string): stri
 function expliquerModeEmploi(resultat: unknown): string {
   const r = resultat as {
     trouve?: boolean;
+    visite?: string;
     fiches?: { ecran: string; ou: string; intitule: string; geste: string; reserve: string | null }[];
   };
   if (!r.trouve || !r.fiches || r.fiches.length === 0) {
-    return "Je ne connais pas ce geste — je préfère le dire plutôt que d'en inventer un.";
+    return "Je ne connais pas ce geste. Je préfère le dire plutôt que d'en inventer un.";
   }
+  // **La visite d'un écran : ses gestes, un par ligne** (29 septembre 2026).
+  // Le vrai modèle les résume ; ici, les intitulés suffisent à prouver que
+  // l'écran entier est arrivé jusqu'à la réponse.
+  if (r.visite) return [`**${r.visite}**`, ...r.fiches.map((f) => `${f.intitule}.`)].join("\n");
   // **UNE fiche, pas trois.** Vu à l'image le 25 août 2026 : la réponse à
   // « comment je supprime un client ? » enchaînait le retrait, la création d'un
   // chantier et la saisie du client — trois gestes pour une question. Sa règle
@@ -669,11 +646,7 @@ function propositionCopieDeLigne(resultat: unknown): ResultatLLMAvecOutils {
     return { succes: true, type: "texte", texte: `Plusieurs lignes correspondent. Laquelle ?\n${choix}` };
   }
   const ligne = r.lignes[0];
-  return {
-    succes: true,
-    type: "appel_outil",
-    outil: NOM_OUTIL_PROPOSITION,
-    parametres: {
+  return unAppel(NOM_OUTIL_PROPOSITION, {
       texteIntroduction: "Voici la ligne à reprendre :",
       propositions: [
         {
@@ -682,8 +655,7 @@ function propositionCopieDeLigne(resultat: unknown): ResultatLLMAvecOutils {
           donnees: { ligneOrigineId: ligne.ligneId },
         },
       ],
-    },
-  };
+    });
 }
 
 // --- Les gestes de l'agent (26 août 2026) ---------------------------------
@@ -746,12 +718,7 @@ function traiterGeste(
     // l'écran) attend `nom` ; `LireClients` attend `motCle`. Se tromper rend
     // `undefined`, et l'outil tombe au lieu de chercher.
     const cherche = nomCite(texte) ?? "";
-    return {
-      succes: true,
-      type: "appel_outil",
-      outil: lecture,
-      parametres: lecture === "RechercherChantier" ? { nom: cherche } : { motCle: cherche },
-    };
+    return unAppel(lecture, lecture === "RechercherChantier" ? { nom: cherche } : { motCle: cherche });
   }
 
   // 2. La cible est connue (ou le geste n'en demande pas) : on propose.
@@ -771,9 +738,9 @@ function traiterGeste(
       // **Sans prix, pas de tarif.** Un prix ne s'invente pas (`CLAUDE.md` §4) :
       // on demande plutôt que d'en poser un plausible.
       if (!prix || !intitule) {
-        return { succes: true, type: "texte", texte: "Il me faut l'intitulé ET le prix — je n'invente pas un prix." };
+        return { succes: true, type: "texte", texte: "Il me faut l'intitulé ET le prix, je n'invente pas un prix." };
       }
-      return proposer("creer_tarif", `Créer le tarif : ${intitule} — ${prix} €`, { intitule, prix });
+      return proposer("creer_tarif", `Créer le tarif : ${intitule}, ${prix} €`, { intitule, prix });
     }
     case "modifier_client": {
       const telephone = texte.match(/\b((?:0|\+33)[\d\s.]{8,})/)?.[1]?.replace(/[\s.]/g, "");
@@ -808,12 +775,7 @@ function traiterGeste(
 
 /** Une proposition, jamais une écriture — c'est tout le contrat de l'assistant. */
 function proposer(type: string, description: string, donnees: Record<string, unknown>): ResultatLLMAvecOutils {
-  return {
-    succes: true,
-    type: "appel_outil",
-    outil: NOM_OUTIL_PROPOSITION,
-    parametres: { texteIntroduction: "Voici ce que je propose :", propositions: [{ type, description, donnees }] },
-  };
+  return unAppel(NOM_OUTIL_PROPOSITION, { texteIntroduction: "Voici ce que je propose :", propositions: [{ type, description, donnees }] });
 }
 
 /** La première cible rendue par la lecture — nom et identifiant. */

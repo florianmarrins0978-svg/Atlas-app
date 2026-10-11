@@ -47,7 +47,7 @@ export type PanneauVersionLente = {
 
 const CHAQUE_ECRAN =
   "Chaque écran peut mettre jusqu'à une minute la première fois, et l'adresse de GitHub " +
-  "abandonne avant — c'est ce qui fait apparaître « une réponse inattendue du serveur ». ";
+  "abandonne avant, c'est ce qui fait apparaître « une réponse inattendue du serveur ». ";
 
 export function panneauVersionLente(etat: EtatVersionLente): PanneauVersionLente {
   // **Le cas de sa soirée du 20 août, et le seul qui appelle un geste.** Sans
@@ -59,7 +59,7 @@ export function panneauVersionLente(etat: EtatVersionLente): PanneauVersionLente
       phrase:
         CHAQUE_ECRAN +
         "Et personne ne construit la version rapide en ce moment : elle n'arrivera pas " +
-        "toute seule. Éteignez puis rouvrez votre espace de travail — il se reconstruit " +
+        "toute seule. Éteignez puis rouvrez votre espace de travail. Il se reconstruit " +
         "au démarrage.",
     };
   }

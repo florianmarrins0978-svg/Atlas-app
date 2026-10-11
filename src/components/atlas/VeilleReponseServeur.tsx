@@ -59,7 +59,7 @@ export default function VeilleReponseServeur() {
       // Au-dessus de la barre du bas, sous le panneau du mode développement :
       // quand les deux s'affichent, celui-ci doit rester lisible sans recouvrir
       // ce que le patron pourrait vouloir nous montrer.
-      className="fixed inset-x-0 bottom-0 z-[60] mx-auto max-w-md px-4 pb-24 pt-3"
+      className="atlas-colonne-fixe bottom-0 z-[60] px-4 pb-24 pt-3"
     >
       <div
         className="rounded-[4px] px-4 py-4"
@@ -76,8 +76,8 @@ export default function VeilleReponseServeur() {
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="rounded-full px-4 py-2.5 text-[14px] font-medium text-white"
-            style={{ backgroundColor: colors.rust, fontFamily: font.display }}
+            className="atlas-plein rounded-full px-4 py-2.5 text-[14px] font-medium text-white"
+            style={{ backgroundColor: colors.plein, fontFamily: font.display }}
           >
             Recharger
           </button>

@@ -45,10 +45,19 @@ async function essai(nom: string, fn: () => Promise<void> | void) {
   }
 }
 
-/** La connexion du RÔLE APPLICATIF — celle qui sert en production. */
+/**
+ * La connexion du RÔLE APPLICATIF — celle qui sert en production.
+ *
+ * `DATABASE_URL`, comme toute suite base : c'est elle que `npm test` reçoit,
+ * sous `atlas_app` (`CLAUDE.md` §5, `_etapes-batterie.ts`). Une première
+ * version lisait `DATABASE_APP_URL`, que personne ne pose : dans un atelier
+ * autre que le premier, le décor se posait sur `atlas_test_a4` et la suite
+ * l'interrogeait sur `atlas_test` — cinq rouges sur des droits justes, et
+ * invisibles en CI, qui n'a qu'un atelier (20 septembre 2026).
+ */
 const appli = new Pool({
   connectionString:
-    process.env.DATABASE_APP_URL ?? "postgresql://atlas_app:atlas_app_ci_pw@localhost:5432/atlas_test",
+    process.env.DATABASE_URL ?? "postgresql://atlas_app:atlas_app_ci_pw@localhost:5432/atlas_test",
 });
 /** Le rôle propriétaire, pour poser le décor. */
 const proprio = new Pool({

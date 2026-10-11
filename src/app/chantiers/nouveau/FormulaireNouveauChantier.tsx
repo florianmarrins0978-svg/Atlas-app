@@ -1,22 +1,44 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useImperativeHandle, useRef, useState, type Ref } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { colors, font, libelleCaps, smallCaps } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, smallCaps, surPlein } from "@/lib/design-tokens";
 import ChoixCanal from "@/components/atlas/ChoixCanal";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import ChampAdresse from "@/components/atlas/ChampAdresse";
+import LigneRetirable from "@/components/atlas/LigneRetirable";
+import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
+import { useRetraits } from "@/components/atlas/useRetraits";
+import { supprimerNoteVocaleAction } from "../[id]/note-vocale/actions";
 import DicterCoordonnees from "./DicterCoordonnees";
-import type { CoordonneesDictees } from "@/lib/coordonnees-dictees";
-import { creerChantierAction } from "./actions";
+import { champsARemplir, type CoordonneesDictees } from "@/lib/coordonnees-dictees";
+import {
+  reprendreLesPhotosAction,
+  chantierDuClientAFacturerAction,
+  creerFactureSansDevisAction,
+  creerChantierAction,
+  reconnaitreLeClientAction,
+} from "./actions";
+import type { ClientReconnu } from "@/server/repositories/clients";
 import { reprendreChantierAction } from "../[id]/coordonnees/actions";
+import { terminerChantierAction } from "../[id]/facture/actions";
+import { oublierCetEcran } from "@/components/atlas/journal-navigateur";
+import {
+  libelleRetourDesCoordonnees,
+  retourDesCoordonnees,
+  type Provenance,
+} from "@/lib/retour-du-devis";
 import ChoixCivilite from "@/components/atlas/ChoixCivilite";
-import Pellicule from "../[id]/Pellicule";
+import Pellicule, { type VignettePhoto } from "../[id]/Pellicule";
 import AnneauNoteVocale from "../[id]/AnneauNoteVocale";
 import DevisDepuisDictee from "../[id]/DevisDepuisDictee";
-import type { Civilite } from "@/lib/civilite";
-import { espacerNumero, numeroEnregistre } from "@/lib/numero-telephone";
+import type { CiviliteClient } from "@/lib/civilite";
+import { espacerNumero, numeroEnregistre, telephoneLu } from "@/lib/numero-telephone";
+import { siretLu } from "@/lib/siren";
+import { DEBUT_NUMERO_TVA, numeroTvaLu, numeroTvaVide } from "@/lib/autoliquidation";
+import { saisieAEnregistrer } from "@/lib/saisie-fiche-client";
+import AvisNumeroTva from "@/components/atlas/AvisNumeroTva";
 
 // Intégration réelle : la création passe désormais par une Server Action
 // (creerChantierAction), qui persiste le chantier (et le client s'il est
@@ -42,11 +64,16 @@ import { espacerNumero, numeroEnregistre } from "@/lib/numero-telephone";
  * Où l'on va en sortant de cet écran — et ce n'est plus un « choix » à faire
  * avant d'agir : depuis le 18 août 2026, chaque bouton porte sa destination.
  *
- * `fiche` mène à la fiche du chantier, là où l'on dicte. `devis` mène au devis
- * entier, à remplir soi-même. Les deux passent par la MÊME création : voir
- * `creerPuisAller`.
+ * `devis` mène au devis entier, à remplir soi-même. `facture` mène droit à la
+ * facture, sans devis — sa demande du 10 septembre 2026. Toutes passent par la
+ * MÊME création : voir `creerPuisAller`.
+ *
+ * **`fiche` n'existe plus — 17 septembre 2026.** Elle ne servait qu'au bouton
+ * « Enregistrer » d'une fiche rouverte, et il l'a refusé : *« normalement il y
+ * a la note vocale et en dessous il propose d'écrire le devis à la main »*.
+ * Une fiche rouverte va donc au devis, comme une fiche neuve.
  */
-type Destination = "fiche" | "devis";
+type Destination = "devis" | "facture";
 
 /**
  * Un chantier DÉJÀ LÀ, que cet écran rouvre au lieu d'en créer un.
@@ -63,8 +90,49 @@ type Destination = "fiche" | "devis";
  */
 export type ChantierRepris = {
   id: string;
+  /** D'où il est entré — le devis le renvoie chez lui (`retour-du-devis.ts`). */
+  provenance: Provenance;
+  /**
+   * Ce que le chantier porte DÉJÀ — 31 août 2026.
+   *
+   * **Sans elles, l'écran mentirait.** Une pellicule vide sur un chantier
+   * photographié, un anneau muet sur une dictée existante : il croirait avoir
+   * perdu ce qu'il avait posé, et recommencerait.
+   */
+  photos: VignettePhoto[];
+  /**
+   * Une dictée est DÉJÀ enregistrée sur ce chantier — et c'est tout ce que cet
+   * écran a besoin d'en savoir.
+   *
+   * **Sa remarque du 5 septembre 2026, capture à l'appui :** *« je suis arrivé
+   * sur la page de la fiche client, j'ai dicté mon chantier […] j'ai fait
+   * retour […] ce n'est pas la même que lorsque j'ai cliqué sur nouveau
+   * chantier. Tu verras par toi-même que la note vocale a changé. »*
+   *
+   * Il avait raison, et la mesure le dit : à la création l'objet est le micro
+   * vert (`.atlas-dictee`) ; au retour du devis, le même écran rendait
+   * l'anneau creux du LECTEUR (`.atlas-lecteur`), qui n'offre qu'un geste —
+   * « Poussez l'anneau vers le haut », c'est-à-dire retirer. Un troisième
+   * visage existait même : l'audio purgé après transcription, l'anneau
+   * disparaissait entièrement de la fiche. Trois écrans pour une seule fiche
+   * client.
+   *
+   * **La fiche client ne porte donc plus qu'un objet, celui de la DICTÉE** —
+   * c'est ce qu'elle sert à faire, et c'est l'objet qu'il a laissé deux
+   * minutes plus tôt en envoyant sa note. Écouter et retirer vivent sur
+   * l'écran **Note vocale** (`/chantiers/[id]/note-vocale`), qu'ouvrent la
+   * Transcription et le brouillon des Informations.
+   *
+   * **Ce point a été revérifié le 5 septembre au soir**, la fiche du CHANTIER
+   * ayant été retirée la veille (§254) : le second rendu d'`AnneauNoteVocale`
+   * n'a plus d'écran, et ce sont `NoteVocaleClient` et lui seul qui portent
+   * désormais la lecture et le retrait.
+   *
+   * Ce booléen ne sert plus qu'à taire l'invite : voir `preparationEnCours`.
+   */
+  aUneNote: boolean;
   nomClient: string;
-  civilite: Civilite | null;
+  civilite: CiviliteClient | null;
   telephone: string;
   email: string;
   canal: "sms" | "email" | null;
@@ -74,39 +142,203 @@ export type ChantierRepris = {
   adresseClient: string;
 };
 
+/**
+ * D'OÙ L'ON REPART QUAND ON VIENT DE LA FICHE D'UN CLIENT — 8 septembre 2026.
+ *
+ * *« Il faut la E car si c'est un client déjà enregistré en tant que client on
+ * ne va pas recréer une fiche client ! »*
+ *
+ * **Ce n'est PAS une reprise, et les deux ne se mélangent pas.** Une reprise
+ * rouvre un chantier qui EXISTE, et l'écran y enregistre. Ici le chantier
+ * n'existe pas encore : seul le client est connu. Les confondre ferait
+ * enregistrer sur un chantier qui n'a jamais été créé.
+ */
+export type ClientDeDepart = {
+  clientId: string;
+  nomClient: string;
+  civilite: CiviliteClient | null;
+  telephone: string;
+  email: string;
+  canal: "sms" | "email" | null;
+  adresseClient: string;
+  /** Ce qu'on avait photographié chez lui, sur ses AUTRES chantiers. */
+  anciennesPhotos: { id: string; storageKey: string; chantierNom: string }[];
+};
+
+/**
+ * Ce que la feuille de l'accueil peut demander au formulaire : se refermer.
+ *
+ * **La feuille ne referme plus elle-même — 22 septembre 2026.** Le voile et
+ * Échap vivent dans `EcranChantiers`, la saisie vit ici : refermer depuis
+ * là-bas jetait ce qu'il avait tapé, pendant que la flèche, elle,
+ * l'enregistrait. Une seule sortie, qui sait ce qu'il y a à garder.
+ */
+export type FermetureDeLaFeuille = { fermer: () => void };
+
 export default function FormulaireNouveauChantier({
   enFeuille = false,
   onFermer,
+  fermeture,
   reprise,
+  depuisClient,
+  pour = "devis",
 }: {
   enFeuille?: boolean;
   onFermer?: () => void;
+  /** En feuille : la porte par laquelle le voile et Échap demandent à refermer. */
+  fermeture?: Ref<FermetureDeLaFeuille>;
   /** Présent : l'écran ENREGISTRE sur ce chantier au lieu d'en créer un. */
   reprise?: ChantierRepris;
+  /** Présent : le client est connu d'avance, ses cases sont déjà posées. */
+  depuisClient?: ClientDeDepart;
+  /**
+   * CE QU'ON VA FAIRE EN SORTANT — sa demande du 10 septembre 2026 :
+   * *« il faut que l'on puisse facturer sans avoir besoin de passer par la case
+   * devis »*.
+   *
+   * **Pourquoi le même écran, et pas un second.** C'est la fiche client : le
+   * nom, la civilité, le numéro, l'e-mail, l'adresse, et surtout la
+   * reconnaissance du client pendant qu'il tape. Un jumeau « pour la facture »
+   * aurait recopié tout cela, et les deux auraient divergé au premier
+   * ajustement — c'est exactement ce que `CLAUDE.md` §3 refuse, et c'est déjà
+   * l'argument qui a fait garder UN seul écran pour la création et la reprise.
+   *
+   * **Ce que `facture` retire, et il ne retire que cela :** la note vocale, les
+   * photos et la dictée des coordonnées. Sa planche l'écrit — *« on ne dicte
+   * pas une facture qu'on tape »* — et c'est vrai au-delà du geste : ces trois
+   * pièces existent pour préparer un DEVIS (elles nourrissent le chiffrage), et
+   * il n'y a pas de devis ici.
+   */
+  pour?: "devis" | "facture";
 } = {}) {
   const router = useRouter();
-  const [nomClient, setNomClient] = useState(reprise?.nomClient ?? "");
-  const [civilite, setCivilite] = useState<Civilite | null>(reprise?.civilite ?? null);
-  const [telephone, setTelephone] = useState(reprise?.telephone ?? "");
-  const [email, setEmail] = useState(reprise?.email ?? "");
-  const [canalChoisi, setCanalChoisi] = useState<"sms" | "email" | null>(reprise?.canal ?? null);
+  // **La reprise l'emporte sur le client de départ**, et les deux n'arrivent
+  // jamais ensemble : on rouvre un chantier, ou on en ouvre un pour quelqu'un.
+  const depart = reprise ?? depuisClient;
+  /**
+   * On prépare un devis — le cas ordinaire, et celui qui porte la dictée.
+   *
+   * **Une seule constante plutôt qu'un `pour === "devis"` répété six fois** :
+   * le jour où un troisième cas apparaît, c'est ici qu'il se lit, et non dans
+   * six conditions dont on aurait corrigé cinq.
+   */
+  const pourLeDevis = pour === "devis";
+  const [nomClient, setNomClient] = useState(depart?.nomClient ?? "");
+  const [civilite, setCivilite] = useState<CiviliteClient | null>(depart?.civilite ?? null);
+  const [telephone, setTelephone] = useState(depart?.telephone ?? "");
+  const [email, setEmail] = useState(depart?.email ?? "");
+  // Une entreprise cliente : son SIRET et son n° TVA, comme sur sa fiche
+  // (sa demande du 4 octobre 2026, « faut ajouter le siret aussi »).
+  const [siret, setSiret] = useState("");
+  const [numeroTva, setNumeroTva] = useState(DEBUT_NUMERO_TVA);
+  const [canalChoisi, setCanalChoisi] = useState<"sms" | "email" | null>(depart?.canal ?? null);
   const [adresseChantier, setAdresseChantier] = useState(reprise?.adresseChantier ?? "");
-  const [adresseClient, setAdresseClient] = useState(reprise?.adresseClient ?? "");
+  // **L'adresse du CLIENT sert d'adresse de chantier par défaut quand on vient
+  // de sa fiche** — c'est là qu'on retourne neuf fois sur dix. Elle reste
+  // modifiable : rien n'est enregistré tant qu'il n'a pas validé.
+  const [adresseClient, setAdresseClient] = useState(depart?.adresseClient ?? "");
   // Déjà dépliée quand elle porte quelque chose : la replier cacherait une
   // adresse qu'il a saisie, et il la croirait perdue.
   const [adresseClientVisible, setAdresseClientVisible] = useState(
-    (reprise?.adresseClient ?? "").length > 0
+    (depart?.adresseClient ?? "").length > 0
   );
+  /**
+   * Les photos de la dernière fois qu'il a COCHÉES — sa règle du 8 septembre.
+   *
+   * *« Si ce n'est pas le premier devis les anciennes photos peuvent apparaître
+   * à l'écran mais sans s'inscrire de nouveau, juste pour voir ce qu'on avait
+   * fait la dernière fois. […] Si il valide sans les avoir resélectionnées elles
+   * ne doivent pas apparaître dans la fiche d'intervention pour le salarié.
+   * Seulement si l'utilisateur les coche. »*
+   *
+   * L'ensemble vide est donc l'état NORMAL, pas un oubli.
+   */
+  const [photosReprises, setPhotosReprises] = useState<ReadonlySet<string>>(new Set());
+  /**
+   * ═════════════════════════════════════════════════════════════════════════
+   * LE CLIENT QU'ATLAS RECONNAÎT PENDANT QU'IL TAPE — proposition C, tranchée
+   * par le patron le 9 septembre 2026.
+   *
+   * *« J'écris Martins, il reconnaît et entre les infos de lui-même. »*
+   *
+   * **Ce n'est PAS la liste de correspondances qu'il a écartée** le 17 août
+   * (*« non justement, il ne faut pas »*) : rien ne lui est proposé, rien ne
+   * lui est demandé. La fiche se remplit, et un bouton dit non.
+   *
+   * `null` bien plus souvent qu'un homme : quatre Martins sans numéro ne
+   * reconnaissent personne, et c'est la règle qui en décide
+   * (`clientAPreremplir`), jamais cet écran.
+   */
+  const [reconnu, setReconnu] = useState<ClientReconnu | null>(null);
+  /**
+   * CEUX QU'ATLAS PROPOSE, quand il n'ose pas poser — sa demande du
+   * 20 septembre 2026, capture de sa fiche client à l'appui : *« je tape le
+   * prénom d'un client qui existe, il ne me le reconnaît pas ; il doit me le
+   * proposer et remplir le champ direct »*.
+   *
+   * **Jamais en même temps que `reconnu`** : le serveur rend l'un OU l'autre
+   * (`reconnaitreLeClient`). Une fiche qui se remplit toute seule sous une
+   * liste qui redemande de choisir, ce serait deux réponses à une question.
+   */
+  const [propositions, setPropositions] = useState<ClientReconnu[]>([]);
+  /**
+   * Le nom qu'il vient de CHOISIR dans la liste — et qui ne se recherche plus.
+   *
+   * Sans cette mémoire, poser son nom entier relancerait la recherche : sur
+   * quatre Martins elle ne saurait pas lequel, le bandeau s'éteindrait et la
+   * liste se rouvrirait sous son doigt, sur l'homme qu'il vient de désigner.
+   * Une frappe de plus la rouvre, et c'est voulu : il corrige, donc il cherche.
+   */
+  const choisiPour = useRef<string | null>(null);
+  /**
+   * Il a dit « ce n'est pas lui », et **rien ne rouvre la question**.
+   *
+   * Sans ce verrou, la reconnaissance repartirait à la frappe suivante et lui
+   * répondrait « si, c'est lui » — puis l'enregistrement rangerait le chantier
+   * chez celui qu'il venait d'écarter. Le refus voyage donc jusqu'au serveur
+   * (`refuseLeRapprochement`).
+   */
+  const [refuse, setRefuse] = useState(false);
+  /**
+   * Ce qu'ATLAS a posé, par opposition à ce que LUI a tapé.
+   *
+   * « Ce n'est pas lui » ne vide que ces cases-là. Tout effacer lui ferait
+   * perdre le numéro qu'il venait de taper à la main — et il ne saurait pas
+   * pourquoi.
+   *
+   * **Une référence, pas un état** : rien à l'écran n'en dépend, et en faire un
+   * état l'aurait mis dans les dépendances de la reconnaissance — qui se serait
+   * relancée juste après s'être servie.
+   */
+  const posesParAtlas = useRef<Set<string>>(new Set());
+
   // **Quel bouton travaille**, et pas seulement « ça travaille ». Les deux
   // capsules sont identiques ; sans cela, « Création… » s'afficherait sur celle
   // qu'il n'a pas touchée, et il croirait s'être trompé de geste.
-  const [enCoursVers, setEnCoursVers] = useState<Destination | null>(null);
+  // `retour` : la flèche enregistre ce qui est saisi avant de sortir
+  // (`sortirEnEnregistrant`), et aucun second geste ne doit partir pendant ce temps.
+  const [enCoursVers, setEnCoursVers] = useState<Destination | "retour" | null>(null);
   const enCours = enCoursVers !== null;
   const [erreur, setErreur] = useState<string | null>(null);
 
+  // **Ce qui est tapé doit être juste — sa capture du 7 octobre 2026 :** « 85 45 »
+  // et « Fr33 » commençaient un devis. Rien n'est obligatoire, mais un numéro
+  // donné doit joindre quelqu'un. La phrase se lit sous la case, et chaque
+  // sortie (les deux boutons, la flèche, le micro) refuse la même : une seule
+  // lecture, celle du serveur (`telephoneLu`, `siretLu`, `numeroTvaLu`).
+  const avecSesNumeros = civilite === "entreprise" && !reprise;
+  const saisieFausse =
+    telephoneLu(telephone) === null
+      ? "Le téléphone a 10 chiffres."
+      : avecSesNumeros && siretLu(siret) === null
+        ? "Le SIRET a 14 chiffres."
+        : avecSesNumeros && !numeroTvaVide(numeroTva) && numeroTvaLu(numeroTva) === null
+          ? "Le n° TVA : FR suivi de 11 chiffres."
+          : null;
+
   // Plus rien n'est obligatoire : le chantier prend le nom de ce qui a été
   // donné, et la date s'il n'y a rien (`src/lib/nom-chantier.ts`).
-  const peutCreer = !enCours;
+  const peutCreer = !enCours && saisieFausse === null;
 
   // Le canal se devine dans la plupart des cas : une seule coordonnée renseignée
   // ne laisse pas d'ambiguïté. Le choix explicite du patron prime toujours —
@@ -116,17 +348,127 @@ export default function FormulaireNouveauChantier({
   const canal = canalChoisi ?? (aTelephone ? "sms" : aEmail ? "email" : null);
 
   /**
-   * Ce que la dictée a compris entre dans les champs VIDES seulement.
+   * CE QU'ATLAS POSE SUR LA FICHE D'UN CLIENT RETROUVÉ — les cases VIDES.
    *
-   * Écraser une saisie parce qu'on a dicté ensuite serait la pire façon
-   * d'aider : le patron aurait tapé le numéro, dicté l'adresse, et perdu le
-   * numéro sans comprendre pourquoi.
+   * **Une seule écriture pour deux chemins** : celui qu'Atlas reconnaît tout
+   * seul, et celui que le patron touche dans la liste des propositions. Deux
+   * copies auraient divergé au premier champ ajouté — l'une aurait repris
+   * l'e-mail, l'autre l'aurait oublié (`CLAUDE.md` §3).
+   *
+   * **La décision n'est pas ici** : `champsARemplir` la porte, éprouvable sans
+   * navigateur (`CLAUDE.md` §3). Cet écran ne fait que poser ce qu'elle rend —
+   * et un champ absent du résultat est un champ auquel on ne touche pas.
    */
+  const poserCeQuAtlasSait = useCallback(
+    (lui: ClientReconnu) => {
+      // La même règle que la dictée, et c'est voulu : on ne remplit QUE ce qui
+      // est vide. Une seconde façon de « compléter sans écraser » finirait par
+      // diverger (`CLAUDE.md` §3).
+      const aRemplir = champsARemplir(
+        { nom: nomClient, civilite, telephone, email, adresse: adresseChantier },
+        {
+          nom: null,
+          civilite: lui.civilite,
+          telephone: lui.telephone,
+          email: lui.email,
+          adresse: lui.adresse,
+        }
+      );
+      const poses = posesParAtlas.current;
+      if (aRemplir.civilite !== undefined) { setCivilite(aRemplir.civilite); poses.add("civilite"); }
+      // **Le numéro s'écrit comme quand il le tape**, par la même fonction.
+      // Vu à la capture, pas à la mesure : la base le garde collé
+      // (`0679984514`), et la case le rendait tel quel — un numéro qu'on ne
+      // relit pas d'un coup d'œil, à côté de ceux qu'il a saisis lui-même.
+      if (aRemplir.telephone !== undefined) { setTelephone(espacerNumero(aRemplir.telephone).valeur); poses.add("telephone"); }
+      if (aRemplir.email !== undefined) { setEmail(aRemplir.email); poses.add("email"); }
+      if (aRemplir.adresse !== undefined) { setAdresseChantier(aRemplir.adresse); poses.add("adresse"); }
+    },
+    [nomClient, civilite, telephone, email, adresseChantier]
+  );
+
+  /**
+   * On demande au serveur QUI c'est, un court instant après qu'il a cessé de
+   * taper.
+   *
+   * **Le délai n'est pas un `setTimeout` de confort** (`CLAUDE.md` §4 quater) :
+   * c'est la frappe elle-même qu'on attend. Interroger à chaque caractère
+   * ferait sept requêtes pour « Martins », dont six sur des noms qui n'existent
+   * pas — et la sixième pourrait revenir APRÈS la septième et poser la fiche
+   * d'un autre. C'est pourquoi la réponse est jetée si la saisie a bougé
+   * entre-temps.
+   *
+   * **Rien ne part quand on vient déjà de sa fiche** (`depart`) : le client est
+   * tenu par son identifiant, il n'y a rien à reconnaître.
+   */
+  useEffect(() => {
+    if (depart || refuse) return;
+    // **Ce qu'il vient de CHOISIR n'est pas une frappe.** Voir `choisiPour`.
+    if (choisiPour.current === nomClient) return;
+    const demande = { nom: nomClient, telephone, email };
+    let abandonne = false;
+    const minuteur = setTimeout(() => {
+      reconnaitreLeClientAction(demande)
+        .then(({ lui, propositions: proposes }) => {
+          if (abandonne) return;
+          setReconnu(lui);
+          setPropositions(proposes);
+          if (lui) poserCeQuAtlasSait(lui);
+        })
+        // **Une reconnaissance qui échoue ne fait rien**, et surtout pas une
+        // alerte : elle n'est qu'un confort, et l'écran marche entièrement sans
+        // elle. Ce n'est pas un refus avalé — il n'y avait rien à refuser.
+        .catch(() => undefined);
+    }, 350);
+    return () => {
+      abandonne = true;
+      clearTimeout(minuteur);
+    };
+  }, [nomClient, telephone, email, depart, refuse, poserCeQuAtlasSait]);
+
+  /**
+   * IL A TOUCHÉ UNE PROPOSITION — *« il doit me le proposer et remplir le
+   * champ direct »*, sa demande du 20 septembre 2026.
+   *
+   * Le nom se complète — il a tapé « Julien », la case porte « Julien
+   * Bernard » —, la fiche se pose par la même écriture que la reconnaissance,
+   * et l'identifiant part avec le chantier (`assurerChantier`) : c'est ce qui
+   * évite la fiche en double, et ce qui remplit « Envoyer à ».
+   */
+  function choisirLeClient(lui: ClientReconnu) {
+    choisiPour.current = lui.nom;
+    setNomClient(lui.nom);
+    setPropositions([]);
+    setReconnu(lui);
+    poserCeQuAtlasSait(lui);
+  }
+
+  /** « Ce n'est pas lui » : on retire ce qu'Atlas a posé, et rien d'autre. */
+  function ceNestPasLui() {
+    setRefuse(true);
+    setReconnu(null);
+    // La liste part avec la fiche : la laisser proposerait de nouveau celui
+    // qu'il vient d'écarter.
+    setPropositions([]);
+    choisiPour.current = null;
+    const poses = posesParAtlas.current;
+    if (poses.has("civilite")) setCivilite(null);
+    if (poses.has("telephone")) setTelephone("");
+    if (poses.has("email")) setEmail("");
+    if (poses.has("adresse")) setAdresseChantier("");
+    posesParAtlas.current = new Set();
+  }
+
   function appliquerDictee(c: CoordonneesDictees) {
-    if (c.nom && !nomClient.trim()) setNomClient(c.nom);
-    if (c.telephone && !telephone.trim()) setTelephone(c.telephone);
-    if (c.email && !email.trim()) setEmail(c.email);
-    if (c.adresse && !adresseChantier.trim()) setAdresseChantier(c.adresse);
+    const aRemplir = champsARemplir(
+      { nom: nomClient, civilite, telephone, email, adresse: adresseChantier },
+      c
+    );
+    if (aRemplir.nom !== undefined) setNomClient(aRemplir.nom);
+    if (aRemplir.civilite !== undefined) setCivilite(aRemplir.civilite);
+    if (aRemplir.telephone !== undefined) setTelephone(aRemplir.telephone);
+    if (aRemplir.email !== undefined) setEmail(aRemplir.email);
+    if (aRemplir.adresse !== undefined) setAdresseChantier(aRemplir.adresse);
   }
 
   /**
@@ -147,12 +489,42 @@ export default function FormulaireNouveauChantier({
   /**
    * Le chantier créé par un geste de l'écran — photo ou dictée — s'il l'a été.
    *
-   * **Il ne peut y en avoir qu'un.** Trois photos et une dictée, c'est un seul
-   * chantier : la promesse en cours est gardée pour que deux gestes simultanés
-   * n'en fabriquent pas deux (`creationEnCours`).
+   * **Ce n'est qu'un reflet pour le RENDU** : la mémoire qui compte est
+   * `chantierDeCetEcran`, plus bas. Un état ne peut pas tenir ce rôle, et
+   * c'est ce qui a fabriqué six chantiers pour six photos le 13 septembre
+   * 2026 — voir là-bas.
    */
   const [chantierCree, setChantierCree] = useState<string | null>(null);
   const [dicteeFaite, setDicteeFaite] = useState(false);
+
+  /**
+   * LA DICTÉE SE JETTE DEPUIS CET ÉCRAN — sa décision du 13 septembre 2026.
+   *
+   * **Le chantier porte la note** : sur une fiche neuve il n'existe qu'à partir
+   * du moment où la dictée part (`assurerChantier`), d'où ces deux sources.
+   *
+   * **Ce qui est retiré n'est pas encore détruit** : `useRetraits` garde la
+   * note six secondes derrière « Annuler », et c'est la fermeture du tiroir qui
+   * la supprime pour de bon — avec son enregistrement, mis en file de purge
+   * dans la même transaction (`supprimerNoteVocale`). Une annulation qui ne
+   * rendrait que le texte serait pire que pas d'annulation.
+   */
+  const chantierDeLaNote = reprise?.id ?? chantierCree;
+  const retraitDeLaNote = useRetraits({
+    valider: async () => {
+      if (chantierDeLaNote) await supprimerNoteVocaleAction(chantierDeLaNote);
+    },
+  });
+  const noteRetiree = chantierDeLaNote ? retraitDeLaNote.estRetire(chantierDeLaNote) : false;
+  /**
+   * Y a-t-il une dictée à jeter ?
+   *
+   * **Le même booléen tait l'invite du micro**, et ce n'est pas un raccourci :
+   * ce sont deux faces d'une seule question — *cet écran porte-t-il déjà une
+   * note ?* Les séparer, c'est la réponse qui finit par diverger (`CLAUDE.md`
+   * §3) : l'invite se tairait sur une note qu'il vient de jeter.
+   */
+  const noteAretirer = Boolean(chantierDeLaNote) && (dicteeFaite || (reprise?.aUneNote ?? false)) && !noteRetiree;
   /**
    * Une dictée est-elle en cours ?
    *
@@ -163,7 +535,26 @@ export default function FormulaireNouveauChantier({
    * tromper ; il n'en reste qu'une pendant qu'on parle.
    */
   const [dicteeEnCours, setDicteeEnCours] = useState(false);
-  const creationEnCours = useRef<Promise<string> | null>(null);
+  /**
+   * LE chantier de cet écran — la promesse de sa création, gardée jusqu'au bout.
+   *
+   * **Il ne peut y en avoir qu'un, et c'est CETTE référence qui le garantit.**
+   * Six photos choisies d'un coup, le 13 septembre 2026, ont fait six
+   * chantiers d'une photo chacun. La pellicule les envoie une à une dans une
+   * seule boucle, avec la fonction `assurerChantier` telle qu'elle était
+   * AVANT la première photo : pour cette boucle, l'état `chantierCree` reste
+   * vide jusqu'à la fin. Et la promesse, elle, était effacée dès qu'elle
+   * aboutissait — la deuxième photo ne trouvait donc plus rien, et recréait.
+   *
+   * Une référence ne vieillit pas avec le rendu : la boucle y lit la même
+   * promesse à chaque tour, résolue ou non, et obtient le même identifiant.
+   * **Elle ne s'efface que sur un échec** — une tentative ratée n'est pas un
+   * chantier, et « Réessayez » doit pouvoir réessayer.
+   */
+  const chantierDeCetEcran = useRef<Promise<string> | null>(null);
+
+  /** Le client tenu par son identifiant : venu de sa fiche, ou reconnu ici. */
+  const clientConnu = depuisClient?.clientId ?? reconnu?.id;
 
   /**
    * Fait exister le chantier, maintenant, avec ce qui est saisi.
@@ -178,87 +569,261 @@ export default function FormulaireNouveauChantier({
    */
   async function assurerChantier(): Promise<string> {
     if (reprise) return reprise.id;
-    if (chantierCree) return chantierCree;
-    if (creationEnCours.current) return creationEnCours.current;
+    if (chantierDeCetEcran.current) return chantierDeCetEcran.current;
 
-    const promesse = creerChantierAction({
+    chantierDeCetEcran.current = creerChantierAction({
+      // **Connu, donc pas cherché.** Venant de sa fiche, on tient
+      // l'identifiant : aucun rapprochement n'est joué, et le chantier ne peut
+      // pas atterrir chez un homonyme parce qu'un nom aurait été retouché.
+      // **Reconnu à l'écran, donc tenu par son identifiant lui aussi.** Sans
+      // cette ligne, l'écran aurait montré « Repris de sa fiche » et
+      // l'enregistrement serait quand même reparti chercher un homonyme — deux
+      // vérités pour une seule question (`CLAUDE.md` §3).
+      clientId: clientConnu,
       nomClient,
       civilite: civilite ?? undefined,
       telephone: numeroEnregistre(telephone),
       email,
+      siret,
+      numeroTva,
       canal: canal ?? undefined,
       adresseChantier,
       adresseClient,
-    }).then(({ id }) => {
-      setChantierCree(id);
-      creationEnCours.current = null;
-      return id;
-    });
-    creationEnCours.current = promesse;
-    return promesse;
+      refuseLeRapprochement: refuse,
+    }).then(
+      ({ id }) => {
+        setChantierCree(id);
+        return id;
+      },
+      (erreur) => {
+        chantierDeCetEcran.current = null;
+        throw erreur;
+      }
+    );
+    return chantierDeCetEcran.current;
   }
 
   /**
-   * Reporte la saisie sur un chantier déjà créé par un geste de l'écran.
+   * ENREGISTRE ce qui est saisi, et rend le chantier qui le porte.
    *
-   * **Le cas est courant, pas théorique :** il dicte d'abord — le chantier
-   * naît alors avec un nom vide —, puis il tape le nom du client avant de
-   * toucher le bouton. Sans ce report, tout ce qui a été saisi APRÈS le premier
-   * geste serait perdu, en silence.
+   * **Une seule écriture pour les trois sorties** — « Je rédige à la main »,
+   * « Facturer », et la FLÈCHE DE RETOUR depuis le 22 septembre 2026. Sa
+   * remarque ce soir-là : *« je crée un devis, je remplis la fiche client, je
+   * fais retour, mais elle n'apparaît plus dans mes clients en cours !! »* La
+   * flèche jetait ce qu'il venait de taper : elle passe désormais par ici, et
+   * trois chemins d'écriture auraient divergé au premier champ ajouté
+   * (`CLAUDE.md` §3).
+   *
+   * **Trois cas, une seule question — le chantier existe-t-il déjà ?**
+   *
+   * | le chantier | ce qu'on fait |
+   * |---|---|
+   * | rouvert (`reprise`) | on enregistre dessus : l'écran ne crée jamais un second chantier |
+   * | né d'une photo ou d'une dictée de cet écran | on reporte la saisie dessus — il a pu taper le nom APRÈS avoir dicté, et ce serait perdu en silence |
+   * | pas encore | on le crée, avec ce qui est saisi |
+   *
+   * Lu dans la référence `chantierDeCetEcran`, pas dans l'état : une photo
+   * encore en route a déjà lancé la création, et l'état ne le sait pas encore.
+   *
+   * **Un refus se rend en valeur**, jamais en exception avalée (`AGENTS.md`) :
+   * celui du serveur arrive tel quel, en toutes lettres.
    */
-  async function enregistrerSurLeChantier(id: string): Promise<string> {
-    const r = await reprendreChantierAction(id, {
+  async function enregistrerLaSaisie(): Promise<{ ok: true; id: string } | { ok: false; raison: string }> {
+    if (saisieFausse) return { ok: false, raison: saisieFausse };
+    try {
+      const existant = reprise?.id ?? (chantierDeCetEcran.current ? await chantierDeCetEcran.current : null);
+      if (existant) {
+        const r = await reprendreChantierAction(existant, {
+          nomClient,
+          civilite: civilite ?? undefined,
+          // Espacé à l'écran, en chiffres en base — voir `numeroEnregistre`.
+          telephone: numeroEnregistre(telephone),
+          email,
+          canal: canal ?? undefined,
+          adresseChantier,
+          adresseClient,
+        });
+        if (!r.ok) return r;
+      }
+      const id = existant ?? (await assurerChantier());
+
+      // **Les photos cochées rejoignent le dossier À L'ENREGISTREMENT**, pas au
+      // moment où il les touche. Recopier à la volée poserait des fichiers sur
+      // un chantier qu'il peut encore abandonner — et décocher devrait alors
+      // les supprimer, geste que rien ne demande.
+      //
+      // **Une reprise qui échoue ne fait PAS échouer le chantier.** Ce qu'il a
+      // saisi est enregistré ; des photos de rappel qui manquent se recochent,
+      // un chantier perdu se retape.
+      if (photosReprises.size > 0) {
+        const r = await reprendreLesPhotosAction(id, [...photosReprises]);
+        if (!r.ok) setErreur(r.raison);
+      }
+      return { ok: true, id };
+    } catch (panne) {
+      // **Journalisée avant d'être dite** : le message d'une panne imprévue
+      // n'atteint jamais l'écran (`AGENTS.md`), et un « réessayez » que
+      // personne ne sait expliquer coûte deux fois.
+      console.error("[fiche client] saisie non enregistrée", panne);
+      return {
+        ok: false,
+        raison: reprise
+          ? "Impossible d'enregistrer pour l'instant. Réessayez."
+          : "Impossible de créer le chantier pour l'instant. Réessayez.",
+      };
+    }
+  }
+
+  /**
+   * Y a-t-il quelque chose à enregistrer avant de sortir par la flèche ?
+   *
+   * La règle vit dans `saisie-fiche-client.ts` : l'écart avec ce que l'écran
+   * portait en s'ouvrant, jamais « un champ est rempli ».
+   */
+  const aEnregistrerEnSortant = saisieAEnregistrer(
+    {
+      nomClient: depart?.nomClient ?? "",
+      civilite: depart?.civilite ?? null,
+      telephone: depart?.telephone ?? "",
+      email: depart?.email ?? "",
+      canal: depart?.canal ?? null,
+      adresseChantier: reprise?.adresseChantier ?? "",
+      adresseClient: depart?.adresseClient ?? "",
+      photosCochees: 0,
+    },
+    {
       nomClient,
-      civilite: civilite ?? undefined,
-      telephone: numeroEnregistre(telephone),
+      civilite,
+      telephone,
       email,
-      canal: canal ?? undefined,
+      canal: canalChoisi,
       adresseChantier,
       adresseClient,
-    });
-    if (!r.ok) throw new Error(r.raison);
-    return id;
+      photosCochees: photosReprises.size,
+    }
+  );
+
+  /**
+   * LA FLÈCHE DE RETOUR ENREGISTRE AVANT DE SORTIR — 22 septembre 2026.
+   *
+   * Sans saisie, elle sort tout de suite, comme avant : une feuille ouverte par
+   * erreur ne laisse aucun chantier vide derrière elle. Avec une saisie, elle
+   * l'enregistre, puis sort ; un refus la retient ici, dit en toutes lettres —
+   * sortir quand même ferait perdre la saisie, c'est-à-dire le défaut même.
+   */
+  async function sortirEnEnregistrant(sortir: () => void) {
+    if (enCours) return;
+    if (!aEnregistrerEnSortant) {
+      sortir();
+      return;
+    }
+    setEnCoursVers("retour");
+    setErreur(null);
+    const r = await enregistrerLaSaisie();
+    if (!r.ok) {
+      setErreur(r.raison);
+      setEnCoursVers(null);
+      return;
+    }
+    sortir();
   }
+
+  /** Refermer la feuille : la flèche, le voile et Échap passent tous par ici. */
+  const fermerLaFeuille = () => void sortirEnEnregistrant(() => onFermer?.());
+  useImperativeHandle(fermeture, () => ({ fermer: fermerLaFeuille }));
+
+  /** Où mène la flèche EN PAGE — en feuille, elle referme (`onFermer`). */
+  const sortieDeLaPage = pourLeDevis
+    ? retourDesCoordonnees(reprise?.id ?? "", reprise?.provenance ?? null)
+    : "/termines";
 
   async function creerPuisAller(vers: Destination) {
     if (enCours) return;
     setEnCoursVers(vers);
     setErreur(null);
 
+    // **UN CLIENT DONT LE DEVIS ATTEND SE FACTURE SUR CE DEVIS — 3 octobre
+    // 2026.** *« Il ne reprend pas le devis du client »* : on créait ici un
+    // chantier neuf et une facture vide, et le prix accepté restait sur
+    // l'autre chantier. La question se pose AVANT d'enregistrer, sans quoi le
+    // chantier en double serait déjà né (`chantierAFacturer`).
+    if (vers === "facture" && !reprise && clientConnu) {
+      const aFacturer = await chantierDuClientAFacturerAction(clientConnu, adresseChantier);
+      if (aFacturer.type === "plusieurs") {
+        setErreur("Ce client a plusieurs devis à facturer : ouvrez le chantier concerné.");
+        setEnCoursVers(null);
+        return;
+      }
+      if (aFacturer.type === "un") {
+        const r = await terminerChantierAction(aFacturer.chantierId);
+        if (!r.succes) {
+          setErreur(r.erreur);
+          setEnCoursVers(null);
+          return;
+        }
+        router.push(`/chantiers/${aFacturer.chantierId}/facture`);
+        return;
+      }
+    }
+
+    const enregistre = await enregistrerLaSaisie();
+    if (!enregistre.ok) {
+      // Le refus se dit en toutes lettres, jamais avalé en silence : le
+      // 11 août 2026, « impossible d'enregistrer la note » ne pouvait être
+      // expliqué par personne (`AGENTS.md`).
+      setErreur(enregistre.raison);
+      setEnCoursVers(null);
+      return;
+    }
+    const id = enregistre.id;
+
     // **Rouvert, l'écran ENREGISTRE — il ne crée pas un second chantier.** La
     // saisie est la même, la destination aussi ; seul le chemin d'écriture
     // change, et il vit côté serveur (`coordonnees/actions.ts`).
     if (reprise) {
-      const r = await reprendreChantierAction(reprise.id, {
-        nomClient,
-        civilite: civilite ?? undefined,
-        // Espacé à l'écran, en chiffres en base — voir `numeroEnregistre`.
-        telephone: numeroEnregistre(telephone),
-        email,
-        canal: canal ?? undefined,
-        adresseChantier,
-        adresseClient,
-      });
-      if (!r.ok) {
-        // Le refus se dit en toutes lettres, jamais un `catch {}` muet : le
-        // 11 août 2026, « impossible d'enregistrer la note » ne pouvait être
-        // expliqué par personne (`AGENTS.md`).
-        setErreur(r.raison);
-        setEnCoursVers(null);
-        return;
-      }
-      router.push(vers === "devis" ? `/chantiers/${reprise.id}/devis-complet` : `/chantiers/${reprise.id}`);
+      // **Enregistré, on va AU DEVIS — 17 septembre 2026**, comme une fiche
+      // neuve : c'est le bouton « Je rédige à la main » qui enregistre ce
+      // qu'il vient de taper, et il dit où il mène. Entré depuis un devis sans
+      // client, il retrouve donc son devis, qui porte désormais la fiche qui
+      // lui manquait ; entré depuis l'accueil, il ouvre le devis du chantier
+      // qu'il vient de rouvrir. (« Enregistrer », qui ramenait à la liste, a
+      // été retiré : voir `Destination`.)
+      const destination = `/chantiers/${reprise.id}/devis-complet`;
+      // **REVENIR D'OÙ L'ON VIENT SE DÉCLARE — 9 septembre 2026.** Cet
+      // enregistrement ne va pas « quelque part » : il RETOURNE à l'écran qui
+      // l'a envoyé ici. Le journal de navigation ne peut pas le deviner — un
+      // retour et une réouverture laissent la même trace
+      // (`src/lib/journal-de-navigation.ts`) —, et sans cette ligne la flèche
+      // du devis renverrait ensuite sur le formulaire qu'il vient de valider.
+      if (destination === reprise.provenance) oublierCetEcran(window.location.pathname);
+      router.push(destination);
       return;
     }
 
     try {
-      // **Un chantier déjà né d'une photo ou d'une dictée n'est pas recréé** —
-      // sinon la moitié de ce qu'il vient de faire resterait sur un chantier
-      // fantôme, et il verrait deux lignes à l'accueil pour un seul client.
-      const id = chantierCree
-        ? await enregistrerSurLeChantier(chantierCree)
-        : await assurerChantier();
-      router.push(vers === "devis" ? `/chantiers/${id}/devis-complet` : `/chantiers/${id}`);
+      // **LA FACTURE DIRECTE NAÎT ICI, avant qu'on l'affiche.** Le chantier
+      // existe et il n'a pas de devis : c'est le seul instant où la facture
+      // peut être posée sans que rien ne soit à reprendre. L'écran d'arrivée
+      // ne la crée PAS lui-même — il attend un geste (« Créer la facture »),
+      // et ce geste-ci vient d'être fait, ici, sur le bouton d'à côté.
+      //
+      // **Un refus n'est pas une panne** : le chantier est enregistré quoi
+      // qu'il arrive, et on le dit plutôt que d'aller sur un écran qui
+      // n'expliquerait rien (`AGENTS.md` — un défaut muet coûte deux fois).
+      if (vers === "facture") {
+        const r = await creerFactureSansDevisAction(id);
+        if (!r.succes) {
+          setErreur(r.erreur);
+          setEnCoursVers(null);
+          return;
+        }
+        router.push(`/chantiers/${id}/facture`);
+        return;
+      }
+
+      // **UN CHANTIER NEUF VA TOUJOURS AU DEVIS** : depuis le 21 août 2026,
+      // la création ne porte plus qu'un bouton, et il vaut « devis ».
+      router.push(`/chantiers/${id}/devis-complet`);
     } catch {
       setErreur("Impossible de créer le chantier pour l'instant. Réessayez.");
       setEnCoursVers(null);
@@ -284,7 +849,44 @@ export default function FormulaireNouveauChantier({
           recouvre déjà la bulle et le bandeau du bas (`EcranChantiers.tsx`).
           Y poser la même réserve ajoutait quatre-vingts pixels de vide sous le
           formulaire, pour se protéger de quelque chose qui n'y arrive pas. */}
-      <div className={enFeuille ? "" : "pb-40"}>
+      {/* ═══════════════════════════════════════════════════════════════════
+          **UNE SEULE PAGE, CENTRÉE — sa demande du 1ᵉʳ septembre 2026 :**
+          *« la page doit remplir tout l'espace, elle n'est pas centrée. Je veux
+          qu'une seule page mais centrée, il y a trop de marge en bas et en
+          haut, la note vocale est presque coupée tellement elle est haute. »*
+
+          **MESURÉ AVANT DE TOUCHER** (`scripts/capture-fiche-client-hauteur.mts`) :
+          la page faisait 933 px pour un écran de 844, dont **272 px de réserve
+          en bas** — un `pb-40` ici PLUS un `pb-28` sur le formulaire, cumulés
+          sans que rien ne les additionne jamais. La barre d'onglets, elle,
+          mesure **48 px**. On réservait donc près de six fois ce qu'il fallait,
+          et tout le contenu était poussé vers le haut : d'où le micro « presque
+          coupé » et le grand vide sous le bouton.
+
+          **LA HAUTEUR SE CALCULE, elle ne se copie pas — et deux essais l'ont
+          appris.** Une hauteur d'écran entière (`100svh`) s'AJOUTE à la réserve
+          que le gabarit pose déjà (`main.atlas-contenu`, 68 px) : la page
+          faisait alors 912 px pour 844 de fenêtre. Et `min-h-full` ne vaut
+          rien du tout — un pourcentage sur un parent qui n'a lui-même qu'un
+          `min-height` ne résout pas, si bien que la page cessait de déborder
+          mais restait collée en haut, tout le vide en dessous.
+
+          On retire donc la réserve du gabarit à la hauteur d'écran, en lisant
+          SA variable : le jour où la barre d'onglets change de taille, ce
+          calcul suit tout seul.
+
+          **`my-auto` plutôt que `justify-center`, et ce n'est pas un détail.**
+          Un centrage par `justify-content` déborde des DEUX côtés quand le
+          contenu dépasse : sur un petit iPhone, le haut de la fiche passerait
+          au-dessus du pli, inatteignable même en défilant. Les marges
+          automatiques, elles, n'absorbent que la place LIBRE — s'il n'y en a
+          pas, elles valent zéro et l'écran se lit normalement depuis le haut.
+          ═══════════════════════════════════════════════════════════════════ */}
+      <div
+        className={enFeuille ? "" : "flex flex-col"}
+        style={enFeuille ? undefined : { minHeight: "calc(100svh - var(--atlas-barre))" }}
+      >
+      <div className={enFeuille ? "" : "my-auto w-full"}>
         {/* Retour discret — même style que la fiche chantier. En feuille il
             referme sans quitter l'accueil ; en page il y revient. Le dessin est
             le même : c'est le même geste pour le patron. */}
@@ -293,7 +895,30 @@ export default function FormulaireNouveauChantier({
             bloc de gauche n'a plus qu'une ligne : le micro aligné par le haut
             se posait au-dessus du titre au lieu d'en face. Mesuré à l'écran —
             les deux centres tombent maintenant sur le même pixel. */}
-        <div className="flex items-center justify-between gap-3 px-6">
+        {/* **UNE RÉSERVE AU-DESSUS DE LA LIGNE — sa remarque du 16 septembre
+            2026, capture à l'appui :** *« la note vocale en haut à droite, il
+            faut la descendre légèrement, elle est trop haute, limite
+            coupée »*.
+
+            **Mesuré avant de toucher** : le rond du micro (44 px) commençait
+            au pixel ZÉRO de la feuille, dont le coin est arrondi de 26 px — il
+            passait donc réellement sous la courbe. En page, sur un iPhone SE,
+            il tombait à 1 px du haut de la fenêtre : le centrage
+            (`my-auto`) ne rend rien quand il n'y a plus de place libre, et la
+            ligne se recolle alors au bord.
+
+            **La réserve est posée ICI, sur la ligne, et pas sur la feuille** :
+            le défaut vivait dans les DEUX visages de cet écran — la feuille de
+            l'accueil et la page du retour du devis —, et une réserve mise sur
+            la feuille n'en aurait réparé qu'un. Une seule règle, un seul
+            endroit (`CLAUDE.md` §4 sexies).
+
+            **Toute la ligne descend, pas le seul micro** : ses trois pièces
+            sont alignées sur le même centre depuis le 16 août, et ne bouger
+            que le rond les désalignerait. Douze pixels — il a demandé
+            « légèrement », et c'est ce qu'il faut pour dégager la courbe du
+            coin. `test-micro-fiche-client-degage-e2e` les tient. */}
+        <div className="flex items-center justify-between gap-3 px-6 pt-3">
           {/* **Le retour est SUR la ligne du titre, et c'est un chevron nu** —
               22 août 2026, sa maquette codée trait pour trait (`.entete` dans
               `appli/fiche-client-vocale.html`). Il occupait auparavant une
@@ -302,16 +927,43 @@ export default function FormulaireNouveauChantier({
           {enFeuille ? (
             <button
               type="button"
-              onClick={onFermer}
+              onClick={fermerLaFeuille}
               aria-label="Retour à la liste des chantiers"
+              data-geste-retour=""
               className="-ml-1 flex h-8 w-6 flex-shrink-0 items-center justify-center"
             >
               <FlecheRetour />
             </button>
           ) : (
+            /* **La flèche SORT, elle ne revient jamais sur ses pas** — sa
+               correction du 7 septembre 2026. Elle menait au devis quand on en
+               venait, et le retour du devis menait ici : les deux se
+               pointaient l'une l'autre, sans sortie. Voir
+               `src/lib/retour-du-devis.ts`. Revenir au devis reste le
+               comportement de l'ENREGISTREMENT, qui, lui, rapporte quelque
+               chose. */
+            /* **La fiche qui FACTURE repart d'où elle vient : Terminés.**
+               Ce n'est pas une supposition — c'est le seul chemin qui mène
+               ici : `?facture=1` n'est écrit qu'à un endroit, le bouton doré
+               de l'écran Terminés (`ListeTermines.tsx`). La règle générale ne
+               peut pas le savoir : `retourDesCoordonnees` rendrait « / »
+               faute de provenance, et il se retrouverait à l'accueil après
+               avoir appuyé sur retour depuis un écran qu'il vient de quitter. */
             <Link
-              href="/"
-              aria-label="Retour à la liste des chantiers"
+              href={sortieDeLaPage}
+              // Le lien reste un lien — il s'ouvre, se lit et se partage comme
+              // avant ; seul l'appui retient la sortie le temps d'enregistrer.
+              onClick={(e) => {
+                if (!aEnregistrerEnSortant && !enCours) return;
+                e.preventDefault();
+                void sortirEnEnregistrant(() => router.push(sortieDeLaPage));
+              }}
+              aria-label={
+                pourLeDevis
+                  ? libelleRetourDesCoordonnees(reprise?.id ?? "", reprise?.provenance ?? null)
+                  : "Retour aux chantiers terminés"
+              }
+              data-geste-retour=""
               className="-ml-1 flex h-8 w-6 flex-shrink-0 items-center justify-center"
             >
               <FlecheRetour />
@@ -347,7 +999,20 @@ export default function FormulaireNouveauChantier({
           </div>
           {/* Le raccourci pour qui a les mains prises — jamais l'action
               principale de cet écran, d'où le rond discret plutôt qu'un
-              bouton. */}
+              bouton.
+
+              **IL EST LÀ AUSSI QUAND ON FACTURE — sa demande du 11 septembre
+              2026 :** *« il faut rajouter la petite note vocale comme sur la
+              fiche client si on veut dicter les infos de la facture »*.
+
+              Sa planche de la veille disait le contraire — *« on ne dicte pas
+              une facture qu'on tape »* —, et le raisonnement qui la suivait
+              était juste pour les DEUX AUTRES pièces : l'anneau et les photos
+              nourrissent le chiffrage d'un devis, qui n'existe pas ici. Ce
+              micro-ci ne nourrit rien : il remplit le nom, le numéro,
+              l'e-mail, l'adresse — les mêmes cases, sur le même écran, qu'on
+              aille au devis ou à la facture. Il n'avait aucune raison de
+              tomber avec les deux autres. */}
           <DicterCoordonnees onCoordonnees={appliquerDictee} />
         </div>
 
@@ -356,11 +1021,26 @@ export default function FormulaireNouveauChantier({
           // capture) : la barre d'onglets est FIXÉE au bas de l'écran, et sans
           // lui elle coupait l'anneau en deux — le geste principal de l'écran,
           // à moitié sous une barre. Ni les types ni les suites ne voient cela.
-          className={`flex flex-col gap-[7px] px-6 pt-1.5 ${enFeuille ? "pb-2" : "pb-28"}`}
+          //
+          // **2 px entre les blocs, et non 4 — 14 septembre 2026.** Sur un
+          // petit iPhone (4,7 pouces) cet écran débordait de 17 px : le bas se
+          // dérobait sous la barre. Les deux pixels rendus ici, plus vingt pris
+          // à la réserve du micro (`globals.css`, `.atlas-dictee`), le font
+          // rentrer — sans qu'un mot parte ni qu'une ligne bouge.
+          //
+          // **Ce que cela ne règle PAS, et il l'a tranché lui-même** : ajoutez
+          // l'adresse du client et l'écran redéborde de 66 px, resserré ou non.
+          // *« On aura ce problème sur beaucoup d'écrans, on pourra pas
+          // satisfaire tout le monde ; faut pas que les caractères soient trop
+          // petits sinon c'est illisible, donc ils défileront. »* La règle
+          // « une seule page » vaut donc sur SON téléphone ; en dessous, l'écran
+          // défile, et c'est un choix, pas un défaut.
+          className={`flex flex-col gap-[2px] px-6 pt-1.5 pb-2`}
           onSubmit={(e) => {
             e.preventDefault();
-            // « Entrée » fait ce que fait le bouton, et il n'y en a plus qu'un.
-            creerPuisAller("devis");
+            // « Entrée » fait ce que fait le bouton, et il n'y en a qu'un —
+            // celui de la voie qu'on a prise pour arriver ici.
+            creerPuisAller(pourLeDevis ? "devis" : "facture");
           }}
         >
           {/* 1 — Nom du client.
@@ -379,6 +1059,15 @@ export default function FormulaireNouveauChantier({
               puis *« non, remets le Mr et Mme, je voulais juste que tu enlèves
               le TITRE »*. Les deux pastilles se comprennent seules, et c'est
               une ligne de petites capitales de moins en haut de l'écran. */}
+          {/* **CE QU'ATLAS A RECONNU** — proposition C, tranchée le 9 septembre
+              2026. Deux lignes et un bouton : il ne lui est rien demandé.
+
+              **Rien quand personne n'est reconnu**, et surtout pas « Nouveau
+              client » : une ligne qui s'allume à chaque frappe pour dire qu'il
+              ne se passe rien est du bruit (`CLAUDE.md` §3), et il taperait
+              par-dessus sans la lire. */}
+          {reconnu && <FicheReprise lui={reconnu} onRefuser={ceNestPasLui} />}
+
           <ChoixCivilite valeur={civilite} onChange={setCivilite} sansLegende />
 
           {/* **Le nom et le numéro sur la MÊME ligne** — sa demande du 21 août
@@ -450,45 +1139,142 @@ export default function FormulaireNouveauChantier({
             </div>
           </div>
 
-          <Field
-            label="E-mail"
-            placeholder="bernard@exemple.fr"
-            type="email"
-            value={email}
-            onChange={setEmail}
-            sansLibelle
-          />
+          {/* **LA LISTE POUSSE L'ÉCRAN, elle ne le RECOUVRE pas.** Posée
+              par-dessus, elle se plaçait exactement sur la case E-mail : un
+              doigt qui visait l'e-mail touchait un client. La descendre
+              n'ajoute rien à fermer — c'est ce que font déjà les adresses
+              proposées (`ChampAdresse`), et c'est pour cela que ce champ-ci n'a
+              pas besoin d'un `onBlur` (`scripts/test-valeur-du-champ.ts`). */}
+          {propositions.length > 0 && (
+            <ClientsProposes liste={propositions} onChoisir={choisirLeClient} />
+          )}
+
+          {/* **Entreprise : le SIRET et le n° TVA, sur une seule rangée** — sa
+              demande du 4 octobre 2026, les mêmes cases que sa fiche. Une
+              rangée et non deux : l'écran doit tenir dans une page (sa règle du
+              30 août), et il ne grandit que pour une entreprise. Un numéro mal
+              tapé se signale sous sa case, par la même lecture que le serveur,
+              qui ne l'écrit pas. **À la création seulement** : en reprise, cet
+              écran enregistre par une autre porte, qui ne les connaît pas ;
+              ils se corrigent alors sur sa fiche (« Ses coordonnées »). */}
+          {avecSesNumeros && (
+            <div>
+              <div className="flex gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+                    SIRET
+                  </div>
+                  <Field label="SIRET" placeholder="812 345 678 00021" value={siret} onChange={setSiret} sansLibelle />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+                    N° TVA
+                  </div>
+                  <Field
+                    label="N° TVA intracommunautaire"
+                    placeholder="FR00812345678"
+                    value={numeroTva}
+                    onChange={setNumeroTva}
+                    sansLibelle
+                  />
+                </div>
+              </div>
+              <AvisNumeroTva siret={siret} numeroTva={numeroTva} onMettre={setNumeroTva} />
+            </div>
+          )}
+          {saisieFausse && (
+            <p role="alert" className="-mt-1 text-[12px]" style={{ color: colors.alert }}>
+              {saisieFausse}
+            </p>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════════
+              **LES QUATRE CASES PORTENT DE NOUVEAU LEUR NOM — son choix du
+              2 septembre 2026**, planche « A — Épurée »
+              (`appli/fiche-client-haut-de-gamme.html`).
+
+              **C'EST UN REVIREMENT, ET IL EST ASSUMÉ.** Les intitulés avaient
+              été retirés le 30 août à sa demande : *« je veux que tout tienne
+              sur une seule page »*. Deux d'entre eux seulement étaient restés
+              (le nom et le numéro), et les deux autres cases ne tenaient qu'à
+              leur exemple en gris — qui disparaît à la première touche. Au
+              soleil, on ne savait plus laquelle attendait quoi.
+
+              **CE QUI REND SA CONTRAINTE DU 30 AOÛT TENABLE MALGRÉ TOUT :** les
+              trente-six pixels des deux libellés sont payés, pas ajoutés —
+              vingt-huit rendus par la rangée « + Ajouter une adresse client
+              différente », qui remonte au bout de l'intitulé « Chantier », et
+              vingt-sept par l'écart des blocs, ramené de 7 à 4 px. L'écran
+              reste dans la feuille, et `scripts/capture-fiche-client-hauteur.mts`
+              le mesure.
+              ═══════════════════════════════════════════════════════════════ */}
+          <div>
+            <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+              E-mail
+            </div>
+            <Field
+              label="E-mail"
+              placeholder="bernard@exemple.fr"
+              type="email"
+              value={email}
+              onChange={setEmail}
+              sansLibelle
+            />
+          </div>
 
           {/* 6 — Adresse du chantier : facultative, et proposée pendant la
               frappe. Le champ reste libre : un lieu-dit ou un chemin de
               campagne ne figure dans aucune base, et le patron y travaille
               (`src/components/atlas/ChampAdresse.tsx`). */}
-          <ChampAdresse
-            label="Adresse du chantier"
-            placeholder="12 rue des Lilas, Nantes"
-            value={adresseChantier}
-            onChange={setAdresseChantier}
-            sansLibelle
-          />
-
-          {/* 7 — Adresse client, masquée par défaut */}
-          {!adresseClientVisible ? (
-            <button
-              type="button"
-              onClick={() => setAdresseClientVisible(true)}
-              className="self-start text-[14px] font-medium"
-              style={{ color: colors.rust }}
-            >
-              + Ajouter une adresse client différente
-            </button>
-          ) : (
+          <div>
+            {/* **« + CLIENT » VIT AU BOUT DE L'INTITULÉ, plus sur sa propre
+                rangée.** C'est là qu'on y pense — en écrivant l'adresse — et
+                cela rend vingt-huit pixels à l'écran. Les deux mots ne se
+                coupent jamais : « Chantier » et « + Client » tiennent sur une
+                ligne à 390 px, là où « Adresse du chantier » et « + Adresse
+                client » se brisaient tous les deux (vu à la capture). */}
+            <div className="mb-1 flex items-baseline justify-between gap-2.5">
+              <span className={`whitespace-nowrap ${libelleCaps}`} style={{ color: colors.muted }}>
+                Chantier
+              </span>
+              {!adresseClientVisible && (
+                <button
+                  type="button"
+                  onClick={() => setAdresseClientVisible(true)}
+                  data-atlas="adresse-client"
+                  className={`whitespace-nowrap ${libelleCaps}`}
+                  style={{ color: colors.rust }}
+                >
+                  + Client
+                </button>
+              )}
+            </div>
             <ChampAdresse
-              label="Adresse du client"
-              placeholder="Si différente de l'adresse du chantier"
-              value={adresseClient}
-              onChange={setAdresseClient}
+              label="Adresse du chantier"
+              placeholder="12 rue des Lilas, Nantes"
+              value={adresseChantier}
+              onChange={setAdresseChantier}
               sansLibelle
             />
+          </div>
+
+          {/* 7 — Adresse client, demandée au bout de l'intitulé ci-dessus.
+              Elle porte son nom comme les quatre autres : une case sans
+              intitulé est exactement ce que cet écran vient de corriger, et
+              une exception suffit à défaire la règle. */}
+          {adresseClientVisible && (
+            <div>
+              <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+                Client
+              </div>
+              <ChampAdresse
+                label="Adresse du client"
+                placeholder="Si différente de l'adresse du chantier"
+                value={adresseClient}
+                onChange={setAdresseClient}
+                sansLibelle
+              />
+            </div>
           )}
 
           {/* 8 — Les deux actions.
@@ -524,10 +1310,15 @@ export default function FormulaireNouveauChantier({
               « je sais déjà que je l'écrirai moi-même » ; là-bas, « j'ai
               commencé, finalement je l'écris ».
 
-              **En reprise, un seul bouton — et c'est délibéré.** L'écran sert
-              alors à corriger des coordonnées (sa demande du 17 août : « RIEN
-              DE PLUS, RIEN DE MOINS ») ; lui proposer deux devis pour changer
-              une adresse serait lui poser une question qu'il n'a pas. */}
+              **En reprise, PLUS AUCUNE différence — 17 septembre 2026.** Le
+              31 août, tout l'écart avait été supprimé à sa demande sauf un
+              bouton « Enregistrer », gardé pour que ce qu'il TAPE sur un
+              chantier existant parte quelque part. Il l'a refusé devant
+              l'écran : *« normalement il y a la note vocale et en dessous il
+              propose d'écrire le devis à la main, et là y'a marqué
+              enregistrer »*. « Je rédige à la main » enregistre AUSSI ce qui
+              est tapé (`creerPuisAller`, chemin `reprise`) : rien n'est perdu,
+              et il n'y a plus qu'une fiche client. */}
           {/* **Le canal d'envoi vit SOUS l'adresse depuis le 21 août 2026** —
               sa place, choisie par lui : *« comment lui envoyer son devis, tu
               le mets sous l'adresse »*. Il n'apparaît toujours qu'une fois une
@@ -538,21 +1329,47 @@ export default function FormulaireNouveauChantier({
               numéro. Les deux capsules restent inertes tant qu'il n'y a rien
               pour envoyer : proposer un canal sans coordonnée est sans objet,
               le masquer laisse chercher pourquoi le choix a disparu. */}
-          <fieldset aria-label="Comment lui envoyer son devis ?">
-              <div className="flex gap-2">
-                <ChoixCanal
-                  libelle="Par SMS"
-                  actif={canal === "sms"}
-                  disponible={aTelephone}
-                  onClick={() => setCanalChoisi("sms")}
-                />
-                <ChoixCanal
-                  libelle="Par e-mail"
-                  actif={canal === "email"}
-                  disponible={aEmail}
-                  onClick={() => setCanalChoisi("email")}
-                />
-              </div>
+          {/* ═══ L'ENVOI EST UN RÉGLAGE, PAS UNE ACTION — planche « A — Épurée »
+              ═══════════════════════════════════════════════════════════════
+              **Son choix du 2 septembre 2026, appliqué le 4.** La planche
+              l'écrit en une phrase : *« l'envoi n'est plus une action : c'est un
+              réglage. Il en prend la forme — une ligne, deux mots — et rend
+              40 px à l'anneau. »*
+
+              Deux capsules pleine largeur se lisaient comme des boutons
+              d'envoi ; elles ne disent que par où le devis partira. Le libellé
+              « ENVOI » les nomme, et le canal retenu porte un trait d'or sous
+              son mot.
+
+              **Le filet du dessus vient avec** : c'est lui qui sépare les
+              coordonnées de ce réglage, et il est dans la planche
+              (`.b-envoi{border-top}`). Il n'existe pas comme élément à part —
+              le poser séparément ferait deux séparateurs pour une couture. */}
+          <fieldset
+            aria-label="Comment lui envoyer son devis ?"
+            data-atlas="envoi-canal"
+            className="mt-2.5 flex min-h-[34px] items-center justify-between gap-3 pt-2"
+            style={{ borderTop: `1px solid ${colors.lineSoft}` }}
+          >
+            <span className={libelleCaps} style={{ color: colors.muted }}>
+              Envoi
+            </span>
+            <span className="flex gap-1">
+              <ChoixCanal
+                apparence="reglage"
+                libelle="SMS"
+                actif={canal === "sms"}
+                disponible={aTelephone}
+                onClick={() => setCanalChoisi("sms")}
+              />
+              <ChoixCanal
+                apparence="reglage"
+                libelle="E-mail"
+                actif={canal === "email"}
+                disponible={aEmail}
+                onClick={() => setCanalChoisi("email")}
+              />
+            </span>
           </fieldset>
 
           {/* **LES PHOTOS ET L'ANNEAU, sur la fiche client — 21 août 2026.**
@@ -572,24 +1389,210 @@ export default function FormulaireNouveauChantier({
               **Elles fonctionnent AVANT que le chantier existe** : c'est le
               geste qui le crée (`assurerChantier`). L'ordre est celui de sa
               maquette (`appli/fiche-client-vocale.html`), qu'il a demandé de
-              coder trait pour trait : photos, puis anneau, puis le devis. */}
-          {!reprise && (
-            <div aria-label="Photos du chantier" role="group">
-              <Pellicule chantierId={chantierCree} assurerChantier={assurerChantier} initiales={[]} />
+              coder trait pour trait : photos, puis anneau, puis le devis.
+
+              **ET ELLES SONT LÀ EN REPRISE AUSSI — 31 août 2026.** Sa demande,
+              deux captures à l'appui : *« lorsque je fais retour j'arrive sur la
+              page 1re photo alors que je veux arriver sur la 2e. Je sais pas
+              d'où sort la 1re photo ? Si elle sert à rien il faut la
+              supprimer. »* La première était CET écran privé de ses photos et de
+              son anneau ; la seconde, le même écran entier. Il n'y a donc plus
+              qu'une fiche client, et c'est la bonne — deux versions du même
+              écran se lisaient comme deux écrans, dont un amputé sans raison
+              visible.
+
+              Ce que la reprise change, et rien d'autre : les pièces partent de
+              ce que le chantier porte DÉJÀ. Les nourrir de vide afficherait une
+              pellicule vide sur un chantier photographié, et il croirait ses
+              photos perdues. */}
+          {/* **Le carré de photo cesse d'être orphelin.** Il flottait seul,
+              en pointillé doré, sans un mot — le seul objet « brouillon » d'un
+              écran par ailleurs net. Son intitulé le fait rentrer dans le
+              rythme des quatre cases au-dessus. */}
+          {/* **Rien de tout cela quand on vient FACTURER — 10 septembre 2026.**
+              Les photos, l'anneau et la chaîne du devis ne sont pas des
+              agréments : ils nourrissent le CHIFFRAGE, et une facture directe
+              n'en a pas. Les laisser aurait posé sur l'écran trois gestes dont
+              aucun n'aboutit à quoi que ce soit ici — le pire des ornements,
+              celui qui a l'air de faire quelque chose. */}
+          {pourLeDevis && (
+          <div aria-label="Photos du chantier" role="group">
+            <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+              Photos
+            </div>
+            <Pellicule
+              chantierId={reprise?.id ?? chantierCree}
+              assurerChantier={assurerChantier}
+              initiales={reprise?.photos ?? []}
+            />
+          </div>
+          )}
+
+          {/* ─── CE QU'ON AVAIT FAIT LA DERNIÈRE FOIS — 8 septembre 2026 ─────
+              Sa règle, dans ses mots : *« si ce n'est pas le premier devis les
+              anciennes photos peuvent apparaître à l'écran mais sans s'inscrire
+              de nouveau, juste pour voir ce qu'on avait fait la dernière fois.
+              […] Si il valide sans les avoir resélectionnées elles ne doivent
+              pas apparaître dans la fiche d'intervention pour le salarié. »*
+
+              **Éteintes tant qu'elles ne sont pas cochées, et c'est le sens du
+              geste** : ce ne sont pas les photos de CE chantier. Les afficher
+              pleines les ferait passer pour des pièces du dossier, et le salarié
+              recevrait des images d'un chantier qu'il n'a pas fait.
+
+              **Rien quand il n'y en a pas** — un titre « La dernière fois »
+              au-dessus du vide sur le premier chantier d'un client serait du
+              bruit (`CLAUDE.md` §3). */}
+          {pourLeDevis && (depuisClient?.anciennesPhotos.length ?? 0) > 0 && (
+            <div role="group" aria-label="Les photos de la dernière fois">
+              <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+                La dernière fois
+              </div>
+              <div className="flex flex-wrap gap-[9px]">
+                {depuisClient!.anciennesPhotos.map((photo) => {
+                  const cochee = photosReprises.has(photo.id);
+                  return (
+                    <button
+                      key={photo.id}
+                      type="button"
+                      aria-pressed={cochee}
+                      aria-label={`Reprendre une photo de ${photo.chantierNom}`}
+                      onClick={() =>
+                        setPhotosReprises((avant) => {
+                          const apres = new Set(avant);
+                          if (apres.has(photo.id)) apres.delete(photo.id);
+                          else apres.add(photo.id);
+                          return apres;
+                        })
+                      }
+                      className="relative h-[62px] w-[62px] overflow-hidden rounded-[11px]"
+                      style={{
+                        opacity: cochee ? 1 : 0.42,
+                        // **Le liseré d'or, pas un fond teinté.** Sur les deux
+                        // chartes sombres, un fond pâle poserait un pavé blanc
+                        // au milieu de l'écran ; l'or, lui, tient sur les huit
+                        // (`CLAUDE.md` §3).
+                        boxShadow: cochee
+                          ? `inset 0 0 0 2px ${colors.or}`
+                          : `inset 0 0 0 1px ${colors.line}`,
+                      }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`/api/fichiers/${photo.storageKey}`}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
 
-          {!reprise && (
-            <div>
-              <AnneauNoteVocale
-                chantierId={chantierCree}
-                assurerChantier={assurerChantier}
-                onDicte={() => setDicteeFaite(true)}
-                onDictee={setDicteeEnCours}
-                storageKey={null}
-                dureeSecondes={null}
+          {/* **UN SEUL VISAGE, AUX DEUX VISITES — sa remarque du 5 septembre
+              2026** (le détail est sur `aUneNote`, plus haut). Cet écran ne
+              passe donc JAMAIS de note à l'anneau : le lecteur — l'anneau
+              creux, son glisseur « Retirer », son chrono — reste sur la fiche
+              du chantier, qui est faite pour relire. Ici, on dicte.
+
+              **Et il est là dans tous les cas**, y compris quand l'audio a été
+              purgé après transcription : l'ancienne garde faisait disparaître
+              l'anneau entier de la fiche au bout de quelques jours, sans que
+              rien ne le dise. */}
+          {pourLeDevis && (
+          <div>
+            {/* **CE QUE LE MICRO PRODUIT, DIT AU-DESSUS — « la A », sa réponse
+                du 3 octobre 2026** (`appli/dicter-le-devis-dire-ce-que-ca-fait.html`).
+                Sa remarque : *« on comprend pas que la note vocale permet de
+                rédiger le devis par la voix »*. Seul l'indice gris de 11 px
+                parlait, et il disait « décrivez le chantier », pas « devis ».
+
+                **Un libellé, pas une phrase** : la voix de « Photos » et de
+                « La dernière fois » juste au-dessus, donc une section de plus
+                dans le même rythme. Il reste pendant la dictée, parce qu'il
+                nomme l'objet ; c'est l'indice qui s'efface.
+
+                **Ici, et pas dans `AnneauNoteVocale`** : c'est la fiche client
+                qui prête à confusion, avec son second micro en tête qui, lui,
+                remplit les coordonnées (`DicterCoordonnees`). */}
+            <p
+              className={`mb-2 mt-2 text-center ${libelleCaps}`}
+              style={{ color: colors.muted }}
+              data-atlas="devis-a-la-voix"
+            >
+              Devis à la voix
+            </p>
+            <AnneauNoteVocale
+              chantierId={reprise?.id ?? chantierCree}
+              assurerChantier={assurerChantier}
+              refusAvantDeDicter={saisieFausse}
+              onDicte={() => setDicteeFaite(true)}
+              onDictee={setDicteeEnCours}
+              // **L'invite se tait devant une dictée déjà faite.** Dès que la
+              // note est partie, la chaîne du devis démarre seule (`auto`,
+              // plus bas) ; et sur un chantier qui porte DÉJÀ sa note,
+              // « Appuyez et décrivez le chantier » inviterait à recouvrir ce
+              // qu'il a dicté — c'est sa règle du 1ᵉʳ septembre 2026, appliquée
+              // au même endroit pour la même raison. L'objet, lui, ne bouge
+              // pas : il reste appuyable, et une seconde dictée remplace la
+              // première, en le disant (`DevisDepuisDictee`, cas « conflit »).
+              preparationEnCours={noteAretirer}
+            />
+
+            {/* ─── RETIRER LA DICTÉE, ICI — sa décision du 13 septembre 2026 ──
+                *« C'est sur cet écran que je le voulais ! Car en cas de
+                problème on peut supprimer la dictée comme ça. »*
+
+                **Ce qui manquait n'était pas le geste, c'était l'objet.** Le
+                glissement existait depuis le 7 septembre — sur l'écran Note
+                vocale, où il ne va pas quand sa dictée vient de rater. Ici, il
+                a le micro sous les yeux : c'est ici qu'il jette pour redicter.
+
+                **Les pièces sont celles de partout** : `useRetraits` pour le
+                tiroir « Annuler », `LigneRetirable` pour le glissement. Rien
+                n'est réinventé sur place — c'est ce qui avait ramené trois
+                mécaniques de suppression dans l'application, et ce que sa règle
+                du 10 août 2026 a fait disparaître.
+
+                **Et le retrait rend le micro à l'invite** : sans cela, l'écran
+                resterait muet après un jet, et il ne saurait pas qu'il peut
+                recommencer — ce qui est tout l'objet de sa demande. */}
+            {noteAretirer && (
+              <div className="mt-4">
+                <LigneRetirable
+                  libelle="cette note vocale"
+                  retiree={noteRetiree}
+                  onRetirer={() => retraitDeLaNote.retirer(chantierDeLaNote!, "cette note vocale")}
+                  hauteurMax={80}
+                  plage={{ fond: colors.card }}
+                  className="flex w-full items-center py-4 pl-5 pr-5"
+                >
+                  <p className="text-[14px]" style={{ color: colors.ink }}>
+                    Votre dictée
+                  </p>
+                </LigneRetirable>
+              </div>
+            )}
+
+            {/* **LE TIROIR VIT HORS DE LA CONDITION QU'IL ANNULE.** Placé
+                avec la ligne, il disparaissait avec elle au moment même du
+                retrait : « Annuler » existait dans la page, mais plus personne
+                ne pouvait l'atteindre — le geste devenait irréversible sans
+                que rien ne le dise. Trouvé par la suite, avant lui. */}
+            {/* **Un repère À LUI** : la pellicule des photos porte son propre
+                tiroir sur ce même écran, avec le même « Annuler ». Sans de quoi
+                les distinguer, un contrôle vise le premier venu — et c'est
+                exactement ce qui est arrivé en écrivant sa suite. */}
+            <div data-atlas="tiroir-de-la-dictee">
+              <TiroirDesRetires
+                dernier={retraitDeLaNote.dernier}
+                nombre={retraitDeLaNote.nombre}
+                onAnnuler={retraitDeLaNote.annuler}
+                className="mt-3 !mx-0"
               />
             </div>
+          </div>
           )}
 
           {/* **L'AVION FAIT TOUT : envoyer, préparer, arriver sur le devis.**
@@ -602,10 +1605,16 @@ export default function FormulaireNouveauChantier({
               se fait (`surLeDevis={false}`). Ce composant ne rend plus alors que
               ce qui se PASSE — le travail en cours, l'arrêt d'avant-chiffrage,
               ou ce qui a échoué. */}
-          {!reprise && dicteeFaite && chantierCree && (
+          {/* **La préparation cesse d'être suivie dès que la dictée est jetée
+              — 13 septembre 2026.** Sans ce `noteRetiree`, l'écran continuerait
+              d'annoncer « Atlas prépare votre devis… » à partir d'une note
+              qu'il vient de retirer, et l'emmènerait sur un devis qu'il n'a
+              plus demandé. Le geste de jeter n'aurait alors rien jeté à ses
+              yeux. */}
+          {dicteeFaite && !noteRetiree && (reprise?.id ?? chantierCree) && (
             <div>
               <DevisDepuisDictee
-                chantierId={chantierCree}
+                chantierId={(reprise?.id ?? chantierCree)!}
                 transcriptionDisponible
                 auto
                 surLeDevis={false}
@@ -614,13 +1623,18 @@ export default function FormulaireNouveauChantier({
           )}
 
           <div className="flex flex-col gap-3">
-            {reprise ? (
+            {!pourLeDevis ? (
+              /* **« Faire la facture » — le geste de sa planche, et il est
+                 PRINCIPAL.** Sur la fiche d'un devis, le bouton est secondaire
+                 parce que la voie recommandée est la note vocale juste
+                 au-dessus. Ici il n'y a pas d'autre voie : le secondariser
+                 laisserait un écran dont l'unique issue a l'air d'un repli. */
               <PrimaryButton
                 disabled={!peutCreer}
-                onClick={() => creerPuisAller("fiche")}
-                repere="action-creation"
+                onClick={() => creerPuisAller("facture")}
+                repere="action-facture-directe"
               >
-                {enCours ? "Enregistrement…" : "Enregistrer"}
+                {enCoursVers === "facture" ? "Préparation…" : "Faire la facture"}
               </PrimaryButton>
             ) : (
               /* **UN SEUL bouton — sa demande du 21 août 2026** : *« garde un
@@ -655,7 +1669,7 @@ export default function FormulaireNouveauChantier({
                   secondaire
                   part="66%"
                 >
-                  {enCoursVers === "devis" ? "Création…" : "Je rédige à la main"}
+                  {enCoursVers === "devis" ? (reprise ? "Enregistrement…" : "Création…") : "Je rédige à la main"}
                 </PrimaryButton>
               )
             )}
@@ -690,6 +1704,7 @@ export default function FormulaireNouveauChantier({
             {erreur}
           </p>
         </form>
+      </div>
       </div>
     </div>
   );
@@ -814,4 +1829,150 @@ function FlecheRetour() {
       <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
+}
+
+/**
+ * CEUX QU'ATLAS PROPOSE — sa demande du 20 septembre 2026, capture de sa fiche
+ * client à l'appui : *« je tape le prénom d'un client qui existe, il ne me le
+ * reconnaît pas ; il doit me le proposer et remplir le champ direct »*.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Pourquoi une LISTE là où la reconnaissance se tait.** Poser, c'est écrire
+ * le numéro d'un homme sur la fiche d'un autre avant qu'il ait fini sa
+ * phrase — il ne le relira pas, c'est pour ne pas retaper qu'il a demandé cet
+ * écran. Proposer attend son doigt : quatre Martins peuvent se montrer, et
+ * c'est lui qui tranche (`src/lib/rapprochement-client.ts`).
+ *
+ * **La même allure que les adresses proposées** (`ChampAdresse`), et ce n'est
+ * pas une coquetterie : c'est le geste qu'il connaît depuis le 7 août 2026 —
+ * on tape, une liste descend, on touche, la case se remplit.
+ *
+ * **La seconde ligne le DISTINGUE**, comme sur la fiche reprise : « Repris de
+ * sa fiche » tout seul ne disait pas LEQUEL de ses quatre Martins
+ * (sa remarque du 3 septembre 2026). Le lieu manque parfois, et rien n'est
+ * inventé pour combler (`CLAUDE.md` §4).
+ */
+function ClientsProposes({
+  liste,
+  onChoisir,
+}: {
+  liste: ClientReconnu[];
+  onChoisir: (lui: ClientReconnu) => void;
+}) {
+  return (
+    <ul
+      role="listbox"
+      aria-label="Clients proposés"
+      data-atlas="clients-proposes"
+      // `z-40` : la couche au-dessus de la bulle de l'assistant, fixée en bas
+      // à droite (`AssistantSidebar.tsx`). Un élément dans le flux se fait
+      // recouvrir par un élément fixé — le doigt toucherait alors la bulle au
+      // lieu du client, défaut déjà payé sur les adresses proposées.
+      className="relative z-40 -mt-1 overflow-hidden rounded-[4px]"
+      style={{ backgroundColor: colors.card, border: `1px solid ${colors.rustTint}` }}
+    >
+      {liste.map((lui) => {
+        const lieu = villeDe(lui.adresse);
+        const chantiers = `${lui.chantiers} chantier${lui.chantiers > 1 ? "s" : ""}`;
+        return (
+          <li key={lui.id} role="option" aria-selected={false}>
+            {/* `onMouseDown` plutôt que `onClick` : la case perd le focus avant
+                qu'un clic n'aboutisse, la liste se fermerait sous le doigt et le
+                choix serait perdu une fois sur deux. */}
+            <button
+              type="button"
+              data-atlas="client-propose"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onChoisir(lui);
+              }}
+              // 48 px de haut : une ligne plus fine se touche mal sur un
+              // téléphone tenu d'une main, et il s'en sert dehors.
+              className="w-full px-4 py-3 text-left"
+              style={{ minHeight: 48, color: colors.ink }}
+            >
+              <span className="block text-[15px] leading-snug">{lui.nom}</span>
+              <span className="block text-[12px]" style={{ color: colors.muted }}>
+                {lieu ? `${lieu}, ${chantiers}` : chantiers}
+              </span>
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/**
+ * « Repris de sa fiche » — ce qu'Atlas dit quand il a reconnu quelqu'un.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **CE QUI LE DISTINGUE COMPTE AUTANT QUE SON NOM.** Sa remarque du
+ * 3 septembre 2026 : *« j'ai vingt et un clients, dont QUATRE qui s'appellent
+ * Martins »*. « Repris de sa fiche » tout seul ne lui dit pas LEQUEL. La
+ * seconde ligne porte donc son lieu et ses chantiers — c'est ce qui se
+ * reconnaît d'un coup d'œil, et c'est ce que la planche montrait.
+ *
+ * **Le lieu manque parfois**, et rien n'est inventé pour combler : la ligne se
+ * réduit alors aux chantiers (`CLAUDE.md` §4).
+ */
+function FicheReprise({ lui, onRefuser }: { lui: ClientReconnu; onRefuser: () => void }) {
+  const lieu = villeDe(lui.adresse);
+  const chantiers = `${lui.chantiers} chantier${lui.chantiers > 1 ? "s" : ""}`;
+
+  return (
+    <div
+      className="mb-4 flex items-start gap-3 rounded-[14px] px-3.5 py-3"
+      style={{ backgroundColor: colors.rustTint }}
+      data-atlas="client-reconnu"
+    >
+      <span
+        aria-hidden="true"
+        className="mt-[2px] flex h-[19px] w-[19px] flex-none items-center justify-center rounded-full"
+        style={{ backgroundColor: colors.plein, color: surPlein }}
+      >
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+          <path
+            d="M2 6.3 4.7 9 10 3"
+            stroke="currentColor"
+            strokeWidth="1.9"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[14.5px] leading-[1.35]">Repris de sa fiche</span>
+        <span className="mt-[2px] block text-[12.5px] leading-[1.45]" style={{ color: colors.muted }}>
+          {lieu ? `${lieu}, ${chantiers}` : chantiers}
+        </span>
+        {/* **Le seul geste de tout l'écran**, et il ne se grise jamais : un
+            bouton grisé se touche quand même, et son silence se lit comme une
+            panne. Quand personne n'est reconnu, c'est le bandeau ENTIER qui
+            n'existe pas. */}
+        <button
+          type="button"
+          onClick={onRefuser}
+          data-atlas="ce-n-est-pas-lui"
+          className="mt-[7px] text-[13px] underline underline-offset-2"
+          style={{ color: colors.orTexte }}
+        >
+          Ce n&apos;est pas lui
+        </button>
+      </span>
+    </div>
+  );
+}
+
+/**
+ * La ville d'une adresse, pour la reconnaître à l'œil.
+ *
+ * Le dernier morceau après la virgule : « 12 rue des Lilas, Saint-Marc » rend
+ * « Saint-Marc ». Sans virgule, on ne devine pas — on rend rien plutôt que de
+ * couper un nom de rue en deux et d'afficher « des Lilas ».
+ */
+function villeDe(adresse: string | null): string {
+  if (!adresse) return "";
+  const bouts = adresse.split(",").map((b) => b.trim()).filter(Boolean);
+  return bouts.length > 1 ? bouts[bouts.length - 1] : "";
 }

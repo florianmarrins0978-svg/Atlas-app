@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — « Monsieur » ne va plus dans la case du nom</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="-monsieur--ne-va-plus-dans-la-case-du-nom">« Monsieur » ne va plus dans la case du nom</h1>
+<p><strong>7 septembre 2026</strong> · branche <code>claude/name-field-title-salutation-7gf10b</code></p>
+<hr>
+<h2 id="ce-que-vous-avez-demandé">Ce que vous avez demandé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<blockquote>« J'ai dicté monsieur Ludovic. Le problème, c'est que dans la case du nom, il a écrit Monsieur. Déjà, il faut jamais qu'il y ait marqué monsieur, madame ou quoi que ce soit d'autre à part le nom dans cette case-là. Mais est-ce que c'est possible, à la rigueur, que lorsqu'il entend monsieur ou madame, il vienne sélectionner tout seul en haut soit le monsieur, soit le madame ? »</blockquote>
+<p><strong>Oui, c'était possible, et c'est fait.</strong></p>
+<hr>
+<h2 id="ce-qui-change-à-lécran">Ce qui change à l'écran</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Vous dictez</th>
+<th>La pastille du haut</th>
+<th>La case du nom</th>
+</tr></thead><tbody>
+<tr>
+<td>« monsieur Ludovic »</td>
+<td><strong>Mr</strong> s'allume</td>
+<td>Ludovic</td>
+</tr>
+<tr>
+<td>« madame Roux, 06 12 34 56 78 »</td>
+<td><strong>Mme</strong> s'allume</td>
+<td>Roux</td>
+</tr>
+<tr>
+<td>« Ludovic Martin »</td>
+<td>rien</td>
+<td>Ludovic Martin</td>
+</tr>
+<tr>
+<td>« monsieur » tout seul</td>
+<td><strong>Mr</strong> s'allume</td>
+<td>vide</td>
+</tr>
+<tr>
+<td>« docteur Rivière »</td>
+<td>rien</td>
+<td>Rivière</td>
+</tr>
+</tbody></table></div>
+<p>Le mot n'est pas jeté : il va là où c'est une donnée. De là, il se recopie tout seul sur le devis, la facture et le message au client — comme quand vous appuyez sur la pastille à la main.</p>
+<hr>
+<h2 id="ce-que-ça-vous-évitait-de-payer">Ce que ça vous évitait de payer</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Sur vos documents.</strong> Un nom qui porte déjà « Monsieur » repart tel quel : le devis, la facture et le SMS auraient écrit « Monsieur Ludovic » là où vous écrivez « Mr. » — vous l'aviez déjà corrigé le 13 août.</p>
+<p><strong>Sur vos clients.</strong> « monsieur Ludovic » dicté un jour et « Ludovic » dicté le lendemain faisaient <strong>deux fiches</strong> pour la même personne : le rapprochement compare les noms.</p>
+<hr>
+<h2 id="trois-décisions-que-jai-prises-et-ce-quelles-coûtent">Trois décisions que j'ai prises, et ce qu'elles coûtent</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>1. « Docteur » et « Maître » partent aussi — c'est VOUS qui l'avez tranché.</strong> Je vous avais livré l'inverse, en vous disant ce que le retrait coûterait : ces deux titres ne disent ni monsieur ni madame, donc aucune pastille ne les porte ; en les enlevant, ils disparaissent, et le nom nu reçoit « Mr. » par défaut — une femme médecin devient « Mr. Rivière » sur le devis.</p>
+<p>Votre réponse : <em>« Docteur et maître ne doivent pas apparaître dans le nom. Seulement les noms de famille ! »</em> C'est fait. <strong>Le prix reste celui-là</strong>, et il est petit : la pastille est juste au-dessus, à un appui, et vous relisez la fiche avant de créer le chantier.</p>
+<p><strong>2. La dictée n'écrase jamais ce que vous avez fait.</strong> Si vous avez déjà touché « Mme », une dictée qui dit « monsieur » <strong>ne la retourne pas</strong>. Même règle que pour le nom, le numéro et l'adresse depuis le début.</p>
+<p><strong>3. La pastille ne dépend pas du nom.</strong> « Monsieur, 06 79 98 45 14 » n'a aucun nom à poser, mais vous avez bien dit monsieur : la pastille s'allume.</p>
+<hr>
+<h2 id="un-cas-que-ça-ne-sait-pas-voir">Un cas que ça ne sait pas voir</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Une enseigne qui s'appelle « Monsieur Bricolage » deviendrait « Bricolage » avec la pastille « Mr ». Vous relisez la fiche avant de créer le chantier — ça se voit et ça se corrige d'un appui. Je n'ai pas trouvé de règle qui distingue les deux sans se tromper ailleurs.</p>
+<hr>
+<h2 id="ce-que-jai-vérifié-et-ce-que-je-nai-pas-pu-vérifier">Ce que j'ai vérifié, et ce que je n'ai PAS pu vérifier</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Vérifié ici</strong></td>
+<td>17 contrôles neufs : le mot part du nom, il désigne la bonne pastille, un patronyme qui commence pareil (« Merlin », « Meunier ») n'est pas amputé, votre saisie n'est jamais écrasée. Les deux suites <strong>rougissent</strong> quand on retire la correction — c'est ce qui prouve qu'elles servent</td>
+</tr>
+<tr>
+<td><strong>Un défaut qu'elles ont attrapé</strong></td>
+<td>« Maître Roux » ressortait entier : le découpage s'arrêtait sur l'accent. Corrigé. Aucun contrôle ne l'aurait vu si son corpus s'était contenté de « Dr »</td>
+</tr>
+<tr>
+<td><strong>PAS vérifié ici</strong></td>
+<td><strong>le parcours en partant du micro.</strong> Ce poste n'a pas de clé de transcription : la dictée y rend un texte de remplacement. Je tiens toute la chaîne SOUS le micro, pas le micro lui-même</td>
+</tr>
+</tbody></table></div>
+<p><strong>Donc : à essayer sur votre espace.</strong> Ouvrez « Un chantier », appuyez sur le micro, dites « monsieur Ludovic ». La pastille « Mr » doit s'allumer et la case du nom afficher « Ludovic ».</p>
+<hr>
+<h2 id="ce-qui-reste-ouvert-et-qui-peut-le-trancher">Ce qui reste ouvert, et qui peut le trancher</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>~~« Docteur » / « Maître » : les retirer du nom aussi ?~~ <strong>tranché le 7 septembre : oui</strong></td>
+<td>~~vous~~</td>
+</tr>
+<tr>
+<td>Corriger la civilité d'un client <strong>déjà créé</strong> — il n'y a toujours pas d'écran de fiche client où le faire (signalé le 13 août 2026)</td>
+<td><strong>vous</strong>, si ça vous gêne</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

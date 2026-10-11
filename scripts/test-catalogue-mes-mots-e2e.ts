@@ -2,6 +2,7 @@ import assert from "node:assert";
 import { mkdirSync } from "node:fs";
 import { Pool } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
 
 // Le parcours du patron sur l'écran « Catalogue », arrangement B (17 août 2026).
 //
@@ -21,7 +22,7 @@ import { lancerNavigateur } from "./e2e-browser";
 // rouge ; ignorer le mot ajouté dans le rendu rend le cas de la persistance
 // rouge, en disant ce qu'il attendait et ce qu'il a vu.
 
-const RACINE = "http://localhost:3000";
+const RACINE = ADRESSE;
 const CAPTURES = process.env.CAPTURES_E2E ?? "/tmp/captures-atlas";
 
 async function main() {
@@ -68,7 +69,7 @@ async function main() {
     `Le mot « ${mot} » a disparu au rechargement : il n'a pas été enregistré.`
   );
   assert.ok(
-    /· vous/.test(apres),
+    (await page.locator('[data-atlas="mes-mots-marque"]').count()) > 0,
     "Ses mots doivent être marqués « vous » : sans la marque, il croit corriger le vocabulaire commun."
   );
 
@@ -230,8 +231,22 @@ async function main() {
   }
 
   // --- 6. La flèche de retour, le défaut du 14 août --------------------------
+  //
+  // **ON Y ARRIVE COMME LUI — corrigé le 14 septembre 2026.** Ce contrôle
+  // sautait sur `/catalogue` par une adresse directe, puis cherchait une flèche
+  // nommée « Retour aux tarifs ». Depuis le 9 septembre, la flèche ramène à la
+  // page d'où l'on vient et s'annonce alors « Retour » : elle connaît l'adresse,
+  // pas le nom de l'écran (`FlecheRetour.tsx`, et c'est SA demande — *« un vrai
+  // bouton marche arrière »*). Le contrôle réclamait donc un libellé que le
+  // patron a fait changer, sur du code juste (`CLAUDE.md` §5 bis).
+  //
+  // Ce qu'il éprouve ne bouge pas : **on repart du catalogue sans la barre du
+  // bas, et l'on retombe sur les tarifs.** C'est vrai des deux mécanismes — le
+  // journal quand on vient des tarifs, le repli déclaré quand on arrive à
+  // froid —, et le parcours joué ici est celui qu'il fait vraiment.
+  await page.goto(`${RACINE}/reglages/tarifs`, { waitUntil: "networkidle" });
   await page.goto(`${RACINE}/catalogue`, { waitUntil: "networkidle" });
-  const retour = page.getByRole("link", { name: "Retour aux tarifs" });
+  const retour = page.getByRole("link", { name: /^Retour/ });
   assert.equal(
     await retour.count(),
     1,

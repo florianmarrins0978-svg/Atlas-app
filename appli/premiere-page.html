@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — La première page, revue</title>
+<title>Atlas : La première page, revue</title>
 </head>
 <body>
 <style>
@@ -176,9 +176,9 @@
 
 <div class="barre">
   <div class="choix" role="group" aria-label="Propositions">
-    <button type="button" data-p="A" aria-pressed="true">A · aujourd'hui</button>
-    <button type="button" data-p="B" aria-pressed="false">B · les avis se distinguent</button>
-    <button type="button" data-p="C" aria-pressed="false">C · la vôtre, telle quelle</button>
+    <button type="button" data-p="A" aria-pressed="true">A, aujourd'hui</button>
+    <button type="button" data-p="B" aria-pressed="false">B, les avis se distinguent</button>
+    <button type="button" data-p="C" aria-pressed="false">C, la vôtre, telle quelle</button>
   </div>
   <div class="reglages">
     <span class="cpt">chantiers en cours
@@ -201,15 +201,15 @@
 <div class="note">
   <p><b>Ce que la B change, et rien d'autre.</b> Les deux cartes de votre capture ne sont pas
   des chantiers : ce sont des <b>avis</b>. Le compteur « En cours 0 » disait donc vrai, et la
-  phrase « Aucun chantier pour l'instant » aussi — mais l'œil, lui, lisait deux chantiers entre
+  phrase « Aucun chantier pour l'instant » aussi : mais l'œil, lui, lisait deux chantiers entre
   les deux. Un intertitre, un filet or, un fond un peu plus clair : les deux familles se séparent
   sans un mot de plus.</p>
   <p><b>Et la phrase d'accueil se tait quand l'écran n'est pas vide.</b> « Aucun chantier pour
   l'instant » sous deux avis, c'est l'application qui nie ce qu'elle vient de montrer. Elle ne
-  paraît plus que s'il n'y a vraiment rien — ni chantier, ni avis. Retirez les deux avis avec
+  paraît plus que s'il n'y a vraiment rien, ni chantier, ni avis. Retirez les deux avis avec
   « J'ai vu », chantiers à 0 : elle revient, et là elle est juste.</p>
   <p><b>« Créer un devis » devient un bouton.</b> Sur votre capture c'est un titre gris avec un
-  petit rond à côté — rien ne dit qu'on peut appuyer. En capsule, c'est la forme que porte tout
+  petit rond à côté, rien ne dit qu'on peut appuyer. En capsule, c'est la forme que porte tout
   ce sur quoi on appuie dans Atlas, et c'est le geste que vous faites le plus.</p>
   <p><b>La C ne porte QUE vos deux demandes.</b> Votre écran d'aujourd'hui, moins le
   trait gris et moins « Bonjour compte ». Le bouton en capsule, l'intertitre « À voir »
@@ -217,7 +217,7 @@
   des corrections, et elles attendent votre mot.</p>
   <p><b>Ce que je n'ai pas touché, faute de savoir :</b> le mot « BONJOUR COMPTE » affiche
   visiblement le nom du compte au lieu du vôtre. Vous l'avez fait retirer en C, ce qui règle
-  l'écran — mais si le nom est faux ailleurs, dites-le et je chercherai la cause.</p>
+  l'écran : mais si le nom est faux ailleurs, dites-le et je chercherai la cause.</p>
 </div>
 
 <script>
@@ -230,9 +230,9 @@
   var avis = ["martins", "grospiron"];
 
   var CHANTIERS = [
-    { nom: "M. Bernard",  quand: "Jeudi 28 août · une journée" },
-    { nom: "Mme Larousse", quand: "Lundi 31 août · matin" },
-    { nom: "M. Faucher",  quand: "Mardi 1er septembre · une journée" }
+    { nom: "M. Bernard",  quand: "Jeudi 28 août : une journée" },
+    { nom: "Mme Larousse", quand: "Lundi 31 août : matin" },
+    { nom: "M. Faucher",  quand: "Mardi 1er septembre : une journée" }
   ];
 
   function echapper(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
@@ -241,7 +241,7 @@
   // En A il est indiscernable d'un chantier : c'est le défaut qu'on montre.
   function unAvis(id) {
     // **Seule la B orne les avis.** La C est son écran d'aujourd'hui, moins les
-    // deux choses qu'il a nommées — rien d'autre ne bouge (sa consigne du
+    // deux choses qu'il a nommées : rien d'autre ne bouge (sa consigne du
     // 24 août : « pour la mienne fais seulement les changements que je t'ai
     // demandés, le reste laisse-le comme il est aujourd'hui »).
     var orne = prop === "B" ? " marque-or" : "";
@@ -298,7 +298,7 @@
 
     // ── La phrase d'accueil ─────────────────────────────────────────────
     // **En A elle paraît dès qu'il n'y a pas de CHANTIER**, même sous deux
-    // avis — et elle nie alors ce que l'écran vient de montrer. En B et C
+    // avis : et elle nie alors ce que l'écran vient de montrer. En B et C
     // elle attend que l'écran soit vraiment vide.
     var vide = prop === "B" ? (chantiers === 0 && avis.length === 0) : chantiers === 0;
     if (vide) h += '<p class="vide">Aucun chantier pour l\'instant. Créez votre premier chantier pour commencer.</p>';
@@ -312,13 +312,13 @@
   }
 
   // **Le verdict se recompose à chaque geste** : c'est lui qui répond à la
-  // question qu'il pose vraiment — « qu'est-ce qui cloche, au juste ? ».
+  // question qu'il pose vraiment, « qu'est-ce qui cloche, au juste ? ».
   function verdict() {
     var v = $("#verdict");
     if (prop !== "B" && chantiers === 0 && avis.length > 0) {
       v.innerHTML = "<b>Voilà ce que vous voyez aujourd'hui :</b> « En cours 0 », puis " +
         avis.length + " carte" + (avis.length > 1 ? "s" : "") + ", puis « Aucun chantier pour l'instant ». " +
-        "Les trois sont vraies — les cartes sont des avis, pas des chantiers — mais elles se contredisent à l'œil. " +
+        "Les trois sont vraies (les cartes sont des avis, pas des chantiers) mais elles se contredisent à l'œil. " +
         (prop === "C"
           ? "<b>Votre version garde ce point</b>, puisque vous n'avez demandé que le trait et le bonjour. Touchez B pour voir l'autre chemin."
           : "<b>Touchez B.</b>");
@@ -327,7 +327,7 @@
     }
     if (prop === "B" && chantiers === 0 && avis.length > 0) {
       v.innerHTML = "<b>Les avis sont sous « À voir », le compteur parle des chantiers, " +
-        "et la phrase d'accueil se tait</b> — elle reviendra quand l'écran sera vraiment vide. " +
+        "et la phrase d'accueil se tait</b> : elle reviendra quand l'écran sera vraiment vide. " +
         "Retirez les deux avis avec « J'ai vu » pour la voir revenir à sa place.";
       v.hidden = false;
       return;

@@ -21,7 +21,7 @@ import assert from "node:assert/strict";
 import { pool } from "../src/server/db/client";
 import { nettoyerBase } from "./_test-db";
 import { creerEntreprise } from "../src/server/repositories/entreprises";
-import { creerChantier } from "../src/server/repositories/chantiers";
+import { creerChantier, getChantier, retirerChantierDeLaListe } from "../src/server/repositories/chantiers";
 import { getOuCreerDevisBrouillon, envoyerDevis } from "../src/server/repositories/devis";
 import { ajouterLignePrix } from "../src/server/repositories/lignes-prix";
 import { creerEnvoi } from "../src/server/repositories/envois-devis";
@@ -35,8 +35,11 @@ import {
 import { RAPPELS_PAR_DEFAUT } from "../src/lib/rappels";
 import { terminerChantier, emettreFacture } from "../src/server/repositories/factures";
 import { noterPaiement } from "../src/server/repositories/paiements-facture";
+import { declarerNonPayee } from "../src/server/repositories/factures-non-payees";
+import { faireUnAvoir } from "../src/server/repositories/avoirs";
 import { mettreAJourEntreprise } from "../src/server/repositories/entreprises";
 import { withEntreprise } from "../src/server/db/with-entreprise";
+import { donnerUnAcces, listerAcces } from "../src/server/repositories/membres-entreprise";
 import { chantiers, envoisDevis } from "../src/server/db/schema";
 import { eq } from "drizzle-orm";
 
@@ -343,9 +346,12 @@ async function main() {
 
   // ── Le quatrième rappel : la facture impayée ──────────────────────────────
   //
-  // **« A plus B », sa réponse du 16 août 2026.** L'échéance quand un délai de
-  // paiement est réglé, le jour de l'envoi sinon.
-  await essai("A : avec un délai de 30 jours, rien n'est rappelé au dixième", async () => {
+  // **Depuis l'échéance INSCRITE SUR LA FACTURE — sa décision du 7 octobre
+  // 2026**, qui remplace « A plus B » (16 août). Le rappel comptait depuis le
+  // délai des Réglages ; or la facture imprime sa propre échéance (celle du
+  // devis, ou celle qu'il a changée à la main), et le rappel tombait alors un
+  // mois trop tard ou relançait un client qui n'était pas en retard.
+  await essai("avec un délai de 30 jours, rien n'est rappelé au dixième", async () => {
     const { ctxA } = await monter();
     await mettreAJourEntreprise(ctxA, { conditions: { delaiPaiementJours: 30 } });
     await factureEnvoyeeIlYA(ctxA, "Toiture", 10);
@@ -353,7 +359,7 @@ async function main() {
     assert.deepEqual(rappels, []);
   });
 
-  await essai("A : passée l'échéance, elle est rappelée avec son montant", async () => {
+  await essai("passée l'échéance, elle est rappelée avec son montant", async () => {
     const { ctxA } = await monter();
     await mettreAJourEntreprise(ctxA, { conditions: { delaiPaiementJours: 30 } });
     await factureEnvoyeeIlYA(ctxA, "Toiture", 40);
@@ -363,13 +369,35 @@ async function main() {
     assert.equal(rappels[0].facture?.totalCts, 120000);
   });
 
-  // **B : sans délai réglé, on compte depuis l'envoi.** Rendre `null` aurait
-  // laissé un rappel muet qu'on croit allumé.
-  await essai("B : sans délai réglé, le compte part de l'envoi", async () => {
+  // Son exemple 1 : un devis « comptant » donne une facture à échéance du jour
+  // même. Les Réglages à 30 jours faisaient attendre un mois de trop.
+  await essai("une facture payable comptant est rappelée le lendemain, malgré 30 jours aux Réglages", async () => {
+    const { ctxA } = await monter();
+    await mettreAJourEntreprise(ctxA, { conditions: { delaiPaiementJours: 0 } });
+    const { chantier } = await factureEnvoyeeIlYA(ctxA, "Toiture", 3);
+    await mettreAJourEntreprise(ctxA, { conditions: { delaiPaiementJours: 30 } });
+    const rappels = (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee");
+    assert.deepEqual(rappels.map((r) => r.chantierId), [chantier.id], "la facture comptant attend le délai des Réglages");
+  });
+
+  // Son exemple 2 : 60 jours accordés au client, Réglages à 30. Le client
+  // n'est pas en retard au quarantième jour.
+  await essai("une facture à 60 jours n'est pas rappelée au quarantième, malgré 30 jours aux Réglages", async () => {
+    const { ctxA } = await monter();
+    await mettreAJourEntreprise(ctxA, { conditions: { delaiPaiementJours: 60 } });
+    await factureEnvoyeeIlYA(ctxA, "Toiture", 40);
+    await mettreAJourEntreprise(ctxA, { conditions: { delaiPaiementJours: 30 } });
+    const rappels = (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee");
+    assert.deepEqual(rappels, [], "un client à 60 jours est relancé au délai des Réglages");
+  });
+
+  // Sans délai réglé, la facture imprime l'échéance légale de 30 jours : le
+  // rappel compte depuis elle, comme le client la lit.
+  await essai("sans délai réglé, le rappel compte depuis l'échéance imprimée (30 jours)", async () => {
     const { ctxA } = await monter();
     await factureEnvoyeeIlYA(ctxA, "Toiture", 3);
     const rappels = (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee");
-    assert.equal(rappels.length, 1, "aucun rappel alors qu'aucun délai n'est réglé");
+    assert.deepEqual(rappels, [], "relancé au troisième jour alors que la facture laisse 30 jours");
   });
 
   // **LE PREMIER PIÈGE DE SA PLANCHE.** C'est la somme des règlements qui
@@ -380,6 +408,28 @@ async function main() {
     await noterPaiement(ctxA, factureId, { date: "2026-08-13", montant: "1200.00" });
     const rappels = (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee");
     assert.deepEqual(rappels, []);
+  });
+
+  // **« IL NE ME PAIERA PAS » TAIT LE RAPPEL** (sa planche du 24 septembre
+  // 2026) : il l'a dit, on ne le lui redit plus. La facture, elle, reste due.
+  await essai("déclarée « Il ne me paiera pas », elle n'est plus rappelée", async () => {
+    const { ctxA } = await monter();
+    const { factureId } = await factureEnvoyeeIlYA(ctxA, "Toiture", 40);
+    assert.deepEqual(await declarerNonPayee(ctxA, factureId), { ok: true });
+    const rappels = (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee");
+    assert.deepEqual(rappels, []);
+  });
+
+  // **Un avoir baisse ce qui est rappelé** : le rappel réclame ce qui reste
+  // après lui, jamais une somme déjà annulée.
+  await essai("après un avoir de 240 €, le rappel ne réclame plus que 960 €", async () => {
+    const { ctxA } = await monter();
+    const { factureId } = await factureEnvoyeeIlYA(ctxA, "Toiture", 40);
+    const avoir = await faireUnAvoir(ctxA, factureId, { portee: null, montantTtc: "240", motif: "Geste commercial" }, MAINTENANT);
+    assert.ok(avoir.ok, avoir.ok ? "" : avoir.refus);
+    const [rappel] = (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee");
+    assert.equal(rappel?.facture?.resteDuCts, 96000);
+    assert.equal(rappel?.facture?.totalCts, 96000);
   });
 
   // **LE DEUXIÈME PIÈGE.** Un acompte ne solde pas : la facture reste rappelée
@@ -435,6 +485,32 @@ async function main() {
       (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee"),
       []
     );
+  });
+
+  // ── Retiré de la liste, sans rien effacer — sa règle du 29 septembre 2026 ──
+  // *« il doit pouvoir les retirer en les slidant, mais ça ne doit pas impacter
+  // le lien cliquable envoyé au client »*. Retiré en sachant qu'il attendait,
+  // le devis ne revient pas par un rappel.
+  await essai("un devis retiré de la liste ne se rappelle plus, et rien n'est effacé", async () => {
+    const { ctxA } = await monter();
+    const chantier = await devisPartiIlYA(ctxA, "Haie de charmille", 10);
+    assert.equal(await retirerChantierDeLaListe(ctxA, chantier.id), true);
+    assert.deepEqual(
+      (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "devis-sans-reponse"),
+      []
+    );
+    // Lu sous `atlas_app`, par la porte des écrans : un chantier supprimé n'y
+    // serait plus.
+    const relu = await getChantier(ctxA, chantier.id);
+    assert.ok(relu, "le chantier a été supprimé");
+    assert.ok(relu.retireDeLaListeAt, "l'heure du retrait n'est pas posée");
+  });
+
+  await essai("et l'entreprise voisine ne retire pas ses chantiers", async () => {
+    const { ctxA, ctxB } = await monter();
+    const chantier = await devisPartiIlYA(ctxA, "Haie de charmille", 10);
+    assert.equal(await retirerChantierDeLaListe(ctxB, chantier.id), false);
+    assert.equal((await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "devis-sans-reponse").length, 1);
   });
 
   // ───────────────────────────────────────────────────────────────────────
@@ -578,6 +654,53 @@ async function main() {
       1,
       "le rappel du voisin s'est tu"
     );
+  });
+
+  // ── Chacun ses rappels ────────────────────────────────────────────────────
+  //
+  // **Sa règle du 27 septembre 2026** : *« Le patron doit toujours tout
+  // recevoir. Ensuite il faut filtrer pour le commercial et la facturation.
+  // Chacun ne doit pas recevoir les rappels des autres. »* Le tri se fait dans
+  // `rappelsEnCours`, pas dans l'écran : l'assistant lit la même fonction
+  // (`lire-rappels.ts`), et un commercial ne doit pas y retrouver les factures.
+  console.log("");
+  await essai("chacun ne reçoit que ses rappels, le patron reçoit tout", async () => {
+    const { ctxA } = await monter();
+    await chantierOuvertIlYA(ctxA, "Sans devis", 6);
+    await devisPartiIlYA(ctxA, "Sans réponse", 10);
+    const termine = await creerChantier(ctxA, { nom: "Non facturé" });
+    await poserJalon(ctxA, termine.id, { termineAt: ilYA(5) });
+    await factureEnvoyeeIlYA(ctxA, "Impayée", 40);
+
+    const membre = async (email: string, role: "commercial" | "facturation" | "salarie"): Promise<Ctx> => {
+      const r = await donnerUnAcces(ctxA, {
+        nom: email,
+        email,
+        motDePasse: "un-mot-de-passe-assez-long",
+        confirmation: "un-mot-de-passe-assez-long",
+        role,
+      });
+      assert.equal(r.ok, true, `le montage n'a pas pu créer ${email}`);
+      const acces = (await listerAcces(ctxA)).find((l) => l.email === email)!;
+      return { utilisateurId: acces.utilisateurId, entrepriseId: ctxA.entrepriseId };
+    };
+    const genres = async (ctx: Ctx) => (await rappelsEnCours(ctx, MAINTENANT)).map((r) => r.genre).sort();
+
+    const tous = ["chantier-non-facture", "chantier-sans-devis", "devis-sans-reponse", "facture-impayee"];
+    // Le contrôle inverse d'abord : sans les quatre chez le patron, les refus
+    // ci-dessous seraient verts faute de matière.
+    assert.deepEqual(await genres(ctxA), tous, "le patron ne reçoit pas tout");
+    assert.deepEqual(
+      await genres(await membre("commercial@essai.local", "commercial")),
+      ["chantier-sans-devis", "devis-sans-reponse"],
+      "le commercial reçoit autre chose que les devis"
+    );
+    assert.deepEqual(
+      await genres(await membre("facturation@essai.local", "facturation")),
+      ["chantier-non-facture", "facture-impayee"],
+      "la facturation reçoit autre chose que les factures"
+    );
+    assert.deepEqual(await genres(await membre("salarie@essai.local", "salarie")), [], "un salarié reçoit des rappels");
   });
 
   console.log("");

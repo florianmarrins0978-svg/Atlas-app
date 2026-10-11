@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — Le planning, simplifié</title>
+<title>Atlas : Le planning, simplifié</title>
 </head>
 <body>
 <style>
@@ -376,24 +376,24 @@
 <div class="pied">
   <h3>Ce qui suit votre demande, sans variante</h3>
   <ul>
-    <li><b>Le calendrier reste au mois</b> — votre correction du 21 août. C’est
+    <li><b>Le calendrier reste au mois</b> : votre correction du 21 août. C’est
       lui qui sert à viser une date lointaine, et les flèches changent de mois.</li>
     <li><b>La semaine ne gouverne que les planifiés</b>, avec sa propre flèche
       de chaque côté, les jours <b>nommés</b> et les clients dessous.</li>
-    <li><b>Les titres sont noirs, gras et centrés</b> — et le jour aussi.</li>
+    <li><b>Les titres sont noirs, gras et centrés</b> : et le jour aussi.</li>
     <li><b>Les deux se parlent :</b> toucher un jour du mois amène la liste sur
       la semaine de ce jour. On vise en haut, on lit en bas.</li>
   </ul>
   <h3>Ce qu’il reste à choisir</h3>
   <ul>
-    <li><b>A, B ou C</b> — comment se voient les demi-journées sur le mois.
+    <li><b>A, B ou C</b> : comment se voient les demi-journées sur le mois.
       <b>A</b> pose deux barres sous le chiffre (matin dessus, après-midi
       dessous) ; <b>B</b> met le chiffre dans un rond rempli par le haut ou par
       le bas ; <b>C</b> pose une seule barre coupée en deux (gauche = matin,
       droite = après-midi).</li>
     <li>Trois couleurs seulement : <b>vide</b> = libre, <b>vert pâle</b> = une
       équipe sur deux, <b>vert plein</b> = complet. La phrase « Complet veut
-      dire : vos 2 équipes sont prises sur cette demi-journée » disparaît — la
+      dire : vos 2 équipes sont prises sur cette demi-journée » disparaît, la
       couleur le dit.</li>
   </ul>
 </div>
@@ -413,7 +413,7 @@
    *
    * **Un chantier peut porter PLUSIEURS équipes.** Sa demande du 21 août :
    * *« lorsque je choisis une équipe je dois pouvoir mettre toutes les équipes
-   * si je le souhaite, le même jour ou même sur la même demi-journée — tout le
+   * si je le souhaite, le même jour ou même sur la même demi-journée : tout le
    * monde le matin, puis tout le monde l'aprem »*. Un gros chantier se fait à
    * plusieurs, et l'écran doit pouvoir le dire.
    *
@@ -427,7 +427,7 @@
    *
    * **Le matin et l'après-midi sont indépendants.** Sa remarque du 21 août :
    * *« sur Mr. Leroy, qui dure toute la journée, je ne peux pas mettre juste
-   * Paul le matin et Julien et Paul l'après-midi — si je mets les deux
+   * Paul le matin et Julien et Paul l'après-midi : si je mets les deux
    * l'après-midi, ça me les met aussi le matin. Il faut que tout soit
    * indépendant. »*
    *
@@ -440,35 +440,35 @@
   // **Modifiable, et c'est tout l'objet de la planche.** Sa consigne du
   // 21 août : « il faut que j'aille cliquer, pouvoir modifier, changer, voir ce
   // que ça donne ». Une planche qui ne ferait qu'AFFICHER un état ne répondrait
-  // pas à la demande — on pose donc pour de bon dans cette liste.
+  // pas à la demande, on pose donc pour de bon dans cette liste.
   const CHANTIERS = [
     { nom: "Mme Rocher",                  date: "2026-08-19", demi: "apres",   equipes: { matin: ["Julien"], apres: ["Julien"] },
       adresse: "4 rue des Ormes, Nantes", tel: "02 40 11 22 33",
-      taches: ["Taille de haie de laurier — 18 m linéaires, hauteur 2 m",
+      taches: ["Taille de haie de laurier : 18 m linéaires, hauteur 2 m",
                "Évacuation des déchets verts"] },
     { nom: "Mr. Leroy",                   date: "2026-08-20", demi: "journee", equipes: { matin: ["Paul"], apres: ["Paul"] },
       adresse: "12 chemin du Moulin, Sautron", tel: "06 44 55 66 77",
-      taches: ["Tonte de la pelouse — environ 900 m²",
+      taches: ["Tonte de la pelouse : environ 900 m²",
                "Débroussaillage du talus arrière",
                "Ramassage et évacuation"] },
     { nom: "Mr. Martins",                 date: "2026-08-21", demi: "journee", equipes: { matin: [], apres: [] } },
     { nom: "Monsieur Martins",            date: "2026-08-21", demi: "journee", equipes: { matin: [], apres: [] } },
-    { nom: "Chantier test — Abri Pornic", date: "2026-08-25", demi: "matin",   equipes: { matin: ["Julien"], apres: ["Julien"] } },
+    { nom: "Chantier test : Abri Pornic", date: "2026-08-25", demi: "matin",   equipes: { matin: ["Julien"], apres: ["Julien"] } },
     { nom: "Mme Guérin",                  date: "2026-08-27", demi: "apres",   equipes: { matin: ["Paul"], apres: ["Paul"] } },
     { nom: "Mr. Ollivier",                date: "2026-08-27", demi: "matin",   equipes: { matin: ["Julien"], apres: ["Julien"] } },
     // **Le cas qui manquait, et qui l'a fait douter le 21 août :** un
     // après-midi où les DEUX équipes sont sur le coup, avec le matin libre. Sans
     // lui, rien à l'écran ne distinguait « une équipe sur deux » de « complet »,
-    // et sa question — « comment vous faites si l'après-midi j'ai mes deux
-    // équipes ? » — n'avait aucune réponse visible.
+    // et sa question : « comment vous faites si l'après-midi j'ai mes deux
+    // équipes ? », n'avait aucune réponse visible.
     { nom: "Mme Chauvin",                 date: "2026-08-26", demi: "apres",   equipes: { matin: ["Julien"], apres: ["Julien"] },
       adresse: "7 impasse des Vignes, Orvault", tel: "06 12 34 56 78",
       taches: ["Plantation de 12 arbustes en massif",
-               "Apport de terreau et paillage — 3 m³",
+               "Apport de terreau et paillage : 3 m³",
                "Arrosage de reprise"] },
     { nom: "Mr. Renaudin",                date: "2026-08-26", demi: "apres",   equipes: { matin: ["Paul"], apres: ["Paul"] },
       adresse: "31 boulevard de la Prairie, Nantes", tel: "06 98 76 54 32",
-      taches: ["Pose de bordures béton — 24 m",
+      taches: ["Pose de bordures béton : 24 m",
                "Reprise de l'allée en gravillons"] },
     { nom: "Mr. Pasquier",                date: "2026-09-03", demi: "journee", equipes: { matin: ["Paul"], apres: ["Paul"] } },
   ];
@@ -477,7 +477,7 @@
     { nom: "Mr. Pichon",  adresse: "9 rue du Pré, Vertou", tel: "06 21 43 65 87",
       taches: ["Élagage d'un cerisier", "Broyage sur place"] },
     { nom: "Mme Auffret", adresse: "2 allée des Chênes, Carquefou", tel: "02 40 55 44 33",
-      taches: ["Remise en état d'un massif — 40 m²", "Pose d'une toile et paillage"] },
+      taches: ["Remise en état d'un massif : 40 m²", "Pose d'une toile et paillage"] },
   ];
 
   const ATTENTE = [
@@ -523,12 +523,12 @@
   let jourTouche = null;
 
   /**
-   * Les chantiers du jour — les siens, plus ce qu'il faut pour que la question
+   * Les chantiers du jour, les siens, plus ce qu'il faut pour que la question
    * des dix équipes ait une réponse VISIBLE.
    *
    * Avec deux équipes, le mercredi 26 est complet l'après-midi. Avec dix, les
    * deux mêmes chantiers n'en remplissent plus qu'un cinquième, et « complet »
-   * ne se verrait nulle part — la maquette cesserait de montrer ce qu'elle doit
+   * ne se verrait nulle part : la maquette cesserait de montrer ce qu'elle doit
    * trancher. On complète donc ce jour-là jusqu'à la dernière équipe, et le
    * jeudi 27 jusqu'à la moitié.
    */
@@ -553,14 +553,14 @@
    * **Sa proposition du 21 août 2026, et c'est la bonne :**
    * *« Une fois qu'on a mis deux chantiers avec deux gars, on dit que c'est
    * complet. Et si l'utilisateur en rajoute un troisième, on met une autre
-   * couleur pour lui signaler qu'il a dépassé le quota — mais il peut quand
+   * couleur pour lui signaler qu'il a dépassé le quota : mais il peut quand
    * même le faire. S'il veut mettre trois chantiers par jour avec deux gars, il
    * le fait ; nous, on prévient juste. Au cas où il aurait fait une erreur, ou
    * s'il se dit : ces chantiers ne dureront pas vraiment la journée, donc ça
    * passe. »*
    *
    * **Ce que ce modèle résout, et que ni « complet » ni « aucune limite » ne
-   * réglaient :** un repère existe — une équipe, un chantier, une demi-journée —
+   * réglaient :** un repère existe : une équipe, un chantier, une demi-journée —
    * sans jamais devenir une barrière. Le dépassement se voit ; il ne se refuse
    * pas. C'est lui qui sait qu'une taille de haie prend une heure.
    *
@@ -580,7 +580,7 @@
    * **`dispo` et non `place`** : `.place` est déjà le nom des lignes de
    * chantier dans la fiche du jour. Les deux se sont rencontrés dans la
    * légende, où le carré « incomplet » héritait du `margin-top:10px` des
-   * lignes et tombait cinq pixels plus bas que ses voisins — vu par lui, sur
+   * lignes et tombait cinq pixels plus bas que ses voisins, vu par lui, sur
    * son téléphone, le 21 août. Deux sens pour un même mot finissent toujours
    * par se croiser.
    */
@@ -589,7 +589,7 @@
 
   const titreJour = (iso) => `${JOURS[jourDeSemaine(iso)]} ${numero(iso)} ${MOIS[enDate(iso).getUTCMonth()]}`;
   // **« ½ journée » ne s'écrit plus.** Sa remarque du 21 août : « il y a marqué
-  // matin, et à chaque fois demi-journée — on sait que c'est une demi-journée ».
+  // matin, et à chaque fois demi-journée : on sait que c'est une demi-journée ».
   // Un mot qui répète le mot d'à côté se lit quand même, et fait douter qu'il
   // dise autre chose.
   const ditLaDemi = (demi) =>
@@ -607,15 +607,15 @@
    * **Quatre états, et le dernier est un avertissement, pas un refus** (sa
    * proposition du 21 août) :
    *
-   *   · vide — personne ;
-   *   · vert clair — il reste de la place ;
-   *   · vert foncé — chaque équipe a son chantier ;
-   *   · **or — au-delà** : plus de chantiers que d'équipes. La barre est pleine
+   *   · vide : personne ;
+   *   · vert clair, il reste de la place ;
+   *   · vert foncé, chaque équipe a son chantier ;
+   *   · **or, au-delà** : plus de chantiers que d'équipes. La barre est pleine
    *     et change de couleur ; rien n'est interdit, on prévient.
    *
    * La barre se remplit à la charge, plafonnée à 100 % pour le DESSIN : au-delà,
    * c'est la couleur qui parle, sinon il faudrait une barre qui déborde de la
-   * case — et le mois ne serait plus lisible.
+   * case : et le mois ne serait plus lisible.
    */
   function dessinerMarque(iso) {
     const barre = (o) => {
@@ -675,14 +675,14 @@
    *    coup ? »* — la couleur seule ne répondait pas : « une équipe sur deux »
    *    et « complet » se ressemblent tant qu'on n'a pas vu les deux côte à côte.
    *    La fiche dit donc le COMPTE, demi-journée par demi-journée : « matin :
-   *    libre », « après-midi : 2 équipes sur 2 — complet ». Le calendrier
+   *    libre », « après-midi : 2 équipes sur 2 : complet ». Le calendrier
    *    signale ; la fiche tranche.
    */
   /**
    * Ce que dit une demi-journée, en toutes lettres.
    *
    * **Plus de « complet » depuis le 21 août** : il n'y a pas de plafond. On
-   * énonce donc ce qui est vrai — le nombre de chantiers, et qui est dehors.
+   * énonce donc ce qui est vrai, le nombre de chantiers, et qui est dehors.
    */
   function ditLeCompte(iso, demi) {
     const o = occupation(iso, demi);
@@ -700,8 +700,8 @@
    * Ce que dit la JOURNÉE, en un seul endroit.
    *
    * **Sa correction du 21 août :** *« "1 chantier" de l'aprem, supprime, c'est
-   * déjà écrit pour le matin »*. Le compte était rendu deux fois — une par
-   * demi-journée — et sur un chantier à la journée les deux lignes disaient le
+   * déjà écrit pour le matin »*. Le compte était rendu deux fois : une par
+   * demi-journée, et sur un chantier à la journée les deux lignes disaient le
    * même mot. On compte donc les chantiers du jour, une fois, en tête.
    *
    * La charge, elle, se prend sur la demi-journée la plus chargée : c'est celle
@@ -725,7 +725,7 @@
    * jour, et sous un chantier de la liste des planifiés. Sa demande du
    * 21 août : *« quand je clique sur Monsieur Martins dans la liste, il faut
    * que ça m'affiche le même bandeau déroulant que lorsque je clique sur un
-   * chiffre du planning du mois — le matin, l'après-midi, ajouter un chantier
+   * chiffre du planning du mois, le matin, l'après-midi, ajouter un chantier
    * — et la feuille de chantier. Il faut que les deux s'affichent. »*
    *
    * Elle est donc écrite UNE fois et branchée deux fois : deux copies auraient
@@ -742,7 +742,7 @@
 
     // La ligne d'une demi-journée SOUS le nom du chantier : sa pastille, son
     // moment, son équipe, et les deux gestes. Le matin et l'après-midi gardent
-    // chacun leur équipe — c'est sa règle du 21 août, et elle vaut ici aussi.
+    // chacun leur équipe : c'est sa règle du 21 août, et elle vaut ici aussi.
     const ligne = (c, demi, mot) => {
       const i = CHANTIERS.indexOf(c);
       const equipes = equipesDe(c, demi);
@@ -785,7 +785,7 @@
 
     // **LE NOM D'ABORD, TOUJOURS** — sa correction du 21 août au soir : *« fais
     // pareil pour les autres, le nom toujours en premier ! »*. Une demi-journée
-    // vide ouvrait la fiche du 19 et celle du 26 : on lisait « matin — libre »
+    // vide ouvrait la fiche du 19 et celle du 26 : on lisait « matin, libre »
     // avant de savoir DE QUI il s'agit, alors que c'est le client qu'il
     // cherche. Les chantiers passent donc devant, et ce qui reste libre se dit
     // après.
@@ -807,7 +807,7 @@
       if (occupation(iso, demi).pris.length === 0) morceaux.push(libre(demi, mot));
     });
 
-    // **Un seul bouton d'ajout, sous la journée — sa demande du 21 août :**
+    // **Un seul bouton d'ajout, sous la journée : sa demande du 21 août :**
     // *« le "+ Ajouter un chantier", tu le mets en dessous, un rond avec un
     // plus ; je ne veux pas qu'il soit affilié à la case matin ou après-midi,
     // ça surcharge et on ne comprend plus trop. »*
@@ -826,7 +826,7 @@
       <div class="feuille-place"></div>`;
   }
 
-  /** Les gestes de la carte — branchés sur la copie qu'on vient d'écrire. */
+  /** Les gestes de la carte, branchés sur la copie qu'on vient d'écrire. */
   function brancherJour(boite, iso) {
     const feuillePlace = () => boite.querySelector(".feuille-place");
 
@@ -861,7 +861,7 @@
       }));
 
     // **Qui poser ?** La liste des chantiers en attente s'ouvre sur place. Elle
-    // dit ce qu'elle a, ou qu'elle n'a rien — un bouton qui n'ouvre rien laisse
+    // dit ce qu'elle a, ou qu'elle n'a rien : un bouton qui n'ouvre rien laisse
     // croire à une panne.
     boite.querySelectorAll("[data-ajouter]").forEach((b) =>
       b.addEventListener("click", () => {
@@ -870,7 +870,7 @@
         choix.className = "choisir";
 
         // **D'abord QUI, ensuite QUAND.** Demander le moment avant le chantier
-        // obligerait à revenir en arrière dès qu'on se trompe de client — et
+        // obligerait à revenir en arrière dès qu'on se trompe de client, et
         // c'est le client qu'il a en tête, pas la demi-journée.
         if (SANS_DATE.length === 0) {
           choix.innerHTML = `<p class="rien">Aucun chantier n’attend de jour.</p>`;
@@ -925,15 +925,15 @@
    *
    * **C'est le bon choix, et pour une raison de fond :** une fiche
    * « prestations » saisie à côté serait une SECONDE liste de ce qui est à
-   * faire. Le devis change — une ligne ajoutée au téléphone, une quantité
-   * corrigée — et les deux divergent en silence ; l'équipe part alors avec la
+   * faire. Le devis change, une ligne ajoutée au téléphone, une quantité
+   * corrigée : et les deux divergent en silence ; l'équipe part alors avec la
    * version d'avant. Ici la feuille N'EST PAS un document : c'est le devis
    * lui-même, rendu sans ses colonnes de prix. Rien à tenir à jour, rien qui
    * puisse mentir.
    *
    * Ce qui reste à trancher, et qui n'est pas un détail : les lignes d'un devis
    * portent parfois le prix DANS leur libellé (« forfait 350 € »). Il faudra le
-   * dire au moment de coder — voir `TODO.md`.
+   * dire au moment de coder, voir `TODO.md`.
    */
   function rendreFeuille(c, boite) {
     if (!c || !boite) return;
@@ -944,7 +944,7 @@
 
     // **Les gestes de la feuille « Y aller » sont repris, pas réinventés.** Sa
     // demande du 21 août : « reprends l'adresse cliquable qui ouvre Maps ou
-    // Waze, la possibilité d'appeler le client et de copier l'adresse — le
+    // Waze, la possibilité d'appeler le client et de copier l'adresse : le
     // reste, on n'en aura pas besoin ». Ces liens existent déjà dans
     // l'application (`src/lib/itineraire.ts`) : la maquette recopie leurs
     // formes exactes, pas des adresses inventées qui ouvriraient sur rien.
@@ -1011,16 +1011,16 @@
         </div>`).join("");
 
     // **Le nom d'un planifié ouvre SA feuille, ici même.** C'est dans CETTE
-    // liste qu'il cliquait — pas dans la fiche du jour —, et rien ne se
+    // liste qu'il cliquait : pas dans la fiche du jour —, et rien ne se
     // passait : « je ne peux toujours pas cliquer sur le nom du client ». La
     // feuille s'ouvre sous la liste, là où le doigt vient d'appuyer.
     // **Depuis la liste, la pastille MÈNE AU JOUR** au lieu d'ouvrir un choix.
-    // Un chantier à la journée porte deux listes d'équipes — matin et
+    // Un chantier à la journée porte deux listes d'équipes, matin et
     // après-midi, indépendantes depuis le 21 août —, et une pastille unique ne
     // saurait pas laquelle modifier. On ouvre donc la journée, où les deux sont
     // distinctes.
     // **Toucher un chantier de la liste ouvre SA JOURNÉE, puis SA FEUILLE.**
-    // Sa demande du 21 août : « il faut que les deux s'affichent » — le bandeau
+    // Sa demande du 21 août : « il faut que les deux s'affichent » : le bandeau
     // du jour (matin, après-midi, ajouter) et la feuille de chantier. La carte
     // est la même que sous le calendrier : elle est écrite une fois, branchée
     // ici aussi.
@@ -1046,7 +1046,7 @@
   /**
    * La liste des équipes, ouverte à la place de la pastille touchée.
    *
-   * Elle sert aux deux endroits où une équipe s'affiche — la fiche du jour et la
+   * Elle sert aux deux endroits où une équipe s'affiche, la fiche du jour et la
    * liste des planifiés. Deux listes écrites séparément auraient fini par
    * proposer des choix différents.
    */
@@ -1059,7 +1059,7 @@
     // **On COCHE, on ne choisit pas une seule fois.** Sa demande du 21 août :
     // « je dois pouvoir mettre toutes les équipes si je le souhaite, sur la
     // même demi-journée ». La liste reste donc ouverte tant qu'il n'a pas fini,
-    // et le calendrier se repeint derrière à chaque coche — sinon il faudrait
+    // et le calendrier se repeint derrière à chaque coche : sinon il faudrait
     // refermer pour voir l'effet, et rouvrir pour corriger.
     // **La liste se construit UNE fois, puis se coche sur place.** La
     // réécrire à chaque coche remplaçait les boutons sous le doigt : deux
@@ -1102,7 +1102,7 @@
     rendreSansDate();
 
     // **Les compteurs de la journée se mettent à jour EUX AUSSI**, sans que la
-    // fiche soit refaite — sinon la liste ouverte se refermerait sous le doigt.
+    // fiche soit refaite : sinon la liste ouverte se refermerait sous le doigt.
     // Vu sur capture : trois équipes cochées, et l'en-tête disait encore
     // « 2 sur 5 ». Un compteur qui retarde d'un geste fait douter du geste.
     document.querySelectorAll("[data-jour-carte] .demi[data-bloc]").forEach((ligne) => {
@@ -1118,13 +1118,13 @@
   }
 
   /**
-   * « Sans date » — et c'est d'ici qu'on POSE.
+   * « Sans date », et c'est d'ici qu'on POSE.
    *
    * Sa consigne du 21 août : « il faut que j'aille cliquer, pouvoir modifier,
    * changer ». Poser un chantier est le geste central du planning ; une planche
    * qui ne le permettrait pas ne se laisserait pas juger.
    *
-   * **Le jour se choisit AVANT**, dans le calendrier — c'est déjà le geste de
+   * **Le jour se choisit AVANT**, dans le calendrier : c'est déjà le geste de
    * l'application, et cela évite un second calendrier dans une feuille. Tant
    * qu'aucun jour n'est touché, le bouton le dit au lieu de rester inerte.
    */

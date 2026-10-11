@@ -1,11 +1,19 @@
+import { positionEffective } from "@/lib/mentions-legales";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getEntreprise } from "@/server/repositories/entreprises";
+import { facturesAvecAncienIban } from "@/server/repositories/factures";
 import { estProprietaire } from "@/server/autorisation";
 import IdentiteClient from "./IdentiteClient";
 import PeriodiciteTvaReglage from "../PeriodiciteTva";
-import { PERIODICITE_TVA_PAR_DEFAUT } from "@/server/periode-tva";
+import ExigibiliteTva from "../ExigibiliteTva";
+import { libellePeriode, periodeCourante, PERIODICITE_TVA_PAR_DEFAUT } from "@/server/periode-tva";
+import { relevesSousLesDeuxRegimes } from "@/server/repositories/factures";
+import { enEuros } from "@/lib/euros";
+import VoirUnExemple from "../VoirUnExemple";
+import { remarquesSurLAttestation } from "@/lib/attestation-lue";
+import { jourIso } from "@/lib/jour";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +46,17 @@ export default async function IdentitePage() {
   }
 
   const e = await getEntreprise(ctx);
+  // **La liste des factures parties avec l'ancien IBAN**, montée ici : la page
+  // seule lit la base, l'écran n'affiche que ce qu'elle lui donne. Vide dans
+  // l'immense majorité des cas — et rien ne s'affiche alors.
+  const aPrevenir = await facturesAvecAncienIban(ctx);
+  // **Ce que le régime change sur la période COURANTE**, pour que le choix ne se
+  // fasse pas à l'aveugle — sa plainte du 26 août 2026, « rien ne se passe ».
+  // Lu ici, sur le serveur, en une seule lecture des factures : la phrase
+  // d'écart d'`ExigibiliteTva` compare les deux chiffres.
+  const periodicite = e?.periodiciteTva ?? PERIODICITE_TVA_PAR_DEFAUT;
+  const courante = periodeCourante(periodicite);
+  const releves = await relevesSousLesDeuxRegimes(ctx, courante.debut, courante.fin);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -52,13 +71,44 @@ export default async function IdentitePage() {
           formeJuridique: e?.formeJuridique ?? "",
           adresse: e?.adresse ?? "",
           siret: e?.siret ?? "",
+          numeroRm: e?.numeroRm ?? "",
           telephone: e?.telephone ?? "",
           email: e?.email ?? "",
           iban: e?.iban ?? "",
           titulaireCompte: e?.titulaireCompte ?? "",
           numeroTva: e?.numeroTva ?? "",
           regimeTva: e?.regimeTva ?? "assujettie",
+          // Le champ se retape en entier : « 1000.00 » y serait relu tel quel
+          // et réécrit sans qu'on l'ait touché — « 1000 » se retrouve.
+          capitalSocial: e?.capitalSocial ? String(Number(e.capitalSocial)) : "",
+          villeRcs: e?.villeRcs ?? "",
+          assureurDecennale: e?.assureurDecennale ?? "",
+          adresseAssureurDecennale: e?.adresseAssureurDecennale ?? "",
+          contratDecennale: e?.contratDecennale ?? "",
+          couvertureDecennale: e?.couvertureDecennale ?? "",
+          mediateurNom: e?.mediateurNom ?? "",
+          mediateurCoordonnees: e?.mediateurCoordonnees ?? "",
+          // « aucune » ne se propose plus : une société imprime ses mentions (4A).
+          mentionsLegalesPosition: positionEffective(e?.mentionsLegalesPosition),
         }}
+        aPrevenir={aPrevenir}
+        attestationDeposee={!!e?.attestationDecennaleCle}
+        remarquesAttestation={
+          e?.attestationDecennaleCle
+            ? remarquesSurLAttestation(e.attestationDecennaleLue, e.assureurDecennale, jourIso(new Date())).map((r) => r.libelle)
+            : []
+        }
+        declarations={
+          <>
+            <PeriodiciteTvaReglage initiale={periodicite} />
+            <ExigibiliteTva
+              actuelle={releves.retenu.regime}
+              periode={libellePeriode(courante)}
+              tvaRetenue={enEuros(Number(releves.retenu.totalTva))}
+              tvaAutre={enEuros(Number(releves.autre.totalTva))}
+            />
+          </>
+        }
       />
 
       {/* **La périodicité de TVA rejoint le régime de TVA, le 14 août 2026.**
@@ -69,10 +119,23 @@ export default async function IdentitePage() {
 
           Le doublon que cela évite n'est pas un doublon de code mais de
           PENSÉE : « suis-je en franchise » et « à quel rythme je déclare » se
-          répondent ensemble, ou pas du tout. */}
-      <div className="pb-24">
-        <PeriodiciteTvaReglage initiale={e?.periodiciteTva ?? PERIODICITE_TVA_PAR_DEFAUT} />
-      </div>
+          répondent ensemble, ou pas du tout.
+
+          **ET ELLE NE L'AVAIT JAMAIS REJOINT — corrigé le 6 septembre 2026.**
+          Ce commentaire disait vrai de l'intention et faux de l'écran : le
+          réglage était rendu ICI, c'est-à-dire APRÈS tout `IdentiteClient` —
+          donc après le téléphone, l'e-mail et les coordonnées bancaires. Il
+          passe désormais en enfant (`periodicite`) et se pose sous le régime,
+          dans le même bloc.
+
+          **Il reste monté par la PAGE**, et c'est voulu : elle seule lit la
+          base. Le recopier dans l'écran en aurait fait deux. */}
+      {/* En bas, après ce qu'il vient de remplir : l'exemple montre tout de
+          suite ce que son SIRET, ses mentions et sa TVA donnent sur le papier
+          (sa réponse « A et B », 26 septembre 2026, `VoirUnExemple`). */}
+      <VoirUnExemple />
+
+      <div className="pb-24" />
     </div>
   );
 }

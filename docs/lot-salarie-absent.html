@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — « Salarié absent ? » — le petit +, la barre oblique, et ce qui a été mesuré</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="-salarié-absent----le-petit--la-barre-oblique-et-ce-qui-a-été-mesuré">« Salarié absent ? » — le petit +, la barre oblique, et ce qui a été mesuré</h1>
+<p><strong>9 septembre 2026.</strong> Trois demandes du même soir, sur la fiche d'un jour du planning. Ce document dit ce qui a été fait, ce qui a été vérifié, et ce qui ne l'a pas été.</p>
+<hr>
+<h2 id="ce-que-vous-avez-demandé-et-ce-qui-est-codé">Ce que vous avez demandé, et ce qui est codé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Votre demande</th>
+<th>Ce qui est fait</th>
+<th>Où</th>
+</tr></thead><tbody>
+<tr>
+<td><em>« Quelqu'un pas là faut le changer par salarié absent avec un petit + plutôt que le gros bouton »</em></td>
+<td>le bouton est devenu <strong>« + Salarié absent ? »</strong></td>
+<td><code>GesteAbsence</code>, <code>src/app/planning/PlanningClient.tsx</code></td>
+</tr>
+<tr>
+<td><em>« Salarié absent + sans contour ! »</em></td>
+<td>aucun cerne, aucun cadre, aucun fond</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><em>« Rajoute un ? à la fin »</em></td>
+<td>« Salarié absent ? »</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><em>« Retire ce jour-là, on sait que c'est ce jour »</em></td>
+<td>le titre est supprimé</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><em>« Mets Julien / Antoine, un / entre chaque salarié »</em></td>
+<td>la virgule devient une barre oblique</td>
+<td><code>ditQuiPart</code>, <code>src/lib/planning-jour.ts</code></td>
+</tr>
+<tr>
+<td><em>« La façon de le noter tu la laisses »</em></td>
+<td>rien d'autre n'a bougé : le nom à toucher, « Plutôt Matin / Après-midi », « Annuler »</td>
+<td>—</td>
+</tr>
+</tbody></table></div>
+<p><strong>La planche est en ligne</strong>, et elle garde les trois tailles de + pour montrer ce qui a été écarté : <code>https://florianmarrins0978-svg.github.io/Atlas-app/salarie-s-absente.html</code></p>
+<hr>
+<h2 id="ce-qui-a-été-discuté-plutôt-quexécuté">Ce qui a été discuté plutôt qu'exécuté</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Le cerne ne pouvait pas partir sans rien à sa place.</strong> Ce même geste était une phrase nue le 6 septembre, et il vous a échappé une journée entière — c'est vous qui l'aviez signalé le 7 : <em>« comment savoir qu'il faut cliquer dessus ? »</em>. La réponse d'alors était la pastille que vous trouvez aujourd'hui trop grosse.</p>
+<p><strong>Ce qui remplace le cerne, c'est le +</strong>, et ce n'est pas de l'ornement : il dit « ceci s'appuie, et ça ajoute », ce qu'un cadre ne disait pas. C'est pourquoi la variante « le + tout seul, sans mot » est montrée sur la planche mais <strong>n'a pas été retenue</strong> : sans mot, on ne sait pas ce qu'on ajoute.</p>
+<p><strong>Ce qui n'a pas rétréci : la cible du doigt.</strong> 44 px de haut, pleine largeur. Un geste raté avec des gants coûte autant qu'un geste invisible.</p>
+<p><strong>Un contrôle a dû être corrigé, pas contourné.</strong> <code>test-pas-la-ce-jour-e2e.ts</code> exigeait « un cerne, une ombre ou un fond » — c'est-à-dire exactement ce que vous veniez de faire retirer. Il accepte désormais le <strong>+</strong> comme quatrième signe, et refuse toujours les quatre absents à la fois.</p>
+<hr>
+<h2 id="ce-qui-a-été-tranché-après-coup">Ce qui a été tranché après coup</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Quand vous n'avez aucun salarié</strong>, le geste dit <strong>« + Absent ? »</strong> — votre réponse du 9 septembre. Le mot « salarié » tomberait à faux quand vous n'en avez aucun. Rien ne reste ouvert sur ce geste.</p>
+<hr>
+<h2 id="ce-qui-a-été-mesuré-et-ce-qui-ne-la-pas-été">Ce qui a été mesuré, et ce qui ne l'a pas été</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>types, lint, mémoire</td>
+<td><strong>verts</strong></td>
+</tr>
+<tr>
+<td>pansement, code mort, couches, flèches</td>
+<td><strong>verts</strong></td>
+</tr>
+<tr>
+<td><code>test-planning-jour.ts</code> (la barre oblique)</td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td><code>test-planning-e2e.ts</code> (43 contrôles du planning)</td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td><code>test-pas-la-ce-jour-e2e.ts</code></td>
+<td>5 verts sur 6</td>
+</tr>
+<tr>
+<td>publication de la planche</td>
+<td><strong>verte</strong>, et le site a été interrogé à son adresse</td>
+</tr>
+</tbody></table></div>
+<p><strong>LE ROUGE QU'IL FAUT DIRE.</strong> Sur ce poste, la batterie complète rend <strong>22 suites navigateur rouges — avant comme après ce lot</strong>. Vérifié en remettant le fichier à nu : <code>test-pas-la-ce-jour-e2e</code> rend le MÊME échec sans une seule de mes lignes. La cause tient à une ligne du journal : <em>« le bandeau du banc apparaît sur un serveur qui n'en est pas un »</em>. Ce bandeau est une bande fixe : tout ce qui se mesure « recouvert » tombe avec lui.</p>
+<p><strong>Ce que cela veut dire pour vous :</strong> ce lot n'allume aucun rouge, mais je ne peux pas vous montrer une batterie verte tant que ce bandeau paraît hors banc. C'est inscrit dans <code>TODO.md</code>, à reprendre avant tout lot qui compte sur elle.</p>
+<p><strong>Et pour voir le changement dans l'application</strong>, il faut que votre espace redémarre : l'écran <strong>Réglages</strong> dit quelle version est servie.</p>
+</main>
+</body>
+</html>

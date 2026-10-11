@@ -1,0 +1,274 @@
+/**
+ * COMMENT LE CLIENT NOUS RÈGLE — l'IBAN, l'ordre du chèque, et la consigne du
+ * libellé.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **CE QUI SE FIGE, ET CE QUI NE SE FIGE PAS. La distinction est tout ce
+ * module**, et elle a été posée le 8 septembre 2026 sur sa question : *« lorsque
+ * l'utilisateur modifie son IBAN dans ses réglages ou le nom de sa société, les
+ * infos se modifient automatiquement dans le lien que recevra le client ? »*
+ *
+ * La réponse était **non**, et le défaut était pire que la question : une
+ * facture recopie l'identité **du devis** (`instantaneDuDevis`), figée le jour
+ * où le devis a été fait. Un devis de janvier facturé en juin partait donc avec
+ * l'IBAN de janvier — et si l'artisan avait changé de banque entre-temps, le
+ * client virait l'argent sur un compte fermé, sur une facture toute neuve.
+ *
+ * **CE QUI A ÉTÉ CORRIGÉ N'EST PAS LE FIGEAGE, C'EST SON INSTANT.** La première
+ * idée — montrer l'IBAN vivant sur la page du client — était fausse, et c'est
+ * la lecture de `factures/[jeton]/pdf/route.ts` qui l'a arrêtée : le PDF servi
+ * est le fichier **ARCHIVÉ**, jamais reconstruit. Une page qui aurait affiché
+ * l'IBAN d'aujourd'hui à côté d'un PDF portant celui d'hier aurait donné DEUX
+ * IBAN au même client, dans le même envoi — pire que le défaut de départ.
+ *
+ * | | |
+ * |---|---|
+ * | ce qui vient du **devis** | le client et les prix : c'est ce qui a été accepté |
+ * | ce qui vient de l'**entreprise**, lu à la création de la facture | l'émetteur et ses modalités de paiement : une facture est une pièce NEUVE, émise aujourd'hui |
+ *
+ * Le régime de TVA suivait déjà cette règle depuis la migration 0039 ; ce lot
+ * l'étend à l'IBAN, au titulaire du compte et au reste de l'identité
+ * (migration 0076). Une fois la facture créée, tout est figé — la page et le PDF
+ * archivé lisent alors les mêmes colonnes, et ne peuvent plus se contredire.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **PUR, ET SANS BASE.** Les mêmes fonctions servent la page du client et le
+ * PDF : deux rédactions de la même phrase finiraient par dire deux choses
+ * différentes au même client, sur deux pièces du même envoi (`CLAUDE.md` §3).
+ */
+
+/**
+ * LES MOYENS DE PAIEMENT QU'IL ACCEPTE — trois choix, jamais un champ libre.
+ *
+ * **Sa décision du 18 septembre 2026**, devant la planche
+ * `appli/moyens-de-paiement-a-choisir.html` : *« pas besoin de planche, je
+ * choisis celle-là »*. La seizième question de la porte demandait d'ÉCRIRE, et
+ * la case des réglages aussi ; il voulait *« des choix pré-écrits, qu'il ait
+ * qu'à cliquer »* — virement et chèque proposé d'office, virement seul,
+ * virement chèque espèces.
+ *
+ * **Une seule liste pour la porte ET les réglages.** Deux listes finiraient par
+ * diverger, et c'est lui qui verrait deux réponses à la même question à deux
+ * écrans d'intervalle (`CLAUDE.md` §3). Elle vit ici, à côté de l'IBAN et de
+ * l'ordre du chèque : c'est le même sujet — comment le client nous règle.
+ *
+ * **La `valeur` est le texte que la facture imprime déjà**, en minuscules et
+ * séparé par des virgules : « Moyens de paiement acceptés : virement, chèque. »
+ * (`conditions-documents.ts`). Ce que la porte enregistre s'inscrit donc sur
+ * les devis et les factures sans rien traduire — la colonne
+ * `entreprises.moyens_paiement` ne change pas, seul le geste qui la remplit
+ * change. Le `titre`, lui, est ce qu'on lit en grand sur la pastille.
+ */
+export const MOYENS_ACCEPTES = [
+  { valeur: "virement, chèque", titre: "Virement et chèque" },
+  { valeur: "virement", titre: "Virement seulement" },
+  { valeur: "virement, chèque, espèces", titre: "Virement, chèque, espèces" },
+] as const;
+
+export type MoyenAccepte = (typeof MOYENS_ACCEPTES)[number]["valeur"];
+
+/** Ce qui est entouré avant qu'il touche quoi que ce soit. */
+export const MOYENS_PROPOSES: MoyenAccepte = "virement, chèque";
+
+/**
+ * La même liste revalide ce que l'écran renvoie — une valeur qui n'en vient
+ * pas ne vient pas de la porte (`CLAUDE.md` §3, jamais deux règles).
+ */
+export function estUnMoyenAccepte(valeur: string): valeur is MoyenAccepte {
+  return MOYENS_ACCEPTES.some((m) => m.valeur === valeur);
+}
+
+export type IdentiteDePaiement = {
+  /** L'IBAN (Réglages → Identité), ou celui figé sur la facture. */
+  iban: string | null;
+  /** Le titulaire du compte, quand il diffère du nom de l'entreprise. */
+  titulaireCompte: string | null;
+  /** Le nom de l'entreprise — celui de la même source que les deux au-dessus. */
+  nomEntreprise: string;
+};
+
+export type ModalitesPaiement = {
+  /** L'IBAN par groupes de quatre, pour l'œil. `null` s'il n'est pas réglé. */
+  ibanLisible: string | null;
+  /** Le même sans un seul espace, pour le copier-coller. */
+  ibanACopier: string | null;
+  /** À qui le chèque est libellé. Jamais vide. */
+  ordreDuCheque: string;
+};
+
+/**
+ * **Un IBAN se relit par paquets de quatre, et c'est pour ça qu'on le regroupe.**
+ *
+ * Il se saisit comme on veut — avec des espaces, sans, en minuscules. On le
+ * normalise avant de le regrouper, sinon « FR76 30006 » rendrait des paquets
+ * décalés d'un caractère et personne ne pourrait le comparer à son relevé.
+ */
+export function ibanEnGroupes(iban: string): string {
+  const nu = ibanSansEspace(iban);
+  return nu.replace(/(.{4})/g, "$1 ").trim();
+}
+
+/** L'IBAN nu — ce qu'on met dans le presse-papier, et ce qu'une banque attend. */
+export function ibanSansEspace(iban: string): string {
+  return iban.replace(/\s+/g, "").toUpperCase();
+}
+
+/**
+ * À l'ordre de QUI.
+ *
+ * **Le titulaire l'emporte sur le nom de l'entreprise, et ce n'est pas un
+ * détail.** `entreprises.titulaire_compte` existe précisément parce qu'un compte
+ * peut être ouvert à un autre nom que l'enseigne — le commentaire du schéma le
+ * dit : « un IBAN à un nom différent de l'entreprise inquiète au lieu de
+ * rassurer ». Un chèque libellé à l'enseigne quand le compte est au nom propre
+ * se fait refuser au guichet.
+ *
+ * Vide ou blanc, il ne compte pas : une chaîne d'espaces n'est pas un nom.
+ */
+export function ordreDuCheque(id: IdentiteDePaiement): string {
+  const titulaire = (id.titulaireCompte ?? "").trim();
+  return titulaire !== "" ? titulaire : id.nomEntreprise.trim();
+}
+
+/**
+ * Les modalités d'une FACTURE, lues sur ses colonnes figées.
+ *
+ * **Le passage obligé de la page du client et du PDF.** Les deux partent des
+ * mêmes trois colonnes ; les laisser les recombiner chacune de son côté serait
+ * la duplication que `CLAUDE.md` §3 interdit, et l'écart s'appellerait « deux
+ * IBAN pour un même envoi ». La forme est structurelle, sans rien de Drizzle :
+ * ce module doit rester éprouvable sans base.
+ */
+export function modalitesDeLaFacture(f: {
+  entrepriseIban: string | null;
+  entrepriseTitulaireCompte: string | null;
+  entrepriseNom: string;
+}): ModalitesPaiement {
+  return modalitesDePaiement({
+    iban: f.entrepriseIban,
+    titulaireCompte: f.entrepriseTitulaireCompte,
+    nomEntreprise: f.entrepriseNom,
+  });
+}
+
+/** Les trois valeurs prêtes à écrire, à partir d'une identité déjà réunie. */
+export function modalitesDePaiement(id: IdentiteDePaiement): ModalitesPaiement {
+  const brut = (id.iban ?? "").trim();
+  const nu = brut === "" ? null : ibanSansEspace(brut);
+  return {
+    ibanLisible: nu ? ibanEnGroupes(nu) : null,
+    ibanACopier: nu,
+    ordreDuCheque: ordreDuCheque(id),
+  };
+}
+
+/**
+ * LA CONSIGNE DU LIBELLÉ — sa demande du 8 septembre 2026 : *« une phrase bien
+ * écrite pour dire que pour nous régler il faut impérativement mettre le numéro
+ * de facture dans le libellé »*.
+ *
+ * **Elle dit ce qui arrive si on ne le fait pas, et c'est ce qui la rend
+ * obéie.** « Merci d'indiquer le numéro » se lit comme une politesse et
+ * s'oublie ; « sans ce numéro, votre règlement ne peut pas être rattaché »
+ * donne la raison, et un client qui comprend la raison la respecte.
+ *
+ * Coupée en deux pour la page, entière pour le PDF : l'écran met le numéro en
+ * gras au milieu de la phrase, le papier ne le peut pas. **Un seul texte pour
+ * les deux** — c'est le point de tout ce module.
+ */
+export const LIBELLE_AVANT = "Par virement, indiquez";
+export const LIBELLE_APRES =
+  "dans le libellé. Sans ce numéro, votre règlement ne peut pas être rattaché à cette facture.";
+
+export function consigneDuLibelle(numeroFacture: string): string {
+  return `${LIBELLE_AVANT} ${numeroFacture} ${LIBELLE_APRES}`;
+}
+
+/**
+ * LA PHRASE DU CHÈQUE, avec DEUX POINTS — et ce n'est pas une coquetterie.
+ *
+ * « À l'ordre d'Atlas » demanderait de deviner l'élision au nom près : on écrit
+ * « d'Atlas » mais « de Dupont Paysage », « d'Élagage du Val » mais « de
+ * Herbier » — et le h aspiré n'est décidable par aucune règle mécanique. Les
+ * deux points suppriment la question quel que soit le nom réglé, et ne coûtent
+ * rien à la lecture.
+ */
+export function phraseDuCheque(ordre: string): string {
+  return `Par chèque, à l'ordre de : ${ordre}.`;
+}
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * QUAND L'IBAN CHANGE — les factures déjà parties, et ce qu'on en dit.
+ *
+ * **Tranché par lui le 8 septembre 2026**, maquette à l'appui
+ * (`appli/changer-d-iban.html`) : *« oui je le veux »*, aux trois endroits.
+ *
+ * Depuis la migration 0076, une facture prend l'IBAN de l'entreprise au jour où
+ * elle naît : les factures à venir sont justes. Mais celles **déjà envoyées et
+ * non réglées** gardent l'ancien, et leur PDF ne se réécrit pas — c'est le
+ * fichier archivé que le client a dans son téléphone. Le risque est concret :
+ * un virement sur un compte fermé.
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+/**
+ * Cette facture porte-t-elle un AUTRE IBAN que celui d'aujourd'hui ?
+ *
+ * **Les deux absences ne se traitent pas pareil, et c'est tout le sens de cette
+ * fonction :**
+ *
+ * | | |
+ * |---|---|
+ * | l'entreprise n'a **plus** d'IBAN | on ne prévient de rien : il n'y a pas de nouveau compte à annoncer |
+ * | la facture n'en portait **aucun** | rien à corriger — son client n'a jamais lu d'IBAN dessus, et n'a donc pas pu se tromper de compte |
+ *
+ * Ne reste que le cas qui coûte de l'argent : **la facture en portait un, et ce
+ * n'est plus celui-là.** Un avertissement qui parle dans les autres cas
+ * s'apprendrait à être ignoré, et l'on perdrait le garde-fou le jour où il a
+ * raison (`CLAUDE.md` §4 ter).
+ *
+ * La comparaison se fait sur l'IBAN NU : « FR76 3000 » et « fr763000 » sont le
+ * même compte, et croire le contraire ferait prévenir tous les clients pour une
+ * espace de saisie.
+ */
+export function porteUnAutreIban(ibanFacture: string | null, ibanActuel: string | null): boolean {
+  const figee = (ibanFacture ?? "").trim();
+  const vivant = (ibanActuel ?? "").trim();
+  if (figee === "" || vivant === "") return false;
+  return ibanSansEspace(figee) !== ibanSansEspace(vivant);
+}
+
+/**
+ * LE MESSAGE QUE L'ARTISAN ENVOIE À SON CLIENT.
+ *
+ * **Écrit ici, et nulle part ailleurs.** Il porte le numéro de facture et le
+ * nouvel IBAN — les deux mêmes valeurs que la page du client et le PDF, par les
+ * mêmes fonctions. Le composer dans l'écran en ferait une seconde rédaction, et
+ * le jour où l'une des deux change, le client reçoit deux consignes
+ * (`CLAUDE.md` §3).
+ *
+ * **Il dit le numéro DEUX fois, et ce n'est pas une maladresse :** une fois pour
+ * désigner la facture, une fois pour ce qu'il faut recopier dans le libellé.
+ * C'est la même exigence que sur la page — sans ce numéro, le règlement ne se
+ * rattache à rien.
+ *
+ * **Il ne s'excuse pas et n'explique pas pourquoi.** Un client n'a pas à savoir
+ * si l'artisan a changé de banque ou corrigé une faute de frappe ; ce qu'il lui
+ * faut, c'est le bon compte et ce qu'il doit écrire.
+ */
+export function messageNouvelIban(entree: {
+  /** Comment on s'adresse à lui — déjà composé par `avecCivilite`. */
+  clientAvecCivilite: string;
+  numeroFacture: string;
+  /** L'IBAN d'aujourd'hui, groupé par quatre : c'est celui qu'il va recopier. */
+  ibanLisible: string;
+  entrepriseNom: string;
+}): string {
+  return (
+    `Bonjour ${entree.clientAvecCivilite}, nos coordonnées bancaires ont changé. ` +
+    `Pour régler la facture ${entree.numeroFacture}, merci d'utiliser ` +
+    `${entree.ibanLisible}, en indiquant ${entree.numeroFacture} dans le libellé. ` +
+    `Merci, ${entree.entrepriseNom}.`
+  );
+}

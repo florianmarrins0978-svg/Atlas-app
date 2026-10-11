@@ -74,19 +74,19 @@ export function construirePropositionDevis(
   // Rapprochement tarifaire — jamais de prix inventé, jamais de choix arbitraire.
   let sourcePrix: SourcePrix = "aucun";
   if (correspondancesTarifs === null && !chiffrage) {
-    notesIntroduction.push("Prix à renseigner — aucune recherche de tarif n'a été nécessaire ou possible.");
+    notesIntroduction.push("Prix à renseigner, aucune recherche de tarif n'a été nécessaire ou possible.");
   } else if (correspondancesTarifs === null && chiffrage) {
     const standard = chiffrage.variantes?.standard;
     if (standard && standard.coutMainOeuvre !== "0.00") {
       sourcePrix = "chiffrage";
       propositions.push({
         type: "ajouter_ligne_prix",
-        description: `Ajouter une ligne de prix calculée : ${standard.prixConseille} € (marge ${standard.margePourcent} % sur ${standard.sousTotal} € de coût estimé — pas un tarif existant)`,
+        description: `Ajouter une ligne de prix calculée : ${standard.prixConseille} € (marge ${standard.margePourcent} % sur ${standard.sousTotal} € de coût estimé, pas un tarif existant)`,
         donnees: { libelle: "Prestation (prix calculé)", montant: standard.prixConseille },
       });
       notesIntroduction.push(
         "Aucun tarif existant trouvé : un prix a été calculé par le moteur de chiffrage à partir de la durée, de " +
-          "l'équipe et des paramètres de l'entreprise — à vérifier avant application."
+          "l'équipe et des paramètres de l'entreprise, à vérifier avant application."
       );
       if (chiffrage.historique) {
         notesIntroduction.push(
@@ -95,7 +95,7 @@ export function construirePropositionDevis(
       }
     } else {
       notesIntroduction.push(
-        "Aucun tarif existant et aucun calcul possible (durée ou équipe non connue) — Prix à renseigner manuellement."
+        "Aucun tarif existant et aucun calcul possible (durée ou équipe non connue). Prix à renseigner manuellement."
       );
     }
   } else if (correspondancesTarifs!.length === 1) {
@@ -109,11 +109,11 @@ export function construirePropositionDevis(
   } else if (correspondancesTarifs!.length > 1) {
     sourcePrix = "tarifs_ambigus";
     notesIntroduction.push(
-      `Plusieurs tarifs correspondent (${correspondancesTarifs!.map((t) => `${t.intitule} : ${t.prix} €`).join(", ")}) — ` +
+      `Plusieurs tarifs correspondent (${correspondancesTarifs!.map((t) => `${t.intitule} : ${t.prix} €`).join(", ")}) : ` +
         "choisissez lequel utiliser plutôt que de laisser l'assistant décider."
     );
   } else {
-    notesIntroduction.push("Aucun tarif correspondant trouvé — Prix à renseigner manuellement.");
+    notesIntroduction.push("Aucun tarif correspondant trouvé. Prix à renseigner manuellement.");
   }
 
   for (const a of ambiguites) {

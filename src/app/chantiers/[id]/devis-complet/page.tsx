@@ -8,13 +8,17 @@ import { getClient } from "@/server/repositories/clients";
 import { canalPourJoindre } from "@/lib/message-client";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { listerLignesPrix } from "@/server/repositories/lignes-prix";
-import { getOuCreerDevisBrouillon, chargerDevisPourEcran } from "@/server/repositories/devis";
+import { getOuCreerDevisBrouillon, chargerDevisPourEcran, getAcomptesDevis } from "@/server/repositories/devis";
 import { getBrouillon } from "@/server/repositories/brouillons-informations";
 import { getNoteVocale } from "@/server/repositories/notes-vocales";
 import { devisAPreparer } from "@/lib/devis-a-preparer";
+import { unLienExistePourLeDevis } from "@/server/repositories/envois-devis";
 import { leconsComparables } from "@/server/repositories/lecons-prix";
 import { rappelDePrix } from "@/lib/lecons-prix";
 import DevisCompletClient from "./DevisCompletClient";
+import { PARAM_PROVENANCE, PARAM_RELANCE, jourDeRelecture, lienRetourDeRelecture } from "@/lib/retour-au-planning";
+import { retourDuDevis } from "@/lib/retour-du-devis";
+import { estUneEntreprise } from "@/lib/civilite";
 import PreparationDictee from "./PreparationDictee";
 
 // **Une page où il n'y a que le devis.**
@@ -43,8 +47,19 @@ export const dynamic = "force-dynamic";
 // imprimée serait un engagement faux.
 const VALIDITE = "30 jours";
 
-export default async function DevisCompletPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function DevisCompletPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { id } = await params;
+  const lus = await searchParams;
+  const de = lus[PARAM_PROVENANCE];
+  // **Relu depuis la carte d'un jour** (un devis expiré qui revient, 7 octobre
+  // 2026) : le bouton du bas ramène à ce jour, à la question de la signature.
+  const jourDeRelance = jourDeRelecture(lus[PARAM_RELANCE]);
 
   const ctx = await getCurrentCtx();
   const chantier = await getChantier(ctx, id);
@@ -54,18 +69,25 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
   // lecture seule — le consulter ne doit jamais ouvrir une nouvelle version.
   const devisRow = (await chargerDevisPourEcran(ctx, id)) ?? (await getOuCreerDevisBrouillon(ctx, id));
 
-  const [entreprise, client, lignes, brouillon, note] = await Promise.all([
+  const [entreprise, client, lignes, brouillon, note, acomptes] = await Promise.all([
     getEntreprise(ctx),
     chantier.clientId ? getClient(ctx, chantier.clientId) : Promise.resolve(null),
     listerLignesPrix(ctx, id),
     getBrouillon(ctx, id),
     getNoteVocale(ctx, id),
+    getAcomptesDevis(ctx, devisRow.id),
   ]);
 
   // **Une dictée sans devis se traite ICI, à l'arrivée** — sa panne du 21 août
   // 2026 : il dicte chez sa cliente, ferme l'application, revient, ouvre le
   // chantier, et tombe sur une feuille vide. La règle vit dans une fonction
   // pure (`src/lib/devis-a-preparer.ts`) ; cet écran n'a qu'à l'appliquer.
+  // **« Parti chez votre client » se VÉRIFIE, il ne se déduit plus du statut.**
+  // Le statut se pose en deux temps — le devis se fige, puis le lien se crée —
+  // et il existe entre les deux un état où le document est immuable et où le
+  // client n'a rien reçu (`unLienExistePourLeDevis`).
+  const lienParti = devisRow.statut === "envoye" ? await unLienExistePourLeDevis(ctx, devisRow.id) : false;
+
   const aPreparer = devisAPreparer({
     aUneNoteVocale: note !== null,
     nombreDeLignes: lignes.length,
@@ -92,6 +114,13 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
     if (rappel) rappels[ligne.id] = { prix: rappel.prix, phrase: rappel.phrase };
   }
 
+  // **D'où il vient, et donc où le ramener** — sa demande du 8 septembre 2026.
+  // Sans provenance, rien ne bouge : c'est la fiche client, comme depuis le
+  // 31 août. La flèche se décide ICI et non dans l'écran, parce qu'un écran ne
+  // décide de rien (`CLAUDE.md` §3) — et parce que son libellé dépend du client,
+  // qui vient d'être lu.
+  const retour = retourDuDevis({ chantierId: id, clientId: chantier.clientId ?? null, de });
+
   // Le pourquoi vit dans `originePublique` — c'était « même code que l'écran du
   // devis parti », et c'est désormais LE même code.
   const origine = originePublique(await headers());
@@ -108,12 +137,23 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
       {aPreparer && <PreparationDictee chantierId={id} />}
 
       <DevisCompletClient
+        // **Basculer la sous-traitance réécrit les taux en base** : la clé fait
+        // repartir l'écran des lignes réelles, au lieu de garder l'état d'avant
+        // dans ses `useState` (la même raison que la facture, `page.tsx`).
+        key={`${devisRow.id}-${chantier.autoliquidation ? "sans-tva" : "tva"}`}
         chantierId={id}
+        sousTraitance={chantier.autoliquidation}
+        // Pour un client Entreprise, hors franchise : son choix B, décoché
+        // d'office. La règle de « Entreprise » est celle de `civilite.ts`.
+        sousTraitancePossible={
+          entreprise?.regimeTva !== "franchise" && estUneEntreprise(client?.nom, client?.civilite ?? null)
+        }
         devisId={devisRow.id}
         numeroCommercial={devisRow.numeroCommercial}
         dateEmission={devisRow.dateEmission}
         validite={VALIDITE}
         statut={devisRow.statut as "brouillon" | "envoye"}
+        lienParti={lienParti}
         // **Son logo, sur l'écran où il regarde son devis** (18 août 2026).
         // Il l'avait posé dans « Devis & factures », vu dans l'aperçu de ce
         // réglage, puis constaté qu'il n'apparaissait pas ici : *« j'ai rajouté
@@ -129,6 +169,8 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
           iban: entreprise?.iban ?? "",
         }}
         clientId={chantier.clientId ?? null}
+        retour={retour}
+        continuerVers={jourDeRelance ? lienRetourDeRelecture(id, jourDeRelance) : null}
         client={{
           nom: client?.nom ?? "",
           civilite: client?.civilite ?? null,
@@ -156,13 +198,35 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
           montant: l.montant,
           unite: l.unite,
           aChiffrer: l.aChiffrer,
+          // Le taux de sa catégorie : sans lui, l'écran regrouperait tout sous
+          // le taux du devis et ses catégories disparaîtraient au rechargement.
+          tauxTva: l.tauxTva,
+          prixAncien: l.prixAncien,
+          prixGrille: l.prixGrille,
         }))}
         tauxTva={devisRow.tauxTva}
         reductionPourcent={devisRow.reductionPourcent}
+        mainDoeuvreHt={devisRow.mainDoeuvreHt}
+        titre={devisRow.titre}
+        repriseGrille={chantier.repriseGrille ?? null}
+        hausseReprise={chantier.hausseReprise === null ? 0 : Number(chantier.hausseReprise)}
+        acomptesInitiaux={acomptes}
+        acompteReglage={devisRow.acomptePourcent}
+        conditionsReglees={{
+          acomptePourcent: devisRow.acomptePourcent,
+          delaiPaiementJours: devisRow.delaiPaiementJours,
+          moyensPaiement: devisRow.moyensPaiement,
+          rappelerPenalites: devisRow.rappelerPenalites,
+          textePied: devisRow.textePied,
+        }}
         conditionsPaiement={devisRow.conditionsPaiement ?? ""}
         /* La dictée a-t-elle été comprise, ou seulement recopiée ? L'avis vivait
            sur le compte rendu, qui a disparu du parcours : il se dit désormais
            sur le devis, c'est-à-dire là où le patron relit les lignes. */
+        /* La chaîne va-t-elle écrire ce devis à partir de sa dictée ? L'écran
+           n'ouvre pas de ligne d'avance tant qu'elle tourne : elle n'écrit les
+           prestations dictées que sur un devis vide (`ligne-ouverte-devis.ts`). */
+        dicteeAPreparer={aPreparer}
         lectureLitterale={brouillon?.lecture === "litterale"}
         rappels={rappels}
       />

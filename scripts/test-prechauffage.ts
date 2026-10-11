@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { exigerLesOutils } from "./_outil-requis";
+
+// **Sans ces outils, cette suite ne mesure RIEN** — elle le dit et sort du
+// compte, au lieu de rougir sur une machine qui n'y est pour rien
+// (`_outil-requis.ts`, sa colère du 20 septembre 2026).
+exigerLesOutils("npx");
 
 // **Deux défauts du 9 août 2026, tenus ici — et ils n'étaient pas des lenteurs.**
 //
@@ -322,6 +328,18 @@ async function main() {
       "/chantiers/5be0e3fe-0449-4bdc-ad8e-91d9658cd77b/prix",
       "/chantiers/5be0e3fe-0449-4bdc-ad8e-91d9658cd77b/devis-complet",
       "/api/chantiers/5be0e3fe-0449-4bdc-ad8e-91d9658cd77b/feuille/pdf",
+      // **Les trois qui manquaient, et ce que leur absence a coûté** : la CI a
+      // tué son runner quatre fois de suite, toujours au même endroit. Le
+      // relevé posé dans le journal l'a montré — la mémoire libre tombe de
+      // 3 624 Mo à 396 Mo sur le cas qui demande ces trois routes coup sur
+      // coup, puis la machine s'arrête. Elles se compilent maintenant pendant
+      // le préchauffage, quand il reste treize gigaoctets.
+      //
+      // L'identifiant nul est délibéré : la route s'exécute donc se compile,
+      // et rend un 404 sans fabriquer le moindre document.
+      "/api/devis/00000000-0000-0000-0000-000000000000/pdf",
+      "/api/factures/00000000-0000-0000-0000-000000000000/pdf",
+      "/api/mes-donnees",
     ]);
   });
 
@@ -420,6 +438,87 @@ async function main() {
     assert.deepEqual(lancements, [], `le serveur est encore lancé sans veilleur : ${lancements.join(" | ")}`);
   });
 
+  await cas("le banc est ARRÊTÉ avant l'installation, jamais pendant", () => {
+    // ─────────────────────────────────────────────────────────────────────────
+    // **La racine de sa panne du 2 septembre 2026, et elle a coûté une heure
+    // de page blanche.**
+    //
+    // `npm ci` EFFACE `node_modules` avant de réinstaller. Le veilleur, lui,
+    // est posé cinquante lignes plus haut — délibérément — et quinze secondes
+    // plus tard un `next-server` sert pendant qu'un `next build` bâtit. Les
+    // deux tiennent des fichiers ouverts dans `node_modules`.
+    //
+    // L'installation effaçait donc ce qu'elle pouvait, échouait sur le reste :
+    //
+    //     npm error ENOTEMPTY: directory not empty, rmdir '.../scope-manager/dist'
+    //     npm error ENOTEMPTY: directory not empty, rename '.../zod' -> '.../.zod-…'
+    //
+    // et laissait l'arbre AMPUTÉ. `next` en fut la victime : le serveur suivant
+    // mourait à la seconde sur « Cannot find module », le veilleur le relançait,
+    // il remourait — trente fois d'affilée, sans que rien ne l'enregistre.
+    //
+    // Les processus étaient tués vingt lignes plus bas, c'est-à-dire après les
+    // dégâts. Ce contrôle fixe l'ORDRE, qui est tout ce qui compte ici.
+    const lignes = readFileSync(path.join(RACINE, ".devcontainer", "demarrer.sh"), "utf8")
+      .split("\n")
+      .map((texte, numero) => ({ numero, texte: texte.trim() }))
+      .filter((l) => !l.texte.startsWith("#"));
+    const ou = (motif: RegExp) => lignes.find((l) => motif.test(l.texte))?.numero ?? -1;
+
+    // **Le repère de DÉPART compte autant que celui d'arrivée, et l'oublier a
+    // rendu ce contrôle inutile pendant sa première écriture.** Le script tue
+    // déjà un serveur orphelin tout en HAUT du fichier, avant la mise à jour.
+    // Une recherche naïve « existe-t-il un pkill avant l'installation ? »
+    // trouvait donc celui-là, et passait au VERT sur la version défectueuse —
+    // celle où le banc n'était arrêté qu'après les dégâts. On borne des deux
+    // côtés : l'arrêt doit vivre DANS le bloc de mise à jour.
+    const miseAJour = ou(/MISE_A_JOUR="\$\(bash/);
+    const installation = ou(/npm ci .*>> "\$JOURNAL"|if npm ci/);
+    assert.ok(miseAJour > 0, "le bloc de mise à jour est introuvable : ce contrôle n'éprouve rien");
+    assert.ok(installation > 0, "l'installation des dépendances est introuvable : ce contrôle n'éprouve rien");
+    assert.ok(
+      miseAJour < installation,
+      "les repères sont dans le désordre : ce contrôle ne vise plus ce qu'il croit"
+    );
+    const arretsAvant = lignes.filter(
+      (l) =>
+        l.numero > miseAJour &&
+        l.numero < installation &&
+        /pkill -f "\[n\]ext\(-server\| dev\| start\| build\)"/.test(l.texte)
+    );
+    assert.ok(
+      arretsAvant.length > 0,
+      "`npm ci` efface node_modules sous un serveur qui tourne : il faut l'arrêter AVANT, pas après"
+    );
+    // Et le veilleur repart APRÈS, sinon il relancerait un banc au milieu de
+    // l'installation — le désordre qu'on vient d'éviter.
+    const relance = lignes.filter((l) => l.numero > installation && /lancer_veilleur/.test(l.texte));
+    assert.ok(relance.length > 0, "le veilleur ne repart pas après l'installation : le banc resterait mort");
+  });
+
+  await cas("un échec d'installation ne s'avale pas", () => {
+    // Le `|| true` d'avant le taisait : le code neuf arrivait sur des
+    // dépendances amputées, et le seul endroit qui le savait était un journal
+    // que personne ne lit. C'est la faute déjà payée sur les migrations le
+    // 9 août — une commande qui échoue en silence est pire qu'une qui échoue.
+    const demarrage = readFileSync(path.join(RACINE, ".devcontainer", "demarrer.sh"), "utf8");
+    assert.doesNotMatch(
+      demarrage,
+      /npm ci --silent[^\n]*\|\| npm install --silent[^\n]*\|\| true/,
+      "l'échec d'installation est encore avalé par un `|| true`"
+    );
+    assert.match(
+      demarrage,
+      /DEPENDANCES="échec"/,
+      "rien ne retient l'échec de l'installation : le bandeau ne pourra pas le dire"
+    );
+    assert.match(
+      demarrage,
+      /LES DÉPENDANCES N'ONT PAS SUIVI LE CODE/,
+      "l'échec est retenu mais jamais montré : le patron ne le verra pas"
+    );
+  });
+
   await cas("le constat des migrations arrive intact jusqu'au bandeau", () => {
     // **Ce cas éprouvait la survie d'un `exec` qui n'existe plus.** Le script se
     // relançait dans sa version neuve, et le second passage recalculait tout :
@@ -471,7 +570,12 @@ async function main() {
   // d'elles a fait accuser le calcul du prix.
   await cas("`banc.mjs` installe son gardien de signal AVANT d'attendre quoi que ce soit", () => {
     const source = readFileSync(path.join(RACINE, "scripts", "banc.mjs"), "utf8");
-    const iLancement = source.indexOf("let serveur = raison ?");
+    // **`let serveur = ` et non la condition qui suit.** Le 31 août 2026, la
+    // condition est passée de `raison ?` à `modeDeveloppement ?` — le lancement
+    // du serveur n'avait pas bougé d'une ligne, et ce contrôle a pourtant rougi
+    // en annonçant qu'il « n'éprouve rien ». Un repère doit viser ce qu'on
+    // défend, pas la façon dont c'était écrit le jour où on l'a posé.
+    const iLancement = source.indexOf("let serveur = ");
     const iGardien = source.indexOf('process.on(signal, () => {');
     assert.ok(iLancement > 0, "le lancement du serveur est introuvable : ce contrôle n'éprouve rien");
     assert.ok(iGardien > 0, "aucun gestionnaire de signal : fermer le banc laisserait son serveur sur le port");
@@ -482,7 +586,7 @@ async function main() {
     // L'attente longue du fil principal : la construction. Tout ce qui est
     // installé après elle ne protège pas pendant ces minutes-là — et c'est
     // exactement la fenêtre où le signal arrivait.
-    const iConstruction = source.search(/"npx", \["next", "build"\]/);
+    const iConstruction = source.search(/process\.execPath, \[NEXT, "build"\]/);
     assert.ok(
       iConstruction > 0,
       "la construction est introuvable : ce contrôle ne sait plus où est la fenêtre qu'il surveille"
@@ -504,8 +608,37 @@ async function main() {
   // de trouver un mot ne protège que du mot.
   await cas("`run-e2e-tests` refuse de continuer si quelque chose écoute déjà", () => {
     const source = readFileSync(path.join(RACINE, "scripts", "run-e2e-tests.ts"), "utf8");
-    const iGarde = source.indexOf('if (await quelquUnEcouteDeja("http://localhost:3000');
-    const iSpawn = source.indexOf('spawn(NPM, ["run", "dev"');
+    // **Le port n'est plus écrit en dur — 8 septembre 2026.** Chaque session
+    // mesure sur le sien (`scripts/_atelier.ts`), donc la garde interroge
+    // `sante()` et non plus une adresse littérale. On vise ce que la garde
+    // FAIT, comme le dit déjà le commentaire ci-dessus : appeler
+    // `quelquUnEcouteDeja` avant de lancer quoi que ce soit.
+    const iGarde = source.indexOf("if (await quelquUnEcouteDeja(");
+    // **Ce repère a vieilli, et le contrôle est resté vert d'un côté et muet de
+    // l'autre — 2 septembre 2026.** `run-e2e-tests.ts` lançait `npm run dev` ;
+    // le commit `3cd0d21` l'a remplacé par l'exécutable Node et le binaire du
+    // projet, pour que le journal du serveur cesse d'être avalé. Personne n'a
+    // reporté le changement ici : `iSpawn` valait -1, et l'assertion qui vient
+    // ensuite — la garde arrive-t-elle AVANT le lancement ? — n'éprouvait plus
+    // rien du tout. Elle rougissait sur du code juste.
+    //
+    // On vise donc le lancement du serveur par ce qu'il EST — un `spawn` qui
+    // demande `dev` sur un port —, pas par la commande qui le porte, qui a
+    // déjà changé deux fois.
+    //
+    // **Le repère a vieilli TROIS fois, et deux sessions l'ont rajeuni le même
+    // jour — 8 septembre 2026. On arrête.**
+    //
+    // Il visait `"dev"`, puis `"-p", "3000"`. Le lot de l'atelier a donné son
+    // port à chaque session (`ARCHITECTURE.md` §287), donc `"3000"` a disparu ;
+    // la bascule sur la version bâtie a remplacé `dev` par `start`. À chaque
+    // fois, `iSpawn` valait -1 et le contrôle restait vert en n'éprouvant plus
+    // rien — ou rougissait sur du code juste.
+    //
+    // On vise donc ce qui ne peut pas changer sans que le serveur cesse d'être
+    // lancé : l'exécutable Node et le binaire du projet. La sous-commande et le
+    // port sont libres.
+    const iSpawn = source.search(/spawn\(process\.execPath, \[CHEMIN_NEXT/);
     assert.ok(
       iGarde > 0,
       "aucune garde en tête de batterie : un orphelin du banc rendrait les cinquante suites ininterprétables"

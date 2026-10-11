@@ -4,6 +4,7 @@ import path from "node:path";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
+import { ADRESSE } from "./_adresse";
 
 /**
  * La fiche de chantier, du premier geste au rapport reçu par le client.
@@ -11,12 +12,14 @@ import { pool } from "../src/server/db/client";
  * *Sa demande du 16 août 2026 : « une fiche où ils cochent ce qu'ils ont fait
  * ou non sur le chantier et ensuite qu'ils peuvent enregistrer et envoyer
  * directement au client ».* Puis, le 17 : **« Fait la C »** — le client est
- * nommable à tout moment, et la fiche se replie alors sur ses prestations.
+ * nommable à tout moment. Depuis le 22 septembre 2026, le nommer recoche son
+ * dernier passage, et toutes les lignes de la fiche restent.
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * **CE QUE CETTE SUITE TIENT, ET QU'AUCUNE AUTRE NE PEUT VOIR.**
  *
- * `test-passage-entretien.ts` éprouve les règles et le dépôt : le repli,
+ * `test-passage-entretien.ts` éprouve les règles et le dépôt : les coches du
+ * dernier passage,
  * l'invariant du rapport figé, l'isolation, la lecture par jeton. Toutes
  * resteraient vertes si l'ÉCRAN n'appelait jamais ces fonctions — c'est le
  * piège 13 du dépôt, « une règle juste que l'écran n'applique pas ne protège
@@ -32,7 +35,7 @@ import { pool } from "../src/server/db/client";
  * (`CLAUDE.md` §5).
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 /** Reconnaissable, et retiré à la fin : aucune autre suite ne doit le lire. */
 const CLIENT = "Chantier E2E Fiche";
 const DOSSIER_CAPTURES = process.env.ATLAS_CAPTURES ?? null;
@@ -101,7 +104,7 @@ async function main() {
   // `LIMIT 1`.** La base en porte plusieurs — les suites précédentes en
   // laissent —, et une entreprise prise au hasard fabrique un client que
   // l'écran ne montrera jamais : le contrôle rougirait alors en accusant le
-  // repli, qui n'y serait pour rien. Payé une fois, le 18 août 2026.
+  // choix du client, qui n'y serait pour rien. Payé une fois, le 18 août 2026.
   const { rows: entreprises } = await pool.query(
     `SELECT m.entreprise_id AS id FROM membres_entreprise m
        JOIN users u ON u.id = m.utilisateur_id
@@ -118,15 +121,17 @@ async function main() {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await seConnecter(context);
 
-  await test("Le modèle se pose une fois, depuis Paysage", async () => {
+  await test("Le modèle est là, depuis Paysage", async () => {
     // `networkidle` : le bouton est un composant client, et un appui posé avant
     // l'hydratation ne déclenche rien. Sous la charge d'une batterie complète,
     // l'écart se compte en secondes — la suite passait seule et rougissait dans
     // la batterie, ce qui est le pire des deux états.
     await page.goto(`${BASE}/paysage/fiche/composer`, { waitUntil: "networkidle" });
-    const poser = page.getByRole("button", { name: "Partir du modèle Atlas" });
-    if (await poser.isVisible().catch(() => false)) {
-      await poser.click();
+    // Le compte de démonstration le porte d'office depuis le 29 septembre 2026 ;
+    // une suite voisine a pu le vider, et c'est alors son bouton qui le remet.
+    const remettre = page.getByRole("button", { name: "Remettre le modèle Atlas" });
+    if ((await page.locator("[data-prestation]").count()) === 0 && (await remettre.isVisible().catch(() => false))) {
+      await remettre.click();
     }
     // Attente qui monte, plutôt qu'un délai fixe choisi au doigt mouillé.
     for (const essai of [1, 2, 3, 4, 5]) {
@@ -177,7 +182,12 @@ async function main() {
     assert.equal(rows[0].n, 3, "les coches ne sont pas arrivées en base");
   });
 
-  await test("Nommer le client replie la fiche — et ne perd aucune coche", async () => {
+  await test("Nommer le client ne retire aucune ligne, et ne perd aucune coche", async () => {
+    // Sa règle du 22 septembre 2026 : « les 20 points qui composent ma fiche
+    // doivent être présents ! ». L'ancien repli retirait les lignes que ce
+    // client ne prenait pas d'habitude, et il ne pouvait plus cocher un travail
+    // en plus.
+    const lignesAvant = await page.locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"]').count();
     const avant = await page
       .locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"][aria-pressed="true"]')
       .count();
@@ -186,12 +196,18 @@ async function main() {
     await capturer(page, "05-choix-du-client");
     await page.locator('[data-atlas="choix-du-client"]').getByText(CLIENT).click();
     await page.waitForTimeout(1200);
-    await capturer(page, "06-fiche-repliee");
+    await capturer(page, "06-client-nomme");
 
     const apres = await page
       .locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"][aria-pressed="true"]')
       .count();
     assert.equal(apres, avant, "nommer le client a effacé une coche déjà posée");
+    assert.ok(lignesAvant > 0, "aucune ligne à l'écran : rien n'est prouvé");
+    assert.equal(
+      await page.locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"]').count(),
+      lignesAvant,
+      "nommer le client a retiré des lignes de la fiche"
+    );
 
     const { rows } = await pool.query(
       `SELECT p.id FROM passages_entretien p
@@ -275,7 +291,7 @@ async function main() {
     const fiche = await page.locator('[data-atlas="fiche-chantier"]').innerText();
     assert.match(
       fiche,
-      /Votre client ne le verra pas sur son compte rendu\./,
+      /Votre client ne le verra pas sur son retour d'intervention\./,
       "la phrase qu'il a dictée le 23 août ne paraît pas sous la molette"
     );
 
@@ -408,9 +424,23 @@ async function main() {
     const texte = await pageClient.locator("body").innerText();
     // Insensible à la casse : le surtitre est mis en capitales par la feuille
     // de style, et `innerText` rend ce qui est AFFICHÉ, pas la source.
-    assert.match(texte, /compte rendu de passage/i);
+    //
+    // **Cette suite réclamait « compte rendu de passage » jusqu'au 9 septembre
+    // 2026, et elle rougissait sur du code juste.** Le patron avait fait
+    // renommer la page (commit `dc4449dc`) ; ce contrôle, lui, exigeait encore
+    // l'ancien mot. C'est le §5 bis de `CLAUDE.md` : quand une suite rougit
+    // après un retrait qu'il a demandé, **on adapte le contrôle, on ne remet
+    // pas le libellé** — sinon son écran devient impossible à changer.
+    assert.match(texte, /retour d'intervention/i);
     assert.match(texte, /1 h 45/, "le temps passé n'apparaît pas");
     assert.match(texte, /haie du fond/, "les observations n'apparaissent pas");
+    // **L'année s'écrit toujours** (25 septembre 2026) : le client relit ce
+    // rapport l'année suivante, et « jeudi 17 septembre » n'y désigne plus rien.
+    assert.match(
+      texte,
+      /(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche) (1er|\d{1,2}) [a-zéû]+ 20\d\d/i,
+      "le jour du passage est écrit sans son année"
+    );
 
     // Sa décision « B » du 16 août : le client lit ce qui a été FAIT chez lui.
     // Trois lignes cochées sur vingt : les dix-sept autres n'ont rien à y faire.
@@ -444,45 +474,48 @@ async function main() {
     await anonyme.close();
   });
 
-  await test("Le passage SUIVANT chez lui s'ouvre entier, puis se replie", async () => {
-    // **Le cœur de l'arrangement C, et il ne se voit qu'au SECOND passage.**
-    // Au premier, ce client n'a pas d'historique : la fiche garde tout, et une
-    // capture prise là ne montre aucun repli. C'est exactement le genre de
-    // contrôle qui reste vert sans rien prouver (`CLAUDE.md` §5).
+  await test("Le passage SUIVANT chez lui garde toutes ses lignes, et recoche le dernier", async () => {
+    // **Sa règle du 22 septembre 2026**, qui remplace le repli de l'arrangement
+    // C : *« ce qui a déjà été coché par le passé se recoche automatiquement,
+    // mais les 20 points qui composent ma fiche doivent être présents ! »*
+    // (`ARCHITECTURE.md` §408). Elle ne se voit qu'au SECOND passage : au
+    // premier, ce client n'a pas de rapport, et rien ne se coche.
     // `networkidle` : le bouton est un composant client, et un appui posé avant
     // l'hydratation ne déclenche rien — l'écran reste sur la liste sans un mot.
     await page.goto(`${BASE}/paysage/fiche`, { waitUntil: "networkidle" });
     await page.locator('[data-atlas="ouvrir-fiche-chantier"]').click();
     await page.waitForURL(/\/paysage\/fiche\/[0-9a-f-]{36}/, { timeout: 30_000 });
 
+    // **Le jour se choisit DANS la fiche** (24 septembre 2026) : la roue y est,
+    // posée sur le jour même.
+    await page.locator('[data-atlas="fiche-chantier"] [data-atlas="jour-du-passage"]').waitFor({ timeout: 20_000 });
+
     const cases = page.locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"]');
+    const cochees = page.locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"][aria-pressed="true"]');
     const entier = await cases.count();
     assert.ok(entier > 5, `la fiche ne s'ouvre pas sur le modèle entier (${entier} lignes)`);
+    assert.equal(await cochees.count(), 0, "la fiche s'ouvre avec des coches avant que le client soit nommé");
 
     await page.locator('[data-atlas="pont-client"]').click();
     await page.locator('[data-atlas="choix-du-client"]').getByText(CLIENT).click();
     await page.waitForTimeout(1500);
-    await capturer(page, "10-second-passage-replie");
+    await capturer(page, "10-second-passage-recoche");
 
-    const replie = await cases.count();
-    assert.ok(
-      replie < entier,
-      `la fiche ne s'est pas repliée sur ce client : ${replie} lignes sur ${entier}`
-    );
-    // Les trois prestations du premier rapport, et elles seules.
+    assert.equal(await cases.count(), entier, "nommer le client a retiré des lignes de la fiche");
+    // Les trois prestations du premier rapport, et elles seules, reviennent cochées.
+    assert.equal(await cochees.count(), 3, "ce ne sont pas les coches du dernier rapport qui reviennent");
     const texte = await page.locator('[data-atlas="fiche-chantier"]').innerText();
-    // **Le repli se DIT, et se dit comme un constat.** Une fiche qui perd
-    // dix-sept lignes sans un mot passe pour une fiche amputée ; la même chose
-    // écrite en rouge sous le bouton passe pour une panne.
-    assert.match(texte, /repliée sur ce que/i, "le repli ne se dit nulle part");
-    assert.match(texte, /Tonte et ébarbage/);
-    assert.doesNotMatch(texte, /Scarification/, "une ligne jamais faite chez lui est revenue");
+    // **Le geste se DIT, en ses mots à lui.**
+    assert.match(texte, /3 prestations cochées, celles du dernier chantier\./, "la phrase n'est pas la sienne");
 
-    // Et elles reviennent DÉCOCHÉES : c'est un nouveau passage, pas une copie.
-    const cochees = await page
-      .locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"][aria-pressed="true"]')
-      .count();
-    assert.equal(cochees, 0, "le passage suivant arrive avec des coches déjà posées");
+    // **Sa capture du 24 septembre 2026** : il coche ensuite ce qu'il a fait en
+    // plus, et la phrase restait sur le chiffre de la reprise. Elle suit.
+    await page.locator('[data-atlas="fiche-chantier"] button[data-atlas="prestation"][aria-pressed="false"]').first().click();
+    await page.waitForTimeout(800);
+    assert.equal(await cochees.count(), 4, "la coche en plus n'a pas pris");
+    const apres = await page.locator('[data-atlas="fiche-chantier"]').innerText();
+    assert.match(apres, /4 prestations cochées\./, "la phrase ne suit pas la coche en plus");
+    assert.doesNotMatch(apres, /celles du dernier chantier/, "la phrase attribue au dernier chantier une coche du jour");
 
     await page.goBack();
   });

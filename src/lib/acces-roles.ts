@@ -39,10 +39,22 @@
  * verrait tout de suite (il vient se plaindre), donc il ne coûte rien.
  */
 
-/** Les trois rôles. `membre` n'existe plus : repris en `salarie` (migration 0065). */
-export type Role = "proprietaire" | "commercial" | "salarie";
+/**
+ * LES QUATRE RÔLES. `membre` n'existe plus : repris en `salarie` (migration 0065).
+ *
+ * **`facturation` est arrivé le 30 août 2026**, pour figer le modèle avant le
+ * premier artisan réel : *« une entreprise doit pouvoir avoir plusieurs
+ * utilisateurs au service facturation, chacun avec son compte »*. Ce n'est pas
+ * une session partagée « Facturation » — c'est un rôle, que plusieurs personnes
+ * portent, chacune avec son identité (`membres_entreprise` a une clé unique sur
+ * (entreprise, personne), jamais sur (entreprise, rôle)).
+ *
+ * **L'ordre de cette liste est celui de l'écran des accès** : du plus large au
+ * plus fermé. Le patron le lit de haut en bas pour choisir.
+ */
+export type Role = "proprietaire" | "facturation" | "commercial" | "salarie";
 
-export const ROLES: readonly Role[] = ["proprietaire", "commercial", "salarie"] as const;
+export const ROLES: readonly Role[] = ["proprietaire", "facturation", "commercial", "salarie"] as const;
 
 /** Ce que la personne voit du planning. Réglé PAR PERSONNE, jamais par rôle. */
 export type PorteePlanning = "tout" | "ses_equipes";
@@ -59,6 +71,8 @@ export function libelleRole(role: Role): string {
   switch (role) {
     case "proprietaire":
       return "Patron";
+    case "facturation":
+      return "Facturation";
     case "commercial":
       return "Commercial";
     case "salarie":
@@ -88,7 +102,45 @@ const FERME_AU_COMMERCIAL = [
   "/reglages/equipe",
   "/reglages/abonnement",
   "/reglages/donnees",
+  // ───────────────────────────────────────────────────────────────────────
+  // **LA FACTURATION, ET C'EST SA RÈGLE DU 13 AOÛT — pas une nouveauté.**
+  //
+  // `docs/QUESTIONS.md` §10, sa table, ses mots : le commercial a *« les
+  // chantiers, le planning, les devis et les prix — il en a besoin pour
+  // vendre. **Ni les factures, ni la TVA**, ni l'IBAN, ni les accès, ni
+  // l'abonnement. »*
+  //
+  // **Elle n'a jamais été appliquée.** Jusqu'au 30 août 2026, toutes les
+  // actions d'argent — émettre une facture, la porter au relevé de TVA, noter
+  // un paiement, ranger un ticket — passaient par une seule garde
+  // (`peutVoirLesMontants`, c'est-à-dire « tout sauf le salarié »). Un
+  // commercial émettait donc des factures, et l'écran des accès lui promettait
+  // même « Les factures et le relevé de TVA » : la promesse disait l'inverse
+  // de la règle.
+  //
+  // « Terminés » porte les deux, la liste des chantiers facturables et le
+  // relevé de TVA : c'est l'écran de la facturation, il se ferme en entier.
+  "/termines",
 ] as const;
+
+/**
+ * L'écran de la facture d'un chantier, et le PDF qu'il produit.
+ *
+ * **Ils ne peuvent pas s'écrire dans la liste ci-dessus** : leur adresse porte
+ * l'identifiant du chantier au milieu (`/chantiers/<id>/facture`), et un
+ * préfixe ne sait pas décrire cela. Le PDF suit le même sort — un écran fermé
+ * dont le document reste téléchargeable ne ferme rien (`docs/QUESTIONS.md`
+ * §10 : *« ni dans la page, ni dans le PDF, ni dans une réponse d'API »*).
+ *
+ * **Le devis, lui, reste ouvert** : le commercial le rédige et l'envoie. C'est
+ * toute la frontière du rôle, et elle passe entre les deux documents.
+ */
+const FACTURE_DU_CHANTIER = [
+  /^\/chantiers\/[^/]+\/facture(\/.*)?$/,
+  /^\/api\/factures\/[^/]+(\/.*)?$/,
+  // L'avoir est une pièce de la facture : même porte, même fermeture (§413).
+  /^\/api\/avoirs\/[^/]+(\/.*)?$/,
+];
 
 /**
  * **`/reglages/tarifs` et `/reglages/prix` NE sont PAS dans cette liste, et
@@ -134,9 +186,15 @@ const OUVERT_AU_SALARIE = [
   "/planning",
   "/reglages",
   "/documents-legaux",
+  // Le code de vérification d'une adresse : une porte, avant tout rôle.
+  "/verifier-email",
   // Les polices du rendu et les sondes de santé : aucune donnée d'entreprise.
   "/api/polices",
   "/api/health",
+  // **Les têtes de ses collègues, et la sienne** (27 septembre 2026) : il les
+  // voit sur le planning. Cette route ne sert QUE des photos de personnes,
+  // jamais celles des chantiers (`api/tetes`).
+  "/api/tetes",
 ] as const;
 
 /**
@@ -152,6 +210,75 @@ const REGLAGES_A_SOI = [
   "/reglages/notifications",
   "/reglages/connexion",
   "/reglages/apparence",
+] as const;
+
+/**
+ * **Les réglages de l'ENTREPRISE que tout le monde LIT.** Un seul : l'organigramme,
+ * sa règle du 27 septembre 2026 — *« L'organigramme doit être visible par tout
+ * le monde ! »*. Séparé de `REGLAGES_A_SOI`, qui dit ce qui appartient à la
+ * personne : l'organigramme ne lui appartient pas, il se lit, et seul le patron
+ * y écrit (`exigerProprietaire` dans ses actions).
+ */
+const REGLAGES_A_TOUS = ["/reglages/organigramme"] as const;
+
+/**
+ * CE QUE LA FACTURATION ATTEINT, ET RIEN D'AUTRE.
+ *
+ * **Une liste blanche, comme le salarié, et pas une liste noire comme le
+ * commercial.** La raison est celle du haut de ce fichier, et elle vaut ici
+ * plus qu'ailleurs : un écran neuf, ajouté demain par une autre session, doit
+ * être **fermé d'office** à un rôle dont le métier est borné. Le commercial a
+ * droit à l'application entière moins quelques pages — l'oubli s'y verrait tout
+ * de suite, il vient se plaindre. La facturation, elle, ne saurait pas qu'un
+ * écran de réglage vient de s'ouvrir à elle.
+ *
+ * **Ce qu'elle a, et pourquoi :** le cycle client → devis → facture, et rien de
+ * plus. Les chantiers parce que le devis y vit, les clients parce qu'elle les
+ * crée et corrige, « Terminés » parce que c'est là que la facture se fait et
+ * que le relevé de TVA se lit.
+ *
+ * **`/planning` y est, en LECTURE seule** — sa consigne du 30 août : *« si
+ * Facturation doit voir le planning uniquement pour comprendre la date d'un
+ * chantier avant facturation, donne le minimum nécessaire. Ne lui donne pas
+ * automatiquement l'écriture. »* Cette liste-ci ouvre l'écran ; c'est
+ * `peutModifierLePlanning` qui refuse d'y écrire, et les deux sont séparées
+ * exprès (le salarié vit sous le même partage depuis le 30 août).
+ *
+ * **`/paysage` n'y est PAS** : l'arrosage, le diagnostic végétal et les fiches
+ * d'entretien sont les outils du terrain. Rien n'y sert à facturer.
+ */
+const OUVERT_A_LA_FACTURATION = [
+  // L'accueil : la liste des chantiers. `sousChemin` ne rend vrai que pour « / »
+  // exactement — « /reglages » ne commence pas par « // ».
+  "/",
+  "/chantiers",
+  "/clients",
+  "/planning",
+  "/termines",
+  "/reglages",
+  "/documents-legaux",
+  "/verifier-email",
+  // La visionneuse, où s'ouvre la facture qu'elle émet (« Voir la facture en
+  // PDF ») et, depuis le 24 septembre 2026, celle d'une ligne de Ma TVA. Elle
+  // ne montre rien par elle-même : le fichier qu'on lui passe reste gardé par
+  // sa propre route, `/api/factures` ci-dessous. Fermée, l'appui menait à un
+  // refus sur un document qu'elle a le droit de lire.
+  "/documents/pdf",
+  // Les documents et pièces jointes du cycle. Le PDF du devis ET celui de la
+  // facture : elle envoie les deux.
+  "/api/chantiers",
+  "/api/devis",
+  "/api/factures",
+  // **Le rapport d'entretien, relu depuis le dossier d'un client** — elle
+  // l'ouvrait déjà là, sur la page publique ; il se relit dans l'application
+  // depuis le 24 septembre 2026 (`rapport-dans-l-appli.ts`). Aucun montant.
+  "/documents/entretien",
+  "/api/fichiers",
+  "/api/tetes",
+  "/api/notes-vocales",
+  "/api/adresses",
+  "/api/polices",
+  "/api/health",
 ] as const;
 
 /** La feuille de chantier sans montants : `/api/chantiers/<id>/feuille/pdf`. */
@@ -175,29 +302,44 @@ export function cheminAutorise(role: Role, chemin: string): boolean {
   if (role === "proprietaire") return true;
 
   if (role === "commercial") {
+    if (FACTURE_DU_CHANTIER.some((motif) => motif.test(chemin))) return false;
     return !FERME_AU_COMMERCIAL.some((p) => sousChemin(chemin, p));
+  }
+
+  if (role === "facturation") {
+    if (!OUVERT_A_LA_FACTURATION.some((p) => sousChemin(chemin, p))) return false;
+    return reglagesASoi(chemin);
   }
 
   if (FEUILLE_SANS_MONTANTS.test(chemin)) return true;
   if (!OUVERT_AU_SALARIE.some((p) => sousChemin(chemin, p))) return false;
 
-  /**
-   * **Les réglages sont ouverts au salarié, mais pas TOUS les réglages.**
-   *
-   * `/reglages` mène à son compte, son mot de passe et ses notifications ; il ne
-   * mène ni aux tarifs ni à l'identité de l'entreprise.
-   *
-   * **Ce fichier-ci décide, le sommaire ne fait qu'obéir.** `rubriques-reglages`
-   * filtre SES rubriques par `cheminAutorise` — jamais l'inverse : une seconde
-   * liste écrite là-bas se serait tue le jour où l'on ajoute une rubrique ici,
-   * et la dépendance ne va donc que dans un sens (`CLAUDE.md` §3).
-   */
-  if (sousChemin(chemin, "/reglages")) {
-    if (chemin === "/reglages") return true;
-    return REGLAGES_A_SOI.some((h) => sousChemin(chemin, h));
-  }
+  return reglagesASoi(chemin);
+}
 
-  return true;
+/**
+ * **LES RÉGLAGES SONT OUVERTS, MAIS PAS TOUS LES RÉGLAGES** — pour le salarié
+ * comme pour la facturation.
+ *
+ * `/reglages` mène à son compte, son mot de passe et ses notifications ; il ne
+ * mène ni aux tarifs ni à l'identité de l'entreprise.
+ *
+ * **Ce fichier-ci décide, le sommaire ne fait qu'obéir.** `rubriques-reglages`
+ * filtre SES rubriques par `cheminAutorise` — jamais l'inverse : une seconde
+ * liste écrite là-bas se serait tue le jour où l'on ajoute une rubrique ici, et
+ * la dépendance ne va donc que dans un sens (`CLAUDE.md` §3).
+ *
+ * **Écrit une fois pour les deux rôles.** Recopié, il aurait ouvert à la
+ * facturation une rubrique d'entreprise le jour où on l'ajoute au salarié, ou
+ * l'inverse — et l'écart ne se serait vu nulle part.
+ *
+ * Rend `true` pour tout ce qui n'est pas un réglage : les deux rôles sont déjà
+ * passés par leur liste blanche quand ils arrivent ici.
+ */
+function reglagesASoi(chemin: string): boolean {
+  if (!sousChemin(chemin, "/reglages")) return true;
+  if (chemin === "/reglages") return true;
+  return REGLAGES_A_SOI.some((h) => sousChemin(chemin, h)) || REGLAGES_A_TOUS.some((h) => sousChemin(chemin, h));
 }
 
 /**
@@ -224,13 +366,142 @@ export function ongletsDuRole(role: Role, onglets: readonly { href: string }[]):
 }
 
 /**
- * Cette personne peut-elle voir un montant ?
+ * ═══════════════════════════════════════════════════════════════════════════
+ * LES CAPACITÉS — et pourquoi elles s'écrivent TOUTES en liste blanche.
+ * ═══════════════════════════════════════════════════════════════════════════
  *
- * Le patron chiffre, le commercial vend — *« il en a besoin pour vendre »*
- * (13 août). Le salarié, jamais : c'est toute la raison de la feuille sans prix.
+ * Jusqu'au 30 août 2026, elles s'écrivaient `role !== "salarie"`. C'était juste
+ * tant qu'il n'existait que trois rôles dont un seul était fermé — et **c'est
+ * devenu un piège à l'instant où `facturation` est né** : la formule l'aurait
+ * accueilli partout, en silence, sans qu'aucune ligne de ce fichier ne change.
+ * Un rôle neuf serait arrivé avec le droit d'émettre des factures.
+ *
+ * Chaque capacité **nomme donc qui l'a**. Un cinquième rôle, ajouté demain par
+ * une autre session, naît sans aucun droit et doit s'inscrire ici, un par un.
+ * C'est plus long à écrire une fois, et c'est la seule version qui se relit.
+ *
+ * **Elles ne s'appellent pas entre elles quand elles coïncident.** Deux règles
+ * qui rendent aujourd'hui le même verdict resteront deux règles : les lier
+ * ferait qu'élargir l'une élargit l'autre, pour une raison sans rapport et sans
+ * un mot. Le dépôt a déjà pris cette décision deux fois — `peutUtiliserLAssistant`
+ * et `peutModifierLePlanning` — et elle ne se rediscute pas.
+ */
+
+/**
+ * **Cette personne peut-elle voir un montant ?** — LIRE, pas écrire.
+ *
+ * Le patron chiffre, le commercial vend (*« il en a besoin pour vendre »*,
+ * 13 août), la facturation facture. Le salarié, jamais : c'est toute la raison
+ * de la feuille sans prix.
+ *
+ * **Ne dit rien de ce qu'on a le droit d'en FAIRE** : rédiger un devis relève
+ * de `peutGererDevis`, émettre une facture de `peutFacturer`. Trois questions
+ * distinctes, qui se répondaient toutes par la même fonction avant le 30 août.
  */
 export function peutVoirLesMontants(role: Role): boolean {
-  return role !== "salarie";
+  return role === "proprietaire" || role === "facturation" || role === "commercial";
+}
+
+/**
+ * **Cette personne peut-elle rédiger, chiffrer et envoyer un DEVIS ?**
+ *
+ * Le devis est le document du commercial — c'est le sens même du rôle. La
+ * facturation en a besoin aussi : *« consulter, rédiger, créer, modifier,
+ * finaliser, envoyer au client »* (sa consigne du 30 août 2026).
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **POURQUOI ELLE EXISTE ALORS QU'ELLE REND LE MÊME VERDICT QUE
+ * `peutVoirLesMontants`.**
+ *
+ * Parce que ce sont deux questions différentes, et qu'elles ne coïncident que
+ * par accident du moment. Le jour où quelqu'un ouvrira un total au salarié — un
+ * récapitulatif de chantier, une ligne « à payer » sur sa feuille —, il
+ * touchera à la lecture des montants ; il n'a aucune raison de lui donner du
+ * même geste le droit de réécrire un devis envoyé.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **CE QU'ELLE NE COUVRE PAS : LES GRILLES DE TARIFS.**
+ *
+ * Poser un prix SUR un devis et administrer la grille tarifaire de l'entreprise
+ * sont deux gestes distincts, et le dépôt les sépare déjà : `/reglages/tarifs`
+ * et `/reglages/prix` portent `exigerProprietaire` depuis le 23 août. Sa règle
+ * du 13 août pour le commercial — *« il lit les tarifs, il ne les change pas »* —
+ * n'a pas bougé, et ce lot ne l'élargit à personne.
+ */
+export function peutGererDevis(role: Role): boolean {
+  return role === "proprietaire" || role === "facturation" || role === "commercial";
+}
+
+/** Ce dont parle un rappel de l'accueil : ce qui décide à qui il revient. */
+export type DomaineDesRappels = "devis" | "facture" | "retour";
+
+/**
+ * **Cette personne reçoit-elle les rappels de ce domaine ?**
+ *
+ * Sa règle du 27 septembre 2026 (planche `rappels-par-role-et-organigramme`) :
+ * *« Le patron doit toujours tout recevoir. Ensuite il faut filtrer pour le
+ * commercial et la facturation. Chacun ne doit pas recevoir les rappels des
+ * autres. »*
+ *
+ * **Ce n'est pas `peutGererDevis`**, et c'est voulu : la facturation a le droit
+ * de rédiger un devis, mais le rappel d'un devis qui dort est le travail du
+ * commercial. Un droit dit ce qu'on PEUT faire ; un rappel dit ce qu'on doit
+ * ne pas OUBLIER.
+ *
+ * Avant ce jour, personne ne triait : le commercial recevait « À facturer » et
+ * « Facture impayée », dont le bouton mène à une adresse qui lui est fermée
+ * (`FACTURE_DU_CHANTIER`).
+ */
+export function recoitLesRappels(role: Role, domaine: DomaineDesRappels): boolean {
+  switch (role) {
+    case "proprietaire":
+      return true;
+    case "commercial":
+      return domaine === "devis";
+    case "facturation":
+      return domaine === "facture";
+    case "salarie":
+      return false;
+  }
+}
+
+/**
+ * **Cette personne peut-elle FACTURER ?**
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **CE N'EST PAS UNE RÈGLE NEUVE — c'est la sienne, du 13 août 2026**, écrite
+ * dans `docs/QUESTIONS.md` §10, et jamais appliquée jusqu'ici :
+ *
+ * > *« Le commercial : les chantiers, le planning, les devis et les prix — il en
+ * > a besoin pour vendre. **Ni les factures, ni la TVA**, ni l'IBAN, ni les
+ * > accès, ni l'abonnement. »*
+ *
+ * Toutes les actions d'argent passaient par `peutVoirLesMontants`, qui ne
+ * refusait que le salarié : un commercial émettait donc des factures, les
+ * portait au relevé de TVA, notait des paiements. Et l'écran des accès lui
+ * **promettait** « Les factures et le relevé de TVA » — la promesse disait
+ * l'inverse de la règle, ce qui est la pire des deux erreurs : le patron
+ * croyait avoir lu ce qu'il avait décidé.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **CE QU'ELLE COUVRE, ET QUI SURPREND.**
+ *
+ * « Terminer le chantier » en fait partie. Ce geste ne change pas seulement un
+ * état : il **crée la facture** (`terminerChantier`), et refuse même de le
+ * faire tant que le devis n'est pas parti. C'est l'entrée du cycle comptable,
+ * pas une case à cocher — la fermer au commercial est la conséquence honnête de
+ * sa règle, et elle se paie : un commercial ne clôture plus un chantier.
+ *
+ * S'y ajoutent l'émission, l'échéance, le lien envoyé au client, les paiements,
+ * les achats et les tickets du relevé de TVA.
+ *
+ * **Elle ne donne AUCUN droit sur ce qui est déjà émis.** L'immuabilité d'une
+ * facture, le refus de la réémettre, l'avoir : tout cela vit dans le dépôt
+ * (`repositories/factures.ts`) et ne connaît pas les rôles. Facturer est un
+ * droit fonctionnel, jamais un droit de casser une protection comptable.
+ */
+export function peutFacturer(role: Role): boolean {
+  return role === "proprietaire" || role === "facturation";
 }
 
 /**
@@ -283,9 +554,66 @@ export function peutVoirLesMontants(role: Role): boolean {
  * qui subsiste faute d'avoir été examiné se resserre un jour « par prudence »,
  * au premier lot de sécurité venu. Celui-ci a été examiné, et il tient. Le
  * resserrer demande une nouvelle décision de sa part.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **LA FACTURATION LIT LE PLANNING, ELLE N'Y ÉCRIT PAS** — 30 août 2026 :
+ * *« si Facturation doit voir le planning uniquement pour comprendre la date
+ * d'un chantier avant facturation, donne le minimum nécessaire. Ne lui donne
+ * pas automatiquement l'écriture du planning. »*
+ *
+ * **Et c'est pourquoi cette fonction ne s'écrit plus `!== "salarie"`.** Sous
+ * l'ancienne forme, le rôle `facturation` serait né avec le droit de déplacer
+ * et de supprimer des chantiers, sans qu'aucune ligne de ce fichier ne change
+ * et sans qu'aucun test ne rougisse. Le partage lecture/écriture posé pour le
+ * salarié le 30 août sert donc deux rôles, sans être écrit deux fois.
  */
 export function peutModifierLePlanning(role: Role): boolean {
-  return role !== "salarie";
+  return role === "proprietaire" || role === "commercial";
+}
+
+/**
+ * POSER UN RETOUR D'INTERVENTION — **la première écriture jamais rendue au
+ * salarié**, et la seule.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **SA DÉCISION DU 8 SEPTEMBRE 2026**, posée en réponse à une question qui lui
+ * a été explicitement soumise avant d'écrire une ligne : *« oui, le salarié
+ * dépose photos et "c'est fini" sur les chantiers de sa journée, et rien
+ * d'autre : aucun montant, ni devis, ni facture, ni un chantier qui n'est pas
+ * le sien. Que le contrôle le prouve. »*
+ *
+ * C'est une brèche dans le modèle figé le 30 août — `docs/modele-des-roles.md`
+ * §E disait mot pour mot *« aucun droit d'écriture ne lui a été rouvert »*. Elle
+ * est délibérée, et **sa borne est ce qui la rend acceptable** :
+ *
+ * | ce qu'il gagne | ce qui ne bouge pas |
+ * |---|---|
+ * | cocher, photographier, écrire un mot | aucun montant ne sort du serveur pour lui |
+ * | poser « c'est fini », horodaté, à son nom | ni le devis, ni la facture |
+ * | | ni un chantier qui n'est pas de sa journée |
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **POURQUOI UNE FONCTION À ELLE, ET PAS UN `!== "salarie"` RETOURNÉ.**
+ *
+ * Trois raisons, et la troisième est celle qui compte :
+ *
+ * 1. cette permission est VRAIE pour tout le monde, `peutModifierLePlanning`
+ *    est fausse pour deux rôles : les écrire ensemble obligerait à une
+ *    négation, et une négation se relit mal à trois heures du matin ;
+ * 2. elle ne dit rien du CHANTIER. « Il a le droit de poser un retour » n'est
+ *    pas « il a le droit de poser CELUI-CI » — le second se vérifie en base,
+ *    contre la journée du salarié, et ne peut pas vivre dans une fonction pure ;
+ * 3. **elle sera la première à bouger.** Le jour où le patron voudra qu'un
+ *    salarié ne pose plus rien, c'est cette ligne-ci qu'on change — et pas une
+ *    condition mêlée à l'écriture du planning, qui ferait tomber le commercial
+ *    avec lui.
+ *
+ * **Ce que cette fonction n'autorise pas, et qu'aucun rôle ne franchit :**
+ * lire un montant. Un retour n'en porte aucun, par construction — la table
+ * elle-même n'a pas de colonne d'argent (migration 0080).
+ */
+export function peutPoserUnRetour(role: Role): boolean {
+  return role === "proprietaire" || role === "facturation" || role === "commercial" || role === "salarie";
 }
 
 /**
@@ -341,10 +669,39 @@ export function ceQueLeRoleChange(role: Role): { peut: string[]; nonPlus: string
         peut: ["Tout Atlas", "Les tarifs, l'identité, l'IBAN, l'abonnement", "Donner et retirer les accès"],
         nonPlus: [],
       };
+    /**
+     * **« Les factures et le relevé de TVA » a QUITTÉ cette colonne le 30 août
+     * 2026, et c'est une correction, pas un choix.** Cet écran promettait au
+     * patron l'inverse de sa propre règle du 13 août — *« ni les factures, ni
+     * la TVA »* (`docs/QUESTIONS.md` §10). Il donnait donc un accès en croyant
+     * en donner un autre, et rien ne pouvait le détromper.
+     */
+    case "facturation":
+      return {
+        peut: [
+          "Les clients, les devis, les factures",
+          "Le relevé de TVA, les paiements, les achats",
+          "Le planning, en lecture",
+        ],
+        nonPlus: [
+          "Modifier le planning",
+          "Les tarifs et les grilles de prix",
+          "L'identité de l'entreprise et l'IBAN",
+          "Les accès et l'abonnement",
+        ],
+      };
     case "commercial":
       return {
-        peut: ["Les chantiers, le planning, les devis et les prix", "Les factures et le relevé de TVA"],
-        nonPlus: ["La mise en page des devis", "L'identité de l'entreprise et l'IBAN", "Les accès et l'abonnement"],
+        peut: [
+          "Les chantiers, le planning, les devis et les prix",
+          "Poser, déplacer et supprimer un chantier",
+        ],
+        nonPlus: [
+          "Les factures et le relevé de TVA",
+          "La mise en page des devis",
+          "L'identité de l'entreprise et l'IBAN",
+          "Les accès et l'abonnement",
+        ],
       };
     case "salarie":
       return {

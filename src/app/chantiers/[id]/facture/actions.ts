@@ -1,15 +1,41 @@
 "use server";
 
-import { exigerMontants } from "@/server/garde-action";
+import { exigerFacturation } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import {
   emettreFacture,
   majEcheanceFacture,
+  reprendreLeDevisSurLaFacture,
   terminerChantier,
+  ajouterLigneDeFacture,
+  majLigneDeFacture,
+  majReductionDeFacture,
+  retirerLignesDeFacture,
+  majTitreDeFacture,
+  majMainDoeuvreDeFacture,
+  majDateTravauxFacture,
+  majAutoliquidationFacture,
+  majTvaClientFacture,
+  manquesDeLaFactureAEmettre,
   FactureDejaEmiseError,
+  FactureEnRetardSurLeDevisError,
   FinChantierImpossibleError,
 } from "@/server/repositories/factures";
+import {
+  poserReglementRecu,
+  majReglementRecu,
+  retirerReglementRecu,
+  basculerAcquittee,
+  type ReglementEnregistre,
+  type SaisieReglement,
+  noterPaiement,
+} from "@/server/repositories/paiements-facture";
+import { faireUnAvoir } from "@/server/repositories/avoirs";
+import { declarerNonPayee } from "@/server/repositories/factures-non-payees";
+import type { MoyenDePaiement } from "@/lib/acomptes-facture";
+import { jourIso } from "@/lib/jour";
 import { logger } from "@/server/logger";
+import { phraseDesManques, type Manque } from "@/lib/mentions-manquantes";
 import {
   creerEnvoiFacture,
   dernierEnvoiFacture,
@@ -33,7 +59,7 @@ export type ResultatFinChantier =
 
 export async function terminerChantierAction(chantierId: string): Promise<ResultatFinChantier> {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "terminer le chantier et préparer la facture");
+  await exigerFacturation(ctx, "terminer le chantier et préparer la facture");
   try {
     const facture = await terminerChantier(ctx, chantierId);
     return { succes: true, factureId: facture.id };
@@ -45,7 +71,9 @@ export async function terminerChantierAction(chantierId: string): Promise<Result
   }
 }
 
-export type ResultatEmission = { succes: true; numero: string } | { succes: false; erreur: string };
+export type ResultatEmission =
+  | { succes: true; numero: string }
+  | { succes: false; erreur: string; manques?: Manque[] };
 
 /**
  * Fige la facture et la porte au relevé de TVA.
@@ -56,15 +84,49 @@ export type ResultatEmission = { succes: true; numero: string } | { succes: fals
  */
 export async function emettreFactureAction(factureId: string): Promise<ResultatEmission> {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "émettre la facture");
+  await exigerFacturation(ctx, "émettre la facture");
+  // **Une mention obligatoire absente arrête la pièce** (son choix 1A) : une
+  // facture émise ne se corrige plus que par un avoir.
+  const manques = await manquesDeLaFactureAEmettre(ctx, factureId);
+  if (manques.length > 0) return { succes: false, erreur: phraseDesManques(manques), manques };
   try {
     const facture = await emettreFacture(ctx, factureId);
     return { succes: true, numero: facture.numeroCommercial };
   } catch (err) {
-    if (err instanceof FactureDejaEmiseError) {
+    if (err instanceof FactureDejaEmiseError || err instanceof FactureEnRetardSurLeDevisError) {
       return { succes: false, erreur: err.message };
     }
     throw err;
+  }
+}
+
+/**
+ * Reprend le dernier devis envoyé sur une facture encore en brouillon.
+ *
+ * **Le geste que le refus de l'écran désigne.** Une facture bâtie avant qu'un
+ * devis soit corrigé garde les montants d'avant, et rien ne le disait : le
+ * second arrêt se franchissait sur l'ancien prix. L'écran nomme désormais le
+ * devis manquant ET porte ce bouton — un refus qui ne nomme pas son geste est
+ * un cul-de-sac (`CLAUDE.md`, ce que « impeccable » veut dire, point 5).
+ *
+ * **Le refus se rend en valeur** (`AGENTS.md`) : le message d'une exception
+ * d'action serveur n'atteint jamais le patron.
+ */
+export type ResultatReprise =
+  | { succes: true; numeroDevis: string }
+  | { succes: false; erreur: string };
+
+export async function reprendreLeDevisAction(factureId: string): Promise<ResultatReprise> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "reprendre le devis sur la facture");
+  try {
+    const r = await reprendreLeDevisSurLaFacture(ctx, factureId);
+    return r.ok ? { succes: true, numeroDevis: r.numeroDevis } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Devis non repris sur la facture", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { succes: false, erreur: "Le devis n'a pas pu être repris. Réessayez dans un instant." };
   }
 }
 
@@ -84,7 +146,7 @@ export async function majEcheanceFactureAction(
   dateEcheance: string
 ): Promise<ResultatEcheanceFacture> {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "changer l'échéance de la facture");
+  await exigerFacturation(ctx, "changer l'échéance de la facture");
   try {
     const r = await majEcheanceFacture(ctx, factureId, dateEcheance);
     return r.ok ? { succes: true, dateEcheance: r.dateEcheance } : { succes: false, erreur: r.raison };
@@ -112,7 +174,7 @@ export async function preparerLienFactureAction(
   canal: "sms" | "email"
 ): Promise<ResultatLienFacture> {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "préparer le lien de la facture");
+  await exigerFacturation(ctx, "préparer le lien de la facture");
   try {
     const existant = await dernierEnvoiFacture(ctx, factureId);
     // Un second appui ne fabrique pas un second lien : le client aurait alors
@@ -129,5 +191,297 @@ export async function preparerLienFactureAction(
     return { succes: true, jeton: envoi.jeton };
   } catch (e) {
     return { succes: false, erreur: e instanceof Error ? e.message : "Le lien n'a pas pu être préparé." };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LES TRAVAUX SUPPLÉMENTAIRES — sa demande du 31 août, tranchée le 9 septembre
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// *« Si on effectue des travaux en plus chez un client, on n'a aucun moyen de
+// rajouter les TS sur la facture. »* Et sa règle du 9 : *« le devis ne se
+// réécrit pas, seulement la case travaux supplémentaires ».*
+//
+// **Le refus se rend en VALEUR, jamais en exception** (`AGENTS.md`) : le
+// message d'une exception d'action serveur n'arrive pas jusqu'à lui — Next.js
+// le remplace en production par un identifiant opaque, et son banc sert une
+// version bâtie. Il lirait « une erreur est survenue » et ne saurait pas que
+// sa facture est simplement déjà partie.
+
+export type ResultatTravaux =
+  | { succes: true; montant?: string }
+  | { succes: false; erreur: string };
+
+/**
+ * CE QUE REND UNE LIGNE AJOUTÉE — et pourquoi ce n'est plus `ResultatTravaux`.
+ *
+ * Les trois gestes ne rapportent pas la même chose : l'ajout rend une ligne, la
+ * correction un montant, le retrait rien. Un type commun les rendait tous
+ * FACULTATIFS — si bien que l'écran devait se débrouiller quand ils manquaient,
+ * et « se débrouiller » voulait dire redéduire de son côté la règle du dépôt
+ * (`CLAUDE.md` §3). Trois gestes, deux formes : chacune promet ce qu'elle porte
+ * vraiment, et l'écran n'a plus rien à supposer.
+ */
+export type ResultatLigneAjoutee =
+  | {
+      succes: true;
+      ligneId: string;
+      /**
+       * **Dans quel bloc le SERVEUR vient de ranger la ligne** (migration
+       * 0085) : ordinaire sur une facture directe, supplément sur une facture
+       * née d'un devis. C'est lui qui l'a écrite en base — c'est à lui de dire
+       * où elle est.
+       */
+      supplement: boolean;
+    }
+  | { succes: false; erreur: string };
+
+/**
+ * Le prix accordé au client, posé ou retiré depuis l'écran de saisie.
+ *
+ * **Une chaîne vide vaut RETIRER**, et c'est délibéré : le « − » et la case
+ * qu'on vide sont le même geste pour le patron, et deux chemins d'annulation
+ * finiraient par se comporter différemment (`CLAUDE.md` §3). Le dépôt relit la
+ * valeur avec `pourcentValide` — ce qui n'est pas un pourcentage utile efface
+ * la remise plutôt que d'en garder une à zéro.
+ */
+export async function majReductionFactureAction(
+  factureId: string,
+  pourcent: string | null
+): Promise<ResultatTravaux & { reductionPourcent?: string | null }> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "changer le prix accordé au client");
+  try {
+    const r = await majReductionDeFacture(ctx, factureId, pourcent);
+    return r.ok
+      ? { succes: true, reductionPourcent: r.reductionPourcent }
+      : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Prix accordé au client non enregistré", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { succes: false, erreur: "Le prix accordé n'a pas pu être enregistré. Réessayez." };
+  }
+}
+
+export async function ajouterLigneDeFactureAction(
+  factureId: string,
+  taux?: string | null
+): Promise<ResultatLigneAjoutee> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "ajouter une ligne de facture");
+  try {
+    const r = await ajouterLigneDeFacture(ctx, factureId, taux);
+    return r.ok
+      ? { succes: true, ligneId: r.ligne.id, supplement: r.ligne.supplement }
+      : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Ligne de facture non ajoutée", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { succes: false, erreur: "La ligne n'a pas pu être ajoutée. Réessayez dans un instant." };
+  }
+}
+
+export async function majLigneDeFactureAction(
+  factureId: string,
+  ligneId: string,
+  champs: { libelle?: string; quantite?: string; prixUnitaire?: string; unite?: string | null; tauxTva?: string | null }
+): Promise<ResultatTravaux> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "corriger une ligne de facture");
+  try {
+    const r = await majLigneDeFacture(ctx, factureId, ligneId, champs);
+    return r.ok ? { succes: true, montant: r.montant } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Ligne de facture non corrigée", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { succes: false, erreur: "La correction n'a pas pu être enregistrée. Réessayez." };
+  }
+}
+
+export async function retirerLignesDeFactureAction(
+  factureId: string,
+  ligneId?: string
+): Promise<ResultatTravaux> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "retirer des lignes de facture");
+  try {
+    const r = await retirerLignesDeFacture(ctx, factureId, ligneId);
+    return r.ok ? { succes: true } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Lignes de facture non retirées", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { succes: false, erreur: "Le retrait n'a pas pu être enregistré. Réessayez." };
+  }
+}
+
+// ─── LE MÊME PAPIER QUE LE DEVIS — sa planche du 14 septembre 2026 ─────────
+// Le titre, la main d'œuvre nommée, et les acomptes reçus sur la facture en
+// brouillon. Chaque refus revient en VALEUR avec ses mots : une exception
+// levée par une action serveur n'arrive jamais jusqu'à lui (`AGENTS.md`).
+
+export async function majTitreFactureAction(
+  factureId: string,
+  titre: string | null
+): Promise<ResultatTravaux & { titre?: string | null }> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "donner un titre à la facture");
+  try {
+    const r = await majTitreDeFacture(ctx, factureId, titre);
+    return r.ok ? { succes: true, titre: r.titre } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Titre de la facture non enregistré", { erreur: err instanceof Error ? err.message : String(err) });
+    return { succes: false, erreur: "Le titre n'a pas pu être enregistré. Réessayez." };
+  }
+}
+
+export async function majMainDoeuvreFactureAction(
+  factureId: string,
+  valeur: string | null
+): Promise<ResultatTravaux & { mainDoeuvreHt?: string | null }> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "nommer la main d'œuvre sur la facture");
+  try {
+    const r = await majMainDoeuvreDeFacture(ctx, factureId, valeur);
+    return r.ok ? { succes: true, mainDoeuvreHt: r.mainDoeuvreHt } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Main d'œuvre de la facture non enregistrée", { erreur: err instanceof Error ? err.message : String(err) });
+    return { succes: false, erreur: "La main d'œuvre n'a pas pu être enregistrée. Réessayez." };
+  }
+}
+
+export type ResultatReglements =
+  | { succes: true; reglements: ReglementEnregistre[] }
+  | { succes: false; erreur: string };
+
+async function enReglements(
+  geste: string,
+  fn: () => Promise<{ ok: true; reglements: ReglementEnregistre[] } | { ok: false; raison: string }>
+): Promise<ResultatReglements> {
+  try {
+    const r = await fn();
+    return r.ok ? { succes: true, reglements: r.reglements } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error(`${geste} : impossible`, { erreur: err instanceof Error ? err.message : String(err) });
+    return { succes: false, erreur: "Ce règlement n'a pas pu être enregistré. Réessayez." };
+  }
+}
+
+export async function poserReglementRecuAction(factureId: string, saisie: SaisieReglement): Promise<ResultatReglements> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "noter un acompte reçu");
+  return enReglements("Acompte reçu", () => poserReglementRecu(ctx, factureId, saisie));
+}
+
+export async function majReglementRecuAction(reglementId: string, saisie: SaisieReglement): Promise<ResultatReglements> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "corriger un acompte reçu");
+  return enReglements("Acompte corrigé", () => majReglementRecu(ctx, reglementId, saisie));
+}
+
+export async function retirerReglementRecuAction(reglementId: string): Promise<ResultatReglements> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "retirer un acompte reçu");
+  return enReglements("Acompte retiré", () => retirerReglementRecu(ctx, reglementId));
+}
+
+export async function basculerAcquitteeAction(factureId: string, allumee: boolean): Promise<ResultatReglements> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "marquer la facture acquittée");
+  return enReglements("Facture acquittée", () => basculerAcquittee(ctx, factureId, allumee, jourIso(new Date())));
+}
+
+// ─── L'avoir, « Il ne me paiera pas », le paiement qui arrive quand même ─────
+//
+// Ses planches du 24 septembre 2026 (`appli/avoir.html`,
+// `appli/il-ne-paiera-pas.html`). Le refus se rend en VALEUR, jamais en
+// exception : elle deviendrait un identifiant opaque chez lui (`AGENTS.md`).
+// Les écrans sont `force-dynamic` : ils relisent la base à chaque ouverture.
+
+export type ResultatAvoirAction = { succes: true; avoirId: string } | { succes: false; erreur: string };
+
+export async function faireUnAvoirAction(
+  factureId: string,
+  demande: { portee: string | null; montantTtc: string; motif: string }
+): Promise<ResultatAvoirAction> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "faire un avoir");
+  const r = await faireUnAvoir(ctx, factureId, demande);
+  if (!r.ok) return { succes: false, erreur: r.refus };
+  return { succes: true, avoirId: r.avoir.id };
+}
+
+export async function declarerNonPayeeAction(factureId: string): Promise<{ succes: true } | { succes: false; erreur: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "ranger la facture dans les non payées");
+  const r = await declarerNonPayee(ctx, factureId);
+  if (!r.ok) return { succes: false, erreur: r.refus };
+  return { succes: true };
+}
+
+export async function recuLePaiementAction(
+  factureId: string,
+  demande: { date: string; montant: string; moyen: MoyenDePaiement; numero: string | null }
+): Promise<{ succes: true } | { succes: false; erreur: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "noter le paiement");
+  const r = await noterPaiement(ctx, factureId, demande);
+  if (!r.ok) return { succes: false, erreur: r.raison };
+  return { succes: true };
+}
+
+// ─── LES MENTIONS DE LA FACTURE — ses choix du 3 octobre 2026 ──────────────
+// La date des travaux (6A) et la sous-traitance sans TVA (5B). Chaque refus
+// revient en VALEUR, avec ses mots (`AGENTS.md`).
+
+export async function majDateTravauxFactureAction(
+  factureId: string,
+  date: string
+): Promise<{ succes: true; dateTravaux: string } | { succes: false; erreur: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "corriger la date des travaux");
+  try {
+    const r = await majDateTravauxFacture(ctx, factureId, date);
+    return r.ok ? { succes: true, dateTravaux: r.dateTravaux } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Date des travaux non enregistrée", { erreur: err instanceof Error ? err.message : String(err) });
+    return { succes: false, erreur: "La date n'a pas pu être enregistrée. Réessayez." };
+  }
+}
+
+export async function majAutoliquidationFactureAction(
+  factureId: string,
+  active: boolean
+): Promise<
+  { succes: true; autoliquidation: boolean; clientNumeroTva: string | null } | { succes: false; erreur: string }
+> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "facturer en sous-traitance");
+  try {
+    const r = await majAutoliquidationFacture(ctx, factureId, active);
+    return r.ok
+      ? { succes: true, autoliquidation: r.autoliquidation, clientNumeroTva: r.clientNumeroTva }
+      : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Sous-traitance non enregistrée", { erreur: err instanceof Error ? err.message : String(err) });
+    return { succes: false, erreur: "Le changement n'a pas pu être enregistré. Réessayez." };
+  }
+}
+
+export async function majTvaClientFactureAction(
+  factureId: string,
+  numero: string
+): Promise<{ succes: true; clientNumeroTva: string } | { succes: false; erreur: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "noter le numéro de TVA du client");
+  try {
+    const r = await majTvaClientFacture(ctx, factureId, numero);
+    return r.ok ? { succes: true, clientNumeroTva: r.clientNumeroTva } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Numéro de TVA du client non enregistré", { erreur: err instanceof Error ? err.message : String(err) });
+    return { succes: false, erreur: "Le numéro n'a pas pu être enregistré. Réessayez." };
   }
 }

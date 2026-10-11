@@ -148,7 +148,7 @@ export function construireConsigneMetier(
   }
 
   const nbRegles = ajouter(
-    "RÈGLES DE CET ARTISAN — elles priment sur tes habitudes :",
+    "RÈGLES DE CET ARTISAN, elles priment sur tes habitudes :",
     regles.map(formaterTerme),
     "Règle écartée"
   );
@@ -167,7 +167,7 @@ export function construireConsigneMetier(
   reste = disponiblePourLesMots;
 
   const nbMots = ajouter(
-    "VOCABULAIRE DE CET ARTISAN — emploie ces mots, et traite-les comme indiqué :",
+    "VOCABULAIRE DE CET ARTISAN, emploie ces mots et traite-les comme indiqué :",
     mots.map(formaterTerme),
     "Terme écarté"
   );
@@ -177,7 +177,7 @@ export function construireConsigneMetier(
   // La réserve leur revient, augmentée de ce que les mots n'ont pas consommé.
   reste += misDeCote;
   const nbExemples = ajouter(
-    "CE QU'IL A CORRIGÉ LES FOIS PRÉCÉDENTES — c'est sa façon de faire, reprends-la :",
+    "CE QU'IL A CORRIGÉ LES FOIS PRÉCÉDENTES, c'est sa façon de faire, reprends-la :",
     exemples,
     "Exemple écarté"
   );

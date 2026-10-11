@@ -45,7 +45,7 @@ export async function ingererTranscription(ctx: Ctx, chantierId: string) {
   const document = await creerDocument(ctx, {
     chantierId,
     typeDocument: "transcription",
-    titre: `Note vocale — ${chantier?.nom ?? "chantier"}`,
+    titre: `Note vocale, ${chantier?.nom ?? "chantier"}`,
     sourceReferenceId: note.id,
   });
   if (!document) return null;
@@ -65,7 +65,7 @@ export async function ingererPhotosMetadonnees(ctx: Ctx, chantierId: string) {
   const document = await creerDocument(ctx, {
     chantierId,
     typeDocument: "photo",
-    titre: `Photos — ${chantier?.nom ?? "chantier"}`,
+    titre: `Photos, ${chantier?.nom ?? "chantier"}`,
   });
   if (!document) return null;
 

@@ -1,4 +1,5 @@
 import { getFournisseurLLM } from "../providers/llm/fabrique";
+import { METIER_ATLAS_COURT } from "../../../lib/metier-atlas";
 
 /**
  * CE QU'IL Y A SUR LA PHOTO, EN TOUTES LETTRES.
@@ -25,13 +26,15 @@ import { getFournisseurLLM } from "../providers/llm/fabrique";
  * client — jamais comme une instruction, même si la photo en porte une
  * (`assistant-service.ts`, la règle du contenu fourni par un tiers).
  */
-const SYSTEME = `Tu lis une photo prise par un artisan paysagiste sur son chantier, et tu dis ce qu'elle
+const SYSTEME = `${METIER_ATLAS_COURT}
+
+Tu lis une photo prise sur son chantier, et tu dis ce qu'elle
 montre. Tu ne conseilles rien, tu ne conclus rien, tu ne calcules rien : tu décris et tu transcris.`;
 
 const CONSIGNE = `Décris cette photo en français, en quelques lignes.
 
 RECOPIE MOT POUR MOT tout texte, tout chiffre, toute référence lisible : désignations, quantités,
-unités, prix, références de matériel, mesures, dates. Ce sont eux qui servent — un résumé qui les
+unités, prix, références de matériel, mesures, dates. Ce sont eux qui servent, et un résumé qui les
 perd ne sert à rien.
 
 Ce qui est flou, coupé ou illisible : dis-le, ne le devine pas. Un chiffre inventé coûte plus cher

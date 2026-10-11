@@ -142,21 +142,3 @@ export function etatDuJour(
   if (options.occupes.includes(jour)) return "occupe";
   return "choisissable";
 }
-
-/**
- * Ajoute ou retire un jour d'une sélection bornée.
- *
- * **Pourquoi une fonction pure plutôt que trois lignes dans l'écran.** La règle
- * « une ou deux dates, jamais plus » vient du patron (`docs/AGENT.md` §2.2) et
- * elle est déjà vérifiée par le serveur au moment de l'envoi. Écrite deux fois,
- * elle finirait par diverger — et l'écart se verrait chez le client, pas ici.
- *
- * Au-delà du maximum, **le plus ancien choix cède la place** plutôt que de
- * refuser en silence : un bouton qui ne répond pas se lit comme une panne.
- */
-export function basculerJour(retenus: readonly JourIso[], jour: JourIso, maximum: number): JourIso[] {
-  if (retenus.includes(jour)) return retenus.filter((j) => j !== jour);
-  if (maximum < 1) return [...retenus];
-  const suivants = [...retenus, jour];
-  return suivants.slice(Math.max(0, suivants.length - maximum));
-}

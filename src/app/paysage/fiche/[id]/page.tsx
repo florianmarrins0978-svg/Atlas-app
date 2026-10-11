@@ -9,16 +9,15 @@ import { getEntreprise } from "@/server/repositories/entreprises";
 import FicheChantierClient from "./FicheChantierClient";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Fiche de chantier — Atlas" };
+export const metadata = { title: "Fiche de chantier, Atlas" };
 
 /**
  * La fiche qu'il coche sur un chantier — **arrangement C**, sa décision du
  * 17 août 2026 (planche `docs/maquettes/77-la-fiche-dans-paysage.html`).
  *
  * La fiche s'ouvre SANS client : un outil qui exige un client ne sert pas en
- * visite. Une ligne discrète — « c'est pour quel client ? » — se touche à tout
- * moment, et la fiche se replie alors sur SES prestations sans perdre une
- * coche. La règle est dans `src/lib/passage-entretien.ts`.
+ * visite. « + Ajouter un client » se touche à tout moment, et la fiche recoche
+ * alors son dernier passage, sans retirer une ligne ni perdre une coche. La règle est dans `src/lib/passage-entretien.ts`.
  *
  * **La liste des clients part avec la page**, et c'est délibéré : sur un
  * chantier, la couverture réseau est ce qu'elle est. Une recherche qui appelle
@@ -64,7 +63,10 @@ export default async function FichePage({ params }: { params: Promise<{ id: stri
         }}
         origine={origine}
         entrepriseNom={entrepriseNom}
-        modeleMessage={entreprise?.messageClient ?? null}
+        // **Le message du COMPTE RENDU de passage (migration 0075).** C'est le
+        // troisième document, celui qu'on a failli laisser sur le texte d'Atlas
+        // pendant que les deux autres portaient sa voix.
+        modeleMessage={entreprise?.messageClientPassage ?? null}
         // **Les coordonnées partent avec la liste, et ce n'est pas du confort.**
         // La fiche s'ouvre sans client : celles du passage sont donc vides, et
         // le rester après qu'il a nommé quelqu'un ferait ouvrir un message SANS

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le contrat d'entretien, lot 2 : la facture de chaque passage</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-contrat-dentretien-lot-2--la-facture-de-chaque-passage">Le contrat d'entretien, lot 2 : la facture de chaque passage</h1>
+<p><em>27 septembre 2026. Branche <code>claude/extrabat-competitor-review-7v9r8m</code>, pas sur <code>main</code>.</em></p>
+<p>Ta demande : <em>« enchaîne le lot 2, ne lance pas de batterie »</em>.</p>
+<h2 id="ce-qui-marche">Ce qui marche</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Le geste</th>
+<th>Où</th>
+<th>Vérifié comment</th>
+</tr></thead><tbody>
+<tr>
+<td>un passage fait arrive « À facturer » <strong>avec son montant</strong> : « 25 septembre, 54,00 € prévus »</td>
+<td>Terminés</td>
+<td>écran regardé</td>
+</tr>
+<tr>
+<td>« Créer la facture » la remplit au prix du contrat : « Tonte et ébarbage, passage du 25 septembre 2026 », 45,00 € HT, 54,00 € TTC</td>
+<td>facture</td>
+<td>écran regardé, et en base</td>
+</tr>
+<tr>
+<td>deux appuis ne font qu'une facture</td>
+<td>facture</td>
+<td>en base</td>
+</tr>
+<tr>
+<td><strong>l'automatisme</strong> : quand le compte rendu du jour part, la facture du passage part avec, dans le même message</td>
+<td>fiche d'entretien</td>
+<td>en base : facture arrêtée, lien créé, une seule fois</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-na-pas-pu-être-vérifié-ici">Ce qui n'a pas pu être vérifié ici</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>L'envoi réel du message avec les deux liens</strong> (compte rendu et facture) : ici Atlas tourne sur une adresse locale, qui refuse d'envoyer un lien qu'un client ne pourrait pas ouvrir. À essayer chez toi : un contrat avec l'interrupteur allumé, un passage posé, sa fiche d'entretien envoyée le même jour.</li>
+</ul>
+<h2 id="comment-lautomatisme-choisit-la-facture">Comment l'automatisme choisit la facture</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Condition</th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td>le compte rendu du <strong>même client</strong>, le <strong>même jour</strong> que le passage posé</td>
+<td>c'est ce qui dit que le passage a eu lieu</td>
+</tr>
+<tr>
+<td>le contrat est en <strong>B</strong> avec l'interrupteur <strong>allumé</strong></td>
+<td>c'est ton choix, contrat par contrat</td>
+</tr>
+<tr>
+<td>la personne qui envoie <strong>peut facturer</strong></td>
+<td>la règle des factures ne saute pas parce qu'on passe par la fiche</td>
+</tr>
+</tbody></table></div>
+<p>Si la facture ne peut pas partir, le compte rendu part quand même, et la fiche reste ouverte avec la phrase : « Le compte rendu part, mais sa facture n'a pas pu partir avec. Envoyez-la depuis Terminés. »</p>
+<h2 id="ce-que-jai-décidé-seul-et-pourquoi">Ce que j'ai décidé seul, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>La facture d'un passage passe par la même porte qu'un devis</strong> (« Créer la facture » dans Terminés). Cette porte refusait le passage avec « pas de devis, rien à facturer ». J'ai d'abord voulu passer par la « facture sans devis », puis je suis revenu dessus : ce n'est pas la porte que Terminés ouvre, et elle doit rester vide pour les dépannages.</li>
+<li><strong>Le lien de la facture s'ajoute à la fin du message</strong>, après ton texte de compte rendu, que je n'ai pas touché.</li>
+</ul>
+<h2 id="intégration-de-main">Intégration de <code>main</code></h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Sur <code>main</code>, « Autre chantier » est devenu <strong>« Nouveau devis »</strong> : la rangée à trois boutons porte le nouveau nom. <code>main</code> avait aussi pris les numéros de migration 0102 à 0106 : celle du contrat devient <strong>0107</strong>, vérifiée sur une base vide (121 migrations passent).</p>
+<h2 id="les-chiffres-des-contrôles-joués-pas-la-batterie">Les chiffres des contrôles joués (pas la batterie)</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Contrôle</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>types</td>
+<td>verts</td>
+</tr>
+<tr>
+<td>règles du contrat, sans base</td>
+<td>16 cas verts</td>
+</tr>
+<tr>
+<td>contrat en base, sous le rôle de l'application</td>
+<td>15 cas verts, dont la facture du passage et l'automatisme</td>
+</tr>
+<tr>
+<td>Terminés, messages, fiche d'entretien, état du planning, actions gardées, accès</td>
+<td>verts</td>
+</tr>
+<tr>
+<td>tirets, flèches, couleurs, code mort, pansements, couches</td>
+<td>verts</td>
+</tr>
+</tbody></table></div>
+<p><strong>Niveau : 3</strong> (migration, facturation). La batterie entière est à jouer avant <code>main</code> ; tu m'as demandé de ne pas la lancer.</p>
+<h2 id="ce-qui-reste">Ce qui reste</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>lot 3 : la facturation A</strong> (mensualités le 1er du mois) : aujourd'hui elle s'enregistre et s'imprime, sans créer de facture</td>
+<td>à coder</td>
+</tr>
+<tr>
+<td>la carte d'état du contrat sur la fiche client</td>
+<td>à coder</td>
+</tr>
+<tr>
+<td>les passages d'un mois groupés sur une ligne dans « Sans date »</td>
+<td>à coder</td>
+</tr>
+<tr>
+<td>le message du contrat modifiable dans Réglages</td>
+<td>ta décision</td>
+</tr>
+<tr>
+<td>la batterie, puis <code>main</code></td>
+<td>ta décision</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

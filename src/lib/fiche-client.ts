@@ -1,4 +1,5 @@
 import Decimal from "decimal.js";
+import { ligneSansTexte } from "./taches-du-devis";
 
 /**
  * Ce que l'application sait déjà d'un client — la règle, sans base.
@@ -46,7 +47,6 @@ export type PrestationRecurrente = {
 };
 
 export type FicheClient = {
-  chantiers: number;
   /** `null` : rien n'a encore été facturé — ce n'est pas « zéro euro ». */
   facture: string | null;
   /** Ce qui reste dû, toutes factures confondues. `null` : rien n'est facturé. */
@@ -120,7 +120,7 @@ export function composerFicheClient(
     { libelle: string; chantiers: Set<string>; total: Decimal; lignes: number }
   >();
   for (const l of lignes) {
-    if (!l.libelle.trim()) continue; // une ligne vide n'est pas une prestation
+    if (ligneSansTexte(l.libelle)) continue; // une ligne vide n'est pas une prestation
     const k = cle(l.libelle);
     const vu = parFamille.get(k) ?? {
       libelle: familleDePrestation(l.libelle),
@@ -145,7 +145,11 @@ export function composerFicheClient(
     .sort((a, b) => b.fois - a.fois || Number(b.prixMoyen) - Number(a.prixMoyen));
 
   return {
-    chantiers: chantiers.length,
+    // **Le COMPTE de chantiers est parti le 9 septembre 2026.** Il ne servait
+    // plus qu'à la ligne de la liste, et le patron l'a fait remplacer par la
+    // dernière chose qui s'est produite (`derniereTraceDuClient`). Un champ que
+    // plus personne ne lit se garde « au cas où » et devient la pièce qu'une
+    // prochaine session cherchera à comprendre (`CLAUDE.md` §4 quinquies).
     facture,
     du,
     prestations,

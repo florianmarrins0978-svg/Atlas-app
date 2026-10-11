@@ -161,14 +161,6 @@ const HORS_CHARTE: Array<{
     seulement: /data-atlas="carte-composer-ma-fiche"/,
   },
   {
-    // Le chevron de retour : 32 × 32, une icône dans un cadre, pas un bouton
-    // d'action. La charte réserve la capsule à ce qu'on FAIT ; l'arrondir
-    // entièrement en ferait une pastille ronde, ce qui n'a été demandé nulle
-    // part.
-    motif: /^src[/\\]components[/\\]ScreenHeader\.tsx$/,
-    pourquoi: "chevron de retour, icône encadrée et non bouton d'action",
-  },
-  {
     // **Une case qu'on REMPLIT, pas un geste qu'on appuie.** La charte est
     // citée juste au-dessus : « elle ne donne la capsule qu'à ce qu'on APPUIE,
     // jamais à ce qu'on remplit ». La case de l'unité est un champ — elle se
@@ -187,6 +179,127 @@ const HORS_CHARTE: Array<{
     // que cette case et les rangs de sa liste.
     motif: /^src[/\\]components[/\\]atlas[/\\]ChoixUnite\.tsx$/,
     pourquoi: "case d'un champ qu'on remplit, alignée sur le champ « Prix » voisin",
+  },
+  {
+    // **UNE VIGNETTE PHOTO, PAS UN BOUTON D'ACTION.** Arrivée le 8 septembre
+    // 2026 avec « repartir d'un client » : un carré de 62 px qui montre une
+    // photo de l'ancien chantier, et qu'on touche pour la reprendre. La charte
+    // donne la capsule à ce qu'on APPUIE ; ici on ne presse pas un geste, on
+    // COCHE une image — l'état se lit d'ailleurs au liseré d'or, pas à la
+    // forme.
+    //
+    // **Et l'arrondir entièrement abîmerait ce qu'elle montre** : un cercle
+    // rogne les quatre coins d'une photo déjà réduite à 62 px, c'est-à-dire
+    // précisément ce qui permet de la reconnaître. La même raison que la tuile
+    // du calendrier deux entrées plus bas : une image n'est pas un geste.
+    //
+    // Le motif vise la LIGNE — la vignette —, pas le fichier : un vrai bouton
+    // rectangulaire écrit demain dans cet écran serait toujours dénoncé.
+    motif: /^src[/\\]app[/\\]chantiers[/\\]nouveau[/\\]FormulaireNouveauChantier\.tsx$/,
+    seulement: /h-\[62px\] w-\[62px\]/,
+    pourquoi: "vignette d'une photo qu'on reprend : un cercle rognerait l'image",
+  },
+  {
+    // **LES DOUZE MOIS ET LES DEUX CARTES A ET B DU CONTRAT D'ENTRETIEN** —
+    // sa planche 129 (`appli/contrat-d-entretien-vert.html`), retenue le
+    // 26 septembre 2026 : les mois sont douze CASES d'une grille, comme les
+    // tuiles d'un calendrier, et A et B sont deux CARTES de choix qui portent
+    // un titre et une phrase. En capsule, douze mois ne tiennent plus sur une
+    // ligne, et une carte de deux lignes devient un galet. Trouvé par la
+    // batterie du 27 septembre. Le motif vise leurs repères, pas le fichier.
+    motif: /^src[/\\]app[/\\]clients[/\\]\[id\][/\\]contrat[/\\]ContratClient\.tsx$/,
+    seulement: /aria-label=\{MOIS_LONGS\[i\]\}|data-atlas="choix-facturation"/,
+    pourquoi: "cases des mois et cartes A et B de sa planche 129",
+  },
+  {
+    // **UNE VIGNETTE DE PHOTO, PAS UN BOUTON** — la troisième, arrivée le
+    // 9 septembre 2026 avec les photos d'un retour d'intervention sur la fiche
+    // du jour. Même arbitrage que les deux autres : un cercle rogne les quatre
+    // coins d'une photo réduite à 74 px, c'est-à-dire ce qui permet de
+    // reconnaître ce qu'elle montre. Une image n'est pas un geste.
+    //
+    // **Déclarée ici parce qu'elle ne l'avait pas été**, et que ce contrôle
+    // rougissait donc sur `main` pour tout le monde. Le motif vise la LIGNE :
+    // un vrai bouton rectangulaire écrit demain dans cet écran serait toujours
+    // dénoncé.
+    // **ET LES QUATRE CASES DE LA FICHE D'INTERVENTION — sa planche du
+    // 19 septembre 2026** (`appli/fiche-intervention-sixieme.html`, codée sur
+    // son « tu peux coder exactement cette planche ») : Maps, Waze, Copier
+    // l'adresse, Appeler le client sont quatre CASES sur une ligne, le dessin
+    // au-dessus du mot. Il a choisi cette forme planche en main, contre une
+    // version en capsules qu'il avait sous les yeux la veille (la deuxième).
+    // Le motif vise leur repère, pas le fichier.
+    motif: /^src[/\\]app[/\\]planning[/\\]PlanningClient\.tsx$/,
+    seulement: /h-\[74px\] w-\[74px\]|data-atlas="geste-de-la-fiche"/,
+    pourquoi: "vignette d'une photo de retour, et les quatre cases de sa fiche d'intervention",
+  },
+  {
+    // **UNE VIGNETTE DE PHOTO, PAS UN BOUTON** — exactement la même raison que
+    // celle de 62 px trois entrées plus haut, et le même arbitrage : un cercle
+    // rogne les quatre coins d'une photo réduite à 46 px, c'est-à-dire
+    // précisément ce qui permet de reconnaître le chantier qu'elle montre. Une
+    // image n'est pas un geste.
+    //
+    // **Ce qu'elle ne couvre PAS** : la case à cocher de la même liste, à vingt
+    // lignes de là. Celle-là est un geste, elle a été arrondie le 9 septembre
+    // 2026 quand ce contrôle l'a dénoncée.
+    //
+    // Le motif vise la LIGNE — la vignette —, pas le fichier : un vrai bouton
+    // rectangulaire écrit demain dans cet écran serait toujours dénoncé.
+    motif: /^src[/\\]app[/\\]planning[/\\]TravauxAFaire\.tsx$/,
+    seulement: /h-\[46px\] w-\[46px\]/,
+    pourquoi: "vignette d'une photo du retour : un cercle rognerait l'image",
+  },
+  {
+    // **LA MÊME VIGNETTE, SUR LA FICHE DE SÉCURITÉ** — arrivée le 22 septembre
+    // 2026 avec sa demande : *« les photos de la fiche de sécurité, je ne peux
+    // pas cliquer dessus pour les voir en grand »*. Elle était un `<span>`
+    // jusque-là ; la rendre cliquable en a fait un bouton, et ce contrôle l'a
+    // dénoncée aussitôt — c'est ce qu'on lui demande.
+    //
+    // Même arbitrage que les quatre au-dessus, au pixel près : un cercle rogne
+    // les quatre coins d'une photo réduite à 46 px, c'est-à-dire ce qui permet
+    // de reconnaître le croquis du terrain. Une image n'est pas un geste.
+    //
+    // **Ce qu'elle ne couvre PAS** : le « Retirer » de la visionneuse, dans le
+    // même fichier — celui-là est un geste, et il porte la capsule.
+    motif: /^src[/\\]app[/\\]planning[/\\]fiche-de-securite[/\\]\[chantierId\][/\\]FormulaireFicheDeSecurite\.tsx$/,
+    seulement: /h-\[46px\] w-\[46px\]/,
+    pourquoi: "vignette d'une photo du terrain : un cercle rognerait l'image",
+  },
+  {
+    // **UNE PHOTO QU'ON OUVRE, PAS UN BOUTON** — la quatrième de cette famille,
+    // arrivée le 11 septembre 2026 avec sa demande : *« ce qui serait bien,
+    // c'est qu'on puisse cliquer dessus pour qu'elle apparaisse en grand »*.
+    //
+    // Même arbitrage que les trois autres, et il est plus fort ici : la photo
+    // fait 132 px de haut sur la moitié de l'écran, et c'est SUR ELLE qu'il
+    // décide de facturer. Un cercle rognerait les quatre coins de ce qu'il
+    // regarde. Une image n'est pas un geste — la charte donne la capsule à ce
+    // qu'on APPUIE.
+    //
+    // **Elle garde le rayon qu'elle avait quand elle n'était qu'une image** :
+    // rien n'a changé à l'écran, seul le fait qu'on puisse l'ouvrir.
+    //
+    // Le motif vise la LIGNE — son repère —, pas le fichier : un vrai bouton
+    // rectangulaire écrit demain dans cet écran serait toujours dénoncé, et
+    // « Replier » juste en dessous porte bien sa capsule.
+    motif: /^src[/\\]app[/\\]termines[/\\]retours[/\\]ListeDesRetours\.tsx$/,
+    seulement: /data-atlas="ouvrir-la-photo"/,
+    pourquoi: "photo d'un retour qu'on ouvre en grand : un cercle rognerait l'image",
+  },
+  {
+    // **LA RANGÉE DE LA VISIONNEUSE — la « bibliothèque » qu'il a retenue le
+    // 11 septembre 2026 au soir**, planche en main (*« Voilà je veux ça ! »*,
+    // `appli/photo-en-bibliotheque.html`, variante avec la rangée). Cinq
+    // vignettes de 56 px sous la photo ; celle qu'on regarde est cerclée d'or.
+    //
+    // Même arbitrage que les quatre autres : ce sont des IMAGES qu'on touche,
+    // et un cercle rognerait ce qu'elles montrent. La croix et les chevrons du
+    // même écran, eux, sont de vrais boutons — et bien ronds.
+    motif: /^src[/\\]components[/\\]atlas[/\\]VisionneusePhoto\.tsx$/,
+    seulement: /data-atlas="vignette-de-la-rangee"/,
+    pourquoi: "vignette de la rangée sous la photo : un cercle rognerait l'image",
   },
   {
     // **UNE CASE DU CALENDRIER, PAS UN BOUTON.** La charte est citée deux fois
@@ -213,6 +326,32 @@ const HORS_CHARTE: Array<{
     motif: /^src[/\\]components[/\\]atlas[/\\]MoisCharge\.tsx$/,
     seulement: /data-jour=/,
     pourquoi: "case du calendrier : une tuile de 44 px, ni geste ni champ",
+  },
+  {
+    /**
+     * **L'ENVOI N'EST PLUS UN BOUTON, C'EST UN RÉGLAGE — sa planche
+     * « A — Épurée », retenue le 2 septembre 2026 et codée le 4.**
+     *
+     * *« L'envoi n'est plus une action : c'est un réglage. Il en prend la forme
+     * — une ligne, deux mots — et rend 40 px à l'anneau. »* Deux capsules
+     * pleine largeur se lisaient comme des boutons d'ENVOI alors qu'elles ne
+     * disent que par où le devis partira. Le canal retenu porte donc un trait
+     * d'or SOUS son mot, comme le marqueur d'onglet de la barre du bas — et
+     * plus aucun fond ni aucun contour.
+     *
+     * **Sa règle du 12 août ne s'applique pas à ce qu'on ne lit pas comme un
+     * bouton.** Ce rendu n'a ni fond, ni liseré, ni capsule : les 2 px sont ce
+     * qui reste d'une forme qu'on a retirée, pas un galet. Le dénoncer, c'est
+     * accuser une décision qu'il a prise lui-même, planche en main — le pire
+     * des rouges (`AGENTS.md`).
+     *
+     * **`seulement` la borne à ce rendu-là** : la capsule pleine largeur, qui
+     * vit dans le même fichier et sert la facture, reste surveillée, et elle
+     * est bien `rounded-full`.
+     */
+    motif: /^src[/\\]components[/\\]atlas[/\\]ChoixCanal\.tsx$/,
+    seulement: /rounded-\[2px\]/,
+    pourquoi: "l'envoi en réglage : un mot souligné d'or, ni fond ni contour",
   },
 ];
 

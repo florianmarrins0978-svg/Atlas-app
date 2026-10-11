@@ -3,7 +3,8 @@ import { mkdirSync } from "node:fs";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
-import { joursAProposer } from "./_calendrier-e2e";
+import { joursAProposer, retenirAuCalendrier } from "./_calendrier-e2e";
+import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
 
 // L'envoi du devis au client, vu depuis l'écran du patron (docs/AGENT.md §2.2).
 //
@@ -12,7 +13,7 @@ import { joursAProposer } from "./_calendrier-e2e";
 // aucun chemin réel. Cette suite parcourt donc la chaîne entière, du
 // formulaire de création jusqu'au lien que le client ouvrira.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const CAPTURES = process.env.CAPTURES_E2E ?? "/tmp/captures-atlas";
 
 /**
@@ -71,16 +72,16 @@ async function creerChantierFacturable(
   // Le canal convenu avec le client, quand les deux coordonnées existent : sans
   // lui, rien ne se devine, et c'est exactement le cas de son défaut du 20 août.
   if (client.canal) {
-    await page
-      .getByRole("button", { name: client.canal === "sms" ? "Par SMS" : "Par e-mail" })
-      .click();
+    // **Le canal se désigne par sa MARQUE.** Sur la fiche client, le mot est
+    // passé de « Par SMS » à « SMS » le 4 septembre 2026, avec la planche
+    // « A — Épurée » qu'il a retenue. `data-atlas` survit au remaniement, et
+    // c'est le GESTE que ce montage rejoue, pas un libellé (`CLAUDE.md` §5 bis).
+    await page.locator(`[data-atlas="canal-${client.canal}"]`).click();
   }
-  await creerPuisFiche(page);
-  // Sans délai explicite : celui du contexte s'applique (`e2e-browser.ts`).
-  // Dix secondes suffisaient seule et pas en batterie — l'échec accusait alors
-  // l'envoi au client, qui n'y était pour rien.
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
-  const url = page.url();
+  // L'adresse du chantier se BÂTIT sur l'identifiant rendu par l'aide : la
+  // relire dans le navigateur donnait « devis-complet » depuis que la fiche du
+  // chantier est retirée (`ARCHITECTURE.md` §254).
+  const url = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
 
   // Un devis à zéro euro n'a pas de sens : on lui donne une ligne de prix.
   await page.goto(`${url}/prix`, { waitUntil: "networkidle" });
@@ -147,9 +148,15 @@ async function main() {
     // s'ouvre. Un libellé se change ; la déduction du canal, elle, est la règle
     // (`CLAUDE.md` §5 bis), et c'est aussi ce qui a mordu le 20 août quand le
     // SMS s'ouvrait à la place de l'e-mail.
-    await page.locator("button[aria-pressed]").nth(1).click();
+    //
+    // **La date se prend par le geste du patron, plus par le rang d'un bouton.**
+    // `button[aria-pressed]` nº 2 désignait une case du mois d'à côté depuis le
+    // glissement du 11 septembre 2026 : elle existe, elle est hors de l'écran,
+    // et le clic partait dans le cadre (`_calendrier-e2e.ts`).
+    const [jourCanal] = await joursAProposer(page, 1);
+    await retenirAuCalendrier(page, jourCanal);
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 });
+    await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 });
 
     const porte = page.locator("a[data-transmission-directe]");
     assert.equal(await porte.count(), 1, "l'appui n'a ouvert aucune messagerie");
@@ -179,13 +186,14 @@ async function main() {
     await page.waitForSelector('[data-atlas="invite-dates"]', {
       timeout: DELAI_ECRAN_MS,
     });
-    await page.locator('button[aria-pressed]').nth(1).click();
+    const [jourChoisi] = await joursAProposer(page, 1);
+    await retenirAuCalendrier(page, jourChoisi);
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 (`ARCHITECTURE.md` §140) :
     // c'est lui, le signal. Le lien touché pour lui, LUI, vit sur `document.body`
     // — hors de l'arbre React — et survit donc au changement d'écran ; c'est ce
     // qui permet de le relire ici.
-    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 });
+    await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 });
 
     const porte = page.locator("a[data-transmission-directe]");
     assert.equal(await porte.count(), 1, "l'appui n'a ouvert aucune messagerie");
@@ -199,31 +207,6 @@ async function main() {
       `le destinataire n'est pas celui de la fiche : ${adresse.slice(0, 80)}`
     );
   });
-
-  /**
-   * Retenir un jour au calendrier — un seul geste depuis le 25 août 2026.
-   *
-   * *« Je dois pouvoir sélectionner les jours juste en les touchant, pas besoin
-   * de cliquer sur proposer. »* Toucher la case OUVRE la fiche — il voit qui
-   * est déjà là — et engage la date du même doigt. Écrit une fois ici : deux
-   * copies de ce geste finiraient par diverger (`CLAUDE.md` §3).
-   *
-   * **On n'appuie plus une seconde fois pour refermer** : ce second appui
-   * retirerait la date qu'on vient de poser.
-   */
-  async function retenirAuCalendrier(page: Page, jour: string) {
-    await page.locator(`[data-jour="${jour}"]`).click();
-    await page
-      .locator("text=Vérification de votre planning…")
-      .waitFor({ state: "hidden", timeout: 20_000 })
-      .catch(() => undefined);
-    // La case se peint quand le serveur a dit oui : l'attendre vaut mieux qu'un
-    // délai, et rougir ici désigne le bon coupable — le jour a été refusé.
-    await page
-      .locator(`[data-jour="${jour}"][data-etat="retenu"]`)
-      .waitFor({ state: "visible", timeout: 20_000 });
-    await page.waitForTimeout(150);
-  }
 
   /**
    * Les jours qu'on peut RETENIR — au besoin en tournant la page du mois.
@@ -318,7 +301,7 @@ async function main() {
     const offerts = await joursRetenables(page, 1);
     await retenirAuCalendrier(page, offerts[0]);
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+    await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
     // **L'appui doit ouvrir SA messagerie tout de suite** — sa demande du
     // 18 août 2026 : *« quand je clique sur le bouton envoyer le devis, tout de
@@ -368,12 +351,12 @@ async function main() {
     // page. Le défaut d'avant — un message ouvert sans destinataire — ne se
     // voyait que dans la messagerie du patron, c'est-à-dire trop tard.
     //
-    // **« Relancer », et non « Ouvrir le SMS tout prêt » — et c'est juste.** Le
+    // **« Rouvrir » depuis le 3 octobre 2026, avant « Relancer ».** Le
     // libellé dit ce que le geste FAIT (sa règle du 13 août) : on revient ici
     // sur un devis DÉJÀ parti, donc le geste est une relance. Depuis que l'envoi
     // ramène à l'accueil (21 août), c'est même le seul cas où cet écran se voit.
     assert.ok(
-      await page.getByRole("link", { name: /Relancer par (SMS|e-mail)/ }).isVisible(),
+      await page.getByRole("link", { name: /Rouvrir (le SMS|l’e-mail)/ }).isVisible(),
       "le lien qui ouvre le message tout prêt doit apparaître dès que le lien existe"
     );
     // Dire qui envoie, pour que le patron n'attende pas un départ automatique
@@ -393,7 +376,7 @@ async function main() {
     // moins la hauteur de la barre ? » Une première version amenait l'élément
     // au bord de la fenêtre — c'est-à-dire exactement sous la barre — et
     // accusait donc toujours, y compris à tort.
-    for (const texte of ["Relancer par SMS", "c'est vous qui l'envoyez"]) {
+    for (const texte of ["Rouvrir le SMS", "c'est vous qui l'envoyez"]) {
       const cible = page.locator(`text=${texte}`).first();
       assert.ok(await cible.isVisible(), `« ${texte} » doit être présent à l'écran`);
 
@@ -437,8 +420,11 @@ async function main() {
     const pageClient = await contexteClient.newPage();
     await pageClient.goto(`${BASE}${chemin}`, { waitUntil: "networkidle" });
 
+    // « Quelle date vous arrange ? » sur une journée, « Quels jours vous
+    // arrangent ? » dès que le chantier en prend plusieurs — sa planche du
+    // 17 septembre 2026 : la cliente lit les JOURS, pas une date de départ.
     assert.ok(
-      await pageClient.locator("text=Quelle date vous arrange").isVisible(),
+      await pageClient.locator("text=/Quel(le)?s? (date|jours) vous arrange(nt)?/").isVisible(),
       "la page du client ne présente pas le choix de date"
     );
     assert.strictEqual(
@@ -455,7 +441,7 @@ async function main() {
     await page.click("text=Choisir la date");
     await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+    await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
     // On rouvre le DEVIS : c'est là que se poserait de nouveau « Choisir la
     // date », et c'est donc là qu'il faut vérifier qu'il ne s'y pose plus.
@@ -535,14 +521,13 @@ async function main() {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
     await page.fill('input[placeholder="Bernard"]', `Prix tardifs ${Date.now()}`);
     await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-    await creerPuisFiche(page);
-    await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
-    const url = page.url();
+    // L'adresse du chantier se BÂTIT sur l'identifiant rendu par l'aide : la
+    // relire dans le navigateur donnait « devis-complet » depuis que la fiche
+    // du chantier est retirée (`ARCHITECTURE.md` §254).
+    const url = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
 
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.waitForSelector("text=Total TTC", { timeout: DELAI_ECRAN_MS });
-    await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
-    await page.waitForTimeout(900);
     await page.getByLabel("Description 1").fill("Taille d'un chêne");
     await page.getByLabel("Prix unitaire 1").fill("550");
     await page.getByLabel("Description 1").click();
@@ -562,7 +547,7 @@ async function main() {
     );
 
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 });
+    await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 });
 
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     const message = decodeURIComponent(
@@ -609,9 +594,10 @@ async function main() {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
     await page.fill('input[placeholder="Bernard"]', `Devis vide ${Date.now()}`);
     await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-    await creerPuisFiche(page);
-    await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
-    const url = page.url();
+    // L'adresse du chantier se BÂTIT sur l'identifiant rendu par l'aide : la
+    // relire dans le navigateur donnait « devis-complet » depuis que la fiche
+    // du chantier est retirée (`ARCHITECTURE.md` §254).
+    const url = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
 
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.click("text=Choisir la date");
@@ -670,7 +656,7 @@ async function main() {
     for (const jour of libres.slice(0, 2)) await retenirAuCalendrier(page, jour);
 
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 });
+    await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 });
 
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     const message = decodeURIComponent(
@@ -707,7 +693,7 @@ async function main() {
 
     await page.getByRole("switch", { name: /autre date/i }).click();
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+    await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
     // On revient sur l'écran du devis parti, comme par la carte du chantier :
     // c'est lui qui porte le message tout prêt, et il ne s'affiche plus seul.
@@ -729,10 +715,14 @@ async function main() {
     await pageClient.goto(`${BASE}${chemin}`, { waitUntil: "networkidle" });
     const vu = await pageClient.locator("body").innerText();
     assert.match(vu, /Quelle date vous arrange/, `la page du client ne s'est pas ouverte : ${vu.slice(0, 200)}`);
+    // **Le libellé a changé le 20 septembre 2026** — *« quand il y a une date
+    // c'est : cette date ne me convient pas ? Je propose »*. Viser l'ancien
+    // mot à mot laisserait ce contrôle passer au vert sans plus rien défendre
+    // (`CLAUDE.md` §5 bis) : c'est le GESTE qu'on interdit, pas une formule.
     assert.doesNotMatch(
       vu,
-      /une autre date|autre date/i,
-      "le client peut encore demander une autre date alors que l'artisan l'a refusé"
+      /ne me convient pas|ne me conviennent pas|je propose/i,
+      "le client peut encore proposer ses jours alors que l'artisan l'a refusé"
     );
     assert.strictEqual(
       await pageClient.locator('input[name="choixDate"][value="autre"]').count(),

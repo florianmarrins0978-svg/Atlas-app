@@ -2,7 +2,10 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { exigerEcran } from "@/server/garde-action";
+import { exigerEcran, exigerFonction } from "@/server/garde-action";
+import { getRole } from "@/server/autorisation";
+import { peutFacturer } from "@/lib/acces-roles";
+import { factureDuPassageAvecSonCompteRendu } from "@/server/repositories/contrats-entretien";
 import { getCurrentCtx } from "@/server/session-ctx";
 import {
   brouillonVierge,
@@ -47,6 +50,7 @@ export type Resultat = { ok: true } | { ok: false; phrase: string };
 export async function ouvrirFicheAction(jour: string): Promise<Resultat> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "ouvrir une fiche d'entretien");
+  await exigerFonction(ctx, "fiche-chantier", "ouvrir une fiche d'entretien");
 
   const enCours = await brouillonVierge(ctx, jour);
   if (enCours) redirect(`/paysage/fiche/${enCours}`);
@@ -64,6 +68,7 @@ export async function cocherLigneAction(
 ): Promise<Resultat> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "cocher une prestation faite");
+  await exigerFonction(ctx, "fiche-chantier", "cocher une prestation faite");
   const r = await cocherLigne(ctx, passageId, ligneId, faite);
   if (!r.ok) return { ok: false, phrase: PHRASE_REFUS_PASSAGE[r.refus] };
   return { ok: true };
@@ -71,10 +76,11 @@ export async function cocherLigneAction(
 
 export async function majPassageAction(
   passageId: string,
-  champs: { minutes?: number | null; tempsVisible?: boolean; observations?: string | null }
+  champs: { minutes?: number | null; tempsVisible?: boolean; observations?: string | null; jour?: string }
 ): Promise<Resultat> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "mettre à jour un passage");
+  await exigerFonction(ctx, "fiche-chantier", "mettre à jour un passage");
   const r = await majPassage(ctx, passageId, champs);
   if (!r.ok) return { ok: false, phrase: PHRASE_REFUS_PASSAGE[r.refus] };
   return { ok: true };
@@ -83,7 +89,7 @@ export async function majPassageAction(
 /**
  * Nomme le client — le pont demandé le 17 août.
  *
- * **Rend les lignes qui restent**, et pas un simple `ok` : la fiche se replie,
+ * **Rend les lignes**, et pas un simple `ok` : son dernier passage se recoche,
  * et l'écran doit montrer le résultat sans recharger. Le lui faire recalculer
  * de son côté donnerait deux vérités sur ce qui est à l'écran.
  */
@@ -91,15 +97,16 @@ export async function nommerClientAction(
   passageId: string,
   clientId: string
 ): Promise<
-  | { ok: true; retirees: number; lignes: LignePassageAffichee[] }
+  | { ok: true; reprises: string[]; lignes: LignePassageAffichee[] }
   | { ok: false; phrase: string }
 > {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "nommer le client d'un passage");
+  await exigerFonction(ctx, "fiche-chantier", "nommer le client d'un passage");
   const r = await nommerClient(ctx, passageId, clientId);
   if (!r.ok) return { ok: false, phrase: PHRASE_REFUS_PASSAGE[r.refus] };
   revalidatePath(`/paysage/fiche/${passageId}`);
-  return { ok: true, retirees: r.retirees, lignes: r.lignes };
+  return { ok: true, reprises: r.reprises, lignes: r.lignes };
 }
 
 /**
@@ -116,6 +123,7 @@ export async function nommerClientAction(
 export async function supprimerFicheAction(passageId: string): Promise<Resultat> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "supprimer un passage d'entretien");
+  await exigerFonction(ctx, "fiche-chantier", "supprimer un passage d'entretien");
   const r = await supprimerPassage(ctx, passageId);
   if (!r.ok) return { ok: false, phrase: PHRASE_REFUS_PASSAGE[r.refus] };
   revalidatePath("/paysage/fiche");
@@ -130,12 +138,41 @@ export async function supprimerFicheAction(passageId: string): Promise<Resultat>
  * le courriel avec le lien que cette action vient de créer.
  */
 export async function envoyerFicheAction(
-  passageId: string
-): Promise<{ ok: true; lien: string } | { ok: false; phrase: string }> {
+  passageId: string,
+  canal: "sms" | "email"
+): Promise<
+  | { ok: true; lien: string; facture: { ok: true; lien: string } | { ok: false; phrase: string } | null }
+  | { ok: false; phrase: string }
+> {
   const ctx = await getCurrentCtx();
-  await exigerEcran(ctx, "/paysage", "envoyer le compte rendu au client");
+  await exigerEcran(ctx, "/paysage", "envoyer le retour d'intervention au client");
+  await exigerFonction(ctx, "fiche-chantier", "envoyer le retour d'intervention au client");
   const r = await figerPassage(ctx, passageId);
   if (!r.ok) return { ok: false, phrase: r.phrase };
   revalidatePath("/paysage/fiche");
-  return { ok: true, lien: `/entretien/${r.jeton}` };
+  return { ok: true, lien: `/entretien/${r.jeton}`, facture: await laFactureQuiPartAvec(ctx, passageId, canal) };
+}
+
+/**
+ * La facture du passage, si son contrat l'envoie AVEC le compte rendu
+ * (`factureDuPassageAvecSonCompteRendu`). **Seul qui peut facturer la fait
+ * partir** : la garde de la facture ne s'efface pas parce que le geste passe
+ * par la fiche. Refusé, le compte rendu part quand même, et l'écran le dit.
+ */
+async function laFactureQuiPartAvec(
+  ctx: Awaited<ReturnType<typeof getCurrentCtx>>,
+  passageId: string,
+  canal: "sms" | "email"
+): Promise<{ ok: true; lien: string } | { ok: false; phrase: string } | null> {
+  const role = await getRole(ctx);
+  const r = await factureDuPassageAvecSonCompteRendu(
+    ctx,
+    passageId,
+    canal,
+    new Date(),
+    Boolean(role && peutFacturer(role))
+  );
+  if (r === null || !r.ok) return r;
+  revalidatePath("/termines");
+  return { ok: true, lien: `/factures/${r.jeton}` };
 }

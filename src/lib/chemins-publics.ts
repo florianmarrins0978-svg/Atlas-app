@@ -33,8 +33,24 @@
  */
 export const CHEMINS_PUBLICS = [
   "/login",
+  // **La porte en plein air, qu'il a choisie le 8 septembre 2026.** C'est
+  // l'écran d'un visiteur SANS compte : le rendre privé le renverrait vers
+  // lui-même, et la boucle serait infinie. Les deux pages légales qu'il porte
+  // sont publiques pour la même raison — on doit pouvoir lire ce qu'on accepte
+  // avant d'accepter.
+  "/bienvenue",
+  "/creer-un-compte",
+  "/mot-de-passe-oublie",
+  // Les deux pages légales sont des fichiers de `public/` — servies avant le
+  // middleware, donc rien à déclarer ici pour elles.
   "/api/auth",
   "/api/cron",
+  // **Le crochet du prestataire de paiement.** Il frappe depuis l'extérieur,
+  // donc sans session — c'est la nature même d'un crochet. Ce n'est pas une
+  // porte ouverte pour autant : rien n'y passe sans une SIGNATURE que seul le
+  // secret partagé permet de produire (`src/lib/signature-stripe.ts`), et
+  // aucune réponse ne dit jamais si l'abonnement visé existe.
+  "/api/paiement",
   "/api/session-perimee",
   // La page de réponse du client au devis. Elle n'est pas « ouverte » pour
   // autant : son seul accès est un jeton imprévisible, contrôlé en base par une
@@ -49,6 +65,10 @@ export const CHEMINS_PUBLICS = [
   // Même mécanique et même garde-fou : l'accès est un jeton imprévisible,
   // contrôlé par une politique dédiée. Sans jeton exact, aucune ligne.
   "/entretien",
+  // Le contrat d'entretien, lu et accepté par le client sans compte
+  // (26 septembre 2026), puis les dates de ses passages du mois
+  // (`/contrat/dates`, 27 septembre) : la mécanique du devis, par jeton exact.
+  "/contrat",
 ] as const;
 
 /** Ce chemin est-il atteignable sans compte ? */
@@ -77,7 +97,7 @@ export function estCheminPublic(chemin: string): boolean {
  * futur chemin public — une page d'aide, un mode d'emploi — deviendrait
  * « page client » sans que personne l'ait décidé.
  */
-export const CHEMINS_DU_CLIENT = ["/devis", "/factures", "/entretien"] as const;
+export const CHEMINS_DU_CLIENT = ["/devis", "/factures", "/entretien", "/contrat"] as const;
 
 /** Cette page est-elle celle que le client de l'artisan reçoit ? */
 export function estPageDuClient(chemin: string | null): boolean {

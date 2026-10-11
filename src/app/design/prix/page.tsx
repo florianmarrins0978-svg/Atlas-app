@@ -14,9 +14,9 @@ import { AnimatedRow } from "@/components/atlas/AnimatedRow";
 type Ligne = WithId & { libelle: string; montant: number };
 
 const LIGNES_INITIALES: Ligne[] = [
-  { id: 1, libelle: "Main d'œuvre — 2 hommes × 2 jours", montant: 1120 },
-  { id: 2, libelle: "Dépose carrelage — 8 m²", montant: 144 },
-  { id: 3, libelle: "Pose faïence — 8 m²", montant: 360 },
+  { id: 1, libelle: "Main d'œuvre, 2 hommes × 2 jours", montant: 1120 },
+  { id: 2, libelle: "Dépose carrelage, 8 m²", montant: 144 },
+  { id: 3, libelle: "Pose faïence, 8 m²", montant: 360 },
   { id: 4, libelle: "Forfait déplacement", montant: 35 },
 ];
 
@@ -58,7 +58,7 @@ export default function PrixMockup() {
             {total.toLocaleString("fr-FR")} €
           </p>
           <p className="mt-2 text-[12px]" style={{ color: colors.muted }}>
-            Calculé à partir des tarifs de l&apos;entreprise — modifiable ci-dessous.
+            Calculé à partir des tarifs de l&apos;entreprise, modifiable ci-dessous.
           </p>
         </div>
 

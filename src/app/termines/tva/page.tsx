@@ -1,29 +1,32 @@
 import Link from "next/link";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
+import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
-import { relevesSousLesDeuxRegimes } from "@/server/repositories/factures";
+import { estProprietaire } from "@/server/autorisation";
+import { releveTvaCollectee } from "@/server/repositories/factures";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import {
   libellePeriode,
   lirePeriode,
   periodeCourante,
-  periodePrecedente,
-  periodeSuivante,
   PERIODICITE_TVA_PAR_DEFAUT,
 } from "@/server/periode-tva";
-import { jourLisible } from "@/lib/jour";
-import CalendrierPeriodes from "./CalendrierPeriodes";
+import { jourLisible, jourEtMois, jourIso } from "@/lib/jour";
+import { enEuros } from "@/lib/euros";
+import { visionneuseDeLaFacture } from "@/lib/visionneuse-pdf";
+import FrisePeriodes from "./FrisePeriodes";
+import LigneMontant from "./LigneMontant";
 import RythmeTva from "./RythmeTva";
-import MontantCopiable from "./MontantCopiable";
 import AchatsTva from "./AchatsTva";
 import EnAttenteDePaiement from "./EnAttenteDePaiement";
-import RegimeTva from "./RegimeTva";
+import { receptionsDesFactures } from "@/server/repositories/envois-factures";
+import { receptionEnMots } from "@/lib/reception-facture";
 import { facturesEnAttente } from "@/server/repositories/paiements-facture";
 import { listerAchatsTva, totalTvaDeductible } from "@/server/repositories/achats-tva";
 import { tvaDue } from "@/lib/achat-tva";
-import { jourIso } from "@/lib/jour";
+import { facturesAvecAncienIban } from "@/server/repositories/factures";
 
 export const dynamic = "force-dynamic";
 
@@ -32,13 +35,48 @@ export const dynamic = "force-dynamic";
 // Calculé à partir des factures émises, jamais stocké. Atlas PRÉPARE ce
 // relevé ; il ne le déclare pas. La mention en bas d'écran le dit au patron
 // plutôt que de le lui laisser supposer.
-
-const formatEuros = new Intl.NumberFormat("fr-FR", {
-  style: "currency",
-  currency: "EUR",
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
+//
+// ─── L'ÉCRAN EST UNE ADDITION — refonte du 3 septembre 2026 ─────────────────
+//
+// Il ouvrait sur DEUX RÉGLAGES, avant son titre et avant le moindre chiffre :
+// le rythme du relevé, puis le régime d'exigibilité avec ses deux lignes, son
+// encart d'écart et sa phrase de prudence. Mesuré sur son écran de 390 × 664,
+// le « Reste à payer » — la seule raison d'ouvrir cet écran — tombait sous la
+// ligne de flottaison. Il fallait faire défiler pour voir le chiffre qu'on
+// venait chercher. Il l'a nommé lui-même.
+//
+// Les trois montants formaient par ailleurs trois objets différents : deux
+// tuiles centrées côte à côte, puis un encadré. Rien ne disait que le troisième
+// est la soustraction des deux premiers, et deux montants centrés de longueurs
+// différentes ne partagent aucun bord — or un chiffre se compare sur sa colonne
+// des unités.
+//
+// D'où la forme retenue sur maquette, et validée par lui : **deux termes, un
+// trait, un total**, alignés à droite sur la même colonne, chacun copiable —
+// y compris le reste, qui ne l'était pas et qui est pourtant le seul des trois
+// qu'il recopie pour payer.
+//
+// ─── UNE SEULE LOGIQUE — sa planche du 12 septembre 2026 ─────────────────
+//
+// `appli/ma-tva-une-seule-logique.html`, retenue trait pour trait : *« TVA
+// encaissée − TVA récupérable = TVA à payer. Un règlement noté, une TVA
+// comptée. Pas d'explications, des montants. »*
+//
+// Ce qui a quitté l'écran : la ligne de provenance et sa feuille, où vivaient le
+// rythme ET le régime d'exigibilité. Le rythme reste ici, en un mot sous les
+// mois (`RythmeTva`) — *« il faut pouvoir passer de mensuelle à trimestrielle
+// sur cette page »*. Le régime encaissements / débits, lui, rejoint le rythme
+// dans « Mon entreprise » (`reglages/ExigibiliteTva.tsx`) : le brief voulait le
+// SUPPRIMER, le prenant pour un mode manuel et un mode automatique ; c'est un
+// régime fiscal posé le 14 août à sa demande, et le retirer fausserait la TVA
+// de qui a opté pour les débits. Sorti de la vue, pas du produit.
+//
+// Les trois montants portent leur mot entier — « TVA collectée », « TVA
+// déductible », « TVA à payer » — et le dernier devient « Crédit de TVA »
+// plutôt qu'un moins. Les deux gestes d'achat passent SOUS le total. Puis
+// l'écran suit l'ordre : ce qui reste À FAIRE (les factures en attente), et
+// les deux PREUVES, où chaque ligne dit son TTC et sa TVA, et finit sur son
+// total.
 
 export default async function ReleveTvaPage({
   searchParams,
@@ -48,6 +86,24 @@ export default async function ReleveTvaPage({
   const { annee, t } = await searchParams;
 
   const ctx = await getCurrentCtx();
+  /**
+   * **DEUX DÉCLARATIONS FAITES AUX IMPÔTS, ET ELLES SONT AU PATRON.**
+   *
+   * Le rythme du relevé et le moment où la TVA devient exigible s'écrivent par
+   * `exigerProprietaire` (`reglages/actions.ts`, `tva/actions.ts`) — c'était
+   * déjà vrai avant ce lot, et cela ne bouge pas.
+   *
+   * **Mais l'écran, lui, s'est ouvert au rôle « Facturation » le 30 août 2026.**
+   * Elle y voyait donc deux réglages qu'un appui aurait laissés muets : le
+   * serveur refuse, et un refus sans explication se lit comme une panne.
+   *
+   * **Depuis le 3 septembre 2026, elle en LIT l'état sans pouvoir y toucher** :
+   * le rythme s'écrit sous les mois, sans trait ni geste pour elle (`RythmeTva`,
+   * `modifiable`). Le régime, lui, n'est plus sur cet écran depuis le
+   * 12 septembre : la mention du bas dit ce que le relevé compte — règlements
+   * ou factures émises —, et c'est tout ce qu'elle a besoin de savoir.
+   */
+  const patron = await estProprietaire(ctx);
 
   // **La périodicité vient de l'entreprise, jamais de l'adresse.** Elle
   // commande le découpage ET la lecture du numéro : « 12 » est un mois valide
@@ -64,152 +120,123 @@ export default async function ReleveTvaPage({
   // **L'attente n'est pas bornée à la période affichée**, et c'est délibéré :
   // une facture d'avril qu'on n'a jamais encaissée doit se voir en août, sinon
   // elle se perd — et une TVA jamais déclarée finit par se remarquer ailleurs.
-  // **Les DEUX régimes, en une seule lecture des factures.** Le second total ne
-  // s'affiche pas : il sert à dire, sous les boutons, ce que le choix change —
-  // ou ne change pas (`ARCHITECTURE.md` §194).
-  const [releves, deductible, achats, enAttente] = await Promise.all([
-    relevesSousLesDeuxRegimes(ctx, periode.debut, periode.fin),
+  const [releve, deductible, achats, enAttente, aPrevenir] = await Promise.all([
+    releveTvaCollectee(ctx, periode.debut, periode.fin),
     totalTvaDeductible(ctx, periode.debut, periode.fin),
     listerAchatsTva(ctx, periode.debut, periode.fin),
     facturesEnAttente(ctx),
+    // Ce qui reste à signaler après un changement d'IBAN. Vide presque
+    // toujours — et rien ne s'affiche alors.
+    facturesAvecAncienIban(ctx),
   ]);
-  const releve = releves.retenu;
   const collectee = Number(releve.totalTva);
   const reste = tvaDue(collectee, deductible);
 
-  const precedent = periodePrecedente(periode);
-  const suivant = periodeSuivante(periode);
-  const lien = (p: { annee: number; numero: number }) => `/termines/tva?annee=${p.annee}&t=${p.numero}`;
+  // **Ce que les clients ont fait des factures qui attendent** — sa demande du
+  // 9 septembre 2026. Après le `Promise.all` et non dedans : la liste des
+  // factures à interroger sort de `enAttente`. Une seule requête pour toutes,
+  // jamais une par ligne.
+  //
+  // **Mis en mots ICI, sur le serveur** : une heure formatée par le téléphone
+  // changerait selon l'appareil qui la lit, et une preuve qui change d'heure
+  // selon qui la regarde ne prouve rien (`src/lib/reception-facture.ts`).
+  const receptionsBrutes = await receptionsDesFactures(
+    ctx,
+    enAttente.map((f) => f.id)
+  );
+  const receptions = Object.fromEntries(
+    [...receptionsBrutes].map(([id, r]) => [id, receptionEnMots(r)])
+  );
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-16">
-        <div className="px-6 pt-8">
-          <Link
-            href="/termines"
-            aria-label="Retour aux chantiers terminés"
-            className="flex h-10 w-10 items-center justify-center rounded-full"
-            style={{ backgroundColor: colors.rustTint }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
-              <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </Link>
-        </div>
-
-        {/* **Le rythme en haut, à sa demande du 13 août 2026.** Il vit aussi
-            dans Réglages ; c'est ici qu'on se pose la question. */}
-        <RythmeTva actuelle={periodicite} />
-
-        {/* **Quand la TVA devient exigible**, à côté du rythme : ce sont les
-            deux mêmes sortes de choses — des déclarations faites aux impôts,
-            pas des préférences d'écran. Sa question du 14 août 2026. */}
-        <RegimeTva
-          actuelle={releve.regime}
-          periode={libellePeriode(periode)}
-          tvaRetenue={formatEuros.format(Number(releves.retenu.totalTva))}
-          tvaAutre={formatEuros.format(Number(releves.autre.totalTva))}
+        {/* La flèche de retour et l'assistant partagent la rangée du haut :
+            c'est la grammaire commune (`EnTeteEcran`), et elle libère toute la
+            largeur pour « 3e trimestre 2026 », qui se cassait en deux lignes
+            quand la bulle lui prenait son coin droit. */}
+        <EnTeteEcran
+          retour={{ href: "/termines", libelle: "Retour aux chantiers terminés" }}
+          action={<BoutonAssistant />}
+          actionPlacee="retour"
+          assistant={false}
+          surtitre="Ma TVA"
+          titre={libellePeriode(periode)}
         />
 
-        <EnTeteEcran surtitre="Ma TVA" titre={libellePeriode(periode)} />
-
-        {/* **Le calendrier se glisse ENTRE les deux flèches**, à sa demande du
-            12 août 2026. Sans lui, remonter au 1er trimestre 2025 demandait
-            sept appuis — et sept chargements, chaque flèche étant un lien. */}
-        <div className="mt-5 flex items-center justify-between gap-2.5 px-6 text-[14px] font-medium">
-          <Link href={lien(precedent)} className="whitespace-nowrap" style={{ color: colors.rust }}>
-            ← {libellePeriode(precedent)}
-          </Link>
-          <CalendrierPeriodes
-            periodicite={periodicite}
-            annee={periode.annee}
-            numero={periode.numero}
-            anneeCourante={courante.annee}
-            numeroCourant={courante.numero}
-          />
-          <Link href={lien(suivant)} className="whitespace-nowrap" style={{ color: colors.rust }}>
-            {libellePeriode(suivant)} →
-          </Link>
-        </div>
-
-        <div className="mt-5 px-6">
-          {/* **Les deux colonnes, retenues par le patron le 12 août 2026** parmi
-              trois présentations (`docs/maquettes/37`). Les trois chiffres
-              portent le même poids et la même encre : la déductible était en
-              gris, elle avait l'air d'un chiffre de second rang alors que c'est
-              celui qu'il va chercher. */}
-          <div
-            className="flex gap-px overflow-hidden rounded-t-[10px]"
-            style={{ backgroundColor: colors.lineSoft }}
-          >
-            <MontantCopiable libelle="Collectée" montant={formatEuros.format(collectee)} />
-            <MontantCopiable libelle="Déductible" montant={formatEuros.format(deductible)} />
-          </div>
-          {/* **Le reste peut être NÉGATIF, et c'est un état normal** : le mois
-              où l'on achète une machine sans facturer grand-chose donne un
-              crédit de TVA. Le borner à zéro cacherait le mois où le patron a
-              le plus besoin de savoir. */}
-          {/* **Plus d'arrondi en bas : le bloc des gestes le porte désormais.**
-              Depuis le 23 août 2026, « Scanner un ticket » et « Écrire à la
-              main » sont rattachés sous cet encadré (proposition C,
-              `docs/maquettes/85`) — les deux ne font plus qu'une seule pièce, et
-              c'est cette continuité qui dit le lien sans un mot de plus. */}
-          <div data-atlas="encadre-tva" className="mt-px px-4 py-4" style={{ backgroundColor: colors.card }}>
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-[14px]">Reste à payer</span>
-              <span
-                className="text-[26px] font-semibold"
-                style={{ fontFamily: font.display, color: colors.rust, fontVariantNumeric: "tabular-nums" }}
-              >
-                {/* **Un vrai signe moins (−), pas le trait d'union du clavier.**
-                    Sa demande du 13 août 2026 : « si le reste à payer est
-                    négatif, il faut qu'il le marque négativement ». Le trait
-                    d'union rendu par le formatage est deux fois plus court et
-                    posé plus bas : à 26 px, sur un écran au soleil, il se lit
-                    comme une poussière. Le signe moins est à la hauteur des
-                    chiffres, et de leur épaisseur. */}
-                {reste < 0
-                  ? `\u2212 ${formatEuros.format(Math.abs(reste))}`
-                  : formatEuros.format(reste)}
-              </span>
-            </div>
-            {/* **Et le signe seul ne suffit pas à dire ce que ça VEUT dire.**
-                « Reste à payer − 20 € » se lit mal : on ne paie rien, c'est
-                l'inverse. La phrase le dit en clair — et elle n'apparaît que
-                dans ce cas, pour ne pas encombrer les onze mois où le montant
-                est positif. */}
-            {reste < 0 && (
-              /* **À GAUCHE, sous le libellé.** Alignée à droite, sa fin
-                 passait sous la bulle de l'assistant, qui flotte dans ce coin
-                 sur tous les écrans — « c'est l'État qui vous… ». Vu sur
-                 capture, jamais autrement. */
-              <p className="mt-1.5 text-[12px]" style={{ color: colors.or }}>
-                Crédit de TVA — c’est l’État qui vous doit.
-              </p>
-            )}
-          </div>
-        </div>
-
-        <AchatsTva
-          achats={achats.map((a) => ({
-            id: a.id,
-            dateAchat: a.dateAchat,
-            fournisseur: a.fournisseur,
-            totalTtc: a.totalTtc,
-            tvaDeductible: a.tvaDeductible,
-            saisie: a.saisie,
-          }))}
-          aujourdHui={jourIso(new Date())}
+        <FrisePeriodes
           periodicite={periodicite}
           annee={periode.annee}
           numero={periode.numero}
+          anneeCourante={courante.annee}
+          numeroCourant={courante.numero}
         />
+
+        {/* **Le rythme, sous les mois, en un mot qui s'appuie** — et rien
+            d'autre : le régime d'exigibilité est parti dans « Mon entreprise »
+            (`reglages/ExigibiliteTva.tsx`). La planche du 12 septembre 2026 ne
+            veut qu'une logique ici. */}
+        <RythmeTva actuelle={periodicite} modifiable={patron} />
+
+        {/* ─── L'addition ───────────────────────────────────────────────── */}
+        <section className="mt-[22px] px-6" aria-label="Le relevé de la période">
+          {/* **Le mot ouvre la page à la calculette, le chiffre copie** — sa
+              planche du 25 septembre 2026 (`appli/tva-collectee-a-la-calculette.html`) :
+              chaque colonne s'y additionne, avec le taux de chaque ligne. */}
+          <LigneMontant
+            libelle="TVA collectée"
+            montant={enEuros(collectee)}
+            marque="montant-collectee"
+            lien={`/termines/tva/collectee?annee=${periode.annee}&t=${periode.numero}`}
+          />
+          <LigneMontant
+            libelle="TVA déductible"
+            montant={enEuros(deductible)}
+            marque="montant-deductible"
+            negatif
+            lien={`/termines/tva/deductible?annee=${periode.annee}&t=${periode.numero}`}
+
+          />
+
+          <div className="mt-3 h-px" style={{ backgroundColor: colors.line }} aria-hidden="true" />
+
+          {/* **Le reste peut être NÉGATIF, et c'est un état normal** : le mois
+              où l'on achète une machine sans facturer grand-chose donne un
+              crédit de TVA. Le borner à zéro cacherait le mois où le patron a
+              le plus besoin de savoir.
+
+              **Et l'on n'écrit jamais un moins devant** — sa planche du
+              12 septembre 2026 : *« ne jamais afficher simplement un montant
+              négatif »*. C'est le MOT qui change : « TVA à payer » devient
+              « Crédit de TVA », et le chiffre reste ce qu'il est, positif. Un
+              « − 20 € » sous « à payer » se lisait à l'envers : on ne paie
+              rien, c'est l'État qui doit. */}
+          <LigneMontant
+            libelle={reste < 0 ? "Crédit de TVA" : "TVA à payer"}
+            montant={enEuros(Math.abs(reste))}
+            marque="montant-reste"
+            total
+          />
+
+          {/* **Sous le chiffre, les deux gestes qui le changent.** Sa retouche
+              du 12 septembre : *« Scanner et À la main, mets-les sous la TVA à
+              payer, au-dessus de Factures en attente »*. Entre la déductible
+              et le trait, ils coupaient l'addition en deux. */}
+          <AchatsTva
+            aujourdHui={jourIso(new Date())}
+            periodicite={periodicite}
+            annee={periode.annee}
+            numero={periode.numero}
+          />
+        </section>
 
         {/* **« L'endroit en attente »**, sa demande du 14 août 2026 : la facture
             partie chez le client attend ici, et un appui la fait entrer au
-            relevé. Placé APRÈS les achats et AVANT le détail des lignes : c'est
-            ce qui reste à faire, et ça se lit avant ce qui est fait. */}
+            relevé. Placé AVANT les deux preuves : c'est ce qui reste à faire,
+            et ça se lit avant ce qui est fait. */}
         <EnAttenteDePaiement
+          aPrevenir={aPrevenir}
+          receptions={receptions}
           regime={releve.regime}
           aujourdHui={jourIso(new Date())}
           factures={enAttente.map((f) => ({
@@ -224,58 +251,217 @@ export default async function ReleveTvaPage({
               id: p.id,
               date: p.date,
               montant: p.montant,
+              moyen: p.moyen,
               origine: p.origine,
+            })),
+            retires: f.retires.map((r) => ({
+              id: r.id,
+              date: r.date,
+              montant: r.montant,
+              retireLe: jourIso(r.retireLe),
             })),
           }))}
         />
 
-        <div className="mt-6 flex flex-col gap-4 px-6">
-          {releve.lignes.length === 0 ? (
-            <div className="rounded-[4px] px-5 py-8 text-center" style={{ backgroundColor: colors.card }}>
-              <p className="text-[14px]" style={{ color: colors.muted }}>
-                {releve.regime === "encaissements"
-                  ? "Aucun règlement reçu sur cette période."
-                  : "Aucune facture émise sur cette période."}
-              </p>
-            </div>
-          ) : (
-            <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
-              <p className={smallCaps} style={{ color: colors.muted, marginBottom: 12 }}>
-                {releve.lignes.length} facture{releve.lignes.length > 1 ? "s" : ""}
-              </p>
-              <ul className="flex flex-col gap-3">
-                {/* **La clé porte la date, pas seulement le numéro.** Aux
-                    encaissements, une facture réglée en deux acomptes produit
-                    deux lignes : deux clés identiques feraient disparaître la
-                    seconde de l'écran, sans que le total change — un écart que
-                    personne ne saurait expliquer. */}
-                {releve.lignes.map((l) => (
-                  <li key={`${l.numeroCommercial}|${l.dateEmission}|${l.totalTtc}`} className="flex items-baseline justify-between gap-4">
-                    <div className="min-w-0">
-                      <p className="truncate text-[15px]" style={{ color: colors.ink }}>
-                        <NumeroDeDocument valeur={l.numeroCommercial} /> —{" "}
-                        {l.clientNom ?? "Client non renseigné"}
-                      </p>
-                      <p className="mt-0.5 text-[12px]" style={{ color: colors.muted }}>
-                        {jourLisible(l.dateEmission)}
-                      </p>
-                    </div>
-                    <span className="flex-shrink-0 text-[15px]" style={{ color: colors.rust }}>
-                      {formatEuros.format(Number(l.totalTva))}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+        {/* ─── La preuve du premier terme ───────────────────────────────── */}
+        {/* **Chaque ligne dit son TTC ET sa TVA, chacun avec son mot** — sa
+            planche du 12 septembre 2026 : *« l'utilisateur ne doit jamais
+            devoir deviner si le montant affiché correspond au TTC ou à la
+            TVA »*. Une seule colonne de chiffres ne le disait pas.
 
-          <p className="px-1 text-center text-[12px]" style={{ color: colors.muted }}>
-            Ce relevé est préparé par Atlas à partir de vos factures émises. Il ne
-            vaut pas déclaration : celle-ci reste à faire par votre outil
-            comptable.
+            **Ce qu'une ligne EST dépend du régime**, et la ligne le sait
+            (`motif`) : aux encaissements c'est un règlement — « Règlement
+            encaissé », à la date où il l'a été ; aux débits c'est la facture
+            entière — « Facture émise », à sa date d'émission. Écrire
+            « règlement » sous les débits mentirait sur ce qui est compté. */}
+        <section className="mt-[34px] px-6" data-atlas="preuve-collectee">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="text-[19px]" style={{ color: colors.ink, fontFamily: font.display }}>
+              TVA collectée
+            </h2>
+            <span className="text-[12px] tabular-nums" style={{ color: colors.muted }}>
+              {releve.lignes.length > 0 &&
+                (releve.regime === "encaissements"
+                  ? `${releve.lignes.length} règlement${releve.lignes.length > 1 ? "s" : ""}`
+                  : `${releve.lignes.length} facture${releve.lignes.length > 1 ? "s" : ""}`)}
+            </span>
+          </div>
+          <p className={`mt-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+            Vos factures
           </p>
-        </div>
+
+          {releve.lignes.length === 0 ? (
+            <p className="mt-4 text-center text-[13px]" style={{ color: colors.inkSoft }}>
+              {releve.regime === "encaissements"
+                ? "Aucun règlement reçu sur cette période."
+                : "Aucune facture émise sur cette période."}
+            </p>
+          ) : (
+            <ul className="mt-2 flex flex-col">
+              {/* **La clé porte la date, pas seulement le numéro.** Aux
+                  encaissements, une facture réglée en deux acomptes produit
+                  deux lignes : deux clés identiques feraient disparaître la
+                  seconde de l'écran, sans que le total change — un écart que
+                  personne ne saurait expliquer. */}
+              {/* **La ligne entière ouvre la facture envoyée**, sa demande du
+                  24 septembre 2026, *« comme sur la page Terminés, je clique
+                  sur la zone du client et ça ouvre la facture »*
+                  (`appli/ouvrir-la-facture-depuis-la-tva.html`). Rien ne la
+                  signale : il a refusé le nom souligné en doré. */}
+              {releve.lignes.map((l) => (
+                <li
+                  key={`${l.numeroCommercial}|${l.dateEmission}|${l.totalTtc}`}
+                  style={{ borderTop: `1px solid ${colors.lineSoft}` }}
+                >
+                  {(() => {
+                    const contenu = (
+                      <>
+                        <p className="truncate text-[15px]" style={{ color: colors.ink }}>
+                          {l.clientNom ?? "Client non renseigné"}
+                        </p>
+                        <p className="mt-0.5 text-[11.5px]" style={{ color: colors.muted }}>
+                          {/* Aux débits, un avoir retire sa TVA sous SON numéro (§413) :
+                              l'appeler « Facture » ferait chercher la mauvaise pièce. */}
+                          {l.motif === "avoir" ? "Avoir" : "Facture"} n° <NumeroDeDocument valeur={l.numeroCommercial} />,{" "}
+                          {l.motif === "paiement" ? "règlement du" : l.motif === "avoir" ? "émis le" : "émise le"} {jourLisible(l.dateEmission)}
+                        </p>
+                        <Paire
+                          quoi={l.motif === "paiement" ? "Règlement encaissé" : l.motif === "avoir" ? "Avoir émis" : "Facture émise"}
+                          combien={`${enEuros(Number(l.totalTtc))} TTC`}
+                        />
+                        <Paire quoi="TVA collectée" combien={enEuros(Number(l.totalTva))} tva />
+                      </>
+                    );
+                    // Une ligne d'avoir ne s'ouvre pas sur la facture : le
+                    // numéro affiché est celui de l'avoir, et la visionneuse
+                    // titrerait la facture de ce numéro-là. Son PDF se trouve
+                    // sous la facture et dans la fiche du client.
+                    return l.motif === "avoir" ? (
+                      <div className="py-3">{contenu}</div>
+                    ) : (
+                      <Link
+                        href={visionneuseDeLaFacture({ id: l.factureId, numeroCommercial: l.numeroCommercial })}
+                        data-atlas="ouvrir-la-facture"
+                        className="block py-3"
+                      >
+                        {contenu}
+                      </Link>
+                    );
+                  })()}
+                </li>
+              ))}
+              <Total quoi="Total collectée" combien={enEuros(collectee)} marque="total-collectee" />
+            </ul>
+          )}
+        </section>
+
+        {/* ─── La preuve du second ──────────────────────────────────────── */}
+        <section className="mt-[34px] px-6" data-atlas="preuve-deductible">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="text-[19px]" style={{ color: colors.ink, fontFamily: font.display }}>
+              TVA déductible
+            </h2>
+            <span className="text-[12px] tabular-nums" style={{ color: colors.muted }}>
+              {achats.length > 0 && `${achats.length} achat${achats.length > 1 ? "s" : ""}`}
+            </span>
+          </div>
+          {/* La liste garde son mot juste : ce qu'il ajoute, ce sont des
+              ACHATS. « TVA déductible », c'est ce que l'administration en
+              fait. */}
+          <p className={`mt-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+            Vos achats
+          </p>
+
+          {achats.length === 0 ? (
+            <p className="mt-4 text-center text-[13px]" style={{ color: colors.inkSoft }}>
+              Rien encore. Scannez un ticket, ou écrivez-le.
+            </p>
+          ) : (
+            <ul className="mt-2 flex flex-col">
+              {achats.map((a) => (
+                <li
+                  key={a.id}
+                  data-atlas="ligne-achat"
+                  className="py-3"
+                  style={{ borderTop: `1px solid ${colors.lineSoft}` }}
+                >
+                  <p className="truncate text-[15px]" style={{ color: colors.ink }}>
+                    {a.fournisseur}
+                  </p>
+                  <p className="mt-0.5 text-[11.5px]" style={{ color: colors.muted }}>
+                    {jourEtMois(a.dateAchat)}
+                  </p>
+                  {/* Le TTC n'est pas toujours connu — un achat écrit à la main
+                      peut ne porter que sa TVA. Sans lui, la ligne ne dit que
+                      ce qu'elle sait ; elle n'invente pas un montant. */}
+                  {a.totalTtc && <Paire quoi="Montant" combien={`${enEuros(Number(a.totalTtc))} TTC`} />}
+                  <Paire quoi="TVA déductible" combien={enEuros(Number(a.tvaDeductible))} tva />
+                </li>
+              ))}
+              <Total quoi="Total déductible" combien={enEuros(deductible)} marque="total-deductible" />
+            </ul>
+          )}
+        </section>
+
+        {/* **« vos règlements » ou « vos factures émises » : ce que le relevé
+            compte VRAIMENT**, selon le régime. La mention ne doit pas dire
+            « règlements » à qui déclare aux débits. */}
+        <p className="mt-10 px-8 text-center text-[12px] leading-[1.55]" style={{ color: colors.inkSoft }}>
+          Ce relevé est préparé par Atlas à partir de vos{" "}
+          {releve.regime === "encaissements" ? "règlements" : "factures émises"}. Il ne
+          vaut pas déclaration : celle-ci reste à faire par votre outil
+          comptable.
+        </p>
       </div>
     </div>
+  );
+}
+
+/**
+ * « Intitulé   montant » — une ligne d'une preuve.
+ *
+ * **En doré quand c'est la TVA** — le mot ET le chiffre —, sa retouche du
+ * 12 septembre 2026 : c'est la ligne qui alimente le total, et le total est
+ * doré aussi. Le TTC reste en gris : il dit d'où vient le chiffre, il ne
+ * compte pas.
+ */
+function Paire({ quoi, combien, tva = false }: { quoi: string; combien: string; tva?: boolean }) {
+  return (
+    <p className="mt-[7px] flex items-baseline justify-between gap-2.5 text-[13px]">
+      <span style={{ color: tva ? colors.or : colors.muted }}>{quoi}</span>
+      <span
+        className="whitespace-nowrap text-[16px]"
+        style={{ color: tva ? colors.or : colors.ink, fontFamily: font.display, fontVariantNumeric: "tabular-nums" }}
+      >
+        {combien}
+      </span>
+    </p>
+  );
+}
+
+/**
+ * La ligne de total sous une preuve : le mot en noir gras, décalé à gauche du
+ * chiffre ; le chiffre en doré gras, **dans la colonne des chiffres** — sa
+ * demande du 12 septembre 2026 : *« le montant total aligné au dernier
+ * chiffre »*. Un total qui ne tombe pas sous ses lignes ne se recompose pas à
+ * la main (`CLAUDE.md` §4 bis).
+ */
+function Total({ quoi, combien, marque }: { quoi: string; combien: string; marque: string }) {
+  return (
+    <li
+      data-atlas={marque}
+      className="flex items-baseline justify-end gap-3.5 pt-3"
+      style={{ borderTop: `1px solid ${colors.line}` }}
+    >
+      <span className={`${libelleCaps} font-bold`} style={{ color: colors.ink }}>
+        {quoi}
+      </span>
+      <span
+        className="whitespace-nowrap text-[18px] font-bold"
+        style={{ color: colors.or, fontFamily: font.display, fontVariantNumeric: "tabular-nums" }}
+      >
+        {combien}
+      </span>
+    </li>
   );
 }

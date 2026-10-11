@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mise en demeure</title>
+<link rel="stylesheet" href="facture-impayee.css">
+</head>
+<body>
+
+<div class="recit">
+  <div class="etape" id="etape">Étape 1</div>
+  <p id="texte"></p>
+  <div class="pas">
+    <button type="button" id="avant">Retour</button>
+    <span class="points" id="points"></span>
+    <button type="button" id="recommencer">Recommencer</button>
+  </div>
+</div>
+
+<div class="tel" id="tel"></div>
+
+<div class="apres">
+  <p class="autres">Les deux autres planches : <a href="avoir.html">Faire un avoir</a>, <a href="il-ne-paiera-pas.html">Il ne me paiera pas</a>.</p>
+  <h3>Deux points à vérifier avant de coder</h3>
+  <div class="q">Le délai de <b>huit jours</b> et les <b>intérêts au taux légal</b> sont l'usage. Ils n'ont pas encore été vérifiés dans les textes de loi.</div>
+</div>
+
+<script>
+  // Planche 3 sur 3 : la mise en demeure, depuis une facture rangée dans Non payées.
+  const PARCOURS = {
+    debut: "termB",
+    ordre: ["termB","nonPayees","factureB","mise"],
+    recit: {
+      termB: ["Vous êtes ici", "Vous avez dit que M. Martin ne vous paiera pas : sa facture est rangée dans <b>Non payées</b>, sous les deux boutons de Terminés. <b>Touchez «&nbsp;Non payées&nbsp;».</b>"],
+      factureB: ["Sa facture", "La facture est entière, marquée <b>Non payée</b> : vous pouvez toujours réclamer. <b>Touchez «&nbsp;Mise en demeure&nbsp;».</b>"],
+      mise: ["La mise en demeure", "La lettre officielle qui lui donne <b>huit jours pour payer</b>, avant le tribunal. Atlas la remplit seule : le client, la facture, le montant, les dates. Vous la téléchargez et l'envoyez en recommandé. Fin de la planche."],
+    },
+  };
+</script>
+<script src="facture-impayee.js"></script>
+</body>
+</html>

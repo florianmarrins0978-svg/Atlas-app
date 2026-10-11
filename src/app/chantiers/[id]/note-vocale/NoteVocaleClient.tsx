@@ -185,7 +185,7 @@ export default function NoteVocaleClient({
           "detail" in r && r.detail
             ? r.detail
             : r.raison === "vide"
-              ? "Rien n'a été entendu — votre note d'origine est intacte."
+              ? "Rien n'a été entendu. Votre note d'origine est intacte."
               : "Le complément n'a pas pu être transcrit. Votre note d'origine est intacte."
         );
         return;
@@ -380,7 +380,7 @@ export default function NoteVocaleClient({
           <div className="mt-4 flex items-center justify-center gap-2">
             <span className="h-2 w-2 animate-pulse rounded-full" style={{ backgroundColor: colors.rust }} />
             <span className="text-[14px]" style={{ color: colors.muted }}>
-              Enregistrement en cours — {mmss(secondes)}
+              Enregistrement en cours, {mmss(secondes)}
             </span>
           </div>
           <p className="mt-2 text-center text-[13px]" style={{ color: colors.muted }}>
@@ -459,8 +459,8 @@ export default function NoteVocaleClient({
               <button
                 onClick={togglerLecture}
                 aria-label={lecture ? "Mettre en pause" : "Écouter la note"}
-                className="ml-5 flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full"
-                style={{ backgroundColor: colors.rust }}
+                className="atlas-plein ml-5 flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full"
+                style={{ backgroundColor: colors.plein }}
               >
                 {lecture ? <PauseIcon /> : <PlayIcon />}
               </button>
@@ -518,7 +518,7 @@ export default function NoteVocaleClient({
               <>
                 <DevisDepuisDictee chantierId={chantierId} transcriptionDisponible />
                 <p className="mt-3 text-center text-[13px]" style={{ color: colors.muted }}>
-                  Transcription disponible —{" "}
+                  Transcription disponible,{" "}
                   <a href={`/chantiers/${chantierId}/transcription`} className="font-medium" style={{ color: colors.rust }}>
                     voir le texte
                   </a>
@@ -579,10 +579,10 @@ export default function NoteVocaleClient({
             }}
           >
             {complementEnCours
-              ? "J'écoute — touchez pour arrêter"
+              ? "J'écoute. Touchez pour arrêter"
               : enCours
                 ? "Un instant…"
-                : "Reprendre — j'avais oublié quelque chose"}
+                : "Reprendre, j'avais oublié quelque chose"}
           </button>
           {messageComplement && (
             <p className="mt-2 text-center text-[13px] leading-snug" style={{ color: colors.muted }}>
@@ -604,7 +604,7 @@ export default function NoteVocaleClient({
 
       {etatAffiche === "confirmation" && (
         <div className="fixed inset-0 z-40 flex items-end" style={{ backgroundColor: "rgba(0,0,0,0.35)" }}>
-          <div className="w-full rounded-t-[26px] px-6 pb-9 pt-3" style={{ backgroundColor: colors.cream }}>
+          <div className="atlas-feuille rounded-t-[26px] px-6 pb-9 pt-3" style={{ backgroundColor: colors.cream }}>
             <div className="mx-auto mb-5 h-1 w-10 rounded-full" style={{ backgroundColor: colors.line }} />
             {/* Il ne reste QUE le remplacement. Et il garde sa question, à
                 dessein : contrairement au retrait, il ne détruit rien au moment

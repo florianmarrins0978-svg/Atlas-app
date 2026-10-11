@@ -1,0 +1,18 @@
+-- LES JOURS QUE LE CLIENT PROPOSE AVEC SA CORRECTION : sa plainte du
+-- 27 septembre 2026, « mon client a demandé une correction et proposé des
+-- dates ; quand je corrige et renvoie, je ne vois pas ses dates, donc je
+-- repropose les mêmes ». Planche `appli/dates-du-client-au-renvoi.html`,
+-- proposition A retenue le jour même.
+--
+-- Pourquoi une colonne à part, et pas `date_retenue` ni `jours_retenus` :
+-- ces deux-là disent qu'une date est RETENUE. La page du client écrit
+-- « Intervention prévue le… » dès qu'elles sont remplies, et la notification
+-- « le client a accepté ». Une correction ne retient rien : c'est un souhait,
+-- que le patron reprend ou non au renvoi.
+--
+-- Étendre, sans rien retirer (`.claude/rules/deployment-safety.md`) : nullable,
+-- aucune ligne réécrite, aucune contrainte. NULL sur les corrections d'avant :
+-- leurs dates ont été jetées à l'époque, rien ne se reconstruit
+-- (`.claude/rules/migrations.md`). Aucun `UPDATE`, donc rien à prouver sous
+-- FORCE RLS.
+ALTER TABLE "envois_devis" ADD COLUMN IF NOT EXISTS "jours_souhaites" jsonb;

@@ -5,8 +5,9 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier, reprendreChantier } from "@/server/repositories/chantiers";
 import { trouverOuCreerClient, mettreAJourClient, type CanalClient } from "@/server/repositories/clients";
 import { nomDuChantier } from "@/lib/nom-chantier";
-import type { Civilite } from "@/lib/civilite";
+import type { CiviliteClient } from "@/lib/civilite";
 import { jourIso } from "@/lib/jour";
+import { telephoneLu } from "@/lib/numero-telephone";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -33,7 +34,7 @@ import { revalidatePath } from "next/cache";
  */
 export type ReprendreChantierInput = {
   nomClient?: string;
-  civilite?: Civilite;
+  civilite?: CiviliteClient;
   telephone?: string;
   email?: string;
   canal?: CanalClient;
@@ -59,7 +60,10 @@ export async function reprendreChantierAction(
     }
 
     const nomClient = data.nomClient?.trim();
-    const telephone = data.telephone?.trim() || undefined;
+    // Un numéro qui ne joint personne se refuse (sa capture du 7 octobre 2026).
+    const lu = telephoneLu(data.telephone);
+    if (lu === null) return { ok: false, raison: "Le téléphone a 10 chiffres." };
+    const telephone = lu || undefined;
     const email = data.email?.trim() || undefined;
 
     // Un canal sans la coordonnée correspondante est un cul-de-sac : l'envoi
@@ -140,7 +144,10 @@ export async function reprendreChantierAction(
     // retrouverait « Adresse non renseignée » après avoir enregistré, et
     // croirait le geste sans effet.
     revalidatePath("/");
-    revalidatePath(`/chantiers/${chantierId}`);
+    // **Cet écran-ci, et plus la fiche du chantier** (4 septembre 2026,
+    // `ARCHITECTURE.md` §254) : `/chantiers/[id]` ne rend plus qu'une
+    // redirection, et revalider une redirection ne rafraîchit rien.
+    revalidatePath(`/chantiers/${chantierId}/coordonnees`);
     return { ok: true };
   } catch (erreur) {
     // **Rendre le défaut bavard AVANT de le corriger** (`AGENTS.md`) : sans

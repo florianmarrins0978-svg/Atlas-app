@@ -1,21 +1,40 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { exigerMontants } from "@/server/garde-action";
+import { exigerGestionDevis } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { retenirLecon } from "@/server/repositories/lecons-prix";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { mettreAJourClient } from "@/server/repositories/clients";
-import { modifierLignePrix, supprimerLignePrix, ajouterLignePrix, listerLignesPrix } from "@/server/repositories/lignes-prix";
+import {
+  modifierLignePrix,
+  supprimerLignePrix,
+  ajouterLignePrix,
+  listerLignesPrix,
+  changerTauxCategorie,
+  retirerCategorieTva,
+  deplacerLigneVersCategorie,
+} from "@/server/repositories/lignes-prix";
 import { noterRetenu } from "@/server/repositories/termes-metier";
 import { apprendrePrixGrille } from "@/server/services/apprendre-grille";
 import { mettreAJourAdresseChantier } from "@/server/repositories/chantiers";
-import { mettreAJourEnTeteDevis, getDevisPourChantier } from "@/server/repositories/devis";
+import {
+  mettreAJourEnTeteDevis,
+  getDevisPourChantier,
+  poserAcompteSuivant,
+  changerTauxAcompte,
+  retirerAcompte,
+  majAutoliquidationDevis,
+} from "@/server/repositories/devis";
+import { logger } from "@/server/logger";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerAudioEntrant } from "@/server/audio-entrant";
 import { lireRetouchesDictees } from "@/server/ai/services/retouches-devis-service";
 import type { Changement } from "@/lib/retouches-devis";
-import type { Civilite } from "@/lib/civilite";
+import type { CiviliteClient } from "@/lib/civilite";
+import { tauxTvaValide } from "@/lib/reduction-devis";
+import { lireTauxDeHausse, type ReponseGrille } from "@/lib/hausse-du-devis";
+import { appliquerLaReprise } from "@/server/repositories/reprise-du-devis";
 
 // Le devis écrit à la main : chaque champ du document part vers SA source.
 //
@@ -34,31 +53,38 @@ export async function majEmetteurAction(data: {
   iban?: string;
 }) {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "modifier l'émetteur du devis");
+  await exigerGestionDevis(ctx, "modifier l'émetteur du devis");
   await mettreAJourEntreprise(ctx, data);
 }
 
 export async function majClientDuDevisAction(
   clientId: string,
-  data: { nom?: string; civilite?: Civilite | null; adresse?: string; telephone?: string; email?: string }
+  data: { nom?: string; civilite?: CiviliteClient | null; adresse?: string; telephone?: string; email?: string }
 ) {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "modifier le client du devis");
+  await exigerGestionDevis(ctx, "modifier le client du devis");
   await mettreAJourClient(ctx, clientId, data);
 }
 
 export async function majAdresseChantierAction(chantierId: string, adresse: string) {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "modifier l'adresse du chantier");
+  await exigerGestionDevis(ctx, "modifier l'adresse du chantier");
   await mettreAJourAdresseChantier(ctx, chantierId, adresse);
 }
 
 export async function majLigneAction(
   id: string,
-  data: { libelle?: string; quantite?: string; prixUnitaire?: string }
+  data: {
+    libelle?: string;
+    quantite?: string;
+    prixUnitaire?: string;
+    /** L'unité de la quantité — ml, m², m³, kg… (migration 0070). Vide : aucune. */
+    unite?: string | null;
+    tauxTva?: string | null;
+  }
 ) {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "modifier une ligne du devis");
+  await exigerGestionDevis(ctx, "modifier une ligne du devis");
   const ligne = await modifierLignePrix(ctx, id, data);
 
   // **C'est ici que l'agent apprend.** Ce que le patron écrit sur son devis est
@@ -115,15 +141,78 @@ export async function majLigneAction(
   return ligne;
 }
 
-export async function ajouterLigneAction(chantierId: string) {
+export async function ajouterLigneAction(chantierId: string, tauxTva?: string | null) {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "ajouter une ligne au devis");
-  return ajouterLignePrix(ctx, chantierId, "", "0.00");
+  await exigerGestionDevis(ctx, "ajouter une ligne au devis");
+  // Le taux vient de la catégorie sous laquelle il a appuyé : la ligne naît au
+  // bon endroit plutôt que de tomber dans la première puis d'être déplacée.
+  return ajouterLignePrix(ctx, chantierId, "", "0.00", { tauxTva: tauxTva ?? null });
+}
+
+/**
+ * « Ajouter une TVA » — une catégorie s'ouvre, avec sa première ligne.
+ *
+ * **Pourquoi une ligne tout de suite, et pas une catégorie vide.** Le taux vit
+ * sur la ligne : une catégorie que rien ne porte n'existe nulle part, et
+ * disparaîtrait au premier rechargement de la page. Créer la ligne dans la
+ * foulée, c'est exactement le geste suivant qu'il ferait — et le devis refuse
+ * déjà de partir tant qu'une ligne n'est pas chiffrée, donc rien ne peut filer
+ * chez un client à moitié rempli.
+ */
+export async function ajouterCategorieTvaAction(chantierId: string, taux: string) {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "ajouter une TVA au devis");
+  const propre = tauxTvaValide(taux);
+  if (propre === null) return null;
+  return ajouterLignePrix(ctx, chantierId, "", "0.00", { tauxTva: propre });
+}
+
+/** Le taux d'une catégorie change : toutes ses lignes suivent. */
+export async function changerTauxCategorieAction(
+  chantierId: string,
+  ancien: string,
+  nouveau: string,
+  tauxDuDevis: string
+) {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "changer un taux de TVA du devis");
+  const propre = tauxTvaValide(nouveau);
+  if (propre === null) return;
+  await changerTauxCategorie(ctx, chantierId, ancien, propre, tauxDuDevis);
+}
+
+/**
+ * Déplacer une ligne vers une autre TVA — ce que fait son appui long.
+ *
+ * Le taux est validé ici comme partout ailleurs : la feuille propose des taux
+ * connus, mais rien n'oblige un appel à passer par elle.
+ */
+export async function deplacerLigneVersTvaAction(
+  ligneId: string,
+  taux: string,
+  tauxDuDevis: string
+) {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "déplacer une ligne du devis");
+  const propre = tauxTvaValide(taux);
+  if (propre === null) return null;
+  return deplacerLigneVersCategorie(ctx, ligneId, propre, tauxDuDevis);
+}
+
+/** La catégorie disparaît, ses lignes reviennent au taux du devis. */
+export async function retirerCategorieTvaAction(
+  chantierId: string,
+  taux: string,
+  tauxDuDevis: string
+) {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "retirer une TVA du devis");
+  await retirerCategorieTva(ctx, chantierId, taux, tauxDuDevis);
 }
 
 export async function retirerLigneAction(id: string) {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "retirer une ligne du devis");
+  await exigerGestionDevis(ctx, "retirer une ligne du devis");
   return supprimerLignePrix(ctx, id);
 }
 
@@ -150,7 +239,7 @@ export async function dicterRetouchesDevisAction(chantierId: string, formData: F
 
 
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "dicter des retouches sur le devis");
+  await exigerGestionDevis(ctx, "dicter des retouches sur le devis");
   const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
   if (!limite.autorise) throw new Error(limite.message);
 
@@ -214,7 +303,7 @@ export async function appliquerRetouchesAction(chantierId: string, changements: 
         break;
       case "ajouter": {
         const ctx = await getCurrentCtx();
-        await exigerMontants(ctx, "appliquer des retouches au devis");
+        await exigerGestionDevis(ctx, "appliquer des retouches au devis");
         // **Un ajout sans prix arrive à zéro, et l'écran le dit.** Poser un
         // montant « probable » ici serait inventer un prix sur un document qui
         // part chez un client — le refus le plus ancien du produit.
@@ -250,6 +339,15 @@ export async function appliquerRetouchesAction(chantierId: string, changements: 
       quantite: l.quantite,
       prixUnitaire: l.prixUnitaire,
       montant: l.montant,
+      // **« À CHIFFRER » REPARTAIT AVEC LES LIGNES, ET IL NE PARTAIT PAS.**
+      // Trouvé le 11 septembre 2026 en branchant le champ du prix sur ce
+      // drapeau : l'écran se recale ENTIÈREMENT sur ce que rend cette action,
+      // et comme elle ne rendait pas le drapeau, toutes les lignes le
+      // perdaient après la moindre dictée. « À chiffrer » devenait alors
+      // « 0,00 € » sous ses yeux — une ligne non chiffrée présentée comme
+      // GRATUITE, sur le document qui part chez son client. Le garde-fou de
+      // l'envoi tenait encore, lui : il relit la base, pas l'écran.
+      aChiffrer: l.aChiffrer,
     })),
     reductionPourcent: devis?.reductionPourcent ?? null,
   };
@@ -262,13 +360,95 @@ function montantDeLaLigne(quantite: string, prixUnitaire: string): string {
 
 // Le taux de TVA et les conditions vivent sur le devis lui-même : ce ne sont
 // pas des caractéristiques de l'entreprise ni du chantier, mais de CE document.
+// ─── Les acomptes du devis (migration 0088) ────────────────────────────────
+//
+// Trois gestes, un seul écrivain : le dépôt réécrit l'échéancier entier par la
+// règle commune (`tauxCumulesBornes`), et rend ce qu'il a écrit — c'est ce que
+// l'écran affiche, jamais ce qu'il a supposé.
+
+export async function ajouterAcompteAction(devisId: string) {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "ajouter un acompte au devis");
+  return poserAcompteSuivant(ctx, devisId);
+}
+
+export async function changerTauxAcompteAction(devisId: string, rang: number, taux: string) {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "changer un acompte du devis");
+  return changerTauxAcompte(ctx, devisId, rang, taux);
+}
+
+export async function retirerAcompteAction(devisId: string, rang: number) {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "retirer un acompte du devis");
+  return retirerAcompte(ctx, devisId, rang);
+}
+
 export async function majEnTeteDevisAction(
   devisId: string,
-  data: { tauxTva?: string; conditionsPaiement?: string; reductionPourcent?: string | null }
+  data: { tauxTva?: string; conditionsPaiement?: string; reductionPourcent?: string | null; mainDoeuvreHt?: string | null; titre?: string | null }
 ) {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "modifier l'en-tête du devis");
+  await exigerGestionDevis(ctx, "modifier l'en-tête du devis");
   const devisModifie = await mettreAJourEnTeteDevis(ctx, devisId, data);
   if (devisModifie?.chantierId) revalidatePath(`/chantiers/${devisModifie.chantierId}/export`);
   return devisModifie;
+}
+
+/**
+ * Le devis repris par « Dernier devis » : « Mettre à jour » / « Garder les
+ * anciens », et « Augmenter les prix » (ses décisions du 26 septembre 2026).
+ *
+ * **Un refus se rend en valeur**, jamais en exception : le message d'une
+ * exception levée ici ne lui parviendrait pas (`AGENTS.md`).
+ */
+export async function repriseDuDevisAction(
+  chantierId: string,
+  choix: { reponse?: ReponseGrille; hausse?: string }
+): Promise<
+  | { ok: true; reponse: ReponseGrille; hausse: number; lignes: { id: string; prixUnitaire: string; montant: string }[] }
+  | { ok: false; raison: string }
+> {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "reprendre les prix du devis");
+
+  // Un devis parti ne se réécrit pas : c'est ce que son client a reçu.
+  const devisCourant = await getDevisPourChantier(ctx, chantierId);
+  if (devisCourant?.statut === "envoye") {
+    return { ok: false, raison: "Ce devis est parti : ses prix ne bougent plus." };
+  }
+
+  let hausse: number | undefined;
+  if (choix.hausse !== undefined) {
+    const lu = lireTauxDeHausse(choix.hausse);
+    if (lu === null) return { ok: false, raison: "Entre 0,1 et 100 %." };
+    hausse = lu;
+  }
+  if (choix.reponse !== undefined && choix.reponse !== null && choix.reponse !== "oui" && choix.reponse !== "non") {
+    return { ok: false, raison: "Réponse inconnue." };
+  }
+
+  const r = await appliquerLaReprise(ctx, chantierId, { reponse: choix.reponse, hausse });
+  revalidatePath(`/chantiers/${chantierId}/devis-complet`);
+  return { ok: true, ...r };
+}
+
+/**
+ * Sous-traitance, sans TVA, sur le devis — son choix B du 4 octobre 2026.
+ * Le refus revient en VALEUR, avec ses mots (`AGENTS.md`).
+ */
+export async function majAutoliquidationDevisAction(
+  chantierId: string,
+  active: boolean
+): Promise<{ ok: true; autoliquidation: boolean } | { ok: false; raison: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "facturer en sous-traitance");
+  try {
+    const r = await majAutoliquidationDevis(ctx, chantierId, active);
+    if (r.ok) revalidatePath(`/chantiers/${chantierId}/devis-complet`);
+    return r;
+  } catch (err) {
+    logger.error("Sous-traitance du devis non enregistrée", { erreur: err instanceof Error ? err.message : String(err) });
+    return { ok: false, raison: "Le changement n'a pas pu être enregistré. Réessayez." };
+  }
 }

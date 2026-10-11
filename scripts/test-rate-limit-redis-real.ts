@@ -69,6 +69,56 @@ async function main() {
     assert.equal(nbAutorisees, 4, "Exactement 4 sur 10, jamais plus — atomicité réelle de Redis INCR");
   });
 
+  // ─── RENDRE — ce qu'un geste RÉUSSI ne doit pas consommer ────────────────
+  //
+  // Le défaut du 17 septembre 2026 : cinq connexions réussies depuis un même
+  // wifi, et la sixième était mise dehors avec le bon mot de passe. Les trois
+  // cas ci-dessous tiennent le remède ET ses deux pièges.
+
+  await test("Redis réel : rendre libère une place, et la fenêtre repart intacte", async () => {
+    const cle = `test-redis-${Date.now()}-rendre`;
+    for (let i = 0; i < 5; i++) {
+      assert.equal((await magasin.verifierEtIncrementer(cle, 5, 60_000)).autorise, true);
+      await magasin.rendre(cle);
+    }
+    // Cinq entrées rendues : la sixième passe encore, et les cinq suivantes aussi.
+    for (let i = 0; i < 5; i++) {
+      assert.equal(
+        (await magasin.verifierEtIncrementer(cle, 5, 60_000)).autorise,
+        true,
+        "un geste réussi consomme encore le quota"
+      );
+    }
+  });
+
+  await test("Redis réel : rendre une clé ABSENTE ne fabrique pas un compteur immortel", async () => {
+    const cle = `test-redis-${Date.now()}-absente`;
+    await magasin.rendre(cle);
+    // `DECR` sur une clé absente la créerait à −1, SANS expiration : le seuil
+    // ne se viderait alors plus jamais. On vérifie qu'elle n'existe pas.
+    const client = new (await import("ioredis")).default(
+      process.env.REDIS_URL_TEST ?? "redis://127.0.0.1:6379"
+    );
+    const existe = await client.exists(`ratelimit:${cle}`);
+    await client.quit();
+    assert.equal(existe, 0, "rendre a créé une clé là où il n'y en avait pas");
+  });
+
+  await test("Redis réel : rendre plus qu'on n'a pris ne descend jamais sous zéro", async () => {
+    const cle = `test-redis-${Date.now()}-plancher`;
+    await magasin.verifierEtIncrementer(cle, 3, 60_000);
+    for (let i = 0; i < 5; i++) await magasin.rendre(cle);
+    // Le seuil reste entier : trois essais, pas huit.
+    for (let i = 0; i < 3; i++) {
+      assert.equal((await magasin.verifierEtIncrementer(cle, 3, 60_000)).autorise, true);
+    }
+    assert.equal(
+      (await magasin.verifierEtIncrementer(cle, 3, 60_000)).autorise,
+      false,
+      "rendre en trop a creusé un crédit : le seuil ne protège plus"
+    );
+  });
+
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);
   await magasin.fermer();
   if (failed > 0) process.exit(1);

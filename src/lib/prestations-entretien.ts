@@ -130,6 +130,46 @@ export function parFamilles<T extends { famille: string }>(
 }
 
 /**
+ * Les lignes du modèle Atlas qui ne sont plus sur sa fiche.
+ *
+ * **Sa réponse « B » du 29 septembre 2026**, devant la planche
+ * `appli/fiche-paysage-modele.html` : « Remettre le modèle Atlas » ramène ce
+ * qui manque, et rien d'autre. Une ligne se reconnaît à son libellé seul, avec
+ * la même indulgence que partout (`memeLibelle`) : renommée à la casse près, ou
+ * rangée dans une autre famille, elle est encore là et ne revient pas en double.
+ *
+ * L'écran s'en sert pour montrer le bouton, le dépôt pour écrire : une seule
+ * règle pour dire « il manque quelque chose » (`CLAUDE.md` §3).
+ */
+export function modeleManquant(existantes: readonly { libelle: string }[]): PrestationModele[] {
+  return MODELE_FOURNI.filter((m) => !existantes.some((e) => memeLibelle(e.libelle, m.libelle)));
+}
+
+/**
+ * La fiche une fois le modèle remis, dans l'ordre où elle se lira.
+ *
+ * **Ses lignes à lui ne bougent pas**, et ses familles gardent leur place : il
+ * range ses gestes dans l'ordre du chantier. Une ligne du modèle qui revient se
+ * range **à la fin de sa famille**, sous le nom qu'il lui donne ; une famille
+ * du modèle qu'il n'a plus revient à la fin, dans l'ordre du modèle. Une fiche
+ * vide reçoit donc le modèle tel quel : c'est aussi ce que reçoit un compte neuf.
+ */
+export function modeleRemis<T extends PrestationModele>(existantes: readonly T[]): (T | PrestationModele)[] {
+  const manquantes = modeleManquant(existantes);
+  const placees = new Set<PrestationModele>();
+  const fiche: (T | PrestationModele)[] = [];
+  for (const groupe of parFamilles(existantes)) {
+    fiche.push(...groupe.lignes);
+    for (const m of manquantes) {
+      if (!memeLibelle(m.famille, groupe.famille)) continue;
+      fiche.push({ famille: groupe.famille, libelle: m.libelle });
+      placees.add(m);
+    }
+  }
+  return [...fiche, ...manquantes.filter((m) => !placees.has(m))];
+}
+
+/**
  * Ce qu'un geste peut se voir refuser — et la phrase qui le dit.
  *
  * **Les deux vivent ICI, ensemble, et pas dans l'action serveur.** D'abord
@@ -146,7 +186,6 @@ export type RefusPrestation =
   | "doublon"
   | "trop_de_prestations"
   | "introuvable"
-  | "fiche_non_vide"
   | "non_autorise";
 
 export const PHRASE_REFUS: Record<RefusPrestation, string> = {
@@ -156,6 +195,5 @@ export const PHRASE_REFUS: Record<RefusPrestation, string> = {
   trop_de_prestations:
     "Votre fiche est pleine. Retirez une prestation avant d'en ajouter une autre.",
   introuvable: "Cette prestation n'existe plus. Rechargez l'écran.",
-  fiche_non_vide: "Votre fiche contient déjà des prestations.",
   non_autorise: "Seul le propriétaire de l'entreprise peut modifier la fiche.",
 };

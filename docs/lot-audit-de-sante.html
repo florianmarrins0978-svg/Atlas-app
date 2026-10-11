@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Audit de santé du code Atlas — ce qui a été trouvé, ce qui a été fait</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="audit-de-santé-du-code-atlas--ce-qui-a-été-trouvé-ce-qui-a-été-fait">Audit de santé du code Atlas — ce qui a été trouvé, ce qui a été fait</h1>
+<p><strong>5 septembre 2026.</strong> Premier passage complet du dépôt en lecture seule (1 857 fichiers suivis), puis le lot de corrections qui en découle.</p>
+<p>Sa demande, en une ligne : <em>« oui espace le partout et fait les 4 »</em>.</p>
+<hr>
+<h2 id="en-un-coup-dœil">En un coup d'œil</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Défauts visibles par l'utilisateur</strong></td>
+<td><strong>un seul</strong> — la visionneuse de photos, illisible sur deux apparences sur huit</td>
+</tr>
+<tr>
+<td>Corrections livrées</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Code mort retiré</td>
+<td>5 exports, 1 jeu de données, 3 scripts</td>
+</tr>
+<tr>
+<td>Contrôles neufs</td>
+<td>2 (numéros de migration, or sur l'encre)</td>
+</tr>
+<tr>
+<td>Ce que j'avais annoncé et qui était faux</td>
+<td><strong>2 points, corrigés plus bas</strong></td>
+</tr>
+<tr>
+<td>Ce qui reste ouvert</td>
+<td>2, dont un qui demande sa décision</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="ce-qui-est-sain-et-quil-faut-dire-en-premier">Ce qui est SAIN, et qu'il faut dire en premier</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Un audit qui ne rapporte que le mauvais fait croire que tout est mauvais. Sur 1 857 fichiers, voici ce qui a été cherché et <strong>pas</strong> trouvé :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Cherché</th>
+<th>Trouvé</th>
+</tr></thead><tbody>
+<tr>
+<td><code>TODO</code>, <code>FIXME</code>, <code>HACK</code>, <code>XXX</code>, <code>WORKAROUND</code> laissés dans le code</td>
+<td><strong>aucun</strong> — les 24 occurrences sont des renvois à <code>TODO.md</code>, pas des aveux</td>
+</tr>
+<tr>
+<td>accès direct à la base hors <code>withEntreprise</code></td>
+<td>13, et <strong>les 13 portent leur raison écrite</strong> (catalogue partagé, table d'authentification, transactions)</td>
+</tr>
+<tr>
+<td>maquettes <code>/design</code> servies en production</td>
+<td><strong>non</strong> — et le contrôle qui l'empêche APPELLE la mise en page au lieu de lire le fichier, donc il ne peut pas être trompé par un code commenté</td>
+</tr>
+<tr>
+<td>suites qui rendent un vert sans rien mesurer</td>
+<td><strong>aucune</strong> dans ce qui a été lu : elles refusent de conclure sur une liste vide ou une boîte de zéro pixel</td>
+</tr>
+<tr>
+<td>empilement de rustines</td>
+<td><strong>aucun</strong> — les gardes ouverts un par un portent tous leur date, leur raison, et ce qui avait été écarté</td>
+</tr>
+</tbody></table></div>
+<p>C'est le résultat le plus important de cet audit, et il n'était pas acquis.</p>
+<hr>
+<h2 id="les-cinq-corrections-point-par-point">Les cinq corrections, point par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="1-la-visionneuse-de-photos-était-illisible-sur-nuit-et-sylve--corrigé">1. La visionneuse de photos était illisible sur Nuit et Sylve — CORRIGÉ</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Le fichier</strong></td>
+<td><code>src/app/chantiers/[id]/Pellicule.tsx</code>, lignes 225-250</td>
+</tr>
+<tr>
+<td><strong>Le symptôme</strong></td>
+<td>photo ouverte en plein écran, la croix pour sortir et le mot « Retirer » disparaissent dans le fond</td>
+</tr>
+<tr>
+<td><strong>La mesure</strong></td>
+<td><strong>1,09 sur Nuit, 1,12 sur Sylve</strong> (il en faut 4,5 pour un texte)</td>
+</tr>
+</tbody></table></div>
+<p><strong>Pourquoi.</strong> Cet écran prend l'encre de la charte pour FOND, afin qu'on ne voie que la photo. Sur les six apparences claires l'encre est presque noire, et tout se lit. <strong>Sur Nuit et Sylve l'encre est CLAIRE</strong> — on posait donc un crème sur un crème.</p>
+<p>C'est exactement la faute du 22 août 2026, celle qui avait fait naître <code>surPlein</code> après sa capture <em>« le mode nuit est illisible »</em>. Elle avait corrigé huit endroits ; celui-ci, écrit le 11 août, en faisait un neuvième que personne n'a vu.</p>
+<p><strong>Pourquoi personne ne l'a vu, et c'est le plus intéressant :</strong></p>
+<ul>
+<li><strong>aucune capture ne la montre</strong> — la visionneuse exige qu'une photo soit ouverte, et aucune capture d'écran du dépôt ne l'ouvre ;</li>
+<li><strong>aucune suite ne l'ouvre</strong> non plus ;</li>
+<li><strong>le contrôle des chartes ne pouvait pas la voir</strong> : il mesure les chartes, jamais ce qu'un écran en fait. C'est sa propre leçon, écrite le 5 septembre au matin dans <code>ARCHITECTURE.md</code> §257 — et elle s'est vérifiée le soir même.</li>
+</ul>
+<p>Ce défaut a donc été trouvé <strong>par le calcul</strong>, sur les valeurs de <code>chartes.ts</code>, sans regarder un écran. C'est une première dans ce dépôt : les quatre défauts de lisibilité précédents étaient tous sortis d'une image.</p>
+<p><strong>Ce qui a été fait.</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>la croix et les pastilles</td>
+<td><code>surPlein</code> et <code>voile(surPlein, 0.12)</code> — les jetons qui existaient déjà pour ça</td>
+</tr>
+<tr>
+<td>le mot « Retirer »</td>
+<td>un jeton <strong>neuf</strong>, <code>orSurEncre</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>Son doré ne bouge pas.</strong> Sa consigne du 31 août — <em>« tout ce qui est en doré sur la version originale apparaisse en doré sur les autres apparences »</em> — est tenue au caractère près :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>valeur du mot « Retirer »</th>
+<th>contraste</th>
+<th>avant</th>
+</tr></thead><tbody>
+<tr>
+<td>Origine, Brume, Pierre, Beurre, Moka, Prune</td>
+<td><code>#b98b47</code> — <strong>inchangé</strong></td>
+<td>4,98 à 5,81</td>
+<td>inchangé</td>
+</tr>
+<tr>
+<td>Sylve</td>
+<td><code>#806031</code></td>
+<td>4,59</td>
+<td>2,44</td>
+</tr>
+<tr>
+<td>Nuit</td>
+<td><code>#826231</code></td>
+<td>4,56</td>
+<td>2,49</td>
+</tr>
+</tbody></table></div>
+<p><strong>Pourquoi un jeton neuf et pas <code>orTexte</code>.</strong> Les deux vont en sens contraire : <code>orTexte</code> s'écarte du FOND (donc s'éclaircit sur une charte sombre), <code>orSurEncre</code> s'écarte de l'ENCRE (donc s'assombrit). Employer l'un pour l'autre corrigerait l'apparence qui n'en a pas besoin et laisserait intacte celle qui en a besoin.</p>
+<p><strong>Le contrôle sait échouer</strong>, et cela a été vérifié : <code>orSurEncre</code> ramené à <code>or</code> fait rougir Nuit et Sylve, et elles seules.</p>
+<h3 id="2-le-numéro-du-client-se-lit-espacé--corrigé">2. Le numéro du client se lit espacé — CORRIGÉ</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Le fichier</strong></td>
+<td><code>src/app/clients/[id]/page.tsx</code></td>
+</tr>
+<tr>
+<td><strong>Avant</strong></td>
+<td><code>0679984514</code></td>
+</tr>
+<tr>
+<td><strong>Après</strong></td>
+<td><code>06 79 98 45 14</code></td>
+</tr>
+</tbody></table></div>
+<p><code>numeroLisible</code> existe depuis le 12 août 2026, et sa raison d'être est écrite noir sur blanc : <em>« dix chiffres collés ne se vérifient pas d'un coup d'œil »</em>, après qu'un devis n'est pas parti à cause d'une coordonnée mal relue. <strong>Elle n'avait qu'un seul appelant</strong> — l'écran d'envoi. La fiche du client est pourtant l'autre endroit où l'on vérifie qu'on a le bon client.</p>
+<p><strong>« Partout » veut dire les endroits où le numéro se LIT. Trois endroits ont été délibérément laissés, et voici pourquoi :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>pourquoi on n'y touche pas</th>
+</tr></thead><tbody>
+<tr>
+<td>les cases du devis</td>
+<td>on y <strong>tape</strong> le numéro. L'espacer changerait ce qui s'enregistre en base, et le dépôt tient deux conventions de rangement, chacune justifiée</td>
+</tr>
+<tr>
+<td>l'écran de la facture</td>
+<td>le destinataire y a été <strong>retiré à sa demande</strong>. Le remettre pour l'espacer serait réclamer ce qu'il a fait enlever</td>
+</tr>
+<tr>
+<td>les capsules « SMS / E-mail »</td>
+<td>elles ne montrent pas le numéro, seulement le mot et « · absent »</td>
+</tr>
+</tbody></table></div>
+<p>Le numéro se lit donc à <strong>deux</strong> endroits en tout, et les deux l'espacent.</p>
+<h3 id="3-deux-migrations-ne-peuvent-plus-prendre-le-même-numéro--corrigé">3. Deux migrations ne peuvent plus prendre le même numéro — CORRIGÉ</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Le fichier neuf</strong></td>
+<td><code>scripts/test-numeros-migrations.ts</code> (4 contrôles, verts)</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce que l'audit a compté :</strong> <strong>onze numéros pris deux ou trois fois</strong>, soit vingt-quatre fichiers. <code>TODO.md</code> n'en connaissait qu'un depuis le 27 août, et le comptait à deux fichiers là où il y en a trois.</p>
+<p><strong>Rien ne casse aujourd'hui, et ce n'est pas une supposition :</strong> chaque groupe a été relevé, tables créées contre tables touchées, et aucun couple de même numéro n'a de dépendance croisée. Chaque migration est suivie par son NOM de fichier, donc les vingt-quatre s'appliquent bien, une seule fois.</p>
+<p><strong>Ce qui n'est pas garanti, c'est l'ORDRE.</strong> Il vient d'un tri alphabétique du nom complet. Une base reconstruite depuis zéro les applique dans un ordre que personne n'a choisi — et le jour où deux migrations de même numéro se toucheront, la panne ne se verra pas sur les bases existantes : seulement en production, ou à la restauration d'une sauvegarde.</p>
+<p><strong>Ce que ce contrôle ne demande PAS :</strong> renommer quoi que ce soit. Un fichier déjà en ligne qui changerait de nom se <strong>rejouerait</strong> sur toute base à jour. Les onze sont inscrits comme des faits acquis. Le contrôle ne défend que le douzième.</p>
+<p><strong>L'asymétrie qu'il corrige, et qui est la vraie trouvaille :</strong> les paragraphes en double d'<code>ARCHITECTURE.md</code> avaient reçu leur garde-fou le 26 août. Les migrations, non. <strong>Le document était protégé, la base ne l'était pas.</strong></p>
+<h3 id="4-cinq-exports-morts-et-un-commentaire-qui-promettait-une-garde--retiré">4. Cinq exports morts, et un commentaire qui promettait une garde — RETIRÉ</h3>
+<p>Cherchés par nom dans <code>src/</code>, <code>scripts/</code>, <code>drizzle/</code> et <code>appli/</code> — imports directs, appels indirects, routes, configuration.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>ce que c'était</th>
+</tr></thead><tbody>
+<tr>
+<td><code>enComposantes</code></td>
+<td>annonçait « ce qu'attend <code>pdf-lib</code> », et <strong>le PDF ne l'a jamais appelée</strong> : il fait la conversion lui-même. Ce n'était pas une aide, c'était <strong>une seconde source de vérité endormie</strong></td>
+</tr>
+<tr>
+<td><code>reservéAuPatron</code></td>
+<td>promettait <em>« les pages qui doivent quand même refuser, côté serveur »</em>, et n'était appelée par personne</td>
+</tr>
+<tr>
+<td>3 exports de <code>mock-data.ts</code></td>
+<td>données de maquettes d'avant leur découplage du 1er août</td>
+</tr>
+<tr>
+<td><code>mockChantiersTest</code> (69 lignes)</td>
+<td>atteignable par une seule des fonctions ci-dessus</td>
+</tr>
+<tr>
+<td>3 scripts du tout premier commit</td>
+<td>visaient un chemin de navigateur Linux et une adresse absente en production</td>
+</tr>
+</tbody></table></div>
+<p><strong>Sur <code>reservéAuPatron</code>, à lire attentivement : aucun trou d'accès n'a été ouvert ni comblé.</strong> La garde existe, ailleurs et mieux — chaque écran pose la sienne, et une adresse tapée à la main est refusée par la mise en page racine. Le défaut était la <strong>phrase</strong>, qui désignait le mauvais endroit : elle rejouait, à trois lignes de distance, la faute que le paragraphe voisin raconte en détail.</p>
+<p><strong>Corrigé au passage :</strong> un commentaire de <code>chantier-etat.ts</code> annonçait une réexportation vers <code>mock-data.ts</code> qui n'existe plus, et faisait craindre de casser les maquettes en ajoutant un état au produit.</p>
+<h3 id="5-quatorze-contrôles-de-maquettes-rejoignent-la-chaîne--fait-mais-voir-ci-dessous">5. Quatorze contrôles de maquettes rejoignent la chaîne — FAIT, mais voir ci-dessous</h3>
+<p>Les quinze contrôles endormis ont été <strong>joués un par un</strong> :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>verts</td>
+<td><strong>13</strong></td>
+</tr>
+<tr>
+<td>vert mais lent (74 s)</td>
+<td>1 — <code>verifier-maquette-bascule.mjs</code></td>
+</tr>
+<tr>
+<td><strong>rouge</strong></td>
+<td>1 — <code>verifier-maquette-logo.mjs</code>, « Page crashed » sous Playwright</td>
+</tr>
+</tbody></table></div>
+<p>Les quatorze verts sont entrés dans <code>verifier:maquette</code>, qui compte désormais 77 maillons. <strong>Le rouge est resté dehors, délibérément</strong> : un maillon rouge dans une chaîne en <code>&amp;&amp;</code> barre tout ce qui suit, et le dépôt l'a payé dix heures le 23 août 2026.</p>
+<hr>
+<h2 id="ce-que-jai-dit-et-qui-était-faux">CE QUE J'AI DIT ET QUI ÉTAIT FAUX</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Deux verdicts de mon propre rapport ne tenaient pas. Les écrire vaut plus que les points justes.</p>
+<h3 id="a--estport--est-ce-un-oubli-de-validation----non">A. « <code>estPort</code> : est-ce un oubli de validation ? » — NON</h3>
+<p>J'avais relevé qu'un contrôle de vocabulaire sur cinq n'était appelé nulle part, et suggéré qu'un champ puisse ne pas être validé. <strong>C'était faux.</strong> Le champ en question est validé <strong>à l'entrée</strong>, plus tôt et mieux, par le schéma d'import. La fonction était redondante, pas manquante. Elle a été retirée pour cette raison-là, pas pour celle que j'avais écrite.</p>
+<h3 id="b--quinze-contrôles-ne-sont-jamais-joués---vrai-et-à-côté">B. « Quinze contrôles ne sont jamais joués » — VRAI, ET À CÔTÉ</h3>
+<p>C'est plus large que ce que j'avais écrit, et dans le mauvais sens. Ces quinze n'étaient pas exclus d'un garde qui tourne :</p>
+<p><strong>rien ne lance <code>verifier:maquette</code></strong> — ni la CI, ni la batterie de livraison, ni aucun script. Les cinquante maillons qui y étaient déjà dorment <strong>exactement autant</strong> que les quinze qui n'y étaient pas.</p>
+<p>Compléter la chaîne était donc utile mais insuffisant. Le vrai défaut est au-dessus, et il demande un arbitrage — voir plus bas.</p>
+<hr>
+<h2 id="ce-qui-a-été-refusé-et-ce-que-ça-aurait-coûté">Ce qui a été REFUSÉ, et ce que ça aurait coûté</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Refusé</th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td>brancher la page du client sur les couleurs des documents</td>
+<td>il a tranché le 4 septembre : <em>« non, garde les couleurs d'origine »</em>. Le « faire propre » aurait défait un arbitrage rendu planche en main</td>
+</tr>
+<tr>
+<td>espacer le numéro dans les cases où on le tape</td>
+<td>cela changerait ce qui s'enregistre en base</td>
+</tr>
+<tr>
+<td>réafficher le destinataire sur l'écran de la facture pour l'espacer</td>
+<td>il l'avait fait retirer</td>
+</tr>
+<tr>
+<td>renuméroter les onze migrations en double</td>
+<td>elles se rejoueraient sur toute base à jour</td>
+</tr>
+<tr>
+<td>ajouter <code>verifier-maquette-logo.mjs</code> à la chaîne</td>
+<td>rouge : il aurait barré les 76 autres</td>
+</tr>
+<tr>
+<td>vider <code>mock-data.ts</code> complètement</td>
+<td>ce fichier sert de MARQUE à un contrôle : un écran du produit qui l'importerait serait refusé. Le vider retirerait un garde-fou</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="les-chiffres">Les chiffres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><code>tsc --noEmit</code></td>
+<td><strong>0 erreur</strong></td>
+</tr>
+<tr>
+<td><code>lint</code></td>
+<td><strong>0 erreur</strong>, 18 avertissements — <strong>tous antérieurs</strong>, aucun sur les fichiers de ce lot</td>
+</tr>
+<tr>
+<td><code>test-chartes-lisibles</code></td>
+<td><strong>14 / 14</strong> (avec le couple neuf)</td>
+</tr>
+<tr>
+<td><code>test-numeros-migrations</code></td>
+<td><strong>4 / 4</strong> (fichier neuf)</td>
+</tr>
+<tr>
+<td><code>test-maquettes-hors-production</code></td>
+<td>vert</td>
+</tr>
+<tr>
+<td><code>test-rubriques-reglages</code></td>
+<td>vert</td>
+</tr>
+<tr>
+<td><code>test-numero-lisible</code></td>
+<td>vert</td>
+</tr>
+<tr>
+<td><code>test-ligne-etat-chantier</code></td>
+<td>vert</td>
+</tr>
+<tr>
+<td><code>test-reglages-gardes</code></td>
+<td>vert</td>
+</tr>
+<tr>
+<td><code>test-import-fiches-phyto</code></td>
+<td>vert</td>
+</tr>
+<tr>
+<td><code>test-allure-documents</code></td>
+<td>vert</td>
+</tr>
+<tr>
+<td>contrôles de maquettes réveillés</td>
+<td>14 verts sur 15</td>
+</tr>
+</tbody></table></div>
+<p><strong>LA BATTERIE COMPLÈTE N'A PAS ÉTÉ JOUÉE, et il faut le savoir.</strong> Deux raisons, et la seconde est la sienne :</p>
+<ol>
+<li>il a demandé le 4 septembre à être <strong>prévenu avant toute batterie</strong>, ses sessions partageant le dossier ;</li>
+<li><strong>une autre de ses sessions travaillait dans le même arbre pendant ce lot</strong> — 123 suites modifiées pour centraliser l'adresse du serveur et paralléliser les suites navigateur. Mesurer par-dessus aurait rendu des chiffres qui n'accusent personne.</li>
+</ol>
+<p>Rien de ce lot ne touche ces 123 fichiers, et rien d'eux n'a été commité ici.</p>
+<hr>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="1-où-la-chaîne-des-maquettes-doit-elle-se-jouer---sa-décision">1. Où la chaîne des maquettes doit-elle se jouer ? — SA DÉCISION</h3>
+<p><strong>Le constat :</strong> 77 contrôles gardent les planches qu'il ouvre depuis son téléphone, et <strong>personne ne les lance</strong>.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>ce que ça coûte</th>
+<th>ce que ça donne</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>une étape dans la CI</strong> <em>(ma recommandation)</em></td>
+<td>10 à 20 minutes sur GitHub, rien sur sa machine. Playwright y est déjà installé</td>
+<td>la chaîne tourne à chaque poussée</td>
+</tr>
+<tr>
+<td>dans la batterie de livraison</td>
+<td>les mêmes minutes <strong>sur sa machine</strong>, à chaque lot</td>
+<td>rien de plus : ces contrôles gardent des planches, pas l'application</td>
+</tr>
+<tr>
+<td>ne rien faire</td>
+<td>rien</td>
+<td>77 contrôles qui rassurent sans rien garder</td>
+</tr>
+</tbody></table></div>
+<p><strong>Une réserve honnête :</strong> la CI est rouge sur <code>main</code> depuis le 2 septembre. Y ajouter une étape maintenant noierait un rouge dans un autre. À faire une fois la CI revenue au vert.</p>
+<h3 id="2-verifier-maquette-logomjs-plante--nimporte-quelle-session">2. <code>verifier-maquette-logo.mjs</code> plante — n'importe quelle session</h3>
+<p>« Page crashed » sous Playwright, sur la planche du motif du sceau. <strong>Non diagnostiqué</strong> : cela peut venir de la planche comme de l'environnement. Laissé hors de la chaîne en attendant.</p>
+<hr>
+<h2 id="ce-que-je-nai-pas-pu-vérifier">Ce que je n'ai PAS pu vérifier</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Un audit qui tait ses angles morts se lit comme un audit complet.</p>
+<ul>
+<li><strong>Aucun écran regardé.</strong> Les contrastes sont <strong>calculés</strong>, pas mesurés à l'écran. Le dépôt rappelle que quatre défauts réels sont sortis d'une capture et d'aucun test — je n'ai pas eu ce moyen-là.</li>
+<li><strong>Aucune base montée</strong>, aucune migration appliquée. L'affirmation « aucune dépendance croisée entre migrations de même numéro » vient de la lecture du SQL, pas d'une reconstruction depuis zéro.</li>
+<li><strong>Non parcourus faute de temps</strong> : l'écran du planning (2 551 lignes), le schéma de la base (2 752), le calcul d'arrosage (2 843 — et c'est le domaine « sans droit à l'erreur »), les 91 migrations en détail, les 664 scripts autrement que par leur nom, et tout <code>src/server/ai/</code>.</li>
+<li><strong>La duplication fine</strong> — deux fonctions presque identiques à quelques lignes près — demanderait une comparaison de contenu qui n'a pas été menée. Seuls des noms et des rôles ont été comparés.</li>
+</ul>
+</main>
+</body>
+</html>

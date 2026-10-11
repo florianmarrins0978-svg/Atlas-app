@@ -123,7 +123,7 @@ async function prendreDefi(nom: string): Promise<DefiPose | null> {
   } catch {
     // Un cookie d'avant cette version : il portait le défi nu. Le faire
     // recommencer vaut mieux que de vérifier sous une origine devinée.
-    console.warn("[cle-appareil] défi illisible — geste à refaire");
+    console.warn("[cle-appareil] défi illisible, geste à refaire");
     return null;
   }
 }
@@ -281,7 +281,7 @@ export async function ouvrirAvecCle(reponse: AuthenticationResponseJSON): Promis
   // celle du défi, jamais celle que la seconde requête laisse deviner.
   const defi = await prendreDefi(DEFI_CONNEXION);
   if (!defi) {
-    console.warn("[cle-appareil] connexion sans défi en cours — geste trop tardif, ou cookie perdu");
+    console.warn("[cle-appareil] connexion sans défi en cours, geste trop tardif ou cookie perdu");
     return null;
   }
 
@@ -319,7 +319,7 @@ export async function ouvrirAvecCle(reponse: AuthenticationResponseJSON): Promis
     // On ne retire pas la clé pour autant : un authentificateur qui compte mal
     // n'est pas forcément une clé volée, et effacer la porte de quelqu'un sur
     // un soupçon lui coûterait son accès rapide sans preuve.
-    console.error("[cle-appareil] compteur en recul — rejeu possible, connexion refusée");
+    console.error("[cle-appareil] compteur en recul, rejeu possible, connexion refusée");
     return null;
   }
 

@@ -316,9 +316,22 @@ export default function AssistantSidebar() {
         ne peut rien couvrir : `BoutonAssistant`, posé par `EnTeteEcran`.
       */}
       {ouvert && (
-        <div className="fixed inset-0 z-40 flex justify-end" style={{ backgroundColor: "rgba(0,0,0,0.25)" }}>
+        <div
+          className="fixed inset-0 z-40 flex justify-end"
+          style={{ backgroundColor: "rgba(0,0,0,0.25)" }}
+          // **Toucher le gris ferme** (sa réponse « la A » du 26 septembre 2026,
+          // `appli/fermer-l-assistant.html`). Seul le voile lui-même compte : un
+          // toucher dans le panneau remonte jusqu'ici et ne doit rien fermer.
+          onClick={(e) => {
+            if (e.target === e.currentTarget) assistant?.fermer();
+          }}
+          data-atlas="voile-assistant"
+        >
+          {/* 44 px de gris restent toujours visibles : sur un iPhone de
+              390 px, « w-full max-w-sm » n'en laissait que 6, et toucher le
+              gris pour fermer aurait été un geste impossible à viser. */}
           <div
-            className="flex h-full w-full max-w-sm flex-col"
+            className="flex h-full w-[calc(100%-44px)] max-w-sm flex-col"
             style={{ backgroundColor: colors.cream }}
           >
             <div className="flex items-center justify-between border-b px-4 py-4" style={{ borderColor: colors.line }}>
@@ -339,7 +352,15 @@ export default function AssistantSidebar() {
                     Oublier
                   </button>
                 )}
-                <button onClick={() => assistant?.fermer()} aria-label="Fermer" className="text-[20px]" style={{ color: colors.muted }}>
+                {/* Une croix de 20 px sans marge se ratait au pouce : le rond
+                    fait 44 px, la taille qu'un doigt atteint du premier coup. */}
+                <button
+                  onClick={() => assistant?.fermer()}
+                  aria-label="Fermer"
+                  data-atlas="fermer-assistant"
+                  className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-[24px] leading-none"
+                  style={{ backgroundColor: colors.card, color: colors.ink }}
+                >
                   ×
                 </button>
               </div>
@@ -392,8 +413,8 @@ export default function AssistantSidebar() {
                                   }}
                                 >
                                   {m.resultats.find((r) => r.propositionId === p.proposition.id)?.statut === "conflit"
-                                    ? ` — Conflit : ${m.resultats.find((r) => r.propositionId === p.proposition.id)?.message ?? ""}`
-                                    : " — Appliqué"}
+                                    ? `, conflit : ${m.resultats.find((r) => r.propositionId === p.proposition.id)?.message ?? ""}`
+                                    : ", appliqué"}
                                 </span>
                               )}
                             </span>
@@ -411,8 +432,8 @@ export default function AssistantSidebar() {
                             <button
                               onClick={() => appliquerPropositions(i)}
                               disabled={enCours}
-                              className="flex-1 rounded-full py-2 text-[13px] font-medium text-white disabled:opacity-40"
-                              style={{ backgroundColor: colors.rust }}
+                              className="atlas-plein flex-1 rounded-full py-2 text-[13px] font-medium text-white disabled:opacity-40"
+                              style={{ backgroundColor: colors.plein }}
                             >
                               Appliquer les modifications
                             </button>
@@ -458,12 +479,12 @@ export default function AssistantSidebar() {
                 a l'air en panne (`AGENTS.md`, le défaut muet). */}
             {(observation || souci || photoEnCours || dictee !== "repos") && (
               <div className="border-t px-3 pt-2 text-[12.5px]" style={{ borderColor: colors.line, color: colors.muted }}>
-                {dictee === "enregistre" && <span data-atlas="dictee-en-cours">Je vous écoute — appuyez à nouveau pour arrêter.</span>}
+                {dictee === "enregistre" && <span data-atlas="dictee-en-cours">Je vous écoute. Appuyez à nouveau pour arrêter.</span>}
                 {dictee === "traite" && <span>Transcription…</span>}
                 {photoEnCours && <span data-atlas="photo-en-cours">Je regarde la photo…</span>}
                 {observation && !photoEnCours && (
                   <span data-atlas="photo-lue" className="flex items-center gap-2">
-                    <span className="flex-1">Photo lue — elle part avec votre question.</span>
+                    <span className="flex-1">Photo lue, elle part avec votre question.</span>
                     <button onClick={() => setObservation(null)} className="underline" style={{ color: colors.muted }}>
                       Retirer
                     </button>
@@ -502,8 +523,8 @@ export default function AssistantSidebar() {
                   onClick={() => arreterLaDictee(true)}
                   aria-label="Envoyer la dictée"
                   data-atlas="envoyer-dictee"
-                  className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full"
-                  style={{ backgroundColor: colors.rust }}
+                  className="atlas-plein flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full"
+                  style={{ backgroundColor: colors.plein }}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" style={{ fill: surPlein }}>
                     <path d="M3 20l18-8L3 4v6l12 2-12 2z" />
@@ -567,15 +588,18 @@ export default function AssistantSidebar() {
                   if (e.key === "Enter") void envoyer();
                 }}
                 placeholder="Votre question…"
-                className="flex-1 rounded-[4px] border-0 px-4 py-2.5 outline-none"
+                // `min-w-0` : un champ garde sinon sa largeur de vingt
+                // caractères, et pousse le bouton d'envoi hors de l'écran dès
+                // que le panneau passe sous 384 px.
+                className="min-w-0 flex-1 rounded-[4px] border-0 px-4 py-2.5 outline-none"
                 style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "14px" }}
               />
               <button
                 onClick={() => void envoyer()}
                 disabled={enCours || (!saisie.trim() && !observation)}
                 aria-label="Envoyer"
-                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full disabled:opacity-40"
-                style={{ backgroundColor: colors.rust }}
+                className="atlas-plein flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full disabled:opacity-40"
+                style={{ backgroundColor: colors.plein }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" style={{ fill: surPlein }}>
                   <path d="M3 20l18-8L3 4v6l12 2-12 2z" />

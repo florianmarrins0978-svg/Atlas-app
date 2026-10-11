@@ -84,13 +84,19 @@ const SONDE = `(() => {
     fleches: [...(corps ? corps.querySelectorAll("[data-atlas^='mois-']") : [])]
       .map((b) => ({ quoi: b.dataset.atlas, h: Math.round(b.getBoundingClientRect().height),
                      ferme: b.disabled })),
-    // La capsule « Facturer », visée par son texte : le dernier \`span\` d'une
-    // ligne facturée est le MONTANT, et le mesurer ne prouvait rien.
+    // La capsule à facturer, visée par son REPÈRE et non par son texte : elle
+    // s'appelait « Facturer » jusqu'au 31 août 2026, et ce contrôle-là rougissait
+    // alors sur du code juste, pour un mot que le patron a fait changer
+    // (\`CLAUDE.md\` §5 bis). Le dernier \`span\` d'une ligne facturée, lui, est le
+    // MONTANT : le mesurer ne prouvait rien.
     capsuleFacturer: (() => {
-      const c = [...(corps ? corps.querySelectorAll("[data-atlas='ligne-terminee'] span") : [])]
-        .find((e) => e.children.length === 0 && e.textContent.trim() === "Facturer");
+      const c = corps ? corps.querySelector("[data-atlas='capsule-a-facturer']") : null;
       return c ? Math.round(c.getBoundingClientRect().height) : null;
     })(),
+    // Chaque rangée en attente porte SA capsule. Compter les deux permet de dire
+    // « une rangée attend sans rien qui le dise », ce que la présence d'une
+    // phrase quelque part dans l'écran ne prouvait pas.
+    capsules: corps ? corps.querySelectorAll("[data-atlas='capsule-a-facturer']").length : 0,
     montantsDroite: [...new Set(montants.map((m) => m.droite))],
     montantsTabulaires: montants.every((m) => m.tabulaire),
     // **Aucun code graphique de l'ancien écran ne doit survivre.**
@@ -157,7 +163,7 @@ for (const f of fleches) {
 
 // **Les montants d'une même colonne finissent au même pixel.**
 if (etat.capsuleFacturer !== null && (etat.capsuleFacturer as number) < 44)
-  echecs.push(`la capsule « Facturer » fait ${etat.capsuleFacturer} px : sous 44, on la rate.`);
+  echecs.push(`la capsule « À facturer » fait ${etat.capsuleFacturer} px : sous 44, on la rate.`);
 
 const droites = etat.montantsDroite as number[];
 if (droites.length > 1)
@@ -181,27 +187,40 @@ if (fleches.length === 2 &&
 if ((etat.lignes as number) === 0 && !/Rien en /i.test(await page.locator("[data-atlas='ecran-termines']").innerText()))
   echecs.push("un mois vide ne dit pas qu'il est vide.");
 
-// ─── 3. L'onglet « À facturer » ─────────────────────────────────────────────
-const ongletAttente = page.getByRole("button", { name: "À facturer" });
-if ((await ongletAttente.count()) === 0) {
-  echecs.push("l'onglet « À facturer » n'existe pas.");
+// ─── 3. L'œil — l'ancien onglet « À facturer », depuis le 13 septembre 2026 ──
+// Il n'existe que s'il y a quelque chose à montrer : sans rien qui attend, la
+// phrase ne porte ni le compte ni l'œil, et c'est voulu.
+const oeil = page.locator("[data-atlas='oeil-a-facturer']");
+if ((await oeil.count()) === 0) {
+  console.log("  (rien n'attend : l'œil n'a rien à montrer, il n'est pas rendu)");
 } else {
-  const hauteurOnglet = Math.round((await ongletAttente.boundingBox())?.height ?? 0);
-  if (hauteurOnglet < 40) echecs.push(`l'onglet fait ${hauteurOnglet} px de haut : trop petit pour un pouce.`);
-  await ongletAttente.click();
+  const boite = await oeil.boundingBox();
+  if (!boite || boite.height < 44 || boite.width < 44)
+    echecs.push(`l'œil fait ${boite?.width} × ${boite?.height} px : trop petit pour un pouce.`);
+  await oeil.click();
   await page.waitForTimeout(400);
-  etat = await sonder("onglet « À facturer »");
+  etat = await sonder("œil ouvert");
   await page.screenshot({ path: `${dossier}/termines-3-a-facturer.png`, fullPage: true });
 
-  // **Il ne se feuillette PAS** : il montre tout ce qui attend, tous mois
-  // confondus. C'est ce que le patron a demandé pour le retard de facturation.
-  if ((etat.fleches as unknown[]).length !== 0)
-    echecs.push("l'onglet « À facturer » porte des flèches de mois : il ne doit pas se feuilleter.");
-  const texte = await page.locator("[data-atlas='ecran-termines']").innerText();
-  if ((etat.lignes as number) === 0 && !/Rien n['’]attend/i.test(texte))
-    echecs.push("rien n'attend, et l'écran ne le dit pas — il a l'air amputé plutôt que calme.");
-  if ((etat.lignes as number) > 0 && !/Pas encore facturé/i.test(texte))
-    echecs.push("une ligne en attente ne dit pas son état en toutes lettres.");
+  // **Le mois se met en veille** : l'œil ouvert montre tout ce qui attend, tous
+  // mois confondus — ce que le patron a demandé pour le retard de facturation —,
+  // et des flèches qui feuilletteraient une liste immobile feraient croire
+  // l'écran cassé.
+  const fermees = await page.evaluate(() =>
+    [...document.querySelectorAll<HTMLButtonElement>("[data-atlas='mois-precedent'], [data-atlas='mois-suivant']")].every((b) => b.disabled)
+  );
+  if (!fermees) echecs.push("l'œil est ouvert et les flèches de mois restent ouvertes : la liste ignore le mois.");
+  if ((etat.lignes as number) === 0)
+    echecs.push("l'œil est ouvert sur rien : il n'aurait pas dû être rendu.");
+  // **Ce que porte une rangée en attente, c'est sa CAPSULE.** Ce contrôle
+  // exigeait « Pas encore facturé » quelque part dans l'écran — un texte que le
+  // patron a fait retirer le 31 août 2026, et qui prouvait de toute façon peu :
+  // une seule occurrence suffisait pour dix rangées muettes.
+  if ((etat.lignes as number) > 0 && (etat.capsules as number) !== (etat.lignes as number))
+    echecs.push(
+      `${etat.lignes} rangée(s) en attente pour ${etat.capsules} capsule(s) « À facturer » : ` +
+        `une rangée attend sans que rien ne le dise.`
+    );
 }
 
 await navigateur.close();

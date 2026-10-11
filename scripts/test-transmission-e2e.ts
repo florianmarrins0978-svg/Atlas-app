@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { numeroLisible } from "../src/lib/numero-lisible";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
 
 // Le dernier mètre : le message part-il au bon destinataire ?
 //
@@ -20,7 +21,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // l'endroit où le patron appuie. L'adresse est désormais portée par un vrai
 // lien, donc lisible — c'est ce qui la rend vérifiable.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const TELEPHONE = "0679984514";
 
 async function main() {
@@ -49,9 +50,9 @@ async function main() {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', TELEPHONE);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
-  const chantierUrl = page.url();
+  const chantierUrl = `${BASE}/chantiers/${idChantier}`;
 
   await page.goto(`${chantierUrl}/prix`, { waitUntil: "networkidle" });
   await page.click("text=+ Ajouter une ligne");
@@ -66,7 +67,7 @@ async function main() {
   await page.click("text=Choisir la date");
   await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 15000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+  await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   // On revient sur l'écran du devis parti, comme il le fera par la carte du
   // chantier : il ne s'affiche plus de lui-même après l'envoi.
@@ -115,10 +116,13 @@ async function main() {
   // lui, porte toujours le numéro brut — les deux assertions se tiennent, et
   // c'est voulu : le jour où l'affichage contaminerait le lien, la première
   // rougirait.
-  const sousLigne = await page.locator("text=/c'est vous qui l'envoyez/").first().innerText();
+  // La phrase s'écrit en DEUX phrases depuis le 23 septembre 2026, le tiret
+  // ayant laissé la place à un point (sa règle du 22). Le motif cherché ne
+  // porte donc plus la majuscule initiale, qui a bougé avec lui.
+  const sousLigne = await page.locator("text=/vous qui l'envoyez/").first().innerText();
   assert.equal(
     sousLigne.replace(/\s+/g, " ").trim(),
-    `Au ${numeroLisible(TELEPHONE)} — c'est vous qui l'envoyez.`,
+    `Au ${numeroLisible(TELEPHONE)}. C'est vous qui l'envoyez.`,
     `La phrase du destinataire est mal composée : « ${sousLigne} »`
   );
   console.log("  ✓ le destinataire est annoncé sur l'écran, phrase entière");

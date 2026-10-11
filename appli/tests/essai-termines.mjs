@@ -73,7 +73,7 @@ dire(
 const refs = (await page.$$eval(".ancienne .ref", (n) => n.map((x) => x.textContent.trim())))
   .filter((t) => t.startsWith("F2026-"));
 dire(
-  refs.join(" ") === "F2026-0005 · le 20 F2026-0004 · le 19 F2026-0002 · le 19 F2026-0001 · le 18 F2026-0003 · le 14",
+  refs.join(" ") === "F2026-0005, le 20 F2026-0004, le 19 F2026-0002, le 19 F2026-0001, le 18 F2026-0003, le 14",
   `Aujourd’hui — les cinq factures dans l'ordre de sa capture (${refs.join(", ")})`
 );
 const totalBas = nombre(await page.locator(".pied-ancien .tous b").innerText());

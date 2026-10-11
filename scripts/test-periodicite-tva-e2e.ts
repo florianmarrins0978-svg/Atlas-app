@@ -2,6 +2,7 @@ import assert from "node:assert";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
+import { ADRESSE } from "./_adresse";
 
 /**
  * Le rythme de la TVA — au mois ou au trimestre — et le calendrier qui suit.
@@ -22,7 +23,7 @@ import { pool } from "../src/server/db/client";
  * Atlas ne connaît pas. L'écran doit renvoyer au comptable, et le dire.
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let passed = 0;
 let failed = 0;
@@ -52,7 +53,7 @@ async function choisir(page: Page, libelle: "Tous les mois" | "Tous les trimestr
   // La périodicité a rejoint le régime de TVA dans « Mon entreprise » le
   // 14 août 2026 : deux réglages fiscaux à deux endroits (ARCHITECTURE.md §96).
   await page.goto(`${BASE}/reglages/identite`, { waitUntil: "domcontentloaded" });
-  await page.waitForSelector("text=Votre TVA", { timeout: 30_000 });
+  await page.waitForSelector('[data-atlas="periodicite-tva"]', { timeout: 30_000 });
   await page.getByRole("button", { name: libelle, exact: true }).click();
 
   // **On RECHARGE pour vérifier, au lieu de croire le bouton.** L'écran coche
@@ -69,7 +70,7 @@ async function choisir(page: Page, libelle: "Tous les mois" | "Tous les trimestr
   for (const essai of [1, 2, 3]) {
     await page.waitForTimeout(essai * 400);
     await page.reload({ waitUntil: "domcontentloaded" });
-    await page.waitForSelector("text=Votre TVA", { timeout: 30_000 });
+    await page.waitForSelector('[data-atlas="periodicite-tva"]', { timeout: 30_000 });
     const coche = await page
       .getByRole("button", { name: libelle, exact: true })
       .getAttribute("aria-pressed");
@@ -88,7 +89,7 @@ async function titreTva(page: Page): Promise<string> {
   // chiffres et non plus un seul — ce contrôle a attendu trente secondes un
   // texte disparu. Un repère d'attente doit viser ce que l'écran EST, pas
   // comment il s'appelait.
-  await page.waitForSelector("text=Reste à payer", { timeout: 30_000 });
+  await page.waitForSelector('[data-atlas="montant-reste"]', { timeout: 30_000 });
   return (await page.locator("h1").first().textContent())?.trim() ?? "";
 }
 
@@ -129,6 +130,39 @@ async function main() {
     assert.equal(await page.getByRole("button", { name: "Janvier", exact: true }).count(), 0);
   });
 
+  // **Sa question du 26 septembre 2026, capture d'iPhone à l'appui :**
+  // *« pourquoi je peux pas aller voir les années précédentes ? »* Il touchait
+  // « 2026 », et seule la bande des mois se voilait de gris : la feuille était
+  // posée DANS le rail qui défile, et Safari rogne un `position: fixed` à son
+  // conteneur défilant. Chromium ne rogne pas, et le cas précédent passait.
+  //
+  // On ne peut donc pas mesurer ce que Safari peint ; on mesure ce qui le
+  // provoque, et qui, lui, est le même partout : aucun ancêtre de la feuille ne
+  // doit défiler ni la rogner.
+  await test("La feuille du calendrier ne vit dans aucun conteneur qui la rogne", async () => {
+    const rogneurs = await page.evaluate(() => {
+      const lien = [...document.querySelectorAll("button")].find((b) =>
+        /Revenir à la période en cours/.test(b.textContent ?? "")
+      );
+      const trouves: string[] = [];
+      if (!lien) return ["feuille introuvable"];
+      for (let el = lien.parentElement; el && el !== document.body; el = el.parentElement) {
+        const s = getComputedStyle(el);
+        if (s.position === "fixed") {
+          for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+            const t = getComputedStyle(a);
+            if (t.overflowX !== "visible" || t.overflowY !== "visible" || t.position === "sticky") {
+              trouves.push(`${a.tagName.toLowerCase()}${a.dataset.atlas ? `[${a.dataset.atlas}]` : ""}`);
+            }
+          }
+          return trouves;
+        }
+      }
+      return ["aucun voile fixe au-dessus de la feuille"];
+    });
+    assert.deepEqual(rogneurs, [], `la feuille est enfermée dans : ${rogneurs.join(", ")}`);
+  });
+
   await test("Le calendrier emmène vraiment où l'on touche, sans passer par les flèches", async () => {
     await page.getByRole("button", { name: "Année précédente" }).click();
     await page.getByRole("button", { name: /^1er trimestre/ }).click();
@@ -161,7 +195,7 @@ async function main() {
   await test("Une période impossible ramène à la période en cours, sans écran mort", async () => {
     await choisir(page, "Tous les trimestres");
     await page.goto(`${BASE}/termines/tva?annee=2026&t=12`, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector("text=Reste à payer", { timeout: 30_000 });
+    await page.waitForSelector('[data-atlas="montant-reste"]', { timeout: 30_000 });
     const titre = (await page.locator("h1").first().textContent())?.trim() ?? "";
     assert.ok(/^[1-4](er|e) trimestre \d{4}$/.test(titre), `titre inattendu : « ${titre} »`);
     await choisir(page, "Tous les mois");
@@ -182,11 +216,16 @@ async function main() {
   await test("SON GESTE : basculer depuis l'écran de TVA change le titre, sans recharger", async () => {
     await choisir(page, "Tous les mois");
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector("text=Reste à payer", { timeout: 30_000 });
+    await page.waitForSelector('[data-atlas="montant-reste"]', { timeout: 30_000 });
     const avant = (await page.locator("h1").first().textContent())?.trim() ?? "";
     assert.ok(!/trimestre/i.test(avant), `l'écran ne part pas d'un mois : « ${avant} »`);
 
-    await page.getByRole("button", { name: "Tous les trois mois", exact: true }).click();
+    // **Le rythme est un mot sous les mois depuis le 12 septembre 2026** —
+    // « Déclaration mensuelle » — et l'autre mot flotte dessous quand on
+    // l'appuie (sa planche « une seule logique »). La feuille du 3 septembre
+    // n'existe plus ; on rejoue le geste du patron tel qu'il est.
+    await page.click('[data-atlas="rythme-actuel"]');
+    await page.click('[data-atlas="rythme-autre"]');
 
     // **On attend le TITRE, pas un délai.** Un `waitForTimeout` mesurerait la
     // vitesse de la machine ; ce qu'on veut savoir est si l'écran finit par
@@ -207,7 +246,11 @@ async function main() {
 
     // Et le retour au mois doit marcher pareil : une correction qui ne
     // fonctionnerait que dans un sens laisserait la moitié du défaut.
-    await page.getByRole("button", { name: "Tous les mois", exact: true }).click();
+    //
+    // Le bandeau s'est refermé au choix : on rouvre, et l'autre mot est
+    // maintenant « mensuelle ».
+    await page.click('[data-atlas="rythme-actuel"]');
+    await page.click('[data-atlas="rythme-autre"]');
     await page.waitForFunction(
       () => !/trimestre/i.test(document.querySelector("h1")?.textContent ?? ""),
       null,
@@ -223,8 +266,8 @@ async function main() {
     // La périodicité a rejoint le régime de TVA dans « Mon entreprise » le
   // 14 août 2026 : deux réglages fiscaux à deux endroits (ARCHITECTURE.md §96).
   await page.goto(`${BASE}/reglages/identite`, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector("text=Votre TVA", { timeout: 30_000 });
-    const texte = (await page.locator("section:has-text('Votre TVA')").last().textContent()) ?? "";
+    await page.waitForSelector('[data-atlas="periodicite-tva"]', { timeout: 30_000 });
+    const texte = (await page.locator('[data-atlas="periodicite-tva"]').textContent()) ?? "";
     // **CE CONTRÔLE A ÉTÉ RE-VISÉ le 24 août 2026, pas assoupli.**
     //
     // Il exigeait deux phrases — « votre comptable dit lequel vous concerne » et
@@ -239,7 +282,7 @@ async function main() {
     // reviendrait à inventer une donnée (`CLAUDE.md` §4) — et c'est cela qu'on
     // mesure désormais, sur le texte, pas sur un libellé qu'il peut vouloir
     // réécrire demain.
-    assert.ok(texte.trim().length > 0, "la rubrique « Votre TVA » est vide : rien n'est mesuré");
+    assert.ok(texte.trim().length > 0, "la rubrique de la périodicité est vide : rien n'est mesuré");
     // **Le mois reste annoncé comme le DÉFAUT** — sa phrase courte du 24 août.
     // Sans cela, les deux boutons se lisent comme un choix libre, et le mauvais
     // coûte un rappel de l'administration. Le motif est volontairement large :

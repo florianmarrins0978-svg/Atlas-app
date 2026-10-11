@@ -1,0 +1,625 @@
+// Les deux portes de Terminés tiennent dans l'écran, et l'œil filtre — mesuré,
+// pas supposé.
+//
+// ═══════════════════════════════════════════════════════════════════════════
+// **Depuis le 13 septembre 2026, la rangée ne porte plus d'onglet.** Sa
+// demande, planche `appli/termines-l-oeil.html` : *« sous la TVA, garde que
+// deux boutons : Retours d'intervention et Créer une facture ; supprime le
+// bouton Tout, que ça soit le mode par défaut ; à côté de "3 à facturer", le
+// signe œil barré — on clique dessus, ça montre les à facturer, on reclique,
+// on revient sur le mode tout »*. Ce que la rangée tenait à trois, elle le
+// tient à deux ; ce que l'onglet « À facturer » filtrait, l'œil le filtre.
+//
+// **Sa demande du 9 septembre 2026, qui a fait naître ce contrôle :** *« comment est-ce possible que "retours
+// d'intervention" déborde, il y a beaucoup de place ? Tu te débrouilles comme
+// tu veux mais tu fais tenir les 3 sur la même ligne, donc rétrécis-les un peu
+// tous les 3 s'il faut. »*
+//
+// Il avait raison de tiquer : le mot ne fait que 145 px. Ce qui débordait,
+// c'était le REMBOURRAGE — 18 px de chaque côté sur trois pastilles, plus
+// 26 px de marge. Mesuré : 440 px avant, 377 après.
+//
+// **Ce contrôle mesure ce qui est RENDU**, une fois la mise en page faite :
+// un libellé rallongé, une police changée, un rembourrage remis à 18 le
+// feraient rougir — et c'est le seul moyen de le savoir avant lui.
+//
+// **Et il refuse de conclure sur une boîte de zéro pixel** : l'absence de
+// matière à mesurer n'est pas un succès, c'est une mesure impossible
+// (`CLAUDE.md` §5, payé le 15 août 2026).
+
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import assert from "node:assert/strict";
+import { Pool } from "pg";
+import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
+import { RACINE_STOCKAGE } from "../src/server/storage/local-storage";
+
+const BASE = ADRESSE;
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+/**
+ * **Les largeurs qu’il faut tenir, et pas seulement la sienne.**
+ *
+ * Sa remarque du 9 septembre 2026 : *« n’oublie pas que ça doit être adapté à
+ * tous les téléphones »*. La première livraison ne mesurait qu’à 390 — son
+ * iPhone à lui — et la rangée aurait débordé de quinze pixels sur un Android
+ * ordinaire, chez le premier de ses salariés à en avoir un.
+ *
+ * **360 px est le plancher que ce dépôt tient déjà** (`ARCHITECTURE.md` §125,
+ * où la barre du bas se vérifie à cette largeur). 430 est le grand format.
+ */
+const LARGEURS = [360, 375, 390, 430] as const;
+const RANGEE = "[data-atlas='portes-termines']";
+/** **On la REGARDE aussi.** Une rangée peut tenir au pixel et rester laide :
+ *  quatre défauts réels de ce dépôt sont sortis d’une image, d’aucun test. */
+const DOSSIER_CAPTURES = process.env.ATLAS_CAPTURES ?? null;
+
+let echecs = 0;
+async function cas(nom: string, fn: () => Promise<void>) {
+  try {
+    await fn();
+    console.log(`  ✓ ${nom}`);
+  } catch (e) {
+    echecs++;
+    console.error(`  ✗ ${nom}\n    ${(e as Error).message}`);
+  }
+}
+
+async function main() {
+  console.log("=== Les portes et l’œil de Terminés, à la largeur de son téléphone ===\n");
+
+  // **L'onglet des retours ne s'affiche QUE s'il y en a**, et c'est voulu : un
+  // onglet qui ouvre une liste vide s'apprend à ne plus être touché. Il faut
+  // donc en poser un pour mesurer les trois.
+  //
+  // **La suite pose ce dont elle a besoin, et le retire après.** S'appuyer sur
+  // ce que le jeu de démonstration contient, c'est rougir le jour où il change
+  // — et il change (`CLAUDE.md` §5 bis).
+  //
+  // **Et ce chantier n'a PAS de facture émise** : l'œil ne se montre que s'il
+  // y a quelque chose à facturer. Jouée seule après les suites qui facturent,
+  // la suite prenait le dernier chantier du jeu — déjà facturé — et refusait
+  // de conclure sur un écran sans œil (13 septembre 2026).
+  const { rows } = await pool.query<{ id: string; entreprise_id: string }>(
+    `SELECT c.id, c.entreprise_id FROM chantiers c
+       JOIN membres_entreprise me ON me.entreprise_id = c.entreprise_id
+       JOIN users u ON u.id = me.utilisateur_id AND u.email = 'demo@atlas.local'
+      WHERE c.deleted_at IS NULL
+        AND NOT EXISTS (SELECT 1 FROM factures f WHERE f.chantier_id = c.id AND f.statut = 'emise')
+      ORDER BY c.created_at DESC LIMIT 1`
+  );
+  assert.ok(rows.length === 1, "aucun chantier sans facture dans le jeu de démonstration");
+  const { id: chantierId, entreprise_id: entrepriseId } = rows[0];
+
+  // **Et l'écran des Terminés ne montre ses onglets que s'il a quelque chose
+  // à trier** : sans chantier terminé, il rend son état vide et la rangée
+  // n'existe pas. On pose donc les deux conditions, et on les défait à la fin.
+  const { rows: avant } = await pool.query<{ termine_at: Date | null }>(
+    `SELECT termine_at FROM chantiers WHERE id = $1`,
+    [chantierId]
+  );
+  await pool.query(`UPDATE chantiers SET termine_at = now() WHERE id = $1`, [chantierId]);
+  // Un chantier porte plusieurs retours depuis la migration 0096 : plus
+  // d'`ON CONFLICT` possible, on repart d'un chantier sans retour.
+  await pool.query(`DELETE FROM retours_intervention WHERE chantier_id = $1`, [chantierId]);
+  const { rows: pose } = await pool.query<{ id: string }>(
+    `INSERT INTO retours_intervention (entreprise_id, chantier_id, pose_le, a_signaler)
+     VALUES ($1, $2, now(), 'Chantier fini')
+     RETURNING id`,
+    [entrepriseId, chantierId]
+  );
+  // ═══════════════════════════════════════════════════════════════════════
+  // **LE COMPTE DES NON-LUS NE SE MESURE QUE SEUL — 11 septembre 2026.**
+  //
+  // Ces trois contrôles lisent un NOMBRE sur l'onglet, et ce nombre appartient
+  // à toute l'entreprise. Une suite voisine qui tombe avant sa ligne de ménage
+  // laisse son retour derrière elle : l'onglet affiche alors 2, et ces
+  // contrôles rougissent en accusant la pastille — sur un produit sain, et sur
+  // un défaut qui n'est pas le leur. Mesuré deux fois dans la batterie du
+  // 11 septembre, avant comme après le lot.
+  //
+  // On ne relâche pas l'assertion pour autant (ce serait un pansement, et un
+  // vrai « 2 » passerait) : on ISOLE. Tout ce qui traîne est marqué LU, donc le
+  // seul non-lu qui reste est celui que cette suite vient de poser. Les lignes
+  // ajoutées repartent avec elle.
+  //
+  // **Et notre propre retour est remis à NON LU** : le `ON CONFLICT DO UPDATE`
+  // ci-dessus réutilise la ligne d'une exécution précédente, et sa lecture
+  // aurait survécu — la suite serait alors partie d'une pastille déjà éteinte.
+  const { rows: dejaLa } = await pool.query<{ id: string }>(
+    `INSERT INTO retours_intervention_vus (entreprise_id, retour_id, utilisateur_id)
+     SELECT r.entreprise_id, r.id, u.id
+       FROM retours_intervention r, users u
+      WHERE r.entreprise_id = $1 AND r.id <> $2 AND u.email = 'demo@atlas.local'
+     ON CONFLICT DO NOTHING
+     RETURNING id`,
+    [entrepriseId, pose[0].id]
+  );
+  await pool.query(`DELETE FROM retours_intervention_vus WHERE retour_id = $1`, [pose[0].id]);
+
+  // **Une faite et une PAS faite** : c’est la seconde qui compte, et le
+  // dépliage doit l’écrire en toutes lettres.
+  await pool.query(`DELETE FROM retours_intervention_taches WHERE retour_id = $1`, [pose[0].id]);
+  // **DEUX photos, et leurs FICHIERS.** Une seule ne dit rien du chevron —
+  // sa demande du 11 septembre au soir : *« des flèches de chaque côté pour
+  // aller voir les suivantes »*. Et sans fichier, l’image mesure zéro pixel :
+  // on ne saurait pas dire si elle couvre l’écran ou non — or c’est
+  // précisément ce qu’il a refusé. Deux PNG de 300 × 400 sont donc posés
+  // dans le stockage local, là où la route les lira.
+  const clesPhotos = [1, 2].map((n) => `chantiers/${chantierId}/photos/e2e-onglets-${n}.png`);
+  const navigateur = await lancerNavigateur();
+  {
+    const atelier = await navigateur.newPage();
+    for (const cle of clesPhotos) {
+      await atelier.setContent(`<div style="width:300px;height:400px;background:#4c6b3f"></div>`);
+      const png = await atelier.locator("div").screenshot();
+      const chemin = path.join(RACINE_STOCKAGE, cle);
+      mkdirSync(path.dirname(chemin), { recursive: true });
+      writeFileSync(chemin, png);
+    }
+    await atelier.close();
+  }
+  const lesPhotos: { id: string }[] = [];
+  for (const cle of clesPhotos) {
+    const { rows } = await pool.query<{ id: string }>(
+      `INSERT INTO photos (entreprise_id, chantier_id, storage_key, mime_type, taille_octets, checksum)
+       VALUES ($1, $2, $3, 'image/png', 10, $4) RETURNING id`,
+      [entrepriseId, chantierId, cle, "e".repeat(64)]
+    );
+    lesPhotos.push(rows[0]);
+    await pool.query(
+      `INSERT INTO retours_intervention_photos (entreprise_id, retour_id, photo_id)
+       VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,
+      [entrepriseId, pose[0].id, rows[0].id]
+    );
+  }
+  await pool.query(
+    `INSERT INTO retours_intervention_taches (entreprise_id, retour_id, libelle, faite, ordre)
+     VALUES ($1, $2, 'Tonte et ébarbage', true, 0), ($1, $2, 'Traitement anti-mousse', false, 1)`,
+    [entrepriseId, pose[0].id]
+  );
+
+  const contexte = await navigateur.newContext({ viewport: { width: LARGEURS[0], height: 844 } });
+  const page = await contexte.newPage();
+
+  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+  await page.fill('input[name="email"]', "demo@atlas.local");
+  await page.fill('input[name="password"]', "demo1234");
+  await page.click('button[type="submit"]');
+  await page.waitForURL(`${BASE}/`, { timeout: 30_000 });
+  // `networkidle` et non `domcontentloaded` : sans la feuille de style
+  // appliquée, toutes les largeurs valent 0 et le contrôle rendrait un vert
+  // qui ne prouve rien.
+  await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
+  await page.locator(RANGEE).waitFor({ state: "visible", timeout: 20_000 });
+
+  // La capture se prend à la largeur la PLUS ÉTROITE : c’est là que ça casse.
+  if (DOSSIER_CAPTURES) {
+    mkdirSync(DOSSIER_CAPTURES, { recursive: true });
+    await page.locator(RANGEE).screenshot({
+      path: path.join(DOSSIER_CAPTURES, "onglets-termines.png"),
+    });
+  }
+
+  await cas("LES DEUX PORTES SONT LÀ, ET AUCUN ONGLET — sa demande du 13 septembre", async () => {
+    const dit = (await page.locator(RANGEE).innerText()).replace(/\n/g, " · ");
+    assert.match(dit, /Retours d'intervention/, `la rangée dit « ${dit} »`);
+    assert.match(dit, /Créer une facture/, `la rangée dit « ${dit} »`);
+    // « Tout » et « À facturer » sont partis : un onglet qui reviendrait ici
+    // referait la rangée à trois qu'il a fait défaire.
+    assert.doesNotMatch(dit, /\bTout\b/, `« Tout » est revenu : « ${dit} »`);
+    assert.equal(await page.locator(`${RANGEE} > *`).count(), 2, "la rangée ne porte pas deux portes");
+  });
+
+  for (const large of LARGEURS) {
+    await cas(`LA RANGÉE TIENT DANS ${large} px — toutes les largeurs, pas seulement la sienne`, async () => {
+      await page.setViewportSize({ width: large, height: 844 });
+      // La mise en page se refait : sans cette attente, on mesure celle d’avant.
+      await page.waitForTimeout(350);
+      const rangee = page.locator(RANGEE);
+      const boite = await rangee.boundingBox();
+      assert.ok(boite && boite.height > 20, "la rangée est écrasée : rien n’est mesuré");
+
+      // La largeur RÉELLE de ce qui est posé dedans, marges comprises — pas la
+      // largeur de la boîte, qui vaut celle de l’écran quoi qu’elle contienne.
+      // ═══════════════════════════════════════════════════════════════════
+      // **NE PAS MESURER LA LARGEUR OCCUPÉE : elle ment.** Les pastilles sont
+      // des enfants de flex, donc elles SE SERRENT quand la place manque. La
+      // rangée « tient » alors toujours — en écrasant les libellés. La
+      // première version de ce contrôle rendait exactement la largeur de
+      // l’écran à 360 comme à 375, et croyait avoir prouvé quelque chose.
+      //
+      // Ce qui se mesure, c’est **ce que chaque pastille voudrait** contre ce
+      // qu’on lui laisse : un libellé plus large que sa boîte est un libellé
+      // rogné ou replié, et ça se voit à l’œil.
+      // **`scrollWidth` NE VOIT RIEN quand le débordement est visible**, et
+      // c’est le piège de ce contrôle : il rendait 68/68 sur une pastille dont
+      // le texte demandait 74. On mesure donc le TEXTE lui-même, par un
+      // intervalle posé sur le contenu — la seule largeur qui ne mente pas.
+      const serres = await rangee.evaluate((r) =>
+        Array.from(r.children).map((e) => {
+          const intervalle = document.createRange();
+          intervalle.selectNodeContents(e);
+          const texte = intervalle.getBoundingClientRect();
+          const st = getComputedStyle(e as HTMLElement);
+          const dedans =
+            e.getBoundingClientRect().width -
+            (parseFloat(st.paddingLeft) || 0) -
+            (parseFloat(st.paddingRight) || 0);
+          return {
+            mot: (e.textContent ?? "").trim().slice(0, 24),
+            large: Math.round(e.getBoundingClientRect().width),
+            dedans: Math.round(dedans),
+            voulu: Math.ceil(texte.width),
+
+          };
+        })
+      );
+      const pris = await rangee.evaluate((r) => Math.ceil(r.scrollWidth));
+      console.log(
+        `    ${large} px : la rangée voudrait ${pris} — ` +
+          serres.map((x) => `${x.mot} ${x.dedans}←${x.voulu}`).join(" · ")
+      );
+      assert.ok(pris > 200, `mesure invraisemblable (${pris} px) : la mise en page n’est pas faite`);
+
+      // **La borne, c’est la place DISPONIBLE**, pas la largeur de l’écran :
+      // la rangée vit entre deux marges, et les comparer à l’écran entier
+      // rendrait un vert sur trente pixels qui n’existent pas.
+      const dispo = await rangee.evaluate((r) => {
+        const st = getComputedStyle(r as HTMLElement);
+        return Math.floor(
+          (r.parentElement?.getBoundingClientRect().width ?? 0) -
+            (parseFloat(st.marginLeft) || 0) -
+            (parseFloat(st.marginRight) || 0)
+        );
+      });
+      assert.ok(
+        pris <= dispo,
+        `les portes débordent de ${pris - dispo} px à ${large} (${pris} pour ${dispo} disponibles)`
+      );
+      // **À 360 px, la capture montrait « À / facturer » sur deux lignes — et
+      // tous les contrôles au vert**, parce que deux lignes de 12,5 px tiennent
+      // dans les 44 px du pouce et que `scrollWidth` ne voit rien d’un
+      // débordement visible.
+      //
+      // Les pastilles portent donc `whitespace-nowrap` ET `shrink-0` : ni
+      // repli ni écrasement ne sont plus possibles, et le manque de place
+      // devient un DÉBORDEMENT que la mesure ci-dessous voit. Un défaut
+      // visible vaut mieux qu’un défaut absorbé en silence.
+      const hauts = await rangee.evaluate((r) =>
+        Array.from(r.children).map((e) => Math.round(e.getBoundingClientRect().height))
+      );
+      for (const h of hauts) {
+        assert.ok(h <= 48, `une porte fait ${h} px de haut à ${large} px : son libellé s’est replié`);
+      }
+      for (const x of serres) {
+        assert.ok(x.voulu > 0, `« ${x.mot} » ne mesure rien : la mise en page n’est pas faite`);
+        assert.ok(
+          x.dedans + 1 >= x.voulu,
+          `« ${x.mot} » est rogné à ${large} px : ${x.dedans} px de place pour ${x.voulu} de texte`
+        );
+      }
+
+      const deborde = await page.evaluate(
+        () => document.documentElement.scrollWidth > window.innerWidth + 1
+      );
+      assert.equal(deborde, false, `l’écran défile de côté à ${large} px`);
+    });
+  }
+
+  await cas("AUCUNE PORTE N’EST RONDE — son coup d’œil du 9 septembre", async () => {
+    // *« Le bouton Tout, on dirait qu’il est rond et pas ovale comme les
+    // autres »* : un mot court dans un rembourrage resserré rend une pastille
+    // aussi haute que large. On mesure donc le RAPPORT, pas seulement la
+    // largeur — c’est ce que l’œil voit.
+    const formes = await page.locator(`${RANGEE} > *`).evaluateAll((els) =>
+      els.map((e) => {
+        const b = e.getBoundingClientRect();
+        return { l: Math.round(b.width), h: Math.round(b.height) };
+      })
+    );
+    for (const f of formes) {
+      assert.ok(f.l > 0 && f.h > 0, "une porte sans dimension : rien n’est mesuré");
+      // **Le seuil vient de l’image, pas d’une intuition.** Ce qu’il a vu était
+      // une pastille aussi haute que large — un rapport proche de 1. À 1,36
+      // (60 × 44) elle se lit ovale, vérifié à la capture ; le garde-fou est
+      // donc posé à 1,25, où il attrape un vrai rond sans refuser ce qui va.
+      assert.ok(f.l >= f.h * 1.25, `une porte est presque ronde : ${f.l} × ${f.h} px`);
+    }
+  });
+
+  await cas("aucune porte ne descend sous 44 px — le pouce, avec des gants", async () => {
+    const hauteurs = await page.locator(`${RANGEE} > *`).evaluateAll((els) =>
+      els.map((e) => Math.round(e.getBoundingClientRect().height))
+    );
+    assert.ok(hauteurs.length === 2, `${hauteurs.length} portes au lieu de deux`);
+    for (const h of hauteurs) {
+      assert.ok(h >= 44, `une porte ne fait que ${h} px de haut`);
+    }
+  });
+
+  await cas("L’ŒIL : fermé on voit tout, ouvert seulement ce qui attend, refermé tout revient", async () => {
+    // **C'est le chemin du patron, pas la fonction qu'on vient d'écrire**
+    // (`CLAUDE.md` §5 quater) : on lit le chiffre, on appuie sur l'œil à côté,
+    // on regarde ce qui reste. Le chantier terminé plus haut n'a pas de
+    // facture : il attend, donc l'œil a quelque chose à montrer — et sans lui
+    // on refuse de conclure, un écran sans rien à filtrer ne prouvant rien.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
+    const oeil = page.locator("[data-atlas='oeil-a-facturer']");
+    // **Un refus qui dit ce que l'écran montrait** : sans cela, « 0 !== 1 »
+    // envoie chercher dans le composant quand c'est le jeu de données qui manque.
+    const contenu = page.locator("[data-atlas='contenu-termines']");
+    assert.equal(
+      await oeil.count(),
+      1,
+      `aucun chantier à facturer : l'œil n'a rien à montrer, rien n'est mesurable. Ce que montrait l'écran : ${(await contenu.innerText().catch(() => "(pas de contenu)")).replace(/s+/g, " ").slice(0, 300)}`
+    );
+    const boite = await oeil.boundingBox();
+    assert.ok(
+      boite && boite.width >= 44 && boite.height >= 44,
+      `l'œil fait ${boite?.width} × ${boite?.height} : sous les 44 px du pouce`
+    );
+    assert.equal(await oeil.getAttribute("aria-pressed"), "false", "l'œil n'est pas fermé en arrivant : on doit tout voir par défaut");
+
+    const compte = page.locator("[data-atlas='compte-du-mois']");
+    const attendus = Number(/(\d+) à facturer/.exec(await compte.innerText())?.[1]);
+    assert.ok(attendus > 0, `la phrase ne dit pas combien attendent : « ${await compte.innerText()} »`);
+    const lignes = "[data-atlas='ligne-terminee']";
+    const capsules = "[data-atlas='capsule-a-facturer']";
+    // **Le mois affiché peut être VIDE, et c'est un cas qui compte** : jouée
+    // seule, la suite arrive sur un septembre sans chantier, et l'œil doit
+    // quand même faire remonter ce qui attend ailleurs (13 septembre 2026).
+    // Zéro rangée avant n'est donc pas une mesure impossible — c'est le
+    // retard de facturation que l'œil existe pour montrer.
+    const avant = await page.locator(lignes).count();
+
+    await oeil.click();
+    await page.waitForSelector("[data-atlas='tout-ce-qui-attend']", { timeout: 5000 });
+    assert.equal(await oeil.getAttribute("aria-pressed"), "true");
+    assert.equal(await page.locator(lignes).count(), attendus, "ouvert, l'œil ne montre pas ce que le chiffre annonce");
+    assert.equal(await page.locator(capsules).count(), attendus, "une rangée sans capsule s'est glissée parmi ce qui attend");
+    // Le mois se met en veille : ce qu'on voit l'ignore, ses flèches se ferment.
+    for (const f of ["mois-precedent", "mois-suivant"]) {
+      assert.ok(await page.locator(`[data-atlas='${f}']`).isDisabled(), `${f} reste ouvert alors que la liste ignore le mois`);
+    }
+
+    await oeil.click();
+    await page.waitForSelector("[data-atlas='le-mois']", { timeout: 5000 });
+    assert.equal(await oeil.getAttribute("aria-pressed"), "false");
+    assert.equal(await page.locator(lignes).count(), avant, "refermé, l'œil ne rend pas la liste d'avant");
+  });
+
+  // On rend le jeu de démonstration tel qu'on l'a pris : les suites voisines
+  // comptent les retours de cette entreprise, et un de trop les ferait mentir.
+  await cas("UN RETOUR NON LU PORTE SA PASTILLE, et la barre compte les non-lus", async () => {
+    // **Sa demande du 9 septembre 2026** : *« comme pour les SMS »*. Le
+    // contrôle part de l’onglet, là où son œil tombe en arrivant.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
+    const pastille = page.locator("[data-atlas='compte-des-non-lus']");
+    await pastille.waitFor({ state: "visible", timeout: 20_000 });
+    assert.equal((await pastille.innerText()).trim(), "1", "la barre ne compte pas les non-lus");
+
+    // **Et la pastille du retour lui-même**, dans la liste : c’est celle qui
+    // lui dit LEQUEL, quand il en aura vingt.
+    await page.goto(`${BASE}/termines/retours`, { waitUntil: "networkidle" });
+    const marque = page.locator("[data-atlas='retour-non-lu']");
+    await marque.waitFor({ state: "visible", timeout: 20_000 });
+    const rond = await marque.boundingBox();
+    assert.ok(rond && rond.width >= 8, `la pastille ne fait que ${Math.round(rond?.width ?? 0)} px`);
+    if (DOSSIER_CAPTURES) {
+      await page.screenshot({ path: path.join(DOSSIER_CAPTURES, "retour-non-lu.png") });
+    }
+  });
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // SON CHEMIN À LUI, ET PAS LE NÔTRE — 11 septembre 2026
+  //
+  // **Sa plainte :** *« je viens d'aller regarder le retour d'inter mais le
+  // petit 1 est resté visible »*. Les deux contrôles voisins étaient VERTS sur
+  // ce défaut, et pour une seule raison : ils rechargent la page
+  // (`page.goto`), ce que lui ne fait jamais. Il touche l'onglet, ouvre le
+  // retour, puis appuie sur la flèche — et la flèche RECULE
+  // (`FlecheRetour.tsx`, `router.back()`), donc le navigateur rejoue la page
+  // qu'il avait mise de côté, pastille comprise.
+  //
+  // C'est exactement la leçon du 28 août (`CLAUDE.md` §5 quater) : éprouver le
+  // geste du patron, pas la fonction qu'on vient d'écrire. Ce contrôle ne
+  // recharge rien, du premier appui au dernier.
+  await cas("SANS RECHARGER : il ouvre le retour, revient, et le 1 est parti", async () => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
+    const pastille = page.locator("[data-atlas='compte-des-non-lus']");
+    await pastille.waitFor({ state: "visible", timeout: 20_000 });
+
+    // ── son geste, du doigt, sans jamais recharger ──
+    await page.locator("[data-atlas='onglet-retours']").click();
+    const carte = page.locator("[data-atlas='carte-de-retour']").first();
+    await carte.waitFor({ state: "visible", timeout: 20_000 });
+    await carte.click();
+    await page.locator("[data-atlas='retour-deplie']").first().waitFor({ state: "visible", timeout: 10_000 });
+
+    // La flèche de l'en-tête : celle qu'il a sous le pouce, et qui recule.
+    await page.locator('a[aria-label="Retour"], a[aria-label="Retour aux chantiers terminés"]').first().click();
+    await page.locator(RANGEE).waitFor({ state: "visible", timeout: 20_000 });
+
+    // **On laisse à la pastille le temps de REVENIR.** Conclure dans la
+    // seconde rendrait vert un écran qui se repeint mal une demi-seconde plus
+    // tard — et c'est cette demi-seconde qu'il voit, lui.
+    await page.waitForTimeout(1_500);
+    assert.equal(
+      await pastille.count(),
+      0,
+      "le 1 est resté sur l'onglet alors qu'il vient d'ouvrir le retour"
+    );
+    if (DOSSIER_CAPTURES) {
+      await page.screenshot({ path: path.join(DOSSIER_CAPTURES, "retour-lu-de-retour-sur-termines.png") });
+    }
+  });
+
+  await cas("LA CARTE S’OUVRE EN GRAND, et se replie — sa proposition A", async () => {
+    await page.goto(`${BASE}/termines/retours`, { waitUntil: "networkidle" });
+    const carte = page.locator("[data-atlas='carte-de-retour']").first();
+    await carte.waitFor({ state: "visible", timeout: 20_000 });
+
+    // **Le compte, et non un résumé** : « tout fait » a été retiré le
+    // 9 septembre, parce qu’il ne pouvait pas le vérifier.
+    const dit = await carte.innerText();
+    assert.match(dit, /1 sur 2/, "la carte ne porte pas le compte des tâches");
+    assert.doesNotMatch(dit, /tout fait/);
+
+    assert.equal(await page.locator("[data-atlas='retour-deplie']").count(), 0, "la carte est déjà ouverte");
+    await carte.click();
+    const feuille = page.locator("[data-atlas='retour-deplie']").first();
+    await feuille.waitFor({ state: "visible", timeout: 10_000 });
+
+    // **CE QUI N’A PAS ÉTÉ FAIT S’ÉCRIT** — la ligne qui l’arrête avant de
+    // facturer un travail qui n’a pas eu lieu.
+    const dedans = await feuille.innerText();
+    assert.match(dedans, /Tonte et ébarbage/);
+    assert.match(dedans, /pas fait/, "ce qui reste à faire ne se lit pas");
+    assert.match(dedans, /Chantier fini/, "son mot n’est pas rendu");
+    assert.equal(await page.locator("[data-atlas='tache-pas-faite']").count(), 1);
+
+    // **Les photos sont POSÉES, en grand.** Elles n’existaient qu’en chiffre
+    // sur sa capture ; leur fichier peut manquer sur ce poste, mais l’image
+    // doit être là, à la bonne adresse et à la bonne taille.
+    const image = page.locator("[data-atlas='photo-du-retour']").first();
+    assert.equal(await page.locator("[data-atlas='photo-du-retour']").count(), 2);
+    const src = await image.getAttribute("src");
+    assert.ok(src?.startsWith("/api/fichiers/"), `la photo pointe vers ${src}`);
+    const cadre = await image.boundingBox();
+    assert.ok(cadre && cadre.height > 100, `la photo ne fait que ${Math.round(cadre?.height ?? 0)} px de haut`);
+
+    if (DOSSIER_CAPTURES) {
+      await page.screenshot({ path: path.join(DOSSIER_CAPTURES, "retour-deplie.png") });
+    }
+
+    // **ON APPUIE SUR LA PHOTO, ET ELLE S'OUVRE — SANS PRENDRE L'ÉCRAN.** Sa
+    // demande du 11 septembre 2026, puis sa capture du soir : *« c'est trop
+    // gros, faut pas qu'elle prenne tout l'écran »*. C'est le geste du patron
+    // qui est éprouvé ici, pas la fonction qu'on vient d'écrire (`CLAUDE.md`
+    // §5 quater) : on clique là où son doigt se pose, on feuillette, on ferme
+    // comme il ferme.
+    await page.locator("[data-atlas='ouvrir-la-photo']").first().click();
+    const enGrand = page.locator("[data-atlas='photo-en-grand']");
+    await enGrand.waitFor({ state: "visible", timeout: 10_000 });
+    const ouverte = page.locator("[data-atlas='photo-ouverte']");
+    await ouverte.waitFor({ state: "visible", timeout: 10_000 });
+
+    if (DOSSIER_CAPTURES) {
+      await page.screenshot({ path: path.join(DOSSIER_CAPTURES, "photo-en-grand.png") });
+    }
+
+    // Le VOILE couvre l'écran — c'est lui qu'on touche pour fermer — mais la
+    // PHOTO, non. Une boîte de zéro pixel ne vaut pas un vert (15 août) : le
+    // fichier est posé exprès pour qu'elle ait une taille.
+    const voile = await enGrand.boundingBox();
+    const ecran = page.viewportSize();
+    assert.ok(voile && ecran && voile.width >= ecran.width - 1 && voile.height >= ecran.height - 1, "le voile ne couvre pas l'écran");
+    const photo = await ouverte.boundingBox();
+    assert.ok(photo && photo.width > 100 && photo.height > 100, "la photo mesure zéro pixel : rien n'est mesuré");
+    assert.ok(
+      photo.width < ecran.width - 16 && photo.height < ecran.height * 0.7,
+      `la photo prend l'écran : ${Math.round(photo.width)} × ${Math.round(photo.height)} sur ${ecran.width} × ${ecran.height}`
+    );
+
+    // **La croix est en haut à DROITE** — *« surtout une croix en haut à droite
+    // pour fermer »*. Elle était à gauche.
+    const croix = await page.locator('button[aria-label="Fermer"]').boundingBox();
+    assert.ok(croix && croix.x > ecran.width / 2 && croix.y < 120, "la croix n'est pas en haut à droite");
+
+    // **La suivante, puis la rangée**, et le compte qui suit.
+    const rang = page.locator("[data-atlas='rang-de-la-photo']");
+    assert.equal((await rang.innerText()).replace(/\s/g, ""), "1/2");
+    await page.locator('button[aria-label="Photo suivante"]').click();
+    assert.equal((await rang.innerText()).replace(/\s/g, ""), "2/2");
+    assert.ok(await page.locator('button[aria-label="Photo suivante"]').isDisabled(), "au bout, le chevron n'est pas éteint");
+    assert.equal(await page.locator("[data-atlas='vignette-de-la-rangee']").count(), 2, "la rangée du bas ne porte pas les deux photos");
+    await page.locator("[data-atlas='vignette-de-la-rangee']").first().click();
+    assert.equal((await rang.innerText()).replace(/\s/g, ""), "1/2", "la vignette de la rangée ne mène pas à sa photo");
+
+    // **Pas de « Retirer » ici, et c'est délibéré** : un retour est le compte
+    // rendu d'un salarié, il ne s'efface pas depuis l'écran qui le vérifie.
+    assert.equal(
+      await page.locator('button[aria-label="Retirer cette photo"]').count(),
+      0,
+      "on peut retirer une photo depuis un compte rendu"
+    );
+
+    // **Toucher HORS de la photo ferme aussi** — sa demande, planche en main.
+    // On vise le voile au-dessus du cadre, loin de la croix et des chevrons.
+    await page.mouse.click(ecran.width / 2, Math.max(8, photo.y - 40));
+    await enGrand.waitFor({ state: "detached", timeout: 10_000 });
+    // Et la croix ferme toujours.
+    await page.locator("[data-atlas='ouvrir-la-photo']").first().click();
+    await enGrand.waitFor({ state: "visible", timeout: 10_000 });
+    await page.locator('button[aria-label="Fermer"]').click();
+    await enGrand.waitFor({ state: "detached", timeout: 10_000 });
+
+    const tourne = await carte
+      .locator("svg")
+      .last()
+      .evaluate((e) => getComputedStyle(e.parentElement as HTMLElement).transform);
+    assert.notEqual(tourne, "none", "le chevron ne tourne pas : rien ne dit que la carte est ouverte");
+
+    await page.locator("[data-atlas='replier-le-retour']").click();
+    await page.waitForTimeout(400);
+    assert.equal(
+      await page.locator("[data-atlas='retour-deplie']").count(),
+      0,
+      "« Replier » ne referme pas la feuille"
+    );
+  });
+
+  await cas("L’AVOIR OUVERT L’ÉTEINT — et ça tient au rechargement", async () => {
+    // La pastille s’éteint sous le doigt ; ce qui compte, c’est qu’elle ne
+    // revienne pas le lendemain. On recharge donc, plutôt que de croire
+    // l’écran sur parole.
+    await page.goto(`${BASE}/termines/retours`, { waitUntil: "networkidle" });
+    assert.equal(
+      await page.locator("[data-atlas='retour-non-lu']").count(),
+      0,
+      "la pastille du retour revient alors qu’il l’a ouvert"
+    );
+    await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
+    assert.equal(
+      await page.locator("[data-atlas='compte-des-non-lus']").count(),
+      0,
+      "la barre compte encore un non-lu"
+    );
+    // **Et l’onglet RESTE** : sans quoi la page devient inatteignable le soir
+    // où il a tout lu.
+    const dit = await page.locator(RANGEE).innerText();
+    assert.match(dit, /Retours d'intervention/, "l’onglet a disparu avec la pastille");
+  });
+
+  // Les lectures posées pour isoler la mesure repartent : elles appartiennent
+  // aux suites voisines, pas à celle-ci.
+  if (dejaLa.length > 0) {
+    await pool.query(`DELETE FROM retours_intervention_vus WHERE id = ANY($1::uuid[])`, [
+      dejaLa.map((l) => l.id),
+    ]);
+  }
+  await pool.query(`DELETE FROM retours_intervention_taches WHERE retour_id = $1`, [pose[0].id]);
+  await pool.query(`DELETE FROM retours_intervention_photos WHERE retour_id = $1`, [pose[0].id]);
+  await pool.query(`DELETE FROM retours_intervention WHERE chantier_id = $1`, [chantierId]);
+  for (const p of lesPhotos) await pool.query(`DELETE FROM photos WHERE id = $1`, [p.id]);
+  for (const cle of clesPhotos) rmSync(path.join(RACINE_STOCKAGE, cle), { force: true });
+  await pool.query(`UPDATE chantiers SET termine_at = $2 WHERE id = $1`, [
+    chantierId,
+    avant[0]?.termine_at ?? null,
+  ]);
+  await pool.end();
+  await navigateur.close();
+  console.log(`\n${echecs === 0 ? "✅" : "❌"} Les portes et l’œil de Terminés — ${echecs} échec(s).`);
+  process.exit(echecs === 0 ? 0 : 1);
+}
+
+main().catch(async (e) => {
+  console.error(e);
+  await pool.end().catch(() => {});
+  process.exit(1);
+});

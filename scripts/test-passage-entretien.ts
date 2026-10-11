@@ -7,7 +7,7 @@ import { creerClient, mettreAJourClient } from "../src/server/repositories/clien
 import {
   ajouterPrestation,
   listerPrestations,
-  poserModeleFourni,
+  remettreLeModele,
   retirerPrestation,
   renommerPrestation,
 } from "../src/server/repositories/prestations-entretien";
@@ -27,7 +27,8 @@ import {
   empechementEnvoi,
   libelleMinutes,
   minutesValides,
-  recomposerPourClient,
+  cocherCommeLaDerniereFois,
+  constatDesCoches,
 } from "../src/lib/passage-entretien";
 
 // Le PASSAGE d'entretien — la fiche qu'il coche sur un chantier.
@@ -38,9 +39,9 @@ import {
 //      plus jamais, quoi qu'il advienne du modèle. C'est le seul défaut de
 //      cette liste qui ne se rattrape pas : il se découvre le jour où un client
 //      conteste un passage, et le rapport ne dit plus ce qu'il disait.
-//   2. **L'arrangement C** (17 août) — nommer le client replie la fiche sur ses
-//      prestations *sans perdre une seule coche*. Perdre trois coches parce
-//      qu'on a nommé le client au milieu serait pire que ne rien pré-remplir.
+//   2. **Nommer le client** — sa règle du 22 septembre 2026 : la fiche recoche
+//      ce que son dernier rapport portait, sans retirer une ligne ni perdre une
+//      coche du jour.
 //   3. **L'isolation** — c'est ce dont un défaut ne se voit jamais à l'écran.
 //   4. Les refus se RENDENT, ils ne lèvent pas : l'exception d'une action
 //      serveur n'arrive jamais jusqu'au patron (`HANDOVER.md`, piège 0 ter).
@@ -66,6 +67,9 @@ async function contexte(suffixe: string) {
 
 /** Une fiche minuscule, pour que les cas se lisent : quatre lignes nommées. */
 async function petitModele(ctx: { utilisateurId: string; entrepriseId: string }) {
+  // Un compte neuf porte le modèle Atlas d'office (29 septembre 2026) : le
+  // petit modèle le remplace, pour que les cas se lisent sur quatre lignes.
+  for (const p of await listerPrestations(ctx)) await retirerPrestation(ctx, p.id);
   for (const libelle of ["Tonte", "Haies", "Massifs", "Feuilles"]) {
     const r = await ajouterPrestation(ctx, { famille: "Entretien", libelle });
     assert.equal(r.ok, true, `le petit modèle n'a pas pu poser « ${libelle} »`);
@@ -138,61 +142,83 @@ async function main() {
     assert.equal(minutesValides(undefined), null);
   });
 
-  await cas("nommer le client replie la fiche SANS perdre une coche", () => {
+  await cas("nommer le client recoche son dernier passage, et ne retire AUCUNE ligne", () => {
+    // **Sa règle du 22 septembre 2026**, qui remplace le repli du 17 août :
+    // *« ce qui a déjà été coché par le passé se recoche automatiquement, mais
+    // les 20 points qui composent ma fiche doivent être présents ! Car si j'ai
+    // fait quelque chose en plus ce jour, je le coche »*.
     const actuelles = [
-      { famille: "E", libelle: "Tonte", ordre: 10, faite: true },
+      { famille: "E", libelle: "Tonte", ordre: 10, faite: false },
       { famille: "E", libelle: "Haies", ordre: 20, faite: false },
       { famille: "E", libelle: "Massifs", ordre: 30, faite: true },
       { famille: "E", libelle: "Feuilles", ordre: 40, faite: false },
     ];
-    // Ce client n'a jamais pris que la tonte et les haies.
-    const gardees = recomposerPourClient(actuelles, [{ libelle: "Tonte" }, { libelle: "Haies" }]);
+    const lignes = cocherCommeLaDerniereFois(actuelles, [{ libelle: "Tonte" }, { libelle: "Haies" }]);
 
-    // « Massifs » n'est PAS chez ce client — mais il vient de le faire. Une
-    // fiche qui efface un geste déjà fait est pire qu'une fiche trop longue.
-    assert.deepEqual(
-      gardees.map((l) => l.libelle),
-      ["Tonte", "Haies", "Massifs"]
-    );
-    // « Feuilles » tombe : ni coché, ni chez ce client.
-    assert.equal(gardees.some((l) => l.libelle === "Feuilles"), false);
-    // L'ordre vient de l'écran : la fiche ne se réorganise pas sous ses doigts.
-    assert.deepEqual(gardees.map((l) => l.ordre), [10, 20, 30]);
+    // Toutes les lignes restent, dans l'ordre de l'écran.
+    assert.deepEqual(lignes.map((l) => l.libelle), ["Tonte", "Haies", "Massifs", "Feuilles"]);
+    // Ce qu'il a coché la dernière fois se recoche ; ce qu'il vient de cocher reste.
+    assert.deepEqual(lignes.map((l) => l.faite), [true, true, true, false]);
   });
 
-  await cas("un geste saisonnier survit aux passages où il n'a pas lieu", () => {
-    // **Le défaut qu'un repli sur le seul dernier passage aurait fabriqué.** La
-    // taille de haie d'automne ne se fait qu'une fois l'an : en mars, elle
-    // n'était pas sur le passage de février. Elle doit rester proposée, sinon
-    // il ne pourra plus la cocher en octobre — et il n'a pas les Réglages sous
-    // la main sur un chantier.
-    const gardees = recomposerPourClient(
-      [
-        { famille: "E", libelle: "Tonte", ordre: 10, faite: false },
-        { famille: "E", libelle: "Taille de haie automne", ordre: 20, faite: false },
-        { famille: "E", libelle: "Massifs", ordre: 30, faite: false },
-      ],
-      [{ libelle: "Tonte" }, { libelle: "Taille de haie automne" }]
+  await cas("la phrase compte les cases COCHÉES, pas celles reprises une fois", () => {
+    // **Sa capture du 24 septembre 2026** : *« y'a marqué 5 prestations cochées,
+    // celles du dernier chantier, alors qu'il y en a 8 de cochées »*. Le
+    // chiffre était compté UNE fois, au moment de nommer le client, puis ne
+    // bougeait plus : ni ce qui était coché avant, ni ce qui l'était après.
+    const l = (id: string, faite: boolean) => ({ id, faite });
+    const reprises = new Set(["a", "b"]);
+    // Juste après la reprise : les cases cochées sont exactement celles reprises.
+    assert.equal(
+      constatDesCoches([l("a", true), l("b", true), l("c", false)], reprises),
+      "2 prestations cochées, celles du dernier chantier."
     );
-    assert.deepEqual(gardees.map((l) => l.libelle), ["Tonte", "Taille de haie automne"]);
+    // Il coche une case de plus : le chiffre suit, et la reprise ne se prétend plus.
+    assert.equal(
+      constatDesCoches([l("a", true), l("b", true), l("c", true)], reprises),
+      "3 prestations cochées."
+    );
+    // Une case cochée AVANT de nommer le client compte aussi.
+    assert.equal(constatDesCoches([l("a", true), l("c", true)], new Set(["a"])), "2 prestations cochées.");
+    assert.equal(constatDesCoches([l("a", true)], new Set(["a"])), "1 prestation cochée, celle du dernier chantier.");
+    // Rien de coché, ou aucun client nommé sur cet écran : rien à dire.
+    assert.equal(constatDesCoches([l("a", false)], reprises), null);
+    assert.equal(constatDesCoches([l("a", true)], null), null);
+    // Premier passage chez lui : rien n'a été repris, la phrase ne se pose pas.
+    assert.equal(constatDesCoches([l("a", true)], new Set()), null);
   });
 
-  await cas("premier passage chez un client : rien ne se replie", () => {
+  await cas("CHANGER de client décoche tout ce qui venait du premier", () => {
+    // **Sa règle du 24 septembre 2026** : *« les cases doivent se décocher,
+    // car seules les cases du nouveau client doivent apparaître »*.
+    const actuelles = [
+      { famille: "E", libelle: "Tonte", ordre: 10, faite: true },
+      { famille: "E", libelle: "Haies", ordre: 20, faite: true },
+      { famille: "E", libelle: "Massifs", ordre: 30, faite: false },
+    ];
+    const lignes = cocherCommeLaDerniereFois(actuelles, [{ libelle: "Massifs" }], { changeDeClient: true });
+    assert.deepEqual(lignes.map((l) => l.faite), [false, false, true]);
+    // Au PREMIER client nommé, ce qu'il a coché à la main reste.
+    const premier = cocherCommeLaDerniereFois(actuelles, [{ libelle: "Massifs" }]);
+    assert.deepEqual(premier.map((l) => l.faite), [true, true, true]);
+  });
+
+  await cas("premier passage chez un client : rien ne se coche tout seul", () => {
     const actuelles = [
       { famille: "E", libelle: "Tonte", ordre: 10, faite: false },
       { famille: "E", libelle: "Haies", ordre: 20, faite: false },
     ];
-    assert.deepEqual(recomposerPourClient(actuelles, []), actuelles);
+    assert.deepEqual(cocherCommeLaDerniereFois(actuelles, []), actuelles);
   });
 
   await cas("la comparaison des libellés reste indulgente entre deux passages", () => {
     // Le libellé a été renommé « tonte » en minuscules dans les Réglages entre
-    // deux passages : c'est le même geste, la ligne doit revenir.
-    const gardees = recomposerPourClient(
+    // deux passages : c'est le même geste, il se recoche.
+    const lignes = cocherCommeLaDerniereFois(
       [{ famille: "E", libelle: "tonte", ordre: 10, faite: false }],
       [{ libelle: "Tonte" }]
     );
-    assert.equal(gardees.length, 1);
+    assert.equal(lignes[0].faite, true);
   });
 
   await cas("le bouton d'envoi éteint DIT pourquoi", () => {
@@ -245,6 +271,9 @@ async function main() {
 
   await cas("une fiche s'ouvre COPIÉE du modèle, et refuse si le modèle est vide", async () => {
     const ctx = await contexte("ouverture");
+    // Un compte neuf porte le modèle d'office (29 septembre 2026) : on le vide,
+    // comme le patron qui aurait tout retiré.
+    for (const p of await listerPrestations(ctx)) await retirerPrestation(ctx, p.id);
     // Le modèle est vide : ouvrir donnerait un écran blanc dont il ne saurait
     // rien faire. Le refus le dit, plutôt que de laisser passer.
     assert.deepEqual(await ouvrirPassage(ctx, "2026-08-18"), {
@@ -252,7 +281,7 @@ async function main() {
       refus: "modele_vide",
     });
 
-    assert.equal((await poserModeleFourni(ctx)).ok, true);
+    assert.equal((await remettreLeModele(ctx)).ok, true);
     const modele = await listerPrestations(ctx);
     const ouverte = await ouvrirPassage(ctx, "2026-08-18");
     assert.equal(ouverte.ok, true);
@@ -367,73 +396,55 @@ async function main() {
     assert.equal(empreintes[0].length, 64, "l'empreinte n'est pas un SHA-256");
   });
 
-  await cas("le passage suivant chez le même client reprend SES prestations", async () => {
-    // C'est le pont demandé le 17 août : « à partir de cette fiche chantier,
-    // faire un pont vers la case client ». Sans ce cas, la fiche repartirait du
-    // modèle complet à chaque fois et il retrierait vingt lignes douze fois par an.
+  await cas("le passage suivant chez le même client recoche son DERNIER passage", async () => {
+    // Sa règle du 22 septembre 2026 : ce qui a été coché la dernière fois se
+    // recoche, et toute la fiche reste là pour ce qu'il fait en plus.
     const ctx = await contexte("pont");
     await petitModele(ctx);
     const client = await creerClient(ctx, { nom: "Lefèvre" });
 
-    const premier = await ouvrirPassage(ctx, "2026-06-01");
-    assert.equal(premier.ok, true);
-    if (!premier.ok) return;
-    assert.equal((await nommerClient(ctx, premier.id, client.id)).ok, true);
-    // Chez lui, on ne fait que la tonte et les haies : c'est ce qu'on coche,
-    // et c'est ce que le rapport parti dira qu'il prend.
-    const lu1 = await lirePassage(ctx, premier.id);
-    for (const l of lu1!.lignes.filter((l) => ["Tonte", "Haies"].includes(l.libelle))) {
-      assert.equal((await cocherLigne(ctx, premier.id, l.id, true)).ok, true);
+    async function envoyer(jour: string, cochees: string[]) {
+      const p = await ouvrirPassage(ctx, jour);
+      assert.equal(p.ok, true);
+      if (!p.ok) throw new Error("ouverture refusée");
+      assert.equal((await nommerClient(ctx, p.id, client.id)).ok, true);
+      const lu = await lirePassage(ctx, p.id);
+      for (const l of lu!.lignes) {
+        assert.equal((await cocherLigne(ctx, p.id, l.id, cochees.includes(l.libelle))).ok, true);
+      }
+      assert.equal((await figerPassage(ctx, p.id)).ok, true);
     }
-    assert.equal((await figerPassage(ctx, premier.id)).ok, true);
+    await envoyer("2026-06-01", ["Tonte", "Haies"]);
+    await envoyer("2026-06-15", ["Tonte"]);
 
-    // Passage suivant : la fiche s'ouvre nue, sur le modèle COMPLET.
-    const second = await ouvrirPassage(ctx, "2026-06-15");
-    assert.equal(second.ok, true);
-    if (!second.ok) return;
-    const nu = await lirePassage(ctx, second.id);
-    assert.equal(nu!.lignes.length, 4, "la fiche ne s'ouvre pas sur le modèle complet");
-
-    // Il coche « Feuilles » AVANT de nommer le client — un geste qu'il ne fait
-    // pas d'habitude chez lui. Nommer le client ne doit pas l'effacer.
+    const suivant = await ouvrirPassage(ctx, "2026-07-01");
+    assert.equal(suivant.ok, true);
+    if (!suivant.ok) return;
+    const nu = await lirePassage(ctx, suivant.id);
+    // Il coche « Feuilles » AVANT de nommer le client : nommer ne doit pas l'effacer.
     const feuilles = nu!.lignes.find((l) => l.libelle === "Feuilles")!;
-    assert.equal((await cocherLigne(ctx, second.id, feuilles.id, true)).ok, true);
+    assert.equal((await cocherLigne(ctx, suivant.id, feuilles.id, true)).ok, true);
 
-    const replie = await nommerClient(ctx, second.id, client.id);
-    assert.equal(replie.ok, true);
-    const lu2 = await lirePassage(ctx, second.id);
+    const r = await nommerClient(ctx, suivant.id, client.id);
+    assert.equal(r.ok, true);
+    if (r.ok) {
+      assert.equal(r.reprises.length, 1, "le compte des lignes recochées est faux");
+      // Feuilles, cochée avant, compte dans la phrase : 2, et pas « celles du
+      // dernier chantier », puisque Feuilles n'en vient pas.
+      assert.equal(constatDesCoches(r.lignes, new Set(r.reprises)), "2 prestations cochées.");
+    }
+    const lu = await lirePassage(ctx, suivant.id);
+    assert.equal(lu!.lignes.length, 4, "une ligne de la fiche a disparu en nommant le client");
     assert.deepEqual(
-      lu2!.lignes.map((l) => l.libelle).sort(),
-      ["Feuilles", "Haies", "Tonte"],
-      "le repli n'a pas gardé le geste déjà coché, ou n'a pas repris le dernier passage"
+      lu!.lignes.filter((l) => l.faite).map((l) => l.libelle).sort(),
+      ["Feuilles", "Tonte"],
+      "ce n'est pas le DERNIER passage qui a été recoché, ou le geste du jour s'est perdu"
     );
-    assert.equal(lu2!.clientNom, "Lefèvre");
-    assert.equal(
-      lu2!.lignes.find((l) => l.libelle === "Feuilles")?.faite,
-      true,
-      "nommer le client a décoché un geste déjà fait"
-    );
-
-    // **Ce qu'on lui a fait une fois entre dans son répertoire.** On envoie ce
-    // second rapport, puis on ouvre un troisième passage : « Feuilles » doit
-    // revenir tout seul, même décochée cette fois-là.
-    assert.equal((await figerPassage(ctx, second.id)).ok, true);
-    const troisieme = await ouvrirPassage(ctx, "2026-07-01");
-    assert.equal(troisieme.ok, true);
-    if (!troisieme.ok) return;
-    assert.equal((await nommerClient(ctx, troisieme.id, client.id)).ok, true);
-    const lu3 = await lirePassage(ctx, troisieme.id);
-    assert.deepEqual(
-      lu3!.lignes.map((l) => l.libelle).sort(),
-      ["Feuilles", "Haies", "Tonte"],
-      "le répertoire du client ne s'est pas enrichi du geste du passage précédent"
-    );
-    assert.equal(lu3!.lignes.every((l) => !l.faite), true, "une ligne arrive déjà cochée");
   });
 
   await cas("un brouillon abandonné ne dicte rien au passage suivant", async () => {
-    // Seul le dernier passage ENVOYÉ fait foi : une fiche ouverte par erreur
-    // puis laissée en plan ne doit pas décider de ce que ce client prend.
+    // Seul un passage ENVOYÉ fait foi : une fiche ouverte par erreur puis
+    // laissée en plan ne doit rien cocher à sa place.
     const ctx = await contexte("brouillon");
     await petitModele(ctx);
     const client = await creerClient(ctx, { nom: "Petit" });
@@ -442,13 +453,16 @@ async function main() {
     assert.equal(abandonne.ok, true);
     if (!abandonne.ok) return;
     assert.equal((await nommerClient(ctx, abandonne.id, client.id)).ok, true);
+    const luA = await lirePassage(ctx, abandonne.id);
+    assert.equal((await cocherLigne(ctx, abandonne.id, luA!.lignes[0].id, true)).ok, true);
 
     const suivant = await ouvrirPassage(ctx, "2026-06-21");
     assert.equal(suivant.ok, true);
     if (!suivant.ok) return;
     assert.equal((await nommerClient(ctx, suivant.id, client.id)).ok, true);
     const lu = await lirePassage(ctx, suivant.id);
-    assert.equal(lu!.lignes.length, 4, "un brouillon a replié la fiche du passage suivant");
+    assert.equal(lu!.lignes.length, 4);
+    assert.equal(lu!.lignes.some((l) => l.faite), false, "un brouillon a coché le passage suivant");
   });
 
   await cas("une durée aberrante se REFUSE, elle ne se corrige pas en silence", async () => {
@@ -467,6 +481,37 @@ async function main() {
     // Effacer la durée reste permis : il peut se raviser.
     assert.equal((await majPassage(ctx, ouverte.id, { minutes: null })).ok, true);
     assert.equal((await lirePassage(ctx, ouverte.id))!.minutes, null);
+  });
+
+  await cas("le jour se change DANS la fiche, tant qu'elle n'est pas partie", async () => {
+    // **Sa demande du 24 septembre 2026** : *« le jeudi 24 septembre doit
+    // apparaître lorsque je clique sur Créer une fiche, dans la création, pas
+    // en dehors »*. La fiche s'ouvre sur le jour même ; il le change dedans.
+    const ctx = await contexte("jour");
+    await petitModele(ctx);
+    const client = await creerClient(ctx, { nom: "Faucher" });
+    const ouverte = await ouvrirPassage(ctx, "2026-09-24");
+    assert.equal(ouverte.ok, true);
+    if (!ouverte.ok) return;
+
+    assert.equal((await majPassage(ctx, ouverte.id, { jour: "2026-09-23" })).ok, true);
+    assert.equal((await lirePassage(ctx, ouverte.id))!.jour, "2026-09-23", "le jour n'a pas changé");
+    // Le 31 février s'écrit sur dix caractères : il se refuse quand même.
+    assert.deepEqual(await majPassage(ctx, ouverte.id, { jour: "2026-02-31" }), {
+      ok: false,
+      refus: "jour_invalide",
+    });
+    assert.equal((await lirePassage(ctx, ouverte.id))!.jour, "2026-09-23");
+
+    // Parti chez le client, le jour ne bouge plus : c'est la date qu'il a lue.
+    assert.equal((await nommerClient(ctx, ouverte.id, client.id)).ok, true);
+    const lue = await lirePassage(ctx, ouverte.id);
+    assert.equal((await cocherLigne(ctx, ouverte.id, lue!.lignes[0].id, true)).ok, true);
+    assert.equal((await figerPassage(ctx, ouverte.id)).ok, true);
+    assert.deepEqual(await majPassage(ctx, ouverte.id, { jour: "2026-09-22" }), {
+      ok: false,
+      refus: "deja_envoye",
+    });
   });
 
   await cas("une entreprise ne voit ni ne touche le passage d'une autre", async () => {

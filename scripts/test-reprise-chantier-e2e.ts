@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { Pool } from "pg";
+import { ADRESSE } from "./_adresse";
 
 // **« Il n'y a pas de mémoire dans les actions. »** — le patron, 13 août 2026.
 //
@@ -20,7 +21,7 @@ import { Pool } from "pg";
 // soit cliquable, et qu'on arrive sur un écran qui offre l'envoi. C'est ce
 // parcours-là qu'il a fait, et c'est celui-là qui était cassé.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function main() {
@@ -62,9 +63,10 @@ async function main() {
   // moins souvent qu'un exemple, et elle dit ce que le champ EST.
   await page.getByLabel(/Nom du client/i).fill(client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30000 });
-  const fiche = page.url();
+  // L'adresse se bâtit sur l'identifiant que l'aide rend : la relire dans
+  // le navigateur donnait « devis-complet » depuis que la fiche du chantier
+  // est retirée (`ARCHITECTURE.md` §254).
+  const fiche = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
   const id = fiche.split("/").pop()!;
 
   await cas("un chantier neuf se rouvre LÀ OÙ IL EN EST", async () => {
@@ -86,9 +88,13 @@ async function main() {
     const lien = page.locator(`a:has-text("${marque}")`).first();
     await lien.waitFor({ state: "visible", timeout: 20000 });
     const href = await lien.getAttribute("href");
-    assert.ok(
-      href === `/chantiers/${id}` || href === `/chantiers/${id}/devis-complet`,
-      `la ligne mène à « ${href} » : ce n'est ni la fiche du chantier ni son devis`
+    // **La fiche du chantier n'est plus une réponse acceptable** (4 septembre
+    // 2026, `ARCHITECTURE.md` §254) : son adresse ne rend qu'une redirection,
+    // et la laisser ici accepterait un aller-retour invisible au patron.
+    assert.equal(
+      href,
+      `/chantiers/${id}/devis-complet`,
+      `la ligne mène à « ${href} » au lieu du devis où il s'est arrêté`
     );
   });
 
@@ -159,7 +165,17 @@ async function main() {
       "la ligne ramène à la fiche : il devra refaire les étapes une à une"
     );
 
-    await lien.click();
+    // **ON APPUIE SUR LE NOM, comme lui.** Un appui au centre de la ligne
+    // tombait sur « Adresse non renseignée » — une cible de 44 px posée DANS
+    // l'ancre, qui mène à la fiche client depuis sa demande du 17 août 2026
+    // (*« lorsque s'affiche Adresse non renseignée, je puisse cliquer
+    // dessus »*), agrandie le 6 septembre. Ce chantier d'essai n'a pas
+    // d'adresse : la mention est donc là, et le contrôle appuyait dessus sans
+    // le savoir — puis accusait la reprise de mener ailleurs.
+    //
+    // Le geste du patron qui reprend son chantier, c'est le NOM
+    // (`CLAUDE.md` §5 quater).
+    await lien.locator("h2").click();
     await page.waitForURL(new RegExp(`/chantiers/${id}/devis-complet`), { timeout: 20000 });
   });
 
@@ -194,10 +210,33 @@ async function main() {
     );
   });
 
-  await cas("la fiche reste à un doigt — reprendre ne ferme aucune porte", async () => {
-    // Photos, dictée, tiroir : tout reste joignable par la flèche de retour.
-    const retour = page.locator(`a[href="/chantiers/${id}"]`).first();
+  await cas("reprendre ne ferme aucune porte — le devis garde une sortie qui SORT", async () => {
+    // **Ce que ce cas défend, et ce qu'il a cessé de défendre — 9 septembre
+    // 2026.** Il exigeait une destination écrite d'avance, la fiche client de
+    // sa règle du 31 août. Depuis que la flèche ramène à la page d'où l'on
+    // vient (`src/lib/journal-de-navigation.ts`), cette destination dépend du
+    // chemin parcouru : l'exiger ici reviendrait à réclamer le détour qu'il a
+    // fait retirer (`CLAUDE.md` §5 bis).
+    //
+    // Reste ce qui n'a jamais dépendu du chemin, et qui est le vrai sujet de
+    // cette suite : reprendre un chantier ne doit pas fabriquer un cul-de-sac.
+    // La flèche existe, elle mène dans Atlas, et elle QUITTE le devis — une
+    // page nue sans retour possible est le geste le plus coûteux de
+    // l'application. Où elle mène est éprouvé là où c'est le sujet
+    // (`test-retour-page-davant-e2e.ts`).
+    const retour = page.locator('[data-atlas="retour-du-devis"]').first();
     await retour.waitFor({ state: "visible", timeout: 15000 });
+    const cible = await retour.getAttribute("href");
+    assert.ok(
+      cible?.startsWith("/") && !cible.startsWith("//"),
+      `la flèche du devis mène à « ${cible} » : ce n'est pas un écran d'Atlas`
+    );
+    await retour.click();
+    await page.waitForURL((u) => !u.pathname.endsWith("/devis-complet"), { timeout: 30_000 });
+    assert.ok(
+      !new URL(page.url()).pathname.endsWith("/devis-complet"),
+      `la flèche a laissé sur le devis : ${page.url()}`
+    );
   });
 
   await contexte.close();

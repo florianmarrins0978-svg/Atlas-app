@@ -3,13 +3,13 @@
 import { useState } from "react";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors } from "@/lib/design-tokens";
-import { composerMessageClient, lienTransmission, type CanalClient } from "@/lib/message-client";
+import { composerMessageClient, lienTransmission, type CanalClient, type EnvoiDuDevis } from "@/lib/message-client";
 import { ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
 import { useLienPourLeClient } from "@/lib/use-adresse-client";
 import { destinataireLisible } from "@/lib/numero-lisible";
 import { marquerDepartMessagerie, useRetourDeMessagerie } from "@/lib/depart-messagerie";
 import { enregistrerCoordonneeClientAction } from "./actions";
-import type { Civilite } from "@/lib/civilite";
+import type { CiviliteClient } from "@/lib/civilite";
 
 // Ouvre l'application de messagerie du patron, message prêt à partir, **au bon
 // destinataire**.
@@ -45,7 +45,7 @@ type Props = {
   clientId: string | null;
   clientNom: string;
   /** Ce qu'il a choisi au-dessus du nom (migration 0038). */
-  clientCivilite: Civilite | null;
+  clientCivilite: CiviliteClient | null;
   entrepriseNom: string;
   /**
    * Le gabarit qu'il a écrit dans « Devis & factures ». `null` : celui d'Atlas.
@@ -65,6 +65,8 @@ type Props = {
   telephone: string;
   email: string;
   lien: string;
+  /** Ce que l'envoi a fixé et que la relance redit tel quel : le jour où le lien meurt, la case « autre date ». */
+  envoi: EnvoiDuDevis;
   /** Le devis est-il DÉJÀ chez le client ? Commande le libellé du bouton. */
   relance: boolean;
 };
@@ -74,13 +76,18 @@ type Props = {
 // premier envoi ; devant un devis que le client a déjà en main, il fait croire
 // qu'on va lui en envoyer un second. C'est « relancer » — le même lien, tel
 // quel — et c'est le mot que le patron a retenu sur la maquette 34.
+//
+// **« Rouvrir », depuis le 3 octobre 2026.** Atlas ne sait pas si le message
+// est vraiment parti : annulé dans Messages, le devis est figé et son client
+// n'a rien. « Relancer » mentait alors (Mr Lolo). « Rouvrir » est vrai dans
+// les deux cas, et ne fait pas croire à un second devis. Sa décision.
 const LIBELLE: Record<
   CanalClient,
   { bouton: string; relance: string; bascule: string; champ: string; exemple: string; manque: string; invite: string }
 > = {
   sms: {
     bouton: "Ouvrir le SMS tout prêt",
-    relance: "Relancer par SMS",
+    relance: "Rouvrir le SMS",
     bascule: "Plutôt par SMS",
     champ: "Numéro de téléphone",
     exemple: "06 12 34 56 78",
@@ -89,7 +96,7 @@ const LIBELLE: Record<
   },
   email: {
     bouton: "Ouvrir l'e-mail tout prêt",
-    relance: "Relancer par e-mail",
+    relance: "Rouvrir l’e-mail",
     bascule: "Plutôt par e-mail",
     champ: "Adresse e-mail",
     exemple: "client@exemple.fr",
@@ -108,6 +115,7 @@ export default function TransmettreAuClient({
   telephone,
   email,
   lien,
+  envoi,
   relance,
 }: Props) {
   const [erreur, setErreur] = useState<string | null>(null);
@@ -129,7 +137,7 @@ export default function TransmettreAuClient({
   // quand on revient de Messages, il la réveille. Aucun événement de navigation
   // ne se produit, et un `focus` seul se déclenche aussi en changeant d'onglet
   // sans jamais être parti.
-  useRetourDeMessagerie();
+  useRetourDeMessagerie("/");
 
   // L'origine du lien, remplacée par celle du navigateur dès qu'il a la main
   // (`use-adresse-client.ts`).
@@ -141,6 +149,7 @@ export default function TransmettreAuClient({
     entrepriseNom,
     lien: lienOuvrable,
     modele: modeleMessage,
+    envoi,
   });
   const autre: CanalClient = canalChoisi === "sms" ? "email" : "sms";
   const destinataire = coordonnees[canalChoisi];
@@ -201,8 +210,8 @@ export default function TransmettreAuClient({
             href={adresse(canalChoisi, destinataire)}
             data-transmission={canalChoisi}
             onClick={() => marquerDepartMessagerie("devis", clientNom)}
-            className="block w-full rounded-full py-3 text-center text-[15px] font-medium text-white"
-            style={{ backgroundColor: colors.rust }}
+            className="atlas-plein block w-full rounded-full py-3 text-center text-[15px] font-medium text-white"
+            style={{ backgroundColor: colors.plein }}
           >
             {relance ? LIBELLE[canalChoisi].relance : LIBELLE[canalChoisi].bouton}
           </a>
@@ -217,7 +226,7 @@ export default function TransmettreAuClient({
               de porter le numéro brut — c'est `lienTransmission` qui retire les
               espaces, et non cette ligne. */}
           <p className="mt-2 text-center text-[12px]" style={{ color: colors.muted }}>
-            {`${canalChoisi === "sms" ? "Au" : "À"} ${destinataireLisible(canalChoisi, destinataire)} — c'est vous qui l'envoyez.`}
+            {`${canalChoisi === "sms" ? "Au" : "À"} ${destinataireLisible(canalChoisi, destinataire)}. C'est vous qui l'envoyez.`}
           </p>
         </>
       ) : (

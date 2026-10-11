@@ -71,7 +71,11 @@ export default function EditeurMessage({
         puce.style.padding = "0 4px";
         // Un voile doré très léger : la puce se lit comme un bloc, sans crier.
         puce.style.backgroundColor = "color-mix(in srgb, currentColor 12%, transparent)";
-        puce.style.whiteSpace = "nowrap";
+        // **Une puce peut être une phrase** depuis le 29 septembre 2026 (la
+        // durée du lien, la phrase « autre date ») : elle passe à la ligne comme
+        // le texte, sans quoi elle sortait du cadre sur un téléphone.
+        puce.style.boxDecorationBreak = "clone";
+        puce.style.setProperty("-webkit-box-decoration-break", "clone");
         puce.style.userSelect = "none";
         el.appendChild(puce);
       }

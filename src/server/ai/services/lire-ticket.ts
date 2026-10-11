@@ -1,4 +1,5 @@
 import { getFournisseurLLM } from "../providers/llm/fabrique";
+import { METIER_ATLAS_COURT } from "../../../lib/metier-atlas";
 import { tvaDepuisTtc } from "@/lib/achat-tva";
 
 /**
@@ -41,7 +42,9 @@ export type ResultatLecture =
   | { ok: true; ticket: TicketLu }
   | { ok: false; raison: string };
 
-const SYSTEME = `Tu lis des tickets de caisse et des factures d'achat français, pour un artisan élagueur.
+const SYSTEME = `${METIER_ATLAS_COURT}
+
+Tu lis ses tickets de caisse et ses factures d'achat.
 Tu réponds UNIQUEMENT par un objet JSON, sans phrase avant ni après, sans balises de code.
 Champs attendus : fournisseur (string|null), date (string|null au format AAAA-MM-JJ),
 total_ttc (number|null), taux_tva (number|null, en pour-cent), tva (number|null).

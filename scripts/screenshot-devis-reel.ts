@@ -1,6 +1,7 @@
 import { chromium, devices } from "playwright";
 import { mkdirSync, writeFileSync } from "fs";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
 
 const OUT = "artifacts/screenshots/step-24-devis-reel";
 mkdirSync(OUT, { recursive: true });
@@ -14,9 +15,9 @@ async function main() {
 
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', "M. Capture");
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
-  const chantierUrl = page.url();
+  const chantierUrl = `http://localhost:3000/chantiers/${idChantier}`;
 
   await page.goto(`${chantierUrl}/prix`, { waitUntil: "networkidle" });
   await page.click("text=+ Ajouter une ligne");
@@ -24,7 +25,7 @@ async function main() {
   await page.click("text=+ Ajouter une ligne");
   await page.waitForTimeout(300);
   const inputs = page.locator("form input");
-  await inputs.nth(0).fill("Main d'œuvre — 2 hommes × 2 jours");
+  await inputs.nth(0).fill("Main d'œuvre, 2 hommes × 2 jours");
   await inputs.nth(1).fill("1120.00");
   await inputs.nth(2).fill("Forfait déplacement");
   await inputs.nth(3).fill("35.00");
@@ -34,7 +35,7 @@ async function main() {
   await page.goto(`${chantierUrl}/export`, { waitUntil: "networkidle" });
   await page.screenshot({ path: `${OUT}/01-avant-envoi.png`, fullPage: true });
 
-  const apercuHref = await page.locator("text=Aperçu du PDF").getAttribute("href");
+  const apercuHref = fichierDemandeALaVisionneuse((await page.locator("text=Aperçu du PDF").getAttribute("href")) ?? "");
   const reponse = await page.request.get(`http://localhost:3000${apercuHref}`);
   writeFileSync(`${OUT}/apercu-devis.pdf`, await reponse.body());
 

@@ -89,6 +89,28 @@ export const LIMITES = {
    */
   reponseDevis: { max: 10, fenetreMs: 60 * 1000 },
   reponseDevisParSource: { max: 60, fenetreMs: 60 * 1000 },
+  /**
+   * OUVRIR ET CONFIRMER SA FACTURE depuis le lien public (9 septembre 2026).
+   *
+   * **Même famille que `reponseDevis`, et pour la même raison :** ce sont les
+   * seules écritures d'Atlas ouvertes SANS session. Ce seuil ne défend aucun
+   * secret — le jeton fait 256 bits tirés au sort et ne se devine pas ; il
+   * borne le COÛT d'un appel qu'on peut marteler sans rien voler.
+   *
+   * **Plus large que la réponse au devis, et c'est voulu.** Ces deux écritures
+   * sont idempotentes en base — l'ouverture ne s'écrit qu'une fois, l'accusé
+   * non plus (`envois-factures.ts`, les gardes `IS NULL`). Marteler ne change
+   * donc rien après le premier appel, là où une réponse à un devis peut poser
+   * une date de chantier à chaque fois.
+   *
+   * **Et le compteur par source ne s'applique QUE si la source est établie** —
+   * la leçon de la revue hostile de F9, qui vaut mot pour mot ici : sans
+   * `ATLAS_PROXY_SAUTS`, tous les visiteurs partagent un seul seau, et ce seuil
+   * deviendrait une arme retournée. Plus aucun client de plus aucun artisan ne
+   * pourrait confirmer sa facture. La condition vit au point d'appel.
+   */
+  receptionFacture: { max: 20, fenetreMs: 60 * 1000 },
+  receptionFactureParSource: { max: 120, fenetreMs: 60 * 1000 },
   assistant: { max: 20, fenetreMs: 60 * 1000 }, // 20 requêtes IA / minute / entreprise
   confirmationProposition: { max: 30, fenetreMs: 60 * 1000 },
   televersementFichier: { max: 20, fenetreMs: 60 * 1000 },
@@ -102,6 +124,31 @@ export const LIMITES = {
   // protège pas Atlas, il évite que l'adresse publique du banc d'essai serve de
   // relais vers un service public qui, lui, nous couperait.
   rechercheAdresse: { max: 120, fenetreMs: 60 * 1000 },
+  /**
+   * Ouvrir la page de paiement — comptée PAR ENTREPRISE, et serrée.
+   *
+   * **Chaque appui crée un objet chez le prestataire**, et il y reste. Un
+   * double appui nerveux sur un réseau lent — le geste ordinaire d'un artisan
+   * sur un chantier — fabriquerait autant de sessions de paiement qu'il y a
+   * d'appuis, et elles encombreraient son tableau de bord le jour où il
+   * cherche la bonne.
+   *
+   * **Six par minute, pas moins :** il a le droit d'hésiter entre trois
+   * formules et deux périodicités avant de se décider, et un refus au
+   * quatrième essai se lirait comme une panne. Ce seuil borne le gaspillage,
+   * il n'arbitre pas son choix.
+   */
+  ouvrirLePaiement: { max: 6, fenetreMs: 60 * 1000 },
+  /**
+   * « Recevoir un code » du mot de passe oublié, compté par SOURCE.
+   *
+   * Chaque adresse est déjà bornée à trois codes par quart d'heure, en base
+   * (`src/lib/code-verification.ts`). Ce seuil-ci borne l'autre abus : faire
+   * partir un code vers cent adresses différentes depuis un même poste. Il
+   * reste large parce que, sans `ATLAS_PROXY_SAUTS`, tous les visiteurs
+   * partagent la même source (même raisonnement que `cleAppareil`).
+   */
+  motDePasseOublie: { max: 30, fenetreMs: 15 * 60 * 1000 },
 } as const;
 
 export type ResultatLimite = { autorise: true } | { autorise: false; retryAfterMs: number };
@@ -110,6 +157,24 @@ export interface MagasinLimite {
   // Incrémente le compteur pour `cle` dans la fenêtre courante et renvoie le
   // résultat. Implémentations : mémoire (dev/test) et Redis (production).
   verifierEtIncrementer(cle: string, max: number, fenetreMs: number): Promise<ResultatLimite>;
+
+  /**
+   * REND ce qu'un appel vient de consommer — sans jamais descendre sous zéro,
+   * ni ressusciter une clé expirée.
+   *
+   * **Pourquoi un seuil doit pouvoir rendre (17 septembre 2026).** Le compteur
+   * monte AVANT qu'on sache si le geste réussit : c'est ce qui le rend atomique,
+   * et il faut que ça le reste. Mais un geste qui aboutit n'a rien à consommer —
+   * un seuil anti-martèlement compte des essais qui RATENT. Sans ce retour,
+   * cinq connexions RÉUSSIES depuis un même wifi mettaient la sixième dehors,
+   * avec le bon mot de passe : *« un ami s'était connecté à mon appli via son
+   * tél, et sur le sien ça n'a pas marché »*.
+   *
+   * Rendre plutôt que « regarder puis consommer » : la seconde forme ouvre une
+   * fenêtre entre la lecture et l'écriture, et c'est par là qu'un martèlement
+   * passerait.
+   */
+  rendre(cle: string): Promise<void>;
 
   // Libère ce qui doit l'être. Facultatif : l'adaptateur mémoire n'a rien à
   // fermer. L'adaptateur Redis, lui, tient une connexion ouverte — et une

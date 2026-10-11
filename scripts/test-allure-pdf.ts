@@ -272,7 +272,7 @@ async function main() {
 
   await essai("une couleur de fond aberrante ne casse pas le devis", async () => {
     const { trace } = await composerDevisPdf(DEVIS, {
-      allure: { typographie: "playfair", fond: "bleu roi", accent: "" } as Allure,
+      allure: { typographie: "merriweather", fond: "bleu roi", accent: "" } as Allure,
     });
     // Elle retombe sur le défaut plutôt que d'empêcher le document de sortir.
     assert.equal(trace.fonds[0].couleur, ALLURE_PAR_DEFAUT.fond);

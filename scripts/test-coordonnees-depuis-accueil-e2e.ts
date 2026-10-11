@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import { devices } from "playwright";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **« Adresse non renseignée » ouvre l'écran du chantier.**
 //
@@ -31,7 +32,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 //      défaut serait corrigé partout sauf là où il l'a vu ;
 //   6. et la mention disparaît de l'accueil — il n'y a plus rien à compléter.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const ECRAN_DU_PATRON = devices["iPhone 13"];
 
 let echecs = 0;
@@ -63,16 +64,16 @@ async function main() {
   // produit « Chantier du … ». Fabriquer la ligne à la main éprouverait une
   // forme de donnée que l'application ne produit pas.
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-  const chantierId = page.url().split("/").pop()!.split("?")[0];
+  const chantierId = idChantier;
 
   // **La mention n'est PAS une ancre, et c'est voulu.** Une ligne de l'accueil
   // est un seul `<a>` — trois suites l'ont prouvé le 17 août en tombant d'un
   // coup quand ce lien avait été coupé en trois. La mention vit donc dans
   // l'ancre et détourne le geste ; son `data-href` dit où elle mène.
   const ligne = page.locator(
-    `[data-atlas="lieu-manquant"][data-href="/chantiers/${chantierId}/coordonnees"]`
+    `[data-atlas="lieu-manquant"][data-href^="/chantiers/${chantierId}/coordonnees"]`
   );
 
   await cas("la mention est un lien, et elle mène aux coordonnées de CE chantier", async () => {
@@ -100,16 +101,38 @@ async function main() {
   });
 
   await cas("le NOM du chantier, lui, garde sa reprise — « rien de plus »", async () => {
-    // S'il menait lui aussi aux coordonnées, la ligne changerait de destination
-    // et sa règle du 13 août — « que ça me renvoie à l'étape où je me suis
-    // arrêté » — cesserait de valoir. Il a dit « cliquer DESSUS ».
+    // Sa règle du 13 août : *« que ça me renvoie à l'étape où je me suis
+    // arrêté »*. Il a dit « cliquer DESSUS » — la mention est une seconde
+    // cible, elle ne remplace pas la première.
+    //
+    // ─── CE CONTRÔLE INTERDISAIT UNE DESTINATION ; IL EXIGE LA RÈGLE ────────
+    //
+    // Il refusait que le nom mène aux coordonnées, parce qu'à l'époque la
+    // reprise d'un chantier vide, c'était la fiche du chantier. Cette fiche est
+    // retirée le 4 septembre 2026 (`ARCHITECTURE.md` §254) : les photos et la
+    // dictée se reprennent désormais sur la fiche client, qui EST l'écran des
+    // coordonnées.
+    //
+    // **Sur un chantier où rien n'est fait, les deux cibles coïncident donc —
+    // et c'est juste dans les deux sens** : le nom mène là où le travail
+    // s'arrête, la mention mène là où l'adresse se remplit, et c'est le même
+    // écran parce que c'est le même geste. Interdire cette adresse ferait
+    // rougir un produit qui a raison.
+    //
+    // Ce qui reste à défendre, et qui est le fond : **le nom suit `lienDeReprise`**,
+    // il ne pointe pas sur une adresse écrite en dur. Dès qu'une dictée existe,
+    // les deux se séparent d'eux-mêmes.
     const cible = await page
       .locator(`a.atlas-brin:has-text("Chantier du")`)
       .first()
       .getAttribute("href");
     if (cible === null) throw new Error("le nom du chantier ne mène nulle part");
-    if (/\/coordonnees$/.test(cible)) {
-      throw new Error(`la ligne mène aux coordonnées (${cible}) : la mention n'est plus seule`);
+    const reprisesPossibles = /\/chantiers\/[0-9a-f-]{36}(\/coordonnees|\/devis-complet|\/prix|\/note-vocale)?$|^\/planning/;
+    if (!reprisesPossibles.test(cible)) {
+      throw new Error(`la ligne mène à « ${cible} » : ce n'est aucun écran de reprise`);
+    }
+    if (/\/chantiers\/[0-9a-f-]{36}$/.test(cible)) {
+      throw new Error(`la ligne mène à la fiche retirée (${cible}) : elle rebondirait`);
     }
   });
 
@@ -127,7 +150,7 @@ async function main() {
     // annonçait « 8 liens dans la ligne » et accusait la ligne d'un défaut qui
     // était le sien (`AGENTS.md` : un contrôle doit désigner le bon coupable).
     const saLigne = page.locator(
-      `.atlas-ligne:has([data-href="/chantiers/${chantierId}/coordonnees"])`
+      `.atlas-ligne:has([data-href^="/chantiers/${chantierId}/coordonnees"])`
     );
     const ancres = await saLigne.locator("a").count();
     if (ancres !== 1) {
@@ -173,8 +196,20 @@ async function main() {
         );
       }
     }
-    if (!ecran.includes("Ajouter une adresse client différente")) {
-      throw new Error("le lien vers l'adresse client différente manque de l'écran d'arrivée.");
+    // **On éprouve le GESTE, plus son libellé.** Ce contrôle lisait « Ajouter
+    // une adresse client différente » ; le 2 septembre 2026 ces cinq mots sont
+    // devenus « + Client », au bout de l'intitulé « Chantier » (planche
+    // « A — Épurée »). Un contrôle qui réclame un libellé rend l'écran
+    // impossible à retoucher — `CLAUDE.md` §5 bis. Ce qui compte, et qui
+    // survivra au prochain remaniement : il existe une commande qui fait
+    // apparaître la case de l'adresse du client.
+    const ouvrirAdresseClient = page.locator('[data-atlas="adresse-client"]');
+    if ((await ouvrirAdresseClient.count()) === 0) {
+      throw new Error("la commande qui ouvre l'adresse du client manque de l'écran d'arrivée.");
+    }
+    await ouvrirAdresseClient.click();
+    if ((await page.getByLabel("Adresse du client", { exact: true }).count()) === 0) {
+      throw new Error("la case « Adresse du client » ne s'ouvre pas quand on la demande.");
     }
   });
 
@@ -196,12 +231,16 @@ async function main() {
     if (/\bNOUVEAU\b/.test(ecran)) {
       throw new Error("l'écran dit encore « Nouveau » sur un chantier qui existe");
     }
-    const bouton = page.locator('[data-atlas="action-creation"]');
+    const bouton = page.locator('[data-atlas="action-ecrire"]');
     const dit = (await bouton.innerText()).replace(/\s+/g, " ").trim();
     if (/Créer le chantier/i.test(dit)) {
       throw new Error(`le bouton dit « ${dit} » : il ne créerait rien`);
     }
-    if (!/Enregistrer/i.test(dit)) throw new Error(`le bouton dit « ${dit} » au lieu d'enregistrer`);
+    // **Le même bouton qu'à la création — 17 septembre 2026.** « Enregistrer »
+    // ramenait à la liste ; il l'a refusé devant l'écran : *« normalement il y
+    // a la note vocale et en dessous il propose d'écrire le devis à la main »*.
+    if (/^Enregistrer$/i.test(dit)) throw new Error(`le bouton dit « ${dit} » : c'est celui qu'il a fait retirer`);
+    if (!/à la main/i.test(dit)) throw new Error(`le bouton dit « ${dit} » au lieu de proposer le devis à la main`);
   });
 
   const CLIENT = `Martins ${Date.now()}`;
@@ -209,8 +248,11 @@ async function main() {
     await page.locator('input[placeholder="Bernard"]').fill(CLIENT);
     await page.locator('input[placeholder="06 12 34 56 78"]').fill("0679984514");
     await page.locator('input[placeholder="12 rue des Lilas, Nantes"]').fill("10 rue des Lilas, Nantes");
-    await page.getByRole("button", { name: /Enregistrer/ }).click();
-    await page.waitForURL(new RegExp(`/chantiers/${chantierId}$`), { timeout: 30_000 });
+    await page.getByRole("button", { name: /à la main/ }).click();
+    // **On arrive AU DEVIS, ce qu'il a tapé enregistré** — 17 septembre 2026.
+    // Le bouton dit où il mène, et c'est le même chemin qu'une fiche neuve ;
+    // la liste reste à une flèche (`retourDesCoordonnees`).
+    await page.waitForURL(new RegExp(`/chantiers/${chantierId}/devis-complet`), { timeout: 30_000 });
 
     // **Le nom recalculé est ce qui fait disparaître la ligne fautive.** Sans
     // lui, la base porterait le bon client et l'accueil dirait encore

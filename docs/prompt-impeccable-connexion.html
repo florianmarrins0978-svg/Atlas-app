@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le prompt `/impeccable` pour la porte d'Atlas</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-prompt-impeccable-pour-la-porte-datlas">Le prompt <code>/impeccable</code> pour la porte d'Atlas</h1>
+<p>À coller après <code>/impeccable</code> dans une session neuve. Il tient seul.</p>
+<p>Écrit le 7 septembre 2026. C'est <strong>le premier écran que voit un artisan</strong>, et le seul du produit qui ne montre aucune donnée — donc le plus libre.</p>
+<p>Sa demande, mot pour mot : <em>« je veux une page de connexion comme les plus grandes applis qui existent, avec la reconnaissance faciale, jolie, épurée et design »</em>, puis : <em>« avec la possibilité de se connecter avec son compte Google ou Apple, comme ce que proposent toutes les applis aujourd'hui. »</em></p>
+<p><strong>Deux choses que ce prompt corrige avant tout :</strong> la reconnaissance faciale <strong>existe déjà</strong> (il l'a choisie le 24 août), et elle porte <strong>un trou de sécurité ouvert depuis ce jour-là</strong>, vérifié encore aujourd'hui.</p>
+<hr>
+<p>``` Rends impeccable LA PORTE D'ATLAS — l'écran /login, le premier qu'un artisan voit. Sa demande : « comme les plus grandes applis qui existent, avec la reconnaissance faciale, jolie, épurée et design ».</p>
+<p>src/app/login/page.tsx (181 l.), LigneFaceId.tsx (149), actions.ts (277) src/server/cle-appareil.ts, src/lib/origine-webauthn.ts, src/auth.ts src/server/accueil-apres-connexion.ts</p>
+<p>CE QUI EXISTE DÉJÀ — NE LE RÉINVENTE PAS</p>
+<ul>
+<li><strong>La reconnaissance faciale est CODÉE.</strong> WebAuthn, clés d'appareil, table <code>cles_appareil</code> (migration 0063). « Ouvrir avec Face ID » est une LIGNE au-dessus de la porte : <strong>sa réponse B du 24 août 2026</strong>, sur la planche <code>appli/face-id.html</code> — <em>« ta porte d'aujourd'hui, plus une ligne au-dessus. Rien ne change de place. »</em></li>
+<li>Elle ne s'affiche <strong>que si l'appareil sait le faire</strong> (<code>platformAuthenticatorIsAvailable</code>) : un bouton qui ne peut pas aboutir est pire qu'un bouton absent.</li>
+<li><strong>L'écran tient déjà dans une page</strong> — 658 px mesurés pour 664 de hauteur utile, après sa demande (« qu'elle tienne sur une seule page »).</li>
+<li>Les <strong>cinq phrases grises</strong> ont été retirées à sa demande, et un contrôle vérifie qu'elles ne reviennent pas. La promesse « votre visage ne quitte jamais votre téléphone » vit dans le mode d'emploi, pas à l'écran.</li>
+</ul>
+<p>LA PRIORITÉ 1, ET CE N'EST PAS L'APPARENCE</p>
+<p><strong>Une clé Face ID survit à « déconnecter partout » et au changement de mot de passe.</strong> Constaté le 24 août 2026, consigné, JAMAIS corrigé — revérifié le 7 septembre :</p>
+<p>· <code>deconnecterPartout</code> (repositories/compte.ts:143) efface les preuves et pose <code>jetonsValidesDepuis</code>, mais <strong>ne touche pas</strong> <code>cles_appareil</code> ; · <code>cle-appareil.ts</code> ne lit <strong>jamais</strong> la coupure : zéro occurrence de <code>jetonsValidesDepuis</code> ni de <code>coupureDesJetons</code> dans tout le fichier.</p>
+<p>Conséquence : une clé enregistrée depuis une session volée ouvre encore l'app <strong>après</strong> que le patron a tout coupé et changé son mot de passe. Refaire la porte sans réparer la serrure n'aurait aucun sens. Corrige cela d'abord, avec une suite qui sait rougir contre la version d'aujourd'hui.</p>
+<p>SE CONNECTER AVEC GOOGLE OU AVEC APPLE — sa demande du 7 septembre</p>
+<p>« avec la possibilité de se connecter avec son compte Google ou Apple, comme ce que proposent toutes les applis aujourd'hui »</p>
+<p><strong>Le terrain est prêt, et c'est vérifiable :</strong> l'application tourne sur next-auth 5 (<code>src/auth.ts</code>), qui n'a aujourd'hui que des fournisseurs <code>Credentials</code> — le mot de passe, et Face ID. Ajouter Google et Apple, c'est ajouter des fournisseurs à cette même liste, pas refaire la couche de session.</p>
+<p><strong>MAIS TROIS CHOSES NE SE CODENT PAS, et se demandent à LUI :</strong></p>
+<p>Google    des identifiants OAuth à créer dans une console Google, et une adresse de retour déclarée. Gratuit Apple     « Sign in with Apple » exige un compte développeur Apple PAYANT (99 $/an) et une clé signée. Ce n'est pas un détail de configuration : sans ce compte, le bouton ne peut pas exister l'adresse le retour OAuth doit être déclaré pour CHAQUE origine où il se connecte — et il passe par un proxy dont l'origine diffère de l'hôte. C'est exactement ce qui a déjà cassé ses actions serveur</p>
+<p>Dis-lui ce qu'il doit faire, avec les étapes, plutôt que de livrer un bouton qui ne peut pas aboutir. Et <strong>s'il ne veut pas payer le compte Apple, dis-le-lui franchement</strong> : une porte qui montre « Continuer avec Apple » et rend une erreur est pire que pas de bouton du tout.</p>
+<p><strong>LE PIÈGE QUI COMPTE, ET IL EST DE SÉCURITÉ :</strong> que se passe-t-il quand quelqu'un arrive avec un compte Google portant la MÊME adresse qu'un compte Atlas existant ? Rattacher automatiquement, c'est offrir un compte à qui sait créer une adresse chez un fournisseur ; refuser sans rien dire, c'est enfermer dehors un patron légitime. Le rattachement ne se fait que sur une adresse <strong>vérifiée par le fournisseur</strong>, et la règle choisie s'écrit noir sur blanc.</p>
+<p>Et n'oublie pas ce que ce dépôt sait déjà : <code>atlas_app</code> ne peut plus lire le condensat du mot de passe (migration 0064), et un utilisateur n'appartient à une entreprise qu'APRÈS s'être identifié — il n'y a donc pas de RLS par entreprise sur <code>users</code>, et un nouveau chemin d'entrée ne doit pas en réclamer une.</p>
+<p>CE QUE « COMME LES PLUS GRANDES APPLIS » VEUT DIRE ICI — ET CE QUE ÇA NE VEUT PAS</p>
+<p>Ce qu'il admire dans ces applis, ce n'est pas un style : c'est qu'on entre <strong>sans réfléchir</strong>. Un logo, un geste, on est dedans.</p>
+<p>ce qu'on prend      la porte s'ouvre d'UN geste ; le mot de passe est le recours, pas le chemin ; rien à lire avant d'entrer ; l'écran est calme, large, et respire ce qu'on ne prend   PAS le style générique d'une application américaine. PAS                 Atlas a son monde — crème, encre, vert pin, or #B98B47 sur les huit chartes, serif de titre. Une porte qui pourrait être celle de n'importe quelle application n'est pas « design », elle est interchangeable</p>
+<p><strong>C'est l'écran le plus libre du produit</strong> : aucune donnée, aucune liste, aucun tableau. C'est donc là que la marque a le plus de place — et le seul endroit où une vraie ambition visuelle ne coûte rien à la lisibilité. Ose.</p>
+<p>ET LA CONTRAINTE QUI PRIME SUR L'AMBITION — sa consigne du 5 septembre 2026</p>
+<p>« La plupart des patrons qui vont utiliser l'app sont des vieux qui ont du mal à se servir de leur téléphone ; il faut que ce soit hyper intuitif et simple. » (PRODUCT.md, « Accessibility &amp; Inclusion ».)</p>
+<p>Sur une porte, cela veut dire :</p>
+<p>· aucun geste à deviner — rien de caché, pas de glissement, pas d'appui long ; · des cibles grandes : on tape mal, avec les doigts froids, au soleil ; · si Face ID échoue, le mot de passe est LÀ, visible, sans avoir à revenir ; · un refus dit ce qui ne va pas ET quoi faire — jamais « une erreur est survenue » ; · rien qui presse, rien qui expire sous les doigts.</p>
+<p>Le test qui tranche : un homme de soixante-cinq ans qui n'a jamais rien installé sur son téléphone entre-t-il sans qu'on le lui explique ?</p>
+<p>DÉJÀ TRANCHÉ — ne pas rouvrir</p>
+<ul>
+<li>Face ID en LIGNE au-dessus de la porte, pas en écran séparé (24 août, sa B).</li>
+<li>L'écran tient en une page, sans défilement, à 390 × 664.</li>
+<li>Aucune phrase grise sous les champs. « Au moins 12 caractères » ne se dit que <strong>quand elle mord</strong>, jamais d'avance.</li>
+<li>L'or vaut <code>#B98B47</code> sur les huit chartes, y compris ici.</li>
+<li>Aucune flèche décorative (scripts/test-aucune-fleche.ts).</li>
+</ul>
+<p>CE QUI EST DÉJÀ CONNU COMME BANCAL</p>
+<ul>
+<li><strong>« Invalid Server Actions request. »</strong> — le défaut qui lui a coûté vingt essais : il passe par un proxy où l'origine diffère de l'hôte, et Next refuse alors toute action serveur, à commencer par la connexion. Le contrôle existe (<code>verifier-connexion-avec-serveur.mts</code>) et il est la DERNIÈRE étape de la batterie : ne le contourne jamais, c'est le seul qui voit ce qu'il voit, lui.</li>
+<li>L'écran de connexion a déjà affiché « un service d'Atlas ne répond pas » pour un simple mot de passe de base mal configuré : un message qui accuse le produit à la place de la machine coûte une soirée.</li>
+</ul>
+<p>LES INVARIANTS — zone sensible</p>
+<ul>
+<li>L'authentification est une <strong>zone à prudence extrême</strong> : on n'y simplifie jamais un refus en le supprimant.</li>
+<li><code>atlas_app</code> ne peut ni lire ni écrire le condensat du mot de passe (migration 0064) : la base vérifie, elle ne rend rien. Ne défais pas cela pour simplifier.</li>
+<li>La base ne porte <strong>aucune donnée biométrique</strong> — le visage ne quitte pas le téléphone. C'est un fait, et une suite l'interroge : garde-le vrai.</li>
+<li>Français partout ; les règles pures dans src/lib/.</li>
+</ul>
+<p>LA MÉTHODE</p>
+<ol>
+<li>Lis PRODUCT.md, CLAUDE.md, <code>appli/face-id.html</code>, puis git log -20.</li>
+<li>Dis-moi ce que tu as trouvé AVANT d'écrire une ligne, et dans quel ordre tu prends les deux moitiés : la serrure d'abord, la porte ensuite.</li>
+<li><strong>L'apparence se DESSINE d'abord</strong> : une planche dans appli/, un lien dans appli/essais.html, l'adresse ENTIÈRE une fois qu'elle répond 200 — jamais une capture de la maquette. Propose-lui <strong>trois portes</strong>, pas une : c'est un écran de goût, et il tranche mieux devant un choix. Les trois montrent les quatre entrées ensemble — Face ID, Google, Apple, mot de passe — car c'est leur cohabitation qui fait la difficulté : quatre chemins sur un écran qui doit rester calme.</li>
+<li>Regarde l'écran en capture, à 390 × 664, sur les huit chartes — et dans les états qui comptent : Face ID absent, Face ID refusé, mot de passe faux, compte inconnu, service en panne.</li>
+<li>La dernière étape de la batterie (connexion derrière un proxy) est OBLIGATOIRE sur ce lot.</li>
+</ol>
+<p>LA BATTERIE, SUR SON POSTE WINDOWS</p>
+<ul>
+<li><strong>Préviens-le AVANT de la lancer</strong> ; son accord vaut ensuite pour toute la séquence, sans le relancer à chaque étape.</li>
+<li>Sa base vit dans Docker : <code>docker start atlas-postgres atlas-redis</code>.</li>
+</ul>
+<p>``<code>bash export ATLAS_BASE_SUPER="postgresql://postgres:postgres_dev_pw@localhost:5432/atlas_test" npm run verifier:avant-livraison </code>``</p>
+<p>LE RENDU</p>
+<p>Un document dans docs/, commité avec le code, plus sa page : node scripts/md-en-page.mjs docs/&lt;nom&gt;.md Il porte : un verdict par point, le fichier qui le fonde, ce qui a été fait autrement et pourquoi, ce qui a été refusé et ce que ça aurait coûté, les chiffres exacts de la batterie, et ce qui reste ouvert. ```</p>
+<hr>
+<h2 id="pourquoi-ce-lot-vaut-plus-que-son-écran">Pourquoi ce lot vaut plus que son écran</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>la serrure</strong></td>
+<td>une clé Face ID qui survit à un vol de session, c'est l'accès à ses chantiers, ses clients et ses prix. C'est le seul défaut de sécurité connu et non corrigé du produit</td>
+</tr>
+<tr>
+<td><strong>la porte</strong></td>
+<td>c'est le premier écran, celui qui dit si l'application est sérieuse — et le seul sans données, donc le seul où le dessin est entièrement libre</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

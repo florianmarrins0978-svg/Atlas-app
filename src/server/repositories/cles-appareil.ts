@@ -2,6 +2,7 @@ import { and, asc, eq, sql } from "drizzle-orm";
 import { db } from "../db/client";
 import { clesAppareil, users } from "../db/schema";
 import { CLES_MAX, type CleAppareil } from "../../lib/cle-appareil";
+import { nomAffiche } from "../../lib/identite-personne";
 
 /**
  * Les clés d'appareil — lecture et écriture.
@@ -73,6 +74,7 @@ export async function cleParIdentifiant(identifiantCle: string): Promise<CleTrou
       identifiantCle: clesAppareil.identifiantCle,
       utilisateurId: clesAppareil.utilisateurId,
       email: users.email,
+      prenom: users.prenom,
       nom: users.nom,
       clePublique: clesAppareil.clePublique,
       compteur: clesAppareil.compteur,
@@ -81,7 +83,12 @@ export async function cleParIdentifiant(identifiantCle: string): Promise<CleTrou
     .innerJoin(users, eq(users.id, clesAppareil.utilisateurId))
     .where(eq(clesAppareil.identifiantCle, identifiantCle))
     .limit(1);
-  return ligne ?? null;
+  if (!ligne) return null;
+  // Même raison que dans la liste de l'équipe : depuis la migration 0077,
+  // `users.nom` est le nom de FAMILLE, et l'afficher seul amputerait chaque
+  // compte neuf de son prénom.
+  const { prenom, ...reste } = ligne;
+  return { ...reste, nom: nomAffiche({ prenom, nom: reste.nom }) || reste.nom };
 }
 
 export type AjoutCle = { ok: true; id: string } | { ok: false; refus: "trop-de-cles" | "deja-enregistree" };
@@ -178,4 +185,45 @@ export async function renommerCle(utilisateurId: string, id: string, nom: string
     .where(and(eq(clesAppareil.id, id), eq(clesAppareil.utilisateurId, utilisateurId)))
     .returning({ id: clesAppareil.id });
   return touches.length > 0;
+}
+
+/**
+ * Retirer **toutes** les clés d'un compte — ce que « me déconnecter partout »
+ * ferme, et qu'il ne fermait pas.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **LE DÉFAUT QUE CELA RÉPARE, et il était ouvert depuis le 24 août 2026.**
+ *
+ * Une session ouvre les Réglages et y pose une clé Face ID. Le patron s'en
+ * aperçoit, appuie sur « me déconnecter partout », change son mot de passe :
+ * les jetons tombent, les preuves tombent — **la clé reste**. `ouvrirAvecCle`
+ * ne consulte jamais la coupure (aucune occurrence de `jetonsValidesDepuis`
+ * dans `cle-appareil.ts`), et le voleur rentre par la porte de devant.
+ *
+ * Le défaut avait été trouvé le 25 août, **écrit à l'écran** et reporté : la
+ * raison notée était qu'il faudrait tout réenregistrer après une simple
+ * déconnexion. Elle ne tient pas. « Me déconnecter partout » n'est pas un geste
+ * courant : c'est ce qu'on appuie quand on croit s'être fait voler quelque
+ * chose. Son prix doit être la fermeture COMPLÈTE — et remettre Face ID est un
+ * toucher, sur le téléphone qu'on tient encore.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **POURQUOI ON EFFACE, plutôt que de refuser les clés d'avant la coupure.**
+ *
+ * Comparer `cree_le` à la coupure paraît plus doux, et ne l'est pas : la clé du
+ * voleur a été posée AVANT la coupure exactement comme celle du patron. Les
+ * deux tomberaient donc de la même façon — mais la liste des Réglages
+ * garderait des lignes qui n'ouvrent plus rien, et l'écran mentirait dans
+ * l'autre sens.
+ *
+ * `utilisateur_id` borne la suppression, comme partout dans ce fichier : aucune
+ * RLS ne couvre cette table (`drizzle/0063_cles_appareil.sql`). Rend le nombre
+ * de portes réellement fermées — l'appelant en a besoin pour le dire.
+ */
+export async function retirerToutesLesCles(utilisateurId: string): Promise<number> {
+  const retirees = await db
+    .delete(clesAppareil)
+    .where(eq(clesAppareil.utilisateurId, utilisateurId))
+    .returning({ id: clesAppareil.id });
+  return retirees.length;
 }

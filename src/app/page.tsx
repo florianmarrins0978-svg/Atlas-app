@@ -3,19 +3,33 @@ import {
   getStatutAffiche,
   lienDeReprise,
   ligneEtatChantier,
+  retireDeLaListe,
+  seRetireSansEffacer,
 } from "@/lib/chantier-etat";
 import { ongletDuChantier } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
 import { lieuDuChantier, lieuEstManquant } from "@/lib/nom-chantier";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { getRole } from "@/server/autorisation";
+import { peutGererDevis, recoitLesRappels, type DomaineDesRappels } from "@/lib/acces-roles";
+import { avecCivilite } from "@/lib/civilite";
+import { deOuD, ligneDuContratEnCours } from "@/lib/contrats-entretien";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
+import { contratsEnCours } from "@/server/repositories/contrats-entretien";
 import { notificationsPatron, envoisCaducs } from "@/server/repositories/envois-devis";
-import { rappelsEnCours } from "@/server/repositories/rappels";
+import { rappelsEnCours, retoursPasRecusEnCours } from "@/server/repositories/rappels";
+import { reglesDuRetour } from "@/server/regles-du-retour";
+import { jourLisibleCourt } from "@/lib/mois";
 import { depuisCombien, joursEcoules } from "@/lib/rappels";
 import { enEuros } from "@/lib/euros";
 import Notifications from "./Notifications";
+import { receptionsASignaler } from "@/server/repositories/envois-factures";
+import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
+import { PHRASE_LECTURE_SEULE, etatDeLEssai } from "@/lib/abonnements";
+import RubanEssai from "@/components/atlas/RubanEssai";
 import AnnonceTransmission from "@/components/atlas/AnnonceTransmission";
 import EcranChantiers from "./EcranChantiers";
+import VeilleDesNouvelles from "@/components/atlas/VeilleDesNouvelles";
 import type { BrinChantier } from "./ListeChantiers";
 
 // Données réelles, propres à l'entreprise courante : jamais de pré-rendu statique.
@@ -52,21 +66,83 @@ export default async function ChantiersPage() {
   // pour n'en rien faire coûterait un aller-retour à chaque ouverture de son
   // écran d'accueil, et laisserait croire à la prochaine lecture que la session
   // sert encore à quelque chose ici.
-  const [chantiers, notifications, caducs, rappels] = await Promise.all([
+  // **Chacun ses cartes, comme chacun ses rappels** (27 septembre 2026) : une
+  // réponse de client sur un devis revient au commercial, la réception d'une
+  // facture à la facturation, et tout au patron. `rappelsEnCours` trie les
+  // siens lui-même ; ces trois-là se lisent ici, sur la même règle.
+  const role = await getRole(ctx);
+  const recoit = (domaine: DomaineDesRappels) => role !== null && recoitLesRappels(role, domaine);
+  const [chantiers, contrats, notifications, caducs, rappels, receptions, abonnement, retoursManques] = await Promise.all([
     listerChantiersPourAffichage(ctx),
-    notificationsPatron(ctx),
-    envoisCaducs(ctx),
+    // Qui ne rédige pas de contrat n'en voit pas : il ne pourrait ni les
+    // reprendre, ni les retirer.
+    role !== null && peutGererDevis(role) ? contratsEnCours(ctx) : [],
+    recoit("devis") ? notificationsPatron(ctx) : [],
+    recoit("devis") ? envoisCaducs(ctx) : [],
     rappelsEnCours(ctx, maintenant),
+    // Les clients qui viennent de confirmer avoir reçu leur facture — sa
+    // demande du 9 septembre 2026. Vide presque toujours, et rien ne s'affiche
+    // alors.
+    recoit("facture") ? receptionsASignaler(ctx) : [],
+    // L'essai de quinze jours, s'il y en a un : `null` pour son Atlas à lui.
+    abonnementDeLEntreprise(ctx),
+    // « Retour pas reçu » : sa planche du 26 septembre 2026, seulement quand
+    // il a allumé « Demander une preuve ».
+    reglesDuRetour(ctx).then((r) => retoursPasRecusEnCours(ctx, r.demande, maintenant)),
   ]);
+
+  // Le ruban et le bouton éteint se décident ICI, sur le même instant que les
+  // rappels — la règle vit dans `abonnements.ts`, l'écran n'en recalcule rien.
+  const essai = etatDeLEssai(abonnement, maintenant);
 
   // **Cette liste ne montre que ce qui reste à préparer.** Un chantier passé au
   // planning vit au planning ; facturé, terminé, ou dont la date est dépassée,
   // il vit dans « Terminés » (`src/lib/onglet-chantier.ts`).
   const avecStatut = chantiers
     .map((c) => ({ ...c, statut: getStatutAffiche(c) }))
-    .filter((c) => ongletDuChantier(c) === "chantiers");
+    // Glissé hors de la liste pendant que son devis attend le client : rien
+    // n'est effacé, et sa réponse le ramène (`retireDeLaListe`).
+    .filter((c) => ongletDuChantier(c) === "chantiers" && !retireDeLaListe(c));
 
-  const brins: BrinChantier[] = avecStatut.map((c) => {
+  // **Un contrat vit ici tant que le client ne l'a pas accepté, comme un
+  // devis.** Sa plainte du 29 septembre 2026 (un contrat quitté avant l'envoi
+  // ne figurait nulle part), puis sa règle du même jour : *« tout ce qui est
+  // devis, contrat d'entretien, dernier devis ou autre doivent arriver là »*.
+  // Accepté, ses passages vivent au planning (`ligneDuContratEnCours`).
+  const brinsDeContrat: BrinChantier[] = contrats.flatMap((c) => {
+    const ligne = ligneDuContratEnCours(
+      {
+        statut: c.statut,
+        prestations: c.prestations,
+        periode: { debut: c.debut, dureeMois: c.dureeMois },
+        envoyeLe: c.envoyeLe ? jourIso(c.envoyeLe) : null,
+        retireDeLaListeAt: c.retireDeLaListeAt,
+        reponduLe: c.reponduLe,
+      },
+      maintenant
+    );
+    if (!ligne) return [];
+    const { jour, mois } = jourEtMois(c.majAt);
+    const client = avecCivilite(c.clientNom, c.clientCivilite ?? undefined);
+    return [
+      {
+        id: c.id,
+        retrait: "contrat" as const,
+        nom: "Contrat d'entretien",
+        quoi: `le contrat d'entretien ${deOuD(client)}`,
+        jour,
+        mois,
+        lieu: client,
+        etat: ligne.etat,
+        precision: ligne.precision,
+        attend: true,
+        reprise: `/clients/${c.clientId}/contrat`,
+        enCours: true,
+      },
+    ];
+  });
+
+  const brinsDeChantier: BrinChantier[] = avecStatut.map((c) => {
     const { jour, mois } = jourEtMois(c.majAt);
     // **La date d'ENVOI, pas celle de la dernière modification.** Celle de
     // gauche est `majAt` — le chantier a pu bouger depuis pour une photo. Ce
@@ -80,7 +156,9 @@ export default async function ChantiersPage() {
     });
     return {
       id: c.id,
+      retrait: seRetireSansEffacer(c.statut) ? "retirer" : "supprimer",
       nom: c.nom,
+      quoi: `le chantier ${c.nom}`,
       jour,
       mois,
       lieu,
@@ -116,9 +194,17 @@ export default async function ChantiersPage() {
 
   return (
     <EcranChantiers
-      chantiers={brins}
+      chantiers={[...brinsDeContrat, ...brinsDeChantier]}
+      ruban={essai ? <RubanEssai etat={essai} /> : null}
+      lectureSeule={essai?.statut === "termine" ? PHRASE_LECTURE_SEULE : null}
       bandeaux={
         <>
+          {/* **L'accueil se relit tout seul** : une réponse de client arrive
+              pendant qu'il regarde l'écran, et rien dans son navigateur ne
+              pouvait l'apprendre (`VeilleDesNouvelles`, 17 septembre 2026). Il
+              ne dessine rien — sa place ici ne tient qu'à ce qu'il veille sur
+              ce qui suit. */}
+          <VeilleDesNouvelles />
           {/* Le mot qui accueille le patron au retour de sa messagerie. Placé
               AVANT les notifications : c'est la conséquence du geste qu'il
               vient de faire, pas une information de fond. */}
@@ -126,6 +212,7 @@ export default async function ChantiersPage() {
           <Notifications
             initiales={notifications}
             caducs={caducs}
+            receptions={receptions}
             // Le délai est mis en mots ICI, au serveur : l'écran n'a pas à
             // recalculer une durée et à en donner une seconde version.
             rappels={rappels.map((r) => ({
@@ -159,7 +246,23 @@ export default async function ChantiersPage() {
                     partielle: r.facture.resteDuCts !== r.facture.totalCts,
                   }
                 : undefined,
-            }))}
+            })).concat(
+              retoursManques.map((r) => {
+                // Midi à Paris : l'instant sert à RANGER la carte parmi les
+                // autres, jamais à l'écrire.
+                const jour = new Date(`${r.jour}T12:00:00Z`);
+                return {
+                  genre: "retour-pas-recu" as const,
+                  chantierId: r.chantierId,
+                  chantierNom: r.chantierNom,
+                  depuisTexte: depuisCombien(maintenant, jour),
+                  depuisJours: joursEcoules(maintenant, jour),
+                  quand: jour.getTime(),
+                  jourManque: jourLisibleCourt(r.jour).toLowerCase(),
+                  facture: undefined,
+                };
+              })
+            )}
           />
         </>
       }

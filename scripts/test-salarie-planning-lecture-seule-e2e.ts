@@ -8,6 +8,7 @@ import { planifierChantier, basculerEquipeDuChantier } from "../src/server/repos
 import { nommerEquipe } from "../src/server/repositories/equipes";
 import { jourIso } from "../src/lib/jour";
 import type { Ctx } from "../src/server/repositories/context";
+import { ADRESSE } from "./_adresse";
 
 // UN SALARIÉ, DANS UN VRAI NAVIGATEUR, DEVANT SON PLANNING.
 //
@@ -50,7 +51,7 @@ import type { Ctx } from "../src/server/repositories/context";
 // fichier par la suite base, qui rougit si l'une l'oublie.
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 /**
  * **LES CAPTURES SONT UNE PIÈCE DU CONTRÔLE, PAS UNE FINITION.**
  *
@@ -309,7 +310,7 @@ async function main() {
       '[data-atlas="retirer"]',
       '[data-atlas="equipe"]',
       '[data-atlas="note-chantier"]',
-      '[data-atlas="titre-sans-date"]',
+      '[data-atlas="ou-poser"]',
       '[aria-label="Ajouter un chantier"]',
     ]) {
       assert.equal(
@@ -337,8 +338,12 @@ async function main() {
       lignes > 0,
       "le salarié ne voit plus aucun chantier planifié : la lecture a été fermée avec l'écriture"
     );
+    // **SA LIGNE, pas tout ce qui porte son identifiant** : depuis le
+    // 15 septembre 2026 le bloc de la carte du jour porte aussi
+    // `data-chantier`, et la carte est ouverte ici. Compter large accusait
+    // le produit d'une ligne en double qu'il n'a pas.
     assert.equal(
-      await pageS.locator(`[data-chantier="${chantier.id}"]`).count(),
+      await pageS.locator(`[data-atlas="ligne-planifiee"][data-chantier="${chantier.id}"]`).count(),
       1,
       "le chantier posé pour cet essai n'apparaît pas chez le salarié"
     );

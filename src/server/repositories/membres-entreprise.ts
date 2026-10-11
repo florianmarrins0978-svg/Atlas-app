@@ -1,10 +1,13 @@
 import { and, eq, ne } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { hash } from "bcryptjs";
 import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { equipes, membresEntreprise, users } from "../db/schema";
 import type { Ctx } from "./context";
 import type { PorteePlanning, Role } from "@/lib/acces-roles";
+import { nomAffiche } from "@/lib/identite-personne";
+import { photoDUnCompte } from "@/lib/organigramme";
 import {
   adresseNormalisee,
   refusDeLAcces,
@@ -13,6 +16,36 @@ import {
   refusDuRetrait,
   type RefusAcces,
 } from "@/lib/donner-un-acces";
+import { placePourUnFabricant, roleFabrique } from "@/lib/abonnements";
+import { abonnementDeLEntreprise, compterLesFabricants } from "./abonnements";
+
+/**
+ * RESTE-T-IL UNE PLACE POUR UNE PERSONNE DE PLUS QUI FABRIQUE ?
+ *
+ * **Elle rend `true` pour un salarié, toujours**, et ce n'est pas une
+ * exception : le plafond ne compte que ceux qui font des devis ou des factures
+ * — sa correction du 9 septembre 2026. Un paysagiste avec huit gars sur le
+ * terrain n'utilise pas huit fois Atlas, il coche huit cases dans un planning.
+ *
+ * **Et elle rend `true` quand il n'y a PAS d'abonnement.** Un plafond est la
+ * conséquence d'une formule choisie, jamais un état par défaut : l'appliquer
+ * sans abonnement fermerait aujourd'hui l'équipe des artisans qui se servent
+ * d'Atlas avant que la moindre offre existe. La règle vit dans
+ * `placePourUnFabricant`, pas ici.
+ *
+ * **Aucun verrou, et c'est assumé.** Deux ajouts simultanés pourraient franchir
+ * le plafond d'une unité. Cela suppose deux patrons ajoutant un commercial dans
+ * la même seconde — un cas qui ne se produit pas sur le téléphone d'un artisan,
+ * et dont le pire effet est un commercial de trop, qui se retire d'un geste.
+ * C'est le même raisonnement que le compteur de patrons, juste en dessous.
+ */
+async function placeDisponible(ctx: Ctx, role: Role): Promise<boolean> {
+  if (!roleFabrique(role)) return true;
+  const abonnement = await abonnementDeLEntreprise(ctx);
+  if (!abonnement) return true;
+  const fabricants = await compterLesFabricants(ctx);
+  return placePourUnFabricant(abonnement.formule, fabricants).ok;
+}
 
 /** Une personne qui a un accès à cette entreprise, telle que l'écran la lit. */
 export type Acces = {
@@ -26,8 +59,15 @@ export type Acces = {
   equipeId: string | null;
   /** Le rang de la file du planning rattachée, pour l'afficher sans second appel. */
   equipeRang: number | null;
+  /** Le rang du nom de salarié que ce compte EST, ou `null` (migration 0111). */
+  salarieRang: number | null;
+  /** Sa photo, lue là où elle vit : sur son nom s'il est relié, sinon sur l'adhésion. */
+  photo: string | null;
   createdAt: Date;
 };
+
+/** La ligne du nom relié, distincte de la file rattachée : deux jointures sur `equipes`. */
+const salarieRelie = alias(equipes, "salarie_relie");
 
 export type ResultatAcces = { ok: true } | { ok: false; refus: RefusAcces };
 
@@ -47,23 +87,41 @@ export async function listerAcces(ctx: Ctx): Promise<Acces[]> {
       .select({
         id: membresEntreprise.id,
         utilisateurId: membresEntreprise.utilisateurId,
+        prenom: users.prenom,
         nom: users.nom,
         email: users.email,
         role: membresEntreprise.role,
         porteePlanning: membresEntreprise.porteePlanning,
         equipeId: membresEntreprise.equipeId,
         equipeRang: equipes.rang,
+        salarieRang: salarieRelie.rang,
+        photoDuNom: salarieRelie.photoStorageKey,
+        photoDuCompte: membresEntreprise.photoStorageKey,
         createdAt: membresEntreprise.createdAt,
       })
       .from(membresEntreprise)
       .innerJoin(users, eq(users.id, membresEntreprise.utilisateurId))
       .leftJoin(equipes, eq(equipes.id, membresEntreprise.equipeId))
+      .leftJoin(
+        salarieRelie,
+        and(eq(salarieRelie.id, membresEntreprise.salarieId), eq(salarieRelie.entrepriseId, ctx.entrepriseId))
+      )
       .where(eq(membresEntreprise.entrepriseId, ctx.entrepriseId))
       // Le patron d'abord — c'est lui qu'on cherche en ouvrant l'écran —, puis
       // par ancienneté : l'ordre d'arrivée est celui qu'on a en tête.
       .orderBy(membresEntreprise.createdAt);
 
-    return lignes.sort((a, b) =>
+    // **Le nom se compose ICI, par la fonction du dépôt.** Depuis la
+    // migration 0077, `users.nom` est le nom de FAMILLE : l'afficher seul
+    // amputerait chaque compte neuf de son prénom. `nomAffiche` sait aussi
+    // retomber sur les comptes d'avant, dont `nom` porte encore le tout.
+    const composees = lignes.map(({ prenom, photoDuNom, photoDuCompte, ...reste }) => ({
+      ...reste,
+      nom: nomAffiche({ prenom, nom: reste.nom }) || reste.nom,
+      photo: photoDUnCompte({ relie: reste.salarieRang !== null, photoDuNom, photoDuCompte }),
+    }));
+
+    return composees.sort((a, b) =>
       a.role === b.role ? 0 : a.role === "proprietaire" ? -1 : b.role === "proprietaire" ? 1 : 0
     );
   });
@@ -73,17 +131,16 @@ export async function listerAcces(ctx: Ctx): Promise<Acces[]> {
  * DONNER UN ACCÈS — c'est-à-dire créer un COMPTE, puis l'attacher.
  *
  * ───────────────────────────────────────────────────────────────────────────
- * **Deux écritures, deux tables, et elles ne peuvent pas vivre dans la même
- * transaction d'isolation.** `users` précède l'entreprise et n'a pas de contexte
- * RLS ; `membres_entreprise` en exige un. La création du compte se fait donc
- * hors `withEntreprise`, l'attachement dedans.
+ * **Deux écritures, deux tables, UNE transaction.** `users` ne porte aucune
+ * politique d'isolation et `atlas_app` y a le droit d'insérer (migration
+ * 0064) : le compte se crée donc DANS `withEntreprise`, avec son attachement.
+ * L'un refusé, l'autre l'est aussi.
  *
- * **Conséquence assumée, et écrite pour qu'on ne la découvre pas en panne :**
- * si l'attachement échoue, un compte reste en base sans aucune adhésion. Il
- * n'ouvre rien — `getCurrentCtx` refuse une session sans entreprise —, et la
- * même adresse ne pourra pas être redonnée tant qu'il traîne. C'est un défaut
- * visible et réparable ; l'alternative — désactiver l'isolation le temps
- * d'écrire deux lignes — est celle que `CLAUDE.md` §4 interdit.
+ * **Ce commentaire affirmait le contraire jusqu'au 27 septembre 2026**, et le
+ * compte se créait hors de la transaction. Au 16ᵉ jour d'un essai,
+ * l'attachement était refusé (lecture seule) et le compte, lui, restait :
+ * une adresse « déjà prise » que le patron ne pouvait plus redonner, même
+ * abonné (`test-essai-lecture-seule-db.ts`, section 6).
  *
  * ───────────────────────────────────────────────────────────────────────────
  * **POURQUOI UN MOT DE PASSE PROVISOIRE, ET PAS UNE INVITATION PAR E-MAIL.**
@@ -123,16 +180,22 @@ export async function donnerUnAcces(
   });
   if (refus) return { ok: false, refus };
 
+  // **Le plafond de la formule, vérifié AVANT de créer le compte.** Le créer
+  // puis refuser l'adhésion laisserait un compte orphelin, avec une adresse
+  // désormais « déjà prise » que le patron ne pourrait plus réemployer.
+  const place = await placeDisponible(ctx, saisie.role);
+  if (!place) return { ok: false, refus: "plafond-atteint" };
+
   // Coût 10 : celui d'`authorize`, du changement de mot de passe et du jeu de
   // démonstration. En changer ici rendrait ce chemin plus lent ou plus faible
   // que les autres, sans que rien ne le dise.
   const passwordHash = await hash(saisie.motDePasse, 10);
-  const [compte] = await db
-    .insert(users)
-    .values({ email, nom: saisie.nom.trim(), passwordHash })
-    .returning({ id: users.id });
 
   await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [compte] = await tx
+      .insert(users)
+      .values({ email, nom: saisie.nom.trim(), passwordHash })
+      .returning({ id: users.id });
     await tx.insert(membresEntreprise).values({
       entrepriseId: ctx.entrepriseId,
       utilisateurId: compte.id,
@@ -168,6 +231,14 @@ export async function changerLeRole(ctx: Ctx, accesId: string, roleVoulu: string
     nombreDePatrons: liste.filter((l) => l.role === "proprietaire").length,
   });
   if (refus) return { ok: false, refus };
+
+  // **Promouvoir un salarié en commercial le fait ENTRER dans le plafond**, et
+  // c'est exactement le chemin par lequel on le franchirait sans s'en
+  // apercevoir : personne ne s'ajoute, un rôle change. Ne garder que
+  // `donnerUnAcces` aurait laissé cette porte grande ouverte.
+  if (roleFabrique(roleVoulu as Role) && !roleFabrique(cible.role)) {
+    if (!(await placeDisponible(ctx, roleVoulu as Role))) return { ok: false, refus: "plafond-atteint" };
+  }
 
   await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     await tx
@@ -232,7 +303,10 @@ export async function changerLaPortee(
  * plus nulle part — pas besoin d'invalider un jeton, l'adhésion est revalidée à
  * chaque appel (`with-entreprise.ts`).
  */
-export async function retirerUnAcces(ctx: Ctx, accesId: string): Promise<ResultatAcces> {
+export async function retirerUnAcces(
+  ctx: Ctx,
+  accesId: string
+): Promise<{ ok: true; /** Sa photo à lui, à supprimer : il n'est plus là. */ photoOrpheline: string | null } | { ok: false; refus: RefusAcces }> {
   const liste = await listerAcces(ctx);
   const cible = liste.find((l) => l.id === accesId);
   if (!cible) return { ok: false, refus: "role-inconnu" };
@@ -245,13 +319,17 @@ export async function retirerUnAcces(ctx: Ctx, accesId: string): Promise<Resulta
   });
   if (refus) return { ok: false, refus };
 
-  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    await tx
+  // **Sa photo part avec son accès** quand elle vivait sur l'adhésion. Celle
+  // d'un compte relié vit sur son NOM, qui reste dans la liste des salariés :
+  // le patron décide seul de la retirer.
+  const [retire] = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
       .delete(membresEntreprise)
-      .where(and(eq(membresEntreprise.id, accesId), eq(membresEntreprise.entrepriseId, ctx.entrepriseId)));
-  });
+      .where(and(eq(membresEntreprise.id, accesId), eq(membresEntreprise.entrepriseId, ctx.entrepriseId)))
+      .returning({ photo: membresEntreprise.photoStorageKey })
+  );
 
-  return { ok: true };
+  return { ok: true, photoOrpheline: retire?.photo ?? null };
 }
 
 /**

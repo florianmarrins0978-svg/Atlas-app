@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // Le geste exact du patron, rejoué dans un navigateur.
 //
@@ -14,7 +15,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // était dans un bouton qui oubliait, au premier retour arrière, ce qu'il venait
 // de faire. Une règle juste que l'écran n'applique pas ne protège personne.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 function montantDuTotal(texte: string): number {
   // « 1 674,00 € » — espaces insécables compris.
@@ -35,9 +36,9 @@ async function main() {
   const nom = `Chantier doublon e2e ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nom);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
-  const chantierUrl = page.url();
+  const chantierUrl = `${BASE}/chantiers/${idChantier}`;
   const prixUrl = `${chantierUrl}/prix`;
 
   // Une prestation qui correspond à un tarif des données de démonstration :

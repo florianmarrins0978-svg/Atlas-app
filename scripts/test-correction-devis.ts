@@ -10,8 +10,9 @@ import {
   notificationsPatron,
   dernierEnvoi,
 } from "../src/server/repositories/envois-devis";
+import { preparerEnvoi } from "../src/server/repositories/preparation-envoi";
 import { etatEnvoi, etatEnvoiLabel, demandeUneAction } from "../src/lib/etat-envoi";
-import { versJourIso, ajouterJours } from "../src/server/disponibilites";
+import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { nettoyerBase } from "./_test-db";
 
 // La troisième issue : « corrigez, et je signe ».
@@ -44,6 +45,20 @@ async function test(nom: string, fn: () => Promise<void>) {
 const MARDI = new Date("2026-03-03T09:00:00Z");
 const dans = (n: number) => versJourIso(ajouterJours(MARDI, n));
 const MESSAGE = "Mon nom est mal écrit : Martins, avec un s.";
+
+/**
+ * Où le chantier est posé — « 2026-09-14 matin », lu SOUS SON ENTREPRISE.
+ *
+ * **Pas par `pool` directement, et ce n'est pas un détail.** `creneaux_chantier`
+ * porte la RLS ; une lecture sans contexte d'entreprise rend une liste **vide**,
+ * silencieusement. Une première version de ce contrôle a rendu un vert sur un
+ * `every()` d'une liste vide — le « contrôle qui mesure zéro » de
+ * `CLAUDE.md` §5, attrapé ici avant d'avoir servi.
+ */
+async function ouEstPose(ctx: { utilisateurId: string; entrepriseId: string }, chantierId: string) {
+  const poses = await chantiersRepo.creneauxDunChantier(ctx, chantierId);
+  return poses.map((c) => `${c.jour} ${c.moment}`).sort();
+}
 
 async function contexteAvecEnvoi(email: string) {
   const { entreprise, utilisateurId } = await entreprisesRepo.creerEntreprise({ nom: "Élagage Éden" }, { email });
@@ -131,7 +146,7 @@ async function main() {
     const { ctx, envoi } = await contexteAvecEnvoi(`accept-${Date.now()}@t.test`);
     await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte", dateRetenue: dans(7), precision: "Plutôt le matin si possible." },
+      { decision: "accepte", demarrageAnticipe: true, dateRetenue: dans(7), precision: "Plutôt le matin si possible." },
       MARDI
     );
 
@@ -140,14 +155,64 @@ async function main() {
     assert.equal(notifications[0].precisionClient, "Plutôt le matin si possible.");
   });
 
-  await test("une acceptation muette sur une date proposée ne dérange toujours personne", async () => {
-    // Le contrôle précédent ne prouverait rien si TOUTES les acceptations
-    // remontaient : ce serait noyer les deux nouvelles qui appellent un geste.
+  // **CE CAS A CHANGÉ DE SENS LE 7 SEPTEMBRE 2026, et c'est lui qui l'a
+  // demandé :** *« il faut aussi rajouter une notification lorsqu'un client
+  // accepte un devis, elle doit apparaître en haut dans les retours client ! »*
+  //
+  // La version qui vivait ici exigeait le SILENCE sur une acceptation muette,
+  // au motif qu'elle « ne surprend personne ». Le raisonnement tenait sur le
+  // papier et oubliait l'essentiel : **c'est la nouvelle qu'il attend.** Un
+  // chantier gagné ne s'apprend pas en ouvrant une fiche.
+  await test("une acceptation muette remonte AUSSI — sa règle du 7 septembre", async () => {
     const { ctx, envoi } = await contexteAvecEnvoi(`muet-${Date.now()}@t.test`);
-    await enregistrerReponse(envoi.jeton, { decision: "accepte", dateRetenue: dans(7) }, MARDI);
+    await enregistrerReponse(envoi.jeton, { decision: "accepte", demarrageAnticipe: true, dateRetenue: dans(7) }, MARDI);
 
     const notifications = await notificationsPatron(ctx);
-    assert.equal(notifications.length, 0, "Une acceptation sans surprise ni message ne doit rien réclamer.");
+    assert.equal(notifications.length, 1, "Une acceptation doit être portée au patron.");
+    assert.equal(notifications[0].reponse, "acceptee");
+    assert.equal(notifications[0].precisionClient, null, "muette : aucun message du client");
+  });
+
+  // ─── LA DATE ACCEPTÉE POSE VRAIMENT LE CHANTIER — 10 septembre 2026 ─────
+  //
+  // **Le défaut que ce contrôle existe pour rendre impossible.** Depuis que le
+  // chantier porte OÙ chacune de ses demi-journées est posée
+  // (`ARCHITECTURE.md` §322), cette route écrivait `date_planifiee` sans
+  // toucher aux créneaux : un chantier qui en portait déjà restait affiché à
+  // son ANCIENNE place, et la date que le client venait de choisir
+  // n'apparaissait nulle part au planning.
+  //
+  // **On part d'un chantier DÉJÀ posé ailleurs**, sinon on ne mesure rien : un
+  // chantier sans créneau se lit par son bloc, et le défaut ne se voit pas.
+  await test("la date acceptée pose le chantier LÀ, même s'il était posé ailleurs", async () => {
+    const { ctx, chantierId, envoi } = await contexteAvecEnvoi(`pose-${Date.now()}@t.test`);
+    const ailleurs = dans(2);
+    await chantiersRepo.planifierChantier(ctx, chantierId, ailleurs);
+    const avant = await ouEstPose(ctx, chantierId);
+    assert.ok(
+      avant.length > 0 && avant.every((c) => c.startsWith(ailleurs)),
+      `le décor n'a pas posé le chantier le ${ailleurs} : ${JSON.stringify(avant)} — rien n'est mesuré`
+    );
+
+    const retenue = dans(7);
+    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte", demarrageAnticipe: true, dateRetenue: retenue }, MARDI);
+    assert.equal(r.succes, true, "l'acceptation a été refusée");
+
+    const apres = await ouEstPose(ctx, chantierId);
+    assert.ok(apres.length > 0, "le chantier n'occupe plus rien : la pose a effacé sans reposer");
+    assert.ok(
+      apres.every((c) => c.startsWith(retenue)),
+      `le chantier occupe encore ${JSON.stringify(apres)} au lieu du ${retenue} choisi par le client`
+    );
+    // **Et la colonne d'avant DIT LA MÊME CHOSE.** Vingt endroits la lisent
+    // encore ; qu'elle s'écarte des créneaux, c'est deux vérités sur la même
+    // question — et un chantier posé deux fois.
+    const fiche = await chantiersRepo.getChantier(ctx, chantierId);
+    assert.equal(
+      fiche?.datePlanifiee,
+      retenue,
+      "la colonne du chantier et ses créneaux ne racontent pas la même chose"
+    );
   });
 
   await test("une correction sans message est refusée, avec un motif utilisable", async () => {
@@ -162,7 +227,7 @@ async function main() {
   await test("on ne répond pas deux fois, correction comprise", async () => {
     const { envoi } = await contexteAvecEnvoi(`double-${Date.now()}@t.test`);
     await enregistrerReponse(envoi.jeton, { decision: "correction", precision: MESSAGE }, MARDI);
-    const second = await enregistrerReponse(envoi.jeton, { decision: "accepte", dateRetenue: dans(7) }, MARDI);
+    const second = await enregistrerReponse(envoi.jeton, { decision: "accepte", demarrageAnticipe: true, dateRetenue: dans(7) }, MARDI);
     assert.equal(second.succes, false);
     if (!second.succes) assert.equal(second.motif, "deja_repondu");
   });
@@ -198,6 +263,56 @@ async function main() {
       await connexion.query("ROLLBACK").catch(() => {});
       connexion.release();
     }
+  });
+
+  /**
+   * **SES DATES NE SE PERDENT PLUS AVEC LA CORRECTION** — sa plainte du
+   * 27 septembre 2026 : *« mon client a demandé une correction et proposé des
+   * dates ; quand je corrige et renvoie, je ne vois pas ses dates, donc je
+   * repropose les mêmes »*. Elles partaient avec le formulaire, et l'action les
+   * jetait avant de les lire. Planche `appli/dates-du-client-au-renvoi.html`.
+   */
+  await test("les jours qu'il propose avec sa correction sont gardés, et relus au renvoi", async () => {
+    const { ctx, chantierId, envoi } = await contexteAvecEnvoi(`jours-${Date.now()}@t.test`);
+    const siens = [dans(14), dans(15)];
+    const r = await enregistrerReponse(
+      envoi.jeton,
+      { decision: "correction", precision: MESSAGE, dateRetenue: siens[0], joursRetenus: siens },
+      MARDI
+    );
+    assert.equal(r.succes, true, "La correction accompagnée de dates a été refusée.");
+
+    const dernier = await dernierEnvoi(ctx, chantierId);
+    assert.deepEqual(dernier?.joursSouhaites, siens, "Ses jours ne sont pas gardés avec la correction.");
+    assert.equal(dernier?.dateRetenue, null, "Une correction ne retient aucune date : le planning n'a rien à poser.");
+
+    const preparation = await preparerEnvoi(ctx, chantierId, MARDI);
+    assert.deepEqual(preparation.joursDuClient, siens, "Le renvoi ne relit pas les jours du client.");
+ 
+    // Sa réponse du 27 septembre : « Oui je veux voir ses dates » dans la
+    // notification « Correction demandée ».
+    const [notification] = await notificationsPatron(ctx);
+    assert.deepEqual(notification?.joursSouhaites, siens, "La notification ne porte pas ses dates.");
+  });
+
+  await test("la date qu'il prend parmi les vôtres est gardée, avec le chantier derrière elle", async () => {
+    const { ctx, chantierId, envoi } = await contexteAvecEnvoi(`prise-${Date.now()}@t.test`);
+    await enregistrerReponse(
+      envoi.jeton,
+      { decision: "correction", precision: MESSAGE, dateRetenue: dans(7) },
+      MARDI
+    );
+    const dernier = await dernierEnvoi(ctx, chantierId);
+    assert.equal(dernier?.joursSouhaites?.[0], dans(7), "La date offerte qu'il a prise n'est pas gardée.");
+  });
+
+  await test("sans date touchée, la correction n'en invente aucune", async () => {
+    const { ctx, chantierId, envoi } = await contexteAvecEnvoi(`sans-${Date.now()}@t.test`);
+    await enregistrerReponse(envoi.jeton, { decision: "correction", precision: MESSAGE }, MARDI);
+    const dernier = await dernierEnvoi(ctx, chantierId);
+    assert.equal(dernier?.joursSouhaites ?? null, null);
+    const preparation = await preparerEnvoi(ctx, chantierId, MARDI);
+    assert.equal(preparation.joursDuClient, null);
   });
 
   console.log(`\n${reussis} test(s) réussi(s), ${echoues} échoué(s).`);

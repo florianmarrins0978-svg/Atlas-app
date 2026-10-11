@@ -162,7 +162,7 @@ export function destinationAutorisee(
     return {
       ok: false,
       refus: "schema",
-      phrase: `Atlas ne parle à un agenda qu'en https — « ${url.protocol.replace(":", "")} » est refusé.`,
+      phrase: `Atlas ne parle à un agenda qu'en https. « ${url.protocol.replace(":", "")} » est refusé.`,
     };
   }
 

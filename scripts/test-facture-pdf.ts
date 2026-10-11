@@ -68,10 +68,12 @@ async function main() {
   await cas("elle porte ses références : numéro, émission, échéance", async () => {
     const { trace } = await composerFacturePdf(FACTURE);
     const textes = contenus(trace);
-    for (const attendu of ["FACTURE", "Facture n°", "Date d'émission", "Date d'échéance"]) {
+    // Le numéro est à droite du titre (« n° F-2026-0004 »), les références
+    // disent « Date » et « Échéance » — sa planche du 14 septembre 2026.
+    for (const attendu of ["FACTURE", "Date", "Échéance"]) {
       assert.ok(textes.includes(attendu), `« ${attendu} » manque à la facture.`);
     }
-    assert.ok(textes.includes("F-2026-0004"), "Le numéro de facture n'est pas imprimé.");
+    assert.ok(textes.includes("n° F-2026-0004"), "Le numéro de facture n'est pas imprimé à droite du titre.");
     // Jour/mois/année, comme sur le devis : « la date est à l'envers ! C'est
     // jour/mois/année » (le patron, sur capture, le 2026-08-04). La facture est
     // la pièce la plus lue des deux — une date à l'envers y fait douter du reste.
@@ -84,7 +86,7 @@ async function main() {
     const { trace } = await composerFacturePdf({ ...FACTURE, dateEcheance: null });
     const textes = contenus(trace);
     assert.ok(
-      !textes.includes("Date d'échéance"),
+      !textes.includes("Échéance"),
       "Une échéance inconnue ne doit pas ouvrir sa ligne — c'est elle qui fait courir les pénalités."
     );
     // Le reste de la pièce tient debout sans elle.
@@ -93,26 +95,27 @@ async function main() {
 
   await cas("elle rappelle le devis dont elle naît", async () => {
     const { trace } = await composerFacturePdf(FACTURE);
-    assert.ok(
-      contenus(trace).some((t) => t.includes("devis n° 2026-0006")),
-      "Sans ce rappel, le client doit rapprocher deux pièces lui-même."
-    );
+    // Le devis d'origine est une référence de l'en-tête — « Devis · 2026-0006 »
+    // —, plus une phrase (sa planche du 14 septembre 2026).
+    const textes = contenus(trace);
+    assert.ok(textes.includes("Devis") && textes.includes("2026-0006"), "Sans ce rappel, le client doit rapprocher deux pièces lui-même.");
     const { trace: sansDevis } = await composerFacturePdf({ ...FACTURE, numeroDevis: null });
-    assert.ok(
-      !contenus(sansDevis).some((t) => t.startsWith("Établie à partir")),
-      "Un numéro de devis inconnu ne doit pas produire une phrase creuse."
-    );
+    assert.ok(!contenus(sansDevis).includes("Devis"), "Un numéro de devis inconnu ne doit pas ouvrir sa ligne.");
   });
 
   await cas("elle porte les mentions légales de retard de paiement", async () => {
     const { trace } = await composerFacturePdf(FACTURE);
     const pied = contenus(trace).join(" ");
-    // Obligatoires, et attendues d'un particulier comme d'un professionnel.
     assert.match(pied, /pénalité/, "La pénalité de retard n'est pas mentionnée.");
     assert.match(pied, /trois fois le taux d'intérêt légal/, "Le taux de pénalité n'est pas dit.");
-    assert.match(pied, /indemnité forfaitaire/, "L'indemnité de recouvrement n'est pas mentionnée.");
-    assert.match(pied, /40 €/, "Le montant de l'indemnité n'est pas dit.");
     assert.match(pied, /Pas d'escompte/, "L'absence d'escompte n'est pas mentionnée.");
+    // **Les 40 € ne se réclament qu'à un professionnel** (C. com. L441-10,
+    // D441-5 ; check-up légal du 4 octobre 2026) : obligatoires pour lui, dus
+    // par personne d'autre.
+    const particulier = { ...FACTURE, clientCivilite: "mr" as const };
+    assert.doesNotMatch(contenus((await composerFacturePdf(particulier)).trace).join(" "), /40 €/, "Les 40 € sont réclamés à un particulier.");
+    const pro = contenus((await composerFacturePdf({ ...FACTURE, clientCivilite: "entreprise" })).trace).join(" ");
+    assert.match(pro, /indemnité forfaitaire pour frais de recouvrement de 40 €/, "L'indemnité manque sur la facture d'une entreprise.");
   });
 
   await cas("la franchise de TVA ne s'imprime que si la TVA est nulle", async () => {
@@ -176,7 +179,7 @@ async function main() {
       numeroVersion: 1,
       statut: "envoye",
     });
-    const reperes = ["CLIENT", "DESCRIPTION", "QTÉ", "PRIX UNITAIRE HT", "Total TTC"];
+    const reperes = ["CLIENT", "LIEU DES TRAVAUX", "DÉSIGNATION", "QTÉ", "UNITÉ", "P.U. HT", "TOTAL TTC", "Total TTC"];
     for (const repere of reperes) {
       const pf = f.textes.find((t) => t.contenu === repere);
       const pd = d.textes.find((t) => t.contenu === repere);

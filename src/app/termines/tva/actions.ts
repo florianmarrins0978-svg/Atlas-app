@@ -1,22 +1,24 @@
 "use server";
 
-import { exigerMontants } from "@/server/garde-action";
+import { exigerFacturation } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { creerAchatTva, supprimerAchatTva } from "@/server/repositories/achats-tva";
 import { enregistrerObjet } from "@/server/storage";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { achatComplet, montantSaisi, type SaisieAchat } from "@/lib/achat-tva";
+import { causeDeLaPanne, codeSqlDe, messageSansLesValeurs, phraseDeLaPanne } from "@/lib/panne-de-base";
+import { estBancDEssai } from "@/profil-banc";
+import { logger } from "@/server/logger";
+import type { MoyenDePaiement } from "@/lib/acomptes-facture";
 import { lireTicket, type TicketLu } from "@/server/ai/services/lire-ticket";
 import { revalidatePath } from "next/cache";
 import {
   noterPaiement,
-  reglerExigibilite,
+  remettrePaiement,
   retirerPaiement,
   soldera,
   type ResultatPaiement,
 } from "@/server/repositories/paiements-facture";
-import { exigerProprietaire } from "@/server/autorisation";
-import type { Exigibilite } from "@/lib/exigibilite-tva";
 import { preparerPhotoEntrante } from "@/server/photo-entrante";
 
 /**
@@ -57,7 +59,7 @@ export async function ajouterAchatAction(formData: FormData): Promise<ResultatAc
   }
 
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "enregistrer un achat");
+  await exigerFacturation(ctx, "enregistrer un achat");
 
   /**
    * **UNE CLÉ DE STOCKAGE NE SE CROIT PAS SUR PAROLE** — constat de l'audit
@@ -105,7 +107,7 @@ export async function ajouterAchatAction(formData: FormData): Promise<ResultatAc
 
 export async function supprimerAchatAction(id: string): Promise<{ ok: boolean }> {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "supprimer un achat");
+  await exigerFacturation(ctx, "supprimer un achat");
   const ligne = await supprimerAchatTva(ctx, id);
   // `undefined` = la RLS a filtré, ou la ligne était déjà retirée. Dans les
   // deux cas l'écran doit remettre la ligne plutôt que la faire disparaître à
@@ -131,7 +133,7 @@ export type ResultatTicket =
  */
 export async function rangerTicketAction(formData: FormData): Promise<ResultatTicket> {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "ranger un ticket de caisse");
+  await exigerFacturation(ctx, "ranger un ticket de caisse");
   const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
   if (!limite.autorise) return { ok: false, raison: limite.message };
 
@@ -193,44 +195,111 @@ export async function rangerTicketAction(formData: FormData): Promise<ResultatTi
 // **Mêmes règles qu'au-dessus : les refus se RENDENT.** « Il ne reste que
 // 440,00 € à recevoir » doit lui parvenir mot pour mot ; levé, ce message
 // deviendrait un identifiant opaque et il croirait l'application cassée.
+//
+// ═══════════════════════════════════════════════════════════════════════════
+// **ET UNE PANNE DE BASE EST UN REFUS COMME UN AUTRE — sa capture du
+// 17 septembre 2026.**
+//
+// « Ce règlement n'a pas pu être enregistré. Réessayez. », sur 495,00 € qui
+// restaient dus au centime près. La règle acceptait le montant ; c'est sa BASE
+// qui ne répondait plus — la fiche de son espace, écrite trois minutes plus
+// tôt, portait « état inconnu — la base n'a pas répondu ».
+//
+// Ces trois actions laissaient alors l'exception SORTIR : Next.js la remplaçait
+// par un identifiant opaque, l'écran retombait sur sa phrase de dernier
+// recours, et **rien n'était écrit nulle part** — ni pour lui, ni pour la
+// prochaine session. Le conseil rendu était même le mauvais : réessayer sur une
+// base qui ne répond pas ne donne rien.
+//
+// Le mécanisme existait depuis le 13 septembre (`src/lib/panne-de-base.ts`,
+// né de sa panne « Une erreur · Référence : 3285538552 ») ; il n'avait jamais
+// été branché ici. Ce n'est pas un `catch` qui avale (`CLAUDE.md` §4 quater) :
+// la panne est journalisée entière, et ce qui sort à l'écran NOMME la base et
+// le geste sûr — rallumer l'espace, qui ne touche à aucune de ses données.
+// ═══════════════════════════════════════════════════════════════════════════
 
-export async function soldeFactureAction(factureId: string, aujourdHui: string): Promise<ResultatPaiement> {
+type Refus = { ok: false; raison: string };
+
+async function sansPanneMuette<T>(
+  geste: string,
+  echec: string,
+  fn: () => Promise<T | Refus>
+): Promise<T | Refus> {
+  try {
+    return await fn();
+  } catch (erreur) {
+    const cause = causeDeLaPanne(erreur);
+    const codeSql = codeSqlDe(erreur);
+    // **La saisie ne repart jamais dans le journal** : Drizzle recopie dans son
+    // message tout ce qui partait en base, et la rédaction de `logger.ts`
+    // travaille sur les clés, pas à l'intérieur d'une chaîne.
+    logger.error(`${geste} : la base a refusé`, {
+      cause,
+      codeSql,
+      erreur: messageSansLesValeurs(erreur instanceof Error ? erreur.message : String(erreur)),
+    });
+    return { ok: false, raison: phraseDeLaPanne(cause, estBancDEssai(), codeSql, echec) };
+  }
+}
+
+/** Ce que l'écran annonce quand l'écriture n'aboutit pas. Ses mots, au plus court. */
+const ECHEC_NOTE = "Ce règlement n’a pas pu être enregistré";
+const ECHEC_RETRAIT = "Ce règlement n’a pas pu être retiré";
+const ECHEC_REMISE = "Ce règlement n’a pas pu être remis";
+
+export async function soldeFactureAction(
+  factureId: string,
+  aujourdHui: string,
+  moyen: MoyenDePaiement
+): Promise<ResultatPaiement> {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "solder une facture");
-  const r = await soldera(ctx, factureId, aujourdHui);
-  revalidatePath("/termines/tva");
+  await exigerFacturation(ctx, "solder une facture");
+  const r = await sansPanneMuette("Facture soldée", ECHEC_NOTE, () => soldera(ctx, factureId, aujourdHui, moyen));
+  // **Seulement quand l'argent est entré, et HORS de l'enveloppe ci-dessus.**
+  // Rafraîchir après un refus ne sert à rien ; et une panne de `revalidatePath`
+  // annoncerait « non enregistré » sur un règlement qui, lui, est bien en base.
+  if (r.ok) revalidatePath("/termines/tva");
   return r;
 }
 
 export async function noterPaiementAction(
   factureId: string,
   date: string,
-  montant: string
+  montant: string,
+  moyen: MoyenDePaiement
 ): Promise<ResultatPaiement> {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "noter un paiement");
-  const r = await noterPaiement(ctx, factureId, { date, montant });
-  revalidatePath("/termines/tva");
+  await exigerFacturation(ctx, "noter un paiement");
+  const r = await sansPanneMuette("Règlement noté", ECHEC_NOTE, () =>
+    noterPaiement(ctx, factureId, { date, montant, moyen })
+  );
+  if (r.ok) revalidatePath("/termines/tva");
   return r;
 }
 
-export async function retirerPaiementAction(paiementId: string): Promise<void> {
+/**
+ * **Le retrait rend un résultat, il ne rend plus `void` — 17 septembre 2026.**
+ *
+ * Sans lui, un retrait qui échoue ne montrait RIEN : la ligne restait à
+ * l'écran, et il réappuyait sur une croix qui ne faisait rien. C'est pire que
+ * « Réessayez » — un défaut muet se cherche dans le produit, où il n'est pas.
+ */
+export async function retirerPaiementAction(paiementId: string): Promise<{ ok: true } | Refus> {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "retirer un paiement");
-  await retirerPaiement(ctx, paiementId);
-  revalidatePath("/termines/tva");
+  await exigerFacturation(ctx, "retirer un paiement");
+  const r = await sansPanneMuette("Règlement retiré", ECHEC_RETRAIT, async () => {
+    await retirerPaiement(ctx, paiementId);
+    return { ok: true as const };
+  });
+  if (r.ok) revalidatePath("/termines/tva");
+  return r;
 }
 
-/**
- * Changer de régime.
- *
- * **Réservé au propriétaire**, à la différence de la saisie d'un règlement :
- * ce choix décide de ce qui part à l'administration pour toute l'entreprise, et
- * il se déclare aux impôts. Un salarié n'a aucune raison d'y toucher.
- */
-export async function reglerExigibiliteAction(regime: Exigibilite): Promise<void> {
+/** « Remettre » : le règlement retiré revient, au même mois (sa planche du 26 septembre 2026). */
+export async function remettrePaiementAction(reglementId: string): Promise<ResultatPaiement> {
   const ctx = await getCurrentCtx();
-  await exigerProprietaire(ctx, "changer le moment où votre TVA devient exigible");
-  await reglerExigibilite(ctx, regime);
-  revalidatePath("/termines/tva");
+  await exigerFacturation(ctx, "remettre un paiement");
+  const r = await sansPanneMuette("Règlement remis", ECHEC_REMISE, () => remettrePaiement(ctx, reglementId));
+  if (r.ok) revalidatePath("/termines/tva");
+  return r;
 }

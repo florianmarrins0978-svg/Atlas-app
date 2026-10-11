@@ -32,7 +32,7 @@
 
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join, relative, sep } from "node:path";
 import { nettoyerBase } from "./_test-db";
 import { creerEntreprise } from "../src/server/repositories/entreprises";
 import { donnerUnAcces, listerAcces } from "../src/server/repositories/membres-entreprise";
@@ -98,7 +98,14 @@ function fichiersUseServer(): string[] {
         // entrer les fichiers qui ne font qu'en PARLER — celui-ci, par exemple.
         const debut = readFileSync(chemin, "utf8").slice(0, 200);
         if (/^\s*(\/\/[^\n]*\n)*\s*["']use server["']/.test(debut)) {
-          trouves.push(relative(process.cwd(), chemin));
+          // **Toujours des barres obliques, quelle que soit la machine.** Sur
+          // Windows, `relative` rend « src\app\login\actions.ts » ; les clés
+          // d'`EXEMPTIONS` et la liste d'énumération, elles, sont écrites avec
+          // des « / ». Aucune exemption ne correspondait donc, et ce contrôle
+          // accusait TREIZE actions gardées de ne pas l'être — sur la machine
+          // du patron seulement, jamais sur la CI. Une erreur qui désigne le
+          // mauvais coupable coûte plus cher que pas d'erreur (`CLAUDE.md` §5).
+          trouves.push(relative(process.cwd(), chemin).split(sep).join("/"));
         }
       }
     }
@@ -124,6 +131,12 @@ const GARDES = [
   "exigerMontants(",
   "exigerEcran(",
   "exigerEcritureSurLePlanning(",
+  // Les deux capacités nées le 30 août 2026 avec le rôle « Facturation ».
+  // **Sans elles ici, ce contrôle aurait rougi sur les actions que ce lot
+  // vient précisément de mieux garder** — un contrôle qui punit le durcissement
+  // pousse à revenir en arrière.
+  "exigerGestionDevis(",
+  "exigerFacturation(",
   "exigerProprietaire(",
   "exigerPreuveRecente(",
   "peutUtiliserLAssistant(",
@@ -191,26 +204,83 @@ function aidesDe(chemin: string): Map<string, string> {
  */
 const EXEMPTIONS: Record<string, string> = {
   // ─── Avant la connexion : aucun rôle n'existe encore ────────────────────
+  "src/app/login/code/actions.ts#codeAction":
+    "Le code de l'appli d'authentification se demande AVANT que la session existe : c'est lui qui la crée. Il ne connaît que la connexion en attente, et compte ses échecs comme un mot de passe faux.",
   "src/app/login/actions.ts#connexionAction":
     "C'est l'action qui CRÉE la session. Exiger un rôle avant elle enfermerait tout le monde dehors.",
   "src/app/login/actions.ts#defiConnexionAction":
     "Le défi Face ID se demande avant d'être connecté — c'est ce qui permet de se connecter sans mot de passe.",
   "src/app/login/actions.ts#connexionParCleAction":
     "Même famille : elle ouvre la session par la clé d'appareil, donc elle s'appelle sans session.",
+  "src/app/login/actions.ts#entrerAvecAction":
+    "Elle envoie chez Google ou chez Apple pour PROUVER une adresse : c'est ce qui " +
+    "précède la session, exactement comme le défi Face ID. Ce qui la borne n'est donc " +
+    "pas un rôle mais la liste fermée d'`estNomFournisseur` — sans elle, une chaîne " +
+    "quelconque venue du navigateur atteindrait Auth.js.",
   "src/app/login/actions.ts#deconnexionAction":
     "Se déconnecter est ouvert à qui est connecté, quel que soit son rôle — et refuser reviendrait à retenir les gens dedans.",
+  "src/app/creer-un-compte/actions.ts#creerLeCompteAction":
+    "Elle CRÉE le compte, l'entreprise et la session : il n'existe encore ni rôle, " +
+    "ni entreprise, ni personne à qui les demander. Ce qui la protège n'est donc pas " +
+    "une garde de rôle mais le limiteur de `verifierLimite` — sans lui, cette adresse " +
+    "fabriquerait une entreprise par appel, aussi vite qu'on les envoie.",
 
   // ─── Public par jeton : le client de l'artisan n'a pas de compte ────────
   "src/app/devis/[jeton]/actions.ts#repondreAction":
     "L'écran du devis s'ouvre par un jeton, sans compte : le client de l'artisan n'a pas de rôle. Le jeton EST la garde (chemins-publics.ts).",
+  "src/app/contrat/[jeton]/actions.ts#repondreContratAction":
+    "Le contrat d'entretien s'accepte par un jeton, sans compte, comme le devis : le jeton EST la garde, " +
+    "et la cadence est bornée par `verifierLimite` avant toute lecture (26 septembre 2026).",
+  "src/app/contrat/dates/[jeton]/actions.ts#validerDatesAction":
+    "Les dates du mois se valident par un jeton, sans compte, comme le contrat : le jeton EST la garde, " +
+    "la cadence est bornée par `verifierLimite`, et chaque jour changé se revérifie au planning (27 septembre 2026).",
   "src/app/documents-legaux/actions.ts#accepterDocumentsAction":
     "Accepter les documents légaux est la porte d'entrée : la fermer par rôle enfermerait dehors le salarié qui n'a pas encore accepté.",
+  "src/app/verifier-email/actions.ts#verifierLeCodeAction":
+    "Entrer le code reçu à son adresse précède tout rôle : le compte vient de naître, " +
+    "et la porte ne s'ouvre qu'après. Ce qui la borne, c'est le code lui-même — cinq " +
+    "essais, un quart d'heure — et la session : l'action ne prend aucun identifiant.",
+  "src/app/verifier-email/actions.ts#renvoyerLeCodeAction":
+    "Même porte : le renvoi est borné en base (trois par quart d'heure, trente secondes " +
+    "entre deux), et l'adresse est lue en base, jamais reçue du navigateur.",
+  "src/app/mot-de-passe-oublie/actions.ts#recevoirUnCodeAction":
+    "Mot de passe oublié : on y vient justement parce qu'on ne peut pas se connecter, " +
+    "il n'y a donc ni session ni rôle. Ce qui la borne : trois codes par adresse et par " +
+    "quart d'heure, en base, et le limiteur `motDePasseOublie` par source. Une adresse " +
+    "sans compte ne reçoit rien et ne laisse aucune trace.",
+  "src/app/mot-de-passe-oublie/actions.ts#verifierLeCodeOublieAction":
+    "Même porte. Ce qui la borne, c'est le code lui-même : cinq essais, un quart " +
+    "d'heure, et il meurt dès qu'il a servi. Le jeton qu'il rend est la seule clé de " +
+    "`choisirLeMotDePasseAction`, et la base le vérifie (migration 0100).",
+  "src/app/mot-de-passe-oublie/actions.ts#choisirLeMotDePasseAction":
+    "Même porte, dernier pas. Sa garde est le jeton rendu par le bon code : 32 octets " +
+    "tirés au sort, un quart d'heure, une seule fois, et c'est la BASE qui le vérifie " +
+    "avant de poser le condensat (`reinitialiser_mot_de_passe`, migration 0100).",
+  "src/app/factures/[jeton]/actions.ts#noterOuvertureAction":
+    "Même porte que la réponse au devis : la page de la facture s'ouvre par un jeton, " +
+    "sans compte. Le jeton EST la garde — 256 bits tirés au sort, une politique RLS " +
+    "d'écriture qui l'exige mot pour mot (migration 0081), et une cadence bornée " +
+    "(LIMITES.receptionFacture). L'écriture est de surcroît idempotente : elle ne pose " +
+    "la date que si elle est absente, donc la marteler ne change rien après le premier appel.",
+  "src/app/factures/[jeton]/actions.ts#accuserReceptionAction":
+    "Même raison, et même serrure. Un porteur du jeton ne peut poser QUE la confirmation " +
+    "de SA facture, une seule fois : le garde IS NULL en base refuse d'écraser la première date.",
 
   // ─── Ses propres réglages : elles n'écrivent que sur la personne ────────
-  "src/app/reglages/compte/actions.ts#renommerCompteAction":
-    "Écrit le nom de la personne connectée, sur elle seule. « Un salarié peut changer ses notifications ou son mot de passe » (13 août 2026).",
+  "src/app/reglages/compte/actions.ts#ecrireIdentiteAction":
+    "Écrit la civilité, le prénom et le nom de la personne connectée, sur elle seule. « Un salarié peut changer ses notifications ou son mot de passe » (13 août 2026).",
+  "src/app/reglages/compte/actions.ts#poserMaPhotoAction":
+    "SA propre photo, sur SA ligne : « chaque personne doit pouvoir mettre et changer sa photo de profil » (27 septembre 2026). Fermer par rôle l'interdirait au salarié.",
+  "src/app/reglages/compte/actions.ts#retirerMaPhotoAction":
+    "Retire SA propre photo et son fichier. Le refuser à un rôle lui interdirait d'effacer sa propre tête.",
   "src/app/reglages/apparence/actions.ts#choisirCharteAction":
     "La charte de couleurs de la personne connectée. Aucune donnée d'entreprise, aucun autre compte touché.",
+  "src/app/reglages/connexion/double-verification-actions.ts#commencerActivationAction":
+    "Activer la double vérification n'écrit que sur la personne connectée, quel que soit son rôle ; c'est l'écran où le patron est envoyé tant qu'elle n'est pas activée.",
+  "src/app/reglages/connexion/double-verification-actions.ts#confirmerActivationAction":
+    "Confirmer l'activation n'écrit que sur la personne connectée, avec le code de SON appli : tout rôle doit pouvoir protéger son propre compte.",
+  "src/app/reglages/connexion/double-verification-actions.ts#desactiverAction":
+    "Désactiver n'écrit que sur la personne connectée, exige son code, et refuse déjà au serveur le rôle pour qui elle est obligatoire.",
   "src/app/reglages/connexion/actions.ts#changerMotDePasseAction":
     "Son propre mot de passe, et il exige l'ancien. Le fermer par rôle interdirait à un salarié de changer le sien.",
   "src/app/reglages/connexion/actions.ts#deconnecterPartoutAction":

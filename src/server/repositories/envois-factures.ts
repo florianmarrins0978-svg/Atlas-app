@@ -1,9 +1,11 @@
+import { nomAvecForme } from "@/lib/formes-juridiques";
 import { randomBytes } from "node:crypto";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
-import { envoisFactures, factures, chantiers } from "../db/schema";
+import { avoirs, envoisFactures, factures, chantiers } from "../db/schema";
 import { lireObjet } from "../storage";
+import { modalitesDeLaFacture, type ModalitesPaiement } from "@/lib/modalites-paiement";
 import type { Ctx } from "./context";
 
 // **Transmettre la facture, puisque personne ne le fait à la place du patron.**
@@ -129,6 +131,18 @@ export async function dernierEnvoiFacture(ctx: Ctx, factureId: string): Promise<
 }
 
 /**
+ * Le jeton du dernier lien de cette facture, **s'il vit encore** — ou rien.
+ *
+ * Pour l'avoir, qui part avec le lien de sa facture : un lien périmé mis dans
+ * le message mènerait le client sur « ce lien n'est plus valable ». Rien, et
+ * l'écran en prépare un neuf à l'appui (`preparerLienFactureAction`).
+ */
+export async function jetonVivantDeLaFacture(ctx: Ctx, factureId: string, maintenant: Date = new Date()): Promise<string | null> {
+  const dernier = await dernierEnvoiFacture(ctx, factureId);
+  return dernier && dernier.expireAt.getTime() > maintenant.getTime() ? dernier.jeton : null;
+}
+
+/**
  * Le PDF de la facture, ouvert par le client depuis son lien — sans compte.
  *
  * Sert le fichier ARCHIVÉ au moment de l'arrêt, jamais un document régénéré :
@@ -174,8 +188,55 @@ export async function pdfFactureParJeton(
 export type FacturePourClient = {
   numeroCommercial: string;
   entrepriseNom: string;
+  /**
+   * **Le total ne s'affiche plus sur la page — sa demande du 8 septembre 2026 :**
+   * *« le montant ne doit pas apparaître, ça incitera le client à ouvrir sa
+   * facture »*. Il reste rendu ici : c'est ce qui identifie la facture derrière
+   * le jeton, et les suites base s'en servent pour prouver qu'un lien mène bien
+   * à la bonne pièce — une assertion sur un libellé d'écran, elle, tomberait au
+   * premier remaniement (`CLAUDE.md` §5 bis).
+   */
   totalTtc: string;
   echeanceLe: string | null;
+  /**
+   * **La confirmation déjà donnée, s'il en a donné une** (9 septembre 2026).
+   *
+   * Le client rouvre son lien : il doit retrouver sa case cochée et sa date.
+   * Sans cela, l'écran lui proposerait de confirmer une seconde fois quelque
+   * chose que la base tient déjà pour fait — et il croirait que le premier
+   * appui n'avait rien produit.
+   */
+  accuseLe: Date | null;
+  /**
+   * COMMENT LE CLIENT RÈGLE — l'IBAN, l'ordre du chèque, lus sur les colonnes
+   * FIGÉES de la facture (`src/lib/modalites-paiement.ts`).
+   *
+   * **Ce sont exactement celles du PDF archivé**, par la même fonction : le
+   * client a les deux pièces sous les yeux, et deux IBAN pour un même envoi
+   * seraient pires que pas d'IBAN du tout.
+   *
+   * ───────────────────────────────────────────────────────────────────────────
+   * **L'ALLURE A DISPARU D'ICI, ET C'EST LUI QUI L'A DEMANDÉ.** Le 8 septembre
+   * 2026, capture à l'appui : *« il faut le modifier, déjà mets-le aux couleurs
+   * de l'appli »*. La page portait jusqu'ici l'allure figée de la facture, si
+   * bien qu'un artisan ayant réglé un accent noir voyait une page noire.
+   *
+   * **Cela rouvre sa décision du 4 septembre**, et il faut le dire noir sur
+   * blanc plutôt que de la laisser croire encore vraie : *« mon client doit
+   * retrouver en ligne exactement ce qu'il a reçu en PDF »*. Il a vu la
+   * proposition en crème et vert (`appli/la-page-de-sa-facture.html`) et a
+   * répondu « code-moi ça ». La règle devient : **le PDF est son document et
+   * garde son allure ; la page est l'enveloppe d'Atlas et porte les couleurs
+   * d'Atlas.**
+   */
+  modalites: ModalitesPaiement;
+  /**
+   * **Les avoirs de cette facture** — sa question du 24 septembre 2026 :
+   * l'avoir part par SMS ou e-mail comme la facture. Il part avec le lien de la
+   * facture qu'il corrige, et le client le trouve ici, sous elle. Du plus
+   * ancien au plus récent, dans l'ordre de leurs numéros.
+   */
+  avoirs: { id: string; numero: string; dateEmission: string }[];
 };
 
 export async function factureParJeton(
@@ -212,11 +273,294 @@ export async function factureParJeton(
 
     const [f] = await tx.select().from(factures).where(eq(factures.id, envoi.factureId)).limit(1);
     if (!f) return null;
+    const sesAvoirs = await tx
+      .select({ id: avoirs.id, numero: avoirs.numero, dateEmission: avoirs.dateEmission })
+      .from(avoirs)
+      .where(eq(avoirs.factureId, f.id))
+      .orderBy(avoirs.numero);
     return {
       numeroCommercial: f.numeroCommercial,
-      entrepriseNom: f.entrepriseNom,
+      // « … EI » pour un entrepreneur individuel (R526-27), comme sur le PDF.
+      entrepriseNom: nomAvecForme(f.entrepriseNom, f.entrepriseFormeJuridique),
       totalTtc: f.totalTtc,
       echeanceLe: f.dateEcheance ?? null,
+      accuseLe: envoi.accuseAt,
+      // **Les mêmes trois colonnes que le PDF archivé, par la même fonction.**
+      // Le client a les deux pièces sous les yeux : un IBAN groupé autrement, ou
+      // un ordre de chèque calculé deux fois, finiraient par ne plus coïncider
+      // (`src/lib/modalites-paiement.ts`).
+      modalites: modalitesDeLaFacture(f),
+      avoirs: sesAvoirs,
     };
+  });
+}
+
+/**
+ * Le PDF d'un avoir, ouvert par le client depuis le lien de SA facture.
+ *
+ * **L'avoir doit appartenir à la facture du jeton**, et la condition est dans
+ * la requête, pas après : un lien de facture ne doit ouvrir aucun autre avoir de
+ * la même entreprise, même si quelqu'un devine son identifiant. Comme pour la
+ * facture, c'est le fichier ARCHIVÉ qui part, jamais un document refait.
+ */
+const FORMAT_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export async function pdfAvoirParJeton(
+  jeton: string,
+  avoirId: string,
+  maintenant: Date = new Date()
+): Promise<{ octets: Buffer; nom: string } | null> {
+  // Un identifiant qui n'en est pas un ferait lever PostgreSQL (« invalid input
+  // syntax for type uuid ») : le client verrait une erreur brute au lieu de la
+  // page qui dit que le lien n'est plus valable.
+  if (!jeton || !FORMAT_UUID.test(avoirId)) return null;
+
+  const cle = await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT set_config('app.jeton_envoi', ${jeton}, true)`);
+    const [envoi] = await tx.select().from(envoisFactures).where(eq(envoisFactures.jeton, jeton)).limit(1);
+    if (!envoi) return null;
+    if (envoi.expireAt.getTime() <= maintenant.getTime()) return null;
+    // Même contexte que `factureParJeton`, déduit du jeton et de lui seul.
+    await tx.execute(sql`SELECT set_config('app.entreprise_id', ${envoi.entrepriseId}, true)`);
+    const [a] = await tx
+      .select({ storageKey: avoirs.pdfStorageKey, numero: avoirs.numero })
+      .from(avoirs)
+      .where(and(eq(avoirs.id, avoirId), eq(avoirs.factureId, envoi.factureId)))
+      .limit(1);
+    return a ?? null;
+  });
+
+  if (!cle) return null;
+  try {
+    return { octets: await lireObjet(cle.storageKey), nom: `avoir-${cle.numero}.pdf` };
+  } catch (e) {
+    // Même règle que la facture : un 404, jamais un avoir reconstruit. Mais
+    // journalisé, pour qu'un fichier disparu ne reste pas une panne muette.
+    console.error("[avoir] PDF introuvable au stockage", { avoirId, erreur: e });
+    return null;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LA RÉCEPTION — « ah ouais mais j'ai pas vu votre facture », 9 septembre 2026
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// Deux dates, et elles ne se valent pas :
+//   · l'OUVERTURE, qu'Atlas note tout seul — celle qu'on oppose au client,
+//     parce qu'elle ne dépend pas de sa bonne volonté ;
+//   · l'ACCUSÉ, la case qu'il coche — plus parlant, et facultatif.
+//
+// La case NE CONDITIONNE RIEN : le patron l'a tranché le jour où il l'a
+// proposée. « Ça ne l'empêche pas de télécharger la facture s'il ne coche
+// pas ! » Une facture se donne.
+
+/** Ce que le client dit de lui en écrivant — le même trio que la réponse au devis. */
+export type EmpreinteClient = { adresseIp: string | null; agentUtilisateur: string | null };
+
+/**
+ * Note que le client a OUVERT sa facture. Sans lui rien demander.
+ *
+ * **Écrite une seule fois**, et c'est ce qui la rend citable : ce qu'on oppose
+ * à « je ne l'ai jamais reçue », c'est la PREMIÈRE ouverture. Le garde
+ * `IS NULL` rend aussi l'appel idempotent — un rendu qui se répète n'avance pas
+ * la date, et l'on n'a donc pas à parier sur le nombre de fois qu'une page est
+ * rendue.
+ *
+ * **Elle ne s'appelle PAS pendant le rendu du serveur, et c'est délibéré.**
+ * Une messagerie qui déplie l'aperçu d'un lien, un antivirus qui le vérifie,
+ * un robot d'indexation : tous ouvrent l'adresse sans qu'aucun client ne l'ait
+ * lue. Une date née là serait fausse le jour précis où elle sert de preuve.
+ * L'appel part donc du NAVIGATEUR, une fois la page affichée (`OuvertureNotee`)
+ * — ces trois-là n'exécutent pas de JavaScript.
+ */
+export async function noterOuvertureDeLaFacture(
+  jeton: string,
+  empreinte: EmpreinteClient,
+  maintenant: Date = new Date()
+): Promise<void> {
+  if (!jeton) return;
+
+  await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT set_config('app.jeton_envoi', ${jeton}, true)`);
+    await tx
+      .update(envoisFactures)
+      .set({
+        ouverteAt: maintenant,
+        adresseIp: empreinte.adresseIp,
+        agentUtilisateur: empreinte.agentUtilisateur,
+      })
+      .where(
+        and(
+          eq(envoisFactures.jeton, jeton),
+          isNull(envoisFactures.ouverteAt),
+          // Un lien périmé ne s'ouvre plus : la page refuse déjà de s'afficher,
+          // et une trace posée après l'expiration ne correspondrait à rien de
+          // ce que le client a pu voir.
+          sql`${envoisFactures.expireAt} > ${maintenant}`
+        )
+      );
+  });
+}
+
+/**
+ * Le client coche « J'ai bien reçu cette facture ».
+ *
+ * **Ne se décoche pas** : une confirmation retirée ne veut rien dire, et
+ * laisserait croire qu'une trace s'efface. Le garde `IS NULL` le tient en base
+ * plutôt qu'à l'écran — un second appel ne repousse pas la date.
+ *
+ * Pose aussi l'ouverture si elle manque : cocher, c'est avoir ouvert. Sans
+ * cela, une facture confirmée pourrait s'afficher « pas encore ouverte », et
+ * deux lignes qui se contredisent font douter des deux.
+ */
+export async function accuserReceptionDeLaFacture(
+  jeton: string,
+  empreinte: EmpreinteClient,
+  maintenant: Date = new Date()
+): Promise<{ ok: true; accuseLe: Date } | { ok: false; raison: string }> {
+  if (!jeton) return { ok: false, raison: "Ce lien n'est plus valable." };
+
+  return db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT set_config('app.jeton_envoi', ${jeton}, true)`);
+
+    const [envoi] = await tx
+      .select()
+      .from(envoisFactures)
+      .where(eq(envoisFactures.jeton, jeton))
+      .limit(1);
+    if (!envoi) return { ok: false as const, raison: "Ce lien n'est plus valable." };
+    if (envoi.expireAt.getTime() <= maintenant.getTime()) {
+      return { ok: false as const, raison: "Ce lien n'est plus valable." };
+    }
+    // Déjà confirmée : on rend la PREMIÈRE date, celle qui est écrite. Rendre
+    // « aujourd'hui » ferait afficher au client une date que la base ne porte
+    // pas — deux vérités pour un même geste.
+    if (envoi.accuseAt) return { ok: true as const, accuseLe: envoi.accuseAt };
+
+    const [ecrit] = await tx
+      .update(envoisFactures)
+      .set({
+        accuseAt: maintenant,
+        ouverteAt: envoi.ouverteAt ?? maintenant,
+        adresseIp: empreinte.adresseIp,
+        agentUtilisateur: empreinte.agentUtilisateur,
+      })
+      .where(and(eq(envoisFactures.jeton, jeton), isNull(envoisFactures.accuseAt)))
+      .returning();
+
+    // Deux appuis au même instant : l'autre a gagné, et sa date fait foi.
+    return { ok: true as const, accuseLe: ecrit?.accuseAt ?? maintenant };
+  });
+}
+
+/** Les deux dates d'un envoi, telles qu'elles se lisent chez le patron. */
+export type ReceptionDeFacture = {
+  factureId: string;
+  ouverteLe: Date | null;
+  accuseLe: Date | null;
+};
+
+/**
+ * Ce que les clients ont fait des factures qu'on leur a envoyées.
+ *
+ * **Le DERNIER envoi de chaque facture, et lui seul.** Une facture peut partir
+ * deux fois — le premier lien expire, le client redemande. Mêler les deux
+ * ferait afficher l'ouverture d'un lien mort à côté d'un lien vivant jamais
+ * ouvert, c'est-à-dire une preuve pour une facture qui n'en a pas.
+ */
+export async function receptionsDesFactures(
+  ctx: Ctx,
+  factureIds: string[]
+): Promise<Map<string, ReceptionDeFacture>> {
+  if (factureIds.length === 0) return new Map();
+
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const lignes = await tx
+      .select()
+      .from(envoisFactures)
+      .where(inArray(envoisFactures.factureId, factureIds));
+
+    // `envoyeAt` départage, jamais l'ordre rendu par la base : sans `ORDER BY`,
+    // PostgreSQL n'en promet aucun, et le « dernier » changerait d'un
+    // affichage à l'autre.
+    const par = new Map<string, ReceptionDeFacture & { envoyeLe: Date }>();
+    for (const l of lignes) {
+      const deja = par.get(l.factureId);
+      if (deja && deja.envoyeLe.getTime() >= l.envoyeAt.getTime()) continue;
+      par.set(l.factureId, {
+        factureId: l.factureId,
+        ouverteLe: l.ouverteAt,
+        accuseLe: l.accuseAt,
+        envoyeLe: l.envoyeAt,
+      });
+    }
+    return new Map(
+      [...par].map(([id, r]) => [
+        id,
+        { factureId: r.factureId, ouverteLe: r.ouverteLe, accuseLe: r.accuseLe },
+      ])
+    );
+  });
+}
+
+/** Une confirmation que le patron n'a pas encore acquittée — pour la carte de l'accueil. */
+export type ReceptionASignaler = {
+  envoiId: string;
+  factureId: string;
+  chantierId: string;
+  numeroCommercial: string;
+  clientNom: string | null;
+  chantierNom: string;
+  accuseLe: Date;
+};
+
+/**
+ * Les réceptions confirmées dont le patron n'a pas encore dit « J'ai vu ».
+ *
+ * Une carte, pas un journal : ce qui est acquitté disparaît d'ici, et les deux
+ * dates restent sur la facture. C'est exactement la coupure que sa question du
+ * 9 septembre imposait — *« en cas de litige, où est-ce que l'utilisateur va
+ * rechercher cette info ? »*
+ */
+export async function receptionsASignaler(ctx: Ctx): Promise<ReceptionASignaler[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const lignes = await tx
+      .select({
+        envoiId: envoisFactures.id,
+        factureId: envoisFactures.factureId,
+        accuseLe: envoisFactures.accuseAt,
+        chantierId: factures.chantierId,
+        numeroCommercial: factures.numeroCommercial,
+        clientNom: factures.clientNom,
+        chantierNom: chantiers.nom,
+      })
+      .from(envoisFactures)
+      .innerJoin(factures, eq(factures.id, envoisFactures.factureId))
+      .innerJoin(chantiers, eq(chantiers.id, factures.chantierId))
+      .where(and(isNotNull(envoisFactures.accuseAt), isNull(envoisFactures.vuParPatronAt)));
+
+    return lignes
+      .filter((l): l is typeof l & { accuseLe: Date } => l.accuseLe !== null)
+      .sort((a, b) => b.accuseLe.getTime() - a.accuseLe.getTime());
+  });
+}
+
+/**
+ * « J'ai vu » : la carte s'en va, la trace reste.
+ *
+ * Le même mot et le même geste que pour une réponse au devis
+ * (`Notifications.tsx`) : nommer ce geste autrement ici ferait chercher une
+ * différence là où il n'y en a pas.
+ */
+export async function marquerReceptionVue(
+  ctx: Ctx,
+  envoiId: string,
+  maintenant: Date = new Date()
+): Promise<void> {
+  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    await tx
+      .update(envoisFactures)
+      .set({ vuParPatronAt: maintenant })
+      .where(and(eq(envoisFactures.id, envoiId), isNull(envoisFactures.vuParPatronAt)));
   });
 }

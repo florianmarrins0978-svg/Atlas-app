@@ -27,12 +27,26 @@ set -uo pipefail
 DEPOT="${1:-$(pwd)}"
 PORT="${PORT:-3000}"
 JOURNAL="${JOURNAL:-/tmp/essai.log}"
-VERROU=/tmp/atlas-veilleur.pid
+# **Détournables uniquement pour les ÉPROUVER, et ce n'est pas du confort.**
+# `test-port-remesure.ts` fait tourner un vrai veilleur : sans ces deux portes,
+# il écraserait le verrou et l'état de port du banc RÉEL de la machine qui joue
+# la suite — la fiche du patron annoncerait alors un veilleur absent, ou un port
+# qu'elle n'a pas mesuré. Un contrôle ne doit jamais abîmer ce qu'il vérifie.
+VERROU="${ATLAS_VERROU_VEILLEUR:-/tmp/atlas-veilleur.pid}"
+FICHIER_PORT="${ATLAS_FICHIER_PORT:-/tmp/atlas-port.txt}"
 # Détournables uniquement pour les ÉPROUVER : une suite ne peut pas attendre un
 # quart d'heure pour vérifier qu'une publication a lieu, ni dix minutes pour
 # voir une construction se retenter.
 INTERVALLE="${ATLAS_INTERVALLE_VEILLE:-15}"
 INTERVALLE_RAPPORT="${ATLAS_INTERVALLE_RAPPORT:-900}"
+# Le port se revérifie DU DEHORS, à ce pas-là. Cinq minutes : assez rare
+# pour ne rien coûter, assez fréquent pour qu'une nuit ne se passe pas sur un
+# port perdu. Voir le bloc « LE PORT SE REVÉRIFIE » plus bas.
+INTERVALLE_CONTROLE_PORT="${ATLAS_INTERVALLE_CONTROLE_PORT:-300}"
+# Combien de fois on rejoue un remède avant d'admettre qu'il ne répare pas.
+# Trois : assez pour absorber un relais qui met quelques secondes, trop peu pour
+# passer une nuit à se féliciter d'un port mort (§345).
+REMEDES_AVANT_DE_RENONCER="${ATLAS_REMEDES_PORT:-3}"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # **LA CONSTRUCTION QUI A ÉCHOUÉ N'ÉTAIT JAMAIS RETENTÉE.**
@@ -156,7 +170,26 @@ VEILLEUR=$$
 # trouverait la ligne de commande de ce script et conclurait toujours que le
 # serveur tourne. Le même piège avait déjà fait que `demarrer.sh` se tuait avant
 # de rien lancer.
-MOTIF='[n]ext(-server| dev| start)'
+# ═══════════════════════════════════════════════════════════════════════════
+# **LE MOTIF SE SURCHARGE, PARCE QU'UNE SUITE NE DOIT PAS TUER LA BATTERIE.**
+#
+# Trouvé le 31 août 2026. `test-fiche-pendant-relance.ts` lance CE veilleur sur
+# un faux dépôt, port 59999 où personne n'écoute, pour éprouver qu'il continue
+# de publier la fiche pendant une relance. Mais `pgrep -f` regarde TOUTE la
+# machine : le serveur Next de la batterie répond au motif, à quelques
+# centimètres de là.
+#
+# Le veilleur d'essai concluait donc « un serveur tient le port sans répondre »
+# — jamais « plus rien n'écoute » —, la suite rougissait sur un montage sain,
+# et deux tours plus tard il faisait `pkill` sur ce motif : **il tuait le
+# serveur de la batterie**. D'où des suites navigateur en échec ailleurs, sur
+# des « waitForURL » qui n'accusaient personne.
+#
+# Une variable d'environnement suffit à isoler l'essai, et la valeur par défaut
+# ne bouge pas d'un caractère. Ce n'est pas une porte ouverte : rien d'extérieur
+# ne pose l'environnement du veilleur sur l'espace du patron.
+# ═══════════════════════════════════════════════════════════════════════════
+MOTIF="${ATLAS_MOTIF_SERVEUR:-[n]ext(-server| dev| start)}"
 
 BASCULE="$(dirname "$0")/bascule-en-cours.sh"
 
@@ -199,6 +232,57 @@ while true; do
     MUET=0
 
     # ─────────────────────────────────────────────────────────────────────────
+    # **LE PORT SE REVÉRIFIE DU DEHORS — sa nuit du 30 au 31 août 2026.**
+    #
+    # *« L'appli ne se lance plus »*, à 1 h 07, capture à l'appui. Son espace
+    # tournait pourtant, Atlas répondait sur 127.0.0.1:3000, et la version
+    # rapide était bâtie sur le dernier commit. Sa fiche disait le reste :
+    # l'adresse publique rendait un **404 du relais**, sans jamais atteindre
+    # l'application.
+    #
+    # **Ce qui l'a laissé passer :** `PORT_OUVERT=oui` était posé dès que `gh`
+    # répondait « ouvert », et plus rien n'y revenait de la session. Or ce mot
+    # ne dit pas que le port est JOIGNABLE — il dit qu'une commande a réussi, à
+    # un instant. Le relais peut perdre le port ensuite (serveur remplacé par la
+    # version bâtie, reprise après veille), et le verrou tenait quand même.
+    #
+    # C'est le défaut du 22 août d'un cran plus loin : on retenait encore un
+    # RÉGLAGE là où il fallait une MESURE (`scripts/_verdict-port.mjs`).
+    #
+    # **On ne mesure QUE quand le serveur répond** — c'est déjà le cas ici. Une
+    # adresse publique muette pendant que rien n'écoute n'apprend rien sur le
+    # port : elle dit seulement que le relais n'a personne à servir.
+    #
+    # Trois réponses, et la troisième compte autant que les deux autres :
+    # joignable → on retient ; refusé → on redemande au tour suivant ; **pas
+    # mesurable → on ne conclut rien**, sans quoi on rappellerait `gh` toutes les
+    # cinq minutes sur une machine qui n'a aucun port à ouvrir.
+    MAINTENANT="$(date +%s)"
+    if [ "$MAINTENANT" -ge "${PROCHAIN_CONTROLE_PORT:-0}" ]; then
+      PROCHAIN_CONTROLE_PORT=$(( MAINTENANT + INTERVALLE_CONTROLE_PORT ))
+      node "$DEPOT/scripts/port-joignable.mjs" > /dev/null 2>&1
+      case $? in
+        # **Un relais qui revient se reprend tout seul.** C'est ce qui rend
+        # l'abandon du remède (plus bas) sans danger : on cesse de rejouer un
+        # geste sans effet, jamais de regarder.
+        0) PORT_OUVERT=oui ; REMEDE_ABANDONNE=non ; REMEDES_SANS_EFFET=0 ;;
+        1)
+          # **Deux mots ne se retentent JAMAIS, quoi que dise la mesure.** Hors
+          # Codespace il n'y a pas de port à ouvrir ; sans `gh`, aucune tentative
+          # n'aboutira — et `ouvrir-port.sh` essaie alors d'installer `gh`, ce qui
+          # coûte jusqu'à quatre-vingt-dix secondes. Les redemander tous les quarts
+          # d'heure userait la machine pour rien.
+          if [ "${MOT_PORT:-}" != "sans-gh" ] && [ "${MOT_PORT:-}" != "hors-codespace" ]; then
+            [ "${PORT_OUVERT:-non}" = "oui" ] && \
+              echo "$(date '+%d/%m %H:%M:%S') — le port ${PORT} n'est plus joignable de l'extérieur : on le redemande" >> "$JOURNAL"
+            PORT_OUVERT=non
+          fi
+          ;;
+        *) : ;;
+      esac
+    fi
+
+    # ─────────────────────────────────────────────────────────────────────────
     # **LE PORT S'OUVRE QUAND LE SERVEUR RÉPOND, PAS AVANT.**
     #
     # Le patron, le 26 août 2026, capture de son onglet PORTS à l'appui :
@@ -219,22 +303,68 @@ while true; do
     # lieu au seul moment où elle ne pouvait pas aboutir.
     #
     # On redemande donc ICI, où l'on sait que le serveur répond — donc que le
-    # port existe. Une fois obtenu, on n'y revient plus : `gh` interroge le
-    # réseau, et l'appeler toutes les quinze secondes pour rien userait un
-    # quota sans rien apprendre.
-    if [ "${PORT_OUVERT:-non}" != "oui" ]; then
+    # port existe. Une fois obtenu, on n'y revient qu'à la **remesure** ci-dessus,
+    # jamais à chaque tour : `gh` interroge le réseau, et l'appeler toutes les
+    # quinze secondes pour rien userait un quota sans rien apprendre.
+    # ─────────────────────────────────────────────────────────────────────────
+    # **« OUVERT » NE PROUVE RIEN, ET LE VEILLEUR LE CROYAIT — 13 septembre 2026.**
+    #
+    # Sa capture de 1 h 58 : un TÉLÉCHARGEMENT proposé à la place d'Atlas. Sa
+    # fiche, écrite à la même minute, disait serveur debout, `gh` satisfait
+    # (`[démarrage : ouvert]`), et 404 du relais.
+    #
+    # **Ce que son journal disait pendant ce temps, toutes les cinq minutes :**
+    # *« port 3000 ouvert au public, une fois le serveur debout »* — une ligne
+    # de succès, écrite sur un port mort, toute la nuit. La boucle tournait :
+    #
+    #     mesure → 404 → PORT_OUVERT=non → `gh visibility` → « ouvert »
+    #     → PORT_OUVERT=oui → (cinq minutes) → mesure → 404 → …
+    #
+    # Le remède posait le verrou que la mesure venait de lever, **sur la seule
+    # foi d'une commande qui a réussi**. C'est le défaut du 22 août puis du
+    # 31 août pour la troisième fois, et au même endroit : *on retient un
+    # RÉGLAGE là où il faut une MESURE* (`scripts/_verdict-port.mjs`). La
+    # remesure avait été ajoutée au-dessus ; ce `PORT_OUVERT=oui`-ci l'annulait
+    # au tour suivant.
+    #
+    # **Ce qu'il en coûtait, et ce n'est pas que du bruit :** un appel réseau à
+    # `gh` toutes les cinq minutes pour rien, un journal qui affirme le
+    # contraire de ce que voit son téléphone — donc inutilisable pour chercher —
+    # et surtout **rien qui apprenne jamais que ce remède ne peut pas marcher
+    # ici**. Un remède mesuré sans effet et rejoué indéfiniment n'est pas une
+    # tentative : c'est une panne muette de plus.
+    #
+    # **La mesure décide, et elle seule.** Le remède est suivi de la question
+    # qu'il prétend régler ; si la réponse ne change pas, on cesse de le rejouer
+    # et on le DIT. La remesure du dehors, elle, continue de tourner — un relais
+    # qui revient est donc repris tout seul (`REMEDE_ABANDONNE` remis à `non`).
+    if [ "${PORT_OUVERT:-non}" != "oui" ] && [ "${REMEDE_ABANDONNE:-non}" != "oui" ]; then
       MOT_PORT="$(bash "$(dirname "$0")/ouvrir-port.sh" "$PORT" 2>/dev/null)"
       # **La fiche lit ce fichier** (`diagnostiquer-espace.mjs`) : sans cette
       # ligne, elle continuerait d'annoncer le refus du démarrage alors que le
       # port est ouvert — et sa règle enverrait le patron réparer ce qui marche.
-      printf '%s\n' "$MOT_PORT" > /tmp/atlas-port.txt 2>/dev/null || true
+      printf '%s\n' "$MOT_PORT" > "$FICHIER_PORT" 2>/dev/null || true
       case "$MOT_PORT" in
-        # Ces trois-là ne se retentent pas : hors Codespaces il n'y a pas de
-        # port à ouvrir, et sans `gh` aucune tentative n'aboutira jamais.
-        ouvert|hors-codespace|sans-gh)
+        # Ces deux-là ne se retentent pas et ne se mesurent pas : hors Codespaces
+        # il n'y a pas de port à ouvrir, et sans `gh` aucune tentative
+        # n'aboutira jamais.
+        hors-codespace|sans-gh)
           PORT_OUVERT=oui
-          [ "$MOT_PORT" = "ouvert" ] && \
-            echo "$(date '+%d/%m %H:%M:%S') — port ${PORT} ouvert au public, une fois le serveur debout" >> "$JOURNAL"
+          ;;
+        # **Le seul mot qui prétend avoir réparé quelque chose : on vérifie.**
+        ouvert)
+          if node "$DEPOT/scripts/port-joignable.mjs" > /dev/null 2>&1; then
+            PORT_OUVERT=oui
+            REMEDES_SANS_EFFET=0
+            echo "$(date '+%d/%m %H:%M:%S') — port ${PORT} ouvert au public, et VÉRIFIÉ joignable du dehors" >> "$JOURNAL"
+          else
+            REMEDES_SANS_EFFET=$(( ${REMEDES_SANS_EFFET:-0} + 1 ))
+            echo "$(date '+%d/%m %H:%M:%S') — GitHub a rendu le port ${PORT} public et l'adresse publique refuse TOUJOURS (${REMEDES_SANS_EFFET}) : ce remède ne peut rien ici" >> "$JOURNAL"
+            if [ "$REMEDES_SANS_EFFET" -ge "$REMEDES_AVANT_DE_RENONCER" ]; then
+              REMEDE_ABANDONNE=oui
+              echo "$(date '+%d/%m %H:%M:%S') — on cesse de redemander l'ouverture du port ${PORT} : elle réussit et ne change rien. Il faut RALLUMER l'espace (voir la fiche)" >> "$JOURNAL"
+            fi
+          fi
           ;;
         # `non-declare` et les refus se retentent au tour suivant : le relais
         # peut mettre quelques secondes de plus à enregistrer le port.

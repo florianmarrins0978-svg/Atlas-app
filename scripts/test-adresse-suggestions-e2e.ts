@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **Le geste que le patron a décrit, joué en entier.**
 //
@@ -26,7 +27,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // contrôle contre le VRAI service vit dans `.github/workflows/adresses.yml`, sur
 // une machine qui peut le joindre.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 const REPONSE = {
   suggestions: [
@@ -123,23 +124,80 @@ async function main() {
 
   // Et le chantier se crée quand même, avec une adresse que la base ignore —
   // un chemin, un lieu-dit, « derrière la scierie ». C'est là qu'il travaille.
-  await creerPuisFiche(page);
-  // **Généreux, et pour une raison précise.** Cette suite passe la PREMIÈRE de
-  // la batterie (ordre alphabétique) : elle paie donc la toute première
-  // compilation de la fiche de chantier, sur un serveur de développement qui
-  // n'a encore rien en cache. Quinze secondes suffisaient seule et pas en
-  // batterie — l'échec accusait alors l'adresse, qui n'y était pour rien.
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}$/, { timeout: 60_000 });
-  // La fiche affiche « CHARGEMENT… » le temps de se composer : lire l'écran à
-  // cet instant reviendrait à accuser le produit d'avoir perdu l'adresse.
+  // **UN CHANTIER NEUF VA AU DEVIS, et c'est l'écran des coordonnées qui porte
+  // l'adresse — corrigé le 14 septembre 2026.**
+  //
+  // Ce contrôle attendait `/chantiers/<id>` tout court, puis lisait l'adresse
+  // sur cette fiche. Or elle a été RETIRÉE le 4 septembre (`ARCHITECTURE.md`
+  // §254) : depuis, la création mène toujours au devis. Le contrôle attendait
+  // donc un écran que le patron a fait enlever, et rougissait sur du code juste
+  // — exactement ce que `CLAUDE.md` §5 bis interdit. `creerPuisFiche` avait
+  // déjà été adapté ; cette suite refaisait l'ancienne attente à la main.
+  //
+  // **Ce qu'on éprouve n'a pas changé d'un pouce** : l'adresse libre tapée à la
+  // création est-elle conservée ? On la relit là où elle se saisit et se
+  // modifie, plutôt que sur un écran qui la citait en passant — une assertion
+  // qui vise la donnée survit au prochain remaniement d'écran.
+  const idCree = await creerPuisFiche(page);
+  await page.goto(`${BASE}/chantiers/${idCree}/coordonnees`, { waitUntil: "networkidle" });
   await page.waitForFunction(() => !document.body.innerText.includes("CHARGEMENT"), null, { timeout: 40_000 });
 
-  const fiche = await page.locator("body").innerText();
   assert.match(
-    fiche,
+    await page.getByRole("combobox").first().inputValue(),
     /Scierie/i,
     "L'adresse libre n'a pas été conservée : la liste aurait alors enfermé le patron dans ce que la base connaît."
   );
+
+  // ─── LA FICHE ROUVERTE N'OUVRE AUCUNE LISTE ──────────────────────────────
+  //
+  // **Sa plainte du 4 septembre 2026 :** *« je suis arrivé sur la page de la
+  // fiche client […] ce n'est pas la même que lorsque j'ai cliqué sur nouveau
+  // chantier »*. C'était bien le même écran : ce qui différait, c'est que la
+  // liste des suggestions s'était ouverte TOUTE SEULE sur l'adresse que la
+  // reprise venait de remplir. Six adresses recouvraient les photos, l'anneau
+  // de la note vocale et « Je rédige à la main ».
+  //
+  // **Le contrôle mesure la HAUTEUR, et pas seulement la liste.** C'est elle
+  // qui dit ce qu'il voyait : 672 px à la création, 1099 px à la reprise. Une
+  // assertion sur le seul `combobox` resterait verte le jour où la liste
+  // s'ouvrirait sous une autre forme.
+  const appelsAvant = appels;
+
+  // On rouvre la fiche d'un chantier qui porte déjà une adresse — le chemin du
+  // retour depuis le devis (`src/lib/retour-du-devis.ts`).
+  //
+  // **C'est le chantier qu'on vient de créer, et non un lien cherché sur
+  // l'accueil — corrigé le 14 septembre 2026.** Le contrôle y cherchait une
+  // adresse de la forme `/chantiers/<uuid>` : celle de la fiche RETIRÉE le
+  // 4 septembre. Il n'en trouvait donc plus aucune et accusait la reprise de
+  // n'avoir rien à rouvrir, sur du code juste. Le chantier créé douze lignes
+  // plus haut porte exactement l'adresse qu'il faut : il n'y a rien à chercher.
+  await page.goto(`${BASE}/chantiers/${idCree}/coordonnees`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(900);
+
+  const champReprise = page.getByRole("combobox").first();
+  assert.equal(
+    await champReprise.count(),
+    1,
+    "La fiche rouverte n'a pas de champ d'adresse : ce n'est plus le même écran que la création."
+  );
+  const adresseReprise = await champReprise.inputValue();
+  if (adresseReprise.trim().length >= 5) {
+    assert.equal(
+      appels,
+      appelsAvant,
+      `La fiche rouverte a interrogé le service d'adresses ${appels - appelsAvant} fois sur une valeur ` +
+        "qu'elle venait elle-même de remplir : la liste s'ouvre sous les yeux du patron, sur un écran " +
+        "où il n'a rien tapé."
+    );
+    const listes = await page.locator('[role="listbox"], ul[id*="suggestion"]').count();
+    assert.equal(
+      listes,
+      0,
+      "Une liste de suggestions est ouverte à l'arrivée sur la fiche : elle recouvre les photos, " +
+        "l'anneau de la note vocale et « Je rédige à la main »."
+    );
+  }
 
   await navigateur.close();
   console.log("✅ L'adresse se propose, se choisit d'un doigt, et n'enferme personne.");

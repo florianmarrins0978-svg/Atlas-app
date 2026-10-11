@@ -42,6 +42,10 @@ const JUSTE = JSON.stringify({
   ],
   point_d_eau: "compteur",
   nourrice: { x: 0.1, y: 0.9 },
+  // **Le piquage aussi se lit, depuis le 11 septembre 2026** — c'est sa place
+  // qui donne la longueur de l'amenée (« calculée, ni lue ni supposée »). Un
+  // croquis complet le porte ; sans lui, une réserve, comme pour la nourrice.
+  piquage: { x: 0.05, y: 0.95 },
 });
 
 console.log("=== Lire un croquis de jardin ===\n");
@@ -89,6 +93,19 @@ if (r.ok) {
     sansNourrice.ok && sansNourrice.croquis.reserves.some((x) => /nourrice/.test(x)),
     "et l'absence est dite au patron",
   );
+  const sansPiquage = lireReponseCroquis(
+    JSON.stringify({
+      zones: [{ type: "gazon", nom: "P", longueur_m: 16, largeur_m: 6 }],
+      point_d_eau: "compteur",
+      nourrice: { x: 0.1, y: 0.9 },
+    })
+  );
+  dire(
+    sansPiquage.ok && sansPiquage.croquis.piquage === null && sansPiquage.croquis.reserves.some((x) => /piquage/.test(x)),
+    "sans piquage dessiné, il reste nul et l'absence est dite — jamais posé à la nourrice",
+  );
+  const r2 = lireReponseCroquis(JUSTE);
+  dire(r2.ok && r2.croquis.piquage !== null && r2.croquis.piquage.x === 0.05, "le piquage se lit en fraction, comme la nourrice");
 }
 
 // ── 1 ter. UNE PLACE HORS DE [0, 1] N'EN EST PAS UNE ────────────────────────

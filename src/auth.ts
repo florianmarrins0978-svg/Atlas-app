@@ -1,5 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
+import Apple from "next-auth/providers/apple";
 import { eq } from "drizzle-orm";
 import { db } from "./server/db/client";
 import { users } from "./server/db/schema";
@@ -8,7 +10,11 @@ import { authConfig } from "./auth.config";
 import { ouvrirAvecCle } from "./server/cle-appareil";
 import { identifiantSiMotDePasseJuste } from "./server/secret-authentification";
 import { marquerSession } from "./lib/identite-session";
+import { emailProuve, fournisseursDisponibles, ouAllerSansCompte } from "./lib/fournisseurs-connexion";
+import { clesFournisseurs } from "./server/cles-fournisseurs";
+import { identifiantPourEmailProuve } from "./server/identite-externe";
 import type { AuthenticationResponseJSON } from "@simplewebauthn/types";
+import { CodeRequis, attenteSiCodeExige, verifierLeCodeEnAttente } from "./server/double-verification-connexion";
 
 // Provider Credentials : aucun accès réseau externe requis (contrairement à
 // un provider OAuth), donc utilisable tel quel dans n'importe quel
@@ -70,6 +76,40 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           .limit(1);
         if (!utilisateur) return null;
 
+        /**
+         * **La double vérification se joue ICI** (7 octobre 2026) : c'est le
+         * seul point par où passe toute connexion par mot de passe, l'écran de
+         * connexion comme le mot de passe oublié, et celles qu'on ajoutera.
+         * Posée dans une action, elle s'oublierait dans la suivante. Le mot de
+         * passe est juste : aucune session ne s'ouvre, une connexion en attente
+         * du code naît à la place (`double-verification-connexion.ts`).
+         */
+        if (await attenteSiCodeExige(utilisateur.id)) throw new CodeRequis();
+
+        return { id: utilisateur.id, email: utilisateur.email, name: utilisateur.nom ?? undefined };
+      },
+    }),
+
+    /**
+     * LE CODE DE L'APPLI D'AUTHENTIFICATION, après le mot de passe, Google ou
+     * Apple. Seul ce fournisseur ouvre la session d'un compte qui a activé la
+     * double vérification ; il n'accepte qu'une connexion en attente, que seul
+     * un premier facteur juste a pu ouvrir. Le code d'un autre, ou le code
+     * seul, ne mène nulle part.
+     */
+    Credentials({
+      id: "second-facteur",
+      name: "Code",
+      credentials: { code: { label: "Code", type: "text" } },
+      async authorize(credentials) {
+        const code = typeof credentials?.code === "string" ? credentials.code : "";
+        const utilisateurId = await verifierLeCodeEnAttente(code);
+        const [utilisateur] = await db
+          .select({ id: users.id, email: users.email, nom: users.nom })
+          .from(users)
+          .where(eq(users.id, utilisateurId))
+          .limit(1);
+        if (!utilisateur) return null;
         return { id: utilisateur.id, email: utilisateur.email, name: utilisateur.nom ?? undefined };
       },
     }),
@@ -130,9 +170,88 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return { id: compte.id, email: compte.email, name: compte.nom ?? undefined };
       },
     }),
+
+    /**
+     * GOOGLE ET APPLE — sa demande du 10 septembre 2026, planche à l'appui :
+     * *« je veux pouvoir me connecter avec Google ou Apple »*.
+     *
+     * ─────────────────────────────────────────────────────────────────────────
+     * **DÉCLARÉS SEULEMENT SI LEURS CLÉS SONT POSÉES**, et la question ne se
+     * tranche pas ici : `fournisseursDisponibles` répond, et le même appel sert
+     * à l'écran pour décider quoi dessiner. Deux rédactions divergeraient, et
+     * la divergence s'appellerait « un bouton qui mène à une page d'erreur
+     * d'Auth.js » (`CLAUDE.md` §3).
+     *
+     * **AUCUN ADAPTATEUR DE BASE N'EST BRANCHÉ, et c'est délibéré** — même
+     * raisonnement que pour Face ID, quinze lignes plus haut : la session
+     * d'Atlas est un JWT sans table, et en brancher un remettrait en jeu le
+     * contexte d'entreprise, le middleware et « me déconnecter partout ». Ce
+     * qui rattache une identité Google à un compte d'ici est donc **l'adresse
+     * prouvée**, et rien d'autre (`emailProuve`, puis le rappel `signIn`).
+     */
+    ...fournisseursDisponibles(clesFournisseurs()).map((f) =>
+      f.nom === "google"
+        ? Google({
+            clientId: getEnv().googleClientId,
+            clientSecret: getEnv().googleClientSecret,
+            /**
+             * `consent` refusé, `select_account` retenu : il fait choisir le
+             * compte à chaque fois. Un artisan et son salarié partagent parfois
+             * le même téléphone, et sans cela le second entrerait chez le
+             * premier sans jamais voir de choix.
+             */
+            authorization: { params: { prompt: "select_account" } },
+          })
+        : Apple({
+            clientId: getEnv().appleClientId,
+            clientSecret: getEnv().appleClientSecret,
+          })
+    ),
   ],
   callbacks: {
     ...authConfig.callbacks,
+
+    /**
+     * **QUI ENTRE PAR GOOGLE OU PAR APPLE — et qui va d'abord créer son compte.**
+     *
+     * Ce rappel ne concerne QUE les fournisseurs extérieurs : les deux
+     * `Credentials` ont déjà rendu un identifiant Atlas, il n'y a rien à
+     * rattacher.
+     *
+     * ─────────────────────────────────────────────────────────────────────────
+     * **POURQUOI ON NE CRÉE PAS LE COMPTE AU VOL.** C'est la décision qui
+     * compte dans ce lot, et elle a un coût visible : celui qui appuie sur
+     * Google sans compte Atlas ne rentre pas, il est envoyé sur la création.
+     * L'inverse donnerait un Atlas **sans entreprise, sans forme juridique et
+     * sans TVA** — le premier devis serait impossible à émettre, et l'artisan
+     * le découvrirait devant un client. Le parcours de création pose ces
+     * questions ; on y va, avec l'adresse déjà prouvée.
+     *
+     * **`user.id` est réécrit ici**, et il le faut : ce qu'Auth.js y met pour
+     * un fournisseur OAuth est l'identifiant du compte CHEZ GOOGLE. Laissé tel
+     * quel, il partirait dans le jeton et `getCurrentCtx` ne trouverait aucune
+     * entreprise — une session vide, sans un mot.
+     */
+    async signIn({ user, account, profile }) {
+      if (!account || account.type !== "oidc") return true;
+
+      const email = emailProuve(profile);
+      // Une adresse non prouvée n'ouvre rien. Voir `emailProuve` : sans
+      // adaptateur, l'adresse est le SEUL lien entre les deux mondes.
+      if (!email) return "/login?refus=adresse-non-verifiee";
+
+      const utilisateurId = await identifiantPourEmailProuve(email);
+      if (!utilisateurId) return ouAllerSansCompte(email);
+
+      // Google ou Apple ne dispensent pas du code : leur compte se vole comme
+      // un mot de passe. Face ID, lui, n'arrive jamais ici.
+      if (await attenteSiCodeExige(utilisateurId)) return "/login/code";
+
+      user.id = utilisateurId;
+      user.email = email;
+      return true;
+    },
+
     // Le jeton ne porte que l'id utilisateur — jamais entrepriseId/rôle, qui
     // sont toujours résolus server-side depuis la base à chaque requête (voir
     // session-ctx.ts), jamais fait confiance depuis le jeton lui-même.

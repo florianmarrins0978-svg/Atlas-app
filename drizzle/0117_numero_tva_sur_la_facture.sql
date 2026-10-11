@@ -1,0 +1,18 @@
+-- LE NUMÉRO DE TVA DE L'ARTISAN SUR SA FACTURE — sa demande du 3 octobre 2026 :
+-- « corrige à la racine ce problème ».
+--
+-- Le numéro de TVA intracommunautaire est une mention obligatoire de toute
+-- facture d'un assujetti (CGI, annexe II, art. 242 nonies A, I-4°). Il se
+-- saisissait dans Réglages (`entreprises.numero_tva`) depuis la création du
+-- compte, et ne partait sur AUCUNE facture : l'identité recopiée sur la pièce
+-- (`identiteDeLEmetteur`) prenait le SIRET, l'IBAN, le régime de TVA, mais pas
+-- lui. Trouvé en vérifiant la facture en autoliquidation, qui l'exige aussi.
+--
+-- Figé sur la facture comme le SIRET et le régime (0039, 0076) : une pièce garde
+-- ce qu'elle portait le jour où elle est partie.
+--
+-- Expand seul, aucune donnée réécrite : les factures émises sont immuables
+-- (trigger), et un brouillon reprend toute l'identité de l'émetteur au moment
+-- où il part (`emettreFacture`). Aucune contrainte : aucun écran ne tombe, et
+-- l'ancien code ignore la colonne (.claude/rules/deployment-safety.md).
+ALTER TABLE "factures" ADD COLUMN IF NOT EXISTS "entreprise_numero_tva" text;

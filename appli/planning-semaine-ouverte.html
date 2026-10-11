@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Un devis accepté — sur quelle semaine s'ouvre le planning ?</title>
+<title>Un devis accepté : sur quelle semaine s'ouvre le planning ?</title>
 <style>
   /* Couleurs et tailles de la planche 84, sans exception. */
   :root{
@@ -101,9 +101,9 @@
 <body>
 
 <div class="bandeau">
-  <b>Planche 87 — sur quelle semaine le planning s'ouvre-t-il ?</b><br>
+  <b>Planche 87, sur quelle semaine le planning s'ouvre-t-il ?</b><br>
   Ce que tu as signalé : un devis accepté pour le <b>lundi 24 août</b>, et rien de visible.
-  Le chantier <b>est bien posé</b> — c'est l'écran qui ouvre sur la semaine d'aujourd'hui,
+  Le chantier <b>est bien posé</b> : c'est l'écran qui ouvre sur la semaine d'aujourd'hui,
   la vide, et écrit « Aucun chantier posé cette semaine ».<br>
   Trois écrans ci-dessous. <b>Les flèches marchent</b> : tu peux te promener dans chacun.
   Dis-moi lequel, et je le code.
@@ -113,7 +113,7 @@
      A — CE QUE TU AS AUJOURD'HUI
      ══════════════════════════════════════════════════════════════════ -->
 <div class="cas">
-  <h2>A — aujourd'hui</h2>
+  <h2>A : aujourd'hui</h2>
   <p>L'écran s'ouvre sur la semaine du jour. Le 24 porte bien sa barre dans le calendrier,
      mais la liste dessous dit <b>« Aucun chantier posé cette semaine »</b>. C'est ce qui
      t'a fait croire que rien n'était arrivé.</p>
@@ -124,7 +124,7 @@
      B — OUVRIR SUR LA SEMAINE DU PROCHAIN CHANTIER
      ══════════════════════════════════════════════════════════════════ -->
 <div class="cas">
-  <h2>B — ouvrir sur le prochain chantier</h2>
+  <h2>B, ouvrir sur le prochain chantier</h2>
   <p>Quand la semaine du jour est vide, l'écran s'ouvre <b>directement sur la semaine
      qui porte le prochain chantier</b>. Tu ouvres Atlas, tu vois le chantier accepté,
      sans un geste.</p>
@@ -135,7 +135,7 @@
      C — RESTER SUR CETTE SEMAINE, MAIS LE DIRE
      ══════════════════════════════════════════════════════════════════ -->
 <div class="cas">
-  <h2>C — rester sur cette semaine, mais le dire</h2>
+  <h2>C, rester sur cette semaine, mais le dire</h2>
   <p>L'écran ne bouge pas de la semaine du jour, mais à la place de « Aucun chantier posé
      cette semaine » il écrit <b>où est le prochain</b>, et t'y emmène si tu le touches.</p>
 </div>
@@ -148,7 +148,7 @@
 
   <h3>Ce qui te débloque tout de suite</h3>
   <p>Sur l'écran d'aujourd'hui : touche le <b>24 dans le calendrier</b>, ou la flèche
-     <b>›</b> à droite de « 17 – 23 août ». Le chantier est là.</p>
+     <b>›</b> à droite de « 17 : 23 août ». Le chantier est là.</p>
 
   <div class="question">
     <b>La question :</b> A, B ou C ? Un mot suffit.
@@ -159,7 +159,7 @@
 /* ─────────────────────────────────────────────────────────────────────────
    La situation REPRODUITE, pas imaginée : elle sort de l'écran mesuré ce
    samedi 22 août sur l'application, avec un chantier accepté pour le
-   lundi 24. Les nombres ci-dessous ne se devinent pas — les changer
+   lundi 24. Les nombres ci-dessous ne se devinent pas : les changer
    changerait le cas décrit, pas seulement le dessin.
    ───────────────────────────────────────────────────────────────────── */
 const AUJOURDHUI = "2026-08-22";          // samedi
@@ -226,7 +226,7 @@ function dessinerMois(){
 /* ─────────────────────────────────────────────────────────────────────────
    UN écran. La variante ne change QU'UNE chose : sur quelle semaine il
    s'ouvre, et ce qu'il écrit quand cette semaine est vide. Tout le reste
-   est commun — c'est délibéré : deux dessins pour la même liste
+   est commun : c'est délibéré : deux dessins pour la même liste
    finiraient par ne plus dire pareil (CLAUDE.md §3).
    ───────────────────────────────────────────────────────────────────── */
 function monter(hote, variante){

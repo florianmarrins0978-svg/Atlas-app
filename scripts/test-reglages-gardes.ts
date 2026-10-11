@@ -31,7 +31,7 @@
 
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join, relative, sep } from "node:path";
 
 let echecs = 0;
 function essai(nom: string, fn: () => void) {
@@ -56,6 +56,7 @@ const RACINE = join(__dirname, "..", "src", "app", "reglages");
 const PERSONNELLES: Record<string, string> = {
   "compte/page.tsx": "son nom et son adresse électronique à lui",
   "connexion/page.tsx": "son mot de passe, ses clés d'appareil, sa déconnexion",
+  "connexion/double-verification/page.tsx": "le code de SON téléphone, ses codes de secours",
   "apparence/page.tsx": "les couleurs de SON application",
 };
 
@@ -140,7 +141,13 @@ function pagesDeReglages(): string[] {
     for (const entree of readdirSync(dossier, { withFileTypes: true })) {
       const chemin = join(dossier, entree.name);
       if (entree.isDirectory()) parcourir(chemin);
-      else if (entree.name === "page.tsx") trouvees.push(relative(RACINE, chemin));
+      // **Toujours des barres obliques, quelle que soit la machine.** Sur
+      // Windows, `relative` rend « apparence\page.tsx » quand les exceptions
+      // sont écrites « apparence/page.tsx » : aucune ne correspondait, et ce
+      // contrôle accusait trois rubriques gardées de ne pas l'être — sur la
+      // machine du patron seulement, jamais sur la CI. Une erreur qui désigne
+      // le mauvais coupable coûte plus cher que pas d'erreur (`CLAUDE.md` §5).
+      else if (entree.name === "page.tsx") trouvees.push(relative(RACINE, chemin).split(sep).join("/"));
     }
   };
   parcourir(RACINE);

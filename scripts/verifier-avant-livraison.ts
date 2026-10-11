@@ -1,6 +1,26 @@
-import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
+import { empreinteDesSources, fichiersRemues } from "./_empreinte-des-sources.mjs";
+import {
+  phraseDuRefus,
+  phraseDuVerdictCaduc,
+  processusDeLaMachine,
+  restesDeBatterie,
+  saPropreLignee,
+} from "./_batterie-solitaire";
+import {
+  prendreUnAtelierSync,
+  baseDeLAtelier,
+  redisDeLAtelier,
+  suffixeDeLAtelier,
+} from "./_atelier";
+import { prendreLeVerrou } from "./verrou-batterie.mjs";
+import { porteeDuLot, phraseDuRefusDePortee, refusApresUnRouge } from "./_portee-batterie";
+import { lireDernierVerdict, ecrireDernierVerdict, ilYA } from "./_dernier-verdict";
+import { jouerEnGardantLaSortie } from "./_jouer-etape";
+import { bilanDuJournal } from "./_bilan-suites.mjs";
+import { commitCourant } from "./_temoin-de-main.mjs";
+import { evaluerLeLot } from "./_niveau-de-risque.mjs";
 
 // La batterie complète, à jouer AVANT de demander au patron d'essayer quoi que
 // ce soit.
@@ -20,113 +40,67 @@ import path from "node:path";
 // Il ne s'arrête PAS à la première erreur : savoir que trois choses cassent, et
 // lesquelles, vaut mieux que de les découvrir une par une.
 
-type Etape = {
-  nom: string;
-  commande: string;
-  args: string[];
-  /** Variables propres à l'étape ; le reste de l'environnement est repris. */
-  env?: Record<string, string>;
-  /**
-   * Variables à RETIRER pour cette étape. Nécessaire parce que l'environnement
-   * ambiant est repris : une variable présente par accident suffit à changer le
-   * comportement d'une suite.
-   */
-  envSupprime?: string[];
-  /** Pourquoi cette étape existe — affiché quand elle échoue. */
-  ceQueCaAttrape: string;
-};
 
-const AUTH = { AUTH_SECRET: "ci-secret-not-a-real-production-value-000000000000" };
-const CRON = { CRON_SECRET: "ci-placeholder-cron-secret-0000000000" };
-const REDIS = { REDIS_URL: "redis://localhost:6379" };
+// **Les adresses et les rôles vivent dans `_bases-essai.ts`** depuis le
+// 16 septembre 2026 : le niveau 2 en a besoin des mêmes, et deux copies de la
+// même vérité finissent par diverger (`CLAUDE.md` §3).
+import { basesDeLAtelier } from "./_bases-essai";
+import { type Etape, etapesDeLaBatterie } from "./_etapes-batterie";
 
-// **Aucune suite ne doit appeler un vrai fournisseur d'IA.** Depuis que poser
-// une clé suffit à brancher l'IA, une batterie lancée dans l'espace de travail
-// du patron — où ses clés vivent — enverrait les dictées d'essai chez Anthropic
-// et OpenAI, et les lui ferait payer. Retirées de toute étape qui exécute le
-// produit ; l'étape « Fournisseurs d'IA », elle, les garde : c'est justement sa
-// configuration à lui qu'elle vérifie.
-const SANS_CLES_IA = ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "DEEPGRAM_API_KEY", "GOOGLE_API_KEY"];
 
-// Retirer les clés de l'environnement ne suffit PAS : Next.js charge de
-// lui-même `.env.local`, où le patron est justement invité à coller les
-// siennes. Une variable réelle l'emporte sur ce fichier — d'où ce réglage
-// explicite, qui garantit le mode déterministe quoi qu'il y ait sur le disque.
-const IA_COUPEE = { LLM_PROVIDER: "dev", TRANSCRIPTION_PROVIDER: "dev" };
 
-const APP = "postgresql://atlas_app:atlas_app_ci_pw@localhost:5432/atlas_test";
-const OWNER = "postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test";
-const SUPER = "postgresql://postgres:postgres_ci_pw@localhost:5432/atlas_test";
 
 /**
  * **CETTE BATTERIE IGNORE LE `.env` DU DOSSIER — d'où ce refus.**
  *
- * Les trois adresses ci-dessus sont écrites en dur, sur le port **5432**. C'est
- * juste dans le dossier de développement, où c'est précisément ce qu'on veut
- * éprouver. Mais jouée depuis l'établi de qualification (`docs/ETABLI-QA.md`),
- * dont la base vit sur **55432**, cette batterie sort de l'établi sans le dire :
- * elle migre, vide et remplit `atlas_test` sur le port de tous les jours,
- * pendant qu'on croit travailler dans un environnement jetable.
+ * Ses adresses (`_bases-essai.ts`) visent `atlas_test` sur le port **5432**,
+ * ou la base de son atelier (`atlas_test_a1`…) sur ce même port. C'est juste
+ * dans le dossier de développement. Mais jouée depuis l'établi de
+ * qualification (`docs/ETABLI-QA.md`), dont la base vit sur **55432**, elle
+ * sortirait de l'établi sans le dire : elle migrerait, viderait et
+ * remplirait une base du port de tous les jours, pendant qu'on croit
+ * travailler dans un environnement jetable.
  *
- * **Le trou n'était pas théorique** : il a été relevé le 30 août 2026 en
- * montant l'établi, et c'est le SEUL chemin par lequel la qualification pouvait
- * encore atteindre le dossier habituel. Tout le reste — suites base, suites
- * navigateur, migrations, jeu de données — lit `DATABASE_URL`.
+ * Relevé le 30 août 2026 en montant l'établi, et reporté le 11 octobre 2026
+ * sur la batterie réécrite entre-temps (ateliers, `_bases-essai.ts`) : la
+ * réécriture n'a rien changé au port, le trou restait entier.
  *
- * On refuse donc, plutôt que de « faire au mieux ». Un `.env` qui nomme une
- * base de qualification est une déclaration d'intention sans ambiguïté : celui
- * qui l'a posé ne veut pas qu'on écrive ailleurs.
- *
- * **Pourquoi ne pas simplement faire lire `DATABASE_URL` à la batterie ?**
- * Parce qu'elle a besoin des TROIS rôles — applicatif, propriétaire,
- * superutilisateur — et qu'un `.env` n'en porte que deux. Lui en faire déduire
- * le troisième serait deviner un mot de passe. Le refus est honnête ; la
- * déduction ne le serait pas.
+ * **Pourquoi ne pas lui faire lire `DATABASE_URL` ?** Elle a besoin des TROIS
+ * rôles, et un `.env` n'en porte que deux. En déduire le troisième serait
+ * deviner un mot de passe. Le refus est honnête ; la déduction ne le serait pas.
  */
 function refuserHorsDeSonDossier() {
   const chemin = path.join(process.cwd(), ".env");
   if (!existsSync(chemin)) return;
 
-  let contenu: string;
-  try {
-    contenu = readFileSync(chemin, "utf8");
-  } catch {
-    return;
-  }
-
-  const ligne = contenu
+  const ligne = readFileSync(chemin, "utf8")
     .split("\n")
     .map((l) => l.trim())
     .find((l) => !l.startsWith("#") && l.startsWith("DATABASE_URL="));
   if (!ligne) return;
 
-  const adresse = ligne.slice("DATABASE_URL=".length).trim();
   let base = "";
   let port = "";
   try {
-    const url = new URL(adresse);
+    const url = new URL(ligne.slice("DATABASE_URL=".length).trim().replace(/^["']|["']$/g, ""));
     base = decodeURIComponent(url.pathname.replace(/^\//, ""));
     port = url.port || "5432";
   } catch {
+    // Une adresse illisible ne désigne aucune base de qualification : la
+    // batterie garde alors son comportement de toujours.
     return;
   }
 
-  // Deux signes, et l'un des deux suffit : un nom de base qui n'est pas celui
-  // que la batterie va employer, ou un port qui n'est pas le sien.
-  const memeCible = base === "atlas_test" && port === "5432";
-  if (memeCible) return;
+  if (/^atlas_test(_a\d+)?$/.test(base) && port === "5432") return;
 
   console.error(
     `\n❌ Cette batterie REFUSE de tourner dans ce dossier.\n\n` +
       `   Le .env d'ici désigne « ${base} » sur le port ${port}.\n` +
-      `   La batterie, elle, écrit en dur sur « atlas_test » port 5432 —\n` +
+      `   La batterie, elle, écrit sur « atlas_test » port 5432,\n` +
       `   c'est-à-dire AILLEURS que là où tu travailles.\n\n` +
-      `   Ce qu'elle ferait sans ce refus : migrer, VIDER et remplir la base\n` +
-      `   d'un autre environnement, sans que rien ne le dise.\n\n` +
-      `   Dans un établi de qualification, la batterie de livraison n'a rien à\n` +
-      `   faire : ce qui s'y joue est « npm test » et « npm run test:e2e », qui\n` +
-      `   lisent tous deux DATABASE_URL.\n\n` +
-      `   Pour l'employer quand même — sur une machine où atlas_test:5432 EST\n` +
+      `   Dans un établi de qualification, ce qui se joue est « npm test » et\n` +
+      `   « npm run test:e2e », qui lisent tous deux DATABASE_URL.\n\n` +
+      `   Pour l'employer quand même, sur une machine où atlas_test:5432 EST\n` +
       `   la bonne cible :\n\n` +
       `     ATLAS_BATTERIE_HORS_ETABLI=oui npm run verifier:avant-livraison\n`,
   );
@@ -135,136 +109,262 @@ function refuserHorsDeSonDossier() {
 
 if (process.env.ATLAS_BATTERIE_HORS_ETABLI?.trim() !== "oui") refuserHorsDeSonDossier();
 
-const ETAPES: Etape[] = [
-  {
-    nom: "Types",
-    commande: "npm",
-    args: ["run", "typecheck"],
-    ceQueCaAttrape: "un appel qui ne correspond plus à sa signature",
-  },
-  {
-    nom: "Lint",
-    commande: "npm",
-    args: ["run", "lint"],
-    ceQueCaAttrape: "les pièges connus de React et de Next",
-  },
-  {
-    // **LA CONSTRUCTION, et il aura fallu une soirée entière pour l'ajouter.**
-    //
-    // Le 16 août 2026, le patron : « l'appli est vraiment très lente, mais
-    // vraiment ». Son banc servait le mode développement, où chaque écran se
-    // compile à l'ouverture, parce que `next build` échouait chez lui à chaque
-    // démarrage. Or cette batterie vérifiait les types, le lint, la mémoire,
-    // les suites base, les suites navigateur et une connexion réelle — **et ne
-    // bâtissait jamais**. Une panne qui n'existe qu'à la construction
-    // traversait donc les cinquante-huit contrôles au vert, et c'est LUI qui la
-    // découvrait, un soir, en cliquant.
-    //
-    // Les suites navigateur ne la rattrapent pas : elles démarrent un serveur
-    // de DÉVELOPPEMENT, qui compile à la demande et ne passe jamais par le
-    // chemin de production — vérification des types de routes, rendu statique,
-    // découpage des paquets. Le typecheck non plus : `tsc` ne connaît pas les
-    // types de routes qu'engendre Next.
-    //
-    // Placée tôt, juste après le lint : elle dure deux à trois minutes, et
-    // découvrir à la vingtième que rien ne se bâtit ferait perdre les dix-neuf
-    // autres.
-    nom: "Construction",
-    commande: "npm",
-    args: ["run", "build"],
-    // Dans SON dossier, comme le banc : sans quoi la construction écraserait le
-    // `.next` d'un serveur de développement qui tourne peut-être à côté.
-    //
-    // **`DATABASE_URL` posée ici, et ce n'est pas une commodité (20 août 2026).**
-    // La construction *collecte les données de page*, ce qui instancie la
-    // configuration du serveur : sans elle, elle s'arrête sur « Variable
-    // d'environnement obligatoire manquante : DATABASE_URL » en accusant une
-    // route d'agenda qui n'y est pour rien. La CI, elle, la pose au niveau du
-    // job (`ci.yml`) et bâtit donc sans broncher — **l'étape locale ne jouait
-    // pas ce que la CI joue**, et son rouge permanent apprenait à ignorer le
-    // seul contrôle qui protège le banc du mode lent. Aucune requête n'est
-    // faite pendant une construction : cette adresse n'a qu'à être lisible.
-    env: { ATLAS_DIST_DIR: ".next-verification", DATABASE_URL: APP },
-    ceQueCaAttrape: "une erreur qui n'existe qu'à la construction — et qui condamne le banc au mode lent",
-  },
-  {
-    nom: "Mémoire du dépôt",
-    commande: "npm",
-    args: ["run", "verifier:memoire"],
-    ceQueCaAttrape: "une documentation qui décrit une version qui n'existe plus",
-  },
-  {
-    nom: "Fournisseurs d'IA",
-    commande: "npm",
-    args: ["run", "verifier:ia"],
-    // Volontairement SANS `envSupprime` : cette étape lit la configuration
-    // réelle de la machine. Aucun appel réseau — il faut `--reseau` pour cela.
-    env: { DATABASE_URL: APP },
-    ceQueCaAttrape: "un fournisseur choisi sans sa clé, ou un nom de fournisseur mal orthographié",
-  },
-  {
-    nom: "Suites base de données",
-    commande: "npm",
-    args: ["test"],
-    env: { DATABASE_URL: APP, DATABASE_ADMIN_URL: OWNER, ...AUTH, ...IA_COUPEE },
-    // REDIS_URL retiré, et ce n'est pas un détail de configuration : avec
-    // cette variable, la suite des propositions IA ouvre une connexion Redis
-    // qui n'est jamais refermée, le processus ne se termine plus, et la
-    // batterie entière reste bloquée sans le moindre message. Constaté deux
-    // fois de suite, puis isolé : code 124 (délai dépassé) avec la variable,
-    // code 0 sans. La CI ne la fournit pas non plus à cette étape.
-    envSupprime: ["REDIS_URL", ...SANS_CLES_IA],
-    ceQueCaAttrape: "l'isolation entre entreprises, les règles métier, la RLS",
-  },
-  {
-    // `npm test` vide la base : sans réamorçage, l'étape suivante échouerait
-    // sur un compte manquant et accuserait le navigateur.
-    nom: "Données de démonstration",
-    commande: "npx",
-    args: ["tsx", "src/server/db/seed.ts"],
-    env: { DATABASE_URL: SUPER, ...AUTH },
-    envSupprime: ["REDIS_URL", ...SANS_CLES_IA],
-    ceQueCaAttrape: "rien — c'est une remise en état, pas un contrôle",
-  },
-  {
-    nom: "Suites navigateur",
-    commande: "npm",
-    args: ["run", "test:e2e"],
-    // Redis ici, comme en CI : la limitation de débit doit être remise à zéro
-    // entre deux suites, ce que la mémoire du serveur ne permet pas.
-    env: { DATABASE_URL: SUPER, ...AUTH, ...CRON, ...REDIS, ...IA_COUPEE },
-    envSupprime: SANS_CLES_IA,
-    ceQueCaAttrape: "le parcours complet, du devis à la facture",
-  },
-  {
-    nom: "Connexion derrière un proxy",
-    commande: "npx",
-    args: ["tsx", "scripts/verifier-connexion-avec-serveur.mts"],
-    env: { DATABASE_URL: SUPER, ...AUTH, ...CRON, ...REDIS, ...IA_COUPEE },
-    envSupprime: SANS_CLES_IA,
-    ceQueCaAttrape:
-      "« Invalid Server Actions request. » — le défaut qui a coûté une demi-journée au patron,\n" +
-      "     invisible partout ailleurs parce que tout le reste interroge 127.0.0.1",
-  },
-];
+/**
+ * **L'ATELIER DE CETTE BATTERIE — sa demande du 8 septembre 2026.**
+ *
+ * *« L'idée c'est qu'après ça chaque session puisse tourner en même temps sans
+ * se gêner. »* Il fait tourner trois ou quatre sessions dans le même dossier,
+ * et une seule pouvait mesurer : la batterie s'approprie le port 3000, la base
+ * d'essai — qu'elle VIDE entre les suites — et le limiteur de connexion. Les
+ * autres attendaient cinquante minutes, ou mesuraient des chiffres qui
+ * n'accusent personne.
+ *
+ * Le rang se prend au premier port libre, sans que personne se coordonne, et il
+ * dérive à lui seul le port, la base, le coin de Redis et les dossiers bâtis
+ * (`scripts/_atelier.ts`). **Le rang 0 rend exactement la batterie d'avant** :
+ * une session seule ne voit aucune différence, et aucun chiffre ne bouge.
+ *
+ * Aucune manip pour lui — sa condition du 5 septembre : la commande ne prend ni
+ * variable ni option nouvelle.
+ */
+const ATELIER = prendreUnAtelierSync();
+const SUFFIXE = suffixeDeLAtelier(ATELIER);
+process.env.ATLAS_ADRESSE = ATELIER.adresse;
+if (ATELIER.rang !== 0) {
+  console.log(
+    `Atelier n° ${ATELIER.rang} : port ${ATELIER.port}, base et Redis à part.`
+  );
+}
+
+const { APP, OWNER, SUPER, REDIS } = basesDeLAtelier(ATELIER);
+
+/** Le dossier bâti par l'étape « Construction », propre à cet atelier. */
+const DIST_VERIFICATION = `.next-verification${SUFFIXE}`;
+
+
+const ETAPES = etapesDeLaBatterie({ APP, OWNER, SUPER, REDIS, DIST_VERIFICATION });
 
 const echecs: Etape[] = [];
+/** Ce que chaque moteur de suites tombé a écrit — pour nommer ses rouges. */
+const bilans = new Map<string, ReturnType<typeof bilanDuJournal>>();
 
+/**
+ * Le dossier de la construction, effacé AVANT de commencer.
+ *
+ * **Payé le 5 septembre 2026, et c'est la deuxième fois que ce piège se
+ * referme.** L'étape « Types » passe la PREMIÈRE ; « Construction » écrit dans
+ * `.next-verification`. À la batterie suivante, `tsc` relit donc le validateur
+ * de routes laissé par la précédente — `tsconfig.json` l'inclut exprès — et
+ * rend quatre erreurs (`Type 'Route' does not satisfy the constraint 'never'`)
+ * sur du code que personne n'a touché.
+ *
+ * Le rouge accuse alors les types, c'est-à-dire le lot en cours, et il est
+ * INSOLUBLE : rien dans `src/` ne le fait bouger. Une batterie qui ne peut pas
+ * être verte s'apprend à être ignorée — la même phrase qu'au 4 septembre, pour
+ * la même raison.
+ *
+ * On l'efface plutôt que de l'exclure de `tsconfig.json` : Next réécrit cette
+ * liste tout seul (`test-tsconfig-sans-restes-dev.ts` le raconte), et une
+ * exclusion qui se remet d'elle-même n'en est pas une. La construction le
+ * recrée trois lignes plus bas.
+ */
+// ─── ELLE NE DÉMARRE PAS SI UNE AUTRE TOURNE — 8 septembre 2026 ─────────────
+//
+// **Une heure perdue devant le patron.** Une batterie arrêtée laisse ses
+// enfants : `pkill` tue le père, jamais les suites qu'il avait lancées. Elles
+// ont continué à VIDER LA BASE sous la batterie suivante, qui a rougi sur du
+// code juste — la panne du 26 août, réécrite à l'identique.
+//
+// On refuse, on nomme, et on ne tue rien : ce qui tourne peut être la batterie
+// d'une autre session, en train de mesurer pour de bon.
+// **Sa lignée ENTIÈRE est écartée, pas seulement son père** : entre le terminal
+// et le `node` qui exécute ceci, cinq processus portent le nom de ce script dans
+// leur ligne de commande. S'en tenir au père faisait refuser toutes les
+// batteries — trouvé en confrontant le garde-fou à une vraie, dans la minute.
+const processus = processusDeLaMachine();
+const restes = restesDeBatterie(processus, saPropreLignee(processus));
+if (restes.length > 0) {
+  console.error(phraseDuRefus(restes));
+  process.exit(1);
+}
+
+// **Et elle emporte ses enfants quand on l'arrête** — c'est la racine du reste
+// ci-dessus, pas seulement sa détection. Sans ces deux lignes, un `Ctrl-C` ou un
+// `pkill` laisse le moteur des suites en vie, et la panne recommence.
+const RACINE = path.join(__dirname, "..");
+for (const signal of ["SIGINT", "SIGTERM"] as const) {
+  process.on(signal, () => {
+    console.error(`\n\x1b[1m→ Arrêt demandé — on emporte les suites en cours.\x1b[0m`);
+    // Le groupe entier, et non le seul processus courant : c'est ce qui manquait.
+    try {
+      process.kill(-process.pid, "SIGTERM");
+    } catch {
+      // Pas de groupe à soi (lancée sans `setsid`) : on part quand même, mais on
+      // le DIT — sinon on croirait les enfants emportés alors qu'ils survivent.
+      console.error("   ⚠️  Impossible d'emporter les suites : vérifiez avec `ps` avant d'en relancer une.");
+    }
+    process.exit(130);
+  });
+}
+
+/**
+ * ─── LE DOSSIER SE FERME PENDANT QU'ON MESURE — 9 septembre 2026 ───────────
+ *
+ * **Sa colère, et elle était méritée :** *« JE NE VEUX PLUS DE PROBLÈME SUR LA
+ * BATTERIE. Quand une batterie tourne, personne n'y touche. »* Trois verdicts
+ * de dix minutes jetés dans la même journée, tous pour la même raison.
+ *
+ * L'empreinte ci-dessous DIT que l'arbre a bougé ; le verrou EMPÊCHE qu'il
+ * bouge. Les deux se complètent, et aucun ne remplace l'autre : un geste fait
+ * hors de Claude — un enregistrement dans l'éditeur — échappe au verrou, et
+ * c'est alors l'empreinte qui parle.
+ */
+/**
+ * ─── ET AVANT TOUT : Y A-T-IL SEULEMENT QUELQUE CHOSE À MESURER ? ──────────
+ *
+ * **Sa question du 10 septembre 2026, à la fin d'une heure perdue :** *« mais
+ * là tu faisais tourner une batterie pour pousser quoi ? »* Trois batteries de
+ * vingt minutes avaient été rejouées **en entier** alors que, d'un tour à
+ * l'autre, seuls deux ou trois `scripts/test-*.ts` avaient bougé.
+ *
+ * La règle existait — `CLAUDE.md` §6, un tableau à dérouler à la main. C'est
+ * précisément ce que ce dépôt sait ne pas tenir : une consigne en prose se lit
+ * au début d'une conversation et s'oublie au bout de trois heures, or c'est au
+ * bout de trois heures qu'on relance une batterie de trop.
+ *
+ * Elle vit donc ici, en fonction pure éprouvable (`_portee-batterie.ts`), et
+ * **le doute tranche toujours vers la batterie complète** : seuls « rien n'a
+ * bougé » et « seules des suites ont bougé » sont refusés.
+ */
+const empreinteAvant = empreinteDesSources(RACINE);
+const forcer = process.argv.includes("--forcer") || process.argv.includes("--complet");
+const precedent = lireDernierVerdict(RACINE);
+
+// Un verdict ROUGE ne retient jamais : sur un arbre inchangé, il accuse
+// souvent la machine, et le rejouer est le seul moyen de le savoir.
+//
+// **Et un verdict de NIVEAU 2 ne retient pas non plus** — trouvé le
+// 16 septembre 2026, en voulant éprouver un lot d'outillage. Le niveau 2 ne
+// joue ni la construction, ni les cent cinquante suites navigateur, ni la
+// connexion derrière un proxy : dire « rien n'a bougé depuis » après lui, c'est
+// refuser la seule mesure qui manquait. Ce raccourci n'a de sens qu'entre deux
+// batteries complètes.
+const precedentComplet = precedent?.niveau === 3 ? precedent : null;
+
+// **UN VERDICT ROUGE NE SE REMESURE PAS EN ENTIER — 17 septembre 2026, 23 h.**
+//
+// Sa question, après la correction du soir : *« les autres sessions ont déjà
+// l'info, ou je dois leur dire à chaque fois ? »* — elles ne l'ont pas, et
+// c'est bien le problème : **une session qui relance la batterie ne passe par
+// aucun garde-fou**. Elle décide toute seule, au bout de trois heures, que son
+// verdict ne vaut plus. Le refus vit donc ICI, où le geste se fait.
+if (!forcer && precedentComplet && !precedentComplet.vert) {
+  const bougeDepuis = fichiersRemues(precedentComplet.empreinte, empreinteAvant);
+  const refus = refusApresUnRouge({
+    rouges: precedentComplet.rouges,
+    rougesHorsSuites: precedentComplet.rougesHorsSuites,
+    niveauDeCeQuiABouge: evaluerLeLot(bougeDepuis, { racine: RACINE }).niveau,
+  });
+  if (refus) {
+    console.error(refus);
+    process.exit(2);
+  }
+}
+
+if (!forcer && precedentComplet?.vert) {
+  const portee = porteeDuLot(fichiersRemues(precedentComplet.empreinte, empreinteAvant));
+  if (portee.quoi !== "complete") {
+    console.error(phraseDuRefusDePortee(portee, precedentComplet.verdict, ilYA(precedentComplet.quand)));
+    process.exit(2);
+  }
+}
+
+const verrou = prendreLeVerrou("npm run verifier:avant-livraison");
+process.on("exit", verrou.rendre);
+
+rmSync(DIST_VERIFICATION, { recursive: true, force: true });
+
+async function jouerLaBatterie(): Promise<never> {
 for (const etape of ETAPES) {
+  // **Le verrou se signe ICI, entre deux étapes** — jamais par une minuterie.
+  // Ce fil est bloqué par `spawnSync` du début à la fin : un `setInterval` n'y
+  // partirait pas une seule fois, et c'est exactement ce qui a laissé une
+  // session voisine écrire pendant la mesure du 9 septembre 2026.
+  verrou.signer();
   console.log(`\n\x1b[1m→ ${etape.nom}\x1b[0m`);
   const env = { ...process.env, ...(etape.env ?? {}) };
   for (const cle of etape.envSupprime ?? []) delete env[cle];
 
-  const r = spawnSync(etape.commande, etape.args, { stdio: "inherit", env });
+  // **`shell` sous Windows, et rien d'autre — 2 septembre 2026.**
+  //
+  // Sur Windows, `npm` et `npx` sont des fichiers `.cmd` : `spawnSync` ne sait
+  // pas les lancer sans passer par l'interpréteur, et rend ENOENT. La batterie
+  // affichait alors **les neuf étapes en échec d'un coup, en une seconde**, y
+  // compris « Types » et « Lint » qui passent quand on les joue à la main —
+  // c'est-à-dire le pire des verdicts : faux, complet, et instantané.
+  //
+  // Le drapeau reste FAUX partout ailleurs. Sous shell, les arguments sont
+  // ré-interprétés (guillemets, `&`, espaces) : l'activer sur Linux et en CI
+  // changerait le comportement d'étapes qui marchent depuis des mois, pour
+  // corriger un défaut qui ne s'y produit pas. Les arguments passés ici sont de
+  // simples jetons sans espace — la condition tient tant que cela reste vrai.
+  const r = await jouerEnGardantLaSortie(etape.commande, etape.args, {
+    env,
+    cwd: RACINE,
+    shell: process.platform === "win32",
+  });
   if (r.status === 0) {
     console.log(`   ✅ ${etape.nom}`);
   } else {
     console.error(`   ❌ ${etape.nom}`);
     echecs.push(etape);
+    if (etape.suites) bilans.set(etape.nom, bilanDuJournal(r.sortie));
   }
 }
 
 console.log("\n─────────────────────────────────────────────────────────────");
+
+// **Un vert rendu sur un arbre qui a bougé est pire qu'un rouge** : on livre en
+// croyant avoir mesuré. Le dire avant le verdict, jamais après.
+const remues = fichiersRemues(empreinteAvant, empreinteDesSources(RACINE));
+if (remues.length > 0) {
+  console.error(phraseDuVerdictCaduc(remues));
+  console.error("─────────────────────────────────────────────────────────────");
+  process.exit(1);
+}
+
+// **Le verdict se NOTE, sinon le refus du prochain tour n'a rien à comparer.**
+// Écrit ici, après le contrôle d'empreinte : un verdict caduc n'est pas un
+// verdict, et le retenir ferait refuser la batterie qui devait le remplacer.
+//
+// **Et il NOMME ses rouges — 16 septembre 2026.** « Deux étapes en échec » ne
+// se compare à rien ; « ces onze suites » se compare à ce que `main` donnait
+// déjà sur cette machine. Une étape tombée sans bilan qui tombe juste — types,
+// construction, ou un moteur dont le compte ne correspond pas aux noms — va
+// dans `rougesHorsSuites`, et une seule y suffit à fermer la fusion.
+const rouges: string[] = [];
+const rougesHorsSuites: string[] = [];
+for (const e of echecs) {
+  const bilan = e.suites ? bilans.get(e.nom) : null;
+  if (e.suites && bilan && bilan.complet) rouges.push(...bilan.rouges);
+  else rougesHorsSuites.push(e.suites ? `${e.nom} (bilan incomplet)` : e.nom);
+}
+const commit = commitCourant(RACINE) ?? undefined;
+ecrireDernierVerdict(RACINE, {
+  quand: Date.now(),
+  vert: echecs.length === 0,
+  verdict:
+    echecs.length === 0
+      ? "✅ Batterie complète au vert."
+      : `❌ ${echecs.length} étape(s) en échec : ${echecs.map((e) => e.nom).join(", ")}`,
+  empreinte: empreinteAvant,
+  niveau: 3,
+  rouges,
+  rougesHorsSuites,
+  commit,
+});
+
+
 if (echecs.length === 0) {
   console.log("✅ Batterie complète au vert.");
   console.log("   La connexion a été faite pour de vrai, dans un navigateur,");
@@ -279,3 +379,9 @@ for (const e of echecs) {
 }
 console.error("\n   Ne rien donner au patron avant que tout soit vert.");
 process.exit(1);
+}
+
+jouerLaBatterie().catch((erreur) => {
+  console.error(erreur);
+  process.exit(1);
+});

@@ -1,12 +1,13 @@
 "use client";
 
+import type { CiviliteClient } from "@/lib/civilite";
 import { useState } from "react";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors } from "@/lib/design-tokens";
-import { composerMessageFacture, lienTransmission, type CanalClient } from "@/lib/message-client";
+import { composerMessageAvoir, composerMessageFacture, lienTransmission, type CanalClient } from "@/lib/message-client";
 import { ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
 import { useAdressePourLeClient } from "@/lib/use-adresse-client";
-import { marquerDepartMessagerie } from "@/lib/depart-messagerie";
+import { marquerDepartMessagerie, useRetourDeMessagerie } from "@/lib/depart-messagerie";
 import { enregistrerCoordonneeClientAction } from "../export/actions";
 import { preparerLienFactureAction } from "./actions";
 
@@ -72,11 +73,12 @@ export default function TransmettreLaFacture({
   telephone,
   email,
   origine,
+  avoir = null,
 }: {
   factureId: string;
   clientId: string | null;
   clientNom: string;
-  clientCivilite: "mr" | "mme" | null;
+  clientCivilite: CiviliteClient | null;
   entrepriseNom: string;
   /**
    * Son gabarit de message, écrit dans « Devis & factures ». `null` : Atlas.
@@ -95,7 +97,22 @@ export default function TransmettreLaFacture({
   email: string;
   /** Adresse complète du site, bâtie côté serveur : un chemin seul ne s'ouvre nulle part. */
   origine: string;
+  /**
+   * **L'avoir à transmettre, quand c'est lui qui part** (24 septembre 2026).
+   * Même geste, même lien — celui de la facture, où le client le trouve sous
+   * elle. Seuls le message et les mots changent : un second composant d'envoi
+   * finirait par diverger de celui-ci (`CLAUDE.md` §3).
+   */
+  avoir?: { numero: string } | null;
 }) {
+  // **Qui marque le départ monte le retour.** Il vivait seulement dans
+  // `FactureClient` : l'écran « C'est fait » de l'avoir, qui porte ce composant
+  // sans lui, marquait le départ et laissait le patron revenir sur un écran
+  // identique. Sa demande du 25 septembre 2026 : *« une fois envoyé il faut
+  // revenir sur la page d'accueil »*. Sur la facture, les deux écoutes
+  // coexistent sans se gêner : la première efface la marque, la seconde ne
+  // trouve plus rien.
+  useRetourDeMessagerie("/");
   const [canalChoisi, setCanalChoisi] = useState<CanalClient>(canal);
   const [coordonnees, setCoordonnees] = useState<Record<CanalClient, string>>({ sms: telephone, email });
   const [saisie, setSaisie] = useState("");
@@ -116,6 +133,14 @@ export default function TransmettreLaFacture({
   const adresseSite = useAdressePourLeClient(origine);
 
   const lienFacture = jeton ? `${adresseSite}/factures/${jeton}` : null;
+  const quoi = avoir ? "avoir" : "facture";
+
+  /** Le message, pour la facture ou pour l'avoir : écrit une fois, lu aux deux départs. */
+  function message(lien: string) {
+    return avoir
+      ? composerMessageAvoir({ clientCivilite, clientNom, entrepriseNom, numeroAvoir: avoir.numero, numeroFacture, lien })
+      : composerMessageFacture({ clientCivilite, clientNom, entrepriseNom, modele: modeleMessage, numeroFacture, echeanceLisible, lien });
+  }
 
   /**
    * L'adresse `sms:` ou `mailto:`, destinataire compris.
@@ -129,15 +154,7 @@ export default function TransmettreLaFacture({
     return lienTransmission({
       canal: canalCible,
       destinataire: cible,
-      message: composerMessageFacture({
-        clientCivilite,
-        clientNom,
-        entrepriseNom,
-        modele: modeleMessage,
-        numeroFacture,
-        echeanceLisible,
-        lien: lienFacture,
-      }),
+      message: message(lienFacture),
     });
   }
 
@@ -200,20 +217,12 @@ export default function TransmettreLaFacture({
       // La coordonnée vient d'être saisie : aucun lien de la page ne la portait
       // encore. On en fabrique un et on le déclenche — `location.assign` plutôt
       // qu'une écriture sur `location.href`, que le lint interdit à raison.
-      marquerDepartMessagerie("facture", clientNom);
+      marquerDepartMessagerie(quoi, clientNom);
       window.location.assign(
         lienTransmission({
           canal: canalChoisi,
           destinataire: valeur,
-          message: composerMessageFacture({
-        clientCivilite,
-            clientNom,
-            entrepriseNom,
-        modele: modeleMessage,
-            numeroFacture,
-            echeanceLisible,
-            lien: `${adresseSite}/factures/${jetonPret}`,
-          }),
+          message: message(`${adresseSite}/factures/${jetonPret}`),
         })
       );
     } catch {
@@ -230,7 +239,7 @@ export default function TransmettreLaFacture({
   if (!ouvrableParLeClient(adresseSite)) {
     return (
       <p className="text-center text-[13px] leading-[1.6]" style={{ color: colors.rust }} data-refus>
-        {phraseAdresseLocale("votre facture")}
+        {phraseAdresseLocale(avoir ? "votre avoir" : "votre facture")}
       </p>
     );
   }
@@ -254,7 +263,7 @@ export default function TransmettreLaFacture({
               ferait revenir au prochain changement de charte. */}
           <PrimaryButton
             href={adresse(destinataire)}
-            onClick={() => marquerDepartMessagerie("facture", clientNom)}
+            onClick={() => marquerDepartMessagerie(quoi, clientNom)}
             repere={`transmission-${canalChoisi}`}
           >
             {LIBELLE[canalChoisi].bouton}
@@ -278,11 +287,13 @@ export default function TransmettreLaFacture({
         </p>
       ) : (
         <>
-          <p className="mb-3 text-center text-[13px]" style={{ color: colors.muted }}>
-            Votre client ne l&apos;a pas encore reçue.
-          </p>
+          {!avoir && (
+            <p className="mb-3 text-center text-[13px]" style={{ color: colors.muted }}>
+              Votre client ne l&apos;a pas encore reçue.
+            </p>
+          )}
           <PrimaryButton disabled={enCours} onClick={envoyer}>
-            {enCours ? "Préparation…" : "Envoyer la facture au client"}
+            {enCours ? "Préparation…" : avoir ? "Envoyer l'avoir au client" : "Envoyer la facture au client"}
           </PrimaryButton>
         </>
       )}
@@ -322,7 +333,7 @@ export default function TransmettreLaFacture({
         <a
           href={adresse(coordonnees[autre], autre)}
           onClick={() => {
-            marquerDepartMessagerie("facture", clientNom);
+            marquerDepartMessagerie(quoi, clientNom);
             // Le registre doit dire par où la facture est REELLEMENT partie.
             // L'échec ne le concerne pas : son message part quand même.
             void preparerLienFactureAction(factureId, autre).catch(() => undefined);

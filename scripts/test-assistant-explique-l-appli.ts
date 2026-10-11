@@ -123,6 +123,38 @@ async function main() {
     assert.equal(titres.length, 1, `${titres.length} gestes dans la réponse : ${titres.join(" / ")}`);
   });
 
+  // **Sa demande du 24 septembre 2026, par la porte qu'il emprunte** : la
+  // question posée à l'assistant, depuis un écran sans chantier, jusqu'au texte
+  // qu'il lit. Avant ce lot, « où sont mes factures » répondait comment en
+  // créer une, et les avoirs ne rendaient rien du tout.
+  const OU_EST: [string, RegExp][] = [
+    ["où sont mes factures ?", /Touchez « Terminés » dans la barre du bas, puis la ligne du chantier/],
+    ["où est la fiche de sécurité ?", /« Paysage » dans la barre du bas, puis « Fiches de sécurité »/],
+    ["où est la fiche d'intervention ?", /sa fiche d'intervention se déplie/],
+    ["comment je fais un avoir ?", /puis « Je fais un avoir »/],
+    // **Sa capture du 28 septembre 2026**, mot pour mot : « ce n'est pas une
+    // fonctionnalité d'Atlas, renseignez-vous auprès du support ».
+    ["Combien de temps tu conserve les données dans lappli ?", /reste enregistré tant que votre compte existe/],
+    ["Comment sont conserver les données ?", /Les factures se gardent dix ans/],
+    ["qui peut voir mes données ?", /une autre entreprise n'y a jamais accès/],
+    // **Sa colère du 29 septembre 2026** : « comment fonctionne le planning »
+    // rendait « Touchez Planning dans la barre du bas », et rien d'autre.
+    [
+      "comment fonctionne le planning ?",
+      /^(?=[\s\S]*Poser directement un client sur un jour)(?=[\s\S]*est absent un jour)(?=[\s\S]*Choisir quels salariés vont sur un chantier)(?=[\s\S]*couleurs)/,
+    ],
+    ["que signifie au-delà ?", /« Au-delà » : plus de chantiers que d'équipes/],
+  ];
+  for (const [question, attendu] of OU_EST) {
+    await test(`« ${question} » reçoit l'endroit, depuis n'importe quel écran`, async () => {
+      const reponse = await poserQuestion(P, null, [], question);
+      assert.equal(reponse.succes, true);
+      if (!reponse.succes) return;
+      assert.match(reponse.texte, attendu);
+      assert.ok(reponse.sources.includes("RechercherModeEmploi"), "La source doit être le mode d'emploi");
+    });
+  }
+
   await test("Un geste inconnu se DIT, il ne s'invente pas", async () => {
     const reponse = await poserQuestion(P, chantier.id, [], "comment je fais pour envoyer une fusée sur la lune ?");
     assert.equal(reponse.succes, true);
@@ -136,7 +168,9 @@ async function main() {
   await test("Plusieurs écrans savent se raconter", async () => {
     const attendus: [string, RegExp][] = [
       ["comment envoyer le devis au client", /Envoyer le devis/],
-      ["comment changer mon mot de passe", /Changer de mot de passe/],
+      // « Changer de mot de passe ? » est le TITRE de la rubrique ; le bouton
+      // qu'on appuie dit « Changer mon mot de passe » (24 septembre 2026).
+      ["comment changer mon mot de passe", /Changer mon mot de passe/],
       ["comment je déplace un chantier sur le planning", /Déplacer/],
       ["où je vois ma tva", /Ma TVA/],
     ];

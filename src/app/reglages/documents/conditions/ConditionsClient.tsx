@@ -1,0 +1,323 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
+import {
+  BORNES,
+  lireConditions,
+  lignesConditionsDevis,
+  type Conditions,
+} from "@/lib/conditions-documents";
+import { majConditionsAction } from "../actions";
+import {
+  TEXTE_ORIGINE_CONDITIONS_GENERALES,
+  conditionsGeneralesRemplies,
+  crochetsRestants,
+} from "@/lib/conditions-generales";
+import type { DonneesMentionsObligatoires } from "@/lib/mentions-obligatoires";
+import { MOYENS_ACCEPTES, MOYENS_PROPOSES, estUnMoyenAccepte } from "@/lib/modalites-paiement";
+import BarreEnregistrer from "@/components/atlas/BarreEnregistrer";
+import { Bloc, Chiffre, Libre, Reglage } from "../pieces";
+
+/**
+ * « Ce qui s'imprime sur le devis » — le premier des quatre écrans du
+ * découpage du 7 septembre 2026.
+ *
+ * **Il portait trois blocs sur six d'un écran de 4 350 px** : les six
+ * interrupteurs, le récapitulatif qu'ils produisent, et les mentions qui ne se
+ * coupent pas. Les trois vont ensemble — le deuxième RÉSUME le premier, le
+ * troisième dit ce que le premier ne pourra jamais éteindre —, et c'est
+ * précisément pourquoi ils n'ouvrent pas trois lignes du sommaire.
+ *
+ * **L'APERÇU DIT LA VÉRITÉ DEPUIS LE 25 AOÛT 2026.** Il ne l'a pas toujours
+ * dite, et c'est le patron qui l'a vu : *« les autres qui sont en ON doivent-ils
+ * être visibles sur le devis ? car je ne vois rien »*. Non. Pendant onze jours,
+ * `lignesConditionsDevis` n'était appelée QUE par cet aperçu : il réglait,
+ * l'aperçu montrait les phrases, et son client ne recevait que la validité.
+ * Depuis, les cinq autres se figent sur le devis à sa création (migration 0064)
+ * et le PDF les met en phrases avec CETTE fonction-ci.
+ *
+ * **Ce qui a laissé passer le défaut onze jours, et qu'il faut retenir :** les
+ * contrôles éprouvaient la RÈGLE — les bonnes phrases pour les bons réglages —,
+ * jamais le CHEMIN entre le réglage et le papier.
+ */
+export default function ConditionsClient({
+  initial,
+  mentions,
+}: {
+  initial: Conditions;
+  /**
+   * Ce que « Mon entreprise » sait déjà (migration 0094). Les articles 9 et 11
+   * s'en remplissent à l'impression : un crochet couvert par ces champs n'est
+   * plus un crochet à remplir, et l'annoncer serait envoyer le patron chercher
+   * un travail qu'il a déjà fait.
+   */
+  mentions: DonneesMentionsObligatoires;
+}) {
+  const [c, setC] = useState<Conditions>(initial);
+  // **Ce qui RESTE après remplissage**, jamais ce que le texte porte : depuis
+  // la migration 0094, l'assureur et le médiateur viennent de Mon entreprise.
+  // Compter les crochets bruts annoncerait du travail déjà fait.
+  const restants = crochetsRestants(conditionsGeneralesRemplies(c.conditionsGenerales, mentions));
+  const [refus, setRefus] = useState<string | null>(null);
+  const [enCours, demarrer] = useTransition();
+  const [aEcrire, setAEcrire] = useState(false);
+
+  function poser(partiel: Partial<Conditions>) {
+    setC((v) => ({ ...v, ...partiel }));
+    setAEcrire(true);
+  }
+
+  function enregistrer(partiel: Partial<Conditions>) {
+    const prochain = { ...c, ...partiel };
+    setC(prochain);
+    demarrer(async () => {
+      const r = await majConditionsAction({
+        validiteJours: prochain.validiteJours,
+        acomptePourcent: prochain.acomptePourcent,
+        delaiPaiementJours: prochain.delaiPaiementJours,
+        moyensPaiement: prochain.moyensPaiement,
+        rappelerPenalites: prochain.rappelerPenalites,
+        textePied: prochain.textePied,
+        conditionsGenerales: prochain.conditionsGenerales,
+      });
+      setRefus(r.ok ? null : r.raison);
+      // **On affiche ce que la base porte, jamais ce qu'on a demandé.** Un refus
+      // silencieux laisserait un réglage coché qui n'existe pas.
+      if (r.ok) {
+        setC(lireConditions(r.conditions));
+        setAEcrire(false);
+      }
+    });
+  }
+
+  const apercu = lignesConditionsDevis(c);
+
+  // **La réserve du bas suit la barre**, sans quoi `pb-40` laissait 160 px de
+  // vide au bout de l'écran. Elle ne compte PAS les deux secondes et demie où
+  // la barre s'attarde pour dire « Enregistré ✓ » : cet instant-là suit un
+  // appui, pas une lecture du bas de page.
+  const barreVisible = aEcrire || enCours;
+
+  return (
+    <div className={barreVisible ? "pb-40" : "pb-10"}>
+      {refus && (
+        <p
+          role="alert"
+          className={`mx-[26px] mt-4 rounded-[4px] px-[15px] py-3 ${texteSituation}`}
+          style={{ backgroundColor: colors.card, borderLeft: `3px solid ${colors.alert}`, color: colors.alert }}
+        >
+          {refus}
+        </p>
+      )}
+
+      <Bloc titre="Ce qui s'imprime sur le devis">
+        <Reglage
+          nom="Durée de validité"
+          dit="En tête, sous le numéro du devis"
+          allume={c.validiteJours !== null}
+          onBascule={(v) => enregistrer({ validiteJours: v ? 30 : null })}
+        >
+          <Chiffre
+            valeur={c.validiteJours}
+            unite="jours"
+            apres="à compter de l'envoi"
+            bornes={BORNES.validiteJours}
+            onEcrire={(n) => poser({ validiteJours: n })}
+            onFini={(n) => enregistrer({ validiteJours: n })}
+          />
+        </Reglage>
+
+        <Reglage
+          nom="Acompte à la commande"
+          dit="Écrit sous le total du devis"
+          allume={c.acomptePourcent !== null}
+          onBascule={(v) => enregistrer({ acomptePourcent: v ? 30 : null })}
+        >
+          <Chiffre
+            valeur={c.acomptePourcent}
+            unite="%"
+            apres="à la signature"
+            bornes={BORNES.acomptePourcent}
+            onEcrire={(n) => poser({ acomptePourcent: n })}
+            onFini={(n) => enregistrer({ acomptePourcent: n })}
+          />
+        </Reglage>
+
+        <Reglage
+          nom="Délai de paiement"
+          dit="Zéro veut dire comptant"
+          allume={c.delaiPaiementJours !== null}
+          onBascule={(v) => enregistrer({ delaiPaiementJours: v ? 30 : null })}
+        >
+          <Chiffre
+            valeur={c.delaiPaiementJours}
+            unite="jours"
+            apres="après la facture"
+            bornes={BORNES.delaiPaiementJours}
+            onEcrire={(n) => poser({ delaiPaiementJours: n })}
+            onFini={(n) => enregistrer({ delaiPaiementJours: n })}
+          />
+        </Reglage>
+
+        {/* **Trois pastilles, plus de champ libre — sa décision du 18 septembre
+            2026**, la même liste qu'à la porte (`MOYENS_ACCEPTES`). Ce qui a été
+            écrit AVANT — à la main, par l'assistant, ou lu sur la photo d'un
+            devis — n'est pas de la liste : on le montre tel quel, entouré, et
+            il part dès qu'une pastille est touchée. Rien ne se réécrit à son
+            insu, rien ne se cache. */}
+        <Reglage
+          nom="Moyens de paiement acceptés"
+          dit="Listés sous vos coordonnées bancaires"
+          allume={c.moyensPaiement !== null}
+          onBascule={(v) => enregistrer({ moyensPaiement: v ? MOYENS_PROPOSES : null })}
+        >
+          <div className="flex flex-col gap-2" role="group" aria-label="Moyens de paiement acceptés">
+            {[
+              ...MOYENS_ACCEPTES,
+              ...(c.moyensPaiement && !estUnMoyenAccepte(c.moyensPaiement)
+                ? [{ valeur: c.moyensPaiement, titre: c.moyensPaiement }]
+                : []),
+            ].map((m) => {
+              const choisi = c.moyensPaiement === m.valeur;
+              return (
+                <button
+                  key={m.valeur}
+                  type="button"
+                  data-atlas={`moyens-${m.valeur}`}
+                  aria-pressed={choisi}
+                  onClick={() => enregistrer({ moyensPaiement: m.valeur })}
+                  className="min-h-[50px] rounded-full px-5 py-2.5 text-left text-[15px]"
+                  style={{
+                    color: colors.ink,
+                    backgroundColor: choisi ? colors.card : "transparent",
+                    boxShadow: `inset 0 0 0 1px ${choisi ? colors.or : colors.line}`,
+                  }}
+                >
+                  {m.titre}
+                </button>
+              );
+            })}
+          </div>
+        </Reglage>
+
+        <Reglage
+          nom="Rappeler les pénalités sur le devis"
+          dit="Elles figurent de toute façon sur la facture"
+          allume={c.rappelerPenalites}
+          onBascule={(v) => enregistrer({ rappelerPenalites: v })}
+        />
+
+        <Reglage
+          nom="Texte en bas de vos documents"
+          dit="Ajouté tel quel à chaque devis"
+          allume={c.textePied !== null}
+          onBascule={(v) => enregistrer({ textePied: v ? "" : null })}
+        >
+          <Libre
+            valeur={c.textePied ?? ""}
+            exemple="Sous réserve d'accès au chantier."
+            onEcrire={(t) => poser({ textePied: t })}
+            onFini={(t) => enregistrer({ textePied: t })}
+          />
+        </Reglage>
+
+        {/* **Ses conditions générales — sa demande du 12 septembre 2026** : la
+            case arrive REMPLIE du texte d'origine, il l'efface ou la réécrit.
+            Éteindre vide ; rallumer remet le texte d'origine. Imprimées après
+            le bon pour accord (`devis-pdf.ts`, annexe). */}
+        <Reglage
+          nom="Conditions générales de vente et de règlement"
+          dit="Imprimées après le bon pour accord"
+          allume={c.conditionsGenerales !== ""}
+          onBascule={(v) => enregistrer({ conditionsGenerales: v ? TEXTE_ORIGINE_CONDITIONS_GENERALES : "" })}
+        >
+          <Libre
+            valeur={c.conditionsGenerales}
+            exemple=""
+            lignes={14}
+            aria="Conditions générales de vente et de règlement"
+            onEcrire={(t) => poser({ conditionsGenerales: t })}
+            onFini={(t) => enregistrer({ conditionsGenerales: t })}
+          />
+          {restants > 0 && (
+            <p className={`mt-2 ${texteSituation}`} style={{ color: colors.alert }} data-atlas="crochets-a-remplir">
+              {restants} crochet{restants > 1 ? "s" : ""} à remplir dans Mon entreprise.
+            </p>
+          )}
+        </Reglage>
+      </Bloc>
+
+      {/* **CE RÉCAPITULATIF A REMONTÉ SOUS LES INTERRUPTEURS LE 6 SEPTEMBRE
+          2026.** Il vivait 3 000 pixels plus bas, après le message au client, le
+          numéro et l'allure : on le lisait sans savoir de quoi il parlait, ou
+          on ne le lisait jamais. Le découpage du 7 septembre le garde ici,
+          collé à ce qu'il résume.
+
+          Il se RECALCULE (`lignesConditionsDevis`), il ne se recopie pas : deux
+          rédactions du même engagement finiraient par diverger, et c'est le
+          client qui lirait la mauvaise (`CLAUDE.md` §3). */}
+      <Bloc titre="Ce que votre devis dira">
+        {apercu.length === 0 ? (
+          <p className={texteSituation} style={{ color: colors.inkSoft }}>
+            Rien ne s&apos;ajoutera : votre devis portera ses lignes, ses totaux et sa
+            mention de signature, sans condition supplémentaire.
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {apercu.map((l) => (
+              <li key={l} className="text-[13px] leading-[1.6]" style={{ color: colors.inkSoft }}>
+                {l}
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className={`mt-3 ${texteSituation}`} style={{ color: colors.inkSoft }}>
+          Le montant de l&apos;acompte se calcule sur chaque devis. Il n&apos;est pas
+          écrit ici : il dépend du total.
+        </p>
+      </Bloc>
+
+      {/* **CE QUI N'A PAS D'INTERRUPTEUR, dit à l'endroit exact où on le
+          chercherait.** Le patron, le 13 août : des interrupteurs *« seulement
+          à celles où la désactivation n'entraîne pas de problème juridique ou
+          moral »*. Les retirer d'une facture la rendrait irrégulière ; un
+          bouton ici serait « rendre ma facture irrégulière », posé dans un écran
+          où l'on vient changer un pourcentage. */}
+      <Bloc titre="Ce qui ne se coupe pas">
+        <div className="flex items-start gap-3 py-[14px]">
+          <span className="min-w-0 flex-1">
+            <span className="block" style={{ fontFamily: font.display, fontSize: 17, lineHeight: 1.25 }}>
+              Mentions légales de la facture
+            </span>
+            <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
+              Pénalités de retard, indemnité de 40 € pour une entreprise, et la franchise de
+              l&apos;article 293 B quand vous n&apos;êtes pas assujetti.
+            </span>
+          </span>
+          <span className={libelleCaps} style={{ color: colors.or, flex: "none", paddingTop: 4 }}>
+            Obligatoire
+          </span>
+        </div>
+        <p className={texteSituation} style={{ color: colors.inkSoft }}>
+          Elles s&apos;écrivent seules et suivent votre régime de TVA. Les retirer rendrait
+          la facture irrégulière.
+        </p>
+      </Bloc>
+
+      <p className={`mx-[26px] mt-[30px] border-t pt-[18px] ${texteSituation}`}
+         style={{ borderColor: colors.line, color: colors.inkSoft }}>
+        Chaque devis garde <b style={{ color: colors.ink, fontWeight: 400 }}>ce que ces
+        réglages disaient le jour où il a été créé</b> : les corriger aujourd&apos;hui
+        ne change aucun document déjà fait.
+      </p>
+
+      <BarreEnregistrer
+        aEcrire={aEcrire}
+        enCours={enCours}
+        refus={null}
+        onEnregistrer={() => enregistrer({})}
+      />
+    </div>
+  );
+}

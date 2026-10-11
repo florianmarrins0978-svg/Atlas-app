@@ -44,6 +44,94 @@ export function normaliserPourRecherche(texte: string): string {
     .trim();
 }
 
+/**
+ * La même normalisation, **caractère par caractère**.
+ *
+ * **Pourquoi elle existe, et pourquoi ce n'est pas une seconde règle.** Pour
+ * surligner ce qui a été trouvé, il faut savoir QUELLES LETTRES du nom
+ * correspondent. Or `normaliserPourRecherche` change la longueur du texte —
+ * « Moréau » y perd son accent, une apostrophe y devient une espace, deux
+ * espaces n'en font plus qu'une : l'indice d'une lettre dans le texte comparé
+ * ne désigne plus la même lettre dans le nom affiché, et le surlignage tombe à
+ * côté d'un caractère.
+ *
+ * Les deux fonctions font le même travail sur les mêmes caractères ; seul le
+ * regroupement des espaces diffère, et il est sans effet sur la recherche
+ * puisqu'un mot cherché n'en contient jamais. `test-recherche-client.ts` le
+ * VÉRIFIE plutôt que de le promettre : deux règles qui se ressemblent finissent
+ * toujours par diverger (`CLAUDE.md` §3).
+ */
+export function normaliserCaractere(caractere: string): string {
+  const nu = caractere
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
+  // Un accent seul ne laisse rien : il ne se compare pas, et il ne se surligne
+  // pas non plus — c'est la lettre qu'il porte qui compte.
+  if (nu === "") return "";
+  return /^[.'’\-_\s]$/.test(nu) ? " " : nu;
+}
+
+/** Un morceau de nom, tel que l'écran doit le rendre : surligné, ou non. */
+export type MorceauDeNom = { texte: string; trouve: boolean };
+
+/**
+ * Le nom d'un client découpé en morceaux, ceux qui répondent à la frappe étant
+ * marqués.
+ *
+ * **Sa remarque du 3 septembre 2026 :** sur quatre clients qui s'appellent
+ * Martins, il faut voir POURQUOI la ligne sort. Sans marque, une recherche qui
+ * rend quatre noms identiques ressemble à une recherche qui n'a pas filtré.
+ *
+ * **Une saisie vide ne marque rien** — et rend le nom d'un seul tenant : c'est
+ * l'état de la liste au repos, celui qu'on voit le plus souvent.
+ */
+export function morceauxSurlignes(nom: string, saisie: string): MorceauDeNom[] {
+  const mots = normaliserPourRecherche(saisie).split(" ").filter(Boolean);
+  const caracteres = Array.from(nom);
+  if (mots.length === 0) return caracteres.length ? [{ texte: nom, trouve: false }] : [];
+
+  // Le texte comparé, et pour chacune de ses positions la lettre du nom d'où
+  // elle vient : c'est ce lien qui permet de reposer la marque au bon endroit.
+  let compare = "";
+  const venuDe: number[] = [];
+  caracteres.forEach((c, index) => {
+    for (const lettre of normaliserCaractere(c)) {
+      compare += lettre;
+      venuDe.push(index);
+    }
+  });
+
+  // **Un seul mot manquant, et RIEN ne s'éclaire.** Trouvé par le garde-fou de
+  // `test-recherche-client.ts`, jamais à la lecture : le filtre exige que
+  // CHAQUE mot tapé soit présent, alors que le surlignage les cherchait un par
+  // un. « martins freres » écartait donc « Martins » de la liste — mais aurait
+  // éclairé son nom si l'écran l'avait affiché. Deux lectures du même texte qui
+  // ne répondent pas pareil : c'est exactement la divergence que ce contrôle
+  // existe pour empêcher (`CLAUDE.md` §3).
+  if (!mots.every((mot) => compare.includes(mot))) {
+    return [{ texte: nom, trouve: false }];
+  }
+
+  const marque = new Array(caracteres.length).fill(false);
+  for (const mot of mots) {
+    // **Toutes les occurrences, pas seulement la première** : « Martins
+    // Martins-Fils » doit s'éclairer des deux côtés, sans quoi la seconde
+    // paraît n'avoir rien à voir avec ce qui a été tapé.
+    for (let i = compare.indexOf(mot); i !== -1; i = compare.indexOf(mot, i + 1)) {
+      for (let k = i; k < i + mot.length; k++) marque[venuDe[k]] = true;
+    }
+  }
+
+  const morceaux: MorceauDeNom[] = [];
+  caracteres.forEach((c, index) => {
+    const dernier = morceaux[morceaux.length - 1];
+    if (dernier && dernier.trouve === marque[index]) dernier.texte += c;
+    else morceaux.push({ texte: c, trouve: marque[index] });
+  });
+  return morceaux;
+}
+
 /** Ce dont la recherche a besoin d'un client : son nom, et rien d'autre. */
 export type ClientCherchable = { nom: string };
 

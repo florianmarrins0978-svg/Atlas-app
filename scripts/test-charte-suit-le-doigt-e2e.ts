@@ -2,6 +2,7 @@ import assert from "node:assert";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { charte, type NomCharte } from "../src/lib/chartes";
+import { ADRESSE } from "./_adresse";
 
 /**
  * La couleur choisie suit le DOIGT — pas le rechargement.
@@ -43,7 +44,7 @@ import { charte, type NomCharte } from "../src/lib/chartes";
  * couleur accuseraient leur propre écran.
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const NUIT: NomCharte = "nuit";
 const ORIGINE: NomCharte = "origine";
 

@@ -26,14 +26,19 @@ const CONTOUR: Point[] = [
 ];
 const N: Point = { x: 0, y: 4 };
 const p = (x: number, y: number) => ({ x, y });
+// **La ligne passe au pied de chaque tête** dans cette suite : c'est le plan du
+// 21 août, tracé avant la règle des antennes du 11 septembre. Le pied confondu
+// avec la tête est le cas qu'elle éprouve ; l'axe du milieu et les antennes
+// sont éprouvés dans `test-regles-du-patron.ts`.
+const tete = (x: number, y: number, reseau: number) => ({ point: p(x, y), pied: p(x, y), reseau });
 
 // Les 13 arroseurs, 9 turbines sur le carré et 4 tuyères sur la bande.
 const ARROSEURS = [
-  { point: p(0, 0), reseau: 1 }, { point: p(6, 0), reseau: 1 }, { point: p(12, 0), reseau: 1 },
-  { point: p(0, 6), reseau: 1 }, { point: p(6, 6), reseau: 1 }, { point: p(12, 6), reseau: 1 },
-  { point: p(0, 12), reseau: 1 }, { point: p(6, 12), reseau: 1 }, { point: p(12, 12), reseau: 1 },
-  { point: p(16, 0), reseau: 2 }, { point: p(20, 0), reseau: 2 },
-  { point: p(20, 4), reseau: 2 }, { point: p(16, 4), reseau: 2 },
+  tete(0, 0, 1), tete(6, 0, 1), tete(12, 0, 1),
+  tete(0, 6, 1), tete(6, 6, 1), tete(12, 6, 1),
+  tete(0, 12, 1), tete(6, 12, 1), tete(12, 12, 1),
+  tete(16, 0, 2), tete(20, 0, 2),
+  tete(20, 4, 2), tete(16, 4, 2),
 ];
 
 console.log("\n=== Le tracé des lignes, sur son jardin du 21 août ===\n");

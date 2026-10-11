@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import type { Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { GRILLES_PAR_DEFAUT, cellulesDe } from "../src/lib/grille-prix";
+import { ADRESSE } from "./_adresse";
 
 // **« Je dois pouvoir ajouter ou retirer des cases. »** — le patron, le 14 août
 // 2026, capture de l'écran « Mes prix » à l'appui. Trois formes dessinées
@@ -25,7 +26,7 @@ import { GRILLES_PAR_DEFAUT, cellulesDe } from "../src/lib/grille-prix";
 // `test-grille-prix-e2e`, qui compte les cases : une tranche oubliée ici la
 // ferait rougir ailleurs, et l'échec accuserait le décompte.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const TOTAL_DEPART = GRILLES_PAR_DEFAUT.natures.reduce(
   (n, nature) => n + cellulesDe(nature.cle, GRILLES_PAR_DEFAUT).length,
   0
@@ -114,7 +115,8 @@ async function main() {
   // --- 4. « Mes mesures » : les trois axes, et ce qu'ils portent -----------
   await page.goto(`${BASE}/reglages/prix/mesures`, { waitUntil: "networkidle" });
   const mesures = await page.locator("body").innerText();
-  for (const bloc of ["Diamètres", "Hauteurs d'arbre", "Façons d'abattre"]) {
+  // « Hauteurs de fût » depuis le 29 septembre 2026 : la fente se chiffre au fût.
+  for (const bloc of ["Diamètres", "Hauteurs de fût", "Façons d'abattre"]) {
     assert.ok(mesures.includes(bloc), `« ${bloc} » manque à l'écran des mesures.`);
   }
   assert.match(mesures, /Sert à \d+ grilles?/, "L'écran ne dit pas à quelles grilles un axe sert.");

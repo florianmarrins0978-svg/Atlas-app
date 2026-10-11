@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — la fiche client qui dicte le devis</title>
+<title>Atlas : la fiche client qui dicte le devis</title>
 <style>
 /*
   LA FICHE CLIENT QUI DICTE LE DEVIS — sa demande du 21 août 2026.
@@ -244,9 +244,9 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
 <div class="tel">
 
   <nav class="onglets" aria-label="Les écrans de la maquette">
-    <button type="button" data-va="fiche" aria-pressed="true">1 · Fiche client</button>
-    <button type="button" data-va="accueil" aria-pressed="false">2 · L'accueil, plus tard</button>
-    <button type="button" data-va="devis" aria-pressed="false">3 · Le devis</button>
+    <button type="button" data-va="fiche" aria-pressed="true">1, Fiche client</button>
+    <button type="button" data-va="accueil" aria-pressed="false">2, L'accueil, plus tard</button>
+    <button type="button" data-va="devis" aria-pressed="false">3 : Le devis</button>
     <button type="button" data-va="reloger" aria-pressed="false">À trancher</button>
   </nav>
 
@@ -369,7 +369,7 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
       <span class="titre">Ce que cet écran prouve</span>
       Vous étiez en rendez-vous. Vous avez dicté, vous avez fermé l’application.
       <b>Rien n’est perdu</b> : le chantier est là, avec ce que vous avez dit.
-      Touchez-le — vous arrivez <b>directement sur le devis</b>, déjà rempli.
+      Touchez-le : vous arrivez <b>directement sur le devis</b>, déjà rempli.
     </div>
 
     <div style="padding:20px 26px 0" id="liste-accueil">
@@ -395,7 +395,7 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
 
     <div class="doc" style="margin-top:14px">
       <h2 id="devis-nom">M. Julien</h2>
-      <p id="devis-coord" style="margin:0 0 16px;font-size:13.5px;color:var(--muted)">12 rue des Lilas, Nantes · 06 79 98 45 14</p>
+      <p id="devis-coord" style="margin:0 0 16px;font-size:13.5px;color:var(--muted)">12 rue des Lilas, Nantes : 06 79 98 45 14</p>
 
       <div class="ligne-devis">
         <span><span class="libelle">Taille de haie</span><span class="mesure">20 ml</span></span>
@@ -427,7 +427,7 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
     <div class="note">
       <span class="titre">Tout est tranché</span>
       Vous supprimez la fiche chantier « pour de bon ». Elle portait <b>quatre choses</b> sans
-      autre maison : <b>les quatre sont réglées</b>. Deux ne coûtent rien — elles existent déjà
+      autre maison : <b>les quatre sont réglées</b>. Deux ne coûtent rien, elles existent déjà
       ailleurs —, une part (vous n’en voulez pas), et une reste sur la fiche client.
       <b>Le code peut commencer.</b>
     </div>
@@ -443,7 +443,7 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
            chantier ne coûte donc rien de ce côté. -->
       <li>
         <span class="quoi" style="text-decoration:line-through;text-decoration-color:var(--or)">Créer la facture</span>
-        <span class="prop"><b>Réglé — et c’est déjà en place.</b> Vous l’avez dit :
+        <span class="prop"><b>Réglé, et c’est déjà en place.</b> Vous l’avez dit :
           « dans planning ou terminé ». Les deux y sont déjà : dans <b>Planning</b>, le chevron
           ouvre la feuille qui porte « Créer la facture » ; dans <b>Terminés</b>, chaque ligne
           mène droit à la facture. Rien à déplacer.</span>
@@ -457,7 +457,7 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
            elles pointeront vers la fiche client, où elles vivent désormais. -->
       <li>
         <span class="quoi" style="text-decoration:line-through;text-decoration-color:var(--or)">Les étapes du chantier</span>
-        <span class="prop"><b>Rien à déplacer — vérifié.</b> Chaque étape a déjà son écran ; la
+        <span class="prop"><b>Rien à déplacer, vérifié.</b> Chaque étape a déjà son écran ; la
           fiche chantier n’en était que la <b>liste</b>. Et votre accueil vous emmène déjà à la
           <b>prochaine</b> : c’est ce qu’il fait aujourd’hui. Dites-le si vous voulez malgré tout
           revoir cette liste quelque part.</span>
@@ -466,7 +466,7 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
            dictée ».** Rien à reloger, et une pièce de moins à porter. -->
       <li>
         <span class="quoi" style="text-decoration:line-through;text-decoration-color:var(--or)">Réécouter ce que vous avez dicté</span>
-        <span class="prop"><b>Réglé — vous n’en voulez pas.</b> « On n’a pas besoin de réécouter
+        <span class="prop"><b>Réglé, vous n’en voulez pas.</b> « On n’a pas besoin de réécouter
           la note dictée. » L’anneau reste donc un micro, et rien d’autre.</span>
       </li>
       <!-- **Réglé le 21 août au soir : « fais ça pour le rajout de la 4e photo
@@ -480,7 +480,7 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
       <li>
         <span class="quoi" style="text-decoration:line-through;text-decoration-color:var(--or)">Une photo que vous ajoutez plus tard</span>
         <span class="prop"><b>Réglé.</b> Jeudi, vous rouvrez le chantier depuis l’accueil : le devis
-          s’ouvre, et <b>la flèche de retour vous ramène à la fiche client</b> — le carré « + » est
+          s’ouvre, et <b>la flèche de retour vous ramène à la fiche client</b> : le carré « + » est
           là, au même endroit que mardi. Rien de nouveau à apprendre.</span>
       </li>
     </ul>
@@ -488,7 +488,7 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
     <div class="note" style="margin-top:22px">
       <span class="titre">Un détail qui compte</span>
       Vous pouvez photographier <b>avant</b> d’avoir dit un nom. Le chantier sera donc créé
-      dès la première photo ou la première dictée — sinon la photo n’aurait nulle part où aller.
+      dès la première photo ou la première dictée, sinon la photo n’aurait nulle part où aller.
       Vous ne verrez rien de ce mécanisme : il apparaîtra simplement à l’accueil.
     </div>
   </section>
@@ -497,11 +497,11 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
 
 <script>
 /*
-  LA MAQUETTE SE MANIPULE — c'est ce qu'il demande depuis le 17 août : « fais-moi
+  LA MAQUETTE SE MANIPULE, c'est ce qu'il demande depuis le 17 août : « fais-moi
   des maquettes dynamiques, pas de photo, que je puisse essayer ».
 
   Rien ici n'appelle un serveur : la dictée est simulée, mais le GESTE est le
-  vrai — un appui commence, un second arrête, et c'est au second que « Mon
+  vrai : un appui commence, un second arrête, et c'est au second que « Mon
   devis → » apparaît et que le chantier se pose à l'accueil.
 
   Le choix des photos, lui, n'est PAS simulé : c'est un vrai champ de fichier,
@@ -527,7 +527,7 @@ function aller(id) {
  * Sa demande du 21 août au soir : *« il faut que je puisse taper les dix
  * chiffres à la suite et qu'ils se mettent automatiquement avec les bons
  * espaces »*. Sur un chantier, devant le client, on tape le numéro qu'on lit ou
- * qu'on entend — on ne s'arrête pas toutes les deux touches pour un espace.
+ * qu'on entend : on ne s'arrête pas toutes les deux touches pour un espace.
  *
  * **Par PAIRES, comme un numéro français s'écrit et se dicte** : 06 79 98 45 14.
  *
@@ -563,7 +563,7 @@ function espacerLeNumero(champ) {
 
 $("#tel").addEventListener("input", (e) => espacerLeNumero(e.target));
 
-/* ─── Mr / Mme — sans intitulé, mais bien là ──────────────────────────── */
+/* ─── Mr / Mme : sans intitulé, mais bien là ──────────────────────────── */
 document.querySelectorAll(".civilite button").forEach((b) => {
   b.addEventListener("click", () => {
     document.querySelectorAll(".civilite button").forEach((x) => x.setAttribute("aria-pressed", "false"));
@@ -642,7 +642,7 @@ function arreter() {
   // 21 août au soir : « quand je clique sur devis à terminer, je dois arriver
   // directement sur la page du devis, et les infos que j'ai dictées doivent
   // être remplies ». Une carte et un devis qui affichent un nom d'exemple
-  // pendant qu'il en a tapé un autre ne prouvent rien — c'est SON chantier
+  // pendant qu'il en a tapé un autre ne prouvent rien, c'est SON chantier
   // qu'il doit reconnaître à l'accueil.
   reporter();
 }
@@ -663,7 +663,7 @@ function reporter() {
   $("#brin-nom").textContent = nom;
   $("#brin-ou").textContent = adresse;
   $("#devis-nom").textContent = nom;
-  $("#devis-coord").textContent = [adresse, tel].filter(Boolean).join(" · ");
+  $("#devis-coord").textContent = [adresse, tel].filter(Boolean).join(" : ");
 }
 
 $("#vers-devis").addEventListener("click", () => aller("devis"));

@@ -4,6 +4,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import { avecCivilite } from "../src/lib/civilite";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
 
 // **« Est-ce qu'il y a une possibilité pour que la facture rentre au relevé de
 // TVA seulement une fois que le client m'a payé ? »** — le patron, le 14 août
@@ -17,11 +18,11 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 //   · **la facture arrêtée ne dit plus qu'elle figure au relevé.** Elle le
 //     disait, et c'était faux depuis ce lot : il aurait cherché dans son relevé
 //     un montant qui n'y est pas, et douté de l'application ;
-//   · **l'endroit en attente existe, et porte le geste** — « Payée », d'un
+//   · **l'endroit en attente existe, et porte le geste** — solder, d'un
 //     doigt, exactement ce qu'il a décrit ;
 //   · **le relevé bouge du bon montant** quand il valide, et pas avant.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function inspecter(sql: string, params: unknown[], attendu?: number) {
   const r = await pool.query(sql, params);
@@ -64,9 +65,13 @@ async function chantierRealise(page: Page, suffixe: string) {
   const client = `M. Bernard ${suffixe} ${Date.now()}`;
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
-  const url = page.url();
+  // **L'adresse du chantier est une mention de la facture** (242 nonies A,
+  // I-2°) : sans elle, l'émission refuse depuis le 3 octobre 2026.
+  await page.fill('input[placeholder="12 rue des Lilas, Nantes"]', "10 rue des Lilas, Nantes");
+  // L'adresse se bâtit sur l'identifiant que l'aide rend : la relire dans
+  // le navigateur donnait « devis-complet » depuis que la fiche du chantier
+  // est retirée (`ARCHITECTURE.md` §254).
+  const url = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
   const chantierId = url.split("/").pop()!;
 
   await page.goto(`${url}/prix`, { waitUntil: "networkidle" });
@@ -82,7 +87,7 @@ async function chantierRealise(page: Page, suffixe: string) {
   await page.click("text=Choisir la date");
   await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+  await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   await inspecter("UPDATE chantiers SET date_planifiee = CURRENT_DATE - 3 WHERE id = $1", [chantierId], 1);
   return { chantierId, nom: avecCivilite(client) };
@@ -92,7 +97,12 @@ async function chantierRealise(page: Page, suffixe: string) {
 async function emettre(page: Page, chantierId: string): Promise<string> {
   await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
   await page.click("text=Créer la facture");
-  await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
+  // **Repéré par son ATTRIBUT, jamais par la phrase.** Ces suites attendaient
+  // « Rien n'a changé depuis le devis ? » — un texte que le patron a fait
+  // remplacer par un bouton le 9 septembre 2026. Elles sont alors mortes sur
+  // un délai dépassé, sur du code juste et pour une demande exaucée
+  // (`CLAUDE.md` §5 bis).
+  await page.waitForSelector('[data-atlas="ajouter-travaux-supplementaires"]', { timeout: 15000 });
   // **UN SEUL APPUI depuis le 22 août 2026** : ce bouton arrête la facture ET
   // ouvre la messagerie (`ARCHITECTURE.md` §147). Repéré par son `data-atlas`,
   // jamais par son libellé — c'est le libellé qui a changé.
@@ -112,6 +122,28 @@ async function collectee(page: Page): Promise<number> {
   const m = texte.match(/COLLECTÉE\s*\n?\s*([\d\s   ,.]+)\s*€/i);
   assert.ok(m, `Le montant collecté est introuvable. Lu : « ${texte.slice(0, 200)} »`);
   return Number(m[1].replace(/[\s   ]/g, "").replace(",", "."));
+}
+
+/**
+ * Changer de régime, là où il vit depuis le 12 septembre 2026 : dans « Mon
+ * entreprise », à côté du rythme. Sa planche « une seule logique » l'a sorti du
+ * relevé ; on rejoue donc le geste du patron tel qu'il est — l'autre écran, puis
+ * le choix —, et l'on attend que la case soit cochée AVANT de repartir lire le
+ * relevé, sinon on lirait l'ancien régime.
+ */
+async function choisirLeRegime(page: Page, libelle: RegExp) {
+  await page.goto(`${BASE}/reglages/identite`, { waitUntil: "domcontentloaded" });
+  const choix = page.getByRole("radio", { name: libelle });
+  await choix.waitFor({ state: "visible", timeout: 30_000 });
+  await choix.click();
+  await page.waitForFunction(
+    (l) => {
+      const r = [...document.querySelectorAll('[role="radio"]')].find((x) => new RegExp(l, "i").test(x.textContent ?? ""));
+      return r?.getAttribute("aria-checked") === "true";
+    },
+    libelle.source,
+    { timeout: 15_000 }
+  );
 }
 
 async function main() {
@@ -171,7 +203,7 @@ async function main() {
     assert.strictEqual(await collectee(page), avant, "la facture impayée est entrée au relevé");
 
     // Et elle est visible dans l'endroit en attente, avec son nom.
-    const attente = page.getByRole("heading", { name: "En attente de paiement" });
+    const attente = page.getByRole("heading", { name: "Factures en attente" });
     await attente.waitFor({ state: "visible", timeout: 10_000 });
     const ecran = await page.locator("body").innerText();
     assert.ok(ecran.includes(numero), `la facture ${numero} n'apparaît pas en attente`);
@@ -188,7 +220,7 @@ async function main() {
 
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const ligne = page.locator("li").filter({ hasText: numero });
-    await ligne.getByRole("button", { name: "Payée" }).click();
+    await ligne.locator('[data-atlas="solder-la-facture"]').click();
 
     // Le relevé bouge du bon montant : 1 000 € HT à 20 % font 200 € de TVA.
     await page.waitForFunction(
@@ -211,6 +243,48 @@ async function main() {
     assert.strictEqual(rows[0].n, 1, "aucun règlement n'a été écrit");
   });
 
+  // **La zone du client ouvre la facture envoyée, et la flèche ramène à la
+  // même hauteur** — sa demande du 24 septembre 2026, planche
+  // `appli/ouvrir-la-facture-depuis-la-tva.html`. On vise le repère et la
+  // facture qu'il ouvre, jamais un libellé : c'est la PIÈCE qu'il vient
+  // vérifier, et elle doit être celle de la ligne appuyée.
+  await test("UN APPUI SUR LE CLIENT OUVRE SA FACTURE, en attente comme au relevé", async () => {
+    const { chantierId } = await chantierRealise(page, "ouvre");
+    const numero = await emettre(page, chantierId);
+    const { rows } = await inspecter("SELECT id FROM factures WHERE chantier_id = $1", [chantierId], 1);
+    const fichier = `/api/factures/${rows[0].id}/pdf`;
+
+    async function ouvrirPuisRevenir(zone: ReturnType<Page["locator"]>) {
+      // **La zone se pose au MILIEU de l'écran avant la mesure.** Posée au ras
+      // du bas, le clic la remontait lui-même de trois cents pixels, et le
+      // contrôle accusait le retour d'un défilement qu'il avait fait.
+      await zone.evaluate((el) => el.scrollIntoView({ block: "center" }));
+      const hauteur = await page.evaluate(() => window.scrollY);
+      await zone.click();
+      await page.waitForURL(/\/documents\/pdf/, { timeout: 20_000 });
+      const adresse = new URL(page.url());
+      assert.strictEqual(adresse.searchParams.get("fichier"), fichier, "la ligne ouvre une autre facture que la sienne");
+      assert.strictEqual(adresse.searchParams.get("titre"), numero);
+      await page.getByRole("link", { name: "Retour" }).first().click();
+      await page.waitForURL(/\/termines\/tva/, { timeout: 20_000 });
+      await page.waitForTimeout(800);
+      const revenu = await page.evaluate(() => window.scrollY);
+      assert.ok(
+        Math.abs(revenu - hauteur) < 2,
+        `le retour ne ramène pas à la ligne appuyée : ${hauteur} px avant, ${revenu} px après`
+      );
+    }
+
+    await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
+    const enAttente = page.locator("li").filter({ hasText: numero });
+    await ouvrirPuisRevenir(enAttente.locator('[data-atlas="ouvrir-la-facture"]').first());
+
+    await enAttente.locator('[data-atlas="solder-la-facture"]').click();
+    const auReleve = page.locator('[data-atlas="preuve-collectee"] li').filter({ hasText: numero });
+    await auReleve.waitFor({ state: "visible", timeout: 15_000 });
+    await ouvrirPuisRevenir(auReleve.locator('[data-atlas="ouvrir-la-facture"]'));
+  });
+
   await test("un acompte n'apporte que sa part, et la facture reste en attente", async () => {
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const avant = await collectee(page);
@@ -220,9 +294,34 @@ async function main() {
 
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const ligne = page.locator("li").filter({ hasText: numero });
-    await ligne.getByRole("button", { name: "Noter un règlement" }).click();
-    await ligne.getByLabel("Montant reçu, en euros").fill("600");
-    await ligne.getByRole("button", { name: "Enregistrer ce règlement" }).click();
+    await ligne.locator('[data-atlas="noter-un-reglement"]').click();
+
+    // **LA DATE S'ÉCRIT À LA FRANÇAISE, ET C'EST NOUS QUI L'ÉCRIVONS.**
+    // Sa capture du 11 septembre 2026 montrait « 09/11/2026 » pour un
+    // 11 septembre : le champ natif se formate selon la langue du TÉLÉPHONE. Ce
+    // navigateur-ci n'est pas en français, et c'est exactement le cas qu'on
+    // veut éprouver — le jour doit se lire pareil partout.
+    // Le jour se lit dans SA case : « Payé par », au-dessus depuis le 9 octobre
+    // 2026, porte lui aussi un libellé posé sous un champ transparent.
+    const jour = await ligne.locator('label:has-text("Payé le") span[aria-hidden]').first().innerText();
+    assert.match(
+      jour.trim(),
+      /^\d{2}\/\d{2}\/\d{4}$/,
+      `la date du paiement se lit « ${jour.trim()} » au lieu de jj/mm/aaaa`
+    );
+
+    // **La case part vide, et le bouton attend** — sa demande du même jour : le
+    // chiffre affiché doit être celui qu'il a tapé, jamais un solde proposé.
+    const caseMontant = ligne.getByLabel("Montant reçu, en euros");
+    assert.strictEqual(await caseMontant.inputValue(), "", "le montant arrive rempli d'un chiffre qu'il n'a pas tapé");
+    const bouton = ligne.getByRole("button", { name: "Enregistrer ce règlement" });
+    assert.ok(!(await bouton.isEnabled()), "on peut enregistrer un règlement sans montant");
+
+    // **« Payé par » — sa planche du 9 octobre 2026.** Choisi avant d'appuyer,
+    // il part avec le règlement et se relit sur sa ligne.
+    await ligne.locator('[data-atlas="moyen-du-reglement"]').selectOption("cheque");
+    await caseMontant.fill("600");
+    await bouton.click();
 
     // 600 € sur 1 200 € TTC : la moitié, donc 100 € de TVA sur 200.
     await page.waitForFunction(
@@ -239,7 +338,92 @@ async function main() {
     // Et elle attend toujours son solde : c'est ce qui empêche de l'oublier.
     const ecran = await page.locator("body").innerText();
     assert.ok(ecran.includes(numero), "la facture partiellement réglée a quitté l'attente");
-    assert.ok(/reste sur/.test(ecran), "rien ne dit qu'il s'agit d'un reste");
+    // **Ce qu'on vise, c'est LE CHIFFRE, pas le libellé** (`CLAUDE.md` §5 bis) :
+    // « reste sur » a été remplacé par « Reste à payer … / Sur les … du … » le
+    // 11 septembre 2026, et ce contrôle tombait sur un écran juste. Ce qui doit
+    // rester vrai quel que soit le mot choisi : le solde ET le total de la
+    // facture sont tous les deux à l'écran — sans le second, « 600 € » sur une
+    // facture de 1 200 € se lit comme une erreur de montant.
+    assert.ok(/600,00\s*€/.test(ecran), "le solde qui reste dû ne s'affiche pas");
+    assert.ok(/1\s*200,00\s*€/.test(ecran), "rien ne rattache ce solde à la facture entière");
+
+    // **Le règlement enregistré se relit COMME IL A ÉTÉ TAPÉ** — sa demande du
+    // 11 septembre 2026 : « donc : 11/09/2026, le montant qui vient d'être
+    // rentré ». La date à gauche, le montant à droite, aux mêmes places que les
+    // deux cases juste au-dessus. La ligne disait « 600,00 € le 11/09 » : les
+    // deux mêmes choses, dans l'autre sens et dans un autre format.
+    const enregistre = ligne.locator("ul li").first();
+    const parts = (await enregistre.innerText()).split("\n").map((t) => t.trim());
+    // « Acompte payé le … » depuis le 11 septembre 2026 : un jour et un montant
+    // posés seuls ne disaient pas de quoi ils parlaient.
+    assert.match(
+      parts[0] ?? "",
+      /^Acompte payé le \d{2}\/\d{2}\/\d{4} par chèque$/,
+      `la ligne dit « ${parts[0]} » au lieu de « Acompte payé le jj/mm/aaaa par chèque »`
+    );
+    assert.match(parts[1] ?? "", /600,00\s*€/, `le montant ne suit pas la date : « ${parts[1]} »`);
+  });
+
+  // **LA CROIX NE FAIT PLUS DISPARAÎTRE UN ACOMPTE — sa planche du
+  // 26 septembre 2026 (`appli/retirer-un-acompte.html`, « la B »).** Son geste
+  // entier, dans l'ordre : noter un acompte, le retirer, voir la ligne barrée
+  // et datée à sa place, la voir barrée aussi dans la TVA collectée, puis la
+  // remettre. Le total bouge à chaque fois du bon montant.
+  await test("LA CROIX BARRE L'ACOMPTE AU LIEU DE L'EFFACER, et « Remettre » le rend", async () => {
+    await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
+    const avant = await collectee(page);
+
+    const { chantierId } = await chantierRealise(page, "retrait");
+    const numero = await emettre(page, chantierId);
+    await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
+    const ligne = page.locator("li").filter({ hasText: numero });
+    await ligne.locator('[data-atlas="noter-un-reglement"]').click();
+    await ligne.getByLabel("Montant reçu, en euros").fill("600");
+    await ligne.getByRole("button", { name: "Enregistrer ce règlement" }).click();
+    await ligne.getByRole("button", { name: /^Retirer le règlement de 600,00/ }).waitFor({ timeout: 15_000 });
+
+    await ligne.getByRole("button", { name: /^Retirer le règlement de 600,00/ }).click();
+    const barre = ligne.locator('[data-atlas="reglement-retire"]');
+    await barre.waitFor({ timeout: 15_000 });
+    assert.match(
+      await barre.innerText(),
+      /Acompte du \d{2}\/\d{2}(\/\d{4})?, retiré le \d{2}\/\d{2}(\/\d{4})?/,
+      "la ligne retirée ne dit pas ce qu'elle était ni quand elle a été retirée"
+    );
+    assert.strictEqual(
+      await barre.locator("span").first().evaluate((e) => getComputedStyle(e).textDecorationLine),
+      "line-through",
+      "la ligne retirée n'est pas barrée"
+    );
+    await page.waitForFunction(
+      (a) => {
+        const m = document.body.innerText.match(/COLLECTÉE\s*\n?\s*([\d\s   ,.]+)\s*€/i);
+        return m ? Number(m[1].replace(/[\s   ]/g, "").replace(",", ".")) === a : false;
+      },
+      avant,
+      { timeout: 15_000 }
+    );
+
+    // La TVA collectée du mois la MONTRE, barrée, sans la compter.
+    await page.goto(`${BASE}/termines/tva/collectee`, { waitUntil: "networkidle" });
+    const trace = page.locator('[data-atlas="retires-du-releve"]');
+    await trace.waitFor({ timeout: 15_000 });
+    assert.ok((await trace.innerText()).includes(numero), "la TVA collectée du mois ne montre pas l'acompte retiré");
+
+    await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
+    await page.locator("li").filter({ hasText: numero }).locator('[data-atlas="remettre-le-reglement"]').click();
+    await page
+      .locator("li")
+      .filter({ hasText: numero })
+      .getByRole("button", { name: /^Retirer le règlement de 600,00/ })
+      .waitFor({ timeout: 15_000 });
+    assert.strictEqual(
+      await page.locator("li").filter({ hasText: numero }).locator('[data-atlas="reglement-retire"]').count(),
+      0,
+      "l'acompte remis est encore barré"
+    );
+    const apres = await collectee(page);
+    assert.strictEqual((apres - avant).toFixed(2), "100.00", `l'acompte remis a apporté ${(apres - avant).toFixed(2)} €`);
   });
 
   await test("UN MONTANT TROP GRAND EST REFUSÉ, et le refus lui parvient", async () => {
@@ -248,7 +432,7 @@ async function main() {
 
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const ligne = page.locator("li").filter({ hasText: numero });
-    await ligne.getByRole("button", { name: "Noter un règlement" }).click();
+    await ligne.locator('[data-atlas="noter-un-reglement"]').click();
     await ligne.getByLabel("Montant reçu, en euros").fill("5000");
     await ligne.getByRole("button", { name: "Enregistrer ce règlement" }).click();
 
@@ -265,21 +449,14 @@ async function main() {
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const avant = await collectee(page);
 
-    await page.getByRole("radio", { name: /Le mois où j'envoie la facture/ }).click();
-    await page.waitForFunction(
-      (a) => {
-        const m = document.body.innerText.match(/COLLECTÉE\s*\n?\s*([\d\s   ,.]+)\s*€/i);
-        return m ? Number(m[1].replace(/[\s   ]/g, "").replace(",", ".")) !== a : false;
-      },
-      avant,
-      { timeout: 15_000 }
-    );
+    await choisirLeRegime(page, /Le mois où j'envoie la facture/);
+    await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const apres = await collectee(page);
     assert.ok(apres > avant, `aux débits, la facture impayée devrait entrer au relevé (${avant} → ${apres})`);
 
     // Et l'endroit en attente disparaît : plus rien à faire, tout est déclaré.
     const ecran = await page.locator("body").innerText();
-    assert.ok(!ecran.includes("En attente de paiement"), "l'attente subsiste alors que tout est déclaré");
+    assert.ok(!ecran.includes("Factures en attente"), "l'attente subsiste alors que tout est déclaré");
     // **Le numéro du relevé porte des espaces et des retours à la ligne.**
     // `NumeroDeDocument` le coupe en blocs pour qu'iOS cesse d'y voir un numéro
     // de téléphone (`ARCHITECTURE.md`, 13 août) : le comparer tel quel fait
@@ -291,8 +468,7 @@ async function main() {
     );
 
     // On repose le régime : les suites suivantes partent d'un état connu.
-    await page.getByRole("radio", { name: /Le mois où mon client me paie/ }).click();
-    await page.waitForTimeout(1500);
+    await choisirLeRegime(page, /Le mois où mon client me paie/);
   });
 
   // ─── SA PLAINTE DU 26 AOÛT 2026 : « rien ne se passe » ───────────────────
@@ -312,8 +488,14 @@ async function main() {
     const { chantierId } = await chantierRealise(page, "ecart");
     await emettre(page, chantierId); // émise, et jamais payée
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
+    const grandChiffre = await collectee(page);
 
+    // La phrase accompagne le choix, et le choix est dans « Mon entreprise »
+    // depuis le 12 septembre 2026 : c'est là qu'on se demande ce qu'il change.
+    // Elle parle de la période COURANTE — celle que le relevé ouvre par défaut.
+    await page.goto(`${BASE}/reglages/identite`, { waitUntil: "domcontentloaded" });
     const phrase = page.locator('[data-atlas="ecart-des-regimes"]');
+    await phrase.waitFor({ state: "visible", timeout: 30_000 });
     assert.equal(await phrase.count(), 1, "la phrase qui dit ce que le choix change a disparu");
 
     const nombre = (x: string) => Number(x.replace(/[\s   ]/g, "").replace(",", "."));
@@ -339,8 +521,8 @@ async function main() {
     assert.equal(avant.lus.length, 2, `deux montants attendus, lu « ${avant.dit} »`);
     assert.equal(
       avant.lus[0],
-      await collectee(page),
-      "le montant cité n'est pas celui du bloc au-dessus : la phrase a dérivé"
+      grandChiffre,
+      "le montant cité n'est pas celui du relevé : la phrase a dérivé"
     );
     assert.ok(avant.lus[1] > avant.lus[0], "aux débits, la facture impayée doit ajouter sa TVA");
 
@@ -353,17 +535,10 @@ async function main() {
     // Elle nomme donc les deux régimes, dans un ordre qui ne bouge pas — et
     // c'est ce que ce contrôle fixe : après la bascule, ce sont les MÊMES deux
     // montants, et c'est « Collectée » qui passe de l'un à l'autre.
-    await page.getByRole("radio", { name: /Le mois où j'envoie la facture/ }).click();
-    await page.waitForFunction(
-      (a) => {
-        const m = document.body.innerText.match(/COLLECTÉE\s*\n?\s*([\d \s   ,.]+)\s*€/i);
-        return m ? Number(m[1].replace(/[\s   ]/g, "").replace(",", ".")) !== a : false;
-      },
-      avant.lus[0],
-      { timeout: 15_000 }
-    );
+    await choisirLeRegime(page, /Le mois où j'envoie la facture/);
     const apres = await montants();
     assert.deepEqual(apres.lus, avant.lus, `la phrase a changé d'ordre : « ${apres.dit} »`);
+    await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     assert.equal(
       await collectee(page),
       avant.lus[1],
@@ -371,8 +546,7 @@ async function main() {
     );
 
     // On repose le régime : les suites suivantes partent d'un état connu.
-    await page.getByRole("radio", { name: /Le mois où mon client me paie/ }).click();
-    await page.waitForTimeout(1500);
+    await choisirLeRegime(page, /Le mois où mon client me paie/);
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

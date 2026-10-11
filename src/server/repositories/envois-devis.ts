@@ -1,3 +1,6 @@
+import { nomAvecForme } from "@/lib/formes-juridiques";
+import type { CiviliteClient } from "../../lib/civilite";
+import { dansDelaiRetractation, jourIso } from "@/lib/jour";
 import { randomBytes, createHash } from "node:crypto";
 import { and, asc, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
 import { db, type DbOrTx } from "../db/client";
@@ -9,10 +12,19 @@ import {
 } from "./agendas-externes";
 import { configurationGoogle } from "../agenda/google";
 import { periodesOccupeesExterieures } from "./agendas-externes";
-import { absencesEquipe, chantiers, devis, entreprises, envoisDevis, lignesDevis } from "../db/schema";
+import { absencesEquipe, chantiers, creneauxChantier, devis, entreprises, envoisDevis, lignesDevis } from "../db/schema";
+import { creneauxOccupes } from "../../lib/creneaux-chantier";
+import { datesHorsFenetre, type RefusDate } from "../../lib/dates-envoi";
+import { VALIDITE_LIEN_JOURS } from "../../lib/etat-envoi";
 import type { Ctx } from "./context";
-import { encoreEnCoursDepuis, equipesParChantier } from "./occupation-chantiers";
+import {
+  creneauxParChantier,
+  encoreEnCoursDepuis,
+  equipesParChantier,
+} from "./occupation-chantiers";
 import { lireObjet } from "../storage";
+// Le seul écrivain de « où le chantier est posé » — partagé avec le planning.
+import { ecrireLesCreneaux } from "./creneaux-poses";
 import {
   compterOccupation,
   departPossible,
@@ -23,18 +35,21 @@ import {
   jourRetenable,
   DUREE_PAR_DEFAUT_DEMI_JOURNEES,
   versJourIso,
+  creneauxDuChantier,
+  creneauxSurLesJours,
+  estUnBlocDAffilee,
+  joursDuBloc,
+  joursDuChantier,
+  propositionRetenable,
   type ChantierPlanifie,
   type FenetreProposition,
   type JourIso,
   type Moment,
-  type MotifRefusDate,
-} from "../disponibilites";
+} from "@/lib/disponibilites";
 
 // Envoi d'un devis au client et recueil de sa réponse — docs/AGENT.md §2.1
 // à §2.2 ter.
 
-/** Durée de vie d'un lien. Au-delà, la page ne répond plus. */
-export const VALIDITE_LIEN_JOURS = 45;
 
 /**
  * Jeton du lien public : 256 bits d'aléa cryptographique, encodés sans
@@ -93,7 +108,7 @@ export async function joursOccupes(
  * `tx` est passé de l'extérieur parce que deux de ces chemins n'ont pas de
  * session : la page du client pose son contexte par jeton (voir `lireParJeton`).
  */
-async function contrainteDuPlanning(
+export async function contrainteDuPlanning(
   tx: DbOrTx,
   entrepriseId: string,
   fenetre: FenetreProposition,
@@ -133,13 +148,15 @@ async function contrainteDuPlanning(
   // Les équipes cochées comptent dans la place prise : sans elles, un jour où
   // ses deux équipes travaillent déjà partirait chez un client (22 août 2026).
   const equipes = await equipesParChantier(tx, entrepriseId);
+  const creneauxPoses = await creneauxParChantier(tx, entrepriseId);
   const planifies: ChantierPlanifie[] = lignes
     .filter((l) => l.jour !== null && l.id !== exclureChantierId)
     .map((l) => ({
       jour: l.jour as JourIso,
       moment: l.moment === "matin" || l.moment === "apres_midi" ? l.moment : null,
       dureeDemiJournees: l.duree,
-      equipesParDemi: equipes.get(l.id) ?? null,
+      ...(equipes.get(l.id) ?? {}),
+      creneaux: creneauxPoses.get(l.id) ?? null,
     }));
 
   const [entreprise] = await tx
@@ -166,6 +183,13 @@ async function contrainteDuPlanning(
       equipeId: absencesEquipe.equipeId,
       premierJour: absencesEquipe.premierJour,
       dernierJour: absencesEquipe.dernierJour,
+      // **Les demi-journées comptent ICI aussi, et c'est le chemin qui va
+      // jusqu'au client** (8 septembre 2026). Les oublier laisserait une
+      // absence d'un matin bloquer l'après-midi dans les dates proposées :
+      // une demi-journée de travail perdue à chaque rendez-vous médical, et
+      // invisible — personne ne voit une date qu'on n'a pas offerte.
+      premierDemi: absencesEquipe.premierDemi,
+      dernierDemi: absencesEquipe.dernierDemi,
     })
     .from(absencesEquipe)
     .where(
@@ -206,6 +230,13 @@ export type CreationEnvoi = {
   /** Une ou deux dates — la forme est tranchée par le patron à la validation. */
   datesProposees: JourIso[];
   /**
+   * LES JOURS DE CHAQUE PROPOSITION, dans l'ordre de `datesProposees` — sa règle
+   * du 17 septembre 2026 (« le 18 et le 22 »). Chaque liste compte les jours de
+   * la durée, et commence par sa date proposée : le client répond toujours par
+   * ce premier jour. Absente, chaque date vaut un bloc d'affilée, comme avant.
+   */
+  joursProposes?: JourIso[][];
+  /**
    * Le client peut-il proposer une AUTRE date ? Sa demande du 17 août 2026.
    *
    * Absent : `true`, c'est-à-dire ce que faisait l'application depuis toujours.
@@ -221,7 +252,7 @@ export type CreationEnvoi = {
 };
 
 export class DatesProposeesInvalidesError extends Error {
-  constructor(public readonly motifs: { date: JourIso; motif: MotifRefusDate }[]) {
+  constructor(public readonly motifs: RefusDate[]) {
     super(`Dates proposées invalides : ${motifs.map((m) => `${m.date} (${m.motif})`).join(", ")}`);
     this.name = "DatesProposeesInvalidesError";
   }
@@ -275,12 +306,16 @@ export async function creerEnvoi(
     // La durée que ce chantier réservera. Le patron a pu la corriger à l'écran ;
     // sinon elle se déduit de sa dictée, et à défaut vaut une journée.
     const [chantier] = await tx
-      .select({ dureePrevue: chantiers.dureePrevue })
+      .select({ duree: chantiers.dureeDemiJournees, dureePrevue: chantiers.dureePrevue })
       .from(chantiers)
       .where(and(eq(chantiers.id, creation.chantierId), eq(chantiers.entrepriseId, ctx.entrepriseId)))
       .limit(1);
+    // Le même ordre que `preparerEnvoi` : ce que l'écran envoie, sinon ce que
+    // le chantier porte déjà (le premier envoi), sinon la dictée, sinon une
+    // journée. Deux ordres différents finiraient par se contredire (§3).
     const duree =
       creation.dureeDemiJournees ??
+      chantier?.duree ??
       dureeEnDemiJournees(chantier?.dureePrevue ?? null) ??
       DUREE_PAR_DEFAUT_DEMI_JOURNEES;
 
@@ -294,23 +329,51 @@ export async function creerEnvoi(
     //
     // Hors fenêtre reste un refus, et ce n'en est pas un de jugement : une date
     // passée ou à plus de dix-huit mois n'est pas un arbitrage d'artisan.
-    const motifs = creation.datesProposees
-      .map((date) => ({
-        date,
-        motif:
-          date < horizon.debut || date > horizon.fin ? ("hors_fenetre" as const) : null,
-      }))
-      .filter((m): m is { date: JourIso; motif: "hors_fenetre" } => m.motif !== null);
+    // **La MÊME fonction que l'action, qui l'a déjà consultée avant de figer**
+    // le devis (`src/lib/dates-envoi.ts`). Ce contrôle-ci reste : ce dépôt est
+    // appelable ailleurs, et un envoi hors fenêtre poserait au client une date
+    // qu'il ne peut pas retenir. Mais il ne décide plus seul, et il ne peut
+    // plus surprendre un devis déjà parti.
+    const motifs = datesHorsFenetre(creation.datesProposees, horizon);
     if (motifs.length > 0) throw new DatesProposeesInvalidesError(motifs);
+
+    // **Les listes disent ce que dit la durée, ou elles ne passent pas.** Une
+    // liste venue de l'écran qui compterait un jour de trop réserverait ce
+    // jour chez le client sans que la durée le porte ; un jour de moins
+    // laisserait une demi-journée sans place. Et son premier jour EST la date
+    // proposée : c'est par elle que le client répond.
+    const joursProposes = creation.joursProposes?.map((jours) => [...new Set(jours)].sort()) ?? null;
+    if (joursProposes) {
+      if (joursProposes.length !== creation.datesProposees.length) {
+        throw new Error("Chaque date proposée doit porter ses jours de chantier.");
+      }
+      const attendus = joursDuChantier(duree);
+      joursProposes.forEach((jours, i) => {
+        if (jours.length !== attendus) {
+          throw new Error(
+            `Une proposition doit compter ${attendus} jour(s) de chantier ; celle du ${creation.datesProposees[i]} en porte ${jours.length}.`
+          );
+        }
+        if (jours[0] !== creation.datesProposees[i]) {
+          throw new Error("Le premier jour d'une proposition doit être sa date proposée.");
+        }
+        const horsFenetre = datesHorsFenetre(jours, horizon);
+        if (horsFenetre.length > 0) throw new DatesProposeesInvalidesError(horsFenetre);
+      });
+    }
 
     // **Ce qu'il a forcé, retenu ici et nulle part ailleurs.** Calculé au
     // serveur, à l'instant de l'envoi : l'écran l'a prévenu (« ce jour est
     // complet »), et c'est cette photographie-là qui autorisera son client à
     // prendre la date. Une valeur venue du navigateur ferait de cette colonne
-    // un moyen de forcer n'importe quel jour.
-    const datesForcees = creation.datesProposees.filter(
-      (date) => !jourRetenable(date, duree, occupation, nombreEquipes, horizon)
-    );
+    // un moyen de forcer n'importe quel jour. Une liste de jours se juge
+    // demi-journée par demi-journée ; une date seule, comme avant.
+    const datesForcees = creation.datesProposees.filter((date, i) => {
+      const jours = joursProposes?.[i];
+      return jours
+        ? !propositionRetenable(jours, duree, occupation, nombreEquipes, horizon)
+        : !jourRetenable(date, duree, occupation, nombreEquipes, horizon);
+    });
 
     const expireAt = new Date(maintenant.getTime() + VALIDITE_LIEN_JOURS * 86400_000);
     const [envoi] = await tx
@@ -331,6 +394,7 @@ export async function creerEnvoi(
         envoyeAt: maintenant,
         canal: creation.canal,
         datesProposees: creation.datesProposees,
+        joursProposes,
         autreDateAutorisee: creation.autreDateAutorisee ?? true,
         empreinteDevis: empreinteDevis(creation.contenuDevis),
       })
@@ -364,6 +428,8 @@ export type EnvoiPourClient = {
   devisId: string;
   chantierId: string;
   datesProposees: JourIso[];
+  /** Les jours derrière chaque date, dans le même ordre ; `null` sur un envoi d'avant la migration 0095. */
+  joursProposes: JourIso[][] | null;
   /** Le calendrier « une autre date » n'est offert que si le patron l'a permis. */
   autreDateAutorisee: boolean;
   /**
@@ -379,6 +445,24 @@ export type EnvoiPourClient = {
   fenetre: { debut: JourIso; fin: JourIso };
   reponse: "acceptee" | "refusee" | "correction" | null;
   dateRetenue: JourIso | null;
+  /**
+   * Tous les jours qu'elle a retenus — pour l'écran de RETOUR, celui qu'elle
+   * rouvre depuis son SMS. `dateRetenue` n'en porte qu'un, et sur un chantier
+   * de quatre jours cela lui redisait un jour sur quatre.
+   *
+   * `null` sur une réponse d'avant la migration 0097 : l'écran retombe alors
+   * sur la date, comme il l'a toujours fait.
+   */
+  joursRetenus: JourIso[] | null;
+  /**
+   * LES JOURS OÙ LE PATRON L'A POSÉ — son choix B du 7 octobre 2026.
+   *
+   * Présents : le lien n'offre plus de dates, il dit celles-ci et ne demande
+   * que l'accord. `null` sinon, et la page reste celle d'avant. Des jours, et
+   * jamais des demi-journées : le client n'apprend rien du planning de son
+   * artisan (`test-creneaux-planning.ts`).
+   */
+  joursFixes: JourIso[] | null;
   expire: boolean;
   devis: {
     numeroCommercial: string;
@@ -387,10 +471,12 @@ export type EnvoiPourClient = {
     totalTva: string;
     totalTtc: string;
     tauxTva: string;
+    /** En sous-traitance, sans TVA (migration 0119) : ni ligne de TVA, ni 14 jours. */
+    autoliquidation: boolean;
     entrepriseNom: string;
     clientNom: string | null;
     /** Recopiée sur le devis à son établissement (migration 0038). */
-    clientCivilite: "mr" | "mme" | null;
+    clientCivilite: CiviliteClient | null;
     adresseChantier: string | null;
     lignes: { libelle: string; quantite: string; prixUnitaire: string; montant: string }[];
   };
@@ -564,11 +650,22 @@ export async function lireParJeton(
       devisId: envoi.devisId,
       chantierId: envoi.chantierId,
       datesProposees: envoi.datesProposees,
+      joursProposes: envoi.joursProposes ?? null,
       autreDateAutorisee: envoi.autreDateAutorisee,
       joursOccupes: joursSansPlace,
       fenetre,
       reponse: envoi.reponse,
       dateRetenue: envoi.dateRetenue,
+      /**
+       * Les jours qu'elle a retenus, pour l'écran de RETOUR — celui qu'elle
+       * rouvre depuis son SMS le lendemain. Sur un chantier de quatre jours,
+       * `dateRetenue` seule lui redirait un jour sur quatre.
+       *
+       * `null` sur une réponse d'avant la migration 0097 : l'écran retombe
+       * alors sur la date, comme il l'a toujours fait.
+       */
+      joursRetenus: envoi.joursRetenus ?? null,
+      joursFixes: await joursFixesDeLEnvoi(tx, envoi),
       expire,
       devis: {
         numeroCommercial: d.numeroCommercial,
@@ -577,7 +674,9 @@ export async function lireParJeton(
         totalTva: d.totalTva,
         totalTtc: d.totalTtc,
         tauxTva: d.tauxTva,
-        entrepriseNom: d.entrepriseNom,
+        autoliquidation: d.autoliquidation,
+        // « … EI » pour un entrepreneur individuel (R526-27), comme sur le PDF.
+        entrepriseNom: nomAvecForme(d.entrepriseNom, d.entrepriseFormeJuridique),
         clientNom: d.clientNom,
         clientCivilite: d.clientCivilite,
         adresseChantier: d.adresseChantier,
@@ -654,6 +753,76 @@ export async function pdfDevisParJeton(
   }
 }
 
+/**
+ * La durée que le chantier réserve, en demi-journées : celle qu'il porte, sinon
+ * celle de sa dictée, sinon une journée. Une seule lecture, pour l'acceptation
+ * comme pour la correction : deux calculs finiraient par étaler différemment
+ * le même jour.
+ */
+async function dureeDuChantier(
+  tx: DbOrTx,
+  envoi: { chantierId: string; entrepriseId: string }
+): Promise<number> {
+  await tx.execute(sql`SELECT set_config('app.entreprise_id', ${envoi.entrepriseId}, true)`);
+  const [chantierRow] = await tx
+    .select({ duree: chantiers.dureeDemiJournees, dureePrevue: chantiers.dureePrevue })
+    .from(chantiers)
+    .where(eq(chantiers.id, envoi.chantierId))
+    .limit(1);
+  return (
+    chantierRow?.duree ??
+    dureeEnDemiJournees(chantierRow?.dureePrevue ?? null) ??
+    DUREE_PAR_DEFAUT_DEMI_JOURNEES
+  );
+}
+
+/**
+ * LES JOURS OÙ LE CHANTIER EST POSÉ, triés, sans les demi-journées.
+ *
+ * Lus au planning, jamais recopiés dans l'envoi : c'est ce que le patron voit,
+ * et un chantier déplacé après coup montre sa nouvelle place. Le repli des
+ * chantiers jamais morcelés est celui de partout (`creneauxOccupes`).
+ */
+export async function joursOuLeChantierEstPose(tx: DbOrTx, chantierId: string): Promise<JourIso[]> {
+  const [pose] = await tx
+    .select({
+      jour: chantiers.datePlanifiee,
+      moment: chantiers.creneauDebut,
+      dureeDemiJournees: chantiers.dureeDemiJournees,
+    })
+    .from(chantiers)
+    .where(and(eq(chantiers.id, chantierId), isNull(chantiers.deletedAt)))
+    .limit(1);
+  if (!pose?.jour) return [];
+  const lignes = await tx
+    .select({ jour: creneauxChantier.jour, demi: creneauxChantier.demi })
+    .from(creneauxChantier)
+    .where(eq(creneauxChantier.chantierId, chantierId));
+  const occupes = creneauxOccupes(
+    pose,
+    lignes.map((l) => ({ jour: l.jour, moment: l.demi }) as { jour: JourIso; moment: Moment })
+  );
+  return [...new Set(occupes.map((c) => c.jour))].sort() as JourIso[];
+}
+
+/**
+ * Les jours que le lien montre à la place des dates — `null` s'il en offre.
+ *
+ * **Un drapeau ET une place**, jamais l'un sans l'autre : retiré du planning
+ * après coup, le chantier n'a plus de jours à montrer, et le lien redevient ce
+ * qu'il était (ses dates proposées, revérifiées comme toujours). Lui montrer
+ * une liste vide l'empêcherait de répondre du tout.
+ */
+async function joursFixesDeLEnvoi(
+  tx: DbOrTx,
+  envoi: { datesFixeesParArtisan: boolean; chantierId: string; entrepriseId: string }
+): Promise<JourIso[] | null> {
+  if (!envoi.datesFixeesParArtisan) return null;
+  await tx.execute(sql`SELECT set_config('app.entreprise_id', ${envoi.entrepriseId}, true)`);
+  const jours = await joursOuLeChantierEstPose(tx, envoi.chantierId);
+  return jours.length > 0 ? jours : null;
+}
+
 export type ReponseClient = {
   /**
    * Ce que le client a décidé.
@@ -663,8 +832,24 @@ export type ReponseClient = {
    * « Je ne donne pas suite », et le patron lit un refus.
    */
   decision: "accepte" | "refuse" | "correction";
-  /** Requise si accepte : l'une des dates proposées, ou une contre-proposition. */
+  /**
+   * Requise si accepte : l'une des dates proposées, ou une contre-proposition.
+   * Facultative sur une correction : le souhait du client, gardé à part.
+   */
   dateRetenue?: JourIso;
+  /**
+   * LES JOURS QU'ELLE A POSÉS, quand elle propose les siens — sa demande du
+   * 20 septembre 2026.
+   *
+   * Absente : le comportement d'avant, inchangé — le chantier prend le bloc
+   * d'affilée depuis `dateRetenue`. C'est ce que font encore les envois partis
+   * avant, et les clients qui retiennent une date offerte.
+   *
+   * **Elle ne remplace pas `dateRetenue`** : le premier jour reste ce par quoi
+   * tout le reste du produit désigne cette réponse (le planning, la
+   * notification, l'écran de retour).
+   */
+  joursRetenus?: readonly JourIso[];
   precision?: string | null;
   demarrageAnticipe?: boolean;
   adresseIp?: string | null;
@@ -681,9 +866,20 @@ export type ResultatReponse =
         | "deja_repondu"
         | "date_indisponible"
         | "date_manquante"
+        /**
+         * Elle a retenu moins de jours que le chantier n'en prend — trois sur
+         * quatre. Accepté tel quel, l'artisan n'aurait pas eu de quoi faire le
+         * travail, et personne ne l'aurait su avant le chantier.
+         */
+        | "jours_incomplets"
         | "message_manquant"
         /** Le patron n'a pas autorisé d'autre date sur CET envoi (17 août 2026). */
-        | "autre_date_refusee";
+        | "autre_date_refusee"
+        /**
+         * La date tombe dans ses 14 jours de rétractation et il n'a pas coché la
+         * demande expresse (L221-25, son choix 3A du 3 octobre 2026).
+         */
+        | "demarrage_non_demande";
     };
 
 /**
@@ -699,6 +895,12 @@ export type ResultatReponse =
  * autant côté produit : l'appelant doit redemander une date, le prix ne
  * dépendant pas du calendrier (docs/AGENT.md §2.2 bis).
  */
+/** Le devis de cet envoi est-il en sous-traitance (migration 0119) ? */
+export async function devisEnSousTraitance(tx: DbOrTx, devisId: string): Promise<boolean> {
+  const [d] = await tx.select({ autoliquidation: devis.autoliquidation }).from(devis).where(eq(devis.id, devisId)).limit(1);
+  return d?.autoliquidation ?? false;
+}
+
 export async function enregistrerReponse(
   jeton: string,
   reponse: ReponseClient,
@@ -735,24 +937,76 @@ export async function enregistrerReponse(
       return { succes: false, motif: "message_manquant" as const };
     }
 
-    if (reponse.decision !== "accepte") {
-      await tx
-        .update(envoisDevis)
-        .set({
-          reponse: reponse.decision === "correction" ? "correction" : "refusee",
-          responduAt: maintenant,
-          precisionClient: precision,
-          adresseIp: reponse.adresseIp ?? null,
-          agentUtilisateur: reponse.agentUtilisateur ?? null,
-        })
-        .where(eq(envoisDevis.jeton, jeton));
-      return { succes: true as const, dateRetenue: null, contreProposee: false };
+    /**
+     * **LE PATRON L'A POSÉ LUI-MÊME — son choix B du 7 octobre 2026.**
+     *
+     * Ce sont alors SES jours qui comptent, quoi que le formulaire poste : la
+     * page est publique et se rejoue, et un jour posté d'ailleurs déplacerait
+     * le chantier qu'il vient de placer. Une correction ou un refus ne portent
+     * aucun souhait de date : elle n'en a choisi aucune.
+     */
+    const joursFixes = await joursFixesDeLEnvoi(tx, envoi);
+
+    // **Lue AVANT la décision** : une correction porte aussi les jours que le
+    // client a touchés (sa plainte du 27 septembre 2026), et ils se jugent par
+    // les mêmes règles qu'à l'acceptation, écrites une seule fois ci-dessous.
+    const date = joursFixes
+      ? reponse.decision === "accepte"
+        ? joursFixes[0]
+        : undefined
+      : reponse.dateRetenue;
+
+    /**
+     * **LES JOURS QU'ELLE A POSÉS — sa demande du 20 septembre 2026.**
+     *
+     * Sur un chantier de quatre jours, elle pose les quatre au calendrier, et
+     * ils peuvent ne pas se suivre. Jusque-là elle envoyait UNE date que le
+     * serveur étalait en bloc d'affilée derrière elle : le chantier tombait sur
+     * des jours qu'elle n'avait jamais vus.
+     *
+     * `dateRetenue` reste le PREMIER de ses jours — c'est par lui que le
+     * planning, la notification et l'écran de retour désignent cette réponse —
+     * et ce lien est vérifié plutôt que supposé : deux vérités sur la même
+     * réponse, et le planning dirait autre chose que l'écran qu'elle rouvre.
+     */
+    const joursDuClient =
+      !joursFixes && reponse.joursRetenus && reponse.joursRetenus.length > 0
+        ? [...new Set(reponse.joursRetenus)].sort()
+        : null;
+    if (joursDuClient && joursDuClient[0] !== date) {
+      return { succes: false, motif: "date_manquante" as const };
     }
 
-    const date = reponse.dateRetenue;
-    if (!date) return { succes: false, motif: "date_manquante" as const };
+    const rangProposee = date ? envoi.datesProposees.indexOf(date) : -1;
+    /**
+     * `null`, et surtout PAS `[date]`, sur un envoi d'avant la migration 0095 :
+     * une liste d'un seul jour ferait poser un chantier de deux jours sur un
+     * seul (`creneauxSurLesJours` n'étale que sur les jours qu'on lui donne),
+     * là où l'absence de liste doit rendre le bloc d'affilée d'autrefois.
+     * C'est ce qu'a attrapé `test-envoi-jours-pas-colles-db`.
+     */
+    const joursProposesPourCeJour =
+      rangProposee >= 0 ? (envoi.joursProposes?.[rangProposee] ?? null) : null;
 
-    const contreProposee = !envoi.datesProposees.includes(date);
+    /**
+     * **CE QUI FAIT D'UNE RÉPONSE UNE CONTRE-PROPOSITION : les JOURS, pas le
+     * premier d'entre eux.**
+     *
+     * Le raccourci d'avant — « la date n'est pas dans celles proposées » — a
+     * cessé d'être vrai le jour où elle a pu déplacer UN jour sur quatre : en
+     * gardant le premier et en poussant le quatrième, elle envoyait une date
+     * proposée avec des jours qui ne le sont pas. Sa liste aurait été jetée au
+     * profit de celle du patron, sans que rien ne le dise.
+     */
+    const memesJoursQueProposes =
+      joursDuClient !== null &&
+      joursProposesPourCeJour !== null &&
+      joursDuClient.length === joursProposesPourCeJour.length &&
+      joursDuClient.every((j, i) => j === [...joursProposesPourCeJour].sort()[i]);
+    const contreProposee =
+      !joursFixes &&
+      date !== undefined &&
+      (rangProposee < 0 || (joursDuClient !== null && !memesJoursQueProposes));
 
     // **Le refus se fait ICI, pas seulement à l'écran** (17 août 2026). La page
     // du client est publique : elle s'ouvre sans compte, et son formulaire se
@@ -764,6 +1018,27 @@ export async function enregistrerReponse(
       return { succes: false, motif: "autre_date_refusee" as const };
     }
 
+    // **La demande expresse BLOQUE, elle ne se contente plus d'être notée** —
+    // son choix 3A du 3 octobre 2026. La case existait, et un client pouvait
+    // accepter une date dans ses 14 jours sans la cocher : l'artisan ne pouvait
+    // alors pas commencer sans s'exposer à une rétractation après travaux. La
+    // même règle que celle qui montre la case (`dansDelaiRetractation`), au même
+    // jour : celui de l'accord.
+    //
+    // **Sauf en sous-traitance** (migration 0119) : l'entreprise qui le
+    // sous-traite achète dans son propre métier, elle n'a pas les 14 jours du
+    // consommateur. Lui faire cocher une demande qui ne la concerne pas
+    // bloquerait un accord valable.
+    if (
+      reponse.decision === "accepte" &&
+      date &&
+      dansDelaiRetractation(date, jourIso(maintenant)) &&
+      !reponse.demarrageAnticipe &&
+      !(await devisEnSousTraitance(tx, envoi.devisId))
+    ) {
+      return { succes: false, motif: "demarrage_non_demande" as const };
+    }
+
     // Revérification côté serveur — la seule qui fasse foi.
     //
     // **Contre la fenêtre de l'ENVOI, pas celle d'aujourd'hui.** C'est le même
@@ -772,8 +1047,74 @@ export async function enregistrerReponse(
     // fait refuser « date indisponible » — au client qui accepte la date que le
     // patron vient de lui proposer. Le devis se serait perdu là, sans que
     // personne comprenne pourquoi.
+    // **Les jours qu'il a posés derrière la date choisie** — sa règle du
+    // 17 septembre 2026. Une contre-proposition n'en a pas : elle vaut un bloc
+    // d'affilée depuis le jour du client, comme toujours. Et un bloc d'affilée
+    // posé à l'écran se juge et s'écrit comme avant, pour que `departPossible`
+    // garde le droit de commencer l'après-midi quand le matin est pris.
+    const joursChoisis = joursDuClient ?? joursProposesPourCeJour;
+
+    if (reponse.decision !== "accepte") {
+      /**
+       * **SES JOURS, GARDÉS AVEC LA CORRECTION** — sa plainte du 27 septembre
+       * 2026 : *« je ne vois pas les dates qu'il a proposées, donc je lui
+       * repropose les mêmes »*. Ils partaient avec le formulaire, et cette
+       * branche rendait la main avant de les lire. Un SOUHAIT, jamais une date
+       * retenue : rien ne se pose au planning, et `date_retenue` reste vide
+       * (migration 0109). Un refus n'en porte pas.
+       */
+      // La page est publique et son formulaire se rejoue : un souhait se garde
+      // tel quel, mais jamais autre chose qu'une liste de jours.
+      const joursSouhaites =
+        reponse.decision === "correction" && date && /^\d{4}-\d{2}-\d{2}$/.test(date)
+          ? (joursChoisis ?? joursDuBloc(date as JourIso, await dureeDuChantier(tx, envoi))).filter((j) =>
+              /^\d{4}-\d{2}-\d{2}$/.test(j)
+            )
+          : null;
+      await tx
+        .update(envoisDevis)
+        .set({
+          reponse: reponse.decision === "correction" ? "correction" : "refusee",
+          responduAt: maintenant,
+          precisionClient: precision,
+          joursSouhaites: joursSouhaites ? [...joursSouhaites] : null,
+          adresseIp: reponse.adresseIp ?? null,
+          agentUtilisateur: reponse.agentUtilisateur ?? null,
+        })
+        .where(eq(envoisDevis.jeton, jeton));
+      return { succes: true as const, dateRetenue: null, contreProposee: false };
+    }
+    if (!date) return { succes: false, motif: "date_manquante" as const };
+
+    /**
+     * **SUR LES JOURS DU PATRON, ON N'ÉCRIT QUE L'ACCORD.** La place est déjà
+     * prise au planning, demi-journées comprises : la revérifier se jugerait
+     * contre lui-même, et réécrire les créneaux en bloc d'affilée défairait
+     * le matin ou l'après-midi qu'il a choisi.
+     */
+    if (joursFixes) {
+      await tx
+        .update(envoisDevis)
+        .set({
+          reponse: "acceptee",
+          responduAt: maintenant,
+          dateRetenue: date,
+          joursRetenus: joursFixes,
+          dateContreProposee: false,
+          precisionClient: precision,
+          demarrageAnticipe: reponse.demarrageAnticipe ?? false,
+          adresseIp: reponse.adresseIp ?? null,
+          agentUtilisateur: reponse.agentUtilisateur ?? null,
+        })
+        .where(eq(envoisDevis.jeton, jeton));
+      return { succes: true as const, dateRetenue: date, contreProposee: false };
+    }
+
     await tx.execute(sql`SELECT set_config('app.entreprise_id', ${envoi.entrepriseId}, true)`);
-    const fenetre = fenetrePourDates(envoi.envoyeAt, envoi.datesProposees);
+    const fenetre = fenetrePourDates(envoi.envoyeAt, [
+      ...envoi.datesProposees,
+      ...(envoi.joursProposes?.flat() ?? []),
+    ]);
     const { occupation, nombreEquipes } = await contrainteDuPlanning(
       tx,
       envoi.entrepriseId,
@@ -782,15 +1123,7 @@ export async function enregistrerReponse(
       periodesExterieures
     );
 
-    const [chantierRow] = await tx
-      .select({ duree: chantiers.dureeDemiJournees, dureePrevue: chantiers.dureePrevue })
-      .from(chantiers)
-      .where(eq(chantiers.id, envoi.chantierId))
-      .limit(1);
-    const duree =
-      chantierRow?.duree ??
-      dureeEnDemiJournees(chantierRow?.dureePrevue ?? null) ??
-      DUREE_PAR_DEFAUT_DEMI_JOURNEES;
+    const duree = await dureeDuChantier(tx, envoi);
 
     // **Ce que le PATRON a proposé, le client peut le prendre.**
     //
@@ -814,15 +1147,36 @@ export async function enregistrerReponse(
     // Ce qui autorise, c'est `dates_forcees` : la photographie prise à l'envoi
     // de ce qui était déjà plein ce jour-là. Elle distingue « il a choisi » de
     // « le planning a bougé depuis ».
+    /**
+     * **ELLE NE RETIENT PAS MOINS DE JOURS QUE LE CHANTIER N'EN PREND.**
+     *
+     * L'écran le refuse déjà — « Il manque 1 jour » —, mais cette page est
+     * publique et son formulaire se rejoue : la règle vit ici, une seule fois
+     * (`CLAUDE.md` §3). Sans elle, `creneauxSurLesJours` poserait trois
+     * demi-journées là où le chantier en demande huit, et personne ne l'aurait
+     * su avant le jour des travaux.
+     */
+    if (joursDuClient && joursDuClient.length !== joursDuChantier(duree)) {
+      return { succes: false, motif: "jours_incomplets" as const };
+    }
+
+    const surDesJoursChoisis = joursChoisis !== null && !estUnBlocDAffilee(joursChoisis, duree);
     const forcee = envoi.datesForcees.includes(date);
-    if (!forcee && !jourRetenable(date, duree, occupation, nombreEquipes, fenetre)) {
+    const tient = surDesJoursChoisis
+      ? propositionRetenable(joursChoisis, duree, occupation, nombreEquipes, fenetre)
+      : jourRetenable(date, duree, occupation, nombreEquipes, fenetre);
+    if (!forcee && !tient) {
       return { succes: false, motif: "date_indisponible" as const };
     }
 
     // Le créneau est décidé ici, jamais par le client : il choisit un jour, le
     // planning choisit la demi-journée. C'est la consigne du patron — « mon
-    // client ne doit pas être informé de la demi-journée ».
+    // client ne doit pas être informé de la demi-journée ». Sur des jours
+    // choisis un à un, chaque jour se prend entier, matin puis après-midi.
     const moment: Moment = departPossible(date, duree, occupation, nombreEquipes) ?? "matin";
+    const creneaux = surDesJoursChoisis
+      ? creneauxSurLesJours(joursChoisis, duree)
+      : creneauxDuChantier({ jour: date as JourIso, moment }, duree);
 
     await tx
       .update(envoisDevis)
@@ -830,6 +1184,13 @@ export async function enregistrerReponse(
         reponse: "acceptee",
         responduAt: maintenant,
         dateRetenue: date,
+        /**
+         * Les jours qu'elle a réellement retenus — les siens quand elle les a
+         * posés, ceux du patron sinon. Écrits même dans le second cas : une
+         * réponse qui se redit toute seule vaut mieux qu'une réponse qu'il faut
+         * recroiser avec `jours_proposes` pour comprendre (migration 0097).
+         */
+        joursRetenus: joursChoisis ?? joursDuBloc(date as JourIso, duree),
         dateContreProposee: contreProposee,
         precisionClient: precision,
         demarrageAnticipe: reponse.demarrageAnticipe ?? false,
@@ -840,12 +1201,24 @@ export async function enregistrerReponse(
 
     // Le chantier est débloqué et planifié à la date retenue, sur le créneau
     // que le planning vient de lui trouver.
+    //
+    // **La DURÉE d'abord, la PLACE ensuite — et par la même porte que le
+    // planning.** Jusqu'au 10 septembre 2026, cette ligne écrivait
+    // `date_planifiee` sans toucher aux créneaux du chantier : celui qui en
+    // portait déjà restait affiché à son ANCIENNE place, et la date que le
+    // client venait de choisir n'apparaissait nulle part au planning. C'est
+    // exactement la divergence que `ecrireLesCreneaux` existe pour rendre
+    // impossible (`ARCHITECTURE.md` §322).
     await tx
       .update(chantiers)
-      .set({ datePlanifiee: date, creneauDebut: moment, dureeDemiJournees: duree, updatedAt: maintenant })
+      .set({ dureeDemiJournees: duree, updatedAt: maintenant })
       .where(
         and(eq(chantiers.id, envoi.chantierId), eq(chantiers.entrepriseId, envoi.entrepriseId))
       );
+    // **Un bloc d'un seul tenant, et c'est juste ici** : le client accepte un
+    // jour, pas un morcellement. Ce que le patron rendra ensuite depuis son
+    // planning se réécrira par la même fonction.
+    await ecrireLesCreneaux(tx, { entrepriseId: envoi.entrepriseId }, envoi.chantierId, creneaux);
 
     return { succes: true as const, dateRetenue: date, contreProposee };
   });
@@ -883,6 +1256,35 @@ export async function reponsesNonVues(ctx: Ctx) {
 }
 
 /**
+ * Un lien est-il RÉELLEMENT parti pour ce devis-là ?
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **L'écran affirmait « parti chez votre client » sans jamais le vérifier.**
+ *
+ * Il lisait le statut du devis, et le statut se pose en deux temps :
+ * `envoyerDevis` fige le document, `creerEnvoi` crée le lien. Entre les deux,
+ * il existe un état où le devis est immuable et où le client n'a rien reçu.
+ * L'écran y annonçait pourtant l'envoi — et sur une pièce comptable qui ne se
+ * réécrit pas, une phrase fausse coûte le chantier.
+ *
+ * **Par DEVIS et non par chantier**, contrairement à `dernierEnvoi` : un devis
+ * figé sans lien, suivi d'une version 2 réellement envoyée, laisse un envoi sur
+ * le chantier. Interroger le chantier redirait donc « parti » sur la version
+ * qui, elle, n'est jamais partie.
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+export async function unLienExistePourLeDevis(ctx: Ctx, devisId: string): Promise<boolean> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [row] = await tx
+      .select({ id: envoisDevis.id })
+      .from(envoisDevis)
+      .where(and(eq(envoisDevis.devisId, devisId), eq(envoisDevis.entrepriseId, ctx.entrepriseId)))
+      .limit(1);
+    return row !== undefined;
+  });
+}
+
+/**
  * Le dernier envoi d'un chantier, ou `null` s'il n'en a jamais eu.
  *
  * Le dernier, et lui seul : un devis refusé puis corrigé et renvoyé laisse
@@ -917,6 +1319,8 @@ export type NotificationPatron = {
    * donné suite » sans jamais lire pourquoi.
    */
   precisionClient: string | null;
+  /** Les jours proposés avec une correction (migration 0109), ou `null`. */
+  joursSouhaites: string[] | null;
 };
 
 /**
@@ -943,6 +1347,7 @@ export async function notificationsPatron(ctx: Ctx): Promise<NotificationPatron[
         dateRetenue: envoisDevis.dateRetenue,
         dateContreProposee: envoisDevis.dateContreProposee,
         precisionClient: envoisDevis.precisionClient,
+        joursSouhaites: envoisDevis.joursSouhaites,
       })
       .from(envoisDevis)
       .innerJoin(chantiers, eq(envoisDevis.chantierId, chantiers.id))
@@ -952,11 +1357,21 @@ export async function notificationsPatron(ctx: Ctx): Promise<NotificationPatron[
           isNull(envoisDevis.vuParPatronAt),
           isNull(chantiers.deletedAt),
           sql`${envoisDevis.reponse} IS NOT NULL`,
-          // Une acceptation sur l'une des dates proposées ne surprend personne :
-          // c'est le déroulement attendu. La signaler noierait les deux nouvelles
-          // qui, elles, appellent quelque chose.
-          sql`(${envoisDevis.reponse} IN ('refusee', 'correction') OR ${envoisDevis.dateContreProposee}
-               OR ${envoisDevis.precisionClient} IS NOT NULL)`
+          // **TOUTE réponse d'un client remonte — sa demande du 7 septembre
+          // 2026 :** *« il faut aussi rajouter une notification lorsqu'un client
+          // accepte un devis, elle doit apparaître en haut dans les retours
+          // client ! »*
+          //
+          // **Ce que cela renverse, et je l'écris parce que c'était une
+          // décision délibérée :** une acceptation sur une date proposée était
+          // TUE ici, au motif qu'elle « ne surprend personne » et noierait les
+          // nouvelles qui appellent un geste. Le raisonnement tenait sur le
+          // papier ; il oubliait que c'est la nouvelle qu'il ATTEND. Un
+          // chantier gagné ne s'apprend pas en ouvrant une fiche.
+          //
+          // Le bruit qu'on craignait est borné par ailleurs : la carte
+          // s'acquitte, et l'accueil n'en montre qu'une à la fois
+          // (`VISIBLES_PAR_DEFAUT`).
         )
       )
       .orderBy(desc(envoisDevis.responduAt));
@@ -1024,7 +1439,15 @@ export async function marquerReponseVue(ctx: Ctx, envoiId: string, maintenant: D
   });
 }
 
-/** Jour du jour, au format des dates de la base — utile aux appelants. */
+/**
+ * Le jour du jour, celui du patron : à l'heure de Paris (`jourIso`).
+ *
+ * **Le même jour que le refus de l'accord** (`enregistrerReponse`), et c'est
+ * tout ce qui compte. En temps universel, la page du client comptait les 14
+ * jours de rétractation avec un jour de retard entre minuit et 2 h : la case à
+ * cocher ne s'affichait pas, et l'accord était refusé quand même. Trouvé par
+ * la batterie commune du 5 octobre 2026, jouée à 1 h 30.
+ */
 export function aujourdHuiIso(maintenant: Date = new Date()): JourIso {
-  return versJourIso(maintenant);
+  return jourIso(maintenant) as JourIso;
 }

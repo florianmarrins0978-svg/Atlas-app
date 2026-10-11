@@ -79,6 +79,23 @@ export async function poserNouveauCondensat(
 }
 
 /**
+ * Poser un nouveau condensat — **sur présentation du jeton du mot de passe
+ * oublié**, que la fonction consomme (`drizzle/0100_mot_de_passe_oublie.sql`).
+ *
+ * Rend `false` si le jeton n'est pas celui de la ligne, ou s'il a expiré.
+ */
+export async function poserCondensatSurJeton(
+  utilisateurId: string,
+  empreinteDuJeton: string,
+  nouveauCondensat: string
+): Promise<boolean> {
+  const resultat = await db.execute(
+    sql`SELECT public.reinitialiser_mot_de_passe(${utilisateurId}::uuid, ${empreinteDuJeton}, ${nouveauCondensat}) AS ok`
+  );
+  return premiereLigne<{ ok: boolean | null }>(resultat)?.ok === true;
+}
+
+/**
  * `db.execute` rend selon le pilote soit un tableau, soit un objet portant
  * `rows`. On lit les deux plutôt que de parier sur l'un — un pari qui ne se
  * verrait qu'à la première connexion en production.

@@ -2,6 +2,7 @@ import assert from "node:assert";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 /**
  * Le raccourci vers les dates : trois écrans devenus deux.
@@ -28,7 +29,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
  * avant l'envoi.
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let passed = 0;
 let failed = 0;
@@ -68,14 +69,12 @@ async function main() {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.getByLabel(/Nom du client/i).fill(`Choisir la date ${Date.now()}`);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 40_000 });
-  const chantierId = page.url().split("/").pop()!.split("?")[0];
+  const chantierId = idChantier;
 
   await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.waitForSelector("text=Total TTC", { timeout: 60_000 });
-  await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
-  await page.waitForTimeout(900);
   await page.getByLabel("Description 1").fill("Abattage d'un chêne");
   await page.getByLabel("Prix unitaire 1").fill("1200");
   await page.getByLabel("Description 1").click();

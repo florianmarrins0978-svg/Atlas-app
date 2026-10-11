@@ -2,14 +2,16 @@
 
 import { signIn, signOut } from "@/auth";
 import { accueilPourCleAppareil, accueilPourEmail } from "@/server/accueil-apres-connexion";
-import { AuthError } from "next-auth";
+import { AuthError, type CredentialsSignin } from "next-auth";
 import { redirect } from "next/navigation";
-import { verifierLimite, LIMITES } from "@/server/rate-limit";
+import { verifierLimite, rendreLimite, LIMITES } from "@/server/rate-limit";
 import { logger } from "@/server/logger";
 import { messageAttente as messageTemporisation, porteeTemporisation } from "@/lib/tentatives-connexion";
 import { horsProductionReelle, sourceDuVisiteur } from "@/server/source-visiteur";
 import { attenteAvantEssai, noterEchec, oublierEchecs } from "@/server/repositories/tentatives-connexion";
 import { messageRefusCle } from "@/lib/cle-appareil";
+import { estBranche, estNomFournisseur, messageNonBranche } from "@/lib/fournisseurs-connexion";
+import { clesFournisseurs } from "@/server/cles-fournisseurs";
 import { optionsConnexion } from "@/server/cle-appareil";
 import type { PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/types";
 
@@ -61,9 +63,22 @@ const MESSAGE_SERVICE_INDISPONIBLE =
  *    sait déjà) payée d'un prix total : l'utilisateur légitime n'a aucun moyen
  *    de comprendre, et conclut que l'application est cassée.
  */
+/**
+ * **« depuis cet appareil » ACCUSAIT LE MAUVAIS COUPABLE — 17 septembre 2026.**
+ *
+ * Le seuil est tenu par compte ET par adresse : deux téléphones sur un même
+ * wifi n'en font qu'une. L'ami à qui il fait essayer l'application lisait donc
+ * que SON appareil avait trop essayé, alors qu'il s'y connectait pour la
+ * première fois — et il cherchait du côté de son téléphone, où il n'y avait
+ * rien. Une erreur qui envoie chercher au mauvais endroit coûte plus cher que
+ * pas d'erreur du tout (`AGENTS.md`).
+ *
+ * Le message dit désormais ce qui est vrai et rien de plus : il y a eu trop
+ * d'essais récents, et voici combien de temps attendre.
+ */
 function messageAttente(secondes: number): string {
   const minutes = Math.max(1, Math.ceil(secondes / 60));
-  return `Trop de tentatives depuis cet appareil. Réessayez dans ${minutes} minute${minutes > 1 ? "s" : ""}.`;
+  return `Trop de tentatives de connexion récentes. Réessayez dans ${minutes} minute${minutes > 1 ? "s" : ""}.`;
 }
 
 // **D'où vient une requête** — la fonction, et le raisonnement qui la
@@ -155,6 +170,10 @@ export async function connexionAction(
       // c'est accuser le patron de se tromper de mot de passe pendant qu'un
       // service est couché, et il n'a alors aucun moyen de le comprendre.
       if (err.type === "CredentialsSignin") {
+        // **Le mot de passe est juste, il manque le code** (double vérification,
+        // 7 octobre 2026). Ce n'est pas un échec : rien ne se compte, et les
+        // compteurs ne se remettent pas non plus à zéro avant le code.
+        if ((err as CredentialsSignin).code === "code-requis") redirect("/login/code");
         // **Un échec, et un seul type d'échec, fait avancer le compteur.** Une
         // base couchée ou un secret manquant ne sont pas des essais ratés :
         // les compter temporiserait l'artisan pour une panne qui n'est pas la
@@ -179,6 +198,22 @@ export async function connexionAction(
   // à un doigt de la temporisation pendant l'heure qui suit. Posé avant
   // `redirect()`, qui lève et ne rend jamais la main.
   await oublierEchecs(portee);
+
+  // **ET LES DEUX SEUILS RENDENT CE QU'ILS VIENNENT DE PRENDRE.**
+  //
+  // Ils ont été incrémentés en haut de cette fonction, avant qu'on sache si la
+  // porte s'ouvrirait. Elle s'est ouverte : cette tentative n'était pas un
+  // essai raté, elle n'a donc rien à consommer. Sans ce retour, cinq entrées
+  // légitimes depuis un même wifi mettaient la sixième dehors — *« un ami
+  // s'était connecté à mon appli via son tél, et sur le sien ça n'a pas
+  // marché »* (17 septembre 2026).
+  //
+  // Au même endroit que `oublierEchecs`, et pour la même raison : le compteur
+  // en base ne comptait déjà que les échecs. Les deux disent enfin la même
+  // chose (`CLAUDE.md` §3).
+  await rendreLimite(`connexion:${email}:${source}`);
+  await rendreLimite(`connexion:compte:${email}`);
+
   redirect(await accueilPourEmail(email));
 }
 
@@ -272,6 +307,156 @@ function identifiantDeLaCle(reponse: string): string {
   }
 }
 
-export async function deconnexionAction() {
-  await signOut({ redirectTo: "/login" });
+/**
+ * SE DÉCONNECTER DE CET APPAREIL.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **Elle existait sans appelant jusqu'au 9 septembre 2026**, et c'est ce qui l'a
+ * rendue dangereuse : ce jour-là, faute de l'avoir cherchée, une seconde action
+ * identique a été écrite dans `src/app/reglages/`. Deux façons de sortir
+ * d'Atlas, c'est exactement ce que `CLAUDE.md` §3 interdit — et `§5 ter` le dit
+ * déjà : *la question n'est jamais « est-ce possible ? » mais « qui, dans ce
+ * dépôt, fait déjà quelque chose d'approchant ? »*. Le doublon a été retiré,
+ * celle-ci a reçu son appelant : `src/app/reglages/SeDeconnecter.tsx`.
+ *
+ * ─── POURQUOI `signOut` ET NON `/api/session-perimee` ───────────────────────
+ *
+ * Cette route efface bien les cookies, et la tentation de la réemployer est
+ * réelle. Deux raisons de s'en abstenir :
+ *
+ * 1. **Son nom ment.** Elle existe pour une session dont le COMPTE a disparu
+ *    (le cookie fantôme du 10 août 2026) et renvoie sur `/login?session=perimee`.
+ *    Rien de cela n'est vrai d'un patron qui sort volontairement.
+ * 2. **Elle tient sa propre liste de six noms de cookies**, préfixes
+ *    `__Secure-` et `__Host-` compris. La recopier en ferait une seconde, et
+ *    deux listes divergent. `signOut` efface le cookie qu'Auth.js a posé.
+ *
+ * ─── RIEN À FERMER CÔTÉ SERVEUR, ET CE N'EST PAS UN OUBLI ───────────────────
+ *
+ * La session est un jeton signé (`session: { strategy: "jwt" }`) : aucune ligne
+ * de session en base. La preuve récente de M11 reste, délibérément — attachée
+ * au `sessionId`, un UUID tiré à chaque authentification réelle, elle est
+ * inutilisable par la session suivante ; l'effacer voudrait dire appeler
+ * `effacerPreuves`, qui travaille sur TOUT l'utilisateur et couperait la
+ * tablette parce qu'on a fermé le téléphone.
+ *
+ * ─── ET FACE ID RESTE POSÉ SUR L'APPAREIL ───────────────────────────────────
+ *
+ * C'est toute la différence avec « Me déconnecter partout », qui, lui, retire
+ * les clés — sans quoi l'appareil qu'on voulait couper rouvrirait Atlas d'un
+ * regard, `signIn("cle-appareil")` ouvrant une session sans mot de passe. Ici,
+ * on ne coupe rien à distance : on sort d'un appareil qu'on tient.
+ *
+ * ─── LA REDIRECTION EST À NOUS, PAS À AUTH.JS ───────────────────────────────
+ *
+ * **Sa capture du 10 septembre 2026 : « Safari ne peut pas ouvrir la page »,
+ * sur `localhost`.** Il se déconnecte depuis son téléphone, et l'application
+ * l'envoie sur une adresse qui, sur un téléphone, désigne le téléphone.
+ *
+ * `signOut({ redirectTo })` ne redirige pas vers ce qu'on lui donne : il rend
+ * une adresse **absolue**, fabriquée par `createActionURL` à partir de
+ * `AUTH_URL` ou, à défaut, de l'en-tête `x-forwarded-host`. Le chemin était
+ * juste ; c'est l'hôte collé devant qui ne valait rien.
+ *
+ * **Et cet en-tête vaut `localhost:3000` PARCE QU'ON L'A VOULU.**
+ * `alignerHoteSurOrigine` (`src/middleware.ts`) le réécrit délibérément sur
+ * l'`Origin` du navigateur : sans cela, Next.js refuse toute action serveur
+ * derrière le mandataire d'un espace de travail — c'est « Invalid Server
+ * Actions request. », vingt échanges perdus le 24 août 2026. **Ne pas défaire
+ * cet alignement pour réparer ceci** : on rouvrirait la panne d'à côté, et
+ * personne ne pourrait plus se connecter du tout.
+ *
+ * **Ce qui tient, c'est de ne plus laisser deviner l'adresse.** Un `redirect`
+ * de Next.js sur un chemin RELATIF ne porte aucun hôte : le navigateur le
+ * résout contre celui par lequel Atlas a été ouvert, quel qu'il soit. Il ne
+ * peut donc pas se tromper — là où toute valeur devinée finit par l'être.
+ *
+ * **C'est déjà ce que font les trois chemins qui ENTRENT** (`redirect: false`,
+ * puis notre redirection) : cette sortie-là était la seule à faire autrement.
+ * Une seule façon de naviguer, et le §3 est tenu.
+ *
+ * ─── AUCUN `try/catch` AUTOUR DU `redirect` ─────────────────────────────────
+ *
+ * Il lève délibérément le `NEXT_REDIRECT` que Next.js attrape pour naviguer.
+ * L'entourer d'un `catch` avalerait la redirection : le cookie serait effacé et
+ * l'écran resterait là, chaque geste ensuite refusé — exactement le piège du
+ * cookie mort payé une soirée le 10 août 2026.
+ *
+ * ─── OÙ L'ON ARRIVE : « Se connecter », OU LA PORTE D'ENTRÉE ──────────────
+ *
+ * Depuis Réglages, celui qui se déconnecte sait qu'il reviendra : `/login`.
+ * Depuis l'écran du code (14 septembre 2026), celui qui n'a jamais reçu son
+ * code veut repartir du début — recréer un compte avec la bonne adresse, ou
+ * entrer autrement : `/bienvenue`, la porte principale. **La destination
+ * est bornée à ces deux-là** : une action serveur reçoit ce que le navigateur
+ * lui envoie, et un chemin libre en ferait une redirection ouverte.
+ */
+export async function deconnexionAction(vers: "connexion" | "entree" = "connexion") {
+  await signOut({ redirect: false });
+  // Deux `redirect` écrits en toutes lettres, pas un chemin calculé :
+  // `test-sortie-sans-hote` lit cette fonction et exige un chemin RELATIF
+  // littéral — c'est ce qui garantit qu'aucun hôte n'y revient un jour.
+  if (vers === "entree") redirect("/bienvenue");
+  redirect("/login");
+}
+
+/**
+ * ENTRER PAR GOOGLE OU PAR APPLE — sa demande du 10 septembre 2026.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **CE QUE CETTE ACTION NE FAIT PAS, ET POURQUOI C'EST L'ESSENTIEL.** Elle ne
+ * vérifie rien : ni que le fournisseur est ouvert, ni que l'adresse rendue est
+ * prouvée, ni qu'un compte Atlas existe. Tout cela vit dans `src/auth.ts` et
+ * dans `src/lib/fournisseurs-connexion.ts`, **une seule fois** — c'est le même
+ * choix qu'« Ouvrir avec Face ID », dont l'action ne pré-vérifie rien non plus.
+ * Deux rédactions de la même règle divergeraient, et ici la divergence
+ * s'appellerait « accepté d'un côté, refusé de l'autre » (`CLAUDE.md` §3).
+ *
+ * **Le nom du fournisseur ne vient PAS du navigateur en confiance.** Il arrive
+ * d'un bouton, donc de dehors : `estNomFournisseur` le confronte à la liste
+ * fermée avant qu'il n'atteigne Auth.js. Sans quoi n'importe quelle chaîne
+ * partirait dans `signIn`.
+ *
+ * **`redirect` reste à sa valeur par défaut**, contrairement aux deux autres
+ * chemins : le propre d'OAuth est de sortir de l'application. La levée de
+ * redirection doit donc traverser — elle est ce que Next attend.
+ */
+export async function entrerAvecAction(nom: string): Promise<{ erreur?: string }> {
+  if (!estNomFournisseur(nom)) {
+    logger.warn("[connexion] fournisseur inconnu refusé", { nom });
+    return { erreur: "Ce moyen de connexion n'existe pas." };
+  }
+
+  /**
+   * **LE REFUS QUI REND L'AFFICHAGE TENABLE — 11 septembre 2026.**
+   *
+   * Les deux marques se dessinent désormais même sans clé (sa décision, voir
+   * `fournisseursAAfficher`). Sans ce refus-ci, appuyer partirait dans
+   * `signIn("google")`, qu'Auth.js ne connaît pas : il renvoie alors sur SA
+   * page de connexion à lui, et l'on sort d'Atlas sans comprendre.
+   *
+   * **Il est ICI et pas dans l'écran** : c'est le serveur qui voit les clés, et
+   * l'adresse de cette action reste postable sans passer par le bouton.
+   */
+  if (!estBranche(nom, clesFournisseurs())) {
+    logger.warn("[connexion] fournisseur non branché", { nom });
+    return { erreur: messageNonBranche(nom) };
+  }
+
+  try {
+    await signIn(nom, { redirectTo: "/" });
+    return {};
+  } catch (erreur) {
+    // Une action serveur qui redirige le fait en LEVANT — c'est la réussite
+    // qui passe par ici, et Next doit la recevoir. Le piège est exactement
+    // celui de `LigneFaceId`, payé le 26 août 2026.
+    if (
+      typeof (erreur as { digest?: unknown })?.digest === "string" &&
+      (erreur as { digest: string }).digest.startsWith("NEXT_REDIRECT")
+    ) {
+      throw erreur;
+    }
+    logger.error("[connexion] le fournisseur n'a pas abouti", { nom, erreur });
+    return { erreur: "Ce service ne répond pas. Réessayez dans un instant." };
+  }
 }

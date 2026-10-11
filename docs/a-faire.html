@@ -82,6 +82,9 @@
 <li><a href="#11-décider-si-atlas-peut-calculer-des-trajets-par-la-route--tranché-le-16-août-2026">~~Décider si Atlas peut calculer des trajets par la route~~ — tranché le 16 août 2026</a></li>
 <li><a href="#12-demander-à-votre-comptable--tva-sur-les-encaissements-ou-sur-les-débits-">Demander à votre comptable : TVA sur les encaissements ou sur les débits ?</a></li>
 <li><a href="#13-choisir-le-prestataire-qui-lit-vos-virements">Choisir le prestataire qui lit vos virements</a></li>
+<li><a href="#14-demander-à-votre-comptable--ce-que-vaut-laccusé-de-réception-dune-facture">Demander à votre comptable : ce que vaut l’accusé de réception d’une facture</a></li>
+<li><a href="#15-créer-le-compte-brevo-pour-que-le-code-de-vérification-parte">Créer le compte Brevo, pour que le code de vérification parte</a></li>
+<li><a href="#16-prendre-un-nom-de-domaine-pour-que-le-devis-parte-datlas-avec-un-lien-cliquable">Prendre un nom de domaine, pour que le devis parte d’Atlas avec un lien cliquable</a></li>
 </ol>
 <hr>
 <h2 id="1-choisir-les-fournisseurs-dia-définitifs">1. Choisir les fournisseurs d'IA définitifs</h2>
@@ -379,11 +382,45 @@
 <p><strong>Joindre le PDF au message, automatiquement.</strong> Un message préparé par un site web ne peut pas porter de pièce jointe — c'est le format qui n'en a pas, aucun développement n'y changera rien.</p>
 <p>Ce n'est pas une perte : <strong>le PDF est au bout du lien</strong>. Et l'y joindre serait même nuisible — votre client lirait la pièce jointe et vous répondrait « c'est bon » par SMS, sans jamais ouvrir la page. Donc sans date choisie, et sans la trace qui vous protège en cas de litige. Vous ressaisiriez tout à la main.</p>
 <p>Le jour où l'application s'installera vraiment depuis l'App Store, le composeur du téléphone acceptera destinataire <strong>et</strong> pièce jointe : on l'ajoutera alors, en gardant le lien dans le message. Cela suppose le compte développeur Apple — <a href="QUESTIONS.md" target="_blank" rel="noopener"><code>QUESTIONS.md</code></a> question 1.</p>
+<p><strong>Une exception depuis le 14 septembre 2026, et elle ne rouvre pas ce choix :</strong> le code qui prouve l'adresse d'un compte neuf part par Brevo — voir le point 15. Les devis et les factures, eux, partent toujours de votre messagerie.</p>
 <hr>
 <h2 id="6-choisir-loutil-qui-émet-les-factures">6. Choisir l'outil qui émet les factures</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><strong>Qui : le patron</strong>, pour le choix, le compte et la signature. Le branchement se code ensuite.</p>
 <p><em>Ajouté le 8 août 2026, après votre question « qu'est-ce que tu dois faire sur la plateforme de facturation ? ». La réponse longue est dans <a href="QUESTIONS.md" target="_blank" rel="noopener"><code>QUESTIONS.md</code></a> question 11 ; ce point ne garde que ce qui attend une décision.</em></p>
+<h3 id="tranché-le-26-septembre-2026--chaque-artisan-branche-son-compte">Tranché le 26 septembre 2026 : chaque artisan branche SON compte</h3>
+<p>Votre réponse : <em>« on a dit Pennylane et toutes les applis compatibles avec la nôtre. L'idée, c'est que l'utilisateur connecte son compte de facturation à notre appli, et qu'après elles communiquent entre elles lors de l'envoi de la facture. »</em></p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>qui choisit l'outil</strong></td>
+<td>chaque artisan, pour lui-même. Atlas ne choisit plus pour tout le monde</td>
+</tr>
+<tr>
+<td><strong>le premier branché</strong></td>
+<td>Pennylane</td>
+</tr>
+<tr>
+<td><strong>les suivants</strong></td>
+<td>les autres outils qui ont une API (Evoliz, Tiime, Sellsy, Abby…), un par un : chacun a la sienne</td>
+</tr>
+<tr>
+<td><strong>le geste de l'artisan</strong></td>
+<td>une fois, dans Réglages : « Connecter mon compte », il se connecte chez Pennylane et accepte</td>
+</tr>
+<tr>
+<td><strong>quand ça parle</strong></td>
+<td>à l'envoi de la facture : Atlas transmet, l'outil émet</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui reste à vous, et à vous seul :</strong></p>
+<ol>
+<li><strong>Ouvrir l'accès développeur chez Pennylane</strong> (programme partenaires ou intégrations), pour qu'Atlas ait le droit de demander à un artisan la connexion de son compte. Sans cet accès, rien ne peut se coder ni s'éprouver. <em>Je ne peux pas vérifier d'ici ce que Pennylane exige pour l'ouvrir : le réseau de cet environnement refuse leurs pages.</em></li>
+<li><strong>Le compte d'Eden Nature elle-même</strong>, pour vos propres factures : c'est aussi le compte sur lequel le branchement s'éprouvera en premier.</li>
+</ol>
+<p><strong>Ce qui est à nous, et s'inscrit dans <code>TODO.md</code> :</strong> le branchement, et trois questions qu'il faudra vous poser au moment de le coder (quel numéro fait foi, quel PDF part chez le client, que faire quand la connexion est coupée).</p>
 <h3 id="ce-qui-est-déjà-décidé-et-ne-se-rouvre-pas">Ce qui est déjà décidé, et ne se rouvre pas</h3>
 <p><strong>Atlas prépare les factures, il ne les émet pas au sens légal.</strong> Décision du 31 juillet 2026, inscrite comme définitive dans <a href="AGENT.md" target="_blank" rel="noopener"><code>AGENT.md</code></a> §6 et <a href="MVP.md" target="_blank" rel="noopener"><code>MVP.md</code></a> — « hors périmètre définitivement, pas <em>pas encore</em> ».</p>
 <p>Une facture non conforme n'est pas un défaut d'affichage : c'est un risque légal pour l'artisan, et une numérotation cassée se traîne sur tout un exercice. On se branche par <strong>API</strong> sur un outil dont c'est le métier.</p>
@@ -476,6 +513,7 @@
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><strong>Qui : le patron.</strong> Cela engage une entreprise auprès de Google, et demande des pièces que vous seul possédez.</p>
 <blockquote><strong>À ressortir au moment de la commercialisation.</strong> Sa consigne du 9 août 2026 : <em>« quand on sera arrivé à la partie commercialisation, je veux que tu me le ressortes automatiquement parce que je ne vais pas m'en souvenir. »</em> Le rappel est armé dans <code>HANDOVER.md</code>, que chaque conversation lit en arrivant.</blockquote>
+<blockquote><strong>Mise à jour du 26 septembre 2026 : à faire plus tard, votre décision du jour.</strong> Deux choses nouvelles.  1. <strong>Votre agenda Google s'est coupé</strong> (« invalid_grant » dans Réglages, Mon    agenda). Très probablement (sept chances sur dix, pas vérifié d'ici) la    même cause : tant que le projet reste en mode « Test » chez Google, <strong>l'accès    se coupe tous les sept jours</strong> et il faut rebrancher. Faire passer le projet    « en production » règle ça, et c'est l'étape qui déclenche cette validation. 2. <strong>Vos utilisateurs ne verront jamais d'identifiants Google.</strong> Atlas portera    les siens sur le serveur (le code sait déjà les lire), et chacun n'aura que    le bouton, la page Google, le choix de son compte. Les trois cases du point 7    quittent l'écran (planche <code>appli/mon-agenda-simple.html</code>). Cela suppose    <strong>cette validation faite</strong> : sans elle, le raccordement reste limité aux    comptes inscrits à la main.</blockquote>
 <h3 id="pourquoi-cest-bloquant-et-pourquoi-ça-ne-se-voit-pas-venir">Pourquoi c'est bloquant, et pourquoi ça ne se voit pas venir</h3>
 <p>Le raccordement de l'agenda <strong>fonctionnera parfaitement</strong> pour vous et vos premiers artisans. Rien n'annoncera le mur.</p>
 <p>Tant que Google n'a pas validé l'application, l'accès est limité à <strong>une centaine de comptes que vous inscrivez à la main dans la console</strong>. Le cent-unième artisan verra un écran d'avertissement de Google, puis un refus. Ce n'est pas un défaut d'Atlas : c'est la règle de Google pour les applications non vérifiées qui demandent l'accès à un agenda.</p>
@@ -696,6 +734,78 @@
 <p><strong>Un relevé bancaire ne porte pas de numéro de facture.</strong> Il porte une date, un montant et un libellé écrit par la banque de votre client. Atlas ne pourra donc que <strong>proposer</strong> un rapprochement ; c'est vous qui confirmez. Quand le montant ne tombe pas juste — un acompte, deux factures réglées en un virement —, il le dira au lieu de deviner.</p>
 <h3 id="ce-que-ça-ne-bloque-pas">Ce que ça ne bloque pas</h3>
 <p><strong>Rien.</strong> La saisie à la main (« Noter un paiement ») se code sans attendre, et c'est elle qui reste quand l'accès bancaire dort. La banque n'est pas une condition : c'est un confort qui supprime un oubli.</p>
+<hr>
+<h2 id="14-demander-à-votre-comptable--ce-que-vaut-laccusé-de-réception-dune-facture">14. Demander à votre comptable : ce que vaut l’accusé de réception d’une facture</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Qui peut le faire : vous, avec votre comptable.</strong> Personne d’autre.</p>
+<h3 id="ce-qui-existe-depuis-le-9-septembre-2026">Ce qui existe depuis le 9 septembre 2026</h3>
+<p>Quand vous envoyez une facture, deux choses sont enregistrées toutes seules :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>la date d’ouverture</strong></td>
+<td>le jour et l’heure où votre client a ouvert le lien. Il n’a rien à faire pour ça, et il ne peut pas l’empêcher</td>
+</tr>
+<tr>
+<td><strong>la confirmation</strong></td>
+<td>s’il coche « J’ai bien reçu cette facture ». Un geste volontaire, daté</td>
+</tr>
+</tbody></table></div>
+<p>Vous les retrouvez dans <strong>Clients › Factures</strong>, et sur <strong>Terminés › En attente de paiement</strong>. Elles ne s’effacent jamais.</p>
+<h3 id="la-question">La question</h3>
+<p><strong>Devant un client qui ne paie pas et qui prétend n’avoir jamais reçu la facture, qu’est-ce que ces deux dates valent ?</strong></p>
+<p>Ce qu’on sait déjà, et qui n’a pas besoin d’un juriste :</p>
+<ul>
+<li><strong>ce n’est pas un recommandé.</strong> Ça ne remplace pas une mise en demeure ;</li>
+<li>ça remplace « je ne l’ai jamais reçue » par <strong>une date, une heure et un appareil</strong> — le même mécanisme qui sert déjà pour vos devis, et que votre page de confidentialité annonce (« cette trace vaut signature ») ;</li>
+<li>pour une relance amiable, ça ferme la discussion.</li>
+</ul>
+<p><strong>Ce qu’on ignore, et qu’il faut lui demander :</strong> est-ce que ça pèse devant un tribunal de commerce, et faut-il quand même doubler d’un recommandé au-delà d’un certain montant ou d’un certain retard.</p>
+<h3 id="ce-qui-a-déjà-été-écarté-et-par-vous">Ce qui a déjà été écarté, et par vous</h3>
+<p>Obliger le client à cocher <strong>pour pouvoir télécharger sa facture</strong>. Vous l’avez proposé puis écarté le même jour, et vous aviez raison : une facture se donne, et la retenir se retourne contre vous — s’il ne coche pas, il ne télécharge pas, et là il ne l’a vraiment pas reçue.</p>
+<p><strong>Si votre comptable dit que ça ne suffit pas</strong>, il n’y a rien à recoder : la trace reste utile, et c’est le recommandé qui s’ajoute à côté.</p>
+<hr>
+<h2 id="15-créer-le-compte-brevo-pour-que-le-code-de-vérification-parte">15. Créer le compte Brevo, pour que le code de vérification parte</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Depuis le 14 septembre 2026, un compte neuf ne peut pas entrer sans avoir recopié le code reçu à son adresse</strong> — c'est ce que vous avez demandé après être entré avec une adresse inventée. Ce code part par <strong>Brevo</strong>, que vous avez choisi : français, serveurs en France, gratuit jusqu'à 300 e-mails par jour, et une adresse vérifiée suffit — ~~pas de nom de domaine nécessaire~~ (faux, voir plus bas : il en faut un, et il sert aussi au point 16).</p>
+<h3 id="pourquoi-cest-bloquant">Pourquoi c'est bloquant</h3>
+<p>Tant que le compte Brevo n'est pas branché, <strong>personne ne peut créer de compte</strong> : le code ne part pas, et la porte reste fermée. Vos comptes actuels ne sont pas concernés — ils entrent comme avant.</p>
+<h3 id="ce-que-vous-faites-une-seule-fois-un-quart-dheure">Ce que vous faites, une seule fois (un quart d'heure)</h3>
+<ol>
+<li>Créer le compte sur brevo.com.</li>
+<li>Dans <strong>Expéditeurs</strong>, ajouter l'adresse qui enverra les codes — la vôtre suffit pour commencer — et la <strong>vérifier</strong> (Brevo vous envoie un e-mail).</li>
+<li>Dans <strong>Clés API</strong>, créer une clé, et la coller dans le fichier <code>.env.local</code> de votre espace, aux deux lignes qui l'attendent :</li>
+</ol>
+<p>``<code> BREVO_API_KEY=xkeysib-… COURRIEL_EXPEDITEUR=votre@adresse.fr </code>``</p>
+<ol>
+<li>Rallumer l'espace. Rien d'autre : dès que les deux lignes sont remplies, tout fonctionne.</li>
+</ol>
+<h3 id="ce-quil-faut-savoir">Ce qu'il faut savoir</h3>
+<ul>
+<li><strong>Les deux lignes sont nécessaires.</strong> Une clé sans expéditeur vérifié : Brevo refuse chaque envoi, et Atlas refuse de démarrer en le disant.</li>
+<li>Ce qui part chez Brevo : l'adresse du compte, un objet, six chiffres. Jamais une donnée de vos clients. Brevo est un sous-traitant de plus à faire figurer au point 2 — pour une seule donnée, l'adresse e-mail du titulaire du compte.</li>
+<li><strong>Un nom de domaine à vous est NÉCESSAIRE — constaté le 14 septembre 2026, le soir même.</strong> Le compte Brevo a été créé, l'adresse laposte.net vérifiée, la clé posée : Atlas a envoyé le code, Brevo l'a transmis, et iCloud l'a refusé — <em>« 554 5.7.1 rejected due to laposte.net's DMARC policy »</em>. La Poste interdit à tout autre serveur d'envoyer en son nom, et les grandes messageries appliquent la règle ; il en ira de même avec gmail, icloud ou orange en expéditeur. Il faut donc un domaine (~10 €/an, <code>.fr</code>), déclaré dans Brevo (<em>Domaines</em> → trois lignes à copier chez le vendeur), puis une adresse <code>contact@votre-domaine.fr</code> en expéditeur et dans <code>COURRIEL_EXPEDITEUR</code>. Rien à changer dans l'application. Ce domaine servira aussi au point 8.</li>
+</ul>
+<p>Le détail de ce qui a été fait : <a href="verification-email.md" target="_blank" rel="noopener"><code>verification-email.md</code></a>.</p>
+<hr>
+<h2 id="16-prendre-un-nom-de-domaine-pour-que-le-devis-parte-datlas-avec-un-lien-cliquable">16. Prendre un nom de domaine, pour que le devis parte d’Atlas avec un lien cliquable</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Constaté le 20 septembre 2026, capture à l’appui.</strong> Le devis envoyé par e-mail depuis votre téléphone (Outlook) arrive chez le client avec l’adresse de la page <strong>en texte, pas en lien</strong> : il doit la copier. Ce n’est pas le message — le lien y est seul sur sa ligne, propre — c’est le canal : un <code>mailto:</code> ne transporte que du texte, et Outlook ne transforme pas en lien un texte qu’il n’a pas vu taper. Le client sous Gmail ou Mail d’Apple, lui, voit un lien ; sous Outlook, non. Aucune façon d’écrire le message n’y change rien.</p>
+<h3 id="ce-qui-règle-le-problème-et-pourquoi-cest-bloquant">Ce qui règle le problème, et pourquoi c’est bloquant</h3>
+<p><strong>Que le devis parte d’Atlas lui-même</strong>, par Brevo, avec un vrai bouton dans le mail. C’est ce qui a été décidé le 20 septembre. Mais Brevo n’expédie qu’avec une adresse <strong>sur un nom de domaine à vous</strong> (point 15 : laposte.net, gmail, orange sont refusés par les messageries) — et vous n’en avez pas encore. Tant qu’elle n’existe pas, <strong>rien ne part d’Atlas</strong> : ni le code de vérification, ni le devis. Coder l’envoi avant serait livrer quelque chose que personne ne peut essayer.</p>
+<h3 id="ce-que-vous-faites-vous-seul-le-pouvez">Ce que vous faites (vous seul le pouvez)</h3>
+<ol>
+<li>Acheter un nom de domaine (~10 €/an, un <code>.fr</code> chez OVH, Gandi, Ionos…).</li>
+<li>Chez Brevo, <em>Domaines</em> → l’ajouter → copier les trois lignes chez le vendeur du domaine. Puis <em>Expéditeurs</em> → <code>contact@votre-domaine.fr</code>, vérifiée.</li>
+<li>Poser cette adresse dans <code>COURRIEL_EXPEDITEUR</code> de votre espace (à côté de <code>BREVO_API_KEY</code>), et rallumer l’espace.</li>
+<li>Me dire « l’adresse est là ».</li>
+</ol>
+<h3 id="ce-que-je-fais-ensuite-et-ce-qui-a-été-pensé-pour-votre-adresse-à-venir">Ce que je fais ensuite, et ce qui a été pensé pour votre adresse à venir</h3>
+<p>L’envoi du devis par Atlas : votre message actuel mot pour mot, le lien en bouton, <strong>votre nom d’entreprise</strong> en expéditeur, <strong>les réponses vers votre adresse</strong> telle qu’elle est en base. L’adresse expéditrice reste un réglage de l’espace, jamais écrite dans le code : le jour où elle change, seul le réglage change. Le SMS ne bouge pas.</p>
+<h3 id="en-attendant">En attendant</h3>
+<p>Par <strong>SMS</strong>, le lien arrive cliquable. Par e-mail, le client copie l’adresse.</p>
 </main>
 </body>
 </html>

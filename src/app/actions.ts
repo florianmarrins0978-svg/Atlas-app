@@ -1,13 +1,22 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { exigerEcran } from "@/server/garde-action";
+import {
+  exigerChantierDansSaPortee,
+  exigerEcran,
+  exigerEcritureSurLePlanning,
+  exigerFacturation,
+  exigerGestionDevis,
+} from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { logger } from "@/server/logger";
 import { marquerReponseVue } from "@/server/repositories/envois-devis";
+import { marquerReceptionVue } from "@/server/repositories/envois-factures";
 import { getOuCreerDevisBrouillon } from "@/server/repositories/devis";
 import { repousserRappelFacture, marquerRappelVu } from "@/server/repositories/rappels";
-import { estGenreAcquittable } from "@/lib/rappels";
+import { retirerContratDeLaListe } from "@/server/repositories/contrats-entretien";
+import { retirerChantierDeLaListe } from "@/server/repositories/chantiers";
+import { estGenreVu } from "@/lib/rappels";
 import { jourIso } from "@/lib/jour";
 
 /**
@@ -22,6 +31,23 @@ export async function marquerReponseVueAction(envoiId: string) {
   await exigerEcran(ctx, "/", "marquer une réponse comme vue");
   await marquerReponseVue(ctx, envoiId);
   revalidatePath("/");
+}
+
+/**
+ * Le patron a vu qu'un client confirmait avoir reçu sa facture.
+ *
+ * **La carte s'en va, la trace reste** — c'est toute la réponse à sa question
+ * du 9 septembre 2026 : *« en cas de litige, où est-ce que l'utilisateur va
+ * rechercher cette info ? »*. Une preuve qui disparaît avec l'alerte qui
+ * l'annonçait ne prouve rien. Les deux dates continuent de vivre sur
+ * « Terminés › En attente de paiement », d'où le second `revalidatePath`.
+ */
+export async function marquerReceptionVueAction(envoiId: string) {
+  const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/", "marquer une réception comme vue");
+  await marquerReceptionVue(ctx, envoiId);
+  revalidatePath("/");
+  revalidatePath("/termines/tva");
 }
 
 /**
@@ -51,7 +77,7 @@ export async function corrigerDevisAction(
 ): Promise<{ ok: true } | { ok: false; message: string }> {
   try {
     const ctx = await getCurrentCtx();
-    await exigerEcran(ctx, "/", "rouvrir un devis en correction");
+    await exigerGestionDevis(ctx, "rouvrir un devis en correction");
     await getOuCreerDevisBrouillon(ctx, chantierId);
     revalidatePath(`/chantiers/${chantierId}/devis-complet`);
     revalidatePath("/");
@@ -92,7 +118,7 @@ export async function repousserRappelFactureAction(
   factureId: string
 ): Promise<{ ok: true } | { ok: false; raison: string }> {
   const ctx = await getCurrentCtx();
-  await exigerEcran(ctx, "/", "repousser un rappel de facture");
+  await exigerFacturation(ctx, "repousser un rappel de facture");
   try {
     const fait = await repousserRappelFacture(ctx, factureId, jourIso(new Date()));
     return fait
@@ -123,7 +149,7 @@ export async function marquerRappelVuAction(
 ): Promise<{ ok: true } | { ok: false; raison: string }> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/", "marquer un rappel comme vu");
-  if (!estGenreAcquittable(genre)) {
+  if (!estGenreVu(genre)) {
     return { ok: false, raison: "Ce rappel ne peut pas être acquitté. Rechargez l'écran." };
   }
   try {
@@ -140,5 +166,57 @@ export async function marquerRappelVuAction(
     // à sa place, c'est réparer une panne imaginée (`AGENTS.md`).
     console.error("[accueil] rappel non marqué vu", erreur);
     return { ok: false, raison: "Impossible de ranger ce rappel pour l'instant. Réessayez." };
+  }
+}
+
+/**
+ * Retirer de « Vos chantiers » un contrat d'entretien. Envoyé, rien ne
+ * s'efface et son lien reste ouvert ; en brouillon ou refusé, il s'efface
+ * (`retirerContratDeLaListe`). La garde est celle qui le rédige.
+ */
+export async function retirerContratDeLaListeAction(
+  id: string
+): Promise<{ succes: true } | { succes: false; erreur: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "retirer un contrat d'entretien");
+  try {
+    if (!(await retirerContratDeLaListe(ctx, id))) {
+      return { succes: false, erreur: "Ce contrat n'existe plus." };
+    }
+    revalidatePath("/");
+    return { succes: true };
+  } catch (err) {
+    logger.error("Retrait du contrat de la liste impossible", {
+      id,
+      cause: err instanceof Error ? err.message : String(err),
+    });
+    return { succes: false, erreur: "Le contrat n'a pas pu être retiré." };
+  }
+}
+
+/**
+ * Retirer de « Vos chantiers » un chantier dont le devis attend le client,
+ * SANS le supprimer : sa règle du 29 septembre 2026, le lien envoyé au client
+ * doit continuer de s'ouvrir, et sa réponse doit revenir. Les gardes sont
+ * celles de la suppression qu'il remplace sur ces lignes-là.
+ */
+export async function retirerChantierDeLaListeAction(
+  chantierId: string
+): Promise<{ succes: true } | { succes: false; erreur: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "retirer ce chantier de la liste");
+  await exigerChantierDansSaPortee(ctx, chantierId, "retirer ce chantier de la liste");
+  try {
+    if (!(await retirerChantierDeLaListe(ctx, chantierId))) {
+      return { succes: false, erreur: "Ce chantier n'existe plus." };
+    }
+    revalidatePath("/");
+    return { succes: true };
+  } catch (err) {
+    logger.error("Retrait du chantier de la liste impossible", {
+      chantierId,
+      cause: err instanceof Error ? err.message : String(err),
+    });
+    return { succes: false, erreur: "Le chantier n'a pas pu être retiré." };
   }
 }

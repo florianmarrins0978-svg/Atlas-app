@@ -1,3 +1,5 @@
+import { recoitLesRappels, type DomaineDesRappels, type Role } from "./acces-roles";
+
 /**
  * Les trois rappels qu'Atlas peut vraiment tenir aujourd'hui.
  *
@@ -178,16 +180,13 @@ export function normaliserRappels(saisie: Partial<ReglagesRappels>): ReglagesRap
 }
 
 /**
- * L'échéance d'une facture — « A plus B », sa réponse du 16 août 2026.
+ * L'échéance d'une facture : son délai de paiement compté depuis sa date.
+ * `null` : aucun délai, l'échéance est la date même.
  *
- * **A :** le délai de paiement réglé dans « Devis & factures » court à partir de
- * l'envoi. C'est la date promise au client, celle qui définit le retard.
- * **B :** aucun délai réglé — il n'y a donc pas d'échéance, et on retombe sur le
- * jour de l'envoi. Le rappel paraîtra alors `factureImpayeeJours` après
- * l'envoi, comme les trois autres rappels comptent depuis leur événement.
- *
- * Rendre `null` aurait été le troisième choix, et il est écarté : un rappel qui
- * se tait faute de réglage est un rappel qu'on croit allumé.
+ * Elle s'IMPRIME sur la facture (`poserLaFactureBrouillon`), et c'est cette
+ * date imprimée que le rappel d'impayé relit depuis le 7 octobre 2026 : sa
+ * règle « A plus B » du 16 août recalculait ici l'échéance depuis le délai des
+ * Réglages, qui n'est pas celui de chaque facture.
  */
 export function echeanceFacture(envoyeeLe: Date, delaiPaiementJours: number | null): Date {
   if (delaiPaiementJours === null) return envoyeeLe;
@@ -217,12 +216,47 @@ export function rappelFactureDu(params: {
   return params.maintenant.getTime() >= reveil;
 }
 
-/** Les quatre rappels, nommés une seule fois — écran, dépôt et base s'accordent. */
+/** Les rappels, nommés une seule fois — écran, dépôt et base s'accordent. */
 export type GenreRappel =
   | "chantier-sans-devis"
   | "devis-sans-reponse"
   | "chantier-non-facture"
-  | "facture-impayee";
+  | "facture-impayee"
+  | "retour-pas-recu";
+
+/** De quoi parle chaque rappel : c'est ce qui dit à qui il revient. */
+export function domaineDuRappel(genre: GenreRappel): DomaineDesRappels {
+  switch (genre) {
+    case "chantier-sans-devis":
+    case "devis-sans-reponse":
+      return "devis";
+    case "chantier-non-facture":
+    case "facture-impayee":
+      return "facture";
+    case "retour-pas-recu":
+      return "retour";
+  }
+}
+
+/**
+ * Les réglages, vus par une personne : un rappel qui ne lui revient pas est
+ * ÉTEINT pour elle (sa règle du 27 septembre 2026, `recoitLesRappels`).
+ *
+ * **Éteint, et non filtré après coup** : un rappel éteint ne coûte aucune
+ * requête (`rappelsEnCours`), et il ne faut pas qu'une requête jouée puis jetée
+ * passe un jour pour la preuve qu'il est envoyé. Un rôle inconnu n'en reçoit
+ * aucun : une adhésion retirée entre deux requêtes ne lit plus rien.
+ */
+export function reglagesPourLeRole(reglages: ReglagesRappels, role: Role | null): ReglagesRappels {
+  const recoit = (genre: GenreRappel) => role !== null && recoitLesRappels(role, domaineDuRappel(genre));
+  return {
+    ...reglages,
+    chantierSansDevisJours: recoit("chantier-sans-devis") ? reglages.chantierSansDevisJours : null,
+    devisSansReponseJours: recoit("devis-sans-reponse") ? reglages.devisSansReponseJours : null,
+    chantierNonFactureJours: recoit("chantier-non-facture") ? reglages.chantierNonFactureJours : null,
+    factureImpayeeJours: recoit("facture-impayee") ? reglages.factureImpayeeJours : null,
+  };
+}
 
 /** Les trois qui s'acquittent par « J'ai vu ». L'impayé a son propre moteur. */
 export const GENRES_ACQUITTABLES = [
@@ -233,8 +267,21 @@ export const GENRES_ACQUITTABLES = [
 
 export type GenreAcquittable = (typeof GENRES_ACQUITTABLES)[number];
 
-export function estGenreAcquittable(valeur: unknown): valeur is GenreAcquittable {
-  return GENRES_ACQUITTABLES.includes(valeur as GenreAcquittable);
+/**
+ * Ceux qui se rangent d'un « J'ai vu » écrit dans `rappels_vus` : les trois
+ * d'avant, plus « Retour pas reçu » (26 septembre 2026, migration 0104).
+ *
+ * **Le retour n'est pas dans `GENRES_ACQUITTABLES`**, et c'est voulu : ceux-là
+ * se taisent le délai réglé dans « Notifications », puis reviennent. Le retour
+ * n'a pas de délai réglé ; son « J'ai vu » fait taire les jours d'avant, et un
+ * soir manqué plus tard revient (`retoursPasRecus`).
+ */
+export const GENRES_VUS = [...GENRES_ACQUITTABLES, "retour-pas-recu"] as const;
+
+export type GenreVu = (typeof GENRES_VUS)[number];
+
+export function estGenreVu(valeur: unknown): valeur is GenreVu {
+  return GENRES_VUS.includes(valeur as GenreVu);
 }
 
 /**

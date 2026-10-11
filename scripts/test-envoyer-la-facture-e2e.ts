@@ -3,6 +3,7 @@ import { devices } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
 
 /**
  * Envoyer la facture en un seul geste.
@@ -30,7 +31,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
  * problème.
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let reussis = 0;
 let echecs = 0;
@@ -67,13 +68,14 @@ async function main() {
   // La création passe par l'aide PARTAGÉE : le bouton a déjà changé de nom une
   // fois (`action-dicter` → `action-ecrire`), et une suite qui le recopie
   // rougit alors sur la création au lieu de ce qu'elle éprouve.
+  // **L'adresse du chantier est une mention de la facture** (242 nonies A,
+  // I-2°) : sans elle, l'émission refuse depuis le 3 octobre 2026.
+  await page.fill('input[placeholder="12 rue des Lilas, Nantes"]', "10 rue des Lilas, Nantes");
   const chantierId = await creerPuisFiche(page, BASE);
 
   // Une ligne de prix, sans quoi la facture serait à zéro euro.
   await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.waitForSelector("text=Total TTC", { timeout: 60_000 });
-  await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
-  await page.waitForTimeout(900);
   await page.getByLabel("Description 1").fill("Taille d'une haie de laurier");
   await page.getByLabel("Prix unitaire 1").fill("850");
   await page.getByLabel("Description 1").click();
@@ -92,7 +94,7 @@ async function main() {
   // §5 bis, et le repère `data-atlas="invite-dates"` existe exactement pour ça.
   await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 30_000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForURL(/localhost:3000\/$/, { timeout: 30_000 });
+  await page.waitForURL(ACCUEIL_EXACT, { timeout: 30_000 });
 
   await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
   // « Le chantier est réalisé ? » → la facture se bâtit depuis le devis. Visé
@@ -120,12 +122,46 @@ async function main() {
 
   await cas("l'encart du canal est là, à la forme de la fiche client", async () => {
     const capsules = page.locator('[data-atlas^="canal-"]');
-    assert.equal(await capsules.count(), 2, "les deux capsules SMS / e-mail ne sont pas toutes deux à l'écran");
-    // La MÊME capsule que la fiche client : `aria-pressed` la distingue d'un
-    // bouton ordinaire, et c'est ce que porte `ChoixCanal`.
+    assert.equal(await capsules.count(), 2, "les deux boutons SMS / e-mail ne sont pas tous deux à l'écran");
+    // `aria-pressed` les distingue d'un bouton ordinaire, et c'est ce que porte
+    // `ChoixCanal`.
     assert.ok(
       await capsules.first().getAttribute("aria-pressed"),
-      "la capsule n'annonce pas son état : ce n'est pas la capsule de la fiche client"
+      "le bouton n'annonce pas son état : ce n'est pas celui de la fiche client"
+    );
+
+    // ─── ET LA FORME SE MESURE — 9 septembre 2026 ────────────────────────
+    //
+    // **Ce contrôle disait « à la forme de la fiche client » sans jamais la
+    // regarder**, et les deux écrans ont divergé pendant cinq jours sous ses
+    // yeux : le 4 septembre, la fiche client est passée aux capsules à la ligne
+    // « Envoi » — deux mots, un trait d'or sous celui qui est retenu — pendant
+    // que la facture gardait les pastilles. C'est LE PATRON qui l'a vu, sur une
+    // capture : *« dans la fiche client c'est un trait en dessous, pas une
+    // bulle »*. Aucun test ne pouvait le voir, celui-ci compris.
+    //
+    // On mesure donc ce qui les sépare : le réglage n'a AUCUN fond et porte son
+    // trait sous le mot ; la pastille a un fond et un liseré tout autour.
+    const vu = await page.evaluate(() => {
+      const actif = [...document.querySelectorAll('[data-atlas^="canal-"]')].find(
+        (b) => b.getAttribute("aria-pressed") === "true"
+      ) as HTMLElement | undefined;
+      if (!actif) return null;
+      const s = getComputedStyle(actif);
+      return { fond: s.backgroundColor, ombre: s.boxShadow, hauteur: Math.round(actif.getBoundingClientRect().height) };
+    });
+    assert.ok(vu, "aucun canal n'est marqué comme retenu : il n'y a rien à mesurer");
+    // Un contrôle qui mesure zéro ne mesure rien (`CLAUDE.md` §5).
+    assert.ok(vu.hauteur >= 30, `le bouton du canal mesure ${vu.hauteur} px : la mise en page n'est pas appliquée`);
+    assert.match(
+      vu.fond,
+      /rgba\(0, 0, 0, 0\)|transparent/,
+      `le canal retenu porte un fond (${vu.fond}) : c'est la pastille, pas le réglage de la fiche client`
+    );
+    assert.match(
+      vu.ombre,
+      /inset/,
+      `le canal retenu ne porte pas son trait d'or sous le mot : ${vu.ombre}`
     );
   });
 

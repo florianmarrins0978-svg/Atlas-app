@@ -17,7 +17,7 @@ import { BORNES, type ConditionsLues } from "@/lib/conditions-documents";
  *   · **le logo.** Le modèle décrit une image, il ne la découpe pas : on ne
  *     peut pas en tirer un fichier PNG propre. Le logo reste posé à la main.
  *   · **une police non reconnue.** On ne pose une typographie que si le modèle
- *     nomme une famille que le PDF sait embarquer (les neuf de la liste). « Une
+ *     nomme une famille que le PDF sait embarquer (les cinq de la liste). « Une
  *     serif quelconque » n'est pas une source : la deviner poserait une police
  *     qui n'est pas la sienne, et il ne le verrait qu'à l'impression.
  *
@@ -52,7 +52,7 @@ export type ResultatAllure =
   | { ok: true; allure: AllureLue }
   | { ok: false; raison: string };
 
-const SYSTEME = `Tu regardes la photo d'un devis ou d'une facture d'artisan français, et tu en décris l'ALLURE — pas le contenu.
+const SYSTEME = `Tu regardes la photo d'un devis ou d'une facture d'artisan français, et tu en décris l'ALLURE, pas le contenu.
 Tu réponds UNIQUEMENT par un objet JSON, sans phrase avant ni après, sans balises de code.
 Champs attendus :
 - fond (string|null) : la couleur de fond de la page, au format "#rrggbb". Le blanc pur vaut "#ffffff".
@@ -138,7 +138,11 @@ export function lireReponseAllure(texte: string): ResultatAllure {
   if (typographie === null) {
     // Reconnue ou non, on le dit : sa police est peut-être hors de la liste des
     // neuf, et alors elle reste à choisir à la main plutôt qu'approchée.
-    reserves.push("la police n’a pas été reconnue parmi les neuf disponibles — à choisir à la main");
+    // **Cinq depuis le 7 septembre 2026**, et le compte se dit : quatre
+    // familles ont été retirées à sa demande, et un devis photographié en
+    // Playfair tombe maintenant ici. On le DIT plutôt que d’approcher : lui
+    // poser la plus ressemblante repeindrait ses documents sur une photo.
+    reserves.push("la police n’a pas été reconnue parmi les cinq disponibles, à choisir à la main");
   }
 
   const c = (brut.conditions ?? {}) as Record<string, unknown>;
@@ -158,7 +162,7 @@ export function lireReponseAllure(texte: string): ResultatAllure {
 
   // **Le logo se dit toujours**, parce qu'on ne sait pas le reprendre d'une
   // photo : il reste à poser à la main, et il ne faut pas le lui laisser croire.
-  reserves.push("le logo n’est pas repris d’une photo — ajoutez-le à la main");
+  reserves.push("le logo n’est pas repris d’une photo, ajoutez-le à la main");
 
   return {
     ok: true,
@@ -167,7 +171,7 @@ export function lireReponseAllure(texte: string): ResultatAllure {
       accent,
       typographie,
       conditions,
-      reserve: reserves.length === 0 ? null : `${reserves.join(" · ")}.`,
+      reserve: reserves.length === 0 ? null : `${reserves.join(", ")}.`,
     },
   };
 }

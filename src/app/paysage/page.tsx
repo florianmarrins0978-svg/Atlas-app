@@ -38,7 +38,7 @@ import { colors, font, libelleCaps } from "@/lib/design-tokens";
  * d'Atlas, et le disait. Ce commentaire décrivait donc un monde disparu : il est
  * corrigé dans le même commit que le code, comme le dépôt l'exige.
  */
-export const metadata = { title: "Paysage — Atlas" };
+export const metadata = { title: "Paysage, Atlas" };
 
 
 type Outil = {
@@ -46,8 +46,6 @@ type Outil = {
   dit: string;
   /** `null` = pas encore fait. Alors AUCUN lien, et l'écran l'annonce. */
   href: string | null;
-  /** Hors de l'application : l'écran le dit, et le lien s'ouvre à côté. */
-  dehors?: boolean;
 };
 
 const OUTILS: Outil[] = [
@@ -55,12 +53,10 @@ const OUTILS: Outil[] = [
     // **DANS l'application depuis le 20 août 2026** — *« code le tout dans
     // l'appli »*. Il ouvrait jusque-là une page publiée à côté, hors d'Atlas.
     nom: "Plan d'arrosage automatique",
-    dit: "Le piquage, le croquis photographié — et le plan sort.",
+    dit: "Le piquage, le croquis photographié, et le plan sort.",
     href: "/paysage/arrosage",
   },
   {
-    // **Le premier outil qui vit DANS Atlas.** L'arrosage est une page publiée
-    // à part ; celui-ci s'ouvre ici, avec ses clients et son modèle de fiche.
     // Sa demande du 17 août : *« la ranger comme étant un outil dans la case
     // paysage à côté de arrosage automatique et terrasse bois »*.
     nom: "Fiche de chantier",
@@ -82,9 +78,17 @@ const OUTILS: Outil[] = [
     dit: "Photographier une anomalie, et savoir quoi faire.",
     href: "/paysage/diagnostic",
   },
+  // Sa décision du 21 septembre 2026, après avoir vu Terminés : *« il faut créer
+  // une catégorie dans Paysage »*. La fiche elle-même se remplit depuis le
+  // planning ; ici vivent celles qui sont signées, gardées deux ans.
+  {
+    nom: "Fiches de sécurité",
+    dit: "Avant un chantier d'élagage ou d'abattage. Gardées deux ans.",
+    href: "/paysage/fiches-securite",
+  },
   {
     nom: "Terrasse bois",
-    dit: "Lambourdes, plots, visserie — le même principe, à partir des mesures.",
+    dit: "Lambourdes, plots, visserie : le même principe, à partir des mesures.",
     href: null,
   },
 ];
@@ -132,13 +136,6 @@ function LigneOutil({ outil, derniere }: { outil: Outil; derniere: boolean }) {
         <span className={libelleCaps} style={{ color: colors.or, opacity: 0.9, flex: "none" }}>
           Bientôt
         </span>
-      ) : outil.dehors ? (
-        // **« À l'essai » plutôt qu'un chevron.** Le chevron dit « ça s'ouvre
-        // ici » ; cette page-là s'ouvre AILLEURS, et elle n'est pas encore un
-        // écran d'Atlas. Le mot vaut mieux qu'un signe qui mentirait.
-        <span className={libelleCaps} style={{ color: colors.or, opacity: 0.9, flex: "none" }}>
-          À l&apos;essai
-        </span>
       ) : (
         <span
           aria-hidden="true"
@@ -165,20 +162,6 @@ function LigneOutil({ outil, derniere }: { outil: Outil; derniere: boolean }) {
       <div className={classe} style={style}>
         {contenu}
       </div>
-    );
-  }
-
-  if (outil.dehors) {
-    return (
-      <a
-        href={outil.href!}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={classe}
-        style={style}
-      >
-        {contenu}
-      </a>
     );
   }
 

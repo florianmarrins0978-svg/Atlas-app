@@ -2,6 +2,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { accueilDuRole, estRole } from "@/lib/acces-roles";
 import { db } from "./db/client";
 import { clesAppareil, membresEntreprise, users } from "./db/schema";
+import { verificationEnAttente } from "./repositories/verification-email";
 
 /**
  * OÙ L'ON ENTRE, UNE FOIS CONNECTÉ — et ce n'est pas le même écran pour tous.
@@ -55,6 +56,11 @@ import { clesAppareil, membresEntreprise, users } from "./db/schema";
 /** Le rôle d'un compte, lu sans passer par la session. `null` si rien n'est sûr. */
 async function accueilPourUtilisateur(utilisateurId: string | undefined): Promise<string> {
   if (!utilisateurId) return "/";
+  // **Le code avant tout rôle** — 14 septembre 2026. Un compte créé par la
+  // porte qui revient se connecter sans avoir entré son code repart à la case
+  // du code. La garde du layout ne se rejoue pas sur la navigation qui suit
+  // une action serveur : c'est ici, à la destination, que ça se décide.
+  if (await verificationEnAttente(utilisateurId)) return "/verifier-email";
 
   return db.transaction(async (tx) => {
     // La politique d'isolation de `membres_entreprise` exige un contexte. Ici

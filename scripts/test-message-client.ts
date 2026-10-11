@@ -4,11 +4,12 @@ import {
   composerMessageClient,
   composerMessageEntretien,
   composerMessageFacture,
+  composerMessageAvoir,
   lienTransmission,
   refusDuMessage,
   rendreMessage,
   MESSAGE_MAX,
-  MESSAGE_PAR_DEFAUT,
+  MESSAGES_PAR_DEFAUT,
 } from "../src/lib/message-client";
 import { CIVILITE_PAR_DEFAUT, avecCivilite } from "../src/lib/civilite";
 
@@ -31,33 +32,35 @@ function test(nom: string, fn: () => void) {
 }
 
 const LIEN = "https://exemple.test/devis/jeton-abc";
+/** Un envoi ordinaire : le lien meurt le vendredi 13 novembre 2026, la case « autre date » cochée. */
+const ENVOI = { expireLe: "2026-11-13", autreDateAutorisee: true };
 
 test("Le message porte le lien du devis, en entier", () => {
-  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN });
+  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN, envoi: ENVOI });
   assert.ok(m.corps.includes(LIEN), "sans le lien, le message ne sert à rien");
 });
 
 test("Le message nomme le client et signe l'entreprise", () => {
-  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN });
+  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN, envoi: ENVOI });
   assert.ok(m.corps.startsWith("Bonjour M. Bernard,"));
   assert.ok(m.corps.trimEnd().endsWith("Eden Nature"));
   assert.ok(m.objet.includes("Eden Nature"));
 });
 
 test("Client sans nom : le message reste correct, jamais « Bonjour ,  »", () => {
-  const m = composerMessageClient({ clientNom: "   ", entrepriseNom: "Eden Nature", lien: LIEN });
+  const m = composerMessageClient({ clientNom: "   ", entrepriseNom: "Eden Nature", lien: LIEN, envoi: ENVOI });
   assert.ok(m.corps.startsWith("Bonjour,"), "un salut bancal se remarque plus qu'il ne dérange");
 });
 
 // Le prix figure dans le devis. Le répéter ici créerait deux sources : le jour
 // où le devis est repris, le message dirait encore l'ancien montant.
 test("Aucun montant n'est répété dans le message", () => {
-  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN });
+  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN, envoi: ENVOI });
   assert.equal(/\d+[.,]\d{2}\s*€|\d+\s*€/.test(m.corps), false);
 });
 
 test("E-mail : objet et corps sont transmis à l'application du patron", () => {
-  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN });
+  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN, envoi: ENVOI });
   const url = lienTransmission({ canal: "email", destinataire: "client@exemple.fr", message: m });
   assert.ok(url.startsWith("mailto:"));
   assert.ok(url.includes(encodeURIComponent("client@exemple.fr")));
@@ -66,11 +69,66 @@ test("E-mail : objet et corps sont transmis à l'application du patron", () => {
 });
 
 test("SMS : le corps passe, et la forme accepte iOS comme Android", () => {
-  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN });
+  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN, envoi: ENVOI });
   const url = lienTransmission({ canal: "sms", destinataire: "0612345678", message: m });
   assert.ok(url.startsWith("sms:0612345678"));
   assert.ok(url.includes("?&body="), "sans `?&`, iOS ouvre Messages mais laisse le texte de côté");
   assert.ok(url.includes(encodeURIComponent(LIEN)));
+});
+
+// ── Sa demande du 29 septembre 2026 ────────────────────────────────────────
+// *« vérifie vraiment que si je décoche la possibilité de laisser le client me
+// proposer une date, le message qu'il voit ne contient pas la mention »* : il
+// la contenait. Puis la durée du lien, avec sa date, et ce qu'il faudra faire
+// après (planche `appli/lien-valable-45-jours.html`, A retenue).
+const AUTRE_DATE = "Et si aucune des dates proposées ne vous convient, vous pouvez en proposer une autre.";
+
+test("case « autre date » cochée : la phrase est là, à sa place", () => {
+  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN, envoi: ENVOI });
+  assert.ok(m.corps.includes(`choisir votre date d'intervention. ${AUTRE_DATE} Tout se fait`), m.corps);
+});
+
+test("case « autre date » décochée : le client ne lit nulle part qu'il peut proposer une date", () => {
+  const m = composerMessageClient({
+    clientNom: "M. Bernard",
+    entrepriseNom: "Eden Nature",
+    lien: LIEN,
+    envoi: { ...ENVOI, autreDateAutorisee: false },
+  });
+  assert.ok(!m.corps.includes("aucune des dates"), m.corps);
+  // Et la phrase qui l'entoure ne garde ni trou ni double espace.
+  assert.ok(m.corps.includes("choisir votre date d'intervention. Tout se fait sur cette page :"), m.corps);
+});
+
+test("la durée du lien, sa date, et qu'il faudra appeler, sous le lien", () => {
+  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN, envoi: ENVOI });
+  const attendu =
+    "Ce lien est valable 45 jours, jusqu'au vendredi 13 novembre. " +
+    "Passé ce délai, vous ne pourrez plus répondre depuis ce lien : il faudra appeler Eden Nature.";
+  assert.ok(m.corps.includes(`${LIEN}\n\n${attendu}\n\nBien à vous,`), m.corps);
+});
+
+test("la durée du lien ne se retire pas d'un message de devis, et le refus le dit", () => {
+  const sansDuree = MESSAGES_PAR_DEFAUT.devis.replace("[validite]", "");
+  const refus = refusDuMessage(sansDuree, "devis");
+  assert.ok(refus && /durée du lien/i.test(refus), `refus : « ${refus} »`);
+  // Une facture n'en porte pas : elle n'est pas refusée pour ça.
+  assert.equal(refusDuMessage(MESSAGES_PAR_DEFAUT.facture, "facture"), null);
+});
+
+test("SON message garde les deux morceaux d'Atlas là où il les a posés", () => {
+  const modele = "Bonjour [client], votre [document] est prêt.[autre-date]\n\n[lien]\n\n[validite]\n\n[entreprise]";
+  const coche = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN, envoi: ENVOI, modele });
+  assert.ok(coche.corps.includes(`est prêt. ${AUTRE_DATE}`));
+  assert.ok(coche.corps.includes("jusqu'au vendredi 13 novembre"));
+  const decoche = composerMessageClient({
+    clientNom: "M. Bernard",
+    entrepriseNom: "Eden Nature",
+    lien: LIEN,
+    envoi: { ...ENVOI, autreDateAutorisee: false },
+    modele,
+  });
+  assert.ok(decoche.corps.includes("est prêt.\n\n"), decoche.corps);
 });
 
 // Le numéro tel qu'il est RÉELLEMENT saisi sur la fiche du client — avec ses
@@ -78,7 +136,7 @@ test("SMS : le corps passe, et la forme accepte iOS comme Android", () => {
 // qu'un numéro collé « 0612345678 » reste vert sur un défaut que le patron
 // rencontre à chaque envoi.
 test("Un numéro espacé sur la fiche ouvre quand même le bon destinataire", () => {
-  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN });
+  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN, envoi: ENVOI });
   const url = lienTransmission({ canal: "sms", destinataire: "06 12 34 56 78", message: m });
   assert.ok(
     url.startsWith("sms:0612345678?"),
@@ -87,7 +145,7 @@ test("Un numéro espacé sur la fiche ouvre quand même le bon destinataire", ()
 });
 
 test("Un numéro pointé ou tireté est accepté de la même façon", () => {
-  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN });
+  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN, envoi: ENVOI });
   assert.ok(
     lienTransmission({ canal: "sms", destinataire: "06.12.34.56.78", message: m }).startsWith(
       "sms:0612345678?"
@@ -103,7 +161,7 @@ test("Un numéro pointé ou tireté est accepté de la même façon", () => {
 // Ne pas s'ouvrir du tout serait pire : le patron connaît son client et peut
 // compléter le destinataire lui-même.
 test("Destinataire absent : le message s'ouvre quand même", () => {
-  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN });
+  const m = composerMessageClient({ clientNom: "M. Bernard", entrepriseNom: "Eden Nature", lien: LIEN, envoi: ENVOI });
   assert.ok(lienTransmission({ canal: "email", destinataire: null, message: m }).startsWith("mailto:?"));
   assert.ok(lienTransmission({ canal: "sms", destinataire: "", message: m }).startsWith("sms:?"));
 });
@@ -120,7 +178,7 @@ test("Destinataire absent : le message s'ouvre quand même", () => {
 // il n'a aucune suite de rattrapage.
 
 test("Le message aborde le client par sa civilité", () => {
-  const m = composerMessageClient({ clientNom: "Martins", entrepriseNom: "Atelier Démo", lien: LIEN });
+  const m = composerMessageClient({ clientNom: "Martins", entrepriseNom: "Atelier Démo", lien: LIEN, envoi: ENVOI });
   assert.ok(
     m.corps.startsWith(`Bonjour ${CIVILITE_PAR_DEFAUT} Martins,`),
     `le message s'ouvre sur « ${m.corps.split("\n")[0]} »`
@@ -130,7 +188,7 @@ test("Le message aborde le client par sa civilité", () => {
 test("Une civilité déjà saisie n'est jamais doublée dans le message", () => {
   // « Bonjour Mr. Mme Roux » serait pire que pas de civilité du tout.
   for (const nom of ["Mme Roux", "M. Bernard", "SARL Untel"]) {
-    const m = composerMessageClient({ clientNom: nom, entrepriseNom: "Atelier Démo", lien: LIEN });
+    const m = composerMessageClient({ clientNom: nom, entrepriseNom: "Atelier Démo", lien: LIEN, envoi: ENVOI });
     assert.ok(m.corps.startsWith(`Bonjour ${nom},`), `« ${m.corps.split("\n")[0]} »`);
   }
 });
@@ -148,14 +206,19 @@ test("La facture aborde le client de la même façon que le devis", () => {
 });
 
 test("La date se propose AU PRÉSENT : « vous pouvez », jamais « vous pourrez »", () => {
-  const m = composerMessageClient({ clientNom: "Martins", entrepriseNom: "Atelier Démo", lien: LIEN });
+  const m = composerMessageClient({ clientNom: "Martins", entrepriseNom: "Atelier Démo", lien: LIEN, envoi: ENVOI });
   assert.ok(
     m.corps.includes("vous pouvez en proposer une autre"),
     "la phrase des dates ne dit plus ce que le patron a demandé"
   );
   // Le futur repoussait le geste à plus tard, comme s'il fallait d'abord faire
   // autre chose. Il ne doit pas revenir par une reformulation.
-  assert.ok(!m.corps.includes("pourrez"), "le futur est revenu dans le message");
+  //
+  // **Dans la phrase qui PROPOSE, et seulement là** (29 septembre 2026) : la
+  // ligne de la durée du lien dit, elle, ce qui arrivera APRÈS le délai (« vous
+  // ne pourrez plus répondre »), et c'est sa phrase à lui.
+  const proposition = m.corps.slice(0, m.corps.indexOf(LIEN));
+  assert.ok(!proposition.includes("pourrez"), "le futur est revenu dans la phrase qui propose la date");
 });
 
 // ═══ SON MESSAGE, ÉCRIT PAR LUI — sa décision du 23 août 2026 ═══════════
@@ -167,18 +230,23 @@ test("le lien est OBLIGATOIRE : un message sans lui est refusé", () => {
   // **Sa règle, et c'est un refus, pas un avertissement.** Sans lien, le
   // message part et le client ne peut rien ouvrir : le patron ne l'apprend
   // qu'au téléphone, une semaine plus tard.
-  const refus = refusDuMessage("Bonjour [client], voici [document]. [entreprise]");
+  const refus = refusDuMessage("Bonjour [client], voici votre [document]. [entreprise]", "facture");
   assert.ok(refus, "un message sans lien a été accepté");
   assert.ok(/lien/i.test(refus), `le refus ne nomme pas le lien : « ${refus} »`);
-  assert.equal(refusDuMessage(MESSAGE_PAR_DEFAUT), null, "le message d'Atlas est refusé");
+  // Les TROIS messages d'Atlas doivent passer : depuis le 7 septembre 2026 il y
+  // en a un par document, et un refus qui n'en verrait qu'un laisserait les deux
+  // autres se casser sans bruit.
+  for (const [genre, modele] of Object.entries(MESSAGES_PAR_DEFAUT)) {
+    assert.equal(refusDuMessage(modele, genre as keyof typeof MESSAGES_PAR_DEFAUT), null, `le message d'Atlas est refusé : ${genre}`);
+  }
 });
 
 test("un message vide ou démesuré est refusé, et le dit", () => {
-  assert.ok(refusDuMessage("   "), "un message vide a été accepté");
+  assert.ok(refusDuMessage("   ", "devis"), "un message vide a été accepté");
   // Tronquer serait pire que refuser : un message coupé part QUAND MÊME, et
   // c'est le client qui lit la moitié d'une phrase.
   const trop = "[lien] " + "b".repeat(MESSAGE_MAX);
-  const refus = refusDuMessage(trop);
+  const refus = refusDuMessage(trop, "facture");
   assert.ok(refus, "un message de plus de 2 000 caractères a été accepté");
   assert.ok(String(MESSAGE_MAX) === "2000" && refus.includes("2000"),
     `le refus ne dit pas la borne : « ${refus} »`);
@@ -188,7 +256,7 @@ test("UN SEUL message, et chaque document dit ce qu'il doit dire", () => {
   // **Le cœur de sa « façon 1 ».** Le même gabarit sert les trois envois ; ce
   // qui les distingue vient d'Atlas, à l'endroit où il a posé `[document]`.
   const commun = { clientNom: "Larousse", entrepriseNom: "Eden Nature", lien: LIEN };
-  const devis = composerMessageClient(commun).corps;
+  const devis = composerMessageClient({ ...commun, envoi: ENVOI }).corps;
   const facture = composerMessageFacture({
     ...commun,
     numeroFacture: "F2026-0008",
@@ -212,25 +280,34 @@ test("UN SEUL message, et chaque document dit ce qu'il doit dire", () => {
   assert.ok(/votre facture F2026-0008/i.test(facture), "la facture ne porte pas son numéro");
   assert.ok(/à régler avant le 21 septembre/i.test(facture),
     "l'échéance manque : c'est précisément ce qu'il a refusé de perdre");
-  assert.ok(/compte rendu de mon passage/i.test(rapport), "le compte rendu ne se nomme pas");
+  assert.ok(/retour d.intervention après le passage/i.test(rapport), "le retour d'intervention ne se nomme pas");
 
   // **Et aucun ne parle du document d'un autre.** Une facture qui annonce un
   // devis, c'est le client qui rappelle pour comprendre.
   assert.ok(!/votre devis/i.test(facture), "la facture parle d'un devis");
-  assert.ok(!/votre devis|facture/i.test(rapport), "le compte rendu parle d'un autre document");
+  assert.ok(!/votre devis|facture/i.test(rapport), "le retour d'intervention parle d'un autre document");
 });
 
 test("SON message remplace celui d'Atlas, partout", () => {
   const sien = "Salut [client] !\n[document]\n[lien]\nÀ bientôt, [entreprise]";
   const commun = { clientNom: "Larousse", entrepriseNom: "Eden Nature", lien: LIEN, modele: sien };
-  const devis = composerMessageClient(commun).corps;
+  const devis = composerMessageClient({ ...commun, envoi: ENVOI }).corps;
   const facture = composerMessageFacture({ ...commun, numeroFacture: "F2026-0008" }).corps;
 
   assert.ok(devis.startsWith("Salut Mr. Larousse !"), `son message n'est pas servi : ${devis.slice(0, 40)}`);
   assert.ok(devis.includes("À bientôt, Eden Nature"), "sa signature n'est pas servie");
-  // Le sien sert AUSSI la facture : c'est « un message pour tous ».
-  assert.ok(facture.startsWith("Salut Mr. Larousse !"), "la facture garde l'ancien message");
-  assert.ok(/votre facture F2026-0008/i.test(facture), "la phrase du document n'est plus posée");
+
+  // **CE CAS DÉFENDAIT « UN MESSAGE POUR TOUS », ET CETTE RÈGLE EST TOMBÉE.**
+  // Elle datait du 23 août 2026 ; le patron l'a renversée le 7 septembre — trois
+  // messages, un par document — et chaque envoi lit désormais SA colonne. Ce
+  // qui reste vrai, et que ce cas vérifie maintenant : le modèle qu'on donne
+  // est bien celui qui sert, et le mot du document s'y accorde tout seul.
+  assert.ok(facture.startsWith("Salut Mr. Larousse !"), "le modèle donné n'est pas servi");
+  assert.ok(/\nfacture\n/.test(facture), `le mot du document ne s'accorde pas : ${facture}`);
+  // **On vise la LIGNE du document, pas le mot « devis » n'importe où :**
+  // l'adresse d'exemple en contient un, et un contrôle qui le lirait accuserait
+  // le lien à la place du modèle.
+  assert.ok(!/\ndevis\n/.test(facture), "la facture pose encore le mot du devis");
   // Et une pastille inconnue reste en clair plutôt que de disparaître : il la
   // voit à l'aperçu et se corrige, au lieu de perdre un mot sans savoir où.
   assert.ok(
@@ -245,7 +322,7 @@ test("un message vide RETOMBE sur celui d'Atlas, il ne part pas nu", () => {
   // Il efface tout, enregistre, et part en chantier : le client doit recevoir
   // un message, pas une ligne vide.
   const corps = composerMessageClient({
-    clientNom: "Larousse", entrepriseNom: "Eden Nature", lien: LIEN, modele: "   ",
+    clientNom: "Larousse", entrepriseNom: "Eden Nature", lien: LIEN, modele: "   ", envoi: ENVOI,
   }).corps;
   assert.ok(corps.includes(LIEN) && corps.includes("Bonjour"), `message nu : « ${corps} »`);
 });
@@ -280,6 +357,99 @@ test("Le canal se DÉDUIT, il ne s'invente pas", () => {
     "sans canal convenu, l'application choisit encore à sa place"
   );
   assert.equal(canalPourJoindre({ telephone: null, email: null }), null);
+});
+
+// ═══ TROIS MESSAGES, UN PAR DOCUMENT — sa décision du 7 septembre 2026 ═══
+//
+// Ces cas défendent ce que le lot a changé, et rien d'autre : le mot juste par
+// document, l'échéance qui emporte ses mots, et le refus d'un message qui ne
+// nomme plus ce qu'il transmet.
+
+test("chaque document reçoit SON message, avec le mot juste", () => {
+  const devis = composerMessageClient({
+    clientNom: "Martins",
+    entrepriseNom: "Eden Nature",
+    lien: "https://exemple/devis/1",
+    envoi: ENVOI,
+  }).corps;
+  const facture = composerMessageFacture({
+    clientNom: "Martins",
+    entrepriseNom: "Eden Nature",
+    numeroFacture: "F2026-0008",
+    echeanceLisible: "21 septembre",
+    lien: "https://exemple/facture/1",
+  }).corps;
+  const passage = composerMessageEntretien({
+    clientNom: "Martins",
+    entrepriseNom: "Eden Nature",
+    lien: "https://exemple/passage/1",
+  }).corps;
+
+  // **Le piège que ce lot devait fermer :** un seul modèle pour trois envois
+  // faisait dire à la facture « choisissez votre date d'intervention ».
+  assert.ok(/Voici votre devis\./.test(devis), `le devis ne dit pas « devis » : ${devis}`);
+  assert.ok(/date d'intervention/.test(devis), "le devis ne propose plus de date");
+  assert.ok(/Voici votre facture F2026-0008/.test(facture), `la facture : ${facture}`);
+  assert.ok(!/date d'intervention/.test(facture), "la facture parle encore de choisir une date");
+  assert.ok(/retour d.intervention après le passage/.test(passage), `le retour d'intervention : ${passage}`);
+  assert.ok(!/facture|devis/i.test(passage), "le retour d'intervention évoque un autre document");
+});
+
+test("l'échéance emporte ses mots quand il n'y en a pas", () => {
+  // **Le délai de paiement est un interrupteur : éteint, il n'y a pas
+  // d'échéance.** Une pastille qui ne rendrait que la date laisserait alors
+  // « facture F2026-0008, à régler avant le . » dans la boîte du client.
+  const sans = composerMessageFacture({
+    clientNom: "Martins",
+    entrepriseNom: "Eden Nature",
+    numeroFacture: "F2026-0008",
+    echeanceLisible: null,
+    lien: "https://exemple/facture/1",
+  }).corps;
+  assert.ok(!/à régler avant/.test(sans), `une échéance vide est restée : ${sans}`);
+  assert.ok(!/, \./.test(sans), `une ponctuation orpheline est restée : ${sans}`);
+  assert.ok(/Voici votre facture F2026-0008\./.test(sans), sans);
+});
+
+test("le mot du document ne se retire pas", () => {
+  // Sa consigne du 7 septembre : *« le lien, les mots devis, facture et fiche
+  // client ne peuvent être enlevés »*.
+  const refus = refusDuMessage("Bonjour [client], c'est prêt : [lien] — [entreprise]", "facture");
+  assert.ok(refus, "un message sans le mot du document a été accepté");
+  assert.ok(/document/i.test(refus), `le refus ne nomme pas le document : « ${refus} »`);
+  // Et il ne parle pas à tort : le message d'Atlas, lui, passe.
+  assert.equal(refusDuMessage(MESSAGES_PAR_DEFAUT.facture, "facture"), null);
+});
+
+test("son texte à lui commande, et les pastilles s'y remplissent", () => {
+  // Ce que le lot rend possible : la phrase du milieu est à lui.
+  const sien = "Coucou [client] ! Ta [document] [numero][echeance]. Ici : [lien]. [entreprise]";
+  const corps = composerMessageFacture({
+    clientNom: "Martins",
+    entrepriseNom: "Eden Nature",
+    numeroFacture: "F2026-0009",
+    echeanceLisible: "3 octobre",
+    lien: "https://exemple/facture/2",
+    modele: sien,
+  }).corps;
+  assert.ok(corps.startsWith("Coucou "), `son texte n'a pas été employé : ${corps}`);
+  assert.ok(/Ta facture F2026-0009, à régler avant le 3 octobre\./.test(corps), corps);
+  assert.ok(!/\[/.test(corps), `une pastille est restée en clair : ${corps}`);
+});
+
+test("l'avoir nomme SA facture, garde le lien seul sur sa ligne, et ne laisse aucune pastille", () => {
+  const m = composerMessageAvoir({
+    clientNom: "Martin",
+    clientCivilite: "mr",
+    entrepriseNom: "Eden Nature",
+    numeroAvoir: "A2026-000001",
+    numeroFacture: "F2026-000012",
+    lien: "https://atlas.test/factures/abc",
+  });
+  assert.equal(m.objet, "Votre avoir A2026-000001 de Eden Nature");
+  assert.match(m.corps, /Voici votre avoir A2026-000001, qui rectifie la facture F2026-000012\./);
+  assert.match(m.corps, /\n\nhttps:\/\/atlas\.test\/factures\/abc\n\n/);
+  assert.ok(!/\[/.test(m.corps), `une pastille est restée en clair : ${m.corps}`);
 });
 
 console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

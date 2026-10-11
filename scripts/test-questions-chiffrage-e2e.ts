@@ -1,6 +1,9 @@
 import assert from "node:assert";
 import { Client } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
+
+const BASE = ADRESSE;
 
 // L'arrêt d'avant-chiffrage, parcouru comme le patron le parcourt.
 //
@@ -78,13 +81,13 @@ async function main() {
   const page = await context.newPage();
 
   try {
-    await page.goto("http://localhost:3000/login", { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
     await page.fill('input[name="email"]', "demo@atlas.local");
     await page.fill('input[name="password"]', "demo1234");
     await page.click('button[type="submit"]');
-    await page.waitForURL("http://localhost:3000/", { timeout: 20000 });
+    await page.waitForURL(`${BASE}/`, { timeout: 20000 });
 
-    await page.goto(`http://localhost:3000/chantiers/${chantierId}/transcription`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/chantiers/${chantierId}/transcription`, { waitUntil: "networkidle" });
     await page.click("text=Créer le devis à partir de ma dictée");
 
     // --- L'arrêt doit venir -------------------------------------------------
@@ -123,7 +126,15 @@ async function main() {
     // `data-atlas` survit au prochain remaniement de texte.
     const combien = await page.locator('[data-atlas="question-chiffrage"]').count();
     assert.ok(combien >= 1, "aucune question à l'écran : l'arrêt n'a rien demandé.");
-    assert.ok(combien <= 3, `${combien} questions posées : l'arrêt devient un formulaire, il le contournera.`);
+    // **Quatre au plus depuis le 29 septembre 2026**, et pour une seule raison :
+    // la hauteur de fût, qu'il a demandée (*« pour la fente, il faudrait qu'il
+    // demande quelle hauteur de fût »*), sans qu'aucune autre question ne
+    // parte. Le quatrième n'apparaît qu'en recopie, où la longueur de haie se
+    // pose aussi ; avec un modèle, elles sont trois. Une cinquième voudrait
+    // dire qu'une question s'est ajoutée sans qu'il l'ait voulu.
+    assert.ok(combien <= 4, `${combien} questions posées : l'arrêt devient un formulaire, il le contournera.`);
+    assert.match(texte, /Quelle hauteur de fût\s*\?/, "la fente ne demande pas son fût");
+    assert.doesNotMatch(texte, /Quelle hauteur fait l'arbre/, "la hauteur de l'arbre se demande encore");
 
     // --- Il répond d'un pouce -----------------------------------------------
     // Le bouton, pas le paragraphe. « démontage avec rétention » figure aussi
@@ -131,10 +142,16 @@ async function main() {
     // texte cliquait la explication, aucune option n'était retenue, et le
     // contrôle passait quand même — vert sur une réponse jamais donnée.
     await page.locator("button", { hasText: /^Démontage avec rétention$/ }).click();
-    // Ciblé par son libellé : en recopie littérale, l'écran porte aussi le
-    // champ « longueur de haie », et un sélecteur sur le type remplirait le
-    // mauvais — le contrôle passerait alors au vert sur un diamètre absent.
-    await page.fill('input[aria-label="Quel diamètre ?"]', "70");
+    // Ciblé par le DÉBUT de son libellé, jamais en entier. L'écran porte aussi
+    // le champ « longueur de haie » : un sélecteur sur le type remplirait le
+    // mauvais, et le contrôle passerait au vert sur un diamètre absent. Mais un
+    // libellé recopié en entier fige un mot que le patron peut faire changer —
+    // et il l'a fait : « Quel diamètre ? » est devenu « Quel diamètre fait le
+    // tronc ? » le soir du test téléphone, parce que la question ne disait pas
+    // DE QUOI. La suite a rougi sur du code juste (`CLAUDE.md` §5 bis : on
+    // adapte le contrôle, on ne remet pas le libellé). Le préfixe suffit à
+    // désigner le bon champ et survivra au prochain remaniement.
+    await page.fill('input[aria-label^="Quel diamètre"]', "70");
     // Le libellé du bouton dit la vérité sur ce qui va se passer : « Continuer
     // vers le devis » quand tout est renseigné, « Continuer sans répondre à
     // tout » sinon. Les deux mènent au devis — on vise donc le geste, pas le mot.
@@ -150,7 +167,7 @@ async function main() {
     // ici que le devis en porte la trace ferait passer au vert une promesse que
     // le produit ne tient pas.
     await page.waitForURL(`**/chantiers/${chantierId}/devis-complet`, { timeout: 60000 });
-    await page.goto(`http://localhost:3000/chantiers/${chantierId}/informations`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/chantiers/${chantierId}/informations`, { waitUntil: "networkidle" });
     // Les prestations y sont des champs de saisie : `innerText` ne rend PAS
     // leur valeur, et une assertion sur le texte de la page passerait au rouge
     // en accusant le produit d'un tort qui n'est qu'un mauvais sélecteur.
@@ -180,7 +197,7 @@ async function main() {
     // --- Rejouer ne repose pas les mêmes questions --------------------------
     // Le défaut qui ferait abandonner l'arrêt : répondre, rejouer, et se voir
     // redemander la même chose.
-    await page.goto(`http://localhost:3000/chantiers/${chantierId}/transcription`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/chantiers/${chantierId}/transcription`, { waitUntil: "networkidle" });
     await page.click("text=Créer le devis à partir de ma dictée");
     const reposees = page.locator("text=avant de chiffrer");
     await Promise.race([

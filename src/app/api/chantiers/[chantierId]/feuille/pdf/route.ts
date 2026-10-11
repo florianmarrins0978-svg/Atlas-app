@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { genererDevisSansPrix } from "@/server/repositories/devis";
+import { enTetesDeRemise, veutTelecharger } from "@/lib/remise-de-fichier";
 
 // **La feuille de chantier : le devis, sans un seul prix.**
 //
@@ -32,13 +33,18 @@ export async function GET(
     return NextResponse.json({ error: "Aucun devis pour ce chantier" }, { status: 404 });
   }
 
-  // `inline` : il l'ouvre sur le chantier, au téléphone, pour LIRE. Le
-  // téléchargement forcé l'obligerait à ressortir de l'application pour trouver
-  // le fichier (`src/app/api/devis/[id]/pdf/route.ts`, 7 août 2026).
+  // **La règle de remise vient d'un seul endroit — 13 septembre 2026.** Cette
+  // route écrivait ses deux en-têtes à la main : la sixième et dernière à le
+  // faire, et c'est ainsi qu'une règle corrigée cinq fois sur six laisse
+  // revenir le défaut par la porte qu'on n'a pas regardée (`CLAUDE.md` §3).
+  //
+  // Le geste par défaut reste `inline` : il l'ouvre sur le chantier, au
+  // téléphone, pour LIRE. `?telecharger=1` la range, comme partout ailleurs.
   return new NextResponse(new Uint8Array(pdf), {
-    headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="feuille-de-chantier.pdf"`,
-    },
+    headers: enTetesDeRemise({
+      telecharger: veutTelecharger(requete.url),
+      nom: "feuille-de-chantier.pdf",
+      type: "application/pdf",
+    }),
   });
 }

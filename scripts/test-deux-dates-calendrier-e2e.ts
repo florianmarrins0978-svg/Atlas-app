@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
-import { Pool } from "pg";
-import { versJourIso } from "../src/server/disponibilites";
+import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { joursAProposer } from "./_calendrier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **« Je ne peux choisir qu'un seul jour à même le planning. »**
 //
@@ -32,13 +32,12 @@ import { joursAProposer } from "./_calendrier-e2e";
 //   4. les deux partent réellement dans l'envoi ;
 //   5. un troisième ne s'ajoute pas en silence — le plus ancien cède la place.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function main() {
   const navigateur = await lancerNavigateur();
   const contexte = await navigateur.newContext();
   const page = await contexte.newPage();
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
   await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
   await page.fill('input[name="email"]', "demo@atlas.local");
@@ -50,14 +49,12 @@ async function main() {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nom);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-  const chantierId = page.url().split("/").pop()!;
+  const chantierId = idChantier;
 
   await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.waitForSelector("text=Total TTC", { timeout: 40_000 });
-  await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
-  await page.waitForTimeout(900);
   await page.getByLabel("Description 1").fill("Taille de deux tilleuls");
   await page.getByLabel("Prix unitaire 1").fill("600");
   await page.getByLabel("Description 1").click();
@@ -190,11 +187,9 @@ async function main() {
     [chantierId]
   );
   assert.ok(rows[0], "Aucun envoi enregistré : le devis n'est pas parti.");
-  // `pg` rend les colonnes `date[]` en objets Date : on compare des jours, pas
-  // des instants — sinon le fuseau du lecteur décalerait d'une case.
-  const envoyees = (rows[0].dates_proposees as (string | Date)[])
-    .map((d) => (d instanceof Date ? versJourIso(d) : String(d).slice(0, 10)))
-    .sort();
+  // Le pool du produit rend une `date[]` en jours « AAAA-MM-JJ », jamais en
+  // instants (`src/server/db/client.ts`) : le fuseau du PC ne décale aucune case.
+  const envoyees = (rows[0].dates_proposees as string[]).slice().sort();
   assert.deepEqual(
     envoyees,
     [premier, troisieme].sort(),

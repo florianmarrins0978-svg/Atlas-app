@@ -30,7 +30,7 @@ const contexte = await navigateur.newContext({
 const page = await contexte.newPage();
 await connecter(page);
 
-await page.goto(`${BASE}/reglages/documents`, { waitUntil: "networkidle" });
+await page.goto(`${BASE}/reglages/documents/numero`, { waitUntil: "networkidle" });
 await page.waitForSelector('button[data-atlas^="format-"]', { timeout: 60_000 });
 
 const bloc = page.locator('button[data-atlas="format-annee-4"]').first();

@@ -153,7 +153,7 @@ export function echelleDuCroquis(zones: ZonePositionnee[]): Echelle {
       ok: false,
       raison:
         `le croquis n'est pas à l'échelle : selon les zones, un même trait vaut de ` +
-        `${Math.round(mini)} à ${Math.round(maxi)} m — les distances ne s'en déduisent pas`,
+        `${Math.round(mini)} à ${Math.round(maxi)} m, et les distances ne s'en déduisent pas`,
     };
   }
 
@@ -293,6 +293,37 @@ export function distanceRegardVersZone(
 }
 
 /**
+ * La longueur de l'amenée, du piquage à la nourrice — CALCULÉE sur le croquis.
+ *
+ * **Sa règle du 11 septembre 2026 : « elle doit être calculée, ni lue ni
+ * supposée ».** Le calcul comptait 30 m faute de saisie, et ce chiffre entrait
+ * dans la pression au dernier arroseur ; un modèle qui « lirait » des mètres
+ * les inventerait. Ce qui se lit, ce sont deux PLACES en fraction du dessin ;
+ * ce qui se calcule, c'est la distance entre elles à l'échelle des cotes — la
+ * même échelle sévère que le trajet du regard, parce que le résultat entre
+ * dans le même calcul de pression.
+ *
+ * En Manhattan : un tuyau d'amenée suit les axes, comme le reste.
+ */
+export function longueurDeLAmenee(
+  piquage: PointCroquis | null,
+  regard: PointCroquis | null,
+  zones: ZonePositionnee[]
+): { ok: true; metres: number } | { ok: false; raison: string } {
+  if (!piquage) return { ok: false, raison: "le croquis ne montre pas où le piquage se fait" };
+  if (!regard) return { ok: false, raison: "le croquis ne montre pas où la nourrice est posée" };
+  const echelle = echelleDuCroquis(zones);
+  if (!echelle.ok) return { ok: false, raison: echelle.raison };
+  const metres = (Math.abs(piquage.x - regard.x) + Math.abs(piquage.y - regard.y)) * echelle.metresParFraction;
+  // Au-delà de 200 m, ce n'est plus une amenée de jardin : c'est une échelle
+  // lue de travers, et la perte qu'on en tirerait condamnerait le plan pour rien.
+  if (metres > 200) {
+    return { ok: false, raison: `l'amenée calculée (${Math.round(metres)} m) n'est pas vraisemblable` };
+  }
+  return { ok: true, metres: Math.round(metres * 10) / 10 };
+}
+
+/**
  * Le plus long trajet regard → zone de tout le jardin.
  *
  * **Le plus long, parce que c'est lui qui décide.** Toutes les zones sont
@@ -417,10 +448,10 @@ export function poserSurLeTerrain(
   // **Ce qu'on dit du placement**, dans son langage et sans jargon.
   const reserve = echelle.approchee
     ? "le croquis ne donne pas les proportions des zones : elles sont placées à l’estime, " +
-      "d’après leurs cotes — les métrés sont justes, l’agencement est à vérifier d’un coup d’œil"
+      "d’après leurs cotes. Les métrés sont justes, l’agencement est à vérifier d’un coup d’œil"
     : echelle.dispersion > ECART_MAX_ENTRE_ZONES
       ? "le croquis n’est pas à l’échelle : les zones sont placées d’après leurs cotes, " +
-        "pas d’après le dessin — les métrés sont justes, l’agencement est à vérifier d’un coup d’œil"
+        "pas d’après le dessin. Les métrés sont justes, l’agencement est à vérifier d’un coup d’œil"
       : null;
 
   return {

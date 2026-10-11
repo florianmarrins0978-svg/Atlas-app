@@ -32,6 +32,7 @@ import { getOuCreerDevisBrouillon, envoyerDevis } from "../src/server/repositori
 import { terminerChantier, emettreFacture, getFacturePourChantier } from "../src/server/repositories/factures";
 import { noterPaiement } from "../src/server/repositories/paiements-facture";
 import { chargerFicheClient } from "../src/server/repositories/fiche-client";
+import { faireUnAvoir } from "../src/server/repositories/avoirs";
 import { ajouterPrestation as ajouterPrestationEntretien } from "../src/server/repositories/prestations-entretien";
 import {
   ouvrirPassage,
@@ -178,7 +179,7 @@ async function main() {
 
     const fiche = await chargerFicheClient(ctx, client.id);
     assert.ok(fiche, "la fiche est introuvable");
-    assert.equal(fiche.chantiers, 2);
+    assert.equal(fiche.liste.length, 2);
     // 450 + 300 = 750 HT, TVA 20 % → 900 TTC.
     assert.equal(fiche.facture, "900.00", "le total ne correspond pas aux factures émises");
     assert.equal(fiche.du, "900.00", "rien n'est réglé : tout est encore dû");
@@ -321,9 +322,19 @@ async function main() {
     await nettoyerBase();
     const ctx = await monterEntreprise("Essai ordre");
     const client = await creerClient(ctx, { nom: "M. Martins" });
-    await chantierDate(ctx, client.id, "Ancien", [["Taille", "100.00"]], "2024-03-02");
-    await chantierDate(ctx, client.id, "Milieu", [["Tonte", "150.00"]], "2025-06-10");
-    await chantierDate(ctx, client.id, "Récent", [["Élagage", "200.00"]], "2026-07-28");
+    const anciens = [
+      await chantierDate(ctx, client.id, "Ancien", [["Taille", "100.00"]], "2024-03-02"),
+      await chantierDate(ctx, client.id, "Milieu", [["Tonte", "150.00"]], "2025-06-10"),
+      await chantierDate(ctx, client.id, "Récent", [["Élagage", "200.00"]], "2026-07-28"),
+    ];
+    // **La colonne des avoirs (§413) se trie comme les autres** : un avoir par
+    // facture, le lendemain de chacune, pour que l'ordre ait à se prouver.
+    for (const { factureId, jour } of anciens) {
+      const lendemain = new Date(`${jour}T09:00:00Z`);
+      lendemain.setUTCDate(lendemain.getUTCDate() + 1);
+      const r = await faireUnAvoir(ctx, factureId, { portee: null, montantTtc: "10", motif: "Geste commercial" }, lendemain);
+      assert.ok(r.ok, r.ok ? "" : r.refus);
+    }
     // **Les fiches ont leurs propres dates**, et ne suivent plus les chantiers :
     // depuis le 23 août 2026 la colonne porte les fiches d'entretien envoyées,
     // pas les chantiers terminés. Trois d'entre elles, pour que le tri ait
@@ -483,7 +494,7 @@ async function main() {
     await getOuCreerDevisBrouillon(ctx, c.id);
 
     const fiche = await chargerFicheClient(ctx, client.id);
-    assert.equal(fiche!.chantiers, 1, "le chantier compte, lui");
+    assert.equal(fiche!.liste.length, 1, "le chantier compte, lui");
     assert.equal(fiche!.facture, null, "« 0 € » se lirait comme un mauvais client");
     assert.equal(fiche!.du, null);
   });
@@ -532,7 +543,7 @@ async function main() {
     await supprimerChantier(ctx, jete.id);
 
     const fiche = await chargerFicheClient(ctx, client.id);
-    assert.equal(fiche!.chantiers, 1, "le chantier supprimé compte encore");
+    assert.equal(fiche!.liste.length, 1, "le chantier supprimé compte encore");
     assert.ok(!fiche!.liste.some((c) => c.nom === "Jeté"), "le chantier supprimé s'affiche encore");
   });
 
@@ -563,7 +574,7 @@ async function main() {
     await chantierFacture(b, clientDeB.id, "Chez B", [["Élagage", "900.00"]]);
 
     const fiche = await chargerFicheClient(a, clientDeA.id);
-    assert.equal(fiche!.chantiers, 1, "un chantier d'une autre entreprise s'est glissé dans la fiche");
+    assert.equal(fiche!.liste.length, 1, "un chantier d'une autre entreprise s'est glissé dans la fiche");
     assert.equal(fiche!.facture, "600.00", "500 HT → 600 TTC : le chantier de B ne doit rien y ajouter");
   });
 
@@ -574,7 +585,7 @@ async function main() {
 
     const fiche = await chargerFicheClient(ctx, client.id);
     assert.ok(fiche, "une fiche vide vaut mieux qu'une page introuvable");
-    assert.equal(fiche.chantiers, 0);
+    assert.equal(fiche.liste.length, 0);
     assert.equal(fiche.facture, null);
     assert.deepEqual(fiche.prestations, []);
     assert.equal(fiche.client.nom, "M. Tout Neuf");

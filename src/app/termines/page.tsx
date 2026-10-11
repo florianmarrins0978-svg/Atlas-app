@@ -1,10 +1,16 @@
 import Link from "next/link";
 import { colors, font, libelleCaps, voile } from "@/lib/design-tokens";
+import { compterLesRetours } from "@/server/repositories/retours-intervention";
+import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
+import { fonctionOuverte } from "@/lib/abonnements";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerChantiersTermines } from "@/server/repositories/factures";
 import { preparer } from "@/lib/termines-par-mois";
+import { jourIso } from "@/lib/jour";
 import ListeTermines from "./ListeTermines";
+import { listerFacturesNonPayees } from "@/server/repositories/factures-non-payees";
+import { facturesAvecPaiements } from "@/server/repositories/paiements-facture";
 import { tvaDeLaPeriodeCourante } from "@/server/tva-courante";
 
 export const dynamic = "force-dynamic";
@@ -43,20 +49,41 @@ const formatEuros = new Intl.NumberFormat("fr-FR", {
   maximumFractionDigits: 2,
 });
 
-export default async function TerminesPage() {
+export default async function TerminesPage({ searchParams }: { searchParams: Promise<{ chantier?: string }> }) {
+  // La ligne devant laquelle revenir, quand un écran nous y renvoie (le
+  // paiement noté, sa demande du 25 septembre 2026).
+  const { chantier: chantierDemande } = await searchParams;
   const ctx = await getCurrentCtx();
   const chantiers = await listerChantiersTermines(ctx);
   const lignes = preparer(chantiers);
   // **Le mois du jour se décide ICI, sur le serveur.** Calculé dans le
   // navigateur, il pourrait différer de celui du rendu serveur pour qui n'est
   // pas au même fuseau : React refuse alors l'hydratation, et l'écran fige.
-  const moisCourant = new Date().toISOString().slice(0, 7);
+  // Et il se compte à l'heure de son atelier, comme tout jour du dépôt
+  // (`jourIso`) : en UTC, le 1ᵉʳ du mois entre minuit et deux heures ouvrait
+  // encore sur le mois d'avant.
+  const moisCourant = jourIso(new Date()).slice(0, 7);
 
   // **Ce qu'il reste à payer de TVA, pour la carte en tête — sa demande du
   // 23 août 2026.** Composé une seule fois, dans `src/server/tva-courante.ts` :
   // recomposer ces chiffres ici aurait donné deux additions de la même somme,
   // et deux montants possiblement différents à deux écrans d'intervalle.
   const tva = await tvaDeLaPeriodeCourante(ctx);
+
+  // **Le compte des retours, TOUS mois confondus** — sa règle du 8 septembre
+  // 2026 : « il faut pouvoir les garder longtemps ». Le limiter au mois affiché
+  // aurait fait disparaître l’onglet un 1er du mois, avec toute l’histoire
+  // derrière lui.
+  //
+  // **Et ZÉRO quand la formule ne les ouvre pas** (« Artisan », 10 septembre
+  // 2026) : un point rouge sur un écran qu'on ne peut pas ouvrir est une
+  // agression, pas une information. L'onglet, lui, reste (`ListeTermines`).
+  const abonnement = await abonnementDeLEntreprise(ctx);
+  const retours = fonctionOuverte(abonnement?.formule, "retours") ? await compterLesRetours(ctx) : 0;
+  const nonPayees = await listerFacturesNonPayees(ctx);
+  // Le même « soldée » que l'écran « Il ne vous paiera pas » lit pour refuser :
+  // une seule règle décide si la porte existe et si elle s'ouvre.
+  const chantiersSoldes = (await facturesAvecPaiements(ctx)).filter((f) => f.etat === "soldee").map((f) => f.chantierId);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -113,7 +140,15 @@ export default async function TerminesPage() {
         <Link
           href="/termines/tva"
           data-atlas="carte-tva"
-          className="mx-[26px] mt-[18px] flex items-center justify-between gap-3 rounded-[4px] px-[15px] py-[17px]"
+          // **20 px de haut au lieu de 17, 18 de côté au lieu de 15, et 24 sous
+          // le titre au lieu de 18 — « le calme », sa proposition A du
+          // 2 septembre 2026** (`appli/termines-elegance.html`). La carte porte
+          // un montant de 21 px entre 17 px de marge : le chiffre touchait
+          // presque le contour doré, et la carte paraissait pincée là où elle
+          // est le premier objet de l'écran. Rien d'autre n'y bouge — ni la
+          // forme, ni le fond, ni le contour : *« garde ce style et cette
+          // forme, j'aime bien »* (26 août).
+          className="mx-[26px] mt-6 flex items-center justify-between gap-3 rounded-[4px] px-[18px] py-5"
           style={{
             backgroundColor: colors.card,
             boxShadow: `inset 0 0 0 1.5px ${voile(colors.or, 0.55)}`,
@@ -129,7 +164,7 @@ export default async function TerminesPage() {
               Ma TVA à déclarer
             </span>
             <span
-              className="mt-[3px] block truncate text-[16.5px]"
+              className="mt-[5px] block truncate text-[17px]"
               style={{ fontFamily: font.display }}
             >
               {tva.periode}
@@ -159,14 +194,20 @@ export default async function TerminesPage() {
             un repère sur la liste, le contrôle comparait la carte à sa propre
             mention et restait vert la carte remise en pied d'écran — vert sur
             le défaut même dont il portait le nom. */}
+        {/* **La liste se rend même vide — 11 septembre 2026.** L'état « aucun
+            chantier terminé » remplaçait la liste entière, et emportait avec
+            elle les onglets, « Retours d'intervention » et la porte « Créer une
+            facture ». La phrase vit désormais DANS `ListeTermines`, sous les
+            onglets, là où elle laisse les portes ouvertes. */}
         <div data-atlas="contenu-termines">
-          {chantiers.length === 0 ? (
-            <p className="mt-8 px-[26px] text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
-              Vos chantiers apparaîtront ici une fois leur date d&apos;intervention passée.
-            </p>
-          ) : (
-            <ListeTermines lignes={lignes} moisCourant={moisCourant} />
-          )}
+          <ListeTermines
+            lignes={lignes}
+            retoursNonLus={retours}
+            moisCourant={moisCourant}
+            nonPayees={nonPayees.length}
+            chantierDemande={chantierDemande ?? null}
+            chantiersSoldes={chantiersSoldes}
+          />
         </div>
 
       </div>

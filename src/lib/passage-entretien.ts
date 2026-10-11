@@ -5,23 +5,20 @@
 // exige un client ne sert pas en visite. Le client est nommé quand il veut —
 // **arrangement C** de `docs/maquettes/77-la-fiche-dans-paysage.html`.
 //
-// ─── LE CŒUR DE L'ARRANGEMENT C ──────────────────────────────────────────────
-// Deux de ses décisions se rencontraient sur un même point, et paraissaient se
-// contredire :
+// ─── QUAND LE CLIENT EST NOMMÉ ───────────────────────────────────────────────
+// **Sa règle du 22 septembre 2026, qui remplace le repli du 17 août :**
+// *« ce qui a déjà été coché par le passé se recoche automatiquement, mais les
+// 20 points qui composent ma fiche doivent être présents ! Car si j'ai fait
+// quelque chose en plus ce jour, je le coche, or là je ne peux pas, les cases
+// ne sont pas visibles »*.
 //
-//   · 16 août — « chaque client aura sa fiche » : le passage suivant chez le
-//     même client doit RETROUVER son ajustement, sinon il retrie vingt lignes
-//     douze fois par an ;
-//   · 17 août — l'outil s'ouvre SANS client.
-//
-// Elles ne se contredisent pas : elles se rencontrent sur le MOMENT où le
-// client est nommé. D'où `recomposerPourClient` : la fiche part du modèle
-// complet, et se replie sur les prestations du client dès qu'on le connaît —
-// **sans perdre ce qui vient d'être coché**. C'est cette dernière clause qui
-// fait tout le travail, et c'est elle qu'un contrôle doit tenir : perdre trois
-// coches parce qu'on a nommé le client au milieu serait pire que ne rien
-// pré-remplir du tout.
+// Le repli retirait les lignes que ce client ne prenait pas d'habitude : il
+// voulait lui épargner de retrier vingt lignes, et il l'empêchait de cocher le
+// travail en plus. Désormais la fiche garde TOUT le modèle, et c'est la coche
+// qui porte l'habitude (`cocherCommeLaDerniereFois`).
 // ─────────────────────────────────────────────────────────────────────────────
+
+import { filtrerClientsParNom, normaliserPourRecherche } from "./recherche-client";
 
 /** Une ligne de la fiche en cours — copiée du modèle, jamais lue dedans. */
 export type LignePassage = {
@@ -73,63 +70,66 @@ export function minutesValides(brut: number | null | undefined): number | null {
 }
 
 /**
- * Recompose la fiche quand le client est enfin nommé — **sans rien perdre**.
+ * Recoche ce que ce client a eu à son DERNIER passage envoyé — **sans retirer
+ * une ligne ni décocher ce qui est déjà coché**.
  *
  * @param actuelles ce qui est à l'écran, coches comprises
- * @param dejaPris ce que ce client a **déjà pris** : les prestations cochées
- *   sur ses rapports envoyés, tous passages confondus. Vide au premier passage.
+ * @param derniere les prestations cochées sur son dernier rapport envoyé. Vide
+ *   au premier passage : rien ne se coche tout seul.
  *
- * **Trois règles, et chacune répare un défaut prévisible :**
+ * **Le dernier passage, et non tout son historique** : une taille de haie
+ * d'automne cochée une fois en octobre se recocherait sinon à chaque passage
+ * de l'année, et partirait sur des rapports où elle n'a pas été faite. Le
+ * dernier passage est ce qui ressemble le plus à celui du jour ; ce qui change
+ * se décoche ou se coche d'un geste, puisque toutes les lignes sont là.
  *
- * 1. **Ce qui est coché reste, quoi qu'il arrive.** Même si ce client n'a
- *    jamais pris cette prestation : il vient de la faire, et une fiche qui
- *    efface un geste déjà fait est pire qu'une fiche qui en montre trop.
- * 2. **Ce que ce client prend revient**, décoché : c'est ce qui lui évite de
- *    retrier vingt lignes douze fois par an.
- * 3. **Le reste tombe.** Les lignes que ce client ne paie pas n'ont rien à
- *    faire sous son pouce — c'est tout l'intérêt de nommer le client.
+ * **L'ordre et les lignes viennent de l'écran** : rien ne bouge sous ses doigts.
  *
- * ─── POURQUOI « TOUT SON HISTORIQUE » ET NON « SON DERNIER PASSAGE » ─────────
- * La première version regardait le seul passage précédent, et elle a été
- * refusée par son propre contrôle avant d'atteindre le patron. Deux défauts,
- * dans les deux sens :
- *
- *   · **les lignes PRÉSENTES du dernier passage** ne convergent jamais : au
- *     premier passage la fiche porte le modèle entier, donc le second le
- *     reprend entier, et ainsi de suite. Le repli ne replie rien ;
- *   · **les lignes COCHÉES du seul dernier passage** replient trop fort : une
- *     taille de haie d'automne se fait une fois l'an. Au passage de mars elle
- *     n'aurait pas été cochée en février, donc elle disparaîtrait — et il ne
- *     pourrait plus la cocher en octobre, faute de ligne.
- *
- * D'où l'historique complet : **ce que ce client a déjà pris au moins une
- * fois**. Il se construit tout seul, garde les gestes saisonniers, et ne rend
- * jamais une fiche plus longue que le modèle du jour.
- *
- * **Ce que cela coûte, et c'est assumé** : une prestation cochée par erreur
- * chez un client y reste proposée. Une ligne de trop se saute des yeux ; une
- * ligne manquante bloque le geste sur un chantier.
- * ─────────────────────────────────────────────────────────────────────────────
- *
- * **L'ordre vient de ce qui est à l'écran**, jamais de l'historique : la fiche
- * ne doit pas se réorganiser sous ses doigts pendant qu'il coche.
+ * **CHANGER DE CLIENT repart de zéro** — sa règle du 24 septembre 2026 :
+ * *« les cases doivent se décocher, car seules les cases du nouveau client
+ * doivent apparaître »*. Gardées, les coches du premier client partaient sur
+ * le rapport du second, pour des travaux faits ailleurs. `changeDeClient` ne
+ * vaut que pour un client REMPLACÉ ; au premier client nommé, ce qu'il a coché
+ * à la main reste.
  */
-export function recomposerPourClient(
-  actuelles: readonly LignePassage[],
-  dejaPris: readonly { libelle: string }[]
-): LignePassage[] {
-  // Client neuf — ou client dont aucun rapport n'a encore rien porté : il n'y a
-  // rien à replier, et deviner à sa place serait pire que de tout montrer.
-  if (dejaPris.length === 0) return [...actuelles];
+export function cocherCommeLaDerniereFois<L extends LignePassage>(
+  actuelles: readonly L[],
+  derniere: readonly { libelle: string }[],
+  { changeDeClient }: { changeDeClient: boolean } = { changeDeClient: false }
+): L[] {
+  const cochees = new Set(derniere.map((l) => plie(l.libelle)));
+  return actuelles.map((l) => {
+    const faite = (!changeDeClient && l.faite) || cochees.has(plie(l.libelle));
+    return faite === l.faite ? l : { ...l, faite };
+  });
+}
 
-  const sien = new Set(dejaPris.map((l) => plie(l.libelle)));
-
-  // Une prestation que ce client prend et que le modèle ne porte plus — retirée
-  // des Réglages depuis — n'est pas dans `actuelles`, et on ne la ramène PAS :
-  // le modèle est ce qu'il propose aujourd'hui, et ressusciter une ligne qu'il
-  // a retirée irait contre son geste. Le rapport du passé, lui, garde la
-  // sienne : il porte sa propre copie (migration 0055).
-  return actuelles.filter((l) => l.faite || sien.has(plie(l.libelle)));
+/**
+ * La phrase sous le nom du client : combien de cases sont cochées, et si ce
+ * sont celles du dernier chantier.
+ *
+ * **Calculée sur les cases, à chaque coche — 24 septembre 2026.** Sa capture :
+ * *« y'a marqué 5 prestations cochées, celles du dernier chantier, alors qu'il
+ * y en a 8 de cochées »*. Le chiffre était compté une fois par le serveur, au
+ * moment de nommer le client, puis gardé tel quel : il ignorait ce qui était
+ * coché avant, et tout ce qu'il cochait après.
+ *
+ * « Celles du dernier chantier » ne se dit que tant que c'est vrai : les cases
+ * cochées sont exactement celles reprises. `reprises` vaut `null` tant
+ * qu'aucun client n'a été nommé sur cet écran ; vide, rien n'a été repris
+ * (premier passage chez lui) et la phrase ne se pose pas, comme avant.
+ */
+export function constatDesCoches(
+  lignes: readonly { id: string; faite: boolean }[],
+  reprises: ReadonlySet<string> | null
+): string | null {
+  if (!reprises || reprises.size === 0) return null;
+  const faites = lignes.filter((l) => l.faite);
+  if (faites.length === 0) return null;
+  const nombre = faites.length > 1 ? `${faites.length} prestations cochées` : "1 prestation cochée";
+  const cesont = faites.length === reprises.size && faites.every((l) => reprises.has(l.id));
+  if (!cesont) return `${nombre}.`;
+  return `${nombre}, ${faites.length > 1 ? "celles" : "celle"} du dernier chantier.`;
 }
 
 /**
@@ -186,6 +186,7 @@ export type RefusPassage =
   | "modele_vide"
   | "deja_envoye"
   | "duree_invalide"
+  | "jour_invalide"
   | "client_inconnu";
 
 export const PHRASE_REFUS_PASSAGE: Record<RefusPassage, string> = {
@@ -194,6 +195,7 @@ export const PHRASE_REFUS_PASSAGE: Record<RefusPassage, string> = {
     "Votre fiche n'a aucune prestation. Composez-la d'abord dans les réglages.",
   deja_envoye: "Ce rapport est déjà parti chez votre client. Il ne se modifie plus.",
   duree_invalide: "Ce temps ne tient pas dans une journée. Reprenez la molette.",
+  jour_invalide: "Ce jour n'existe pas. Reprenez la roue.",
   client_inconnu: "Ce client n'existe plus. Choisissez-en un autre.",
 };
 
@@ -205,4 +207,31 @@ function plie(t: string): string {
     .toLowerCase()
     .replace(/\s+/g, " ")
     .trim();
+}
+
+/**
+ * LES RAPPORTS ENVOYÉS QUE LA LISTE MONTRE — le mois ou le jour choisi, ou le
+ * nom tapé.
+ *
+ * **Sa demande du 22 septembre 2026 :** *« faut pouvoir filtrer par nom de
+ * client et que ça nous sorte toutes les fiches liées au client, et un filtre
+ * par jour mois année »*. Le contrat des fiches de sécurité (`fichesAMontrer`) :
+ * la période est `2026-09` ou `2026-09-22`, et un nom tapé passe PAR-DESSUS —
+ * il sort tous les rapports du client, sans tourner la roue mois par mois.
+ *
+ * Le jour est celui du passage, déjà une date de calendrier : il se compare tel
+ * quel, sans fuseau. Et le nom se cherche comme celui des clients
+ * (`filtrerClientsParNom`) : une seule façon de chercher un nom (`CLAUDE.md` §3).
+ */
+export function rapportsAMontrer<T extends { clientNom: string | null; jour: string }>(
+  rapports: readonly T[],
+  choix: { periode: string; saisie: string }
+): T[] {
+  if (normaliserPourRecherche(choix.saisie)) {
+    return filtrerClientsParNom(
+      rapports.flatMap((r) => (r.clientNom ? [{ nom: r.clientNom, rapport: r }] : [])),
+      choix.saisie
+    ).map((x) => x.rapport);
+  }
+  return rapports.filter((r) => r.jour.startsWith(choix.periode));
 }

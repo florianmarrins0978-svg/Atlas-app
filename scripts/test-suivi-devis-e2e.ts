@@ -1,13 +1,16 @@
 import assert from "node:assert";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
+import { ouvrirLeTiroirDuPlanning } from "./_tiroir-planning-e2e";
 // Le nom du chantier se DÉDUIT du client (`src/lib/nom-chantier.ts`) : on
 // applique la même règle que le produit plutôt que de recomposer « Chez … ».
 // Recopié ici, ce contrôle est passé au rouge le 13 août 2026, le jour où le
 // patron a fait retirer ce mot.
 import { avecCivilite } from "../src/lib/civilite";
+import { jourIso, jourLisible } from "../src/lib/jour";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
 
 // Ce que devient un devis parti, vu du patron (docs/AGENT.md §2.2).
 //
@@ -15,7 +18,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // et n'était couvert nulle part : une fois le devis parti, l'application
 // dit-elle au patron où il en est — et lui laisse-t-elle un chemin ?
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let passed = 0;
 let failed = 0;
@@ -63,9 +66,10 @@ async function devisParti(page: Page, suffixe: string) {
   const nom = avecCivilite(client);
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
-  const url = page.url();
+  // L'adresse se bâtit sur l'identifiant que l'aide rend : la relire dans
+  // le navigateur donnait « devis-complet » depuis que la fiche du chantier
+  // est retirée (`ARCHITECTURE.md` §254).
+  const url = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
   const chantierId = url.split("/").pop()!;
 
   await page.goto(`${url}/prix`, { waitUntil: "networkidle" });
@@ -81,7 +85,7 @@ async function devisParti(page: Page, suffixe: string) {
   await page.click("text=Choisir la date");
   await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+  await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   // **Le jeton se lit dans la BASE, plus à l'écran.**
   //
@@ -110,7 +114,10 @@ async function clientRefuse(browser: Awaited<ReturnType<typeof lancerNavigateur>
   const contexte = await browser.newContext();
   const p = await contexte.newPage();
   await p.goto(`${BASE}/devis/${jeton}`, { waitUntil: "networkidle" });
+  // Le refus passe par une feuille de confirmation depuis le 20 septembre 2026
+  // (sa réponse « la A ») : un appui ne ferme plus un devis.
   await p.click('button:has-text("Je ne donne pas suite")');
+  await p.click('button:has-text("Oui, je ne donne pas suite")');
   await p.waitForSelector("text=Votre réponse a bien été transmise", { timeout: 15000 });
   await contexte.close();
 }
@@ -134,22 +141,67 @@ async function main() {
     );
     // Et la date d'envoi, en clair, sous l'état : c'est ce qu'il a demandé de
     // voir. Sans elle, il ne sait pas depuis combien de temps il attend.
+    //
+    // **Ce contrôle cherchait « Envoyé le » — un texte que le patron a fait
+    // RETIRER le 6 septembre 2026** (*« l'ancienneté du devis est écrite deux
+    // fois »*), et il rougissait depuis sur un écran juste. On vise donc la
+    // ligne elle-même, et la date qu'elle doit porter : cela survivra au
+    // prochain changement de mots (`CLAUDE.md` §5 bis).
+    const precision = carte.locator('[data-atlas="precision-chantier"]');
     assert.ok(
-      (await carte.locator("text=/Envoyé le /").count()) > 0,
-      "la liste ne dit pas QUAND le devis est parti"
+      (await precision.count()) > 0,
+      "la liste ne dit pas QUAND le devis est parti : aucune ligne de précision sous l'état"
+    );
+    const jourEcrit = ((await precision.first().textContent()) ?? "").trim();
+    // ═══════════════════════════════════════════════════════════════════
+    // **LE JOUR SE LIT DANS SON FUSEAU, PAS EN UTC — 15 septembre 2026,
+    // à minuit dix-sept.**
+    //
+    // Ce contrôle prenait `new Date().toISOString()` : entre 22 h et minuit
+    // UTC, c'est-à-dire chaque soir entre minuit et deux heures chez lui,
+    // l'écran affichait « mardi 15 » et le contrôle attendait « lundi 14 ».
+    // L'écran avait raison — l'application compte les jours dans le fuseau du
+    // patron (`jourIso`, `FUSEAU_DU_PATRON`), parce que c'est son calendrier
+    // qui décide de ce qu'est « aujourd'hui ».
+    //
+    // On emploie donc la MÊME fonction que le produit (`CLAUDE.md` §3) : deux
+    // façons de dire quel jour on est finissent toujours par se contredire, et
+    // celle-ci se contredisait deux heures par nuit.
+    // ═══════════════════════════════════════════════════════════════════
+    const attendu = jourLisible(jourIso(new Date()));
+    assert.equal(
+      jourEcrit.toLowerCase(),
+      attendu.toLowerCase(),
+      `la ligne sous l'état porte « ${jourEcrit} » au lieu du jour de l'envoi, « ${attendu} »`
     );
 
     // Planifier soi-même une date que le client s'apprête à choisir préparerait
     // deux engagements sur le même jour.
     await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
+    // **« En attente du client » vit dans le tiroir du bas depuis le
+    // 3 septembre 2026** (`ARCHITECTURE.md` §243). La règle que ce contrôle
+    // fixe n'a pas bougé — un chantier dont le client choisit sa date est
+    // ANNONCÉ, jamais proposé à la planification — mais elle se lit après un
+    // appui. On rejoue son geste plutôt que d'exiger un écran qui n'existe
+    // plus (`CLAUDE.md` §5 bis).
+    await ouvrirLeTiroirDuPlanning(page);
     const sectionAPlanifier = page.locator("text=À planifier").locator("xpath=..");
     assert.strictEqual(
       await sectionAPlanifier.locator(`text=${nom}`).count(),
       0,
       "le chantier est proposé à la planification alors que le client choisit"
     );
+    // **L'ENCADRÉ, PAS LE TEXTE NU — 14 septembre 2026.** La poignée du tiroir
+    // compte désormais ce qu'elle ouvre (« 6 clients sans date · 14 en attente
+    // du client ») : `text=En attente du client` trouvait donc deux éléments,
+    // et Playwright refusait de choisir. Ce n'est pas l'écran qui a tort — il
+    // dit MIEUX ce qu'il porte —, c'est le contrôle qui visait une phrase là où
+    // il parle d'une section (`CLAUDE.md` §5 bis).
     assert.ok(
-      await page.locator("text=En attente du client").isVisible(),
+      await page
+        .locator('[data-atlas="titre-encadre"]', { hasText: "En attente du client" })
+        .first()
+        .isVisible(),
       "le chantier disparaît du planning au lieu d'y être annoncé en attente"
     );
   });
@@ -248,7 +300,7 @@ async function main() {
     await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 10000 });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     try {
-      await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+      await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
     } catch (e) {
       // Ce contrôle a échoué une fois dans la batterie complète, jamais seul :
       // l'attente expirait sans qu'on sache pourquoi. Un délai dépassé ne
@@ -293,8 +345,8 @@ async function main() {
       // REVENANT, sur un devis déjà parti — le geste est donc une relance, et le
       // libellé le dit. Les deux formes restent acceptées : ce qu'on vérifie est
       // qu'un geste de transmission subsiste, pas lequel.
-      (await page.getByRole("link", { name: /(Ouvrir le (SMS|mail|message)|Relancer par)/i }).count()) +
-        (await page.getByRole("button", { name: /(Ouvrir le (SMS|mail|message)|Relancer par)/i }).count()) >
+      (await page.getByRole("link", { name: /(Ouvrir le (SMS|mail|message)|Rouvrir (le SMS|l’e-mail))/i }).count()) +
+        (await page.getByRole("button", { name: /(Ouvrir le (SMS|mail|message)|Rouvrir (le SMS|l’e-mail))/i }).count()) >
         0,
       "après l'envoi, l'écran ne porte plus aucun geste : la transmission a disparu avec la reprise."
     );

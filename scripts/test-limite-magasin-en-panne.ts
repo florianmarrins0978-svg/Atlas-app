@@ -40,6 +40,11 @@ class MagasinEnPanne implements MagasinLimite {
     this.appels++;
     throw new Error("MaxRetriesPerRequestError: Reached the max retries per request limit");
   }
+  /** Couché pour rendre aussi : c'est tout l'intérêt de ce faux magasin. */
+  async rendre(): Promise<void> {
+    this.appels++;
+    throw new Error("MaxRetriesPerRequestError: Reached the max retries per request limit");
+  }
 }
 
 const LIMITE = { max: 3, fenetreMs: 60_000 };
@@ -135,6 +140,7 @@ async function main() {
       async verifierEtIncrementer(): Promise<ResultatLimite> {
         return { autorise: false, retryAfterMs: 1_000 };
       },
+      async rendre(): Promise<void> {},
     });
     assert.equal((await verifierLimite("panne:retour", LIMITE)).autorise, false);
   });

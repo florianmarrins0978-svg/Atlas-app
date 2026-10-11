@@ -16,6 +16,8 @@
 // ses yeux en août — sinon il faudrait déjà savoir qu'il existe pour aller le
 // chercher. D'où `aFacturerPartout`, qui ignore délibérément le mois affiché.
 
+import { detacherCivilite } from "./civilite";
+
 /** Ce que l'écran reçoit du dépôt, réduit à ce dont la règle a besoin. */
 export type LigneTerminee = {
   id: string;
@@ -29,18 +31,59 @@ export type LigneTerminee = {
   factureStatut: string | null;
   /** Le total de la facture, quand elle existe. */
   totalTtc: string | null;
-  /** Le total du dernier devis envoyé — le montant PRÉVU, pas encaissé. */
-  devisTotalTtc: string | null;
+  /**
+   * Le montant PRÉVU, pas encaissé : le total du dernier devis envoyé, ou le
+   * prix du passage quand le chantier vient d'un contrat d'entretien.
+   */
+  totalPrevuTtc: string | null;
+  /**
+   * `AAAA-MM-JJ` — la date du dernier devis envoyé, `null` pour une facture
+   * faite sans devis. Elle ne sert qu'au tri « Date du devis ».
+   */
+  devisDateEmission: string | null;
 };
 
 export type LigneAffichee = LigneTerminee & {
   /** `true` tant qu'aucune facture n'a été émise pour ce chantier. */
   aFacturer: boolean;
-  /** Le montant à montrer : celui de la facture, sinon celui du devis. */
+  /** Le montant à montrer : celui de la facture, sinon le montant prévu. */
   montant: number | null;
+  /** Le jour du chantier — `dateDuChantier`, et `null` quand rien ne le dit. */
+  dateDuChantier: string | null;
   /** `AAAA-MM`, ou `""` quand le chantier n'a pas de date. */
   cleMois: string;
 };
+
+/**
+ * LE JOUR DU CHANTIER : le planning s'il l'a posé, sinon le jour de sa facture.
+ *
+ * **Sa décision du 21 septembre 2026**, devant deux rangées « Mr. Julien » sans
+ * deuxième ligne — *« pourquoi Julien n'a pas de date ? »*, puis : *« il faut
+ * même mettre la date du jour à laquelle on a créé la facture »*.
+ *
+ * **Ce que ça répare, et ce n'était pas qu'une ligne vide.** Sans
+ * `datePlanifiee`, `cleMois` valait `""` : **aucun mois ne portait le
+ * chantier**. L'œil le montrait tant qu'il attendait sa facture — il ignore le
+ * mois —, et le jour où la facture partait, il disparaissait de l'écran tout en
+ * comptant dans « N facturés ». Un chiffre qui compte ce que la liste ne montre
+ * pas est exactement ce que la planche 90 avait fait retirer.
+ *
+ * **Pourquoi la date d'émission, et pourquoi elle est fiable.** Elle est posée
+ * une fois, `jourIso(maintenant)`, à la création de la facture brouillon
+ * (`poserLaFactureBrouillon`), et **aucun code ne la réécrit ensuite** : c'est
+ * littéralement le jour où il a créé la facture. Pour un dépannage réglé sur
+ * place — le cas que « Créer une facture » sert — c'est le jour du chantier.
+ *
+ * **Pourquoi on ne l'écrit PAS dans `date_planifiee`.** C'est la colonne du
+ * planning : y poser un jour ferait redemander une place à un chantier déjà
+ * facturé (`demiJourneesAPoser` le compterait parmi les demi-journées qui
+ * attendent), et ferait occuper une demi-journée passée par un travail qui
+ * n'occupe plus personne. La date de RÉALISATION se déduit, elle ne se force
+ * pas dans la date de POSE.
+ */
+export function dateDuChantier(l: Pick<LigneTerminee, "datePlanifiee" | "factureDateEmission">): string | null {
+  return l.datePlanifiee ?? l.factureDateEmission;
+}
 
 /** Ce qu'un mois porte, une fois qu'on s'y est arrêté. */
 export type ResumeMois = {
@@ -93,23 +136,125 @@ export function preparer(lignes: readonly LigneTerminee[]): LigneAffichee[] {
   return lignes
     .map((l): LigneAffichee => {
       const facture = estFacture(l);
+      const jour = dateDuChantier(l);
       return {
         ...l,
         aFacturer: !facture,
-        montant: facture ? euros(l.totalTtc) : euros(l.devisTotalTtc),
-        cleMois: (l.datePlanifiee ?? "").slice(0, 7),
+        montant: facture ? euros(l.totalTtc) : euros(l.totalPrevuTtc),
+        dateDuChantier: jour,
+        cleMois: (jour ?? "").slice(0, 7),
       };
     })
-    .sort((a, b) => {
-      const da = a.datePlanifiee ?? "";
-      const db = b.datePlanifiee ?? "";
-      if (da === db) return 0;
-      // Un chantier sans date ne se range nulle part dans le temps : il passe
-      // devant plutôt que de se perdre au fond de la liste.
-      if (!da) return -1;
-      if (!db) return 1;
-      return da < db ? 1 : -1;
-    });
+    .sort(comparer(TRI_PAR_DEFAUT));
+}
+
+/**
+ * LE BOUTON « FILTRE » — sa demande du 27 septembre 2026, planche
+ * `appli/termines-l-ordre.html`, proposition B retenue : *« met une note
+ * filtre on clique dessus et il y a plusieurs moyen de trier »*.
+ *
+ * Cinq clés et deux sens. **Par défaut, l'ordre d'avant** : le jour du
+ * chantier, le plus récent en tête. C'est le même comparateur qui range la
+ * liste à son arrivée (`preparer`) et quand il choisit un ordre : deux
+ * comparateurs finiraient par ne plus ranger pareil (`CLAUDE.md` §3).
+ */
+export type CleDeTri = "chantier" | "devis" | "facture" | "montant" | "client";
+export type Tri = { cle: CleDeTri; croissant: boolean };
+export const TRI_PAR_DEFAUT: Tri = { cle: "chantier", croissant: false };
+
+/**
+ * Le libellé de chaque clé, et les mots de ses deux sens (croissant d'abord).
+ * Le sens se dit dans la langue de la clé : on ne range pas un nom « du plus
+ * ancien ».
+ */
+export const CLES_DE_TRI: readonly { cle: CleDeTri; libelle: string; sens: readonly [string, string] }[] = [
+  { cle: "chantier", libelle: "Date du chantier", sens: ["Du plus ancien", "Du plus récent"] },
+  { cle: "devis", libelle: "Date du devis", sens: ["Du plus ancien", "Du plus récent"] },
+  { cle: "facture", libelle: "Date de facturation", sens: ["Du plus ancien", "Du plus récent"] },
+  { cle: "montant", libelle: "Montant", sens: ["Du plus petit", "Du plus grand"] },
+  { cle: "client", libelle: "Nom du client", sens: ["De A à Z", "De Z à A"] },
+];
+
+export function estTriParDefaut(tri: Tri): boolean {
+  return tri.cle === TRI_PAR_DEFAUT.cle && tri.croissant === TRI_PAR_DEFAUT.croissant;
+}
+
+/**
+ * Un tri relu depuis le téléphone, ou l'ordre par défaut.
+ *
+ * Ce qui est rangé sur le téléphone peut dater d'une autre version de l'écran,
+ * ou avoir été abîmé : une clé qu'on ne connaît plus rend l'ordre par défaut,
+ * jamais une liste rangée sur une clé absente.
+ */
+export function lireTri(brut: string | null): Tri {
+  if (!brut) return TRI_PAR_DEFAUT;
+  let lu: unknown;
+  try {
+    lu = JSON.parse(brut);
+  } catch {
+    return TRI_PAR_DEFAUT;
+  }
+  if (typeof lu !== "object" || lu === null) return TRI_PAR_DEFAUT;
+  const { cle, croissant } = lu as Record<string, unknown>;
+  if (!CLES_DE_TRI.some((c) => c.cle === cle) || typeof croissant !== "boolean") return TRI_PAR_DEFAUT;
+  return { cle: cle as CleDeTri, croissant };
+}
+
+/** Le nom tel qu'il se range : sans « Mr. », « Mme »… qui mettraient toutes les dames ensemble. */
+function nomDeTri(l: LigneAffichee): string {
+  return detacherCivilite(l.nom).nom;
+}
+
+function valeurDeTri(l: LigneAffichee, cle: CleDeTri): string | number | null {
+  switch (cle) {
+    case "chantier": return l.dateDuChantier;
+    case "devis": return l.devisDateEmission;
+    case "facture": return estFacture(l) ? l.factureDateEmission : null;
+    case "montant": return l.montant;
+    case "client": return nomDeTri(l);
+  }
+}
+
+/**
+ * Le comparateur de la liste.
+ *
+ * **Ce qui n'a pas la valeur ne se range nulle part** : une facture faite sans
+ * devis n'a pas de date de devis, un chantier pas encore facturé n'a pas de
+ * date de facture, un montant peut être inconnu. Ces lignes vont À LA FIN,
+ * dans les deux sens, et gardent entre elles l'ordre d'arrivée — le tri est
+ * stable. Rien ne s'invente pour les placer (`docs/AGENT.md` §3).
+ *
+ * **Une exception, et elle date du 22 août 2026 : le chantier sans date passe
+ * DEVANT** sur la clé « chantier ». Là, l'absence est une anomalie à
+ * rattraper, pas un cas normal ; au fond de la liste, elle se perdrait.
+ *
+ * **Le comparateur rend 0 à valeurs égales.** Un comparateur qui répond « plus
+ * petit » dans ce cas se contredit (`a<b` et `b<a` à la fois) et le tri rend
+ * alors un ordre qu'aucune donnée n'explique : deux factures du même jour
+ * sortaient à l'envers de ce que le patron voit sur son écran. Trouvé sur la
+ * planche 90, où les deux factures du 19 août s'échangeaient.
+ */
+function comparer(tri: Tri): (a: LigneAffichee, b: LigneAffichee) => number {
+  const devant = tri.cle === "chantier" ? -1 : 1;
+  const signe = tri.croissant ? 1 : -1;
+  return (a, b) => {
+    const va = valeurDeTri(a, tri.cle);
+    const vb = valeurDeTri(b, tri.cle);
+    if (va === null && vb === null) return 0;
+    if (va === null) return devant;
+    if (vb === null) return -devant;
+    if (va === vb) return 0;
+    // Un nom se compare à la française : « Émile » ne part pas après « Zoé ».
+    if (typeof va === "string" && typeof vb === "string" && tri.cle === "client") {
+      return va.localeCompare(vb, "fr", { sensitivity: "base" }) * signe;
+    }
+    return (va < vb ? -1 : 1) * signe;
+  };
+}
+
+/** Les lignes dans l'ordre choisi. Le tri est stable : à égalité, l'ordre d'arrivée reste. */
+export function trier(lignes: readonly LigneAffichee[], tri: Tri): LigneAffichee[] {
+  return [...lignes].sort(comparer(tri));
 }
 
 /**
@@ -153,6 +298,19 @@ export function bornesDuFeuilletage(
     entree: recent > moisCourant ? moisCourant : recent,
     borne: recent > moisCourant ? recent : moisCourant,
   };
+}
+
+/**
+ * Le mois où vit la ligne de ce chantier, ou `null` s'il n'en a pas.
+ *
+ * Sert au retour vers Terminés « devant sa case » (sa demande du 25 septembre
+ * 2026) : l'écran s'ouvre sur CE mois, pas sur celui du jour. Lu sur la ligne
+ * préparée, donc sur la même règle que le rangement (`dateDuChantier`) ; un
+ * second calcul du mois ailleurs finirait par ouvrir le mauvais.
+ */
+export function moisDuChantier(lignes: readonly LigneAffichee[], chantierId: string | null): string | null {
+  if (!chantierId) return null;
+  return lignes.find((l) => l.id === chantierId)?.cleMois || null;
 }
 
 /**
@@ -235,12 +393,104 @@ export function numeroCourt(numero: string): string {
   return fin ? `Facture n° ${Number(fin[1])}` : `Facture ${numero}`;
 }
 
-/** « Facturé le 20 août », d'après la date d'émission — ou rien si on l'ignore. */
-export function libelleFacturee(l: LigneAffichee): string {
+/**
+ * « 12 août » — la date à laquelle le chantier a été réalisé.
+ *
+ * **Sa demande du 31 août 2026 :** *« à côté du nom du client il faudrait
+ * inscrire la date à laquelle le chantier a été réalisé »*. Planche
+ * `appli/termines-date-du-chantier.html`, proposition **B** retenue : la date
+ * ouvre la deuxième ligne, devant le montant.
+ *
+ * **C'est `datePlanifiee`, et il faut le savoir.** L'application ne garde
+ * aucune date de réalisation distincte : elle garde la date du planning, celle
+ * qui range déjà ces chantiers par mois. Un chantier déplacé la voit changer,
+ * donc dans les faits c'est bien le jour où il a été fait ; un chantier clôturé
+ * sans être passé par le planning n'en a aucune, et la ligne n'en invente pas.
+ *
+ * **L'ANNÉE NE S'ÉCRIT QUE SI CE N'EST PAS CELLE DU JOUR**, et c'est l'onglet
+ * « À facturer » qui l'impose : il mêle tous les mois, pour rattraper un retard
+ * de facturation (sa demande du 22 août). « 14 septembre » sans année, sur un
+ * chantier de l'an dernier, s'y lit comme le mois qui vient — et l'on croit
+ * avoir facturé ce qu'on n'a pas facturé.
+ *
+ * @param anneeCourante `AAAA`, décidée sur le SERVEUR. La lire dans le
+ *   navigateur ferait rendre au serveur une année et au client une autre au
+ *   passage de minuit : React refuse alors l'hydratation, et l'écran fige.
+ */
+export function libelleDateChantier(jour: string | null, anneeCourante: string): string {
+  if (!jour) return "";
+  const numero = Number(jour.slice(8, 10));
+  const mois = moisSeul(jour.slice(0, 7));
+  if (!numero || !mois) return "";
+  const annee = jour.slice(0, 4);
+  return annee === anneeCourante ? `${numero} ${mois}` : `${numero} ${mois} ${annee}`;
+}
+
+/**
+ * La deuxième ligne d'une rangée, assemblée morceau par morceau.
+ *
+ * **« Pas encore facturé » est parti le 31 août 2026, à sa demande** — *« supprime
+ * "Pas encore facturé" en doré »*. La phrase ouvrait chaque rangée dorée pendant
+ * qu'une capsule « À FACTURER » disait exactement la même chose à trois
+ * centimètres, sur la même ligne.
+ *
+ * **Elle rend donc parfois une chaîne VIDE**, ce qui n'existait pas avant : un
+ * chantier sans montant au devis n'a plus que sa date, et un chantier sans date
+ * ni montant n'a plus de deuxième ligne du tout. L'écran n'affiche alors rien —
+ * ni tiret, ni phrase de remplacement : on n'écrit pas ce qu'on ne sait pas
+ * (`docs/AGENT.md` §3).
+ *
+ * **Et les morceaux se JOIGNENT, ils ne se concatènent pas.** Un « · » écrit en
+ * dur derrière la date restait pendu dans le vide dès que le reste manquait.
+ */
+export function libelleEtatLigne(l: LigneAffichee, anneeCourante: string, cle: CleDeTri = TRI_PAR_DEFAUT.cle): EtatLigne {
+  // **Rangée par devis, la ligne montre la date du devis** à la place de
+  // celle du chantier : sinon l'ordre paraîtrait tiré au hasard (planche
+  // `appli/termines-l-ordre.html`). Sans devis, elle garde le jour du
+  // chantier plutôt que de rester muette.
+  const duDevis = cle === "devis" && l.devisDateEmission
+    ? libelleDateChantier(l.devisDateEmission, anneeCourante)
+    : "";
+  // **La rangée FACTURÉE ne montre que sa date de planning.** Quand le chantier
+  // n'en a pas, son jour est celui de la facture (`dateDuChantier`) — et
+  // « Facturé le 18 septembre » le dit déjà, trois mots plus loin. Écrire les
+  // deux donnerait « 18 septembre · Facturé le 18 septembre », la répétition
+  // qu'il fait retirer à chaque fois (`CLAUDE.md` §3).
+  const date = duDevis
+    ? `Devis du ${duDevis}`
+    : libelleDateChantier(l.aFacturer ? l.dateDuChantier : l.datePlanifiee, anneeCourante);
+  if (l.aFacturer) {
+    const bouts = date ? [date] : [];
+    if (l.montant !== null) bouts.push(`${formatEuros(l.montant)} prévus`);
+    return { avant: bouts.join(", "), mot: "", apres: "" };
+  }
+  // « Facturé le 20 août » reste, lui : aucun bouton ne le dit à sa place.
+  const { mot, suite } = libelleFacturee(l);
+  return { avant: date ? `${date}, ` : "", mot, apres: suite };
+}
+
+/**
+ * La ligne d'état en trois morceaux, dont `mot` est « Facturé » quand il y en
+ * a un : l'écran le pose en gras doré, sa planche A du 24 septembre 2026
+ * (`appli/termines-facture-en-dore.html`). **Le mot sort d'ici séparé**, là où
+ * la phrase se compose : la redécouper dans l'écran ferait deux règles pour
+ * une seule question, et la seconde se tromperait sur « Facture n° 5 ».
+ */
+export type EtatLigne = { avant: string; mot: string; apres: string };
+
+/** « Facturé » et « le 20 août », d'après la date d'émission — ou rien si on l'ignore. */
+export function libelleFacturee(l: LigneAffichee): { mot: string; suite: string } {
   const jour = l.factureDateEmission;
-  if (!jour) return l.factureNumero ? numeroCourt(l.factureNumero) : "Facturée";
-  const quand = `Facturé le ${Number(jour.slice(8, 10))} ${moisSeul(jour.slice(0, 7))}`;
-  return l.factureNumero ? `${quand} · ${numeroCourt(l.factureNumero)}` : quand;
+  if (!jour) {
+    return l.factureNumero
+      ? { mot: "", suite: numeroCourt(l.factureNumero) }
+      : { mot: "Facturée", suite: "" };
+  }
+  const quand = ` le ${Number(jour.slice(8, 10))} ${moisSeul(jour.slice(0, 7))}`;
+  return {
+    mot: "Facturé",
+    suite: l.factureNumero ? `${quand}, ${numeroCourt(l.factureNumero)}` : quand,
+  };
 }
 
 const EUROS = new Intl.NumberFormat("fr-FR", {

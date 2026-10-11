@@ -1,0 +1,703 @@
+import assert from "node:assert";
+import { pool } from "../src/server/db/client";
+import * as entreprisesRepo from "../src/server/repositories/entreprises";
+import * as chantiersRepo from "../src/server/repositories/chantiers";
+import * as clientsRepo from "../src/server/repositories/clients";
+import * as devisRepo from "../src/server/repositories/devis";
+import * as prixRepo from "../src/server/repositories/lignes-prix";
+import {
+  terminerChantier,
+  emettreFacture,
+  getFacturePourChantier,
+  reprendreLeDevisSurLaFacture,
+  facturesAvecAncienIban,
+  marquerIbanSignale,
+  FinChantierImpossibleError,
+} from "../src/server/repositories/factures";
+import { noterPaiement } from "../src/server/repositories/paiements-facture";
+import { creerEnvoiFacture, factureParJeton } from "../src/server/repositories/envois-factures";
+import { repriseDuDevis } from "../src/lib/facture-face-au-devis";
+import {
+  ALLURE_PAR_DEFAUT,
+  allureDepuisColonnes,
+  estLAllureParDefaut,
+} from "../src/lib/allure-documents";
+import { withEntreprise } from "../src/server/db/with-entreprise";
+import { factures } from "../src/server/db/schema";
+import { eq } from "drizzle-orm";
+import { nettoyerBase } from "./_test-db";
+import { sql } from "drizzle-orm";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LA FACTURE ET LE DEVIS QUI FAIT FOI — et l'allure qui arrive chez le client.
+//
+// **Sous le rôle applicatif, et c'est la condition.** La page par jeton est un
+// chemin public : les suites navigateur démarrent leur serveur sous un rôle qui
+// TRAVERSE la RLS et ne peuvent donc pas, par construction, voir un défaut
+// d'isolation. Le 8 août 2026, le lien de facture était mort en production
+// pendant que sa suite navigateur était verte (`CLAUDE.md` §5).
+//
+// **Ce que cette suite sait faire rougir**, et qu'aucune autre ne voyait :
+//   · un devis v2 en brouillon qui faisait refuser la fin de chantier ;
+//   · un devis v2 envoyé qui n'atteignait jamais la facture ;
+//   · l'allure de ses documents absente de la page que son client ouvre.
+// ═══════════════════════════════════════════════════════════════════════════
+
+let passed = 0;
+let failed = 0;
+async function test(nom: string, fn: () => Promise<void>) {
+  try {
+    await fn();
+    console.log(`✅ ${nom}`);
+    passed++;
+  } catch (err) {
+    console.error(`❌ ${nom}`);
+    console.error(`   ${err instanceof Error ? err.message : err}`);
+    failed++;
+  }
+}
+
+/**
+ * LE MESSAGE D'UNE ERREUR, SA CAUSE COMPRISE — et c'est le piège du 4 septembre.
+ *
+ * **Un contrôle de l'immuabilité a été cru faux pendant une soirée à cause de
+ * ça.** PostgreSQL refusait bel et bien la réécriture ; mais drizzle enveloppe
+ * son erreur, et `Error.message` ne porte alors que « Failed query: update
+ * "factures" … ». Le texte du trigger — « Une facture émise est immuable » —
+ * vit dans `error.cause`. Un `assert.rejects(fn, /immuable/i)` échoue donc
+ * SUR UNE PROTECTION QUI MARCHE, et fait conclure l'inverse de la vérité.
+ *
+ * `scripts/db-tests.ts` n'a pas ce problème : il passe par `pg` directement,
+ * sans ORM. Toute assertion sur un message de base venue du DÉPÔT doit passer
+ * par ici.
+ *
+ * Rend `null` quand rien n'a été refusé — l'appelant décide si c'est un échec.
+ */
+async function refusDe(f: () => Promise<unknown>): Promise<string | null> {
+  try {
+    await f();
+    return null;
+  } catch (e) {
+    let texte = "";
+    let courant: unknown = e;
+    for (let i = 0; i < 5 && courant instanceof Error; i++) {
+      texte += `${courant.message}
+`;
+      courant = (courant as { cause?: unknown }).cause;
+    }
+    return texte;
+  }
+}
+
+const MAINTENANT = new Date("2026-09-04T09:00:00Z");
+type Ctx = { utilisateurId: string; entrepriseId: string };
+
+async function contexte(suffixe: string): Promise<Ctx> {
+  const { entreprise, utilisateurId } = await entreprisesRepo.creerEntreprise(
+    { nom: "Atelier Reprise" },
+    { email: `reprise-${suffixe}-${Date.now()}@t.test` }
+  );
+  return { utilisateurId, entrepriseId: entreprise.id };
+}
+
+/** Un chantier dont le devis v1 est parti chez le client. */
+async function chantierAvecDevisEnvoye(ctx: Ctx, montantHt: string) {
+  const client = await clientsRepo.creerClient(ctx, { nom: "Mme Grospiron", telephone: "0612345678" });
+  const chantier = await chantiersRepo.creerChantier(ctx, {
+    nom: "Taille de haie",
+    adresseChantier: "5 rue des Lilas",
+    clientId: client.id,
+  });
+  await prixRepo.ajouterLignePrix(ctx, chantier.id, "Taille", montantHt);
+  const v1 = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+  await devisRepo.envoyerDevis(ctx, v1.id);
+  return { chantierId: chantier.id, devisV1: v1.id };
+}
+
+/**
+ * L'allure FIGÉE d'une facture, lue en base.
+ *
+ * **Ce qu'on interroge quand on veut savoir ce qui a été figé** — et non ce que
+ * tel ou tel écran veut bien en montrer. La page du client a changé le
+ * 8 septembre 2026 ; ces colonnes-là, elles, portent toujours la règle.
+ */
+/** La ligne de facture telle qu'elle est en base — ce qui a réellement été figé. */
+async function ligneDeFacture(ctx: Ctx, factureId: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [f] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
+    return f;
+  });
+}
+
+async function allureFigeeDe(ctx: Ctx, factureId: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [f] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
+    // La lecture des trois colonnes vit dans `src/lib` et sert aussi bien à
+    // l'entreprise qu'à la facture : la refaire ici en ferait une seconde.
+    return allureDepuisColonnes({
+      typographie: f.docTypographie,
+      fond: f.docFond,
+      accent: f.docAccent,
+    });
+  });
+}
+
+async function main() {
+  await nettoyerBase();
+
+  // ─── Le devis qui fait foi ────────────────────────────────────────────────
+
+  await test("un devis v2 EN BROUILLON ne fait plus refuser la fin de chantier", async () => {
+    const ctx = await contexte("v2-brouillon");
+    const { chantierId, devisV1 } = await chantierAvecDevisEnvoye(ctx, "1000.00");
+
+    // Il rouvre le devis pour corriger : une v2 en brouillon naît. Avant ce
+    // lot, `terminerChantier` prenait cette v2 et refusait le chantier au motif
+    // — faux — qu'aucun devis n'avait été envoyé.
+    await prixRepo.ajouterLignePrix(ctx, chantierId, "Évacuation", "200.00");
+    const v2 = await devisRepo.getOuCreerDevisBrouillon(ctx, chantierId);
+    assert.notStrictEqual(v2.id, devisV1, "aucune v2 n'a été ouverte : le cas n'est pas joué");
+
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    assert.strictEqual(facture.devisId, devisV1, "la facture doit reprendre la version ENVOYÉE");
+    assert.strictEqual(facture.totalHt, "1000.00", "elle a facturé un prix que le client n'a pas vu");
+  });
+
+  await test("un chantier sans aucun devis reste refusé, et pour le bon motif", async () => {
+    const ctx = await contexte("sans-devis");
+    const client = await clientsRepo.creerClient(ctx, { nom: "M. Sans", telephone: "0611111111" });
+    const chantier = await chantiersRepo.creerChantier(ctx, {
+      nom: "Rien",
+      adresseChantier: "1 rue Vide",
+      clientId: client.id,
+    });
+    await assert.rejects(
+      () => terminerChantier(ctx, chantier.id, MAINTENANT),
+      (e: unknown) => e instanceof FinChantierImpossibleError && e.motif === "devis_absent"
+    );
+  });
+
+  await test("un devis resté en brouillon refuse, en nommant l'envoi", async () => {
+    const ctx = await contexte("jamais-envoye");
+    const client = await clientsRepo.creerClient(ctx, { nom: "M. Attente", telephone: "0622222222" });
+    const chantier = await chantiersRepo.creerChantier(ctx, {
+      nom: "Devis en cours",
+      adresseChantier: "2 rue Attente",
+      clientId: client.id,
+    });
+    await prixRepo.ajouterLignePrix(ctx, chantier.id, "Main d'œuvre", "300.00");
+    await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+    await assert.rejects(
+      () => terminerChantier(ctx, chantier.id, MAINTENANT),
+      (e: unknown) => e instanceof FinChantierImpossibleError && e.motif === "devis_non_envoye"
+    );
+  });
+
+  // ─── La facture en retard, et le geste qui la rattrape ────────────────────
+
+  await test("un devis v2 ENVOYÉ après la facture la met en retard, et la reprise la rattrape", async () => {
+    const ctx = await contexte("rattrapage");
+    const { chantierId, devisV1 } = await chantierAvecDevisEnvoye(ctx, "1000.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    assert.strictEqual(facture.totalHt, "1000.00");
+
+    // Le supplément est accepté : il corrige le devis et le renvoie.
+    await prixRepo.ajouterLignePrix(ctx, chantierId, "Évacuation", "200.00");
+    const v2 = await devisRepo.getOuCreerDevisBrouillon(ctx, chantierId);
+    await devisRepo.envoyerDevis(ctx, v2.id);
+
+    // La règle le DIT — c'est ce que l'écran montre.
+    const foi = await devisRepo.devisQuiFaitFoi(ctx, chantierId);
+    assert.ok(foi, "aucun devis qui fait foi");
+    const etat = repriseDuDevis(
+      { devisId: facture.devisId, statut: "brouillon" },
+      { id: foi.id, numeroCommercial: foi.numeroCommercial, numeroVersion: foi.numeroVersion }
+    );
+    assert.strictEqual(etat.aJour, false, "la facture en retard n'est pas signalée");
+
+    // Le geste la rattrape : lignes, montants et devis d'origine.
+    const r = await reprendreLeDevisSurLaFacture(ctx, facture.id);
+    assert.strictEqual(r.ok, true, "la reprise a échoué");
+
+    const apres = await getFacturePourChantier(ctx, chantierId);
+    assert.strictEqual(apres?.facture.totalHt, "1200.00", "les montants n'ont pas suivi");
+    assert.strictEqual(apres?.facture.devisId, v2.id, "la facture pointe encore vers l'ancien devis");
+    assert.strictEqual(apres?.lignes.length, 2, "les lignes n'ont pas été remplacées");
+    assert.notStrictEqual(apres?.facture.devisId, devisV1);
+
+    // **Ce qui NE bouge PAS** : un numéro de facture est consommé, et sa date
+    // est celle de la facture, pas celle du devis.
+    assert.strictEqual(apres?.facture.numeroCommercial, facture.numeroCommercial);
+    assert.strictEqual(apres?.facture.dateEmission, facture.dateEmission);
+    assert.strictEqual(apres?.facture.dateEcheance, facture.dateEcheance);
+  });
+
+  await test("une facture ARRÊTÉE refuse la reprise, et le dit", async () => {
+    const ctx = await contexte("arretee");
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "800.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+
+    await prixRepo.ajouterLignePrix(ctx, chantierId, "Supplément", "100.00");
+    const v2 = await devisRepo.getOuCreerDevisBrouillon(ctx, chantierId);
+    await devisRepo.envoyerDevis(ctx, v2.id);
+
+    const r = await reprendreLeDevisSurLaFacture(ctx, facture.id);
+    assert.strictEqual(r.ok, false, "une pièce comptable a été réécrite");
+    if (!r.ok) assert.match(r.raison, /arrêtée/i, "le refus ne nomme pas sa raison");
+  });
+
+  await test("reprendre une facture déjà à jour est refusé sans rien toucher", async () => {
+    const ctx = await contexte("deja-a-jour");
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "500.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+
+    const r = await reprendreLeDevisSurLaFacture(ctx, facture.id);
+    assert.strictEqual(r.ok, false);
+
+    const apres = await getFacturePourChantier(ctx, chantierId);
+    assert.strictEqual(apres?.facture.totalHt, "500.00");
+    assert.strictEqual(apres?.lignes.length, 1, "les lignes ont été rejouées pour rien");
+  });
+
+  await test("la facture d'une AUTRE entreprise n'existe pas — la reprise ne la voit pas", async () => {
+    const a = await contexte("isolation-a");
+    const b = await contexte("isolation-b");
+    const { chantierId } = await chantierAvecDevisEnvoye(a, "700.00");
+    const facture = await terminerChantier(a, chantierId, MAINTENANT);
+
+    const r = await reprendreLeDevisSurLaFacture(b, facture.id);
+    assert.strictEqual(r.ok, false, "une entreprise a réécrit la facture d'une autre");
+    if (!r.ok) assert.match(r.raison, /introuvable/i);
+  });
+
+  // ─── L'allure de ses documents, jusqu'à la page du client ─────────────────
+
+  await test("sans réglage, la page du client rend celle d'aujourd'hui", async () => {
+    const ctx = await contexte("allure-defaut");
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "600.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+    const envoi = await creerEnvoiFacture(ctx, facture.id, "sms", MAINTENANT);
+
+    const vue = await factureParJeton(envoi.jeton, MAINTENANT);
+    assert.ok(vue, "la page du client ne trouve pas sa facture");
+    // **L'allure est ÉCRITE, et elle vaut le défaut.** Écrire en clair est ce
+    // qui distingue « parti sans allure » de « facture antérieure à 0074 » ; et
+    // c'est `estLAllureParDefaut` qui rend alors la page d'aujourd'hui, au pixel
+    // près (`src/app/factures/[jeton]/page.tsx`).
+    // **On l'interroge SUR LA FACTURE, plus sur ce que la page du client
+    // renvoie — 8 septembre 2026.** Le patron a demandé que cette page porte les
+    // couleurs d'Atlas ; elle ne transporte donc plus d'allure. La RÈGLE, elle,
+    // n'a pas bougé : c'est le PDF archivé qui la porte, et il naît de ces trois
+    // colonnes. Viser la colonne plutôt que l'écran, c'est ce que `CLAUDE.md`
+    // §5 bis demande — un contrôle ne doit pas réclamer ce qu'il a fait retirer.
+    const allureFigee = await allureFigeeDe(ctx, facture.id);
+    assert.ok(allureFigee, "l'aspect n'a pas été figé à l'émission");
+    assert.ok(
+      estLAllureParDefaut(allureFigee),
+      "un réglage jamais touché repeint le document de son client"
+    );
+  });
+
+  await test("UNE FACTURE PARTIE NE CHANGE PLUS D'ASPECT — sa règle du 4 septembre", async () => {
+    const ctx = await contexte("allure-figee");
+    await entreprisesRepo.mettreAJourEntreprise(ctx, {
+      allure: { typographie: "inter", fond: "#101010", accent: "#c0392b" },
+    });
+
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "750.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+    const envoi = await creerEnvoiFacture(ctx, facture.id, "sms", MAINTENANT);
+
+    // Six mois plus tard, il refait l'allure de ses documents.
+    await entreprisesRepo.mettreAJourEntreprise(ctx, {
+      allure: { typographie: "lato", fond: "#ffffff", accent: "#1a5c2e" },
+    });
+
+    const vue = await factureParJeton(envoi.jeton, MAINTENANT);
+    assert.ok(vue, "la page du client ne trouve plus sa facture");
+    const fige = await allureFigeeDe(ctx, facture.id);
+    assert.ok(fige, "la facture a perdu son aspect");
+    assert.strictEqual(fige.typographie, "inter", "l'aspect a suivi le nouveau réglage");
+    assert.strictEqual(fige.fond, "#101010");
+    assert.strictEqual(
+      fige.accent,
+      "#c0392b",
+      "son client ne retrouve plus l'aspect du PDF qu'il a reçu"
+    );
+  });
+
+  await test("LA BASE REFUSE de réécrire une facture émise — par le dépôt comme en SQL", async () => {
+    // **Sa règle du 4 septembre tenue une couche plus bas que l'application.**
+    // « Une facture partie ne change plus d'aspect » n'est pas une politesse
+    // d'écran : `trg_facture_immuable` (0018) l'interdit, et c'est ce trigger
+    // qui fait tenir tout le relevé de TVA — un relevé se calcule à partir des
+    // factures émises, donc il ne vaut que si elles ne bougent plus.
+    const ctx = await contexte("immuable");
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "550.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+
+    const parLeDepot = await refusDe(() =>
+      withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+        await tx
+          .update(factures)
+          .set({ docFond: "#123456" })
+          .where(eq(factures.id, facture.id));
+      })
+    );
+    assert.ok(parLeDepot, "l'aspect d'une facture émise a pu être réécrit par le dépôt");
+    assert.match(parLeDepot, /immuable/i, "le refus ne vient pas du trigger");
+
+    // Et par le chemin le plus court, dans le même contexte d'isolation : un
+    // garde-fou qui ne tiendrait que face à l'ORM n'en serait pas un.
+    const enSqlBrut = await refusDe(() =>
+      withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+        await tx.execute(sql`UPDATE factures SET doc_fond = '#123456' WHERE id = ${facture.id}`);
+      })
+    );
+    assert.ok(enSqlBrut, "une écriture SQL directe a réécrit une facture émise");
+    assert.match(enSqlBrut, /immuable/i);
+
+    // Le montant aussi, pas seulement l'aspect — c'est lui qui porte le relevé.
+    const surLeMontant = await refusDe(() =>
+      withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+        await tx.update(factures).set({ totalTtc: "1.00" }).where(eq(factures.id, facture.id));
+      })
+    );
+    assert.ok(surLeMontant, "le montant d'une facture émise a pu être réécrit");
+  });
+
+  await test("le repli d'historique : trois colonnes vides rendent RIEN, jamais le défaut", async () => {
+    // Confondre les deux ferait repeindre une facture partie sans allure — le
+    // bouton passerait du vert à l'or chez son client, à cause d'une migration
+    // censée figer les aspects.
+    assert.strictEqual(
+      allureDepuisColonnes({ typographie: null, fond: null, accent: null }),
+      null,
+      "une facture d'avant 0074 se prend pour une facture sans allure"
+    );
+    const relue = allureDepuisColonnes({
+      typographie: "inter",
+      fond: "#101010",
+      accent: "#c0392b",
+    });
+    assert.ok(relue, "une allure figée ne se relit pas");
+    assert.strictEqual(relue.fond, "#101010");
+    assert.ok(!estLAllureParDefaut(relue));
+  });
+
+  await test("son allure de documents arrive jusqu'à la page du client", async () => {
+    const ctx = await contexte("allure-reglee");
+    await entreprisesRepo.mettreAJourEntreprise(ctx, {
+      allure: { typographie: "inter", fond: "#101010", accent: "#c0392b" },
+    });
+
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "900.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+    const envoi = await creerEnvoiFacture(ctx, facture.id, "email", MAINTENANT);
+
+    const vue = await factureParJeton(envoi.jeton, MAINTENANT);
+    assert.ok(vue, "la page du client ne trouve pas sa facture");
+    const reglee = await allureFigeeDe(ctx, facture.id);
+    assert.ok(reglee, "l'allure réglée n'a pas été figée sur la facture");
+    assert.strictEqual(reglee.typographie, "inter");
+    assert.strictEqual(reglee.fond, "#101010");
+    assert.strictEqual(reglee.accent, "#c0392b");
+    assert.ok(
+      !estLAllureParDefaut(reglee),
+      "une allure réglée ne doit pas être prise pour le défaut"
+    );
+    // Et elle est bien FIGÉE dans la pièce, pas relue sur l'entreprise.
+    const enBase = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+      const [f] = await tx.select().from(factures).where(eq(factures.id, facture.id)).limit(1);
+      return f;
+    });
+    assert.strictEqual(enBase.docTypographie, "inter", "l'aspect n'est pas écrit sur la facture");
+    assert.strictEqual(enBase.docFond, "#101010");
+    assert.strictEqual(enBase.docAccent, "#c0392b");
+    assert.notStrictEqual(ALLURE_PAR_DEFAUT.accent, "#c0392b");
+  });
+
+  await test("un jeton inconnu ou expiré ne rend rien, allure comprise", async () => {
+    const ctx = await contexte("jeton-mort");
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "400.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+    const envoi = await creerEnvoiFacture(ctx, facture.id, "sms", MAINTENANT);
+
+    assert.strictEqual(await factureParJeton("ceci-n-existe-pas", MAINTENANT), null);
+    const bienPlusTard = new Date(MAINTENANT.getTime() + 400 * 86400_000);
+    assert.strictEqual(await factureParJeton(envoi.jeton, bienPlusTard), null);
+  });
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // L'IDENTITÉ QUE PORTE LA FACTURE — sa question du 8 septembre 2026.
+  //
+  // *« Lorsque l'utilisateur modifie son IBAN dans ses réglages ou le nom de sa
+  // société, les infos se modifient automatiquement dans le lien que recevra le
+  // client ? »* — puis : *« ne fais pas de pansement, corrige à la racine. »*
+  //
+  // **CES DEUX SUITES ROUGISSENT CONTRE LA VERSION D'HIER**, et c'est leur
+  // raison d'être : la facture recopiait l'identité DU DEVIS, figée le jour du
+  // devis. Un devis de janvier facturé en juin partait avec l'IBAN de janvier —
+  // le client virait sur un compte fermé, sur une facture toute neuve.
+  // ═════════════════════════════════════════════════════════════════════════
+
+  await test("L'IBAN DE LA FACTURE EST CELUI DU JOUR, PAS CELUI DU DEVIS", async () => {
+    const ctx = await contexte("iban-du-jour");
+    await entreprisesRepo.mettreAJourEntreprise(ctx, {
+      iban: "FR7611110000011111111111111",
+      titulaireCompte: "Ancienne Banque",
+    });
+
+    // Le devis part avec l'IBAN d'alors : c'est normal, et cela ne change pas.
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "500.00");
+
+    // Des mois plus tard, il change de banque et régularise le titulaire.
+    await entreprisesRepo.mettreAJourEntreprise(ctx, {
+      iban: "FR7622220000022222222222222",
+      titulaireCompte: "Jardins du Val",
+    });
+
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    const ligne = await ligneDeFacture(ctx, facture.id);
+    assert.strictEqual(
+      ligne.entrepriseIban,
+      "FR7622220000022222222222222",
+      "la facture part avec l'IBAN du devis : le client vire sur un compte fermé"
+    );
+    assert.strictEqual(
+      ligne.entrepriseTitulaireCompte,
+      "Jardins du Val",
+      "le titulaire n'est pas figé : le chèque sera libellé au mauvais nom"
+    );
+
+    // Et ce que le client LIT sur sa page vient de ces colonnes-là, groupé par
+    // quatre — la même fonction que le PDF archivé.
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+    const envoi = await creerEnvoiFacture(ctx, facture.id, "sms", MAINTENANT);
+    const vue = await factureParJeton(envoi.jeton, MAINTENANT);
+    assert.ok(vue, "la page du client ne trouve pas sa facture");
+    assert.strictEqual(vue.modalites.ibanLisible, "FR76 2222 0000 0222 2222 2222 222");
+    assert.strictEqual(vue.modalites.ibanACopier, "FR7622220000022222222222222");
+    assert.strictEqual(
+      vue.modalites.ordreDuCheque,
+      "Jardins du Val",
+      "l'ordre du chèque ignore le titulaire du compte"
+    );
+  });
+
+  await test("et le NOM de l'entreprise aussi — une facture porte la raison sociale du jour", async () => {
+    const ctx = await contexte("nom-du-jour");
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "620.00");
+
+    // Il passe en société, et l'enseigne change.
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { nom: "Jardins du Val SAS" });
+
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    const ligne = await ligneDeFacture(ctx, facture.id);
+    assert.strictEqual(
+      ligne.entrepriseNom,
+      "Jardins du Val SAS",
+      "la facture porte une raison sociale qui n'existe plus"
+    );
+
+    // Sans titulaire de compte réglé, l'ordre du chèque retombe sur ce nom-là,
+    // et un IBAN jamais renseigné ne doit rien afficher du tout.
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+    const envoi = await creerEnvoiFacture(ctx, facture.id, "email", MAINTENANT);
+    const vue = await factureParJeton(envoi.jeton, MAINTENANT);
+    assert.strictEqual(vue?.modalites.ordreDuCheque, "Jardins du Val SAS");
+    assert.strictEqual(vue?.modalites.ibanLisible, null, "un IBAN non réglé ne doit rien afficher");
+  });
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // LES FACTURES PARTIES AVEC UN AUTRE IBAN — tranché par lui le 8 sept. 2026.
+  //
+  // Ce qu'on éprouve ici n'est pas l'écran : c'est **qui** doit être prévenu.
+  // Un faux positif ferait écrire à un client qui n'a rien à corriger, et un
+  // avertissement qui parle à tort s'apprend à être ignoré.
+  // ═════════════════════════════════════════════════════════════════════════
+
+  await test("UNE FACTURE PARTIE AVANT LE CHANGEMENT D'IBAN EST SIGNALÉE", async () => {
+    const ctx = await contexte("ancien-iban");
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7611110000011111111111111" });
+
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "500.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+
+    // Il change de banque APRÈS l'envoi.
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7622220000022222222222222" });
+
+    const aPrevenir = await facturesAvecAncienIban(ctx);
+    assert.strictEqual(aPrevenir.length, 1, "la facture partie avec l'ancien IBAN n'est pas signalée");
+    assert.strictEqual(aPrevenir[0].numeroCommercial, facture.numeroCommercial);
+
+    // **Le message porte le NOUVEL IBAN**, jamais celui de la facture : c'est
+    // tout l'objet du message.
+    assert.ok(
+      aPrevenir[0].message.includes("FR76 2222 0000 0222 2222 2222 222"),
+      `le message ne porte pas le nouvel IBAN : « ${aPrevenir[0].message} »`
+    );
+    assert.equal(
+      aPrevenir[0].message.includes("1111"),
+      false,
+      "le message porte encore l'ancien IBAN"
+    );
+    assert.ok(aPrevenir[0].message.includes(facture.numeroCommercial), "le numéro manque au message");
+  });
+
+  await test("une facture émise APRÈS le changement n'est pas signalée", async () => {
+    const ctx = await contexte("iban-deja-bon");
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7611110000011111111111111" });
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "500.00");
+
+    // Le changement précède la facture : elle naît déjà avec le bon IBAN
+    // (migration 0076).
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7622220000022222222222222" });
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+
+    assert.deepStrictEqual(await facturesAvecAncienIban(ctx), []);
+  });
+
+  await test("UNE FACTURE DÉJÀ RÉGLÉE N'A PLUS RIEN À CORRIGER", async () => {
+    const ctx = await contexte("iban-deja-paye");
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7611110000011111111111111" });
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "500.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7622220000022222222222222" });
+
+    // Sans le règlement, elle serait signalée : la suite au-dessus le prouve.
+    assert.strictEqual((await facturesAvecAncienIban(ctx)).length, 1);
+
+    const ligne = await ligneDeFacture(ctx, facture.id);
+    const regle = await noterPaiement(ctx, facture.id, {
+      date: ligne.dateEmission,
+      montant: ligne.totalTtc,
+    });
+    assert.strictEqual(regle.ok, true, "le montage n'a pas pu solder la facture");
+
+    assert.deepStrictEqual(
+      await facturesAvecAncienIban(ctx),
+      [],
+      "on écrit à un client qui a déjà payé"
+    );
+  });
+
+  await test("sans IBAN aujourd'hui, il n'y a rien à annoncer", async () => {
+    const ctx = await contexte("iban-retire");
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7611110000011111111111111" });
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "500.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+
+    // Il retire son IBAN : il n'y a pas de nouveau compte à donner.
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: null });
+
+    assert.deepStrictEqual(await facturesAvecAncienIban(ctx), []);
+  });
+
+
+  await test("UN CLIENT PRÉVENU NE SE REDEMANDE PAS", async () => {
+    const ctx = await contexte("iban-signale");
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7611110000011111111111111" });
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "500.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7622220000022222222222222" });
+
+    assert.strictEqual((await facturesAvecAncienIban(ctx)).length, 1, "l'essai ne prouverait rien");
+
+    await marquerIbanSignale(ctx, facture.id);
+    assert.deepStrictEqual(
+      await facturesAvecAncienIban(ctx),
+      [],
+      "l'alerte réclame un client déjà prévenu : elle s'apprendra à être ignorée"
+    );
+  });
+
+  await test("MAIS UN SECOND CHANGEMENT DE BANQUE LE REDEMANDE", async () => {
+    // C'est ce qu'un simple drapeau « prévenu » aurait raté : il serait resté
+    // levé, et ce client n'aurait jamais su où virer (migration 0078).
+    const ctx = await contexte("iban-deux-fois");
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7611110000011111111111111" });
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "500.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7622220000022222222222222" });
+    await marquerIbanSignale(ctx, facture.id);
+    assert.deepStrictEqual(await facturesAvecAncienIban(ctx), []);
+
+    // Il change encore de banque : le client doit être prévenu du troisième.
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7633330000033333333333333" });
+    const encore = await facturesAvecAncienIban(ctx);
+    assert.strictEqual(encore.length, 1, "le client reste sur un compte dont personne ne lui a parlé");
+    assert.ok(encore[0].message.includes("FR76 3333 0000 0333 3333 3333 333"));
+  });
+
+  await test("marquer sans IBAN réglé ne fait rien taire", async () => {
+    // Noter un signalement alors qu'aucun compte n'est donné éteindrait l'alerte
+    // pour un IBAN qui n'existe pas.
+    const ctx = await contexte("iban-marquer-a-vide");
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7611110000011111111111111" });
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "500.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: null });
+    await marquerIbanSignale(ctx, facture.id);
+    const ligne = await ligneDeFacture(ctx, facture.id);
+    assert.strictEqual(ligne.ibanSignale, null, "un signalement a été noté sans compte à annoncer");
+  });
+
+
+  await test("LE TROU FAIT UNE SEULE COLONNE DE LARGE — le reste reste immuable", async () => {
+    // La migration 0079 pardonne `iban_signale`, et RIEN d'autre. Sans cette
+    // suite, l'ouverture pourrait s'élargir sans que personne le voie — et
+    // c'est le relevé de TVA qui en paierait le prix.
+    const ctx = await contexte("immuable-encore");
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "500.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+
+    const refus = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+      try {
+        await tx
+          .update(factures)
+          .set({ entrepriseIban: "FR7699990000099999999999999" })
+          .where(eq(factures.id, facture.id));
+        return null;
+      } catch (e) {
+        // **Drizzle enveloppe l'erreur de Postgres** : le texte est dans la
+        // cause, pas dans le message. L'y chercher ferait passer une protection
+        // qui marche pour une protection absente.
+        const cause = (e as { cause?: { message?: string } }).cause;
+        return `${(e as Error).message} ${cause?.message ?? ""}`;
+      }
+    });
+    assert.ok(refus, "l'IBAN figé d'une facture émise a pu être réécrit");
+    assert.ok(
+      /immuable/i.test(refus),
+      `le refus ne vient pas du bon garde-fou : « ${refus} »`
+    );
+  });
+
+
+  console.log(`\n${passed} réussis, ${failed} échoués`);
+  await pool.end();
+  if (failed > 0) process.exit(1);
+}
+
+main().catch(async (err) => {
+  console.error(err);
+  await pool.end();
+  process.exit(1);
+});

@@ -1,19 +1,28 @@
-import { and, desc, eq, isNull, isNotNull, lt, gt, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, isNotNull, lt, gt, or, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { chantiers, entreprises, envoisDevis, factures, rappelsVus } from "../db/schema";
+import { chantiers, creneauxChantier, entreprises, envoisDevis, factures, rappelsVus, retoursIntervention } from "../db/schema";
 import {
   lireRappels,
   normaliserRappels,
+  reglagesPourLeRole,
   seuilAncienneté,
-  echeanceFacture,
   rappelFactureDu,
   rappelEncoreTu,
   silenceApresVuJours,
   type GenreRappel,
   type GenreAcquittable,
+  type GenreVu,
   type ReglagesRappels,
 } from "../../lib/rappels";
 import type { Ctx } from "./context";
+import { getRole } from "../autorisation";
+import { recoitLesRappels } from "../../lib/acces-roles";
+import { dernierJourTravaille, retoursPasRecus, type JourTravaille } from "../../lib/retour-intervention";
+import { creneauxOccupes } from "../../lib/creneaux-chantier";
+import type { Creneau, Moment } from "../../lib/disponibilites";
+import { jourIso } from "../../lib/jour";
+import { avoirsDesFactures } from "./avoirs";
+import { apresAvoirs } from "@/lib/exigibilite-tva";
 
 /**
  * Les quatre rappels : leur réglage, et ce qu'ils rappellent.
@@ -93,7 +102,11 @@ export type Rappel = {
  * rappel fonctionne, alors qu'il est coupé.
  */
 export async function rappelsEnCours(ctx: Ctx, maintenant: Date): Promise<Rappel[]> {
-  const reglages = await lireReglagesRappels(ctx);
+  // **Le tri par rôle se fait ICI, pas à l'écran** : l'assistant lit cette
+  // même fonction (`lire-rappels.ts`), et un commercial ne doit pas y retrouver
+  // les factures qu'on lui cache à l'accueil (27 septembre 2026).
+  const [lus, role] = await Promise.all([lireReglagesRappels(ctx), getRole(ctx)]);
+  const reglages = reglagesPourLeRole(lus, role);
   if (
     reglages.chantierSansDevisJours === null &&
     reglages.devisSansReponseJours === null &&
@@ -158,6 +171,10 @@ export async function rappelsEnCours(ctx: Ctx, maintenant: Date): Promise<Rappel
             eq(envoisDevis.entrepriseId, ctx.entrepriseId),
             isNull(envoisDevis.reponse),
             isNull(chantiers.deletedAt),
+            // **Glissé hors de la liste, il ne revient pas par un rappel** : il
+            // l'a retiré en sachant qu'il attendait. Un envoi parti APRÈS le
+            // retrait, lui, se rappelle (`retireDeLaListe`, la même frontière).
+            or(isNull(chantiers.retireDeLaListeAt), gt(envoisDevis.envoyeAt, chantiers.retireDeLaListeAt)),
             lt(envoisDevis.envoyeAt, seuil),
             // **Un lien EXPIRÉ a déjà sa propre alerte** (`EnvoiCaduc`, sur
             // l'accueil). Le rappeler ici une seconde fois ferait deux cartes
@@ -211,23 +228,23 @@ export async function rappelsEnCours(ctx: Ctx, maintenant: Date): Promise<Rappel
 
     // ── Le quatrième : une facture dont le règlement n'est pas arrivé ─────
     //
-    // **« A plus B », sa réponse du 16 août 2026** : l'échéance quand elle
-    // existe — le délai de paiement réglé dans « Devis & factures » — et le
-    // jour de l'envoi sinon (`echeanceFacture`).
+    // **Depuis l'échéance INSCRITE SUR LA FACTURE — sa décision du 7 octobre
+    // 2026**, qui remplace « A plus B » (16 août). Le délai des Réglages n'est
+    // pas celui de chaque facture : un devis « comptant » ou une échéance
+    // changée à la main faisaient prévenir un mois trop tard, ou relancer un
+    // client qui n'était pas en retard. Ce que le client lit est la date qui
+    // compte ; le jour de l'envoi ne sert qu'à une facture sans échéance.
     if (reglages.factureImpayeeJours !== null) {
-      const [reglage] = await tx
-        .select({ delai: entreprises.delaiPaiementJours })
-        .from(entreprises)
-        .where(eq(entreprises.id, ctx.entrepriseId))
-        .limit(1);
-      const delai = reglage?.delai ?? null;
-
       const lignes = await tx
         .select({
           id: factures.id,
           numero: factures.numeroCommercial,
           chantierId: factures.chantierId,
           chantierNom: chantiers.nom,
+          dateEmission: factures.dateEmission,
+          dateEcheance: factures.dateEcheance,
+          totalHt: factures.totalHt,
+          totalTva: factures.totalTva,
           totalTtc: factures.totalTtc,
           envoyeeLe: chantiers.factureEnvoyeeAt,
           repousseeLe: chantiers.rappelFactureRepousseLe,
@@ -246,17 +263,27 @@ export async function rappelsEnCours(ctx: Ctx, maintenant: Date): Promise<Rappel
             eq(factures.entrepriseId, ctx.entrepriseId),
             eq(factures.statut, "emise"),
             isNull(chantiers.deletedAt),
-            isNotNull(chantiers.factureEnvoyeeAt)
+            isNotNull(chantiers.factureEnvoyeeAt),
+            // « Il ne me paiera pas » : il l'a dit, on ne le lui rappelle plus
+            // (sa planche du 24 septembre 2026). La facture reste réclamable ;
+            // c'est le rappel seul qui se tait.
+            sql`NOT EXISTS (SELECT 1 FROM factures_non_payees n WHERE n.facture_id = ${factures.id})`
           )
         );
 
+      // **Ce qu'il doit se compte APRÈS les avoirs** : sans eux, le rappel
+      // réclamerait une somme qu'un avoir a déjà annulée.
+      const avoirsParFacture = await avoirsDesFactures(tx, lignes.map((l) => l.id));
+
       for (const l of lignes) {
-        const totalCts = Math.round(Number(l.totalTtc) * 100);
+        const net = apresAvoirs({ ...l, avoirs: avoirsParFacture.get(l.id) ?? [] });
+        const totalCts = Math.round(Number(net.totalTtc) * 100);
         const resteDuCts = totalCts - Math.round(Number(l.recu) * 100);
         // Soldée : elle sort du rappel le jour même, sans geste.
         if (resteDuCts <= 0) continue;
 
-        const echeance = echeanceFacture(l.envoyeeLe!, delai);
+        // Une date civile en base : on la lit comme un jour, pas un instant.
+        const echeance = l.dateEcheance ? new Date(`${l.dateEcheance}T00:00:00Z`) : l.envoyeeLe!;
         const du = rappelFactureDu({
           maintenant,
           echeance,
@@ -323,6 +350,99 @@ export async function rappelsEnCours(ctx: Ctx, maintenant: Date): Promise<Rappel
 
 
 /**
+ * « RETOUR PAS REÇU » — sa planche du 26 septembre 2026.
+ *
+ * Ce fichier lit ; la règle (quel jour, quels chantiers, ce que « J'ai vu »
+ * fait taire) vit dans `retoursPasRecus`, et s'éprouve sans base.
+ *
+ * **`demande` vient de `reglesDuRetour`**, qui tient la formule : un réglage
+ * éteint, ou une formule sans retours, ne coûte aucune requête.
+ *
+ * **Les jours travaillés se lisent comme le planning les dessine** : les
+ * demi-journées posées, et à défaut le bloc d'un seul tenant de ses trois
+ * colonnes (`creneauxOccupes`). Une seconde lecture finirait par annoncer un
+ * jour travaillé que le planning ne montre pas.
+ */
+export async function retoursPasRecusEnCours(
+  ctx: Ctx,
+  demande: boolean,
+  maintenant: Date
+): Promise<JourTravaille[]> {
+  if (!demande) return [];
+  // Le retour d'un chantier est l'affaire du patron seul (27 septembre 2026).
+  const role = await getRole(ctx);
+  if (role === null || !recoitLesRappels(role, "retour")) return [];
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [lesChantiers, poses] = await Promise.all([
+      tx
+        .select({
+          id: chantiers.id,
+          nom: chantiers.nom,
+          jour: chantiers.datePlanifiee,
+          moment: chantiers.creneauDebut,
+          dureeDemiJournees: chantiers.dureeDemiJournees,
+        })
+        .from(chantiers)
+        .where(and(eq(chantiers.entrepriseId, ctx.entrepriseId), isNull(chantiers.deletedAt))),
+      tx
+        .select({ chantierId: creneauxChantier.chantierId, jour: creneauxChantier.jour, demi: creneauxChantier.demi })
+        .from(creneauxChantier)
+        .where(eq(creneauxChantier.entrepriseId, ctx.entrepriseId)),
+    ]);
+
+    const posesParChantier = new Map<string, Creneau[]>();
+    for (const p of poses) {
+      const liste = posesParChantier.get(p.chantierId) ?? [];
+      liste.push({ jour: p.jour, moment: p.demi as Moment });
+      posesParChantier.set(p.chantierId, liste);
+    }
+    const travailles: JourTravaille[] = [];
+    for (const c of lesChantiers) {
+      const jours = new Set(
+        creneauxOccupes(c, posesParChantier.get(c.id) ?? []).map((creneau) => creneau.jour)
+      );
+      for (const jour of jours) travailles.push({ chantierId: c.id, chantierNom: c.nom, jour });
+    }
+
+    const aujourdHui = jourIso(maintenant);
+    const cible = dernierJourTravaille(travailles, aujourdHui);
+    if (cible === null) return [];
+
+    // **Les retours de CE jour seulement**, lus à Paris : une journée à Paris
+    // déborde d'une heure ou deux sur la veille et le lendemain en UTC, d'où
+    // la marge d'un jour de chaque côté, puis le tri par `jourIso`.
+    const debut = new Date(`${cible}T00:00:00Z`);
+    debut.setUTCDate(debut.getUTCDate() - 1);
+    const fin = new Date(`${cible}T00:00:00Z`);
+    fin.setUTCDate(fin.getUTCDate() + 2);
+    const [retours, vus] = await Promise.all([
+      tx
+        .select({ chantierId: retoursIntervention.chantierId, poseLe: retoursIntervention.poseLe })
+        .from(retoursIntervention)
+        .where(
+          and(
+            eq(retoursIntervention.entrepriseId, ctx.entrepriseId),
+            gt(retoursIntervention.poseLe, debut),
+            lt(retoursIntervention.poseLe, fin)
+          )
+        ),
+      tx
+        .select({ chantierId: rappelsVus.chantierId, vuLe: rappelsVus.vuLe })
+        .from(rappelsVus)
+        .where(and(eq(rappelsVus.entrepriseId, ctx.entrepriseId), eq(rappelsVus.genre, "retour-pas-recu"))),
+    ]);
+
+    return retoursPasRecus({
+      demande,
+      travailles,
+      retours: retours.map((r) => ({ chantierId: r.chantierId, jour: jourIso(new Date(r.poseLe)) })),
+      vus: new Map(vus.map((v) => [v.chantierId, jourIso(new Date(v.vuLe))])),
+      aujourdHui,
+    });
+  });
+}
+
+/**
  * « J'ai vu » sur un rappel — sa demande du 30 août 2026.
  *
  * *« Pour chaque notification je dois pouvoir cliquer sur vu pour les faire
@@ -338,7 +458,7 @@ export async function rappelsEnCours(ctx: Ctx, maintenant: Date): Promise<Rappel
  */
 export async function marquerRappelVu(
   ctx: Ctx,
-  genre: GenreAcquittable,
+  genre: GenreVu,
   chantierId: string,
   maintenant: Date = new Date()
 ): Promise<boolean> {

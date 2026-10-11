@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Les points au milieu des phrases — relevés, puis retirés</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="les-points-au-milieu-des-phrases--relevés-puis-retirés">Les points au milieu des phrases — relevés, puis retirés</h1>
+<p>Sa règle du 22 septembre 2026, devant « Probable · Peuplier » : <em>« Plus jamais tu mets de point entre le nom et probable ! Retiens pour les autres fiches, et plus jamais de tiret, fais des phrases normales. »</em></p>
+<p>Puis sa demande : <em>« va me chercher tous les · qui servent à rien dans l'application comme le 6 à facturer · 19 facturés »</em>.</p>
+<p>Puis son arbitrage, une fois le relevé sous les yeux : <em>« pour dernière prestation tu peux remplacer le · par le "le". Pour les autres supprime-les simplement. Ne lance aucune batterie. »</em></p>
+<hr>
+<h2 id="ce-qui-a-été-fait">Ce qui a été fait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>relevé dans <code>src/</code>, commentaires du code retirés</td>
+<td><strong>123 lignes, 149 points</strong></td>
+</tr>
+<tr>
+<td><strong>retirés</strong> — écrans, documents qui partent chez ses clients, écrans techniques</td>
+<td><strong>72 lignes, toutes</strong></td>
+</tr>
+<tr>
+<td>laissés : les conditions générales</td>
+<td>42 lignes — voir plus bas</td>
+</tr>
+<tr>
+<td>laissés : hors produit — <code>/design</code>, fournisseur d'IA de développement, consigne envoyée au modèle</td>
+<td>6 lignes</td>
+</tr>
+<tr>
+<td>laissés : faux positifs — du code qui <strong>retire</strong> des points d'une saisie</td>
+<td>3 lignes</td>
+</tr>
+</tbody></table></div>
+<p><strong>Il reste zéro point du milieu de phrase dans ce que le produit affiche.</strong></p>
+<h2 id="par-quoi-chacun-a-été-remplacé">Par quoi chacun a été remplacé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Sa consigne était « supprime-les simplement ». Elle a été suivie à la lettre <strong>partout où l'espace seule se lit</strong> :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Avant</th>
+<th>Après</th>
+</tr></thead><tbody>
+<tr>
+<td><code>F-2026-019 · émise le 12 août</code></td>
+<td><code>F-2026-019 émise le 12 août</code></td>
+</tr>
+<tr>
+<td><code>Jardin Martin · ½</code></td>
+<td><code>Jardin Martin ½</code></td>
+</tr>
+<tr>
+<td><code>Devis · n° 12</code></td>
+<td><code>Devis n° 12</code></td>
+</tr>
+<tr>
+<td><code> · vous</code> (catalogue)</td>
+<td><code> vous</code></td>
+</tr>
+<tr>
+<td><code> · absent</code> (fiche de chantier)</td>
+<td><code> absent</code></td>
+</tr>
+<tr>
+<td><code>6 à facturer · 19 facturés</code></td>
+<td><code>6 à facturer  19 facturés</code> — l'œil sépare déjà les deux comptes</td>
+</tr>
+</tbody></table></div>
+<p><strong>Et par une virgule là où l'espace seule collait deux nombres, ou changeait le sens.</strong> « 12 août 1 250 € prévus » se lit comme un seul nombre coupé ; « Devis envoyé à relancer » ne dit plus la même chose que « Devis envoyé, à relancer » :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Avant</th>
+<th>Après</th>
+</tr></thead><tbody>
+<tr>
+<td><code>BROUILLON · SANS PHOTO</code> · <code>À VÉRIFIER · 6 PHOTOS</code></td>
+<td><code>BROUILLON, SANS PHOTO</code> · <code>À VÉRIFIER, 6 PHOTOS</code></td>
+</tr>
+<tr>
+<td><code>Devis envoyé · à relancer</code></td>
+<td><code>Devis envoyé, à relancer</code></td>
+</tr>
+<tr>
+<td><code>Devis en attente · 5 jours</code></td>
+<td><code>Devis en attente, 5 jours</code></td>
+</tr>
+<tr>
+<td><code>12 août · 1 250 € prévus</code></td>
+<td><code>12 août, 1 250 € prévus</code></td>
+</tr>
+<tr>
+<td><code>Facturé le 20 août · F-2026-019</code></td>
+<td><code>Facturé le 20 août, F-2026-019</code></td>
+</tr>
+<tr>
+<td><code>44300 Nantes · Devis 5 sept.</code></td>
+<td><code>44300 Nantes, Devis 5 sept.</code></td>
+</tr>
+<tr>
+<td><code>2 chantiers · complet</code></td>
+<td><code>2 chantiers, complet</code></td>
+</tr>
+<tr>
+<td><code>06 12 34 56 78 · 12 rue des Lilas</code></td>
+<td><code>06 12 34 56 78, 12 rue des Lilas</code></td>
+</tr>
+<tr>
+<td><code>Probable · Peuplier</code></td>
+<td><code>Probable, peuplier</code></td>
+</tr>
+<tr>
+<td><code>Matin · 2 demi-journées · équipe Nord</code> (PDF)</td>
+<td><code>Matin, 2 demi-journées, équipe Nord</code></td>
+</tr>
+<tr>
+<td><code>15 SAMU · 18 Pompiers</code> (PDF de sécurité)</td>
+<td><code>15 SAMU, 18 Pompiers</code></td>
+</tr>
+<tr>
+<td><code>2 à 4 m de haut · tronc de ⌀ 20 cm</code></td>
+<td><code>2 à 4 m de haut, tronc de ⌀ 20 cm</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>Et le seul remplacement qu'il a dicté :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>Avant</th>
+<th>Après</th>
+</tr></thead><tbody>
+<tr>
+<td><code>DERNIÈRE PRESTATION · 12 août</code></td>
+<td><code>DERNIÈRE PRESTATION le 12 août</code></td>
+</tr>
+</tbody></table></div>
+<h2 id="pourquoi-pas--probable-sur-un-peuplier-">Pourquoi pas « Probable sur un peuplier »</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>CLAUDE.md</code> §3 donne cette phrase en exemple, et elle demande un genre — « un » peuplier, « une » aubépine. <strong>Aucune donnée du dépôt ne porte ce genre</strong> : ni la table des taxons, ni la fiche. L'écrire reviendrait à le deviner, ce que la même règle interdit (<em>« ce qui a besoin d'un genre se lit dans la donnée, jamais deviné »</em>). L'écran dit donc « Probable, peuplier » — et la phrase complète reste possible le jour où le genre entre en base.</p>
+<h2 id="trois-choses-trouvées-en-chemin-qui-nétaient-pas-dans-la-demande">Trois choses trouvées en chemin, qui n'étaient pas dans la demande</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>La version servie était comparée par son point.</strong> <code>demarrer.sh</code> écrit <code>%cd · %h · branche</code> dans <code>ATLAS_VERSION</code>, <code>version-executee.ts</code> écrit le même format, et <code>version-servie.ts</code> compare les deux <strong>caractère pour caractère</strong> pour dire si le serveur est en retard sur le dépôt. Changer un seul des deux aurait fait annoncer « en retard » en permanence dans Réglages. Les deux ont été changés ensemble.</li>
+<li><strong>Le point portait une marge de 5 px sur la ligne des clients.</strong> Une boîte flexible mange l'espace qui la commence : la marge existait pour que le point ne colle pas à l'adresse. Une virgule, elle, doit coller au mot qu'elle suit — la marge est partie avec le point.</li>
+<li><strong><code>abonnements.ts</code> remplaçait un tiret par un point</strong> — les deux caractères qu'il refuse, l'un mis à la place de l'autre. C'est une virgule maintenant.</li>
+</ol>
+<h2 id="les-contrôles-qui-réclamaient-un-point">Les contrôles qui réclamaient un point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Sa règle du 20 août : quand une suite rougit après un retrait qu'il a demandé, <strong>on adapte le contrôle, on ne remet pas le libellé</strong>. Neuf suites le réclamaient :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>La suite</th>
+<th>Ce qui a changé</th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-libelle-occupation</code>, <code>test-planning-jour</code>, <code>test-ligne-etat-chantier</code>, <code>test-termines-par-mois</code>, <code>test-grille-prix</code>, <code>test-abonnements</code></td>
+<td>le libellé attendu suit le libellé rendu</td>
+</tr>
+<tr>
+<td><code>test-devis-qui-tarde-e2e</code>, <code>test-fiche-chantier-pdf</code></td>
+<td>idem</td>
+</tr>
+<tr>
+<td><code>test-version-executee</code></td>
+<td>il cherchait un point pour prouver qu'aucune branche n'est inventée sur un arbre détaché : il cherche la virgule</td>
+</tr>
+<tr>
+<td><code>test-diagnostic-ecrans-e2e</code></td>
+<td>il exigeait « un point médian » entre le crédit et la licence</td>
+</tr>
+<tr>
+<td><code>test-catalogue-mes-mots-e2e</code></td>
+<td><strong>visé plus profond</strong> : il cherchait <code>/· vous/</code> dans toute la page. Le mot « vous » se lit partout ; la marque porte désormais un repère, <code>data-atlas="mes-mots-marque"</code>, qui survivra au prochain remaniement du libellé</td>
+</tr>
+</tbody></table></div>
+<p>Deux suites interdisaient DÉJÀ le point — <code>test-fiche-client-e2e</code> et <code>test-travaux-a-faire-e2e</code> : elles restent vertes, et elles gardent la règle.</p>
+<h2 id="ce-qui-na-pas-été-touché-et-pourquoi">Ce qui n'a pas été touché, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>les 42 points des conditions générales</strong></td>
+<td>ce sont des puces de liste et des séparateurs de tableau dans un document juridique <strong>déjà publié et accepté</strong>. Les modifier demande une nouvelle version et une nouvelle acceptation par chaque compte : c'est sa décision, pas une correction de forme</td>
+</tr>
+<tr>
+<td><strong>les maquettes</strong> (<code>appli/</code>, <code>maquettes/</code>, les <code>engendrer-*</code>)</td>
+<td>des planches déjà tranchées. Les réécrire ferait rougir leurs vérificateurs sans rien changer à l'application</td>
+</tr>
+<tr>
+<td><strong>les commentaires du code</strong></td>
+<td>ils ne s'affichent pas. Seuls ont été corrigés ceux qui CITAIENT un libellé d'écran — un commentaire périmé se relit comme vrai</td>
+</tr>
+<tr>
+<td><strong>les tirets <code>—</code></strong></td>
+<td>sa deuxième règle du jour. Ce lot ne porte que les points ; le relevé des tirets reste à faire</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-a-été-vérifié--et-ce-qui-ne-la-pas-été">Ce qui a été vérifié — et ce qui ne l'a pas été</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Sa consigne : aucune batterie.</strong> Elle n'a donc pas été jouée.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Joué ici</th>
+<th>Verdict</th>
+</tr></thead><tbody>
+<tr>
+<td><code>npx tsc --noEmit</code></td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td><code>npm run lint</code></td>
+<td><strong>vert</strong> (0 erreur ; 41 avertissements, tous antérieurs)</td>
+</tr>
+<tr>
+<td>les six suites de règles pures adaptées</td>
+<td><strong>vertes</strong>, 9+9+…, 0 échec</td>
+</tr>
+<tr>
+<td>l'écran d'accueil, regardé connecté</td>
+<td><code>BROUILLON, SANS PHOTO</code> · <code>À VÉRIFIER, 6 PHOTOS</code> — le point est bien parti</td>
+</tr>
+</tbody></table></div>
+<div class="tablewrap"><table><thead><tr>
+<th>Pas vérifié</th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td>Terminés, Ma TVA, le diagnostic, l'arrosage, la fiche client</td>
+<td>le jeu de démonstration n'a ni chantier terminé, ni facture, ni photo de croquis, ni fiche de passage. <strong>Pas vérifiable ICI</strong></td>
+</tr>
+<tr>
+<td>les suites navigateur, les suites base</td>
+<td>c'est la batterie, et elle n'a pas été lancée</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce lot est de niveau 3</strong> — il touche la TVA, les devis et les règlements, et <code>abonnements.ts</code> atteint 68 points d'entrée. Le garde-fou de <code>main</code> exigera <code>npm run verifier:avant-livraison</code> avant toute fusion : <strong>rien n'arrivera sur son espace tant que la batterie n'aura pas été jouée</strong>, et c'est lui qui dit quand.</p>
+<hr>
+<h2 id="le-garde-fou--23-septembre-2026">Le garde-fou — 23 septembre 2026</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Sa demande du lendemain : <em>« mets cette règle en garde-fou, que les sessions futures ne recommencent pas à mettre des points inutiles là où elles peuvent faire des phrases »</em>.</p>
+<p><code>scripts/test-aucun-tiret.ts</code> (qui a absorbé celui des points le 23 septembre, voir plus bas), joué par <code>npm test</code>, donc par la batterie. Il lit les 152 000 lignes de <code>src/</code>, commentaires retirés, et refuse tout « · » qui n'est pas déclaré <strong>avec sa raison</strong> :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Déclaré</th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td>les conditions générales</td>
+<td>des puces, dans un texte déjà publié et accepté</td>
+</tr>
+<tr>
+<td><code>/design/a</code>, <code>/design/b</code></td>
+<td>hors produit</td>
+</tr>
+<tr>
+<td>le fournisseur d'IA de développement</td>
+<td>rien de ce qu'il écrit n'atteint un écran</td>
+</tr>
+<tr>
+<td>la consigne envoyée au modèle</td>
+<td>mise en forme pour lui, pas pour l'écran</td>
+</tr>
+</tbody></table></div>
+<p>Les trois fichiers qui <strong>retirent</strong> des points d'une saisie sont ignorés : les faire rougir reviendrait à demander de retirer le nettoyage.</p>
+<p><strong>Son message ne dit pas seulement non</strong>, il donne la phrase à écrire : une espace quand elle se lit seule, une virgule quand l'espace collerait deux nombres, un mot de liaison quand il en faut un.</p>
+<p><strong>Et il sait échouer</strong> : confronté à un point remis dans <code>Notifications.tsx</code>, il rougit et nomme la ligne. Vérifié, pas supposé.</p>
+<h3 id="ce-que-le-garde-fou-a-trouvé-au-passage">Ce que le garde-fou a trouvé au passage</h3>
+<p>Les deux contrôles de style — points et flèches — lisent désormais le code par le même module, <code>scripts/_sans-commentaires.ts</code>. Deux copies auraient divergé, et la copie d'origine avait déjà un trou : elle prenait le « // » d'une adresse <code>https://…</code> pour un commentaire et cessait de lire la ligne.</p>
+<p>En la remplaçant, deux commentaires de <code>dev.ts</code> ont surgi : une expression régulière <code>/['"]/</code> y ouvrait une chaîne qui n'a jamais existé, et cinq cents lignes échappaient au contrôle des flèches. La lecture des chaînes s'arrête maintenant à la fin de leur ligne — seule une chaîne à gabarit peut contenir un retour à la ligne, c'est la règle du langage.</p>
+<h2 id="le-check-up-du-23-septembre">Le check-up du 23 septembre</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>main</code> avait avancé de <strong>63 commits</strong> depuis le relevé.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>des points neufs ?</td>
+<td><strong>non</strong>, aucun</td>
+</tr>
+<tr>
+<td>un point retiré par quelqu'un d'autre ?</td>
+<td><strong>oui, un</strong> : le rapport d'intervention du client. Une autre session l'a corrigé le 22 septembre, sur la même règle. Sa version est gardée — elle va plus loin : « Mardi 22 septembre chez M. Bernard », une phrase, le jour en gras</td>
+</tr>
+<tr>
+<td>après fusion</td>
+<td><strong>zéro</strong> point du milieu de phrase dans ce que le produit affiche</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="les-deux-trous-que-sa-question-a-trouvés--23-septembre-2026">Les deux trous que SA question a trouvés — 23 septembre 2026</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>« Si dans la maquette il met des points n'importe où, quand il va pousser sur main il va pousser avec les points ? Donc c'est pas bon. »</em></p>
+<p>Il a raison deux fois : la planche est ce qu'il OUVRE depuis son téléphone, et une planche validée se recopie en code — c'est le chemin normal de ce dépôt.</p>
+<h3 id="1-les-maquettes">1. Les maquettes</h3>
+<p>Le contrôle lit désormais ce qu'un lot <strong>ajoute</strong> sous <code>appli/</code> et <code>maquettes/</code>. Pas le reste : <strong>2 320 points dorment dans 231 planches</strong>, dont des dizaines d'essais archivés. Les faire rougir toutes, c'est un garde-fou éteint dans la journée — c'est la règle qui fait vivre celui des pansements depuis le 7 septembre, et la mécanique est maintenant partagée avec lui.</p>
+<p>Éprouvé : un point ajouté dans une planche le fait rougir et nomme la ligne.</p>
+<h3 id="2-le-catalogue-darrosage--et-celui-là-était-dans-lapplication">2. Le catalogue d'arrosage — et celui-là était DANS l'application</h3>
+<p>Le contrôle ne lisait que le TypeScript. <code>src/lib/arrosage/catalogue.js</code> est un <code>.js</code> : <strong>61 libellés y portaient un point</strong>, et ils partent sur le plan, dans la liste des pièces, et chez le fournisseur.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Avant</th>
+<th>Après</th>
+</tr></thead><tbody>
+<tr>
+<td><code>PGP-ADJ · buse 1 (rouge std)</code></td>
+<td><code>PGP-ADJ buse 1 (rouge std)</code></td>
+</tr>
+<tr>
+<td><code>escamotable 10 cm · SAM</code></td>
+<td><code>escamotable 10 cm, SAM</code></td>
+</tr>
+<tr>
+<td><code>2,5 bar · par 20</code></td>
+<td><code>2,5 bar, par 20</code></td>
+</tr>
+</tbody></table></div>
+<p>Corrigés dans les <strong>deux</strong> copies du catalogue — celle de l'application et celle de la page publiée —, qui restent identiques à la ligne près (<code>verifier-arrosage-une-seule-source.mjs</code> le vérifie).</p>
+<p>Sept maquettes citaient ces libellés en dur : elles suivent le catalogue.</p>
+<h3 id="un-contrôle-qui-tenait-au-point-lui-même">Un contrôle qui tenait au point lui-même</h3>
+<p><code>verifier-maquette-arrosage-plan.mjs</code> isolait le modèle d'une buse en <strong>découpant sur le point médian</strong>. Le point parti, il rendait le nom entier, ne le retrouvait pas dans la liste des pièces, et rougissait sur du code juste. Il lit maintenant le mot « buse ». C'est sa règle du 20 août : un contrôle ne doit pas réclamer ce qu'il a fait retirer.</p>
+<h3 id="et-la-lecture-partagée-avait-un-trou">Et la lecture partagée avait un trou</h3>
+<p><code>https://</code> n'est pas un commentaire : le « // » d'une adresse coupait la ligne en deux, et tout ce qui suivait devenait invisible au contrôle. Corrigé, avec le commentaire <code>&lt;!-- --&gt;</code> des maquettes ajouté au passage.</p>
+<h2 id="ce-qui-reste-et-quil-faut-savoir">Ce qui reste, et qu'il faut savoir</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>les 2 320 points des planches archivées</td>
+<td>laissés. Il ne les rouvrira pas, et les corriger ferait rougir leurs vérificateurs</td>
+</tr>
+<tr>
+<td><strong>7 générateurs de maquettes</strong> en écrivent encore (99 points)</td>
+<td>régénérer l'une de ces planches fera rougir le contrôle. C'est voulu : c'est le bon moment pour corriger le générateur, puisque la planche repart chez lui. <code>TODO.md</code> le porte</td>
+</tr>
+<tr>
+<td>les tirets <code>—</code></td>
+<td>deuxième relevé, toujours à faire</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="les-deux-lots-combinés--23-septembre-2026">Les deux lots combinés — 23 septembre 2026</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Sa demande : <em>« j'ai une session qui taffe sur les tirets, combinez-vous »</em>.</p>
+<p>Une autre session traitait la même règle par l'autre bout, et <strong>son contrôle refusait déjà le point médian</strong>. Deux contrôles pour une règle, c'est la divergence assurée (<code>CLAUDE.md</code> §3) : un seul reste, <strong>le sien</strong>, parce qu'il lit l'arbre TypeScript pour savoir où sont les vraies chaînes — là où celui-ci lisait caractère par caractère. <code>test-aucun-point-median.ts</code> est supprimé.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui vient de son lot</th>
+<th>Ce qui vient de celui-ci</th>
+</tr></thead><tbody>
+<tr>
+<td>le garde-fou d'écriture, qui refuse la phrase avant qu'elle soit posée</td>
+<td>la lecture des <strong><code>.js</code> de <code>src/</code></strong> : 10 tirets de plus trouvés dans le catalogue</td>
+</tr>
+<tr>
+<td>le refus à la poussée vers <code>main</code>, <strong>même en niveau 1</strong> — une maquette est inerte, donc aucun contrôle ne s'y jouait</td>
+<td>le NOM d'un matériel sans virgule : « PGP-ADJ buse 1 »</td>
+</tr>
+<tr>
+<td>les phrases, meilleures : « Devis en attente depuis 5 jours »</td>
+<td>le contrôle de la maquette du plan, qui tenait au point médian</td>
+</tr>
+<tr>
+<td>les tirets, partout</td>
+<td>l'exception des conditions générales, que nous avions posée tous les deux</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui n'est pas visé</strong> : <code>maquettes/</code>, que <code>pages.yml</code> ne publie pas. 398 lignes y portent encore un tiret ou un point — des planches sans adresse, qu'il ne peut pas ouvrir depuis son téléphone.</p>
+</main>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Arborea — Calcul de TVA</title>
+<title>Arborea : Calcul de TVA</title>
 <meta name="color-scheme" content="only light">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -225,7 +225,7 @@
 <body>
 
 <div class="toolbar no-print">
-  <span class="brand-mini">Arborea — Calcul de TVA</span>
+  <span class="brand-mini">Arborea, Calcul de TVA</span>
   <div class="toolbar-actions">
     <button class="btn-secondary" id="printBtn" type="button">Imprimer</button>
     <button class="btn-print" id="savePdfBtn" type="button">Enregistrer en PDF</button>
@@ -236,7 +236,7 @@
   <div class="doc-header">
     <div>
       <span class="brand-name">Arborea</span>
-      <span class="brand-tagline">Arboriculture · Paysagisme · Île-de-France</span>
+      <span class="brand-tagline">Arboriculture, Paysagisme, Île-de-France</span>
     </div>
     <div class="period-picker no-print">
       <div class="period-field">
@@ -302,7 +302,7 @@
         <img class="ocr-preview" id="ocrPreview" alt="Aperçu du justificatif">
       </div>
       <p class="form-hint" style="font-size:0.8rem;color:#7a7a6a;margin-bottom:1rem;">
-        Avec « Scanner en direct », il suffit de pointer la caméra sur le justificatif : les montants sont détectés et remplis automatiquement dès qu'ils sont lisibles — vérifiez-les toujours avant d'ajouter l'achat, la lecture peut se tromper.
+        Avec « Scanner en direct », il suffit de pointer la caméra sur le justificatif : les montants sont détectés et remplis automatiquement dès qu'ils sont lisibles, vérifiez-les toujours avant d'ajouter l'achat, la lecture peut se tromper.
       </p>
 
       <div class="live-scan-overlay no-print" id="liveScanOverlay" hidden>
@@ -315,7 +315,7 @@
       <div class="achat-form">
         <div class="form-row">
           <label for="achatFournisseur">Fournisseur / description</label>
-          <input type="text" id="achatFournisseur" placeholder="Ex : Point Vert — matériel">
+          <input type="text" id="achatFournisseur" placeholder="Ex : Point Vert, matériel">
         </div>
         <div class="form-row">
           <label for="achatDate">Date</label>
@@ -604,7 +604,7 @@
     ocrPreview.classList.add('show');
 
     if (typeof Tesseract === 'undefined'){
-      ocrStatus.textContent = "Lecture automatique indisponible — merci de saisir les montants manuellement.";
+      ocrStatus.textContent = "Lecture automatique indisponible, merci de saisir les montants manuellement.";
       return;
     }
 
@@ -621,9 +621,9 @@
       if (parsed.fournisseur) achatFournisseurInput.value = parsed.fournisseur.slice(0, 60);
       if (parsed.ht !== '') achatHTInput.value = parsed.ht;
       if (parsed.tva !== '') achatTVAInput.value = parsed.tva;
-      ocrStatus.textContent = 'Montants détectés — vérifiez-les avant d\'ajouter l\'achat.';
+      ocrStatus.textContent = 'Montants détectés, vérifiez-les avant d\'ajouter l\'achat.';
     } catch(err){
-      ocrStatus.textContent = "La lecture automatique a échoué — merci de saisir les montants manuellement.";
+      ocrStatus.textContent = "La lecture automatique a échoué, merci de saisir les montants manuellement.";
     }
   });
 
@@ -641,11 +641,11 @@
 
   async function startLiveScan(){
     if (typeof Tesseract === 'undefined'){
-      ocrStatus.textContent = "Lecture automatique indisponible — merci de saisir les montants manuellement.";
+      ocrStatus.textContent = "Lecture automatique indisponible, merci de saisir les montants manuellement.";
       return;
     }
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-      ocrStatus.textContent = "Caméra non disponible sur cet appareil — utilisez \"Importer une photo\".";
+      ocrStatus.textContent = "Caméra non disponible sur cet appareil, utilisez \"Importer une photo\".";
       return;
     }
     try{
@@ -657,7 +657,7 @@
         }
       });
     } catch(err){
-      ocrStatus.textContent = "Impossible d'accéder à la caméra — vérifiez les autorisations, ou utilisez \"Importer une photo\".";
+      ocrStatus.textContent = "Impossible d'accéder à la caméra, vérifiez les autorisations, ou utilisez \"Importer une photo\".";
       return;
     }
 
@@ -671,7 +671,7 @@
     try{
       liveScanWorker = await Tesseract.createWorker('fra');
     } catch(err){
-      stopLiveScan("Lecture automatique indisponible — merci de saisir les montants manuellement.");
+      stopLiveScan("Lecture automatique indisponible, merci de saisir les montants manuellement.");
       return;
     }
 
@@ -741,7 +741,7 @@
             achatHTInput.value = parsed.ht;
             achatTVAInput.value = parsed.tva;
             ocrPreview.classList.remove('show');
-            stopLiveScan("Montants détectés — vérifiez-les avant d'ajouter l'achat.");
+            stopLiveScan("Montants détectés, vérifiez-les avant d'ajouter l'achat.");
             break;
           } else {
             liveScanStatus.textContent = 'Montant repéré, confirmation…';

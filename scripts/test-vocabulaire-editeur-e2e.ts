@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
 
 // **« Est-ce que les utilisateurs auront accès à cette page ? Moi c'est ça que
 // je ne veux pas. »** — le patron, le 7 août 2026.
@@ -21,7 +22,7 @@ import { lancerNavigateur } from "./e2e-browser";
 // Le banc d'essai tourne sans `ATLAS_EDITEUR_EMAIL` : le compte de
 // démonstration n'est donc PAS éditeur, et c'est exactement le cas à éprouver.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function main() {
   const navigateur = await lancerNavigateur();
@@ -39,12 +40,19 @@ async function main() {
   // rangé sous « Atlas IA » et non plus à même l'écran des réglages
   // (`ARCHITECTURE.md` §96) : viser `/reglages` rendrait ce contrôle vert par
   // accident, en cherchant un lien à un endroit où plus personne ne le met.
+  //
+  // **PAR L'ADRESSE ET NON PAR LE LIBELLÉ — corrigé le 6 septembre 2026.**
+  // Ce contrôle cherchait la phrase « vocabulaire de mon métier ». L'écran a
+  // été renommé « Mon vocabulaire » le même jour, parce que l'ancien titre se
+  // cassait en deux lignes sous la pastille de l'assistant — et le contrôle
+  // serait alors resté VERT en cherchant un texte qui n'existe plus, c'est-à-dire
+  // en ne prouvant plus rien. Une adresse, elle, ne se renomme pas pour faire
+  // tenir un titre (`CLAUDE.md` §5 bis).
   await page.goto(`${BASE}/reglages/ia`, { waitUntil: "networkidle" });
   await page.waitForTimeout(800);
-  const reglages = await page.locator("body").innerText();
-  assert.doesNotMatch(
-    reglages,
-    /vocabulaire de mon métier/i,
+  assert.equal(
+    await page.locator('a[href="/reglages/vocabulaire"]').count(),
+    0,
     "Le vocabulaire est proposé à un compte ordinaire : chaque client pourrait réécrire celui de tous les autres."
   );
 
@@ -67,7 +75,7 @@ async function main() {
   // navigateur**. Ni le contenu, ni les champs pour l'écrire.
   assert.doesNotMatch(
     contenu,
-    /charpentière|vendre seule|vocabulaire de mon métier/i,
+    /charpentière|vendre seule|Mon vocabulaire/i,
     "Le contenu du vocabulaire a fuité dans une page d'erreur."
   );
   assert.doesNotMatch(

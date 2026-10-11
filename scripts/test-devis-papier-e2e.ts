@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **Trois défauts trouvés par le patron sur son premier vrai devis à la main.**
 //
@@ -22,7 +23,23 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // parcourt son chemin, dans son ordre, avec un écran de six pouces.
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
+
+/**
+ * Taper dans une case de chiffre **comme lui** : on entre, on tape.
+ *
+ * **Plus de sélection à la main depuis sa décision du 13 septembre 2026 (« fais
+ * le B »)** : entrer dans la case sélectionne tout, et un appui remplace. Le
+ * `ControlOrMeta+a` qui était ici compensait le comportement d'avant — le
+ * curseur posé derrière le chiffre, qui faisait « 12 » d'un « 2 » tapé sur
+ * « 1 ». Le garder masquerait le jour où le B saute : la suite resterait verte
+ * pendant qu'il enverrait un devis à 5 400 € au lieu de 900 (`CLAUDE.md`
+ * §4 quater — on retire la couche qui compensait).
+ */
+async function remplacer(champ: import("playwright").Locator, valeur: string) {
+  await champ.click();
+  await champ.type(valeur);
+}
 
 async function main() {
   const navigateur = await lancerNavigateur();
@@ -44,9 +61,9 @@ async function main() {
   await page.fill('input[placeholder="06 12 34 56 78"]', "0660060265");
   await page.fill('input[placeholder="bernard@exemple.fr"]', "client@exemple.net");
   await page.fill('input[placeholder="12 rue des Lilas, Nantes"]', ADRESSE);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15000 });
-  const chantierId = page.url().split("/").pop()!;
+  const chantierId = idChantier;
 
   await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.waitForSelector("text=Total TTC", { timeout: 20000 });
@@ -85,8 +102,6 @@ async function main() {
   console.log("  ✓ l'adresse des travaux ne se répète pas quand elle est la même");
 
   // --- 2. Le prix se voit, et se touche ------------------------------------
-  await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
-  await page.waitForTimeout(1000);
 
   const prix = page.getByLabel("Prix unitaire 1");
   const boite = await prix.boundingBox();
@@ -105,8 +120,15 @@ async function main() {
   console.log("  ✓ le champ du prix a la taille d'un doigt et se voit");
 
   await page.getByLabel("Description 1").fill("Élagage d'un tilleul");
-  await prix.fill("450");
-  await page.getByLabel("Quantité 1").fill("2");
+  // **SON GESTE, PAS `fill()` — 13 septembre 2026.** La case porte déjà un
+  // chiffre, et le curseur s'y pose À DROITE, derrière lui : sa règle du
+  // 11 septembre, *« si la quantité par défaut n'est pas bonne, on a juste à
+  // supprimer »*. `fill()` insère sans effacer — il écrivait donc « 12 » sur
+  // une case qui valait « 1 », et la suite accusait le calcul d'un total de
+  // 5 400 € qui était juste. On sélectionne, puis on tape : c'est ce que fait
+  // quelqu'un qui remplace une quantité.
+  await remplacer(prix, "450");
+  await remplacer(page.getByLabel("Quantité 1"), "2");
   await page.getByLabel("Description 1").click();
   await page.waitForTimeout(1200);
 

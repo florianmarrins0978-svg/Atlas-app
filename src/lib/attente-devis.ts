@@ -1,3 +1,5 @@
+import type { QuestionChiffrage } from "./questions-chiffrage";
+
 /**
  * Attendre un devis sans dépendre d'un aller-retour tenu ouvert.
  *
@@ -24,8 +26,59 @@
  * **Et elle sait renoncer.** Une attente sans fin est le défaut qu'on répare :
  * passé le délai, elle rend `"abandon"`, et l'écran dit quoi faire au lieu de
  * tourner pour toujours.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **ELLE NE REGARDAIT QU'UNE ISSUE SUR SIX — sa capture du 1ᵉʳ septembre 2026.**
+ *
+ * *« Atlas prépare toujours votre devis… (96 s) »*, et rien ne vient.
+ *
+ * **Ce compteur ne s'atteint que par une seule voie** : le rattrapage ci-dessus,
+ * c'est-à-dire une réponse d'action serveur PERDUE. Sa capture prouve donc que
+ * la chaîne a répondu dans le vide — pas qu'elle a bouclé.
+ *
+ * Or ce rattrapage n'avait qu'un seul signal de réussite : « le devis est
+ * écrit ». La chaîne, elle, s'arrête légitimement **sans écrire de devis** dans
+ * cinq cas sur six (`devis-depuis-dictee.ts`) — dictée non transcrite,
+ * transcription simulée, brouillon corrigé à la main, échec, et surtout
+ * **l'arrêt d'avant-chiffrage**, celui qui lui pose les deux questions valant
+ * 800 €. Sur une vraie dictée d'arbre, c'est le cas le PLUS fréquent.
+ *
+ * Réponse perdue **+** arrêt d'avant-chiffrage = une attente qui ne peut jamais
+ * aboutir. Cinq minutes de compteur, puis « la préparation n'a pas abouti » —
+ * alors que le serveur avait fini son travail et l'attendait avec ses questions.
+ *
+ * **Elle rapporte donc désormais l'arrêt, et l'écran le montre.** Répondre
+ * termine le devis sans relire la dictée (`enregistrerPrecisionsEtReprendre`) :
+ * le rattrapage rattrape pour de bon, au lieu de renoncer poliment.
+ * ═══════════════════════════════════════════════════════════════════════════
  */
-export type IssueAttente = "pret" | "abandon";
+export type IssueAttente =
+  /** Le devis porte des lignes : il y a de quoi l'ouvrir. */
+  | { type: "pret" }
+  /**
+   * La chaîne est allée jusqu'à l'arrêt d'avant-chiffrage et l'y attend.
+   *
+   * Ce n'est pas un échec : c'est le seul arrêt du parcours avant l'envoi, et
+   * il vaut de l'argent (`docs/AGENT.md` §2).
+   */
+  | { type: "questions"; questions: QuestionChiffrage[] }
+  /** Rien de concluant dans le délai imparti. */
+  | { type: "abandon" };
+
+/**
+ * Ce que la route rend — et ce que l'attente sait en faire.
+ *
+ * **`pret` compte les LIGNES, plus la date de génération**, et ce n'est pas un
+ * détail : `devis_genere_at` est posé par `getOuCreerDevisBrouillon`, que la
+ * page du devis appelle elle-même en s'ouvrant. Sur cette page-là, le témoin
+ * était donc vrai AVANT que la chaîne ait rien produit, et l'attente y répondait
+ * « prêt » devant une feuille vide.
+ *
+ * L'écran, lui, décidait déjà sur le nombre de lignes (`devis-a-preparer.ts`).
+ * Deux lectures d'une même question, dont une fausse — `CLAUDE.md` §3. Il n'en
+ * reste qu'une, et c'est celle de l'écran.
+ */
+type ReponseDevisPret = { pret?: boolean; questions?: QuestionChiffrage[] } | null;
 
 export async function attendreLeDevis(
   chantierId: string,
@@ -56,12 +109,20 @@ export async function attendreLeDevis(
       const r = await interroger(`/api/chantiers/${chantierId}/devis-pret`);
       // Une réponse qui n'est pas du JSON — page de connexion rendue par un
       // mandataire, par exemple — ne doit pas passer pour un « prêt ».
-      const corps = (await r.json()) as { pret?: boolean } | null;
-      if (r.ok && corps?.pret === true) return "pret";
+      const corps = (await r.json()) as ReponseDevisPret;
+      if (!r.ok || !corps) continue;
+      // **Le devis d'abord.** S'il est écrit, il n'y a plus rien à demander :
+      // les questions qui resteraient sans réponse y sont déjà signalées
+      // (`chiffrerEtPreparer`, `aSignaler`), et le renvoyer à l'arrêt lui
+      // ferait refaire un chemin qu'il a déjà franchi.
+      if (corps.pret === true) return { type: "pret" };
+      if (Array.isArray(corps.questions) && corps.questions.length > 0) {
+        return { type: "questions", questions: corps.questions };
+      }
     } catch {
       // Injoignable pour l'instant : on retentera. C'est précisément ce qu'un
       // aller-retour unique ne savait pas faire.
     }
   }
-  return "abandon";
+  return { type: "abandon" };
 }

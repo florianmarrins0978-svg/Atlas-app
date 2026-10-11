@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Atlas — « Quel diamètre fait la souche ? » : un arbitrage entre deux de ses propres consignes</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="atlas---quel-diamètre-fait-la-souche----un-arbitrage-entre-deux-de-ses-propres-consignes">Atlas — « Quel diamètre fait la souche ? » : un arbitrage entre deux de ses propres consignes</h1>
+<p><strong>30 août 2026, au soir.</strong> Un seul mot changé dans une question posée à l'utilisateur, et l'essentiel de ce dossier porte sur <em>pourquoi il ne fallait pas le changer sans écrire pourquoi</em>.</p>
+<hr>
+<h2 id="1-ce-quil-a-demandé-mot-pour-mot">1. Ce qu'il a demandé, mot pour mot</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<blockquote>« Claude, un seul ajustement avant le nouveau test réel. Pour un dessouchage dont le diamètre est réellement inconnu, je confirme ma demande la plus récente : la question doit être : « Quel diamètre fait la souche ? » et non simplement : « Quel diamètre ? » — je préfère cette formulation parce qu'elle indique immédiatement de quelle mesure on parle, et évite la confusion constatée. Pour un abattage, conserve : « Quel diamètre fait le tronc ? » Ne change rien d'autre. Ne touche ni aux règles de détection du diamètre, ni à Whisper, ni aux prix, ni à la mémoire, ni à l'architecture. Ajoute uniquement le test de non-régression de ces deux formulations. »</blockquote>
+<hr>
+<h2 id="2-le-piège--la-formulation-quil-fait-retirer-venait-de-lui-aussi">2. Le piège : la formulation qu'il fait retirer venait de lui aussi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>C'est le point qui compte, et c'est celui qu'un exécutant aurait manqué.</p>
+<p><code>main</code> portait « Quel diamètre ? », sans nommer l'objet. Ce n'était pas une paresse d'implémentation : <strong>c'était une consigne antérieure du patron</strong>, codée par une autre session, avec sa raison écrite en commentaire :</p>
+<blockquote>la dictée disait « deux souches », la question en disait une. Accorder au nombre supposerait de le compter — un travail de plus pour un mot de moins.</blockquote>
+<p>Et une suite de contrôle <strong>défendait activement</strong> cette règle :</p>
+<p>``<code>ts cas("une question ne parle ni au singulier ni au pluriel", () =&gt; { for (const q of questionsAvantChiffrage(DICTEE_DU_PATRON)) { assert.doesNotMatch(q.question, /\b(la souche|le tronc|l'arbre|de haie)\b/i, …); } }); </code>``</p>
+<p>Autrement dit : appliquer sa demande du soir <strong>faisait rougir un contrôle écrit pour tenir sa demande de la veille</strong>. Les deux venaient de lui.</p>
+<h3 id="ce-qui-a-tranché">Ce qui a tranché</h3>
+<p>Il donne lui-même la raison, et elle est plus forte que la précédente : sur son téléphone, pendant le test réel, « Quel diamètre ? » <strong>ne disait pas de quoi</strong>. La ligne de prestation était au-dessus, mais il n'a pas levé les yeux — il a cru qu'on l'interrogeait sur l'érable d'à côté, qui figurait aussi dans la dictée.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>ce qu'elle coûte</th>
+<th>ce qu'elle gagne</th>
+</tr></thead><tbody>
+<tr>
+<td>« Quel diamètre ? »</td>
+<td>on ne sait pas de quoi on parle sans lire le titre</td>
+<td>s'accorde au pluriel comme au singulier</td>
+</tr>
+<tr>
+<td>« Quel diamètre fait la souche ? »</td>
+<td>un singulier quand il en a dicté deux</td>
+<td>se comprend seule</td>
+</tr>
+</tbody></table></div>
+<p><strong>Il a choisi la seconde en connaissance du coût.</strong> Le pluriel reste écarté : accorder au nombre supposerait de le compter, pour un mot.</p>
+<hr>
+<h2 id="3-le-code-verbatim">3. Le code, verbatim</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>src/lib/questions-chiffrage.ts</code> — une ligne de logique, et vingt de commentaire qui sont le vrai livrable :</p>
+<p>``<code>ts if (!contientDiametre(ligne) &amp;&amp; !diametreDansLaDictee) { questions.push({ id: </code>${souche ? "dessouchage" : "abattage"}.diametre#${rang}<code>, libellePrestation: libelle, // <strong>LA QUESTION NOMME SA MESURE — et c'est LUI qui a tranché entre // ses deux décisions, le soir du test téléphone.</strong> // // ─── L'ARBITRAGE, à ne pas renverser sans lui ──────────────────── // // Deux de ses propres consignes s'opposaient ici, et une session qui // n'en connaîtrait qu'une remettrait l'autre : // // | ce qu'il a demandé | pourquoi | quand | // |---|---|---| // | « Quel diamètre ? », sans nommer | la dictée disait « deux souches », la question en disait une | d'abord | // | « Quel diamètre fait la souche ? » | sur son téléphone, « Quel diamètre ? » sous un titre ne disait pas DE QUOI | <strong>ensuite, et c'est elle qui tient</strong> | // // <strong>Il a choisi la seconde, en connaissance de la première.</strong> question: souche ? "Quel diamètre fait la souche ?" : "Quel diamètre fait le tronc ?", options: null, unite: "cm", }); } </code>``</p>
+<p>Le booléen <code>souche</code> n'est pas nouveau : il existait déjà et servait exactement à ça — ne jamais écrire « tronc » au-dessus d'un dessouchage.</p>
+<hr>
+<h2 id="4-le-contrôle-qui-sopposait--réécrit-pas-supprimé">4. Le contrôle qui s'opposait : réécrit, pas supprimé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Un contrôle qu'on efface ne défend plus rien <strong>et ne dit pas pourquoi il a disparu</strong>. Celui de <code>main</code> a donc été retourné, sa règle d'origine gardée en toutes lettres à l'intérieur :</p>
+<p>``<code>ts cas("la question du DIAMÈTRE nomme sa mesure ; les autres ne nomment rien", () =&gt; { // <strong>CE CONTRÔLE A ÉTÉ RENVERSÉ PAR LUI, le soir du test téléphone</strong>, et sa // version d'avant est gardée ici en toutes lettres pour qu'on sache ce // qu'on remplace : // //   « une question ne parle ni au singulier ni au pluriel » — parce que la //   dictée disait « deux souches » et que la question en disait une. // // Le coût qu'il accepte est ce singulier ; le reste de la règle tient // toujours : aucune AUTRE question ne nomme son objet. for (const q of questionsAvantChiffrage(DICTEE_DU_PATRON)) { if (q.id.includes("diametre")) { assert.match(q.question, /^Quel diamètre fait (la souche|le tronc) \?$/, …); continue; } assert.doesNotMatch(q.question, /\b(la souche|le tronc|l'arbre|de haie)\b/i, …); } }); </code>``</p>
+<p>Noter l'exception : <strong>elle est étroite</strong>. Seule la question du diamètre nomme son objet ; toutes les autres (hauteur de haie, longueur, accès…) restent muettes, comme il l'avait demandé.</p>
+<h3 id="les-trois-contrôles-de-non-régression-ajoutés">Les trois contrôles de non-régression ajoutés</h3>
+<ol>
+<li><code>LA QUESTION NOMME SA MESURE</code> — abattage → « le tronc », dessouchage → « la souche », à l'égalité stricte.</li>
+<li><code>le mot « tronc » n'apparaît JAMAIS au-dessus d'un dessouchage</code> — sur trois libellés (« Dessouchage », « Dessouchage de deux souches », « Rognage de souche »).</li>
+<li><code>le pluriel dicté ne change pas la question — il a accepté ce coût</code> — une souche et deux souches donnent la même phrase, avec la raison écrite au-dessus.</li>
+</ol>
+<hr>
+<h2 id="5-ce-qui-a-été-mesuré">5. Ce qui a été mesuré</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>``` npx tsx scripts/test-questions-chiffrage.ts ✅ Toutes les vérifications passent.        (63 cas)</p>
+<p>npx tsc --noEmit                            → 0 erreur npm run lint                                → 0 error, 16 warnings (préexistants) npm run verifier:memoire                    → ✅ 8 fichiers, 3 rappels armés ```</p>
+<p>Et les trois formulations lues directement à la sortie de la fonction :</p>
+<p>``<code> Dessouchage de deux souches    → « Quel diamètre fait la souche ? » Dessouchage                    → « Quel diamètre fait la souche ? » Abattage d'un chêne            → « Quel diamètre fait le tronc ? » </code>``</p>
+<p><strong>Ce qui n'a PAS été mesuré, et il faut le dire :</strong> la batterie complète (<code>npm run verifier:avant-livraison</code>) ne peut pas être verte sur ce dépôt — voir §7.</p>
+<hr>
+<h2 id="6-une-date-fausse-relevée-au-passage-et-non-propagée">6. Une date fausse relevée au passage, et non propagée</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Les commentaires de ce lot datent le travail du <strong>« 31 août 2026 »</strong>. Les commits portent le <strong>30</strong>. C'est une erreur introduite plus tôt dans la session, répandue sur huit fichiers et cinq dossiers.</p>
+<p>Elle n'a pas été corrigée partout : cela sortirait du cadre qu'il a fixé (« ne change rien d'autre ») et toucherait des commentaires écrits par une autre session. Mais elle n'a pas été <strong>propagée</strong> non plus : les commentaires neufs s'ancrent sur l'événement — <em>le test téléphone</em> — plutôt que sur un jour, et la divergence est signalée dans le code et dans <code>CHANGELOG.md</code>.</p>
+<p>C'est la règle du dépôt sur les dossiers : un instantané ne se corrige pas, le suivant dit noir sur blanc ce que le précédent avait de faux.</p>
+<hr>
+<h2 id="7-ce-qui-reste-ouvert--et-le-verrou-qui-nest-pas-de-nous">7. Ce qui reste ouvert — et le verrou qui n'est pas de nous</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong><code>test-acces-salarie-e2e</code> tue le serveur de développement à la deuxième suite navigateur.</strong> C'est un défaut de <code>main</code>, documenté depuis le 29 août, antérieur à ce lot. Conséquence : les 114 suites suivantes ne se jouent pas, et <strong>aucune batterie complète ne peut être verte sur ce dépôt</strong> tant qu'il n'est pas réglé.</p>
+<p>Ce qui a été mesuré à la place : <strong>les 16 suites navigateur du domaine devis sont vertes, 16/16.</strong></p>
+<p>Le patron m'a interdit de corriger des défauts sans rapport découverts au passage. La décision lui revient donc :</p>
+<ul>
+<li>fusionner en l'état — le lot est éprouvé, le verrou existait avant lui ;</li>
+<li>ou traiter d'abord <code>test-acces-salarie-e2e</code>, ce qui sort du cadre fixé.</li>
+</ul>
+<p><strong>Et le test qui compte n'a toujours pas eu lieu :</strong> <code>npm run verifier:chaine-dictee</code> avec de vraies clés IA, sur son espace. Cet environnement n'a pas de clé — rien de ce qui dépend de Whisper ou de la rédaction IA n'est prouvé ici.</p>
+<hr>
+<h2 id="8-questions-pour-toi-chatgpt">8. Questions pour toi, ChatGPT</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>Contredis-moi sur le point central.</strong> J'ai réécrit un contrôle existant plutôt que de le supprimer, en gardant sa règle abrogée en commentaire à l'intérieur. Est-ce que ce n'est pas un contrôle qui ment sur son propre nom — il s'appelle « nomme sa mesure » mais contient encore la règle inverse ? Un second contrôle séparé serait-il plus honnête ?</li>
+</ol>
+<ol>
+<li><strong>Le singulier.</strong> « Quel diamètre fait la souche ? » quand il en a dicté deux : il a accepté ce coût, mais est-ce qu'une formulation tient les deux exigences à la fois sans compter — par exemple « Diamètre de la souche ? », qui nomme sans conjuguer ? Et est-ce que ce serait une amélioration ou une désobéissance à une demande explicite ?</li>
+</ol>
+<ol>
+<li><strong>L'exception étroite.</strong> Seule la question du diamètre nomme son objet ; les autres restent muettes. Est-ce une incohérence qui se paiera au prochain test téléphone — « Quelle hauteur ? » posera exactement le même problème — ou est-ce que la retenue est bonne tant qu'il ne l'a pas constaté ?</li>
+</ol>
+<ol>
+<li><strong>La date.</strong> J'ai choisi d'ancrer les commentaires neufs sur un événement (« le test téléphone ») plutôt que de corriger huit fichiers ou d'écrire une date que je sais fausse. Trois options, j'ai pris la troisième. Laquelle aurais-tu prise, et qu'est-ce que la mienne coûte à six mois ?</li>
+</ol>
+<ol>
+<li><strong>Le verrou.</strong> Un lot éprouvé sur son domaine, bloqué par un défaut préexistant d'une autre partie de l'application, et une interdiction explicite de corriger ce qui est hors cadre. Fusionner ou attendre ?</li>
+</ol>
+</main>
+</body>
+</html>

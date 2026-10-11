@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ajouter au catalogue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+    /* Charte par défaut, relevée dans src/lib/design-tokens.ts */
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --muted:#8a8578;
+    --or:#B98B47; --plein:#7d9a6d; --alert:#9C3B2E;
+    --line:rgba(28,28,26,.12); --lineSoft:rgba(28,28,26,.07);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--etabli)}
+  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased}
+
+  .page{max-width:1240px;margin:0 auto;padding:30px 16px 90px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;
+            color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 30px/1.15 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+  .chapeau{max-width:680px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0 0 22px}
+
+  .rangee{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+
+  .tel{width:390px;max-width:100%;border-radius:26px;overflow:hidden;
+       box-shadow:0 1px 2px rgba(20,18,14,.16),0 14px 34px rgba(20,18,14,.14);background:var(--cream)}
+  .ecran{height:720px;display:flex;flex-direction:column;background:var(--cream);color:var(--ink)}
+  .corps{flex:1;overflow-y:auto;padding:0 0 30px}
+
+  /* En-tête commune (EnTeteEcran) */
+  .haut{display:flex;align-items:center;justify-content:space-between;padding:28px 26px 0}
+  .retour{width:40px;height:40px;border-radius:999px;background:var(--card);
+          box-shadow:inset 0 0 0 1px var(--lineSoft);display:grid;place-items:center;color:var(--ink)}
+  .ligneTitre{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 26px 0}
+  .ligneTitre h2{font:400 36px/1.1 var(--serif);margin:0;color:var(--ink)}
+  .ligneTitre .sur{margin-top:8px;font:500 11px/1 var(--sans);letter-spacing:.28em;
+                   text-transform:uppercase;color:var(--or)}
+  .assistant{width:40px;height:40px;border-radius:999px;flex:none;
+             box-shadow:inset 0 0 0 1px var(--or);display:grid;place-items:center;color:var(--or)}
+
+  .intro{margin:18px 26px 0;font-size:13px;line-height:1.55;color:var(--muted)}
+  .intro .dore{color:var(--or)}
+
+  section.bloc{margin:26px 26px 0}
+  .caps{margin:0 0 10px;font:500 11px/1.2 var(--sans);letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+  .caps.or{color:var(--or)}
+  ul.cartes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+  .carte{border-radius:11px;padding:11px 13px;background:var(--card);border:1px solid var(--lineSoft)}
+  .carte.propose{border-color:var(--or);padding:12px 13px}
+  .nom{display:block;font:400 17px/1.25 var(--serif);color:var(--ink)}
+  .aussi{margin:3px 0 0;font-size:12.5px;line-height:1.5;color:var(--muted)}
+  .aussi .mien{color:var(--or)}
+  .croix{display:inline-flex;width:24px;height:24px;align-items:center;justify-content:center;
+         vertical-align:middle;margin-left:2px;border:0;background:none;color:var(--or);
+         font:inherit;font-size:14px;cursor:pointer;padding:0}
+  .lien{margin-top:8px;border:0;background:none;padding:0;font:inherit;font-size:12.5px;color:var(--or);cursor:pointer}
+  .saisie{margin-top:9px;display:flex;align-items:center;gap:8px}
+  .saisie input{min-width:0;flex:1;border-radius:8px;padding:8px 10px;font:inherit;font-size:14px;
+                background:var(--cream);border:1px solid var(--line);color:var(--ink);outline:none}
+  .plein{border:0;border-radius:999px;padding:8px 15px;font:inherit;font-size:13.5px;
+         background:var(--plein);color:var(--card);cursor:pointer}
+  .plein:disabled{opacity:.6}
+  .creux{border-radius:999px;padding:8px 15px;font:inherit;font-size:13.5px;background:none;
+         border:1px solid var(--line);color:var(--muted);cursor:pointer}
+  .refus{margin:6px 0 0;font-size:12px;line-height:1.5;color:var(--alert)}
+  .nouvelle{margin-top:12px;width:100%;border-radius:999px;padding:10px 12px;font:inherit;font-size:13.5px;
+            background:none;border:1px dashed var(--or);color:var(--or);cursor:pointer}
+  .zoneNouvelle{margin-top:12px}
+  .extrait{margin:3px 0 0;font-size:12.5px;line-height:1.5;color:var(--muted)}
+  .question{margin:7px 0 0;font-size:13.5px;line-height:1.45}
+  .deux{margin-top:10px;display:flex;align-items:center;gap:8px}
+
+  .basNav{display:flex;justify-content:space-around;padding:12px 8px 15px;
+          border-top:1px solid var(--line);background:var(--cream)}
+  .basNav span{font:500 10.5px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .basNav .actif{color:var(--ink)}
+
+  .temoin{width:390px;max-width:100%;background:var(--etabli-carte);border-radius:16px;padding:14px 16px;
+          box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .temoin .t{display:block;font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;
+             color:var(--etabli-or);margin-bottom:10px}
+  .temoin ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+  .temoin li{font-size:13.5px;line-height:1.45;color:var(--etabli-doux)}
+  .temoin li.neuf{animation:eclat 1.2s ease-out}
+  @keyframes eclat{from{background:#efe3c8}to{background:transparent}}
+  .temoin .rien{font-size:13.5px;color:var(--etabli-gris)}
+  .recommencer{margin-top:14px;border:0;border-radius:999px;padding:10px 16px;font:600 12.5px/1 var(--sans);
+               background:var(--etabli-encre);color:var(--etabli-carte);cursor:pointer}
+  .colonne{display:flex;flex-direction:column;gap:14px;width:390px;max-width:100%}
+</style>
+</head>
+<body>
+<main class="page">
+
+  <p class="surtitre">Catalogue</p>
+  <h1>Ajouter au catalogue</h1>
+  <p class="chapeau">Appuyez sur « + mon mot » ou « + Nouvelle prestation », puis validez sans rien écrire.</p>
+
+  <div class="rangee">
+    <div class="tel">
+      <div class="ecran">
+        <div class="corps" id="corps"></div>
+        <nav class="basNav">
+          <span>Chantiers</span><span>Planning</span><span>Terminés</span><span>Paysage</span><span class="actif">Réglages</span>
+        </nav>
+      </div>
+    </div>
+
+    <div class="colonne">
+      <div class="temoin">
+        <span class="t">Enregistré</span>
+        <div id="temoin"></div>
+        <button class="recommencer" type="button" id="recommencer">Recommencer</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+(function(){
+  // Reprises de src/lib/mots-catalogue.ts
+  var MAX_MOTS_PAR_ENTREE = 20, MAX_ENTREES_A_MOI = 100, MAX_LONGUEUR_MOT = 40;
+  var PHRASES = {
+    vide: "Écrivez un mot avant de valider.",
+    deja_chez_atlas: "Atlas connaît déjà ce mot pour cette entrée : il est reconnu quand vous dictez.",
+    deja_chez_moi: "Vous avez déjà posé ce mot ailleurs. Un mot ne peut désigner qu'une chose.",
+    trop_de_mots: MAX_MOTS_PAR_ENTREE + " mots par entrée suffisent : au-delà, la dictée rapproche moins bien.",
+    trop_d_entrees: "Vous avez atteint " + MAX_ENTREES_A_MOI + " entrées à vous."
+  };
+  function motNettoye(brut){
+    if(!brut) return null;
+    var propre = brut.replace(/ /g," ").replace(/\s+/g," ").trim();
+    if(propre === "") return null;
+    return propre.slice(0, MAX_LONGUEUR_MOT);
+  }
+  function plier(t){ return t.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/\s+/g," ").trim(); }
+  function memeMot(a,b){ return plier(a) === plier(b); }
+  function refusDuMot(a){
+    var mot = motNettoye(a.mot);
+    if(!mot) return "vide";
+    if(a.motsDuCommun.some(function(m){return memeMot(m,mot);})) return "deja_chez_atlas";
+    if(a.mesMotsDeLaFamille.some(function(m){return memeMot(m,mot);})) return "deja_chez_moi";
+    if(a.dejaSurCetteEntree >= MAX_MOTS_PAR_ENTREE) return "trop_de_mots";
+    return null;
+  }
+
+  function depart(){
+    return {
+      seq: 0,
+      enCours: false,
+      proposes: [{ mot: "écime", extrait: "faut m'écimer le tilleul du fond", entreeId: "p1", entreeNom: "Élagage" }],
+      ecartes: [],
+      familles: {
+        prestation: {
+          titre: "Prestations", libelleNouvelle: "+ Nouvelle prestation",
+          ouverte: null, saisie: "", nouvelle: null, refus: null,
+          cartes: [
+            { id: "p1", nom: "Élagage", motsCommuns: ["sapin","arbre","conifère","abattage","démontage","dessouchage"], mesMots: [], aMoi: false },
+            { id: "p2", nom: "Tonte", motsCommuns: ["pelouse","gazon"], mesMots: [], aMoi: false },
+            { id: "p3", nom: "Taille de haie", motsCommuns: ["haie","thuyas","charmille"], mesMots: [], aMoi: false }
+          ]
+        },
+        materiel: {
+          titre: "Matériels", libelleNouvelle: "+ Nouveau matériel",
+          ouverte: null, saisie: "", nouvelle: null, refus: null,
+          cartes: [
+            { id: "m1", nom: "Nacelle", motsCommuns: ["plateforme élévatrice"], mesMots: [], aMoi: false },
+            { id: "m2", nom: "Broyeur", motsCommuns: ["broyeur de branches"], mesMots: [], aMoi: false }
+          ]
+        }
+      },
+      dernier: null
+    };
+  }
+  var etat = depart();
+
+  function nouvelId(){ etat.seq += 1; return "x" + etat.seq; }
+  function mesMotsDeLaFamille(f){
+    var out = [];
+    f.cartes.forEach(function(c){
+      c.mesMots.forEach(function(m){ out.push(m.mot); });
+      if(c.aMoi) out.push(c.nom);
+    });
+    return out;
+  }
+  // Le temps d'aller-retour du serveur : l'écriture part à l'appui, et l'écran attend la réponse.
+  function serveur(fn){ etat.enCours = true; rendre(); setTimeout(function(){ fn(); etat.enCours = false; rendre(); }, 350); }
+
+  // ajouterMot (src/server/repositories/mots-catalogue.ts)
+  function ajouterMot(nomFamille, carteId, saisie){
+    var f = etat.familles[nomFamille];
+    var carte = f.cartes.find(function(c){return c.id === carteId;});
+    var refus = refusDuMot({
+      mot: saisie, motsDuCommun: [carte.nom].concat(carte.motsCommuns),
+      mesMotsDeLaFamille: mesMotsDeLaFamille(f), dejaSurCetteEntree: carte.mesMots.length
+    });
+    if(refus) return { ok: false, phrase: PHRASES[refus] };
+    var mot = { id: nouvelId(), mot: motNettoye(saisie) };
+    carte.mesMots.push(mot);
+    etat.dernier = mot.id;
+    return { ok: true };
+  }
+  // creerEntree
+  function creerEntree(nomFamille, nom){
+    var f = etat.familles[nomFamille];
+    var commun = [];
+    f.cartes.filter(function(c){return !c.aMoi;}).forEach(function(c){ commun.push(c.nom); commun = commun.concat(c.motsCommuns); });
+    var refus = refusDuMot({ mot: nom, motsDuCommun: commun, mesMotsDeLaFamille: mesMotsDeLaFamille(f), dejaSurCetteEntree: 0 });
+    if(!refus && f.cartes.filter(function(c){return c.aMoi;}).length >= MAX_ENTREES_A_MOI) refus = "trop_d_entrees";
+    if(refus) return { ok: false, phrase: PHRASES[refus] };
+    var id = nouvelId();
+    f.cartes.push({ id: id, nom: motNettoye(nom), motsCommuns: [], mesMots: [], aMoi: true });
+    etat.dernier = id;
+    return { ok: true };
+  }
+
+  // Gestes de MesMots.tsx
+  function ouvrir(nf, id){ var f = etat.familles[nf]; f.ouverte = (f.ouverte === id ? null : id); f.saisie = ""; f.refus = null; rendre("champ-" + nf); }
+  function poserLeMot(nf, id){
+    var f = etat.familles[nf];
+    if(etat.enCours) return;
+    f.refus = null;
+    serveur(function(){
+      var r = ajouterMot(nf, id, f.saisie);
+      if(!r.ok){ f.refus = r.phrase; return; }
+      f.saisie = ""; f.ouverte = null;
+    });
+  }
+  function ouvrirNouvelle(nf){ var f = etat.familles[nf]; f.nouvelle = ""; f.refus = null; rendre("nouvelle-" + nf); }
+  function creer(nf){
+    var f = etat.familles[nf];
+    if(etat.enCours) return;
+    f.refus = null;
+    serveur(function(){
+      var r = creerEntree(nf, f.nouvelle || "");
+      if(!r.ok){ f.refus = r.phrase; return; }
+      f.nouvelle = null;
+    });
+  }
+  function retirer(nf, carteId, motId){
+    var f = etat.familles[nf];
+    var carte = f.cartes.find(function(c){return c.id === carteId;});
+    carte.mesMots = carte.mesMots.filter(function(m){return m.id !== motId;});
+    rendre();
+  }
+  // Gestes de MotsProposes.tsx : la carte disparaît dans les deux cas, même si l'ajout est refusé.
+  function repondre(mot, retenir){
+    if(etat.enCours) return;
+    var p = etat.proposes.find(function(x){return x.mot === mot;});
+    serveur(function(){
+      if(retenir) ajouterMot("prestation", p.entreeId, p.mot);
+      else { etat.ecartes.push(p.mot); etat.dernier = "ecart-" + p.mot; }
+      etat.proposes = etat.proposes.filter(function(x){return x.mot !== mot;});
+    });
+  }
+
+  function esc(t){ return String(t).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+
+  function rendreFamille(nf){
+    var f = etat.familles[nf], h = "";
+    h += '<section class="bloc"><p class="caps">' + f.titre + '</p><ul class="cartes">';
+    f.cartes.forEach(function(c){
+      h += '<li class="carte"><span class="nom">' + esc(c.nom) + '</span>';
+      if(c.motsCommuns.length || c.mesMots.length){
+        h += '<p class="aussi">Aussi appelé : ' + esc(c.motsCommuns.join(", "));
+        if(c.motsCommuns.length && c.mesMots.length) h += ", ";
+        c.mesMots.forEach(function(m,i){
+          h += '<span class="mien">' + (i > 0 ? ", " : "") + esc(m.mot) +
+               '<button class="croix" type="button" aria-label="Retirer le mot « ' + esc(m.mot) + ' »" data-geste="retirer" data-f="' + nf + '" data-c="' + c.id + '" data-m="' + m.id + '">×</button></span>';
+        });
+        if(c.mesMots.length) h += '<span class="mien">, dont les vôtres</span>';
+        h += '</p>';
+      }
+      if(f.ouverte === c.id){
+        h += '<div class="saisie"><input id="champ-' + nf + '" data-champ="mot" data-f="' + nf + '" data-c="' + c.id + '" value="' + esc(f.saisie) + '" placeholder="Comme vous le dites : « écime »">' +
+             '<button class="plein" type="button" data-geste="poser" data-f="' + nf + '" data-c="' + c.id + '"' + (etat.enCours ? " disabled" : "") + '>Ajouter</button></div>';
+      } else {
+        h += '<button class="lien" type="button" data-geste="ouvrir" data-f="' + nf + '" data-c="' + c.id + '">+ mon mot</button>';
+      }
+      if(f.refus && f.ouverte === c.id) h += '<p class="refus">' + esc(f.refus) + '</p>';
+      h += '</li>';
+    });
+    h += '</ul>';
+    if(f.nouvelle === null){
+      h += '<button class="nouvelle" type="button" data-geste="ouvrirNouvelle" data-f="' + nf + '">' + f.libelleNouvelle + '</button>';
+    } else {
+      h += '<div class="zoneNouvelle"><div class="saisie" style="margin-top:0"><input id="nouvelle-' + nf + '" data-champ="nouvelle" data-f="' + nf + '" value="' + esc(f.nouvelle) + '" placeholder="Son nom">' +
+           '<button class="plein" type="button" data-geste="creer" data-f="' + nf + '"' + (etat.enCours ? " disabled" : "") + '>Créer</button></div>';
+      if(f.refus) h += '<p class="refus">' + esc(f.refus) + '</p>';
+      h += '</div>';
+    }
+    h += '</section>';
+    return h;
+  }
+
+  function rendreProposes(){
+    if(!etat.proposes.length) return "";
+    var h = '<section class="bloc"><p class="caps or">Atlas a entendu ces mots</p><ul class="cartes">';
+    etat.proposes.forEach(function(p){
+      h += '<li class="carte propose"><span class="nom">« ' + esc(p.mot) + ' »</span>' +
+           '<p class="extrait">Dans votre dictée : « ' + esc(p.extrait) + ' »</p>' +
+           '<p class="question">Le retenir comme un mot pour <b>' + esc(p.entreeNom) + '</b> ?</p>' +
+           '<div class="deux"><button class="plein" type="button" data-geste="oui" data-m="' + esc(p.mot) + '"' + (etat.enCours ? " disabled" : "") + '>Oui, retenir</button>' +
+           '<button class="creux" type="button" data-geste="non" data-m="' + esc(p.mot) + '"' + (etat.enCours ? " disabled" : "") + '>Non</button></div></li>';
+    });
+    return h + '</ul></section>';
+  }
+
+  var FLECHE = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 8H3M7 4L3 8l4 4"/></svg>';
+  var ETOILE = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.5l1.4 4.1 4.1 1.4-4.1 1.4L8 12.5 6.6 8.4 2.5 7l4.1-1.4z"/></svg>';
+
+  function rendreTemoin(){
+    var lignes = [];
+    ["prestation","materiel"].forEach(function(nf){
+      var f = etat.familles[nf];
+      f.cartes.forEach(function(c){
+        if(c.aMoi) lignes.push({ id: c.id, t: (nf === "prestation" ? "Prestation à vous : " : "Matériel à vous : ") + c.nom });
+        c.mesMots.forEach(function(m){ lignes.push({ id: m.id, t: "« " + m.mot + " », mot pour " + c.nom }); });
+      });
+    });
+    etat.ecartes.forEach(function(m){ lignes.push({ id: "ecart-" + m, t: "« " + m + " », écarté : il ne sera plus proposé" }); });
+    var el = document.getElementById("temoin");
+    if(!lignes.length){ el.innerHTML = '<p class="rien">Rien pour l\'instant.</p>'; return; }
+    el.innerHTML = "<ul>" + lignes.map(function(l){
+      return '<li' + (l.id === etat.dernier ? ' class="neuf"' : "") + ">" + esc(l.t) + "</li>";
+    }).join("") + "</ul>";
+    etat.dernier = null;
+  }
+
+  function rendre(focusId){
+    var corps = document.getElementById("corps");
+    var haut = corps.scrollTop;
+    var actif = document.activeElement && document.activeElement.id;
+    var h = '<div class="haut"><span class="retour" aria-label="Retour aux tarifs">' + FLECHE + '</span></div>' +
+            '<div class="ligneTitre"><div><h2>Catalogue</h2><p class="sur">Réglages</p></div><span class="assistant" aria-label="Assistant">' + ETOILE + '</span></div>' +
+            '<p class="intro">Les mots qu\'Atlas reconnaît quand vous dictez. <span class="dore">En doré, les vôtres</span>, visibles de vous seul.</p>' +
+            rendreProposes() + rendreFamille("prestation") + rendreFamille("materiel");
+    corps.innerHTML = h;
+    corps.scrollTop = haut;
+    var cible = focusId ? document.getElementById(focusId) : (actif ? document.getElementById(actif) : null);
+    if(cible && cible.tagName === "INPUT"){ cible.focus({preventScroll:true}); var v = cible.value; cible.setSelectionRange(v.length, v.length); }
+    rendreTemoin();
+  }
+
+  document.getElementById("corps").addEventListener("click", function(e){
+    var b = e.target.closest("[data-geste]"); if(!b) return;
+    var g = b.dataset.geste, nf = b.dataset.f;
+    if(g === "ouvrir"){ ouvrir(nf, b.dataset.c); }
+    else if(g === "poser") poserLeMot(nf, b.dataset.c);
+    else if(g === "ouvrirNouvelle"){ ouvrirNouvelle(nf); }
+    else if(g === "creer") creer(nf);
+    else if(g === "retirer") retirer(nf, b.dataset.c, b.dataset.m);
+    else if(g === "oui") repondre(b.dataset.m, true);
+    else if(g === "non") repondre(b.dataset.m, false);
+  });
+  document.getElementById("corps").addEventListener("input", function(e){
+    var c = e.target; if(!c.dataset.champ) return;
+    var f = etat.familles[c.dataset.f];
+    if(c.dataset.champ === "mot") f.saisie = c.value; else f.nouvelle = c.value;
+  });
+  document.getElementById("corps").addEventListener("keydown", function(e){
+    var c = e.target; if(!c.dataset || !c.dataset.champ || e.key !== "Enter") return;
+    if(c.dataset.champ === "mot") poserLeMot(c.dataset.f, c.dataset.c); else creer(c.dataset.f);
+  });
+  document.getElementById("recommencer").addEventListener("click", function(){
+    etat = depart(); document.getElementById("corps").scrollTop = 0; rendre();
+  });
+
+  rendre();
+})();
+</script>
+</body>
+</html>

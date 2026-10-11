@@ -71,7 +71,8 @@ export default function FichesEnCours({ brouillons }: { brouillons: PassageListe
     <>
       {visibles.length > 0 && (
         <section className="mx-[26px] mt-[28px]">
-          <h2 className={smallCaps} style={{ color: colors.muted }}>
+          {/* En noir gras, sa demande du 22 septembre 2026. */}
+          <h2 className={smallCaps} style={{ color: colors.ink, fontWeight: 700 }}>
             En cours
           </h2>
 
@@ -80,6 +81,7 @@ export default function FichesEnCours({ brouillons }: { brouillons: PassageListe
               <LignePassage
                 key={p.id}
                 passage={p}
+                href={`/paysage/fiche/${p.id}`}
                 action={
                   // 44 px de côté : la mesure d'un doigt, pas d'un curseur.
                   <button

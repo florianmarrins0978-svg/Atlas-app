@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import BottomSheet from "@/components/atlas/BottomSheet";
-import { colors, voile } from "@/lib/design-tokens";
-import { nomDuFichierDeLaPiece, type PieceDuClient } from "@/lib/documents-du-client";
+import { colors, font } from "@/lib/design-tokens";
+import { natureDeLaPiece, nomDuFichierDeLaPiece, numeroDeLaPiece, type PieceDuClient } from "@/lib/documents-du-client";
+import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
+import { rapportDansLAppli } from "@/lib/rapport-dans-l-appli";
+import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 
 /**
  * Une pièce du dossier d'un client, et les trois choses qu'on peut en faire.
@@ -23,22 +26,26 @@ import { nomDuFichierDeLaPiece, type PieceDuClient } from "@/lib/documents-du-cl
  * d'œil. La question lui a été posée telle quelle — *vient-il regarder, ou
  * garder ?* — et sa réponse est celle qui ne tranche pas pour lui.
  *
- * ── LES TROIS CONDITIONS DE « ENREGISTRER », ET AUCUNE NE SUFFIT SEULE ──────
+ * ── « ENREGISTRER » NE PASSE PLUS PAR UN LIEN ──────────────────────────────
  *
  * Le défaut du 7 août 2026 — *« quand je clique sur télécharger le PDF, ça me
- * propose pas de l'enregistrer, ça ouvre juste une page de plus »* — a coûté
- * une matinée, et son remède tient à trois choses réunies :
+ * propose pas de l'enregistrer, ça ouvre juste une page de plus »* — revenait
+ * le 12 septembre sur la facture, et pour de bon : un lien remet le fichier au
+ * navigateur, et iOS PEINT un PDF au lieu de le ranger. La page récupère donc
+ * le document et le remet à la feuille de partage, qui, elle, sait
+ * l'enregistrer (`BoutonTelechargerDocument`, et ses raisons).
  *
- *   1. `?telecharger=1`, qui fait poser `attachment` par le serveur ; sans lui
- *      Chrome affiche le document ;
- *   2. l'attribut `download`, qui donne son NOM au fichier ; sans lui Safari le
- *      nomme d'après la page, sans extension ;
- *   3. **pas de `target="_blank"`** ; l'onglet neuf prive Safari de sa demande
- *      d'enregistrement.
- *
- * Les trois sont ici. « Ouvrir », lui, veut exactement l'inverse : pas de
- * `?telecharger=1`, et un onglet à part pour ne pas perdre la fiche.
+ * « Ouvrir » veut exactement l'inverse : pas de
+ * `?telecharger=1` — et, depuis le 11 septembre 2026, **plus d'onglet à part**
+ * pour un PDF : *« j'ai pas de touche retour »*. Le fichier se peint dans la
+ * visionneuse de l'application, dont la flèche ramène à cette fiche
+ * (`src/lib/visionneuse-pdf.ts`). Le rapport d'entretien, qui est une page,
+ * a suivi le 24 septembre 2026 : il se relit dans l'application
+ * (`src/lib/rapport-dans-l-appli.ts`), jamais sur la page du client.
  */
+/** Ce que l'en-tête de la visionneuse écrit au-dessus du numéro. */
+const NATURE_LISIBLE = { facture: "Facture", avoir: "Avoir", devis: "Devis", "fiche-chantier": "Fiche de chantier" } as const;
+
 export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
   const [feuilleOuverte, setFeuilleOuverte] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -87,8 +94,21 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
           l'attend : « Ouvrir les actions » plutôt que le seul numéro, qui
           laisserait croire que l'appui ouvre le document.
 
-          Les 56 px de haut viennent de la règle de cet écran : « un lien qu'il
-          touche d'une main, dehors, parfois avec des gants ». */}
+          Les 64 px de haut viennent de la règle de cet écran : « un lien qu'il
+          touche d'une main, dehors, parfois avec des gants ».
+
+          ── LA PIÈCE EST UNE LIGNE DEPUIS LE 2 SEPTEMBRE 2026 ──────────────
+          Retenu sur maquette. Elle était une vignette dans une colonne de
+          118 px, et son numéro n'y tenait pas : « n° 2026-0031 » se coupait.
+          Le registre porte maintenant toute la largeur, le numéro se lit en
+          serif comme un nom de chantier, et la date se range à droite en
+          chiffres alignés.
+
+          **La pastille rouge « PDF » a disparu, et c'était la seule tache
+          d'alerte de l'écran** — posée sur un document qui n'alerte rien. Ce
+          qu'elle disait, l'onglet le dit mieux : la nature de la pièce EST son
+          registre. `estUnFichier` continue de commander la feuille, où la
+          différence a une conséquence (on n'enregistre pas une page). */}
       <button
         type="button"
         onClick={() => {
@@ -96,26 +116,63 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
           setFeuilleOuverte(true);
         }}
         data-atlas="piece"
-        aria-label={`${piece.titre} — que faire de ce document ?`}
-        className="mt-2 block min-h-[56px] w-full pb-0.5 pt-2 text-center"
+        aria-label={`${piece.titre}, que faire de ce document ?`}
+        className="grid min-h-[64px] w-full grid-cols-[1fr_auto_auto] items-center gap-x-[14px] py-[15px] text-left"
+        style={{ borderTop: `1px solid ${colors.lineSoft}`, WebkitTapHighlightColor: "transparent" }}
       >
-        <span
-          className="mx-auto flex h-[29px] w-[24px] items-end justify-center rounded-[3px] pb-[3px] text-[6.5px] font-bold"
-          style={{
-            backgroundColor: colors.card,
-            boxShadow: `inset 0 0 0 1px ${voile(colors.alert, 0.35)}`,
-            color: colors.alert,
-            letterSpacing: "0.06em",
-          }}
-        >
-          {estUnFichier ? "PDF" : "FICHE"}
-        </span>
-        <span data-atlas="piece-titre" className="mt-[5px] block truncate text-[12.5px] leading-[1.2]">
+        <span data-atlas="piece-titre" className="block truncate text-[19px] leading-[1.15]" style={{ fontFamily: font.display }}>
           {piece.titre}
         </span>
-        {piece.precision && (
-          <span className="mt-0.5 block truncate text-[10.5px] leading-[1.25]" style={{ color: colors.muted }}>
-            {piece.precision}
+        {/* **UNE DATE NE SE MET JAMAIS EN CAPITALES.** Écrite ici en petites
+            capitales espacées, « 12 août 2026 » devenait « 12 AOÛT 2026 » : le
+            mois cesse d'avoir une forme, et l'on épelle au lieu de lire. C'est
+            l'argument même qui a fait repasser l'adresse en bas de casse dans
+            l'en-tête — il vaut autant ici.
+
+            Et cela cassait une règle qu'il avait payée : une seule façon
+            d'écrire une date sur cet écran, en toutes lettres
+            (`test-fiche-client-e2e`, qui l'a vu avant lui). */}
+        <span
+          className="text-[11.5px] leading-[1.5]"
+          style={{ color: colors.muted, fontVariantNumeric: "tabular-nums" }}
+        >
+          {piece.precision ?? ""}
+        </span>
+        {/* Le chevron : seule affordance de navigation vers l'intérieur, et
+            discret — il montre un sens, il ne décore pas (`CLAUDE.md` §3). */}
+        <svg width="7" height="12" viewBox="0 0 8 14" fill="none" stroke={colors.chevron} strokeWidth="1.5" aria-hidden="true">
+          <path d="M1.5 1l5 6-5 6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        {/* **CE QUE LE CLIENT A FAIT DE SA FACTURE — sa réponse du 9 septembre
+            2026.** Je lui demandais où il chercherait le jour d'un litige :
+            *« je vais dans mes clients sur la catégorie facture »*. C'est donc
+            ici, et pas seulement sur « En attente de paiement ».
+
+            Sur toute la largeur, SOUS le numéro : à droite, elle se serait
+            battue avec la date pour la même colonne de 118 px — celle-là même
+            où « n° 2026-0031 » ne tenait pas. La ligne passe de 64 à 90 px, et
+            seules les factures la portent.
+
+            **« Pas encore ouverte » S'ÉCRIT**, et ce n'est pas du bruit : c'est
+            justement ce qu'il vient vérifier quand un client prétend n'avoir
+            rien reçu. Ne rien afficher ferait lire l'absence de trace comme une
+            absence de fonctionnalité.
+
+            **La phrase se décide dans `src/lib/reception-facture.ts`**, pas
+            ici : l'écran des impayés la montre aussi, et le choix « confirmée
+            plutôt qu'ouverte » y était écrit une seconde fois (`CLAUDE.md`
+            §3). */}
+        {piece.reception && (
+          <span
+            data-atlas="piece-reception"
+            className="col-span-3 mt-[3px] block text-[11.5px] leading-[1.5]"
+            style={{ color: piece.reception.date ? colors.inkSoft : colors.muted }}
+          >
+            {piece.reception.avant}
+            {/* Le gras, et non le demi-gras d'avant : c'est la date qu'il cherche
+                dans la ligne, et il l'a demandée « en gras » le 11 septembre
+                2026. À 11,5 px, un 500 ne se distingue pas du texte autour. */}
+            {piece.reception.date && <strong>{piece.reception.date}</strong>}
           </span>
         )}
       </button>
@@ -123,43 +180,55 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
       <BottomSheet open={feuilleOuverte} onBackdropClick={() => setFeuilleOuverte(false)}>
         <p className="text-center text-[12px]" style={{ color: colors.muted }}>
           {piece.titre}
-          {piece.precision ? ` · ${piece.precision}` : ""}
+          {piece.precision ? ` ${piece.precision}` : ""}
         </p>
 
         {/* **« Enregistrer » en tête, et c'est le geste qu'il est venu chercher.**
-            Les trois conditions du 7 août sont réunies ici, et le pavé au-dessus
-            dit pourquoi aucune ne se retire.
+            La feuille de l'application ne se referme qu'une fois le document
+            parti : refermée à l'appui, elle emportait le message d'un refus.
 
             **Sauf pour une fiche d'entretien**, qui n'est pas un fichier : elle
             n'a rien à enregistrer, et « Ouvrir » devient alors le geste
             principal. */}
         {estUnFichier && (
-          <a
-            href={`${piece.href}?telecharger=1`}
-            download={nomFichier}
-            onClick={() => setFeuilleOuverte(false)}
-            data-atlas="piece-enregistrer"
-            className="mt-4 block rounded-full py-4 text-center text-[16px] font-medium"
-            style={{ backgroundColor: colors.rust, color: colors.cream }}
+          <BoutonTelechargerDocument
+            fichier={piece.href}
+            nom={nomFichier}
+            onFini={() => setFeuilleOuverte(false)}
+            dataAtlas="piece-enregistrer"
+            className="atlas-plein mt-4 block w-full rounded-full py-4 text-center text-[16px] font-medium"
+            style={{ backgroundColor: colors.plein, color: colors.cream }}
           >
             Enregistrer
-          </a>
+          </BoutonTelechargerDocument>
         )}
 
-        {/* Un onglet à part : sans lui, regarder un devis ferait perdre la fiche
-            du client, et il faudrait y revenir à la main. */}
         <a
-          href={piece.href}
-          target="_blank"
-          rel="noreferrer"
+          href={
+            estUnFichier
+              ? adresseDeLaVisionneuse(piece.href, {
+                  surtitre: NATURE_LISIBLE[natureDeLaPiece(piece.href)],
+                  titre: numeroDeLaPiece(piece.titre) ?? piece.titre,
+                })
+              // **Plus d'onglet neuf — 24 septembre 2026.** Il y tombait sur la
+              // page de son client, sans flèche : *« j'ai aucun moyen de faire
+              // retour ! »*. Le rapport se relit dans l'application
+              // (`rapport-dans-l-appli.ts`) ; « Partager » garde l'adresse
+              // publique, la seule que le client puisse ouvrir.
+              : (rapportDansLAppli(piece.href) ?? piece.href)
+          }
           onClick={() => setFeuilleOuverte(false)}
           data-atlas="piece-ouvrir"
           className={
             estUnFichier
               ? "mt-2 block py-4 text-center text-[15px]"
-              : "mt-4 block rounded-full py-4 text-center text-[16px] font-medium"
+              // **Seule cette branche est un aplat.** L'autre est un simple
+              // lien à l'encre : lui poser la classe du bouton plein lui
+              // donnerait un geste que rien ne peint — « surtout pas ceux qui
+              // sont creux » (sa consigne du 31 août).
+              : "atlas-plein mt-4 block rounded-full py-4 text-center text-[16px] font-medium"
           }
-          style={estUnFichier ? { color: colors.ink } : { backgroundColor: colors.rust, color: colors.cream }}
+          style={estUnFichier ? { color: colors.ink } : { backgroundColor: colors.plein, color: colors.cream }}
         >
           Ouvrir
         </a>

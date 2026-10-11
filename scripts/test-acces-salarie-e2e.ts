@@ -4,6 +4,7 @@ import { Pool } from "pg";
 import { donnerUnAcces, listerAcces } from "../src/server/repositories/membres-entreprise";
 import { documentsAAccepter, enregistrerAcceptations } from "../src/server/repositories/documents-legaux";
 import type { Ctx } from "../src/server/repositories/context";
+import { ADRESSE } from "./_adresse";
 
 // UN VRAI SALARIÉ, DANS UN VRAI NAVIGATEUR — et ce qu'il n'obtient pas.
 //
@@ -39,7 +40,7 @@ import type { Ctx } from "../src/server/repositories/context";
 // pourtant reçu le fichier.
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const MOT_DE_PASSE = "trois-mots-courts";
 
 let echecs = 0;
@@ -208,7 +209,7 @@ async function main() {
     });
   }
 
-  await cas("le patron le voit dans « Qui a accès », avec son rôle", async () => {
+  await cas("le patron le voit dans « Accès », avec son rôle", async () => {
     const liste = await listerAcces(ctxPatron);
     const lui = liste.find((l) => l.email === email);
     assert.ok(lui, "le salarié n'apparaît pas dans la liste des accès");

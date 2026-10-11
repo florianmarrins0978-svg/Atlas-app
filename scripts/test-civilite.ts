@@ -4,6 +4,7 @@ import path from "node:path";
 import { Pool } from "pg";
 import {
   avecCivilite,
+  detacherCivilite,
   porteDejaSonAppellation,
   CIVILITE_PAR_DEFAUT,
   CIVILITES,
@@ -204,6 +205,112 @@ cas("sans nom, un choix ne fabrique personne", () => {
 
 cas("les deux mots sont ceux qu'il a écrits", () => {
   assert.deepEqual(CIVILITES, { mr: "Mr.", mme: "Mme" });
+});
+
+// ─── Le mot dicté quitte le nom pour la pastille ─────────────────────────────
+//
+// **Le patron, le 7 septembre 2026, capture de sa dictée à l'appui.** Il a dit
+// « monsieur Ludovic » ; la case du nom portait « Monsieur Ludovic ». *« Il ne
+// faut jamais qu'il y ait marqué monsieur, madame ou quoi que ce soit d'autre à
+// part le nom dans cette case-là. Mais est-ce que c'est possible que lorsqu'il
+// entend monsieur ou madame, il vienne sélectionner tout seul en haut soit le
+// monsieur, soit le madame ? »*
+//
+// Ce qui est tenu ici : le mot est retiré du nom, ET il désigne la bonne
+// pastille. Retirer sans désigner perdrait ce qu'il a dit ; désigner sans
+// retirer laisserait « Monsieur » partir tel quel sur le devis, là où il écrit
+// « Mr. ».
+
+console.log("\n=== Le mot dicté quitte le nom pour la pastille ===");
+
+cas("« Monsieur Ludovic » rend « Ludovic » et la pastille Mr — SON cas", () => {
+  assert.deepEqual(detacherCivilite("Monsieur Ludovic"), { nom: "Ludovic", civilite: "mr" });
+});
+
+cas("les graphies qu'une transcription écrit vraiment désignent la même pastille", () => {
+  for (const dit of ["Monsieur Ludovic", "monsieur ludovic", "M. Ludovic", "Mr Ludovic", "MM. Ludovic"]) {
+    assert.equal(detacherCivilite(dit).civilite, "mr", `« ${dit} » ne désigne pas « Mr »`);
+  }
+  for (const dit of ["Madame Roux", "Mme Roux", "MADAME ROUX", "Mademoiselle Roux", "Mlle Roux", "Melle Roux"]) {
+    assert.equal(detacherCivilite(dit).civilite, "mme", `« ${dit} » ne désigne pas « Mme »`);
+  }
+});
+
+cas("la casse et les accents du nom sont ceux qui ont été dictés", () => {
+  // Reconstruire le nom depuis les mots aplatis aurait rendu « riviere ».
+  assert.deepEqual(detacherCivilite("Madame Rivière-Le Goff"), {
+    nom: "Rivière-Le Goff",
+    civilite: "mme",
+  });
+});
+
+cas("un patronyme qui COMMENCE comme une civilité n'est pas amputé", () => {
+  // « Merlin » commence par « m », « Mathieu » par « m » : le contrôle qui
+  // regarde les lettres une à une les décapiterait. C'est le mot entier qui
+  // compte, et le mot entier seulement.
+  for (const nom of ["Merlin", "Mathieu Dubois", "Mmelanie Roux", "Meunier", "Mendes"]) {
+    assert.deepEqual(detacherCivilite(nom), { nom, civilite: null }, `« ${nom} » a été amputé`);
+  }
+});
+
+cas("une civilité au MILIEU du nom reste où elle est", () => {
+  assert.deepEqual(detacherCivilite("Jean-Marie Leme"), { nom: "Jean-Marie Leme", civilite: null });
+});
+
+cas("« Docteur » et « Maître » quittent le nom SANS allumer de pastille", () => {
+  // **Sa décision du 7 septembre 2026**, après que je lui ai livré l'inverse et
+  // dit ce qu'elle coûte : *« Docteur et maître ne doivent pas apparaître dans
+  // le nom. Seulement les noms de famille ! »*
+  //
+  // Ce que ça coûte, et qui est assumé : aucune pastille ne les porte, donc le
+  // document écrira « Mr. Rivière » — y compris pour une femme médecin. La
+  // pastille est à un appui, juste au-dessus, et il relit la fiche.
+  //
+  // Le contrôle tient les DEUX moitiés : le titre part, et rien ne s'allume à
+  // sa place. Un contrôle qui ne dirait que la première laisserait passer une
+  // civilité devinée, ce que le dépôt interdit partout ailleurs.
+  for (const [dit, attendu] of [
+    ["Docteur Rivière", "Rivière"],
+    ["Dr Rivière", "Rivière"],
+    ["Maître Roux", "Roux"],
+    ["Me Roux", "Roux"],
+  ] as const) {
+    assert.deepEqual(
+      detacherCivilite(dit),
+      { nom: attendu, civilite: null },
+      `« ${dit} » : le titre est resté, ou une pastille a été devinée`
+    );
+  }
+});
+
+cas("une civilité dite SANS nom allume quand même la pastille", () => {
+  // « Monsieur, 06 79 98 45 14 » : aucun nom à poser, mais il a dit monsieur.
+  assert.deepEqual(detacherCivilite("Monsieur"), { nom: "", civilite: "mr" });
+  assert.deepEqual(detacherCivilite(""), { nom: "", civilite: null });
+  assert.deepEqual(detacherCivilite(null), { nom: "", civilite: null });
+});
+
+cas("ce qui est détaché ici est reposé à l'identique par avecCivilite", () => {
+  // **La propriété qui compte vraiment.** Les deux fonctions sont l'inverse
+  // l'une de l'autre ; si l'une apprend une graphie que l'autre ignore, un nom
+  // dicté ressort sans sa civilité sur le devis. Le contrôle les confronte
+  // plutôt que de décrire chacune dans son coin.
+  for (const dit of ["Monsieur Ludovic", "Mme Roux", "Mlle Bernard", "M. Martins"]) {
+    const { nom, civilite } = detacherCivilite(dit);
+    assert.ok(civilite, `« ${dit} » n'a pas rendu de pastille`);
+    assert.equal(
+      avecCivilite(nom, civilite),
+      `${CIVILITES[civilite!]} ${nom}`,
+      `« ${dit} » : le nom détaché ne se renomme pas`
+    );
+  }
+});
+
+cas("le contrôle sait échouer : une pastille inventée ne se détache pas", () => {
+  // Un contrôle qui n'a jamais échoué ne prouve rien (`AGENTS.md`). « Sieur »
+  // n'est dans aucune des deux listes : s'il se détachait, c'est que la
+  // reconnaissance devine au lieu de lire.
+  assert.deepEqual(detacherCivilite("Sieur Ludovic"), { nom: "Sieur Ludovic", civilite: null });
 });
 
 // ─── La migration et la fonction disent la même chose ────────────────────────

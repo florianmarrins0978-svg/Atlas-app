@@ -8,11 +8,12 @@ import { lancerNavigateur } from "./e2e-browser";
 import { avecCivilite } from "../src/lib/civilite";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
 
 // Créer la facture, l'envoyer, et le relevé de TVA — vus depuis l'écran du patron
 // (docs/AGENT.md §2.3). L'arrêt 3 est ici : rien ne part sans un appui.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 /**
  * Requête d'inspection, hors application.
@@ -75,9 +76,13 @@ async function chantierRealise(page: Page, suffixe: string) {
   const nom = avecCivilite(client);
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
-  const url = page.url();
+  // **L'adresse du chantier est une mention de la facture** (242 nonies A,
+  // I-2°) : sans elle, l'émission refuse depuis le 3 octobre 2026.
+  await page.fill('input[placeholder="12 rue des Lilas, Nantes"]', "10 rue des Lilas, Nantes");
+  // L'adresse se bâtit sur l'identifiant que l'aide rend : la relire dans
+  // le navigateur donnait « devis-complet » depuis que la fiche du chantier
+  // est retirée (`ARCHITECTURE.md` §254).
+  const url = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
   const chantierId = url.split("/").pop()!;
 
   await page.goto(`${url}/prix`, { waitUntil: "networkidle" });
@@ -93,7 +98,7 @@ async function chantierRealise(page: Page, suffixe: string) {
   await page.click("text=Choisir la date");
   await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+  await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   await inspecter("UPDATE chantiers SET date_planifiee = CURRENT_DATE - 3 WHERE id = $1", [chantierId], 1);
 
@@ -107,7 +112,12 @@ async function main() {
 
   await test("le chantier réalisé apparaît dans l'onglet Terminés, et mène à sa facture", async () => {
     const { nom, chantierId } = await chantierRealise(page, "onglet");
-    await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
+    // **Sur SON mois, désigné par `?chantier=`.** Terminés s'ouvre sur le mois
+    // le plus récent qui porte un chantier ; celui-ci est posé trois jours en
+    // arrière, donc le mois d'avant du 1er au 3. Dès qu'une autre suite avait
+    // laissé un chantier du mois courant, l'écran s'ouvrait dessus et ce cas
+    // rougissait sur du code juste (batterie du 3 octobre 2026, deux fois).
+    await page.goto(`${BASE}/termines?chantier=${chantierId}`, { waitUntil: "networkidle" });
 
     assert.ok(await page.locator(`text=${nom}`).first().isVisible(), "le chantier n'apparaît pas");
     // **La touche ne vit plus ici**, et c'est la maquette du 10 août 2026 :
@@ -117,7 +127,7 @@ async function main() {
     // plus d'action évidente. Ce qui doit être vrai ici, c'est que le chemin
     // existe.
     assert.equal(
-      await page.locator(`a[href="/chantiers/${chantierId}/facture"]`).count(),
+      await page.locator(`a[href^="/chantiers/${chantierId}/facture"]`).count(),
       1,
       "la ligne du chantier ne mène pas à son écran de facture"
     );
@@ -141,10 +151,17 @@ async function main() {
     const { chantierId } = await chantierRealise(page, "preparer");
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
     await page.click("text=Créer la facture");
-    await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
+    // **Repéré par son ATTRIBUT, jamais par la phrase.** Ces suites attendaient
+    // « Rien n'a changé depuis le devis ? » — un texte que le patron a fait
+    // remplacer par un bouton le 9 septembre 2026. Elles sont alors mortes sur
+    // un délai dépassé, sur du code juste et pour une demande exaucée
+    // (`CLAUDE.md` §5 bis).
+    await page.waitForSelector('[data-atlas="ajouter-travaux-supplementaires"]', { timeout: 15000 });
 
+    // `.first()` : depuis sa planche du 14 septembre 2026, le montant se lit
+    // deux fois — Total TTC, puis « Net à payer » tant que rien n'est reçu.
     assert.ok(
-      await page.locator("text=/1\\s?200,00\\s?€/").isVisible(),
+      await page.locator("text=/1\\s?200,00\\s?€/").first().isVisible(),
       "le total du devis n'est pas repris (1 200,00 €)"
     );
 
@@ -157,11 +174,11 @@ async function main() {
     // la migration 0045, une facture arrêtée n'entre au relevé qu'une fois
     // ENCAISSÉE — c'est le défaut légal d'une prestation de services
     // (`ARCHITECTURE.md` §110). Le parcours compte donc un geste de plus, et
-    // c'est celui que le patron a demandé : « Payée ».
+    // c'est celui que le patron a demandé : solder, d'un doigt.
     const { chantierId } = await chantierRealise(page, "emettre");
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
     await page.click("text=Créer la facture");
-    await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
+    await page.waitForSelector('[data-atlas="ajouter-travaux-supplementaires"]', { timeout: 15000 });
     // **UN SEUL APPUI depuis le 22 août 2026** — il arrête la facture ET ouvre
     // la messagerie (`ARCHITECTURE.md` §147). Repéré par son `data-atlas`,
     // jamais par son libellé : c'est justement le libellé qui a changé, et
@@ -180,12 +197,17 @@ async function main() {
     // Arrêtée mais pas encaissée : elle ATTEND, et l'écran le dit.
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const enAttente = page.locator("li").filter({ hasText: rows[0].numero_commercial as string });
-    await enAttente.getByRole("button", { name: "Payée" }).waitFor({ state: "visible", timeout: 15000 });
+    await enAttente.locator('[data-atlas="solder-la-facture"]').waitFor({ state: "visible", timeout: 15000 });
 
     // Le relevé n'est pas une table : il se recalcule à chaque affichage, et
     // doit donc porter cette facture dès que son règlement est noté — sans
     // qu'aucune écriture ne l'ait mise dans un relevé.
-    await enAttente.getByRole("button", { name: "Payée" }).click();
+    await enAttente.locator('[data-atlas="solder-la-facture"]').click();
+    // **Et l'écran dit où elle est partie — sa demande du 16 septembre 2026 :**
+    // « Amélie 1392 est rentrée au relevé ». Sans cette ligne, une facture qui
+    // disparaît à l'appui ne dit pas si elle a été soldée ou perdue.
+    await page.locator('[data-atlas="rentree-au-releve"]').filter({ hasText: "est rentrée au relevé" })
+      .waitFor({ state: "visible", timeout: 15000 });
     await page.waitForFunction(
       (numero) => !document.body.innerText.includes(numero),
       rows[0].numero_commercial as string,
@@ -208,7 +230,7 @@ async function main() {
     const { chantierId } = await chantierRealise(page, "rejeu");
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
     await page.click("text=Créer la facture");
-    await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
+    await page.waitForSelector('[data-atlas="ajouter-travaux-supplementaires"]', { timeout: 15000 });
     // **UN SEUL APPUI depuis le 22 août 2026** — il arrête la facture ET ouvre
     // la messagerie (`ARCHITECTURE.md` §147). Repéré par son `data-atlas`,
     // jamais par son libellé : c'est justement le libellé qui a changé, et

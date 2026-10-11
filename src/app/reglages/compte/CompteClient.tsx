@@ -1,8 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
-import { renommerCompteAction } from "./actions";
+import { colors, font, libelleCaps, surPlein, texteSituation } from "@/lib/design-tokens";
+import BarreEnregistrer from "@/components/atlas/BarreEnregistrer";
+import { initialesDe, nomAffiche } from "@/lib/identite-personne";
+import { CIVILITES } from "@/lib/civilite";
+import FichePhoto from "@/components/atlas/FichePhoto";
+import TeteRonde from "@/components/atlas/TeteRonde";
+import { ecrireIdentiteAction, poserMaPhotoAction, retirerMaPhotoAction } from "./actions";
 
 /**
  * « Mon compte » — `maquettes/atlas-reglages-moi.html`, écran 1.
@@ -16,29 +21,65 @@ import { renommerCompteAction } from "./actions";
  * n'y a pas de quoi la rattraper. L'écran le DIT plutôt que de laisser croire à
  * une panne (`TODO.md` §0 octovicies).
  */
-export default function CompteClient({ initial }: { initial: { nom: string; email: string } }) {
+type Initial = {
+  civilite: "mr" | "mme" | null;
+  prenom: string;
+  nom: string;
+  email: string;
+  /** Sa photo, là où elle vit (`lireMaPhoto`). */
+  photo: string | null;
+};
+
+export default function CompteClient({ initial }: { initial: Initial }) {
+  const [civilite, setCivilite] = useState<"mr" | "mme" | null>(initial.civilite);
+  const [prenom, setPrenom] = useState(initial.prenom);
   const [nom, setNom] = useState(initial.nom);
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
   /** Ce qui n'est pas encore écrit — le bouton du bas DIT cet état (§99). */
   const [aEcrire, setAEcrire] = useState(false);
+  const [photo, setPhoto] = useState(initial.photo);
+  const [ficheOuverte, setFicheOuverte] = useState(false);
 
-  function enregistrer() {
+  /**
+   * **Ce que le champ porte prime sur l'état**, qui est celui du dernier rendu :
+   * la dernière lettre tapée avant de toucher ailleurs pouvait n'y être pas
+   * encore, et c'est l'ancien prénom qui partait (`test-valeur-du-champ.ts`).
+   */
+  function enregistrer(frais: { prenom?: string; nom?: string } = {}) {
     demarrer(async () => {
-      const r = await renommerCompteAction(nom);
+      const r = await ecrireIdentiteAction({ civilite, prenom: frais.prenom ?? prenom, nom: frais.nom ?? nom });
       setRefus(r.ok ? null : r.raison);
       if (r.ok) setAEcrire(false);
     });
   }
 
-  // Les initiales, à défaut d'un portrait : `users.image` existe et reste vide
-  // — personne ne téléverse une photo depuis un chantier, et un rond vide se
-  // lit comme un écran cassé.
-  const initiales = initialesDe(nom, initial.email);
+  const identite = { civilite, prenom, nom };
+  // Les initiales, à défaut de photo : un rond vide se lit comme un écran
+  // cassé. **Et c'est ce rond qui porte la photo** depuis le 27 septembre 2026
+  // (« chaque personne doit pouvoir mettre et changer sa photo de profil ») :
+  // il reste à sa place, seul son contenu change.
+  const initiales = initialesDe(identite, initial.email);
+  const affiche = nomAffiche(identite);
 
   return (
     // `pb-40` : la barre d'enregistrement s'ajoute aux onglets.
     <div className="pb-40">
+      {ficheOuverte ? (
+        <FichePhoto
+          repli={initiales}
+          nom={affiche === "" ? initial.email : affiche}
+          photo={photo}
+          envoyer={(fichier) => {
+            const fd = new FormData();
+            fd.set("fichier", fichier);
+            return poserMaPhotoAction(fd);
+          }}
+          retirer={retirerMaPhotoAction}
+          onPhoto={setPhoto}
+          onFermer={() => setFicheOuverte(false)}
+        />
+      ) : null}
       {refus && (
         <p
           role="alert"
@@ -50,19 +91,21 @@ export default function CompteClient({ initial }: { initial: { nom: string; emai
       )}
 
       <div className="mx-[26px] mt-[26px] flex items-center gap-3.5">
-        <span
-          aria-hidden="true"
-          className="flex h-[52px] w-[52px] flex-none items-center justify-center rounded-full"
-          style={{ backgroundColor: colors.card, color: colors.or, fontFamily: font.display, fontSize: 19 }}
+        <button
+          type="button"
+          data-atlas="ma-photo"
+          aria-label="Ma photo"
+          onClick={() => setFicheOuverte(true)}
+          className="flex-none rounded-full"
         >
-          {initiales}
-        </span>
+          <TeteRonde repli={initiales} photo={photo} taille={52} />
+        </button>
         {/* **Le nom seul, sans « Ce compte » dessous.** Sa demande du 26 août
             2026. Un écran qui s'appelle « Mon compte » n'a pas besoin de dire
             sous chaque ligne qu'on y est. */}
         <span className="min-w-0 flex-1">
           <span className="block truncate" style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.25 }}>
-            {nom.trim() === "" ? initial.email : nom}
+            {affiche === "" ? initial.email : affiche}
           </span>
         </span>
       </div>
@@ -71,24 +114,64 @@ export default function CompteClient({ initial }: { initial: { nom: string; emai
         className="mx-[26px] mt-[30px] border-t pt-[18px] [&>*:last-child]:border-b-0"
         style={{ borderColor: colors.line }}
       >
-        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
           Qui vous êtes
         </p>
 
+        {/* **LA CIVILITÉ SE CHOISIT, ELLE NE SE TAPE PAS.** Sa demande du
+            8 septembre 2026, capture à l'appui : « l'identité comme sur la
+            photo avec Mr. Madame nom prénom ». Deux cibles de 44 px plutôt
+            qu'un champ libre — « Mr », « M. », « monsieur » partiraient
+            ensuite sur des documents, et rien ne saurait les rapprocher.
+
+            **On peut la retirer** en réappuyant : elle n'est obligatoire nulle
+            part, et un choix qu'on ne peut pas défaire se regrette. */}
+        <div className="border-b py-[13px]" style={{ borderColor: colors.line }}>
+          <span className={`mb-2 block ${libelleCaps}`} style={{ color: colors.inkSoft }}>
+            Civilité
+          </span>
+          <div className="flex gap-2.5">
+            {(["mme", "mr"] as const).map((code) => {
+              const choisie = civilite === code;
+              return (
+                <button
+                  key={code}
+                  type="button"
+                  aria-pressed={choisie}
+                  onClick={() => {
+                    setCivilite(choisie ? null : code);
+                    setAEcrire(true);
+                  }}
+                  className="h-11 flex-1 rounded-full"
+                  style={{
+                    fontFamily: font.display,
+                    fontSize: 16,
+                    backgroundColor: choisie ? colors.plein : colors.card,
+                    color: choisie ? surPlein : colors.ink,
+                    border: `1px solid ${choisie ? colors.plein : colors.line}`,
+                  }}
+                >
+                  {CIVILITES[code]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <label className="block border-b py-[13px]" style={{ borderColor: colors.line }}>
-          <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.muted }}>
-            Nom
+          <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.inkSoft }}>
+            Prénom
           </span>
           <input
             type="text"
-            value={nom}
-            autoComplete="name"
-            aria-label="Nom"
+            value={prenom}
+            autoComplete="given-name"
+            aria-label="Prénom"
             onChange={(e) => {
-              setNom(e.target.value);
+              setPrenom(e.target.value);
               setAEcrire(true);
             }}
-            onBlur={enregistrer}
+            onBlur={(e) => enregistrer({ prenom: e.currentTarget.value })}
             className="block w-full border-0 bg-transparent p-0 outline-none"
             // 16 px au moins : en dessous, iOS agrandit la page à la mise au
             // point et il se retrouve avec un écran zoomé à rétablir à la main.
@@ -96,8 +179,32 @@ export default function CompteClient({ initial }: { initial: { nom: string; emai
           />
         </label>
 
+        {/* **« Nom » veut dire NOM DE FAMILLE depuis la migration 0077** — mais
+            les comptes d'avant portent ici leur nom complet, et on ne les a pas
+            découpés : « Jean-Pierre de La Fontaine » ne se coupe pas par un
+            espace. L'écran ne dit rien de tout cela, et c'est voulu : celui qui
+            veut séparer les deux le voit en regardant ses deux cases. */}
+        <label className="block border-b py-[13px]" style={{ borderColor: colors.line }}>
+          <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.inkSoft }}>
+            Nom
+          </span>
+          <input
+            type="text"
+            value={nom}
+            autoComplete="family-name"
+            aria-label="Nom"
+            onChange={(e) => {
+              setNom(e.target.value);
+              setAEcrire(true);
+            }}
+            onBlur={(e) => enregistrer({ nom: e.currentTarget.value })}
+            className="block w-full border-0 bg-transparent p-0 outline-none"
+            style={{ fontFamily: font.display, fontSize: 17, lineHeight: 1.35, color: colors.ink }}
+          />
+        </label>
+
         <div className="border-b py-[13px]" style={{ borderColor: colors.line }}>
-          <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.muted }}>
+          <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.inkSoft }}>
             E-mail
           </span>
           <span
@@ -115,7 +222,7 @@ export default function CompteClient({ initial }: { initial: { nom: string; emai
               **Mais la ligne ne disparaît pas**, contrairement à celle du nom :
               un champ qui ne s'ouvre pas quand on le touche se lit comme une
               panne, et il chercherait ce qu'il a mal fait. */}
-          <span className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.muted }}>
+          <span className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
             Sert aussi à vous connecter. Pas encore modifiable.
           </span>
         </div>
@@ -131,59 +238,6 @@ export default function CompteClient({ initial }: { initial: { nom: string; emai
           qui part, pas la règle. */}
 
       <BarreEnregistrer aEcrire={aEcrire} enCours={enCours} onEnregistrer={enregistrer} />
-    </div>
-  );
-}
-
-/**
- * Deux lettres, tirées du nom — et de l'e-mail quand le nom manque.
- *
- * Exportée pour être éprouvée sans navigateur : un compte neuf n'a pas de nom,
- * et c'est exactement le cas où un rond vide passerait pour un défaut.
- */
-export function initialesDe(nom: string, email: string): string {
-  const mots = nom.trim().split(/\s+/).filter(Boolean);
-  if (mots.length >= 2) return (mots[0][0] + mots[mots.length - 1][0]).toUpperCase();
-  if (mots.length === 1) return mots[0].slice(0, 2).toUpperCase();
-  const avant = email.split("@")[0] ?? "";
-  return (avant.slice(0, 2) || "?").toUpperCase();
-}
-
-/**
- * Le bouton du bas, posé SUR l'écran — sa réponse « À » du 14 août 2026.
- *
- * Il se pose sur `--atlas-barre`, jamais sur un nombre écrit à la main : la
- * hauteur de la barre du bas comprend `env(safe-area-inset-bottom)`, nulle sur
- * un ordinateur et d'une vingtaine de pixels sur un iPhone à encoche.
- */
-function BarreEnregistrer({
-  aEcrire,
-  enCours,
-  onEnregistrer,
-}: {
-  aEcrire: boolean;
-  enCours: boolean;
-  onEnregistrer: () => void;
-}) {
-  const rien = !aEcrire && !enCours;
-  return (
-    <div
-      className="fixed inset-x-0 z-10 mx-auto max-w-md border-t px-[26px] pb-4 pt-3.5"
-      style={{ bottom: "var(--atlas-barre)", backgroundColor: colors.cream, borderColor: colors.line }}
-    >
-      <button
-        type="button"
-        onClick={onEnregistrer}
-        disabled={rien}
-        className="block w-full rounded-full py-[15px] text-center text-[16px]"
-        style={{
-          backgroundColor: rien ? colors.card : colors.rust,
-          color: rien ? colors.muted : colors.cream,
-          boxShadow: rien ? `inset 0 0 0 1px ${colors.line}` : "none",
-        }}
-      >
-        {enCours ? "Enregistrement…" : rien ? "Enregistré ✓" : "Enregistrer"}
-      </button>
     </div>
   );
 }

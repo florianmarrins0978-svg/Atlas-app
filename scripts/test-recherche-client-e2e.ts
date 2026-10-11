@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
+import { normaliserPourRecherche } from "../src/lib/recherche-client";
 import { lancerNavigateur, DELAI_PAR_DEFAUT_MS } from "./e2e-browser";
 import type { Page } from "playwright";
+import { eq } from "drizzle-orm";
+import { db, pool } from "../src/server/db/client";
+import { users, membresEntreprise } from "../src/server/db/schema";
+import * as clientsRepo from "../src/server/repositories/clients";
 
 // **La barre de recherche des clients, éprouvée en tapant dedans.**
 //
@@ -101,13 +106,48 @@ async function taperEtAttendre(page: Page, texte: string) {
   throw new Error(`la frappe « ${texte} » n'a jamais été prise en compte — l'écran n'est pas devenu vivant`);
 }
 
-/** Les noms affichés dans la liste, dans l'ordre. */
+/**
+ * Les noms affichés dans la liste, dans l'ordre.
+ *
+ * **Un repère, pas une forme de balises.** Ce contrôle visait
+ * `ul li a span span:first-child` : il décrivait l'emboîtement exact du 20 août,
+ * et la refonte du 3 septembre 2026 l'aurait fait rougir sur du code juste
+ * (`CLAUDE.md` §5 bis). Un `data-atlas` survit au remaniement ; l'emboîtement,
+ * non.
+ */
 async function nomsAffiches(page: Page): Promise<string[]> {
-  return page.locator('ul li a span span:first-child').allInnerTexts();
+  return page.locator('[data-atlas="nom-client"]').allInnerTexts();
+}
+
+/**
+ * **Assez de clients pour que la liste DÉPASSE l'écran.**
+ *
+ * Sans eux, le contrôle « la barre reste atteignable quand on descend » ne
+ * mesurait rien : sur une base à peine amorcée, la page tient dans la fenêtre,
+ * `scrollTo(0, 900)` ne bouge pas, et le champ reste à sa place naturelle.
+ * Il rougissait alors en accusant l'écran (25 septembre 2026, relevé : « page
+ * descendue de 0 px, page de 664 px, fenêtre de 664 px »), et verdissait en
+ * batterie, où les autres suites avaient laissé des clients. La suite pose ce
+ * qu'elle mesure, au lieu de dépendre de ce que d'autres ont laissé.
+ */
+async function assezDeClientsPourDefiler() {
+  const [demo] = await db.select().from(users).where(eq(users.email, "demo@atlas.local")).limit(1);
+  if (!demo) throw new Error("le compte de démonstration est absent : la base n'est pas amorcée");
+  const [m] = await db
+    .select({ e: membresEntreprise.entrepriseId })
+    .from(membresEntreprise)
+    .where(eq(membresEntreprise.utilisateurId, demo.id))
+    .limit(1);
+  const ctx = { utilisateurId: demo.id, entrepriseId: m!.e };
+  const deja = await clientsRepo.listerClients(ctx);
+  for (let i = deja.length; i < 30; i++) {
+    await clientsRepo.creerClient(ctx, { nom: `Défilement ${String(i).padStart(2, "0")}` });
+  }
 }
 
 async function principal() {
   console.log("=== Chercher un client, au clavier ===\n");
+  await assezDeClientsPourDefiler();
   const nav = await lancerNavigateur();
   const page = await (await nav.newContext()).newPage();
 
@@ -176,8 +216,20 @@ async function principal() {
       `la liste n'a pas été réduite (${apres.length} sur ${avant.length}) : la frappe n'arrive pas jusqu'à elle`
     );
     for (const n of apres) {
+      // **LA RÈGLE DU PRODUIT, PAS UNE SECONDE — 14 septembre 2026.**
+      //
+      // Ce contrôle comparait la frappe BRUTE au nom brut. Or la recherche
+      // découpe en mots et normalise (`recherche-client.ts`) : « m. p » y vaut
+      // « m » et « p », que « Mme Costa empile » contient tous les deux — à
+      // juste titre. Sous une batterie entière, où d'autres suites ont créé des
+      // clients, ce cas de figure finit toujours par sortir, et la suite
+      // accusait la recherche d'un défaut qu'elle n'avait pas.
+      //
+      // On interroge donc la fonction qui décide (`CLAUDE.md` §3).
+      const nom = normaliserPourRecherche(n);
+      const attendus = normaliserPourRecherche(morceau).split(" ").filter(Boolean);
       assert.ok(
-        n.toLowerCase().includes(morceau),
+        attendus.every((mot) => nom.includes(mot)),
         `« ${n} » ne contient pas « ${morceau} » : la recherche rend n'importe quoi`
       );
     }
@@ -237,8 +289,145 @@ async function principal() {
     assert.equal(debord, false, "la page déborde sur le côté");
   });
 
+  // ───────────────────────────────────────────────────────────────────────────
+  // **CE QU'IL A NOMMÉ LE 3 SEPTEMBRE 2026, et qui a été codé sur maquette.**
+  //
+  // Les contrôles ci-dessous ne visent pas des libellés : un mot qu'il fera
+  // retirer demain rendrait la suite rouge sur du code juste (`CLAUDE.md`
+  // §5 bis). Ils visent ce qui doit rester vrai — une ligne d'identité sous
+  // chaque nom, un compte qui suit la frappe, un champ qui reste atteignable,
+  // un montant qui se lit.
+
+  await cas("chaque nom porte une ligne qui dit LEQUEL c'est", async () => {
+    await taperEtAttendre(page, "");
+    const situations = page.locator('[data-atlas="situation-client"]');
+    const combien = await situations.count();
+    const noms = (await nomsAffiches(page)).length;
+    // **UNE LIGNE PAR CLIENT QUI A QUELQUE CHOSE À DIRE — pas une par nom.**
+    //
+    // Ce cas exigeait autant de lignes que de noms, et il rougissait sur un
+    // retrait DEMANDÉ : un client sans adresse et sans document laissait sous
+    // son nom une seconde ligne VIDE — dix-huit pixels de trou, vus à la
+    // capture le 9 septembre 2026. La ligne ne se rend donc plus quand elle
+    // n'aurait rien à porter (`ListeClients`), et réclamer l'inverse ici
+    // rendrait cet écran impossible à corriger (`CLAUDE.md` §5 bis).
+    //
+    // Ce qui reste vrai, et c'est tout le sujet : **il y en a**, elles se
+    // lisent, et aucune n'est vide — sans quoi quatre Martins se ressemblent.
+    assert.ok(
+      combien > 0 && combien <= noms,
+      `${combien} lignes de situation pour ${noms} noms : un client sans rien sous son nom ` +
+        "est indistinguable de son homonyme"
+    );
+    const vides = await situations.evaluateAll(
+      (l) => l.filter((e) => ((e as HTMLElement).innerText ?? "").trim() === "").length
+    );
+    assert.equal(vides, 0, `${vides} lignes de situation sont VIDES : c'est le trou de dix-huit pixels`);
+    // **Refuser de conclure sur une boîte de zéro pixel** (`CLAUDE.md` §5) :
+    // une feuille de style non appliquée rendrait 0, et le vert ne prouverait
+    // rien.
+    const boite = await situations.first().boundingBox();
+    assert.ok(boite && boite.height > 0, "la ligne de situation n'a pas de boîte : elle est invisible");
+    const texte = (await situations.first().innerText()).trim();
+    assert.ok(texte.length > 0, "la ligne de situation est vide");
+  });
+
+  await cas("le compte se lit en haut, et il suit la frappe", async () => {
+    // Il était écrit sous le DERNIER résultat : hors de l'écran au moment
+    // précis où il sert. Ce qui se tient ici, c'est qu'il bouge — pas son mot.
+    const compte = page.locator('[data-atlas="compte-clients"]');
+    assert.equal(await compte.count(), 1, "aucun compte de clients sur l'écran");
+
+    await taperEtAttendre(page, "");
+    const auRepos = (await compte.innerText()).trim();
+    assert.match(auRepos, /\d/, `le compte au repos ne porte aucun chiffre : « ${auRepos} »`);
+
+    const cible = avant.find((n) => n.trim().length > 2);
+    const morceau = cible!.trim().slice(0, 4).toLowerCase();
+    await taperEtAttendre(page, morceau);
+    const pendant = (await compte.innerText()).trim();
+    assert.notEqual(
+      pendant,
+      auRepos,
+      `le compte n'a pas bougé (« ${auRepos} ») : il annonce toute la liste alors qu'elle est filtrée`
+    );
+
+    // Et il est bien AU-DESSUS de la liste, pas sous le dernier résultat.
+    const boiteCompte = await compte.boundingBox();
+    const boitePremier = await page.locator('[data-atlas="nom-client"]').first().boundingBox();
+    assert.ok(boiteCompte && boitePremier, "l'un des deux n'a pas de boîte");
+    assert.ok(
+      boiteCompte!.y < boitePremier!.y,
+      "le compte est sous la liste : il faut la parcourir en entier pour le lire"
+    );
+  });
+
+  await cas("la barre de recherche reste atteignable quand on descend", async () => {
+    await taperEtAttendre(page, "");
+    await page.evaluate(() => window.scrollTo(0, 900));
+    await page.waitForTimeout(300);
+    const boite = await champ.boundingBox();
+    assert.ok(boite, "le champ a disparu de la page en descendant");
+    const { descendu, hauteur, fenetre } = await page.evaluate(() => ({
+      descendu: window.scrollY,
+      hauteur: document.documentElement.scrollHeight,
+      fenetre: window.innerHeight,
+    }));
+    // **Refuser de conclure sur une page qui n'a pas bougé** (`CLAUDE.md` §5) :
+    // le champ y serait à sa place naturelle, et l'on accuserait l'écran.
+    assert.ok(
+      descendu > 0,
+      `la page n'a pas défilé (page de ${hauteur} px, fenêtre de ${fenetre} px) : rien n'est mesuré`
+    );
+    assert.ok(
+      boite!.y >= 0 && boite!.y < 140,
+      `le champ est à ${Math.round(boite!.y)} px du haut après avoir descendu : ` +
+        "il est parti avec le défilement, et il faut remonter toute la liste pour chercher " +
+        `(page descendue de ${descendu} px, page de ${hauteur} px, fenêtre de ${fenetre} px)`
+    );
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(200);
+  });
+
+  await cas("ce qui reste dû se lit — il n'est plus en capitales de 9,5 px", async () => {
+    await taperEtAttendre(page, "");
+    const du = page.locator('[data-atlas="reste-du"] span').first();
+    if ((await du.count()) === 0) {
+      // **Le dire plutôt que de rendre un vert qui ne mesure rien**
+      // (`CLAUDE.md` §5) : sur une base sans facture impayée, il n'y a rien à
+      // mesurer — ce n'est pas un succès, c'est une mesure impossible.
+      console.log(
+        "  ⚠️  Aucun client ne doit d'argent sur cette base : la taille du montant\n" +
+          "     n'a pas pu être mesurée ICI. Elle l'est dès qu'une facture reste impayée."
+      );
+      return;
+    }
+    const taille = await du.evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
+    assert.ok(taille > 0, "le montant n'a pas de taille calculée : la feuille de style n'est pas appliquée");
+    assert.ok(
+      taille >= 15,
+      `le montant dû fait ${taille} px — c'est la plainte du 3 septembre : « écrit tout petit »`
+    );
+  });
+
+  await cas("ce qui a été trouvé s'éclaire dans le nom", async () => {
+    const cible = avant.find((n) => n.trim().length > 3);
+    assert.ok(cible, "aucun nom exploitable");
+    const morceau = cible!.trim().slice(0, 4).toLowerCase();
+    await taperEtAttendre(page, morceau);
+    const marques = page.locator('[data-atlas="nom-client"] mark');
+    assert.ok(
+      (await marques.count()) > 0,
+      `« ${morceau} » ne s'éclaire nulle part : sur quatre homonymes, on ne voit pas pourquoi la ligne sort`
+    );
+    const boite = await marques.first().boundingBox();
+    assert.ok(boite && boite.width > 0, "la marque n'a pas de boîte : elle ne se voit pas");
+    await taperEtAttendre(page, "");
+  });
+
   await page.screenshot({ path: "/tmp/recherche-client.png", fullPage: true });
   await nav.close();
+  await pool.end();
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Recherche de client au navigateur — ${echecs} échec(s).`);
   process.exit(echecs === 0 ? 0 : 1);
 }

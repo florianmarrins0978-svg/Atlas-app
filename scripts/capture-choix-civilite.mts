@@ -52,9 +52,9 @@ await page.screenshot({ path: `${dossier}/civilite-mme-prise.png` });
 
 // L'écran du devis : la seconde porte, celle qui corrige.
 await page.locator('input[placeholder="06 12 34 56 78"]').fill("0679984514");
-await creerPuisFiche(page);
+const idChantier = await creerPuisFiche(page);
 await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-const chantierId = page.url().split("/").pop()!.split("?")[0];
+const chantierId = idChantier;
 
 await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
 await page.waitForSelector("text=Total TTC", { timeout: 40_000 });

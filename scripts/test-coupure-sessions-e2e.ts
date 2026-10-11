@@ -46,15 +46,20 @@
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function main() {
   console.log("=== La coupure des sessions se contourne-t-elle ? ===\n");
 
   const proprio = new Pool({
     connectionString:
-      process.env.DATABASE_ADMIN_URL ?? "postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test",
+      // **La base du SERVEUR, jamais « atlas_test » en dur** : sur un atelier de
+      // rang 1, la batterie ne passe que DATABASE_URL (suffixée _a1). Couper la
+      // session dans atlas_test pendant que le serveur lit atlas_test_a1 rendait
+      // un « contournement » qui n'existait pas (15 septembre 2026).
+      process.env.DATABASE_ADMIN_URL ?? process.env.DATABASE_URL ?? "postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test",
   });
   const navigateur = await lancerNavigateur();
   const contexte = await navigateur.newContext();

@@ -86,7 +86,7 @@ export default function NoteVocaleMockup() {
                   style={{ backgroundColor: colors.rust }}
                 />
                 <span className="text-[14px]" style={{ color: colors.muted }}>
-                  Enregistrement en cours — {mmss(secondes)}
+                  Enregistrement en cours, {mmss(secondes)}
                 </span>
               </div>
             </>

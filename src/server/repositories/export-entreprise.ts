@@ -2,15 +2,21 @@ import { eq } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import {
   absencesEquipe,
+  acomptesDevis,
   audiosAPurger,
   brouillonsInformations,
   chantiers,
+  creneauxChantier,
+  fichesSecurite,
+  fichesSecuritePhotos,
+  fichesSecuriteMemoire,
   clients,
   devis,
   documents,
   entrepriseCompteurs,
   entreprises,
   envoisDevis,
+  acceptationsDefaites,
   envoisFactures,
   correctionsDictee,
   grillePrix,
@@ -22,6 +28,11 @@ import {
   lignesPassage,
   naturesGrille,
   paiementsFacture,
+  avoirs,
+  contratsEntretien,
+  envoisDatesContrat,
+  facturesNonPayees,
+  reglementsRetires,
   tranchesGrille,
   factures,
   fragmentsDocuments,
@@ -46,10 +57,17 @@ import {
   propositionsIa,
   messagesAssistant,
   rappelsVus,
+  retoursIntervention,
+  retoursInterventionTaches,
+  retoursInterventionPhotos,
+  retoursInterventionVus,
+  abonnements,
+  evenementsPaiement,
   tarifs,
   motsCatalogue,
 } from "../db/schema";
 import type { Ctx } from "./context";
+import { rangerLesFichiers, type FichierARanger } from "@/lib/rangement-sauvegarde";
 
 // Emporter ses données, sans demander la permission à personne.
 //
@@ -87,7 +105,13 @@ export type ExportEntreprise = {
 export type FichierAJoindre = {
   storageKey: string;
   /** D'où vient ce fichier, pour le retrouver dans les données. */
-  origine: "photo" | "note-vocale" | "devis-pdf" | "facture-pdf" | "logo" | "ticket-tva";
+  origine: FichierARanger["origine"];
+  /**
+   * Où il se range dans l'archive : `fichiers/<client>/<chantier>/Photos/…`.
+   * Écrit ici, à côté de la clé, pour qu'une reprise sache relier l'un à
+   * l'autre (`src/lib/rangement-sauvegarde.ts`).
+   */
+  chemin: string;
 };
 
 /**
@@ -124,6 +148,7 @@ export async function exporterEntreprise(
       lesLiaisonsPrestations,
       lesDevis,
       lesLignesDevis,
+      lesAcomptesDevis,
       lHistorique,
       lesLecons,
       lesParametres,
@@ -133,6 +158,7 @@ export async function exporterEntreprise(
       lesPropositions,
       lesPrecisions,
       lesEnvois,
+      lesAcceptationsDefaites,
       lesAudiosAPurger,
       lesFactures,
       lesLignesFacture,
@@ -146,6 +172,11 @@ export async function exporterEntreprise(
       sesTranches,
       sesNatures,
       lesReglements,
+      lesAvoirs,
+      lesNonPayees,
+      lesRetires,
+      sesContrats,
+      sesEnvoisDeDates,
       sonModeleEntretien,
       sesPassages,
       sesLignesPassage,
@@ -156,6 +187,16 @@ export async function exporterEntreprise(
       sesPhotosAPurger,
       sesEchangesAssistant,
       sesRappelsRanges,
+      sesRetours,
+      sesTachesDeRetour,
+      sesPhotosDeRetour,
+      sesRetoursLus,
+      sonAbonnement,
+      sesEvenementsDePaiement,
+      sesCreneauxPoses,
+      sesFichesDeSecurite,
+      sesPhotosDeFiche,
+      saMemoireDesFiches,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -183,6 +224,9 @@ export async function exporterEntreprise(
       tx.select().from(lignesPrixPrestations).where(eq(lignesPrixPrestations.entrepriseId, e)),
       tx.select().from(devis).where(eq(devis.entrepriseId, e)),
       tx.select().from(lignesDevis).where(eq(lignesDevis.entrepriseId, e)),
+      // L'échéancier d'acomptes de chaque devis (migration 0088) : sans lui, un
+      // devis sauvegardé perdrait ce qui a été convenu sur le règlement.
+      tx.select().from(acomptesDevis).where(eq(acomptesDevis.entrepriseId, e)),
       tx.select().from(historiquePrix).where(eq(historiquePrix.entrepriseId, e)),
       tx.select().from(leconsPrix).where(eq(leconsPrix.entrepriseId, e)),
       tx.select().from(parametresChiffrage).where(eq(parametresChiffrage.entrepriseId, e)),
@@ -192,6 +236,7 @@ export async function exporterEntreprise(
       tx.select().from(propositionsIa).where(eq(propositionsIa.entrepriseId, e)),
       tx.select().from(precisionsChantier).where(eq(precisionsChantier.entrepriseId, e)),
       tx.select().from(envoisDevis).where(eq(envoisDevis.entrepriseId, e)),
+      tx.select().from(acceptationsDefaites).where(eq(acceptationsDefaites.entrepriseId, e)),
       tx.select().from(audiosAPurger).where(eq(audiosAPurger.entrepriseId, e)),
       tx.select().from(factures).where(eq(factures.entrepriseId, e)),
       tx.select().from(lignesFacture).where(eq(lignesFacture.entrepriseId, e)),
@@ -248,6 +293,21 @@ export async function exporterEntreprise(
       // les factures sans dire lesquelles ont été payées — donc sans permettre
       // de reconstituer un seul relevé de TVA.
       tx.select().from(paiementsFacture).where(eq(paiementsFacture.entrepriseId, e)),
+      // Les avoirs (migration 0101) : sans eux, une sauvegarde rendrait des
+      // factures qui réclament des sommes déjà annulées, et un relevé de TVA
+      // faux de leur montant.
+      tx.select().from(avoirs).where(eq(avoirs.entrepriseId, e)),
+      // Ce qu'il a déclaré « Il ne me paiera pas » : sans cela, les rappels
+      // qu'il a fait taire reviendraient à la restauration.
+      tx.select().from(facturesNonPayees).where(eq(facturesNonPayees.entrepriseId, e)),
+      // Les règlements retirés (migration 0103) : sans eux, un mois déjà
+      // déclaré qui a baissé ne dirait plus pourquoi une fois restauré.
+      tx.select().from(reglementsRetires).where(eq(reglementsRetires.entrepriseId, e)),
+      // Ses contrats d'entretien (0107) et les envois de leurs dates (0108) :
+      // un contrat accepté porte la preuve de l'accord (empreinte, heure,
+      // adresse) et les prix que ses passages factureront. Rien ne le refait.
+      tx.select().from(contratsEntretien).where(eq(contratsEntretien.entrepriseId, e)),
+      tx.select().from(envoisDatesContrat).where(eq(envoisDatesContrat.entrepriseId, e)),
       // Le modèle de fiche d'entretien (migration 0051). C'est SA saisie —
       // les prestations, leurs familles, leur ordre —, et rien ne la
       // reconstitue : le modèle fourni au départ n'est qu'un point de départ,
@@ -296,6 +356,49 @@ export async function exporterEntreprise(
       // sont ses gestes, et ils disent quand il a vu quoi : les taire ferait
       // revenir, sur une base restaurée, des rappels qu'il avait acquittés.
       tx.select().from(rappelsVus).where(eq(rappelsVus.entrepriseId, e)),
+      // **Les retours d'intervention, leurs tâches et leurs photos
+      // (migration 0080).** C'est ce que le salarié a constaté sur place : ce
+      // qui a été fait, ce qui ne l'a pas été, et ce qu'il a signalé. Rien ne
+      // les reconstitue — le devis dit ce qui était PRÉVU, jamais ce qui a eu
+      // lieu. Et c'est exactement la pièce qu'on relit le jour où un client
+      // conteste, comme les passages d'entretien plus haut.
+      //
+      // Les photos, elles, sont déjà dans `photos` : cette table ne porte que
+      // le lien. L'exporter quand même est ce qui permet de savoir LESQUELLES
+      // faisaient la preuve — sans elle, une reprise rendrait un retour muet
+      // au milieu des photos du chantier.
+      tx.select().from(retoursIntervention).where(eq(retoursIntervention.entrepriseId, e)),
+      tx.select().from(retoursInterventionTaches).where(eq(retoursInterventionTaches.entrepriseId, e)),
+      tx.select().from(retoursInterventionPhotos).where(eq(retoursInterventionPhotos.entrepriseId, e)),
+      // **Qui a déjà ouvert quel retour (migration 0083).** Ce sont ses
+      // lectures : sans elles, une base restaurée rallumerait la pastille sur
+      // tout ce qu'il avait déjà lu, et il relirait la soirée entière.
+      tx.select().from(retoursInterventionVus).where(eq(retoursInterventionVus.entrepriseId, e)),
+      // **SON ABONNEMENT, ET CE QUE LE PRESTATAIRE EN A DIT (migration 0084).**
+      //
+      // Sans lui, une base restaurée dirait « Aucun abonnement » à quelqu'un
+      // qui paie — et l'écran lui proposerait de s'abonner une seconde fois.
+      //
+      // **Les identifiants du prestataire partent AUSSI**, et c'est voulu : ce
+      // sont eux qui rattachent la ligne à ce qui est réellement prélevé sur
+      // son compte. Les taire rendrait l'export joli et inutile le jour où il
+      // sert. Ils n'ouvrent rien par eux-mêmes — sans la clé secrète, un
+      // identifiant d'abonnement ne permet aucun appel.
+      tx.select().from(abonnements).where(eq(abonnements.entrepriseId, e)),
+      // Le journal des événements de paiement : ce qui est arrivé, et quand.
+      // C'est la trace qu'on relit le jour où un prélèvement est contesté.
+      tx.select().from(evenementsPaiement).where(eq(evenementsPaiement.entrepriseId, e)),
+      // **OÙ chaque chantier est posé, demi-journée par demi-journée**
+      // (migration 0085). Sans elles, une reprise rendrait les chantiers et
+      // leur durée demandée, mais plus rien ne dirait QUAND ils tiennent : le
+      // planning d'une saison entière serait à refaire à la main. Le contrôle
+      // d'exhaustivité les a réclamées le soir même de leur arrivée.
+      tx.select().from(creneauxChantier).where(eq(creneauxChantier.entrepriseId, e)),
+      // Les fiches de sécurité (migration 0099) : gardées deux ans par la loi,
+      // donc à reprendre avec tout le reste — la signature dessinée comprise.
+      tx.select().from(fichesSecurite).where(eq(fichesSecurite.entrepriseId, e)),
+      tx.select().from(fichesSecuritePhotos).where(eq(fichesSecuritePhotos.entrepriseId, e)),
+      tx.select().from(fichesSecuriteMemoire).where(eq(fichesSecuriteMemoire.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -316,6 +419,7 @@ export async function exporterEntreprise(
       lignes_prix_prestations: lesLiaisonsPrestations,
       devis: lesDevis,
       lignes_devis: lesLignesDevis,
+      acomptes_devis: lesAcomptesDevis,
       historique_prix: lHistorique,
       // La mémoire des corrections du patron. C'est ce qu'Atlas a appris de lui
       // — la perdre lui ferait recommencer son apprentissage à zéro.
@@ -330,6 +434,9 @@ export async function exporterEntreprise(
       // sur quelle technique ni quel diamètre ils ont été établis.
       precisions_chantier: lesPrecisions,
       envois_devis: lesEnvois,
+      // Une acceptation défaite (migration 0123) : la seule trace qu'un client
+      // avait accepté. Une sauvegarde qui l'oublierait effacerait la preuve.
+      acceptations_defaites: lesAcceptationsDefaites,
       audios_a_purger: lesAudiosAPurger,
       factures: lesFactures,
       lignes_facture: lesLignesFacture,
@@ -348,6 +455,11 @@ export async function exporterEntreprise(
       natures_grille: sesNatures,
       // Ce qui a été encaissé, et quand : c'est ce qui date sa TVA.
       paiements_facture: lesReglements,
+      avoirs: lesAvoirs,
+      factures_non_payees: lesNonPayees,
+      reglements_retires: lesRetires,
+      contrats_entretien: sesContrats,
+      envois_dates_contrat: sesEnvoisDeDates,
       // Sans les jetons — voir la requête ci-dessus.
       agendas_externes: lesAgendas,
       equipes: lesEquipes,
@@ -369,6 +481,22 @@ export async function exporterEntreprise(
       // répondu.
       messages_assistant: sesEchangesAssistant,
       rappels_vus: sesRappelsRanges,
+      // Ce que le salarié a constaté en fin de chantier. Parent avant enfants,
+      // comme partout ici : rejoué ligne à ligne, rien n'a de contrainte à
+      // désactiver.
+      retours_intervention: sesRetours,
+      retours_intervention_taches: sesTachesDeRetour,
+      retours_intervention_photos: sesPhotosDeRetour,
+      retours_intervention_vus: sesRetoursLus,
+      // Son abonnement, et le journal de ce que le prestataire en a dit.
+      abonnements: sonAbonnement,
+      evenements_paiement: sesEvenementsDePaiement,
+      creneaux_chantier: sesCreneauxPoses,
+      // La fiche de sécurité de chaque chantier, ses photos, et ce qui est
+      // gardé d'une fiche à l'autre. Parent avant enfants.
+      fiches_securite: sesFichesDeSecurite,
+      fiches_securite_photos: sesPhotosDeFiche,
+      fiches_securite_memoire: saMemoireDesFiches,
     };
 
     const compte: Record<string, number> = {};
@@ -378,21 +506,42 @@ export async function exporterEntreprise(
     // et l'écrire deux fois dans l'archive produirait un doublon que certains
     // décompresseurs refusent d'extraire.
     const vus = new Set<string>();
-    const fichiers: FichierAJoindre[] = [];
-    const ajouter = (cle: string | null, origine: FichierAJoindre["origine"]) => {
+    const aRanger: FichierARanger[] = [];
+    const ajouter = (
+      cle: string | null,
+      origine: FichierARanger["origine"],
+      chantierId: string | null = null,
+      libelle: string | null = null,
+      jour: string | null = null
+    ) => {
       if (!cle || vus.has(cle)) return;
       vus.add(cle);
-      fichiers.push({ storageKey: cle, origine });
+      aRanger.push({ storageKey: cle, origine, chantierId, libelle, jour });
     };
-    for (const p of lesPhotos) ajouter(p.storageKey as string | null, "photo");
-    for (const n of lesNotes) ajouter(n.storageKey as string | null, "note-vocale");
-    for (const d of lesDevis) ajouter(d.pdfStorageKey as string | null, "devis-pdf");
-    for (const f of lesFactures) ajouter(f.pdfStorageKey as string | null, "facture-pdf");
+    const jourDe = (d: Date | string | null | undefined) =>
+      d ? (typeof d === "string" ? d.slice(0, 10) : d.toISOString().slice(0, 10)) : null;
+
+    for (const p of lesPhotos) ajouter(p.storageKey, "photo", p.chantierId, null, jourDe(p.createdAt));
+    for (const n of lesNotes) ajouter(n.storageKey, "note-vocale", n.chantierId, null, jourDe(n.createdAt));
+    for (const d of lesDevis)
+      ajouter(
+        d.pdfStorageKey,
+        "devis-pdf",
+        d.chantierId,
+        d.numeroVersion > 1 ? `${d.numeroCommercial} version ${d.numeroVersion}` : d.numeroCommercial,
+        null
+      );
+    for (const f of lesFactures) ajouter(f.pdfStorageKey, "facture-pdf", f.chantierId, f.numeroCommercial, null);
+    const chantierDeLaFacture = new Map(lesFactures.map((f) => [f.id, f.chantierId]));
+    for (const a of lesAvoirs)
+      ajouter(a.pdfStorageKey, "avoir-pdf", chantierDeLaFacture.get(a.factureId) ?? null, a.numero, null);
     // Les photos de diagnostic partent avec le reste. Celles déjà purgées ont
     // une clé nulle : `ajouter` les ignore, plutôt que de faire échouer
     // l'archive sur un objet qui n'existe plus (c'est le cas normal après
     // 90 jours, pas une anomalie).
-    for (const p of sesPhotosDiagnostic) ajouter(p.storageKey as string | null, "photo");
+    const chantierDuDiagnostic = new Map(sesDiagnostics.map((d) => [d.id, d.chantierId]));
+    for (const p of sesPhotosDiagnostic)
+      ajouter(p.storageKey, "photo", chantierDuDiagnostic.get(p.diagnosticId) ?? null, "diagnostic", jourDe(p.createdAt));
 
     /**
      * **LE LOGO ET LES TICKETS DE CAISSE PARTENT AUSSI** — lot de clôture,
@@ -412,8 +561,21 @@ export async function exporterEntreprise(
      * tables. Il ne manquait que de les parcourir. C'est ce qui a fait juger la
      * correction sûre plutôt que disproportionnée.
      */
-    for (const a of lesAchatsTva) ajouter(a.photoCle as string | null, "ticket-tva");
-    for (const ent of entreprise) ajouter(ent.logoStorageKey as string | null, "logo");
+    for (const a of lesAchatsTva) ajouter(a.photoCle, "ticket-tva", null, a.fournisseur, jourDe(a.dateAchat));
+    for (const ent of entreprise) ajouter(ent.logoStorageKey, "logo");
+
+    // Rangés sous le nom du client et du chantier, jamais sous leur
+    // identifiant : c'est ce qu'il voit en ouvrant l'archive sur son téléphone.
+    const nomDuClient = new Map(lesClients.map((c) => [c.id, c.nom]));
+    const chantiersDeRangement = new Map(
+      lesChantiers.map((c) => [c.id, { nom: c.nom, client: c.clientId ? nomDuClient.get(c.clientId) ?? null : null }])
+    );
+    const chemins = rangerLesFichiers(aRanger, chantiersDeRangement);
+    const fichiers: FichierAJoindre[] = aRanger.map((f, i) => ({
+      storageKey: f.storageKey,
+      origine: f.origine,
+      chemin: chemins[i],
+    }));
 
     return {
       versionFormat: VERSION_FORMAT_EXPORT,
@@ -426,7 +588,8 @@ export async function exporterEntreprise(
   });
 }
 
-// Le jeton d'`envois_devis` est exporté, en connaissance de cause. C'est une clé
+// Le jeton d'`envois_devis` est exporté, en connaissance de cause (et, pour la
+// même raison, ceux des contrats d'entretien et de l'envoi de leurs dates). C'est une clé
 // d'accès vivante à une page publique — mais l'écarter reviendrait à produire une
 // sauvegarde d'où les envois ne pourraient pas être remis en place, pour protéger
 // un secret qui expire de lui-même. Le mode d'emploi joint à l'archive le dit en

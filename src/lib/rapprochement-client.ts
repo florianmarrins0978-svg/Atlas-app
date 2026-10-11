@@ -54,6 +54,13 @@ export type SaisieClient = {
   telephone?: string | null;
   email?: string | null;
   adresse?: string | null;
+  /**
+   * Il a appuyé sur « Ce n'est pas lui ».
+   *
+   * C'est le seul geste qui puisse contredire la reconnaissance, et il gagne
+   * toujours : lui seul sait que ce Martins-là n'est pas celui d'Atlas.
+   */
+  refuseLeRapprochement?: boolean;
 };
 
 export type Rapprochement =
@@ -66,8 +73,9 @@ export type Rapprochement =
   | {
       type: "creer";
       /** `inconnu` : personne de ce nom. `contradiction` : ce nom existe, mais
-       *  avec d'autres coordonnées — c'est quelqu'un d'autre. */
-      motif: "inconnu" | "contradiction";
+       *  avec d'autres coordonnées — c'est quelqu'un d'autre. `refuse` : il a
+       *  dit « ce n'est pas lui », et sa parole passe avant la règle. */
+      motif: "inconnu" | "contradiction" | "refuse";
     };
 
 /** Sans accents ni casse : « Rivière » et « RIVIERE » sont le même homme. */
@@ -140,6 +148,17 @@ export function rapprocherClient(
   saisie: SaisieClient,
   existants: readonly ClientExistant[]
 ): Rapprochement {
+  // **« Ce n'est pas lui » ferme la question, et rien ne la rouvre.**
+  //
+  // Sans cette porte, le refus ne tenait pas : il vide les cases reprises, le
+  // nom reste seul, et la règle du nom seul RETROUVAIT le même homme. Le patron
+  // aurait vu Atlas lui répondre « si, c'est lui » — et son chantier serait
+  // parti chez le voisin qu'il venait d'écarter.
+  //
+  // Le refus est une DONNÉE, pas un cas particulier posé à côté de la règle :
+  // il entre ici, avec le reste de ce qu'il a dit (`CLAUDE.md` §4 quater).
+  if (saisie.refuseLeRapprochement) return { type: "creer", motif: "refuse" };
+
   const nom = nomRapproche(saisie.nom);
   if (!nom) return { type: "creer", motif: "inconnu" };
 
@@ -197,4 +216,136 @@ export function complementsPourFiche(
   if (mail && !existant.email?.trim()) complements.email = mail;
   if (adresse && !existant.adresse?.trim()) complements.adresse = adresse;
   return complements;
+}
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * CE QU'ATLAS OSE POSER SUR LA FICHE PENDANT QU'IL TAPE — proposition C,
+ * tranchée par le patron le 9 septembre 2026.
+ *
+ * *« Si c'est un client déjà enregistré, on ne va pas recréer une fiche
+ * client ! »* Il tape « Martins », Atlas retrouve sa fiche et pose ce qu'il
+ * sait déjà — téléphone, e-mail, adresse. Il ne retape rien.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **POURQUOI CE N'EST PAS `rapprocherClient` TEL QUEL, ET C'EST TOUT L'ENJEU.**
+ *
+ * Le rapprochement tranche AU MOMENT D'ENREGISTRER, quand tout a été tapé, et
+ * il a le droit de départager deux homonymes par le plus récent : au pire, le
+ * chantier va chez le mauvais Martins, et cela se répare.
+ *
+ * Pré-remplir, c'est autre chose : **on ÉCRIT le numéro d'un homme sur la
+ * fiche d'un autre**, à l'écran, avant qu'il ait fini sa phrase. Il ne le
+ * relira pas — c'est justement pour ne pas retaper qu'il a demandé cet écran.
+ * Le devis part alors au mauvais numéro, et personne ne saura d'où il vient.
+ *
+ * Donc : **on ne pose rien tant que l'identification n'est pas certaine.**
+ * Quatre Martins et aucune coordonnée, c'est un doute — pas un défaut, pas un
+ * message : l'écran attend le numéro, qui tranchera de lui-même. « Plausible »
+ * n'est pas une source (`CLAUDE.md` §4).
+ *
+ * Le tableau, et il n'a que trois lignes :
+ *
+ * | Ce que la règle rend | Combien d'homonymes | On pré-remplit ? |
+ * |---|---|---|
+ * | `reutiliser`, motif `coordonnee` | peu importe | **oui** — son numéro le désigne |
+ * | `reutiliser`, motif `nom` | **un seul** | **oui** — il n'y a personne d'autre |
+ * | `reutiliser`, motif `nom` | plusieurs | **non** — on ne devine pas lequel |
+ * | `creer` | — | non, il n'y a rien à reprendre |
+ */
+export function clientAPreremplir(
+  saisie: SaisieClient,
+  existants: readonly ClientExistant[]
+): ClientExistant | null {
+  const trouve = rapprocherClient(saisie, existants);
+  if (trouve.type !== "reutiliser") return null;
+
+  const lui = existants.find((c) => c.id === trouve.id);
+  if (!lui) return null;
+
+  // Son numéro ou son mail le désignent : aucun homonyme ne peut plus s'y
+  // glisser, `rapprocherClient` les a déjà écartés.
+  if (trouve.motif === "coordonnee") return lui;
+
+  // Le nom seul ne suffit que s'il ne désigne qu'une personne.
+  const nom = nomRapproche(saisie.nom);
+  const homonymes = existants.filter((c) => nomRapproche(c.nom) === nom);
+  return homonymes.length === 1 ? lui : null;
+}
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * CE QU'ATLAS PROPOSE QUAND IL N'OSE PAS POSER — sa demande du 20 septembre
+ * 2026, capture de sa fiche client à l'appui : *« je tape le prénom d'un
+ * client qui existe, il ne me le reconnaît pas ; il doit me le proposer et
+ * remplir le champ direct »*.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **POURQUOI LA RECONNAISSANCE NE POUVAIT PAS Y RÉPONDRE, ET C'EST LA RACINE.**
+ *
+ * `clientAPreremplir` compare deux noms ENTIERS : « julien » n'est pas
+ * « julien bernard », donc personne — sans le moindre message. Ce n'était pas
+ * un réglage trop prudent qu'on aurait pu desserrer, c'était une question
+ * qu'on ne lui avait jamais posée : celle du nom COMMENCÉ. La desserrer aurait
+ * été le pansement (`CLAUDE.md` §4 quater) : « julien » désigne aussi bien
+ * Julien Bernard que Julien Morel, et poser le numéro de l'un sur la fiche de
+ * l'autre est exactement le dégât que la pose s'interdit.
+ *
+ * **PROPOSER N'EST PAS POSER, et tout tient dans cet écart.** Poser, c'est
+ * écrire des coordonnées qu'il ne relira pas — c'est pour ne pas retaper qu'il
+ * a demandé cet écran. Proposer attend son doigt : le choix est le sien, la
+ * liste ne décide de rien. C'est ce qui autorise ici la liste que la pose
+ * refuse, et c'est aussi pourquoi elle ose descendre là où la pose se tait —
+ * quatre Martins se montrent tous, et il tranche.
+ *
+ * **Ce n'est pas la liste de correspondances écartée le 17 août 2026**
+ * (*« non justement, il ne faut pas »*) : celle-là s'interposait à
+ * l'ENREGISTREMENT, pour faire confirmer un rapprochement qu'Atlas savait
+ * faire seul. Celle-ci répond pendant la frappe, là où Atlas ne sait
+ * justement rien faire seul. Sa demande du 20 septembre tranche le reste.
+ *
+ * **Le début d'un MOT, jamais le milieu.** « nard » est dans « Bernard » ;
+ * le proposer ferait remonter des noms que personne ne cherchait, et une liste
+ * qui répond à côté cesse d'être lue — on perd alors l'aide sans s'en
+ * apercevoir.
+ */
+export function clientsProposes(
+  saisie: SaisieClient,
+  existants: readonly ClientExistant[],
+  /** Sous la case, sur un téléphone tenu d'une main : cinq lignes au plus. */
+  max = 5
+): ClientExistant[] {
+  // Son refus ferme la liste comme il ferme la pose. Sans cette ligne, Atlas
+  // répondrait « si, c'est lui » à celui qu'il vient d'écarter — en
+  // proposition au lieu de fiche posée, mais avec le même résultat.
+  if (saisie.refuseLeRapprochement) return [];
+
+  const cherche = nomRapproche(saisie.nom);
+  // Deux lettres ne cherchent personne : à une, c'est le carnet entier qui
+  // remonte, et la liste recouvre l'écran au premier caractère tapé.
+  if (cherche.length < 2) return [];
+
+  // 0 : le nom entier · 1 : il commence par · 2 : un de ses mots commence par.
+  // Le rang est la ressemblance, et il départage avant l'ancienneté.
+  const rangs = new Map<string, number>();
+  const retenus = existants.filter((c) => {
+    const nom = nomRapproche(c.nom);
+    if (!nom) return false;
+    if (nom === cherche) rangs.set(c.id, 0);
+    else if (nom.startsWith(cherche)) rangs.set(c.id, 1);
+    else if (nom.split(" ").some((mot) => mot.startsWith(cherche))) rangs.set(c.id, 2);
+    else return false;
+    return true;
+  });
+
+  return retenus
+    .slice()
+    .sort((a, b) => {
+      const ecart = rangs.get(a.id)! - rangs.get(b.id)!;
+      if (ecart !== 0) return ecart;
+      // À ressemblance égale, le plus récent d'abord — la même règle que
+      // `plusRecent`, qui départage déjà les homonymes au rapprochement.
+      return new Date(b.creeLe).getTime() - new Date(a.creeLe).getTime();
+    })
+    .slice(0, max);
 }

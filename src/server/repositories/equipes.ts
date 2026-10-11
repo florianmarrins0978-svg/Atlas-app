@@ -14,7 +14,21 @@ import { equipes } from "../db/schema";
 import type { Ctx } from "./context";
 import { MAX_EQUIPES } from "@/lib/equipes";
 
-export type EquipeEnregistree = { id: string; rang: number; nom: string | null };
+export type EquipeEnregistree = {
+  id: string;
+  rang: number;
+  nom: string | null;
+  /** La clef de sa photo dans le stockage, ou `null` : l'état normal. */
+  photo: string | null;
+};
+
+/** Ce qu'on lit d'une ligne, écrit une fois pour toutes les lectures d'ici. */
+const COLONNES = {
+  id: equipes.id,
+  rang: equipes.rang,
+  nom: equipes.nom,
+  photo: equipes.photoStorageKey,
+};
 
 /**
  * Toutes les équipes nommées de l'entreprise, par rang croissant.
@@ -26,7 +40,7 @@ export type EquipeEnregistree = { id: string; rang: number; nom: string | null }
 export async function listerEquipes(ctx: Ctx): Promise<EquipeEnregistree[]> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const lignes = await tx
-      .select({ id: equipes.id, rang: equipes.rang, nom: equipes.nom })
+      .select(COLONNES)
       .from(equipes)
       .where(eq(equipes.entrepriseId, ctx.entrepriseId))
       .orderBy(asc(equipes.rang));
@@ -63,14 +77,14 @@ export async function nommerEquipe(ctx: Ctx, rang: number, nom: string | null): 
         .update(equipes)
         .set({ nom: propre, updatedAt: new Date() })
         .where(and(eq(equipes.entrepriseId, ctx.entrepriseId), eq(equipes.rang, rangBorne)))
-        .returning({ id: equipes.id, rang: equipes.rang, nom: equipes.nom });
+        .returning(COLONNES);
       return maj;
     }
 
     const [creee] = await tx
       .insert(equipes)
       .values({ entrepriseId: ctx.entrepriseId, rang: rangBorne, nom: propre })
-      .returning({ id: equipes.id, rang: equipes.rang, nom: equipes.nom });
+      .returning(COLONNES);
     return creee;
   });
 }
@@ -85,7 +99,7 @@ export async function nommerEquipe(ctx: Ctx, rang: number, nom: string | null): 
 export async function equipeParRang(ctx: Ctx, rang: number): Promise<EquipeEnregistree | null> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [ligne] = await tx
-      .select({ id: equipes.id, rang: equipes.rang, nom: equipes.nom })
+      .select(COLONNES)
       .from(equipes)
       .where(and(eq(equipes.entrepriseId, ctx.entrepriseId), eq(equipes.rang, Math.trunc(rang))))
       .limit(1);
@@ -109,4 +123,45 @@ export async function assurerEquipeDeRang(ctx: Ctx, rang: number): Promise<strin
   if (existante) return existante.id;
   const creee = await nommerEquipe(ctx, rang, null);
   return creee.id;
+}
+
+/**
+ * Pose, ou retire, la photo d'un salarié désigné par son RANG.
+ *
+ * Par le rang, comme le nom : on photographie le troisième sans avoir nommé le
+ * deuxième, et la ligne se crée à ce moment-là seulement.
+ *
+ * **Rend la clef d'AVANT**, pour que l'appelant supprime l'ancien fichier une
+ * fois la nouvelle clef écrite. Effacer d'abord laisserait, si l'écriture
+ * tombe, une ligne qui pointe vers une image disparue (le même ordre que le
+ * logo, `reglages/documents/actions.ts`).
+ */
+export async function poserPhotoSalarie(
+  ctx: Ctx,
+  rang: number,
+  cle: string | null
+): Promise<{ avant: string | null }> {
+  const rangBorne = Math.min(MAX_EQUIPES, Math.max(1, Math.trunc(rang)));
+
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [existante] = await tx
+      .select({ photo: equipes.photoStorageKey })
+      .from(equipes)
+      .where(and(eq(equipes.entrepriseId, ctx.entrepriseId), eq(equipes.rang, rangBorne)))
+      .limit(1);
+
+    if (existante) {
+      await tx
+        .update(equipes)
+        .set({ photoStorageKey: cle, updatedAt: new Date() })
+        .where(and(eq(equipes.entrepriseId, ctx.entrepriseId), eq(equipes.rang, rangBorne)));
+      return { avant: existante.photo };
+    }
+
+    // Retirer la photo d'un salarié qui n'a pas de ligne : il n'y a rien à
+    // faire, et créer une ligne vide écrirait en base ce que personne n'a saisi.
+    if (cle === null) return { avant: null };
+    await tx.insert(equipes).values({ entrepriseId: ctx.entrepriseId, rang: rangBorne, photoStorageKey: cle });
+    return { avant: null };
+  });
 }

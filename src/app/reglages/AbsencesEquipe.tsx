@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { colors, font, libelleCaps, voile } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { salariesAffiches, libelleSalarie } from "@/lib/equipes";
 import { libelleAbsence, phraseDuRefus, refusDeLAbsence } from "@/lib/absences-equipe";
 import { noterAbsenceAction, retirerAbsenceAction } from "./actions";
+import TeteRonde from "@/components/atlas/TeteRonde";
 
 /**
  * « Absences » — les jours où quelqu'un n'est pas là.
@@ -59,19 +61,39 @@ export default function AbsencesEquipe({
   noms,
   initialAbsences,
   aujourdHui,
+  agendaRelie,
 }: {
   nombreSalaries: number;
   /** Ce que la base porte, par rang. Un rang absent est un cas ordinaire. */
-  noms: { rang: number; nom: string | null }[];
+  noms: { rang: number; nom: string | null; photo: string | null }[];
   initialAbsences: AbsenceAffichee[];
   /** Le jour d'aujourd'hui, calculé au serveur — jamais dans le navigateur. */
   aujourdHui: string;
+  /**
+   * Un agenda extérieur est-il relié ET actif — Google ou iCloud ?
+   *
+   * **Lu au serveur, jamais supposé.** C'est lui qui décide de ce que la phrase
+   * du bas a le droit de promettre : sans raccordement, les périodes
+   * extérieures sont vides, et des congés posés ailleurs ne bloquent rien.
+   */
+  agendaRelie: boolean;
 }) {
   const router = useRouter();
 
   const [ouverte, setOuverte] = useState(false);
   const [enCours, setEnCours] = useState(false);
   const [refus, setRefus] = useState<string | null>(null);
+  /**
+   * Les chantiers d'où ce congé vient de retirer la personne.
+   *
+   * **Ici, et pas au planning, parce qu'ici rien ne se voit.** Poser un congé
+   * défait les affectations qu'il traverse (sa consigne du 8 septembre 2026,
+   * « corrige à la racine »). Sur le planning, la pastille disparaît sous ses
+   * yeux : l'écran MONTRE, il n'a rien à expliquer (`CLAUDE.md` §3). Sur cet
+   * écran-là, les chantiers concernés sont ailleurs — sans cette phrase, une
+   * demi-journée passerait de « Julien » à personne sans qu'il l'apprenne.
+   */
+  const [liberes, setLiberes] = useState<{ id: string; nom: string }[]>([]);
 
   const [rang, setRang] = useState(1);
   const [premierJour, setPremierJour] = useState(aujourdHui);
@@ -85,6 +107,22 @@ export default function AbsencesEquipe({
   const [retirees, setRetirees] = useState<Set<string>>(new Set());
 
   if (nombreSalaries <= 0) {
+    /**
+     * **CETTE PHRASE PROMETTAIT UN AGENDA QUI N'EST PEUT-ÊTRE PAS RELIÉ.**
+     *
+     * Trouvé le 8 septembre 2026, en vérifiant la phrase d'à côté qu'il venait
+     * de faire retirer. Elle affirmait « Atlas en tient compte » sans rien
+     * savoir : `periodesOccupeesPourEntreprise` rend une liste VIDE quand
+     * aucune ligne d'agenda n'est reliée et active — donc un artisan seul, sans
+     * agenda branché, posait ses congés dans Google et Atlas continuait de
+     * proposer ces jours-là. Il ne l'aurait su qu'en recevant l'appel d'un
+     * client un jour de vacances.
+     *
+     * **Ce n'est pas la phrase qu'on répare, c'est ce qu'elle dit du produit :**
+     * l'écran lit l'état réel des deux raccordements (Google et iCloud) et
+     * n'affirme que ce qui est vrai pour LUI. Quand rien n'est relié, il donne
+     * le geste qui manque au lieu d'une promesse.
+     */
     return (
       <p
         className="mx-[26px] mt-[30px] border-t pt-[18px] text-[12px] leading-[1.7]"
@@ -92,10 +130,22 @@ export default function AbsencesEquipe({
       >
         Seul, une absence fermerait l’entreprise : plus aucune date ne serait
         proposable.{" "}
-        <span style={{ color: colors.ink }}>
-          Pour vos congés, posez-les dans votre agenda
-        </span>{" "}
-        — Atlas en tient compte et ne proposera rien sur ces jours-là.
+        {agendaRelie ? (
+          <>
+            <span style={{ color: colors.ink }}>
+              Pour vos congés, posez-les dans votre agenda
+            </span>{" "}
+            : Atlas en tient compte et ne proposera rien sur ces jours-là.
+          </>
+        ) : (
+          <>
+            Pour vos congés,{" "}
+            <Link href="/reglages/agenda" style={{ color: colors.ink, textDecoration: "underline" }}>
+              reliez votre agenda
+            </Link>{" "}
+            : Atlas n’en tient compte qu’une fois relié.
+          </>
+        )}
       </p>
     );
   }
@@ -104,6 +154,7 @@ export default function AbsencesEquipe({
   const nomDuRang = (r: number) =>
     libelleSalarie(lignesEquipes.find((e) => e.rang === r) ?? { rang: r, nom: null }, nombreSalaries) ??
     `Salarié ${r}`;
+  const photoDuRang = (r: number) => noms.find((e) => e.rang === r)?.photo ?? null;
 
   const absences = initialAbsences.filter((a) => !retirees.has(a.id));
 
@@ -131,6 +182,7 @@ export default function AbsencesEquipe({
   async function enregistrer() {
     setEnCours(true);
     setRefus(null);
+    setLiberes([]);
     const fd = new FormData();
     fd.set("rang", String(rang));
     fd.set("premierJour", premierJour);
@@ -143,6 +195,7 @@ export default function AbsencesEquipe({
       return;
     }
     setOuverte(false);
+    setLiberes(r.chantiersLiberes);
     router.refresh();
   }
 
@@ -169,14 +222,45 @@ export default function AbsencesEquipe({
 
   return (
     <section className="mt-[30px]">
-      <p className={`mb-1.5 px-[26px] ${libelleCaps}`} style={{ color: colors.muted }}>
+      <p className={`mb-1.5 px-[26px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
         Absences
       </p>
 
+      {/* **« ATLAS N'ENVERRA PLUS PERSONNE À SA PLACE » EST PARTI — sa
+          remarque du 8 septembre 2026 : *« la phrase dans absence n'a aucun
+          sens »*. Il avait raison, et deux fois.
+
+          **Atlas n'envoie personne**, et n'a jamais envoyé personne : il
+          propose des dates à un client. « À sa place » laissait même entendre
+          qu'un remplaçant serait choisi. La phrase décrivait une application
+          qui n'existe pas.
+
+          **Et elle disait de travers ce qui était déjà écrit juste**, sous le
+          bouton : « un absent ne compte plus ces jours-là ; Atlas propose une
+          date de moins ». Deux phrases pour une seule règle, dont la fausse
+          arrivait la première (`CLAUDE.md` §3 : jamais deux fois la même
+          règle).
+
+          Ne reste ici que ce que l'autre ne dit pas : qu'il n'y a personne
+          d'absent, et ce qu'on note dans ce bloc. */}
+
+      {/* **Ce que le congé vient de défaire** — les chantiers d'où la personne
+          a été retirée. La liste se ferme d'elle-même au congé suivant : elle
+          annonce un fait, elle ne s'installe pas. */}
+      {liberes.length > 0 && (
+        <p
+          role="status"
+          data-atlas="chantiers-liberes"
+          className="mx-[26px] mb-2 rounded-xl px-3.5 py-3 text-[12.5px] leading-[1.6]"
+          style={{ backgroundColor: voile(colors.or, 0.1), color: colors.or }}
+        >
+          Retiré de {liberes.map((c) => c.nom).join(", ")}.
+        </p>
+      )}
+
       {absences.length === 0 ? (
         <p className="px-[26px] py-2 text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
-          Personne d’absent. Un déplacement, un congé, un arrêt : notez-le ici et
-          Atlas n’enverra plus personne à sa place ces jours-là.
+          Personne d’absent. Un déplacement, un congé, un arrêt : notez-le ici.
         </p>
       ) : (
         <div className="px-[26px]">
@@ -186,13 +270,20 @@ export default function AbsencesEquipe({
               className="flex items-center gap-3 py-3"
               style={{ borderBottom: `1px solid ${colors.lineSoft}` }}
             >
-              <span
-                className="flex h-[26px] w-[26px] flex-shrink-0 items-center justify-center rounded-full text-[11.5px]"
-                style={{ backgroundColor: colors.rustTint, color: colors.rust }}
-                aria-hidden="true"
-              >
-                {a.rang}
-              </span>
+              {/* **Sa tête, quand il en a une** (planche du 27 septembre 2026).
+                  Sans photo, la pastille reste celle d'avant : rien ne change
+                  pour qui n'en pose pas. */}
+              {photoDuRang(a.rang) ? (
+                <TeteRonde repli={a.rang} photo={photoDuRang(a.rang)} taille={26} />
+              ) : (
+                <span
+                  className="flex h-[26px] w-[26px] flex-shrink-0 items-center justify-center rounded-full text-[11.5px]"
+                  style={{ backgroundColor: colors.rustTint, color: colors.rust }}
+                  aria-hidden="true"
+                >
+                  {a.rang}
+                </span>
+              )}
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[15px]">{nomDuRang(a.rang)}</span>
                 {a.motif && (
@@ -299,7 +390,7 @@ export default function AbsencesEquipe({
             phraseDuRefus(refusSaisi)
           ) : (
             <>
-              {nomDuRang(rang)} sera absente {libelleAbsence(premierJour, dernierJour)} —
+              {nomDuRang(rang)} sera absente {libelleAbsence(premierJour, dernierJour)},
               week-ends compris. Le motif n’est là que pour vous.
             </>
           )}
@@ -315,9 +406,9 @@ export default function AbsencesEquipe({
           type="button"
           onClick={() => void enregistrer()}
           disabled={!armé}
-          className="mt-3 w-full rounded-full py-[15px] text-[15px]"
+          className="atlas-plein mt-3 w-full rounded-full py-[15px] text-[15px]"
           style={{
-            backgroundColor: colors.rust,
+            backgroundColor: colors.plein,
             color: colors.cream,
             fontFamily: font.display,
             opacity: armé ? 1 : 0.35,

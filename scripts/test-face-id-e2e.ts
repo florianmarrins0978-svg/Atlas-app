@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { Client } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
 
 /**
  * « Ouvrir avec Face ID », parcouru en entier dans un vrai navigateur.
@@ -30,7 +31,7 @@ import { lancerNavigateur } from "./e2e-browser";
  * connaît.
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const COMPTE = "demo@atlas.local";
 const MOT_DE_PASSE = process.env.ATLAS_MDP_DEMO?.trim() || "demo1234";
 
@@ -113,6 +114,29 @@ async function main() {
     // appuie, rien ne se passe, et on croit l'application cassée.
     const contexte = await navigateur.newContext();
     const page = await contexte.newPage();
+
+    /**
+     * **ON FABRIQUE L'APPAREIL INCAPABLE, ON NE L'ESPÈRE PLUS.**
+     *
+     * Ce cas supposait qu'un Chromium sans écran ne sache jamais faire de
+     * WebAuthn de plateforme. **C'est faux sur Windows**, mesuré le
+     * 10 septembre 2026 sur le poste du patron :
+     * `isUserVerifyingPlatformAuthenticatorAvailable()` y répond `true` —
+     * Windows Hello est là. La porte proposait donc Face ID à juste titre, et
+     * la suite accusait le produit pour une propriété de la machine.
+     *
+     * Un contrôle qui dépend de l'hôte ne prouve rien : vert sur la CI,
+     * rouge chez lui, et personne ne sait lequel des deux a raison. On impose
+     * donc la réponse — c'est la seule façon d'éprouver « un appareil qui ne
+     * sait pas le faire » partout pareil.
+     */
+    await page.addInitScript(() => {
+      const pkc = (window as unknown as { PublicKeyCredential?: unknown }).PublicKeyCredential as
+        | { isUserVerifyingPlatformAuthenticatorAvailable?: () => Promise<boolean> }
+        | undefined;
+      if (pkc) pkc.isUserVerifyingPlatformAuthenticatorAvailable = async () => false;
+    });
+
     await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
     // On laisse le temps au test de disponibilité de répondre.
     await page.waitForTimeout(800);
@@ -156,10 +180,83 @@ async function main() {
     await page.waitForTimeout(800);
     const bouton = page.getByRole("button", { name: /Enregistrer cet appareil/i });
     assert.equal(await bouton.count(), 1, "l'écran ne propose pas d'enregistrer l'appareil");
-    // La promesse qui décide s'il ose : elle doit être ÉCRITE, pas sous-entendue.
+
+    /**
+     * **CE CONTRÔLE A ÉTÉ RETOURNÉ LE 31 AOÛT 2026, ET C'EST LA RÈGLE
+     * (`CLAUDE.md` §5 bis).** Il exigeait la promesse écrite — « ne quitte
+     * jamais votre téléphone », « votre mot de passe reste actif ». Le patron a
+     * fait retirer toutes les phrases grises de cet écran : le contrôle
+     * réclamait donc ce que sa demande venait de supprimer, sur du code juste.
+     *
+     * On vise plus profond, et dans les deux sens : la glose ne doit PAS
+     * repousser (c'est sa demande), et la garantie qu'elle annonçait se vérifie
+     * là où elle est vraie — en base, au cas
+     * « AUCUNE donnée biométrique n'arrive en base » plus bas. Une phrase se
+     * réécrit ; une colonne absente, non.
+     */
     const texte = await page.locator("body").innerText();
-    assert.match(texte, /ne quitte jamais votre téléphone/i);
-    assert.match(texte, /mot de passe reste actif/i);
+    assert.doesNotMatch(texte, /ne quitte jamais votre téléphone/i,
+      "la glose grise de Face ID est revenue : il l'a fait retirer le 31 août 2026");
+    assert.doesNotMatch(texte, /mot de passe reste actif/i,
+      "la glose grise de Face ID est revenue : il l'a fait retirer le 31 août 2026");
+  });
+
+  await cas("L'ÉCRAN TIENT SUR UN SEUL ÉCRAN DE TÉLÉPHONE — rien à faire défiler", async () => {
+    /**
+     * **Sa demande du 31 août 2026 : « je veux qu'elle tienne sur une seule
+     * page ».** Il l'a écrite devant une capture où « Changer mon mot de
+     * passe » et « Ailleurs » vivaient à deux écrans l'un de l'autre.
+     *
+     * **390 × 664, et c'est le cas dur** : son iPhone quand Safari montre ses
+     * deux barres. La même mesure sur un grand écran serait verte sans rien
+     * prouver — c'est exactement le vert vide que le dépôt interdit
+     * (`CLAUDE.md` §5).
+     *
+     * **Mesuré ici et pas dans `test-compte-connexion-e2e.ts`**, parce que
+     * là-bas le navigateur n'a pas d'appareil capable de Face ID : la rubrique
+     * ne se dessine pas, et l'on mesurerait un écran amputé de 80 px. Cette
+     * suite-ci pose une puce simulée : c'est l'écran entier.
+     *
+     * **Ce que cette mesure NE couvre pas, et il faut le dire :** un appareil
+     * DÉJÀ enregistré ajoute sa ligne (56 px). L'écran défile alors de ce
+     * qu'il faut sur un 664 px — mais pas sur son téléphone, où la hauteur
+     * utile mesurée sur sa capture est de l'ordre de 770 px.
+     */
+    await page.setViewportSize({ width: 390, height: 664 });
+    await page.goto(`${BASE}/reglages/connexion`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(900);
+    const mesure = await page.evaluate(() => {
+      const barre = document.querySelector('nav[aria-label="Navigation principale"]');
+      const dernier = [...document.querySelectorAll("button")].find((b) =>
+        /Me déconnecter partout/.test(b.textContent ?? "")
+      );
+      const b = dernier?.getBoundingClientRect();
+      return {
+        haut: document.documentElement.scrollHeight,
+        fenetre: window.innerHeight,
+        basDuDernierGeste: b ? b.y + b.height : null,
+        hautDeLaBarre: barre ? barre.getBoundingClientRect().y : null,
+      };
+    });
+    // **Refuser de conclure sur une page qui n'est pas mise en page** : sans
+    // ce garde-fou, « 0 ≤ 664 » rendrait un vert qui ne mesure rien.
+    assert.ok(mesure.haut > 300, `la page mesure ${mesure.haut} px : rien n'est mis en page`);
+    assert.ok(
+      mesure.basDuDernierGeste !== null && mesure.hautDeLaBarre !== null,
+      "le dernier geste ou la barre du bas est introuvable"
+    );
+    assert.ok(
+      mesure.haut <= mesure.fenetre,
+      `l'écran demande ${mesure.haut} px pour ${mesure.fenetre} : il faut le faire défiler`
+    );
+    assert.ok(
+      mesure.basDuDernierGeste! <= mesure.hautDeLaBarre!,
+      `« Me déconnecter partout » finit à ${Math.round(mesure.basDuDernierGeste!)} px, ` +
+        `la barre commence à ${Math.round(mesure.hautDeLaBarre!)} px : elle le recouvre`
+    );
+    // La suite se joue sur le gabarit par défaut : la laisser en 390 px ferait
+    // porter à d'autres cas une contrainte qu'ils n'ont pas demandée.
+    await page.setViewportSize({ width: 1280, height: 720 });
   });
 
   await cas("« Changer mon mot de passe » est AU-DESSUS d'« Ouvrir avec Face ID »", async () => {

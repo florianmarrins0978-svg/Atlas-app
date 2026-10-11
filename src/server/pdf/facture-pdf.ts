@@ -1,34 +1,52 @@
+import { MENTION_FRANCHISE, sousFranchise } from "@/lib/franchise-tva";
+import { MENTION_AUTOLIQUIDATION } from "@/lib/autoliquidation";
+import { estUneEntreprise } from "@/lib/civilite";
 import {
   composerDocument,
   type DonneesDocument,
   type LigneDocument,
   type TraceDocument,
+  type AttestationDocument,
   type LogoDocument,
 } from "./document-commun";
 import { jourNumerique } from "../../lib/jour";
 import type { Allure } from "@/lib/allure-documents";
+import { LIBELLE_MAIN_DOEUVRE } from "@/lib/main-doeuvre-devis";
+import { echeancierDevis, modeDeReglement, type AcompteDevis } from "@/lib/acomptes-devis";
+import {
+  netAPayer,
+  nomAcompte,
+  phraseMontantsVerses,
+  tamponAcquittee,
+  type ReglementRecu,
+} from "@/lib/acomptes-facture";
+import { lireConditions, lignesConditionsFacture, type ConditionsLues } from "@/lib/conditions-documents";
+import { enEuros } from "@/lib/euros";
+import { totauxAvecReduction } from "@/lib/reduction-devis";
+import Decimal from "decimal.js";
 
-// La facture, sur le modèle du patron (`appli/facture-modele.html`).
+// LA FACTURE — le même papier que le devis, sa planche du 14 septembre 2026
+// (`appli/le-papier-devis-et-facture.html`) : *« il faut uniformiser les deux
+// car c'est la même chose, c'est le titre qui change »*.
 //
-// Elle partage sa feuille avec le devis — même en-tête, même tableau, mêmes
-// totaux : c'est `document-commun.ts` qui la dessine. Ne vit ici que ce qui
-// appartient à une facture, et qui n'est pas cosmétique :
+// Tout ce que le devis imprime, la facture l'imprime aussi — c'est
+// `document-commun.ts` qui dessine : les colonnes des pros, la main d'œuvre
+// nommée sous le total, les conditions réglées en gras. Ne vit ici que ce qui
+// n'a de sens qu'une fois le chantier fait :
 //
-// - **Trois références d'en-tête au lieu d'une validité** : numéro, date
-//   d'émission, date d'échéance. C'est la date d'échéance qui déclenche les
-//   pénalités, et son absence rend la mention légale creuse.
-// - **Le rappel du devis d'origine.** Sans lui, le client reçoit deux pièces
-//   qu'il doit rapprocher lui-même.
-// - **La mention légale du modèle**, reprise mot pour mot : pénalités de retard,
-//   indemnité forfaitaire de 40 €, absence d'escompte. Ces mentions sont
-//   obligatoires entre professionnels et attendues d'un particulier.
+// - **les acomptes reçus sous le Total TTC**, chacun sa ligne, puis « Net à
+//   payer » — la somme des acomptes ne s'écrit pas, elle se déduit ;
+// - **« Montants versés »** dans les notes : le moyen, le numéro du chèque, la
+//   date, le montant ;
+// - **le tampon « Acquittée le … »** quand plus rien n'est dû ;
+// - **la main d'œuvre TTC, pour information** — ce qu'un client demande pour
+//   son crédit d'impôt.
 // - **Aucun cadre de signature.** Une facture ne se signe pas, elle se règle.
-//   En proposer un inviterait le client à croire qu'il lui reste quelque chose
-//   à accepter.
 //
-// **Rien n'est inventé** : la franchise de TVA n'est imprimée que si le taux
-// appliqué est nul, et jamais « au cas où » — une facture qui annonce à tort
-// « TVA non applicable » est une facture fausse.
+// **La mention légale du pied reste scellée** : pénalités de retard, indemnité
+// de 40 €, absence d'escompte — la loi, pas un réglage. Elle ne se répète donc
+// pas dans les conditions en gras. Et la franchise de TVA n'est imprimée que si
+// le régime est nul, jamais « au cas où ».
 
 export type LigneFacturePdf = LigneDocument;
 
@@ -39,83 +57,132 @@ export type FacturePdfData = DonneesDocument & {
   dateEcheance?: string | null;
   /** Le numéro du devis dont la facture est issue, quand il est connu. */
   numeroDevis?: string | null;
-  /**
-   * Le régime de TVA **au jour de l'émission**, figé dans la facture
-   * (migration 0039).
-   *
-   * Absent pour les factures antérieures : la mention se déduit alors du taux,
-   * exactement comme avant. Ne pas retirer ce repli — il porte tout
-   * l'historique.
-   */
   regimeTva?: "assujettie" | "franchise" | null;
+  /** « dont main d'œuvre HT », recopiée du devis (migration 0092). */
+  mainDoeuvreHt?: string | null;
+  /** Son titre, s'il en a donné un (migration 0092). Vide : rien ne s'imprime. */
+  titre?: string | null;
+  /** Les acomptes du devis, pour nommer le rang de chaque règlement reçu. */
+  acomptesDuDevis?: readonly AcompteDevis[] | null;
+  /** Ce qui a été reçu, dans l'ordre où c'est tombé. */
+  reglements?: readonly ReglementRecu[] | null;
+  /** Les conditions figées sur le devis d'origine — ou celles des Réglages, sans devis. */
+  conditionsReglees?: ConditionsLues | null;
+  /** La date des travaux (migration 0118). Nulle sur les factures d'avant : rien ne s'imprime. */
+  dateTravaux?: string | null;
+  /** Sous-traitance du bâtiment, sans TVA (`src/lib/autoliquidation.ts`). */
+  autoliquidation?: boolean;
+};
+
+function mentionLegaleFacture(data: FacturePdfData): string {
+  // **Les 40 € ne se réclament qu'à un professionnel** (C. com. L441-10,
+  // D441-5) : sur la facture d'un particulier, ils lui demandaient ce qu'il ne
+  // doit pas (`docs/check-up-legal-documents.md`, point 5).
+  const base = estUneEntreprise(data.clientNom, data.clientCivilite)
+    ? "En cas de retard de paiement, une pénalité au taux de trois fois le taux d'intérêt légal " +
+      "est exigible, ainsi qu'une indemnité forfaitaire pour frais de recouvrement de 40 €. " +
+      "Pas d'escompte pour paiement anticipé."
+    : "En cas de retard de paiement, une pénalité au taux de trois fois le taux d'intérêt légal " +
+      "est exigible. Pas d'escompte pour paiement anticipé.";
+  // L'autoliquidation passe AVANT la lecture du taux : à 0 % sur une facture
+  // d'avant 0039 (régime nul), `sousFranchise` répondrait « franchise », et la
+  // pièce porterait deux mentions qui se contredisent.
+  if (data.autoliquidation) return `${base} ${MENTION_AUTOLIQUIDATION}`;
+  return sousFranchise(data.regimeTva, data.tauxTva) ? `${base} ${MENTION_FRANCHISE}` : base;
+}
+
+export type OptionsFacturePdf = {
+  allure?: Allure | null;
+  logo?: LogoDocument | null;
+  /** L'attestation décennale figée sur cette facture, lue par le dépôt. */
+  attestation?: AttestationDocument | null;
+  /** La facture d'exemple des Réglages : EXEMPLE en travers de la page. */
+  exemple?: boolean;
 };
 
 /**
- * La mention du modèle d'Arborea, mot pour mot.
+ * Sous le Total TTC : chaque acompte reçu en gris — « Acompte 30 % », « Acompte
+ * 50 % », « Acompte » —, puis « Net à payer » dans la fonte du total.
  *
- * La dernière phrase — la franchise de l'article 293 B — porte dans le modèle
- * la consigne « à retirer si vous êtes assujetti à la TVA ». On ne peut pas
- * laisser cette décision à l'impression.
- *
- * **ELLE SE LIT DÉSORMAIS DANS LE RÉGIME DÉCLARÉ, ET NON PLUS DANS LE TAUX**
- * (migration 0039, `ARCHITECTURE.md` §81). Jusqu'au 13 août 2026, la franchise
- * était DEVINÉE : « le taux vaut zéro, donc c'est une franchise ». La situation
- * fiscale de l'entreprise se déduisait donc d'un chiffre saisi chantier par
- * chantier, et les deux sens étaient faux — un artisan en franchise qui laissait
- * 20 % par mégarde perdait une mention obligatoire ; un assujetti qui posait
- * 0 % voyait s'imprimer, sur une pièce comptable, une phrase qui ne le
- * concernait pas.
- *
- * **Le repli sur le taux demeure, et doit demeurer** : les factures émises avant
- * la migration n'ont pas de régime figé, et il porte tout leur historique.
+ * **Le trait d'union, jamais le « moins » typographique** : WinAnsi ne le
+ * connaît pas, et c'est toute la facture qui ne se générerait plus.
  */
-function mentionLegaleFacture(data: FacturePdfData): string {
-  const base =
-    "En cas de retard de paiement, une pénalité au taux de trois fois le taux d'intérêt légal " +
-    "est exigible, ainsi qu'une indemnité forfaitaire pour frais de recouvrement de 40 €. " +
-    "Pas d'escompte pour paiement anticipé.";
-  const enFranchise =
-    data.regimeTva != null ? data.regimeTva === "franchise" : Number(data.tauxTva) === 0;
-  return enFranchise ? `${base} TVA non applicable, art. 293 B du CGI.` : base;
+function lignesApresTotal(data: FacturePdfData): { libelle: string; montant: string; style?: "doux" | "grand" }[] {
+  const reglements = data.reglements ?? [];
+  const acomptes = data.acomptesDuDevis ?? [];
+  return [
+    ...reglements.map((g, i) => ({
+      libelle: nomAcompte(reglements, i, acomptes),
+      montant: `-${g.montant}`,
+      style: "doux" as const,
+    })),
+    { libelle: "Net à payer", montant: netAPayer(data.totalTtc, reglements), style: "grand" as const },
+  ];
+}
+
+function notesEnGras(data: FacturePdfData): string[] {
+  const conditions = lireConditions(data.conditionsReglees);
+  const mode = data.acomptesDuDevis?.length
+    ? modeDeReglement(echeancierDevis(data.acomptesDuDevis, data.totalTtc))
+    : null;
+  return lignesConditionsFacture(conditions, mode, phraseMontantsVerses(data.reglements ?? []));
 }
 
 /**
- * L'allure réglée par le patron (23 août 2026) — la facture la porte comme le
- * devis : ce sont les deux documents que son client reçoit.
+ * « Pour information, montant de la main d'œuvre TTC : 513,00 €. » — la main
+ * d'œuvre nette de remise, au taux de SES lignes. Une information, pas un total.
+ *
+ * **Le taux se lit sur la facture, et seulement quand il n'y en a qu'un**
+ * (check-up du 7 octobre 2026). Calculée au taux du document, une main
+ * d'œuvre à 10 % sur une facture à 20 % s'annonçait 9 % trop chère, et c'est
+ * ce chiffre que le client reprend pour son crédit d'impôt. Avec plusieurs
+ * taux, rien ne dit lequel porte la main d'œuvre : la ligne se tait plutôt
+ * que d'inventer (`docs/AGENT.md` §3).
  */
-export type OptionsFacturePdf = {
-  allure?: Allure | null;
-  /** Son logo, lu par le dépôt. Une facture est une pièce que le client garde. */
-  logo?: LogoDocument | null;
-};
+function informations(data: FacturePdfData): string[] {
+  if (!data.mainDoeuvreHt) return [];
+  const { parTaux } = totauxAvecReduction(data.lignes, data.tauxTva, data.reductionPourcent ?? null);
+  if (parTaux.length !== 1) return [];
+  const remise = data.reductionPourcent ? new Decimal(data.reductionPourcent) : new Decimal(0);
+  const ttc = new Decimal(data.mainDoeuvreHt)
+    .times(new Decimal(1).minus(remise.dividedBy(100)))
+    .times(new Decimal(1).plus(new Decimal(parTaux[0].taux).dividedBy(100)))
+    .toDecimalPlaces(2);
+  return [`Pour information, montant de la main d’œuvre TTC : ${enEuros(ttc.toFixed(2))}.`];
+}
 
 export async function composerFacturePdf(
   data: FacturePdfData,
   options: OptionsFacturePdf = {}
 ): Promise<{ pdf: Uint8Array; trace: TraceDocument }> {
-  const references: [string, string][] = [
-    ["Facture n°", data.numeroCommercial],
-    // Jour/mois/année, comme sur le devis : la facture est la pièce la plus
-    // lue des deux, et une date à l'envers y fait douter du reste.
-    ["Date d'émission", jourNumerique(data.dateEmission)],
-  ];
-  // Une échéance absente laisse sa ligne vide plutôt que d'afficher une date
-  // plausible : c'est elle qui fait courir les pénalités (CLAUDE.md §4).
-  if (data.dateEcheance) references.push(["Date d'échéance", jourNumerique(data.dateEcheance)]);
+  // La date, l'échéance, le devis d'origine — le numéro, lui, est à droite du
+  // titre (sa planche).
+  const references: [string, string][] = [["Date", jourNumerique(data.dateEmission)]];
+  if (data.dateEcheance) references.push(["Échéance", jourNumerique(data.dateEcheance)]);
+  if (data.dateTravaux) references.push(["Travaux réalisés", jourNumerique(data.dateTravaux)]);
+  if (data.numeroDevis) references.push(["Devis", data.numeroDevis]);
 
   return composerDocument(data, {
     allure: options.allure ?? null,
     logo: options.logo ?? null,
-    // Une facture non émise qui ne le signale pas peut partir par erreur, et
-    // une facture partie est immuable — la corriger demande un avoir.
+    attestation: options.attestation ?? null,
     titre: data.statut === "brouillon" ? "FACTURE (BROUILLON)" : "FACTURE",
+    numero: data.numeroCommercial,
+    titreLibre: data.titre,
     references,
-    titreNotes: "NOTES",
-    // `composerDocument` ne connaît que `DonneesDocument` : la fonction reçoit
-    // donc `data` par fermeture, qui porte le régime.
+    titreNotes: "NOTES / CONDITIONS",
+    notesEnGras: notesEnGras(data),
+    sousLeTotalHt: data.mainDoeuvreHt ? [{ libelle: LIBELLE_MAIN_DOEUVRE, montant: data.mainDoeuvreHt }] : [],
+    apresTotal: lignesApresTotal(data),
+    // Sous-traitance : la maquette du 3 octobre 2026, ni ligne de TVA ni
+    // « TTC » là où il n'y a pas de taxe.
+    sansTva: !!data.autoliquidation,
+    libelleTotalTtc: data.autoliquidation ? "Total à payer" : undefined,
+    tampon: tamponAcquittee(data.totalTtc, data.reglements ?? []),
+    informations: informations(data),
     mentionLegale: () => mentionLegaleFacture(data),
     cadreSignature: false,
-    rappel: data.numeroDevis ? `Établie à partir du devis n° ${data.numeroDevis}` : null,
+    filigrane: options.exemple ? "EXEMPLE" : null,
   });
 }
 

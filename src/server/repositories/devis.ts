@@ -1,15 +1,32 @@
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { manquesDuDevis, type Manque } from "@/lib/mentions-manquantes";
+import { TAUX_SANS_TVA, tauxRendus, tauxSousAutoliquidation } from "@/lib/autoliquidation";
+import { estUneEntreprise } from "@/lib/civilite";
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { jourIso } from "@/lib/jour";
 import { withEntreprise } from "../db/with-entreprise";
-import { allureDesDocuments, formatNumeroDe } from "./entreprises";
+import { allureDesDocuments, attestationLue, formatNumeroDe } from "./entreprises";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
-import { totauxAvecReduction, pourcentValide } from "@/lib/reduction-devis";
+import { totauxAvecReduction, pourcentValide, tauxTvaValide } from "@/lib/reduction-devis";
+import { montantMainDoeuvreValide } from "@/lib/main-doeuvre-devis";
+import { ibanEnGroupes } from "@/lib/modalites-paiement";
 import type { DbOrTx } from "../db/client";
-import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises } from "../db/schema";
+import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises, acomptesDevis } from "../db/schema";
+import { dureeDuChantier, dureeEnDemiJournees, libelleDuree } from "@/lib/disponibilites";
+import {
+  ACOMPTES_MAX,
+  acompteDOffice,
+  acompteSuivantPropose,
+  tauxCumuleValide,
+  tauxCumulesBornes,
+  type AcompteDevis,
+} from "@/lib/acomptes-devis";
+import { AUCUNE_PROMESSE, type PromesseDuDevis } from "@/lib/acomptes-facture";
 import type { Ctx } from "./context";
-import { genererPdfDevis } from "../pdf/devis-pdf";
+import { genererPdfDevis, type DevisPdfData } from "../pdf/devis-pdf";
 import { enregistrerObjet } from "../storage";
 import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
+import { lignesDuDocument, lignesEnAttenteDePrix } from "@/lib/preparation-devis";
+import { refusDuTravail, tachesDuDevis, travauxAffiches } from "@/lib/taches-du-devis";
 
 const TAUX_TVA_DEFAUT = "20.00";
 
@@ -62,7 +79,7 @@ export async function attribuerNumeroDevis(tx: DbOrTx, entrepriseId: string): Pr
  * client. Une seule règle, appelée partout.
  */
 function calculerTotaux(
-  lignes: { montant: string }[],
+  lignes: { montant: string; tauxTva?: string | null }[],
   tauxTva: string,
   reductionPourcent?: string | null
 ) {
@@ -85,6 +102,41 @@ export async function getDevisPourChantier(ctx: Ctx, chantierId: string) {
       .orderBy(desc(devis.numeroVersion))
       .limit(1);
     return rows[0] ?? null;
+  });
+}
+
+/**
+ * LE DEVIS QUI FAIT FOI — la dernière version **ENVOYÉE**, jamais un brouillon.
+ *
+ * **Une seule fonction pour la seule question qui compte au moment de
+ * facturer :** quel prix le client a-t-il vu ? `getDevisPourChantier` rend la
+ * dernière version *quelle qu'elle soit*, brouillon commencé la veille compris,
+ * et c'est une autre question.
+ *
+ * **Le défaut qu'elle referme.** `terminerChantier` prenait la dernière
+ * version, puis refusait si elle n'était pas envoyée. Un devis v1 envoyé et une
+ * v2 laissée en brouillon rendaient donc « Le devis de ce chantier n'a jamais
+ * été envoyé » — une phrase FAUSSE, sur un chantier parfaitement facturable, et
+ * un refus qu'aucun geste ne pouvait lever (`AGENTS.md` : une erreur qui accuse
+ * à tort coûte plus cher que pas d'erreur du tout).
+ *
+ * **C'est déjà la règle ailleurs** — `listerChantiersTermines` annonce le
+ * montant « prévu au devis » d'après la dernière version envoyée. Les deux
+ * écrans disent enfin la même chose du même chantier.
+ */
+export function lireDevisQuiFaitFoi(tx: DbOrTx, chantierId: string) {
+  return tx
+    .select()
+    .from(devis)
+    .where(and(eq(devis.chantierId, chantierId), eq(devis.statut, "envoye")))
+    .orderBy(desc(devis.numeroVersion))
+    .limit(1);
+}
+
+export async function devisQuiFaitFoi(ctx: Ctx, chantierId: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await lireDevisQuiFaitFoi(tx, chantierId);
+    return d ?? null;
   });
 }
 
@@ -170,6 +222,15 @@ export async function chargerDevisPourEcran(ctx: Ctx, chantierId: string) {
 // dernière version existante a déjà été envoyée.
 export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // **Un seul « get ou crée » à la fois par chantier.** Deux rendus qui se
+    // chevauchent — l'écran du devis redemandé pendant que le premier rendu
+    // crée encore le brouillon — lisaient tous deux « aucun devis » et
+    // inséraient chacun la version 1 : le second tombait sur
+    // `devis_chantier_version_uk`, et l'écran restait blanc (13 septembre 2026,
+    // sous la suite des acomptes). Le verrou est lié à la transaction : le
+    // second attend, puis TROUVE le brouillon du premier. Hors transaction il
+    // ne survit pas, et il ne bloque rien d'autre que ce même chantier.
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${chantierId}))`);
     const [chantier] = await tx.select().from(chantiers).where(eq(chantiers.id, chantierId)).limit(1);
     if (!chantier) throw new Error("Chantier introuvable");
 
@@ -178,7 +239,12 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       ? (await tx.select().from(clients).where(eq(clients.id, chantier.clientId)).limit(1))[0]
       : null;
 
-    const lignesPrixActuelles = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
+    // **Une ligne sans rien reste sur la feuille, jamais sur le devis**
+    // (`lignesDuDocument`) : ni sur le PDF du client, ni dans ses totaux, ni sur
+    // la fiche de l'équipe. Tous les gestes qui en posent une passent par ici.
+    const lignesPrixActuelles = lignesDuDocument(
+      await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId))
+    );
 
     const [dernier] = await tx
       .select()
@@ -205,16 +271,48 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       moyensPaiement: conditions.moyensPaiement,
       rappelerPenalites: conditions.rappelerPenalites,
       textePied: conditions.textePied,
+      // Figées comme les autres (migration 0090) : le texte résolu — le sien, le
+      // texte d'origine, ou vide s'il l'a effacé.
+      conditionsGenerales: conditions.conditionsGenerales,
       entrepriseNom: entreprise.nom,
       entrepriseAdresse: entreprise.adresse,
       entrepriseSiret: entreprise.siret,
+      entrepriseNumeroRm: entreprise.numeroRm,
+      entrepriseNumeroTva: entreprise.numeroTva,
       entrepriseEmail: entreprise.email,
       entrepriseTelephone: entreprise.telephone,
       entrepriseIban: entreprise.iban,
+      // Les trois mentions légales, et leur emplacement (migration 0072) —
+      // recopiées comme le reste de l'identité.
+      entrepriseFormeJuridique: entreprise.formeJuridique,
+      entrepriseCapitalSocial: entreprise.capitalSocial,
+      entrepriseVilleRcs: entreprise.villeRcs,
+      // Figées au jour du devis, comme le SIRET (migration 0094) : un numéro de
+      // contrat d'assurance change, et c'est cette pièce qui prouve la
+      // couverture au moment du chantier.
+      entrepriseAssureurDecennale: entreprise.assureurDecennale,
+      // Ses coordonnées et l'attestation (migration 0121) : c'est l'attestation
+      // du jour de la pièce qui prouve la couverture du chantier.
+      entrepriseAdresseAssureurDecennale: entreprise.adresseAssureurDecennale,
+      entrepriseAttestationDecennaleCle: entreprise.attestationDecennaleCle,
+      entrepriseAttestationDecennaleMime: entreprise.attestationDecennaleMime,
+      entrepriseContratDecennale: entreprise.contratDecennale,
+      entrepriseCouvertureDecennale: entreprise.couvertureDecennale,
+      entrepriseMediateurNom: entreprise.mediateurNom,
+      entrepriseMediateurCoordonnees: entreprise.mediateurCoordonnees,
+      entrepriseMentionsLegalesPosition: entreprise.mentionsLegalesPosition,
+      // Le régime au jour du devis (migration 0118), comme sur la facture : la
+      // mention 293 B s'imprime au pied d'un devis en franchise.
+      entrepriseRegimeTva: entreprise.regimeTva,
       clientNom: client?.nom,
       // Recopiée comme le nom : le document dit comment on s'adressait à son
       // destinataire CE JOUR-LÀ (migration 0038).
       clientCivilite: client?.civilite ?? null,
+      clientSiret: client?.siret ?? null,
+      // La sous-traitance du CHANTIER, figée sur le devis (migration 0119) :
+      // un devis parti garde ce qu'il disait, même si le chantier bascule.
+      autoliquidation: chantier.autoliquidation,
+      clientNumeroTva: chantier.autoliquidation ? (client?.numeroTva ?? null) : null,
       clientAdresse: client?.adresse,
       clientTelephone: client?.telephone,
       clientEmail: client?.email,
@@ -224,21 +322,49 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
     // Le taux de TVA appartient au DOCUMENT : le patron peut l'avoir corrigé
     // sur son devis (10 % en rénovation, 20 % en neuf). Recalculer au taux par
     // défaut effacerait sa correction à la première ligne ajoutée.
-    const taux = dernier && dernier.statut === "brouillon" ? dernier.tauxTva : TAUX_TVA_DEFAUT;
-    // **La réduction survit à la régénération**, exactement comme le taux de
-    // TVA juste au-dessus. Elle a été accordée au client ; ajouter une ligne au
-    // devis ne la révoque pas, et la perdre en silence lui ferait renvoyer un
+    //
+    // **En sous-traitance, le document est à zéro** (migration 0119), y compris
+    // pour une nouvelle version après un envoi : sans cela, elle repartait à
+    // 20 % sur des lignes qui suivent le taux du devis.
+    //
+    // **Une version corrigée garde ce que la précédente portait** (check-up du
+    // 7 octobre 2026) : le taux, la remise, et plus bas le titre, la main
+    // d'œuvre et les notes. Elle repartait à 20 % sans remise, et la facture
+    // reprise de cette version facturait le plein tarif d'un devis accordé à
+    // −10 %. Corriger une ligne ne renégocie pas le reste, comme l'échéancier.
+    const taux = chantier.autoliquidation ? TAUX_SANS_TVA : dernier ? dernier.tauxTva : TAUX_TVA_DEFAUT;
+    // **La réduction survit à la régénération et à la nouvelle version.** Elle a
+    // été accordée au client ; la perdre en silence lui ferait renvoyer un
     // document plus cher que celui qu'il avait promis.
-    const reduction = dernier && dernier.statut === "brouillon" ? dernier.reductionPourcent : null;
+    const reduction = dernier ? dernier.reductionPourcent : null;
     const totaux = calculerTotaux(lignesPrixActuelles, taux, reduction);
 
     if (dernier && dernier.statut === "brouillon") {
       // Régénération : remplace les lignes et recalcule les totaux, ne change
       // ni le numéro commercial ni le numéro de version.
       await tx.delete(lignesDevis).where(eq(lignesDevis.devisId, dernier.id));
+      // **La main d'œuvre survit aussi, mais reste « dont »** : si les lignes ont
+      // fondu sous elle, on la ramène au nouveau brut plutôt que d'imprimer
+      // « dont 450 € » sous un total de 380 €. **Un brut nul ne borne rien**
+      // (14 septembre 2026) : sur un devis pas encore chiffré elle se garde —
+      // la première version l'effaçait au rechargement, comme
+      // `montantMainDoeuvreValide` l'effaçait à la saisie.
+      //
+      // **Calculée par Postgres sur la valeur du MOMENT, jamais recopiée d'une
+      // lecture.** Ce rendu se joue en même temps que le geste du patron : le
+      // « − » de la main d'œuvre écrivait `null` pendant qu'un rendu, parti une
+      // seconde avant, réécrivait le 1 160 qu'il avait lu — et la ligne
+      // revenait sous ses yeux (13 septembre 2026, `test-planche-b-devis-e2e`).
+      const brutHt = totauxAvecReduction(lignesPrixActuelles, taux, null).brutHt;
       const [d] = await tx
         .update(devis)
-        .set({ ...snapshotEnTete, ...totaux })
+        .set({
+          ...snapshotEnTete,
+          ...totaux,
+          mainDoeuvreHt: sql`CASE
+            WHEN ${brutHt}::numeric > 0 AND ${devis.mainDoeuvreHt} > ${brutHt}::numeric THEN ${brutHt}::numeric
+            ELSE ${devis.mainDoeuvreHt} END`,
+        })
         .where(eq(devis.id, dernier.id))
         .returning();
       if (lignesPrixActuelles.length > 0) {
@@ -256,6 +382,11 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
             // lignes de prix, qui ont pu bouger depuis.
             unite: l.unite,
             aChiffrer: l.aChiffrer,
+            // **Le taux de sa catégorie descend au document** (migration 0073).
+            // Recopié, jamais relu : un devis garde ce qu'il portait, et changer
+            // la ligne du chantier l'an prochain ne doit pas réécrire une pièce
+            // déjà partie. Nul quand il n'a qu'un taux — le devis commande.
+            tauxTva: l.tauxTva,
             ordre: i,
           }))
         );
@@ -281,8 +412,15 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
         // minuit portait la date de la veille — et la définition unique du
         // jour ne servait à rien, puisque celui-ci passait à côté.
         dateEmission: jourIso(new Date()),
-        tauxTva: TAUX_TVA_DEFAUT,
+        tauxTva: taux,
         ...totaux,
+        titre: dernier?.titre ?? null,
+        conditionsPaiement: dernier?.conditionsPaiement ?? null,
+        // Toujours « dont » : bornée au nouveau brut, comme à la régénération.
+        mainDoeuvreHt: montantMainDoeuvreValide(
+          dernier?.mainDoeuvreHt ?? null,
+          totauxAvecReduction(lignesPrixActuelles, taux, null).brutHt
+        ),
         createdBy: ctx.utilisateurId,
       })
       .returning();
@@ -298,9 +436,36 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
           montant: l.montant,
           unite: l.unite,
           aChiffrer: l.aChiffrer,
+          tauxTva: l.tauxTva,
           ordre: i,
         }))
       );
+    }
+
+    // ── L'ÉCHÉANCIER D'UNE NOUVELLE VERSION — 17 septembre 2026 ────────────
+    //
+    // **Ce qu'il a posé à la main SUIT sa correction.** Sa panne, capture à
+    // l'appui : *« ça prend qu'un seul acompte, ça m'a supprimé mes 2 autres et
+    // je n'arrive pas à les remettre »*. Son devis portait 30 / 50 / 75 ;
+    // rouvert pour correction (« Corriger le devis » crée une version), il n'en
+    // portait plus qu'un — celui des Réglages.
+    //
+    // Les deux autres n'étaient supprimés par aucun geste : ils n'étaient
+    // jamais RECOPIÉS. Le dépôt en faisait une décision — *« elle repart des
+    // Réglages, comme le taux de TVA et la remise »* —, et elle était fausse :
+    // un échéancier n'est pas un réglage d'entreprise, c'est ce qu'il a promis
+    // à CE client. Corriger une virgule du devis ne le renégocie pas.
+    //
+    // **Le premier acompte des Réglages ne vaut donc que pour un devis qui
+    // n'en a jamais eu** — la naissance du tout premier. Et « aucun acompte »
+    // se recopie aussi fidèlement que trois : un devis dont il a retiré la
+    // ligne du doigt ne la voit pas revenir à la version suivante.
+    const repris = dernier ? await lireAcomptes(tx, dernier.id) : [];
+    const dOffice = acompteDOffice(conditions.acomptePourcent);
+    if (dernier) {
+      if (repris.length > 0) await ecrireAcomptes(tx, ctx.entrepriseId, d.id, repris);
+    } else if (dOffice) {
+      await ecrireAcomptes(tx, ctx.entrepriseId, d.id, [dOffice]);
     }
 
     if (!chantier.devisGenereAt) {
@@ -311,6 +476,309 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
   });
 }
 
+// ─── Les acomptes d'un devis ───────────────────────────────────────────────
+
+async function lireAcomptes(tx: DbOrTx, devisId: string): Promise<AcompteDevis[]> {
+  const rows = await tx
+    .select({ rang: acomptesDevis.rang, tauxCumule: acomptesDevis.tauxCumule })
+    .from(acomptesDevis)
+    .where(eq(acomptesDevis.devisId, devisId))
+    .orderBy(asc(acomptesDevis.rang));
+  return rows.map((r) => ({ rang: r.rang, tauxCumule: r.tauxCumule }));
+}
+
+/**
+ * Réécrit l'échéancier ENTIER d'un devis : rangs 1..n dans l'ordre donné, taux
+ * bornés par la règle commune.
+ *
+ * **Tout réécrire plutôt que corriger une ligne**, et ce n'est pas de la
+ * paresse : retirer l'acompte du milieu fait remonter les suivants d'un rang
+ * (le 3ᵉ devient « à mi-parcours »), et monter le 2ᵉ à 100 emporte le 3ᵉ. Une
+ * écriture par ligne aurait dû rejouer ces deux règles ici — elles vivent dans
+ * `tauxCumulesBornes`, et n'ont qu'à y rester.
+ */
+async function ecrireAcomptes(
+  tx: DbOrTx,
+  entrepriseId: string,
+  devisId: string,
+  acomptes: readonly AcompteDevis[]
+): Promise<AcompteDevis[]> {
+  const bornes = tauxCumulesBornes(acomptes);
+  const propres = bornes.map((tauxCumule, i) => ({ rang: i + 1, tauxCumule }));
+  await tx.delete(acomptesDevis).where(eq(acomptesDevis.devisId, devisId));
+  if (propres.length > 0) {
+    await tx.insert(acomptesDevis).values(
+      propres.map((a) => ({ entrepriseId, devisId, rang: a.rang, tauxCumule: a.tauxCumule }))
+    );
+  }
+  return propres;
+}
+
+export async function getAcomptesDevis(ctx: Ctx, devisId: string): Promise<AcompteDevis[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) => lireAcomptes(tx, devisId));
+}
+
+/**
+ * Ce que le devis d'une facture a promis : ses acomptes et SON total. C'est
+ * sur lui que les acomptes se comptent, jamais sur celui de la facture.
+ */
+export async function getPromesseDuDevis(ctx: Ctx, devisId: string | null): Promise<PromesseDuDevis> {
+  if (!devisId) return AUCUNE_PROMESSE;
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select({ totalTtc: devis.totalTtc }).from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d) return AUCUNE_PROMESSE;
+    return { acomptes: await lireAcomptes(tx, devisId), totalTtc: d.totalTtc };
+  });
+}
+
+/**
+ * « + Ajouter un acompte » : le rang suivant, à sa valeur d'office (les
+ * Réglages, puis 50, puis 75 — cumulés).
+ *
+ * **Un refus se DIT, il ne se tait pas — 17 septembre 2026.** Sa phrase :
+ * *« je n'arrive pas à les remettre »*. Ce geste rendait `null` dans trois cas
+ * — devis parti, trois acomptes déjà, devis réglé à 100 % — et l'écran ne
+ * faisait rien du tout : un appui sans effet et sans un mot se lit comme une
+ * application cassée, et il rappuie (`AGENTS.md`, « rendre le défaut bavard »).
+ * Chaque refus porte donc sa raison, et c'est elle qui s'affiche.
+ */
+export type PoseAcompte =
+  | { ok: true; acomptes: AcompteDevis[] }
+  | { ok: false; raison: string };
+
+export async function poserAcompteSuivant(ctx: Ctx, devisId: string): Promise<PoseAcompte> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d) return { ok: false, raison: "Ce devis est introuvable. Rechargez l'écran." };
+    if (d.statut === "envoye") {
+      return {
+        ok: false,
+        raison: "Ce devis est parti chez votre client : son échéancier ne se corrige plus. Rechargez l'écran.",
+      };
+    }
+    const actuels = await lireAcomptes(tx, devisId);
+    const suivant = acompteSuivantPropose(actuels, d.acomptePourcent);
+    if (!suivant) {
+      return {
+        ok: false,
+        raison:
+          actuels.length >= ACOMPTES_MAX
+            ? "Trois acomptes au maximum : à la signature, à mi-parcours, à l'avancement."
+            : "Les acomptes posés règlent déjà la totalité du devis.",
+      };
+    }
+    return { ok: true, acomptes: await ecrireAcomptes(tx, ctx.entrepriseId, devisId, [...actuels, suivant]) };
+  });
+}
+
+/**
+ * Le taux cumulé d'un acompte, tel qu'il l'a tapé — borné par la même règle
+ * que l'écran (`tauxCumulesBornes`) : une seule règle sert à construire
+ * l'écran et à revalider ce qu'il renvoie (`CLAUDE.md` §3).
+ */
+export async function changerTauxAcompte(
+  ctx: Ctx,
+  devisId: string,
+  rang: number,
+  taux: string
+): Promise<AcompteDevis[] | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d || d.statut === "envoye") return null;
+    const propre = tauxCumuleValide(taux);
+    if (propre === null) return null;
+    const actuels = await lireAcomptes(tx, devisId);
+    if (!actuels.some((a) => a.rang === rang)) return null;
+    return ecrireAcomptes(
+      tx,
+      ctx.entrepriseId,
+      devisId,
+      actuels.map((a) => (a.rang === rang ? { ...a, tauxCumule: propre } : a))
+    );
+  });
+}
+
+/**
+ * Le « − » d'un acompte : la ligne quitte les totaux, les suivantes remontent
+ * d'un rang. Le dernier retiré, plus rien ne se réclame dans les notes : ni à
+ * l'écran (`phrasesAcomptesDuDevis`), ni à l'envoi (`envoyerDevis`).
+ */
+export async function retirerAcompte(ctx: Ctx, devisId: string, rang: number): Promise<AcompteDevis[] | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d || d.statut === "envoye") return null;
+    const actuels = await lireAcomptes(tx, devisId);
+    return ecrireAcomptes(tx, ctx.entrepriseId, devisId, actuels.filter((a) => a.rang !== rang));
+  });
+}
+
+/**
+ * ─── CE QUE LE PDF REÇOIT — UNE SEULE FOIS, POUR LES TROIS SORTIES ──────────
+ *
+ * L'aperçu, l'envoi et la feuille sans prix composaient chacun leur propre
+ * copie de ce bloc, et elles avaient divergé : **le PDF ENVOYÉ — celui que le
+ * client télécharge par son lien — partait sans la validité ni les conditions
+ * réglées** ; seul l'aperçu les portait. Trouvé le 12 septembre 2026 en
+ * branchant les acomptes, qui auraient fait une quatrième divergence.
+ *
+ * Une seule fonction : ce que l'artisan voit dans l'aperçu est ce que le client
+ * reçoit, à l'octet près (`CLAUDE.md` §3).
+ */
+function donneesPdfDuDevis(
+  d: typeof devis.$inferSelect,
+  lignes: (typeof lignesDevis.$inferSelect)[],
+  acomptes: readonly AcompteDevis[],
+  statut: "brouillon" | "envoye",
+  dureeEstimee: string | null
+): DevisPdfData {
+  return {
+    numeroCommercial: d.numeroCommercial,
+    numeroVersion: d.numeroVersion,
+    statut,
+    dateEmission: d.dateEmission,
+    entrepriseNom: d.entrepriseNom,
+    entrepriseAdresse: d.entrepriseAdresse,
+    entrepriseSiret: d.entrepriseSiret,
+    entrepriseNumeroRm: d.entrepriseNumeroRm,
+    entrepriseNumeroTva: d.entrepriseNumeroTva,
+    entrepriseTelephone: d.entrepriseTelephone,
+    entrepriseEmail: d.entrepriseEmail,
+    // Le modèle d'Arborea imprime les modalités de virement : sans l'IBAN, le
+    // client reçoit un devis qu'il ne peut pas payer. (`sansChiffrage` l'ignore.)
+    //
+    // Groupé par quatre, comme sur la facture (check-up du 7 octobre 2026) :
+    // le même IBAN s'écrivait de deux façons sur les deux pièces du client.
+    entrepriseIban: d.entrepriseIban ? ibanEnGroupes(d.entrepriseIban) : null,
+    entrepriseFormeJuridique: d.entrepriseFormeJuridique,
+    entrepriseCapitalSocial: d.entrepriseCapitalSocial,
+    entrepriseVilleRcs: d.entrepriseVilleRcs,
+    // Relues sur le DOCUMENT, pas sur l'entreprise (migration 0094) : c'est ce
+    // qui était vrai le jour où il est parti.
+    entrepriseAssureurDecennale: d.entrepriseAssureurDecennale,
+    entrepriseAdresseAssureurDecennale: d.entrepriseAdresseAssureurDecennale,
+    entrepriseContratDecennale: d.entrepriseContratDecennale,
+    entrepriseCouvertureDecennale: d.entrepriseCouvertureDecennale,
+    entrepriseMediateurNom: d.entrepriseMediateurNom,
+    entrepriseMediateurCoordonnees: d.entrepriseMediateurCoordonnees,
+    entrepriseMentionsLegalesPosition: d.entrepriseMentionsLegalesPosition,
+    regimeTva: d.entrepriseRegimeTva,
+    dureeEstimee,
+    autoliquidation: d.autoliquidation,
+    clientNom: d.clientNom,
+    clientCivilite: d.clientCivilite,
+    clientSiret: d.clientSiret,
+    clientNumeroTva: d.autoliquidation ? d.clientNumeroTva : null,
+    clientAdresse: d.clientAdresse,
+    clientTelephone: d.clientTelephone,
+    adresseChantier: d.adresseChantier,
+    conditionsPaiement: d.conditionsPaiement,
+    validiteJours: d.validiteJours,
+    // Les cinq conditions figées à la création (migration 0064). C'est le PDF
+    // qui les met en phrases, parce que le total y est connu — le montant de
+    // l'acompte en dépend.
+    conditionsReglees: {
+      acomptePourcent: d.acomptePourcent,
+      delaiPaiementJours: d.delaiPaiementJours,
+      moyensPaiement: d.moyensPaiement,
+      rappelerPenalites: d.rappelerPenalites,
+      textePied: d.textePied,
+      conditionsGenerales: d.conditionsGenerales,
+    },
+    // « dont main d'œuvre HT » (migration 0090) : nommée sous le total, jamais comptée.
+    mainDoeuvreHt: d.mainDoeuvreHt,
+    // Son titre, s'il en a donné un (migration 0092).
+    titre: d.titre,
+    // Les lignes des totaux, cumulées (migration 0088) : le PDF en tire ce qui
+    // tombe à chaque acompte et le reste à régler, par la règle commune.
+    acomptes: [...acomptes],
+    devise: d.devise,
+    tauxTva: d.tauxTva,
+    totalHt: d.totalHt,
+    totalTva: d.totalTva,
+    totalTtc: d.totalTtc,
+    reductionPourcent: d.reductionPourcent,
+    reductionMontant: d.reductionMontant,
+    lignes: lignes.map((l) => ({
+      libelle: l.libelle,
+      quantite: l.quantite,
+      prixUnitaire: l.prixUnitaire,
+      montant: l.montant,
+      unite: l.unite,
+      aChiffrer: l.aChiffrer,
+      // Le taux de sa catégorie voyage jusqu'au papier : sans lui, le PDF
+      // ventilerait tout sur le taux du document (migration 0073).
+      tauxTva: l.tauxTva,
+    })),
+  };
+}
+
+/**
+ * La durée estimée du chantier, telle qu'elle s'imprime sur le devis.
+ *
+ * Lue sur le chantier — la durée réservée, à défaut celle qu'il a dictée —, et
+ * NULLE quand ni l'une ni l'autre n'existe : la durée par défaut du planning
+ * (`DUREE_PAR_DEFAUT_DEMI_JOURNEES`) sert à réserver, pas à engager l'artisan
+ * auprès de son client (`CLAUDE.md` §4).
+ */
+async function dureeEstimeeDuChantier(tx: DbOrTx, chantierId: string): Promise<string | null> {
+  const [c] = await tx
+    .select({ dureeDemiJournees: chantiers.dureeDemiJournees, dureePrevue: chantiers.dureePrevue })
+    .from(chantiers)
+    .where(eq(chantiers.id, chantierId))
+    .limit(1);
+  if (!c || (c.dureeDemiJournees == null && dureeEnDemiJournees(c.dureePrevue) == null)) return null;
+  return libelleDuree(dureeDuChantier(c));
+}
+
+/**
+ * Ce qui manque au devis tel qu'il PARTIRAIT — sa photographie, pas
+ * l'entreprise d'aujourd'hui (choix 1A du 3 octobre 2026). Une seule règle
+ * pour l'écran et pour l'envoi : `manquesDuDevis`.
+ */
+export async function manquesDuDevisAEnvoyer(ctx: Ctx, devisId: string): Promise<Manque[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d) return [];
+    return manquesDuDevis(
+      {
+        nom: d.entrepriseNom,
+        adresse: d.entrepriseAdresse,
+        siret: d.entrepriseSiret,
+        formeJuridique: d.entrepriseFormeJuridique,
+        capitalSocial: d.entrepriseCapitalSocial,
+        villeRcs: d.entrepriseVilleRcs,
+        mediateurNom: d.entrepriseMediateurNom,
+        assureurDecennale: d.entrepriseAssureurDecennale,
+        regimeTva: d.entrepriseRegimeTva,
+        numeroTva: null,
+        telephone: d.entrepriseTelephone,
+        email: d.entrepriseEmail,
+        adresseAssureurDecennale: d.entrepriseAdresseAssureurDecennale,
+        attestationDecennale: !!d.entrepriseAttestationDecennaleCle,
+      },
+      { nom: d.clientNom, adresse: d.clientAdresse, adresseChantier: d.adresseChantier },
+      d.conditionsGenerales,
+      d.autoliquidation
+    );
+  });
+}
+
+/**
+ * L'allure, le logo, et l'attestation FIGÉE sur ce devis (son choix A du
+ * 5 octobre 2026). La feuille de chantier n'en a pas besoin : elle garde
+ * `allureDesDocuments` seul.
+ */
+async function habillageDuDevis(
+  tx: Parameters<typeof allureDesDocuments>[0],
+  entrepriseId: string,
+  d: { entrepriseAttestationDecennaleCle: string | null; entrepriseAttestationDecennaleMime: string | null }
+) {
+  return {
+    ...(await allureDesDocuments(tx, entrepriseId)),
+    attestation: await attestationLue(d.entrepriseAttestationDecennaleCle, d.entrepriseAttestationDecennaleMime),
+  };
+}
+
 // Génère le PDF pour un devis (brouillon ou envoyé) sans jamais persister la
 // clé de stockage pour un brouillon (seul le PDF du devis réellement envoyé est
 // conservé comme référence officielle — voir envoyerDevis).
@@ -319,53 +787,17 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
     const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
     if (!d) throw new Error("Devis introuvable");
     const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, devisId));
-    const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
-    return genererPdfDevis({
-      numeroCommercial: d.numeroCommercial,
-      numeroVersion: d.numeroVersion,
-      statut: d.statut as "brouillon" | "envoye",
-      dateEmission: d.dateEmission,
-      entrepriseNom: d.entrepriseNom,
-      entrepriseAdresse: d.entrepriseAdresse,
-      entrepriseSiret: d.entrepriseSiret,
-      entrepriseTelephone: d.entrepriseTelephone,
-      entrepriseEmail: d.entrepriseEmail,
-      // Le modèle d'Arborea imprime les modalités de virement : sans l'IBAN,
-      // le client reçoit un devis qu'il ne peut pas payer.
-      entrepriseIban: d.entrepriseIban,
-      clientNom: d.clientNom,
-      clientCivilite: d.clientCivilite,
-      clientAdresse: d.clientAdresse,
-      clientTelephone: d.clientTelephone,
-      adresseChantier: d.adresseChantier,
-      conditionsPaiement: d.conditionsPaiement,
-      validiteJours: d.validiteJours,
-      // Les cinq conditions figées à la création (migration 0064). C'est le PDF
-      // qui les met en phrases, parce que le total y est connu — le montant de
-      // l'acompte en dépend.
-      conditionsReglees: {
-        acomptePourcent: d.acomptePourcent,
-        delaiPaiementJours: d.delaiPaiementJours,
-        moyensPaiement: d.moyensPaiement,
-        rappelerPenalites: d.rappelerPenalites,
-        textePied: d.textePied,
-      },
-      devise: d.devise,
-      tauxTva: d.tauxTva,
-      totalHt: d.totalHt,
-      totalTva: d.totalTva,
-      totalTtc: d.totalTtc,
-      reductionPourcent: d.reductionPourcent,
-      reductionMontant: d.reductionMontant,
-      lignes: lignes.map((l) => ({
-        libelle: l.libelle,
-        quantite: l.quantite,
-        prixUnitaire: l.prixUnitaire,
-        montant: l.montant,
-        unite: l.unite,
-        aChiffrer: l.aChiffrer,
-      })),
-    }, habillage);
+    const habillage = await habillageDuDevis(tx, ctx.entrepriseId, d);
+    return genererPdfDevis(
+      donneesPdfDuDevis(
+        d,
+        lignes,
+        await lireAcomptes(tx, devisId),
+        d.statut as "brouillon" | "envoye",
+        await dureeEstimeeDuChantier(tx, d.chantierId)
+      ),
+      habillage
+    );
   });
 }
 
@@ -389,48 +821,38 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
     //
     // Un devis envoyé est immuable — le corriger demande une nouvelle version,
     // et le client, lui, a déjà lu « 0 € » en face d'un travail.
-    const enAttente = lignes.filter((l) => l.aChiffrer);
-    if (enAttente.length > 0) {
+    //
+    // **La phrase vient de `lignesEnAttenteDePrix`, et n'est plus réécrite
+    // ici.** Elle l'était, et les deux versions ont divergé : celle-ci disait
+    // « 2 lignes attendent **son** prix […] Posez-**le** » — le pluriel traité
+    // sur le verbe et nulle part ailleurs. Une seule fonction pour l'écran et
+    // pour le serveur (`CLAUDE.md` §3).
+    const enAttente = lignesEnAttenteDePrix(lignes);
+    if (enAttente) {
       throw new Error(
-        `Ce devis ne peut pas être envoyé : ${enAttente.length === 1 ? "une ligne attend" : `${enAttente.length} lignes attendent`} ` +
-          `son prix (${enAttente.map((l) => `« ${l.libelle.split("\n")[0]} »`).join(", ")}). ` +
-          "Posez-le sur l'écran Prix, puis revenez ici."
+        `Ce devis ne peut pas être envoyé : ${enAttente} ` +
+          "Posez leur montant sur l'écran du devis, puis revenez ici."
       );
     }
-    const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
-    const pdfBytes = await genererPdfDevis({
-      numeroCommercial: avant.numeroCommercial,
-      numeroVersion: avant.numeroVersion,
-      statut: "envoye",
-      dateEmission: avant.dateEmission,
-      entrepriseNom: avant.entrepriseNom,
-      entrepriseAdresse: avant.entrepriseAdresse,
-      entrepriseSiret: avant.entrepriseSiret,
-      entrepriseTelephone: avant.entrepriseTelephone,
-      entrepriseEmail: avant.entrepriseEmail,
-      entrepriseIban: avant.entrepriseIban,
-      clientNom: avant.clientNom,
-      clientCivilite: avant.clientCivilite,
-      clientAdresse: avant.clientAdresse,
-      clientTelephone: avant.clientTelephone,
-      adresseChantier: avant.adresseChantier,
-      conditionsPaiement: avant.conditionsPaiement,
-      devise: avant.devise,
-      tauxTva: avant.tauxTva,
-      totalHt: avant.totalHt,
-      totalTva: avant.totalTva,
-      totalTtc: avant.totalTtc,
-      reductionPourcent: avant.reductionPourcent,
-      reductionMontant: avant.reductionMontant,
-      lignes: lignes.map((l) => ({
-        libelle: l.libelle,
-        quantite: l.quantite,
-        prixUnitaire: l.prixUnitaire,
-        montant: l.montant,
-        unite: l.unite,
-        aChiffrer: l.aChiffrer,
-      })),
-    }, habillage);
+    // **Sans acompte posé, le devis part sans condition d'acompte** (sa
+    // décision du 7 octobre 2026). `acomptePourcent` est le réglage recopié à
+    // la création : laissé tel quel, il ferait réapparaître « 30 % à la
+    // commande » dès l'envoi, sur le devis comme sur la facture qui en naîtra
+    // (`complementsDeLaFacture` lit cette colonne). C'est à l'envoi que le
+    // devis se fige, donc c'est ici que son échéancier devient sa condition.
+    const acomptes = await lireAcomptes(tx, devisId);
+    const fige = acomptes.length === 0 ? { ...avant, acomptePourcent: null } : avant;
+    const habillage = await habillageDuDevis(tx, ctx.entrepriseId, avant);
+    const pdfBytes = await genererPdfDevis(
+      donneesPdfDuDevis(
+        fige,
+        lignes,
+        acomptes,
+        "envoye",
+        await dureeEstimeeDuChantier(tx, avant.chantierId)
+      ),
+      habillage
+    );
 
     const objet = await enregistrerObjet(
       `chantiers/${avant.chantierId}/devis`,
@@ -442,6 +864,7 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
       .update(devis)
       .set({
         statut: "envoye",
+        acomptePourcent: fige.acomptePourcent,
         envoyeLe: new Date(),
         pdfStorageKey: objet.storageKey,
         pdfChecksum: objet.checksum,
@@ -473,9 +896,31 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
 export async function mettreAJourEnTeteDevis(
   ctx: Ctx,
   devisId: string,
-  data: { tauxTva?: string; conditionsPaiement?: string; reductionPourcent?: string | null }
+  data: {
+    tauxTva?: string;
+    conditionsPaiement?: string;
+    reductionPourcent?: string | null;
+    /** « dont main d'œuvre HT » ; `null` retire la ligne. Bornée au brut HT. */
+    mainDoeuvreHt?: string | null;
+    /** Son titre (migration 0092). Vide ou `null` : aucun. */
+    titre?: string | null;
+  }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // **Le même verrou que le rendu du brouillon** (`getOuCreerDevisBrouillon`),
+    // pris AVANT de lire. Le rendu recopie le taux de TVA, la remise et les
+    // totaux depuis ce qu'il a lu ; joué en même temps que ce geste-ci, il
+    // réécrivait la valeur d'avant par-dessus la sienne — les 5 % du « + Remise »
+    // n'arrivaient pas en base, la main d'œuvre retirée revenait (13 septembre
+    // 2026, `test-reduction-devis-e2e`, `test-planche-b-devis-e2e`). Sous le
+    // verrou, l'un attend l'autre et lit ce qu'il a écrit.
+    const [cible] = await tx
+      .select({ chantierId: devis.chantierId })
+      .from(devis)
+      .where(eq(devis.id, devisId))
+      .limit(1);
+    if (!cible) return null;
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${cible.chantierId}))`);
     const [avant] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
     if (!avant || avant.statut === "envoye") return null;
 
@@ -483,13 +928,25 @@ export async function mettreAJourEnTeteDevis(
       tauxTva?: string;
       conditionsPaiement?: string;
       reductionPourcent?: string | null;
+      mainDoeuvreHt?: string | null;
+      titre?: string | null;
       updatedAt: Date;
     } = { updatedAt: new Date() };
+    // Un titre vide est un titre absent : rien ne s'imprime, rien ne se garde.
+    if (data.titre !== undefined) valeurs.titre = data.titre?.trim() || null;
     if (data.tauxTva !== undefined) {
-      // Borné : un taux négatif ou à trois chiffres produirait un total que le
-      // patron ne comprendrait pas, et qu'aucun client n'accepterait.
-      const taux = Math.min(100, Math.max(0, Number(data.tauxTva.replace(",", "."))));
-      if (Number.isFinite(taux)) valeurs.tauxTva = taux.toFixed(2);
+      // **La même règle que les catégories, appelée et non réécrite.** Elle
+      // vivait ici en `Math.min(100, Math.max(0, …))` ; depuis que l'écran des
+      // catégories valide lui aussi des taux, deux validations séparées
+      // auraient fini par accepter deux choses différentes (`CLAUDE.md` §3).
+      // En sous-traitance, le taux du document reste à zéro (migration 0119).
+      const [c] = await tx
+        .select({ autoliquidation: chantiers.autoliquidation })
+        .from(chantiers)
+        .where(eq(chantiers.id, cible.chantierId))
+        .limit(1);
+      const taux = tauxTvaValide(data.tauxTva);
+      if (taux !== null && !c?.autoliquidation) valeurs.tauxTva = taux;
     }
     if (data.conditionsPaiement !== undefined) valeurs.conditionsPaiement = data.conditionsPaiement;
     // **Le prix accordé au client passe par la MÊME borne que l'écran**
@@ -507,6 +964,12 @@ export async function mettreAJourEnTeteDevis(
       valeurs.tauxTva ?? avant.tauxTva,
       data.reductionPourcent !== undefined ? valeurs.reductionPourcent : avant.reductionPourcent
     );
+    // **La main d'œuvre passe par la MÊME borne que l'écran** (`montantMainDoeuvreValide`),
+    // et le plafond est le brut HT du moment : « dont » ne dépasse pas le tout.
+    if (data.mainDoeuvreHt !== undefined) {
+      const brutHt = totauxAvecReduction(lignes, valeurs.tauxTva ?? avant.tauxTva, null).brutHt;
+      valeurs.mainDoeuvreHt = montantMainDoeuvreValide(data.mainDoeuvreHt, brutHt);
+    }
 
     const [row] = await tx
       .update(devis)
@@ -546,41 +1009,12 @@ export async function genererDevisSansPrix(
     if (!d) return null;
     const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, d.id));
     const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
+    // Les mêmes données que le devis chiffré : c'est `sansChiffrage` qui
+    // décide de ce qui ne s'imprime pas (prix, totaux, acomptes, IBAN,
+    // conditions), pas une copie amputée de ce bloc.
     return genererPdfDevis(
-      {
-        numeroCommercial: d.numeroCommercial,
-        numeroVersion: d.numeroVersion,
-        statut: d.statut as "brouillon" | "envoye",
-        dateEmission: d.dateEmission,
-        entrepriseNom: d.entrepriseNom,
-        entrepriseAdresse: d.entrepriseAdresse,
-        entrepriseSiret: d.entrepriseSiret,
-        entrepriseTelephone: d.entrepriseTelephone,
-        entrepriseEmail: d.entrepriseEmail,
-        // `sansChiffrage` ignore l'IBAN : il n'a rien à faire sur une feuille
-        // de chantier, et le passer ne l'imprime pas.
-        entrepriseIban: d.entrepriseIban,
-        clientNom: d.clientNom,
-        clientCivilite: d.clientCivilite,
-        clientAdresse: d.clientAdresse,
-        clientTelephone: d.clientTelephone,
-        adresseChantier: d.adresseChantier,
-        conditionsPaiement: d.conditionsPaiement,
-        validiteJours: d.validiteJours,
-        devise: d.devise,
-        tauxTva: d.tauxTva,
-        totalHt: d.totalHt,
-        totalTva: d.totalTva,
-        totalTtc: d.totalTtc,
-        reductionPourcent: d.reductionPourcent,
-        reductionMontant: d.reductionMontant,
-        lignes: lignes.map((l) => ({
-          libelle: l.libelle,
-          quantite: l.quantite,
-          prixUnitaire: l.prixUnitaire,
-          montant: l.montant,
-        })),
-      },
+      // La feuille de travail n'imprime ni début ni durée : rien à lire.
+      donneesPdfDuDevis(d, lignes, await lireAcomptes(tx, d.id), d.statut as "brouillon" | "envoye", null),
       { sansChiffrage: true, ...habillage }
     );
   });
@@ -608,36 +1042,117 @@ export type FeuilleDuChantier = {
    * **L'écran s'en sert pour ne pas offrir un bouton qui mène à rien.** Sans
    * devis, le PDF sans les prix n'a rien à imprimer et la route répond 404 : un
    * bouton qui ouvre une erreur est pire qu'un bouton absent — il fait douter de
-   * l'application entière. Le cas ne devrait pas se présenter (le planning ne
-   * liste que des chantiers dont le devis est PARTI), mais « ne devrait pas »
-   * n'est pas « ne peut pas ».
+   * l'application entière. Le cas est courant depuis le 10 septembre 2026 : un
+   * client se pose au planning sans devis.
    */
   avecDevis: boolean;
+  /**
+   * La liste vient-elle de la main du patron ? C'est alors elle, et elle seule,
+   * qui se complète sur la fiche (`travauxAffiches`, sa réponse du 7 octobre
+   * 2026). Une liste lue sur un devis ne s'y modifie pas : elle se modifie sur
+   * le devis.
+   */
+  aLaMain: boolean;
 };
 
 export async function tachesDuChantier(
   ctx: Ctx,
   chantierId: string
 ): Promise<FeuilleDuChantier> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    lireLesTravaux(tx, ctx, chantierId)
+  );
+}
+
+async function lireLesTravaux(tx: DbOrTx, ctx: Ctx, chantierId: string): Promise<FeuilleDuChantier> {
+  const d = await devisÀImprimer(tx, chantierId);
+  const [chantier] = await tx
+    .select({ travauxALaMain: chantiers.travauxALaMain })
+    .from(chantiers)
+    .where(and(eq(chantiers.id, chantierId), eq(chantiers.entrepriseId, ctx.entrepriseId)))
+    .limit(1);
+  const lignes = d
+    ? tachesDuDevis(
+        await tx
+          .select({ libelle: lignesDevis.libelle, quantite: lignesDevis.quantite, unite: lignesDevis.unite })
+          .from(lignesDevis)
+          .where(eq(lignesDevis.devisId, d.id))
+          .orderBy(lignesDevis.ordre)
+      )
+    : null;
+  const affiches = travauxAffiches({
+    envoye: d?.statut === "envoye" ? lignes : null,
+    brouillon: d?.statut === "brouillon" ? lignes : null,
+    aLaMain: chantier?.travauxALaMain ?? [],
+  });
+  return { ...affiches, avecDevis: d !== null };
+}
+
+/**
+ * Les deux gestes sur les travaux écrits à la main — sa réponse du 7 octobre
+ * 2026. **Ils rendent un refus, ils ne lèvent pas** : le message d'une
+ * exception d'action serveur n'arrive pas jusqu'à lui (`AGENTS.md`).
+ *
+ * **La règle d'affichage les garde aussi** : on n'écrit pas dans une liste que
+ * l'écran ne montre pas. Une fois le devis parti, ajouter ici ferait un
+ * travail que personne ne verra jamais.
+ */
+export type ResultatTravaux = { ok: true; taches: string[] } | { ok: false; raison: string };
+
+const REFUS_LISTE_DU_DEVIS = "Ces travaux viennent du devis : ils se changent sur le devis.";
+
+export async function ajouterTravailALaMain(
+  ctx: Ctx,
+  chantierId: string,
+  libelle: string
+): Promise<ResultatTravaux> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const d = await devisÀImprimer(tx, chantierId);
-    if (!d) return { taches: [], avecDevis: false };
-    const lignes = await tx
-      .select({ libelle: lignesDevis.libelle, quantite: lignesDevis.quantite })
-      .from(lignesDevis)
-      .where(eq(lignesDevis.devisId, d.id))
-      .orderBy(lignesDevis.ordre);
-    return {
-      avecDevis: true,
-      taches: lignes.map((l) => {
-        // **La quantité s'écrit quand elle apprend quelque chose.** « 1 » ne dit
-        // rien de plus que le libellé ; « 18 » dit combien de mètres de haie.
-        const q = Number(l.quantite);
-        return Number.isFinite(q) && q !== 1
-          ? `${l.libelle} — ${q.toLocaleString("fr-FR")}`
-          : l.libelle;
-      }),
-    };
+    const avant = await lireLesTravaux(tx, ctx, chantierId);
+    if (!avant.aLaMain) return { ok: false, raison: REFUS_LISTE_DU_DEVIS };
+    const refus = refusDuTravail(libelle, avant.taches.length);
+    if (refus) return { ok: false, raison: refus };
+    // **Ajouté en base, pas recopié depuis l'écran** : deux téléphones qui
+    // ajoutent en même temps gardent chacun le sien.
+    const [row] = await tx
+      .update(chantiers)
+      .set({
+        travauxALaMain: sql`array_append(${chantiers.travauxALaMain}, ${libelle.trim()}::text)`,
+        updatedBy: ctx.utilisateurId,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(eq(chantiers.id, chantierId), eq(chantiers.entrepriseId, ctx.entrepriseId), isNull(chantiers.deletedAt))
+      )
+      .returning({ travauxALaMain: chantiers.travauxALaMain });
+    if (!row) return { ok: false, raison: "Ce chantier n'existe plus." };
+    return { ok: true, taches: row.travauxALaMain };
+  });
+}
+
+export async function enleverTravailALaMain(
+  ctx: Ctx,
+  chantierId: string,
+  rang: number,
+  libelle: string
+): Promise<ResultatTravaux> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const avant = await lireLesTravaux(tx, ctx, chantierId);
+    if (!avant.aLaMain) return { ok: false, raison: REFUS_LISTE_DU_DEVIS };
+    // **Le rang ET le libellé** : un rang seul enlèverait le mauvais travail si
+    // un autre téléphone en a enlevé un plus haut entre-temps.
+    if (avant.taches[rang] !== libelle) {
+      return { ok: false, raison: "La liste a changé entre-temps : rouvrez la fiche." };
+    }
+    const apres = avant.taches.filter((_, i) => i !== rang);
+    const [row] = await tx
+      .update(chantiers)
+      .set({ travauxALaMain: apres, updatedBy: ctx.utilisateurId, updatedAt: new Date() })
+      .where(
+        and(eq(chantiers.id, chantierId), eq(chantiers.entrepriseId, ctx.entrepriseId), isNull(chantiers.deletedAt))
+      )
+      .returning({ travauxALaMain: chantiers.travauxALaMain });
+    if (!row) return { ok: false, raison: "Ce chantier n'existe plus." };
+    return { ok: true, taches: row.travauxALaMain };
   });
 }
 
@@ -760,5 +1275,91 @@ export async function getLigneDevisPourCopie(
       .where(eq(lignesDevis.id, ligneId))
       .limit(1);
     return ligne ?? null;
+  });
+}
+
+/**
+ * LE DEVIS EN SOUS-TRAITANCE, SANS TVA — son choix B du 4 octobre 2026
+ * (`appli/devis-sous-traitance.html`) : l'interrupteur, décoché d'office, sur
+ * le devis d'un client Entreprise.
+ *
+ * **L'état vit sur le CHANTIER**, parce que ses lignes de prix y vivent et que
+ * chaque version du devis en repart. L'allumer met les lignes au taux du devis
+ * (`null`) et le devis à zéro, en gardant les taux d'avant : l'éteindre les
+ * rend, une ligne à 10 % redevient à 10 %. Même principe que la facture
+ * (`ARCHITECTURE.md` §443) : écran, PDF, page du client et facture lisent les
+ * taux, aucun ne peut réclamer la TVA par oubli.
+ *
+ * Refusé en franchise (déjà sans TVA), pour un client qui n'est pas une
+ * entreprise (une sous-traitance se fait pour une entreprise), et sur un devis
+ * parti (il ne change plus).
+ */
+export async function majAutoliquidationDevis(
+  ctx: Ctx,
+  chantierId: string,
+  active: boolean
+): Promise<{ ok: true; autoliquidation: boolean } | { ok: false; raison: string }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // Le verrou du rendu du brouillon : joué en même temps, il réécrirait le
+    // taux d'avant par-dessus (`mettreAJourEnTeteDevis`).
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${chantierId}))`);
+    const [c] = await tx.select().from(chantiers).where(eq(chantiers.id, chantierId)).limit(1);
+    if (!c) return { ok: false, raison: "Ce chantier est introuvable." };
+    if (c.autoliquidation === active) return { ok: true, autoliquidation: active };
+
+    const [brouillon] = await tx
+      .select()
+      .from(devis)
+      .where(eq(devis.chantierId, chantierId))
+      .orderBy(desc(devis.numeroVersion))
+      .limit(1);
+    if (!brouillon || brouillon.statut !== "brouillon") {
+      return { ok: false, raison: "Le devis est parti : il ne change plus." };
+    }
+
+    if (active) {
+      const [e] = await tx
+        .select({ regimeTva: entreprises.regimeTva })
+        .from(entreprises)
+        .where(eq(entreprises.id, ctx.entrepriseId))
+        .limit(1);
+      if (e?.regimeTva === "franchise") {
+        return { ok: false, raison: "En franchise de TVA, vos devis sont déjà sans TVA." };
+      }
+      const [client] = c.clientId
+        ? await tx.select().from(clients).where(eq(clients.id, c.clientId)).limit(1)
+        : [];
+      if (!estUneEntreprise(client?.nom, client?.civilite)) {
+        return { ok: false, raison: "La sous-traitance se fait pour une entreprise : choisissez Entreprise sur sa fiche." };
+      }
+    }
+
+    const lignes = await tx
+      .select({ id: lignesPrix.id, tauxTva: lignesPrix.tauxTva })
+      .from(lignesPrix)
+      .where(eq(lignesPrix.chantierId, chantierId));
+
+    if (active) {
+      const sans = tauxSousAutoliquidation({ tauxTva: brouillon.tauxTva, lignes });
+      await tx
+        .update(chantiers)
+        .set({ autoliquidation: true, tauxAvantAutoliquidation: sans.avant })
+        .where(eq(chantiers.id, chantierId));
+      // Les lignes SUIVENT le devis (`null`), à zéro : une ligne ajoutée ensuite
+      // le suit aussi, sans taux à poser.
+      await tx.update(lignesPrix).set({ tauxTva: null, updatedAt: new Date() }).where(eq(lignesPrix.chantierId, chantierId));
+      await tx.update(devis).set({ tauxTva: TAUX_SANS_TVA }).where(eq(devis.id, brouillon.id));
+    } else {
+      const rendus = tauxRendus({ tauxTva: brouillon.tauxTva, lignes }, c.tauxAvantAutoliquidation, TAUX_TVA_DEFAUT);
+      await tx
+        .update(chantiers)
+        .set({ autoliquidation: false, tauxAvantAutoliquidation: null })
+        .where(eq(chantiers.id, chantierId));
+      for (const l of rendus.lignes) {
+        await tx.update(lignesPrix).set({ tauxTva: l.tauxTva, updatedAt: new Date() }).where(eq(lignesPrix.id, l.id));
+      }
+      await tx.update(devis).set({ tauxTva: rendus.tauxTva }).where(eq(devis.id, brouillon.id));
+    }
+    return { ok: true, autoliquidation: active };
   });
 }

@@ -137,7 +137,7 @@ export const MESSAGE_HEIC_REFUSE =
  * c'est ce refus qu'il lit.
  */
 export const MESSAGE_PHOTO_ILLISIBLE =
-  "Cette photo n'a pas pu être lue — elle est peut-être abîmée, ou ce n'est pas le format annoncé. Reprenez-la.";
+  "Cette photo n'a pas pu être lue. Elle est peut-être abîmée, ou ce n'est pas le format annoncé. Reprenez-la.";
 
 /**
  * L'extension à poser sur la clé de stockage — **et c'est elle qui décidera du

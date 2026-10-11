@@ -95,10 +95,26 @@ maquettes/*-essai.html
 # Sauvegardes du banc d'essai — noms et adresses de clients : jamais versionnées.
 sauvegarde-atlas-*.sql
 sauvegarde-atlas-*.json
-.next-batie
-.next-verification
-# Le serveur au profil « banc » monté par `test-bandeau-banc-e2e.ts` : Next.js
-# refuse deux serveurs de développement dans un même dossier, il lui faut donc
-# le sien. Un fichier neuf dans l'arbre git ferait refuser TOUTES les mises à
-# jour du banc du patron (`mettre-a-jour.sh`).
-.next-banc-essai
+# TOUS LES DOSSIERS BÂTIS, ET LA RÈGLE REMPLACE LA LISTE — 8 septembre 2026.
+#
+# Ils étaient nommés un par un : `.next-batie`, ses deux versions de relais,
+# `.next-verification`, les ateliers (`.next-a*`), le profil « banc ». Le
+# huitième — un dossier de capture — n'y était pas, et cela ne s'est pas vu
+# comme un fichier de trop dans `git status` : **Tailwind lit tout ce que git
+# ne cache pas**. Il a donc relu ses propres classes compilées, y compris une
+# qu'on venait de corriger, et la feuille de style entière a cessé de
+# compiler — l'application rendait 500 sur du code juste.
+#
+# Un dossier bâti ne se versionne jamais, quel que soit son suffixe. Et un
+# fichier neuf dans l'arbre ferait refuser TOUTES les mises à jour du banc du
+# patron (`mettre-a-jour.sh`), qui n'avance qu'en ligne droite.
+.next-*
+
+# Le verrou de la batterie : il vit le temps d une mesure, jamais dans git.
+.atlas-batterie-en-cours.json
+
+# Le dernier verdict de la batterie : il decrit l'etat d'UNE machine a UN
+# instant. Le committer ferait refuser une batterie chez quelqu'un qui ne l'a
+# jamais jouee — le pire des faux positifs, puisqu'il frapperait celui qui
+# arrive (voir scripts/_dernier-verdict.ts).
+.atlas-dernier-verdict.json

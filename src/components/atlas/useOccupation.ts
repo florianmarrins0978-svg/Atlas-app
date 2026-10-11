@@ -3,13 +3,13 @@
 import { useCallback, useMemo } from "react";
 import { fusionnerAbsences, type AbsenceEquipe } from "@/lib/absences-equipe";
 import { equipesMobilisees, libelleSalarie, salariesAffiches } from "@/lib/equipes";
+import { equipesDuJour } from "@/lib/equipes-par-jour";
 import { occupationDemi, type Demi } from "@/lib/planning-jour";
 import {
   cleCreneau,
-  creneauxDuChantier,
-  DUREE_PAR_DEFAUT_DEMI_JOURNEES,
+  creneauxPoses,
   type JourIso,
-} from "@/server/disponibilites";
+} from "@/lib/disponibilites";
 import type { ChantierPlanning } from "@/app/planning/PlanningClient";
 
 /**
@@ -62,10 +62,15 @@ export function useOccupation({
     const m = new Map<string, ChantierPlanning[]>();
     for (const c of chantiers) {
       if (!c.datePlanifiee) continue;
-      const creneaux = creneauxDuChantier(
-        { jour: c.datePlanifiee, moment: c.creneauDebut === "apres_midi" ? "apres_midi" : "matin" },
-        c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES
-      );
+      // **Ses créneaux s'il en a, son bloc sinon** — la même règle qu'au
+      // serveur, et elle vit dans `creneauxPoses` : le planning et l'écran
+      // d'envoi doivent répondre la même chose à « ce jour est-il pris ».
+      const creneaux = creneauxPoses({
+        jour: c.datePlanifiee,
+        moment: c.creneauDebut === "apres_midi" ? "apres_midi" : "matin",
+        dureeDemiJournees: c.dureeDemiJournees ?? null,
+        creneaux: c.creneaux ?? null,
+      });
       for (const x of creneaux) {
         const cle = cleCreneau(x);
         const siens = m.get(cle);
@@ -94,11 +99,9 @@ export function useOccupation({
         parCreneau.get(cle) ?? [],
         nombreEquipes,
         absentesParCreneau.get(cle) ?? 0,
-        (c) =>
-          equipesMobilisees(
-            (demi === "matin" ? c.equipes.matin : c.equipes.apres_midi).length,
-            nombreEquipes
-          )
+        // **Ceux de CE jour** — la coche peut ne valoir qu'à partir du 4e jour
+        // (migration 0093), et la règle vit dans `equipes-par-jour.ts`.
+        (c) => equipesMobilisees(equipesDuJour(c.equipes, jour)[demi].length, nombreEquipes)
       );
     },
     [parCreneau, absentesParCreneau, nombreEquipes]

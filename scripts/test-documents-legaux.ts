@@ -47,12 +47,24 @@ async function main() {
     process.exit(1);
   }
 
-  await test("les trois documents déclarés sont publiés", async () => {
-    assert.strictEqual(enVigueur.length, VERSIONS_DOCUMENTS.length);
-    for (const v of VERSIONS_DOCUMENTS) {
-      assert.ok(
-        enVigueur.some((d) => d.type === v.type && d.version === v.version),
-        `${v.type}@${v.version} absent`
+  // **UN document en vigueur PAR TYPE, et non un par version — 9 septembre
+  // 2026.** Ce contrôle comptait les entrées de `VERSIONS_DOCUMENTS`. Tant
+  // qu'il n'existait qu'une version par document, cela revenait au même ; à la
+  // seconde version des CGU, il a rougi sur du code juste. Ce qu'il défend
+  // vraiment : chaque TYPE a exactement un texte en vigueur, et c'est le plus
+  // récemment publié (`CLAUDE.md` §5 bis — on adapte le contrôle).
+  await test("un document en vigueur par type, et c'est le plus récent", async () => {
+    const types = [...new Set(VERSIONS_DOCUMENTS.map((v) => v.type))];
+    assert.strictEqual(enVigueur.length, types.length);
+    for (const t of types) {
+      const declarees = VERSIONS_DOCUMENTS.filter((v) => v.type === t);
+      const derniere = declarees[declarees.length - 1];
+      const vue = enVigueur.find((d) => d.type === t);
+      assert.ok(vue, `${t} n'a aucun texte en vigueur`);
+      assert.strictEqual(
+        vue.version,
+        derniere.version,
+        `${t} : c'est ${vue.version} qui est en vigueur, pas ${derniere.version}`
       );
     }
   });
@@ -67,17 +79,23 @@ async function main() {
     }
   });
 
-  await test("l'ordre d'affichage suit versions.ts, pas la base", async () => {
-    assert.deepStrictEqual(
-      enVigueur.map((d) => d.type),
-      VERSIONS_DOCUMENTS.map((v) => v.type)
-    );
+  // **Et il ne se répète pas.** Le tri prenait le type de chaque version : à la
+  // seconde version des CGU, l'écran affichait DEUX fois la même carte, deux
+  // cases pour un seul document. Personne ne l'a vu avant la capture.
+  await test("l'ordre d'affichage suit versions.ts, sans répéter un type", async () => {
+    const vus = enVigueur.map((d) => d.type);
+    assert.deepStrictEqual(vus, [...new Set(VERSIONS_DOCUMENTS.map((v) => v.type))]);
+    assert.strictEqual(new Set(vus).size, vus.length, `un type est proposé deux fois : ${vus.join(", ")}`);
   });
 
   await test("un nouvel utilisateur doit accepter les documents requis", async () => {
     const utilisateurId = await creerUtilisateur(`neuf-${Date.now()}@atlas.test`);
     const attendus = await documentsAAccepter(utilisateurId);
-    const requis = VERSIONS_DOCUMENTS.filter((v) => v.acceptationRequise);
+    // Un TYPE requis, pas une version requise : deux versions d'un même
+    // document ne se font jamais accepter toutes les deux.
+    const requis = [
+      ...new Set(VERSIONS_DOCUMENTS.filter((v) => v.acceptationRequise).map((v) => v.type)),
+    ];
     assert.strictEqual(attendus.length, requis.length);
   });
 

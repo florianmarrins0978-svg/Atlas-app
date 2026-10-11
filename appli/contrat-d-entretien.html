@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Contrat d'entretien</title>
+<style>
+  /*
+    LE CONTRAT D'ENTRETIEN, sa demande du 26 septembre 2026 (« fais la planche
+    pour la 3 »), après la comparaison avec Extrabat. RIEN N'EST CODÉ.
+
+    CE QUI EST REPRIS DE L'EXISTANT, et ne s'invente pas :
+      1. la fiche du client (`RepartirDeCeClient.tsx`) : « Dernier devis »
+         plein, « Autre chantier » creux, « Dernière prestation » ;
+      2. les prestations du contrat viennent de SON modèle de fiche
+         d'entretien (`MODELE_FOURNI`, `src/lib/prestations-entretien.ts`),
+         libellés mot pour mot, ou s'écrivent à la main (sa demande du même
+         soir : « il faut pouvoir ajouter une prestation et l'écrire ») ;
+         le nombre de passages par mois se règle avec + et −, sans autre
+         plafond que les 31 jours d'un mois ;
+      3. le planning : les passages du mois tombent dans le tiroir « Sans
+         date » (`TiroirDuBas`, `PlanningClient.tsx`), et se posent comme un
+         chantier. Aucun écran neuf dans le planning.
+
+    CE QUI EST NEUF : le bloc « Contrat d'entretien » de la fiche du client, et
+    l'écran du contrat.
+
+    RECONSTRUIT D'APRÈS LE CODE, PAS PHOTOGRAPHIÉ : le jeu de démonstration n'a
+    pas pu être monté dans l'environnement de l'agent ce jour-là. Les noms, les
+    prix et l'adresse sont inventés.
+
+    RÈGLES DU CALCUL, à tenir dans le code :
+      a. un passage par mois coché et par fréquence : avril à octobre, deux
+         fois par mois, font 14 passages ;
+      b. le montant annuel HT est la somme des passages fois leur prix ;
+      c. « chaque mois » : le montant annuel en douze, au centime ; ce qui
+         reste de l'arrondi va sur la dernière facture, pour que la somme
+         tombe juste ;
+      d. tout se calcule en centimes entiers.
+  */
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
+    --or:#B98B47; --orTexte:#8b6835; --plein:#7d9a6d;
+    --line:rgba(28,28,26,0.12); --lineSoft:rgba(28,28,26,0.07);
+    --voileChamp:rgba(28,28,26,0.04); --alerte:#9C3B2E; --surPlein:#faf9f5;
+    --hors:#e6e3dc; --barre:rgba(28,28,26,0.16);
+  }
+  body[data-charte="nuit"]{
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e;
+    --or:#B98B47; --orTexte:#b98b47; --plein:#e9e8de;
+    --line:rgba(233,232,222,0.12); --lineSoft:rgba(233,232,222,0.07);
+    --voileChamp:rgba(233,232,222,0.06); --alerte:#e08b7d; --surPlein:#1a1d19;
+    --hors:#0a0b0a; --barre:rgba(233,232,222,0.16);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  [hidden]{display:none!important}
+  html,body{margin:0}
+  body{background:var(--hors);color:var(--ink);
+       font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:0 0 34px}
+  input{font:inherit;color:inherit}
+  button{font:inherit;color:inherit}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:14px 18px;font-size:14px;line-height:1.5}
+  .bandeau b{color:#fff}
+  .choix{display:flex;gap:7px;justify-content:center;padding:12px}
+  .autre-version{display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border-radius:999px;
+                 border:1px solid var(--line);background:var(--card);color:var(--ink);text-decoration:none;
+                 font:600 13px/1 ui-sans-serif,sans-serif}
+  .choix button{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);
+                background:var(--card);color:var(--ink);font:600 13px/1 ui-sans-serif,sans-serif;cursor:pointer}
+  .choix button[aria-pressed="true"]{background:var(--ink);color:var(--cream)}
+
+  .tel{position:relative;max-width:430px;margin:0 auto;background:var(--cream);border-radius:26px;overflow:hidden;
+       box-shadow:0 18px 46px rgba(20,18,14,.22)}
+
+  .entete{padding:26px 26px 0;display:flex;align-items:flex-start;gap:12px}
+  .entete h1{margin:0;font:400 34px/1.05 ui-serif,Georgia,"Iowan Old Style",serif;letter-spacing:-0.018em}
+  .entete .sous{margin:8px 0 0;font-size:15px;line-height:1.45;color:var(--inkSoft)}
+  .entete .sur{margin:10px 0 0;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+               text-transform:uppercase;color:var(--or)}
+  .retour{flex:none;width:36px;height:36px;border-radius:999px;border:1px solid var(--line);
+          background:var(--card);color:var(--ink);font-size:18px;line-height:1;cursor:pointer}
+
+  /* ─── La fiche du client ─────────────────────────────────────────────── */
+  /* Trois gestes sur UNE rangée (sa demande du 26 septembre 2026) : chacun
+     prend un tiers, le libellé passe sur deux lignes plutôt que de déborder,
+     et la rangée s'élargit jusqu'aux bords de la fiche pour garder la place
+     du texte sur un téléphone de 360 px. */
+  .gestes{display:flex;gap:6px;padding:20px 16px 0}
+  .gestes button{flex:1 1 0;min-width:0;height:56px;border-radius:999px;display:flex;align-items:center;
+                 justify-content:center;gap:6px;padding:0 8px;cursor:default;border:0;text-align:left}
+  .gestes svg{flex:none}
+  .gestes .dernier{background:var(--plein);color:var(--surPlein);font:400 14.5px/1.15 ui-serif,Georgia,serif}
+  .gestes .autre{background:none;color:var(--orTexte);box-shadow:inset 0 0 0 1px var(--orTexte);
+                 font:400 13.5px/1.15 ui-sans-serif,sans-serif}
+  .gestes .autre[data-aller]{cursor:pointer}
+  .passe{margin:26px 26px 0}
+  .passe p:not(.intitule){margin:0;font-size:15px}
+  .passe .quand{font-size:13px;color:var(--muted);margin-top:2px}
+  .intitule{margin:0 0 6px;font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;
+            text-transform:uppercase;color:var(--muted)}
+
+  .contrat-fiche{margin:22px 26px 0;padding-top:18px;border-top:1px solid var(--lineSoft)}
+  .contrat-fiche:empty{display:none}
+  .contrat-fiche .carte{display:block;width:100%;text-align:left;border:0;cursor:pointer;
+                        background:var(--card);border-radius:10px;padding:14px 16px}
+  .contrat-fiche .carte p{margin:0}
+  .contrat-fiche .carte .etat{font:400 18px/1.25 ui-serif,Georgia,serif}
+  .contrat-fiche .carte .detail{margin-top:4px;font-size:13.5px;color:var(--inkSoft)}
+  .contrat-fiche .carte .attente{color:var(--orTexte)}
+  .appui{animation:appui 1.6s ease-in-out infinite}
+  @keyframes appui{50%{box-shadow:0 0 0 6px rgba(185,139,71,.28)}}
+
+  /* ─── L'écran du contrat ─────────────────────────────────────────────── */
+  .feuille{margin:18px 10px 0;background:var(--card);border-radius:10px;padding:18px 16px 22px}
+  .bloc{margin-top:26px}
+  .bloc:first-child{margin-top:0}
+
+  .presta{padding:14px 0 16px;border-bottom:1px solid var(--lineSoft)}
+  .presta:first-of-type{padding-top:4px}
+  .presta .haut{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .presta .nom{margin:0;font:400 18px/1.25 ui-serif,Georgia,serif}
+  .presta .famille{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+  .moins{width:28px;height:28px;flex:none;border-radius:999px;background:none;border:1px solid var(--or);
+         color:var(--or);font-size:15px;line-height:1;cursor:pointer;padding:0}
+  .mois{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:3px;margin-top:12px}
+  .mois button{height:34px;border:0;border-radius:6px;padding:0;cursor:pointer;
+               background:var(--voileChamp);color:var(--muted);font:600 12px/1 ui-sans-serif,sans-serif;
+               box-shadow:inset 0 0 0 1px var(--lineSoft)}
+  .mois button[aria-pressed="true"]{background:var(--rust);color:var(--surPlein);box-shadow:none}
+  .rangee{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
+  .rangee .lib{font:600 11px/1.2 ui-sans-serif,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .compteur{display:flex;align-items:center;gap:4px}
+  .compteur button{width:36px;height:36px;border:0;border-radius:999px;cursor:pointer;padding:0;
+                   background:var(--card);box-shadow:inset 0 0 0 1px var(--line);font:500 19px/1 ui-sans-serif,sans-serif}
+  .compteur button:disabled{color:var(--muted);opacity:.5;cursor:default}
+  .compteur output{min-width:32px;text-align:center;font:600 17px/1 ui-sans-serif,sans-serif;font-variant-numeric:tabular-nums}
+  .ecrire{display:flex;gap:8px;margin:10px 0 4px}
+  .ecrire input{flex:1;min-width:0;height:42px;border:0;border-radius:8px;padding:0 12px;background:var(--card);
+                box-shadow:inset 0 0 0 1px var(--line);font-size:16px;outline:none}
+  .ecrire input:focus{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .liste-modele .ecrire button{width:auto;flex:none;height:42px;padding:0 16px;border-radius:999px;border:0;
+                background:var(--plein);color:var(--surPlein);font:500 14.5px/1 ui-sans-serif,sans-serif;text-align:center}
+  .liste-modele .ecrire button:disabled{opacity:.45;color:var(--surPlein)}
+  .prix{display:flex;align-items:center;gap:4px}
+  .prix input{width:84px;border:0;border-bottom:1px solid var(--lineSoft);background:transparent;
+              text-align:right;font-size:16px;padding:4px 2px;outline:none;font-variant-numeric:tabular-nums}
+  .prix input:focus{background:var(--voileChamp)}
+  .prix span{font-size:14px;color:var(--inkSoft)}
+  .somme{margin:10px 0 0;font-size:13.5px;color:var(--inkSoft);text-align:right;font-variant-numeric:tabular-nums}
+  .somme.vide{color:var(--or)}
+
+  .ajout{display:block;margin-top:14px;background:none;border:0;padding:0;cursor:pointer;min-height:36px;
+         font:500 14px/1.2 ui-sans-serif,sans-serif;color:var(--rust)}
+  .liste-modele{margin-top:8px;border-radius:8px;background:var(--rustTint);padding:6px 12px 10px}
+  .liste-modele .fam{margin:10px 0 4px;font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;
+                     text-transform:uppercase;color:var(--muted)}
+  .liste-modele button{display:block;width:100%;text-align:left;border:0;background:none;cursor:pointer;
+                       padding:9px 0;font-size:15px;border-bottom:1px solid var(--lineSoft)}
+  .liste-modele button:disabled{color:var(--muted);cursor:default}
+
+  .debut{display:flex;gap:6px}
+  .debut select{height:38px;border:0;border-radius:8px;padding:0 8px;background:var(--card);color:var(--ink);
+                box-shadow:inset 0 0 0 1px var(--line);font:500 15px/1 ui-sans-serif,sans-serif}
+  .ligne-duree{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0;font-size:15px}
+  .interrupteur{width:48px;height:28px;flex:none;border-radius:999px;border:0;cursor:pointer;position:relative;
+                background:var(--barre)}
+  .interrupteur::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:999px;
+                       background:var(--card);transition:left .15s}
+  .interrupteur[aria-checked="true"]{background:var(--plein)}
+  .interrupteur[aria-checked="true"]::after{left:23px}
+
+  .auto{margin-top:12px}
+  .auto-dit{margin:2px 0 0;font-size:13.5px;color:var(--inkSoft)}
+  .facturation{display:flex;flex-direction:column;gap:8px}
+  .facturation button{text-align:left;border:0;cursor:pointer;border-radius:10px;padding:12px 14px;
+                      background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
+  .facturation button[aria-pressed="true"]{box-shadow:inset 0 0 0 1.5px var(--or);background:var(--voileChamp)}
+  .facturation .t{display:block;font:500 15px/1.3 ui-sans-serif,sans-serif}
+  .facturation .c{display:block;margin-top:4px;font-size:13.5px;color:var(--inkSoft);font-variant-numeric:tabular-nums}
+  .facturation .lettre{color:var(--or);font-weight:600;margin-right:6px}
+
+  .totaux{margin-top:26px}
+  .lp{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;font-size:15px;
+      font-variant-numeric:tabular-nums}
+  .ttc{margin-top:6px;padding-top:10px;border-top:2px solid var(--ink);display:flex;
+       align-items:center;justify-content:space-between}
+  .ttc b{font:600 17px/1 ui-sans-serif,sans-serif}
+  .ttc .valeur{font:600 20px/1 ui-serif,Georgia,serif;font-variant-numeric:tabular-nums}
+
+  .apercu{margin-top:30px;padding-top:20px;border-top:1px solid var(--lineSoft);text-align:center}
+  .apercu button{border:0;background:none;padding:8px;cursor:pointer;font:500 14px/1 ui-sans-serif,sans-serif;color:var(--rust)}
+  .feuille-pdf{margin:18px 10px 0;padding:0 0 20px}
+  .feuille-pdf img{display:block;width:100%;height:auto;border-radius:4px;box-shadow:0 6px 22px rgba(20,18,14,.18)}
+  .feuille-pdf p{margin:12px 8px 0;font-size:13px;color:var(--muted);text-align:center}
+  .plein{display:block;width:calc(100% - 36px);margin:20px 18px 0;min-height:52px;border:0;
+         border-radius:999px;background:var(--plein);color:var(--surPlein);
+         font:400 17px/1 ui-serif,Georgia,serif;cursor:pointer}
+  .plein:disabled{opacity:.45;cursor:default}
+  .collant{position:sticky;bottom:0;padding:10px 0 12px;background:var(--cream)}
+  .collant .plein{margin-top:0}
+  .manque{margin:6px 18px 0;font-size:13px;color:var(--alerte);text-align:center}
+
+  /* ─── Le planning, le bas de l'écran ─────────────────────────────────── */
+  .cal{padding:18px 12px 0}
+  .cal .nom-mois{margin:0 6px 12px;font:400 22px/1 ui-serif,Georgia,serif}
+  .sem{display:flex;gap:6px;margin-bottom:6px}
+  .jour{flex:1;border:0;border-radius:9px;padding:7px 0 6px;text-align:center;background:transparent;cursor:pointer}
+  .jour.we{background:rgba(128,128,128,.10)}
+  .jour.touche{box-shadow:inset 0 0 0 2px var(--or)}
+  .jour.vide{visibility:hidden}
+  .jour .n{font:400 16px/1 ui-serif,Georgia,serif}
+  .jour .b{height:4px;border-radius:2px;background:rgba(128,128,128,.18);margin:4px 6px 0}
+  .jour .b.plein{background:var(--rust)}
+  .jour.cible{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .pose{margin:14px 18px 0;min-height:48px;font-size:13.5px;color:var(--inkSoft)}
+  .pose b{font-weight:500;color:var(--ink)}
+
+  .tiroir{margin-top:18px;background:var(--card);border-top:2px solid var(--or);border-radius:14px 14px 0 0;
+          box-shadow:0 -14px 34px rgba(28,28,26,.12)}
+  .tiroir .poignee{display:flex;align-items:center;gap:10px;padding:15px 18px;font-size:13px;color:var(--inkSoft)}
+  .tiroir .poignee.or{color:var(--orTexte)}
+  .tiroir .dedans{padding:0 18px 16px;border-top:1px solid var(--line)}
+  .tiroir .titre{display:inline-block;font:700 11px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
+                 text-transform:uppercase;background:var(--rustTint);color:var(--ink);padding:7px 15px;
+                 border-radius:999px;margin:14px 0 6px}
+  .tiroir .ligne{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;
+                 padding:11px 0;border:0;border-bottom:1px solid var(--line);background:none;cursor:pointer;text-align:left}
+  .tiroir .ligne:last-child{border-bottom:0}
+  .tiroir .ligne .nom{min-width:0;flex:1;font:400 19px/1.2 ui-serif,Georgia,serif}
+  .tiroir .ligne[aria-pressed="true"] .nom{color:var(--or)}
+  .tiroir .ligne .q{flex:none;font-size:12.5px;color:var(--muted);text-align:right}
+  .tiroir .rien{padding:12px 0 4px;font-size:13.5px;color:var(--muted)}
+
+  .nav{border-top:1px solid var(--line);position:relative;background:var(--cream);
+       display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:18px 14px 8px}
+  .nav button{border:0;background:none;padding:0 0 8px;cursor:pointer;text-align:center;
+              font:500 8.5px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .nav button.actif{color:var(--ink)}
+  .nav i{position:absolute;bottom:8px;width:calc((100% - 28px) / 5);height:1px;background:var(--or);left:14px}
+  .nav i.p2{left:calc(14px + (100% - 28px) / 5)}
+
+  /* ─── Les notes, sous le téléphone ───────────────────────────────────── */
+  .notes{max-width:560px;margin:28px auto 0;padding:0 18px}
+  .notes h2{margin:26px 0 8px;font:400 22px/1.2 ui-serif,Georgia,serif}
+  .notes p,.notes li{font-size:14.5px;line-height:1.6;color:var(--inkSoft);margin:0 0 8px}
+  .notes b{color:var(--ink)}
+  .notes ul{padding-left:18px;margin:0}
+
+  @media (prefers-reduced-motion:reduce){ .appui{animation:none} }
+</style>
+</head>
+<body data-charte="origine">
+
+<div class="bandeau"><b>Maquette.</b> Touchez « Contrat d'entretien », à côté de « Autre chantier ». Tout se touche : les mois, le nombre de passages, les prix, la facturation. Puis envoyez, et allez au planning.</div>
+<div class="choix">
+  <button type="button" id="recommencer">Recommencer</button>
+  <button type="button" id="bascule-nuit" aria-pressed="false">Nuit</button>
+  <a class="autre-version" href="contrat-d-entretien-vert.html">Version verte</a>
+</div>
+
+<div class="tel">
+
+  <!-- 1. LA FICHE DU CLIENT -->
+  <section id="ecran-client">
+    <div class="entete">
+      <div>
+        <h1>Mme Costa</h1>
+        <p class="sous">12 chemin des Vignes, Saint-Marc<br>06 21 43 65 87</p>
+      </div>
+    </div>
+    <div class="gestes">
+      <button type="button" class="dernier" tabindex="-1">
+        <svg width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M15.2 9a6.2 6.2 0 1 1-1.9-4.5M15.2 2.4V6h-3.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Dernier<br>devis</span>
+      </button>
+      <button type="button" class="autre" tabindex="-1">
+        <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 3.4v11.2M3.4 9h11.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span>Autre<br>chantier</span>
+      </button>
+      <button type="button" class="autre" id="geste-contrat" data-aller="contrat">
+        <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="2.6" y="3.6" width="12.8" height="11.6" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M2.6 7.4h12.8M6.2 2.2v2.8M11.8 2.2v2.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <span>Contrat<br>d'entretien</span>
+      </button>
+    </div>
+    <div class="passe">
+      <p class="intitule">Dernière prestation</p>
+      <p>Taille de haie et tonte</p>
+      <p class="quand">14 septembre 2026</p>
+    </div>
+
+    <!-- NEUF : le contrat, sur la fiche -->
+    <div class="contrat-fiche" id="contrat-fiche"></div>
+
+    <div class="nav">
+      <button type="button" class="actif">Chantiers</button>
+      <button type="button" data-aller="planning">Planning</button>
+      <button type="button" tabindex="-1">Terminés</button>
+      <button type="button" tabindex="-1">Paysage</button>
+      <button type="button" tabindex="-1">Réglages</button><i></i>
+    </div>
+  </section>
+
+  <!-- 2. LE CONTRAT -->
+  <section id="ecran-contrat" hidden>
+    <div class="entete">
+      <button class="retour" type="button" data-aller="client" aria-label="Revenir à la fiche du client">‹</button>
+      <div style="flex:1"><h1>Contrat d'entretien</h1><p class="sur">Mme Costa</p></div>
+    </div>
+
+    <div class="feuille">
+      <div class="bloc">
+        <p class="intitule">Prestations</p>
+        <div id="prestations"></div>
+        <button type="button" class="ajout" id="ajouter">+ Ajouter une prestation</button>
+        <div class="liste-modele" id="liste-modele" hidden></div>
+      </div>
+
+      <div class="bloc">
+        <p class="intitule">Durée</p>
+        <div class="ligne-duree">
+          <span>Début</span>
+          <span class="debut">
+            <select id="debut-mois" aria-label="Mois de début"></select>
+            <select id="debut-annee" aria-label="Année de début"></select>
+          </span>
+        </div>
+        <div class="ligne-duree">
+          <span>Durée</span>
+          <div class="compteur">
+            <button type="button" data-duree="-1" aria-label="Un mois de moins">−</button>
+            <output id="duree-mois"></output>
+            <button type="button" data-duree="1" aria-label="Un mois de plus">+</button>
+          </div>
+        </div>
+        <p class="auto-dit" id="periode"></p>
+        <div class="ligne-duree">
+          <span>Reconduit à la fin</span>
+          <button type="button" class="interrupteur" id="reconduit" role="switch" aria-checked="true" aria-label="Reconduit à la fin"></button>
+        </div>
+      </div>
+
+      <div class="bloc">
+        <p class="intitule">Facturation</p>
+        <div class="facturation" id="facturation">
+          <button type="button" data-fact="mois" aria-pressed="false">
+            <span class="t"><span class="lettre">A</span>Chaque mois, le même montant</span>
+            <span class="c" id="conseq-mois"></span>
+          </button>
+          <button type="button" data-fact="passage" aria-pressed="true">
+            <span class="t"><span class="lettre">B</span>Après chaque passage</span>
+            <span class="c" id="conseq-passage"></span>
+          </button>
+        </div>
+        <!-- L'automatisme ne part JAMAIS d'une date : seulement du compte rendu,
+             qui est lui-même son geste (`CLAUDE.md` §4, « facturer sans un
+             geste du patron »). Une facture datée partirait pour un passage
+             que la pluie a annulé. -->
+        <div id="auto" class="auto">
+          <div class="ligne-duree">
+            <span>Envoyer la facture avec le compte rendu</span>
+            <button type="button" class="interrupteur" id="avec-compte-rendu" role="switch" aria-checked="false" aria-label="Envoyer la facture avec le compte rendu"></button>
+          </div>
+          <p class="auto-dit" id="auto-dit"></p>
+        </div>
+      </div>
+
+      <div class="totaux">
+        <div class="lp"><span>Passages</span><span id="t-passages"></span></div>
+        <div class="lp"><span>Total HT du contrat</span><span id="t-ht"></span></div>
+        <div class="lp"><span>TVA 20 %</span><span id="t-tva"></span></div>
+        <div class="ttc"><b>Total TTC</b><span class="valeur" id="t-ttc"></span></div>
+      </div>
+      <div class="apercu"><button type="button" data-aller="apercu">Aperçu du PDF</button></div>
+    </div>
+
+    <div class="collant">
+      <button type="button" class="plein" id="envoyer">Envoyer à Mme Costa</button>
+      <p class="manque" id="manque" hidden></p>
+    </div>
+  </section>
+
+  <!-- 2 bis. L'APERÇU DU PDF : sorti du VRAI moteur des devis
+       (`composerDocument`, `src/server/pdf/document-commun.ts`), titré
+       « CONTRAT D'ENTRETIEN », sur les prix de départ de la planche. -->
+  <section id="ecran-apercu" hidden>
+    <div class="entete">
+      <button class="retour" type="button" data-aller="contrat" aria-label="Revenir au contrat">‹</button>
+      <div style="flex:1"><h1>Aperçu</h1><p class="sur">Contrat d'entretien</p></div>
+    </div>
+    <div class="feuille-pdf">
+      <img src="contrat-d-entretien-apercu.jpg" alt="Le contrat d'entretien de Mme Costa, tel qu'il part en PDF" width="1190" height="1684">
+      <p>Avec les prix de départ de l'exemple.</p>
+    </div>
+  </section>
+
+  <!-- 3. LE PLANNING D'AVRIL -->
+  <section id="ecran-planning" hidden>
+    <div class="entete">
+      <div><h1>Planning</h1><p class="sur">Vos journées</p></div>
+    </div>
+    <div class="cal">
+      <p class="nom-mois">Avril 2027</p>
+      <div id="calendrier"></div>
+    </div>
+    <p class="pose" id="pose"></p>
+
+    <div class="tiroir">
+      <div class="poignee" id="poignee"></div>
+      <div class="dedans">
+        <span class="titre">Sans date</span>
+        <div id="sans-date"></div>
+      </div>
+    </div>
+
+    <div class="nav">
+      <button type="button" data-aller="client">Chantiers</button>
+      <button type="button" class="actif">Planning</button>
+      <button type="button" tabindex="-1">Terminés</button>
+      <button type="button" tabindex="-1">Paysage</button>
+      <button type="button" tabindex="-1">Réglages</button><i class="p2"></i>
+    </div>
+  </section>
+</div>
+
+<div class="notes">
+  <h2>La facturation : B, tranchée le 26 septembre</h2>
+  <p>Une facture après chaque passage. <b>Et vous pouvez l'automatiser</b> : l'interrupteur « Envoyer la facture avec le compte rendu », sous la B.</p>
+  <ul>
+    <li><b>Éteint</b> : vous envoyez la facture vous-même, après le passage.</li>
+    <li><b>Allumé</b> : quand le compte rendu du passage part chez le client, la facture part avec. Un seul geste au lieu de deux.</li>
+  </ul>
+  <p><b>Ce qui ne s'automatise pas, et c'est voulu :</b> une facture qui partirait toute seule à une date. Un passage annulé par la pluie serait facturé quand même. Le déclencheur reste le compte rendu, c'est-à-dire un passage réellement fait.</p>
+
+  <h2>Ce que je propose, sans vous le demander</h2>
+  <ul>
+    <li><b>Les passages ne prennent pas de date fixe.</b> Le 20 du mois d'avant, ceux du mois suivant arrivent dans « Sans date », et vous les posez comme un chantier. Une date fixe (le 2e mardi) ne tient pas face à la pluie, et il faudrait la déplacer à la main à chaque fois.</li>
+    <li><b>Le contrat part chez le client comme un devis</b> : un lien, et il accepte. Rien n'entre au planning avant son accord.</li>
+    <li><b>Les prestations viennent de votre fiche d'entretien.</b> Au passage, la fiche s'ouvre avec celles du mois déjà listées, et le compte rendu part comme aujourd'hui.</li>
+  </ul>
+
+  <h2>Une question pour plus tard</h2>
+  <p>Vos clients particuliers ont droit au crédit d'impôt sur l'entretien du jardin si votre entreprise est déclarée en services à la personne. Si c'est le cas, Atlas pourrait sortir l'attestation fiscale de l'année, à partir des factures du contrat. À vous de me dire si ça vous concerne.</p>
+
+  <p><b>Rien n'est codé.</b> Les noms, les prix et l'adresse sont inventés. La fiche et le planning sont reconstruits d'après le code de l'application.</p>
+</div>
+
+<script>
+/*
+  L'ÉTAT DU CONTRAT. Les prix sont en centimes. `mois` : les mois cochés,
+  de 0 (janvier) à 11. `fois` : passages par mois.
+*/
+const MODELE = [
+  ["Pelouse", "Tonte et ébarbage"], ["Pelouse", "Traitement pelouse"], ["Pelouse", "Scarification"], ["Pelouse", "Engrais"],
+  ["Tailles", "Taille arbuste automne"], ["Tailles", "Taille arbuste printemps"], ["Tailles", "Taille de haie automne"],
+  ["Tailles", "Taille de haie printemps"], ["Tailles", "Taille des rosiers"],
+  ["Massifs", "Bêchage"], ["Massifs", "Bordures massifs"], ["Massifs", "Griffage massifs"], ["Massifs", "Désherbage massifs"],
+  ["Massifs", "Coupe des fleurs fanées"],
+  ["Propreté", "Nettoyage pied de haies"], ["Propreté", "Désherbant allée"], ["Propreté", "Lierre, liseron, liane"],
+  ["Propreté", "Démoussage voirie"], ["Propreté", "Ramassage des feuilles"], ["Propreté", "Évacuation des déchets"],
+];
+const INITIALES = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
+const NOMS_MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+// Pas de plafond de métier : un mois compte au plus 31 jours, rien d'autre ne borne.
+const MAX_PAR_MOIS = 31;
+// Sa limite de libellé, la même que la fiche d'entretien (`MAX_LONGUEUR_LIBELLE`).
+const MAX_LIBELLE = 60;
+const echapper = (t) => String(t).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
+const AVRIL = 3;
+
+const DEPART = () => ({
+  prestations: [
+    { id: 1, famille: "Pelouse", libelle: "Tonte et ébarbage", mois: [3, 4, 5, 6, 7, 8, 9], fois: 2, prix: 4500 },
+    { id: 2, famille: "Tailles", libelle: "Taille de haie printemps", mois: [4], fois: 1, prix: 18000 },
+    { id: 3, famille: "Tailles", libelle: "Taille de haie automne", mois: [9], fois: 1, prix: 18000 },
+    { id: 4, famille: "Propreté", libelle: "Ramassage des feuilles", mois: [10], fois: 1, prix: 6000 },
+  ],
+  facturation: "passage",
+  avecCompteRendu: false,
+  reconduit: true,
+  // La période : le mois de début (0 = janvier) et sa durée en mois.
+  debut: { mois: 2, annee: 2027 },
+  dureeMois: 12,
+  etat: "aucun",
+  poses: {},
+  enMain: null,
+  // Le jour touché d'abord : dans l'application, c'est l'ordre ordinaire
+  // (on touche le jour, le tiroir dit « À poser sur… », on touche le client).
+  jourTouche: null,
+});
+let c = DEPART();
+let prochainId = 5;
+
+const euros = (x) => (x / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "\u00a0€";
+function lireCentimes(txt) {
+  const t = String(txt).trim().replace(/\s/g, "").replace("€", "").replace(",", ".");
+  if (t === "" || !/^\d+(\.\d{0,2})?$/.test(t)) return null;
+  return Math.round(parseFloat(t) * 100);
+}
+// Pas de plafond de métier sur la durée : trois ans bornent seulement le compteur.
+const DUREE_MAX = 36;
+// Les mois de la période, dans l'ordre : un contrat de 18 mois compte deux mai.
+function moisDeLaPeriode() {
+  return Array.from({ length: c.dureeMois }, (_, i) => {
+    const n = c.debut.mois + i;
+    return { mois: n % 12, annee: c.debut.annee + Math.floor(n / 12) };
+  });
+}
+const passagesDe = (p) => moisDeLaPeriode().filter((m) => p.mois.includes(m.mois)).length * p.fois;
+const complete = (p) => passagesDe(p) > 0 && p.prix !== null;
+function finDeLaPeriode() {
+  const d = moisDeLaPeriode().at(-1);
+  return new Date(d.annee, d.mois + 1, 0);
+}
+function periodeEnLettres() {
+  const fin = finDeLaPeriode();
+  return `Du 1er ${NOMS_MOIS[c.debut.mois]} ${c.debut.annee} au ${fin.getDate() === 1 ? "1er" : fin.getDate()} ${NOMS_MOIS[fin.getMonth()]} ${fin.getFullYear()}.`;
+}
+function dessinerPeriode() {
+  const m = document.getElementById("debut-mois"), a = document.getElementById("debut-annee");
+  if (!m.options.length) {
+    m.innerHTML = NOMS_MOIS.map((n, i) => `<option value="${i}">${n}</option>`).join("");
+    a.innerHTML = [2026, 2027, 2028].map((x) => `<option value="${x}">${x}</option>`).join("");
+  }
+  m.value = String(c.debut.mois); a.value = String(c.debut.annee);
+  document.getElementById("duree-mois").textContent = `${c.dureeMois} mois`;
+  document.querySelector('[data-duree="-1"]').disabled = c.dureeMois <= 1;
+  document.querySelector('[data-duree="1"]').disabled = c.dureeMois >= DUREE_MAX;
+  document.getElementById("periode").textContent = periodeEnLettres();
+}
+
+function totaux() {
+  const passages = c.prestations.reduce((s, p) => s + passagesDe(p), 0);
+  const ht = c.prestations.reduce((s, p) => s + (complete(p) ? passagesDe(p) * p.prix : 0), 0);
+  const tva = Math.round(ht * 0.2);
+  return { passages, ht, tva, ttc: ht + tva };
+}
+
+// Le montant annuel en douze : ce qui reste de l'arrondi va sur la dernière.
+function mensualites(ht) {
+  const n = c.dureeMois;
+  const base = Math.floor(ht / n);
+  return { n, base, derniere: ht - base * (n - 1) };
+}
+
+function passagesDuMois(m, annee) {
+  if (!moisDeLaPeriode().some((x) => x.mois === m && x.annee === annee)) return [];
+  return c.prestations.filter((p) => complete(p) && p.mois.includes(m))
+    .map((p) => ({ id: p.id, libelle: p.libelle, fois: p.fois }));
+}
+
+/* ─── Dessin de la fiche ─────────────────────────────────────────────── */
+function dessinerFiche() {
+  const z = document.getElementById("contrat-fiche");
+  const t = totaux();
+  document.getElementById("geste-contrat").classList.toggle("appui", c.etat === "aucun");
+  if (c.etat === "aucun") {
+    z.innerHTML = "";
+  } else if (c.etat === "envoye") {
+    z.innerHTML = `<p class="intitule">Contrat d'entretien</p>
+      <button type="button" class="carte appui" id="accepter">
+        <p class="etat">Envoyé le 26 septembre</p>
+        <p class="detail attente">En attente de sa réponse. Touchez pour faire comme si elle acceptait.</p>
+      </button>`;
+    document.getElementById("accepter").onclick = () => { c.etat = "accepte"; dessinerFiche(); };
+  } else {
+    z.innerHTML = `<p class="intitule">Contrat d'entretien</p>
+      <button type="button" class="carte" data-aller="contrat">
+        <p class="etat">Accepté le 28 septembre</p>
+        <p class="detail">${t.passages} passages, ${euros(t.ht)} HT. ${periodeEnLettres()}</p>
+      </button>`;
+  }
+}
+
+/* ─── Dessin du contrat ──────────────────────────────────────────────── */
+function dessinerPrestations() {
+  const z = document.getElementById("prestations");
+  z.innerHTML = c.prestations.map((p) => `
+    <div class="presta" data-id="${p.id}">
+      <div class="haut">
+        <div><p class="nom">${echapper(p.libelle)}</p>${p.famille ? `<p class="famille">${p.famille}</p>` : ""}</div>
+        <button type="button" class="moins" data-retirer="${p.id}" aria-label="Retirer ${echapper(p.libelle)}">−</button>
+      </div>
+      <div class="mois">${INITIALES.map((l, m) =>
+        `<button type="button" data-mois="${m}" aria-pressed="${p.mois.includes(m)}" aria-label="${NOMS_MOIS[m]}">${l}</button>`).join("")}</div>
+      <div class="rangee"><span class="lib">Passages par mois</span>
+        <div class="compteur">
+          <button type="button" data-fois="-1" aria-label="Un passage de moins" ${p.fois <= 1 ? "disabled" : ""}>−</button>
+          <output data-nb-fois>${p.fois}</output>
+          <button type="button" data-fois="1" aria-label="Un passage de plus" ${p.fois >= MAX_PAR_MOIS ? "disabled" : ""}>+</button>
+        </div>
+      </div>
+      <div class="rangee"><span class="lib">Prix du passage HT</span>
+        <span class="prix"><input inputmode="decimal" data-prix value="${p.prix === null ? "" : (p.prix / 100).toFixed(2).replace(".", ",")}" placeholder="à chiffrer" aria-label="Prix du passage de ${echapper(p.libelle)}"><span>€</span></span>
+      </div>
+      <p class="somme" data-somme></p>
+    </div>`).join("");
+  c.prestations.forEach((p) => sommeDe(p));
+}
+
+function sommeDe(p) {
+  const el = document.querySelector(`.presta[data-id="${p.id}"] [data-somme]`);
+  if (!el) return;
+  const n = passagesDe(p);
+  if (p.mois.length === 0) { el.textContent = "Aucun mois choisi"; el.classList.add("vide"); return; }
+  if (n === 0) { el.textContent = "Aucun de ces mois dans la période"; el.classList.add("vide"); return; }
+  if (p.prix === null) { el.textContent = `${n} passage${n > 1 ? "s" : ""}, prix à chiffrer`; el.classList.add("vide"); return; }
+  el.classList.remove("vide");
+  el.textContent = `${n} passage${n > 1 ? "s" : ""}, ${euros(n * p.prix)} HT`;
+}
+
+function dessinerTotaux() {
+  const t = totaux();
+  document.getElementById("t-passages").textContent = t.passages;
+  document.getElementById("t-ht").textContent = euros(t.ht);
+  document.getElementById("t-tva").textContent = euros(t.tva);
+  document.getElementById("t-ttc").textContent = euros(t.ttc);
+
+  const { n, base, derniere } = mensualites(t.ht);
+  document.getElementById("conseq-mois").textContent = t.ht === 0 ? "Rien à facturer."
+    : derniere === base ? `${n} facture${n > 1 ? "s" : ""} de ${euros(base)} HT, le 1er de chaque mois.`
+    : `${n - 1} facture${n > 2 ? "s" : ""} de ${euros(base)} HT et une de ${euros(derniere)}, le 1er de chaque mois.`;
+
+  const montants = [];
+  c.prestations.filter(complete).forEach((p) => { for (let i = 0; i < passagesDe(p); i++) montants.push(p.prix); });
+  const min = Math.min(...montants), max = Math.max(...montants);
+  document.getElementById("conseq-passage").textContent = montants.length === 0 ? "Rien à facturer."
+    : min === max ? `${montants.length} factures de ${euros(min)} HT, le jour du compte rendu.`
+    : `${montants.length} factures, de ${euros(min)} à ${euros(max)} HT, le jour du compte rendu.`;
+
+  document.getElementById("auto").hidden = c.facturation !== "passage";
+  document.getElementById("avec-compte-rendu").setAttribute("aria-checked", String(c.avecCompteRendu));
+  document.getElementById("auto-dit").textContent = c.avecCompteRendu
+    ? "Un seul geste : le compte rendu part, la facture part avec."
+    : "Vous l'envoyez vous-même après chaque passage.";
+  document.querySelectorAll("#facturation button").forEach((b) =>
+    b.setAttribute("aria-pressed", String(b.dataset.fact === c.facturation)));
+
+  // Ce qui manque se dit AVANT l'appui, jamais après.
+  const manques = c.prestations.filter((p) => !complete(p)).map((p) => p.libelle);
+  const envoyer = document.getElementById("envoyer");
+  const manque = document.getElementById("manque");
+  if (c.prestations.length === 0) {
+    envoyer.disabled = true; manque.hidden = false; manque.textContent = "Ajoutez une prestation.";
+  } else if (manques.length) {
+    envoyer.disabled = true; manque.hidden = false;
+    manque.textContent = `À compléter : ${manques.join(", ")}.`;
+  } else { envoyer.disabled = false; manque.hidden = true; }
+}
+
+function dessinerModele() {
+  const z = document.getElementById("liste-modele");
+  const pris = new Set(c.prestations.map((p) => p.libelle));
+  let html = `<div class="ecrire">
+      <input id="presta-libre" maxlength="${MAX_LIBELLE}" placeholder="Écrire une prestation" aria-label="Écrire une prestation" autocomplete="off">
+      <button type="button" id="ajouter-libre" disabled>Ajouter</button>
+    </div>`, fam = null;
+  MODELE.forEach(([f, l]) => {
+    if (f !== fam) { html += `<p class="fam">${f}</p>`; fam = f; }
+    html += `<button type="button" data-prendre="${l}" ${pris.has(l) ? "disabled" : ""}>${l}</button>`;
+  });
+  z.innerHTML = html;
+}
+
+/* ─── Dessin du planning ─────────────────────────────────────────────── */
+// Avril 2027 commence un jeudi.
+const PREMIER_JOUR = 3; // lundi 0
+function dessinerPlanning() {
+  // Rien n'entre au planning avant son accord.
+  const aPoser = c.etat !== "accepte" ? [] : passagesDuMois(AVRIL, 2027).flatMap((p) =>
+    Array.from({ length: p.fois }, (_, i) => ({ cle: `${p.id}-${i}`, id: p.id, libelle: p.libelle })));
+  const restants = aPoser.filter((x) => !c.poses[x.cle]);
+  const posesParJour = {};
+  Object.entries(c.poses).forEach(([cle, j]) => { (posesParJour[j] ||= []).push(cle); });
+
+  const cases = [];
+  for (let i = 0; i < PREMIER_JOUR; i++) cases.push(null);
+  for (let j = 1; j <= 30; j++) cases.push(j);
+  while (cases.length % 7) cases.push(null);
+  let html = "";
+  for (let s = 0; s < cases.length; s += 7) {
+    html += `<div class="sem">${cases.slice(s, s + 7).map((j, k) => {
+      if (j === null) return `<span class="jour vide"></span>`;
+      const we = k >= 5;
+      const plein = !!posesParJour[j];
+      return `<button type="button" class="jour${we ? " we" : ""}${c.enMain ? " cible" : ""}${c.jourTouche === j ? " touche" : ""}" data-jour="${j}" aria-label="${jourSemaine(j)} ${j} avril">
+        <div class="n">${j}</div><div class="b${plein ? " plein" : ""}"></div><div class="b"></div></button>`;
+    }).join("")}</div>`;
+  }
+  document.getElementById("calendrier").innerHTML = html;
+
+  const pose = document.getElementById("pose");
+  const derniers = Object.entries(c.poses).sort((a, b) => a[1] - b[1]);
+  pose.innerHTML = derniers.length === 0 ? ""
+    : derniers.map(([cle, j]) => {
+        const p = c.prestations.find((x) => String(x.id) === cle.split("-")[0]);
+        return `<b>${jourSemaine(j)} ${j} avril</b>, Mme Costa, ${p ? p.libelle.toLowerCase() : ""}`;
+      }).join("<br>");
+
+  const poignee = document.getElementById("poignee");
+  if (c.enMain) {
+    poignee.className = "poignee or";
+    poignee.textContent = "Touchez un jour pour le poser";
+  } else if (c.jourTouche && restants.length) {
+    poignee.className = "poignee or";
+    poignee.textContent = `À poser sur ${jourSemaine(c.jourTouche).toLowerCase()} ${c.jourTouche} avril`;
+  } else {
+    poignee.className = "poignee";
+    poignee.textContent = restants.length ? "1 client sans date" : "Aucun client sans date";
+  }
+
+  const sd = document.getElementById("sans-date");
+  if (c.etat !== "accepte") {
+    sd.innerHTML = `<p class="rien">Rien. Le contrat n'est pas encore accepté.</p>`;
+    return;
+  }
+  // Une ligne par prestation, comme une moitié rendue : le client, et ce qui reste à poser.
+  const parPresta = {};
+  restants.forEach((x) => { (parPresta[x.id] ||= { libelle: x.libelle, cles: [] }).cles.push(x.cle); });
+  const lignes = Object.entries(parPresta);
+  sd.innerHTML = lignes.length === 0 ? `<p class="rien">Tout avril est posé.</p>`
+    : lignes.map(([id, v]) => `
+      <button type="button" class="ligne" data-prendre-passage="${v.cles[0]}" aria-pressed="${c.enMain === v.cles[0]}">
+        <span class="nom">Mme Costa</span>
+        <span class="q">${c.enMain === v.cles[0] ? "touchez un jour" : `${v.libelle}<br>${v.cles.length} à poser`}</span>
+      </button>`).join("");
+}
+function jourSemaine(j) {
+  return ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"][(PREMIER_JOUR + j - 1) % 7];
+}
+
+/* ─── Navigation ─────────────────────────────────────────────────────── */
+function aller(ecran) {
+  ["client", "contrat", "apercu", "planning"].forEach((e) => {
+    document.getElementById(`ecran-${e}`).hidden = e !== ecran;
+  });
+  if (ecran === "client") dessinerFiche();
+  if (ecran === "contrat") { dessinerPrestations(); dessinerPeriode(); dessinerTotaux(); }
+  if (ecran === "planning") dessinerPlanning();
+  document.querySelector(".tel").scrollIntoView({ block: "start" });
+}
+
+document.addEventListener("click", (e) => {
+  const cible = e.target.closest("[data-aller]");
+  if (cible) { aller(cible.dataset.aller); return; }
+
+  const presta = e.target.closest(".presta");
+  if (presta) {
+    const p = c.prestations.find((x) => x.id === Number(presta.dataset.id));
+    const m = e.target.closest("[data-mois]");
+    if (m) {
+      const n = Number(m.dataset.mois);
+      p.mois = p.mois.includes(n) ? p.mois.filter((x) => x !== n) : [...p.mois, n].sort((a, b) => a - b);
+      m.setAttribute("aria-pressed", String(p.mois.includes(n)));
+      sommeDe(p); dessinerTotaux(); return;
+    }
+    const f = e.target.closest("[data-fois]");
+    if (f) {
+      p.fois = Math.min(MAX_PAR_MOIS, Math.max(1, p.fois + Number(f.dataset.fois)));
+      presta.querySelector("[data-nb-fois]").textContent = p.fois;
+      presta.querySelector('[data-fois="-1"]').disabled = p.fois <= 1;
+      presta.querySelector('[data-fois="1"]').disabled = p.fois >= MAX_PAR_MOIS;
+      sommeDe(p); dessinerTotaux(); return;
+    }
+    const r = e.target.closest("[data-retirer]");
+    if (r) { c.prestations = c.prestations.filter((x) => x !== p); dessinerPrestations(); dessinerTotaux(); dessinerModele(); return; }
+  }
+
+  if (e.target.closest("#ajouter")) {
+    const l = document.getElementById("liste-modele");
+    l.hidden = !l.hidden; dessinerModele(); return;
+  }
+  if (e.target.closest("#ajouter-libre")) { ajouterLibre(); return; }
+  const prendre = e.target.closest("[data-prendre]");
+  if (prendre) {
+    const [famille, libelle] = MODELE.find(([, l]) => l === prendre.dataset.prendre);
+    c.prestations.push({ id: prochainId++, famille, libelle, mois: [], fois: 1, prix: null });
+    document.getElementById("liste-modele").hidden = true;
+    dessinerPrestations(); dessinerTotaux(); return;
+  }
+
+  const fact = e.target.closest("[data-fact]");
+  if (fact) { c.facturation = fact.dataset.fact; dessinerTotaux(); return; }
+
+  const duree = e.target.closest("[data-duree]");
+  if (duree) {
+    c.dureeMois = Math.min(DUREE_MAX, Math.max(1, c.dureeMois + Number(duree.dataset.duree)));
+    rafraichirContrat(); return;
+  }
+
+  if (e.target.closest("#avec-compte-rendu")) { c.avecCompteRendu = !c.avecCompteRendu; dessinerTotaux(); return; }
+
+  if (e.target.closest("#reconduit")) {
+    c.reconduit = !c.reconduit;
+    document.getElementById("reconduit").setAttribute("aria-checked", String(c.reconduit)); return;
+  }
+
+  if (e.target.closest("#envoyer")) { c.etat = "envoye"; aller("client"); return; }
+
+  const pp = e.target.closest("[data-prendre-passage]");
+  if (pp) {
+    if (c.jourTouche) { poser(pp.dataset.prendrePassage, c.jourTouche); return; }
+    c.enMain = c.enMain === pp.dataset.prendrePassage ? null : pp.dataset.prendrePassage; dessinerPlanning(); return;
+  }
+
+  const jour = e.target.closest("[data-jour]");
+  if (jour) {
+    const j = Number(jour.dataset.jour);
+    if (c.enMain) { poser(c.enMain, j); return; }
+    c.jourTouche = c.jourTouche === j ? null : j; dessinerPlanning();
+  }
+});
+
+// Les deux ordres mènent ici : le client puis le jour, ou le jour puis le client.
+function poser(cle, j) {
+  c.poses[cle] = j;
+  c.enMain = null; c.jourTouche = null;
+  dessinerPlanning();
+}
+
+// Le libellé tapé, nettoyé comme la fiche d'entretien le nettoie (`libelleNettoye`).
+function libelleTape() {
+  const champ = document.getElementById("presta-libre");
+  return champ ? champ.value.replace(/\s+/g, " ").trim().slice(0, MAX_LIBELLE) : "";
+}
+function ajouterLibre() {
+  const libelle = libelleTape();
+  if (!libelle) return;
+  c.prestations.push({ id: prochainId++, famille: "", libelle, mois: [], fois: 1, prix: null });
+  document.getElementById("liste-modele").hidden = true;
+  dessinerPrestations(); dessinerTotaux();
+}
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && e.target.id === "presta-libre") { e.preventDefault(); ajouterLibre(); }
+});
+
+// Tout ce qui dépend de la période : chaque ligne, les totaux, la période écrite.
+function rafraichirContrat() {
+  c.prestations.forEach((p) => sommeDe(p));
+  dessinerPeriode(); dessinerTotaux();
+}
+document.addEventListener("change", (e) => {
+  if (e.target.id === "debut-mois") { c.debut.mois = Number(e.target.value); rafraichirContrat(); }
+  if (e.target.id === "debut-annee") { c.debut.annee = Number(e.target.value); rafraichirContrat(); }
+});
+
+document.addEventListener("input", (e) => {
+  if (e.target.id === "presta-libre") { document.getElementById("ajouter-libre").disabled = !libelleTape(); return; }
+  if (!e.target.matches("[data-prix]")) return;
+  const presta = e.target.closest(".presta");
+  const p = c.prestations.find((x) => x.id === Number(presta.dataset.id));
+  p.prix = lireCentimes(e.target.value);
+  sommeDe(p); dessinerTotaux();
+});
+
+document.getElementById("recommencer").onclick = () => { c = DEPART(); prochainId = 5; aller("client"); };
+document.getElementById("bascule-nuit").onclick = (e) => {
+  const nuit = document.body.dataset.charte !== "nuit";
+  document.body.dataset.charte = nuit ? "nuit" : "origine";
+  e.currentTarget.setAttribute("aria-pressed", String(nuit));
+};
+
+aller("client");
+</script>
+</body>
+</html>

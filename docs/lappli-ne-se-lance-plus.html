@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — « L'appli ne se lance plus » — nuit du 30 au 31 août 2026</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="-lappli-ne-se-lance-plus---nuit-du-30-au-31-août-2026">« L'appli ne se lance plus » — nuit du 30 au 31 août 2026</h1>
+<h2 id="ce-qui-se-passait">Ce qui se passait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ton espace tournait, Atlas tournait dedans, et ton téléphone n'atteignait rien.</strong> Ce n'était ni le code, ni la construction, ni la mémoire : c'est l'adresse publique qui ne menait plus à l'application. GitHub avait perdu ton port 3000, et rien ne s'en apercevait.</p>
+<p>Le téléchargement que Safari te proposait au lieu de la page, c'est exactement ça : un refus de GitHub, sans contenu. Un navigateur enregistre ce qu'il ne sait pas afficher.</p>
+<h2 id="ce-que-tu-as-à-faire-demain">Ce que tu as à faire demain</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Rallume ton espace</strong> — github.com/codespaces. C'est tout.</p>
+<p>Le veilleur corrigé redemandera le port tout seul. S'il ne revient toujours pas, et seulement dans ce cas : onglet <strong>PORTS</strong> de l'éditeur → clic droit sur la ligne 3000 → la retirer → « Transférer un port » → 3000.</p>
+<h2 id="ce-qui-a-été-corrigé">Ce qui a été corrigé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Le port n'était demandé qu'une fois.</strong> Ton espace demandait l'ouverture du port au démarrage ; dès que GitHub répondait « c'est fait », il n'y revenait plus de la session. Or « c'est fait » ne veut pas dire « ça marche encore » : le port peut se perdre en cours de route, et c'est ce qui s'est produit.</p>
+<p>Il <strong>remesure</strong> maintenant, toutes les cinq minutes, depuis l'adresse que tu tapes sur ton téléphone. S'il ne s'atteint plus, il redemande.</p>
+<p><strong>Ta fiche d'état se contredisait</strong>, aussi, sur deux lignes voisines : « le serveur ne répond pas » juste au-dessus de « c'est le port ». Elle t'envoyait régler une visibilité qui n'aurait rien réparé. Elle nomme désormais la seule cause mesurée — et le téléchargement que tu vois.</p>
+<h2 id="ce-qui-a-été-vérifié-plutôt-que-supposé">Ce qui a été vérifié, plutôt que supposé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>le code de <code>main</code> se construit</td>
+<td><strong>oui</strong>, ici, sans une erreur</td>
+</tr>
+<tr>
+<td>ta construction</td>
+<td><strong>interrompue</strong>, pas cassée : ni mémoire ni disque en cause</td>
+</tr>
+<tr>
+<td>le correctif du veilleur</td>
+<td><strong>joué pour de bon</strong>, pas relu : un vrai veilleur, un vrai serveur, une sonde qui refuse</td>
+</tr>
+</tbody></table></div>
+<p>Rien n'était cassé dans l'application.</p>
+<h2 id="ce-que-javais-dabord-dit-et-qui-était-incomplet">Ce que j'avais d'abord dit, et qui était incomplet</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Ta fiche de 23 h 46 (heure de Paris) montrait un espace sans serveur, figée depuis 82 minutes : j'en ai conclu un espace éteint. C'était vrai de cet instant-là, et ça ne l'était plus une heure plus tard, quand la fiche est repartie en montrant un espace debout et un port perdu. C'est cette seconde lecture qui a donné la vraie cause.</p>
+<h2 id="ce-qui-nest-pas-réparé-et-qui-ne-peut-pas-lêtre">Ce qui n'est pas réparé, et qui ne peut pas l'être</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Un espace GitHub se met en veille tout seul après un moment sans activité. <strong>L'application ne peut pas rester debout pendant que tu dors.</strong> Ce banc sert à essayer ; ce n'est pas un hébergement.</p>
+<p>Ce que tu peux régler toi-même si les mises en veille te gênent : GitHub → Settings → Codespaces → « Default idle timeout », jusqu'à quatre heures. Cela ne couvre pas une nuit, mais cela évite qu'il s'éteigne pendant que tu es sur un chantier.</p>
+<p>Et si le relais a perdu le port pour de bon, la remesure le constate mais ne sait pas le réenregistrer : c'est le geste de l'onglet PORTS ci-dessus.</p>
+<h2 id="où-cest-écrit-dans-le-dépôt">Où c'est écrit dans le dépôt</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><code>ARCHITECTURE.md</code> §215 — le raisonnement complet et les pièges</li>
+<li><code>HANDOVER.md</code> — la signature « téléchargement au lieu de la page »</li>
+<li><code>scripts/port-joignable.mjs</code>, <code>.devcontainer/veiller.sh</code> — la remesure</li>
+<li><code>scripts/test-port-remesure.ts</code>, <code>scripts/test-verdict-port.ts</code>, <code>scripts/test-ouvrir-port.ts</code> — les contrôles, vus rouges contre l'ancienne version avant d'être crus</li>
+</ul>
+</main>
+</body>
+</html>

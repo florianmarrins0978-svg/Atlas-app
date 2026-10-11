@@ -1,54 +1,128 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { useAncrageDuGeste } from "@/components/atlas/useAncrageDuGeste";
 import Link from "next/link";
-import { getPlanificationEtat, trierParDatePlanifiee } from "@/lib/chantier-etat";
-import { estAuPlanning } from "@/lib/onglet-chantier";
-import { jourIso } from "@/lib/jour";
+import { getPlanificationEtat, poseSansAccord, trierParDatePlanifiee } from "@/lib/chantier-etat";
+import { useRouter } from "next/navigation";
+import { VALIDITE_LIEN_JOURS } from "@/lib/etat-envoi";
+import { lienDeRelecture } from "@/lib/retour-au-planning";
+import { estAuCalendrier } from "@/lib/onglet-chantier";
+import { dansDelaiRetractation, jourIso } from "@/lib/jour";
+import { retourDuJourAttendu } from "@/lib/retour-intervention";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { cheminAutorise, peutModifierLePlanning, type Role } from "@/lib/acces-roles";
-import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
-import MoisCharge, { fondDeLEtat } from "@/components/atlas/MoisCharge";
+import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
+import { colors, font, libelleCaps, surPlein, texteSituation, voile } from "@/lib/design-tokens";
+import TeteRonde from "@/components/atlas/TeteRonde";
+import MoisCharge, { styleDuCarre } from "@/components/atlas/MoisCharge";
+import CouleursDesEtats from "@/components/atlas/CouleursDesEtats";
+import { AUCUNE_COULEUR_CHOISIE, type CouleursPlanning } from "@/lib/couleurs-planning";
+import type { NomCharte } from "@/lib/chartes";
+import CouleursDuPlanning from "./CouleursDuPlanning";
 import {
   cleCreneau,
-  creneauxDuChantier,
-  DUREE_PAR_DEFAUT_DEMI_JOURNEES,
+  creneauxPoses,
+  dureeDuChantier,
+  type Creneau,
   type JourIso,
-} from "@/server/disponibilites";
+} from "@/lib/disponibilites";
+import { demiJourneesAPoser } from "@/lib/creneaux-chantier";
 import { fusionnerAbsences, type AbsenceEquipe } from "@/lib/absences-equipe";
 import {
+  cocheRefusee,
+  joursDeLaPastille,
+  type ChantierPourAbsence,
+} from "@/lib/equipe-absente";
+import { noterAbsenceAction, retirerAbsenceAction } from "@/app/reglages/actions";
+import { masquerRappelAgendaAction } from "@/app/reglages/agenda/actions";
+import type { BandeauAgenda } from "@/lib/agenda-externe";
+
+/**
+ * Une absence, telle que le PLANNING en a besoin.
+ *
+ * `AbsenceEquipe` — ce que lit le calcul de disponibilité — ne porte que
+ * l'équipe et les dates. L'écran, lui, a besoin de deux choses de plus :
+ * l'`id` pour retirer la ligne d'un appui, et le `rang` pour écrire le NOM de
+ * la personne au lieu d'un numéro.
+ */
+export type AbsenceDuPlanning = AbsenceEquipe & { id: string; rang: number };
+import { communeDeLAdresse } from "@/lib/commune-adresse";
+import {
+  jourAbrege,
   jourLisibleCourt,
   MOIS_LONGS,
 } from "@/lib/mois";
 import {
   blocsDeLaJournee,
+  rangDeLaFiche,
+  ficheOuverteDOffice,
   DEMIS,
   ditLeCompteDemi,
   ditLaDuree,
   ditQuiPart,
   etatDemi,
   MOT_DEMI,
-  MOT_QUAND,
-  quandDuChantier,
   occupationDemi,
   type Demi,
   type EtatDemi,
-  type QuandChantier,
 } from "@/lib/planning-jour";
 import { equipesMobilisees, libelleSalarie, salariesAffiches } from "@/lib/equipes";
+import TravauxAFaire from "./TravauxAFaire";
+import { avecCivilite } from "@/lib/civilite";
+import { DatesAEnvoyer, DatesEnAttente, type DonneesDatesDuMois } from "./DatesDuMois";
+import { datesDuMois as grouperLesDatesDuMois, type EnvoiDesDates } from "@/lib/dates-du-mois";
+import FicheDeSecurite from "./FicheDeSecurite";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
+import { ChampRecherche } from "@/components/atlas/ChampRecherche";
+import PortesDuChantier from "./PortesDuChantier";
+import { chantierDemandeAuPlanning, PARAM_CHANTIER_PLANNING } from "@/lib/lien-planning";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
+import QuestionDeSuppression from "./QuestionDeSuppression";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { lienAppel, liensItineraire } from "@/lib/itineraire";
 import type { FeuilleDuChantier } from "@/server/repositories/devis";
+
+/**
+ * La feuille d’un chantier, et combien de retours il a déjà envoyés.
+ *
+ * **Les deux voyagent ensemble** : la fiche dit « 2 retours envoyés » sous le
+ * bandeau fermé, dès l’ouverture — pas seulement dans la session où l’on a
+ * appuyé. Un chantier de huit jours en envoie un chaque soir (19 septembre 2026).
+ */
+type FeuilleEtRetour = FeuilleDuChantier & { retours: number; dernierRetourLe: string | null };
 import { NOTE_MAX } from "@/lib/note-chantier";
+// **Les types se prennent par `import type`, jamais dans l'import des actions.**
+// Un fichier « use server » réexporté par Next ne laisse survivre que des
+// valeurs ; un nom de type y meurt à l'évaluation et emporte TOUTES les actions
+// de l'écran (`scripts/test-actions-serveur-sans-export-de-type.ts`).
+import type { ClientProposé, QuandPoser } from "./actions";
+import {
+  ceQueLeJourPorte,
+  momentsOfferts,
+  type MomentDArrivee,
+} from "@/lib/creneaux-chantier";
 import {
   basculerEquipeAction,
-  deplacerChantierAction,
+  reposerDemiJourneeAction,
+  deplacerCeQueLeJourPorteAction,
+  chercherDesClientsAction,
+  poserUnClientAction,
+  poserDuTempsAction,
   ecrireNoteChantierAction,
   deplanifierChantierAction,
   planifierChantierAction,
+  poserALaPlaceAction,
+  relancerLeDevisExpireAction,
+  relireLeDevisExpireAction,
   supprimerChantierAction,
   tachesDuChantierAction,
 } from "./actions";
@@ -80,7 +154,7 @@ import {
  * (`CLAUDE.md` §3). Cet écran affiche ce qu'il rend.
  */
 
-type EquipesParDemi = { matin: number[]; apres_midi: number[] };
+import { equipesDuJour, type EquipesDuChantier } from "@/lib/equipes-par-jour";
 
 /**
  * Un chantier tel que le planning le lit — la forme rendue par
@@ -98,9 +172,23 @@ export type ChantierPlanning = {
   datePlanifiee: string | null;
   creneauDebut: string | null;
   dureeDemiJournees: number | null;
+  /**
+   * LES DEMI-JOURNÉES OÙ IL EST POSÉ, quand il ne tient plus en un bloc
+   * (migration 0085, sa demande du 10 septembre 2026).
+   *
+   * **Vide vaut le bloc calculé de `datePlanifiee` + `creneauDebut` + la
+   * durée** : rien n'a été recopié à la migration, et lire « aucun créneau »
+   * comme « rien d'occupé » viderait le calendrier de tout ce qui est déjà pris.
+   */
+  creneaux?: readonly { jour: string; moment: "matin" | "apres_midi" }[] | null;
   dureePrevue?: string | null;
-  /** Les rangs d'équipe cochés, demi-journée par demi-journée (migration 0058). */
-  equipes: EquipesParDemi;
+  /**
+   * Les rangs d'équipe cochés, demi-journée par demi-journée (migration 0058)
+   * — et JOUR PAR JOUR depuis la migration 0093 (sa plainte du 15 septembre
+   * 2026). **Pour un jour donné, on lit `equipesDuJour(c.equipes, jour)`** ;
+   * `matin` / `apres_midi` disent qui vient au moins un jour.
+   */
+  equipes: EquipesDuChantier;
   /** L'adresse du chantier, telle qu'elle est en base — jamais devinée. */
   adresseChantier?: string | null;
   /**
@@ -117,14 +205,11 @@ export type ChantierPlanning = {
   envoiReponse: "acceptee" | "refusee" | null;
   termineAt: Date | string | null;
   factureEnvoyeeAt: Date | string | null;
+  /** Un passage de contrat d'entretien, et sa clé, qui dit son mois (0107). */
+  contratEntretienId?: string | null;
+  contratPassage?: string | null;
 };
 
-export type EtatAgendaPlanning = {
-  configure: boolean;
-  relie: boolean;
-  actif: boolean;
-  enPanne: boolean;
-};
 
 // ─── Les dates, comme la planche les calcule ──────────────────────────────
 const enDate = (iso: JourIso) => new Date(`${iso}T12:00:00Z`);
@@ -135,22 +220,134 @@ function lundiDe(iso: JourIso): JourIso {
   return d.toISOString().slice(0, 10);
 }
 
+/**
+ * Combien de jours la liste montre quand on l ouvre en grand.
+ *
+ * **Sept, et non six.** Ses exemples du 9 septembre en donnaient six — « du 8
+ * au 13 » — mais une fenetre de sept jours porte une semaine entiere : quel
+ * que soit le jour ou il ouvre l appli, il voit le meme jour de la semaine
+ * suivante. A six, le lundi ne voit jamais le lundi.
+ */
+const JOURS_DE_LA_FENETRE = 7;
+
 function plusDeJours(iso: JourIso, n: number): JourIso {
   const d = enDate(iso);
   d.setUTCDate(d.getUTCDate() + n);
   return d.toISOString().slice(0, 10);
 }
 
-/** Les créneaux qu'occupe un chantier posé — week-ends sautés. */
+/**
+ * Les créneaux qu'occupe un chantier posé — **ceux qu'il porte**, sinon son bloc.
+ *
+ * **Il recalculait le bloc, et c'est la capture qui l'a montré** (10 septembre
+ * 2026) : un chantier d'une journée dont on rend le matin garde sa durée et
+ * repart de l'après-midi — le bloc de deux demi-journées débordait alors sur le
+ * MATIN DU LENDEMAIN, qui se noircissait au calendrier. Le jour d'après passait
+ * pour occupé par un chantier qui n'y est pas, et l'écran d'envoi le retirait
+ * des dates proposées au client.
+ *
+ * `creneauxPoses` est la seule réponse à « quelles demi-journées prend-il »
+ * (`src/lib/disponibilites.ts`) : le repli sur le bloc y vit déjà, pour les
+ * chantiers d'avant la migration 0085 qui n'ont pas de créneaux écrits.
+ */
 function creneauxDe(c: ChantierPlanning) {
   if (!c.datePlanifiee) return [];
-  return creneauxDuChantier(
-    {
-      jour: c.datePlanifiee,
-      moment: c.creneauDebut === "apres_midi" ? "apres_midi" : "matin",
-    },
-    c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES
+  return creneauxPoses({
+    jour: c.datePlanifiee,
+    moment: c.creneauDebut === "apres_midi" ? "apres_midi" : "matin",
+    dureeDemiJournees: c.dureeDemiJournees,
+    creneaux: c.creneaux as Creneau[] | undefined,
+  });
+}
+
+/**
+ * CE QU'UNE FICHE DE JOUR TIENT OUVERT — un seul geste à la fois.
+ *
+ * `cle` dit DANS QUELLE carte : la fiche du jour est rendue à deux endroits —
+ * sous le calendrier et sous une ligne des planifiés — et c'est le même
+ * composant, écrit une fois. Sans elle, deux listes s'ouvrent ensemble et l'on
+ * coche dans l'une en croyant agir sur l'autre.
+ *
+ * **Les trois temps de « Ajouter » — 10 septembre 2026.** Sa planche
+ * `appli/bloquer-sans-devis.html` : le geste propose d'abord DEUX voies, puis
+ * l'une ou l'autre. « Annuler » ramène aux deux voies, à chaque étape.
+ */
+export type OuvertDansLaCarte =
+  | { quoi: "equipe"; cle: string; chantierId: string; demi: Demi }
+  // **`demi` a disparu d'ici le 3 septembre 2026, et c'est un nettoyage, pas
+  // une perte.** Il n'existait que pour empêcher la liste des trois moments de
+  // s'ouvrir dans les DEUX lignes d'un chantier à la journée — six boutons pour
+  // un seul geste.
+  // ─── LES DEUX TEMPS DE « DÉPLACER » — 17 septembre 2026 ─────────────────
+  //
+  // **Sa demande :** *« lorsque je clique sur déplacer ça me fait apparaître le
+  // planning et je sélectionne un jour et le matin ou l'aprem ou journée pour
+  // réellement déplacer mon client, parce que là c'est trop de clics à faire »*.
+  // Puis, sur la planche : *« je choisis la deux, le planning au-dessus, et la
+  // A : on déplace que la demi-journée du jour sélectionné »*.
+  //
+  // `jourSource` est porté par l'état, pas relu de la carte : pendant le geste
+  // il change de mois, et la carte du jour de départ n'est plus à l'écran.
+  | { quoi: "deplacer"; cle: string; chantierId: string; jourSource: JourIso }
+  | {
+      quoi: "deplacer-quand";
+      cle: string;
+      chantierId: string;
+      jourSource: JourIso;
+      vers: JourIso;
+    }
+  // **« ajout-quand » a disparu le 9 septembre 2026** : un second temps qui
+  // demandait « Matin, Après-midi ou Journée » après avoir touché le nom du
+  // chantier. La durée étant déjà en base, la question n'ajoutait rien et
+  // écrasait ce que le devis avait fixé (voir `poser`).
+  | { quoi: "ajout-voies"; cle: string }
+  | { quoi: "ajout-qui"; cle: string }
+  | { quoi: "ajout-client"; cle: string }
+  // **Le client qui n'arrive pas à choisir ses dates** — son choix B du
+  // 7 octobre 2026 : on le pose, puis l'on dit comment il signe.
+  | { quoi: "ajout-signature"; cle: string; chantierId: string }
+  // **Un devis expiré qui revient** — sa demande du 7 octobre 2026 : sa porte
+  // à part, puis le choix (relire, renvoyer, poser), puis comment il signe.
+  | { quoi: "ajout-expire"; cle: string }
+  | { quoi: "ajout-relance"; cle: string; chantierId: string; etape: "choix" | "signe" }
+  // **La banque, une livraison, une formation** — sa réponse du 10 septembre
+  // 2026 à la question que sa propre correction avait ouverte.
+  | { quoi: "ajout-temps"; cle: string };
+
+/**
+ * CE QUE LE CHANTIER OCCUPE ENCORE — et non ce qu'il demande.
+ *
+ * **La planche `appli/liberer-une-demi-journee.html` compte les demi-journées
+ * POSÉES**, et elle a raison : une fois le matin rendu, lire « une journée »
+ * sous le nom pendant que le tiroir annonce « ½ journée à poser » fait une
+ * journée et demie pour un chantier d'un jour. Deux vérités à trois
+ * centimètres, c'est ce qu'il a photographié le 7 septembre 2026.
+ *
+ * **Sa durée, elle, ne bouge pas** : c'est ce que le devis a vendu, et c'est
+ * l'écart entre les deux qui fait apparaître le morceau en bas.
+ *
+ * Tant qu'aucune date n'est posée, il n'occupe rien : c'est alors sa durée
+ * qu'on annonce, faute d'autre chose à dire.
+ */
+/**
+ * « PAS ENCORE SIGNÉ », sous la durée — son choix B du 7 octobre 2026.
+ *
+ * Il l'a posé lui-même, le client n'a pas encore accepté sur son lien. Un
+ * chantier posé ne doit jamais se lire comme un chantier vendu. La règle vit
+ * dans `poseSansAccord`, l'écran ne fait que la montrer.
+ */
+function PasEncoreSigne({ chantier }: { chantier: ChantierPlanning }) {
+  if (!poseSansAccord(chantier)) return null;
+  return (
+    <span data-atlas="pas-encore-signe" className="block text-[12.5px]" style={{ color: colors.muted }}>
+      Pas encore signé
+    </span>
   );
+}
+
+function ditCeQuIlOccupe(c: ChantierPlanning): string {
+  const poses = creneauxDe(c).length;
+  return ditLaDuree(poses > 0 ? poses : dureeDuChantier(c));
 }
 
 export default function PlanningClient({
@@ -158,9 +355,15 @@ export default function PlanningClient({
   nombreEquipes = 1,
   nombreSalaries = 0,
   equipesNommees = [],
-  agenda = { configure: false, relie: false, actif: false, enPanne: false },
+  bandeauAgenda = null,
   absences = [],
   role = null,
+  chantierDemande = null,
+  relanceDemandee = null,
+  retourDuJour = { demande: false, envoyes: [] },
+  datesDuMois = null,
+  couleurs = AUCUNE_COULEUR_CHOISIE,
+  nomCharte = null,
 }: {
   initialChantiers: ChantierPlanning[];
   /** La CAPACITÉ : combien de chantiers tiennent dans une journée. */
@@ -174,8 +377,13 @@ export default function PlanningClient({
    * n'a pas.
    */
   nombreSalaries?: number;
-  equipesNommees?: { rang: number; nom: string | null }[];
-  agenda?: EtatAgendaPlanning;
+  equipesNommees?: { rang: number; nom: string | null; photo?: string | null }[];
+  /**
+   * Ce que le haut de l'écran dit de l'agenda, décidé par
+   * `bandeauAgendaDuPlanning` (`src/lib/agenda-externe.ts`) : une panne, une
+   * proposition de relier, ou rien.
+   */
+  bandeauAgenda?: BandeauAgenda;
   /**
    * Les équipes qui ne sont pas là (14 août 2026, `ARCHITECTURE.md` §109).
    *
@@ -183,7 +391,12 @@ export default function PlanningClient({
    * calendrier montrerait un jour libre que l'écran d'envoi refuserait au
    * client — deux vérités sur la même capacité, sur deux écrans qui se suivent.
    */
-  absences?: AbsenceEquipe[];
+  /**
+   * Les absences de la fenêtre — avec leur `id` et le `rang` de la personne
+   * depuis le 6 septembre 2026, pour que le planning puisse fermer et rouvrir
+   * un jour sans quitter l'écran (`ARCHITECTURE.md` §267).
+   */
+  absences?: AbsenceDuPlanning[];
   /**
    * Le RÔLE de la personne, résolu au serveur (`src/app/planning/page.tsx`).
    *
@@ -198,10 +411,58 @@ export default function PlanningClient({
    * même serait un mensonge, et l'inverse une panne (`CLAUDE.md` §3).
    */
   role?: Role | null;
+  /**
+   * Le chantier sur lequel ouvrir — `?chantier=<id>`, lu au serveur.
+   *
+   * **Sa réponse du 4 septembre 2026 : « sa journée ».** Un chantier posé
+   * n'a plus d'écran à lui (`ARCHITECTURE.md` §254) ; le déposer sur le mois
+   * courant, à lui de retrouver sa ligne, c'est l'errance du 8 août 2026.
+   *
+   * **Un identifiant qui ne désigne rien de VISIBLE ne fait rien** : ni
+   * erreur, ni écran vide. Un signet dont le chantier a été retiré ouvre le
+   * planning du jour, ce qui n'est pas une panne.
+   */
+  chantierDemande?: string | null;
+  /**
+   * Le retour de la relecture d'un devis expiré (`lienRetourDeRelecture`) : ce
+   * jour s'ouvre, à la question de la signature de ce chantier.
+   */
+  relanceDemandee?: { chantierId: string; jour: string } | null;
+  /**
+   * « Retour à envoyer » sous le chantier du jour, sa planche du 26 septembre
+   * 2026 (réponse A). `demande` est déjà tranché au serveur : le réglage
+   * allumé, la formule qui porte les retours, et une personne qui peut en
+   * poser un. `envoyes` : les chantiers dont le retour d'aujourd'hui est parti.
+   */
+  retourDuJour?: { demande: boolean; envoyes: readonly string[] };
+  /**
+   * LES DATES DU MOIS DES CONTRATS (planche 130) : les envois partis, de quoi
+   * joindre chaque client, l'adresse du lien. NULL pour qui ne pose pas le
+   * planning : rien de tout cela ne descend chez lui.
+   */
+  datesDuMois?: DonneesDatesDuMois | null;
+  /** Les couleurs du planning de l'entreprise (migration 0113), et l'apparence de la personne. */
+  couleurs?: CouleursPlanning;
+  nomCharte?: NomCharte | null;
 }) {
+  // **L'état vit ici** : le mois, la légende et la fiche du jour se repeignent
+  // pendant qu'il choisit, avant même que la base ait répondu.
+  const [couleursVues, setCouleursVues] = useState(couleurs);
   // Les deux portes que cet écran propose, décidées par la règle des rôles —
   // jamais par une liste écrite ici. Sans rôle (cas d'un rendu hors session),
   // on ne retire rien : l'écran est celui d'avant ce lot.
+  // Masquée, la phrase part À L'INSTANT, sans attendre le serveur : il l'a
+  // écartée d'un doigt, la voir rester une seconde se lirait comme un refus.
+  // Le serveur l'écrit pour toujours ; s'il refuse, la raison est journalisée,
+  // et la phrase reviendra au prochain chargement, ce qui dit vrai.
+  const [rappelMasque, setRappelMasque] = useState(false);
+  const masquerLeRappel = () => {
+    setRappelMasque(true);
+    void masquerRappelAgendaAction().then((r) => {
+      if (!r.ok) console.error("[planning] masquer la phrase de l'agenda :", r.motif);
+    });
+  };
+
   const ouvertes = {
     fiche: role === null || cheminAutorise(role, "/chantiers"),
     agenda: role === null || cheminAutorise(role, "/reglages/agenda"),
@@ -225,16 +486,74 @@ export default function PlanningClient({
   const [chantiers, setChantiers] = useState<ChantierPlanning[]>(initialChantiers);
   const aujourdHui = jourIso(new Date());
 
+  /**
+   * ─── ARRIVER PAR `?chantier=<id>` : SA JOURNÉE, PORTES LEVÉES ──────────────
+   *
+   * **Sa réponse du 4 septembre 2026.** C'est ce qui permet à la fiche du
+   * chantier de partir (`ARCHITECTURE.md` §254) : elle était le seul endroit où
+   * retomber une fois la date posée, puisqu'un chantier posé quitte l'onglet
+   * « Chantiers » (`onglet-chantier.ts`).
+   *
+   * **Il se lit DANS L'ÉTAT DE DÉPART, pas dans un effet.** Un effet aurait
+   * peint le mois courant, puis sauté sur le bon — une cascade de rendus que
+   * l'œil voit, et que le lint refuse à juste titre. Le paramètre vient du
+   * serveur : il est là au premier rendu, il n'y a rien à attendre.
+   *
+   * **Introuvable, ou retiré : on ne dit rien.** Le planning du jour s'ouvre
+   * normalement — un signet dont le chantier a été supprimé n'est pas une
+   * panne, et une page d'erreur le lui ferait croire.
+   */
+  const viseDemande = chantierDemande
+    ? (initialChantiers.find((c) => c.id === chantierDemande) ?? null)
+    : null;
+  /** Le jour sur lequel le calendrier s'ouvre : le sien, sinon aujourd'hui. */
+  const jourDArrivee = viseDemande?.datePlanifiee ?? (relanceDemandee?.jour as JourIso | undefined) ?? aujourdHui;
+
   const [curseur, setCurseur] = useState(() => {
-    const d = enDate(aujourdHui);
+    const d = enDate(jourDArrivee as JourIso);
     return { annee: d.getUTCFullYear(), mois: d.getUTCMonth() };
   });
-  const [jourTouche, setJourTouche] = useState<JourIso | null>(null);
-  const [lundi, setLundi] = useState<JourIso>(() => lundiDe(aujourdHui));
+  const [jourTouche, setJourTouche] = useState<JourIso | null>((relanceDemandee?.jour as JourIso | undefined) ?? null);
+  /**
+   * ─── LA LISTE PART DU JOUR, ET NON DU LUNDI — sa demande du 9 septembre 2026
+   *
+   * *« Les jours du planning doivent avancer chaque jour : quand on est le 8,
+   * c'est du 8 au 13 ; le 9, du 9 au 14. Et pour voir apparaître les jours
+   * grisés en bas, il faut appuyer sur la flèche retour arrière. »*
+   *
+   * **Ce que cette fenêtre glissante RÉPARE, et c'est lui qui l'a vu :** la
+   * semaine du lundi mettait des journées DÉJÀ FAITES en tête de liste, avec la
+   * même pastille et la même encre que celles à venir. Le salarié qui ouvre
+   * l'appli le matin y lisait un chantier de plus à faire. Une fenêtre qui part
+   * d'aujourd'hui n'en contient aucune ; celles qu'on va chercher avec la
+   * flèche arrivent éteintes.
+   */
+  const [debutFenetre, setDebutFenetre] = useState<JourIso>(jourDArrivee as JourIso);
+  /**
+   * **Ce qu'on regarde : la journée, ou les sept jours.** Sa demande du même
+   * jour : *« qu'on ait seulement la journée d'aujourd'hui, pour avoir moins
+   * d'informations ; néanmoins, en un clic, le visuel de la semaine »*. La
+   * journée est le défaut à chaque arrivée sur l'écran — c'est ce qu'il a
+   * demandé, et c'est ce que le salarié cherche à sept heures du matin.
+   */
+  const [portee, setPortee] = useState<"jour" | "semaine">("jour");
+  /** D'où le doigt est parti — `null` tant qu'aucun balayage n'est en cours. */
+  const departBalayage = useRef<{ x: number; y: number } | null>(null);
+
+  /**
+   * Passer de la journée aux sept jours, et l'inverse.
+   *
+   * **Revenir sur la journée REPART d'aujourd'hui.** Sans cela, celui qui a
+   * reculé de trois fenêtres retomberait sur une journée d'il y a trois
+   * semaines sans comprendre pourquoi — et il la lirait comme la sienne.
+   */
+  function allerVers(quoi: "jour" | "semaine") {
+    setPortee(quoi);
+    if (quoi === "jour") setDebutFenetre(aujourdHui);
+  }
   const [, enTransition] = useTransition();
 
   const grilleRef = useRef<HTMLDivElement>(null);
-  const carteRef = useRef<HTMLDivElement>(null);
   /**
    * **Ce qu'il touche ne doit pas lui échapper.** Ouvrir une fiche en referme
    * une autre ; si celle-ci était plus haut, tout remonte de sa hauteur et la
@@ -251,14 +570,54 @@ export default function PlanningClient({
    * et le geste vit sur « Sans date » — la seule liste où l'on se débarrasse
    * d'un chantier plutôt que de le poser.
    */
-  const retraits = useRetraits({ valider: (id) => supprimerChantierAction(id) });
+  const retraits = useRetraits({
+    valider: async (id) => {
+      const resultat = await supprimerChantierAction(id);
+      // **Sa plainte du 12 septembre 2026**, et c'est cette ligne qui manquait.
+      //
+      // La liste de cet écran vit dans un `useState` : aucun rendu du serveur
+      // ne la rattrape. Le tiroir ne masquait que six secondes — à sa
+      // fermeture, la ligne revenait sous « Sans date », sur un chantier que
+      // la base venait d'effacer, et il la retirait une seconde fois.
+      //
+      // Les tarifs, les photos et les lignes de prix le font déjà : c'est
+      // l'écran qui garde une liste qui la tient à jour.
+      if (resultat.succes) setChantiers((liste) => liste.filter((c) => c.id !== id));
+      // **Un refus sur un chantier POSÉ se dit sous le calendrier** (7 octobre
+      // 2026). Dans « Sans date », la ligne revient et porte son motif ; sur la
+      // fiche du jour, le chantier reviendrait sans un mot (une facture émise
+      // l'interdit, `supprimerChantier`).
+      else if (chantiers.some((c) => c.id === id && c.datePlanifiee)) setRefus(resultat.erreur);
+      return resultat;
+    },
+  });
   const visibles = useMemo(
     () => chantiers.filter((c) => !retraits.estRetire(c.id)),
     [chantiers, retraits]
   );
 
+  /**
+   * CE QUE LE CALENDRIER PEINT — et depuis le 31 août 2026, les jours passés
+   * aussi.
+   *
+   * **Sa question :** *« est-ce que le planning garde en mémoire les chantiers
+   * passés ? »* — non : `estAuPlanning` les refusait dès le lendemain, et son
+   * mois de juillet était blanc alors qu'il y avait travaillé tous les jours.
+   * Il a choisi la proposition **B** (planche 98) : le jour passé garde ses
+   * couleurs, et la mémoire tient **deux ans**.
+   *
+   * **`estAuCalendrier` et non `estAuPlanning` élargie** : la seconde décide de
+   * l'onglet, et un chantier passé doit rester dans « Terminés ». Les élargir
+   * ensemble l'aurait remis dans deux onglets — le défaut du 6 août 2026.
+   *
+   * **Ce que ce changement RÉPARE en passant.** L'écran d'envoi peint le même
+   * calendrier (`MoisCharge`) à partir de la liste BRUTE, sans ce tamis : un
+   * jour passé y portait déjà ses chantiers pendant que le planning l'affichait
+   * vide. Deux vérités sur la même journée, à un écran d'écart — ce que
+   * `CLAUDE.md` §3 interdit nommément. Elles se rejoignent.
+   */
   const planifies = useMemo(
-    () => trierParDatePlanifiee(visibles.filter((c) => estAuPlanning(c, aujourdHui))),
+    () => trierParDatePlanifiee(visibles.filter((c) => estAuCalendrier(c, aujourdHui))),
     [visibles, aujourdHui]
   );
 
@@ -275,9 +634,58 @@ export default function PlanningClient({
     [visibles]
   );
 
+  /**
+   * LES DEMI-JOURNÉES QUI ATTENDENT UNE PLACE — sa demande du 10 septembre 2026.
+   *
+   * Un chantier posé sur MOINS de demi-journées qu'il n'en demande a rendu le
+   * reste : c'est ce qu'il voit dans « Sans date », et ce qu'il repose où il
+   * veut. La règle vit dans `demiJourneesAPoser`, jamais recopiée ici.
+   */
+  const morceaux = useMemo(
+    () =>
+      visibles
+        .filter((c) => c.datePlanifiee)
+        .map((c) => ({
+          chantier: c,
+          combien: demiJourneesAPoser(
+            {
+              jour: c.datePlanifiee,
+              moment: c.creneauDebut,
+              dureeDemiJournees: c.dureeDemiJournees,
+            },
+            (c.creneaux ?? []) as Creneau[]
+          ),
+        }))
+        .filter((m) => m.combien > 0),
+    [visibles]
+  );
+
+  /**
+   * LES DATES DU MOIS À ENVOYER, ET CELLES QUI ATTENDENT LE CLIENT.
+   *
+   * Calculées sur la liste VIVANTE, pas au chargement : la dernière date posée
+   * ouvre l'envoi à l'instant, sans recharger (sa demande du 27 septembre).
+   * Un envoi parti s'ajoute ici aussitôt, et le client passe en attente.
+   */
+  const [envoisDesDates, setEnvoisDesDates] = useState<EnvoiDesDates[]>(datesDuMois?.envois ?? []);
+  const lesDatesDuMois = useMemo(
+    () => grouperLesDatesDuMois(datesDuMois ? visibles : [], envoisDesDates, aujourdHui),
+    [datesDuMois, visibles, envoisDesDates, aujourdHui]
+  );
+
   /** Ni posables ni oubliables : leur date se décide chez le client. */
   const attenteClient = useMemo(
     () => visibles.filter((c) => getPlanificationEtat(c) === "attente_client"),
+    [visibles]
+  );
+
+  /**
+   * LES DEVIS EXPIRÉS — sa demande du 7 octobre 2026 : 45 jours sans réponse,
+   * le lien est mort et rien n'est vendu. Ni « Sans date » (ils s'y posaient
+   * sans signature), ni « En attente du client » (il n'a plus rien où signer).
+   */
+  const devisExpires = useMemo(
+    () => visibles.filter((c) => getPlanificationEtat(c) === "devis_expire"),
     [visibles]
   );
 
@@ -310,9 +718,165 @@ export default function PlanningClient({
    * évite d'écrire une seconde fois la règle des bornes incluses, qui vit dans
    * `src/lib/absences-equipe.ts`.
    */
+  /**
+   * ─── FERMER UN JOUR DEPUIS LE PLANNING — 6 septembre 2026 ────────────────
+   *
+   * **Ce qui existait déjà, et qu'on ne refait pas.** Une absence retire une
+   * place ce jour-là, et les trois chemins la voient : l'écran d'envoi, l'envoi
+   * lui-même, et la revérification quand le client répond
+   * (`envois-devis.ts`, `fusionnerAbsences`). Ce lot ne touche PAS à ce
+   * calcul — il ne fait que rapprocher le geste.
+   *
+   * **Ce qui manquait :** pour dire « je ne suis pas là mardi », il fallait
+   * quitter le planning, ouvrir Réglages, puis Équipe, descendre jusqu'aux
+   * absences et taper deux dates. Le geste vit désormais là où il regarde ses
+   * jours.
+   *
+   * **La liste est tenue ICI, en état.** Sans cela, fermer un jour n'aurait
+   * rien changé à l'écran avant un rechargement — et il aurait appuyé deux
+   * fois, ce qui pose deux absences.
+   */
+  const [absencesVues, setAbsencesVues] = useState<AbsenceDuPlanning[]>(absences);
+
+  /**
+   * **Le serveur reste la source.** Une navigation qui rend des absences
+   * neuves doit les remplacer, pas les laisser périmées derrière un état local.
+   *
+   * **Ajusté PENDANT le rendu, pas dans un effet.** Écrit en `useEffect`, ce
+   * rattrapage repeint l'écran une seconde fois pour rien — et la règle de
+   * lint le refuse (« cascading renders »). Comparer la liste précédente ici
+   * est le geste que React documente pour ce cas précis : le rendu en cours est
+   * abandonné et repris avec la bonne valeur, sans passer par le navigateur.
+   */
+  const [absencesRendues, setAbsencesRendues] = useState(absences);
+  if (absencesRendues !== absences) {
+    setAbsencesRendues(absences);
+    setAbsencesVues(absences);
+  }
+
   const absentesParCreneau = useMemo(
-    () => fusionnerAbsences(new Map(), absences, nombreEquipes),
-    [absences, nombreEquipes]
+    () => fusionnerAbsences(new Map(), absencesVues, nombreEquipes),
+    [absencesVues, nombreEquipes]
+  );
+
+  /** Qui n'est pas là ce jour-là — par rang, avec l'`id` pour pouvoir défaire. */
+  /**
+   * Cette personne peut-elle être cochée sur cette demi-journée du chantier ?
+   * La règle du serveur (`cocheRefusee`), sur TOUTES les absences : un
+   * chantier de deux jours traverse deux journées (son signalement du
+   * 7 septembre 2026), et une coche se juge sur sa moitié (28 septembre).
+   */
+  const cocheRefuseeDe = useCallback(
+    (rang: number, c: ChantierPourAbsence, demi: "matin" | "apres_midi") =>
+      cocheRefusee(rang, c, absencesVues, false, demi),
+    [absencesVues]
+  );
+
+  /**
+   * Ce que la pastille écrit sous le nom — « ven. » quand il ne vient qu'un
+   * jour sur deux. Vide le reste du temps, c'est-à-dire presque toujours.
+   *
+   * Sa proposition C, retenue le 8 septembre 2026 : il coche une fois, et
+   * l'application dit les jours. La règle vit dans `equipe-absente.ts`.
+   */
+  const joursDeLaPastilleDe = useCallback(
+    (rang: number, c: ChantierPourAbsence, demi?: "matin" | "apres_midi") =>
+      joursDeLaPastille(rang, c, absencesVues, jourAbrege, demi),
+    [absencesVues]
+  );
+
+  const absencesDuJour = useCallback(
+    (jour: JourIso) =>
+      absencesVues.filter((a) => a.premierJour <= jour && jour <= a.dernierJour),
+    [absencesVues]
+  );
+
+  /**
+   * Fermer une journée pour une personne — une absence d'UN jour.
+   *
+   * **Optimiste, comme le reste du planning** : le doigt doit voir tout de
+   * suite. Si le serveur refuse, on retire la ligne posée d'avance plutôt que
+   * de laisser un jour barré qui ne l'est pas — un jour qu'il croit fermé et
+   * qui part chez un client est exactement ce qu'on cherche à éviter.
+   */
+  const fermerLeJour = useCallback(
+    async (jour: JourIso, rang: number, quand: "matin" | "apres_midi" | null = null) => {
+      const provisoire: AbsenceDuPlanning = {
+        id: `provisoire-${rang}-${jour}`,
+        equipeId: `provisoire-${rang}`,
+        rang,
+        premierJour: jour,
+        dernierJour: jour,
+        // **Une demi-journée n'occupe qu'une moitié**, y compris pendant la
+        // seconde où l'écran devance le serveur : sans ces deux bornes, la
+        // journée entière se barrerait puis se corrigerait sous ses yeux.
+        premierDemi: quand ?? "matin",
+        dernierDemi: quand ?? "apres_midi",
+      };
+      setAbsencesVues((v) => [...v, provisoire]);
+
+      const formulaire = new FormData();
+      formulaire.set("rang", String(rang));
+      formulaire.set("premierJour", jour);
+      formulaire.set("dernierJour", jour);
+      // Rien à envoyer pour une journée entière : le serveur met ses valeurs
+      // par défaut, et le geste courant reste exactement ce qu'il était.
+      if (quand) {
+        formulaire.set("premierDemi", quand);
+        formulaire.set("dernierDemi", quand);
+      }
+      const r = await noterAbsenceAction(formulaire);
+
+      setAbsencesVues((v) =>
+        r.ok
+          ? v.map((a) => (a.id === provisoire.id ? { ...a, id: r.id } : a))
+          : v.filter((a) => a.id !== provisoire.id)
+      );
+
+      // ─── CE QUE LE CONGÉ VIENT DE DÉFAIRE SE REPEINT ICI ────────────────
+      // **Sans cette ligne, l'écran MENT jusqu'au prochain rechargement.** Le
+      // serveur a retiré cette personne des chantiers que le congé traverse
+      // (sa consigne du 8 septembre 2026, « corrige à la racine ») ; la liste
+      // du navigateur, elle, porterait encore « ✓ Julien » — c'est-à-dire
+      // exactement les deux vérités contradictoires qu'il a photographiées, à
+      // ceci près qu'elles seraient désormais de notre fait.
+      //
+      // **Et cette disparition EST le message.** La carte du jour est ouverte
+      // sous ses yeux : la pastille s'en va, il le voit. Une phrase par-dessus
+      // expliquerait ce que l'écran montre déjà (`CLAUDE.md` §3). Aux
+      // Réglages, où rien de tout cela n'est visible, c'est l'inverse — et
+      // c'est là que la phrase est écrite.
+      if (r.ok && r.chantiersLiberes.length > 0) {
+        const liberes = new Set(r.chantiersLiberes.map((c) => c.id));
+        setChantiers((liste) =>
+          liste.map((c) =>
+            liberes.has(c.id)
+              ? {
+                  ...c,
+                  equipes: {
+                    matin: c.equipes.matin.filter((x) => x !== rang),
+                    apres_midi: c.equipes.apres_midi.filter((x) => x !== rang),
+                    lignes: c.equipes.lignes.filter((l) => l.equipe !== rang),
+                  },
+                }
+              : c
+          )
+        );
+      }
+    },
+    []
+  );
+
+  /** Rouvrir : on retire la ligne, et on la remet si le serveur n'a pas suivi. */
+  const rouvrirLeJour = useCallback(
+    async (id: string) => {
+      const retiree = absencesVues.find((a) => a.id === id);
+      if (!retiree) return;
+      setAbsencesVues((v) => v.filter((a) => a.id !== id));
+      const r = await retirerAbsenceAction(id);
+      if (!r.ok) setAbsencesVues((v) => [...v, retiree]);
+    },
+    [absencesVues]
   );
 
   const occupationDe = useCallback(
@@ -333,11 +897,10 @@ export default function PlanningClient({
         // **Plafonné à la capacité depuis le 26 août** : on coche désormais des
         // SALARIÉS, et trois gars sur un même chantier ne doivent pas fermer une
         // journée qui accepte deux chantiers (`equipesMobilisees`).
-        (c) =>
-          equipesMobilisees(
-            (demi === "matin" ? c.equipes.matin : c.equipes.apres_midi).length,
-            nombreEquipes
-          )
+        // **Ceux de CE jour** — depuis le 15 septembre 2026 la coche peut ne
+        // valoir qu'à partir du 4e jour, et compter « au moins un jour »
+        // fermerait le lundi pour un gars qui ne vient que le jeudi.
+        (c) => equipesMobilisees(equipesDuJour(c.equipes, jour)[demi].length, nombreEquipes)
       );
     },
     [parCreneau, absentesParCreneau, nombreEquipes]
@@ -362,31 +925,158 @@ export default function PlanningClient({
     [lignesEquipes, nombreSalaries]
   );
 
+  /**
+   * Les têtes des salariés cochés qui en ont une, dans l'ordre des noms
+   * (planche `appli/photo-des-salaries.html`, 27 septembre 2026). Un salarié
+   * sans photo n'a rien ici : son nom suffit, comme avant.
+   */
+  const tetesDe = useCallback(
+    (rangs: readonly number[]) =>
+      rangs.flatMap((rang) => {
+        const photo = equipesNommees.find((e) => e.rang === rang)?.photo;
+        return photo ? [{ rang, photo }] : [];
+      }),
+    [equipesNommees]
+  );
+
   // ─── Ce qui est ouvert : au plus une chose à la fois ────────────────────
   //
   // Deux listes ouvertes ensemble, et l'on coche dans l'une en croyant agir sur
   // l'autre. `cle` dit DANS QUELLE carte : la fiche du jour est rendue à deux
   // endroits — sous le calendrier et sous une ligne des planifiés — et c'est le
   // même composant, écrit une fois.
-  type Ouvert =
-    | { quoi: "equipe"; cle: string; chantierId: string; demi: Demi }
-    // **`demi` compte ici aussi**, et c'est une réparation : sans elle, la liste
-    // des trois moments s'ouvrait dans les DEUX lignes du chantier à la fois —
-    // six boutons pour un seul geste, et le doigt tombait sur la mauvaise.
-    // Un chantier à la journée porte deux lignes ; on n'en touche qu'une.
-    | { quoi: "deplacer"; cle: string; chantierId: string; demi: Demi }
-    | { quoi: "ajout-qui"; cle: string }
-    | { quoi: "ajout-quand"; cle: string; chantierId: string };
-  const [ouvert, setOuvert] = useState<Ouvert | null>(null);
+  // **Écrit UNE fois, au module** (`OuvertDansLaCarte`) : cette union vivait ici
+  // ET dans les propriétés de la carte, mot pour mot. Deux rédactions d'une même
+  // forme finissent par diverger — c'est le §3, et un état qui manque d'un côté
+  // ne se voit qu'à l'exécution.
+  type Ouvert = OuvertDansLaCarte;
+  const [ouvert, setOuvert] = useState<Ouvert | null>(() =>
+    relanceDemandee
+      ? { quoi: "ajout-relance", cle: "jour", chantierId: relanceDemandee.chantierId, etape: "signe" }
+      : null
+  );
+  const router = useRouter();
+  // **L'adresse de retour ne sert qu'une fois** : un rechargement plus tard ne
+  // doit pas rouvrir une question à laquelle il a déjà répondu.
+  useEffect(() => {
+    if (relanceDemandee) window.history.replaceState(null, "", "/planning");
+  }, [relanceDemandee]);
+  /**
+   * LE MORCEAU QU'IL TIENT AU DOIGT — une demi-journée qui attend sa place.
+   *
+   * Sa demande du 10 septembre : *« la demi-journée de Mr Julien qui a été
+   * retirée peut être replacée »*. On la touche dans « Sans date », puis on
+   * touche la demi-journée qui l'accueille — deux gestes, comme poser un
+   * chantier.
+   */
+  const [morceauEnMain, setMorceauEnMain] = useState<string | null>(null);
 
   /** La feuille de chantier ouverte, et dans quelle carte. */
   const [feuille, setFeuille] = useState<{ chantierId: string; cle: string } | null>(null);
 
   /** La carte d'un jour dépliée sous une ligne des planifiés. */
   const [carteListe, setCarteListe] = useState<{ apres: string; jour: JourIso } | null>(null);
+  /**
+   * ─── LA FEUILLE LEVÉE VIT DANS L'ADRESSE, ET NULLE PART AILLEURS ──────────
+   *
+   * Le chantier dont le chevron a ouvert les portes — son allure C, levées
+   * d'emblée quand on arrive par `?chantier=<id>` (sa réponse du 4 septembre
+   * 2026). Le mois, lui, est calé sur sa journée par `viseDemande`, tout en
+   * haut : refermer la feuille laisse donc le patron devant SA date, et non
+   * devant le mois courant.
+   *
+   * **Sa panne du 7 septembre 2026, revenue par l'autre bout :** *« lorsque je
+   * fais retour j'arrive sur la page d'accueil, or je devrais arriver d'où je
+   * suis parti. »* Depuis le 9 septembre, la flèche ne devine plus : elle lit
+   * le journal des écrans traversés (`journal-de-navigation.ts`), qui note
+   * **l'adresse complète**, paramètres compris — et son commentaire nomme
+   * précisément ce cas-ci, `/planning?chantier=…`.
+   *
+   * Or le chevron ne posait ce paramètre nulle part : la feuille ne vivait que
+   * dans un état React. Le journal enregistrait donc `/planning` tout court, et
+   * la flèche du devis le ramenait sur le mois courant, feuille refermée — la
+   * panne exacte qu'il avait fait corriger, à un mécanisme près.
+   *
+   * **On ne répare pas la flèche, on rend la feuille VISIBLE dans l'adresse**
+   * (`CLAUDE.md` §4 quater) : c'est l'adresse que `lienVersLeChantierAuPlanning`
+   * définit déjà, celle que `viseDemande` relit au montage, et celle que le
+   * `?de=` employait avant le journal. Aucun second mécanisme, aucune seconde
+   * vérité — la moitié qui manquait.
+   *
+   * **`replaceState` et non `pushState`** : lever une feuille n'est pas
+   * changer d'écran. Une entrée d'historique par chevron obligerait à reculer
+   * autant de fois qu'il en a touché avant de quitter le planning. Next.js
+   * accorde son routeur sur ce geste (guide « Shallow routing on the client »),
+   * donc le journal le voit.
+   *
+   * Les autres paramètres sont conservés : l'adresse se retouche, elle ne se
+   * réécrit pas.
+   *
+   * **ET LA FEUILLE SE LIT DANS L'ADRESSE, ELLE N'EST PLUS GARDÉE À CÔTÉ.**
+   * Un état React en parallèle aurait été une seconde vérité (`CLAUDE.md` §3) :
+   * au retour, c'est l'adresse qui est juste — l'état, lui, revient tel qu'il
+   * était en partant, c'est-à-dire refermé. Le chevron écrit donc, et l'écran
+   * relit ; il n'y a qu'un seul endroit qui sait quelle feuille est levée.
+   */
+  /**
+   * **L'ADRESSE D'ABORD, LE SERVEUR EN REPLI.** Revenir par la flèche remonte
+   * l'écran sur une entrée d'historique dont le rendu serveur, lui, date de
+   * l'arrivée — `chantierDemande` y vaut donc `null` alors que l'adresse porte
+   * bien la feuille. Lire l'adresse au premier rendu les accorde ; au tout
+   * premier chargement les deux disent la même chose, il n'y a rien à
+   * réconcilier.
+   */
+  const [chantierLeve, setChantierLeve] = useState<string | null>(() =>
+    typeof window === "undefined"
+      ? chantierDemande
+      : chantierDemandeAuPlanning(
+          new URLSearchParams(window.location.search).get(PARAM_CHANTIER_PLANNING)
+        )
+  );
+
+  const montrerLesPortes = useCallback((c: ChantierPlanning | null) => {
+    const question = new URLSearchParams(window.location.search);
+    if (c) question.set(PARAM_CHANTIER_PLANNING, c.id);
+    else question.delete(PARAM_CHANTIER_PLANNING);
+    const ecrit = question.toString();
+    window.history.replaceState(null, "", ecrit ? `?${ecrit}` : window.location.pathname);
+    setChantierLeve(c ? c.id : null);
+  }, []);
+
+  /**
+   * **ET ON RELIT L'ADRESSE QUAND ELLE RECULE.** La flèche du devis revient par
+   * `router.back()` : l'écran n'est pas remonté, et l'état qu'il retrouve est
+   * celui d'avant — feuille refermée. L'adresse, elle, est juste. C'est le même
+   * geste que `JournalDeNavigation` fait déjà sur `popstate`, pour la même
+   * raison.
+   *
+   * **`popstate` plutôt que `useSearchParams`**, et ce n'est pas un détail de
+   * style : ce crochet fait suspendre l'écran jusqu'au rendu du navigateur, et
+   * le planning entier arrivait alors après coup — `test-ligne-planning-e2e`
+   * l'a attrapé, la page n'ayant plus la même hauteur au moment où il mesure.
+   */
+  useEffect(() => {
+    const relire = () =>
+      setChantierLeve(
+        chantierDemandeAuPlanning(
+          new URLSearchParams(window.location.search).get(PARAM_CHANTIER_PLANNING)
+        )
+      );
+    window.addEventListener("popstate", relire);
+    return () => window.removeEventListener("popstate", relire);
+  }, []);
+
+  // Cherché dans la liste VIVANTE : `sansDate` et « en attente » en sont des
+  // vues (`useMemo` plus bas), donc un chantier touché dans le tiroir du bas
+  // s'y trouve aussi. Et un identifiant qui ne désigne plus rien ne lève
+  // simplement aucune feuille — voir `chantierDemandeAuPlanning`.
+  const portes = useMemo(
+    () => (chantierLeve ? (chantiers.find((c) => c.id === chantierLeve) ?? null) : null),
+    [chantierLeve, chantiers]
+  );
 
   /** Ce que porte la feuille de chaque chantier — chargé une fois, jamais deux. */
-  const [taches, setTaches] = useState<Record<string, FeuilleDuChantier>>({});
+  const [taches, setTaches] = useState<Record<string, FeuilleEtRetour>>({});
 
   useEffect(() => {
     if (!feuille) return;
@@ -411,27 +1101,123 @@ export default function PlanningClient({
    * affichait « Lundi 27 juillet » sous un calendrier titré « août » : les deux
    * se contredisaient, et rien ne disait lequel croire.
    */
+  /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * RENDRE À LA CARTE LES PIXELS QUE LES BANDES DU BAS LUI PRENNENT
+   * ═══════════════════════════════════════════════════════════════════════
+   *
+   * **Le défaut, mesuré sur son écran** (390 × 664, compte de démonstration) :
+   * la carte s'ouvre à 472 px, « + Absent ? » occupe 523 → 567, et le tiroir
+   * commence à 565. **Deux pixels**, et `test-pas-la-ce-jour-e2e` refuse à
+   * juste titre un geste qu'une bande fixe recouvre — c'est ce contrôle qui
+   * avait attrapé, le 6 septembre, un geste entièrement caché dessous.
+   *
+   * **Ce n'est pas un défaut de réserve.** `.atlas-contenu` réserve déjà la
+   * barre ET le tiroir (§323) : cela permet de faire défiler jusqu'au bas,
+   * cela ne remonte pas ce qui est déjà à l'écran. La carte naît au MILIEU de
+   * la page, sous le doigt, et rien ne garantit que les cent derniers pixels
+   * soient libres à cet endroit-là.
+   *
+   * **CE QUE CE N'EST PAS, et deux contrôles l'ont prouvé dans la minute.** Le
+   * `scrollIntoView` retiré le 3 septembre 2026 ramenait une fiche née HORS du
+   * champ, à deux cents pixels de là : il déplaçait la case qu'on venait de
+   * toucher. Une première version de ce rattrapage-ci vivait dans la CARTE, et
+   * `test-ligne-planning-e2e` l'a refusée aussitôt — *« le client touché a
+   * bougé de 956 px, il disparaît sous mes yeux »* : la même carte se déplie
+   * aussi sous une ligne des planifiés, où la règle est que le nom touché ne
+   * bouge PAS.
+   *
+   * Il vit donc sur **le geste**, pas sur la carte : on touche un jour du
+   * calendrier, et rien d'autre ne le déclenche. Il rend exactement ce que les
+   * bandes prennent, jamais plus, et ne fait rien quand le geste est déjà
+   * dégagé — c'est-à-dire dans la plupart des journées.
+   */
+  function rendreLesPixelsDesBandes() {
+    // Après la peinture : la carte n'existe pas encore au moment de l'appel.
+    requestAnimationFrame(() => {
+      const carte = document.querySelector<HTMLElement>('[data-atlas="carte-jour"]');
+      const premier = carte?.querySelector<HTMLElement>("button");
+      if (!premier) return;
+      const style = getComputedStyle(document.documentElement);
+      // Les deux bandes publient leur hauteur ; les recopier ici serait
+      // s'assurer qu'un jour l'une bougera sans l'autre (`AtlasBottomNav`,
+      // `TiroirDuBas`).
+      const haut = (nom: string) => parseFloat(style.getPropertyValue(nom)) || 0;
+      const plancher = window.innerHeight - haut("--atlas-barre") - haut("--atlas-tiroir");
+      const manque = Math.round(premier.getBoundingClientRect().bottom - plancher);
+      if (manque > 0) window.scrollBy({ top: manque, behavior: "smooth" });
+    });
+  }
+
+  /**
+   * LE DÉPLACEMENT EST-IL EN COURS ?
+   *
+   * Il décide d'une seule chose, et c'est sa demande du 17 septembre 2026 : le
+   * mois passe alors ENTIER au-dessus, la fiche descendant dessous.
+   *
+   * **Il a remplacé `ficheDuJourVisible`**, qui répondait à « la fiche est-elle
+   * encore là après le mois tourné ? » — une question qui ne se pose plus :
+   * détachée de la semaine, elle y survit.
+   */
+  const enDeplacement =
+    ouvert?.quoi === "deplacer" || ouvert?.quoi === "deplacer-quand";
+
   function toucherLeJour(jour: JourIso) {
+    // ─── PENDANT UN DÉPLACEMENT, LE JOUR TOUCHÉ EST LA DESTINATION ─────────
+    //
+    // **Sa demande du 17 septembre 2026 :** *« ça me fait apparaître le
+    // planning et je sélectionne un jour »*. Sans cette dérivation, le
+    // calendrier ferait ce qu'il fait toujours — ouvrir la fiche de ce jour —
+    // et le geste serait perdu au premier appui.
+    //
+    // **Et l'on ne touche NI au jour ouvert, NI à la fenêtre du bas** : la
+    // fiche du chantier qui part doit rester où elle est, sinon il regarde
+    // déjà autre chose au moment de choisir le moment.
+    if (ouvert?.quoi === "deplacer") {
+      setOuvert({ ...ouvert, quoi: "deplacer-quand", vers: jour });
+      return;
+    }
+    if (ouvert?.quoi === "deplacer-quand") {
+      // Il se ravise sur le jour : on garde le geste, on change la cible.
+      setOuvert({ ...ouvert, vers: jour });
+      return;
+    }
     setOuvert(null);
-    setFeuille(null);
+    // **Seul ce jour-là, sa fiche s'ouvre avec la journée** — sa réponse du
+    // 3 octobre 2026, « la C » (`appli/ouvrir-la-fiche.html`). Refermer le
+    // jour referme tout.
+    const seul = jourTouche === jour ? null : ficheOuverteDOffice(chantiersDuJour(jour));
+    setFeuille(seul ? { chantierId: seul, cle: "jour" } : null);
     setCarteListe(null);
     const d = enDate(jour);
     if (d.getUTCFullYear() !== curseur.annee || d.getUTCMonth() !== curseur.mois) {
       setCurseur({ annee: d.getUTCFullYear(), mois: d.getUTCMonth() });
     }
-    setLundi(lundiDe(jour));
+    // **La liste du bas ne suit plus le jour touché** — sa réponse du
+    // 7 octobre 2026, « la B » (`appli/planning-sans-doublon.html`). Elle
+    // sautait sur ce jour depuis l'époque où la fiche s'ouvrait sous le
+    // calendrier entier ; depuis qu'elle s'ouvre sous la case, le chantier se
+    // lisait deux fois. Un jour ouvert retire la liste, et la refermer la rend
+    // telle qu'elle était.
     setJourTouche((cur) => (cur === jour ? null : jour));
+    rendreLesPixelsDesBandes();
   }
 
   /**
-   * **Ouvrir ET amener à l'écran.** Deux fois de suite le patron a écrit « rien
-   * ne s'ouvre quand je touche un jour », avec quarante contrôles au vert :
-   * posée hors du champ, la fiche laissait l'écran mort sous le doigt.
+   * ─── PLUS DE `scrollIntoView` : LA FICHE S'OUVRE À LA PLACE DE LA CASE ─────
+   *
+   * **Ce qu'il y avait ici, et pourquoi ça a disparu le 3 septembre 2026.** La
+   * fiche du jour était rendue SOUS le calendrier entier ; deux fois de suite
+   * le patron a écrit « rien ne s'ouvre quand je touche un jour », avec
+   * quarante contrôles au vert — posée hors du champ, elle laissait l'écran
+   * mort sous le doigt. On la ramenait donc de force.
+   *
+   * **Le remède soignait le symptôme, pas la place.** Depuis la maquette qu'il
+   * a retenue, la fiche se déplie ENTRE la semaine qui porte le jour et la
+   * suivante (`MoisCharge`, prop `volet`) : elle naît sous le doigt, et il n'y
+   * a plus rien à rattraper. Un défilement automatique serait même nuisible —
+   * il déplacerait la case qu'il vient de toucher.
    */
-  useEffect(() => {
-    if (!jourTouche) return;
-    carteRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [jourTouche]);
 
   // ─── Les gestes, tous rendus au serveur puis relus ──────────────────────
 
@@ -442,9 +1228,11 @@ export default function PlanningClient({
    * supposé : deux appuis rapprochés sur la même pastille se croiseraient
    * sinon, et le dernier arrivé gagnerait sur l'autre.
    */
-  function basculerEquipe(chantierId: string, demi: Demi, rang: number) {
+  function basculerEquipe(chantierId: string, jour: JourIso, demi: Demi, rang: number) {
     enTransition(async () => {
-      const etat = await basculerEquipeAction(chantierId, demi, rang);
+      // **Le jour de la carte part avec le geste** — sa plainte du 15 septembre
+      // 2026 : décocher Julien le jeudi ne doit décocher que le jeudi.
+      const etat = await basculerEquipeAction(chantierId, demi, rang, jour);
       if (!etat) return;
       setChantiers((liste) =>
         liste.map((c) => (c.id === chantierId ? { ...c, equipes: etat } : c))
@@ -462,25 +1250,126 @@ export default function PlanningClient({
    * rechargement, et sur un chantier de trois jours ce sont deux jours de
    * travail qui disparaîtraient de l'affichage.
    */
-  function deplacer(chantierId: string, quand: QuandChantier) {
+  /**
+   * CE QUE LE SERVEUR REND, dans la forme que l'écran repeint.
+   *
+   * `datePlanifiee` et `creneauDebut` restent le premier créneau : vingt
+   * endroits les lisent encore, et l'écran ne doit pas les laisser diverger de
+   * ce que la base vient d'écrire (`resumeDesCreneaux`, côté dépôt).
+   */
+  function etatDesCreneaux(creneaux: { jour: string; moment: Demi }[]) {
+    const ordre = [...creneaux].sort((a, b) =>
+      a.jour === b.jour ? (a.moment === b.moment ? 0 : a.moment === "matin" ? -1 : 1) : a.jour < b.jour ? -1 : 1
+    );
+    return {
+      creneaux: ordre,
+      datePlanifiee: ordre[0]?.jour ?? null,
+      creneauDebut: ordre[0]?.moment ?? null,
+    };
+  }
+
+  /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * CE QUI N'A PAS PU PARTIR, ÉCRIT À L'ÉCRAN — 11 septembre 2026
+   * ═══════════════════════════════════════════════════════════════════════
+   *
+   * **Sa panne, captures à l'appui :** *« il ne se pose sur aucune demi-journée
+   * ! »*, et *« quand c'est un client je ne peux pas remplir sa fiche »*. Les
+   * deux gestes marchaient ; c'est sa PAGE qui avait survécu à son serveur —
+   * son espace venait de basculer d'une version à l'autre, et une action
+   * serveur postée depuis la page d'avant n'atteint plus rien.
+   *
+   * **Et l'écran ne disait RIEN.** Un appui, aucun effet, aucun message : le
+   * défaut muet que `AGENTS.md` interdit — *« devant un défaut muet, la
+   * première livraison n'est pas un correctif, c'est de rendre le défaut
+   * bavard »*. Le `.then()` seul n'attrape pas un refus : la promesse est
+   * REJETÉE, et rien ne s'exécute.
+   *
+   * **Ce qu'on écrit alors est ce qu'il doit FAIRE**, pas ce qui s'est passé :
+   * recharger la page. C'est la seule chose qui répare une page vieillie, et
+   * c'est la première question du dépôt devant un défaut qui ne se reproduit
+   * pas (`HANDOVER.md`, piège 0).
+   */
+  const [refus, setRefus] = useState<string | null>(null);
+  /**
+   * LE DERNIER CLIENT POSÉ DEPUIS LE TIROIR — pour le défaire d'un mot.
+   *
+   * **La réversibilité après, plutôt que la confirmation avant** (principe 4
+   * du produit, et sa planche du 18 septembre 2026) : le tiroir écrit « Mr.
+   * Linotte est sur jeudi 17 septembre · Annuler » tant que c'est vrai. Rien
+   * n'expire ; la ligne se tait d'elle-même dès que le chantier n'est plus sur
+   * ce jour — déplacé, retiré, ou reposé ailleurs —, parce qu'elle se DÉDUIT
+   * de la liste au lieu d'être un second état à tenir à jour.
+   */
+  const [dernierPose, setDernierPose] = useState<{ id: string; jour: JourIso } | null>(null);
+  /** Le chantier dont on demande s'il faut le supprimer, le temps de la question. */
+  const [aSupprimer, setASupprimer] = useState<ChantierPlanning | null>(null);
+  const PAGE_VIEILLIE = "Rien n'est parti. Rechargez la page.";
+
+  /**
+   * DÉPLACER CE QUE LE JOUR PORTE — trois appuis au lieu de sept.
+   *
+   * **Sa demande du 17 septembre 2026 :** *« trop de clics à faire »*. Le geste
+   * d'avant rendait la demi-journée au tiroir du bas, d'où il fallait aller la
+   * reprendre et la reposer. Ici elle part et arrive en une écriture.
+   *
+   * **« La A »** : seule la demi-journée du jour de départ bouge. Les autres
+   * jours du chantier restent où ils sont.
+   */
+  function deplacerLeJour(
+    chantierId: string,
+    jourSource: JourIso,
+    vers: JourIso,
+    moment: MomentDArrivee
+  ) {
     setOuvert(null);
+    setRefus(null);
     enTransition(async () => {
-      const r = await deplacerChantierAction(chantierId, quand);
+      const r = await deplacerCeQueLeJourPorteAction(chantierId, jourSource, vers, moment).catch(
+        (e) => {
+          console.error("Déplacement parti dans le vide", e);
+          setRefus(PAGE_VIEILLIE);
+          return null;
+        }
+      );
+      if (!r) return;
       if (!r.succes) {
-        // **Un refus avalé est un défaut muet**, et le dépôt l'a déjà payé le
-        // 11 août 2026 : « Impossible d'enregistrer la note » sans que personne
-        // puisse savoir laquelle des quatre causes s'appliquait. Ici le `return`
-        // seul rendait « Déplacer » indistinguable d'un bouton mort — c'est
-        // précisément ce qu'il a signalé le 23 août.
-        //
-        // Journalisé plutôt que levé : le message d'une exception d'action
-        // serveur n'arrive jamais jusqu'à lui (`AGENTS.md`).
-        console.error("Déplacement refusé", { chantierId, quand, erreur: r.erreur });
+        // **Le refus du serveur EST la phrase montrée.** Chacun dit sa cause —
+        // une demi-journée posée sur une journée entière, une place déjà prise —
+        // et les recopier ici ferait deux écritures d'une même règle.
+        setRefus(r.erreur);
+        console.error("Déplacement refusé", { chantierId, jourSource, vers, moment, erreur: r.erreur });
         return;
       }
       setChantiers((liste) =>
-        liste.map((c) => (c.id === chantierId ? { ...c, ...r.etat } : c))
+        liste.map((c) => (c.id === chantierId ? { ...c, ...etatDesCreneaux(r.creneaux) } : c))
       );
+    });
+  }
+
+  /**
+   * REPOSER LE MORCEAU qu'il tient au doigt, sur la demi-journée touchée.
+   *
+   * *« La demi-journée de Mr Julien qui a été retirée peut être replacée. »*
+   * Elle se pose où il veut — un autre jour, un autre moment ; le serveur
+   * refuse seulement de poser plus que le chantier ne demande.
+   */
+  function reposer(chantierId: string, jour: JourIso, demi: Demi) {
+    setMorceauEnMain(null);
+    setRefus(null);
+    enTransition(async () => {
+      const r = await reposerDemiJourneeAction(chantierId, jour, demi).catch((e) => {
+        console.error("Repose partie dans le vide", e);
+        setRefus(PAGE_VIEILLIE);
+        return null;
+      });
+      if (!r) return;
+      if (!r.succes) {
+        setRefus("Cette demi-journée n'a pas pu être reposée.");
+        console.error("Repose refusée", { chantierId, jour, demi, erreur: r.erreur });
+        return;
+      }
+      setChantiers((liste) => liste.map((c) => (c.id === chantierId ? { ...c, ...etatDesCreneaux(r.creneaux) } : c)));
     });
   }
 
@@ -489,37 +1378,193 @@ export default function PlanningClient({
    *
    * Effacé, il serait à ressaisir ; là, il redescend dans la liste d'attente,
    * d'où on le repose ailleurs.
+   *
+   * **ET SES CRÉNEAUX PARTENT AVEC SA DATE** — sa panne du 16 septembre 2026.
+   * `deplanifierChantier` les efface tous, sans condition ; ne retirer que la
+   * date laissait l'écran avec les demi-journées d'avant, et le geste suivant
+   * — reposer le chantier ailleurs — les gardait. Le chantier se peignait alors
+   * sur son ancien jour, et une moitié semblait attendre une place qui n'existe
+   * qu'à l'écran. Un état à moitié repeint est la divergence que `CLAUDE.md` §3
+   * interdit.
    */
   function retirerDuJour(chantierId: string) {
     setOuvert(null);
     setFeuille(null);
+    setRefus(null);
     enTransition(async () => {
-      await deplanifierChantierAction(chantierId);
+      const r = await deplanifierChantierAction(chantierId);
+      // **Un chantier déjà facturé garde sa date** — sa décision du
+      // 21 septembre 2026. Sans ce garde-fou, il la perdait pour toujours, et
+      // « Terminés » n'avait plus rien à écrire sur sa rangée. Repeindre l'écran
+      // avant de savoir si le serveur a accepté afficherait « Sans date » sur un
+      // chantier qui ne l'est pas : la divergence que `CLAUDE.md` §3 interdit.
+      if (!r.succes) {
+        setRefus(r.erreur);
+        return;
+      }
       setChantiers((liste) =>
-        liste.map((c) => (c.id === chantierId ? { ...c, datePlanifiee: null } : c))
+        liste.map((c) => (c.id === chantierId ? { ...c, datePlanifiee: null, creneaux: [] } : c))
       );
     });
   }
 
   /**
-   * Poser un chantier sur un jour — même règle : on repeint avec ce que la base
-   * rend, jamais avec ce que l'écran a supposé (voir `deplacer`).
+   * Poser un chantier sur un jour — SANS lui demander quand.
+   *
+   * ───────────────────────────────────────────────────────────────────────────
+   * **Sa remarque du 9 septembre 2026 :** *« quand je clique sur Claudette il me
+   * propose 3 choix, alors que si Claudette c'est un chantier 1 journée, deux,
+   * ou une demi, ça doit se mettre tout seul — je dois pas avoir à choisir »*.
+   *
+   * **Et les trois boutons ne demandaient rien qui manquait.** La durée est déjà
+   * en base : elle vient du devis, ou de sa dictée — « 3 jours » fait six
+   * demi-journées. Ce qu'ils proposaient, c'était d'ÉCRASER cette durée-là :
+   * « Matin » sur un chantier d'une journée le raccourcissait à une
+   * demi-journée, en silence, et l'après-midi repartait à la vente.
+   *
+   * Sans choix, `planifierChantier` garde la durée du chantier et cherche la
+   * demi-journée où elle tient (`departPossible`) — la même règle que le jour
+   * proposé au client, jamais une seconde (`CLAUDE.md` §3).
+   *
+   * **La moitié de journée se rattrape, la durée ne se voyait pas.** Un chantier
+   * posé le matin qu'il voulait l'après-midi se déplace d'un appui — « Déplacer »
+   * est là pour ça, et n'a pas bougé. Une journée devenue demi-journée, elle, ne
+   * se lisait nulle part avant le jour du chantier.
+   * ───────────────────────────────────────────────────────────────────────────
+   *
+   * On repeint avec ce que la base rend, jamais avec ce que l'écran a supposé
+   * (voir `deplacer`).
    */
-  function poser(chantierId: string, jour: JourIso, quand: QuandChantier) {
+  /**
+   * UN CLIENT POSÉ SUR UN JOUR — le chantier n'existait pas avant le geste.
+   *
+   * `poser` met à jour une ligne que la liste porte déjà ; ici on l'AJOUTE, et
+   * l'on cale la fenêtre sur son jour pour qu'il le voie sans le chercher.
+   */
+  function poserUnClient(chantier: ChantierPlanning) {
+    setChantiers((liste) => [...liste, chantier]);
+    if (chantier.datePlanifiee) setDebutFenetre(chantier.datePlanifiee as JourIso);
+  }
+
+  function poser(chantierId: string, jour: JourIso) {
     setOuvert(null);
     enTransition(async () => {
-      const r = await planifierChantierAction(chantierId, jour, { quand });
+      const r = await planifierChantierAction(chantierId, jour);
       if (!r.succes) return;
       setChantiers((liste) =>
         liste.map((c) => (c.id === chantierId ? { ...c, ...r.etat } : c))
       );
-      setLundi(lundiDe(jour));
+      setDebutFenetre(jour);
+      setDernierPose({ id: chantierId, jour });
     });
   }
 
+  /**
+   * POSER UN CLIENT QUI ATTEND SON LIEN — son choix B du 7 octobre 2026.
+   *
+   * Rend le refus en mots, ou `null` : le geste s'écrit dans la fiche du jour,
+   * qui reste ouverte tant qu'il n'est pas parti. Sans réponse lisible, un
+   * appui sans effet se lirait comme une panne (`AGENTS.md`).
+   */
+  async function poserALaPlace(
+    chantierId: string,
+    jour: JourIso,
+    signature: { maniere: "lien" } | { maniere: "papier"; demarrageAnticipe: boolean }
+  ): Promise<string | null> {
+    try {
+      const r = await poserALaPlaceAction(chantierId, jour, signature);
+      if (!r.succes) {
+        console.error("Pose à sa place refusée", { chantierId, jour, erreur: r.erreur });
+        return r.erreur;
+      }
+      setChantiers((liste) =>
+        liste.map((c) =>
+          c.id === chantierId
+            ? { ...c, ...r.etat, envoiReponse: r.envoiReponse ?? c.envoiReponse }
+            : c
+        )
+      );
+      setOuvert(null);
+      setDebutFenetre(jour);
+      return null;
+    } catch (e) {
+      console.error("Pose à sa place partie dans le vide", e);
+      return "Rien n'est parti. Rechargez la page.";
+    }
+  }
+
+  /**
+   * UN DEVIS EXPIRÉ QUI REVIENT — sa demande du 7 octobre 2026.
+   *
+   * Renvoyé (relu ou tel quel) avec un lien neuf qui ne montre que ce jour,
+   * puis posé. **Par son lien** : l'écran du devis parti s'ouvre, celui d'où
+   * part tout devis, avec « Ouvrir le SMS tout prêt » ; Atlas n'envoie rien
+   * tout seul. **Sur papier** : posé et accepté, on reste ici.
+   */
+  async function relancerLeDevisExpire(
+    chantierId: string,
+    jour: JourIso,
+    signature: { maniere: "lien" } | { maniere: "papier"; demarrageAnticipe: boolean }
+  ): Promise<string | null> {
+    try {
+      const r = await relancerLeDevisExpireAction(chantierId, jour, signature);
+      if (!r.succes) {
+        console.error("Relance du devis expiré refusée", { chantierId, jour, erreur: r.erreur });
+        return r.erreur;
+      }
+      if (signature.maniere === "lien") {
+        router.push(`/chantiers/${chantierId}/export`);
+        return null;
+      }
+      setChantiers((liste) =>
+        liste.map((c) =>
+          c.id === chantierId
+            ? {
+                ...c,
+                ...r.etat,
+                envoiReponse: r.envoiReponse ?? c.envoiReponse,
+                // Le lien neuf vient d'être créé et accepté : le chantier n'est
+                // plus un devis expiré.
+                envoiExpireAt: null,
+              }
+            : c
+        )
+      );
+      setOuvert(null);
+      setDebutFenetre(jour);
+      return null;
+    } catch (e) {
+      console.error("Relance du devis expiré partie dans le vide", e);
+      return "Rien n'est parti. Rechargez la page.";
+    }
+  }
+
+  /** Rouvre son devis aux prix du jour, puis la page du devis ; « Continuer » ramène ici. */
+  async function relireLeDevisExpire(chantierId: string, jour: JourIso): Promise<string | null> {
+    try {
+      const r = await relireLeDevisExpireAction(chantierId);
+      if (!r.succes) return r.erreur;
+      router.push(lienDeRelecture(chantierId, jour));
+      return null;
+    } catch (e) {
+      console.error("Relecture du devis expiré partie dans le vide", e);
+      return "Rien ne s'est ouvert. Rechargez la page.";
+    }
+  }
+
+  /** Ce que le tiroir peut encore défaire : le dernier posé, s'il est toujours là. */
+  const poseADefaire = (() => {
+    if (!dernierPose) return null;
+    const c = chantiers.find((x) => x.id === dernierPose.id);
+    return c && c.datePlanifiee === dernierPose.jour ? { chantier: c, jour: dernierPose.jour } : null;
+  })();
+
   const joursDeLaSemaine = useMemo(
-    () => Array.from({ length: 7 }, (_, i) => plusDeJours(lundi, i)),
-    [lundi]
+    () =>
+      Array.from({ length: portee === "jour" ? 1 : JOURS_DE_LA_FENETRE }, (_, i) =>
+        plusDeJours(debutFenetre, i)
+      ),
+    [debutFenetre, portee]
   );
 
   /**
@@ -555,8 +1600,12 @@ export default function PlanningClient({
   );
 
   const titreSemaine = useMemo(() => {
-    const debut = enDate(joursDeLaSemaine[0]);
-    const fin = enDate(joursDeLaSemaine[6]);
+    const debut = enDate(debutFenetre);
+    // **La fin se calcule, elle ne se lit pas au rang 6** : sur la vue journée
+    // le tableau n'a qu'une case, et `joursDeLaSemaine[6]` y valait `undefined`
+    // — une date invalide dans le titre, sur un écran qu'il regarde tous les
+    // matins.
+    const fin = enDate(plusDeJours(debutFenetre, JOURS_DE_LA_FENETRE - 1));
     const moisDebut = MOIS_LONGS[debut.getUTCMonth()];
     const moisFin = MOIS_LONGS[fin.getUTCMonth()];
     return debut.getUTCMonth() === fin.getUTCMonth()
@@ -567,26 +1616,60 @@ export default function PlanningClient({
   const joursAvecChantiers = joursDeLaSemaine.filter((j) => chantiersDuJour(j).length > 0);
 
   /** Ce que porte une carte de journée — les mêmes gestes aux deux endroits. */
+  // La règle vit dans `retourDuJourAttendu` ; l'écran ne fait que la montrer.
+  const retourAEnvoyer = (chantierId: string, jour: JourIso) =>
+    retourDuJourAttendu({
+      demande: retourDuJour.demande,
+      jour,
+      aujourdHui,
+      envoyeAujourdhui: retourDuJour.envoyes.includes(chantierId),
+    });
+
   const gestesCarte = {
     ecriture: ouvertes.ecriture,
     nombreSalaries,
+    absencesDuJour,
+    cocheRefuseeDe,
+    joursDeLaPastilleDe,
+    fermerLeJour,
+    rouvrirLeJour,
     ouvert,
     setOuvert,
     feuille,
     setFeuille,
     sansDate,
     nomEquipe,
+    tetesDe,
     lignesEquipes,
     occupationDe,
     chantiersDuJour,
     basculerEquipe,
-    deplacer,
+    reposer,
+    morceauEnMain,
+    deplacerLeJour,
     retirerDuJour,
+    demanderSuppression: setASupprimer,
     poser,
+    poserUnClient,
+    attenteClient,
+    poserALaPlace,
+    devisExpires,
+    relancerLeDevisExpire,
+    relireLeDevisExpire,
+    morceaux,
+    onPrendreMorceau: (id: string) => setMorceauEnMain((tenu) => (tenu === id ? null : id)),
+    refus,
     taches,
+    // **Les travaux écrits à la main remontent dans le cache de la feuille** :
+    // sans cela, la refermer puis la rouvrir montrerait la liste d'avant
+    // l'ajout, chargée « une fois, jamais deux ».
+    travauxChanges: (chantierId: string, liste: string[]) =>
+      setTaches((t) => (t[chantierId] ? { ...t, [chantierId]: { ...t[chantierId], taches: liste } } : t)),
+    retourAEnvoyer,
   };
 
   return (
+    <CouleursDesEtats couleurs={couleursVues} nomCharte={nomCharte}>
     <div
       style={{
         backgroundColor: colors.cream,
@@ -598,45 +1681,40 @@ export default function PlanningClient({
       <div className="pb-16">
         <EnTeteEcran surtitre="Vos journées" titre="Planning" />
 
-        {/* Le raccordement de l'agenda — sa demande du 9 août 2026. Il
-            disparaît quand tout va bien : un bandeau permanent sur l'écran le
-            plus consulté devient du décor, et le jour où il annonce une panne
-            personne ne le voit. La planche ne le montre pas parce qu'elle
-            n'avait pas d'agenda ; le retirer laisserait un client retenir un
-            jour où le patron est déjà pris. */}
+        {/* Le raccordement de l'agenda : sa demande du 9 août 2026, resserrée
+            le 26 septembre (planche `appli/mon-agenda-simple.html`, C). La
+            PANNE parle toujours : il se croit protégé du doublon. La
+            proposition de relier se masque pour toujours, et une pause ne dit
+            plus rien, puisque c'est lui qui l'a choisie. */}
         {/* **Pas pour un salarié** : relier l'agenda de l'entreprise est un
             réglage du patron, et le lien le renverrait ici même. Un renvoi sans
             explication se lit comme une panne. */}
-        {ouvertes.agenda && (!agenda.relie || !agenda.actif || agenda.enPanne) && (
+        {ouvertes.agenda && bandeauAgenda !== null && !rappelMasque && (
           <div className="mt-5 px-[26px]">
-            <Link
-              href="/reglages/agenda"
-              className="flex items-center justify-between py-3.5"
-              style={{ borderBottom: `1px solid ${colors.line}` }}
-            >
-              <span className="min-w-0 flex-1">
+            <div className="flex items-center justify-between py-3.5" style={{ borderBottom: `1px solid ${colors.line}` }}>
+              <Link href="/reglages/agenda" className="min-w-0 flex-1">
                 <span className="block text-[15px]" style={{ fontFamily: font.display }}>
-                  {agenda.enPanne
-                    ? "Votre agenda n'est plus lu"
-                    : !agenda.relie
-                      ? "Relier mon agenda Google"
-                      : "Votre agenda est en pause"}
+                  {bandeauAgenda === "panne" ? "Votre agenda n'est plus lu" : "Vous pouvez relier votre agenda"}
                 </span>
-                <span
-                  className="block text-[12.5px] leading-snug"
-                  style={{ color: colors.muted }}
-                >
-                  {agenda.enPanne
+                <span className="block text-[12.5px] leading-snug" style={{ color: colors.muted }}>
+                  {bandeauAgenda === "panne"
                     ? "Un client peut retenir un jour où vous êtes déjà pris."
-                    : !agenda.relie
-                      ? "Sans lui, Atlas ne voit pas les rendez-vous notés ailleurs."
-                      : "Reprendre la lecture pour éviter les doublons."}
+                    : "Atlas évitera vos jours déjà pris."}
                 </span>
+              </Link>
+              <span className="ml-4 flex flex-shrink-0 flex-col items-end gap-2">
+                <Link href="/reglages/agenda" className={libelleCaps} style={{ color: colors.or }}>
+                  Ouvrir
+                </Link>
+                {/* « Masquer » n'existe pas pour la panne : ce n'est pas un
+                    conseil qu'on écarte, c'est un raccordement qui a lâché. */}
+                {bandeauAgenda === "proposer" && (
+                  <button type="button" onClick={masquerLeRappel} className={libelleCaps} style={{ color: colors.muted }}>
+                    Masquer
+                  </button>
+                )}
               </span>
-              <span className={`ml-4 flex-shrink-0 ${libelleCaps}`} style={{ color: colors.or }}>
-                {agenda.configure ? "Ouvrir" : "Connecter"}
-              </span>
-            </Link>
+            </div>
           </div>
         )}
 
@@ -655,23 +1733,114 @@ export default function PlanningClient({
             jourTouche={jourTouche}
             onToucherJour={toucherLeJour}
             occupationDe={occupationDe}
+            // **La semaine que lit la liste du bas, teintée dans le mois.** Les
+            // deux navigations cessent de s'ignorer : changer de semaine ne
+            // disait rien au mois, et rien ne montrait d'où venait la liste.
+            // Sans liste à l'écran (un jour est ouvert), aucune semaine n'est lue.
+            semaineLue={jourTouche === null ? lundiDe(debutFenetre) : null}
+            // **Le patron seul** : c'est un réglage de l'entreprise, sa réponse
+            // du 29 septembre 2026. Ses salariés voient ses couleurs.
+            sousLaLegende={
+              role === "proprietaire" ? (
+                <CouleursDuPlanning couleurs={couleursVues} nomCharte={nomCharte} onChanger={setCouleursVues} />
+              ) : null
+            }
+            // ─── LA FICHE DU JOUR, DANS LE MOIS ────────────────────────────
+            //
+            // **Sa maquette du 3 septembre 2026.** Elle s'ouvre entre la
+            // semaine qui porte le jour et la suivante, l'encoche pointant la
+            // case. C'est ce qui a supprimé le `scrollIntoView` plus haut.
+            volet={(jour, colonne) => (
+              <CarteDuJour
+                cle="jour"
+                jour={jour}
+                // La pointe vise le CENTRE de la case touchée : c'est le
+                // calendrier qui donne la colonne, lui seul la connaît. Il ne
+                // la donne PAS quand la fiche est descendue sous le mois
+                // entier — là, elle ne toucherait plus sa case et désignerait
+                // la voisine. C'est le cerne du jour ouvert qui le dit.
+                attache={colonne === null ? undefined : { colonne }}
+                {...gestesCarte}
+                // **Un jour passé se lit, il ne s'écrit pas** (planche 98). Ce
+                // n'est pas une précaution de style : cocher un salarié ou
+                // déplacer une demi-journée sur un chantier fait il y a huit
+                // mois ne veut rien dire, et un geste possible est un geste
+                // qu'on fait par erreur. C'est le MÊME drapeau que celui du
+                // salarié en lecture seule — une seconde façon de rendre une
+                // carte inerte aurait divergé de la première.
+                ecriture={gestesCarte.ecriture && jour >= aujourdHui}
+              />
+            )}
+            // ─── LE JOUR D'ACCUEIL, PEINT PENDANT LE GESTE ────────────────
+            //
+            // **Sa demande du 17 septembre 2026 :** *« je choisis la deux, le
+            // planning au-dessus »*. Le jour touché reste marqué le temps qu'il
+            // choisisse le moment — sans quoi il ne sait plus lequel il a pris,
+            // et le calendrier ne répond pas à son doigt.
+            jourRetenu={ouvert?.quoi === "deplacer-quand" ? ouvert.vers : null}
+            // ─── LE MOIS ENTIER AU-DESSUS PENDANT LE GESTE ────────────────
+            //
+            // **Sa demande du 17 septembre 2026**, planche 120 « la A » :
+            // *« faire en sorte que le planning apparaisse entier au-dessus de
+            // Mr Linotte pour choisir un jour facilement »*. Au repos la fiche
+            // s'ouvre entre deux semaines, rattachée à sa case (sa règle du
+            // 4 septembre) ; le temps qu'il choisisse un jour d'accueil, elle
+            // descend sous le mois pour ne plus rien lui cacher.
+            voletDetache={enDeplacement}
           />
         </div>
 
-        {/* ─── LA FICHE DU JOUR, DIRECTEMENT SOUS LE CALENDRIER ───────────── */}
-        <div ref={carteRef}>
-          {jourTouche && (
-            <CarteDuJour cle="jour" jour={jourTouche} {...gestesCarte} />
-          )}
+        {/* ─── LA JOURNÉE, OU LES SEPT JOURS ───────────────────────────────
+            **Le mot « Planifiés » est parti le 9 septembre 2026, à sa demande.**
+            Il titrait une liste qui n'a plus besoin d'être nommée : sous le
+            calendrier, ce qui suit ne peut être que des chantiers posés, et
+            l'écran a déjà « Planning » écrit en tête. Un titre qui répète son
+            écran est du bruit (`CLAUDE.md` §3).
+
+            **On passe de l'une à l'autre AU DOIGT** — son choix du même jour :
+            *« pas en appuyant sur deux gros boutons, quelque chose de plus
+            subtil »*. Les deux points disent où l'on est, et se touchent aussi :
+            un geste qui ne se voit pas ne s'apprend pas seul. */}
+        <div
+          data-atlas="portee-liste"
+          className="mt-[22px] flex items-center justify-center gap-[9px]"
+        >
+          {(["jour", "semaine"] as const).map((quoi) => (
+            <button
+              key={quoi}
+              type="button"
+              data-atlas={`point-${quoi}`}
+              aria-pressed={portee === quoi}
+              aria-label={quoi === "jour" ? "La journée" : "Les sept jours"}
+              onClick={() => allerVers(quoi)}
+              className="flex h-[34px] w-[34px] cursor-pointer items-center justify-center border-0 bg-transparent p-0"
+              style={{ WebkitTapHighlightColor: "transparent" }}
+            >
+              <i
+                className="block h-[6px] w-[6px] rounded-full"
+                style={{
+                  background: portee === quoi ? colors.or : colors.chevron,
+                  transform: portee === quoi ? "scale(1.5)" : "none",
+                  transition: "background 300ms, transform 300ms",
+                }}
+              />
+            </button>
+          ))}
         </div>
 
-        {/* ─── PLANIFIÉS, à la semaine ────────────────────────────────────── */}
-        <TitreSection>Planifiés</TitreSection>
-        <div className="mx-[18px] mt-[18px] flex items-center justify-between gap-2.5">
+        {/* Les flèches ne servent qu'en grand : sur la journée, il n'y a rien à
+            feuilleter, et deux cibles inertes se touchent quand même. */}
+        {/* **Un jour ouvert retire la liste, ses flèches avec elle** : sa fiche
+            montre déjà ces chantiers, et les relire en dessous était le doublon
+            qu'il a vu le 7 octobre 2026 (« la B »). */}
+        {jourTouche === null && (
+        <>
+        {portee === "semaine" && (
+        <div className="mx-[18px] mt-[14px] flex items-center justify-between gap-2.5">
           <Fleche
-            libelle="Semaine précédente"
+            libelle="Sept jours avant"
             signe="‹"
-            onClick={() => setLundi((l) => plusDeJours(l, -7))}
+            onClick={() => setDebutFenetre((d) => plusDeJours(d, -JOURS_DE_LA_FENETRE))}
           />
           <div className="flex-1 text-center">
             <b
@@ -683,15 +1852,36 @@ export default function PlanningClient({
             </b>
           </div>
           <Fleche
-            libelle="Semaine suivante"
+            libelle="Sept jours après"
             signe="›"
-            onClick={() => setLundi((l) => plusDeJours(l, 7))}
+            onClick={() => setDebutFenetre((d) => plusDeJours(d, JOURS_DE_LA_FENETRE))}
           />
         </div>
+        )}
 
+        {/* **Le balayage vit ICI, sur la liste elle-même.** Posé plus haut, il
+            aurait pris le doigt qui fait défiler le calendrier. */}
+        <div
+          data-atlas="liste-planifies"
+          onPointerDown={(e) => {
+            departBalayage.current = { x: e.clientX, y: e.clientY };
+          }}
+          onPointerUp={(e) => {
+            const d = departBalayage.current;
+            departBalayage.current = null;
+            if (!d) return;
+            const dx = e.clientX - d.x;
+            const dy = e.clientY - d.y;
+            // **Plus horizontal que vertical, et quarante pixels au moins** :
+            // sans ces deux conditions, un simple défilement du pouce changerait
+            // de vue sans qu'on comprenne pourquoi.
+            if (Math.abs(dx) < 40 || Math.abs(dx) <= Math.abs(dy)) return;
+            allerVers(dx < 0 ? "semaine" : "jour");
+          }}
+        >
         {joursAvecChantiers.length === 0 ? (
           <p className="mx-[18px] mt-3.5 text-center text-[13.5px]" style={{ color: colors.muted }}>
-            Aucun chantier posé cette semaine.
+            {portee === "jour" ? "Rien de posé ce jour-là." : "Aucun chantier posé sur ces sept jours."}
           </p>
         ) : (
           joursAvecChantiers.map((jour) => (
@@ -723,18 +1913,67 @@ export default function PlanningClient({
                donnant la couleur lue — « la date ne porte aucun fond :
                rgba(0, 0, 0, 0) ». Un contrôle jamais vu rouge ne prouve rien
                (`AGENTS.md`). */
-            <div key={jour} data-atlas="jour-planifie" className="mx-[18px] mt-5">
+            <div
+              key={jour}
+              data-atlas="jour-planifie"
+              data-passe={jour < aujourdHui ? "1" : undefined}
+              className="mx-[18px] mt-5"
+            >
+              {/* ─── « AUJOURD'HUI », EN DORÉ — sa proposition B, choisie ──────
+                  Sa demande du 9 septembre 2026 : *« si on est le 8 septembre
+                  y'a écrit 8 septembre ; ça serait bien que ce soit marqué
+                  aujourd'hui en doré, en premier — comme ça au premier coup
+                  d'œil, le salarié qui ouvre l'appli le matin la tête
+                  enfarinée, il sait que M. Martins sous aujourd'hui c'est le
+                  client qu'il doit faire »*.
+
+                  **`or` ET NON `orTexte` — sa correction du 9 septembre :**
+                  *« utilise le doré qu'on utilise dans l'appli ! »*. Il a
+                  raison, et pas seulement par goût : **la durée du chantier,
+                  trois pixels plus bas, est déjà en `colors.or`**. L'or
+                  assombri posait donc deux dorés différents dans le même bloc,
+                  à se toucher — exactement le genre d'écart qu'on ne voit pas
+                  en codant et qui saute aux yeux sur l'écran.
+
+                  **Ce que ça coûte, et il l'a tranché en connaissance :** l'or
+                  plein sur ce papier pâle donne **2,03 à 2,53** de contraste
+                  selon la charte, là où `orTexte` tenait 3,92. Le mot reste à
+                  19 px en gras — la taille faisait partie du correctif et elle
+                  ne bouge pas. **La façon de garder le VRAI or ET la lisibilité
+                  existe** : c'est la proposition D de
+                  `appli/aujourd-hui-en-tete.html`, la pastille d'encre, qui
+                  donne 4,56 à 5,81. Il l'a vue et a préféré celle-ci.
+
+                  Les autres journées ne bougent pas : 12 px, encre sur papier,
+                  14,07 de contraste. */}
               <p className="text-center leading-none">
                 <span
                   data-atlas="date-planifiee"
-                  className="inline-block rounded-full px-[15px] py-[7px] text-[12px] font-bold uppercase"
-                  style={{ letterSpacing: "0.14em", background: colors.rustTint, color: colors.ink }}
+                  data-aujourdhui={jour === aujourdHui ? "1" : undefined}
+                  className={
+                    jour === aujourdHui
+                      ? "inline-block rounded-full px-[17px] py-[8px] text-[19px] font-bold uppercase"
+                      : "inline-block rounded-full px-[15px] py-[7px] text-[12px] font-bold uppercase"
+                  }
+                  style={{
+                    letterSpacing: jour === aujourdHui ? "0.08em" : "0.14em",
+                    background: colors.rustTint,
+                    color:
+                      jour === aujourdHui
+                        ? colors.or
+                        : jour < aujourdHui
+                          ? colors.muted
+                          : colors.ink,
+                  }}
                 >
-                  {jourLisibleCourt(jour)}
+                  {jour === aujourdHui ? "Aujourd’hui" : jourLisibleCourt(jour)}
                 </span>
               </p>
               {chantiersDuJour(jour).map((c) => {
-                const toutes = [...new Set([...c.equipes.matin, ...c.equipes.apres_midi])].sort(
+                // **Ceux de CE jour** (migration 0093) : la ligne est celle d'une
+                // journée, et Julien « à partir du 4e jour » ne se lit pas le 1er.
+                const duJour = equipesDuJour(c.equipes, jour);
+                const toutes = [...new Set([...duJour.matin, ...duJour.apres_midi])].sort(
                   (a, b) => a - b
                 );
                 const deplie = carteListe?.apres === c.id;
@@ -778,7 +2017,11 @@ export default function PlanningClient({
                           fontFamily: font.display,
                           fontSize: 19,
                           lineHeight: 1.2,
-                          color: colors.ink,
+                          // **Une journée déjà faite s'éteint.** On ne la voit
+                          // que si l'on est allé la chercher avec la flèche ;
+                          // gardée en pleine encre, elle se lirait comme un
+                          // chantier de plus à faire — c'est lui qui l'a vu.
+                          color: jour < aujourdHui ? colors.muted : colors.ink,
                         }}
                       >
                         <span className="block">{c.nom}</span>
@@ -798,10 +2041,16 @@ export default function PlanningClient({
                         <span
                           data-atlas="duree-planifiee"
                           className="mt-[3px] block text-[12.5px]"
-                          style={{ color: colors.or }}
+                          style={{ color: jour < aujourdHui ? colors.muted : colors.or }}
                         >
-                          {ditLaDuree(c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES)}
+                          {ditCeQuIlOccupe(c)}
                         </span>
+                        <PasEncoreSigne chantier={c} />
+                        {/* **Le lieu, sous la durée.** C'est la deuxième
+                            question après « qui » — et sur quatre clients qui
+                            s'appellent Martins, c'est la seule qui distingue. */}
+                        <LieuDuChantier chantier={c} />
+                  {retourAEnvoyer(c.id, jour) && <RetourAEnvoyer />}
                       </button>
                       {/* La pastille MÈNE AU JOUR au lieu d'ouvrir un choix : un
                           chantier à la journée porte deux listes d'équipes —
@@ -819,58 +2068,48 @@ export default function PlanningClient({
                           avecPlus={false}
                           ecriture={ouvertes.ecriture}
                           libelle={ditQuiPart(toutes.map(nomEquipe))}
+                          tetes={tetesDe(toutes)}
                         />
                       )}
-                      {/* **Le chevron MÈNE au chantier, il n'ouvre pas la
-                          feuille.** La planche 84 lui donne le même geste que le
-                          nom ; l'application ne le peut pas, et voici pourquoi.
+                      {/* **LE CHEVRON FAIT MONTER LES PORTES — son allure C,
+                          choisie le 4 septembre 2026** sur
+                          `appli/facture-au-planning.html` : *« je préfère la
+                          C »*. Rien au repos, une feuille à l'appui.
 
-                          Un chantier POSÉ quitte l'onglet « Chantiers »
-                          (`src/lib/onglet-chantier.ts`) : le planning devient
-                          alors le seul endroit d'où l'atteindre. Sans ce lien,
-                          on retombe exactement sur ce qu'il a signalé le 8 août
-                          2026 — *« il se range dans les chantiers planifiés,
-                          mais comment moi je fais pour avoir accès au devis ? »*
-                          —, et la réponse redeviendrait : on ne peut pas.
-
-                          Le nom, lui, garde le geste de la planche : il ouvre la
-                          journée et la feuille. Un chevron promet qu'on PART
-                          quelque part, un nom qu'il se déplie : les deux gestes
-                          se distinguent d'eux-mêmes. */}
-                      {/* **LE CHEVRON RESTE UN LIEN VERS LE CHANTIER**, et
-                          c'est un contrôle du dépôt qui l'a rappelé : *« depuis
-                          le planning, le chantier mène à son devis »*
-                          (`test-planning-vers-facture-e2e.ts`).
-
-                          La planche 86 dessine un chevron qui pivote — mais
-                          c'est son signe de repli à elle, pas le geste de cet
-                          écran : ici le NOM déplie, et le chevron part. Les
-                          confondre coûterait le seul chemin vers le devis d'un
-                          chantier posé, puisqu'un chantier posé quitte l'onglet
-                          « Chantiers » (`src/lib/onglet-chantier.ts`) et que la
-                          feuille n'en offre aucun autre.
-
-                          C'est exactement ce qu'il signalait le 8 août 2026 —
+                          **Il menait à `/chantiers/[id]` jusqu'ici**, et ce
+                          n'était pas un caprice : un chantier POSÉ quitte
+                          l'onglet « Chantiers » (`src/lib/onglet-chantier.ts`),
+                          si bien que le planning est le seul endroit d'où
+                          l'atteindre. C'est ce qu'il signalait le 8 août 2026 —
                           *« il se range dans les chantiers planifiés, mais
-                          comment moi je fais pour avoir accès au devis ? »* — et
-                          la réponse redeviendrait : on ne peut pas. */}
-                      {ouvertes.fiche && (
-                        <Link
-                          href={`/chantiers/${c.id}`}
-                          aria-label={`Ouvrir le chantier — ${c.nom}`}
-                          className="cursor-pointer px-0.5 text-[19px] no-underline"
-                          style={{ color: colors.chevron }}
-                        >
-                          ›
-                        </Link>
-                      )}
+                          comment moi je fais pour avoir accès au devis ? »*.
+
+                          **La feuille tient cette promesse mieux que le lien** :
+                          elle porte le devis, la facture et la fiche client,
+                          nommés et datés, au lieu d'un écran d'où il fallait
+                          repartir. C'est ce qui permet à la fiche du chantier de
+                          disparaître — sa décision du 1er septembre.
+
+                          Le NOM, lui, garde son geste : il déplie la journée. Un
+                          chevron promet qu'on part quelque part, un nom qu'il
+                          s'ouvre : les deux se distinguent toujours. */}
+                      {ouvertes.fiche && <ChevronDesPortes chantier={c} onPortes={montrerLesPortes} />}
                     </div>
                     {deplie && (
                       <CarteDuJour
                         cle={`liste:${c.id}`}
                         jour={carteListe.jour}
                         seulement={c.id}
+                        // **Sous le NOM, et non au centre** — sa correction du
+                        // 4 septembre 2026 : *« pareil lorsque je clique
+                        // directement sur le nom de mon client »*. Ici la
+                        // pointe ne vise pas une case mais le mot qu'il vient
+                        // de toucher, qui commence au bord gauche de la ligne.
+                        // Vingt-deux pixels : le retrait de la fiche plus la
+                        // demi-largeur de la pointe.
+                        attache={{ colonne: "22px" }}
                         {...gestesCarte}
+                        ecriture={gestesCarte.ecriture && carteListe.jour >= aujourdHui}
                       />
                     )}
                   </div>
@@ -880,7 +2119,9 @@ export default function PlanningClient({
                   C'est ce que montre la planche 86 : un seul « + » sous les
                   chantiers du jour, quel que soit le nombre de volets ouverts.
                   Et il n'existe pas pour un salarié (30 août 2026). */}
-              {ouvertes.ecriture && (
+              {/* **Pas de « + » sur une journée passée** : on n'ajoute pas un
+                  chantier à un jour qui a déjà eu lieu. */}
+              {ouvertes.ecriture && jour >= aujourdHui && (
               <AjoutAuJour
                 cle={`ajout:${jour}`}
                 jour={jour}
@@ -888,149 +2129,117 @@ export default function PlanningClient({
                 setOuvert={setOuvert}
                 sansDate={sansDate}
                 poser={poser}
+                poserUnClient={poserUnClient}
+                attenteClient={attenteClient}
+                poserALaPlace={poserALaPlace}
+                devisExpires={devisExpires}
+                relancerLeDevisExpire={relancerLeDevisExpire}
+                relireLeDevisExpire={relireLeDevisExpire}
+                morceaux={morceaux}
+                morceauEnMain={morceauEnMain}
+                onPrendreMorceau={(id) =>
+                  setMorceauEnMain((tenu) => (tenu === id ? null : id))
+                }
               />
               )}
             </div>
           ))
         )}
-
-        {/* ─── SANS DATE — et c'est d'ici qu'on POSE ──────────────────────── */}
-        {/* **RIEN N'ATTEND DE JOUR : LA SECTION N'EXISTE PAS.** Sa question du
-            25 août 2026 : *« est-ce que la catégorie sans date a un réel besoin
-            d'exister ? »*. Elle en a un — c'est le seul endroit d'où un
-            chantier reçoit sa date, et « Retirer » l'y renvoie — mais VIDE elle
-            ne rend qu'un titre et un refus, au milieu d'un écran déjà long.
-
-            C'est sa propre règle du 23 août, celle qui a fait disparaître
-            « Ajouter un chantier » : un geste qui ne peut mener nulle part se
-            retire au lieu de s'annoncer. La phrase du cul-de-sac vivait ici,
-            et c'est elle que ce bouton promettait. */}
-        {/* **PAS DE « SANS DATE » POUR UN SALARIÉ** — 30 août 2026. Cette
-            section n'existe que pour deux gestes : poser un chantier sur le
-            jour touché, et le supprimer. Les deux lui sont refusés au serveur.
-            La laisser afficherait une liste de chantiers sans date accompagnée
-            de boutons morts — sa propre règle du 23 août : un geste qui ne peut
-            mener nulle part se retire au lieu de s'annoncer. */}
-        {ouvertes.ecriture && sansDate.length > 0 && (
-          <>
-            <TitreSection encadre data-atlas="titre-sans-date">Sans date</TitreSection>
-            <p
-              data-atlas="ou-poser"
-              className="mx-[18px] mt-2 text-center text-[12.5px]"
-              style={{ color: colors.muted }}
-            >
-              {/* **Un samedi touché est un jour comme un autre** — sa règle
-                  du 23 août 2026. La condition écartait le week-end : il
-                  touchait son samedi, et l'écran continuait de lui dire de
-                  toucher un jour. */}
-              {jourTouche
-                ? `À poser sur ${jourLisibleCourt(jourTouche).toLowerCase()}`
-                : "Touchez d’abord un jour du calendrier"}
-            </p>
-            <div className="mx-[18px] mt-3">
-              {sansDate.map((c, i) => (
-                <LigneRetirable
-                  key={c.id}
-                  libelle={`le chantier ${c.nom}`}
-                  retiree={retraits.estRetire(c.id)}
-                  onRetirer={() => retraits.retirer(c.id, `le chantier ${c.nom}`)}
-                  hauteurMax={64}
-                  className="flex"
-                >
-                  <div
-                    data-atlas="sans-date"
-                    className="flex w-full items-center justify-between gap-2.5 py-[11px]"
-                    // **Le filet SÉPARE deux lignes, il ne souligne pas la
-                    // dernière** — sa demande du 26 août : *« supprime le trait
-                    // sous Jean Louis »*. Avec un seul chantier en attente, le
-                    // trait ne séparait rien : il soulignait un nom. C'est la
-                    // règle qu'emploie déjà la liste « En attente du client »
-                    // deux blocs plus bas, reprise ici plutôt qu'inventée.
-                    style={{
-                      borderBottom:
-                        i === sansDate.length - 1 ? "none" : `1px solid ${colors.line}`,
-                    }}
-                  >
-                    <span
-                      className="min-w-0 flex-1 truncate"
-                      style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2 }}
-                    >
-                      {c.nom}
-                    </span>
-                    {jourTouche ? (
-                      <span className="flex flex-shrink-0 gap-[5px]">
-                        {(
-                          [
-                            ["matin", "Matin"],
-                            ["apres", "Ap.-m."],
-                            ["journee", "Journée"],
-                          ] as [QuandChantier, string][]
-                        ).map(([v, mot]) => (
-                          <Petit
-                            key={v}
-                            data-poser={v}
-                            onClick={() => poser(c.id, jourTouche, v)}
-                          >
-                            {mot}
-                          </Petit>
-                        ))}
-                      </span>
-                    ) : (
-                      <span className="text-[12.5px]" style={{ color: colors.muted }}>
-                        en attente d’un jour
-                      </span>
-                    )}
-                  </div>
-                </LigneRetirable>
-              ))}
-            </div>
-          </>
+        </div>
+        </>
         )}
 
-        {/* Le tiroir, en fin de contenu et non par-dessus : il pousse la
-            dernière ligne vers le haut au lieu de la masquer. */}
-        {ouvertes.ecriture && (
-          <TiroirDesRetires
-            dernier={retraits.dernier}
-            nombre={retraits.nombre}
-            onAnnuler={retraits.annuler}
-            className="mt-6"
-          />
-        )}
-
-        {/* ─── EN ATTENTE DU CLIENT ───────────────────────────────────────── */}
-        {attenteClient.length > 0 && (
-          <>
-            <TitreSection encadre>En attente du client</TitreSection>
-            <div className="mx-[18px] mt-3">
-              {attenteClient.map((c, i) => (
-                <div
-                  key={c.id}
-                  className="flex items-center justify-between gap-2.5 py-[11px]"
-                  style={{
-                    borderBottom:
-                      i === attenteClient.length - 1 ? "none" : `1px solid ${colors.line}`,
-                  }}
-                >
-                  <span style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2 }}>
-                    {c.nom}
-                  </span>
-                  <span className="text-right text-[12.5px]" style={{ color: colors.muted }}>
-                    Il choisit sa date
-                  </span>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
+        {/* ─── CE QUI N'A PAS ENCORE DE JOUR — dans le tiroir du bas ────── */}
+        <QuestionDeSuppression
+          chantier={aSupprimer}
+          onRenoncer={() => setASupprimer(null)}
+          onConfirmer={(c) => {
+            setASupprimer(null);
+            // La fiche ouverte sur lui se referme : elle parlerait d'un chantier
+            // qui vient de quitter le jour.
+            setOuvert(null);
+            setFeuille(null);
+            retraits.retirer(c.id, `le chantier ${c.nom}`);
+          }}
+        />
+        <TiroirDuBas
+          ecriture={ouvertes.ecriture}
+          sansDate={sansDate}
+          morceaux={morceaux}
+          morceauEnMain={morceauEnMain}
+          onPrendreMorceau={(id) => setMorceauEnMain((tenu) => (tenu === id ? null : id))}
+          attenteClient={attenteClient}
+          devisExpires={devisExpires}
+          jourTouche={jourTouche}
+          poser={poser}
+          poseADefaire={poseADefaire}
+          defairePose={(id) => {
+            setDernierPose(null);
+            retirerDuJour(id);
+          }}
+          retraits={retraits}
+          demanderSuppression={setASupprimer}
+          portesOuvertes={ouvertes.fiche}
+          onPortes={montrerLesPortes}
+          datesDuMois={
+            datesDuMois
+              ? {
+                  donnees: datesDuMois,
+                  ...lesDatesDuMois,
+                  onEnvoye: (e) => setEnvoisDesDates((l) => [...l, e]),
+                }
+              : null
+          }
+        />
       </div>
+
+      {/* Les portes du chantier, montées par le chevron — son allure C. Posée
+          ici, hors de la liste : une feuille rendue dans la ligne descendrait
+          avec elle au défilement, et la coquille est déjà `fixed`. */}
+      <PortesDuChantier
+        chantier={portes}
+        aujourdHui={aujourdHui}
+        onFermer={() => montrerLesPortes(null)}
+      />
     </div>
+    </CouleursDesEtats>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
 // LES PIÈCES DE L'ÉCRAN
 // ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * Le chevron qui fait monter les portes d'un chantier — son allure C.
+ *
+ * **Il vit dans une pièce, et non recopié à trois endroits.** Trois listes le
+ * portent depuis le 4 septembre 2026 — les journées, « Sans date » et « En
+ * attente du client » —, et un chevron recopié aurait changé de couleur ou de
+ * taille dans l'une des trois le jour où l'on retouche les deux autres.
+ *
+ * **Le NOM ne le remplace pas** : sa consigne du 4 septembre. Un chevron
+ * promet qu'on part quelque part, un nom qu'il s'ouvre.
+ */
+function ChevronDesPortes({
+  chantier,
+  onPortes,
+}: {
+  chantier: ChantierPlanning;
+  onPortes: (c: ChantierPlanning) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onPortes(chantier)}
+      aria-label={`Ouvrir le chantier ${chantier.nom}`}
+      className="flex-shrink-0 cursor-pointer border-0 bg-transparent px-0.5 text-[19px]"
+      style={{ color: colors.chevron }}
+    >
+      ›
+    </button>
+  );
+}
 
 function Fleche({
   libelle,
@@ -1082,16 +2291,29 @@ function Fleche({
 function TitreSection({
   children,
   encadre = false,
+  aGauche = false,
   ...reste
 }: {
   children: React.ReactNode;
   encadre?: boolean;
+  /**
+   * **À GAUCHE, sur la marge du contenu** — sa demande du 11 septembre 2026 :
+   * *« le sans date à gauche »*, planche `appli/tiroir-en-or.html` à l'appui.
+   *
+   * Centré, le titre du tiroir ne s'alignait sur rien : ni sur la poignée
+   * au-dessus, ni sur les noms en dessous, qui commencent tous deux à 18 px du
+   * bord. Les deux titres du tiroir le prennent — un seul des deux aurait fait
+   * deux façons de titrer dans le même panneau.
+   */
+  aGauche?: boolean;
 } & React.HTMLAttributes<HTMLParagraphElement>) {
   if (!encadre) {
     return (
       <p
         {...reste}
-        className="mx-[18px] mt-[26px] text-center text-[13px] font-bold uppercase leading-none"
+        className={`mx-[18px] mt-[26px] text-[13px] font-bold uppercase leading-none ${
+          aGauche ? "text-left" : "text-center"
+        }`}
         style={{ letterSpacing: "0.16em", color: colors.ink }}
       >
         {children}
@@ -1099,7 +2321,10 @@ function TitreSection({
     );
   }
   return (
-    <p {...reste} className="mx-[18px] mt-[26px] text-center leading-none">
+    <p
+      {...reste}
+      className={`mx-[18px] mt-[26px] leading-none ${aGauche ? "text-left" : "text-center"}`}
+    >
       <span
         data-atlas="titre-encadre"
         className="inline-block rounded-full px-[15px] py-[7px] text-[12px] font-bold uppercase"
@@ -1120,11 +2345,7 @@ function Pastille({ etat }: { etat: EtatDemi }) {
       data-atlas="pastille"
       data-etat={etat}
       className="inline-block h-[11px] w-[11px] flex-shrink-0 rounded-[3px]"
-      style={
-        etat === "libre"
-          ? { background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }
-          : { background: fondDeLEtat(etat) }
-      }
+      style={styleDuCarre(etat)}
     />
   );
 }
@@ -1135,12 +2356,41 @@ function Petit({
   retenue,
   fini,
   serre,
+  absente,
+  partielle,
   ...reste
 }: {
   children: React.ReactNode;
   onClick: () => void;
   retenue?: boolean;
   fini?: boolean;
+  /**
+   * **Cette personne n'est pas là ce jour-là** — son signalement du
+   * 7 septembre 2026 : *« il doit être grisé et on ne doit pas pouvoir le
+   * sélectionner »*.
+   *
+   * **Grise TOUJOURS, n'interdit que la COCHE.** Une pastille déjà cochée
+   * reste cliquable pour être retirée : c'est le seul chemin qui existe pour
+   * réparer une coche antérieure au congé, et c'est exactement l'état qu'il a
+   * photographié. Le gris dit alors qu'il faut la retirer, il n'enferme pas
+   * dedans.
+   *
+   * **Ce que l'écran décide ici, c'est l'apparence, jamais la règle** : le
+   * refus vit dans `equipe-absente.ts` et le serveur l'applique aussi
+   * (`CLAUDE.md` §3).
+   */
+  absente?: boolean;
+  /**
+   * **Cochée, mais pas sur tous les jours du chantier** — sa proposition C,
+   * retenue le 8 septembre 2026.
+   *
+   * **Un aplat ne peut pas porter une exception**, et c'est lui qui l'a relevé
+   * sur la maquette : *« la phrase dit Julien en congé mais il est quand même
+   * coché en vert, c'est normal ? »* Non — on lit l'aplat, pas ce qui
+   * l'accompagne. Le cerne vert sans fond dit « oui, mais pas partout », et la
+   * pastille porte alors les jours.
+   */
+  partielle?: boolean;
   /**
    * Resserré à 9 px, comme `.demi .petit` sur la planche 84.
    *
@@ -1162,13 +2412,36 @@ function Petit({
       type="button"
       onClick={onClick}
       {...reste}
-      className={`flex-shrink-0 cursor-pointer rounded-full py-[7px] text-[12px] ${
-        serre ? "px-[9px]" : "px-3"
-      }`}
+      disabled={absente && !retenue}
+      aria-disabled={absente && !retenue ? true : undefined}
+      data-absente={absente ? "1" : undefined}
+      className={`flex-shrink-0 rounded-full py-[7px] text-[12px] ${
+        absente && !retenue ? "cursor-not-allowed" : "cursor-pointer"
+      } ${serre ? "px-[9px]" : "px-3"}`}
       style={{
-        border: `1px solid ${retenue ? colors.rust : fini ? colors.or : colors.line}`,
-        background: retenue ? colors.rust : colors.card,
-        color: retenue ? surPlein : fini ? colors.or : colors.inkSoft,
+        border: `1px solid ${
+          absente
+            ? colors.line
+            : retenue || partielle
+              ? colors.plein
+              : fini
+                ? colors.or
+                : colors.line
+        }`,
+        background: retenue && !absente ? colors.plein : colors.card,
+        color: absente
+          ? colors.muted
+          : retenue
+            ? surPlein
+            : partielle
+              ? colors.plein
+              : fini
+                ? colors.or
+                : colors.inkSoft,
+        // **Le gris se voit, sans effacer.** À 0,5 la pastille disparaissait sur
+        // les deux chartes sombres, mesuré : un nom qu'on ne lit plus ne dit pas
+        // « absent », il dit « rien ».
+        opacity: absente ? 0.72 : undefined,
         WebkitTapHighlightColor: "transparent",
       }}
     >
@@ -1178,12 +2451,37 @@ function Petit({
 }
 
 /**
- * La pastille d'équipe.
+ * Les têtes, serrées l'une contre l'autre : trois gars tiennent dans la place
+ * d'un prénom. Rien quand personne n'a de photo.
+ */
+function TetesQuiPartent({ tetes }: { tetes: { rang: number; photo: string }[] }) {
+  if (tetes.length === 0) return null;
+  return (
+    <span className="flex -space-x-1.5" aria-hidden="true">
+      {tetes.map((t) => (
+        <span key={t.rang} className="rounded-full" style={{ boxShadow: `0 0 0 2px ${colors.cream}` }}>
+          <TeteRonde repli={t.rang} photo={t.photo} taille={24} />
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/**
+ * QUI PART — des prénoms, et un « + » en or.
  *
- * **Le « ＋ » qui dit qu'on peut en ajouter un autre.** Sa remarque du 21 août :
+ * **Le « + » qui dit qu'on peut en ajouter un autre.** Sa remarque du 21 août :
  * *« l'utilisateur voit marqué Paul, mais il ne se dit pas qu'il peut cliquer
  * dessus pour ajouter un autre gars »*. Un signe collé au nom coûte huit pixels
  * et se lit comme une invitation ; une phrase aurait pris une ligne.
+ *
+ * **Plus de pastille verte, plus de pointillé — sa planche du 18 septembre
+ * 2026** (`appli/planning-tout-ensemble-en-mieux.html`) : les prénoms en noir,
+ * un fait ; le « + » en or, un geste. Et quand personne n'est posé, **« +
+ * Salarié »** — son choix du 18 au soir à la place de « Qui ? » : le même mot
+ * et le même « + » que « + Salarié absent ? » juste au-dessus, un seul geste à
+ * apprendre. Le contrat des suites ne bouge pas : `data-atlas="equipe"`,
+ * `data-vide`, et le texte porte les prénoms.
  */
 function PastilleEquipe({
   libelle,
@@ -1191,8 +2489,15 @@ function PastilleEquipe({
   onClick,
   avecPlus = true,
   ecriture = true,
+  tetes = [],
 }: {
   libelle: string;
+  /**
+   * Les têtes de ceux qui partent, collées devant leurs noms : sa demande du
+   * 27 septembre 2026. **Le nom reste** : une photo ne se lit pas au soleil,
+   * un nom si.
+   */
+  tetes?: { rang: number; photo: string }[];
   vide: boolean;
   /** L'événement est transmis : l'appelant y trouve la ligne à garder immobile. */
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
@@ -1214,9 +2519,10 @@ function PastilleEquipe({
     return (
       <span
         data-atlas="equipe-lecture"
-        className="flex-shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12.5px]"
-        style={{ background: colors.rust, color: surPlein }}
+        className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap text-[14.5px]"
+        style={{ color: colors.ink }}
       >
+        <TetesQuiPartent tetes={tetes} />
         {libelle}
       </span>
     );
@@ -1228,30 +2534,87 @@ function PastilleEquipe({
       data-atlas="equipe"
       data-vide={vide ? "1" : "0"}
       onClick={onClick}
-      className="flex-shrink-0 cursor-pointer whitespace-nowrap rounded-full px-3 py-1.5 text-[12.5px]"
-      style={{
-        border: vide ? `1px dashed ${colors.or}` : "0",
-        background: vide ? "transparent" : colors.rust,
-        color: vide ? colors.or : surPlein,
-        WebkitTapHighlightColor: "transparent",
-      }}
+      className="inline-flex min-h-[44px] flex-shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 bg-transparent px-0 text-[14.5px]"
+      style={{ color: vide ? colors.or : colors.ink, WebkitTapHighlightColor: "transparent" }}
     >
-      {libelle}
-      {avecPlus && !vide && (
-        <span className="ml-1.5 text-[11px] opacity-65" aria-hidden="true">
-          ＋
-        </span>
+      {vide ? (
+        <>
+          <span className="text-[17px] leading-none" aria-hidden="true">
+            +
+          </span>
+          Salarié
+        </>
+      ) : (
+        <>
+          <TetesQuiPartent tetes={tetes} />
+          {libelle}
+          {avecPlus && (
+            <span className="text-[17px] leading-none" style={{ color: colors.or }} aria-hidden="true">
+              +
+            </span>
+          )}
+        </>
       )}
     </button>
   );
 }
 
+/**
+ * OÙ VA CE CHANTIER — la commune, sous sa durée.
+ *
+ * **Sa maquette du 3 septembre 2026.** L'adresse existait en base et ne servait
+ * qu'aux boutons de la feuille : Maps, Waze, « copier l'adresse » la lisaient
+ * sans jamais la montrer. Sur une liste où quatre clients s'appellent Martins,
+ * c'est pourtant la seule chose qui dit LEQUEL.
+ *
+ * **Rien quand on ne sait pas.** `communeDeLAdresse` rend `null` plutôt que de
+ * deviner, et la ligne disparaît alors : un nom de rue écrit à la place d'une
+ * commune ferait partir le patron au mauvais endroit (`CLAUDE.md` §4).
+ *
+ * **Elle ne peut pas déborder.** La ligne des planifiés est mesurée au pixel
+ * (`test-ligne-planning-e2e.ts`) : une commune longue est coupée plutôt que de
+ * pousser la colonne — c'est le nom du client qui commande la largeur.
+ */
+function LieuDuChantier({ chantier }: { chantier: ChantierPlanning }) {
+  const commune = communeDeLAdresse(chantier.adresseChantier);
+  if (!commune) return null;
+  return (
+    <span
+      data-atlas="lieu-du-chantier"
+      className="mt-[2px] block truncate text-[11.5px] leading-[1.5]"
+      style={{ color: colors.muted }}
+    >
+      {commune}
+    </span>
+  );
+}
+
+/**
+ * « Retour à envoyer », sous le lieu du chantier du jour — sa planche du
+ * 26 septembre 2026, réponse A. Il se tait dès que le retour du jour part.
+ */
+function RetourAEnvoyer() {
+  return (
+    <span
+      data-atlas="retour-a-envoyer"
+      className="mt-[5px] flex items-center gap-[7px] text-[12.5px] font-semibold"
+      style={{ color: colors.or }}
+    >
+      <span aria-hidden="true" className="h-[7px] w-[7px] flex-none rounded-full" style={{ backgroundColor: colors.or }} />
+      Retour à envoyer
+    </span>
+  );
+}
+
 /** La rangée de boutons qui remplace ce qu'on vient de toucher. */
-function Choisir({ children }: { children: React.ReactNode }) {
+function Choisir({ children, mots }: { children: React.ReactNode; mots?: boolean }) {
   return (
     <div
       data-atlas="choisir"
-      className="mt-1 flex flex-wrap justify-start gap-1.5"
+      // **Des mots s'espacent, des pastilles se serrent** : dix-huit pixels
+      // entre deux prénoms en or (sa planche du 18 septembre 2026), six entre
+      // deux capsules — le même conteneur, deux respirations.
+      className={`mt-1 flex flex-wrap items-center justify-start ${mots ? "gap-x-[18px] pl-[46px]" : "gap-1.5"}`}
       style={{ flexBasis: "100%" }}
     >
       {children}
@@ -1260,6 +2623,8 @@ function Choisir({ children }: { children: React.ReactNode }) {
 }
 
 type GestesCarte = {
+  /** Le retour d'aujourd'hui est-il encore attendu sur ce chantier ? */
+  retourAEnvoyer: (chantierId: string, jour: JourIso) => boolean;
   /**
    * Cette personne a-t-elle le droit de MODIFIER le planning ?
    *
@@ -1280,26 +2645,416 @@ type GestesCarte = {
    * s'il y a quelqu'un à cocher.
    */
   nombreSalaries: number;
-  ouvert:
-    | { quoi: "equipe"; cle: string; chantierId: string; demi: Demi }
-    | { quoi: "deplacer"; cle: string; chantierId: string; demi: Demi }
-    | { quoi: "ajout-qui"; cle: string }
-    | { quoi: "ajout-quand"; cle: string; chantierId: string }
-    | null;
+  ouvert: OuvertDansLaCarte | null;
   setOuvert: (o: GestesCarte["ouvert"]) => void;
   feuille: { chantierId: string; cle: string } | null;
   setFeuille: (f: { chantierId: string; cle: string } | null) => void;
   sansDate: ChantierPlanning[];
+  /**
+   * UN CLIENT VIENT D'ÊTRE POSÉ SUR CE JOUR — le chantier naît ici.
+   *
+   * Il n'existait pas avant le geste : l'écran ne peut pas le retrouver dans sa
+   * liste pour le mettre à jour, il l'AJOUTE. C'est ce qui distingue cette voie
+   * de « Poser », qui déplace un chantier déjà là.
+   */
+  poserUnClient: (chantier: ChantierPlanning) => void;
+  /**
+   * Ceux dont le devis attend la réponse du client — son choix B du
+   * 7 octobre 2026 : on peut les poser à sa place, quand il n'arrive pas à
+   * choisir ses dates.
+   */
+  attenteClient: ChantierPlanning[];
+  poserALaPlace: (
+    chantierId: string,
+    jour: JourIso,
+    signature: { maniere: "lien" } | { maniere: "papier"; demarrageAnticipe: boolean }
+  ) => Promise<string | null>;
+  /** Les devis expirés sans réponse — leur porte « Devis expiré » (7 octobre 2026). */
+  devisExpires: ChantierPlanning[];
+  relancerLeDevisExpire: (
+    chantierId: string,
+    jour: JourIso,
+    signature: { maniere: "lien" } | { maniere: "papier"; demarrageAnticipe: boolean }
+  ) => Promise<string | null>;
+  relireLeDevisExpire: (chantierId: string, jour: JourIso) => Promise<string | null>;
+  /** Les demi-journées rendues qui attendent une place — voir le tiroir du bas. */
+  morceaux: { chantier: ChantierPlanning; combien: number }[];
+  /** Le chantier dont une demi-journée attend une place, s'il en tient une. */
+  morceauEnMain: string | null;
+  onPrendreMorceau: (chantierId: string) => void;
+  /**
+   * CE QUI N'A PAS PU PARTIR — écrit en tête de la journée, ou rien.
+   *
+   * **Un geste sans effet et sans message est un défaut muet** (`AGENTS.md`) :
+   * sa panne du 11 septembre 2026, où sa page avait survécu à son serveur et
+   * où plus rien ne répondait, en silence.
+   */
+  refus: string | null;
   nomEquipe: (rang: number) => string;
+  tetesDe: (rangs: readonly number[]) => { rang: number; photo: string }[];
   lignesEquipes: { rang: number; nom?: string | null }[];
   occupationDe: (jour: JourIso, demi: Demi) => { pris: readonly ChantierPlanning[]; charge: number };
   chantiersDuJour: (jour: JourIso) => ChantierPlanning[];
-  basculerEquipe: (chantierId: string, demi: Demi, rang: number) => void;
-  deplacer: (chantierId: string, quand: QuandChantier) => void;
+  basculerEquipe: (chantierId: string, jour: JourIso, demi: Demi, rang: number) => void;
+  /**
+   * DÉPLACER CE QUE LE JOUR PORTE — le geste vit DANS la fiche (17 sept. 2026).
+   *
+   * La carte le rend elle-même, sous les demi-journées, comme sur la planche
+   * qu'il a retenue. Le même bloc est monté une seconde fois sous le calendrier,
+   * pour le seul cas où le mois tourné a emporté la fiche.
+   */
+  deplacerLeJour: (
+    chantierId: string,
+    jourSource: JourIso,
+    vers: JourIso,
+    moment: MomentDArrivee
+  ) => void;
+  /** Reposer le morceau tenu au doigt sur la demi-journée touchée. */
+  reposer: (chantierId: string, jour: JourIso, demi: Demi) => void;
   retirerDuJour: (chantierId: string) => void;
-  poser: (chantierId: string, jour: JourIso, quand: QuandChantier) => void;
-  taches: Record<string, FeuilleDuChantier>;
+  /** Ouvre la question avant de supprimer — la B de sa planche du 7 octobre 2026. */
+  demanderSuppression: (c: ChantierPlanning) => void;
+  poser: (chantierId: string, jour: JourIso) => void;
+  taches: Record<string, FeuilleEtRetour>;
+  travauxChanges: (chantierId: string, liste: string[]) => void;
 };
+
+/**
+ * UNE MOITIÉ DE JOURNÉE QUE PERSONNE N'OCCUPE.
+ *
+ * **Écrite une fois, dessinée à deux endroits** : seule, quand plus aucun
+ * chantier ne la suit ; sous le nom d'un chantier, quand elle le précède dans
+ * la journée (`libresAvant`). Deux copies de cette ligne auraient divergé au
+ * premier changement de pastille (`CLAUDE.md` §3).
+ */
+function LigneLibre({
+  demi,
+  occupation,
+  marge = 16,
+  onPoser,
+}: {
+  demi: Demi;
+  occupation: { pris: readonly ChantierPlanning[]; charge: number };
+  marge?: number;
+  /**
+   * OÙ REPOSER LE MORCEAU qu'il tient au doigt — absent le reste du temps.
+   *
+   * **Le geste ne s'offre que quand il tient quelque chose** : un « Poser ici »
+   * qui vivrait sur chaque demi-journée libre ferait un bouton par ligne pour
+   * un geste qu'il fait deux fois par mois.
+   */
+  onPoser?: () => void;
+}) {
+  return (
+    <div
+      data-atlas="demi"
+      data-bloc={demi}
+      data-sans-chantier="1"
+      className="flex flex-wrap items-center gap-2"
+      style={{ marginTop: marge }}
+    >
+      <Pastille etat={etatDemi(occupation)} />
+      <span
+        className="w-[70px] flex-shrink-0 whitespace-nowrap text-[10px] font-semibold uppercase leading-[1.15]"
+        style={{ letterSpacing: "0.06em", color: colors.ink }}
+      >
+        {MOT_DEMI[demi]}
+      </span>
+      <span data-atlas="compte" className="ml-auto text-[12px]" style={{ color: colors.muted }}>
+        {ditLeCompteDemi(occupation)}
+      </span>
+      {onPoser && (
+        <button
+          type="button"
+          data-atlas="poser-le-morceau"
+          onClick={onPoser}
+          className="min-h-[44px] rounded-full px-3.5 text-[12.5px]"
+          style={{ color: colors.or, boxShadow: `inset 0 0 0 1px ${colors.or}` }}
+        >
+          Poser ici
+        </button>
+      )}
+    </div>
+  );
+}
+
+/**
+ * L'INTERRUPTEUR À DEUX POSITIONS DE « DÉPLACER ».
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Sa demande du 10 septembre 2026**, après avoir essayé la planche
+ * `appli/deplacer-plus-simple.html` : *« fais celui-là, juste tu retires la
+ * journée. Il faut garder le bouton déplacer ; lorsque l'on clique dessus on
+ * arrive sur ce bouton matin - aprem, on clique sur l'un ou l'autre et le
+ * bouton disparaît, la sélection s'est faite et le bouton déplacer
+ * réapparaît. »*
+ *
+ * **Pourquoi un interrupteur et non trois pastilles** — sa remarque de la
+ * veille : *« j'ai l'impression que c'est inversé »*. Trois pastilles rondes
+ * dont une est allumée ne disent pas si l'allumée est là où le chantier EST ou
+ * là où il IRA. Un interrupteur, lui, ne se lit que dans un sens : la position
+ * tenue est l'état courant.
+ *
+ * **Et « Journée » n'est plus une position**, parce que ce n'en était pas une :
+ * elle ne décrivait pas un départ mais une étendue, et la choisir réécrivait la
+ * durée du chantier (`deplacerChantier`).
+ * ───────────────────────────────────────────────────────────────────────────
+ */
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * DÉPLACER : LE JOUR, PUIS LE MOMENT — sa demande du 17 septembre 2026
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * *« Lorsque je clique sur déplacer ça me fait apparaître le planning et je
+ * sélectionne un jour et le matin ou l'aprem ou journée pour réellement
+ * déplacer mon client, parce que là c'est trop de clics à faire. »* Puis,
+ * devant `appli/deplacer-sur-le-calendrier.html` : *« je choisis la deux, le
+ * planning au-dessus, et la A : on déplace que la demi-journée du jour
+ * sélectionné »*.
+ *
+ * **Sept appuis sont devenus trois.** Avant : Déplacer, la moitié à rendre,
+ * ouvrir le tiroir, toucher le morceau, refermer, ouvrir le jour d'accueil,
+ * Poser ici. Maintenant : Déplacer, le jour, le moment.
+ *
+ * **Il vit DANS LA FICHE, et nulle part ailleurs** — la planche le montrait
+ * ainsi, et c'est enfin tenable depuis le 17 septembre 2026 : pendant le
+ * geste, le mois passe entier au-dessus et la fiche descend dessous
+ * (`voletDetache`). Elle ne disparaît donc plus quand il tourne le mois pour
+ * atteindre son jour d'accueil, et le repli qu'il avait fallu écrire sous le
+ * calendrier pour ce seul cas est parti avec.
+ *
+ * **Les mots sont en gras, sans contour** — sa règle du 17 septembre : une
+ * pastille à contour a la forme des pastilles d'équipe, qui ouvrent une liste ;
+ * ici ce sont des gestes.
+ */
+function BandeauDeplacement({
+  chantier,
+  jourSource,
+  vers,
+  onChoisir,
+  onAnnuler,
+}: {
+  chantier: ChantierPlanning | undefined;
+  jourSource: JourIso;
+  /** Le jour d'accueil touché, ou `null` tant qu'il n'a pas choisi. */
+  vers: JourIso | null;
+  /**
+   * **IL N'Y A PLUS QU'UNE PLACE — 17 septembre 2026.**
+   *
+   * Ce bloc était monté à deux endroits : dans la fiche du jour, et en repli
+   * sous le calendrier. Le second n'existait que parce que la fiche vivait
+   * DANS la semaine du jour ouvert et disparaissait au premier mois tourné —
+   * or tourner le mois est exactement ce qu'il fait pour atteindre son jour.
+   *
+   * Depuis que le mois passe entier au-dessus pendant le geste (`voletDetache`
+   * de `MoisCharge`), la fiche survit au mois tourné : le repli est devenu du
+   * code mort, et il est parti avec sa prop (`CLAUDE.md` §4 quinquies). Une
+   * seule place, une seule phrase — et le nom du chantier n'a plus à être
+   * redit, puisqu'il est toujours en titre trois lignes plus haut.
+   */
+  onChoisir: (moment: MomentDArrivee) => void;
+  onAnnuler: () => void;
+}) {
+  if (!chantier) return null;
+  // **Ce qui part commande ce qui peut arriver**, et la règle est dans `lib` :
+  // une demi-journée ne devient pas une journée, une journée ne tient pas sur
+  // une demi-journée. L'écran ne fait que montrer ce qu'elle autorise.
+  const partants = ceQueLeJourPorte(
+    {
+      jour: chantier.datePlanifiee as JourIso | null,
+      moment: chantier.creneauDebut,
+      dureeDemiJournees: chantier.dureeDemiJournees,
+    },
+    (chantier.creneaux ?? []) as readonly Creneau[],
+    jourSource
+  );
+  const moments = momentsOfferts(partants.length);
+
+  return (
+    <div data-atlas="deplacement-en-cours" data-vers={vers ?? undefined} className="mt-2.5">
+      {vers ? (
+        <>
+          <span className="block text-[12.5px]" style={{ color: colors.or }}>
+            {`${jourLisibleCourt(vers).toLowerCase()}. Quel moment ?`}
+          </span>
+          <div className="mt-1 flex flex-wrap items-center gap-x-[18px] gap-y-1">
+            {moments.map((m) => (
+              <MotDuGeste key={m} data-atlas={`vers-${m}`} onClick={() => onChoisir(m)}>
+                {MOT_ARRIVEE[m]}
+              </MotDuGeste>
+            ))}
+            <MotDuGeste data-atlas="annuler-deplacer" onClick={onAnnuler}>
+              Annuler
+            </MotDuGeste>
+          </div>
+        </>
+      ) : (
+        /* ─── « ANNULER » SUR LA LIGNE DE LA CONSIGNE ────────────────────
+           **Sa retouche du 17 septembre 2026 :** *« le Annuler tu le mets en
+           noir gras à droite de "touchez le jour au-dessus", genre 2 cm sur sa
+           droite »*. Il était gris pâle, sur la ligne du dessous : on le
+           cherchait. Il prend l'encre des deux gestes qu'il remplace le temps
+           du déplacement.
+
+           **2 cm RÉELS, et c'est pourquoi ce n'est pas `2cm`** : l'unité `cm`
+           d'une feuille de style vaut 96 dpi nominaux, soit 1,25 cm sous la
+           règle sur son téléphone. Son écran fait ~61 px par centimètre.
+
+           **L'écart se COMPRIME plutôt que de pousser le bouton dehors.**
+           Mesuré sur 320 px de large : à 122 px fixes, « Annuler » finissait
+           pile sur le bord, zéro marge — un nom plus long et il sortait.
+
+           **La ligne ne vaut que pour le choix du JOUR** : au moment suivant,
+           trois mots s'ajoutent et ne tiennent pas à côté de la phrase. */
+        <div className="flex items-baseline">
+          {/* La phrase ne se coupe PAS : elle est ce qu'il lit, et l'écart est
+              ce qui doit céder. Sans cela elle rendait « Touchez le jour au- /
+              dessus » sur deux lignes — vu à l'écran, jamais par un test. */}
+          <span className="whitespace-nowrap text-[12.5px]" style={{ color: colors.or }}>
+            Touchez le jour au-dessus
+          </span>
+          <span aria-hidden className="min-w-[18px] flex-[0_1_122px]" />
+          <MotDuGeste data-atlas="annuler-deplacer" onClick={onAnnuler}>
+            Annuler
+          </MotDuGeste>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Les trois mots d'arrivée, écrits une fois. */
+const MOT_ARRIVEE: Record<MomentDArrivee, string> = {
+  matin: "Matin",
+  apres_midi: "Après-midi",
+  journee: "Journée",
+};
+
+/**
+ * UN MOT QUI FAIT UN GESTE — en gras, sans contour.
+ *
+ * **Sa règle du 17 septembre 2026** : *« mets des mots en gras plutôt que des
+ * boutons »*. Une pastille à contour a exactement la forme des pastilles
+ * d'équipe posées juste au-dessus — or celles-là ouvrent une liste, tandis que
+ * celles-ci font un geste. Même forme, deux natures.
+ *
+ * **Il se vise quand même** : le remplissage lui donne 40 px de haut, parce
+ * qu'un mot nu n'offre rien au pouce.
+ */
+function MotDuGeste({
+  children,
+  onClick,
+  alerte = false,
+  ...reste
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  alerte?: boolean;
+} & Record<string, unknown>) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      {...reste}
+      className="flex-shrink-0 cursor-pointer border-0 bg-transparent px-0 py-[11px] text-[13.5px] font-bold"
+      style={{ color: alerte ? colors.alert : colors.ink, WebkitTapHighlightColor: "transparent" }}
+    >
+      {children}
+    </button>
+  );
+}
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * LA RÈGLE DE LA FICHE DU JOUR — noir un fait, or un geste, gris le reste.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * **Sa planche du 18 septembre 2026**, `appli/planning-tout-ensemble-en-mieux`,
+ * et son oui du 19 : *« j'en ai marre des gros boutons ! Je veux une page
+ * élégante et minimaliste qu'on comprend direct »*. La fiche empilait cinq
+ * formes pour dire « ça s'appuie » — une pastille verte pleine, un pointillé,
+ * un interrupteur, des capsules, un rond cerné d'or — et l'œil devait
+ * apprendre chacune.
+ *
+ * Une seule règle les remplace, sans cadre ni aplat : un mot en OR est un
+ * geste ; un mot NOIR est un fait ; le GRIS est le reste. Les deux dessins
+ * ci-dessous sont les seuls qu'un geste prenne sur cette fiche :
+ *
+ * - `MotEnOr` — un mot qu'on touche ;
+ * - `MotAChoisir` — un mot parmi d'autres, dont un seul est retenu : le retenu
+ *   passe en noir, souligné d'or ; les autres restent en or.
+ *
+ * **44 px de haut, toujours** : l'encre rétrécit, la cible non. Un mot nu
+ * n'offre rien au pouce.
+ */
+function MotEnOr({
+  children,
+  onClick,
+  doux,
+  ...reste
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  /** Gris plutôt qu'or — « Fermer », « Annuler » : une sortie, pas un geste. */
+  doux?: boolean;
+} & Record<string, unknown>) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      {...reste}
+      className="inline-flex min-h-[44px] flex-shrink-0 cursor-pointer items-center gap-1.5 border-0 bg-transparent px-0 text-[14px]"
+      style={{ color: doux ? colors.muted : colors.or, WebkitTapHighlightColor: "transparent" }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function MotAChoisir({
+  children,
+  onClick,
+  retenu,
+  absente,
+  ...reste
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  retenu: boolean;
+  /**
+   * **Cette personne n'est pas là** — son signalement du 7 septembre 2026 :
+   * *« il doit être grisé et on ne doit pas pouvoir le sélectionner »*. Grise
+   * toujours, n'interdit que la coche : un nom déjà retenu reste touchable
+   * pour être retiré (voir `Petit`, où la règle est écrite en entier).
+   */
+  absente?: boolean;
+} & Record<string, unknown>) {
+  const inerte = absente && !retenu;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      {...reste}
+      disabled={inerte}
+      aria-disabled={inerte ? true : undefined}
+      aria-pressed={retenu}
+      data-absente={absente ? "1" : undefined}
+      className={`inline-flex min-h-[44px] flex-shrink-0 items-center border-0 bg-transparent px-0 text-[14px] ${
+        inerte ? "cursor-not-allowed" : "cursor-pointer"
+      }`}
+      style={{
+        color: absente ? colors.muted : retenu ? colors.ink : colors.or,
+        textDecoration: retenu ? "underline" : "none",
+        textDecorationColor: colors.or,
+        textDecorationThickness: 1.5,
+        textUnderlineOffset: 6,
+        WebkitTapHighlightColor: "transparent",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
 
 /**
  * LE GESTE D'AJOUT D'UNE JOURNÉE — écrit une fois, posé à deux endroits.
@@ -1320,105 +3075,1173 @@ function AjoutAuJour({
   setOuvert,
   sansDate,
   poser,
+  poserUnClient,
+  attenteClient,
+  poserALaPlace,
+  devisExpires,
+  relancerLeDevisExpire,
+  relireLeDevisExpire,
+  morceaux,
+  morceauEnMain,
+  onPrendreMorceau,
 }: {
   cle: string;
   jour: JourIso;
-} & Pick<GestesCarte, "ouvert" | "setOuvert" | "sansDate" | "poser">) {
-  // ─── RIEN À AJOUTER : PAS DE GESTE ────────────────────────────────────────
+} & Pick<
+  GestesCarte,
+  | "ouvert"
+  | "setOuvert"
+  | "sansDate"
+  | "poser"
+  | "poserUnClient"
+  | "attenteClient"
+  | "poserALaPlace"
+  | "devisExpires"
+  | "relancerLeDevisExpire"
+  | "relireLeDevisExpire"
+  | "morceaux"
+  | "morceauEnMain"
+  | "onPrendreMorceau"
+>) {
+  const ici = ouvert?.cle === cle ? ouvert.quoi : null;
+  /**
+   * **CE QUI ATTEND UN JOUR, ET PAS SEULEMENT « SANS DATE » — 11 sept. 2026.**
+   *
+   * Sa panne, capture à l'appui : *« j'en ai que deux […] ça devait être un
+   * chantier en attente et un client »*. Une demi-journée de M. Julien
+   * attendait sous « Sans date », et la voie qui mène aux chantiers en attente
+   * avait DISPARU — parce qu'elle ne comptait que les chantiers sans date, et
+   * qu'un morceau rendu n'en est pas un : son chantier, lui, a une date.
+   *
+   * Pour lui, les deux sont la même chose — du travail qui attend un jour —, et
+   * le tiroir du bas les compte déjà ensemble depuis la veille. C'est ici que
+   * la règle manquait.
+   */
+  // **Et ceux qui attendent leur lien** — son choix B du 7 octobre 2026 : un
+  // client qui n'arrive pas à choisir ses dates se pose d'ici, comme les autres.
+  const aEnAttente = sansDate.length > 0 || morceaux.length > 0 || attenteClient.length > 0;
+
+  // ─── LE GESTE NE DISPARAÎT PLUS, PARCE QU'IL MÈNE QUELQUE PART ───────────
   //
   // **Sa remarque du 23 août 2026 :** *« lorsqu'aucun chantier n'attend de
   // jour, il ne faudrait pas que le bouton "Ajouter un chantier" apparaisse à
-  // l'écran, car il peut nous induire en erreur »*.
+  // l'écran, car il peut nous induire en erreur »*. La raison en était juste :
+  // ce geste ne CRÉAIT rien, il posait un chantier qui attendait déjà une date.
+  // Sans aucun en attente, il ne pouvait mener qu'à un cul-de-sac.
   //
-  // Et il a raison au sens strict : ce geste ne CRÉE rien. Il ouvre la liste
-  // des chantiers qui attendent une date, et les pose sur la journée. Sans
-  // aucun chantier en attente, il ne pouvait mener qu'à « Aucun chantier
-  // n'attend de jour » — un cul-de-sac qui promet un chantier de plus et rend
-  // une phrase. Pire : la même phrase s'écrivait déjà sous « Sans date », deux
-  // lignes plus bas, si bien que l'écran la disait deux fois.
+  // **Depuis sa planche du 10 septembre, il crée.** *« Que je puisse le faire
+  // sans devoir passer par la fiche client et le devis. »* Un jour vide n'est
+  // donc plus un cul-de-sac : « Un client » y mène toujours quelque part. La
+  // règle qu'il a posée — un geste qui ne mène nulle part se retire — est
+  // exactement ce qui commande de le montrer maintenant.
   //
-  // **Le bouton ne se grise pas, il DISPARAÎT.** Un rond doré éteint reste un
-  // rond doré : on appuie dessus pour savoir pourquoi il est éteint, et l'on
-  // retombe dans le même cul-de-sac par un chemin plus long.
-  if (sansDate.length === 0) return null;
-
+  // **Ce qui disparaît, c'est la VOIE qui ne mène nulle part**, et elle seule :
+  // « Un chantier en attente » ne s'offre pas quand aucun n'attend.
   return (
     <>
-      {ouvert?.quoi === "ajout-qui" && ouvert.cle === cle ? (
+      {ici === "ajout-voies" ? (
+        /* ─── SES RÉPONSES DU 17 ET DU 18 SEPTEMBRE 2026 ─────────────────────
+           *« Le C, pas d'Annuler »* : les trois voies gardent leurs mots, et
+           l'on referme par où l'on est entré — « Ajouter » devenu « Fermer »,
+           à sa place, sous les voies. Puis, sur sa planche du 18 : des mots en
+           or plutôt que des capsules, et *« quand on clique sur ajouter il
+           doit y avoir marqué client en attente »*. */
         <div className="mt-3.5 pt-3">
-          {/* Plus de repli « Aucun chantier n'attend de jour » ici : on n'y
-              arrive plus, puisque le geste lui-même n'existe pas dans ce cas.
-              Le laisser aurait été une branche morte — et surtout la promesse
-              qu'on peut encore tomber sur ce cul-de-sac. */}
+          <div className="flex flex-wrap items-center gap-x-[18px]">
+            {aEnAttente && (
+              <VoieDAjout
+                data-atlas="voie-chantier"
+                onClick={() => setOuvert({ quoi: "ajout-qui", cle })}
+              >
+                Client en attente
+              </VoieDAjout>
+            )}
+            {/* **Sa porte à part** — sa demande du 7 octobre 2026 : un devis
+                expiré ne passe jamais par « Client en attente », le client n'a
+                plus rien où signer. */}
+            {devisExpires.length > 0 && (
+              <VoieDAjout
+                data-atlas="voie-expire"
+                onClick={() => setOuvert({ quoi: "ajout-expire", cle })}
+              >
+                Devis expiré
+              </VoieDAjout>
+            )}
+            <VoieDAjout
+              data-atlas="voie-client"
+              onClick={() => setOuvert({ quoi: "ajout-client", cle })}
+            >
+              Un client
+            </VoieDAjout>
+            {/* **Ce qui n'est pas un client** — sa réponse du 10 septembre :
+                un rendez-vous à la banque, une livraison, une formation
+                prennent une demi-journée comme le reste. */}
+            <VoieDAjout
+              data-atlas="voie-temps"
+              onClick={() => setOuvert({ quoi: "ajout-temps", cle })}
+            >
+              Autre chose
+            </VoieDAjout>
+          </div>
+          <GesteAjouter ouvert onClick={() => setOuvert(null)} />
+        </div>
+      ) : ici === "ajout-qui" ? (
+        <div className="mt-3.5 pt-3">
+          {/* **LE NOM POSE LE CHANTIER, ET C'EST TOUT** — sa remarque du
+              9 septembre 2026. Il y avait ici un second temps : on touchait le
+              nom, et trois boutons demandaient « Matin, Après-midi ou
+              Journée ». La durée du chantier étant déjà en base, cette
+              question-là ne comblait aucun trou — elle proposait d'écraser ce
+              que le devis avait fixé (voir `poser`). Un geste, une pose. */}
           <Choisir>
             {sansDate.map((s) => (
-              <Petit
-                key={s.id}
-                data-qui={s.id}
-                onClick={() => setOuvert({ quoi: "ajout-quand", cle, chantierId: s.id })}
-              >
+              <Petit key={s.id} data-qui={s.id} onClick={() => poser(s.id, jour)}>
                 {s.nom}
               </Petit>
             ))}
-          </Choisir>
-        </div>
-      ) : ouvert?.quoi === "ajout-quand" && ouvert.cle === cle ? (
-        // **Le nom choisi prend la forme des autres lignes** — sa demande du
-        // 21 août : « j'aimerais que le nom se mette au même niveau que ceux
-        // qui sont déjà sélectionnés ». En petit gris à côté des boutons, il
-        // se lisait comme une étiquette ; en serif, il se lit comme le
-        // chantier qu'il va devenir.
-        <div
-          data-atlas="en-attente"
-          className="mt-3.5 flex flex-wrap items-center gap-2 pt-3"
-        >
-          <span
-            className="flex-1"
-            style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2, color: colors.ink }}
-          >
-            {sansDate.find((s) => s.id === ouvert.chantierId)?.nom ?? ""}
-          </span>
-          <span className="flex flex-shrink-0 gap-1.5">
-            {(Object.keys(MOT_QUAND) as QuandChantier[]).map((v) => (
+            {/* **Une demi-journée rendue se prend, elle ne se pose pas d'un
+                coup** : le jour a deux moitiés, et choisir laquelle à sa place
+                serait décider de son chantier. On la met au doigt — le geste du
+                tiroir, écrit une fois — et les « Poser ici » de la journée
+                s'allument juste au-dessus. */}
+            {morceaux.map((m) => (
               <Petit
-                key={v}
-                data-quand={v}
-                onClick={() => poser(ouvert.chantierId, jour, v)}
+                key={`morceau-${m.chantier.id}`}
+                data-qui-morceau={m.chantier.id}
+                retenue={morceauEnMain === m.chantier.id}
+                onClick={() => {
+                  onPrendreMorceau(m.chantier.id);
+                  setOuvert(null);
+                }}
               >
-                {MOT_QUAND[v]}
+                {m.chantier.nom}, ½
               </Petit>
             ))}
-          </span>
+            {/* **Son devis est parti, il n'a pas choisi** : le nom ne pose pas
+                encore, il demande comment il signera. Poser ne vaut jamais
+                accord (`pose-a-sa-place.ts`). */}
+            {attenteClient.map((c) => (
+              <Petit
+                key={`lien-${c.id}`}
+                data-qui-lien={c.id}
+                onClick={() => setOuvert({ quoi: "ajout-signature", cle, chantierId: c.id })}
+              >
+                {c.nom}, devis envoyé
+              </Petit>
+            ))}
+          </Choisir>
+          {/* **« Annuler » ramène aux deux voies**, sa demande du 10 septembre :
+              sans lui, changer d'avis oblige à refermer le geste entier. */}
+          <div className="mt-2 flex justify-end">
+            <Petit data-atlas="annuler-ajout" onClick={() => setOuvert({ quoi: "ajout-voies", cle })}>
+              Annuler
+            </Petit>
+          </div>
         </div>
+      ) : ici === "ajout-signature" && ouvert?.quoi === "ajout-signature" ? (
+        <CommentIlSigne
+          jour={jour}
+          chantier={attenteClient.find((c) => c.id === ouvert.chantierId) ?? null}
+          onAnnuler={() => setOuvert({ quoi: "ajout-qui", cle })}
+          poserALaPlace={poserALaPlace}
+        />
+      ) : ici === "ajout-expire" ? (
+        <div className="mt-3.5 pt-3">
+          <Choisir>
+            {devisExpires.map((c) => (
+              <Petit
+                key={`expire-${c.id}`}
+                data-qui-expire={c.id}
+                onClick={() => setOuvert({ quoi: "ajout-relance", cle, chantierId: c.id, etape: "choix" })}
+              >
+                {c.nom}
+              </Petit>
+            ))}
+          </Choisir>
+          <div className="mt-2 flex justify-end">
+            <Petit data-atlas="annuler-ajout" onClick={() => setOuvert({ quoi: "ajout-voies", cle })}>
+              Annuler
+            </Petit>
+          </div>
+        </div>
+      ) : ici === "ajout-relance" && ouvert?.quoi === "ajout-relance" ? (
+        ouvert.etape === "signe" ? (
+          /* **La même question que « Poser à sa place »**, et le même
+             composant : seul change ce qui l'écrit, un lien NEUF d'abord. */
+          <CommentIlSigne
+            jour={jour}
+            chantier={devisExpires.find((c) => c.id === ouvert.chantierId) ?? null}
+            onAnnuler={() => setOuvert({ ...ouvert, etape: "choix" })}
+            poserALaPlace={relancerLeDevisExpire}
+          />
+        ) : (
+          <RelanceDuDevisExpire
+            jour={jour}
+            chantier={devisExpires.find((c) => c.id === ouvert.chantierId) ?? null}
+            onRenvoyer={() => setOuvert({ ...ouvert, etape: "signe" })}
+            onPoser={(id) => poser(id, jour)}
+            relire={relireLeDevisExpire}
+            onAnnuler={() => setOuvert({ quoi: "ajout-expire", cle })}
+          />
+        )
+      ) : ici === "ajout-client" ? (
+        <AjoutDunClient
+          jour={jour}
+          onAnnuler={() => setOuvert({ quoi: "ajout-voies", cle })}
+          onPose={(chantier) => {
+            setOuvert(null);
+            poserUnClient(chantier);
+          }}
+        />
+      ) : ici === "ajout-temps" ? (
+        <AjoutDeTemps
+          jour={jour}
+          onAnnuler={() => setOuvert({ quoi: "ajout-voies", cle })}
+          onPose={(chantier) => {
+            setOuvert(null);
+            poserUnClient(chantier);
+          }}
+        />
       ) : (
-        /* **Plus de filet au-dessus du « + »** — sa demande du 23 août 2026 :
-           *« la ligne qui se trouve entre le nom et le "+ Ajouter un chantier",
-           supprime-la »*. La planche 86 n'en porte pas : c'est l'écran qui en
-           avait ajouté un, et il refermait la journée juste avant le geste qui
-           la prolonge. */
-        <div
-          className="mt-3.5 flex items-center justify-center gap-2.5 pt-3 text-[12.5px]"
-          style={{ color: colors.inkSoft }}
-        >
-          <button
-            type="button"
-            data-atlas="ajouter"
-            aria-label="Ajouter un chantier"
-            onClick={() => setOuvert({ quoi: "ajout-qui", cle })}
-            className="h-[34px] w-[34px] cursor-pointer rounded-full text-[19px] leading-none"
-            style={{
-              border: `1px solid ${colors.or}`,
-              background: "transparent",
-              color: colors.or,
-              WebkitTapHighlightColor: "transparent",
-            }}
-          >
-            +
-          </button>
-          <span>Ajouter un chantier</span>
-        </div>
+        /* **Plus de filet au-dessus d'« Ajouter »** — sa demande du 23 août
+           2026 : *« la ligne qui se trouve entre le nom et le "+ Ajouter un
+           chantier", supprime-la »*. La planche 86 n'en porte pas : c'est
+           l'écran qui en avait ajouté un, et il refermait la journée juste
+           avant le geste qui la prolonge. */
+        <GesteAjouter ouvert={false} onClick={() => setOuvert({ quoi: "ajout-voies", cle })} />
       )}
     </>
+  );
+}
+
+/**
+ * « AJOUTER », ET LE MÊME MOT DEVENU « FERMER » — au milieu, en or.
+ *
+ * **C'était un rond cerné d'or avec un « + »** (sa demande du 21 août 2026 :
+ * *« un rond avec un plus »*). Sa planche du 18 septembre 2026 l'a remplacé par
+ * le mot seul, en or, comme tout ce qui s'appuie sur cette fiche : *« j'en ai
+ * marre des gros boutons »*. Il garde sa place — sous les chantiers, en bas de
+ * la fiche — et son repère `ajouter` : ouvert, il dit « Fermer » et referme,
+ * c'est sa réponse C du 17 septembre (*« le C, pas d'Annuler »*).
+ */
+function GesteAjouter({ ouvert, onClick }: { ouvert: boolean; onClick: () => void }) {
+  return (
+    <div className="mt-2 flex justify-center">
+      <MotEnOr data-atlas="ajouter" aria-label={ouvert ? "Fermer" : "Ajouter"} onClick={onClick}>
+        {ouvert ? "Fermer" : "Ajouter"}
+      </MotEnOr>
+    </div>
+  );
+}
+
+/**
+ * LE DESSIN DES CHAMPS DE CET ÉCRAN, écrit une fois pour les trois voies.
+ *
+ * **Repris du pense-bête du chantier**, qui vit dans la même carte : même
+ * rayon, même filet, même fond. Un second style aurait donné deux façons de
+ * dessiner un champ à trois centimètres d'écart.
+ */
+const CHAMP = "mt-2 w-full rounded-[9px] border-0 px-3 py-3 outline-none";
+const STYLE_CHAMP = {
+  boxShadow: `inset 0 0 0 1px ${colors.line}`,
+  background: colors.card,
+  color: colors.ink,
+  minHeight: 48,
+  // **16 px au moins.** En dessous, iOS grossit la page à la mise au point et
+  // l'écran saute sous le doigt — un piège déjà payé sur le pense-bête.
+  fontSize: 16,
+} as const;
+
+/**
+ * L'une des voies de « Ajouter » — même dessin, trois destinations.
+ *
+ * **Un mot en or, plus une capsule** — sa planche du 18 septembre 2026. La
+ * forme est celle de tout geste de cette fiche (`MotEnOr`) ; les repères des
+ * suites (`voie-chantier`, `voie-client`, `voie-temps`) ne bougent pas.
+ */
+function VoieDAjout({
+  children,
+  onClick,
+  ...reste
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+} & React.ComponentPropsWithoutRef<"button">) {
+  return (
+    <MotEnOr onClick={onClick} {...reste}>
+      {children}
+    </MotEnOr>
+  );
+}
+
+/**
+ * COMMENT IL SIGNERA — son choix B du 7 octobre 2026.
+ *
+ * *« Le client est âgé, il n'arrive pas à choisir ses dates via mon lien. »*
+ * Le patron le pose, et dit comment l'accord viendra :
+ *
+ * - **« Signe sur son lien »** : son lien ne montre plus que ces jours et
+ *   « J'accepte ce devis ». Le planning écrit « Pas encore signé ».
+ * - **« Signé sur papier »** : il a le devis papier signé, l'accord s'enregistre
+ *   à ce titre et son lien se ferme.
+ *
+ * **Poser ne vaut jamais accord** — il l'a proposé, c'est refusé, et il l'a
+ * accepté le même jour (`pose-a-sa-place.ts`).
+ *
+ * **La case des 14 jours n'apparaît que sur le papier, et que dans le délai** :
+ * sur le lien, c'est le client qui la coche lui-même. Sa présence suit la même
+ * règle que la page du client (`dansDelaiRetractation`), et le serveur la
+ * revérifie.
+ */
+/**
+ * UN DEVIS EXPIRÉ QUI REVIENT — sa planche du 7 octobre 2026
+ * (`appli/relancer-un-devis-expire.html`), retenue telle quelle.
+ *
+ * Trois gestes. **Relire** : ses lignes aux prix du jour, sur la page du devis.
+ * **Renvoyer tel quel** : un lien neuf, puis comment il signe. **Poser sans le
+ * renvoyer** : sa décision, et rien n'écrit ensuite « Pas encore signé » ; c'est
+ * lui qui a l'accord du client en main.
+ */
+function RelanceDuDevisExpire({
+  jour,
+  chantier,
+  onRenvoyer,
+  onPoser,
+  relire,
+  onAnnuler,
+}: {
+  jour: JourIso;
+  chantier: ChantierPlanning | null;
+  onRenvoyer: () => void;
+  onPoser: (chantierId: string) => void;
+  relire: GestesCarte["relireLeDevisExpire"];
+  onAnnuler: () => void;
+}) {
+  const [enCours, setEnCours] = useState(false);
+  const [refus, setRefus] = useState<string | null>(null);
+  if (!chantier) {
+    return (
+      <div className="mt-3.5 pt-3">
+        <p data-atlas="refus-du-geste" className="text-[13px]" style={{ color: colors.bordeaux }}>
+          Ce devis n&apos;est plus expiré.
+        </p>
+        <div className="mt-2 flex justify-end">
+          <Petit data-atlas="annuler-ajout" onClick={onAnnuler}>
+            Annuler
+          </Petit>
+        </div>
+      </div>
+    );
+  }
+  const c = chantier;
+  return (
+    <div className="mt-3.5 pt-3" data-atlas="relance-du-devis">
+      <p className="text-[14px]" style={{ color: colors.inkSoft }}>
+        Le lien de son devis a expiré{c.envoiExpireAt ? ` le ${jourEnLettres(c.envoiExpireAt)}` : ""}.
+      </p>
+      <Choisir>
+        <Petit
+          data-atlas="relire-le-devis"
+          onClick={() => {
+            if (enCours) return;
+            setEnCours(true);
+            setRefus(null);
+            relire(c.id, jour).then((erreur) => {
+              setEnCours(false);
+              if (erreur) setRefus(erreur);
+            });
+          }}
+        >
+          {enCours ? "…" : "Relire le devis"}
+        </Petit>
+        <Petit data-atlas="renvoyer-tel-quel" onClick={onRenvoyer}>
+          Le renvoyer tel quel
+        </Petit>
+        <Petit data-atlas="poser-sans-renvoyer" onClick={() => onPoser(c.id)}>
+          Le poser sans le renvoyer
+        </Petit>
+      </Choisir>
+      {refus && (
+        <p data-atlas="refus-du-geste" className="mt-2 text-[13px]" style={{ color: colors.bordeaux }}>
+          {refus}
+        </p>
+      )}
+      <div className="mt-2 flex justify-end">
+        <Petit data-atlas="annuler-ajout" onClick={onAnnuler}>
+          Annuler
+        </Petit>
+      </div>
+    </div>
+  );
+}
+
+/** « 21 septembre » : le jour où le lien est mort, comme il le dirait. */
+function jourEnLettres(d: Date | string): string {
+  return new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "long", timeZone: "Europe/Paris" });
+}
+
+function CommentIlSigne({
+  jour,
+  chantier,
+  onAnnuler,
+  poserALaPlace,
+}: {
+  jour: JourIso;
+  chantier: ChantierPlanning | null;
+  onAnnuler: () => void;
+  poserALaPlace: GestesCarte["poserALaPlace"];
+}) {
+  const [papier, setPapier] = useState(false);
+  const [demandeEcrite, setDemandeEcrite] = useState(false);
+  const [enCours, setEnCours] = useState(false);
+  const [refus, setRefus] = useState<string | null>(null);
+  const dansLeDelai = dansDelaiRetractation(jour, jourIso(new Date()));
+
+  // Le client a répondu entre-temps : il n'est plus dans la liste.
+  if (!chantier) {
+    return (
+      <div className="mt-3.5 pt-3">
+        <p data-atlas="refus-du-geste" className="text-[13px]" style={{ color: colors.bordeaux }}>
+          Ce client a déjà répondu.
+        </p>
+        <div className="mt-2 flex justify-end">
+          <Petit data-atlas="annuler-ajout" onClick={onAnnuler}>
+            Annuler
+          </Petit>
+        </div>
+      </div>
+    );
+  }
+
+  function envoyer(signature: Parameters<GestesCarte["poserALaPlace"]>[2]) {
+    if (enCours || !chantier) return;
+    setEnCours(true);
+    setRefus(null);
+    poserALaPlace(chantier.id, jour, signature).then((erreur) => {
+      setEnCours(false);
+      if (erreur) setRefus(erreur);
+    });
+  }
+
+  return (
+    <div className="mt-3.5 pt-3">
+      <p className="text-[14px]" style={{ color: colors.inkSoft }}>
+        {chantier.nom} n&apos;a pas encore signé son devis.
+      </p>
+      <Choisir>
+        <Petit data-atlas="signe-sur-son-lien" onClick={() => envoyer({ maniere: "lien" })}>
+          Signe sur son lien
+        </Petit>
+        <Petit
+          data-atlas="signe-sur-papier"
+          retenue={papier}
+          onClick={() => {
+            if (!dansLeDelai) envoyer({ maniere: "papier", demarrageAnticipe: false });
+            else setPapier(true);
+          }}
+        >
+          Signé sur papier
+        </Petit>
+      </Choisir>
+      {papier && dansLeDelai && (
+        <>
+          <label className="mt-2.5 flex items-start gap-2.5 text-[13px]" style={{ color: colors.inkSoft }}>
+            <input
+              type="checkbox"
+              data-atlas="demande-ecrite"
+              checked={demandeEcrite}
+              onChange={(e) => setDemandeEcrite(e.target.checked)}
+              className="mt-0.5 h-5 w-5 flex-none"
+            />
+            <span>Il a demandé par écrit de commencer avant la fin de ses 14 jours de rétractation.</span>
+          </label>
+          <div className="mt-2 flex justify-end">
+            <Petit
+              data-atlas="poser-sur-papier"
+              retenue={demandeEcrite}
+              onClick={() => {
+                if (demandeEcrite) envoyer({ maniere: "papier", demarrageAnticipe: true });
+              }}
+            >
+              {enCours ? "…" : "Poser"}
+            </Petit>
+          </div>
+        </>
+      )}
+      {refus && (
+        <p data-atlas="refus-du-geste" className="mt-2 text-[13px]" style={{ color: colors.bordeaux }}>
+          {refus}
+        </p>
+      )}
+      <div className="mt-2 flex justify-end">
+        <Petit data-atlas="annuler-ajout" onClick={onAnnuler}>
+          Annuler
+        </Petit>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * DU TEMPS QUI N'EST PAS UN CLIENT — la banque, une livraison, une formation.
+ *
+ * **Sa réponse du 10 septembre 2026**, à la question que sa propre correction
+ * avait ouverte : la troisième entrée existe.
+ *
+ * **Un seul champ, et rien d'autre.** Il n'y a personne à reconnaître, aucune
+ * fiche à créer, aucune adresse à rejoindre : ce qu'on écrit EST le nom de ce
+ * qui prend la place. Passer par le chemin du client aurait fait chercher un
+ * homonyme à « Banque », et proposé de lui créer une fiche.
+ */
+function AjoutDeTemps({
+  jour,
+  onAnnuler,
+  onPose,
+}: {
+  jour: JourIso;
+  onAnnuler: () => void;
+  onPose: (chantier: ChantierPlanning) => void;
+}) {
+  const [quoi, setQuoi] = useState("");
+  const [quand, setQuand] = useState<QuandPoser>("matin");
+  const [enCours, setEnCours] = useState(false);
+  const [refus, setRefus] = useState<string | null>(null);
+  const pret = quoi.trim().length >= 2 && !enCours;
+
+  return (
+    <div className="mt-3.5 pt-3">
+      <input
+        data-atlas="quoi-cest"
+        autoFocus
+        value={quoi}
+        onChange={(e) => setQuoi(e.target.value)}
+        placeholder="Rendez-vous à la banque, livraison…"
+        className={CHAMP}
+        style={STYLE_CHAMP}
+      />
+      <BasculeDuMoment retenu={quand} onChoisir={setQuand} repere="quand-poser" />
+      {refus && (
+        <p data-atlas="refus-du-geste" className="mt-2 text-[13px]" style={{ color: colors.bordeaux }}>
+          {refus}
+        </p>
+      )}
+      <div className="mt-2.5 flex items-center justify-between gap-2">
+        <Petit data-atlas="annuler-ajout" onClick={onAnnuler}>
+          Annuler
+        </Petit>
+      </div>
+      <div className="mt-2 flex justify-end">
+        <Petit
+          data-atlas="poser-le-temps"
+          retenue={pret}
+          onClick={() => {
+            if (!pret) return;
+            setEnCours(true);
+            poserDuTempsAction(jour, quand, quoi)
+              .then((r) => {
+                setEnCours(false);
+                if (r.succes) onPose(r.chantier);
+                else {
+                  console.error("Temps refusé", { jour, quand, erreur: r.erreur });
+                  setRefus(r.erreur);
+                }
+              })
+              .catch((e) => {
+                console.error("Temps parti dans le vide", e);
+                setEnCours(false);
+                setRefus("Rien n'est parti. Rechargez la page.");
+              });
+          }}
+        >
+          {enCours ? "…" : "Poser"}
+        </Petit>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * POSER UN CLIENT SUR CE JOUR — sans fiche à remplir d'avance, sans devis
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * **Sa demande du 10 septembre 2026**, planche `appli/bloquer-sans-devis.html` :
+ * *« si j'ai un chantier à rajouter ou quelque chose, que je puisse le faire
+ * sans devoir passer par la fiche client et le devis »*, puis *« si le client
+ * n'est pas reconnu, il faut qu'il ajoute aussi sa fiche client automatiquement,
+ * comme quand on ajoute un client par la voie normale »*.
+ *
+ * **Trois états, et un seul écran** : on tape un nom ; s'il est connu on le
+ * touche, sinon les trois cases de sa fiche s'ouvrent. Puis matin, après-midi
+ * ou la journée — et c'est posé.
+ *
+ * **« Journée » existe ICI et nulle part ailleurs**, et ce n'est pas une
+ * exception oubliée : partout ailleurs le moment réécrivait ce que le devis
+ * avait vendu (le défaut du 9 septembre). Ici, le chantier naît de ce geste :
+ * le choix EST sa durée, il ne recouvre rien.
+ */
+function AjoutDunClient({
+  jour,
+  onAnnuler,
+  onPose,
+}: {
+  jour: JourIso;
+  onAnnuler: () => void;
+  onPose: (chantier: ChantierPlanning) => void;
+}) {
+  const [saisie, setSaisie] = useState("");
+  /**
+   * LA DERNIÈRE RÉPONSE DU SERVEUR, ET LE MOT QU'ELLE CONCERNE.
+   *
+   * **Garder le mot avec sa réponse est ce qui rend la liste honnête.** Une
+   * simple liste de clients affiche, le temps d'un aller-retour, les résultats
+   * du mot d'AVANT — et l'écran annonce alors « Inconnu » sur un nom qu'il
+   * connaît, ou l'inverse. Ici, ce qui ne répond pas à ce qui est tapé n'est
+   * pas montré.
+   */
+  const [reponse, setReponse] = useState<{ mot: string; clients: ClientProposé[] }>({
+    mot: "",
+    clients: [],
+  });
+  const [retenu, setRetenu] = useState<ClientProposé | null>(null);
+  const [fiche, setFiche] = useState({ telephone: "", email: "", adresse: "" });
+  const [quand, setQuand] = useState<QuandPoser>("matin");
+  const [enCours, setEnCours] = useState(false);
+  const [refus, setRefus] = useState<string | null>(null);
+
+  /**
+   * **La recherche part au SERVEUR, et elle attend qu'il s'arrête d'écrire.**
+   *
+   * Sans ce délai, chaque frappe ferait un aller-retour — huit requêtes pour
+   * « Bernard », dont sept que personne ne lit. Et les réponses ne reviennent
+   * pas dans l'ordre où elles partent : la liste afficherait par instants les
+   * résultats d'un mot déjà effacé.
+   */
+  const mot = saisie.trim();
+  useEffect(() => {
+    if (retenu) return;
+    if (mot.length < 2) return;
+    let vivant = true;
+    const minuteur = setTimeout(() => {
+      chercherDesClientsAction(mot)
+        .then((clients) => {
+          if (vivant) setReponse({ mot, clients });
+        })
+        // **UNE RECHERCHE QUI TOMBE NE DOIT PAS FERMER LA FICHE.** Sans ce
+        // rattrapage, la réponse n'arrivait jamais, « on cherche encore »
+        // restait vrai pour toujours, et les trois cases de la fiche ne
+        // s'ouvraient PLUS JAMAIS — sa panne du 11 septembre 2026, sur une page
+        // qui avait survécu à son serveur. On rend alors une liste vide : il
+        // est inconnu, ce qui est le cas le plus utile, et il peut écrire.
+        .catch((e) => {
+          console.error("Recherche de client partie dans le vide", e);
+          if (vivant) setReponse({ mot, clients: [] });
+        });
+    }, 250);
+    return () => {
+      vivant = false;
+      clearTimeout(minuteur);
+    };
+  }, [mot, retenu]);
+
+  /** Ce que le serveur a répondu POUR CE MOT — rien d'autre ne s'affiche. */
+  const trouves = reponse.mot === mot ? reponse.clients : [];
+  /** On interroge encore : ni liste, ni verdict. */
+  const cherche = mot.length >= 2 && reponse.mot !== mot;
+  // **« Inconnu » n'apparaît qu'une fois la réponse arrivée.** Sans cette
+  // attente, la phrase clignoterait à chaque lettre — et un client connu se
+  // verrait annoncer comme inconnu le temps d'un aller-retour.
+  const inconnu = retenu === null && !cherche && trouves.length === 0 && mot.length >= 2;
+  const pret = (retenu !== null || mot.length >= 2) && !enCours;
+
+  function poser() {
+    if (!pret) return;
+    setEnCours(true);
+    poserUnClientAction(jour, quand, {
+      nom: retenu?.nom ?? saisie,
+      // **On n'envoie SA saisie que pour un client inconnu.** Sur un client
+      // reconnu, ces cases ne sont pas à l'écran : envoyer leur contenu
+      // reviendrait à écrire dans sa fiche ce qu'il n'a pas relu.
+      ...(inconnu ? fiche : {}),
+    })
+      .then((r) => {
+        setEnCours(false);
+        if (r.succes) onPose(r.chantier);
+        else {
+          console.error("Pose d'un client refusée", { jour, quand, erreur: r.erreur });
+          setRefus(r.erreur);
+        }
+      })
+      // **Un appui sans effet et sans message est un défaut muet** : c'est ce
+      // qu'il a vu le 11 septembre 2026. Le `.then()` seul n'attrape rien quand
+      // la promesse est REJETÉE — une page qui a survécu à son serveur poste
+      // dans le vide.
+      .catch((e) => {
+        console.error("Pose d'un client partie dans le vide", e);
+        setEnCours(false);
+        setRefus("Rien n'est parti. Rechargez la page.");
+      });
+  }
+
+
+  return (
+    <div className="mt-3.5 pt-3">
+      <ChampRecherche
+        dataAtlas="nom-du-client"
+        autoFocus
+        valeur={saisie}
+        onChange={(v) => {
+          setSaisie(v);
+          setRetenu(null);
+        }}
+        placeholder="Nom du client"
+        ariaLabel="Nom du client"
+        className="mt-2"
+      />
+
+      {retenu ? (
+        <p data-atlas="client-retenu" className="mt-2 text-[13px]" style={{ color: colors.inkSoft }}>
+          {retenu.nom}
+          <span className="block" style={{ color: colors.muted }}>
+            {retenu.telephone || "sans numéro"} · {retenu.adresse || "sans adresse"}
+          </span>
+        </p>
+      ) : trouves.length > 0 ? (
+        <Choisir>
+          {trouves.map((c) => (
+            <Petit
+              key={c.id}
+              data-atlas="client-trouve"
+              onClick={() => {
+                setRetenu(c);
+                setSaisie(c.nom);
+              }}
+            >
+              {c.nom}
+            </Petit>
+          ))}
+        </Choisir>
+      ) : inconnu ? (
+        /* **Inconnu : on ne refuse pas, on ouvre sa fiche.** Sa demande du
+           10 septembre — le numéro et l'adresse s'écrivent ici, une fois, et
+           la fiche existe ensuite comme les autres. */
+        <>
+          <p data-atlas="fiche-a-creer" className="mt-2 text-[13px]" style={{ color: colors.inkSoft }}>
+            Inconnu, sa fiche sera créée
+          </p>
+          {(
+            [
+              ["telephone", "Téléphone"],
+              ["email", "E-mail"],
+              ["adresse", "Adresse du chantier"],
+            ] as const
+          ).map(([champName, mot]) => (
+            <input
+              key={champName}
+              data-atlas={`fiche-${champName}`}
+              value={fiche[champName]}
+              onChange={(e) => setFiche((f) => ({ ...f, [champName]: e.target.value }))}
+              placeholder={mot}
+              className={CHAMP}
+              style={STYLE_CHAMP}
+            />
+          ))}
+        </>
+      ) : null}
+
+      {/* **Le même interrupteur que « qui n'est pas là »**, à un repère près :
+          la question est la même — matin, après-midi, ou la journée. */}
+      <BasculeDuMoment retenu={quand} onChoisir={setQuand} repere="quand-poser" />
+
+      {refus && (
+        <p data-atlas="refus-du-geste" className="mt-2 text-[13px]" style={{ color: colors.bordeaux }}>
+          {refus}
+        </p>
+      )}
+
+      <div className="mt-2.5 flex items-center justify-between gap-2">
+        <Petit data-atlas="annuler-ajout" onClick={onAnnuler}>
+          Annuler
+        </Petit>
+      </div>
+
+      <div className="mt-2 flex justify-end">
+        <Petit data-atlas="poser-le-client" onClick={poser} retenue={pret}>
+          {enCours ? "…" : "Poser"}
+        </Petit>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * « Je ne suis pas là ce jour-là » — le raccourci du 6 septembre 2026.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **CE QUE CE COMPOSANT NE FAIT PAS, ET C'EST L'ESSENTIEL.** Il ne décide RIEN
+ * de la disponibilité. Fermer un jour écrit une absence d'un jour — la même
+ * ligne que l'écran des Réglages —, et c'est `fusionnerAbsences` qui, comme
+ * depuis le 14 août, retire la place. Les trois chemins la voient déjà :
+ * l'écran d'envoi, l'envoi, et la revérification quand le client répond.
+ *
+ * **Une seconde façon de fermer un jour aurait divergé de la première**
+ * (`CLAUDE.md` §3), et c'est la disponibilité qui l'aurait payé : un jour
+ * fermé ici mais ouvert là-bas part chez un client.
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ * **SANS SALARIÉ, UN SEUL APPUI.** Sa correction du 6 septembre : *« c'est pas
+ * les équipes, c'est le nom des salariés qu'il faut mettre »*. Quand il
+ * travaille seul, il n'y a personne à désigner : une ligne, un appui, le jour
+ * se ferme. La question « qui ? » ne s'ouvre que s'il a quelqu'un — la poser à
+ * un artisan seul serait un geste de plus pour rien.
+ *
+ * **RIEN DE CACHÉ** (`PRODUCT.md`) : pas d'appui long, pas de glissement. Une
+ * ligne visible dans la carte qu'il ouvre déjà en touchant un jour.
+ *
+ * **UN JOUR PASSÉ NE SE FERME PAS** : l'appelant ne rend ce bloc que sur un
+ * jour à venir, par le même drapeau `ecriture` que le reste de la carte.
+ */
+/**
+ * Les deux façons de restreindre une absence — la journée entière n'y est pas.
+ *
+ * **Son choix D2, le 8 septembre 2026, et c'est une mesure.** Trois pastilles
+ * plus le mot « Quand » faisaient 440 px pour 354 disponibles : la ligne se
+ * repliait dès qu'un écran était un peu plus étroit que le sien, et une
+ * troisième pastille « La journée » ne tient pas davantage dans l'application
+ * que sur la planche — vérifié à l'écran, pas supposé.
+ *
+ * **Toucher un nom pose la journée entière, tout de suite.** C'est le cas
+ * courant, et il reste à un appui, exactement comme avant ce lot. Les deux
+ * pastilles ci-dessous ne servent qu'à RESTREINDRE ce qui vient d'être posé —
+ * le jour où ça compte.
+ */
+type MomentEntier = "matin" | "apres_midi" | "journee";
+
+/**
+ * LES TROIS MOMENTS, ÉCRITS UNE FOIS — l'absence les emploie, la pose aussi.
+ *
+ * **Renommés le 10 septembre 2026** : ils s'appelaient « moments d'absence », et
+ * poser un client ou du temps sur une journée pose exactement la même question.
+ * Un second tableau aurait donné deux listes de trois mots dans le même écran,
+ * et la première divergence — « Aprem » d'un côté, « Après-midi » de l'autre —
+ * serait passée inaperçue.
+ */
+const LES_TROIS_MOMENTS: { cle: MomentEntier; mot: string; dit: string }[] = [
+  { cle: "matin", mot: "Matin", dit: "matin" },
+  { cle: "apres_midi", mot: "Après-midi", dit: "après-midi" },
+  { cle: "journee", mot: "Journée", dit: "journée" },
+];
+
+/**
+ * Ce que porte une absence déjà écrite : une moitié, ou la journée.
+ *
+ * **Les deux bornes sont des chaînes libres en base** (`AbsenceEquipe`), et
+ * c'est délibéré côté dépôt. Ici on ne garde que ce qu'on sait dessiner : une
+ * borne inconnue vaut la journée, comme partout ailleurs dans ce fichier.
+ */
+function momentDe(a: AbsenceDuPlanning): MomentEntier {
+  if (a.premierDemi !== a.dernierDemi) return "journee";
+  if (a.premierDemi === "matin" || a.premierDemi === "apres_midi") return a.premierDemi;
+  return "journee";
+}
+
+/**
+ * LE GESTE D'UNE ABSENCE — un +, deux mots, aucun contour.
+ *
+ * **Sa décision du 9 septembre 2026**, planche `appli/salarie-s-absente.html` :
+ * *« Quelqu'un pas là faut le changer par salarié absent avec un petit +
+ * plutôt que le gros bouton »*, puis *« Salarié absent + sans contour ! »*.
+ *
+ * **CE QUI REMPLACE LE CERNE, C'EST LE +, ET CE N'EST PAS UN ORNEMENT.** Le
+ * 7 septembre, ce même geste était une phrase nue et lui a échappé une journée
+ * entière : *« comment savoir qu'il faut cliquer dessus ? »*. On y avait
+ * répondu par une pastille ; il la trouve trop grosse, et il a raison — mais
+ * on ne peut pas retirer la pastille ET laisser du texte nu, ce serait
+ * remettre le défaut du 7. Le + porte ce que le cerne portait : « ceci
+ * s'appuie, et ça ajoute quelque chose ».
+ *
+ * **L'ENCRE RÉTRÉCIT, LA CIBLE NON** : 44 px de haut, pleine largeur. Un geste
+ * qu'on rate avec des gants ne vaut pas mieux qu'un geste qu'on ne voit pas.
+ */
+function GesteAbsence({
+  children,
+  onClick,
+  ...reste
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+} & Record<string, unknown>) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      {...reste}
+      // **AU MILIEU — sa demande du 17 septembre 2026**, planche
+      // `appli/deplacer-sur-le-calendrier.html` : *« mets la touche salarié
+      // absent au milieu »*. Collée à gauche, à la taille du texte courant,
+      // elle se lisait comme une ligne de la fiche et non comme un geste. Elle
+      // garde sa PLACE — sous la date, au-dessus du nom.
+      //
+      // **EN OR, PLUS EN GRAS — sa planche du 18 septembre 2026**
+      // (`appli/planning-tout-ensemble-en-mieux.html`) : sur cette fiche, un
+      // mot en or est un geste, un mot noir est un fait. Le gras servait à dire
+      // « ceci s'appuie » ; l'or le dit pour toute la fiche, et un mot en or ET
+      // en gras crierait. Le « + » reste — *« garde le + avant salarié
+      // absent ? »*, sa retouche du 18 au soir.
+      className="flex min-h-[44px] w-full items-center justify-center gap-2.5 py-[9px] text-center text-[14px]"
+      style={{ color: colors.or, WebkitTapHighlightColor: "transparent" }}
+    >
+      <span
+        aria-hidden="true"
+        className="text-[19px] leading-none"
+        style={{ flex: "none", marginTop: -2 }}
+      >
+        +
+      </span>
+      <span>{children}</span>
+    </button>
+  );
+}
+
+/**
+ * LE CHOIX DU MOMENT — trois mots, un seul retenu.
+ *
+ * **Sa demande du 10 septembre 2026, capture à l'appui :** *« pour le choix
+ * matin aprem journée utilise le bouton pour déplacer un chantier »* — c'était
+ * alors un interrupteur à trois cases, recopié de `appli/deplacer-plus-simple`.
+ *
+ * **Des mots depuis sa planche du 18 septembre 2026**
+ * (`appli/planning-tout-ensemble-en-mieux.html`) : *« j'en ai marre des gros
+ * boutons ! Je veux une page élégante et minimaliste qu'on comprend direct »*.
+ * Ce que l'interrupteur disait par sa forme — une seule position allumée —, le
+ * mot retenu le dit en noir, souligné d'or ; les deux autres restent en or,
+ * comme tout ce qui s'appuie sur cette fiche. Le contrat des suites ne bouge
+ * pas : même repère, `data-quand`, `aria-pressed`.
+ *
+ * **44 px de haut, toujours** : l'encre rétrécit, la cible non.
+ */
+function BasculeDuMoment({
+  retenu,
+  onChoisir,
+  repere = "quand-absent",
+  moments = LES_TROIS_MOMENTS,
+}: {
+  retenu: MomentEntier | null;
+  onChoisir: (moment: MomentEntier) => void;
+  /**
+   * **Le repère des suites, et il change avec le GESTE.** Deux gestes de cet
+   * écran posent la même question — qui n'est pas là, et quand poser — et
+   * partagent donc ce dessin. Leur donner le même repère ferait viser à une
+   * suite l'interrupteur de l'autre, ouvert dans la même carte.
+   */
+  repere?: string;
+  moments?: readonly { cle: MomentEntier; mot: string }[];
+}) {
+  return (
+    <div className="mt-1 flex flex-wrap items-center gap-x-[18px]">
+      {moments.map((m) => {
+        const allume = m.cle === retenu;
+        return (
+          <MotAChoisir
+            key={m.cle}
+            data-atlas={repere}
+            data-quand={m.cle}
+            retenu={allume}
+            onClick={() => onChoisir(m.cle)}
+          >
+            {m.mot}
+          </MotAChoisir>
+        );
+      })}
+    </div>
+  );
+}
+
+function PasLaCeJour({
+  jour,
+  absences,
+  lignesEquipes,
+  nombreSalaries,
+  nomEquipe,
+  fermer,
+  rouvrir,
+}: {
+  jour: JourIso;
+  absences: AbsenceDuPlanning[];
+  lignesEquipes: { rang: number; nom?: string | null }[];
+  nombreSalaries: number;
+  nomEquipe: (rang: number) => string;
+  fermer: (jour: JourIso, rang: number, quand?: "matin" | "apres_midi" | null) => void;
+  rouvrir: (id: string) => void;
+}) {
+  /**
+   * LA LISTE EST-ELLE OUVERTE ?
+   *
+   * **Son ordre du 10 septembre 2026 :** *« l'ordre devrait être + salarié
+   * absent ? puis Julien »*, et *« si on veut annuler on reclique sur + salarié
+   * absent, et on verrait Julien / Annuler, puis Antoine ? »*.
+   *
+   * Une seule porte, donc, pour poser ET pour défaire : le + ouvre la liste des
+   * gens du jour, chacun avec ce qu'on peut lui faire. Ce qui reste sous les
+   * yeux le reste du temps est ce qu'il a besoin de LIRE — qui manque, et quand.
+   */
+  const [ouverte, setOuverte] = useState(false);
+  /** Qui il vient de poser absent — le seul à qui l'interrupteur s'adresse. */
+  const [quiManque, setQuiManque] = useState<number | null>(null);
+
+  // **Le rang 1, c'est LUI.** Sans salarié, la seule ligne d'équipe qui existe
+  // est la sienne : fermer le jour revient à noter son absence à ce rang-là.
+  const rangs = nombreSalaries > 0 ? lignesEquipes.map((e) => e.rang) : [1];
+  const absentsParRang = new Map(absences.map((a) => [a.rang, a]));
+
+  /** Le nom qu'on écrit sur une ligne — le sien quand il travaille seul. */
+  const nomDuRang = (rang: number) => (nombreSalaries > 0 ? nomEquipe(rang) : "Vous");
+
+  /**
+   * Poser une absence, ou la ramener à une moitié de journée.
+   *
+   * **On retire et on repose**, plutôt que de modifier. Une action de mise à
+   * jour aurait ajouté un troisième chemin d'écriture sur cette table — donc un
+   * troisième endroit où la réconciliation des affectations pourrait être
+   * oubliée (`ARCHITECTURE.md` §294). Reposer traverse celle qui existe déjà.
+   */
+  function poserLeMoment(rang: number, moment: MomentEntier) {
+    const a = absentsParRang.get(rang);
+    if (!a) return;
+    if (momentDe(a) === moment) {
+      // Déjà là où il veut : ne rien réécrire, et refermer l'interrupteur.
+      setQuiManque(null);
+      return;
+    }
+    rouvrir(a.id);
+    fermer(jour, rang, moment === "journee" ? null : moment);
+    // **L'interrupteur s'efface une fois choisi** — sa demande du 10 septembre.
+    setQuiManque(null);
+  }
+
+  const ligne = "flex min-h-[48px] w-full items-center justify-between gap-3 py-[11px] text-left";
+
+  return (
+    <div className="mt-1 border-t pt-1" style={{ borderColor: colors.lineSoft }}>
+      {/* ─── LE + EN TÊTE, LES NOMS DESSOUS — 10 septembre 2026 ────────────
+          *« L'ordre devrait être + salarié absent ? puis Julien. »* Il ouvre la
+          liste et la referme ; c'est aussi par lui qu'on annule, ce qui libère
+          la ligne d'une absence posée du mot « Annuler » qu'elle portait à
+          demeure — le geste le plus rare occupait la place la plus visible.
+
+          **Le geste se reconnaît au +, pas à un cerne** (voir `GesteAbsence`) :
+          sa décision du 9 septembre, et le pourquoi y est écrit en entier. */}
+      <div className="py-1">
+        <GesteAbsence
+          data-atlas="fermer-le-jour"
+          onClick={() => {
+            // **Seul et pas encore absent : un seul appui suffit.** Il n'y a
+            // personne à désigner, et lui demander de se choisir dans une liste
+            // d'un nom serait un geste pour rien.
+            if (nombreSalaries === 0 && !absentsParRang.has(1)) {
+              fermer(jour, 1);
+              setQuiManque(1);
+              return;
+            }
+            setOuverte((o) => !o);
+            setQuiManque(null);
+          }}
+        >
+          {nombreSalaries === 0 ? "Absent ?" : "Salarié absent ?"}
+        </GesteAbsence>
+      </div>
+
+      {ouverte ? (
+        /* ─── OUVERT : LES PRÉNOMS, EN OR, SUR UNE LIGNE ───────────────────
+           Sa planche du 18 septembre 2026 : plus une ligne par personne, des
+           mots. Ceux qui manquent portent « · annuler » ; les autres attendent
+           d'être touchés. Les repères des suites ne bougent pas. */
+        <div className="flex flex-wrap items-center gap-x-[18px]">
+          {rangs.map((r) => {
+            const absente = absentsParRang.get(r);
+            return absente ? (
+              <MotEnOr
+                key={r}
+                data-atlas="rouvrir-le-jour"
+                onClick={() => {
+                  rouvrir(absente.id);
+                  if (quiManque === r) setQuiManque(null);
+                }}
+              >
+                {nomDuRang(r)}, annuler
+              </MotEnOr>
+            ) : (
+              <MotEnOr
+                key={r}
+                data-atlas="qui-nest-pas-la"
+                onClick={() => {
+                  // **La journée entière, tout de suite.** Le cas courant reste
+                  // à un appui : il touche un nom, c'est posé. Le choix du
+                  // moment ne sert qu'à restreindre, le jour où ça compte.
+                  fermer(jour, r);
+                  setQuiManque(r);
+                  setOuverte(false);
+                }}
+              >
+                {nomDuRang(r)}
+              </MotEnOr>
+            );
+          })}
+        </div>
+      ) : (
+        /* ─── FERMÉ : ON NE LIT QUE CE QUI EST POSÉ, ET QUAND ──────────────
+           *« Julien absent, et là on marque soit matin, soit aprem, soit
+           journée en fonction de la sélection ; le Annuler disparaît. »*
+
+           **Et une petite croix noire, à droite de la durée** — sa retouche du
+           18 septembre au soir : *« quand je mets un salarié absent, mets une
+           petite croix à droite en noir pour le supprimer, à côté de la durée
+           de son absence »*. Elle fait ce que fait « · annuler » derrière le
+           +, sans avoir à rouvrir la liste. Le moment ne s'écrit pas pendant
+           qu'on le choisit juste en dessous : il serait écrit deux fois. */
+        absences.map((a) => (
+          <div key={a.id} data-atlas="absence-posee" data-quand={momentDe(a)} className={ligne}>
+            <span className="w-[86px] flex-shrink-0 text-[13px]" style={{ color: colors.muted }}>
+              Absent
+            </span>
+            <span className="min-w-0 flex-1 text-[14.5px]" style={{ color: colors.ink }}>
+              {nombreSalaries > 0 ? nomEquipe(a.rang) : "Vous"}
+            </span>
+            {quiManque !== a.rang && (
+              <span className={texteSituation} style={{ color: colors.muted, flex: "none" }}>
+                {LES_TROIS_MOMENTS.find((m) => m.cle === momentDe(a))?.dit}
+              </span>
+            )}
+            <button
+              type="button"
+              data-atlas="retirer-absence"
+              aria-label={`Supprimer l’absence de ${nomDuRang(a.rang)}`}
+              onClick={() => {
+                rouvrir(a.id);
+                if (quiManque === a.rang) setQuiManque(null);
+              }}
+              className="-mr-2 flex min-h-[44px] min-w-[44px] flex-shrink-0 cursor-pointer items-center justify-end border-0 bg-transparent pr-2 text-[15px]"
+              style={{ color: colors.ink, WebkitTapHighlightColor: "transparent" }}
+            >
+              ✕
+            </button>
+          </div>
+        ))
+      )}
+
+      {/* ─── L'INTERRUPTEUR, SUR CELUI QU'IL VIENT DE POSER ───────────────
+          Son choix D2 du 8 septembre — une absence peut ne prendre qu'une
+          demi-journée — dans la forme qu'il a demandée le 10 : le bouton de
+          « Déplacer », allumé sur ce qui vient d'être écrit, et qui s'efface
+          dès qu'il a choisi. Le faire vivre sous chaque ligne remettrait un
+          geste là où il n'en faut plus. */}
+      {quiManque !== null && !ouverte && absentsParRang.has(quiManque) && (
+        <BasculeDuMoment
+          retenu={momentDe(absentsParRang.get(quiManque)!)}
+          onChoisir={(m) => poserLeMoment(quiManque, m)}
+        />
+      )}
+    </div>
   );
 }
 
@@ -1438,6 +4261,7 @@ function CarteDuJour({
   cle,
   jour,
   seulement,
+  attache,
   ecriture,
   nombreSalaries,
   ouvert,
@@ -1446,17 +4270,49 @@ function CarteDuJour({
   setFeuille,
   sansDate,
   nomEquipe,
+  tetesDe,
   lignesEquipes,
   occupationDe,
   chantiersDuJour,
   basculerEquipe,
-  deplacer,
+  reposer,
+  morceauEnMain,
+  deplacerLeJour,
   retirerDuJour,
+  demanderSuppression,
   poser,
+  poserUnClient,
+  attenteClient,
+  poserALaPlace,
+  devisExpires,
+  relancerLeDevisExpire,
+  relireLeDevisExpire,
+  morceaux,
+  onPrendreMorceau,
+  refus,
   taches,
+  travauxChanges,
+  absencesDuJour,
+  cocheRefuseeDe,
+  joursDeLaPastilleDe,
+  fermerLeJour,
+  rouvrirLeJour,
+  retourAEnvoyer,
 }: {
   cle: string;
   jour: JourIso;
+  /** Qui n'est pas là ce jour-là — voir §267. */
+  absencesDuJour: (jour: JourIso) => AbsenceDuPlanning[];
+  /** Peut-on la cocher sur cette demi-journée — voir §293, et le 28 septembre. */
+  cocheRefuseeDe: (rang: number, c: ChantierPourAbsence, demi: "matin" | "apres_midi") => boolean;
+  /** Ce que la pastille écrit sous le nom — « ven. », ou rien. Voir §295. */
+  joursDeLaPastilleDe: (
+    rang: number,
+    c: ChantierPourAbsence,
+    demi?: "matin" | "apres_midi"
+  ) => string;
+  fermerLeJour: (jour: JourIso, rang: number, quand?: "matin" | "apres_midi" | null) => void;
+  rouvrirLeJour: (id: string) => void;
   /**
    * Le chantier SEUL qu'on déplie, quand la carte sort d'une ligne des
    * planifiés.
@@ -1475,6 +4331,27 @@ function CarteDuJour({
    * porte tous les chantiers.
    */
   seulement?: string;
+  /**
+   * OÙ LA FICHE SE RATTACHE — et `undefined` quand elle ne se rattache à rien.
+   *
+   * **Sa correction du 4 septembre 2026 :** *« lorsque je clique sur un jour,
+   * le client doit être rattaché ; or là, il est juste en dessous. Pareil
+   * lorsque je clique directement sur le nom de mon client. »*
+   *
+   * `colonne` est la position HORIZONTALE de la pointe : le centre de la case
+   * touchée dans le mois, le début du nom dans la liste des planifiés. Le
+   * calendrier la calcule — lui seul connaît la colonne — et la fiche la
+   * dessine, parce qu'elle se rattache aussi là où le calendrier n'existe pas.
+   *
+   * **Rattachée, elle prend aussi son relief** : fond de plage, filet et une
+   * ombre portée. Son fond n'est qu'à 4 % du fond de page — sans relief, on ne
+   * la distinguerait pas de ce qu'elle interrompt.
+   *
+   * **Rien d'autre ne diffère**, et c'est le but : deux cartes qui se seraient
+   * mises à proposer des gestes différents selon l'endroit où l'on touche sont
+   * exactement ce que sa demande du 21 août 2026 interdit.
+   */
+  attache?: { colonne: string };
 } & GestesCarte) {
   const feuilleIci = feuille && feuille.cle === cle ? feuille.chantierId : null;
 
@@ -1511,14 +4388,104 @@ function CarteDuJour({
   const blocs = blocsDeLaJournee(duJour, occupe).filter(
     (b) => !seulement || b.type === "libre" || b.chantier.id === seulement
   );
+  // Le dernier chantier du jour, et les moitiés libres qui le suivent : elles
+  // se dessinent dans son bloc, au-dessus de « Déplacer  Retirer » (sa
+  // consigne du 18 septembre 2026). `blocsDeLaJournee` ne pose des blocs
+  // « libre » qu'en queue, donc tout ce qui suit le dernier chantier est libre.
+  const dernierChantier = blocs.reduce((r, b, i) => (b.type === "chantier" ? i : r), -1);
+  const libresApres = blocs
+    .slice(dernierChantier + 1)
+    .flatMap((b) => (b.type === "libre" ? [b.demi] : []));
+
+  /**
+   * OÙ REPOSER LE MORCEAU — la règle, pour TOUTE moitié libre de ce jour.
+   *
+   * **Sa seconde capture du 16 septembre 2026 :** *« je l'ai enlevée puis j'ai
+   * essayé de la remettre au même endroit, ça a bugué »* — le matin rendu,
+   * l'après-midi gardé par le chantier, et rien à toucher sur le matin.
+   *
+   * `LigneLibre` est écrite une fois et montée à DEUX endroits : en queue de
+   * journée, et sous le nom du chantier qu'elle précède (`libresAvant`, sa
+   * précision du 10 septembre). Seul le premier recevait le geste — donc la
+   * moitié rendue, qui tombe dans le second dès que le chantier garde l'autre
+   * moitié, ne se reposait jamais là. Deux montages d'une même ligne dont un
+   * seul porte le geste, c'est la divergence que `CLAUDE.md` §3 interdit : la
+   * condition vit désormais ICI, une fois, et les deux la reçoivent.
+   */
+  const poserIci = (demi: Demi) =>
+    ecriture && morceauEnMain ? () => reposer(morceauEnMain, jour, demi) : undefined;
+
+  // ─── LA FICHE SE COLLE SOUS SON CHANTIER — sa correction du 10 septembre
+  // 2026. La règle, et ce qu'elle concilie, vivent dans `rangDeLaFiche` : elle
+  // s'éprouve sans navigateur, là où le défaut, lui, ne se voyait qu'à deux
+  // chantiers dans la même journée.
+  const apresLaFiche = rangDeLaFiche(blocs, feuilleIci);
+  const laFiche = feuilleIci ? (
+    <FeuilleChantier
+      key={feuilleIci}
+      chantier={duJour.find((c) => c.id === feuilleIci) ?? null}
+      feuille={taches[feuilleIci]}
+      ecriture={ecriture}
+      travauxChanges={(liste) => travauxChanges(feuilleIci, liste)}
+    />
+  ) : null;
 
   return (
     <>
+      {/* ─── ELLE SE RATTACHE À CE QU'IL A TOUCHÉ ───────────────────────────
+          **Sa correction du 4 septembre 2026 :** *« lorsque je clique sur un
+          jour, le client doit être rattaché ; or là, il est juste en dessous.
+          Pareil lorsque je clique directement sur le nom de mon client. »*
+
+          **UNE seule pointe dans le code, deux endroits où elle se pose** : la
+          case du mois lui donne sa colonne, la ligne des planifiés la met sous
+          le nom. Deux dessins de la même attache auraient divergé au premier
+          ajustement (`CLAUDE.md` §3).
+
+          La géométrie est celle de la maquette qu'il a validée : un carré de
+          10 px tourné à 45°, dont la pointe DÉPASSE de six pixels au-dessus de
+          la fiche. Elle existait déjà et ne se voyait pas — mesurée sur
+          l'application, elle commençait **un pixel sous** le bord haut, donc
+          entièrement posée dessus et de la même couleur. */}
+      <div className={attache ? "relative" : undefined}>
+        {attache && (
+          <span
+            aria-hidden="true"
+            data-atlas="encoche"
+            className="absolute z-[2] h-[10px] w-[10px]"
+            style={{
+              bottom: "100%",
+              left: attache.colonne,
+              // `bottom: 100%` colle la pointe au bord haut de la fiche quelle
+              // que soit sa marge — la seule ancre qui ne se décale pas quand
+              // l'écart change. Les 8 px la font mordre dessus, pour qu'aucun
+              // filet ne l'en sépare.
+              transform: "translate(-50%, 8px) rotate(45deg)",
+              background: colors.card,
+              borderLeft: `1px solid ${colors.lineSoft}`,
+              borderTop: `1px solid ${colors.lineSoft}`,
+            }}
+          />
+        )}
       <div
         data-atlas="carte-jour"
         data-jour={jour}
-        className="mx-[18px] mt-4 rounded-[10px] px-[15px] py-[14px]"
-        style={{ background: colors.card }}
+        className={
+          attache
+            ? "mt-[9px] rounded-[14px] px-[15px] py-[14px]"
+            : "mx-[18px] mt-4 rounded-[10px] px-[15px] py-[14px]"
+        }
+        style={
+          attache
+            ? {
+                background: colors.card,
+                // Un décalage ET un flou : un halo sans décalage n'est pas une
+                // ombre, c'est un contour de plus.
+                boxShadow: `0 6px 20px ${voile(colors.ink, 0.07)}`,
+                border: `1px solid ${colors.lineSoft}`,
+              }
+            : { background: colors.card }
+        }
       >
         {!seulement && (
           <p
@@ -1529,42 +4496,98 @@ function CarteDuJour({
           </p>
         )}
 
+        {/* ─── « JE NE SUIS PAS LÀ » — sa demande du 6 septembre 2026 ────────
+
+            **IL ÉTAIT EN BAS DE LA CARTE, ET C'EST LA CAPTURE QUI L'A
+            DÉPLACÉ.** Le raisonnement tenait : c'est le geste le moins fréquent
+            des trois, et le mettre en tête ferait lire « pas là » avant de lire
+            ce qui est posé.
+
+            Sur l'écran, il tombait **derrière le tiroir du bas** — `fixed`, à
+            `--atlas-barre`, z-19 — et les noms des salariés étaient coupés en
+            deux. Un geste qu'on ne peut pas viser ne vaut pas son rang dans une
+            liste de priorités.
+
+            **Et l'on n'a PAS ajouté de défilement forcé pour le rattraper** :
+            le dépôt en a retiré un le 3 septembre, précisément parce qu'il
+            soignait le symptôme et non la place. La carte naît sous le doigt,
+            donc son HAUT est visible par construction — c'est là que le geste
+            va. */}
+        {/* ─── CE QUI N'A PAS PU PARTIR — 11 septembre 2026 ────────────────
+            Sa panne : *« il ne se pose sur aucune demi-journée ! »*. Le geste
+            partait dans le vide — sa page avait survécu à son serveur — et
+            l'écran ne disait rien. Un appui qui n'a aucun effet et aucun
+            message se lit comme une application cassée, et il n'a alors aucun
+            moyen de savoir qu'un rechargement répare tout. */}
+        {refus && (
+          /* **Une phrase, pas un bouton.** Elle n'a rien à faire faire : le
+             geste suivant l'efface de lui-même (`setRefus(null)` en tête de
+             chaque). Un bouton qui ne sert qu'à effacer un message demande un
+             appui de plus pour rien — et il porterait un rayon carré, que sa
+             règle du 12 août interdit. */
+          <p
+            data-atlas="refus-du-geste"
+            className="mb-2 mt-1 rounded-[9px] px-3 py-2.5 text-[13px]"
+            style={{ background: voile(colors.bordeaux, 0.1), color: colors.bordeaux }}
+          >
+            {refus}
+          </p>
+        )}
+
+        {ecriture && !seulement && (
+          <PasLaCeJour
+            jour={jour}
+            absences={absencesDuJour(jour)}
+            lignesEquipes={lignesEquipes}
+            nombreSalaries={nombreSalaries}
+            nomEquipe={nomEquipe}
+            fermer={fermerLeJour}
+            rouvrir={rouvrirLeJour}
+          />
+        )}
+
         {blocs.map((bloc, rang) => {
+          // La fiche se glisse ICI quand c'est le rang qu'on a calculé — un
+          // seul endroit dans l'arbre, donc une seule règle de placement.
+          const suite = rang === apresLaFiche ? laFiche : null;
+
           if (bloc.type === "libre") {
-            const o = occupationDe(jour, bloc.demi);
+            // **Les moitiés libres qui SUIVENT le dernier chantier se dessinent
+            // dans son bloc**, au-dessus de « Déplacer  Retirer » — voir
+            // `libresApres`. Ici il ne reste que la fiche à poser à son rang.
+            if (rang > dernierChantier && dernierChantier >= 0) return <Fragment key={`libre-${bloc.demi}`}>{suite}</Fragment>;
             return (
-              <div
-                key={`libre-${bloc.demi}`}
-                data-atlas="demi"
-                data-bloc={bloc.demi}
-                data-sans-chantier="1"
-                className="flex flex-wrap items-center gap-2"
-                style={{ marginTop: rang === 0 ? 8 : 16 }}
-              >
-                <Pastille etat={etatDemi(o)} />
-                <span
-                  className="w-[70px] flex-shrink-0 whitespace-nowrap text-[10px] font-semibold uppercase leading-[1.15]"
-                  style={{ letterSpacing: "0.06em", color: colors.ink }}
-                >
-                  {MOT_DEMI[bloc.demi]}
-                </span>
-                <span
-                  data-atlas="compte"
-                  className="ml-auto text-[12px]"
-                  style={{ color: colors.muted }}
-                >
-                  {ditLeCompteDemi(o)}
-                </span>
-              </div>
+              <Fragment key={`libre-${bloc.demi}`}>
+                <LigneLibre
+                  demi={bloc.demi}
+                  occupation={occupationDe(jour, bloc.demi)}
+                  marge={rang === 0 ? 8 : 16}
+                  onPoser={poserIci(bloc.demi)}
+                />
+                {suite}
+              </Fragment>
             );
           }
 
           const c = bloc.chantier;
+          // **Au CHANTIER, plus à la demi-journée.** « Déplacer » écrit un
+          // départ et une durée sur le chantier entier : le rattacher à une
+          // moitié de journée n'avait de sens que tant que le bouton vivait sur
+          // sa ligne, et il en ouvrait alors deux à la fois.
+          // **Les DEUX temps du geste**, pas seulement le premier : sans le
+          // second, « Déplacer » et « Retirer » revenaient dès qu'il avait
+          // touché son jour d'accueil — deux gestes offerts pendant qu'un
+          // troisième attend sa réponse. Vu à l'écran, jamais par un test.
+          const choixDeplacer =
+            (ouvert?.quoi === "deplacer" || ouvert?.quoi === "deplacer-quand") &&
+            ouvert.cle === cle &&
+            ouvert.chantierId === c.id;
 
           return (
+            <Fragment key={c.id}>
             <div
-              key={c.id}
               data-atlas="bloc-chantier"
+              data-chantier={c.id}
               style={{ marginTop: rang === 0 ? 0 : 16 }}
             >
               {/* **Le compte « 1 chantier · complet » a disparu.** Sa
@@ -1573,16 +4596,18 @@ function CarteDuJour({
                   Ce que la journée porte se voit déjà aux pastilles de chaque
                   demi-journée, et au calendrier juste au-dessus. */}
               {!seulement && (
-                <div className="flex items-baseline gap-2.5">
-                  <button
-                    type="button"
-                    data-atlas="nom-du-jour"
-                    onClick={() =>
-                      setFeuille(
-                        feuilleIci === c.id ? null : { chantierId: c.id, cle }
-                      )
-                    }
-                    className="flex-1 cursor-pointer border-0 bg-transparent p-0 text-left"
+                <button
+                  type="button"
+                  data-atlas="nom-du-jour"
+                  onClick={() =>
+                    setFeuille(feuilleIci === c.id ? null : { chantierId: c.id, cle })
+                  }
+                  aria-expanded={feuilleIci === c.id}
+                  className="flex w-full cursor-pointer items-start gap-2.5 border-0 bg-transparent p-0 text-left"
+                >
+                  <span className="min-w-0 flex-1">
+                  <span
+                    className="block"
                     style={{
                       fontFamily: font.display,
                       fontSize: 19,
@@ -1591,20 +4616,76 @@ function CarteDuJour({
                     }}
                   >
                     {c.nom}
-                  </button>
-                </div>
+                  </span>
+                  {/* **La durée, ici aussi.** Elle était sur la ligne des
+                      planifiés et nulle part dans la fiche du jour : en ouvrant
+                      une journée depuis le calendrier, on ne savait pas si le
+                      chantier tenait la demi-journée ou trois jours. Même
+                      fonction, même or, même place que sur la ligne — deux
+                      écritures pour une seule durée finiraient par diverger. */}
+                  <span
+                    data-atlas="duree-du-jour"
+                    className="mt-[3px] block text-[12.5px]"
+                    style={{ color: colors.or }}
+                  >
+                    {ditCeQuIlOccupe(c)}
+                  </span>
+                  <PasEncoreSigne chantier={c} />
+                  <LieuDuChantier chantier={c} />
+                  {retourAEnvoyer(c.id, jour) && <RetourAEnvoyer />}
+                  </span>
+                  {/* **LE CHEVRON DIT QUE LA FICHE S'OUVRE** — sa réponse du
+                      3 octobre 2026, « la C » : *« le fait de cliquer pour
+                      faire apparaître la fiche chantier n'est pas intuitif »*.
+                      Il pivote quand elle est ouverte : un sens, pas une
+                      décoration. */}
+                  <span
+                    data-atlas="chevron-fiche"
+                    aria-hidden="true"
+                    className="mt-[-2px] grid h-10 w-10 flex-none place-items-center rounded-full"
+                    style={{
+                      color: colors.or,
+                      background: voile(colors.or, 0.1),
+                      transform: feuilleIci === c.id ? "rotate(180deg)" : undefined,
+                      transition: "transform 0.28s cubic-bezier(.2,.7,.2,1)",
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                      <path d="M5 8l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                </button>
               )}
+
+              {/* **LES MOITIÉS LIBRES QUI PRÉCÈDENT, SOUS SON NOM.** Sa
+                  précision du 10 septembre 2026 : *« le nom doit rester en
+                  premier, ensuite matin et ensuite aprèm »*. Émises comme des
+                  blocs à part, elles ouvraient la fiche sur « libre » — on
+                  lisait ce qui manque avant de savoir de qui il s'agit. Ici,
+                  l'ordre du jour est tenu ET le nom reste en tête. */}
+              {bloc.libresAvant.map((demi) => (
+                <LigneLibre
+                  key={`avant-${demi}`}
+                  demi={demi}
+                  occupation={occupationDe(jour, demi)}
+                  onPoser={poserIci(demi)}
+                />
+              ))}
 
               {bloc.demis.map((demi) => {
                 const o = occupationDe(jour, demi);
-                const rangs = demi === "matin" ? c.equipes.matin : c.equipes.apres_midi;
+                // **Ceux de CE jour** (migration 0093) : la coche peut ne valoir
+                // qu'à partir du 4e jour, et la carte montre un seul jour.
+                const rangs = equipesDuJour(c.equipes, jour)[demi];
+                // **Qui part VRAIMENT ce jour-là** — un congé se déduit, il ne
+                // s'écrit pas (sa proposition C du 8 septembre 2026). Un absent
+                // nommé sur la journée où il ne vient pas, c'est le défaut qu'il
+                // a photographié le 7.
+                const rangsPresents = rangs.filter(
+                  (r) => !absencesDuJour(jour).some((a) => a.rang === r)
+                );
                 const choixEquipe =
                   ouvert?.quoi === "equipe" &&
-                  ouvert.cle === cle &&
-                  ouvert.chantierId === c.id &&
-                  ouvert.demi === demi;
-                const choixDeplacer =
-                  ouvert?.quoi === "deplacer" &&
                   ouvert.cle === cle &&
                   ouvert.chantierId === c.id &&
                   ouvert.demi === demi;
@@ -1624,6 +4705,13 @@ function CarteDuJour({
                       {MOT_DEMI[demi]}
                     </span>
 
+                    {/* ─── QUI PART VRAIMENT CE JOUR-LÀ — sa proposition C ──
+                        La coche vaut pour tout le chantier ; la carte, elle,
+                        montre UN jour. Écrire « Julien » sur le jeudi où il est
+                        en congé, c'est le défaut qu'il a photographié le
+                        7 septembre — deux vérités à trois centimètres, ici
+                        entre la ligne « Julien n'est pas là » du haut et la
+                        pastille du chantier juste en dessous. */}
                     {nombreSalaries <= 0 ? null : !ecriture ? (
                       // Un salarié LIT qui part. La règle vit dans la pastille
                       // elle-même, pas recopiée ici (`CLAUDE.md` §3).
@@ -1631,91 +4719,182 @@ function CarteDuJour({
                         ecriture={false}
                         vide={rangs.length === 0}
                         onClick={() => undefined}
-                        libelle={ditQuiPart(rangs.map(nomEquipe))}
+                        libelle={ditQuiPart(rangsPresents.map(nomEquipe))}
+                        tetes={tetesDe(rangsPresents)}
                       />
                     ) : choixEquipe ? (
                       // **On COCHE, on ne choisit pas une seule fois.** La liste
                       // reste ouverte tant qu'il n'a pas fini, et le calendrier
                       // se repeint derrière à chaque coche — sinon il faudrait
                       // refermer pour voir l'effet, et rouvrir pour corriger.
-                      <Choisir>
+                      <Choisir mots>
                         {lignesEquipes.map((e) => {
                           const cochee = rangs.includes(e.rang);
+                          // **Elle n'est pas là sur au moins un jour de CE
+                          // chantier** — son signalement du 7 septembre 2026.
+                          // La règle vit dans `equipe-absente.ts`, et le serveur
+                          // applique la même : l'écran ne fait que la montrer.
+                          // **Absente PARTOUT** : la coche n'annoncerait
+                          // personne, et le serveur la refuse. Absente sur
+                          // certains jours seulement : elle reste cochable, et
+                          // la pastille dit lesquels (sa proposition C).
+                          // **La demi-journée compte** : sur la ligne du
+                          // matin, un congé qui ne prend que l'après-midi ne
+                          // retire pas le jour. Sans elle, la pastille
+                          // annoncerait un jour de moins que la vérité.
+                          const jours = joursDeLaPastilleDe(e.rang, c, demi);
+                          // **La règle du serveur, et elle seule** (28 septembre
+                          // 2026) : l'écran la recalculait sur la JOURNÉE et
+                          // grisait Julien l'après-midi d'un matin d'absence.
+                          const absente = cocheRefuseeDe(e.rang, c, demi);
+                          // **Des mots, plus des pastilles — sa planche du
+                          // 18 septembre 2026.** Le prénom retenu passe en
+                          // noir, souligné d'or ; les autres restent en or. La
+                          // coche partielle (sa proposition C) se lit aux jours
+                          // écrits à côté du prénom, comme avant.
                           return (
-                            <Petit
+                            <MotAChoisir
                               key={e.rang}
-                              serre
                               data-choix={e.rang}
-                              retenue={cochee}
-                              onClick={() => basculerEquipe(c.id, demi, e.rang)}
+                              retenu={cochee}
+                              absente={absente}
+                              onClick={() => basculerEquipe(c.id, jour, demi, e.rang)}
                             >
-                              {cochee ? "✓ " : ""}
                               {nomEquipe(e.rang)}
-                            </Petit>
+                              {/* **Les jours de PRÉSENCE, pas d'absence** —
+                                  « ven. » répond à « quand vient-il », là où
+                                  « pas jeudi » oblige à soustraire de tête. */}
+                              {jours && (
+                                <span className="ml-1 text-[12.5px]" style={{ color: colors.muted }}>
+                                  {jours}
+                                </span>
+                              )}
+                            </MotAChoisir>
                           );
                         })}
-                        <Petit serre data-fini="1" fini onClick={() => setOuvert(null)}>
-                          Terminé
-                        </Petit>
+                        {/* « Fermer », en gris, à droite : une sortie, pas un
+                            geste. Il garde le repère `data-fini` des suites. */}
+                        <span className="ml-auto">
+                          <MotEnOr doux data-fini="1" onClick={() => setOuvert(null)}>
+                            Fermer
+                          </MotEnOr>
+                        </span>
                       </Choisir>
                     ) : (
                       <PastilleEquipe
                         vide={rangs.length === 0}
-                        libelle={ditQuiPart(rangs.map(nomEquipe))}
+                        libelle={ditQuiPart(rangsPresents.map(nomEquipe))}
+                        tetes={tetesDe(rangsPresents)}
                         onClick={() =>
                           setOuvert({ quoi: "equipe", cle, chantierId: c.id, demi })
                         }
                       />
                     )}
 
-                    {!ecriture ? null : choixDeplacer ? (
-                      // **Déplacer se CHOISIT aussi** : une liste, jamais une
-                      // rotation qui déciderait à sa place. C'est la règle qu'il
-                      // a posée pour l'équipe, et elle vaut partout.
-                      <Choisir>
-                        {/* **« Journée » disparaît au-delà d'une journée.**
-                            Sur un chantier de trois jours, elle écrit le même
-                            état que « Matin » — le départ, la durée étant
-                            protégée — et l'une des deux ne faisait donc rien.
-                            Un bouton qui n'écrit rien se retire ; le laisser en
-                            expliquant serait pire, puisqu'il faut le lire pour
-                            savoir de ne pas l'employer. */}
-                        {(Object.keys(MOT_QUAND) as QuandChantier[])
-                          .filter(
-                            (v) =>
-                              v !== "journee" ||
-                              (c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES) <= 2
-                          )
-                          .map((v) => (
-                            <Petit
-                              key={v}
-                              serre
-                              data-vers={v}
-                              retenue={quandDuChantier(c) === v}
-                              onClick={() => deplacer(c.id, v)}
-                            >
-                              {MOT_QUAND[v]}
-                            </Petit>
-                          ))}
-                      </Choisir>
-                    ) : (
-                      <>
-                        <Petit
-                          serre
-                          data-atlas="deplacer"
-                          onClick={() => setOuvert({ quoi: "deplacer", cle, chantierId: c.id, demi })}
-                        >
-                          Déplacer
-                        </Petit>
-                        <Petit serre data-atlas="retirer" onClick={() => retirerDuJour(c.id)}>
-                          Retirer
-                        </Petit>
-                      </>
-                    )}
                   </div>
                 );
               })}
+
+              {/* ─── LES DEUX GESTES DU CHANTIER, UNE SEULE FOIS ─────────────
+                  **Ils étaient sur CHAQUE ligne de demi-journée jusqu'au
+                  3 septembre 2026, et c'était deux fautes en une.**
+
+                  La première est une redite : `deplacer` et `retirerDuJour`
+                  prennent un CHANTIER, jamais une moitié de journée — la demi
+                  ne servait qu'à savoir laquelle des deux lignes ouvrait la
+                  liste. Un chantier à la journée affichait donc « Déplacer » et
+                  « Retirer » deux fois, à quinze pixels d'écart, pour un seul
+                  geste. C'est exactement ce qu'il a fait retirer ailleurs :
+                  *« c'est le même chantier, pas besoin de répéter »*.
+
+                  La seconde est une question de place. La ligne alignait
+                  pastille + mot + équipe + deux boutons dans 324 px : il a fallu
+                  resserrer les boutons à 9 px de marge pour que « Retirer » ne
+                  bascule pas à la ligne suivante. Sortis de la ligne, ils
+                  reprennent leur taille, et la demi-journée respire.
+
+                  **Ils gardent leurs repères `deplacer` et `retirer`** : c'est
+                  le même geste, à une autre place — les suites le désignent par
+                  ce qu'il FAIT, pas par la ligne où il se trouvait. */}
+              {/* ─── LES MOITIÉS LIBRES QUI SUIVENT, AVANT LES GESTES ─────────
+                  **Sa consigne du 18 septembre 2026 au soir :** *« le Déplacer
+                  Retirer doit être en bas à droite, en dessous de l'aprem, au-
+                  dessus du Ajouter »*. Sur le dernier chantier du jour, la
+                  moitié restée libre passe donc ICI, sous ses demi-journées,
+                  et les deux mots viennent après elle. La ligne est la même
+                  `LigneLibre`, avec le même geste de repose : écrite une fois. */}
+              {rang === dernierChantier &&
+                libresApres.map((demi) => (
+                  <LigneLibre
+                    key={`apres-${demi}`}
+                    demi={demi}
+                    occupation={occupationDe(jour, demi)}
+                    marge={8}
+                    onPoser={poserIci(demi)}
+                  />
+                ))}
+              {ecriture && (
+                <div
+                  data-atlas="actes-chantier"
+                  className="mt-2.5 flex flex-wrap items-center justify-end gap-1.5"
+                >
+                  {choixDeplacer ? (
+                    /* ─── LE GESTE SE DESSINE ICI — sa planche du 17 sept. 2026
+                       La ligne en or dit le jour touché, les mots disent le
+                       moment. Le bloc est celui du repli sous le calendrier,
+                       écrit une seule fois. */
+                    <div className="w-full">
+                      <BandeauDeplacement
+                        chantier={c}
+                        jourSource={ouvert.jourSource}
+                        vers={ouvert.quoi === "deplacer-quand" ? ouvert.vers : null}
+                        onChoisir={(moment) =>
+                          ouvert.quoi === "deplacer-quand" &&
+                          deplacerLeJour(c.id, ouvert.jourSource, ouvert.vers, moment)
+                        }
+                        onAnnuler={() => setOuvert(null)}
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      {/* **DES MOTS, PAS DES PASTILLES — 17 septembre 2026.**
+                          *« Mets des mots en gras plutôt que des boutons pour
+                          déplacer retirer. »* Une pastille à contour a
+                          exactement la forme des pastilles d'équipe posées
+                          juste au-dessus — or celles-là ouvrent une liste,
+                          tandis que celles-ci font un geste. Même forme, deux
+                          natures. Ils gardent leur place, à droite. */}
+                      <MotDuGeste
+                        data-atlas="deplacer"
+                        onClick={() =>
+                          setOuvert({
+                            quoi: "deplacer",
+                            cle,
+                            chantierId: c.id,
+                            jourSource: jour,
+                          })
+                        }
+                      >
+                        Déplacer
+                      </MotDuGeste>
+                      <MotDuGeste data-atlas="retirer" onClick={() => retirerDuJour(c.id)}>
+                        Retirer
+                      </MotDuGeste>
+                      {/* **SUPPRIMER SUR LE JOUR MÊME, la B de sa planche du
+                          7 octobre 2026.** Un client qui a accepté par erreur
+                          demandait deux gestes : Retirer, puis le glisser dans
+                          « Sans date ». Le mot vit à côté des deux autres, à
+                          leur place ; en rouge parce qu'il ne se repose pas. */}
+                      <MotDuGeste data-atlas="supprimer" alerte onClick={() => demanderSuppression(c)}>
+                        Supprimer
+                      </MotDuGeste>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
+            {suite}
+            </Fragment>
           );
         })}
 
@@ -1727,18 +4906,20 @@ function CarteDuJour({
             setOuvert={setOuvert}
             sansDate={sansDate}
             poser={poser}
+            poserUnClient={poserUnClient}
+            attenteClient={attenteClient}
+            poserALaPlace={poserALaPlace}
+            devisExpires={devisExpires}
+            relancerLeDevisExpire={relancerLeDevisExpire}
+            relireLeDevisExpire={relireLeDevisExpire}
+            morceaux={morceaux}
+            morceauEnMain={morceauEnMain}
+            onPrendreMorceau={onPrendreMorceau}
           />
         )}
-      </div>
 
-      {feuilleIci && (
-        <FeuilleChantier
-          key={feuilleIci}
-          chantier={duJour.find((c) => c.id === feuilleIci) ?? null}
-          feuille={taches[feuilleIci]}
-          ecriture={ecriture}
-        />
-      )}
+      </div>
+      </div>
     </>
   );
 }
@@ -1787,7 +4968,14 @@ function NoteDuChantier({
   const [etat, setEtat] = useState<"repos" | "ecrit" | "enregistre" | "perdu">("repos");
   const [, enTransition] = useTransition();
 
-  function enregistrer() {
+  /**
+   * **Ce que le cadre porte, pas ce que le rendu en gardait.** Sans la valeur,
+   * on écrivait `texte` — l'état du DERNIER RENDU — et la dernière touche tapée
+   * avant de ranger son téléphone pouvait n'y être pas encore. Une note perdue
+   * en silence, c'est le broyeur oublié (`test-valeur-du-champ.ts`).
+   */
+  function enregistrer(duCadre: string) {
+    const texte = duCadre.slice(0, NOTE_MAX);
     if (texte === (chantier.note ?? "")) return;
     enTransition(async () => {
       const r = await ecrireNoteChantierAction(chantier.id, texte);
@@ -1806,16 +4994,16 @@ function NoteDuChantier({
     const ecrite = (chantier.note ?? "").trim();
     if (ecrite === "") return null;
     return (
-      <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
+      <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
         <p
           className="m-0 mb-2 text-[10px] font-semibold uppercase leading-none"
-          style={{ letterSpacing: "0.16em", color: colors.muted }}
+          style={{ letterSpacing: "0.16em", color: colors.ink }}
         >
           La note
         </p>
         <p
           data-atlas="note-lecture"
-          className="m-0 whitespace-pre-wrap text-[14.5px] leading-[1.45]"
+          className="m-0 whitespace-pre-wrap break-words text-[14.5px] leading-[1.45]"
           style={{ color: colors.ink }}
         >
           {ecrite}
@@ -1825,10 +5013,13 @@ function NoteDuChantier({
   }
 
   return (
-    <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
+    <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
+      {/* **En NOIR, comme « Matin » et « Après-midi »** — sa remarque du
+          20 septembre 2026 : en or, *« j'aime pas sa couleur »*. Ce sont les
+          mêmes capitales que la carte du jour. */}
       <p
         className="m-0 mb-2 text-[10px] font-semibold uppercase leading-none"
-        style={{ letterSpacing: "0.16em", color: colors.muted }}
+        style={{ letterSpacing: "0.16em", color: colors.ink }}
       >
         Ma note
       </p>
@@ -1841,14 +5032,18 @@ function NoteDuChantier({
         }}
         // **Enregistré en SORTANT du cadre, jamais par un bouton.** Il range
         // son téléphone et démarre : un bouton non touché perdrait la note.
-        onBlur={enregistrer}
+        onBlur={(e) => enregistrer(e.currentTarget.value)}
         placeholder="Penser à prendre le broyeur. Client dispo à partir de 9 h."
         rows={3}
-        className="w-full resize-none rounded-[9px] px-3 py-2.5"
+        className="w-full resize-none rounded-[10px] px-3 py-2.5 outline-none"
+        // **Un papier doré** — sa planche du 19 septembre 2026 : la note est ce
+        // qui se LIT, et l'or est la couleur de ce qui se lit sur cette fiche.
+        // Le curseur aussi ; à la mise au point, le liseré se fonce.
         style={{
-          border: `1px solid ${colors.line}`,
-          background: colors.card,
+          boxShadow: `inset 0 0 0 1px ${voile(colors.or, 0.22)}`,
+          background: voile(colors.or, 0.13),
           color: colors.ink,
+          caretColor: colors.or,
           // **16 px au moins.** En dessous, iOS grossit la page à la mise au
           // point et l'écran saute sous le doigt — un piège déjà payé ici.
           fontSize: 16,
@@ -1898,11 +5093,13 @@ function FeuilleChantier({
   chantier,
   feuille,
   ecriture = true,
+  travauxChanges,
 }: {
   chantier: ChantierPlanning | null;
-  feuille?: FeuilleDuChantier;
+  feuille?: FeuilleEtRetour;
   /** Faux pour un salarié : la note se LIT, elle ne s'écrit pas (30 août 2026). */
   ecriture?: boolean;
+  travauxChanges: (liste: string[]) => void;
 }) {
   // **`key={chantier.id}` là où elle est rendue** : changer de chantier remonte
   // le composant, et « Adresse copiée » repart à zéro sans qu'un effet ait à le
@@ -1913,22 +5110,41 @@ function FeuilleChantier({
   if (!chantier) return null;
   const adresse = chantier.adresseChantier?.trim() || null;
   // **Deux destinations, plus trois.** Sa demande du 21 août : « pas besoin
-  // d'en mettre trois ». `plans` est celle qu'il nomme « Maps » sur son
-  // iPhone ; Google Maps sort, elle faisait doublon.
+  // d'en mettre trois ». Et « Maps », c'est **Google Maps** — sa demande du
+  // 31 août 2026, capture à l'appui : *« pour Maps c'est Google Maps que je
+  // veux »*. Le bouton servait Plans d'Apple, qui est ce que son iPhone appelle
+  // « Plans » ; ce n'est pas ce qu'il ouvre pour aller sur un chantier.
   const liens = liensItineraire(adresse);
   const tel = lienAppel(chantier.clientTelephone);
 
+  // **Aucune marge à elle** : elle vit DANS la carte du jour, entre les
+  // chantiers, et c'est le retrait de la carte qui l'aligne.
+  //
+  // **SA PLANCHE DU 19 SEPTEMBRE 2026 — la sixième de la fiche**
+  // (`appli/fiche-intervention-sixieme.html`) : *« tu peux coder exactement
+  // cette planche »*. La carte est blanche, cernée d'or à 2 px — le sien,
+  // `colors.or`, celui de « une journée » —, en VRAIE bordure : un ombrage
+  // intérieur s'épaississait dans l'angle au lieu de suivre le rayon, et c'est
+  // lui qui l'a vu, photo à l'appui (*« les bords, je les trouve mal
+  // arrondis »*).
   return (
     <div
       data-atlas="feuille"
-      className="mx-[18px] mt-3 rounded-[10px] px-4 pb-[18px] pt-4"
-      style={{ background: colors.rustTint, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+      className="mt-3 rounded-[14px] px-3 pb-3.5 pt-4"
+      style={{
+        background: colors.card,
+        border: `2px solid ${colors.or}`,
+        boxShadow: `0 2px 10px ${voile(colors.ink, 0.07)}`,
+      }}
     >
       <p
         className="m-0 text-center text-[10.5px] font-bold uppercase leading-none"
-        style={{ letterSpacing: "0.24em", color: colors.or }}
+        style={{ letterSpacing: "0.22em", color: colors.or }}
       >
-        Feuille de chantier
+        {/* **« Fiche d'intervention » depuis le 8 septembre 2026** — sa demande,
+            capture à l'appui : *« qui d'ailleurs devrait s'appeler fiche
+            d'intervention, change le nom »*. */}
+        Fiche d&apos;intervention
       </p>
       <p
         className="mb-0 mt-2.5 text-center"
@@ -1937,12 +5153,22 @@ function FeuilleChantier({
         {chantier.clientNom ?? chantier.nom}
       </p>
 
-      <div className="mt-2.5 flex gap-1.5">
-        <Geste href={liens?.plans ?? null}>Maps</Geste>
-        <Geste href={liens?.waze ?? null}>Waze</Geste>
-      </div>
-      <div className="mt-1.5 flex gap-1.5">
+      {/* **LES QUATRE GESTES SUR UNE SEULE LIGNE — sa planche du 19.** Quatre
+          cases en deux rangées se lisaient comme deux choix à faire ; une seule
+          rangée, le dessin au-dessus du mot, dit d'un coup d'œil qu'il y a
+          quatre gestes. Le dessin garde sa couleur, sans rond derrière (sa
+          retouche du soir) : vert pin pour y aller et appeler, or pour copier
+          l'adresse — ce qui se fait, et ce qui se lit. */}
+      <div className="mt-3.5 grid grid-cols-4 gap-1.5">
+        <Geste href={liens?.google ?? null} dessin="maps" teinte={colors.rust}>
+          Maps
+        </Geste>
+        <Geste href={liens?.waze ?? null} dessin="waze" teinte={colors.rust}>
+          Waze
+        </Geste>
         <Geste
+          dessin="copier"
+          teinte={colors.or}
           onClick={
             adresse
               ? async () => {
@@ -1962,96 +5188,949 @@ function FeuilleChantier({
               ? "Copie refusée"
               : "Copier l’adresse"}
         </Geste>
-        <Geste href={tel}>Appeler le client</Geste>
+        <Geste href={tel} dessin="appeler" teinte={colors.rust}>
+          Appeler le client
+        </Geste>
       </div>
 
       <NoteDuChantier chantier={chantier} ecriture={ecriture} />
 
-      <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
-        {(feuille?.taches ?? []).length === 0 ? (
-          <p className="m-0 text-[14.5px] leading-[1.45]" style={{ color: colors.muted }}>
-            {feuille === undefined ? "Lecture du devis…" : "Aucune ligne sur le devis."}
-          </p>
-        ) : (
-          (feuille?.taches ?? []).map((t, i) => (
-            <p
-              key={`${t}-${i}`}
-              className="relative mb-[9px] pl-3.5 text-[14.5px] leading-[1.45]"
-            >
-              <span
-                aria-hidden="true"
-                className="absolute left-0 top-2 h-[5px] w-[5px] rounded-full"
-                style={{ background: colors.or }}
-              />
-              {t}
-            </p>
-          ))
-        )}
-      </div>
+      {/* ─── LA FICHE DE SÉCURITÉ — avant les travaux, parce qu'elle se remplit
+          avant de commencer. Sur TOUS les chantiers, au bon vouloir — sa
+          décision du 21 septembre 2026 (`FicheDeSecurite.tsx`). */}
+      <FicheDeSecurite chantierId={chantier.id} />
+      {/* ─── LES TRAVAUX À FAIRE — le bandeau qui se déplie ─────────────────
+          Les lignes du devis vivent DEDANS, et nulle part ailleurs : *« un
+          devis de trois pages, ça va faire trop long sur le planning si c'est
+          visible tout le temps »* (19 septembre 2026). Fermé, il tient une
+          ligne et dit où on en est. Un chantier sans devis y lit « aucune
+          ligne » et peut quand même poser une photo et un mot. */}
+      {feuille === undefined ? (
+        <p className="mb-0 mt-3.5 text-[13.5px]" style={{ color: colors.muted }}>
+          Lecture du devis…
+        </p>
+      ) : (
+        <TravauxAFaire
+          chantierId={chantier.id}
+          lignes={feuille.taches}
+          aLaMain={feuille.aLaMain && ecriture}
+          travauxChanges={travauxChanges}
+          retoursEnvoyes={feuille.retours}
+          dernierRetourLe={feuille.dernierRetourLe}
+        />
+      )}
 
-      {/* **Le bouton n'existe QUE s'il y a un devis à imprimer.** Sans devis, la
-          route répond 404 : un bouton qui ouvre une erreur est pire qu'un bouton
-          absent — il fait douter de l'application entière. Le cas ne devrait pas
-          se présenter (le planning ne liste que des chantiers dont le devis est
-          PARTI), mais « ne devrait pas » n'est pas « ne peut pas ». */}
+      {/* **Le lien n'existe QUE s'il y a un devis à imprimer.** Sans devis, la
+          route répond 404 : un lien qui ouvre une erreur est pire qu'un lien
+          absent — il fait douter de l'application entière. */}
       {feuille?.avecDevis && (
-        <a
+        /* **Dans l'application, pas dans un onglet de Safari — 13 septembre
+           2026** : sans en-tête ni flèche, *« j'ai pas de touche retour »*.
+
+           **En NOIR gras, comme « Déplacer  Retirer » — sa remarque du
+           20 septembre 2026 à 2 h** : en or, il faisait *« ton sur ton avec le
+           contour doré de la fiche »*. Et « le devis », pas « le PDF » — son
+           mot, le même jour : *« change PDF sans les prix par : ouvrir le
+           devis sans les prix »*. C'est bien le devis, expurgé de ses prix, que
+           l'équipe emporte (sa décision du 21 août). */
+        <Link
           data-atlas="pdf-sans-prix"
-          href={`/api/chantiers/${chantier.id}/feuille/pdf`}
-          target="_blank"
-          rel="noreferrer"
-          className="mx-auto mt-3 block w-max rounded-full px-5 py-2.5 text-[13px]"
-          style={{ background: colors.rust, color: surPlein }}
+          href={adresseDeLaVisionneuse(`/api/chantiers/${chantier.id}/feuille/pdf`, {
+            surtitre: "Feuille de chantier",
+            titre: chantier.nom,
+          })}
+          className="mx-auto mt-3 block w-max px-3 py-2 text-[14px] font-bold"
+          style={{ color: colors.ink }}
         >
-          Ouvrir le PDF sans les prix
-        </a>
+          Ouvrir le devis sans les prix
+        </Link>
       )}
     </div>
   );
 }
 
 /**
- * Un des quatre gestes de la feuille.
+ * Un des quatre gestes de la fiche — une case, le dessin au-dessus du mot.
  *
  * **Éteint plutôt qu'absent quand la donnée manque** : un bouton qui disparaît
  * fait chercher où il est passé ; éteint, il dit que c'est l'adresse qui
  * manque, et non l'application qui a changé.
+ *
+ * **Les dessins sont tracés ici, d'un même trait** (`stroke-width` 1,6) : le
+ * repère, la flèche de navigation, les deux feuilles, le combiné. Aucun glyphe
+ * de police, aucune image — un dessin de police change de forme d'un téléphone
+ * à l'autre.
  */
+const DESSINS_DES_GESTES = {
+  maps: (
+    <>
+      <path d="M10 17.5s-5.5-5-5.5-9a5.5 5.5 0 0 1 11 0c0 4-5.5 9-5.5 9z" />
+      <circle cx="10" cy="8.5" r="2" />
+    </>
+  ),
+  waze: <path d="M16.5 3.5 3.5 9l6 1.5 1.5 6z" />,
+  copier: (
+    <>
+      <rect x="7" y="7" width="9.5" height="9.5" rx="2" />
+      <path d="M13 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+    </>
+  ),
+  appeler: (
+    <path d="M4 3.5h3l1.5 3.5-2 1.2a9 9 0 0 0 5.3 5.3l1.2-2 3.5 1.5v3a1.5 1.5 0 0 1-1.6 1.5A13 13 0 0 1 2.5 5.1 1.5 1.5 0 0 1 4 3.5z" />
+  ),
+} as const;
+
 function Geste({
   href,
   onClick,
+  dessin,
+  teinte,
   children,
 }: {
   href?: string | null;
   onClick?: (() => void) | null;
+  dessin: keyof typeof DESSINS_DES_GESTES;
+  /** La couleur du dessin : vert pin pour ce qu'on fait, or pour ce qui se lit. */
+  teinte: string;
   children: React.ReactNode;
 }) {
+  const actif = Boolean(href || onClick);
   const style = {
-    border: `1px solid ${colors.line}`,
-    background: colors.card,
-    color: href || onClick ? colors.ink : colors.muted,
-    opacity: href || onClick ? 1 : 0.45,
+    background: colors.rustTint,
+    boxShadow: `inset 0 0 0 1px ${colors.lineSoft}`,
+    color: actif ? colors.ink : colors.muted,
+    opacity: actif ? 1 : 0.45,
   } as const;
+  // Une CASE, pas une capsule : c'est la forme de sa planche du 19 septembre
+  // 2026, déclarée comme telle dans `test-boutons-arrondis.ts`.
   const classe =
-    "block flex-1 rounded-lg px-1.5 py-[11px] text-center text-[13px] no-underline";
+    "flex min-h-[78px] min-w-0 flex-col items-center justify-center gap-1.5 rounded-[12px] px-1 py-2 text-center text-[11.5px] leading-[1.15] no-underline";
+  const dedans = (
+    <>
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 20 20"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className="flex-none"
+        style={{ color: actif ? teinte : colors.muted }}
+      >
+        {DESSINS_DES_GESTES[dessin]}
+      </svg>
+      <span className="flex min-h-[2.3em] items-center">{children}</span>
+    </>
+  );
 
   if (href) {
     return (
-      <a className={classe} style={style} href={href} target="_blank" rel="noreferrer">
-        {children}
+      <a
+        data-atlas="geste-de-la-fiche"
+        className={classe}
+        style={style}
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+      >
+        {dedans}
       </a>
     );
   }
   if (onClick) {
     return (
-      <button type="button" className={classe} style={style} onClick={onClick}>
-        {children}
+      <button
+        type="button"
+        data-atlas="geste-de-la-fiche"
+        className={classe}
+        style={style}
+        onClick={onClick}
+      >
+        {dedans}
       </button>
     );
   }
   return (
-    <span className={classe} style={style}>
-      {children}
+    <span data-atlas="geste-de-la-fiche" className={classe} style={style}>
+      {dedans}
     </span>
+  );
+}
+
+
+/**
+ * Le nom de cette liste, écrit une seule fois.
+ *
+ * **Il sert à DEUX endroits, et c'est tout le correctif du 7 septembre 2026 :**
+ * le titre de la section, et la poignée qui l'annonce avant qu'on l'ouvre.
+ * Écrits séparément, ils s'étaient mis à dire deux choses — « En attente du
+ * client » dedans, « chez le client » dehors —, et c'est le raccourci du
+ * dehors qu'il n'a pas compris.
+ */
+const EN_ATTENTE_DU_CLIENT = "En attente du client";
+
+/** Ce que dit la poignée quand des dates du mois sont prêtes à partir. */
+function pretAEnvoyer(
+  groupes: readonly { contratEntretienId: string }[],
+  donnees: DonneesDatesDuMois | null
+): string {
+  if (groupes.length > 1) return `${groupes.length} clients prêts à envoyer`;
+  const contact = donnees?.contacts.find((c) => c.contratEntretienId === groupes[0]?.contratEntretienId);
+  return contact ? `Prêt à envoyer à ${avecCivilite(contact.clientNom, contact.clientCivilite ?? undefined)}` : "1 client prêt à envoyer";
+}
+
+/**
+ * LE TIROIR DU BAS — ce qui n'a pas encore de jour, à portée du pouce.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Sa maquette du 3 septembre 2026, retenue telle quelle.**
+ *
+ * « Sans date » et « En attente du client » vivaient tout en bas d'un écran qui
+ * porte déjà le mois, la journée ouverte et la semaine des planifiés. Or **poser
+ * un chantier est le geste le plus actif de cet écran**, et il était le plus
+ * loin du pouce : on touchait un jour en haut, on descendait, on posait, et l'on
+ * remontait voir le résultat.
+ *
+ * **CE QUE ÇA COÛTE, ET IL FAUT LE DIRE :** ces deux listes étaient visibles en
+ * faisant défiler ; elles demandent maintenant un appui. C'est le seul échange
+ * de ce lot, et il a été accepté en connaissance de cause. La poignée les
+ * NOMME et les COMPTE — « 3 sans date · 2 chez le client » —, si bien que rien
+ * ne devient introuvable : ce qui se perdait était leur position, pas leur
+ * existence.
+ *
+ * **La poignée change de mot dès qu'un jour est touché** : elle écrit alors « À
+ * poser sur jeudi 3 septembre », en or. C'est la phrase que l'écran écrivait
+ * déjà sous « Sans date » — rendue à l'endroit du geste plutôt qu'au bas de la
+ * page.
+ *
+ * **Il n'existe pas quand il n'a rien à porter.** Sa règle du 23 août 2026, la
+ * même qui a fait disparaître « Ajouter un chantier » : un geste qui ne peut
+ * mener nulle part se retire au lieu de s'annoncer. Un salarié n'en voit que la
+ * moitié « En attente du client », et rien du tout si elle est vide.
+ * ───────────────────────────────────────────────────────────────────────────
+ */
+
+/**
+ * L'épaisseur du bord doré du tiroir — sa version C du 11 septembre 2026.
+ *
+ * **Une seule valeur, parce que deux choses en dépendent** : le bord lui-même,
+ * et le voile posé au-dessus, qui doit s'arrêter exactement où l'or commence.
+ * Écrite deux fois, elle a divergé une fois — et l'or a disparu sous le voile.
+ */
+const BORD_OR_DU_TIROIR = 2;
+
+function TiroirDuBas({
+  ecriture,
+  sansDate,
+  morceaux,
+  morceauEnMain,
+  onPrendreMorceau,
+  attenteClient,
+  devisExpires,
+  jourTouche,
+  poser,
+  poseADefaire,
+  defairePose,
+  retraits,
+  demanderSuppression,
+  portesOuvertes,
+  onPortes,
+  datesDuMois,
+}: {
+  ecriture: boolean;
+  sansDate: ChantierPlanning[];
+  /**
+   * LES DEMI-JOURNÉES RENDUES qui attendent une place (10 septembre 2026).
+   *
+   * Elles vivent sous le même titre que « Sans date », et c'est voulu : pour
+   * lui, ce sont deux formes de la même chose — du travail qui attend un jour.
+   */
+  morceaux: { chantier: ChantierPlanning; combien: number }[];
+  morceauEnMain: string | null;
+  onPrendreMorceau: (chantierId: string) => void;
+  attenteClient: ChantierPlanning[];
+  devisExpires: ChantierPlanning[];
+  jourTouche: JourIso | null;
+  poser: (chantierId: string, jour: JourIso) => void;
+  /** Le dernier client posé d'ici, tant qu'il est encore sur ce jour — voir `dernierPose`. */
+  poseADefaire: { chantier: ChantierPlanning; jour: JourIso } | null;
+  defairePose: (chantierId: string) => void;
+  /**
+   * **Le type vient de la source, jamais recopié.** Une liste de champs écrite
+   * ici aurait divergé au premier champ ajouté à `useRetraits` — et le tiroir
+   * d'annulation se serait mis à recevoir autre chose que ce qu'il attend.
+   */
+  retraits: ReturnType<typeof useRetraits>;
+  /** La question avant de supprimer, la même que sur la fiche du jour. */
+  demanderSuppression: (c: ChantierPlanning) => void;
+  /**
+   * ─── LES DEUX LISTES DU BAS ONT DES PORTES, ELLES AUSSI — 4 sept. 2026 ──
+   *
+   * **Elles n'avaient AUCUN lien vers le chantier** : ni chevron, ni bouton,
+   * ni nom cliquable. Tant que la fiche existait, cela ne se voyait pas — la
+   * liste des chantiers y menait. Elle est retirée le 4 septembre, et un
+   * devis parti sans date y serait devenu injoignable : exactement le
+   * cul-de-sac du 8 août 2026, *« comment moi je fais pour avoir accès au
+   * devis ? »*, sous un autre nom.
+   *
+   * **La même feuille que les journées, la même règle** (`portesDuPlanning`,
+   * qui rend le devis et la fiche client sur un chantier sans date, et pas la
+   * facture — un chantier qui n'a pas eu lieu ne se facture pas).
+   *
+   * **Le chevron, jamais le nom.** Sa consigne du 4 septembre : la feuille ne
+   * s'accroche pas au nom du chantier.
+   */
+  portesOuvertes: boolean;
+  onPortes: (c: ChantierPlanning) => void;
+  /** Les dates du mois des contrats : à envoyer, et en attente du client. */
+  datesDuMois: {
+    donnees: DonneesDatesDuMois;
+    aEnvoyer: ReturnType<typeof grouperLesDatesDuMois<ChantierPlanning>>["aEnvoyer"];
+    enAttente: ReturnType<typeof grouperLesDatesDuMois<ChantierPlanning>>["enAttente"];
+    onEnvoye: (e: EnvoiDesDates) => void;
+  } | null;
+}) {
+  const [ouvert, setOuvert] = useState(false);
+  const aEnvoyer = datesDuMois?.aEnvoyer ?? [];
+  const datesEnAttente = datesDuMois?.enAttente ?? [];
+
+  /**
+   * **LA DERNIÈRE DATE POSÉE OUVRE LE TIROIR** — sa demande du 27 septembre
+   * 2026 : *« l'onglet avec envoyer les dates s'affiche de suite, il ne faut
+   * pas avoir besoin de recliquer sur le nom du client »*. Ajusté pendant le
+   * rendu, sur le compte d'avant : un effet qui pose un état relancerait un
+   * rendu de plus pour rien.
+   */
+  const [dejaAEnvoyer, setDejaAEnvoyer] = useState(aEnvoyer.length);
+  if (aEnvoyer.length !== dejaAEnvoyer) {
+    setDejaAEnvoyer(aEnvoyer.length);
+    if (aEnvoyer.length > dejaAEnvoyer) setOuvert(true);
+  }
+
+  /**
+   * **UN RETRAIT OUVRE LE TIROIR** — la B de sa planche du 7 octobre 2026 :
+   * « Retiré à l'instant, Annuler » reste six secondes en bas. Supprimé depuis
+   * la fiche du jour, le tiroir était fermé, et « Annuler » vivait dedans, à
+   * hauteur zéro. Même ajustement pendant le rendu que la date posée.
+   */
+  const [dejaRetires, setDejaRetires] = useState(retraits.nombre);
+  if (retraits.nombre !== dejaRetires) {
+    setDejaRetires(retraits.nombre);
+    if (retraits.nombre > dejaRetires) setOuvert(true);
+  }
+
+  /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * LE TIROIR PUBLIE SA HAUTEUR — 10 septembre 2026
+   * ═══════════════════════════════════════════════════════════════════════
+   *
+   * **Le défaut qu'il ferme, et il traînait dans `TODO.md` :** ce tiroir est
+   * `fixed`, posé sur la barre du bas. `.atlas-contenu` réserve la hauteur de
+   * LA BARRE (`--atlas-barre`) et rien d'autre — le tiroir, lui, mangeait
+   * cinquante pixels de plus, et ce qui tombait dessous n'était plus visable.
+   * Deux gestes en ont souffert : « + Absent ? », qui passait dessous d'un
+   * pixel le 10 septembre, et le « Poser » du client, qui atterrissait
+   * dessous dès que sa fiche s'ouvrait.
+   *
+   * **On ne pousse pas la carte à la main** : le tiroir mesure ce qu'il occupe
+   * et le publie, exactement comme `AtlasBottomNav` publie `--atlas-barre`.
+   * Un nombre écrit dans la feuille de style aurait menti au premier
+   * changement de la poignée — et c'est précisément ce que ce dépôt a déjà
+   * payé sur la barre elle-même.
+   *
+   * **Rendue au démontage** : sur un écran sans tiroir, une hauteur survivante
+   * volerait sa place au contenu pour toujours.
+   */
+  const cadre = useRef<HTMLDivElement>(null);
+  const montre = (ecriture && sansDate.length > 0) || attenteClient.length > 0 ||
+    (ecriture && devisExpires.length > 0) ||
+    (ecriture && morceaux.length > 0) || aEnvoyer.length > 0 || datesEnAttente.length > 0 ||
+    (ecriture && retraits.nombre > 0);
+  useEffect(() => {
+    const racine = document.documentElement;
+    const rendre = () => racine.style.removeProperty("--atlas-tiroir");
+    const noeud = cadre.current;
+    if (!noeud) {
+      rendre();
+      return;
+    }
+    const publier = () =>
+      racine.style.setProperty(
+        "--atlas-tiroir",
+        `${Math.round(noeud.getBoundingClientRect().height)}px`
+      );
+    publier();
+    const oeil = new ResizeObserver(publier);
+    oeil.observe(noeud);
+    return () => {
+      oeil.disconnect();
+      rendre();
+    };
+    // **`montre` est la dépendance, et c'est ce qui rend l'effet juste** : le
+    // tiroir n'est pas démonté quand il n'a rien à porter, il rend `null`. Sans
+    // cette dépendance, l'effet ne se rejouerait pas au moment où il reparaît,
+    // et sa hauteur resterait celle d'avant — ou zéro.
+  }, [montre]);
+
+  // **« Sans date » n'existe que pour qui peut écrire** (30 août 2026) : ses
+  // deux seuls gestes — poser et supprimer — sont refusés au serveur pour un
+  // salarié, et une liste accompagnée de boutons morts se lit comme une panne.
+  const aSansDate = ecriture && sansDate.length > 0;
+  const aAttente = attenteClient.length > 0;
+  // **Ses deux gestes ne sont qu'à qui pose le planning** : supprimer, et la
+  // porte « Devis expiré » de la carte du jour.
+  const aExpires = ecriture && devisExpires.length > 0;
+  /**
+   * **LES DEMI-JOURNÉES RENDUES COMPTENT DANS CETTE PORTE — 10 sept. 2026.**
+   *
+   * Trouvé par la suite navigateur, à l'écran : un chantier dont on rend une
+   * moitié alors que rien d'autre n'attend faisait un tiroir vide, donc ABSENT
+   * — et le morceau n'existait plus nulle part. Le geste marchait, et il
+   * n'était joignable qu'au hasard d'une autre liste (`CLAUDE.md` §5 quater).
+   *
+   * Comme « Sans date », elles ne s'offrent qu'à qui peut écrire : les reposer
+   * est refusé au serveur pour un salarié, et une liste aux boutons morts se
+   * lit comme une panne.
+   */
+  const aMorceaux = ecriture && morceaux.length > 0;
+  /**
+   * **Le dernier client posé tient le tiroir ouvert à lui seul.** Il vient de
+   * poser le seul client qui attendait : la liste est vide, mais c'est là,
+   * exactement, qu'il doit pouvoir revenir. Un tiroir qui disparaît à
+   * l'instant du geste emporterait « Annuler » avec lui.
+   */
+  const aDefaire = ecriture && poseADefaire !== null;
+  /**
+   * **Un retrait qui attend tient le tiroir, lui aussi — 7 octobre 2026.** La
+   * même règle que la pose juste au-dessus, qui avait oublié son pendant :
+   * retirer le SEUL client de « Sans date » vidait la liste, le tiroir se
+   * démontait, et « Annuler » partait avec lui. L'écriture, elle, tombait six
+   * secondes plus tard : un client accepté par erreur, supprimé sans retour
+   * (`test-supprimer-du-planning-e2e`).
+   */
+  const aRetire = ecriture && retraits.nombre > 0;
+  const aDates = aEnvoyer.length > 0 || datesEnAttente.length > 0;
+  if (!aSansDate && !aAttente && !aExpires && !aMorceaux && !aDefaire && !aRetire && !aDates) return null;
+  /** Ceux qui attendent le client : un devis parti, ou les dates d'un mois. */
+  const combienAttendent = attenteClient.length + datesEnAttente.length;
+
+  /** Ce qui attend une place, morceaux compris — un seul compte, un seul mot. */
+  const combienEnAttente =
+    sansDate.length + morceaux.reduce((t, m) => t + m.combien, 0);
+
+  /**
+   * Ce que dit la poignée, et rien de plus.
+   *
+   * **Un jour touché change tout** : la question n'est plus « qu'ai-je en
+   * attente » mais « qu'est-ce que je pose ici ». Le mot suit le geste.
+   */
+  const aPoser = (aSansDate || aMorceaux) && jourTouche !== null;
+  const resume = aPoser
+    ? `À poser sur ${jourLisibleCourt(jourTouche).toLowerCase()}`
+    : [
+        // **Un seul compte pour les deux**, et c'est son mot : une moitié
+        // rendue et un chantier sans date sont la même chose — du travail qui
+        // attend un jour. Deux comptes côte à côte auraient demandé de choisir
+        // lequel est « sans date », question qui ne se pose pas pour lui.
+        //
+        // **« 1 client sans date », pas « 1 sans date »** — sa demande du
+        // 12 septembre 2026. Le nombre seul ne disait pas de quoi il comptait ;
+        // c'est le client qu'il attend de poser, et c'est le mot qu'il emploie.
+        aSansDate || aMorceaux
+          ? `${combienEnAttente} client${combienEnAttente > 1 ? "s" : ""} sans date`
+          : null,
+        // **Le TITRE de la liste, pas un raccourci** — son choix du 7 septembre
+        // 2026 (planche « Deux mots du planning », variante B). « 1 chez le
+        // client » ne disait ni ce qui est chez lui, ni ce qu'on attend : il
+        // l'a signalé le matin même, *« on comprend pas bien ! »*. La poignée
+        // annonce désormais ce qu'on trouve dedans, mot pour mot.
+        // « Prêt à envoyer à Mme Costa » : le mot de sa planche 130.
+        aEnvoyer.length > 0 ? pretAEnvoyer(aEnvoyer, datesDuMois?.donnees ?? null) : null,
+        combienAttendent > 0 ? `${combienAttendent} ${EN_ATTENTE_DU_CLIENT.toLowerCase()}` : null,
+        aExpires ? `${devisExpires.length} devis expiré${devisExpires.length > 1 ? "s" : ""}` : null,
+      ]
+        .filter(Boolean)
+        .join(" · ") ||
+      // Plus rien n'attend, et le dernier posé est encore à défaire.
+      "Aucun client sans date";
+
+  return (
+    <div
+      ref={cadre}
+      data-atlas="tiroir-planning"
+      data-ouvert={ouvert ? "1" : "0"}
+      className="atlas-colonne-fixe z-[19]"
+      style={{
+        // **Juste au-dessus de la barre du bas, et mesuré par elle.**
+        // `--atlas-barre` est sa hauteur réelle, indicateur d'accueil compris
+        // (`globals.css`) : la recopier ici serait s'assurer qu'un jour l'une
+        // bougera sans l'autre.
+        bottom: "var(--atlas-barre)",
+        // ─── ON DOIT VOIR OÙ IL COMMENCE — 11 septembre 2026 ──────────────
+        //
+        // **Sa remarque, capture à l'appui :** *« il faut rendre plus visible
+        // la fenêtre qui s'ouvre "1 sans date" — quand elle est ouverte, on ne
+        // la voit pas »*. Elle portait le fond de la PAGE (`cream`) : ouverte,
+        // rien ne disait où la page finissait et où le tiroir commençait, et
+        // ses listes semblaient flotter au bas de l'écran.
+        //
+        // **Le fond des cartes** (`card`), comme la fiche d'un jour deux
+        // centimètres plus haut : c'est ce qui, dans cet écran, dit « ceci est
+        // posé par-dessus ». Aucune couleur neuve, aucun trait de plus.
+        background: colors.card,
+        // ─── SA VERSION C, CHOISIE LE 11 SEPTEMBRE 2026 ───────────────────
+        //
+        // Planche `appli/tiroir-en-or.html`, quatre bords côte à côte : *« j'aime
+        // bien la C »*. Deux pixels d'or et les angles qui se lèvent — l'or dit
+        // « ceci s'ouvre » sans cerner tout le bas de l'écran, et les coins
+        // montrent que le tiroir passe PAR-DESSUS le calendrier, ce que le fond
+        // seul ne faisait pas.
+        //
+        // **D a été écartée, et c'est écrit sur la planche** : un cadre doré
+        // complet est joli une fois et lourd tous les jours, sur un tiroir
+        // présent à chaque ouverture du planning.
+        borderTop: `${BORD_OR_DU_TIROIR}px solid ${colors.or}`,
+        borderRadius: "14px 14px 0 0",
+        // **Et l'ombre se creuse quand il est OUVERT.** Fermé, il n'est qu'une
+        // poignée : une ombre soutenue en permanence salirait le bas de tous
+        // les écrans du planning pour une liste que personne ne regarde.
+        boxShadow: ouvert
+          ? `0 -14px 34px ${voile(colors.ink, 0.18)}`
+          : `0 -10px 28px ${voile(colors.ink, 0.08)}`,
+      }}
+    >
+      {/* Le voile : sans lui, la poignée tranche net la rangée du mois qui
+          passe dessous, et la coupure se lit comme un défaut d'affichage. */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 h-6"
+        style={{
+          // **AU-DESSUS DU BORD DORÉ, pas dessus** — 12 septembre 2026, sa
+          // capture à l'appui : *« j'avais demandé la planche avec le liseré
+          // doré en haut, va vérifier ! »*. Le bord était bien là, et il ne se
+          // voyait que dans les angles arrondis. Un élément absolu se place
+          // depuis la boîte de REMPLISSAGE, sous le bord : à `-24`, les deux
+          // derniers pixels du voile — pleins, couleur de carte — recouvraient
+          // exactement les deux pixels d'or. On le remonte de l'épaisseur du
+          // bord, et rien d'autre : le voile finit où l'or commence.
+          top: -(24 + BORD_OR_DU_TIROIR),
+          // **Il fond la rangée du mois dans le tiroir, donc il porte SA
+          // couleur.** Resté sur le fond de page, il aurait redessiné la
+          // coupure que le nouveau fond vient d'effacer.
+          background: `linear-gradient(to top, ${colors.card}, ${voile(colors.card, 0)})`,
+        }}
+      />
+      <button
+        type="button"
+        data-atlas="poignee-tiroir"
+        aria-expanded={ouvert}
+        aria-controls="tiroir-du-bas"
+        onClick={() => setOuvert((o) => !o)}
+        className="flex w-full cursor-pointer items-center gap-3 border-0 bg-transparent px-[18px] py-[15px] text-left"
+        style={{ WebkitTapHighlightColor: "transparent" }}
+      >
+        <span
+          // **En noir, en gras** — sa demande du 12 septembre 2026, avec le
+          // mot « client ». L'encre adoucie faisait de la poignée une note en
+          // bas de page ; c'est la seule ligne qui dit ce qui attend un jour.
+          // L'or reste à « À poser sur … » : là, c'est le geste qu'on annonce.
+          className="min-w-0 flex-1 truncate text-[13px] font-semibold"
+          style={{ color: aPoser ? colors.or : colors.ink }}
+        >
+          {resume}
+        </span>
+        <svg
+          aria-hidden="true"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={colors.chevron}
+          strokeWidth="2.2"
+          style={{
+            flex: "none",
+            transform: ouvert ? "rotate(180deg)" : "none",
+            transition: "transform 320ms cubic-bezier(0.16,1,0.3,1)",
+          }}
+        >
+          <path d="M5 15l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      <div
+        id="tiroir-du-bas"
+        className="overflow-hidden"
+        // **FERMÉ, IL N'EXISTE PLUS POUR PERSONNE.**
+        //
+        // `max-height: 0` avec `overflow: hidden` ne cache rien : les boutons
+        // gardent leur taille, le clavier les atteint encore par tabulation, et
+        // un lecteur d'écran les annonce. Le navigateur, lui, les tient pour
+        // VISIBLES — c'est ce qui a fait rougir `test-planning-e2e` : « Journée »
+        // était trouvé, cliqué, et la poignée interceptait le doigt.
+        //
+        // `visibility` retire l'élément du doigt, du clavier et de la voix,
+        // sans casser l'animation : à l'ouverture elle passe à `visible` tout de
+        // suite, à la fermeture elle attend que le repli soit fini.
+        style={{
+          // **Une hauteur MAXIMALE, jamais une hauteur.** Le contenu varie —
+          // trois chantiers sans date ou dix —, et une valeur fixe laisserait
+          // soit un vide sous la dernière ligne, soit une liste coupée.
+          maxHeight: ouvert ? 352 : 0,
+          overflowY: ouvert ? "auto" : "hidden",
+          visibility: ouvert ? "visible" : "hidden",
+          transition: `max-height 420ms cubic-bezier(0.16,1,0.3,1), visibility 0s linear ${
+            ouvert ? "0s" : "420ms"
+          }`,
+        }}
+      >
+        {/* ─── LE DERNIER POSÉ, ET LE MOT QUI LE DÉFAIT ────────────────────
+            Sa planche du 18 septembre 2026 : « Mr. Linotte est sur jeudi 17
+            septembre », et « Annuler » à droite, en gris — la même grammaire
+            que le reste de la fiche. Il vit AU-DESSUS de la liste, et hors
+            d'elle : quand le dernier client vient d'être posé, la liste n'a
+            plus rien à montrer, et c'est précisément là qu'on veut pouvoir
+            revenir. « Annuler » fait ce que fait « Retirer » sur la fiche du
+            jour — un seul chemin d'écriture (`CLAUDE.md` §3). */}
+        {ecriture && poseADefaire && (
+          <>
+            <div style={{ borderTop: `1px solid ${colors.line}` }} />
+            <div
+              data-atlas="pose-a-defaire"
+              className="mx-[18px] flex min-h-[46px] items-center justify-between gap-3 pt-1 text-[14px]"
+              style={{ color: colors.ink }}
+            >
+              <span className="min-w-0 flex-1">
+                {poseADefaire.chantier.nom} est sur {jourLisibleCourt(poseADefaire.jour).toLowerCase()}
+              </span>
+              <MotEnOr doux data-atlas="defaire-la-pose" onClick={() => defairePose(poseADefaire.chantier.id)}>
+                Annuler
+              </MotEnOr>
+            </div>
+          </>
+        )}
+
+        {/* ─── LES DATES DU MOIS À ENVOYER — planche 130 ─────────────────────
+            **En tête du tiroir** : c'est ce que la dernière date posée vient
+            d'ouvrir, et l'écran y descend de lui-même. */}
+        {datesDuMois &&
+          aEnvoyer.map((g) => (
+            <DatesAEnvoyer
+              key={`${g.contratEntretienId}|${g.mois}`}
+              groupe={g}
+              donnees={datesDuMois.donnees}
+              titre={
+                <>
+                  <div style={{ borderTop: `1px solid ${colors.line}` }} />
+                  <TitreSection encadre aGauche>À envoyer</TitreSection>
+                </>
+              }
+              onEnvoye={datesDuMois.onEnvoye}
+            />
+          ))}
+
+        {/* ─── SANS DATE — et c'est d'ici qu'on POSE ──────────────────────── */}
+        {/* **RIEN N'ATTEND DE JOUR : LA SECTION N'EXISTE PAS.** Sa question du
+            25 août 2026 : *« est-ce que la catégorie sans date a un réel besoin
+            d'exister ? »*. Elle en a un — c'est le seul endroit d'où un
+            chantier reçoit sa date, et « Retirer » l'y renvoie — mais VIDE elle
+            ne rend qu'un titre et un refus, au milieu d'un écran déjà long.
+
+            C'est sa propre règle du 23 août, celle qui a fait disparaître
+            « Ajouter un chantier » : un geste qui ne peut mener nulle part se
+            retire au lieu de s'annoncer. La phrase du cul-de-sac vivait ici,
+            et c'est elle que ce bouton promettait. */}
+        {/* **PAS DE « SANS DATE » POUR UN SALARIÉ** — 30 août 2026. Cette
+            section n'existe que pour deux gestes : poser un chantier sur le
+            jour touché, et le supprimer. Les deux lui sont refusés au serveur.
+            La laisser afficherait une liste de chantiers sans date accompagnée
+            de boutons morts — sa propre règle du 23 août : un geste qui ne peut
+            mener nulle part se retire au lieu de s'annoncer. */}
+        {ecriture && (sansDate.length > 0 || morceaux.length > 0) && (
+          <>
+            {/* **Le trait qui sépare la poignée du dedans** — sa demande du
+                11 septembre 2026, planche à l'appui : *« avec le trait qui
+                sépare 1 sans date de sans date »*. Il vit ICI, dans le contenu
+                qui se replie : posé sur le cadre, il resterait visible sous la
+                poignée quand le tiroir est fermé. */}
+            <div style={{ borderTop: `1px solid ${colors.line}` }} />
+            {/* **PLUS DE TITRE « SANS DATE »** — sa demande du 12 septembre
+                2026 : la poignée dit déjà « 1 client sans date » deux
+                centimètres plus haut ; la pastille le redisait en dessous.
+                Le mot en trop part, et la consigne remonte sous le trait. */}
+            {/* ─── LE JOUR NE S'ÉCRIT PLUS DEUX FOIS — 17 septembre 2026 ────
+                **Sa demande, capture à l'appui :** *« il y a écrit deux fois
+                "à poser sur le mardi 22 septembre" : garde celle en doré,
+                supprime en noir »*.
+
+                La phrase est montée dans la poignée le 11 septembre, en or, à
+                l'endroit du geste (`docs/planning-verdict.md`). Celle d'ici
+                n'avait jamais été retirée : elle redisait mot pour mot la
+                ligne dorée deux centimètres plus haut.
+
+                **CE QUI RESTE, et ce n'est pas le doublon :** sans jour
+                touché, la poignée ne dit que « 1 client sans date ». Rien
+                n'apprend alors qu'il faut d'abord toucher un jour — et un
+                « Poser » qui refuse sans dire pourquoi se lit comme une
+                panne. Cette ligne-là est la seule qui l'explique, et c'est
+                elle que trois suites cherchent
+                (`test-planning-e2e`, `test-poser-une-date-e2e`,
+                `test-salarie-planning-lecture-seule-e2e`). */}
+            {!jourTouche && (
+              <p
+                data-atlas="ou-poser"
+                // **Juste sous le trait, à gauche, en noir** — *« qu'on la voie
+                // bien »*. C'est la seule ligne qui dit quoi faire de la liste ;
+                // en gris, elle se lisait comme une note, et il touchait les noms.
+                className="mx-[18px] mt-3 text-[12.5px]"
+                style={{ color: colors.ink }}
+              >
+                Touchez d’abord un jour du calendrier
+              </p>
+            )}
+            <div className="mx-[18px] mt-3">
+              {sansDate.map((c, i) => (
+                <LigneRetirable
+                  key={c.id}
+                  libelle={`le chantier ${c.nom}`}
+                  retiree={retraits.estRetire(c.id)}
+                  onRetirer={() => demanderSuppression(c)}
+                  hauteurMax={64}
+                  className="flex"
+                >
+                  <div
+                    data-atlas="sans-date"
+                    className="flex w-full items-center justify-between gap-2.5"
+                    // **Le filet SÉPARE deux lignes, il ne souligne pas la
+                    // dernière** — sa demande du 26 août : *« supprime le trait
+                    // sous Jean Louis »*. Avec un seul chantier en attente, le
+                    // trait ne séparait rien : il soulignait un nom. C'est la
+                    // règle qu'emploie déjà la liste « En attente du client »
+                    // deux blocs plus bas, reprise ici plutôt qu'inventée.
+                    style={{
+                      borderBottom:
+                        i === sansDate.length - 1 ? "none" : `1px solid ${colors.line}`,
+                    }}
+                  >
+                    {/* ─── LE NOM SEUL POSE LE CLIENT — ses réponses du 17 sept. 2026
+                        *« Au lieu du "Poser" entouré, le mieux serait qu'on
+                        clique sur Mr. Linotte »*, puis, le soir : *« laisse
+                        juste le nom du client et retire le contour doré »*.
+                        Le bouton « Poser » et le chevron « › » partent ; le
+                        nom porte le geste, et `data-poser` avec lui — les
+                        suites le cherchent là. Ce que le « › » emportait, il le
+                        sait : le chantier s'ouvre depuis l'onglet Chantiers.
+
+                        **Sans jour touché, rien ne s'appuie** : la ligne reste
+                        un texte, et `data-poser` n'existe pas
+                        (`test-poser-une-date-e2e`). La poignée dit « À poser
+                        sur … » en or : c'est elle qui annonce le geste.
+
+                        **La durée, en gris, à droite** — sa planche du 18 :
+                        c'est elle qui dit qu'une demi-journée trouvera sa place
+                        dans une journée déjà entamée. */}
+                    {jourTouche ? (
+                      /* **UN SEUL GESTE, ET LE JOUR EST DÉJÀ ÉCRIT AU-DESSUS.**
+                         Les trois moments vivaient ici aussi — même question,
+                         même défaut : ils écrasaient la durée que le devis avait
+                         fixée (voir `poser`). Les laisser dans ce tiroir après
+                         les avoir retirés de la carte du jour aurait fait deux
+                         façons de poser un chantier, et c'est exactement ce que
+                         `CLAUDE.md` §3 interdit : elles auraient divergé. */
+                      <button
+                        type="button"
+                        data-poser="1"
+                        aria-label={`Poser ${c.nom} sur ${jourLisibleCourt(jourTouche)}`}
+                        onClick={() => poser(c.id, jourTouche)}
+                        className="flex min-h-[50px] min-w-0 flex-1 cursor-pointer items-center justify-between gap-2.5 border-0 bg-transparent px-0 py-[11px] text-left"
+                        style={{ color: colors.ink, WebkitTapHighlightColor: "transparent" }}
+                      >
+                        <span
+                          className="min-w-0 flex-1 truncate"
+                          style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2 }}
+                        >
+                          {c.nom}
+                        </span>
+                        <span className="flex-none text-[12.5px]" style={{ color: colors.muted }}>
+                          {ditCeQuIlOccupe(c)}
+                        </span>
+                      </button>
+                    ) : (
+                      <div className="flex min-h-[50px] min-w-0 flex-1 items-center justify-between gap-2.5 py-[11px]">
+                        <span
+                          className="min-w-0 flex-1 truncate"
+                          style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2 }}
+                        >
+                          {c.nom}
+                        </span>
+                        <span className="flex-none text-[12.5px]" style={{ color: colors.muted }}>
+                          en attente d’un jour
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </LigneRetirable>
+              ))}
+
+              {/* ─── LES DEMI-JOURNÉES RENDUES — 10 septembre 2026 ─────────
+                  *« La demi-journée de Mr Julien qui a été retirée peut être
+                  replacée. »* On la touche ici, puis on touche la demi-journée
+                  qui l'accueille : deux gestes, comme poser un chantier.
+
+                  **Pas de « Retirer » sur ces lignes-là**, et ce n'est pas un
+                  oubli : le chantier, lui, n'est pas sans date — c'est une
+                  moitié de lui qui attend. Le retirer entier se fait depuis sa
+                  journée, où il est encore posé. */}
+              {morceaux.map((m, i) => {
+                const tenu = morceauEnMain === m.chantier.id;
+                return (
+                  <button
+                    key={`morceau-${m.chantier.id}`}
+                    type="button"
+                    data-atlas="morceau-a-poser"
+                    data-chantier={m.chantier.id}
+                    aria-pressed={tenu}
+                    onClick={() => onPrendreMorceau(m.chantier.id)}
+                    className="flex w-full items-center justify-between gap-2.5 py-[11px] text-left"
+                    style={{
+                      borderBottom:
+                        i === morceaux.length - 1 ? "none" : `1px solid ${colors.line}`,
+                    }}
+                  >
+                    <span
+                      className="min-w-0 flex-1 truncate"
+                      style={{
+                        fontFamily: font.display,
+                        fontSize: 19,
+                        lineHeight: 1.2,
+                        color: tenu ? colors.or : colors.ink,
+                      }}
+                    >
+                      {m.chantier.nom}
+                    </span>
+                    <span className="flex-none text-[12.5px]" style={{ color: colors.muted }}>
+                      {tenu
+                        ? "touchez une demi-journée"
+                        : m.combien === 1
+                          ? "½ journée à poser"
+                          : `${m.combien} demi-journées à poser`}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {/* Le tiroir d'annulation vit DANS celui du bas, et non plus en fin de
+            page. Deux tiroirs cloués au même bord se seraient recouverts ; et
+            « Retirer » se déclenche depuis cette liste-ci, donc l'annulation
+            doit être là où le geste a eu lieu. */}
+        {ecriture && (
+          <TiroirDesRetires
+            dernier={retraits.dernier}
+            nombre={retraits.nombre}
+            onAnnuler={retraits.annuler}
+            compteARebours={retraits.compteARebours}
+            className="mt-6"
+          />
+        )}
+
+        {/* ─── EN ATTENTE DU CLIENT ───────────────────────────────────────── */}
+        {combienAttendent > 0 && (
+          <>
+            <TitreSection encadre aGauche data-atlas="titre-attente-client">
+              {EN_ATTENTE_DU_CLIENT}
+            </TitreSection>
+            <div className="mx-[18px] mt-3">
+              {attenteClient.map((c, i) => (
+                <div
+                  key={c.id}
+                  className="flex items-center justify-between gap-2.5 py-[11px]"
+                  style={{
+                    borderBottom:
+                      i === attenteClient.length - 1 ? "none" : `1px solid ${colors.line}`,
+                  }}
+                >
+                  <span
+                    className="min-w-0 flex-1 truncate"
+                    style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2 }}
+                  >
+                    {c.nom}
+                  </span>
+                  <span
+                    className="flex-shrink-0 text-right text-[12.5px]"
+                    style={{ color: colors.muted }}
+                  >
+                    Il choisit sa date
+                  </span>
+                  {portesOuvertes && <ChevronDesPortes chantier={c} onPortes={onPortes} />}
+                </div>
+              ))}
+              {datesDuMois &&
+                datesEnAttente.map((g, i) => (
+                  <DatesEnAttente
+                    key={`${g.contratEntretienId}|${g.mois}`}
+                    groupe={g}
+                    donnees={datesDuMois.donnees}
+                    derniere={i === datesEnAttente.length - 1}
+                  />
+                ))}
+            </div>
+          </>
+        )}
+
+        {/* ─── LES DEVIS EXPIRÉS — sa planche du 7 octobre 2026 ──────────────
+            (`appli/devis-expires.html`). 45 jours sans réponse : le lien est
+            mort. La phrase dit pourquoi ils sont là, sa demande du même soir ;
+            la croix ouvre la même question que « Sans date », puis la barre
+            d'or de six secondes. Les poser se fait par la porte « Devis
+            expiré » de la carte du jour. */}
+        {aExpires && (
+          <>
+            <TitreSection encadre aGauche data-atlas="titre-devis-expires">
+              Devis expirés
+            </TitreSection>
+            <p className="mx-[18px] mt-2 text-[12.5px] leading-[1.45]" style={{ color: colors.muted }}>
+              Le lien envoyé au client n&apos;est valable que {VALIDITE_LIEN_JOURS} jours. Pour ceux-ci, il a
+              expiré sans réponse.
+            </p>
+            <div className="mx-[18px] mt-2">
+              {devisExpires.map((c, i) => (
+                <LigneRetirable
+                  key={c.id}
+                  libelle={`le chantier ${c.nom}`}
+                  retiree={retraits.estRetire(c.id)}
+                  onRetirer={() => demanderSuppression(c)}
+                  hauteurMax={64}
+                  className="flex"
+                >
+                  <div
+                    data-atlas="devis-expire"
+                    className="flex min-h-[50px] w-full items-center justify-between gap-2.5 py-[11px]"
+                    style={{
+                      borderBottom: i === devisExpires.length - 1 ? "none" : `1px solid ${colors.line}`,
+                    }}
+                  >
+                    <span
+                      className="min-w-0 flex-1 truncate"
+                      style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2 }}
+                    >
+                      {c.nom}
+                    </span>
+                    {c.envoiExpireAt && (
+                      <span className="flex-none text-[12.5px]" style={{ color: colors.muted }}>
+                        Expiré le {jourEnLettres(c.envoiExpireAt)}
+                      </span>
+                    )}
+                  </div>
+                </LigneRetirable>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 }

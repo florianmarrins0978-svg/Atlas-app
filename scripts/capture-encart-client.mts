@@ -18,6 +18,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { composerMessageClient } from "../src/lib/message-client";
 import { avecCivilite } from "../src/lib/civilite";
+import { jourIso } from "../src/lib/jour";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 const dossier = process.argv[2];
@@ -46,14 +47,12 @@ await page.waitForURL(`${BASE}/`, { timeout: 60_000 });
 await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
 await page.fill('input[placeholder="Bernard"]', CLIENT);
 await page.fill('input[placeholder="06 12 34 56 78"]', "0679984514");
-await creerPuisFiche(page);
+const idChantier = await creerPuisFiche(page);
 await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-const chantierId = page.url().split("/").pop()!.split("?")[0];
+const chantierId = idChantier;
 
 await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
 await page.waitForSelector("text=Total TTC", { timeout: 40_000 });
-await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
-await page.waitForTimeout(900);
 await page.getByLabel("Description 1").fill("Taille d'une haie de laurier (20 ml)");
 await page.getByLabel("Prix unitaire 1").fill("350");
 await page.getByLabel("Description 1").click();
@@ -65,7 +64,7 @@ await page.getByRole("button", { name: /Envoyer le devis/i }).click();
 await page.waitForTimeout(3500);
 
 const { rows } = await pool.query(
-  `SELECT e.jeton FROM envois_devis e JOIN devis d ON d.id = e.devis_id WHERE d.chantier_id = $1`,
+  `SELECT e.jeton, e.expire_at, e.autre_date_autorisee FROM envois_devis e JOIN devis d ON d.id = e.devis_id WHERE d.chantier_id = $1`,
   [chantierId]
 );
 if (!rows[0]) {
@@ -82,17 +81,21 @@ await page.locator("#precision").scrollIntoViewIfNeeded();
 await page.waitForTimeout(400);
 await page.screenshot({ path: `${dossier}/client-encart.png` });
 
-const invite = page.locator("text=/vous pouvez laisser un mot/i");
-if ((await invite.count()) === 0) {
-  echecs.push("aucune phrase n'invite le client à écrire — c'est ce qu'il a demandé le 13 août");
+// **La phrase et l'intitulé ont été RÉUNIS le 31 août 2026**, pour que l'écran
+// tienne dans un téléphone. Ce qui se vérifie est donc ce qu'ils défendaient : le
+// libellé du champ invite à écrire (`CLAUDE.md` §5 bis).
+const invite = page.locator('label[for="precision"]');
+if (!/écriv|dites|laissez/i.test((await invite.count()) ? await invite.first().innerText() : "")) {
+  echecs.push("l'intitulé du champ n'invite pas le client à écrire — c'est ce qu'il a demandé le 13 août");
 }
 
 // **La page nomme le client comme le message qui l'y a mené.** Il lit « Bonjour
 // Mr. Martins » dans son SMS ; trouver « Pour Martins » en tête de la page
 // ouverte juste après ferait douter qu'elle lui soit destinée. C'est ici que ça
-// s'éprouve, et non dans `test-devis-client-e2e` : la préparation de cette
-// suite-là ne nomme aucun client, donc la ligne n'y existe pas et le contrôle
-// serait vert sans rien avoir vu.
+// s'éprouve d'abord, sur une capture qu'on REGARDE : la civilité s'y lit, là où
+// une assertion ne dit que « présent ». (`test-devis-client-e2e` nomme lui aussi
+// son client depuis le 31 août — la ligne « Pour … » y pèse vingt pixels, et
+// c'est le cas le plus haut de l'écran.)
 const ecranClient = await page.locator("body").innerText();
 if (!ecranClient.includes(`Pour ${avecCivilite(CLIENT)}`)) {
   const vu = /Pour\s+.*/.exec(ecranClient)?.[0] ?? "(aucune ligne « Pour … »)";
@@ -104,6 +107,7 @@ const message = composerMessageClient({
   clientNom: CLIENT,
   entrepriseNom: "Atelier Démo",
   lien: `${BASE}/devis/${rows[0].jeton}`,
+  envoi: { expireLe: jourIso(new Date(rows[0].expire_at)), autreDateAutorisee: rows[0].autre_date_autorisee },
 });
 console.log("\n─── Le message tout prêt ───────────────────────────────────────");
 console.log(message.corps);

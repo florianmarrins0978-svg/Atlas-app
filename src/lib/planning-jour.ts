@@ -12,7 +12,7 @@
  * peindre une couleur qui contredit le compte écrit juste à côté.
  */
 
-import { DUREE_PAR_DEFAUT_DEMI_JOURNEES, type Moment } from "@/server/disponibilites";
+import { type Moment } from "@/lib/disponibilites";
 
 /**
  * Une demi-journée. Le même vocabulaire que `creneauDebut` en base et que
@@ -50,6 +50,32 @@ export const MOT_DEMI: Record<Demi, string> = {
  * plus bas. Vu par lui, sur son téléphone.
  */
 export type EtatDemi = "libre" | "dispo" | "plein" | "dela";
+
+/**
+ * LE MOT de chaque état, écrit UNE fois.
+ *
+ * **Sa demande du 31 août 2026 :** *« écrit deux chantiers par jour, planning
+ * complet, et met le petit carré vert foncé avec écrit "complet" du planning »*
+ * — sur l'écran Réglages, qu'il a désigné : *« c'est sur cette page que doit se
+ * faire la modification »*.
+ *
+ * Ces quatre mots vivaient dans la légende du calendrier, en clair. Le réglage
+ * des chantiers menés en même temps les emploie maintenant lui aussi : recopier
+ * « complet » dans un second écran, c'est accepter qu'un jour l'un dise
+ * « complet » et l'autre « plein » pour la même couleur — et c'est le genre
+ * d'écart qu'on ne voit jamais, parce que les deux écrans ne se lisent pas
+ * ensemble (`CLAUDE.md` §3).
+ *
+ * **« rien » et non « libre »** : c'est le mot de la légende, celui qu'il a sous
+ * les yeux. `ditLaBarre` dit « libre » à voix haute, pour qui n'emploie pas ses
+ * yeux — une phrase lue n'est pas une étiquette.
+ */
+export const MOT_ETAT: Record<EtatDemi, string> = {
+  libre: "rien",
+  dispo: "incomplet",
+  plein: "complet",
+  dela: "au-delà",
+};
 
 export type OccupationDemi<C> = {
   /** Les chantiers posés sur cette demi-journée. */
@@ -139,8 +165,8 @@ export function partDeLaBarre(charge: number): number {
 export function ditLeCompteDemi<C>(o: OccupationDemi<C>): string {
   if (o.pris.length === 0) return "libre";
   const chantiers = `${o.pris.length} chantier${o.pris.length > 1 ? "s" : ""}`;
-  if (o.charge > 1) return `${chantiers} · ${Math.round(o.charge * 100)} % de vos équipes`;
-  if (o.charge === 1) return `${chantiers} · complet`;
+  if (o.charge > 1) return `${chantiers}, ${Math.round(o.charge * 100)} % de vos équipes`;
+  if (o.charge === 1) return `${chantiers}, complet`;
   return chantiers;
 }
 
@@ -158,8 +184,8 @@ export function ditLeCompteDemi<C>(o: OccupationDemi<C>): string {
 export function ditLeCompteDuJour(nombreChantiers: number, chargeMax: number): string {
   if (nombreChantiers === 0) return "libre";
   const texte = `${nombreChantiers} chantier${nombreChantiers > 1 ? "s" : ""}`;
-  if (chargeMax > 1) return `${texte} · ${Math.round(chargeMax * 100)} % de vos équipes`;
-  if (chargeMax === 1) return `${texte} · complet`;
+  if (chargeMax > 1) return `${texte}, ${Math.round(chargeMax * 100)} % de vos équipes`;
+  if (chargeMax === 1) return `${texte}, complet`;
   return texte;
 }
 
@@ -179,14 +205,38 @@ export function ditLeCompteDuJour(nombreChantiers: number, chargeMax: number): s
  * lui manquait sur un téléphone.
  *
  * Au-delà de deux noms on compte, sinon la ligne déborde sur un téléphone.
+ *
+ * **La barre oblique sépare, la virgule énumérait** — sa demande du 9 septembre
+ * 2026 : *« à la place de noter les salariés avec une virgule, mets Julien /
+ * Antoine, un / entre chaque salarié »*. Sur une pastille pleine, la virgule
+ * se lit mal : elle tombe sous la ligne de base, presque contre le nom
+ * suivant, et deux noms courts finissent par se lire comme un seul.
+ *
+ * Une seule fonction l'écrit, pour le planning comme pour la fiche de chantier
+ * (`CLAUDE.md` §3) : deux façons d'énumérer les mêmes personnes auraient
+ * divergé au premier ajustement.
  */
 export function ditQuiPart(noms: readonly string[]): string {
   if (noms.length === 0) return "Qui ?";
-  if (noms.length <= 2) return noms.join(", ");
+  if (noms.length <= 2) return noms.join(" / ");
   return `${noms[0]} +${noms.length - 1}`;
 }
 
-export type BlocChantier<C> = { type: "chantier"; chantier: C; demis: Demi[] };
+export type BlocChantier<C> = {
+  type: "chantier";
+  chantier: C;
+  demis: Demi[];
+  /**
+   * Les moitiés libres qui PRÉCÈDENT ce chantier dans la journée.
+   *
+   * **Elles vivent dans son bloc, sous son nom** — sa précision du 10 septembre
+   * 2026 : *« le nom doit rester en premier, ensuite matin et ensuite
+   * aprèm »*. Émises comme des blocs à part, elles passaient AVANT le nom : la
+   * fiche s'ouvrait sur « libre », et l'on lisait ce qui manque avant de savoir
+   * de qui il s'agit — ce qu'il refuse depuis le 21 août.
+   */
+  libresAvant: Demi[];
+};
 export type BlocLibre = { type: "libre"; demi: Demi };
 export type BlocJour<C> = BlocChantier<C> | BlocLibre;
 
@@ -204,10 +254,22 @@ export type BlocJour<C> = BlocChantier<C> | BlocLibre;
  * écrivait deux fois — l'écran FABRIQUAIT deux chantiers là où il n'y en a
  * qu'un.
  *
- * **Et le nom passe devant ce qui reste libre :** *« fais pareil pour les
- * autres, le nom toujours en premier ! »*. Une demi-journée vide ouvrait la
- * fiche, et l'on lisait ce qui MANQUE avant de savoir de qui il s'agit — alors
- * que c'est le client qu'il cherche.
+ * **LA JOURNÉE SE LIT DANS SON ORDRE — matin, puis après-midi, TOUJOURS.** Sa
+ * décision du 10 septembre 2026 : *« oui, matin puis aprèm »*.
+ *
+ * **Elle revient sur sa règle du 21 août**, et il faut le savoir avant de la
+ * défaire à nouveau. Il avait alors demandé *« le nom toujours en premier ! »* :
+ * une demi-journée vide ouvrait la fiche, et l'on lisait ce qui MANQUE avant de
+ * savoir de qui il s'agit. La conséquence n'était visible sur aucune capture de
+ * l'époque : les chantiers passant d'abord et les moitiés libres ensuite, un
+ * chantier posé l'APRÈS-MIDI faisait lire la fiche « après-midi puis matin ».
+ * Les deux lignes échangeaient donc leur place selon l'heure du chantier, et
+ * l'appui sur « Matin » les faisait sauter — *« j'ai l'impression que c'est
+ * inversé »*, le 9 septembre 2026.
+ *
+ * **Ce que cela coûte, et qu'il a accepté :** sur une journée dont seul
+ * l'après-midi est pris, la fiche s'ouvre sur « libre ». Une place stable vaut
+ * mieux qu'un nom en tête, parce qu'une place stable se retrouve sans lire.
  *
  * Une demi-journée que personne n'occupe garde sa ligne : la cacher ferait
  * croire que la journée entière est prise.
@@ -221,30 +283,88 @@ export function blocsDeLaJournee<C>(
     .filter((g) => g.demis.length > 0);
 
   const blocs: BlocJour<C>[] = [];
-  // Les chantiers d'abord, dans l'ordre où ils commencent.
+  // **UNE SEULE PASSE, DANS L'ORDRE DE LA JOURNÉE.** Il y en avait deux — les
+  // chantiers, puis ce qui restait libre —, et c'est ce qui faisait échanger
+  // leurs places aux deux moitiés du jour.
+  //
+  // **Une moitié libre attend le chantier qui la suit** plutôt que d'ouvrir la
+  // fiche : elle se dessine sous son nom (`libresAvant`). Sans cette attente,
+  // tenir l'ordre du jour obligeait à faire passer « libre » devant le client.
+  let enAttente: Demi[] = [];
   for (const demi of DEMIS) {
     for (const g of groupes.filter((g) => g.demis[0] === demi)) {
-      blocs.push({ type: "chantier", chantier: g.chantier, demis: g.demis });
+      blocs.push({
+        type: "chantier",
+        chantier: g.chantier,
+        demis: g.demis,
+        libresAvant: enAttente,
+      });
+      enAttente = [];
     }
+    // Une moitié que personne n'occupe garde sa ligne : la cacher ferait croire
+    // que la journée entière est prise.
+    if (!groupes.some((g) => g.demis.includes(demi))) enAttente.push(demi);
   }
-  // Puis ce qui reste libre, avant le bouton d'ajout — qui est justement le
-  // geste qu'appelle une demi-journée vide.
-  for (const demi of DEMIS) {
-    if (!groupes.some((g) => g.demis.includes(demi))) blocs.push({ type: "libre", demi });
-  }
+  // Ce qui reste libre APRÈS le dernier chantier n'a personne sous qui se
+  // ranger : il garde sa ligne, à la fin, comme avant.
+  for (const demi of enAttente) blocs.push({ type: "libre", demi });
   return blocs;
 }
 
 /**
- * Le moment d'un chantier, tel qu'il se choisit et se lit : matin,
- * après-midi, ou la journée.
+ * APRÈS QUEL BLOC LA FICHE D'INTERVENTION SE DESSINE — son rang, ou −1.
  *
- * **Trois mots, parce que ce sont les trois boutons de « Déplacer ».** La base,
- * elle, porte un départ et une durée en demi-journées : c'est plus riche — un
- * chantier peut durer trois jours — et c'est pourquoi la traduction se fait ici
- * une fois pour toutes, plutôt que dans chaque écran.
+ * **Sa correction du 10 septembre 2026**, capture à l'appui : *« quand il y a
+ * plusieurs chantiers le même jour on a un problème ! Quand je clique sur sa
+ * fiche d'intervention, ça doit se coller en dessous, pas en dessous de
+ * Frédéric, ça porte à confusion. »*
+ *
+ * L'écran la rendait après la boucle entière, donc toujours au BAS de la
+ * journée. Sur un jour à deux chantiers, toucher le nom du premier ouvrait une
+ * fiche sous le second — et la fiche porte le nom du client en gros : deux noms
+ * qui se contredisent à trois centimètres, sur l'écran qui dit à une équipe où
+ * elle va.
+ *
+ * **Elle repasse SOUS les moitiés restées libres quand son chantier est le
+ * dernier du jour**, et c'est sa correction du 22 août 2026 : *« l'après-midi de
+ * libre passe sous la feuille de chantier, or il doit rester en dessous du matin
+ * même s'il est libre »*. Une moitié libre appartient à la journée, pas au
+ * chantier ; un panneau qu'on déplie ne la repousse pas à trois écrans du matin
+ * qu'elle complète. Les deux règles ne se croisent qu'à la fin, parce que
+ * `blocsDeLaJournee` ne pose des blocs « libre » qu'en queue.
+ *
+ * **Écrit ici plutôt que dans l'écran** : c'est la règle qui vient de régresser,
+ * et elle s'éprouve sans monter un navigateur (`CLAUDE.md` §4 sexies).
  */
-export type QuandChantier = "matin" | "apres" | "journee";
+export function rangDeLaFiche<C extends { id: string }>(
+  blocs: readonly BlocJour<C>[],
+  chantierOuvert: string | null
+): number {
+  if (!chantierOuvert) return -1;
+  const sien = blocs.findIndex(
+    (b) => b.type === "chantier" && b.chantier.id === chantierOuvert
+  );
+  const dernier = blocs.reduce((r, b, i) => (b.type === "chantier" ? i : r), -1);
+  // Chantier introuvable parmi les blocs — il n'occupe aucune demi-journée :
+  // la fiche garde alors la queue, plutôt que de disparaître sans un mot.
+  if (sien < 0 || sien === dernier) return blocs.length - 1;
+  return sien;
+}
+
+/**
+ * LA FICHE OUVERTE EN TOUCHANT LE JOUR — sa réponse du 3 octobre 2026, « la C »
+ * (`appli/ouvrir-la-fiche.html`).
+ *
+ * Seul ce jour-là, le chantier ouvre sa fiche avec la journée : il n'y a rien
+ * à choisir, donc rien à toucher de plus. À deux ou trois, aucune : les ouvrir
+ * toutes ferait une page interminable, et le chevron de chaque nom dit déjà
+ * qu'elle s'ouvre.
+ */
+export function ficheOuverteDOffice<C extends { id: string }>(
+  chantiers: readonly C[]
+): string | null {
+  return chantiers.length === 1 ? chantiers[0].id : null;
+}
 
 /**
  * Un jour écrit « 2026-08-31 », et rien d'autre.
@@ -264,35 +384,19 @@ export function estUnJourValide(jour: string): boolean {
   return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === jour;
 }
 
-/** « matin », « apres » ou « journee » — les trois seuls moments de pose. */
-export function estUnMomentValide(quand: string): quand is QuandChantier {
-  return quand === "matin" || quand === "apres" || quand === "journee";
-}
-
-export const MOT_QUAND: Record<QuandChantier, string> = {
-  matin: "Matin",
-  apres: "Après-midi",
-  journee: "Journée",
-};
-
 /**
- * Le départ et la durée qu'écrit chacun des trois boutons.
+ * « matin » ou « apres_midi » — les deux seuls départs possibles.
  *
- * **Un chantier plus long qu'une journée garde sa durée.** « Journée » sur un
- * chantier de trois jours le raccourcirait à deux demi-journées sans que rien
- * ne le dise : le patron déplacerait son chantier et perdrait deux jours de
- * travail en silence. Le bouton ne fait alors que changer le DÉPART.
+ * **Ils portent les mots de la BASE, et c'est le lot du 10 septembre 2026 qui
+ * l'a ramené là.** Un troisième mot vivait ici, « journee », et il ne décrivait
+ * pas un départ mais une ÉTENDUE : le choisir réécrivait la durée du chantier.
+ * Sa décision — *« tu retires la journée »* — supprime le mélange, et avec lui
+ * la traduction qui existait pour le rattraper.
  */
-export function departEtDuree(
-  quand: QuandChantier,
-  dureeActuelle: number
-): { moment: Demi; duree: number } {
-  if (dureeActuelle > 2) {
-    return { moment: quand === "apres" ? "apres_midi" : "matin", duree: dureeActuelle };
-  }
-  if (quand === "journee") return { moment: "matin", duree: 2 };
-  return { moment: quand === "apres" ? "apres_midi" : "matin", duree: 1 };
+export function estUnDemiValide(demi: string): demi is Demi {
+  return demi === "matin" || demi === "apres_midi";
 }
+
 
 /**
  * Comment se lit, en un mot, un chantier déjà posé.
@@ -341,28 +445,22 @@ export function ditLeQuand(moment: Demi, duree: number): string {
 }
 
 /**
- * Comment ce chantier se lit dans les boutons de « Déplacer ».
+ * D'OÙ PART CE CHANTIER — la seule question que « Déplacer » pose encore.
  *
- * **Vit ici, et non dans l'écran** : c'est une règle, pas un dessin, et une
- * règle enfermée dans un composant ne s'éprouve qu'au navigateur (`CLAUDE.md`
- * §3).
+ * **Sa décision du 10 septembre 2026 :** *« il faut garder le bouton déplacer ;
+ * quand on clique dessus on arrive sur ce bouton matin - aprem, on clique sur
+ * l'un ou l'autre et le bouton disparaît »*. Un interrupteur à deux positions,
+ * et rien d'autre.
+ *
+ * **Ce que cela retire, et qui était un vrai piège :** le troisième mot,
+ * « Journée », ne décrivait pas un départ mais une ÉTENDUE. Le choisir
+ * réécrivait `dureeDemiJournees` — « Matin » sur un chantier d'une journée le
+ * ramenait donc à une demi-journée, en silence, et l'après-midi redevenait
+ * vendable. La durée vient du devis (§308) ; « Déplacer » n'y touche plus, et
+ * la traduction qui existait pour rattraper ce mélange a disparu avec lui.
  */
-export function quandDuChantier(c: {
-  dureeDemiJournees: number | null;
-  creneauDebut: string | null;
-}): QuandChantier {
-  const duree = c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
-  // **« Journée » ne décrit QUE la journée pleine.** Un chantier de trois jours
-  // rendait « journee » lui aussi : la pastille se posait donc sur « Journée »,
-  // et « Matin » — qui écrit exactement le même état pour lui — restait éteint
-  // et sans effet. C'est ce qu'il a signalé le 23 août 2026 : *« cliquer sur
-  // Déplacer ne déplace pas le chantier, ça ne fait rien du tout »*.
-  //
-  // Au-delà d'une journée, ce qu'il choisit est le DÉPART, jamais la durée
-  // (`departEtDuree` protège les jours de travail) : l'état courant est donc
-  // « matin » ou « après-midi », et la pastille tombe juste.
-  if (duree === 2) return "journee";
-  return c.creneauDebut === "apres_midi" ? "apres" : "matin";
+export function departDuChantier(c: { creneauDebut: string | null }): Demi {
+  return c.creneauDebut === "apres_midi" ? "apres_midi" : "matin";
 }
 
 /**

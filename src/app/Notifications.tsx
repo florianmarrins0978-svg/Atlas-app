@@ -5,15 +5,16 @@ import { ordonnerLesCartes } from "@/lib/ordre-notifications";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
-import { jourLisible } from "@/lib/jour";
+import { jourLisible, joursEnToutesLettres } from "@/lib/jour";
 import { suiteDeLaReponse, type SuiteDeLaReponse } from "@/lib/suite-de-la-reponse";
 import {
   marquerReponseVueAction,
+  marquerReceptionVueAction,
   corrigerDevisAction,
   repousserRappelFactureAction,
   marquerRappelVuAction,
 } from "./actions";
-import type { GenreRappel, GenreAcquittable } from "@/lib/rappels";
+import type { GenreRappel, GenreVu } from "@/lib/rappels";
 import type { NotificationPatron, EnvoiCaduc } from "@/server/repositories/envois-devis";
 
 /** Un rappel, déjà mis en mots par le serveur — voir `src/lib/rappels.ts`. */
@@ -50,6 +51,9 @@ export type RappelAffiche = {
    * facture (sa planche du 16 août 2026, écran 1).
    */
   facture?: { id: string; numero: string; resteDu: string; total: string; partielle: boolean };
+  /** « vendredi 25 septembre », sur le seul « Retour pas reçu » : mis en mots
+   *  au serveur, comme le délai. */
+  jourManque?: string;
 };
 
 // Ce qu'est devenu un devis parti, porté au patron (docs/AGENT.md §2.2).
@@ -88,7 +92,15 @@ type Carte = {
    * Absent sur la facture impayée : celle-là se tait par `repousser`, son
    * moteur d'origine — deux mécaniques pour une idée se contrediraient.
    */
-  vu?: { genre: GenreAcquittable; chantierId: string };
+  vu?: { genre: GenreVu; chantierId: string };
+  /**
+   * Une réception de facture confirmée (9 septembre 2026).
+   *
+   * Un troisième acquittement, parce qu'il écrit ailleurs : `vu_par_patron_at`
+   * sur l'ENVOI de la facture, là où `vu` touche un rappel et `repousser` un
+   * délai. Le doigt, lui, fait le même geste et lit le même mot.
+   */
+  reception?: true;
   chantierId: string;
   chantierNom: string;
   /**
@@ -135,15 +147,43 @@ type Carte = {
  * ouvre son application pour voir son travail, pas pour faire défiler des
  * alertes. Les autres ne sont pas cachées — elles sont annoncées et à un appui.
  */
-const VISIBLES_PAR_DEFAUT = 2;
+/**
+ * **UN SEUL depuis le 6 septembre 2026**, et non deux.
+ *
+ * Sur un matin à trois réponses, deux cartes repoussaient la liste des
+ * chantiers à 770 px dans une fenêtre qui en fait 596 : l'écran s'appelait
+ * « Vos chantiers » et n'en montrait aucun — pas même le nom du premier.
+ * Mesuré, pas estimé, sur la planche `appli/l-accueil-a-bout-de-bras.html`
+ * qu'il a retenue.
+ *
+ * Avec une seule, il lit le nom, le lieu et l'état du premier chantier. Les
+ * autres ne sont pas cachées : elles sont annoncées et à un appui — et
+ * **depuis ce même jour, elles se replient**, ce qui n'était pas le cas.
+ */
+const VISIBLES_PAR_DEFAUT = 1;
 
 function versCarte(n: NotificationPatron): Carte {
   const refus = n.reponse === "refusee";
   const correction = n.reponse === "correction";
 
-  const titre = correction ? "Correction demandée" : refus ? "Devis retourné" : "Autre date proposée";
+  // **« Devis accepté » est un titre à part entière depuis le 7 septembre
+  // 2026.** Une acceptation simple ne remontait pas jusqu'ici ; la seule
+  // qui passait était celle où le client avait proposé SA date, d'où un titre
+  // qui parlait de la date plutôt que de la nouvelle. Le garder pour les deux
+  // aurait annoncé « Autre date proposée » sur un devis accepté tel quel.
+  const titre = correction
+    ? "Correction demandée"
+    : refus
+      ? "Devis retourné"
+      : n.dateContreProposee
+        ? "Autre date proposée"
+        : "Devis accepté";
+  // Ses dates dans la même phrase, pas sur une ligne à part : sa réponse du
+  // 27 septembre 2026, « je veux voir ses dates ». La carte ne bouge pas.
   const texte = correction
-    ? "Le client veut ce devis corrigé avant de l'accepter."
+    ? n.joursSouhaites && n.joursSouhaites.length > 0
+      ? `Le client veut ce devis corrigé avant de l'accepter. ${n.joursSouhaites.length > 1 ? "Ses dates" : "Sa date"} : ${joursEnToutesLettres(n.joursSouhaites)}.`
+      : "Le client veut ce devis corrigé avant de l'accepter."
     : refus
       ? "Le client n'a pas donné suite. Le devis peut être repris et renvoyé."
       : n.dateRetenue
@@ -173,6 +213,49 @@ function versCarte(n: NotificationPatron): Carte {
   };
 }
 
+/**
+ * Ce que l'accueil reçoit quand un client confirme avoir reçu sa facture.
+ *
+ * Sa demande du 9 septembre 2026. Le geste d'acquittement est le MÊME que pour
+ * une réponse au devis — « J'ai vu » —, et c'est voulu : nommer autrement un
+ * geste identique ferait chercher une différence là où il n'y en a pas.
+ */
+export type ReceptionAffichee = {
+  envoiId: string;
+  chantierId: string;
+  chantierNom: string;
+  numeroCommercial: string;
+  clientNom: string | null;
+  accuseLe: Date;
+};
+
+function receptionVersCarte(r: ReceptionAffichee): Carte {
+  return {
+    envoiId: r.envoiId,
+    chantierId: r.chantierId,
+    chantierNom: r.chantierNom,
+    // L'instant de la CONFIRMATION, pas celui de l'envoi : c'est elle qui est
+    // la nouvelle, et c'est elle qui doit remonter en tête.
+    quand: r.accuseLe.getTime(),
+    // **Pas urgente, et c'est une bonne nouvelle.** Le fond teinté est réservé
+    // à ce qui réclame un geste ; ici il n'y en a aucun à faire. Une bonne
+    // nouvelle peinte comme une alerte apprend à ignorer les alertes.
+    urgent: false,
+    titre: "Facture reçue",
+    texte: `${r.clientNom ?? "Votre client"} a confirmé avoir reçu la facture ${r.numeroCommercial}.`,
+    reception: true,
+    // **Vers les factures qui attendent, et non vers le document.** C'est là
+    // que vivent les deux dates, et c'est le seul geste qui reste : voir si
+    // elle est payée. Une carte qui mène ailleurs que là où est la suite fait
+    // chercher — le patron l'a relevé le 12 août 2026.
+    suite: {
+      href: "/termines/tva",
+      libelle: "Voir les factures qui attendent",
+      reprendreAvant: false,
+    },
+  };
+}
+
 function caducVersCarte(e: EnvoiCaduc): Carte {
   return {
     envoiId: e.envoiId,
@@ -185,7 +268,7 @@ function caducVersCarte(e: EnvoiCaduc): Carte {
     urgent: true,
     titre: "Devis caduc",
     texte:
-      "Le lien a expiré sans réponse. Le client n'a rien dit — ni oui, ni non. " +
+      "Le lien a expiré sans réponse. Le client n'a rien dit, ni oui, ni non. " +
       "Le devis peut être repris et renvoyé.",
     // Personne n'a répondu : le silence appelle la même reprise qu'un refus.
     suite: suiteDeLaReponse(e.chantierId, null),
@@ -229,7 +312,31 @@ function rappelVersCarte(r: RappelAffiche): Carte {
       suite: {
         href: `/termines/tva`,
         // Le geste attendu est de SOLDER, et il se fait à l'endroit en attente.
-        libelle: r.facture.partielle ? "Noter un règlement" : "Marquer payée",
+        // Les mêmes mots que les deux boutons de cet endroit (16 septembre
+        // 2026) : un même geste ne s'appelle pas autrement sur la carte.
+        libelle: r.facture.partielle ? "J'ai reçu une partie" : "J'ai reçu le paiement",
+        reprendreAvant: false,
+      },
+    };
+  }
+  // **« Retour pas reçu », sa planche du 26 septembre 2026.** Il ne crie pas :
+  // le travail est fait, c'est le récit qui manque. « J'ai vu » le range
+  // (migration 0104), et la suite mène au chantier dans le planning, là où le
+  // retour se lit et s'envoie.
+  if (r.genre === "retour-pas-recu") {
+    return {
+      envoiId: `rappel-${r.genre}-${r.chantierId}`,
+      chantierId: r.chantierId,
+      chantierNom: r.chantierNom,
+      quand: r.quand,
+      urgent: false,
+      rappel: true,
+      vu: { genre: r.genre, chantierId: r.chantierId },
+      titre: "Retour pas reçu",
+      texte: `Le retour du ${r.jourManque} n'est pas arrivé.`,
+      suite: {
+        href: `/planning?chantier=${r.chantierId}`,
+        libelle: "Ouvrir le chantier",
         reprendreAvant: false,
       },
     };
@@ -245,7 +352,7 @@ function rappelVersCarte(r: RappelAffiche): Carte {
     // Acquittable : ces trois-là visent un chantier, et c'est lui qu'on retient
     // (`rappels_vus`). Le genre voyage avec, car un même chantier peut dormir
     // sur son devis un mois, puis sur sa facture le mois suivant.
-    vu: { genre: r.genre as GenreAcquittable, chantierId: r.chantierId },
+    vu: { genre: r.genre as GenreVu, chantierId: r.chantierId },
     // **Les deux rappels d'origine ne crient pas.** Le fond teinté était
     // réservé à ce qui appelle une décision : un refus, un lien mort. Un rappel
     // de confort qui crierait aussi fort ferait baisser le volume des autres.
@@ -261,7 +368,7 @@ function rappelVersCarte(r: RappelAffiche): Carte {
     titre: sansDevis
       // **Le compte des jours DANS l'étiquette**, avant le nom — l'autre moitié
       // de la proposition B. Le nombre se lit avant qu'on ait lu le chantier.
-      ? `Devis en attente · ${r.depuisJours} jour${r.depuisJours > 1 ? "s" : ""}`
+      ? `Devis en attente depuis ${r.depuisJours} jour${r.depuisJours > 1 ? "s" : ""}`
       : devis
         ? "Devis sans réponse"
         : "À facturer",
@@ -271,10 +378,23 @@ function rappelVersCarte(r: RappelAffiche): Carte {
         ? `Parti ${r.depuisTexte}, sans un mot du client. Vous pouvez le relancer vous-même.`
         : `Chantier terminé ${r.depuisTexte}, et aucune facture n'est partie.`,
     suite: {
-      // **Le chantier, pas le devis vierge.** De la fiche il dicte, il chiffre,
-      // ou il écrit le devis à la main — trois chemins, et c'est lui qui sait
-      // lequel. L'envoyer d'office sur `devis-complet` choisirait à sa place.
-      href: devis || sansDevis ? `/chantiers/${r.chantierId}` : `/chantiers/${r.chantierId}/facture`,
+      // **CHAQUE RAPPEL MÈNE OÙ SON LIBELLÉ LE DIT — 4 septembre 2026.**
+      //
+      // Les deux premiers menaient à la fiche du chantier, pour ne pas choisir
+      // entre dicter, chiffrer et rédiger à la main. Cette fiche est retirée
+      // (`ARCHITECTURE.md` §254), et les trois chemins n'y étaient plus depuis
+      // longtemps : la chaîne va de la dictée au devis d'un seul tenant.
+      //
+      //   · « Faire le devis » : le devis. Il s'y dicte ET s'y écrit à la main,
+      //     donc rien n'est choisi à sa place ;
+      //   · « Ouvrir le chantier » — un devis parti sans réponse : `/export`,
+      //     qui porte le lien du client et la relance. C'est la règle du
+      //     20 août 2026, parti → export, pas une nouvelle.
+      href: sansDevis
+        ? `/chantiers/${r.chantierId}/devis-complet`
+        : devis
+          ? `/chantiers/${r.chantierId}/export`
+          : `/chantiers/${r.chantierId}/facture`,
       libelle: sansDevis ? "Faire le devis" : devis ? "Ouvrir le chantier" : "Créer la facture",
       reprendreAvant: false,
     },
@@ -285,11 +405,14 @@ export default function Notifications({
   initiales,
   caducs,
   rappels = [],
+  receptions = [],
 }: {
   initiales: NotificationPatron[];
   caducs: EnvoiCaduc[];
   /** Réglés dans « Notifications » — vide quand les deux sont éteints. */
   rappels?: RappelAffiche[];
+  /** Les clients qui viennent de confirmer avoir reçu leur facture. */
+  receptions?: ReceptionAffichee[];
 }) {
   // Retirée à l'écran dès l'appui, sans attendre le serveur : le patron a fait
   // son geste, lui laisser la carte sous les yeux le ferait douter.
@@ -332,9 +455,13 @@ export default function Notifications({
   // **On range APRÈS avoir retiré les cartes acquittées** : ranger d'abord
   // ferait compter une réponse que le patron vient de marquer « J'ai vu ».
   const lesRappels = rappels.map(rappelVersCarte).filter((n) => !masquees.includes(n.envoiId));
-  const lesReponses = [...initiales.map(versCarte), ...caducs.map(caducVersCarte)].filter(
-    (n) => !masquees.includes(n.envoiId)
-  );
+  // Les réceptions voyagent avec les réponses : ce sont toutes des nouvelles
+  // venues du client, et l'ordre chronologique les départage tout seul.
+  const lesReponses = [
+    ...initiales.map(versCarte),
+    ...caducs.map(caducVersCarte),
+    ...receptions.map(receptionVersCarte),
+  ].filter((n) => !masquees.includes(n.envoiId));
   const restantes = ordonnerLesCartes(lesRappels, lesReponses);
   if (restantes.length === 0) return null;
 
@@ -345,6 +472,20 @@ export default function Notifications({
     setMasquees((v) => [...v, envoiId]);
     demarrer(() => {
       void marquerReponseVueAction(envoiId);
+    });
+  }
+
+  /**
+   * « J'ai vu » sur une réception de facture — le même geste, une autre écriture.
+   *
+   * La carte part de l'écran tout de suite, comme les autres : le doigt a fait
+   * son geste. Ce qui s'écrit derrière, lui, ne le regarde pas — et les deux
+   * dates de la facture, elles, ne bougent pas.
+   */
+  function marquerReception(envoiId: string) {
+    setMasquees((v) => [...v, envoiId]);
+    demarrer(() => {
+      void marquerReceptionVueAction(envoiId);
     });
   }
 
@@ -467,14 +608,20 @@ export default function Notifications({
                 gauche disent que ces mots ne sont pas ceux de l'application. */}
             {n.messageClient && (
               <blockquote
-                className="mt-3 whitespace-pre-wrap pl-3 text-[14px] leading-relaxed"
+                className="mt-3 whitespace-pre-wrap break-words pl-3 text-[14px] leading-relaxed"
                 style={{ borderLeft: `2px solid ${colors.rust}`, color: colors.ink }}
               >
                 « {n.messageClient} »
               </blockquote>
             )}
 
-            <div className="mt-3 flex items-center gap-4">
+            {/* **44 px de haut, et la rangée reprend ses marges — 6 septembre
+                2026.** Ces deux gestes n'avaient aucun rembourrage : mesurés à
+                21 px, sur un écran qu'il touche debout, d'une main, avec un
+                doigt épais. Le remboursement intérieur donne la cible, la marge
+                négative la reprend à l'affichage — les deux mots restent où ils
+                étaient, et l'écart entre eux ne bouge pas. */}
+            <div className="-mx-2 mt-2 flex items-center gap-2">
               {/* **Le lien mène là où est le geste**, et l'annonce. Voir
                   `suite-de-la-reponse.ts` : un devis accepté s'ouvre figé, tel
                   que le client l'a reçu ; un devis à corriger mène à l'écran
@@ -487,7 +634,7 @@ export default function Notifications({
                   type="button"
                   onClick={() => corriger(n)}
                   disabled={enCours !== null}
-                  className="text-[14px] font-medium disabled:opacity-60"
+                  className="min-h-[44px] px-2 text-[14px] font-medium disabled:opacity-60"
                   style={{ color: colors.rust }}
                 >
                   {enCours === n.chantierId ? "Ouverture…" : n.suite.libelle}
@@ -495,7 +642,7 @@ export default function Notifications({
               ) : (
                 <Link
                   href={n.suite.href}
-                  className="text-[14px] font-medium"
+                  className="inline-flex min-h-[44px] items-center px-2 text-[14px] font-medium"
                   style={{ color: colors.rust }}
                 >
                   {n.suite.libelle}
@@ -521,10 +668,18 @@ export default function Notifications({
               <button
                 type="button"
                 data-atlas="j-ai-vu"
-                onClick={() => (n.repousser ? repousser(n) : n.vu ? marquerRappel(n) : marquerVue(n.envoiId))}
+                onClick={() =>
+                  n.reception
+                    ? marquerReception(n.envoiId)
+                    : n.repousser
+                      ? repousser(n)
+                      : n.vu
+                        ? marquerRappel(n)
+                        : marquerVue(n.envoiId)
+                }
                 disabled={enCours !== null}
-                className="text-[14px] font-medium disabled:opacity-60"
-                style={{ color: colors.muted }}
+                className="min-h-[44px] px-2 text-[14px] font-medium disabled:opacity-60"
+                style={{ color: colors.inkSoft }}
               >
                 J&apos;ai vu
               </button>
@@ -545,15 +700,39 @@ export default function Notifications({
         );
       })}
 
-      {enPlus > 0 && (
+      {/* ── UNE PORTE QUI S'OUVRE DOIT SE REFERMER ────────────────────────
+          **Trouvé par le patron le 6 septembre 2026 :** *« les autres devis à
+          regarder, on peut cliquer dessus pour agrandir la fenêtre mais on
+          peut pas la refermer »*.
+
+          Il avait raison, et ce n'était pas un défaut de maquette : l'appui
+          posait `setToutVoir(true)` sans retour, et le bouton DISPARAISSAIT
+          une fois déplié — il ne restait plus rien à toucher, et la seule
+          façon de replier était de quitter l'écran et d'y revenir.
+
+          C'est sa règle du 5 septembre, « une erreur se rattrape » : un geste
+          sans retour en est une. « Replier » — un verbe, un mot. */}
+      {enPlus > 0 ? (
         <button
           type="button"
           onClick={() => setToutVoir(true)}
-          className="text-center text-[14px] font-medium"
+          className="min-h-[44px] text-center text-[14px] font-medium"
           style={{ color: colors.rust }}
         >
           {enPlus === 1 ? "1 autre devis à regarder" : `${enPlus} autres devis à regarder`}
         </button>
+      ) : (
+        toutVoir &&
+        restantes.length > VISIBLES_PAR_DEFAUT && (
+          <button
+            type="button"
+            onClick={() => setToutVoir(false)}
+            className="min-h-[44px] text-center text-[14px] font-medium"
+            style={{ color: colors.rust }}
+          >
+            Replier
+          </button>
+        )
       )}
     </div>
   );

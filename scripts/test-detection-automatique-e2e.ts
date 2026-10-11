@@ -35,10 +35,11 @@ import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import * as chantiersRepo from "../src/server/repositories/chantiers";
 import * as devisRepo from "../src/server/repositories/devis";
 import { creerEnvoi } from "../src/server/repositories/envois-devis";
-import { versJourIso, ajouterJours } from "../src/server/disponibilites";
+import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { ressembleAUnTelephone } from "../src/lib/numero-document";
+import { ADRESSE } from "./_adresse";
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 // Ce que le navigateur doit lire pour cesser de fabriquer des liens. Next rend
 // les trois refus dans un seul en-tête, séparés par des virgules.
@@ -92,6 +93,38 @@ async function main() {
           `${chemin} : l'en-tête « ${entete} » ne contient pas « ${refus} »`
         );
       }
+    });
+  }
+
+  // **La traduction automatique réécrivait le devis du client — 3 octobre 2026.**
+  //
+  // Le patron envoie la capture d'un devis ouvert sur le téléphone Android
+  // d'une amie : « Quelle date vous arrangez ? », « votre artisan la lire. »,
+  // « TVA ( 20 %) ». Le code servi (957cb97) porte « arrange », « lira » et
+  // « TVA (20 %) » ; son propre iPhone affiche juste. Ces fautes n'ont existé
+  // dans aucune version du dépôt : le navigateur traduisait du français vers le
+  // français, en reprenant les verbes pour de l'anglais et en redécoupant la
+  // ponctuation. Sur une page qui engage le client, c'est inacceptable.
+  //
+  // Le refus se pose dans le gabarit racine, comme `format-detection` : sur
+  // `<html>` (`translate="no"`, la norme, lue par tous les navigateurs) et en
+  // `<meta name="google" content="notranslate">`, que Chrome lit pour taire sa
+  // proposition. Comme plus haut, Chromium sans compte Google ne traduit pas :
+  // la panne d'origine ne se rejoue pas ici, seul le refus se vérifie.
+  for (const chemin of ["/factures/jeton-inconnu", "/devis/jeton-inconnu", "/login"]) {
+    await cas(`${chemin} refuse la traduction automatique`, async () => {
+      await page.goto(`${BASE}${chemin}`, { waitUntil: "domcontentloaded" });
+      assert.equal(
+        await page.locator("html").getAttribute("translate"),
+        "no",
+        `${chemin} : <html> ne porte plus translate="no", la traduction automatique ` +
+          "peut de nouveau réécrire le texte sous les yeux du client"
+      );
+      assert.equal(
+        await page.locator('head meta[name="google"]').getAttribute("content", { timeout: 10_000 }),
+        "notranslate",
+        `${chemin} : <meta name="google" content="notranslate"> a disparu`
+      );
     });
   }
 

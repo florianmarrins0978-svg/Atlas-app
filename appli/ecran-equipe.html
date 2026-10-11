@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — L'écran Équipe, dégraissé</title>
+<title>Atlas : L'écran Équipe, dégraissé</title>
 </head>
 <body>
 <style>
@@ -143,9 +143,9 @@
 
 <div class="barre">
   <div class="choix" role="group" aria-label="Propositions">
-    <button type="button" data-p="A" aria-pressed="true">A · aujourd'hui</button>
-    <button type="button" data-p="B" aria-pressed="false">B · une seule phrase</button>
-    <button type="button" data-p="C" aria-pressed="false">C · le titre pose la question</button>
+    <button type="button" data-p="A" aria-pressed="true">A, aujourd'hui</button>
+    <button type="button" data-p="B" aria-pressed="false">B, une seule phrase</button>
+    <button type="button" data-p="C" aria-pressed="false">C, le titre pose la question</button>
   </div>
   <p class="mesure" id="mesure"></p>
 </div>
@@ -155,19 +155,19 @@
 <div class="verdict" id="verdict"></div>
 
 <div class="note">
-  <p><b>Ce que ce réglage fait, et rien d'autre</b> — vérifié dans le code avant d'écrire
+  <p><b>Ce que ce réglage fait, et rien d'autre</b> : vérifié dans le code avant d'écrire
   une ligne. Le nombre gouverne combien de chantiers peuvent tenir le même jour : à 1, un
   jour pris n'est plus proposé à vos clients ; à 2, il le reste tant qu'une équipe est
-  libre. Et à partir de 2, le planning écrit un nom sur chaque chantier — d'où le bloc des
+  libre. Et à partir de 2, le planning écrit un nom sur chaque chantier : d'où le bloc des
   noms.</p>
 
   <p><b>Pourquoi votre écran paraît bavard.</b> À une équipe, quatre blocs se suivent, et
   <b>deux disent la même chose</b> : « le planning n'écrira aucune équipe », puis, quinze
-  lignes plus bas, « le planning n'écrit aucun nom ». Le troisième parle d'<b>absences</b> —
+  lignes plus bas, « le planning n'écrit aucun nom ». Le troisième parle d'<b>absences</b> :
   un autre sujet, qui a sa propre section juste en dessous.</p>
 
   <p><b>« Combien partent en même temps » ne dit pas grand-chose, vous avez raison.</b> Ce
-  titre évitait le mot « équipe » à dessein — mais l'écran nomme les équipes trois lignes
+  titre évitait le mot « équipe » à dessein : mais l'écran nomme les équipes trois lignes
   plus bas. Autant l'employer.</p>
 
   <p><b>Ce que je n'ai pas tranché, et qui est pour vous :</b> la phrase sur les congés
@@ -180,7 +180,7 @@
   var $ = function (s) { return document.querySelector(s); };
   var prop = "A", n = 1;
 
-  // Ce que chaque proposition écrit — titre, phrase sous le compteur, blocs.
+  // Ce que chaque proposition écrit : titre, phrase sous le compteur, blocs.
   function titre() {
     if (prop === "A") return "Combien partent en même temps";
     if (prop === "B") return "Vos équipes";
@@ -194,7 +194,7 @@
         : "Un jour reste proposé tant qu'une équipe est libre.";
     }
     // **B et C : UNE phrase, qui absorbe ce que les autres blocs répétaient.**
-    // Elle dit les deux seules choses que le nombre change — ce qui se passe
+    // Elle dit les deux seules choses que le nombre change, ce qui se passe
     // sur le planning du client, et ce qui s'écrit sur le sien.
     return n <= 1
       ? "Un chantier à la fois. Un jour pris n'est plus proposé, et le planning n'écrit aucun nom."
@@ -207,7 +207,7 @@
     if (n > 1) return "";
     return '<p class="bloc">Seul, rien à nommer : <b>le planning n\'écrira aucune équipe</b>.</p>' +
       '<p class="bloc">Seul, une absence fermerait l\'entreprise : plus aucune date ne serait proposable. ' +
-      '<b>Pour vos congés, posez-les dans votre agenda</b> — Atlas en tient compte et ne proposera rien sur ces jours-là.</p>' +
+      '<b>Pour vos congés, posez-les dans votre agenda</b> : Atlas en tient compte et ne proposera rien sur ces jours-là.</p>' +
       '<p class="bloc">À une seule équipe, le planning n\'écrit aucun nom : il n\'y a personne à distinguer. ' +
       'Les noms apparaissent à partir de deux.</p>';
   }
@@ -262,14 +262,14 @@
     var v = $("#verdict");
     if (prop === "A" && n <= 1) {
       v.innerHTML = "<b>Voilà ce que vous lisez aujourd'hui :</b> quatre blocs, dont deux qui " +
-        "disent la même chose — « le planning n'écrira aucune équipe », puis « le planning " +
+        "disent la même chose : « le planning n'écrira aucune équipe », puis « le planning " +
         "n'écrit aucun nom ». Touchez B.";
     } else if (prop !== "A" && n <= 1) {
       v.innerHTML = "<b>Une seule phrase</b>, qui dit les deux seules choses que le nombre " +
         "change : ce que voit votre client, et ce qu'écrit votre planning. Les congés sont " +
         "retournés dans « Absences », où ils sont chez eux.";
     } else if (prop !== "A") {
-      v.innerHTML = "<b>À partir de deux, la phrase compte pour vous</b> — elle annonce le " +
+      v.innerHTML = "<b>À partir de deux, la phrase compte pour vous</b> : elle annonce le " +
         "bloc des noms au lieu de le laisser surgir.";
     } else {
       v.innerHTML = "<b>À deux, l'écran d'aujourd'hui se tait</b> : les trois blocs " +

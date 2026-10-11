@@ -51,6 +51,15 @@ dire(
 // d'un devis, le jour qui nomme un chantier, et une suite qui datait un
 // règlement. Après minuit, ils portaient la veille pendant que l'écran affichait
 // le lendemain. Corriger `jourIso` ne les corrigeait pas : ils passaient à côté.
+//
+// **ET LES SUITES AUSSI, DEPUIS LE 15 SEPTEMBRE 2026, à minuit dix-sept.**
+// Ce garde-fou ne parcourait que `src/`. `test-suivi-devis-e2e` comparait donc
+// la ligne de l'écran à un jour compté en UTC : entre 22 h et minuit UTC —
+// c'est-à-dire chaque nuit entre minuit et deux heures chez lui — l'écran
+// affichait « mardi 15 » et la suite exigeait « lundi 14 ». Elle accusait un
+// écran parfaitement juste, et la batterie rendait 154/155 pour une heure de
+// la nuit. Un contrôle qui compte les jours autrement que le produit finira
+// toujours par le contredire.
 {
   const enUtc: string[] = [];
   const parcourir = (dossier: string) => {
@@ -59,15 +68,20 @@ dire(
       if (e.isDirectory()) parcourir(chemin);
       else if (/\.(ts|tsx)$/.test(e.name) && !e.name.startsWith("test-jour-du-patron")) {
         const t = readFileSync(chemin, "utf8");
-        if (/new Date\(\)\.toISOString\(\)\.slice\(0, 10\)/.test(t)) enUtc.push(chemin);
+        // **`versJourIso(new Date())` est la même faute sous un autre nom**
+        // (27 septembre 2026) : `versJourIso` coupe l'instant en UTC. Il est
+        // juste pour un jour déjà écrit (« 2026-10-06T12:00Z »), faux pour
+        // AUJOURD'HUI, qui se compte à son heure (`jourIso`).
+        if (/new Date\(\)\.toISOString\(\)\.slice\(0, 10\)|versJourIso\(new Date\(\)\)/.test(t)) enUtc.push(chemin);
       }
     }
   };
   parcourir("src");
+  parcourir("scripts");
   dire(
     enUtc.length === 0,
     enUtc.length === 0
-      ? "aucun écran ne compte les jours en UTC — tout passe par `jourIso`"
+      ? "ni un écran ni une suite ne compte les jours en UTC — tout passe par `jourIso`"
       : `comptent encore les jours en UTC : ${enUtc.join(", ")}`
   );
 }

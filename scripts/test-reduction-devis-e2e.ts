@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // Le prix accordé au client, sur l'écran du devis.
 //
@@ -26,7 +27,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 //      en base, c'est le PDF qui partirait faux.
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let echecs = 0;
 async function cas(nom: string, fn: () => Promise<void>) {
@@ -52,9 +53,10 @@ async function main() {
 
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Mme Remise ${Date.now()}`);
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15_000 });
-  const url = page.url();
+  // L'adresse se bâtit sur l'identifiant que l'aide rend : la relire dans
+  // le navigateur donnait « devis-complet » depuis que la fiche du chantier
+  // est retirée (`ARCHITECTURE.md` §254).
+  const url = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
   const chantierId = url.split("/").pop()!;
 
   // Le devis de la maquette 61, aux mêmes chiffres : 870,00 € HT.
@@ -65,8 +67,10 @@ async function main() {
     ["Évacuation des déchets verts", "240"],
   ];
   for (const [rang, [libelle, prix]] of lignesVoulues.entries()) {
-    await page.click('button:has-text("Ajouter une ligne")');
     const zones = page.locator('textarea[aria-label*="escription"]');
+    // La feuille s'ouvre déjà avec sa PREMIÈRE ligne (20 septembre 2026) :
+    // on n'ajoute que celles qui manquent.
+    if ((await zones.count()) <= rang) await page.click('button:has-text("Ajouter une ligne")');
     // **On attend que la ligne EXISTE, on ne compte pas 500 ms.** Sous la
     // batterie, la nouvelle ligne n'était pas encore rendue : `nth(count - 1)`
     // désignait alors la PRÉCÉDENTE, et l'écrasait. Une ligne disparaissait
@@ -93,6 +97,39 @@ async function main() {
 
   const totaux = () => page.locator("section").filter({ hasText: "Total TTC" }).last();
 
+  /**
+   * Attend que la base porte le pourcentage annoncé, et rend la ligne du devis.
+   *
+   * **Pourquoi une attente et pas un délai.** L'écriture suit la saisie de
+   * loin : l'écran affiche le pourcentage dès la frappe, le serveur l'enregistre
+   * après. Une pause choisie au doigt mouillé passe seule et manque sous cent
+   * dix suites — et le contrôle accuse alors le produit d'écrire un chiffre
+   * faux sur un devis, ce qui est le pire des rouges (`AGENTS.md`).
+   *
+   * **Le contrôle ne s'affaiblit pas** : l'appelant exige toujours la valeur
+   * exacte et dit ce que la base portait quand elle ne vient pas. Un vrai
+   * désaccord entre l'écran et la base rougit donc encore.
+   *
+   * Écrite une fois pour les deux endroits qui en ont besoin — les 15 % de la
+   * saisie et les 5 % du bouton « + ». Deux boucles recopiées auraient divergé
+   * au premier ajustement (`CLAUDE.md` §3).
+   */
+  async function quandLaBasePorte(pourcent: string | null): Promise<Record<string, string>[]> {
+    let rows: Record<string, string>[] = [];
+    for (const essai of [0, 1, 2, 3, 4, 5]) {
+      if (essai > 0) await page.waitForTimeout(essai * 700);
+      rows = (
+        await pool.query(
+          `SELECT reduction_pourcent, reduction_montant, total_ht, total_tva, total_ttc
+             FROM devis WHERE chantier_id = $1 ORDER BY numero_version DESC LIMIT 1`,
+          [chantierId]
+        )
+      ).rows;
+      if (rows[0]?.reduction_pourcent === pourcent) break;
+    }
+    return rows;
+  }
+
   await cas("sans réduction, l'écran est EXACTEMENT celui d'avant", async () => {
     const texte = await totaux().innerText();
     assert.ok(texte.includes("870,00"), `le total plein manque :\n${texte}`);
@@ -107,21 +144,21 @@ async function main() {
     );
     // La ligne vide du premier essai : elle contredisait le PDF, qui n'imprime rien.
     assert.equal(
-      await page.locator('input[aria-label="Prix accordé au client, en pourcentage"]').count(),
+      await page.locator('input[aria-label="Remise, en pourcentage"]').count(),
       0,
       "un champ de remise vide traîne sur un devis qui n'en a pas — l'écran ment sur le document"
     );
   });
 
   await cas("le chemin pour en poser une existe, et il est discret", async () => {
-    const bouton = page.getByRole("button", { name: /Prix accordé au client/ });
+    const bouton = page.getByRole("button", { name: /^\+ Remise$/ });
     assert.equal(await bouton.count(), 1, "aucun moyen d'accorder un prix sans dicter");
     await bouton.click();
     await page.waitForTimeout(900);
   });
 
   await cas("15 % : les trois lignes de B, dans l'ordre et aux bons montants", async () => {
-    const champ = page.locator('input[aria-label="Prix accordé au client, en pourcentage"]');
+    const champ = page.locator('input[aria-label="Remise, en pourcentage"]');
     await champ.fill("15");
     await page.keyboard.press("Tab");
     await page.waitForTimeout(900);
@@ -141,7 +178,7 @@ async function main() {
       return b!.y;
     };
     const yPlein = await y("Total HT870,00");
-    const yRemise = await y("Prix accordé au client");
+    const yRemise = await y("Remise de");
     const yNet = await y("Total HT après remise");
     assert.ok(yPlein < yRemise, `le prix plein doit être au-dessus (${yPlein} contre ${yRemise})`);
     assert.ok(yRemise < yNet, `la remise doit être au-dessus du net (${yRemise} contre ${yNet})`);
@@ -169,18 +206,7 @@ async function main() {
     // valeur exacte, et il dit ce que la base portait quand elle ne vient pas.
     // Un vrai désaccord entre l'écran et la base rougirait donc encore — c'est
     // la seule chose que ce cas ait à défendre.
-    let rows: Record<string, string>[] = [];
-    for (const essai of [0, 1, 2, 3, 4, 5]) {
-      if (essai > 0) await page.waitForTimeout(essai * 700);
-      rows = (
-        await pool.query(
-          `SELECT reduction_pourcent, reduction_montant, total_ht, total_tva, total_ttc
-             FROM devis WHERE chantier_id = $1 ORDER BY numero_version DESC LIMIT 1`,
-          [chantierId]
-        )
-      ).rows;
-      if (rows[0]?.reduction_pourcent === "15.00") break;
-    }
+    const rows = await quandLaBasePorte("15.00");
     assert.equal(rows.length, 1, "aucun devis en base");
     assert.equal(
       rows[0].reduction_pourcent,
@@ -194,12 +220,21 @@ async function main() {
   });
 
   await cas("elle se retire, et le devis revient à son prix plein", async () => {
-    const champ = page.locator('input[aria-label="Prix accordé au client, en pourcentage"]');
+    const champ = page.locator('input[aria-label="Remise, en pourcentage"]');
     await champ.fill("");
     await page.keyboard.press("Tab");
-    await page.waitForTimeout(1_000);
+    // **ON ATTEND LA TRACE, JAMAIS UN DÉLAI — et c'est la troisième fois dans
+    // CETTE suite (13 septembre 2026).** Les deux autres endroits l'avaient
+    // déjà appris ; celui-ci gardait une seconde choisie au doigt mouillé,
+    // suivie d'un rechargement. Sous cent cinquante suites, le vidage n'était
+    // pas retombé : la page rechargée redonnait les 15 %, et les quatre cas
+    // suivants s'écroulaient derrière — le contrôle accusait alors le produit
+    // de garder une remise retirée, ce qui est le rouge le plus coûteux qui
+    // soit (`AGENTS.md`). Jouée seule, elle passait.
+    //
+    // Le rechargement reste : ce cas-ci mesure ce que le SERVEUR a retenu.
+    await quandLaBasePorte(null);
     await page.reload({ waitUntil: "networkidle" });
-    await page.waitForTimeout(600);
 
     const texte = await totaux().innerText();
     assert.match(texte.replace(/\s/g, " "), /1 044,00/, `le devis n'est pas revenu au prix plein :\n${texte}`);
@@ -225,10 +260,10 @@ async function main() {
   // pendant que la base, elle, n'en portait plus aucune. L'écran affirmait donc
   // une remise que le PDF n'imprimait pas.
   await cas("écrire 0 % la retire pour de bon, à l'écran comme en base", async () => {
-    await page.getByRole("button", { name: /Prix accordé au client/ }).click();
+    await page.getByRole("button", { name: /^\+ Remise$/ }).click();
     await page.waitForTimeout(900);
 
-    const champ = page.locator('input[aria-label="Prix accordé au client, en pourcentage"]');
+    const champ = page.locator('input[aria-label="Remise, en pourcentage"]');
     await champ.fill("0");
     await page.keyboard.press("Tab");
     // **On attend la TRACE, jamais un délai.** Une seconde suffisait à vide et
@@ -248,7 +283,7 @@ async function main() {
     // libellé accuserait donc ce bouton d'être la ligne morte.
     const texte = await totaux().innerText();
     assert.equal(
-      await page.locator('input[aria-label="Prix accordé au client, en pourcentage"]').count(),
+      await page.locator('input[aria-label="Remise, en pourcentage"]').count(),
       0,
       `la ligne or survit à un zéro pour cent :\n${texte}`
     );
@@ -269,11 +304,25 @@ async function main() {
   // *« Tout comme on ajoute une ligne avec un petit plus, il faudrait qu'on ait
   // un petit moins pour supprimer la ligne de la réduction. »*
   // `docs/maquettes/68-retirer-le-prix-accorde.html`.
-  const moins = () => page.getByRole("button", { name: /Retirer le prix accordé/i });
+  const moins = () => page.getByRole("button", { name: /Retirer la remise/i });
 
   await cas("le « − » existe, et se touche : 26 px", async () => {
-    await page.getByRole("button", { name: /^\+ Prix accordé au client/ }).click();
-    await page.waitForTimeout(900);
+    await page.getByRole("button", { name: /^\+ Remise$/ }).click();
+    // **On attend la TRACE, jamais un délai** — et c'est le cas SUIVANT qui
+    // paie quand on l'oublie : il lit la base juste après le « − » et exige d'y
+    // trouver les 5 % que ce bouton vient de poser. Sous la charge de la CI,
+    // 900 ms ne suffisaient pas, et le contrôle accusait alors le produit
+    // d'avoir effacé une remise qui n'était simplement pas encore écrite —
+    // exactement le rouge le plus coûteux qui soit (`AGENTS.md`).
+    //
+    // La même cause a déjà frappé plus haut, sur les 15 %. C'est la seconde
+    // fois : d'où la fonction commune plutôt qu'une seconde boucle recopiée.
+    const posee = await quandLaBasePorte("5.00");
+    assert.equal(
+      posee[0]?.reduction_pourcent,
+      "5.00",
+      `les 5 % du « + » ne sont pas arrivés en base : ${JSON.stringify(posee[0])}`
+    );
     assert.equal(await moins().count(), 1, "aucun « − » en face de la ligne");
     const b = await moins().boundingBox();
     // Une boîte de zéro pixel ne prouve rien : refuser de conclure plutôt que
@@ -316,7 +365,7 @@ async function main() {
 
     const texte = await totaux().innerText();
     assert.equal(
-      await page.locator('input[aria-label="Prix accordé au client, en pourcentage"]').count(),
+      await page.locator('input[aria-label="Remise, en pourcentage"]').count(),
       0,
       `la ligne or survit à son propre retrait :\n${texte}`
     );

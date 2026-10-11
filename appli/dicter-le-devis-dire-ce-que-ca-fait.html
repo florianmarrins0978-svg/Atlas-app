@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Dire que le micro rédige le devis</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  SA REMARQUE DU 3 OCTOBRE 2026 :
+
+  *« Sur la fiche client on comprend pas que la note vocale permet de rédiger
+  le devis par la voix, il faudrait mettre une phrase au-dessus. »*
+
+  L'écran est la fiche client d'un chantier (`/chantiers/nouveau?client=…`,
+  `FormulaireNouveauChantier.tsx`), REGARDÉ le 3 octobre sur le jeu de
+  démonstration (Mme Costa) avant d'être redessiné ici. Sous le grand micro,
+  une seule ligne grise de 11 px : « Appuyez et décrivez le chantier »
+  (`AnneauNoteVocale.tsx`). Rien ne dit que la dictée DEVIENT le devis ; et le
+  petit micro en haut à droite (`DicterCoordonnees`, qui remplit les
+  coordonnées) brouille encore la lecture : deux micros, deux métiers.
+
+  ─── LES TROIS PROPOSITIONS ─────────────────────────────────────────────
+  A  un libellé en capitales au-dessus du micro, « DEVIS À LA VOIX », dans la
+     voix de « PHOTOS » et « LA DERNIÈRE FOIS ». L'indice dessous ne bouge pas.
+  B  une phrase au-dessus, « Dictez les travaux, Atlas rédige le devis. »
+     L'indice dessous ne bouge pas.
+  C  la phrase de B, et l'indice dessous réduit à « Appuyez pour commencer » :
+     « décrivez le chantier » redisait « Dictez les travaux ». Le mot en trop
+     part, la ligne reste à sa place (CLAUDE.md §3).
+
+  Rien d'autre ne bouge : même place, mêmes pièces. La phrase reste pendant la
+  dictée (elle nomme l'objet) ; l'indice, lui, s'efface comme dans
+  l'application, et « Je rédige à la main » disparaît aussi.
+
+  RIEN N'EST CODÉ.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --fond:#f4f2ec; --champ:#ebe8e0; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+    --plein:#7d9a6d; --or:#B98B47; --or-clair:#C9A15E; --alerte:#b4553c;
+    --ombre-forte:rgba(28,28,26,.18);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e2d8;color:var(--encre);font:400 15px/1.4 -apple-system,"Helvetica Neue",Arial,sans-serif}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .serif{font-family:ui-serif,Georgia,"Times New Roman",serif}
+
+  h1.tete{margin:22px 16px 0;text-align:center;font:400 24px/1.2 ui-serif,Georgia,serif}
+  .commandes{display:flex;justify-content:center;gap:8px;padding:14px 16px 0;flex-wrap:wrap}
+  .commandes button{min-height:44px;min-width:44px;padding:0 16px;border-radius:999px;font-size:15px;
+                    color:var(--encre-douce);background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait)}
+  .commandes button[aria-pressed="true"]{color:var(--carte);background:var(--encre);box-shadow:none;font-weight:600}
+  .dit{max-width:390px;margin:8px auto 0;padding:0 20px;text-align:center;font-size:13.5px;color:var(--encre-douce);min-height:40px}
+
+  .tel{width:calc(100% - 32px);max-width:390px;height:800px;margin:10px auto 40px;background:var(--fond);
+       border-radius:30px;overflow:hidden;box-shadow:0 18px 46px var(--ombre-forte);display:flex;flex-direction:column}
+  .ecran{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:14px 20px 24px}
+
+  .entete{display:grid;grid-template-columns:44px 1fr 44px;align-items:center}
+  .entete .titre{text-align:center;font:400 30px/1 ui-serif,Georgia,serif}
+  .rond{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;box-shadow:inset 0 0 0 1px var(--trait);color:var(--encre)}
+  .caps{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--gris)}
+  .civ{display:flex;gap:8px;margin-top:12px}
+  .civ span{min-width:68px;padding:9px 18px;border-radius:999px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);text-align:center}
+  .ligne{display:flex;justify-content:space-between;margin-top:10px}
+  .champ{margin-top:4px;padding:11px 14px;border-radius:12px;background:var(--champ);font-size:16px}
+  .champ.pale{color:var(--gris)}
+  .deux{display:grid;grid-template-columns:1.2fr 1fr;gap:8px}
+  .deux .champ:last-child{text-align:right}
+  .envoi{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:10px;border-top:1px solid var(--trait)}
+  .envoi .canaux{display:flex;gap:14px;font-size:15px}
+  .envoi .canaux .actif{border-bottom:2px solid var(--or);padding-bottom:2px}
+  .envoi .canaux .eteint{color:var(--gris)}
+  .photo{width:52px;height:52px;margin-top:6px;border:1.5px dashed var(--or);border-radius:9px;display:grid;place-items:center;color:var(--or);font-size:20px}
+  .anciennes{display:flex;gap:9px;margin-top:6px}
+  .anciennes i{width:58px;height:58px;border-radius:11px;opacity:.55}
+
+  /* ─── l'objet de la planche ─── */
+  .dictee{display:flex;flex-direction:column;align-items:center;margin-top:18px}
+  .au-dessus{margin:0 0 10px;text-align:center}
+  .au-dessus.caps{color:var(--gris)}
+  .au-dessus.phrase{font:400 18px/1.3 ui-serif,Georgia,serif;color:var(--encre)}
+  .micro{width:80px;height:80px;border-radius:50%;display:grid;place-items:center;color:#fff;background:var(--plein);
+         box-shadow:inset 0 0 0 2px var(--or-clair);transition:transform .2s}
+  .micro:active{transform:scale(.97)}
+  .indice{margin:6px 0 0;font-size:11px;color:var(--gris)}
+  .enregistre{display:none;width:100%;align-items:center;gap:12px;min-height:80px}
+  .enregistre .chrono{display:flex;align-items:center;gap:7px;color:var(--or);font-size:14px;font-variant-numeric:tabular-nums}
+  .enregistre .chrono i{width:8px;height:8px;border-radius:50%;background:var(--alerte)}
+  .enregistre .onde{flex:1;height:6px;border-radius:3px;background:var(--or);opacity:.8;animation:souffle 1.1s ease-in-out infinite}
+  @keyframes souffle{50%{transform:scaleY(2.2)}}
+  @media (prefers-reduced-motion:reduce){.enregistre .onde{animation:none}}
+  .enregistre .envoyer{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--plein);box-shadow:inset 0 0 0 1.5px var(--plein)}
+  .enregistre .jeter{width:44px;height:44px;display:grid;place-items:center;color:var(--gris)}
+  .dicte .micro,.dicte .indice,.dicte ~ .main{display:none}
+  .dicte .enregistre{display:flex}
+  .main{display:block;width:66%;margin:16px auto 0;min-height:52px;border-radius:999px;box-shadow:inset 0 0 0 1.5px var(--trait);
+        font:400 20px/1 ui-serif,Georgia,serif;text-align:center}
+
+  .barre{flex:none;display:grid;grid-template-columns:repeat(5,1fr);height:62px;background:var(--fond);border-top:1px solid var(--trait)}
+  .barre span{display:flex;align-items:center;justify-content:center;font-size:9.5px;letter-spacing:.12em;color:var(--gris)}
+  .barre span.actif{color:var(--encre);box-shadow:inset 0 -2px 0 var(--or)}
+</style>
+</head>
+<body>
+  <h1 class="tete">Dire que le micro rédige le devis</h1>
+
+  <div class="commandes" role="group" aria-label="Proposition">
+    <button type="button" data-choix="A" aria-pressed="true">A</button>
+    <button type="button" data-choix="B" aria-pressed="false">B</button>
+    <button type="button" data-choix="C" aria-pressed="false">C</button>
+    <button type="button" data-choix="0" aria-pressed="false">Aujourd’hui</button>
+  </div>
+  <p class="dit" id="dit"></p>
+
+  <div class="tel">
+    <div class="ecran">
+      <div class="entete">
+        <span class="rond" style="box-shadow:none" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="titre">Fiche client</span>
+        <span class="rond" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0" stroke-linecap="round"/><path d="M12 18v3" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+
+      <div class="civ"><span>Mr</span><span>Mme</span></div>
+      <div class="ligne"><span class="caps">Nom du client</span><span class="caps">Téléphone</span></div>
+      <div class="deux"><div class="champ">Mme Costa</div><div class="champ">06 98 76 54 32</div></div>
+      <div class="ligne"><span class="caps">E-mail</span></div>
+      <div class="champ pale">bernard@exemple.fr</div>
+      <div class="ligne"><span class="caps">Chantier</span><span class="caps" style="color:var(--encre)">+ Client</span></div>
+      <div class="champ pale">12 rue des Lilas, Nantes</div>
+
+      <div class="envoi"><span class="caps">Envoi</span>
+        <span class="canaux"><span class="actif">SMS</span><span class="eteint">E-mail</span></span></div>
+
+      <div class="ligne" style="margin-top:14px"><span class="caps">Photos</span></div>
+      <div class="photo">+</div>
+
+      <div class="ligne" style="margin-top:14px"><span class="caps">La dernière fois</span></div>
+      <div class="anciennes"><i style="background:#b5b8a8"></i><i style="background:#d6cab6"></i><i style="background:#c8c6c0"></i></div>
+
+      <div class="dictee" id="dictee">
+        <p class="au-dessus" id="au-dessus"></p>
+        <button type="button" class="micro" id="micro" aria-label="Dicter une note vocale">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0" stroke-linecap="round"/><path d="M12 18v3" stroke-linecap="round"/></svg>
+        </button>
+        <div class="enregistre">
+          <button type="button" class="jeter" id="jeter" aria-label="Supprimer la note">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16"/><path d="M10 4h4a1 1 0 0 1 1 1v2H9V5a1 1 0 0 1 1-1z"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/></svg>
+          </button>
+          <span class="chrono"><i></i><span id="sec">00:00</span></span>
+          <span class="onde" aria-hidden="true"></span>
+          <button type="button" class="envoyer" id="envoyer" aria-label="Envoyer la note et préparer le devis">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20.5 3.5 10.6 13.4"/><path d="M20.5 3.5 14.2 21a.6.6 0 0 1-1.1.05l-3-6.6-6.6-3a.6.6 0 0 1 .05-1.1z"/></svg>
+          </button>
+        </div>
+        <p class="indice" id="indice"></p>
+      </div>
+      <button type="button" class="main">Je rédige à la main</button>
+    </div>
+    <nav class="barre"><span class="actif">CHANTIERS</span><span>PLANNING</span><span>TERMINÉS</span><span>PAYSAGE</span><span>RÉGLAGES</span></nav>
+  </div>
+
+<script>
+  // Les textes de chaque proposition. Le placement ne change jamais : seule
+  // la ligne au-dessus du micro apparaît, et l'indice dessous change en C.
+  const PROPOSITIONS = {
+    "0": { dessus: "", classe: "", indice: "Appuyez et décrivez le chantier",
+           dit: "L’écran tel qu’il est aujourd’hui, relevé sur l’application." },
+    A: { dessus: "Devis à la voix", classe: "caps", indice: "Appuyez et décrivez le chantier",
+         dit: "Un titre en capitales, comme « Photos » au-dessus. Trois mots." },
+    B: { dessus: "Dictez les travaux, Atlas rédige le devis.", classe: "phrase", indice: "Appuyez et décrivez le chantier",
+         dit: "Une phrase qui dit ce que le micro produit. L’indice dessous ne change pas." },
+    C: { dessus: "Dictez les travaux, Atlas rédige le devis.", classe: "phrase", indice: "Appuyez pour commencer",
+         dit: "La phrase de B, et l’indice dessous raccourci pour ne pas la redire." },
+  };
+  const dessus = document.getElementById("au-dessus");
+  const indice = document.getElementById("indice");
+  const dit = document.getElementById("dit");
+  const dictee = document.getElementById("dictee");
+  let minuteur = null;
+
+  function choisir(cle) {
+    const p = PROPOSITIONS[cle];
+    dessus.textContent = p.dessus;
+    dessus.className = "au-dessus " + p.classe;
+    dessus.style.display = p.dessus ? "" : "none";
+    indice.textContent = p.indice;
+    dit.textContent = p.dit + " Touchez le micro.";
+    document.querySelectorAll("[data-choix]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.choix === cle)));
+    arreter();
+  }
+  function arreter() {
+    dictee.classList.remove("dicte");
+    clearInterval(minuteur);
+  }
+  document.querySelectorAll("[data-choix]").forEach((b) => b.addEventListener("click", () => choisir(b.dataset.choix)));
+  document.getElementById("micro").addEventListener("click", () => {
+    dictee.classList.add("dicte");
+    let s = 0;
+    document.getElementById("sec").textContent = "00:00";
+    minuteur = setInterval(() => {
+      s++;
+      document.getElementById("sec").textContent = "00:" + String(s).padStart(2, "0");
+    }, 1000);
+  });
+  document.getElementById("jeter").addEventListener("click", arreter);
+  document.getElementById("envoyer").addEventListener("click", arreter);
+  choisir("A");
+</script>
+</body>
+</html>

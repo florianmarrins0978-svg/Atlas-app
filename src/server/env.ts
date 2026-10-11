@@ -71,13 +71,72 @@ export type Env = {
    * `src/lib/origine-webauthn.ts`.
    */
   rpId?: string;
+
+  // ── Entrer par Google ou par Apple (10 septembre 2026) ───────────────────
+  //
+  // **Les quatre sont OPTIONNELLES, et la porte le sait.** Tant qu'une paire
+  // n'est pas posée, son bouton ne s'affiche pas : un bouton qui ne peut pas
+  // aboutir est pire qu'un bouton absent (`src/lib/fournisseurs-connexion.ts`).
+  // Rien n'est deviné, rien ne casse — la connexion par mot de passe et par
+  // Face ID est inchangée.
+  //
+  // Elles ne peuvent pas naître ici : elles s'ouvrent chez Google (gratuit) et
+  // chez Apple (compte développeur payant). Voir `docs/A-FAIRE.md`.
+  googleClientId?: string;
+  googleClientSecret?: string;
+  appleClientId?: string;
+  appleClientSecret?: string;
+
   redisUrl?: string;
   cronSecret?: string;
+
+  /**
+   * QUI ENVOIE LES E-MAILS — le code de vérification d'une adresse, pour
+   * l'instant (14 septembre 2026). `brevo` avec sa clé, ou `dev`, qui n'envoie
+   * rien et écrit le code dans le journal du serveur. Même modèle que
+   * `llmProvider` : la clé décide, la variable explicite l'emporte.
+   */
+  courrielProvider: "brevo" | "dev";
+  brevoApiKey?: string;
+  /** L'adresse expéditrice, vérifiée chez Brevo — sans elle, Brevo refuse l'envoi. */
+  courrielExpediteur?: string;
+
+  // ── Le paiement de l'abonnement (9 septembre 2026) ───────────────────────
+  //
+  // **Les trois sont OPTIONNELLES, et c'est délibéré.** Le compte Stripe
+  // n'existe pas encore : sans elles, l'écran « Abonnement » le DIT — il
+  // n'offre pas un bouton qui échouerait. Un écran qui promet un paiement
+  // impossible est pire qu'un écran qui annonce qu'il n'est pas branché.
+  //
+  // **Aucune ne porte le mot « stripe » dans le type**, seulement dans le nom
+  // de la variable : le jour où l'on change de prestataire, c'est
+  // `src/server/paiement/` qui change, pas tout ce qui lit `getEnv()`.
+
+  /** `ATLAS_PAIEMENT_CLE` — la clé secrète (`sk_…`). Ne sort JAMAIS du serveur. */
+  paiementCleSecrete?: string;
+  /**
+   * `ATLAS_PAIEMENT_SECRET_CROCHET` — le secret du crochet (`whsec_…`).
+   *
+   * **Ce n'est pas la même chose que la clé**, et les confondre ouvrirait
+   * l'adresse publique du crochet à qui possède la clé publique. Elles sont
+   * donc distinctes ici, comme chez Stripe.
+   */
+  paiementSecretCrochet?: string;
+  /**
+   * `ATLAS_URL_PUBLIQUE` — l'adresse à laquelle le patron revient après avoir
+   * payé.
+   *
+   * **Elle ne se déduit PAS de la requête.** L'hôte annoncé est écrit par
+   * celui qui frappe : le déduire ferait renvoyer le patron, après paiement,
+   * vers une adresse choisie par un tiers. C'est le même raisonnement que
+   * `ATLAS_RP_ID` juste au-dessus.
+   */
+  urlPublique?: string;
   sentryDsn?: string;
   sentryEnvironment: string;
   releaseVersion?: string;
   /**
-   * Version affichée au patron (« 04/08/2026 21:12 · b05e282 »), posée par
+   * Version affichée au patron (« 04/08/2026 21:12, b05e282 »), posée par
    * `.devcontainer/demarrer.sh`. Faite pour être lue sur une capture d'écran :
    * elle répond à « quelle version essayez-vous ? » sans avoir à la poser.
    * Absente hors banc d'essai — on dit alors « inconnue » plutôt que d'inventer.
@@ -191,7 +250,7 @@ function construireEnv(): Env {
   if (nodeEnvBrut !== undefined && !["development", "test", "production"].includes(nodeEnvBrut)) {
     throw new ErreurConfiguration(
       `NODE_ENV vaut « ${nodeEnvBrut} », qui n'est pas une valeur connue.\n` +
-        "Les seules acceptées sont development, test et production — en minuscules.\n" +
+        "Les seules acceptées sont development, test et production, en minuscules.\n" +
         "Une valeur inattendue faisait basculer Atlas en posture de développement sans le dire :\n" +
         "secret de session en dur, stockage local, IA simulée, et la porte de test rouverte."
     );
@@ -372,6 +431,42 @@ function construireEnv(): Env {
     }
   }
 
+  /**
+   * **QUI ENVOIE LES E-MAILS.** Brevo est le service qu'il a choisi le
+   * 14 septembre 2026 (français, serveurs en France, gratuit jusqu'à 300 par
+   * jour, un expéditeur vérifié suffit sans nom de domaine).
+   *
+   * Même règle que l'IA : la clé posée suffit à brancher le service, et
+   * `COURRIEL_PROVIDER=dev` le coupe sans retirer la clé. En `dev`, aucun
+   * e-mail ne part — le code est écrit dans le journal du serveur, ce qui est
+   * ce qu'il faut pour la batterie et pour un poste sans clé, et ce qu'il ne
+   * faut jamais devant de vrais comptes : d'où le refus en production, plus bas.
+   */
+  const brevoApiKey = optionnel("BREVO_API_KEY");
+  const courrielProviderBrut = optionnel("COURRIEL_PROVIDER")?.toLowerCase() ?? (brevoApiKey ? "brevo" : "dev");
+  if (courrielProviderBrut !== "brevo" && courrielProviderBrut !== "dev") {
+    throw new ErreurConfiguration(
+      `COURRIEL_PROVIDER="${courrielProviderBrut}" n'est pas un service reconnu. Valeurs acceptées : brevo, dev.`
+    );
+  }
+  const courrielProvider: "brevo" | "dev" = courrielProviderBrut;
+  const courrielExpediteur = optionnel("COURRIEL_EXPEDITEUR");
+  if (courrielProvider === "brevo" && !brevoApiKey) {
+    throw new ErreurConfiguration("COURRIEL_PROVIDER=brevo exige BREVO_API_KEY, qui est absente.");
+  }
+  if (courrielProvider === "brevo" && !courrielExpediteur) {
+    throw new ErreurConfiguration(
+      "BREVO_API_KEY est posée mais COURRIEL_EXPEDITEUR ne l'est pas : Brevo refuse tout envoi sans expéditeur vérifié. " +
+        "Poser l'adresse validée dans Brevo (Expéditeurs), par exemple contact@votre-domaine.fr."
+    );
+  }
+  if (exigencesDeDeploiement && courrielProvider === "dev") {
+    throw new ErreurConfiguration(
+      "COURRIEL_PROVIDER vaut « dev » en production : aucun code de vérification ne partirait, et personne ne pourrait " +
+        "créer un compte. Poser BREVO_API_KEY et COURRIEL_EXPEDITEUR."
+    );
+  }
+
   // Le stockage local ne doit JAMAIS être utilisé en production (fichiers
   // éphémères / non partagés entre instances) — échec explicite au démarrage.
   const stockageProviderBrut = process.env.STORAGE_PROVIDER ?? "local";
@@ -409,7 +504,7 @@ function construireEnv(): Env {
   if (exigencesDeDeploiement && !urlPublique) {
     throw new ErreurConfiguration(
       "ATLAS_URL_PUBLIQUE manquante en production.\n" +
-        "Sans elle, l'adresse du site se déduit d'un en-tête que le client peut écrire — et c'est\n" +
+        "Sans elle, l'adresse du site se déduit d'un en-tête que le client peut écrire, et c'est\n" +
         "cette adresse qui compose les liens de devis et de facture que le patron envoie à ses\n" +
         "clients. Poser l'adresse publique complète, par exemple https://atlas.exemple.fr"
     );
@@ -538,7 +633,7 @@ function construireEnv(): Env {
         throw new ErreurConfiguration(
           `${nom} détourne les appels vers « ${pose} » en production.\n` +
             "Cette variable n'existe que pour les essais : en production, la clé d'API et tout ce\n" +
-            "qui est envoyé au modèle — dictées, photos, noms et adresses des clients — partiraient\n" +
+            "qui est envoyé au modèle (dictées, photos, noms et adresses des clients) partiraient\n" +
             `à cette adresse. La retirer, ou la remettre à ${officielle}.`
         );
       }
@@ -575,8 +670,21 @@ function construireEnv(): Env {
     // franchissait le refus ci-dessus, puis le magasin échouait à chaque appel
     // et la limitation retombait sur un compteur en mémoire, par instance —
     // exactement l'état que ce refus déclare « jamais autorisé en production ».
+    googleClientId: optionnel("AUTH_GOOGLE_ID"),
+    googleClientSecret: optionnel("AUTH_GOOGLE_SECRET"),
+    appleClientId: optionnel("AUTH_APPLE_ID"),
+    appleClientSecret: optionnel("AUTH_APPLE_SECRET"),
     redisUrl: optionnel("REDIS_URL"),
     cronSecret,
+    courrielProvider,
+    brevoApiKey,
+    courrielExpediteur,
+    paiementCleSecrete: optionnel("ATLAS_PAIEMENT_CLE"),
+    paiementSecretCrochet: optionnel("ATLAS_PAIEMENT_SECRET_CROCHET"),
+    // La barre oblique finale se retire ici, une fois : ailleurs, chaque
+    // appelant devrait s'en souvenir, et le premier oubli fabrique un
+    // « https://…//reglages » que certains hébergeurs refusent.
+    urlPublique: optionnel("ATLAS_URL_PUBLIQUE")?.replace(/\/+$/, ""),
     sentryDsn: process.env.SENTRY_DSN,
     sentryEnvironment: process.env.SENTRY_ENVIRONMENT ?? nodeEnv,
     releaseVersion: process.env.RELEASE_VERSION,

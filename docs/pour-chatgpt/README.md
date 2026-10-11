@@ -42,7 +42,17 @@ noir sur blanc, comme le demande `CLAUDE.md` §2 bis.
 | `06-lot-C-suite-r23-et-unites.md` | lot C (suite) | le doublon du rejeu, les unités de comptage, et l'inventaire des natures réellement présentes |
 | `07-correction-complete.md` | **l'état final** | ce que la chaîne fait désormais, ce qui a été refusé, et la seule question qui lui revient |
 | `08-validation-reelle.md` | validation | pourquoi la chaîne n'est PAS prouvée en conditions réelles, et ce qui protège d'une faute de Whisper |
-| `09-mise-sur-main.md` | migrations | la preuve que deux migrations peuvent porter le même numéro sans danger |
+| `09-mise-sur-main.md` | migrations | la preuve que deux migrations peuvent porter le même numéro sans danger — **titre trompeur, voir l'avertissement ci-dessous** |
+| `10-la-correction-atteint-main.md` | mise en ligne | ce qui est sur `main`, le démenti du titre du 09, et trois suites rouges élucidées |
+| `11-libelles-du-devis.md` | affichage | pourquoi le client relisait deux fois ses mesures, et pourquoi nettoyer le libellé stocké aurait cassé le prix |
+| `12-rediger-plutot-qu-assembler.md` | rédaction | ce qui décide de l'ordre des mots quand un tiret réunit un sujet et un geste |
+| `13-nature-declaree-et-accord.md` | robustesse | la tournure qui vient d'une donnée déclarée, et l'article qui ne se devine plus |
+| `14-questions-deja-repondues.md` | test téléphone | pourquoi Atlas redemandait ce qu'il savait, et un second défaut qui n'en était pas un |
+| `15-centimetres-dun-tronc.md` | convention métier | quand « soixante centimètres » veut dire un diamètre, et les sept cas où il ne le veut pas |
+| `16-sans-prononcer-l-unite.md` | convention métier | lire « une souche de 60 » sans exiger l'unité, et les trois portes que ça ouvrait |
+| `17-la-fusion-et-son-verrou.md` | fusion | les quatre arbitrages qu'elle a demandés, et le défaut de `main` qui empêche toute batterie verte |
+| `18-nommer-la-mesure.md` | question posée | l'arbitrage entre deux de ses propres consignes, et le contrôle qui défendait celle qu'il abroge |
+| `19-jamais-cree.md` | chaîne réelle | pourquoi le diamètre dicté n'arrivait jamais en base, et comment cinquante suites vertes encadraient le trou |
 
 **Le dossier 07 remplace les six premiers.** Ils restent comme le chemin
 parcouru — un instantané ne se corrige pas, `CLAUDE.md` §2 bis — mais ce qui

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { ADRESSE } from "./_adresse";
 import { lancerNavigateur } from "./e2e-browser";
 
 // **La porte d'Atlas, éprouvée par où le patron y passe.**
@@ -41,7 +42,10 @@ import { lancerNavigateur } from "./e2e-browser";
 // une version BÂTIE derrière une origine étrangère. Les deux sont nécessaires —
 // celle-ci regarde l'écran, l'autre regarde l'enveloppe.
 
-const BASE = process.env.ATLAS_BASE ?? "http://127.0.0.1:3000";
+// **L'adresse vient de l'atelier, jamais d'un port écrit ici** : jouée dans un
+// atelier autre que 3000, cette suite tombait en « connexion refusée » sur un
+// serveur qui n'était pas le sien (batterie du 12 septembre 2026).
+const BASE = ADRESSE;
 const COMPTE = { email: "demo@atlas.local", motDePasse: "demo1234" };
 
 let reussis = 0;

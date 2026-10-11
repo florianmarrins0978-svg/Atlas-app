@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Poser un chantier sans avoir à choisir — 9 septembre 2026</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="poser-un-chantier-sans-avoir-à-choisir--9-septembre-2026">Poser un chantier sans avoir à choisir — 9 septembre 2026</h1>
+<p><strong>Ce que tu as signalé :</strong> <em>« quand je clique sur ajouter un chantier, lorsque je clique sur Claudette il me propose 3 choix, alors que si Claudette c'est un chantier 1 journée, deux, ou une demi, ça doit se mettre tout seul — je dois pas avoir à choisir. »</em></p>
+<p><strong>Tu as raison, et c'était pire que ça.</strong></p>
+<hr>
+<h2 id="ce-que-les-trois-boutons-faisaient-vraiment">Ce que les trois boutons faisaient vraiment</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Ils n'avaient pas l'air d'écrire quoi que ce soit. Ils réécrivaient la <strong>durée</strong> du chantier — celle qui vient de ton devis, ou de ta dictée.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Le chantier</th>
+<th>Un appui sur « Matin »</th>
+</tr></thead><tbody>
+<tr>
+<td>une demi-journée</td>
+<td>rien de changé</td>
+</tr>
+<tr>
+<td><strong>une journée</strong></td>
+<td><strong>il devenait une demi-journée</strong></td>
+</tr>
+<tr>
+<td>deux jours ou plus</td>
+<td>rien de changé (la durée était déjà protégée)</td>
+</tr>
+</tbody></table></div>
+<p>La ligne du milieu est le défaut. Il ne se voyait nulle part : ni sur le plan, ni sur le devis, ni sur la facture. L'après-midi que tu croyais réservé redevenait libre — donc proposable à un client — et tu ne l'apprenais que le jour du chantier.</p>
+<h2 id="ce-qui-a-changé-à-lécran">Ce qui a changé à l'écran</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Avant</th>
+<th>Maintenant</th>
+</tr></thead><tbody>
+<tr>
+<td>« + Ajouter un chantier » → le nom → <strong>Matin · Ap.-m. · Journée</strong></td>
+<td>« + Ajouter un chantier » → le nom, et c'est posé</td>
+</tr>
+<tr>
+<td>dans le tiroir du bas, trois boutons par ligne</td>
+<td>un seul bouton, <strong>Poser</strong></td>
+</tr>
+</tbody></table></div>
+<p>Un chantier d'une journée prend la journée. Une demi-journée prend la première moitié libre. Trois jours prennent trois jours.</p>
+<h2 id="ce-qui-na-pas-changé-et-pourquoi">Ce qui n'a pas changé, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>« Déplacer » garde ses trois moments.</strong> C'est là que tu corriges — « finalement Claudette ce sera l'après-midi » —, sur un chantier déjà posé, que tu regardes. Là, le mot que tu choisis est une vraie demande. Le retirer t'aurait enlevé le seul endroit d'où l'on règle un moment.</p>
+<h2 id="ce-que-jai-corrigé-en-plus-et-que-personne-navait-vu">Ce que j'ai corrigé en plus, et que personne n'avait vu</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Le même défaut vivait dans l'<strong>assistant</strong>. Quand tu dictais « pose Claudette jeudi » sans dire l'heure, le code remplissait « journée » tout seul : une demi-journée vendue en réservait deux. Un moment que tu n'as pas dit n'est plus inventé.</p>
+<p>Et « déplace Claudette » sans dire quand est désormais <strong>refusé</strong> avec la question — plutôt que de décider à ta place.</p>
+<h2 id="ce-qui-léprouve">Ce qui l'éprouve</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>deux contrôles neufs sans navigateur</td>
+<td>poser garde la demi-journée réservée ; poser suit ta dictée quand rien n'est encore réservé</td>
+</tr>
+<tr>
+<td>deux contrôles au navigateur, réécrits</td>
+<td>ils <strong>touchaient eux-mêmes « Matin »</strong> avant de vérifier la durée : ils auraient été verts sur le défaut. Ils ne touchent plus qu'un nom</td>
+</tr>
+</tbody></table></div>
+<p>Les deux contrôles neufs ont été mis au <strong>rouge</strong> contre la règle inverse avant d'être retenus — un contrôle qui n'a jamais échoué ne prouve rien.</p>
+<h2 id="ce-qui-reste-ouvert-et-cest-à-toi">Ce qui reste ouvert, et c'est à toi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>La maquette du planning que tu as retenue le 21 août (<code>planning-simple.html</code>) montre encore les deux temps « qui, puis quand ». Je n'y ai pas touché : une planche que tu as validée ne se réécrit pas sans toi. Dis-moi si tu veux que je la reprenne.</p>
+<hr>
+<p><strong>Aucune migration.</strong> Rien n'a été ajouté au serveur : la fonction qui pose un chantier savait déjà lire sa durée et chercher la moitié de journée où elle tient. C'est l'écran qui refusait de l'employer.</p>
+<p>Détail technique : <code>ARCHITECTURE.md</code> §308.</p>
+</main>
+</body>
+</html>

@@ -6,12 +6,21 @@ import { getEntreprise } from "@/server/repositories/entreprises";
 import { listerEquipes } from "@/server/repositories/equipes";
 import { equipesPourRattachement, listerAcces } from "@/server/repositories/membres-entreprise";
 import { listerAbsencesEquipe } from "@/server/repositories/absences-equipe";
+import { etatAgenda } from "@/server/repositories/agendas-externes";
+import { etatAgendaApple } from "@/server/repositories/agenda-apple";
 import { jourIso } from "@/lib/jour";
 import RubriqueReservee from "../RubriqueReservee";
 import VosEquipes from "../VosEquipes";
+import CouleursDesEtats from "@/components/atlas/CouleursDesEtats";
+import { couleursDepuisColonnes } from "@/lib/couleurs-planning";
+import { lireCharte } from "@/server/repositories/charte-personne";
 import VosSalaries from "../VosSalaries";
 import QuiAAcces from "./QuiAAcces";
+import FinDeChantierReglage from "./FinDeChantierReglage";
 import AbsencesEquipe from "../AbsencesEquipe";
+import FonctionReservee from "@/components/atlas/FonctionReservee";
+import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
+import { fonctionOuverte } from "@/lib/abonnements";
 
 export const dynamic = "force-dynamic";
 
@@ -54,13 +63,29 @@ export default async function EquipePage() {
   const aujourdHui = jourIso(new Date());
   // Seulement ce qui n'est pas fini : une liste qui accumulerait deux ans de
   // déplacements passés ne se relirait plus.
-  const [entreprise, equipes, absences, acces, equipesRattachables] = await Promise.all([
-    getEntreprise(ctx),
-    listerEquipes(ctx),
-    listerAbsencesEquipe(ctx, aujourdHui),
-    listerAcces(ctx),
-    equipesPourRattachement(ctx),
-  ]);
+  const [entreprise, equipes, absences, acces, equipesRattachables, google, apple, abonnement] =
+    await Promise.all([
+      getEntreprise(ctx),
+      listerEquipes(ctx),
+      listerAbsencesEquipe(ctx, aujourdHui),
+      listerAcces(ctx),
+      equipesPourRattachement(ctx),
+      // **L'état RÉEL des deux raccordements, lu ici.** La phrase du bas
+      // promettait « Atlas en tient compte » sans rien savoir : sans agenda
+      // relié et actif, `periodesOccupeesPourEntreprise` rend une liste vide,
+      // et des congés posés dans Google ne bloquaient rien du tout. Ce sont les
+      // deux lectures que le calcul de disponibilité emploie lui-même — pas
+      // leurs sosies (`CLAUDE.md` §3).
+      etatAgenda(ctx),
+      etatAgendaApple(ctx),
+      abonnementDeLEntreprise(ctx),
+    ]);
+  // Les absences et les retours sont un plus d'« Entreprise » (10 septembre
+  // 2026). La règle est dans `fonctionOuverte` ; sans abonnement, tout est ouvert.
+  const absencesOuvertes = fonctionOuverte(abonnement?.formule, "absences");
+  const retoursOuverts = fonctionOuverte(abonnement?.formule, "retours");
+
+  const agendaRelie = (google.relie && google.actif) || (apple.relie && apple.actif);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -82,7 +107,24 @@ export default async function EquipePage() {
           nombreSalaries={entreprise?.nombreSalaries ?? 0}
         />
 
-        <VosEquipes initialNombreEquipes={entreprise?.nombreEquipes ?? 1} />
+        {/* **Ce que le patron exige en fin de chantier — 8 septembre 2026.**
+            Il vit ICI, sous « Accès » : c’est le même écran que celui où
+            il décide de ce que ses gens peuvent faire, et cette exigence-là en
+            est une. */}
+        {/* Sans les retours, ce réglage ne commande plus rien : ce qu'il ne
+            peut plus lire, on ne le fait pas réclamer à ses gars
+            (`src/server/regles-du-retour.ts`). */}
+        {retoursOuverts && (
+          <FinDeChantierReglage
+            initialDemande={entreprise?.retourDemande ?? false}
+            initialPhotoExigee={entreprise?.retourPhotoExigee ?? false}
+          />
+        )}
+
+        {/* Le carré « complet » prend la couleur du planning de l'entreprise. */}
+        <CouleursDesEtats couleurs={couleursDepuisColonnes(entreprise)} nomCharte={await lireCharte()}>
+          <VosEquipes initialNombreEquipes={entreprise?.nombreEquipes ?? 1} />
+        </CouleursDesEtats>
 
         {/* **Les gens sous la capacité, et séparés d'elle** — sa demande du
             26 août 2026. Le compteur du dessus dit combien de chantiers
@@ -91,25 +133,33 @@ export default async function EquipePage() {
             retirer du code. */}
         <VosSalaries
           initialNombreSalaries={entreprise?.nombreSalaries ?? 0}
-          initialNoms={equipes.map((e) => ({ rang: e.rang, nom: e.nom }))}
+          initialNoms={equipes.map((e) => ({ rang: e.rang, nom: e.nom, photo: e.photo }))}
         />
 
         {/* **Sous les noms, comme il l'a retenu** (`docs/maquettes/55`,
             proposition A) : c'est là que vivent les équipes, et c'est là qu'on
             va quand on prépare la semaine. */}
-        <AbsencesEquipe
-          nombreSalaries={entreprise?.nombreSalaries ?? 0}
-          noms={equipes.map((e) => ({ rang: e.rang, nom: e.nom }))}
-          initialAbsences={absences.map((a) => ({
-            id: a.id,
-            rang: a.rang,
-            nom: a.nom,
-            premierJour: a.premierJour,
-            dernierJour: a.dernierJour,
-            motif: a.motif,
-          }))}
-          aujourdHui={aujourdHui}
-        />
+        {/* À sa place, jamais retirée : une rubrique qui disparaît se cherche.
+            Ses absences déjà saisies ne s'effacent pas — elles reparaissent
+            s'il monte de formule. */}
+        {absencesOuvertes ? (
+          <AbsencesEquipe
+            nombreSalaries={entreprise?.nombreSalaries ?? 0}
+            noms={equipes.map((e) => ({ rang: e.rang, nom: e.nom, photo: e.photo }))}
+            initialAbsences={absences.map((a) => ({
+              id: a.id,
+              rang: a.rang,
+              nom: a.nom,
+              premierJour: a.premierJour,
+              dernierJour: a.dernierJour,
+              motif: a.motif,
+            }))}
+            aujourdHui={aujourdHui}
+            agendaRelie={agendaRelie}
+          />
+        ) : (
+          <FonctionReservee fonction="absences" />
+        )}
 
         {/* **RETIRÉ le 26 août 2026 : la phrase qui expliquait pourquoi le
             planning n'écrivait rien à une seule équipe.** Elle disait vrai tant

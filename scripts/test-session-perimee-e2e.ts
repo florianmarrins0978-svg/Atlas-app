@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { encode } from "next-auth/jwt";
+import { ADRESSE } from "./_adresse";
 import { lancerNavigateur } from "./e2e-browser";
 
 // **La panne qui a tenu une soirée entière, tenue par un contrôle.**
@@ -31,7 +32,10 @@ import { lancerNavigateur } from "./e2e-browser";
 //   5. et pour finir, un VRAI navigateur, JavaScript coupé, part du fantôme et
 //      arrive sur l'écran de connexion sans plus porter de session.
 
-const BASE = process.env.ATLAS_BASE ?? "http://127.0.0.1:3000";
+// **L'adresse vient de l'atelier, jamais d'un port écrit ici** : jouée dans un
+// atelier autre que 3000, cette suite tombait en « connexion refusée » sur un
+// serveur qui n'était pas le sien (batterie du 12 septembre 2026).
+const BASE = ADRESSE;
 const NOM_COOKIE = "authjs.session-token";
 // Un identifiant qui n'existe dans aucune base : c'est tout l'objet du fantôme.
 const FANTOME = "38befa76-e564-4751-9060-69ada52e720d";

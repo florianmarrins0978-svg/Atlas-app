@@ -22,9 +22,10 @@ import { mkdirSync } from "node:fs";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { FORMATS_NUMERO } from "../src/lib/numero-documents";
+import { ADRESSE } from "./_adresse";
 
 const CAPTURES = process.env.CAPTURES_E2E ?? "/tmp/captures-atlas";
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 let echecs = 0;
@@ -69,7 +70,7 @@ async function main() {
   await page.click('button[type="submit"]');
   await page.waitForURL(`${BASE}/`, { timeout: 30_000 });
 
-  await page.goto(`${BASE}/reglages/documents`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/reglages/documents/numero`, { waitUntil: "networkidle" });
   await page.waitForSelector('button[data-atlas^="format-"]', { timeout: 30_000 });
 
   await cas("le réglage est dans « Devis & factures » — là où il l'a demandé", async () => {
@@ -192,7 +193,6 @@ async function main() {
     const chantierId = await creerPuisFiche(page, BASE);
 
     await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
-    await page.click('button:has-text("Ajouter une ligne")');
     const zones = page.locator('textarea[aria-label*="escription"]');
     for (const essai of [1, 2, 3, 4, 5]) {
       if ((await zones.count()) > 0) break;
@@ -229,7 +229,7 @@ async function main() {
   await cas("on repose le défaut derrière soi", async () => {
     // Une suite qui laisse le décor de travers fait rougir sa voisine sur du
     // code juste (`CLAUDE.md` §5 bis).
-    await page.goto(`${BASE}/reglages/documents`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/reglages/documents/numero`, { waitUntil: "networkidle" });
     await page.waitForSelector('[data-atlas="format-annee-6"]', { timeout: 30_000 });
     await page.click('[data-atlas="format-annee-6"]');
     const lu = await attendreEnBase(formatEnBase, (v) => v === "annee-6");

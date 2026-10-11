@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le sommaire des réglages — ce qui a été fait, et ce qui a été refusé</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-sommaire-des-réglages--ce-qui-a-été-fait-et-ce-qui-a-été-refusé">Le sommaire des réglages — ce qui a été fait, et ce qui a été refusé</h1>
+<p><strong>6 septembre 2026.</strong> Premier lot de la reprise des Réglages. Il porte votre consigne du 5 septembre :</p>
+<blockquote><em>« Imagine que la plupart des patrons qui vont utiliser l'app sont des vieux qui ont du mal à se servir de leur téléphone ; il faut que ce soit hyper intuitif et simple. »</em></blockquote>
+<p><strong>La planche à ouvrir :</strong> <code>https://florianmarrins0978-svg.github.io/Atlas-app/sommaire-des-reglages.html</code></p>
+<p>Elle se manipule : le téléphone défile, les boutons <strong>Après / Avant</strong> basculent sans bouger le doigt, et <strong>Voir sur Nuit</strong> montre les deux pôles.</p>
+<hr>
+<h2 id="ce-qui-a-été-tranché-à-votre-place">Ce qui a été tranché à votre place</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Vous avez demandé que les deux planches en attente soient décidées plutôt que reposées une troisième fois. Les voici, et <strong>ce ne sont plus des questions</strong>.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Question</th>
+<th>Depuis</th>
+<th>Verdict</th>
+</tr></thead><tbody>
+<tr>
+<td>« Moins de mots » — faut-il retirer les phrases sous les titres des Réglages ?</td>
+<td>19 août, <code>docs/QUESTIONS.md</code> §23</td>
+<td><strong>Oui, les douze.</strong> Codé</td>
+</tr>
+<tr>
+<td>Planche 96 — quel écran Équipe ?</td>
+<td>26 août</td>
+<td><strong>Proposition C</strong>, le titre pose la question. <strong>Pas codé</strong> : c'est le sixième lot</td>
+</tr>
+</tbody></table></div>
+<p><strong>Pourquoi le premier a été tranché ainsi.</strong> Le motif était déjà dans votre propre question du 19 août : <em>une phrase d'explication ne répare jamais un mauvais titre, elle le cache</em>. Donc on corrige les titres et on retire les phrases — jamais l'inverse.</p>
+<hr>
+<h2 id="verdict-point-par-point">Verdict, point par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="1-les-douze-phrases-grises-sont-parties">1. Les douze phrases grises sont parties</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Fait</strong></td>
+<td>oui</td>
+</tr>
+<tr>
+<td><strong>Le fichier</strong></td>
+<td><code>src/lib/rubriques-reglages.ts</code>, <code>src/app/reglages/Sommaire.tsx</code></td>
+</tr>
+</tbody></table></div>
+<p>Le champ qui les portait n'existe plus du tout. Sa propre description disait : <em>« jamais vide : une rubrique sans explication oblige à l'ouvrir pour savoir si c'est la bonne »</em> — c'était l'aveu du défaut, pas sa réparation.</p>
+<h3 id="2-quatre-titres-ont-changé-de-mot">2. Quatre titres ont changé de mot</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Avant</th>
+<th>Après</th>
+<th>Ce qui le fonde</th>
+</tr></thead><tbody>
+<tr>
+<td>Intégrations</td>
+<td><strong>Mon agenda</strong></td>
+<td>c'était déjà le titre de l'écran derrière. La phrase promettait « calendrier, comptabilité et services connectés » : deux des trois n'ont jamais existé</td>
+</tr>
+<tr>
+<td>Connexion</td>
+<td><strong>Mot de passe</strong></td>
+<td>l'écran ne fait que ça — le mot de passe, Face ID qui le remplace, se déconnecter partout</td>
+</tr>
+<tr>
+<td>Apparence</td>
+<td><strong>Couleurs</strong></td>
+<td>on y choisit huit chartes de couleurs, rien d'autre</td>
+</tr>
+<tr>
+<td>Sécurité &amp; données</td>
+<td><strong>Mes données</strong></td>
+<td>aucune sécurité ne s'y règle : on y télécharge un fichier, et l'écran dit lui-même que l'effacement du compte n'existe pas encore</td>
+</tr>
+</tbody></table></div>
+<p><strong>Le mot suivait l'écran, mais l'icône ne suivait pas le mot.</strong> « Mon agenda » a gardé quelques minutes la <strong>pièce de puzzle</strong> d'« Intégrations » — la métaphore d'informaticien qu'on venait justement de retirer du libellé. C'est un calendrier depuis. <strong>Aucun test ne l'a vu ; la capture, si.</strong></p>
+<h3 id="3-ce-qui-se-lit-a-grossi">3. Ce qui se lit a grossi</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Quoi</th>
+<th>Avant</th>
+<th>Après</th>
+</tr></thead><tbody>
+<tr>
+<td>le nom d'une rubrique</td>
+<td>17 px</td>
+<td><strong>19 px</strong></td>
+</tr>
+<tr>
+<td>« L'ENTREPRISE », « MOI »</td>
+<td>gris, <strong>3,3</strong> de contraste</td>
+<td>encre douce, <strong>8,0</strong></td>
+</tr>
+<tr>
+<td>la ligne que lit un salarié</td>
+<td>gris</td>
+<td>encre douce</td>
+</tr>
+</tbody></table></div>
+<p><strong>Votre palette n'a pas été touchée.</strong> Le gris est le vôtre, relevé sur le site d'Arborea, et le contrôle des chartes refuse délibérément d'y poser un seuil. Ce qui change, c'est <strong>où on l'emploie</strong> : plus pour du texte à lire au soleil.</p>
+<p>Mesuré sur vos huit chartes, ce gris tient de <strong>2,85</strong> (Moka) à <strong>3,59</strong> (Brume) là où la norme demande 4,5. <strong>Les deux seules qui passent sont Nuit et Sylve</strong> — celles dont vous vous étiez plaint le 22 août, et qui ont été corrigées ce jour-là.</p>
+<hr>
+<h2 id="ce-que-ça-change-en-chiffres">Ce que ça change, en chiffres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Relevés dans un navigateur sur l'écran réel, à 390 × 664, avant et après, sur les deux pôles — <code>scripts/capture-sommaire-reglages.mts</code>.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Avant</th>
+<th>Après</th>
+</tr></thead><tbody>
+<tr>
+<td>hauteur de l'écran</td>
+<td>1 310 px</td>
+<td><strong>1 145 px</strong></td>
+</tr>
+<tr>
+<td>ce que ça fait en écrans de 664</td>
+<td>1,97</td>
+<td><strong>1,72</strong></td>
+</tr>
+<tr>
+<td>rubriques atteintes sans défiler</td>
+<td>6</td>
+<td><strong>8</strong></td>
+</tr>
+<tr>
+<td>hauteur d'une ligne</td>
+<td>56 à 84 px</td>
+<td><strong>56 px partout</strong></td>
+</tr>
+<tr>
+<td>mots à l'écran</td>
+<td>89</td>
+<td><strong>30</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>La ligne la plus parlante est la quatrième.</strong> Avant, les lignes n'avaient pas toutes la même hauteur : celle dont l'explication tenait sur deux lignes — « Équipe » — poussait à 84 px. Une liste au pas irrégulier se parcourt moins vite qu'une liste au pas égal, et cela ne se voit pas en lisant le code.</p>
+<hr>
+<h2 id="ce-qui-a-été-refusé-et-ce-que-ça-aurait-coûté">Ce qui a été REFUSÉ, et ce que ça aurait coûté</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>1. Renommer « Tarifs &amp; catalogue » et « Devis &amp; factures ».</strong> Ce sont des mots de votre métier, ils sont justes, et <strong>neuf suites les lisent</strong>. Les retoucher aurait coûté une demi-journée pour un gain nul.</p>
+<p><strong>2. Serrer les lignes pour tenir en un seul écran.</strong> Il aurait fallu descendre les rubriques sous 56 px — au-delà de la cible de 44 px d'Apple, et c'est <strong>toute la ligne</strong> qui se touche aujourd'hui. Gagner un demi-écran se serait payé au pouce, contre votre consigne même.</p>
+<p><strong>3. Retirer la version du bas de l'écran.</strong> C'est votre règle : ce n'est pas un réglage, c'est la réponse à « est-ce que mes correctifs sont arrivés ».</p>
+<p><strong>4. Toucher aux phrases grises que vous aviez déjà fait retirer le 31 août.</strong> Elles ne sont pas revenues ; elles ne reviendront pas.</p>
+<hr>
+<h2 id="ce-que-ça-ne-fait-pas-et-il-faut-le-dire">Ce que ça NE fait pas, et il faut le dire</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>L'écran ne tient toujours pas en une seule fenêtre.</strong> 1 145 px contre 664. Douze rubriques à 56 px, plus la version en bas, font davantage. Annoncer le contraire aurait été un mensonge de trois lignes.</p>
+<p>Ce qui a vraiment changé, c'est qu'on <strong>atteint les huit rubriques de l'entreprise sans bouger le doigt</strong> — avant, il en fallait six et un coup de pouce pour voir les deux dernières.</p>
+<hr>
+<h2 id="deux-contrôles-ont-été-retournés-pas-réparés">Deux contrôles ont été RETOURNÉS, pas réparés</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>C'est la règle du dépôt : <em>une suite qui réclame ce que le patron a fait enlever rend son écran impossible à changer.</em></p>
+<p><strong>1.</strong> <code>scripts/test-rubriques-reglages.ts</code> exigeait que chaque rubrique porte une explication de plus de quatre lettres. Il a été remplacé par son contraire utile : <strong>aucune rubrique ne reprend un des quatre mots retirés</strong>. Ce contrôle a été confronté au défaut qu'il prétend attraper — remis « Intégrations » à la main, il rougit ; remis « Mon agenda », il repasse au vert.</p>
+<p><strong>2.</strong> Les listes de rubriques y étaient écrites <strong>par libellé</strong>. Elles sont désormais <strong>par adresse</strong>. Ce n'est pas seulement plus robuste, c'est plus sûr : le contrôle qui vérifie qu'un salarié ne reçoit aucune rubrique de l'entreprise se serait <strong>désarmé tout seul</strong> au premier renommage — « Intégrations » devenue « Mon agenda » ne figurait plus dans sa liste d'interdits, et la rubrique aurait pu sortir chez un salarié sans que rien ne rougisse.</p>
+<hr>
+<h2 id="les-chiffres-de-la-batterie">Les chiffres de la batterie</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>npm run verifier:avant-livraison</code>, jouée en entier sur votre poste.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>Types (<code>tsc</code>)</td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td>Lint</td>
+<td><strong>vert</strong> — 0 erreur, 18 avertissements, tous antérieurs</td>
+</tr>
+<tr>
+<td>Construction</td>
+<td><strong>verte</strong></td>
+</tr>
+<tr>
+<td>Mémoire du dépôt</td>
+<td><strong>verte</strong></td>
+</tr>
+<tr>
+<td>Suites base de données</td>
+<td><strong>304 / 314</strong></td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td><strong>117 / 128</strong></td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td><strong>n'a pas mesuré</strong> — voir plus bas</td>
+</tr>
+</tbody></table></div>
+<p><strong>Aucun des 21 rouges n'appartient à ce lot</strong>, et ce n'est pas une supposition : les suites du lot sont vertes, nommément.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Suite</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-rubriques-reglages</code></td>
+<td>16 / 16</td>
+</tr>
+<tr>
+<td><code>test-reglages-gardes</code></td>
+<td>verte</td>
+</tr>
+<tr>
+<td><code>test-agenda-reglages-e2e</code></td>
+<td>verte — <strong>c'est elle qui éprouve le renommage</strong> : elle part du sommaire, clique la rubrique, et attend le titre « Mon agenda » de l'autre côté</td>
+</tr>
+<tr>
+<td><code>test-reglages-e2e</code>, <code>test-chartes-e2e</code></td>
+<td>vertes</td>
+</tr>
+</tbody></table></div>
+<p><em>(Une précision, parce que je l'avais d'abord écrite de travers : <code>test-aucune-barre-de-defilement-e2e</code> est verte et passe bien par ces deux écrans, mais elle les atteint <strong>par leur adresse</strong> — « mon agenda » et « mes données » y sont ses propres étiquettes, pas les libellés de l'écran. Elle ne prouve donc rien du renommage.)</em></p>
+<p><strong>Les dix rouges en base</strong> sont ceux qui rougissent déjà sans ce lot, relevés le 4 septembre : neuf de machine (<code>test-ouvrir-port</code>, <code>test-verrou-construction</code>, <code>test-relance-construction</code>, <code>test-fiche-pendant-relance</code>, <code>test-mise-a-jour-role-db</code>, <code>test-roles-capacites-db</code>, <code>test-salarie-planning-lecture-seule-db</code>, <code>test-seed-conserve-identifiants</code>, <code>test-boutons-arrondis</code>) et <strong><code>test-mode-emploi</code></strong>, qui cherche « Par SMS » là où l'écran dit « SMS » — <strong>le correctif est déjà sur <code>main</code></strong>, pas encore ici.</p>
+<p><strong>Les onze rouges au navigateur</strong> sont sur le devis, le planning, le calendrier, la fiche client, Face ID et la TVA — les zones reprises par d'autres lots, déjà consignées dans <code>TODO.md</code> le 5 septembre. Aucun ne touche les Réglages.</p>
+<h3 id="la-dernière-étape-ne-mesure-rien-sur-votre-pc-et-ce-nest-pas-ce-lot">La dernière étape ne mesure rien sur votre PC, et ce n'est pas ce lot</h3>
+<p><code>verifier:connexion</code> annonce <em>« Le serveur n'a pas répondu en dix minutes »</em>. <strong>C'est faux, et c'est le contrôle qui se trompe de coupable :</strong> le serveur ne met pas dix minutes, il <strong>meurt en une seconde</strong>. Vérifié en le relançant à la main hors du contrôle — il démarre et répond en quelques secondes.</p>
+<p>La cause : ce contrôle lance le serveur par <code>npm.cmd</code>, et il le lance avec sa sortie <strong>jetée</strong> (<code>stdio: "ignore"</code>). Le processus sort en code 1 sans un mot, et le contrôle en déduit une lenteur. Les autres étapes de la batterie ont déjà été corrigées de ce piège Windows le 2 septembre (<code>scripts/_processus.ts</code>) ; celle-ci ne l'a pas été.</p>
+<p><strong>Ce que ça veut dire pour vous :</strong> l'étape qui attrape le « Invalid Server Actions request. » <strong>n'a rien vérifié</strong>, ni pour ce lot ni pour les précédents joués sur ce poste. Elle est réparée dans un lot à part — mêler une réparation d'outillage à un lot d'écran rend les deux illisibles.</p>
+<hr>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Quoi</th>
+<th>Qui tranche</th>
+</tr></thead><tbody>
+<tr>
+<td>Le lot 2 — l'en-tête unique sur les quatre écrans qui se dessinent le leur (<code>agenda</code>, <code>prix</code>, <code>prix/mesures</code>, <code>vocabulaire</code>), et le bouton de l'assistant rendu partout</td>
+<td>nous, à faire</td>
+</tr>
+<tr>
+<td>Le lot 3 — « Devis &amp; factures », 1 267 lignes en un seul écran</td>
+<td>nous, à faire</td>
+</tr>
+<tr>
+<td>L'écran <strong>Équipe</strong> (proposition C, décidée ici)</td>
+<td>codé au lot 6</td>
+</tr>
+<tr>
+<td>Le raccordement iCloud : il demande d'aller sur <code>account.apple.com</code> générer un « mot de passe pour les apps » et de recopier seize lettres</td>
+<td><strong>vous</strong> — c'est le seul endroit des Réglages où la tâche elle-même est hors de portée, et la simplifier demanderait de changer ce qu'on demande, pas comment on le demande</td>
+</tr>
+</tbody></table></div>
+<p><strong>Un point qui n'est pas dans les lots :</strong> le texte secondaire de toute l'application s'écrit en 9,5 et 11,5 px dans ce même gris. Les Réglages ne sont qu'un écran parmi vingt. Le corriger partout est un lot à lui seul — pas une retouche à glisser dans celui-ci.</p>
+</main>
+</body>
+</html>
