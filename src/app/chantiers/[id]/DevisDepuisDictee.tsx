@@ -183,9 +183,22 @@ export default function DevisDepuisDictee({
       const issue = await attendreLeDevis(chantierId, {
         surAttente: (secondes) => setEtat({ type: "attente", secondes }),
       });
-      if (issue === "pret") {
+      if (issue.type === "pret") {
         if (surLeDevis) return router.refresh();
         return router.push(`/chantiers/${chantierId}/devis-complet`);
+      }
+      // **L'arrêt d'avant-chiffrage se rattrape, il ne se perd plus.**
+      //
+      // Sa capture du 1ᵉʳ septembre 2026 : « Atlas prépare toujours votre
+      // devis… (96 s) », et rien ne vient. La chaîne avait fini — elle
+      // l'attendait à l'arrêt, avec ses deux questions — mais sa réponse
+      // s'était perdue, et cette attente-ci ne savait reconnaître qu'un devis
+      // écrit. Elle comptait donc des secondes devant un serveur au repos.
+      //
+      // Répondre ici termine le devis sans relire la dictée : le modèle n'est
+      // pas rappelé, et les questions ne se renumérotent pas.
+      if (issue.type === "questions") {
+        return setEtat({ type: "questions", questions: issue.questions });
       }
       setEtat({
         type: "message",
@@ -257,8 +270,8 @@ export default function DevisDepuisDictee({
           type="button"
           onClick={() => lancer()}
           disabled={etat.type === "encours" || etat.type === "attente"}
-          className="w-full rounded-full py-3.5 text-[15px] font-medium text-white disabled:opacity-40"
-          style={{ backgroundColor: colors.rust }}
+          className="atlas-plein w-full rounded-full py-3.5 text-[15px] font-medium text-white disabled:opacity-40"
+          style={{ backgroundColor: colors.plein }}
         >
           {libelleEnCours(etat) ?? "Créer le devis à partir de ma dictée"}
         </button>
@@ -302,8 +315,8 @@ export default function DevisDepuisDictee({
             <button
               type="button"
               onClick={() => router.push(`/chantiers/${chantierId}/devis-complet`)}
-              className="rounded-full px-4 py-2.5 text-[14px] font-medium"
-              style={{ backgroundColor: colors.rust, color: colors.cream }}
+              className="atlas-plein rounded-full px-4 py-2.5 text-[14px] font-medium"
+              style={{ backgroundColor: colors.plein, color: colors.cream }}
             >
               Ouvrir le devis et poser les prix
             </button>
@@ -325,7 +338,13 @@ export default function DevisDepuisDictee({
           questions={etat.questions}
           onAbandon={() => setEtat({ type: "repos" })}
           onEchec={(texte) => setEtat({ type: "message", texte })}
-          onPrepare={() => router.push(`/chantiers/${chantierId}/devis-complet`)}
+          /* **Le même partage que `lancer` — et pour le même piège.** Sur la
+             page du devis, `push` vers l'adresse courante ne rejoue pas le
+             rendu serveur : le patron répondait à ses questions et restait
+             devant la feuille vide qu'il venait de remplir. */
+          onPrepare={() =>
+            surLeDevis ? router.refresh() : router.push(`/chantiers/${chantierId}/devis-complet`)
+          }
         />
       )}
 
@@ -418,8 +437,23 @@ function QuestionsChiffrage({
       // devis, jamais oublié en silence.
       if (r.statut === "prepare") return onPrepare();
       onEchec("statut" in r && r.statut === "echec" ? r.erreur : "La préparation n'a pas abouti. Réessayez.");
-    } catch {
+    } catch (panne) {
+      // **LE REFUS SE JOURNALISE AVANT DE SE DIRE — 13 septembre 2026.** Ce
+      // `catch` avalait la panne : l'écran disait « Réessayez » et personne,
+      // jamais, ne pouvait savoir POURQUOI. C'est le défaut muet que
+      // `AGENTS.md` demande de rendre bavard avant de corriger quoi que ce
+      // soit — et un message d'action serveur n'arrive pas jusqu'à lui, il
+      // faut donc l'écrire ici.
+      console.error("[chiffrage] les réponses n'ont pas pu être enregistrées", panne);
       onEchec("Vos réponses n'ont pas pu être enregistrées. Réessayez.");
+    } finally {
+      // **ET LE BOUTON SE REND — c'est sa panne du 13 septembre 2026 :**
+      // *« ça n'a pas fonctionné et impossible de recommencer »*. Le drapeau
+      // était posé à l'entrée et rendu nulle part : après un échec, le seul
+      // geste de l'écran restait éteint POUR TOUJOURS, sous un message qui
+      // disait « Réessayez ». Un écran qui invite à refaire et qui l'empêche
+      // est pire qu'un écran muet.
+      setEnvoi(false);
     }
   }
 
@@ -452,9 +486,14 @@ function QuestionsChiffrage({
                       key={o.valeur}
                       type="button"
                       onClick={() => setReponses((r) => ({ ...r, [q.id]: o.valeur }))}
+                      // **Le vert des boutons, comme les pastilles d'équipe du
+                      // planning — 4 septembre 2026.** Une pastille retenue est un
+                      // aplat qu'on appuie : sa phrase du 3 septembre nommait ce
+                      // cas-là (« le choix des noms des équipes »), et celles-ci
+                      // avaient été manquées.
                       className="rounded-full px-4 py-2.5 text-left text-[14px] font-medium"
                       style={{
-                        backgroundColor: choisie ? colors.rust : colors.card,
+                        backgroundColor: choisie ? colors.plein : colors.card,
                         color: choisie ? colors.cream : colors.ink,
                       }}
                     >
@@ -487,8 +526,8 @@ function QuestionsChiffrage({
         type="button"
         onClick={valider}
         disabled={envoi}
-        className="mt-5 w-full rounded-full py-3 text-[15px] font-medium disabled:opacity-40"
-        style={{ backgroundColor: colors.rust, color: colors.cream }}
+        className="atlas-plein mt-5 w-full rounded-full py-3 text-[15px] font-medium disabled:opacity-40"
+        style={{ backgroundColor: colors.plein, color: colors.cream }}
       >
         {envoi ? "Atlas termine le devis…" : toutesRepondues ? "Continuer vers le devis" : "Continuer sans répondre à tout"}
       </button>

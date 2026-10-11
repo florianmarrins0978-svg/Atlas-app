@@ -105,6 +105,24 @@ jobs:
           # porte de l'application qui en sortirait.
           jouer test:face-id
 
+          # **Celle-ci garde deux choses qu'aucun œil ne revérifie.** La matière
+          # du bouton est comparée à `.atlas-micro` DANS `src/app/globals.css` :
+          # le jour où la note vocale change de vert, la planche rougit au lieu
+          # de lui montrer une couleur qui n'existe plus. Et le halo qu'il a
+          # fait retirer le 3 septembre ne peut pas revenir sans que ça se voie.
+          jouer test:boutons-verts
+          # **Même raison, et la même porte.** Trois propositions d'apparence
+          # attendent un choix (A, B ou C) : ce qu'elles montrent doit d'abord
+          # TENIR dans le cadre d'un téléphone — un « Entrer » repoussé hors de
+          # l'écran ne se voit sur aucune capture, et se paie à l'essai.
+          jouer test:porte-capture
+          # **Même raison, et un danger de plus : la PHOTO.** Cette planche-ci
+          # est la première du dossier à poser une image, et une image qui ne
+          # charge pas laisse un écran NOIR avec du texte blanc dessus — donc
+          # lisible, donc invisible à toute mesure de débordement. La suite
+          # exige des pixels (`naturalWidth`), pas une balise `<img>`.
+          jouer test:porte-plein-air
+
           if [ -n "$ECHECS" ]; then
             echo "::error::Suites en échec :$ECHECS"
             exit 1
@@ -247,7 +265,8 @@ jobs:
           for f in index.html essais.html nav.js arrosage-catalogue.js \
                    arrosage-simple.html arrosage-plan.html \
                    arrosage-discuter.html anthracnose-du-platane.pdf \
-                   ecran-anthracnose-platane.png $LIES; do
+                   ecran-anthracnose-platane.png images/porte-foret.jpg \
+                   conditions-utilisation.html confidentialite.html $LIES; do
             code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 20 "$BASE/$f")
             echo "$code  $f"
             [ "$code" = "200" ] || { echo "Écran manquant ou en erreur : $f"; exit 1; }

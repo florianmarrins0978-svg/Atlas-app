@@ -14,7 +14,7 @@ import {
 import { chiffrer, dechiffrer } from "../agenda/secret-au-repos";
 import { destinationAutorisee } from "../../lib/destination-caldav";
 import { agendasExternes, chantiers, clients } from "../db/schema";
-import { creneauxDuChantier, type Moment } from "../disponibilites";
+import { creneauxDuChantier, type Moment } from "@/lib/disponibilites";
 import {
   executeurDeSession,
   messageDePanne,

@@ -1,5 +1,14 @@
 import { contourDesZones, cadre, type Rectangle } from "./terrain";
-import { tracerReseaux, surLeBord, estDedans, distance, type Point, type Segment } from "./trace";
+import {
+  tracerReseaux,
+  surLeBord,
+  estDedans,
+  distance,
+  ANTENNE_MAX,
+  type ArroseurPose,
+  type Point,
+  type Segment,
+} from "./trace";
 
 /**
  * LE PLAN, ASSEMBLÉ — du croquis lu au dessin qu'il regarde.
@@ -35,6 +44,22 @@ import { tracerReseaux, surLeBord, estDedans, distance, type Point, type Segment
  * dessin, et `tés + coudes = arroseurs` par construction, réseau par réseau.
  * C'est le contrôle que le patron a réclamé après une liste où deux erreurs se
  * compensaient au total (« il faut que tu l'appliques pour chaque réseau »).
+ *
+ * **Et la liste des pièces se LIT ICI depuis le 11 septembre 2026**
+ * (`pieces.ts`) : le calcul les comptait sur un modèle de rangées parallèles
+ * que le tracé ne suit pas, et les deux divergeaient — 8 tés + 4 coudes + 2 tés
+ * égaux dans la liste, 7 + 5 + 0 sur le dessin de ses deux pelouses. C'est le
+ * défaut qu'il avait relevé le 21 août (« quatre arroseurs qui ne sont pas
+ * alimentés »), revenu par une autre porte.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * LE Ø25 PASSE, L'ANTENNE Ø16 VA CHERCHER LA TÊTE — sa règle du 11 septembre.
+ *
+ * *« Un seul passage au mieux pour le 25, et ensuite des antennes en 16 rigide
+ * de part et d'autre — et le max c'est 2 m. »* Une zone dont le petit côté ne
+ * dépasse pas deux antennes (4 m) reçoit sa ligne SUR L'AXE DU MILIEU, et chaque
+ * tête pend au bout d'une antenne d'un demi-côté. Au-delà, la ligne passe au
+ * pied de chaque tête, comme avant : c'est le seul moyen de tenir les 2 m.
  */
 
 /** Une zone telle que le calcul la rend, avec ses têtes déjà placées. */
@@ -61,11 +86,23 @@ export type Tete = {
   /** Plein : la ligne continue (té taraudé). Creux : elle s'arrête (coude taraudé). */
   plein: boolean;
   portee: number;
+  /**
+   * Où DESSINER le symbole quand un autre occupe le même point — sa règle du
+   * 11 septembre 2026 : *« même si c'est au même endroit, tu ne dois pas
+   * superposer les ronds, carrés ou losanges : mets-les côte à côte, qu'on les
+   * voie bien ; l'utilisateur comprendra que c'est au même endroit »*. Le
+   * point vrai reste `x, y` — c'est lui qui arrose ; ceci n'est qu'un écart
+   * de dessin, nul quand la tête est seule.
+   */
+  decalage: { x: number; y: number };
 };
 
 export type ReseauDessine = {
   numero: number;
   couleur: string;
+  /** Du pied sur la ligne Ø25 à la tête, en Ø16 rigide — 2 m au plus. */
+  antennes: Segment[];
+  metresAntennes: number;
   /**
    * QUELS arroseurs, avec QUELLES buses — sa demande du 21 août 2026 :
    * *« lorsque l'utilisateur regarde son plan, il sache tout de suite où les
@@ -94,11 +131,18 @@ export type ReseauDessine = {
    */
   traits: Segment[];
   tetes: Tete[];
-  /** Les points où la ligne se sépare sans arroser : té égal 25×25×25. */
+  /**
+   * Où se dessine un losange : la ligne se sépare là. Sans arroseur, c'est un
+   * té égal seul ; À CÔTÉ d'un arroseur, c'est le té égal qui s'ajoute à son té
+   * taraudé — *« il faut un té égal à côté du premier arroseur pour faire la
+   * jonction »*, sa lecture du plan du 11 septembre 2026.
+   */
   jonctions: Point[];
   metresTuyau: number;
   tes: number;
   coudes: number;
+  /** Les tés égaux 25×25×25 : un par branche au-delà de deux, en chaque point. */
+  tesEgaux: number;
 };
 
 export type Cote = { x: number; y: number; texte: string; ancre: "start" | "middle" | "end" };
@@ -182,7 +226,7 @@ export function dessinerPlan(
   const reserves: string[] = [];
   const liaisons: Segment[] = [];
   const tranchee: Segment[] = [];
-  const parReseau = new Map<number, { lignes: Point[][]; tuyau: number }>();
+  const parReseau = new Map<number, { lignes: Point[][]; antennes: Segment[]; tuyau: number }>();
 
   // ── Chaque morceau de terrain se trace pour lui-même ──────────────────────
   //
@@ -195,10 +239,14 @@ export function dessinerPlan(
     const dedans = zones.filter((z) =>
       z.points.some((pt) => surLeBord(pt, contour) || estDedans(pt, contour))
     );
-    const arroseurs = dedans.flatMap((z) =>
+    const arroseurs: ArroseurPose[] = dedans.flatMap((z) =>
       z.points
         .filter((pt) => pt.reseau !== undefined)
-        .map((pt) => ({ point: { x: pt.x, y: pt.y }, reseau: pt.reseau as number }))
+        .map((pt) => ({
+          point: { x: pt.x, y: pt.y },
+          pied: piedDeLaTete(z, { x: pt.x, y: pt.y }),
+          reseau: pt.reseau as number,
+        }))
     );
     if (arroseurs.length === 0) continue;
 
@@ -216,8 +264,9 @@ export function dessinerPlan(
     tranchee.push(...t.tranchee);
     for (const [numero, chemins] of Object.entries(t.lignes)) {
       const n = Number(numero);
-      const dejaLa = parReseau.get(n) ?? { lignes: [], tuyau: 0 };
+      const dejaLa = parReseau.get(n) ?? { lignes: [], antennes: [], tuyau: 0 };
       dejaLa.lignes.push(...chemins);
+      dejaLa.antennes.push(...(t.antennes[n] ?? []).map((a) => ({ de: a.de, a: a.a })));
       dejaLa.tuyau += t.metresTuyau[n] ?? 0;
       parReseau.set(n, dejaLa);
     }
@@ -234,15 +283,18 @@ export function dessinerPlan(
   // coin de l'autre tombent alors aux MÊMES coordonnées. Une clé sur le seul
   // point faisait que la seconde effaçait la première, et le plan dessinait un
   // carré là où une turbine est posée.
-  const formeDe = new Map<
-    string,
-    { forme: "rond" | "carre"; portee: number; modele: string | null; buse: string | null }
-  >();
+  type TeteLue = { x: number; y: number; forme: "rond" | "carre"; portee: number; modele: string | null; buse: string | null };
+  /** Les têtes de chaque réseau, rangées par le PIED qui les alimente. */
+  const tetesAuPied = new Map<string, TeteLue[]>();
   const parEndroit = new Map<string, Set<number>>();
   for (const z of zones) {
     for (const pt of z.points) {
       if (pt.reseau === undefined) continue;
-      formeDe.set(`${cle(pt)}|${pt.reseau}`, {
+      const k = `${cle(piedDeLaTete(z, pt))}|${pt.reseau}`;
+      if (!tetesAuPied.has(k)) tetesAuPied.set(k, []);
+      tetesAuPied.get(k)!.push({
+        x: pt.x,
+        y: pt.y,
         forme: z.cle === "tuyere" ? "carre" : "rond",
         portee: z.portee,
         modele: z.modele,
@@ -286,11 +338,11 @@ export function dessinerPlan(
 
   const reseaux: ReseauDessine[] = [...parReseau.entries()]
     .sort((a, b) => a[0] - b[0])
-    .map(([numero, { lignes, tuyau }]) => {
-      // **Le degré du point décide de la pièce**, et rien d'autre : c'est la
-      // seule lecture qui ne puisse pas diverger du dessin. Un point traversé
-      // porte un té, un point terminal un coude — et un point à trois branches
-      // qui n'arrose rien est un té égal.
+    .map(([numero, { lignes, antennes, tuyau }]) => {
+      // **Le degré du PIED décide de la pièce**, et rien d'autre : c'est la
+      // seule lecture qui ne puisse pas diverger du dessin. Un pied traversé
+      // porte un té taraudé, un pied terminal un coude — et chaque branche
+      // au-delà de deux, arroseur ou pas, est un té égal de plus.
       const voisins = new Map<string, Set<string>>();
       const relier = (a: Point, b: Point) => {
         if (!voisins.has(cle(a))) voisins.set(cle(a), new Set());
@@ -305,6 +357,9 @@ export function dessinerPlan(
 
       const tetes: Tete[] = [];
       const jonctions: Point[] = [];
+      let tes = 0;
+      let coudes = 0;
+      let tesEgaux = 0;
       const materiels = new Map<string, { libelle: string; portee: number; nombre: number }>();
       const vus = new Set<string>();
       for (const ligne of lignes) {
@@ -313,17 +368,27 @@ export function dessinerPlan(
           if (vus.has(k)) continue;
           vus.add(k);
           const degre = voisins.get(k)?.size ?? 0;
-          const tete = formeDe.get(`${k}|${numero}`);
-          if (tete) {
-            tetes.push({ x: p.x, y: p.y, forme: tete.forme, plein: degre > 1, portee: tete.portee });
+          const portees = tetesAuPied.get(`${k}|${numero}`) ?? [];
+          // Deux têtes sur un même pied se montent en série : un seul coude
+          // possible, au bout — les autres sont des tés.
+          portees.forEach((tete, rang) => {
+            const plein = degre > 1 || rang < portees.length - 1;
+            tetes.push({ x: tete.x, y: tete.y, forme: tete.forme, plein, portee: tete.portee, decalage: { x: 0, y: 0 } });
+            if (plein) tes++;
+            else coudes++;
             // **On compte les têtes de chaque modèle**, au lieu de retenir le
             // premier : depuis le 23 août 2026, une vanne peut en porter deux.
             const libelle = [tete.modele, tete.buse].filter(Boolean).join(" ");
             const deja = materiels.get(libelle);
             if (deja) deja.nombre++;
             else materiels.set(libelle, { libelle, portee: tete.portee, nombre: 1 });
+          });
+          if (degre > 2) {
+            tesEgaux += degre - 2;
+            // Le losange se pose SUR le pied quand rien n'y arrose, et JUSTE À
+            // CÔTÉ quand une tête l'occupe — décalé vers la branche qui part.
+            jonctions.push(portees.length === 0 ? p : aCote(p, voisins.get(k)!));
           }
-          else if (degre > 2) jonctions.push(p);
         }
       }
 
@@ -338,15 +403,20 @@ export function dessinerPlan(
         numero,
         couleur: couleurs[numero] ?? "#7C8271",
         traits,
+        antennes,
+        metresAntennes: Math.round(antennes.reduce((t, a) => t + distance(a.de, a.a), 0) * 10) / 10,
         materiels: [...materiels.values()].filter((m) => m.libelle !== ""),
         lignes,
         tetes,
         jonctions,
         metresTuyau: Math.round(tuyau * 10) / 10,
-        tes: tetes.filter((t) => t.plein).length,
-        coudes: tetes.filter((t) => !t.plein).length,
+        tes,
+        coudes,
+        tesEgaux,
       };
     });
+
+  ecarterLesSymboles(reseaux);
 
   const tousLesPoints = [...contours.flat(), nourrice];
   const c = cadre(tousLesPoints);
@@ -359,7 +429,7 @@ export function dessinerPlan(
       viewBox: `${c.x - MARGE} ${c.y - MARGE} ${c.L + 2 * MARGE} ${c.l + 2 * MARGE}`,
       contours,
       trous,
-      cotes: contours.flatMap(cotesDuContour),
+      cotes: cotesLisibles(contours),
       tranchee,
       metresTranchee: Math.round(metres * 10) / 10,
       nourrice,
@@ -372,6 +442,60 @@ export function dessinerPlan(
 
 const cle = (p: { x: number; y: number }) => `${p.x.toFixed(3)},${p.y.toFixed(3)}`;
 const cleSegment = (a: Point, b: Point) => [cle(a), cle(b)].sort().join("|");
+
+/**
+ * Où la ligne Ø25 doit passer pour cette tête — sa règle du 11 septembre 2026.
+ *
+ * Quand le petit côté de la zone tient dans deux antennes, la ligne suit l'axe
+ * du milieu, parallèle au grand côté, et la tête pend au bout d'une antenne
+ * perpendiculaire — un demi-côté, jamais plus de `ANTENNE_MAX`. Sinon la ligne
+ * vient au pied de la tête : c'est la seule façon de tenir les 2 m.
+ */
+export function piedDeLaTete(z: { x: number; y: number; L: number; l: number }, pt: Point): Point {
+  const petit = Math.min(z.L, z.l);
+  if (!(petit > 0) || petit > 2 * ANTENNE_MAX) return { x: pt.x, y: pt.y };
+  const arrondir = (v: number) => Math.round(v * 1000) / 1000;
+  return z.L >= z.l
+    ? { x: pt.x, y: arrondir(z.y + z.l / 2) }
+    : { x: arrondir(z.x + z.L / 2), y: pt.y };
+}
+
+/** Un point à 0,8 m du pied, vers la dernière branche qui en part. */
+/** Un point à 1,1 m du pied, vers la dernière branche qui en part : le losange ne touche pas la tête. */
+function aCote(p: Point, voisins: Set<string>): Point {
+  const [x, y] = [...voisins][voisins.size - 1].split(",").map(Number);
+  const l = Math.hypot(x - p.x, y - p.y);
+  if (l < 1e-9) return p;
+  return { x: p.x + ((x - p.x) / l) * 1.1, y: p.y + ((y - p.y) / l) * 1.1 };
+}
+
+/** Deux symboles qui tiennent l'un de l'autre à moins de cette distance se lisent comme un seul. */
+const ECART_SYMBOLES = 1.15;
+
+/**
+ * Les têtes qui tombent au même point se dessinent CÔTE À CÔTE — sa règle du
+ * 11 septembre 2026.
+ *
+ * Deux pelouses qui se touchent posent chacune sa tête sur l'arête commune ; le
+ * dessin en montrait une, la seconde exactement dessous. La réserve le disait,
+ * le plan le cachait. Les têtes d'un même point s'écartent maintenant le long
+ * de l'arête qu'elles partagent — perpendiculairement à la direction du pied,
+ * ou en x quand rien ne l'indique —, chacune de son côté de l'axe.
+ */
+function ecarterLesSymboles(reseaux: ReseauDessine[]): void {
+  const parPoint = new Map<string, Tete[]>();
+  for (const r of reseaux) for (const t of r.tetes) {
+    const k = cle(t);
+    if (!parPoint.has(k)) parPoint.set(k, []);
+    parPoint.get(k)!.push(t);
+  }
+  for (const tetes of parPoint.values()) {
+    if (tetes.length < 2) continue;
+    tetes.forEach((t, i) => {
+      t.decalage = { x: (i - (tetes.length - 1) / 2) * ECART_SYMBOLES, y: 0 };
+    });
+  }
+}
 
 /** L'écart entre deux tuyaux d'une même tranchée, en mètres — de quoi les distinguer. */
 const ECART_TRAIT = 0.34;
@@ -428,6 +552,41 @@ function cotesDuContour(contour: Point[]): Cote[] {
     });
   }
   return out;
+}
+
+/**
+ * Les cotes de tous les contours, moins celles qui tomberaient sur un autre.
+ *
+ * **Vu à la capture du 11 septembre 2026, sur trois zones** : deux pelouses
+ * séparées d'un passage de 2 m y écrivaient chacune leur cote DANS le passage,
+ * l'une sur l'autre et sur le mot « nourrice ». Une cote dont le libellé tombe
+ * à moins d'un mètre et demi d'un autre contour ne s'écrit pas — quand le même
+ * contour porte déjà la même longueur ailleurs (le côté d'en face d'un
+ * rectangle). Sinon elle reste : mieux vaut une cote serrée qu'une cote absente.
+ */
+function cotesLisibles(contours: Point[][]): Cote[] {
+  const parContour = contours.map(cotesDuContour);
+  return parContour.flatMap((cotes, i) =>
+    cotes.filter((c) => {
+      const genee = contours.some((autre, j) => j !== i && distanceAuContour(c, autre) < 1.5);
+      const deja = cotes.filter((d) => d !== c && d.texte === c.texte).length > 0;
+      return !(genee && deja);
+    })
+  );
+}
+
+function distanceAuContour(p: Point, contour: Point[]): number {
+  let mini = Infinity;
+  for (let i = 0; i < contour.length; i++) {
+    const a = contour[i];
+    const b = contour[(i + 1) % contour.length];
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const L = dx * dx + dy * dy;
+    const t = L === 0 ? 0 : Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / L));
+    mini = Math.min(mini, Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy)));
+  }
+  return mini;
 }
 
 /**

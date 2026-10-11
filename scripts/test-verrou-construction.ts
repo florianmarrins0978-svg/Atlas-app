@@ -9,6 +9,13 @@ import {
   attendreLaConstructionEnCours,
   detenteursDuVerrou,
 } from "./verrou-construction.mjs";
+import { exigerLesOutils, exigerUnSystemePosix } from "./_outil-requis";
+
+// **Sans ces outils, cette suite ne mesure RIEN** — elle le dit et sort du
+// compte, au lieu de rougir sur une machine qui n'y est pour rien
+// (`_outil-requis.ts`, sa colère du 20 septembre 2026).
+exigerLesOutils("bash");
+exigerUnSystemePosix("groupes de processus");
 
 // **« L'appli est vraiment très lente, mais vraiment. »** — 16 août 2026.
 //
@@ -98,7 +105,11 @@ verifier("la sortie reste VISIBLE en plus d'être retenue", () => {
 });
 
 verifier("la batterie BÂTIT — c'est ce qui manquait le 16 août", () => {
-  const batterie = readFileSync(BATTERIE, "utf8");
+  // **La table des étapes a déménagé le 17 septembre 2026** dans
+  // `_etapes-batterie.ts`, pour qu'on puisse en rejouer UNE au lieu des
+  // cinquante minutes. Le contrôle suit la règle là où elle vit — il ne
+  // réclame pas le fichier d'avant (`CLAUDE.md` §5 bis).
+  const batterie = readFileSync(path.join(__dirname, "_etapes-batterie.ts"), "utf8");
   assert.match(
     batterie,
     /nom: "Construction"/,
@@ -168,12 +179,28 @@ verifier("le motif de démarrage attrape « next build », pas seulement les ser
 // qui l'écrit et noie celui qui le rejoue.
 verifier("le dossier bâti par la batterie est écarté du lint", () => {
   const batterie = readFileSync(BATTERIE, "utf8");
-  const dossiers = [...batterie.matchAll(/ATLAS_DIST_DIR:\s*"([^"]+)"/g)].map((m) => m[1]);
+  // **On cherche les NOMS, plus la forme dans laquelle ils sont écrits.**
+  //
+  // Depuis le 8 septembre 2026, le dossier porte le rang de l'atelier —
+  // `.next-verification-a1` pour la deuxième session qui mesure — donc il n'est
+  // plus une chaîne littérale mais un gabarit. La première version de ce
+  // contrôle lisait `ATLAS_DIST_DIR: "…"` : elle serait devenue muette du jour
+  // au lendemain, en annonçant « la batterie ne déclare plus de dossier »
+  // plutôt que de vérifier quoi que ce soit. Un contrôle qui ne sait plus quoi
+  // regarder ne doit pas rendre vert — mais il ne doit pas non plus exiger une
+  // écriture particulière (`CLAUDE.md` §5 bis).
+  const dossiers = [...new Set([...batterie.matchAll(/\.next-[a-z][a-z-]*/g)].map((m) => m[0]))];
   assert.ok(dossiers.length > 0, "la batterie ne déclare plus de dossier de construction");
   const eslint = readFileSync(path.join(__dirname, "..", "eslint.config.mjs"), "utf8");
   for (const dossier of dossiers) {
+    // Écarté nommément, ou par une famille qui le couvre — `.next-*/**` prend
+    // aussi bien `.next-verification` que `.next-verification-a3`.
+    const nommement = eslint.includes(`"${dossier}/**"`);
+    const parFamille = [...eslint.matchAll(/"(\.next-[a-z-]*)\*\/\*\*"/g)].some((m) =>
+      dossier.startsWith(m[1])
+    );
     assert.ok(
-      eslint.includes(`"${dossier}/**"`),
+      nommement || parFamille,
       `« ${dossier} » n'est pas écarté dans eslint.config.mjs : le lint de la batterie suivante ` +
         "sera noyé sous du code généré, et un contrôle noyé ne se lit plus"
     );
@@ -367,7 +394,7 @@ await verifierAsync("sans orpheline, on ne déloge rien et on ne se tue pas soi-
 
 verifier("banc.mjs déloge l'orpheline AVANT de bâtir", () => {
   const iDelogement = source.indexOf("delogerConstructionsOrphelines");
-  const iConstruction = source.indexOf('jouerEnRetenant("npx", ["next", "build"]');
+  const iConstruction = source.indexOf('jouerEnRetenant(process.execPath, [NEXT, "build"]');
   assert.ok(iDelogement > 0, "banc.mjs ne déloge aucune construction orpheline");
   assert.ok(
     iDelogement < iConstruction,

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Les planifiés — la durée, et plus de répétition</title>
+<title>Les planifiés : la durée, et plus de répétition</title>
 <style>
   /* Couleurs et tailles de la planche 84, sans exception. */
   :root{
@@ -136,7 +136,7 @@
   <p class="titre-section">Planifiés</p>
   <div class="barre">
     <button class="fleche" type="button" aria-label="Semaine précédente">‹</button>
-    <div class="quand">24 – 30 août</div>
+    <div class="quand">24, 30 août</div>
     <button class="fleche" type="button" aria-label="Semaine suivante">›</button>
   </div>
 
@@ -153,7 +153,7 @@
     <i>quelle</i> demi-journée ?</p>
   <div class="choix">
     <button type="button" data-mot="seule" aria-pressed="true">une demi-journée</button>
-    <button type="button" data-mot="avec" aria-pressed="false">une demi-journée · matin</button>
+    <button type="button" data-mot="avec" aria-pressed="false">une demi-journée, matin</button>
   </div>
 </div>
 
@@ -170,7 +170,7 @@
 
   <div class="question">
     <b>La question que ça pose :</b> avec la durée seule, un chantier d’une demi-journée
-    ne dit plus s’il est le matin ou l’après-midi — il faut l’ouvrir pour le voir.
+    ne dit plus s’il est le matin ou l’après-midi : il faut l’ouvrir pour le voir.
     Les deux boutons ci-dessus vous laissent comparer. <b>Dites-moi lequel.</b>
   </div>
 </div>
@@ -181,7 +181,7 @@ const JOURS = [
   {
     quand: "Mardi 25 août",
     chantiers: [
-      { nom: "Chantier test — Abri Pornic", client: "M. Moreau (test)", duree: 1,
+      { nom: "Chantier test : Abri Pornic", client: "M. Moreau (test)", duree: 1,
         demis: [{ mot: "Matin", equipe: "Julien" }], libre: "Après-midi" },
     ],
   },
@@ -198,7 +198,7 @@ const JOURS = [
     quand: "Jeudi 27 août",
     chantiers: [
       // Trois jours : la ligne le DIT, même si ce jour-ci n'en montre que deux
-      // demi-journées. C'est tout l'objet de sa demande — la durée du chantier,
+      // demi-journées. C'est tout l'objet de sa demande, la durée du chantier,
       // pas ce qu'il occupe aujourd'hui.
       { nom: "M. Bernard-Delacroix", client: "M. Bernard-Delacroix", duree: 6,
         demis: [{ mot: "Matin", equipe: "Paul" }, { mot: "Après-midi", equipe: "Paul" }] },
@@ -207,7 +207,7 @@ const JOURS = [
 ];
 
 /**
- * Le mot de la durée — celui que la ligne portera à la place de « matin ».
+ * Le mot de la durée : celui que la ligne portera à la place de « matin ».
  *
  * Il compte des DEMI-JOURNÉES, comme l'application : 1 = une demi-journée,
  * 2 = une journée, 4 = deux jours. Le moment ne s'y ajoute que si l'essai
@@ -292,7 +292,7 @@ document.getElementById("semaine").addEventListener("click", (e) => {
   const tete = e.target.closest(".tete");
   if (tete) {
     // **Un seul chantier ouvert à la fois.** Deux fiches dépliées, et l'on
-    // perd la vue d'ensemble de la semaine — c'est précisément ce qu'il
+    // perd la vue d'ensemble de la semaine : c'est précisément ce qu'il
     // reprochait à la répétition.
     const bloc = tete.closest(".chantier");
     const ouvert = bloc.dataset.ouvert === "1";

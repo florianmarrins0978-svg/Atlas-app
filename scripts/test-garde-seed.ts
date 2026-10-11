@@ -58,6 +58,34 @@ essai("une base nommée comme une production est refusée", () => {
   refuse(base({ databaseUrl: "postgresql://u:p@localhost:5432/postgres" }), "base-inconnue");
 });
 
+// ─── Les bases d'ATELIER, et la porte ouverte au plus juste ────────────────
+//
+// Depuis le 8 septembre 2026, chaque session mesure sur SA base pour ne pas
+// effacer celle des voisines (`scripts/_atelier.ts`). Ces bases naissent au
+// besoin : leur nom ne peut pas être écrit d'avance dans la liste. Le motif est
+// donc étroit, et ce contrôle existe pour qu'il le reste — une porte qu'on
+// élargit sans la mesurer finit par laisser passer une production.
+essai("une base d'atelier est acceptée", () => {
+  for (const nom of ["atlas_test_a1", "atlas_test_a7", "atlas_test_a42"]) {
+    const v = garderSeed(base({ databaseUrl: `postgresql://u:p@localhost:5432/${nom}` }));
+    assert.equal(v.ok, true, `« ${nom} » a été refusée : les sessions ne peuvent plus mesurer en parallèle`);
+    if (v.ok) assert.equal(v.force, false);
+  }
+});
+
+essai("ce qui RESSEMBLE à une base d'atelier reste refusé", () => {
+  // Le chiffre est obligatoire, le préfixe exact, et rien ne suit.
+  refuse(base({ databaseUrl: "postgresql://u:p@localhost:5432/atlas_test_atelier" }), "base-inconnue");
+  refuse(base({ databaseUrl: "postgresql://u:p@localhost:5432/atlas_testa1" }), "base-inconnue");
+  refuse(base({ databaseUrl: "postgresql://u:p@localhost:5432/atlas_test_a1_prod" }), "base-inconnue");
+  refuse(base({ databaseUrl: "postgresql://u:p@localhost:5432/atlas_test_a" }), "base-inconnue");
+  refuse(base({ databaseUrl: "postgresql://u:p@localhost:5432/atlas_prod_a1" }), "base-inconnue");
+});
+
+essai("une base d'atelier AILLEURS reste refusée", () => {
+  refuse(base({ databaseUrl: "postgresql://u:p@db.hebergeur.example:5432/atlas_test_a1" }), "hote-distant");
+});
+
 essai("une base au BON nom mais AILLEURS est refusée", () => {
   // Le piège que le nom seul laisserait passer : `atlas_test` chez un
   // hébergeur reste la base de quelqu'un.

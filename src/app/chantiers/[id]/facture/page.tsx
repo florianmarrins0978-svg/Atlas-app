@@ -6,16 +6,36 @@ import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getFacturePourChantier } from "@/server/repositories/factures";
+import { getPromesseDuDevis } from "@/server/repositories/devis";
+import { AUCUNE_PROMESSE } from "@/lib/acomptes-facture";
+import { reglementsRecus } from "@/server/repositories/paiements-facture";
+import { devisQuiFaitFoi } from "@/server/repositories/devis";
+import { repriseDuDevis } from "@/lib/facture-face-au-devis";
 import { getClient } from "@/server/repositories/clients";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { exigibiliteDe } from "@/server/repositories/paiements-facture";
 import { dernierEnvoiFacture } from "@/server/repositories/envois-factures";
 import FactureClient from "./FactureClient";
+import SuiteDeLaFacture from "./SuiteDeLaFacture";
+import { avoirsDeLaFacture } from "@/server/repositories/avoirs";
+import { PARAM_PROVENANCE, retourDepuisLePlanning } from "@/lib/retour-au-planning";
 
 export const dynamic = "force-dynamic";
 
-export default async function FacturePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function FacturePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { id } = await params;
+  // **D'où il vient, et donc où le ramener** — son signalement du 7 septembre
+  // 2026. Venu des terminés, on y retourne : le repli ne bouge pas.
+  const retour = retourDepuisLePlanning(id, (await searchParams)[PARAM_PROVENANCE], {
+    href: "/termines",
+    libelle: "Retour aux chantiers terminés",
+  });
 
   const ctx = await getCurrentCtx();
   const chantier = await getChantier(ctx, id);
@@ -47,24 +67,69 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
   // le jour où sa messagerie refuse de s'ouvrir — précisément le jour où cet
   // écran doit le rattraper.
   const envoiDejaFait = existante ? await dernierEnvoiFacture(ctx, existante.facture.id) : null;
+  // Le même papier que le devis (migration 0092) : les acomptes du devis
+  // nomment le rang de chaque règlement reçu, et se comptent sur SON total.
+  const [promesseDuDevis, reglements] = existante
+    ? await Promise.all([
+        getPromesseDuDevis(ctx, existante.facture.devisId),
+        reglementsRecus(ctx, existante.facture.id),
+      ])
+    : [AUCUNE_PROMESSE, []];
+
+  // **LE DEVIS QUI FAIT FOI, CONFRONTÉ À CELUI QUE LA FACTURE REPREND.**
+  //
+  // Une facture bâtie à la fin du chantier ne bouge plus : un devis corrigé et
+  // renvoyé ensuite ne l'atteignait jamais, et le second arrêt du parcours se
+  // franchissait sur l'ancien prix. La comparaison est une fonction pure
+  // (`src/lib/facture-face-au-devis.ts`), et elle ne fait que DIRE — c'est un
+  // geste du patron qui reprend.
+  const devisFoi = existante ? await devisQuiFaitFoi(ctx, id) : null;
+  const reprise = existante
+    ? repriseDuDevis(
+        { devisId: existante.facture.devisId, statut: existante.facture.statut },
+        devisFoi
+          ? {
+              id: devisFoi.id,
+              numeroCommercial: devisFoi.numeroCommercial,
+              numeroVersion: devisFoi.numeroVersion,
+            }
+          : null
+      )
+    : { aJour: true as const };
 
   const origine = originePublique(await headers());
+  const avoirs = existante?.facture.statut === "emise" ? await avoirsDeLaFacture(ctx, existante.facture.id) : [];
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-16">
         <EnTeteEcran
-          retour={{ href: "/termines", libelle: "Retour aux chantiers terminés" }}
+          retour={retour}
           surtitre={chantier.nom}
           titre="Facture"
         />
 
         <FactureClient
+          // **Une facture = un montage.** Après « Créer la facture », l'écran
+          // se relit (`router.refresh()`) mais React garde l'instance — et
+          // ses `useState` gardent la valeur d'AVANT : titre vide, main
+          // d'œuvre absente, alors que la base les tient (14 septembre 2026,
+          // suite `test-papier-facture-e2e`). La clé fait repartir l'écran
+          // de la facture réelle, sans recopier ses champs un à un.
+          key={existante?.facture.id ?? "sans-facture"}
           chantierId={id}
           regimeTva={regimeTva}
+          // En franchise, la facture est déjà sans TVA : la sous-traitance n'a
+          // rien à y changer, et son interrupteur ne s'offre pas.
+          enFranchise={entreprise?.regimeTva === "franchise"}
+          reprise={reprise}
           origine={origine}
           entrepriseNom={entreprise?.nom ?? ""}
-          modeleMessage={entreprise?.messageClient ?? null}
+          // **Le message de la FACTURE, depuis le 7 septembre 2026 (0075).** Il
+          // en a trois maintenant ; prendre `messageClient` ici enverrait son
+          // texte de devis avec sa facture, et le client lirait « choisissez
+          // votre date d'intervention » sur ce qu'il doit payer.
+          modeleMessage={entreprise?.messageClientFacture ?? null}
           // Sans lui, une coordonnée manquante ne peut se saisir nulle part :
           // il n'existe aucun écran de fiche client (voir `TransmettreLaFacture`).
           clientId={chantier.clientId ?? null}
@@ -72,29 +137,62 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
           clientEmail={client?.email ?? null}
           canalClient={(client?.canalCommunication as "sms" | "email" | null) ?? null}
           jetonDejaPrepare={envoiDejaFait?.jeton ?? null}
+          avoirs={avoirs}
           initialFacture={
             existante
               ? {
                   id: existante.facture.id,
                   numeroCommercial: existante.facture.numeroCommercial,
                   statut: existante.facture.statut,
+                  // De quel devis viennent ces lignes. Le PDF l'écrit depuis
+                  // toujours ; l'écran du patron, non.
+                  numeroDevis: existante.numeroDevis,
+                  versionDevis: existante.versionDevis,
+                  // **Nul = faite SANS devis** (migration 0086), et l'écran ne
+                  // doit alors écrire « Reprise du devis » nulle part : c'est
+                  // la pièce qu'il vérifie avant qu'elle parte chez le client.
+                  devisId: existante.facture.devisId,
                   clientNom: existante.facture.clientNom,
                   clientCivilite: existante.facture.clientCivilite,
                   dateEmission: existante.facture.dateEmission,
                   dateEcheance: existante.facture.dateEcheance,
+                  dateTravaux: existante.facture.dateTravaux,
+                  autoliquidation: existante.facture.autoliquidation,
+                  clientNumeroTva: existante.facture.clientNumeroTva,
+                  clientSiret: existante.facture.clientSiret,
                   tauxTva: existante.facture.tauxTva,
-                  totalHt: existante.facture.totalHt,
-                  totalTva: existante.facture.totalTva,
-                  totalTtc: existante.facture.totalTtc,
+                  // **Le prix accordé au client voyage jusqu'à l'écran.** Sans
+                  // lui, la somme des lignes affichées ne faisait pas le Total
+                  // HT affiché, et rien ne disait pourquoi — au second arrêt,
+                  // sur le montant qu'il défend devant son client.
+                  reductionPourcent: existante.facture.reductionPourcent,
+                  mainDoeuvreHt: existante.facture.mainDoeuvreHt,
+                  titre: existante.facture.titre,
+                  promesseDuDevis,
+                  reglements,
                   lignes: existante.lignes.map((l) => ({
                     id: l.id,
                     libelle: l.libelle,
                     montant: l.montant,
+                    // Le taux de sa catégorie, comme sur le papier
+                    // (migration 0073) : sans lui, l'écran ventilait tout sur
+                    // le taux du document.
+                    tauxTva: l.tauxTva,
+                    // **Et son bloc (migration 0082).** Sans lui, l'écran
+                    // rangeait un travail supplémentaire sous « Reprise du
+                    // devis » — le patron l'a vu le 10 septembre 2026 : *« ça
+                    // n'apparaît nulle part, le client pense simplement que
+                    // j'ai rajouté une ligne »*.
+                    supplement: l.supplement,
                   })),
                 }
               : null
           }
         />
+
+        {/* Ce qui suit une facture PARTIE : ses avoirs, et ce qu'il fait quand
+            le client ne paie pas (planches du 24 septembre 2026). */}
+        {existante?.facture.statut === "emise" && <SuiteDeLaFacture ctx={ctx} chantierId={id} factureId={existante.facture.id} />}
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ import * as devisRepo from "../src/server/repositories/devis";
 import * as prixRepo from "../src/server/repositories/lignes-prix";
 import { creerEnvoi, lireParJeton, enregistrerReponse } from "../src/server/repositories/envois-devis";
 import { preparerEnvoi, premiersJoursLibres, verifierJourPropose } from "../src/server/repositories/preparation-envoi";
-import { versJourIso, ajouterJours, fenetreProposition, compterOccupation } from "../src/server/disponibilites";
+import { versJourIso, ajouterJours, fenetreProposition, compterOccupation } from "../src/lib/disponibilites";
 
 // Depuis les créneaux (migration 0019), la disponibilité dépend du chantier
 // qu'on cherche à caler : une demi-journée tient là où une journée entière ne
@@ -15,6 +15,7 @@ import { versJourIso, ajouterJours, fenetreProposition, compterOccupation } from
 // durée par défaut — c'est-à-dire exactement leur hypothèse d'origine.
 const UNE_JOURNEE = 2;
 const RIEN_DE_PLANIFIE = { occupation: compterOccupation([], 1), nombreEquipes: 1, dureeDemiJournees: UNE_JOURNEE };
+import { mettreEnRegle } from "./_entreprise-en-regle";
 import { nettoyerBase } from "./_test-db";
 
 let passed = 0;
@@ -40,7 +41,9 @@ async function contexte(email: string) {
     { nom: "Atelier" },
     { email }
   );
-  return { utilisateurId, entrepriseId: entreprise.id };
+  const ctx = { utilisateurId, entrepriseId: entreprise.id };
+  await mettreEnRegle(ctx);
+  return ctx;
 }
 
 async function main() {
@@ -367,7 +370,7 @@ async function main() {
     const r = await enregistrerReponse(
       envoi.jeton,
       {
-        decision: "accepte",
+        decision: "accepte", demarrageAnticipe: true,
         dateRetenue: dans(10),
         precision: null,
         adresseIp: null,
@@ -414,7 +417,7 @@ async function main() {
     await chantiersRepo.planifierChantier(ctx, long.id, dans(0));
 
     const r = await enregistrerReponse(envoi.jeton, {
-      decision: "accepte",
+      decision: "accepte", demarrageAnticipe: true,
       dateRetenue: dans(2),
       precision: null,
       adresseIp: null,
@@ -465,7 +468,7 @@ async function main() {
     const r = await enregistrerReponse(
       envoi.jeton,
       {
-        decision: "accepte",
+        decision: "accepte", demarrageAnticipe: true,
         dateRetenue: dans(10),
         precision: null,
         adresseIp: null,
@@ -549,7 +552,7 @@ async function main() {
 
     const eric = await chantiersRepo.creerChantier(ctx, { nom: "Mr. Eric" });
     await chantiersRepo.mettreAJourDureeEquipe(ctx, eric.id, { dureePrevue: "1 journée" });
-    await chantiersRepo.planifierChantier(ctx, eric.id, dans(10), { quand: "journee" });
+    await chantiersRepo.planifierChantier(ctx, eric.id, dans(10), { demi: "matin" });
     // Ses deux équipes, matin ET après-midi : c'est sa capture du 22 août.
     for (const demi of ["matin", "apres_midi"] as const) {
       for (const rang of [1, 2]) {
@@ -583,7 +586,7 @@ async function main() {
 
     const eric = await chantiersRepo.creerChantier(ctx, { nom: "Mr. Eric" });
     await chantiersRepo.mettreAJourDureeEquipe(ctx, eric.id, { dureePrevue: "une demi-journée" });
-    await chantiersRepo.planifierChantier(ctx, eric.id, dans(10), { quand: "matin" });
+    await chantiersRepo.planifierChantier(ctx, eric.id, dans(10), { demi: "matin" });
     for (const rang of [1, 2]) {
       await chantiersRepo.basculerEquipeDuChantier(ctx, eric.id, "matin", rang);
     }
@@ -601,32 +604,102 @@ async function main() {
     );
   });
 
-  await test("une date trop proche NOMME le premier jour possible", async () => {
-    // **Sa remarque du 23 août 2026 :** *« "trop tôt" veut rien dire, on
-    // comprend pas bien »*. La phrase énonçait la règle — « proposez au moins
-    // après-demain » — au lieu de dire quoi faire, et obligeait à compter dans
-    // sa tête devant un calendrier qui affiche déjà les dates.
-    const ctx = await contexte(`tot-${Date.now()}@t.test`);
+  await test("DEMAIN se retient : il prévient, il ne refuse plus", async () => {
+    // ═══════════════════════════════════════════════════════════════════════
+    // **Sa règle du 31 août 2026 :** *« si l'utilisateur veut choisir le
+    // 1ᵉʳ septembre il doit pouvoir ! »* Le calendrier lui montrait le
+    // lendemain, la case s'ouvrait sous son doigt, et le verdict la reprenait.
+    //
+    // C'est le même arbitrage qu'il avait rendu le 23 août pour les journées
+    // pleines : lui seul sait qu'il a une remorque libre demain matin.
+    // ═══════════════════════════════════════════════════════════════════════
+    const ctx = await contexte(`demain-${Date.now()}@t.test`);
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Haie" });
+    await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+
+    const v = await verifierJourPropose(ctx, chantier.id, dans(1), undefined, LUNDI);
+    assert.strictEqual(v.retenable, true, `demain est encore refusé : « ${v.raison} »`);
+    // **Et il doit le SAVOIR.** Un jour retenu sans un mot, c'est le délai
+    // supprimé plutôt que rendu franchissable : son client a bien peu de temps
+    // pour répondre, et c'est à lui d'en juger en connaissance de cause.
+    assert.ok(
+      /moins de deux jours/i.test(v.raison ?? ""),
+      `demain se retient sans rien dire : « ${v.raison} »`
+    );
+    assert.ok(
+      !/trop proche/i.test(v.raison ?? ""),
+      `la phrase refuse encore : « ${v.raison} »`
+    );
+  });
+
+  await test("AUJOURD'HUI aussi : c'est son chantier, pas le nôtre", async () => {
+    const ctx = await contexte(`aujourdhui-${Date.now()}@t.test`);
     const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Haie" });
     await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
 
     const v = await verifierJourPropose(ctx, chantier.id, dans(0), undefined, LUNDI);
+    assert.strictEqual(v.retenable, true, `aujourd'hui est refusé : « ${v.raison} »`);
+  });
+
+  await test("HIER reste refusé — et ce n'est pas un arbitrage d'artisan", async () => {
+    // La seule borne basse qui subsiste, et elle ne se négocie pas : son client
+    // lira ce devis demain au plus tôt. Sans ce contrôle, la règle du 31 août
+    // aurait ouvert le passé en même temps que le lendemain.
+    const ctx = await contexte(`hier-${Date.now()}@t.test`);
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Haie" });
+    await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+
+    const v = await verifierJourPropose(ctx, chantier.id, dans(-1), undefined, LUNDI);
     assert.strictEqual(v.retenable, false, "une date passée doit rester refusée");
-    assert.ok(
-      !/trop tôt/i.test(v.raison ?? ""),
-      `« trop tôt » est revenu : « ${v.raison} »`
+    assert.match(v.raison ?? "", /pass/i, `la raison ne dit pas que le jour est passé : « ${v.raison} »`);
+  });
+
+  await test("l'application ne SUGGÈRE toujours rien avant après-demain", async () => {
+    // **Ce que la règle du 31 août ne rouvre pas.** Le 22 août il a exigé qu'un
+    // jour ne soit jamais proposé de lui-même sans qu'il l'ait voulu. Rendre le
+    // délai franchissable et le supprimer sont deux choses différentes : la
+    // seconde mettrait demain sous son doigt sans qu'il l'ait demandé.
+    const ctx = await contexte(`suggere-${Date.now()}@t.test`);
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Haie" });
+    await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+
+    const p = await preparerEnvoi(ctx, chantier.id, LUNDI);
+    for (const j of p.joursLibres) {
+      assert.ok(j >= dans(2), `${j} est suggéré alors qu'il est dans moins de deux jours`);
+    }
+  });
+
+  await test("UN DEVIS REFUSÉ PUIS RENVOYÉ GARDE SES HUIT JOURS — sa plainte du 15 septembre 2026", async () => {
+    // *« Lors du premier envoi j'ai sélectionné 8 jours et quand je le reprends
+    // pour le renvoyer, il n'a pas gardé en mémoire les 8 jours de chantier. »*
+    // Le premier envoi écrit la durée sur le chantier ; la préparation du
+    // second doit la relire — pas repartir de la dictée, ni d'une journée.
+    const ctx = await contexte(`huit-jours-${Date.now()}@t.test`);
+    const client = await clientsRepo.creerClient(ctx, { nom: "Mr Julien", telephone: "0611223344" });
+    await clientsRepo.mettreAJourClient(ctx, client.id, { canalCommunication: "sms" });
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Terrasse", clientId: client.id });
+    await prixRepo.ajouterLignePrix(ctx, chantier.id, "Terrasse bois", "8000.00");
+    const brouillon = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+    const HUIT_JOURS = 16;
+
+    const envoi = await creerEnvoi(
+      ctx,
+      {
+        chantierId: chantier.id,
+        devisId: brouillon.id,
+        canal: "sms",
+        datesProposees: [dans(10)],
+        contenuDevis: "Terrasse bois",
+        dureeDemiJournees: HUIT_JOURS,
+      },
+      LUNDI
     );
-    assert.ok(
-      !/en défaut/i.test(v.raison ?? ""),
-      `la phrase le met encore en tort : « ${v.raison} »`
-    );
-    // **Elle doit NOMMER le jour**, pas le lui faire calculer.
-    assert.match(
-      v.raison ?? "",
-      /\d{1,2}\s+\p{L}+/u,
-      `la phrase ne nomme aucune date : « ${v.raison} »`
-    );
-    assert.strictEqual(v.alternative, dans(2), "le premier jour possible n'est pas offert");
+    const refus = await enregistrerReponse(envoi.jeton, { decision: "refuse" }, LUNDI);
+    assert.ok(refus.succes, "le refus du client n'a pas été enregistré");
+
+    const p = await preparerEnvoi(ctx, chantier.id, LUNDI);
+    assert.strictEqual(p.dureeDemiJournees, HUIT_JOURS, "la durée du premier envoi n'est pas relue au renvoi");
+    assert.strictEqual(p.dureeDeduiteDeLaDictee, false, "une durée choisie par le patron n'est pas « déduite de la dictée »");
   });
 
   console.log(`\n${passed} réussis, ${failed} échoués`);

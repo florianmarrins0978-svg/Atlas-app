@@ -2,6 +2,8 @@ import assert from "node:assert";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
+import { ADRESSE } from "./_adresse";
+import { MOIS_A_L_ECRAN } from "./_calendrier-e2e";
 
 /**
  * Une équipe absente ne compte plus — du doigt jusqu'à la date proposée.
@@ -29,7 +31,7 @@ import { pool } from "../src/server/db/client";
  * retirée du calcul, le dernier cas tombe en nommant le jour.
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 /** Reconnaissable, et retiré à la fin : aucune autre suite ne doit le lire. */
 /**
  * **Un motif NEUF à chaque exécution.** Il était fixe, et c'est une source de
@@ -199,9 +201,13 @@ async function main() {
     // dans le calcul, la même case dirait « libre » — c'est cet écart-là qui
     // fait rougir le contrôle quand on retire la réparation.
     await page.goto(`${BASE}/planning`, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector("[data-jour]", { timeout: 30_000 });
+    await page.waitForSelector(`${MOIS_A_L_ECRAN} [data-jour]`, { timeout: 30_000 });
 
-    const caseDuJour = page.locator(`[data-jour="${premier}"]`);
+    // **Dans le mois QUI EST À L'ÉCRAN.** Le calendrier garde ses deux voisins
+    // montés hors du cadre depuis le 11 septembre 2026 : sans cette portée, la
+    // boucle s'arrête dès que le jour visé apparaît dans le mois d'après, et le
+    // clic qui suit part dans le cadre (`_calendrier-e2e.ts`).
+    const caseDuJour = page.locator(`${MOIS_A_L_ECRAN} [data-jour="${premier}"]`);
     for (let essai = 0; essai < 3; essai++) {
       if (await caseDuJour.count()) break;
       await page.getByRole("button", { name: "Mois suivant" }).click();

@@ -10,16 +10,16 @@ import {
   notificationsPatron,
   envoisCaducs,
   marquerReponseVue,
-  VALIDITE_LIEN_JOURS,
 } from "../src/server/repositories/envois-devis";
 import {
   etatEnvoi,
   attendLeClient,
   demandeUneAction,
   RELANCE_APRES_JOURS,
+  VALIDITE_LIEN_JOURS,
 } from "../src/lib/etat-envoi";
-import { getStatutAffiche, getPlanificationEtat, chantierEnCours } from "../src/lib/chantier-etat";
-import { versJourIso, ajouterJours } from "../src/server/disponibilites";
+import { getStatutAffiche, getPlanificationEtat, chantierEnCours, poseSansAccord } from "../src/lib/chantier-etat";
+import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { nettoyerBase } from "./_test-db";
 
 // Où en est le devis d'un chantier, du point de vue du patron — docs/AGENT.md
@@ -243,6 +243,32 @@ async function main() {
     assert.strictEqual(retourne, "a_planifier");
   });
 
+  // **Un lien expiré sans réponse n'est PAS un chantier vendu** — sa demande
+  // du 7 octobre 2026. Il tombait dans « Sans date », d'où un nom se pose sans
+  // aucune signature : le planning l'aurait montré comme un chantier signé.
+  await test("un devis expiré sans réponse se range à part, jamais « à planifier »", async () => {
+    const expire = { devisEnvoyeAt: ilYA(50), envoiEnvoyeAt: ilYA(50), envoiExpireAt: ilYA(5), envoiReponse: null };
+    assert.strictEqual(getPlanificationEtat({ ...expire, datePlanifiee: null }, MAINTENANT), "devis_expire");
+    // Posé quand même par le patron (« Le poser sans le renvoyer ») : il est
+    // planifié, et rien ne dit « Pas encore signé », sa décision du même soir.
+    assert.strictEqual(getPlanificationEtat({ ...expire, datePlanifiee: "2026-09-01" }, MAINTENANT), "planifie");
+    assert.strictEqual(poseSansAccord({ ...expire, datePlanifiee: "2026-09-01" }, MAINTENANT), false);
+  });
+
+  // **Posé par le patron, pas encore signé** — son choix B du 7 octobre 2026 :
+  // un chantier posé ne doit jamais se lire comme un chantier vendu.
+  await test("posé alors que le client n'a pas signé : « Pas encore signé », et seulement là", async () => {
+    const envoi = { devisEnvoyeAt: ilYA(1), envoiEnvoyeAt: ilYA(1), envoiExpireAt: dans(40) };
+    assert.strictEqual(poseSansAccord({ ...envoi, datePlanifiee: "2026-09-01", envoiReponse: null }, MAINTENANT), true);
+    assert.strictEqual(poseSansAccord({ ...envoi, datePlanifiee: "2026-09-01", envoiReponse: "acceptee" }, MAINTENANT), false);
+    assert.strictEqual(poseSansAccord({ ...envoi, datePlanifiee: null, envoiReponse: null }, MAINTENANT), false);
+    // Sans envoi, rien à signer : un chantier posé sans devis n'attend personne.
+    assert.strictEqual(
+      poseSansAccord({ devisEnvoyeAt: null, datePlanifiee: "2026-09-01", envoiEnvoyeAt: null }, MAINTENANT),
+      false
+    );
+  });
+
   // ---- Le dernier envoi, en base
   await test("un chantier sans envoi n'en a pas", async () => {
     const { ctx, chantierId } = await contexteAvecDevis("sansenvoi");
@@ -306,19 +332,26 @@ async function main() {
     );
   });
 
-  await test("une acceptation sur une date proposée ne dérange personne", async () => {
+  // **CE CAS A CHANGÉ DE SENS LE 7 SEPTEMBRE 2026**, à sa demande : *« il faut
+  // aussi rajouter une notification lorsqu'un client accepte un devis, elle
+  // doit apparaître en haut dans les retours client ! »* Il exigeait le
+  // silence ; il exige désormais la nouvelle. Voir `ARCHITECTURE.md` §282.
+  await test("une acceptation remonte au patron, même sans surprise", async () => {
     const { ctx, chantierId, devisId } = await contexteAvecDevis("notifok");
     const envoi = await creerEnvoi(
       ctx,
       { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "d" },
       ilYA(2)
     );
-    await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, dateRetenue: dans(10) }, ilYA(1));
+    await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: dans(10) }, ilYA(1));
 
+    const notifs = await notificationsPatron(ctx);
+    assert.strictEqual(notifs.length, 1, "un chantier gagné ne s'apprend pas en ouvrant une fiche");
+    assert.strictEqual(notifs[0].reponse, "acceptee");
     assert.strictEqual(
-      (await notificationsPatron(ctx)).length,
-      0,
-      "signaler le déroulement attendu noierait les nouvelles qui comptent"
+      notifs[0].dateContreProposee,
+      false,
+      "il a pris une date proposée : la carte doit dire « Devis accepté », pas « Autre date »"
     );
   });
 
@@ -331,7 +364,7 @@ async function main() {
     );
     // Le client retient un autre jour libre : l'agenda du patron change sans
     // qu'il ait rien décidé.
-    await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, dateRetenue: dans(15) }, ilYA(1));
+    await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: dans(15) }, ilYA(1));
 
     const notifs = await notificationsPatron(ctx);
     assert.strictEqual(notifs.length, 1);

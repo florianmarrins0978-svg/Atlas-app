@@ -17,6 +17,8 @@
 // pas par retour de courrier.
 
 import { avecCivilite, type CiviliteChoisie } from "./civilite";
+import { VALIDITE_LIEN_JOURS } from "./etat-envoi";
+import { jourLisible } from "./jour";
 
 export type CanalClient = "sms" | "email";
 
@@ -38,41 +40,139 @@ export type MessageClient = {
  *      ne le porte pas, il ne se contente pas de prévenir. Sans lui, le message
  *      part et le client ne peut rien ouvrir : ce serait un envoi perdu, et le
  *      patron ne l'apprendrait qu'au téléphone ;
- *   3. **UN SEUL message pour ses trois documents** — devis, facture, compte
- *      rendu de passage.
+ *   3. ~~un seul message pour ses trois documents~~ — **RENVERSÉ LE 7 SEPTEMBRE
+ *      2026, par lui**, et ce fichier a été refait pour ça.
  *
- * **Et c'est la troisième qui demande `[document]`.** Un texte unique et
- * littéral ferait dire à sa facture *« Voici votre devis, choisissez votre date
- * d'intervention »*, et l'échéance disparaîtrait. Il l'a vu en images, sur les
- * six bulles de `appli/mon-message-au-client.html`, et a répondu : **« façon
- * 1 »** — il écrit le cadre, Atlas pose la phrase du milieu.
+ * ═══ TROIS MESSAGES, ET LA PHRASE DU MILIEU LUI APPARTIENT ═══════════════
+ *
+ * *« En fait il faut faire deux messages par défaut, un pour devis et un pour
+ * facture »*, puis — le compte rendu de passage retrouvé — *« dans ce cas faut
+ * faire 3 messages par défaut et garder le système un seul mot change »*.
+ *
+ * **Ce que la version d'avant coûtait, et qui l'a fait tomber :** la phrase qui
+ * distingue les trois envois était écrite par Atlas et posée à l'endroit du
+ * `[document]`. C'était le seul morceau de son message qu'il ne pouvait pas
+ * toucher — et précisément celui qu'il voulait écrire.
+ *
+ * **Ce qui reste d'Atlas dans son texte** tient en cinq mots qui se remplissent
+ * seuls : le prénom, le mot du document, le numéro, l'échéance, le lien, son
+ * nom. **Deux ne se retirent pas** — le lien et le mot du document
+ * (`refusDuMessage`) : sans le premier le client n'ouvre rien, sans le second il
+ * ne sait pas s'il reçoit un devis à signer ou une facture à payer.
  */
 
-/** Ce qu'Atlas remplace. Une pastille inconnue reste telle quelle, en clair. */
-export const PASTILLES = ["[client]", "[document]", "[lien]", "[entreprise]"] as const;
+/**
+ * Ce qu'Atlas remplace. Une pastille inconnue reste telle quelle, en clair.
+ *
+ * **`[document]` A CHANGÉ DE SENS LE 7 SEPTEMBRE 2026, et c'est le cœur du
+ * lot.** Il portait LA PHRASE ENTIÈRE du document — « Voici votre devis. Vous
+ * pouvez le consulter et choisir votre date… » —, écrite par Atlas et
+ * verrouillée. Le patron l'a fait sauter : *« il faut faire 3 messages par
+ * défaut et garder le système un seul mot change »*. La phrase est donc
+ * désormais DANS son modèle, en texte qu'il modifie, et `[document]` ne pose
+ * plus que le mot — « devis », « facture », « retour d'intervention ».
+ *
+ * **Conséquence pour les messages déjà enregistrés**, et la migration 0075 s'en
+ * charge : un modèle d'avant porte `[document]` au sens ancien, et le rendre
+ * avec le nouveau enverrait au client un message qui dit « Voici votre devis »
+ * réduit au seul mot « devis ». La migration y réécrit la phrase en clair.
+ *
+ * **`[numero]` et `[echeance]` sont nouveaux**, et l'échéance EMPORTE SES MOTS :
+ * elle rend « , à régler avant le 21 septembre » ou rien du tout. Une facture
+ * sans échéance — le délai de paiement est un interrupteur, il s'éteint —
+ * laisserait sinon « Voici votre facture F2026-0008, à régler avant le . »
+ * chez le client.
+ */
+export const PASTILLES = [
+  "[client]",
+  "[document]",
+  "[numero]",
+  "[echeance]",
+  "[autre-date]",
+  "[lien]",
+  "[validite]",
+  "[entreprise]",
+] as const;
+
+/** Les trois documents qui partent chez le client, et rien d'autre. */
+export const GENRES = ["devis", "facture", "passage"] as const;
+export type GenreDocument = (typeof GENRES)[number];
 
 /**
- * Le message tant qu'il n'a rien écrit — et c'est SON message d'aujourd'hui.
+ * Ce qui entoure la phrase, et qui ne change pas d'un document à l'autre.
+ *
+ * **Écrite une fois pour les trois.** Le bonjour, la place du lien et la
+ * signature sont les mêmes partout : les recopier trois fois ferait qu'un jour
+ * l'un d'eux dirait « Bien à vous » et l'autre « Cordialement », sans que
+ * personne ne l'ait décidé.
+ */
+function enveloppe(phrase: string, sousLeLien: string[] = []): string {
+  return [
+    "Bonjour [client],",
+    "",
+    phrase,
+    // **Une ligne vide de chaque côté, et le lien SEUL sur la sienne.** Le patron,
+    // le 10 août 2026 : *« le lien n'est pas cliquable, je suis obligé de le
+    // copier »*. Collé sous une phrase, un lien est lu par beaucoup de messageries
+    // comme la suite du paragraphe ; isolé, il redevient une adresse à leurs yeux.
+    "",
+    "[lien]",
+    "",
+    ...sousLeLien.flatMap((ligne) => [ligne, ""]),
+    "Bien à vous,",
+    "[entreprise]",
+  ].join("\n");
+}
+
+/**
+ * TROIS MESSAGES, UN PAR DOCUMENT — sa décision du 7 septembre 2026.
+ *
+ * *« En fait il faut faire deux messages par défaut, un pour devis et un pour
+ * facture »*, puis, une fois le troisième document retrouvé : *« dans ce cas
+ * faut faire 3 messages par défaut et garder le système un seul mot change »*.
+ *
+ * **Le texte est celui d'avant, mot pour mot** : les phrases sortent de
+ * `phraseDuDocument`, qui les portait en dur. Rien n'est réécrit — ce qui
+ * change, c'est qu'elles vivent maintenant dans SON modèle, donc qu'il peut
+ * les modifier.
+ *
+ * **Le troisième document existe, et il a failli être oublié.** Le retour
+ * d'intervention part avec ce même modèle (`composerMessageEntretien`) : à deux
+ * messages, il serait resté sur le texte d'Atlas pendant que les deux autres
+ * portaient la voix du patron. **Il s'appelait « compte rendu de passage »**
+ * jusqu'au 8 septembre 2026 ; c'est LUI qui l'a renommé, et le nom d'écran est
+ * le seul à avoir changé — les identifiants du code gardent « passage ».*
+ */
+export const MESSAGES_PAR_DEFAUT: Record<GenreDocument, string> = {
+  // **Deux morceaux d'Atlas depuis le 29 septembre 2026**, et sa planche
+  // `appli/lien-valable-45-jours.html`, A retenue. `[autre-date]` n'est posé
+  // que si la case « Votre client peut proposer une autre date » est cochée :
+  // la phrase était dans le texte, et le client la lisait case décochée.
+  // `[validite]` dit jusqu'à quand le lien répond, et qu'ensuite il faudra
+  // appeler.
+  devis: enveloppe(
+    "Voici votre [document]. Vous pouvez le consulter et choisir votre date " +
+      "d'intervention.[autre-date] Tout se fait sur cette page :",
+    ["[validite]"]
+  ),
+  facture: enveloppe(
+    "Voici votre [document] [numero][echeance]. Vous pouvez la consulter et la " +
+      "télécharger ici :"
+  ),
+  passage: enveloppe("Voici mon [document] après le passage chez vous :"),
+};
+
+/**
+ * Le message d'un document tant qu'il n'a rien écrit.
  *
  * `null` en base veut dire « celui-ci » : recopier ce texte dans la colonne à
  * la création d'une entreprise l'y figerait, et le jour où l'on corrige une
  * virgule, les anciennes garderaient l'ancienne version sans que personne ne
  * s'en aperçoive.
  */
-export const MESSAGE_PAR_DEFAUT = [
-  "Bonjour [client],",
-  "",
-  "[document]",
-  // **Une ligne vide de chaque côté, et le lien SEUL sur la sienne.** Le patron,
-  // le 10 août 2026 : *« le lien n'est pas cliquable, je suis obligé de le
-  // copier »*. Collé sous une phrase, un lien est lu par beaucoup de messageries
-  // comme la suite du paragraphe ; isolé, il redevient une adresse à leurs yeux.
-  "",
-  "[lien]",
-  "",
-  "Bien à vous,",
-  "[entreprise]",
-].join("\n");
+export function messageParDefaut(genre: GenreDocument): string {
+  return MESSAGES_PAR_DEFAUT[genre];
+}
 
 /**
  * La borne. Un message est un message, pas une lettre.
@@ -92,11 +192,29 @@ export const MESSAGE_MAX = 2000;
  * règles pour un seul refus finiraient par diverger, et il verrait un bouton
  * allumé sur un message que le serveur rejette.
  */
-export function refusDuMessage(modele: string): string | null {
+export function refusDuMessage(modele: string, genre: GenreDocument): string | null {
   const texte = modele.trim();
   if (!texte) return "Écrivez votre message : il ne peut pas être vide.";
   if (modele.length > MESSAGE_MAX) {
     return `Votre message dépasse ${MESSAGE_MAX} caractères. Raccourcissez-le pour l'enregistrer.`;
+  }
+  /**
+   * **LE MOT DU DOCUMENT NE SE RETIRE PAS — sa consigne du 7 septembre 2026 :**
+   * *« le lien, les mots devis, facture et fiche client ne peuvent être
+   * enlevés »*.
+   *
+   * Ce n'est pas de la mise en forme : les trois messages se ressemblent, et
+   * celui qui perd son mot laisse le client deviner ce qu'il vient de recevoir
+   * — un devis à signer, ou une facture à payer. On refuse, et on le dit.
+   *
+   * **Le refus est rendu AVANT celui du lien**, parce que c'est celui qu'il
+   * verra en premier en effaçant le début de sa phrase.
+   */
+  if (!modele.includes("[document]")) {
+    return (
+      "Le mot du document est obligatoire : sans lui, votre client ne sait pas " +
+      "s'il reçoit un devis, une facture ou un retour d'intervention. Reposez-le pour enregistrer."
+    );
   }
   if (!modele.includes("[lien]")) {
     return (
@@ -104,52 +222,92 @@ export function refusDuMessage(modele: string): string | null {
       "document ni choisir sa date. Reposez-le pour enregistrer."
     );
   }
+  /**
+   * **LA DURÉE DU LIEN NE SE RETIRE PAS NON PLUS** — sa planche du 29 septembre
+   * 2026 : elle reste *« même si vous avez réécrit votre message »*. Passé ce
+   * délai le client ne peut plus répondre, et c'est le seul endroit où il
+   * l'apprend avant de tomber sur « Ce lien n'est plus valable ».
+   */
+  if (genre === "devis" && !modele.includes("[validite]")) {
+    return (
+      "La durée du lien est obligatoire : sans elle, votre client ne sait pas " +
+      "jusqu'à quand il peut répondre. Reposez-la pour enregistrer."
+    );
+  }
   return null;
 }
 
 /**
- * La phrase du milieu — celle qu'Atlas pose à la place de `[document]`.
+ * LA PHRASE « AUTRE DATE », AVEC SON ESPACE — ou rien.
  *
- * **Elle porte tout ce qui distingue les trois envois**, et c'est pour cela
- * qu'elle n'est pas dans son texte : le numéro de la facture, son échéance, et
- * le fait qu'un devis se répond quand une facture se règle.
- *
- * **La phrase du devis a changé le 23 août 2026, et il faut le savoir.** Elle
- * tenait en deux morceaux — l'un avant le lien, l'autre après (« si aucune des
- * dates proposées ne vous convient… »). Un seul emplacement ne peut pas porter
- * les deux : les deux idées sont donc réunies en une phrase, avant le lien.
- * Rien n'est perdu, et le « vous POUVEZ » qu'il avait corrigé le 13 août reste.
+ * **Elle suit la case de l'envoi, jamais le texte.** Sa demande du 29 septembre
+ * 2026 : *« vérifie vraiment que si je décoche la possibilité de laisser le
+ * client me proposer une date, le message qu'il voit ne contient pas la
+ * mention »*. Il la contenait : la phrase était écrite dans le modèle, et
+ * aucun code ne savait qu'elle dépendait de la case. La page du devis, elle,
+ * obéissait déjà (`formulaire.tsx`). L'espace de tête est dans la phrase, comme
+ * la virgule de l'échéance : absente, elle ne laisse pas deux espaces.
  */
-export function phraseDuDocument(
-  doc:
-    | { genre: "devis" }
-    | { genre: "facture"; numero: string; echeanceLisible?: string | null }
-    | { genre: "entretien" }
-): string {
-  if (doc.genre === "devis") {
-    // **SES DEUX PHRASES SURVIVENT MOT POUR MOT, et un contrôle l'exige.**
-    // Un premier jet les avait fondues en une seule — « ou en proposer une autre
-    // si aucune ne vous convient » — et `test-message-client` a rougi : il
-    // défend le « vous POUVEZ » qu'il a corrigé lui-même le 13 août 2026, le
-    // futur repoussant le geste à plus tard. On réordonne, on ne réécrit pas.
-    //
-    // **Le tiret est parti le 25 août 2026, à sa demande** (« supprime le
-    // tiret »), vu sur sa capture du SMS. Les deux idées redeviennent deux
-    // phrases, séparées d'un point — pas d'un « — » qui « ne sert à rien ».
-    return (
-      "Voici votre devis. Vous pouvez le consulter et choisir votre date " +
-      "d'intervention. Et si aucune des dates proposées ne vous convient, " +
-      "vous pouvez en proposer une autre. Tout se fait sur cette page :"
-    );
-  }
-  if (doc.genre === "facture") {
-    const echeance = doc.echeanceLisible ? `, à régler avant le ${doc.echeanceLisible}` : "";
-    return (
-      `Voici votre facture ${doc.numero}${echeance}. ` +
-      "Vous pouvez la consulter et la télécharger ici :"
-    );
-  }
-  return "Voici le compte rendu de mon passage chez vous :";
+export function clauseAutreDate(autreDateAutorisee: boolean): string {
+  return autreDateAutorisee
+    ? " Et si aucune des dates proposées ne vous convient, vous pouvez en proposer une autre."
+    : "";
+}
+
+/**
+ * JUSQU'À QUAND LE LIEN RÉPOND, et ce qu'il faudra faire après.
+ *
+ * Sa décision du 29 septembre 2026 : *« garder 45 jours, mais sur le message
+ * qu'il reçoit il faut préciser que le lien est valide 45 jours »*, avec la
+ * date (A), puis *« faut dire que passé ce délai ils ne pourront plus prévenir
+ * l'artisan via l'appli, il faudra l'appeler »*. Le nom de l'entreprise, et pas
+ * « nous » ni « moi » : il vaut qu'on travaille seul ou non.
+ *
+ * `expireLe` est le jour où le lien meurt (« AAAA-MM-JJ »), lu sur l'envoi :
+ * jamais recalculé ici, sinon une relance dirait une autre date que le lien.
+ */
+export function clauseValidite(expireLe: string, entreprise: string, aujourdHui: Date = new Date()): string {
+  return (
+    `Ce lien est valable ${VALIDITE_LIEN_JOURS} jours, jusqu'au ${jourLisible(expireLe, aujourdHui)}. ` +
+    `Passé ce délai, vous ne pourrez plus répondre depuis ce lien : il faudra appeler ${entreprise}.`
+  );
+}
+
+/**
+ * LE MOT QUI NOMME LE DOCUMENT — ce qu'Atlas pose à la place de `[document]`.
+ *
+ * **Un mot, plus une phrase, depuis le 7 septembre 2026.** La phrase entière
+ * vivait ici et s'imposait à son message ; elle est passée dans les modèles
+ * (`MESSAGES_PAR_DEFAUT`), où elle se modifie. Ne reste que ce qui ne peut pas
+ * être écrit d'avance parce qu'il change d'un envoi à l'autre.
+ *
+ * **« retour d'intervention », et c'est SON mot.** C'est celui du produit
+ * entier — l'écran des Terminés, le planning, la fiche : *« ils se retrouveront
+ * dans la catégorie retour d'intervention »*. Le mot rendu au client est donc
+ * celui qu'il emploie lui-même, et renommer se déciderait d'un bloc plutôt que
+ * de se glisser ici.
+ *
+ * *(Ce commentaire annonçait « compte rendu » alors que la ligne rend autre
+ * chose depuis le 9 septembre 2026. Une documentation qui contredit son code
+ * est pire qu'absente : on s'y fie encore — `CLAUDE.md` §1.)*
+ */
+export function motDuDocument(genre: GenreDocument): string {
+  if (genre === "devis") return "devis";
+  if (genre === "facture") return "facture";
+  return "retour d'intervention";
+}
+
+/**
+ * L'échéance AVEC SES MOTS — « , à régler avant le 21 septembre », ou rien.
+ *
+ * **Elle emporte sa ponctuation, et c'est la seule façon sûre.** Le délai de
+ * paiement est un interrupteur : éteint, il n'y a pas d'échéance. Une pastille
+ * qui ne rendrait que la date laisserait alors « Voici votre facture F2026-0008,
+ * à régler avant le . » dans la boîte du client — une phrase cassée, sur le seul
+ * document qu'il faut lire sans hésiter.
+ */
+export function clauseEcheance(echeanceLisible?: string | null): string {
+  return echeanceLisible ? `, à régler avant le ${echeanceLisible}` : "";
 }
 
 /**
@@ -162,12 +320,30 @@ export function phraseDuDocument(
  */
 export function rendreMessage(
   modele: string,
-  valeurs: { client: string; document: string; lien: string; entreprise: string }
+  valeurs: {
+    client: string;
+    /** Le mot du document : « devis », « facture », « retour d'intervention ». */
+    document: string;
+    /** Le numéro du document. Vide quand il n'y en a pas encore. */
+    numero?: string;
+    /** L'échéance AVEC ses mots, ou vide (voir `clauseEcheance`). */
+    echeance?: string;
+    /** La phrase « autre date » AVEC son espace, ou vide (voir `clauseAutreDate`). */
+    autreDate?: string;
+    lien: string;
+    /** Jusqu'à quand le lien répond (voir `clauseValidite`), ou vide hors devis. */
+    validite?: string;
+    entreprise: string;
+  }
 ): string {
   const rendu = modele
     .replace(/\[client\]/g, valeurs.client)
     .replace(/\[document\]/g, valeurs.document)
+    .replace(/\[numero\]/g, valeurs.numero ?? "")
+    .replace(/\[echeance\]/g, valeurs.echeance ?? "")
+    .replace(/\[autre-date\]/g, valeurs.autreDate ?? "")
     .replace(/\[lien\]/g, valeurs.lien)
+    .replace(/\[validite\]/g, valeurs.validite ?? "")
     .replace(/\[entreprise\]/g, valeurs.entreprise);
 
   // **UN CLIENT SANS NOM NE DOIT PAS DONNER « Bonjour , ».**
@@ -193,6 +369,13 @@ function nommer(clientNom: string, clientCivilite?: CiviliteChoisie): string {
   return clientNom.trim() ? avecCivilite(clientNom, clientCivilite) : "";
 }
 
+/** Ce que l'envoi d'un devis a fixé et que son message dit : le jour où le lien meurt, et la case « autre date ». */
+export type EnvoiDuDevis = {
+  /** « AAAA-MM-JJ », le jour de `expire_at`. */
+  expireLe: string;
+  autreDateAutorisee: boolean;
+};
+
 /**
  * Compose le message remettant le devis au client.
  *
@@ -207,20 +390,31 @@ export function composerMessageClient(params: {
   clientCivilite?: CiviliteChoisie;
   entrepriseNom: string;
   lien: string;
-  /** Son message, s'il en a écrit un. Absent : `MESSAGE_PAR_DEFAUT`. */
+  /** Le numéro du devis, quand il en porte un. */
+  numeroDevis?: string | null;
+  /** SON message de devis, s'il en a écrit un. Absent : celui d'Atlas. */
   modele?: string | null;
+  /**
+   * Ce que l'envoi a fixé, et que le message doit dire tel quel. **Obligatoire** :
+   * c'est son absence qui laissait partir la phrase « autre date » case
+   * décochée (29 septembre 2026).
+   */
+  envoi: EnvoiDuDevis;
 }): MessageClient {
-  const { clientNom, clientCivilite, entrepriseNom, lien, modele } = params;
+  const { clientNom, clientCivilite, entrepriseNom, numeroDevis, lien, modele, envoi } = params;
   return {
     // **L'objet ne se règle pas, et c'est délibéré.** Il ne se lit que par
     // courriel — jamais par SMS —, il doit rester reconnaissable dans une boîte
     // de réception, et un objet vide ou trompeur envoie le message aux
     // indésirables. Ce qu'il écrit, c'est le corps.
-    objet: `Votre devis — ${entrepriseNom}`,
-    corps: rendreMessage(modele?.trim() || MESSAGE_PAR_DEFAUT, {
+    objet: `Votre devis de ${entrepriseNom}`,
+    corps: rendreMessage(modele?.trim() || MESSAGES_PAR_DEFAUT.devis, {
       client: nommer(clientNom, clientCivilite),
-      document: phraseDuDocument({ genre: "devis" }),
+      document: motDuDocument("devis"),
+      numero: numeroDevis ?? "",
+      autreDate: clauseAutreDate(envoi.autreDateAutorisee),
       lien,
+      validite: clauseValidite(envoi.expireLe, entrepriseNom),
       entreprise: entrepriseNom,
     }),
   };
@@ -247,16 +441,59 @@ export function composerMessageFacture(params: {
     params;
   return {
     objet: `Votre facture ${numeroFacture} — ${entrepriseNom}`,
-    corps: rendreMessage(modele?.trim() || MESSAGE_PAR_DEFAUT, {
+    corps: rendreMessage(modele?.trim() || MESSAGES_PAR_DEFAUT.facture, {
       client: nommer(clientNom, clientCivilite),
-      // **L'échéance entre dans la phrase du document, avant le lien.** Elle
-      // vivait après lui, sur sa propre ligne ; un seul emplacement ne peut pas
-      // porter les deux, et c'est la seule chose que le client doit savoir sans
-      // ouvrir la pièce.
-      document: phraseDuDocument({ genre: "facture", numero: numeroFacture, echeanceLisible }),
+      document: motDuDocument("facture"),
+      numero: numeroFacture,
+      // **L'échéance entre dans la phrase, avant le lien**, et elle emporte ses
+      // mots : sans échéance, la clause disparaît en entier plutôt que de
+      // laisser « à régler avant le . » chez le client.
+      echeance: clauseEcheance(echeanceLisible),
       lien,
       entreprise: entrepriseNom,
     }),
+  };
+}
+
+/**
+ * Compose le message remettant l'AVOIR au client — sa question du 24 septembre
+ * 2026 : *« lorsque j'envoie l'avoir, ça fait comme pour envoyer un devis, ça
+ * ouvre soit les SMS soit les mails ? »*
+ *
+ * **Le lien est celui de la FACTURE**, et c'est délibéré : l'avoir corrige une
+ * facture, le client la retrouve donc là où il l'a déjà ouverte, avec l'avoir
+ * posé dessous. Un second système de liens publics serait une seconde porte à
+ * garder, pour un document qu'il dit lui-même « hyper rare ».
+ *
+ * **Pas de modèle réglable** : les trois messages qu'il écrit (devis, facture,
+ * retour d'intervention) vivent dans ses réglages ; un quatrième pour une pièce
+ * aussi rare ajouterait une case que personne ne remplira. Le texte d'Atlas suit
+ * la même enveloppe que les trois autres, donc la même voix.
+ */
+export function composerMessageAvoir(params: {
+  clientNom: string;
+  clientCivilite?: CiviliteChoisie;
+  entrepriseNom: string;
+  numeroAvoir: string;
+  numeroFacture: string;
+  lien: string;
+}): MessageClient {
+  const { clientNom, clientCivilite, entrepriseNom, numeroAvoir, numeroFacture, lien } = params;
+  return {
+    objet: `Votre avoir ${numeroAvoir} de ${entrepriseNom}`,
+    corps: rendreMessage(
+      enveloppe(
+        `Voici votre avoir [numero], qui rectifie la facture ${numeroFacture}. ` +
+          "Vous pouvez le consulter et le télécharger ici :"
+      ),
+      {
+        client: nommer(clientNom, clientCivilite),
+        document: "avoir",
+        numero: numeroAvoir,
+        lien,
+        entreprise: entrepriseNom,
+      }
+    ),
   };
 }
 
@@ -279,16 +516,70 @@ export function composerMessageEntretien(params: {
   entrepriseNom: string;
   lien: string;
   modele?: string | null;
+  /**
+   * La facture du passage, quand son contrat d'entretien l'envoie AVEC le
+   * compte rendu (26 septembre 2026). **Elle s'ajoute en fin de message**, le
+   * lien seul sur sa ligne comme l'autre : son modèle à lui reste intact, et
+   * « aucune facture évoquée » reste vrai de tout compte rendu qui n'en porte
+   * pas.
+   */
+  lienFacture?: string | null;
 }): MessageClient {
-  const { clientNom, clientCivilite, entrepriseNom, lien, modele } = params;
+  const { clientNom, clientCivilite, entrepriseNom, lien, modele, lienFacture } = params;
+  const corps = rendreMessage(modele?.trim() || MESSAGES_PAR_DEFAUT.passage, {
+    client: nommer(clientNom, clientCivilite),
+    document: motDuDocument("passage"),
+    lien,
+    entreprise: entrepriseNom,
+  });
   return {
-    objet: `Compte rendu de passage — ${entrepriseNom}`,
-    corps: rendreMessage(modele?.trim() || MESSAGE_PAR_DEFAUT, {
-      client: nommer(clientNom, clientCivilite),
-      document: phraseDuDocument({ genre: "entretien" }),
-      lien,
-      entreprise: entrepriseNom,
-    }),
+    objet: lienFacture ? `Retour d'intervention et facture de ${entrepriseNom}` : `Retour d'intervention de ${entrepriseNom}`,
+    corps: lienFacture ? `${corps}\n\nVotre facture pour ce passage :\n\n${lienFacture}\n` : corps,
+  };
+}
+
+/**
+ * Le message qui porte le CONTRAT D'ENTRETIEN (26 septembre 2026).
+ *
+ * **Même enveloppe que les trois autres** : le bonjour, le lien seul sur sa
+ * ligne, la signature. **Pas encore de modèle à lui dans les Réglages** : les
+ * trois messages modifiables sont ceux qu'il a décidés le 7 septembre, et en
+ * ajouter un quatrième à l'écran des réglages se lui demande (`TODO.md`).
+ */
+export function composerMessageContrat(params: {
+  clientNom: string;
+  clientCivilite?: CiviliteChoisie;
+  entrepriseNom: string;
+  lien: string;
+}): MessageClient {
+  const { clientNom, clientCivilite, entrepriseNom, lien } = params;
+  return {
+    objet: `Contrat d'entretien de ${entrepriseNom}`,
+    corps: rendreMessage(
+      enveloppe("Voici votre contrat d'entretien. Vous pouvez le lire, le télécharger et l'accepter sur cette page :"),
+      { client: nommer(clientNom, clientCivilite), document: "contrat d'entretien", lien, entreprise: entrepriseNom }
+    ),
+  };
+}
+
+/**
+ * Le message des DATES DU MOIS d'un contrat (planche 130) : un seul lien pour
+ * tous les passages du mois. `duMois` vaut « d'octobre », « de novembre ».
+ */
+export function composerMessageDatesDuMois(params: {
+  clientNom: string;
+  clientCivilite?: CiviliteChoisie;
+  entrepriseNom: string;
+  duMois: string;
+  lien: string;
+}): MessageClient {
+  const { clientNom, clientCivilite, entrepriseNom, duMois, lien } = params;
+  return {
+    objet: `Vos passages ${duMois}`,
+    corps: rendreMessage(
+      enveloppe(`Voici les dates de vos passages ${duMois}. Vous pouvez les valider sur cette page :`),
+      { client: nommer(clientNom, clientCivilite), document: "dates de passage", lien, entreprise: entrepriseNom }
+    ),
   };
 }
 

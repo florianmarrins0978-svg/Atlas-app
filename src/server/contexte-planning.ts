@@ -2,9 +2,15 @@ import { chantiersDeLEquipe, listerChantiersPourPlanning } from "@/server/reposi
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { listerEquipes } from "@/server/repositories/equipes";
 import { absencesSurLaFenetre } from "@/server/repositories/absences-equipe";
-import { HORIZON_OCCUPATION_PATRON_JOURS, ajouterJours, versJourIso } from "@/server/disponibilites";
+import { HORIZON_OCCUPATION_PATRON_JOURS, ajouterJours, versJourIso } from "@/lib/disponibilites";
 import type { Ctx } from "@/server/repositories/context";
-import { accesDeLaPersonne } from "@/server/autorisation";
+import { accesDeLaPersonne, getRole } from "@/server/autorisation";
+import { poserLesPassagesArrives } from "@/server/repositories/contrats-entretien";
+import { peutModifierLePlanning } from "@/lib/acces-roles";
+import { seuilMemoireCalendrier } from "@/lib/onglet-chantier";
+import { jourIso } from "@/lib/jour";
+import { couleursDepuisColonnes } from "@/lib/couleurs-planning";
+import { charteDeLaPersonne } from "@/server/repositories/charte-personne";
 
 /**
  * TOUT CE QU'IL FAUT POUR PEINDRE UNE JOURNÉE — chargé une seule fois, servi
@@ -31,16 +37,32 @@ import { accesDeLaPersonne } from "@/server/autorisation";
  * ───────────────────────────────────────────────────────────────────────────
  */
 export async function contextePlanning(ctx: Ctx, maintenant: Date) {
-  const [chantiers, entreprise, equipesNommees, absences, acces] = await Promise.all([
+  // **Les passages des contrats arrivent AVANT la lecture**, pour qu'ils soient
+  // dans « Sans date » dès cette ouverture-ci. Seul qui peut écrire le planning
+  // les fait arriver : c'est lui qui les pose, et « Sans date » n'existe que
+  // pour lui (`PlanningClient`). Rejouable : l'arrivée est idempotente.
+  const role = await getRole(ctx);
+  if (role && peutModifierLePlanning(role)) {
+    await poserLesPassagesArrives(ctx, jourIso(maintenant));
+  }
+
+  const [chantiers, entreprise, equipesNommees, absences, acces, nomCharte] = await Promise.all([
     listerChantiersPourPlanning(ctx),
     getEntreprise(ctx),
     listerEquipes(ctx),
+    // **La fenêtre s'ouvre EN ARRIÈRE aussi, depuis le 31 août 2026.** Le
+    // calendrier peint désormais les jours passés (planche 100, proposition B) :
+    // une fenêtre partant d'aujourd'hui aurait repeint un mardi de mars sans
+    // l'absence qui l'avait vraiment vidé — donc plus chargé qu'il ne l'a été.
+    // Le coût est nul à l'échelle : une entreprise pose quelques dizaines
+    // d'absences par an, pas des milliers.
     absencesSurLaFenetre(
       ctx,
-      versJourIso(maintenant),
+      seuilMemoireCalendrier(versJourIso(maintenant)),
       versJourIso(ajouterJours(maintenant, HORIZON_OCCUPATION_PATRON_JOURS))
     ),
     accesDeLaPersonne(ctx),
+    charteDeLaPersonne(ctx.utilisateurId),
   ]);
 
   /**
@@ -78,8 +100,13 @@ export async function contextePlanning(ctx: Ctx, maintenant: Date) {
     // sans les deux, et la table ne porte que des noms (`ARCHITECTURE.md` §51).
     nombreEquipes: entreprise?.nombreEquipes ?? 1,
     nombreSalaries: entreprise?.nombreSalaries ?? 0,
-    equipesNommees: equipesNommees.map((e) => ({ rang: e.rang, nom: e.nom })),
+    equipesNommees: equipesNommees.map((e) => ({ rang: e.rang, nom: e.nom, photo: e.photo })),
     absences,
+    // **Les couleurs de l'entreprise ET l'apparence de la personne** (sa
+    // demande du 29 septembre 2026) : la seconde décide si la couleur choisie
+    // doit s'éclaircir pour se voir sur fond sombre (`variablesDesEtats`).
+    couleurs: couleursDepuisColonnes(entreprise),
+    nomCharte,
   };
 }
 

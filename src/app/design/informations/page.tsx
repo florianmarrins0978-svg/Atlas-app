@@ -52,7 +52,7 @@ export default function InformationsMockup() {
 
         <div className="mx-6 mt-5 rounded-2xl px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
           <p className="text-[13px]" style={{ color: colors.rust }}>
-            Proposé à partir de la dictée — à vérifier avant de continuer.
+            Proposé à partir de la dictée, à vérifier avant de continuer.
           </p>
         </div>
 

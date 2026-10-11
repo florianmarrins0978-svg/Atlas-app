@@ -73,8 +73,8 @@
   avis.setAttribute('role', 'note');
   avis.innerHTML =
     '<strong>Maquette de démonstration.</strong> Ces écrans montrent l\'intention, ' +
-    'rien n\'y est enregistré. L\'application complète — chantiers, planning, envoi ' +
-    'du devis au client, facture et TVA — attend son hébergement.';
+    'rien n\'y est enregistré. L\'application complète (chantiers, planning, envoi ' +
+    'du devis au client, facture et TVA) attend son hébergement.';
 
   document.body.insertBefore(avis, nav);
 

@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atlas, informations légales</title>
+<meta name="description" content="Planche : les mentions légales du site de vente d'Atlas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Hanken+Grotesk:wght@400;500;600&display=swap">
+<!--
+  PLANCHE, rien n'est codé dans l'application.
+
+  Sa question du 8 octobre 2026, après quatre essais de transitions refusés :
+  « qu'est-ce que les équipes design chez Apple auraient proposé ? ». La
+  réponse tient dans la construction, pas dans un effet : quatre ou cinq
+  moments au lieu de douze écrans, un mot géant par chapitre, le détail en
+  grand plutôt que l'écran entier en petit, et un mouvement qui ne sert qu'à
+  révéler. Elle vit à côté de defilement.html pour qu'il compare les deux.
+
+  Toutes les images sont les captures du chantier Lemaire (defilement.html dit
+  comment elles ont été prises), et les gros plans en sont des recadrages
+  (images/chap-*.jpg) : rien n'est redessiné.
+
+  Le « 17 minutes » proposé dans la conversation n'est PAS écrit : aucun temps
+  n'a été mesuré chez un utilisateur. La phrase qui le remplace dit ce que
+  l'application permet vraiment : envoyer le devis depuis le chantier.
+
+  La page du client (images/accord-entier.jpg) est la capture accord.jpg,
+  prolongée vers le bas par la même page capturée le 9 octobre au même état
+  (date choisie, case cochée) : seuls « Je ne donne pas suite » et la mention
+  d'horodatage viennent de la seconde, qui ne portent aucune donnée.
+
+  Les outils (arrosage, diagnostic) ne figurent pas : sa demande, le site
+  reste sur le devis, le planning, la facture et la TVA.
+
+  LE SITE COMPLET, ses réponses du 9 octobre : les prix s'affichent ; l'essai
+  de 15 jours est dans les formules ; pas d'adresse de contact encore ; pas de
+  parcours personnel, « il faut vendre l'appli » ; la facture électronique
+  n'est pas disponible, chaque utilisateur pourra relier son compte.
+  La cible, tranchée le même jour : les paysagistes ET les élagueurs, pas
+  « les artisans » en général, que l'appli ne sert pas encore.
+  Tout ce qui est écrit sur les formules vient de src/lib/abonnements.ts
+  (prix, lignes, essai Illimité sans carte), et ce qui est dit de la
+  résiliation vient des conditions générales (article 12). Aucun avis, aucun
+  chiffre d'usage : il n'en existe pas encore. Les boutons « Essayer »
+  mènent au bas de la page tant que l'adresse de l'application n'est pas
+  donnée.
+-->
+<!--
+  Les mentions légales du site de vente. Chaque case vide l'est délibérément :
+  les mêmes champs sont « [À COMPLÉTER] » dans les conditions générales
+  (src/server/documents-legaux/versions.ts), et les remplir au plausible est
+  puni par l'article 1-2 de la LCEN. Le patron les fournit, on les recopie.
+-->
+<style>
+:root{
+  --fond:#f3f1ea;--papier:#fbfaf6;--encre:#1c211b;--encre-2:#5c6258;
+  --pin:#2f3b2f;--sauge:#7e9c6c;--or:#b0823f;--trait:#ddd7c8;--bouton-texte:#faf8f3;
+  --nuit:#1b241d;--sur-nuit:#ece8dc;--sur-nuit-2:#a9b3a2;
+  --ombre:28,33,27;
+  --display:"Instrument Serif","Iowan Old Style",Georgia,serif;
+  --texte:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --fond:#141b16;--papier:#1a231d;--encre:#ece8dc;--encre-2:#a9b3a2;
+    --pin:#cfd8c4;--sauge:#8fae7c;--or:#cf9f58;--trait:#2e3b31;--bouton-texte:#141b16;
+    --nuit:#0e1410;--ombre:0,0,0;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --fond:#141b16;--papier:#1a231d;--encre:#ece8dc;--encre-2:#a9b3a2;
+  --pin:#cfd8c4;--sauge:#8fae7c;--or:#cf9f58;--trait:#2e3b31;--bouton-texte:#141b16;
+  --nuit:#0e1410;--ombre:0,0,0;color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{overflow-x:clip}
+body{margin:0;background:var(--fond);color:var(--encre);font:400 18px/1.55 var(--texte);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+body{margin:0;background:var(--fond);color:var(--encre);font:400 17px/1.6 var(--texte);-webkit-font-smoothing:antialiased}
+.colonne{max-width:720px;margin:0 auto;padding:32px 16px 80px}
+.retour{display:inline-block;padding:12px 0;font:500 15px/1 var(--texte);text-decoration:none;color:var(--encre-2)}
+h1{font:400 clamp(52px,14vw,96px)/1 var(--display);margin:24px 0 8px;letter-spacing:-.015em}
+h2{font:400 34px/1.1 var(--display);margin:56px 0 16px;scroll-margin-top:24px}
+p{margin:0 0 12px;color:var(--encre-2)}
+dl{margin:0}
+dl div{display:flex;justify-content:space-between;gap:16px;padding:13px 0;border-top:1px solid var(--trait)}
+dl div:last-child{border-bottom:1px solid var(--trait)}
+dt{color:var(--encre-2)}
+dd{margin:0;text-align:right}
+.a-completer{display:inline-block;padding:3px 10px;border:1px dashed var(--or);border-radius:999px;color:var(--or);font-size:14px;white-space:nowrap}
+</style>
+</head>
+<body>
+<main class="colonne">
+  <a class="retour" href="chapitres.html">Retour au site</a>
+  <h1>Informations légales.</h1>
+
+  <h2 id="mentions">Mentions légales</h2>
+  <dl>
+    <div><dt>Éditeur</dt><dd><span class="a-completer">à compléter</span></dd></div>
+    <div><dt>Forme juridique et capital</dt><dd><span class="a-completer">à compléter</span></dd></div>
+    <div><dt>Siège social</dt><dd><span class="a-completer">à compléter</span></dd></div>
+    <div><dt>RCS et SIREN</dt><dd><span class="a-completer">à compléter</span></dd></div>
+    <div><dt>TVA intracommunautaire</dt><dd><span class="a-completer">à compléter</span></dd></div>
+    <div><dt>Directeur de la publication</dt><dd><span class="a-completer">à compléter</span></dd></div>
+    <div><dt>Téléphone</dt><dd><span class="a-completer">à compléter</span></dd></div>
+    <div><dt>E-mail</dt><dd><span class="a-completer">à compléter</span></dd></div>
+    <div><dt>Hébergeur</dt><dd><span class="a-completer">à compléter</span></dd></div>
+  </dl>
+
+  <h2 id="conditions">Conditions générales</h2>
+  <p>Elles s'acceptent à la création du compte, dans Atlas.</p>
+
+  <h2 id="donnees">Données personnelles</h2>
+  <p>Vos clients, vos prix et vos chantiers ne sont visibles que par votre équipe.</p>
+  <dl>
+    <div><dt>Responsable du traitement</dt><dd><span class="a-completer">à compléter</span></dd></div>
+    <div><dt>Pour exercer vos droits</dt><dd><span class="a-completer">à compléter</span></dd></div>
+  </dl>
+
+  <h2 id="cookies">Cookies</h2>
+  <p>Ce site ne dépose aucun cookie.</p>
+</main>
+</body>
+</html>

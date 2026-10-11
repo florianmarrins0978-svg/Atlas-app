@@ -21,8 +21,15 @@
 
 import { execFileSync } from "node:child_process";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
+import { exigerLesOutils } from "./_outil-requis";
 
-const BASE = "http://localhost:3000";
+// **Sans ces outils, cette suite ne mesure RIEN** — elle le dit et sort du
+// compte, au lieu de rougir sur une machine qui n'y est pour rien
+// (`_outil-requis.ts`, sa colère du 20 septembre 2026).
+exigerLesOutils("bash");
+
+const BASE = ADRESSE;
 
 let echecs = 0;
 function verifier(nom: string, condition: boolean, detail = "") {

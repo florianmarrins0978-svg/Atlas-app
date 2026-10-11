@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="only light">
-<title>Arborea — Mes tarifs</title>
+<title>Arborea : Mes tarifs</title>
 <meta name="description" content="Renseignez vos prix une seule fois. L'assistant rédige ensuite vos devis tout seul, sans jamais inventer un tarif.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -199,9 +199,9 @@
 
 <main>
   <header class="hero">
-    <span class="eyebrow">Configuration · une seule fois</span>
+    <span class="eyebrow">Configuration, une seule fois</span>
     <h1>Vos prix, une bonne fois pour toutes.</h1>
-    <p>Renseignez ici vos tarifs — main-d'œuvre, matériel, forfaits. Ensuite, l'assistant rédige vos devis tout seul à partir de votre note vocale, en piochant dans cette grille. Il ne devine jamais un prix&nbsp;: si un poste manque, il vous le signale, vous l'ajoutez une fois, et c'est mémorisé.</p>
+    <p>Renseignez ici vos tarifs : main-d'œuvre, matériel, forfaits. Ensuite, l'assistant rédige vos devis tout seul à partir de votre note vocale, en piochant dans cette grille. Il ne devine jamais un prix&nbsp;: si un poste manque, il vous le signale, vous l'ajoutez une fois, et c'est mémorisé.</p>
     <span class="privacy">🔒 Vos tarifs et vos clients restent sur votre appareil. Nous n'y avons jamais accès.</span>
   </header>
 
@@ -244,7 +244,7 @@
   <section class="section">
     <div class="section-head">
       <h2>Forfaits &amp; combinaisons</h2>
-      <p class="hint">Un prix « package » qui n'est pas la simple somme — ex. 1&nbsp;homme + broyeur + camion à la journée.</p>
+      <p class="hint">Un prix « package » qui n'est pas la simple somme, ex. 1&nbsp;homme + broyeur + camion à la journée.</p>
     </div>
     <div class="cards" id="forfaitsList"></div>
     <button class="btn-add" id="addForfait" type="button">+ Ajouter un forfait</button>
@@ -258,7 +258,7 @@
 
 <script>
   /* =====================================================================
-     Mes tarifs — grille de prix local-first, générique (multi-métier).
+     Mes tarifs, grille de prix local-first, générique (multi-métier).
      Aucune donnée ne quitte l'appareil : tout est stocké en localStorage.
      ===================================================================== */
 
@@ -287,7 +287,7 @@
 
   // Exemples génériques proposés à un compte vierge (entièrement modifiables).
   const EXEMPLES_RESSOURCES = [
-    { libelle:'Main-d’œuvre — 1 personne', categorie:'Main-d’œuvre', unite:'jour', prix:250 },
+    { libelle:'Main-d’œuvre, 1 personne', categorie:'Main-d’œuvre', unite:'jour', prix:250 },
     { libelle:'Camion benne', categorie:'Matériel / location', unite:'jour', prix:120 },
     { libelle:'Déplacement / zone d’intervention', categorie:'Déplacement', unite:'forfait', prix:0 },
   ];
@@ -342,7 +342,7 @@
     card.innerHTML = `
       <div class="lib"><span class="c-label">Désignation</span>
         <input class="libelle f-libelle" type="text" value="${(item.libelle||'').replace(/"/g,'&quot;')}"
-               placeholder="${kind==='forfait' ? '1 homme + broyeur + camion' : 'Ex : Main-d’œuvre — 1 personne'}"></div>
+               placeholder="${kind==='forfait' ? '1 homme + broyeur + camion' : 'Ex : Main-d’œuvre, 1 personne'}"></div>
       ${catCell}
       <div class="unit"><span class="c-label">Unité</span>
         <div class="unit-wrap"><span class="per">/</span>
@@ -397,7 +397,7 @@
 
   function renderAll(){
     renderList('ressourcesList', state.ressources, 'ressource',
-      'Aucun poste pour l’instant. Ajoutez votre premier tarif — une personne à la journée, par exemple.', true);
+      'Aucun poste pour l’instant. Ajoutez votre premier tarif : une personne à la journée, par exemple.', true);
     renderList('forfaitsList', state.forfaits, 'forfait',
       'Optionnel. Ajoutez un forfait si vous avez des prix « package ».', false);
   }

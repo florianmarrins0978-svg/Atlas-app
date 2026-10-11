@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Le croquis → le plan — essai</title>
+<title>Le croquis → le plan : essai</title>
 <!--
   ═══════════════════════════════════════════════════════════════════════════
   DU CROQUIS AU PLAN — LA MAQUETTE ESSAYABLE DE LA CIBLE
@@ -160,15 +160,15 @@
 </head>
 <body>
 <div class="dedans">
-  <p class="sur">Atlas · maquette essayable</p>
+  <p class="sur">Atlas, maquette essayable</p>
   <h1>Du croquis au plan</h1>
   <p class="chapo">Vous envoyez la photo, vous choisissez la marque.
     <b>Tout le reste se déduit</b> : le plan en couleur et la liste des pièces.
-    <b>Rien n'est codé dans l'application</b> — c'est la maquette pour essayer
+    <b>Rien n'est codé dans l'application</b>, c'est la maquette pour essayer
     avant.</p>
 
   <section>
-    <h2>1 · Le croquis</h2>
+    <h2>1, Le croquis</h2>
     <p class="aide">Photographiez le croquis du client avec ses métrés. C'est
       la seule chose que vous saisissez.</p>
 
@@ -183,7 +183,7 @@
     <label for="exemples" style="margin-bottom:7px">Ce que l'IA a lu</label>
     <div class="exemples" id="exemples"></div>
     <p class="aide" style="margin:10px 0 14px">
-      <span class="provisoire">La lecture de la photo est simulée ici</span> —
+      <span class="provisoire">La lecture de la photo est simulée ici</span>,
       cette page n'a pas de serveur. Choisissez un jardin d'exemple pour voir ce
       que donnerait la lecture. <b>Le plan et la liste, eux, sont vraiment
       calculés</b>, sur votre catalogue.
@@ -195,7 +195,7 @@
   </section>
 
   <section>
-    <h2>2 · Le plan</h2>
+    <h2>2, Le plan</h2>
     <p class="aide">Un réseau, une couleur. Les <b>PE en pointillés</b>, les
       arroseurs en <b>ronds</b>, la <b>nourrice</b> à son regard.</p>
     <div class="feuille"><div id="plan"></div></div>
@@ -203,7 +203,7 @@
   </section>
 
   <section>
-    <h2>3 · Les pièces à acheter</h2>
+    <h2>3, Les pièces à acheter</h2>
     <p class="aide">Des <b>quantités</b>, jamais un prix du catalogue. Rangées
       comme vous les commandez.</p>
     <div class="compte" id="compte"></div>
@@ -214,7 +214,7 @@
     <b>Ce qui est simulé :</b> la lecture des mesures sur la photo. Rien
     d'autre.<br>
     <b>Ce qui ne l'est pas :</b> le plan, les quantités, le choix des buses, le
-    découpage en réseaux, les pièces de nourrice — tout sort du même calcul que
+    découpage en réseaux, les pièces de nourrice : tout sort du même calcul que
     l'outil, sur votre catalogue.<br>
     <b>Aucun prix</b> : la liste part chez votre fournisseur, son devis revient
     par le parcours habituel.
@@ -234,9 +234,9 @@
    qu'un arroseur en trop est apparu sur son plan le 17 août.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── LES TROIS JARDINS D'EXEMPLE — ce que l'IA rendrait d'un croquis ────────
+/* ── LES TROIS JARDINS D'EXEMPLE, ce que l'IA rendrait d'un croquis ────────
    Ils ne sont PAS des décors : ce sont des jardins plausibles, dont chaque
-   mesure passe dans le vrai calcul. Trois, pour qu'il voie l'écran changer —
+   mesure passe dans le vrai calcul. Trois, pour qu'il voie l'écran changer :
    un seul exemple ne dirait pas si le plan suit vraiment ce qu'on lui donne. */
 var JARDINS = [
   { nom:'Pavillon simple',
@@ -312,7 +312,7 @@ function dessinerCroquis(){
     lecture.innerHTML = '<b>Croquis reçu.</b> Il reste avec le chantier.';
   } else {
     libelle.textContent = 'Ajouter la photo du croquis';
-    lecture.innerHTML = 'Facultatif ici — c\'est lui qui fera foi sur le chantier.';
+    lecture.innerHTML = 'Facultatif ici, c\'est lui qui fera foi sur le chantier.';
   }
 }
 
@@ -344,21 +344,21 @@ function dessinerMarques(){
   document.getElementById('marqueNote').innerHTML = combien
     ? combien + ' buse(s) ' + nomDeMarque(marqueCourante()) + ' posables au catalogue.'
     : '<span class="provisoire">Aucune buse ' + nomDeMarque(marqueCourante()) +
-      ' encore enregistrée</span> — le plan reprendra la marque par défaut.';
+      ' encore enregistrée</span>, le plan reprendra la marque par défaut.';
 }
 
-/* ══ LE PLAN D'ENSEMBLE — le vocabulaire de SON plan à lui ══════════════════
+/* ══ LE PLAN D'ENSEMBLE, le vocabulaire de SON plan à lui ══════════════════
 
    Sa photo du 17 août : les PE en pointillés, les arroseurs en ronds, la
    nourrice dans son regard, une couleur par réseau. La dripline n'est PAS
-   tracée — sa consigne : « juste la dripline, ça tu ne le mets pas » — mais sa
+   tracée (sa consigne : « juste la dripline, ça tu ne le mets pas ») mais sa
    vanne est bien au regard.
 
    **La disposition des zones est arbitraire, et c'est la seule chose qui le
    soit.** L'outil ne sait pas encore OÙ les zones sont les unes par rapport
    aux autres : c'est précisément ce que la lecture du croquis apportera. On
    les range donc côte à côte, à l'échelle, ce qui suffit à juger les symboles,
-   les couleurs et la lisibilité — le reste viendra du croquis. */
+   les couleurs et la lisibilité : le reste viendra du croquis. */
 var E = 13;          // pixels par mètre
 var MARGE_PLAN = 34; // le tour du dessin
 
@@ -392,7 +392,7 @@ function dessinerPlan(d){
 
   // ── LES MASSIFS : une bande par massif, À LA COULEUR DE SA VANNE ─────────
   //
-  // Sa consigne du 17 août : « la dripline, ça tu ne le mets pas » — seul le
+  // Sa consigne du 17 août : « la dripline, ça tu ne le mets pas » : seul le
   // TRACÉ disparaît, pas la zone ni sa vanne. Une bande grise unique laissait
   // croire l'inverse : le dessin montrait deux couleurs quand la nourrice en
   // annonçait trois, et rien ne disait où passait la troisième voie. La bande
@@ -409,7 +409,7 @@ function dessinerPlan(d){
       svg.push('<rect class="massif" x="' + xM.toFixed(1) + '" y="' + yM + '" width="' +
                largeurM.toFixed(1) + '" height="' + bandeMassif + '" rx="4" stroke="' + c + '"/>');
       svg.push('<text class="repere" x="' + (xM + 7).toFixed(1) + '" y="' + (yM + 19) +
-               '" fill="' + c + '">' + (z.nom || TYPES[z.type].nom) + ' — goutte-à-goutte</text>');
+               '" fill="' + c + '">' + (z.nom || TYPES[z.type].nom) + ', goutte-à-goutte</text>');
     });
   }
 
@@ -418,12 +418,11 @@ function dessinerPlan(d){
   // *Défaut trouvé le 23 août 2026, et il barrait la publication de la page.*
   // Le tracé vivait à l'intérieur de `boites.forEach` : un réseau qui ne posait
   // qu'UNE tête dans une zone tombait sur `pts.length < 2` et ne recevait aucun
-  // tuyau — l'arroseur flottait, relié à rien. Sur « Devant et derrière », le
+  // tuyau, l'arroseur flottait, relié à rien. Sur « Devant et derrière », le
   // réseau vert avait quatre têtes réparties sur deux pelouses, dont une seule
   // d'un côté : celle-là n'était alimentée par rien.
   //
-  // C'est le défaut que le patron avait relevé lui-même au chiffre près —
-  // *« il y a quatre arroseurs qui ne sont pas alimentés »* — et la raison
+  // C'est le défaut que le patron avait relevé lui-même au chiffre près (// *« il y a quatre arroseurs qui ne sont pas alimentés »*) et la raison
   // d'être du contrôle des orphelins.
   //
   // Un réseau EST une vanne : son tuyau visite toutes ses têtes, où qu'elles
@@ -458,7 +457,7 @@ function dessinerPlan(d){
     });
     svg.push('<g clip-path="url(#' + id + ')">' + couronnes + '</g>');
     // **Le contour AVANT les tuyaux, et ce n'est pas cosmétique.** Dessiné
-    // après, le trait de la pelouse repeignait la rangée du BAS — dont les
+    // après, le trait de la pelouse repeignait la rangée du BAS : dont les
     // têtes sont posées sur la bordure. Le tracé était juste, et le plan
     // montrait un réseau à moitié relié. Un défaut que seul l'œil voit : le
     // contrôle des orphelins interroge le chemin, pas les pixels.
@@ -475,14 +474,14 @@ function dessinerPlan(d){
   // **La version d'avant dessinait une ligne PAR RANGÉE, et elle mentait.**
   // Une rangée qui ne portait qu'une seule tête de ce réseau n'avait pas de
   // ligne du tout : sur le plan « Pavillon simple », l'arroseur bleu du
-  // milieu flottait, relié à rien — et les deux verts du milieu formaient un
+  // milieu flottait, relié à rien : et les deux verts du milieu formaient un
   // trait suspendu, sans rien qui remonte vers leur rangée du bas. Un plan
   // qu'on emporte sur le chantier doit montrer par où passe le tuyau, sinon
   // il ne sert qu'à compter.
   //
   // Le tracé suit l'ORDRE DE POSE (`pointsDeLaPose` : rangée par rangée, de
   // gauche à droite) et va d'une tête à la suivante en deux segments à angle
-  // droit — horizontal puis vertical. C'est le serpentin qu'on déroule pour
+  // droit, horizontal puis vertical. C'est le serpentin qu'on déroule pour
   // de vrai, et c'est aussi ce qui rend visibles les tés de sa règle du
   // 17 août : chaque tête traversée par le tracé en porte un, la dernière
   // n'a qu'un coude.
@@ -499,12 +498,12 @@ function dessinerPlan(d){
     //    du bout d'une rangée jusqu'à une tête isolée à l'autre bout,
     //    traversant au passage les arroseurs d'un AUTRE réseau. Sur
     //    « Devant et derrière », le bleu repartait du coin droit pour aller
-    //    chercher une tête à gauche, en coupant deux verts — un plan qu'on
+    //    chercher une tête à gauche, en coupant deux verts : un plan qu'on
     //    ne peut pas poser, et qui donne à lire des tés là où il n'y a rien.
     //
     // On part donc de la tête la plus proche du regard et l'on rejoint chaque
     // fois la plus proche restante, à angle droit. Ce n'est pas l'optimum du
-    // tracé — il n'existe pas ici, faute de savoir où passent les obstacles —,
+    // tracé : il n'existe pas ici, faute de savoir où passent les obstacles —,
     // mais aucune jambe n'est absurde, et c'est ce qu'il doit pouvoir juger
     // d'un regard.
     //
@@ -557,12 +556,12 @@ function dessinerPlan(d){
              '<path d="M' + (xv+6) + ' ' + (yR-7) + ' L' + xv + ' ' + yR + ' L' + (xv+6) + ' ' + (yR+7) + ' Z" fill="' + cv + '"/>');
   }
   svg.push('<text class="repere" x="' + (xR + largeurR + 9) + '" y="' + (yR + 4) +
-           '">Nourrice ' + voies + ' voie' + (voies > 1 ? 's' : '') + ' — dans le regard</text>');
+           '">Nourrice ' + voies + ' voie' + (voies > 1 ? 's' : '') + ', dans le regard</text>');
   // L'amenée, en PE, du compteur au regard.
   var a = amenee(d);
   svg.push('<path class="tuyau-p" d="M' + (xR - 16) + ' ' + yR + ' H' + xR + '"/>');
   svg.push('<text class="ech" x="' + MARGE_PLAN + '" y="' + (hauteur - 8) +
-           '">Amenée PE Ø' + a.diametre + ' · échelle 1/100e</text>');
+           '">Amenée PE Ø' + a.diametre + ', échelle 1/100e</text>');
   svg.push('</svg>');
   hote.innerHTML = svg.join('');
 
@@ -573,12 +572,12 @@ function dessinerPlan(d){
   l.push('<span><i class="trait"></i>PE, en pointillés</span>');
   reseauxNappe.sort(function(p, q){ return p - q; }).forEach(function(i){
     l.push('<span><i style="background:' + couleurReseau(i) +
-           ';border-radius:3px"></i>Réseau ' + (i+1) + ' — goutte-à-goutte, non tracé</span>');
+           ';border-radius:3px"></i>Réseau ' + (i+1) + ', goutte-à-goutte, non tracé</span>');
   });
   legende.innerHTML = l.join('');
 }
 
-/* ══ LES CASIERS — l'ordre dans lequel IL commande ══════════════════════════
+/* ══ LES CASIERS : l'ordre dans lequel IL commande ══════════════════════════
 
    Sa demande : « une case, par exemple deux réseaux ou trois réseaux ; les
    pièces pour la nourrice ; ensuite les pièces pour les arroseurs, quel
@@ -588,7 +587,7 @@ function dessinerPlan(d){
    Les lignes ne sont pas réécrites : elles viennent de `listeMateriel`, et on
    ne fait que les RANGER. Un casier qui recopierait une désignation finirait
    par mentir le jour où le catalogue change. */
-var COURONNE = 50;   // mètres par couronne de PE — à confirmer par lui
+var COURONNE = 50;   // mètres par couronne de PE, à confirmer par lui
 
 function rangerEnCasiers(lignes, d){
   var casiers = [
@@ -613,7 +612,7 @@ function rangerEnCasiers(lignes, d){
   // **Rien ne se perd.** Une ligne qu'aucun casier ne reconnaît s'affiche
   // quand même, sous son propre titre : la faire disparaître serait retirer
   // une pièce de la commande sans le dire.
-  if (restes.length) casiers.push({ titre:'Autres pièces', quoi:'Non classées — à ranger.', refs:restes });
+  if (restes.length) casiers.push({ titre:'Autres pièces', quoi:'Non classées : à ranger.', refs:restes });
   return casiers.filter(function(c){ return c.refs.length; });
 }
 
@@ -652,17 +651,17 @@ function dessinerCasiers(d){
     hote.appendChild(b);
   });
 
-  // ── LES COURONNES DE PE — sa demande, et ce qu'on NE sait pas ────────────
+  // ── LES COURONNES DE PE, sa demande, et ce qu'on NE sait pas ────────────
   // Il veut « le nombre de couronnes de PE et en quel diamètre ». Le DIAMÈTRE
   // se calcule (sa règle : Ø25 par défaut, Ø32 si l'hydraulique l'impose). La
   // LONGUEUR, elle, dépend du tracé sur le terrain : on ne l'invente pas, on
-  // la demande — et on dit combien de couronnes elle ferait.
+  // la demande : et on dit combien de couronnes elle ferait.
   var pe = document.createElement('div');
   pe.className = 'casier';
   pe.innerHTML =
     '<h3>Le tuyau PE</h3>' +
     '<p class="quoi">Le <b>diamètre</b> se calcule ; la <b>longueur</b> se mesure ' +
-    'sur le terrain — elle dépend du tracé, et une longueur inventée se paie ' +
+    'sur le terrain, elle dépend du tracé, et une longueur inventée se paie ' +
     'à la pose.</p>' +
     '<div class="l"><span class="q">Ø' + a.diametre + '</span>' +
     '<span class="n">Amenée du compteur au regard — ' +
@@ -673,7 +672,7 @@ function dessinerCasiers(d){
     '<div class="l"><span class="q">Ø25</span><span class="n">Antennes vers les réseaux — ' +
     '<span class="provisoire">longueur à mesurer</span></span></div>' +
     '<p class="quoi" style="margin:10px 0 0">La couronne est comptée à ' + COURONNE +
-    ' m. <span class="provisoire">À confirmer</span> — c\'est le conditionnement ' +
+    ' m. <span class="provisoire">À confirmer</span>, c\'est le conditionnement ' +
     'de votre fournisseur, pas une donnée du catalogue.</p>';
   hote.appendChild(pe);
 }

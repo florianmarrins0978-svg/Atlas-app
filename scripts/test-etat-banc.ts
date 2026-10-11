@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { lireEtatConstruction, laVersionRapideSeConstruit } from "../src/server/etat-banc";
+import { lireEtatConstruction, laVersionRapideSeConstruit, lireChantier } from "../src/server/etat-banc";
 
 /**
  * Le bandeau « version rapide en construction » : ce qu'il dit, et quand il se tait.
@@ -30,9 +30,12 @@ console.log("=== L'état de construction du banc ===\n");
 // ─── Quand le bandeau existe, et quand il n'existe pas ──────────────────────
 
 cas("hors banc d'essai, il n'y a rien à montrer", () => {
-  assert.equal(laVersionRapideSeConstruit({ NODE_ENV: "development" } as NodeJS.ProcessEnv), false);
   assert.equal(
-    laVersionRapideSeConstruit({ NODE_ENV: "production" } as NodeJS.ProcessEnv),
+    laVersionRapideSeConstruit({ NODE_ENV: "development" } as NodeJS.ProcessEnv, false),
+    false
+  );
+  assert.equal(
+    laVersionRapideSeConstruit({ NODE_ENV: "production" } as NodeJS.ProcessEnv, true),
     false,
     "une application déployée n'a rien à bâtir"
   );
@@ -40,17 +43,17 @@ cas("hors banc d'essai, il n'y a rien à montrer", () => {
 
 cas("sur le banc, en mode développement : la version rapide se construit encore", () => {
   assert.equal(
-    laVersionRapideSeConstruit({ ATLAS_PROFIL: "banc", NODE_ENV: "development" } as NodeJS.ProcessEnv),
+    laVersionRapideSeConstruit({ ATLAS_PROFIL: "banc", NODE_ENV: "development" } as NodeJS.ProcessEnv, false),
     true
   );
 });
 
-// **`next start` impose `NODE_ENV=production`.** Servir en production SUR un
-// banc EST la preuve que la bascule a eu lieu : tout est compilé, le bandeau
+// **Servir du code BÂTI sur un banc EST la preuve que la bascule a eu lieu** :
+// tout est compilé, le bandeau
 // n'a plus rien à dire.
 cas("sur le banc, une fois la version rapide en place : plus de bandeau", () => {
   assert.equal(
-    laVersionRapideSeConstruit({ ATLAS_PROFIL: "banc", NODE_ENV: "production" } as NodeJS.ProcessEnv),
+    laVersionRapideSeConstruit({ ATLAS_PROFIL: "banc", NODE_ENV: "production" } as NodeJS.ProcessEnv, true),
     false
   );
 });
@@ -59,8 +62,26 @@ cas("l'ancien nom du profil est reconnu aussi", () => {
   // Un espace créé avant `ATLAS_PROFIL` ne connaît que celui-ci — deux
   // correctifs de suite sont restés inertes pour l'avoir oublié.
   assert.equal(
-    laVersionRapideSeConstruit({ ATLAS_BANC_ESSAI: "1", NODE_ENV: "development" } as NodeJS.ProcessEnv),
+    laVersionRapideSeConstruit({ ATLAS_BANC_ESSAI: "1", NODE_ENV: "development" } as NodeJS.ProcessEnv, false),
     true
+  );
+
+  // ─── CE QUE L'ENVIRONNEMENT NE PEUT PLUS FAIRE DIRE — 10 septembre 2026 ────
+  //
+  // **Le défaut mesuré ce jour-là :** `next start` respecte un `NODE_ENV` qu'on
+  // lui donne — il ne l'impose que s'il manque. La batterie servait donc du code
+  // BÂTI avec `NODE_ENV=development` dans son environnement, et le bandeau
+  // « version rapide en construction » paraissait sur ses vingt-six écrans.
+  //
+  // La règle ne lit plus cette variable : elle reçoit un FAIT de compilation.
+  // Ce contrôle le fixe — une version bâtie se tait, quoi que dise l'environnement.
+  assert.equal(
+    laVersionRapideSeConstruit(
+      { ATLAS_PROFIL: "banc", NODE_ENV: "development" } as NodeJS.ProcessEnv,
+      true
+    ),
+    false,
+    "une version BÂTIE se remet à parler dès que l'environnement dit « development »"
   );
 });
 
@@ -68,7 +89,7 @@ cas("l'ancien nom du profil est reconnu aussi", () => {
 
 cas("préchauffage en cours : le compte est rendu tel quel", () => {
   const e = lireEtatConstruction(JSON.stringify({ faits: 12, total: 19, encours: "/reglages" }));
-  assert.deepEqual(e, { faits: 12, total: 19, encours: "/reglages" });
+  assert.deepEqual(e, { faits: 12, total: 19, encours: "/reglages", versionDavant: false });
 });
 
 cas("préchauffage terminé : le bandeau se tait", () => {
@@ -77,17 +98,17 @@ cas("préchauffage terminé : le bandeau se tait", () => {
 
 cas("fichier absent : on dit que ça travaille, sans inventer de total", () => {
   const e = lireEtatConstruction(null);
-  assert.deepEqual(e, { faits: 0, total: 0, encours: null }, "un total inventé serait une donnée fabriquée");
+  assert.deepEqual(e, { faits: 0, total: 0, encours: null, versionDavant: false }, "un total inventé serait une donnée fabriquée");
 });
 
 // **Lu pendant son écriture.** Le préchauffage réécrit ce fichier à chaque
 // écran ; une lecture qui tombe au milieu rend du JSON tronqué. Ce n'est pas
 // une panne, et cela ne doit ni lever ni afficher d'erreur.
 cas("fichier tronqué : on retombe sur « ça travaille », jamais sur une erreur", () => {
-  assert.deepEqual(lireEtatConstruction('{"faits":3,"tot'), { faits: 0, total: 0, encours: null });
-  assert.deepEqual(lireEtatConstruction(""), { faits: 0, total: 0, encours: null });
-  assert.deepEqual(lireEtatConstruction("null"), { faits: 0, total: 0, encours: null });
-  assert.deepEqual(lireEtatConstruction("[1,2]"), { faits: 0, total: 0, encours: null });
+  assert.deepEqual(lireEtatConstruction('{"faits":3,"tot'), { faits: 0, total: 0, encours: null, versionDavant: false });
+  assert.deepEqual(lireEtatConstruction(""), { faits: 0, total: 0, encours: null, versionDavant: false });
+  assert.deepEqual(lireEtatConstruction("null"), { faits: 0, total: 0, encours: null, versionDavant: false });
+  assert.deepEqual(lireEtatConstruction("[1,2]"), { faits: 0, total: 0, encours: null, versionDavant: false });
 });
 
 cas("un compte supérieur au total est ramené au total", () => {
@@ -99,7 +120,7 @@ cas("un compte supérieur au total est ramené au total", () => {
 
 cas("des valeurs absurdes ne traversent pas", () => {
   const e = lireEtatConstruction(JSON.stringify({ faits: -3, total: "dix-neuf", encours: "" }));
-  assert.deepEqual(e, { faits: 0, total: 0, encours: null });
+  assert.deepEqual(e, { faits: 0, total: 0, encours: null, versionDavant: false });
 });
 
 cas("l'écran en cours n'est rendu que s'il en est vraiment un", () => {
@@ -108,6 +129,44 @@ cas("l'écran en cours n'est rendu que s'il en est vraiment un", () => {
     lireEtatConstruction(JSON.stringify({ faits: 1, total: 5, encours: "/planning" }))?.encours,
     "/planning"
   );
+});
+
+// ── Le témoin de construction : « on sert la version d'avant » ──────────────
+//
+// **Il porte un pid, et c'est tout l'objet de ces cas.** Le banc du patron se
+// fait abattre par le noyau quand la mémoire manque — il laisse alors son
+// témoin derrière lui. Un bandeau qui annoncerait une construction en cours
+// pour toujours enverrait attendre ce que plus personne ne fait : c'est la
+// faute du 20 août (`src/lib/version-lente.ts`), et elle ne se refait pas.
+
+const VIVANT = () => true;
+const MORT = () => false;
+
+cas("un chantier ouvert par un banc vivant se lit", () => {
+  assert.deepEqual(lireChantier(JSON.stringify({ pid: 42, versionDavant: true }), VIVANT), {
+    versionDavant: true,
+  });
+});
+
+cas("un chantier laissé par un banc MORT ne dit rien", () => {
+  assert.equal(
+    lireChantier(JSON.stringify({ pid: 42, versionDavant: true }), MORT),
+    null,
+    "un témoin d'un banc abattu ferait attendre une construction que personne ne fait"
+  );
+});
+
+cas("une construction sans version d'avant ne prétend pas en servir une", () => {
+  // Le tout premier démarrage d'un espace : il n'y a rien à servir, on est bel
+  // et bien en mode développement, et le bandeau garde son compte d'écrans.
+  assert.deepEqual(lireChantier(JSON.stringify({ pid: 42 }), VIVANT), { versionDavant: false });
+});
+
+cas("un témoin illisible ou sans pid ne fait rien croire", () => {
+  for (const brut of ["", "   ", "{pas du json", "null", "[1,2]", "{}", '{"pid":0}', '{"pid":"42"}']) {
+    assert.equal(lireChantier(brut, VIVANT), null, `« ${brut} » aurait dû être écarté`);
+  }
+  assert.equal(lireChantier(null, VIVANT), null);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} État du banc — ${echecs} échec(s).`);

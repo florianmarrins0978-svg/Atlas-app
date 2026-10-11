@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le papier, le même pour le devis et la facture — codé le 14 septembre 2026</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-papier-le-même-pour-le-devis-et-la-facture--codé-le-14-septembre-2026">Le papier, le même pour le devis et la facture — codé le 14 septembre 2026</h1>
+<p><em>Votre planche <code>le-papier-devis-et-facture.html</code>, et votre « PARFAIT ! Code exactement cette planche, du devis à la facture ». Un verdict par point, ce qui a été décidé sans vous et dit, ce qui reste.</em></p>
+<hr>
+<h2 id="en-une-phrase">En une phrase</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Le devis et la facture sortent du même papier</strong>, avec les colonnes des pros, les acomptes reçus déduits et le net à payer ; l'écran de la facture a tous les boutons de la planche. Votre chemin, du devis à la facture, a été joué dans un navigateur, et le PDF regardé en grand contre la planche : les colonnes, les gras et les fontes y sont.</p>
+<hr>
+<h2 id="1-ce-qui-est-codé-point-par-point">1. Ce qui est codé, point par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Sur la planche</th>
+<th>Dans l'application</th>
+</tr></thead><tbody>
+<tr>
+<td>Un seul papier, seul le titre change</td>
+<td>oui — un seul composeur ; la facture ajoute ce qu'elle seule porte</td>
+</tr>
+<tr>
+<td>Désignation · Qté · Unité · P.U. HT · Rem. % · Total HT · TVA % · Total TTC</td>
+<td>oui ; Rem. %, TVA % et Unité centrés ; Total TTC en gras, en-tête comprise</td>
+</tr>
+<tr>
+<td>« 3 », jamais « 3.00 » ; l'unité dans sa colonne</td>
+<td>oui — et l'unité suit enfin le devis jusqu'à la facture (elle se perdait en route)</td>
+</tr>
+<tr>
+<td>Le taux de TVA sur la ligne, les bases par taux dessous</td>
+<td>oui — plus de tableau coupé « TVA 20 % / TVA 10 % »</td>
+</tr>
+<tr>
+<td>Le numéro à droite du titre, CLIENT et LIEU DES TRAVAUX côte à côte</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>« Titre (optionnel) », en italique sous DEVIS ou FACTURE</td>
+<td>oui — sur le devis, recopié sur la facture, retouchable tant qu'elle n'est pas arrêtée. Vide : rien</td>
+</tr>
+<tr>
+<td>Total HT et Total HT après remise en gras, la remise en or, « TVA 20 % »</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>Reste à régler / Net à payer dans la fonte du Total TTC</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>« dont main d'œuvre HT » sur la facture, « + Main d'œuvre »</td>
+<td>oui — recopiée du devis, retouchable</td>
+</tr>
+<tr>
+<td>Chaque montant reçu est un acompte : « Acompte 30 % », « Acompte 50 % », puis « Acompte » ; chacun sa ligne, la somme se déduit sans s'écrire</td>
+<td>oui — le rang dit le taux du devis</td>
+</tr>
+<tr>
+<td>« + Règlement reçu » propose le rang suivant du devis avec son montant</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>Chèque déjà écrit, à toucher pour virement / espèces / carte ; la case du numéro seulement pour un chèque</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>« Montants versés : chèque n° … du …, … € ; virement du …, … €. »</td>
+<td>oui, sans le mot acompte</td>
+</tr>
+<tr>
+<td>« Facture acquittée » : interrupteur ; allumé, le solde est compté reçu, tampon « Acquittée le … »</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>« Pour information, montant de la main d'œuvre TTC »</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>Les colonnes de saisie centrées ; un chiffre touché est sélectionné</td>
+<td>oui</td>
+</tr>
+</tbody></table></div>
+<h2 id="2-décidé-sans-vous-et-dit">2. Décidé sans vous, et dit</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Un acompte reçu avant la facture.</strong> La règle de TVA refusait tout règlement daté d'avant la facture. Sur une facture pas encore arrêtée, l'acompte de la signature est daté d'avant par nature : il se pose désormais, et il entre au relevé de TVA à la date où l'argent est tombé — c'est la même table que « Noter un règlement ». Sur une facture arrêtée, rien ne change.</p>
+<p><strong>Les pénalités ne se répètent pas</strong> dans les conditions en gras de la facture : elle les porte déjà, scellées, au pied — c'est la loi.</p>
+<h2 id="3-ce-qui-nest-pas-codé-et-pourquoi">3. Ce qui n'est pas codé, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>la case « crédit d'impôt 50 % »</td>
+<td>elle était « à trancher » sur la planche de l'écran, et votre planche du papier ne la porte pas. À vous : une case sur la facture, ou une facture à part comme chez le paysagiste</td>
+</tr>
+<tr>
+<td>la décennale et le médiateur dans Mon entreprise</td>
+<td>dessinés sur votre accord, en attente de votre « code »</td>
+</tr>
+</tbody></table></div>
+<h2 id="4-ce-qui-a-été-vérifié">4. Ce qui a été vérifié</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>règles pures</td>
+<td><code>test-papier-devis-facture</code> : les centimes des colonnes tombent juste, les noms d'acompte, les montants versés, le tampon, les deux papiers aux mêmes abscisses — vert</td>
+</tr>
+<tr>
+<td>base, sous la RLS</td>
+<td><code>test-papier-facture-db</code> : la facture recopie titre, main d'œuvre, unité ; l'acompte de la signature se pose, se corrige, se refuse au-delà du reste ; acquittée pose et reprend le solde ; le PDF dit tout ; une facture arrêtée ne bouge plus — vert</td>
+</tr>
+<tr>
+<td>suites adaptées à la planche</td>
+<td><code>test-devis-pdf</code>, <code>test-facture-pdf</code>, <code>test-acomptes-pdf</code>, <code>test-planche-b-devis</code> — vertes</td>
+</tr>
+<tr>
+<td>types, lint, couches, code mort, chartes, flèches</td>
+<td>verts</td>
+</tr>
+<tr>
+<td><strong>suites navigateur</strong> — <code>test-papier-facture-e2e</code> (votre chemin : le devis avec tous ses boutons, le titre, la main d'œuvre, la facture, « + Règlement reçu », le chèque et son numéro, « Facture acquittée », le PDF dans la visionneuse), <code>planche-b-devis</code>, <code>acomptes-devis</code>, <code>reduction-devis</code></td>
+<td><strong>vertes</strong>, jouées le 14 septembre au soir une fois la machine redémarrée</td>
+</tr>
+<tr>
+<td><strong>le papier, regardé</strong></td>
+<td>le PDF du devis et celui de la facture, capturés en grand : mêmes colonnes, mêmes gras, seul le titre et le bloc sous le TTC changent — comme la planche</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce que la suite navigateur a attrapé, que rien d'autre ne voyait :</strong> après « Créer la facture », l'écran gardait un titre vide et pas de main d'œuvre alors que la base les tenait — il fallait recharger. Corrigé à la racine (une facture = un montage de l'écran, <code>page.tsx</code>). Et sur un téléphone, la flèche native du choix du moyen mangeait « Virement », et cinq colonnes ne tenaient pas dans la carte d'un téléphone : chaque colonne est mesurée au plus long qu'elle porte, et regardée à 390 px.</p>
+<h2 id="5-la-batterie-complète--14-septembre-au-soir-dans-un-dossier-à-part">5. La batterie complète — 14 septembre au soir, dans un dossier à part</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>Types, lint, atelier, construction, mémoire du dépôt, fournisseurs d'IA</td>
+<td><strong>verts</strong></td>
+</tr>
+<tr>
+<td>Suites base</td>
+<td><strong>364/378</strong>. Les 14 rouges : 12 sont l'outillage du banc qui veut <code>bash</code>, <code>ps</code>, <code>gh</code> ou des chemins en <code>/</code> — introuvables sur Windows, déjà relevés dans <code>TODO.md</code> ; 2 étaient au lot et attendus — le relevé au pixel du papier (il a changé, c'est le but ; relevé après l'avoir regardé) et l'interrupteur « Facture acquittée » à déclarer comme un état. <strong>Rejouées seules : vertes</strong></td>
+</tr>
+<tr>
+<td>Données de démonstration</td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td><strong>133/154</strong>. 19 rouges sont ceux déjà nommés dans <code>TODO.md</code> sur ce PC (<code>adresse-suggestions</code>, <code>bandeau-banc</code>, <code>ia-01/03/04</code>, <code>madame-lucie</code>, <code>message-au-client</code>…), aucun ne touche un fichier du lot. 2 nouveaux : <code>facture</code> — le montant TTC se lit désormais deux fois (Total TTC, Net à payer) et la suite le cherchait une seule fois : adaptée, comme <code>planning-vers-facture</code> qui tombait sur le même repère (rejouées seules après la fusion de <code>main</code> : vertes, avec <code>papier-facture</code>, <code>planche-b-devis</code>, <code>acomptes-devis</code>, <code>reduction-devis</code>) ; <code>pages-publiques</code> — <strong>verte</strong> (0 échec), puis Node plante en sortant (<code>UV_HANDLE_CLOSING</code>, Windows) — l'environnement, pas le produit</td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td><strong>vert</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Non éprouvé :</strong> ce que votre espace affiche à vous.</p>
+</main>
+</body>
+</html>

@@ -1,18 +1,31 @@
 "use server";
 
-import { exigerMontants } from "@/server/garde-action";
+import { exigerGestionDevis, exigerMontants } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { contextePlanning } from "@/server/contexte-planning";
-import { getOuCreerDevisBrouillon, envoyerDevis } from "@/server/repositories/devis";
+import { getOuCreerDevisBrouillon, envoyerDevis, manquesDuDevisAEnvoyer } from "@/server/repositories/devis";
+import { phraseDesManques } from "@/lib/mentions-manquantes";
 import { listerPrestations } from "@/server/repositories/prestations";
 import { ingererDevis } from "@/server/documents/ingestion";
 import { preparerEnvoi, verifierJourPropose } from "@/server/repositories/preparation-envoi";
 import { creerEnvoi, DatesProposeesInvalidesError } from "@/server/repositories/envois-devis";
 import { mettreAJourClient } from "@/server/repositories/clients";
+import { getEntreprise } from "@/server/repositories/entreprises";
+import { jourIso } from "@/lib/jour";
+import type { EnvoiDuDevis } from "@/lib/message-client";
 import { MOTIF_DEVIS_VIDE } from "@/lib/devis-envoyable";
+import { datesHorsFenetre, motifDatesRefusees } from "@/lib/dates-envoi";
+import { fenetrePatron } from "@/lib/disponibilites";
+import { defaireLAcceptation, AcceptationNonDefaite } from "@/server/repositories/acceptation-defaite";
+import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
 
 export async function chargerDevisAction(chantierId: string) {
   const ctx = await getCurrentCtx();
+  // **Une LECTURE, donc la garde des montants et non celle du devis.** Ouvrir
+  // un devis ne l'écrit pas : c'est la question « avez-vous le droit de voir un
+  // prix ? », pas « avez-vous le droit d'en poser un ? ». Les deux rendent le
+  // même verdict aujourd'hui, et c'est précisément pourquoi elles restent
+  // séparées (`peutGererDevis`).
   await exigerMontants(ctx, "ouvrir le devis");
   const devis = await getOuCreerDevisBrouillon(ctx, chantierId);
   const prestations = await listerPrestations(ctx, chantierId);
@@ -21,7 +34,12 @@ export async function chargerDevisAction(chantierId: string) {
 
 export async function envoyerDevisAction(devisId: string) {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "envoyer le devis");
+  await exigerGestionDevis(ctx, "envoyer le devis");
+  // **Une mention obligatoire qui manque, le devis ne part pas** (choix 1A du
+  // 3 octobre 2026). L'écran d'envoi le dit avant (`preparerEnvoi`) ; ce refus
+  // tient la règle quand l'action est appelée autrement.
+  const manques = await manquesDuDevisAEnvoyer(ctx, devisId);
+  if (manques.length > 0) throw new Error(phraseDesManques(manques));
   const resultat = await envoyerDevis(ctx, devisId);
   try {
     // Base documentaire (lot IA-07) : rend le devis envoyé recherchable par
@@ -46,9 +64,38 @@ export async function envoyerDevisAction(devisId: string) {
  */
 export async function reprendreDevisAction(chantierId: string) {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "reprendre le devis");
+  await exigerGestionDevis(ctx, "reprendre le devis");
   const devis = await getOuCreerDevisBrouillon(ctx, chantierId);
   return { devisId: devis.id, numeroVersion: devis.numeroVersion };
+}
+
+/**
+ * « Le client s'est trompé » — son choix 3 du 7 octobre 2026. La règle et son
+ * pourquoi vivent dans le dépôt (`acceptation-defaite.ts`) ; ici, la garde, le
+ * refus rendu EN VALEUR (`AGENTS.md`, piège 0 ter), et l'agenda de son
+ * téléphone, qui ne doit pas garder un chantier que le planning a perdu.
+ */
+const REFUS_ACCEPTATION: Record<AcceptationNonDefaite["motif"], string> = {
+  pas_accepte: "Ce devis n'est plus accepté. Rechargez la page.",
+  facture_preparee: "Sa facture est déjà préparée : une correction passe par un avoir.",
+};
+
+export type ResultatAcceptationDefaite = { succes: true } | { succes: false; erreur: string };
+
+export async function defaireLAcceptationAction(
+  chantierId: string,
+  vers: "attente" | "refusee"
+): Promise<ResultatAcceptationDefaite> {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "défaire l'acceptation du devis");
+  try {
+    await defaireLAcceptation(ctx, chantierId, vers);
+  } catch (err) {
+    if (err instanceof AcceptationNonDefaite) return { succes: false, erreur: REFUS_ACCEPTATION[err.motif] };
+    throw err;
+  }
+  await porterChantierDansAgenda(ctx, chantierId);
+  return { succes: true };
 }
 
 // --- Envoi au client : la seule question posée au patron (docs/AGENT.md §2.2) ---
@@ -61,7 +108,7 @@ export async function reprendreDevisAction(chantierId: string) {
  */
 export async function preparerEnvoiAction(chantierId: string, dureeDemiJournees?: number) {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "préparer l'envoi du devis");
+  await exigerGestionDevis(ctx, "préparer l'envoi du devis");
 
   // **Le document se recompose DÈS L'OUVERTURE de la feuille d'envoi.**
   //
@@ -119,12 +166,27 @@ export async function verifierJourProposeAction(
   dureeDemiJournees?: number
 ) {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "vérifier un jour proposé");
+  await exigerGestionDevis(ctx, "vérifier un jour proposé");
   return verifierJourPropose(ctx, chantierId, jour, dureeDemiJournees);
 }
 
 export type ResultatEnvoiClient =
-  | { succes: true; lien: string; canal: "sms" | "email"; destinataire: string | null }
+  | {
+      succes: true;
+      lien: string;
+      canal: "sms" | "email";
+      destinataire: string | null;
+      /**
+       * SON message de devis, relu au moment du départ, ou `null` s'il n'en a
+       * pas écrit. **Trouvé le 29 septembre 2026** : le premier envoi ouvrait
+       * la messagerie avec le texte d'Atlas, jamais le sien ; seule la relance
+       * le prenait. Rendu ici avec le canal et le destinataire : une seule
+       * source, relue en base, pour tout ce qui part chez le client.
+       */
+      modeleMessage: string | null;
+      /** Ce que l'envoi a fixé et que le message dit : le jour où le lien meurt, la case « autre date ». */
+      envoiDuDevis: EnvoiDuDevis;
+    }
   | { succes: false; erreur: string };
 
 /**
@@ -159,10 +221,16 @@ export async function envoyerAuClientAction(
    * paramètre est en dernier et facultatif pour que rien d'existant ne change
    * de comportement en silence.
    */
-  autreDateAutorisee?: boolean
+  autreDateAutorisee?: boolean,
+  /**
+   * Les jours derrière chaque date, dans le même ordre — sa règle du
+   * 17 septembre 2026 (« le 18 et le 22 »). Le serveur les revérifie contre la
+   * durée ; l'écran ne décide de rien.
+   */
+  joursProposes?: string[][]
 ): Promise<ResultatEnvoiClient> {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "envoyer le devis au client");
+  await exigerGestionDevis(ctx, "envoyer le devis au client");
 
   /**
    * **LE DOCUMENT SE RECOMPOSE AVANT DE PARTIR, jamais avant.**
@@ -199,11 +267,14 @@ export async function envoyerAuClientAction(
   if (preparation.blocage === "devis_vide") {
     return { succes: false, erreur: MOTIF_DEVIS_VIDE };
   }
+  if (preparation.blocage === "mentions_manquantes") {
+    return { succes: false, erreur: phraseDesManques(preparation.manques) };
+  }
 
   if (preparation.blocage === "canal_absent") {
     return {
       succes: false,
-      erreur: "Indiquez d'abord comment joindre ce client — par SMS ou par e-mail.",
+      erreur: "Indiquez d'abord comment joindre ce client, par SMS ou par e-mail.",
     };
   }
   if (preparation.blocage === "coordonnee_absente") {
@@ -221,6 +292,30 @@ export async function envoyerAuClientAction(
 
   if (datesProposees.length < 1 || datesProposees.length > 2) {
     return { succes: false, erreur: "Proposez une date, ou deux au choix du client." };
+  }
+
+  /**
+   * ═════════════════════════════════════════════════════════════════════════
+   * **LES DATES SE VALIDENT AVANT QUE LE DEVIS SOIT FIGÉ — 3 septembre 2026.**
+   *
+   * Juste en dessous, `envoyerDevisAction` fige le devis pour de bon : statut
+   * « envoyé », PDF archivé, numéro consommé, document immuable. La création
+   * du lien, elle, venait APRÈS — et quand elle refusait une date, la moitié
+   * irréversible avait déjà eu lieu.
+   *
+   * Le résultat n'était pas un simple échec : le devis était parti pour
+   * l'application et n'existait nulle part pour le client. En rouvrant, il
+   * lisait « Ce devis est parti chez votre client : il ne se modifie plus » —
+   * faux, et sur une pièce qui ne se réécrit pas.
+   *
+   * **La MÊME règle que le dépôt** (`src/lib/dates-envoi.ts`), consultée ici
+   * en premier : le seul refus que `creerEnvoi` sache encore opposer ne peut
+   * donc plus surprendre un devis déjà figé.
+   * ═════════════════════════════════════════════════════════════════════════
+   */
+  const refusees = datesHorsFenetre(datesProposees, fenetrePatron(new Date()));
+  if (refusees.length > 0) {
+    return { succes: false, erreur: motifDatesRefusees(refusees) };
   }
 
   // L'envoi du devis (PDF figé) précède la création du lien : c'est ce PDF dont
@@ -250,6 +345,7 @@ export async function envoyerAuClientAction(
       devisId: devisAEnvoyer,
       canal: preparation.canal,
       datesProposees,
+      joursProposes,
       autreDateAutorisee: autreDateAutorisee ?? true,
       contenuDevis: `${devisEnvoye.numeroCommercial}|${devisEnvoye.numeroVersion}|${devisEnvoye.totalTtc}`,
       // La durée réellement retenue, telle que l'écran l'a affichée : c'est sur
@@ -262,13 +358,17 @@ export async function envoyerAuClientAction(
       lien: `/devis/${envoi.jeton}`,
       canal: preparation.canal,
       destinataire: preparation.destinataire,
+      modeleMessage: (await getEntreprise(ctx))?.messageClient ?? null,
+      envoiDuDevis: { expireLe: jourIso(envoi.expireAt), autreDateAutorisee: envoi.autreDateAutorisee },
     };
   } catch (err) {
     if (err instanceof DatesProposeesInvalidesError) {
-      return {
-        succes: false,
-        erreur: "Une des dates proposées n'est plus libre. Choisissez-en une autre.",
-      };
+      // **La phrase vient de la règle, elle n'est plus écrite ici.** Celle qui
+      // s'y trouvait disait « n'est plus libre » — or l'occupation d'un jour
+      // ne refuse plus rien depuis sa règle du 23 août 2026, et le seul motif
+      // restant est la fenêtre. Le patron cherchait une autre date libre pour
+      // un jour qui n'avait jamais été pris.
+      return { succes: false, erreur: motifDatesRefusees(err.motifs) };
     }
     // Plus rien ne sort d'ici sans sa raison : voir le commentaire ci-dessus.
     return { succes: false, erreur: raisonLisible(err) };
@@ -314,7 +414,7 @@ export async function enregistrerCoordonneeClientAction(
   valeur: string
 ) {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "enregistrer les coordonnées du client");
+  await exigerGestionDevis(ctx, "enregistrer les coordonnées du client");
   const propre = valeur.trim().slice(0, 200);
   if (!propre) return { succes: false as const };
   await mettreAJourClient(ctx, clientId, {

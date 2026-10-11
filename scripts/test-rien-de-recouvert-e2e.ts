@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
+import { ADRESSE } from "./_adresse";
 
 // **Rien de touchable ne doit être caché sous le mobilier fixe.**
 //
@@ -24,7 +25,7 @@ import { Pool } from "pg";
 // recouvrait jamais rien : ce contrôle aurait été vert d'un bout à l'autre, y
 // compris le jour du défaut.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 let echecs = 0;
@@ -166,9 +167,11 @@ async function ecrans(): Promise<Array<[string, string]>> {
   ];
   if (chantier) {
     liste.push(
-      // Ses photos n'ont plus d'écran : elles vivent dans la pellicule du
-      // tiroir de la fiche, ci-dessus (11 août 2026).
-      ["la fiche d'un chantier", `/chantiers/${chantier}`],
+      // **La fiche du chantier est retirée le 4 septembre 2026**
+      // (`ARCHITECTURE.md` §254) : son adresse ne rend plus qu'une
+      // redirection, et rien ne recouvre rien sur une redirection. Les photos
+      // et l'anneau vivent sur la fiche client : c'est elle qu'on mesure.
+      ["sa fiche client", `/chantiers/${chantier}/coordonnees`],
       ["sa note vocale", `/chantiers/${chantier}/note-vocale`],
       ["ses informations", `/chantiers/${chantier}/informations`],
       ["son prix", `/chantiers/${chantier}/prix`],

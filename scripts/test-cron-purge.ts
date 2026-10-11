@@ -1,4 +1,5 @@
 import assert from "node:assert";
+import { ADRESSE } from "./_adresse";
 
 let passed = 0;
 let failed = 0;
@@ -16,12 +17,12 @@ async function test(nom: string, fn: () => Promise<void>) {
 
 async function main() {
   await test("Sans secret : rejeté (401)", async () => {
-    const r = await fetch("http://localhost:3000/api/cron/purge-fichiers", { method: "POST" });
+    const r = await fetch(`${ADRESSE}/api/cron/purge-fichiers`, { method: "POST" });
     assert.equal(r.status, 401);
   });
 
   await test("Secret invalide : rejeté (401)", async () => {
-    const r = await fetch("http://localhost:3000/api/cron/purge-fichiers", {
+    const r = await fetch(`${ADRESSE}/api/cron/purge-fichiers`, {
       method: "POST",
       headers: { "x-cron-secret": "mauvais-secret-totalement-invalide" },
     });
@@ -29,7 +30,7 @@ async function main() {
   });
 
   await test("Route accessible sans authentification de session (le middleware ne redirige jamais vers /login)", async () => {
-    const r = await fetch("http://localhost:3000/api/cron/purge-fichiers", { method: "POST", redirect: "manual" });
+    const r = await fetch(`${ADRESSE}/api/cron/purge-fichiers`, { method: "POST", redirect: "manual" });
     assert.notEqual(r.status, 307, "Ne doit jamais rediriger vers /login — c'est la vérification de secret qui doit répondre");
   });
 

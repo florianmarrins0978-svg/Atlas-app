@@ -5,7 +5,7 @@ import {
   questionsAvantChiffrage,
   type LignePourQuestions,
 } from "../src/lib/questions-chiffrage";
-import { diametreLu, hauteurLue, mesuresArbre } from "../src/lib/mesures-arbre";
+import { diametreLu, futLu, mesuresArbre } from "../src/lib/mesures-arbre";
 
 // Ce que cette suite tient, et pourquoi elle vaut plus qu'un test de fonction.
 //
@@ -97,21 +97,20 @@ cas("« 20 m linéaires » compte comme une longueur, comme « de long »", () =
   }
 });
 
-cas("SE TAIRE : le billonnage et le fendage ne déclenchent rien", () => {
+cas("SE TAIRE : le billonnage ne déclenche rien, la fente ne demande que son fût", () => {
   // Le billonnage est compris dans l'abattage : il ne porte aucune variable de
   // prix, et le questionner allongerait l'arrêt pour rien.
   //
-  // **La fente, elle, en porte deux depuis le 8 août 2026** — la hauteur et le
-  // diamètre désignent une case de sa grille. Si elle ne demande rien ICI,
-  // c'est que sa dictée les donne déjà : la hauteur sur la ligne du chêne, le
-  // diamètre par la question posée à l'abattage. Le silence vient de ce que
-  // tout est su, pas de ce que rien ne compte (voir le bloc « La fente » en fin
-  // de suite).
+  // **La fente demande la hauteur de FÛT depuis le 29 septembre 2026**, et
+  // rien d'autre : le diamètre est demandé sur le chêne, et les « 20 mètres de
+  // haut » du chêne ne disent rien du bois à fendre (voir le bloc « La fente »
+  // en fin de suite).
   const q = questionsAvantChiffrage(DICTEE_DU_PATRON);
-  const parasites = q.filter(
-    (x) => x.libellePrestation.includes("Billonnage") || x.libellePrestation.includes("Fendage")
+  assert.deepEqual(q.filter((x) => x.libellePrestation.includes("Billonnage")), []);
+  assert.deepEqual(
+    q.filter((x) => x.libellePrestation.includes("Fendage")).map((x) => x.question),
+    ["Quelle hauteur de fût ?"]
   );
-  assert.deepEqual(parasites, [], `questions de trop : ${parasites.map((x) => x.question).join(" / ")}`);
 });
 
 cas("l'arrêt reste franchissable : jamais plus de trois questions sur sa dictée", () => {
@@ -228,11 +227,31 @@ cas("ce qu'on cesse de demander, le chiffrage sait le lire", () => {
   );
 });
 
-cas("une question ne parle ni au singulier ni au pluriel", () => {
-  // Même remarque, sa moitié moqueuse : la dictée disait « deux souches », la
-  // question en disait une. Accorder au nombre supposerait de le compter — un
-  // travail de plus pour un mot de moins. La prestation est écrite au-dessus.
+cas("la question du DIAMÈTRE nomme sa mesure ; les autres ne nomment rien", () => {
+  // **CE CONTRÔLE A ÉTÉ RENVERSÉ PAR LUI, le soir du test téléphone**, et sa
+  // version d'avant est gardée ici en toutes lettres pour qu'on sache ce qu'on
+  // remplace :
+  //
+  //   « une question ne parle ni au singulier ni au pluriel » — parce que la
+  //   dictée disait « deux souches » et que la question en disait une.
+  //
+  // Il a tranché dans l'autre sens après le test téléphone : *« je préfère
+  // cette formulation parce qu'elle indique immédiatement de quelle mesure on
+  // parle, et évite la confusion constatée. »* Sur son écran, « Quel
+  // diamètre ? » sous un titre ne disait pas DE QUOI — et il a cru qu'on
+  // l'interrogeait sur l'érable d'à côté.
+  //
+  // Le coût qu'il accepte est ce singulier ; le reste de la règle tient
+  // toujours : aucune AUTRE question ne nomme son objet.
   for (const q of questionsAvantChiffrage(DICTEE_DU_PATRON)) {
+    if (q.id.includes("diametre")) {
+      assert.match(
+        q.question,
+        /^Quel diamètre fait (la souche|le tronc) \?$/,
+        `« ${q.question} » : la question du diamètre doit nommer sa mesure`
+      );
+      continue;
+    }
     assert.doesNotMatch(
       q.question,
       /\b(la souche|le tronc|l'arbre|de haie)\b/i,
@@ -294,24 +313,68 @@ cas("une prestation sans libellé ne produit rien", () => {
   assert.deepEqual(questionsAvantChiffrage([]), []);
 });
 
-console.log("\n=== La fente : hauteur et diamètre, sans redemander deux fois ===");
+console.log("\n=== La fente : hauteur de fût et diamètre, sans redemander deux fois ===");
 
-// Le patron, le 8 août 2026 : *« pour la fente ils devraient demander la
-// hauteur de l'arbre et son diamètre, et on crée une liste de prix en fonction
-// de la hauteur et du diamètre, comme ça il n'invente rien. »*
+// **Sa règle du 29 septembre 2026**, qui remplace celle du 8 août (« la
+// hauteur de l'arbre et son diamètre ») : *« la hauteur de l'arbre, c'est pour
+// la hauteur de l'arbre, ça n'a rien à voir avec la fente du bois. Pour la
+// fente, il faudrait qu'il demande quelle hauteur de fût : s'il y a 10 mètres
+// de fût coupé en 50, il peut procéder à un calcul. »* Sur un chêne de 20 m,
+// les branches partent au broyeur ; seul le fût se fend.
 //
-// Ce que ces cas tiennent, et qui n'est pas évident : **ces deux mesures
-// appartiennent à l'arbre, pas à la ligne de devis.** Les redemander sur la
-// ligne de la fente quand l'abattage les porte déjà ferait répéter au patron ce
-// qu'il vient de dire — et l'arrêt cesserait d'être franchissable.
+// Elle ne contredit pas sa règle du 7 septembre (« cette case-là ne doit
+// jamais comporter de hauteur, c'est pour un arbre ») : ce qu'il refusait
+// sous la fente, c'était la hauteur de l'ARBRE. Le fût, lui, est le bois
+// qu'on fend, et c'est lui qui a demandé qu'on le demande là.
 
-cas("une fente seule, sans rien de dit, demande les deux mesures", () => {
+cas("une fente seule, sans rien de dit, demande son fût et son diamètre", () => {
   const q = questionsAvantChiffrage([{ libelle: "Fendage du bois" }]);
   assert.deepEqual(
     q.map((x) => x.id.split("#")[0]).sort(),
-    ["fendage.diametre", "fendage.hauteur"],
-    `attendu la hauteur et le diamètre, vu : ${q.map((x) => x.id).join(", ") || "rien"}`
+    ["fendage.diametre", "fendage.fut"],
+    `attendu le fût et le diamètre, vu : ${q.map((x) => x.id).join(", ") || "rien"}`
   );
+});
+
+cas("sa dictée du 29 septembre : 20 m de haut ne répondent pas à la hauteur de fût", () => {
+  const q = questionsAvantChiffrage([
+    { libelle: "Démontage d'un chêne mort", description: "20 m de haut, 80 cm de diamètre", nature: "abattage" },
+    { libelle: "Broyage des branches", nature: "broyage" },
+    { libelle: "Fente du bois", description: "fût coupé en 50, laissé sur place", nature: "fendage" },
+  ]);
+  const surLaFente = q.filter((x) => x.libellePrestation === "Fente du bois");
+  assert.deepEqual(surLaFente.map((x) => x.question), ["Quelle hauteur de fût ?"]);
+  assert.equal(surLaFente[0].unite, "m");
+  // Et la hauteur de l'arbre ne se demande plus nulle part : elle ne décide
+  // d'aucun prix.
+  assert.deepEqual(q.filter((x) => /hauteur(?! de fût)/i.test(x.question)), []);
+});
+
+cas("un fût dit dans la dictée ne se redemande pas", () => {
+  for (const dit of ["10 mètres de fût", "fût de 10 m", "hauteur de fût 10 m", "dix mètres de fût"]) {
+    const q = questionsAvantChiffrage([
+      { libelle: "Démontage d'un chêne mort", description: `20 m de haut, ${dit}`, nature: "abattage" },
+      { libelle: "Fente du bois", nature: "fendage" },
+    ]);
+    assert.equal(q.filter((x) => x.id.startsWith("fendage.fut")).length, 0, `« ${dit} » redemandé`);
+  }
+});
+
+cas("« coupé en 50 » est la longueur des bûches, pas celle du fût", () => {
+  assert.equal(futLu("on coupe le fût en 50, on le fend"), null);
+  assert.equal(futLu("fût coupé en 50 cm"), null);
+  assert.equal(futLu("10 m de fût coupé en 50"), 10);
+});
+
+cas("une hauteur répondue avant le 29 septembre ne tient pas lieu de fût", () => {
+  // Ses réponses « fendage.hauteur » et « abattage.hauteur » disaient la
+  // hauteur de l'ARBRE : les relire comme un fût rangerait le prix dans la
+  // case d'à côté.
+  const q = questionsAvantChiffrage(
+    [{ libelle: "Abattage d'un chêne" }, { libelle: "Fendage du bois" }],
+    new Set(["fendage.hauteur#1", "abattage.hauteur#0"])
+  );
+  assert.equal(q.filter((x) => x.id.startsWith("fendage.fut")).length, 1);
 });
 
 cas("le diamètre ne se demande qu'une fois quand un abattage l'accompagne", () => {
@@ -331,42 +394,17 @@ cas("le diamètre ne se demande qu'une fois quand un abattage l'accompagne", () 
   );
 });
 
-cas("la hauteur dite ailleurs dans la dictée ne se redemande pas", () => {
-  const q = questionsAvantChiffrage([
-    { libelle: "Abattage d'un chêne mort", description: "20 mètres de haut" },
-    { libelle: "Fendage du bois" },
-  ]);
-  assert.equal(
-    q.filter((x) => x.id.startsWith("fendage.hauteur")).length,
-    0,
-    "« vingt mètres de haut » était dans la dictée : la redemander rend l'arrêt pénible"
-  );
-});
-
-cas("mais elle se demande dès que la dictée ne la donne nulle part", () => {
-  const q = questionsAvantChiffrage([
-    { libelle: "Abattage d'un chêne mort" },
-    { libelle: "Fendage du bois" },
-  ]);
-  assert.equal(
-    q.filter((x) => x.id.startsWith("fendage.hauteur")).length,
-    1,
-    "sans hauteur, aucune case de la grille ne peut être désignée — et la fente resterait sans prix"
-  );
-});
-
 cas("les réponses s'écrivent sous la forme que le chiffrage sait relire", () => {
-  // **Ce cas protège un défaut invisible.** Si « ⌀ 45 cm » devenait « 45 cm de
-  // diamètre du tronc », rien ne casserait : la question serait posée, la
-  // réponse enregistrée, le devis produit — et la case de la grille
-  // introuvable. La fente n'aurait simplement jamais de prix.
-  const hauteur = questionsAvantChiffrage([{ libelle: "Fendage du bois" }]).find((x) =>
-    x.id.startsWith("fendage.hauteur")
+  // **Ce cas protège un défaut invisible.** Si « fût de 10 m » s'écrivait
+  // autrement, rien ne casserait : la question serait posée, la réponse
+  // enregistrée, le devis produit, et la case de la grille introuvable.
+  const fut = questionsAvantChiffrage([{ libelle: "Fendage du bois" }]).find((x) =>
+    x.id.startsWith("fendage.fut")
   )!;
   const diametre = questionsAvantChiffrage([{ libelle: "Fendage du bois" }]).find((x) =>
     x.id.startsWith("fendage.diametre")
   )!;
-  assert.equal(hauteurLue(precisionLisible(hauteur, "12")), 12);
+  assert.equal(futLu(precisionLisible(fut, "10")), 10);
   assert.equal(diametreLu(precisionLisible(diametre, "45")), 45);
 });
 
@@ -400,6 +438,353 @@ cas("sans colonne, le texte reprend la main — comme avant", () => {
   const q = questionsAvantChiffrage([{ libelle: "Taille de haie de laurier" }]);
   assert.ok(q.some((x) => x.id.startsWith("haie.longueur")));
 });
+
+
+
+// =========================================================================
+// LE TEST TÉLÉPHONE DU 31 AOÛT 2026 : ne jamais redemander ce qu'on sait
+// =========================================================================
+//
+// Il a dicté « démontage d'un érable de 40 cm de diamètre et 12 mètres de haut
+// avec rétention », et l'écran lui a quand même demandé « Comment s'abat-il ? »
+// puis « Quel diamètre fait le tronc ? » — sous le titre « Dessouchage ».
+//
+// **Deux défauts distincts, et le titre disait lequel.** Les questions
+// portaient bien sur la SOUCHE, pas sur l'érable : une souche recevait la
+// question de l'abattage, qui n'a pas de sens pour elle, et son diamètre était
+// cherché dans un texte au lieu de sa colonne.
+//
+// Sa règle : « une question n'est posée que si l'information nécessaire au prix
+// est réellement absente des données structurées de LA prestation concernée.
+// Ne récupère pas l'information depuis une autre prestation. »
+
+console.log("\n=== Ce que la dictée a déjà dit ne se redemande pas ===\n");
+
+const erableRenseigne = {
+  libelle: "Démontage en rétention d'un érable",
+  nature: "abattage",
+  methode: "demontage_retention",
+  caracteristiques: { diametreCm: 40, hauteurM: 12 },
+};
+const soucheRenseignee = {
+  libelle: "Dessouchage de souches de 60 cm",
+  nature: "dessouchage",
+  caracteristiques: { diametreCm: 60 },
+};
+
+cas("la technique en COLONNE éteint « Comment s'abat-il ? »", () => {
+  const q = questionsAvantChiffrage([erableRenseigne]);
+  assert.ok(
+    q.every((x) => !x.id.startsWith("abattage.technique")),
+    `posée quand même : ${q.map((x) => x.question).join(" / ")}`
+  );
+});
+
+cas("le diamètre en COLONNE éteint « Quel diamètre fait le tronc ? »", () => {
+  const q = questionsAvantChiffrage([erableRenseigne]);
+  assert.ok(
+    q.every((x) => !x.id.startsWith("abattage.diametre")),
+    `posée quand même : ${q.map((x) => x.question).join(" / ")}`
+  );
+});
+
+cas("un érable entièrement renseigné ne pose AUCUNE question", () => {
+  const q = questionsAvantChiffrage([erableRenseigne]);
+  assert.equal(q.length, 0, `restantes : ${q.map((x) => x.question).join(" / ")}`);
+});
+
+cas("une SOUCHE ne se fait jamais demander comment elle s'abat", () => {
+  // C'est la question qu'il a lue sous le titre « Dessouchage ». Une souche se
+  // rogne ou s'arrache ; elle ne s'abat pas.
+  const q = questionsAvantChiffrage([{ libelle: "Dessouchage", nature: "dessouchage" }]);
+  assert.ok(
+    q.every((x) => !x.id.startsWith("abattage.technique")),
+    `posée quand même : ${q.map((x) => x.question).join(" / ")}`
+  );
+});
+
+cas("le diamètre d'une souche vient de SA colonne, pas de l'arbre d'à côté", () => {
+  const q = questionsAvantChiffrage([erableRenseigne, soucheRenseignee]);
+  assert.equal(
+    q.length,
+    0,
+    `restantes : ${q.map((x) => `${x.libellePrestation} → ${x.question}`).join(" / ")}`
+  );
+});
+
+cas("sans colonne NI texte, la technique et le diamètre se demandent encore", () => {
+  // **Le garde-fou dans l'autre sens.** Une prestation d'avant le lot B n'a que
+  // son texte ; taire la question ferait chiffrer sans savoir, ce qui coûte du
+  // simple au double sur un abattage.
+  const q = questionsAvantChiffrage([{ libelle: "Abattage d'un chêne", nature: "abattage" }]);
+  assert.equal(q.length, 2, `posées : ${q.map((x) => x.question).join(" / ")}`);
+});
+
+cas("chaque question porte le libellé de SA prestation", () => {
+  // Ce titre « Dessouchage » au-dessus d'une question d'abattage est ce qui l'a
+  // induit en erreur.
+  const q = questionsAvantChiffrage([{ libelle: "Abattage d'un chêne", nature: "abattage" }]);
+  assert.ok(
+    q.every((x) => x.libellePrestation === "Abattage d'un chêne"),
+    JSON.stringify(q.map((x) => x.libellePrestation))
+  );
+});
+
+
+// =========================================================================
+// LA CONVENTION MÉTIER DU 31 AOÛT 2026 : les centimètres d'un tronc
+// =========================================================================
+//
+// *« Quand une mesure en centimètres est donnée pour une souche ou un arbre
+// dans certaines formulations métier, elle doit être interprétée comme un
+// diamètre. »*
+//
+//   « dessouchage de deux souches de 60 cm »  → diametreCm = 60
+//   « un chêne de 60 cm au pied »             → diametreCm = 60
+//
+// **Et la borne qu'il a posée lui-même**, qui compte autant que la règle :
+// *« ne généralise pas aveuglément toute mesure en cm trouvée dans une
+// phrase. Si le contexte indique clairement une autre mesure — une
+// circonférence, une hauteur — respecte ce qui est dit. »*
+
+console.log("\n=== Les centimètres d'un tronc, et ceux qui n'en sont pas ===\n");
+
+cas("« deux souches de 60 cm » : aucune question de diamètre", () => {
+  const q = questionsAvantChiffrage([
+    { libelle: "Dessouchage de deux souches de 60 cm", nature: "dessouchage" },
+  ]);
+  assert.equal(q.length, 0, `posées : ${q.map((x) => x.question).join(" / ")}`);
+});
+
+cas("« une souche de 50 cm » : aucune question de diamètre", () => {
+  const q = questionsAvantChiffrage([
+    { libelle: "Dessouchage d'une souche de 50 cm", nature: "dessouchage" },
+  ]);
+  assert.equal(q.length, 0, `posées : ${q.map((x) => x.question).join(" / ")}`);
+});
+
+cas("« un chêne de 60 cm au pied » : le diamètre est lu", () => {
+  const q = questionsAvantChiffrage([
+    { libelle: "Abattage d'un chêne de 60 cm au pied", nature: "abattage" },
+  ]);
+  assert.ok(
+    q.every((x) => !x.id.startsWith("abattage.diametre")),
+    `posée quand même : ${q.map((x) => x.question).join(" / ")}`
+  );
+});
+
+cas("« un érable de 40 cm au pied avec rétention » : plus AUCUNE question", () => {
+  // Ses deux règles à la fois : « au pied » donne le diamètre, « rétention »
+  // donne la technique.
+  const q = questionsAvantChiffrage([
+    { libelle: "Démontage d'un érable de 40 cm au pied avec rétention", nature: "abattage" },
+  ]);
+  assert.equal(q.length, 0, `posées : ${q.map((x) => x.question).join(" / ")}`);
+});
+
+cas("« deux souches » SANS mesure : la question se pose, et elle dit « la souche »", () => {
+  // C'est le seul cas où elle doit sortir — et jamais avec le mot « tronc ».
+  const q = questionsAvantChiffrage([
+    { libelle: "Dessouchage de deux souches", nature: "dessouchage" },
+  ]);
+  assert.equal(q.length, 1, `posées : ${q.map((x) => x.question).join(" / ")}`);
+  // **« Quel diamètre ? », pas « Quel diamètre fait la souche ? ».** Il a
+  // demandé le 31 août qu'on ne dise plus « le tronc » sur un dessouchage —
+  // et le 30, qu'on n'accorde pas au singulier quand la dictée en dit deux.
+  // La formulation de `main` tient les deux, et la prestation est écrite juste
+  // au-dessus de la question : elle dit déjà de quoi l'on parle.
+  assert.equal(q[0].question, "Quel diamètre fait la souche ?");
+  assert.ok(q[0].id.startsWith("dessouchage."), "la souche a son propre identifiant");
+});
+
+cas("LA QUESTION NOMME SA MESURE : « la souche » ou « le tronc », jamais l'autre", () => {
+  // **Son arbitrage du soir du test téléphone**, entre deux de ses propres
+  // consignes : *« je préfère cette formulation parce qu'elle indique
+  // immédiatement de quelle mesure on parle, et évite la confusion constatée
+  // pendant le test téléphone. »*
+  //
+  // Une session qui ne connaîtrait que sa PREMIÈRE consigne — « Quel
+  // diamètre ? », sans nommer — remettrait celle-ci. Ce contrôle l'en empêche.
+  const arbre = questionsAvantChiffrage([{ libelle: "Abattage d'un chêne", nature: "abattage" }])
+    .find((x) => x.id.includes("diametre"));
+  const souche = questionsAvantChiffrage([{ libelle: "Dessouchage", nature: "dessouchage" }])
+    .find((x) => x.id.includes("diametre"));
+  assert.equal(arbre?.question, "Quel diamètre fait le tronc ?");
+  assert.equal(souche?.question, "Quel diamètre fait la souche ?");
+});
+
+cas("le mot « tronc » n'apparaît JAMAIS au-dessus d'un dessouchage", () => {
+  // C'est ce mot qui lui a fait croire, pendant le test téléphone, que la
+  // question portait sur l'érable d'à côté.
+  for (const libelle of ["Dessouchage", "Dessouchage de deux souches", "Rognage de souche"]) {
+    for (const q of questionsAvantChiffrage([{ libelle, nature: "dessouchage" }])) {
+      assert.ok(!/tronc/i.test(q.question), `« ${libelle} » → « ${q.question} »`);
+    }
+  }
+});
+
+cas("le pluriel dicté ne change pas la question — il a accepté ce coût", () => {
+  // Sa première consigne écartait « la souche » pour cette raison : la dictée
+  // dit « deux souches ». Il a tranché dans l'autre sens en connaissance de
+  // cause — accorder au nombre supposerait de le compter, pour un mot.
+  const une = questionsAvantChiffrage([{ libelle: "Dessouchage d'une souche", nature: "dessouchage" }])
+    .find((x) => x.id.includes("diametre"));
+  const deux = questionsAvantChiffrage([{ libelle: "Dessouchage de deux souches", nature: "dessouchage" }])
+    .find((x) => x.id.includes("diametre"));
+  assert.equal(une?.question, "Quel diamètre fait la souche ?");
+  assert.equal(deux?.question, "Quel diamètre fait la souche ?");
+});
+
+console.log("\n=== La borne : tout ce qui est en cm n'est pas un diamètre ===\n");
+
+// **CE CAS A CHANGÉ DE SENS LE 7 SEPTEMBRE 2026, et c'est lui qui l'a
+// provoqué.** Sa dictée : *« un chêne mort à démonter, hauteur 20 m de haut
+// et 60 cm de circonférence »*, et l'écran lui redemandait le diamètre.
+//
+// Le refus d'origine était juste — confondre les deux TRIPLE la mesure —,
+// mais il ne faisait que la moitié du travail : **sur un tronc debout, on
+// mesure un tour de ruban, pas un diamètre.** Ce qui est défendu ici n'a pas
+// bougé — 60 ne devient jamais 60 — ; ce qui change, c'est qu'on divise par
+// π au lieu de jeter la mesure (`CLAUDE.md` §5 bis).
+cas("une circonférence est CONVERTIE, jamais recopiée", () => {
+  assert.equal(diametreLu("Abattage d'un chêne de 60 cm de circonférence au pied"), 19);
+  assert.equal(diametreLu("Dessouchage d'une souche de 60 cm de circonférence"), 19);
+});
+
+// **SON cas exact du 7 septembre.** La mesure était donnée : plus une seule
+// question ne doit s'afficher.
+cas("SON chêne : la circonférence dite ferme la question du diamètre", () => {
+  const q = questionsAvantChiffrage([
+    {
+      libelle: "Démontage d'un chêne mort",
+      description: "hauteur 20 m de haut et 60 cm de circonférence",
+      nature: "abattage",
+      methode: "demontage",
+    },
+  ]);
+  assert.deepEqual(
+    q.map((x) => x.id.split("#")[0]),
+    [],
+    "une mesure déjà donnée ne se redemande pas"
+  );
+});
+
+// **La borne : un diamètre DIT l'emporte toujours.** La conversion est un
+// dernier recours, jamais un arbitrage entre deux valeurs.
+cas("un diamètre dit l'emporte sur une circonférence dite", () => {
+  assert.equal(diametreLu("un chêne de diamètre 60 et 190 cm de circonférence"), 60);
+});
+
+cas("une hauteur, une longueur ou une largeur ne deviennent pas un diamètre", () => {
+  assert.equal(diametreLu("un chêne de 12 m de haut"), null);
+  assert.equal(diametreLu("une haie de 800 cm de long"), null);
+  assert.equal(diametreLu("bordure de 30 cm de large"), null);
+});
+
+cas("une mesure en cm qui flotte ailleurs n'est pas un diamètre", () => {
+  // Sa borne, littéralement : le motif est ancré sur « souche » ou « au pied ».
+  assert.equal(diametreLu("évacuation, prévoir 30 cm de paillage"), null);
+});
+
+
+// =========================================================================
+// SANS PRONONCER « CENTIMÈTRES » — sa précision du 31 août 2026 au soir
+// =========================================================================
+//
+// *« Quand je dis "une souche de 60", cela signifie une souche de 60 cm de
+// diamètre. De la même manière, "un chêne de 60 au pied" signifie un chêne de
+// 60 cm de diamètre au pied. »*
+//
+// Il ne prononce pas l'unité. Exiger le mot revenait à jeter la mesure qu'il
+// venait de donner, et à reposer la question dans la foulée.
+//
+// **La borne, elle, ne bouge pas** : la lecture reste ancrée sur « souche de X »
+// et « X au pied ». Un nombre qui flotte ailleurs n'est toujours pas un
+// diamètre, et une autre mesure nommée est respectée.
+
+console.log("\n=== Sans prononcer l'unité, dans les deux contextes métier ===\n");
+
+cas("« deux souches de 60 » : aucune question de diamètre", () => {
+  const q = questionsAvantChiffrage([
+    { libelle: "Dessouchage de deux souches de 60", nature: "dessouchage" },
+  ]);
+  assert.equal(q.length, 0, `posées : ${q.map((x) => x.question).join(" / ")}`);
+});
+
+cas("« une souche de 50 » : aucune question de diamètre", () => {
+  const q = questionsAvantChiffrage([
+    { libelle: "Dessouchage d'une souche de 50", nature: "dessouchage" },
+  ]);
+  assert.equal(q.length, 0, `posées : ${q.map((x) => x.question).join(" / ")}`);
+});
+
+cas("« un chêne de 60 au pied » : le diamètre est lu", () => {
+  const q = questionsAvantChiffrage([
+    { libelle: "Abattage d'un chêne de 60 au pied", nature: "abattage" },
+  ]);
+  assert.ok(
+    q.every((x) => !x.id.startsWith("abattage.diametre")),
+    `posée quand même : ${q.map((x) => x.question).join(" / ")}`
+  );
+});
+
+cas("« un érable de 40 au pied avec rétention » : plus AUCUNE question", () => {
+  const q = questionsAvantChiffrage([
+    { libelle: "Démontage d'un érable de 40 au pied avec rétention", nature: "abattage" },
+  ]);
+  assert.equal(q.length, 0, `posées : ${q.map((x) => x.question).join(" / ")}`);
+});
+
+cas("les quatre lectures, valeur par valeur", () => {
+  assert.equal(diametreLu("dessouchage de deux souches de 60"), 60);
+  assert.equal(diametreLu("dessouchage d'une souche de 50"), 50);
+  assert.equal(diametreLu("abattage d'un chêne de 60 au pied"), 60);
+  assert.equal(diametreLu("démontage d'un érable de 40 au pied avec rétention"), 40);
+});
+
+console.log("\n=== La borne tient : trois refus que l'unité facultative pouvait casser ===\n");
+
+cas("« deux souches » ne devient PAS un diamètre de 2", () => {
+  // **Le piège le plus dangereux de cette convention.** « deux souches » s'écrit
+  // « 2 souches » une fois les mots-nombres en chiffres ; lire ce 2 comme un
+  // diamètre rangerait le prix dans la case des tout petits troncs.
+  //
+  // Ce qui l'écarte tient à la position : le motif exige le nombre APRÈS le mot
+  // « souche », et là il est avant.
+  assert.equal(diametreLu("dessouchage de deux souches"), null);
+  assert.equal(diametreLu("dessouchage de trois souches"), null);
+  const q = questionsAvantChiffrage([
+    { libelle: "Dessouchage de deux souches", nature: "dessouchage" },
+  ]);
+  assert.equal(q.length, 1, "la question doit encore se poser");
+  assert.equal(q[0].question, "Quel diamètre fait la souche ?");
+});
+
+cas("une AUTRE unité n'est pas prise pour des centimètres", () => {
+  // « une souche de 2 m » : deux mètres de diamètre n'existent pas sur ses
+  // chantiers, mais lire 2 les rangerait dans la case des 2 cm.
+  assert.equal(diametreLu("une souche de 2 m"), null);
+  assert.equal(diametreLu("une souche de 2 mètres"), null);
+});
+
+// (La circonférence a quitté cette liste le 7 septembre 2026 : elle n'est
+// toujours pas recopiée, mais elle est désormais convertie — voir plus haut.)
+cas("une mesure NOMMÉE autrement reste ce qu'elle est, avec ou sans unité", () => {
+  for (const dit of [
+    "un chêne de 12 m de haut",
+    "une haie de 800 cm de long",
+    "bordure de 30 cm de large",
+  ]) {
+    assert.equal(diametreLu(dit), null, `« ${dit} » a été pris pour un diamètre`);
+  }
+});
+
+cas("un nombre qui flotte ailleurs n'est toujours pas un diamètre", () => {
+  assert.equal(diametreLu("trois arbres à abattre"), null);
+  assert.equal(diametreLu("tonte de 1200 m²"), null);
+  assert.equal(diametreLu("évacuation, prévoir 30 cm de paillage"), null);
+});
+
 
 console.log(`\n${echecs === 0 ? "✅ Toutes les vérifications passent." : `❌ ${echecs} échec(s).`}`);
 process.exit(echecs === 0 ? 0 : 1);

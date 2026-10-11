@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { colors, font, surPlein } from "@/lib/design-tokens";
 import { etatConfirmation, LONGUEUR_MINIMALE } from "@/lib/mot-de-passe";
+import OeilMotDePasse from "@/components/atlas/OeilMotDePasse";
 import type { Role } from "@/lib/acces-roles";
 import ChoixRole from "../ChoixRole";
 import { donnerUnAccesAction } from "../actions";
@@ -30,13 +31,21 @@ import { donnerUnAccesAction } from "../actions";
  * `/reglages/equipe`, que `cheminAutorise` ferme à tout ce qui n'est pas patron
  * — et la page serveur le revérifie. Cet écran n'est qu'un dessin.
  */
-export default function NouveauCompte() {
+export default function NouveauCompte({
+  roleInitial = "salarie",
+  retour = "/reglages/equipe",
+}: {
+  /** Le rôle déjà choisi dans l'organigramme (27 septembre 2026) : on ne le redemande pas. */
+  roleInitial?: Role;
+  /** Où revenir : là d'où l'on vient, l'équipe ou l'organigramme. */
+  retour?: string;
+}) {
   const router = useRouter();
   const [nom, setNom] = useState("");
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
   const [confirmation, setConfirmation] = useState("");
-  const [role, setRole] = useState<Role>("salarie");
+  const [role, setRole] = useState<Role>(roleInitial);
   const [message, setMessage] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
 
@@ -49,7 +58,7 @@ export default function NouveauCompte() {
       if (r.ok) {
         // Retour à la liste, où il verra la ligne qu'il vient de créer. Un
         // écran de félicitations serait un appui de plus pour rien.
-        router.push("/reglages/equipe");
+        router.push(retour);
         router.refresh();
       } else {
         setMessage(r.message);
@@ -100,15 +109,15 @@ export default function NouveauCompte() {
       <button
         type="submit"
         disabled={enCours}
-        className="mt-7 flex w-full items-center justify-center rounded-full py-3.5 text-[14px] font-semibold"
-        style={{ backgroundColor: colors.rust, color: surPlein, opacity: enCours ? 0.6 : 1 }}
+        className="atlas-plein mt-7 flex w-full items-center justify-center rounded-full py-3.5 text-[14px] font-semibold"
+        style={{ backgroundColor: colors.plein, color: surPlein, opacity: enCours ? 0.6 : 1 }}
       >
         {enCours ? "Un instant…" : "Créer le compte"}
       </button>
 
       <button
         type="button"
-        onClick={() => router.push("/reglages/equipe")}
+        onClick={() => router.push(retour)}
         className="mt-1 flex w-full items-center justify-center py-3 text-[13px]"
         style={{ color: colors.muted }}
       >
@@ -206,26 +215,14 @@ function ChampSecret({
           value={valeur}
           onChange={(e) => onChange(e.target.value)}
         />
-        <button
-          type="button"
-          onClick={() => setOuvert((o) => !o)}
-          aria-label={ouvert ? `Masquer ${etiquette.toLowerCase()}` : `Afficher ${etiquette.toLowerCase()}`}
-          aria-pressed={ouvert}
-          // 44 px : la cible tactile d'Atlas. Le pictogramme en fait 21.
-          className="-mr-2.5 flex h-11 w-11 flex-none items-center justify-center"
-          style={{ color: ouvert ? colors.or : colors.muted }}
-        >
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            className="h-[21px] w-[21px]"
-            style={{ fill: "none", stroke: "currentColor", strokeWidth: 1.4, strokeLinecap: "round", strokeLinejoin: "round" }}
-          >
-            <path d="M2.4 12S6 5.8 12 5.8 21.6 12 21.6 12 18 18.2 12 18.2 2.4 12 2.4 12Z" />
-            <circle cx="12" cy="12" r="3.1" />
-            {ouvert && <path d="M4 20 20 4" />}
-          </svg>
-        </button>
+        <OeilMotDePasse
+          ouvert={ouvert}
+          onBasculer={() => setOuvert((o) => !o)}
+          quoi={etiquette.toLowerCase()}
+          couleur={colors.muted}
+          couleurOuvert={colors.or}
+          className="-mr-2.5"
+        />
       </div>
       {sous && (
         <span className="mt-1.5 block text-[11.5px]" style={{ color: souligne ?? colors.muted }}>

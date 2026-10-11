@@ -166,7 +166,7 @@ export default function DicterCoordonnees({
       setMessage(
         remplis === 0
           ? "Aucune coordonnée reconnue dans ce que vous avez dit. Rien n'a été rempli."
-          : `${remplis} information${remplis > 1 ? "s" : ""} reprise${remplis > 1 ? "s" : ""} — relisez avant de créer.`
+          : `${remplis} information${remplis > 1 ? "s" : ""} reprise${remplis > 1 ? "s" : ""}. Relisez avant de créer.`
       );
     } catch {
       if (actuelle()) {
@@ -207,7 +207,17 @@ export default function DicterCoordonnees({
         }
         className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full"
         style={{
-          backgroundColor: enCours ? colors.alert : colors.rustTint,
+          // **PLUS D'APLAT AU REPOS — planche « A — Épurée », 2 septembre
+          // 2026.** Deux micros vivaient sur cet écran, celui-ci pour les
+          // coordonnées et l'anneau pour le chantier, et rien ne les
+          // distinguait qu'une taille. Depuis que l'anneau est une tasse, le
+          // rond beige d'ici lui répondait comme un second objet plein. Il ne
+          // garde qu'un filet : sa fonction n'a pas changé, son rang si.
+          //
+          // **Il redevient plein pendant qu'il écoute**, et c'est la même
+          // règle qu'ailleurs : ce qui est EN TRAIN de se faire porte l'aplat.
+          backgroundColor: enCours ? colors.alert : "transparent",
+          boxShadow: enCours ? undefined : `inset 0 0 0 1px ${colors.line}`,
           color: enCours ? surPlein : colors.rust,
           // **Pas de demi-effacement pendant le traitement.** Il y en avait un,
           // et c'était la moitié du défaut signalé le 13 août : un bouton à
@@ -243,7 +253,7 @@ export default function DicterCoordonnees({
           style={{ color: colors.muted }}
         >
           {enCours
-            ? "J'écoute — touchez pour arrêter."
+            ? "J'écoute. Touchez pour arrêter."
             : etat === "traite"
               ? phraseAttente(attente)
               : message}

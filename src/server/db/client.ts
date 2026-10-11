@@ -1,4 +1,5 @@
-import { Pool } from "pg";
+import { Pool, types } from "pg";
+import type { TypeId } from "pg-types";
 import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "./schema";
 import { getEnv } from "../env";
@@ -11,6 +12,27 @@ import { logger } from "../logger";
 declare global {
   var __atlasPgPool: Pool | undefined;
 }
+
+// **Une colonne `date` est un JOUR, pas un instant — et le pilote l'oubliait.**
+//
+// `pg` rend une `date` en objet `Date` posé à minuit dans le fuseau du
+// processus. Relue par `toISOString()`, elle recule d'un jour partout à l'est
+// de Greenwich : minuit à Paris est 22 h la veille en UTC. Drizzle se protège
+// déjà pour ses propres requêtes (il rend `date`, `timestamp` et `date[]` en
+// texte) ; le `pool` exporté plus bas, lui, gardait le comportement du pilote,
+// et quatre suites rougissaient d'un jour sur tout PC à l'heure de Paris —
+// vertes en UTC, où tournent la CI et son espace (13 septembre 2026).
+//
+// La règle vit donc au pilote, une fois : `date` et `date[]` arrivent en
+// « AAAA-MM-JJ », le format que `src/lib/jour.ts` attend et que la base rend.
+// Les horodatages (`timestamptz`) ne sont pas touchés : eux sont des instants.
+// Le tableau se lit avec l'analyseur de `text[]` — même syntaxe, et l'on
+// n'ajoute aucune dépendance pour le découper. Les deux identifiants de
+// tableau ne figurent pas dans `types.builtins`, d'où les nombres.
+const OID_DATE_ARRAY = 1182 as TypeId;
+const OID_TEXT_ARRAY = 1009 as TypeId;
+types.setTypeParser(types.builtins.DATE, (v) => v);
+types.setTypeParser(OID_DATE_ARRAY, types.getTypeParser(OID_TEXT_ARRAY));
 
 function creerPool(): Pool {
   const pool = new Pool({

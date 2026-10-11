@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le bouton retour — ce qui a été fait, et pourquoi</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-bouton-retour--ce-qui-a-été-fait-et-pourquoi">Le bouton retour — ce qui a été fait, et pourquoi</h1>
+<p><em>9 septembre 2026 · branche <code>claude/back-button-history-0pa6sj</code></em></p>
+<hr>
+<h2 id="ce-que-vous-avez-signalé">Ce que vous avez signalé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<blockquote>« J'ai cliqué sur ouvrir le devis, une fois sur le devis je clique sur retour, j'arrive sur la page de la fiche client — or le bouton retour doit marcher comme un vrai bouton marche arrière : il doit toujours renvoyer à la page d'où l'on vient juste avant. »</blockquote>
+<p>Vous partiez de l'accueil, par la carte « Devis accepté ».</p>
+<hr>
+<h2 id="ce-qui-a-été-trouvé-et-cest-le-vrai-sujet">Ce qui a été trouvé, et c'est le vrai sujet</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>C'était la cinquième fois, et toujours la même cause.</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>quand</th>
+<th>ce que vous avez signalé</th>
+<th>ce qui avait été fait</th>
+</tr></thead><tbody>
+<tr>
+<td>20 août</td>
+<td>la fiche client sautait deux écrans</td>
+<td>une porte reconnue</td>
+</tr>
+<tr>
+<td>31 août</td>
+<td>le devis vous déposait sur la fiche du chantier</td>
+<td>une destination écrite d'avance</td>
+</tr>
+<tr>
+<td>7 sept.</td>
+<td>venu du planning, vous atterrissiez sur l'accueil</td>
+<td>une porte de plus</td>
+</tr>
+<tr>
+<td>8 sept.</td>
+<td>venu du planning, le devis menait à la fiche client</td>
+<td>une branche de plus</td>
+</tr>
+<tr>
+<td><strong>9 sept.</strong></td>
+<td>venu de l'accueil, le devis menait à la fiche client</td>
+<td><strong>ceci</strong></td>
+</tr>
+</tbody></table></div>
+<p>Chaque écran <strong>annonçait</strong> sa sortie, écrite le jour où on l'avait écrite. À chaque fois qu'un nouveau chemin menait à cet écran, l'annonce devenait fausse — et l'on ajoutait le chemin manquant à la liste. Quatre couches, et la cinquième était déjà en route.</p>
+<p><strong>Ce qui a été corrigé, c'est la question.</strong> On ne cherche plus à devimer d'où vous venez : on s'en souvient. Votre onglet garde la trace des écrans traversés, et <strong>toute</strong> flèche de l'application y lit la page d'avant.</p>
+<hr>
+<h2 id="verdict-point-par-point">Verdict, point par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>verdict</th>
+<th>ce qui le fonde</th>
+</tr></thead><tbody>
+<tr>
+<td>le retour du devis renvoie où vous étiez</td>
+<td><strong>fait</strong></td>
+<td><code>src/lib/journal-de-navigation.ts</code></td>
+</tr>
+<tr>
+<td><strong>toutes</strong> les flèches, pas seulement celle-là</td>
+<td><strong>fait</strong></td>
+<td><code>src/components/atlas/FlecheRetour.tsx</code> — une seule flèche pour tous les écrans</td>
+</tr>
+<tr>
+<td>deux retours d'affilée reculent de deux écrans</td>
+<td><strong>fait</strong></td>
+<td>le journal se dépile ; c'était la boucle du 7 septembre</td>
+</tr>
+<tr>
+<td>recharger la page ne coûte pas un retour de plus</td>
+<td><strong>fait</strong></td>
+<td>le journal survit au rechargement</td>
+</tr>
+<tr>
+<td>votre règle du 31 août (« toujours la fiche client »)</td>
+<td><strong>gardée, en repli</strong></td>
+<td>elle s'applique quand il n'y a pas de page d'avant</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="ce-qui-a-été-fait-autrement-que-demandé-et-pourquoi">Ce qui a été fait AUTREMENT que demandé, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Vous avez dit « comme un vrai bouton marche arrière ». Ce n'est pas exactement <code>history.back()</code> du navigateur, et c'est délibéré sur deux points :</strong></p>
+<ol>
+<li><strong>Un écran qu'on feuillette reste un seul écran.</strong> Sur « TVA », changer de trimestre change l'adresse. Avec un vrai bouton retour, il faudrait appuyer quatre fois pour quitter l'écran après avoir regardé quatre trimestres. La flèche quitte l'écran où vous êtes, d'un coup.</li>
+<li><strong>Après avoir enregistré un formulaire, on ne revient pas dessus.</strong> Un vrai bouton retour vous remettrait sur la fiche client que vous venez de valider. La flèche continue de sortir.</li>
+</ol>
+<p>Dans les deux cas, un « vrai » retour aurait été plus fidèle à la lettre et moins utile. Si vous préférez le comportement strict du navigateur sur ces deux points, dites-le : c'est une ligne à changer.</p>
+<hr>
+<h2 id="ce-qui-a-été-retiré-avec--et-ce-qui-aurait-manqué-sans">Ce qui a été retiré avec — et ce qui aurait manqué sans</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>« Aucun client rattaché à ce chantier » n'est plus un cul-de-sac.</strong> Le 31 août, la flèche du devis avait été détournée vers le formulaire de fiche client justement parce que cette phrase disait ce qui manquait sans dire où le réparer. La flèche redevenant un retour, ce chemin aurait disparu.</p>
+<p>Il se lit désormais <strong>sous la phrase</strong>, et il s'annonce : « Renseigner la fiche client ». Il disparaît dès que le client est là — ses coordonnées se corrigent alors directement sur la feuille du devis.</p>
+<p><strong>Et la fiche d'un client supprimée quitte la trace</strong> : sans cela, la flèche de l'écran suivant vous aurait déposé sur une fiche effacée.</p>
+<hr>
+<h2 id="ce-qui-a-été-refusé-et-ce-que-ça-coûte">Ce qui a été REFUSÉ, et ce que ça coûte</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Retirer complètement les quatre anciennes règles de provenance.</strong> Elles ne servent plus à deviner d'où vous venez — le journal le sait — mais elles servent encore à deux choses : dire où sortir quand il n'y a pas de page d'avant, et où aller après avoir enregistré un formulaire.</p>
+<p>Leur moitié devenue inutile touche <strong>six écrans et six batteries de contrôle</strong>. La réécrire la même nuit, c'est livrer rouge. Elle est nommée dans <code>TODO.md</code> avec la liste exacte, et elle a cessé de grandir : plus aucune porte neuve n'a à s'y déclarer.</p>
+<p><strong>Ce que ça coûte de l'avoir laissée :</strong> quelques centaines de lignes qu'un développeur lira sans savoir qu'elles ne décident plus de la flèche. C'est pourquoi elles le disent maintenant en tête, et pourquoi la tâche existe.</p>
+<hr>
+<h2 id="deux-choses-que-jai-dites-et-qui-étaient-fausses">DEUX CHOSES QUE J'AI DITES ET QUI ÉTAIENT FAUSSES</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Elles sont écrites ici parce qu'un correctif qui a l'air juste et ne l'est pas coûte plus cher qu'un défaut connu. Les deux ont été trouvées par la batterie, pas en relisant — et les deux étaient dans MON correctif.</p>
+<p><strong>1. « Le journal sait quand vous reculez. »</strong> Non. Il le devinait à la forme de la trace — et rouvrir un écran déjà vu laisse exactement la même trace que reculer. Résultat : la flèche sautait deux écrans en arrière, c'est-à-dire la panne que je venais de corriger, par l'autre bout.</p>
+<p>Reculer ne se devine pas : c'est un geste, et ce sont les trois gestes qui reculent qui le disent maintenant — l'appui sur la flèche, l'enregistrement d'une fiche client, et le bouton du navigateur.</p>
+<p><strong>2. « L'ordre des choses n'a pas d'importance. »</strong> Non. La flèche se calcule avant que le pas ne soit noté : elle lisait donc une trace en retard d'un pas, et retombait sur la fois PRÉCÉDENTE où vous aviez ouvert le même écran. C'est exactement votre plainte du 9 septembre, reproduite par mon propre correctif.</p>
+<p><strong>Ce que ça dit du reste :</strong> ni l'une ni l'autre ne se voyait en relisant le code, et les deux passaient les contrôles « sur papier ». C'est le contrôle qui déroule VOTRE geste dans un vrai navigateur qui les a nommées.</p>
+<hr>
+<h2 id="ce-qui-a-été-éprouvé">Ce qui a été éprouvé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>la règle, sans navigateur</td>
+<td><code>scripts/test-journal-de-navigation.ts</code> — 18 cas, tous verts</td>
+</tr>
+<tr>
+<td>votre geste, dans un navigateur</td>
+<td><code>scripts/test-retour-page-davant-e2e.ts</code> — 5 cas, tous verts : accueil → devis → retour → accueil, la même flèche par une autre porte, deux retours d'affilée, la sortie déclarée à froid, et le rechargement</td>
+</tr>
+<tr>
+<td>les six suites adaptées</td>
+<td>vertes ensemble (6/6)</td>
+</tr>
+<tr>
+<td>la batterie complète</td>
+<td><em>(les chiffres exacts sont plus bas)</em></td>
+</tr>
+</tbody></table></div>
+<p><strong>Six batteries de contrôle réclamaient l'ancien comportement</strong> — la flèche du devis menant à la fiche client. Elles ont été <strong>adaptées, pas contournées</strong> : chacune défend désormais ce qui ne dépend pas du chemin parcouru (le devis a une sortie, la fiche montre le bon visage), et la destination est éprouvée là où c'est son sujet.</p>
+<hr>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>qui peut trancher</th>
+</tr></thead><tbody>
+<tr>
+<td>les deux écarts avec un « vrai » bouton retour (plus haut)</td>
+<td><strong>vous</strong></td>
+</tr>
+<tr>
+<td>la retraite de l'ancienne couche de provenance</td>
+<td>nous, quand le journal aura tenu quelques jours chez vous</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="à-regarder-chez-vous">À regarder chez vous</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Le geste exact : l'accueil, « Ouvrir le devis validé », puis retour. Vous devez revenir sur l'accueil. Puis le même devis ouvert depuis « Vos clients » : le retour doit vous ramener chez les clients.</p>
+</main>
+</body>
+</html>

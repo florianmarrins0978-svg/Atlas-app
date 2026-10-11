@@ -59,37 +59,21 @@ sleep 1
 
 cd "$CD" || exit 0
 
-# **Le chemin de secours pour les clés d'IA — et il est créé d'avance.**
+# **Le chemin de secours pour les clés — écrit d'avance, et TENU À JOUR.**
 #
 # Un secret d'espace de travail n'entre dans le conteneur qu'après une
 # reconstruction : geste introuvable sur un téléphone. Un fichier `.env.local`
 # à la racine, lui, est pris en compte au prochain allumage, sans rien
 # reconstruire.
 #
-# Il est **écrit ici, vide, dès le premier démarrage**, parce que « créez un
-# fichier nommé .env.local à la racine du projet » n'a pas été compris — et
-# c'était une consigne mal posée : demander de créer un fichier caché, au bon
-# endroit, avec le bon nom, sur six pouces. Le fichier existe donc déjà ; il
-# n'y a qu'à coller une clé après le signe égal.
+# Il naît ici, vide, parce que « créez un fichier nommé .env.local à la racine
+# du projet » n'a pas été compris — et c'était une consigne mal posée : demander
+# de créer un fichier caché, au bon endroit, avec le bon nom, sur six pouces.
 #
-# Jamais réécrit s'il existe : une clé déjà collée ne doit pas disparaître à
-# l'allumage suivant. Ignoré par git (`.gitignore` : `.env*`) — une clé ne se
-# versionne pas.
-if [ ! -f "$CD/.env.local" ]; then
-  cat > "$CD/.env.local" <<'MODELE'
-# Collez vos clés après le signe = , puis rechargez la page de l'éditeur.
-# Rien d'autre à faire : Atlas les prend en compte au démarrage suivant.
-#
-# Sans clé, la dictée est recopiée mot à mot au lieu d'être comprise.
-# Ce fichier n'est jamais envoyé sur GitHub.
-
-# Pour que votre voix devienne du texte :
-OPENAI_API_KEY=
-
-# Pour que ce texte devienne un devis structuré :
-ANTHROPIC_API_KEY=
-MODELE
-fi
+# **Et il se COMPLÈTE à chaque allumage**, sans quoi une clé ajoutée à Atlas
+# après la naissance du fichier n'aurait aucun moyen de l'atteindre. Le
+# raisonnement, et ce qu'il a coûté, vivent dans `completer-env-local.sh`.
+bash "$(dirname "$0")/completer-env-local.sh" "$CD/.env.local"
 
 # Chargé ICI plutôt que laissé à Next.js seul : le bandeau ci-dessous et
 # `npm run verifier:ia` doivent voir exactement ce que voit l'application.
@@ -161,11 +145,11 @@ fi
 # ligne existe pour éteindre.
 version_du_depot() {
   local v b
-  v="$(git log -1 --date=format:'%d/%m/%Y %H:%M' --format='%cd · %h' 2>/dev/null)" || v=""
+  v="$(git log -1 --date=format:'%d/%m/%Y %H:%M' --format='%cd, %h' 2>/dev/null)" || v=""
   [ -z "$v" ] && { echo "inconnue"; return; }
   b="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" || b=""
   # Tête détachée : on n'invente pas un nom de branche, on n'en dit aucun.
-  [ -n "$b" ] && [ "$b" != "HEAD" ] && v="$v · $b"
+  [ -n "$b" ] && [ "$b" != "HEAD" ] && v="$v, $b"
   echo "$v"
 }
 ATLAS_VERSION="$(version_du_depot)"
@@ -215,8 +199,7 @@ lancer_veilleur
 # vit dans `mettre-a-jour.sh`, qui est éprouvé par
 # `scripts/test-mise-a-jour-espace.ts` : enfouie ici, elle n'aurait jamais été
 # vue échouer.
-MISE_A_JOUR="$(bash "$(dirname "$0")/mettre-a-jour.sh" "$CD")"
-MIGRATIONS=""
+MISE_A_JOUR="$(bash "$(dirname "$0")/mettre-a-jour.sh" "$CD" 2>> "$JOURNAL")"
 
 # Le code a peut-être changé sous nos pieds : on relit la version AVANT que le
 # veilleur ne soit relancé plus bas, sinon le serveur neuf hériterait de la
@@ -229,24 +212,95 @@ export ATLAS_VERSION
 # produit une panne au lieu d'un correctif : un écran qui plante sur une colonne
 # absente est pire que l'ancienne version.
 if [ "$MISE_A_JOUR" = "faite" ]; then
-  npm ci --silent >> "$JOURNAL" 2>&1 || npm install --silent >> "$JOURNAL" 2>&1 || true
-
-  # **Les migrations passent par leur propre script, sous le rôle
-  # PROPRIÉTAIRE.** Lancées ici avec la variable ambiante, elles tournaient sous
-  # `atlas_app` — qui n'a aucun droit de créer une table — et le `|| true`
-  # avalait l'échec. Le code neuf arrivait sur une base vieille, et l'écran qui
-  # touchait une table absente tombait sans que rien ne l'ait annoncé.
-  MIGRATIONS="$(bash "$(dirname "$0")/appliquer-migrations.sh" "$CD")"
-  echo "migrations : $MIGRATIONS" >> "$JOURNAL"
-
-  # Le code a changé sous le serveur qui tourne : on remplace le veilleur ET le
-  # serveur par leurs versions neuves. C'est ce qui rend l'`exec` inutile.
-  echo "$(date '+%d/%m %H:%M:%S') — code neuf : on remplace veilleur et serveur" >> "$JOURNAL"
+  # ───────────────────────────────────────────────────────────────────────────
+  # **ON ARRÊTE LE BANC AVANT D'INSTALLER, ET C'EST LA RACINE DE SA PANNE DU
+  # 2 SEPTEMBRE 2026.**
+  #
+  # Ce soir-là, son application est restée blanche pendant une heure. Son
+  # journal disait, à 21 h 13 :
+  #
+  #     npm error ENOTEMPTY: directory not empty, rmdir '.../scope-manager/dist'
+  #     npm error ENOTEMPTY: directory not empty, rename '.../zod' -> '.../.zod-…'
+  #
+  # puis, trente fois de suite :
+  #
+  #     Error: Cannot find module '/workspaces/Atlas-app/node_modules/next/dist/bin/next'
+  #
+  # **`npm ci` EFFACE `node_modules` avant de réinstaller.** Or le veilleur est
+  # posé cinquante lignes plus haut — délibérément, pour que le patron ait une
+  # application qui répond quoi qu'il arrive —, et quinze secondes plus tard un
+  # banc tourne : un `next-server` qui SERT, et un `next build` qui bâtit. Tous
+  # deux tiennent des fichiers ouverts dans `node_modules`.
+  #
+  # npm efface ce qu'il peut, échoue sur ce qui est tenu, et **laisse l'arbre
+  # amputé** — `next` en fut la victime. Le serveur suivant meurt à la seconde,
+  # le veilleur le relance, il remeurt : une boucle qui ne s'arrête jamais.
+  #
+  # Les processus étaient tués vingt lignes plus bas, APRÈS l'installation.
+  # C'est-à-dire après les dégâts. Ils le sont désormais AVANT.
+  #
+  # **Ce que cela ne coûte pas :** rien. Ils étaient tués de toute façon, et un
+  # `npm ci` tue déjà le serveur — salement. Il n'y a pas de service perdu,
+  # seulement une corruption évitée.
+  echo "$(date '+%d/%m %H:%M:%S') — code neuf : on arrête le banc AVANT d'installer" >> "$JOURNAL"
   pkill -f "[v]eiller.sh" 2>/dev/null || true
   rm -f /tmp/atlas-veilleur.pid
   # Voir le pavé plus haut : `build` est dans le motif à dessein.
   pkill -f "[n]ext(-server| dev| start| build)" 2>/dev/null || true
-  sleep 1
+  # Tuer n'est pas instantané : installer sur des fichiers encore ouverts
+  # reproduirait exactement ce qu'on vient d'éviter.
+  sleep 2
+
+  # **L'échec de l'installation NE S'AVALE PLUS.** Le `|| true` d'avant le
+  # taisait : le code neuf arrivait sur des dépendances vieilles ou amputées, et
+  # rien ne le disait — la même faute que les migrations du 9 août.
+  if npm ci --silent >> "$JOURNAL" 2>&1; then
+    DEPENDANCES="faites"
+  elif npm install --silent >> "$JOURNAL" 2>&1; then
+    DEPENDANCES="faites (npm install, après un refus de npm ci)"
+  else
+    DEPENDANCES="échec"
+  fi
+  echo "dépendances : $DEPENDANCES" >> "$JOURNAL"
+
+  CODE_NEUF=1
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# **LES MIGRATIONS TOURNENT À CHAQUE ALLUMAGE — 13 septembre 2026, et c'est la
+# racine de sa panne du soir.**
+#
+# Elles vivaient DANS le `if` ci-dessus : on ne migrait que le jour où le code
+# bougeait. Cette condition prétend dire « la base est en retard » ; elle dit
+# autre chose, et l'écart se paie deux fois :
+#
+#   1. **une migration qui échoue n'est jamais retentée.** Base pas encore
+#      levée, `node_modules` amputé, un `tsx` qui manque : l'échec est écrit
+#      dans le journal, et l'allumage suivant répond « déjà à jour » — donc ne
+#      migre pas. La base reste en arrière POUR TOUJOURS, et aucun bouton ne la
+#      rattrape ;
+#   2. **le code peut arriver par un autre chemin** — le bouton « Chercher les
+#      dernières corrections », une reconstruction qui clone déjà à jour. Ce
+#      démarrage-ci lit « à jour » et ne migre pas, alors que la base, elle, est
+#      bien en retard sur ce qu'il sert.
+#
+# Ce qu'il a vu le 13 septembre 2026 : « Planning » et « Terminés » tombés
+# ensemble, « Chantiers » debout. Les deux premiers lisent l'entreprise ENTIÈRE
+# (`getEntreprise`, donc toutes ses colonnes) ; la troisième non. Une colonne
+# ajoutée par une migration jamais appliquée (0090) suffit à ce partage exact.
+#
+# **Le rejeu ne coûte rien et ne détruit rien** : `run-migrations.ts` tient la
+# table `_migrations` et saute ce qui est déjà appliqué. Ce qui coûtait, c'était
+# de ne pas le faire.
+#
+# **Les migrations passent par leur propre script, sous le rôle PROPRIÉTAIRE.**
+# Lancées ici avec la variable ambiante, elles tournaient sous `atlas_app` — qui
+# n'a aucun droit de créer une table — et le `|| true` avalait l'échec.
+MIGRATIONS="$(bash "$(dirname "$0")/appliquer-migrations.sh" "$CD")"
+echo "migrations : $MIGRATIONS" >> "$JOURNAL"
+
+# Le banc repart, sur le code neuf et des dépendances entières.
+if [ -n "${CODE_NEUF:-}" ]; then
   lancer_veilleur
 fi
 
@@ -359,6 +413,33 @@ case "$ETAT_IA" in
     [ "$ETAT_IA" = "neutralise" ] && echo "       (réglage figé d'un ancien conteneur neutralisé)"
     ;;
 esac
+
+# **CE QUI MANQUE POUR ENTRER PAR GOOGLE OU PAR APPLE, dit ici et pas ailleurs.**
+#
+# Payé le 10 septembre 2026 : *« voilà l'écran que je veux, voilà l'écran que
+# j'ai »*, capture de la planche à l'appui. La porte n'affiche Google et Apple
+# que si leurs clés sont posées — un bouton qui ne peut pas aboutir est pire
+# qu'un bouton absent (`src/lib/fournisseurs-connexion.ts`). Mais l'écran, lui,
+# se taisait : deux boutons manquants ressemblent exactement à une application
+# en retard sur sa maquette, et il n'y avait aucun moyen de savoir.
+#
+# **L'adresse de retour est écrite en toutes lettres**, parce que c'est le seul
+# endroit où elle se sait sans se deviner : elle dépend de l'espace de travail,
+# et Google refuse le raccordement au caractère près.
+if [ -n "${AUTH_GOOGLE_ID:-}" ] && [ -n "${AUTH_GOOGLE_SECRET:-}" ]; then
+  echo "  Entrer avec Google : branché."
+else
+  echo "  Entrer avec Google : le bouton ne s'affiche pas — clés absentes."
+  echo "       Marche à suivre : docs/entrer-avec-google.md"
+  [ -n "$ADRESSE" ] && echo "       Adresse de retour à déclarer chez Google :"
+  [ -n "$ADRESSE" ] && echo "       $ADRESSE/api/auth/callback/google"
+fi
+if [ -n "${AUTH_APPLE_ID:-}" ] && [ -n "${AUTH_APPLE_SECRET:-}" ]; then
+  echo "  Entrer avec Apple  : branché."
+else
+  echo "  Entrer avec Apple  : le bouton ne s'affiche pas — clés absentes."
+  echo "       (compte développeur Apple payant ; voir docs/A-FAIRE.md)"
+fi
 case "$MISE_A_JOUR" in
   faite) echo "  Le code a été mis à jour au démarrage." ;;
   impossible*) echo "  ⚠ MISE À JOUR $MISE_A_JOUR" ;;
@@ -369,7 +450,19 @@ esac
 # 9 août 2026 : les migrations échouaient sous le mauvais rôle, l'échec était
 # avalé, et le patron ouvrait un écran qui tombait sur une table absente sans
 # rien pour le relier à la mise à jour qu'il venait de faire.
-case "${MIGRATIONS:-}" in
+# **Des dépendances qui n'ont pas suivi se DISENT.** Sa panne du 2 septembre
+# 2026 : `next` absent, le serveur mort à la seconde, en boucle — et le seul
+# endroit qui le savait était un journal que personne ne lit.
+case "${DEPENDANCES:-}" in
+  échec*)
+    echo
+    echo "  ⚠ LES DÉPENDANCES N'ONT PAS SUIVI LE CODE."
+    echo "    Atlas ne pourra pas démarrer. Dans un terminal de cet espace :"
+    echo
+    echo "      rm -rf node_modules && npm ci"
+    ;;
+esac
+case "$MIGRATIONS" in
   échec*)
     echo
     echo "  ⚠ LA BASE N'A PAS SUIVI LE CODE — $MIGRATIONS"

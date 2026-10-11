@@ -84,3 +84,24 @@ export function numeroEnregistre(valeur: string): string {
   if (brut.startsWith("+")) return brut;
   return brut.replace(/\D/g, "");
 }
+
+/**
+ * Le numéro tel qu'on l'enregistre, ou `null` s'il ne joint personne.
+ *
+ * **« 85 45 » commençait un devis** — sa capture du 7 octobre 2026. Quatre
+ * chiffres partaient en base, et le SMS du devis avec, vers nulle part.
+ *
+ * Une case vide rend `""` : ne rien donner n'est pas une faute. Un numéro
+ * français a dix chiffres et commence par 0 ; un numéro international, de 8 à
+ * 15 chiffres derrière son « + » (la norme E.164 n'en permet pas plus).
+ * L'écran et le serveur lisent par ici, et par ici seulement (`CLAUDE.md` §3).
+ */
+export function telephoneLu(saisi: string | null | undefined): string | null {
+  const enregistre = numeroEnregistre(saisi ?? "");
+  if (enregistre === "") return "";
+  if (enregistre.startsWith("+")) {
+    const chiffres = enregistre.replace(/\D/g, "").length;
+    return chiffres >= 8 && chiffres <= 15 ? enregistre : null;
+  }
+  return /^0\d{9}$/.test(enregistre) ? enregistre : null;
+}

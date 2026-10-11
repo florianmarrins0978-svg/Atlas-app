@@ -1,18 +1,26 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, surPlein } from "@/lib/design-tokens";
+import BottomSheet from "@/components/atlas/BottomSheet";
 import {
   aFacturerPartout,
   bornesDuFeuilletage,
   decalerMois,
   factureesPartout,
   formatEuros,
-  libelleFacturee,
+  libelleEtatLigne,
+  moisDuChantier,
   nomDuMois,
   resumeDuMois,
   type LigneAffichee,
+  CLES_DE_TRI,
+  estTriParDefaut,
+  lireTri,
+  trier,
+  type CleDeTri,
+  type Tri,
 } from "@/lib/termines-par-mois";
 
 /**
@@ -35,15 +43,55 @@ import {
  *
  * **CE QUI RESTE À FACTURER NE SUIT PAS LE MOIS.** Sa demande du 22 août :
  * *« il faut pouvoir revenir dans le passé si jamais on a du retard sur la
- * facturation »*. L'onglet « À facturer » ignore donc le mois affiché — un
- * chantier de juillet jamais facturé se voit encore en août, sinon il faudrait
- * déjà savoir qu'il existe pour aller le chercher.
+ * facturation »*. L'œil ouvert ignore donc le mois affiché — un chantier de
+ * juillet jamais facturé se voit encore en août, sinon il faudrait déjà savoir
+ * qu'il existe pour aller le chercher. C'était la règle de l'onglet
+ * « À facturer » ; l'onglet est parti le 13 septembre 2026, la règle reste.
  */
 export default function ListeTermines({
   lignes,
+  retoursNonLus,
   moisCourant,
+  nonPayees,
+  chantierDemande,
+  chantiersSoldes,
 }: {
+  /**
+   * Les chantiers dont la facture est entièrement réglée. Leur volet ne propose
+   * plus « Il ne me paiera pas » — sa décision du 25 septembre 2026 : le bouton
+   * menait à un écran qui renvoyait en silence sur la facture acquittée.
+   */
+  chantiersSoldes: string[];
+  /**
+   * Le chantier devant lequel s'ouvrir : son mois, et sa ligne à l'écran. Sa
+   * demande du 25 septembre 2026, après un paiement noté : *« retourner sur
+   * Terminés, devant la case de Monsieur Martins qui se trouvait en août »*.
+   */
+  chantierDemande: string | null;
   lignes: LigneAffichee[];
+  /**
+   * Combien de factures il a rangées « Il ne me paiera pas », et encore dues.
+   * Zéro : la catégorie n'existe pas (sa règle du 24 septembre 2026, *« elle
+   * apparaît seulement lorsque je clique sur ça »*).
+   */
+  nonPayees: number;
+  /**
+   * Combien de retours d'intervention l'entreprise porte — TOUS mois confondus.
+   *
+   * Sa règle du 8 septembre 2026 : *« il faut pouvoir les garder longtemps »*.
+   * Le compte ignore donc le mois affiché, exactement comme « À facturer »
+   * l'ignore déjà : un retour de 2024 compte toujours.
+   */
+  /**
+   * Combien il n’a pas encore ouverts — c’est ce que la pastille montre.
+   *
+   * **Sa correction du 9 septembre 2026** : *« il faut que le nombre qui
+   * s’affiche soit celui-là, et pas combien il y en a à l’intérieur »*. Un
+   * total ne descend jamais à zéro, et une pastille qui ne s’éteint pas
+   * s’apprend à être ignorée — le jour où un retour compte vraiment, elle
+   * ressemble à celle de la veille.
+   */
+  retoursNonLus: number;
   /**
    * `AAAA-MM` du jour, calculé sur le SERVEUR.
    *
@@ -53,7 +101,22 @@ export default function ListeTermines({
    */
   moisCourant: string;
 }) {
-  const [onglet, setOnglet] = useState<"tout" | "attente">("tout");
+  /**
+   * L'œil : fermé (barré), on voit tout — c'est le mode d'origine ; ouvert, on
+   * ne voit que ce qui attend. Sa demande du 13 septembre 2026 : *« par défaut
+   * on doit tout voir et on clique pour voir seulement les à facturer »*.
+   */
+  const [oeilOuvert, setOeilOuvert] = useState(false);
+
+  /**
+   * L'année du jour, tirée du mois que le SERVEUR a décidé.
+   *
+   * C'est elle qui dit si la date d'un chantier s'écrit avec son année
+   * (`libelleDateChantier`). La relire d'un `new Date()` ici rendrait une année
+   * au serveur et une autre au client au passage de minuit, et React refuserait
+   * l'hydratation — le même piège que `moisCourant` juste en dessous.
+   */
+  const annee = moisCourant.slice(0, 4);
 
   const attente = useMemo(() => aFacturerPartout(lignes), [lignes]);
   const faites = useMemo(() => factureesPartout(lignes), [lignes]);
@@ -64,111 +127,298 @@ export default function ListeTermines({
   );
   // Le mois affiché se garde en clair — un décalage relatif se recalculait à
   // chaque rendu, et le jour où l'entrée bouge il ne veut plus rien dire.
-  const [cle, setCle] = useState(entree);
+  const soldes = useMemo(() => new Set(chantiersSoldes), [chantiersSoldes]);
+  const [cle, setCle] = useState(() => moisDuChantier(lignes, chantierDemande) ?? entree);
+
+  // Sa ligne à l'écran, au milieu : en haut, l'en-tête la cacherait à moitié.
+  useEffect(() => {
+    if (!chantierDemande) return;
+    document.getElementById(`chantier-${chantierDemande}`)?.scrollIntoView({ block: "center" });
+  }, [chantierDemande]);
   const plancher = decalerMois(entree, RECUL_MAX);
   const mois = useMemo(() => resumeDuMois(lignes, cle), [lignes, cle]);
+  // Un œil ouvert sur rien ne montre rien : dès que la dernière facture part,
+  // on revient à tout — sans quoi l'écran resterait vide sous un bouton parti.
+  const montrerCeQuiAttend = oeilOuvert && attente.length > 0;
+
+  /**
+   * L'ordre choisi au bouton « Filtre » — sa demande du 27 septembre 2026,
+   * planche `appli/termines-l-ordre.html`, B retenue.
+   *
+   * **Retenu sur CE téléphone.** Le serveur, qui ne le connaît pas, rend
+   * l'ordre d'origine ; `useSyncExternalStore` fait relire le téléphone après
+   * l'hydratation, sans quoi React la refuserait (le piège de `moisCourant`).
+   */
+  const triRetenu = useSyncExternalStore(sAbonnerAuTri, triDuTelephone, () => null);
+  const tri = useMemo(() => lireTri(triRetenu), [triRetenu]);
+  const [voletTri, setVoletTri] = useState(false);
+  const montrees = useMemo(
+    () => trier(montrerCeQuiAttend ? attente : mois.lignes, tri),
+    [montrerCeQuiAttend, attente, mois.lignes, tri]
+  );
 
   return (
     <div data-atlas="liste-termines">
-      {/* **La phrase des deux chiffres a QUITTÉ cette place le 23 août 2026**,
-          à sa demande : *« supprime ce qui est marqué sous le mois d'août et à
-          la place tu écris la phrase qui est marquée sous Terminés. Et tu
-          enlèves la phrase qui est marquée sous Terminés. »*
+      {/* ─── DEUX PORTES, ET PLUS AUCUN ONGLET — sa demande du 13 septembre 2026
+          *« Sous la TVA, garde que deux boutons : Retours d'intervention et
+          Créer une facture. Je voudrais qu'on supprime le bouton Tout, que ça
+          soit le mode par défaut, et qu'on garde que le bouton À facturer. »*
+          Planche `appli/termines-l-oeil.html`, retenue le soir même :
+          *« Très bien, et par défaut on doit tout voir et on clique pour voir
+          seulement les à facturer. »*
 
-          Elle vit maintenant sous le mois, où elle remplace un décompte qui
-          disait la même chose en d'autres mots. Deux phrases pour un seul état,
-          à trois centimètres l'une de l'autre, faisaient hésiter — est-ce le
-          même chiffre ? */}
-      <div className="mx-[26px] mt-[22px] flex gap-2">
-        <Onglet repere="tout" actif={onglet === "tout"} onClick={() => setOnglet("tout")}>
-          Tout
-        </Onglet>
-        <Onglet repere="attente" actif={onglet === "attente"} onClick={() => setOnglet("attente")}>
-          À facturer
-        </Onglet>
+          **« Tout » et « À facturer » ont quitté cette rangée**, et le filtre
+          vit désormais dans la phrase de comptes, sous le mois : c'est l'ŒIL,
+          plus bas. Il ne reste ici que ce qui OUVRE une page — les deux
+          portes —, et elles tiennent sur une seule rangée : 44 px de haut, le
+          bord droit sur la marge de 26 px, comme le 11 septembre. À 360 px la
+          rangée se replie, et « Créer une facture » passe dessous, à droite.
+
+          **28 px sous la carte — « le calme », sa proposition A du 2 septembre
+          2026** (`appli/termines-elegance.html`). */}
+      <div
+        className="mx-[26px] mt-7 flex flex-wrap justify-between gap-2"
+        data-atlas="portes-termines"
+      >
+        {/* ─── LES RETOURS D'INTERVENTION — sa décision du 8 septembre 2026 ───
+            *« Dans la catégorie terminé il faut rajouter une sous-catégorie,
+            comme tu as fait, à côté de "à facturer" : mettre la sous-catégorie
+            retour d'intervention. On clique dessus et on arrive sur une page
+            où seront listés tous les retours par client. »*
+
+            **IL EST TOUJOURS LÀ, même quand il n'y a aucun retour — sa
+            correction du 9 septembre 2026 :** *« l'onglet retour
+            d'intervention doit exister même s'il n'y a aucun retour qui
+            existe ! »*
+
+            Je l'avais caché tant que la liste était vide, au motif qu'un
+            onglet qui n'ouvre rien s'apprend à ne plus être touché. Il a
+            raison contre ça : un onglet qui apparaît un jour et pas l'autre
+            se cherche, et le premier retour de son salarié arriverait dans un
+            endroit dont il ignore l'existence. **La page vide, elle, dit ce
+            qui l'attend** — c'est ce que fait `ListeDesRetours`. */}
+        <Link
+          href="/termines/retours"
+          data-atlas="onglet-retours"
+          className="flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-[12.5px] no-underline"
+          style={{
+            backgroundColor: colors.card,
+            color: colors.inkSoft,
+            boxShadow: `inset 0 0 0 1px ${colors.line}`,
+            WebkitTapHighlightColor: "transparent",
+          }}
+        >
+          Retours d&apos;intervention
+          {/* **La pastille ne compte QUE ce qu’il n’a pas lu, et disparaît
+              quand il a tout vu** — sa correction du 9 septembre 2026. Un
+              nombre qui reste allumé pour toujours ne dit plus rien : le
+              jour où un retour compte vraiment, il ressemble à la veille.
+
+              **L’onglet, lui, reste** tant qu’il existe des retours : sans
+              quoi la page devient inatteignable le soir où il a tout lu. */}
+          {retoursNonLus > 0 && (
+            <span
+              data-atlas="compte-des-non-lus"
+              className="grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-bold"
+              style={{ backgroundColor: colors.or, color: colors.cream }}
+            >
+              {retoursNonLus}
+            </span>
+          )}
+        </Link>
+
+        {/* ─── CRÉER UNE FACTURE SANS DEVIS — sa demande du 11 septembre 2026 ──
+            *« Sous retour d'intervention, collé à droite, tu mets créer une
+            facture en doré, comme tu as fait le bouton vide contour doré. »*
+
+            **Pourquoi ici, et pas sur l'accueil.** Il l'avait d'abord posée sur
+            l'écran des chantiers, puis s'est ravisé le lendemain : *« est-ce que
+            c'est pas plus logique de mettre la porte dans la catégorie
+            Terminés ? »* — et il a raison. Un dépannage réglé sur place est du
+            travail FINI ; « Vos chantiers » liste ce qui est en cours, et le
+            chantier créé par ce bouton part de toute façon droit dans Terminés.
+
+            **Sur la même rangée depuis le 13 septembre 2026.** Elle vivait sur
+            une seconde rangée parce que les trois onglets prenaient 300 px sur
+            les 306 d'un écran de 360 ; deux d'entre eux partis, la place est
+            là — et `ml-auto` la garde à droite même quand la rangée se replie.
+
+            **À DROITE ET EN OR, et ce n'est pas de l'ornement.** Le contour
+            vide plutôt qu'un aplat : le vert plein dit « c'est ce que vous
+            regardez », ce qui n'est pas ce qu'on veut dire ici.
+
+            **C'est un LIEN, comme « Vos clients ».** Il mène à la fiche client,
+            qui prépare la facture au lieu du devis — le même écran, le même
+            geste, `?facture=1` en décidant (`chantiers/nouveau/page.tsx`). */}
+        <Link
+          href="/chantiers/nouveau?facture=1"
+          data-atlas="creer-une-facture"
+          className="ml-auto flex min-h-11 flex-none items-center justify-center whitespace-nowrap rounded-full px-3.5 text-[12.5px] no-underline"
+          style={{
+            color: colors.or,
+            boxShadow: `inset 0 0 0 1px ${colors.or}`,
+            WebkitTapHighlightColor: "transparent",
+          }}
+        >
+          Créer une facture
+        </Link>
       </div>
 
-      {onglet === "attente" ? (
-        <section className="mx-[26px] mt-[30px]" data-atlas="tout-ce-qui-attend">
-          {attente.length === 0 ? (
-            <p className="text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
-              Rien n&apos;attend. Vous êtes à jour.
-            </p>
-          ) : (
-            <>
-              <Compte>
-                {attente.length} chantier{attente.length > 1 ? "s" : ""} à facturer, tous mois
-                confondus.
-              </Compte>
-              {attente.map((l) => (
-                <Ligne key={l.id} ligne={l} />
-              ))}
-            </>
-          )}
-        </section>
+      {/* ─── LES FACTURES NON PAYÉES — sa demande du 24 septembre 2026 ──────
+          *« Dans Terminés, si je dis que mon client ne me paiera pas, il faut
+          créer une petite catégorie qui apparaît seulement lorsque je clique
+          sur ça, et qui range la facture dans factures non payées. »*
+          Planche `appli/il-ne-paiera-pas.html`. Elle disparaît d'elle-même
+          quand la dernière est payée : « non payée » se déduit du reste dû. */}
+      {nonPayees > 0 && (
+        <Link
+          href="/termines/non-payees"
+          data-atlas="categorie-non-payees"
+          className="mx-[26px] mt-3 flex min-h-12 items-center justify-between rounded-full px-[18px] text-[14px] no-underline"
+          style={{ color: colors.alert, boxShadow: `inset 0 0 0 1px ${colors.alert}` }}
+        >
+          Non payées
+          <span
+            className="grid h-6 min-w-6 place-items-center rounded-full px-1.5 text-[12.5px] font-semibold"
+            style={{ backgroundColor: colors.alert, color: surPlein }}
+          >
+            {nonPayees}
+          </span>
+        </Link>
+      )}
+
+      {/* ─── AUCUN CHANTIER TERMINÉ, ET LES PORTES RESTENT — 11 septembre 2026
+          Cet état vivait dans `page.tsx`, À LA PLACE de cette liste entière :
+          sans un seul chantier terminé, ni les onglets, ni « Retours
+          d'intervention », ni « Créer une facture » n'existaient. Vu à la
+          capture, sur une base neuve — c'est-à-dire chez tout artisan qui ouvre
+          Atlas pour la première fois, et dont le premier geste est justement un
+          dépannage réglé sur place, sans devis.
+
+          Un écran qui cache sa porte tant qu'on n'a jamais rien fini est un
+          cul-de-sac : c'est la règle qu'il a posée le 9 septembre pour les
+          retours (*« l'onglet doit exister même s'il n'y a aucun retour »*),
+          appliquée ici pour la même raison. La phrase, elle, ne change pas. */}
+      {lignes.length === 0 ? (
+        <p className="mt-8 px-[26px] text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
+          Vos chantiers apparaîtront ici une fois leur date d&apos;intervention passée.
+        </p>
       ) : (
-        <section className="mx-[26px] mt-[30px]" data-atlas="le-mois">
+        <section
+          className="mx-[26px] mt-8"
+          // Le repère change avec ce que la section MONTRE : les suites qui
+          // attendent « tout ce qui attend » le trouvent au même endroit que du
+          // temps de l'onglet, sans dépendre d'un libellé (`CLAUDE.md` §5 bis).
+          data-atlas={montrerCeQuiAttend ? "tout-ce-qui-attend" : "le-mois"}
+        >
+          {/* **Le mois est CENTRÉ — sa demande du 13 septembre 2026.** Et il se
+              met EN VEILLE quand l'œil est ouvert : ce qu'on voit alors ignore
+              le mois (règle du 22 août, en tête de fichier), et des flèches qui
+              feuilletteraient une liste qui ne bouge pas feraient croire
+              l'écran cassé. Le nom reste à sa place, en retrait : une ligne qui
+              disparaît se cherche, une ligne qui s'éteint se comprend. */}
           <NavigationMois
             cle={cle}
             peutReculer={cle > plancher}
             peutAvancer={cle < borne}
+            enVeille={montrerCeQuiAttend}
             surMois={setCle}
           />
-          {mois.lignes.length === 0 ? (
+          {/* **Sa phrase, ici — 23 août 2026 —, réduite à ses DEUX
+              COMPTES le soir même** : *« là où il y a écrit trois à
+              facturer et huit facturés, supprime les montants qu'il y a
+              avec »*.
+
+              **Elle compte TOUS les mois**, pas seulement celui qu'on
+              regarde : c'est ainsi qu'elle a été demandée. Ses montants
+              disaient donc des sommes que la liste en dessous ne montrait
+              pas — trois chiffres d'origines différentes sur deux lignes.
+
+              **ET DEPUIS LE 13 SEPTEMBRE 2026, C'EST ELLE QUI FILTRE.** Sa
+              demande, planche `appli/termines-l-oeil.html` : *« laisser
+              14 facturés en gras et 3 à facturer en gras doré, mais à côté
+              tu mets le signe œil barré ; on clique dessus, ça montre les
+              à facturer ; on reclique, il disparaît, on revient sur le mode
+              tout par défaut »*. L'onglet « À facturer » disait la même
+              chose que « 3 à facturer », à trois centimètres d'écart — il
+              est parti, et le geste vit sur le chiffre lui-même.
+
+              **17 px au lieu de 14 — « mets-les en plus gros », le même
+              soir.** Et la phrase ne se montre que s'il y a quelque chose
+              à compter : *« quand il n'y a rien à facturer ou de facturé,
+              supprime la phrase »*. Sans rien qui attend, l'œil part avec
+              son compte — il n'aurait rien à montrer.
+
+              **Le trait sous elle était la démarcation qu'il a demandée**
+              le 23 août — *« essaye de laisser un peu d'espace entre cette
+              phrase-là et le premier client, histoire qu'on fasse bien la
+              démarcation »*. **Il est parti le 26** : *« tous les traits
+              supprimés entre chaque ligne »*.
+
+              **C'est l'espace qui le remplace, et c'est ce qu'il avait
+              demandé au départ** — le trait avait été préféré parce que de
+              l'espace seul se mange au premier ajout de contenu. La
+              démarcation tient donc maintenant sur les 22 px de la première
+              ligne, et c'est à surveiller : une ligne qui reviendrait à 19
+              la ferait disparaître sans que rien ne rougisse.
+
+              **ET ELLE SE MONTRE MÊME SUR UN MOIS VIDE.** Elle compte tous les
+              mois ; la poser sous « Rien en septembre » l'aurait fait taire —
+              et l'œil avec — précisément quand un chantier d'août attend encore
+              sa facture : c'est le retard de facturation de sa règle du
+              22 août, et un mois neuf l'aurait caché. Trouvé par la suite
+              jouée seule, sur un septembre sans chantier (13 septembre 2026). */}
+          {(attente.length > 0 || faites.length > 0) && (
+            <p
+              className="mb-3 mt-3.5 flex items-center gap-1.5 text-[17px] font-bold leading-[1.5]"
+              style={{ color: colors.ink }}
+              data-atlas="compte-du-mois"
+            >
+              {attente.length > 0 && (
+                <>
+                  {/* **« À facturer » en or — sa correction du 23 août au
+                      soir.** L'or porte ici ce qui attend un geste de lui.
+                      Deux comptes du même noir se lisaient comme un seul
+                      chiffre coupé en deux. */}
+                  <span style={{ color: colors.or }}>{attente.length} à facturer</span>
+                  <Oeil ouvert={montrerCeQuiAttend} onClick={() => setOeilOuvert((o) => !o)} />
+                </>
+              )}
+              {/* Les facturés s'éteignent quand l'œil est ouvert : ils ne
+                  sont plus dans la liste, mais le chiffre reste à sa place
+                  pour dire qu'ils existent. `muted` plutôt qu'une opacité :
+                  c'est le jeton du retrait, lisible sur les huit chartes. */}
+              {faites.length > 0 && (
+                <span style={{ color: montrerCeQuiAttend ? colors.muted : colors.ink }}>
+                  {faites.length} facturé{faites.length > 1 ? "s" : ""}
+                </span>
+              )}
+            </p>
+          )}
+          {/* **LE BOUTON FILTRE, SUR SA PROPRE RANGÉE — sa proposition B du
+              27 septembre 2026.** Sous les comptes, à droite : la phrase des
+              comptes garde sa ligne pour elle. Il se REMPLIT quand l'ordre
+              n'est plus celui d'origine, pour qu'on ne lise pas une liste
+              rangée autrement sans le savoir. */}
+          {(attente.length > 0 || faites.length > 0) && (
+            <div className="-mt-1 mb-1 flex justify-end">
+              <BoutonFiltre actif={!estTriParDefaut(tri)} onClick={() => setVoletTri(true)} />
+            </div>
+          )}
+          <VoletTri
+            ouvert={voletTri}
+            tri={tri}
+            surTri={retenirTri}
+            surFermer={() => setVoletTri(false)}
+          />
+          {!montrerCeQuiAttend && mois.lignes.length === 0 ? (
             <p className="mt-4 text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
               Rien en {nomDuMois(cle).toLowerCase()}.
             </p>
           ) : (
-            <>
-              {/* **Sa phrase, ici — 23 août 2026 —, réduite à ses DEUX
-                  COMPTES le soir même** : *« là où il y a écrit trois à
-                  facturer et huit facturés, supprime les montants qu'il y a
-                  avec »*.
-
-                  **Elle compte TOUS les mois**, pas seulement celui qu'on
-                  regarde : c'est ainsi qu'elle a été demandée. Ses montants
-                  disaient donc des sommes que la liste en dessous ne montrait
-                  pas — trois chiffres d'origines différentes sur deux lignes.
-
-                  **Le trait sous elle était la démarcation qu'il a demandée**
-                  le 23 août — *« essaye de laisser un peu d'espace entre cette
-                  phrase-là et le premier client, histoire qu'on fasse bien la
-                  démarcation »*. **Il est parti le 26** : *« tous les traits
-                  supprimés entre chaque ligne »*.
-
-                  **C'est l'espace qui le remplace, et c'est ce qu'il avait
-                  demandé au départ** — le trait avait été préféré parce que de
-                  l'espace seul se mange au premier ajout de contenu. La
-                  démarcation tient donc maintenant sur les 22 px de la première
-                  ligne, et c'est à surveiller : une ligne qui reviendrait à 19
-                  la ferait disparaître sans que rien ne rougisse.
-
-                  **Toute la phrase est en noir gras** — c'était déjà sa demande
-                  du 22 août pour le compte des factures, et les montants partis,
-                  il ne reste plus rien à mettre en retrait : deux graisses pour
-                  deux mots feraient une hiérarchie sans objet. */}
-              <p
-                className="mb-[9px] mt-3.5 text-[14px] font-bold leading-[1.6]"
-                style={{ color: colors.ink }}
-                data-atlas="compte-du-mois"
-              >
-                {attente.length > 0 && (
-                  <>
-                    {/* **« À facturer » en or — sa correction du 23 août au
-                        soir.** L'or porte ici ce qu'il porte déjà sur les lignes
-                        en dessous (« Pas encore facturé · 360,00 € prévus ») :
-                        ce qui attend un geste de lui. Deux comptes du même noir
-                        se lisaient comme un seul chiffre coupé en deux. */}
-                    <span style={{ color: colors.or }}>{attente.length} à facturer</span>
-                    {" · "}
-                  </>
-                )}
-                {faites.length} facturé{faites.length > 1 ? "s" : ""}
-              </p>
-              {mois.lignes.map((l) => (
-                <Ligne key={l.id} ligne={l} />
-              ))}
-            </>
+            montrees.map((l) => (
+              <Ligne key={l.id} ligne={l} annee={annee} cle={tri.cle} soldee={soldes.has(l.id)} />
+            ))
           )}
         </section>
       )}
@@ -200,24 +450,47 @@ function NavigationMois({
   cle,
   peutReculer,
   peutAvancer,
+  enVeille,
   surMois,
 }: {
   cle: string;
   peutReculer: boolean;
   peutAvancer: boolean;
+  /** L'œil est ouvert : la liste ignore le mois, les flèches se ferment. */
+  enVeille: boolean;
   surMois: (cle: string) => void;
 }) {
   return (
-    <div className="flex items-center gap-0.5" data-atlas="navigation-mois">
+    // Centré — sa demande du 13 septembre 2026 : *« Septembre 2026, centre-le »*.
+    <div className="flex items-center justify-center gap-0.5" data-atlas="navigation-mois">
       <Fleche
         sens="passe"
-        desactivee={!peutReculer}
+        desactivee={enVeille || !peutReculer}
         onClick={() => surMois(decalerMois(cle, 1))}
       />
-      <span style={{ fontFamily: font.display, fontSize: 21, lineHeight: 1.2, whiteSpace: "nowrap" }}>
+      {/* **26 px au lieu de 21 — « le calme », sa proposition A du 2 septembre
+          2026** (`appli/termines-elegance.html`). C'est ce nom qui dit où l'on
+          est dans la page ; à 21 px il avait exactement le corps d'un nom de
+          client — 17 px de serif, à trois centimètres en dessous —, et l'écran
+          n'avait plus de repère. Les deux pixels de marge resserrent
+          « ‹ Août 2026 › » en UN objet, au lieu de trois signes qui se suivent. */}
+      <span
+        style={{
+          fontFamily: font.display,
+          fontSize: 26,
+          lineHeight: 1.2,
+          whiteSpace: "nowrap",
+          marginInline: 2,
+          color: enVeille ? colors.muted : colors.ink,
+        }}
+      >
         {nomDuMois(cle)}
       </span>
-      <Fleche sens="futur" desactivee={!peutAvancer} onClick={() => surMois(decalerMois(cle, -1))} />
+      <Fleche
+        sens="futur"
+        desactivee={enVeille || !peutAvancer}
+        onClick={() => surMois(decalerMois(cle, -1))}
+      />
     </div>
   );
 }
@@ -238,11 +511,10 @@ function Fleche({
       disabled={desactivee}
       aria-label={sens === "passe" ? "Mois précédent" : "Mois suivant"}
       data-atlas={sens === "passe" ? "mois-precedent" : "mois-suivant"}
-      className="flex h-11 w-[38px] items-center justify-center text-[22px] leading-none"
+      className="flex h-11 w-[34px] items-center justify-center text-[22px] leading-none"
       style={{
         fontFamily: font.display,
         color: desactivee ? colors.line : colors.or,
-        marginLeft: sens === "passe" ? -10 : 0,
         WebkitTapHighlightColor: "transparent",
       }}
     >
@@ -252,62 +524,222 @@ function Fleche({
 }
 
 /**
- * Le compte des factures — **en noir gras**, sa demande du 22 août 2026 :
- * *« cinq factures envoyées et tant qui attendent leur facturation, ça tu peux
- * le mettre en noir gras »*. C'est ce qu'il vient chercher ; ce n'était pas une
- * note de bas de page.
+ * L'œil à côté de « 3 à facturer » — sa demande du 13 septembre 2026.
+ *
+ * **Barré, on voit tout ; ouvert, on ne voit que ce qui attend.** C'est le
+ * sens qu'il a donné : *« on clique dessus, ça montre les à facturer ; on
+ * reclique, il disparaît, on revient sur le mode tout par défaut »*.
+ *
+ * **44 × 44 posés sur une ligne de 17 px, sans la grandir** : les marges
+ * négatives absorbent le bouton, et le doigt garde sa mesure — la même que
+ * tout ce qu'on appuie ici. Le dessin fait 22 px, en or comme le chiffre
+ * qu'il accompagne.
+ *
+ * **Rien autour de lui, ni ouvert ni fermé** — sa correction du même soir
+ * devant la planche : *« quand on clique sur l'œil il y a une sorte de fond
+ * qui se met autour en forme de rond, supprime ça, garde vraiment que
+ * l'œil »*. L'état se lit au dessin seul : la barre, ou la pupille pleine.
  */
-function Compte({ children }: { children: React.ReactNode }) {
-  return (
-    <p
-      className="mb-[9px] mt-1.5 text-[13px] font-bold leading-[1.55]"
-      style={{ color: colors.ink }}
-      data-atlas="compte-du-mois"
-    >
-      {children}
-    </p>
-  );
+const CLE_DU_TRI = "atlas:termines-tri";
+
+/**
+ * Le tri de ce téléphone, tel qu'il est rangé. Gardé aussi en mémoire : quand
+ * le stockage est refusé (navigation privée), le choix vaut quand même pour
+ * l'écran ouvert, il ne sera simplement pas retrouvé à la visite suivante.
+ */
+let triEnMemoire: string | null | undefined;
+const abonnesAuTri = new Set<() => void>();
+
+function sAbonnerAuTri(prevenir: () => void): () => void {
+  abonnesAuTri.add(prevenir);
+  return () => {
+    abonnesAuTri.delete(prevenir);
+  };
 }
 
-function Onglet({
-  repere,
-  actif,
-  onClick,
-  children,
-}: {
-  /**
-   * Ce que vise un contrôle, plutôt que le libellé.
-   *
-   * **Posé le 26 août 2026.** Une suite cherchait l'onglet par son texte —
-   * « À facturer » — et le jour où il le fera changer, elle rougira sur du code
-   * juste (`CLAUDE.md` §5 bis). Un repère survit au mot.
-   */
-  repere: "tout" | "attente";
-  actif: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
+function triDuTelephone(): string | null {
+  if (triEnMemoire === undefined) {
+    try {
+      triEnMemoire = window.localStorage.getItem(CLE_DU_TRI);
+    } catch {
+      // Stockage refusé : l'ordre d'origine, rien de perdu.
+      triEnMemoire = null;
+    }
+  }
+  return triEnMemoire;
+}
+
+/** Range le tri sur le téléphone ; `false` quand le stockage est refusé. */
+function rangerSurLeTelephone(valeur: string): boolean {
+  try {
+    window.localStorage.setItem(CLE_DU_TRI, valeur);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function retenirTri(tri: Tri): void {
+  triEnMemoire = JSON.stringify(tri);
+  // Refusé ou non, la mémoire tient l'écran ouvert : on prévient quand même.
+  rangerSurLeTelephone(triEnMemoire);
+  for (const prevenir of abonnesAuTri) prevenir();
+}
+
+/** « Filtre », et son signe à côté — sa demande du 27 septembre 2026. */
+function BoutonFiltre({ actif, onClick }: { actif: boolean; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      data-atlas={`onglet-${repere}`}
-      aria-pressed={actif}
-      className="min-h-10 rounded-full px-4 text-[13px]"
+      data-atlas="bouton-filtre"
+      data-actif={actif ? "" : undefined}
+      className="flex min-h-11 items-center gap-[7px] whitespace-nowrap rounded-full px-[13px] text-[12.5px]"
       style={{
-        backgroundColor: actif ? colors.ink : "transparent",
-        color: actif ? colors.card : colors.muted,
+        backgroundColor: actif ? colors.ink : colors.card,
+        color: actif ? colors.cream : colors.inkSoft,
         boxShadow: actif ? "none" : `inset 0 0 0 1px ${colors.line}`,
         WebkitTapHighlightColor: "transparent",
       }}
     >
-      {children}
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M2 4h12M4.5 8h7M7 12h2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+      Filtre
     </button>
   );
 }
 
 /**
- * Une ligne : le nom, ce qu'elle en est, et le montant — ou le bouton.
+ * Le volet du tri : cinq clés, puis le sens dans les mots de la clé.
+ *
+ * **Tout s'applique au toucher**, sans bouton « Valider » : la liste bouge
+ * derrière le voile, et c'est ce qui dit que le geste a pris.
+ */
+function VoletTri({
+  ouvert,
+  tri,
+  surTri,
+  surFermer,
+}: {
+  ouvert: boolean;
+  tri: Tri;
+  surTri: (t: Tri) => void;
+  surFermer: () => void;
+}) {
+  const choisie = CLES_DE_TRI.find((c) => c.cle === tri.cle) ?? CLES_DE_TRI[0];
+  return (
+    <BottomSheet open={ouvert} onBackdropClick={surFermer}>
+      <div data-atlas="volet-tri">
+        <p
+          className="mb-2 text-center text-[11px] font-semibold uppercase"
+          style={{ letterSpacing: "0.18em", color: colors.muted }}
+        >
+          Trier par
+        </p>
+        {CLES_DE_TRI.map((c) => {
+          const active = c.cle === tri.cle;
+          return (
+            <button
+              key={c.cle}
+              type="button"
+              onClick={() => surTri({ ...tri, cle: c.cle })}
+              aria-pressed={active}
+              data-atlas={`tri-${c.cle}`}
+              className="mt-2 flex min-h-[54px] w-full items-center justify-center rounded-full"
+              style={{
+                fontFamily: font.display,
+                fontSize: 19,
+                color: active ? colors.cream : colors.ink,
+                backgroundColor: active ? colors.ink : colors.card,
+                boxShadow: active ? "none" : `inset 0 0 0 1px ${colors.line}`,
+              }}
+            >
+              {c.libelle}
+            </button>
+          );
+        })}
+        <div className="mt-[18px] flex gap-2">
+          {[true, false].map((croissant, i) => {
+            const actif = tri.croissant === croissant;
+            return (
+              <button
+                key={String(croissant)}
+                type="button"
+                onClick={() => surTri({ ...tri, croissant })}
+                aria-pressed={actif}
+                data-atlas={croissant ? "tri-croissant" : "tri-decroissant"}
+                className="min-h-11 flex-1 rounded-full text-[13.5px]"
+                style={{
+                  color: actif ? colors.or : colors.inkSoft,
+                  fontWeight: actif ? 600 : 400,
+                  boxShadow: `inset 0 0 0 ${actif ? 1.5 : 1}px ${actif ? colors.or : colors.line}`,
+                }}
+              >
+                {choisie.sens[i]}
+              </button>
+            );
+          })}
+        </div>
+        <button
+          type="button"
+          onClick={surFermer}
+          className="mt-3 w-full py-3 text-[14px]"
+          style={{ color: colors.muted }}
+        >
+          Fermer
+        </button>
+      </div>
+    </BottomSheet>
+  );
+}
+
+function Oeil({ ouvert, onClick }: { ouvert: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={ouvert}
+      aria-label={ouvert ? "Tout montrer" : "Ne montrer que ce qui attend"}
+      data-atlas="oeil-a-facturer"
+      className="-my-[10px] -ml-1 -mr-1 grid h-11 w-11 place-items-center rounded-full"
+      style={{ color: colors.or, WebkitTapHighlightColor: "transparent" }}
+    >
+      <svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path
+          d="M2.2 10s2.8-5 7.8-5 7.8 5 7.8 5-2.8 5-7.8 5-7.8-5-7.8-5Z"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+        {ouvert ? (
+          <circle cx="10" cy="10" r="2.4" fill="currentColor" />
+        ) : (
+          <>
+            <circle cx="10" cy="10" r="2.4" stroke="currentColor" strokeWidth="1.6" />
+            <path d="M3.6 16.4 16.4 3.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          </>
+        )}
+      </svg>
+    </button>
+  );
+}
+
+/**
+ * Une ligne : le nom, la date du chantier, et le montant — ou le bouton.
+ *
+ * **La date est arrivée le 31 août 2026**, à sa demande : *« à côté du nom du
+ * client il faudrait inscrire la date à laquelle le chantier a été réalisé »*.
+ * Quatre places lui ont été dessinées (`appli/termines-date-du-chantier.html`,
+ * essayables au doigt) ; il a retenu la **B** — la date ouvre la deuxième ligne,
+ * devant le montant. Elle y coûte zéro pixel de hauteur, et laisse au nom toute
+ * sa largeur : sur la ligne du nom, un nom long se serait coupé pour elle.
+ *
+ * **« Pas encore facturé » est parti le même soir**, à sa demande devant la
+ * planche. La capsule « À FACTURER », à trois centimètres sur la même ligne,
+ * disait déjà exactement cela. **Une rangée peut donc n'avoir PLUS DE DEUXIÈME
+ * LIGNE du tout** — pas de date, pas de devis envoyé : on n'écrit rien plutôt
+ * que d'inventer.
  *
  * **Toute la ligne mène à la facture, et il n'y a qu'UN lien.** La capsule
  * « Facturer » est un `span` à l'intérieur : deux liens superposés dans la même
@@ -317,30 +749,111 @@ function Onglet({
  * **« Facturer » ouvre l'écran de facture, il ne facture pas.** Rien ne part
  * chez un client sans un geste du patron (`docs/AGENT.md` §6).
  */
-function Ligne({ ligne }: { ligne: LigneAffichee }) {
-  return (
+/**
+ * La ligne d'un chantier terminé.
+ *
+ * **Facturée et partie, elle ouvre un VOLET à trois choix** — sa demande du 24
+ * septembre 2026, sur la planche `appli/avoir.html` : *« il faut pouvoir faire
+ * les deux »*, ouvrir la facture ET faire un avoir ou la ranger en non payée.
+ * « La facture » ouvre la facture définitive, en entier, comme avant.
+ *
+ * **À facturer, elle reste un lien direct** : il n'y a encore ni avoir ni
+ * impayé possible, et un volet à une seule porte serait un geste pour rien.
+ */
+function Ligne({ ligne, annee, cle, soldee }: { ligne: LigneAffichee; annee: string; cle: CleDeTri; soldee: boolean }) {
+  const [volet, setVolet] = useState(false);
+  // **Aéré le 23 août 2026, à sa demande** : *« il faut aérer un peu la
+  // page parce qu'il y a énormément d'informations »*. Une ligne porte deux
+  // étages de texte et parfois une capsule de 44 px ; à 14 px de marge, le
+  // trait du dessous touchait presque le second étage, et douze lignes se
+  // lisaient comme un bloc.
+  //
+  // **LE TRAIT EST PARTI LE 26 AOÛT 2026** — *« tous les traits supprimés
+  // entre chaque ligne »*, planche `appli/termines-sans-traits.html`.
+  //
+  // **Et l'espace a dû grandir avec, ce n'est pas un retrait sec.** Le
+  // trait faisait la moitié du travail : c'est lui qui séparait le second
+  // étage d'une ligne du nom de la suivante. Retiré à marge égale, deux
+  // rangées voisines se lisent comme une seule — le nom du chantier suivant
+  // paraît appartenir à l'état du précédent. 19 px de respiration deviennent
+  // donc 24, et la PREMIÈRE ligne en garde 22 pour tenir la démarcation
+  // qu'il avait demandée le 23 août sous la phrase de compte.
+  //
+  // **L'ALIGNEMENT CHANGE LE 2 SEPTEMBRE 2026 — « le calme », sa
+  // proposition A** (`appli/termines-elegance.html`). `items-center`
+  // centrait le montant sur la HAUTEUR de la rangée : sur une rangée à deux
+  // étages — le nom, puis la date et l'état — il se posait à mi-chemin
+  // entre les deux, aligné sur rien. Douze montants d'affilée ne faisaient
+  // donc pas une colonne, alors que c'est exactement ce qu'on vient lire.
+  // En ligne de base, le montant se pose sur le NOM.
+  //
+  // **Sauf quand la rangée porte la capsule**, qui garde le centrage : une
+  // pastille de 44 px n'a pas de ligne d'écriture, et l'aligner sur une
+  // lettre la ferait descendre sous la rangée.
+  const classe = `flex w-full text-left ${ligne.aFacturer ? "items-center" : "items-baseline"} gap-3.5 py-[24px] first:pt-[22px]`;
+  if (ligne.factureStatut !== "emise") {
+    return (
+      <Link href={`/chantiers/${ligne.id}/facture`} data-atlas="ligne-terminee" id={`chantier-${ligne.id}`} className={classe} style={{ minWidth: 0 }}>
+        <ContenuLigne ligne={ligne} annee={annee} cle={cle} />
+      </Link>
+    );
+  }
+  const porte = (href: string, cle: string, mot: string) => (
     <Link
-      href={`/chantiers/${ligne.id}/facture`}
-      data-atlas="ligne-terminee"
-      // **Aéré le 23 août 2026, à sa demande** : *« il faut aérer un peu la
-      // page parce qu'il y a énormément d'informations »*. Une ligne porte deux
-      // étages de texte et parfois une capsule de 44 px ; à 14 px de marge, le
-      // trait du dessous touchait presque le second étage, et douze lignes se
-      // lisaient comme un bloc.
-      //
-      // **LE TRAIT EST PARTI LE 26 AOÛT 2026** — *« tous les traits supprimés
-      // entre chaque ligne »*, planche `appli/termines-sans-traits.html`.
-      //
-      // **Et l'espace a dû grandir avec, ce n'est pas un retrait sec.** Le
-      // trait faisait la moitié du travail : c'est lui qui séparait le second
-      // étage d'une ligne du nom de la suivante. Retiré à marge égale, deux
-      // rangées voisines se lisent comme une seule — le nom du chantier suivant
-      // paraît appartenir à l'état du précédent. 19 px de respiration deviennent
-      // donc 24, et la PREMIÈRE ligne en garde 22 pour tenir la démarcation
-      // qu'il avait demandée le 23 août sous la phrase de compte.
-      className="flex items-center gap-3.5 py-[24px] first:pt-[22px]"
-      style={{ minWidth: 0 }}
+      href={href}
+      data-atlas={`volet-${cle}`}
+      className="mt-2 flex min-h-[54px] w-full items-center justify-center rounded-full no-underline"
+      style={{
+        fontFamily: font.display,
+        fontSize: 19,
+        color: colors.ink,
+        backgroundColor: colors.card,
+        boxShadow: `inset 0 0 0 1px ${colors.line}`,
+      }}
     >
+      {mot}
+    </Link>
+  );
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setVolet(true)}
+        data-atlas="ligne-terminee" id={`chantier-${ligne.id}`}
+        className={classe}
+        style={{ minWidth: 0, background: "none", border: 0 }}
+      >
+        <ContenuLigne ligne={ligne} annee={annee} cle={cle} />
+      </button>
+      <BottomSheet open={volet} onBackdropClick={() => setVolet(false)}>
+        <div data-atlas="volet-choix">
+          <p
+            className="mb-2 text-center text-[11px] font-semibold uppercase"
+            style={{ letterSpacing: "0.18em", color: colors.muted }}
+          >
+            {ligne.nom}
+          </p>
+          {porte(`/chantiers/${ligne.id}/facture`, "facture", "La facture")}
+          {porte(`/chantiers/${ligne.id}/facture/avoir`, "avoir", "Je fais un avoir")}
+          {!soldee && porte(`/chantiers/${ligne.id}/facture/non-payee`, "non-payee", "Il ne me paiera pas")}
+          <button
+            type="button"
+            onClick={() => setVolet(false)}
+            className="mt-3 w-full py-3 text-[14px]"
+            style={{ color: colors.muted }}
+          >
+            Annuler
+          </button>
+        </div>
+      </BottomSheet>
+    </>
+  );
+}
+
+function ContenuLigne({ ligne, annee, cle }: { ligne: LigneAffichee; annee: string; cle: CleDeTri }) {
+  const { avant, mot, apres } = libelleEtatLigne(ligne, annee, cle);
+  return (
+    <>
       <span className="min-w-0 flex-1">
         <b
           className="block truncate font-normal"
@@ -349,27 +862,74 @@ function Ligne({ ligne }: { ligne: LigneAffichee }) {
           {ligne.nom}
         </b>
         {/* **La ligne d'état s'enroule, elle ne se coupe pas.** Vu sur une
-            capture de l'écran, avec de vrais montants : « Pas encore facturé ·
-            1 764,00 € prévus » perdait « prévus », et parfois le montant
+            capture de l'écran, avec de vrais montants : « 12 août,
+            1 764,00 € prévus » perdrait « prévus », et parfois le montant
             lui-même. Le NOM, lui, reste sur une ligne — un nom se reconnaît
-            tronqué, un chiffre coupé ne se devine pas. */}
-        <span
-          className="mt-[5px] block text-[13px] leading-[1.5]"
-          style={{ color: ligne.aFacturer ? colors.or : colors.muted }}
-        >
-          {ligne.aFacturer
-            ? ligne.montant === null
-              ? "Pas encore facturé"
-              : `Pas encore facturé · ${formatEuros(ligne.montant)} prévus`
-            : libelleFacturee(ligne)}
-        </span>
+            tronqué, un chiffre coupé ne se devine pas.
+
+            **Vide, elle n'existe pas.** Un `span` vide laisserait ses 5 px de
+            marge et un interligne : la rangée paraîtrait porter une information
+            qu'on n'arrive pas à lire. */}
+        {/* **CETTE LIGNE PASSE À L'ENCRE DOUCE LE 2 SEPTEMBRE 2026 — « le
+              calme », sa proposition A.** Elle s'écrivait en or quand la rangée
+              attendait, en gris quand elle était facturée. Mesuré sur le crème
+              d'Origine : l'or tient **2,8** de contraste et le gris **3,4** ; il
+              en faut 4,5 pour un texte de 13 px. `inkSoft` en tient **8,0**.
+
+              **Sa scène d'usage tranche** (`PRODUCT.md`) : debout, une main, en
+              plein soleil. Ces deux lignes-là étaient les premières à
+              disparaître, et ce sont elles qui portent la date et le montant
+              prévu.
+
+              **Ce qui remplace l'or n'est pas rien.** Le signal « ça attend »
+              ne repose plus sur une nuance de couleur mais sur la CAPSULE, à
+              trois centimètres sur la même rangée — un objet vert de 44 px qui
+              se voit de loin, là où une teinte se devine. L'or n'a pas quitté
+              l'écran : il porte toujours « 3 à facturer » au-dessus de la
+              liste, en gras, où il a la place de se voir. */}
+        {avant + mot + apres !== "" && (
+          <span
+            className="mt-[5px] block text-[13px] leading-[1.5]"
+            style={{ color: colors.inkSoft, fontVariantNumeric: "tabular-nums" }}
+            data-atlas="etat-ligne"
+          >
+            {/* **« Facturé » en gras doré, le 24 septembre 2026** : sa planche
+                A (`appli/termines-facture-en-dore.html`). Le mot seul : la
+                date et le numéro gardent l'encre douce, qui tient au soleil
+                ce que l'or ne tient pas (voir juste au-dessus). */}
+            {avant}
+            {mot !== "" && (
+              <span style={{ color: colors.or, fontWeight: 700 }} data-atlas="mot-facture">
+                {mot}
+              </span>
+            )}
+            {apres}
+          </span>
+        )}
       </span>
       {ligne.aFacturer ? (
         <span
-          className="flex min-h-11 flex-none items-center rounded-full px-[17px] text-[12.5px] font-semibold uppercase"
-          style={{ backgroundColor: colors.rust, color: colors.card, letterSpacing: "0.12em" }}
+          // **Il l'a demandée dedans le 31 août**, après avoir vu la liste des
+          // écartés : elle prend le vert des boutons pleins et leur geste. Elle
+          // vit à l'intérieur du lien de la ligne — l'appuyer active donc bien
+          // l'étiquette elle-même, et le geste se voit.
+          // **ELLE A PORTÉ LE GALET DU 2 AU 4 SEPTEMBRE 2026**, puis il l'a
+          // ramenée au vert des boutons : *« oui, vert clair partout »*. Le
+          // dégradé et son filet d'or sont partis avec — voir la pierre tombale
+          // dans `globals.css`.
+          //
+          // **`surPlein` et jamais un blanc écrit en clair** (`CLAUDE.md` §3) :
+          // `plein` devient clair sur Nuit et Sylve, où du blanc dessus ne se
+          // lirait plus.
+          className="atlas-plein flex min-h-11 flex-none items-center rounded-full px-[17px] text-[12.5px] font-semibold uppercase"
+          style={{ letterSpacing: "0.12em", backgroundColor: colors.plein, color: surPlein }}
+          // **Un repère plutôt que son texte** (`CLAUDE.md` §5 bis) : la capsule
+          // s'appelait « Facturer » jusqu'au 31 août 2026, et les contrôles qui
+          // la cherchaient par son libellé ont rougi sur du code juste le jour
+          // où il l'a fait changer.
+          data-atlas="capsule-a-facturer"
         >
-          Facturer
+          À facturer
         </span>
       ) : (
         <span
@@ -380,12 +940,14 @@ function Ligne({ ligne }: { ligne: LigneAffichee }) {
             lineHeight: 1.2,
             fontVariantNumeric: "tabular-nums",
             whiteSpace: "nowrap",
-            color: colors.ink,
+            // Gras doré, comme « Facturé » : sa planche A du 24 septembre 2026.
+            fontWeight: 700,
+            color: colors.or,
           }}
         >
           {ligne.montant === null ? "—" : formatEuros(ligne.montant)}
         </span>
       )}
-    </Link>
+    </>
   );
 }

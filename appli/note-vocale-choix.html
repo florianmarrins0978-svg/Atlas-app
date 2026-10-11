@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — la note vocale, ses trois choix réunis</title>
+<title>Atlas : la note vocale, ses trois choix réunis</title>
 <style>
 /*
   LA NOTE VOCALE TELLE QU'IL L'A CHOISIE — 30 août 2026 :
@@ -253,7 +253,7 @@ form{padding:6px 24px 0;display:flex;flex-direction:column;gap:7px}
 <div class="tel">
 
   <nav class="onglets" aria-label="La planche">
-    <span class="quoi">Vos choix : 4 · 2 · B</span>
+    <span class="quoi">Vos choix : 4, 2, B</span>
     <button type="button" id="teinte" aria-label="Passer en fond noir">☾</button>
   </nav>
 
@@ -368,7 +368,7 @@ form{padding:6px 24px 0;display:flex;flex-direction:column;gap:7px}
 
     <div class="doc">
       <h2 id="devis-nom">M. Bernard</h2>
-      <p id="devis-coord" style="margin:0 0 16px;font-size:13.5px;color:var(--muted)">12 rue des Lilas, Nantes · 06 79 98 45 14</p>
+      <p id="devis-coord" style="margin:0 0 16px;font-size:13.5px;color:var(--muted)">12 rue des Lilas, Nantes : 06 79 98 45 14</p>
       <div class="ligne-devis">
         <span><span class="libelle">Taille de haie</span><span class="mesure">20 ml</span></span>
         <span class="prix">à chiffrer</span>
@@ -395,7 +395,7 @@ form{padding:6px 24px 0;display:flex;flex-direction:column;gap:7px}
 
 <script>
 /*
-  LA MAQUETTE SE MANIPULE — rien n'appelle un serveur.
+  LA MAQUETTE SE MANIPULE, rien n'appelle un serveur.
 
   Un appui ouvre la dictée : la poubelle et l'avion viennent de part et d'autre,
   le micro devient un carré d'arrêt, et « Je rédige à la main » s'en va. Jeter
@@ -413,7 +413,7 @@ const ICONES = {
 $("#jeter").innerHTML = ICONES.jeter;
 $("#envoyer").innerHTML = ICONES.envoyer;
 
-/* ─── Les deux petites ondes — 1,5 cm, dessinées à partir de la mesure ──── */
+/* ─── Les deux petites ondes, 1,5 cm, dessinées à partir de la mesure ──── */
 //
 // **Le nombre de barreaux se DÉDUIT de la largeur, il ne se compte pas à la
 // main.** Sa consigne est une longueur (1,5 cm), pas un nombre : si l'on
@@ -610,7 +610,7 @@ function reporter() {
   const tel = $("#tel").value.trim();
   const adresse = $("#adresse").value.trim() || "Adresse à préciser";
   $("#devis-nom").textContent = nom;
-  $("#devis-coord").textContent = [adresse, tel].filter(Boolean).join(" · ");
+  $("#devis-coord").textContent = [adresse, tel].filter(Boolean).join(" : ");
 }
 
 $("#retour-fiche").addEventListener("click", () => aller("fiche"));

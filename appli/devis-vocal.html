@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="only light">
-<title>Arborea — Nouveau devis vocal</title>
+<title>Arborea : Nouveau devis vocal</title>
 <meta name="description" content="Dictez votre chantier sur place. Arborea prépare le devis à partir de votre grille de tarifs, sans jamais inventer un prix.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -112,7 +112,7 @@
   <header class="hero">
     <span class="eyebrow">Chantier → Devis</span>
     <h1>Nouveau devis vocal</h1>
-    <p>Sur place, dictez votre chantier comme vous le raconteriez. Arborea prépare le devis à partir de votre grille de tarifs — vous vérifiez en 30&nbsp;secondes.</p>
+    <p>Sur place, dictez votre chantier comme vous le raconteriez. Arborea prépare le devis à partir de votre grille de tarifs, vous vérifiez en 30&nbsp;secondes.</p>
   </header>
 
   <div class="steps-nav">
@@ -172,9 +172,9 @@
 <script>
   /* =====================================================================
      Nouveau devis vocal.
-     1) Transcription in-browser (Web Speech API) — gratuite, sans clé.
+     1) Transcription in-browser (Web Speech API), gratuite, sans clé.
      2) Extraction rule-based : on rapproche la note de la grille « Mes
-        tarifs ». On n'invente JAMAIS un prix — un moyen absent de la grille
+        tarifs ». On n'invente JAMAIS un prix, un moyen absent de la grille
         est signalé, pas chiffré.
      3) Passage au devis pré-rempli (devis-modele.html).
 
@@ -228,7 +228,7 @@
       }
     });
 
-    // 2) Ressources — en évitant de doubler ce qui est déjà dans un forfait retenu.
+    // 2) Ressources, en évitant de doubler ce qui est déjà dans un forfait retenu.
     ressources.forEach(r => {
       if (!mentions(text, r.libelle)) return;
       if (keywords(r.libelle).some(k => usedForfaitWords.includes(k))) return; // déjà couvert par un forfait
@@ -314,7 +314,7 @@
       transcriptEl.classList.toggle('interim', interim.length > 0 && !finalText);
       refreshAnalyzeState();
     };
-    recog.onerror = (e) => { if (e.error === 'not-allowed' || e.error === 'service-not-allowed'){ stopRec(); $('micLabel').textContent = "Micro refusé — autorisez l'accès, ou tapez votre note."; } };
+    recog.onerror = (e) => { if (e.error === 'not-allowed' || e.error === 'service-not-allowed'){ stopRec(); $('micLabel').textContent = "Micro refusé, autorisez l'accès, ou tapez votre note."; } };
     recog.onend = () => { if (recording){ try{ recog.start(); }catch(_){} } };
   } else {
     $('speechWarn').classList.add('show');
@@ -387,7 +387,7 @@
       $('clientDetected').innerHTML = 'Client détecté : <b>' + escapeHtml(c.nom || '—') + '</b>' +
         (c.adresse ? ' · ' + escapeHtml(c.adresse) : '');
     } else {
-      $('clientDetected').innerHTML = '<span class="empty-note">Aucun client détecté dans la note — à renseigner sur le devis.</span>';
+      $('clientDetected').innerHTML = '<span class="empty-note">Aucun client détecté dans la note, à renseigner sur le devis.</span>';
     }
 
     $('principleNote').textContent = flags

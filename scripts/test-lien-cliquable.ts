@@ -40,7 +40,7 @@ console.log("=== Le lien doit être cliquable chez le client ===");
 
 cas("devis : le lien est seul sur sa ligne, isolé", () => {
   verifierIsolement(
-    composerMessageClient({ clientNom: "Monsieur Martin", entrepriseNom: "Atelier Démo", lien: LIEN }).corps,
+    composerMessageClient({ clientNom: "Monsieur Martin", entrepriseNom: "Atelier Démo", lien: LIEN, envoi: { expireLe: "2026-11-13", autreDateAutorisee: true } }).corps,
     "devis",
   );
 });
@@ -64,7 +64,7 @@ cas("aucun message ne se termine ni ne s'ouvre sur une ligne vide", () => {
   // Une messagerie ajoute sa signature à la suite : trois lignes vides de
   // rang donnent un message qui a l'air abandonné en cours d'écriture.
   for (const corps of [
-    composerMessageClient({ clientNom: "", entrepriseNom: "Atelier Démo", lien: LIEN }).corps,
+    composerMessageClient({ clientNom: "", entrepriseNom: "Atelier Démo", lien: LIEN, envoi: { expireLe: "2026-11-13", autreDateAutorisee: true } }).corps,
     composerMessageFacture({
       clientNom: "",
       entrepriseNom: "Atelier Démo",

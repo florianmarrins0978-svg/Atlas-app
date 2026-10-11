@@ -119,97 +119,20 @@ export const mockChantiers: Chantier[] = [
   },
 ];
 
-// Chantiers de test — ne s'affichent pas dans la liste principale, servent uniquement
-// à vérifier chaque état possible de l'action principale de la fiche chantier.
-export const mockChantiersTest: Chantier[] = [
-  {
-    id: "t-note",
-    ref: "CH-TEST-1",
-    nom: "Photos prises, note à faire (test)",
-    adresseChantier: "Adresse de test",
-    client: { nom: "Client test", telephone: "00 00 00 00 00" },
-    statut: "a_verifier",
-    photos: 4,
-    aUneNoteVocale: false,
-    dateCreation: "2026-07-20",
-    informationsVerifiees: false,
-    prixCalcule: false,
-    devisGenere: false,
-    devisEnvoye: false,
-    planifie: false,
-  },
-  {
-    id: "t-devis-preparer",
-    ref: "CH-TEST-2",
-    nom: "Prix calculé, devis à préparer (test)",
-    adresseChantier: "Adresse de test",
-    client: { nom: "Client test", telephone: "00 00 00 00 00" },
-    statut: "verifie",
-    photos: 5,
-    aUneNoteVocale: true,
-    dateCreation: "2026-07-20",
-    informationsVerifiees: true,
-    prixCalcule: true,
-    devisGenere: false,
-    devisEnvoye: false,
-    planifie: false,
-  },
-  {
-    id: "t-devis-consulter",
-    ref: "CH-TEST-3",
-    nom: "Devis généré, non envoyé (test)",
-    adresseChantier: "Adresse de test",
-    client: { nom: "Client test", telephone: "00 00 00 00 00" },
-    statut: "verifie",
-    photos: 5,
-    aUneNoteVocale: true,
-    dateCreation: "2026-07-20",
-    informationsVerifiees: true,
-    prixCalcule: true,
-    devisGenere: true,
-    devisEnvoye: false,
-    planifie: false,
-  },
-  {
-    id: "t-planifie",
-    ref: "CH-TEST-4",
-    nom: "Chantier planifié (test)",
-    adresseChantier: "Adresse de test",
-    client: { nom: "Client test", telephone: "00 00 00 00 00" },
-    statut: "planifie",
-    photos: 5,
-    aUneNoteVocale: true,
-    dateCreation: "2026-07-20",
-    informationsVerifiees: true,
-    prixCalcule: true,
-    devisGenere: true,
-    devisEnvoye: true,
-    planifie: true,
-  },
-];
-
-// Utilisé par la fiche chantier — cherche d'abord dans les chantiers réels,
-// puis dans les fixtures de test (jamais affichées dans la liste principale).
-export function getChantierById(id: string): Chantier | undefined {
-  return mockChantiers.find((c) => c.id === id) ?? mockChantiersTest.find((c) => c.id === id);
-}
-
-export const mockInformationsStructurees = {
-  prestations: ["Dépose ancien carrelage", "Pose faïence murale", "Remplacement robinetterie"],
-  duree: "2 jours",
-  equipe: "2 hommes",
-  materiel: ["Carrelage 60x60 (fourni client)", "Colle flex", "Joint gris anthracite"],
-  transcriptionBrute:
-    "Alors pour la salle de bain de monsieur Bernard, on va devoir déposer l'ancien carrelage complètement, " +
-    "poser la nouvelle faïence sur les murs, et changer la robinetterie qui est vraiment vétuste. Je pense " +
-    "deux jours de travail avec deux gars sur le chantier. Le client fournit son carrelage, nous on prend " +
-    "la colle flex et le joint gris anthracite.",
-};
-
-export const mockTarifs = [
-  { intitule: "Main d'œuvre (jour/homme)", prix: "280 €" },
-  { intitule: "Dépose carrelage (m²)", prix: "18 €" },
-  { intitule: "Pose faïence (m²)", prix: "45 €" },
-  { intitule: "Forfait déplacement", prix: "35 €" },
-];
-
+// **QUATRE EXPORTS RETIRÉS LE 5 SEPTEMBRE 2026 — audit de santé.**
+//
+// `getChantierById`, `mockInformationsStructurees` et `mockTarifs` n'avaient
+// aucun appelant : cherchés par nom dans `src/`, `scripts/`, `drizzle/` et
+// `appli/`, imports directs comme indirects. Ils servaient les maquettes
+// `/design/*` d'avant leur découplage du 1er août 2026 ; ce que ces planches
+// emploient encore, c'est `mockChantiers` et `ChantierStatut`, rien d'autre.
+//
+// `mockChantiersTest` (69 lignes) est parti avec eux, et **c'est l'ordre qui
+// importe** : il n'était atteignable que par `getChantierById`. Un dépôt qui
+// retire une fonction sans regarder ce qu'elle SEULE tenait laisse derrière
+// elle une donnée que plus rien n'atteint et que personne n'ose toucher.
+//
+// **Ce fichier reste, et il n'est pas du code mort :**
+// `scripts/test-maquettes-hors-production.ts` s'en sert comme MARQUE — un
+// écran du produit qui l'importerait montrerait un chantier qui n'existe pas,
+// et la suite le refuse. Le vider serait donc retirer un garde-fou.

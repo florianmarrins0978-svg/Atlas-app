@@ -11,6 +11,9 @@ import {
   retirerUnAcces,
 } from "@/server/repositories/membres-entreprise";
 import type { Role } from "@/lib/acces-roles";
+import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
+import { relierAuSalarie } from "@/server/repositories/photo-des-personnes";
+import { supprimerObjet } from "@/server/storage";
 
 /**
  * LES QUATRE GESTES DES ACCÈS — et les quatre commencent par la même ligne.
@@ -82,6 +85,26 @@ export async function changerLaPorteeAction(
   return { ok: true };
 }
 
+/**
+ * Relie un compte à son nom de salarié, ou le délie : sa réponse du
+ * 27 septembre 2026 (« tu relies une fois »). Ensuite, la photo que la
+ * personne pose dans Mon compte s'affiche partout sous ce nom.
+ */
+export async function relierAuSalarieAction(
+  accesId: string,
+  rang: number | null
+): Promise<{ ok: true } | { ok: false; message: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "relier un compte à un salarié");
+
+  const resultat = await relierAuSalarie(ctx, accesId, rang);
+  if (!resultat.ok) return { ok: false, message: resultat.raison };
+  if (resultat.aSupprimer) await supprimerObjet(resultat.aSupprimer);
+
+  revalidatePath("/reglages/equipe");
+  return { ok: true };
+}
+
 export async function retirerUnAccesAction(
   accesId: string
 ): Promise<{ ok: true } | { ok: false; message: string }> {
@@ -90,7 +113,43 @@ export async function retirerUnAccesAction(
 
   const resultat = await retirerUnAcces(ctx, accesId);
   if (!resultat.ok) return phrase(resultat.refus);
+  if (resultat.photoOrpheline) await supprimerObjet(resultat.photoOrpheline);
 
   revalidatePath("/reglages/equipe");
+  return { ok: true };
+}
+
+/**
+ * CE QUE LE PATRON EXIGE EN FIN DE CHANTIER — les deux interrupteurs.
+ *
+ * Sa décision du 8 septembre 2026 : *« une feuille de preuve de fin de chantier
+ * que le salarié remplira ou non — ça sera au patron de décider. »*
+ *
+ * **`exigerProprietaire`, et pas `exigerEcran`.** Ce réglage tient toute
+ * l'équipe : un commercial qui l'allumerait imposerait une photo à des gens qui
+ * ne lui rendent pas de comptes. C'est la même garde que les rôles et les accès,
+ * juste au-dessus.
+ *
+ * **La photo ne s'exige pas sans la preuve**, et c'est écrit ICI plutôt que
+ * laissé à l'écran : un appel direct pourrait poser la seconde sans la première,
+ * et `ceQuiManque` ne saurait alors plus quoi refuser. L'écran cache le second
+ * interrupteur ; le serveur, lui, éteint la valeur.
+ */
+export async function reglerLaFinDeChantierAction(
+  demande: boolean,
+  photoExigee: boolean
+): Promise<{ ok: true } | { ok: false; message: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "régler la fin de chantier");
+
+  await mettreAJourEntreprise(ctx, {
+    retourDemande: demande,
+    retourPhotoExigee: demande ? photoExigee : false,
+  });
+
+  revalidatePath("/reglages/equipe");
+  // Le salarié lit ces règles en ouvrant sa fiche : sans cela il verrait
+  // celles d'hier jusqu'au prochain rechargement.
+  revalidatePath("/planning");
   return { ok: true };
 }

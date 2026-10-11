@@ -1,4 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
+import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
+import { adresseDuRapportDansLAppli } from "../src/lib/rapport-dans-l-appli";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { getOuCreerDevisBrouillon, envoyerDevis } from "../src/server/repositories/devis";
@@ -15,6 +17,7 @@ import { devis } from "../src/server/db/schema";
 import { eq } from "drizzle-orm";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { ajouterPrestation as ajouterPrestationEntretien } from "../src/server/repositories/prestations-entretien";
+import { ADRESSE } from "./_adresse";
 import {
   ouvrirPassage,
   lirePassage,
@@ -36,20 +39,21 @@ import {
 //      jamais la formule ;
 //   2. **la porte n'existe pas sans client.** Un chantier sans client ouvrirait
 //      une fiche de personne ;
-//   3. **la dernière prestation est en titre NOIR GRAS**, avec ce qu'elle
-//      comprend — sa demande, en toutes lettres ;
-//   4. **trois colonnes de PDF**, du plus récent au plus ancien. L'ordre est la
-//      demande elle-même, dite deux fois : une colonne qui remonte le temps
+//   3. **la dernière prestation porte L'ENCRE PLEINE**, avec ce qu'elle
+//      comprend — sa demande du 20 août, dont le poids est passé de
+//      l'étiquette à son contenu le 2 septembre, sur maquette ;
+//   4. **trois registres de PDF**, du plus récent au plus ancien. L'ordre est la
+//      demande elle-même, dite deux fois : un registre qui remonte le temps
 //      l'obligerait à ouvrir chaque document pour trouver le bon ;
-//   5. **rien ne se casse ni ne déborde à 390 px.** Trois colonnes sur la
-//      largeur de son téléphone, c'est là que ça casse — et cela ne se voit
-//      qu'en mesurant ;
+//   5. **rien ne se casse ni ne déborde à 390 px.** C'est la largeur de son
+//      téléphone qui a eu raison des trois colonnes côte à côte — et cela ne
+//      se voit qu'en mesurant ;
 //   6. **CE QUI A ÉTÉ RETIRÉ NE REVIENT PAS.** Un retrait ne se vérifie que par
 //      l'absence : sans ce contrôle, les trois cases et les deux listes
 //      pourraient reparaître au premier rebasage sans que rien ne rougisse.
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let echecs = 0;
 async function cas(nom: string, fn: () => Promise<void>) {
@@ -76,14 +80,12 @@ async function main() {
   const nomClient = `Mme Bracquemont ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nomClient);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15_000 });
-  const chantierUrl = page.url();
+  const chantierUrl = `${BASE}/chantiers/${idChantier}`;
   const chantierId = chantierUrl.split("/").pop()!;
 
   await page.goto(`${chantierUrl}/devis-complet`, { waitUntil: "networkidle" });
-  await page.click('button:has-text("Ajouter une ligne")');
-  await page.waitForTimeout(600);
   const zones = page.locator('textarea[aria-label*="escription"]');
   await zones.nth((await zones.count()) - 1).fill("Élagage — 3 chênes");
   const prixs = page.locator('input[aria-label*="Prix unitaire"]');
@@ -220,16 +222,114 @@ async function main() {
     throw new Error(`toujours pas : ${quoi}`);
   }
 
-  await cas("depuis la fiche du chantier, une porte mène au client", async () => {
-    await page.goto(chantierUrl, { waitUntil: "networkidle" });
-    await page.waitForTimeout(700);
-    const porte = page.locator('a[href^="/clients/"]');
-    assert.ok(
-      (await porte.count()) >= 1,
-      "aucune porte vers le client : la fiche existe mais rien n'y mène"
-    );
-    await porte.first().click();
-    await page.waitForURL(/\/clients\/[0-9a-f-]{36}/, { timeout: 15_000 });
+  await cas("LA FICHE TIENT DANS UN ÉCRAN, et son contenu y est centré", async () => {
+    // **Sa demande du 1ᵉʳ septembre 2026** : *« la page doit remplir tout
+    // l'espace, elle n'est pas centrée. Je veux qu'une seule page mais centrée,
+    // il y a trop de marge en bas et en haut, la note vocale est presque coupée
+    // tellement elle est haute. »*
+    //
+    // **RIEN NE GARDAIT CETTE HAUTEUR, et c'est pour ça qu'elle a dérivé.** Il
+    // avait déjà demandé le 30 août que cet écran tienne sur une page ; le
+    // resserrement d'alors n'était éprouvé par aucune suite, et deux réserves
+    // de bas de page se sont recumulées jusqu'à 272 px pour une barre qui en
+    // mesure 48.
+    //
+    // **Le contrôle mesure, il ne regarde pas un nom de classe** : une marge
+    // écrite autrement le laisserait passer, et c'est la hauteur qui compte.
+    // ═══════════════════════════════════════════════════════════════════
+    // **« UNE SEULE PAGE » VAUT SUR SON TÉLÉPHONE, ET LES PLUS PETITS
+    // DÉFILENT — sa décision du 14 septembre 2026.**
+    //
+    // Ce cas exigeait la page unique sur les DEUX téléphones, et il rougissait
+    // sur le petit : 684 px pour 667. Resserrer les espacements le fait rentrer
+    // au pixel près — et rien de plus : ajoutez l'adresse du client et il
+    // redéborde de 66 px, resserré ou non. Mesuré, pas supposé.
+    //
+    // Posé devant lui, il a tranché : *« on aura ce problème sur beaucoup
+    // d'écrans, on pourra pas satisfaire tout le monde ; faut pas que les
+    // caractères soient trop petits sinon c'est illisible, donc ils
+    // défileront. »*
+    //
+    // Ce qui est donc exigé, et ce qui ne l'est plus :
+    //
+    // | son téléphone | la page unique, comme le 1ᵉʳ septembre |
+    // | plus petit | **le défilement est permis** — mais rien ne doit finir
+    //   SOUS la barre d'onglets, qui est fixée et masquerait le dernier geste |
+    // ═══════════════════════════════════════════════════════════════════
+    for (const [nom, largeur, hauteur, unePage] of [
+      ["iPhone SE", 375, 667, false],
+      ["iPhone 13", 390, 844, true],
+    ] as const) {
+      await page.setViewportSize({ width: largeur, height: hauteur });
+      await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
+      // La mise en page doit être posée : mesurer trop tôt rend des zéros, et
+      // un zéro n'est pas une mesure (`CLAUDE.md` §5).
+      await page.waitForTimeout(900);
+
+      const m = (await page.evaluate(`(() => {
+        const centre = document.querySelector('.my-auto');
+        const st = centre ? getComputedStyle(centre) : null;
+        return {
+          fenetre: window.innerHeight,
+          document: document.documentElement.scrollHeight,
+          hautCentre: centre ? Math.round(centre.getBoundingClientRect().height) : 0,
+          margeHaut: st ? Math.round(parseFloat(st.marginTop)) : -1,
+        };
+      })()`)) as { fenetre: number; document: number; hautCentre: number; margeHaut: number };
+
+      assert.ok(m.fenetre > 0 && m.hautCentre > 0, `${nom} : rien de mesurable, la page n'est pas rendue`);
+      if (unePage) {
+        // Huit pixels de tolérance : l'arrondi des marges de sécurité, pas un
+        // écran de plus à faire défiler.
+        assert.ok(
+          m.document - m.fenetre <= 8,
+          `${nom} : la fiche déborde de ${m.document - m.fenetre} px — elle ne tient pas sur une page`
+        );
+      } else {
+        // **La barre d'onglets est FIXÉE au bas de l'écran** : ce qui finit
+        // dessous est invisible quel que soit le défilement. C'est la réserve
+        // du bas qui l'empêche (`atlas-contenu`), et c'est elle qu'on éprouve
+        // ici — le dernier geste de l'écran doit rester atteignable.
+        const dernier = (await page.evaluate(`(() => {
+          const b = document.querySelector('[data-atlas="ecrire-a-la-main"], form button:last-of-type');
+          if (!b) return null;
+          const r = b.getBoundingClientRect();
+          return { bas: Math.round(r.bottom + window.scrollY), haut: Math.round(r.height) };
+        })()`)) as { bas: number; haut: number } | null;
+        assert.ok(dernier && dernier.haut > 0, `${nom} : le dernier geste ne se mesure pas`);
+        assert.ok(
+          dernier!.bas <= m.document,
+          `${nom} : le dernier geste finit à ${dernier!.bas} px, au-delà de la page (${m.document})`
+        );
+      }
+      // Là où il reste de la place, elle se partage en haut ET en bas : c'est
+      // la définition de « centré ». Là où il n'y en a pas, la marge vaut zéro
+      // et l'écran se lit depuis le haut — jamais coupé.
+      assert.ok(
+        m.margeHaut >= 0,
+        `${nom} : le contenu n'est pas centré (marge haute ${m.margeHaut})`
+      );
+    }
+    await page.setViewportSize({ width: 390, height: 900 });
+  });
+
+  // ─── LA PORTE A DISPARU AVEC L'ÉCRAN QUI LA PORTAIT ───────────────────────
+  //
+  // Ce cas ouvrait `/clients/[id]` depuis la fiche du chantier — une porte
+  // retenue le 16 août 2026 (arrangement B), qui vivait dans son tiroir. Cette
+  // fiche est retirée le 4 septembre (`ARCHITECTURE.md` §254), et **plus aucun
+  // écran n'ouvre la fiche du client depuis un chantier.** C'est le prix du
+  // retrait, écrit plutôt que découvert, et `TODO.md` porte la question.
+  //
+  // Ce que ce cas SERVAIT vraiment aux trois suivants — être sur la fiche du
+  // bon client — se tient désormais par l'IDENTIFIANT, que rien ne peut faire
+  // retirer (`CLAUDE.md` §5 bis). Les cas d'après, eux, ne bougent pas : c'est
+  // la fiche du client qu'ils éprouvent, et elle existe toujours.
+  await cas("la fiche de SON client s'ouvre, et c'est bien la sienne", async () => {
+    const { rows } = await pool.query(`SELECT client_id FROM chantiers WHERE id = $1`, [chantierId]);
+    const clientId = rows[0]?.client_id;
+    assert.ok(clientId, "le chantier n'a pas de client rattaché : rien à ouvrir");
+    await page.goto(`${BASE}/clients/${clientId}`, { waitUntil: "networkidle" });
     // Les cas de la fin y reviennent : la retenir évite de la rechercher, et
     // surtout d'en ouvrir une autre sans s'en apercevoir.
     ficheDuClientMonte = page.url();
@@ -305,7 +405,7 @@ async function main() {
   // ── ET UNE FICHE SANS AUCUN PAPIER NE COMMENTE PLUS SON VIDE ──────────────
   //
   // *« Supprime la phrase en gris lorsqu'il n'y a aucun document, on le voit,
-  // pas besoin de l'écrire. »* Les trois colonnes disent déjà « Aucun devis
+  // pas besoin de l'écrire. »* Les trois registres disent déjà « Aucun devis
   // parti », « Aucune facture émise », « Aucune fiche envoyée » : la phrase les
   // répétait une quatrième fois.
   //
@@ -344,40 +444,58 @@ async function main() {
     await page.getByText("Chargement…").first().waitFor({ state: "hidden", timeout: 30_000 }).catch(() => undefined);
   });
 
-  // ── Sa demande, mot pour mot : « en titre noir gras » ──────────────────────
+  // ── Ce qu'on lui a fait la dernière fois, et c'est ce qu'il vient lire ─────
   //
-  // **Le noir et le gras se MESURENT, ils ne se relisent pas.** Un `text-black`
-  // oublié dans une refonte laisserait le titre en gris parmi les coordonnées —
-  // et c'est la première chose qu'il cherche en ouvrant cet écran.
-  await cas("la dernière prestation est en titre noir gras, sous l'adresse", async () => {
-    // **CE CONTRÔLE A CHANGÉ DE CIBLE LE 20 AOÛT AU SOIR, ET SON OBJET TIENT.**
-    // Il visait un `h2` portant le NOM du chantier. Le patron l'a fait retirer —
-    // ce nom répétait celui du client, déjà en tête d'écran — et c'est la ligne
-    // « Dernière prestation · date » qui porte désormais le noir gras. On suit
-    // sa décision au lieu de réclamer ce qu'il a enlevé (`CLAUDE.md` §5 bis).
+  // **L'appui se MESURE, il ne se relit pas.** Une refonte qui laisserait ces
+  // lignes en gris parmi les coordonnées lui prendrait la première chose qu'il
+  // cherche en ouvrant cet écran.
+  await cas("la dernière prestation porte l'encre pleine, sous l'adresse", async () => {
+    // **CE CONTRÔLE A CHANGÉ DE CIBLE DEUX FOIS, ET SON OBJET N'A JAMAIS BOUGÉ.**
+    //
+    //   · 20 août 2026 — il visait un `h2` portant le NOM du chantier. Le patron
+    //     l'a fait retirer (ce nom répétait celui du client), et c'est la ligne
+    //     « Dernière prestation · date » qui a pris le noir gras ;
+    //   · 2 septembre 2026, sur maquette — le noir gras passe de L'ÉTIQUETTE à
+    //     CE QU'ELLE NOMME. C'est le contenu qu'il vient lire ; l'étiquette ne
+    //     fait que le désigner, et elle reprend la voix des libellés.
+    //
+    // **Ce qui est défendu ici est donc, comme au premier jour : la dernière
+    // prestation est la chose la plus appuyée sous son nom.** Ce qui change est
+    // QUELLE ligne la porte (`CLAUDE.md` §5 bis).
     const vu = await page.evaluate(() => {
       const ligne = [...document.querySelectorAll("p")].find((p) =>
         /^Dernière prestation/i.test((p.textContent ?? "").trim())
       );
       if (!ligne) return null;
-      const style = getComputedStyle(ligne);
+      const contenu = [...document.querySelectorAll("ul li")];
+      const premier = contenu[0] ? getComputedStyle(contenu[0]) : null;
       const nom = document.querySelector("h1");
       const coord = nom?.nextElementSibling;
       return {
         texte: (ligne.textContent ?? "").trim(),
-        graisse: Number(style.fontWeight),
-        couleur: style.color,
+        etiquette: getComputedStyle(ligne).color,
+        // Ce que l'étiquette nomme : les lignes de la prestation.
+        couleur: premier?.color ?? null,
+        taille: premier ? parseFloat(premier.fontSize) : 0,
         // L'encre de l'écran, lue là où elle est le plus sûrement pleine : le
         // nom du client, en tête.
         encre: nom ? getComputedStyle(nom).color : null,
         // Ce qui l'entoure, et dont elle doit se détacher.
         autour: coord ? getComputedStyle(coord).color : null,
         sousLeNom: ligne.getBoundingClientRect().top > (coord?.getBoundingClientRect().top ?? 0),
-        puces: document.querySelectorAll("ul li").length,
+        puces: contenu.length,
       };
     });
     assert.ok(vu, "aucune ligne « Dernière prestation » sur l'écran");
-    assert.ok(vu!.graisse >= 700, `la ligne n'est pas grasse (graisse lue : ${vu!.graisse})`);
+    assert.ok(
+      vu!.taille >= 16,
+      `ce qu'elle comprend se lit en ${vu!.taille} px : c'est plus petit que le texte courant`
+    );
+    assert.notEqual(
+      vu!.couleur,
+      vu!.etiquette,
+      "l'étiquette et son contenu ont la même voix : l'un des deux ne sert à rien"
+    );
     // **« Noir » se mesure CONTRE l'écran, pas contre `rgb(0, 0, 0)`.**
     //
     // Ce contrôle exigeait le noir absolu, et il a rougi le 22 août 2026 sur du
@@ -422,63 +540,85 @@ async function main() {
     assert.deepEqual(titres, [], `un titre est revenu sous l'adresse : ${titres.join(" | ")}`);
   });
 
-  // ── Les trois colonnes, et l'ordre — le cœur de sa demande ─────────────────
-  await cas("trois colonnes : Devis, Facture, Fiche chantier", async () => {
+  // ── Les trois registres, et l'ordre — le cœur de sa demande ────────────────
+  //
+  // **CE CONTRÔLE A CHANGÉ DE FORME LE 2 SEPTEMBRE 2026, ET SON OBJET TIENT.**
+  // Il lisait trois `h3` dans trois encadrés côte à côte. Le patron a retenu sur
+  // maquette trois ONGLETS — ses trois catégories, son ordre, son tri, mais un
+  // seul registre ouvert à la fois, parce que 118 px de large coupaient les
+  // numéros de devis.
+  //
+  // Ce qui se vérifie n'a pas bougé d'un pouce : **ses trois catégories, dans
+  // l'ordre qu'il a arrêté le 20 août au soir**. C'est la règle ; les encadrés
+  // n'en étaient que le dessin (`CLAUDE.md` §5 bis).
+  await cas("trois registres, dans son ordre : Devis, Facture, Fiche chantier", async () => {
     const titres = await page.evaluate(() =>
-      [...document.querySelectorAll("h3")].map((e) => (e.textContent ?? "").trim().toUpperCase())
+      [...document.querySelectorAll('[data-atlas="registre"]')].map((e) =>
+        (e.textContent ?? "").trim().toUpperCase()
+      )
     );
-    // **Devis · Facture · Fiche chantier**, et l'ordre a changé le 20 août au
-    // soir sur sa décision. On fige ce qu'il a demandé, pas ce qui existait.
     assert.deepEqual(
       titres,
-      ["DEVIS", "FACTURE", "FICHE CHANTIER"],
-      `les colonnes lues sont : ${titres.join(" | ")}`
+      ["DEVIS", "FACTURES", "FICHES"],
+      `les registres lus sont : ${titres.join(" | ")}`
     );
   });
 
-  await cas("chaque colonne porte ses PDF, du plus récent au plus ancien", async () => {
+  await cas("chaque registre porte ses PDF, du plus récent au plus ancien", async () => {
     // **Les pièces sont des BOUTONS depuis le 21 août 2026.** Un appui ouvre
     // trois choix — Enregistrer, Ouvrir, Partager — au lieu d'ouvrir le PDF
     // d'office (`ARCHITECTURE.md` §141, planche 83 proposition C). L'adresse ne
     // se lit donc plus sur la vignette : elle vit dans la feuille.
+    // **Les trois panneaux sont TOUS rendus**, un seul est visible : on peut
+    // donc lire le dossier entier d'un coup, comme avant les onglets.
     const colonnes = await page.evaluate(() =>
-      [...document.querySelectorAll("h3")].map((h3) => {
-        const boite = h3.parentElement!;
-        return {
-          titre: (h3.textContent ?? "").trim(),
-          liens: [...boite.querySelectorAll('[data-atlas="piece"]')].map((b) => ({
-            texte: (b.textContent ?? "").replace(/\s+/g, " ").trim(),
-            haut: b.getBoundingClientRect().top,
-          })),
-        };
-      })
+      [...document.querySelectorAll('[role="tabpanel"]')].map((panneau) => ({
+        titre: (document.getElementById(panneau.getAttribute("aria-labelledby") ?? "")?.textContent ?? "").trim(),
+        liens: [...panneau.querySelectorAll('[data-atlas="piece"]')].map((b) => ({
+          texte: (b.textContent ?? "").replace(/\s+/g, " ").trim(),
+          haut: b.getBoundingClientRect().top,
+        })),
+      }))
     );
 
     const attendus: Record<string, RegExp> = {
       Devis: /^\/api\/devis\//,
-      Facture: /^\/api\/factures\//,
-      // **Plus un PDF de chantier depuis le 23 août 2026** : la colonne porte
-      // le rapport d'entretien, à l'adresse même que le client a reçue.
-      "Fiche chantier": /^\/entretien\/[A-Za-z0-9_-]+$/,
+      Factures: /^\/api\/factures\//,
+      // **Plus un PDF de chantier depuis le 23 août 2026** : le registre porte
+      // le rapport d'entretien, relu DANS l'application depuis le
+      // 24 septembre 2026 : la page du client n'a pas de flèche.
+      Fiches: /^\/documents\/entretien\/[A-Za-z0-9_-]+$/,
     };
     for (const colonne of colonnes) {
-      assert.ok(colonne.liens.length >= 1, `la colonne « ${colonne.titre} » est vide`);
+      assert.ok(colonne.liens.length >= 1, `le registre « ${colonne.titre} » est vide`);
     }
 
-    // **Chaque colonne mène à SON genre de document**, vérifié en ouvrant la
-    // feuille de sa première pièce — c'est-à-dire par le chemin qu'il emprunte.
-    // Une colonne « Facture » qui servirait des devis se lirait pareil dans le
-    // DOM ; seule l'adresse le dit.
+    // **Chaque registre mène à SON genre de document**, vérifié en ouvrant la
+    // feuille de sa première pièce — c'est-à-dire par le chemin qu'il emprunte :
+    // on touche l'onglet, PUIS la pièce. Un registre « Facture » qui servirait
+    // des devis se lirait pareil dans le DOM ; seule l'adresse le dit.
     for (const [titre, motif] of Object.entries(attendus)) {
-      const cadre = page.locator("div").filter({ has: page.locator(`h3:text-is("${titre}")`) }).last();
-      await cadre.locator('[data-atlas="piece"]').first().click();
+      await page.locator(`[data-atlas="registre"]:text-is("${titre}")`).click();
+      const panneau = page.locator('[role="tabpanel"]:not([hidden])');
+      await panneau.locator('[data-atlas="piece"]').first().click();
       const ouvrir = page.locator('[data-atlas="piece-ouvrir"]');
       await ouvrir.waitFor({ state: "visible", timeout: 20_000 });
       const href = (await ouvrir.getAttribute("href")) ?? "";
-      assert.match(href, motif, `« ${titre} » pointe sur ${href}, qui n'est pas son PDF`);
+      // **UN PDF PASSE DÉSORMAIS PAR LA VISIONNEUSE — 11 septembre 2026.**
+      // *« Quand j'ouvre le pdf pour voir la facture j'ai pas de touche
+      // retour »* : « Ouvrir » mène à un écran d'Atlas qui peint le document,
+      // et l'adresse du fichier voyage dedans (`visionneuse-pdf.ts`). Ce
+      // contrôle exigeait l'ancienne adresse nue et rougissait donc sur un
+      // écran qu'il a lui-même demandé (`CLAUDE.md` §5 bis). On lit le fichier
+      // DERRIÈRE la visionneuse, avec la fonction du dépôt — recopier la forme
+      // de l'adresse ici en ferait une seconde vérité (`CLAUDE.md` §3).
+      const vise = fichierDemandeALaVisionneuse(href) ?? href;
+      assert.match(vise, motif, `« ${titre} » pointe sur ${href}, qui n'est pas son PDF`);
       await page.getByRole("button", { name: "Annuler" }).click();
       await ouvrir.waitFor({ state: "hidden", timeout: 15_000 });
     }
+    // On repose l'écran sur son registre d'ouverture pour la suite du contrôle.
+    await page.locator('[data-atlas="registre"]:text-is("Devis")').click();
 
     // **L'ordre se lit sur l'ÉCRAN, pas sur les données.** Un tri juste dans le
     // dépôt et un rendu qui les repose dans l'ordre d'arrivée donneraient un
@@ -566,38 +706,51 @@ async function main() {
     );
   });
 
-  // ── Trois colonnes sur 390 px : c'est là que ça casse ─────────────────────
+  // ── 390 px de large : c'est là que ça casse ───────────────────────────────
+  //
+  // **C'EST CE CONTRÔLE QUI A MOTIVÉ LES ONGLETS.** Il exigeait qu'aucune
+  // colonne ne descende sous 100 px — un seuil tenu de justesse à trois
+  // colonnes, et payé par une vignette montée au-dessus du numéro et des marges
+  // tombées à 16 px. On soignait le symptôme. Le registre pleine largeur
+  // supprime la cause ; ce qui reste à vérifier est ce qu'il voit :
+  // **rien ne déborde, aucun numéro n'est coupé, aucune cible n'est trop
+  // petite pour un pouce ganté.**
   await cas("rien ne déborde ni ne se coupe sur la largeur de son téléphone", async () => {
     const mesures = await page.evaluate(() => ({
       page: document.documentElement.scrollWidth,
       vue: window.innerWidth,
-      colonnes: [...document.querySelectorAll("h3")].map((h3) => {
-        const boite = h3.parentElement!;
-        return { largeur: boite.getBoundingClientRect().width, haut: boite.getBoundingClientRect().top };
-      }),
-      // **On mesure les TITRES, pas les précisions.** Un nom de chantier long
+      // **On mesure les NUMÉROS, pas les précisions.** Un nom de chantier long
       // s'abrège légitimement avec des points de suspension ; un numéro de
       // devis abrégé, lui, ne désigne plus rien. La première version mesurait
       // les deux et accusait l'écran pour une troncature voulue.
-      coupes: [...document.querySelectorAll('h3, [data-atlas="piece-titre"]')]
-        .filter((e) => e.scrollWidth > e.clientWidth + 1)
+      //
+      // Les panneaux masqués sont écartés : un élément `hidden` mesure zéro, et
+      // `0 > 0 + 1` est faux — le contrôle ne dirait donc rien de faux, mais il
+      // ne dirait rien du tout. On ne juge que ce qui est peint (`CLAUDE.md` §5).
+      coupes: [...document.querySelectorAll('[role="tabpanel"]:not([hidden]) [data-atlas="piece-titre"]')]
+        .filter((e) => e.clientWidth > 0 && e.scrollWidth > e.clientWidth + 1)
         .map((e) => `${(e.textContent ?? "").trim()} (${e.scrollWidth} px dans ${e.clientWidth})`),
-      petits: [...document.querySelectorAll("h3 ~ a")]
-        .map((a) => a.getBoundingClientRect().height)
-        .filter((h) => h < 28).length,
+      // Les cibles : les pièces du registre ouvert, et les onglets eux-mêmes.
+      petits: [
+        ...document.querySelectorAll(
+          '[role="tabpanel"]:not([hidden]) [data-atlas="piece"], [data-atlas="registre"]'
+        ),
+      ]
+        .map((e) => e.getBoundingClientRect().height)
+        .filter((h) => h > 0 && h < 28).length,
+      pieces: document.querySelectorAll('[role="tabpanel"]:not([hidden]) [data-atlas="piece-titre"]').length,
     }));
 
     assert.ok(
       mesures.page <= mesures.vue + 1,
       `l'écran déborde de ${mesures.page - mesures.vue} px : il faut le glisser de côté pour tout lire`
     );
-    assert.equal(mesures.colonnes.length, 3, "il faut trois colonnes à mesurer");
-    const plusEtroite = Math.min(...mesures.colonnes.map((c) => c.largeur));
-    assert.ok(plusEtroite >= 100, `la colonne la plus étroite fait ${Math.round(plusEtroite)} px — sous 100, les numéros se coupent`);
-    const ecart = Math.max(...mesures.colonnes.map((c) => c.haut)) - Math.min(...mesures.colonnes.map((c) => c.haut));
-    assert.ok(ecart < 2, `les colonnes ne sont pas côte à côte : ${Math.round(ecart)} px d'écart en hauteur`);
-    assert.deepEqual(mesures.coupes, [], `des libellés sont coupés : ${mesures.coupes.join(" ; ")}`);
-    assert.equal(mesures.petits, 0, `${mesures.petits} lien(s) de moins de 28 px de haut : on les rate au doigt`);
+    // **Refuser de conclure sur zéro élément.** Un registre vide rendrait
+    // « aucune coupe » et « aucune cible trop petite » — un vert qui ne prouve
+    // rien, exactement le défaut du 15 août 2026 (`CLAUDE.md` §5).
+    assert.ok(mesures.pieces >= 1, "le registre ouvert ne porte aucune pièce : il n'y a rien à mesurer");
+    assert.deepEqual(mesures.coupes, [], `des numéros sont coupés : ${mesures.coupes.join(" ; ")}`);
+    assert.equal(mesures.petits, 0, `${mesures.petits} cible(s) de moins de 28 px de haut : on les rate au doigt`);
   });
 
   // ── Le PDF de fiche chantier, le troisième document ───────────────────────
@@ -612,7 +765,8 @@ async function main() {
     // camionnette. Rangée au dossier d'un client, elle donnait à croire qu'il
     // l'avait reçue. Elle porte désormais le rapport d'entretien, à l'adresse
     // même qu'il a envoyée.
-    const cadre = page.locator("div").filter({ has: page.locator('h3:text-is("Fiche chantier")') }).last();
+    await page.locator('[data-atlas="registre"]:text-is("Fiches")').click();
+    const cadre = page.locator('[role="tabpanel"]:not([hidden])');
     await cadre.locator('[data-atlas="piece"]').first().click();
     const ouvrir = page.locator('[data-atlas="piece-ouvrir"]');
     await ouvrir.waitFor({ state: "visible", timeout: 20_000 });
@@ -629,7 +783,7 @@ async function main() {
     await page.getByRole("button", { name: "Annuler" }).click();
     await ouvrir.waitFor({ state: "hidden", timeout: 15_000 });
 
-    assert.equal(href, `/entretien/${jetonFiche}`, `la feuille de la fiche mène à « ${href} »`);
+    assert.equal(href, adresseDuRapportDansLAppli(jetonFiche), `la feuille de la fiche mène à « ${href} »`);
 
     // **Ouvert POUR DE BON, pas seulement listé.** Un lien qui rend une erreur
     // 500 se voit exactement pareil dans le DOM ; c'est en le suivant qu'on
@@ -644,14 +798,43 @@ async function main() {
     );
   });
 
+  // **Sa capture du 24 septembre 2026 :** *« j'ai aucun moyen de faire
+  // retour ! »*, sur le rapport ouvert depuis l'application. « Ouvrir » le
+  // remettait à Safari dans un onglet neuf, sur la page de son CLIENT, qui ne
+  // porte ni en-tête ni flèche, et un onglet ouvert par un lien n'a rien
+  // derrière lui. Joué par SON geste : l'appui sur « Ouvrir », puis la flèche.
+  await cas("la fiche ouverte depuis le dossier porte une flèche qui y ramène", async () => {
+    await page.goto(ficheDuClientMonte, { waitUntil: "networkidle" });
+    const dossier = new URL(page.url()).pathname;
+    await page.locator('[data-atlas="registre"]:text-is("Fiches")').click();
+    await page.locator('[role="tabpanel"]:not([hidden]) [data-atlas="piece"]').first().click();
+    const ouvrir = page.locator('[data-atlas="piece-ouvrir"]');
+    await ouvrir.waitFor({ state: "visible", timeout: 20_000 });
+    const onglets = page.context().pages().length;
+    await ouvrir.click();
+    await page.locator('[data-atlas="rapport-entretien"]').waitFor({ timeout: 30_000 });
+    assert.equal(page.context().pages().length, onglets, "« Ouvrir » a ouvert un onglet neuf");
+    await page.getByRole("link", { name: "Retour", exact: true }).click();
+    await page.waitForURL((u) => u.pathname === dossier, { timeout: 30_000 });
+  });
+
+  // Le même rapport, par l'autre porte : « Rapports envoyés », dans Paysage.
+  await cas("un rapport envoyé s'ouvre dans l'application, et la flèche ramène à la liste", async () => {
+    const { rows } = await pool.query(`SELECT nom FROM clients WHERE id = $1`, [clientDuChantier]);
+    await page.goto(`${BASE}/paysage/fiche`, { waitUntil: "networkidle" });
+    // La fiche date de juin : le nom tapé passe par-dessus le mois en cours.
+    await page.locator('[data-atlas="chercher-un-rapport"]').fill(rows[0].nom);
+    await page.locator(`a[href="${adresseDuRapportDansLAppli(jetonFiche)}"]`).click();
+    await page.locator('[data-atlas="rapport-entretien"]').waitFor({ timeout: 30_000 });
+    await page.getByRole("link", { name: "Retour", exact: true }).click();
+    await page.waitForURL((u) => u.pathname === "/paysage/fiche", { timeout: 30_000 });
+  });
+
   await cas("un chantier SANS client n'ouvre aucune porte sur du vide", async () => {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-    await creerPuisFiche(page);
-    await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15_000 });
+    const neuf = await creerPuisFiche(page);
     await page.waitForTimeout(700);
-    const { rows } = await pool.query(`SELECT client_id FROM chantiers WHERE id = $1`, [
-      page.url().split("/").pop(),
-    ]);
+    const { rows } = await pool.query(`SELECT client_id FROM chantiers WHERE id = $1`, [neuf]);
     if (rows[0]?.client_id) {
       // Le formulaire a quand même créé un client : le cas ne se produit pas ici.
       console.log("    (ce chantier a reçu un client : rien à vérifier)");

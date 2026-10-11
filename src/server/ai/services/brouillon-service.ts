@@ -216,9 +216,48 @@ export async function confirmerBrouillon(ctx: Ctx, chantierId: string): Promise<
 
 // Recompose un libellé lisible à partir de la ligne structurée. N'ajoute
 // jamais de quantité absente : sans quantité ET unité, le libellé est repris tel quel.
+//
+// **Et jamais DEUX FOIS la même mesure.** C'est le défaut qu'il a lu sur son
+// vrai devis du 30 août 2026 : « Haie de laurier (800 ml) (800 ml) ». Le modèle
+// écrit déjà la mesure dans le libellé — c'est ce que la dictée dit — et cette
+// fonction en recollait une seconde depuis les colonnes.
+//
+// **Pourquoi on n'a pas simplement supprimé la recollure.** Le texte reste le
+// repli des moteurs qui ne lisent pas encore les colonnes
+// (`mesures-prestation.ts`) : si le modèle rendait « Haie de laurier » sans
+// mesure, la retirer d'ici ferait perdre à la haie son prix au mètre linéaire.
+// On la pose donc quand elle manque, et jamais quand elle est déjà là.
 function libelleAvecQuantite(ligne: LigneExtraite): string {
   const base = ligne.libelle.trim();
   if (!base) return "";
-  if (ligne.quantite && ligne.unite) return `${base} (${ligne.quantite} ${ligne.unite})`;
-  return base;
+  if (!ligne.quantite || !ligne.unite) return base;
+  return porteDejaLaMesure(base, ligne.quantite, ligne.unite)
+    ? base
+    : `${base} (${ligne.quantite} ${ligne.unite})`;
+}
+
+/**
+ * Le libellé dit-il déjà cette mesure ?
+ *
+ * La comparaison ignore ce qui sépare deux écritures de la même chose :
+ * l'espace des milliers (« 1 200 » et « 1200 »), la casse, les accents et la
+ * ponctuation. Sans cela, « Tonte de la pelouse (1 200 m²) » recevrait
+ * « (1200 m²) » en plus — c'est exactement ce qu'il a lu.
+ */
+function porteDejaLaMesure(libelle: string, quantite: string, unite: string): boolean {
+  const reduire = (s: string) =>
+    s
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}]+/gu, "");
+  const nombre = Number(String(quantite).replace(",", "."));
+  const ecritures = new Set([reduire(String(quantite))]);
+  if (Number.isFinite(nombre)) {
+    ecritures.add(reduire(String(nombre)));
+    if (Number.isInteger(nombre)) ecritures.add(reduire(String(Math.trunc(nombre))));
+  }
+  const texte = reduire(libelle);
+  const u = reduire(unite);
+  return [...ecritures].some((n) => n.length > 0 && texte.includes(n + u));
 }

@@ -108,7 +108,7 @@ export default function GrillesPrixClient({
   const total = grilles.natures.reduce((n, g) => n + cellulesDeNature(g, grilles.axes).length, 0);
 
   return (
-    <div className="mt-6 flex flex-col gap-6 px-6">
+    <div className="mt-6 flex flex-col gap-6 px-[26px]">
       <p className="text-[13px]" style={{ color: colors.muted }}>
         {cases.size === 0
           ? `Aucune case remplie sur ${total}. Atlas posera la question à chaque chantier, et rangera ici ce que vous répondez.`
@@ -363,7 +363,7 @@ function rangeesDe(nature: Nature, grilles: Grilles): { cle: string; titre: stri
       axe: "technique" as const,
     }));
   }
-  return grilles.axes.hauteurs.map((h) => ({ cle: h.cle, titre: `Arbre ${h.libelle}`, axe: "hauteur" as const }));
+  return grilles.axes.hauteurs.map((h) => ({ cle: h.cle, titre: `Fût ${h.libelle}`, axe: "hauteur" as const }));
 }
 
 /**
@@ -424,7 +424,7 @@ function AjouterTranche({
           onChange={(e) => setA(e.target.value)}
           inputMode="decimal"
           placeholder={`à 120`}
-          aria-label={`Borne haute, en ${unite} — vide pour « et plus »`}
+          aria-label={`Borne haute, en ${unite}, vide pour « et plus »`}
           className="min-w-0 flex-1 rounded-[4px] border-0 px-3 py-2.5 outline-none"
           style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
         />
@@ -444,15 +444,15 @@ function AjouterTranche({
             }
             router.refresh();
           }}
-          className="min-h-[40px] rounded-full px-4 py-2 text-[14px] font-medium disabled:opacity-40"
-          style={{ backgroundColor: colors.rust, color: colors.card }}
+          className="atlas-plein min-h-[40px] rounded-full px-4 py-2 text-[14px] font-medium disabled:opacity-40"
+          style={{ backgroundColor: colors.plein, color: colors.card }}
         >
           Ajouter
         </button>
       </div>
       <p className="rounded-[4px] px-3 py-2 text-[12px] leading-snug" style={{ backgroundColor: colors.rustTint, color: colors.inkSoft }}>
         {consequence.total > 0
-          ? `Cette ${mot} ajoutera ${consequence.total} case${consequence.total > 1 ? "s" : ""} en tout — ${consequence.parNature
+          ? `Cette ${mot} ajoutera ${consequence.total} case${consequence.total > 1 ? "s" : ""} en tout, ${consequence.parNature
               .map((x) => x.nature.titre.toLowerCase())
               .join(", ")}.`
           : "Cette tranche n'ajoutera aucune case : aucune grille ne s'en sert."}
@@ -505,8 +505,8 @@ function AjouterTechnique({ onErreur }: { onErreur: (m: string | null) => void }
           }
           router.refresh();
         }}
-        className="min-h-[40px] rounded-full px-4 py-2 text-[14px] font-medium disabled:opacity-40"
-        style={{ backgroundColor: colors.rust, color: colors.card }}
+        className="atlas-plein min-h-[40px] rounded-full px-4 py-2 text-[14px] font-medium disabled:opacity-40"
+        style={{ backgroundColor: colors.plein, color: colors.card }}
       >
         Ajouter
       </button>
@@ -529,12 +529,12 @@ function AjouterTravail({
   const router = useRouter();
 
   const FORMES: { valeur: FormeGrille; titre: string; quoi: string }[] = [
-    { valeur: "une-case", titre: "Un seul prix", quoi: "multiplié par une quantité — comme la haie, au mètre" },
-    { valeur: "un-axe", titre: "Par diamètre", quoi: "une case par tranche — comme le dessouchage" },
+    { valeur: "une-case", titre: "Un seul prix", quoi: "multiplié par une quantité, comme la haie, au mètre" },
+    { valeur: "un-axe", titre: "Par diamètre", quoi: "une case par tranche, comme le dessouchage" },
     {
       valeur: "technique-diametre",
       titre: "Par façon de faire et par diamètre",
-      quoi: "croisé — comme l'abattage",
+      quoi: "croisé, comme l'abattage",
     },
   ];
 
@@ -614,8 +614,8 @@ function AjouterTravail({
           }
           router.refresh();
         }}
-        className="min-h-[44px] self-start rounded-full px-5 py-2.5 text-[14px] font-medium disabled:opacity-40"
-        style={{ backgroundColor: colors.rust, color: colors.card }}
+        className="atlas-plein min-h-[44px] self-start rounded-full px-5 py-2.5 text-[14px] font-medium disabled:opacity-40"
+        style={{ backgroundColor: colors.plein, color: colors.card }}
       >
         Ajouter ce travail
       </button>
@@ -682,8 +682,11 @@ function TiroirDuRetrait({
   return (
     <div
       role="status"
-      className="flex items-center gap-3 rounded-[4px] px-4 py-3"
-      style={{ backgroundColor: colors.rust, color: colors.card }}
+      // **Il l'a demandé dedans le 31 août.** Le bandeau prend le vert des
+      // boutons pleins. Il ne prend PAS de geste utile : rien ne s'y appuie —
+      // `:active` ne se déclenchera jamais dessus, et c'est normal.
+      className="atlas-plein flex items-center gap-3 rounded-[4px] px-4 py-3"
+      style={{ backgroundColor: colors.plein, color: colors.card }}
     >
       <span className="flex-1 text-[12.5px] leading-snug">
         {quoi.nom} retiré{quoi.quoi === "tranche" ? "e" : ""}

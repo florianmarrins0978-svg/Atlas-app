@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Les travaux d’un client posé sans devis</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  SA DEMANDE DU 7 OCTOBRE 2026 :
+
+  *« On peut ajouter un client au planning alors qu'on n'a pas envoyé le
+  devis. À ce moment-là, il faut que l'on puisse ajouter les tâches, les
+  travaux à faire, dans la fiche du client. Vérifie si on peut le faire ou
+  non, auquel cas il faut pouvoir le créer. Fais-moi une planche. »*
+
+  ─── LE CONSTAT, DANS LE CODE ─────────────────────────────────────────────
+  · poser un client au planning sans devis : CODÉ le 10 septembre
+    (`bloquer-sans-devis.html`, `PlanningClient.tsx`, « POSER UN CLIENT SUR
+    CE JOUR ») ;
+  · « Travaux à faire » ne lit QUE les lignes du devis : `tachesDuChantier`
+    (`src/server/repositories/devis.ts`) rend `{ taches: [] }` sans devis ;
+  · le bandeau dit alors « aucune ligne », et dedans « Aucune ligne sur le
+    devis. Vous pouvez quand même poser une photo et un mot. »
+    (`src/app/planning/TravauxAFaire.tsx`). Aucun geste pour en ajouter.
+  Donc : ON NE PEUT PAS. Écran non ouvert ici (pas de base habitée avec un
+  tel chantier dans cette session) ; constat tiré du code, une seule branche.
+
+  ─── « LA FICHE DU CLIENT » ───────────────────────────────────────────────
+  Lu comme la fiche d'intervention du planning, celle qui porte son nom en
+  titre et le bandeau « Travaux à faire ». La page Clients (`/clients/[id]`)
+  ne porte aucun chantier ouvrable depuis le 20 août (sa décision) : les
+  travaux y seraient loin de l'équipe qui les coche.
+
+  ─── LA PROPOSITION ───────────────────────────────────────────────────────
+  Sans devis, le bandeau s'ouvre sur un champ « Ajouter un travail ». Chaque
+  travail devient une ligne à cocher, comme une ligne du devis, et part dans
+  le retour du jour de la même façon. Une croix l'enlève.
+  Avec un devis, rien ne change : la liste est celle du devis.
+
+  ─── CE QUI RESTE À TRANCHER PAR LUI ─────────────────────────────────────
+  Quand le devis part ensuite : 1, ses lignes REMPLACENT les travaux écrits à
+  la main (recommandé : une seule liste, celle qui est signée) ; 2, les deux
+  restent.
+
+  RIEN N'EST CODÉ.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --scene:#e6e3dc; --fond:#f5f3ee; --carte:#faf9f5; --teinte:#ece9e1; --encre:#1c1c1a;
+    --encre-douce:#4a4a44; --gris:#8a8578; --or:#B98B47; --or-texte:#8b6835; --plein:#7d9a6d; --sur-plein:#faf9f5;
+    --pin:#2f3b2f; --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+    --ombre:rgba(28,28,26,.07); --ombre-forte:rgba(20,18,14,.18); --or-voile:rgba(185,139,71,.10);
+    --vert-pale:#b9c6b4; --vert-voile:rgba(125,154,109,.16); --or-papier:rgba(185,139,71,.13);
+  }
+  body.nuit{
+    --scene:#070908; --fond:#101210; --carte:#1a1d19; --teinte:#151814; --encre:#e9e8de;
+    --encre-douce:#c1c2b6; --gris:#84887b; --or:#C9A05E; --or-texte:#d9b676; --plein:#e9e8de; --sur-plein:#101210;
+    --pin:#b9c6b4; --trait:rgba(233,232,222,.14); --trait-doux:rgba(233,232,222,.08);
+    --ombre:rgba(0,0,0,.35); --ombre-forte:rgba(0,0,0,.6); --or-voile:rgba(201,160,94,.14);
+    --vert-pale:#4f5f4c; --vert-voile:rgba(185,198,180,.12); --or-papier:rgba(201,160,94,.16);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--scene)}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 48px;font-variant-numeric:tabular-nums}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+  button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:4px}
+
+  .commandes{display:flex;justify-content:center;gap:22px;padding:16px 16px 0;font-size:13px;flex-wrap:wrap}
+  .commandes button{min-height:40px;color:var(--gris)}
+  .commandes button[aria-pressed="true"]{color:var(--encre);text-decoration:underline;
+                                        text-decoration-color:var(--or);text-underline-offset:6px}
+
+  .deux{display:flex;flex-direction:column;align-items:center;gap:26px;padding:0 16px}
+  .cote{flex:none;width:100%;max-width:390px}
+  .cote .quel{margin:0 0 8px;text-align:center;font:600 11px/1 inherit;letter-spacing:.14em;
+              text-transform:uppercase;color:var(--gris)}
+  .cote .quel b{color:var(--or);font-weight:600}
+  @media (min-width:840px){.deux{flex-direction:row;justify-content:center;align-items:flex-start;gap:28px}.cote{width:390px}}
+
+  .tel{width:100%;height:760px;margin:14px auto 0;background:var(--fond);
+       border-radius:30px;overflow:hidden;box-shadow:0 18px 46px var(--ombre-forte);
+       display:flex;flex-direction:column}
+  .ecran{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:20px 16px 24px}
+
+  .fiche{background:var(--carte);border-radius:14px;border:1px solid var(--trait-doux);
+         box-shadow:0 6px 20px var(--ombre);padding:16px 16px 8px}
+  .titre{margin:0;text-align:center;font:600 11px/1 inherit;letter-spacing:.14em;text-transform:uppercase}
+  .filet{margin:14px 0 2px;border:0;border-top:1px solid var(--trait)}
+  .chantier{padding:8px 0 2px}
+  .chantier .nom{margin:0;font:400 20px/1.2 ui-serif,Georgia,serif}
+  .chantier .ou{margin:1px 0 0;font-size:13px;color:var(--gris)}
+  .chantier .duree{margin:1px 0 4px;font-size:13px;color:var(--or)}
+  .demi{display:flex;min-height:44px;align-items:center;gap:18px;
+        font:600 11px/1 inherit;letter-spacing:.16em;text-transform:uppercase}
+  .demi .a{display:flex;align-items:center;gap:12px;min-width:112px}
+  .demi .b{font:400 14.5px/1.4 inherit;letter-spacing:0;text-transform:none}
+  .pastille{width:16px;height:16px;border-radius:4px;flex:none;background:var(--pin)}
+  .actions{display:flex;justify-content:flex-end;gap:14px;min-height:44px;align-items:center;font:700 14.5px/1 inherit}
+
+  .feuille{margin:10px 0 6px;border-radius:14px;background:var(--carte);
+           border:2px solid var(--or);box-shadow:0 2px 10px var(--ombre);padding:16px 12px 14px}
+  .feuille .sur{margin:0;text-align:center;font:700 10.5px/1 inherit;letter-spacing:.22em;
+                text-transform:uppercase;color:var(--or)}
+  .feuille .qui{margin:10px 0 0;text-align:center;font:400 22px/1.15 ui-serif,Georgia,serif}
+  .etiquette{margin:0 0 8px;font:600 10px/1 inherit;letter-spacing:.16em;text-transform:uppercase;color:var(--encre)}
+  .part{margin:14px 0 0;padding-top:14px;border-top:1px solid var(--trait-doux)}
+  .part.sans-filet{border-top:0;padding-top:0}
+
+  .barre-gestes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:14px}
+  .cellule{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:78px;
+           padding:8px 4px;font-size:11.5px;line-height:1.15;text-align:center;border-radius:12px;
+           background:var(--teinte);box-shadow:inset 0 0 0 1px var(--trait-doux)}
+  .cellule .d{display:grid;place-items:center;height:30px;color:var(--pin)}
+  .cellule .d.or{color:var(--or)}
+
+  .note-cadre{display:block;width:100%;min-height:78px;padding:10px 12px;border:0;border-radius:10px;
+              background:var(--or-papier);box-shadow:inset 0 0 0 1px rgba(185,139,71,.22);color:var(--encre);resize:none;
+              font-family:inherit;font-size:16px;line-height:1.45}
+  .note-cadre::placeholder{color:var(--gris);opacity:1}
+
+  .bandeau{margin-top:14px;border-radius:12px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);overflow:hidden}
+  .tete{display:flex;width:100%;align-items:center;gap:10px;min-height:54px;padding:0 14px 0 16px;background:var(--vert-voile)}
+  .tete .mot{flex:1;min-width:0;font:400 16px/1.2 ui-serif,Georgia,serif;color:var(--pin)}
+  .tete .compte{flex:none;font-size:12.5px;font-weight:600;color:var(--pin)}
+  .tete .chev{flex:none;color:var(--pin);transition:transform .28s cubic-bezier(.2,.7,.2,1)}
+  .bandeau.ouvert .tete .chev{transform:rotate(180deg)}
+  .pli{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.2,.7,.2,1)}
+  .bandeau.ouvert .pli{grid-template-rows:1fr}
+  .pli .dedans{min-height:0;overflow:hidden;padding:0 14px}
+  .bandeau.ouvert .pli .dedans{padding-bottom:14px}
+  @media (prefers-reduced-motion:reduce){.pli,.tete .chev{transition:none}}
+
+  .vide{margin:12px 0 0;font-size:13.5px;line-height:1.5;color:var(--gris)}
+  .cases{padding-top:10px}
+  .case{display:flex;width:100%;align-items:flex-start;gap:12px;min-height:44px;padding:6px 0;font-size:14.5px;line-height:1.45}
+  .case .cocher{display:flex;flex:1;min-width:0;align-items:flex-start;gap:12px;text-align:left}
+  .case .rond{flex:none;width:24px;height:24px;border-radius:50%;background:var(--carte);
+              box-shadow:inset 0 0 0 1.5px var(--vert-pale);display:grid;place-items:center;color:transparent;margin-top:-1px}
+  .case[data-faite="true"] .rond{background:var(--plein);box-shadow:none;color:var(--sur-plein)}
+  .case[data-faite="true"] .quoi{color:var(--gris)}
+  .case .quoi{flex:1;min-width:0}
+  .case .enlever{flex:none;width:44px;height:44px;margin:-10px -10px -10px 0;display:grid;place-items:center;color:var(--gris)}
+
+  /* le champ qui ajoute un travail, sous les lignes qu'il a déjà posées */
+  .ajout{display:flex;align-items:center;gap:8px;margin-top:6px;padding:4px 4px 4px 14px;border-radius:12px;
+         background:var(--teinte);box-shadow:inset 0 0 0 1px var(--trait-doux)}
+  .ajout input{flex:1;min-width:0;height:44px;border:0;background:transparent;color:var(--encre);
+               font:inherit;font-size:16px}
+  .ajout input::placeholder{color:var(--gris);opacity:1}
+  .ajout input:focus{outline:0}
+  .ajout .poser{flex:none;min-height:40px;padding:0 14px;border-radius:999px;background:var(--plein);color:var(--sur-plein);
+                font:400 14.5px/1 ui-serif,Georgia,serif}
+  .ajout .poser[disabled]{opacity:.4;cursor:default}
+
+  .photos{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:12px}
+  .photos .etiquette{margin:0 4px 0 0}
+  .photos .ajouter{width:46px;height:46px;border-radius:9px;display:grid;place-items:center;
+                   background:var(--vert-voile);color:var(--pin);box-shadow:inset 0 0 0 1px var(--vert-pale)}
+  .vert{display:flex;width:max-content;max-width:100%;min-height:46px;margin:14px auto 0;padding:0 26px;
+        align-items:center;justify-content:center;border-radius:999px;background:var(--plein);
+        color:var(--sur-plein);font:400 15.5px/1 ui-serif,Georgia,serif}
+
+  .barre{flex:none;display:grid;grid-template-columns:repeat(5,1fr);height:64px;
+         background:var(--carte);border-top:1px solid var(--trait);padding-bottom:6px}
+  .barre span{display:flex;align-items:end;justify-content:center;padding-bottom:12px;font-size:11px;color:var(--gris)}
+  .barre span.actif{color:var(--encre);font-weight:600}
+
+  .note{max-width:430px;margin:26px auto 0;padding:0 22px;font-size:13.5px;line-height:1.6;color:var(--encre-douce)}
+  .note h2{font:400 20px/1.2 ui-serif,Georgia,serif;color:var(--encre);margin:20px 0 8px}
+  .note p{margin:0 0 10px}
+  .note b{color:var(--encre)}
+  .note table{border-collapse:collapse;width:100%;margin:0 0 12px}
+  .note td{padding:6px 8px 6px 0;vertical-align:top;border-top:1px solid var(--trait-doux)}
+  .note td:first-child{color:var(--encre);width:38%}
+  .choix{display:grid;gap:8px;margin:8px 0 12px}
+  .choix div{padding:10px 12px;border-radius:12px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait)}
+  .choix div.reco{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .choix .n{font:400 18px/1 ui-serif,Georgia,serif;color:var(--or);margin-right:8px}
+
+  @media (max-width:420px){.tel{border-radius:22px;margin-top:10px}}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" id="nuit" aria-pressed="false">Voir sur Nuit</button>
+  <button type="button" id="rejouer">Recommencer</button>
+</div>
+
+<div class="deux">
+  <div class="cote"><p class="quel">Aujourd’hui, sans devis</p><div class="tel" id="tel-avant"></div></div>
+  <div class="cote"><p class="quel"><b>La planche</b></p><div class="tel" id="tel-apres"></div></div>
+</div>
+
+<div class="note">
+  <h2>Ce qui existe</h2>
+  <table>
+    <tr><td>Poser un client au planning sans devis</td><td>oui, depuis le 10 septembre</td></tr>
+    <tr><td>Lui écrire ses travaux</td><td><b>non</b> : « Travaux à faire » ne lit que les lignes du devis. Sans devis, il dit « aucune ligne », et rien ne permet d’en ajouter</td></tr>
+  </table>
+
+  <h2>La planche</h2>
+  <p>Sans devis, le bandeau s’ouvre sur <b>Ajouter un travail</b>. Chaque travail devient une ligne à cocher, comme une ligne du devis, et part dans le retour du jour. La croix l’enlève.</p>
+  <p>Avec un devis, rien ne change : la liste reste celle du devis.</p>
+  <p><b>Essayez</b> : touchez « Travaux à faire », écrivez « Taille de haie », Ajouter, cochez.</p>
+
+  <h2>Une question</h2>
+  <p>Quand le devis part ensuite :</p>
+  <div class="choix">
+    <div class="reco"><span class="n">1</span>ses lignes <b>remplacent</b> les travaux écrits à la main. Une seule liste, celle que le client a reçue. <b>Je recommande celle-ci.</b></div>
+    <div><span class="n">2</span>les deux <b>restent</b>, ceux écrits à la main en dessous.</div>
+  </div>
+  <p><b>Rien n’est codé.</b> Dites oui, et 1 ou 2.</p>
+</div>
+
+<script>
+const T = (d, t = 22) => `<svg width="${t}" height="${t}" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const DESSIN = {
+  maps: `<path d="M10 17.5s-5.5-5-5.5-9a5.5 5.5 0 0 1 11 0c0 4-5.5 9-5.5 9z"/><circle cx="10" cy="8.5" r="2"/>`,
+  waze: `<path d="M16.5 3.5 3.5 9l6 1.5 1.5 6z"/>`,
+  copier: `<rect x="7" y="7" width="9.5" height="9.5" rx="2"/><path d="M13 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>`,
+  appeler: `<path d="M4 3.5h3l1.5 3.5-2 1.2a9 9 0 0 0 5.3 5.3l1.2-2 3.5 1.5v3a1.5 1.5 0 0 1-1.6 1.5A13 13 0 0 1 2.5 5.1 1.5 1.5 0 0 1 4 3.5z"/>`,
+};
+const COCHE = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const CROIX = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+const PLUS = `<svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>`;
+const CHEV = `<svg class="chev" width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const bouton = (html, onClick, cls) => { const b = el("button", cls, html); b.type = "button"; b.onclick = onClick; return b; };
+
+function telephone(racine, proposition) {
+  let etat;
+  const depart = () => { etat = { ouvert: false, travaux: [], saisie: "" }; };
+
+  racine.innerHTML = `<div class="ecran"><div class="fiche">
+      <p class="titre">Mercredi 8 octobre</p><hr class="filet">
+      <div class="chantier"><p class="nom">Mme Lefèvre</p><p class="ou">Vernouillet</p><p class="duree">une journée</p>
+        <div class="demi"><span class="a"><span class="pastille"></span>Matin</span><span class="b">Antoine / Julien</span></div>
+        <div class="demi"><span class="a"><span class="pastille"></span>Après-midi</span><span class="b">Antoine / Julien</span></div>
+        <div class="actions"><span>Déplacer</span><span>Retirer</span></div></div>
+      <section class="feuille" aria-label="Fiche d’intervention"></section>
+    </div></div>
+    <div class="barre" aria-hidden="true"><span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></div>`;
+  const f = racine.querySelector(".feuille");
+
+  function dessiner(garderFocus) {
+    f.innerHTML = "";
+    f.appendChild(el("p", "sur", "Fiche d’intervention"));
+    f.appendChild(el("p", "qui", "Mme Lefèvre"));
+    const g = el("div", "barre-gestes");
+    [["maps", "Maps", ""], ["waze", "Waze", ""], ["copier", "Copier l’adresse", "or"], ["appeler", "Appeler le client", ""]]
+      .forEach(([d, mot, c]) => g.appendChild(bouton(`<span class="d ${c}">${T(DESSIN[d])}</span><span>${mot}</span>`, () => {}, "cellule")));
+    f.appendChild(g);
+
+    const n = el("div", "part", `<p class="etiquette">Ma note</p>`);
+    const t = el("textarea", "note-cadre"); t.rows = 3; t.placeholder = "Penser à prendre le broyeur. Client dispo à partir de 9 h.";
+    n.appendChild(t); f.appendChild(n);
+
+    const total = etat.travaux.length, faites = etat.travaux.filter((x) => x.faite).length;
+    const compte = total === 0 ? "aucune ligne"
+      : faites === 0 ? `${total} ligne${total > 1 ? "s" : ""}`
+      : faites === total ? "tout est fait" : `${faites} sur ${total} fait${faites > 1 ? "s" : ""}`;
+    const b = el("div", "bandeau" + (etat.ouvert ? " ouvert" : ""));
+    const tete = bouton(`<span class="mot">Travaux à faire</span><span class="compte">${compte}</span>${CHEV}`,
+      () => { etat.ouvert = !etat.ouvert; dessiner(); }, "tete");
+    tete.setAttribute("aria-expanded", String(etat.ouvert));
+    b.appendChild(tete);
+    const pli = el("div", "pli"); const dedans = el("div", "dedans"); pli.appendChild(dedans); b.appendChild(pli);
+
+    if (!proposition) {
+      // ce que l'application dit aujourd'hui, mot pour mot (TravauxAFaire.tsx)
+      dedans.appendChild(el("p", "vide", "Aucune ligne sur le devis. Vous pouvez quand même poser une photo et un mot."));
+    } else {
+      const c = el("div", "cases");
+      etat.travaux.forEach((x, i) => {
+        const ligne = el("div", "case"); ligne.dataset.faite = String(x.faite);
+        const cocher = bouton(`<span class="rond" aria-hidden="true">${COCHE}</span><span class="quoi"></span>`,
+          () => { x.faite = !x.faite; dessiner(); }, "cocher");
+        cocher.querySelector(".quoi").textContent = x.libelle;
+        cocher.setAttribute("aria-pressed", String(x.faite));
+        const enlever = bouton(CROIX, () => { etat.travaux.splice(i, 1); dessiner(); }, "enlever");
+        enlever.setAttribute("aria-label", `Enlever ${x.libelle}`);
+        ligne.appendChild(cocher); ligne.appendChild(enlever); c.appendChild(ligne);
+      });
+      dedans.appendChild(c);
+
+      const ajout = el("form", "ajout");
+      const champ = el("input"); champ.type = "text"; champ.placeholder = "Ajouter un travail";
+      champ.value = etat.saisie; champ.enterKeyHint = "done"; champ.setAttribute("aria-label", "Ajouter un travail");
+      const poser = el("button", "poser", "Ajouter"); poser.type = "submit"; poser.disabled = etat.saisie.trim() === "";
+      champ.oninput = () => { etat.saisie = champ.value; poser.disabled = champ.value.trim() === ""; };
+      ajout.onsubmit = (e) => {
+        e.preventDefault();
+        const libelle = etat.saisie.trim(); if (!libelle) return;
+        etat.travaux.push({ libelle, faite: false }); etat.saisie = ""; dessiner(true);
+      };
+      ajout.appendChild(champ); ajout.appendChild(poser); dedans.appendChild(ajout);
+      if (garderFocus) setTimeout(() => racine.querySelector(".ajout input").focus(), 0);
+    }
+
+    const ph = el("div", "photos", `<span class="etiquette">Photos</span>`);
+    ph.appendChild(bouton(PLUS, () => {}, "ajouter"));
+    dedans.appendChild(ph);
+    dedans.appendChild(bouton("Envoyer le retour du jour", () => { etat.ouvert = false; dessiner(); }, "vert"));
+    const p = el("div", "part sans-filet"); p.appendChild(b); f.appendChild(p);
+  }
+
+  depart(); dessiner();
+  return { recommencer() { depart(); dessiner(); racine.querySelector(".ecran").scrollTo({ top: 0 }); } };
+}
+
+const tels = [telephone(document.getElementById("tel-avant"), false), telephone(document.getElementById("tel-apres"), true)];
+document.getElementById("rejouer").onclick = () => tels.forEach((t) => t.recommencer());
+document.getElementById("nuit").onclick = () => { const on = document.body.classList.toggle("nuit"); document.getElementById("nuit").setAttribute("aria-pressed", String(on)); };
+</script>
+</body>
+</html>

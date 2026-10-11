@@ -1,16 +1,44 @@
 import { eq, sql } from "drizzle-orm";
+import type { AttestationLue } from "@/lib/attestation-lue";
 import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { entreprises, entrepriseCompteurs, users, membresEntreprise } from "../db/schema";
 import type { Ctx } from "./context";
+import { remettreLeModeleDans } from "./prestations-entretien";
 import { normaliserConditions, type ConditionsLues } from "@/lib/conditions-documents";
-import { refusDuMessage, MESSAGE_PAR_DEFAUT } from "@/lib/message-client";
-import { estLAllureParDefaut, normaliserAllure, type Allure } from "@/lib/allure-documents";
+import { TEXTE_ORIGINE_CONDITIONS_GENERALES } from "@/lib/conditions-generales";
+import {
+  refusDuMessage,
+  GENRES,
+  MESSAGES_PAR_DEFAUT,
+  type GenreDocument,
+} from "@/lib/message-client";
+import {
+  allureDepuisColonnes,
+  couleurNettoyee,
+  estLAllureParDefaut,
+  normaliserAllure,
+  type Allure,
+} from "@/lib/allure-documents";
 import { FORMATS_NUMERO } from "@/lib/numero-documents";
+import type { EtatDemi } from "@/lib/planning-jour";
 import { MAX_EQUIPES, MAX_SALARIES } from "@/lib/equipes";
+import { capitalEnBase } from "@/lib/mentions-legales";
 import { lireObjet } from "../storage";
-import type { LogoDocument } from "../pdf/document-commun";
+import type { AttestationDocument, LogoDocument } from "../pdf/document-commun";
 import { logger } from "../logger";
+
+/**
+ * Où chaque message s'écrit en base — une seule table de correspondance.
+ *
+ * Écrite ici plutôt que dans `src/lib/` : c'est un fait de la BASE, pas une
+ * règle métier. La bibliothèque du message ne doit rien savoir des colonnes.
+ */
+const COLONNE_DU_MESSAGE: Record<GenreDocument, string> = {
+  devis: "messageClient",
+  facture: "messageClientFacture",
+  passage: "messageClientPassage",
+};
 
 // Cas particulier : à la création, l'entreprise n'existe pas encore, donc
 // withEntreprise() (qui exige une adhésion préexistante) ne peut pas s'appliquer.
@@ -52,6 +80,12 @@ export async function creerEntreprise(
     // idempotent si la fonction était rappelée avec la même entreprise (ne devrait
     // pas arriver en usage normal, mais sans risque de double-provisioning).
     await tx.insert(entrepriseCompteurs).values({ entrepriseId: entreprise.id }).onConflictDoNothing();
+
+    // **Le modèle de fiche d'entretien est là d'office** — sa demande du
+    // 29 septembre 2026 : *« mon modèle doit déjà être là par défaut, et ils la
+    // modifieront s'ils le souhaitent »*. La même écriture que le bouton
+    // « Remettre le modèle Atlas », sur une fiche vide.
+    await remettreLeModeleDans(tx, entreprise.id);
 
     return { entreprise, utilisateurId };
   });
@@ -123,6 +157,7 @@ export async function mettreAJourEntreprise(
     periodiciteTva?: "mensuelle" | "trimestrielle";
     adresse?: string | null;
     siret?: string | null;
+    numeroRm?: string | null;
     telephone?: string | null;
     email?: string | null;
     iban?: string | null;
@@ -130,6 +165,44 @@ export async function mettreAJourEntreprise(
     regimeTva?: "assujettie" | "franchise";
     numeroTva?: string | null;
     titulaireCompte?: string | null;
+    /**
+     * Ce que le patron exige en fin de chantier — sa décision du 8 septembre
+     * 2026, *« ça sera au patron de décider »* (migration 0080).
+     *
+     * `retourPhotoExigee` n'a de sens que si `retourDemande` est vrai ; c'est
+     * l'action qui tient cette dépendance, pas cette signature — un appel qui
+     * poserait la seconde sans la première laisserait `ceQuiManque` sans rien
+     * à refuser.
+     */
+    retourDemande?: boolean;
+    retourPhotoExigee?: boolean;
+    /**
+     * Le capital social et le RCS (migration 0072) — n'ont de sens que pour
+     * une société (`formeADuCapital`), jamais pour une EI ou une
+     * micro-entreprise. Voir `src/lib/mentions-legales.ts`.
+     */
+    capitalSocial?: string | null;
+    villeRcs?: string | null;
+    /**
+     * La décennale et le médiateur (migration 0094) — saisis une fois, comme le
+     * SIRET. Ils remplissent les articles 9 et 11 des conditions générales et
+     * s'impriment en bas des documents (`src/lib/mentions-obligatoires.ts`).
+     */
+    assureurDecennale?: string | null;
+    /** Ses coordonnées (loi 96-603, art. 22-2), migration 0121. */
+    adresseAssureurDecennale?: string | null;
+    contratDecennale?: string | null;
+    couvertureDecennale?: string | null;
+    /**
+     * L'attestation déposée (C. ass. L243-2), migration 0121 : la clé et le
+     * format. `null` la retire des pièces SUIVANTES ; le fichier, lui, reste,
+     * parce que les pièces déjà parties le citent.
+     */
+    attestationDecennale?: { cle: string; mime: string; lue?: AttestationLue | null } | null;
+    mediateurNom?: string | null;
+    mediateurCoordonnees?: string | null;
+    /** Où — ou si — les trois mentions s'impriment. Par défaut « aucune ». */
+    mentionsLegalesPosition?: "sous_nom" | "bas";
     /**
      * Les conditions imprimées sur le devis (migration 0040).
      *
@@ -140,12 +213,16 @@ export async function mettreAJourEntreprise(
      */
     conditions?: ConditionsLues;
     /**
-     * Son message au client (migration 0062).
+     * SES messages au client — un par document (migrations 0062 puis 0075).
      *
      * **`null` REMET celui d'Atlas**, une chaîne vide aussi : c'est ainsi qu'il
      * revient au message d'origine sans avoir à le retaper de mémoire.
+     *
+     * **Un genre absent n'est pas touché.** L'écran n'envoie que ce qu'il a
+     * modifié : recevoir « les trois ou rien » ferait effacer deux messages
+     * pour en corriger un, depuis un écran resté ouvert.
      */
-    messageClient?: string | null;
+    messages?: Partial<Record<GenreDocument, string | null>>;
     /**
      * L'allure de ses documents (migration 0063).
      *
@@ -171,27 +248,56 @@ export async function mettreAJourEntreprise(
      * parti chez un client ne se réécrit pas.
      */
     formatNumero?: string | null;
+    /**
+     * Les couleurs du planning (migration 0113). **Un état absent n'est pas
+     * touché** ; `null` le rend à la couleur de l'apparence. Une valeur qui
+     * n'est pas une couleur ne rentre pas (`couleurNettoyee`).
+     */
+    couleursPlanning?: Partial<Record<EtatDemi, string | null>>;
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const valeurs: Record<string, unknown> & { updatedAt: Date } = { updatedAt: new Date() };
     if (data.nom !== undefined) valeurs.nom = data.nom;
     for (const champ of [
-      "adresse", "siret", "telephone", "email", "iban",
-      "formeJuridique", "numeroTva", "titulaireCompte",
+      "adresse", "siret", "numeroRm", "telephone", "email", "iban",
+      "formeJuridique", "numeroTva", "titulaireCompte", "villeRcs",
+      "assureurDecennale", "adresseAssureurDecennale", "contratDecennale", "couvertureDecennale",
+      "mediateurNom", "mediateurCoordonnees",
     ] as const) {
       // Une chaîne vide vaut « effacé », pas « inchangé » : le patron doit
       // pouvoir retirer un SIRET saisi de travers.
       if (data[champ] !== undefined) valeurs[champ] = data[champ]?.trim() || null;
     }
+    // **Le capital n'est pas un texte : un « 1 500 € » saisi de travers ne
+    // s'écrit pas en base**, sans quoi il romprait le calcul des mentions
+    // légales (`enEuros` sur du texte). Une saisie qu'on ne comprend pas
+    // laisse le capital tel qu'il était plutôt que d'écrire n'importe quoi —
+    // même règle que la périodicité de TVA plus bas.
+    if (data.capitalSocial !== undefined) {
+      const lu = capitalEnBase(data.capitalSocial);
+      if (lu !== undefined) valeurs.capitalSocial = lu;
+    }
     if (data.conditions !== undefined) {
+      // **Seules les clefs DITES s'écrivent** (`normaliserConditions`, 14
+      // septembre 2026) : un geste qui ne règle que l'acompte ne remet plus
+      // les six autres réglages — et ne vide plus ses conditions générales.
       const c = normaliserConditions(data.conditions);
-      valeurs.validiteDevisJours = c.validiteJours;
-      valeurs.acomptePourcent = c.acomptePourcent;
-      valeurs.delaiPaiementJours = c.delaiPaiementJours;
-      valeurs.moyensPaiement = c.moyensPaiement;
-      valeurs.rappelerPenalitesDevis = c.rappelerPenalites;
-      valeurs.textePiedDocuments = c.textePied;
+      if (c.validiteJours !== undefined) valeurs.validiteDevisJours = c.validiteJours;
+      if (c.acomptePourcent !== undefined) valeurs.acomptePourcent = c.acomptePourcent;
+      if (c.delaiPaiementJours !== undefined) valeurs.delaiPaiementJours = c.delaiPaiementJours;
+      if (c.moyensPaiement !== undefined) valeurs.moyensPaiement = c.moyensPaiement;
+      if (c.rappelerPenalites !== undefined) valeurs.rappelerPenalitesDevis = c.rappelerPenalites;
+      if (c.textePied !== undefined) valeurs.textePiedDocuments = c.textePied;
+      // **Le texte d'origine retapé à l'identique reste « celui d'Atlas »**,
+      // comme les messages plus bas : rangé en copie, il ne suivait plus les
+      // corrections du texte d'origine, et quatre clauses contraires au droit
+      // du particulier seraient restées sur ses devis (check-up du 4 octobre
+      // 2026, migration 0120).
+      if (c.conditionsGenerales !== undefined) {
+        valeurs.conditionsGenerales =
+          c.conditionsGenerales === TEXTE_ORIGINE_CONDITIONS_GENERALES ? null : c.conditionsGenerales;
+      }
     }
 
     // **Le message est REFUSÉ ici aussi, pas seulement à l'écran.** La même
@@ -199,16 +305,22 @@ export async function mettreAJourEntreprise(
     // accepterait ce que l'écran refuse laisserait passer un message sans lien
     // — par une adresse tapée à la main, ou par un écran resté ouvert depuis
     // une version d'avant. Un refus se garde au plus près de la base.
-    if (data.messageClient !== undefined) {
-      const texte = data.messageClient?.trim() ?? "";
+    // **TROIS MESSAGES DEPUIS LE 7 SEPTEMBRE 2026 (migration 0075), et la règle
+    // est la même pour les trois.** Une boucle plutôt que trois blocs recopiés :
+    // le jour où le refus changera, il changerait dans deux d'entre eux.
+    for (const genre of GENRES) {
+      const saisi = data.messages?.[genre];
+      if (saisi === undefined) continue;
+      const colonne = COLONNE_DU_MESSAGE[genre];
+      const texte = saisi?.trim() ?? "";
       // Vide = il revient au message d'Atlas. Ce n'est pas un refus : c'est le
       // seul moyen de retrouver l'original sans le retaper de mémoire.
       // **Le texte d'Atlas retapé à l'identique reste « celui d'Atlas ».** Sans
       // cette ligne, un aller-retour par « Remettre celui d'Atlas » figerait
       // l'entreprise sur la version du jour : une correction ultérieure ne
       // l'atteindrait plus, et personne ne s'en apercevrait.
-      if (texte === "" || texte === MESSAGE_PAR_DEFAUT.trim()) valeurs.messageClient = null;
-      else if (refusDuMessage(texte) === null) valeurs.messageClient = texte;
+      if (texte === "" || texte === MESSAGES_PAR_DEFAUT[genre].trim()) valeurs[colonne] = null;
+      else if (refusDuMessage(texte, genre) === null) valeurs[colonne] = texte;
       // Sinon : on n'écrit rien. Le réglage reste celui d'avant, et l'écran a
       // déjà dit pourquoi — lever ici rendrait un identifiant opaque au patron.
     }
@@ -229,6 +341,22 @@ export async function mettreAJourEntreprise(
       valeurs.docAccent = rienDeChoisi ? null : a.accent;
     }
 
+    if (data.couleursPlanning !== undefined) {
+      const colonnes: Record<EtatDemi, string> = {
+        libre: "planningRien",
+        dispo: "planningIncomplet",
+        plein: "planningComplet",
+        dela: "planningAuDela",
+      };
+      for (const [etat, couleur] of Object.entries(data.couleursPlanning) as [EtatDemi, string | null][]) {
+        if (couleur === null) valeurs[colonnes[etat]] = null;
+        else {
+          const propre = couleurNettoyee(couleur);
+          if (propre) valeurs[colonnes[etat]] = propre;
+        }
+      }
+    }
+
     if (data.formatNumero !== undefined) {
       // `null` remet le format par défaut ; une clef inconnue ne rentre pas.
       if (data.formatNumero === null) valeurs.formatNumero = null;
@@ -241,11 +369,21 @@ export async function mettreAJourEntreprise(
       valeurs.logoStorageKey = data.logo?.storageKey ?? null;
       valeurs.logoMime = data.logo?.mime ?? null;
     }
+    if (data.attestationDecennale !== undefined) {
+      valeurs.attestationDecennaleCle = data.attestationDecennale?.cle ?? null;
+      valeurs.attestationDecennaleMime = data.attestationDecennale?.mime ?? null;
+      // La lecture suit SON fichier : un dépôt neuf ou un retrait efface celle
+      // du fichier d'avant, qui ne dirait rien du nouveau (migration 0124).
+      valeurs.attestationDecennaleLue = data.attestationDecennale?.lue ?? null;
+    }
 
     // Le régime n'est PAS traité comme les autres : il n'a pas de « vide ». Une
     // entreprise est assujettie ou en franchise, jamais ni l'un ni l'autre — et
     // la base le refuserait (contrainte `entreprises_regime_tva_ck`).
     if (data.regimeTva !== undefined) valeurs.regimeTva = data.regimeTva;
+    if (data.mentionsLegalesPosition !== undefined) {
+      valeurs.mentionsLegalesPosition = data.mentionsLegalesPosition;
+    }
     if (data.nombreEquipes !== undefined) {
       valeurs.nombreEquipes = Math.min(MAX_EQUIPES, Math.max(1, Math.trunc(data.nombreEquipes)));
     }
@@ -301,20 +439,48 @@ export async function allureDesDocuments(
     .limit(1);
   if (!e) return { allure: null, logo: null };
 
-  // Rien de réglé : on rend `null` plutôt que le défaut, pour que la fabrique
-  // reprenne le chemin d'avant — celui qu'aucun contrôle d'apparence ne doit
-  // voir changer.
-  const allure =
-    !e.typographie && !e.fond && !e.accent
-      ? null
-      : normaliserAllure({
-          typographie: e.typographie ?? undefined,
-          fond: e.fond ?? undefined,
-          accent: e.accent ?? undefined,
-        });
-
-  return { allure, logo: await logoLu(e.logoStorageKey, e.logoMime) };
+  return { allure: allureLue(e), logo: await logoLu(e.logoStorageKey, e.logoMime) };
 }
+
+/**
+ * L'allure SANS le logo — pour la page web que le client ouvre.
+ *
+ * **Pourquoi une seconde porte plutôt que `allureDesDocuments`.** Celle-là va
+ * chercher le logo dans le stockage : un aller-retour réseau à chaque
+ * consultation, pour une image que la page n'affiche pas. Sur un téléphone au
+ * bord d'une route, cela se paie en secondes d'attente devant une facture.
+ *
+ * **La RÈGLE, elle, n'est pas dupliquée** : les deux passent par `allureLue`.
+ */
+export async function allureSeuleDesDocuments(
+  tx: { select: typeof db.select },
+  entrepriseId: string
+): Promise<Allure | null> {
+  const [e] = await tx
+    .select({
+      typographie: entreprises.docTypographie,
+      fond: entreprises.docFond,
+      accent: entreprises.docAccent,
+    })
+    .from(entreprises)
+    .where(eq(entreprises.id, entrepriseId))
+    .limit(1);
+  return e ? allureLue(e) : null;
+}
+
+/**
+ * Ce que les trois colonnes de l'ENTREPRISE valent, ou `null`.
+ *
+ * **Rien de réglé rend `null`, jamais le défaut.** La fabrique reprend alors le
+ * chemin d'avant — celui qu'aucun contrôle d'apparence ne doit voir changer, et
+ * c'est ce qui garantit que le réglage neuf ne repeint rien tant qu'il n'y a pas
+ * touché (`allure-documents.ts`, sa règle du 23 août 2026).
+ *
+ * **La lecture elle-même vit dans `src/lib`** : la facture porte les mêmes trois
+ * colonnes depuis la migration 0074, et deux lectures écrites séparément
+ * auraient fini par ne plus filtrer pareil.
+ */
+const allureLue = allureDepuisColonnes;
 
 /**
  * Le logo lu dans le stockage — ou `null`, quoi qu'il arrive.
@@ -344,6 +510,30 @@ export async function formatNumeroDe(
     .where(eq(entreprises.id, entrepriseId))
     .limit(1);
   return e?.format ?? null;
+}
+
+/**
+ * L'attestation figée sur une pièce, lue pour être jointe à son PDF.
+ *
+ * **Une attestation illisible ARRÊTE la pièce, à l'inverse du logo.** Un devis
+ * sans logo reste en règle ; un devis sans l'attestation qu'il annonce part
+ * sans une pièce que la loi exige (C. ass. L243-2), et personne ne le verrait.
+ * Le défaut se dit donc, et se journalise, au lieu de se taire.
+ */
+export async function attestationLue(
+  cle: string | null,
+  mime: string | null
+): Promise<AttestationDocument | null> {
+  if (!cle || !mime) return null;
+  try {
+    return { octets: await lireObjet(cle), mime };
+  } catch (err) {
+    logger.error("Attestation décennale illisible : la pièce n'est pas composée", {
+      cle,
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    throw new Error("Votre attestation d'assurance est illisible. Déposez-la de nouveau dans Mon entreprise.");
+  }
 }
 
 async function logoLu(

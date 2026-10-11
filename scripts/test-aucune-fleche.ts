@@ -22,6 +22,9 @@
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
+// La lecture qui ignore les commentaires est la MÊME que celle du contrôle des
+// points du milieu de phrase : deux copies auraient divergé (`CLAUDE.md` §3).
+import { sansCommentaires } from "./_sans-commentaires";
 
 const RACINE = path.join(__dirname, "..", "src");
 
@@ -69,12 +72,6 @@ const AUTORISEES: { fichier: string; motif: RegExp; pourquoi: string }[] = [
     pourquoi: "feuilleter les années du calendrier de TVA",
   },
   {
-    fichier: "src/app/termines/tva/page.tsx",
-    motif: /libellePeriode\((precedent|suivant)\)/,
-    pourquoi:
-      "période précédente et suivante, à sa demande du 12 août 2026 : « le calendrier se glisse ENTRE les deux flèches »",
-  },
-  {
     fichier: "src/components/atlas/MoisCharge.tsx",
     motif: /← Aujourd/,
     pourquoi: "revenir au mois courant — la flèche EST le retour, elle ne suit pas un libellé",
@@ -90,6 +87,27 @@ const AUTORISEES: { fichier: string; motif: RegExp; pourquoi: string }[] = [
     motif: /detail:/,
     pourquoi: "« 250 € → 350 € » : la flèche dit avant/après, elle ne décore pas",
   },
+  {
+    fichier: "src/app/EcranChantiers.tsx",
+    motif: /^\s*›\s*$/,
+    pourquoi:
+      "« Vos clients › » — sa demande du 6 septembre 2026 : « il faut rajouter un " +
+      "chevron pour qu'on sache qu'on puisse cliquer dessus ». C'est le seul mot de " +
+      "cet en-tête qui mène ailleurs, et rien d'autre ne le dit : le titre au-dessus " +
+      "et le compteur en dessous ne s'appuient pas. " +
+      "IL EXISTAIT DÉJÀ, DESSINÉ EN CSS — un carré tourné à 45° que ce contrôle ne " +
+      "pouvait pas voir, puisqu'il cherche des caractères. Une exception invisible " +
+      "n'est pas une exception, c'est un trou : il s'écrit désormais en toutes " +
+      "lettres, et il se déclare ici",
+  },
+  {
+    fichier: "src/app/clients/page.tsx",
+    motif: /^\s*›\s*$/,
+    pourquoi:
+      "« Vos entreprises › » — sa consigne du 4 octobre 2026, « rajoute juste une " +
+      "porte pour aller sur l'entreprise ». La porte reprend trait pour trait celle " +
+      "de « Vos clients › » : le seul mot de l'en-tête qui mène ailleurs",
+  },
 ];
 
 /** Les fichiers qui ne s'affichent jamais : consignes envoyées à l'IA, journal du serveur. */
@@ -98,40 +116,6 @@ const HORS_ECRAN = [
   "src/lib/consigne-metier.ts",
   "src/server/db/seed.ts",
 ];
-
-/**
- * Retire les commentaires, y compris ceux de JSX (`{/* … *\/}`).
- *
- * Sans cela, le contrôle rougirait sur les explications de ce dépôt —
- * qui citent les libellés fléchés d'hier pour dire pourquoi ils sont
- * partis. Un contrôle qui interdit d'expliquer se fait contourner.
- */
-function sansCommentaires(source: string): string[] {
-  const lignes = source.split("\n");
-  let dansBloc = false;
-  return lignes.map((ligne) => {
-    let sortie = "";
-    let i = 0;
-    while (i < ligne.length) {
-      if (dansBloc) {
-        const fin = ligne.indexOf("*/", i);
-        if (fin === -1) return sortie;
-        dansBloc = false;
-        i = fin + 2;
-        continue;
-      }
-      if (ligne.startsWith("//", i)) return sortie;
-      if (ligne.startsWith("/*", i)) {
-        dansBloc = true;
-        i += 2;
-        continue;
-      }
-      sortie += ligne[i];
-      i++;
-    }
-    return sortie;
-  });
-}
 
 function fichiers(dossier: string): string[] {
   return readdirSync(dossier).flatMap((nom) => {

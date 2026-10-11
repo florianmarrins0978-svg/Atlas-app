@@ -3,6 +3,17 @@ import { spawn, execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { exigerLesOutils, exigerUnSystemePosix } from "./_outil-requis";
+
+// **Sans ces outils, cette suite ne mesure RIEN** — elle le dit et sort du
+// compte, au lieu de rougir sur une machine qui n'y est pour rien
+// (`_outil-requis.ts`, sa colère du 20 septembre 2026).
+exigerLesOutils("bash", "sleep");
+// Et sans groupes de processus, le veilleur d'essai ne peut pas être arrêté :
+// la suite rougirait sur son troisième contrôle et laisserait un orphelin
+// publier dans un dossier temporaire toutes les deux secondes (20 septembre
+// 2026, sur son PC).
+exigerUnSystemePosix("groupes de processus");
 
 // **La fiche se figeait à l'instant précis où elle devenait utile.**
 //
@@ -75,6 +86,22 @@ const veilleur = spawn("bash", [VEILLEUR, dossier], {
     PORT: "59999",
     JOURNAL: path.join(dossier, "journal.log"),
     ATLAS_INTERVALLE_RAPPORT: "2",
+    // ═══════════════════════════════════════════════════════════════════════
+    // **UN MOTIF QUI NE PEUT DÉSIGNER QUE CE MONTAGE — 31 août 2026.**
+    //
+    // Le veilleur cherche « un serveur Next » avec `pgrep -f`, qui regarde
+    // TOUTE la machine. Le serveur de la batterie répond au motif par défaut,
+    // à quelques centimètres d'ici : le veilleur d'essai concluait alors « un
+    // serveur tient le port sans répondre » au lieu de « plus rien n'écoute »,
+    // cette suite rougissait sur un montage sain — et deux tours plus tard il
+    // faisait `pkill` sur ce motif, **tuant le serveur de la batterie**. Des
+    // suites navigateur tombaient ailleurs, sur des « waitForURL » qui
+    // n'accusaient personne.
+    //
+    // Un contrôle ne doit ni accuser à tort, ni abîmer la course dont il fait
+    // partie. Le motif est donc unique à ce processus.
+    // ═══════════════════════════════════════════════════════════════════════
+    ATLAS_MOTIF_SERVEUR: `[a]ucun-serveur-de-cet-essai-${process.pid}`,
   },
   detached: true,
   stdio: "ignore",

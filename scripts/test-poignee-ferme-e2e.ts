@@ -34,8 +34,9 @@
 
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
+import { ADRESSE } from "./_adresse";
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 /** Ce qu'un doigt atteint sans viser : la recommandation d'Apple comme d'Android. */
 const DOIGT_MINIMUM_PX = 24;

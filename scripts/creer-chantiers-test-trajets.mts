@@ -217,7 +217,7 @@ async function main() {
   const departNom = CHANTIERS[0].nom;
   const jourDepart = prochainJourOuvrable(maintenant);
   await planifierChantier({ utilisateurId, entrepriseId: entreprise.id }, idParNom[departNom], jourDepart, {
-    quand: "matin",
+    demi: "matin",
   });
 
   const jourLisible = new Date(`${jourDepart}T12:00:00Z`).toLocaleDateString("fr-FR", {

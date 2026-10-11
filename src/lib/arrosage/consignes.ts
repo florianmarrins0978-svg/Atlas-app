@@ -68,6 +68,8 @@ export type ParametresPlan = {
   pression: number;
   compteur: string;
   regardVersZone: number;
+  /** Du piquage à la nourrice, en mètres — calculée sur le croquis ; zéro si elle n'a pas pu l'être. */
+  amenee: number;
   zones: ZoneParametre[];
   marque?: string;
   corps?: string;

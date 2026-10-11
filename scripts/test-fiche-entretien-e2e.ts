@@ -3,6 +3,7 @@ import { mkdirSync } from "node:fs";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { MODELE_FOURNI } from "../src/lib/prestations-entretien";
+import { ADRESSE } from "./_adresse";
 
 // L'écran où la fiche se compose — Paysage → Fiche de chantier → Composer ma fiche.
 //
@@ -27,7 +28,7 @@ import { MODELE_FOURNI } from "../src/lib/prestations-entretien";
 //      renommer, et « enlever » n'existait pas.
 
 const CAPTURES = process.env.CAPTURES_E2E ?? "/tmp/captures-atlas";
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let echecs = 0;
 async function cas(nom: string, verifier: () => Promise<void>) {
@@ -83,21 +84,17 @@ async function main() {
     await page.goto(`${BASE}/paysage/fiche/composer`, { waitUntil: "networkidle" });
   });
 
-  await cas("une fiche vide PROPOSE le modèle, elle ne le pose pas", async () => {
-    // Attendre l'écran lui-même : lire le corps à l'instant où l'adresse
-    // change rendrait le contenu de la page PRÉCÉDENTE, et le contrôle
-    // accuserait un écran qu'il n'a pas encore vu.
-    await page.getByRole("button", { name: /Partir du modèle Atlas/ }).waitFor({ timeout: 20_000 });
-    const corps = await page.locator("body").innerText();
-    assert.match(corps, /vide/i, "l'écran ne dit pas que la fiche est vide");
-    // Le contenu du modèle est montré AVANT d'appuyer : il choisit en sachant.
-    assert.match(corps, /Tonte et ébarbage/, "le contenu du modèle n'est pas montré");
+  // **LE MODÈLE EST LÀ D'OFFICE, ET UNE TOUCHE LE REMET** — ses demandes du
+  // 29 septembre 2026, et sa réponse « B » : ce qui manque revient, ses lignes
+  // restent. La fiche vidée par le décor est celle d'un patron qui a tout retiré.
+  await cas("une fiche vidée ne se remplit pas en l'ouvrant, et montre « Remettre le modèle Atlas »", async () => {
+    await page.getByRole("button", { name: "Remettre le modèle Atlas" }).waitFor({ timeout: 20_000 });
     const { rows } = await pool.query(`select count(*)::int as n from prestations_entretien`);
     assert.equal(rows[0].n, 0, "des prestations ont été écrites par le simple fait d'ouvrir l'écran");
   });
 
-  await cas("« Partir du modèle Atlas » pose les prestations, une fois", async () => {
-    await page.getByRole("button", { name: /Partir du modèle Atlas/ }).click();
+  await cas("« Remettre le modèle Atlas » pose le modèle, et le bouton s'efface", async () => {
+    await page.getByRole("button", { name: "Remettre le modèle Atlas" }).click();
     await page.waitForSelector("[data-prestation]", { timeout: 30_000 });
     const combien = await page.locator("[data-prestation]").count();
     assert.equal(
@@ -105,11 +102,76 @@ async function main() {
       MODELE_FOURNI.length,
       `${combien} prestations à l'écran, ${MODELE_FOURNI.length} attendues`
     );
-    // Les familles sont là, dans l'ordre du métier — pas dans l'alphabet.
+    // Les familles sont là, dans l'ordre du métier, pas dans l'alphabet.
     const familles = await page.locator("[data-famille]").evaluateAll((n) =>
       n.map((e) => (e as HTMLInputElement).value)
     );
     assert.deepEqual(familles, ["Pelouse", "Tailles", "Massifs", "Propreté"]);
+    assert.equal(await page.locator('[data-atlas="remettre-modele"]').count(), 0, "le bouton reste alors que rien ne manque");
+  });
+
+  await cas("B : une ligne retirée revient, et « Annuler » la reprend", async () => {
+    const lignes = async () =>
+      (await pool.query<{ libelle: string }>(`select libelle from prestations_entretien order by ordre`)).rows.map(
+        (r) => r.libelle
+      );
+    // **Le bandeau du cas précédent doit être parti — 6 octobre 2026.** Il
+    // reste six secondes ; encore là, il répondait à l'attente ci-dessous
+    // avant que CETTE remise ait eu lieu, et « Annuler » défaisait la remise
+    // d'avant : deux lignes de Pelouse effacées, « Cette prestation n'existe
+    // plus », et les deux cas suivants rouges en cascade. Vu rouge sur `main`
+    // seul, deux passages sur trois.
+    await page.locator('[data-atlas="modele-remis"]').waitFor({ state: "detached", timeout: 20_000 });
+    await page.getByRole("button", { name: "Retirer Scarification" }).click();
+    // **Un seul appui, sans réessai — 4 octobre 2026.** Le bouton disparaît
+    // dès que la fiche est complète, c'est-à-dire en réponse à CET appui.
+    // `click()` le croyait alors détaché avant d'avoir cliqué, et réessayait
+    // quarante-cinq secondes sur un bouton parti : la suite rougissait une fois
+    // sur deux, alors que la remise avait eu lieu.
+    await page.locator('[data-atlas="remettre-modele"]').dispatchEvent("click");
+    await page.locator('[data-atlas="modele-remis"]').waitFor({ timeout: 20_000 });
+    let apres = await lignes();
+    assert.equal(apres.filter((l) => l === "Scarification").length, 1, "la ligne retirée n'est pas revenue une fois");
+    assert.equal(apres.length, MODELE_FOURNI.length);
+
+    await page.getByRole("button", { name: "Annuler la remise du modèle" }).click();
+    for (const essai of [1, 2, 3, 4, 5]) {
+      apres = await lignes();
+      if (!apres.includes("Scarification")) break;
+      await page.waitForTimeout(essai * 400);
+    }
+    assert.ok(!apres.includes("Scarification"), "« Annuler » n'a pas repris la ligne remise");
+    // Et on remet la fiche entière pour les cas qui suivent.
+    await page.locator('[data-atlas="remettre-modele"]').dispatchEvent("click");
+    await page.waitForFunction(() => !document.querySelector('[data-atlas="remettre-modele"]'), null, { timeout: 20_000 });
+  });
+
+  // **UN RETRAIT SUIVI AUSSITÔT DE « REMETTRE » S'ÉCRIT D'ABORD — 4 octobre
+  // 2026.** Trouvé par la batterie commune : ce contrôle-ci rougissait une fois
+  // sur deux. `fermer()` lisait les retraits en attente dans une copie que
+  // l'écran ne mettait à jour qu'APRÈS son rendu ; touché dans la foulée,
+  // « Remettre » ne voyait donc aucun retrait, le serveur trouvait la fiche
+  // complète, et le retrait partait six secondes plus tard : la ligne que le
+  // bouton promettait de remettre était effacée. Les deux appuis se jouent ici
+  // dans le même instant, pour que la course ne dépende plus de la machine.
+  await cas("un retrait aussitôt suivi de « Remettre » est écrit AVANT, et la ligne revient", async () => {
+    await pool.query(`delete from prestations_entretien where libelle = 'Engrais'`);
+    await page.reload({ waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "Remettre le modèle Atlas" }).waitFor({ timeout: 20_000 });
+    // En chaîne, pas en fonction : `tsx` renomme les fonctions (`__name`), et
+    // le helper n'existe pas dans la page (`e2e-browser.ts`).
+    await page.evaluate(`
+      document.querySelector('button[aria-label="Retirer Scarification"]').click();
+      document.querySelector('[data-atlas="remettre-modele"]').click();
+    `);
+    await page.locator('[data-atlas="modele-remis"]').waitFor({ timeout: 20_000 });
+    // Au-delà du délai du tiroir : un retrait oublié se serait écrit entre-temps.
+    await page.waitForTimeout(7_000);
+    const { rows } = await pool.query<{ libelle: string }>(`select libelle from prestations_entretien`);
+    const libelles = rows.map((r) => r.libelle);
+    assert.ok(libelles.includes("Scarification"), "« Remettre » a été suivi de l'effacement de la ligne qu'il remettait");
+    assert.ok(libelles.includes("Engrais"), "la ligne manquante n'a pas été remise");
+    assert.equal(libelles.length, MODELE_FOURNI.length);
   });
 
   // **SA PLACE EST SOUS LE TITRE, EN PREMIER** — sa décision du 26 août 2026 :
@@ -120,18 +182,34 @@ async function main() {
   // ce que son œil voit, et une mise en page peut réordonner ce que le HTML
   // empile. Il refuse de conclure sur une boîte de zéro pixel (`CLAUDE.md` §5,
   // le contrôle qui mesure zéro ne mesure rien).
-  await cas("la rubrique est SOUS LE TITRE, avant le jour du passage", async () => {
+  await cas("la rubrique est SOUS LE TITRE, avant le bouton qui crée la fiche", async () => {
     await page.goto(`${BASE}/paysage/fiche`, { waitUntil: "networkidle" });
-    const rubrique = page.locator('a[href="/paysage/fiche/composer"]').first();
+    // **SON REPÈRE, PAS SON ADRESSE — 14 septembre 2026.**
+    //
+    // `a[href="/paysage/fiche/composer"]` attrapait la FLÈCHE DE RETOUR : elle
+    // mène là où l'on vient, et l'on vient du composeur (le cas d'avant y pose
+    // le modèle). Depuis que la flèche lit le journal de navigation
+    // (9 septembre), cette adresse n'appartient plus à la carte. Le contrôle
+    // mesurait donc un rond de 40 px et accusait la carte de ne pas tenir sous
+    // le pouce — alors qu'elle porte `min-h-[44px]` et les tient.
+    const rubrique = page.locator('[data-atlas="carte-composer-ma-fiche"]');
     await rubrique.waitFor({ timeout: 20_000 });
 
     const boite = await rubrique.boundingBox();
-    const jour = await page.getByText("Jour du passage").first().boundingBox();
+    // **Le jour du passage n'est plus sur cette liste** — il se choisit dans
+    // la fiche depuis le 24 septembre 2026 (`OuvrirFiche`). Ce qui suit la
+    // rubrique est désormais le bouton (`CLAUDE.md` §5 bis).
+    const bouton = await page.locator('[data-atlas="ouvrir-fiche-chantier"]').boundingBox();
     assert.ok(boite && boite.height > 0, "la rubrique ne se mesure pas : rien n'est prouvé");
-    assert.ok(jour && jour.height > 0, "« Jour du passage » ne se mesure pas : rien n'est prouvé");
+    assert.ok(bouton && bouton.height > 0, "le bouton « Créer une fiche » ne se mesure pas : rien n'est prouvé");
     assert.ok(
-      boite!.y < jour!.y,
-      `la rubrique est passée SOUS le jour du passage (${Math.round(boite!.y)} px contre ${Math.round(jour!.y)} px) — il l'a demandée en premier`
+      boite!.y < bouton!.y,
+      `la rubrique est passée SOUS le bouton (${Math.round(boite!.y)} px contre ${Math.round(bouton!.y)} px) — il l'a demandée en premier`
+    );
+    assert.equal(
+      await page.locator('[data-atlas="jour-du-passage"]').count(),
+      0,
+      "le jour de la fiche est revenu sur la liste, au-dessus du filtre des rapports"
     );
 
     // Le titre doré, ses mots à lui.
@@ -147,14 +225,21 @@ async function main() {
     mkdirSync(CAPTURES, { recursive: true });
     await page.screenshot({ path: `${CAPTURES}/fiche-chantier-rubrique-en-tete.png` });
 
-    // On revient d'où l'on vient : les cas suivants composent la fiche, et
-    // laisser la suite sur un autre écran les ferait tous rougir à la file —
-    // sept faux coupables pour un seul oubli de navigation.
-    await page.goto(`${BASE}/paysage/fiche/composer`, { waitUntil: "networkidle" });
-    await page.waitForSelector("[data-prestation]", { timeout: 30_000 });
   });
 
+  // **CHAQUE CAS OUVRE L'ÉCRAN DONT IL A BESOIN, et c'est payé.** Ce retour au
+  // composeur vivait à la FIN du cas précédent — donc après ses assertions.
+  // L'une d'elles est tombée, et les sept cas suivants ont rougi sur un écran
+  // où ils n'avaient rien à chercher : sept faux coupables, exactement ce que
+  // le commentaire d'alors disait vouloir éviter. Un montage ne se place pas
+  // derrière une assertion qui peut ne jamais l'atteindre.
+  async function ouvrirLeComposeur() {
+    await page.goto(`${BASE}/paysage/fiche/composer`, { waitUntil: "networkidle" });
+    await page.waitForSelector("[data-prestation]", { timeout: 30_000 });
+  }
+
   await cas("LE RETRAIT SE DÉFAIT — et rien n'est écrit tant qu'on peut annuler", async () => {
+    await ouvrirLeComposeur();
     // **Le point le plus coûteux de cet écran.** Une croix nue sur une liste
     // composée à la main est le geste qu'il regretterait le plus.
     const avant = await page.locator("[data-prestation]").count();

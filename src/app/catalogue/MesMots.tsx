@@ -149,7 +149,14 @@ export default function MesMots({
                     </button>
                   </span>
                 ))}
-                {carte.mesMots.length > 0 && <span style={{ color: colors.or }}> · vous</span>}
+                {carte.mesMots.length > 0 && (
+                  /* Le repère porte la marque : le mot « vôtres » se lit
+                     ailleurs dans l'écran, et une suite qui le chercherait
+                     dans la page entière rendrait un vert qui ne prouve rien. */
+                  <span data-atlas="mes-mots-marque" style={{ color: colors.or }}>
+                    , dont les vôtres
+                  </span>
+                )}
               </p>
             )}
 
@@ -177,8 +184,8 @@ export default function MesMots({
                   type="button"
                   onClick={() => poserLeMot(carte)}
                   disabled={enCours}
-                  className="rounded-full px-[15px] py-[8px] text-[13.5px]"
-                  style={{ backgroundColor: colors.rust, color: colors.card }}
+                  className="atlas-plein rounded-full px-[15px] py-[8px] text-[13.5px]"
+                  style={{ backgroundColor: colors.plein, color: colors.card }}
                 >
                   Ajouter
                 </button>
@@ -233,8 +240,8 @@ export default function MesMots({
               type="button"
               onClick={creer}
               disabled={enCours}
-              className="rounded-full px-[15px] py-[8px] text-[13.5px]"
-              style={{ backgroundColor: colors.rust, color: colors.card }}
+              className="atlas-plein rounded-full px-[15px] py-[8px] text-[13.5px]"
+              style={{ backgroundColor: colors.plein, color: colors.card }}
             >
               Créer
             </button>

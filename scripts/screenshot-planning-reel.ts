@@ -16,9 +16,9 @@ async function main() {
 
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Chantier capture planning ${Date.now()}`);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
-  const chantierId = page.url().split("/").pop()!;
+  const chantierId = idChantier;
 
   const client = await pool.connect();
   try {

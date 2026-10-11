@@ -123,7 +123,11 @@ for (const [nom, options] of CAS) {
   const chemin = path.join(SORTIE, `devis-${nom}.pdf`);
   writeFileSync(chemin, pdf);
   await page.goto("file://" + chemin);
-  await page.waitForTimeout(1500);
+  // **Quatre secondes, et non une et demie.** Le 31 août 2026, le cas le plus
+  // lourd — police sur mesure, logo, fond sombre — sortait une capture VIDE :
+  // le lecteur n'avait pas fini de peindre. Une capture vide se lit comme un
+  // document cassé, et fait chercher un défaut qui n'existe pas.
+  await page.waitForTimeout(4000);
   await page.screenshot({ path: path.join(SORTIE, `devis-${nom}.png`) });
   console.log(`${nom.padEnd(22)} ${String(Math.round(pdf.length / 1024)).padStart(4)} ko`);
 }
@@ -135,7 +139,7 @@ for (const typo of TYPOGRAPHIES) {
   const chemin = path.join(SORTIE, `devis-${typo.clef}.pdf`);
   writeFileSync(chemin, pdf);
   await page.goto("file://" + chemin);
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(4000);
   await page.screenshot({ path: path.join(SORTIE, `devis-${typo.clef}.png`) });
   console.log(`${typo.nom.padEnd(22)} ${String(Math.round(pdf.length / 1024)).padStart(4)} ko`);
 }

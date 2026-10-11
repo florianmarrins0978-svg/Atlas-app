@@ -75,3 +75,40 @@ export function issueApresMiseAJour(etat: EtatApresMiseAJour): IssueMiseAJour {
       `injoignable une ou deux minutes, puis reviendra d'elle-même avec le code neuf.`,
   };
 }
+
+/**
+ * Ce que `appliquer-migrations.sh` vient de répondre, lu une seule fois.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **La panne du 13 septembre 2026.** « Planning » et « Terminés » tombés
+ * ensemble, « Chantiers » debout. Les deux premiers lisent l'entreprise
+ * ENTIÈRE (`getEntreprise`) : une seule colonne ajoutée par une migration
+ * jamais appliquée suffit à ce partage exact. Sa base était restée en arrière
+ * du code qu'il servait.
+ *
+ * Le rattrapage se joue désormais à CHAQUE allumage et à chaque appui sur
+ * « Chercher les dernières corrections », y compris quand le code, lui, n'a pas
+ * bougé — c'était le trou : les migrations ne tournaient que le jour où le code
+ * avançait, donc un échec ne se retentait jamais.
+ *
+ * **D'où cette lecture.** Une fois le rattrapage systématique, le cas courant
+ * est « rien à faire » : il faut distinguer une base déjà à niveau d'une base
+ * qui vient d'être remise d'aplomb — c'est précisément ce qu'il a besoin de
+ * lire devant un écran tombé.
+ *
+ * Ici plutôt que dans l'action serveur : une règle qui décide de ce qu'on lui
+ * annonce s'éprouve sans base, sans serveur et sans banc (`CLAUDE.md` §3).
+ */
+export type IssueMigrations =
+  | { faites: true; rattrapees: number }
+  | { faites: false; raison: string };
+
+export function lireIssueMigrations(ligne: string): IssueMigrations {
+  const dite = ligne.trim();
+  if (dite.startsWith("échec")) {
+    return { faites: false, raison: dite.replace(/^échec\s*:?\s*/, "") || "la base n'a pas répondu" };
+  }
+  // « faites : 3 migration(s) rattrapée(s) ». Absent ou nul : rien à rattraper.
+  const compte = /(\d+)\s+migration/.exec(dite);
+  return { faites: true, rattrapees: compte ? Number(compte[1]) : 0 };
+}

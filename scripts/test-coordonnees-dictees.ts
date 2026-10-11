@@ -3,7 +3,9 @@ import {
   lireCoordonneesEvidentes,
   nettoyerChamp,
   assemblerCoordonnees,
+  champsARemplir,
   coordonneesVides,
+  recollerCodePostal,
 } from "../src/lib/coordonnees-dictees";
 
 // **Remplir la fiche du client à la voix, sans jamais rien inventer.**
@@ -111,7 +113,11 @@ cas("un numéro approché par le modèle ne remplace pas celui qui a été dict�
     adresse: "12 rue des Lilas",
   });
   assert.equal(r.telephone, "0652889751", "Le numéro du modèle a écrasé celui qui était écrit noir sur blanc.");
-  assert.equal(r.nom, "Monsieur Martin");
+  // **Le nom ne porte plus « Monsieur » depuis le 7 septembre 2026** : le mot
+  // est parti sur la pastille. Le contrôle a été adapté plutôt que la règle
+  // remise (`CLAUDE.md` §5 bis) — c'est le patron qui a demandé le retrait.
+  assert.equal(r.nom, "Martin");
+  assert.equal(r.civilite, "mr");
   assert.equal(r.adresse, "12 rue des Lilas");
 });
 
@@ -122,7 +128,8 @@ cas("le modèle complète ce que la forme ne sait pas voir", () => {
     telephone: "inconnu",
     email: "non précisé",
   });
-  assert.equal(r.nom, "Madame Aubry");
+  assert.equal(r.nom, "Aubry");
+  assert.equal(r.civilite, "mme");
   assert.equal(r.adresse, "2 route de Vertou");
   assert.equal(r.telephone, null, "« inconnu » est devenu un numéro de téléphone.");
   assert.equal(r.email, null);
@@ -252,6 +259,267 @@ cas("ce qui marchait déjà marche encore", () => {
   );
   assert.equal(lireCoordonneesEvidentes("contact arobase eden-nature point fr").email, "contact@eden-nature.fr");
   assert.equal(lireCoordonneesEvidentes("mail : paul.durand@wanadoo.fr").email, "paul.durand@wanadoo.fr");
+});
+
+
+console.log("\n=== SA DICTÉE DU 7 SEPTEMBRE 2026 — l'arobase et les chiffres ===");
+
+// **Sa plainte :** *« Souvent l'arobase, elle ne le comprend pas donc ne
+// l'écrit pas ! C'est très embêtant, l'utilisateur va vite se lasser si ça ne
+// fonctionne pas bien. »*
+//
+// **Ce que la mesure a montré, et c'est pire.** Sur sa phrase exacte, la
+// version d'avant rendait `huit@laposte.net` : le prénom avalé en silence, et
+// une adresse qui a l'air juste. Un champ vide se voit et se corrige ; une
+// adresse fausse et vraisemblable part avec le devis.
+cas("SON cas : les chiffres dictés ne coupent plus l'adresse en deux", () => {
+  assert.equal(
+    lireCoordonneesEvidentes("son mail c'est florian point martin zero neuf sept huit arobase laposte point net").email,
+    "florian.martin0978@laposte.net"
+  );
+});
+
+// L'autre moitié de sa plainte : quand le signe n'est pas reconnu, il n'y a
+// plus d'adresse DU TOUT — et le modèle en invente une à la place.
+cas("l'arobase s'écrit de plusieurs façons, et toutes comptent", () => {
+  for (const dit of ["arobase", "arobas", "arrobase", "arrobas", "at"]) {
+    assert.equal(
+      lireCoordonneesEvidentes(`florian point martin ${dit} gmail point com`).email,
+      "florian.martin@gmail.com",
+      `« ${dit} » n'a pas été reconnu comme une arobase`
+    );
+  }
+});
+
+// La transcription coupe aussi le DOMAINE : « la poste » en deux mots.
+cas("un domaine coupé en deux se recolle", () => {
+  assert.equal(
+    lireCoordonneesEvidentes("mon mail florian point martin arobase la poste point net").email,
+    "florian.martin@laposte.net"
+  );
+});
+
+// Une phrase se termine, et le point final collait à « net ».
+cas("le point n'a plus besoin d'un espace de chaque côté", () => {
+  assert.equal(
+    lireCoordonneesEvidentes("son mail est florian arobase gmail point com.").email,
+    "florian@gmail.com"
+  );
+});
+
+console.log("\n=== Les bornes du recollage — ne JAMAIS fabriquer une adresse ===");
+
+// **Le correctif ne doit pas créer le défaut qu'il répare.** Recoller sans
+// borne produit une adresse fausse et vraisemblable, exactement comme avant.
+// Ces quatre cas-là sont ceux qui l'ont attrapé pendant l'écriture.
+cas("un nom propre qui précède n'est pas recollé", () => {
+  assert.equal(
+    lireCoordonneesEvidentes("Ludovic florian point martin arobase gmail point com").email,
+    "florian.martin@gmail.com"
+  );
+});
+
+cas("un mot français qui précède n'est pas recollé", () => {
+  assert.equal(
+    lireCoordonneesEvidentes("son mail florian arobase gmail point com").email,
+    "florian@gmail.com"
+  );
+});
+
+cas("ce qui SUIT une adresse complète n'est pas recollé", () => {
+  assert.equal(
+    lireCoordonneesEvidentes("mon mail c'est florian arobase gmail point com merci").email,
+    "florian@gmail.com"
+  );
+});
+
+// Celui-ci a été attrapé par la suite EXISTANTE, pas par moi : une fois les
+// chiffres convertis, un numéro de téléphone a exactement la forme d'un
+// morceau d'adresse.
+cas("un numéro de téléphone n'est jamais un morceau d'adresse", () => {
+  const r = lireCoordonneesEvidentes("06 52 88 97 51 martin arobase exemple point fr");
+  assert.equal(r.email, "martin@exemple.fr");
+  assert.equal(r.telephone, "0652889751");
+});
+
+// **Le contrôle sait échouer.** Sans adresse dictée, on ne fabrique rien —
+// c'est ce refus qui rend les cas ci-dessus croyables.
+cas("une phrase sans adresse n'en produit aucune", () => {
+  assert.equal(
+    lireCoordonneesEvidentes("le chantier est au 10 rue des marguerites, rappelle-le demain").email,
+    null
+  );
+});
+
+console.log("\n=== SA SECONDE CAPTURE, 16 h 20 — le modèle écrit un tiret à la place du @ ===");
+
+// Il avait dicté `flo-speed@hotmail.fr` ; la fiche portait
+// **`flo-speed-hotmail.fr`**. Deux défauts en un, et il faut les deux
+// correctifs : la forme n'était pas reconnue, donc le modèle avait la main,
+// et ce qu'il a rendu n'était même pas une adresse.
+cas("SON cas : le tiret et l'arobase dans la même adresse", () => {
+  assert.equal(
+    lireCoordonneesEvidentes("son mail c'est flo tiret speed arobase hotmail point fr").email,
+    "flo-speed@hotmail.fr"
+  );
+});
+
+// **La seconde ligne de défense.** Quand la forme ne trouve rien, ce que le
+// modèle propose n'entre que s'il a la forme d'une adresse. Un champ vide se
+// voit et se corrige ; `flo-speed-hotmail.fr` part avec le devis.
+cas("un e-mail du modèle sans arobase est REFUSÉ, pas recopié", () => {
+  const c = assemblerCoordonnees("aucune adresse dite ici", {
+    email: "flo-speed-hotmail.fr",
+  });
+  assert.equal(c.email, null);
+});
+
+cas("un e-mail du modèle BIEN formé passe toujours", () => {
+  const c = assemblerCoordonnees("aucune adresse dite ici", {
+    email: "Flo-Speed@Hotmail.fr",
+  });
+  assert.equal(c.email, "flo-speed@hotmail.fr");
+});
+
+// **Une adresse e-mail ne comporte AUCUN espace, jamais — sa règle du
+// 7 septembre 2026, 16 h 26.** Il avait dicté « arborea pro arobase outlook
+// point fr » ; le champ portait « arborea pro@outlook.fr ».
+//
+// Les espaces se retirent AVANT de juger la forme : l'inverse refuserait
+// l'adresse au lieu de la réparer, et le champ resterait vide.
+cas("SON cas : les espaces d'une adresse s'en vont, elle n'est pas refusée", () => {
+  const c = assemblerCoordonnees("rien de reconnaissable", {
+    email: "arborea pro@outlook.fr",
+  });
+  assert.equal(c.email, "arboreapro@outlook.fr");
+});
+
+console.log("\n=== L'adresse ponctuée par le modèle ===");
+
+// *« Pour l'adresse il me l'a séparée par des virgules, je ne comprends pas
+// pourquoi ?????!!!!! »* — « 12 rue Bérangère, 27 500, Macon ».
+cas("SON cas : la virgule entre le code postal et la ville s'en va", () => {
+  const c = assemblerCoordonnees("rien de reconnaissable", {
+    adresse: "12 rue Berangere, 27 500, Macon",
+  });
+  assert.equal(c.adresse, "12 rue Berangere, 27500 Macon");
+});
+
+// **La borne : celle qui suit la rue est du français**, et elle reste. C'est
+// ainsi qu'une adresse s'écrit sur une enveloppe.
+cas("la virgule après la rue n'est pas touchée", () => {
+  const c = assemblerCoordonnees("rien", { adresse: "12 rue des Lilas, 44000 Nantes" });
+  assert.equal(c.adresse, "12 rue des Lilas, 44000 Nantes");
+});
+
+console.log("\n=== Le code postal ne se coupe pas en deux ===");
+
+// Sa capture du 7 septembre : il avait dicté « 27730 Villennes », la fiche
+// portait « 27 730 ». Une transcription écrit les nombres par groupes de
+// trois ; un code postal n'est pas un nombre.
+cas("SON cas : « 27 730 » redevient 27730", () => {
+  assert.equal(recollerCodePostal("Dierud et Marguerite 27 730 Villene"), "Dierud et Marguerite 27730 Villene");
+});
+
+// **La borne : on ne recolle pas un nombre quelconque.** Trois chiffres suivis
+// d'un autre groupe ne sont pas un code postal, et les coller inventerait une
+// valeur — ce que le produit ne fait jamais (`CLAUDE.md` §4).
+cas("un nombre en trois groupes n'est pas un code postal", () => {
+  assert.equal(recollerCodePostal("batiment 12 345 678"), "batiment 12 345 678");
+});
+
+cas("une adresse déjà juste n'est pas touchée", () => {
+  assert.equal(recollerCodePostal("10 rue des marguerites 27730 Villennes"), "10 rue des marguerites 27730 Villennes");
+});
+
+console.log("\n=== « Monsieur Ludovic » : le mot va sur la pastille, pas dans le nom ===");
+
+// **Sa capture du 7 septembre 2026.** Il dicte « monsieur Ludovic » ; la case du
+// nom porte « Monsieur Ludovic ». *« Il ne faut jamais qu'il y ait marqué
+// monsieur, madame ou quoi que ce soit d'autre à part le nom dans cette
+// case-là. Mais est-ce que c'est possible que lorsqu'il entend monsieur ou
+// madame, il vienne sélectionner tout seul en haut soit le monsieur, soit le
+// madame ? »*
+//
+// **POURQUOI CETTE SUITE ET PAS UNE SUITE NAVIGATEUR** (`CLAUDE.md` §5 quater) :
+// la dictée demande une clé de transcription que cet environnement n'a pas — le
+// fournisseur y rend un texte de remplacement. Le geste du patron ne peut donc
+// pas être joué du micro jusqu'à l'écran ICI. Ce qui est tenu à la place, c'est
+// la chaîne entière SOUS le micro : ce que le modèle rend → ce que la fiche
+// reçoit. La règle de remplissage a été sortie de l'écran exprès pour cela
+// (`champsARemplir`).
+
+cas("SON cas : « monsieur Ludovic » remplit le nom et allume « Mr »", () => {
+  const r = assemblerCoordonnees("monsieur Ludovic, 06 79 98 45 14", {
+    nom: "Monsieur Ludovic",
+    telephone: "0679984514",
+  });
+  assert.equal(r.nom, "Ludovic", "« Monsieur » est resté dans la case du nom");
+  assert.equal(r.civilite, "mr");
+  assert.equal(r.telephone, "0679984514");
+});
+
+cas("une civilité dite sans nom n'est pas annoncée comme « rien compris »", () => {
+  // Sinon l'écran dirait « je n'ai rien reconnu » pendant qu'une pastille
+  // s'allume sous ses yeux : le seul message qu'il ne peut pas recouper.
+  const r = assemblerCoordonnees("madame", { nom: "Madame" });
+  assert.equal(r.nom, null, "un nom vide est devenu une chaîne, qui se glisserait dans le champ");
+  assert.equal(r.civilite, "mme");
+  assert.ok(!coordonneesVides(r), "l'écran annoncerait n'avoir rien compris");
+});
+
+cas("une dictée sans civilité n'en invente aucune", () => {
+  const r = assemblerCoordonnees("Ludovic Martin, 12 rue des Lilas", {
+    nom: "Ludovic Martin",
+    adresse: "12 rue des Lilas",
+  });
+  assert.equal(r.nom, "Ludovic Martin");
+  assert.equal(r.civilite, null, "une pastille s'est allumée sans que rien ne l'ait dite");
+});
+
+console.log("\n=== Ce que la dictée a le droit de changer sur une fiche commencée ===");
+
+const VIDE = { nom: "", civilite: null, telephone: "", email: "", adresse: "" } as const;
+const RIEN_DIT = { nom: null, civilite: null, telephone: null, email: null, adresse: null } as const;
+
+cas("sur une fiche vierge, tout ce qui a été compris entre", () => {
+  const aRemplir = champsARemplir({ ...VIDE }, {
+    ...RIEN_DIT,
+    nom: "Ludovic",
+    civilite: "mr",
+    telephone: "0679984514",
+  });
+  assert.deepEqual(aRemplir, { nom: "Ludovic", civilite: "mr", telephone: "0679984514" });
+});
+
+cas("rien de ce qu'il a SAISI n'est écrasé par une dictée", () => {
+  // Il aurait tapé le numéro, dicté l'adresse, et perdu le numéro sans
+  // comprendre pourquoi. C'est la règle qui coûte cher si elle se trompe.
+  const aRemplir = champsARemplir(
+    { nom: "Bernard", civilite: null, telephone: "0611223344", email: "", adresse: "" },
+    { ...RIEN_DIT, nom: "Ludovic", telephone: "0679984514", adresse: "10 rue de Nantes" }
+  );
+  assert.deepEqual(aRemplir, { adresse: "10 rue de Nantes" });
+});
+
+cas("une pastille qu'il a TOUCHÉE lui appartient : la dictée ne la reprend pas", () => {
+  const aRemplir = champsARemplir(
+    { ...VIDE, civilite: "mme" },
+    { ...RIEN_DIT, nom: "Ludovic", civilite: "mr" }
+  );
+  assert.deepEqual(aRemplir, { nom: "Ludovic" }, "son choix a été retourné par la dictée");
+});
+
+cas("la pastille ne dépend PAS du nom — « Monsieur, 06 79… » l'allume", () => {
+  // Aucun nom à poser, mais il a bien dit monsieur.
+  const aRemplir = champsARemplir({ ...VIDE }, { ...RIEN_DIT, civilite: "mr", telephone: "0679984514" });
+  assert.deepEqual(aRemplir, { civilite: "mr", telephone: "0679984514" });
+});
+
+cas("le contrôle sait échouer : une dictée muette ne change rien", () => {
+  // Un contrôle qui n'a jamais échoué ne prouve rien (`AGENTS.md`). Si un champ
+  // sortait d'ici sans que rien ne l'ait dit, c'est que la fonction fabrique.
+  assert.deepEqual(champsARemplir({ ...VIDE }, { ...RIEN_DIT }), {});
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Coordonnées dictées — ${echecs} échec(s).`);

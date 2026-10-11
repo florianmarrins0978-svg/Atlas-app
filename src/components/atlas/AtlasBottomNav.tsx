@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { colors } from "@/lib/design-tokens";
 import { cheminAutorise, type Role } from "@/lib/acces-roles";
@@ -83,6 +84,70 @@ const ONGLETS = [
  */
 export default function AtlasBottomNav({ role = null }: { role?: Role | null }) {
   const pathname = usePathname();
+
+  /**
+   * LA BARRE PUBLIE SA HAUTEUR RÉELLE — sa capture du 7 septembre 2026 :
+   * *« il y a un trou entre “1 en attente du client” et le menu du bas »*.
+   *
+   * **Mesuré : 20,3 px de vide.** `--atlas-barre` valait `4.25rem` — 68 px
+   * écrits à la main — pour une barre qui en mesure 47,75. Le tiroir du
+   * planning se pose à `bottom: var(--atlas-barre)` : il flottait donc vingt
+   * pixels au-dessus d'elle, et le trou se voyait sur son écran.
+   *
+   * **Le défaut n'est pas le chiffre, c'est qu'il soit écrit.** Le fichier
+   * qui le porte dit déjà la règle, deux lignes plus bas, pour le bandeau du
+   * banc : *« un élément qui change de taille ne se mesure pas dans un
+   * fichier »*. Ce bandeau publie la sienne (`BandeauBanc.tsx`) ; la barre
+   * ne le faisait pas, et elle a maigri sans que la variable suive.
+   *
+   * **La valeur du fichier reste**, et c'est délibéré : elle sert au premier
+   * rendu, avant que JavaScript ait mesuré quoi que ce soit. Un contenu qui
+   * passerait sous la barre pendant deux images se verrait.
+   */
+  const cadre = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const racine = document.documentElement;
+    // **Rendue à la feuille de style au démontage**, jamais laissée derrière :
+    // sur un écran sans barre, une hauteur survivante volerait sa place au
+    // contenu pour toujours — c'est la « valeur provisoire qui survit ».
+    const rendre = () => racine.style.removeProperty("--atlas-barre");
+    const noeud = cadre.current;
+    if (!noeud) {
+      rendre();
+      return;
+    }
+    // **Ce qu'elle publie, c'est la place qu'elle PREND EN BAS.** Sur
+    // ordinateur elle passe à gauche sur toute la hauteur (`globals.css`) :
+    // publier sa hauteur réserverait un écran entier de vide sous chaque page.
+    // Sa forme se lit sur elle-même (étroite, elle est à gauche), sans recopier
+    // ici la largeur d'écran qui en décide.
+    const publier = () => {
+      const boite = noeud.getBoundingClientRect();
+      const enBas = boite.width > window.innerWidth / 2;
+      racine.style.setProperty("--atlas-barre", `${enBas ? Math.round(boite.height) : 0}px`);
+    };
+    publier();
+    const oeil = new ResizeObserver(publier);
+    oeil.observe(noeud);
+    return () => {
+      oeil.disconnect();
+      rendre();
+    };
+  }, [pathname, role]);
+
+  // **CETTE BARRE NE SE GARDE PLUS ELLE-MÊME — 17 septembre 2026.** Elle
+  // portait, depuis le 5 septembre, un `if (estEcranSansNavigation(pathname))
+  // return null` : un rattrapage posé parce que la mise en page racine, elle,
+  // décidait au SERVEUR et ne se rejouait pas sur une navigation de lien. Il
+  // réparait un sens — la barre d'un écran précédent qui restait sur le devis —
+  // et ne pouvait rien pour l'autre : une barre jamais rendue n'a rien à
+  // retirer, et c'est ce que le patron a vu en revenant à l'accueil après un
+  // envoi (*« le menu du bas disparaît »*).
+  //
+  // Le choix vit désormais dans `CadreApplication`, qui lit le même chemin
+  // courant et ne monte cette barre que là où elle doit être. Le refaire ici
+  // serait la seconde copie que `CLAUDE.md` §3 interdit — et la couche qui
+  // compensait s'en va avec la racine corrigée (§4 quater).
   const onglets = role === null ? ONGLETS : ONGLETS.filter((o) => cheminAutorise(role, o.href));
   const indexActif = onglets.reduce(
     (trouve, t, i) => (estActif(pathname, t.href) ? i : trouve),
@@ -93,9 +158,10 @@ export default function AtlasBottomNav({ role = null }: { role?: Role | null }) 
 
   return (
     <nav
+      ref={cadre}
       className="atlas-nav-basse fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md"
       aria-label="Navigation principale"
-      style={{ backgroundColor: colors.cream, borderTop: `1px solid ${colors.line}` }}
+      style={{ backgroundColor: colors.cream }}
     >
       {/* **Le nombre de colonnes suit le nombre d'onglets**, il n'est plus écrit
           en dur à cinq. Un salarié n'en voit que deux : figées à cinq, ses deux
@@ -104,8 +170,11 @@ export default function AtlasBottomNav({ role = null }: { role?: Role | null }) 
           Moins d'onglets élargit les colonnes — la mesure de
           `verifier-barre-basse.mjs` reste donc valable, elle vise le pire cas. */}
       <div
-        className="relative grid px-3.5 pb-2 pt-[18px]"
-        style={{ gridTemplateColumns: `repeat(${onglets.length}, minmax(0, 1fr))` }}
+        className="atlas-nav-onglets relative grid px-3.5 pb-2 pt-[18px]"
+        // **Des variables, plus des valeurs** : la forme de la barre (une
+        // rangée en bas, une colonne à gauche sur ordinateur) se décide dans
+        // `globals.css`, et un style en ligne y aurait le dernier mot.
+        style={{ "--atlas-onglets": onglets.length, "--atlas-onglet-rang": indexActif } as React.CSSProperties}
       >
         {onglets.map((t, i) => {
           const actif = i === indexActif;
@@ -118,7 +187,7 @@ export default function AtlasBottomNav({ role = null }: { role?: Role | null }) 
               // document. Tant qu'il faisait un trait d'un pixel au ras du bas,
               // l'ordre était sans conséquence ; devenu pastille, il passerait
               // PAR-DESSUS le libellé et le rendrait illisible.
-              className="relative z-[1] pb-2 text-center text-[8.5px] font-medium uppercase"
+              className="atlas-nav-onglet relative z-[1] pb-2 text-center text-[8.5px] font-medium uppercase"
               style={{
                 // Le repli EST la valeur d'aujourd'hui : une charte qui ne dit
                 // rien laisse l'encre en place, au caractère près.
@@ -146,25 +215,11 @@ export default function AtlasBottomNav({ role = null }: { role?: Role | null }) 
             lui, ne bouge pas : c'est un choix qu'il a déjà fait en le voyant. */}
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute bottom-2 left-3.5 z-0"
-          style={{
-            // La largeur d'UNE colonne, marges déduites — et le diviseur suit le
-            // nombre d'onglets réellement dessinés, sans quoi le trait viserait
-            // un cinquième là où la colonne fait un demi.
-            width: `calc((100% - 1.75rem) / ${onglets.length})`,
-            top: "var(--atlas-onglet-haut, auto)",
-            transform: `translateX(${indexActif * 100}%)`,
-            transition: "transform 540ms cubic-bezier(0.34,1.4,0.5,1)",
-          }}
+          // Sa largeur, sa place et sa couleur sont dans `globals.css`
+          // (`.atlas-nav-trait`) : elles changent avec la forme de la barre.
+          className="atlas-nav-trait pointer-events-none absolute bottom-2 left-3.5 z-0"
         >
-          <span
-            className="block"
-            style={{
-              height: "var(--atlas-onglet-hauteur, 1px)",
-              borderRadius: "var(--atlas-onglet-rayon, 0)",
-              backgroundColor: `var(--atlas-onglet-fond, ${colors.or})`,
-            }}
-          />
+          <span className="block" />
         </span>
       </div>
     </nav>

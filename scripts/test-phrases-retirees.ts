@@ -98,7 +98,13 @@ console.log("");
 // quand plus aucun chantier n'est en cours.
 essai("les bandeaux restent affichés sur un accueil vide", () => {
   const source = readFileSync("src/app/EcranChantiers.tsx", "utf8");
-  const depuis = source.indexOf("restants.length === 0 ?");
+  // **Le repère a changé le 16 septembre 2026, et le contrôle défend la même
+  // chose.** La condition était écrite deux fois — une pour la branche, une
+  // pour les ressorts qui font descendre la porte (`ARCHITECTURE.md` §372) ;
+  // elle vit désormais dans `vide`, une seule fois (`CLAUDE.md` §3). Ce qui
+  // est éprouvé n'a pas bougé : les réponses de ses clients restent rendues
+  // quand la liste est vide.
+  const depuis = source.indexOf("{vide ? (");
   assert.ok(depuis > 0, "la branche « liste vide » a disparu de l'accueil");
   const branche = source.slice(depuis, source.indexOf(") : (", depuis));
   assert.ok(

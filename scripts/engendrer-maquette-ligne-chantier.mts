@@ -93,7 +93,7 @@ const VARIANTES: Variante[] = [
     lettre: "D",
     nom: "deux lignes : l’état, puis la suite",
     dit: "« Devis envoyé · sans réponse », puis une phrase en clair",
-    etat: "Devis envoyé · sans réponse",
+    etat: "Devis envoyé, sans réponse",
     clair: "Parti il y a 3 jours — à relancer à partir du 17 août.",
     dore: true,
     note:

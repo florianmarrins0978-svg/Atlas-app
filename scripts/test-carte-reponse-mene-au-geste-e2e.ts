@@ -1,6 +1,8 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { cocherLaDemandeExpresse } from "./_demande-expresse-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **La carte de réponse mène là où est le geste — et le geste y est vraiment.**
 //
@@ -21,7 +23,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // que c'est le seul moyen d'obtenir les états « accepté » et « à corriger » tels
 // qu'ils se produisent chez lui.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 let echecs = 0;
@@ -43,14 +45,12 @@ async function chantierAvecDevisEnvoye(page: Page, nom: string) {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nom);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-  const chantierId = page.url().split("/").pop()!.split("?")[0];
+  const chantierId = idChantier;
 
   await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.waitForSelector("text=Total TTC", { timeout: 30_000 });
-  await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
-  await page.waitForTimeout(900);
   await page.getByLabel("Description 1").fill("Abattage d'un cèdre mort");
   await page.getByLabel("Prix unitaire 1").fill("850");
   await page.getByLabel("Description 1").click();
@@ -208,11 +208,25 @@ async function main() {
   // (`notificationsPatron`). La carte que le patron a photographiée porte
   // d'ailleurs « AUTRE DATE PROPOSÉE » : c'est ce cas-là qu'il faut jouer.
   await page.locator('input[name="choixDate"][value="autre"]').check();
-  await page.locator('[data-jour][data-etat="choisissable"]').first().waitFor({ timeout: 20_000 });
+  // **Le calendrier posé, pas un jour libre dans CE mois** (batterie commune
+  // du 28 septembre 2026). Exiger un jour choisissable dans le mois affiché
+  // faisait tomber la suite en fin de mois, quand les deux derniers jours
+  // étaient pris par une suite jouée avant elle, alors que
+  // `unJourAutreQueLesProposees` sait déjà tourner la page.
+  await page.locator("[data-jour]").first().waitFor({ timeout: 20_000 });
   const jourLibre = await unJourAutreQueLesProposees(page, accepte.datesProposees);
   await page.locator(`[data-jour="${jourLibre}"]`).click();
   // La case se peint quand le choix est pris : l'attendre vaut mieux qu'un délai.
   await page.locator(`[data-jour="${jourLibre}"][data-etat="retenu"]`).waitFor({ timeout: 20_000 });
+  // **ON REFERME LA FEUILLE, comme le client.** Le calendrier monte du bas
+  // depuis le 4 septembre 2026 — sa réponse A, pour que la page tienne d'un
+  // seul tenant. Toucher un jour le RETIENT ; c'est « Retenir cette date » qui
+  // referme la feuille. Sans ce geste, la feuille reste posée par-dessus, et
+  // « J'accepte ce devis » se laissait chercher pendant quarante-cinq secondes
+  // sous un bouton de calendrier — un faux coupable pour une étape sautée.
+  await page.getByRole("button", { name: "Retenir cette date" }).click();
+  await page.locator('[data-jour]').first().waitFor({ state: "hidden", timeout: 20_000 });
+  await cocherLaDemandeExpresse(page);
   await page.click('button:has-text("J\'accepte ce devis")');
   await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 20_000 });
 

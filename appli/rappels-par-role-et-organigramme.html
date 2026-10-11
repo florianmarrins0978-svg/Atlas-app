@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas : les rappels de chacun, et l'organigramme</title>
+</head>
+<body>
+<style>
+  /*
+    LES RAPPELS PAR RÔLE, PUIS L'ORGANIGRAMME : DEUXIÈME VERSION
+
+    Ses réponses du 27 septembre 2026 à la première version :
+      « Le patron doit toujours tout recevoir. Ensuite il faut filtrer pour le
+        commercial et la facturation. Chacun ne doit pas recevoir les rappels
+        des autres. »  (donc la A)
+      « Il faut pouvoir nommer un chef d'équipe et aussi ajouter un petit
+        avatar avec leur tête. Comment on ajoute ou retire des gens ? Et où
+        l'organigramme va apparaître ? »
+
+    CE QUE LA PREMIÈRE VERSION DISAIT DE FAUX, ET QUI SE CORRIGE ICI : elle
+    rangeait les gars dans « Équipe A » et « Équipe B ». Aucun regroupement de
+    ce genre n'existe. Depuis la migration 0067, une équipe n'est plus qu'un
+    NOMBRE, la capacité du planning (entreprises.nombre_equipes : 2 équipes,
+    2 chantiers par jour). Les gars sont une liste à part (table equipes, qui
+    porte les salariés malgré son nom, VosSalaries.tsx). D'où le besoin réel :
+    un chef d'équipe n'a de sens que si l'on dit QUI est sous lui, et cela
+    n'existe nulle part aujourd'hui.
+
+    D'OÙ VIENNENT LES GENS AUJOURD'HUI (lu dans src/app/reglages/equipe) :
+      les gars : « Combien de salariés ? », un compteur + ou - et un nom par
+        ligne. Le moins retire TOUJOURS LE DERNIER : on ne peut pas retirer
+        Karim s'il est deuxième sur quatre.
+      les comptes : « Qui a accès », Donner un accès, Retirer l'accès.
+    L'organigramme ne crée pas une troisième liste : il LIT ces deux-là, et son
+    « Ajouter » écrit dans la même que le compteur.
+
+    L'AVATAR est la photo de la planche photo-des-salaries.html (autre session,
+    en attente de son A ou B). Une seule photo par personne : l'organigramme
+    reprend celle-là, il n'en prend pas une seconde.
+
+    AUCUN SCRIPT : tout bascule en CSS (radios cachées, :checked ~).
+  */
+  :root{
+    --fond:#e7e3db; --cream:#f5f3ee; --card:#faf9f5; --encre:#1c1c1a;
+    --gris:#8a8578; --pin:#2f3b2f; --pinTint:#ece9e1; --or:#B98B47;
+    --alerte:#9C3B2E; --surPlein:#faf9f5;
+    --trait:rgba(28,28,26,.12); --traitDoux:rgba(28,28,26,.07);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141310; --cream:#171613; --card:#1f1d19; --encre:#e9e5dc;
+      --gris:#8a867c; --pin:#cfd8c9; --pinTint:#26241f; --or:#C9A15E; --surPlein:#171613;
+      --alerte:#d98a7d;
+      --trait:rgba(233,229,220,.16); --traitDoux:rgba(233,229,220,.09);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141310; --cream:#171613; --card:#1f1d19; --encre:#e9e5dc;
+    --gris:#8a867c; --pin:#cfd8c9; --pinTint:#26241f; --or:#C9A15E; --surPlein:#171613;
+    --alerte:#d98a7d;
+    --trait:rgba(233,229,220,.16); --traitDoux:rgba(233,229,220,.09);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:38px 16px 90px;-webkit-text-size-adjust:100%}
+  .page{max-width:900px;margin:0 auto}
+  h1{margin:0 0 6px;font:400 30px/1.15 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .sur{margin:0 0 22px;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+  .chapo{margin:0 0 26px;max-width:60ch;color:var(--gris);font-size:14.5px}
+
+  .encadre{margin:0 0 30px;padding:16px 18px;border-radius:14px;
+           background:var(--card);border:1px solid var(--traitDoux);font-size:14px}
+  .encadre p.t{margin:0 0 8px;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--gris)}
+  .encadre.faux p.t{color:var(--alerte)}
+  .encadre p{margin:0 0 8px}
+  .encadre p:last-child{margin-bottom:0}
+  .encadre ul{margin:0;padding-left:20px}
+  .encadre li{margin-bottom:6px}
+
+  .partie{margin:46px 0 14px;font:400 24px/1.2 ui-serif,Georgia,serif}
+  .partie span{display:block;font:10px/1.4 ui-sans-serif,sans-serif;letter-spacing:.28em;
+               text-transform:uppercase;color:var(--or);margin-bottom:6px}
+  .explique{margin:0 0 18px;font-size:13.5px;color:var(--gris);max-width:60ch}
+  .explique b{color:var(--encre);font-weight:600}
+
+  .radio{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+  .choix{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+  .choix label{display:inline-flex;align-items:center;min-height:40px;padding:0 16px;
+               border-radius:999px;border:1px solid var(--trait);font-size:13px;
+               color:var(--gris);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  #qP:checked ~ .choix label[for="qP"], #qC:checked ~ .choix label[for="qC"],
+  #qF:checked ~ .choix label[for="qF"],
+  #eO:checked ~ .choix label[for="eO"], #eK:checked ~ .choix label[for="eK"],
+  #eS:checked ~ .choix label[for="eS"], #eR:checked ~ .choix label[for="eR"],
+  #eJ:checked ~ .choix label[for="eJ"]{background:var(--pinTint);color:var(--encre);
+                                        border-color:transparent;font-weight:600}
+
+  /* LE TÉLÉPHONE */
+  .tel{width:390px;max-width:100%;margin:0 auto;border-radius:26px;overflow:hidden;
+       background:var(--cream);border:1px solid var(--trait);box-shadow:0 12px 34px rgba(28,28,26,.10)}
+  .ecran{display:flex;flex-direction:column;min-height:640px}
+  .corps{flex:1;padding-bottom:18px}
+  .tete{padding:22px 26px 0}
+  .tete .st{margin:0 0 6px;font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+  .tete h2{margin:0;font:400 32px/1.05 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .barre{display:grid;grid-template-columns:repeat(4,1fr);padding:15px 14px 13px;
+         border-top:1px solid var(--trait);background:var(--cream)}
+  .barre span{text-align:center;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+  .barre .ici{color:var(--encre)}
+  .qui{display:none}
+  #qP:checked ~ .tel .qui.p, #qC:checked ~ .tel .qui.c, #qF:checked ~ .tel .qui.f{display:inline}
+
+  /* LES CARTES DE RAPPEL, comme src/app/Notifications.tsx les dessine. */
+  .cartes{display:flex;flex-direction:column;gap:12px;padding:22px 24px 0}
+  .carte{display:none;border-radius:18px;padding:16px 20px;background:var(--card)}
+  .carte.urgent{background:var(--pinTint)}
+  .carte .sorte{margin:0 0 6px;font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--gris)}
+  .carte.urgent .sorte{color:var(--pin)}
+  .carte .titre{margin:0;font:400 16px/1.3 ui-serif,Georgia,serif}
+  .carte .texte{margin:4px 0 0;font-size:13px;color:var(--gris)}
+  .carte .chantier{margin:10px 0 0;font:400 19px/1.2 ui-serif,Georgia,serif}
+  .geste{display:inline-flex;align-items:center;min-height:40px;margin-top:12px;padding:0 18px;
+         border-radius:999px;background:var(--pin);color:var(--surPlein);font-size:13px}
+  #qP:checked ~ .tel .carte.p{display:block}
+  #qC:checked ~ .tel .carte.c{display:block}
+  #qF:checked ~ .tel .carte.f{display:block}
+
+  /* LES TROIS VUES DE L'ÉCRAN ÉQUIPE */
+  .vue{display:none}
+  #eS:checked ~ .tel .vue.o, #eR:checked ~ .tel .vue.r{display:block}
+  #eS:checked ~ .tel .patron-seul, #eR:checked ~ .tel .patron-seul{display:none}
+  #eS:checked ~ .tel .barre, #eR:checked ~ .tel .barre{grid-template-columns:repeat(2,1fr)}
+  .salarie-seul{display:none}
+  #eS:checked ~ .tel .salarie-seul, #eR:checked ~ .tel .salarie-seul{display:inline}
+  #eS:checked ~ .tel .chef{pointer-events:none}
+  .somm{padding:18px 26px 0}
+  .somm .t{margin:18px 0 4px;font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--gris)}
+  .somm label, .somm span.l{display:flex;align-items:center;justify-content:space-between;padding:15px 0;
+         border-bottom:1px solid var(--trait);font-size:15.5px;cursor:pointer}
+  .somm .neuf{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--or)}
+  #eO:checked ~ .tel .vue.o, #eK:checked ~ .tel .vue.k, #eJ:checked ~ .tel .vue.j{display:block}
+
+  /* L'AVATAR : la photo prend la place des initiales dès qu'elle existe. */
+  .av{flex:none;display:inline-flex;align-items:center;justify-content:center;
+      width:44px;height:44px;border-radius:50%;background:var(--pinTint);
+      color:var(--pin);font:600 14px/1 ui-sans-serif,sans-serif;letter-spacing:.02em;
+      border:1.5px solid var(--card);overflow:hidden}
+  .av.photo{background:linear-gradient(160deg,#c9b89c,#8f7a5e);color:transparent;position:relative}
+  .av.photo::after{content:"";position:absolute;left:50%;top:26%;width:38%;height:38%;
+                   transform:translateX(-50%);border-radius:50%;background:rgba(250,249,245,.55)}
+  .av.photo::before{content:"";position:absolute;left:50%;bottom:-18%;width:78%;height:50%;
+                    transform:translateX(-50%);border-radius:50%;background:rgba(250,249,245,.55)}
+  .av.grand{width:84px;height:84px;font-size:24px}
+
+  /* L'ORGANIGRAMME */
+  .organi{padding:20px 20px 0}
+  .etage{margin:0 0 4px;display:flex;align-items:center;gap:12px;font-size:9.5px;
+         letter-spacing:.28em;text-transform:uppercase;color:var(--gris)}
+  .etage i{flex:1;height:1px;background:var(--trait)}
+  .rang{display:flex;gap:10px;justify-content:center;padding:10px 0 20px;position:relative}
+  .rang + .etage{margin-top:2px}
+  .pers{flex:1 1 0;min-width:0;max-width:170px;display:flex;flex-direction:column;align-items:center;
+        padding:12px 8px;border-radius:16px;background:var(--card);border:1px solid var(--traitDoux);text-align:center}
+  .pers.haut{max-width:190px;background:var(--pinTint);border-color:transparent}
+  .pers .n{display:block;margin-top:6px;font:400 16px/1.2 ui-serif,Georgia,serif}
+  .pers .r{display:block;margin-top:1px;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--or)}
+  .pers .ra{display:block;margin-top:4px;font-size:11.5px;color:var(--gris)}
+
+  .chef{flex:1 1 0;min-width:0;border-radius:16px;border:1px solid var(--traitDoux);padding:12px 8px 8px;text-align:center}
+  .chef .n{display:block;margin-top:6px;font:400 16px/1.2 ui-serif,Georgia,serif}
+  .chef .r{display:block;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--or)}
+  .gars{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--traitDoux)}
+  .gars span{display:flex;flex-direction:column;align-items:center;font-size:12.5px;width:56px}
+  .gars .av{width:36px;height:36px;font-size:12px;margin-bottom:3px}
+  .gars .actif{color:var(--encre)}
+  .libres{display:flex;justify-content:center;gap:10px;padding:4px 0 6px}
+  .libres span{display:flex;flex-direction:column;align-items:center;font-size:12.5px;width:56px}
+  .libres .av{width:36px;height:36px;font-size:12px;margin-bottom:3px}
+  .ajouter{display:flex;align-items:center;justify-content:center;gap:8px;margin:14px 0 0;
+           min-height:46px;border-radius:999px;border:1px dashed var(--trait);font-size:14px;color:var(--encre)}
+
+  /* LA FEUILLE D'UNE PERSONNE */
+  .feuille{padding:22px 26px 0}
+  .feuille .haut{display:flex;flex-direction:column;align-items:center;gap:8px;padding-bottom:18px;border-bottom:1px solid var(--trait)}
+  .feuille .haut .lien{font-size:13px;color:var(--pin);text-decoration:underline;text-underline-offset:3px}
+  .ligne{display:flex;align-items:center;justify-content:space-between;gap:12px;
+         padding:15px 0;border-bottom:1px solid var(--trait);font-size:15px}
+  .ligne .val{font-size:14px;color:var(--gris)}
+  .inter{flex:none;width:46px;height:28px;border-radius:999px;background:var(--pin);position:relative}
+  .inter::after{content:"";position:absolute;right:3px;top:3px;width:22px;height:22px;border-radius:50%;background:var(--surPlein)}
+  .inter.eteint{background:var(--trait)}
+  .inter.eteint::after{right:auto;left:3px}
+  .coches{padding:6px 0 4px}
+  .coches p{margin:0;padding:9px 0;display:flex;align-items:center;gap:12px;font-size:15px}
+  .coches .c{flex:none;width:22px;height:22px;border-radius:6px;border:1.5px solid var(--trait)}
+  .coches .c.oui{background:var(--pin);border-color:var(--pin)}
+  .retirer{display:block;margin:22px 0 0;text-align:center;font-size:14px;color:var(--alerte)}
+  .champ{margin:18px 0 0}
+  .champ .l{display:block;margin:0 0 6px;font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--gris)}
+  .champ .b{display:block;padding:13px 14px;border-radius:12px;background:var(--card);border:1px solid var(--trait);font-size:15px}
+  .pastilles{display:flex;gap:8px;flex-wrap:wrap}
+  .pastilles span{display:inline-flex;align-items:center;min-height:38px;padding:0 14px;border-radius:999px;
+                  border:1px solid var(--trait);font-size:13px;color:var(--gris)}
+  .pastilles .oui{background:var(--pinTint);color:var(--encre);border-color:transparent;font-weight:600}
+  .pastilles.roles label{display:inline-flex;align-items:center;min-height:38px;padding:0 14px;border-radius:999px;
+                  border:1px solid var(--trait);font-size:13px;color:var(--gris);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  #rS:checked ~ .champ label[for="rS"], #rC:checked ~ .champ label[for="rC"],
+  #rF:checked ~ .champ label[for="rF"]{background:var(--pinTint);color:var(--encre);border-color:transparent;font-weight:600}
+  .selon{display:none}
+  #rS:checked ~ .selon.s, #rC:checked ~ .selon.cf, #rF:checked ~ .selon.cf{display:block}
+  #rC:checked ~ .selon.cf .selon.c, #rF:checked ~ .selon.cf .selon.f{display:inline}
+  .recoit{margin:14px 0 0;font-size:13.5px;color:var(--gris)}
+  .bouton{display:flex;align-items:center;justify-content:center;min-height:50px;margin-top:22px;
+          border-radius:999px;background:var(--pin);color:var(--surPlein);font-size:15px}
+
+  .questions{margin:40px 0 0;padding:18px 20px;border-radius:14px;background:var(--card);border:1px solid var(--traitDoux)}
+  .questions p.t{margin:0 0 10px;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--or)}
+  .questions ol{margin:0;padding-left:20px;font-size:14.5px}
+  .questions li{margin-bottom:8px}
+</style>
+
+<div class="page">
+  <p class="sur">Planche, deuxième version, rien n'est codé</p>
+  <h1>Les rappels de chacun, et l'organigramme</h1>
+  <p class="chapo">Vos réponses : vous recevez tout, le commercial et la facturation seulement les leurs. Un chef d'équipe, une photo, et où tout ça se trouve.</p>
+
+  <div class="encadre faux">
+    <p class="t">Ce que la première version disait de faux</p>
+    <p>Elle rangeait les gars dans « Équipe A » et « Équipe B ». <b>Ça n'existe pas dans Atlas.</b> Une équipe, chez vous, c'est seulement un nombre : combien de chantiers tiennent dans une journée. Les gars sont une liste à part, sans groupe. Pour qu'un chef ait des gars sous lui, il faut donc le dire : c'est ce que montre la partie 3.</p>
+  </div>
+
+  <!-- ═══ PARTIE 1 : LES RAPPELS ═══ -->
+  <h2 class="partie"><span>1</span>Chacun ses rappels</h2>
+
+  <input class="radio" type="radio" name="q" id="qC" checked>
+  <input class="radio" type="radio" name="q" id="qF">
+  <input class="radio" type="radio" name="q" id="qP">
+  <div class="choix">
+    <label for="qC">Commercial</label>
+    <label for="qF">Facturation</label>
+    <label for="qP">Patron</label>
+  </div>
+
+  <div class="tel"><div class="ecran"><div class="corps">
+    <div class="tete">
+      <p class="st"><span class="qui c">Julien, commercial</span><span class="qui f">Sophie, facturation</span><span class="qui p">Vous, patron</span></p>
+      <h2>Ce qui attend</h2>
+    </div>
+    <div class="cartes">
+      <div class="carte urgent p c">
+        <p class="sorte">Rappel</p>
+        <p class="titre">Devis en attente depuis 14 jours</p>
+        <p class="texte">Chantier ouvert il y a 14 jours, et aucun devis n'est parti.</p>
+        <p class="chantier">Jardin Martin</p>
+        <span class="geste">Faire le devis</span>
+      </div>
+      <div class="carte p c">
+        <p class="sorte">Rappel</p>
+        <p class="titre">Devis sans réponse</p>
+        <p class="texte">Parti il y a 9 jours, sans un mot du client.</p>
+        <p class="chantier">Haie Dubois</p>
+        <span class="geste">Ouvrir le chantier</span>
+      </div>
+      <div class="carte p f">
+        <p class="sorte">Rappel</p>
+        <p class="titre">À facturer</p>
+        <p class="texte">Chantier terminé il y a 5 jours, et aucune facture n'est partie.</p>
+        <p class="chantier">Élagage Leroy</p>
+        <span class="geste">Créer la facture</span>
+      </div>
+      <div class="carte p f">
+        <p class="sorte">Rappel</p>
+        <p class="titre">Facture impayée</p>
+        <p class="texte">Échéance dépassée il y a 12 jours.</p>
+        <p class="chantier">Terrasse Moreau</p>
+        <span class="geste">J'ai reçu le paiement</span>
+      </div>
+      <div class="carte p">
+        <p class="sorte">Rappel</p>
+        <p class="titre">Retour pas reçu</p>
+        <p class="texte">Le retour du 24 septembre n'est pas arrivé.</p>
+        <p class="chantier">Tonte Petit</p>
+        <span class="geste">Ouvrir le chantier</span>
+      </div>
+    </div>
+  </div>
+  <div class="barre"><span class="ici">Chantiers</span><span>Planning</span><span><span class="qui c">Paysage</span><span class="qui f">Terminés</span><span class="qui p">Terminés</span></span><span>Réglages</span></div>
+  </div></div>
+
+  <!-- ═══ PARTIE 2 ET 3 : L'ORGANIGRAMME ═══ -->
+  <h2 class="partie"><span>2</span>L'organigramme, dans Réglages, pour tout le monde</h2>
+  <p class="explique"><b>Tout le monde le voit</b> : une ligne « Organigramme » s'ajoute dans Réglages, sous « L'entreprise », pour le patron, le commercial, la facturation et chaque salarié. <b>Vous seul le modifiez</b> : ajouter, retirer, nommer un chef. Réglages, Équipe ne bouge pas.</p>
+
+  <input class="radio" type="radio" name="e" id="eO" checked>
+  <input class="radio" type="radio" name="e" id="eS">
+  <input class="radio" type="radio" name="e" id="eR">
+  <input class="radio" type="radio" name="e" id="eK">
+  <input class="radio" type="radio" name="e" id="eJ">
+  <div class="choix">
+    <label for="eO">Vous le voyez</label>
+    <label for="eS">Un salarié le voit</label>
+    <label for="eR">Les réglages d'un salarié</label>
+    <label for="eK">Toucher Karim</label>
+    <label for="eJ">Ajouter une personne</label>
+  </div>
+
+  <div class="tel"><div class="ecran"><div class="corps">
+
+    <div class="vue o">
+      <div class="tete"><p class="st">Réglages</p><h2>Organigramme</h2></div>
+      <div class="organi">
+        <div class="rang">
+          <label class="pers haut"><span class="av photo">VO</span><span class="n"><span class="patron-seul">Vous</span><span class="salarie-seul">Marc</span></span><span class="r">Patron</span><span class="ra patron-seul">Tous les rappels</span></label>
+        </div>
+        <div class="etage">Bureau<i></i></div>
+        <div class="rang">
+          <label class="pers"><span class="av">JL</span><span class="n">Julien</span><span class="r">Commercial</span><span class="ra patron-seul">Rappels des devis</span></label>
+          <label class="pers"><span class="av photo">SB</span><span class="n">Sophie</span><span class="r">Facturation</span><span class="ra patron-seul">Rappels des factures</span></label>
+        </div>
+        <div class="etage">Terrain<i></i></div>
+        <div class="rang">
+          <label class="chef" for="eK"><span class="av photo">KA</span><span class="n">Karim</span><span class="r">Chef d'équipe</span>
+            <span class="gars"><span><span class="av">LE</span>Léo</span><span><span class="av photo">NA</span>Nathan</span></span>
+          </label>
+          <div class="chef"><span class="av">MA</span><span class="n">Mathis</span><span class="r">Chef d'équipe</span>
+            <span class="gars"><span><span class="av">HU</span>Hugo</span></span>
+          </div>
+        </div>
+        <div class="etage">Sans chef<i></i></div>
+        <div class="libres"><span><span class="av">TO</span>Tom</span></div>
+        <label class="ajouter patron-seul" for="eJ">+ Ajouter une personne</label>
+      </div>
+    </div>
+
+    <div class="vue r">
+      <div class="tete"><p class="st">Léo, salarié</p><h2>Réglages</h2></div>
+      <div class="somm">
+        <p class="t">L'entreprise</p>
+        <label for="eS">Organigramme<span class="neuf">nouveau</span></label>
+        <p class="t">Moi</p>
+        <span class="l">Mon compte</span><span class="l">Notifications</span><span class="l">Mot de passe</span><span class="l">Couleurs</span>
+      </div>
+    </div>
+
+    <div class="vue k">
+      <div class="tete"><p class="st">Équipe</p><h2>Karim</h2></div>
+      <div class="feuille">
+        <div class="haut"><span class="av photo grand">KA</span><span class="lien">Changer la photo</span></div>
+        <div class="ligne"><span>Chef d'équipe</span><span class="inter"></span></div>
+        <div class="coches">
+          <p><span class="c oui"></span>Léo</p>
+          <p><span class="c oui"></span>Nathan</p>
+          <p><span class="c"></span>Tom</p>
+        </div>
+        <div class="ligne"><span>Accès à Atlas</span><span class="val">Salarié</span></div>
+        <span class="retirer">Retirer Karim</span>
+      </div>
+    </div>
+
+    <div class="vue j">
+      <div class="tete"><p class="st">Équipe</p><h2>Nouvelle personne</h2></div>
+      <div class="feuille">
+        <div class="haut"><span class="av grand">+</span><span class="lien">Prendre sa photo</span></div>
+        <div class="champ"><span class="l">Prénom</span><span class="b">Enzo</span></div>
+        <input class="radio" type="radio" name="role" id="rS" checked>
+        <input class="radio" type="radio" name="role" id="rC">
+        <input class="radio" type="radio" name="role" id="rF">
+        <div class="champ"><span class="l">C'est</span>
+          <div class="pastilles roles"><label for="rS">Un salarié</label><label for="rC">Un commercial</label><label for="rF">La facturation</label></div>
+        </div>
+        <div class="selon s">
+          <div class="champ"><span class="l">Son chef</span>
+            <div class="pastilles"><span class="oui">Karim</span><span>Mathis</span><span>Aucun</span></div>
+          </div>
+          <div class="ligne"><span>Chef d'équipe</span><span class="inter eteint"></span></div>
+          <div class="ligne"><span>Accès à Atlas</span><span class="inter eteint"></span></div>
+        </div>
+        <div class="selon cf">
+          <div class="champ"><span class="l">Son adresse mail</span><span class="b">enzo@exemple.fr</span></div>
+          <div class="champ"><span class="l">Son mot de passe</span><span class="b">••••••••</span></div>
+          <p class="recoit"><span class="selon c">Ses rappels : ceux des devis.</span><span class="selon f">Ses rappels : ceux des factures.</span></p>
+        </div>
+        <span class="bouton">Ajouter Enzo</span>
+      </div>
+    </div>
+
+  </div>
+  <div class="barre"><span class="patron-seul">Chantiers</span><span>Planning</span><span class="patron-seul">Terminés</span><span class="ici">Réglages</span></div>
+  </div></div>
+
+  <div class="encadre" style="margin-top:34px">
+    <p class="t">Ajouter, retirer</p>
+    <ul>
+      <li><b>Ajouter</b> : le bouton sous l'organigramme. On choisit d'abord <b>salarié, commercial ou facturation</b>. Un salarié : son chef, et un accès à Atlas s'il en veut un (c'est le même geste que le + du compteur). Un commercial ou la facturation : son adresse et son mot de passe, comme « Donner un accès » aujourd'hui.</li>
+      <li><b>Retirer</b> : sur sa feuille. Aujourd'hui le moins du compteur retire <b>toujours le dernier</b> : vous ne pouvez pas retirer Karim s'il est deuxième. La feuille le permettra.</li>
+      <li>Un gars retiré <b>reste sur les chantiers passés</b> du planning : on ne réécrit pas qui a travaillé où.</li>
+      <li>La photo est celle de la planche « La photo des salariés », qui attend votre A ou B. Une seule photo par personne, partout.</li>
+    </ul>
+  </div>
+
+  <div class="questions">
+    <p class="t">Tranché par vous</p>
+    <ol>
+      <li>Un gars n'a <b>qu'un seul chef</b>.</li>
+      <li>Le chef d'équipe <b>ne voit rien de plus</b> : c'est un titre sur l'organigramme.</li>
+      <li>L'organigramme est <b>visible par tout le monde</b>, modifiable par vous seul.</li>
+    </ol>
+  </div>
+</div>
+</body>
+</html>

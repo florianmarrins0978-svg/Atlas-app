@@ -14,7 +14,7 @@ import { getNoteVocale } from "../repositories/notes-vocales";
 import { getOuCreerDevisBrouillon } from "../repositories/devis";
 import { preparerPropositionPrix, type OriginePrix } from "../chiffrage/proposition-prix";
 import { appliquerPropositionPrix } from "../chiffrage/appliquer-proposition";
-import { peutPreparerDevis } from "../../lib/preparation-devis";
+import { peutPreparerLaPiece } from "../../lib/preparation-devis";
 import { listerPrecisions, enregistrerPrecisions, type Precision } from "../repositories/precisions-chantier";
 import { listerPrestations, renommerPrestation, completerPrestation } from "../repositories/prestations";
 import { structureDepuisPrecisions } from "../../lib/prestation-structuree";
@@ -206,8 +206,20 @@ async function executerChaineDevis(
  * Les réponses déjà données sont relues depuis la base : c'est ce qui empêche
  * l'arrêt de se rouvrir tout seul après avoir été franchi, y compris si la
  * dictée est relue plus tard.
+ *
+ * **Exportée depuis le 3 septembre 2026, et pour une seule raison.** La route
+ * qui dit où en est la préparation (`api/chantiers/[chantierId]/devis-pret`)
+ * doit pouvoir rapporter l'arrêt d'avant-chiffrage quand la réponse de l'action
+ * s'est perdue. La recopier là-bas aurait donné deux listes de questions à
+ * tenir d'accord — celle que la chaîne pose et celle que l'attente annonce —
+ * et l'écart se serait vu sur un devis (`CLAUDE.md` §3).
+ *
+ * `prestations` reste le repli du brouillon, pour l'instant qui précède la
+ * confirmation ; un appelant qui n'en a pas passe une liste vide, et ce sont
+ * alors les prestations en base qui décident — ou rien, si la chaîne n'est pas
+ * encore allée jusque-là.
  */
-async function questionsRestantes(
+export async function questionsRestantes(
   ctx: Ctx,
   chantierId: string,
   prestations: { libelle: string; description?: string | null; quantite?: string | null; unite?: string | null }[]
@@ -216,7 +228,20 @@ async function questionsRestantes(
   // Ses façons d'abattre à lui : une question qui proposerait les trois
   // d'origine laisserait sa quatrième rangée vide pour toujours.
   const { axes } = await lireGrilles(ctx);
-  return questionsAvantChiffrage(prestations, new Set(deja.map((p) => p.sujet)), axes.techniques);
+
+  // **On interroge les PRESTATIONS EN BASE quand elles existent, pas le
+  // brouillon.** Sa règle du 31 août 2026 : *« une question n'est posée que si
+  // l'information est réellement absente des données structurées de LA
+  // prestation concernée. »*
+  //
+  // Le brouillon ne porte que ce que le modèle a rendu : ni `methode`, ni
+  // `caracteristiques`. Décider sur lui, c'est décider sans regarder les
+  // colonnes — et redemander une technique et un diamètre déjà connus. Le
+  // brouillon reste le repli, pour l'instant qui précède la confirmation.
+  const enBase = await listerPrestations(ctx, chantierId);
+  const surQuoi = enBase.length > 0 ? enBase : prestations;
+
+  return questionsAvantChiffrage(surQuoi, new Set(deja.map((p) => p.sujet)), axes.techniques);
 }
 
 /**
@@ -318,7 +343,7 @@ async function poursuivreJusquAuDevis(
   const sansReponse = await questionsRestantes(ctx, chantierId, contenu?.prestations ?? []);
 
   return chiffrerEtPreparer(ctx, chantierId, {
-    aSignaler: sansReponse.map((q) => `${q.libellePrestation} : ${q.question.toLowerCase()} — sans réponse`),
+    aSignaler: sansReponse.map((q) => `${q.libellePrestation} : ${q.question.toLowerCase()}, sans réponse`),
     contenu,
     lecture: brouillon?.lecture ?? "modele",
     prestations: contenu?.prestations.map((l) => l.libelle) ?? [],
@@ -437,7 +462,7 @@ async function chiffrerEtPreparer(
   const lignes = await listerLignesPrix(ctx, chantierId);
   // La même fonction que l'écran Prix : un devis sans ligne exploitable ne se
   // déclare pas « prêt », et son jalon de prix n'est pas posé.
-  if (peutPreparerDevis(lignes).possible) {
+  if (peutPreparerLaPiece(lignes).possible) {
     await marquerPrixValide(ctx, chantierId);
   }
   const devis = await getOuCreerDevisBrouillon(ctx, chantierId);

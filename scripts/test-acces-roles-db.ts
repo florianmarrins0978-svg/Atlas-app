@@ -246,7 +246,7 @@ async function main() {
       { ok: true }
     );
     const second = (await listerAcces(ctxA)).find((l) => l.email === "second@essai.local")!;
-    assert.deepEqual(await retirerUnAcces(ctxA, second.id), { ok: true });
+    assert.deepEqual(await retirerUnAcces(ctxA, second.id), { ok: true, photoOrpheline: null });
     assert.equal((await listerAcces(ctxA)).some((l) => l.email === "second@essai.local"), false);
   });
 

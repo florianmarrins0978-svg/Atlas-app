@@ -216,14 +216,14 @@ export function debitRetenu(saisie: MesureSaisie): DebitRetenu {
       // le Ø25 du compteur — on retient le minimum viable (sa règle du 21 août).
       pression: dyn ?? BAR_SUPPOSE_AU_SEAU,
       mesure: "seau",
-      reserve: reserves.length > 0 ? reserves.join(" · ") : null,
+      reserve: reserves.length > 0 ? reserves.join(", ") : null,
     };
   }
 
   if (dyn !== null) {
     reserves.push(
       "la pression ne donne pas le débit : il est ESTIMÉ à " +
-        `${DEBIT_COMPTEUR.toFixed(2).replace(".", ",")} m³/h — chronométrez un seau de ` +
+        `${DEBIT_COMPTEUR.toFixed(2).replace(".", ",")} m³/h. Chronométrez un seau de ` +
         `${SEAU_LITRES} L pour le mesurer`
     );
     return {
@@ -231,7 +231,7 @@ export function debitRetenu(saisie: MesureSaisie): DebitRetenu {
       debit: DEBIT_COMPTEUR,
       pression: dyn,
       mesure: "estime",
-      reserve: reserves.join(" · "),
+      reserve: reserves.join(", "),
     };
   }
 

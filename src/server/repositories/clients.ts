@@ -1,9 +1,14 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, count, eq, inArray, isNull } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { clients } from "../db/schema";
+import { chantiers, clients } from "../db/schema";
 import type { Ctx } from "./context";
-import type { Civilite } from "@/lib/civilite";
-import { rapprocherClient, complementsPourFiche } from "@/lib/rapprochement-client";
+import type { CiviliteClient } from "@/lib/civilite";
+import {
+  rapprocherClient,
+  complementsPourFiche,
+  clientAPreremplir,
+  clientsProposes,
+} from "@/lib/rapprochement-client";
 
 export async function listerClients(ctx: Ctx) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
@@ -23,6 +28,132 @@ export async function getClient(ctx: Ctx, id: string) {
 }
 
 export type CanalClient = "sms" | "email";
+
+/**
+ * Les clients contre lesquels on reconnaît quelqu'un.
+ *
+ * **Une seule liste, et c'est le point.** Elle sert à l'enregistrement
+ * (`trouverOuCreerClient`) ET à la reconnaissance pendant qu'il tape
+ * (`reconnaitreLeClient`). Deux requêtes finiraient par diverger sur un
+ * `effaceLe` oublié — l'écran annoncerait alors un homme que l'enregistrement
+ * ne retrouve pas, ou l'inverse (`CLAUDE.md` §3).
+ */
+function clientsQuOnPeutReconnaitre(ctx: Ctx) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .select({
+        id: clients.id,
+        nom: clients.nom,
+        telephone: clients.telephone,
+        email: clients.email,
+        adresse: clients.adresse,
+        civilite: clients.civilite,
+        canalCommunication: clients.canalCommunication,
+        creeLe: clients.createdAt,
+      })
+      .from(clients)
+      .where(and(isNull(clients.deletedAt), isNull(clients.effaceLe)))
+  );
+}
+
+/** Ce que l'écran de création montre quand il reconnaît quelqu'un. */
+export type ClientReconnu = {
+  id: string;
+  nom: string;
+  civilite: CiviliteClient | null;
+  telephone: string | null;
+  email: string | null;
+  adresse: string | null;
+  canalCommunication: CanalClient | null;
+  /** Combien de chantiers portent déjà sa fiche — « 3 chantiers » à l'écran. */
+  chantiers: number;
+};
+
+/**
+ * Ce que l'écran apprend d'une frappe — celui qu'on POSE, et ceux qu'on PROPOSE.
+ *
+ * **Une seule question, une seule réponse.** L'écran demande « qui cela
+ * peut-il être ? » et reçoit les deux moitiés ensemble : une seconde action
+ * pour les propositions aurait doublé les requêtes à chaque lettre et fait
+ * vivre deux attentes de frappe — deux règles pour une question, que
+ * `CLAUDE.md` §3 refuse.
+ */
+export type ReconnaissanceClient = {
+  /** Celui qu'Atlas pose de lui-même. `null` tant que ce n'est pas certain. */
+  lui: ClientReconnu | null;
+  /**
+   * Ceux qu'il propose quand il n'ose pas poser — vide dès qu'il a posé.
+   *
+   * Poser ET proposer le même homme, ce serait deux réponses à une question :
+   * la fiche se remplit toute seule, et une liste sous la case redemanderait
+   * de choisir ce qui vient d'être choisi.
+   */
+  propositions: ClientReconnu[];
+};
+
+/**
+ * RECONNAÎTRE LE CLIENT PENDANT QU'IL TAPE — proposition C, tranchée le
+ * 9 septembre 2026 ; et le PROPOSER quand le nom n'est que commencé, sa
+ * demande du 20 septembre 2026.
+ *
+ * `lui` reste `null` tant que l'identification n'est pas certaine : c'est
+ * `clientAPreremplir` qui en décide, et elle seule. Ici on ne fait que lui
+ * donner à lire, puis compter les chantiers pour que le patron sache **de
+ * qui** il s'agit — sur quatre Martins, « Saint-Marc, 3 chantiers » est ce
+ * qui les sépare à l'œil.
+ */
+export async function reconnaitreLeClient(
+  ctx: Ctx,
+  saisie: { nom: string; telephone?: string; email?: string }
+): Promise<ReconnaissanceClient> {
+  const nom = saisie.nom.trim();
+  // Deux lettres ne reconnaissent personne, et interroger la base à chaque
+  // frappe ferait une requête par caractère pour rien.
+  if (nom.length < 2) return { lui: null, propositions: [] };
+
+  const existants = await clientsQuOnPeutReconnaitre(ctx);
+  const certain = clientAPreremplir({ ...saisie, nom }, existants);
+  const proposes = certain ? [] : clientsProposes({ ...saisie, nom }, existants);
+
+  const retenus = certain ? [certain] : proposes;
+  if (retenus.length === 0) return { lui: null, propositions: [] };
+
+  const comptes = await compterLesChantiers(ctx, retenus.map((c) => c.id));
+  const fiches = retenus.map((c) => {
+    const retrouve = existants.find((e) => e.id === c.id)!;
+    return {
+      id: retrouve.id,
+      nom: retrouve.nom,
+      civilite: retrouve.civilite as CiviliteClient | null,
+      telephone: retrouve.telephone,
+      email: retrouve.email,
+      adresse: retrouve.adresse,
+      canalCommunication: retrouve.canalCommunication as CanalClient | null,
+      chantiers: comptes.get(retrouve.id) ?? 0,
+    };
+  });
+
+  return certain ? { lui: fiches[0], propositions: [] } : { lui: null, propositions: fiches };
+}
+
+/**
+ * Combien de chantiers portent chacune de ces fiches.
+ *
+ * **Une seule requête pour toute la liste**, et non une par proposition : cinq
+ * allers-retours à chaque pause de frappe se paient sur un téléphone en
+ * bordure de réseau, là où il s'en sert.
+ */
+async function compterLesChantiers(ctx: Ctx, ids: string[]): Promise<Map<string, number>> {
+  if (ids.length === 0) return new Map();
+  const lignes = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .select({ clientId: chantiers.clientId, n: count() })
+      .from(chantiers)
+      .where(and(inArray(chantiers.clientId, ids), isNull(chantiers.deletedAt)))
+      .groupBy(chantiers.clientId)
+  );
+  return new Map(lignes.map((l) => [l.clientId as string, Number(l.n)]));
+}
 
 /**
  * Retrouver la fiche d'un client déjà connu, ou en créer une.
@@ -47,28 +178,22 @@ export async function trouverOuCreerClient(
   ctx: Ctx,
   data: {
     nom: string;
-    civilite?: Civilite;
+    civilite?: CiviliteClient;
     telephone?: string;
     adresse?: string;
     email?: string;
     canalCommunication?: CanalClient;
+    /**
+     * Il a appuyé sur « Ce n'est pas lui ».
+     *
+     * Sans ce passage, le refus ne survivait pas à l'enregistrement : les cases
+     * reprises vidées, le nom restait seul, et la règle du nom seul retrouvait
+     * le même homme. Le chantier serait parti chez celui qu'il venait d'écarter.
+     */
+    refuseLeRapprochement?: boolean;
   }
 ): Promise<{ client: typeof clients.$inferSelect; reutilise: boolean }> {
-  const existants = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
-    tx
-      .select({
-        id: clients.id,
-        nom: clients.nom,
-        telephone: clients.telephone,
-        email: clients.email,
-        adresse: clients.adresse,
-        civilite: clients.civilite,
-        canalCommunication: clients.canalCommunication,
-        creeLe: clients.createdAt,
-      })
-      .from(clients)
-      .where(and(isNull(clients.deletedAt), isNull(clients.effaceLe)))
-  );
+  const existants = await clientsQuOnPeutReconnaitre(ctx);
 
   const verdict = rapprocherClient(data, existants);
   if (verdict.type === "creer") {
@@ -76,22 +201,84 @@ export async function trouverOuCreerClient(
   }
 
   const retrouve = existants.find((c) => c.id === verdict.id)!;
-  // **La civilité et le canal complètent aussi, sous la même règle : que du
-  // vide.** Ils ne passent pas par `complementsPourFiche` parce que ce sont des
-  // énumérations et non du texte libre — les y mêler aurait demandé un type
-  // flou pour un gain nul.
-  const aEcrire: Parameters<typeof mettreAJourClient>[2] = complementsPourFiche(retrouve, data);
-  if (data.civilite && !retrouve.civilite) aEcrire.civilite = data.civilite;
-  if (data.canalCommunication && !retrouve.canalCommunication) {
-    aEcrire.canalCommunication = data.canalCommunication;
+  return { client: await completerLaFiche(ctx, retrouve, data), reutilise: true };
+}
+
+/** Ce qu'une fiche déjà connue doit porter pour qu'on sache ce qui lui manque. */
+export type FicheDejaConnue = {
+  id: string;
+  nom: string;
+  civilite: string | null;
+  telephone: string | null;
+  email: string | null;
+  adresse: string | null;
+  canalCommunication: string | null;
+  creeLe: Date | string;
+  /** Une entreprise cliente (migration 0119) ; absents sur les fiches d'avant. */
+  siret?: string | null;
+  numeroTva?: string | null;
+};
+
+/**
+ * CE QU'IL VIENT DE TAPER ENTRE DANS LA FICHE — les cases VIDES, et elles
+ * seules.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Sa demande du 11 septembre 2026, sur la fiche qui facture :** *« il n'avait
+ * pas l'info de l'adresse e-mail, donc là je l'ai rajoutée, et ce qu'il faut
+ * faire c'est que maintenant il a l'info et il doit la rajouter dans la
+ * catégorie client, comme ça la prochaine fois que je taperai Frédéric
+ * l'adresse e-mail pourra être ajoutée automatiquement aussi. »*
+ *
+ * **POURQUOI CETTE FONCTION EXISTE, ALORS QUE LA RÈGLE ÉTAIT DÉJÀ ÉCRITE.**
+ * Elle l'était deux fois : ici, et recopiée dans `creerChantierAction` pour le
+ * client qu'on tient déjà par son identifiant — celui qu'Atlas vient de
+ * reconnaître à l'écran, donc le chemin même de sa demande. Les deux copies
+ * avaient déjà divergé : la seconde apprenait le numéro, l'e-mail et l'adresse,
+ * mais **jamais la civilité ni le canal d'envoi**. Il choisit « Mr » et « SMS »
+ * sur cet écran-là ; sa fiche ne les retenait pas, et il les rechoisissait à
+ * chaque fois sans jamais savoir pourquoi. C'est exactement ce que `CLAUDE.md`
+ * §3 refuse : deux implémentations d'une seule règle finissent par diverger.
+ *
+ * **Rien n'est jamais écrasé** (`complementsPourFiche`) : ce qu'il tape à la
+ * volée complète le vide, il n'efface pas le numéro qu'il avait pris le temps
+ * de noter. Pour corriger une fiche, il y a l'écran des coordonnées.
+ *
+ * La civilité et le canal ne passent pas par `complementsPourFiche` parce que
+ * ce sont des énumérations et non du texte libre — les y mêler aurait demandé
+ * un type flou pour un gain nul.
+ */
+export async function completerLaFiche(
+  ctx: Ctx,
+  existante: FicheDejaConnue,
+  saisie: {
+    civilite?: CiviliteClient;
+    telephone?: string;
+    email?: string;
+    adresse?: string;
+    canalCommunication?: CanalClient;
+    /** Déjà lus par `siretLu` et `numeroTvaLu` : seule une valeur valable arrive ici. */
+    siret?: string;
+    numeroTva?: string;
   }
+): Promise<typeof clients.$inferSelect> {
+  const aEcrire: Parameters<typeof mettreAJourClient>[2] = complementsPourFiche(
+    { ...existante, nom: existante.nom },
+    { ...saisie, nom: existante.nom }
+  );
+  if (saisie.civilite && !existante.civilite) aEcrire.civilite = saisie.civilite;
+  if (saisie.canalCommunication && !existante.canalCommunication) {
+    aEcrire.canalCommunication = saisie.canalCommunication;
+  }
+  // Le SIRET et le n° TVA d'une entreprise (4 octobre 2026) : la même règle,
+  // le vide se complète, rien ne s'écrase.
+  if (saisie.siret && !existante.siret) aEcrire.siret = saisie.siret;
+  if (saisie.numeroTva && !existante.numeroTva) aEcrire.numeroTva = saisie.numeroTva;
 
-  const client =
-    Object.keys(aEcrire).length > 0
-      ? ((await mettreAJourClient(ctx, verdict.id, aEcrire)) ?? (await getClient(ctx, verdict.id))!)
-      : (await getClient(ctx, verdict.id))!;
-
-  return { client, reutilise: true };
+  // Rien à compléter : on ne touche pas `updated_at` pour rien — sa fiche
+  // porterait une date de modification qu'aucune modification n'explique.
+  if (Object.keys(aEcrire).length === 0) return (await getClient(ctx, existante.id))!;
+  return (await mettreAJourClient(ctx, existante.id, aEcrire)) ?? (await getClient(ctx, existante.id))!;
 }
 
 export async function creerClient(
@@ -99,7 +286,7 @@ export async function creerClient(
   data: {
     nom: string;
     /** « Mr » / « Mme », ou absent : les trois états (migration 0038). */
-    civilite?: Civilite;
+    civilite?: CiviliteClient;
     telephone?: string;
     adresse?: string;
     email?: string;
@@ -129,11 +316,14 @@ export async function mettreAJourClient(
   id: string,
   data: {
     nom?: string;
-    civilite?: Civilite | null;
+    civilite?: CiviliteClient | null;
     telephone?: string | null;
     adresse?: string | null;
     email?: string | null;
     canalCommunication?: CanalClient | null;
+    /** Une entreprise cliente (migration 0119) ; déjà lus par `siretLu` et `numeroTvaLu`. */
+    siret?: string | null;
+    numeroTva?: string | null;
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {

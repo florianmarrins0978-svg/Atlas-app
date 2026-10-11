@@ -1,6 +1,9 @@
 import { lancerNavigateur } from "./e2e-browser";
 import type { Page } from "playwright";
 import assert from "node:assert";
+import { ADRESSE } from "./_adresse";
+
+const BASE = ADRESSE;
 
 // Le cycle complet d'un tarif : ajout, persistance, modification, suppression.
 //
@@ -93,18 +96,18 @@ async function main() {
 
   // Connexion réelle (Auth.js) — toutes les routes applicatives sont
   // désormais protégées par le middleware d'authentification.
-  await page.goto("http://localhost:3000/login", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
   await page.fill('input[name="email"]', "demo@atlas.local");
   await page.fill('input[name="password"]', "demo1234");
   await page.click('button[type="submit"]');
-  await page.waitForURL("http://localhost:3000/", { timeout: 10000 });
+  await page.waitForURL(`${BASE}/`, { timeout: 10000 });
 
   // **Les tarifs ont leur propre rubrique depuis le 14 août 2026.** L'écran des
   // réglages est devenu un sommaire, et tout ce qui s'y empilait est parti dans
   // la rubrique correspondante (`ARCHITECTURE.md` §96). Le chemin du patron est
   // donc éprouvé DEPUIS LE SOMMAIRE, en touchant la ligne : viser directement
   // l'adresse aurait laissé passer un sommaire dont le lien ne mène nulle part.
-  await page.goto("http://localhost:3000/reglages", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
   assert.ok(await page.locator("text=Réglages").first().isVisible());
   await page.getByRole("link", { name: /Tarifs & catalogue/ }).click();
   await page.getByRole("heading", { name: "Tarifs & catalogue" }).waitFor({ timeout: 15000 });
@@ -165,7 +168,7 @@ async function main() {
   // **Elle a sa rubrique depuis le 14 août 2026** (`ARCHITECTURE.md` §96), et on
   // y va PAR LE SOMMAIRE : viser l'adresse directement laisserait passer une
   // ligne « Atlas IA » qui ne mène nulle part.
-  await page.goto("http://localhost:3000/reglages", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
   await page.getByRole("link", { name: /Atlas IA/ }).click();
   await page.getByRole("heading", { name: "Atlas IA" }).waitFor({ timeout: 15000 });
   const ecran = await page.locator("body").innerText();
@@ -174,14 +177,30 @@ async function main() {
     /Atlas IA/i,
     "L'écran ne dit plus quels fournisseurs d'IA tournent."
   );
-  // La batterie retire délibérément les clés d'IA de cette étape : l'état
-  // attendu ici est donc le mode déterministe, annoncé sans détour.
+  /**
+   * **CE CONTRÔLE RÉCLAMAIT UN MOT QUE LE PATRON A FAIT RETIRER — corrigé le
+   * 9 septembre 2026.**
+   *
+   * Il exigeait « déterministe ». C'est un mot d'informaticien, et l'écran a
+   * été réécrit le jour même (`cab142f2`, *« cesser de parler en développeur à
+   * un artisan »*) : il énumère désormais ce qu'Atlas sait faire — écouter,
+   * écrire, lire un croquis — et marque chaque ligne « Pas encore » tant que
+   * rien n'est branché.
+   *
+   * **On adapte le contrôle, on ne remet pas le libellé** (`CLAUDE.md` §5 bis) :
+   * écrire une suite qui réclame ce qu'il a fait enlever rend son écran
+   * impossible à changer.
+   *
+   * Ce qu'on défend ici n'est donc plus un mot mais la RÈGLE : la batterie
+   * coupe délibérément les clés d'IA, et l'écran doit le DIRE — jamais laisser
+   * croire qu'une dictée sera transcrite alors que personne n'écoute.
+   */
   assert.match(
     ecran,
-    /déterministe/i,
-    `Sans clé, l'écran doit annoncer le mode déterministe. Écran : ${ecran.slice(-400)}`
+    /pas encore/i,
+    `Sans clé, l'écran doit dire que rien n'est branché. Écran : ${ecran.slice(-400)}`
   );
-  console.log("  ✓ l'écran dit quels fournisseurs d'IA tournent réellement");
+  console.log("  ✓ sans clé, l'écran dit que rien n'est encore branché");
 
   await browser.close();
   console.log("✅ Test bout-en-bout Tarifs réussi.");

@@ -2,6 +2,7 @@ import assert from "node:assert";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import type { NomCharte } from "../src/lib/chartes";
+import { ADRESSE } from "./_adresse";
 
 /**
  * LE MODE NUIT SE LIT — mesuré sur les écrans, pas sur la palette.
@@ -43,7 +44,7 @@ import type { NomCharte } from "../src/lib/chartes";
  * en clair, elle rougit sur « Julien ＋ » en donnant les deux mesures.
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const ORIGINE: NomCharte = "origine";
 const NUIT: NomCharte = "nuit";
 

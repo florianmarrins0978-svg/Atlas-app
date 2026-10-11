@@ -76,7 +76,7 @@ export async function GET() {
     titre = "Le préchauffage n'a pas encore commencé";
     explication =
       "Le serveur vient de démarrer. Les écrans se compileront donc à l'ouverture, " +
-      "une fois chacun — comptez jusqu'à une minute pour le premier.";
+      "une fois chacun. Comptez jusqu'à une minute pour le premier.";
   } else if (etat.termine) {
     const echoues = etat.echoues ?? 0;
     ton = echoues > 0 ? "mal" : "bien";
@@ -88,16 +88,16 @@ export async function GET() {
       : echoues > 0
         ? "Certains écrans n'ont pas pu être compilés d'avance : ils le seront à l'ouverture."
         : "Tout est compilé d'avance. Chaque écran doit s'ouvrir en moins d'une seconde. " +
-          "Si ce n'est pas le cas, le problème est ailleurs — dites-le.";
+          "Si ce n'est pas le cas, le problème est ailleurs. Dites-le.";
   } else {
     ton = "attendre";
     const faits = etat.faits ?? 0;
     const total = etat.total ?? 0;
-    titre = `Préchauffage en cours — ${faits} écran(s) prêts sur ${total}`;
+    titre = `Préchauffage en cours, ${faits} écran(s) prêts sur ${total}`;
     insiste = "Pendant ce temps, vos propres clics passent derrière la file.";
     explication =
       "Atlas compile ses écrans d'avance : un écran que vous ouvrez maintenant peut donc " +
-      "mettre une minute. Ce n'est pas une panne, et il n'y a rien à faire — attendez que " +
+      "mettre une minute. Ce n'est pas une panne, et il n'y a rien à faire. Attendez que " +
       "cette page affiche « prêts »." +
       (etat.encours ? ` En train de compiler : ${etat.encours}` : "");
   }
@@ -108,7 +108,7 @@ export async function GET() {
 <html lang="fr"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>État du banc — Atlas</title>
+<title>État du banc, Atlas</title>
 <style>
  body{margin:0;padding:24px;font:16px/1.5 system-ui,sans-serif;color:#1c1a17;background:#faf7f2}
  h1{font-size:20px;margin:0 0 4px}

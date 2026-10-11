@@ -4,6 +4,7 @@ import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 /**
  * La ligne du planning, MESURÉE sur l'écran du patron — 390 px.
@@ -68,7 +69,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
  * ─────────────────────────────────────────────────────────────────────────
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 // La largeur réelle de son téléphone. Mesurer à 1280 px ne prouverait rien :
 // tout tient, et le défaut qu'on cherche n'apparaît qu'à l'étroit.
 const LARGEUR_TELEPHONE = 390;
@@ -127,9 +128,9 @@ async function main() {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
     await page.fill('input[placeholder="Bernard"]', "Bernard-Delacroix");
     await page.fill('input[placeholder="06 12 34 56 78"]', "05 56 00 00 12");
-    await creerPuisFiche(page);
+    const idChantier = await creerPuisFiche(page);
     await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
-    const id = page.url().split("/").pop()!;
+    const id = idChantier;
 
     // Un LUNDI, pour que « 3 jours » ne saute pas le week-end : le saut est
     // éprouvé côté règle (`test-libelle-occupation.ts`), et l'introduire ici
@@ -184,10 +185,27 @@ async function main() {
       ])
     ).rows[0].jour as string;
     const numero = new Date(`${cible}T12:00:00Z`).getUTCDate();
+    // ─── DEPUIS LE 9 SEPTEMBRE 2026, LA FENÊTRE NE PART PLUS D'UN LUNDI ─────
+    //
+    // Elle part du JOUR, et avance de sept en sept. Ce contrôle visait le titre
+    // — « la fenêtre commence-t-elle le 21 ? » —, et il ne pouvait donc plus
+    // aboutir : la date visée est un lundi, la fenêtre commence un mercredi, et
+    // les deux ne coïncident que si la suite tourne un mercredi. Il a rougi sur
+    // du code juste.
+    //
+    // **On vise donc ce qu'on CHERCHE VRAIMENT** : que la journée visée soit
+    // dans la liste. Cela ne dépend d'aucun libellé de fenêtre et survivra au
+    // prochain remaniement (`CLAUDE.md` §5 bis).
+    if (!(await page.locator('[data-atlas="semaine-titre"]').count())) {
+      await page.click('[data-atlas="point-semaine"]');
+      await page.waitForTimeout(300);
+    }
+    const laJournee = page
+      .locator('[data-atlas="jour-planifie"]')
+      .filter({ has: page.locator(`[data-atlas="date-planifiee"]:text-matches("\\\\b${numero}\\\\b")`) });
     for (let i = 0; i < 8; i++) {
-      const titre = await page.locator('[data-atlas="semaine-titre"]').innerText();
-      if (titre.startsWith(`${numero} `)) return;
-      await page.click('button[aria-label="Semaine suivante"]');
+      if (await laJournee.count()) return;
+      await page.click('button[aria-label="Sept jours après"]');
       await page.waitForTimeout(250);
     }
     throw new Error(`la liste n'atteint pas la semaine du ${cible}`);
@@ -328,7 +346,11 @@ async function main() {
     await allerAuPlanning();
     await amenerSurLaSemaineDesCas();
     const vu = await page.evaluate(() => {
-      const date = document.querySelector('[data-atlas="date-planifiee"]') as HTMLElement | null;
+      // **Une journée ORDINAIRE, jamais celle du jour** : depuis le 9 septembre
+      // 2026 la pastille d'aujourd'hui porte volontairement une autre encre et
+      // une autre taille. La mesurer ici ferait rougir la grammaire commune sur
+      // une différence VOULUE.
+      const date = document.querySelector('[data-atlas="date-planifiee"]:not([data-aujourdhui])') as HTMLElement | null;
       const nom = document.querySelector('[data-atlas="nom-planifie"]') as HTMLElement | null;
       if (!date || !nom) return null;
       const r = date.getBoundingClientRect();
@@ -431,12 +453,30 @@ async function main() {
     const hautDe = async (id: string) =>
       await rangeeDe(id).evaluate((r) => r.getBoundingClientRect().top);
 
+    // **QUI EST AU-DESSUS SE LIT, IL NE SE SUPPOSE PAS — 17 septembre 2026.**
+    //
+    // Ce montage nommait `journee` la fiche du haut et `longue` le client du
+    // bas. Joué seul, l'ordre tombait juste ; dans la batterie, ce que les
+    // suites d'avant ont laissé dans la semaine le retourne, et le contrôle
+    // refusait alors de conclure — *« la première fiche n'est pas AU-DESSUS du
+    // second client »*, sur du code juste, deux batteries de suite.
+    //
+    // **Lequel des deux joue quel rôle est une commodité de mesure** : ce qu'il
+    // défend, c'est la SÉQUENCE — une fiche ouverte au-dessus, qui se referme,
+    // et un client touché en dessous. On lit donc l'ordre à l'écran.
+    const ordre = await Promise.all(
+      [journee.id, longue.id].map(async (id) => ({ id, haut: await hautDe(id) }))
+    );
+    ordre.sort((a, b) => a.haut - b.haut);
+    const enHaut = ordre[0].id;
+    const enBas = ordre[1].id;
+
     // 1. Une première fiche est ouverte PLUS HAUT dans la page — c'est elle qui
     //    se refermera, et sa hauteur qui manquera d'un coup.
-    await rangeeDe(journee.id).locator('[data-atlas="nom-planifie"]').click();
+    await rangeeDe(enHaut).locator('[data-atlas="nom-planifie"]').click();
     await page.waitForTimeout(400);
 
-    const hauteurCarte = await rangeeDe(journee.id).evaluate(
+    const hauteurCarte = await rangeeDe(enHaut).evaluate(
       (r) => r.getBoundingClientRect().height
     );
     if (hauteurCarte < 120) {
@@ -456,27 +496,48 @@ async function main() {
         ) as HTMLElement;
         window.scrollBy({ top: r.getBoundingClientRect().top - (vise as number), behavior: "instant" as ScrollBehavior });
       },
-      [longue.id, HAUT_VOULU] as [string, number]
+      [enBas, HAUT_VOULU] as [string, number]
     );
     await page.waitForTimeout(200);
 
-    const avant = await hautDe(longue.id);
-    // **Un contrôle qui ne peut pas se placer refuse de conclure.** Si la page
-    // n'est pas assez haute pour amener ce client sous l'en-tête, le geste
-    // qu'il décrit n'est pas rejoué — et un vert dirait le contraire.
+    // **On pousse jusqu'en bas si la page ne suffit pas — 9 septembre 2026.**
+    //
+    // Ce contrôle exigeait que le second client arrive à moins de 260 px du
+    // haut, et il refusait de conclure sinon. Depuis que la liste s'ouvre sur
+    // la SEULE journée du jour, la page est plus courte : le montage ne pouvait
+    // plus se placer, et la suite rougissait en disant elle-même que ce n'était
+    // pas le produit. Un rouge qui n'accuse personne s'apprend à être ignoré.
+    //
+    // **Ce qui compte n'est pas la hauteur, c'est la SÉQUENCE** : une fiche
+    // ouverte AU-DESSUS, qui se referme, et un client qu'on touche en dessous.
+    // C'est cela qu'on exige désormais — le reste était une commodité de mesure.
+    let avant = await hautDe(enBas);
     if (avant > 260) {
+      await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" as ScrollBehavior }));
+      await page.waitForTimeout(200);
+      avant = await hautDe(enBas);
+    }
+    const hautPremier = await hautDe(enHaut);
+    if (!(hautPremier < avant)) {
       throw new Error(
-        `Le second client est à ${Math.round(avant)} px du haut : la page n'est pas assez ` +
-          "longue pour rejouer son geste. Ce n'est pas le produit qui est en cause, c'est " +
-          "ce montage."
+        `La première fiche n'est pas AU-DESSUS du second client (${Math.round(hautPremier)} px ` +
+          `contre ${Math.round(avant)} px) : rien ne remontera en se refermant, et ce contrôle ` +
+          "ne mesurerait rien."
+      );
+    }
+    const hauteurVue = await page.evaluate(() => window.innerHeight);
+    if (avant < 0 || avant > hauteurVue) {
+      throw new Error(
+        `Le second client est hors de l'écran (${Math.round(avant)} px) : son geste n'est pas ` +
+          "rejouable. Ce n'est pas le produit qui est en cause, c'est ce montage."
       );
     }
 
     // 3. Son geste : il touche le nom.
-    await rangeeDe(longue.id).locator('[data-atlas="nom-planifie"]').click();
+    await rangeeDe(enBas).locator('[data-atlas="nom-planifie"]').click();
     await page.waitForTimeout(400);
 
-    const apres = await hautDe(longue.id);
+    const apres = await hautDe(enBas);
     const saut = avant - apres;
 
     // **La ligne touchée reste sous le doigt.** Deux pixels de tolérance : le
@@ -493,7 +554,7 @@ async function main() {
     );
 
     // La fiche, elle, s'est bien ouverte — SOUS lui.
-    const hauteurApres = await rangeeDe(longue.id).evaluate(
+    const hauteurApres = await rangeeDe(enBas).evaluate(
       (r) => r.getBoundingClientRect().height
     );
     assert.ok(

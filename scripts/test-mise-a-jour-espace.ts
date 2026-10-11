@@ -3,6 +3,12 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { exigerLesOutils } from "./_outil-requis";
+
+// **Sans ces outils, cette suite ne mesure RIEN** — elle le dit et sort du
+// compte, au lieu de rougir sur une machine qui n'y est pour rien
+// (`_outil-requis.ts`, sa colère du 20 septembre 2026).
+exigerLesOutils("bash", "cat");
 
 // **Le défaut le plus coûteux de tous : le patron éprouvait du code d'hier.**
 //
@@ -60,13 +66,23 @@ function monterEspace(): { distant: string; espace: string; racine: string } {
 
   execFileSync("git", ["init", "--quiet", "-b", "principale", source]);
   writeFileSync(path.join(source, "fichier.txt"), "version 1\n");
+  // **`package-lock.json` est SUIVI dans le vrai dépôt**, et cela change tout :
+  // `git stash push -- <chemin>` ignore un fichier non suivi. Un montage qui
+  // l'oublierait éprouverait un cas qui n'existe pas chez le patron.
+  writeFileSync(path.join(source, "package-lock.json"), '{"lock":"version 1"}\n');
   git(source, "add", ".");
   git(source, "commit", "--quiet", "-m", "version 1");
   execFileSync("git", ["clone", "--quiet", "--bare", source, distant]);
   git(source, "remote", "add", "origin", distant);
 
   const espace = path.join(racine, "espace");
-  execFileSync("git", ["clone", "--quiet", distant, espace]);
+  // Son espace est sous Linux. Sur son PC, git pose `core.autocrlf=true` et
+  // le code récupéré arrivait en CRLF : « version 2\r\n » contre « version
+  // 2\n », un rouge sur une mise à jour juste (20 septembre 2026). Le réglage
+  // se pose AVANT le premier checkout, sinon celui-ci écrit déjà du CRLF que
+  // le réglage suivant tient pour une modification non enregistrée.
+  execFileSync("git", ["-c", "core.autocrlf=false", "clone", "--quiet", distant, espace]);
+  git(espace, "config", "core.autocrlf", "false");
   return { distant, espace, racine };
 }
 
@@ -121,6 +137,53 @@ cas("du travail non enregistré arrête tout, et le dit", () => {
     execFileSync("cat", [path.join(espace, "fichier.txt")], { encoding: "utf8" }),
     "ce que le patron était en train d'écrire\n",
     "Le travail non enregistré du patron a été écrasé par la mise à jour."
+  );
+});
+
+cas("UN « package-lock.json » SALI NE FIGE PLUS L'ESPACE — sa panne du 12 septembre", () => {
+  const { espace, racine } = monterEspace();
+  aNettoyer.push(racine);
+  livrer(racine, "version 2\n");
+
+  // Ce que fait `npm install`, le repli de `demarrer.sh` quand `npm ci` refuse.
+  // Personne ne l'a écrit à la main, et personne ne le relira jamais.
+  writeFileSync(path.join(espace, "package-lock.json"), '{"lock":"réécrit par npm install"}\n');
+
+  const issue = lancer(espace);
+  assert.equal(
+    issue,
+    "faite",
+    `L'espace est resté en arrière à cause d'un fichier que personne n'a écrit : ` +
+      `il servira le code d'hier indéfiniment (reçu « ${issue} »).`
+  );
+  assert.equal(
+    execFileSync("cat", [path.join(espace, "fichier.txt")], { encoding: "utf8" }),
+    "version 2\n",
+    "Le script a dit « faite » sans que le code neuf arrive."
+  );
+  // **Mis de côté, jamais jeté.** C'est ce qui distingue cette exception d'un
+  // « git checkout -- » : le fichier se rend par « git stash pop ».
+  assert.match(
+    git(espace, "stash", "list"),
+    /package-lock\.json/,
+    "Le fichier a disparu sans laisser de quoi le récupérer."
+  );
+});
+
+cas("le VRAI travail reste refusé, même quand le lock est sali en même temps", () => {
+  const { espace, racine } = monterEspace();
+  aNettoyer.push(racine);
+  livrer(racine, "version 2\n");
+
+  writeFileSync(path.join(espace, "package-lock.json"), '{"lock":"réécrit"}\n');
+  writeFileSync(path.join(espace, "fichier.txt"), "ce que le patron était en train d'écrire\n");
+
+  const issue = lancer(espace);
+  assert.ok(issue.startsWith("impossible"), `Attendu un refus, reçu « ${issue} ».`);
+  assert.equal(
+    execFileSync("cat", [path.join(espace, "fichier.txt")], { encoding: "utf8" }),
+    "ce que le patron était en train d'écrire\n",
+    "L'exception du lock a emporté le travail du patron avec elle."
   );
 });
 

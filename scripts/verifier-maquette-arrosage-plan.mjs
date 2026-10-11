@@ -773,7 +773,13 @@ cas("chaque arroseur dit sa famille, et la légende la traduit", () => {
     // Enfin : la légende parle-t-elle du matériel que la LISTE facture ? C'est
     // le contrôle qui aurait vu le mensonge — la légende disait 5004 pendant
     // que la commande portait des 3504.
-    const modele = buse.nom.split("·")[0].trim();
+    // **Le modèle se lit sur le MOT « buse », plus sur un point médian.** Le
+    // catalogue écrivait « 3504 · buse 0,75 » et ce contrôle découpait là ;
+    // le point est parti le 23 septembre (sa règle du 22), et le découpage
+    // rendait alors le nom entier — introuvable dans la liste des pièces, donc
+    // un rouge sur du code juste. Un contrôle ne doit pas tenir à un caractère
+    // de typographie que le patron peut faire retirer (`CLAUDE.md` §5 bis).
+    const modele = buse.nom.split(/\bbuses?\b/i)[0].trim();
     if (!facturees.includes(sansAccent(modele))) {
       throw new Error(
         `la légende annonce « ${modele} » que la liste des pièces ne facture nulle part : ` +

@@ -1,4 +1,5 @@
 {
+  "buildPath": "code",
   "hook": {
     "consent": "declined"
   }

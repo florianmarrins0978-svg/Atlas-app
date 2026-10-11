@@ -1,10 +1,13 @@
 import assert from "node:assert";
 // `unzip` system call replaced by Node-based extraction for Windows compatibility
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
+
+const BASE = ADRESSE;
 
 // Le parcours entier du patron, du bouton au fichier ouvert.
 //
@@ -28,15 +31,15 @@ async function main() {
   const page = await context.newPage();
 
   try {
-    await page.goto("http://localhost:3000/login", { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
     await page.fill('input[name="email"]', "demo@atlas.local");
     await page.fill('input[name="password"]', "demo1234");
     await page.click('button[type="submit"]');
-    await page.waitForURL("http://localhost:3000/", { timeout: 10000 });
+    await page.waitForURL(`${BASE}/`, { timeout: 10000 });
 
     // Le téléchargement a rejoint la rubrique « Sécurité & données » le 14 août
     // 2026, quand l'écran des réglages est devenu un sommaire (ARCHITECTURE.md §96).
-    await page.goto("http://localhost:3000/reglages/donnees", { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/reglages/donnees`, { waitUntil: "networkidle" });
 
     const bouton = page.locator("text=Télécharger mes données");
     assert.ok(await bouton.isVisible(), "Le bouton « Télécharger mes données » est absent de Réglages.");
@@ -139,6 +142,17 @@ async function main() {
     // entier, seul objet que le patron enverra réellement.
     assert.ok(!("users" in donnees.tables), "Les comptes de connexion sont dans la sauvegarde.");
     assert.doesNotMatch(brut, /passwordHash|password_hash/, "Une empreinte de mot de passe est dans la sauvegarde.");
+
+    // Sa capture du 26 septembre 2026 : trente dossiers nommés par identifiant
+    // dans l'app Fichiers. Les fichiers se rangent sous le nom du client. Le jeu
+    // de démonstration porte des PDF de devis : un dossier vide ne prouverait
+    // rien, et la suite refuse d'y conclure.
+    const racineFichiers = path.join(dossier, "sortie", "fichiers");
+    const chemins = readdirSync(racineFichiers, { recursive: true }).map(String);
+    assert.ok(chemins.some((c) => c.endsWith(".pdf")), "Aucun PDF dans la sauvegarde du compte de démonstration.");
+    const identifiant = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+    const illisible = chemins.find((c) => identifiant.test(c));
+    assert.equal(illisible, undefined, `Un dossier porte un identifiant au lieu d'un nom : « ${illisible} ».`);
 
     console.log(`✅ Sauvegarde téléchargée (${taille} octets), ouverte, et conforme.`);
     console.log(`   ${Object.entries(donnees.compte).filter(([, n]) => n > 0).map(([t, n]) => `${t}=${n}`).join(", ")}`);

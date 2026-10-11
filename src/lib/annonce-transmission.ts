@@ -20,8 +20,11 @@
  * diverger, et c'est celle qu'on relit le moins qui resterait fausse
  * (`CLAUDE.md` §3).
  */
+/** Ce qui part par la messagerie, et que le bandeau sait annoncer. */
+export const TRANSMISSIONS = ["devis", "facture", "avoir", "fiche"] as const;
+
 export type Transmission = {
-  quoi: "devis" | "facture";
+  quoi: (typeof TRANSMISSIONS)[number];
   /** Le nom du client, tel qu'il figure sur sa fiche. */
   client: string;
 };
@@ -32,6 +35,13 @@ export function annonceTransmission(t: Transmission): string {
   // vaut mieux que « Devis transmis à Client non renseigné ».
   const destinataire = client ? ` à ${client}` : "";
 
+  // **La fiche de chantier est « envoyée »**, et c'est le mot du patron (22
+  // septembre 2026 : *« une petite mention qui dit que la fiche a bien été
+  // envoyée »*). Il est juste ici, contrairement au devis : le rapport est figé
+  // et daté en base AVANT que la messagerie s'ouvre, et la liste le range
+  // sous « Rapports envoyés ».
+  if (t.quoi === "fiche") return `Fiche envoyée${destinataire}.`;
+
   if (t.quoi === "facture") {
     // Pas d'« en attente de sa réponse » : une facture ne se négocie pas, elle
     // se règle. Le laisser ferait attendre au patron une réponse qui ne viendra
@@ -39,7 +49,10 @@ export function annonceTransmission(t: Transmission): string {
     return `Facture transmise${destinataire}.`;
   }
 
-  return `Devis transmis${destinataire} — en attente de sa réponse.`;
+  // L'avoir non plus n'attend pas de réponse : il rend, il ne demande rien.
+  if (t.quoi === "avoir") return `Avoir transmis${destinataire}.`;
+
+  return `Devis transmis${destinataire}, en attente de sa réponse.`;
 }
 
 /**

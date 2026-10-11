@@ -90,12 +90,43 @@ const ABSOLUS: (Couple & { seuil: number })[] = [
   // `design-tokens.ts` à poser `surPlein = card` plutôt qu'un crème en clair.
   { quoi: "ce qu'on écrit sur l'accent plein (surPlein)", devant: (c) => c.jetons.card, derriere: (c) => c.jetons.rust, seuil: TEXTE },
   { quoi: "ce qu'on écrit sur le rouge d'alerte (surPlein)", devant: (c) => c.jetons.card, derriere: (c) => c.jetons.alerte, seuil: TEXTE },
-  // Le fond de page sert lui aussi d'encre sur l'accent — `ActionPrincipale`,
-  // `CalendrierPeriodes`.
+  // Le fond de page sert lui aussi d'encre sur l'accent — `CalendrierPeriodes`.
+  // (`ActionPrincipale` le faisait aussi ; supprimé le 8 septembre 2026, mort.)
   { quoi: "le fond de page écrit sur l'accent", devant: (c) => c.jetons.cream, derriere: (c) => c.jetons.rust, seuil: TEXTE },
   // ─── Un refus doit pouvoir se lire ────────────────────────────────────────
   { quoi: "le rouge d'alerte sur une plage", devant: (c) => c.jetons.alerte, derriere: (c) => c.jetons.card, seuil: TEXTE },
   { quoi: "le rouge d'alerte sur le fond de page", devant: (c) => c.jetons.alerte, derriere: (c) => c.jetons.cream, seuil: TEXTE },
+  // ─── L'OR QUAND IL PORTE UN MOT — ajouté le 5 septembre 2026 ─────────────
+  //
+  // **Ce que ce couple ferme, et pourquoi il manquait.** `or` figure plus bas,
+  // dans les couples RELATIFS : on lui demande seulement de ne pas faire pire
+  // sur les sombres que sur les claires, parce que le patron a fixé son niveau
+  // lui-même. C'est juste tant qu'il dessine — un filet, un sceau, un marqueur
+  // d'onglet. Ça ne l'est plus dès qu'il écrit un mot : « à chiffrer » sur la
+  // plage d'Origine donnait **2,91**, et l'écran des prix se lit en plein
+  // soleil, d'une main.
+  //
+  // Ce contrôle-ci porte donc sur `orTexte`, qui est le même or assombri
+  // jusqu'au seuil (`chartes.ts`), et il sait échouer : en rendant `orTexte`
+  // égal à `or`, les six chartes claires rougissent d'un coup.
+  { quoi: "l'or d'un mot sur une plage", devant: (c) => c.jetons.orTexte, derriere: (c) => c.jetons.card, seuil: TEXTE },
+  { quoi: "l'or d'un mot sur le fond de page", devant: (c) => c.jetons.orTexte, derriere: (c) => c.jetons.cream, seuil: TEXTE },
+  // ─── L'OR SUR L'ENCRE PRISE POUR FOND — ajouté le 5 septembre 2026 ───────
+  //
+  // **Le couple que ni celui du dessus ni aucun autre ne couvrait.** La
+  // visionneuse de photos prend `ink` pour FOND, pour qu'on ne voie que la
+  // photo — et là les pôles s'inversent : sur Nuit et Sylve l'encre est un
+  // crème. L'or du mot « Retirer » y tenait **2,49**, et la croix pour sortir,
+  // écrite `#F6F1E6` en clair, **1,09**.
+  //
+  // C'est la leçon du §257 appliquée une seconde fois : un jeton mesuré dans
+  // un rôle n'est pas mesuré dans tous. Il sait échouer — en rendant
+  // `orSurEncre` égal à `or`, les deux sombres rougissent (2,49 et 2,55).
+  //
+  // **`surPlein` sur l'encre n'a pas son couple ici, et c'est voulu :** le
+  // contraste est symétrique, et « l'encre sur une plage » le mesure déjà
+  // plus haut. Un couple de plus n'aurait rien prouvé de neuf.
+  { quoi: "l'or d'un mot sur l'encre prise pour fond", devant: (c) => c.jetons.orSurEncre, derriere: (c) => c.jetons.ink, seuil: TEXTE },
   // ─── Deux des quatre états du calendrier, et seulement ces deux-là ────────
   // « incomplet » contre « complet » : sur les cinq claires, de 6,6 à 9,5.
   // Avant ce lot, 1,5 sur les deux sombres — deux blancs.

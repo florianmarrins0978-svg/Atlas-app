@@ -63,7 +63,10 @@ const fichiers = TYPOGRAPHIES.flatMap((t) =>
   t.fichiers ? [t.fichiers.normal, t.fichiers.gras] : []
 );
 
-assert.ok(fichiers.length >= 18, "les neuf familles doivent porter deux fichiers chacune");
+// **Cinq familles depuis le 7 septembre 2026**, deux fichiers chacune : le
+// normal et le gras. Quatre ont été retirées à sa demande ; leurs fichiers
+// restent sur le disque, mais plus personne ne les sert.
+assert.equal(fichiers.length, 10, `${fichiers.length} fichiers : les cinq familles en portent deux chacune`);
 
 async function jouer(): Promise<void> {
 for (const fichier of fichiers) {

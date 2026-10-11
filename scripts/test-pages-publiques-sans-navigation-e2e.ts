@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { CHEMINS_PUBLICS, estPageDuClient } from "../src/lib/chemins-publics";
+import { ADRESSE } from "./_adresse";
 
 // **Ce que voit le client de l'artisan ne porte JAMAIS l'outil de l'artisan.**
 //
@@ -25,7 +26,7 @@ import { CHEMINS_PUBLICS, estPageDuClient } from "../src/lib/chemins-publics";
 // (`src/lib/chemins-publics.ts`). Un nouveau chemin public y entre, et il est
 // éprouvé le jour même — sans que personne ait à y penser.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 let echecs = 0;
@@ -49,7 +50,18 @@ async function cas(nom: string, verifier: () => Promise<void>) {
  * exactement le genre de contrôle vert sur du vide que ce dépôt a déjà payé.
  */
 async function adressesPubliques(): Promise<Array<[string, string]>> {
-  const liste: Array<[string, string]> = [["la page de connexion", "/login"]];
+  const liste: Array<[string, string]> = [
+    ["la page de connexion", "/login"],
+    // La porte et la création de compte, ouvertes le 8 septembre 2026 : elles
+    // s'ouvrent SANS session par construction — c'est là qu'on arrive quand on
+    // n'en a pas — et elles ne doivent donc pas plus porter la barre d'onglets
+    // que la facture du client.
+    ["la porte", "/bienvenue"],
+    ["la création de compte", "/creer-un-compte"],
+    // Le mot de passe oublié (24 septembre 2026) : on y arrive précisément
+    // parce qu'on ne peut pas se connecter.
+    ["le mot de passe oublié", "/mot-de-passe-oublie"],
+  ];
 
   const devis = await pool.query(`select jeton from envois_devis limit 1`);
   if (devis.rows[0]) liste.push(["le devis vu par le client", `/devis/${devis.rows[0].jeton}`]);
@@ -67,6 +79,13 @@ async function adressesPubliques(): Promise<Array<[string, string]>> {
   if (passage.rows[0]) {
     liste.push(["le compte rendu vu par le client", `/entretien/${passage.rows[0].jeton}`]);
   }
+
+  // Le contrat d'entretien (26 septembre 2026) et les dates de ses passages
+  // du mois (27 septembre) : deux pages de plus que le client reçoit par SMS.
+  const contrat = await pool.query(`select jeton from contrats_entretien where jeton is not null limit 1`);
+  if (contrat.rows[0]) liste.push(["le contrat vu par le client", `/contrat/${contrat.rows[0].jeton}`]);
+  const dates = await pool.query(`select jeton from envois_dates_contrat limit 1`);
+  if (dates.rows[0]) liste.push(["les dates du mois vues par le client", `/contrat/dates/${dates.rows[0].jeton}`]);
 
   return liste;
 }
@@ -165,7 +184,10 @@ async function main() {
   await cas("sans compte, les écrans du patron restent fermés", async () => {
     for (const ecran of ["/", "/planning", "/termines", "/reglages"]) {
       await page.goto(`${BASE}${ecran}`, { waitUntil: "networkidle" });
-      if (!page.url().includes("/login")) {
+      // La porte depuis le 8 septembre 2026 ; `/login` reste accepté, car
+      // c'est là que mène une session périmée — l'un ou l'autre prouve la même
+      // chose : l'écran du patron ne s'est pas ouvert.
+      if (!page.url().includes("/bienvenue") && !page.url().includes("/login")) {
         throw new Error(
           `${ecran} s'est ouvert sans session (arrivé sur ${page.url()}). ` +
             "Ce n'est plus une gêne d'affichage : le client accède aux données du patron."
@@ -180,12 +202,21 @@ async function main() {
     // de passer au vert en ne regardant que les anciens.
     const couverts = [
       "/login",
+      "/bienvenue",
+      "/creer-un-compte",
+      "/mot-de-passe-oublie",
       "/devis",
       "/factures",
       "/entretien",
+      "/contrat",
       "/api/auth",
       "/api/cron",
       "/api/session-perimee",
+      // Le crochet du prestataire de paiement (migration 0084) : une adresse
+      // que seul Stripe frappe, en POST et signé. Elle n'a aucune page, donc
+      // aucune barre de navigation à cacher — c'est le même cas que les trois
+      // adresses ci-dessus.
+      "/api/paiement",
     ];
     const oublies = CHEMINS_PUBLICS.filter((p) => !couverts.includes(p));
     if (oublies.length > 0) {

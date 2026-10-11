@@ -56,9 +56,9 @@ const QUATRE = [
   ch("4", "Élagage d'entretien", "2026-01-09", "592.60", "0.00"),
 ];
 
-cas("les trois chiffres de la fiche tombent juste", () => {
+cas("les deux montants de la fiche tombent juste", () => {
   const f = composerFicheClient(QUATRE, []);
-  assert.equal(f.chantiers, 4);
+  assert.equal(f.liste.length, 4, "les quatre chantiers doivent tous entrer dans le calcul");
   assert.equal(f.facture, "3200.00", "887,40 + 740 + 980 + 592,60 = 3 200,00");
   assert.equal(f.du, "740.00", "un seul chantier est impayé");
 });
@@ -76,14 +76,13 @@ cas("le plus récent se lit en premier", () => {
 
 cas("un client jamais facturé n'affiche pas « 0 € »", () => {
   const f = composerFicheClient([ch("1", "Devis en cours", "2026-08-16")], []);
-  assert.equal(f.chantiers, 1);
+  assert.equal(f.liste.length, 1);
   assert.equal(f.facture, null, "« 0 € » se lirait comme un mauvais client");
   assert.equal(f.du, null);
 });
 
 cas("un client tout neuf ne dit rien plutôt que de dire zéro", () => {
   const f = composerFicheClient([], []);
-  assert.equal(f.chantiers, 0);
   assert.equal(f.facture, null);
   assert.equal(f.du, null);
   assert.deepEqual(f.prestations, []);

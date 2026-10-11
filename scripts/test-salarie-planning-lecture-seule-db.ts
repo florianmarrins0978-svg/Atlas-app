@@ -59,11 +59,36 @@ const FICHIER_ACTIONS = join(process.cwd(), "src/app/planning/actions.ts");
 const ECRITURES = [
   ["planifierChantierAction", "poser un chantier à une date"],
   ["basculerEquipeAction", "changer l'équipe d'une demi-journée"],
-  ["deplacerChantierAction", "déplacer un chantier dans la journée"],
+  ["deplacerCeQueLeJourPorteAction", "déplacer ce qu'un jour porte"],
+  ["chercherDesClientsAction", "chercher un client depuis le planning"],
+  ["poserUnClientAction", "poser un client sur un jour, sans devis"],
+  ["poserDuTempsAction", "bloquer du temps qui n'est pas un client"],
+  ["reposerDemiJourneeAction", "reposer une demi-journée qui attendait"],
   ["ecrireNoteChantierAction", "écrire le pense-bête"],
+  ["ajouterTravailAction", "ajouter un travail écrit à la main"],
+  ["enleverTravailAction", "enlever un travail écrit à la main"],
   ["deplanifierChantierAction", "retirer un chantier du planning"],
   ["supprimerChantierAction", "supprimer un chantier"],
 ] as const;
+
+/**
+ * CELLES QUI NE VISENT AUCUN CHANTIER EXISTANT — 10 septembre 2026.
+ *
+ * **Elles écrivent, donc elles portent la garde d'écriture comme les autres.**
+ * Ce qu'elles ne peuvent pas porter, c'est la PORTÉE : `exigerChantierDansSaPortee`
+ * demande l'identifiant d'un chantier, et celui-ci n'existe pas encore —
+ * `poserUnClientAction` le crée, `chercherDesClientsAction` ne touche à aucun.
+ *
+ * **Exiger la portée ici la rendrait creuse** : il faudrait inventer un
+ * identifiant pour satisfaire un contrôle, et le contrôle cesserait de dire
+ * quoi que ce soit. Ce qu'un salarié ne doit pas faire est tenu par la garde
+ * d'écriture, qui refuse AVANT toute requête.
+ */
+const SANS_CHANTIER = new Set([
+  "chercherDesClientsAction",
+  "poserUnClientAction",
+  "poserDuTempsAction",
+]);
 
 /** La seule qui LIT — la feuille de chantier sans un montant, son document. */
 const LECTURE = "tachesDuChantierAction";
@@ -127,7 +152,18 @@ async function main() {
     assert.equal(peutModifierLePlanning("commercial"), true, "le commercial a perdu son droit");
     // Refuser de conclure sur rien : le jour où un quatrième rôle naît, cette
     // règle doit avoir été relue plutôt que d'ouvrir en silence.
-    assert.equal(ROLES.length, 3, "un rôle est apparu : la règle d'écriture n'a pas été relue");
+    // **Ce compte est un fil à la patte, et il a fait son travail le 30 août
+    // 2026** : l'arrivée du rôle « Facturation » l'a fait rougir, ce qui a
+    // obligé à rouvrir `peutModifierLePlanning` — écrite alors `!== "salarie"`,
+    // elle aurait donné au rôle neuf le droit de déplacer et de supprimer des
+    // chantiers, sans qu'aucune ligne ne change. Elle est depuis une liste
+    // blanche. Le compte reste : le prochain rôle doit provoquer la même halte.
+    assert.equal(ROLES.length, 4, "un rôle est apparu : la règle d'écriture n'a pas été relue");
+    assert.equal(
+      peutModifierLePlanning("facturation"),
+      false,
+      "la facturation écrit sur le planning : sa consigne du 30 août dit le contraire"
+    );
   });
 
   // ─── LE DÉCOR : une entreprise, ses trois rôles, un chantier ─────────────
@@ -250,6 +286,7 @@ async function main() {
     const corps = corpsDesActions(SOURCE);
     const mauvaises: string[] = [];
     for (const [nom] of ECRITURES) {
+      if (SANS_CHANTIER.has(nom)) continue;
       const c = corps.get(nom)!;
       const ecriture = c.indexOf("exigerEcritureSurLePlanning(");
       const portee = c.indexOf("exigerChantierDansSaPortee(");
@@ -277,8 +314,18 @@ async function main() {
     const corps = corpsDesActions(SOURCE);
     const sansPortee: string[] = [];
     for (const nom of [...ECRITURES.map(([n]) => n), LECTURE]) {
+      if (SANS_CHANTIER.has(nom)) continue;
       const c = corps.get(nom);
       if (!c || !c.includes("exigerChantierDansSaPortee(")) sansPortee.push(nom);
+    }
+    // **Et l'exemption ne doit désigner que des actions VIVANTES.** Un nom qui
+    // s'y attarderait après un renommage dispenserait de la portée une action
+    // qui n'existe plus — et couvrirait la suivante qui reprendrait son nom.
+    for (const nom of SANS_CHANTIER) {
+      assert.ok(
+        corps.has(nom),
+        `${nom} est exemptée de portée mais n'existe plus : l'exemption dort et couvrira autre chose`
+      );
     }
     assert.deepEqual(sansPortee, [], `la portée a été perdue sur : ${sansPortee.join(", ")}`);
   });
@@ -313,7 +360,13 @@ async function main() {
      * un `finally`, puis comparé à l'octet près : un contrôle qui laisserait le
      * dépôt entamé serait pire que le défaut qu'il traque.
      */
-    const ampute = SOURCE.replace(/^ +await exigerEcritureSurLePlanning\(.*\);\n/gm, "");
+    // **`\r?\n`, et non `\n` — 9 septembre 2026.** Les fichiers du dépôt sont
+    // en CRLF sur la machine du patron : la coupure ne trouvait aucune ligne,
+    // et ce contrôle rougissait sur du code sain, **chez lui seulement**. Même
+    // faute que la séparation des chemins de `test-actions-gardees-db` — une
+    // erreur qui désigne le mauvais coupable coûte plus cher que pas d'erreur
+    // (`CLAUDE.md` §5).
+    const ampute = SOURCE.replace(/^ +await exigerEcritureSurLePlanning\(.*\);\r?\n/gm, "");
     assert.notEqual(ampute, SOURCE, "aucune garde n'a été retirée : l'essai négatif ne mesurerait rien");
 
     try {

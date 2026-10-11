@@ -10,6 +10,7 @@ import { enregistrerObjet } from "../storage";
 import { mkdir, writeFile } from "node:fs/promises";
 import { deflateSync } from "node:zlib";
 import path from "node:path";
+import { PDFDocument, StandardFonts } from "pdf-lib";
 /**
  * Une image PNG d'une seule couleur, fabriquée sans aucune dépendance.
  *
@@ -139,6 +140,21 @@ function audioDeDemonstration(secondes: number): Buffer {
  * produit mais pas ici : le seed doit pouvoir réécrire la même clé à chaque
  * amorçage, sinon chaque passage laisse un fichier orphelin de plus.
  */
+const CLE_ATTESTATION_DEMO = "demo/attestation-decennale.pdf";
+
+/** Une attestation d'une page, marquée comme ce qu'elle est : une démonstration. */
+async function attestationDeDemonstration(): Promise<Buffer> {
+  const doc = await PDFDocument.create();
+  const page = doc.addPage([595.28, 841.89]);
+  page.drawText("Attestation d'assurance de responsabilité décennale (démonstration)", {
+    x: 50,
+    y: 780,
+    size: 12,
+    font: await doc.embedFont(StandardFonts.Helvetica),
+  });
+  return Buffer.from(await doc.save());
+}
+
 async function ecrireObjetDeSeed(storageKey: string, octets: Buffer): Promise<void> {
   const chemin = path.join(process.cwd(), ".storage", storageKey);
   await mkdir(path.dirname(chemin), { recursive: true });
@@ -146,6 +162,7 @@ async function ecrireObjetDeSeed(storageKey: string, octets: Buffer): Promise<vo
 }
 
 import { creerPrestationCatalogue } from "../repositories/catalogue-prestations";
+import { remettreLeModeleDans } from "../repositories/prestations-entretien";
 import { creerMaterielCatalogue } from "../repositories/catalogue-materiels";
 import {
   entreprises,
@@ -305,6 +322,10 @@ async function main() {
     `);
 
     console.log("Création de l'entreprise et de l'utilisateur de démonstration...");
+    // **L'attestation décennale de démonstration** (son choix A du 5 octobre
+    // 2026) : un assureur nommé l'exige, et sans elle aucun devis d'essai ne
+    // partirait. Une page, à une clé FIXE, réécrite à chaque amorçage.
+    await ecrireObjetDeSeed(CLE_ATTESTATION_DEMO, await attestationDeDemonstration());
     const [entreprise] = await tx
       .insert(entreprises)
       .values({
@@ -314,6 +335,20 @@ async function main() {
         telephone: "02 40 00 00 00",
         email: "contact@atelier-demo.fr",
         iban: "FR76 3000 1000 0000 0000 0000 000",
+        // **Une identité EN RÈGLE** : depuis le 3 octobre 2026, un devis ou une
+        // facture qui manque d'une mention obligatoire ne part plus
+        // (`src/lib/mentions-manquantes.ts`). Une démonstration incomplète
+        // bloquerait tous les parcours d'essai sur un refus juste.
+        formeJuridique: "EI",
+        numeroTva: "FR12123456789",
+        mediateurNom: "Médiateur de démonstration",
+        mediateurCoordonnees: "1 place de la Médiation, Nantes",
+        assureurDecennale: "Assureur de démonstration",
+        adresseAssureurDecennale: "1 rue de l'Exemple, 44000 Nantes",
+        attestationDecennaleCle: CLE_ATTESTATION_DEMO,
+        attestationDecennaleMime: "application/pdf",
+        contratDecennale: "0000000",
+        couvertureDecennale: "France métropolitaine",
       })
       .returning();
 
@@ -334,7 +369,7 @@ async function main() {
         }))
       );
       console.log(
-        `Identifiants d'agenda conservés (${identifiantsGardes.length}) — le raccordement se refait en un appui.`
+        `Identifiants d'agenda conservés (${identifiantsGardes.length}). Le raccordement se refait en un appui.`
       );
     }
 
@@ -366,6 +401,10 @@ async function main() {
       .values({ entrepriseId: entreprise.id, prochainNumeroDevis: 1 })
       .onConflictDoNothing();
 
+    // Comme tout compte neuf depuis le 29 septembre 2026 : le modèle de fiche
+    // d'entretien est là d'office (`creerEntreprise`, `creation-compte.ts`).
+    await remettreLeModeleDans(tx, entreprise.id);
+
     // Le compte de démonstration accepte d'emblée les documents légaux en
     // vigueur, sans quoi la garde du layout redirigerait chaque écran vers
     // l'écran d'acceptation — et aucun parcours de démonstration ni de test de
@@ -390,7 +429,7 @@ async function main() {
             utilisateurId: utilisateur.id,
             documentId: d.id,
             adresseIp: null,
-            agentUtilisateur: "seed de démonstration — consentement fictif",
+            agentUtilisateur: "seed de démonstration, consentement fictif",
           }))
         )
         .onConflictDoNothing();
@@ -578,9 +617,9 @@ async function main() {
     console.log("Insertion du devis envoyé pour Reprise de toiture...");
     const idToiture = chantierIdsParNom["Reprise de toiture"];
     const lignesToiture = [
-      { libelle: "Main d'œuvre — 2 hommes × 2 jours", montant: "1120.00" },
-      { libelle: "Dépose carrelage — 8 m²", montant: "144.00" },
-      { libelle: "Pose faïence — 8 m²", montant: "360.00" },
+      { libelle: "Main d'œuvre, 2 hommes × 2 jours", montant: "1120.00" },
+      { libelle: "Dépose carrelage, 8 m²", montant: "144.00" },
+      { libelle: "Pose faïence, 8 m²", montant: "360.00" },
       { libelle: "Forfait déplacement", montant: "35.00" },
     ];
     await tx.insert(lignesPrix).values(
@@ -642,7 +681,7 @@ async function main() {
     //
     // Le PDF est archivé dans le même geste, comme le fait `envoyerDevis` en
     // vrai. Sans lui, le devis était marqué envoyé mais aucun document n'existait
-    // : le lien « Voir le devis complet » que le client ouvre depuis sa page
+    // : le lien « Télécharger mon devis » que le client ouvre depuis sa page
     // renvoyait un 404 sur le banc d'essai. Une démonstration qui se contredit
     // fait perdre plus de temps qu'elle n'en gagne — c'est déjà arrivé une fois
     // sur ce même devis.
@@ -713,7 +752,7 @@ async function main() {
       // L'empreinte fige le devis tel qu'il est parti : le client ne peut pas
       // se voir opposer une version modifiée après coup.
       empreinteDevis: createHash("sha256")
-        .update("Reprise de toiture — devis de démonstration")
+        .update("Reprise de toiture, devis de démonstration")
         .digest("hex"),
       expireAt: new Date(Date.now() + 14 * 86400_000),
       // **Le client a répondu, et il a renvoyé le devis.** Sans cette réponse,

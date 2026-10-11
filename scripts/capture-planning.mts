@@ -193,11 +193,11 @@ if (await unNom.count()) {
   const liens = (await page.evaluate(`(() => [...document.querySelectorAll(
     "[data-atlas='feuille'] a"
   )].map((a) => a.getAttribute("href")))()`)) as string[];
-  if (!liens.some((h) => h?.startsWith("https://maps.apple.com/"))) {
-    echecs.push(`la feuille ne porte pas Maps : ${JSON.stringify(liens)}`);
+  if (!liens.some((h) => h?.startsWith("https://www.google.com/maps/"))) {
+    echecs.push(`la feuille ne porte pas Google Maps : ${JSON.stringify(liens)}`);
   }
-  if (liens.some((h) => h?.includes("google.com/maps"))) {
-    echecs.push("Google Maps est revenu dans la feuille : il en voulait deux, pas trois.");
+  if (liens.some((h) => h?.includes("maps.apple.com"))) {
+    echecs.push("Plans est revenu dans la feuille : « Maps », c'est Google Maps (31 août).");
   }
 } else {
   console.log("  aucun chantier posé ce jour-là : la feuille n'est pas éprouvée.");

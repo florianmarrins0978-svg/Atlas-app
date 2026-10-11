@@ -61,14 +61,21 @@ cas("la première typographie n'embarque rien : c'est celle du format", () => {
   assert.equal(TYPOGRAPHIES[0].pileCss, null);
 });
 
-cas("une dizaine de typographies, et les neuf autres ont leurs deux fichiers", () => {
-  // « Fais-en une dizaine », le 23 août. Neuf familles plus celle d'aujourd'hui.
-  assert.ok(TYPOGRAPHIES.length >= 10, `seulement ${TYPOGRAPHIES.length}`);
+cas("six typographies, et les cinq familles ont leurs deux fichiers", () => {
+  // **« Fais-en une dizaine » (23 août) est TOMBÉ le 7 septembre 2026**, par
+  // lui : *« tu peux en enlever ou en changer si tu estimes que certaines sont
+  // moches et ne servent à rien »*. Quatre partaient en double emploi — trois
+  // linéales neutres indistinctes, une serif très large, une serif à déliés qui
+  // disparaissent à l'impression.
+  //
+  // **Le compte est EXACT, et pas « au moins »** : un minimum laisserait
+  // rentrer sans bruit celles qu'il vient de faire retirer (`CLAUDE.md` §5 bis).
+  assert.equal(TYPOGRAPHIES.length, 6, `${TYPOGRAPHIES.length} typographies au lieu de 6`);
   for (const t of TYPOGRAPHIES.slice(1)) {
     assert.ok(t.fichiers, `${t.clef} n'a pas de fichier`);
     assert.ok(t.pileCss, `${t.clef} n'a pas de pile CSS`);
     // **La famille est écrite à part.** L'écran en fait des `@font-face` : sans
-    // elle, il retomberait sur Georgia en affichant « Playfair Display ».
+    // elle, il retomberait sur Georgia en affichant « Merriweather ».
     assert.ok(t.famille, `${t.clef} n'a pas de famille CSS`);
     assert.ok(
       t.pileCss.startsWith(t.famille) || t.pileCss.startsWith(`"${t.famille}"`),

@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas : Mon agenda, en simple</title>
+</head>
+<body>
+<style>
+  /*
+    MON AGENDA, EN SIMPLE : maquette ESSAYABLE
+
+    Sa demande du 26 septembre 2026, capture à l'appui (Google en panne,
+    « invalid_grant ») : « La page mon agenda doit être repensée, trop de
+    mots, trop compliqué, il faut qu'elle soit hyper simple ! »
+
+    Ce que l'écran d'aujourd'hui porte, compté sur la capture : une phrase
+    d'explication en tête, un titre, un encadré rouge de quatre lignes, un
+    détail technique en JSON, un lien « Changer mes identifiants Google »,
+    trois boutons, puis tout iCloud en dessous (avertissement, trois étapes,
+    deux champs). Soit une vingtaine de lignes avant de savoir quoi faire.
+
+    Ce qui ne bouge pas, quelle que soit la proposition retenue :
+      1. la panne se VOIT (CLAUDE.md, et le commentaire d'AgendaClient) ;
+      2. l'avertissement iCloud reste AU-DESSUS du mot de passe ;
+      3. débrancher se confirme ;
+      4. écrire dans iCloud reste un interrupteur éteint par défaut.
+
+    Ce qui part de l'écran principal : le JSON de Google (il ne lui sert à
+    rien), les identifiants Google (rangés dans « Gérer »), les phrases qui
+    expliquent le fonctionnement.
+
+    Rien n'est codé dans l'application : cette page est une maquette. Aucune
+    phrase pré-écrite n'y est à recopier comme telle sans son accord.
+  */
+  :root{
+    --fond:#f5f3ee; --carte:#faf9f5; --teinte:#ece9e1; --encre:#1c1c1a;
+    --doux:#4a4a44; --gris:#8a8578; --or:#B98B47; --vert:#7d9a6d;
+    --alerte:#9C3B2E; --trait:rgba(28,28,26,.12);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 60px}
+  button{font:inherit;color:inherit;cursor:pointer}
+
+  .bandeau{background:var(--encre);color:#f2efe8;padding:14px 18px;text-align:center;font-size:13px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .etats{max-width:430px;margin:16px auto 0;padding:0 16px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+  .etats button{border:1px solid var(--trait);background:var(--carte);border-radius:999px;padding:8px 13px;font-size:13px}
+  .etats button[aria-pressed="true"]{background:var(--encre);color:#fff;border-color:var(--encre)}
+
+  h2{max-width:430px;margin:30px auto 0;padding:0 18px;font:400 22px/1.2 Georgia,ui-serif,serif}
+  .sous{max-width:430px;margin:4px auto 0;padding:0 18px;font-size:13px;color:var(--doux)}
+
+  .tel{position:relative;max-width:430px;margin:14px auto 0;background:var(--fond);border-radius:26px;
+       overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18);min-height:560px}
+  .entete{padding:26px 26px 0}
+  .entete h1{margin:0;font:400 38px/1.05 Georgia,ui-serif,serif}
+  .entete .sur{margin-top:8px;font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+  .corps{padding:20px 26px 28px}
+
+  /* Proposition A : une ligne par agenda */
+  .liste{background:var(--carte);border-radius:14px;overflow:hidden}
+  .ligne{display:flex;align-items:center;gap:12px;padding:16px;border-top:1px solid var(--trait)}
+  .ligne:first-child{border-top:0}
+  .logo{width:36px;height:36px;border-radius:9px;background:var(--teinte);display:grid;place-items:center;
+        font:600 15px/1 ui-sans-serif,sans-serif;flex:0 0 auto}
+  .qui{flex:1;min-width:0}
+  .qui b{display:block;font-weight:600;font-size:16px}
+  .qui span{display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--gris)}
+  .point{width:8px;height:8px;border-radius:50%;background:var(--gris);flex:0 0 auto}
+  .ok .point{background:var(--vert)} .ok span{color:var(--vert)}
+  .ko .point{background:var(--alerte)} .ko span{color:var(--alerte)}
+  .petit{border:0;border-radius:999px;padding:9px 15px;font-size:14px;font-weight:500;flex:0 0 auto}
+  .petit.plein{background:var(--vert);color:#fff}
+  .petit.doux{background:var(--teinte);color:var(--encre)}
+
+  /* Proposition B : un seul voyant */
+  .voyant{background:var(--carte);border-radius:14px;padding:22px 20px;text-align:center}
+  .voyant .rond{width:54px;height:54px;border-radius:50%;margin:0 auto 12px;display:grid;place-items:center;
+                font-size:26px;color:#fff;background:var(--gris)}
+  .voyant.ok .rond{background:var(--vert)} .voyant.ko .rond{background:var(--alerte)}
+  .voyant p{margin:0;font:400 21px/1.25 Georgia,ui-serif,serif}
+  .voyant small{display:block;margin-top:6px;font-size:13.5px;color:var(--gris)}
+  .gros{display:block;width:100%;border:0;border-radius:999px;padding:14px 18px;font-size:15.5px;font-weight:500;margin-top:12px}
+  .gros.plein{background:var(--vert);color:#fff}
+  .gros.doux{background:var(--teinte);color:var(--encre)}
+  .lien{display:block;margin:18px auto 0;border:0;background:none;color:var(--gris);font-size:14.5px}
+
+  /* Le volet qui monte du bas : tout ce qui n'est pas quotidien */
+  .voile{position:absolute;inset:0;background:rgba(20,18,14,.35);display:none}
+  .volet{position:absolute;left:0;right:0;bottom:0;background:var(--fond);border-radius:22px 22px 0 0;
+         padding:10px 22px 26px;display:none;max-height:92%;overflow:auto}
+  .tel.ouvert .voile,.tel.ouvert .volet{display:block}
+  .volet .barre{width:40px;height:4px;border-radius:2px;background:var(--trait);margin:0 auto 14px}
+  .volet h3{margin:0 0 14px;font:400 22px/1.2 Georgia,ui-serif,serif}
+  .volet .compte{margin:-8px 0 14px;font-size:13.5px;color:var(--gris)}
+  .inter{display:flex;align-items:center;gap:14px;background:var(--carte);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+  .inter span{flex:1;font-size:15px}
+  .switch{width:50px;height:30px;border-radius:999px;border:0;background:rgba(28,28,26,.18);position:relative;flex:0 0 auto}
+  .switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;
+                 background:#fff;box-shadow:0 1px 3px rgba(20,18,14,.28);transition:left .2s}
+  .switch[aria-checked="true"]{background:var(--vert)}
+  .switch[aria-checked="true"]::after{left:23px}
+  .gros.rouge{color:var(--alerte)}
+  .confirme{background:var(--carte);border-left:3px solid var(--alerte);border-radius:6px;padding:12px 14px;margin-top:10px;font-size:14px}
+  .confirme .deux{display:flex;gap:10px;margin-top:10px}
+  .confirme .deux button{border:0;border-radius:999px;padding:8px 14px;font-size:14px}
+  .attention{background:var(--carte);border-left:3px solid var(--alerte);border-radius:6px;padding:12px 14px;font-size:14px;margin-bottom:12px}
+  .etapes{font-size:13.5px;color:var(--doux);margin:0 0 12px}
+  label{display:block;margin-bottom:10px;font-size:13px;color:var(--gris)}
+  input{display:block;width:100%;margin-top:4px;border:1px solid var(--trait);border-radius:6px;padding:12px 14px;
+        font-size:16px;background:var(--carte);color:var(--encre)}
+  details{margin-top:16px;font-size:14px;color:var(--gris)}
+  details summary{cursor:pointer}
+  /* Proposition C : la phrase du Planning, à la place exacte de l'actuelle */
+  .rappel{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--trait)}
+  .rappel-texte{flex:1;min-width:0}
+  .rappel-texte b{display:block;font:400 16px/1.3 Georgia,ui-serif,serif}
+  .rappel-texte span{display:block;font-size:13px;color:var(--gris)}
+  .rappel-boutons{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:0 0 auto}
+  .rappel-bouton{border:0;background:none;color:var(--or);font-size:12px;letter-spacing:.24em;text-transform:uppercase;padding:4px 0}
+  .rappel-masquer{border:0;background:none;color:var(--gris);font-size:12px;letter-spacing:.24em;text-transform:uppercase;padding:4px 0}
+  .mois{margin-top:22px;text-align:center;font-weight:600;font-size:17px;color:var(--doux)}
+  .reprendre{padding:0 26px 18px}
+  .note{max-width:430px;margin:14px auto 0;padding:0 18px;font-size:12.5px;line-height:1.6;color:var(--doux)}
+</style>
+
+<div class="bandeau">
+  <b>Aujourd'hui :</b> une vingtaine de lignes, un message de Google en langage machine, et cinq boutons avant de savoir quoi faire.<br>
+  Deux propositions. <b>Changez l'état en haut</b>, puis touchez les boutons.
+</div>
+
+<div class="etats" id="etats">
+  <button data-etat="panne" aria-pressed="true">Google en panne</button>
+  <button data-etat="ok" aria-pressed="false">Tout marche</button>
+  <button data-etat="rien" aria-pressed="false">Rien de relié</button>
+</div>
+
+<h2>A : Une ligne par agenda</h2>
+<p class="sous">Chaque agenda dit son état en deux mots, et un seul bouton.</p>
+<div class="tel" id="telA">
+  <div class="entete"><h1>Mon agenda</h1><div class="sur">Réglages</div></div>
+  <div class="corps">
+    <div class="liste" id="listeA"></div>
+  </div>
+  <div class="voile" data-fermer></div>
+  <div class="volet"></div>
+</div>
+
+<h2>B : Un seul voyant</h2>
+<p class="sous">Un rond vert ou rouge, et le geste qui répare. Le reste dans « Gérer ».</p>
+<div class="tel" id="telB">
+  <div class="entete"><h1>Mon agenda</h1><div class="sur">Réglages</div></div>
+  <div class="corps" id="corpsB"></div>
+  <div class="voile" data-fermer></div>
+  <div class="volet"></div>
+</div>
+
+<p class="note"><b>Dans les deux</b> : le message technique de Google et les identifiants Google disparaissent (Atlas porte les siens), et l'avertissement iCloud reste au-dessus du mot de passe.</p>
+
+<h2>C : En haut du Planning</h2>
+<p class="sous">Jamais relié : une phrase, « Ouvrir », « Masquer ». Masquée, il ne reste rien, et elle ne revient plus. En pause : rien. En panne : toujours là.</p>
+<div class="tel" id="telC" style="min-height:0">
+  <div class="entete"><h1>Planning</h1><div class="sur">Vos journées</div></div>
+  <div class="corps" id="corpsC"></div>
+</div>
+
+<script>
+  // L'état est commun aux deux propositions : on compare le même cas côte à côte.
+  const etat = { google: "panne", icloud: "rien", ecrire: false, pauseG: false, pauseI: false };
+
+  function poser(nom) {
+    if (nom === "panne") Object.assign(etat, { google: "panne", icloud: "rien" });
+    if (nom === "ok") Object.assign(etat, { google: "ok", icloud: "ok" });
+    if (nom === "rien") Object.assign(etat, { google: "rien", icloud: "rien" });
+    // Pour l'essai seulement : changer d'état en haut fait revenir la phrase.
+    etat.pauseG = etat.pauseI = false; masque = false;
+    document.querySelectorAll("#etats button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.etat === nom)));
+    dessiner();
+  }
+
+  function mots(qui) {
+    const e = etat[qui], pause = qui === "google" ? etat.pauseG : etat.pauseI;
+    if (e === "panne") return { classe: "ko", texte: "Ne se lit plus" };
+    if (e === "ok" && pause) return { classe: "", texte: "En pause" };
+    if (e === "ok") return { classe: "ok", texte: "Relié" };
+    return { classe: "", texte: "Non relié" };
+  }
+
+  function ligne(qui) {
+    const nom = qui === "google" ? "Google Agenda" : "iCloud", logo = qui === "google" ? "G" : "i";
+    const m = mots(qui), e = etat[qui];
+    const bouton = e === "panne" ? `<button class="petit plein" data-rebrancher="${qui}">Rebrancher</button>`
+      : e === "rien" ? `<button class="petit plein" data-relier="${qui}">Relier</button>`
+      : `<button class="petit doux" data-gerer="${qui}">Gérer</button>`;
+    return `<div class="ligne ${m.classe}"><div class="logo">${logo}</div>
+      <div class="qui"><b>${nom}</b><span><i class="point"></i>${m.texte}</span></div>${bouton}</div>`;
+  }
+
+  function dessinerA() {
+    document.getElementById("listeA").innerHTML = ligne("google") + ligne("icloud");
+  }
+
+  function dessinerB() {
+    const c = document.getElementById("corpsB");
+    const reliés = ["google", "icloud"].filter(q => etat[q] !== "rien");
+    const panne = ["google", "icloud"].find(q => etat[q] === "panne");
+    let html;
+    if (panne) {
+      const nom = panne === "google" ? "Google" : "iCloud";
+      html = `<div class="voyant ko"><div class="rond">!</div><p>${nom} ne se lit plus</p>
+        <small>Un doublon de rendez-vous reste possible.</small></div>
+        <button class="gros plein" data-rebrancher="${panne}">Rebrancher ${nom}</button>`;
+    } else if (reliés.length) {
+      html = `<div class="voyant ok"><div class="rond">✓</div><p>Atlas voit votre agenda</p>
+        <small>${reliés.map(q => q === "google" ? "Google" : "iCloud").join(" et ")}</small></div>`;
+    } else {
+      html = `<div class="voyant"><div class="rond">?</div><p>Aucun agenda relié</p>
+        <small>Atlas peut proposer un jour déjà pris.</small></div>
+        <button class="gros plein" data-relier="google">Relier Google</button>
+        <button class="gros doux" data-relier="icloud">Relier iCloud</button>`;
+    }
+    if (reliés.length) html += `<button class="lien" data-gerer="${reliés[0]}">Gérer mes agendas</button>`;
+    c.innerHTML = html;
+  }
+
+  // Masquer vaut pour toujours : au codage, le choix se range dans le compte,
+  // pas dans le téléphone, sinon la phrase revient sur l'iPad.
+  let masque = false;
+  function dessinerC() {
+    const c = document.getElementById("corpsC");
+    const g = etat.google;
+    let html = "";
+    if (g === "panne") {
+      html = `<div class="rappel"><div class="rappel-texte"><b>Votre agenda n'est plus lu</b>
+        <span>Un client peut retenir un jour où vous êtes déjà pris.</span></div>
+        <button class="rappel-bouton" data-ouvrir>Ouvrir</button></div>`;
+    } else if (g === "rien" && !masque) {
+      html = `<div class="rappel"><div class="rappel-texte"><b>Vous pouvez relier votre agenda</b>
+        <span>Atlas évitera vos jours déjà pris.</span></div>
+        <div class="rappel-boutons"><button class="rappel-bouton" data-ouvrir>Ouvrir</button>
+        <button class="rappel-masquer" data-masquer>Masquer</button></div></div>`;
+    }
+    c.innerHTML = html + `<div class="mois">Septembre 2026</div>`;
+  }
+
+  function dessiner() { dessinerA(); dessinerB(); dessinerC(); }
+
+  function ouvrir(tel, contenu) {
+    tel.querySelector(".volet").innerHTML = `<div class="barre"></div>` + contenu;
+    tel.classList.add("ouvert");
+  }
+  function fermer(tel) { tel.classList.remove("ouvert"); }
+
+  function voletGerer(qui) {
+    const nom = qui === "google" ? "Google Agenda" : "iCloud";
+    const compte = qui === "google" ? "vous@gmail.com" : "vous@icloud.com";
+    const pause = qui === "google" ? etat.pauseG : etat.pauseI;
+    let h = `<h3>${nom}</h3><p class="compte">${compte}</p>
+      <div class="inter"><span>Lire mon agenda</span><button class="switch" role="switch" aria-checked="${!pause}" data-pause="${qui}"></button></div>`;
+    if (qui === "icloud") {
+      h += `<div class="inter"><span>Écrire mes chantiers dedans</span><button class="switch" role="switch" aria-checked="${etat.ecrire}" data-ecrire></button></div>`;
+    }
+    // Plus d'identifiants Google ici : sa décision du 26 septembre, Atlas porte
+    // les siens sur le serveur (configurationGoogle), l'utilisateur ne les voit jamais.
+    h += `<button class="gros doux rouge" data-debrancher="${qui}">Débrancher</button><div id="conf"></div>`;
+    return h;
+  }
+
+  function voletRelierIcloud() {
+    return `<h3>Relier iCloud</h3>
+      <div class="attention"><b>Ce mot de passe ouvre tout votre iCloud.</b> Vous pouvez l'annuler chez Apple quand vous voulez.</div>
+      <p class="etapes">Sur account.apple.com : Connexion et sécurité, puis Mots de passe pour les apps, puis Générer.</p>
+      <label>Adresse iCloud<input placeholder="prenom@icloud.com"></label>
+      <label>Mot de passe pour les apps<input type="password" placeholder="abcd efgh ijkl mnop"></label>
+      <button class="gros plein" data-fait="icloud">Relier</button>`;
+  }
+
+  document.addEventListener("click", ev => {
+    const b = ev.target.closest("button, [data-fermer]");
+    if (!b) return;
+    const tel = b.closest(".tel");
+    if (b.closest("#etats")) return poser(b.dataset.etat);
+    if (b.hasAttribute("data-fermer")) return fermer(tel);
+    // Chez Google, « Rebrancher » et « Relier » partent vers sa page d'accord :
+    // la maquette simule le retour réussi.
+    if (b.dataset.rebrancher) { etat[b.dataset.rebrancher] = "ok"; return dessiner(); }
+    if (b.dataset.relier === "google") { etat.google = "ok"; return dessiner(); }
+    if (b.dataset.relier === "icloud") return ouvrir(tel, voletRelierIcloud());
+    if (b.dataset.fait) { etat[b.dataset.fait] = "ok"; fermer(tel); return dessiner(); }
+    if (b.dataset.gerer) return ouvrir(tel, voletGerer(b.dataset.gerer));
+    if (b.dataset.pause) {
+      const q = b.dataset.pause; if (q === "google") etat.pauseG = !etat.pauseG; else etat.pauseI = !etat.pauseI;
+      b.setAttribute("aria-checked", String(!(q === "google" ? etat.pauseG : etat.pauseI))); return dessiner();
+    }
+    if (b.hasAttribute("data-ecrire")) { etat.ecrire = !etat.ecrire; b.setAttribute("aria-checked", String(etat.ecrire)); return; }
+    if (b.dataset.debrancher) {
+      const q = b.dataset.debrancher;
+      tel.querySelector("#conf").innerHTML = `<div class="confirme">Atlas cessera de lire cet agenda.
+        <div class="deux"><button style="background:var(--alerte);color:#fff" data-oui="${q}">Débrancher</button><button data-non>Annuler</button></div></div>`;
+      return;
+    }
+    if (b.dataset.oui) { etat[b.dataset.oui] = "rien"; fermer(tel); return dessiner(); }
+    if (b.hasAttribute("data-masquer")) { masque = true; return dessinerC(); }
+    if (b.hasAttribute("data-ouvrir")) { document.getElementById("telA").scrollIntoView({ behavior: "smooth" }); return; }
+    if (b.hasAttribute("data-non")) { tel.querySelector("#conf").innerHTML = ""; return; }
+  });
+
+  dessiner();
+</script>
+</body>
+</html>

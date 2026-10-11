@@ -1,8 +1,15 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { exigerLesOutils, exigerUnSystemePosix } from "./_outil-requis";
+
+// **Sans ces outils, cette suite ne mesure RIEN** — elle le dit et sort du
+// compte, au lieu de rougir sur une machine qui n'y est pour rien
+// (`_outil-requis.ts`, sa colère du 20 septembre 2026).
+exigerLesOutils("bash", "gh", "mkdir");
+exigerUnSystemePosix("scripts exécutables par leur première ligne");
 
 // **Le port privé — la troisième fois que la même méprise coûte une soirée.**
 //
@@ -289,6 +296,106 @@ cas("le veilleur redemande l'ouverture du port quand le serveur répond", () => 
     /\/tmp\/atlas-port\.txt/,
     "veiller.sh n'écrit pas le nouvel état du port : la fiche annoncerait encore le refus"
   );
+});
+
+// ─── LE PORT SE REVÉRIFIE, ET « OUVERT » N'EST PLUS UN ACQUIS ───────────────
+//
+// **Sa nuit du 30 au 31 août 2026 : « l'appli ne se lance plus ».** Son espace
+// tournait, Atlas répondait sur 127.0.0.1:3000, la version rapide était bâtie
+// sur le dernier commit — et son adresse publique rendait un 404 du relais.
+//
+// Le veilleur posait `PORT_OUVERT=oui` dès que `gh` avait répondu « ouvert », et
+// n'y revenait plus de la session. Ce mot ne dit pourtant pas que le port est
+// joignable : il dit qu'une commande a réussi, à un instant. Le relais peut
+// perdre le port ensuite — et le verrou tenait quand même, toute la nuit.
+cas("le veilleur REMESURE le port du dehors, au lieu de croire « ouvert » pour toujours", () => {
+  const veilleur = readFileSync(path.join(__dirname, "..", ".devcontainer", "veiller.sh"), "utf8")
+    .split("\n")
+    .filter((l) => !l.trimStart().startsWith("#"))
+    .join("\n");
+
+  assert.match(
+    veilleur,
+    /port-joignable\.mjs/,
+    "veiller.sh ne mesure jamais si l'adresse publique atteint Atlas : un port perdu " +
+      "en cours de session le reste jusqu'au prochain allumage"
+  );
+  assert.match(
+    veilleur,
+    /PORT_OUVERT=non/,
+    "rien ne peut plus DÉFAIRE le verrou : c'est exactement ce qui a laissé passer sa nuit du 31 août"
+  );
+  // **Ne rien conclure d'une ignorance.** Hors Codespace, la mesure est
+  // impossible : la traiter comme un refus rappellerait `gh` toutes les cinq
+  // minutes sur une machine qui n'a aucun port à ouvrir.
+  assert.match(
+    veilleur,
+    /\*\)\s*:\s*;;/,
+    "le cas « pas mesurable » n'est pas distingué du refus"
+  );
+});
+
+// ─── « OUVERT » NE REPOSE PLUS LE VERROU QUE LA MESURE VIENT DE LEVER ───────
+//
+// **Sa nuit du 12 au 13 septembre 2026.** Capture à 1 h 58 : un téléchargement
+// proposé à la place d'Atlas. Sa fiche, à la même minute : serveur debout,
+// `[démarrage : ouvert]`, 404 du relais. Et son journal, toutes les cinq
+// minutes de la nuit : *« port 3000 ouvert au public »* — une ligne de succès
+// écrite sur un port mort.
+//
+// La remesure du dehors existait déjà (31 août) et faisait son travail :
+// `PORT_OUVERT=non`. Mais le remède qui suivait reposait `PORT_OUVERT=oui` sur
+// la seule foi de `gh`, et la boucle se refermait — pour la troisième fois, le
+// dépôt retenait un RÉGLAGE là où il faut une MESURE.
+//
+// Ce cas rougit contre le veilleur d'avant le 13 septembre.
+cas("le remède du port se MESURE : « ouvert » ne repose plus le verrou tout seul", () => {
+  const veilleur = readFileSync(path.join(__dirname, "..", ".devcontainer", "veiller.sh"), "utf8")
+    .split("\n")
+    .filter((l) => !l.trimStart().startsWith("#"))
+    .join("\n");
+
+  // Le mot `ouvert` ne doit plus figurer dans la liste des mots qui posent le
+  // verrou sans rien vérifier — c'est exactement la ligne qui a tenu la nuit.
+  assert.ok(
+    !/ouvert\|hors-codespace\|sans-gh\)/.test(veilleur),
+    "« ouvert » repose PORT_OUVERT=oui sans mesurer : la remesure d'au-dessus est annulée au tour suivant"
+  );
+
+  // Et le remède doit être suivi de la question qu'il prétend régler.
+  const brancheOuverte = veilleur.slice(veilleur.indexOf("      ouvert)"));
+  assert.match(
+    brancheOuverte.slice(0, 600),
+    /port-joignable\.mjs/,
+    "rien ne vérifie que le remède a eu un effet : un geste sans effet se rejoue indéfiniment en silence"
+  );
+
+  // **Un remède mesuré sans effet cesse de se rejouer, et le DIT.** Sans cela,
+  // `gh` est rappelé toutes les cinq minutes pour rien et le journal reste
+  // inutilisable pour chercher.
+  assert.match(
+    veilleur,
+    /REMEDE_ABANDONNE=oui/,
+    "le veilleur rejoue indéfiniment un remède dont il a mesuré qu'il ne change rien"
+  );
+  // …mais il ne cesse JAMAIS de regarder : un relais qui revient est repris.
+  assert.match(
+    veilleur,
+    /REMEDE_ABANDONNE=non/,
+    "l'abandon est définitif : un port qui redevient joignable ne serait jamais repris"
+  );
+});
+
+cas("hors Codespace, la mesure du port s'abstient (code 2) au lieu d'accuser", () => {
+  // Joué pour de bon : un contrôle qui n'a jamais été exécuté ne prouve rien.
+  const sans = { ...process.env };
+  delete sans.CODESPACE_NAME;
+  delete sans.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN;
+  const rendu = spawnSync(process.execPath, [path.join(__dirname, "port-joignable.mjs")], {
+    env: sans,
+    encoding: "utf8",
+  });
+  assert.equal(rendu.status, 2, "la sonde conclut là où elle n'a rien pu mesurer");
 });
 
 rmSync(dossier, { recursive: true, force: true });

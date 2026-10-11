@@ -52,12 +52,22 @@ import { handlers } from "@/auth";
 
 export const { GET } = handlers;
 
-/** Les fournisseurs `Credentials` déclarés dans `src/auth.ts`. */
-const RAPPELS_MURES = ["/callback/credentials", "/callback/cle-appareil"];
+/**
+ * **Les seuls retours de connexion qui restent ouverts : Google et Apple.**
+ * Leur retour vient de chez eux, par le navigateur (Apple en `POST`) ; il ne
+ * peut pas passer par une action serveur.
+ *
+ * **Une liste qui OUVRE, plus une liste qui ferme** (7 octobre 2026). La liste
+ * d'avant nommait les fournisseurs à murer, et le fournisseur `second-facteur`
+ * de la double vérification y manquait : sa route acceptait des codes sans
+ * l'écran, donc sans le compteur d'échecs. Une liste qui ferme oublie le
+ * fournisseur ajouté demain ; celle-ci le mure tant que personne ne l'ouvre.
+ */
+const RAPPELS_OUVERTS = ["/callback/google", "/callback/apple"];
 
 export async function POST(requete: Parameters<typeof handlers.POST>[0]): Promise<Response> {
   const chemin = new URL(requete.url).pathname;
-  if (RAPPELS_MURES.some((r) => chemin.endsWith(r))) {
+  if (chemin.includes("/callback/") && !RAPPELS_OUVERTS.some((r) => chemin.endsWith(r))) {
     // **404, et non 403.** Un refus explicite confirmerait à qui cherche que la
     // route existe et qu'elle mène quelque part. Ici elle n'a aucun usage
     // légitime : autant qu'elle n'existe pas.

@@ -3,10 +3,11 @@ import { Pool } from "pg";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MICRO_SIMULE = path.join(__dirname, "fixtures", "fake-mic.wav");
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 // **La séquence de Madame Lucie, rejouée à la lettre — 21 août 2026.**
@@ -46,15 +47,6 @@ async function cas(nom: string, verifier: () => Promise<void>) {
     console.error(`  ✗ ${nom}\n    ${(e as Error).message}`);
   }
 }
-
-// Ce qu'il a dicté chez sa cliente, dans sa langue à lui. On l'écrit en base
-// avant le retour : le fournisseur de simulation de cet environnement pose un
-// préfixe que l'application refuse de lire, et ce refus est éprouvé ailleurs
-// (`test-anneau-vers-devis-e2e`). Ici on éprouve l'AUTRE moitié — celle que
-// cette machine ne sait pas produire, faute de clé (`AGENTS.md`).
-const DICTEE =
-  "Taille de la haie de laurier sur 20 mètres linéaires. Tonte de la pelouse. " +
-  "J'estime le temps de travaux à 1 jour, 2 hommes.";
 
 async function main() {
   console.log("=== La séquence de Madame Lucie ===\n");
@@ -126,15 +118,32 @@ async function main() {
   }
   assert.ok(noteId, "la note vocale n'est jamais arrivée en base : l'avion n'a rien envoyé");
 
-  // La transcription qu'un vrai service aurait rendue — voir DICTEE ci-dessus.
-  const ecrite = await pool.query(
-    "update notes_vocales set transcription = $1 where chantier_id = $2",
-    [DICTEE, chantierId]
+  // ═══════════════════════════════════════════════════════════════════════
+  // **ON N'ÉCRIT PLUS LA TRANSCRIPTION À LA MAIN — 14 septembre 2026.**
+  //
+  // Cette suite posait sa dictée en base ici. C'était nécessaire tant que le
+  // fournisseur des suites MARQUAIT son texte, que l'application refuse de
+  // lire. Depuis `transcription/essai.ts` (9 septembre), le texte rendu est
+  // ordinaire : la chaîne part à l'envoi de la dictée, donc AVANT cette
+  // écriture, et le devis se remplit du texte transcrit.
+  //
+  // L'écriture arrivait donc après coup, et ne servait plus qu'à contredire
+  // ce que le devis portait — c'est ce qui faisait rougir le cas plus bas :
+  // « élagage » (le texte rendu) « ne reprend rien de taille, laurier… » (le
+  // nôtre). Elle part, et la preuve se lit contre la transcription que la
+  // chaîne a vraiment lue.
+  // ═══════════════════════════════════════════════════════════════════════
+  const posee = await pool.query(
+    "select transcription from notes_vocales where chantier_id = $1",
+    [chantierId]
   );
-  // **Une écriture qui ne touche rien n'est pas un succès** (`CLAUDE.md` §5) :
+  // **Une note sans transcription n'est pas un succès** (`CLAUDE.md` §5) :
   // sans ce contrôle, la suite continuerait sur un devis qui n'avait aucune
   // chance d'être rempli.
-  assert.equal(ecrite.rowCount, 1, "la transcription n'a été posée sur aucune note");
+  assert.ok(
+    String(posee.rows[0]?.transcription ?? "").trim().length > 0,
+    "la note n'a aucune transcription : la chaîne n'a rien à reprendre"
+  );
 
   // ─── 3. « J'ai quitté l'application » ────────────────────────────────────
   //
@@ -172,7 +181,17 @@ async function main() {
       `/chantiers/${chantierId}/devis-complet`,
       `la liste l'envoie sur « ${destination} » — c'est la panne qu'il décrit`
     );
-    await ligne.click();
+    // **ON APPUIE SUR SON NOM, pas au milieu de la ligne.**
+    //
+    // Payé le 7 septembre 2026 : le clic tombait au centre de l'ancre, et le
+    // centre, sur un chantier né d'une dictée, c'est « Adresse non renseignée »
+    // — une mention qui mène EXPRÈS aux coordonnées depuis sa demande du
+    // 17 août (`ListeChantiers.tsx`). La suite accusait donc l'application
+    // d'une panne qu'elle avait fabriquée en visant le mauvais endroit.
+    //
+    // Lui appuie sur le nom de sa cliente : c'est ce que dit sa phrase — *« j'ai
+    // cliqué sur Madame Lucie »*. On vise donc le nom.
+    await ligne.locator("h2").click();
     await page2.waitForURL(/\/devis-complet$/, { timeout: 60_000 });
   });
 
@@ -231,7 +250,29 @@ async function main() {
       "le devis n'a aucune ligne : il retomberait sur la feuille vide qu'il dénonce"
     );
     const tout = rows.map((r) => String(r.libelle).toLowerCase()).join(" | ");
-    assert.match(tout, /haie|laurier|tonte|pelouse/, `ses prestations dictées sont absentes : « ${tout} »`);
+    // **CONTRE LA TRANSCRIPTION RÉELLEMENT POSÉE, et non contre nos mots.**
+    //
+    // Ce cas exigeait « haie | laurier | tonte | pelouse » — les mots de la
+    // dictée qu'il écrit en base plus haut. Depuis le 9 septembre 2026, le
+    // fournisseur des suites rend un texte utilisable tout seul
+    // (`transcription/essai.ts`) : la chaîne part à l'instant où la dictée est
+    // envoyée, donc AVANT cette écriture, et le devis porte les prestations du
+    // texte rendu. La règle que ce cas défend n'a pas bougé d'un pouce — sa
+    // dictée devient des lignes de devis — mais elle se lit contre la
+    // transcription que la chaîne a vraiment lue.
+    const { rows: note } = await pool.query(
+      "select transcription from notes_vocales where chantier_id = $1",
+      [chantierId]
+    );
+    const mots = String(note[0]?.transcription ?? "")
+      .toLowerCase()
+      .split(/[^a-zà-ÿ]+/)
+      .filter((m) => m.length >= 5);
+    assert.ok(mots.length > 0, "la note n'a aucune transcription : il n'y a rien dont les lignes puissent venir");
+    assert.ok(
+      mots.some((mot) => tout.includes(mot)),
+      `ses prestations dictées sont absentes : « ${tout} » ne reprend rien de « ${mots.slice(0, 6).join(", ")} »`
+    );
   });
 
   await cas("rien n'est parti chez la cliente", async () => {

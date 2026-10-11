@@ -4,11 +4,14 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { getRole } from "@/server/autorisation";
 import { rubriquesReglages, surtitreReglages } from "@/lib/rubriques-reglages";
 import { versionEtRetard } from "@/server/version-executee";
+import { etatDeLaBase } from "@/server/retard-de-la-base";
 import { etatVersionLente } from "@/server/etat-banc";
 import { panneauVersionLente } from "@/lib/version-lente";
 import BoutonMiseAJour from "./BoutonMiseAJour";
+import SeDeconnecter from "./SeDeconnecter";
 import Sommaire from "./Sommaire";
 import { derniereIssueMiseAJour } from "./actions";
+import { getEntreprise } from "@/server/repositories/entreprises";
 import { estBancDEssai } from "@/profil-banc";
 
 export const dynamic = "force-dynamic";
@@ -37,8 +40,28 @@ export const dynamic = "force-dynamic";
  */
 export default async function ReglagesPage() {
   const ctx = await getCurrentCtx();
-  const [role, etatVersion] = await Promise.all([getRole(ctx), versionEtRetard()]);
+  // **Le nom de l'entreprise ne sert QU'À la feuille de déconnexion**, qui
+  // nomme d'où l'on sort. Lu ici plutôt que dans le composant : un écran
+  // n'interroge pas la base, il affiche ce qu'on lui donne (`CLAUDE.md` §4
+  // sexies), et cette lecture-ci part avec les deux autres au lieu d'ajouter un
+  // aller-retour.
+  const [role, etatVersion, entreprise] = await Promise.all([
+    getRole(ctx),
+    versionEtRetard(),
+    getEntreprise(ctx),
+  ]);
   const version = etatVersion.ligne;
+
+  // **LA BASE PORTE-T-ELLE LE SCHÉMA QUE CE CODE ATTEND ? — sa panne du
+  // 13 septembre 2026.** *« Plus rien ne fonctionne ! »* : « Planning » et
+  // « Terminés » par terre, « Chantiers » debout, et cet écran-ci — celui où il
+  // vient demander « est-ce que j'ai les corrections ? » — répondait « à jour »
+  // sans rien savoir de sa base, restée trois migrations en arrière.
+  //
+  // Chargé en séquence plutôt qu'avec les trois autres : la mesure n'a de sens
+  // que sur le banc, et un `Promise.all` l'aurait faite partout
+  // (`src/server/retard-de-la-base.ts` dit pourquoi elle s'arrête là).
+  const base = estBancDEssai() ? await etatDeLaBase() : null;
 
   // Le rôle décide de ce que le SERVEUR rend, pas de ce que la feuille de style
   // cache : ce qu'un membre n'a pas le droit de voir ne sort pas d'ici
@@ -55,17 +78,40 @@ export default async function ReglagesPage() {
         {/* **Un écran court dit pourquoi il est court.** Sans cette phrase, le
             salarié lit une application amputée et va demander au patron de
             « lui ouvrir les droits ». Elle était sur la planche du 14 août, et
-            l'oublier en codant l'aurait rendue introuvable. */}
+            l'oublier en codant l'aurait rendue introuvable.
+
+            **Elle a perdu « vous voyez le planning et vos chantiers » le
+            30 août 2026, et c'est une correction.** Écrite pour le salarié,
+            elle est devenue fausse le jour où le rôle « Facturation » est né —
+            lui voit les clients, les devis et les factures, pas des chantiers
+            au planning. Énumérer par rôle aurait fait une seconde liste des
+            droits, qui vieillit (`CLAUDE.md` §3) ; ce qui reste est vrai des
+            trois, et plus court, ce qu'il demande.
+
+            **Elle est passée en `inkSoft` le 5 septembre 2026.** C'est la SEULE
+            phrase qu'un salarié lit sur cet écran, et elle lui évite justement
+            d'aller demander qu'on « lui ouvre les droits » : en `muted` elle
+            tenait 3,3 de contraste, donc elle se sautait. */}
         {role !== "proprietaire" && (
           <p
             className="mx-[26px] mt-[30px] border-t pt-[18px] text-[12px] leading-[1.75]"
-            style={{ borderColor: colors.line, color: colors.muted }}
+            style={{ borderColor: colors.line, color: colors.inkSoft }}
           >
-            Rien de l&apos;entreprise ici, et ce n&apos;est pas un écran amputé : vous voyez le
-            planning et vos chantiers. Les tarifs, les coordonnées bancaires et les documents
-            appartiennent au patron.
+            Le reste de l&apos;entreprise n&apos;est pas ici, et ce n&apos;est pas un écran amputé : les
+            tarifs, les coordonnées bancaires et les documents appartiennent au patron.
           </p>
         )}
+
+        {/* **LA SORTIE CLÔT LES RUBRIQUES, ET PASSE AVANT LA VERSION.** Le bloc
+            ci-dessous n'est pas un réglage : c'est le pied de page technique,
+            qui répond à « est-ce que mes correctifs sont arrivés ». Poser la
+            déconnexion après lui l'aurait rangée derrière du texte qu'on ne lit
+            pas, et un geste qu'on ne trouve pas n'existe pas.
+
+            **Aucune garde de rôle**, et ce n'en est pas un oubli : sortir de
+            son propre compte n'appartient pas à l'entreprise. Un salarié doit
+            pouvoir fermer sa session sur le téléphone qu'il rend le soir. */}
+        <SeDeconnecter nomEntreprise={entreprise?.nom ?? null} />
 
         {/* La version exécutée, en bas et discrète.
             Elle existe pour une raison précise : le patron a réessayé, un jour
@@ -80,11 +126,11 @@ export default async function ReglagesPage() {
             date de la même heure — les deux avançaient en parallèle — et conclu
             qu'il avait tout. La date ne mentait pas ; elle ne suffisait pas. */}
         <div className="mx-[26px] mt-[30px] border-t pt-[18px]" style={{ borderColor: colors.line }}>
-          <p className={`mb-[6px] ${libelleCaps}`} style={{ color: colors.muted }}>
+          <p className={`mb-[6px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
             Version
           </p>
-          <p className="text-[13px]" style={{ color: colors.muted }}>
-            {version ?? "inconnue — cette installation n'annonce pas sa version."}
+          <p className="text-[13px]" style={{ color: colors.inkSoft }}>
+            {version ?? "inconnue, cette installation n'annonce pas sa version."}
           </p>
 
           {/* **LE CAS QUI LUI A COÛTÉ UNE SOIRÉE, dit en toutes lettres.**
@@ -106,7 +152,35 @@ export default async function ReglagesPage() {
               </p>
               <p className="mt-1 text-[12px]" style={{ color: colors.muted }}>
                 En attente : {etatVersion.enAttente}. Arrêtez puis rouvrez l&apos;espace de
-                travail — il se reconstruira au démarrage.
+                travail. Il se reconstruira au démarrage.
+              </p>
+            </div>
+          )}
+
+          {/* **LA BASE, quand elle n'a pas suivi — sa panne du 13 septembre
+              2026.** Une base en retard ne rend pas l'application vieille : elle
+              en fait TOMBER des écrans, au hasard de la colonne qu'ils touchent.
+              Ce soir-là il a lu « Impossible de charger le planning » et un
+              numéro de six chiffres, et il a conclu — légitimement — que
+              l'application était cassée.
+
+              **Rien ne s'affiche quand tout concorde.** Une ligne « base à
+              jour » de plus sur cet écran serait du bruit les 364 autres jours
+              (`CLAUDE.md` §3, le moins de mots possible) ; elle n'apparaît que
+              lorsqu'il y a un geste à faire.
+
+              En or, comme tout ce qui attend un geste de lui — et le geste est
+              juste en dessous, le même bouton. Il n'efface aucune donnée
+              (`CLAUDE.md` §4 septies). */}
+          {base && !base.accordee && (
+            <div className="mt-3 py-1 pl-[15px]" style={{ borderLeft: `1px solid ${colors.or}` }}>
+              <p className="text-[13px]" style={{ color: colors.ink }}>
+                {base.manquantes.length > 0
+                  ? `La base a ${base.manquantes.length} version(s) de retard sur l'application : certains écrans ne s'afficheront pas.`
+                  : `La base est en avance sur l'application : certains écrans ne s'afficheront pas.`}
+              </p>
+              <p className="mt-1 text-[12px]" style={{ color: colors.muted }}>
+                Touchez « Chercher les dernières corrections » : rien ne sera effacé.
               </p>
             </div>
           )}

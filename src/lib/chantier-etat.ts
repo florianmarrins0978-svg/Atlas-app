@@ -1,9 +1,21 @@
 import { attendLeClient, etatEnvoi } from "./etat-envoi";
 import { jourLisible } from "./jour";
+import { lienVersLeChantierAuPlanning } from "./lien-planning";
 
-// Statut d'un chantier et libellés associés — définis ici (pas dans
-// mock-data.ts) car utilisés par les écrans réels ; réexportés depuis
-// mock-data.ts pour ne pas casser les maquettes /design/* qui les référencent.
+// Statut d'un chantier et libellés associés — définis ici, et employés par les
+// écrans réels.
+//
+// **CE COMMENTAIRE ÉTAIT FAUX, corrigé le 5 septembre 2026 (audit de santé).**
+// Il disait que ces statuts étaient « réexportés depuis mock-data.ts pour ne
+// pas casser les maquettes /design/* ». Ce lien N'EXISTE PLUS : `mock-data.ts`
+// tient depuis sa propre liste, gelée, et explique pourquoi — un outil de
+// conception ne doit pas peser sur les états du produit. Les deux fichiers
+// portent donc un `ChantierStatut` et un `statutLabel` chacun, **délibérément
+// séparés**, et non l'un dérivé de l'autre.
+//
+// Le laisser aurait envoyé chercher une réexportation inexistante, et fait
+// craindre de casser les maquettes en ajoutant un état ici — soit exactement
+// la peur que la coupure du 1er août 2026 avait supprimée.
 export type ChantierStatut =
   | "brouillon"
   | "a_verifier"
@@ -89,6 +101,18 @@ export type LigneEtatChantier = {
 /** Un devis est parti, et le client n'a pas encore répondu. */
 const DEVIS_PARTI_SANS_REPONSE: ChantierStatut[] = ["devis_envoye", "en_attente_client", "a_relancer"];
 
+/**
+ * La première lettre en capitale — « lundi 10 août » devient « Lundi 10 août ».
+ *
+ * `toLocaleUpperCase("fr")` et non `toUpperCase()` : le second connaît l'ASCII
+ * et rien d'autre. Aucun jour ni aucun mois français ne commence par une
+ * lettre accentuée aujourd'hui, mais une chaîne vide ou une lettre hors ASCII
+ * ne doit pas rendre autre chose qu'elle-même.
+ */
+export function enCapitale(texte: string): string {
+  return texte ? texte[0].toLocaleUpperCase("fr") + texte.slice(1) : texte;
+}
+
 export function ligneEtatChantier(params: {
   statut: ChantierStatut;
   photosCount: number;
@@ -123,14 +147,26 @@ export function ligneEtatChantier(params: {
 
   if (DEVIS_PARTI_SANS_REPONSE.includes(statut)) {
     return {
-      etat: statut === "a_relancer" ? "Devis envoyé · à relancer" : "Devis envoyé · sans réponse",
-      precision: envoyeLe ? `Envoyé le ${jourLisible(envoyeLe, aujourdHui)}.` : null,
+      etat: statut === "a_relancer" ? "Devis envoyé, à relancer" : "Devis envoyé, sans réponse",
+      // **LA DATE SEULE, SANS LE MOT « ENVOYÉ » — 6 septembre 2026.**
+      //
+      // Elle s'écrivait « Envoyé le lundi 10 août. » sous une ligne qui dit
+      // déjà « DEVIS ENVOYÉ ». C'est sa plainte du 19 août 2026, mot pour
+      // mot : *« l'ancienneté du devis est écrite deux fois »*. Le mot part,
+      // la DATE reste entière — c'est elle qu'il avait demandée le 13 août,
+      // et elle ne bouge pas.
+      //
+      // La capitale initiale est posée ici plutôt que par une classe
+      // `capitalize` : c'est une phrase, et une règle d'affichage ne doit pas
+      // décider de ce qu'une fonction pure a écrit. Le point final part avec
+      // le verbe — ce n'est plus une phrase, c'est une date.
+      precision: envoyeLe ? enCapitale(jourLisible(envoyeLe, aujourdHui)) : null,
       enOr,
     };
   }
 
   const photos = photosCount > 0 ? `${photosCount} photo${photosCount > 1 ? "s" : ""}` : "sans photo";
-  return { etat: `${statutLabel[statut]} · ${photos}`, precision: null, enOr };
+  return { etat: `${statutLabel[statut]}, ${photos}`, precision: null, enOr };
 }
 
 // Détermine l'unique action principale à proposer sur la fiche chantier.
@@ -146,6 +182,7 @@ export type NextActionKey =
   | "prix"
   | "devis-preparer"
   | "devis-consulter"
+  | "devis-attente"
   | "planifier";
 
 export type NextAction = {
@@ -153,7 +190,7 @@ export type NextAction = {
   label: string;
 };
 
-// Forme réelle (issue de la base) consommée par getNextAction / getSecondarySteps.
+// Forme réelle (issue de la base) consommée par getNextAction et lienDeReprise.
 // Un seul arbre de décision pour toute l'application — voir aussi getStatutAffiche,
 // qui applique la même règle pour dériver le statut affiché sur la liste.
 export type EtatChantierPourAction = {
@@ -164,6 +201,11 @@ export type EtatChantierPourAction = {
   devisGenereAt: Date | string | null;
   devisEnvoyeAt: Date | string | null;
   datePlanifiee: string | null;
+  // Le dernier envoi : sans lui, un devis qui attend le client ne se distingue
+  // pas d'un devis « à planifier » (`getPlanificationEtat`).
+  envoiEnvoyeAt?: Date | string | null;
+  envoiExpireAt?: Date | string | null;
+  envoiReponse?: "acceptee" | "refusee" | "correction" | null;
 };
 
 export function getNextAction(c: EtatChantierPourAction): NextAction | null {
@@ -191,8 +233,8 @@ export function getNextAction(c: EtatChantierPourAction): NextAction | null {
   // La chaîne est donc parcourue **à l'envers**, du plus avancé au plus
   // ancien : le premier jalon franchi commande, et ce qui manque en amont ne
   // ramène plus personne au départ. Les étapes sautées restent joignables par
-  // `getSecondarySteps` — sauter n'est pas interdit, c'est même la voie normale
-  // depuis que la chaîne va de la dictée au devis d'un seul geste.
+  // leur adresse — sauter n'est pas interdit, c'est même la voie normale depuis
+  // que la chaîne va de la dictée au devis d'un seul geste.
   //
   // La règle qui existait déjà — « une fois les informations vérifiées,
   // supprimer la note vocale ne doit pas ramener à la dictée » — n'est pas
@@ -201,6 +243,13 @@ export function getNextAction(c: EtatChantierPourAction): NextAction | null {
   // ─────────────────────────────────────────────────────────────────────────
 
   if (c.datePlanifiee) return null; // Planifié : plus rien à faire ici.
+  // **Le client choisit sa date : il n'y a rien à planifier.** Sa plainte du
+  // 3 octobre 2026 : un devis figé, son message annulé dans Messages, et le
+  // chantier qui menait au planning, où il dort replié sous « en attente du
+  // client ». La reprise est l'écran du devis parti, qui porte la relance.
+  if (c.devisEnvoyeAt && getPlanificationEtat(c) === "attente_client") {
+    return { key: "devis-attente", label: "Relancer le client" };
+  }
   if (c.devisEnvoyeAt) return { key: "planifier", label: "Planifier le chantier" };
   // **Le libellé dit ce qui reste à faire, pas où l'on va.** « Consulter le
   // devis » décrivait une lecture ; ce qui l'attend est un envoi, et c'est le
@@ -240,13 +289,24 @@ export function getNextAction(c: EtatChantierPourAction): NextAction | null {
 // Construit l'URL associée à l'action principale pour un chantier donné.
 export function getNextActionHref(id: string, action: NextAction): string {
   switch (action.key) {
-    // **Les photos n'ont plus d'écran à elles** (11 août 2026) : elles vivent
-    // dans la pellicule du tiroir, sur la fiche. Pointer vers un
-    // `/photos` disparu enverrait sur une page introuvable.
+    // **LES DEUX MÈNENT À LA FICHE CLIENT, ET C'EST LE MÊME ÉCRAN.**
+    //
+    // Les photos n'ont plus d'écran à elles depuis le 11 août 2026 ; elles
+    // vivaient dans la pellicule du tiroir, sur la fiche du chantier. Cette
+    // fiche a disparu le 4 septembre (`ARCHITECTURE.md` §254), et sa raison
+    // était qu'elle montrait une seconde fois ce que la fiche client porte
+    // déjà : la pellicule, l'anneau de dictée et les coordonnées.
+    //
+    // C'est donc là que les deux reprises se font — le même `/coordonnees`,
+    // qui rend `FormulaireNouveauChantier` prérempli.
+    //
+    // **La clé garde son nom parce qu'elle nomme l'ÉTAPE, pas l'écran** :
+    // « enregistrer une note vocale » reste ce qui manque, même si le geste a
+    // changé de page. L'écran `/note-vocale` n'est pas supprimé pour autant —
+    // il reste joignable par son adresse, comme les quatre autres.
     case "photos":
-      return `/chantiers/${id}`;
     case "note-vocale":
-      return `/chantiers/${id}/note-vocale`;
+      return `/chantiers/${id}/coordonnees`;
     case "informations":
       return `/chantiers/${id}/informations`;
     case "prix":
@@ -261,97 +321,34 @@ export function getNextActionHref(id: string, action: NextAction): string {
     case "devis-preparer":
     case "devis-consulter":
       return `/chantiers/${id}/devis-complet`;
+    case "devis-attente":
+      return `/chantiers/${id}/export`;
     case "planifier":
       return `/planning`;
   }
 }
 
-export type SecondaryStep = {
-  key: "photos" | "note-vocale" | "informations" | "prix" | "devis";
-  label: string;
-  meta: string;
-  done: boolean;
-  href: string;
-};
 
-// Construit la liste des étapes secondaires (toutes toujours accessibles, jamais
-// verrouillées), en excluant celle qui correspond déjà à l'action principale
-// pour éviter toute redondance.
-export function getSecondarySteps(
-  id: string,
-  c: EtatChantierPourAction,
-  currentActionKey: NextActionKey | undefined
-): SecondaryStep[] {
-  const all: SecondaryStep[] = [
-    {
-      key: "photos",
-      label: "Photos",
-      meta:
-        c.photosCount > 0 ? `${c.photosCount} photo${c.photosCount > 1 ? "s" : ""}` : "Aucune photo pour l'instant",
-      done: c.photosCount > 0,
-      // Même raison que ci-dessus : la pellicule de la fiche a remplacé
-      // l'écran Photos. Cette ligne reste construite — les maquettes /design
-      // s'en servent — mais la fiche l'écarte : la pellicule est juste
-      // au-dessus, et deux fois la même chose sur un écran, c'est une de trop.
-      href: `/chantiers/${id}`,
-    },
-    {
-      key: "note-vocale",
-      label: "Note vocale",
-      meta: c.aUneNoteVocale ? "Enregistrée" : "Aucune note pour l'instant",
-      done: c.aUneNoteVocale,
-      href: `/chantiers/${id}/note-vocale`,
-    },
-    {
-      key: "informations",
-      label: "Informations",
-      // « En attente de la note vocale » se lisait comme un verrou : le patron
-      // en a conclu qu'il ne pouvait pas rédiger son devis à la main. Rien n'est
-      // verrouillé — ces écrans ont toujours été ouverts. Le libellé dit
-      // désormais ce qui MANQUE, pas ce qu'il faudrait attendre.
-      meta: c.informationsVerifieesAt
-        ? "Vérifiées"
-        : c.aUneNoteVocale
-          ? "À vérifier"
-          : "À remplir, ou à dicter",
-      done: !!c.informationsVerifieesAt,
-      href: `/chantiers/${id}/informations`,
-    },
-    {
-      key: "prix",
-      label: "Prix",
-      meta: c.prixValideAt ? "Calculé" : c.informationsVerifieesAt ? "À calculer" : "À calculer, ou à écrire à la main",
-      done: !!c.prixValideAt,
-      href: `/chantiers/${id}/prix`,
-    },
-    {
-      key: "devis",
-      label: "Devis",
-      meta: c.devisEnvoyeAt
-        ? "Envoyé"
-        : c.devisGenereAt
-          ? "Généré, non envoyé"
-          : c.prixValideAt
-            ? "À préparer"
-            : "À préparer une fois le prix posé",
-      done: !!c.devisEnvoyeAt,
-      // **Deux destinations, selon que le devis est parti ou non** — depuis le
-      // 20 août 2026. Avant l'envoi, `/export` n'existe plus : il renvoie de
-      // lui-même vers le devis, et une redirection en cascade se voit à l'œil.
-      // Après l'envoi, c'est bien lui qu'il faut — il porte le lien du client
-      // et la reprise.
-      href: c.devisEnvoyeAt ? `/chantiers/${id}/export` : `/chantiers/${id}/devis-complet`,
-    },
-  ];
+/**
+ * ─── LA LISTE DES ÉTAPES A DISPARU AVEC L'ÉCRAN QUI LA PORTAIT ───────────
+ *
+ * `getSecondarySteps` et son type `SecondaryStep` construisaient le tiroir de
+ * la fiche du chantier, et rien d'autre : cette fonction n'avait qu'un seul
+ * appelant. La fiche est retirée le 4 septembre 2026 (`ARCHITECTURE.md` §254)
+ * — *« toutes ces infos sont déjà sur cette page »* —, et une liste conservée
+ * au cas où se met à mentir en silence.
+ *
+ * **Ce qu'elle décidait n'est pas perdu**, et n'est pas recopié non plus :
+ *
+ * | Sa règle | Où elle vit désormais |
+ * |---|---|
+ * | où mène le devis — `/export` une fois parti, `/devis-complet` avant (20 août 2026) | `portes-du-planning.ts` |
+ * | où se reprennent les photos et la dictée | `getNextActionHref`, juste au-dessus |
+ *
+ * Les cinq écrans d'étape, eux, existent tous : la fiche n'en était que la
+ * liste.
+ */
 
-  // La ligne "devis" correspond aux deux clés d'action "devis-preparer" / "devis-consulter"
-  const currentAsSecondaryKey =
-    currentActionKey === "devis-preparer" || currentActionKey === "devis-consulter"
-      ? "devis"
-      : currentActionKey;
-
-  return all.filter((s) => s.key !== currentAsSecondaryKey);
-}
 
 // --- État de planification --------------------------------------------------
 // Source unique de vérité pour savoir si un chantier doit apparaître dans
@@ -361,10 +358,16 @@ export function getSecondarySteps(
 // change demain (acceptation client, acompte reçu...), seule cette fonction
 // est à modifier — pas l'écran Planning.
 
-export type PlanificationEtat = "a_planifier" | "planifie" | "attente_client" | "non_concerne";
+export type PlanificationEtat = "a_planifier" | "planifie" | "attente_client" | "devis_expire" | "non_concerne";
 
 export type EtatPourPlanification = {
   devisEnvoyeAt: Date | string | null;
+  /**
+   * Le contrat d'entretien dont ce chantier est un passage (migration 0107).
+   * Un passage n'a pas de devis : c'est le contrat accepté qui l'a fait
+   * naître, et il attend son jour exactement comme un devis envoyé.
+   */
+  contratEntretienId?: string | null;
   datePlanifiee: string | null;
   envoiEnvoyeAt?: Date | string | null;
   envoiExpireAt?: Date | string | null;
@@ -389,8 +392,37 @@ export function getPlanificationEtat(
   );
   if (attendLeClient(etat)) return "attente_client";
 
-  if (c.devisEnvoyeAt) return "a_planifier";
+  // **Son lien a expiré sans réponse : rien n'est vendu** — sa demande du
+  // 7 octobre 2026. Ce chantier tombait dans « à planifier », d'où son nom se
+  // posait sans aucune signature, et le planning le montrait comme signé. Il
+  // se range à part (« Devis expirés »), et ne se pose que par la porte qui
+  // demande comment il signe.
+  if (etat === "caduc" && c.devisEnvoyeAt) return "devis_expire";
+
+  if (c.devisEnvoyeAt || c.contratEntretienId) return "a_planifier";
   return "non_concerne";
+}
+
+/**
+ * POSÉ AU PLANNING, MAIS LE DEVIS N'EST PAS SIGNÉ — son choix B du 7 octobre
+ * 2026.
+ *
+ * Le patron a posé lui-même un client qui n'arrivait pas à choisir ses dates :
+ * la place est prise, l'accord attend encore son lien. Le planning le dit sous
+ * le nom (« Pas encore signé »), pour qu'un chantier posé ne se lise jamais
+ * comme un chantier vendu.
+ *
+ * La même lecture de l'envoi que `getPlanificationEtat` : deux façons de dire
+ * « il attend le client » finiraient par se contredire (`CLAUDE.md` §3).
+ */
+export function poseSansAccord(c: EtatPourPlanification, maintenant: Date = new Date()): boolean {
+  if (!c.datePlanifiee || c.envoiEnvoyeAt === undefined) return false;
+  return attendLeClient(
+    etatEnvoi(
+      { envoyeAt: c.envoiEnvoyeAt, expireAt: c.envoiExpireAt ?? null, reponse: c.envoiReponse ?? null },
+      maintenant
+    )
+  );
 }
 
 // --- Statut d'affichage (liste des chantiers) ---------------------------
@@ -488,6 +520,35 @@ export function trierParDatePlanifiee<T extends { datePlanifiee?: string | null 
 }
 
 /**
+ * **Glisser la ligne d'un devis qui attend le client la RETIRE de la liste,
+ * sans rien effacer.** Sa règle du 29 septembre 2026 : *« il doit pouvoir les
+ * retirer en les slidant sur le côté, mais ça ne doit pas impacter le lien
+ * cliquable envoyé au client ! Il doit quand même pouvoir l'ouvrir »*.
+ *
+ * Le glissement supprimait le chantier : le lien s'ouvrait encore, mais une
+ * acceptation arrivée ensuite posait au planning un chantier supprimé, donc
+ * invisible, et sans notification. Tout le reste se supprime comme avant.
+ */
+export function seRetireSansEffacer(statut: ChantierStatut): boolean {
+  return DEVIS_PARTI_SANS_REPONSE.includes(statut);
+}
+
+/**
+ * La ligne est-elle retirée de « Vos chantiers » ? Oui tant que le client n'a
+ * pas répondu : sa réponse change le statut, et la ligne revient avec la
+ * carte qui l'annonce. Un NOUVEL envoi parti après le retrait la remet aussi :
+ * c'est un autre devis qui attend.
+ */
+export function retireDeLaListe(c: {
+  statut: ChantierStatut;
+  retireDeLaListeAt: Date | null;
+  envoiEnvoyeAt?: Date | string | null;
+}): boolean {
+  if (!c.retireDeLaListeAt || !seRetireSansEffacer(c.statut)) return false;
+  return !c.envoiEnvoyeAt || new Date(c.envoiEnvoyeAt) <= c.retireDeLaListeAt;
+}
+
+/**
  * Où l'on retombe en rouvrant un chantier depuis la liste.
  *
  * ───────────────────────────────────────────────────────────────────────────
@@ -509,30 +570,34 @@ export function trierParDatePlanifiee<T extends { datePlanifiee?: string | null 
  * La liste ne mène donc plus à la fiche, mais **à l'écran où le travail s'est
  * arrêté**. Rouvrir un chantier, c'est reprendre — pas recommencer.
  *
- * **Ce qui reste sur la fiche, et pourquoi ce n'est pas un oubli.** Deux états
- * n'ont aucun écran où reprendre : un devis parti dont on attend la réponse du
- * client, et un chantier déjà planifié. Le renvoyer vers le planning général
- * l'éloignerait de son chantier au lieu de l'y ramener. Dans ces deux cas, la
- * fiche EST l'endroit : elle porte l'état, le tiroir et la sortie vers la
- * facture.
+ * ───────────────────────────────────────────────────────────────────────────
+ * **ELLE NE RENVOIE PLUS JAMAIS SUR LA FICHE DU CHANTIER — 4 septembre 2026.**
  *
- * **Et la fiche reste à un doigt**, toujours : la flèche de retour de chaque
- * écran y mène. Reprendre au bon endroit ne ferme aucune porte.
+ * Cette fonction rendait `/chantiers/[id]` dans **quatre** cas : les photos, la
+ * dictée, un devis parti pas encore posé, et — par son repli — un chantier
+ * planifié. La fiche disparaissant (`ARCHITECTURE.md` §254), les quatre
+ * seraient devenus une **boucle de redirection**, puisque la route qui la
+ * remplace se règle sur cette fonction-ci. Sur un chantier planifié,
+ * c'est-à-dire précisément le cas du patron.
+ *
+ * Les quatre ont donc une destination à eux, et aucune n'est inventée :
+ *
+ * | Ce qui reste à faire | Où l'on reprend | Pourquoi celui-là |
+ * |---|---|---|
+ * | des photos, une dictée | `/chantiers/[id]/coordonnees` | la pellicule et l'anneau y sont depuis le 31 août — c'était le doublon qu'il refusait |
+ * | attendre le client | `/chantiers/[id]/export` | le devis parti et sa relance : au planning il n'est pas « à planifier », il dort replié (3 octobre 2026) |
+ * | poser une date | `/planning` | ce que `getNextActionHref` rendait déjà : le chantier est dans « À planifier », et sa ligne y porte ses portes |
+ * | rien : la date est posée | `/planning?chantier=[id]` | **sa journée**, portes levées — sa réponse du 4 septembre |
+ *
+ * **Le chantier posé ne retombe pas sur le planning général**, et c'est le seul
+ * point qu'il a tranché lui-même ce jour-là : le mois courant, à lui de
+ * retrouver sa ligne, c'est l'errance du 8 août 2026 — *« comment moi je fais
+ * pour avoir accès au devis ? »*.
  * ───────────────────────────────────────────────────────────────────────────
  */
 export function lienDeReprise(id: string, c: EtatChantierPourAction): string {
   const action = getNextAction(c);
-  if (!action) return `/chantiers/${id}`;
-  // **Trois étapes se reprennent SUR la fiche**, et ce n'est pas un repli :
-  //
-  //   · les photos et la dictée y vivent pour de bon — la pellicule et
-  //     l'anneau sont au milieu de l'écran depuis sa demande du 11 août
-  //     (« il est en plein milieu et dès qu'on arrive sur la page, il y est »).
-  //     C'est bien « cette page-là » qu'il décrit ;
-  //   · un chantier planifié n'a rien à reprendre : l'envoyer vers le planning
-  //     général l'éloignerait de son chantier au lieu de l'y ramener.
-  if (action.key === "photos" || action.key === "note-vocale" || action.key === "planifier") {
-    return `/chantiers/${id}`;
-  }
+  // La date est posée : il n'y a plus d'étape, il y a une JOURNÉE.
+  if (!action) return lienVersLeChantierAuPlanning(id);
   return getNextActionHref(id, action);
 }

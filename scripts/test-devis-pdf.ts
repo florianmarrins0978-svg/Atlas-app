@@ -6,6 +6,7 @@ import {
   type DevisPdfData,
   type TraceDevis,
 } from "../src/server/pdf/devis-pdf";
+import { TITRE_FORMULAIRE } from "../src/lib/retractation";
 import { couleursDocument } from "../src/lib/design-tokens";
 
 // Le devis d'Atlas doit être celui d'Arborea (`appli/devis-modele.html`).
@@ -100,28 +101,40 @@ async function main() {
     const textes = contenus(trace);
     // Les intertitres du modèle, un par un. Un seul qui manque et le patron ne
     // reconnaît plus son document.
+    // **Les colonnes des pros — sa planche du 14 septembre 2026.** Le numéro
+    // ne vit plus dans les références : il est à droite du titre, « n° … ».
+    // L'en-tête de colonne « TOTAL HT » et le récapitulatif « Total HT » ne
+    // s'écrivent pas pareil, et c'est voulu (30 août 2026) : il les confondait.
     for (const attendu of [
-      "Devis n°",
       "Date",
       "Validité",
       "DEVIS",
       "CLIENT",
-      "DESCRIPTION",
+      "LIEU DES TRAVAUX",
+      "DÉSIGNATION",
       "QTÉ",
-      "PRIX UNITAIRE HT",
+      "UNITÉ",
+      "P.U. HT",
       "TOTAL HT",
+      "TVA %",
+      "TOTAL TTC",
+      "BASE HT",
       "Total HT",
       "Total TTC",
       "NOTES / CONDITIONS",
       "MODALITÉS DE PAIEMENT",
-      "Bon pour accord — signature du client",
+      "Bon pour accord, signature du client",
     ]) {
       assert.ok(textes.includes(attendu), `« ${attendu} » manque au devis.`);
     }
+    // Ce devis n'a aucune remise : la colonne « Rem. % » ne s'y dessine pas
+    // (15 septembre 2026). Elle n'apparaît que lorsqu'il en accorde une —
+    // `test-papier-devis-facture.ts` tient les deux cas.
+    assert.ok(!textes.includes("REM. %"), "« REM. % » s'écrit en tête d'un devis sans remise.");
 
     const rang = (t: string) => textes.indexOf(t);
     assert.ok(rang("DEVIS") < rang("CLIENT"), "Le titre doit précéder les parties.");
-    assert.ok(rang("CLIENT") < rang("DESCRIPTION"), "Les parties précèdent le tableau.");
+    assert.ok(rang("CLIENT") < rang("DÉSIGNATION"), "Les parties précèdent le tableau.");
 
     // **L'ÉMETTEUR N'APPARAÎT QU'UNE FOIS**, et c'est sa question du 18 août
     // 2026 : *« pourquoi il y a deux fois l'émetteur ? »*. L'en-tête le porte
@@ -131,7 +144,7 @@ async function main() {
     assert.ok(!textes.includes("ÉMETTEUR"), "le bloc « ÉMETTEUR » est revenu : il double l'en-tête");
     const foisLeNom = textes.filter((t) => t === DEVIS.entrepriseNom).length;
     assert.equal(foisLeNom, 1, `le nom de l'entreprise est écrit ${foisLeNom} fois sur le devis`);
-    assert.ok(rang("DESCRIPTION") < rang("Total TTC"), "Le tableau précède les totaux.");
+    assert.ok(rang("DÉSIGNATION") < rang("Total TTC"), "Le tableau précède les totaux.");
     assert.ok(rang("Total TTC") < rang("NOTES / CONDITIONS"), "Les totaux précèdent les notes.");
   });
 
@@ -146,7 +159,11 @@ async function main() {
     }
     const mention = textes.find((t) => t.startsWith("Devis établi par"));
     assert.ok(mention, "La mention légale ne commence pas comme celle du modèle.");
-    const pied = textes.filter((t) => t.startsWith("Devis établi") || t.includes("précédé")).join(" ");
+    // La mention se lit d'un tenant, à partir de son début : la largeur coupe
+    // ses lignes où elle veut, et la durée de validité nommée (3 octobre 2026)
+    // a déplacé la coupure. Un contrôle d'accents ne doit pas dépendre d'elle.
+    const debut = textes.findIndex((t) => t.startsWith("Devis établi"));
+    const pied = textes.slice(debut, debut + 4).join(" ");
     assert.match(pied, /précédé/, "« précédé » a perdu ses accents.");
     assert.match(pied, /daté et signé/, "« daté et signé » a perdu ses accents.");
   });
@@ -262,7 +279,81 @@ async function main() {
     assert.ok(!textes.some((t) => t.startsWith("IBAN")), "Un IBAN a été inventé.");
     assert.ok(!textes.some((t) => t.startsWith("SIRET")), "Un SIRET a été inventé.");
     // Le pied, lui, reste : c'est ce que le client signe.
-    assert.ok(textes.includes("Bon pour accord — signature du client"), "Le cadre de signature a disparu.");
+    assert.ok(textes.includes("Bon pour accord, signature du client"), "Le cadre de signature a disparu.");
+  });
+
+  await cas("une ligne CHIFFRÉE n'affiche jamais « à chiffrer », drapeau ou pas", async () => {
+    // ═══════════════════════════════════════════════════════════════════════
+    // **Sa capture du 31 août 2026, et c'est le pire des trois défauts du
+    // jour.** Son devis portait « à chiffrer » en face du dessouchage et de la
+    // tonte, un seul montant visible (560,00 €) — et un Total HT de
+    // 2 280,00 €. Le document comptait 1 720 € que son tableau refusait de
+    // montrer.
+    //
+    // Un devis bloqué se voit. Un devis dont le total ne correspond pas à ses
+    // lignes PART chez le client : il additionne, n'y arrive pas, et cesse de
+    // croire le reste.
+    //
+    // Le drapeau était resté levé sur des lignes qu'il avait chiffrées ; le
+    // PDF le lisait seul. Un montant posé répond désormais à la question.
+    // ═══════════════════════════════════════════════════════════════════════
+    const { trace } = await composerDevisPdf({
+      ...DEVIS,
+      totalHt: "2280.00",
+      totalTva: "456.00",
+      totalTtc: "2736.00",
+      lignes: [
+        { libelle: "Dessouchage", quantite: "2", unite: "souche", prixUnitaire: "860.00", montant: "1720.00", aChiffrer: true },
+        { libelle: "Démontage en rétention d'un érable", quantite: "1", prixUnitaire: "560.00", montant: "560.00" },
+      ],
+    });
+    const textes = contenus(trace);
+    assert.ok(
+      !textes.includes("à chiffrer"),
+      "Une ligne qui porte 1 720,00 € s'affiche encore « à chiffrer » : le total ne correspond plus au tableau."
+    );
+
+    // **La propriété qui compte, et elle vaut plus qu'une chaîne attendue :**
+    // ce qui est imprimé doit faire le total imprimé. Les montants sont relus
+    // en NOMBRES plutôt que comparés au mot près : le séparateur de milliers
+    // est une espace insécable étroite, invisible dans un fichier source, et un
+    // contrôle qui rougit sur ce caractère-là accuse le mauvais coupable.
+    const montantsLus = textes
+      .filter((t) => /^-?[\d\u202f\u00a0 ]+,\d{2}\s*€$/.test(t))
+      .map((t) => Number(t.replace(/[^\d,]/g, "").replace(",", ".")));
+    assert.ok(
+      montantsLus.includes(2280),
+      "Le Total HT n'a pas été lu — le contrôle ne mesure rien (`CLAUDE.md` §5)."
+    );
+    assert.ok(
+      montantsLus.includes(1720) && montantsLus.includes(560),
+      `Le tableau ne montre pas les deux montants qui font le total. Lus : ${montantsLus.join(", ")}`
+    );
+    // Et ils font bien le total : c'est la contradiction elle-même qu'on
+    // interdit, pas seulement le mot « à chiffrer ».
+    assert.strictEqual(1720 + 560, 2280, "le jeu d'essai ne représente plus sa capture");
+  });
+
+  await cas("une ligne VRAIMENT sans prix dit toujours « à chiffrer »", async () => {
+    // La règle ne s'est pas retournée : un zéro affiché comme un montant se lit
+    // « gratuit ». C'est ce que le drapeau existe pour éviter (26 août 2026),
+    // et l'assouplissement ci-dessus ne doit pas l'emporter avec lui.
+    const { trace } = await composerDevisPdf({
+      ...DEVIS,
+      totalHt: "560.00",
+      totalTva: "112.00",
+      totalTtc: "672.00",
+      lignes: [
+        { libelle: "Tonte de la pelouse", quantite: "1200", unite: "m²", prixUnitaire: "0", montant: "0", aChiffrer: true },
+        { libelle: "Démontage en rétention d'un érable", quantite: "1", prixUnitaire: "560.00", montant: "560.00" },
+      ],
+    });
+    const textes = contenus(trace);
+    assert.ok(textes.includes("à chiffrer"), "Une ligne sans prix ne le dit plus.");
+    assert.ok(
+      !textes.some((t) => t === "0,00 €"),
+      "Un travail non chiffré s'affiche à 0,00 € : le client le lira « gratuit »."
+    );
   });
 
   await cas("un devis sans ligne le dit plutôt que de paraître tronqué", async () => {
@@ -307,7 +398,7 @@ async function main() {
     );
     assert.ok(pagesAvecLignes.size > 1, "Les lignes devraient s'étaler sur plusieurs pages.");
     const pagesAvecEnTete = new Set(
-      trace.textes.filter((t) => t.contenu === "DESCRIPTION").map((t) => t.page)
+      trace.textes.filter((t) => t.contenu === "DÉSIGNATION").map((t) => t.page)
     );
     for (const page of pagesAvecLignes) {
       assert.ok(
@@ -322,13 +413,17 @@ async function main() {
     assert.ok(numeros.includes(`Page 1 / ${trace.pages}`), "La numérotation ne dit pas le total.");
   });
 
-  await cas("un devis d'une page ne porte pas de numéro de page", async () => {
+  // **Le formulaire de rétractation suit sur sa propre page** — 3 octobre
+  // 2026 (L221-5, annexe de R221-1). Le devis lui-même tient toujours sur la
+  // première ; c'est ce que ce contrôle défendait, et il le défend encore.
+  await cas("un devis court tient sur une page, et le formulaire sur la suivante", async () => {
     const { trace } = await composerDevisPdf(DEVIS);
-    assert.equal(trace.pages, 1, "Ce devis devrait tenir sur une page.");
-    assert.ok(
-      !contenus(trace).some((t) => t.startsWith("Page ")),
-      "Le modèle ne numérote pas : « Page 1 / 1 » est un ornement en trop."
-    );
+    assert.equal(trace.pages, 2, "Le devis et son formulaire devraient tenir sur deux pages.");
+    const titre = trace.textes.find((t) => t.contenu.includes(TITRE_FORMULAIRE));
+    assert.ok(titre, "le formulaire de rétractation manque");
+    assert.equal(titre.page, 2, "le formulaire n'est pas sur sa propre page");
+    const total = trace.textes.find((t) => t.contenu === "Total TTC");
+    assert.equal(total?.page, 1, "le devis lui-même déborde sur une seconde page");
   });
 
   await cas("le PDF produit est un vrai PDF, non vide", async () => {

@@ -14,9 +14,13 @@ import {
   facturesEnAttente,
   noterPaiement,
   reglerExigibilite,
+  reglementsRetiresDeLaPeriode,
+  remettrePaiement,
   retirerPaiement,
+  reglementsRecus,
   soldera,
 } from "../src/server/repositories/paiements-facture";
+import { nomAcompte } from "../src/lib/acomptes-facture";
 import { trimestre } from "../src/server/trimestre";
 import { fermerLimiteur } from "../src/server/rate-limit";
 import { nettoyerBase } from "./_test-db";
@@ -128,6 +132,41 @@ async function main() {
     assert.strictEqual((await facturesEnAttente(ctx)).length, 0);
   });
 
+  // **LE DERNIER ENREGISTRÉ EN TÊTE** — sa règle du 22 septembre 2026 :
+  // *« l'ordre pour la TVA collectée et la TVA déductible doit être le dernier
+  // enregistré visible »*. Le relevé sortait du plus ancien au plus récent, et
+  // le règlement qu'il venait de noter tombait en bas d'une liste de neuf.
+  //
+  // Éprouvé ICI et pas sur une règle pure : l'ordre naît de `assemblerReleve`,
+  // qui n'est pas exporté, et le numéro qui départage vient de la base.
+  await test("LE RELEVÉ SORT DU PLUS RÉCENT AU PLUS ANCIEN", async () => {
+    const ctx = await contexte("ordre");
+    const ancienne = await factureEmise(ctx, "1000.00");
+    const recente = await factureEmise(ctx, "500.00");
+    const memeJour = await factureEmise(ctx, "200.00");
+
+    assert.ok((await noterPaiement(ctx, ancienne.id, { date: "2026-09-10", montant: "1200.00" })).ok);
+    assert.ok((await noterPaiement(ctx, recente.id, { date: "2026-09-20", montant: "600.00" })).ok);
+    // Même jour que la plus récente : c'est le numéro qui départage, et il
+    // grandit avec le temps — la dernière facture passe donc devant.
+    assert.ok((await noterPaiement(ctx, memeJour.id, { date: "2026-09-20", montant: "240.00" })).ok);
+
+    const t3 = await releveTvaCollectee(ctx, T3.debut, T3.fin);
+    assert.deepStrictEqual(
+      t3.lignes.map((l) => `${l.dateEmission}|${l.numeroCommercial}`),
+      [
+        `2026-09-20|${memeJour.numeroCommercial}`,
+        `2026-09-20|${recente.numeroCommercial}`,
+        `2026-09-10|${ancienne.numeroCommercial}`,
+      ],
+      "le dernier règlement noté n'est plus en tête du relevé"
+    );
+
+    // Et les totaux ne dépendent pas de l'ordre d'affichage : la TVA des
+    // acomptes se répartit toujours dans l'ordre où l'argent est rentré.
+    assert.strictEqual(t3.totalTva, "340.00");
+  });
+
   await test("« Payée » solde en un geste, à la date du jour", async () => {
     // La porte qu'il a décrite : *« je clique sur valider, et boum »*.
     const ctx = await contexte("solde");
@@ -165,6 +204,47 @@ async function main() {
     assert.strictEqual((await facturesEnAttente(ctx)).length, 0);
   });
 
+  await test("LE VERSEMENT QUI TERMINE LE PAIEMENT S'APPELLE « SOLDE », celui d'avant reste un acompte", async () => {
+    // Sa demande du 9 octobre 2026, vue dans l'appli : « J'ai reçu une
+    // partie » puis « J'ai reçu le paiement » donnaient deux « Acompte ».
+    const nomsDe = async (id: string) => {
+      const r = await reglementsRecus(ctx, id);
+      return r.map((_, i) => nomAcompte(r, i, []));
+    };
+    const ctx = await contexte("solde-nomme");
+    const parBouton = await factureEmise(ctx, "1200.00");
+    assert.ok((await noterPaiement(ctx, parBouton.id, { date: "2026-08-20", montant: "500.00" })).ok);
+    assert.ok((await soldera(ctx, parBouton.id, "2026-09-15")).ok);
+    assert.deepStrictEqual(await nomsDe(parBouton.id), ["Acompte", "Solde"]);
+
+    // Le reste tapé à la main dans « J'ai reçu une partie » est un solde aussi.
+    const aLaMain = await factureEmise(ctx, "1200.00");
+    assert.ok((await noterPaiement(ctx, aLaMain.id, { date: "2026-08-20", montant: "500.00" })).ok);
+    assert.ok((await noterPaiement(ctx, aLaMain.id, { date: "2026-09-15", montant: "940.00" })).ok);
+    assert.deepStrictEqual(await nomsDe(aLaMain.id), ["Acompte", "Solde"]);
+  });
+
+  await test("LE MOYEN CHOISI DANS TERMINÉS EST ENREGISTRÉ, sur les deux portes", async () => {
+    // Sa planche du 9 octobre 2026 (`appli/moyen-de-reglement-termines.html`),
+    // retenue : « Payé par » au-dessus des deux boutons, que les deux emploient.
+    const ctx = await contexte("paye-par");
+    const facture = await factureEmise(ctx, "1200.00");
+    assert.ok((await noterPaiement(ctx, facture.id, { date: "2026-08-20", montant: "500.00", moyen: "cheque" })).ok);
+    assert.ok((await soldera(ctx, facture.id, "2026-09-15", "especes")).ok);
+    const moyens = (await reglementsRecus(ctx, facture.id)).map((g) => g.moyen);
+    assert.deepStrictEqual(moyens, ["cheque", "especes"]);
+
+    // Un moyen venu d'ailleurs que la liste se refuse en VALEUR, et rien n'est écrit.
+    const autre = await factureEmise(ctx, "1200.00");
+    const r = await noterPaiement(ctx, autre.id, {
+      date: "2026-08-20",
+      montant: "500.00",
+      moyen: "bitcoin" as unknown as "cheque",
+    });
+    assert.strictEqual(r.ok, false);
+    assert.strictEqual((await reglementsRecus(ctx, autre.id)).length, 0);
+  });
+
   await test("UN MONTANT PLUS GRAND QUE LE RESTE DÛ EST REFUSÉ, et rien n'est écrit", async () => {
     const ctx = await contexte("trop");
     const facture = await factureEmise(ctx, "1200.00");
@@ -188,6 +268,91 @@ async function main() {
 
     assert.strictEqual((await releveTvaCollectee(ctx, T3.debut, T3.fin)).totalTva, "0.00");
     assert.strictEqual((await facturesEnAttente(ctx)).length, 1, "la facture n'est pas revenue en attente");
+  });
+
+  // **UN RÈGLEMENT RETIRÉ LAISSE SA TRACE — sa planche du 26 septembre 2026
+  // (`appli/retirer-un-acompte.html`, « la B »).** La croix effaçait la ligne
+  // pour de bon : un acompte de juillet, retiré en septembre, faisait baisser
+  // un mois déjà déclaré, et plus rien ne disait pourquoi. Le calcul ne change
+  // pas (la TVA repart, le cas précédent le tient) ; ce qui change, c'est que
+  // le retrait se RELIT, avec sa date.
+  await test("UN RÈGLEMENT RETIRÉ LAISSE SA TRACE, datée", async () => {
+    const ctx = await contexte("trace");
+    const facture = await factureEmise(ctx, "1000.00");
+    await noterPaiement(ctx, facture.id, { date: "2026-08-12", montant: "300.00" });
+    const [avant] = await facturesAvecPaiements(ctx);
+    const id = avant.paiements[0].id;
+
+    await retirerPaiement(ctx, id);
+
+    const [apres] = await facturesAvecPaiements(ctx);
+    assert.strictEqual(apres.paiements.length, 0, "le règlement retiré compte encore");
+    assert.strictEqual(apres.reste, "1200.00");
+    assert.strictEqual(apres.retires.length, 1, "le règlement retiré n'a laissé aucune trace");
+    assert.strictEqual(apres.retires[0].id, id);
+    assert.strictEqual(apres.retires[0].date, "2026-08-12");
+    assert.strictEqual(apres.retires[0].montant, "300.00");
+    assert.ok(apres.retires[0].retireLe instanceof Date, "le retrait n'est pas daté");
+
+    // Le relevé du mois où il était entré le MONTRE, sans le compter.
+    const ailleurs = await reglementsRetiresDeLaPeriode(ctx, T4.debut, T4.fin);
+    assert.strictEqual(ailleurs.length, 0, "le retrait apparaît dans un autre trimestre");
+    const auBonMois = await reglementsRetiresDeLaPeriode(ctx, T3.debut, T3.fin);
+    assert.deepStrictEqual(
+      auBonMois.map((r) => [r.id, r.numeroCommercial, r.montant]),
+      [[id, facture.numeroCommercial, "300.00"]]
+    );
+  });
+
+  await test("un règlement retiré se REMET, et sa TVA revient au bon mois", async () => {
+    const ctx = await contexte("remettre");
+    const facture = await factureEmise(ctx, "1000.00");
+    await noterPaiement(ctx, facture.id, { date: "2026-08-12", montant: "300.00" });
+    const avant = await releveTvaCollectee(ctx, T3.debut, T3.fin);
+    const [f] = await facturesAvecPaiements(ctx);
+    const id = f.paiements[0].id;
+
+    await retirerPaiement(ctx, id);
+    const r = await remettrePaiement(ctx, id);
+    assert.ok(r.ok, `refusé : ${r.ok ? "" : r.raison}`);
+
+    const [apres] = await facturesAvecPaiements(ctx);
+    assert.strictEqual(apres.retires.length, 0);
+    assert.deepStrictEqual(
+      apres.paiements.map((p) => [p.id, p.date, p.montant]),
+      [[id, "2026-08-12", "300.00"]]
+    );
+    assert.strictEqual((await releveTvaCollectee(ctx, T3.debut, T3.fin)).totalTva, avant.totalTva);
+  });
+
+  // Remettre un règlement dont le montant dépasse ce qui reste dû ferait payer
+  // la facture plus qu'elle ne vaut : la même borne que la saisie.
+  await test("un règlement retiré ne se remet pas s'il dépasse le reste dû", async () => {
+    const ctx = await contexte("remettre-trop");
+    const facture = await factureEmise(ctx, "1000.00");
+    await noterPaiement(ctx, facture.id, { date: "2026-08-12", montant: "300.00" });
+    const [f] = await facturesAvecPaiements(ctx);
+    await retirerPaiement(ctx, f.paiements[0].id);
+    await soldera(ctx, facture.id, "2026-09-15");
+
+    const r = await remettrePaiement(ctx, f.paiements[0].id);
+    assert.strictEqual(r.ok, false, "la facture est payée deux fois");
+    assert.strictEqual((await facturesAvecPaiements(ctx))[0].retires.length, 1, "la trace a disparu malgré le refus");
+  });
+
+  await test("une AUTRE entreprise ne remet pas un règlement retiré, ni ne le voit", async () => {
+    const a = await contexte("remettre-a");
+    const b = await contexte("remettre-b");
+    const facture = await factureEmise(a, "1000.00");
+    await noterPaiement(a, facture.id, { date: "2026-08-12", montant: "300.00" });
+    const [f] = await facturesAvecPaiements(a);
+    await retirerPaiement(a, f.paiements[0].id);
+
+    const r = await remettrePaiement(b, f.paiements[0].id);
+    assert.strictEqual(r.ok, false, "B a remis un règlement de A");
+    assert.strictEqual((await facturesAvecPaiements(a))[0].retires.length, 1);
+    await retirerPaiement(b, f.paiements[0].id);
+    assert.strictEqual((await facturesAvecPaiements(a))[0].retires.length, 1);
   });
 
   await test("une facture d'une AUTRE entreprise ne se paie pas", async () => {

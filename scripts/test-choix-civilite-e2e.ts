@@ -3,6 +3,7 @@ import { devices } from "playwright";
 import { Pool } from "pg";
 import { avecCivilite } from "../src/lib/civilite";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **« Mme » choisi à la création se retrouve PARTOUT, jusque chez la cliente.**
 //
@@ -22,7 +23,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // Le nom est saisi NU, sans « Mme » devant : c'est le cas du patron, et le seul
 // où la pastille sert à quelque chose.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const ECRAN_DU_PATRON = devices["iPhone 13"];
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -93,9 +94,9 @@ async function main() {
   await page.locator('[data-atlas="civilite-mme"]').click();
   await page.locator('input[placeholder="Bernard"]').fill(CLIENTE);
   await page.locator('input[placeholder="06 12 34 56 78"]').fill("0679984514");
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-  const chantierId = page.url().split("/").pop()!.split("?")[0];
+  const chantierId = idChantier;
 
   await cas("le choix est ENREGISTRÉ, pas seulement affiché", async () => {
     const { rows } = await pool.query(`SELECT civilite FROM clients WHERE nom = $1`, [CLIENTE]);
@@ -143,8 +144,6 @@ async function main() {
     if (saisi !== CLIENTE) throw new Error(`le champ du nom porte « ${saisi} »`);
   });
 
-  await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
-  await page.waitForTimeout(900);
   await page.getByLabel("Description 1").fill("Taille d'une haie de laurier (20 ml)");
   await page.getByLabel("Prix unitaire 1").fill("350");
   await page.getByLabel("Description 1").click();
@@ -215,9 +214,10 @@ async function main() {
     const sansChoix = `Martins ${Date.now()}`;
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
     await page.locator('input[placeholder="Bernard"]').fill(sansChoix);
-    await creerPuisFiche(page);
-    await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-    const id = page.url().split("/").pop()!.split("?")[0];
+    // **CE chantier-ci, pas celui du début.** L'aide rend l'identifiant de
+    // celui qu'elle vient de créer ; reprendre le premier ferait lire le nom
+    // d'un chantier qui n'a rien à voir avec ce cas.
+    const id = await creerPuisFiche(page);
     const { rows } = await pool.query(`SELECT nom FROM chantiers WHERE id = $1`, [id]);
     if (rows[0]?.nom !== avecCivilite(sansChoix)) {
       throw new Error(`le chantier s'appelle « ${rows[0]?.nom} » au lieu de « ${avecCivilite(sansChoix)} »`);

@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ajouter une équipe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a; --etabli-or:#8b6835;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
+    --gris:#8a8578; --trait:rgba(28,28,26,.12); --or:#b98b47; --pin:#2f3b2f;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--etabli)}
+  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased}
+  .page{max-width:1240px;margin:0 auto;padding:30px 16px 90px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 30px/1.15 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+  .chapeau{max-width:680px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0 0 22px}
+
+  .tel{width:390px;max-width:100%;border-radius:26px;overflow:hidden;
+       box-shadow:0 1px 2px rgba(20,18,14,.16),0 14px 34px rgba(20,18,14,.14);background:var(--fond)}
+  .ecran{height:664px;display:flex;flex-direction:column;background:var(--fond);color:var(--encre)}
+  .corps{flex:1;overflow-y:auto;padding:0 0 24px}
+
+  .entete{display:flex;align-items:flex-start;gap:14px;padding:20px 26px 0}
+  .retour{width:34px;height:34px;flex:none;border-radius:999px;background:var(--plage);display:grid;place-items:center;
+          color:var(--gris);box-shadow:inset 0 0 0 1px var(--trait);font:400 17px/1 var(--serif)}
+  .titre{font:500 36px/1.05 var(--serif);letter-spacing:-.018em;margin:0}
+  .sur{margin-top:12px;font:500 9.5px/1 var(--sans);letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+
+  .bloc{margin:28px 26px 0}
+  .question{font:400 19px/1.25 var(--serif);margin:0 0 6px}
+  .pale{opacity:.38}
+  .ligneAcces{margin-top:10px;background:var(--plage);border-radius:13px;padding:12px 14px;
+              box-shadow:inset 0 0 0 1px var(--trait);font-size:14px}
+  .ligneAcces small{display:block;color:var(--gris);font-size:12px;margin-top:3px}
+  .filet{height:1px;background:var(--trait);margin:26px 26px 0}
+
+  .compteur{display:flex;align-items:center;justify-content:center;gap:30px;padding:14px 0 4px}
+  .pas{width:46px;height:46px;flex:none;border-radius:999px;border:0;background:transparent;cursor:pointer;
+       box-shadow:inset 0 0 0 1px var(--trait);font:400 21px/1 var(--serif);color:var(--encre);
+       -webkit-tap-highlight-color:transparent;transition:box-shadow .24s,color .24s,opacity .24s}
+  .pas:disabled{color:var(--gris);opacity:.32;cursor:default}
+  .pas:not(:disabled):active{box-shadow:inset 0 0 0 1.5px var(--encre)}
+  .chiffre{min-width:2ch;text-align:center;font:400 52px/1 var(--serif);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  .phrase{margin:8px 0 0;text-align:center;font-size:12.5px;line-height:1.6;color:var(--gris)}
+  .phrase .mot{color:var(--doux)}
+  .carre{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:-1px;background:var(--pin)}
+
+  .basNav{display:flex;justify-content:space-around;padding:12px 8px 15px;border-top:1px solid var(--trait);background:var(--fond)}
+  .basNav span{font:500 10.5px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--gris)}
+  .basNav .actif{color:var(--encre)}
+
+  .temoin{width:390px;max-width:100%;margin-top:16px;background:var(--etabli-carte);border-radius:14px;
+          padding:13px 16px;box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .temoin .t{font:600 10.5px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--etabli-or);margin:0 0 9px}
+  .temoin ul{margin:0;padding:0;list-style:none;font-size:13.5px;line-height:1.55;color:var(--etabli-doux)}
+  .temoin li{padding:3px 6px;border-radius:6px;transition:background .6s}
+  .temoin li.vient{background:#e9dcc2}
+  .temoin .envoi{color:var(--etabli-gris);font-size:12.5px}
+  .recommencer{margin-top:12px;appearance:none;border:0;cursor:pointer;font:600 12.5px/1 var(--sans);
+               padding:11px 17px;border-radius:999px;background:var(--etabli-carte);color:var(--etabli-doux);
+               box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+</style>
+</head>
+<body>
+<main class="page">
+  <p class="surtitre">Réglages, écran Équipe</p>
+  <h1>Ajouter une équipe</h1>
+  <p class="chapeau">Appuyez sur le + puis sur le −, et regardez ce qui s'enregistre.</p>
+
+  <div class="tel">
+    <div class="ecran">
+      <div class="corps">
+        <div class="entete">
+          <div class="retour" aria-hidden="true">‹</div>
+          <div>
+            <p class="titre">Équipe</p>
+            <div class="sur">Réglages</div>
+          </div>
+        </div>
+
+        <div class="bloc pale" aria-hidden="true">
+          <p class="question">Accès</p>
+          <div class="ligneAcces">Julien Roche<small>Vous</small></div>
+        </div>
+
+        <div class="filet"></div>
+
+        <section class="bloc">
+          <p class="question">Combien de chantiers par jour&nbsp;?</p>
+          <div class="compteur">
+            <button class="pas" id="moins" type="button" aria-label="Une équipe de moins">−</button>
+            <span class="chiffre" id="chiffre" aria-live="polite">2</span>
+            <button class="pas" id="plus" type="button" aria-label="Une équipe de plus">+</button>
+          </div>
+          <p class="phrase"><span id="avant">2 chantiers par jour pour un planning</span> <span class="mot">complet</span> <span class="carre" aria-hidden="true"></span>.</p>
+        </section>
+
+        <div class="filet"></div>
+
+        <div class="bloc pale" aria-hidden="true">
+          <p class="question">Combien de salariés&nbsp;?</p>
+        </div>
+      </div>
+      <nav class="basNav"><span>Planning</span><span>Chantiers</span><span>Terminés</span><span class="actif">Réglages</span></nav>
+    </div>
+  </div>
+
+  <div class="temoin">
+    <p class="t">Enregistré</p>
+    <ul id="enregistre"></ul>
+  </div>
+  <button class="recommencer" id="recommencer" type="button">Recommencer</button>
+</main>
+
+<script>
+  var PLANCHER = 1, PLAFOND = 20, DEPART = 2;
+  var affiche, enBase, envois;
+
+  function phraseAvant(n){ return (n <= 1 ? "Un chantier" : n + " chantiers") + " par jour pour un planning"; }
+
+  function peindre(){
+    document.getElementById("chiffre").textContent = affiche;
+    document.getElementById("avant").textContent = phraseAvant(affiche);
+    document.getElementById("moins").disabled = affiche <= PLANCHER;
+    document.getElementById("plus").disabled = affiche >= PLAFOND;
+  }
+
+  function peindreTemoin(neuf){
+    var ul = document.getElementById("enregistre");
+    ul.innerHTML = "";
+    var li = document.createElement("li");
+    li.textContent = "Chantiers par jour : " + enBase;
+    if (neuf) { li.className = "vient"; setTimeout(function(){ li.className = ""; }, 900); }
+    ul.appendChild(li);
+    var nom = document.createElement("li");
+    nom.textContent = "Nom d'équipe : aucun, le compteur n'en crée pas.";
+    ul.appendChild(nom);
+    var e = document.createElement("li");
+    e.className = "envoi";
+    e.textContent = envois === 0 ? "Rien envoyé pour l'instant." : "Envoyé à chaque appui : " + envois + (envois > 1 ? " fois." : " fois.");
+    ul.appendChild(e);
+  }
+
+  // Comme l'application : le chiffre bouge tout de suite, l'écriture part à l'appui,
+  // bornée de 1 à 20, et le serveur renvoie le chiffre retenu.
+  function changer(valeur){
+    var borne = Math.min(PLAFOND, Math.max(PLANCHER, valeur));
+    if (borne === affiche) return;
+    affiche = borne;
+    peindre();
+    envois++;
+    setTimeout(function(){
+      enBase = Math.min(PLAFOND, Math.max(PLANCHER, Math.trunc(borne)));
+      affiche = enBase;
+      peindre();
+      peindreTemoin(true);
+    }, 350);
+  }
+
+  function recommencer(){
+    affiche = DEPART; enBase = DEPART; envois = 0;
+    peindre(); peindreTemoin(false);
+  }
+
+  document.getElementById("plus").addEventListener("click", function(){ changer(affiche + 1); });
+  document.getElementById("moins").addEventListener("click", function(){ changer(affiche - 1); });
+  document.getElementById("recommencer").addEventListener("click", recommencer);
+  recommencer();
+</script>
+</body>
+</html>

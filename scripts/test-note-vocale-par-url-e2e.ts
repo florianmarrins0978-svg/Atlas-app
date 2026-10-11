@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **La note vocale part par une URL, jamais par une action serveur.**
 //
@@ -27,7 +28,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // Ramener l'enregistrement dans une action serveur le fera rougir, et c'est
 // exactement le retour en arrière qu'il faut empêcher.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 let echecs = 0;
@@ -73,14 +74,17 @@ async function main() {
 
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Note par URL ${Date.now()}`);
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-  const chantierId = page.url().split("/").pop()!.split("?")[0];
+  const chantierId = await creerPuisFiche(page);
+  // **L'ANNEAU VIT SUR LA FICHE CLIENT** — 4 septembre 2026. Il était au milieu
+  // de la fiche du chantier ; celle-ci est retirée (`ARCHITECTURE.md` §254)
+  // parce qu'elle montrait une seconde fois ce que la fiche client porte déjà.
+  await page.goto(`${BASE}/chantiers/${chantierId}/coordonnees`, { waitUntil: "networkidle" });
   await page.waitForTimeout(1500);
 
   // **Le micro plein, puis l'AVION** — 30 août 2026. La dictée a son propre
   // dessin depuis qu'il a choisi le repos B : ce n'est plus l'anneau du lecteur
-  // (`.atlas-lecteur`), et le second appui ne fait plus partir la note — il
+  // (retiré le 13 septembre 2026, il n'était monté nulle part), et le second
+  // appui ne fait plus partir la note — il
   // suspend. C'est l'avion qui envoie, et c'est LUI que cette suite doit
   // presser, puisque ce qu'elle éprouve est le CHEMIN de l'envoi.
   const micro = page.locator('[data-atlas="anneau-note-vocale"] .atlas-micro');

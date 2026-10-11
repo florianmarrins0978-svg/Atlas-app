@@ -5,6 +5,69 @@ ou dans les documents qu'il désigne — n'existe pas : aucune décision ne doit
 reposer sur le souvenir d'un échange précédent.
 
 @AGENTS.md
+@.claude/rules/testing.md
+@.claude/rules/migrations.md
+@.claude/rules/deployment-safety.md
+@.claude/rules/regarder-l-ecran.md
+
+---
+
+## 0. LES INVARIANTS — vrais dans toutes les sessions, sans exception
+
+*Le détail vit dans les trois fichiers importés ci-dessus : `testing.md`,
+`migrations.md`, `deployment-safety.md`. Ici, seulement ce qui ne se discute
+jamais.*
+
+1. **Compiler n'est pas fonctionner.** Rien n'est terminé parce que `tsc` est
+   vert : le parcours du patron se joue.
+2. **Une régression donne un test, dans cet ordre** : reproduire → **test
+   rouge** → correction minimale → test vert → **le test reste pour toujours**.
+   Un correctif sans rouge préalable est une supposition.
+3. **Le niveau d'épreuve se CALCULE sur le diff, il ne se déclare pas** —
+   `niveau = MAX(plancher, rayon d'impact, gravité)`. 1 : ce qui ne s'exécute
+   pas · 2 : `npm run verifier:avant-fusion` · 3 :
+   `npm run verifier:avant-livraison`. **Un chemin dans `src/` ne suffit plus à
+   exiger la batterie entière** (14 septembre 2026) : ce qui l'exige, c'est un
+   plancher — `drizzle/`, middleware, gabarit racine, accès à la base —, la
+   gravité — authentification, isolation, argent — ou un rayon de **dix points
+   d'entrée ou plus**. Le doute tranche vers le haut, et ce qui ne se mesure
+   pas vaut 3. Le détail est dans `.claude/rules/testing.md` ; `npm run niveau`
+   le dit pour le lot en cours.
+4. **Avant fusion, les parcours concernés se regardent** — pas seulement des
+   tests verts.
+5. **Rien hors périmètre.** Aucun refactoring, nettoyage ou « amélioration »
+   qui n'a pas été demandé.
+6. **Une migration de données s'éprouve sur une base HABITÉE** dès que des
+   lignes existantes peuvent changer son résultat.
+7. **Une migration qui écrit sur une table sous FORCE RLS doit PROUVER qu'elle
+   voit les lignes.** `atlas_owner` n'a pas `BYPASSRLS` : sans contexte, zéro
+   ligne touchée, **aucune erreur**. C'est la panne du 13 septembre 2026.
+8. **Un code n'est compatible que si le schéma qu'il suppose est là.** Servir du
+   code neuf sur une base ancienne fait TOMBER des écrans.
+9. **Un changement de schéma incompatible se fait en deux temps**
+   (expand/contract) : étendre, déployer, transiter, contracter **plus tard**.
+10. **On REGARDE l'écran avant d'affirmer quoi que ce soit dessus** —
+    `npm run voir -- /planning`. Un `grep` ne prouve RIEN de ce qu'il voit : les
+    repères se composent, un composant peut être monté ailleurs, et une
+    recherche vide n'est pas une absence. C'est ainsi qu'on lui a annoncé à tort
+    la disparition de la porte du devis (14 septembre 2026). Si l'écran ne peut
+    pas s'ouvrir ici, on dit « pas vérifiable ICI » — jamais une affirmation.
+
+**Ce qui ne dépend pas de la bonne volonté** : `scripts/garde-fusion-main.mjs`
+calcule le niveau de risque sur le diff et refuse une poussée vers `main` dont
+le contrôle n'a pas été joué au vert sur cet état de l'arbre — **ou qui porte
+une régression NOUVELLE** (17 septembre 2026). Un rouge venu d'ailleurs ne
+ferme plus la porte : chaque suite rouge est rejouée **sur la base de `main`,
+elle seule** — `npx tsx scripts/verifier-rouge-prealable.ts` —, et déjà rouge là-bas, elle
+ne vient pas de ce lot. Plus aucun état global, plus aucune batterie sur `main`
+pour comparer ; le commit git suffit (`.claude/rules/testing.md`). **Et il
+compare des CONTENUS, jamais des dates** (17 septembre 2026) : une fusion
+réécrit ce qu'elle apporte, et cela périmait le verdict de tout lot vert dès
+qu'une session voisine fusionnait — cinquante minutes pour rien, en boucle.
+Quand seul ce que `main` a apporté a bougé, il renvoie au complément d'une
+minute, jamais à la batterie (`ARCHITECTURE.md` §380). Et il ne se
+contourne pas : c'est lui qui a été corrigé, à la racine, les deux fois où il
+bloquait à tort.
 
 ---
 
@@ -23,6 +86,110 @@ Avant d'écrire une ligne de code dans une nouvelle conversation, dans cet ordre
 
 Ne jamais demander au patron de rappeler ce qui a été fait. C'est le rôle de ces
 fichiers, et leur défaillance est une défaillance du dépôt, pas de sa mémoire.
+
+**ET SURTOUT : UNE PLANCHE QU'ON S'APPRÊTE À LUI REDEMANDER SE VÉRIFIE DANS LE
+CODE D'ABORD — 11 septembre 2026.** Trois planches lui ont été présentées comme
+attendant sa réponse ; **les trois étaient codées**, deux depuis deux jours, et
+c'est lui qui l'a vu : *« la planche déconnecter est déjà faite, va vérifier !
+La 2ᵉ aussi ! Et la 3ᵉ aussi ! »*
+
+Les trois portaient dans `TODO.md` un titre « ⏳ UNE PLANCHE À REGARDER » qui
+n'avait jamais été barré. Le point 4 ci-dessus le disait déjà — *le code fait
+foi* — et il n'avait pas été appliqué : j'ai lu des titres.
+
+**Le geste coûte trente secondes, et il n'y en a qu'un** : le repère de l'écran
+cherché dans `src/`, et l'endroit où il est MONTÉ.
+
+```bash
+grep -rn "SeDeconnecter\|RepartirDeCeClient" src/ | grep -v "\.tsx:"   # monté où ?
+```
+
+Un fichier qui existe ne suffit pas : c'est d'être **importé par un écran** qui
+prouve que le patron peut l'atteindre — la leçon du 28 août (§5 quater), où six
+gestes étaient écrits, éprouvés, et inatteignables.
+
+`scripts/test-todo-sans-titre-menteur.ts` tient la moitié mécanique : un titre
+qui attend une réponse au-dessus d'un corps qui dit « CODÉ LE… ». L'autre
+moitié — une entrée qui ne se contredit pas elle-même, mais que le code
+contredit — reste ce `grep`, et rien d'autre.
+
+**Lui redemander un choix qu'il a déjà donné n'est pas une question de plus :
+c'est lui faire refaire un travail qu'il a fait.**
+
+### 0. AVANT MÊME ÇA : est-ce que ce dossier est À MOI ?
+
+**Sa colère du 9 septembre 2026 :** *« quand elles tournent en même temps,
+souvent elle emmène le code de l'autre ; ça aussi je ne veux plus que ça
+arrive »*.
+
+Il fait tourner trois, quatre, cinq sessions. Dans **un seul** dossier, elles
+partagent un seul répertoire de travail et un seul `HEAD` : tout ce qui déplace
+l'arbre le déplace pour tout le monde, et personne ne voit passer le geste.
+
+| Le geste | Ce qu'il emporte dans un arbre partagé |
+|---|---|
+| `git stash push --include-untracked` (sans chemins) | **l'arbre entier** — le travail des autres part dans MA remise |
+| `git checkout <branche>`, `git switch` | le contenu des fichiers change sous les trois autres, en pleine frappe |
+| `git merge`, `git pull` | idem, et un conflit s'ouvre sur du code que je n'ai pas écrit |
+| `pkill -f next-server` | le serveur de la batterie d'à côté (voir §6) |
+
+**LA RÉPONSE EXISTE DÉJÀ DANS LE DÉPÔT, et elle date du 8 septembre :**
+
+```bash
+npm run sessions:preparer 5     # un dossier par session, une fois pour toutes
+npm run sessions:preparer --liste
+```
+
+**Le singulier marche aussi** — `npm run session:preparer`. Il a tapé celui-là
+le 9 septembre 2026 et npm lui a rendu « npm error / To see a list of scripts »,
+c'est-à-dire rien : une lettre d'écart, et le seul geste qu'on lui demande
+échoue sans dire pourquoi. Les deux noms pointent le même script.
+
+**ET ON N'OUVRE PLUS UNE SESSION À LA MAIN — 10 septembre 2026.** Sa demande,
+après avoir vu les cinq dossiers : *« non mais je veux qu'elle se débrouille,
+qu'elle aille dans un dossier à chaque fois, seule »*. Il avait raison : lui
+faire choisir le dossier, y aller, et se souvenir duquel est pris, c'est trois
+gestes à répéter cinq fois par soirée — et une erreur possible à chaque fois,
+qui remet deux sessions dans le même dossier.
+
+```bash
+npm run session      # au lieu de « claude », où qu'on soit dans le dépôt
+npm run session 2    # ou CE dossier-là, dans les rangs de « --liste »
+```
+
+`scripts/ouvrir-session.mjs` prend le premier dossier libre et y lance `claude`.
+**Un dossier est « pris » par un PROCESSUS vivant, jamais par un fichier laissé
+là** : le lanceur attend sa session, donc son propre PID est la preuve, et un
+jeton dont le processus a disparu est ignoré. C'est la leçon du verrou de la
+batterie, dans les deux sens (§5).
+
+Quand tous les dossiers sont occupés, il **refuse et donne la commande** — il ne
+fabrique pas un sixième worktree ni un `npm install` de trois minutes sous les
+yeux de quelqu'un qui attendait une session.
+
+**Un NUMÉRO se donne aussi** — sa demande du même jour : *« je peux leur dire
+prend le dossier numéro 2 ? »*. Les rangs sont ceux de
+`sessions:preparer --liste`, 1 étant le dossier principal. **Et un dossier
+demandé qui est occupé se refuse, il ne se remplace pas** : sans numéro, prendre
+le suivant est le service rendu ; avec un numéro, ce serait ouvrir la session
+ailleurs qu'où il l'a dit, sans qu'il le voie.
+
+`scripts/preparer-sessions.mjs` crée un **`git worktree` par session** : même
+dépôt, même historique, mêmes remontées, `main` toujours le seul bien commun —
+seul le répertoire de travail change. Chaque session a alors ses fichiers à
+elle. Plus rien à emporter, plus rien à écraser ; et Next.js 16, qui **refuse un
+second serveur dans le même dossier quel que soit le port**, en laisse enfin
+tourner cinq (`ARCHITECTURE.md`, « l'atelier est nécessaire, il n'est pas
+suffisant »).
+
+**Ce que la session doit faire en arrivant :** vérifier où elle est
+(`git rev-parse --show-toplevel`). Si c'est le dossier principal alors que
+d'autres sessions tournent, le dire — et ne jamais employer les quatre gestes du
+tableau tant qu'on y est.
+
+**Ce qui reste vrai même dans son propre dossier :** on ne jette pas le travail
+non enregistré (`scripts/garde-travail-non-enregistre.mjs`), et l'on ne tue
+jamais un processus par motif (§6).
 
 ## 1 bis. « Ça ne marche pas » : REGARDER sa machine avant de lui parler
 
@@ -281,12 +448,75 @@ retransmet — un document périmé le ferait travailler sur une version disparu
   `withEntreprise(utilisateurId, entrepriseId, fn)` — c'est ce qui pose le
   contexte d'isolation. Une requête hors de ce cadre ne renvoie rien,
   *silencieusement*.
+- **L'appli sert TOUS les artisans, pas seulement lui.** Sa correction du
+  9 octobre 2026 : *« ce qu'on est en train de réaliser, c'est une appli pour
+  les artisans ; certains oui, d'autres non, il faut pallier toutes les
+  éventualités »*. Devant une règle qui dépend de la situation de
+  l'entreprise (déclarée ou non, activité à côté ou non, salariés ou seul,
+  TVA ou franchise), on ne lui demande pas SA situation pour trancher le
+  produit : chaque cas devient un réglage, et l'écran suit celui que
+  l'artisan a choisi. Sa propre situation ne sert qu'à éprouver un cas parmi
+  d'autres.
 - **À l'écran, le moins de mots possible.** Sa consigne du 25 août 2026 :
   *« pense toujours à mettre le moins de mots possible sinon on se perd dans
   toutes ces lignes ; retire les phrases inutiles qui expliquent »*. Un écran
   n'explique pas son propre fonctionnement — il le montre. Une phrase qui décrit
   ce que fait le bouton d'à côté est du bruit : elle se supprime. Vaut pour les
   écrans **et** les maquettes.
+- **Une demande d'affichage change le TEXTE, jamais la PLACE.** Sa règle du
+  11 septembre 2026, après deux allers-retours dans la même soirée : *« il
+  fallait laisser les phrases où elles étaient, juste les modifier »*. Il avait
+  demandé deux lignes « Reste à payer… / Sur les… » ; elles ont été posées dans
+  le formulaire de saisie au lieu de la colonne de droite où vivait la phrase
+  qu'elles remplacent — *« pourquoi tu as changé les lignes de place ? »* —,
+  puis une ligne voisine a été effacée parce qu'elle redisait une date.
+  Il reconnaît son écran par la position de ce qu'il lit : un mot qui change se
+  lit en une seconde, une ligne qui bouge se cherche. Quand la réécriture crée
+  une répétition, c'est **le mot en trop** qui part, jamais la ligne entière.
+
+- **Ni point médian, ni tiret : des phrases.** Sa règle du 22 septembre 2026,
+  devant « Probable · Peuplier » : *« Plus jamais tu mets de point entre le nom
+  et probable ! Retiens pour les autres fiches, et plus jamais de tiret, fais
+  des phrases normales. »* Le « · » qui colle deux mots et le « — » qui
+  coupe une phrase sont de la typographie de rapport ; à l'écran, il lit une
+  phrase : « Probable sur un peuplier. », « Photo de X, sous licence Y. ».
+  Ce qui a besoin d'un genre (« un », « une ») se lit dans la donnée, jamais
+  deviné. Vaut pour les écrans, les maquettes et les fiches phytosanitaires.
+  **Il a dû le redire le soir même**, et la règle ne vit donc plus seulement
+  ici : `scripts/test-aucun-tiret.ts` refuse « — », « – » et « · » entre deux
+  mots dans tout ce qui s'affiche — les chaînes et le texte des écrans, les
+  maquettes publiées. Les commentaires sont épargnés (ils citent ses phrases à
+  lui), le trait d'union aussi (« sous-traitant »), et un tiret SEUL dans une
+  case reste ce qu'il est : un montant absent. Ce qui remplace : une virgule,
+  un deux-points quand la suite explique, un point quand c'est une phrase
+  entière, deux parenthèses pour une incise (`ARCHITECTURE.md` §410).
+  **Et il ne se lit plus seulement à la batterie** : sa demande du soir, *« il
+  faut mettre cette règle en garde-fou que les sessions futures ne recommencent
+  pas »*. `scripts/garde-tirets.mjs` est branché sur chaque écriture de chaque
+  session et refuse la phrase avant qu'elle soit posée. Les deux lisent la même
+  règle (`scripts/_tirets.mjs`) ; toucher à sa détection oblige à la confronter
+  aux fichiers affichés du dépôt, faute de quoi elle refuse du texte juste.
+  **Et rien ne passe vers `main`** : `garde-fusion-main.mjs` lit les tirets du
+  lot AVANT son niveau (`tiretsDuLot`). C'est lui qui ferme le chemin qu'il a
+  vu le 23 septembre — une maquette est inerte, donc de niveau 1, donc aucun
+  contrôle ne s'y jouait.
+
+  **Il lit aussi les `.js` de `src/` et le dossier `maquettes/`** — deux trous
+  trouvés le 23 septembre, et le premier était dans l'application : le
+  catalogue d'arrosage est un `.js` repris tel quel de la page publiée, et
+  **61 libellés d'arroseurs y portaient un point médian** (« PGP-ADJ · buse 1 »)
+  — ils partent sur le plan, dans la liste des pièces, et chez le fournisseur.
+  **Et le NOM d'un matériel ne prend pas de virgule** : « PGP-ADJ buse 1 », pas
+  « PGP-ADJ, buse 1 » — c'est ce qu'il porte chez son fournisseur, et §4 bis le
+  dit déjà (*« une virgule de plus rend la référence introuvable »*).
+
+  **Ce qui n'est PAS touché, et c'est délibéré** : les conditions générales
+  (`src/server/documents-legaux/versions.ts`), où le « · » est une **puce de
+  liste** dans un texte **déjà publié et accepté** par des comptes. Le
+  réécrire demande une nouvelle version et une nouvelle acceptation de chacun :
+  c'est sa décision, pas une correction de forme. Le relevé complet est dans
+  `docs/les-points-inutiles.md`.
+
 - **Pas de flèches décoratives au bout des libellés.** Sa consigne du 25 août
   2026 : *« arrête de mettre des flèches, c'est moche »*. Le « → » (et le « › »)
   ajouté à la fin d'un bouton ou d'un lien — « Régler à la main → », « Créer le
@@ -298,6 +528,13 @@ retransmet — un document périmé le ferait travailler sur une version disparu
   facture → » : vingt-huit libellés en portaient encore une. La règle ne vit
   donc plus seulement ici — `scripts/test-aucune-fleche.ts` les refuse, et une
   flèche qui porte une vraie fonction s'y déclare **avec sa raison**.
+- **Aucun écran propre à l'ordinateur.** Sa règle du 3 octobre 2026 : *« les
+  pages doivent être EXACTEMENT les mêmes »*, et *« quand je fais une modif sur
+  l'appli tel, qu'elle s'applique automatiquement sur l'appli PC »*. Au-delà de
+  1024 px, seul le CADRE change (`globals.css`, « L'ORDINATEUR » ;
+  `ARCHITECTURE.md` §447). Ce qui flotte au-dessus du contenu prend
+  `.atlas-colonne-fixe`, une feuille montante `.atlas-feuille`, jamais un
+  `fixed inset-x-0 mx-auto max-w-md` recopié. `test-sur-ordinateur-e2e` le tient.
 - **Les règles métier vivent dans des fonctions pures**, dans `src/lib/`,
   testables sans base. Un écran ne décide de rien : il affiche le résultat.
 - **Jamais de règle dupliquée entre l'affichage et la vérification.** La même
@@ -384,6 +621,37 @@ Concrètement, pour toute planche dont on attend un choix :
    `https://florianmarrins0978-svg.github.io/Atlas-app/<la-planche>.html`.
    C'est la quatrième fois qu'une adresse lui coûte un aller-retour, et les
    quatre fois le code était juste ;
+2 bis bis. **ON NE DONNE L'ADRESSE QU'UNE FOIS QU'ELLE RÉPOND — 4 septembre
+   2026, et il l'a payée deux fois dans la même journée.** Sa réponse :
+   *« Le liens erreur 404 »*.
+
+   La planche était poussée sur `main` et le flux de publication tournait —
+   mais il joue **toute la batterie avant de publier**, soit une dizaine de
+   minutes. L'adresse a été transmise dans l'intervalle, avec un « je te
+   confirme dès que c'est en ligne » qui ne l'a pas retenu : il a cliqué tout
+   de suite, et il a eu une erreur. C'est exactement ce que le dépôt s'était
+   promis d'arrêter — *« ne jamais transmettre une commande non vérifiée sans
+   le dire »* (`AGENTS.md`).
+
+   **Pire : deux poussées rapprochées s'annulent l'une l'autre.** Le flux
+   porte `concurrency: cancel-in-progress` — une nouvelle poussée tue le
+   déploiement en cours. Un lot livré en trois commits d'affilée peut donc
+   laisser l'adresse morte bien plus longtemps qu'on ne l'imagine.
+
+   **Donc, avant d'écrire une adresse dans un message :**
+
+   | | |
+   |---|---|
+   | on l'interroge | `curl -s -o /dev/null -w '%{http_code}' <adresse>` — et l'on attend le 200 |
+   | on regarde le flux | `gh run list --limit 1 --workflow=pages.yml` dit s'il tourne encore, ou s'il a été annulé |
+   | on la parcourt | l'ouvrir soi-même, à SON adresse et à la largeur de son téléphone (§5) |
+
+   **Et l'on groupe les poussées d'un même lot** plutôt que d'en enchaîner
+   trois : chacune annule le déploiement de la précédente.
+
+   « Je te confirme quand ce sera en ligne » n'est pas une précaution : c'est
+   une adresse morte qu'on lui met sous le doigt en promettant de s'excuser
+   après. On ne donne rien, ou on donne quelque chose qui répond ;
 2 ter. **ON NE LUI ENVOIE JAMAIS UNE CAPTURE DE LA MAQUETTE.** Sa consigne du
    26 août 2026, excédée : *« une maquette ! Pas de photo ! Comme d'habitude,
    enregistre une bonne fois pour toutes — certaines sessions le font très bien
@@ -421,6 +689,178 @@ Concrètement, pour toute planche dont on attend un choix :
 - **Envoyer, valider ou facturer sans un geste du patron.** Les arrêts du
   parcours sont décidés, pas optionnels.
 - **Marquer une tâche terminée sans l'avoir vérifiée.** Voir §5.
+- **Poser un pansement sur un défaut au lieu de le corriger.** Voir §4 quater.
+- **Laisser du code qui ne sert plus.** Voir §4 quinquies.
+- **Faire remonter un lien d'une couche à l'autre.** Voir §4 sexies.
+
+## 4 septies. RÈGLE D'OR — ON NE LUI PROPOSE JAMAIS UN GESTE QUI PEUT EFFACER SES DONNÉES
+
+**Posée le 13 septembre 2026, et il a fallu qu'il le dise lui-même :** *« faut
+jamais qu'on me propose de faire ça, c'est hyper dangereux ce que tu viens de
+faire ! »* — après s'être vu conseiller « Rebuild Container » pour réparer son
+port, et avoir dû demander deux fois *« ça va pas supprimer toutes mes
+données ? »*.
+
+**C'ÉTAIT LA DEUXIÈME FOIS.** Le 10 août 2026, devant « supprime ton espace et
+repars sur un disque sain », il répondait déjà : *« ça va effacer tout ce qu'il
+y a en mémoire »*. `scripts/sauvegarder-banc.sh` est né de cette correction-là,
+et son en-tête porte la phrase. Un mois plus tard, le même conseil repartait
+sous un autre nom — et cette fois il était **écrit dans le code**, rendu par la
+fiche que son espace publie tout seul, à chaque quart d'heure.
+
+**Ce que la règle interdit, et elle ne se négocie pas :**
+
+| Le geste | Pourquoi il ne se propose pas |
+|---|---|
+| « reconstruis le conteneur » | rejoue `postCreateCommand`, donc tout ce qu'il fait |
+| « supprime ton espace », « repars de zéro » | emporte la base, donc ses chantiers et ses clients |
+| « rejoue le seed », `db:seed`, `db:push --force` | le seed **vide** avant de reconstruire |
+| « vide la base », « TRUNCATE », « DROP » | il ne les tapera pas en sachant ce qu'ils font |
+| n'importe quel geste dont **on n'a pas vérifié** ce qu'il détruit | c'est exactement la faute des deux fois |
+
+**Ce qu'on fait à la place, et l'ordre compte :**
+
+1. **Chercher le geste sûr d'abord.** Rallumer un espace ne détruit rien ;
+   reconstruire, si. Entre deux remèdes, celui qui ne touche pas aux données
+   passe toujours en premier, même s'il est moins définitif.
+2. **Si seul un geste destructeur peut réparer, ce n'est pas à LUI de le
+   porter.** C'est au dépôt de le rendre sûr — c'est ce qu'a fait le §346, en
+   refusant d'amorcer une base habitée. Tant que ce n'est pas fait, le geste ne
+   se propose pas : il s'inscrit dans `TODO.md` comme du travail à faire.
+3. **Vérifier DANS LE CODE ce qu'un geste détruit, jamais le supposer.** Les
+   deux fois, la réponse était dans le dépôt : `preparer.sh` appelle le seed, et
+   le seed fait `TRUNCATE … CASCADE`. Trente secondes de lecture.
+4. **Et la sauvegarde n'est pas une permission.** `npm run sauvegarder:banc`
+   existe depuis le 10 août ; l'écrire à côté d'un geste dangereux ne le rend
+   pas acceptable, cela déplace seulement le risque sur lui.
+
+**Ce qui tient cette règle**, parce qu'une consigne en prose s'oublie au bout de
+trois heures (§1 bis) : `scripts/test-verdict-port.ts` refuse qu'un geste rendu
+au patron par la fiche de son espace contienne une reconstruction, une
+suppression ou un amorçage. Un rouge dans ce contrôle ne se réécrit pas — il
+veut dire qu'on s'apprêtait à lui reproposer ce qu'il a interdit deux fois.
+
+## 4 quater. RÈGLE D'OR — PAS DE PANSEMENT, ON CORRIGE À LA RACINE
+
+**Posée le 7 septembre 2026 :** *« lorsque tu fais une correction, je ne veux
+pas de pansement. Je veux que tu ailles corriger le problème directement à la
+racine — pas de superposition de couches de code. »* Puis, dans la foulée :
+*« je veux que ça soit une règle incontournable, non franchissable, obligatoire
+de respecter. »*
+
+**Elle ne dépend donc plus de la mémoire de personne**, et c'est ce qui la rend
+non franchissable — deux garde-fous la tiennent, chacun sur une moitié :
+
+| | |
+|---|---|
+| `scripts/test-pas-de-pansement.ts` | joué par `npm test`, donc **par la batterie** : il refuse dans ce que le lot AJOUTE un `catch` vide, `@ts-ignore`, `@ts-expect-error`, `eslint-disable`, `as any`, `!important`. Un lot qui en porte un ne se livre pas |
+| `scripts/rappel-racine.mjs` | branché sur chaque message (`.claude/settings.json`) : dès qu'il demande une correction, cette règle revient sous les yeux de la session — quelle qu'elle soit, et même trois heures après son début |
+
+**Ce qu'aucun script ne saura faire**, et qui reste un jugement : dire si une
+correction vise l'origine ou la recouvre. Le contrôle tient les gestes qui ne
+se discutent pas ; le reste tient à ce qui suit.
+
+**Ce qu'est un pansement**, et chacun de ces gestes en est un :
+
+| Le geste | Ce qu'il fait vraiment |
+|---|---|
+| un `try/catch` qui avale le refus | le défaut devient muet, et la prochaine session cherchera ailleurs |
+| un `?? valeur par défaut` devant une valeur absente | l'écran affiche du plausible ; personne ne saura plus qu'il manquait quelque chose |
+| un cas particulier ajouté à côté de la règle générale | deux règles pour une seule question — c'est le §3, « jamais de règle dupliquée » |
+| une correction dans l'APPELANT parce que l'appelé est plus dur à toucher | le prochain appelant refera le même défaut |
+| un style qui écrase un style qui écrasait déjà | trois couches, et plus personne ne sait laquelle décide |
+| un `setTimeout` qui attend que l'autre bout ait fini | le défaut revient sur une machine plus lente, et il ne se reproduit plus ici |
+| remettre en dur un chiffre que le calcul rendait faux | le calcul reste faux, et il sert ailleurs |
+
+**Ce qu'on fait à la place, dans cet ordre :**
+
+1. **trouver l'endroit d'où ça part** — pas le premier endroit où ça se voit ;
+   `AGENTS.md` le dit déjà pour les pannes muettes : rendre le défaut bavard
+   AVANT de corriger, plutôt que de réparer une panne imaginée ;
+2. **corriger là**, quitte à toucher une signature, un dépôt, une migration ;
+3. **retirer la couche qui compensait** — un pansement laissé en place devient
+   la prochaine couche, et il masquera la correction suivante ;
+4. **écrire pourquoi** dans le code : le piège évité, pas ce que fait la ligne.
+
+**Le signe qui doit alerter, et il est simple : une correction qui n'enlève
+rien.** Un défaut réparé à sa racine remplace du code ; un défaut recouvert en
+ajoute. Devant un correctif qui ne fait qu'ajouter, la question à se poser est :
+*qu'est-ce que j'aurais dû supprimer ?*
+
+**Le dépôt en porte déjà deux exemples**, et ils montrent ce qui est attendu :
+`retourDuDevis` ne prend plus de `clientId` — la condition a disparu de la
+signature au lieu d'y dormir ; et le veilleur **remesure** le port au lieu de
+garder « ouvert » pour toute la session.
+
+**Et quand la racine ne peut pas être touchée maintenant** — elle est dans une
+dépendance, elle demande une migration, elle sort du lot en cours — on ne
+maquille pas en silence. Le contournement s'écrit **`pansement assumé : <la
+raison>`** sur la ligne ou juste au-dessus (c'est la formule exacte que le
+contrôle accepte, et il exige une raison d'au moins vingt caractères), **et une
+entrée dans `TODO.md`** — sans quoi le contrôle rougit aussi. Un pansement avoué
+se retire un jour ; un pansement oublié devient la fondation du suivant.
+
+## 4 quinquies. RÈGLE D'OR — PAS DE CODE MORT
+
+**Posée le 8 septembre 2026 :** *« je ne veux pas de code mort, si ça ne sert
+plus on le supprime proprement. »*
+
+**Ce n'est pas du rangement.** Un fichier que plus rien n'importe continue
+d'être lu — par la session qui cherche d'où vient un défaut, par le
+développeur qu'il paiera un jour pour reprendre l'application. Les deux
+perdent le même temps, et tous deux peuvent corriger LÀ, dans le fichier
+mort, en croyant avoir réparé.
+
+**Rien ne se perd** : l'historique git garde tout, et un fichier supprimé se
+retrouve en une commande. Garder « au cas où » ne protège de rien — cela
+ajoute seulement une pièce à comprendre.
+
+| | |
+|---|---|
+| **le garde-fou** | `scripts/test-pas-de-code-mort.ts`, joué par `npm test`, donc par la batterie : un fichier de `src/` que rien n'importe fait rougir le lot |
+| **sa liste d'exceptions** | **vide**, et elle doit le rester : une exception qui s'ajoute est une dette qui commence |
+| **ce qu'il ne voit pas** | une fonction morte dans un fichier vivant, une branche jamais prise — celles-là restent au jugement, et se voient en lisant |
+
+**Et ce qui tenait le mort en vie s'en va avec lui** : la suite qui n'éprouvait
+que lui, l'exception d'un contrôle qui le nommait, le renvoi d'un commentaire.
+Sinon le contrôle suivant réclamera un fichier disparu (`CLAUDE.md` §5 bis).
+
+## 4 sexies. RÈGLE D'OR — PAS DE SPAGHETTIS : UN SEUL SENS
+
+**Posée le 8 septembre 2026 :** *« le code doit être structuré proprement, il ne
+doit pas y avoir de liens dans tous les sens. Si demain j'ai un problème sur
+l'appli et que je dois faire appel à un développeur, il faut qu'il comprenne
+facilement comment fonctionne le code. »*
+
+**Ce qui rend un code illisible n'est pas sa taille, c'est le SENS de ses
+liens.** Trois couches qui s'appellent en boucle obligent à tout lire pour
+comprendre une ligne ; trois couches qui ne s'appellent que vers le bas se
+lisent par étages, et l'on peut n'en ouvrir qu'un.
+
+**Les étages, du bas vers le haut** — chacun ignore ceux du dessus :
+
+| | |
+|---|---|
+| `src/lib/` | les règles pures : aucune base, aucun écran. C'est là que se décide un calcul, et cela s'éprouve sans rien monter |
+| `src/server/` | les dépôts, l'IA, les PDF — tout ce qui parle à la base, toujours par `withEntreprise` |
+| `src/components/` | ce qui se dessine et se réutilise |
+| `src/app/` | les écrans, qui assemblent et ne décident de rien |
+
+**Une flèche ne remonte jamais** : `lib` ignore `server`, et ni l'un ni l'autre
+ne connaît d'écran. `scripts/test-couches.ts` le refuse, dans la batterie. Les
+`import type` ne comptent pas — ils s'effacent à la compilation, et interdire à
+une règle de NOMMER la forme d'une donnée reviendrait à la recopier, donc à
+créer la divergence que le §3 refuse.
+
+**Devant une remontée, on descend la règle — on ne remonte pas le lien.** Si
+`lib` a besoin d'une fonction qui vit dans `server`, c'est qu'elle est pure :
+elle déménage dans `lib`, et `server` l'importe. La dette du 8 septembre 2026
+est exactement de cette forme, et elle est nommée dans `test-couches.ts` et
+`TODO.md`.
+
+**Et pour le développeur qu'il appellera un jour** : `ARCHITECTURE.md` porte les
+décisions et leur pourquoi, `HANDOVER.md` de quoi reprendre à froid. Un lot qui
+change la structure sans les toucher a déménagé la maison sans changer le plan.
 
 ## 4 ter. L'ARROSAGE N'A PAS LE DROIT À L'ERREUR
 
@@ -536,6 +976,17 @@ programmateur, sa tranchée et son créneau d'arrosage.
 **Et le quinconce ne se resserre JAMAIS sous la portée** — sa règle du 17 août.
 Quand le damier ne couvre pas à cet écart-là, on garde la grille alignée. Le
 resserrement sans plancher disqualifiait la seule pose qui tenait sur une vanne.
+**La portée se mesure ENTRE DEUX TÊTES, pas sur le pas des colonnes** (corrigé
+le 11 septembre 2026) : sur un damier, deux têtes voisines sont à deux pas sur
+un même bord, ou en diagonale — mesurer le pas refusait son couloir de 10 × 2 à
+sept tuyères (§127), et c'est ainsi que sa règle du 18 août était morte.
+
+**LE DAMIER EST POUR LES TUYÈRES DES COULOIRS ; LES TURBINES SE POSENT
+ALIGNÉES — « la A », sa réponse du 11 septembre 2026** devant la planche
+`appli/arrosage-a-trancher.html` qui lui montrait les deux poses calculées sur
+son 12 × 12 : neuf turbines alignées, ou six en damier (où le recouvrement
+entre deux têtes voisines tombe à 72 %). Il a gardé ses neuf. Ne pas rouvrir :
+`test-regles-du-patron.ts` tient les deux.
 
 **UN CROQUIS À MAIN LEVÉE SE LIT QUAND MÊME — sa correction du 23 août 2026 :**
 *« les utilisateurs ne vont pas s'amuser à faire des croquis à l'échelle à
@@ -819,6 +1270,51 @@ calcul, pas un détour.
 **Une antenne part du RÉSEAU, pas de la nourrice.** Seul le réseau part du
 regard ; ses antennes se greffent sur un point qu'il dessert déjà.
 
+**LE Ø25 PASSE, L'ANTENNE Ø16 VA CHERCHER LA TÊTE — ET ELLE FAIT 2 M AU
+MAXIMUM.** Sa règle du 11 septembre 2026, donnée en corrigeant un plan qui
+amenait le Ø25 jusqu'à chaque tuyère d'un couloir, en deux lignes :
+
+*« Pour la tranchée, il faut faire juste un passage au mieux pour le 25, et
+ensuite ce sont des antennes en diamètre 16 rigide qui vont de part et d'autre
+pour poser les tuyères — et elles doivent être posées en quinconce. »*
+
+*« Si le couloir fait 3 m, on fait une seule tranchée au milieu et les antennes
+pour les tuyères de chaque côté — donc 1,50 m de 16 rigide, ça passe. Si le
+couloir fait 5 m, on ne peut plus faire une seule tranchée au milieu, parce que
+là ça fait des antennes de 2,50 m de chaque côté, et le max c'est 2 m de 16
+rigide. »*
+
+| | |
+|---|---|
+| la ligne Ø25 | **un seul passage**, au mieux — elle ne va pas à chaque tête |
+| l'antenne Ø16 rigide | du té de la ligne à l'arroseur, **2 m au plus** |
+| un couloir jusqu'à **4 m** de large | une tranchée au milieu, des antennes des deux côtés |
+| au-delà de 4 m | une tranchée ne suffit plus : la ligne doit repasser assez près de chaque tête |
+
+**L'AMENÉE SE CALCULE — « NI LUE, NI SUPPOSÉE ».** Sa règle du 11 septembre
+2026, devant une planche qui lui proposait de la « lire » ou de garder 30 m :
+*« pour la 2, elle doit être calculée, ni lue ni supposée »*. Le croquis porte
+le piquage et la nourrice — deux des trois éléments obligatoires —, les cotes
+donnent l'échelle : la longueur du compteur à la nourrice se calcule entre les
+deux places, en Manhattan, comme le trajet du regard
+(`longueurDeLAmenee`, `geometrie-croquis.ts`). Le modèle ne rend jamais des
+mètres ; il rend des places. Et **sans piquage dessiné, aucun plan** — c'est le
+troisième élément, et il se lit désormais sur le croquis, pas seulement dans le
+déroulant (qui, lui, ne commande que le débit). Quand l'échelle ne se déduit
+pas, l'amenée n'est pas comptée et l'écran le dit — jamais 30 m tus.
+
+**Pourquoi 2 m et pas « environ 2 m ».** La nomenclature du 17 août comptait
+*« environ 2 m de PEBD rigide Ø16 par arroseur »* — une règle de COMPTE, qu'on
+a prise pour la seule règle. Celle-ci est une règle de POSE : au-delà, ce n'est
+plus une antenne, et la ligne doit venir plus près. Le tracé doit donc placer
+le Ø25 de sorte qu'aucune tête ne soit à plus de 2 m de lui.
+
+**Cette règle avait déjà été donnée avant le 11 septembre, et elle avait été
+perdue** avant d'être écrite — comme le quinconce du couloir (§127), mort le
+24 août quand un contrôle rouge a été réécrit au lieu d'être compris. Les deux
+vivent désormais dans `scripts/test-regles-du-patron.ts`, avec ses chiffres à
+lui : **un rouge dans cette suite ne se réécrit jamais, il lui est posé.**
+
 **Les raccords se comptent par POSITION, jamais par arroseur** — sa planche du
 17 août, écrite dans `appli/arrosage-catalogue.js` :
 
@@ -885,6 +1381,17 @@ Et chaque symbole **nomme la pièce** qu'il implique : plein → té taraudé ; 
 → coude taraudé ; losange → té égal. Sans cela on lit le plan sans savoir quoi
 visser. **Toute pièce facturée se voit quelque part sur le plan** — une pièce
 commandée qu'on ne sait pas où poser ne sert à rien.
+
+**DEUX SYMBOLES AU MÊME POINT SE DESSINENT CÔTE À CÔTE, JAMAIS L'UN SUR
+L'AUTRE.** Sa règle du 11 septembre 2026 : *« même si c'est au même endroit, tu
+ne dois pas superposer les ronds, carrés ou losanges : mets-les côte à côte,
+qu'on les voie bien — l'utilisateur comprendra que c'est au même endroit »*.
+Deux pelouses qui se touchent posent chacune sa tête sur l'arête commune ; le
+dessin en montrait une, la seconde exactement dessous, et seule la réserve le
+disait. Le point vrai ne bouge pas (c'est lui qui arrose) ; le symbole s'écarte
+(`Tete.decalage`). Et le té égal d'une tête à trois branches se dessine **à côté
+d'elle**, pas dessous — *« il faut un té égal à côté du premier arroseur pour
+faire la jonction »*, sa lecture du plan le même jour.
 
 **UNE LÉGENDE SE VÉRIFIE CONTRE LE CATALOGUE ET CONTRE LA COMMANDE.** Payé le
 22 août 2026, et c'est lui qui l'a relevé : *« il m'a déjà donné 4 arroseurs en
@@ -956,6 +1463,84 @@ Elle enchaîne, dans cet ordre — les contrôles rapides d'abord :
 Elle ne s'arrête pas à la première erreur : savoir que trois choses cassent, et
 lesquelles, vaut mieux que de les découvrir une par une.
 
+**LE PRÉVENIR AVANT DE LA LANCER — sa consigne du 4 septembre 2026 :**
+*« préviens-moi avant de lancer une batterie : mes sessions partagent le même
+dossier, et le serveur tombe si une autre écrit pendant que tu mesures. »*
+
+Ce n'est pas une politesse, c'est ce qui rend la mesure lisible. **Lui seul sait
+ce que ses autres sessions sont en train de faire** — le dépôt, lui, ne le dit
+nulle part. Une batterie jouée pendant qu'une session voisine enregistre un
+fichier rend des chiffres qui n'accusent personne et qu'il faut rejouer : dix
+minutes perdues, et l'envie d'y croire quand même.
+
+Une ligne suffit avant de la lancer, et l'on attend sa réponse. Vaut aussi pour
+tout ce qui prend le port 3000 ou vide la base — les suites navigateur, le seed,
+un serveur de développement.
+
+**ET LE DOSSIER SE FERME PENDANT QU'ELLE MESURE — ce n'est plus une consigne,
+c'est un verrou.** Sa colère du 9 septembre 2026 : *« comment ça se fait qu'à
+chaque fois il y a un problème sur la batterie ? Elle est quasi finie et une
+autre session la fait s'arrêter ou envoie des fichiers ! JE NE VEUX PLUS DE
+PROBLÈME SUR LA BATTERIE. »* Trois verdicts de dix minutes jetés dans la même
+journée, tous pour la même raison.
+
+| | |
+|---|---|
+| `scripts/verrou-batterie.mjs` | la batterie pose un verrou en démarrant, le rend en finissant |
+| `scripts/garde-batterie.mjs` | branché sur **chaque** geste de **chaque** session : tant que le verrou tient, rien ne s'écrit dans le dossier |
+
+**Ce qu'il laisse passer, et c'est ce qui le rend tenable :** lire. Un journal,
+un `git status`, un `grep`. Pendant dix minutes, c'est la seule chose utile — et
+un verrou qui interdirait aussi cela se ferait contourner dès le deuxième jour.
+
+**CE QUI PROUVE QU'UNE BATTERIE TOURNE, C'EST SON PROCESSUS** — corrigé le soir
+même, et il l'a payé une fois de plus. La première version tenait la vie du
+verrou à un battement de vingt secondes ; or la batterie enchaîne ses étapes en
+`spawnSync` et **bloque son fil du début à la fin** : aucun timer n'y part
+jamais. Le verrou se déclarait donc mort au bout de quatre-vingt-dix secondes et
+rouvrait le dossier **au milieu de la mesure** — une session voisine a écrit, et
+le verdict est parti à la poubelle sous ses yeux.
+
+Un verrou dont le processus vit tient désormais, muet ou non. Le silence n'est
+plus qu'un plafond de dernier recours — quarante-cinq minutes — contre un PID
+recyclé par le système. En cas de doute :
+`node scripts/verrou-batterie.mjs etat`, et `rendre --force` s'il ment.
+
+**`redis-cli FLUSHALL` VIDE LE LIMITEUR DE TOUTES LES SESSIONS — et ce n'est
+plus une consigne, c'est un refus.**
+Sa consigne du 9 septembre 2026 : *« chaque session peut prendre un port
+différent, plusieurs sessions tournent en même temps, n'effacez pas les
+batteries des autres ! »* Redis tient seize bases numérotées, **une par
+atelier** et étanches entre elles (`scripts/_atelier.ts`) : c'est exactement ce
+qui permet à plusieurs batteries de tourner ensemble. `FLUSHALL` les vide
+**toutes** — donc le compteur de connexions des voisines, qui se mettent alors
+à rougir sur « dépassement de délai après la connexion », vingt fois, sans
+qu'aucun message ne désigne le coupable. C'est la panne du 14 août 2026,
+provoquée cette fois depuis la session d'à côté.
+
+Ce qu'on écrit à la place, quand le limiteur bloque un diagnostic :
+`redis-cli -n <rang de l'atelier> FLUSHDB`. Et le rang **ne se devine pas** : la
+batterie l'annonce (« Atelier n° 2 — port 3002 »), et le rang 0 est le port
+3000.
+
+**Sa réponse quand on le lui a avoué :** *« pourquoi une session vide toutes les
+autres, je veux plus ça ! »* — donc `scripts/garde-redis-des-autres.mjs`,
+branché sur **chaque** commande de **chaque** session
+(`.claude/settings.json`) : `FLUSHALL` et `FLUSHDB` sans `-n` sont refusés, et
+le refus dit quoi taper à la place. Il laisse passer tout le reste — lire, une
+clé nommée, et la règle elle-même écrite dans un message de commit, faux positif
+que `scripts/test-garde-redis-des-autres.ts` a attrapé avant qu'il gêne
+personne.
+
+**Et l'on ne force NI le port NI la base à la main.** `prendreUnAtelier()` en
+choisit un libre et pose `ATLAS_ADRESSE` : imposer `DATABASE_URL` par-dessus,
+c'est se retrouver avec le serveur d'un rang et la base d'un autre — deux
+sessions dans la même base, chacune la vidant sous les pieds de l'autre.
+
+**Le verrou EMPÊCHE, l'empreinte DIT.** Les deux restent : un fichier enregistré
+depuis l'éditeur échappe au verrou, et c'est alors la comparaison d'empreintes
+qui annule le verdict.
+
 **NE RIEN JOUER À LA MAIN PENDANT QU'ELLE TOURNE — surtout pas une suite
 base.** Payé le 26 août 2026. Pendant une batterie, cinq suites navigateur ont
 rougi d'un coup et l'étape « Connexion derrière un proxy » avec elles. Aucune
@@ -988,6 +1573,54 @@ posant délibérément une origine étrangère.
 **Ne rien demander au patron tant qu'elle n'est pas au vert.** C'est sa règle,
 posée après ces vingt échanges : *« tu essayes, tu fais des batteries de tests
 avant de me demander de le faire »*.
+
+**ON NE REJOUE PAS TOUTE LA BATTERIE POUR VÉRIFIER DES ROUGES CONNUS — sa
+consigne du 13 septembre 2026 :** *« tu vas pas rejouer toute la batterie,
+rejoue seulement les rouges !! »*
+
+Il l'a dite après avoir vu trois batteries complètes de cinquante minutes
+enchaînées dans la même soirée. Il a raison, et le calcul est net :
+
+| Ce qu'on veut savoir | Ce qu'on lance | Le temps |
+|---|---|---|
+| **un lot est-il livrable** | la batterie entière | ~50 min, et elle reste obligatoire |
+| **un rouge connu est-il réparé** | les suites concernées, et elles seules | ~20 min pour quinze |
+
+```bash
+npm run test:e2e -- --seulement "adresse-suggestions,fiche-client,ia-01"
+```
+
+Les motifs se séparent par des VIRGULES, et chacun se cherche dans le nom du
+fichier (`run-e2e-tests.ts`). Le script annonce alors combien de suites il a
+retenues — **et ce chiffre se lit** : un motif trop court en attrape une
+voisine, et l'on croit mesurer ce qu'on ne mesure pas.
+
+**Ce que cela ne relâche PAS**, et la limite ne bouge pas : la batterie entière
+reste ce qui autorise une livraison (§5 ci-dessus, et §6 pour `main`). Rejouer
+les rouges sert à SAVOIR, pas à livrer. Le script le dit lui-même à chaque
+filtre : *« Ce n'est PAS la batterie »*.
+
+**ET UN ROUGE CORRIGÉ NE COÛTE PLUS LA MESURE ENTIÈRE — sa colère du
+17 septembre 2026, à 23 h :** *« ça recommence et c'est ça à chaque fois ! »*
+Une batterie à 158 suites vertes sur 159, un rouge de documentation corrigé en
+trois secondes, et cinquante minutes à repayer — dont le produit était le rouge
+suivant.
+
+```bash
+npx tsx scripts/verifier-ce-qui-a-bouge.ts   # ce qui était rouge, plus ce que la correction peut casser
+```
+
+Il répond à une seule question : *qu'est-ce qui a bougé depuis la mesure, et que
+peut-il casser ?* Il rejoue les étapes et les suites concernées, **garde le
+rouge de ce qu'il n'a pas remesuré**, et refuse dès que ce qui a bougé atteint
+le niveau 3. Il remplace `verifier-apres-fusion.ts`, qui refusait justement
+quand le lot avait changé — c'est-à-dire quand on venait de corriger
+(`ARCHITECTURE.md` §381).
+
+**Et un rouge connu qui redevient vert ne se croit pas sur parole :** il se
+rejoue deux fois. Trois sessions ont classé `test-reduction-devis-e2e`
+« capricieuse » parce qu'elle tombait une fois sur deux, alors que le produit
+perdait une écriture (`ARCHITECTURE.md` §353).
 
 Les étapes séparées restent disponibles pour un diagnostic rapide :
 
@@ -1170,6 +1803,29 @@ catalogue portant une entrée générique nommée « Turbine », l'invention
 tolérant ne prouve rien** — celui-là a été trouvé en le confrontant à
 l'invention même qu'il devait bannir.
 
+## 5 quater. Éprouver le GESTE DU PATRON, pas la fonction qu'on vient d'écrire
+
+**Payé le 28 août 2026.** Six gestes de l'assistant ont été livrés avec leur
+code, leurs refus métier et leurs contrôles — **tous verts**, et **aucun
+atteignable** : la liste que le modèle a le droit d'employer n'avait pas été
+complétée. Le patron a essayé, et il a eu « L'assistant n'a pas pu formuler ses
+propositions correctement. »
+
+**Ce qui a permis de le rater :** les contrôles construisaient la proposition
+**à la main**, puis la confirmaient. Ils éprouvaient donc la moitié qu'on venait
+d'écrire, jamais le chemin qu'il emprunte, lui — dire une phrase, et voir si le
+geste sort.
+
+**La question à se poser avant d'écrire un contrôle :** *par où le patron
+arrive-t-il ?* Si le contrôle entre par une porte de service, il ne dit rien de
+la porte d'entrée — et c'est celle-là qui peut être fermée.
+
+**Et quand un chemin ne peut pas être joué en entier ici** — le modèle réel n'a
+pas de clé sur ce poste —, on tient au moins ce qui se tient : que chaque geste
+soit **nommable** ET **exécutable** (`test-agent-gestes.ts`, « aucune porte
+fermée »). Deux listes finissent toujours par diverger ; celle-là avait un jour
+de retard.
+
 ## 5 bis. Un contrôle ne doit pas réclamer ce que le patron a fait retirer
 
 **Payé le 20 août 2026.** Il a demandé de vider la fiche d'un client — *« tout
@@ -1223,6 +1879,28 @@ C'est la même faute que la planche 56, dans l'autre sens : celle-là décrivait
   changement existe et ce qu'il évite. Le diff dit déjà quoi.
 - Ne jamais pousser sur une autre branche sans accord explicite.
 - Ne jamais ouvrir de *pull request* sans demande explicite.
+
+### UNE TÂCHE FONCTIONNELLE = UN LOT ISOLÉ — sa règle du 17 septembre 2026
+
+**Ce qu'elle a coûté :** douze commits de quatre sujets sans rapport — un
+bouton, le garde-fou, deux planches, un micro — empilés sur une seule branche,
+et un seul rouge de batterie qui retenait tout. *« C'est exactement ce que le
+nouveau système devait éviter. »*
+
+| | |
+|---|---|
+| **une tâche** | **un lot**, préparé à part, qui part de `origin/main` propre |
+| **son niveau** | calculé sur SON diff, et rien d'autre (`npm run niveau`) |
+| **ses contrôles** | ceux de son niveau, joués dans SON dossier |
+| **sa poussée** | depuis ce dossier : `git -C <dossier> push origin HEAD:main` — le garde-fou mesure le dossier que la commande vise, pas celui de la session |
+| **la tâche suivante** | repart de `main` à jour — jamais par-dessus le lot qui attend |
+
+**Un lot de niveau 2 ne doit jamais attendre un lot de niveau 3 voisin.** Deux
+sujets sur la même branche, c'est deux batteries pour le prix d'une, et un
+rouge qui bloque un travail qui n'y est pour rien. Le dossier de batterie
+(`npm run sessions:preparer --liste`) sert à ça : `git checkout --detach
+origin/main`, `git cherry-pick` des seuls commits du lot, ses contrôles, sa
+poussée.
 
 ### Rien n'est livré tant que ce n'est pas sur `main`
 
@@ -1284,6 +1962,74 @@ Trois règles qui en découlent, et qui ne se négocient pas :
 qu'on vient de faire.** Sa décision du 13 août 2026 : *« seulement quand le code
 touche »*.
 
+**ET MÊME QUAND ÇA TOUCHE, ON NE REJOUE QUE LA RENCONTRE — sa règle du
+17 septembre 2026 : *« Rejoue juste ce qui a bougé ! »*.** Un lot dont la
+batterie a rendu son verdict sans rouge nouveau, et que `main` a dépassé
+pendant qu'elle mesurait, ne repart pas pour cinquante minutes :
+
+```bash
+npx tsx scripts/verifier-ce-qui-a-bouge.ts     # dans le dossier du lot, une fois reposé sur main
+```
+
+Il tient la place de la batterie **à deux conditions**, et refuse sinon en
+disant quoi jouer : ce qui a bougé depuis le verdict n'atteint pas le niveau 3,
+et l'on rejoue vert **la rencontre** — suites base, écrans du lot, écrans que
+`main` a touchés, suites que `main` a apportées. Ce que `main` a apporté a déjà
+passé son propre garde-fou ; ce qui n'a jamais été mesuré, c'est les deux
+ensemble, et c'est cela qu'on rejoue (`scripts/_apres-fusion.mjs`,
+`ARCHITECTURE.md` §370).
+
+**Le lot a le DROIT d'avoir changé — 17 septembre 2026, 23 h.** La première
+version exigeait qu'il soit identique à la ligne près, et refusait donc
+exactement quand on venait de corriger un rouge : c'est ce mur qui coûtait
+cinquante minutes à chaque correction (`ARCHITECTURE.md` §381). Ce qui décide
+n'est plus « le lot a-t-il bougé » mais « **ce qui a bougé peut-il casser
+quelque chose** ».
+
+**Et depuis le 13 septembre 2026, la batterie le tient elle-même** pour les
+deux cas qui ne se discutent pas : rien n'a bougé depuis son dernier vert, ou
+seules des suites ont bougé — elle refuse et donne les `npx tsx` à jouer
+(`scripts/_portee-batterie.ts`, `ARCHITECTURE.md` §359). Le tableau ci-dessous
+reste le jugement pour tout le reste ; `-- --forcer` la rejoue quoi qu'il
+arrive.
+
+#### LE TRAVAIL NON ENREGISTRÉ NE SE JETTE PLUS — un garde-fou, pas une consigne
+
+**Payé le 4 septembre 2026.** Trois sessions travaillaient dans le même dossier.
+Pendant qu'une quatrième livrait, ses modifications de `CHANGELOG.md` ont
+disparu de l'arbre : réécrites de mémoire, et personne n'a vu passer le geste
+qui les avait effacées.
+
+**Le patron l'a tranché le jour même**, devant deux propositions : le garde-fou
+automatique plutôt qu'une règle écrite. Il a raison, et §1 bis le dit déjà —
+*une consigne en prose se lit au début d'une conversation et s'oublie au bout de
+trois heures*, or c'est au bout de trois heures qu'une session nettoie son arbre.
+
+`scripts/garde-travail-non-enregistre.mjs` est branché sur chaque commande
+(`.claude/settings.json`, `PreToolUse`). **Dès que l'arbre porte du travail non
+enregistré**, il refuse les quatre gestes qui le jettent :
+
+    git reset --hard   ·   git checkout -- <fichier>
+    git restore <f>    ·   git clean -f
+
+**Ce qu'il ne fait PAS, et c'est le point.** Il ne dit rien sur un arbre propre,
+et il laisse passer les changements de branche : `git switch -c` **emporte** les
+modifications, il ne perd rien. La première version du garde-fou visait
+justement les branches — elle aurait gêné tout le monde tous les jours sans
+jamais éviter la panne qu'elle prétendait éviter. Un garde-fou qui parle à tort
+s'apprend à être ignoré, et l'on perd alors la protection sans s'en apercevoir.
+
+**Il ne ferme aucune porte** : ce qu'il propose à la place — `git stash push
+--include-untracked` — fait la même chose et se défait. Jeter son propre essai
+reste possible ; cela laisse simplement une trace.
+
+`scripts/test-garde-travail-non-enregistre.ts` lui montre autant de gestes à
+laisser passer qu'à refuser, joue le déclencheur avec son vrai contrat, et
+**refuse de conclure** sur un arbre propre. Il a servi tout de suite : il a
+attrapé deux défauts avant que le garde-fou ne serve — `git -C . reset --hard`
+n'était pas reconnu, et `git commit -m "… on ne fait jamais git reset --hard"`
+était refusé à tort.
+
 #### Ce que la soirée du 23 août a coûté, et qui n'était écrit nulle part
 
 **Sa consigne :** *« il y a six sessions qui tournent en même temps ; donc
@@ -1339,6 +2085,42 @@ qui tient le port 3000 est **le sien**, jamais celui d'à côté : le chercher c
 les autres fait perdre le temps qu'on croyait gagner. Le seul bien commun, c'est
 `main`.
 
+**CE PARAGRAPHE NE VAUT PAS DANS SON DOSSIER — 9 septembre 2026.** Sa
+correction : *« chaque session peut prendre un port différent, plusieurs
+sessions tournent en même temps, n'effacez pas les batteries des autres ! »*
+Chez lui, les sessions partagent le dossier ET la machine ; ce qu'elles ne
+partagent plus, depuis son lot du 8 septembre, c'est l'**atelier** —
+`scripts/_atelier.ts` donne à chacune son rang, donc son port, sa base et son
+coin de Redis (3000/`atlas_test`, 3001/`atlas_test_a1`, 3002/`atlas_test_a2`…).
+
+| | |
+|---|---|
+| dans le conteneur d'un agent | un seul occupant : ce qui tourne est à soi |
+| **dans SON dossier** | trois ou quatre sessions, chacune dans SON atelier |
+
+**ON NE TUE JAMAIS PAR MOTIF.** `pkill -f next-server`, `pkill -f "next start"`,
+`killall node` : ces trois-là ne visent pas un processus, ils visent un NOM — et
+ils emportent le serveur de la batterie d'à côté, dix minutes de mesure avec.
+Le dépôt l'a déjà payé (`scripts/test-fiche-pendant-relance.ts`) et
+`run-e2e-tests.ts` écrit déjà le bon geste :
+
+```bash
+pgrep -af 'next-server|next dev'   # on REGARDE d'abord
+kill -9 <le pid, le sien>          # on vise UN processus
+```
+
+Un serveur qu'on veut déloger se reconnaît à **son port** — celui de son propre
+atelier —, jamais à son nom. Et quand on ne sait pas lequel est le sien, on ne
+tue rien : on demande son port à `prendreUnAtelierSync`, ou l'on attend.
+
+**Ce que le dépôt ne tient PAS encore, et qu'il ne faut pas croire tenu :** le
+verrou de la batterie est posé sur **un seul fichier à la racine**
+(`.atlas-batterie-en-cours.json`) et refuse la seconde batterie — *« La machine
+est à un seul occupant »*. Les ateliers existent donc, et la batterie les
+ignore : deux sessions ne peuvent pas mesurer en même temps, alors que rien ne
+les en empêcherait. C'est inscrit dans `TODO.md`, et ce n'est pas une raison
+pour forcer le verrou d'une autre session (`rendre --force` efface SA mesure).
+
 **Pourquoi elle a été prise, et ce qu'elle corrige.** Ce soir-là, un écran fini
 et vérifié a mis des heures à parvenir jusqu'à lui — non pas par difficulté,
 mais par une course : `main` a bougé **cinq fois** pendant la vérification (30,
@@ -1347,15 +2129,27 @@ que la fusion suivante périmait aussitôt. Rejouer soixante suites pour du code
 qui touche une autre partie de l'application, c'est payer dix minutes pour ne
 rien apprendre — et faire attendre le patron pour rien.
 
-**Ce qui compte comme « ça touche », et la liste n'est pas au jugé :**
+**CE QUI DÉCIDE N'EST PLUS UNE LISTE, C'EST LA RENCONTRE — 17 septembre 2026.**
+Sa règle : *« Chaque lot doit prouver SON propre travail. Le fait que main
+change parce qu'une autre session a fusionné ne doit jamais, à lui seul,
+provoquer une nouvelle batterie complète. »*
 
-| Le code arrivé… | Alors |
+```bash
+npx tsx scripts/verifier-ce-qui-a-bouge.ts   # il mesure, et dit ce qu'il rejoue
+```
+
+| ce que `main` a apporté | ce qu'on joue |
 |---|---|
-| touche un fichier que ce lot modifie aussi | **batterie complète** |
-| ajoute une **migration** (`drizzle/*.sql`) | **batterie complète**, et l'appliquer d'abord — sans quoi elle rend des dizaines de rouges qui n'accusent que la base (payé le 13 août : 160 rouges d'un coup) |
-| touche une **pièce partagée** — `design-tokens.ts`, `PrimaryButton`, `EnTeteEcran`, `globals.css`, `layout.tsx`, `middleware.ts` | **batterie complète** : ces fichiers-là touchent tous les écrans |
-| touche les suites ou l'outillage que ce lot emploie | **batterie complète** |
-| ne touche rien de tout cela | `typecheck`, `lint`, `verifier:memoire`, **plus les suites du domaine concerné** — et l'on pousse |
+| rien qui croise le lot — ni ce qu'il emploie, ni ce qui l'emploie | **rien** : le verdict du lot est reposé tel quel |
+| une dépendance que le lot emploie, ou un de ses appelants | **seulement** les suites de ces fichiers-là |
+| une migration, un réglage de construction, de l'outillage | ils entrent toujours dans la rencontre — le graphe ne les lit pas, et c'est le côté sûr |
+| un PLANCHER — migration, gabarit racine, `globals.css`, configuration | **le lot sur ce nouveau sol** : ses écrans, les suites du fond, la construction, la connexion. **Jamais la batterie entière** (§387) |
+
+**La liste d'avant — « une pièce partagée, donc la batterie » — a été
+supprimée** : `globals.css` ou `layout.tsx` touchés par une autre session
+faisaient repartir cinquante minutes sans qu'on ait jamais demandé si le lot les
+employait. Le graphe d'imports le dit, dans les deux sens (`ARCHITECTURE.md`
+§375).
 
 **Ce que cela ne relâche PAS.** La batterie complète reste obligatoire **avant
 la première poussée d'un lot**, sur son propre code : c'est la règle du §5, et

@@ -136,7 +136,7 @@ export async function preparerPhotoEntrante(
    * matin, et il rangeait des coordonnées GPS.
    */
   if (!nettoye.nettoye) {
-    logger.warn("Photo refusée : nettoyage impossible — l'original n'est PAS conservé", {
+    logger.warn("Photo refusée : nettoyage impossible, l'original n'est PAS conservé", {
       quoi,
       type: mimeType,
     });

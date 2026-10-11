@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — la note vocale avant qu'on appuie</title>
+<title>Atlas : la note vocale avant qu'on appuie</title>
 <style>
 /*
   LA NOTE VOCALE AVANT QU'ON APPUIE — sa demande du 30 août 2026 :
@@ -304,11 +304,11 @@ form{padding:6px 24px 0;display:flex;flex-direction:column;gap:7px}
 
   <nav class="onglets" aria-label="Les cinq repos">
     <div class="onglets-piste">
-      <button type="button" data-repos="A" aria-pressed="true">A · L’anneau</button>
-      <button type="button" data-repos="B" aria-pressed="false">B · Le micro</button>
-      <button type="button" data-repos="C" aria-pressed="false">C · La barre</button>
-      <button type="button" data-repos="D" aria-pressed="false">D · Anneau + micro</button>
-      <button type="button" data-repos="E" aria-pressed="false">E · L’onde</button>
+      <button type="button" data-repos="A" aria-pressed="true">A, L’anneau</button>
+      <button type="button" data-repos="B" aria-pressed="false">B, Le micro</button>
+      <button type="button" data-repos="C" aria-pressed="false">C, La barre</button>
+      <button type="button" data-repos="D" aria-pressed="false">D, Anneau + micro</button>
+      <button type="button" data-repos="E" aria-pressed="false">E, L’onde</button>
     </div>
     <button type="button" class="teinte" id="teinte" aria-label="Passer en fond noir">☾</button>
   </nav>
@@ -478,7 +478,7 @@ form{padding:6px 24px 0;display:flex;flex-direction:column;gap:7px}
 
     <div class="doc">
       <h2 id="devis-nom">M. Bernard</h2>
-      <p id="devis-coord" style="margin:0 0 16px;font-size:13.5px;color:var(--muted)">12 rue des Lilas, Nantes · 06 79 98 45 14</p>
+      <p id="devis-coord" style="margin:0 0 16px;font-size:13.5px;color:var(--muted)">12 rue des Lilas, Nantes : 06 79 98 45 14</p>
       <div class="ligne-devis">
         <span><span class="libelle">Taille de haie</span><span class="mesure">20 ml</span></span>
         <span class="prix">à chiffrer</span>
@@ -505,11 +505,11 @@ form{padding:6px 24px 0;display:flex;flex-direction:column;gap:7px}
 
 <script>
 /*
-  LA MAQUETTE SE MANIPULE — rien n'appelle un serveur.
+  LA MAQUETTE SE MANIPULE, rien n'appelle un serveur.
 
   Ce qui se choisit ici : les cinq REPOS. Tout le reste est identique d'une
-  proposition à l'autre — la même barre d'enregistrement, le même devis, la même
-  disparition du bouton — sinon on comparerait des écrans, pas des dessins.
+  proposition à l'autre, la même barre d'enregistrement, le même devis, la même
+  disparition du bouton : sinon on comparerait des écrans, pas des dessins.
 */
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => Array.from(document.querySelectorAll(s));
@@ -714,7 +714,7 @@ function reporter() {
   const tel = $("#tel").value.trim();
   const adresse = $("#adresse").value.trim() || "Adresse à préciser";
   $("#devis-nom").textContent = nom;
-  $("#devis-coord").textContent = [adresse, tel].filter(Boolean).join(" · ");
+  $("#devis-coord").textContent = [adresse, tel].filter(Boolean).join(" : ");
 }
 
 $("#retour-fiche").addEventListener("click", () => {

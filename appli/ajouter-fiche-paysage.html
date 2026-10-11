@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ajouter à sa fiche d'entretien</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
+    --gris:#8a8578; --tuile:#ece9e1; --rust:#2f3b2f;
+    --or:#B98B47; --orTexte:#8b6835;
+    --plein:#7d9a6d; --surplein:#faf9f5;
+    --trait:rgba(28,28,26,.12);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--etabli)}
+  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased}
+
+  .page{max-width:1240px;margin:0 auto;padding:30px 16px 90px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;
+            color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 30px/1.15 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+  .chapeau{max-width:680px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0 0 6px}
+
+  .barre{display:flex;gap:9px;flex-wrap:wrap;margin:22px 0 18px;align-items:center}
+  .bascule{appearance:none;border:0;cursor:pointer;font:600 12.5px/1 var(--sans);
+           letter-spacing:.02em;padding:11px 17px;border-radius:999px;
+           background:var(--etabli-carte);color:var(--etabli-doux);
+           box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .bascule[aria-pressed="true"]{background:var(--etabli-encre);color:var(--etabli-carte);box-shadow:none}
+
+  .tel{width:390px;max-width:100%;border-radius:26px;overflow:hidden;
+       box-shadow:0 1px 2px rgba(20,18,14,.16),0 14px 34px rgba(20,18,14,.14);background:var(--fond)}
+  .ecran{height:700px;display:flex;flex-direction:column;background:var(--fond);color:var(--encre)}
+  .corps{flex:1;overflow-y:auto}
+
+  /* L'en-tête commun : la flèche, puis le titre serif sur une ligne. */
+  .entete{padding:20px 26px 0}
+  .retour{width:36px;height:36px;border-radius:999px;background:var(--plage);
+          display:grid;place-items:center;color:var(--doux);box-shadow:inset 0 0 0 1px var(--trait)}
+  .entete h2{font:600 32px/1.1 var(--serif);letter-spacing:-.018em;margin:16px 0 0;white-space:nowrap}
+
+  .contenu{padding:0 24px 40px}
+  .refus{margin:16px 0 0;font-size:14px;color:var(--rust)}
+  .famille{margin-top:24px}
+  .tete{display:flex;align-items:center;gap:12px}
+  .nomFamille{flex:1;min-width:0;background:transparent;border:0;padding:0;
+              font:600 11px/1.2 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--or)}
+  .retirerFamille{appearance:none;border:0;background:none;cursor:pointer;min-height:44px;
+                  margin-right:-8px;padding:0 8px;font:500 11px/1 var(--sans);
+                  letter-spacing:.28em;text-transform:uppercase;color:var(--gris);flex:none}
+  .ligne{display:flex;align-items:center;gap:12px;padding:4px 0;border-bottom:1px solid var(--trait)}
+  .ligne input{flex:1;min-height:48px;background:transparent;border:0;padding:0;
+               font:400 15px/1.3 var(--sans);color:var(--encre)}
+  .croix{appearance:none;border:0;background:none;cursor:pointer;width:44px;height:44px;flex:none;
+         font-size:18px;color:var(--gris)}
+  .lien{appearance:none;border:0;background:none;cursor:pointer;padding:0;min-height:44px;
+        font:400 14px/1.2 var(--sans);color:var(--or);text-align:left}
+  .champ{display:block;width:100%;border-radius:10px;border:1px solid var(--trait);
+         background:var(--plage);padding:12px;font:400 16px/1.3 var(--sans);color:var(--encre)}
+  .champ + .champ{margin-top:12px}
+  .capsule{appearance:none;border:0;cursor:pointer;display:block;margin:12px auto 0;
+           height:50px;padding:0 30px;border-radius:999px;background:var(--plein);
+           color:var(--surplein);font:500 16px/1 var(--serif);letter-spacing:.01em}
+  .aide{margin:8px 0 0;font-size:13px;color:var(--gris)}
+  .pied{margin:32px 0 0;font-size:13px;line-height:1.6;color:var(--gris)}
+  .pied b{color:var(--encre)}
+
+  .vide{font-size:15px;line-height:1.6;color:var(--gris);margin:18px 0 0}
+  .carte{margin-top:20px;border-radius:14px;padding:20px;background:var(--plage)}
+  .carte .petit{font:600 11px/1.2 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--gris);margin:0 0 10px}
+  .carte .liste{font-size:14px;line-height:1.6;color:var(--encre);margin:0}
+  .carte .note{font-size:13px;color:var(--gris);margin:12px 0 0}
+  .centre{display:block;width:100%;text-align:center;margin-top:12px}
+
+  .tiroir{flex:none;display:flex;justify-content:space-between;align-items:center;
+          margin:0 26px;border-top:1px solid var(--trait);padding:10px 0 12px}
+  .tiroir span{font-size:13px;color:var(--gris)}
+  .tiroir button{appearance:none;border:0;background:none;cursor:pointer;padding:8px;margin-right:-8px;
+                 font:500 11px/1 var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--or)}
+
+  /* Le témoin, hors du téléphone : ce qui est dans la base, à l'instant. */
+  .temoin{width:390px;max-width:100%;margin-top:16px;background:var(--etabli-carte);
+          border-radius:16px;padding:14px 16px;box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .temoin .t{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .temoin .t span{font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--etabli-or)}
+  .temoin .t button{appearance:none;border:0;cursor:pointer;border-radius:999px;padding:8px 13px;
+                    background:var(--etabli);color:var(--etabli-doux);font:600 12px/1 var(--sans)}
+  .journal{font-size:12.5px;line-height:1.45;color:var(--etabli-doux);margin:0 0 8px;min-height:18px}
+  .base{margin:0;padding:0;list-style:none;font-size:13px;line-height:1.5;color:var(--etabli-doux)}
+  .base .fam{margin-top:6px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--etabli-gris)}
+  .base .fam:first-child{margin-top:0}
+  .base .neuf{background:#e9dcc2;border-radius:4px;transition:background 1.6s}
+  .rien{font-size:13px;color:var(--etabli-gris);margin:0}
+</style>
+</head>
+<body>
+<main class="page">
+  <p class="surtitre">Fiche paysage, Composer ma fiche</p>
+  <h1>Ajouter à sa fiche d'entretien</h1>
+  <p class="chapeau">Appuyez sur un bouton Ajouter, validez une fois sans rien écrire, puis avec un nom.</p>
+
+  <div class="barre">
+    <button class="bascule" type="button" data-depart="composee" aria-pressed="true">Fiche déjà composée</button>
+    <button class="bascule" type="button" data-depart="vide" aria-pressed="false">Fiche vide</button>
+  </div>
+
+  <div class="tel">
+    <div class="ecran">
+      <div class="corps" id="corps"></div>
+      <div class="tiroir" id="tiroir" hidden>
+        <span id="tiroirTexte">Retiré à l'instant</span>
+        <button type="button" id="annuler">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="temoin" aria-live="polite">
+    <div class="t"><span>Enregistré</span><button type="button" id="recommencer">Recommencer</button></div>
+    <p class="journal" id="journal"></p>
+    <div id="base"></div>
+  </section>
+</main>
+
+<script>
+(function () {
+  // Relevé de src/lib/prestations-entretien.ts : MODELE_FOURNI, PHRASE_REFUS,
+  // libelleNettoye, memeLibelle, parFamilles, et PAS_ORDRE du dépôt.
+  var MODELE = [
+    ["Pelouse","Tonte et ébarbage"],["Pelouse","Traitement pelouse"],["Pelouse","Scarification"],["Pelouse","Engrais"],
+    ["Tailles","Taille arbuste automne"],["Tailles","Taille arbuste printemps"],["Tailles","Taille de haie automne"],
+    ["Tailles","Taille de haie printemps"],["Tailles","Taille des rosiers"],
+    ["Massifs","Bêchage"],["Massifs","Bordures massifs"],["Massifs","Griffage massifs"],["Massifs","Désherbage massifs"],
+    ["Massifs","Coupe des fleurs fanées"],
+    ["Propreté","Nettoyage pied de haies"],["Propreté","Désherbant allée"],["Propreté","Lierre, liseron, liane"],
+    ["Propreté","Démoussage voirie"],["Propreté","Ramassage des feuilles"],["Propreté","Évacuation des déchets"]
+  ];
+  var COMPOSEE = [
+    ["Pelouse","Tonte et ébarbage"],["Pelouse","Scarification"],
+    ["Tailles","Taille de haie automne"],["Tailles","Taille des rosiers"],
+    ["Propreté","Ramassage des feuilles"],["Propreté","Évacuation des déchets"]
+  ];
+  var REFUS = {
+    libelle_vide: "Écrivez d'abord le nom de la prestation.",
+    famille_vide: "Cette prestation doit appartenir à une famille.",
+    doublon: "Cette prestation est déjà dans votre fiche.",
+    trop_de_prestations: "Votre fiche est pleine. Retirez une prestation avant d'en ajouter une autre."
+  };
+  var PAS_ORDRE = 10, MAX = 60, DELAI_RETRAIT = 6000;
+
+  function nettoye(brut) {
+    if (!brut) return null;
+    var p = brut.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+    return p === "" ? null : p.slice(0, 60);
+  }
+  function plie(t) { return t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim(); }
+  function meme(a, b) { return plie(a) === plie(b); }
+  function parFamilles(liste) {
+    var g = [];
+    liste.forEach(function (p) {
+      var d = g.find(function (x) { return meme(x.famille, p.famille); });
+      if (d) d.lignes.push(p); else g.push({ famille: p.famille, lignes: [p] });
+    });
+    return g;
+  }
+
+  // ─── La base (ce que le témoin montre) ───
+  var base = [], seq = 0, depart = "composee", neufs = [];
+  function nouvelId() { seq += 1; return "p" + seq; }
+  function semer(liste) {
+    base = liste.map(function (x, i) { return { id: nouvelId(), famille: x[0], libelle: x[1], ordre: (i + 1) * PAS_ORDRE }; });
+  }
+  function lister() { return base.slice().sort(function (a, b) { return a.ordre - b.ordre; }).map(function (p) { return { id: p.id, famille: p.famille, libelle: p.libelle }; }); }
+
+  // ajouterPrestation du dépôt, ligne pour ligne.
+  function ecrireAjout(familleBrute, libelleBrut) {
+    var famille = nettoye(familleBrute), libelle = nettoye(libelleBrut);
+    if (!famille) return { ok: false, refus: "famille_vide" };
+    if (!libelle) return { ok: false, refus: "libelle_vide" };
+    if (base.length >= MAX) return { ok: false, refus: "trop_de_prestations" };
+    if (base.some(function (p) { return meme(p.libelle, libelle); })) return { ok: false, refus: "doublon" };
+    var deLaFamille = base.filter(function (p) { return meme(p.famille, famille); });
+    var ordre = deLaFamille.length > 0
+      ? Math.max.apply(null, deLaFamille.map(function (p) { return p.ordre; })) + 1
+      : (base.length > 0 ? Math.max.apply(null, base.map(function (p) { return p.ordre; })) : 0) + PAS_ORDRE;
+    var ligne = { id: nouvelId(), famille: deLaFamille.length ? deLaFamille[0].famille : famille, libelle: libelle, ordre: ordre };
+    base.push(ligne);
+    return { ok: true, ligne: ligne };
+  }
+
+  // ─── L'écran (l'état du composant) ───
+  var ecran;
+  function chargerEcran() {
+    ecran = { prestations: lister(), phrase: null, ajoutOuvert: null, saisie: "", saisieFamille: "", retraits: [] };
+  }
+  function estRetire(id) { return ecran.retraits.some(function (r) { return r.id === id; }); }
+
+  var corps = document.getElementById("corps");
+  function esc(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+  function pluriel(n) { return n > 1 ? "s" : ""; }
+
+  var enTete = '<div class="entete"><div class="retour" aria-hidden="true">' +
+    '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+    '</div><h2>Composer ma fiche</h2></div>';
+
+  function dessiner() {
+    var h = enTete + '<div class="contenu">';
+    var refus = ecran.phrase ? '<p class="refus" role="alert">' + esc(ecran.phrase) + '</p>' : "";
+
+    if (ecran.prestations.length === 0) {
+      h += '<p class="vide">Votre fiche d\'entretien est vide. C\'est la liste que vous cocherez sur un chantier, et dont votre client recevra le rapport.</p>';
+      h += '<div class="carte"><p class="petit">Le modèle Atlas, ' + MODELE.length + ' prestations</p>' +
+        '<p class="liste">' + MODELE.map(function (m) { return esc(m[1]); }).join(", ") + '</p>' +
+        '<p class="note">Rien n\'est figé : vous retirez, ajoutez et renommez ce que vous voulez ensuite.</p></div>';
+      h += refus;
+      h += '<button type="button" class="capsule" data-geste="modele">Partir du modèle Atlas</button>';
+      h += '<button type="button" class="lien centre" data-geste="ouvrirNeuve">Je préfère composer la mienne</button>';
+      if (ecran.ajoutOuvert) {
+        h += '<div style="margin-top:16px"><input class="champ" data-champ="famille" placeholder="Pelouse" aria-label="Nom de la première famille" value="' + esc(ecran.saisieFamille) + '">' +
+          '<input class="champ" data-champ="saisie" placeholder="Tonte et ébarbage" aria-label="Nom de la première prestation" value="' + esc(ecran.saisie) + '">' +
+          '<button type="button" class="capsule" data-geste="creerFamille">Ajouter</button></div>';
+      }
+      corps.innerHTML = h + '</div>';
+      focaliser();
+      return;
+    }
+
+    h += refus;
+    var visibles = ecran.prestations.filter(function (p) { return !estRetire(p.id) && !estRetire("famille:" + p.famille); });
+    parFamilles(visibles).forEach(function (f) {
+      var n = f.lignes.length;
+      h += '<section class="famille"><div class="tete">' +
+        '<input class="nomFamille" value="' + esc(f.famille) + '" data-renommer-famille="' + esc(f.famille) + '" aria-label="Nom de la famille ' + esc(f.famille) + '">' +
+        '<button type="button" class="retirerFamille" data-retirer-famille="' + esc(f.famille) + '" data-compte="' + n + '">Retirer la famille</button></div>';
+      f.lignes.forEach(function (p) {
+        h += '<div class="ligne"><input value="' + esc(p.libelle) + '" data-renommer="' + p.id + '" data-avant="' + esc(p.libelle) + '" aria-label="Prestation ' + esc(p.libelle) + '">' +
+          '<button type="button" class="croix" data-retirer="' + p.id + '" data-libelle="' + esc(p.libelle) + '" aria-label="Retirer ' + esc(p.libelle) + '">×</button></div>';
+      });
+      if (ecran.ajoutOuvert === f.famille) {
+        h += '<div style="margin-top:12px"><input class="champ" data-champ="saisie" placeholder="Nom de la prestation" aria-label="Nouvelle prestation dans ' + esc(f.famille) + '" value="' + esc(ecran.saisie) + '">' +
+          '<button type="button" class="capsule" data-ajouter="' + esc(f.famille) + '">Ajouter à ' + esc(f.famille) + '</button></div>';
+      } else {
+        h += '<button type="button" class="lien" style="margin-top:12px" data-ouvrir="' + esc(f.famille) + '">+ Ajouter une prestation</button>';
+      }
+      h += '</section>';
+    });
+
+    if (ecran.ajoutOuvert === "__neuve__") {
+      h += '<div style="margin-top:32px"><input class="champ" data-champ="famille" placeholder="Nom de la famille" aria-label="Nom de la nouvelle famille" value="' + esc(ecran.saisieFamille) + '">' +
+        '<input class="champ" data-champ="saisie" placeholder="Sa première prestation" aria-label="Première prestation de la nouvelle famille" value="' + esc(ecran.saisie) + '">' +
+        '<button type="button" class="capsule" data-geste="creerFamille">Créer la famille</button>' +
+        '<p class="aide">Vous ajouterez ses autres prestations juste après.</p></div>';
+    } else {
+      h += '<button type="button" class="lien" style="margin-top:32px;display:block" data-geste="ouvrirNeuve">+ Ajouter une famille</button>';
+    }
+    h += '<p class="pied">Modifier cette fiche ne change <b>aucun rapport déjà envoyé</b>.</p>';
+    corps.innerHTML = h + '</div>';
+    focaliser();
+  }
+  function focaliser() {
+    var c = corps.querySelector("[data-champ]");
+    if (c && document.activeElement !== c) c.focus({ preventScroll: false });
+  }
+
+  // location.reload() : l'écran repart de ce que la base contient.
+  function recharger() {
+    var haut = corps.scrollTop;
+    chargerEcran();
+    dessiner();
+    corps.scrollTop = haut;
+  }
+
+  // ─── Les gestes ───
+  function ajouter(famille) {
+    var libelle = ecran.saisie;
+    if (!libelle.trim()) {
+      // Le champ vide referme le panneau, en silence : rien n'est écrit.
+      ecran.ajoutOuvert = null; ecran.saisie = "";
+      noter("Champ vide : le panneau se referme, rien n'est écrit.");
+      dessiner(); return;
+    }
+    var r = ecrireAjout(famille, libelle);
+    if (!r.ok) { ecran.phrase = REFUS[r.refus]; noter("Refusé, rien n'est écrit."); dessiner(); return; }
+    neufs = [r.ligne.id];
+    noter("Écrit à l'appui sur « Ajouter à " + famille + " », puis l'écran se recharge.");
+    recharger();
+  }
+  function creerFamille() {
+    var r = ecrireAjout(ecran.saisieFamille, ecran.saisie);
+    if (!r.ok) { ecran.phrase = REFUS[r.refus]; noter("Refusé, rien n'est écrit."); dessiner(); return; }
+    neufs = [r.ligne.id];
+    noter("Écrit à l'appui sur le bouton, puis l'écran se recharge.");
+    recharger();
+  }
+  function poserModele() {
+    if (base.length > 0) { ecran.phrase = "Votre fiche contient déjà des prestations."; dessiner(); return; }
+    semer(MODELE);
+    neufs = base.map(function (p) { return p.id; });
+    noter("Les 20 prestations du modèle sont écrites d'un coup.");
+    recharger();
+  }
+
+  function renommerPrestation(id, avant, apres) {
+    if (apres.trim() === "" || apres === avant) {
+      if (apres.trim() === "") noter("Nom effacé : rien n'est écrit, l'ancien nom reste enregistré.");
+      rafraichirTemoin(); return;
+    }
+    var libelle = nettoye(apres);
+    if (base.some(function (p) { return p.id !== id && meme(p.libelle, libelle); })) {
+      ecran.phrase = REFUS.doublon; dessiner(); noter("Refusé, rien n'est écrit."); return;
+    }
+    base.forEach(function (p) { if (p.id === id) p.libelle = libelle; });
+    ecran.phrase = null;
+    ecran.prestations.forEach(function (p) { if (p.id === id) p.libelle = apres; });
+    neufs = [id];
+    noter("Renommée en quittant le champ.");
+    dessiner();
+  }
+  function renommerFamille(ancienne, nouvelle) {
+    if (nouvelle.trim() === "" || nouvelle === ancienne) {
+      if (nouvelle.trim() === "") noter("Nom effacé : rien n'est écrit, l'ancien nom reste enregistré.");
+      rafraichirTemoin(); return;
+    }
+    var propre = nettoye(nouvelle);
+    neufs = [];
+    base.forEach(function (p) { if (meme(p.famille, ancienne)) { p.famille = propre; neufs.push(p.id); } });
+    ecran.phrase = null;
+    ecran.prestations.forEach(function (p) { if (p.famille === ancienne) p.famille = nouvelle; });
+    noter("Famille renommée en quittant le champ.");
+    dessiner();
+  }
+
+  // useRetraits : la ligne disparaît, « Annuler » reste 6 s, puis c'est écrit.
+  var minuteur = null;
+  function retirer(id, libelle) {
+    ecran.retraits.push({ id: id, libelle: libelle });
+    clearTimeout(minuteur);
+    minuteur = setTimeout(validerRetraits, DELAI_RETRAIT);
+    noter("Retirée de l'écran. Rien n'est écrit tant qu'« Annuler » est là.");
+    dessiner(); tiroir();
+  }
+  function validerRetraits() {
+    ecran.retraits.forEach(function (r) {
+      if (r.id.indexOf("famille:") === 0) {
+        var f = r.id.slice(8);
+        base = base.filter(function (p) { return !meme(p.famille, f); });
+        ecran.prestations = ecran.prestations.filter(function (p) { return p.famille.toLowerCase() !== f.toLowerCase(); });
+      } else {
+        base = base.filter(function (p) { return p.id !== r.id; });
+        ecran.prestations = ecran.prestations.filter(function (p) { return p.id !== r.id; });
+      }
+    });
+    if (ecran.retraits.length) noter("Tiroir refermé : le retrait est écrit.");
+    ecran.retraits = [];
+    neufs = [];
+    dessiner(); tiroir();
+  }
+  function tiroir() {
+    var t = document.getElementById("tiroir");
+    t.hidden = ecran.retraits.length === 0;
+    document.getElementById("tiroirTexte").textContent = ecran.retraits.length > 1 ? "Retirés à l'instant" : "Retiré à l'instant";
+  }
+  document.getElementById("annuler").addEventListener("click", function () {
+    ecran.retraits.pop();
+    if (ecran.retraits.length === 0) clearTimeout(minuteur);
+    noter("Annulé, rien n'a été écrit.");
+    dessiner(); tiroir();
+  });
+
+  corps.addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (!b) return;
+    if (b.dataset.ouvrir) { ecran.saisie = ""; ecran.ajoutOuvert = b.dataset.ouvrir; dessiner(); return; }
+    if (b.dataset.ajouter) { ajouter(b.dataset.ajouter); return; }
+    if (b.dataset.retirer) { retirer(b.dataset.retirer, b.dataset.libelle); return; }
+    if (b.dataset.retirerFamille) { retirer("famille:" + b.dataset.retirerFamille, b.dataset.retirerFamille); return; }
+    var g = b.dataset.geste;
+    if (g === "ouvrirNeuve") { ecran.saisie = ""; ecran.saisieFamille = ""; ecran.ajoutOuvert = "__neuve__"; dessiner(); }
+    else if (g === "creerFamille") creerFamille();
+    else if (g === "modele") poserModele();
+  });
+  corps.addEventListener("input", function (e) {
+    var c = e.target.dataset.champ;
+    if (c === "saisie") ecran.saisie = e.target.value;
+    if (c === "famille") ecran.saisieFamille = e.target.value;
+  });
+  corps.addEventListener("focusout", function (e) {
+    var t = e.target;
+    // Laisser le clic en cours se jouer avant de redessiner.
+    if (t.dataset.renommer) { var id = t.dataset.renommer, av = t.dataset.avant, v = t.value; setTimeout(function () { renommerPrestation(id, av, v); }, 0); }
+    if (t.dataset.renommerFamille !== undefined && t.classList.contains("nomFamille")) {
+      var an = t.dataset.renommerFamille, nv = t.value; setTimeout(function () { renommerFamille(an, nv); }, 0);
+    }
+  });
+
+  // ─── Le témoin ───
+  function noter(t) { document.getElementById("journal").textContent = t; rafraichirTemoin(); }
+  function rafraichirTemoin() {
+    var el = document.getElementById("base");
+    if (base.length === 0) { el.innerHTML = '<p class="rien">Rien.</p>'; return; }
+    var h = '<ul class="base">';
+    parFamilles(lister()).forEach(function (f) {
+      h += '<li class="fam">' + esc(f.famille) + '</li>';
+      f.lignes.forEach(function (p) { h += '<li' + (neufs.indexOf(p.id) >= 0 ? ' class="neuf"' : '') + '>' + esc(p.libelle) + '</li>'; });
+    });
+    el.innerHTML = h + '</ul>';
+    setTimeout(function () { el.querySelectorAll(".neuf").forEach(function (n) { n.style.background = "transparent"; }); }, 80);
+  }
+
+  function demarrer() {
+    clearTimeout(minuteur);
+    seq = 0; neufs = [];
+    semer(depart === "composee" ? COMPOSEE : []);
+    chargerEcran();
+    corps.scrollTop = 0;
+    dessiner(); tiroir();
+    document.getElementById("journal").textContent = "";
+    rafraichirTemoin();
+  }
+  document.getElementById("recommencer").addEventListener("click", demarrer);
+  document.querySelectorAll("[data-depart]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      depart = b.dataset.depart;
+      document.querySelectorAll("[data-depart]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      demarrer();
+    });
+  });
+  demarrer();
+})();
+</script>
+</body>
+</html>

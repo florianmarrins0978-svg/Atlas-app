@@ -36,7 +36,7 @@
  *   avancé depuis, **il faut le dire**, pas le taire ni le confondre.
  *
  * On ne compare que ce qui est comparable : les deux marques sont écrites par
- * le même format (`%cd · %h · branche`), l'une par `demarrer.sh`, l'autre par
+ * le même format (`%cd, %h, branche`), l'une par `demarrer.sh`, l'autre par
  * `version-executee.ts`. Les faire diverger, c'est rendre cette règle aveugle.
  */
 

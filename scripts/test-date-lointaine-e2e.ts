@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
-import { Pool } from "pg";
-import { ajouterJours, versJourIso, HORIZON_PATRON_JOURS, DELAI_MINIMAL_JOURS } from "../src/server/disponibilites";
+import { pool } from "../src/server/db/client";
+import { ajouterJours, versJourIso, HORIZON_PATRON_JOURS } from "../src/lib/disponibilites";
+import { MOIS_A_L_ECRAN } from "./_calendrier-e2e";
 import { jourLisible } from "../src/lib/jour";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **« Comment je fais si je dois lui proposer une date dans six mois ? »**
 // — le patron, le 8 août 2026, en ajoutant : *« c'est un problème qui va se
@@ -18,13 +20,12 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // quelle date — et le patron n'avait aucun moyen d'en désigner une. Un défaut
 // invisible depuis le code, visible en deux secondes sur l'écran.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function main() {
   const navigateur = await lancerNavigateur();
   const contexte = await navigateur.newContext();
   const page = await contexte.newPage();
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
   await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
   await page.fill('input[name="email"]', "demo@atlas.local");
@@ -37,14 +38,12 @@ async function main() {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nom);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
-  const chantierId = page.url().split("/").pop()!;
+  const chantierId = idChantier;
 
   await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.waitForSelector("text=Total TTC");
-  await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
-  await page.waitForTimeout(900);
   await page.getByLabel("Description 1").fill("Taille de haie de laurier");
   await page.getByLabel("Prix unitaire 1").fill("350");
   await page.getByLabel("Description 1").click();
@@ -61,26 +60,26 @@ async function main() {
   // regardait `min` et `max` ; il navigue désormais comme le patron navigue.
   const aujourdHui = new Date();
   assert.equal(
-    await page.locator("[data-jour]").count() > 0,
+    await page.locator(`${MOIS_A_L_ECRAN} [data-jour]`).count() > 0,
     true,
     "Aucun calendrier : le patron ne peut proposer que la semaine qui vient."
   );
 
-  // **Le lendemain se REGARDE mais ne se PROPOSE pas.**
+  // ═══════════════════════════════════════════════════════════════════════
+  // **LE LENDEMAIN SE PROPOSE — sa règle du 31 août 2026.**
   //
-  // Le contrôle exigeait auparavant une case éteinte. Depuis le 22 août 2026,
-  // sur sa demande (planche 91), **toutes les cases restent touchables** :
-  // *« un jour complet reste touchable — c'est justement celui sur lequel vous
-  // voulez regarder avant de décider »*. Le refus a donc changé de place : il
-  // n'éteint plus la case, il s'écrit sous elle.
+  // *« Si l'utilisateur veut choisir le 1ᵉʳ septembre il doit pouvoir ! »* Ce
+  // contrôle exigeait exactement l'inverse jusqu'à ce jour-là : il prouvait que
+  // demain ne partait pas chez le client. Il réclamerait désormais ce que le
+  // patron a fait retirer (`CLAUDE.md` §5 bis), donc il change de camp.
   //
-  // **Et depuis le 25 août, ce qu'on éprouve est la RÈGLE, plus le bouton.**
-  // Toucher une case la propose désormais — le bouton n'existe plus, et un
-  // contrôle qui l'exigeait réclamerait ce que le patron a fait retirer
-  // (`CLAUDE.md` §5 bis). Ce qu'il faut prouver n'a pas bougé : un jour trop
-  // proche ne part pas chez le client, quoi que touche le doigt.
+  // **Ce qu'il prouve maintenant, et c'est plus exigeant :** la case s'allume
+  // POUR DE BON — `data-etat="retenu"`, l'état que seul un aller-retour serveur
+  // accorde —, ET la fiche dit pourquoi c'est court. Un jour retenu en silence
+  // serait le délai supprimé plutôt que rendu franchissable.
+  // ═══════════════════════════════════════════════════════════════════════
   const demain = versJourIso(ajouterJours(aujourdHui, 1));
-  const caseDemain = page.locator(`[data-jour="${demain}"]`);
+  const caseDemain = page.locator(`${MOIS_A_L_ECRAN} [data-jour="${demain}"]`);
   if ((await caseDemain.count()) > 0) {
     await caseDemain.first().click();
     const fiche = page.locator('[data-atlas="journee-regardee"]');
@@ -90,21 +89,25 @@ async function main() {
       undefined,
       { timeout: 30_000 }
     );
-    // Ce contrôle-ci ne porte pas sur le week-end mais sur le DÉLAI MINIMAL :
-    // demain est trop proche, quel que soit le jour de la semaine.
-    assert.equal(
-      await page.locator(`[data-jour="${demain}"][data-etat="retenu"]`).count(),
-      0,
-      `Le calendrier a PROPOSÉ ${demain} au client (délai minimal : ${DELAI_MINIMAL_JOURS} jours).`
-    );
-    // **Et il doit DIRE pourquoi.** Une case qui ne s'allume pas, sans un mot,
-    // se lit comme une panne : c'est le défaut que la planche 91 a corrigé, et
-    // il reviendrait si l'écran se contentait de ne rien faire.
+    await page.locator(`${MOIS_A_L_ECRAN} [data-jour="${demain}"][data-etat="retenu"]`).waitFor({
+      state: "attached",
+      timeout: 30_000,
+    });
     const dit = await page.locator('[data-atlas="verdict-du-jour"]').innerText();
     assert.ok(
-      dit.trim().length > 0 && !/Vérification/.test(dit),
-      `La fiche du ${demain} ne dit pas pourquoi il est refusé. Lue : « ${dit.trim()} »`
+      /moins de deux jours/i.test(dit),
+      `Le ${demain} se retient sans prévenir que c'est court. Lu : « ${dit.trim()} »`
     );
+    assert.ok(
+      !/trop proche/i.test(dit),
+      `Le refus est revenu sous les yeux du patron. Lu : « ${dit.trim()} »`
+    );
+    // On le retire : la suite éprouve une date lointaine, pas un cumul.
+    await caseDemain.first().click();
+    await page.locator(`${MOIS_A_L_ECRAN} [data-jour="${demain}"][data-etat="retenu"]`).waitFor({
+      state: "detached",
+      timeout: 30_000,
+    });
   }
 
   // --- 2. Une date à six mois est acceptée, et elle se voit ----------------
@@ -116,7 +119,16 @@ async function main() {
   // On avance de mois en mois, comme lui. Vingt appuis couvrent largement les
   // six mois visés ; au-delà, c'est que la navigation est bornée trop tôt — et
   // le message le dit plutôt que de laisser un délai d'attente s'écouler.
-  for (let i = 0; i < 20 && (await page.locator(`[data-jour="${dansSixMois}"]`).count()) === 0; i++) {
+  // **On cherche le jour DANS LE MOIS QUI EST À L'ÉCRAN.** Sans cela, la boucle
+  // s'arrêtait dès que le jour visé apparaissait dans le mois d'APRÈS — monté
+  // hors du cadre depuis le glissement du 11 septembre 2026 —, et le clic qui
+  // suit partait dans le cadre : quarante-cinq secondes, puis un rouge qui
+  // accusait un calendrier sain (`_calendrier-e2e.ts`).
+  for (
+    let i = 0;
+    i < 20 && (await page.locator(`${MOIS_A_L_ECRAN} [data-jour="${dansSixMois}"]`).count()) === 0;
+    i++
+  ) {
     const suivant = page.getByRole("button", { name: /^Mois suivant/ });
     assert.ok(
       await suivant.isEnabled(),
@@ -126,7 +138,7 @@ async function main() {
     await suivant.click();
     await page.waitForTimeout(120);
   }
-  const cible = page.locator(`[data-jour="${dansSixMois}"]`);
+  const cible = page.locator(`${MOIS_A_L_ECRAN} [data-jour="${dansSixMois}"]`);
   assert.equal(await cible.count(), 1, `${dansSixMois} reste introuvable dans le calendrier.`);
   // **Un seul geste depuis le 25 août 2026** : la case s'ouvre ET s'engage.
   await cible.click();
@@ -137,7 +149,7 @@ async function main() {
     { timeout: 60_000 }
   );
   await page
-    .locator(`[data-jour="${dansSixMois}"][data-etat="retenu"]`)
+    .locator(`${MOIS_A_L_ECRAN} [data-jour="${dansSixMois}"][data-etat="retenu"]`)
     .waitFor({ state: "visible", timeout: 20_000 })
     .catch(() => {
       throw new Error(`${dansSixMois} n'est pas proposé alors qu'il est libre.`);
@@ -174,12 +186,10 @@ async function main() {
     [chantierId]
   );
   assert.ok(rows[0], "Aucun envoi enregistré : le devis n'est pas parti.");
-  // `pg` rend les colonnes `date[]` en objets Date : on compare des jours, pas
-  // des instants — sinon le fuseau du lecteur décalerait la comparaison d'une
-  // case, ce qui est exactement le piège que `versJourIso` existe pour éviter.
-  const enregistrees = (rows[0].dates_proposees as (string | Date)[]).map((d) =>
-    d instanceof Date ? versJourIso(d) : String(d).slice(0, 10)
-  );
+  // Le pool du produit rend une `date[]` en jours « AAAA-MM-JJ », jamais en
+  // instants : c'est ce qui permet de comparer des cases sans que le fuseau du
+  // PC en décale une (`src/server/db/client.ts`).
+  const enregistrees = rows[0].dates_proposees as string[];
   assert.ok(
     enregistrees.includes(dansSixMois),
     `La date à six mois ne figure pas dans l'envoi : ${JSON.stringify(enregistrees)}`

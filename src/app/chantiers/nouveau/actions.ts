@@ -1,27 +1,69 @@
 "use server";
 
-import { exigerEcran } from "@/server/garde-action";
+import { revalidatePath } from "next/cache";
+import { exigerEcran, exigerFacturation } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
-import { creerChantier } from "@/server/repositories/chantiers";
-import { trouverOuCreerClient, type CanalClient } from "@/server/repositories/clients";
+import { logger } from "@/server/logger";
+import { creerChantier, getChantier } from "@/server/repositories/chantiers";
+import {
+  chantierDuClientAFacturer,
+  creerFactureSansDevis,
+  FactureDirecteImpossibleError,
+} from "@/server/repositories/factures";
+import type { ChantierAFacturer } from "@/lib/chantier-a-facturer";
+import { recopierPhotos } from "@/server/repositories/photos";
+import {
+  trouverOuCreerClient,
+  completerLaFiche,
+  getClient,
+  reconnaitreLeClient,
+  type CanalClient,
+  type ReconnaissanceClient,
+} from "@/server/repositories/clients";
 import { nomDuChantier } from "@/lib/nom-chantier";
-import type { Civilite } from "@/lib/civilite";
+import type { CiviliteClient } from "@/lib/civilite";
 import { jourIso } from "@/lib/jour";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerAudioEntrant } from "@/server/audio-entrant";
+import { siretLu } from "@/lib/siren";
+import { telephoneLu } from "@/lib/numero-telephone";
+import { numeroTvaLu } from "@/lib/autoliquidation";
 import { lireCoordonneesDictees } from "@/server/ai/services/coordonnees-service";
 
 export type CreerChantierInput = {
+  /**
+   * Le client est DÉJÀ connu — on vient de sa fiche (« Nouveau devis »).
+   *
+   * **Aucun rapprochement n'est alors joué, et c'est le point.** `rapprocherClient`
+   * sert à retrouver un client d'après ce qu'on tape ; ici, il n'y a rien à
+   * retrouver. Le faire quand même ferait passer le chantier par une règle de
+   * ressemblance alors qu'on tient l'identifiant : sur quatre Martins, un nom
+   * corrigé à la volée suffirait à ranger le chantier chez le mauvais.
+   *
+   * Ce que le patron tape à l'écran complète malgré tout les cases VIDES de la
+   * fiche, comme ailleurs — il n'écrase jamais ce qu'elle porte déjà.
+   */
+  clientId?: string;
   nomClient?: string;
   /** « Mr » ou « Mme », s'il l'a choisi. Absent : il n'a rien dit, et ce
    *  silence se garde tel quel (migration 0038). */
-  civilite?: Civilite;
+  civilite?: CiviliteClient;
   telephone?: string;
   email?: string;
+  /** Pour une entreprise cliente (4 octobre 2026) : complètent sa fiche s'ils sont valables. */
+  siret?: string;
+  numeroTva?: string;
   /** Canal convenu avec le client pour recevoir son devis (docs/AGENT.md §2.1). */
   canal?: CanalClient;
   adresseChantier?: string;
   adresseClient?: string;
+  /**
+   * Il a appuyé sur « Ce n'est pas lui » sous la fiche reconnue.
+   *
+   * Ce n'est pas la même chose qu'un `clientId` absent : là, on ne sait pas ;
+   * ici, on sait que **ce n'est pas** celui qu'Atlas a trouvé.
+   */
+  refuseLeRapprochement?: boolean;
 };
 
 // Ne redirige pas elle-même (garde le comportement de navigation côté client,
@@ -32,20 +74,48 @@ export async function creerChantierAction(data: CreerChantierInput): Promise<{ i
 
   let clientId: string | undefined;
   const nomClient = data.nomClient?.trim();
-  if (nomClient) {
-    const telephone = data.telephone?.trim() || undefined;
-    const email = data.email?.trim() || undefined;
 
-    // Un canal sans la coordonnée correspondante est un cul-de-sac : l'envoi
-    // s'annoncerait possible puis échouerait au dernier moment. On préfère ne
-    // rien enregistrer et laisser l'écran d'envoi le dire clairement.
-    const canal =
-      data.canal === "sms" && telephone
-        ? "sms"
-        : data.canal === "email" && email
-          ? "email"
-          : undefined;
+  // **On vient de SA fiche : il n'y a rien à retrouver.** Le client est relu ici
+  // plutôt que cru sur parole — un identifiant qui voyage est un identifiant
+  // qu'on peut changer en chemin, et la RLS rend indiscernables « effacé » et
+  // « d'une autre entreprise », ce qui est exactement ce qu'on veut.
+  const clientConnu = data.clientId ? await getClient(ctx, data.clientId) : null;
+  // Un numéro qui ne joint personne ne s'écrit pas, comme le SIRET plus bas :
+  // l'écran l'a déjà refusé sous sa case, par la même lecture (`telephoneLu`).
+  const telephone = telephoneLu(data.telephone) || undefined;
+  const email = data.email?.trim() || undefined;
 
+  // Un canal sans la coordonnée correspondante est un cul-de-sac : l'envoi
+  // s'annoncerait possible puis échouerait au dernier moment. On préfère ne
+  // rien enregistrer et laisser l'écran d'envoi le dire clairement.
+  //
+  // **Il se calcule AVANT la fourche**, et c'est la moitié de sa demande du
+  // 11 septembre 2026 : le client reconnu à l'écran passe par la branche du
+  // haut, qui l'ignorait. Il choisissait « SMS » sur la fiche qui facture, et
+  // sa fiche ne le retenait jamais.
+  const canal =
+    data.canal === "sms" && telephone ? "sms" : data.canal === "email" && email ? "email" : undefined;
+
+  if (clientConnu) {
+    clientId = clientConnu.id;
+    // **CE QU'IL TAPE ENTRE DANS SA FICHE, et par la MÊME porte que partout
+    // ailleurs.** Sa demande du 11 septembre 2026 : l'e-mail ajouté à la main
+    // sur la fiche qui facture doit être là la prochaine fois qu'il tape le
+    // nom. La règle — que du vide, jamais d'écrasement — vit dans
+    // `completerLaFiche`, et une seule fois : recopiée ici, elle avait déjà
+    // oublié la civilité et le canal d'envoi (`CLAUDE.md` §3).
+    await completerLaFiche(
+      ctx,
+      { ...clientConnu, creeLe: clientConnu.createdAt },
+      {
+        civilite: data.civilite,
+        telephone,
+        email,
+        adresse: data.adresseClient?.trim() || data.adresseChantier?.trim() || undefined,
+        canalCommunication: canal,
+      }
+    );
+  } else if (nomClient) {
     // **Retrouvé plutôt que recréé.** Le patron, le 17 août 2026 : *« si c'est
     // monsieur Martins et qu'on a déjà une fiche client monsieur Martins, le
     // devis, la facture s'ajoute à la fiche de monsieur Martins »*. La règle de
@@ -68,8 +138,24 @@ export async function creerChantierAction(data: CreerChantierInput): Promise<{ i
       // laisser le champ vide. Il la corrige d'un geste sur le devis si les
       // deux diffèrent.
       adresse: data.adresseClient?.trim() || data.adresseChantier?.trim() || undefined,
+      // **« Ce n'est pas lui » traverse jusqu'ici, et il le faut.** Le refus est
+      // pris à l'écran, mais c'est l'enregistrement qui range le chantier :
+      // sans ce passage, le nom seul aurait retrouvé l'homme qu'il venait
+      // d'écarter, et Atlas lui aurait répondu « si, c'est lui ».
+      refuseLeRapprochement: data.refuseLeRapprochement,
     });
     clientId = client.id;
+  }
+
+  // **Le SIRET et le n° TVA d'une entreprise** (sa demande du 4 octobre 2026),
+  // par la même porte que le reste : `completerLaFiche`, le vide seul. Une
+  // valeur qui n'en est pas une ne s'écrit pas ; l'écran l'a déjà signalée
+  // sous sa case, par la même lecture (`siretLu`, `numeroTvaLu`).
+  const siret = siretLu(data.siret) || undefined;
+  const numeroTva = numeroTvaLu(data.numeroTva) ?? undefined;
+  if (clientId && data.civilite === "entreprise" && (siret || numeroTva)) {
+    const fiche = await getClient(ctx, clientId);
+    if (fiche) await completerLaFiche(ctx, { ...fiche, creeLe: fiche.createdAt }, { siret, numeroTva });
   }
 
   // Le nom se DÉDUIT de ce que le patron a donné : il n'a plus à en trouver un.
@@ -86,6 +172,39 @@ export async function creerChantierAction(data: CreerChantierInput): Promise<{ i
     adresseChantier: data.adresseChantier?.trim() || undefined,
     clientId,
   });
+
+  // ── CE QUE CETTE ÉCRITURE CHANGE SE DÉCLARE ICI — 20 septembre 2026 ───────
+  //
+  // **Sa remarque, capture à l'appui :** *« j'ai créé un chantier puis j'ai
+  // fait retour. Problème ! J'ai dû recharger la page pour qu'il arrive dans
+  // mes chantiers en cours ! »*
+  //
+  // Le chantier était bien en base. C'est l'accueil qu'il retrouvait tel qu'il
+  // l'avait quitté : un RETOUR — la flèche, ou le geste du navigateur — rejoue
+  // la page telle qu'elle a été rendue, et rien ne disait que la liste avait
+  // changé (`node_modules/next/dist/docs/01-app/04-glossary.md`, « Client
+  // Cache » : *pages … are reused during browser back/forward navigation*).
+  // Aucune durée ne l'en sortait : `staleTimes` ne touche pas ce cas-là.
+  //
+  // **Les sept autres écritures qui touchent l'accueil l'annonçaient déjà** —
+  // `marquerReponseVueAction`, `corrigerDevisAction`, `repartirDeCeClient`
+  // (`src/app/actions.ts`, `src/app/clients/[id]/actions.ts`). Celle qui CRÉE
+  // la ligne était la seule à se taire.
+  //
+  // **Les trois écrans, pas seulement le sien** : la création pose aussi une
+  // fiche client, ou une date de dernier chantier sur une fiche existante —
+  // même retour, même page rejouée, et un défaut qu'il aurait signalé au lot
+  // suivant.
+  //
+  // **Et les trois se nomment, même si une seule suffit AUJOURD'HUI.** La
+  // documentation du cadre le dit elle-même (`revalidatePath.md`) : un appel
+  // rafraîchit pour l'instant *toutes* les pages déjà visitées, et *« this
+  // behavior is temporary and will be updated in the future to apply only to
+  // the specific path »*. S'appuyer sur cet effet de bord, c'est laisser deux
+  // écrans se figer le jour d'une mise à jour, sans que rien ne le dise.
+  revalidatePath("/");
+  revalidatePath("/clients");
+  if (clientId) revalidatePath(`/clients/${clientId}`);
 
   return { id: chantier.id };
 }
@@ -122,4 +241,156 @@ export async function dicterCoordonneesAction(formData: FormData) {
   const audio = await preparerAudioEntrant(fichier);
   if (!audio.ok) throw new Error(audio.message);
   return lireCoordonneesDictees(audio.octets, audio.mime);
+}
+
+/**
+ * REPRENDRE LES PHOTOS DE LA DERNIÈRE FOIS — sa règle du 8 septembre 2026.
+ *
+ * *« Les anciennes photos peuvent apparaître à l'écran mais sans s'inscrire de
+ * nouveau, juste pour voir ce qu'on avait fait la dernière fois. […] Si il
+ * valide sans les avoir resélectionnées elles ne doivent pas apparaître dans la
+ * fiche d'intervention pour le salarié. Seulement si l'utilisateur les
+ * coche. »*
+ *
+ * **Le fichier est RECOPIÉ, jamais partagé** (`recopierPhotos`) : sans quoi
+ * effacer l'ancienne photo viderait la fiche du salarié, un mois plus tard,
+ * sans que personne fasse le lien.
+ *
+ * **Un refus se rend, il ne se lève pas** (`AGENTS.md`, piège 0 ter) : le
+ * message d'une exception d'action serveur n'arrive jamais jusqu'au patron.
+ */
+export async function reprendreLesPhotosAction(
+  chantierId: string,
+  photoIds: readonly string[]
+): Promise<{ ok: true; reprises: number } | { ok: false; raison: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "reprendre des photos");
+
+  // Un plafond, comme partout où le patron peut envoyer plusieurs fichiers
+  // d'un coup : la reprise copie de vrais octets, et une liste forgée à la main
+  // ferait recopier tout le rangement de l'entreprise en une requête.
+  if (photoIds.length > 24) {
+    return { ok: false, raison: "Trop de photos d'un coup. Reprenez-en moins de vingt-quatre." };
+  }
+
+  const chantier = await getChantier(ctx, chantierId);
+  if (!chantier) return { ok: false, raison: "Ce chantier n'existe plus." };
+
+  const creees = await recopierPhotos(ctx, photoIds, chantierId);
+  return { ok: true, reprises: creees.length };
+}
+
+/**
+ * RECONNAÎTRE LE CLIENT PENDANT QU'IL TAPE — proposition C, tranchée par le
+ * patron le 9 septembre 2026.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Sa question, et la réponse qui l'a décidé :** *« lorsque je clique sur
+ * créer un devis j'écris Martins, il reconnaît et entre les infos de lui-même,
+ * mais il ne va donc pas me créer un deuxième client appelé Martins ? »* —
+ * non. `trouverOuCreerClient` réunit déjà les homonymes depuis le 17 août ;
+ * cet écran ne fait que **montrer** ce qu'Atlas faisait en silence.
+ *
+ * **ET ELLE PROPOSE AUSSI, DEPUIS LE 20 SEPTEMBRE 2026** — sa demande, capture
+ * à l'appui : *« je tape le prénom d'un client qui existe, il ne me le
+ * reconnaît pas ; il doit me le proposer et remplir le champ direct »*. Un nom
+ * seulement COMMENCÉ ne pose rien (« julien » n'est pas « julien bernard ») :
+ * il rend alors une liste, qui attend son doigt.
+ *
+ * **Ce n'est toujours pas la liste écartée le 17 août** (*« non justement, il
+ * ne faut pas »*) : celle-là s'interposait à l'ENREGISTREMENT, pour faire
+ * confirmer un rapprochement qu'Atlas savait faire seul. Celle-ci répond
+ * pendant la frappe, là où il ne sait rien faire seul — et elle disparaît dès
+ * qu'il sait (`src/lib/rapprochement-client.ts`).
+ *
+ * **Rien de ce qui sort d'ici n'est un montant, ni une décision.** C'est une
+ * lecture, sous `withEntreprise` comme le reste, et `lui` reste vide bien plus
+ * souvent qu'il ne porte quelqu'un — quatre Martins sans numéro se proposent,
+ * ils ne se posent pas.
+ */
+export async function reconnaitreLeClientAction(saisie: {
+  nom: string;
+  telephone?: string;
+  email?: string;
+}): Promise<ReconnaissanceClient> {
+  const ctx = await getCurrentCtx();
+  // La même porte que la création : reconnaître un client, c'est déjà lire sa
+  // fiche, et un rôle qui n'a pas le droit de créer un chantier n'a pas à
+  // savoir qui est déjà chez lui.
+  await exigerEcran(ctx, "/chantiers", "reconnaître un client");
+  return reconnaitreLeClient(ctx, saisie);
+}
+
+/**
+ * AVANT LA FACTURE DIRECTE : CE CLIENT A-T-IL UN DEVIS QUI ATTEND ? — 3 octobre
+ * 2026.
+ *
+ * *« Il ne reprend pas le devis du client »* : la fiche ouvrait un chantier
+ * neuf et une facture vide pour un client dont le devis envoyé attendait
+ * ailleurs. Cette lecture se fait AVANT toute création, pour qu'aucun chantier
+ * en double ne naisse (`chantierAFacturer`).
+ */
+export async function chantierDuClientAFacturerAction(
+  clientId: string,
+  adresseSaisie: string
+): Promise<ChantierAFacturer> {
+  const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "créer une facture");
+  await exigerFacturation(ctx, "créer une facture");
+  return chantierDuClientAFacturer(ctx, clientId, adresseSaisie);
+}
+
+/**
+ * FACTURER SANS PASSER PAR LA CASE DEVIS — sa demande du 10 septembre 2026.
+ *
+ * *« Il faut que l'on puisse facturer sans avoir besoin de passer par la case
+ * devis. »* Le chantier vient d'être créé par la fiche client ; cette action
+ * pose la facture, vide, et l'écran d'après sert à la remplir.
+ *
+ * ─── LES DEUX PORTES SE FRANCHISSENT TOUTES LES DEUX ───────────────────────
+ *
+ * `exigerEcran(/chantiers)` **et** `exigerFacturation`, et ce n'est pas de la
+ * ceinture-bretelles : le geste fait deux choses que des rôles différents
+ * peuvent avoir le droit de faire. Un salarié autorisé à ouvrir des chantiers
+ * mais pas à facturer passerait la première porte ; sans la seconde, il
+ * créerait des factures et consommerait des numéros de la suite commerciale.
+ *
+ * **Le refus se rend en VALEUR, jamais en exception** (`AGENTS.md`, piège
+ * 0 ter) : le message d'une exception d'action serveur n'arrive jamais jusqu'au
+ * patron — Next.js le remplace en production par un identifiant opaque, et son
+ * banc sert une version bâtie.
+ */
+export type ResultatFactureDirecte =
+  | { succes: true; factureId: string }
+  | { succes: false; erreur: string };
+
+const REFUS_FACTURE_DIRECTE: Record<FactureDirecteImpossibleError["motif"], string> = {
+  chantier_absent: "Ce chantier n'existe plus.",
+  deja_facture: "Ce chantier porte déjà une facture.",
+  // Le geste que ce refus désigne : passer par la fin de chantier, qui reprend
+  // le prix que le client a accepté. Le taire enverrait chercher un défaut.
+  chantier_avec_devis:
+    "Ce chantier a un devis : sa facture se prépare depuis la fin de chantier, pour reprendre le prix accepté.",
+};
+
+export async function creerFactureSansDevisAction(
+  chantierId: string
+): Promise<ResultatFactureDirecte> {
+  const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "créer une facture sans devis");
+  await exigerFacturation(ctx, "créer une facture sans devis");
+  try {
+    const facture = await creerFactureSansDevis(ctx, chantierId);
+    return { succes: true, factureId: facture.id };
+  } catch (err) {
+    if (err instanceof FactureDirecteImpossibleError) {
+      return { succes: false, erreur: REFUS_FACTURE_DIRECTE[err.motif] };
+    }
+    // Une panne imprévue se JOURNALISE avant d'être rendue muette à l'écran :
+    // sans cette ligne, personne ne peut savoir pourquoi (`AGENTS.md`).
+    logger.error("Facture sans devis non créée", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { succes: false, erreur: "La facture n'a pas pu être préparée. Réessayez dans un instant." };
+  }
 }

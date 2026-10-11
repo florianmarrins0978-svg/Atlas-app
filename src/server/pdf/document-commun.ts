@@ -1,5 +1,7 @@
 import { adressesDuDocument } from "../../lib/adresses";
-import { PDFDocument, PDFFont, PDFImage, PDFPage, StandardFonts, rgb, RGB } from "pdf-lib";
+import { phraseDuCheque } from "@/lib/modalites-paiement";
+import { ligneAttendSonPrix } from "../../lib/preparation-devis";
+import { PDFDocument, PDFFont, PDFImage, PDFPage, StandardFonts, degrees, rgb, RGB } from "pdf-lib";
 import Decimal from "decimal.js";
 import { couleursDocument } from "@/lib/design-tokens";
 import {
@@ -14,8 +16,24 @@ import fontkit from "@pdf-lib/fontkit";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { logger } from "@/server/logger";
-import { avecCivilite } from "@/lib/civilite";
-import { libelleReduction } from "@/lib/reduction-devis";
+import { avecCivilite, type CiviliteClient } from "@/lib/civilite";
+import {
+  libelleReduction,
+  recoitLaRemise,
+  lignesParBloc,
+  tauxLisible,
+  totauxAvecReduction,
+  TITRE_TRAVAUX_SUPPLEMENTAIRES,
+} from "@/lib/reduction-devis";
+import { lignesMentionsLegales, positionEffective, type PositionMentionsLegales } from "@/lib/mentions-legales";
+import { nomAvecForme } from "@/lib/formes-juridiques";
+import { lignesMentionsObligatoires } from "@/lib/mentions-obligatoires";
+import { lignesDuPapier, quantiteLisible, tauxCourt } from "@/lib/lignes-du-papier";
+import { uniteDeLaLigne } from "@/lib/unite-de-ligne";
+import { protegerContreModification } from "./proteger-pdf";
+import { sansAnnotations } from "./attestation-deposee";
+import { annoncerLaLongueurDesPolices } from "./polices-embarquees";
+import { pourLePapier } from "@/lib/texte-pdf";
 
 // Le moteur commun des pièces que le client reçoit : devis et facture.
 //
@@ -40,13 +58,16 @@ function couleurHexa(hexa: string): RGB {
 // la facture gardent la terre cuite. Les tenir au même endroit rendait le devis
 // solidaire d'un changement d'écran — c'est exactement ce qui vient d'arriver,
 // et c'est le contrôle des couleurs qui l'a arrêté.
+// **Les trois gris ont disparu le 17 septembre 2026** — étiquettes de colonnes,
+// coordonnées, mentions légales : *« mets toutes les écritures en noir, rien en
+// gris »*. Ils ne sont pas « mis à l'encre » ici, ils sont retirés : une valeur
+// que plus rien ne lit se recopie un jour par erreur (`CLAUDE.md` §4 quinquies).
+// Ce qui décide de la teinte d'une écriture vit désormais dans `teintesDe`,
+// et là seulement.
 const PALETTE = {
   encre: couleursDocument.encre,
-  etiquette: couleursDocument.etiquette, // en-têtes de colonnes, intertitres de bloc
   titrePartie: couleursDocument.accent, // « ÉMETTEUR » / « CLIENT »
-  coordonnees: "#5a5a4c", // .brand-tagline
-  traitClair: "#e2ded3", // --paper-warm
-  legal: "#7a7a6a",
+  traitClair: "#e2ded3", // --paper-warm — un filet, pas une écriture
   papier: couleursDocument.papier, // le devis n'est pas sur du blanc
 } as const;
 
@@ -104,11 +125,19 @@ function teintesDe(brut: Allure | null | undefined): Teintes {
   if (!allure || estLAllureParDefaut(allure)) {
     return {
       encre: couleurHexa(PALETTE.encre),
-      etiquette: couleurHexa(PALETTE.etiquette),
+      // **TOUT CE QUI S'ÉCRIT EST EN ENCRE — sa demande du 17 septembre 2026 :**
+      // *« mets toutes les écritures en noir, rien en gris »*. Les en-têtes de
+      // colonnes, les coordonnées et les mentions légales passaient en gris
+      // doux ; sur un papier imprimé, puis photographié, ce gris se lit mal.
+      // Les trois teintes restent NOMMÉES — elles disent ce qu'elles habillent,
+      // et le jour où il veut de nouveau une nuance, elle se repose ici, en un
+      // endroit. Le trait clair, lui, n'est pas une écriture : il reste dilué,
+      // sans quoi le tableau se referme sur des filets noirs.
+      etiquette: couleurHexa(PALETTE.encre),
       titrePartie: couleurHexa(PALETTE.titrePartie),
-      coordonnees: couleurHexa(PALETTE.coordonnees),
+      coordonnees: couleurHexa(PALETTE.encre),
       traitClair: couleurHexa(PALETTE.traitClair),
-      legal: couleurHexa(PALETTE.legal),
+      legal: couleurHexa(PALETTE.encre),
       papier: couleurHexa(PALETTE.papier),
       papierEcrit: PALETTE.papier,
     };
@@ -116,15 +145,17 @@ function teintesDe(brut: Allure | null | undefined): Teintes {
   const { encre, encreDouce } = encreSurFond(allure.fond);
   return {
     encre: couleurHexa(encre),
-    etiquette: couleurHexa(encreDouce),
+    // Comme ci-dessus : ce qui s'écrit prend l'encre, quelle que soit l'allure
+    // choisie — sur un fond sombre comme sur le crème.
+    etiquette: couleurHexa(encre),
     // L'accent tient les titres de parties et le trait sous le titre : c'est
     // là qu'il se voit, et c'est ce que la planche lui a montré.
     titrePartie: couleurHexa(allure.accent),
-    coordonnees: couleurHexa(encreDouce),
+    coordonnees: couleurHexa(encre),
     // Le trait clair est l'encre très diluée : le calculer plutôt que de le
     // fixer évite un filet noir sur un fond sombre.
     traitClair: couleurHexa(encreDouce),
-    legal: couleurHexa(encreDouce),
+    legal: couleurHexa(encre),
     papier: couleurHexa(allure.fond),
     papierEcrit: allure.fond,
   };
@@ -157,10 +188,39 @@ function formatMontant(v: string, devise: string): string {
   return `${signe}${groupe},${decimales}\u00a0${SYMBOLES[devise] ?? devise}`;
 }
 
+/**
+ * **Le seul texte qui touche le papier.** Rien n'est écrit ni mesuré sans
+ * être passé par là — c'est ce qui empêche un caractère de bloquer un envoi.
+ *
+ * Le 7 septembre 2026, un devis juste refusait de partir sur
+ * « WinAnsi cannot encode … » — le signe de diamètre —, et c'était la
+ * TROISIÈME fois qu'un caractère arrêtait tout. `src/lib/texte-pdf.ts` dit
+ * pourquoi la réparation vit là, et pas une rustine de plus au cas par cas.
+ *
+ * **Mesurer échoue autant qu'écrire** : `widthOfTextAtSize` encode lui aussi.
+ * D'où l'assainissement AVANT toute mesure — `ecrireADroite` et
+ * `ecrireEspaceADroite` calculent leur retrait sur le texte, et poser le
+ * garde seulement au moment d'écrire n'aurait rien empêché.
+ */
+function surLePapier(contenu: string): string {
+  const { texte, retraits } = pourLePapier(contenu);
+  if (retraits.length > 0) {
+    // **Le document part quand même, et c'est le choix.** Un devis bloqué
+    // coûte un chantier ; un signe manquant se voit et se corrige. Mais il ne
+    // part pas en silence : sans cette trace, un mot amputé sur le devis d'un
+    // client ne s'apprendrait jamais.
+    logger.warn("Caractères retirés d'un document : la police du PDF ne sait pas les écrire", {
+      pointsDeCode: retraits.map((r) => r.pointDeCode),
+      apercu: texte.slice(0, 80),
+    });
+  }
+  return texte;
+}
+
 /** Découpe un texte pour qu'aucune ligne ne dépasse `largeur`. */
 function enLignes(texte: string, police: PDFFont, taille: number, largeur: number): string[] {
   const lignes: string[] = [];
-  for (const paragraphe of texte.split("\n")) {
+  for (const paragraphe of surLePapier(texte).split("\n")) {
     let courante = "";
     for (const mot of paragraphe.split(/\s+/)) {
       const essai = courante ? `${courante} ${mot}` : mot;
@@ -192,6 +252,12 @@ export type TexteTrace = {
   page: number;
   /** En hexadécimal, pour qu'un contrôle puisse constater une teinte qui dérive. */
   couleur: string;
+  /**
+   * Vrai quand le texte est écrit en gras (13 septembre 2026). Sans ce témoin,
+   * un contrôle qui prétendrait vérifier « les conditions en gras » mesurerait
+   * zéro (`CLAUDE.md` §5) : la trace ne disait rien de la police.
+   */
+  gras: boolean;
 };
 export type TraitTrace = { y: number; de: number; a: number; epaisseur: number; page: number };
 export type CadreTrace = { x: number; y: number; largeur: number; hauteur: number; page: number };
@@ -220,6 +286,8 @@ type Contexte = {
   sansGras: PDFFont;
   serif: PDFFont;
   serifGras: PDFFont;
+  /** Le titre qu'il donne au document, en italique — la serif quand sa typographie n'en a pas. */
+  serifItalique: PDFFont;
   /** Les couleurs de CE document — son allure, ou celle d'avant. */
   teintes: Teintes;
   trace: TraceDocument;
@@ -244,6 +312,7 @@ function poser(ctx: Contexte, contenu: string, x: number, y: number, style: Styl
 }
 
 function ecrire(ctx: Contexte, contenu: string, x: number, y: number, style: Style = {}) {
+  contenu = surLePapier(contenu);
   poser(ctx, contenu, x, y, style);
   ctx.trace.textes.push({
     contenu,
@@ -252,11 +321,13 @@ function ecrire(ctx: Contexte, contenu: string, x: number, y: number, style: Sty
     taille: style.taille ?? 9.5,
     page: ctx.numeroPage,
     couleur: enHexa(style.couleur ?? ctx.teintes.encre),
+    gras: style.police === ctx.sansGras || style.police === ctx.serifGras,
   });
 }
 
 /** Texte calé sur son bord droit — colonnes de chiffres et bloc de totaux. */
 function ecrireADroite(ctx: Contexte, contenu: string, droite: number, y: number, style: Style = {}) {
+  contenu = surLePapier(contenu);
   const police = style.police ?? ctx.sans;
   const taille = style.taille ?? 9.5;
   ecrire(ctx, contenu, droite - police.widthOfTextAtSize(contenu, taille), y, style);
@@ -294,6 +365,7 @@ function ecrireEspace(
   approche: number,
   style: Style = {}
 ) {
+  contenu = surLePapier(contenu);
   const police = style.police ?? ctx.sans;
   const taille = style.taille ?? 9.5;
   let curseur = x;
@@ -310,6 +382,7 @@ function ecrireEspace(
     taille,
     page: ctx.numeroPage,
     couleur: enHexa(style.couleur ?? ctx.teintes.encre),
+    gras: police === ctx.sansGras || police === ctx.serifGras,
   });
 }
 
@@ -322,6 +395,7 @@ function ecrireEspaceADroite(
   approche: number,
   style: Style = {}
 ) {
+  contenu = surLePapier(contenu);
   const police = style.police ?? ctx.sans;
   const taille = style.taille ?? 9.5;
   // La dernière lettre ne porte pas d'approche à sa droite : la mesure la
@@ -369,20 +443,97 @@ export type LigneDocument = {
    * « 0,00 € » : un zéro se lit « gratuit ».
    */
   aChiffrer?: boolean | null;
+  /**
+   * Le taux de sa catégorie de TVA (migration 0073).
+   *
+   * Absent ou nul : la ligne suit `tauxTva` du document — c'est le cas de tous
+   * les documents émis avant, qui sortent identiques à eux-mêmes.
+   */
+  tauxTva?: string | null;
+  /**
+   * Un TRAVAIL SUPPLÉMENTAIRE, ajouté après le devis (migration 0082).
+   *
+   * **Ce champ manquait, et c'est ce qui rendait le bloc invisible.** Le titre
+   * « TRAVAUX SUPPLÉMENTAIRES » est écrit plus bas depuis le 9 septembre 2026,
+   * et `lignesParBloc` sait déjà séparer — mais les lignes qui lui arrivaient
+   * ne portaient pas la colonne : `Boolean(undefined)` vaut `false`, donc tout
+   * retombait dans le premier bloc, **sans une erreur nulle part**. Le patron
+   * l'a vu le lendemain sur sa propre facture : *« j'ai rajouté un TS mais ça
+   * n'apparaît nulle part, le client pense que j'ai rajouté une ligne »*.
+   *
+   * Absent ou nul : la ligne vient du devis — c'est le cas de tous les
+   * documents d'avant, et d'un devis, qui n'a qu'un bloc par construction.
+   */
+  supplement?: boolean | null;
 };
 
 export type DonneesDocument = {
   entrepriseNom: string;
   entrepriseAdresse?: string | null;
   entrepriseSiret?: string | null;
+  /**
+   * La mention du répertoire des métiers, telle qu'il l'a écrite (migration
+   * 0128) : « RM 33 ». Vide : rien ne s'imprime.
+   */
+  entrepriseNumeroRm?: string | null;
+  /**
+   * Le numéro de TVA intracommunautaire, figé sur la facture (migration 0117).
+   * Obligatoire sur la facture d'un assujetti (CGI, ann. II, art. 242 nonies A,
+   * I-4°) ; absent du devis, que la loi n'y oblige pas. Vide : rien ne
+   * s'imprime.
+   */
+  entrepriseNumeroTva?: string | null;
   entrepriseTelephone?: string | null;
   entrepriseEmail?: string | null;
   entrepriseIban?: string | null;
+  /**
+   * DEUX MENTIONS QUE SEULE LA FACTURE PORTE — sa demande du 8 septembre 2026.
+   *
+   * `consignePaiement` : *« une phrase bien écrite pour dire que pour nous
+   * régler il faut impérativement mettre le numéro de facture dans le
+   * libellé »*. `ordreDuCheque` : à qui le chèque est libellé.
+   *
+   * **Absentes sur un DEVIS, et le document ne change donc pas d'un octet.** Un
+   * devis ne se règle pas : lui imprimer « indiquez le numéro dans le libellé »
+   * ferait payer un document qui n'est pas dû. Les deux phrases elles-mêmes
+   * viennent de `src/lib/modalites-paiement.ts` — la page du client les compose
+   * à partir des mêmes fonctions, sinon les deux pièces du même envoi finiraient
+   * par ne plus dire la même chose (`CLAUDE.md` §3).
+   */
+  consignePaiement?: string | null;
+  ordreDuCheque?: string | null;
+  /**
+   * Les trois mentions légales, et leur emplacement (migration 0072). Absentes
+   * sur un document d'avant la migration : rien de plus ne s'imprime.
+   */
+  entrepriseFormeJuridique?: string | null;
+  entrepriseCapitalSocial?: string | null;
+  entrepriseVilleRcs?: string | null;
+  /**
+   * LA DÉCENNALE ET LE MÉDIATEUR (migration 0094), figés sur le document.
+   *
+   * Écrits sous la mention légale, au pied — sur le devis comme sur la facture,
+   * par une SEULE fonction : deux façons de composer le même engagement
+   * finiraient par ne plus dire la même chose au client (`CLAUDE.md` §3).
+   * Absents ou vides : rien ne s'imprime, jamais une phrase à trou.
+   */
+  entrepriseAssureurDecennale?: string | null;
+  /** Ses coordonnées (loi 96-603, art. 22-2), migration 0121. */
+  entrepriseAdresseAssureurDecennale?: string | null;
+  entrepriseContratDecennale?: string | null;
+  entrepriseCouvertureDecennale?: string | null;
+  entrepriseMediateurNom?: string | null;
+  entrepriseMediateurCoordonnees?: string | null;
+  entrepriseMentionsLegalesPosition?: PositionMentionsLegales | null;
   clientNom?: string | null;
   /** Recopiée sur le document au moment où il est établi (migration 0038). */
-  clientCivilite?: "mr" | "mme" | null;
+  clientCivilite?: CiviliteClient | null;
   clientAdresse?: string | null;
   clientTelephone?: string | null;
+  /** Le numéro de TVA du donneur d'ordre, en sous-traitance (migration 0118). */
+  clientNumeroTva?: string | null;
+  /** Le SIRET d'une entreprise cliente (migration 0119). */
+  clientSiret?: string | null;
   adresseChantier?: string | null;
   conditionsPaiement?: string | null;
   devise: string;
@@ -464,7 +615,7 @@ async function imageDuLogo(
 async function policesDu(
   pdfDoc: PDFDocument,
   allure: Allure | null | undefined
-): Promise<{ sans: PDFFont; sansGras: PDFFont; serif: PDFFont; serifGras: PDFFont }> {
+): Promise<{ sans: PDFFont; sansGras: PDFFont; serif: PDFFont; serifGras: PDFFont; serifItalique: PDFFont }> {
   // Même prudence que pour les teintes : une clef écrite par une version d'avant
   // ne doit pas empêcher le document de sortir.
   const choisie = allure ? typographieDe(normaliserAllure(allure).typographie) : null;
@@ -474,6 +625,7 @@ async function policesDu(
       sansGras: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
       serif: await pdfDoc.embedFont(StandardFonts.TimesRoman),
       serifGras: await pdfDoc.embedFont(StandardFonts.TimesRomanBold),
+      serifItalique: await pdfDoc.embedFont(StandardFonts.TimesRomanItalic),
     };
   }
 
@@ -489,7 +641,7 @@ async function policesDu(
       pdfDoc.embedFont(normal, { subset: false }),
       pdfDoc.embedFont(gras, { subset: false }),
     ]);
-    return { sans: police, sansGras: policeGrasse, serif: police, serifGras: policeGrasse };
+    return { sans: police, sansGras: policeGrasse, serif: police, serifGras: policeGrasse, serifItalique: police };
   } catch (err) {
     // **Un fichier manquant ne doit pas empêcher son devis de sortir.** Il
     // partirait sans document chez son client, pour un choix d'apparence. On
@@ -505,6 +657,7 @@ async function policesDu(
       sansGras: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
       serif: await pdfDoc.embedFont(StandardFonts.TimesRoman),
       serifGras: await pdfDoc.embedFont(StandardFonts.TimesRomanBold),
+      serifItalique: await pdfDoc.embedFont(StandardFonts.TimesRomanItalic),
     };
   }
 }
@@ -517,6 +670,12 @@ async function policesDu(
  * (`refusDuLogo`), pour qu'il puisse encore en prendre une autre.
  */
 export type LogoDocument = { octets: Uint8Array; mime: string };
+
+/**
+ * L'attestation d'assurance décennale, déjà lue : un PDF dont on recopie les
+ * pages, ou une photo JPEG ou PNG posée sur une page (`src/lib/attestation-decennale.ts`).
+ */
+export type AttestationDocument = { octets: Uint8Array; mime: string };
 
 export type OptionsDocument = {
   /** « DEVIS », « FACTURE », ou leur variante brouillon. */
@@ -538,6 +697,12 @@ export type OptionsDocument = {
    * introuvable.
    */
   logo?: LogoDocument | null;
+  /**
+   * L'attestation décennale, jointe en dernières pages — son choix A du
+   * 5 octobre 2026 : à tous les devis et factures dès qu'elle est déposée
+   * (C. ass. L243-2). Lue par le dépôt, comme le logo.
+   */
+  attestation?: AttestationDocument | null;
   /** Le bloc de références en haut à droite : libellé et valeur. */
   references: [string, string][];
   /** Intertitre du bloc de notes — le devis y met aussi ses conditions. */
@@ -565,8 +730,65 @@ export type OptionsDocument = {
   mentionLegale: (data: DonneesDocument) => string;
   /** Le devis se signe, la facture se règle. */
   cadreSignature: boolean;
-  /** Sur une facture, le rappel du devis d'origine. */
-  rappel?: string | null;
+  /**
+   * Des lignes SOUS le « Total TTC » — libellé et montant, la dernière en gras.
+   *
+   * **Pour l'échéancier du devis** (12 septembre 2026) : chaque acompte avec ce
+   * qui tombe ce jour-là, puis « Reste à régler après acompte » et le montant.
+   * C'est le devis qui les compose (`devis-pdf.ts`) par la règle commune ; ce
+   * module ne calcule rien, il écrit. Absentes, ou sans chiffrage : rien, et la
+   * feuille sort comme avant.
+   */
+
+  /**
+   * Le numéro du document, écrit à droite du titre : « n° D2026-000014 » — sa
+   * planche du 14 septembre 2026. Les références du haut, elles, ne le portent
+   * plus.
+   */
+  numero?: string | null;
+  /** Le titre qu'il a donné, en italique sous DEVIS ou FACTURE. Vide : rien. */
+  titreLibre?: string | null;
+  /**
+   * Sous le Total TTC. `doux` : l'acompte, en gris ; `grand` : le reste à
+   * régler ou le net à payer, dans la fonte du Total TTC, montant en gras.
+   */
+  apresTotal?: { libelle: string; montant: string; style?: "doux" | "grand" }[];
+  /**
+   * Le mot du total, quand ce n'est pas celui d'une facture : « Total avoir
+   * TTC » sur un avoir (sa demande du 24 septembre 2026). Absent : « Total TTC ».
+   */
+  libelleTotalTtc?: string;
+  /**
+   * Aucune ligne de TVA, ni ses bases : une facture en sous-traitance
+   * (autoliquidation) ne porte pas de TVA, et « TVA 0 % » sous le total se
+   * lirait comme une TVA à zéro, pas comme une TVA due par l'autre.
+   */
+  sansTva?: boolean;
+  /** « Acquittée le 21/09/2026 » — encadré d'or sous le net, quand tout est reçu. */
+  tampon?: string | null;
+  /** Des lignes d'information sous les notes, en petit : la main d'œuvre TTC. */
+  informations?: string[];
+  /**
+   * Des lignes juste SOUS le « Total HT » — libellé et montant — qui ne
+   * changent rien aux totaux : « dont main d'œuvre HT » (13 septembre 2026,
+   * migration 0090). Nommer, pas compter. Absentes ou sans chiffrage : rien.
+   */
+  sousLeTotalHt?: { libelle: string; montant: string }[];
+  /**
+   * Les conditions réglées, écrites EN GRAS sous les notes qu'il a tapées —
+   * sa demande du 12 septembre 2026. Son texte (`conditionsPaiement`) reste en
+   * maigre ; ce qui engage et se calcule est en gras. Le bloc s'ouvre dès que
+   * l'un des deux existe.
+   */
+  notesEnGras?: string[];
+  /**
+   * Les annexes après le bon pour accord : ses conditions générales de vente
+   * et de règlement (13 septembre 2026), puis le formulaire de rétractation
+   * (3 octobre 2026). Chacune ouvre une page neuve : le devis se lit et se
+   * signe sur ses pages, le reste se lit derrière, comme au dos d'un devis
+   * papier, et le formulaire se détache seul. Vide : rien.
+   */
+  annexes?: readonly { titre: string; paragraphes: string[] }[];
   /**
    * Le document ne porte AUCUN chiffre : ni colonnes de prix, ni totaux, ni TVA.
    *
@@ -586,13 +808,42 @@ export type OptionsDocument = {
    * point (`scripts/test-fiche-chantier-pdf.ts`).
    */
   sansChiffrage?: boolean;
+  /**
+   * Un mot posé en travers de chaque page, pâle, à la couleur des titres de
+   * parties : « EXEMPLE » sur la facture d'exemple des Réglages (sa planche du
+   * 26 septembre 2026, `appli/apercu-du-document.html`). Il se voit d'un coup
+   * d'œil, même imprimé, même photographié : cette feuille ne doit jamais
+   * pouvoir passer pour une vraie facture. Absent : rien ne change.
+   */
+  filigrane?: string | null;
 };
 
 
+/**
+ * « SIRET 123 456 789 00012, RM 33 » — son choix B du 9 octobre 2026
+ * (`appli/numero-rm.html`) : la mention du répertoire des métiers sur la ligne
+ * du SIRET, après une virgule. Elle s'imprime telle qu'il l'a écrite, parce
+ * qu'aucun texte trouvé ne dit laquelle un artisan doit porter depuis le RNE.
+ * Sans SIRET, elle garde sa ligne plutôt que de disparaître avec lui.
+ */
+function ligneSiret(siret: string | null | undefined, numeroRm: string | null | undefined): string | null {
+  const rm = numeroRm?.trim();
+  if (!siret) return rm || null;
+  return rm ? `SIRET ${siret}, ${rm}` : `SIRET ${siret}`;
+}
+
 export async function composerDocument(
-  data: DonneesDocument,
+  donnees: DonneesDocument,
   options: OptionsDocument
 ): Promise<{ pdf: Uint8Array; trace: TraceDocument }> {
+  // **Le nom de l'émetteur se compose UNE fois, ici** : l'en-tête, la mention du
+  // pied et l'ordre du chèque le lisent tous. Un entrepreneur individuel y
+  // reçoit « EI » (R526-27, choix 4A du 3 octobre 2026), sur le devis, la
+  // facture et l'avoir à la fois.
+  const data: DonneesDocument = {
+    ...donnees,
+    entrepriseNom: nomAvecForme(donnees.entrepriseNom, donnees.entrepriseFormeJuridique),
+  };
   const pdfDoc = await PDFDocument.create();
   // **`registerFontkit` inconditionnellement**, même sans typographie choisie :
   // l'oublier ne se verrait qu'au premier document d'un patron qui en a réglé
@@ -641,14 +892,36 @@ export async function composerDocument(
   // ça, il faut sauter une ligne, une ligne par information »*. Le téléphone et
   // l'e-mail tenaient sur la même ligne, séparés d'un tiret cadratin — c'est
   // lisible sur un écran large, c'est un pâté sur un devis imprimé.
+  //
+  // **La forme juridique, le capital et le RCS d'une société s'y glissent
+  // selon SON choix** (migration 0072) : sous le nom, ou avec le reste des
+  // coordonnées. Plus jamais nulle part : elles sont obligatoires (choix 4A du
+  // 3 octobre 2026, `positionEffective`).
+  const positionMentions = positionEffective(data.entrepriseMentionsLegalesPosition);
+  const mentionsLegales = lignesMentionsLegales({
+    formeJuridique: data.entrepriseFormeJuridique,
+    capitalSocial: data.entrepriseCapitalSocial,
+    villeRcs: data.entrepriseVilleRcs,
+    siret: data.entrepriseSiret,
+  });
+
+  let yCoord = y - 15;
+  if (positionMentions === "sous_nom") {
+    for (const ligne of mentionsLegales) {
+      ecrire(ctx, ligne, MARGE, yCoord, { taille: 8.5, couleur: ctx.teintes.coordonnees });
+      yCoord -= 11;
+    }
+  }
+
   const coordonnees = [
+    ...(positionMentions === "bas" ? mentionsLegales : []),
     data.entrepriseAdresse,
     data.entrepriseTelephone,
     data.entrepriseEmail,
-    data.entrepriseSiret ? `SIRET ${data.entrepriseSiret}` : null,
+    ligneSiret(data.entrepriseSiret, data.entrepriseNumeroRm),
+    data.entrepriseNumeroTva ? `TVA intracommunautaire ${data.entrepriseNumeroTva}` : null,
   ].filter((l): l is string => !!l);
 
-  let yCoord = y - 15;
   for (const ligne of coordonnees) {
     ecrire(ctx, ligne, MARGE, yCoord, { taille: 8.5, couleur: ctx.teintes.coordonnees });
     yCoord -= 11;
@@ -659,6 +932,13 @@ export async function composerDocument(
   let yRef = yEnTete;
   for (const [libelle, valeur] of references) {
     ecrire(ctx, libelle, DROITE - 175, yRef, { taille: 8.5, police: ctx.sansGras, couleur: ctx.teintes.etiquette });
+    // **Une valeur qui ne tient pas à côté de son libellé passe dessous**,
+    // calée à droite. « Début des travaux » et « sous 30 jours après
+    // l'accord » (3 octobre 2026) se chevauchaient : la colonne ne mesurait
+    // rien, et toute référence longue l'aurait refait.
+    const largeur =
+      ctx.sansGras.widthOfTextAtSize(libelle, 8.5) + 8 + ctx.sans.widthOfTextAtSize(valeur, 9);
+    if (largeur > 175) yRef -= 12;
     ecrireADroite(ctx, valeur, DROITE, yRef, { taille: 9 });
     trait(ctx, yRef - 4, 0.5, ctx.teintes.traitClair, DROITE - 105, DROITE);
     yRef -= 17;
@@ -668,27 +948,23 @@ export async function composerDocument(
   trait(ctx, y, 1.6, ctx.teintes.encre);
   y -= 30;
 
-  // ─── Titre centré ───────────────────────────────────────────────────────
+  // ─── Titre à gauche, numéro à droite — sa planche du 14 septembre 2026 ──
   // Le brouillon le dit : une pièce non émise qui ne le signale pas peut être
   // transmise par erreur, alors qu'elle n'engage rien.
   const titre = options.titre;
-  ecrireEspace(
-    ctx,
-    titre,
-    (LARGEUR - largeurEspacee(titre, ctx.serif, 17, APPROCHE_TITRE)) / 2,
-    y,
-    APPROCHE_TITRE,
-    { taille: 17, police: ctx.serif }
-  );
-  y -= 32;
-
-  // Une facture rappelle le devis dont elle naît : sans ce lien, le client
-  // reçoit deux pièces qu'il doit rapprocher lui-même. Elle consomme sa propre
-  // hauteur : posée sans descendre, elle venait toucher « ÉMETTEUR ».
-  if (options.rappel) {
-    ecrire(ctx, options.rappel, MARGE, y, { taille: 8.5, couleur: ctx.teintes.etiquette });
-    y -= 20;
+  ecrireEspace(ctx, titre, MARGE, y, APPROCHE_TITRE, { taille: 17, police: ctx.serif });
+  if (options.numero) {
+    ecrireADroite(ctx, `n° ${options.numero}`, DROITE, y, { taille: 11, police: ctx.serif, couleur: ctx.teintes.coordonnees });
   }
+  y -= 12;
+  trait(ctx, y, 0.6, ctx.teintes.traitClair);
+  y -= 18;
+  // Son titre — « Aménagement du jardin » —, s'il en a donné un. Jamais d'office.
+  if (options.titreLibre?.trim()) {
+    ecrire(ctx, options.titreLibre.trim(), MARGE, y, { taille: 10.5, police: ctx.serifItalique, couleur: ctx.teintes.coordonnees });
+    y -= 18;
+  }
+
 
   // ─── Le client, seul ────────────────────────────────────────────────────
   // Le client occupe la moitié gauche : au-delà, une adresse longue viendrait
@@ -711,42 +987,90 @@ export async function composerDocument(
   // **Le client passe donc à gauche**, seul de sa rangée : une colonne
   // « CLIENT » restée à droite avec un vide en face se serait lue comme un
   // bloc oublié à l'impression.
-  const etiquettePartie: Style = { taille: 8.5, police: ctx.serif, couleur: ctx.teintes.titrePartie };
+  // **Deux colonnes, comme sur sa planche** : le client, et le lieu des
+  // travaux — celui du chantier, ou l'adresse du client quand c'est chez lui.
+  // Les étiquettes sont en linéale, en or : c'est ce qu'on LIT.
+  const etiquettePartie: Style = { taille: 7.5, police: ctx.sansGras, couleur: ctx.teintes.titrePartie };
+  const xLieu = MARGE + largeurColonne + 20;
   ecrireEspace(ctx, "CLIENT", MARGE, y, APPROCHE_ETIQUETTE, etiquettePartie);
+  ecrireEspace(ctx, "LIEU DES TRAVAUX", xLieu, y, APPROCHE_ETIQUETTE, etiquettePartie);
   y -= 15;
 
+  const adresses = adressesDuDocument(data);
   const client = [
     // **Le papier nomme le client comme l'écran et le message.** Une seule
     // règle (`src/lib/civilite.ts`) : recopiée ici, elle aurait fini par dire
     // « Mme Roux » à l'écran et « Mr. Roux » sur le PDF qu'elle garde.
     avecCivilite(data.clientNom, data.clientCivilite),
-    // L'adresse du client — ou, à défaut, celle du chantier, sans étiquette.
-    // La ligne « Chantier : … » ne subsiste que si les travaux ont lieu
-    // ailleurs. Même fonction qu'à l'écran (`src/lib/adresses.ts`) : deux
-    // règles recopiées auraient fini par diverger, et c'est le papier — ce que
-    // le client garde — qui serait resté faux.
-    adressesDuDocument(data).adresseClient,
+    adresses.adresseClient,
     data.clientTelephone,
-    adressesDuDocument(data).chantierSepare ? `Chantier : ${adressesDuDocument(data).chantierSepare}` : null,
+    data.clientSiret ? `SIRET ${data.clientSiret}` : null,
+    data.clientNumeroTva ? `TVA intracommunautaire ${data.clientNumeroTva}` : null,
   ]
+    .filter((l): l is string => !!l)
+    .flatMap((l) => enLignes(l, ctx.sans, 9, largeurColonne));
+  const lieu = [data.adresseChantier?.trim() || adresses.adresseClient]
     .filter((l): l is string => !!l)
     .flatMap((l) => enLignes(l, ctx.sans, 9, largeurColonne));
 
   client.forEach((l, i) => ecrire(ctx, l, MARGE, y - i * 12, { taille: 9 }));
-  y -= client.length * 12 + 22;
+  lieu.forEach((l, i) => ecrire(ctx, l, xLieu, y - i * 12, { taille: 9 }));
+  y -= Math.max(client.length, lieu.length) * 12 + 22;
 
-  // ─── Tableau des lignes ─────────────────────────────────────────────────
-  const xQte = DROITE - 240;
-  const xPrix = DROITE - 140;
-  const xMontant = DROITE;
+  // ─── Tableau des lignes — Désignation · Qté · Unité · P.U. HT · Rem. % ·
+  //     Total HT · TVA % · Total TTC, sa planche du 14 septembre 2026 ───────
+  //
+  // **Le taux se lit SUR la ligne, et les bases par taux se lisent dessous.**
+  // Le tableau coupé en « TVA 20 % / TVA 10 % » avec un sous-total chacun
+  // (migration 0073) a vécu : c'est ce qu'il a fait retirer. Ce qui reste
+  // groupé, c'est le bloc des TRAVAUX SUPPLÉMENTAIRES (9 septembre 2026) — une
+  // facture en deux blocs, ce qu'il avait accepté puis ce qui s'est ajouté.
+  //
+  // **« Rem. % » n'existe que lorsqu'il accorde une remise** — sa capture du
+  // 15 septembre 2026, une facture sans remise sous une colonne vide : *« elle
+  // apparaît seulement lorsque l'utilisateur choisit de faire une remise »*.
+  // Sans elle, les colonnes de gauche se resserrent d'autant vers la droite :
+  // une colonne vide n'est pas neutre, le client y cherche ce qu'on lui aurait
+  // retiré.
+  const remiseCourte = data.reductionPourcent && new Decimal(data.reductionPourcent).greaterThan(0)
+    ? tauxCourt(data.reductionPourcent)
+    : "";
+  const placeDeLaRemise = remiseCourte ? 0 : 24;
+  const xTtc = DROITE;
+  const xTaux = DROITE - 74; // centre de « TVA % »
+  const xNet = DROITE - 92;
+  const xRem = DROITE - 150; // centre de « Rem. % »
+  const xPrix = DROITE - 170 + placeDeLaRemise;
+  const xUnite = DROITE - 226 + placeDeLaRemise; // centre de « Unité »
+  const xQte = DROITE - 254 + placeDeLaRemise;
+  const largeurLibelleChiffree = xQte - MARGE - 34;
 
-  const enTeteColonne: Style = { taille: 7.5, police: ctx.sansGras, couleur: ctx.teintes.etiquette };
+  const ecrireCentre = (contenu: string, centre: number, yy: number, style: Style) => {
+    const police = style.police ?? ctx.sans;
+    const largeur = police.widthOfTextAtSize(contenu, style.taille ?? 9);
+    ecrire(ctx, contenu, centre - largeur / 2, yy, style);
+  };
+  const ecrireEspaceCentre = (contenu: string, centre: number, yy: number, style: Style) => {
+    const largeur = largeurEspacee(contenu, style.police ?? ctx.sans, style.taille ?? 7.5, APPROCHE_ETIQUETTE);
+    ecrireEspace(ctx, contenu, centre - largeur / 2, yy, APPROCHE_ETIQUETTE, style);
+  };
+
+  // **La ligne d'en-tête ENTIÈRE, en gras et en encre — sa demande du
+  // 17 septembre 2026** : *« toute la ligne désignation jusqu'à total ttc, tu
+  // la mets en gras, et mets toutes les écritures en noir, rien en gris »*.
+  // « Total TTC » avait déjà son style à lui ; les sept autres colonnes le
+  // rejoignent, et il n'y a donc plus qu'un style pour la ligne.
+  const enTeteColonne: Style = { taille: 7, police: ctx.sansGras, couleur: ctx.teintes.encre };
   const enTeteTableau = () => {
-    ecrireEspace(ctx, options.enTeteLignes ?? "DESCRIPTION", MARGE, y, APPROCHE_ETIQUETTE, enTeteColonne);
+    ecrireEspace(ctx, options.enTeteLignes ?? "DÉSIGNATION", MARGE, y, APPROCHE_ETIQUETTE, enTeteColonne);
     if (!options.sansChiffrage) {
       ecrireEspaceADroite(ctx, "QTÉ", xQte, y, APPROCHE_ETIQUETTE, enTeteColonne);
-      ecrireEspaceADroite(ctx, "PRIX UNITAIRE HT", xPrix, y, APPROCHE_ETIQUETTE, enTeteColonne);
-      ecrireEspaceADroite(ctx, "TOTAL HT", xMontant, y, APPROCHE_ETIQUETTE, enTeteColonne);
+      ecrireEspaceCentre("UNITÉ", xUnite, y, enTeteColonne);
+      ecrireEspaceADroite(ctx, "P.U. HT", xPrix, y, APPROCHE_ETIQUETTE, enTeteColonne);
+      if (remiseCourte) ecrireEspaceCentre("REM. %", xRem, y, enTeteColonne);
+      ecrireEspaceADroite(ctx, "TOTAL HT", xNet, y, APPROCHE_ETIQUETTE, enTeteColonne);
+      ecrireEspaceCentre("TVA %", xTaux, y, enTeteColonne);
+      ecrireEspaceADroite(ctx, "TOTAL TTC", xTtc, y, APPROCHE_ETIQUETTE, enTeteColonne);
     }
     y -= 9;
     trait(ctx, y, 1.2, ctx.teintes.encre);
@@ -762,42 +1086,74 @@ export async function composerDocument(
     y -= 12;
   }
 
-  for (const ligne of data.lignes) {
-    // Sans colonnes de prix, le libellé dispose de toute la feuille : garder la
-    // largeur du devis couperait « Démontage de trois chênes en tête de chat »
-    // en deux pour laisser la place à des colonnes qui n'existent pas.
-    const largeurLibelle = options.sansChiffrage ? DROITE - MARGE : xQte - MARGE - 50;
-    const lignesLibelle = enLignes(ligne.libelle, ctx.sans, 9, largeurLibelle);
-    const hauteurLigne = Math.max(lignesLibelle.length, 1) * 11 + 19;
-    // Une ligne ne se coupe jamais en deux : elle passe entière à la page
-    // suivante, en-tête de colonnes redessiné pour qu'on sache encore ce
-    // qu'on lit.
-    if (y - hauteurLigne < PLANCHER) {
-      y = pageSuivante(ctx);
-      enTeteTableau();
-    }
-    lignesLibelle.forEach((l, i) => ecrire(ctx, l, MARGE, y - i * 11, { taille: 9 }));
-    if (!options.sansChiffrage) {
-      // **L'unité à côté de la quantité** : « 800 ml », plus « 800 » tout court.
-      // Le client lisait « 800 × 17,50 € » sans savoir 800 de quoi.
-      ecrireADroite(ctx, ligne.unite ? `${ligne.quantite} ${ligne.unite}` : ligne.quantite, xQte, y, {
-        taille: 9,
+  // Le net et le TTC de chaque ligne viennent de la règle commune : les
+  // centimes tombent juste, la colonne fait exactement la base du taux.
+  const papier = lignesDuPapier(data.lignes, data.tauxTva, data.reductionPourcent ?? null);
+  const blocs = [
+    { supplement: false, lignes: papier.lignes.filter((p) => !p.ligne.supplement) },
+    { supplement: true, lignes: papier.lignes.filter((p) => Boolean(p.ligne.supplement)) },
+  ].filter((b) => b.lignes.length > 0);
+  const montrerBlocs = blocs.length > 1 && !options.sansChiffrage;
+
+  for (const bloc of blocs) {
+    // Le titre du bloc des suppléments se REDESSINE à chaque nouvelle page :
+    // ses dernières lignes ne doivent jamais se retrouver orphelines.
+    const titreBloc = (suite: boolean) => {
+      if (!montrerBlocs || !bloc.supplement) return;
+      ecrireEspace(ctx, `${TITRE_TRAVAUX_SUPPLEMENTAIRES}${suite ? " (suite)" : ""}`, MARGE, y, APPROCHE_ETIQUETTE, {
+        taille: 7.5,
+        police: ctx.sansGras,
+        couleur: ctx.teintes.titrePartie,
       });
-      if (ligne.aChiffrer) {
-        // Ni prix unitaire, ni montant : il n'y en a pas. Écrire « 0,00 € »
-        // serait annoncer un travail gratuit (26 août 2026).
-        ecrireADroite(ctx, "à chiffrer", xMontant, y, { taille: 9, police: ctx.sansGras });
-      } else {
-        ecrireADroite(ctx, formatMontant(ligne.prixUnitaire, data.devise), xPrix, y, { taille: 9 });
-        ecrireADroite(ctx, formatMontant(ligne.montant, data.devise), xMontant, y, {
-          taille: 9,
-          police: ctx.sansGras,
-        });
+      y -= 15;
+    };
+    if (montrerBlocs && bloc.supplement) {
+      if (y - 34 < PLANCHER) {
+        y = pageSuivante(ctx);
+        enTeteTableau();
       }
+      titreBloc(false);
     }
-    y -= Math.max(lignesLibelle.length, 1) * 11 + 7;
-    trait(ctx, y, 0.7, ctx.teintes.traitClair);
-    y -= 12;
+
+    for (const p of bloc.lignes) {
+      const ligne = p.ligne;
+      // Sans colonnes de prix, le libellé dispose de toute la feuille.
+      const largeurLibelle = options.sansChiffrage ? DROITE - MARGE : largeurLibelleChiffree;
+      const lignesLibelle = enLignes(ligne.libelle, ctx.sans, 9, largeurLibelle);
+      const hauteurLigne = Math.max(lignesLibelle.length, 1) * 11 + 19;
+      // Une ligne ne se coupe jamais en deux : elle passe entière à la page
+      // suivante, en-tête de colonnes redessiné pour qu'on sache encore ce
+      // qu'on lit.
+      if (y - hauteurLigne < PLANCHER) {
+        y = pageSuivante(ctx);
+        enTeteTableau();
+        titreBloc(true);
+      }
+      lignesLibelle.forEach((l, i) => ecrire(ctx, l, MARGE, y - i * 11, { taille: 9 }));
+      if (!options.sansChiffrage) {
+        // « 3 », jamais « 3.00 » ; l'unité dans SA colonne, centrée — et « u »
+        // quand il n'en a posé aucune (sa demande du 15 septembre 2026).
+        ecrireADroite(ctx, quantiteLisible(ligne.quantite), xQte, y, { taille: 9 });
+        ecrireCentre(uniteDeLaLigne(ligne.unite), xUnite, y, { taille: 9 });
+        // **« À chiffrer » ne se lit plus sur le seul drapeau** — sa capture du
+        // 31 août 2026 : ce qui est imprimé fait toujours le total imprimé.
+        if (ligneAttendSonPrix({ libelle: ligne.libelle, montant: ligne.montant, aChiffrer: ligne.aChiffrer })) {
+          // Ni prix, ni total : il n'y en a pas. Écrire « 0,00 € » serait
+          // annoncer un travail gratuit (26 août 2026).
+          ecrireADroite(ctx, "à chiffrer", xNet, y, { taille: 9, police: ctx.sansGras });
+        } else {
+          ecrireADroite(ctx, formatMontant(ligne.prixUnitaire, data.devise), xPrix, y, { taille: 9 });
+          // Un travail ajouté sur la facture n'a pas reçu la remise du devis.
+          if (remiseCourte && recoitLaRemise(ligne)) ecrireCentre(remiseCourte, xRem, y, { taille: 9 });
+          ecrireADroite(ctx, formatMontant(p.net, data.devise), xNet, y, { taille: 9 });
+          ecrireCentre(tauxCourt(p.taux), xTaux, y, { taille: 9 });
+          ecrireADroite(ctx, formatMontant(p.ttc, data.devise), xTtc, y, { taille: 9, police: ctx.sansGras });
+        }
+      }
+      y -= Math.max(lignesLibelle.length, 1) * 11 + 7;
+      trait(ctx, y, 0.7, ctx.teintes.traitClair);
+      y -= 12;
+    }
   }
 
   // ─── Totaux, calés à droite ─────────────────────────────────────────────
@@ -811,56 +1167,140 @@ export async function composerDocument(
   if (!options.sansChiffrage) {
   const libelleRemise = libelleReduction(data.reductionPourcent ?? null);
   const avecRemise = libelleRemise !== null && data.reductionMontant != null;
-  // Deux lignes de plus quand une remise est accordée : la place se réserve
-  // AVANT le saut de page, sinon « Total TTC » se retrouve seul en haut de la
-  // page suivante.
-  place(avecRemise ? 74 + 32 : 74);
+
+  // **UNE LIGNE DE TVA PAR TAUX, ET LES BASES DESSOUS À GAUCHE** — sa demande
+  // du 1er septembre, puis sa planche du 14. La ventilation se DEMANDE à la
+  // règle commune : c'est elle qui répartit la remise au prorata et place le
+  // centime résiduel (`CLAUDE.md` §3).
+  const parTaux = options.sansTva ? [] : papier.parTaux;
+
+  const apresTotal = options.apresTotal ?? [];
+  const sousLeTotalHt = options.sousLeTotalHt ?? [];
+  const hauteurBloc =
+    (avecRemise ? 74 + 32 : 74) +
+    (parTaux.length - 1) * 16 +
+    sousLeTotalHt.length * 16 +
+    apresTotal.reduce((acc, l) => acc + (l.style === "grand" ? 22 : 16), 0) +
+    (options.tampon ? 26 : 0);
+  place(hauteurBloc);
   y -= 6;
   const gaucheTotaux = DROITE - 220;
+  const yHautTotaux = y;
+
+  // La ligne « Total HT », brute ou nette : c'est le premier total écrit, en
+  // gras — sa planche.
+  const ecrireSousLeTotalHt = () => {
+    for (const ligne of sousLeTotalHt) {
+      ecrire(ctx, ligne.libelle, gaucheTotaux, y, { taille: 9, couleur: ctx.teintes.etiquette });
+      ecrireADroite(ctx, formatMontant(ligne.montant, data.devise), DROITE, y, { taille: 9, couleur: ctx.teintes.etiquette });
+      y -= 16;
+    }
+  };
 
   if (avecRemise) {
-    // **Le prix plein d'abord**, puis ce qui a été consenti, puis le net : c'est
-    // la présentation qu'il a choisie, et c'est celle qui permet au client de
-    // refaire le calcul. Le brut vaut net + retiré, jamais une troisième
-    // colonne qui pourrait les contredire.
+    // **Le prix plein d'abord**, puis ce qui a été consenti, puis le net.
     const brut = new Decimal(data.totalHt).plus(new Decimal(data.reductionMontant!)).toFixed(2);
-    ecrire(ctx, "Total HT", gaucheTotaux, y, { taille: 9.5 });
-    ecrireADroite(ctx, formatMontant(brut, data.devise), DROITE, y, { taille: 9.5 });
+    ecrire(ctx, "Total HT", gaucheTotaux, y, { taille: 9.5, police: ctx.sansGras });
+    ecrireADroite(ctx, formatMontant(brut, data.devise), DROITE, y, { taille: 9.5, police: ctx.sansGras });
+    y -= 16;
+    ecrireSousLeTotalHt();
+
+    // La remise en or : ce qui est consenti se LIT.
+    ecrire(ctx, libelleRemise!, gaucheTotaux, y, { taille: 9.5, couleur: ctx.teintes.titrePartie });
+    // **Le trait d'union, jamais le « moins » typographique (U+2212)** : WinAnsi
+    // ne le connaît pas, et c'est TOUT le devis qui ne se générerait plus.
+    ecrireADroite(ctx, `- ${formatMontant(data.reductionMontant!, data.devise)}`, DROITE, y, { taille: 9.5, couleur: ctx.teintes.titrePartie });
     y -= 16;
 
-    ecrire(ctx, libelleRemise!, gaucheTotaux, y, { taille: 9.5 });
-    // **Le trait d'union, jamais le « moins » typographique (U+2212).** Les
-    // polices standard du PDF sont encodées en WinAnsi, qui ne le connaît pas :
-    // `pdf-lib` lève « WinAnsi cannot encode "−" », et c'est TOUT le devis qui
-    // ne se génère plus. Trouvé par `test-reduction-parcours-db.ts`, pas par le
-    // typage — l'écran, lui, l'affiche très bien, ce qui rendait le défaut
-    // invisible partout ailleurs.
-    ecrireADroite(ctx, `- ${formatMontant(data.reductionMontant!, data.devise)}`, DROITE, y, { taille: 9.5 });
-    y -= 16;
-
-    ecrire(ctx, "Total HT après remise", gaucheTotaux, y, { taille: 9.5 });
-    ecrireADroite(ctx, formatMontant(data.totalHt, data.devise), DROITE, y, { taille: 9.5 });
+    ecrire(ctx, "Total HT après remise", gaucheTotaux, y, { taille: 9.5, police: ctx.sansGras });
+    ecrireADroite(ctx, formatMontant(data.totalHt, data.devise), DROITE, y, { taille: 9.5, police: ctx.sansGras });
     y -= 16;
   } else {
-    ecrire(ctx, "Total HT", gaucheTotaux, y, { taille: 9.5 });
-    ecrireADroite(ctx, formatMontant(data.totalHt, data.devise), DROITE, y, { taille: 9.5 });
+    ecrire(ctx, "Total HT", gaucheTotaux, y, { taille: 9.5, police: ctx.sansGras });
+    ecrireADroite(ctx, formatMontant(data.totalHt, data.devise), DROITE, y, { taille: 9.5, police: ctx.sansGras });
     y -= 16;
+    ecrireSousLeTotalHt();
   }
 
-  const tauxLisible = new Decimal(data.tauxTva).toFixed(2).replace(/[.]00$/, "").replace(".", ",");
-  ecrire(ctx, `TVA (${tauxLisible} %)`, gaucheTotaux, y, { taille: 9.5 });
-  ecrireADroite(ctx, formatMontant(data.totalTva, data.devise), DROITE, y, { taille: 9.5 });
-  y -= 14;
+  // « TVA 20 % », sans parenthèses — sa planche.
+  for (const categorie of parTaux) {
+    ecrire(ctx, `TVA ${tauxCourt(categorie.taux)} %`, gaucheTotaux, y, { taille: 9.5 });
+    ecrireADroite(ctx, formatMontant(categorie.tva, data.devise), DROITE, y, { taille: 9.5 });
+    y -= 16;
+  }
+  y += 2;
 
   trait(ctx, y, 1.6, ctx.teintes.encre, gaucheTotaux, DROITE);
   y -= 22;
 
-  ecrire(ctx, "Total TTC", gaucheTotaux, y, { taille: 14, police: ctx.serifGras });
+  ecrire(ctx, options.libelleTotalTtc ?? "Total TTC", gaucheTotaux, y, { taille: 14, police: ctx.serifGras });
   ecrireADroite(ctx, formatMontant(data.totalTtc, data.devise), DROITE, y, {
     taille: 14,
     police: ctx.serifGras,
   });
-  y -= 34;
+
+  // Sous le total : les acomptes en gris, puis le reste à régler ou le net à
+  // payer dans la fonte du Total TTC — sa planche du 14 septembre 2026.
+  if (apresTotal.length) {
+    y -= 20;
+    for (const ligne of apresTotal) {
+      if (ligne.style === "grand") {
+        y -= 4;
+        ecrire(ctx, ligne.libelle, gaucheTotaux, y, { taille: 13, police: ctx.serif });
+        ecrireADroite(ctx, formatMontant(ligne.montant, data.devise), DROITE, y, { taille: 13, police: ctx.serifGras });
+        y -= 18;
+      } else {
+        const style: Style = { taille: 9, couleur: ctx.teintes.etiquette };
+        ecrire(ctx, ligne.libelle, gaucheTotaux, y, style);
+        ecrireADroite(ctx, formatMontant(ligne.montant, data.devise), DROITE, y, style);
+        y -= 16;
+      }
+    }
+    y -= 6;
+  } else {
+    y -= 22;
+  }
+
+  // Le tampon : « Acquittée le … », encadré d'or, comme un tampon posé.
+  if (options.tampon) {
+    const texte = options.tampon.toUpperCase();
+    const largeur = largeurEspacee(texte, ctx.sansGras, 7.5, 0.16) + 20;
+    ctx.page.drawRectangle({
+      x: DROITE - largeur,
+      y: y - 6,
+      width: largeur,
+      height: 18,
+      borderColor: ctx.teintes.titrePartie,
+      borderWidth: 1,
+    });
+    ctx.trace.cadres.push({ x: DROITE - largeur, y: y - 6, largeur, hauteur: 18, page: ctx.numeroPage });
+    ecrireEspace(ctx, texte, DROITE - largeur + 10, y, 0.16, { taille: 7.5, police: ctx.sansGras, couleur: ctx.teintes.titrePartie });
+    y -= 26;
+  }
+  const yBasTotaux = y;
+
+  // ─── Les bases par taux, à gauche du bloc — BASE HT · TAUX · TVA ────────
+  // Le client refait le calcul de SA TVA sans additionner les lignes lui-même.
+  if (parTaux.length > 0) {
+    const droiteBases = MARGE + 170;
+    const enTeteBase: Style = { taille: 7, police: ctx.sansGras, couleur: ctx.teintes.etiquette };
+    let yb = yHautTotaux;
+    ecrireEspace(ctx, "BASE HT", MARGE, yb, APPROCHE_ETIQUETTE, enTeteBase);
+    ecrireEspaceCentre("TAUX", MARGE + 100, yb, enTeteBase);
+    ecrireEspaceADroite(ctx, "TVA", droiteBases, yb, APPROCHE_ETIQUETTE, enTeteBase);
+    yb -= 6;
+    trait(ctx, yb, 0.8, ctx.teintes.encre, MARGE, droiteBases);
+    yb -= 13;
+    for (const categorie of parTaux) {
+      ecrire(ctx, formatMontant(categorie.baseHt, data.devise), MARGE, yb, { taille: 8.5 });
+      ecrireCentre(`${tauxCourt(categorie.taux)} %`, MARGE + 100, yb, { taille: 8.5 });
+      ecrireADroite(ctx, formatMontant(categorie.tva, data.devise), droiteBases, yb, { taille: 8.5 });
+      yb -= 5;
+      trait(ctx, yb, 0.5, ctx.teintes.traitClair, MARGE, droiteBases);
+      yb -= 12;
+    }
+  }
+  y = yBasTotaux;
   }
 
   // ─── Conditions et modalités de paiement ────────────────────────────────
@@ -880,27 +1320,80 @@ export async function composerDocument(
     y -= 12;
   }
 
-  if (data.conditionsPaiement) {
-    const lignesNotes = enLignes(data.conditionsPaiement, ctx.sans, 9, DROITE - MARGE);
-    place(14 + lignesNotes.length * 12);
+  // Ses notes en maigre, puis les conditions réglées en gras (13 septembre
+  // 2026) : deux voix, un seul bloc. Le gras est replié avec SA police, sinon
+  // une ligne mesurée en maigre déborde une fois écrite en gras.
+  const notesEnGras = options.notesEnGras ?? [];
+  if (data.conditionsPaiement || notesEnGras.length) {
+    const lignesNotes = data.conditionsPaiement ? enLignes(data.conditionsPaiement, ctx.sans, 9, DROITE - MARGE) : [];
+    const lignesGras = notesEnGras.flatMap((phrase) => enLignes(phrase, ctx.sansGras, 9, DROITE - MARGE));
+    place(14 + (lignesNotes.length + lignesGras.length) * 12);
     ecrireEspace(ctx, options.titreNotes, MARGE, y, APPROCHE_ETIQUETTE, etiquetteBloc);
     y -= 14;
     for (const l of lignesNotes) {
       ecrire(ctx, l, MARGE, y, { taille: 9 });
       y -= 12;
     }
+    for (const l of lignesGras) {
+      ecrire(ctx, l, MARGE, y, { taille: 9, police: ctx.sansGras });
+      y -= 12;
+    }
     y -= 12;
+  }
+
+  // Les informations — « Pour information, montant de la main d'œuvre TTC :
+  // 513,00 € » — en petit, sous les notes : elles renseignent, elles
+  // n'engagent pas.
+  for (const info of options.informations ?? []) {
+    const lignesInfo = enLignes(info, ctx.sans, 8, DROITE - MARGE);
+    place(lignesInfo.length * 11 + 4);
+    for (const l of lignesInfo) {
+      ecrire(ctx, l, MARGE, y, { taille: 8, couleur: ctx.teintes.coordonnees });
+      y -= 11;
+    }
+    y -= 4;
   }
 
   // Les modalités de paiement suivent le chiffrage : sur une fiche de chantier,
   // un IBAN sans montant invite à payer une somme que personne n'a écrite.
-  if (data.entrepriseIban && !options.sansChiffrage) {
-    place(38);
+  //
+  // **Le bloc s'affiche aussi sans IBAN dès qu'il y a une consigne**, et c'est
+  // voulu : sur une facture, dire à qui libeller le chèque et quoi écrire dans
+  // le libellé vaut même quand l'artisan n'a pas rempli ses coordonnées
+  // bancaires. Sur un devis, ni l'un ni l'autre n'est fourni — le document ne
+  // bouge pas d'un octet.
+  const aDesModalites = data.entrepriseIban || data.consignePaiement || data.ordreDuCheque;
+  if (aDesModalites && !options.sansChiffrage) {
+    // La consigne du libellé fait deux à trois lignes ; les mesurer plutôt que
+    // de réserver 38 px en dur, sinon elle déborderait sur le pied de page.
+    const lignesConsigne = data.consignePaiement
+      ? enLignes(data.consignePaiement, ctx.sans, 9, DROITE - MARGE)
+      : [];
+    // **38 EXACTEMENT quand il n'y a que l'IBAN**, et pas une hauteur calculée
+    // qui vaudrait 50 : c'est le cas du devis, et `place()` décide d'un saut de
+    // page. Une valeur différente ferait basculer certains devis sur une page de
+    // plus — un document que le client a déjà reçu, changé par un lot qui ne le
+    // vise pas. La règle du dépôt est que le défaut ne bouge pas d'un octet.
+    const hauteurBloc =
+      data.consignePaiement || data.ordreDuCheque
+        ? 26 + (data.entrepriseIban ? 24 : 0) + lignesConsigne.length * 12 + (data.ordreDuCheque ? 12 : 0)
+        : 38;
+    place(hauteurBloc);
     ecrireEspace(ctx, "MODALITÉS DE PAIEMENT", MARGE, y, APPROCHE_ETIQUETTE, etiquetteBloc);
     y -= 14;
-    ecrire(ctx, "Paiement par virement bancaire", MARGE, y, { taille: 9 });
-    y -= 12;
-    ecrire(ctx, `IBAN : ${data.entrepriseIban}`, MARGE, y, { taille: 9 });
+    if (data.entrepriseIban) {
+      ecrire(ctx, "Paiement par virement bancaire", MARGE, y, { taille: 9 });
+      y -= 12;
+      ecrire(ctx, `IBAN : ${data.entrepriseIban}`, MARGE, y, { taille: 9 });
+      y -= 12;
+    }
+    for (const l of lignesConsigne) {
+      ecrire(ctx, l, MARGE, y, { taille: 9 });
+      y -= 12;
+    }
+    if (data.ordreDuCheque) {
+      ecrire(ctx, phraseDuCheque(data.ordreDuCheque), MARGE, y, { taille: 9 });
+    }
   }
 
   // ─── Pied : mention légale à gauche, cadre de signature à droite ────────
@@ -911,10 +1404,25 @@ export async function composerDocument(
 
   // Mot pour mot la mention du modèle du patron : c'est celle qu'il a déjà
   // envoyée à ses clients, et Atlas ne doit pas en dire autre chose.
-  const mention = options.mentionLegale(data);
-  enLignes(mention, ctx.sans, 7.8, 290).forEach((l, i) =>
-    ecrire(ctx, l, MARGE, yPied - i * 10, { taille: 7.8, couleur: ctx.teintes.legal })
-  );
+  // **La décennale et le médiateur s'ajoutent ICI, et nulle part ailleurs**
+  // (migration 0094) : le devis et la facture traversent tous deux ce pied, et
+  // les composer chacun de son côté aurait fini par en donner deux versions.
+  // Chaque mention prend sa propre ligne : collées à la phrase des pénalités,
+  // elles s'y perdraient — or elles se cherchent du regard.
+  const paragraphes = [
+    options.mentionLegale(data),
+    ...lignesMentionsObligatoires({
+      assureurDecennale: data.entrepriseAssureurDecennale,
+      adresseAssureurDecennale: data.entrepriseAdresseAssureurDecennale,
+      contratDecennale: data.entrepriseContratDecennale,
+      couvertureDecennale: data.entrepriseCouvertureDecennale,
+      mediateurNom: data.entrepriseMediateurNom,
+      mediateurCoordonnees: data.entrepriseMediateurCoordonnees,
+    }),
+  ];
+  paragraphes
+    .flatMap((p) => enLignes(p, ctx.sans, 7.8, 290))
+    .forEach((l, i) => ecrire(ctx, l, MARGE, yPied - i * 10, { taille: 7.8, couleur: ctx.teintes.legal }));
 
   // Le cadre de signature n'appartient qu'au devis : une facture ne se signe
   // pas, elle se règle. En mettre un inviterait le client à un geste qui n'a
@@ -938,7 +1446,7 @@ export async function composerDocument(
       hauteur: 50,
       page: ctx.numeroPage,
     });
-    const legende = "Bon pour accord — signature du client";
+    const legende = "Bon pour accord, signature du client";
     ecrire(
       ctx,
       legende,
@@ -946,6 +1454,25 @@ export async function composerDocument(
       yPied - 38,
       { taille: 7.8, couleur: ctx.teintes.etiquette }
     );
+  }
+
+  // ─── L'annexe : ses conditions générales, après le bon pour accord ─────────
+  // Toujours une page neuve, même s'il restait de la place : le client signe la
+  // dernière page du devis, et lit les conditions derrière — comme le dos d'un
+  // devis papier. En petit, comme ce genre de texte, et replié par `place` :
+  // onze articles font une page, parfois deux.
+  for (const annexe of options.annexes ?? []) {
+    y = pageSuivante(ctx);
+    ecrireEspace(ctx, annexe.titre, MARGE, y, APPROCHE_ETIQUETTE, etiquetteBloc);
+    y -= 18;
+    for (const paragraphe of annexe.paragraphes) {
+      for (const l of enLignes(paragraphe, ctx.sans, 8.5, DROITE - MARGE)) {
+        place(11);
+        ecrire(ctx, l, MARGE, y, { taille: 8.5 });
+        y -= 11;
+      }
+      y -= 7;
+    }
   }
 
   // ─── Pagination, seulement s'il y a plusieurs pages ──────────────────────
@@ -969,12 +1496,91 @@ export async function composerDocument(
         y: MARGE,
         taille: 7.5,
         page: i + 1,
-        couleur: PALETTE.legal,
+        // La teinte POSÉE, jamais celle de la palette : c'est la faute que
+        // l'en-tête de ce fichier raconte (« la trace disait #ece9e1 pendant
+        // que la page se peignait en vert »), et les mentions sont passées à
+        // l'encre le 17 septembre 2026.
+        couleur: enHexa(ctx.teintes.legal),
+        gras: false,
       });
     });
   }
 
-  return { pdf: await pdfDoc.save(), trace: ctx.trace };
+  if (options.filigrane) {
+    const mot = options.filigrane;
+    const taille = 96;
+    const largeurMot = ctx.sans.widthOfTextAtSize(mot, taille);
+    // Centré sur la page, à 35° : la diagonale traverse le tableau et les
+    // totaux, là où l'œil lit un montant.
+    const angle = (35 * Math.PI) / 180;
+    const x = LARGEUR / 2 - (Math.cos(angle) * largeurMot) / 2;
+    const yMot = HAUTEUR / 2 - (Math.sin(angle) * largeurMot) / 2;
+    ctx.pdfDoc.getPages().forEach((page, i) => {
+      page.drawText(mot, {
+        x,
+        y: yMot,
+        size: taille,
+        font: ctx.sans,
+        color: ctx.teintes.titrePartie,
+        opacity: 0.12,
+        rotate: degrees(35),
+      });
+      ctx.trace.textes.push({
+        contenu: mot,
+        x,
+        y: yMot,
+        taille,
+        page: i + 1,
+        couleur: enHexa(ctx.teintes.titrePartie),
+        gras: false,
+      });
+    });
+  }
+
+  // **La typographie embarquée doit dire la longueur de son programme**, sans
+  // quoi un lecteur strict ne charge pas la police et rend une page blanche —
+  // ce que le patron a eu trois fois sous les yeux (`polices-embarquees.ts`).
+  // `flush` matérialise les polices dans le contexte ; l'entrée se pose donc
+  // ici, entre la composition et le scellé.
+  // **Après la numérotation** : « Page 2 / 2 » compte le devis, et
+  // l'attestation le suit comme l'annexe qu'elle est, telle que l'assureur l'a
+  // émise. **Avant le scellé** : elle part protégée avec le reste.
+  if (options.attestation) await joindreLAttestation(pdfDoc, options.attestation);
+
+  await pdfDoc.flush();
+  annoncerLaLongueurDesPolices(pdfDoc.context);
+
+  // **Tout ce qui sort d'ici part protégé contre la retouche.** Le devis, la
+  // facture, la feuille de chantier : un seul endroit, parce qu'un document
+  // oublié ne se verrait pas — c'est chez le client qu'on l'apprendrait, comme
+  // le 31 août 2026 (`src/server/pdf/proteger-pdf.ts`).
+  return { pdf: await protegerContreModification(await pdfDoc.save()), trace: ctx.trace };
+}
+
+/**
+ * Les pages de l'attestation, à la suite du document.
+ *
+ * Un PDF se recopie page pour page, tel que l'assureur l'a émis. Une photo se
+ * pose sur une page A4, entière et à proportion gardée : réduite, jamais
+ * agrandie au-delà de la page, pour qu'elle se lise sans se déformer.
+ */
+async function joindreLAttestation(pdfDoc: PDFDocument, attestation: AttestationDocument): Promise<void> {
+  if (attestation.mime === "application/pdf") {
+    const source = await PDFDocument.load(attestation.octets, { updateMetadata: false });
+    const pages = await pdfDoc.copyPages(source, source.getPageIndices());
+    pages.forEach((p) => {
+      sansAnnotations(p);
+      pdfDoc.addPage(p);
+    });
+    return;
+  }
+  const image =
+    attestation.mime === "image/png" ? await pdfDoc.embedPng(attestation.octets) : await pdfDoc.embedJpg(attestation.octets);
+  const page = pdfDoc.addPage([LARGEUR, HAUTEUR]);
+  const echelle = Math.min((LARGEUR - 2 * MARGE) / image.width, (HAUTEUR - 2 * MARGE) / image.height, 1);
+  const largeur = image.width * echelle;
+  const hauteur = image.height * echelle;
+  page.drawImage(image, { x: (LARGEUR - largeur) / 2, y: (HAUTEUR - hauteur) / 2, width: largeur, height: hauteur });
 }
 
 /** Le bas réservé au pied de page, pour que les contrôles parlent des mêmes chiffres. */

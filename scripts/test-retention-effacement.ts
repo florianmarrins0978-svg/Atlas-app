@@ -20,7 +20,7 @@ import * as lignesPrixRepo from "../src/server/repositories/lignes-prix";
 import { devis as devisTable } from "../src/server/db/schema";
 import { creerEnvoi, enregistrerReponse } from "../src/server/repositories/envois-devis";
 import { audioAPurger, RETENTION, motifConservation, echeanceConservation } from "../src/server/retention";
-import { versJourIso, ajouterJours } from "../src/server/disponibilites";
+import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { nettoyerBase } from "./_test-db";
 
 let passed = 0;
@@ -253,7 +253,7 @@ async function main() {
     );
     await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte" as const, dateRetenue: versJourIso(ajouterJours(MAINTENANT, 10)) },
+      { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: versJourIso(ajouterJours(MAINTENANT, 10)) },
       MAINTENANT
     );
 
@@ -293,7 +293,7 @@ async function main() {
     );
     await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte" as const, dateRetenue: versJourIso(ajouterJours(MAINTENANT, 12)) },
+      { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: versJourIso(ajouterJours(MAINTENANT, 12)) },
       MAINTENANT
     );
 

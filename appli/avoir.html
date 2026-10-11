@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Faire un avoir</title>
+<link rel="stylesheet" href="facture-impayee.css">
+</head>
+<body>
+
+<div class="recit">
+  <div class="etape" id="etape">Étape 1</div>
+  <p id="texte"></p>
+  <div class="pas">
+    <button type="button" id="avant">Retour</button>
+    <span class="points" id="points"></span>
+    <button type="button" id="recommencer">Recommencer</button>
+  </div>
+</div>
+
+<div class="tel" id="tel"></div>
+
+<div class="apres">
+  <p class="autres">Les deux autres planches : <a href="il-ne-paiera-pas.html">Il ne me paiera pas</a>, <a href="mise-en-demeure.html">La mise en demeure</a>.</p>
+  <h3>Les deux réponses font l'inverse l'une de l'autre</h3>
+  <table>
+    <tr><th></th><th>Je fais un avoir</th><th>Il ne me paiera pas</th></tr>
+    <tr><td>Il doit encore</td><td>moins</td><td>tout</td></tr>
+    <tr><td>Vous pouvez réclamer</td><td>non, plus jamais cette somme</td><td>oui</td></tr>
+    <tr><td>Un document part</td><td>oui, l'avoir</td><td>non</td></tr>
+    <tr><td>Où la retrouver</td><td>un onglet Avoirs sur sa fiche client</td><td>une catégorie Non payées dans Terminés</td></tr>
+    <tr><td>S'il paie après</td><td>il paie le nouveau montant</td><td>vous notez le paiement, et la TVA entre au relevé du mois où il a payé</td></tr>
+    <tr><td>Votre TVA</td><td>ne bouge pas</td><td>ne bouge pas, tant qu'il n'a pas payé</td></tr>
+  </table>
+  <p style="margin-top:12px">Tant qu'il n'a pas payé, votre TVA ne bouge pas : vous la payez quand le client paie, au relevé du mois où il paie.</p>
+
+
+</div>
+
+<script>
+  // Planche 1 sur 3 : l'avoir, de Terminés jusqu'à l'onglet Avoirs de la fiche client.
+  const PARCOURS = {
+    debut: "termines",
+    ordre: ["termines","choix","combien","fait","factureA","ficheA","avoirVu"],
+    recit: {
+      choix: ["Le volet", "Toucher la ligne ouvre un volet à trois choix : <b>la facture</b>, <b>un avoir</b>, ou <b>il ne paiera pas</b>. <b>Touchez «&nbsp;Je fais un avoir&nbsp;»</b>. «&nbsp;Il ne me paiera pas&nbsp;» ouvre l'autre planche."],
+    },
+  };
+</script>
+<script src="facture-impayee.js"></script>
+</body>
+</html>

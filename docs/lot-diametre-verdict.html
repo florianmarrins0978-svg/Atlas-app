@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le devis qui ne partait pas — ce qui a été trouvé, et ce qui a été fait</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-devis-qui-ne-partait-pas--ce-qui-a-été-trouvé-et-ce-qui-a-été-fait">Le devis qui ne partait pas — ce qui a été trouvé, et ce qui a été fait</h1>
+<p><em>7 septembre 2026. Trois défauts signalés dans un seul message, et un quatrième trouvé en cherchant les trois premiers.</em></p>
+<hr>
+<h2 id="ce-que-tu-as-dit-point-par-point">Ce que tu as dit, point par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>#</th>
+<th>Ce que tu as signalé</th>
+<th>Verdict</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td><em>« Il m'a proposé la hauteur pour la fente »</em></td>
+<td><strong>Juste.</strong> Corrigé</td>
+</tr>
+<tr>
+<td>2</td>
+<td><em>« Il n'a pas réussi à retranscrire la hauteur dans la case »</em></td>
+<td><strong>Juste sur le symptôme, faux sur la cause</strong> — voir ci-dessous</td>
+</tr>
+<tr>
+<td>3</td>
+<td><em>« Cette case-là ne doit jamais comporter de hauteur »</em></td>
+<td><strong>Juste.</strong> Corrigé</td>
+</tr>
+<tr>
+<td>4</td>
+<td><em>« J'ai bien aimé le petit rond barré, mets-le à chaque fois »</em></td>
+<td><strong>Déjà le cas</strong>, et ça ne bouge pas</td>
+</tr>
+<tr>
+<td>5</td>
+<td><em>« Il n'a pas réussi à m'envoyer le devis »</em></td>
+<td><strong>Juste, et c'était le plus grave.</strong> Corrigé</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="1-la-hauteur-était-demandée-au-mauvais-endroit">1. La hauteur était demandée au mauvais endroit</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ce qui se passait.</strong> La question vivait sur la ligne du <strong>fendage</strong> depuis le 8 août — et c'est toi qui l'y avais mise : <em>« pour la fente ils devraient demander la hauteur de l'arbre et son diamètre »</em>. La raison tient toujours : ta grille de fendage se lit « hauteur × diamètre », c'est du volume de bois.</p>
+<p>L'erreur n'était donc pas de demander la hauteur. C'était de te la demander <strong>sous le titre « Fente du gros bois »</strong> : sur un objet qui n'a pas de hauteur.</p>
+<p><strong>Ce qui a été fait.</strong> La question <strong>change de ligne, elle ne disparaît pas.</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ta dictée porte</th>
+<th>Qui te pose la question</th>
+</tr></thead><tbody>
+<tr>
+<td>un arbre <strong>et</strong> du bois à fendre</td>
+<td>l'<strong>arbre</strong> — « Quelle hauteur fait l'arbre ? »</td>
+</tr>
+<tr>
+<td>du bois à fendre <strong>seul</strong></td>
+<td>la fente, comme avant : il n'y a personne d'autre</td>
+</tr>
+<tr>
+<td>un arbre <strong>sans</strong> fendage</td>
+<td>personne — la hauteur ne décide alors de rien</td>
+</tr>
+</tbody></table></div>
+<p><strong>Pourquoi pas la supprimer purement, comme ta phrase le laissait entendre</strong> (<em>« pour la fente, on n'a pas besoin d'informations complémentaires »</em>) : sans hauteur, la fente n'a plus de case dans sa grille, donc <strong>plus de prix</strong> — et rien ne te l'aurait dit. C'est le genre de panne muette qu'on s'interdit.</p>
+<p>Le prix de la fente ne souffre pas du déplacement : le chiffrage lit <strong>toutes</strong> tes réponses du chantier, pas seulement celles de la ligne.</p>
+<p><em>Le fichier : <code>src/lib/questions-chiffrage.ts</code>. Le contrôle : <code>scripts/test-questions-chiffrage.ts</code>, qui rejoue ta dictée du 7 septembre.</em></p>
+<hr>
+<h2 id="2-ta-réponse-nétait-pas-perdue--et-cest-le-point-le-plus-utile-du-lot">2. Ta réponse n'était PAS perdue — et c'est le point le plus utile du lot</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Tu as écrit : <em>« moi je lui ai écrit la hauteur de l'arbre vingt mètres, il n'a pas réussi à la retranscrire dans la case »</em>.</p>
+<p><strong>Le 20 était bien enregistré.</strong> Il est allé dans sa colonne, correctement. C'est le <strong>nettoyage du libellé</strong> qui l'a mangé, juste avant l'impression :</p>
+<p>« Fente du gros bois — 20 m de haut »   →   « Fente du gros bois de m de haut »</p>
+<p>Le nettoyage retire des morceaux de texte quand la donnée est déjà rangée dans une colonne — pour que ton client ne lise pas deux fois la même chose. Il retirait le <strong>nombre</strong>, et gardait la phrase autour de lui.</p>
+<p>Ce geste avait été écrit pour « — deux souches de 60 cm », où le nombre de tête est une <strong>quantité</strong>. Sur « — 20 m de haut », où le nombre <strong>est</strong> la mesure, il produit une phrase amputée.</p>
+<p><strong>Ce qui a été fait.</strong> Un morceau qui ne dit que ce que les colonnes portent déjà s'en va <strong>en entier</strong>, jamais à moitié. La formulation que tu avais validée le 30 août — « Dessouchage de souches de 60 cm » — ne bouge pas.</p>
+<p><em>Le fichier : <code>src/lib/libelle-client.ts</code>. Le contrôle : <code>scripts/test-libelle-client.ts</code> — 27 cas, dont le tien.</em></p>
+<hr>
+<h2 id="3-le-rond-barré-ne-bouge-pas-dans-lapplication">3. Le rond barré ne bouge pas dans l'application</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>« Quand on parle de diamètre, s'il peut à chaque fois mettre ce signe-là. »</em></p>
+<p>C'est <strong>déjà</strong> ce que fait Atlas partout où une mesure de diamètre s'écrit, et rien n'a été touché. Une seule exception, et elle est expliquée au point suivant : <strong>sur le PDF</strong>, le signe devient <strong>Ø</strong> au lieu de <strong>⌀</strong>.</p>
+<p>Les deux dessinent le même rond barré. Ton client ne verra pas la différence, et Atlas sait relire les deux formes.</p>
+<p><strong>J'avais laissé UNE ligne sans le signe, tu as tranché l'inverse, et tu as eu raison.</strong> Je t'avais dit que « Dessouchage de souches de 60 cm » resterait sans ⌀, parce que « de souches de ⌀ 60 cm » se lit mal et que c'était ta formulation du 30 août. Ta réponse : <em>« quand on dit souche de 60, ou 60 au pied, on parle de diamètre en réalité »</em>.</p>
+<p><strong>Le signe est donc posé partout où un nombre EST un diamètre :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>l'endroit</th>
+<th>maintenant</th>
+</tr></thead><tbody>
+<tr>
+<td>le devis du client</td>
+<td><code>Dessouchage de souches de ⌀ 60 cm</code></td>
+</tr>
+<tr>
+<td>une case de fendage</td>
+<td><code>10 à 15 m de haut · tronc de ⌀ 40 à 50 cm</code></td>
+</tr>
+<tr>
+<td>une case d'abattage</td>
+<td><code>démontage · tronc de ⌀ 40 à 50 cm</code></td>
+</tr>
+<tr>
+<td>une case de dessouchage</td>
+<td><code>Souche de ⌀ 40 à 50 cm</code></td>
+</tr>
+</tbody></table></div>
+<p>Tes prix déjà saisis ne bougent pas : seuls les libellés sont réécrits.</p>
+<p><strong>Pas de signe là où le mot est déjà écrit</strong> — la question « Quel diamètre fait le tronc ? », le titre « Diamètre du tronc » en tête de tes grilles. Le signe y répéterait le titre.</p>
+<p><strong>Et l'autre moitié de ta phrase était DÉJÀ faite</strong>, je l'ai vérifiée plutôt que de la supposer : Atlas lit déjà « souche de 60 » et « 60 au pied » comme des diamètres depuis le 31 août — et il refuse toujours « 60 cm de circonférence », qui n'en est pas un. Il comprenait ta langue ; il ne te la rendait pas.</p>
+<hr>
+<h2 id="4-le-devis-ne-partait-pas--cétait-le-rond-barré-et-cétait-la-troisième-fois">4. Le devis ne partait pas : c'était le rond barré, et c'était la troisième fois</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Le message exact :</strong> <code>WinAnsi cannot encode "⌀" (0x2300)</code>.</p>
+<p>Les polices d'un PDF ne connaissent que <strong>224 caractères</strong>. Le ⌀ n'en fait pas partie — et quand un seul caractère manque, ce n'est pas lui qui saute, c'est <strong>tout le document</strong> qui refuse de se fabriquer.</p>
+<p><strong>Ce n'était pas la première fois.</strong> Deux autres caractères avaient déjà bloqué un document, et les deux avaient été réparés un par un, là où ils étaient apparus :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>le caractère</th>
+<th>d'où il venait</th>
+</tr></thead><tbody>
+<tr>
+<td>l'espace fine des montants</td>
+<td>l'écriture française des nombres</td>
+</tr>
+<tr>
+<td>le « moins » d'une remise</td>
+<td>la ligne de remise</td>
+</tr>
+<tr>
+<td><strong>le ⌀</strong></td>
+<td>la question sur le diamètre</td>
+</tr>
+</tbody></table></div>
+<p>Réparer le troisième tout seul, c'était attendre le quatrième — et <strong>le quatrième serait venu d'une de tes dictées</strong>, ou du nom d'un client, pas du code. Tu aurais eu le même blocage, sur une phrase que personne n'a écrite.</p>
+<p><strong>Ce qui a été fait.</strong> Le contrôle vit maintenant à l'entrée du papier : plus aucun caractère ne peut empêcher un envoi. Ceux qui ont un équivalent sont remplacés (⌀ devient Ø) ; ceux qui n'en ont pas sont retirés — <strong>et l'incident est enregistré</strong>, pour qu'un mot amputé sur un devis ne passe jamais inaperçu.</p>
+<p><strong>Le choix assumé :</strong> le document part quand même. Un devis bloqué te coûte un chantier ; un signe manquant se voit et se corrige.</p>
+<p><em>Les fichiers : <code>src/lib/texte-pdf.ts</code> (neuf), <code>src/server/pdf/document-commun.ts</code>. Le contrôle : <code>scripts/test-texte-pdf.ts</code>, qui compose ton devis du 7 septembre en entier, avec ton ⌀ dedans.</em></p>
+<hr>
+<h2 id="ce-que-jai-trouvé-en-cherchant-et-que-tu-navais-pas-signalé">Ce que j'ai trouvé en cherchant, et que tu n'avais pas signalé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Mesurer un texte échoue autant que l'écrire.</strong> Le premier correctif ne protégeait que le moment où l'encre se pose. Or Atlas calcule d'abord la largeur du texte pour caler les colonnes de chiffres à droite — et ce calcul plantait lui aussi, avant même d'écrire. Deux endroits sur cinq restaient ouverts.</p>
+<hr>
+<h2 id="ce-que-ça-a-coûté-et-ce-qui-reste">Ce que ça a coûté, et ce qui reste</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ce qui a été vérifié :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>ta panne, reproduite à l'identique</td>
+<td>oui — avant correction, sur les vraies fonctions</td>
+</tr>
+<tr>
+<td>suites concernées rejouées</td>
+<td><strong>18 vertes</strong></td>
+</tr>
+<tr>
+<td>4 autres suites</td>
+<td>rouges faute de base de données sur ce poste : elles tombent <strong>à l'ouverture</strong>, avant que le code du lot soit atteint</td>
+</tr>
+<tr>
+<td>la batterie complète</td>
+<td><strong>pas encore lancée — je t'ai demandé le feu vert d'abord</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui reste ouvert, et qui te revient :</strong></p>
+<ol>
+<li><strong>Le feu vert pour la batterie complète.</strong> Tu m'as demandé de prévenir avant : tes autres sessions partagent le dossier.</li>
+<li><strong>Le ⌀ sur « souches de 60 cm »</strong> — point 3 ci-dessus. Ton arbitrage.</li>
+<li><strong>Rien n'est encore sur <code>main</code>.</strong> Tant que ce n'est pas fusionné, ton banc d'essai continue de servir la version d'avant.</li>
+</ol>
+<hr>
+<h1 id="la-suite--la-dictée-de-la-fiche-client-7-septembre-15-h--16-h-30">La suite : la dictée de la fiche client (7 septembre, 15 h → 16 h 30)</h1>
+<p><em>Tu as continué d'essayer pendant que je corrigeais, et chaque essai a sorti un défaut de plus. Ils sont tous réparés. Aucun n'a été trouvé par une suite de tests : tous par toi.</em></p>
+<h2 id="dabord-ce-quil-faut-savoir-avant-de-lire-la-suite">D'abord, ce qu'il faut savoir avant de lire la suite</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Rien de tout ça n'est encore chez toi.</strong> Ton écran de 16 h 20 portait le bandeau « Version rapide en construction — vous voyez celle d'avant ». Tu as donc essayé, quatre fois, une version qui ne contient aucune de ces corrections — c'est normal qu'elle échoue de la même façon.</p>
+<h2 id="1--elle-ne-comprend-pas-larobase-">1. « Elle ne comprend pas l'arobase »</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ce n'est pas la transcription qui comprend mal — c'est Atlas qui lisait mal ce qu'elle avait écrit.</strong> Et quand cette lecture échoue, c'est le modèle qui prend la main et invente une adresse plausible. D'où tes trois captures.</p>
+<p>Mesuré sur tes phrases exactes, avant correction :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>ce que tu dictes</th>
+<th>ce qu'Atlas en tirait</th>
+</tr></thead><tbody>
+<tr>
+<td><code>florian point martin zéro neuf sept huit arobase laposte point net</code></td>
+<td><strong><code>huit@laposte.net</code></strong></td>
+</tr>
+<tr>
+<td>la même avec « arobas »</td>
+<td><strong>rien du tout</strong></td>
+</tr>
+<tr>
+<td><code>... arobase la poste point net</code></td>
+<td><strong>rien du tout</strong></td>
+</tr>
+<tr>
+<td><code>flo tiret speed arobase hotmail point fr</code></td>
+<td><strong><code>flo-speed-hotmail.fr</code></strong></td>
+</tr>
+<tr>
+<td><code>arborea pro arobase outlook point fr</code></td>
+<td><strong><code>arborea pro@outlook.fr</code></strong></td>
+</tr>
+</tbody></table></div>
+<p>Le premier est le pire : <strong>ton prénom disparaissait en silence</strong> et le résultat avait l'air juste.</p>
+<p><strong>Trois causes, et une seule racine :</strong> les chiffres que tu dictes n'étaient pas convertis pour l'e-mail (ils coupaient l'adresse en deux) ; une seule orthographe d'« arobase » était reconnue ; et rien ne recollait les morceaux que la transcription sépare.</p>
+<p><strong>Ce que ça donne maintenant</strong>, sur ces mêmes phrases :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>tu dictes</th>
+<th>tu obtiens</th>
+</tr></thead><tbody>
+<tr>
+<td><code>florian point martin zéro neuf sept huit arobase laposte point net</code></td>
+<td><code>florian.martin0978@laposte.net</code></td>
+</tr>
+<tr>
+<td><code>flo tiret speed arobase hotmail point fr</code></td>
+<td><code>flo-speed@hotmail.fr</code></td>
+</tr>
+<tr>
+<td><code>arborea pro arobase outlook point fr</code></td>
+<td><code>arboreapro@outlook.fr</code></td>
+</tr>
+</tbody></table></div>
+<p>Et une <strong>seconde ligne de défense</strong> : ce que le modèle propose n'entre plus que si ça a la forme d'une adresse. <code>flo-speed-hotmail.fr</code> laisse maintenant le champ <strong>vide</strong> — un champ vide se voit et se corrige ; une adresse plausible part avec le devis.</p>
+<p>Ta règle est codée telle quelle : <strong>aucun espace dans une adresse, jamais.</strong></p>
+<h2 id="2-ladresse-coupée-par-des-virgules">2. L'adresse coupée par des virgules</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>tu dictes</th>
+<th>avant</th>
+<th>maintenant</th>
+</tr></thead><tbody>
+<tr>
+<td><code>27730 Villennes</code></td>
+<td><code>27 730 Villene</code></td>
+<td><code>27730 Villene</code></td>
+</tr>
+<tr>
+<td><code>12 rue Bérangère 27500 Mâcon</code></td>
+<td><code>12 rue Bérangère, 27 500, Macon</code></td>
+<td><code>12 rue Bérangère, 27500 Macon</code></td>
+</tr>
+<tr>
+<td><code>10 rue des marguerites</code></td>
+<td><code>Dierud et Marguerite</code></td>
+<td><strong>inchangé</strong></td>
+</tr>
+</tbody></table></div>
+<p>La virgule entre le code postal et la ville vient du modèle : elle est retirée. <strong>Celle qui suit la rue reste</strong> — c'est du français, une enveloppe s'écrit ainsi.</p>
+<p><strong>« Dierud et Marguerite » pour « rue des marguerites », je ne peux pas le réparer</strong>, et je préfère te le dire que de te laisser l'essayer : c'est une faute d'oreille de la transcription, pas du code. Tu la corriges à la main.</p>
+<h2 id="3--60-cm-de-circonférence--et-il-redemandait-le-diamètre">3. « 60 cm de circonférence » et il redemandait le diamètre</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Tu as raison, et le refus était pourtant volontaire.</strong> Atlas refusait de prendre une circonférence pour un diamètre — confondre les deux <strong>triple</strong> la mesure et range le prix trois cases plus loin dans ta grille.</p>
+<p>Mais refuser ne suffisait pas : <strong>sur un tronc debout, on ne mesure pas un diamètre, on passe un ruban autour.</strong> C'est ça que tu dis, et c'est ça qu'il faut savoir utiliser.</p>
+<p>Ce n'est pas une devinette, c'est une division : <code>diamètre = tour ÷ π</code>.</p>
+<p><strong>60 cm de tour font 19 cm de tronc.</strong> L'écart avec 60 dit à quel point s'en passer coûtait cher. Ton chêne ne pose plus aucune question.</p>
+<p>Et si tu donnes les deux, <strong>le diamètre l'emporte toujours</strong>.</p>
+<h2 id="4--1-arbre--dans-le-libellé">4. « (1 arbre) » dans le libellé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Ta règle : la quantité a sa colonne, elle n'a rien à faire dans le texte.</p>
+<p>La règle existait depuis le 30 août — <strong>elle ne regardait que la fin du libellé</strong>. Une parenthèse posée au milieu passait sans être vue. Maintenant toutes sont examinées, et celle qui apprend quelque chose reste : « Taille <strong>(haie mixte)</strong> » ne bouge pas.</p>
+<h2 id="5-le--qui-ne-passe-toujours-pas">5. Le ⌀ qui ne passe toujours pas</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>C'est le premier défaut de la journée, réparé depuis ce matin. <strong>Il n'est pas chez toi</strong>, comme le reste. Rien à refaire de ton côté.</p>
+<h2 id="ce-qui-reste-et-ce-que-jattends-de-toi">Ce qui reste, et ce que j'attends de toi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>suites concernées</td>
+<td><strong>18 vertes</strong></td>
+</tr>
+<tr>
+<td>types, lint</td>
+<td>propres</td>
+</tr>
+<tr>
+<td>batterie complète</td>
+<td><strong>pas encore lancée</strong> — j'attends ton feu vert</td>
+</tr>
+<tr>
+<td>sur <code>main</code></td>
+<td><strong>rien</strong> — c'est pour ça que tu vois toujours l'ancienne version</td>
+</tr>
+</tbody></table></div>
+<p><strong>Il me faut une phrase de ta part :</strong> je peux lancer la batterie et pousser sur <code>main</code> ? Sans ça, tu continueras à essayer une version qui ne contient aucune de ces corrections.</p>
+<h2 id="et-ta-question-sur-la-note-vocale">Et ta question sur la note vocale</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Tu demandais si tu pouvais supprimer une note vocale envoyée par erreur.</p>
+<p><strong>Oui, mais pas depuis l'endroit où tu étais.</strong> La suppression existe sur l'écran de la note vocale du chantier, avec un « Annuler » qui la rend si tu te ravises. Depuis le rond de dictée, la poubelle n'apparaît que <strong>pendant</strong> l'enregistrement — une fois envoyée, elle disparaît.</p>
+<p>Si tu ne l'as pas trouvée, c'est un défaut à part entière : chez toi, ce qui est important doit être visible. <strong>Dis-moi depuis quel écran tu cherchais</strong> et je te fais une maquette du geste manquant avant d'y toucher.</p>
+<hr>
+<h1 id="le-soir-du-7-septembre--trois-fils-de-plus">Le soir du 7 septembre : trois fils de plus</h1>
+<h2 id="6-un-devis-accepté-ne-se-disait-nulle-part--cest-corrigé">6. Un devis accepté ne se disait nulle part — c'est corrigé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Ta demande : <em>« il faut aussi rajouter une notification lorsqu'un client accepte un devis, elle doit apparaître en haut dans les retours client ! »</em></p>
+<p><strong>Ce que j'ai trouvé, et je te le dis parce que c'était volontaire :</strong> Atlas <strong>taisait</strong> exprès une acceptation sur l'une des dates que tu proposes. Le raisonnement écrit dans le code : « ça ne surprend personne, et ça noierait les refus et les demandes de correction, qui, eux, appellent un geste ».</p>
+<p><strong>Il oubliait l'essentiel : c'est la nouvelle que tu attends.</strong> Un chantier gagné ne s'apprend pas en ouvrant une fiche.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>avant</th>
+<th>maintenant</th>
+</tr></thead><tbody>
+<tr>
+<td>refus, correction, date contre-proposée</td>
+<td><strong>plus toute acceptation</strong></td>
+</tr>
+<tr>
+<td>titre unique « Autre date proposée »</td>
+<td>« <strong>Devis accepté</strong> » quand il a pris une de tes dates</td>
+</tr>
+</tbody></table></div>
+<p><strong>« En haut » ne demandait aucun code</strong> : les cartes sont rangées par date de réponse, la plus récente d'abord. Une acceptation qui vient d'arriver est en tête toute seule.</p>
+<h2 id="7-les-deux-flèches-qui-tournaient-en-rond--cest-corrigé">7. Les deux flèches qui tournaient en rond — c'est corrigé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Ta remarque : <em>« j'appuie une fois sur le retour du devis, j'arrive sur la fiche client, et si je refais retour arrière je retourne sur le devis et non sur la page chantier. »</em></p>
+<p><strong>C'était une boucle, et elle venait de deux règles que tu avais posées le 31 août</strong> — justes chacune de son côté :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>ta règle</th>
+<th>ce que ça donnait</th>
+</tr></thead><tbody>
+<tr>
+<td>la flèche du devis mène à la fiche client, toujours</td>
+<td>devis → fiche</td>
+</tr>
+<tr>
+<td>« je veux revenir au devis » une fois la fiche remplie</td>
+<td>fiche → devis</td>
+</tr>
+</tbody></table></div>
+<p>Mises bout à bout, les deux flèches se pointaient l'une l'autre. <strong>Aucune sortie</strong> sans fermer l'onglet.</p>
+<p><strong>Ce que j'ai gardé, et c'est la moitié qui compte :</strong> quand tu <strong>enregistres</strong> la fiche, tu reviens sur ton devis — complété. C'est là que ta règle a du sens. Ce qui change, c'est seulement la <strong>flèche</strong> : elle sert à renoncer. Renoncer, c'est sortir — donc la liste des chantiers.</p>
+<h2 id="8-ta-note-vocale--le-geste-existe-déjà-dans-lautre-sens">8. Ta note vocale : le geste existe déjà, dans l'autre sens</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Ta question : <em>« déplacer la note vocale de droite vers la gauche, ça ferait apparaître la suppression ? »</em></p>
+<p><strong>Il existe déjà.</strong> Et voilà pourquoi tu ne l'as pas trouvé :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>le geste</th>
+</tr></thead><tbody>
+<tr>
+<td>sur la note vocale</td>
+<td>de <strong>bas en haut</strong></td>
+</tr>
+<tr>
+<td>dans la liste des chantiers</td>
+<td>vers la <strong>gauche</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Deux sens pour le même geste, dans la même application.</strong> Tu cherchais celui que tu connais.</p>
+<p><strong>Une planche est prête, trois onglets, à essayer au doigt :</strong> l'actuel, le tien, et une <strong>corbeille visible</strong> sans aucun geste à découvrir.</p>
+<p><strong>Cette troisième n'est pas là pour faire nombre.</strong> C'est ta propre règle du 5 septembre : <em>« la plupart des patrons qui vont utiliser l'app sont des vieux qui ont du mal à se servir de leur téléphone »</em> — un glissement ne s'apprend pas tout seul, quel que soit son sens. Les deux règles se contredisent, et c'est toi qui tranches.</p>
+<p><strong>Je te donnerai l'adresse dès que ce sera en ligne</strong> — pas avant : une adresse qui répond 404 t'a déjà coûté un aller-retour, et la planche ne sera publiée qu'une fois poussée.</p>
+<h2 id="où-on-en-est">Où on en est</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>suites concernées rejouées</td>
+<td><strong>32 vertes</strong>, aucune rouge</td>
+</tr>
+<tr>
+<td>types, lint</td>
+<td>propres</td>
+</tr>
+<tr>
+<td>batterie complète</td>
+<td><strong>pas lancée</strong> — tu m'as dit qu'elle tournait ailleurs</td>
+</tr>
+<tr>
+<td>sur <code>main</code></td>
+<td><strong>rien</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Trois choses m'attendent, de ta part :</strong></p>
+<ol>
+<li>quand la batterie est libre, ton feu vert ;</li>
+<li>l'autorisation de pousser sur <code>main</code> — sans elle tu continues d'essayer la version d'avant ;</li>
+<li><strong>1, 2 ou 3</strong> pour la note vocale, quand tu auras vu la planche.</li>
+</ol>
+<hr>
+<h1 id="ta-réponse--2--et-pourquoi-le-diamètre-ne-bouge-toujours-pas">Ta réponse « 2 », et pourquoi le diamètre ne bouge toujours pas</h1>
+<h2 id="le-geste--fait">Le geste : fait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Tu as répondu 2. La note se glisse maintenant <strong>vers la gauche</strong>, comme dans la liste des chantiers. Elle allait vers le haut depuis le 30 août — deux sens pour le même geste dans la même application, et tu cherchais celui que tu connais.</p>
+<h2 id="mais-ça-ne-règle-pas-ton-essai-et-je-préfère-te-le-dire">Mais ça ne règle pas ton essai, et je préfère te le dire</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>« Aujourd'hui, lever la note vocale ne propose pas de la supprimer, je viens d'essayer. »</em> Tu as raison, et la cause n'est pas le sens du geste.</p>
+<p><strong>Sur cet écran-là, après l'envoi, il n'y a aucune note affichée.</strong> Ni objet, ni glisseur : seulement le micro au repos et « Atlas prépare votre devis… ». Le geste corrigé n'a donc rien à saisir.</p>
+<p><strong>Ce qui manque est un objet, pas un geste :</strong> faire apparaître la note que tu viens d'envoyer pendant que le devis se prépare, et que la retirer <strong>interrompe</strong> la préparation. Ça touche la chaîne du devis — je te fais une maquette avant d'y toucher, comme d'habitude.</p>
+<h2 id="le-diamètre-de-la-fente--rien-na-changé-chez-toi-et-cest-normal">Le diamètre de la fente : rien n'a changé chez toi, et c'est normal</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Tu as rechargé ton espace, et c'est bien. <strong>Mais seule la maquette est partie sur <code>main</code>.</strong> Le code — le ⌀ du PDF, la hauteur sur l'arbre, la dictée, la circonférence, les parenthèses, les deux flèches, la notification d'acceptation — est prêt, vert, et <strong>toujours sur ce poste</strong>.</p>
+<p>Tant qu'il n'est pas poussé, ton espace continue de servir la version d'avant, quel que soit le nombre de rechargements.</p>
+<p><strong>Ce qui bloque, et c'est la seule chose :</strong> tu m'as demandé de ne pas lancer la batterie, elle tourne ailleurs. Je ne pousse pas un lot de cette taille sans elle — c'est la règle du dépôt, et elle t'a déjà évité des régressions.</p>
+<p><strong>Deux mots de ta part suffisent</strong>, l'un ou l'autre :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><em>« la batterie est libre »</em></td>
+<td>je la lance, et je pousse si elle est verte</td>
+</tr>
+<tr>
+<td><em>« pousse sans la batterie »</em></td>
+<td>je pousse tout de suite, et je te dis ce que ça risque</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

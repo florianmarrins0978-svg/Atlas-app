@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { colors, libelleCaps, texteSituation } from "@/lib/design-tokens";
-import type { Retrait } from "./useRetraits";
+import type { CompteARebours, Retrait } from "./useRetraits";
 
 /**
  * Le tiroir des retirés — un par écran, entre le contenu et le bas de page.
@@ -25,6 +25,8 @@ export default function TiroirDesRetires({
   nombre,
   onAnnuler,
   className,
+  situation,
+  compteARebours,
 }: {
   /** Le dernier retrait en attente, ou `null` : le tiroir se referme. */
   dernier: Retrait | null;
@@ -32,6 +34,10 @@ export default function TiroirDesRetires({
   nombre: number;
   onAnnuler: () => void;
   className?: string;
+  /** Ce qui vient d'arriver, quand ce n'est pas un retrait (« Noté refusé à l'instant »). */
+  situation?: string;
+  /** Le minuteur du tiroir : présent, une barre d'or diminue jusqu'à l'écriture. */
+  compteARebours?: CompteARebours | null;
 }) {
   const ouvert = dernier !== null;
 
@@ -55,13 +61,13 @@ export default function TiroirDesRetires({
       ref={nœud}
       className={`atlas-tiroir mx-[26px] ${className ?? ""}`}
       data-ouvert={ouvert ? "oui" : "non"}
-      style={{ borderTopColor: ouvert ? colors.line : "transparent" }}
+      style={{ borderTopColor: ouvert ? colors.line : "transparent", position: "relative" }}
       // Le retrait s'annonce à qui ne regarde pas l'écran. « polite » et non
       // « assertive » : cela ne doit pas couper la lecture en cours.
       aria-live="polite"
     >
       <span className={texteSituation} style={{ color: colors.muted }}>
-        {nombre > 1 ? "Retirés à l'instant" : "Retiré à l'instant"}
+        {situation ?? (nombre > 1 ? "Retirés à l'instant" : "Retiré à l'instant")}
       </span>
       <button
         type="button"
@@ -81,6 +87,50 @@ export default function TiroirDesRetires({
       >
         Annuler
       </button>
+      {ouvert && compteARebours && <BarreQuiDiminue compte={compteARebours} />}
     </div>
+  );
+}
+
+/**
+ * LA BARRE QUI DIMINUE — la B de sa planche du 7 octobre 2026, et le 3 de la
+ * planche « Devis accepté par erreur » : *« la barre qui diminue en 6 s avec
+ * le Annuler »*.
+ *
+ * Elle part de ce qui RESTE au minuteur, pas de six secondes pleines : un
+ * second retrait réarme le minuteur, et la barre repart avec lui ; un tiroir
+ * remonté en cours de route reprend où il en était.
+ *
+ * L'animation passe par le navigateur (`animate`) et non par une feuille de
+ * style : la durée vient du minuteur, et un nombre recopié dans la CSS
+ * divergerait au premier changement de délai.
+ */
+function BarreQuiDiminue({ compte }: { compte: CompteARebours }) {
+  const barre = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const el = barre.current;
+    if (!el) return;
+    const reste = Math.max(0, compte.dureeMs - (Date.now() - compte.depuis));
+    const depart = reste / compte.dureeMs;
+    // Qui a demandé moins d'animation voit la barre, immobile : le temps se
+    // lit encore sur « Annuler », pas sur un mouvement.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      el.style.transform = `scaleX(${depart})`;
+      return;
+    }
+    const animation = el.animate(
+      [{ transform: `scaleX(${depart})` }, { transform: "scaleX(0)" }],
+      { duration: reste, easing: "linear", fill: "forwards" }
+    );
+    return () => animation.cancel();
+  }, [compte]);
+  return (
+    <span
+      ref={barre}
+      aria-hidden="true"
+      data-atlas="barre-qui-diminue"
+      className="absolute bottom-0 left-0 right-0 h-[2px] origin-left"
+      style={{ background: colors.or }}
+    />
   );
 }

@@ -14,9 +14,9 @@ async function main() {
 
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Chantier capture prix ${Date.now()}`);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
-  const prixUrl = `${page.url()}/prix`;
+  const prixUrl = `http://localhost:3000/chantiers/${idChantier}/prix`;
 
   await page.goto(prixUrl, { waitUntil: "networkidle" });
   await page.screenshot({ path: `${OUT}/01-etat-vide.png`, fullPage: true });
@@ -28,7 +28,7 @@ async function main() {
   await page.click("text=+ Ajouter une ligne");
   await page.waitForTimeout(300);
   const inputs = page.locator("form input");
-  await inputs.nth(0).fill("Main d'œuvre — 2 hommes × 2 jours");
+  await inputs.nth(0).fill("Main d'œuvre, 2 hommes × 2 jours");
   await inputs.nth(1).fill("1120.00");
   await inputs.nth(2).fill("Dépose carrelage — 8 m²");
   await inputs.nth(3).fill("144.00");

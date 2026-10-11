@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
+import { variableDeLEtat } from "@/lib/couleurs-planning";
 import { colors, font, surPlein, voile } from "@/lib/design-tokens";
-import { grilleDuMois, JOURS_COURTS, MOIS_LONGS } from "@/lib/mois";
-import { etatDemi, partDeLaBarre, type EtatDemi } from "@/lib/planning-jour";
-import type { JourIso } from "@/server/disponibilites";
+import { grilleDuMois, moisDecale, JOURS_COURTS, MOIS_LONGS, type CaseMois } from "@/lib/mois";
+import { etatDemi, MOT_ETAT, partDeLaBarre, type EtatDemi } from "@/lib/planning-jour";
+import { axeDuGeste, pasDuGlissement, type AxeDuGeste } from "@/lib/glissement";
+import type { JourIso } from "@/lib/disponibilites";
 
 /**
  * LE MOIS AVEC SA CHARGE — le calendrier du planning, extrait pour être
@@ -59,7 +61,12 @@ export default function MoisCharge({
   occupationDe,
   jourRetenu,
   jourRetenus,
+  jourRetenusSeconde,
+  semaineLue,
+  volet,
+  voletDetache = false,
   reperePrefixe = "",
+  sousLaLegende,
 }: {
   curseur: Curseur;
   setCurseur: (maj: (c: Curseur) => Curseur) => void;
@@ -80,19 +87,307 @@ export default function MoisCharge({
    * cela n'a aucun sens.
    */
   jourRetenu?: JourIso | null;
+  /**
+   * Les jours du chantier proposés au client — peints « le chiffre entouré »,
+   * son choix du 17 septembre 2026 (planche `appli/deux-jours-pas-colles.html`,
+   * « je choisis la B ») : la case reste papier, le chiffre est dans un cercle
+   * plein. `jourRetenu`, lui, garde la case entière : c'est le jour visé au
+   * planning, et il ne l'a pas fait changer.
+   */
   jourRetenus?: readonly JourIso[];
+  /** La seconde proposition, dans l'or de l'application — la cliente choisit entre les deux. */
+  jourRetenusSeconde?: readonly JourIso[];
+  /**
+   * LE LUNDI DE LA SEMAINE QUE LIT LA LISTE DU BAS — teintée dans le mois.
+   *
+   * **Sa maquette du 3 septembre 2026.** Le planning porte deux navigations :
+   * le mois vise, la semaine lit. Toucher un jour du mois amenait déjà la liste
+   * sur sa semaine, mais l'inverse ne disait rien — changer de semaine laissait
+   * le mois muet, et rien à l'écran ne montrait D'OÙ venait la liste.
+   *
+   * **Absente ailleurs, et c'est voulu** : l'écran d'envoi n'a pas de liste en
+   * dessous, donc aucune semaine à désigner. Sans cette valeur, le mois est
+   * exactement celui d'avant, au pixel.
+   */
+  semaineLue?: JourIso | null;
+  /**
+   * CE QUI SE DÉPLIE SOUS LA SEMAINE DU JOUR TOUCHÉ.
+   *
+   * **Sa maquette du 3 septembre 2026, et c'est le cœur du changement.** La
+   * fiche d'une journée était rendue SOUS le calendrier entier : il a fallu un
+   * `scrollIntoView` pour la ramener sous le doigt, après deux « rien ne
+   * s'ouvre quand je touche un jour ». Rendue ici, elle s'ouvre à la place même
+   * de la case — le remède n'a plus lieu d'être.
+   *
+   * **Le calendrier ne décide de rien de son contenu** : il ouvre une place et
+   * dit quel jour. Ce qu'on y écrit reste à l'écran qui l'emploie, sans quoi ce
+   * composant partagé se mettrait à connaître les chantiers.
+   */
+  volet?: (jour: JourIso, colonne: string | null) => ReactNode;
+  /**
+   * LE VOLET PASSE SOUS LE MOIS ENTIER — sa demande du 17 septembre 2026.
+   *
+   * *« Faire en sorte que le planning apparaisse entier au-dessus de
+   * Mr Linotte pour choisir un jour facilement. »* Pendant qu'il choisit un
+   * jour d'accueil, la fiche coincée entre deux semaines lui cachait la
+   * moitié du mois — sur sa capture, dix jours étaient SOUS elle, dont celui
+   * qu'il visait.
+   *
+   * **Deux effets, et le second n'avait pas été vu :** le volet ne dépend plus
+   * de la semaine affichée, donc il SURVIT au mois tourné — or tourner le mois
+   * est exactement ce qu'il fait pour atteindre son jour. Le repli qu'il avait
+   * fallu écrire sous le calendrier pour ce seul cas n'a plus lieu d'être.
+   *
+   * **Il n'y a alors plus de colonne à viser** : `volet` reçoit `null`, et
+   * c'est la fiche qui décide de ne pas dessiner sa pointe — descendue sous le
+   * mois, elle désignerait la case d'à côté.
+   */
+  voletDetache?: boolean;
   /** Préfixe des repères `data-atlas`, quand deux mois cohabitent sur un écran. */
   reperePrefixe?: string;
+  /**
+   * Ce qui se pose juste sous la légende : sur le planning, « Couleurs »
+   * (sa demande du 29 septembre 2026). L'écran d'envoi n'y met rien.
+   */
+  sousLaLegende?: ReactNode;
 }) {
-  const cases = useMemo(() => grilleDuMois(curseur.annee, curseur.mois), [curseur]);
   const retenus = useMemo(
-    () => new Set([...(jourRetenus ?? []), ...(jourRetenu ? [jourRetenu] : [])]),
-    [jourRetenus, jourRetenu]
+    () => new Set([...(jourRetenus ?? []), ...(jourRetenusSeconde ?? []), ...(jourRetenu ? [jourRetenu] : [])]),
+    [jourRetenus, jourRetenusSeconde, jourRetenu]
+  );
+  // Ce qui se peint en cercle plutôt qu'en case entière, et de quelle couleur.
+  const entoures = useMemo(
+    () =>
+      new Map<string, "premiere" | "seconde">([
+        ...(jourRetenus ?? []).map((j) => [j, "premiere"] as const),
+        ...(jourRetenusSeconde ?? []).map((j) => [j, "seconde"] as const),
+      ]),
+    [jourRetenus, jourRetenusSeconde]
   );
 
   const dAujourdHui = new Date(`${aujourdHui}T12:00:00Z`);
   const surLeMois =
     dAujourdHui.getUTCFullYear() === curseur.annee && dAujourdHui.getUTCMonth() === curseur.mois;
+
+  /**
+   * ─── POUSSER LE MOIS DU DOIGT — sa demande du 11 septembre 2026 ──────────
+   *
+   * *« Ce qui serait bien c'est de pouvoir déplacer les mois du planning en
+   * slidant soit à droite soit à gauche »*, puis, dans la foulée : *« en plus
+   * des 2 flèches »*. Planche `appli/glisser-les-mois.html`, variante A retenue
+   * — *« le mois suit le doigt »*.
+   *
+   * **Les deux flèches ne bougent pas d'un pixel**, et ce n'est pas une
+   * politesse : `PRODUCT.md` interdit qu'un geste caché porte une fonction à lui
+   * seul, parce que ceux qui s'en serviront ne sont pas à l'aise avec un
+   * téléphone. Le glissement est un raccourci pour qui le connaît.
+   *
+   * **Trois mois sont dessinés, un seul se touche.** Les deux voisins ne sont
+   * là que pour se montrer pendant le geste : ils sont `aria-hidden` et hors
+   * d'atteinte du doigt comme du clavier. Une case qu'on pourrait toucher à
+   * moitié sortie de l'écran, c'est une journée ouverte par erreur.
+   *
+   * **La règle du geste vit dans `src/lib/glissement.ts`** (`CLAUDE.md`
+   * §4 sexies) : de quel côté part le doigt, et combien de mois il fait
+   * franchir. Elle s'éprouve sans navigateur ; ici il ne reste que le dessin.
+   */
+  const hublot = useRef<HTMLDivElement | null>(null);
+  const debut = useRef<{ x: number; y: number } | null>(null);
+  const axe = useRef<AxeDuGeste>(null);
+  /** Le pas qu'on est en train de rejoindre — non nul le temps de l'animation. */
+  const enVol = useRef<-1 | 0 | 1>(0);
+  const [dx, setDx] = useState(0);
+  const [anime, setAnime] = useState(false);
+  /**
+   * La largeur mesurée AU MOMENT DE LA PRISE, pas pendant le rendu.
+   *
+   * Lire `clientWidth` au fil du rendu ferait dépendre l'affichage d'une mesure
+   * du navigateur à chaque image ; et la largeur ne change pas sous le doigt.
+   */
+  const [largeurVue, setLargeurVue] = useState(0);
+
+  /**
+   * Le mois ÉCRIT EN TITRE pendant le geste — celui qui occupe le plus de place.
+   *
+   * Sans lui, on voit octobre arriver sous le doigt pendant que l'en-tête dit
+   * encore septembre : deux vérités à deux centimètres, sur l'écran qui sert
+   * justement à savoir où l'on est. Trouvé en regardant la planche, pas en la
+   * relisant.
+   */
+  const moisEcrit = moisDecale(curseur, dx === 0 ? 0 : pasDuGlissement(dx, largeurVue, 0.5));
+
+  /** Ce que fait le rail quand il a fini de rejoindre sa place. */
+  const poser = (pas: -1 | 0 | 1) => {
+    enVol.current = 0;
+    // **Le mois change ET le rail se recentre dans le MÊME rendu** : les pixels
+    // sont identiques, donc rien ne saute. Couper la transition ici est ce qui
+    // empêche le rail de rejouer le trajet à l'envers.
+    setAnime(false);
+    setDx(0);
+    if (pas !== 0) setCurseur((c) => moisDecale(c, pas));
+  };
+
+  const saisir = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    // Une bascule en cours : on ne reprend pas le rail au vol, sinon le mois
+    // qu'on croit tenir n'est plus celui qui arrivera.
+    if (enVol.current !== 0) return;
+    debut.current = { x: e.clientX, y: e.clientY };
+    axe.current = null;
+    setLargeurVue(hublot.current?.clientWidth ?? 0);
+    setAnime(false);
+  };
+
+  const suivre = (e: PointerEvent<HTMLDivElement>) => {
+    if (!debut.current) return;
+    const ecartX = e.clientX - debut.current.x;
+    const ecartY = e.clientY - debut.current.y;
+    if (!axe.current) {
+      const trouve = axeDuGeste(ecartX, ecartY);
+      if (!trouve) return;
+      axe.current = trouve;
+      // **Un doigt qui descend rend la main à la page.** Le calendrier vit au
+      // milieu d'un écran qui se fait défiler ; le retenir bloquerait la page
+      // sous le doigt de celui qui voulait seulement lire plus bas.
+      if (trouve === "bas") {
+        debut.current = null;
+        return;
+      }
+      // Le doigt peut sortir du calendrier sans que le geste s'interrompe.
+      e.currentTarget.setPointerCapture(e.pointerId);
+    }
+    setDx(ecartX);
+  };
+
+  const lacher = (e: PointerEvent<HTMLDivElement>) => {
+    const parti = debut.current;
+    debut.current = null;
+    if (!parti || axe.current !== "cote") return;
+    const pas = pasDuGlissement(e.clientX - parti.x, largeurVue);
+    const cible = -pas * largeurVue;
+    // **Rien à parcourir : on pose tout de suite.** Sans cette porte, aucune
+    // transition ne partirait, `enVol` resterait armé, et le calendrier
+    // refuserait le geste suivant — une panne muette, la pire espèce.
+    if (cible === dx) {
+      poser(pas);
+      return;
+    }
+    enVol.current = pas;
+    setAnime(true);
+    setDx(cible);
+  };
+
+  /**
+   * LES TROIS MOIS, DESSINÉS UNE FOIS.
+   *
+   * **Ils se gardent en mémoire, et c'est ce qui rend le geste fluide.** Sans
+   * cela, chaque pixel parcouru redessinerait cent vingt-six cases — sur le
+   * téléphone d'un artisan, le mois se mettrait à traîner derrière le doigt.
+   * Ici, glisser ne change qu'un `transform` et le mot du titre.
+   */
+  const panneaux = useMemo(
+    () =>
+      [-1, 0, 1].map((pas) => {
+        const cur = moisDecale(curseur, pas);
+        const milieu = pas === 0;
+        const cases = grilleDuMois(cur.annee, cur.mois);
+        /**
+         * Le mois en rangées de sept, lundi en tête.
+         *
+         * `grilleDuMois` rend toujours des semaines COMPLÈTES — c'est sa
+         * garantie, et elle est éprouvée (`test-calendrier.ts`) : ce découpage
+         * ne peut donc pas rendre de rangée bancale, et chaque rangée commence
+         * bien un lundi. C'est ce qui permet de reconnaître la semaine lue à son
+         * seul premier jour.
+         */
+        const semaines = Array.from({ length: cases.length / 7 }, (_, i) =>
+          cases.slice(i * 7, i * 7 + 7)
+        );
+        return (
+          <div
+            key={`${cur.annee}-${cur.mois}`}
+            // **Le repère ne vit que sur le mois du milieu.** Les suites
+            // cherchent un jour DANS `grille-mois` et changent de mois tant
+            // qu'elles ne l'y trouvent pas : le poser sur les voisins leur
+            // ferait viser une case hors de l'écran.
+            data-atlas={milieu ? `${reperePrefixe}grille-mois` : undefined}
+            aria-hidden={milieu ? undefined : true}
+            className="flex w-1/3 flex-none flex-col gap-1"
+            style={milieu ? undefined : { pointerEvents: "none" }}
+          >
+            {semaines.map((semaine) => {
+              const rang = milieu
+                ? semaine.findIndex((c) => !c.horsMois && c.jour === jourTouche)
+                : -1;
+              const lue = milieu && semaineLue && semaine[0].jour === semaineLue;
+              return (
+                <div key={semaine[0].jour}>
+                  <div
+                    data-atlas={milieu ? "semaine-du-mois" : undefined}
+                    data-lue={lue ? "1" : undefined}
+                    className="grid grid-cols-7 gap-1 rounded-[12px]"
+                    style={lue ? { background: voile(colors.rustTint, 0.72) } : undefined}
+                  >
+                    {semaine.map((c) =>
+                      caseDuJour(c, cur.mois, milieu, {
+                        retenus,
+                        entoures,
+                        jourTouche,
+                        aujourdHui,
+                        occupationDe,
+                        onToucherJour,
+                      })
+                    )}
+                  </div>
+                  {/* ─── LA FICHE SE RATTACHE À LA CASE ────────────────────────
+                      **Sa correction du 4 septembre 2026 :** *« lorsque je clique
+                      sur un jour, le client doit être rattaché ; or là, il est
+                      juste en dessous »*.
+
+                      **Le calendrier donne la COLONNE, il ne dessine pas la
+                      pointe.** Elle appartient à la fiche — qui se rattache aussi
+                      sous une ligne des planifiés, où ce composant n’existe pas.
+                      Deux pointes écrites à deux endroits auraient divergé au
+                      premier ajustement (`CLAUDE.md` §3). */}
+                  {volet && !voletDetache && rang >= 0 && jourTouche &&
+                    volet(jourTouche, `${((rang + 0.5) / 7) * 100}%`)}
+                </div>
+              );
+            })}
+
+            {/* ─── LE VOLET DÉTACHÉ, SOUS LA DERNIÈRE SEMAINE ──────────────
+                **Sur le panneau du MILIEU seulement** : les trois mois
+                cohabitent côte à côte, et la fiche s'y dessinerait trois fois
+                — celles des voisins portant `pointerEvents: none`, il en
+                toucherait une qui ne répond pas.
+
+                **Dedans et non après le carrousel**, mesuré sur son écran : la
+                fenêtre prend la hauteur du plus GRAND des trois mois, et un
+                mois de six semaines à côté d'un mois de cinq laissait 56 px de
+                blanc entre le 30 et la fiche. Rendue à l'intérieur, elle
+                regonfle le mois courant, qui redevient le plus grand.
+
+                **Et elle survit au mois tourné** : le glissement recentre,
+                `jourTouche` ne bouge pas, donc elle est redessinée dans le
+                nouveau panneau du milieu. C'est tout l'objet du détachement. */}
+            {volet && voletDetache && milieu && jourTouche && volet(jourTouche, null)}
+          </div>
+        );
+      }),
+    [
+      curseur,
+      jourTouche,
+      semaineLue,
+      volet,
+      voletDetache,
+      retenus,
+      entoures,
+      aujourdHui,
+      occupationDe,
+      onToucherJour,
+      reperePrefixe,
+    ]
+  );
 
   return (
     <div>
@@ -100,9 +395,7 @@ export default function MoisCharge({
         <Fleche
           libelle="Mois précédent"
           signe="‹"
-          onClick={() =>
-            setCurseur((c) => (c.mois === 0 ? { annee: c.annee - 1, mois: 11 } : { ...c, mois: c.mois - 1 }))
-          }
+          onClick={() => setCurseur((c) => moisDecale(c, -1))}
         />
         <div className="flex-1 text-center">
           <b
@@ -110,15 +403,13 @@ export default function MoisCharge({
             className="block text-[15px] font-bold leading-[1.2]"
             style={{ color: colors.ink }}
           >
-            {MOIS_LONGS[curseur.mois]} {curseur.annee}
+            {MOIS_LONGS[moisEcrit.mois]} {moisEcrit.annee}
           </b>
         </div>
         <Fleche
           libelle="Mois suivant"
           signe="›"
-          onClick={() =>
-            setCurseur((c) => (c.mois === 11 ? { annee: c.annee + 1, mois: 0 } : { ...c, mois: c.mois + 1 }))
-          }
+          onClick={() => setCurseur((c) => moisDecale(c, 1))}
         />
       </div>
 
@@ -134,15 +425,114 @@ export default function MoisCharge({
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1" data-atlas={`${reperePrefixe}grille-mois`}>
-        {cases.map((c) =>
-          c.horsMois ? (
-            <span key={c.jour} data-atlas="creux" style={{ aspectRatio: "1 / 1.06" }} />
-          ) : (
-            <button
+      {/* ─── LA FENÊTRE OÙ LE MOIS GLISSE ──────────────────────────────────
+          **Ce n'était qu'une grille de quarante-deux cases jusqu'au 3 septembre
+          2026.** Elle est découpée en semaines pour une seule raison : la fiche
+          d'une journée s'ouvre désormais ENTRE deux rangées, à la place de la
+          case touchée (`volet`). Une grille d'un bloc ne sait pas faire ça —
+          l'insertion aurait glissé les cases suivantes d'un cran.
+
+          **La géométrie ne bouge pas d'un pixel** : mêmes sept colonnes, même
+          écart de 4 px entre les cases comme entre les rangées. L'écran d'envoi,
+          qui ne passe ni `volet` ni `semaineLue`, rend exactement ce qu'il
+          rendait.
+
+          `touch-action: pan-y` laisse le doigt faire défiler la page vers le
+          bas : c'est le navigateur qui s'en charge, et lui seul le fait sans
+          saccade. */}
+      <div ref={hublot} className="overflow-hidden" style={{ touchAction: "pan-y" }}>
+        <div
+          className="flex w-[300%] items-start"
+          style={{
+            transform: `translateX(calc(-33.3333% + ${dx}px))`,
+            transition: anime ? "transform 260ms cubic-bezier(.22,.61,.36,1)" : undefined,
+          }}
+          onPointerDown={saisir}
+          onPointerMove={suivre}
+          onPointerUp={lacher}
+          onPointerCancel={() => {
+            debut.current = null;
+            if (dx !== 0) {
+              enVol.current = 0;
+              setAnime(true);
+              setDx(0);
+            }
+          }}
+          onTransitionEnd={(e) => {
+            if (e.target !== e.currentTarget || e.propertyName !== "transform") return;
+            poser(enVol.current);
+          }}
+        >
+          {panneaux}
+        </div>
+      </div>
+
+      {/* Le retour n'existe QUE si l'on s'est éloigné : un bouton toujours là
+          se lit comme une action à faire. */}
+      {!surLeMois && (
+        <button
+          type="button"
+          data-atlas={`${reperePrefixe}retour-aujourdhui`}
+          onClick={() =>
+            setCurseur(() => ({
+              annee: dAujourdHui.getUTCFullYear(),
+              mois: dAujourdHui.getUTCMonth(),
+            }))
+          }
+          className="mx-auto mt-3 block border-0 bg-transparent text-[11px] font-semibold uppercase"
+          style={{ letterSpacing: "0.18em", color: colors.or }}
+        >
+          ← Aujourd’hui
+        </button>
+      )}
+
+      <Legende />
+      {sousLaLegende}
+    </div>
+  );
+
+}
+
+/**
+ * UNE CASE DU MOIS — sortie du corps du calendrier le 11 septembre 2026.
+ *
+ * **Elle y était imbriquée, et cela empêchait de garder les trois mois en
+ * mémoire** : une fonction déclarée dans un composant se recrée à chaque
+ * rendu, donc la mise en mémoire qui rend le glissement fluide n’aurait jamais
+ * tenu. Écrite ici, elle est la même d’un rendu à l’autre — et ce qu’elle lit
+ * arrive par ses arguments, au lieu d’être pris dans la portée alentour.
+ */
+function caseDuJour(
+  c: CaseMois,
+  mois: number,
+  milieu: boolean,
+  lu: {
+    retenus: ReadonlySet<string>;
+    entoures: ReadonlyMap<string, "premiere" | "seconde">;
+    jourTouche: JourIso | null;
+    aujourdHui: JourIso;
+    occupationDe: (jour: JourIso, demi: "matin" | "apres_midi") => OccupationLue;
+    onToucherJour: (jour: JourIso) => void;
+  }
+) {
+  const { retenus, entoures, jourTouche, aujourdHui, occupationDe, onToucherJour } = lu;
+  // « La B » : la case reste papier, le chiffre est entouré. Vert pin pour la
+  // première proposition ; pour la seconde, l'or DE TEXTE de la charte
+  // (`orTexte`, détaché à 4,5 de la plage sur les huit chartes) — l'or nu ne
+  // tient pas le contraste avec le crème, ni avec l'encre sur Nuit et Sylve.
+  const entoure = entoures.get(c.jour) ?? null;
+  const caseEntiere = retenus.has(c.jour) && !entoure;
+    return c.horsMois ? (
+      <span key={c.jour} data-atlas={milieu ? "creux" : undefined} style={{ aspectRatio: "1 / 1.06" }} />
+    ) : (
+      <button
               key={c.jour}
               type="button"
               data-jour={c.jour}
+              // **Un voisin se regarde, il ne se touche pas.** Il n'est là que
+              // pour se montrer pendant le geste : ni le doigt ni le clavier ne
+              // doivent l'atteindre, sinon une journée s'ouvre par erreur.
+              tabIndex={milieu ? undefined : -1}
               // **L'état de la case, lisible par une suite.** Il ne dit pas si
               // le serveur acceptera ce jour — lui seul le sait — mais ce que
               // la case EST : retenue pour le client, un week-end, un jour
@@ -167,16 +557,18 @@ export default function MoisCharge({
               // **L'état reste ANNONCÉ, même s'il ne s'écrit plus.** La planche
               // a retiré les mots de la case — c'est la couleur qui parle —,
               // mais une couleur ne se lit pas à voix haute.
-              aria-label={`${c.numero} ${MOIS_LONGS[curseur.mois]} — matin : ${ditLaBarre(
+              aria-label={`${c.numero} ${MOIS_LONGS[mois]}, matin : ${ditLaBarre(
                 occupationDe(c.jour, "matin")
               )}, après-midi : ${ditLaBarre(occupationDe(c.jour, "apres_midi"))}`}
               onClick={() => onToucherJour(c.jour)}
               className="flex flex-col items-center justify-center gap-1 rounded-[10px] border-0 p-0"
               style={{
                 aspectRatio: "1 / 1.06",
-                background: retenus.has(c.jour)
+                background: caseEntiere
                   ? colors.rust
-                  : c.jour === jourTouche
+                  : entoure
+                    ? colors.rustTint
+                    : c.jour === jourTouche
                     ? colors.rustTint
                     : c.weekEnd
                       ? voile(colors.ink, 0.035)
@@ -192,9 +584,23 @@ export default function MoisCharge({
             >
               <span
                 className="text-[17px] leading-none"
+                data-entoure={entoure ?? undefined}
                 style={{
                   fontFamily: font.display,
-                  color: retenus.has(c.jour)
+                  ...(entoure
+                    ? {
+                        width: 25,
+                        height: 25,
+                        borderRadius: 999,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: entoure === "seconde" ? colors.orTexte : colors.rust,
+                      }
+                    : null),
+                  color: entoure
+                    ? surPlein
+                    : caseEntiere
                     ? surPlein
                     : c.jour === aujourdHui
                       ? colors.or
@@ -210,51 +616,52 @@ export default function MoisCharge({
                 matin={occupationDe(c.jour, "matin")}
                 apres={occupationDe(c.jour, "apres_midi")}
                 cache={c.weekEnd}
-                surFondPlein={retenus.has(c.jour)}
+                surFondPlein={caseEntiere}
               />
             </button>
-          )
-        )}
-      </div>
-
-      {/* Le retour n'existe QUE si l'on s'est éloigné : un bouton toujours là
-          se lit comme une action à faire. */}
-      {!surLeMois && (
-        <button
-          type="button"
-          data-atlas={`${reperePrefixe}retour-aujourdhui`}
-          onClick={() =>
-            setCurseur(() => ({
-              annee: dAujourdHui.getUTCFullYear(),
-              mois: dAujourdHui.getUTCMonth(),
-            }))
-          }
-          className="mx-auto mt-3 block border-0 bg-transparent text-[11px] font-semibold uppercase"
-          style={{ letterSpacing: "0.18em", color: colors.or }}
-        >
-          ← Aujourd’hui
-        </button>
-      )}
-
-      <Legende />
-    </div>
-  );
+    );
 }
 
 /** Ce que dit une barre, en toutes lettres — pour qui n'emploie pas ses yeux. */
 function ditLaBarre(o: OccupationLue): string {
   const etat = etatDemi(o);
+  // « libre » se dit à voix haute là où la légende écrit « rien » : une phrase
+  // lue n'est pas une étiquette. Le reste suit `MOT_ETAT`, pour que la voix et
+  // la couleur ne se mettent pas à nommer différemment le même état.
   if (etat === "libre") return "libre";
-  if (etat === "plein") return "complet";
+  if (etat === "plein") return MOT_ETAT.plein;
   if (etat === "dela") return `${Math.round(o.charge * 100)} % de vos équipes`;
   return `${o.pris.length} chantier${o.pris.length > 1 ? "s" : ""}`;
 }
 
+/**
+ * La couleur d'un état : celle que l'entreprise a choisie, sinon celle de
+ * l'apparence.
+ *
+ * **Le choix arrive par une variable CSS** (`variablesDesEtats`,
+ * `src/lib/couleurs-planning.ts`), posée par `CouleursDesEtats` au-dessus de
+ * l'écran. Sans elle, le repli est la couleur d'avant le 29 septembre 2026, au
+ * pixel près : c'est ce qui fait que rien ne bouge tant qu'il n'a rien choisi.
+ */
 export function fondDeLEtat(etat: EtatDemi): string {
-  if (etat === "dispo") return colors.vertPale;
-  if (etat === "plein") return colors.rust;
-  if (etat === "dela") return colors.bordeaux;
-  return "transparent";
+  const repli =
+    etat === "dispo" ? colors.vertPale : etat === "plein" ? colors.rust : etat === "dela" ? colors.bordeaux : "transparent";
+  return `var(${variableDeLEtat(etat)}, ${repli})`;
+}
+
+/**
+ * Le petit carré d'un état : la légende, la pastille de la fiche du jour, celle
+ * de la journée regardée à l'envoi.
+ *
+ * **Écrit une fois.** Trois écrans le recopiaient, chacun avec son propre cas
+ * « rien » ; une couleur de « rien » choisie ne serait arrivée que sur ceux
+ * qu'on aurait pensé à retoucher. « rien » garde son filet : blanc sur blanc,
+ * le carré disparaîtrait.
+ */
+export function styleDuCarre(etat: EtatDemi): CSSProperties {
+  return etat === "libre"
+    ? { background: `var(${variableDeLEtat("libre")}, ${colors.card})`, boxShadow: `inset 0 0 0 1px ${colors.line}` }
+    : { background: fondDeLEtat(etat) };
 }
 
 /**
@@ -294,7 +701,9 @@ export function MarqueDuJour({
         <span
           data-atlas="seg"
           className="h-full"
-          style={{ width: `${partDeLaBarre(o.charge)}%`, background: fondDeLEtat(etat) }}
+          // « rien » se peint sur toute la barre : c'est la journée libre qui
+          // prend sa couleur. Sans couleur choisie, il reste transparent.
+          style={{ width: etat === "libre" ? "100%" : `${partDeLaBarre(o.charge)}%`, background: fondDeLEtat(etat) }}
         />
       </i>
     );
@@ -344,28 +753,23 @@ export function Legende() {
       data-atlas="carre"
       data-etat={etat}
       className="block h-[10px] w-[10px] flex-shrink-0 rounded-[3px]"
-      style={
-        etat === "libre"
-          ? { background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }
-          : { background: fondDeLEtat(etat) }
-      }
+      style={styleDuCarre(etat)}
     />
   );
-  const mots: [EtatDemi, string][] = [
-    ["libre", "rien"],
-    ["dispo", "incomplet"],
-    ["plein", "complet"],
-    ["dela", "au-delà"],
-  ];
+  // **Les mots viennent de `MOT_ETAT`** depuis le 31 août 2026 : le réglage des
+  // chantiers menés en même temps affiche « complet » lui aussi, et deux
+  // rédactions du même mot finiraient par diverger sur deux écrans qui ne se
+  // lisent jamais ensemble.
+  const mots: EtatDemi[] = ["libre", "dispo", "plein", "dela"];
   return (
     <div
       data-atlas="legende"
       className="mt-3.5 flex flex-nowrap items-center justify-center gap-1.5 text-[9px]"
       style={{ color: colors.muted }}
     >
-      {mots.map(([etat, mot]) => (
+      {mots.map((etat) => (
         <span key={etat} className="flex flex-shrink-0 items-center gap-[5px] whitespace-nowrap">
-          {carre(etat)} {mot}
+          {carre(etat)} {MOT_ETAT[etat]}
         </span>
       ))}
       <span

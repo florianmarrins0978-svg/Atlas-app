@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { pdfDevisParJeton } from "@/server/repositories/envois-devis";
+import { enTetesDeRemise, veutTelecharger } from "@/lib/remise-de-fichier";
 
 // Le devis complet, ouvert par le client depuis sa page — sans compte.
 //
@@ -14,6 +15,20 @@ export const dynamic = "force-dynamic";
 export async function GET(_req: Request, { params }: { params: Promise<{ jeton: string }> }) {
   const { jeton } = await params;
   const fichier = await pdfDevisParJeton(jeton);
+  /**
+   * **`?telecharger` : le fichier descend, il ne s'affiche pas.**
+   *
+   * Sa demande du 31 août 2026 — une touche qui télécharge le devis « en un
+   * seul clic ». Sur un téléphone, `inline` ouvre le lecteur du navigateur :
+   * le client croit avoir enregistré son devis alors qu'il ne fait que le
+   * regarder, et il n'en reste rien une fois l'onglet fermé.
+   *
+   * L'attribut `download` d'un lien ne l'aurait pas fait : les navigateurs de
+   * téléphone l'ignorent largement. Cela se décide ici, dans l'en-tête — et
+   * dans le TYPE servi, sans quoi Safari peint le PDF au lieu de le ranger
+   * (7 septembre 2026, `src/lib/remise-de-fichier.ts`).
+   */
+  const telecharger = veutTelecharger(_req.url);
 
   if (!fichier) {
     // **Jamais de JSON brut à un client.**
@@ -32,8 +47,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ jeton: 
 
   return new NextResponse(new Uint8Array(fichier.octets), {
     headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="${fichier.nom}"`,
+      ...enTetesDeRemise({ telecharger, nom: fichier.nom, type: "application/pdf" }),
       // Un devis n'a rien à faire dans un cache partagé ni dans un index.
       "Cache-Control": "no-store",
       "X-Robots-Tag": "noindex, nofollow",

@@ -98,8 +98,11 @@ export type Traces = { moteur: string; modele: string; versionBase: string };
 export type Issue =
   | { type: "rendu"; ficheId: string; confiance: Confiance; resultat: ResultatFige }
   | { type: "complement"; consigne: string; partie: Partie | null }
-  | { type: "inconclusif"; motif: MotifRefus; phrase: string }
-  | { type: "echoue"; phrase: string };
+  /** La CLÉ du refus, jamais sa phrase : l'écran la compose depuis la liste
+   *  fermée, et sait ainsi quel geste proposer (migration 0087). */
+  | { type: "inconclusif"; motif: MotifRefus }
+  /** Ce que le fournisseur a dit — une trace pour qui dépanne. */
+  | { type: "echoue"; panne: string };
 
 /**
  * Écrire l'issue d'une analyse.
@@ -142,7 +145,8 @@ export async function conclureDiagnostic(
           ficheId: issue.ficheId,
           confiance: issue.confiance,
           resultat: issue.resultat,
-          motifRefus: null,
+          refus: null,
+          panne: null,
           renduAt: new Date(),
         })
         .where(eq(diagnostics.id, diagnosticId));
@@ -167,8 +171,9 @@ export async function conclureDiagnostic(
       .update(diagnostics)
       .set({
         ...commun,
-        statut: issue.type === "echoue" ? "echoue" : "inconclusif",
-        motifRefus: issue.phrase,
+        statut: issue.type,
+        refus: issue.type === "inconclusif" ? issue.motif : null,
+        panne: issue.type === "echoue" ? issue.panne : null,
         renduAt: new Date(),
       })
       .where(eq(diagnostics.id, diagnosticId));

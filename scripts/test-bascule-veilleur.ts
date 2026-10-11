@@ -4,6 +4,12 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "no
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { prendreVerrouBanc, libererVerrouBanc } from "./verrou-banc.mjs";
+import { exigerLesOutils } from "./_outil-requis";
+
+// **Sans ces outils, cette suite ne mesure RIEN** — elle le dit et sort du
+// compte, au lieu de rougir sur une machine qui n'y est pour rien
+// (`_outil-requis.ts`, sa colère du 20 septembre 2026).
+exigerLesOutils("bash");
 
 // **« listen EADDRINUSE … 0.0.0.0:3000 », errno -98 — la panne du 10 août 2026.**
 //
@@ -304,12 +310,26 @@ cas("le serveur est détaché, et c'est le GROUPE qu'on tue", () => {
     .filter((l) => !l.trimStart().startsWith("//"))
     .join("\n");
 
-  const detachements = (code.match(/detached:\s*true/g) ?? []).length;
-  assert.equal(
-    detachements,
-    2,
-    `le serveur doit être détaché dans les DEUX modes (dev et bâti) — ${detachements} trouvé(s)`
-  );
+  // **On vise les DEUX lanceurs, pas un compte dans le fichier.** La première
+  // version comptait les `detached: true` du banc et en exigeait exactement
+  // deux. Le 31 août 2026, l'échange des versions bâties a ajouté un troisième
+  // détachement — un `rm -rf` en fond, qui n'est pas un serveur — et cette
+  // suite a rougi sur du code juste, en accusant les modes dev et bâti qui
+  // n'avaient pas bougé. Un contrôle qui compte au lieu de viser défend le
+  // nombre, pas la règle (`CLAUDE.md` §5 bis).
+  //
+  // La règle, elle, n'a pas changé : **le serveur** doit être détaché dans les
+  // deux modes, sinon tuer son père laisse `next-server` accroché au port.
+  for (const lanceur of ["lancerBati", "lancerDev"]) {
+    const debut = code.indexOf(`const ${lanceur} = `);
+    assert.notEqual(debut, -1, `${lanceur} a disparu : ce contrôle n'éprouve plus rien`);
+    const corps = code.slice(debut, code.indexOf("});", debut));
+    assert.match(
+      corps,
+      /detached:\s*true/,
+      `${lanceur} doit détacher son serveur : sans cela, tuer le père laisse next-server sur le port`
+    );
+  }
   assert.match(
     code,
     /process\.kill\(-\w+\.pid/,
@@ -319,7 +339,11 @@ cas("le serveur est détaché, et c'est le GROUPE qu'on tue", () => {
   // — exactement la panne qu'on répare.
   assert.match(
     code,
-    /process\.on\("exit",\s*\(\)\s*=>\s*tuerLeServeur/,
+    // Le corps peut être une expression ou un bloc — ce qui compte est que la
+    // mise à mort soit le PREMIER geste de la sortie, pas la forme qu'on lui
+    // donne. Le 31 août 2026, y ajouter la fermeture du chantier a fait rougir
+    // ce contrôle sur du code juste.
+    /process\.on\("exit",\s*\(\)\s*=>\s*\{?\s*tuerLeServeur/,
     "le banc ne tue pas son serveur en sortant : chaque Ctrl+C laisserait un orphelin sur le port"
   );
 });

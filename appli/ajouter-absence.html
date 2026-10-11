@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Noter une absence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a; --etabli-or:#8b6835;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44; --muted:#8a8578;
+    --rust:#2f3b2f; --rustTint:#ece9e1; --plein:#7d9a6d; --alert:#9C3B2E; --or:#B98B47;
+    --line:rgba(28,28,26,.12); --lineSoft:rgba(28,28,26,.07);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--etabli)}
+  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased}
+  .page{max-width:1240px;margin:0 auto;padding:30px 16px 90px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 30px/1.15 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+  .chapeau{max-width:680px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0 0 22px}
+
+  .tel{position:relative;width:390px;max-width:100%;border-radius:26px;overflow:hidden;
+       box-shadow:0 1px 2px rgba(20,18,14,.16),0 14px 34px rgba(20,18,14,.14);background:var(--cream)}
+  .ecran{height:700px;overflow-y:auto;background:var(--cream);color:var(--ink);padding-bottom:40px}
+
+  .entete{padding:18px 26px 4px}
+  .retour{width:34px;height:34px;border-radius:999px;background:var(--card);display:grid;place-items:center;
+          color:var(--inkSoft);box-shadow:inset 0 0 0 1px var(--line)}
+  .entete .sur{margin:14px 0 0;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+  .entete h2{font:500 28px/1.15 var(--serif);margin:6px 0 0}
+
+  .caps{font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+  .bloc{margin-top:30px}
+  .bloc .titre{margin:0 0 6px;padding:0 26px;color:var(--inkSoft)}
+  .ligneNom{display:flex;align-items:center;gap:12px;padding:12px 0;margin:0 26px;border-bottom:1px solid var(--lineSoft);font-size:15px}
+  .pastille{width:26px;height:26px;flex:none;border-radius:999px;background:var(--rustTint);color:var(--rust);
+            display:grid;place-items:center;font-size:11.5px}
+  .vide{padding:8px 26px;margin:0;font-size:13px;line-height:1.7;color:var(--muted)}
+  .absence{display:flex;align-items:center;gap:12px;padding:12px 0;margin:0 26px;border-bottom:1px solid var(--lineSoft)}
+  .absence .qui{min-width:0;flex:1}
+  .absence .n{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .absence .m{display:block;margin-top:2px;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .absence .q{flex:none;font-size:12.5px;color:var(--or)}
+  .croix{width:30px;height:30px;flex:none;border-radius:999px;border:1px solid var(--line);background:transparent;
+         color:var(--muted);display:grid;place-items:center;cursor:pointer;padding:0}
+  .ajout{display:block;margin:14px 26px 0;width:calc(100% - 52px);border-radius:999px;padding:12px 0;
+         background:transparent;border:1px solid var(--line);color:var(--rust);font:inherit;font-size:13.5px;cursor:pointer}
+  .note{margin:12px 26px 0;font-size:12px;line-height:1.7;color:var(--muted)}
+  .note b{font-weight:400;color:var(--ink)}
+  .liberes{margin:0 26px 8px;border-radius:12px;padding:12px 14px;font-size:12.5px;line-height:1.6;
+           background:rgba(185,139,71,.1);color:var(--or)}
+
+  .voile{position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;z-index:5}
+  .feuille{width:100%;max-height:88%;overflow-y:auto;background:var(--cream);border-radius:26px 26px 0 0;padding:12px 24px 36px}
+  .poignee{width:40px;height:4px;border-radius:99px;background:var(--line);margin:0 auto 14px}
+  .feuille .a{text-align:center;color:var(--or);margin:0}
+  .feuille .q2{text-align:center;font:400 20px/1.2 var(--serif);margin:8px 0 14px}
+  .champs{display:flex;flex-direction:column;gap:1px;border-radius:12px;overflow:hidden;background:var(--lineSoft)}
+  .champ{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;background:var(--card)}
+  .champ span{flex:none;font-size:13px;color:var(--muted)}
+  .champ select,.champ input{width:100%;background:transparent;border:0;outline:none;text-align:right;
+       font:inherit;font-size:15.5px;color:var(--ink);min-width:0}
+  .champ input::placeholder{color:var(--muted)}
+  .phrase{margin:10px 0 0;border-radius:12px;padding:12px 14px;font-size:12.5px;line-height:1.5;
+          background:rgba(185,139,71,.1);color:var(--or)}
+  .noter{margin-top:12px;width:100%;border:0;border-radius:999px;padding:15px 0;background:var(--plein);
+         color:var(--cream);font:400 15px/1 var(--serif);cursor:pointer}
+  .noter:disabled{opacity:.35;cursor:default}
+  .annuler{margin-top:6px;width:100%;border:0;background:transparent;border-radius:999px;padding:12px 0;
+           color:var(--muted);font:inherit;font-size:14.5px;cursor:pointer}
+
+  .temoin{width:390px;max-width:100%;margin-top:18px;background:var(--etabli-carte);border-radius:14px;
+          padding:13px 15px;box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .temoin .t{font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--etabli-or);margin:0 0 9px}
+  .temoin ul{margin:0;padding:0 0 0 18px;font-size:13.5px;line-height:1.6;color:var(--etabli-doux)}
+  .temoin .rien{margin:0;font-size:13.5px;color:var(--etabli-gris)}
+  .recommencer{margin-top:14px;appearance:none;border:0;cursor:pointer;font:600 12.5px/1 var(--sans);
+               padding:11px 17px;border-radius:999px;background:var(--etabli-carte);color:var(--etabli-doux);
+               box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+</style>
+</head>
+<body>
+<main class="page">
+  <p class="surtitre">Réglages, Équipe</p>
+  <h1>Noter une absence</h1>
+  <p class="chapeau">Appuyez sur « Noter une absence », puis annulez, videz une date ou laissez le motif vide.</p>
+
+  <div class="tel">
+    <div class="ecran" id="ecran">
+      <div class="entete">
+        <span class="retour" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <p class="sur">Réglages</p>
+        <h2>Équipe</h2>
+      </div>
+
+      <section class="bloc">
+        <p class="titre caps">Vos salariés</p>
+        <div class="ligneNom"><span class="pastille">1</span>Julien</div>
+        <div class="ligneNom"><span class="pastille">2</span>Karim</div>
+      </section>
+
+      <section class="bloc">
+        <p class="titre caps">Absences</p>
+        <p class="liberes" id="liberes" role="status" hidden></p>
+        <div id="liste"></div>
+        <button class="ajout" type="button" id="ouvrir">+ Noter une absence</button>
+        <p class="note">Un absent <b>ne compte plus</b> ces jours-là : Atlas propose une date de moins, et tout revient normal ensuite. Vos clients ne voient rien de tout ceci.</p>
+      </section>
+    </div>
+
+    <div class="voile" id="voile" hidden>
+      <div class="feuille" id="feuille">
+        <div class="poignee"></div>
+        <p class="a caps">Absence</p>
+        <p class="q2">Qui n’est pas là ?</p>
+        <div class="champs">
+          <label class="champ"><span>Qui</span>
+            <select id="rang"><option value="1">Julien</option><option value="2">Karim</option></select></label>
+          <label class="champ"><span>Du</span><input type="date" id="du"></label>
+          <label class="champ"><span>Au</span><input type="date" id="au"></label>
+          <label class="champ"><span>Motif</span><input id="motif" placeholder="Déplacement…"></label>
+        </div>
+        <p class="phrase" id="phrase"></p>
+        <button class="noter" type="button" id="noter">Noter l’absence</button>
+        <button class="annuler" type="button" id="annuler">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="temoin">
+    <p class="t">Enregistré</p>
+    <div id="temoin"></div>
+  </div>
+  <button class="recommencer" type="button" id="recommencer">Recommencer</button>
+</main>
+
+<script>
+(function () {
+  var NOMS = { 1: "Julien", 2: "Karim" };
+  var EST_UN_JOUR = /^\d{4}-\d{2}-\d{2}$/;
+
+  function iso(d) {
+    var m = String(d.getMonth() + 1).padStart(2, "0"), j = String(d.getDate()).padStart(2, "0");
+    return d.getFullYear() + "-" + m + "-" + j;
+  }
+  function plus(jour, n) {
+    var d = new Date(jour + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
+  var aujourdHui = iso(new Date());
+
+  // Même règle que src/lib/absences-equipe.ts (refusDeLAbsence, phraseDuRefus, libelleAbsence).
+  function refusDeLAbsence(p, d) {
+    if (!EST_UN_JOUR.test(p) || !EST_UN_JOUR.test(d)) return "Les dates ne sont pas lisibles.";
+    if (d < p) return "Le dernier jour tombe avant le premier.";
+    var jours = (Date.parse(d + "T00:00:00Z") - Date.parse(p + "T00:00:00Z")) / 86400000 + 1;
+    if (!isFinite(jours) || jours > 366) return "Plus d’un an d’absence : vérifiez les dates.";
+    return null;
+  }
+  function format(jour, avecMois) {
+    var o = { day: "numeric", timeZone: "UTC" }; if (avecMois) o.month = "long";
+    return new Date(jour + "T12:00:00Z").toLocaleDateString("fr-FR", o);
+  }
+  function libelleAbsence(p, d) {
+    if (p === d) return "le " + format(p, true);
+    var memeMois = p.slice(0, 7) === d.slice(0, 7);
+    return "du " + format(p, !memeMois) + " au " + format(d, true);
+  }
+
+  // Un chantier de démonstration où Julien est posé : un congé qui le couvre l'en retire.
+  var CHANTIER = { nom: "Jardin Moreau", rang: 1, jour: plus(aujourdHui, 3) };
+
+  var etat;
+  function zero() {
+    etat = { absences: [], affectes: [CHANTIER], ouverte: false, liberes: [], suivant: 1 };
+  }
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  function ouvrir() {
+    $("rang").value = "1";
+    $("du").value = aujourdHui;
+    $("au").value = aujourdHui;
+    $("au").min = aujourdHui;
+    $("motif").value = "";
+    etat.ouverte = true;
+    dessiner();
+  }
+
+  function saisie() {
+    var p = $("du").value.trim(), d = $("au").value.trim();
+    return { rang: Number($("rang").value), p: p, d: d, motif: $("motif").value.trim() || null };
+  }
+
+  function noter() {
+    var s = saisie();
+    if (refusDeLAbsence(s.p, s.d)) return;
+    etat.absences.push({ id: etat.suivant++, rang: s.rang, p: s.p, d: s.d, motif: s.motif });
+    etat.liberes = [];
+    etat.affectes = etat.affectes.filter(function (c) {
+      var couvert = c.rang === s.rang && c.jour >= s.p && c.jour <= s.d;
+      if (couvert) etat.liberes.push(c.nom);
+      return !couvert;
+    });
+    etat.ouverte = false;
+    dessiner();
+  }
+
+  function retirer(id) {
+    etat.absences = etat.absences.filter(function (a) { return a.id !== id; });
+    dessiner();
+  }
+
+  function phrase() {
+    var s = saisie(), r = refusDeLAbsence(s.p, s.d);
+    $("phrase").textContent = r ? r :
+      NOMS[s.rang] + " sera absente " + libelleAbsence(s.p, s.d) + ", week-ends compris. Le motif n’est là que pour vous.";
+    $("noter").disabled = r !== null;
+  }
+
+  function dessiner() {
+    var liste = $("liste");
+    liste.innerHTML = "";
+    var tries = etat.absences.slice().sort(function (a, b) { return a.p < b.p ? -1 : a.p > b.p ? 1 : 0; });
+    if (tries.length === 0) {
+      var v = document.createElement("p");
+      v.className = "vide";
+      v.textContent = "Personne d’absent. Un déplacement, un congé, un arrêt : notez-le ici.";
+      liste.appendChild(v);
+    } else {
+      tries.forEach(function (a) {
+        var l = document.createElement("div");
+        l.className = "absence";
+        l.innerHTML = '<span class="pastille">' + a.rang + '</span>' +
+          '<span class="qui"><span class="n"></span><span class="m"></span></span>' +
+          '<span class="q"></span>' +
+          '<button class="croix" type="button"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>';
+        l.querySelector(".n").textContent = NOMS[a.rang];
+        if (a.motif) l.querySelector(".m").textContent = a.motif; else l.querySelector(".m").remove();
+        l.querySelector(".q").textContent = libelleAbsence(a.p, a.d);
+        l.querySelector(".croix").setAttribute("aria-label", "Retirer l'absence de " + NOMS[a.rang]);
+        l.querySelector(".croix").onclick = function () { retirer(a.id); };
+        liste.appendChild(l);
+      });
+    }
+    $("liberes").hidden = etat.liberes.length === 0;
+    $("liberes").textContent = "Retiré de " + etat.liberes.join(", ") + ".";
+    $("voile").hidden = !etat.ouverte;
+    if (etat.ouverte) phrase();
+
+    var t = $("temoin");
+    t.innerHTML = "";
+    var lignes = etat.absences.map(function (a) {
+      return NOMS[a.rang] + ", " + libelleAbsence(a.p, a.d) + ", motif : " + (a.motif ? "« " + a.motif + " »" : "aucun");
+    });
+    etat.affectes.forEach(function (c) { lignes.push(NOMS[c.rang] + " sur " + c.nom + ", " + libelleAbsence(c.jour, c.jour)); });
+    if (lignes.length === 0) {
+      t.innerHTML = '<p class="rien">Rien.</p>';
+    } else {
+      var ul = document.createElement("ul");
+      lignes.forEach(function (x) { var li = document.createElement("li"); li.textContent = x; ul.appendChild(li); });
+      t.appendChild(ul);
+    }
+  }
+
+  $("ouvrir").onclick = ouvrir;
+  $("noter").onclick = noter;
+  $("annuler").onclick = function () { etat.ouverte = false; dessiner(); };
+  $("voile").onclick = function (e) { if (e.target === $("voile")) { etat.ouverte = false; dessiner(); } };
+  $("feuille").onclick = function (e) { e.stopPropagation(); };
+  $("du").oninput = function () {
+    var p = $("du").value;
+    if ($("au").value < p) $("au").value = p;
+    $("au").min = p;
+    phrase();
+  };
+  ["au", "rang", "motif"].forEach(function (id) { $(id).oninput = phrase; $(id).onchange = phrase; });
+  $("recommencer").onclick = function () { zero(); dessiner(); };
+
+  zero();
+  dessiner();
+})();
+</script>
+</body>
+</html>

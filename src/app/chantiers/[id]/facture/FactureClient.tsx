@@ -1,26 +1,52 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { colors, font, smallCaps, couleursDocument } from "@/lib/design-tokens";
+import { colors, font, smallCaps, couleursDocument, voile } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
+import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
+import AvisNumeroTva from "@/components/atlas/AvisNumeroTva";
+import { DEBUT_NUMERO_TVA, numeroTvaVide } from "@/lib/autoliquidation";
 import { jourLisible } from "@/lib/jour";
+import { visionneuseDeLaFacture } from "@/lib/visionneuse-pdf";
 import { composerMessageFacture, lienTransmission, type CanalClient } from "@/lib/message-client";
 import { useRetourDeMessagerie, marquerDepartMessagerie } from "@/lib/depart-messagerie";
 import { ouvrirAdresse } from "@/lib/ouvrir-messagerie";
 import { adressePourLeClient, ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
 import ChoixCanal from "@/components/atlas/ChoixCanal";
 import TransmettreLaFacture from "./TransmettreLaFacture";
+import ReglementsRecus from "./ReglementsRecus";
+import { majTitreFactureAction } from "./actions";
+import LigneMainDoeuvre from "../devis-complet/LigneMainDoeuvre";
+import { sansZerosInutiles } from "../devis-complet/ChampsDuDevis";
+import type { PromesseDuDevis } from "@/lib/acomptes-facture";
+import type { ReglementEnregistre } from "@/server/repositories/paiements-facture";
 import {
   terminerChantierAction,
   emettreFactureAction,
   preparerLienFactureAction,
   majEcheanceFactureAction,
+  reprendreLeDevisAction,
+  majDateTravauxFactureAction,
+  majAutoliquidationFactureAction,
+  majTvaClientFactureAction,
 } from "./actions";
-import { avecCivilite } from "@/lib/civilite";
+import ListeDesManques from "@/components/atlas/ListeDesManques";
+import type { Manque } from "@/lib/mentions-manquantes";
+import { avecCivilite, estUneEntreprise, type CiviliteClient } from "@/lib/civilite";
+import { peutPreparerLaPiece } from "@/lib/preparation-devis";
 import { ECHEANCE_MAX_JOURS } from "@/lib/echeance-facture";
 import { jourIso } from "@/lib/jour";
+import {
+  libelleReduction,
+  lignesParBloc,
+  tauxLisible,
+  totauxAvecReduction,
+  TITRE_TRAVAUX_SUPPLEMENTAIRES,
+} from "@/lib/reduction-devis";
+import type { EtatDeReprise } from "@/lib/facture-face-au-devis";
 
 // Arrêt 3 (docs/AGENT.md §2.3). Cet écran EST le contrôle : les montants du
 // devis sont déjà là, il n'y a rien à saisir. Franchissable en un geste quand
@@ -39,16 +65,88 @@ export type FacturePourEcran = {
   statut: "brouillon" | "emise";
   clientNom: string | null;
   /** Recopiée sur la facture à son établissement (migration 0038). */
-  clientCivilite: "mr" | "mme" | null;
+  clientCivilite: CiviliteClient | null;
   /** La date de la facture — borne basse de l'échéance modifiable. */
   dateEmission: string;
   dateEcheance: string | null;
+  /** La date des travaux, proposée d'après le planning (migration 0118). */
+  dateTravaux: string | null;
+  /** Sous-traitance du bâtiment, sans TVA (`src/lib/autoliquidation.ts`). */
+  autoliquidation: boolean;
+  clientNumeroTva: string | null;
+  /** Recopié du devis : l'avis sur la clé du n° TVA le compare au SIREN. */
+  clientSiret: string | null;
+  /** Le devis dont ces lignes viennent — le PDF le nomme, l'écran doit le nommer aussi. */
+  numeroDevis: string | null;
+  versionDevis: number | null;
+  /**
+   * **`null` : elle a été faite SANS devis** (migration 0086).
+   *
+   * Ce n'est pas la même chose qu'un `numeroDevis` absent, et les confondre
+   * était le défaut : une facture née d'un devis qu'on n'arrive pas à relire
+   * porte quand même « Reprise du devis » — c'est vrai, on ne sait juste pas
+   * lequel. Une facture directe, elle, ne reprend RIEN, et l'écrire ferait
+   * chercher au client un document qui n'existe pas.
+   */
+  devisId: string | null;
   tauxTva: string;
-  totalHt: string;
-  totalTva: string;
-  totalTtc: string;
-  lignes: { id: string; libelle: string; montant: string }[];
+  /** Le prix accordé au client, recopié du devis. `null` : aucun. */
+  reductionPourcent: string | null;
+  /** Le même papier que le devis (migration 0092) : la main d'œuvre nommée, le titre. */
+  mainDoeuvreHt: string | null;
+  titre: string | null;
+  /** Ce que le devis a promis : ses acomptes nomment et chiffrent chaque règlement reçu. */
+  promesseDuDevis: PromesseDuDevis;
+  reglements: ReglementEnregistre[];
+  /**
+   * **Les totaux ne sont PLUS transmis, et c'est délibéré.**
+   *
+   * Ils se recalculent ici par `totauxAvecReduction` — l'appel exact que fait
+   * `emettreFacture` juste avant de figer la pièce. L'écran montre donc ce qui
+   * PARTIRA, jamais une colonne de base qui aurait pu prendre du retard sur ses
+   * lignes. Une seule règle pour l'affichage et pour l'émission (`CLAUDE.md` §3).
+   */
+  lignes: {
+    id: string;
+    libelle: string;
+    montant: string;
+    tauxTva: string | null;
+    /**
+     * **Un travail ajouté APRÈS le devis (migration 0082).** Sans lui, l'écran
+     * rangeait un supplément sous « Reprise du devis » : le patron l'a vu le
+     * 10 septembre 2026 — *« ça n'apparaît nulle part, le client pense
+     * simplement que j'ai rajouté une ligne »*.
+     */
+    supplement: boolean | null;
+  }[];
 };
+
+/**
+ * Les blocs de l'écran : le devis, puis les travaux supplémentaires.
+ *
+ * **Le TRI vient de `lignesParBloc`, celui du papier** — c'est lui qui garantit
+ * que le devis passe toujours en premier, quel que soit l'ordre en base.
+ *
+ * **Mais les taux se REFONDENT ici, et c'est la différence avec le PDF.**
+ * `lignesParBloc` rend un groupe par (bloc, taux) parce que le papier imprime
+ * un sous-total par catégorie de TVA. L'écran, lui, ventile ses taux plus bas,
+ * dans le bloc des totaux : garder le découpage y aurait écrit « Reprise du
+ * devis » deux fois de suite sur une facture à deux taux, sans que rien ne dise
+ * pourquoi. Vu en relisant, avant que le patron ne le voie.
+ */
+function blocsDeLEcran<T extends { tauxTva: string | null; supplement: boolean | null }>(
+  lignes: T[],
+  tauxDuDocument: string
+): { supplement: boolean; lignes: T[] }[] {
+  const blocs: { supplement: boolean; lignes: T[] }[] = [];
+  for (const groupe of lignesParBloc(lignes, tauxDuDocument)) {
+    if (groupe.lignes.length === 0) continue;
+    const deja = blocs.find((b) => b.supplement === groupe.supplement);
+    if (deja) deja.lignes.push(...groupe.lignes);
+    else blocs.push({ supplement: groupe.supplement, lignes: [...groupe.lignes] });
+  }
+  return blocs;
+}
 
 export default function FactureClient({
   chantierId,
@@ -62,9 +160,22 @@ export default function FactureClient({
   canalClient,
   jetonDejaPrepare = null,
   regimeTva,
+  enFranchise,
+  reprise,
+  avoirs,
 }: {
+  enFranchise: boolean;
+  /** Ses avoirs (§413), lus parmi les règlements ; vide tant qu'elle n'est pas partie. */
+  avoirs: readonly { id: string; numero: string; dateEmission: string; totalTtc: string }[];
   chantierId: string;
   initialFacture: FacturePourEcran | null;
+  /**
+   * La facture reprend-elle encore le devis qui fait foi ?
+   *
+   * Calculée au serveur par une fonction pure (`src/lib/facture-face-au-devis.ts`).
+   * L'écran ne décide de rien : il montre ce qu'elle dit, et porte le geste.
+   */
+  reprise: EtatDeReprise;
   /** Adresse complète du site, bâtie côté serveur : un chemin seul ne s'ouvre nulle part. */
   origine: string;
   entrepriseNom: string;
@@ -99,10 +210,18 @@ export default function FactureClient({
   regimeTva: "encaissements" | "debits";
 }) {
   const router = useRouter();
-  useRetourDeMessagerie();
+  useRetourDeMessagerie("/");
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [emise, setEmise] = useState(initialFacture?.statut === "emise");
+
+  // Le titre qu'il donne, comme sur le devis (sa planche du 14 septembre 2026).
+  //
+  // **La main d'œuvre, elle, ne se SAISIT plus ici — 21 septembre 2026.** Sa
+  // correction : « + Main d'œuvre » vit sur la page où il remplit la facture,
+  // exactement la place qu'il a sur le devis. Cet écran-là est l'arrêt 3 : il
+  // montre ce qui partira, il ne le compose pas. Il la LIT donc, figée.
+  const [titre, setTitre] = useState(initialFacture?.titre ?? "");
 
   // L'échéance — proposée par défaut à la création (son délai de paiement, ou
   // 30 jours), et modifiable ICI tant que la facture n'est pas arrêtée. Sa
@@ -111,6 +230,54 @@ export default function FactureClient({
   const [dateEcheance, setDateEcheance] = useState<string | null>(initialFacture?.dateEcheance ?? null);
   const [refusEcheance, setRefusEcheance] = useState<string | null>(null);
   const [echeanceEnCours, setEcheanceEnCours] = useState(false);
+
+  // La date des travaux (son choix 6A) : proposée d'après le planning, il la
+  // change ici tant que la facture n'est pas partie.
+  const [dateTravaux, setDateTravaux] = useState<string | null>(initialFacture?.dateTravaux ?? null);
+  const [refusTravaux, setRefusTravaux] = useState<string | null>(null);
+
+  async function changerDateTravaux(valeur: string) {
+    if (!initialFacture) return;
+    setRefusTravaux(null);
+    const r = await majDateTravauxFactureAction(initialFacture.id, valeur);
+    if (r.succes) setDateTravaux(r.dateTravaux);
+    else setRefusTravaux(r.erreur);
+  }
+
+  // Sous-traitance, sans TVA (son bouton du 3 octobre 2026). Les taux changent
+  // EN BASE : l'écran se relit, et les totaux suivent par le même calcul.
+  const [sousTraitance, setSousTraitance] = useState(initialFacture?.autoliquidation ?? false);
+  const [tvaClient, setTvaClient] = useState(initialFacture?.clientNumeroTva || DEBUT_NUMERO_TVA);
+  const [refusSousTraitance, setRefusSousTraitance] = useState<string | null>(null);
+  const [sousTraitanceEnCours, setSousTraitanceEnCours] = useState(false);
+  const [manques, setManques] = useState<Manque[]>([]);
+
+  async function basculerSousTraitance() {
+    if (!initialFacture) return;
+    setSousTraitanceEnCours(true);
+    setRefusSousTraitance(null);
+    try {
+      const r = await majAutoliquidationFactureAction(initialFacture.id, !sousTraitance);
+      if (!r.succes) {
+        setRefusSousTraitance(r.erreur);
+        return;
+      }
+      setSousTraitance(r.autoliquidation);
+      setTvaClient(r.clientNumeroTva ?? "");
+      router.refresh();
+    } finally {
+      setSousTraitanceEnCours(false);
+    }
+  }
+
+  async function enregistrerTvaClient(valeur: string) {
+    // « FR » laissé seul n'est pas une saisie : le refuser ferait croire à une faute.
+    if (!initialFacture || numeroTvaVide(valeur) || valeur.trim() === (initialFacture.clientNumeroTva ?? "")) return;
+    setRefusSousTraitance(null);
+    const r = await majTvaClientFactureAction(initialFacture.id, valeur);
+    if (r.succes) setTvaClient(r.clientNumeroTva);
+    else setRefusSousTraitance(r.erreur);
+  }
 
   async function changerEcheance(valeur: string) {
     if (!initialFacture) return;
@@ -142,6 +309,34 @@ export default function FactureClient({
    */
   const [canalEnvoi, setCanalEnvoi] = useState<CanalClient>(canal);
   const destinataire = (canalEnvoi === "sms" ? clientTelephone : clientEmail) ?? "";
+
+  const [repriseEnCours, setRepriseEnCours] = useState(false);
+
+  /**
+   * Reprend le dernier devis envoyé sur la facture encore en brouillon.
+   *
+   * Le geste que le refus juste au-dessus désigne : sans lui, l'écran dirait
+   * « votre facture ne suit plus votre devis » sans offrir la moindre issue.
+   */
+  async function reprendreLeDevis() {
+    if (!initialFacture) return;
+    setRepriseEnCours(true);
+    setErreur(null);
+    try {
+      const r = await reprendreLeDevisAction(initialFacture.id);
+      if (!r.succes) {
+        setErreur(r.erreur);
+        return;
+      }
+      // Les lignes et les montants viennent d'être réécrits côté serveur : on
+      // relit l'écran plutôt que d'en reconstruire une copie ici.
+      router.refresh();
+    } catch {
+      setErreur("Le devis n'a pas pu être repris.");
+    } finally {
+      setRepriseEnCours(false);
+    }
+  }
 
   async function terminer() {
     setEnCours(true);
@@ -192,9 +387,17 @@ export default function FactureClient({
     setEnCours(true);
     setErreur(null);
     try {
+      setManques([]);
       const emission = await emettreFactureAction(initialFacture.id);
       if (!emission.succes) {
-        setErreur(emission.erreur);
+        // Ce qui manque se LISTE, chaque ligne avec sa porte (son choix 1A) ;
+        // la phrase seule l'enverrait chercher Réglages sans lien.
+        if (emission.manques?.length) {
+          setManques(emission.manques);
+          setErreur("Il manque une mention obligatoire.");
+        } else {
+          setErreur(emission.erreur);
+        }
         return;
       }
       setEmise(true);
@@ -205,7 +408,7 @@ export default function FactureClient({
         // parce que le lien a manqué lui ferait croire que rien n'a eu lieu —
         // et il rappuierait sur un bouton qui a déjà engagé sa comptabilité.
         setErreur(
-          `Facture arrêtée, mais le lien n'a pas pu être préparé — ${lien.erreur} ` +
+          `Facture arrêtée, mais le lien n'a pas pu être préparé. ${lien.erreur} ` +
             `Le message tout prêt vous attend ci-dessous.`
         );
         router.refresh();
@@ -283,6 +486,31 @@ export default function FactureClient({
     );
   }
 
+  // **LE MÊME CALCUL QUE L'ÉMISSION, appelé et non réécrit.** `emettreFacture`
+  // fige la pièce sur `totauxAvecReduction(lignes, tauxTva, reductionPourcent)` :
+  // l'écran de l'arrêt doit montrer ce chiffre-là, et pas une colonne de base
+  // qui aurait pu prendre du retard sur ses propres lignes.
+  const totaux = totauxAvecReduction(
+    initialFacture.lignes,
+    initialFacture.tauxTva,
+    initialFacture.reductionPourcent
+  );
+  const libelleRemise = libelleReduction(totaux.reductionPourcent);
+  const ligneMainDoeuvre =
+    initialFacture.mainDoeuvreHt === null ? null : (
+      <LigneMainDoeuvre montant={sansZerosInutiles(initialFacture.mainDoeuvreHt)} fige />
+    );
+
+  /**
+   * Cette facture a-t-elle de quoi partir ?
+   *
+   * **La même règle que le devis**, nommée pour la pièce qu'on regarde — c'est
+   * ce qui lui évite de lire le mot « devis » sur ce qu'il facture (sa règle du
+   * 11 septembre). Les lignes de l'écran portent déjà ce qu'elle demande : un
+   * libellé et un montant.
+   */
+  const verdictEnvoi = peutPreparerLaPiece(initialFacture.lignes, "facture");
+
   // La borne haute du sélecteur : un an après la facture (au-delà, c'est
   // l'année mal tapée). La borne basse est la date de la facture elle-même.
   const maxEcheance = jourIso(
@@ -299,6 +527,21 @@ export default function FactureClient({
           <NumeroDeDocument valeur={initialFacture.numeroCommercial} /> —{" "}
           {avecCivilite(initialFacture.clientNom, initialFacture.clientCivilite) || "Client non renseigné"}
         </p>
+        {/* Son titre — « Aménagement du jardin » —, en italique comme sur le
+            papier. Jamais d'office : vide, rien ne s'imprime. */}
+        {(!emise || titre) && (
+          <input
+            value={titre}
+            readOnly={emise}
+            placeholder="Titre (optionnel)"
+            aria-label="Titre de la facture"
+            data-atlas="titre-facture"
+            onChange={(e) => setTitre(e.target.value)}
+            onBlur={(e) => void majTitreFactureAction(initialFacture.id, e.currentTarget.value)}
+            className="mt-1.5 block w-full border-0 bg-transparent p-0 italic outline-none focus:bg-[var(--voile-champ)]"
+            style={{ color: colors.inkSoft, fontFamily: font.display, fontSize: "17px" }}
+          />
+        )}
         {/* L'ÉCHÉANCE — proposée, et modifiable tant que la facture n'est pas
             arrêtée (sa demande du 25 août). Émise, elle est partie chez le
             client et inscrite au relevé : on la fige. */}
@@ -341,46 +584,272 @@ export default function FactureClient({
             )}
           </div>
         )}
+        {/* LA DATE DES TRAVAUX — mention de la pièce (242 nonies A), proposée
+            d'après le planning, modifiable tant qu'elle n'est pas partie. */}
+        {dateTravaux && (
+          <div className="mt-1.5">
+            {emise ? (
+              <p className="text-[13px]" style={{ color: colors.muted }}>
+                Travaux réalisés le {jourLisible(dateTravaux)}
+              </p>
+            ) : (
+              <>
+                <label className="flex flex-wrap items-center gap-2 text-[13px]" style={{ color: colors.muted }}>
+                  Travaux réalisés le
+                  <input
+                    type="date"
+                    data-atlas="date-travaux-facture"
+                    value={dateTravaux}
+                    onChange={(e) => {
+                      if (e.target.value) void changerDateTravaux(e.target.value);
+                    }}
+                    className="rounded-[4px] px-2 py-1"
+                    style={{
+                      fontSize: 16,
+                      backgroundColor: colors.cream,
+                      color: colors.ink,
+                      border: `1px solid ${refusTravaux ? colors.alert : colors.line}`,
+                    }}
+                  />
+                </label>
+                {refusTravaux && (
+                  <p role="alert" className="mt-1 text-[12px]" style={{ color: colors.alert }}>
+                    {refusTravaux}
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </div>
 
-      {initialFacture.lignes.length > 0 && (
-        <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
-          <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
-            Reprise du devis
+      {/* ── LA FACTURE NE SUIT PLUS LE DEVIS ────────────────────────────────
+          **Le défaut le plus cher de cet écran, et il était muet.** Une facture
+          bâtie à la fin du chantier garde les lignes du devis d'alors ; un devis
+          corrigé et renvoyé ensuite ne l'atteignait jamais. Il confirmait donc
+          l'ancien prix, sur le seul écran qui engage son argent.
+
+          **Ce bloc passe AVANT les montants**, et c'est tout son sens : lu après,
+          il arriverait une fois le total déjà cru. */}
+      {!reprise.aJour && (
+        <div
+          className="py-1 pl-[13px]"
+          style={{ borderLeft: `1px solid ${colors.alert}` }}
+          data-atlas="facture-en-retard-sur-le-devis"
+        >
+          <p className="text-[13px] leading-[1.4]" style={{ color: colors.ink }}>
+            Le devis <NumeroDeDocument valeur={reprise.numeroCommercial} /> v
+            {reprise.numeroVersion} est parti depuis. Cette facture porte encore
+            les montants d&apos;avant.
           </p>
-          <ul className="flex flex-col gap-2">
-            {initialFacture.lignes.map((l) => (
-              <li key={l.id} className="flex items-baseline justify-between gap-4 text-[15px]">
-                {/* **Les travaux réunis s'empilent, un par ligne.** Depuis que
-                    le devis sépare ses prestations par un retour à la ligne
-                    (7 août, `src/lib/lignes-vendables.ts`), un `truncate`
-                    affichait « Abattage d'un chêne mort Br… » : les lignes
-                    fondues en une seule, puis coupées. Et c'est à cet écran-là
-                    que le patron est censé vérifier avant que la facture parte
-                    (arrêt 3) — lui cacher la moitié de ce qu'il facture est
-                    exactement ce qu'il ne faut pas faire. Le PDF du client,
-                    lui, a toujours respecté les retours à la ligne. */}
-                <span className="min-w-0 whitespace-pre-line break-words" style={{ color: colors.ink }}>
-                  {l.libelle}
-                </span>
-                <span className="flex-shrink-0" style={{ color: colors.muted }}>
-                  {formatEuros.format(Number(l.montant))}
-                </span>
-              </li>
-            ))}
-          </ul>
+          <div className="mt-2">
+            <PrimaryButton
+              secondaire
+              disabled={repriseEnCours}
+              onClick={reprendreLeDevis}
+              repere="reprendre-le-devis"
+            >
+              {repriseEnCours ? "Reprise…" : "Reprendre ce devis"}
+            </PrimaryButton>
+          </div>
+        </div>
+      )}
+
+      {/* ── DEUX BLOCS, PARCE QUE LE PAPIER EN A DEUX ─────────────────────
+          **Sa demande du 10 septembre 2026, photos à l'appui :** il ajoute un
+          travail supplémentaire, et l'écran le range sous « Reprise du devis ».
+          *« Il faut le rajouter comme on avait dit, sinon le client pense
+          simplement que j'ai rajouté une ligne. »*
+
+          C'est aussi ce qui évite la discussion au moment de payer : une
+          facture qui les mêlerait montrerait un total plus haut que le devis
+          signé, sans rien pour l'expliquer (`ARCHITECTURE.md` §304).
+
+          **La séparation vient de `lignesParBloc`, celle du PDF** — et le titre
+          de `TITRE_TRAVAUX_SUPPLEMENTAIRES`, au même endroit. Refaire le tri
+          ici aurait mis deux règles pour une question, et c'est le client qui
+          aurait vu la différence entre son papier et l'écran du patron. */}
+      {initialFacture.lignes.length > 0 &&
+        blocsDeLEcran(initialFacture.lignes, initialFacture.tauxTva).map((bloc) => (
+            <div
+              key={bloc.supplement ? "supplement" : "devis"}
+              data-atlas={bloc.supplement ? "bloc-supplement" : "bloc-devis"}
+              className="rounded-[4px] px-5 py-5"
+              style={{ backgroundColor: colors.card }}
+            >
+              {/* **Le devis se NOMME.** Le papier écrit « Établie à partir du
+                  devis n° … » depuis toujours ; l'écran disait « Reprise du
+                  devis » sans dire lequel — c'est-à-dire sans rien dire du tout
+                  le jour où il y en a deux. */}
+              <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
+                {bloc.supplement ? (
+                  TITRE_TRAVAUX_SUPPLEMENTAIRES
+                ) : initialFacture.devisId === null ? (
+                  /* **Rien à écrire au-dessus d'une facture faite sans devis**
+                     (migration 0086). « Reprise du devis » y nommerait un
+                     document qui n'existe pas — et c'est l'écran que le patron
+                     photographie pour vérifier avant que la pièce parte. Les
+                     taux, eux, se lisent dans les totaux juste en dessous. */
+                  ""
+                ) : initialFacture.numeroDevis ? (
+                  <>
+                    Reprise du devis <NumeroDeDocument valeur={initialFacture.numeroDevis} />
+                    {/* **La version s'écrit TOUJOURS, même la première.** Vu sur
+                        la capture du 4 septembre : les deux versions d'un devis
+                        portent le MÊME numéro commercial, si bien que l'écran
+                        affichait « Reprise du devis 2026-000003 » juste au-dessus
+                        de « Le devis 2026-000003 est parti depuis ». Deux fois le
+                        même numéro, l'un dit périmé et l'autre pas : c'est
+                        illisible. Trois caractères lèvent toute l'ambiguïté. */}
+                    {initialFacture.versionDevis ? ` v${initialFacture.versionDevis}` : ""}
+                  </>
+                ) : (
+                  "Reprise du devis"
+                )}
+              </p>
+              <ul className="flex flex-col gap-2">
+                {bloc.lignes.map((l) => (
+                  <li key={l.id} className="flex items-baseline justify-between gap-4 text-[15px]">
+                    {/* **Les travaux réunis s'empilent, un par ligne.** Depuis que
+                        le devis sépare ses prestations par un retour à la ligne
+                        (7 août, `src/lib/lignes-vendables.ts`), un `truncate`
+                        affichait « Abattage d'un chêne mort Br… » : les lignes
+                        fondues en une seule, puis coupées. Et c'est à cet écran-là
+                        que le patron est censé vérifier avant que la facture parte
+                        (arrêt 3) — lui cacher la moitié de ce qu'il facture est
+                        exactement ce qu'il ne faut pas faire. Le PDF du client,
+                        lui, a toujours respecté les retours à la ligne. */}
+                    <span
+                      className="min-w-0 whitespace-pre-line break-words"
+                      style={{ color: colors.ink }}
+                    >
+                      {l.libelle}
+                    </span>
+                    <span className="flex-shrink-0" style={{ color: colors.muted }}>
+                      {formatEuros.format(Number(l.montant))}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+          </div>
+        ))}
+
+      {/* ── SOUS-TRAITANCE, SANS TVA ─────────────────────────────────────
+          Son bouton du 3 octobre 2026, dans son cadre doré. Ne s'offre ni en
+          franchise (déjà sans TVA), ni sur une facture partie, et **plus sur
+          une facture née d'un devis** (4 octobre 2026) : elle suit le devis,
+          coché ou non. Reste celle faite sans devis, pour une entreprise. */}
+      {!emise &&
+        !enFranchise &&
+        initialFacture.devisId === null &&
+        estUneEntreprise(initialFacture.clientNom, initialFacture.clientCivilite) && (
+        <div
+          className="rounded-[4px] px-5 py-4"
+          data-atlas="carte-sous-traitance"
+          style={{ backgroundColor: colors.card, boxShadow: `0 0 0 2px ${colors.or}`, borderRadius: 14 }}
+        >
+          <div className="flex items-center justify-between gap-3 text-[15px]" style={{ color: colors.ink }}>
+            <span>
+              Sous-traitance, sans TVA
+              <small className="block text-[12.5px]" style={{ color: colors.muted }}>
+                Seulement si vous êtes sous-traitant d’une autre entreprise.
+              </small>
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={sousTraitance}
+              aria-label="Sous-traitance, sans TVA"
+              data-atlas="sous-traitance"
+              disabled={sousTraitanceEnCours}
+              onClick={() => void basculerSousTraitance()}
+              className="relative h-7 w-[46px] flex-none rounded-full"
+              style={{ backgroundColor: sousTraitance ? colors.rust : colors.line }}
+            >
+              <span
+                className="absolute top-[3px] h-[22px] w-[22px] rounded-full transition-[left]"
+                style={{ left: sousTraitance ? 21 : 3, backgroundColor: colors.card }}
+              />
+            </button>
+          </div>
+          {sousTraitance && (
+            <label className="mt-3 flex flex-col gap-1.5">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: colors.muted }}>
+                N° TVA de l’entreprise qui vous sous-traite
+              </span>
+              <input
+                type="text"
+                data-atlas="tva-client"
+                className="atlas-case"
+                placeholder="FR suivi de 11 chiffres"
+                value={tvaClient}
+                onChange={(e) => setTvaClient(e.target.value)}
+                onBlur={(e) => void enregistrerTvaClient(e.currentTarget.value)}
+                style={{ color: colors.ink }}
+              />
+              <AvisNumeroTva
+                siret={initialFacture?.clientSiret ?? ""}
+                numeroTva={tvaClient}
+                onMettre={(juste) => {
+                  setTvaClient(juste);
+                  void enregistrerTvaClient(juste);
+                }}
+              />
+            </label>
+          )}
+          {refusSousTraitance && (
+            <p role="alert" className="mt-2 text-[12px]" style={{ color: colors.alert }}>
+              {refusSousTraitance}
+            </p>
+          )}
         </div>
       )}
 
       <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
-        <Ligne label="Total HT" valeur={initialFacture.totalHt} />
-        <Ligne label={`TVA ${Number(initialFacture.tauxTva)} %`} valeur={initialFacture.totalTva} />
+        {/* ── LE TOTAL SE RECOMPOSE À LA MAIN, LIGNE À LIGNE ─────────────────
+            **Deux choses manquaient ici, et le papier les imprimait toutes les
+            deux.** Le prix accordé au client : la somme des lignes au-dessus ne
+            faisait alors pas le Total HT écrit ici, et rien ne disait pourquoi.
+            Et les taux : chaque ligne porte le sien depuis la migration 0073,
+            l'écran n'en annonçait qu'un.
+
+            Un total qu'on ne peut pas refaire de tête est un total qu'on cesse
+            de croire — et c'est LUI qui le défend devant son client. Les
+            libellés et l'ordre sont ceux du papier (`document-commun.ts`), tirés
+            de la même fonction : deux rédactions du même prix accordé finiraient
+            par se contredire. */}
+        {/* « dont main d'œuvre HT » sous le PREMIER Total HT écrit — brut avec
+            une remise, net sans —, la même pièce que le devis. */}
+        {libelleRemise ? (
+          <>
+            <Ligne label="Total HT" valeur={totaux.brutHt} />
+            {ligneMainDoeuvre}
+            <Ligne label={libelleRemise} valeur={totaux.reductionMontant ?? "0"} retire />
+            <Ligne label="Total HT après remise" valeur={totaux.totalHt} />
+          </>
+        ) : (
+          <>
+            <Ligne label="Total HT" valeur={totaux.totalHt} />
+            {ligneMainDoeuvre}
+          </>
+        )}
+        {initialFacture.autoliquidation ? (
+          <Ligne label="TVA, autoliquidation" valeur="0" />
+        ) : (
+          totaux.parTaux.map((categorie) => (
+            <Ligne
+              key={categorie.taux}
+              label={`TVA ${tauxLisible(categorie.taux)} %`}
+              valeur={categorie.tva}
+            />
+          ))
+        )}
         <div className="mt-3 border-t pt-3 text-center" style={{ borderColor: colors.line }}>
           {/* **En noir, pas en gris** — sa demande du 24 août 2026, capture à
               l'appui. C'est l'intitulé du montant qu'il vérifie ; en gris, il
               passait pour une mention de bas de page. */}
           <p className={smallCaps} style={{ color: colors.ink, marginBottom: 6 }}>
-            Total TTC
+            {initialFacture.autoliquidation ? "Total à payer" : "Total TTC"}
           </p>
           <p
             className="text-[32px] font-semibold leading-none"
@@ -389,10 +858,9 @@ export default function FactureClient({
             // demandé « terre cuite pour le devis, idem pour la facture ».
             style={{ fontFamily: font.display, color: couleursDocument.accent }}
           >
-            {formatEuros.format(Number(initialFacture.totalTtc))}
+            {formatEuros.format(Number(totaux.totalTtc))}
           </p>
         </div>
-
         {/* Sans ce lien, la facture existe sans que personne puisse la
             regarder : le patron valide un montant sans avoir vu la pièce que
             son client recevra. C'est justement ce que l'arrêt 3 lui demande de
@@ -404,40 +872,79 @@ export default function FactureClient({
             de texte teintée : rien ne disait qu'on pouvait appuyer dessus. Le
             soulignement se lit comme un lien partout, sans ajouter un signe de
             plus à l'écran. */}
-        <a
-          href={`/api/factures/${initialFacture.id}/pdf`}
-          target="_blank"
-          rel="noopener"
+        {/* **Dans l'application, pas dans un onglet de Safari** — sa capture du
+            11 septembre 2026 : *« quand j'ouvre le pdf pour voir la facture
+            j'ai pas de touche retour »*. La visionneuse porte l'en-tête et sa
+            flèche ; le fichier reste servi par la même route
+            (`src/lib/visionneuse-pdf.ts`). */}
+        <Link
+          href={visionneuseDeLaFacture(initialFacture)}
+          data-atlas="voir-facture"
           className="mt-4 block text-center text-[14px] font-medium underline underline-offset-4"
           style={{ color: colors.rust }}
         >
           Voir la facture en PDF
-        </a>
+        </Link>
 
         {/* **Ouvrir n'est pas garder.** Le patron, le 10 août 2026 : il ne
             pouvait que regarder la facture, jamais la ranger sur son téléphone
             ou son ordinateur (`TODO.md` §8). Le nom du fichier porte le numéro
             — « F2026-0001.pdf », pas « facture.pdf » : il en aura des centaines
             dans le même dossier, et « facture (17).pdf » ne se retrouve pas.
-            L'attribut `download` ne suffit pas seul (iOS l'ignore selon les
-            versions) : la route répond `Content-Disposition: attachment` sur
-            `?telecharger=1`, et c'est elle qui fait foi. */}
-        <a
-          href={`/api/factures/${initialFacture.id}/pdf?telecharger=1`}
-          download={nomDuFichier(initialFacture, emise)}
-          data-atlas="telecharger-facture"
-          className="mt-2 block text-center text-[13px] underline underline-offset-4"
+
+            **Ce n'était plus un lien depuis le 12 septembre 2026** — *« je peux
+            plus télécharger en cliquant sur télécharger »*. Un lien remet le
+            fichier au navigateur, qui sur iPhone le PEINT au lieu de le ranger ;
+            et quand la route refuse, il n'en rapporte rien. Le document est
+            désormais récupéré par la page, puis remis à la feuille de partage
+            (`BoutonTelechargerDocument`). */}
+        <BoutonTelechargerDocument
+          fichier={`/api/factures/${initialFacture.id}/pdf`}
+          nom={nomDuFichier(initialFacture, emise)}
+          dataAtlas="telecharger-facture"
+          className="mt-2 block w-full text-center text-[13px] underline underline-offset-4"
           style={{ color: colors.ink }}
         >
           Télécharger ({nomDuFichier(initialFacture, emise)})
-        </a>
+        </BoutonTelechargerDocument>
       </div>
+
+      {/* Les règlements reçus et le net à payer — **en lecture**. Sa correction
+          du 21 septembre 2026 : « + Règlement reçu » vit là où il REMPLIT la
+          facture, comme les acomptes du devis. Ici, il vérifie avant d'envoyer ;
+          il ne compose plus.
+
+          **L'ACQUITTEMENT, LUI, REVIENT — 22 septembre 2026.** *« Depuis
+          terminé, à facturer […] il doit y avoir sous net à payer un bouton on
+          off facture acquitté. J'ai essayé de cliquer dessus depuis la facture
+          mais impossible. »* Il était parti avec les deux « + » la veille, et
+          c'était une erreur de rangement : saisir un règlement est une
+          composition, solder est un CONSTAT — celui qu'il fait sur l'écran où
+          « À facturer » le mène, juste avant d'envoyer.
+
+          **Sur un brouillon seulement.** Une facture arrêtée est au relevé de
+          TVA : ses règlements se notent depuis Terminés, et le dépôt refuse
+          déjà (`basculerAcquittee`). L'écran ne l'offre donc pas. */}
+      <ReglementsRecus
+        factureId={initialFacture.id}
+        avoirs={avoirs}
+        totalTtc={totaux.totalTtc}
+        promesseDuDevis={initialFacture.promesseDuDevis}
+        initiaux={initialFacture.reglements}
+        fige
+        acquittement={!emise}
+      />
 
       {erreur && (
         <p role="alert" className="text-center text-[13px]" style={{ color: colors.alert }}>
           {erreur}
         </p>
       )}
+      <ListeDesManques
+        manques={manques}
+        lienEntreprise="/reglages/identite"
+        lienClient={`/chantiers/${chantierId}/coordonnees`}
+      />
 
       {emise ? (
         <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
@@ -479,9 +986,61 @@ export default function FactureClient({
         </div>
       ) : (
         <>
-          <p className="text-center text-[14px]" style={{ color: colors.muted }}>
-            Rien n&apos;a changé depuis le devis ?
-          </p>
+          {/* **La question se tait quand la réponse est déjà écrite.** Vu sur
+              la capture du 4 septembre : le bandeau du dessus annonce qu'un
+              devis plus récent est parti, et l'écran demandait quatre blocs
+              plus bas « Rien n'a changé depuis le devis ? ». Un écran qui se
+              contredit lui-même fait douter de tout ce qu'il affiche. */}
+          {/* ─── LES TRAVAUX SUPPLÉMENTAIRES — sa demande du 9 septembre 2026
+              *« À la place de la phrase "rien n'a changé depuis le devis ?", je
+              veux un bouton "ajouter des travaux supplémentaires" ; ça ouvre la
+              vraie page du devis avec toutes les infos du devis en question. »*
+
+              **La phrase méritait de partir pour une raison de plus que son
+              goût : elle n'était même pas cliquable.** Elle posait une question
+              à l'écran — « rien n'a changé ? » — sans offrir la moindre réponse
+              à portée de doigt. Un écran qui demande et n'écoute pas se lit
+              comme une panne.
+
+              **Le geste ne s'offre que sur un BROUILLON**, et la page qu'il
+              ouvre refuse d'elle-même si la facture est partie : une facture
+              arrêtée est inscrite au relevé de TVA, elle ne se complète plus. */}
+          {/* ─── SOUS LE POUCE, ET AU-DESSUS DE LA BARRE — 21 septembre 2026 ──
+              Sa demande : *« sur la page de la facture mets le bouton remplir
+              la facture en bouton flottant »*. Cette page défile — les lignes,
+              les totaux, les règlements — et le seul geste qui reste à faire
+              partait hors de l'écran : il fallait redescendre pour le trouver.
+
+              **C'est le patron du devis, appelé et non réinventé** : collé en
+              bas, un dégradé qui le détache du document qui passe dessous, et
+              la hauteur de la barre d'onglets RÉSERVÉE — `--atlas-barre`, là
+              où elle est écrite. Sa capture du 5 septembre le dit : « le sous
+              le pouce est caché par le menu du bas ». La réserve s'efface là
+              où la barre n'existe pas (`:has`), sans quoi le bouton flotterait
+              au-dessus du vide sur les écrans qui n'en portent pas. */}
+          {reprise.aJour && (
+            <div
+              className="sticky bottom-0 z-10 -mx-6 px-6 pt-6 pb-[calc(12px+var(--atlas-barre))] [body:not(:has(.atlas-nav-basse))_&]:pb-3"
+              style={{ background: `linear-gradient(to top, ${colors.cream} 68%, ${voile(colors.cream, 0)})` }}
+            >
+            <Link
+              href={`/chantiers/${chantierId}/facture/travaux-supplementaires`}
+              data-atlas="ajouter-travaux-supplementaires"
+              className="mx-auto flex min-h-[48px] w-full max-w-[320px] items-center justify-center rounded-full text-[15px] font-semibold"
+              style={{ border: `1px solid ${colors.or}`, color: colors.or }}
+            >
+              {/* **Le mot dit ce qu'on va faire, et il change avec la pièce.**
+                  Sur une facture née d'un devis, ce qu'on ajoute EST un travail
+                  supplémentaire. Sur une facture directe, il n'y a pas de
+                  supplément : il y a les lignes, et c'est le seul endroit où on
+                  les saisit — le point 1 des trois qu'il a acceptés sur la
+                  planche du 10 septembre 2026. */}
+              {initialFacture.devisId === null
+                ? "Remplir la facture"
+                : "Ajouter des travaux supplémentaires"}
+            </Link>
+            </div>
+          )}
 
           {/* **L'encart du canal, à la forme de la fiche client — sa demande du
               22 août 2026 :** *« le choix SMS ou e-mail, mais de la même forme
@@ -493,35 +1052,90 @@ export default function FactureClient({
               *« refuse l'envoi : ça veut dire qu'il communique avec le client
               par SMS, donc il enverra par SMS »*. Aucun champ de saisie ici —
               il a écarté l'idée. */}
-          <fieldset className="flex flex-col gap-1.5">
-            <legend className={smallCaps} style={{ color: colors.muted }}>
-              Comment lui envoyer sa facture ?
-            </legend>
-            <div className="flex gap-2">
+          {/* ─── LE MÊME RÉGLAGE QUE SUR LA FICHE CLIENT — 9 septembre 2026 ──
+              Sa remarque, capture à l'appui : *« pour envoyer le message SMS ou
+              e-mail, dans la fiche client c'est un trait en dessous, pas une
+              bulle ; mets la même chose ici »*.
+
+              **Les deux écrans avaient DIVERGÉ, et c'est daté.** Sa demande du
+              22 août posait déjà la règle — *« le choix SMS ou e-mail, mais de
+              la même forme que sur la page fiche client »* — et cet écran l'a
+              tenue jusqu'au 4 septembre. Ce jour-là, la planche « A — Épurée »
+              a fait de l'envoi un RÉGLAGE sur la fiche client : une ligne, deux
+              mots, un trait d'or sous celui qui est retenu. La facture est
+              restée aux capsules, et l'on s'est retrouvé avec deux dessins du
+              même geste — ce que `CLAUDE.md` §3 interdit nommément.
+
+              **La question s'en va avec les capsules.** « Comment lui envoyer
+              sa facture ? » était une phrase qui expliquait le bouton d'à côté
+              (§3, « le moins de mots possible ») ; « Envoi » suffit, et c'est
+              le mot qu'il lit déjà sur l'autre écran. */}
+          <fieldset
+            aria-label="Comment lui envoyer sa facture ?"
+            data-atlas="envoi-canal"
+            className="mt-2.5 flex min-h-[34px] items-center justify-between gap-3 pt-2"
+            style={{ borderTop: `1px solid ${colors.lineSoft}` }}
+          >
+            <span className={smallCaps} style={{ color: colors.muted }}>
+              Envoi
+            </span>
+            <span className="flex gap-1">
               <ChoixCanal
-                libelle="Par SMS"
+                apparence="reglage"
+                libelle="SMS"
                 actif={canalEnvoi === "sms"}
                 disponible={Boolean(clientTelephone)}
                 onClick={() => setCanalEnvoi("sms")}
               />
               <ChoixCanal
-                libelle="Par e-mail"
+                apparence="reglage"
+                libelle="E-mail"
                 actif={canalEnvoi === "email"}
                 disponible={Boolean(clientEmail)}
                 onClick={() => setCanalEnvoi("email")}
               />
-            </div>
-            <p className="text-center text-[12.5px]" style={{ color: colors.muted }}>
-              {destinataire
-                ? `${canalEnvoi === "sms" ? "Au" : "À"} ${destinataire}`
-                : "Aucune coordonnée pour ce canal."}
-            </p>
+            </span>
           </fieldset>
+          <p className="text-center text-[12.5px]" style={{ color: colors.muted }}>
+            {destinataire
+              ? `${canalEnvoi === "sms" ? "Au" : "À"} ${destinataire}`
+              : "Aucune coordonnée pour ce canal."}
+          </p>
+
+          {/* ─── UNE FACTURE VIDE NE PART PAS — 11 septembre 2026 ────────────
+              **Le trou qu'ouvrait la facture sans devis.** Une facture née d'un
+              devis arrive avec ses lignes ; une facture directe naît VIDE, et
+              rien n'empêchait de l'envoyer telle quelle — son client aurait reçu
+              une pièce comptable à 0,00 €, immuable, à corriger par un avoir.
+
+              **La règle est celle du devis, appelée et non réécrite**
+              (`peutPreparerLaPiece`) : aucune ligne, un total nul, une ligne qui
+              attend encore son prix. Elle a été généralisée plutôt que recopiée
+              — deux rédactions auraient divergé, et c'est celle de la facture,
+              la plus récente, qu'on aurait oublié de corriger (`CLAUDE.md` §3).
+
+              **Le refus NOMME son geste**, et le bouton doré juste au-dessus
+              l'exécute : un bouton grisé sans un mot se lit comme une
+              application en panne, et c'est déjà arrivé sur l'écran de dictée. */}
+          {!verdictEnvoi.possible && (
+            <div
+              className="py-1 pl-[13px]"
+              style={{ borderLeft: `1px solid ${colors.or}` }}
+              data-atlas="facture-pas-prete"
+            >
+              <p className="text-[13px] leading-[1.4]" style={{ color: colors.ink }}>
+                {verdictEnvoi.probleme}
+              </p>
+              <p className="mt-[3px] text-[12px]" style={{ color: colors.muted }}>
+                {verdictEnvoi.marcheASuivre}
+              </p>
+            </div>
+          )}
 
           {/* **Sans flèche**, et le mot dit l'envoi : *« arrêter la facture, tu
               mets envoyer la facture sans la flèche »*. */}
           <PrimaryButton
-            disabled={enCours || !destinataire}
+            disabled={enCours || !destinataire || !verdictEnvoi.possible}
             onClick={envoyerLaFacture}
             // **Un repère stable, pour que le contrôle accuse le bon coupable.**
             // Attendu par son LIBELLÉ, il mourait sur un délai dépassé dès que le
@@ -595,11 +1209,31 @@ function nomDuFichier(f: FacturePourEcran, emise: boolean): string {
   return emise ? `${f.numeroCommercial}.pdf` : `${f.numeroCommercial}-brouillon.pdf`;
 }
 
-function Ligne({ label, valeur }: { label: string; valeur: string }) {
+/**
+ * Une ligne de total.
+ *
+ * `retire` écrit le montant en négatif — le prix accordé au client, et lui seul.
+ * Le signe est devant le montant comme sur le papier : sans lui, la remise se lit
+ * comme un ajout, et la soustraction imprimée dessous devient incompréhensible.
+ *
+ * L'espacement et le `flex-shrink-0` ne sont pas cosmétiques : « Prix accordé au
+ * client 15 % » et son montant se disputent les 390 px de son téléphone.
+ */
+function Ligne({
+  label,
+  valeur,
+  retire = false,
+}: {
+  label: string;
+  valeur: string;
+  retire?: boolean;
+}) {
   return (
-    <div className="flex items-baseline justify-between text-[15px]">
+    <div className="flex items-baseline justify-between gap-4 text-[15px]">
       <span style={{ color: colors.muted }}>{label}</span>
-      <span style={{ color: colors.ink }}>{formatEuros.format(Number(valeur))}</span>
+      <span className="flex-shrink-0" style={{ color: colors.ink }}>
+        {retire ? `- ${formatEuros.format(Number(valeur))}` : formatEuros.format(Number(valeur))}
+      </span>
     </div>
   );
 }

@@ -1,6 +1,10 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
+import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
+
+const BASE = ADRESSE;
 
 async function main() {
   const browser = await lancerNavigateur();
@@ -9,21 +13,21 @@ async function main() {
 
   // Connexion réelle (Auth.js) — toutes les routes applicatives sont
   // désormais protégées par le middleware d'authentification.
-  await page.goto("http://localhost:3000/login", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
   await page.fill('input[name="email"]', "demo@atlas.local");
   await page.fill('input[name="password"]', "demo1234");
   await page.click('button[type="submit"]');
-  await page.waitForURL("http://localhost:3000/", { timeout: 10000 });
+  await page.waitForURL(`${BASE}/`, { timeout: 10000 });
 
   const client = `M. Bernard ${Date.now()}`;
-  await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   // Client et coordonnée : sans canal d'envoi convenu, l'écran devis refuse
   // — à juste titre — de partir chez le client.
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
-  const chantierUrl = page.url();
+  const chantierUrl = `${BASE}/chantiers/${idChantier}`;
 
   // Ajoute une ligne de prix réelle pour que le devis ait un contenu non nul.
   await page.goto(`${chantierUrl}/prix`, { waitUntil: "networkidle" });
@@ -41,8 +45,11 @@ async function main() {
   await page.goto(`${chantierUrl}/devis-complet`, { waitUntil: "networkidle" });
   assert.ok(await page.locator("text=Aperçu du PDF").isVisible());
 
-  const apercuHref = await page.locator("text=Aperçu du PDF").getAttribute("href");
-  const reponseApercu = await page.request.get(`http://localhost:3000${apercuHref}`);
+  // « Aperçu du PDF » mène à la visionneuse de l'application depuis le
+  // 11 septembre 2026 ; c'est le fichier qu'elle demande qu'on va chercher.
+  const apercuHref = fichierDemandeALaVisionneuse((await page.locator("text=Aperçu du PDF").getAttribute("href")) ?? "");
+  assert.ok(apercuHref, "« Aperçu du PDF » ne mène pas à la visionneuse de l'application");
+  const reponseApercu = await page.request.get(`${BASE}${apercuHref}`);
   assert.equal(reponseApercu.status(), 200);
   assert.equal(reponseApercu.headers()["content-type"], "application/pdf");
   const octetsApercu = await reponseApercu.body();
@@ -56,7 +63,7 @@ async function main() {
   await page.click("text=Choisir la date");
   await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForURL(/localhost:3000\/$/, { timeout: 10000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+  await page.waitForURL(ACCUEIL_EXACT, { timeout: 10000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   // --- Persistance : l'écran du devis parti, retrouvé plus tard ---
   // **On y VA, il ne s'affiche plus tout seul.** Depuis le 21 août 2026, l'envoi
@@ -75,9 +82,18 @@ async function main() {
   // le PDF » en a été retiré le 21 août 2026, à sa demande — il n'y voulait que
   // deux gestes. Ce qui est vérifié ici n'a pas bougé d'un pouce : le document
   // existe, il est servi, et c'en est bien un.
-  const reponsePdf = await page.request.get(`http://localhost:3000${apercuHref}?telecharger=1`);
+  const reponsePdf = await page.request.get(`${BASE}${apercuHref}?telecharger=1`);
   assert.equal(reponsePdf.status(), 200);
+  // **Il est servi À ENREGISTRER, et il reste un PDF** — 10 septembre 2026.
+  // Cette ligne a exigé `application/octet-stream` trois jours durant : ce
+  // type-là est retenu par iOS et suit le fichier enregistré, qui n'a plus de
+  // lecteur quand on le rouvre. Ce qui range le fichier est la disposition,
+  // vérifiée juste après.
   assert.equal(reponsePdf.headers()["content-type"], "application/pdf");
+  assert.ok(
+    (reponsePdf.headers()["content-disposition"] ?? "").startsWith("attachment"),
+    `le fichier s'ouvre au lieu de descendre : ${reponsePdf.headers()["content-disposition"]}`
+  );
   const octetsPdf = await reponsePdf.body();
   assert.equal(octetsPdf.slice(0, 5).toString("ascii"), "%PDF-");
 

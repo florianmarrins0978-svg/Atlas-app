@@ -3,6 +3,7 @@ import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { libellePeriode, periodeCourante, periodePrecedente } from "../src/server/periode-tva";
+import { ADRESSE } from "./_adresse";
 
 /**
  * Un ticket daté d'un autre mois ne doit jamais disparaître en silence.
@@ -38,7 +39,7 @@ import { libellePeriode, periodeCourante, periodePrecedente } from "../src/serve
  * vert sans rien éprouver.
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 /** Ce que le patron a réellement payé, à l'euro près, sur son ticket LAFON. */
 const FOURNISSEUR = "Station du contrôle hors période";
 const TOTAL_TTC = "97,39";
@@ -68,9 +69,18 @@ async function seConnecter(context: BrowserContext): Promise<Page> {
   return page;
 }
 
-/** Le montant d'une des deux colonnes, en centimes, tel que l'écran l'affiche. */
+/**
+ * Le montant d'une des lignes de l'addition, en centimes.
+ *
+ * **On vise le repère, pas la forme.** Ce contrôle lisait
+ * `div:has(> span:text-is("Déductible"))` — c'est-à-dire la TUILE que l'écran
+ * portait alors. La refonte du 3 septembre 2026 a remplacé les deux tuiles par
+ * les lignes d'une addition, et la suite serait devenue rouge sur du code
+ * juste. `data-atlas` survit à la mise en page (`CLAUDE.md` §5 bis).
+ */
 async function colonne(page: Page, libelle: "Collectée" | "Déductible"): Promise<number> {
-  const texte = (await page.locator(`div:has(> span:text-is("${libelle}"))`).last().textContent()) ?? "";
+  const marque = libelle === "Collectée" ? "montant-collectee" : "montant-deductible";
+  const texte = (await page.locator(`[data-atlas="${marque}"]`).last().textContent()) ?? "";
   const chiffres = texte.replace(libelle, "").replace(/[^\d,]/g, "").replace(",", ".");
   const valeur = Number(chiffres);
   assert.ok(Number.isFinite(valeur), `« ${libelle} » illisible : « ${texte} »`);
@@ -97,7 +107,7 @@ async function main() {
   const page = await seConnecter(context);
 
   await page.goto(`${BASE}/termines/tva`, { waitUntil: "domcontentloaded" });
-  await page.waitForSelector("text=Reste à payer", { timeout: 30_000 });
+  await page.waitForSelector('[data-atlas="montant-reste"]', { timeout: 30_000 });
 
   const titreDepart = (await page.locator("h1").first().textContent())?.trim() ?? "";
   assert.equal(
@@ -148,12 +158,10 @@ async function main() {
   });
 
   await test("L'achat est dans la liste de cette période, avec sa TVA", async () => {
-    // Le nom du fournisseur vit deux `<span>` sous la ligne : on remonte à
-    // celle-ci pour lire aussi le montant, qui est son voisin.
-    const ligne = page
-      .locator(`span:text-is("${FOURNISSEUR}")`)
-      .last()
-      .locator("xpath=ancestor::div[1]");
+    // La ligne entière porte son repère : on y lit le fournisseur ET son
+    // montant sans dépendre de la profondeur des balises, qui a déjà changé
+    // une fois.
+    const ligne = page.locator('[data-atlas="ligne-achat"]').filter({ hasText: FOURNISSEUR }).last();
     await ligne.waitFor({ state: "visible", timeout: 20_000 });
     const texte = (await ligne.textContent()) ?? "";
     assert.ok(texte.includes(TVA_ATTENDUE), `la ligne n'affiche pas ${TVA_ATTENDUE} € : ${texte}`);
@@ -174,9 +182,9 @@ async function main() {
     await page.goto(`${BASE}/termines/tva?annee=${courante.annee}&t=${courante.numero}`, {
       waitUntil: "domcontentloaded",
     });
-    await page.waitForSelector("text=Reste à payer", { timeout: 30_000 });
+    await page.waitForSelector('[data-atlas="montant-reste"]', { timeout: 30_000 });
     assert.equal(
-      await page.locator(`span:text-is("${FOURNISSEUR}")`).count(),
+      await page.locator('[data-atlas="ligne-achat"]').filter({ hasText: FOURNISSEUR }).count(),
       0,
       `l'achat du mois dernier apparaît aussi dans ${libellePeriode(courante)}`
     );

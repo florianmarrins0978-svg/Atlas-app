@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE, ACCUEIL_EXACT, echapper } from "./_adresse";
 
 /**
  * Le message du devis figé mène quelque part.
@@ -31,7 +32,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
  *   4. sur un devis PAS ENCORE parti, rien de tout cela n'apparaît : la page
  *      s'écrit, et un message d'interdiction y serait faux.
  */
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function seConnecter(contexte: BrowserContext): Promise<Page> {
   const page = await contexte.newPage();
@@ -39,7 +40,8 @@ async function seConnecter(contexte: BrowserContext): Promise<Page> {
   await page.fill('input[name="email"]', "demo@atlas.local");
   await page.fill('input[name="password"]', "demo1234");
   await page.click('button[type="submit"]');
-  await page.waitForURL(/localhost:3000\/(?!login)/, { timeout: 30_000 });
+  // « On est entré » : n'importe où sauf la page de connexion, sur CE serveur.
+  await page.waitForURL(new RegExp(`^${echapper(ADRESSE)}/(?!login)`), { timeout: 30_000 });
   return page;
 }
 
@@ -48,9 +50,10 @@ async function chantierAvecDevis(page: Page, envoyer: boolean): Promise<string> 
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `M. Porte ${Date.now()}`);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 79 98 45 14");
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-  const url = page.url();
+  // L'adresse se bâtit sur l'identifiant que l'aide rend : la relire dans
+  // le navigateur donnait « devis-complet » depuis que la fiche du chantier
+  // est retirée (`ARCHITECTURE.md` §254).
+  const url = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
 
   await page.goto(`${url}/prix`, { waitUntil: "networkidle" });
   await page.click("text=+ Ajouter une ligne");
@@ -66,7 +69,7 @@ async function chantierAvecDevis(page: Page, envoyer: boolean): Promise<string> 
     await page.click("text=Choisir la date");
     await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 30_000 });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForURL(/localhost:3000\/$/, { timeout: 30_000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+    await page.waitForURL(ACCUEIL_EXACT, { timeout: 30_000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
   }
   return url;
 }
@@ -111,7 +114,13 @@ async function main() {
 
     // ── Et la porte s'ouvre pour de bon ──────────────────────────────────
     await porte.click();
-    await page.waitForURL(`${BASE}/chantiers/${chantierId}/devis-complet`, { timeout: 30_000 });
+    // **La porte mène à `/export`, et le contrôle l'affirmait douze lignes plus
+    // haut — corrigé le 14 septembre 2026.** Il attendait ensuite l'arrivée sur
+    // `/devis-complet` : il se contredisait lui-même, et attendait trente
+    // secondes une adresse où le lien qu'il venait de vérifier ne mène pas.
+    // Pour un devis PARTI, l'écran est `/export` ; `/devis-complet` est celui
+    // d'avant l'envoi (`CHANGELOG.md`, « /export une fois parti »).
+    await page.waitForURL(`${BASE}/chantiers/${chantierId}/export`, { timeout: 30_000 });
     console.log("  ✓ elle s'ouvre : on arrive sur l'écran Devis");
 
     // ── Le devis PAS ENCORE parti : rien de tout cela ────────────────────

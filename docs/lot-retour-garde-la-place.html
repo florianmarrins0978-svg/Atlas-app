@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La flèche de retour rend sa place — et ce que « 8 chantiers » veut dire</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="la-flèche-de-retour-rend-sa-place--et-ce-que--8-chantiers--veut-dire">La flèche de retour rend sa place — et ce que « 8 chantiers » veut dire</h1>
+<p><em>9 septembre 2026. Deux points signalés dans le même message, capture de « Vos clients » à l'appui.</em></p>
+<hr>
+<h2 id="ses-deux-points-et-le-verdict-de-chacun">Ses deux points, et le verdict de chacun</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Son point</th>
+<th>Verdict</th>
+<th>Ce qui le fonde</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>1.</strong> <em>« Si je clique sur un client tout en bas de la liste, je fais retour, il me remet en haut de la liste. Je veux rester où j'étais ! »</em></td>
+<td><strong>défaut réel, reproduit, corrigé</strong></td>
+<td><code>src/components/atlas/FlecheRetour.tsx</code></td>
+</tr>
+<tr>
+<td><strong>2.</strong> <em>« À quoi correspond le nombre de chantier ? Certains clients ont 8 chantiers, on s'attend à avoir 8 devis alors qu'il y en a 0 »</em></td>
+<td><strong>le compte est juste — c'est ce qu'il annonce qui trompe</strong></td>
+<td><code>src/server/repositories/fiche-client.ts</code>, <code>src/lib/fiche-client.ts</code></td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="1-la-place-perdue-au-retour">1. La place perdue au retour</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="le-défaut-nétait-pas-dans-la-liste-des-clients">Le défaut n'était pas dans la liste des clients</h3>
+<p>La flèche de retour de <strong>tous</strong> les écrans (<code>EnTeteEcran</code>) était un lien — c'est-à-dire une navigation <strong>en avant</strong> vers l'adresse de l'écran précédent. Next.js pose une page neuve en haut, et il a raison : c'est ce qu'on attend d'un lien. Mais le geste, lui, est un <strong>retour</strong>.</p>
+<p>Chercher le défaut dans la liste aurait conduit à lui écrire une mémoire de défilement à elle — une seconde vérité à côté de celle que le navigateur tient déjà, et un pansement sur une flèche qui serait restée fausse partout ailleurs.</p>
+<h3 id="la-mesure-faite-avant-de-corriger">La mesure, faite AVANT de corriger</h3>
+<p>Version bâtie, son écran (390 × 664), quarante-sept clients descendus jusqu'au bout :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Le geste</th>
+<th>Où l'on retombe</th>
+</tr></thead><tbody>
+<tr>
+<td>la flèche de l'écran</td>
+<td><strong>0 px</strong></td>
+</tr>
+<tr>
+<td>le retour du navigateur</td>
+<td><strong>2 941 px</strong> — sa place exacte</td>
+</tr>
+</tbody></table></div>
+<p>Le navigateur savait donc déjà le faire. Il n'y avait rien à inventer : il fallait cesser de l'en empêcher.</p>
+<h3 id="ce-qui-a-été-fait">Ce qui a été fait</h3>
+<p>La flèche <strong>recule</strong> dans l'historique — mais seulement quand l'écran d'avant est bien celui qu'elle vise. Chaque entrée d'historique est marquée de l'adresse d'où elle a été ouverte ; sans marque, la flèche navigue comme avant.</p>
+<p><strong>UNE AUTRE SESSION TRAVAILLAIT LE MÊME BOUTON LE MÊME SOIR, et il faut le dire.</strong> Elle a livré sur <code>main</code> un journal des écrans traversés, qui corrige <strong>où</strong> la flèche mène (<code>ARCHITECTURE.md</code> §311 ; ce lot-ci est le §314). Ce lot-ci corrige <strong>par quel chemin</strong> elle y va.</p>
+<p>Le premier jet était une flèche complète, avec son propre souvenir du chemin — donc une seconde pièce pour le même bouton. <strong>Elle a été jetée à la fusion</strong> : ce qui reste est une question de plus, posée à l'endroit où l'autre session avait déjà mis la sienne. Deux règles pour une même question finissent toujours par diverger, et c'est le patron qui verrait la différence.</p>
+<p>Leur paragraphe écarte explicitement <code>history.back()</code>, avec trois objections. Elles tiennent toutes les trois, et aucune n'est contournée :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>leur objection</th>
+<th>pourquoi elle ne mord pas ici</th>
+</tr></thead><tbody>
+<tr>
+<td>la flèche est un lien, on l'ouvre dans un onglet</td>
+<td>elle en reste un ; seul l'appui simple est intercepté</td>
+</tr>
+<tr>
+<td>un retour d'historique ment après un rechargement ou un signet</td>
+<td>sans marque, on ne recule pas</td>
+</tr>
+<tr>
+<td>après un enregistrement, il redéposerait sur le formulaire quitté</td>
+<td>c'est leur journal qui choisit la destination, et il a retiré ce formulaire</td>
+</tr>
+</tbody></table></div>
+<p><strong>Pourquoi cette prudence :</strong> une fiche ouverte depuis un signet, ou rechargée, n'a pas d'écran d'avant. Y reculer à l'aveugle ferait un bouton qui ne fait rien — ou qui rendrait la main au site précédent.</p>
+<p><strong>Où la flèche mène n'a pas bougé d'un pouce</strong> : c'est toujours la règle de provenance qui le décide (<code>ARCHITECTURE.md</code> §296). Ce lot ne change que le <strong>sens</strong> dans lequel on parcourt le chemin.</p>
+<h3 id="ce-que-le-correctif-retire">Ce que le correctif RETIRE</h3>
+<p>L'entrée d'historique empilée à chaque aller-retour. Il fallait auparavant appuyer sur le retour du navigateur autant de fois qu'on avait ouvert de fiches pour ressortir de la liste. <em>Un correctif qui n'enlève rien doit alerter ; celui-ci enlève une navigation.</em></p>
+<h3 id="ce-qui-a-été-écrit-puis-retiré-et-pourquoi-il-faut-le-dire">Ce qui a été ÉCRIT PUIS RETIRÉ, et pourquoi il faut le dire</h3>
+<p>Le contrôle a montré autre chose au passage : <strong>un retour sert l'écran depuis la réserve de Next.js</strong>. Une donnée changée en base pendant qu'on était sur la fiche n'apparaît pas au retour.</p>
+<p>Ce n'est <strong>pas ce lot qui l'apporte</strong> — le même contrôle joué sur le retour du navigateur, celui qu'il emploie déjà sur son téléphone, est stale exactement pareil, et depuis toujours.</p>
+<p>Un rafraîchissement automatique a donc été écrit, essayé, <strong>puis jeté</strong> : il rendait les données fraîches et remettait le défilement à zéro, c'est-à-dire qu'il défaisait le correctif qu'on venait de livrer. Le faire tenir demandait d'attendre 400 millisecondes que le navigateur ait fini de restaurer — un pansement au sens exact de la règle d'or, qui serait revenu sur un téléphone plus lent. Le point ouvert et sa mesure sont dans <code>TODO.md</code>.</p>
+<h3 id="le-contrôle-sait-échouer">Le contrôle sait échouer</h3>
+<p><code>scripts/test-retour-garde-la-place-e2e.ts</code> déroule le geste entier — descendre, ouvrir un client, revenir — et vise la <strong>règle</strong> : une position de défilement, une adresse. Rien qui réclame un mot qu'il pourrait faire retirer demain.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Contre la version d'avant</th>
+<th>Contre celle-ci</th>
+</tr></thead><tbody>
+<tr>
+<td>✗ « on est resté » — <em>0 px au lieu de 17 641</em></td>
+<td>✓</td>
+</tr>
+<tr>
+<td>✗ « l'aller-retour n'empile plus d'historique »</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>✓ les deux garde-fous</td>
+<td>✓</td>
+</tr>
+</tbody></table></div>
+<p>Il pose lui-même ses trente clients — <strong>et aucun chantier</strong> : sur le jeu de démonstration la liste tient dans l'écran, et le contrôle mesurerait alors <strong>zéro</strong>, en vert.</p>
+<hr>
+<h2 id="2--8-chantiers--et-pourquoi-il-ny-a-pas-8-devis">2. « 8 chantiers », et pourquoi il n'y a pas 8 devis</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="ce-que-le-nombre-compte-exactement">Ce que le nombre compte, exactement</h3>
+<p><strong>Tous les chantiers rattachés à ce client</strong>, quel que soit leur état, les supprimés exclus. Un chantier naît dès qu'on en ouvre un — une dictée, « Nouveau chantier », « Autre chantier » depuis sa fiche — c'est-à-dire <strong>avant</strong> qu'il y ait le moindre devis.</p>
+<h3 id="ce-que-la-colonne--devis--compte-et-ce-nest-pas-la-même-chose">Ce que la colonne « Devis » compte, et ce n'est pas la même chose</h3>
+<p><strong>Seulement les devis PARTIS</strong> (envoyés au client). Un devis préparé, chiffré, mais jamais envoyé n'apparaît nulle part sur la fiche : il n'a pas de numéro définitif, le client ne l'a jamais reçu.</p>
+<h3 id="donc-sur-son-écran">Donc, sur son écran</h3>
+<blockquote>« 8 chantiers » et « Aucun devis parti » veut dire : <strong>huit chantiers ouverts, aucun devis envoyé.</strong> Rien n'est perdu, rien n'est cassé.</blockquote>
+<p>Le compte est donc juste. Ce qui trompe, c'est qu'il <strong>promet plus qu'il ne dit</strong> : rien sur la ligne n'annonce qu'un chantier peut être vide.</p>
+<h3 id="ce-quil-a-tranché-le-soir-même">CE QU'IL A TRANCHÉ, LE SOIR MÊME</h3>
+<p>Trois pistes lui ont été soumises ; il a choisi la troisième, en un mot : <strong>« remplace par la dernière chose qui s'est produit »</strong>. C'est fait.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>La règle, en une phrase</th>
+<th><strong>la ligne annonce ce que la FICHE contient</strong></th>
+</tr></thead><tbody>
+<tr>
+<td>les candidats</td>
+<td>les trois registres de sa fiche : Devis, Facture, Fiche</td>
+</tr>
+<tr>
+<td>les conditions</td>
+<td><strong>les mêmes que la fiche</strong> — devis parti, facture émise, fiche envoyée</td>
+</tr>
+<tr>
+<td>à jour égal</td>
+<td>le plus avancé du parcours : facture, puis devis, puis fiche</td>
+</tr>
+<tr>
+<td>rien à annoncer</td>
+<td>la ligne se tait ; elle n'écrit pas « aucun document »</td>
+</tr>
+</tbody></table></div>
+<p><strong>Un chantier ouvert n'en est PAS un</strong>, et c'est le cœur de la correction : il ne se voit nulle part sur la fiche. L'annoncer aurait recréé le même défaut sous un autre nom.</p>
+<p><strong>Ce que ça donne à l'écran :</strong> « 10 Rue de Nantes 77400 Lagny-sur-Ma… · Devis 7 sept. »</p>
+<h3 id="trois-défauts-sortis-de-la-capture-et-daucun-test">TROIS DÉFAUTS SORTIS DE LA CAPTURE, ET D'AUCUN TEST</h3>
+<p>C'est la cinquième fois dans ce dépôt qu'une image trouve ce qu'un vert cachait.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce que l'image a montré</th>
+<th>Ce qui a été fait</th>
+</tr></thead><tbody>
+<tr>
+<td>la date <strong>se coupait</strong> sur les adresses longues — donc elle disparaissait exactement chez les clients où on venait de l'ajouter</td>
+<td>l'adresse et la date sont deux boîtes : <strong>l'adresse se rogne, la date jamais</strong></td>
+</tr>
+<tr>
+<td>un client sans adresse ni document laissait une <strong>seconde ligne vide</strong> sous son nom</td>
+<td>rien à dire, rien à l'écran, et pas même la place</td>
+</tr>
+<tr>
+<td>« 44300 Nantes· Devis 5 sept. » <strong>collé</strong> — une boîte flexible ne garde pas le blanc qui la commence</td>
+<td>le séparateur est une marge, pas un caractère</td>
+</tr>
+</tbody></table></div>
+<p><strong>Et l'année tombe quand c'est celle qui court.</strong> Ce n'est pas un goût : ses quatre caractères sont exactement ce qui faisait déborder la ligne. Sans eux, elle mesure ce que mesurait « · 8 chantiers », qu'elle remplace — <em>rien ne se coupe qui ne se coupait déjà</em>. Elle reparaît dès qu'elle apprend quelque chose : « Devis 12 juin 2025 », c'est le client qu'on n'a pas revu.</p>
+<h3 id="ce-qui-a-été-retiré">Ce qui a été RETIRÉ</h3>
+<p>Le champ <code>chantiers</code> de la fiche : plus personne ne le lisait. Les suites qui s'en servaient pour éprouver l'isolation et la suppression visent maintenant la liste des chantiers elle-même — un repère plus profond qu'un compte.</p>
+<h3 id="un-point-à-savoir-quil-na-pas-demandé">Un point à savoir, qu'il n'a pas demandé</h3>
+<p>Le bouton <strong>« Refaire »</strong> d'une fiche client crée le chantier <strong>au moment où l'on appuie</strong>, même si l'on ne va pas plus loin. C'est probablement une partie de ses huit.</p>
+<hr>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Quoi</th>
+<th>Qui peut le trancher</th>
+</tr></thead><tbody>
+<tr>
+<td>un retour sert l'écran depuis la réserve (mesuré, pas apporté par ce lot)</td>
+<td><strong>nous</strong> — à ouvrir seulement s'il signale un écran qui ment au retour</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="les-chiffres-de-la-batterie">Les chiffres de la batterie</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>npm run verifier:avant-livraison</code>, 9 septembre 2026, les deux moitiés du lot ensemble :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>Types · Lint · Atelier · Construction · Mémoire · Fournisseurs d'IA</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Données de démonstration · Connexion derrière un proxy</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Suites base de données</td>
+<td>❌ — <strong>1 rouge</strong>, <code>test-acces-roles</code></td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td>❌ — <strong>16 rouges</strong></td>
+</tr>
+<tr>
+<td><strong><code>test-retour-garde-la-place-e2e</code></strong></td>
+<td>✅ <strong>4 / 4</strong></td>
+</tr>
+<tr>
+<td><strong><code>test-ligne-du-client-e2e</code></strong></td>
+<td>✅ <strong>5 / 5</strong></td>
+</tr>
+</tbody></table></div>
+<h3 id="les-dix-sept-rouges-sont-exactement-les-mêmes-quavant-le-lot">LES DIX-SEPT ROUGES SONT EXACTEMENT LES MÊMES QU'AVANT LE LOT</h3>
+<p>Ce n'est pas une impression : les deux relevés ont été <strong>comparés ligne à ligne</strong>, celui d'avant le lot et celui d'après.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>rouges avant</td>
+<td><strong>17</strong></td>
+</tr>
+<tr>
+<td>rouges après</td>
+<td><strong>17</strong></td>
+</tr>
+<tr>
+<td>ajoutées par ce lot</td>
+<td><strong>aucune</strong></td>
+</tr>
+<tr>
+<td>disparues</td>
+<td>aucune</td>
+</tr>
+</tbody></table></div>
+<p><code>acces-roles</code> · <code>adresse-suggestions</code> · <code>anneau-dictee</code> · <code>anneau-vers-devis</code> · <code>carte-reponse-mene-au-geste</code> · <code>devis-client</code> · <code>fin-de-chantier</code> · <code>ia-01</code> · <code>madame-lucie</code> · <code>message-au-client</code> · <code>pas-la-ce-jour</code> · <code>poser-une-date</code> · <code>recherche-client</code> · <code>reglages</code> · <code>reprise-chantier</code> · <code>reprise-morceau</code> · <code>suivi-devis</code></p>
+<p><strong>Onze d'entre elles sont nommées dans <code>TODO.md</code> depuis le 8 septembre</strong>, et trois y sont décrites comme des contrôles qui réclament ce qu'il a lui-même fait retirer (<code>CLAUDE.md</code> §5 bis). Elles appartiennent à d'autres lots, et ce document ne les revendique pas : il dit seulement que <strong>ce lot-ci n'en a ajouté aucune</strong>.</p>
+</main>
+</body>
+</html>

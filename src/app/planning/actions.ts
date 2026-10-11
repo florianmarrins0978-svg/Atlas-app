@@ -1,20 +1,45 @@
 "use server";
 
-import { exigerChantierDansSaPortee, exigerEcritureSurLePlanning } from "@/server/garde-action";
+import { exigerChantierDansSaPortee, exigerEcritureSurLePlanning, exigerGestionDevis } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import {
+  getChantier,
+  creerChantier,
+  listerChantiersPourPlanning,
   planifierChantier,
   deplanifierChantier,
+  DeplanificationImpossibleError,
   ecrireNoteChantier,
-  deplacerChantier,
   supprimerChantier,
   SuppressionChantierRefusee,
   basculerEquipeDuChantier,
+  reposerDemiJournee,
+  deplacerCeQueLeJourPorteEnBase,
+  creneauxDunChantier,
 } from "@/server/repositories/chantiers";
-import type { Moment } from "@/server/disponibilites";
-import type { QuandChantier } from "@/lib/planning-jour";
+import type { JourIso, Moment } from "@/lib/disponibilites";
+import type { MomentDArrivee } from "@/lib/creneaux-chantier";
+import type { EquipesDuChantier } from "@/lib/equipes-par-jour";
+import { estUnJourValide } from "@/lib/planning-jour";
+// (le départ se dit avec le vocabulaire de la base : `Moment`)
 import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
-import { tachesDuChantier, type FeuilleDuChantier } from "@/server/repositories/devis";
+import {
+  ajouterTravailALaMain,
+  enleverTravailALaMain,
+  tachesDuChantier,
+  type FeuilleDuChantier,
+  type ResultatTravaux,
+} from "@/server/repositories/devis";
+import { dernierEnvoiDuChantier, nombreDeRetoursDuChantier } from "@/server/repositories/retours-intervention";
+import { getClient, listerClients, mettreAJourClient, trouverOuCreerClient } from "@/server/repositories/clients";
+import { filtrerClientsParNom } from "@/lib/recherche-client";
+import { nomDuChantier } from "@/lib/nom-chantier";
+import { poserALaPlaceDuClient } from "@/server/repositories/pose-a-sa-place";
+import { dernierEnvoi } from "@/server/repositories/envois-devis";
+import { etatEnvoi } from "@/lib/etat-envoi";
+import { getOuCreerDevisBrouillon } from "@/server/repositories/devis";
+import { proposerLaGrilleDuJour } from "@/server/repositories/lignes-prix";
+import { envoyerAuClientAction } from "@/app/chantiers/[id]/export/actions";
 
 /**
  * LES ACTIONS DU PLANNING.
@@ -59,6 +84,25 @@ export type EtatPose = {
   datePlanifiee: string | null;
   creneauDebut: string | null;
   dureeDemiJournees: number | null;
+  /**
+   * OÙ il est posé, demi-journée par demi-journée — **et sans ce champ, poser
+   * laissait l'écran sur les créneaux d'AVANT.**
+   *
+   * Sa panne du 16 septembre 2026, capture à l'appui : *« j'ai essayé de poser
+   * la demi-journée retirée de Mr Julien, mais impossible »*, sur un vendredi
+   * qui s'annonçait libre matin et après-midi. La séquence : rendre une
+   * demi-journée, « Retirer », reposer le chantier ailleurs. `planifierChantier`
+   * réécrit les créneaux entiers ; l'état rendu ici ne les portait pas, l'écran
+   * gardait sa liste d'avant — il peignait donc le chantier sur son ANCIEN jour,
+   * et croyait qu'une moitié attendait encore une place. Le morceau existait à
+   * l'écran et nulle part en base : le serveur refusait, à juste titre.
+   *
+   * Trois colonnes ne suffisent plus à dire où un chantier est depuis la
+   * migration 0085 (`ARCHITECTURE.md` §322). L'état rendu après un geste porte
+   * donc la même vérité que la table, et le type l'exige — un prochain geste ne
+   * peut plus l'oublier en silence.
+   */
+  creneaux: { jour: string; moment: Moment }[];
 };
 
 export type ResultatPose =
@@ -86,7 +130,7 @@ export type ResultatPose =
 export async function planifierChantierAction(
   chantierId: string,
   datePlanifiee: string,
-  choix?: { quand: QuandChantier }
+  choix?: { demi: Moment }
 ): Promise<ResultatPose> {
   const ctx = await getCurrentCtx();
   await exigerEcritureSurLePlanning(ctx, "poser ce chantier au planning");
@@ -104,8 +148,133 @@ export async function planifierChantierAction(
       datePlanifiee: row?.datePlanifiee ?? null,
       creneauDebut: row?.creneauDebut ?? null,
       dureeDemiJournees: row?.dureeDemiJournees ?? null,
+      creneaux: await creneauxApres(ctx, chantierId),
     },
   };
+}
+
+/**
+ * POSER UN CLIENT DONT LE DEVIS ATTEND SA RÉPONSE — son choix B du 7 octobre
+ * 2026 : le client n'arrive pas à choisir ses dates sur son lien.
+ *
+ * `lien` : il signe toujours sur son lien, qui ne montre plus que ces jours.
+ * `papier` : il a signé le devis papier, le lien se ferme. Poser ne vaut
+ * jamais accord à lui seul (`pose-a-sa-place.ts`).
+ *
+ * Rend aussi la réponse de l'envoi : l'écran en tire « Pas encore signé »
+ * sans attendre un rechargement.
+ */
+export async function poserALaPlaceAction(
+  chantierId: string,
+  jour: string,
+  signature: { maniere: "lien" } | { maniere: "papier"; demarrageAnticipe: boolean }
+): Promise<
+  | { succes: true; etat: EtatPose; envoiReponse: "acceptee" | null }
+  | { succes: false; erreur: string }
+> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "poser ce chantier au planning");
+  await exigerChantierDansSaPortee(ctx, chantierId, "poser ce chantier au planning");
+  if (!estUnJourValide(jour)) return { succes: false, erreur: "Ce jour n'existe pas." };
+  // Ce qui arrive du navigateur se relit : seules deux formes existent.
+  const lue =
+    signature?.maniere === "papier"
+      ? { maniere: "papier" as const, demarrageAnticipe: signature.demarrageAnticipe === true }
+      : { maniere: "lien" as const };
+  const r = await poserALaPlaceDuClient(ctx, chantierId, jour, lue);
+  if (!r.succes) {
+    return {
+      succes: false,
+      erreur:
+        r.motif === "demarrage_non_demande"
+          ? "Ce jour tombe dans ses 14 jours de rétractation : cochez sa demande écrite de commencer plus tôt."
+          : "Ce client a déjà répondu. Rechargez la page.",
+    };
+  }
+  await porterChantierDansAgenda(ctx, chantierId);
+  return {
+    succes: true,
+    etat: { ...r.pose, creneaux: await creneauxApres(ctx, chantierId) },
+    envoiReponse: lue.maniere === "papier" ? "acceptee" : null,
+  };
+}
+
+/**
+ * UN DEVIS EXPIRÉ QUI REVIENT — sa demande du 7 octobre 2026.
+ *
+ * Six mois après, le client rappelle pour dire oui. Son lien a expiré : il n'a
+ * plus rien où signer. Deux gestes, depuis la carte du jour :
+ *
+ * - `relireLeDevisExpireAction` rouvre son devis en nouvelle version, ses
+ *   lignes aux prix d'alors et la grille du jour PROPOSÉE (les deux cadres du
+ *   26 septembre). Rien ne part encore.
+ * - `relancerLeDevisExpireAction` le renvoie (relu ou tel quel) avec un lien
+ *   neuf qui ne montre que ce jour, puis le pose : il signe sur ce lien, ou il
+ *   a signé sur papier.
+ *
+ * **Rien n'est réécrit ici** : l'envoi est celui de l'écran Devis
+ * (`envoyerAuClientAction` : nouvelle version, devis figé, lien de 45 jours),
+ * la pose celle de « Poser à sa place » (`poserALaPlaceDuClient`). Deux
+ * chemins pour envoyer un devis finiraient par diverger (`CLAUDE.md` §3).
+ *
+ * **Le poser sans le renvoyer** n'a pas d'action à lui : c'est la pose de
+ * « Sans date » (`planifierChantierAction`), sa décision du même soir.
+ */
+async function envoiExpire(ctx: Awaited<ReturnType<typeof getCurrentCtx>>, chantierId: string) {
+  const envoi = await dernierEnvoi(ctx, chantierId);
+  return envoi !== null && etatEnvoi(envoi) === "caduc" ? envoi : null;
+}
+
+const PLUS_EXPIRE = "Ce devis n'est plus expiré. Rechargez la page.";
+
+export async function relireLeDevisExpireAction(
+  chantierId: string
+): Promise<{ succes: true } | { succes: false; erreur: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "relire ce devis");
+  await exigerGestionDevis(ctx, "relire ce devis");
+  await exigerChantierDansSaPortee(ctx, chantierId, "relire ce devis");
+  if (!(await envoiExpire(ctx, chantierId))) return { succes: false, erreur: PLUS_EXPIRE };
+  await getOuCreerDevisBrouillon(ctx, chantierId);
+  await proposerLaGrilleDuJour(ctx, chantierId);
+  return { succes: true };
+}
+
+export async function relancerLeDevisExpireAction(
+  chantierId: string,
+  jour: string,
+  signature: { maniere: "lien" } | { maniere: "papier"; demarrageAnticipe: boolean }
+): Promise<
+  | { succes: true; etat: EtatPose; envoiReponse: "acceptee" | null }
+  | { succes: false; erreur: string }
+> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "renvoyer ce devis");
+  await exigerChantierDansSaPortee(ctx, chantierId, "renvoyer ce devis");
+  if (!estUnJourValide(jour)) return { succes: false, erreur: "Ce jour n'existe pas." };
+  const expire = await envoiExpire(ctx, chantierId);
+  if (!expire) return { succes: false, erreur: PLUS_EXPIRE };
+
+  // **Par où il l'a joint la dernière fois.** Un client sans canal convenu
+  // bloquerait l'envoi (« Indiquez d'abord comment joindre ce client »), alors
+  // que son premier lien lui est bien parvenu par SMS ou par e-mail : c'est ce
+  // canal-là qui est vrai, et il se lit sur l'envoi expiré.
+  const chantier = await getChantier(ctx, chantierId);
+  if (chantier?.clientId) {
+    const client = await getClient(ctx, chantier.clientId);
+    if (client && !client.canalCommunication) {
+      await mettreAJourClient(ctx, chantier.clientId, { canalCommunication: expire.canal });
+    }
+  }
+
+  // **Le lien ne propose que ce jour, et pas d'autre date** : c'est lui qui l'a
+  // choisi au téléphone avec le client.
+  const envoi = await envoyerAuClientAction(chantierId, "", [jour], undefined, false);
+  if (!envoi.succes) return { succes: false, erreur: envoi.erreur };
+
+  // Le lien est neuf et attend sa réponse : la pose est celle de « Poser à sa
+  // place », qui le referme sur ce jour, ou l'accepte sur papier.
+  return poserALaPlaceAction(chantierId, jour, signature);
 }
 
 /**
@@ -116,49 +285,103 @@ export async function planifierChantierAction(
  * Paul l'après-midi : il faut que tout soit indépendant ».*
  *
  * **Rien n'est refusé** — voir `basculerEquipeDuChantier`. Rend l'état COMPLET
- * des deux demi-journées, et non un simple succès : l'écran repeint sa pastille
+ * des équipes du chantier, et non un simple succès : l'écran repeint sa pastille
  * avec ce que la base dit, jamais avec ce qu'il a supposé. Deux appuis rapides
  * sur la même pastille se croiseraient sinon, et le dernier arrivé gagnerait.
+ *
+ * **`jour` : le jour de la carte où il appuie** — sa plainte du 15 septembre
+ * 2026. Ajouter vaut ce jour et les suivants ; retirer, ce jour seulement
+ * (`src/lib/equipes-par-jour.ts`). Sans jour, tout le chantier, comme avant.
  */
 export async function basculerEquipeAction(
   chantierId: string,
   demi: Moment,
-  rangEquipe: number
-): Promise<{ matin: number[]; apres_midi: number[] } | null> {
+  rangEquipe: number,
+  jour?: string
+): Promise<EquipesDuChantier | null> {
   const ctx = await getCurrentCtx();
   await exigerEcritureSurLePlanning(ctx, "cocher une équipe sur ce chantier");
   await exigerChantierDansSaPortee(ctx, chantierId, "cocher une équipe sur ce chantier");
-  const etat = await basculerEquipeDuChantier(ctx, chantierId, demi, rangEquipe);
+  // Un jour mal formé ne vaut pas « tout le chantier » : il ne vaut rien.
+  if (jour !== undefined && !estUnJourValide(jour)) return null;
+  const etat = await basculerEquipeDuChantier(ctx, chantierId, demi, rangEquipe, jour as JourIso | undefined);
   // L'agenda extérieur porte le nom de l'équipe dans l'intitulé : sans ce
   // report, son téléphone garderait l'ancienne.
   if (etat) await porterChantierDansAgenda(ctx, chantierId);
   return etat;
 }
 
+/** Ce qu'un chantier occupe après le geste — l'écran repeint avec ça. */
+export type ResultatCreneaux =
+  | { succes: true; creneaux: { jour: string; moment: Moment }[] }
+  | { succes: false; erreur: string };
+
+async function creneauxApres(ctx: Awaited<ReturnType<typeof getCurrentCtx>>, chantierId: string) {
+  const poses = await creneauxDunChantier(ctx, chantierId);
+  return poses.map((c) => ({ jour: c.jour, moment: c.moment }));
+}
+
 /**
- * Déplace un chantier posé : matin, après-midi, ou la journée.
+ * REPOSER LA DEMI-JOURNÉE qui attendait une place.
  *
- * Le jour ne bouge pas — « Déplacer » vit dans la fiche d'UN jour, et c'est ce
- * que l'écran promet.
+ * *« La demi-journée de Mr Julien qui a été retirée peut être replacée. »* Elle
+ * se pose où il veut — un autre jour, un autre moment.
  */
-export async function deplacerChantierAction(
+export async function reposerDemiJourneeAction(
   chantierId: string,
-  quand: QuandChantier
-): Promise<ResultatPose> {
+  jour: string,
+  demi: Moment
+): Promise<ResultatCreneaux> {
   const ctx = await getCurrentCtx();
-  await exigerEcritureSurLePlanning(ctx, "déplacer ce chantier");
-  await exigerChantierDansSaPortee(ctx, chantierId, "déplacer ce chantier");
-  const row = await deplacerChantier(ctx, chantierId, quand);
-  if (!row) return { succes: false, erreur: "Ce chantier n'est pas posé sur un jour." };
+  await exigerEcritureSurLePlanning(ctx, "reposer une demi-journée");
+  await exigerChantierDansSaPortee(ctx, chantierId, "reposer une demi-journée");
+  const r = await reposerDemiJournee(ctx, chantierId, jour as JourIso, demi);
+  if (!r) return { succes: false, erreur: "Ce chantier n'attend plus de demi-journée." };
   await porterChantierDansAgenda(ctx, chantierId);
-  return {
-    succes: true,
-    etat: {
-      datePlanifiee: row.datePlanifiee ?? null,
-      creneauDebut: row.creneauDebut ?? null,
-      dureeDemiJournees: row.dureeDemiJournees ?? null,
-    },
-  };
+  return { succes: true, creneaux: await creneauxApres(ctx, chantierId) };
+}
+
+/**
+ * DÉPLACER CE QUE LE JOUR PORTE — le jour d'accueil, puis le moment.
+ *
+ * **Sa demande du 17 septembre 2026 :** *« trop de clics »*. Le geste d'avant
+ * en demandait sept — libérer, ouvrir le tiroir, prendre le morceau, refermer,
+ * ouvrir le jour d'accueil, poser. Celui-ci en demande trois, et **n'écrit
+ * qu'une fois** : entre les deux anciens appels, la demi-journée n'était nulle
+ * part.
+ *
+ * **« La A »** : seule la demi-journée du jour choisi part. Un chantier de huit
+ * jours corrigé sur un jour ne se replie pas ailleurs.
+ *
+ * **Le jour se valide comme partout ailleurs** : une date qui vient de l'écran
+ * n'est pas une date tant que personne ne l'a regardée.
+ */
+export async function deplacerCeQueLeJourPorteAction(
+  chantierId: string,
+  jourSource: string,
+  versJour: string,
+  versMoment: MomentDArrivee
+): Promise<ResultatCreneaux> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "déplacer une demi-journée");
+  await exigerChantierDansSaPortee(ctx, chantierId, "déplacer une demi-journée");
+  if (!estUnJourValide(jourSource) || !estUnJourValide(versJour)) {
+    return { succes: false, erreur: "Ce jour n'est pas une date." };
+  }
+  if (!["matin", "apres_midi", "journee"].includes(versMoment)) {
+    return { succes: false, erreur: "Ce moment n'existe pas." };
+  }
+  const r = await deplacerCeQueLeJourPorteEnBase(
+    ctx,
+    chantierId,
+    jourSource as JourIso,
+    { jour: versJour as JourIso, moment: versMoment }
+  );
+  // **Chaque refus porte SA phrase** — un « réessayez » pour trois causes
+  // envoie chercher au mauvais endroit (`AGENTS.md`).
+  if ("refus" in r) return { succes: false, erreur: r.refus };
+  await porterChantierDansAgenda(ctx, chantierId);
+  return { succes: true, creneaux: await creneauxApres(ctx, chantierId) };
 }
 
 /**
@@ -180,16 +403,65 @@ export async function ecrireNoteChantierAction(
   return { succes: true, note: row.note };
 }
 
-export async function deplanifierChantierAction(chantierId: string) {
+/**
+ * Ajouter un travail, écrit à la main, à un client posé sans devis — sa
+ * réponse du 7 octobre 2026 (`appli/travaux-sans-devis.html`). Mêmes gardes que
+ * le pense-bête : c'est écrire sur le planning, sur un chantier de sa portée.
+ */
+export async function ajouterTravailAction(chantierId: string, libelle: string): Promise<ResultatTravaux> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "écrire les travaux de ce chantier");
+  await exigerChantierDansSaPortee(ctx, chantierId, "écrire les travaux de ce chantier");
+  return ajouterTravailALaMain(ctx, chantierId, libelle);
+}
+
+export async function enleverTravailAction(
+  chantierId: string,
+  rang: number,
+  libelle: string
+): Promise<ResultatTravaux> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "écrire les travaux de ce chantier");
+  await exigerChantierDansSaPortee(ctx, chantierId, "écrire les travaux de ce chantier");
+  if (!Number.isInteger(rang) || rang < 0) return { ok: false, raison: "Ce travail n'existe plus." };
+  return enleverTravailALaMain(ctx, chantierId, rang, libelle);
+}
+
+/**
+ * Le refus de ce geste, dans SES mots — et il dit le pourquoi, pas la règle.
+ *
+ * **Sa décision du 21 septembre 2026.** Retirer du planning un chantier déjà
+ * facturé lui faisait perdre sa date pour toujours, sans rien afficher.
+ */
+const REFUS_DEPLANIFICATION: Record<DeplanificationImpossibleError["motif"], string> = {
+  facture_preparee: "Sa facture est déjà préparée : le chantier garde sa date.",
+};
+
+export type ResultatDeplanification =
+  | { succes: true }
+  | { succes: false; erreur: string };
+
+export async function deplanifierChantierAction(
+  chantierId: string
+): Promise<ResultatDeplanification> {
   const ctx = await getCurrentCtx();
   await exigerEcritureSurLePlanning(ctx, "retirer ce chantier du planning");
   await exigerChantierDansSaPortee(ctx, chantierId, "retirer ce chantier du planning");
-  const resultat = await deplanifierChantier(ctx, chantierId);
+  try {
+    await deplanifierChantier(ctx, chantierId);
+  } catch (err) {
+    // **Le refus se rend en VALEUR** : une exception d'action serveur arrive
+    // chez lui en identifiant opaque de six chiffres (`AGENTS.md`, piège 0 ter).
+    if (err instanceof DeplanificationImpossibleError) {
+      return { succes: false, erreur: REFUS_DEPLANIFICATION[err.motif] };
+    }
+    throw err;
+  }
   // Le pendant obligatoire de l'écriture : sans ce retrait, un chantier
   // déplanifié resterait dans son téléphone pour toujours — et il se fierait à
   // un agenda qui ment.
   await porterChantierDansAgenda(ctx, chantierId);
-  return resultat;
+  return { succes: true };
 }
 
 /**
@@ -237,8 +509,209 @@ export async function supprimerChantierAction(chantierId: string): Promise<Resul
  * une panne, et la feuille le dit en toutes lettres — **et n'offre alors pas le
  * bouton du PDF**, qui répondrait 404.
  */
-export async function tachesDuChantierAction(chantierId: string): Promise<FeuilleDuChantier> {
+export async function tachesDuChantierAction(
+  chantierId: string
+): Promise<FeuilleDuChantier & { retours: number; dernierRetourLe: string | null }> {
   const ctx = await getCurrentCtx();
   await exigerChantierDansSaPortee(ctx, chantierId, "ouvrir la feuille de ce chantier");
-  return tachesDuChantier(ctx, chantierId);
+  // **Le compte des retours se demande ICI, avec la feuille — pas à
+  // l’ouverture du bandeau.** La fiche dit « 2 retours envoyés » sous le
+  // bandeau fermé, avant qu’on l’ouvre ; c’est une requête de plus sur une
+  // lecture qui se fait déjà, jamais une requête de plus tout court.
+  //
+  // **Les photos du chantier ne sont plus lues ici — 22 septembre 2026.** Elles
+  // se voyaient au-dessus de la fiche de sécurité, qui porte exactement les
+  // mêmes (`listerPhotos` du même chantier) : *« pas besoin d’avoir les photos
+  // à cet endroit, elles sont déjà présentes dans la fiche de sécurité »*. Deux
+  // fois la même rangée sur le même écran, c’est une lecture de plus à chaque
+  // ouverture d’une feuille, et un doute sur ce qui les distingue.
+  // **La date du dernier envoi voyage avec le compte** : c'est elle qui dit si
+  // « 1 retour envoyé » se rouvre encore, le jour même (sa règle du
+  // 25 septembre 2026), sans attendre qu'on ouvre le bandeau.
+  const [feuille, retours, dernierRetourLe] = await Promise.all([
+    tachesDuChantier(ctx, chantierId),
+    nombreDeRetoursDuChantier(ctx, chantierId),
+    dernierEnvoiDuChantier(ctx, chantierId),
+  ]);
+  return { ...feuille, retours, dernierRetourLe };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// POSER UN CLIENT SUR UN JOUR, SANS DEVIS — sa demande du 10 septembre 2026
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// *« Si j'ai un chantier à rajouter ou quelque chose, que je puisse le faire
+// sans devoir passer par la fiche client et le devis — donc en appuyant sur
+// ajouter, il faut pouvoir bloquer une demi-journée ou la journée juste en
+// écrivant ce que c'est. »* Puis sa correction, planche
+// `appli/bloquer-sans-devis.html` : *« change le nom en un client, et si le
+// client n'est pas reconnu il faut qu'il ajoute aussi sa fiche client
+// automatiquement, comme quand on ajoute un client par la voie normale. »*
+//
+// **La voie normale part du client et descend vers le planning** — fiche,
+// devis, envoi, puis une date. Celle-ci part du JOUR et remonte : on pose
+// d'abord, la fiche se crée au passage, le devis vient plus tard ou jamais.
+
+/** Un client que la recherche a retrouvé — ce que l'écran propose au doigt. */
+export type ClientProposé = {
+  id: string;
+  nom: string;
+  telephone: string | null;
+  adresse: string | null;
+};
+
+/**
+ * LES CLIENTS DONT LE NOM CONTIENT CE QU'IL TAPE.
+ *
+ * **La recherche se fait au SERVEUR, et le carnet ne descend pas.** L'écran des
+ * clients, lui, filtre dans le navigateur — il a déjà la liste, puisqu'il
+ * l'affiche. Le planning ne l'a pas, et la lui envoyer ferait descendre les
+ * noms, numéros et adresses de tout le carnet dans le téléphone à chaque
+ * ouverture du planning, pour un geste qui sert deux fois par mois.
+ *
+ * **La règle, elle, ne bouge pas** : `filtrerClientsParNom` est celle de
+ * l'écran des clients (`src/lib/recherche-client.ts`). Deux façons de chercher
+ * un client finiraient par ne plus trouver le même (`CLAUDE.md` §3).
+ */
+export async function chercherDesClientsAction(saisie: string): Promise<ClientProposé[]> {
+  const ctx = await getCurrentCtx();
+  // Chercher, c'est lire — mais ce geste-ci n'existe que pour POSER, et poser
+  // est refusé à un salarié. Lui rendre le carnet de son patron par la porte
+  // de service serait le contournement que la garde existe pour fermer.
+  await exigerEcritureSurLePlanning(ctx, "chercher un client");
+  // **Deux lettres ne reconnaissent personne** — la même borne que
+  // `reconnaitreLeClient`, et elle évite une requête par frappe.
+  if (saisie.trim().length < 2) return [];
+  const tous = await listerClients(ctx);
+  return filtrerClientsParNom(tous, saisie)
+    .slice(0, 6)
+    .map((c) => ({ id: c.id, nom: c.nom, telephone: c.telephone, adresse: c.adresse }));
+}
+
+/** Ce que le jour reçoit : une moitié, ou la journée entière. */
+export type QuandPoser = "matin" | "apres_midi" | "journee";
+
+export type ResultatPoseClient =
+  | { succes: true; chantier: ChantierDuPlanning; ficheCreee: boolean }
+  | { succes: false; erreur: string };
+
+/** La forme exacte que l'écran repeint — jamais recopiée à la main. */
+type ChantierDuPlanning = Awaited<ReturnType<typeof listerChantiersPourPlanning>>[number];
+
+/**
+ * POSER UN CLIENT SUR UNE DEMI-JOURNÉE, OU SUR LA JOURNÉE.
+ *
+ * **La fiche du client se crée si elle n'existe pas**, et c'est sa demande mot
+ * pour mot. La reconnaissance est celle de la voie normale
+ * (`trouverOuCreerClient`, qui porte la règle du 17 août 2026) : un M. Martins
+ * déjà connu ne se dédouble pas, et ce qu'on saisit complète ce qui manque
+ * dans sa fiche sans jamais écraser ce qui y est.
+ *
+ * **LA DURÉE SE CHOISIT ICI, et c'est le seul endroit où cela reste vrai.**
+ * Ailleurs, choisir un moment réécrivait ce que le devis avait vendu — le
+ * défaut du 9 septembre 2026. Ici, il n'y a pas de devis : le chantier naît de
+ * ce geste, et « Journée » ne recouvre rien.
+ *
+ * **Ni prix, ni devis, ni équipe.** Le temps est pris, c'est tout ce qui est
+ * promis. Le chantier se chiffre ensuite comme les autres, ou jamais.
+ */
+export async function poserUnClientAction(
+  jour: JourIso,
+  quand: QuandPoser,
+  saisie: { nom: string; telephone?: string; email?: string; adresse?: string }
+): Promise<ResultatPoseClient> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "poser un client sur ce jour");
+
+  const nom = saisie.nom.trim();
+  if (nom.length < 2) return { succes: false, erreur: "Écrivez le nom du client." };
+
+  const { client, reutilise } = await trouverOuCreerClient(ctx, {
+    nom,
+    telephone: saisie.telephone?.trim() || undefined,
+    email: saisie.email?.trim() || undefined,
+    adresse: saisie.adresse?.trim() || undefined,
+  });
+
+  // **Le nom du chantier ne s'invente pas ici** : `nomDuChantier` le fabrique
+  // pour toute l'application, et le recopier à la main donnerait un jour deux
+  // façons de nommer la même chose (`CLAUDE.md` §3).
+  // **La durée naît AVEC le chantier** : `planifierChantier` la lit pour savoir
+  // combien de demi-journées poser, et un chantier sans durée vaudrait la
+  // journée entière — donc « Matin » prendrait aussi l'après-midi.
+  const chantier = await creerChantier(ctx, {
+    nom: nomDuChantier({ nomClient: client.nom, adresseChantier: client.adresse, jour }),
+    adresseChantier: client.adresse ?? undefined,
+    clientId: client.id,
+    dureeDemiJournees: quand === "journee" ? 2 : 1,
+  });
+
+  await planifierChantier(ctx, chantier.id, jour, {
+    demi: quand === "apres_midi" ? "apres_midi" : "matin",
+  });
+  await porterChantierDansAgenda(ctx, chantier.id);
+
+  // **On relit par la requête du planning**, plutôt que de fabriquer la ligne :
+  // elle porte une quinzaine de champs — l'adresse, le dernier envoi, les
+  // équipes, les créneaux — et une seconde rédaction en oublierait un, qui
+  // manquerait à l'écran sans que rien ne le dise.
+  const ligne = (await listerChantiersPourPlanning(ctx)).find((c) => c.id === chantier.id);
+  if (!ligne) {
+    return { succes: false, erreur: "Le chantier a été créé mais reste introuvable au planning." };
+  }
+  return { succes: true, chantier: ligne, ficheCreee: !reutilise };
+}
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * DU TEMPS QUI N'EST PAS UN CLIENT — la banque, une livraison, une formation
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * **Sa réponse du 10 septembre 2026**, à la question que sa propre correction
+ * avait ouverte : *« ok fais ça »* — une troisième entrée, à côté de « Un
+ * chantier en attente » et « Un client ».
+ *
+ * **Un rendez-vous à la banque prend une demi-journée comme un chantier.** Il
+ * ne se distingue de celui d'un client que par ce qui lui manque : personne à
+ * facturer, aucune adresse à rejoindre. C'est donc un chantier **sans client**,
+ * portant pour nom ce qu'il a écrit — et non une nouvelle sorte d'objet.
+ *
+ * **Pourquoi pas une table à part.** Une « occupation » qui ne serait pas un
+ * chantier obligerait à la compter une seconde fois dans la capacité, à la
+ * dessiner une seconde fois au calendrier, à la retirer par un second geste, et
+ * à la sortir des terminés par une seconde règle. Quatre endroits où deux
+ * vérités finiraient par diverger, pour une ligne qui prend une demi-journée
+ * exactement comme les autres.
+ *
+ * **CE QUE ÇA COÛTE, ET IL FAUT LE DIRE** : ce temps-là apparaît dans la liste
+ * des chantiers, puisque c'en est un. Sans prix, sans devis, sans client.
+ */
+export async function poserDuTempsAction(
+  jour: JourIso,
+  quand: QuandPoser,
+  quoi: string
+): Promise<ResultatPoseClient> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "bloquer du temps sur ce jour");
+
+  const nom = quoi.trim();
+  if (nom.length < 2) return { succes: false, erreur: "Écrivez ce que c'est." };
+
+  // **Aucun client, et c'est tout ce qui le distingue.** `nomDuChantier` sait
+  // déjà nommer un chantier sans client — mais ici le nom est écrit par lui, et
+  // c'est le seul qui dise de quoi il s'agit : « Banque », « Livraison ».
+  const chantier = await creerChantier(ctx, {
+    nom: nom.slice(0, 120),
+    dureeDemiJournees: quand === "journee" ? 2 : 1,
+  });
+  await planifierChantier(ctx, chantier.id, jour, {
+    demi: quand === "apres_midi" ? "apres_midi" : "matin",
+  });
+  await porterChantierDansAgenda(ctx, chantier.id);
+
+  const ligne = (await listerChantiersPourPlanning(ctx)).find((c) => c.id === chantier.id);
+  if (!ligne) {
+    return { succes: false, erreur: "Le temps a été bloqué mais reste introuvable au planning." };
+  }
+  return { succes: true, chantier: ligne, ficheCreee: false };
 }

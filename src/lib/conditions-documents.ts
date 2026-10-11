@@ -1,3 +1,6 @@
+import { TEXTE_ORIGINE_CONDITIONS_GENERALES } from "./conditions-generales";
+import { enEuros } from "./euros";
+
 /**
  * Les conditions qui s'impriment sur un devis, réglées au lieu d'être en dur.
  *
@@ -39,6 +42,13 @@ export type ConditionsLues = {
   moyensPaiement?: string | null;
   rappelerPenalites?: boolean | null;
   textePied?: string | null;
+  /**
+   * Les conditions générales de vente et de règlement (migration 0090).
+   * **Ici l'encodage est INVERSÉ par rapport au texte de pied**, et c'est sa
+   * demande : la case arrive REMPLIE. `null` / absent = le texte d'origine
+   * d'Atlas ; `""` = il a tout effacé, rien ne s'imprime ; du texte = le sien.
+   */
+  conditionsGenerales?: string | null;
 };
 
 /**
@@ -71,6 +81,8 @@ export type Conditions = {
   rappelerPenalites: boolean;
   /** Ajouté tel quel en bas de chaque document. */
   textePied: string | null;
+  /** Imprimées après le bon pour accord. Vide : rien, pas même le titre. */
+  conditionsGenerales: string;
 };
 
 function nombre(valeur: unknown, bornes: { min: number; max: number }): number | null {
@@ -132,26 +144,48 @@ export function lireConditions(brut: ConditionsLues | null | undefined): Conditi
     moyensPaiement: texte(brut?.moyensPaiement),
     rappelerPenalites: brut?.rappelerPenalites === true,
     textePied: texte(brut?.textePied),
+    // Absent → rien. Le texte d'origine ne se pose QUE dans
+    // `conditionsDepuisEntreprise` : ici passe aussi l'instantané d'un devis, et
+    // un devis d'avant la migration 0090 sortirait sinon avec des CGV au dos
+    // qu'il n'a jamais portées (`test-conditions-sur-le-devis`, 13 sept. 2026).
+    conditionsGenerales: texte(brut?.conditionsGenerales) ?? "",
   };
 }
 
-/** Ce qui part en base après une saisie. Même fonction que pour l'affichage. */
+/**
+ * Ce qui part en base après une saisie. Même fonction que pour l'affichage.
+ *
+ * **UNE CLEF ABSENTE NE S'ÉCRIT PAS — 14 septembre 2026.** Elle valait
+ * « éteint » : un geste qui ne portait qu'un réglage effaçait tous les autres.
+ * Deux appelants s'en étaient protégés en relisant la base pour tout renvoyer
+ * (le geste `regler_documents` de l'assistant, la photo d'un devis) — et le
+ * second avait oublié la clef née le 13 (migration 0090) : ses conditions
+ * générales repartaient à `""`, c'est-à-dire « il a tout effacé », et plus rien
+ * ne s'imprimait après le bon pour accord. Un troisième appelant aurait refait
+ * la même faute. La règle vit donc ici : ce qui n'est pas dit ne bouge pas.
+ * `null` reste « éteint », `""` reste « allumé, rien écrit ».
+ */
 export function normaliserConditions(saisie: ConditionsLues): {
-  validiteJours: number | null;
-  acomptePourcent: string | null;
-  delaiPaiementJours: number | null;
-  moyensPaiement: string | null;
-  rappelerPenalites: boolean;
-  textePied: string | null;
+  validiteJours?: number | null;
+  acomptePourcent?: string | null;
+  delaiPaiementJours?: number | null;
+  moyensPaiement?: string | null;
+  rappelerPenalites?: boolean;
+  textePied?: string | null;
+  conditionsGenerales?: string;
 } {
   const c = lireConditions({ ...saisie, validiteJours: saisie.validiteJours ?? null });
+  const dite = (clef: keyof ConditionsLues) => saisie[clef] !== undefined;
   return {
-    validiteJours: c.validiteJours,
-    acomptePourcent: c.acomptePourcent === null ? null : String(c.acomptePourcent),
-    delaiPaiementJours: c.delaiPaiementJours,
-    moyensPaiement: c.moyensPaiement,
-    rappelerPenalites: c.rappelerPenalites,
-    textePied: c.textePied,
+    ...(dite("validiteJours") ? { validiteJours: c.validiteJours } : {}),
+    ...(dite("acomptePourcent")
+      ? { acomptePourcent: c.acomptePourcent === null ? null : String(c.acomptePourcent) }
+      : {}),
+    ...(dite("delaiPaiementJours") ? { delaiPaiementJours: c.delaiPaiementJours } : {}),
+    ...(dite("moyensPaiement") ? { moyensPaiement: c.moyensPaiement } : {}),
+    ...(dite("rappelerPenalites") ? { rappelerPenalites: c.rappelerPenalites } : {}),
+    ...(dite("textePied") ? { textePied: c.textePied } : {}),
+    ...(dite("conditionsGenerales") ? { conditionsGenerales: c.conditionsGenerales } : {}),
   };
 }
 
@@ -168,17 +202,41 @@ export function libelleValidite(c: Conditions): string | null {
  * montre exactement ces phrases : deux rédactions finiraient par diverger, et
  * c'est le client qui lirait la mauvaise (`CLAUDE.md` §3).
  */
-export function lignesConditionsDevis(c: Conditions, totalTtc?: number): string[] {
+export function lignesConditionsDevis(
+  c: Conditions,
+  totalTtc?: number,
+  /**
+   * Les phrases de l'échéancier du devis (`phrasesAcomptesDuDevis`) : elles
+   * remplacent la phrase du réglage, sinon l'acompte s'imprimerait deux fois.
+   * **Vide, rien** : il a retiré l'acompte, et le papier ne le réclame plus
+   * (sa décision du 7 octobre 2026). **Absente, la phrase du réglage** :
+   * l'aperçu des Réglages, ou un devis parti sans échéancier posé.
+   */
+  phrasesAcomptes?: readonly string[],
+  /**
+   * Un client professionnel : seul lui doit l'indemnité de 40 € (C. com.
+   * L441-10 et D441-5, achats « pour une activité professionnelle »). La
+   * réclamer à un particulier, c'est lui demander ce qu'il ne doit pas
+   * (`docs/check-up-legal-documents.md`, point 5). Faute de le savoir, le
+   * particulier : c'est le client d'Atlas le plus courant.
+   */
+  clientProfessionnel = false
+): string[] {
   const lignes: string[] = [];
 
-  if (c.acomptePourcent !== null) {
-    // Le montant n'est écrit QUE s'il est connu. Sur l'aperçu des réglages il
-    // ne l'est pas — et un chiffre inventé à cet endroit finirait imprimé.
-    const montant =
-      totalTtc !== undefined && Number.isFinite(totalTtc)
-        ? ` — soit ${((totalTtc * c.acomptePourcent) / 100).toFixed(2).replace(".", ",")} €`
-        : "";
-    lignes.push(`Acompte de ${c.acomptePourcent} % à la commande${montant}.`);
+  if (phrasesAcomptes) {
+    lignes.push(...phrasesAcomptes);
+  } else if (c.acomptePourcent !== null) {
+    // **La B de sa planche, choisie le 14 septembre 2026** — la même rédaction
+    // que `phrasesAcomptes`, pour le réglage seul : le mode, puis les montants
+    // QUAND le total est connu. Sur l'aperçu des réglages il ne l'est pas — et
+    // un chiffre inventé à cet endroit finirait imprimé.
+    lignes.push(`Mode de règlement : ${c.acomptePourcent} % à la commande, solde à réception de la facture.`);
+    if (totalTtc !== undefined && Number.isFinite(totalTtc)) {
+      const acompte = Math.round(totalTtc * c.acomptePourcent) / 100;
+      lignes.push(`Montant à régler à la commande : ${enEuros(acompte)}`);
+      lignes.push(`Solde restant à régler : ${enEuros(Math.round((totalTtc - acompte) * 100) / 100)}`);
+    }
   }
 
   if (c.delaiPaiementJours !== null) {
@@ -198,8 +256,10 @@ export function lignesConditionsDevis(c: Conditions, totalTtc?: number): string[
     // Le TEXTE de la facture, rappelé mot pour mot : deux formulations
     // différentes pour la même pénalité se lisent comme deux pénalités.
     lignes.push(
-      "En cas de retard de paiement : pénalités au taux de trois fois le taux d'intérêt légal, " +
-        "et indemnité forfaitaire de 40 € pour frais de recouvrement."
+      clientProfessionnel
+        ? "En cas de retard de paiement : pénalités au taux de trois fois le taux d'intérêt légal, " +
+            "et indemnité forfaitaire de 40 € pour frais de recouvrement."
+        : "En cas de retard de paiement : pénalités au taux de trois fois le taux d'intérêt légal."
     );
   }
 
@@ -207,6 +267,32 @@ export function lignesConditionsDevis(c: Conditions, totalTtc?: number): string[
   // devis.
   if (c.textePied) lignes.push(c.textePied);
 
+  return lignes;
+}
+
+/**
+ * Les lignes de conditions à imprimer sur la FACTURE — le même papier que le
+ * devis (sa planche du 14 septembre 2026), sans ce qui n'a plus de sens une
+ * fois le chantier fait : le montant à régler à la signature et le solde
+ * restant sont remplacés par « Montants versés », et les pénalités ne se
+ * répètent pas — la facture les porte déjà, scellées, au pied.
+ *
+ * `modeDeReglement` vient des acomptes du devis (`modeDeReglement` dans
+ * `acomptes-devis.ts`) ; sans devis, la phrase du réglage.
+ */
+export function lignesConditionsFacture(
+  c: Conditions,
+  modeDeReglement: string | null,
+  montantsVerses: string | null
+): string[] {
+  const lignes: string[] = [];
+  if (modeDeReglement) lignes.push(modeDeReglement);
+  else if (c.acomptePourcent !== null) {
+    lignes.push(`Mode de règlement : ${c.acomptePourcent} % à la commande, solde à réception de la facture.`);
+  }
+  if (montantsVerses) lignes.push(montantsVerses);
+  if (c.moyensPaiement) lignes.push(`Moyens de paiement acceptés : ${c.moyensPaiement}.`);
+  if (c.textePied) lignes.push(c.textePied);
   return lignes;
 }
 
@@ -229,6 +315,7 @@ export function conditionsDepuisEntreprise(
         moyensPaiement?: string | null;
         rappelerPenalitesDevis?: boolean | null;
         textePiedDocuments?: string | null;
+        conditionsGenerales?: string | null;
       }
     | null
     | undefined
@@ -240,5 +327,11 @@ export function conditionsDepuisEntreprise(
     moyensPaiement: ligne?.moyensPaiement,
     rappelerPenalites: ligne?.rappelerPenalitesDevis,
     textePied: ligne?.textePiedDocuments,
+    // Jamais réglé → le texte d'origine : c'est ce qu'il a demandé, « remplie
+    // d'un texte par défaut ». Effacé (chaîne vide) → vide, rien ne s'imprime.
+    conditionsGenerales:
+      ligne?.conditionsGenerales === null || ligne?.conditionsGenerales === undefined
+        ? TEXTE_ORIGINE_CONDITIONS_GENERALES
+        : ligne.conditionsGenerales,
   });
 }

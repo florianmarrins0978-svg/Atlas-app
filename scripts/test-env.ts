@@ -108,6 +108,10 @@ function main() {
     // compose le lien de devis que le patron recopie et envoie à son client,
     // jeton compris.
     ATLAS_URL_PUBLIQUE: "https://atlas.exemple.fr",
+    // **Exigées depuis le 14 septembre 2026** : sans service d'envoi, aucun
+    // code de vérification ne part, et personne ne peut créer de compte.
+    BREVO_API_KEY: "xkeysib-fictive-pour-les-tests",
+    COURRIEL_EXPEDITEUR: "contact@atlas.exemple.fr",
   } as const;
 
   test("Production avec S3, Redis et CRON_SECRET correctement configurés : ne lève pas", () => {
@@ -228,6 +232,36 @@ function main() {
         assert.equal(env.transcriptionProvider, "dev");
       }
     );
+  });
+
+  // **L'envoi d'e-mails suit la règle de l'IA** (14 septembre 2026) : la clé
+  // branche le service, `dev` n'envoie rien et journalise, et `dev` est
+  // refusé en production — un compte neuf n'y recevrait jamais son code.
+  test("Production sans BREVO_API_KEY (défaut 'dev') : rejet explicite", () => {
+    avecEnv({ ...PRODUCTION_VALIDE, BREVO_API_KEY: undefined, COURRIEL_EXPEDITEUR: undefined }, () => {
+      assert.throws(() => getEnv(), ErreurConfiguration);
+    });
+  });
+
+  test("Une clé Brevo sans expéditeur : rejet, Brevo refuserait chaque envoi", () => {
+    avecEnv({ ...PRODUCTION_VALIDE, COURRIEL_EXPEDITEUR: undefined }, () => {
+      assert.throws(() => getEnv(), ErreurConfiguration);
+    });
+  });
+
+  test("La clé Brevo posée suffit à choisir Brevo ; COURRIEL_PROVIDER=dev le coupe hors production", () => {
+    avecEnv({ ...PRODUCTION_VALIDE, COURRIEL_PROVIDER: undefined }, () => {
+      assert.equal(getEnv().courrielProvider, "brevo");
+    });
+    avecEnv({ ...PRODUCTION_VALIDE, NODE_ENV: "development", COURRIEL_PROVIDER: "dev" }, () => {
+      assert.equal(getEnv().courrielProvider, "dev");
+    });
+  });
+
+  test("Un service d'envoi inconnu est refusé, en production comme ailleurs", () => {
+    avecEnv({ ...PRODUCTION_VALIDE, NODE_ENV: "development", COURRIEL_PROVIDER: "pigeon" }, () => {
+      assert.throws(() => getEnv(), ErreurConfiguration);
+    });
   });
 
   test("Production sans REDIS_URL : échoue explicitement (limitation de débit en mémoire jamais autorisée)", () => {
@@ -533,6 +567,8 @@ function main() {
         STORAGE_S3_ACCESS_KEY_ID: "cle",
         STORAGE_S3_SECRET_ACCESS_KEY: "secret",
         ATLAS_URL_PUBLIQUE: "https://atlas.exemple.fr",
+        BREVO_API_KEY: "xkeysib-fictive-pour-les-tests",
+        COURRIEL_EXPEDITEUR: "contact@atlas.exemple.fr",
       },
       () => {
         const env = getEnv();

@@ -1,0 +1,333 @@
+// Le retour d'intervention — les règles, sans base.
+//
+// **Ce que cette suite protège.** Deux choses, et les deux se paient sur un
+// chantier : un salarié bloqué par une exigence que le patron n'a jamais
+// allumée, et un retour posé vide alors qu'il l'exigeait. Entre les deux, la
+// liste du patron — qui doit retrouver ce qu'on a fait chez quelqu'un en 2024.
+
+import assert from "node:assert/strict";
+import {
+  ceQuiManque,
+  phraseDeCeQuiManque,
+  compteDesTaches,
+  nomCherche,
+  rangerLesRetours,
+  retourModifiable,
+  retourDuJourAttendu,
+  retoursPasRecus,
+  type RetourEnListe,
+} from "../src/lib/retour-intervention";
+
+let echecs = 0;
+function essai(nom: string, fn: () => void) {
+  try {
+    fn();
+    console.log(`  ✓ ${nom}`);
+  } catch (e) {
+    echecs++;
+    console.log(`  ✗ ${nom}`);
+    console.log(`    ${(e as Error).message}`);
+  }
+}
+
+const RIEN_EXIGE = { demande: false, photoExigee: false };
+const PREUVE = { demande: true, photoExigee: false };
+const PREUVE_ET_PHOTO = { demande: true, photoExigee: true };
+
+function retour(p: Partial<RetourEnListe> & { clientNom: string; poseLe: string }): RetourEnListe {
+  return {
+    id: p.poseLe + p.clientNom,
+    chantierNom: "Un chantier",
+    posePar: "Julien",
+    taches: [],
+    photos: [],
+    aSignaler: null,
+    vu: false,
+    ...p,
+  };
+}
+
+console.log("=== Le retour d'intervention ===\n");
+
+// ── Ce que le patron attend, et rien de plus ───────────────────────────
+//
+// **Un RAPPEL, plus un verrou — sa règle du 19 septembre 2026 :** *« il faut
+// qu'on puisse l'envoyer même si on ne met pas de photo ou si tout n'est pas
+// coché »*. `ceQuiManque` dit ce qu'il attend ; rien ici ne décide si le
+// retour part — il part toujours (`poserLeRetourAction`, sans refus).
+essai("le patron n'exige rien : rien n'est rappelé", () => {
+  assert.deepEqual(ceQuiManque({ taches: [], photos: 0 }, RIEN_EXIGE), []);
+});
+
+essai("preuve demandée, rien de coché : on le dit avant l'appui", () => {
+  const manque = ceQuiManque(
+    { taches: [{ libelle: "Taille", faite: false }], photos: 2 },
+    PREUVE
+  );
+  assert.deepEqual(manque, ["cochez ce que vous avez fait"]);
+});
+
+essai("une seule case cochée suffit à taire le rappel", () => {
+  const pose = { taches: [{ libelle: "Taille", faite: true }, { libelle: "Tonte", faite: false }], photos: 0 };
+  assert.deepEqual(ceQuiManque(pose, PREUVE), []);
+});
+
+essai("la photo n'est rappelée que si le patron l'a allumée", () => {
+  const pose = { taches: [{ libelle: "Taille", faite: true }], photos: 0 };
+  assert.deepEqual(ceQuiManque(pose, PREUVE), []);
+  assert.deepEqual(ceQuiManque(pose, PREUVE_ET_PHOTO), ["ajoutez une photo"]);
+});
+
+essai("les deux manques se disent ensemble, pas l'un après l'autre", () => {
+  const phrase = phraseDeCeQuiManque({ taches: [{ libelle: "T", faite: false }], photos: 0 }, PREUVE_ET_PHOTO);
+  assert.equal(phrase, "cochez ce que vous avez fait et ajoutez une photo");
+});
+
+// **Le piège du zèle.** Exiger une photo alors que le patron n'a même pas
+// demandé de preuve bloquerait un salarié pour un réglage qu'il n'a jamais vu.
+essai("photo exigée mais preuve non demandée : rien n'est rappelé", () => {
+  assert.deepEqual(ceQuiManque({ taches: [], photos: 0 }, { demande: false, photoExigee: true }), []);
+});
+
+essai("rien ne manque : la phrase est vide", () => {
+  assert.equal(
+    phraseDeCeQuiManque({ taches: [{ libelle: "T", faite: true }], photos: 1 }, PREUVE_ET_PHOTO),
+    ""
+  );
+});
+
+// ── Ce que le patron lit ───────────────────────────────────────────────
+essai("« 2 sur 3 » — ce qui reste se lit dans le compte", () => {
+  assert.equal(
+    compteDesTaches([
+      { libelle: "a", faite: true },
+      { libelle: "b", faite: true },
+      { libelle: "c", faite: false },
+    ]),
+    "2 sur 3"
+  );
+});
+
+// **« TOUT FAIT » A ÉTÉ RETIRÉ LE 9 SEPTEMBRE 2026**, et ce contrôle disait
+// l’inverse la veille. Sa capture : *« il y a marqué tout fait, mais ce n’est
+// pas ce qui a été fait »*. Un compte se vérifie, un résumé se croit — et une
+// suite qui réclame le mot qu’il a fait retirer rend son écran impossible à
+// changer (`CLAUDE.md` §5 bis).
+essai("tout coché se dit « 2 sur 2 », jamais « tout fait »", () => {
+  assert.equal(
+    compteDesTaches([{ libelle: "a", faite: true }, { libelle: "b", faite: true }]),
+    "2 sur 2"
+  );
+});
+
+essai("aucune tâche : rien à compter, et surtout pas « 0 sur 0 »", () => {
+  assert.equal(compteDesTaches([]), "");
+});
+
+// ── La recherche ───────────────────────────────────────────────────────
+essai("la recherche plie les accents et la casse", () => {
+  assert.equal(nomCherche("  Mme  CÔSTA "), "mme costa");
+});
+
+essai("« costa » trouve « Mme Costa »", () => {
+  const liste = [
+    retour({ clientNom: "Mme Costa", poseLe: "2026-08-28T17:05:00.000Z" }),
+    retour({ clientNom: "M. Rialland", poseLe: "2026-09-02T16:40:00.000Z" }),
+  ];
+  const g = rangerLesRetours(liste, { client: "costa" });
+  assert.equal(g.length, 1);
+  assert.equal(g[0].client, "Mme Costa");
+});
+
+essai("un nom qui n'existe pas ne rend rien, sans casser", () => {
+  const g = rangerLesRetours([retour({ clientNom: "Costa", poseLe: "2026-01-01T00:00:00.000Z" })], {
+    client: "zzz",
+  });
+  assert.deepEqual(g, []);
+});
+
+// ── Le rangement par client ────────────────────────────────────────────
+essai("les retours sont groupés par client", () => {
+  const liste = [
+    retour({ clientNom: "Mme Costa", poseLe: "2025-06-12T15:40:00.000Z" }),
+    retour({ clientNom: "M. Rialland", poseLe: "2026-09-02T16:40:00.000Z" }),
+    retour({ clientNom: "Mme Costa", poseLe: "2026-08-28T17:05:00.000Z" }),
+  ];
+  const g = rangerLesRetours(liste);
+  assert.deepEqual(g.map((x) => x.client), ["M. Rialland", "Mme Costa"]);
+  assert.equal(g[1].retours.length, 2);
+});
+
+// C'est le cœur de sa demande : deux passages chez le même homme se lisent
+// côte à côte, même à quinze mois d'écart.
+essai("chez un client, du plus récent au plus ancien", () => {
+  const liste = [
+    retour({ clientNom: "Mme Costa", poseLe: "2025-06-12T15:40:00.000Z" }),
+    retour({ clientNom: "Mme Costa", poseLe: "2026-08-28T17:05:00.000Z" }),
+  ];
+  const g = rangerLesRetours(liste);
+  assert.deepEqual(g[0].retours.map((r) => r.poseLe.slice(0, 4)), ["2026", "2025"]);
+});
+
+// Le retour du soir doit être en haut : sinon il faut le chercher, et c'est
+// exactement ce que cette page évite.
+essai("le client au retour le plus récent passe devant", () => {
+  const liste = [
+    retour({ clientNom: "Ancien", poseLe: "2024-10-07T16:15:00.000Z" }),
+    retour({ clientNom: "Récent", poseLe: "2026-09-02T16:40:00.000Z" }),
+  ];
+  assert.deepEqual(rangerLesRetours(liste).map((g) => g.client), ["Récent", "Ancien"]);
+});
+
+// ── La date — le filtre des fiches de sécurité (22 septembre 2026) ─────
+essai("un mois ne rend que ce mois", () => {
+  const liste = [
+    retour({ clientNom: "A", poseLe: "2024-10-07T16:15:00.000Z" }),
+    retour({ clientNom: "B", poseLe: "2026-09-02T16:40:00.000Z" }),
+  ];
+  assert.deepEqual(rangerLesRetours(liste, { periode: "2024-10" }).map((x) => x.client), ["A"]);
+});
+
+// **L'ANNÉE — sa demande du 23 septembre 2026 :** *« pouvoir filtrer aussi par
+// mois ou par année ou par jour mois année »*. C'est le cran le plus large, et
+// celui qui manquait : deux passages chez le même client à huit mois d'écart
+// doivent se lire ensemble.
+essai("une année rend tous ses mois, et elle seule", () => {
+  const liste = [
+    retour({ clientNom: "A", poseLe: "2026-01-07T16:15:00.000Z" }),
+    retour({ clientNom: "B", poseLe: "2026-09-02T16:40:00.000Z" }),
+    retour({ clientNom: "C", poseLe: "2025-11-04T09:20:00.000Z" }),
+  ];
+  assert.deepEqual(
+    rangerLesRetours(liste, { periode: "2026" }).map((x) => x.client).sort(),
+    ["A", "B"]
+  );
+  assert.deepEqual(rangerLesRetours(liste, { periode: "2025" }).map((x) => x.client), ["C"]);
+});
+
+essai("un jour ne rend que ce jour, lu à l'heure de Paris", () => {
+  const liste = [
+    retour({ clientNom: "A", poseLe: "2026-09-02T16:40:00.000Z" }),
+    // 0 h 30 le 3 septembre à Paris, 22 h 30 le 2 à Greenwich.
+    retour({ clientNom: "B", poseLe: "2026-09-02T22:30:00.000Z" }),
+  ];
+  assert.deepEqual(rangerLesRetours(liste, { periode: "2026-09-02" }).map((x) => x.client), ["A"]);
+  assert.deepEqual(rangerLesRetours(liste, { periode: "2026-09-03" }).map((x) => x.client), ["B"]);
+});
+
+// Aucune fenêtre glissante : un retour de 2024 se retrouve en 2026.
+essai("sans filtre, les vieilles années restent là", () => {
+  const liste = [
+    retour({ clientNom: "A", poseLe: "2024-10-07T16:15:00.000Z" }),
+    retour({ clientNom: "B", poseLe: "2026-09-02T16:40:00.000Z" }),
+  ];
+  assert.equal(rangerLesRetours(liste).length, 2);
+});
+
+essai("un nom tapé passe par-dessus la date : tous les retours du client", () => {
+  const liste = [
+    retour({ clientNom: "Mme Costa", poseLe: "2025-06-12T15:40:00.000Z" }),
+    retour({ clientNom: "Mme Costa", poseLe: "2026-08-28T17:05:00.000Z" }),
+    retour({ clientNom: "M. Rialland", poseLe: "2026-09-02T16:40:00.000Z" }),
+  ];
+  const g = rangerLesRetours(liste, { client: "costa", periode: "2026-09" });
+  assert.equal(g.length, 1);
+  assert.equal(g[0].retours.length, 2);
+});
+
+// ═══ LE RETOUR SE MODIFIE LE JOUR MÊME, ET SEULEMENT CE JOUR-LÀ ═══════════
+//
+// Sa règle du 25 septembre 2026 : *« il faut qu'à chaque jour je puisse
+// envoyer un nouveau rapport ; le jour 2 ne doit pas ouvrir le rapport du
+// jour 1 ; lorsque le jour 1 est passé on ne peut plus le modifier, la
+// modification peut se faire seulement lorsque c'est le jour actuel. »*
+{
+  // Vendredi 25 septembre 2026, 18 h à Paris.
+  const maintenant = new Date("2026-09-25T16:00:00.000Z");
+  essai("envoyé AUJOURD'HUI : il se modifie", () => {
+    assert.equal(retourModifiable("2026-09-25T07:30:00.000Z", maintenant), true);
+  });
+  essai("envoyé HIER : il ne se modifie plus, le jour est passé", () => {
+    assert.equal(retourModifiable("2026-09-24T16:00:00.000Z", maintenant), false);
+  });
+  // Sa plainte du 26 septembre 2026, fiche de Julien ouverte sur le lundi 28 :
+  // *« je peux pas envoyer un retour d'intervention, ça devait pas être
+  // réglé ? »*. Le retour parti le jour même ne se rouvrait pas, parce que la
+  // règle exigeait AUSSI que la fiche soit sur la journée d'aujourd'hui. Le
+  // retour est celui du chantier, pas de la case du planning : seule l'heure
+  // de l'envoi décide. La signature ne prend donc plus la journée affichée.
+  essai("envoyé aujourd'hui, rouvert depuis une AUTRE journée du planning : il se modifie", () => {
+    const deuxArguments: (poseLe: string, maintenant: Date) => boolean = retourModifiable;
+    assert.equal(deuxArguments("2026-09-25T07:30:00.000Z", maintenant), true);
+    assert.equal(retourModifiable.length, 2, "la règle dépend encore de la journée affichée");
+  });
+  essai("le jour se compte à PARIS : 23 h 30 UTC la veille, c'est déjà aujourd'hui", () => {
+    // 1 h 30 du matin à Paris, le 25 : en UTC c'était encore le 24.
+    assert.equal(retourModifiable("2026-09-24T23:30:00.000Z", maintenant), true);
+  });
+}
+
+// ── LE RAPPEL DU RETOUR — sa planche du 26 septembre 2026 ──────────────────
+//
+// Ses réponses : la ligne sous le chantier (A), CHAQUE SOIR d'un chantier de
+// plusieurs jours, et la carte « Retour pas reçu » sur son accueil. Seulement
+// quand il a allumé « Demander une preuve ».
+{
+  console.log("\nLe rappel du retour");
+  essai("éteint : aucun rappel, même sans retour", () => {
+    assert.equal(retourDuJourAttendu({ demande: false, jour: "2026-09-25", aujourdHui: "2026-09-25", envoyeAujourdhui: false }), false);
+  });
+  essai("allumé, chantier du jour sans retour : le rappel parle", () => {
+    assert.equal(retourDuJourAttendu({ demande: true, jour: "2026-09-25", aujourdHui: "2026-09-25", envoyeAujourdhui: false }), true);
+  });
+  essai("le retour du jour est parti : il se tait", () => {
+    assert.equal(retourDuJourAttendu({ demande: true, jour: "2026-09-25", aujourdHui: "2026-09-25", envoyeAujourdhui: true }), false);
+  });
+  essai("un autre jour que le jour même : il se tait", () => {
+    assert.equal(retourDuJourAttendu({ demande: true, jour: "2026-09-26", aujourdHui: "2026-09-25", envoyeAujourdhui: false }), false);
+  });
+
+  const travailles = [
+    { chantierId: "terrasse", chantierNom: "Terrasse bois", jour: "2026-09-24" },
+    { chantierId: "terrasse", chantierNom: "Terrasse bois", jour: "2026-09-25" },
+    { chantierId: "cloture", chantierNom: "Pose de clôture", jour: "2026-09-25" },
+    { chantierId: "haie", chantierNom: "Taille de haie", jour: "2026-09-28" },
+  ];
+  const vide = new Map<string, string>();
+  essai("le lendemain : chaque chantier du dernier jour travaillé sans retour", () => {
+    const r = retoursPasRecus({ demande: true, travailles, retours: [], vus: vide, aujourdHui: "2026-09-26" });
+    assert.deepEqual(r.map((x) => x.chantierId).sort(), ["cloture", "terrasse"]);
+    assert.ok(r.every((x) => x.jour === "2026-09-25"));
+  });
+  essai("le week-end passé, lundi montre encore le vendredi", () => {
+    const r = retoursPasRecus({ demande: true, travailles, retours: [], vus: vide, aujourdHui: "2026-09-28" });
+    assert.deepEqual(r.map((x) => x.jour), ["2026-09-25", "2026-09-25"]);
+  });
+  essai("un retour posé ce jour-là fait taire la carte de CE chantier", () => {
+    const r = retoursPasRecus({ demande: true, travailles, retours: [{ chantierId: "terrasse", jour: "2026-09-25" }], vus: vide, aujourdHui: "2026-09-26" });
+    assert.deepEqual(r.map((x) => x.chantierId), ["cloture"]);
+  });
+  essai("un retour d'un AUTRE jour ne compte pas", () => {
+    const r = retoursPasRecus({ demande: true, travailles, retours: [{ chantierId: "terrasse", jour: "2026-09-24" }], vus: vide, aujourdHui: "2026-09-26" });
+    assert.ok(r.some((x) => x.chantierId === "terrasse"));
+  });
+  essai("« J'ai vu » après ce jour la fait taire ; un jour manqué plus tard revient", () => {
+    const vus = new Map([["terrasse", "2026-09-26"], ["cloture", "2026-09-26"]]);
+    assert.equal(retoursPasRecus({ demande: true, travailles, retours: [], vus, aujourdHui: "2026-09-27" }).length, 0);
+    const r = retoursPasRecus({ demande: true, travailles, retours: [], vus, aujourdHui: "2026-09-29" });
+    assert.deepEqual(r.map((x) => x.chantierId), ["haie"]);
+  });
+  essai("éteint : aucune carte", () => {
+    assert.equal(retoursPasRecus({ demande: false, travailles, retours: [], vus: vide, aujourdHui: "2026-09-26" }).length, 0);
+  });
+  essai("le jour même ne compte pas encore : la journée n'est pas finie", () => {
+    const r = retoursPasRecus({ demande: true, travailles, retours: [], vus: vide, aujourdHui: "2026-09-25" });
+    assert.ok(r.every((x) => x.jour === "2026-09-24"));
+  });
+  essai("aucun jour travaillé avant aujourd'hui : rien, et pas de plantage", () => {
+    assert.deepEqual(retoursPasRecus({ demande: true, travailles, retours: [], vus: vide, aujourdHui: "2026-09-01" }), []);
+  });
+}
+
+console.log(`\n${echecs === 0 ? "✅" : "❌"} Le retour d'intervention — ${echecs} échec(s).`);
+process.exit(echecs === 0 ? 0 : 1);

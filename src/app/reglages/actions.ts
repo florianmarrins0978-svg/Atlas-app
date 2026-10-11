@@ -7,13 +7,19 @@ import { creerTarif, listerTarifs, modifierTarif, supprimerTarif } from "@/serve
 import { lireFichierTarifs } from "@/server/import/lire-fichier-tarifs";
 import { montantLu, rapprocher, type LigneImportee, type TarifExistant } from "@/lib/import-tarifs";
 import { exigerProprietaire } from "@/server/autorisation";
+import { exigerFonction } from "@/server/garde-action";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
-import { nommerEquipe } from "@/server/repositories/equipes";
+import { reglerExigibilite } from "@/server/repositories/paiements-facture";
+import type { Exigibilite } from "@/lib/exigibilite-tva";
+import { nommerEquipe, poserPhotoSalarie } from "@/server/repositories/equipes";
+import { enregistrerObjet, supprimerObjet } from "@/server/storage";
+import { preparerPhotoEntrante } from "@/server/photo-entrante";
+import { logger } from "@/server/logger";
 import { noterAbsenceEquipe, retirerAbsenceEquipe } from "@/server/repositories/absences-equipe";
 import { phraseDuRefus, refusDeLAbsence } from "@/lib/absences-equipe";
 import { versionExecutee } from "@/server/version-executee";
-import { issueApresMiseAJour } from "@/lib/issue-mise-a-jour";
+import { issueApresMiseAJour, lireIssueMigrations } from "@/lib/issue-mise-a-jour";
 import { estBancDEssai } from "@/profil-banc";
 import { revalidatePath } from "next/cache";
 
@@ -30,6 +36,73 @@ export async function nommerEquipeAction(rang: number, nom: string) {
   await exigerProprietaire(ctx, "nommer une équipe");
   const enregistree = await nommerEquipe(ctx, rang, nom);
   return { rang: enregistree.rang, nom: enregistree.nom };
+}
+
+/**
+ * Pose la tête d'un salarié : sa demande du 27 septembre 2026, planche
+ * `appli/photo-des-salaries.html`, proposition B.
+ *
+ * **Le patron seul**, comme le nom : c'est lui qui tient la liste de ses gars.
+ * **L'image passe par la porte commune** (`preparerPhotoEntrante`) : une photo
+ * prise au téléphone porte l'endroit où elle a été prise, et un fichier qui
+ * n'est pas une image est refusé là.
+ *
+ * Le refus se rend en valeur de retour : le message d'une exception levée ici
+ * n'arriverait jamais jusqu'à lui (`AGENTS.md`).
+ */
+export async function poserPhotoSalarieAction(
+  formData: FormData
+): Promise<{ ok: true; photo: string } | { ok: false; raison: string }> {
+  const ctx = await getCurrentCtx();
+  try {
+    await exigerProprietaire(ctx, "changer la photo d'un salarié");
+    const rang = Number(formData.get("rang"));
+    const fichier = formData.get("fichier");
+    if (!Number.isInteger(rang) || rang < 1) return { ok: false, raison: "Ce salarié est introuvable." };
+    if (!(fichier instanceof File)) return { ok: false, raison: "Aucune photo reçue." };
+
+    const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
+    if (!limite.autorise) return { ok: false, raison: limite.message };
+
+    const prete = await preparerPhotoEntrante(fichier, "photo de salarié");
+    if (!prete.ok) return { ok: false, raison: prete.raison };
+
+    const objet = await enregistrerObjet(
+      `entreprises/${ctx.entrepriseId}/salaries`,
+      prete.photo.octets,
+      prete.photo.extension,
+      prete.photo.mimeType
+    );
+    const { avant } = await poserPhotoSalarie(ctx, rang, objet.storageKey);
+    if (avant) await supprimerObjet(avant);
+    return { ok: true, photo: objet.storageKey };
+  } catch (err) {
+    logger.error("Enregistrement de la photo d'un salarié impossible", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { ok: false, raison: "Cette photo n'a pas pu être enregistrée. Réessayez." };
+  }
+}
+
+/**
+ * Retire la tête d'un salarié. **Le fichier part avec** : une photo de
+ * personne qu'on retire doit disparaître vraiment, pas seulement de l'écran.
+ */
+export async function retirerPhotoSalarieAction(
+  rang: number
+): Promise<{ ok: true } | { ok: false; raison: string }> {
+  const ctx = await getCurrentCtx();
+  try {
+    await exigerProprietaire(ctx, "retirer la photo d'un salarié");
+    const { avant } = await poserPhotoSalarie(ctx, rang, null);
+    if (avant) await supprimerObjet(avant);
+    return { ok: true };
+  } catch (err) {
+    logger.error("Retrait de la photo d'un salarié impossible", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { ok: false, raison: "Cette photo n'a pas pu être retirée. Réessayez." };
+  }
 }
 
 export async function creerTarifAction(intitule: string, prix: string) {
@@ -82,7 +155,7 @@ export async function analyserFichierTarifsAction(donnees: FormData): Promise<Ap
   // Une borne franche : au-delà, ce n'est plus une liste de prix, et un fichier
   // de cent mégaoctets tiendrait la mémoire du serveur pour rien.
   if (fichier.size > 5_000_000) {
-    return { statut: "refuse", raison: "Ce fichier dépasse 5 Mo — ce n'est probablement pas une liste de prix." };
+    return { statut: "refuse", raison: "Ce fichier dépasse 5 Mo. Ce n'est probablement pas une liste de prix." };
   }
 
   /**
@@ -236,6 +309,26 @@ export async function mettreAJourPeriodiciteTvaAction(periodiciteTva: "mensuelle
   return { periodiciteTva: e?.periodiciteTva ?? PERIODICITE_TVA_PAR_DEFAUT };
 }
 
+/**
+ * Changer le moment où la TVA devient exigible — encaissements ou débits.
+ *
+ * **Arrivée ici le 12 septembre 2026, avec son écran.** Elle vivait dans
+ * `termines/tva/actions.ts` parce que le choix se faisait sur le relevé ; sa
+ * planche « une seule logique » l'en a sorti, et le réglage a rejoint le rythme
+ * dans « Mon entreprise » — deux déclarations faites aux impôts, au même endroit.
+ *
+ * **Réservée au propriétaire**, à la différence de la saisie d'un règlement : ce
+ * choix décide de ce qui part à l'administration pour toute l'entreprise, et il
+ * se déclare aux impôts. Un salarié n'a aucune raison d'y toucher.
+ */
+export async function reglerExigibiliteAction(regime: Exigibilite): Promise<void> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "changer le moment où votre TVA devient exigible");
+  await reglerExigibilite(ctx, regime);
+  revalidatePath("/termines/tva");
+  revalidatePath("/reglages/identite");
+}
+
 export async function mettreAJourNombreEquipesAction(nombreEquipes: number) {
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "modifier le nombre d'équipes");
@@ -275,7 +368,18 @@ export async function mettreAJourNombreSalariesAction(nombreSalaries: number) {
  * (`src/lib/absences-equipe.ts`).
  */
 export type ResultatAbsence =
-  | { ok: true; id: string }
+  | {
+      ok: true;
+      id: string;
+      /**
+       * Les chantiers d'où cette personne vient d'être retirée par le congé.
+       *
+       * Vide dans l'immense majorité des cas — un congé posé à l'avance ne
+       * défait rien. Non vide, c'est une nouvelle que l'écran DOIT dire
+       * (`ARCHITECTURE.md` §294).
+       */
+      chantiersLiberes: { id: string; nom: string }[];
+    }
   | { ok: false; raison: string };
 
 export async function noterAbsenceAction(formData: FormData): Promise<ResultatAbsence> {
@@ -293,10 +397,30 @@ export async function noterAbsenceAction(formData: FormData): Promise<ResultatAb
 
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "noter l'absence d'une équipe");
+  // Un plus d'« Entreprise » (10 septembre 2026) : l'écran le montre, la garde le tient.
+  await exigerFonction(ctx, "absences", "noter l'absence d'une équipe");
 
-  const ligne = await noterAbsenceEquipe(ctx, { rang, premierJour, dernierJour, motif });
+  // **Les bornes de demi-journée, son choix D2 du 8 septembre 2026.** Absentes
+  // de la requête, elles valent la journée entière : le geste courant n'a rien
+  // à envoyer de plus qu'avant.
+  const premierDemi = String(formData.get("premierDemi") ?? "").trim() || null;
+  const dernierDemi = String(formData.get("dernierDemi") ?? "").trim() || null;
+
+  const ligne = await noterAbsenceEquipe(ctx, {
+    rang,
+    premierJour,
+    dernierJour,
+    premierDemi,
+    dernierDemi,
+    motif,
+  });
   if (!ligne) return { ok: false, raison: "Cette équipe n\u2019existe pas." };
-  return { ok: true, id: ligne.id };
+  // **Ce que le congé a défait remonte jusqu'à l'écran** — sa consigne du
+  // 8 septembre 2026, « pas de pansement, corrige à la racine ». Retirer une
+  // affectation devenue fausse est la bonne réponse ; la retirer EN SILENCE
+  // laisserait une demi-journée passer de « Julien » à personne sans qu'il
+  // l'apprenne, et un chantier sans personne est ce qu'on veut éviter.
+  return { ok: true, id: ligne.id, chantiersLiberes: ligne.chantiersLiberes };
 }
 
 /**
@@ -310,6 +434,7 @@ export async function noterAbsenceAction(formData: FormData): Promise<ResultatAb
 export async function retirerAbsenceAction(id: string): Promise<{ ok: boolean }> {
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "retirer l'absence d'une équipe");
+  await exigerFonction(ctx, "absences", "retirer l'absence d'une équipe");
   const ligne = await retirerAbsenceEquipe(ctx, id);
   return { ok: Boolean(ligne) };
 }
@@ -376,37 +501,51 @@ export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour>
     const etat = stdout.trim().split("\n").pop() ?? "";
     await noterIssue(etat);
 
-    if (etat === "faite") {
-      // **Le code neuf attend une base neuve, et l'échec ne s'avale plus.**
-      //
-      // Cet appel lançait `npm run db:migrate` avec la variable ambiante — donc
-      // sous `atlas_app`, le rôle applicatif, qui n'a délibérément aucun droit
-      // de créer une table. Il échouait sur « permission denied for schema
-      // public », et le `.catch(() => undefined)` faisait disparaître l'échec :
-      // le patron lisait « Mise à jour récupérée », puis un écran tombait sur
-      // une table absente sans que rien ne relie les deux (9 août 2026).
-      //
-      // Le script choisit maintenant le rôle propriétaire et rend son verdict.
-      const migrations = await executer(
-        "bash",
-        [`${racine}/.devcontainer/appliquer-migrations.sh`, racine],
-        { timeout: 180_000 }
-      )
+    if (etat.startsWith("impossible")) {
+      return { succes: false, erreur: `Mise à jour ${etat}` };
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // **LA BASE SE RATTRAPE MÊME QUAND LE CODE N'A PAS BOUGÉ — 13 septembre
+    // 2026, et c'est la racine de sa panne du soir.**
+    //
+    // Ce rattrapage vivait sous un `if (etat === "faite")` : on ne migrait que
+    // l'appui qui ramenait du code neuf. Cette condition prétend dire « la base
+    // est en retard » ; elle dit autre chose, et l'écart l'a laissé sans issue :
+    // une migration qui échoue (base pas encore levée, `node_modules` amputé)
+    // n'était JAMAIS retentée — l'appui suivant lisait « déjà à jour » et ne
+    // migrait pas. Plus aucun bouton ne rattrapait sa base ; « Planning » et
+    // « Terminés » restaient tombés, pendant que « Chantiers » tenait debout.
+    //
+    // **Le rejeu ne coûte rien et ne détruit rien** : `run-migrations.ts` tient
+    // la table `_migrations` et saute ce qui est déjà appliqué.
+    //
+    // **Et il passe par le rôle PROPRIÉTAIRE, avec son échec dit.** Lancé avec
+    // la variable ambiante, il tournait sous `atlas_app` — qui n'a aucun droit
+    // de créer une table —, et le `.catch(() => undefined)` faisait disparaître
+    // l'échec : le patron lisait « Mise à jour récupérée », puis un écran
+    // tombait sur une table absente sans que rien ne relie les deux (9 août).
+    const migrations = lireIssueMigrations(
+      await executer("bash", [`${racine}/.devcontainer/appliquer-migrations.sh`, racine], {
+        timeout: 180_000,
+      })
         .then((r) => r.stdout.trim().split("\n").pop() ?? "")
-        .catch((e) => `échec : ${e instanceof Error ? e.message : String(e)}`);
+        .catch((e) => `échec : ${e instanceof Error ? e.message : String(e)}`)
+    );
 
-      if (migrations.startsWith("échec")) {
-        // Succès de la récupération, échec de la base : le dire tel quel. Une
-        // demi-vérité sur cet écran envoie chercher la panne au mauvais endroit.
-        return {
-          succes: true,
-          etat,
-          message:
-            `Code récupéré${await suffixeVersion()}, mais LA BASE N'A PAS SUIVI — ${migrations}. ` +
-            `Les écrans qui touchent une table neuve vont tomber : c'est ça, et rien d'autre.`,
-        };
-      }
+    if (!migrations.faites) {
+      // Échec de la base : le dire tel quel. Une demi-vérité sur cet écran
+      // envoie chercher la panne au mauvais endroit.
+      return {
+        succes: true,
+        etat,
+        message:
+          `LA BASE N'A PAS SUIVI : ${migrations.raison}. ` +
+          `Les écrans qui touchent une table neuve vont tomber : c'est ça, et rien d'autre.`,
+      };
+    }
 
+    if (etat === "faite") {
       // **La version RAPIDE ne se recompile jamais**, et ce message le
       // promettait. La règle — quoi dire, et s'il faut couper le serveur pour
       // que le code neuf soit servi — vit dans `src/lib/issue-mise-a-jour.ts`,
@@ -422,9 +561,19 @@ export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour>
       if (issue.couperLeServeur) programmerReconstruction();
       return { succes: true, etat, message: issue.message };
     }
-    if (etat.startsWith("impossible")) {
-      return { succes: false, erreur: `Mise à jour ${etat}` };
+
+    // **Le code était à jour, la base non.** C'est exactement sa panne du
+    // 13 septembre : rien à récupérer, et pourtant deux écrans par terre. Lui
+    // rendre « Vous étiez déjà à jour » ici serait lui cacher la réparation
+    // qu'il vient de déclencher — il repartirait chercher ailleurs.
+    if (migrations.rattrapees > 0) {
+      return {
+        succes: true,
+        etat,
+        message: `La base avait ${migrations.rattrapees} version(s) de retard : c'est réparé. Rechargez la page.`,
+      };
     }
+
     return { succes: true, etat, message: `Vous étiez déjà à jour${await suffixeVersion()}.` };
   } catch (e) {
     const raison = e instanceof Error ? e.message.slice(0, 200) : "la mise à jour a échoué";
@@ -537,5 +686,5 @@ export async function derniereIssueMiseAJour(): Promise<string | null> {
  */
 async function suffixeVersion(): Promise<string> {
   const version = await versionExecutee();
-  return version ? ` — version ${version}` : "";
+  return version ? `, version ${version}` : "";
 }

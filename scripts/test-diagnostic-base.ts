@@ -98,7 +98,6 @@ const RESULTAT_ESSAI = {
   nom: "Problème d'essai alpha",
   nomScientifique: null,
   confiance: "probable" as const,
-  confianceLibelle: "Confiance probable",
   explication: "Donnée d'essai.",
   gravite: "faible" as const,
   graviteLibelle: "Faible",
@@ -350,7 +349,7 @@ async function main() {
     await conclureDiagnostic(
       b,
       diagnosticA,
-      { type: "inconclusif", motif: "aucune_piste", phrase: "détourné" },
+      { type: "inconclusif", motif: "aucune_piste" },
       null,
       TRACES,
       SANS_ESSENCE

@@ -28,11 +28,42 @@ const MOIS = [
 export function jourLisible(iso: string, aujourdHui: Date = new Date()): string {
   const [a, m, j] = iso.split("-").map(Number);
   if (!a || !m || !j) return iso;
+  const annee = a === aujourdHui.getUTCFullYear() ? "" : ` ${a}`;
+  return `${jourEtMoisEnLettres(a, m, j)}${annee}`;
+}
+
+/**
+ * « Mardi 22 septembre 2026 » — le jour écrit comme le titre d'un mois
+ * (« Septembre 2026 », `titreDeLaPeriode`), le nom du jour en plus.
+ *
+ * Sa demande du 22 septembre 2026, pour le jour du passage de la fiche de
+ * chantier. **L'année y est toujours**, contrairement à `jourLisible` : c'est un
+ * titre, et le titre du mois la porte.
+ */
+export function jourEnTitre(iso: string): string {
+  const [a, m, j] = iso.split("-").map(Number);
+  if (!a || !m || !j) return iso;
+  const texte = `${jourEtMoisEnLettres(a, m, j)} ${a}`;
+  return texte.charAt(0).toUpperCase() + texte.slice(1);
+}
+
+/**
+ * « 9 octobre 2026 », « 1er août 2026 » — la date d'une lettre : ni le nom du
+ * jour, ni l'année qu'on sous-entend. Une mise en demeure se relit devant un
+ * juge, parfois l'année suivante.
+ */
+export function jourDeLettre(iso: string): string {
+  const [a, m, j] = iso.split("-").map(Number);
+  if (!a || !m || !j) return iso;
+  return `${j === 1 ? "1er" : j} ${MOIS[m - 1]} ${a}`;
+}
+
+/** « mardi 22 septembre », « samedi 1er août » : ce que les deux écritures partagent. */
+function jourEtMoisEnLettres(a: number, m: number, j: number): string {
   const jourSemaine = JOURS[new Date(Date.UTC(a, m - 1, j)).getUTCDay()];
   // Le premier du mois est le seul ordinal en français : « 1er août », jamais
   // « 1 août ». Sur un devis, cette faute se remarque.
-  const annee = a === aujourdHui.getUTCFullYear() ? "" : ` ${a}`;
-  return `${jourSemaine} ${j === 1 ? "1er" : j} ${MOIS[m - 1]}${annee}`;
+  return `${jourSemaine} ${j === 1 ? "1er" : j} ${MOIS[m - 1]}`;
 }
 
 /**
@@ -46,10 +77,89 @@ export function jourLisible(iso: string, aujourdHui: Date = new Date()): string 
  * Même précaution que `jourLisible` : aucun `new Date(iso)`, qui décalerait le
  * jour selon le fuseau du lecteur.
  */
+/**
+ * LES JOURS D'UN CHANTIER EN TOUTES LETTRES, pour la cliente — sa règle du
+ * 18 septembre 2026 : *« si tous les jours sont en septembre, conserve le mot
+ * septembre pour le premier et le dernier jour, ça suffira pour qu'il
+ * comprenne ; si certains jours sont à cheval sur deux mois, c'est mieux de le
+ * préciser pour chaque jour »*.
+ *
+ *   « le vendredi 18 septembre, le lundi 21, le mardi 22 et le mercredi 23 septembre »
+ *   « le mardi 29 septembre et le jeudi 1er octobre »
+ */
+export function joursEnToutesLettres(jours: readonly string[], aujourdHui: Date = new Date()): string {
+  const tries = [...new Set(jours)].sort();
+  if (tries.length === 0) return "";
+  const memeMois = tries.every((j) => j.slice(0, 7) === tries[0].slice(0, 7));
+  const lisibles = tries.map((j, i) => {
+    const entier = jourLisible(j, aujourdHui);
+    const extremite = i === 0 || i === tries.length - 1;
+    return "le " + (memeMois && !extremite ? entier.split(" ").slice(0, 2).join(" ") : entier);
+  });
+  if (lisibles.length === 1) return lisibles[0];
+  return lisibles.slice(0, -1).join(", ") + " et " + lisibles[lisibles.length - 1];
+}
+
 export function jourNumerique(iso: string): string {
   const [a, m, j] = iso.split("-");
   if (!a || !m || !j) return iso;
   return `${j}/${m}/${a}`;
+}
+
+/**
+ * Le mois d'un jour, en toutes lettres : « septembre », « août ».
+ *
+ * **Une seule table de mois dans le dépôt**, et c'est celle-ci (`CLAUDE.md`
+ * §3). La liste des clients en a besoin pour nommer ses bandes ; en recopier
+ * une seconde, c'est se donner deux orthographes d'« août » et n'en corriger
+ * qu'une le jour venu.
+ */
+export function moisDuJour(iso: string): string | null {
+  const mois = Number(iso.split("-")[1]);
+  return MOIS[mois - 1] ?? null;
+}
+
+/**
+ * « 6 août », « 1er août » — le jour sans son jour de semaine ni son année.
+ *
+ * Pour les listes où la date n'est qu'un repère de second rang : la ligne d'un
+ * achat de TVA en est l'exemple, sous le nom du fournisseur. « jeudi 6 août »
+ * y prendrait la moitié de la largeur pour un mot que personne ne lit.
+ *
+ * **Elle existe pour qu'il n'y ait pas de seconde table de mois.** La ligne
+ * d'achat en fabriquait une par `toLocaleDateString`, avec son propre fuseau à
+ * midi pour ne pas décaler le jour — deux façons d'écrire « août » dans le même
+ * dépôt, et une seule qui se corrigerait le jour venu (`CLAUDE.md` §3). Le
+ * premier du mois garde son ordinal, comme dans `jourLisible`.
+ */
+export function jourEtMois(iso: string): string {
+  const [a, m, j] = iso.split("-").map(Number);
+  if (!a || !m || !j) return iso;
+  return `${j === 1 ? "1er" : j} ${MOIS[m - 1]}`;
+}
+
+/**
+ * « 11/09 » — le jour et le mois en chiffres, pour une trace qu'on lit d'un
+ * coup d'œil.
+ *
+ * **Sa demande du 11 septembre 2026**, devant la ligne de réception d'une
+ * facture : *« les phrases sont trop longues, il faut marquer Ouverte 11/09 »*.
+ * « le 11 septembre à 17 h 57 » prenait la largeur d'une ligne entière pour un
+ * repère qu'il ne fait que survoler.
+ *
+ * **L'année ne s'écrit que si ce n'est pas la nôtre** — la règle de
+ * `jourLisible`, et pour la même raison : « 11/09 » sur une facture de l'an
+ * dernier désignerait deux jours à un an d'écart, et c'est précisément une
+ * vieille facture impayée qu'on vient regarder.
+ *
+ * **L'aujourd'hui se donne en JOUR, pas en instant** : celui que le serveur a
+ * calculé dans le fuseau de l'atelier. Le prendre de l'horloge du téléphone
+ * ferait dépendre l'affichage de l'appareil, le 31 décembre au soir.
+ */
+export function jourCourt(iso: string, aujourdHui: string = jourIso(new Date())): string {
+  const [a, m, j] = iso.split("-");
+  if (!a || !m || !j) return iso;
+  return a === aujourdHui.slice(0, 4) ? `${j}/${m}` : `${j}/${m}/${a}`;
 }
 
 /** Le fuseau du patron. Ses journées se comptent chez lui, pas à Greenwich. */
@@ -98,5 +208,9 @@ export function dansDelaiRetractation(iso: string, aujourdHui: string): boolean 
   const cible = Date.parse(`${iso}T00:00:00Z`);
   const base = Date.parse(`${aujourdHui}T00:00:00Z`);
   if (Number.isNaN(cible) || Number.isNaN(base)) return false;
-  return cible - base < DELAI_RETRACTATION_JOURS * 86400_000;
+  // **`<=`, et le jour compte — corrigé le 3 octobre 2026.** Le délai court à
+  // partir du lendemain de l'accord (L221-19) : accepté le 3, il s'achève le
+  // 17 au soir. Le `<` d'avant laissait le 17 hors du délai, donc sans la case
+  // (`scripts/test-retractation.ts`).
+  return cible - base <= DELAI_RETRACTATION_JOURS * 86400_000;
 }

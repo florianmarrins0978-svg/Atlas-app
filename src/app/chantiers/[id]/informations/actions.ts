@@ -24,6 +24,7 @@ import {
   planifierChantier,
   deplacerChantier,
   deplanifierChantier,
+  DeplanificationImpossibleError,
   ecrireNoteChantier,
   mettreAJourAdresseChantier,
   getChantier,
@@ -35,14 +36,15 @@ import { filtrerClientsParNom } from "@/lib/recherche-client";
 import { creerTarif, modifierTarif, supprimerTarif } from "@/server/repositories/tarifs";
 import { supprimerChantier, SuppressionChantierRefusee } from "@/server/repositories/chantiers";
 import { noterAbsenceEquipe } from "@/server/repositories/absences-equipe";
-import { mettreAJourEntreprise, getEntreprise } from "@/server/repositories/entreprises";
-import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
+import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
+import type { ConditionsLues } from "@/lib/conditions-documents";
 import {
   ajouterPrestation as ajouterPrestationEntretien,
   retirerPrestation as retirerPrestationEntretien,
 } from "@/server/repositories/prestations-entretien";
 import { terminerChantier } from "@/server/repositories/factures";
-import { estUnJourValide, estUnMomentValide, type QuandChantier } from "@/lib/planning-jour";
+import { estUnJourValide, estUnDemiValide } from "@/lib/planning-jour";
+import type { Moment } from "@/lib/disponibilites";
 import { ajouterLignePrixDirectAction } from "@/app/chantiers/[id]/prix/actions";
 import { chargerDevisAction } from "@/app/chantiers/[id]/export/actions";
 import { extraire } from "@/server/ai/services/extraction-service";
@@ -685,7 +687,20 @@ export async function appliquerPropositionsAction(
         case "deplacer_chantier": {
           const cible = chantierVise;
           const jour = String(donnees.jour ?? "").trim();
-          const quand = String(donnees.quand ?? "journee");
+          // **UN MOMENT QU'IL N'A PAS DIT NE S'INVENTE PLUS** — 9 septembre
+          // 2026, la même racine que les trois boutons du planning.
+          //
+          // Cette ligne valait `String(donnees.quand ?? "journee")` : une
+          // dictée qui ne disait pas l'heure — « pose Claudette jeudi » —
+          // arrivait donc ici avec « journée », et « journée » RÉSERVE deux
+          // demi-journées. Une demi-journée vendue au devis devenait une
+          // journée pleine dans le planning, sans qu'un mot le dise, et
+          // l'après-midi disparaissait des jours qu'il peut encore vendre.
+          //
+          // Sans moment dit, on ne passe pas de choix : `planifierChantier`
+          // garde la durée du chantier et cherche la demi-journée où elle
+          // tient — la même règle que l'écran depuis ce jour.
+          const quandDit = donnees.quand == null ? null : String(donnees.quand).trim();
           // **Le jour et le moment se valident ICI, avec la MÊME règle que
           // l'écran** (`planning-jour.ts`) : une seconde version de la règle
           // finirait par accepter ce que le planning refuse (`CLAUDE.md` §3).
@@ -693,18 +708,26 @@ export async function appliquerPropositionsAction(
             resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Chantier ou jour manquant." });
             break;
           }
-          if (!estUnMomentValide(quand)) {
+          if (quandDit !== null && !estUnDemiValide(quandDit)) {
             resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Moment de la journée inconnu." });
+            break;
+          }
+          // **Déplacer SANS moment ne veut rien dire** : le jour ne bouge pas
+          // — « Déplacer » vit dans la fiche d'un jour —, et le moment est
+          // tout ce que ce geste écrit. Le remplir d'office rendrait une
+          // demi-journée en journée pleine, en silence : on redemande.
+          if (proposition.type === "deplacer_chantier" && quandDit === null) {
+            resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Le matin, l'après-midi ou la journée ?" });
             break;
           }
           if (!(await getChantier(ctx, cible))) {
             resultats.push({ ...base, statut: "conflit", categorie: "conflit_metier", message: "Ce chantier n'existe plus." });
             break;
           }
-          const choix = { quand: quand as QuandChantier };
+          const choix = quandDit === null ? undefined : { demi: quandDit as Moment };
           const pose =
             proposition.type === "deplacer_chantier"
-              ? await deplacerChantier(ctx, cible, choix.quand)
+              ? await deplacerChantier(ctx, cible, quandDit as Moment)
               : await planifierChantier(ctx, cible, jour, choix);
           if (!pose) {
             // `deplacerChantier` rend `null` quand le chantier n'est posé nulle
@@ -727,7 +750,23 @@ export async function appliquerPropositionsAction(
             resultats.push({ ...base, statut: "conflit", categorie: "conflit_metier", message: "Ce chantier n'existe plus." });
             break;
           }
-          await deplanifierChantier(ctx, cible);
+          // **Un chantier dont la facture est préparée garde sa date** — sa
+          // décision du 21 septembre 2026. Le refus se DIT, avec sa cause : un
+          // geste dicté qui ne se passe pas se lit comme une panne.
+          try {
+            await deplanifierChantier(ctx, cible);
+          } catch (err) {
+            if (err instanceof DeplanificationImpossibleError) {
+              resultats.push({
+                ...base,
+                statut: "conflit",
+                categorie: "conflit_metier",
+                message: "Sa facture est déjà préparée : le chantier garde sa date.",
+              });
+              break;
+            }
+            throw err;
+          }
           resultats.push({ ...base, statut: "appliquee" });
           break;
         }
@@ -843,16 +882,19 @@ export async function appliquerPropositionsAction(
         /**
          * RÉGLER LES DOCUMENTS — validité, acompte, délai, moyens, pénalités.
          *
-         * **Ce qui n'est pas donné n'est pas touché.** Un réglage absent de la
-         * proposition doit rester tel quel : envoyer l'objet entier remettrait
-         * à zéro ce qu'il a réglé à la main, et cela s'imprimerait sur des
-         * documents que ses clients gardent.
+         * **Ce qui n'est pas donné n'est pas touché**, et c'est le dépôt qui
+         * le tient (`normaliserConditions`, 14 septembre 2026) : une clef
+         * absente ne s'écrit pas. Ce geste relisait l'entreprise pour renvoyer
+         * les six réglages autour du seul qu'il portait — et cette relecture
+         * avait été recopiée sur la photo d'un devis en oubliant la clef née le
+         * 13, ce qui vidait ses conditions générales. La règle vit à un seul
+         * endroit désormais, et l'on ne renvoie que ce que la proposition dit.
          *
          * **Les bornes restent au serveur** (`normaliserConditions`) : un
          * acompte de 400 % ne s'imprime pas parce qu'un modèle l'a proposé.
          */
         case "regler_documents": {
-          const conditions: Record<string, unknown> = {};
+          const conditions: ConditionsLues = {};
           if (donnees.validiteJours !== undefined) conditions.validiteJours = Number(donnees.validiteJours);
           if (donnees.acomptePourcent !== undefined) conditions.acomptePourcent = String(donnees.acomptePourcent);
           if (donnees.delaiPaiementJours !== undefined) conditions.delaiPaiementJours = Number(donnees.delaiPaiementJours);
@@ -863,32 +905,7 @@ export async function appliquerPropositionsAction(
             resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Rien à régler." });
             break;
           }
-          /**
-           * **ON RELIT CE QUI EST DÉJÀ RÉGLÉ, ET ON FUSIONNE.**
-           *
-           * `mettreAJourEntreprise` REMPLACE le bloc des conditions : c'est
-           * juste pour l'écran des réglages, qui renvoie le formulaire entier.
-           * Ici, la proposition ne porte qu'un réglage — et écrire ce seul
-           * réglage effaçait tous les autres. Vu rouge par
-           * `test-agent-gestes.ts` : régler l'acompte perdait la validité.
-           *
-           * Ce n'est pas une régression de plus : **cela s'imprime sur des
-           * documents que ses clients gardent**, et il ne le verrait qu'au
-           * devis suivant.
-           */
-          const entrepriseActuelle = await getEntreprise(ctx);
-          const dejaLa = conditionsDepuisEntreprise(entrepriseActuelle);
-          await mettreAJourEntreprise(ctx, {
-            conditions: {
-              validiteJours: dejaLa.validiteJours,
-              acomptePourcent: dejaLa.acomptePourcent,
-              delaiPaiementJours: dejaLa.delaiPaiementJours,
-              moyensPaiement: dejaLa.moyensPaiement,
-              rappelerPenalites: dejaLa.rappelerPenalites,
-              textePied: dejaLa.textePied,
-              ...conditions,
-            },
-          });
+          await mettreAJourEntreprise(ctx, { conditions });
           resultats.push({ ...base, statut: "appliquee" });
           break;
         }
@@ -998,13 +1015,48 @@ export async function appliquerPropositionsAction(
 export async function preparerDevisDepuisDicteeAction(chantierId: string, remplacer = false) {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/chantiers", "préparer un devis depuis la dictée");
-  const resultat = await preparerDevisDepuisDictee(ctx, chantierId, { remplacer });
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // **LA PANNE SE DIT, ELLE NE SE COMPTE PLUS — sa capture du 1ᵉʳ septembre
+  // 2026 : « Atlas prépare toujours votre devis… (96 s) », et la note qui
+  // n'atteint jamais le devis.**
+  //
+  // Le service journalisait déjà la cause (`devis-depuis-dictee.ts`), puis
+  // relançait. Or **le message d'une exception d'action serveur n'arrive
+  // JAMAIS jusqu'à lui** : Next.js le remplace en production par un
+  // identifiant opaque (`AGENTS.md`). L'écran tombait donc dans son rattrapage
+  // — celui du 12 août, écrit pour les réponses PERDUES — et se mettait à
+  // compter des secondes devant un travail déjà mort. Quatre-vingt-seize
+  // secondes à regarder un devis qui ne viendrait pas.
+  //
+  // On rend donc un refus EN VALEUR. Le rattrapage garde son rôle : il ne sert
+  // plus qu'aux vraies coupures, celles où rien ne revient du tout.
+  //
+  // La raison est courte et sans détail de pile : elle doit tenir sur un
+  // téléphone et pouvoir être recopiée telle quelle. Le détail complet reste
+  // au journal du serveur.
+  // ═══════════════════════════════════════════════════════════════════════
+  let resultat: Awaited<ReturnType<typeof preparerDevisDepuisDictee>>;
+  try {
+    resultat = await preparerDevisDepuisDictee(ctx, chantierId, { remplacer });
+  } catch (err) {
+    const motif = (err instanceof Error ? err.message : String(err))
+      .split("\n")[0]!
+      .slice(0, 160);
+    return {
+      statut: "echec" as const,
+      erreur: `La préparation s'est arrêtée : ${motif}`,
+    };
+  }
 
   if (resultat.statut === "prepare") {
-    // Les quatre écrans que l'enchaînement vient de modifier. Sans cela, le
+    // Les trois écrans que l'enchaînement vient de modifier. Sans cela, le
     // patron revient sur « Informations » et y trouve la page d'avant : il
     // croirait que rien ne s'est passé.
-    revalidatePath(`/chantiers/${chantierId}`);
+    //
+    // **La fiche du chantier a quitté cette liste le 4 septembre 2026**
+    // (`ARCHITECTURE.md` §254) : son adresse ne rend plus qu'une
+    // redirection, et revalider une redirection ne rafraîchit rien.
     revalidatePath(`/chantiers/${chantierId}/informations`);
     revalidatePath(`/chantiers/${chantierId}/prix`);
     revalidatePath(`/chantiers/${chantierId}/export`);
@@ -1035,7 +1087,6 @@ export async function repondreQuestionsChiffrageAction(
   const resultat = await enregistrerPrecisionsEtReprendre(ctx, chantierId, reponses);
 
   if (resultat.statut === "prepare") {
-    revalidatePath(`/chantiers/${chantierId}`);
     revalidatePath(`/chantiers/${chantierId}/informations`);
     revalidatePath(`/chantiers/${chantierId}/prix`);
     revalidatePath(`/chantiers/${chantierId}/export`);

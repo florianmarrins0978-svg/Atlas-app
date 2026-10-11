@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **Un devis dont le client n'a pas de coordonnée peut quand même partir.**
 //
@@ -26,7 +27,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // en base. Un écran qui accepterait la saisie sans la ranger serait vert à
 // l'œil, et faux — elle serait à ressaisir au prochain envoi.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 const NUMERO = "0611223344";
@@ -61,15 +62,13 @@ async function main() {
   const nom = `Contact sur place ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nom);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-  const chantierId = page.url().split("/").pop()!.split("?")[0];
+  const chantierId = idChantier;
 
   // Un devis chiffré, sans quoi l'envoi bute sur un autre motif.
   await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.waitForSelector("text=Total TTC", { timeout: 30_000 });
-  await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
-  await page.waitForTimeout(900);
   await page.getByLabel("Description 1").fill("Taille d'une haie de laurier");
   await page.getByLabel("Prix unitaire 1").fill("700");
   await page.getByLabel("Description 1").click();

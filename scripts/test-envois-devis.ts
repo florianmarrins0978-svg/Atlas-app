@@ -20,7 +20,7 @@ import {
   compterOccupation,
   versJourIso,
   ajouterJours,
-} from "../src/server/disponibilites";
+} from "../src/lib/disponibilites";
 import { jourLisible } from "../src/lib/jour";
 import { nettoyerBase } from "./_test-db";
 
@@ -233,13 +233,33 @@ async function main() {
     );
     const r = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte" as const, dateRetenue: dans(14), adresseIp: "203.0.113.9", agentUtilisateur: "Test" },
+      { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: dans(14), adresseIp: "203.0.113.9", agentUtilisateur: "Test" },
       MAINTENANT
     );
     assert.deepStrictEqual(r, { succes: true, dateRetenue: dans(14), contreProposee: false });
 
     const chantier = await chantiersRepo.getChantier(ctx, chantierId);
     assert.strictEqual(chantier?.datePlanifiee, dans(14));
+  });
+
+  // **Son choix 3A du 3 octobre 2026** : une date dans les 14 jours de
+  // rétractation ne s'accepte qu'avec la demande expresse (L221-25). La case
+  // existait et ne bloquait rien ; vu rouge avant le refus du dépôt.
+  await test("une date dans les 14 jours, case NON cochée : refusée, et rien ne se pose", async () => {
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`retr-${Date.now()}@t.test`);
+    const envoi = await creerEnvoi(
+      ctx,
+      { chantierId, devisId, canal: "sms", datesProposees: [dans(10), dans(30)], contenuDevis: "d" },
+      MAINTENANT
+    );
+    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, dateRetenue: dans(10) }, MAINTENANT);
+    assert.deepStrictEqual(r, { succes: false, motif: "demarrage_non_demande" });
+    const chantier = await chantiersRepo.getChantier(ctx, chantierId);
+    assert.strictEqual(chantier?.datePlanifiee ?? null, null, "le chantier s'est posé malgré le refus");
+
+    // Au-delà des 14 jours, la case n'a pas à être cochée.
+    const loin = await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, dateRetenue: dans(30) }, MAINTENANT);
+    assert.strictEqual(loin.succes, true, "une date après le délai est refusée sans raison");
   });
 
   await test("contre-proposition sur un jour libre : acceptée et signalée", async () => {
@@ -275,7 +295,7 @@ async function main() {
 
     const r = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte" as const, dateRetenue: dans(10) },
+      { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: dans(10) },
       MAINTENANT
     );
     assert.deepStrictEqual(r, { succes: false, motif: "date_indisponible" });
@@ -294,7 +314,7 @@ async function main() {
     );
     const r = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte" as const, dateRetenue: dans(300) },
+      { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: dans(300) },
       MAINTENANT
     );
     assert.deepStrictEqual(r, { succes: false, motif: "date_indisponible" });
@@ -332,7 +352,7 @@ async function main() {
       { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "d" },
       MAINTENANT
     );
-    await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, dateRetenue: dans(10) }, MAINTENANT);
+    await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: dans(10) }, MAINTENANT);
     const seconde = await enregistrerReponse(
       envoi.jeton,
       { decision: "refuse" as const },
@@ -350,7 +370,7 @@ async function main() {
     );
     const r = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte" as const, dateRetenue: dans(10) },
+      { decision: "accepte" as const, demarrageAnticipe: true, dateRetenue: dans(10) },
       ajouterJours(MAINTENANT, 60)
     );
     assert.deepStrictEqual(r, { succes: false, motif: "expire" });
@@ -363,7 +383,7 @@ async function main() {
       { chantierId, devisId, canal: "sms", datesProposees: [dans(10)], contenuDevis: "d" },
       MAINTENANT
     );
-    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte" as const }, MAINTENANT);
+    const r = await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, demarrageAnticipe: true }, MAINTENANT);
     assert.deepStrictEqual(r, { succes: false, motif: "date_manquante" });
   });
 
@@ -403,6 +423,84 @@ async function main() {
   // toutes calées sur une fenêtre glissante de trois mois.
 
   const DANS_SIX_MOIS = dans(182);
+
+  // ---- Une date TRÈS PROCHE : le parcours entier, dans l'autre sens -------
+  //
+  // **Sa règle du 31 août 2026 :** *« si l'utilisateur veut choisir le
+  // 1ᵉʳ septembre il doit pouvoir ! »* — le lendemain, donc.
+  //
+  // C'est la symétrie exacte du bloc ci-dessous, et elle méritait ses propres
+  // cas : la borne haute avait coûté trois barrières, la borne basse en cachait
+  // une, à l'endroit le plus cher — la page du client.
+
+  const DEMAIN = dans(1);
+
+  await test("le patron peut proposer DEMAIN", async () => {
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`proche-${Date.now()}@t.test`);
+    const envoi = await creerEnvoi(
+      ctx,
+      { chantierId, devisId, canal: "sms", datesProposees: [DEMAIN], contenuDevis: "x" },
+      MAINTENANT
+    );
+    assert.ok(envoi.jeton, "l'envoi n'a pas été créé");
+  });
+
+  await test("une date PASSÉE reste refusée", async () => {
+    // La seule borne basse qui subsiste. Ouvrir le lendemain sans la garder
+    // aurait ouvert hier du même geste — et un client ne peut pas retenir un
+    // jour écoulé.
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`hier-${Date.now()}@t.test`);
+    await assert.rejects(
+      creerEnvoi(
+        ctx,
+        { chantierId, devisId, canal: "sms", datesProposees: [dans(-1)], contenuDevis: "x" },
+        MAINTENANT
+      ),
+      /hors_fenetre|Date/i
+    );
+  });
+
+  await test("le client VOIT la date de demain dans sa fenêtre", async () => {
+    // La fenêtre du client commence après-demain. Une date proposée en deçà
+    // tombait dessous, et rien ne le disait.
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`vueproche-${Date.now()}@t.test`);
+    const envoi = await creerEnvoi(
+      ctx,
+      { chantierId, devisId, canal: "sms", datesProposees: [DEMAIN], contenuDevis: "x" },
+      MAINTENANT
+    );
+    const vue = await lireParJeton(envoi.jeton, MAINTENANT);
+    assert.ok(vue, "le lien ne s'ouvre pas");
+    assert.ok(
+      DEMAIN >= vue.fenetre.debut && DEMAIN <= vue.fenetre.fin,
+      `la date proposée ${DEMAIN} tombe hors de la fenêtre [${vue.fenetre.debut} … ${vue.fenetre.fin}]`
+    );
+  });
+
+  await test("le client ACCEPTE la date de demain, et le chantier se pose", async () => {
+    // ═══════════════════════════════════════════════════════════════════════
+    // **La barrière muette du 31 août 2026.** Rendre le lendemain choisissable
+    // au patron ne suffisait pas : la revérification, côté client, se faisait
+    // contre une fenêtre qui commence après-demain. Son client aurait lu « date
+    // indisponible » en acceptant la date qu'il venait de recevoir — l'écran du
+    // patron disant oui, la page du client non, et le devis perdu là.
+    //
+    // Rien ne l'aurait signalé : le lot paraissait fini côté patron.
+    // ═══════════════════════════════════════════════════════════════════════
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`acceptproche-${Date.now()}@t.test`);
+    const envoi = await creerEnvoi(
+      ctx,
+      { chantierId, devisId, canal: "sms", datesProposees: [DEMAIN], contenuDevis: "x" },
+      MAINTENANT
+    );
+    const r = await enregistrerReponse(
+      envoi.jeton,
+      { decision: "accepte", demarrageAnticipe: true, dateRetenue: DEMAIN },
+      MAINTENANT
+    );
+    assert.strictEqual(r.succes, true, `le client s'est fait refuser : ${JSON.stringify(r)}`);
+    assert.strictEqual(r.succes && r.dateRetenue, DEMAIN);
+  });
 
   await test("le patron peut proposer une date à six mois", async () => {
     const { ctx, chantierId, devisId } = await contexteAvecDevis(`loin-${Date.now()}@t.test`);
@@ -465,7 +563,7 @@ async function main() {
     );
     const r = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte", dateRetenue: DANS_SIX_MOIS },
+      { decision: "accepte", demarrageAnticipe: true, dateRetenue: DANS_SIX_MOIS },
       MAINTENANT
     );
     assert.deepStrictEqual(r, { succes: true, dateRetenue: DANS_SIX_MOIS, contreProposee: false });
@@ -550,7 +648,7 @@ async function main() {
 
     const refus = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte", dateRetenue: dans(12) },
+      { decision: "accepte", demarrageAnticipe: true, dateRetenue: dans(12) },
       MAINTENANT
     );
     assert.strictEqual(refus.succes, false, "une date hors des propositions a été acceptée");
@@ -559,7 +657,7 @@ async function main() {
     // Et la date PROPOSÉE, elle, passe : on n'a pas fermé la porte principale.
     const accord = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte", dateRetenue: dans(10) },
+      { decision: "accepte", demarrageAnticipe: true, dateRetenue: dans(10) },
       MAINTENANT
     );
     assert.strictEqual(accord.succes, true, "la date proposée devrait rester acceptable");
@@ -581,7 +679,7 @@ async function main() {
     );
     const r = await enregistrerReponse(
       envoi.jeton,
-      { decision: "accepte", dateRetenue: dans(12) },
+      { decision: "accepte", demarrageAnticipe: true, dateRetenue: dans(12) },
       MAINTENANT
     );
     assert.strictEqual(r.succes, true, "la contre-proposition devrait passer quand elle est autorisée");

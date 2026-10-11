@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { Outil } from "./types";
 import { listerTarifs } from "../../repositories/tarifs";
+import { tarifsCorrespondants } from "../../../lib/tarifs-correspondants";
 
 export const rechercherTarifsCompatibles: Outil = {
   nom: "RechercherTarifsCompatibles",
@@ -11,13 +12,10 @@ export const rechercherTarifsCompatibles: Outil = {
   schema: z.object({ motCle: z.string() }),
   async executer({ ctx }, parametres) {
     const { motCle } = parametres as { motCle: string };
-    const tous = await listerTarifs(ctx);
-    const motCleMinuscule = motCle.trim().toLowerCase();
-    if (!motCleMinuscule) return { correspondances: [] };
-
-    const correspondances = tous
-      .filter((t) => t.intitule.toLowerCase().includes(motCleMinuscule) || motCleMinuscule.includes(t.intitule.toLowerCase()))
-      .map((t) => ({ tarifId: t.id, intitule: t.intitule, prix: t.prix, unite: t.unite, source: "tarif de l'entreprise" }));
+    const correspondances = tarifsCorrespondants(await listerTarifs(ctx), [motCle]).map((t) => ({
+      ...t,
+      source: "tarif de l'entreprise",
+    }));
 
     return { correspondances };
   },

@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
+import { ADRESSE } from "./_adresse";
 
 // **Aucune zone qui défile ne montre sa barre.**
 //
@@ -9,8 +10,9 @@ import { Pool } from "pg";
 // slide. »*
 //
 // Ce n'était pas un désaccord de goût, c'était un oubli. Trois zones qui
-// défilent la masquaient déjà — `.atlas-glisse`, `.atlas-glisseur`,
-// `.atlas-pellicule` — et la quatrième, **la plus vue de l'application**, avait
+// défilent la masquaient déjà — `.atlas-glisse`, `.atlas-pellicule` (une
+// troisième, `.atlas-glisseur`, est partie avec le lecteur de l'anneau le
+// 13 septembre 2026) — et la dernière, **la plus vue de l'application**, avait
 // été sautée. Rien ne pouvait le dire : chaque zone porte la règle chez elle,
 // et personne ne compte les zones.
 //
@@ -38,7 +40,7 @@ import { Pool } from "pg";
 // navigateur la peigne ou non — chez le patron comme ici. Le dire plutôt que de
 // laisser croire à une vérification de l'image (`AGENTS.md`).
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 let echecs = 0;
@@ -116,12 +118,13 @@ async function ecrans(): Promise<Array<[string, string]>> {
   ];
   if (chantier) {
     liste.push(
-      // Ses photos n'ont plus d'écran depuis le 11 août 2026 : elles vivent
-      // dans la pellicule du tiroir de la fiche, ci-dessus (`ARCHITECTURE.md`
-      // §60). Cette ligne a été écrite sur une branche partie avant la
-      // suppression — laissée en place, elle aurait fait mesurer une page 404,
-      // qui n'a évidemment aucune barre : un contrôle vert sur du vide.
-      ["la fiche d'un chantier", `/chantiers/${chantier}`],
+      // **La fiche du chantier est retirée le 4 septembre 2026**
+      // (`ARCHITECTURE.md` §254) : son adresse ne rend plus qu'une
+      // redirection, et mesurer une redirection ne mesure rien — c'est le
+      // « contrôle vert sur du vide » que cette ligne évitait déjà en août,
+      // devant un 404. L'écran qui porte désormais les photos et l'anneau est
+      // la fiche client, et c'est lui qu'il faut mesurer.
+      ["sa fiche client", `/chantiers/${chantier}/coordonnees`],
       ["sa note vocale", `/chantiers/${chantier}/note-vocale`],
       ["son devis à la main", `/chantiers/${chantier}/devis-complet`]
     );

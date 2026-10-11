@@ -1,13 +1,19 @@
-import { and, eq, gte, isNull, lte, sql } from "drizzle-orm";
+import { manquesDuDevis, rappelsDuDevis, type Manque } from "@/lib/mentions-manquantes";
+import { jourIso } from "@/lib/jour";
+import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
+import { and, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { fusionnerOccupationExterne } from "../../lib/agenda-externe";
 import { fusionnerAbsences } from "../../lib/absences-equipe";
 import { periodesOccupeesExterieures } from "./agendas-externes";
-import { encoreEnCoursDepuis, equipesParChantier } from "./occupation-chantiers";
-import { absencesEquipe, chantiers, clients, devis, entreprises, lignesDevis } from "../db/schema";
+import {
+  creneauxParChantier,
+  encoreEnCoursDepuis,
+  equipesParChantier,
+} from "./occupation-chantiers";
+import { absencesEquipe, chantiers, clients, devis, entreprises, envoisDevis, lignesDevis } from "../db/schema";
 import { devisEnvoyable } from "../../lib/devis-envoyable";
 import type { Ctx } from "./context";
-import { jourLisible } from "../../lib/jour";
 import {
   fenetreProposition,
   fenetrePatron,
@@ -22,7 +28,7 @@ import {
   DUREE_PAR_DEFAUT_DEMI_JOURNEES,
   type ChantierPlanifie,
   type JourIso,
-} from "../disponibilites";
+} from "@/lib/disponibilites";
 import type { CanalCommunication } from "./envois-devis";
 
 // Ce que l'écran d'envoi doit savoir avant de poser au patron son unique
@@ -79,8 +85,32 @@ export type PreparationEnvoi = {
   dureeDemiJournees: number;
   /** La durée a-t-elle été déduite de la dictée, ou faute de mieux ? */
   dureeDeduiteDeLaDictee: boolean;
+  /**
+   * Les jours que le client a proposés en demandant une correction, quand le
+   * dernier envoi en porte ; `null` sinon. Sa plainte du 27 septembre 2026 :
+   * sans eux, il renvoyait le devis corrigé avec les mêmes dates, sans avoir vu
+   * les siennes. La feuille les pose d'office (planche
+   * `appli/dates-du-client-au-renvoi.html`, proposition A).
+   */
+  joursDuClient: JourIso[] | null;
+  /**
+   * Les mentions obligatoires qui manquent, chacune avec l'écran où la poser
+   * (son choix 1A du 3 octobre 2026, `manquesDuDevis`). Vide : rien ne manque.
+   */
+  manques: Manque[];
+  /**
+   * La décennale et le médiateur, rappelés sans bloquer l'envoi (sa règle du
+   * 7 octobre 2026, `rappelsDuDevis`). Vide : rien à lui rappeler.
+   */
+  rappels: Manque[];
   /** Motif rendant l'envoi impossible, à afficher tel quel au patron. */
-  blocage: "canal_absent" | "coordonnee_absente" | "devis_absent" | "devis_vide" | null;
+  blocage:
+    | "canal_absent"
+    | "coordonnee_absente"
+    | "devis_absent"
+    | "devis_vide"
+    | "mentions_manquantes"
+    | null;
 };
 
 /**
@@ -149,6 +179,19 @@ export async function preparerEnvoi(
       .where(and(eq(devis.chantierId, chantierId), eq(devis.entrepriseId, ctx.entrepriseId)))
       .limit(1);
 
+    // Le DERNIER envoi, et lui seul : c'est lui que le patron est en train de
+    // corriger. Une correction plus ancienne a déjà reçu sa réponse.
+    const [envoiPrecedent] = await tx
+      .select({ reponse: envoisDevis.reponse, joursSouhaites: envoisDevis.joursSouhaites })
+      .from(envoisDevis)
+      .where(and(eq(envoisDevis.chantierId, chantierId), eq(envoisDevis.entrepriseId, ctx.entrepriseId)))
+      .orderBy(desc(envoisDevis.envoyeAt))
+      .limit(1);
+    const joursDuClient =
+      envoiPrecedent?.reponse === "correction" && envoiPrecedent.joursSouhaites?.length
+        ? (envoiPrecedent.joursSouhaites as JourIso[])
+        : null;
+
     // **Compter les lignes, parce qu'un devis vide part sinon sans un mot.**
     //
     // Son défaut du 23 août 2026 : *« le devis part à zéro euro chez la
@@ -191,16 +234,40 @@ export async function preparerEnvoi(
         )
       );
     const equipesPosees = await equipesParChantier(tx, ctx.entrepriseId);
+    // **Où chacun est POSÉ** — un chantier morcelé n'occupe plus son bloc.
+    const creneauxPoses = await creneauxParChantier(tx, ctx.entrepriseId);
     const planifies: ChantierPlanifie[] = occupesRows
       .filter((r) => r.jour !== null && r.id !== chantierId)
       .map((r) => ({
         jour: r.jour as JourIso,
         moment: r.moment === "matin" || r.moment === "apres_midi" ? r.moment : null,
         dureeDemiJournees: r.duree,
-        equipesParDemi: equipesPosees.get(r.id) ?? null,
+        ...(equipesPosees.get(r.id) ?? {}),
+        creneaux: creneauxPoses.get(r.id) ?? null,
       }));
     const [entreprise] = await tx
-      .select({ nombreEquipes: entreprises.nombreEquipes })
+      .select({
+        nombreEquipes: entreprises.nombreEquipes,
+        // Ce que le devis portera en partant : il se recompose depuis
+        // l'entreprise au moment de l'envoi (`getOuCreerDevisBrouillon`).
+        nom: entreprises.nom,
+        adresse: entreprises.adresse,
+        siret: entreprises.siret,
+        formeJuridique: entreprises.formeJuridique,
+        capitalSocial: entreprises.capitalSocial,
+        villeRcs: entreprises.villeRcs,
+        mediateurNom: entreprises.mediateurNom,
+        assureurDecennale: entreprises.assureurDecennale,
+        regimeTva: entreprises.regimeTva,
+        numeroTva: entreprises.numeroTva,
+        telephone: entreprises.telephone,
+        email: entreprises.email,
+        adresseAssureurDecennale: entreprises.adresseAssureurDecennale,
+        attestationDecennaleCle: entreprises.attestationDecennaleCle,
+        attestationDecennaleLue: entreprises.attestationDecennaleLue,
+        // Ses conditions générales, pour savoir si elles citent la décennale.
+        conditionsGenerales: entreprises.conditionsGenerales,
+      })
       .from(entreprises)
       .where(eq(entreprises.id, ctx.entrepriseId))
       .limit(1);
@@ -226,6 +293,11 @@ export async function preparerEnvoi(
         equipeId: absencesEquipe.equipeId,
         premierJour: absencesEquipe.premierJour,
         dernierJour: absencesEquipe.dernierJour,
+        // Sans ces deux-là, une absence d'un matin bloquerait la journée
+        // entière dans la capacité — le défaut du 8 septembre 2026, corrigé
+        // partout ou nulle part : ces trois chemins doivent compter pareil.
+        premierDemi: absencesEquipe.premierDemi,
+        dernierDemi: absencesEquipe.dernierDemi,
       })
       .from(absencesEquipe)
       .where(
@@ -243,11 +315,19 @@ export async function preparerEnvoi(
       nombreEquipes
     );
 
-    // La durée retenue, dans l'ordre : ce que le patron a corrigé, sinon ce que
-    // sa dictée disait, sinon une journée. Jamais un chiffre inventé sans le
-    // dire — `dureeDeduiteDeLaDictee` porte l'aveu jusqu'à l'écran.
+    // La durée retenue, dans l'ordre : ce que le patron corrige à l'écran, sinon
+    // **ce que le chantier porte déjà** — la durée choisie au premier envoi —,
+    // sinon ce que sa dictée disait, sinon une journée. Jamais un chiffre
+    // inventé sans le dire — `dureeDeduiteDeLaDictee` porte l'aveu jusqu'à l'écran.
+    //
+    // **Le deuxième maillon manquait — sa plainte du 15 septembre 2026 :** *« lors
+    // du premier envoi j'ai sélectionné 8 jours et quand je le reprends pour le
+    // renvoyer, il n'a pas gardé en mémoire les 8 jours »*. Le premier envoi
+    // écrit bien la durée sur le chantier (`creerEnvoi`) ; la préparation du
+    // renvoi, elle, repartait de la dictée, et retombait sur une journée.
     const deduite = dureeEnDemiJournees(chantier?.dureePrevue ?? null);
-    const dureeDemiJournees = dureeImposee ?? deduite ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
+    const dureeDemiJournees =
+      dureeImposee ?? chantier?.dureeDemiJournees ?? deduite ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
 
     const canal = client?.canalCommunication ?? null;
     const destinataire = canal === "sms" ? client?.telephone ?? null : client?.email ?? null;
@@ -257,11 +337,35 @@ export async function preparerEnvoi(
     // **Le devis vide passe AVANT le canal**, et l'ordre n'est pas un détail :
     // à quoi bon lui faire choisir comment joindre sa cliente pour lui envoyer
     // un document qui n'énonce rien ? On corrige le contenu, puis l'adresse.
+    // **Les mentions avant le canal**, par la même logique que le devis vide :
+    // on corrige ce que le document dit, puis l'adresse où il part.
+    const manques = entreprise
+      ? manquesDuDevis(
+          { ...entreprise, attestationDecennale: !!entreprise.attestationDecennaleCle },
+          { nom: client?.nom, adresse: client?.adresse, adresseChantier: chantier?.adresseChantier },
+          conditionsDepuisEntreprise(entreprise).conditionsGenerales,
+          chantier?.autoliquidation ?? false
+        )
+      : [];
+    const rappels = entreprise
+      ? rappelsDuDevis(
+          {
+            ...entreprise,
+            attestationDecennale: !!entreprise.attestationDecennaleCle,
+            attestationLue: entreprise.attestationDecennaleLue,
+          },
+          conditionsDepuisEntreprise(entreprise).conditionsGenerales,
+          jourIso(maintenant),
+          chantier?.autoliquidation ?? false
+        )
+      : [];
     const blocage: PreparationEnvoi["blocage"] = !devisRow
       ? "devis_absent"
       : devisEnvoyable({ nombreLignes: compte?.n ?? 0 })
         ? "devis_vide"
-        : !canal
+        : manques.length > 0
+          ? "mentions_manquantes"
+          : !canal
           ? "canal_absent"
           : !destinataire
             ? "coordonnee_absente"
@@ -295,7 +399,10 @@ export async function preparerEnvoi(
       ),
       fenetre,
       dureeDemiJournees,
-      dureeDeduiteDeLaDictee: dureeImposee === undefined && deduite !== null,
+      joursDuClient,
+      dureeDeduiteDeLaDictee: dureeImposee === undefined && chantier?.dureeDemiJournees == null && deduite !== null,
+      manques,
+      rappels,
       blocage,
     };
   });
@@ -424,18 +531,10 @@ export async function verifierJourPropose(
     return { jour, retenable: false, raison: "Cette date n'est pas lisible.", alternative: null };
   }
   if (jour < horizon.debut) {
-    // **Sa remarque du 23 août 2026 :** *« "trop tôt" veut rien dire, on
-    // comprend pas bien »*. La phrase disait la règle au lieu de dire quoi
-    // faire — et « après-demain » oblige à compter dans sa tête devant un
-    // calendrier qui affiche déjà les dates. On nomme donc le premier jour
-    // possible, et on s'arrête là : le « sinon vous vous mettez en défaut »
-    // le mettait en tort pour un appui.
-    return {
-      jour,
-      retenable: false,
-      raison: `Ce jour est trop proche. Le premier possible est le ${jourLisible(horizon.debut)}.`,
-      alternative: horizon.debut,
-    };
+    // Le passé, et lui seul, reste un refus : son client lira ce devis demain
+    // au plus tôt. Le calendrier grise déjà ces cases — ce contrôle-ci est là
+    // pour ce qui se poste sans passer par lui.
+    return { jour, retenable: false, raison: "Ce jour est déjà passé.", alternative: null };
   }
   if (jour > horizon.fin) {
     return {
@@ -451,6 +550,32 @@ export async function verifierJourPropose(
   // faute de savoir ce qui s'y trouve, pas parce qu'il l'est.
   const contrainte = await contrainteSurHorizon(ctx, chantierId, horizon, preparation.nombreEquipes);
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // **UN JOUR TRÈS PROCHE SE PRÉVIENT, IL NE SE REFUSE PLUS.**
+  //
+  // *Sa règle du 31 août 2026 :* « si l'utilisateur veut choisir le
+  // 1ᵉʳ septembre il doit pouvoir ! » Le calendrier lui montrait le lendemain,
+  // la case s'ouvrait sous son doigt, et le verdict la reprenait : « ce jour
+  // est trop proche ». Un jour offert puis refusé se lit comme une panne.
+  //
+  // C'est mot pour mot l'arbitrage qu'il avait rendu le 23 août pour les
+  // journées pleines, et il vaut ici pour la même raison : lui seul sait qu'il
+  // a une remorque libre demain matin, ou que ce client-là décroche tout de
+  // suite.
+  //
+  // **Ce que cela ne rouvre PAS :** l'application ne SUGGÈRE toujours rien en
+  // deçà de deux jours (`premiersJoursLibres` passe par `fenetreProposition`).
+  // Ce qui change, c'est qu'il peut passer outre en le sachant — la remarque
+  // est sous ses yeux.
+  //
+  // La remarque s'ajoute aux autres au lieu de les remplacer : un samedi
+  // demain, ou une journée déjà pleine demain, doivent dire les deux choses.
+  // ═══════════════════════════════════════════════════════════════════════
+  const tresProche = jour < fenetreProposition(maintenant).debut;
+  const remarqueProche = tresProche
+    ? "C'est dans moins de deux jours, votre client aura peu de temps pour répondre."
+    : null;
+
   const libre = (j: JourIso) => jourRetenable(j, preparation.dureeDemiJournees, contrainte, preparation.nombreEquipes, horizon);
   if (libre(jour)) {
     const weekEnd = [0, 6].includes(new Date(`${jour}T12:00:00Z`).getUTCDay());
@@ -459,7 +584,11 @@ export async function verifierJourPropose(
       retenable: true,
       // Pas un refus : il connaît ses clients. Mais le dire évite l'appui
       // distrait sur un samedi, qui ne se rattrape qu'en rappelant le client.
-      raison: weekEnd ? "C'est un week-end — vous pouvez le proposer, mais vérifiez que c'est voulu." : null,
+      raison:
+        joindre(
+          weekEnd ? "C'est un week-end, vous pouvez le proposer, mais vérifiez que c'est voulu." : null,
+          remarqueProche
+        ),
       alternative: null,
     };
   }
@@ -487,9 +616,18 @@ export async function verifierJourPropose(
   return {
     jour,
     retenable: true,
-    raison: `Ce jour est complet — ${libelleDuree(preparation.dureeDemiJournees).toLowerCase()} n'y tient pas. Vous pouvez le proposer quand même.`,
+    raison: joindre(
+      `Ce jour est complet, ${libelleDuree(preparation.dureeDemiJournees).toLowerCase()} n'y tient pas. Vous pouvez le proposer quand même.`,
+      remarqueProche
+    ),
     alternative: jourLibreLePlusProche(jour, horizon, libre),
   };
+}
+
+/** Deux remarques valent mieux qu'une tronquée : elles se suivent, sans vide. */
+function joindre(...remarques: (string | null)[]): string | null {
+  const dites = remarques.filter((r): r is string => Boolean(r));
+  return dites.length > 0 ? dites.join(" ") : null;
 }
 
 /** Le jour libre le plus proche, cherché des deux côtés en s'éloignant. */
@@ -552,6 +690,8 @@ async function contrainteSurHorizon(
         )
       );
     const equipesPosees = await equipesParChantier(tx, ctx.entrepriseId);
+    // **Où chacun est POSÉ** — un chantier morcelé n'occupe plus son bloc.
+    const creneauxPoses = await creneauxParChantier(tx, ctx.entrepriseId);
     return compterOccupation(
       rows
         .filter((r) => r.jour !== null && r.id !== chantierId)
@@ -559,7 +699,8 @@ async function contrainteSurHorizon(
           jour: r.jour as JourIso,
           moment: r.moment === "matin" || r.moment === "apres_midi" ? r.moment : null,
           dureeDemiJournees: r.duree,
-          equipesParDemi: equipesPosees.get(r.id) ?? null,
+          ...(equipesPosees.get(r.id) ?? {}),
+          creneaux: creneauxPoses.get(r.id) ?? null,
         })),
       nombreEquipes
     );

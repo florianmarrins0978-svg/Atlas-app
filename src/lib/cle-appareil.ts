@@ -139,7 +139,7 @@ export function messageRefusCle(refus: RefusCle): string | null {
     case "indisponible":
       return "Cet appareil ne propose pas Face ID (ni empreinte). Vous pouvez toujours entrer avec votre mot de passe.";
     case "panne":
-      return "Face ID n’a pas pu aboutir. Entrez votre mot de passe — votre compte n’a rien perdu.";
+      return "Face ID n’a pas pu aboutir. Entrez votre mot de passe, votre compte n’a rien perdu.";
     case "panne-activation":
       /**
        * **Le même incident, mais on est DÉJÀ entré** — et « entrez votre mot de
@@ -147,7 +147,7 @@ export function messageRefusCle(refus: RefusCle): string | null {
        * qui demande un geste impossible se lit comme une panne d'Atlas, et
        * l'artisan cherche ce qu'il a mal fait.
        */
-      return "Impossible d’enregistrer cet appareil pour l’instant. Réessayez — vous restez connecté, et rien n’a changé.";
+      return "Impossible d’enregistrer cet appareil pour l’instant. Réessayez, vous restez connecté et rien n’a changé.";
   }
 }
 

@@ -6,20 +6,12 @@ import { logger } from "@/server/logger";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { horsProductionReelle, sourceDuVisiteur } from "@/server/source-visiteur";
 import { SOURCE_NON_ETABLIE } from "@/lib/source-visiteur";
+import { adresseClient } from "@/lib/adresse-client";
 
-export type EtatReponse = { erreur: string } | { succes: string } | undefined;
-
-// Première adresse de X-Forwarded-For : celle du client vue par le proxy de
-// tête. Élément de preuve d'appoint — elle documente l'acceptation, elle ne la
-// fonde pas.
-function adresseClient(entetes: Headers): string | null {
-  const transmis = entetes.get("x-forwarded-for");
-  if (transmis) {
-    const premiere = transmis.split(",")[0]?.trim();
-    if (premiere) return premiere;
-  }
-  return entetes.get("x-real-ip");
-}
+export type EtatReponse =
+  | { erreur: string }
+  | { succes: string }
+  | undefined;
 
 const MESSAGES: Record<string, string> = {
   introuvable: "Ce lien n'est plus valable. Contactez votre artisan pour en recevoir un nouveau.",
@@ -28,12 +20,20 @@ const MESSAGES: Record<string, string> = {
   // Message volontairement actionnable : le client doit comprendre qu'il peut
   // recommencer, et que son intérêt pour le devis n'est pas perdu.
   date_indisponible:
-    "Cette date vient d'être retenue par ailleurs. Choisissez-en une autre — votre accord sur le devis reste valable.",
+    "Cette date vient d'être retenue par ailleurs. Choisissez-en une autre. Votre accord sur le devis reste valable.",
   date_manquante: "Choisissez une date d'intervention avant de valider.",
+  // Elle a posé moins de jours que le chantier n'en prend. L'écran le dit déjà
+  // avant d'envoyer ; cette phrase-ci ne sert qu'au formulaire rejoué.
+  jours_incomplets:
+    "Il manque des jours : retenez-en autant que le chantier en demande.",
   // Le patron n'a pas ouvert le calendrier sur cet envoi : la phrase le dit
   // sans accuser le client, et le renvoie vers ce qu'il peut faire.
   autre_date_refusee:
     "Votre artisan propose des dates précises pour ce chantier. Choisissez-en une, ou demandez-lui une correction en un mot.",
+  // La case est sous ses yeux, juste au-dessus : la phrase dit pourquoi elle
+  // compte, et ce qu'il peut faire s'il ne veut pas la cocher.
+  demarrage_non_demande:
+    "Cette date tombe dans vos 14 jours de rétractation : cochez la case pour demander que les travaux commencent plus tôt, ou choisissez une date plus lointaine.",
   message_manquant: "Dites en un mot ce qui doit être corrigé : sans cela, votre artisan ne saura pas quoi reprendre.",
 };
 
@@ -128,8 +128,42 @@ export async function repondreAction(
   const precisionBrute = String(formData.get("precision") ?? "").trim();
   const precision = precisionBrute ? precisionBrute.slice(0, 500) : null;
 
+  // « proposee » désigne l'une des dates offertes ; « autre » bascule sur le
+  // calendrier. On ne devine jamais l'intention : sans choix explicite, on
+  // redemande.
+  const choix = String(formData.get("choixDate") ?? "");
+  /**
+   * **SES JOURS, et non plus une date** — sa demande du 20 septembre 2026.
+   *
+   * Séparés par des virgules, comme le champ caché les écrit. Rien n'est cru
+   * sur parole : le serveur revérifie chaque jour contre la fenêtre de l'envoi
+   * et le planning (`enregistrerReponse`), et refuse une liste plus courte que
+   * le chantier.
+   *
+   * Le PREMIER jour reste `dateRetenue` : c'est par lui que le planning, la
+   * notification et l'écran de retour désignent cette réponse.
+   */
+  const joursAutres = choix === "autre"
+    ? String(formData.get("joursAutres") ?? "")
+        .split(",")
+        .map((j) => j.trim())
+        .filter((j) => /^\d{4}-\d{2}-\d{2}$/.test(j))
+        .sort()
+    : [];
+  const dateRetenue = choix === "autre" ? (joursAutres[0] ?? "") : choix;
+
   if (decision === "correction") {
-    const r = await enregistrerReponse(jeton, { decision: "correction" as const, precision, ...preuve });
+    // **Ses dates partent AVEC la correction** — sa plainte du 27 septembre
+    // 2026 : elles étaient postées, puis jetées ici avant d'être lues, et le
+    // patron renvoyait le devis corrigé sans les avoir vues. Facultatives : une
+    // correction sans date reste une correction.
+    const r = await enregistrerReponse(jeton, {
+      decision: "correction" as const,
+      precision,
+      dateRetenue: dateRetenue || undefined,
+      joursRetenus: joursAutres.length > 0 ? joursAutres : undefined,
+      ...preuve,
+    });
     if (!r.succes) return { erreur: MESSAGES[r.motif] ?? "Impossible d'enregistrer votre demande." };
     logger.info("Correction demandée par le client");
     return {
@@ -148,16 +182,12 @@ export async function repondreAction(
     return { succes: "Votre réponse a bien été transmise." };
   }
 
-  // « proposee » désigne l'une des dates offertes ; « autre » bascule sur le
-  // calendrier. On ne devine jamais l'intention : sans choix explicite, on
-  // redemande.
-  const choix = String(formData.get("choixDate") ?? "");
-  const dateRetenue = choix === "autre" ? String(formData.get("dateAutre") ?? "") : choix;
   if (!dateRetenue) return { erreur: MESSAGES.date_manquante };
 
   const r = await enregistrerReponse(jeton, {
     decision: "accepte" as const,
     dateRetenue,
+    joursRetenus: joursAutres.length > 0 ? joursAutres : undefined,
     precision,
     demarrageAnticipe: formData.get("demarrageAnticipe") === "oui",
     ...preuve,

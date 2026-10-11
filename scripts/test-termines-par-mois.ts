@@ -21,13 +21,24 @@ import {
   aFacturerPartout,
   factureesPartout,
   somme,
+  formatEuros,
   libelleFacturee,
+  libelleDateChantier,
+  libelleEtatLigne,
   numeroCourt,
   estFacture,
+  trier,
+  lireTri,
+  estTriParDefaut,
+  TRI_PAR_DEFAUT,
   type LigneTerminee,
 } from "../src/lib/termines-par-mois";
 
 let echecs = 0;
+
+/** La ligne telle qu'elle se lit, morceaux recollés. */
+const lue = (e: { avant: string; mot: string; apres: string }) => e.avant + e.mot + e.apres;
+const lueFacturee = (f: { mot: string; suite: string }) => f.mot + f.suite;
 function essai(nom: string, fn: () => void) {
   try {
     fn();
@@ -47,7 +58,8 @@ const ligne = (p: Partial<LigneTerminee> & { id: string }): LigneTerminee => ({
   factureDateEmission: null,
   factureStatut: null,
   totalTtc: null,
-  devisTotalTtc: null,
+  totalPrevuTtc: null,
+  devisDateEmission: null,
   ...p,
 });
 
@@ -55,7 +67,7 @@ console.log("=== Le mois, et ce qu'il porte ===");
 
 // **Quatre essais ont disparu le 23 août 2026, avec la phrase qu'ils gardaient.**
 //
-// Le décompte sous le mois — « 2 factures envoyées · et 620,00 € qui attendent
+// Le décompte sous le mois — « 2 factures envoyées, et 620,00 € qui attendent
 // leur facture » — a été remplacé, à sa demande, par celle qui vivait sous le
 // titre : *« supprime ce qui est marqué sous le mois d'août et à la place tu
 // écris la phrase qui est marquée sous Terminés »*. `libelleCompte` n'avait plus
@@ -70,7 +82,7 @@ essai("un chantier du 20 août est un chantier d'AOÛT, facturé ou non", () => 
   // raconterait plus le mois mais deux listes empilées.
   const mois = resumeDuMois(
     preparer([
-      ligne({ id: "a", datePlanifiee: "2026-08-20", devisTotalTtc: "1240.00" }),
+      ligne({ id: "a", datePlanifiee: "2026-08-20", totalPrevuTtc: "1240.00" }),
       ligne({ id: "b", datePlanifiee: "2026-08-02", factureStatut: "emise", totalTtc: "1320.00" }),
     ]),
     "2026-08"
@@ -107,7 +119,7 @@ essai("le total du mois ne compte QUE ce qui est facturé", () => {
   const mois = resumeDuMois(
     preparer([
       ligne({ id: "a", datePlanifiee: "2026-08-02", factureStatut: "emise", totalTtc: "1320.00" }),
-      ligne({ id: "b", datePlanifiee: "2026-08-20", devisTotalTtc: "1240.00" }),
+      ligne({ id: "b", datePlanifiee: "2026-08-20", totalPrevuTtc: "1240.00" }),
     ]),
     "2026-08"
   );
@@ -118,8 +130,8 @@ essai("le total du mois ne compte QUE ce qui est facturé", () => {
 essai("le montant affiché vient de la facture, sinon du devis", () => {
   const mois = resumeDuMois(
     preparer([
-      ligne({ id: "a", datePlanifiee: "2026-08-02", factureStatut: "emise", totalTtc: "1320.00", devisTotalTtc: "9999.00" }),
-      ligne({ id: "b", datePlanifiee: "2026-08-20", devisTotalTtc: "1240.00" }),
+      ligne({ id: "a", datePlanifiee: "2026-08-02", factureStatut: "emise", totalTtc: "1320.00", totalPrevuTtc: "9999.00" }),
+      ligne({ id: "b", datePlanifiee: "2026-08-20", totalPrevuTtc: "1240.00" }),
     ]),
     "2026-08"
   );
@@ -196,8 +208,8 @@ essai("CE QUI ATTEND NE SUIT PAS LE MOIS — c'est tout l'objet de sa demande", 
   // yeux quand l'écran montre août — sinon il faudrait déjà savoir qu'il existe
   // pour aller le chercher.
   const lignes = preparer([
-    ligne({ id: "aout", datePlanifiee: "2026-08-21", devisTotalTtc: "620.00" }),
-    ligne({ id: "retard", datePlanifiee: "2026-07-14", devisTotalTtc: "890.00" }),
+    ligne({ id: "aout", datePlanifiee: "2026-08-21", totalPrevuTtc: "620.00" }),
+    ligne({ id: "retard", datePlanifiee: "2026-07-14", totalPrevuTtc: "890.00" }),
     ligne({ id: "faite", datePlanifiee: "2026-08-20", factureStatut: "emise", totalTtc: "1764.00" }),
   ]);
   const partout = aFacturerPartout(lignes);
@@ -214,7 +226,7 @@ essai("UN CHANTIER CLÔTURÉ EN AVANCE NE VIDE PAS L'ÉCRAN", () => {
   // L'écran s'ouvrait alors sur le mois prochain — vide — et tout le travail du
   // mois en cours avait disparu, sans rien qui dise pourquoi.
   const lignes = preparer([
-    ligne({ id: "ce-mois", datePlanifiee: "2026-08-16", devisTotalTtc: "300.00" }),
+    ligne({ id: "ce-mois", datePlanifiee: "2026-08-16", totalPrevuTtc: "300.00" }),
     ligne({ id: "en-avance", datePlanifiee: "2026-09-30", factureStatut: "emise", totalTtc: "500.00" }),
   ]);
   const { entree, borne } = bornesDuFeuilletage(lignes, "2026-08");
@@ -269,21 +281,21 @@ essai("« Facturé le 20 août » vient de la DATE D'ÉMISSION, pas du chantier"
       factureDateEmission: "2026-08-30",
     }),
   ]);
-  assert.equal(libelleFacturee(l), "Facturé le 30 août · Facture n° 5");
+  assert.equal(lueFacturee(libelleFacturee(l)), "Facturé le 30 août, Facture n° 5");
 });
 
 essai("sans date d'émission, on ne l'invente pas", () => {
   const [l] = preparer([
     ligne({ id: "a", datePlanifiee: "2026-08-20", factureStatut: "emise", totalTtc: "10.00", factureNumero: "F2026-0005" }),
   ]);
-  assert.equal(libelleFacturee(l), "Facture n° 5");
+  assert.equal(lueFacturee(libelleFacturee(l)), "Facture n° 5");
 });
 
 essai("le total tous mois confondus est celui de la phrase d'en-tête", () => {
   const lignes = preparer([
     ligne({ id: "a", datePlanifiee: "2026-08-02", factureStatut: "emise", totalTtc: "1320.00" }),
     ligne({ id: "j", datePlanifiee: "2026-07-28", factureStatut: "emise", totalTtc: "1860.00" }),
-    ligne({ id: "x", datePlanifiee: "2026-08-20", devisTotalTtc: "640.00" }),
+    ligne({ id: "x", datePlanifiee: "2026-08-20", totalPrevuTtc: "640.00" }),
   ]);
   assert.equal(somme(factureesPartout(lignes)), 3180);
   assert.equal(somme(aFacturerPartout(lignes)), 640);
@@ -295,6 +307,248 @@ essai("« émise » est le seul état qui vaut facturé", () => {
   assert.equal(estFacture({ factureStatut: "emise" }), true);
   assert.equal(estFacture({ factureStatut: "brouillon" }), false);
   assert.equal(estFacture({ factureStatut: null }), false);
+});
+
+// ─── La date du chantier, et la ligne d'état — sa demande du 31 août 2026 ────
+
+essai("la date du chantier s'écrit sans son année quand c'est celle du jour", () => {
+  assert.equal(libelleDateChantier("2026-08-12", "2026"), "12 août");
+  assert.equal(libelleDateChantier("2026-01-03", "2026"), "3 janvier");
+});
+
+essai("l'ANNÉE s'écrit dès que ce n'est plus celle du jour", () => {
+  // C'est l'onglet « À facturer » qui l'impose : il mêle tous les mois, pour
+  // rattraper un retard de facturation. « 14 septembre » sans année s'y lirait
+  // comme le mois qui vient — et l'on croirait avoir facturé un chantier vieux
+  // d'un an.
+  assert.equal(libelleDateChantier("2025-09-14", "2026"), "14 septembre 2025");
+});
+
+essai("sans date au planning, on n'invente rien", () => {
+  assert.equal(libelleDateChantier(null, "2026"), "");
+  assert.equal(libelleDateChantier("", "2026"), "");
+});
+
+essai("la ligne d'état porte la date puis le montant prévu", () => {
+  const [l] = preparer([ligne({ id: "a", datePlanifiee: "2026-08-12", totalPrevuTtc: "360.00" })]);
+  // Le montant se compare par `formatEuros`, jamais par une chaîne écrite à la
+  // main : l'espace qui précède le « € » est une espace fine insécable, et deux
+  // caractères invisibles qui diffèrent font rougir un contrôle juste.
+  assert.equal(lue(libelleEtatLigne(l, "2026")), `12 août, ${formatEuros(360)} prévus`);
+});
+
+essai("« Pas encore facturé » n'est plus écrit nulle part", () => {
+  // Sa demande du 31 août 2026, devant la planche : la capsule « À FACTURER »
+  // disait déjà la même chose, sur la même ligne, à trois centimètres.
+  const lignes = preparer([
+    ligne({ id: "a", datePlanifiee: "2026-08-12", totalPrevuTtc: "360.00" }),
+    ligne({ id: "b", datePlanifiee: "2026-08-26" }),
+  ]);
+  for (const l of lignes) {
+    assert.ok(!/pas encore factur/i.test(lue(libelleEtatLigne(l, "2026"))), lue(libelleEtatLigne(l, "2026")));
+  }
+});
+
+essai("sans devis envoyé, il ne reste que la date — et JAMAIS un «, » pendu", () => {
+  const [l] = preparer([ligne({ id: "a", datePlanifiee: "2026-08-26" })]);
+  assert.equal(lue(libelleEtatLigne(l, "2026")), "26 août");
+});
+
+essai("sans date NI montant, la ligne d'état n'existe pas", () => {
+  // L'écran n'affiche alors rien du tout : ni tiret, ni phrase de remplacement.
+  // Un chantier clôturé sans être passé par le planning est dans ce cas.
+  const [l] = preparer([ligne({ id: "a", termineAt: "2026-08-30T10:00:00Z" } as Partial<LigneTerminee> & { id: string })]);
+  assert.equal(lue(libelleEtatLigne(l, "2026")), "");
+});
+
+essai("une fois facturé, la date du chantier précède celle de la facture", () => {
+  // « Facturé le 20 août » reste : aucun bouton ne le dit à sa place.
+  const [l] = preparer([
+    ligne({
+      id: "a",
+      datePlanifiee: "2026-08-09",
+      factureStatut: "emise",
+      factureDateEmission: "2026-08-20",
+      totalTtc: "1240.00",
+      factureNumero: "F2026-0005",
+    }),
+  ]);
+  assert.equal(lue(libelleEtatLigne(l, "2026")), "9 août, Facturé le 20 août, Facture n° 5");
+});
+
+essai("« Facturé » sort SÉPARÉ, pour le gras doré (planche A du 24 septembre 2026)", () => {
+  const [l] = preparer([
+    ligne({
+      id: "a",
+      datePlanifiee: "2026-08-09",
+      factureStatut: "emise",
+      factureDateEmission: "2026-08-20",
+      totalTtc: "1240.00",
+      factureNumero: "F2026-0005",
+    }),
+  ]);
+  assert.deepEqual(libelleEtatLigne(l, "2026"), {
+    avant: "9 août, ",
+    mot: "Facturé",
+    apres: " le 20 août, Facture n° 5",
+  });
+  // « Facture n° 5 » n'est pas « Facturé » : rien ne passe en doré.
+  assert.deepEqual(
+    libelleFacturee(
+      preparer([ligne({ id: "b", factureStatut: "emise", factureNumero: "F2026-0005" })])[0]
+    ),
+    { mot: "", suite: "Facture n° 5" }
+  );
+  // Une rangée qui attend n'a pas de mot doré.
+  const [attend] = preparer([ligne({ id: "c", datePlanifiee: "2026-08-12" })]);
+  assert.equal(libelleEtatLigne(attend, "2026").mot, "");
+});
+
+// ─── SANS DATE DE PLANNING, C'EST LA FACTURE QUI DIT QUAND ──────────────────
+//
+// **Sa décision du 21 septembre 2026**, devant deux rangées « Mr. Julien » sans
+// deuxième ligne : *« il faut même mettre la date du jour à laquelle on a créé
+// la facture »*.
+//
+// Un chantier facturé sans être passé par le planning n'avait AUCUNE date :
+// `cleMois` valait `""`, donc aucun mois ne le portait — l'œil le montrait tant
+// qu'il attendait sa facture, et il disparaissait de l'écran le jour où elle
+// partait, tout en comptant dans « N facturés ».
+
+console.log("\n=== Sans date de planning : la facture dit quand ===");
+
+essai("le mois vient de la facture quand le planning n'a rien posé", () => {
+  const [l] = preparer([ligne({ id: "a", factureDateEmission: "2026-09-18" })]);
+  assert.equal(l.cleMois, "2026-09");
+});
+
+essai("et le mois le retrouve, au lieu de le perdre", () => {
+  const lignes = preparer([ligne({ id: "a", factureDateEmission: "2026-09-18" })]);
+  assert.deepEqual(
+    resumeDuMois(lignes, "2026-09").lignes.map((l) => l.id),
+    ["a"]
+  );
+});
+
+essai("la date de la facture s'écrit sur la rangée qui attend", () => {
+  const [l] = preparer([ligne({ id: "a", factureDateEmission: "2026-09-18" })]);
+  assert.equal(lue(libelleEtatLigne(l, "2026")), "18 septembre");
+});
+
+essai("le planning l'emporte quand les deux existent", () => {
+  const [l] = preparer([
+    ligne({ id: "a", datePlanifiee: "2026-09-11", factureDateEmission: "2026-09-18" }),
+  ]);
+  assert.equal(l.cleMois, "2026-09");
+  assert.equal(lue(libelleEtatLigne(l, "2026")), "11 septembre");
+});
+
+essai("facturée sans date de planning, la date ne s'écrit PAS deux fois", () => {
+  // « 18 septembre, Facturé le 18 septembre » est la répétition que le patron
+  // fait retirer à chaque fois (`CLAUDE.md` §3) : c'est le mot en trop qui part.
+  const [l] = preparer([
+    ligne({
+      id: "a",
+      factureStatut: "emise",
+      factureDateEmission: "2026-09-18",
+      totalTtc: "480.00",
+      factureNumero: "F2026-0012",
+    }),
+  ]);
+  assert.equal(lue(libelleEtatLigne(l, "2026")), "Facturé le 18 septembre, Facture n° 12");
+});
+
+essai("une rangée sans date de facture se range toujours devant", () => {
+  // Elle n'a plus aucune date connue — c'est le dernier cas où l'on n'écrit
+  // rien plutôt que d'inventer.
+  const lignes = preparer([
+    ligne({ id: "datee", datePlanifiee: "2026-09-11" }),
+    ligne({ id: "muette" }),
+  ]);
+  assert.deepEqual(lignes.map((l) => l.id), ["muette", "datee"]);
+  assert.equal(lignes[0].cleMois, "");
+});
+
+essai("le tri place la facturée à SA date, pas en tête", () => {
+  const lignes = preparer([
+    ligne({ id: "vieux", datePlanifiee: "2026-08-01" }),
+    ligne({ id: "sans-planning", factureDateEmission: "2026-09-18" }),
+    ligne({ id: "recent", datePlanifiee: "2026-09-20" }),
+  ]);
+  assert.deepEqual(lignes.map((l) => l.id), ["recent", "sans-planning", "vieux"]);
+});
+
+// ─── Le bouton Filtre — sa demande du 27 septembre 2026 ─────────────────────
+// Planche `appli/termines-l-ordre.html`, B retenue.
+
+const quatre = () => preparer([
+  ligne({ id: "costa", nom: "Mme Costa", datePlanifiee: "2026-09-02", devisDateEmission: "2026-08-18",
+    factureStatut: "emise", factureDateEmission: "2026-09-18", totalTtc: "1120.00" }),
+  ligne({ id: "frederic", nom: "Mr. Frédéric", datePlanifiee: "2026-09-08", devisDateEmission: "2026-08-25",
+    factureStatut: "emise", factureDateEmission: "2026-09-25", totalTtc: "1240.00" }),
+  ligne({ id: "huguette", nom: "Madame Huguette Aubry", datePlanifiee: "2026-09-12", devisDateEmission: "2026-08-29",
+    totalPrevuTtc: "660.00" }),
+  ligne({ id: "sans-devis", nom: "Mr. Julien", datePlanifiee: "2026-09-22" }),
+]);
+const ids = (l: { id: string }[]) => l.map((x) => x.id);
+
+essai("par défaut, l'ordre d'avant : le chantier le plus récent en tête", () => {
+  const l = quatre();
+  assert.deepEqual(ids(trier(l, TRI_PAR_DEFAUT)), ids(l));
+  assert.deepEqual(ids(l), ["sans-devis", "huguette", "frederic", "costa"]);
+});
+
+essai("chantier, du plus ancien", () => {
+  assert.deepEqual(ids(trier(quatre(), { cle: "chantier", croissant: true })), ["costa", "frederic", "huguette", "sans-devis"]);
+});
+
+essai("devis : la facture sans devis va à la fin, dans les deux sens", () => {
+  assert.deepEqual(ids(trier(quatre(), { cle: "devis", croissant: true })), ["costa", "frederic", "huguette", "sans-devis"]);
+  assert.deepEqual(ids(trier(quatre(), { cle: "devis", croissant: false })), ["huguette", "frederic", "costa", "sans-devis"]);
+});
+
+essai("facturation : ce qui reste à facturer va à la fin, par jour du chantier", () => {
+  assert.deepEqual(ids(trier(quatre(), { cle: "facture", croissant: true })), ["costa", "frederic", "sans-devis", "huguette"]);
+});
+
+essai("une facture préparée mais pas émise n'a pas de date de facturation", () => {
+  const l = preparer([
+    ligne({ id: "brouillon", datePlanifiee: "2026-09-01", factureStatut: "brouillon", factureDateEmission: "2026-09-01" }),
+    ligne({ id: "emise", datePlanifiee: "2026-09-02", factureStatut: "emise", factureDateEmission: "2026-09-20" }),
+  ]);
+  assert.deepEqual(ids(trier(l, { cle: "facture", croissant: true })), ["emise", "brouillon"]);
+});
+
+essai("montant : un montant inconnu va à la fin, jamais compté zéro", () => {
+  assert.deepEqual(ids(trier(quatre(), { cle: "montant", croissant: true })), ["huguette", "costa", "frederic", "sans-devis"]);
+  assert.deepEqual(ids(trier(quatre(), { cle: "montant", croissant: false })), ["frederic", "costa", "huguette", "sans-devis"]);
+});
+
+essai("client : rangé sans la civilité, et à la française", () => {
+  const l = preparer([
+    ligne({ id: "z", nom: "Mme Zoé", datePlanifiee: "2026-09-01" }),
+    ligne({ id: "e", nom: "Mr. Émile", datePlanifiee: "2026-09-02" }),
+    ligne({ id: "b", nom: "Madame Bernard", datePlanifiee: "2026-09-03" }),
+  ]);
+  assert.deepEqual(ids(trier(l, { cle: "client", croissant: true })), ["b", "e", "z"]);
+  assert.deepEqual(ids(trier(l, { cle: "client", croissant: false })), ["z", "e", "b"]);
+});
+
+essai("rangée par devis, la ligne dit la date du devis ; sans devis, celle du chantier", () => {
+  const [sansDevis, huguette] = quatre();
+  assert.equal(lue(libelleEtatLigne(huguette, "2026", "devis")), `Devis du 29 août, ${formatEuros(660)} prévus`);
+  assert.equal(lue(libelleEtatLigne(huguette, "2026")), `12 septembre, ${formatEuros(660)} prévus`);
+  assert.equal(lue(libelleEtatLigne(sansDevis, "2026", "devis")), "22 septembre");
+});
+
+essai("un tri relu du téléphone : abîmé ou d'une autre version, l'ordre par défaut", () => {
+  assert.deepEqual(lireTri(null), TRI_PAR_DEFAUT);
+  assert.deepEqual(lireTri("pas du json"), TRI_PAR_DEFAUT);
+  assert.deepEqual(lireTri('{"cle":"couleur","croissant":true}'), TRI_PAR_DEFAUT);
+  assert.deepEqual(lireTri('{"cle":"devis"}'), TRI_PAR_DEFAUT);
+  assert.deepEqual(lireTri('{"cle":"devis","croissant":true}'), { cle: "devis", croissant: true });
+  assert.equal(estTriParDefaut(TRI_PAR_DEFAUT), true);
+  assert.equal(estTriParDefaut({ cle: "chantier", croissant: true }), false);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} « Terminés » — ${echecs} échec(s).`);

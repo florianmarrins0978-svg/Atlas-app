@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 /**
  * Attend que la BASE porte ce qu'on vient d'écrire à l'écran.
@@ -50,7 +51,23 @@ async function attendreEnBase<T>(
 //   3. un devis déjà parti ne se modifie plus.
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
+
+/**
+ * Taper dans une case de chiffre **comme lui** : on entre, on tape.
+ *
+ * **Plus de sélection à la main depuis sa décision du 13 septembre 2026 (« fais
+ * le B »)** : entrer dans la case sélectionne tout, et un appui remplace. Le
+ * `ControlOrMeta+a` qui était ici compensait le comportement d'avant — le
+ * curseur posé derrière le chiffre, qui faisait « 12 » d'un « 2 » tapé sur
+ * « 1 ». Le garder masquerait le jour où le B saute : la suite resterait verte
+ * pendant qu'il enverrait un devis à 5 400 € au lieu de 900 (`CLAUDE.md`
+ * §4 quater — on retire la couche qui compensait).
+ */
+async function remplacer(champ: import("playwright").Locator, valeur: string) {
+  await champ.click();
+  await champ.type(valeur);
+}
 
 async function main() {
   const navigateur = await lancerNavigateur();
@@ -66,15 +83,14 @@ async function main() {
   const client = `M. Ledoux ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', client);
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
-  const chantierUrl = page.url();
-  const chantierId = chantierUrl.split("/").pop()!;
+  const chantierId = await creerPuisFiche(page);
+  const chantierUrl = `${BASE}/chantiers/${chantierId}`;
 
-  // --- 1. Le lien mène au document entier --------------------------------
-  // Par sa destination : la rédaction à la main vit dans le tiroir depuis le
-  // 11 août 2026, et s'y écrit « Devis à la main ».
-  await page.locator('[data-atlas="tiroir-fiche"] a[href$="/devis-complet"]').click();
+  // --- 1. Le chemin mène au document entier ------------------------------
+  // **Sans détour depuis le 4 septembre 2026.** La rédaction à la main vivait
+  // dans le tiroir de la fiche du chantier, retirée (`ARCHITECTURE.md` §254) ;
+  // « Je rédige à la main », sur la fiche client, y mène droit — c'est ce
+  // bouton que `creerPuisFiche` vient de toucher.
   await page.waitForURL(/\/devis-complet$/, { timeout: 10000 });
   // Le titre du DOCUMENT, et non un titre d'écran : la page ne porte plus que
   // le devis (« une page où il n'y a que le devis », le 5 août 2026).
@@ -174,13 +190,13 @@ async function main() {
   console.log("  ✓ l'en-tête de l'entreprise s'enregistre — IBAN compris");
 
   // Une ligne complète : description, quantité, prix unitaire.
-  await page.click("text=+ Ajouter une ligne");
-  await page.waitForTimeout(600);
-  await page.getByLabel("Description 1").fill("Élagage d'un tilleul — taille architecturée");
+  await page.getByLabel("Description 1").fill("Élagage d'un tilleul, taille architecturée");
   await page.getByLabel("Description 1").blur();
-  await page.getByLabel("Quantité 1").fill("3");
+  // **SON GESTE, PAS `fill()`** : `fill()` pose la valeur sans passer par le
+  // champ, donc sans sa sélection à l'entrée. On entre et on tape, comme lui.
+  await remplacer(page.getByLabel("Quantité 1"), "3");
   await page.getByLabel("Quantité 1").blur();
-  await page.getByLabel("Prix unitaire 1").fill("250");
+  await remplacer(page.getByLabel("Prix unitaire 1"), "250");
   await page.getByLabel("Prix unitaire 1").blur();
   await page.waitForTimeout(900);
 

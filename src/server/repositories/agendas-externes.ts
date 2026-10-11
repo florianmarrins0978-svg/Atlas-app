@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import type { PeriodeOccupee } from "../../lib/agenda-externe";
-import { agendasExternes } from "../db/schema";
+import { agendasExternes, entreprises } from "../db/schema";
 import { withEntreprise } from "../db/with-entreprise";
 import { periodesApple } from "./agenda-apple";
 import {
@@ -159,6 +159,34 @@ export async function debrancherAgenda(ctx: Ctx): Promise<void> {
           eq(agendasExternes.fournisseur, "google")
         )
       );
+  });
+}
+
+/**
+ * La phrase du Planning qui propose de relier un agenda a-t-elle été masquée ?
+ *
+ * Sa demande du 26 septembre 2026 (planche `appli/mon-agenda-simple.html`, C).
+ * **Rangé sur l'entreprise** (migration 0102) : dans le navigateur, le choix
+ * se perdrait sur l'autre appareil et la phrase reviendrait sans raison.
+ */
+export async function rappelAgendaMasque(ctx: Ctx): Promise<boolean> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [ligne] = await tx
+      .select({ masque: entreprises.rappelAgendaMasque })
+      .from(entreprises)
+      .where(eq(entreprises.id, ctx.entrepriseId))
+      .limit(1);
+    return ligne?.masque ?? false;
+  });
+}
+
+/** Masque la phrase, pour toujours : aucun écran ne la fait revenir. */
+export async function masquerRappelAgenda(ctx: Ctx): Promise<void> {
+  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    await tx
+      .update(entreprises)
+      .set({ rappelAgendaMasque: true })
+      .where(eq(entreprises.id, ctx.entrepriseId));
   });
 }
 

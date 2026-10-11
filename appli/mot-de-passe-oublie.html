@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mot de passe oublié</title>
+<style>
+  /*
+    MOT DE PASSE OUBLIÉ, la planche avant le code.
+
+    Sa demande du 24 septembre 2026 : « si un utilisateur a oublié son mot de
+    passe il ne pourra jamais le récupérer ou le changer ? Il faut mettre cette
+    fonction ! » Puis, devant le choix lien ou code : le CODE.
+
+    Pourquoi le code : c'est le mécanisme qui existe déjà à la création du
+    compte (`src/lib/code-verification.ts`, `SaisieDuCode.tsx`). Même durée,
+    mêmes essais, même case, même « Renvoyer ». Un second mécanisme (un lien)
+    serait une seconde chose à sécuriser (`CLAUDE.md` §3).
+
+    Les libellés sont recopiés du produit :
+      · « Connexion », « Adresse », « Mot de passe », « Entrer » : `src/app/login/FormulaireConnexion.tsx`
+      · « Le code reçu à », « Continuer », « Renvoyer le code », « Retour » : `SaisieDuCode.tsx`
+      · « Nouveau mot de passe », « Confirmer le nouveau mot de passe »,
+        les refus et « Les deux sont identiques ✓ » : `src/lib/mot-de-passe.ts`
+        et `src/app/reglages/connexion/ConnexionClient.tsx`
+
+    Ce qui est NEUF, donc à valider : le lien « Mot de passe oublié ? », l'écran
+    de l'adresse et son bouton « Recevoir un code », et l'entrée directe dans
+    Atlas une fois le mot de passe changé.
+
+    RIEN N'EST CODÉ. `src/` n'a pas bougé.
+
+    Couleurs : la charte « Nuit » de `la-porte-en-plein-air.html`, recopiée.
+  */
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:#1c1c1a;
+       -webkit-text-size-adjust:100%;padding:0 0 56px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:16px 20px;font-size:14px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .bloc{max-width:430px;margin:26px auto 0;padding:0 20px}
+  .bloc h2{margin:0 0 8px;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+           text-transform:uppercase;color:#B98B47}
+  .bloc p{margin:0 0 10px;font-size:14.5px;line-height:1.55;color:#4a4a44}
+  .bloc p b{color:#1c1c1a}
+  .bloc ul{margin:0;padding-left:18px;font-size:14.5px;line-height:1.55;color:#4a4a44}
+  .bloc li{margin-bottom:6px}
+
+  .tel{width:318px;margin:14px auto 0;border-radius:42px;padding:10px;
+       background:#0e0e0d;box-shadow:0 18px 44px rgba(20,18,14,.30)}
+  .ecran{border-radius:33px;overflow:hidden;position:relative;height:604px;
+         display:flex;flex-direction:column}
+  .ecran[hidden]{display:none}
+  .heure{padding:14px 6px 0;font:600 13px/1 -apple-system,ui-sans-serif,sans-serif;opacity:.85;flex-shrink:0}
+
+  .nuit{background:radial-gradient(120% 62% at 8% 4%, #3a2f18 0%, #1a1d19 40%, #101210 78%);
+        color:#e9e8de;padding:0 22px 20px}
+  .retour{align-self:flex-start;display:flex;align-items:center;gap:6px;
+          margin-top:10px;border:0;background:transparent;color:#a8ab9d;cursor:pointer;
+          font:400 14px/1 ui-sans-serif,sans-serif;padding:8px 10px 8px 0;flex-shrink:0}
+  .titre{margin:12px 0 16px;font:400 30px/1.1 ui-serif,Georgia,serif;letter-spacing:-.01em}
+  .titre .adr{font-size:22px;word-break:break-all}
+
+  .champ{width:100%;border:0;border-radius:999px;padding:15px 20px;
+         font:400 16px/1.2 ui-sans-serif,-apple-system,sans-serif;
+         background:#1a1d19;color:#e9e8de;box-shadow:inset 0 0 0 1px rgba(233,232,222,.14)}
+  .champ::placeholder{color:#84887b}
+  .champ:focus{outline:none;box-shadow:inset 0 0 0 1.4px #c6a15b}
+  .case{position:relative}
+  .case .champ{padding-right:52px}
+  .oeil{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;
+        color:#a8ab9d;padding:8px;cursor:pointer;display:flex}
+
+  .principal{width:100%;border:0;border-radius:999px;padding:16px;
+             font:400 17px/1 ui-serif,Georgia,serif;cursor:pointer;
+             background:linear-gradient(100deg,#e9e8de,#d9cba8);color:#101210}
+  .principal:active{transform:scale(.985)}
+  .principal:disabled{opacity:.45;cursor:default;transform:none}
+  .discret{width:100%;border:0;background:transparent;padding:13px 0 2px;color:#a8ab9d;
+           font:400 14.5px/1 ui-sans-serif,sans-serif;cursor:pointer}
+
+  .oublie{align-self:flex-end;border:0;background:transparent;color:#c6a15b;cursor:pointer;
+          font:400 13.5px/1 ui-sans-serif,sans-serif;padding:10px 4px 4px}
+  .ligne{min-height:19px;margin:6px 0 4px 14px;font-size:13px;line-height:19px;color:#e2826a}
+  .ligne.bon{color:#9bb886}
+
+  .centre{flex:1;display:flex;flex-direction:column;justify-content:center}
+  .bas{margin-top:auto;text-align:center}
+  .bascule{border:0;background:transparent;padding:10px 0;color:#a8ab9d;
+           font:400 13.5px/1 ui-sans-serif,sans-serif;cursor:pointer}
+  .bascule b{font-weight:600;color:#c6a15b}
+
+  .accueil{background:#f5f3ee;color:#1c1c1a;padding:0 22px 20px}
+  .accueil .titre{margin-top:40px}
+  .accueil p{font-size:14px;color:#8a8578;margin:0}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Mot de passe oublié.</b> Touchez « Mot de passe oublié ? » sous le mot de passe, puis suivez. <b>Rien n’est codé</b> : dites oui, ou ce qui ne va pas.
+</div>
+
+<div class="tel" data-tel>
+
+  <!-- 1, la connexion, avec le lien en plus -->
+  <div class="ecran nuit" data-ecran="connexion">
+    <div class="heure">9:41</div>
+    <button type="button" class="retour" aria-label="Revenir en arrière"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>Retour</button>
+    <h1 class="titre" style="text-align:center;margin:44px 0 40px">Connexion</h1>
+    <input class="champ" type="email" placeholder="Adresse" data-adresse-connexion style="margin-bottom:14px">
+    <input class="champ" type="password" placeholder="Mot de passe">
+    <button type="button" class="oublie" data-aller="adresse">Mot de passe oublié&nbsp;?</button>
+    <button type="button" class="principal" style="margin-top:14px">Entrer</button>
+    <div class="bas">
+      <button type="button" class="bascule">Pas de compte&nbsp;? <b>Créer un compte</b></button>
+    </div>
+  </div>
+
+  <!-- 2, l'adresse -->
+  <div class="ecran nuit" data-ecran="adresse" hidden>
+    <div class="heure">9:41</div>
+    <button type="button" class="retour" data-aller="connexion"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>Retour</button>
+    <div class="centre">
+      <h1 class="titre">Mot de passe oublié</h1>
+      <input class="champ" type="email" placeholder="Adresse" data-adresse>
+      <p class="ligne" data-refus-adresse></p>
+    </div>
+    <button type="button" class="principal" data-recevoir>Recevoir un code</button>
+  </div>
+
+  <!-- 3, le code : la case de la création du compte, telle quelle -->
+  <div class="ecran nuit" data-ecran="code" hidden>
+    <div class="heure">9:41</div>
+    <div class="centre">
+      <h1 class="titre">Le code reçu à <span class="adr" data-adresse-ecrite></span></h1>
+      <input class="champ" type="text" inputmode="numeric" placeholder="000000" maxlength="8" data-code style="letter-spacing:.3em;text-align:center;font-size:20px">
+      <p class="ligne" data-refus-code></p>
+    </div>
+    <button type="button" class="principal" data-continuer>Continuer</button>
+    <button type="button" class="discret" data-renvoyer>Renvoyer le code</button>
+    <button type="button" class="discret" data-aller="connexion" style="padding-top:6px">Retour</button>
+  </div>
+
+  <!-- 4, le nouveau mot de passe : les deux cases des réglages -->
+  <div class="ecran nuit" data-ecran="nouveau" hidden>
+    <div class="heure">9:41</div>
+    <div class="centre">
+      <h1 class="titre">Nouveau mot de passe</h1>
+      <div class="case">
+        <input class="champ" type="password" placeholder="Nouveau mot de passe" data-nouveau>
+        <button type="button" class="oeil" data-oeil aria-label="Afficher"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+      </div>
+      <p class="ligne" data-ligne-nouveau></p>
+      <div class="case">
+        <input class="champ" type="password" placeholder="Confirmer le nouveau mot de passe" data-confirmation>
+        <button type="button" class="oeil" data-oeil aria-label="Afficher"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+      </div>
+      <p class="ligne" data-ligne-confirmation></p>
+    </div>
+    <button type="button" class="principal" data-enregistrer disabled>Enregistrer</button>
+  </div>
+
+  <!-- 5, on entre directement -->
+  <div class="ecran accueil" data-ecran="accueil" hidden>
+    <div class="heure">9:41</div>
+    <h1 class="titre">Accueil d’Atlas</h1>
+    <p>Ici l’application s’ouvre, comme après « Entrer ».</p>
+    <div class="bas"><button type="button" class="bascule" data-recommencer>Recommencer la maquette</button></div>
+  </div>
+</div>
+
+<div class="bloc">
+  <h2>Ce qui se passe derrière</h2>
+  <ul>
+    <li>Le code est <b>celui de la création du compte</b> : 6 chiffres, valable un quart d’heure, un nombre d’essais limité.</li>
+    <li>L’e-mail dit : « Votre code pour changer de mot de passe. Si vous n’avez rien demandé, ignorez ce message. »</li>
+    <li>Une adresse sans compte mène <b>au même écran</b>, et aucun e-mail ne part. Sans cela, n’importe qui pourrait tester quelles adresses ont un compte Atlas.</li>
+    <li>Une fois le mot de passe changé, <b>tous les autres appareils sont déconnectés</b>. Si quelqu’un d’autre était entré, il est dehors.</li>
+    <li>On entre <b>directement</b> dans Atlas, sans retaper le mot de passe.</li>
+  </ul>
+</div>
+
+<script>
+  const tel = document.querySelector("[data-tel]");
+  const $ = (s) => tel.querySelector(s);
+  function aller(nom) {
+    tel.querySelectorAll("[data-ecran]").forEach((e) => { e.hidden = e.dataset.ecran !== nom; });
+  }
+  tel.querySelectorAll("[data-aller]").forEach((b) => b.addEventListener("click", () => {
+    if (b.dataset.aller === "adresse") $("[data-adresse]").value = $("[data-adresse-connexion]").value;
+    aller(b.dataset.aller);
+  }));
+
+  $("[data-recevoir]").addEventListener("click", () => {
+    const adresse = $("[data-adresse]").value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adresse)) {
+      $("[data-refus-adresse]").textContent = "Cette adresse n’est pas complète.";
+      return;
+    }
+    $("[data-refus-adresse]").textContent = "";
+    $("[data-adresse-ecrite]").textContent = adresse;
+    $("[data-code]").value = "";
+    $("[data-refus-code]").textContent = "";
+    aller("code");
+  });
+  $("[data-adresse]").addEventListener("input", () => { $("[data-refus-adresse]").textContent = ""; });
+
+  // La maquette accepte n'importe quels six chiffres : c'est le geste qu'on montre.
+  $("[data-continuer]").addEventListener("click", () => {
+    const code = $("[data-code]").value.replace(/\s/g, "");
+    if (!/^\d{6}$/.test(code)) { const l = $("[data-refus-code]"); l.className = "ligne"; l.textContent = "Le code fait 6 chiffres."; return; }
+    aller("nouveau");
+  });
+  $("[data-code]").addEventListener("input", () => { $("[data-refus-code]").textContent = ""; });
+  $("[data-renvoyer]").addEventListener("click", () => {
+    $("[data-code]").value = "";
+    const l = $("[data-refus-code]");
+    l.textContent = "Un nouveau code est parti.";
+    l.className = "ligne bon";
+  });
+
+  const nouveau = $("[data-nouveau]"), confirmation = $("[data-confirmation]");
+  function suivre() {
+    const n = nouveau.value, c = confirmation.value;
+    const ln = $("[data-ligne-nouveau]"), lc = $("[data-ligne-confirmation]");
+    ln.className = "ligne";
+    ln.textContent = n !== "" && n.length < 12 ? "Il faut au moins 12 caractères." : "";
+    if (c === "") { lc.textContent = ""; lc.className = "ligne"; }
+    else if (c === n) { lc.textContent = "Les deux sont identiques ✓"; lc.className = "ligne bon"; }
+    else { lc.textContent = "Les deux saisies ne sont pas identiques."; lc.className = "ligne"; }
+    $("[data-enregistrer]").disabled = !(n.length >= 12 && c === n);
+  }
+  nouveau.addEventListener("input", suivre);
+  confirmation.addEventListener("input", suivre);
+  tel.querySelectorAll("[data-oeil]").forEach((b) => b.addEventListener("click", () => {
+    const champ = b.previousElementSibling;
+    champ.type = champ.type === "password" ? "text" : "password";
+  }));
+  $("[data-enregistrer]").addEventListener("click", () => aller("accueil"));
+
+  $("[data-recommencer]").addEventListener("click", () => {
+    tel.querySelectorAll("input").forEach((i) => { i.value = ""; });
+    suivre();
+    aller("connexion");
+  });
+</script>
+</body>
+</html>

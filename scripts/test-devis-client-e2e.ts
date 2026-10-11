@@ -1,17 +1,23 @@
 import assert from "node:assert";
+import { readFile } from "node:fs/promises";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import * as chantiersRepo from "../src/server/repositories/chantiers";
 import * as devisRepo from "../src/server/repositories/devis";
+import * as clientsRepo from "../src/server/repositories/clients";
+import * as prixRepo from "../src/server/repositories/lignes-prix";
 import { creerEnvoi, lireParJeton, genererJeton } from "../src/server/repositories/envois-devis";
-import { fenetreProposition, versJourIso, ajouterJours } from "../src/server/disponibilites";
+import { fenetreProposition, versJourIso, ajouterJours } from "../src/lib/disponibilites";
+import { ADRESSE } from "./_adresse";
+import { cocherLaDemandeExpresse } from "./_demande-expresse-e2e";
+import { adresseDeTelechargement } from "../src/lib/remise-de-fichier";
 
 // Parcours réel de la page publique de réponse au devis (docs/AGENT.md §2.2 bis).
 // Exercée dans un navigateur, SANS session : c'est tout l'intérêt de cette page,
 // et c'est ce qui la rend sensible.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let passed = 0;
 let failed = 0;
@@ -27,17 +33,42 @@ async function test(nom: string, fn: () => Promise<void>) {
   }
 }
 
-async function preparerEnvoi(suffixe: string, datesDansNJours: number[]) {
+async function preparerEnvoi(
+  suffixe: string,
+  datesDansNJours: number[],
+  /**
+   * Envoyer le devis pour de bon, ce qui **archive son PDF**.
+   *
+   * Facultatif parce que c'est lent (le document se compose, se protège et
+   * s'écrit), et qu'un seul contrôle en a besoin : celui qui télécharge la
+   * pièce. Sans cela, `pdfStorageKey` est vide et la route renvoie le client
+   * vers la page — un 200 en HTML, qui n'est pas un devis.
+   */
+  avecPdfArchive = false
+) {
   const { entreprise, utilisateurId } = await entreprisesRepo.creerEntreprise(
     { nom: "Atelier du Test" },
     { email: `client-e2e-${suffixe}-${Date.now()}@atlas.test` }
   );
   const ctx = { utilisateurId, entrepriseId: entreprise.id };
+  // **Un client nommé, et une adresse** : c'est le cas du patron, et c'est le
+  // plus haut. Un envoi sans client tient dans l'écran sans rien prouver de
+  // celui qui en porte un — la ligne « Pour Mme … » fait vingt pixels.
+  const client = await clientsRepo.creerClient(ctx, {
+    nom: "Huguette Groupiron",
+    civilite: "mme",
+    telephone: "06 12 34 56 78",
+  });
   const chantier = await chantiersRepo.creerChantier(ctx, {
     nom: "Élagage du grand chêne",
     adresseChantier: "5 avenue de la République",
+    clientId: client.id,
   });
+  if (avecPdfArchive) {
+    await prixRepo.ajouterLignePrix(ctx, chantier.id, "Élagage d'un chêne", "1200.00");
+  }
   const d = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+  if (avecPdfArchive) await devisRepo.envoyerDevis(ctx, d.id);
   const maintenant = new Date();
   const envoi = await creerEnvoi(
     ctx,
@@ -190,12 +221,58 @@ async function main() {
       "la case de rétractation survit à la date qui l'a fait naître"
     );
 
-    // 4. « Une autre date » se défait pareil, et referme son calendrier.
+    // 4. « Une autre date » se défait pareil — mais le GESTE a changé le
+    //    4 septembre 2026, et sa règle, non.
+    //
+    //    Le calendrier monte désormais du bas (sa réponse A) : il couvre le
+    //    bouton radio, qu'on ne peut donc plus rappuyer. Ce qui compte est la
+    //    RÈGLE — « si par erreur j'ai sélectionné un des 3 champs je ne peux
+    //    plus le désélectionner » —, et elle est tenue autrement : refermer la
+    //    feuille sans avoir touché de jour défait le choix.
+    //
+    //    Viser le rappui du radio, ce serait fixer une mise en page plutôt
+    //    qu'un droit (`CLAUDE.md` §5 bis).
     await uneAutre.click();
     assert.ok((await page.locator("[data-jour]").count()) > 0, "le calendrier ne s'ouvre pas");
-    await uneAutre.click();
+    await page.locator('button[aria-label="Refermer"]').click();
     assert.strictEqual(await uneAutre.isChecked(), false, "« une autre date » reste collée");
     assert.strictEqual(await page.locator("[data-jour]").count(), 0, "le calendrier reste ouvert");
+
+    // 4 bis. **Une date RETENUE survit à la fermeture — et c'est CE QUI PART
+    //    AU SERVEUR qu'on vérifie, plus une case cochée.**
+    //
+    //    Depuis son choix du 4 septembre, la liste se replie une fois la date
+    //    retenue : les boutons radio quittent le document, et un champ caché
+    //    prend leur place. Viser `isChecked()` reviendrait à exiger la mise en
+    //    page d'hier ; ce qui compte est que le formulaire envoie encore le
+    //    choix ET la date (`CLAUDE.md` §5 bis).
+    //
+    //    Sans ce contrôle, une feuille qui viderait tout en se refermant — ou
+    //    un repli qui oublierait son champ caché — perdrait la date du client
+    //    en silence, et son acceptation serait refusée sans qu'il comprenne.
+    await uneAutre.click();
+    const jourLibre = page.locator('[data-jour]:not([disabled])').first();
+    const jourRetenu = await jourLibre.getAttribute("data-jour");
+    await jourLibre.click();
+    await page.locator('button:has-text("Retenir cette date")').click();
+    assert.strictEqual(await page.locator("[data-jour]").count(), 0, "la feuille ne s'est pas refermée");
+    assert.strictEqual(
+      await page.locator('input[name="joursAutres"]').inputValue(),
+      jourRetenu,
+      "la date retenue ne part pas au serveur"
+    );
+    assert.strictEqual(
+      await page.locator('input[name="choixDate"]').inputValue(),
+      "autre",
+      "la liste repliée n'envoie plus aucun choix de date"
+    );
+
+    // 4 ter. **« changer » redéplie la liste.** Sans cette sortie, un appui
+    //    ferait de la date retenue un choix définitif : le client ne pourrait
+    //    plus revenir à l'une des deux dates de son artisan.
+    await page.locator('button:has-text("changer")').click();
+    assert.ok(await laProche.isVisible(), "les dates proposées ne reviennent pas");
+    assert.ok(await uneAutre.isVisible(), "« une autre date » ne revient pas");
 
     await page.close();
   });
@@ -241,13 +318,68 @@ async function main() {
     const page = await context.newPage();
     await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
 
+    // **Le refus demande une confirmation depuis le 20 septembre 2026** — sa
+    // réponse « la A », après avoir fermé un de ses devis par erreur : *« j'ai
+    // sans faire exprès cliqué sur je ne donne pas suite, aucun moyen
+    // d'annuler »*. Le premier appui ouvre la feuille, le second envoie.
     await page.click('button:has-text("Je ne donne pas suite")');
+    await page.click('button:has-text("Oui, je ne donne pas suite")');
     await page.waitForSelector("text=Votre réponse a bien été transmise", { timeout: 10000 });
 
     const chantier = await chantiersRepo.getChantier(ctx, chantierId);
     assert.strictEqual(chantier?.datePlanifiee, null, "un refus ne doit rien planifier");
     const relu = await lireParJeton(envoi.jeton);
     assert.strictEqual(relu?.reponse, "refusee");
+    await page.close();
+  });
+
+  await test("un seul appui ne ferme plus le devis — et « Revenir au devis » le rouvre", async () => {
+    // ═══════════════════════════════════════════════════════════════════
+    // **SA SÉCURITÉ DU 20 SEPTEMBRE 2026, réponse « la A ».**
+    //
+    // Ce qui l'a provoquée, de sa main : *« j'ai sans faire exprès cliqué sur
+    // je ne donne pas suite, aucun moyen d'annuler, il faut mettre une
+    // sécurité avant l'envoi »*. Et il n'y a AUCUN retour :
+    // `enregistrerReponse` refuse toute seconde réponse (`deja_repondu`).
+    //
+    // **Ce contrôle passe par la porte du client**, pas par la fonction :
+    // c'est le doigt qui glisse qu'on veut arrêter, et un contrôle qui
+    // appellerait l'action directement ne dirait rien de la feuille
+    // (`CLAUDE.md` §5 quater).
+    // ═══════════════════════════════════════════════════════════════════
+    const { envoi } = await preparerEnvoi("annule", [9]);
+    const page = await context.newPage();
+    await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
+
+    await page.click('button:has-text("Je ne donne pas suite")');
+    assert.ok(
+      await page.locator("text=Vous ne donnez pas suite").isVisible(),
+      "le premier appui n'ouvre pas la confirmation"
+    );
+
+    // Rien n'est parti : le devis est toujours là, et la base n'a rien vu.
+    assert.ok(
+      await page.locator('button:has-text("J\'accepte ce devis")').isVisible(),
+      "le devis a disparu alors que rien n'a été confirmé"
+    );
+    assert.strictEqual(
+      (await lireParJeton(envoi.jeton))?.reponse,
+      null,
+      "un seul appui a suffi à fermer le devis"
+    );
+
+    // Et la sortie existe : c'est tout ce que le patron n'avait pas.
+    await page.click('button:has-text("Revenir au devis")');
+    assert.strictEqual(
+      await page.locator("text=Vous ne donnez pas suite").count(),
+      0,
+      "la feuille ne se referme pas"
+    );
+    assert.strictEqual(
+      (await lireParJeton(envoi.jeton))?.reponse,
+      null,
+      "revenir au devis a quand même envoyé le refus"
+    );
     await page.close();
   });
 
@@ -336,6 +468,7 @@ async function main() {
     await page
       .locator(`input[name="choixDate"][value="${versJourIso(ajouterJours(maintenant, 15))}"]`)
       .check();
+    await cocherLaDemandeExpresse(page);
     await page.click('button:has-text("J\'accepte ce devis")');
     await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 10000 });
 
@@ -363,11 +496,17 @@ async function main() {
     const page = await context.newPage();
     await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
 
-    const invite = page.locator("text=/vous pouvez laisser un mot/i");
-    assert.strictEqual(
-      await invite.count(),
-      1,
-      "aucune phrase n'invite le client à écrire : il ne saura pas qu'il en a le droit"
+    // **Ce contrôle exigeait une phrase, mot pour mot** — « vous pouvez laisser
+    // un mot à votre artisan » — et le patron a fait réunir cette phrase avec
+    // l'intitulé le 31 août 2026, pour que l'écran tienne d'un seul tenant. Il
+    // vise donc ce qu'il défend : que le libellé du champ INVITE à écrire, et
+    // qu'il soit au-dessus (`CLAUDE.md` §5 bis).
+    const invite = page.locator('label[for="precision"]');
+    assert.strictEqual(await invite.count(), 1, "le champ de message n'a plus d'intitulé");
+    const texte = (await invite.first().innerText()).toLowerCase();
+    assert.ok(
+      /écriv|dites|laissez/.test(texte),
+      `l'intitulé ne dit pas au client qu'il peut écrire : « ${texte} »`
     );
 
     // **Au-dessus du champ, jamais en dessous** : une invitation lue après coup
@@ -383,11 +522,295 @@ async function main() {
 
     // Et elle ne promet rien que l'application ne tienne : le client n'a aucun
     // moyen de recevoir une réponse ici.
-    const texte = (await invite.first().innerText()).toLowerCase();
     assert.ok(
       !/répondra|réponse sous|rappellera/.test(texte),
       `l'invitation promet une réponse que rien ne garantit : « ${texte} »`
     );
+    await page.close();
+  });
+
+  await test("TOUT TIENT DANS UN ÉCRAN — sa demande du 31 août 2026", async () => {
+    /**
+     * *« Je veux que le choix de la date qui arrive au client par SMS tienne
+     * sur une seule page ! Il ne doit pas avoir à scroll pour voir toutes les
+     * infos. »*
+     *
+     * Un client nommé, une adresse de chantier, **deux dates proposées** — le
+     * maximum que l'écran d'envoi autorise —, et la contre-proposition OUVERTE.
+     *
+     * Mesuré sur son écran — 390 × 664, un téléphone barre d'adresse déduite,
+     * la mesure du dépôt depuis le 30 août.
+     *
+     * ═══════════════════════════════════════════════════════════════════════
+     * **IL ANNONÇAIT « la contre-proposition ouverte » ET NE L'OUVRAIT PAS —
+     * corrigé le 3 septembre 2026, complété le 4.**
+     *
+     * Il chargeait la page et mesurait, sans jamais toucher « Une autre
+     * date » : il éprouvait l'état replié en promettant l'autre, et son vert
+     * se lisait comme une garantie qu'il ne donnait pas.
+     *
+     * Ce qu'il cachait, mesuré le 3 septembre :
+     *
+     * | état | page | dernier bouton |
+     * |---|---|---|
+     * | replié | 664 px | 602 px |
+     * | calendrier ouvert | **990 px** | **963 px** |
+     *
+     * Le patron a retenu **la feuille** (`appli/ecran-de-son-client.html`,
+     * 4 septembre) : le calendrier monte par-dessus, la page derrière garde sa
+     * hauteur. Puis il a fait replier la liste des dates, puis resserrer les
+     * espacements — sans qu'aucun mot soit retiré.
+     *
+     * | état | avant | après |
+     * |---|---|---|
+     * | calendrier ouvert | 990 px | **664 px** |
+     * | + date à moins de 14 jours | 1 148 px | **664 px** |
+     *
+     * **Le pire cas est éprouvé plus bas**, et c'est lui qui compte : il ne
+     * reste plus un pixel de marge, et deux px ajoutés quelque part le
+     * rouvriraient sans que personne ne s'en aperçoive.
+     *
+     * **Ce contrôle ouvre donc la feuille pour de bon.** Sans ce geste, le
+     * jour où quelqu'un remettrait le calendrier dans le flux, il resterait
+     * vert.
+     * ═══════════════════════════════════════════════════════════════════════
+     */
+    const { envoi } = await preparerEnvoi("pli", [3, 10]);
+    const page = await context.newPage();
+    await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
+
+    // **La contre-proposition OUVERTE — le geste que ce contrôle annonçait.**
+    // C'est l'instant où le client cherche une autre date, donc celui où ce
+    // parcours évite l'aller-retour téléphonique : ses trois issues doivent
+    // rester sous les yeux.
+    await page.locator('input[value="autre"]').check();
+    await page.waitForTimeout(400);
+    const calendrierVisible = await page.locator("[data-jour]").first().isVisible();
+    assert.ok(calendrierVisible, "le calendrier ne s'est pas ouvert : le contrôle ne mesure pas ce qu'il annonce");
+
+    const m = await page.evaluate(() => ({
+      page: document.documentElement.scrollHeight,
+      ecran: window.innerHeight,
+      dernier: document.querySelector('[data-atlas="ne-pas-donner-suite"]')?.getBoundingClientRect().bottom ?? 0,
+    }));
+
+    // **Sans ce garde-fou, « 0 ≤ 664 » rendrait un vert qui ne mesure rien** —
+    // une page pas encore mise en page mesure zéro, et c'est arrivé dans ce
+    // dépôt le 15 août 2026 (`CLAUDE.md` §5).
+    assert.ok(m.dernier > 100, `rien n'est mis en page (dernier bouton à ${m.dernier} px)`);
+    assert.ok(m.ecran > 100, `écran de mesure absurde : ${m.ecran} px`);
+
+    assert.ok(
+      m.page <= m.ecran,
+      `la page fait ${m.page} px pour ${m.ecran} px d'écran : le client doit faire défiler`
+    );
+    // Et le dernier geste est réellement visible, pas seulement « dans la
+    // page » : c'est ce que le client regarde.
+    assert.ok(
+      m.dernier <= m.ecran,
+      `« Je ne donne pas suite » finit à ${m.dernier} px, sous un écran de ${m.ecran} px`
+    );
+
+    // ═══════════════════════════════════════════════════════════════════
+    // **LE PIRE CAS : une date à MOINS DE QUATORZE JOURS.**
+    //
+    // Elle fait apparaître la case de rétractation — 125 px — que la loi
+    // impose : sans elle cochée, l'artisan n'a pas le droit de commencer
+    // avant la fin du délai. C'est l'état le plus haut de cet écran, et
+    // celui que personne n'éprouvait : la page y faisait **1 148 px** le
+    // 3 septembre, puis 790, puis 717.
+    //
+    // Le 4 septembre, sur sa demande — *« il y a pas moyen de garder
+    // aujourd'hui mais de resserrer le texte ? »* —, les 53 px restants ont
+    // été pris dans les espacements, **sans retirer un seul mot**. Il ne
+    // reste donc plus aucune marge : deux px ajoutés n'importe où rouvrent
+    // le défaut, et c'est ce contrôle qui doit le dire.
+    // ═══════════════════════════════════════════════════════════════════
+    const proche = new Date(Date.now() + 4 * 86400_000).toISOString().slice(0, 10);
+    const caseProche = page.locator(`[data-jour="${proche}"]`);
+    if ((await caseProche.count()) > 0 && !(await caseProche.isDisabled())) {
+      await caseProche.click();
+      await page.locator('button:has-text("Retenir cette date")').click();
+      await page.waitForTimeout(400);
+      const retract = await page
+        .locator("text=délai de rétractation")
+        .first()
+        .isVisible()
+        .catch(() => false);
+      assert.ok(retract, "la case de rétractation ne s'affiche pas sur une date proche");
+
+      const p = await page.evaluate(() => ({
+        page: document.documentElement.scrollHeight,
+        ecran: window.innerHeight,
+        dernier: document.querySelector('[data-atlas="ne-pas-donner-suite"]')?.getBoundingClientRect().bottom ?? 0,
+      }));
+      assert.ok(p.dernier > 100, `rien n'est mis en page (dernier bouton à ${p.dernier} px)`);
+      assert.ok(
+        p.page <= p.ecran,
+        `avec la case de rétractation, la page fait ${p.page} px pour ${p.ecran} px d'écran`
+      );
+      assert.ok(
+        p.dernier <= p.ecran,
+        `avec la case de rétractation, « Je ne donne pas suite » finit à ${p.dernier} px`
+      );
+    }
+    await page.close();
+  });
+
+  await test("le devis reste téléchargeable APRÈS l'acceptation", async () => {
+    /**
+     * **Sa demande du 31 août 2026 :** *« lorsque le client a accepté le devis
+     * et qu'il revient sur la page via le SMS il n'a plus accès à son devis, or
+     * il doit encore pouvoir le télécharger s'il a oublié de le faire »*.
+     *
+     * L'écran de retour ne portait aucun geste : le lien reçu par SMS devenait
+     * un cul-de-sac le jour même de l'accord.
+     */
+    const { envoi, maintenant } = await preparerEnvoi("telecharger", [8], true);
+    const page = await context.newPage();
+    await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
+    await page
+      .locator(`input[name="choixDate"][value="${versJourIso(ajouterJours(maintenant, 8))}"]`)
+      .check();
+    await cocherLaDemandeExpresse(page);
+    await page.click('button:has-text("J\'accepte ce devis")');
+    await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 10000 });
+
+    // **UN SEUL GESTE, ET C'EST SA CORRECTION DU 9 SEPTEMBRE 2026 :** *« il y
+    // a marqué deux fois télécharger, garde celui sous le TTC »*.
+    //
+    // Ce contrôle tolérait le doublon — `>= 1` — et c'est ce qui l'a laissé
+    // vivre : deux boutons identiques à deux centimètres l'un de l'autre font
+    // hésiter, est-ce le même fichier ? Un contrôle qui accepte les deux ne
+    // défend rien.
+    // **Le repère, pas la balise — 12 septembre 2026.** Ce contrôle visait
+    // `a:has-text(…)` : le geste n'est plus un lien, parce qu'un lien remet le
+    // fichier au navigateur, qui sur un iPhone le peint au lieu de le ranger
+    // (`BoutonTelechargerDocument`). Ce qui compte n'a jamais été la balise —
+    // c'est qu'il n'y ait qu'UN geste, et qu'il emporte le devis
+    // (`CLAUDE.md` §5 bis).
+    const geste = '[data-atlas="telecharger-devis"]';
+    assert.strictEqual(
+      await page.locator(geste).count(),
+      1,
+      "l'écran d'après l'accord porte deux fois le même bouton"
+    );
+
+    // **Et surtout au RETOUR, des jours plus tard, par le lien du SMS** : c'est
+    // le cas qu'il décrit.
+    await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
+    assert.ok(await page.locator("text=Devis accepté").isVisible());
+    assert.strictEqual(
+      await page.locator(geste).count(),
+      1,
+      "l'écran de retour ne redonne pas le devis : le lien est un cul-de-sac"
+    );
+
+    // **Et le lien de l'en-tête EMPORTE le fichier, il ne l'affiche plus** — sa
+    // demande du 31 août 2026. « Voir le devis complet » est devenu
+    // « Télécharger mon devis (PDF) », en gras et souligné : un lien qui dit
+    // télécharger et se contente d'ouvrir laisse croire qu'on a gardé le devis.
+    const surLaPageDuChoix = await context.newPage();
+    const autre = await preparerEnvoi("entete", [6], true);
+    await surLaPageDuChoix.goto(`${BASE}/devis/${autre.envoi.jeton}`, { waitUntil: "networkidle" });
+    const lienEnTete = surLaPageDuChoix.locator(`header ${geste}`);
+    assert.strictEqual(await lienEnTete.count(), 1, "l'en-tête ne porte plus de lien vers le devis");
+    const libelle = await lienEnTete.innerText();
+    assert.ok(/télécharger/i.test(libelle), `l'en-tête dit « ${libelle} » au lieu de télécharger`);
+    /**
+     * **ON MESURE QU'IL SE VOIT, PLUS QU'IL EST EN GRAS — 8 septembre 2026.**
+     *
+     * Ce contrôle exigeait `font-weight >= 600` et un soulignement : c'était la
+     * FAÇON dont le geste avait été rendu visible le 31 août, pas la règle. Sa
+     * question de ce jour — *« j'hésite à ne pas afficher le montant pour les
+     * obliger à télécharger leur devis »* — a été tranchée autrement : le prix
+     * reste, et c'est le téléchargement qui cesse d'être invisible. Il est
+     * devenu un vrai bouton cerclé, sans souligné.
+     *
+     * Réclamer le gras et le souligné, ce serait réclamer ce qu'il vient de
+     * faire remplacer (`CLAUDE.md` §5 bis). Ce qu'on fixe désormais est ce qui
+     * compte vraiment, et qui survivra au prochain remaniement : **le geste est
+     * une cible qu'un doigt atteint**, pas un mot perdu dans une phrase.
+     */
+    const allure = await lienEnTete.evaluate((el) => {
+      const c = getComputedStyle(el);
+      const b = el.getBoundingClientRect();
+      return {
+        hauteur: Math.round(b.height),
+        largeur: Math.round(b.width),
+        cercle: c.boxShadow !== "none" || c.borderStyle !== "none" || c.backgroundColor !== "rgba(0, 0, 0, 0)",
+      };
+    });
+    // Refuser de conclure sur une boîte de zéro pixel : l'absence de matière à
+    // mesurer n'est pas un succès (`CLAUDE.md` §5, payé le 15 août 2026).
+    assert.ok(allure.hauteur > 0 && allure.largeur > 0, "le geste n'a aucune dimension : mesure impossible");
+    assert.ok(
+      allure.hauteur >= 40,
+      `le geste ne fait que ${allure.hauteur} px de haut : on ne le vise pas avec un doigt`
+    );
+    assert.ok(allure.cercle, "le geste ne se distingue pas du texte : ni cadre, ni fond");
+    // **L'appui, pas l'adresse écrite sur le bouton — 12 septembre 2026.** Le
+    // geste n'est plus un lien : un lien remet le fichier au navigateur, qui
+    // sur un iPhone le PEINT au lieu de le ranger, et n'en rapporte jamais le
+    // refus. La page va chercher le document et le remet à la feuille de
+    // partage (`BoutonTelechargerDocument`). Ce qui se vérifie ici est donc ce
+    // que le client obtient : un fichier, pas un onglet.
+    const devisQuiDescend = surLaPageDuChoix.waitForEvent("download", { timeout: 30_000 });
+    await lienEnTete.click();
+    const emporte = await devisQuiDescend.catch(() => null);
+    assert.ok(emporte, "le geste de l'en-tête n'emporte aucun fichier : le client n'a rien gardé");
+    assert.ok(
+      (await readFile(await emporte.path())).subarray(0, 5).toString("ascii") === "%PDF-",
+      "ce qui descend de l'en-tête n'est pas un PDF"
+    );
+    await surLaPageDuChoix.close();
+
+    // Le geste doit RENDRE le fichier, pas seulement exister. Et le rendre à
+    // enregistrer : ouvert dans le lecteur du téléphone, le client croit
+    // l'avoir gardé alors qu'il n'a fait que le regarder.
+    //
+    // **L'adresse se COMPOSE par la règle**, elle ne se lit plus sur le bouton :
+    // les deux bouts vivent dans `src/lib/remise-de-fichier.ts`, et un contrôle
+    // qui recopierait `?telecharger=1` serait une troisième écriture de la même
+    // chose (`CLAUDE.md` §3).
+    const adresse = adresseDeTelechargement(`/devis/${envoi.jeton}/pdf`);
+    const reponse = await page.request.get(new URL(adresse, BASE).toString());
+    assert.strictEqual(reponse.status(), 200, `le devis ne se télécharge pas (${reponse.status()})`);
+    // **Le fichier rangé garde son VRAI type** — 10 septembre 2026. Cette ligne
+    // exigeait `application/octet-stream` : le type annoncé colle au fichier
+    // enregistré, et le devis rouvert depuis les téléchargements n'avait plus
+    // de lecteur — page blanche sur un document intact.
+    assert.strictEqual(reponse.headers()["content-type"], "application/pdf");
+    assert.ok(
+      (reponse.headers()["content-disposition"] ?? "").startsWith("attachment"),
+      `le fichier s'ouvre au lieu de descendre : ${reponse.headers()["content-disposition"]}`
+    );
+    await page.close();
+  });
+
+  await test("une correction sans un mot ne part pas, et l'écran dit pourquoi", async () => {
+    // Le bouton était éteint, avec une phrase grise en dessous pour dire
+    // pourquoi — trente pixels sur un écran qui doit tenir d'un seul tenant. Il
+    // répond désormais, et c'est sa réponse qui l'explique. Ce qui ne change
+    // pas : rien ne part, et le dépôt le refuserait de toute façon.
+    const { envoi } = await preparerEnvoi("correction-vide", [9]);
+    const page = await context.newPage();
+    await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
+
+    await page.click('button:has-text("Une correction avant d\'accepter")');
+    await page.waitForSelector('p[role="alert"]', { timeout: 10000 });
+    assert.ok(
+      (await page.locator('p[role="alert"]').innerText()).toLowerCase().includes("corrig"),
+      "le message ne dit pas ce qui manque"
+    );
+    assert.strictEqual((await lireParJeton(envoi.jeton))?.reponse, null, "une réponse vide est partie");
+
+    // Un mot écrit, et la voie se rouvre — sans quoi le contrôle prouverait
+    // seulement qu'on a cassé le bouton.
+    await page.fill("#precision", "Mon nom est mal écrit.");
+    await page.click('button:has-text("Une correction avant d\'accepter")');
+    await page.waitForSelector("text=Votre demande est transmise", { timeout: 10000 });
+    assert.strictEqual((await lireParJeton(envoi.jeton))?.reponse, "correction");
     await page.close();
   });
 

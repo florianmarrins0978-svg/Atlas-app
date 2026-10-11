@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La photo des salariés : Atlas</title>
+<style>
+/*
+  LA PHOTO DES SALARIÉS, planche du 27 septembre 2026.
+
+  Sa demande : « Dans le compte des salariés, mettre la possibilité de mettre
+  la tête des gars en photo. »
+
+  Ce qui existe, relevé dans le code avant d'écrire :
+    - Réglages, Équipe : « Combien de salariés ? », un compteur, puis une
+      ligne par salarié : le rang en or, puis le champ du nom
+      (src/app/reglages/VosSalaries.tsx, LigneNom) ;
+    - le planning écrit le nom coché sur chaque demi-journée, ou « Salarié 3 »
+      en repli (libelleSalarie, src/lib/equipes.ts) ;
+    - les absences montrent une pastille ronde avec le rang (AbsencesEquipe).
+  Aucune photo de salarié n'existe en base. Le logo, lui, vit déjà dans le
+  stockage avec sa clef en base : c'est le même chemin.
+
+  Les deux propositions gardent chaque ligne à sa place (CLAUDE.md §3, « une
+  demande d'affichage change le texte, jamais la place ») : seul le rond du
+  rang change de contenu.
+
+  La maquette prend une VRAIE photo : le champ de fichier ouvre l'appareil
+  sur un téléphone. Rien ne quitte le téléphone, rien n'est codé.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --pin:#2f3b2f; --rouille:#9c5b3f;
+  --trait:rgba(28,28,26,.12); --chevron:rgba(28,28,26,.28); --scene:#e6e3dc;
+  --voile:rgba(28,28,26,.42);
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --pin:#8fae86; --rouille:#c07a56;
+  --trait:rgba(233,232,222,.12); --chevron:rgba(233,232,222,.28); --scene:#070908;
+  --voile:rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+.commandes{position:sticky;top:0;z-index:20;background:var(--scene);
+  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);border-color:var(--encre)}
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--rouille);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+.scene{display:flex;flex-wrap:wrap;justify-content:center;gap:24px;padding:22px 16px 6px}
+.colonne{width:390px;max-width:100%}
+.etiquette{text-align:center;font-size:11px;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--encre-douce);margin:0 0 10px;min-height:17px}
+.tel{position:relative;width:390px;max-width:100%;height:664px;overflow:hidden;
+  background:var(--fond);border:1px solid var(--trait);border-radius:10px}
+.defile{height:100%;overflow-y:auto;padding:26px 26px 74px}
+.regle{text-align:center;font-size:12.5px;color:var(--encre-douce);margin:10px 0 0}
+
+/* l'écran */
+h2.titre{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:36px;
+  line-height:1.02;letter-spacing:-.018em;margin:20px 0 0}
+.surtitre{margin:12px 0 0;font-size:11px;font-weight:500;text-transform:uppercase;
+  letter-spacing:.28em;color:var(--or)}
+.question{margin:0 0 10px;font-family:ui-serif,Georgia,serif;font-size:19px;line-height:1.25}
+.bloc{margin-top:28px;padding-top:18px;border-top:1px solid var(--trait)}
+.inter{margin:0 0 10px;font-size:11px;font-weight:500;text-transform:uppercase;
+  letter-spacing:.28em;color:var(--encre-douce)}
+.compteur{display:flex;align-items:center;justify-content:center;gap:34px;margin:6px 0 0}
+.compteur button{width:58px;height:58px;border-radius:50%;border:1px solid var(--trait);
+  background:none;color:var(--encre);font:inherit;font-size:22px;cursor:pointer}
+.compteur .n{font-family:ui-serif,Georgia,serif;font-size:44px;line-height:1}
+.sous{margin:8px 0 0;text-align:center;font-size:12.5px;line-height:1.6;color:var(--gris)}
+.gens{margin-top:22px}
+.gens .l{display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--trait)}
+.gens .r{font-family:ui-serif,Georgia,serif;font-size:15px;color:var(--or);width:20px;text-align:center;flex:none}
+.gens .champ{flex:1;min-width:0;font-family:ui-serif,Georgia,serif;font-size:17px;color:var(--gris);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gens .champ.ecrit{color:var(--encre)}
+.gens .chevron{color:var(--chevron);font-size:20px;flex:none}
+
+/* Le rond de la tête. 44 px : la taille d'un doigt (Apple, 44 pt). */
+.rond{position:relative;width:44px;height:44px;border-radius:50%;flex:none;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);
+  color:var(--or);font-family:ui-serif,Georgia,serif;font-size:15px;cursor:pointer}
+.rond img{width:100%;height:100%;object-fit:cover;display:block}
+.rond .app{position:absolute;right:-1px;bottom:-1px;width:18px;height:18px;border-radius:50%;
+  background:var(--fond);box-shadow:0 0 0 1px var(--trait);display:flex;align-items:center;justify-content:center}
+.rond .app svg{width:11px;height:11px;stroke:var(--encre-douce);fill:none;stroke-width:2}
+label.rond input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+.abs{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--trait)}
+.pastille{width:30px;height:30px;border-radius:50%;background:var(--plage);overflow:hidden;
+  display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--encre-douce);flex:none}
+.pastille img{width:100%;height:100%;object-fit:cover}
+.abs .qui{flex:1;font-size:15px}
+.abs .quand{font-size:13px;color:var(--or)}
+
+/* la fiche (proposition B) */
+.voile{position:absolute;inset:0;background:var(--voile);display:none;z-index:8}
+.fiche{position:absolute;left:0;right:0;bottom:0;background:var(--fond);z-index:9;
+  border-radius:16px 16px 0 0;padding:14px 26px 30px;transform:translateY(100%);
+  transition:transform .28s ease}
+.ouverte .voile{display:block}
+.ouverte .fiche{transform:none}
+.poignee{width:40px;height:4px;border-radius:2px;background:var(--trait);margin:0 auto 18px}
+.grande{width:132px;height:132px;border-radius:50%;margin:0 auto 12px;overflow:hidden;
+  background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);display:flex;align-items:center;
+  justify-content:center;font-family:ui-serif,Georgia,serif;font-size:40px;color:var(--or)}
+.grande img{width:100%;height:100%;object-fit:cover}
+.fiche .nomf{text-align:center;font-family:ui-serif,Georgia,serif;font-size:22px;margin:0 0 18px}
+.action{position:relative;display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;
+  border-radius:999px;border:0;background:none;color:var(--encre);box-shadow:inset 0 0 0 1px var(--trait);
+  font:inherit;font-size:15px;cursor:pointer;margin-top:10px;overflow:hidden}
+.action input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.action.plein{background:var(--encre);color:var(--fond);box-shadow:none}
+.action.discret{box-shadow:none;color:var(--rouille)}
+
+/* le planning */
+.jour{font-family:ui-serif,Georgia,serif;font-size:26px;margin:18px 0 4px}
+.demi{margin-top:18px;padding:14px 16px;border-radius:12px;background:var(--plage);
+  box-shadow:inset 0 0 0 1px var(--trait)}
+.demi .h{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--encre-douce)}
+.demi .c{font-family:ui-serif,Georgia,serif;font-size:19px;margin:6px 0 10px}
+.qui-part{display:flex;flex-wrap:wrap;gap:8px}
+.gars{display:flex;align-items:center;gap:8px;padding:4px 12px 4px 4px;border-radius:999px;
+  background:var(--fond);box-shadow:inset 0 0 0 1px var(--trait);font-size:14px}
+.gars .pastille{width:28px;height:28px}
+.nav{position:absolute;left:0;right:0;bottom:0;height:48px;background:var(--fond);
+  border-top:1px solid var(--trait);display:flex;align-items:center;
+  justify-content:space-around;font-size:9.5px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--gris);z-index:5}
+
+/* les notes */
+.notes{max-width:740px;margin:0 auto;padding:12px 20px 40px}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:30px 0 10px}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--trait);vertical-align:top;color:var(--encre-douce)}
+th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+td b{color:var(--encre)}
+</style>
+</head>
+<body>
+<div class="commandes">
+  <button type="button" data-v="aujourdhui" aria-pressed="false">Aujourd'hui</button>
+  <button type="button" data-v="A" aria-pressed="true">A, on touche le rond</button>
+  <button type="button" data-v="B" aria-pressed="false">B, une fiche par salarié</button>
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">Maquette, rien n'est codé</span>
+  <h1>La photo des salariés</h1>
+  <p><b>Essayez pour de vrai</b> : touchez un rond, prenez une photo. Elle
+  apparaît dans Équipe, puis sur le planning à droite, là où le nom du gars
+  est coché.</p>
+  <p>Rien ne quitte votre téléphone : la photo reste dans cette page.</p>
+</div>
+
+<div class="scene">
+  <div class="colonne">
+    <p class="etiquette" id="etiquette">Réglages, Équipe</p>
+    <div class="tel" id="tel">
+      <div class="defile" id="defile"></div>
+      <div class="voile" id="voile"></div>
+      <div class="fiche" id="fiche"></div>
+      <div class="nav"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span></div>
+    </div>
+    <p class="regle">Chaque ligne reste à sa place : seul le rond change.</p>
+  </div>
+  <div class="colonne">
+    <p class="etiquette">Le planning</p>
+    <div class="tel">
+      <div class="defile" id="planning"></div>
+      <div class="nav"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span></div>
+    </div>
+    <p class="regle">La même photo, partout où le nom s'écrit.</p>
+  </div>
+</div>
+
+<div class="notes">
+  <h3>Les deux propositions</h3>
+  <table>
+    <tr><th></th><th>Le geste</th><th>Ce qu'il coûte</th></tr>
+    <tr><td><b>A, on touche le rond</b><br><i>celle que je vous conseille</i></td>
+      <td>Le numéro doré devant le nom devient un rond. On le touche, l'appareil
+      photo s'ouvre, la tête remplace le numéro. Un geste, rien ne s'ouvre à côté.</td>
+      <td>Pour changer une photo, on retouche le rond. Pour la retirer sans la
+      remplacer, il faut un appui long : moins visible.</td></tr>
+    <tr><td><b>B, une fiche par salarié</b></td>
+      <td>On touche la ligne : une fiche monte, avec la photo en grand et trois
+      boutons, prendre, choisir dans la galerie, retirer.</td>
+      <td>Un geste de plus à chaque fois. Mais la place est prête si un jour
+      le salarié porte autre chose qu'un nom (téléphone, permis).</td></tr>
+  </table>
+  <p><b>Pourquoi A :</b> vous voulez mettre une tête sur un nom, pas remplir
+  un dossier. Le rond est déjà là, il change de contenu, et vous le trouvez du
+  premier coup. Le champ du nom reste un champ, comme aujourd'hui.</p>
+
+  <h3>Où la photo se voit, dans les deux</h3>
+  <table>
+    <tr><th>Écran</th><th>Aujourd'hui</th><th>Avec la photo</th></tr>
+    <tr><td><b>Équipe</b></td><td>le numéro en or</td><td>la tête, ou le numéro s'il n'y a pas de photo</td></tr>
+    <tr><td><b>Planning</b></td><td>le nom coché</td><td>la tête à côté du nom</td></tr>
+    <tr><td><b>Absences</b></td><td>une pastille avec le numéro</td><td>la tête dans la pastille</td></tr>
+  </table>
+  <p><b>Le nom ne disparaît jamais</b> : une photo ne se lit pas au soleil sur
+  un chantier, un nom si. Sans photo, rien ne change : le numéro reste.</p>
+
+  <h3>Ce que je vous dis avant</h3>
+  <p><b>La tête d'un salarié est une donnée personnelle.</b> Il faut son
+  accord, et elle doit pouvoir s'effacer vraiment : « Retirer » supprimera le
+  fichier, pas seulement l'affichage. Elle ne sera visible que des comptes de
+  votre entreprise, jamais de vos clients : ni sur un devis, ni sur la page
+  qu'ils ouvrent.</p>
+  <p><b>Côté code</b>, c'est le chemin du logo, qui existe déjà : la photo
+  dans le stockage, sa clef en base. Elle est réduite sur le téléphone avant
+  l'envoi, une tête de 400 pixels suffit, et une photo d'iPhone (HEIC) est
+  acceptée.</p>
+
+  <h3>À trancher</h3>
+  <p><b>A ou B.</b> Et si un salarié qui a un compte pourra changer sa propre
+  photo, ou seulement vous.</p>
+</div>
+
+<script>
+/*
+  UN SEUL ÉTAT, TROIS RENDUS. La photo prise dans Équipe est la même que celle
+  du planning : deux copies divergeraient dès la seconde photo.
+*/
+var etat = { vue: "A", salaries: 3,
+  noms: { 1: "Kévin", 2: "Mathieu", 3: "" }, photos: {}, ouvert: 0 };
+var defile = document.getElementById("defile");
+var planning = document.getElementById("planning");
+var fiche = document.getElementById("fiche");
+var tel = document.getElementById("tel");
+function ech(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function nom(r){ return etat.noms[r] || ("Salarié " + r); }
+var APPAREIL = '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+
+function tete(r){
+  return etat.photos[r] ? '<img alt="" src="' + etat.photos[r] + '">' : String(r);
+}
+function rondA(r){
+  // Sans « capture », iOS propose l'appareil OU la galerie : on prend souvent
+  // la photo d'un autre, ou on la reprend d'un message.
+  return '<label class="rond" aria-label="Photo de ' + ech(nom(r)) + '">' + tete(r) +
+    (etat.photos[r] ? "" : '<span class="app">' + APPAREIL + '</span>') +
+    '<input type="file" accept="image/*" data-photo="' + r + '"></label>';
+}
+function rondSimple(r){
+  return '<span class="rond" aria-hidden="true">' + tete(r) + '</span>';
+}
+function ligne(r){
+  var n = etat.noms[r] || "";
+  var champ = '<span class="champ' + (n ? " ecrit" : "") + '">' + ech(n || ("Salarié " + r)) + '</span>';
+  if (etat.vue === "aujourdhui")
+    return '<div class="l"><span class="r">' + r + '</span>' + champ + '</div>';
+  if (etat.vue === "A")
+    return '<div class="l">' + rondA(r) + champ + '</div>';
+  return '<div class="l" data-ouvrir="' + r + '" style="cursor:pointer">' + rondSimple(r) + champ +
+    '<span class="chevron">&rsaquo;</span></div>';
+}
+function dessinerEquipe(){
+  var h = '<div><span style="display:flex;align-items:center;justify-content:center;width:40px;' +
+    'height:40px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--trait);font-size:15px;' +
+    'color:var(--gris)">&lsaquo;</span><h2 class="titre">Équipe</h2><p class="surtitre">Réglages</p></div>';
+  h += '<div class="bloc"><p class="question">Combien de salariés&nbsp;?</p>' +
+    '<div class="compteur"><button type="button" data-moins>−</button><span class="n">' + etat.salaries +
+    '</span><button type="button" data-plus>+</button></div>' +
+    '<p class="sous">Leurs noms se cochent sur chaque demi-journée.</p><div class="gens">';
+  for (var r = 1; r <= etat.salaries; r++) h += ligne(r);
+  h += '</div></div>';
+  h += '<div class="bloc"><p class="inter">Absences</p><div class="abs"><span class="pastille">' +
+    (etat.vue !== "aujourdhui" && etat.photos[2] ? '<img alt="" src="' + etat.photos[2] + '">' : "2") +
+    '</span><span class="qui">' + ech(nom(2)) + '</span><span class="quand">du 8 au 12 octobre</span></div></div>';
+  defile.innerHTML = h;
+}
+function gars(r){
+  var p = etat.vue !== "aujourdhui" && etat.photos[r]
+    ? '<span class="pastille"><img alt="" src="' + etat.photos[r] + '"></span>' : "";
+  return '<span class="gars"' + (p ? "" : ' style="padding-left:12px"') + '>' + p + ech(nom(r)) + '</span>';
+}
+function dessinerPlanning(){
+  var h = '<p class="surtitre" style="margin-top:0">Planning</p><p class="jour">Mardi 29 septembre</p>';
+  h += '<div class="demi"><div class="h">Matin</div><div class="c">Taille de haie, Mme Leroy</div>' +
+    '<div class="qui-part">' + gars(1) + (etat.salaries >= 2 ? gars(2) : "") + '</div></div>';
+  if (etat.salaries >= 3)
+    h += '<div class="demi"><div class="h">Après-midi</div><div class="c">Tonte, M. Garnier</div>' +
+      '<div class="qui-part">' + gars(3) + '</div></div>';
+  planning.innerHTML = h;
+}
+function dessinerFiche(){
+  var r = etat.ouvert;
+  if (!r) { tel.classList.remove("ouverte"); return; }
+  fiche.innerHTML = '<div class="poignee"></div><div class="grande">' + tete(r) + '</div>' +
+    '<p class="nomf">' + ech(nom(r)) + '</p>' +
+    '<label class="action plein">Prendre une photo<input type="file" accept="image/*" capture="environment" data-photo="' + r + '"></label>' +
+    '<label class="action">Choisir dans la galerie<input type="file" accept="image/*" data-photo="' + r + '"></label>' +
+    (etat.photos[r] ? '<button type="button" class="action discret" data-retirer="' + r + '">Retirer la photo</button>' : "");
+  tel.classList.add("ouverte");
+}
+function dessiner(){
+  dessinerEquipe(); dessinerPlanning(); dessinerFiche();
+  document.querySelectorAll("[data-v]").forEach(function(b){
+    b.setAttribute("aria-pressed", String(b.getAttribute("data-v") === etat.vue));
+  });
+}
+
+document.addEventListener("change", function(e){
+  var r = e.target.getAttribute && e.target.getAttribute("data-photo");
+  if (!r || !e.target.files || !e.target.files[0]) return;
+  var lecteur = new FileReader();
+  lecteur.onload = function(){ etat.photos[r] = lecteur.result; dessiner(); };
+  lecteur.readAsDataURL(e.target.files[0]);
+});
+document.addEventListener("click", function(e){
+  var t = e.target.closest("[data-v],[data-plus],[data-moins],[data-ouvrir],[data-retirer],#voile,#pole");
+  if (!t) return;
+  if (t.id === "pole") {
+    var nuit = document.body.classList.toggle("nuit");
+    t.setAttribute("aria-pressed", String(nuit));
+    t.textContent = nuit ? "Voir sur Jour" : "Voir sur Nuit";
+    return;
+  }
+  if (t.id === "voile") { etat.ouvert = 0; }
+  else if (t.hasAttribute("data-v")) { etat.vue = t.getAttribute("data-v"); etat.ouvert = 0; }
+  else if (t.hasAttribute("data-plus")) { etat.salaries = Math.min(6, etat.salaries + 1); }
+  else if (t.hasAttribute("data-moins")) { etat.salaries = Math.max(0, etat.salaries - 1); }
+  else if (t.hasAttribute("data-ouvrir")) { etat.ouvert = Number(t.getAttribute("data-ouvrir")); }
+  else if (t.hasAttribute("data-retirer")) { delete etat.photos[t.getAttribute("data-retirer")]; }
+  dessiner();
+});
+dessiner();
+</script>
+</body>
+</html>

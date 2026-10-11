@@ -46,14 +46,35 @@
 /** Un point du plan, en mètres, origine au coin haut-gauche du terrain. */
 export type Point = { x: number; y: number };
 
-/** Un arroseur posé : où il est, et sur quelle voie il se trouve. */
-export type ArroseurPose = { point: Point; reseau: number };
+/**
+ * Un arroseur posé : où il est, sur quelle voie, et OÙ LA LIGNE DOIT PASSER.
+ *
+ * **Le Ø25 ne va pas à la tête, il passe à côté — sa règle du 11 septembre
+ * 2026** (`CLAUDE.md` §4 bis) : *« un seul passage au mieux pour le 25, et
+ * ensuite ce sont des antennes en diamètre 16 rigide qui vont de part et
+ * d'autre »*. `pied` est le point de la ligne d'où part l'antenne ; quand la
+ * ligne passe au pied de l'arroseur, c'est le même point.
+ */
+export type ArroseurPose = { point: Point; pied: Point; reseau: number };
+export type Antenne = { de: Point; a: Point; reseau: number };
+
+/**
+ * La longueur maximale d'une antenne Ø16 rigide, en mètres — SA règle.
+ *
+ * *« Si le couloir fait 3 m, une seule tranchée au milieu et 1,50 m de 16
+ * rigide de chaque côté, ça passe. S'il fait 5 m, ça fait des antennes de
+ * 2,50 m, et le max c'est 2 m. »* Au-delà, ce n'est plus une antenne : la
+ * ligne doit repasser plus près (`piedDeLaTete`, dans `plan-dessine.ts`).
+ */
+export const ANTENNE_MAX = 2;
 
 export type Segment = { de: Point; a: Point };
 
 export type Trace = {
-  /** Les chemins de chaque réseau, depuis la nourrice. */
+  /** Les chemins de chaque réseau, depuis la nourrice — la ligne Ø25. */
   lignes: Record<number, Point[][]>;
+  /** Du pied sur la ligne à la tête, en Ø16 rigide — quand les deux diffèrent. */
+  antennes: Record<number, Antenne[]>;
   /** Ce qu'une équipe creuse — l'union, sans double compte. */
   tranchee: Segment[];
   /** Le linéaire de tranchée, en mètres. */
@@ -119,16 +140,19 @@ export function tracerReseaux(
   const ajouter = (p: Point) => {
     if (!noeuds.some((q) => cle(q) === cle(p))) noeuds.push(p);
   };
+  // **La ligne rejoint les PIEDS, pas les têtes.** Dans un couloir, les pieds
+  // sont tous sur l'axe du milieu : la ligne n'a plus aucune raison de longer
+  // les deux bords, et c'est là que la seconde tranchée disparaît.
   ajouter(nourrice);
-  arroseurs.forEach((a) => ajouter(a.point));
+  arroseurs.forEach((a) => ajouter(a.pied));
   contour.forEach(ajouter);
-  // Les projections : un arroseur au milieu d'une pelouse doit pouvoir se
+  // Les projections : un pied au milieu d'une pelouse doit pouvoir se
   // raccorder au bord par le plus court, et ce pied de perpendiculaire n'est
   // ni un arroseur ni un sommet.
   for (const a of arroseurs) {
-    for (const b of [...arroseurs.map((x) => x.point), nourrice, ...contour]) {
-      ajouter({ x: a.point.x, y: b.y });
-      ajouter({ x: b.x, y: a.point.y });
+    for (const b of [...arroseurs.map((x) => x.pied), nourrice, ...contour]) {
+      ajouter({ x: a.pied.x, y: b.y });
+      ajouter({ x: b.x, y: a.pied.y });
     }
   }
 
@@ -168,6 +192,7 @@ export function tracerReseaux(
   const dejaCreuse = new Set<string>();
   const tranchee: Segment[] = [];
   const lignes: Record<number, Point[][]> = {};
+  const antennes: Record<number, Antenne[]> = {};
   const metresTuyau: Record<number, number> = {};
 
   const creuser = (path: Point[]) => {
@@ -181,7 +206,14 @@ export function tracerReseaux(
 
   const reseaux = [...new Set(arroseurs.map((a) => a.reseau))].sort((a, b) => a - b);
   for (const r of reseaux) {
-    const aJoindre = arroseurs.filter((a) => a.reseau === r).map((a) => a.point);
+    // Deux têtes peuvent partager un pied : la ligne n'y passe qu'une fois.
+    const aJoindre: Point[] = [];
+    for (const a of arroseurs.filter((x) => x.reseau === r)) {
+      if (!aJoindre.some((p) => cle(p) === cle(a.pied))) aJoindre.push(a.pied);
+    }
+    antennes[r] = arroseurs
+      .filter((a) => a.reseau === r && cle(a.pied) !== cle(a.point))
+      .map((a) => ({ de: a.pied, a: a.point, reseau: r }));
     const atteints = new Set<number>([indice.get(cle(nourrice))!]);
     const chemins: Point[][] = [];
     let tuyau = 0;
@@ -235,7 +267,7 @@ export function tracerReseaux(
   }
 
   const metres = tranchee.reduce((t, s) => t + distance(s.de, s.a), 0);
-  return { lignes, tranchee, metresTranchee: Math.round(metres * 10) / 10, metresTuyau };
+  return { lignes, antennes, tranchee, metresTranchee: Math.round(metres * 10) / 10, metresTuyau };
 }
 
 const entre = (v: number, a: number, b: number) => v > Math.min(a, b) + 1e-9 && v < Math.max(a, b) - 1e-9;

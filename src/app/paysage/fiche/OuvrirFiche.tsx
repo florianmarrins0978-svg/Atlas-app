@@ -6,47 +6,36 @@ import { colors } from "@/lib/design-tokens";
 import { ouvrirFicheAction } from "./actions";
 
 /**
- * Le geste qui ouvre une fiche — **et le jour qu'elle porte**.
+ * Le geste qui ouvre une fiche, datée du jour même.
  *
- * **Le jour est modifiable, et ce n'est pas un détail de confort** : il remplit
- * parfois le soir, dans son camion, ou le lendemain matin. Une fiche datée
- * d'office du jour de la saisie enverrait au client un rapport daté du mauvais
- * jour — et c'est la date que le client regarde en premier.
+ * **Le jour reste modifiable, mais DANS la fiche** — sa demande du
+ * 24 septembre 2026 : *« dans la création, pas en dehors »*. Posé ici, il se
+ * lisait comme un second filtre au-dessus de celui des rapports envoyés. Il
+ * remplit parfois le lendemain : la roue est en tête de la fiche
+ * (`FicheChantierClient`), et le rapport part avec le jour qu'elle porte.
  */
 export default function OuvrirFiche() {
-  const [jour, setJour] = useState(() => new Date().toLocaleDateString("en-CA"));
   const [phrase, setPhrase] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
 
   return (
     <div>
-      <label className="block text-[12.5px]" style={{ color: colors.muted }}>
-        Jour du passage
-        <input
-          type="date"
-          value={jour}
-          onChange={(e) => setJour(e.target.value)}
-          className="mt-[6px] block w-full rounded-[14px] px-[15px] py-3 text-[16px] outline-none"
-          style={{ backgroundColor: colors.card, color: colors.ink, border: `1px solid ${colors.line}` }}
-        />
-      </label>
-
-      <div className="mt-[16px]">
-        <PrimaryButton
-          repere="ouvrir-fiche-chantier"
-          disabled={enCours || jour === ""}
-          onClick={() =>
-            demarrer(async () => {
-              // `ouvrirFicheAction` redirige quand elle réussit : ce qui
-              // revient ici est toujours un refus, jamais un succès muet.
-              const r = await ouvrirFicheAction(jour);
-              if (r && !r.ok) setPhrase(r.phrase);
-            })
-          }
-        >
-          {enCours ? "Ouverture…" : "Ouvrir une fiche"}
-        </PrimaryButton>
-      </div>
+      <PrimaryButton
+        repere="ouvrir-fiche-chantier"
+        disabled={enCours}
+        onClick={() =>
+          demarrer(async () => {
+            // `ouvrirFicheAction` redirige quand elle réussit : ce qui
+            // revient ici est toujours un refus, jamais un succès muet.
+            // Le jour du TÉLÉPHONE, pas celui du serveur : à 23 h, un serveur
+            // à l'heure universelle serait déjà au lendemain.
+            const r = await ouvrirFicheAction(new Date().toLocaleDateString("en-CA"));
+            if (r && !r.ok) setPhrase(r.phrase);
+          })
+        }
+      >
+        {enCours ? "Création…" : "Créer une fiche"}
+      </PrimaryButton>
 
       {phrase && (
         <p className="mt-[12px] text-center text-[12.5px]" style={{ color: colors.alert }}>

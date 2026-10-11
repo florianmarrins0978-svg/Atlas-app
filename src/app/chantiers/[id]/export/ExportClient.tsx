@@ -1,13 +1,19 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
+import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 import TransmettreAuClient from "./TransmettreAuClient";
 import { etatEnvoiExplication, etatEnvoiLabel, type EtatEnvoi } from "@/lib/etat-envoi";
-import { reprendreDevisAction } from "./actions";
+import { defaireLAcceptationAction, reprendreDevisAction } from "./actions";
+import ErreurDuClient from "./ErreurDuClient";
+import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
+import { useRetraits } from "@/components/atlas/useRetraits";
 import { enEuros } from "@/lib/euros";
-import { type Civilite } from "@/lib/civilite";
+import { joursEnToutesLettres } from "@/lib/jour";
+import type { EnvoiDuDevis } from "@/lib/message-client";
+import { type CiviliteClient } from "@/lib/civilite";
 
 
 export default function ExportClient({
@@ -26,7 +32,8 @@ export default function ExportClient({
   initialEnvoye,
   etatEnvoi,
   messageClient,
-  lienEnvoi,
+  joursDuClient,
+  envoiOuvert,
   origine,
 }: {
   chantierId: string;
@@ -35,7 +42,7 @@ export default function ExportClient({
   clientId: string | null;
   clientNom: string;
   /** Ce qu'il a choisi au-dessus du nom, recopié sur le devis. */
-  clientCivilite: Civilite | null;
+  clientCivilite: CiviliteClient | null;
   clientTelephone: string;
   clientEmail: string;
   entrepriseNom: string;
@@ -49,8 +56,14 @@ export default function ExportClient({
   etatEnvoi: EtatEnvoi;
   /** Ce que le client a écrit, mot pour mot. Vide s'il n'a rien dit. */
   messageClient: string | null;
-  /** Le lien encore actif, tant que le client n'a pas répondu. */
-  lienEnvoi: string | null;
+  /** Les jours qu'il a proposés avec sa correction, ou `null`. */
+  joursDuClient: string[] | null;
+  /**
+   * L'envoi encore ouvert, tant que le client n'a pas répondu : son chemin, et
+   * ce que le message de relance doit dire (le jour où le lien meurt, la case
+   * « autre date »), lus sur l'envoi lui-même.
+   */
+  envoiOuvert: { chemin: string; envoiDuDevis: EnvoiDuDevis } | null;
   /** Origine du site, calculée côté serveur — voir le commentaire dans page.tsx. */
   origine: string;
 }) {
@@ -107,6 +120,27 @@ export default function ExportClient({
   // dépôt (`CLAUDE.md` §4 — rien ne part et rien ne s'engage sans un geste).
   const [avertissementVisible, setAvertissementVisible] = useState(false);
 
+  /**
+   * « LE CLIENT S'EST TROMPÉ » — son choix 3 du 7 octobre 2026, avec la barre
+   * des six secondes. La question choisit la suite ; le tiroir la retient six
+   * secondes, et c'est sa fermeture qui l'écrit (`useRetraits`, le même
+   * mécanisme que « Supprimer » au planning, pour qu'« Annuler » ne mente pas).
+   *
+   * Le choix vit dans une référence ET dans un état : la référence pour
+   * l'écriture, qui part hors rendu (minuteur, départ de page) ; l'état pour
+   * ce que la page montre pendant les six secondes.
+   */
+  const [erreurOuverte, setErreurOuverte] = useState(false);
+  const [vers, setVers] = useState<"attente" | "refusee">("attente");
+  const versRef = useRef<"attente" | "refusee">("attente");
+  const defaite = useRetraits({ valider: () => defaireLAcceptationAction(chantierId, versRef.current) });
+  const enSuspens = defaite.estRetire(chantierId);
+  // **Ce que la page dit pendant les six secondes, c'est ce qu'elle dira
+  // après** : l'état vers lequel il va, lu dans les mêmes libellés que le
+  // serveur (`etat-envoi.ts`). « Annuler » rend l'état d'avant.
+  const etatAffiche: EtatEnvoi = enSuspens ? (vers === "attente" ? "en_attente" : "retourne") : etatEnvoi;
+  const refusDefaite = defaite.refuses[chantierId] ?? null;
+
   function lienComplet(chemin: string) {
     return `${origine}${chemin}`;
   }
@@ -134,9 +168,10 @@ export default function ExportClient({
   // La règle qu'il a retenue (maquette 40, proposition B) : **un seul bouton à
   // chaque instant**, celui du moment. Avant l'envoi, reprendre EST le geste ;
   // après, c'est transmettre. Jamais les deux.
+  // Pendant les six secondes, rien ne se reprend : la reprise lirait un devis
+  // que la fermeture du tiroir n'a pas encore réécrit.
   const peutReprendre =
-    etatEnvoi === "retourne" || etatEnvoi === "a_corriger" || etatEnvoi === "caduc";
-  const lienAMontrer = lienEnvoi;
+    !enSuspens && (etatEnvoi === "retourne" || etatEnvoi === "a_corriger" || etatEnvoi === "caduc");
 
   /**
    * Rouvre le devis pour le modifier, puis mène à l'écran qui le porte.
@@ -185,21 +220,33 @@ export default function ExportClient({
           si on y retouche, jamais de mémoire. */}
       {envoye ? (
         <EcranDevisParti
-          etat={etatEnvoiLabel[etatEnvoi]}
+          etat={etatEnvoiLabel[etatAffiche]}
           // La même civilité que la synthèse ci-dessous : lire « Mr. Martins »
           // avant l'envoi et « Martins » juste après ferait douter qu'il
           // s'agisse du même client. Le message qui part chez le client
           // l'aborde de la même façon depuis le 13 août au soir
           // (`src/lib/message-client.ts`).
-          phrase={etatEnvoiExplication[etatEnvoi]}
+          phrase={etatEnvoiExplication[etatAffiche]}
+          refus={refusDefaite}
           messageClient={messageClient}
+          joursDuClient={joursDuClient}
           numeroDevis={numeroDevis}
           totalTtc={totalTtc}
-          onModifier={peutReprendre ? null : () => setAvertissementVisible(true)}
-          lienPdf={`/api/devis/${devisId}/pdf?telecharger=1`}
+          onModifier={peutReprendre || enSuspens ? null : () => setAvertissementVisible(true)}
+          onErreurDuClient={etatEnvoi === "accepte" && !enSuspens ? () => setErreurOuverte(true) : null}
+          tiroir={
+            <TiroirDesRetires
+              dernier={defaite.dernier}
+              nombre={defaite.nombre}
+              onAnnuler={defaite.annuler}
+              compteARebours={defaite.compteARebours}
+              situation={vers === "attente" ? "Remis en attente à l'instant" : "Noté refusé à l'instant"}
+            />
+          }
+          lienPdf={`/api/devis/${devisId}/pdf`}
           nomFichierPdf={nomFichierDevis}
           transmission={
-            lienAMontrer ? (
+            envoiOuvert ? (
               <TransmettreAuClient
                 clientId={clientId}
                 clientNom={clientNom}
@@ -209,7 +256,8 @@ export default function ExportClient({
                 canal={canalClient}
                 telephone={clientTelephone}
                 email={clientEmail}
-                lien={lienComplet(lienAMontrer)}
+                lien={lienComplet(envoiOuvert.chemin)}
+                envoi={envoiOuvert.envoiDuDevis}
                 // `initialEnvoye` et non `envoye` : juste après le premier
                 // envoi, l'écran dit « Devis prêt » et le geste est bien un
                 // PREMIER envoi. Confondre les deux ferait proposer de
@@ -230,8 +278,8 @@ export default function ExportClient({
                 type="button"
                 onClick={reprendre}
                 disabled={reprise}
-                className="mt-4 block w-full rounded-full py-3 text-[15px] font-medium text-white disabled:opacity-50"
-                style={{ backgroundColor: colors.rust }}
+                className="atlas-plein mt-4 block w-full rounded-full py-3 text-[15px] font-medium text-white disabled:opacity-50"
+                style={{ backgroundColor: colors.plein }}
               >
                 {reprise
                   ? "Reprise…"
@@ -248,6 +296,19 @@ export default function ExportClient({
           Ce qu'il dit est vérifié dans le dépôt, pas supposé : la page publique
           sert `envoi.devis`, donc la version que le client a reçue. Créer une
           nouvelle version n'annule pas l'envoi en cours. */}
+      <ErreurDuClient
+        ouvert={erreurOuverte}
+        clientNom={clientNom}
+        clientCivilite={clientCivilite}
+        onRenoncer={() => setErreurOuverte(false)}
+        onChoisir={(choix) => {
+          setErreurOuverte(false);
+          versRef.current = choix;
+          setVers(choix);
+          defaite.retirer(chantierId, "l'acceptation du devis");
+        }}
+      />
+
       <AvertissementModification
         ouvert={avertissementVisible}
         enCours={reprise}
@@ -320,7 +381,7 @@ function AvertissementModification({
         className="absolute inset-0 h-full w-full"
       />
       <div
-        className="relative w-full rounded-t-[16px] px-6 pb-8 pt-6"
+        className="atlas-feuille relative rounded-t-[16px] px-6 pb-8 pt-6"
         style={{ backgroundColor: colors.cream }}
       >
         <p className="text-[19px]" style={{ fontFamily: font.display, color: colors.ink }}>
@@ -328,15 +389,15 @@ function AvertissementModification({
         </p>
         <p className="mt-3 text-[14px] leading-relaxed" style={{ color: colors.inkSoft }}>
           Le modifier en crée une nouvelle version. Tant que vous ne l&apos;aurez pas
-          renvoyée, votre client continuera de voir celle qu&apos;il a reçue — et il
+          renvoyée, votre client continuera de voir celle qu&apos;il a reçue, et il
           pourra l&apos;accepter au prix d&apos;avant.
         </p>
         <button
           type="button"
           onClick={onConfirmer}
           disabled={enCours}
-          className="mt-6 block w-full rounded-full py-3 text-center text-[15px] font-medium text-white disabled:opacity-50"
-          style={{ backgroundColor: colors.rust }}
+          className="atlas-plein mt-6 block w-full rounded-full py-3 text-center text-[15px] font-medium text-white disabled:opacity-50"
+          style={{ backgroundColor: colors.plein }}
         >
           {enCours ? "Ouverture…" : "Modifier quand même"}
         </button>
@@ -375,9 +436,13 @@ function EcranDevisParti({
   etat,
   phrase,
   messageClient,
+  joursDuClient,
   numeroDevis,
   totalTtc,
   onModifier,
+  onErreurDuClient,
+  refus,
+  tiroir,
   lienPdf,
   nomFichierPdf,
   transmission,
@@ -386,10 +451,17 @@ function EcranDevisParti({
   etat: string;
   phrase: string;
   messageClient: string | null;
+  joursDuClient: string[] | null;
   numeroDevis: string;
   totalTtc: string;
   /** `null` quand reprendre le devis est déjà l'action principale de l'écran. */
   onModifier: (() => void) | null;
+  /** « Le client s'est trompé » : seulement sur un devis accepté. */
+  onErreurDuClient: (() => void) | null;
+  /** Le refus du serveur, quand l'acceptation n'a pas pu être défaite. */
+  refus: string | null;
+  /** Le tiroir des six secondes, au-dessus du geste du bas. */
+  tiroir: ReactNode;
   lienPdf: string;
   nomFichierPdf: string;
   transmission: ReactNode;
@@ -403,7 +475,13 @@ function EcranDevisParti({
     // ici ; `atlas-ecran` la donne (voir `page.tsx`, et les deux tentatives
     // fausses qui l'ont précédée).
     <div data-atlas="devis-parti" className="flex min-h-0 flex-1 flex-col">
-      <div className="atlas-colonne-defile px-6 pt-5">
+      {/* Sa marge passe par `--atlas-defile-marge`, pas par `px-6` : sur
+          ordinateur, la zone qui défile s'étend jusqu'aux bords de l'écran et
+          ajoute cette marge à son débord (`globals.css`, « L'ORDINATEUR »). */}
+      <div
+        className="atlas-colonne-defile pt-5"
+        style={{ "--atlas-defile-marge": "1.5rem" } as React.CSSProperties}
+      >
       {/* Le signet : un filet d'or, l'état en encre, la phrase en gris. */}
       <div className="pl-4" style={{ borderLeft: `2px solid ${colors.or}` }}>
         <p className="text-[14px]" style={{ color: colors.ink }}>
@@ -419,11 +497,25 @@ function EcranDevisParti({
           lui demander de deviner ce qu'il doit changer. */}
       {messageClient && (
         <blockquote
-          className="mt-4 whitespace-pre-wrap pl-3 text-[14px] leading-relaxed"
+          className="mt-4 whitespace-pre-wrap break-words pl-3 text-[14px] leading-relaxed"
           style={{ borderLeft: `2px solid ${colors.rust}`, color: colors.ink }}
         >
           « {messageClient} »
         </blockquote>
+      )}
+
+      {/* **Ses dates, juste sous son message** — sa plainte du 27 septembre
+          2026 : *« je ne vois pas les dates qu'il a proposées, donc je lui
+          repropose les mêmes »*. Une ligne de plus, rien ne bouge au-dessus
+          (planche `appli/dates-du-client-au-renvoi.html`). */}
+      {joursDuClient && joursDuClient.length > 0 && (
+        <p
+          data-atlas="dates-du-client"
+          className="mt-2.5 pl-3 text-[14px] leading-relaxed"
+          style={{ borderLeft: `2px solid ${colors.rust}`, color: colors.ink }}
+        >
+          {joursDuClient.length > 1 ? "Ses dates" : "Sa date"} : {joursEnToutesLettres(joursDuClient)}.
+        </p>
       )}
 
       <div className="mt-8 text-center">
@@ -448,24 +540,46 @@ function EcranDevisParti({
             Modifier mon devis
           </button>
         )}
+        {/* **Sous « Modifier mon devis », en rouge** — la place de sa planche
+            du 7 octobre 2026 : un mot de plus sous le total, rien ne bouge
+            au-dessus. Rouge parce qu'il défait ce que le client a signé. */}
+        {onErreurDuClient && (
+          <button
+            type="button"
+            data-atlas="le-client-s-est-trompe"
+            onClick={onErreurDuClient}
+            className="mt-2 block w-full text-[14px] font-medium"
+            style={{ color: colors.alert }}
+          >
+            Le client s’est trompé
+          </button>
+        )}
+        {refus && (
+          <p role="alert" className="mt-3 text-[13px] leading-[1.5]" style={{ color: colors.alert }}>
+            {refus}
+          </p>
+        )}
       </div>
 
       </div>
 
+      {/* Hors de la marge du pied : le tiroir porte la sienne (26 px), celle
+          de tous les écrans qui retirent. */}
+      {tiroir}
       <div className="px-6 pb-2 pt-5">
         {transmission}
         {/* Quand aucun lien n'est encore actif — un devis caduc, par exemple — il
             n'y a rien à transmettre, mais le PDF reste utile : le patron le garde
             pour ses archives, ou le renvoie à la main. */}
         {!transmission && (
-          <a
-            href={lienPdf}
-            download={nomFichierPdf}
-            className="block text-center text-[13px] font-medium"
+          <BoutonTelechargerDocument
+            fichier={lienPdf}
+            nom={nomFichierPdf}
+            className="block w-full text-center text-[13px] font-medium"
             style={{ color: colors.ink }}
           >
             Télécharger le PDF
-          </a>
+          </BoutonTelechargerDocument>
         )}
         {reprise}
       </div>

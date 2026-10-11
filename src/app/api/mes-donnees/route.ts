@@ -21,21 +21,20 @@ export const dynamic = "force-dynamic";
 // de le rassembler pour en calculer la longueur.
 export const revalidate = 0;
 
-const LISEZ_MOI = (donnees: ExportEntreprise, nomEntreprise: string) => `SAUVEGARDE ATLAS — ${nomEntreprise}
+const LISEZ_MOI = (donnees: ExportEntreprise, nomEntreprise: string) => `SAUVEGARDE ATLAS, ${nomEntreprise}
 Exportée le ${donnees.exporteLe}
 
 CE QU'IL Y A DANS CE FICHIER
 ----------------------------
   donnees.json   Toutes les données de votre entreprise : clients, chantiers,
-                 devis, factures, tarifs, transcriptions. Un fichier texte —
-                 il s'ouvre dans n'importe quel éditeur, sans Atlas.
-  fichiers/      Vos photos, vos enregistrements et vos PDF. Ils portent le
-                 nom sous lequel l'application les connaît ; « donnees.json »
-                 dit à quel chantier chacun appartient.
+                 devis, factures, tarifs, transcriptions. Un fichier texte.
+                 Il s'ouvre dans n'importe quel éditeur, sans Atlas.
+  fichiers/      Vos photos, vos enregistrements et vos PDF, rangés par
+                 client puis par chantier.
 
 CE QU'IL CONTIENT DE SENSIBLE
 -----------------------------
-Les noms, adresses, téléphones et adresses e-mail de vos clients — et les liens
+Les noms, adresses, téléphones et adresses e-mail de vos clients, et les liens
 d'accès aux devis que vous leur avez envoyés, tant qu'ils n'ont pas expiré. Ce
 fichier se range comme un dossier client : il ne se met pas dans un dépôt
 public, il ne s'envoie pas par messagerie sans raison.
@@ -115,13 +114,13 @@ export async function GET() {
     for (const fichier of donnees.fichiers) {
       try {
         const octets = await lireObjet(fichier.storageKey);
-        yield { nom: `fichiers/${fichier.storageKey}`, contenu: new Uint8Array(octets) };
+        yield { nom: fichier.chemin, contenu: new Uint8Array(octets) };
       } catch {
         // Un fichier manquant n'interrompt pas la sauvegarde. L'audio est purgé
         // après transcription (docs/RGPD.md §4) : une absence est ici le cas
         // NORMAL, et faire échouer l'export dessus reviendrait à interdire
         // toute sauvegarde à qui a laissé tourner la purge une fois.
-        introuvables.push(`${fichier.storageKey} (${fichier.origine})`);
+        introuvables.push(fichier.chemin);
       }
     }
 
@@ -137,7 +136,7 @@ export async function GET() {
             "  - Une photo : ce n'est PAS normal, sauf sur le jeu de démonstration\n" +
             "    dont les photos n'ont jamais eu de fichier. Sur vos propres\n" +
             "    chantiers, cela signifie que l'espace de travail a été supprimé\n" +
-            "    puis recréé — la base a survécu, les fichiers non.\n\n" +
+            "    puis recréé. La base a survécu, les fichiers non.\n\n" +
             introuvables.join("\n") +
             "\n"
         ),

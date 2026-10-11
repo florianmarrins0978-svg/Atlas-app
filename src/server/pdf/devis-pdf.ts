@@ -1,3 +1,9 @@
+import { numeroDuDevisSurLePapier } from "@/lib/numero-documents";
+import { MENTION_FRANCHISE, sousFranchise } from "@/lib/franchise-tva";
+import { MENTION_AUTOLIQUIDATION } from "@/lib/autoliquidation";
+import { estUneEntreprise } from "@/lib/civilite";
+import { DEBUT_DES_TRAVAUX, TITRE_FORMULAIRE, paragraphesFormulaire } from "@/lib/retractation";
+import { nomAvecForme } from "@/lib/formes-juridiques";
 import {
   composerDocument,
   PALETTE_DOCUMENT,
@@ -5,6 +11,7 @@ import {
   type DonneesDocument,
   type LigneDocument,
   type TraceDocument,
+  type AttestationDocument,
   type LogoDocument,
 } from "./document-commun";
 import { jourNumerique } from "../../lib/jour";
@@ -14,6 +21,18 @@ import {
   type ConditionsLues,
 } from "@/lib/conditions-documents";
 import type { Allure } from "@/lib/allure-documents";
+import { LIBELLE_MAIN_DOEUVRE } from "@/lib/main-doeuvre-devis";
+import {
+  TITRE_CONDITIONS_GENERALES,
+  conditionsGeneralesRemplies,
+  paragraphesConditionsGenerales,
+} from "@/lib/conditions-generales";
+import {
+  echeancierDevis,
+  libelleLigneAcompte,
+  phrasesAcomptesDuDevis,
+  type AcompteDevis,
+} from "@/lib/acomptes-devis";
 
 // Le devis, à l'image du modèle d'Arborea (`appli/devis-modele.html`).
 //
@@ -48,6 +67,42 @@ export type DevisPdfData = DonneesDocument & {
    * s'imprime, et ces documents-là sortent identiques à eux-mêmes.
    */
   conditionsReglees?: ConditionsLues | null;
+  /**
+   * Les acomptes posés sur le devis, en taux CUMULÉS (migration 0088).
+   *
+   * Le papier en tire deux choses par la règle commune : les lignes sous le
+   * total — chaque acompte avec ce qui tombe ce jour-là, puis « Reste à régler
+   * après acompte » et le montant, *« chez le client il faut marquer reste à
+   * régler après acompte et le montant »* — et les phrases des notes.
+   * Absents ou vides : la feuille sort comme avant, et la phrase du réglage
+   * reste dans les notes.
+   */
+  acomptes?: readonly AcompteDevis[] | null;
+  /**
+   * « dont main d'œuvre HT » (migration 0090) — la lecture B du 12 septembre
+   * 2026 : nommée sous le total HT, jamais comptée, les totaux ne bougent pas.
+   * Absente ou nulle : pas de ligne.
+   */
+  mainDoeuvreHt?: string | null;
+  /** Son titre, s'il en a donné un (migration 0092). Vide : rien ne s'imprime. */
+  titre?: string | null;
+  /**
+   * Le régime de TVA figé sur le devis (migration 0118). En franchise, la
+   * mention de l'article 293 B s'imprime au pied, comme sur la facture.
+   */
+  regimeTva?: "assujettie" | "franchise" | null;
+  /**
+   * La durée estimée des travaux, lue du chantier (« 2 jours »). Absente : rien
+   * ne s'imprime, plutôt qu'une durée inventée (`CLAUDE.md` §4).
+   */
+  dureeEstimee?: string | null;
+  /**
+   * En sous-traitance, sans TVA (migration 0119, son choix B du 4 octobre
+   * 2026) : ses lignes sont déjà à 0 %. Le papier ne porte ni ligne de TVA ni
+   * « TTC », mais la mention d'autoliquidation ; et pas de formulaire de
+   * rétractation, qui ne protège qu'un consommateur.
+   */
+  autoliquidation?: boolean;
 };
 
 /**
@@ -99,6 +154,8 @@ export type OptionsDevisPdf = {
   allure?: Allure | null;
   /** Son logo, lu par le dépôt. Suit exactement le sort de l'allure. */
   logo?: LogoDocument | null;
+  /** L'attestation décennale figée sur ce devis, lue par le dépôt. */
+  attestation?: AttestationDocument | null;
 };
 
 /**
@@ -120,19 +177,108 @@ export type OptionsDevisPdf = {
  * plutôt que d'inventer un chiffre — un montant supposé à cet endroit finirait
  * imprimé chez un client (`CLAUDE.md` §4).
  */
-function blocNotes(data: DevisPdfData, sansPrix: boolean): string | null {
+/**
+ * Deux voix dans le même bloc : SON texte, en maigre, puis les conditions
+ * réglées, **en gras** — sa demande du 12 septembre 2026 : *« le bloc Notes /
+ * conditions en gras : mode de règlement, acompte, solde, moyens de paiement,
+ * retard »*. Le gras porte sur ce qui engage et se calcule ; ce qu'il a tapé
+ * à la main reste ce qu'il est, une note.
+ */
+function blocNotes(data: DevisPdfData, sansPrix: boolean): { sien: string | null; reglees: string[] } {
   const sien = data.conditionsPaiement?.trim() || null;
   // **Aucune condition sur la feuille de chantier.** Elle part chez un salarié,
   // sans un prix : « acompte de 30 % » y serait un montant, et le document
   // cesserait d'être ce qu'il annonce. C'est la règle que suit déjà l'IBAN.
-  if (sansPrix) return sien;
+  if (sansPrix) return { sien, reglees: [] };
 
-  const lignes = lignesConditionsDevis(
+  const reglees = lignesConditionsDevis(
     lireConditions(data.conditionsReglees),
-    Number(data.totalTtc)
+    Number(data.totalTtc),
+    phrasesAcomptesDuDevis(data.statut, data.acomptes ?? [], data.totalTtc),
+    estUneEntreprise(data.clientNom, data.clientCivilite)
   );
-  if (!lignes.length) return sien;
-  return [sien, ...lignes].filter(Boolean).join("\n");
+  return { sien, reglees };
+}
+
+/**
+ * Les conditions générales, après le bon pour accord — sa demande du
+ * 12 septembre 2026. Sur une feuille de chantier, rien : elle ne s'accepte pas.
+ * Vides (il a tout effacé), rien non plus, pas même le titre.
+ */
+function annexeConditionsGenerales(data: DevisPdfData, sansPrix: boolean) {
+  // Un devis d'avant la 0064 n'a pas de conditions figées du tout : il sort
+  // sans cette annexe — la règle de `conditionsReglees`.
+  if (sansPrix || !data.conditionsReglees) return null;
+  // **Les articles 9 et 11 se remplissent ici** (migration 0094) : l'assureur et
+  // le médiateur sont saisis une fois dans Mon entreprise, et ce sont ceux
+  // FIGÉS sur ce devis — pas ceux d'aujourd'hui. Un crochet dont la valeur
+  // manque reste un crochet : il vaut mieux qu'il se voie sur le papier plutôt
+  // qu'une phrase s'achève sur un deux-points vide.
+  const paragraphes = paragraphesConditionsGenerales(
+    conditionsGeneralesRemplies(lireConditions(data.conditionsReglees).conditionsGenerales, {
+      assureurDecennale: data.entrepriseAssureurDecennale,
+      adresseAssureurDecennale: data.entrepriseAdresseAssureurDecennale,
+      contratDecennale: data.entrepriseContratDecennale,
+      couvertureDecennale: data.entrepriseCouvertureDecennale,
+      mediateurNom: data.entrepriseMediateurNom,
+      mediateurCoordonnees: data.entrepriseMediateurCoordonnees,
+    })
+  );
+  return paragraphes.length ? { titre: TITRE_CONDITIONS_GENERALES, paragraphes } : null;
+}
+
+/**
+ * Le formulaire de rétractation, en dernière page — obligatoire pour un devis
+ * accepté à distance ou chez le client (L221-5, L221-9 ; choix du 3 octobre
+ * 2026). Jamais sur la feuille de chantier : elle ne s'accepte pas.
+ */
+function annexeFormulaire(data: DevisPdfData, sansPrix: boolean) {
+  if (sansPrix || data.autoliquidation) return null;
+  return {
+    titre: TITRE_FORMULAIRE,
+    paragraphes: paragraphesFormulaire({
+      nom: nomAvecForme(data.entrepriseNom, data.entrepriseFormeJuridique),
+      adresse: data.entrepriseAdresse,
+      email: data.entrepriseEmail,
+      numeroDevis: data.numeroCommercial,
+      dateDevis: jourNumerique(data.dateEmission),
+    }),
+  };
+}
+
+/**
+ * La phrase du pied d'un devis. La validité n'y est nommée que si elle
+ * s'imprime : « valable selon la durée indiquée ci-dessus » restait écrit sur
+ * un devis dont il avait retiré la durée, et renvoyait à une ligne absente.
+ */
+function mentionDuDevis(d: DevisPdfData): string {
+  const validite = libelleValiditeDevis(d.validiteJours);
+  const base =
+    `Devis établi par ${d.entrepriseNom}` +
+    (validite ? `, valable ${validite}. ` : ". ") +
+    "Bon pour accord précédé de la mention manuscrite, daté et signé par le client.";
+  // L'autoliquidation passe avant le taux : à 0 % sur un devis d'avant 0118,
+  // `sousFranchise` répondrait « franchise » (la même garde que la facture).
+  if (d.autoliquidation) return `${base} ${MENTION_AUTOLIQUIDATION}`;
+  return sousFranchise(d.regimeTva, d.tauxTva) ? `${base} ${MENTION_FRANCHISE}` : base;
+}
+
+/**
+ * Les lignes SOUS le total TTC : chaque acompte avec ce qui tombe ce jour-là,
+ * puis le reste à régler. Rien quand le devis n'en porte aucun — la feuille
+ * d'avant sort à l'identique.
+ */
+/**
+ * Sous le Total TTC : chaque acompte en gris, puis « Reste à régler » dans la
+ * fonte du total — sa planche du 14 septembre 2026.
+ */
+function lignesApresTotal(data: DevisPdfData): { libelle: string; montant: string; style?: "doux" | "grand" }[] {
+  const echeancier = echeancierDevis(data.acomptes ?? [], data.totalTtc);
+  if (!echeancier.lignes.length) return [];
+  return [
+    ...echeancier.lignes.map((l) => ({ libelle: libelleLigneAcompte(l), montant: l.montant, style: "doux" as const })),
+    { libelle: "Reste à régler", montant: echeancier.reste, style: "grand" as const },
+  ];
 }
 
 export async function composerDevisPdf(
@@ -140,8 +286,24 @@ export async function composerDevisPdf(
   options: OptionsDevisPdf = {}
 ): Promise<{ pdf: Uint8Array; trace: TraceDocument }> {
   const sansPrix = Boolean(options.sansChiffrage);
-  return composerDocument({ ...data, conditionsPaiement: blocNotes(data, sansPrix) }, {
+  const notes = blocNotes(data, sansPrix);
+  return composerDocument({ ...data, conditionsPaiement: notes.sien }, {
     sansChiffrage: options.sansChiffrage,
+    // Les conditions réglées, en gras, sous ses notes.
+    notesEnGras: notes.reglees,
+    // « dont main d'œuvre HT », sous le total HT, sans rien changer aux totaux.
+    sousLeTotalHt: data.mainDoeuvreHt
+      ? [{ libelle: LIBELLE_MAIN_DOEUVRE, montant: data.mainDoeuvreHt }]
+      : [],
+    // L'échéancier sous le total ; `sansChiffrage` le saute avec les totaux.
+    apresTotal: lignesApresTotal(data),
+    sansTva: !!data.autoliquidation,
+    libelleTotalTtc: data.autoliquidation ? "Total à payer" : undefined,
+    // Ses conditions générales, après le bon pour accord.
+    // Ses conditions générales, puis le formulaire de rétractation.
+    annexes: [annexeConditionsGenerales(data, sansPrix), annexeFormulaire(data, sansPrix)].filter(
+      (a): a is { titre: string; paragraphes: string[] } => a !== null
+    ),
     // **Sa décision du 23 août : le devis et la facture SEULEMENT.** La feuille
     // de chantier sort de la même fabrique, avec `sansChiffrage` — sans ce
     // filtre, elle aurait pris l'allure réglée pour les documents du client
@@ -151,6 +313,8 @@ export async function composerDevisPdf(
     // feuille de chantier est interne : elle n'a pas à porter la marque qu'on
     // met sur ce que le client garde, et il ne l'a pas demandé.
     logo: sansPrix ? null : options.logo,
+    // La feuille de chantier ne s'envoie pas au client : rien à y prouver.
+    attestation: sansPrix ? null : options.attestation,
     // **Sans les prix, ce n'est plus un devis : c'est la feuille de travail.**
     // Garder le titre « DEVIS » sur un document qu'un salarié emporte ferait
     // croire à un devis amputé — et le client à qui on le montrerait par erreur
@@ -163,11 +327,10 @@ export async function composerDevisPdf(
       : data.statut === "brouillon"
         ? "DEVIS (BROUILLON)"
         : "DEVIS",
+    // Le numéro à droite du titre, plus dans les références (sa planche).
+    numero: numeroDuDevisSurLePapier(data.numeroCommercial, data.numeroVersion),
+    titreLibre: sansPrix ? null : data.titre,
     references: [
-      [
-        "Devis n°",
-        data.numeroCommercial + (data.numeroVersion > 1 ? ` — v${data.numeroVersion}` : ""),
-      ],
       // Jour/mois/année : personne, en France, ne lit « 2026-08-04 » sur un
       // devis. Le format ISO reste celui de la base, jamais celui du papier.
       ["Date", jourNumerique(data.dateEmission)],
@@ -176,6 +339,10 @@ export async function composerDevisPdf(
       ...(libelleValiditeDevis(data.validiteJours)
         ? ([["Validité", libelleValiditeDevis(data.validiteJours) as string]] as [string, string][])
         : []),
+      // Le début des travaux, obligatoire pour un particulier (L111-1, 2A) ; la
+      // durée, quand le chantier la connaît. Rien sur la feuille de travail.
+      ...(sansPrix ? [] : ([["Début des travaux", DEBUT_DES_TRAVAUX]] as [string, string][])),
+      ...(!sansPrix && data.dureeEstimee ? ([["Durée estimée", data.dureeEstimee]] as [string, string][]) : []),
     ],
     titreNotes: "NOTES / CONDITIONS",
     // **Ni « bon pour accord » ni cadre à signer sur la feuille de travail.**
@@ -186,8 +353,7 @@ export async function composerDevisPdf(
       sansPrix
         ? `Feuille de travail établie par ${d.entrepriseNom} d'après le devis ` +
           "correspondant. Elle ne vaut ni devis ni facture, et n'appelle aucun paiement."
-        : `Devis établi par ${d.entrepriseNom}, valable selon la durée indiquée ci-dessus. ` +
-          "Bon pour accord précédé de la mention manuscrite, daté et signé par le client.",
+        : mentionDuDevis({ ...data, entrepriseNom: d.entrepriseNom }),
     cadreSignature: !sansPrix,
   });
 }

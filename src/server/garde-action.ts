@@ -1,5 +1,13 @@
-import { cheminAutorise, peutModifierLePlanning, peutVoirLesMontants } from "@/lib/acces-roles";
+import {
+  cheminAutorise,
+  peutFacturer,
+  peutGererDevis,
+  peutModifierLePlanning,
+  peutVoirLesMontants,
+} from "@/lib/acces-roles";
+import { fonctionOuverte, type FonctionReservee } from "@/lib/abonnements";
 import { accesDeLaPersonne, getRole } from "./autorisation";
+import { abonnementDeLEntreprise } from "./repositories/abonnements";
 import { chantiersDeLEquipe } from "./repositories/chantiers";
 import type { Ctx } from "./repositories/context";
 
@@ -226,6 +234,89 @@ export async function exigerChantierDansSaPortee(
 export async function exigerEcritureSurLePlanning(ctx: Ctx, action: string): Promise<void> {
   const role = await getRole(ctx);
   if (!role || !peutModifierLePlanning(role)) {
+    throw new ActionRefuseeError(action);
+  }
+}
+
+/**
+ * **CETTE PERSONNE PEUT-ELLE RÉDIGER, CHIFFRER OU ENVOYER UN DEVIS ?**
+ *
+ * À appeler en première ligne de toute action qui ÉCRIT sur un devis : une
+ * ligne, un prix de ligne, l'en-tête, l'émetteur, le client, l'envoi, la
+ * reprise après réponse.
+ *
+ * **Elle ne remplace pas `exigerMontants`, elle la précise.** Les actions qui
+ * se contentent de LIRE un montant — ouvrir un devis, calculer une proposition
+ * de prix pour la regarder — gardent l'autre : ce sont deux questions, et le
+ * jour où l'une s'élargit, l'autre ne doit pas suivre sans qu'on l'ait décidé
+ * (voir `peutGererDevis`).
+ */
+export async function exigerGestionDevis(ctx: Ctx, action: string): Promise<void> {
+  const role = await getRole(ctx);
+  if (!role || !peutGererDevis(role)) {
+    throw new ActionRefuseeError(action);
+  }
+}
+
+/**
+ * **CETTE PERSONNE PEUT-ELLE FACTURER ?**
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **CE QU'ELLE FERME, ET DEPUIS QUAND ÇA AURAIT DÛ L'ÊTRE.**
+ *
+ * La règle est du patron, 13 août 2026 (`docs/QUESTIONS.md` §10) : le
+ * commercial n'a *« ni les factures, ni la TVA »*. Elle n'a jamais été
+ * appliquée : les quinze actions du cycle comptable — terminer un chantier et
+ * préparer sa facture, l'émettre, changer son échéance, préparer le lien
+ * envoyé au client, noter un paiement, en retirer un, solder, ranger un
+ * ticket, enregistrer un achat, en supprimer un, repousser un rappel — se
+ * gardaient toutes par `exigerMontants`, qui ne refuse que le salarié.
+ *
+ * **Un commercial facturait donc pour de bon**, et il pouvait le faire sans
+ * même ouvrir l'écran : l'identifiant d'une Server Action se lit dans les
+ * fragments servis sous `_next/static`, que le `matcher` du middleware exclut.
+ * Fermer « Terminés » dans la barre du bas n'aurait rien fermé du tout.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **ELLE GARDE UNE CAPACITÉ, PAS UN ÉCRAN — et c'est la consigne du 30 août :**
+ * *« ne protège pas seulement /factures ; protège les CAPACITÉS de facturation.
+ * Un commercial qui connaît l'identifiant d'une Server Action de facture doit
+ * être refusé même si son écran Factures n'existe pas. »*
+ *
+ * C'est pourquoi elle ne s'écrit pas `exigerEcran(ctx, "/termines", …)` : le
+ * cycle comptable ne vit pas sur un seul écran — il commence sur la fiche d'un
+ * chantier, se poursuit sur « Terminés », et l'accueil en porte les rappels.
+ * Une garde par chemin aurait été juste trois fois et fausse une fois.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **CE QU'ELLE NE FAIT PAS.** Elle n'ouvre aucune porte dans les protections
+ * comptables : une facture émise reste immuable, elle ne se réémet pas, et une
+ * correction passe par un avoir. Ces règles vivent dans le dépôt
+ * (`repositories/factures.ts`) et ne connaissent pas les rôles — facturer est
+ * un droit fonctionnel, jamais le droit de casser une contrainte légale.
+ */
+export async function exigerFacturation(ctx: Ctx, action: string): Promise<void> {
+  const role = await getRole(ctx);
+  if (!role || !peutFacturer(role)) {
+    throw new ActionRefuseeError(action);
+  }
+}
+
+/**
+ * **LA FORMULE DE L'ENTREPRISE OUVRE-T-ELLE CETTE FONCTION ?**
+ *
+ * Sa décision du 10 septembre 2026 — *« oui bloqué pour l'abonnement artisan »* :
+ * les absences d'équipe et les retours d'intervention sont un plus
+ * d'« Entreprise ». L'écran le montre (`FonctionReservee`) ; cette garde le
+ * TIENT, parce qu'un écran fermé ne ferme pas l'action — c'est tout l'en-tête
+ * de ce fichier.
+ *
+ * La règle n'est pas ici : `fonctionOuverte` décide, et une entreprise sans
+ * abonnement passe — une fermeture est la conséquence d'une formule choisie.
+ */
+export async function exigerFonction(ctx: Ctx, fonction: FonctionReservee, action: string): Promise<void> {
+  const abonnement = await abonnementDeLEntreprise(ctx);
+  if (!fonctionOuverte(abonnement?.formule, fonction)) {
     throw new ActionRefuseeError(action);
   }
 }

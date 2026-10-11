@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Entrer avec Google : ce qu'il reste à faire, et par qui</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="entrer-avec-google--ce-quil-reste-à-faire-et-par-qui">Entrer avec Google : ce qu'il reste à faire, et par qui</h1>
+<p><strong>Qui : vous.</strong> Personne d'autre ne peut le faire — cela se crée depuis un compte Google, et cela engage votre entreprise auprès de Google.</p>
+<p><strong>Ce que ça coûte : rien.</strong> Une quinzaine de minutes, une fois.</p>
+<hr>
+<h2 id="pourquoi-les-boutons-ne-saffichent-pas">Pourquoi les boutons ne s'affichent pas</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>L'écran de connexion est fini, et il est exactement celui de la maquette. Les boutons <strong>Google</strong> et <strong>Apple</strong> n'apparaissent que lorsque les clés de chaque marque sont posées sur votre espace de travail.</p>
+<p>C'est délibéré : un bouton qui ne peut pas aboutir est pire qu'un bouton absent. On appuie, on tombe sur une page d'erreur, et l'on croit l'application cassée — le pire endroit pour ça étant le seul écran qu'on voit avant d'être entré.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Google</strong></td>
+<td>gratuit — les quatre étapes ci-dessous</td>
+</tr>
+<tr>
+<td><strong>Apple</strong></td>
+<td><strong>compte développeur payant, 99 $/an.</strong> Le bouton reste absent tant qu'il n'existe pas</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="les-quatre-étapes-chez-google">Les quatre étapes, chez Google</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>console.cloud.google.com</strong> → créer un projet (ou reprendre celui de l'agenda, si vous l'avez déjà ouvert).</li>
+<li><strong>Écran de consentement</strong> : type « Externe », le nom de l'application, votre adresse d'assistance. Rien d'autre pour l'instant.</li>
+<li><strong>Identifiants → Créer → ID client OAuth → Application Web.</strong></li>
+<li>Dans <strong>URI de redirection autorisés</strong>, coller l'adresse que votre espace affiche au démarrage. Elle ressemble à :</li>
+</ol>
+<p>``<code> https://&lt;votre-espace&gt;-3000.app.github.dev/api/auth/callback/google </code>``</p>
+<p><strong>Elle s'affiche toute faite</strong> dans le terminal de votre espace, au démarrage, juste après la ligne « IA ». Copiez-la de là plutôt que de la retaper : Google la compare au caractère près, et un caractère de travers donne un refus qui ne dit pas pourquoi.</p>
+<p>Google rend alors deux valeurs : un <strong>ID client</strong> et un <strong>secret client</strong>.</p>
+<hr>
+<h2 id="où-les-coller">Où les coller</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Le fichier <strong><code>.env.local</code></strong>, à la racine du projet, dans votre espace de travail. Les deux lignes y sont déjà, vides :</p>
+<p>``<code> AUTH_GOOGLE_ID= AUTH_GOOGLE_SECRET= </code>``</p>
+<p>Collez après le signe <code>=</code>, enregistrez, puis <strong>rechargez la page de l'éditeur</strong>. Au démarrage suivant, le terminal dit « Entrer avec Google : branché », et les deux boutons sont sur l'écran de connexion.</p>
+<p><strong>Les deux lignes, ou aucune.</strong> Un identifiant sans son secret ne mène nulle part : le bouton reste absent tant que les deux ne sont pas remplies.</p>
+<hr>
+<h2 id="ce-qui-se-passe-ensuite-et-qui-peut-surprendre">Ce qui se passe ensuite, et qui peut surprendre</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Entrer par Google ne crée pas de compte Atlas.</strong> Qui appuie sur Google sans avoir de compte ici est envoyé sur la création de compte, son adresse déjà remplie. C'est voulu : un compte créé au vol n'aurait ni entreprise, ni forme juridique, ni TVA — le premier devis serait impossible à émettre, et vous le découvririez devant un client.</p>
+<p><strong>Tant que Google n'a pas validé l'application</strong>, l'accès reste limité à une centaine de comptes de test. Cela suffit largement pour vous et vos essais ; cela ne suffira pas le jour où Atlas sert d'autres artisans. C'est le point 8 de <a href="A-FAIRE.md" target="_blank" rel="noopener"><code>A-FAIRE.md</code></a>, et il demande des semaines — à ouvrir bien avant de commercialiser.</p>
+<hr>
+<p><strong>Ce qui n'a pas pu être vérifié d'ici, et qui doit l'être par vous :</strong> les libellés exacts de la console Google. Le réseau de l'environnement de développement refuse les pages de Google, donc ces quatre étapes viennent de la documentation, pas d'un écran regardé. Si un intitulé diffère, c'est la console qui a raison.</p>
+</main>
+</body>
+</html>

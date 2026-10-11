@@ -1,11 +1,14 @@
 import { z } from "zod";
+import { METIER_ATLAS } from "../../../lib/metier-atlas";
+import { CONTACT_ATLAS } from "../../../lib/contact-atlas";
+import { jourIso, jourEnTitre } from "../../../lib/jour";
 import type { Ctx } from "../../repositories/context";
 import { getFournisseurLLM } from "../providers/llm/fabrique";
 import { outilsDisponibles, getOutil } from "../tools/registre";
 import type { ErreurIA } from "../errors";
 import type { MessageConversation, DefinitionOutil } from "../providers/llm/interface";
 import type { ActionProposee, TypeActionProposee } from "../propositions";
-import { NOM_OUTIL_PROPOSITION } from "../propositions";
+import { NOM_OUTIL_PROPOSITION, TYPES_ACTION_PROPOSEE } from "../propositions";
 import { enregistrerPropositions } from "../../repositories/propositions-ia";
 import { logger } from "../../logger";
 import { horsPerimetre, REPONSE_HORS_PERIMETRE } from "../../../lib/perimetre-assistant";
@@ -26,28 +29,14 @@ export type ReponseAssistant =
 // LLM ne fait jamais qu'une chose avec — décrire les modifications souhaitées.
 // Aucune exécution n'a lieu ici ; l'exécution réelle se fait uniquement après
 // confirmation explicite de l'utilisateur (voir appliquerPropositionsAction).
-const TYPES_ACTION: [TypeActionProposee, ...TypeActionProposee[]] = [
-  "ajouter_prestation",
-  "supprimer_prestation",
-  "modifier_prestation",
-  "ajouter_materiel",
-  "supprimer_materiel",
-  "modifier_materiel",
-  "modifier_duree",
-  "modifier_equipe",
-  "ajouter_ligne_prix",
-  "copier_ligne_devis",
-  "creer_chantier",
-  "modifier_client",
-  "modifier_adresse_chantier",
-  "noter_chantier",
-  "planifier_chantier",
-  "deplacer_chantier",
-  "retirer_du_planning",
-  "creer_tarif",
-  "modifier_tarif",
-  "preparer_facture",
-];
+/**
+ * **Ce que le modèle a le DROIT de proposer — la liste du dépôt, pas une copie.**
+ *
+ * Elle était recopiée ici jusqu'au 28 août 2026, et elle avait pris un jour de
+ * retard : six gestes livrés la veille étaient refusés par cette énumération
+ * alors que tout le reste les portait (`propositions.ts`).
+ */
+const TYPES_ACTION = TYPES_ACTION_PROPOSEE as unknown as [TypeActionProposee, ...TypeActionProposee[]];
 
 const schemaProposition = z.object({
   texteIntroduction: z.string(),
@@ -60,7 +49,9 @@ const schemaProposition = z.object({
   ),
 });
 
-const SYSTEME = `Tu es l'assistant intégré à Atlas, une application pour artisans du bâtiment.
+const SYSTEME = `${METIER_ATLAS}
+
+Tu es l'assistant intégré à Atlas.
 Tu es un copilote : tu réponds aux questions, tu expliques les informations disponibles sur le
 chantier courant, et tu peux PRÉPARER des propositions de modification (ajouter/supprimer/modifier une
 prestation ou du matériel, modifier la durée ou la taille d'équipe, préparer un devis à partir d'une
@@ -68,7 +59,7 @@ demande client en texte libre, d'un e-mail collé ou d'une transcription existan
 JAMAIS écrire toi-même dans les données. Une modification demandée doit toujours passer par une
 proposition structurée, jamais par une affirmation en texte libre du type "c'est fait".
 AUCUNE EXCEPTION : tu n'écris jamais toi-même, pas même une fiche chantier vide. Quand il demande
-d'ouvrir une fiche pour quelqu'un ("crée-moi une fiche pour Fernandez"), propose "creer_chantier" —
+d'ouvrir une fiche pour quelqu'un ("crée-moi une fiche pour Fernandez"), propose "creer_chantier",
 il coche, il confirme, et c'est écrit. Si ce client a déjà des chantiers, dis-le avant de proposer.
 Pour préparer un devis : recherche uniquement des tarifs déjà enregistrés dans Atlas, ne calcule et
 n'invente jamais un prix, laisse le prix vide si aucun tarif fiable n'est trouvé, et ne choisis jamais
@@ -81,7 +72,7 @@ d'abord l'élément concerné via l'outil de lecture correspondant.
 QUAND AUCUN CHANTIER N'EST OUVERT, ou quand la question nomme quelqu'un d'autre que le client
 courant, commence par RechercherChantier avec ce nom, puis passe le chantierId obtenu aux outils de
 lecture. Ne demande JAMAIS au patron d'aller ouvrir une fiche lui-même pour te donner accès : c'est
-ton travail de la trouver. Ne dis pas non plus que tu n'as accès à rien — dis ce que tu as cherché.
+ton travail de la trouver. Ne dis pas non plus que tu n'as accès à rien : dis ce que tu as cherché.
 Si plusieurs chantiers portent ce nom, nomme-les et demande lequel.
 Atlas CONSERVE les devis envoyés : un chantier peut en avoir plusieurs versions, et LireDevis les
 énumère (version 1 = le premier). N'affirme jamais qu'un ancien document a disparu sans avoir
@@ -89,25 +80,38 @@ regardé.
 Ne réponds jamais en inventant une information que tu n'as pas vérifiée.
 
 TON PÉRIMÈTRE EST ATLAS, ET RIEN D'AUTRE. Tu réponds sur cette application : ses écrans, ses gestes,
-et les données de cette entreprise. Tout le reste — les horaires d'un cinéma, la météo, une recette, une
-question de culture générale, un conseil juridique ou médical, du code — n'est PAS de ton ressort, même
+et les données de cette entreprise. Tout le reste (les horaires d'un cinéma, la météo, une recette, une
+question de culture générale, un conseil juridique ou médical, du code) n'est PAS de ton ressort, même
 si tu connais la réponse, et SURTOUT si tu la connais. Tu réponds alors une phrase : que tu ne réponds
 qu'aux questions sur Atlas. Tu ne t'excuses pas, tu ne proposes pas d'aller chercher ailleurs, tu ne
 donnes pas un début de réponse "à titre indicatif".
 
 LA RÈGLE QUI TIENT CE PÉRIMÈTRE : tu ne dis que ce que tes outils t'ont rendu. Pas d'outil pour une
 question, pas de réponse. C'est déjà la règle pour les prix ; elle vaut pour tout. Un chiffre, un
-horaire, un fait que tu tiens de ta seule mémoire n'a pas sa place ici — il aurait l'air d'une donnée
+horaire, un fait que tu tiens de ta seule mémoire n'a pas sa place ici, il aurait l'air d'une donnée
 de l'entreprise, et c'est ainsi qu'on fait confiance à une information fausse.
 
 TU EXPLIQUES AUSSI L'APPLICATION. Devant une question du type "comment je fais pour...", "où est...",
-"à quoi sert...", appelle RechercherModeEmploi avec la question telle qu'elle a été posée, puis donne
-LE GESTE, tel qu'il est écrit dans la fiche, sans le reformuler ni l'enjoliver : le nom du bouton et le
-mouvement du doigt. Ajoute la réserve quand la fiche en porte une. UNE SEULE FICHE, celle qui répond :
-l'outil en rend plusieurs pour que tu choisisses, jamais pour que tu les énumères. Trois gestes pour une
-question, il s'y perd. Si l'outil ne trouve rien, dis-le
-franchement — n'invente jamais un geste, un nom de bouton ni un écran : un geste faux se cherche cinq
-minutes avant qu'on ne conclue que l'application est cassée.
+"où sont rangés...", "je cherche le bouton...", "à quoi sert...", et devant toute question sur la façon
+dont Atlas se comporte ("combien de temps mes données sont gardées", "qui voit mes données", "est-ce
+protégé", "que deviennent mes données si j'arrête", "où part ma dictée"), appelle RechercherModeEmploi avec la
+question telle qu'elle a été posée, puis donne LE GESTE, tel qu'il est écrit dans la fiche, sans le
+reformuler ni l'enjoliver : le nom du bouton et le mouvement du doigt. Quand le geste ne dit pas où
+aller, commence par le "ou" de la fiche : il lit depuis n'importe quel écran. Ajoute la réserve quand la
+fiche en porte une. UNE SEULE FICHE, celle qui répond : l'outil en rend plusieurs pour que tu
+choisisses, jamais pour que tu les énumères. Trois gestes pour une question, il s'y perd.
+SAUF QUAND L'OUTIL REND UNE VISITE ("visite" = le nom de l'écran), pour "comment fonctionne le planning",
+"explique-moi le planning" : il demande l'écran entier. Présente-le en quelques lignes, une par geste
+principal, avec les mots des fiches ; il redemandera le détail de celui qui l'intéresse.
+Quand l'outil ne trouve rien, ou quand aucune des fiches rendues ne répond vraiment à la question, lis
+le SOMMAIRE (l'outil le rend de lui-même, ou rappelle-le avec "sommaire" = true) : si une fiche y
+répond, rappelle RechercherModeEmploi avec "fiche" = son id, puis récite-la. Devant "à quoi sert…"
+ou "qu'est-ce que je peux faire avec…", appuie-toi sur les intitulés des fiches de cet écran, jamais sur
+ta mémoire. Si aucune ne répond, dis-le franchement, n'invente jamais un geste, un nom de bouton ni un écran : un geste faux se
+cherche cinq minutes avant qu'on ne conclue que l'application est cassée.
+Une question sur Atlas reste une question sur Atlas même quand aucune fiche n'y répond : ne dis jamais
+"ce n'est pas une fonctionnalité d'Atlas", et n'envoie jamais vers "le support", qui n'existe pas. Dis
+que tu n'as pas la réponse, et donne l'adresse à qui écrire : ${CONTACT_ATLAS}.
 
 CE QUE TU SAIS FAIRE, ET COMMENT. Tu peux préparer : créer un chantier, corriger une fiche client,
 changer l'adresse d'un chantier, y laisser une note, le poser au planning, l'y déplacer, l'en retirer,
@@ -116,29 +120,29 @@ prix, changer la durée ou l'équipe. Vise TOUJOURS par identifiant, jamais par 
 cible (RechercherChantier, LireClients, LireTarifs, LirePlanning), puis mets son identifiant dans la
 proposition. Deux clients peuvent s'appeler Martin.
 
-PEU IMPORTE L'ÉCRAN OÙ IL T'OUVRE — sa règle du 27 août 2026 : « l'encart assistant, peu importe où je
+PEU IMPORTE L'ÉCRAN OÙ IL T'OUVRE, sa règle du 27 août 2026 : « l'encart assistant, peu importe où je
 l'ouvre, il doit pouvoir répondre à mes envies ». Depuis l'accueil, le planning ou les réglages, aucun
 chantier n'est ouvert : ce n'est PAS une raison de refuser. Cherche le chantier avec RechercherChantier,
-puis mets son identifiant dans "donnees" sous la clé exacte "chantierId" — c'est ce nom-là, et pas un
+puis mets son identifiant dans "donnees" sous la clé exacte "chantierId", et c'est ce nom-là, et pas un
 autre, qui dit sur quel chantier le geste porte. Ne le range jamais sous "id" : cette clé-là désigne
 l'élément touché (la prestation, le tarif, la ligne), et le geste viserait à côté. Ne renvoie JAMAIS le
 patron ouvrir une fiche lui-même.
 
 CE QUE TU SAIS FAIRE DE PLUS, depuis le 27 août 2026 :
-— SUPPRIMER un chantier ("supprimer_chantier"). Un chantier déjà facturé ne se supprime pas : le
-  serveur refuse, et c'est normal — la correction passe par un avoir. Dis-le plutôt que d'insister.
-— SUPPRIMER un tarif ("supprimer_tarif", avec "tarifId" rendu par LireTarifs).
-— POSER UNE ABSENCE d'équipe ("poser_absence_equipe" : "rang" de l'équipe, "premierJour",
+- SUPPRIMER un chantier ("supprimer_chantier"). Un chantier déjà facturé ne se supprime pas : le
+  serveur refuse, et c'est normal, la correction passe par un avoir. Dis-le plutôt que d'insister.
+- SUPPRIMER un tarif ("supprimer_tarif", avec "tarifId" rendu par LireTarifs).
+- POSER UNE ABSENCE d'équipe ("poser_absence_equipe" : "rang" de l'équipe, "premierJour",
   "dernierJour", "motif" facultatif). Une absence retire de la place au planning comme un chantier :
   ne devine JAMAIS une date, demande-la.
-— RÉGLER LES DOCUMENTS ("regler_documents") : "validiteJours", "acomptePourcent",
+- RÉGLER LES DOCUMENTS ("regler_documents") : "validiteJours", "acomptePourcent",
   "delaiPaiementJours", "moyensPaiement", "rappelerPenalites", "textePied". LIS D'ABORD
-  LireReglagesDocuments : ne mets dans la proposition que ce qui CHANGE — un réglage renvoyé à
+  LireReglagesDocuments : ne mets dans la proposition que ce qui CHANGE : un réglage renvoyé à
   l'identique n'apprend rien, et un réglage oublié s'imprime chez ses clients.
-— COMPOSER LA FICHE D'ENTRETIEN : "ajouter_prestation_entretien" ("famille", "libelle"), et
+- COMPOSER LA FICHE D'ENTRETIEN : "ajouter_prestation_entretien" ("famille", "libelle"), et
   "retirer_prestation_entretien" ("prestationId" rendu par LirePrestationsEntretien).
 
-TU NE FAIS RIEN TOI-MÊME. Chaque geste est une PROPOSITION qu'il coche et confirme — sa règle du
+TU NE FAIS RIEN TOI-MÊME. Chaque geste est une PROPOSITION qu'il coche et confirme, sa règle du
 26 août 2026 : « très important que ça reste le doigt du patron ». Ne dis jamais « c'est fait », « j'ai
 créé », « j'ai planifié » : rien n'est écrit tant qu'il n'a pas appuyé.
 
@@ -151,10 +155,26 @@ existe ailleurs, appelle RechercherLignesDevis (un mot du libellé, et/ou le nom
 ce que tu as trouvé, puis propose "copier_ligne_devis" en ne mettant dans donnees que
 { "ligneOrigineId": "<l'identifiant rendu par l'outil>" }. Ne recopie JAMAIS le montant ni le libellé
 dans la proposition : ils sont relus en base au moment où il valide. Si plusieurs lignes correspondent,
-montre-les et demande laquelle — ne choisis jamais à sa place.
+montre-les et demande laquelle, ne choisis jamais à sa place.
 
 Réponds en français, de façon concise et claire, en Markdown simple. Le moins de mots possible : il lit
 sur un téléphone, souvent entre deux chantiers.`;
+
+/**
+ * La consigne, et le jour où l'on est.
+ *
+ * **Il ne savait pas la date** (sa demande du 28 septembre 2026, jouée :
+ * « combien j'ai encaissé ce mois », « qu'est-ce que j'ai demain »). Un modèle
+ * n'a pas d'horloge : il devinait « ce mois » depuis sa mémoire, et visait un
+ * autre mois sans le dire. Le jour est celui de l'atelier (`jourIso`), posé
+ * APRÈS la consigne fixe : le début ne change pas d'une question à l'autre.
+ */
+export function consigneDuJour(aujourdHui: string): string {
+  return (
+    `${SYSTEME}\n\nAUJOURD'HUI : ${jourEnTitre(aujourdHui)} (${aujourdHui}). "Demain", "cette semaine", ` +
+    `"ce mois", "cette année" se comptent depuis ce jour. Une période se donne aux outils en dates AAAA-MM-JJ.`
+  );
+}
 
 const MAX_APPELS_OUTILS = 8;
 
@@ -247,7 +267,7 @@ export async function poserQuestion(
   let corrections = 0;
 
   for (let etape = 0; etape < MAX_APPELS_OUTILS; etape++) {
-    const resultat = await fournisseur.genererAvecOutils(SYSTEME, historique, definitions);
+    const resultat = await fournisseur.genererAvecOutils(consigneDuJour(jourIso(new Date())), historique, definitions);
 
     if (!resultat.succes) {
       return { succes: false, erreur: messageErreurUtilisateur(resultat.erreur) };
@@ -257,91 +277,143 @@ export async function poserQuestion(
       return { succes: true, texte: resultat.texte, sources };
     }
 
-    // type === "appel_outil" — soit un outil de lecture, soit l'outil réservé de proposition.
-    if (resultat.outil === NOM_OUTIL_PROPOSITION) {
-      const analyse = schemaProposition.safeParse(resultat.parametres);
-      if (!analyse.success) {
-        return { succes: false, erreur: "L'assistant n'a pas pu formuler ses propositions correctement." };
+    // **Chaque appel du tour est servi, dans l'ordre**, et chacun reçoit son
+    // résultat : un appel laissé sans réponse ferait refuser la requête
+    // suivante par le fournisseur.
+    for (const appel of resultat.appels) {
+      // type === "appel_outil" — soit un outil de lecture, soit l'outil réservé de proposition.
+      if (appel.outil === NOM_OUTIL_PROPOSITION) {
+        const analyse = schemaProposition.safeParse(appel.parametres);
+        if (!analyse.success) {
+          /**
+           * **ON LE LAISSE SE REPRENDRE — c'est la MÊME faute qu'au 26 août.**
+           *
+           * **Sa capture du 28 août 2026 :** *« rajoute-moi une ligne, tu me mets
+           * des herbages des allées au chalumeau, et tu peux mettre 500 euros
+           * pour le devis actuel »* → « L'assistant n'a pas pu formuler ses
+           * propositions correctement. » Sa phrase était parfaite ; c'est le nom
+           * d'un geste qui ne tombait pas dans notre vocabulaire.
+           *
+           * Le 26 août, le même abandon avait été retiré des outils de lecture ;
+           * il était resté ici, sur le chemin qui compte le plus — celui qui
+           * ÉCRIT. Le refus part donc au modèle avec ce qui manque et la liste
+           * des gestes qu'il peut nommer, et il rappelle correctement.
+           */
+          logger.warn("Propositions mal formées, on redemande", { issues: analyse.error.issues });
+          corrections++;
+          if (corrections > MAX_CORRECTIONS) {
+            return {
+              succes: false,
+              erreur: "Je n'arrive pas à préparer ce geste. Dites-moi en une phrase ce que je dois ajouter, et sur quel chantier.",
+            };
+          }
+          historique = [
+            ...historique,
+            {
+              role: "outil",
+              id: appel.id,
+              outil: NOM_OUTIL_PROPOSITION,
+              parametres: appel.parametres,
+              resultat: {
+                erreur: "Proposition refusée : elle ne respecte pas la forme attendue.",
+                detail: analyse.error.issues.map((i) => `${i.path.join(".") || "(racine)"} : ${i.message}`),
+                // **On lui redonne la liste.** Sans elle, il redevine — et se
+                // trompe de la même façon.
+                typesPossibles: TYPES_ACTION_PROPOSEE,
+                aFaire:
+                  "Rappelle l'outil avec { texteIntroduction, propositions: [{ type, description, donnees }] }, " +
+                  "en choisissant « type » DANS la liste ci-dessus.",
+              },
+            },
+          ];
+          continue;
+        }
+        /**
+         * **Une proposition sans chantier est un cas NORMAL depuis le 26 août
+         * 2026** (migration 0067). Ce refus global était là quand tout geste
+         * visait le chantier ouvert ; il rendait désormais un message technique —
+         * *« Aucun chantier dans le contexte courant »* — à qui demandait
+         * simplement « crée un chantier pour Madame Lucie » depuis l'accueil. Et
+         * il avait tort : créer un chantier ne demande aucun chantier.
+         *
+         * **Trouvé à l'image, pas par un test** (`CLAUDE.md` §5).
+         *
+         * Ce qui garde la porte, c'est le geste lui-même : à la confirmation,
+         * celui qui VISE un chantier et n'en a pas rend un conflit en français —
+         * « ouvrez-le, ou nommez-le » (`appliquerPropositionsAction`).
+         */
+        const enregistrees = await enregistrerPropositions(ctx, chantierId, analyse.data.propositions);
+        const propositionsAvecId: PropositionAvecId[] = enregistrees.map((row, i) => ({
+          ...analyse.data.propositions[i],
+          id: row.id,
+        }));
+        return { succes: true, texte: analyse.data.texteIntroduction, sources, propositions: propositionsAvecId };
       }
-      /**
-       * **Une proposition sans chantier est un cas NORMAL depuis le 26 août
-       * 2026** (migration 0067). Ce refus global était là quand tout geste
-       * visait le chantier ouvert ; il rendait désormais un message technique —
-       * *« Aucun chantier dans le contexte courant »* — à qui demandait
-       * simplement « crée un chantier pour Madame Lucie » depuis l'accueil. Et
-       * il avait tort : créer un chantier ne demande aucun chantier.
-       *
-       * **Trouvé à l'image, pas par un test** (`CLAUDE.md` §5).
-       *
-       * Ce qui garde la porte, c'est le geste lui-même : à la confirmation,
-       * celui qui VISE un chantier et n'en a pas rend un conflit en français —
-       * « ouvrez-le, ou nommez-le » (`appliquerPropositionsAction`).
-       */
-      const enregistrees = await enregistrerPropositions(ctx, chantierId, analyse.data.propositions);
-      const propositionsAvecId: PropositionAvecId[] = enregistrees.map((row, i) => ({
-        ...analyse.data.propositions[i],
-        id: row.id,
-      }));
-      return { succes: true, texte: analyse.data.texteIntroduction, sources, propositions: propositionsAvecId };
-    }
 
-    const outil = getOutil(resultat.outil);
-    if (!outil) {
-      return { succes: false, erreur: "L'assistant a demandé un outil inconnu." };
-    }
-
-    const parseParams = outil.schema.safeParse(resultat.parametres ?? {});
-    if (!parseParams.success) {
-      /**
-       * **On le laisse se CORRIGER, on n'abandonne pas la réponse.**
-       *
-       * **Sa capture du 26 août 2026 au soir**, trois fois de suite : *« Peux-tu
-       * me sortir le devis de Lucie »* → « L'assistant a mal formé sa demande à
-       * un outil interne. Reformulez votre question. » Il reformule, même
-       * message. **Reformuler n'y pouvait rien** : ce n'était pas sa phrase qui
-       * était mauvaise, c'était le nom d'un paramètre côté modèle — et on lui
-       * demandait de réparer une chose qu'il ne voyait pas.
-       *
-       * Un outil mal appelé n'est pas une panne : c'est un aller-retour normal
-       * d'une boucle d'outils. Le refus part donc AU MODÈLE, avec ce qui
-       * manque, et il rappelle l'outil correctement. C'est ainsi qu'un agent
-       * travaille ; s'arrêter au premier écart, c'est n'en être un qu'à moitié.
-       *
-       * **Le détail reste hors de l'écran** : ce qui remonte au patron, c'est
-       * une réponse, pas une explication de schéma.
-       */
-      logger.warn("Paramètres invalides pour un outil de l'assistant — on redemande", {
-        tool: outil.nom,
-        issues: parseParams.error.issues,
-      });
-      corrections++;
-      if (corrections > MAX_CORRECTIONS) {
-        return {
-          succes: false,
-          erreur: "Je n'arrive pas à aller chercher cette information. Dites-moi le nom du client ou du chantier.",
-        };
+      const outil = getOutil(appel.outil);
+      if (!outil) {
+        return { succes: false, erreur: "L'assistant a demandé un outil inconnu." };
       }
+
+      const parseParams = outil.schema.safeParse(appel.parametres ?? {});
+      if (!parseParams.success) {
+        /**
+         * **On le laisse se CORRIGER, on n'abandonne pas la réponse.**
+         *
+         * **Sa capture du 26 août 2026 au soir**, trois fois de suite : *« Peux-tu
+         * me sortir le devis de Lucie »* → « L'assistant a mal formé sa demande à
+         * un outil interne. Reformulez votre question. » Il reformule, même
+         * message. **Reformuler n'y pouvait rien** : ce n'était pas sa phrase qui
+         * était mauvaise, c'était le nom d'un paramètre côté modèle — et on lui
+         * demandait de réparer une chose qu'il ne voyait pas.
+         *
+         * Un outil mal appelé n'est pas une panne : c'est un aller-retour normal
+         * d'une boucle d'outils. Le refus part donc AU MODÈLE, avec ce qui
+         * manque, et il rappelle l'outil correctement. C'est ainsi qu'un agent
+         * travaille ; s'arrêter au premier écart, c'est n'en être un qu'à moitié.
+         *
+         * **Le détail reste hors de l'écran** : ce qui remonte au patron, c'est
+         * une réponse, pas une explication de schéma.
+         */
+        logger.warn("Paramètres invalides pour un outil de l'assistant, on redemande", {
+          tool: outil.nom,
+          issues: parseParams.error.issues,
+        });
+        corrections++;
+        if (corrections > MAX_CORRECTIONS) {
+          return {
+            succes: false,
+            erreur: "Je n'arrive pas à aller chercher cette information. Dites-moi le nom du client ou du chantier.",
+          };
+        }
+        historique = [
+          ...historique,
+          {
+            role: "outil",
+            id: appel.id,
+            outil: outil.nom,
+            parametres: appel.parametres,
+            resultat: {
+              erreur: `Paramètres refusés par ${outil.nom}.`,
+              // Les champs attendus, dits au modèle dans SA langue de travail :
+              // c'est la seule chose qui lui permet de rappeler juste.
+              detail: parseParams.error.issues.map((i) => `${i.path.join(".") || "(racine)"} : ${i.message}`),
+              aFaire: `Rappelle ${outil.nom} avec les champs attendus.`,
+            },
+          },
+        ];
+        continue;
+      }
+      const parametres = parseParams.data;
+
+      const resultatOutil = await outil.executer({ ctx, chantierId }, parametres);
+      sources.push(outil.nom);
       historique = [
         ...historique,
-        {
-          role: "outil",
-          outil: outil.nom,
-          resultat: {
-            erreur: `Paramètres refusés par ${outil.nom}.`,
-            // Les champs attendus, dits au modèle dans SA langue de travail :
-            // c'est la seule chose qui lui permet de rappeler juste.
-            detail: parseParams.error.issues.map((i) => `${i.path.join(".") || "(racine)"} : ${i.message}`),
-            aFaire: `Rappelle ${outil.nom} avec les champs attendus.`,
-          },
-        },
+        { role: "outil", id: appel.id, outil: outil.nom, parametres: appel.parametres, resultat: resultatOutil },
       ];
-      continue;
+  
     }
-    const parametres = parseParams.data;
-
-    const resultatOutil = await outil.executer({ ctx, chantierId }, parametres);
-    sources.push(outil.nom);
-    historique = [...historique, { role: "outil", outil: outil.nom, resultat: resultatOutil }];
   }
 
   return {

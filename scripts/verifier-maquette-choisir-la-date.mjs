@@ -84,11 +84,32 @@ const cases = page.locator(".case:not(.we)");
 const combien = await cases.count();
 dire(combien > 0, "le mois ne s'est pas dessiné");
 
+// **ET L'ON FEUILLETTE, si le mois affiché ne porte rien.**
+//
+// *Payé le 31 août 2026.* Les chantiers de démonstration sont posés en jours
+// OUVRÉS à partir d'aujourd'hui (`ouvre(1)`… `ouvre(9)`) : le 31 août, ils
+// tombent tous en septembre, et la planche s'ouvre sur août. Ce contrôle
+// annonçait alors « la planche ne montre rien » sur une planche parfaitement
+// saine — son verdict dépendait du jour du mois où on le joue, ce qui est la
+// définition d'un contrôle qui ne mesure pas ce qu'il croit (`CLAUDE.md` §5).
+//
+// Le geste ajouté est celui du patron : la flèche du mois suivant.
 let plusCharge = null, score = -1;
-for (let i = 0; i < combien; i++) {
-  const j = await cases.nth(i).getAttribute("data-jour");
-  const n = await page.evaluate((jour) => POSES.filter((p) => p.jour === jour).length, j);
-  if (n > score) { score = n; plusCharge = i; }
+async function chercherLeJourLePlusCharge() {
+  const n = await cases.count();
+  let meilleur = null, points = -1;
+  for (let i = 0; i < n; i++) {
+    const j = await cases.nth(i).getAttribute("data-jour");
+    const combien = await page.evaluate((jour) => POSES.filter((p) => p.jour === jour).length, j);
+    if (combien > points) { points = combien; meilleur = i; }
+  }
+  return { meilleur, points };
+}
+({ meilleur: plusCharge, points: score } = await chercherLeJourLePlusCharge());
+for (let saut = 0; saut < 3 && score <= 0; saut++) {
+  await page.locator('button[aria-label="Mois suivant"]').first().click();
+  await page.waitForTimeout(200);
+  ({ meilleur: plusCharge, points: score } = await chercherLeJourLePlusCharge());
 }
 dire(score > 0, "aucun chantier de démonstration n'est posé : la planche ne montre rien");
 await cases.nth(plusCharge).click();

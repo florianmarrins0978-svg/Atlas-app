@@ -49,9 +49,9 @@ await page.screenshot({ path: `${dossier}/creation-deux-boutons.png`, fullPage: 
 // Le même écran en reprise : un seul bouton, et c'est voulu.
 const chantierId: string = await (async () => {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-  return page.url().split("/").pop()!.split("?")[0];
+  return idChantier;
 })();
 await page.goto(`${BASE}/chantiers/${chantierId}/coordonnees`, { waitUntil: "networkidle" });
 await page.waitForTimeout(600);

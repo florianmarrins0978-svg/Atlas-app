@@ -17,7 +17,7 @@ import { composerDevisPdf, type DevisPdfData } from "../src/server/pdf/devis-pdf
  * recevait rien.
  *
  * **CE QUI RENDAIT LE DÉFAUT INVISIBLE, et c'est ce qui l'a fait durer onze
- * jours.** Sur son écran de devis, « Acompte de 30 % à la signature… » s'affiche
+ * jours.** Sur son écran de devis, « Mode de règlement : 30 % à la commande… » s'affiche
  * bel et bien — mais en GRIS, comme exemple dans un champ libre vide
  * (`placeholder`) ; et « Modalités de paiement / IBAN » vient de ses coordonnées
  * bancaires. Deux choses vraies à l'écran donnaient l'impression que le réglage
@@ -96,7 +96,7 @@ async function main() {
   await essai("les cinq lignes s'impriment quand elles sont allumées", async () => {
   const lu = await papier({ ...BASE, conditionsReglees: TOUT_ALLUME });
   for (const attendu of [
-    "Acompte de 30 %",
+    "Mode de règlement : 30 %",
     "Paiement à 30 jours",
     "Moyens de paiement acceptés : virement, chèque",
     "pénalités au taux de trois fois le taux d'intérêt légal",
@@ -141,9 +141,9 @@ async function main() {
   // **L'ordre ne se juge que si les deux sont là.** Sinon le message accuse
   // l'ordre pour une ligne absente, et envoie chercher au mauvais endroit
   // (`CLAUDE.md` §5). Vu en débranchant le raccordement exprès.
-  assert.ok(lu.includes("Acompte de 30 %"), "la ligne d'acompte n'est pas sur le devis du tout");
+  assert.ok(lu.includes("Mode de règlement : 30 %"), "la ligne d'acompte n'est pas sur le devis du tout");
   assert.ok(
-    lu.indexOf("portail de gauche") < lu.indexOf("Acompte de 30 %"),
+    lu.indexOf("portail de gauche") < lu.indexOf("Mode de règlement : 30 %"),
     "les conditions réglées passent AVANT ce qu'il a écrit pour ce chantier-là"
   );
 });

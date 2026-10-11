@@ -45,7 +45,7 @@ export default function BoutonMiseAJour({ derniereIssue }: { derniereIssue: stri
       // pas se tromper — la ligne Version juste au-dessus, lue dans le dépôt
       // réellement servi (`src/server/version-executee.ts`).
       setErreur(
-        "La réponse n'est pas revenue — c'est presque toujours parce que l'application " +
+        "La réponse n'est pas revenue. C'est presque toujours parce que l'application " +
           "se recompile avec le code neuf, ce qui coupe la réponse en route. Regardez la " +
           "ligne Version juste au-dessus : si elle a changé, la mise à jour a bien eu lieu. " +
           "Sinon, arrêtez puis rouvrez l'espace de travail."

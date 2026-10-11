@@ -203,7 +203,7 @@ export function origineWebAuthn(entree: {
       ok: false,
       code: "sans-https",
       raison:
-        "Face ID exige une adresse en https (seul localhost fait exception) — le navigateur refuserait sans rien dire.",
+        "Face ID exige une adresse en https (seul localhost fait exception). Le navigateur refuserait sans rien dire.",
     };
   }
 

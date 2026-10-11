@@ -1,4 +1,5 @@
 import { getFournisseurLLM } from "../providers/llm/fabrique";
+import { METIER_ATLAS } from "../../../lib/metier-atlas";
 import type { FournisseurLLM } from "../providers/llm/interface";
 import { PropositionExtractionSchema, type ResultatExtraction } from "../schemas/extraction";
 import { erreurIA } from "../errors";
@@ -20,7 +21,9 @@ import { NATURES } from "../../../lib/natures-prestation";
  * jamais proposée par le modèle : la case existerait, rien ne pourrait la
  * désigner. C'est la règle dupliquée que `CLAUDE.md` §3 interdit.
  */
-export const SYSTEME = `Tu extrais des informations de chantier depuis un texte dicté par un artisan.
+export const SYSTEME = `${METIER_ATLAS}
+
+Tu extrais des informations de chantier depuis un texte qu'il a dicté.
 Réponds UNIQUEMENT avec un objet JSON valide, sans aucun texte avant ou après, au format exact suivant :
 {
   "prestations": { "libelle": string, "description": string | null, "quantite": string | null, "unite": string | null, "nature": string | null, "espece": string | null, "aConfirmer": boolean }[],
@@ -41,9 +44,9 @@ Règles absolues :
 - Ne déduis jamais une quantité d'un pluriel ou d'un contexte : sans nombre écrit, "quantite" et "unite"
   restent null.
 - "quantite" et "unite" vont TOUJOURS ensemble : jamais l'une sans l'autre. Un nombre sans unité ne veut
-  rien dire — « 800 » se lit 800 mètres, 800 m² ou 800 heures selon qui le lit.
+  rien dire : « 800 » se lit 800 mètres, 800 m² ou 800 heures selon qui le lit.
 - "unite" est l'unité de ce nombre, dans SON mot à lui : "ml", "m²", "m³", "heure", "jour", "tonne",
-  "stère" — ou l'OBJET qu'il compte quand il compte des choses :
+  "stère", ou l'OBJET qu'il compte quand il compte des choses :
     « deux souches »   -> "quantite": "2", "unite": "souche"
     « trois arbres »   -> "quantite": "3", "unite": "arbre"
   L'unité de comptage doit être l'objet explicitement prononcé. N'invente pas une unité pour un nombre
@@ -52,17 +55,28 @@ Règles absolues :
     ${NATURES.map((n) => n.cle).join(", ")}
   Si le travail décrit n'en fait manifestement partie d'aucune, "nature" vaut null. N'invente
   JAMAIS un nom de nature : un travail sans nature reste un travail à part entière.
-- "espece" n'est renseignée que si l'espèce est PRONONCÉE — « un érable », « de la haie de
+- "espece" n'est renseignée que si l'espèce est PRONONCÉE, « un érable », « de la haie de
   laurier ». Recopie le mot au singulier, sans article : "érable", "laurier". Jamais déduite
   d'un contexte : sinon null.
 - La DURÉE du chantier et la TAILLE de l'équipe ne sont pas des prestations. « quatre journées » et
-  « deux hommes » vont dans "dureePrevue" et "tailleEquipe" — jamais dans la quantité d'une prestation.
+  « deux hommes » vont dans "dureePrevue" et "tailleEquipe", jamais dans la quantité d'une prestation.
 - Toute information absente vaut null (ou un tableau vide) et doit être citée dans "informationsManquantes".
-- Une information présente mais incertaine garde "aConfirmer": true — ce drapeau ne sert jamais à combler
+- Une information présente mais incertaine garde "aConfirmer": true, ce drapeau ne sert jamais à combler
   un vide par une supposition.
 - Si une caractéristique est ambiguë (ex. une dimension qui pourrait être une épaisseur ou une longueur),
   place-la dans "ambiguites" plutôt que de choisir arbitrairement.
 - Ne propose jamais de prix : le chiffrage n'est pas de ton ressort.
+- **Les DIMENSIONS d'un arbre, d'une souche ou d'une haie ne se perdent jamais.** Diamètre, diamètre au
+  pied, hauteur, hauteur de fût, longueur : recopie-les dans "description", avec leur nombre et le mot
+  de l'artisan (« 10 m de fût » reste « 10 m de fût », jamais une hauteur d'arbre).
+  Elles ne vont ni dans "quantite" (qui compte les objets), ni dans "ambiguites" (qui sert au doute).
+    « démontage d'un érable de 40 cm au pied et 12 m de haut »
+      -> "libelle": "Démontage d'un érable", "description": "40 cm au pied, 12 m de haut",
+         "quantite": "1", "unite": "arbre"
+    « dessouchage de deux souches de 60 »
+      -> "libelle": "Dessouchage", "description": "souches de 60", "quantite": "2", "unite": "souche"
+  Recopie le nombre même si l'artisan n'a pas prononcé l'unité : « souches de 60 » se recopie tel quel,
+  jamais complété ni converti.
 
 Règle de complétude, aussi importante que celle de non-invention :
 - **Chaque action de travail décrite dans le texte donne UNE prestation.** Ne
@@ -73,7 +87,7 @@ Règle de complétude, aussi importante que celle de non-invention :
   évacuer, fendre, ranger, dessoucher, protéger…) est une prestation, même si
   l'artisan la mentionne comme une évidence.
 - Ce qui décrit la DESTINATION des déchets ("on laisse sur place", "on emporte")
-  va dans "gestionDechets" — mais le TRAVAIL fait sur la matière (fendre, ranger)
+  va dans "gestionDechets", mais le TRAVAIL fait sur la matière (fendre, ranger)
   reste une prestation à part entière.
 - **Une seule exception, et elle est du métier : le billonnage.** Tronçonner le
   tronc d'un arbre qu'on vient d'abattre ("on le coupe en 50", "débité en
@@ -86,7 +100,7 @@ Règle de complétude, aussi importante que celle de non-invention :
   trouvé sa prestation. Un travail oublié est une perte sèche pour l'artisan :
   il ne le facturera pas.
 
-Comment écrire "ambiguites" et "informationsManquantes" — sa demande du
+Comment écrire "ambiguites" et "informationsManquantes", sa demande du
 25 août 2026, capture à l'appui : « c'est trop long, synthétise, moins de mots ».
 - **Six mots au plus par ligne, et pas de phrase.** Un groupe nominal, comme sur
   une liste de courses : "Hauteur de taille de la haie", "Destination des
@@ -94,7 +108,7 @@ Comment écrire "ambiguites" et "informationsManquantes" — sa demande du
 - **Jamais de question rédigée**, jamais de "s'agit-il de…", "faut-il…",
   "non précisé", "à confirmer" : le titre au-dessus le dit déjà.
 - **Ne recopie pas la dictée.** Ce qu'il faut nommer, c'est ce qui manque ou ce
-  qui hésite — pas ce que l'artisan a dit.
+  qui hésite, pas ce que l'artisan a dit.
 - **Cinq lignes au plus** dans chaque tableau. Il les lit sur un téléphone,
   entre deux chantiers : au-delà, il ne les lit plus du tout. Garde ce qui
   l'empêcherait de chiffrer, laisse le reste.
@@ -155,7 +169,7 @@ export async function extraire(
   consigneMetier?: string
 ): Promise<ResultatExtraction> {
   if (!texte || texte.trim().length === 0) {
-    return { succes: false, erreur: erreurIA("reponse_invalide", "Texte vide — rien à analyser.") };
+    return { succes: false, erreur: erreurIA("reponse_invalide", "Texte vide, rien à analyser.") };
   }
 
   const fournisseur = fournisseurInjecte ?? getFournisseurLLM();

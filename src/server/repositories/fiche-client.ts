@@ -6,20 +6,29 @@ import {
   devis,
   factures,
   lignesPassage,
+  envoisFactures,
   lignesPrix,
   paiementsFacture,
   passagesEntretien,
   prestations,
+  avoirs,
 } from "../db/schema";
 import type { Ctx } from "./context";
 import { composerFicheClient, type FicheClient } from "@/lib/fiche-client";
-import { resteDu, type FacturePourTva } from "@/lib/exigibilite-tva";
+import { resteDu } from "@/lib/exigibilite-tva";
+import { jourDeRangement, rangerParNom } from "@/lib/bandes-clients";
+import { jourIso } from "@/lib/jour";
+import { avoirsDesFactures } from "./avoirs";
+import { receptionEnMots, type ReceptionLisible } from "@/lib/reception-facture";
+import { estUneEntreprise } from "../../lib/civilite";
 import {
   dernierePrestation,
+  derniereTraceDuClient,
   jourCourt,
   rangerDuPlusRecent,
   type DerniereePrestation,
   type PieceDuClient,
+  type TraceDuClient,
 } from "@/lib/documents-du-client";
 
 /**
@@ -48,6 +57,13 @@ export type FicheClientComplete = FicheClient & {
    */
   derniere: DerniereePrestation | null;
   /**
+   * Le chantier que rouvre « Dernier devis » — celui du devis le plus récent.
+   *
+   * **Absent quand il n’a encore aucun devis chez ce client** : le bouton
+   * disparaît alors, plutôt que de promettre de reprendre ce qui n’existe pas.
+   */
+  chantierDuDernierDevis: string | null;
+  /**
    * Les trois colonnes de PDF — devis, fiches de chantier, factures —, chacune
    * du plus récent au plus ancien.
    *
@@ -55,11 +71,11 @@ export type FicheClientComplete = FicheClient & {
    * jour : « tu peux rajouter une colonne facture et ranger les factures dans
    * le même ordre ».
    */
-  pieces: { devis: PieceDuClient[]; fiches: PieceDuClient[]; factures: PieceDuClient[] };
+  pieces: { devis: PieceDuClient[]; fiches: PieceDuClient[]; factures: PieceDuClient[]; avoirs: PieceDuClient[] };
 };
 
 /** Les trois colonnes vides — un client sans aucun chantier. */
-const AUCUNE_PIECE = { devis: [], fiches: [], factures: [] };
+const AUCUNE_PIECE = { devis: [], fiches: [], factures: [], avoirs: [] };
 
 export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<FicheClientComplete | null> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -161,6 +177,8 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
           email: client.email,
         },
         derniere: null,
+        // Aucun chantier, donc aucun devis : rien à reprendre.
+        chantierDuDernierDevis: null,
         // **Un client peut n'avoir AUCUN chantier et une fiche d'entretien.**
         // La fiche s'ouvre depuis Paysage, se nomme, s'envoie — sans qu'aucun
         // chantier n'existe. Rendre `AUCUNE_PIECE` ici l'aurait fait
@@ -219,6 +237,48 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
           )
       : [];
 
+    // **CE QUE SES CLIENTS ONT FAIT DE LEURS FACTURES — sa réponse du
+    // 9 septembre 2026.** Je lui demandais où il chercherait le jour d’un
+    // litige : *« je vais dans mes clients sur la catégorie facture »*. C’est
+    // donc ici, et pas seulement sur « En attente de paiement ».
+    //
+    // Une seule requête pour toutes les factures du client, jamais une par
+    // ligne — et le DERNIER envoi de chacune : une facture peut partir deux
+    // fois (le lien expire, le client en redemande un), et mêler les deux
+    // afficherait l’ouverture d’un lien mort à côté d’un lien vivant jamais
+    // ouvert.
+    const envois = sesFactures.length
+      ? await tx
+          .select()
+          .from(envoisFactures)
+          .where(
+            inArray(
+              envoisFactures.factureId,
+              sesFactures.map((f) => f.id)
+            )
+          )
+      : [];
+
+    const receptionParFacture = new Map<string, ReceptionLisible>();
+    {
+      const dernier = new Map<string, (typeof envois)[number]>();
+      for (const e of envois) {
+        const connu = dernier.get(e.factureId);
+        // `envoyeAt` départage, jamais l’ordre rendu par la base : sans
+        // `ORDER BY`, PostgreSQL n’en promet aucun.
+        if (!connu || e.envoyeAt.getTime() > connu.envoyeAt.getTime()) dernier.set(e.factureId, e);
+      }
+      for (const [factureId, e] of dernier) {
+        // **Mis en mots ICI, au serveur** : une heure formatée par le téléphone
+        // changerait selon l’appareil qui la lit, et une preuve qui change
+        // d’heure selon qui la regarde ne prouve rien.
+        receptionParFacture.set(
+          factureId,
+          receptionEnMots({ ouverteLe: e.ouverteAt, accuseLe: e.accuseAt })
+        );
+      }
+    }
+
     const parFacture = new Map<string, { date: string; montant: string }[]>();
     for (const p of paiements) {
       const liste = parFacture.get(p.factureId) ?? [];
@@ -226,6 +286,9 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
       parFacture.set(p.factureId, liste);
     }
 
+    // Le reste dû se compte APRÈS les avoirs : sans eux, sa fiche lui
+    // réclamerait une somme qu'il a déjà annulée.
+    const avoirsParFacture = await avoirsDesFactures(tx, sesFactures.map((f) => f.id));
     const factureParChantier = new Map<string, { totalTtc: string; reste: string; jour: string }>();
     for (const f of sesFactures) {
       // **`resteDu` et non une soustraction écrite ici.** C'est la règle qui
@@ -234,7 +297,7 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
       // la différence.
       factureParChantier.set(f.chantierId, {
         totalTtc: f.totalTtc,
-        reste: resteDu(f as FacturePourTva, parFacture.get(f.id) ?? []),
+        reste: resteDu({ ...f, avoirs: avoirsParFacture.get(f.id) ?? [] }, parFacture.get(f.id) ?? []),
         jour: f.dateEmission,
       });
     }
@@ -290,6 +353,25 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
       }))
     );
 
+    /**
+     * **Le chantier du DERNIER DEVIS — ce qui allume « Dernier devis ».**
+     *
+     * **Il l’a vu manquer sur sa propre fiche, le 9 septembre 2026** : Julien
+     * porte un devis du 7 septembre, et le bouton n’était pas là. Il tenait
+     * à `derniere`, c’est-à-dire au dernier chantier TERMINÉ — or un devis
+     * envoyé n’est pas un chantier fini, et la plupart de ses clients n’en
+     * ont aucun. Le bouton était donc invisible chez presque tout le monde.
+     *
+     * **Un bouton nommé « Dernier devis » se lit sur le dernier DEVIS**, et
+     * la même liste ordonnée sert aux deux : la colonne qu’il voit et le
+     * chantier qu’on rouvre. Deux façons de dire « le plus récent »
+     * finiraient par désigner deux devis différents (`CLAUDE.md` §3).
+     */
+    const chantierParDevis = new Map(sesDevis.map((d) => [d.id, d.chantierId]));
+    const chantierDuDernierDevis = piecesDevis[0]
+      ? (chantierParDevis.get(piecesDevis[0].id) ?? null)
+      : null;
+
     const piecesFactures = rangerDuPlusRecent(
       sesFactures.map((f) => ({
         id: f.id,
@@ -297,6 +379,30 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
         precision: jourCourt(f.dateEmission),
         jour: f.dateEmission,
         href: `/api/factures/${f.id}/pdf`,
+        // Absente quand la facture n’est jamais partie : sans lien, il n’y a
+        // rien à ouvrir, et « pas encore ouverte » accuserait le client d’un
+        // envoi qui n’a pas eu lieu.
+        reception: receptionParFacture.get(f.id),
+      }))
+    );
+
+    // **Ses avoirs, dans leur onglet à eux** — sa demande du 24 septembre 2026 :
+    // *« le jour où j'envoie un avoir, il faut pouvoir le retrouver dans une
+    // nouvelle catégorie avoir chez mes clients »*. La page ne montre l'onglet
+    // que s'il y en a un (`clients/[id]/page.tsx`).
+    const sesAvoirs = sesFactures.length
+      ? await tx
+          .select({ id: avoirs.id, numero: avoirs.numero, dateEmission: avoirs.dateEmission })
+          .from(avoirs)
+          .where(inArray(avoirs.factureId, sesFactures.map((f) => f.id)))
+      : [];
+    const piecesAvoirs = rangerDuPlusRecent(
+      sesAvoirs.map((a) => ({
+        id: a.id,
+        titre: `n° ${a.numero}`,
+        precision: jourCourt(a.dateEmission),
+        jour: a.dateEmission,
+        href: `/api/avoirs/${a.id}/pdf`,
       }))
     );
 
@@ -341,27 +447,54 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
         faits,
         new Map(idDernier ? [[idDernier, prestationsDuDernier.map((p) => p.libelle)]] : [])
       ),
-      pieces: { devis: piecesDevis, fiches: piecesFiches, factures: piecesFactures },
+      chantierDuDernierDevis,
+      pieces: { devis: piecesDevis, fiches: piecesFiches, factures: piecesFactures, avoirs: piecesAvoirs },
     };
   });
 }
 
 
-/** Ce que la liste des clients montre de chacun : son nom, et deux chiffres. */
+/** Ce que la liste des clients montre de chacun : son nom, son lieu, ses chiffres. */
 export type ClientEnListe = {
   id: string;
   nom: string;
-  chantiers: number;
+  /** Une entreprise cliente : elle vit derrière la porte « Vos entreprises ». */
+  entreprise: boolean;
+  /**
+   * Là où il habite — **ce qui distingue quatre clients du même nom**.
+   *
+   * *Sa remarque du 3 septembre 2026 :* « j'ai vingt et un clients, dont QUATRE
+   * qui s'appellent Martins. Aujourd'hui la ligne ne montre que le nom et des
+   * comptes : rien ne me dit lequel c'est. »
+   *
+   * La colonne existait déjà (`clients.adresse`, migration 0038) et la fiche
+   * l'affichait ; seule cette liste-ci ne la chargeait pas. `null` est un état
+   * normal — un client saisi à la volée n'a pas toujours eu droit à un appui de
+   * plus —, et la ligne se contente alors de ses chantiers.
+   */
+  adresse: string | null;
+  /**
+   * **La dernière chose qui s'est produite chez lui** — sa demande du
+   * 9 septembre 2026, en remplacement du compte de chantiers.
+   *
+   * `null` est un état normal et fréquent : un client dont aucun document n'est
+   * encore parti. La ligne se contente alors de son adresse, plutôt que
+   * d'annoncer un manque qu'il n'a pas demandé à combler.
+   *
+   * La règle vit dans `src/lib/documents-du-client.ts` : ce fichier lit, il ne
+   * décide pas (`CLAUDE.md` §4 sexies).
+   */
+  derniere: TraceDuClient | null;
   /** `null` : rien n'a encore été facturé — ce n'est pas « zéro euro ». */
   facture: string | null;
   /** Ce qui reste dû. `null` quand rien n'est facturé. */
   du: string | null;
-  /** Le jour du chantier le plus récent : c'est l'ordre de la liste. */
+  /** Le dernier jour DÉJÀ PASSÉ chez lui (`jourDeRangement`) : il départage deux homonymes. */
   dernierJour: string | null;
 };
 
 /**
- * Tous ses clients, du plus récent au plus ancien.
+ * Tous ses clients, de A à Z (`rangerParNom`).
  *
  * **Sa remarque du 17 août 2026 au soir :** *« la catégorie client n'a pas été
  * créée »*. La fiche d'un client existait depuis la veille — mais **seulement
@@ -382,7 +515,7 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [sesClients, sesChantiers] = await Promise.all([
       tx
-        .select({ id: clients.id, nom: clients.nom })
+        .select({ id: clients.id, nom: clients.nom, adresse: clients.adresse, civilite: clients.civilite })
         .from(clients)
         .where(eq(clients.entrepriseId, ctx.entrepriseId)),
       tx
@@ -432,6 +565,49 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
           )
       : [];
 
+    // ─── CE QUI S'EST PRODUIT CHEZ CHAQUE CLIENT ─────────────────────────
+    //
+    // **Deux requêtes pour toute la liste, jamais deux par client** : c'est la
+    // règle de ce dépôt depuis que cette fonction existe, et elle vaut plus
+    // encore ici — il a trente-sept clients, et cette page est celle qu'il
+    // ouvre en arrivant.
+    //
+    // **Les mêmes conditions que la FICHE, mot pour mot** : un devis compte
+    // s'il est parti, une facture si elle est émise, une fiche si elle a été
+    // envoyée. C'est ce qui permet à la ligne d'annoncer ce que la fiche
+    // contient — deux jeux de conditions finiraient par se contredire, et
+    // c'est lui qui verrait la différence d'un écran à l'autre.
+    const [sesDevis, sesFiches] = await Promise.all([
+      ids.length
+        ? tx
+            .select({ chantierId: devis.chantierId, jour: devis.dateEmission })
+            .from(devis)
+            .where(and(inArray(devis.chantierId, ids), eq(devis.statut, "envoye")))
+        : Promise.resolve([] as { chantierId: string; jour: string }[]),
+      tx
+        .select({ clientId: passagesEntretien.clientId, jour: passagesEntretien.jour })
+        .from(passagesEntretien)
+        .where(
+          and(
+            eq(passagesEntretien.entrepriseId, ctx.entrepriseId),
+            isNotNull(passagesEntretien.envoyeLe),
+            isNotNull(passagesEntretien.jeton)
+          )
+        ),
+    ]);
+
+    const clientDuChantier = new Map(sesChantiers.map((c) => [c.id, c.clientId]));
+    /** Le jour le plus récent par client, pour un genre de document donné. */
+    const plusRecent = new Map<string, string>();
+    const retenir = (cle: string, jour: string | null) => {
+      if (!jour) return;
+      const connu = plusRecent.get(cle);
+      if (!connu || jour > connu) plusRecent.set(cle, jour);
+    };
+    for (const d of sesDevis) retenir(`devis:${clientDuChantier.get(d.chantierId) ?? ""}`, d.jour);
+    for (const f of sesFactures) retenir(`facture:${clientDuChantier.get(f.chantierId) ?? ""}`, f.dateEmission);
+    for (const f of sesFiches) retenir(`fiche:${f.clientId ?? ""}`, f.jour);
+
     const parFacture = new Map<string, { date: string; montant: string }[]>();
     for (const p of paiements) {
       const liste = parFacture.get(p.factureId) ?? [];
@@ -439,11 +615,14 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
       parFacture.set(p.factureId, liste);
     }
 
+    // Le reste dû se compte APRÈS les avoirs : sans eux, sa fiche lui
+    // réclamerait une somme qu'il a déjà annulée.
+    const avoirsParFacture = await avoirsDesFactures(tx, sesFactures.map((f) => f.id));
     const factureParChantier = new Map<string, { totalTtc: string; reste: string; jour: string }>();
     for (const f of sesFactures) {
       factureParChantier.set(f.chantierId, {
         totalTtc: f.totalTtc,
-        reste: resteDu(f as FacturePourTva, parFacture.get(f.id) ?? []),
+        reste: resteDu({ ...f, avoirs: avoirsParFacture.get(f.id) ?? [] }, parFacture.get(f.id) ?? []),
         jour: f.dateEmission,
       });
     }
@@ -455,6 +634,7 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
       lignesParChantier.set(l.chantierId, liste);
     }
 
+    const aujourdHui = jourIso(new Date());
     const liste = sesClients.map((client) => {
       const aLui = sesChantiers.filter((c) => c.clientId === client.id);
       const composables = aLui.map((c) => {
@@ -467,6 +647,11 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
           reste: f?.reste ?? null,
         };
       });
+      const derniere = derniereTraceDuClient({
+        devis: plusRecent.get(`devis:${client.id}`) ?? null,
+        facture: plusRecent.get(`facture:${client.id}`) ?? null,
+        fiche: plusRecent.get(`fiche:${client.id}`) ?? null,
+      });
       const fiche = composerFicheClient(
         composables,
         aLui.flatMap((c) => lignesParChantier.get(c.id) ?? [])
@@ -474,15 +659,26 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
       return {
         id: client.id,
         nom: client.nom,
-        chantiers: fiche.chantiers,
+        adresse: client.adresse,
+        // La porte « Vos entreprises » (4 octobre 2026) : la même règle que
+        // le « Mr. » retiré et la sous-traitance du devis.
+        entreprise: estUneEntreprise(client.nom, client.civilite),
+        derniere,
         facture: fiche.facture,
         du: fiche.du,
-        dernierJour: fiche.liste[0]?.jour ?? null,
+        dernierJour: jourDeRangement(
+          [
+            ...composables.map((c) => c.jour),
+            ...aLui.map((c) => c.creeLe.toISOString().slice(0, 10)),
+            derniere?.jour,
+          ],
+          aujourdHui
+        ),
       };
     });
 
-    // Le plus récent d'abord — c'est celui qu'il cherche neuf fois sur dix. Un
-    // client sans aucun chantier passe en dernier, jamais au milieu.
-    return liste.sort((a, b) => (b.dernierJour ?? "").localeCompare(a.dernierJour ?? ""));
+    // De A à Z, sa demande du 27 septembre 2026 : quand il cherche un client,
+    // c'est par son nom. La règle vit dans `src/lib/` (`CLAUDE.md` §3).
+    return rangerParNom(liste);
   });
 }

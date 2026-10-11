@@ -112,6 +112,10 @@ export const ECRANS_A_PRECHAUFFER = [
   "/reglages/equipe",
   "/reglages/tarifs",
   "/reglages/documents",
+  "/reglages/documents/conditions",
+  "/reglages/documents/message",
+  "/reglages/documents/numero",
+  "/reglages/documents/allure",
   "/paysage/fiche/composer",
   "/reglages/ia",
   "/reglages/donnees",
@@ -119,6 +123,8 @@ export const ECRANS_A_PRECHAUFFER = [
   "/reglages/abonnement",
   "/reglages/prix",
   "/reglages/vocabulaire",
+  // L'organigramme, ouvert à tous (27 septembre 2026).
+  "/reglages/organigramme",
   // L'onglet « Paysage » et son premier outil interne (18 août 2026). La fiche
   // de chantier s'ouvre sur un chantier, souvent en 4G : c'est exactement le
   // cas où une compilation à froid ne passe pas.
@@ -163,6 +169,41 @@ export const ECRANS_DE_CHANTIER = ["", "/informations", "/note-vocale", "/prix",
  * coûte rien — avant que quiconque chronomètre.
  */
 export const API_DE_CHANTIER = ["/feuille/pdf"];
+
+/**
+ * **LES ROUTES QUI FABRIQUENT UN DOCUMENT, COMPILÉES AVANT LES SUITES.**
+ *
+ * **Ce qu'elles ont coûté, et c'est mesuré.** Les 7 et 8 septembre 2026, la CI
+ * a tué son runner quatre fois de suite, toujours au même endroit, sans un
+ * seul test rouge. Le relevé posé dans le journal a fini par le dire :
+ *
+ *     02:55:20  libre 13 349 Mo     (le préchauffage commence)
+ *     02:55:40  libre  8 033 Mo
+ *     02:56:01  libre  3 624 Mo
+ *     02:56:11  libre    396 Mo     ← « aucun PDF … ne sort pour lui »
+ *     02:56:44  la machine s'arrête
+ *
+ * Le disque, lui, n'avait pas bougé (84 Go libres). C'est donc la MÉMOIRE, et
+ * elle tombe de trois gigaoctets sur le cas qui demande, coup sur coup, le PDF
+ * d'un devis, celui d'une facture et l'export complet — trois routes que
+ * personne n'avait ouvertes avant, donc trois compilations de Turbopack au
+ * milieu des suites, quand il ne reste plus rien.
+ *
+ * Le préchauffage existait déjà pour exactement cela ; ces trois-là lui
+ * avaient simplement échappé. On absorbe la compilation là où il reste treize
+ * gigaoctets, pas là où il en reste trois.
+ *
+ * **L'identifiant nul n'est pas une ruse, c'est le point** : la route se
+ * compile parce qu'elle s'exécute, et elle rend un 404 sans fabriquer le
+ * moindre document. On paie la compilation, jamais le rendu.
+ */
+const IDENTIFIANT_NUL = "00000000-0000-0000-0000-000000000000";
+export const API_DE_DOCUMENTS = [
+  `/api/devis/${IDENTIFIANT_NUL}/pdf`,
+  `/api/factures/${IDENTIFIANT_NUL}/pdf`,
+  // Sans identifiant : la route refuse faute de preuve récente, et se compile.
+  "/api/mes-donnees",
+];
 
 /**
  * Fabrique le cookie de session du compte de démonstration.
@@ -269,6 +310,7 @@ export async function ecransDeChantier({ base, cookie, fetchImpl = fetch }) {
     return [
       ...ECRANS_DE_CHANTIER.map((suffixe) => `/chantiers/${trouve[1]}${suffixe}`),
       ...API_DE_CHANTIER.map((suffixe) => `/api/chantiers/${trouve[1]}${suffixe}`),
+      ...API_DE_DOCUMENTS,
     ];
   } catch {
     return [];
@@ -378,7 +420,12 @@ export function expliquerObstacle(renvoiDominant) {
       "à l'ouverture, une fois chacun."
     );
   }
-  if (renvoiDominant.vers.startsWith("/login")) {
+  // **`/bienvenue` COMPTE AUTANT QUE `/login`** — depuis le 8 septembre 2026, le
+  // middleware envoie un visiteur sans session à la porte, et non au formulaire.
+  // Sans cette ligne, la panne la plus fréquente du préchauffage (une session
+  // refusée) se serait mise à sortir sous la forme « l'application renvoie vers
+  // /bienvenue », qui n'apprend rien et envoie chercher au mauvais endroit.
+  if (renvoiDominant.vers.startsWith("/login") || renvoiDominant.vers.startsWith("/bienvenue")) {
     return (
       "Les écrans n'ont pas pu être compilés : la session du préchauffage a été " +
       "refusée. Vérifier qu'AUTH_SECRET est bien le même que celui du serveur."

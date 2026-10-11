@@ -1,11 +1,18 @@
 "use client";
 
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, surPlein } from "@/lib/design-tokens";
 import { jourLisibleCourt } from "@/lib/mois";
-import { etatDemi, type Demi, type EtatDemi } from "@/lib/planning-jour";
-import { fondDeLEtat } from "@/components/atlas/MoisCharge";
+import {
+  ditCeQuiResteCeJour,
+  equipesLibresCeJour,
+  etatDemi,
+  type Demi,
+  type EtatDemi,
+} from "@/lib/planning-jour";
+import { styleDuCarre } from "@/components/atlas/MoisCharge";
 import type { ChantierPlanning } from "@/app/planning/PlanningClient";
-import type { JourIso } from "@/server/disponibilites";
+import type { JourIso } from "@/lib/disponibilites";
+import { equipesDuJour } from "@/lib/equipes-par-jour";
 
 /**
  * LA FICHE DU JOUR REGARDÉ, sous le calendrier de l'écran d'envoi.
@@ -41,6 +48,7 @@ export default function JourneeRegardee({
   nomEquipe,
   verdict,
   dejaRetenu,
+  nombreEquipes,
 }: {
   jour: JourIso;
   occupationDe: (jour: JourIso, demi: Demi) => { pris: readonly unknown[]; charge: number };
@@ -49,6 +57,15 @@ export default function JourneeRegardee({
   /** Ce que le serveur répond pour CE jour : `null` tant qu'il n'a pas répondu. */
   verdict: { retenable: boolean; raison: string | null } | null;
   dejaRetenu: boolean;
+  /**
+   * La capacité du planning — ce qui permet de dire CE QUI RESTE plutôt que de
+   * redire le mot « proposé » posé juste à côté (4 septembre 2026).
+   *
+   * La phrase vient de `planning-jour.ts`, la même que la liste des dates
+   * retenues emploie : une seconde rédaction ici finirait par annoncer autre
+   * chose que la ligne d'en dessous, sur la même journée (`CLAUDE.md` §3).
+   */
+  nombreEquipes: number;
 }) {
   // **Un samedi se regarde et se propose comme un mardi.** Sa règle du 23 août
   // 2026 : *« s'il a des salariés qui font des extras, il doit pouvoir
@@ -71,16 +88,39 @@ export default function JourneeRegardee({
   }
 
   const nomDe = (c: ChantierPlanning) => c.clientNom ?? c.nom;
-  const equipeDe = (c: ChantierPlanning, demi: Demi) => {
-    const rangs = demi === "matin" ? c.equipes.matin : c.equipes.apres_midi;
-    if (rangs.length === 0) return "—";
-    return rangs.map((r) => nomEquipe(r)).join(" · ");
+  /**
+   * Les équipes posées sur une demi-journée — **ou rien du tout**.
+   *
+   * **Le tiret est parti le 4 septembre 2026.** Un chantier créé puis daté n'a
+   * aucune équipe tant qu'on ne l'a pas rangé au planning : c'est le cas
+   * ORDINAIRE, et la fiche posait alors une pastille verte pleine de 100 × 36
+   * contenant un « — », deux fois par chantier. Quatre aplats qui ne disent
+   * rien sur une feuille où le bouton d'envoi tient déjà à un écran et demi.
+   *
+   * `null` plutôt qu'une chaîne : c'est l'écran qui décide de ne rien peindre,
+   * et il ne peut pas se tromper sur un tiret qu'on lui aurait passé.
+   */
+  const equipeDe = (c: ChantierPlanning, demi: Demi): string | null => {
+    // **Ceux de CE jour** (migration 0093) — la fiche regarde une journée.
+    const rangs = equipesDuJour(c.equipes, jour)[demi];
+    if (rangs.length === 0) return null;
+    return rangs.map((r) => nomEquipe(r)).join(", ");
   };
+
+  // Ce qui reste de capacité ce jour-là, dit par la fonction du planning.
+  const reste = ditCeQuiResteCeJour(
+    equipesLibresCeJour(
+      occupationDe(jour, "matin").charge,
+      occupationDe(jour, "apres_midi").charge,
+      nombreEquipes
+    ),
+    nombreEquipes
+  );
 
   return (
     <Cadre jour={jour}>
       {parNom.length === 0 ? (
-        <p className="m-0 text-center text-[13px]" style={{ color: colors.muted }}>
+        <p className="m-0 text-center text-[13px]" style={{ color: colors.inkSoft }}>
           Personne. La journée est entière.
         </p>
       ) : (
@@ -89,7 +129,7 @@ export default function JourneeRegardee({
             <p className="m-0 text-[18px] leading-tight" style={{ fontFamily: font.display }}>
               {nomDe(chantier)}
               {chantier.adresseChantier && (
-                <span className="block text-[12.5px] leading-snug" style={{ color: colors.muted }}>
+                <span className="block text-[12.5px] leading-snug" style={{ color: colors.inkSoft }}>
                   {chantier.adresseChantier}
                 </span>
               )}
@@ -102,12 +142,18 @@ export default function JourneeRegardee({
                 >
                   {d === "matin" ? "Matin" : "Après-midi"}
                 </span>
-                <span
-                  className="flex-shrink-0 whitespace-nowrap rounded-full px-[11px] py-[5px] text-[12.5px]"
-                  style={{ backgroundColor: colors.rust, color: colors.card }}
-                >
-                  {equipeDe(chantier, d)}
-                </span>
+                {equipeDe(chantier, d) ? (
+                  <span
+                    className="flex-shrink-0 whitespace-nowrap rounded-full px-[11px] py-[5px] text-[12.5px]"
+                    style={{ backgroundColor: colors.plein, color: surPlein }}
+                  >
+                    {equipeDe(chantier, d)}
+                  </span>
+                ) : (
+                  <span className="flex-shrink-0 text-[12.5px]" style={{ color: colors.inkSoft }}>
+                    équipe non posée
+                  </span>
+                )}
               </div>
             ))}
           </div>
@@ -125,7 +171,7 @@ export default function JourneeRegardee({
               {d === "matin" ? "Matin" : "Après-midi"}
             </span>
             <Pastille etat={etatDemi(o)} />
-            <span className="ml-auto text-[12px]" style={{ color: colors.muted }}>
+            <span className="ml-auto text-[12px]" style={{ color: colors.inkSoft }}>
               {compteLisible(o)}
             </span>
           </div>
@@ -159,13 +205,16 @@ export default function JourneeRegardee({
                 : colors.inkSoft,
           }}
         >
+          {/* **« Ce jour est proposé à votre client. » est partie le
+              4 septembre 2026.** Elle s'affichait à trois centimètres du mot
+              « proposé », qui dit exactement cela — et l'écran perdait la seule
+              ligne où il pouvait apprendre quelque chose. Une phrase qui décrit
+              ce qui est écrit à côté est du bruit (`CLAUDE.md` §3).
+              À la place, la ligne dit ce qui RESTE, quand il y a quelque chose
+              à dire ; sinon elle retombe sur ce qu'elle disait déjà. */}
           {!verdict
             ? "Vérification de votre planning…"
-            : verdict.raison
-              ? verdict.raison
-              : dejaRetenu
-                ? "Ce jour est proposé à votre client."
-                : "Il reste de la place."}
+            : (verdict.raison ?? reste ?? "Il reste de la place.")}
         </span>
         {/* **Plus un bouton, un ÉTAT** — sa demande du 25 août 2026 : *« je dois
             pouvoir sélectionner les jours juste en les touchant, pas besoin de
@@ -215,11 +264,7 @@ function Pastille({ etat }: { etat: EtatDemi }) {
   return (
     <i
       className="inline-block h-[11px] w-[11px] flex-shrink-0 rounded-[3px]"
-      style={
-        etat === "libre"
-          ? { background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }
-          : { background: fondDeLEtat(etat) }
-      }
+      style={styleDuCarre(etat)}
     />
   );
 }
@@ -228,7 +273,7 @@ function Pastille({ etat }: { etat: EtatDemi }) {
 function compteLisible(o: { pris: readonly unknown[]; charge: number }): string {
   if (o.pris.length === 0) return "libre";
   const chantiers = `${o.pris.length} chantier${o.pris.length > 1 ? "s" : ""}`;
-  if (o.charge > 1) return `${chantiers} · ${Math.round(o.charge * 100)} % de vos équipes`;
-  if (o.charge === 1) return `${chantiers} · complet`;
+  if (o.charge > 1) return `${chantiers}, ${Math.round(o.charge * 100)} % de vos équipes`;
+  if (o.charge === 1) return `${chantiers}, complet`;
   return chantiers;
 }

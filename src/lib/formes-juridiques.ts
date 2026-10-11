@@ -22,6 +22,13 @@ export type FormeJuridique = {
   sigle: string;
   /** Ce que le sigle veut dire, pour choisir sans chercher ailleurs. */
   nom: string;
+  /**
+   * A-t-elle un capital social, et un RCS (migration 0072) ? Une entreprise
+   * individuelle ou une micro-entreprise n'en ont pas légalement — les deux
+   * seules dont on soit certain. Ni l'un ni l'autre ne se devinent pour une
+   * forme tapée à la main (voir `formeADuCapital`).
+   */
+  capital: boolean;
 };
 
 /**
@@ -32,16 +39,16 @@ export type FormeJuridique = {
  * milieu de celles qu'il emploie.
  */
 export const FORMES_JURIDIQUES: readonly FormeJuridique[] = [
-  { sigle: "EI", nom: "Entreprise individuelle" },
-  { sigle: "Micro-entreprise", nom: "Régime de l'entreprise individuelle" },
-  { sigle: "EURL", nom: "SARL à associé unique" },
-  { sigle: "SARL", nom: "Société à responsabilité limitée" },
-  { sigle: "SASU", nom: "SAS à associé unique" },
-  { sigle: "SAS", nom: "Société par actions simplifiée" },
-  { sigle: "SA", nom: "Société anonyme" },
-  { sigle: "SNC", nom: "Société en nom collectif" },
-  { sigle: "SCOP", nom: "Société coopérative de production" },
-  { sigle: "SCI", nom: "Société civile immobilière" },
+  { sigle: "EI", nom: "Entreprise individuelle", capital: false },
+  { sigle: "Micro-entreprise", nom: "Régime de l'entreprise individuelle", capital: false },
+  { sigle: "EURL", nom: "SARL à associé unique", capital: true },
+  { sigle: "SARL", nom: "Société à responsabilité limitée", capital: true },
+  { sigle: "SASU", nom: "SAS à associé unique", capital: true },
+  { sigle: "SAS", nom: "Société par actions simplifiée", capital: true },
+  { sigle: "SA", nom: "Société anonyme", capital: true },
+  { sigle: "SNC", nom: "Société en nom collectif", capital: true },
+  { sigle: "SCOP", nom: "Société coopérative de production", capital: true },
+  { sigle: "SCI", nom: "Société civile immobilière", capital: true },
 ] as const;
 
 /** Le libellé de la ligne qui laisse écrire à la main. */
@@ -56,7 +63,50 @@ export const FORME_AUTRE = "Autre";
  * bien une SAS, et lui ferait croire que sa saisie a été perdue.
  */
 export function formeConnue(valeur: string | null | undefined): FormeJuridique | null {
-  const net = (valeur ?? "").trim().replace(/[.\s]/g, "").toLowerCase();
+  // Le tiret doit tomber DES DEUX CÔTÉS : sans lui ici, « Micro-entreprise »
+  // tapé exactement comme le propose la liste ne se retrouvait plus jamais —
+  // trouvé en écrivant `formeADuCapital` (migration 0072), qui la traitait
+  // alors comme une forme libre.
+  const net = (valeur ?? "").trim().replace(/[.\s-]/g, "").toLowerCase();
   if (net === "") return null;
   return FORMES_JURIDIQUES.find((f) => f.sigle.replace(/[.\s-]/g, "").toLowerCase() === net) ?? null;
 }
+
+/**
+ * Le capital social et le RCS ont-ils un sens pour cette forme ?
+ *
+ * **Une forme libre (« Autre ») répond OUI**, faute de savoir : une société
+ * civile ou un GAEC en ont, une association non, et rien ici ne permet de
+ * trancher à la place de l'artisan qui l'a tapée. Seules l'EI et la
+ * micro-entreprise, dont on est certain qu'elles n'en ont pas, répondent NON.
+ */
+export function formeADuCapital(formeJuridique: string | null | undefined): boolean {
+  const valeur = (formeJuridique ?? "").trim();
+  if (valeur === "") return false;
+  const connue = formeConnue(valeur);
+  return connue ? connue.capital : true;
+}
+
+/**
+ * L'ENTREPRENEUR INDIVIDUEL SIGNE « … EI » — CHOIX 4A DU 3 OCTOBRE 2026.
+ *
+ * Depuis le 15 mai 2022, un entrepreneur individuel exerce sous une
+ * dénomination qui porte son nom suivi de « EI » ou « entrepreneur
+ * individuel », sur tous ses documents professionnels (Code de commerce,
+ * art. R526-27), sous peine d'amende. Atlas ne l'imprimait nulle part. Il a
+ * choisi la forme collée au nom : « Atelier Démo EI ».
+ *
+ * **Seules l'EI et la micro-entreprise sont concernées** : les deux formes
+ * dont on sait qu'elles n'ont pas de capital (`formeConnue`). Une forme tapée
+ * à la main ne reçoit rien, faute de savoir ce qu'elle est.
+ *
+ * Un nom qui le porte déjà ne le reçoit pas une seconde fois : plusieurs
+ * l'ont tapé eux-mêmes depuis 2022.
+ */
+export function nomAvecForme(nom: string, formeJuridique: string | null | undefined): string {
+  const connue = formeConnue(formeJuridique);
+  if (!connue || connue.capital) return nom;
+  if (/(^|\s)(EI|entrepreneur individuel)(\s|$)/i.test(nom.trim())) return nom;
+  return `${nom.trim()} EI`;
+}
+

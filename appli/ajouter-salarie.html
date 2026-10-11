@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ajouter une personne</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+    --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
+    --gris:#8a8578; --teinte:#ece9e1; --pin:#2f3b2f;
+    --or:#B98B47; --plein:#7d9a6d; --surplein:#faf9f5; --alerte:#9C3B2E;
+    --trait:rgba(28,28,26,.12); --traitdoux:rgba(28,28,26,.07);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--etabli)}
+  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased}
+  button{font-family:inherit}
+
+  .page{max-width:1240px;margin:0 auto;padding:30px 16px 90px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 30px/1.15 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+  .chapeau{max-width:680px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0 0 22px}
+
+  .tel{width:390px;max-width:100%;border-radius:26px;overflow:hidden;
+       box-shadow:0 1px 2px rgba(20,18,14,.16),0 14px 34px rgba(20,18,14,.14);background:var(--fond)}
+  .ecran{height:720px;overflow-y:auto;background:var(--fond);color:var(--encre);padding-bottom:40px}
+
+  /* En-tête commune : flèche sur un rond plein, titre serif, surtitre doré dessous. */
+  .haut{display:flex;align-items:center;padding:28px 26px 0}
+  .retour{width:40px;height:40px;border-radius:999px;background:var(--pin);display:grid;place-items:center;border:0}
+  .titre{padding:20px 26px 0}
+  .titre h2{font:400 36px/1.02 var(--serif);letter-spacing:-.018em;margin:0}
+  .titre .or{margin:12px 0 0;font:500 9.5px/1 var(--sans);letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+
+  .corps{padding:20px 20px 0}
+  .rangee{display:flex;justify-content:center;gap:10px;padding:10px 0 20px}
+  .etage{font:600 11px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--gris);margin-bottom:4px}
+  .compte{flex:1;max-width:190px;min-width:0;display:flex;flex-direction:column;align-items:center;text-align:center;
+          border-radius:16px;padding:12px 8px;border:1px solid var(--traitdoux);background:var(--carte)}
+  .compte.patron{background:var(--teinte)}
+  .nomSerif{margin-top:6px;font:400 16px/1.2 var(--serif);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .role{margin-top:2px;font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--or)}
+  .tete{flex:none;border-radius:999px;display:flex;align-items:center;justify-content:center;background:var(--carte);
+        box-shadow:inset 0 0 0 1px var(--trait);color:var(--or);font-family:var(--serif);line-height:1}
+  .grille{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-bottom:20px}
+  .chef{border-radius:16px;padding:12px 8px 8px;text-align:center;border:1px solid var(--traitdoux)}
+  .chef > button{width:100%;display:flex;flex-direction:column;align-items:center;background:none;border:0;color:var(--encre);cursor:default}
+  .gars{margin-top:10px;padding-top:10px;border-top:1px solid var(--traitdoux);display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+  .petit{width:64px;display:flex;flex-direction:column;align-items:center;font-size:13px;background:none;border:0;color:var(--encre);padding:0;cursor:default}
+  .petit span.n{margin-top:4px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sans{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;padding-bottom:16px}
+  .nouveau .tete{box-shadow:inset 0 0 0 2px var(--plein)}
+
+  .ajouter{margin-top:12px;width:100%;min-height:48px;border-radius:999px;background:transparent;
+           border:1px dashed var(--trait);color:var(--encre);font-size:14px;cursor:pointer}
+
+  .feuille{margin-top:16px;border-radius:16px;padding:16px 20px 20px;background:var(--carte);border:1px solid var(--traitdoux)}
+  .feuille .ligne{display:flex;align-items:center;justify-content:space-between}
+  .feuille .ligne span{font:400 22px/1.2 var(--serif)}
+  .fermer{min-height:40px;padding:0 8px;background:none;border:0;color:var(--gris);font-size:13px;cursor:pointer}
+  .petitTitre{display:block;margin:12px 0 8px;font:600 11px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--gris)}
+  .pastilles{display:flex;flex-wrap:wrap;gap:8px}
+  .pastille{min-height:40px;padding:0 16px;border-radius:999px;font-size:13px;cursor:pointer;
+            background:transparent;border:1px solid var(--trait);color:var(--gris)}
+  .pastille[aria-pressed="true"]{background:var(--teinte);border-color:transparent;color:var(--encre);font-weight:600}
+  .pastille:disabled{cursor:default}
+  label.champ{display:block;padding-top:16px}
+  label.champ span{display:block;margin-bottom:4px;font-size:11px;color:var(--gris)}
+  label.champ input{width:100%;background:transparent;border:0;border-bottom:1px solid var(--trait);padding:8px 0;
+                    font:400 17px/1.3 var(--sans);color:var(--encre);outline:none;border-radius:0}
+  .plein{margin-top:20px;width:100%;padding:14px 0;border-radius:999px;border:0;background:var(--plein);color:var(--surplein);
+         font-size:14px;font-weight:600;cursor:pointer}
+  .plein:disabled{opacity:.6;cursor:default}
+  .alerte{margin-top:12px;text-align:center;font-size:13px;color:var(--alerte)}
+
+  .autre{padding:40px 26px}
+  .autre h2{font:400 30px/1.1 var(--serif);margin:0 0 10px}
+  .autre p{color:var(--gris);font-size:14px;line-height:1.5;margin:0 0 20px}
+
+  /* Le témoin, hors du téléphone. */
+  .temoin{width:390px;max-width:100%;margin-top:18px;background:var(--etabli-carte);border-radius:16px;
+          box-shadow:inset 0 0 0 1px var(--etabli-trait);padding:14px 16px}
+  .temoin h3{margin:0 0 8px;font:600 11px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--etabli-or)}
+  .temoin ul{margin:0;padding:0 0 0 18px;font-size:14px;line-height:1.55}
+  .temoin .vide{color:var(--etabli-gris);font-size:14px;margin:0}
+  .temoin li.frais{animation:eclat 1.4s ease-out}
+  @keyframes eclat{from{background:#dfe8d6}to{background:transparent}}
+  .recommencer{margin-top:14px;appearance:none;border:0;cursor:pointer;font:600 12.5px/1 var(--sans);
+               padding:11px 17px;border-radius:999px;background:var(--etabli-carte);color:var(--etabli-doux);
+               box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="surtitre">Réglages, organigramme</p>
+  <h1>Ajouter une personne</h1>
+  <p class="chapeau">Appuyez sur Ajouter une personne, puis essayez de valider sans prénom, puis avec.</p>
+
+  <div class="tel"><div class="ecran" id="ecran"></div></div>
+
+  <div class="temoin" aria-live="polite">
+    <h3>Enregistré</h3>
+    <div id="temoin"></div>
+  </div>
+  <button type="button" class="recommencer" id="recommencer">Recommencer</button>
+</div>
+
+<script>
+(function(){
+  var MAX = 20;
+  var depart = function(){
+    return {
+      nombre: 4,
+      terrain: [
+        {rang:1, nom:"Karim", chef:true, sous:null},
+        {rang:2, nom:"Lucas", chef:false, sous:1},
+        {rang:3, nom:"Théo", chef:false, sous:1},
+        {rang:4, nom:"Mathis", chef:false, sous:null}
+      ],
+      ajouts: [],
+      ouvert: false,
+      role: "salarie",
+      nom: "",
+      chefRang: null,
+      enCours: false,
+      message: null,
+      ailleurs: false,
+      dernier: null
+    };
+  };
+  var e = depart();
+  var ecran = document.getElementById("ecran");
+  var temoin = document.getElementById("temoin");
+
+  function esc(t){ return String(t).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+  function initiales(t){
+    var m = t.trim().split(/\s+/).filter(Boolean);
+    return (m.length > 1 ? m[0][0] + m[1][0] : t.slice(0,2)).toUpperCase();
+  }
+  function tete(t, taille){
+    return '<span class="tete" style="width:'+taille+'px;height:'+taille+'px;font-size:'+Math.max(11, Math.round(taille*.38))+'px">'+esc(initiales(t))+'</span>';
+  }
+  function petit(g){
+    return '<button type="button" class="petit'+(g.rang === e.dernier ? ' nouveau' : '')+'">'+tete(g.nom,38)+'<span class="n">'+esc(g.nom)+'</span></button>';
+  }
+
+  function dessiner(){
+    if (e.ailleurs){
+      ecran.innerHTML =
+        '<div class="autre"><h2>Nouveau compte</h2>'+
+        '<p>Un autre écran s\'ouvre pour créer son compte. Rien n\'est enregistré dans l\'organigramme pour l\'instant.</p>'+
+        '<button type="button" class="ajouter" id="revenir">Revenir à l\'organigramme</button></div>';
+      document.getElementById("revenir").onclick = function(){ e.ailleurs = false; e.ouvert = false; dessiner(); };
+      dessinerTemoin();
+      return;
+    }
+    var chefs = e.terrain.filter(function(g){ return g.chef; });
+    var sansChef = e.terrain.filter(function(g){ return !g.chef && (g.sous === null || !chefs.some(function(c){ return c.rang === g.sous; })); });
+    var h = '';
+    h += '<div class="haut"><button type="button" class="retour" aria-label="Retour aux réglages">'+
+         '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="#faf9f5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>';
+    h += '<div class="titre"><h2>Organigramme</h2><p class="or">Réglages</p></div>';
+    h += '<div class="corps">';
+    h += '<div class="rangee"><div class="compte patron">'+tete("Florian Martin",44)+'<span class="nomSerif">Vous</span><span class="role">Patron</span></div></div>';
+    h += '<div class="etage">Bureau</div>';
+    h += '<div class="rangee"><div class="compte">'+tete("Camille Roux",44)+'<span class="nomSerif">Camille Roux</span><span class="role">Facturation</span></div></div>';
+    h += '<div class="etage">Terrain</div>';
+    h += '<div class="grille">';
+    chefs.forEach(function(c){
+      var gars = e.terrain.filter(function(g){ return !g.chef && g.sous === c.rang; });
+      h += '<div class="chef"><button type="button">'+tete(c.nom,44)+'<span class="nomSerif">'+esc(c.nom)+'</span><span class="role">Chef d\'équipe</span></button>';
+      if (gars.length) h += '<div class="gars">'+gars.map(petit).join('')+'</div>';
+      h += '</div>';
+    });
+    h += '</div>';
+    if (sansChef.length){
+      h += '<div class="etage">Sans chef</div><div class="sans">'+sansChef.map(petit).join('')+'</div>';
+    }
+
+    if (e.ouvert){
+      var inerte = e.enCours ? ' disabled' : '';
+      var propre = e.nom.trim();
+      h += '<div class="feuille" id="feuille"><div class="ligne"><span>Nouvelle personne</span><button type="button" class="fermer" id="fermer">Fermer</button></div>';
+      h += '<span class="petitTitre">C\'est</span><div class="pastilles">'+
+           pastille("role","salarie","Un salarié", e.role === "salarie", inerte)+
+           pastille("role","commercial","Un commercial", e.role === "commercial", inerte)+
+           pastille("role","facturation","La facturation", e.role === "facturation", inerte)+'</div>';
+      if (e.role === "salarie"){
+        h += '<form id="formulaire"><label class="champ"><span>Prénom</span><input id="prenom" autocomplete="off" value="'+esc(e.nom)+'"></label>';
+        if (chefs.length){
+          h += '<span class="petitTitre" style="margin-top:16px">Son chef</span><div class="pastilles">'+
+               chefs.map(function(c){ return pastille("chef", String(c.rang), c.nom, e.chefRang === c.rang, inerte); }).join('')+
+               pastille("chef","aucun","Aucun", e.chefRang === null, inerte)+'</div>';
+        }
+        if (e.nombre >= MAX){
+          h += '<p style="margin-top:16px;font-size:13px;color:var(--gris)">Vingt personnes au plus sur le terrain.</p>';
+        } else {
+          h += '<button type="submit" class="plein" id="valider"'+((e.enCours || !propre) ? ' disabled' : '')+'>'+esc(propre ? 'Ajouter ' + propre : 'Ajouter')+'</button>';
+        }
+        h += '</form>';
+      } else {
+        h += '<button type="button" class="plein" id="creerCompte">Créer son compte</button>';
+      }
+      h += '</div>';
+    } else {
+      h += '<button type="button" class="ajouter" id="ouvrir">Ajouter une personne</button>';
+    }
+    if (e.message) h += '<p class="alerte" role="alert">'+esc(e.message)+'</p>';
+    h += '</div>';
+    ecran.innerHTML = h;
+    brancher();
+    dessinerTemoin();
+  }
+
+  function pastille(sorte, valeur, texte, choisie, inerte){
+    return '<button type="button" class="pastille" data-sorte="'+sorte+'" data-valeur="'+valeur+'" aria-pressed="'+choisie+'"'+inerte+'>'+esc(texte)+'</button>';
+  }
+
+  function brancher(){
+    var ouvrir = document.getElementById("ouvrir");
+    if (ouvrir) ouvrir.onclick = function(){
+      e.ouvert = true; e.role = "salarie"; e.nom = ""; e.chefRang = null; e.message = null;
+      dessiner();
+      var f = document.getElementById("feuille");
+      if (f) f.scrollIntoView({behavior:"smooth", block:"nearest"});
+    };
+    var fermer = document.getElementById("fermer");
+    if (fermer) fermer.onclick = function(){ e.ouvert = false; dessiner(); };
+    Array.prototype.forEach.call(ecran.querySelectorAll(".pastille"), function(b){
+      b.onclick = function(){
+        var v = b.getAttribute("data-valeur");
+        if (b.getAttribute("data-sorte") === "role") e.role = v;
+        else e.chefRang = v === "aucun" ? null : Number(v);
+        var pos = ecran.scrollTop;
+        dessiner();
+        ecran.scrollTop = pos;
+      };
+    });
+    var prenom = document.getElementById("prenom");
+    if (prenom) prenom.oninput = function(){
+      e.nom = prenom.value;
+      var propre = e.nom.trim();
+      var v = document.getElementById("valider");
+      if (v){
+        v.disabled = e.enCours || !propre;
+        v.textContent = propre ? "Ajouter " + propre : "Ajouter";
+      }
+    };
+    var form = document.getElementById("formulaire");
+    if (form) form.onsubmit = function(ev){
+      ev.preventDefault();
+      ajouter();
+    };
+    var creer = document.getElementById("creerCompte");
+    if (creer) creer.onclick = function(){ e.ailleurs = true; dessiner(); ecran.scrollTop = 0; };
+  }
+
+  // Ce que fait ajouterSalarieAction : refus rendu, sinon écriture puis fiche fermée.
+  function ajouter(){
+    e.message = null;
+    e.enCours = true;
+    var pos = ecran.scrollTop;
+    dessiner(); ecran.scrollTop = pos;
+    setTimeout(function(){
+      e.enCours = false;
+      var propre = e.nom.trim();
+      if (!propre){ e.message = "Écrivez son prénom."; dessiner(); return; }
+      if (e.nombre >= MAX){ e.message = "Vingt personnes au plus sur le terrain."; dessiner(); return; }
+      var rang = e.nombre + 1;
+      e.terrain.push({rang:rang, nom:propre, chef:false, sous:e.chefRang});
+      e.nombre = rang;
+      var chef = e.chefRang === null ? null : e.terrain.filter(function(g){ return g.rang === e.chefRang; })[0];
+      e.ajouts.push({nom:propre, rang:rang, chef: chef ? chef.nom : null});
+      e.dernier = rang;
+      e.frais = true;
+      e.ouvert = false;
+      dessiner();
+      ecran.scrollTop = pos;
+    }, 450);
+  }
+
+  function dessinerTemoin(){
+    if (!e.ajouts.length){
+      temoin.innerHTML = '<p class="vide">Rien pour l\'instant.</p>';
+      return;
+    }
+    var h = '<ul>';
+    e.ajouts.forEach(function(a, i){
+      h += '<li'+(e.frais && i === e.ajouts.length - 1 ? ' class="frais"' : '')+'>'+esc(a.nom)+' (salarié '+a.rang+'), '+(a.chef ? 'sous ' + esc(a.chef) : 'sans chef')+'.</li>';
+    });
+    h += '<li>Nombre de salariés passé à '+e.nombre+'.</li></ul>';
+    temoin.innerHTML = h;
+    e.frais = false;
+  }
+
+  document.getElementById("recommencer").onclick = function(){ e = depart(); dessiner(); ecran.scrollTop = 0; };
+  dessiner();
+})();
+</script>
+</body>
+</html>

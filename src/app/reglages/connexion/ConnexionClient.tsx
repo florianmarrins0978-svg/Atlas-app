@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
-import { etatConfirmation, verifierNouveauMotDePasse, LONGUEUR_MINIMALE } from "@/lib/mot-de-passe";
+import { etatConfirmation, etatNouveau, verifierNouveauMotDePasse, type Personnel } from "@/lib/mot-de-passe";
 import { changerMotDePasseAction, deconnecterPartoutAction } from "./actions";
 import SectionFaceId from "./SectionFaceId";
 import type { CleAppareil } from "@/lib/cle-appareil";
@@ -25,7 +25,7 @@ import type { CleAppareil } from "@/lib/cle-appareil";
  * mauvais sens : un bouton allumé sur une saisie que le serveur refuse
  * (`CLAUDE.md` §3).
  */
-export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
+export default function ConnexionClient({ cles, personnel }: { cles: CleAppareil[]; personnel: Personnel }) {
   const [actuel, setActuel] = useState("");
   const [nouveau, setNouveau] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -34,9 +34,10 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
   const [enCours, demarrer] = useTransition();
   const [partoutDemande, setPartoutDemande] = useState(false);
 
-  const bloquant = verifierNouveauMotDePasse(nouveau, confirmation);
+  const bloquant = verifierNouveauMotDePasse(nouveau, confirmation, personnel);
   const pret = actuel !== "" && bloquant === null && !enCours;
   const etat = etatConfirmation(nouveau, confirmation);
+  const court = etatNouveau(nouveau, personnel);
 
   function changer() {
     demarrer(async () => {
@@ -73,8 +74,13 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
   }
 
   return (
-    // `pb-24` : plus que les onglets à loger — le bouton a rejoint ses champs.
-    <div className="pb-24">
+    // **PLUS AUCUNE RÉSERVE ICI, et c'est 96 px repris — sa demande du 31 août
+    // 2026 : « je veux qu'elle tienne sur une seule page ».** `pb-24` comptait
+    // la barre du bas UNE SECONDE FOIS : `main.atlas-contenu`
+    // (`src/app/layout.tsx`) la réserve déjà pour tous les écrans. C'est le
+    // même défaut que celui corrigé sur l'export de chantier — un vide qui ne
+    // porte rien et qui pousse la dernière rubrique hors de l'écran.
+    <div>
       {refus && (
         <p
           role="alert"
@@ -95,11 +101,17 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
       )}
 
       <section
-        className="mx-[26px] mt-[26px] [&>*:last-child]:border-b-0"
+        className="mx-[26px] mt-[10px] [&>*:last-child]:border-b-0"
         style={{ borderColor: colors.line }}
       >
-        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
-          Changer de mot de passe
+        {/* **Une question, pas une étiquette — sa demande du 9 septembre 2026 :**
+            *« rajoute juste un ? à la fin de changer de mdp »*. C'est la même
+            idée qu'il avait retenue sur l'écran Équipe le 8 : un titre qui pose
+            la question à laquelle le bloc répond se lit tout seul, là où une
+            étiquette se survole. Il a écarté le reste de ma proposition — le
+            titre reste, et les libellés restent en capitales. */}
+        <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
+          Changer de mot de passe&nbsp;?
         </p>
 
         <ChampSecret
@@ -113,7 +125,13 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
           valeur={nouveau}
           onChange={setNouveau}
           autoComplete="new-password"
-          sous={`Au moins ${LONGUEUR_MINIMALE} caractères.`}
+          // **La longueur ne s'annonce plus au repos — 31 août 2026.** Elle
+          // vivait ici en gris, en permanence, et il les a toutes fait
+          // retirer. Elle parle désormais quand elle mord, et seulement là :
+          // sans elle, un bouton éteint sur huit caractères n'aurait plus
+          // aucune explication à l'écran.
+          sous={court?.message ?? null}
+          sousTeinte={court ? colors.alert : undefined}
         />
         <ChampSecret
           etiquette="Confirmer le nouveau mot de passe"
@@ -140,23 +158,29 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
           entier.
 
           Sous ses champs, il ne peut plus se lire autrement. */}
-      <div className="mx-[26px] mt-[22px]">
+      <div className="mx-[26px] mt-[10px]">
         <button
           type="button"
           onClick={changer}
           disabled={!pret}
-          className="block w-full rounded-full py-[15px] text-center text-[16px]"
+          // **Passé au vert des boutons le 4 septembre 2026.** Il l'a relevé
+          // lui-même — *« j'avais demandé à changer tous les boutons en vert
+          // clair »* —, et ce bouton-ci avait échappé au balayage du 3 : il ne
+          // portait pas `atlas-plein`, et le contrôle ne regardait QUE ce qui la
+          // portait. Il la porte maintenant, et il est donc gardé.
+          //
+          // **Le voisin de trois rubriques plus bas, lui, était passé le
+          // 3 septembre.** Deux boutons du même écran, deux verts : c'est
+          // exactement le reste qu'un balayage à la main laisse derrière lui.
+          className={`block w-full rounded-full py-[13px] text-center text-[16px] ${pret ? "atlas-plein" : ""}`}
           style={{
-            backgroundColor: pret ? colors.rust : colors.card,
+            backgroundColor: pret ? colors.plein : colors.card,
             color: pret ? colors.cream : colors.muted,
             boxShadow: pret ? "none" : `inset 0 0 0 1px ${colors.line}`,
           }}
         >
           {enCours ? "En cours…" : "Changer mon mot de passe"}
         </button>
-        <p className={`mt-2 text-center ${texteSituation}`} style={{ color: colors.muted }}>
-          Vous resterez connecté sur cet appareil.
-        </p>
       </div>
 
       {/* **Face ID vient APRÈS le mot de passe, et ce n'est pas un hasard de
@@ -166,10 +190,10 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
       <SectionFaceId clesInitiales={cles} />
 
       <section
-        className="mx-[26px] mt-[30px] border-t pt-[18px]"
+        className="mx-[26px] mt-[12px] border-t pt-[10px]"
         style={{ borderColor: colors.line }}
       >
-        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+        <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
           Ailleurs
         </p>
 
@@ -181,15 +205,12 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
           <button
             type="button"
             onClick={() => setPartoutDemande(true)}
-            className="flex w-full items-center gap-3.5 py-[13px] text-left"
-            style={{ minHeight: 56 }}
+            className="flex w-full items-center gap-3.5 py-[10px] text-left"
+            style={{ minHeight: 44 }}
           >
             <span className="min-w-0 flex-1">
               <span className="block" style={{ fontFamily: font.display, fontSize: 17, lineHeight: 1.25 }}>
                 Me déconnecter partout
-              </span>
-              <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.muted }}>
-                Sur tous les téléphones et ordinateurs, y compris celui-ci
               </span>
             </span>
             <span
@@ -203,25 +224,22 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
             <p className={texteSituation} style={{ color: colors.ink }}>
               Vous devrez vous reconnecter sur tous vos appareils, celui-ci compris.
             </p>
-            {/* **CE QUE CE BOUTON NE FAIT PAS — et il faut le dire ICI.**
+            {/* **CE BOUTON FERME AUSSI FACE ID — depuis le 7 septembre 2026.**
 
-                Constaté le 25 août 2026, en éprouvant la coupure : un appareil
-                déjà enregistré pour Face ID **rouvre aussitôt une session**.
-                `deconnecterPartout` ne touche pas `cles_appareil`, et
-                `ouvrirAvecCle` ne consulte jamais la coupure.
+                Il ne le faisait pas, et c'était le seul défaut de sécurité
+                connu et non réparé du produit : un appareil déjà enregistré
+                rouvrait une session à l'instant d'après. L'écran disait la
+                vérité depuis le 25 août ; il ne réparait rien.
 
-                L'écran ne le disait pas. Quelqu'un qui vient de perdre son
-                téléphone appuyait ici en croyant l'avoir mis dehors — et se
-                trompait, au pire moment. Ce n'est pas une nuance, c'est la
-                différence entre « fermé » et « ouvert ».
-
-                Le comportement, lui, ne change pas dans ce lot : retirer les
-                appareils d'office obligerait à tous les réenregistrer après une
-                simple déconnexion. On dit la vérité, et on montre le geste. */}
+                La phrase de dessous change donc de sens, et c'est délibéré :
+                elle annonce un COÛT, plus une faille. On la garde parce qu'un
+                geste qui retire Face ID sans le dire se découvre au moment où
+                l'on veut entrer, et le raisonnement de `CLAUDE.md` §3 sur les
+                phrases inutiles ne la vise pas — elle ne décrit pas le bouton
+                d'à côté, elle annonce ce qu'on va perdre. */}
             {cles.length > 0 && (
-              <p className={`mt-2 ${texteSituation}`} style={{ color: colors.muted }}>
-                Vos appareils enregistrés pourront rouvrir Atlas avec Face ID. Si vous avez
-                perdu l&apos;un d&apos;eux, retirez-le d&apos;abord dans la liste ci-dessus.
+              <p className={`mt-2 ${texteSituation}`} style={{ color: colors.inkSoft }}>
+                Face ID sera retiré de vos appareils. Vous le remettrez en un toucher.
               </p>
             )}
             <div className="mt-3 flex gap-2.5">
@@ -229,8 +247,8 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
                 type="button"
                 onClick={partout}
                 disabled={enCours}
-                className="flex-1 rounded-full py-[13px] text-center text-[15px]"
-                style={{ backgroundColor: colors.rust, color: colors.cream }}
+                className="atlas-plein flex-1 rounded-full py-[13px] text-center text-[15px]"
+                style={{ backgroundColor: colors.plein, color: colors.cream }}
               >
                 {enCours ? "En cours…" : "Me déconnecter partout"}
               </button>
@@ -246,14 +264,6 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
           </div>
         )}
       </section>
-
-      <p
-        className={`mx-[26px] mt-[30px] border-t pt-[18px] ${texteSituation}`}
-        style={{ borderColor: colors.line, color: colors.muted }}
-      >
-        Un téléphone perdu, un ordinateur prêté : ce qu&apos;on veut, ce n&apos;est pas lire une liste, c&apos;est
-        fermer tout d&apos;un coup.
-      </p>
     </div>
   );
 }
@@ -285,8 +295,8 @@ function ChampSecret({
   const [visible, setVisible] = useState(false);
 
   return (
-    <div className="border-b py-[13px]" style={{ borderColor: colors.line }}>
-      <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.muted }}>
+    <div className="border-b py-[8px]" style={{ borderColor: colors.line }}>
+      <span className={`mb-[3px] block ${libelleCaps}`} style={{ color: colors.inkSoft }}>
         {etiquette}
       </span>
       <div className="flex items-center gap-3">
@@ -307,17 +317,21 @@ function ChampSecret({
           // sur un mot de passe déjà visible envoie appuyer pour rien.
           aria-label={visible ? `Masquer ${etiquette.toLowerCase()}` : `Afficher ${etiquette.toLowerCase()}`}
           aria-pressed={visible}
-          // 44 px, et `-mr-[11px]` pour que la cible déborde sans décaler le
-          // filet : une cible plus petite se rate une fois sur trois avec des
-          // gants.
-          className="-mr-[11px] flex h-11 w-11 flex-none items-center justify-center"
+          // **44 px de cible, mais 24 px de hauteur DANS la rangée.** Une
+          // cible plus petite se rate une fois sur trois avec des gants — elle
+          // ne bouge donc pas. Ce sont les marges négatives qui changent :
+          // sans elles, l'œil imposait sa taille aux trois rangées et leur
+          // ajoutait 20 px chacune, soit 60 px sur un écran qui doit tenir
+          // d'un seul tenant (31 août 2026). `-mr-[11px]` déborde à droite
+          // sans décaler le filet.
+          className="-my-[10px] -mr-[11px] flex h-11 w-11 flex-none items-center justify-center"
           style={{ color: visible ? colors.or : colors.muted }}
         >
           <Oeil barre={visible} />
         </button>
       </div>
       {sous && (
-        <span className={`mt-1.5 block ${texteSituation}`} style={{ color: sousTeinte ?? colors.muted }}>
+        <span className={`mt-1 block ${texteSituation}`} style={{ color: sousTeinte ?? colors.inkSoft }}>
           {sous}
         </span>
       )}

@@ -129,7 +129,7 @@ const telephone = ({ lettre, nom, resume, avant }) => {
               </span>
               <p class="mot">
                 <span class="m-repos">Touchez pour dicter.</span>
-                <span class="m-ecoute">J'écoute — touchez pour arrêter.</span>
+                <span class="m-ecoute">J'écoute. Touchez pour arrêter.</span>
                 <span class="m-traite">${avant ? "" : "Atlas rédige…"}</span>
                 <span class="m-fini">3 informations reprises — relisez avant de créer.</span>
               </p>

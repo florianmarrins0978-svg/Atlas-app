@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { colors, font } from "@/lib/design-tokens";
 import BoutonAssistant from "./BoutonAssistant";
+import FlecheRetour from "./FlecheRetour";
 
 /**
  * L'en-tête d'un écran, dans la grammaire retenue le 10 août 2026.
@@ -32,6 +32,7 @@ export default function EnTeteEcran({
   action,
   actionPlacee = "titre",
   assistant = true,
+  allure = "commune",
 }: {
   /** Le mot d'accroche, en capitales d'or. Absent, la ligne disparaît. */
   surtitre?: string;
@@ -56,7 +57,14 @@ export default function EnTeteEcran({
    * grammaire commune reste.
    */
   precisionPlacee?: "sous" | "avant";
-  /** Où revient la flèche. Absente sur les écrans de la barre du bas. */
+  /**
+   * La sortie DÉCLARÉE de l'écran. Absente sur les écrans de la barre du bas.
+   *
+   * **Ce n'est plus où va la flèche, c'est son repli** — depuis le 9 septembre
+   * 2026, elle ramène à la page d'où l'on vient, et ne prend celle-ci que
+   * lorsqu'il n'y en a pas : premier écran d'un onglet, signet, notification
+   * ouverte à froid (`src/lib/journal-de-navigation.ts`).
+   */
   retour?: { href: string; libelle: string };
   /** Ce qui se pose à droite du titre — un bouton de dictée, par exemple. */
   action?: React.ReactNode;
@@ -81,22 +89,45 @@ export default function EnTeteEcran({
    * a ni panneau à ouvrir ni raison d'en proposer un au client.
    */
   assistant?: boolean;
+  /**
+   * La GRAMMAIRE de l'en-tête, et il n'y en a que deux.
+   *
+   * `"commune"` — celle du 10 août 2026, et le repli : titre 36 px, surtitre
+   * doré SOUS le titre (sa demande du 26 août), précision en capitales
+   * espacées, flèche de retour sur un rond plein. **Ne change pas d'un
+   * caractère** : un écran qui ne dit rien reste exactement ce qu'il était.
+   *
+   * `"ample"` — celle qu'il a retenue sur maquette le 2 septembre 2026 pour la
+   * fiche d'un client, et qu'il a nommée point par point :
+   *
+   *   - le surtitre doré repasse AU-DESSUS du nom (*« le client en doré, mets
+   *     le au-dessus du nom comme tu avais fait »*). Il annonce ce qu'on ouvre ;
+   *     le nom, lui, porte la page ;
+   *   - le titre passe à 40 px — le nom du client EST l'écran ;
+   *   - la précision quitte les capitales espacées pour du bas de casse à
+   *     13 px. **Une adresse en capitales se déchiffre, elle ne se lit pas** :
+   *     c'est ce que la maquette a montré côte à côte ;
+   *   - la flèche de retour est cernée d'un cheveu au lieu d'être posée sur un
+   *     aplat, parce que rien sur cet écran n'a besoin d'un aplat.
+   *
+   * **Un réglage, pas quatre.** Ces quatre traits forment UNE décision, prise
+   * en une fois sur une maquette ; quatre interrupteurs indépendants inviteraient
+   * à en mélanger deux sur un troisième écran, et la grammaire commune finirait
+   * par n'être plus commune (`CLAUDE.md` §3).
+   */
+  allure?: "commune" | "ample";
 }) {
+  const ample = allure === "ample";
   return (
     <header>
       {(retour || actionPlacee === "retour") && (
       <div className="flex items-center justify-between gap-4 px-[26px] pt-7">
         {retour ? (
-          <Link
-            href={retour.href}
-            aria-label={retour.libelle}
-            className="flex h-10 w-10 items-center justify-center rounded-full"
-            style={{ backgroundColor: colors.rustTint }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
-              <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </Link>
+          // **Le dessin est ici, la DESTINATION est ailleurs — 9 septembre
+          // 2026.** `retour` ne dit plus où va la flèche : il dit où elle va
+          // quand on ne sait pas d'où l'on vient. Le reste du temps, elle
+          // ramène à la page d'avant (`src/lib/journal-de-navigation.ts`).
+          <FlecheRetour repli={retour} allure={ample ? "cerne" : "plein"} fleche={ample ? 15 : 16} />
         ) : (
           <span />
         )}
@@ -121,13 +152,26 @@ export default function EnTeteEcran({
               {precision}
             </p>
           )}
+          {/* En allure ample, le surtitre doré précède le nom : c'est son choix
+              du 2 septembre 2026, sur la fiche d'un client. Partout ailleurs il
+              reste dessous, comme il l'a demandé le 26 août. */}
+          {surtitre && ample && (
+            <p
+              className="mb-[13px] text-[9.5px] font-medium uppercase"
+              style={{ color: colors.or, letterSpacing: "0.28em" }}
+            >
+              {surtitre}
+            </p>
+          )}
           <h1
-            className={`${precision && precisionPlacee === "avant" ? "mt-3 " : ""}text-[36px] leading-[1.02]`}
+            className={`${precision && precisionPlacee === "avant" ? "mt-3 " : ""}${
+              ample ? "text-[40px] leading-[1.04]" : "text-[36px] leading-[1.02]"
+            }`}
             style={{ fontFamily: font.display, letterSpacing: "-0.018em" }}
           >
             {titre}
           </h1>
-          {surtitre && (
+          {surtitre && !ample && (
             <p
               className="mt-3 text-[9.5px] font-medium uppercase"
               style={{ color: colors.or, letterSpacing: "0.28em" }}
@@ -137,8 +181,16 @@ export default function EnTeteEcran({
           )}
           {precision && precisionPlacee === "sous" && (
             <p
-              className="mt-2.5 text-[9.5px] font-medium uppercase"
-              style={{ color: colors.muted, letterSpacing: "0.28em" }}
+              className={
+                ample
+                  ? "mt-3.5 text-[13px] leading-[1.65]"
+                  : "mt-2.5 text-[9.5px] font-medium uppercase"
+              }
+              style={
+                ample
+                  ? { color: colors.muted }
+                  : { color: colors.muted, letterSpacing: "0.28em" }
+              }
             >
               {precision}
             </p>

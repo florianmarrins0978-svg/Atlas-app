@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { accepterDocumentsAction } from "./actions";
 import type { DocumentAAccepter } from "@/server/repositories/documents-legaux";
+import { colors, surPlein } from "@/lib/design-tokens";
 
 // Condition 2 de docs/RGPD.md §8 : une acceptation EXPLICITE. Concrètement —
 // une case par document, jamais pré-cochée, jamais une case unique valant pour
@@ -17,7 +18,7 @@ export default function FormulaireAcceptation({ documents }: { documents: Docume
       {documents.map((doc) => {
         const ouvert = ouverts[doc.id] ?? false;
         return (
-          <section key={doc.id} className="rounded-[4px] bg-white p-5 shadow-sm">
+          <section key={doc.id} className="rounded-[4px] bg-card p-5 shadow-sm">
             <h2
               className="text-[17px] font-semibold text-ink"
               style={{ fontFamily: "ui-serif, Georgia, serif" }}
@@ -30,13 +31,13 @@ export default function FormulaireAcceptation({ documents }: { documents: Docume
               type="button"
               onClick={() => setOuverts((o) => ({ ...o, [doc.id]: !ouvert }))}
               aria-expanded={ouvert}
-              className="mt-3 text-[14px] font-medium text-[#B5502F] underline underline-offset-2"
+              className="mt-3 text-[14px] font-medium text-accent underline underline-offset-2"
             >
               {ouvert ? "Replier le texte" : "Lire le texte"}
             </button>
 
             {ouvert && (
-              <div className="mt-3 max-h-80 overflow-y-auto rounded-[4px] border border-black/10 bg-[#FAF8F4] p-4">
+              <div className="mt-3 max-h-80 overflow-y-auto rounded-[4px] border border-line bg-paper p-4">
                 <pre className="whitespace-pre-wrap font-body text-[13px] leading-relaxed text-ink/80">
                   {doc.contenu}
                 </pre>
@@ -50,7 +51,7 @@ export default function FormulaireAcceptation({ documents }: { documents: Docume
                 type="checkbox"
                 name={`accepte_${doc.id}`}
                 value="oui"
-                className="mt-0.5 h-5 w-5 shrink-0 rounded border-black/20"
+                className="mt-0.5 h-5 w-5 shrink-0 rounded border-line"
               />
               <span>
                 J&apos;ai lu et j&apos;accepte&nbsp;: <strong>{doc.titre}</strong>
@@ -66,18 +67,29 @@ export default function FormulaireAcceptation({ documents }: { documents: Docume
         </p>
       )}
 
+      {/* **Le vert des boutons — 4 septembre 2026.** Ce bouton-ci n'était même
+          pas vert : il portait la terre cuite de la page du client, écrite en
+          clair, sur un écran qui est le SIEN. Le balayage du 3 septembre ne
+          pouvait pas le voir — il ne cherchait que `colors.rust`. */}
       <button
         type="submit"
         disabled={enCours}
-        className="rounded-full bg-[#B5502F] py-3 text-[15px] font-medium text-white disabled:opacity-50"
+        className="atlas-plein rounded-full py-3 text-[15px] font-medium disabled:opacity-50"
+        style={{ backgroundColor: colors.plein, color: surPlein }}
       >
         {enCours ? "Enregistrement…" : "Continuer"}
       </button>
 
-      <p className="text-center text-[12px] leading-relaxed text-ink/50">
-        La date, l&apos;heure et la version exacte de ce que vous acceptez sont
-        conservées — c&apos;est ce qui donne sa valeur à votre accord.
-      </p>
+      {/* **RETIRÉ le 9 septembre 2026, à sa demande** : *« la phrase sous
+          continuer, supprime-la »*. Elle disait que la date, l'heure et la
+          version sont conservées — c'est-à-dire qu'elle expliquait le
+          mécanisme de l'écran au lieu de le laisser faire. Sa consigne du
+          25 août : « le moins de mots possible ».
+
+          **Ce qu'elle annonçait n'a pas disparu pour autant** : l'horodatage,
+          l'adresse et l'appareil sont toujours enregistrés
+          (`enregistrerAcceptations`), et c'est toujours ce qui donne sa valeur
+          à l'accord. Ce qui est parti, c'est le commentaire — pas la preuve. */}
     </form>
   );
 }

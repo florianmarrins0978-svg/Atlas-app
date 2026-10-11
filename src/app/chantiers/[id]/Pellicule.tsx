@@ -1,14 +1,15 @@
 "use client";
 
 import { useRef, useState, type ChangeEvent } from "react";
-import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { colors, libelleCaps } from "@/lib/design-tokens";
+import { colors, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
+import VisionneusePhoto from "@/components/atlas/VisionneusePhoto";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { ajouterPhotoAction, supprimerPhotoAction } from "./photos-actions";
 import { ACCEPT_PHOTOS } from "@/lib/exif";
+import { PHOTOS_MAX_PAR_CHANTIER, PHOTOS_PAR_SELECTION, limiterLaSelection, placesRestantes } from "@/lib/photos-plafonds";
 
 export type VignettePhoto = { id: string; storageKey: string };
 
@@ -68,6 +69,10 @@ export default function Pellicule({
   const [photos, setPhotos] = useState<VignettePhoto[]>(initiales);
   const [ouverte, setOuverte] = useState<string | null>(null);
   const [enCours, setEnCours] = useState(false);
+  // **Le refus s'affiche.** Un plafond atteint, une photo trop lourde, le
+  // téléversement borné : jusqu'au 20 septembre 2026 tout cela se perdait dans
+  // un `catch` muet, et il rouvrait la photothèque en croyant à un réseau lent.
+  const [refus, setRefus] = useState<string | null>(null);
   const champ = useRef<HTMLInputElement>(null);
 
   // **Le retrait reste réversible, et l'écriture attend la fermeture du
@@ -79,10 +84,9 @@ export default function Pellicule({
       try {
         await supprimerPhotoAction(id);
         setPhotos((p) => p.filter((ph) => ph.id !== id));
-        // La fiche compte les photos pour dire où en est le chantier : sans ce
-        // rafraîchissement, le résumé du tiroir annoncerait encore une étape
-        // franchie qui ne l'est plus.
-        router.refresh();
+        // La fiche compte les photos pour dire où en est le chantier ; elle se
+        // redemande d'elle-même une fois l'écriture faite (`useRetraits`), ici
+        // comme partout ailleurs où l'on retire.
       } catch {
         // Déjà répercutée visuellement ; une resynchronisation complète en cas
         // d'échec réseau est laissée à un lot ultérieur.
@@ -92,21 +96,41 @@ export default function Pellicule({
   const visibles = photos.filter((p) => !retraits.estRetire(p.id));
 
   async function onFichiersChoisis(e: ChangeEvent<HTMLInputElement>) {
-    const fichiers = Array.from(e.target.files ?? []);
+    const choisies = Array.from(e.target.files ?? []);
     e.target.value = ""; // permet de resélectionner le même fichier ensuite
-    if (fichiers.length === 0) return;
+    if (choisies.length === 0) return;
+    // **Les bornes, avant le premier octet** (`photos-plafonds.ts`, sa décision
+    // du 20 septembre 2026) : 15 par ouverture de la photothèque, et jamais
+    // au-delà de ce qu'il reste sur le chantier. Le serveur retient le plafond
+    // du chantier de son côté ; ici on évite d'envoyer ce qu'il refusera.
+    const { retenues, raison } = limiterLaSelection(choisies, {
+      parSelection: PHOTOS_PAR_SELECTION.pellicule,
+      restantesSurLeChantier: placesRestantes(visibles.length, PHOTOS_MAX_PAR_CHANTIER),
+    });
+    setRefus(raison);
     setEnCours(true);
-    for (const fichier of fichiers) {
+    for (const fichier of retenues) {
       const fd = new FormData();
       fd.set("fichier", fichier);
+      // Sur la fiche client, la première photo CRÉE le chantier ; si la
+      // création tombe, on le dit et on s'arrête — les suivantes n'auraient
+      // nulle part où aller.
+      let cible: string | undefined;
       try {
-        const cible = chantierId ?? (await assurerChantier?.());
-        if (!cible) break;
-        const { id, storageKey } = await ajouterPhotoAction(cible, fd);
-        setPhotos((p) => [...p, { id, storageKey }]);
+        cible = chantierId ?? (await assurerChantier?.());
       } catch {
-        // Une photo en échec parmi plusieurs n'interrompt pas les autres.
+        setRefus("Le chantier n'a pas pu être créé. Réessayez.");
+        break;
       }
+      if (!cible) break;
+      const ajout = await ajouterPhotoAction(cible, fd);
+      // Une photo refusée parmi plusieurs n'interrompt pas les autres — mais
+      // elle le dit, et c'est la dernière raison qui reste à l'écran.
+      if (!ajout.ok) {
+        setRefus(ajout.raison);
+        continue;
+      }
+      setPhotos((p) => [...p, { id: ajout.id, storageKey: ajout.storageKey }]);
     }
     setEnCours(false);
     // Le statut du chantier et l'étape suivante se déduisent du nombre de
@@ -115,7 +139,10 @@ export default function Pellicule({
     router.refresh();
   }
 
-  const photoOuverte = visibles.find((p) => p.id === ouverte);
+  // La visionneuse feuillette les photos VISIBLES : une photo retirée dans le
+  // tiroir n'a pas à réapparaître au chevron suivant.
+  const rangOuvert = visibles.findIndex((p) => p.id === ouverte);
+  const photoOuverte = rangOuvert === -1 ? undefined : visibles[rangOuvert];
 
   return (
     <>
@@ -156,9 +183,24 @@ export default function Pellicule({
           // montre et ce qu'il annonce doivent raconter le même instant.
           aria-label={enCours ? "Envoi des photos en cours" : "Ajouter des photos"}
           className="atlas-ajouter"
-          // Le liseré est en TIRETS et doré, comme sur sa maquette : un carré
-          // en trait plein se lit comme une case vide, pas comme un endroit où
-          // poser une photo.
+          // ─── LE LISERÉ EN TIRETS — il y revient le 5 septembre 2026 ──────
+          //
+          // **Il a tranché deux fois, en sens contraire, et les deux sont
+          // écrites ici pour que personne ne rouvre la question de mémoire.**
+          //
+          // | | |
+          // |---|---|
+          // | 4 septembre | *« Seulement pour le carré photo, je le veux plein doré. »* — l'aplat |
+          // | 5 septembre | capture à l'appui, il montre le liseré en TIRETS : *« l'encadré pour les photos, je veux celui que je te joins en photo »* |
+          //
+          // C'est donc le dessin d'origine qui revient — celui de ses planches
+          // (`.ajout-photo` dans `appli/note-vocale-choix.html`), et le dernier
+          // mot est le sien.
+          //
+          // **Ce que l'aplat disait et que les tirets ne disent pas** : « posez
+          // ici », une invitation plutôt qu'un vide. Les tirets, eux, disent
+          // « il n'y a rien encore ». Il a vu les deux à l'écran et il a
+          // choisi ; on ne remet pas l'aplat sans lui.
           style={{ border: `1px dashed ${colors.or}`, color: colors.or }}
         >
           {/* **Le même souffle que la dictée**, sur sa demande du 13 août 2026 :
@@ -187,6 +229,12 @@ export default function Pellicule({
         ))}
       </div>
 
+      {refus && (
+        <p data-atlas="refus-photos" className="mb-2 text-[13px]" style={{ color: colors.rust }}>
+          {refus}
+        </p>
+      )}
+
       {/* Le tiroir des retirés pousse les étapes vers le bas plutôt que de les
           recouvrir — même règle que partout ailleurs. */}
       <TiroirDesRetires
@@ -196,60 +244,40 @@ export default function Pellicule({
         className="mb-3"
       />
 
-      {/* **La visionneuse sort du tiroir par un portail, et il le faut.** Le
-          tiroir de la fiche porte un `z-index`, donc il ouvre son propre
-          contexte d'empilement : une visionneuse « plein écran » rendue à
-          l'intérieur reste plafonnée au niveau du tiroir, et la barre de
-          navigation — posée plus loin dans le document, au même niveau — se
-          peint par-dessus. On verrait « Chantiers / Planning » en travers de la
-          photo. */}
-      {/* `document` n'existe pas au rendu serveur. Le garde ne masque aucun
-          écart d'hydratation : au premier rendu, aucune photo n'est ouverte —
-          des deux côtés. */}
-      {photoOuverte && typeof document !== "undefined"
-        ? createPortal(
-            <div className="fixed inset-0 z-50 flex flex-col" style={{ backgroundColor: colors.ink }}>
-              <div className="flex items-center justify-between px-[26px] pt-8">
-                <button
-                  onClick={() => setOuverte(null)}
-                  aria-label="Fermer"
-                  className="flex h-11 w-11 items-center justify-center rounded-full"
-                  style={{ backgroundColor: "rgba(255,255,255,0.12)" }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F6F1E6" strokeWidth="2.2">
-                    <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-                  </svg>
-                </button>
-                {/* La photo se retire d'où on la regarde : le mot « Retirer »,
-                    sa couleur, et le tiroir qui rattrape. */}
-                <button
-                  onClick={() => {
-                    const id = photoOuverte.id;
-                    setOuverte(null);
-                    retraits.retirer(id, "cette photo");
-                  }}
-                  aria-label="Retirer cette photo"
-                  className={`flex h-11 items-center justify-center rounded-full px-4 ${libelleCaps}`}
-                  style={{ backgroundColor: "rgba(255,255,255,0.12)", color: colors.orClair, letterSpacing: "0.26em" }}
-                >
-                  Retirer
-                </button>
-              </div>
-              <div className="flex flex-1 items-center justify-center">
-                {/* Conservé en <img> : dimensions intrinsèques inconnues à
-                    l'avance (photos de tailles arbitraires) dans un conteneur
-                    flexible non dimensionné. */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`/api/fichiers/${photoOuverte.storageKey}`}
-                  alt=""
-                  className="max-h-full max-w-full object-contain"
-                />
-              </div>
-            </div>,
-            document.body
-          )
-        : null}
+      {/* **La visionneuse est celle de toute l'application**
+          (`components/atlas/VisionneusePhoto.tsx`) : elle sort par un portail,
+          et elle retourne les pôles de la charte. Le raisonnement des deux vit
+          là-bas, avec elle — il a été payé deux fois ici.
+
+          Ne reste que ce qui est PROPRE à la pellicule : on retire une photo
+          d'où on la regarde. **`orSurEncre`, et non `orClair`.** `orClair` sert
+          les traits posés sur le vert pin ; ici l'or porte un MOT, sur l'encre.
+          Sur les six claires il vaut l'or d'Origine au caractère près — son
+          doré ne bouge pas (sa consigne du 31 août). */}
+      {photoOuverte && (
+        <VisionneusePhoto
+          photos={visibles.map((p) => p.storageKey)}
+          rang={rangOuvert}
+          onRang={(r) => {
+            const p = visibles[r];
+            if (p) setOuverte(p.id);
+          }}
+          onFermer={() => setOuverte(null)}
+        >
+          <button
+            onClick={() => {
+              const id = photoOuverte.id;
+              setOuverte(null);
+              retraits.retirer(id, "cette photo");
+            }}
+            aria-label="Retirer cette photo"
+            className={`flex h-11 items-center justify-center rounded-full px-4 ${libelleCaps}`}
+            style={{ backgroundColor: voile(surPlein, 0.12), color: colors.orSurEncre, letterSpacing: "0.26em" }}
+          >
+            Retirer
+          </button>
+        </VisionneusePhoto>
+      )}
     </>
   );
 }

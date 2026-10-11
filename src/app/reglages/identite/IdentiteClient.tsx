@@ -6,7 +6,15 @@ import ChampAdresse from "@/components/atlas/ChampAdresse";
 import ChampTelephone from "./ChampTelephone";
 import ChampFormeJuridique from "./ChampFormeJuridique";
 import { majIdentiteAction } from "./actions";
+import { deposerAttestationAction, retirerAttestationAction } from "./attestation-actions";
+import { ATTESTATION_FORMATS, refusDeLAttestation } from "@/lib/attestation-decennale";
+import BarreEnregistrer from "@/components/atlas/BarreEnregistrer";
 import DemanderPreuve from "@/components/atlas/DemanderPreuve";
+import { sirenDepuisSiret } from "@/lib/siren";
+import { formeADuCapital } from "@/lib/formes-juridiques";
+import AlerteAncienIban from "@/components/atlas/AlerteAncienIban";
+import { listerAPrevenirAction, prevenirAction } from "@/app/prevenir-du-nouvel-iban";
+import type { FactureAPrevenir } from "@/server/repositories/factures";
 
 /**
  * L'identité de l'entreprise — d'après `maquettes/atlas-reglages-identite.html`.
@@ -28,23 +36,72 @@ type Identite = {
   formeJuridique: string;
   adresse: string;
   siret: string;
+  /** Migration 0128 : facultative, imprimée après le SIRET (`appli/numero-rm.html`). */
+  numeroRm: string;
   telephone: string;
   email: string;
   iban: string;
   titulaireCompte: string;
   numeroTva: string;
   regimeTva: "assujettie" | "franchise";
+  /** Migration 0071 — n'a de sens que pour une société (`formeADuCapital`). */
+  capitalSocial: string;
+  villeRcs: string;
+  /** La décennale et le médiateur (migration 0094) — voir `src/lib/mentions-obligatoires.ts`. */
+  assureurDecennale: string;
+  /** Migration 0121 : ses coordonnées (loi 96-603, art. 22-2). */
+  adresseAssureurDecennale: string;
+  contratDecennale: string;
+  couvertureDecennale: string;
+  mediateurNom: string;
+  mediateurCoordonnees: string;
+  mentionsLegalesPosition: "sous_nom" | "bas";
 };
 
-/** Les neuf premiers chiffres du SIRET — jamais une seconde saisie. */
-export function sirenDepuisSiret(siret: string): string | null {
-  const chiffres = siret.replace(/\D/g, "");
-  if (chiffres.length < 9) return null;
-  return chiffres.slice(0, 9).replace(/(\d{3})(\d{3})(\d{3})/, "$1 $2 $3");
-}
-
-export default function IdentiteClient({ initial }: { initial: Identite }) {
+export default function IdentiteClient({
+  initial,
+  aPrevenir,
+  declarations,
+  attestationDeposee,
+  remarquesAttestation,
+}: {
+  initial: Identite;
+  /** Une attestation décennale est-elle déposée (migration 0121) ? */
+  attestationDeposee: boolean;
+  /** Ce que l'IA a lu sur le fichier déposé, rappelé sans bloquer (7 octobre 2026). */
+  remarquesAttestation: string[];
+  /**
+   * **Les factures parties avec l'ancien IBAN** — sa demande du 8 septembre
+   * 2026. C'est ICI que l'alerte vit, tant qu'il n'a pas prévenu : sa question
+   * — *« si je les relance plus tard, où je retrouve l'écran ? »* — a montré
+   * qu'un écran ouvert une fois ne suffit pas.
+   */
+  aPrevenir: FactureAPrevenir[];
+  /**
+   * Le réglage de périodicité de TVA, monté par la page — elle seule lit la
+   * base — et posé ICI, sous le régime de TVA, parce que les deux moitiés
+   * d'une même question se répondent ensemble ou pas du tout.
+   */
+  /** Les deux déclarations faites aux impôts : le rythme, puis le moment d'exigibilité. */
+  declarations: React.ReactNode;
+}) {
   const [valeurs, setValeurs] = useState<Identite>(initial);
+  /**
+   * **Une seule liste pour les deux exemplaires de l'alerte.** L'encart sous le
+   * champ et l'écran du premier jour montrent la même chose : deux états
+   * séparés laisseraient l'un réclamer un client que l'autre vient de prévenir.
+   */
+  const [aSignaler, setASignaler] = useState(aPrevenir);
+  /**
+   * L'ÉCRAN DU PREMIER JOUR — le troisième endroit, qu'il a voulu le
+   * 8 septembre 2026. Il s'ouvre une fois, juste après l'enregistrement d'un
+   * IBAN qui laisse des factures derrière lui.
+   *
+   * **Il ne remplace rien**, et c'est SA question qui l'a imposé : *« si je les
+   * relance plus tard, où je retrouve l'écran ? »* — « Plus tard » referme
+   * celui-ci, et l'encart sous le champ, lui, ne s'en va pas.
+   */
+  const [premierJour, setPremierJour] = useState(false);
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
   /**
@@ -70,6 +127,15 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
     null
   );
 
+  /**
+   * **L'assureur tel que le SERVEUR l'a enregistré** — sa règle du 5 octobre
+   * 2026 : *« la décennale ne doit pas apparaître comme étant incomplète tant
+   * qu'elle n'est pas enregistrée dans les réglages »*. Rien ne rougit pendant
+   * qu'il tape ; l'adresse et l'attestation ne se réclament qu'une fois
+   * l'assureur rangé, comme le refus d'envoi qui en découle.
+   */
+  const [assureurEnregistre, setAssureurEnregistre] = useState(initial.assureurDecennale.trim());
+
   function enregistrer(partiel: Partial<Identite>) {
     demarrer(async () => {
       const r = await majIdentiteAction(partiel);
@@ -83,6 +149,15 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
       setRefus(r.ok ? null : r.raison);
       // **On ne déclare écrit que ce que le serveur a accepté.** Vider la liste
       // sur un refus afficherait « Enregistré » sur une valeur perdue.
+      if (r.ok && "iban" in partiel) {
+        // La liste se relit côté serveur : la calculer ici demanderait de
+        // savoir quelles factures portent quel IBAN, c'est-à-dire de refaire la
+        // règle qui vit déjà dans le dépôt (`CLAUDE.md` §3).
+        const restantes = await listerAPrevenirAction();
+        setASignaler(restantes);
+        setPremierJour(restantes.length > 0);
+      }
+      if (r.ok && partiel.assureurDecennale !== undefined) setAssureurEnregistre(partiel.assureurDecennale.trim());
       if (r.ok) {
         setAEcrire((a) => {
           const reste = { ...a };
@@ -115,7 +190,7 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
           etiquette="Nom de l'entreprise"
           valeur={valeurs.nom}
           onChange={(v) => ecrire("nom", v)}
-          onFini={() => enregistrer({ nom: valeurs.nom })}
+          onFini={(duChamp) => enregistrer({ nom: duChamp })}
           manquant={valeurs.nom.trim() === ""}
           empeche="Sans nom, vos documents n'ont pas d'émetteur."
         />
@@ -124,8 +199,30 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
         <ChampFormeJuridique
           valeur={valeurs.formeJuridique}
           onChange={(v) => ecrire("formeJuridique", v)}
-          onFini={() => enregistrer({ formeJuridique: valeurs.formeJuridique })}
+          onFini={(v) => enregistrer({ formeJuridique: v })}
         />
+        {/* **Silence, pas grisé** (migration 0072) : les deux champs
+            disparaissent entièrement pour une entreprise individuelle ou une
+            micro-entreprise, qui n'ont ni capital ni RCS — grisés, ils se
+            rempliraient quand même « au cas où ». */}
+        {formeADuCapital(valeurs.formeJuridique) && (
+          <>
+            <Champ
+              etiquette="Capital social"
+              valeur={valeurs.capitalSocial}
+              placeholder="1 000"
+              onChange={(v) => ecrire("capitalSocial", v)}
+              onFini={(duChamp) => enregistrer({ capitalSocial: duChamp })}
+            />
+            <Champ
+              etiquette="Ville du RCS"
+              valeur={valeurs.villeRcs}
+              placeholder="Versailles"
+              onChange={(v) => ecrire("villeRcs", v)}
+              onFini={(duChamp) => enregistrer({ villeRcs: duChamp })}
+            />
+          </>
+        )}
       </Bloc>
 
       <Bloc>
@@ -159,11 +256,42 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
           valeur={valeurs.siret}
           placeholder="14 chiffres"
           onChange={(v) => ecrire("siret", v)}
-          onFini={() => enregistrer({ siret: valeurs.siret })}
+          onFini={(duChamp) => enregistrer({ siret: duChamp })}
           manquant={valeurs.siret.trim() === ""}
           empeche="Vos factures ne sont pas conformes sans lui."
           /* Le SIREN se MONTRE, il ne se demande pas. */
-          sous={siren ? `SIREN ${siren} — les neuf premiers chiffres. Il ne se saisit pas séparément.` : null}
+          sous={siren ? `SIREN ${siren}, les neuf premiers chiffres. Il ne se saisit pas séparément.` : null}
+        />
+        {/* **Facultative, jamais réclamée** (son choix B du 9 octobre 2026) :
+            aucun texte trouvé ne dit quelle mention un artisan porte depuis le
+            RNE. Vide, rien ne s'imprime ; remplie, elle suit le SIRET. */}
+        <Champ
+          etiquette="Répertoire des métiers"
+          valeur={valeurs.numeroRm}
+          placeholder="RM 33"
+          onChange={(v) => ecrire("numeroRm", v)}
+          onFini={(duChamp) => enregistrer({ numeroRm: duChamp })}
+        />
+      </Bloc>
+
+      <Bloc titre="Mentions légales">
+        <Choix
+          nom="Sous le nom"
+          detail="Forme juridique, capital et RCS s'impriment juste sous votre nom."
+          pris={valeurs.mentionsLegalesPosition === "sous_nom"}
+          onChoix={() => {
+            ecrire("mentionsLegalesPosition", "sous_nom");
+            enregistrer({ mentionsLegalesPosition: "sous_nom" });
+          }}
+        />
+        <Choix
+          nom="En bas, avec le SIRET"
+          detail="Elles s'impriment avec vos autres coordonnées."
+          pris={valeurs.mentionsLegalesPosition === "bas"}
+          onChoix={() => {
+            ecrire("mentionsLegalesPosition", "bas");
+            enregistrer({ mentionsLegalesPosition: "bas" });
+          }}
         />
       </Bloc>
 
@@ -194,22 +322,49 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
             valeur={valeurs.numeroTva}
             placeholder="FR…"
             onChange={(v) => ecrire("numeroTva", v)}
-            onFini={() => enregistrer({ numeroTva: valeurs.numeroTva })}
+            onFini={(duChamp) => enregistrer({ numeroTva: duChamp })}
           />
         )}
+
+        {/* ══════════════════════════════════════════════════════════════════
+            **LA PÉRIODICITÉ EST ENFIN À CÔTÉ DU RÉGIME — 6 septembre 2026.**
+
+            Le 14 août, elle a quitté l'écran d'ensemble des réglages pour
+            « rejoindre le régime de TVA », et le commentaire de
+            `identite/page.tsx` le dit encore mot pour mot. **Elle ne l'a jamais
+            rejoint.** Elle était rendue APRÈS tout le composant, donc après le
+            téléphone, l'e-mail et le bloc bancaire.
+
+            **Mesuré au navigateur à 390 × 664, avant et après** — le régime est
+            à 994 px dans les deux cas : la périodicité était à **1 734 px**,
+            elle est à **1 306**. L'écart entre les deux moitiés d'une même
+            question passe de **740 px à 312**, soit un écran de défilement en
+            moins.
+
+            C'est exactement la faute que le déplacement du 14 août voulait
+            réparer — deux réglages fiscaux à deux endroits —, revenue à
+            l'intérieur d'un seul écran. Une prose qui décrit un rangement qui
+            n'a pas eu lieu est pire qu'une absence de prose : on s'y fie.
+
+            **Elle arrive en ENFANT, pas en copie.** Le réglage est un composant
+            client à lui, monté par la page qui lit la base ; le recopier ici en
+            aurait fait deux (`CLAUDE.md` §3). La page le passe, cet écran le
+            pose au bon endroit.
+            ══════════════════════════════════════════════════════════════════ */}
+        {declarations}
       </Bloc>
 
       <Bloc>
         <ChampTelephone
           valeur={valeurs.telephone}
           onChange={(v) => ecrire("telephone", v)}
-          onFini={() => enregistrer({ telephone: valeurs.telephone })}
+          onFini={(duChamp) => enregistrer({ telephone: duChamp })}
         />
         <Champ
           etiquette="Adresse e-mail"
           valeur={valeurs.email}
           onChange={(v) => ecrire("email", v)}
-          onFini={() => enregistrer({ email: valeurs.email })}
+          onFini={(duChamp) => enregistrer({ email: duChamp })}
         />
       </Bloc>
 
@@ -218,7 +373,7 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
           etiquette="IBAN"
           valeur={valeurs.iban}
           onChange={(v) => ecrire("iban", v)}
-          onFini={() => enregistrer({ iban: valeurs.iban })}
+          onFini={(duChamp) => enregistrer({ iban: duChamp })}
           manquant={valeurs.iban.trim() === ""}
           empeche="Sans lui, votre client reçoit un devis qu'il ne peut pas payer."
         />
@@ -227,12 +382,131 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
           valeur={valeurs.titulaireCompte}
           placeholder={valeurs.nom || "Le nom qui figure sur le compte"}
           onChange={(v) => ecrire("titulaireCompte", v)}
-          onFini={() => enregistrer({ titulaireCompte: valeurs.titulaireCompte })}
+          onFini={(duChamp) => enregistrer({ titulaireCompte: duChamp })}
+        />
+
+        {/* **Sous le champ, et non ailleurs** : il voit la conséquence à
+            l'endroit de la cause. L'alerte reste tant qu'il n'a pas prévenu —
+            elle ne dépend d'aucun écran ouvert une fois. */}
+        <AlerteAncienIban factures={aSignaler} onPrevenir={prevenirAction} onMaj={setASignaler} />
+      </Bloc>
+
+      {/* **LA DÉCENNALE ET LE MÉDIATEUR — son accord du 14 septembre 2026**
+          (`appli/decennale-et-mediateur.html`), après « Pour être payé » comme
+          la planche le montre.
+
+          **Ce que ces deux blocs remplacent :** deux crochets à retaper à la
+          main dans le texte des conditions générales. Une information
+          d'entreprise se saisit une fois, comme le SIRET — la retaper dans un
+          texte, c'est la voir diverger au premier changement d'assureur.
+
+          **Le nom porte l'alerte, les autres non** : sans lui rien ne
+          s'imprime, avec lui la mention tient déjà debout. */}
+      <Bloc titre="Assurance décennale">
+        <Champ
+          etiquette="Assureur"
+          valeur={valeurs.assureurDecennale}
+          placeholder="AXA, Groupama, MMA…"
+          onChange={(v) => ecrire("assureurDecennale", v)}
+          onFini={(duChamp) => enregistrer({ assureurDecennale: duChamp })}
+        />
+        {/* **Son choix A du 5 octobre 2026** (`appli/assurance-et-sous-traitance.html`) :
+            la loi veut les coordonnées de l'assureur sur chaque devis et chaque
+            facture (loi 96-603, art. 22-2), et l'attestation jointe (L243-2).
+            Un assureur nommé les rappelle ; sans lui, rien n'est réclamé. Elles
+            ne bloquent plus l'envoi (sa règle du 7 octobre 2026). */}
+        <Champ
+          etiquette="Adresse de l’assureur"
+          valeur={valeurs.adresseAssureurDecennale}
+          placeholder="Sur votre attestation"
+          onChange={(v) => ecrire("adresseAssureurDecennale", v)}
+          onFini={(duChamp) => enregistrer({ adresseAssureurDecennale: duChamp })}
+          manquant={assureurEnregistre !== "" && valeurs.adresseAssureurDecennale.trim() === ""}
+          empeche="Obligatoire sur vos devis et vos factures."
+        />
+        <Champ
+          etiquette="N° de contrat"
+          valeur={valeurs.contratDecennale}
+          placeholder="Sur votre attestation"
+          onChange={(v) => ecrire("contratDecennale", v)}
+          onFini={(duChamp) => enregistrer({ contratDecennale: duChamp })}
+        />
+        <Champ
+          etiquette="Couverture géographique"
+          valeur={valeurs.couvertureDecennale}
+          placeholder="France métropolitaine"
+          onChange={(v) => ecrire("couvertureDecennale", v)}
+          onFini={(duChamp) => enregistrer({ couvertureDecennale: duChamp })}
+        />
+        <Attestation
+          initiale={attestationDeposee}
+          remarquesInitiales={remarquesAttestation}
+          exigee={assureurEnregistre !== ""}
         />
       </Bloc>
 
+      <Bloc titre="Médiateur de la consommation">
+        <Champ
+          etiquette="Nom"
+          valeur={valeurs.mediateurNom}
+          placeholder="Celui auquel vous adhérez"
+          onChange={(v) => ecrire("mediateurNom", v)}
+          onFini={(duChamp) => enregistrer({ mediateurNom: duChamp })}
+          manquant={valeurs.mediateurNom.trim() === ""}
+          empeche="Un client particulier doit pouvoir le saisir. Si vous n'adhérez à aucun médiateur, il faut le faire : c'est obligatoire."
+        />
+        <Champ
+          etiquette="Adresse ou site"
+          valeur={valeurs.mediateurCoordonnees}
+          placeholder="Son adresse ou son site"
+          onChange={(v) => ecrire("mediateurCoordonnees", v)}
+          onFini={(duChamp) => enregistrer({ mediateurCoordonnees: duChamp })}
+        />
+      </Bloc>
+
+      {/* **La pièce partagée attend un OUI ou NON, pas un compte.** Les trois
+          écrans qui portaient chacun leur copie de cette barre ne s'accordaient
+          même pas là-dessus : celui-ci comptait les champs modifiés, les deux
+          autres répondaient vrai ou faux. Ce que la barre en faisait était
+          identique — `> 0` — et la seule chose que le compte ajoutait, c'était
+          une façon de plus d'écrire la même question. */}
+      {/* **L'écran du premier jour.** Il occupe la page pour qu'on ne le
+          traverse pas sans le voir — mais il ne barre rien : « Plus tard » le
+          referme, et l'alerte reste sous le champ. */}
+      {premierJour && aSignaler.length > 0 && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto p-5"
+          style={{ backgroundColor: colors.cream }}
+        >
+          <div className="mx-auto w-full max-w-md">
+            <h1 className="text-[24px]" style={{ fontFamily: font.display, color: colors.ink }}>
+              Votre IBAN a changé
+            </h1>
+            <p className="mt-2 text-[14px] leading-relaxed" style={{ color: colors.inkSoft }}>
+              Les factures ci-dessous sont parties avec l&apos;ancien.
+            </p>
+            <div className="mt-3.5">
+              <AlerteAncienIban
+                factures={aSignaler}
+                onPrevenir={prevenirAction}
+                onMaj={setASignaler}
+                variante="ecran"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setPremierJour(false)}
+              className="mt-3.5 w-full rounded-full py-3 text-[15px]"
+              style={{ color: colors.muted, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+            >
+              Plus tard
+            </button>
+          </div>
+        </div>
+      )}
+
       <BarreEnregistrer
-        aEcrire={Object.keys(aEcrire).length}
+        aEcrire={Object.keys(aEcrire).length > 0}
         enCours={enCours}
         onEnregistrer={() => enregistrer(aEcrire)}
       />
@@ -249,60 +523,6 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
           reprendre?.();
         }}
       />
-    </div>
-  );
-}
-
-/**
- * La barre d'enregistrement, posée au-dessus des onglets.
- *
- * *Demandée par le patron le 14 août 2026 : « il manque un petit bouton save en
- * bas pour pouvoir sauvegarder la page. »*
- *
- * **Elle DIT l'état, elle ne crée pas un second mécanisme** — son choix,
- * planche en main. Les champs s'écrivent déjà seuls en quittant la ligne :
- * c'est ce qui protège une saisie interrompue par un chantier. Le bouton
- * confirme ce qui est écrit, et se rallume dès qu'une frappe attend encore le
- * serveur — par exemple quand on quitte l'écran sans toucher ailleurs.
- *
- * **Elle est FIXE.** Sur une page de neuf champs, un bouton en pied de page ne
- * se voit qu'une fois tout parcouru — c'est-à-dire quand on n'a plus rien à
- * faire.
- *
- * **Elle se pose sur `--atlas-barre`, jamais sur un nombre écrit à la main.**
- * La hauteur de la barre du bas comprend `env(safe-area-inset-bottom)`, qui
- * vaut zéro sur un ordinateur et une vingtaine de pixels sur un iPhone à
- * encoche. Un `bottom-[76px]` aurait donc recouvert les onglets chez lui, et
- * nulle part chez moi — le pire des défauts : invisible là où on le cherche.
- */
-function BarreEnregistrer({
-  aEcrire,
-  enCours,
-  onEnregistrer,
-}: {
-  aEcrire: number;
-  enCours: boolean;
-  onEnregistrer: () => void;
-}) {
-  const rien = aEcrire === 0 && !enCours;
-  return (
-    <div
-      className="fixed inset-x-0 z-10 mx-auto max-w-md border-t px-[26px] pb-4 pt-3.5"
-      style={{ bottom: "var(--atlas-barre)", backgroundColor: colors.cream, borderColor: colors.line }}
-    >
-      <button
-        type="button"
-        onClick={onEnregistrer}
-        disabled={rien}
-        className="block w-full rounded-full py-[15px] text-center text-[16px]"
-        style={{
-          backgroundColor: rien ? colors.card : colors.rust,
-          color: rien ? colors.muted : colors.cream,
-          boxShadow: rien ? `inset 0 0 0 1px ${colors.line}` : "none",
-        }}
-      >
-        {enCours ? "Enregistrement…" : rien ? "Enregistré ✓" : "Enregistrer"}
-      </button>
     </div>
   );
 }
@@ -337,7 +557,7 @@ function Bloc({ titre, children }: { titre?: string; children: React.ReactNode }
       style={{ borderColor: colors.line }}
     >
       {titre && (
-        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
           {titre}
         </p>
       )}
@@ -347,13 +567,128 @@ function Bloc({ titre, children }: { titre?: string; children: React.ReactNode }
 }
 
 /** Une ligne de saisie : étiquette, valeur en serif, filet dessous. */
+/**
+ * L'attestation décennale : un PDF, ou une photo, jointe à chaque devis et
+ * facture dès qu'elle est déposée. Refusée ICI avec la même fonction que le
+ * serveur : la laisser partir pour se la voir refuser après le téléversement
+ * le ferait attendre pour rien, sur un forfait de chantier.
+ */
+function Attestation({
+  initiale,
+  remarquesInitiales,
+  exigee,
+}: {
+  initiale: boolean;
+  remarquesInitiales: string[];
+  exigee: boolean;
+}) {
+  const [deposee, setDeposee] = useState(initiale);
+  const [remarques, setRemarques] = useState(remarquesInitiales);
+  const [refus, setRefus] = useState<string | null>(null);
+  const [enCours, demarrer] = useTransition();
+  const manquant = exigee && !deposee;
+  return (
+    <div
+      data-atlas="attestation-decennale"
+      className="block border-b py-[13px]"
+      style={{ borderColor: manquant ? colors.alert : colors.line }}
+    >
+      <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: manquant ? colors.alert : colors.inkSoft }}>
+        Attestation
+      </span>
+      <input
+        id="attestation-fichier"
+        type="file"
+        accept={ATTESTATION_FORMATS.join(",")}
+        className="hidden"
+        data-atlas="attestation-fichier"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          e.target.value = "";
+          if (!f) return;
+          const r = refusDeLAttestation(f.type, f.size);
+          if (r) {
+            setRefus(r);
+            return;
+          }
+          setRefus(null);
+          const formulaire = new FormData();
+          formulaire.append("fichier", f);
+          demarrer(async () => {
+            const resultat = await deposerAttestationAction(formulaire);
+            if (resultat.ok) {
+              setDeposee(true);
+              setRemarques(resultat.remarques);
+            } else setRefus(resultat.raison);
+          });
+        }}
+      />
+      {deposee ? (
+        <span className="flex items-center justify-between">
+          <span style={{ fontFamily: font.display, fontSize: 17, color: colors.ink }}>Déposée</span>
+          <button
+            type="button"
+            data-atlas="attestation-retirer"
+            disabled={enCours}
+            onClick={() =>
+              demarrer(async () => {
+                const resultat = await retirerAttestationAction();
+                if (resultat.ok) {
+                  setDeposee(false);
+                  setRemarques([]);
+                } else setRefus(resultat.raison);
+              })
+            }
+            className={libelleCaps}
+            style={{ color: colors.or }}
+          >
+            Retirer
+          </button>
+        </span>
+      ) : (
+        <label
+          htmlFor="attestation-fichier"
+          data-atlas="attestation-ajouter"
+          className="cursor-pointer text-[14px] font-medium"
+          style={{ color: colors.or }}
+        >
+          {enCours ? "Envoi…" : "+ Ajouter le PDF"}
+        </label>
+      )}
+      {/* **Un rappel, jamais un refus** (sa règle du 7 octobre 2026) : ce que
+          la lecture a trouvé sur le fichier, sous « Déposée ». */}
+      {deposee && !refus && remarques.length > 0 && (
+        <span data-atlas="attestation-remarques" className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.alert }}>
+          {remarques.map((r) => `${r}.`).join(" ")}
+        </span>
+      )}
+      {manquant && !refus && (
+        <span className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.alert }}>
+          Obligatoire sur vos devis et vos factures.
+        </span>
+      )}
+      {refus && (
+        <span className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.alert }}>
+          {refus}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function Champ({
   etiquette, valeur, onChange, onFini, placeholder, long, manquant, empeche, sous,
 }: {
   etiquette: string;
   valeur: string;
   onChange: (v: string) => void;
-  onFini: () => void;
+  /**
+   * À la sortie du champ, **avec ce que le champ porte** — jamais l'état React,
+   * qui est celui du dernier rendu (leçon du 30 août 2026, `ChampsDuDevis`).
+   * Ce sont le SIRET, le numéro de TVA et l'IBAN qui passent ici : une valeur
+   * en retard d'une frappe part sur toutes ses factures.
+   */
+  onFini: (valeurDuChamp: string) => void;
   placeholder?: string;
   long?: boolean;
   manquant?: boolean;
@@ -366,7 +701,7 @@ function Champ({
     value: valeur,
     placeholder,
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange(e.target.value),
-    onBlur: onFini,
+    onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => onFini(e.currentTarget.value),
     "aria-label": etiquette,
     className: "block w-full border-0 bg-transparent p-0 outline-none",
     // 16 px au moins : en dessous, iOS agrandit la page à la mise au point et le
@@ -376,7 +711,7 @@ function Champ({
 
   return (
     <label className="block border-b py-[13px]" style={{ borderColor: teinte }}>
-      <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: manquant ? colors.alert : colors.muted }}>
+      <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: manquant ? colors.alert : colors.inkSoft }}>
         {etiquette}
         {manquant ? " — manquant" : ""}
       </span>
@@ -386,7 +721,7 @@ function Champ({
         <input {...commun} type="text" autoComplete="off" spellCheck={false} />
       )}
       {sous && (
-        <span className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.muted }}>
+        <span className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
           {sous}
         </span>
       )}
@@ -420,7 +755,7 @@ function Choix({
         <span className="block" style={{ fontFamily: font.display, fontSize: 17, lineHeight: 1.25, color: colors.ink }}>
           {nom}
         </span>
-        <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.muted }}>
+        <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
           {detail}
         </span>
       </span>

@@ -238,6 +238,7 @@ sécurité la moins coûteuse et la plus efficace.
 | Lien public d'un devis | 45 jours | ✅ **appliquée** | Vérifié à la lecture. *Absent de ce tableau jusqu'au 29 août alors qu'il était appliqué* |
 | Lien public d'une facture | 60 jours | ✅ **appliquée** | Idem |
 | Lien d'un compte rendu d'entretien | **aucune** | ❌ **rien** | Les deux autres expirent, celui-ci non. Écart connu, inscrit dans `TODO.md` |
+| **Fiche de sécurité** (décret 2021-1833) | **au moins deux ans après la signature** — imposée | ✅ **appliquée** | Aucune purge ne touche `fiches_securite` ; ses photos sont retenues par `supprimerPhoto` (migration 0099). Une fiche disparaît avec son chantier, donc avec l'entreprise |
 | Transcriptions | illimitée | ❌ **rien** | Aucune constante, aucun code. Intention seule |
 | Chantiers, devis, clients | illimitée | ❌ **rien** | Durée de la relation + prescription commerciale — à définir |
 | Historique des prix | illimitée | ❌ **rien** | Peut être **anonymisé** : l'intérêt est le prix, pas le client |

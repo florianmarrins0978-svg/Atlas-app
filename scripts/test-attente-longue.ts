@@ -8,6 +8,7 @@ import {
   SEUIL_LONGUE_MS,
   SEUIL_ABANDON_MS,
 } from "../src/lib/attente-longue";
+import { champsARemplir } from "../src/lib/coordonnees-dictees";
 
 /*
   Ce que l'écran dit quand l'attente s'éternise.
@@ -128,8 +129,38 @@ cas("LA GARANTIE TIENT : la dictée ne remplit que les champs vides", () => {
   // ferait de l'abandon un piège plutôt qu'une sortie.
   //
   // La garantie vit dans un AUTRE fichier, et c'est le genre d'accord qui se
-  // défait en silence : personne, en modifiant `appliquerDictee`, ne pensera à
-  // l'attente longue.
+  // défait en silence : personne, en touchant à la fusion des champs dictés, ne
+  // pensera à l'attente longue.
+  //
+  // **Ce contrôle lisait le CODE de l'écran, et il a rougi le 7 septembre 2026
+  // sur une garantie intacte.** La règle a quitté `appliquerDictee` pour une
+  // fonction pure ; le `!champ.trim()` qu'il cherchait dans le texte source
+  // n'était plus là, alors que rien ne s'était relâché. Il éprouve désormais la
+  // RÈGLE, pas la façon dont un écran l'écrit (`CLAUDE.md` §5 bis) — et il
+  // survivra au prochain remaniement.
+  const dejaSaisi = {
+    nom: "Bernard",
+    civilite: "mme" as const,
+    telephone: "0611223344",
+    email: "bernard@exemple.fr",
+    adresse: "3 rue du Port",
+  };
+  const dicteeEnRetard = {
+    nom: "Ludovic",
+    civilite: "mr" as const,
+    telephone: "0679984514",
+    email: "ludovic@exemple.fr",
+    adresse: "10 rue de Nantes",
+  };
+  assert.deepStrictEqual(
+    champsARemplir(dejaSaisi, dicteeEnRetard),
+    {},
+    "une dictée en retard écrase ce qui a été saisi pendant l'attente : l'abandon " +
+      "au bout de 45 s devient alors un piège plutôt qu'une sortie",
+  );
+
+  // **Et l'écran doit s'en servir**, sans quoi la règle serait juste et
+  // inappliquée — le défaut exact que ce cas existe pour attraper.
   const formulaire = readFileSync(
     join(__dirname, "..", "src", "app", "chantiers", "nouveau", "FormulaireNouveauChantier.tsx"),
     "utf8",
@@ -138,13 +169,11 @@ cas("LA GARANTIE TIENT : la dictée ne remplit que les champs vides", () => {
     formulaire.indexOf("function appliquerDictee"),
     formulaire.indexOf("function appliquerDictee") + 600,
   );
-  for (const champ of ["nomClient", "telephone", "email", "adresseChantier"]) {
-    assert.ok(
-      new RegExp(`!${champ}\\.trim\\(\\)`).test(fusion),
-      `« ${champ} » peut être écrasé par une dictée en retard : saisir pendant l'attente ` +
-        "devient alors un piège, et rendre la main au bout de 45 s n'est plus une sortie",
-    );
-  }
+  assert.ok(
+    /champsARemplir\(/.test(fusion),
+    "l'écran remplit les champs dictés sans passer par `champsARemplir` : la " +
+      "garantie est ailleurs, et rien ne dit qu'elle est la même",
+  );
 });
 
 if (echecs > 0) {

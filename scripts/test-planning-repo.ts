@@ -93,6 +93,60 @@ async function main() {
     assert.equal(relu?.datePlanifiee, "2026-09-20");
   });
 
+  // ─── POSER NE RÉÉCRIT PAS LA DURÉE — sa remarque du 9 septembre 2026 ──────
+  //
+  // *« Si Claudette c'est un chantier 1 journée, deux, ou une demi, ça doit se
+  // mettre tout seul — je dois pas avoir à choisir. »* Le planning demandait
+  // « Matin, Ap.-m. ou Journée » avant de poser, et écrivait la réponse
+  // par-dessus la durée que le devis avait fixée : une demi-journée vendue en
+  // réservait deux dès qu'on touchait « Journée », et l'après-midi cessait
+  // sans un mot d'être vendable.
+  //
+  // **Ce contrôle vit ici, sans navigateur**, parce que c'est une règle de
+  // dépôt et non un dessin : la suite navigateur éprouve le geste, celle-ci
+  // éprouve ce que la base garde.
+  await test("poser garde la durée du chantier — une demi-journée", async () => {
+    // **La durée vient de la DICTÉE, et de nulle part ailleurs.** Elle était
+    // installée ici en posant le chantier sur « matin » — c'est-à-dire par le
+    // geste même que ce contrôle prétend surveiller. Depuis le 10 septembre
+    // 2026, aucun geste du planning n'écrit une durée : le montage passe donc
+    // par la seule source qui en soit une, sur un chantier NEUF — `c1` porte
+    // déjà une durée réservée des contrôles précédents, et elle primerait.
+    const demiJournee = await chantiersRepo.creerChantier(A, { nom: "Taille — une demi-journée" });
+    await chantiersRepo.mettreAJourDureeEquipe(A, demiJournee.id, {
+      dureePrevue: "une demi-journée",
+    });
+
+    const maj = await chantiersRepo.planifierChantier(A, demiJournee.id, "2026-09-22", {
+      demi: "matin",
+    });
+    assert.equal(maj.datePlanifiee, "2026-09-22");
+    assert.equal(
+      maj.dureeDemiJournees,
+      1,
+      "la demi-journée du chantier a été réécrite par la pose"
+    );
+    // Une journée vide se prend par le matin : `departPossible` rend la
+    // première moitié libre, il n'y a rien à choisir.
+    assert.equal(maj.creneauDebut, "matin");
+  });
+
+  await test("poser sans choix suit la DICTÉE quand rien n'est encore réservé", async () => {
+    // Un chantier qui n'a jamais été posé ne porte pas de durée réservée : la
+    // seule source est ce qu'il a dicté. « 3 jours » fait six demi-journées, et
+    // c'est cela que la pose doit écrire — pas la journée par défaut.
+    const troisJours = await chantiersRepo.creerChantier(A, { nom: "Abattage — trois jours" });
+    await chantiersRepo.mettreAJourDureeEquipe(A, troisJours.id, { dureePrevue: "3 jours" });
+
+    const maj = await chantiersRepo.planifierChantier(A, troisJours.id, "2026-09-24");
+    assert.equal(
+      maj.dureeDemiJournees,
+      6,
+      "deux jours et demi de travail ont disparu en posant le chantier"
+    );
+    assert.equal(maj.creneauDebut, "matin", "un chantier de trois jours part le matin");
+  });
+
   await test("Tri par date de planification : chantiers sans date en dernier", async () => {
     const liste = await chantiersRepo.listerChantiersPourPlanning(A);
     const tries = trierParDatePlanifiee(liste);

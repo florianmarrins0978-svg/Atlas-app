@@ -1,6 +1,7 @@
 import type { Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { CHARTES } from "../src/lib/chartes";
+import { ADRESSE } from "./_adresse";
 
 // Les chartes de couleurs, à l'écran — rubrique « Apparence ».
 //
@@ -28,7 +29,7 @@ import { CHARTES } from "../src/lib/chartes";
 // « Nuit » ferait juger toutes les suivantes sur des couleurs qu'elles
 // n'attendent pas.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let echecs = 0;
 function verifie(nom: string, condition: boolean, detail = "") {

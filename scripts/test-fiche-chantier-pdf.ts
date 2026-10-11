@@ -41,8 +41,93 @@ const dire = (bon: boolean, quoi: string) => {
 // document rendu. Celui-ci l'a été, fond clair et fond sombre, logo carré et
 // logo en bandeau (`scripts/capture-allure-devis.mts`). Recopier l'empreinte
 // affichée sans ouvrir le PDF ne prouverait plus rien du tout.
-const EMPREINTE_FACTURE = "9ccd73aa285385eae884321093df687323d1fcccbfa2d78c877b12ed551c8fa1";
-const EMPREINTE_DEVIS = "e67aa8b9e5d62fabebf179204e383fa71c7019219061cf5d8993370abc6d5186";
+// **RELEVÉES DE NOUVEAU LE 30 AOÛT 2026**, après sa demande : l'en-tête de la
+// colonne de chaque ligne s'appelle « MONTANT HT » et non plus « TOTAL HT »
+// (le récapitulatif du bas, lui, garde « Total HT » — les deux se
+// ressemblaient assez pour qu'il les confonde en lisant son devis).
+//
+// **CE QUI A AUTORISÉ CE RELEVÉ, et ce n'est pas un regard à l'œil.** Le
+// visualiseur PDF de cet environnement rend une page vide, et il n'y a ni
+// `pdftoppm` ni `pdfjs` : une capture aurait mesuré ZÉRO, ce qui est pire
+// qu'absent (`CLAUDE.md` §5). La trace des deux documents a donc été relevée
+// des DEUX CÔTÉS — sur `origin/main` dans un arbre de travail séparé, et ici —
+// puis comparée ligne à ligne. Résultat, sur 917 lignes de trace :
+//
+//   | ce qui diffère | avant | après |
+//   |---|---|---|
+//   | le texte de l'en-tête | « TOTAL HT » | « MONTANT HT » |
+//   | son abscisse | 523,55 | 509,10 |
+//
+//   et **rien d'autre**, dans aucun des deux documents. L'étiquette est calée
+//   à droite : un mot plus long commence plus à gauche, il ne pousse rien.
+//
+// Le seul risque d'un en-tête rallongé — cogner la colonne d'à côté — a été
+// mesuré : « PRIX UNITAIRE HT » finit à x = 424,28 et « MONTANT HT » commence
+// à 509,10, soit 85 points d'écart.
+//
+// **RELEVÉES DE NOUVEAU LE 14 SEPTEMBRE 2026**, après sa planche
+// `appli/le-papier-devis-et-facture.html` — *« PARFAIT ! Code exactement
+// cette planche »* : le devis et la facture sortent du même papier, avec les
+// colonnes des pros (Désignation · Qté · Unité · P.U. HT · Rem. % · Total HT ·
+// TVA % · Total TTC), le taux SUR la ligne et les bases par taux dessous, le
+// numéro à droite du titre (`ARCHITECTURE.md` §364). Ce qui a autorisé ce
+// relevé : les deux PDF rendus dans la visionneuse de l'application et
+// regardés en grand, contre la planche — colonnes, gras et fontes.
+//
+// **RELEVÉES DE NOUVEAU LE 15 SEPTEMBRE 2026**, après sa capture d'une facture
+// sans remise sous une colonne « REM. % » vide : *« si il n'y a pas de remise,
+// la case rem % ne doit pas apparaître »*. Ces deux documents n'en ont pas :
+// la colonne disparaît et Qté · Unité · P.U. HT se resserrent de 24 points
+// vers la droite. Ce qui a autorisé ce relevé : les deux PDF rendus par pdf.js
+// dans un navigateur, regardés — sans remise (la colonne absente, le tableau
+// serré) et avec une remise de 5 % (la colonne revenue, la mise en page du
+// 14 septembre intacte).
+//
+// **ET LE MÊME JOUR, une seconde fois :** *« que l'u soit mise sur le devis ou
+// facture par défaut : si on ne touche à rien, elle se pose, on la voit »*.
+// Les trois lignes de ce document n'ont aucune unité : elles s'impriment
+// désormais « u » (`unite-de-ligne.ts`). Rendu regardé — « u » sur les deux
+// lignes sans unité, « ml » gardé sur celle qui en a une.
+//
+// **RELEVÉES DE NOUVEAU LE 17 SEPTEMBRE 2026**, après ses trois demandes sur le
+// papier : *« toute la ligne désignation jusqu'à total ttc, tu la mets en
+// gras »*, *« mets toutes les écritures en noir, rien en gris »*, *« en bas à
+// gauche, base ht et les deux autres en gras aussi »*. Ce qui change dans la
+// trace : la TEINTE des étiquettes de colonnes, des coordonnées et des
+// mentions légales — du gris à l'encre — et rien d'autre : ni abscisse, ni
+// texte, ni fonte (`ARCHITECTURE.md` §374).
+//
+// **CE QUI A AUTORISÉ CE RELEVÉ** : le PDF du devis rendu par pdf.js dans la
+// visionneuse de l'application, en grand, et REGARDÉ — en-tête de tableau noir
+// et gras d'un bout à l'autre, « BASE HT · TAUX · TVA » de même, coordonnées et
+// mentions légales à l'encre, filets du tableau inchangés.
+//
+// **LE DEVIS SEUL, RELEVÉ DE NOUVEAU LE 22 SEPTEMBRE 2026**, après sa règle :
+// *« Je ne veux plus de tiret, je veux des phrases normales, sans tiret en
+// plein milieu. »* Le cadre de signature dit désormais « Bon pour accord,
+// signature du client ».
+//
+// **CE QUI A AUTORISÉ CE RELEVÉ** : les deux traces entières, relevées ici et
+// sur `HEAD` dans un arbre de travail séparé, puis comparées ligne à ligne.
+// Sur 134 lignes, UNE diffère — ce texte-là, et l'abscisse qui suit sa
+// longueur, la phrase étant centrée. La facture, elle, ne bouge pas : son
+// empreinte est inchangée. C'est la méthode du relevé du 30 août, faute de
+// pouvoir ouvrir un PDF à l'œil dans cet environnement (`CLAUDE.md` §5).
+//
+// **LA FACTURE, RELEVÉE DE NOUVEAU LE 5 OCTOBRE 2026** (check-up légal, point 5) :
+// les 40 € de recouvrement ne se réclament plus à un particulier (C. com.
+// L441-10, D441-5). Trace comparée ligne à ligne à celle d'avant, sur un
+// arbre de travail séparé : sur 70 lignes, deux deviennent une, « légal est
+// exigible. Pas d'escompte pour paiement anticipé. », à la même place. Rien
+// d'autre ne bouge.
+const EMPREINTE_FACTURE = "fb23d34e9939f3466cfefde92e91eab94cb9e2d87958e0c17ad32070e371b3c8";
+// **RELEVÉ DE NOUVEAU LE 3 OCTOBRE 2026** (ses choix 2A, 4A, et le formulaire
+// de rétractation) : « Début des travaux » dans les références, la validité
+// nommée dans la mention, la page du formulaire. Le PDF a été REGARDÉ, rendu
+// en image, avant ce relevé ; c'est ce regard qui a trouvé le libellé et la
+// valeur superposés, corrigés dans `document-commun.ts`. La facture ne bouge
+// pas : son empreinte est inchangée.
+const EMPREINTE_DEVIS = "f0d12df75a3096fe79600a3712b383419aad94633844b9459ca4fa943be4fce6";
 
 const DOCUMENT: FacturePdfData = {
   numeroCommercial: "F-2026-0004",
@@ -171,7 +256,7 @@ async function main() {
   dire(mots.includes("FICHE DE CHANTIER"), "elle porte son titre");
   dire(/Élagage de trois chênes/.test(tout), "elle nomme le chantier");
   dire(/12\/08\/2026/.test(tout), `elle porte le jour de l'intervention (lu : ${tout.match(/\d\d\/\d\d\/\d{4}/)?.[0] ?? "aucun"})`);
-  dire(/Matin · 2 demi-journées · équipe Nord/.test(tout), "elle dit quand on est venu, et avec qui");
+  dire(/Matin, 2 demi-journées, équipe Nord/.test(tout), "elle dit quand on est venu, et avec qui");
   dire(/M\. Martins/.test(tout), "elle nomme le client");
   dire(
     FICHE.prestations.every((p) => tout.includes(p.slice(0, 30))),

@@ -1,6 +1,11 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, ne, notExists, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { photos, fichiersAPurger } from "../db/schema";
+import { photos, fichiersAPurger, chantiers, fichesSecuritePhotos } from "../db/schema";
+import { enregistrerObjet, lireObjet } from "../storage";
+import { preparerPhotoEntrante } from "../photo-entrante";
+import { photoTenueParUnRetour } from "./retours-intervention";
+import { photoTenueParUneFiche } from "./fiches-securite";
+import { refusDuPlafondDuChantier } from "@/lib/photos-plafonds";
 import type { Ctx } from "./context";
 
 type FichierPhoto = {
@@ -20,12 +25,69 @@ export async function listerPhotos(ctx: Ctx, chantierId: string) {
   );
 }
 
-export async function ajouterPhoto(ctx: Ctx, chantierId: string, fichier: FichierPhoto) {
+/**
+ * LES PHOTOS DU CHANTIER, SANS CELLES DE LA FICHE DE SÉCURITÉ — sa règle du
+ * 22 septembre 2026 : *« les photos dans la fiche de sécurité restent à
+ * l'intérieur de la fiche, et les photos de la fiche client restent à
+ * l'intérieur de la feuille travaux à faire »*.
+ *
+ * **Les deux vivent dans la même table, et c'est juste** : ce sont des photos
+ * du même chantier, comptées sous le même plafond, purgées par le même chemin.
+ * Ce qui les distingue n'est pas leur nature mais l'endroit où il les a
+ * posées — et cet endroit est écrit dans `fiches_securite_photos`, dès
+ * l'instant où il la pose (`ajouterPhotoDeLaFicheAction`).
+ *
+ * D'où cette lecture-ci, et non un filtrage à l'écran : un écran qui trie ce
+ * que le serveur lui donne en trop finit par en oublier un, et l'oubli ne se
+ * voit pas.
+ */
+export async function listerPhotosHorsFicheDeSecurite(ctx: Ctx, chantierId: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .select()
+      .from(photos)
+      .where(
+        and(
+          eq(photos.chantierId, chantierId),
+          isNull(photos.deletedAt),
+          notExists(
+            tx
+              .select({ un: sql`1` })
+              .from(fichesSecuritePhotos)
+              .where(eq(fichesSecuritePhotos.photoId, photos.id))
+          )
+        )
+      )
+  );
+}
+
+export type PhotoAjoutee = { ok: true; photo: typeof photos.$inferSelect } | { ok: false; raison: string };
+
+/**
+ * Ajouter une photo au chantier — **sous le plafond du chantier**, et c'est ici
+ * qu'il se tient (`PHOTOS_MAX_PAR_CHANTIER`, sa décision du 20 septembre 2026).
+ *
+ * Au serveur et non à l'écran : une sélection de la photothèque se recommence,
+ * et deux écrans ajoutent des photos au même chantier (la pellicule et le
+ * retour du jour). Le compte et l'insertion vivent dans la même transaction,
+ * sous `withEntreprise`, pour que deux ajouts d'affilée ne passent pas tous
+ * deux sous la barre.
+ */
+export async function ajouterPhoto(ctx: Ctx, chantierId: string, fichier: FichierPhoto): Promise<PhotoAjoutee> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const existantes = await tx
       .select()
       .from(photos)
       .where(and(eq(photos.chantierId, chantierId), isNull(photos.deletedAt)));
+
+    const refus = refusDuPlafondDuChantier(existantes.length);
+    if (refus) {
+      // Les octets sont déjà rangés quand on arrive ici : une photo refusée ne
+      // laisse pas un fichier orphelin, elle part en purge comme une photo
+      // effacée (`supprimerPhoto`).
+      await tx.insert(fichiersAPurger).values({ storageKey: fichier.storageKey });
+      return { ok: false, raison: refus };
+    }
 
     const [row] = await tx
       .insert(photos)
@@ -37,18 +99,201 @@ export async function ajouterPhoto(ctx: Ctx, chantierId: string, fichier: Fichie
         createdBy: ctx.utilisateurId,
       })
       .returning();
-    return row;
+    return { ok: true, photo: row };
   });
+}
+
+/**
+ * RECEVOIR UNE PHOTO DE CHANTIER — nettoyée, rangée, inscrite. **Un seul
+ * chemin**, pour les trois écrans qui en posent : la pellicule du client, le
+ * retour du jour, et la fiche de sécurité.
+ *
+ * Il est né le 22 septembre 2026, quand la fiche de sécurité a dû poser SES
+ * photos autrement que par le geste du retour. Recopier les quatre étapes —
+ * nettoyer, ranger, inscrire, refuser — aurait fait deux portes d'entrée
+ * d'images, et c'est exactement ce que `photo-entrante.ts` interdit : elles
+ * auraient divergé sur le nettoyage des métadonnées (`CLAUDE.md` §3).
+ *
+ * Ce qui reste à l'appelant : la limite de téléversement, qui est une règle de
+ * l'entreprise et non du chantier.
+ */
+export async function recevoirPhotoDeChantier(
+  ctx: Ctx,
+  chantierId: string,
+  fichier: unknown
+): Promise<PhotoAjoutee> {
+  const prete = await preparerPhotoEntrante(fichier, "photo de chantier");
+  if (!prete.ok) return { ok: false, raison: prete.raison };
+  const objet = await enregistrerObjet(
+    `chantiers/${chantierId}/photos`,
+    prete.photo.octets,
+    prete.photo.extension
+  );
+  return ajouterPhoto(ctx, chantierId, {
+    storageKey: objet.storageKey,
+    mimeType: prete.photo.mimeType,
+    tailleOctets: objet.tailleOctets,
+    nomOriginal: prete.photo.nomOriginal,
+    checksum: objet.checksum,
+  });
+}
+
+export type PhotoDAvant = {
+  id: string;
+  storageKey: string;
+  chantierId: string;
+  chantierNom: string;
+  faiteLe: string;
+};
+
+/**
+ * Ce qu'on avait photographié chez ce client, sur ses AUTRES chantiers.
+ *
+ * **Sa demande du 8 septembre 2026 :** *« si ce n'est pas le premier devis les
+ * anciennes photos peuvent apparaître à l'écran mais sans s'inscrire de nouveau,
+ * juste pour voir ce qu'on avait fait la dernière fois. »*
+ *
+ * Elles ne sont donc PAS les photos de ce chantier-ci : elles servent à se
+ * rappeler, et elles ne rejoignent le dossier que si le patron les coche
+ * (`recopierPhotos`, juste en dessous).
+ *
+ * Le chantier en cours est exclu — ses photos à lui sont déjà dans la
+ * pellicule, et les montrer deux fois lui ferait croire à des doublons.
+ */
+export async function photosDesAutresChantiers(
+  ctx: Ctx,
+  clientId: string,
+  saufChantierId: string | null,
+  maximum = 12
+): Promise<PhotoDAvant[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const conditions = [
+      eq(chantiers.clientId, clientId),
+      isNull(photos.deletedAt),
+      isNull(chantiers.deletedAt),
+    ];
+    if (saufChantierId) conditions.push(ne(photos.chantierId, saufChantierId));
+
+    const lignes = await tx
+      .select({
+        id: photos.id,
+        storageKey: photos.storageKey,
+        chantierId: photos.chantierId,
+        chantierNom: chantiers.nom,
+        faiteLe: photos.createdAt,
+      })
+      .from(photos)
+      .innerJoin(chantiers, eq(photos.chantierId, chantiers.id))
+      .where(and(...conditions))
+      .orderBy(desc(photos.createdAt))
+      .limit(maximum);
+
+    return lignes.map((l) => ({ ...l, faiteLe: new Date(l.faiteLe).toISOString() }));
+  });
+}
+
+/**
+ * Reprendre des photos d'un chantier passé sur celui d'aujourd'hui.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **LE FICHIER EST RECOPIÉ, JAMAIS PARTAGÉ — et c'est tout l'enjeu.**
+ *
+ * Réutiliser la `storage_key` d'origine aurait paru élégant : une ligne de
+ * plus, aucun octet déplacé. Ce serait un défaut différé, et grave.
+ * `supprimerPhoto` met **la clé** en file de purge (`fichiersAPurger`, juste en
+ * dessous) : le jour où le patron efface l'ancienne photo, le fichier disparaît
+ * — et avec lui la photo du chantier neuf, qui pointait dessus. Le salarié
+ * ouvrirait alors une fiche d'intervention aux images mortes, sans que rien
+ * n'ait été supprimé de son côté.
+ *
+ * On paie donc une copie d'octets, une fois, pour que les deux dossiers soient
+ * réellement indépendants.
+ *
+ * **Ce qui est délibérément conservé :** le type et le nom d'origine. Ce qui ne
+ * l'est pas : l'ordre, qui repart de la pellicule du nouveau chantier.
+ *
+ * Rend les photos créées. Une photo qu'on ne retrouve pas — effacée entre
+ * l'affichage et la validation, ou appartenant à une autre entreprise, ce que
+ * la RLS rend indiscernable — est simplement ignorée : elle ne doit pas faire
+ * échouer l'enregistrement d'un chantier.
+ */
+export async function recopierPhotos(
+  ctx: Ctx,
+  photoIds: readonly string[],
+  versChantierId: string
+) {
+  if (photoIds.length === 0) return [];
+
+  // Les sources sont relues ICI, jamais transmises par l'écran : une clé de
+  // rangement qui voyage est une clé qu'on peut changer en chemin.
+  const sources = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .select()
+      .from(photos)
+      .where(and(inArray(photos.id, [...photoIds]), isNull(photos.deletedAt)))
+  );
+
+  const creees = [];
+  for (const source of sources) {
+    let octets: Buffer;
+    try {
+      octets = await lireObjet(source.storageKey);
+    } catch {
+      // Le fichier a disparu du rangement. On saute : un chantier ne se refuse
+      // pas pour une photo perdue, et la pellicule dira ce qu'elle a repris.
+      continue;
+    }
+    const extension = extensionDe(source.storageKey);
+    const objet = await enregistrerObjet(
+      `chantiers/${versChantierId}/photos`,
+      octets,
+      extension
+    );
+    creees.push(
+      await ajouterPhoto(ctx, versChantierId, {
+        storageKey: objet.storageKey,
+        mimeType: source.mimeType,
+        tailleOctets: objet.tailleOctets,
+        nomOriginal: source.nomOriginal ?? undefined,
+        checksum: objet.checksum,
+      })
+    );
+  }
+  return creees;
+}
+
+/** L'extension d'une clé de rangement, point compris — « .jpg », ou rien. */
+function extensionDe(storageKey: string): string {
+  const dernier = storageKey.slice(storageKey.lastIndexOf("/") + 1);
+  const point = dernier.lastIndexOf(".");
+  return point === -1 ? "" : dernier.slice(point);
 }
 
 // Suppression douce : marquée deleted_at, le fichier physique n'est jamais
 // détruit immédiatement — mis en file pour purge différée (voir fichiers.ts).
+//
+// ───────────────────────────────────────────────────────────────────────────
+// **SAUF SI UN RETOUR D'INTERVENTION LA MONTRE — et c'est tout l'enjeu de sa
+// règle du 8 septembre 2026 :** *« il faut pouvoir les garder longtemps »*.
+//
+// Les photos d'un retour ne sont pas des copies : ce sont celles du chantier.
+// Mettre la clé en file de purge détruirait donc le fichier que le retour
+// montre encore — **des mois plus tard**, quand la purge passe, et sur un écran
+// que personne ne regardait ce jour-là. Le lien ne se ferait jamais.
+//
+// La ligne disparaît quand même de la pellicule du chantier : c'est son geste,
+// et il reste vrai. C'est le FICHIER qui survit, parce qu'un autre écran en
+// dépend.
 export async function supprimerPhoto(ctx: Ctx, photoId: string) {
+  // …ou une fiche de sécurité, gardée deux ans (migration 0099) : même règle.
+  const tenueParUnRetour = (await photoTenueParUnRetour(ctx, photoId)) || (await photoTenueParUneFiche(ctx, photoId));
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [photo] = await tx.select().from(photos).where(eq(photos.id, photoId)).limit(1);
     if (!photo) return null;
     await tx.update(photos).set({ deletedAt: new Date() }).where(eq(photos.id, photoId));
-    await tx.insert(fichiersAPurger).values({ storageKey: photo.storageKey });
+    if (!tenueParUnRetour) {
+      await tx.insert(fichiersAPurger).values({ storageKey: photo.storageKey });
+    }
     return photo;
   });
 }

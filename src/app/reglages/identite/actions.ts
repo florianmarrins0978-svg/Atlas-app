@@ -41,12 +41,26 @@ export async function majIdentiteAction(data: {
   formeJuridique?: string;
   adresse?: string;
   siret?: string;
+  /** Migration 0128 : la mention du répertoire des métiers, libre. */
+  numeroRm?: string;
   telephone?: string;
   email?: string;
   iban?: string;
   titulaireCompte?: string;
   numeroTva?: string;
   regimeTva?: "assujettie" | "franchise";
+  /** Migration 0071 — voir `src/lib/mentions-legales.ts`. */
+  capitalSocial?: string;
+  villeRcs?: string;
+  mentionsLegalesPosition?: "sous_nom" | "bas";
+  /** Migration 0094 — voir `src/lib/mentions-obligatoires.ts`. */
+  assureurDecennale?: string;
+  /** Migration 0121 : ses coordonnées (loi 96-603, art. 22-2). */
+  adresseAssureurDecennale?: string;
+  contratDecennale?: string;
+  couvertureDecennale?: string;
+  mediateurNom?: string;
+  mediateurCoordonnees?: string;
 }): Promise<ResultatIdentite> {
   const ctx = await getCurrentCtx();
   try {

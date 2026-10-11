@@ -56,6 +56,11 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       DEEPGRAM_API_KEY: ${DEEPGRAM_API_KEY:-}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      # L'envoi du code de vérification d'une adresse (14 septembre 2026) :
+      # même règle que l'IA, la clé branche Brevo, `COURRIEL_PROVIDER=dev` coupe.
+      BREVO_API_KEY: ${BREVO_API_KEY:-}
+      COURRIEL_EXPEDITEUR: ${COURRIEL_EXPEDITEUR:-}
+      COURRIEL_PROVIDER: ${COURRIEL_PROVIDER:-}
       # Marque un conteneur construit APRÈS le correctif du 6 août 2026. Sa
       # présence signifie : « ce que tu lis dans les deux lignes de fournisseur
       # a été voulu ». Son absence signale un espace plus ancien, où `dev` était

@@ -90,16 +90,25 @@ cas("le modèle qui entoure son objet d'une phrase est quand même lu", () => {
   assert.equal(r.allure.typographie, "lato");
 });
 
-console.log("\n=== Rapprocher une police d'une des neuf ===\n");
+console.log("\n=== Rapprocher une police d'une des cinq ===\n");
 
 cas("un nom exact est reconnu", () => {
-  assert.equal(typographieDepuisNom("Playfair Display"), "playfair");
+  assert.equal(typographieDepuisNom("Merriweather"), "merriweather");
   assert.equal(typographieDepuisNom("inter"), "inter");
 });
 
 cas("un nom partiel plausible est reconnu", () => {
   assert.equal(typographieDepuisNom("Garamond"), "eb-garamond");
-  assert.equal(typographieDepuisNom("Playfair"), "playfair");
+  assert.equal(typographieDepuisNom("Archivo"), "archivo-narrow");
+});
+
+cas("une police RETIRÉE n'est pas approchée : elle se dit non reconnue", () => {
+  // **Sa décision du 7 septembre 2026** : quatre familles retirées. Un devis
+  // photographié dans l'une d'elles ne doit pas se voir attribuer la plus
+  // ressemblante — ce serait repeindre ses documents d'après une photo, sans
+  // qu'il l'ait choisi. La réserve le lui dit, et il choisit à la main.
+  assert.equal(typographieDepuisNom("Playfair Display"), null);
+  assert.equal(typographieDepuisNom("Libre Baskerville"), null);
 });
 
 cas("un genre seul (« serif ») n'est PAS une police : null", () => {

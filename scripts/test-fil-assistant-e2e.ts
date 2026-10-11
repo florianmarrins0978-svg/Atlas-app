@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
+import { ADRESSE } from "./_adresse";
 
 /*
   LE FIL DE L'ASSISTANT SURVIT AU RECHARGEMENT.
@@ -23,7 +24,7 @@ import { Pool } from "pg";
   l'écrire vaut mieux que de la découvrir en lisant un rouge de trop.
 */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 let echecs = 0;

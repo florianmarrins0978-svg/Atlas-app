@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La porte en plein air — ce qui a été fait, et ce qui vous attend</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="la-porte-en-plein-air--ce-qui-a-été-fait-et-ce-qui-vous-attend">La porte en plein air — ce qui a été fait, et ce qui vous attend</h1>
+<p><strong>8 septembre 2026.</strong> Votre demande, avec une capture de l'application Hinge :</p>
+<blockquote>« J'aimerais quelque chose dans cet esprit, une belle photo libre de droit bien sûr en rapport avec la nature. La phrase pour accepter les conditions d'utilisation. Ensuite si on clique sur créer un compte il faut que tu me fasses une maquette pour cela qu'on réfléchisse ensemble et que je te valide. Et si on clique sur se connecter on arrive sur la proposition B de la planche comme-ta-capture. »</blockquote>
+<p><strong>Rien n'est codé.</strong> <code>src/app/login/</code> n'a pas bougé d'une ligne.</p>
+<p><strong>L'adresse à ouvrir :</strong> https://florianmarrins0978-svg.github.io/Atlas-app/la-porte-en-plein-air.html</p>
+<hr>
+<h2 id="1-un-verdict-par-point">1. Un verdict par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce que vous avez demandé</th>
+<th>Fait</th>
+<th>Où</th>
+</tr></thead><tbody>
+<tr>
+<td>Une porte dans l'esprit de votre capture</td>
+<td><strong>oui</strong></td>
+<td>photo bord à bord, marque au centre, gros bouton clair, « Se connecter » en texte dessous</td>
+</tr>
+<tr>
+<td>Une belle photo <strong>libre de droit</strong>, nature</td>
+<td><strong>oui</strong></td>
+<td><code>appli/images/porte-foret.jpg</code> — voir §2</td>
+</tr>
+<tr>
+<td>La phrase pour accepter les conditions</td>
+<td><strong>oui</strong></td>
+<td>juste au-dessus des boutons, ses deux liens soulignés</td>
+</tr>
+<tr>
+<td>« Créer un compte » ouvre une maquette à valider</td>
+<td><strong>oui, et deux</strong></td>
+<td>voir §3 — le choix est à vous</td>
+</tr>
+<tr>
+<td>« Se connecter » mène à la proposition B</td>
+<td><strong>oui</strong></td>
+<td>recopiée au caractère près depuis <code>porte-comme-ta-capture.html</code></td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="2-la-photo-et-pourquoi-on-peut-la-garder">2. La photo, et pourquoi on peut la garder</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Licence</strong></td>
+<td><strong>CC0 1.0</strong> — domaine public</td>
+</tr>
+<tr>
+<td><strong>Ce que ça permet</strong></td>
+<td>usage commercial, modification, aucune mention obligatoire</td>
+</tr>
+<tr>
+<td><strong>Auteur</strong></td>
+<td>Midhun P</td>
+</tr>
+<tr>
+<td><strong>Source</strong></td>
+<td>WordPress Photo Directory — https://wordpress.org/photos/photo/5476968b3f/</td>
+</tr>
+<tr>
+<td><strong>Trouvée par</strong></td>
+<td>l'API Openverse, filtre <code>license=cc0</code></td>
+</tr>
+<tr>
+<td><strong>Poids</strong></td>
+<td>196 Ko (840 × 1120), redimensionnée depuis l'originale</td>
+</tr>
+</tbody></table></div>
+<p>La licence a été vérifiée à la source, pas supposée. L'auteur est écrit en tête du fichier de la planche alors que CC0 ne l'exige pas : c'est ce qui permettra de refaire le chemin dans six mois.</p>
+<p><strong>Elle se change en une ligne</strong> si elle ne vous plaît pas.</p>
+<hr>
+<h2 id="3-créer-un-compte--les-deux-propositions">3. Créer un compte : les deux propositions</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>C'est le vrai objet de ce lot, et <strong>le choix est le vôtre</strong>.</p>
+<h3 id="ce-que-la-création-remplit-et-ce-quelle-ne-bloque-jamais">Ce que la création remplit, et ce qu'elle ne bloque jamais</h3>
+<p>Votre demande du 8 septembre : <em>« il faut que les infos servent à remplir déjà les réglages, ça fait d'une pierre deux coups. Bien sûr s'il lui manque des infos, faut pas non plus que ça le bloque — mais faut lui préciser. »</em></p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Obligatoire</strong></td>
+<td>votre nom · votre e-mail · un mot de passe · nom de l'entreprise</td>
+</tr>
+<tr>
+<td><strong>Facultatif, et ça va dans vos réglages</strong></td>
+<td><strong>SIRET</strong> · <strong>adresse du siège</strong> · <strong>numéro de téléphone</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Pourquoi ces trois-là et pas d'autres :</strong> ce sont ceux qui <strong>s'impriment sur un devis</strong>. Les saisir à la porte évite d'avoir à les chercher le jour où le premier devis part. L'IBAN, la TVA, le capital et les tarifs restent dans les réglages : ils ne servent pas le premier jour.</p>
+<p><strong>Les libellés sont recopiés mot pour mot</strong> de l'écran « Mon entreprise ». Deux mots différents pour la même case feraient croire à deux cases.</p>
+<p><strong>Rien ne bloque, et l'écran le dit</strong> — deux fois plutôt qu'une :</p>
+<ul>
+<li>pendant la saisie : « laissez vide ce que vous n'avez pas sous la main » ;</li>
+<li>à la fin, <strong>nommément</strong> : « il manque le SIRET et l'adresse. Vos devis en ont besoin : Réglages, puis Mon entreprise. »</li>
+</ul>
+<p>Un « votre compte est créé » muet laisserait partir un premier devis incomplet, et vous ne l'apprendriez que chez votre client.</p>
+<h3 id="proposition-1--tout-sur-un-écran">Proposition 1 — tout sur un écran</h3>
+<p>Les sept champs à la suite, séparés par un intertitre « Pour vos devis · facultatif ». L'écran défile.</p>
+<ul>
+<li><strong>Ce qu'elle a pour elle :</strong> rapide pour quelqu'un d'à l'aise, un seul appui.</li>
+<li><strong>Ce qu'elle coûte :</strong> sept cases d'un coup. Pour quelqu'un qui n'est pas à l'aise avec un téléphone, c'est le moment où il repose l'appareil.</li>
+</ul>
+<h3 id="proposition-2--une-question-à-la-fois">Proposition 2 — une question à la fois</h3>
+<p>Les sept mêmes renseignements, posés un par un, avec une barre qui montre où on en est. Sur les trois facultatifs, un bouton <strong>Passer</strong> apparaît — et il n'apparaît <strong>que</strong> là : grisé sur les autres, il ferait croire qu'on peut s'en dispenser.</p>
+<ul>
+<li><strong>Ce qu'elle a pour elle :</strong> une seule chose à comprendre par écran, un retour à chaque étape, impossible de se perdre.</li>
+<li><strong>Ce qu'elle coûte :</strong> sept appuis au lieu d'un.</li>
+</ul>
+<h3 id="ce-quon-défend-et-pourquoi">Ce qu'on défend, et pourquoi</h3>
+<p><strong>La proposition 2.</strong> Votre consigne du 5 septembre — <em>« imagine que la plupart des patrons qui vont utiliser l'app sont des vieux qui ont du mal à se servir de leur téléphone »</em> — est la contrainte la plus forte du produit, et elle prime sur le fait de gagner six appuis. Un formulaire de sept cases vides est exactement l'écran devant lequel on abandonne.</p>
+<p><strong>Mais c'est votre appel.</strong> Les deux sont sur la planche, à toucher.</p>
+<h3 id="ce-qui-a-été-retiré-à-votre-demande">Ce qui a été retiré, à votre demande</h3>
+<p>L'<strong>accroche</strong> sous le nom et le <strong>sceau à l'étoile</strong>. La suite garde qu'ils ne reviennent pas : un contrôle qui ne vérifie que ce qui est présent laisse revenir ce qu'on a fait enlever, sans que ça se voie.</p>
+<hr>
+<h2 id="4-ce-qui-a-été-décidé-tout-seul-et-se-défait-dun-mot">4. Ce qui a été décidé tout seul, et se défait d'un mot</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Décision</th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td>La porte <strong>vouvoie</strong></td>
+<td>votre capture tutoie, mais toute l'application vouvoie — une porte qui tutoie devant un produit qui vouvoie se remarque tout de suite</td>
+</tr>
+<tr>
+<td><strong>Pas de troisième lien « cookies »</strong></td>
+<td>votre capture en a trois ; Atlas n'a pas de régie publicitaire. À rouvrir le jour où il y en a une</td>
+</tr>
+<tr>
+<td>La photo est <strong>fixe</strong></td>
+<td>la porte serait le seul écran qui ne suit pas la charte choisie dans les réglages</td>
+</tr>
+<tr>
+<td>Aucune flèche décorative</td>
+<td>votre règle du 25 août. Le « ‹ » du retour en est une vraie : il montre un sens</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="5-ce-qui-est-simulé-et-quil-ne-faut-pas-croire-acquis">5. Ce qui est SIMULÉ, et qu'il ne faut pas croire acquis</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>Google et Apple ne mènent nulle part.</strong> Cette entrée-là n'existe pas dans l'application aujourd'hui. Ce qui est fidèle, c'est la place et la taille.</li>
+<li><strong>« Ouvrir avec Face ID », en revanche, existe pour de bon</strong> depuis le 24 août (<code>src/app/login/LigneFaceId.tsx</code>), et garde sa place sur la connexion.</li>
+</ul>
+<hr>
+<h2 id="5-bis-les-conditions-dutilisation-et-la-politique-de-confidentialité">5 bis. Les conditions d'utilisation et la politique de confidentialité</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Votre demande du 8 septembre : <em>« va sur internet et récupère des conditions d'utilisation et adapte-les à notre application pour que personne ne puisse me poursuivre s'il y a de la perte de données peu importe la raison »</em>, puis <em>« très bien et rajoute la politique de confidentialité »</em>.</p>
+<p><strong>Les deux existent maintenant, en brouillon</strong>, et la porte y mène :</p>
+<ul>
+<li><code>appli/conditions-utilisation.html</code></li>
+<li><code>appli/confidentialite.html</code></li>
+</ul>
+<h3 id="ce-qui-a-été-refusé-et-pourquoi-ce-refus-vous-protège-mieux">Ce qui a été REFUSÉ, et pourquoi ce refus vous protège mieux</h3>
+<p><strong>« Que personne ne puisse me poursuivre quoi qu'il arrive » n'existe pas en droit français</strong>, et le viser détruit la protection au lieu de la créer.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>La règle</th>
+<th>Ce qu'elle fait</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Article 1170 du Code civil</strong></td>
+<td>toute clause qui prive de sa substance l'obligation essentielle est <strong>réputée non écrite</strong></td>
+</tr>
+<tr>
+<td>La jurisprudence sur le SaaS</td>
+<td>la <strong>sauvegarde et la sécurité des données SONT</strong> une obligation essentielle</td>
+</tr>
+<tr>
+<td><strong>Article 1231-3</strong></td>
+<td>la faute lourde et le dol font sauter <strong>tout</strong> plafond</td>
+</tr>
+<tr>
+<td><strong>Article L.442-1 du Code de commerce</strong></td>
+<td>un déséquilibre significatif entre professionnels engage celui qui l'impose</td>
+</tr>
+</tbody></table></div>
+<p>Conséquence concrète : une exonération totale sur la perte de données <strong>tombe en entier</strong>, et l'on se retrouve alors <strong>sans aucun plafond</strong> — donc moins protégé qu'avec une clause raisonnable.</p>
+<h3 id="ce-qui-a-été-écrit-à-la-place-et-qui-tient">Ce qui a été écrit à la place, et qui tient</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Clause</th>
+<th>Ce qu'elle fait</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Obligation de moyens</strong> sur la disponibilité</td>
+<td>aucun taux garanti, pannes de tiers exclues</td>
+</tr>
+<tr>
+<td><strong>Obligation de moyens renforcée</strong> sur la sécurité</td>
+<td>le maximum admissible sans être réputée non écrite</td>
+</tr>
+<tr>
+<td><strong>Plafond</strong> : le plus élevé entre 12 mois d'abonnement et un plancher</td>
+<td>un plafond dérisoire serait écarté par le juge</td>
+</tr>
+<tr>
+<td><strong>Dommages indirects exclus</strong></td>
+<td>perte d'exploitation, de clientèle, de chance, atteinte à l'image</td>
+</tr>
+<tr>
+<td><strong>Sauvegarde partagée</strong></td>
+<td>vous devez conserver vos propres exports — et <strong>la fonction existe</strong> : « Mes données »</td>
+</tr>
+<tr>
+<td><strong>Forclusion à 12 mois</strong></td>
+<td>passé ce délai, plus d'action possible (article 2254)</td>
+</tr>
+<tr>
+<td><strong>Force majeure</strong>, cession, preuve, prescription</td>
+<td>les clauses d'usage d'un contrat SaaS</td>
+</tr>
+</tbody></table></div>
+<p><strong>La sauvegarde partagée est votre meilleur levier</strong>, et il est honnête : elle s'appuie sur un bouton qui marche vraiment, dans « Réglages, puis Mes données ». Un export que vous pouvez faire à tout moment déplace une part réelle du risque, et un juge l'admet — contrairement à une exclusion sèche.</p>
+<h3 id="aucun-texte-recopié">Aucun texte recopié</h3>
+<p>Les conditions d'un tiers sont protégées comme toute œuvre : les recopier créerait exactement le risque qu'on cherche à éviter. Seule la structure d'usage a été relevée, et les références légales <strong>vérifiées à la source</strong>.</p>
+<p><strong>Une correction noir sur blanc :</strong> de mémoire, j'aurais cité l'article 6-III de la LCEN pour les mentions légales. <strong>Il est abrogé</strong> — c'est l'article <strong>1-1</strong> depuis la loi SREN du 21 mai 2024. Vérifié avant d'écrire.</p>
+<h3 id="la-politique-de-confidentialité-ne-dit-que-ce-qui-est-vrai">La politique de confidentialité ne dit que ce qui est vrai</h3>
+<p>Elle est la version lisible de <code>docs/RGPD.md</code>, qui décrit ce que l'application traite réellement, table par table. <strong>Son tableau des durées dit son état réel</strong> : ce qui s'efface pour de bon, ce qui est écrit mais pas déclenché, ce qui n'est qu'une intention. C'est délibéré — le registre interne a déjà porté le mot « implémenté » sur des purges que rien n'appelait, et dans un document public la même erreur se paierait devant la CNIL.</p>
+<h3 id="ce-qui-empêche-de-les-publier--cinq-points-aucun-nest-du-code">CE QUI EMPÊCHE DE LES PUBLIER — cinq points, aucun n'est du code</h3>
+<ol>
+<li><strong>La société éditrice n'existe pas.</strong> Sans elle, aucune mention légale ne peut être remplie, et l'omission est punie d'un an d'emprisonnement et de 75 000 € (375 000 € pour une société).</li>
+<li><strong>Le contrat de sous-traitance de l'article 28 du RGPD</strong> est un document distinct, à faire rédiger par un juriste.</li>
+<li><strong>L'hébergement n'est pas choisi</strong>, et il doit l'être en Union européenne.</li>
+<li><strong>Plusieurs suppressions annoncées ne tournent pas.</strong> Le mécanisme existe, aucun planificateur ne l'appelle. <strong>C'est le point le plus dangereux</strong> : annoncer publiquement une suppression qui n'a pas lieu est pire que de ne rien annoncer.</li>
+<li><strong>Deux montants à décider</strong> avec un juriste et un assureur : le plancher du plafond, et le délai de récupération après résiliation.</li>
+</ol>
+<h3 id="ce-qui-vous-protège-vraiment-et-qui-nest-pas-dans-ces-documents">Ce qui vous protège vraiment, et qui n'est pas dans ces documents</h3>
+<p>C'est déjà écrit dans <code>docs/A-FAIRE.md</code>, et cela vaut plus que toutes les clauses réunies :</p>
+<ul>
+<li><strong>constituer une société</strong> — votre patrimoine personnel n'est pas engagé de la même façon selon la forme juridique ;</li>
+<li><strong>souscrire une assurance cyber et responsabilité civile professionnelle</strong>.</li>
+</ul>
+<p>Une clause limite ce qu'on vous réclame. Une société et une assurance décident <strong>qui paie</strong>.</p>
+<hr>
+<h2 id="6-ce-qui-reste-ouvert-et-qui-peut-le-trancher">6. Ce qui reste ouvert, et qui peut le trancher</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Proposition 1 ou 2</strong> pour la création de compte</td>
+<td><strong>vous</strong></td>
+</tr>
+<tr>
+<td><strong>L'accroche</strong> sous ATLAS — trois choix sur la planche, ou aucune</td>
+<td><strong>vous</strong></td>
+</tr>
+<tr>
+<td><strong>Une phrase, ou une case à cocher</strong> pour les conditions</td>
+<td><strong>vous</strong> — la case se prouve mieux en cas de litige, mais c'est un geste de plus</td>
+</tr>
+<tr>
+<td>La photo reste-t-elle fixe malgré les huit chartes</td>
+<td><strong>vous</strong></td>
+</tr>
+<tr>
+<td>« Créer un compte » crée un <strong>patron et son entreprise</strong> — un salarié reçoit son accès de son patron dans les réglages. À confirmer</td>
+<td><strong>vous</strong></td>
+</tr>
+</tbody></table></div>
+<h3 id="bloquant-et-ce-nest-pas-du-code">Bloquant, et ce n'est pas du code</h3>
+<p><strong>Les pages « Conditions d'utilisation » et « Politique de confidentialité » n'existent pas dans le dépôt.</strong> La porte les lie ; les liens ne mènent nulle part, exprès — rien ne se fabrique pour faire joli.</p>
+<p>Aucune mise en ligne publique n'est possible sans elles, et ce n'est pas un travail qui s'écrit en codant. <strong>Qui les rédige ?</strong></p>
+<hr>
+<h2 id="7-les-chiffres-et-ce-quils-valent">7. Les chiffres, et ce qu'ils valent</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Contrôle</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td><code>appli</code> · <strong>la nouvelle suite</strong> (<code>test:porte-plein-air</code>)</td>
+<td><strong>62 vert, 0 rouge</strong></td>
+</tr>
+<tr>
+<td><code>appli</code> · la suite de la planche du 30 août (<code>test:porte-capture</code>)</td>
+<td><strong>vert</strong>, non touchée</td>
+</tr>
+<tr>
+<td><code>appli</code> · la batterie des maquettes (<code>test:e2e</code>)</td>
+<td><strong>107 vert, 0 rouge</strong></td>
+</tr>
+<tr>
+<td><code>scripts/test-aucune-fleche.ts</code></td>
+<td><strong>vert</strong> — il a attrapé un « › » que j’avais écrit dans « Réglages › Mon entreprise »</td>
+</tr>
+<tr>
+<td>Les écrans <strong>regardés</strong>, à 390 px de large</td>
+<td>rien de coupé, rien hors cadre</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui n'a pas été joué, et pourquoi.</strong> La grande batterie de l'application (<code>npm run verifier:avant-livraison</code>) n'a pas été lancée : ce lot ne touche que <code>appli/</code>, <code>.github/workflows/pages.yml</code> et la documentation — aucun fichier de <code>src/</code>, aucune migration. Elle prend dix minutes et occupe la base et le port 3000, que vos autres sessions partagent (votre consigne du 4 septembre).</p>
+<p><strong>Ce que la nouvelle suite garde, et qu'aucun test de hauteur n'aurait vu :</strong></p>
+<ol>
+<li><strong>La photo a de vrais pixels.</strong> Une image qui ne charge pas laisse un écran <em>noir</em> avec du texte blanc dessus — donc lisible, donc invisible à toute mesure de débordement. La suite exige <code>naturalWidth</code>, pas une balise.</li>
+<li><strong>Les deux boutons mènent à deux endroits différents.</strong> Une porte dont « Créer un compte » et « Se connecter » ouvriraient le même écran passerait toutes les mesures sans qu'on s'en aperçoive.</li>
+<li><strong>Tout tient dans le cadre</strong>, sur les quatre écrans. Une porte est le seul écran qu'on ne peut pas faire défiler avant d'être entré.</li>
+</ol>
+<p>Et <code>pages.yml</code> interroge en plus <code>images/porte-foret.jpg</code> <strong>sur le site publié</strong>, comme il le fait déjà pour le PDF de l'anthracnose : une image absente de l'artefact ne se verrait pas autrement.</p>
+<hr>
+<h2 id="8-trois-défauts-de-mon-fait-corrigés--et-il-faut-les-dire">8. Trois défauts de MON fait, corrigés — et il faut les dire</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>1. Les conditions débordaient de l'écran.</strong> À l'ouverture sur un téléphone de 390 px, la page faisait <strong>546 px de large</strong> : elle glissait latéralement, et se lit alors une main sur deux. La cause tenait en trois mots — le texte « [À COMPLÉTER — dénomination, adresse, téléphone] » portait une consigne de non-coupure, et il a emporté la page entière. <strong>Aucun test ne le voyait</strong> : la suite vérifiait que la page répondait, pas qu'elle se lisait. C'est la capture, regardée, qui l'a montré — la cinquième fois dans ce dépôt qu'un défaut sort d'une image et d'aucun test. Le contrôle existe maintenant, et il mesure les deux pages à la largeur de votre téléphone.</p>
+<p><strong>2. Le flux de publication cherchait un écran nommé « n ».</strong> En ajoutant les deux pages à la liste vérifiée en ligne, j'ai laissé une continuation de ligne mal écrite : le retour à la ligne s'est retrouvé en littéral, et la vérification a demandé au site une page appelée « n ». <strong>404, job rouge — sur un site qui allait très bien</strong>, ses quatre nouvelles adresses répondant déjà. Un rouge sur un produit sain fait chercher au mauvais endroit, et c'est pour ça qu'il est écrit ici.</p>
+<p><strong>3. L'écran de fin de la création n'offrait aucune suite</strong> — un cul-de-sac a l'air d'une panne. « Entrer dans Atlas » ajouté. Trouvé en regardant, là encore.</p>
+<hr>
+<h2 id="9-un-défaut-trouvé-au-passage-sans-rapport-avec-la-demande">9. Un défaut trouvé au passage, sans rapport avec la demande</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Dans <code>appli/essais.html</code>, l'entrée « La porte d'Atlas » n'était pas refermée — un <code>&lt;/a&gt;</code> manquant, 113 ancres ouvertes pour 112 fermées. Le navigateur refermait tout seul, donc rien ne se voyait à l'œil ; le lien suivant s'en trouvait avalé dans la même zone cliquable. Corrigé.</p>
+</main>
+</body>
+</html>

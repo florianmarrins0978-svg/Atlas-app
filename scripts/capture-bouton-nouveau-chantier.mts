@@ -74,10 +74,10 @@ try {
 const bouton = page.locator('[data-atlas="nouveau-chantier"]');
 await bouton.waitFor({ state: "visible" });
 
-// 1 · Au repos, le battement à sa plus grande extension — c'est l'état qu'il
-// verra dix fois par jour.
+// 1 · Au repos, la croix à demi tracée : c'est l'état qu'il verra dix fois
+// par jour.
 await page.evaluate(() => {
-  document.querySelectorAll(".atlas-pouls").forEach((n) =>
+  document.querySelectorAll(".atlas-plume path").forEach((n) =>
     n.getAnimations().forEach((a) => {
       a.currentTime = 3400 * 0.3;
       a.pause();
@@ -88,7 +88,7 @@ await page.screenshot({ path: `${dossier}/bouton-1-attente.png` });
 
 // 2 · En plein geste : le tour et les onze grains, figés à mi-course.
 await page.evaluate(() => {
-  document.querySelectorAll(".atlas-pouls").forEach((n) =>
+  document.querySelectorAll(".atlas-plume path").forEach((n) =>
     n.getAnimations().forEach((a) => a.play()),
   );
 });

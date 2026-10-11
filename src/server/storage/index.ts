@@ -37,7 +37,7 @@ function choisi() {
   //
   // Il a lu, sur la feuille d'envoi, à la place de son devis :
   //
-  //     Stockage local sélectionné en production — configuration refusée
+  //     Stockage local sélectionné en production, configuration refusée
   //
   // Sa configuration était pourtant juste. Cette barrière ne regardait que
   // `nodeEnv === "production"`, alors que le banc d'essai SERT UNE VERSION
@@ -62,7 +62,7 @@ function choisi() {
   // PDF a disparu est pire qu'un envoi refusé.
   const deploiementReel = env.nodeEnv === "production" && !env.bancDEssai;
   if (deploiementReel && env.stockageProvider !== "s3") {
-    throw new Error("Stockage local sélectionné en production — configuration refusée (voir src/server/env.ts).");
+    throw new Error("Stockage local sélectionné en production, configuration refusée (voir src/server/env.ts).");
   }
   return env.stockageProvider === "s3" ? s3 : local;
 }

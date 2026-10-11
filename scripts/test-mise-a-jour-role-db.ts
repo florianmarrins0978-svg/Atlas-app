@@ -256,7 +256,9 @@ async function main() {
           continue;
         }
         if (!/\.tsx?$/.test(entree.name)) continue;
-        const relatif = path.relative(process.cwd(), chemin);
+        // Écrit comme git l'écrit : sous Windows, `path.relative` rend
+        // `src\profil-banc.ts`, et le seul fichier autorisé passait pour coupable.
+        const relatif = path.relative(process.cwd(), chemin).split(path.sep).join("/");
         if (relatif === "src/profil-banc.ts" || relatif === "src/server/env.ts") continue;
         const texte = readFileSync(chemin, "utf8");
         // Les commentaires racontent l'histoire de ce constat : on ne lit que

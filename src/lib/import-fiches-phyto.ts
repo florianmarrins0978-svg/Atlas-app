@@ -368,12 +368,12 @@ export function validerLot(
     // aurait servi à rassurer plutôt qu'à protéger.
     for (const [i, img] of fiche.images.entries()) {
       if (!img.fichier && !img.url && !img.storageKey) {
-        problemes.push(ici(`image ${i + 1} : ni fichier, ni adresse — elle ne désigne rien`));
+        problemes.push(ici(`image ${i + 1} : ni fichier, ni adresse, elle ne désigne rien`));
       }
       if (/vérifier|verifier|inconnu|\?|à définir|a definir/i.test(img.licence)) {
         problemes.push(
           ici(
-            `image ${i + 1} : licence « ${img.licence} » — ce n’est pas une licence, c’est un aveu. ` +
+            `image ${i + 1} : licence « ${img.licence} » : ce n’est pas une licence, c’est un aveu. ` +
               `Une image dont les droits ne sont pas établis ne s’affiche pas`
           )
         );
@@ -390,7 +390,7 @@ export function validerLot(
       if (/©|\(c\)|tous droits réservés|droits réservés|all rights reserved/i.test(img.licence)) {
         problemes.push(
           ici(
-            `image ${i + 1} : « ${img.licence} » est une mention de copyright, pas une licence — ` +
+            `image ${i + 1} : « ${img.licence} » est une mention de copyright, pas une licence : ` +
               `elle dit l’inverse de ce qu’on lui fait dire. Nommez la licence qui AUTORISE l’usage ` +
               `(CC BY 4.0, CC BY-SA 4.0, domaine public, Licence Ouverte 2.0…), ou n’affichez pas l’image`
           )
@@ -423,7 +423,7 @@ export function validerLot(
     // ── 1 et 2. Ce qu'une fiche SERVABLE doit prouver ──────────────────────
     if (fiche.niveauValidation === "validee") {
       if (fiche.sources.length === 0) {
-        problemes.push(ici("fiche validée sans aucune source — refusée"));
+        problemes.push(ici("fiche validée sans aucune source, refusée"));
       }
       for (const champ of CHAMPS_QUI_ENGAGENT) {
         // Un champ vide n'a rien à prouver : `statut_reglementaire = aucun` et
@@ -435,13 +435,13 @@ export function validerLot(
         }
       }
       if (fiche.symptomes.length === 0) {
-        problemes.push(ici("fiche validée sans aucun symptôme — elle ne pourrait jamais être rapprochée d’une photo"));
+        problemes.push(ici("fiche validée sans aucun symptôme, elle ne pourrait jamais être rapprochée d’une photo"));
       }
       if (fiche.sourcesAJourLe === null) {
         avertissements.push(ici("fiche validée sans date de mise à jour des sources"));
       }
     } else if (fiche.sources.length === 0) {
-      avertissements.push(ici("aucune source — cette fiche ne pourra pas être validée en l’état"));
+      avertissements.push(ici("aucune source, cette fiche ne pourra pas être validée en l’état"));
     }
 
     // ── 7. Une confirmation exigée, et une certitude quand même élevée ─────

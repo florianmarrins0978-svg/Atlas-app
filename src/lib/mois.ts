@@ -14,8 +14,8 @@
 // calendrier et la répartition par équipe. Le planning refait porte ses propres
 // règles dans `src/lib/planning-jour.ts` — voir plus bas.
 
-import type { JourIso } from "@/server/disponibilites";
-import { versJourIso } from "@/server/disponibilites";
+import type { JourIso } from "@/lib/disponibilites";
+import { versJourIso } from "@/lib/disponibilites";
 
 /** Lundi en tête — la semaine française, pas celle du navigateur. */
 export const JOURS_COURTS = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"];
@@ -76,6 +76,19 @@ export function grilleDuMois(annee: number, mois: number): CaseMois[] {
 // c'est exactement ce que `CLAUDE.md` §3 interdit : elles auraient divergé au
 // premier réglage, et l'écart se serait vu là où le patron compare.
 
+/**
+ * « ven. » — le jour de la semaine, en trois lettres.
+ *
+ * Pour les pastilles d'équipe d'un chantier de plusieurs jours (sa proposition
+ * C du 8 septembre 2026) : la place y est comptée, et le quantième n'apprend
+ * rien de plus quand les jours sont voisins.
+ */
+export function jourAbrege(jour: JourIso): string {
+  const d = new Date(`${jour}T12:00:00Z`);
+  // `getUTCDay()` rend 0 pour dimanche ; la table commence au lundi.
+  return `${JOURS_COURTS[(d.getUTCDay() + 6) % 7]}.`;
+}
+
 /** « Jeudi 20 août » — la date telle que la journée l'écrit. */
 export function jourLisibleCourt(jour: JourIso): string {
   const d = new Date(`${jour}T12:00:00Z`);
@@ -86,6 +99,17 @@ export function jourLisibleCourt(jour: JourIso): string {
     timeZone: "UTC",
   });
   return texte.charAt(0).toUpperCase() + texte.slice(1);
+}
+
+/**
+ * « 20 août 2026 » — une date qui se cite, avec son année.
+ *
+ * Pour ce qui se montre à un client : la date de consultation d'une source
+ * phytosanitaire, par exemple. « 2026-08-20 » se lit comme un code.
+ */
+export function dateCitee(jour: JourIso): string {
+  const d = new Date(`${jour}T12:00:00Z`);
+  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 }
 
 /** Un samedi ou un dimanche — jamais proposé (`disponibilites.ts`). */
@@ -99,3 +123,23 @@ export function estWeekEndIso(jour: JourIso): boolean {
 // rang. La fiche du jour est désormais bâtie sur le CHANTIER — son nom une fois,
 // ses demi-journées dessous — et une équipe n'est plus une file : un chantier
 // peut en porter plusieurs sur la même moitié (migration 0058).
+
+/**
+ * LE MOIS D'À CÔTÉ — écrit une seule fois.
+ *
+ * Le passage de décembre à janvier vivait en clair dans chacune des deux
+ * flèches du calendrier, avec sa bascule d'année à chaque fois. Le glissement du
+ * 11 septembre 2026 en réclamait un troisième et un quatrième usage — le mois
+ * qui arrive à droite, celui qui part à gauche —, et quatre copies d'une même
+ * arithmétique finissent par diverger sur le seul cas qui compte : le
+ * changement d'année (`CLAUDE.md` §3).
+ *
+ * Le pas n'est pas borné à ±1 : rien ici ne dit combien de mois l'on saute.
+ */
+export function moisDecale(
+  c: { annee: number; mois: number },
+  pas: number
+): { annee: number; mois: number } {
+  const total = c.annee * 12 + c.mois + pas;
+  return { annee: Math.floor(total / 12), mois: ((total % 12) + 12) % 12 };
+}

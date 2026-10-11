@@ -3,6 +3,9 @@ import { nomDuChantier } from "../src/lib/nom-chantier";
 import { jourIso } from "../src/lib/jour";
 import assert from "node:assert";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
+
+const BASE = ADRESSE;
 
 // Créer un chantier, et ce que cela demande au patron.
 //
@@ -24,11 +27,11 @@ async function main() {
 
   // Connexion réelle (Auth.js) — toutes les routes applicatives sont
   // désormais protégées par le middleware d'authentification.
-  await page.goto("http://localhost:3000/login", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
   await page.fill('input[name="email"]', "demo@atlas.local");
   await page.fill('input[name="password"]', "demo1234");
   await page.click('button[type="submit"]');
-  await page.waitForURL("http://localhost:3000/", { timeout: 10000 });
+  await page.waitForURL(`${BASE}/`, { timeout: 10000 });
 
   const client = `M. E2E ${Date.now()}`;
   // Le nom du chantier se DÉDUIT du client (`src/lib/nom-chantier.ts`) : on
@@ -37,7 +40,7 @@ async function main() {
   // le patron a fait retirer ce mot.
   const nomAttendu = nomDuChantier({ nomClient: client, jour: jourIso(new Date()) });
 
-  await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
 
   // Le champ retiré ne doit pas revenir par une autre porte.
   assert.equal(
@@ -89,8 +92,14 @@ async function main() {
   // `aria-label` sur le groupe. Ce que sa demande fixait, c'est la PLACE du
   // choix sous l'adresse, pas la présence d'une phrase au-dessus : chercher le
   // texte, c'était réclamer ce qu'il a fait retirer (`CLAUDE.md` §5 bis).
+  // **Le canal se désigne par sa MARQUE, plus par son libellé** — 4 septembre
+  // 2026. Le mot est passé de « Par SMS » à « SMS » avec la planche
+  // « A — Épurée », qu'il a retenue : *« l'envoi n'est plus une action, c'est
+  // un réglage »*. Viser le texte, c'était réclamer ce qu'il vient de faire
+  // changer ; `data-atlas="canal-sms"` survit au remaniement, et c'est la
+  // PLACE sous l'adresse que ce contrôle défend (`CLAUDE.md` §5 bis).
   const boiteAdresse = await page.locator('input[placeholder="12 rue des Lilas, Nantes"]').boundingBox();
-  const boiteCanal = await page.getByRole("button", { name: "Par SMS" }).boundingBox();
+  const boiteCanal = await page.locator('[data-atlas="canal-sms"]').boundingBox();
   assert.ok(boiteAdresse && boiteCanal, "l'adresse et le choix de l'envoi doivent être visibles");
   assert.ok(
     boiteCanal.y > boiteAdresse.y,
@@ -103,12 +112,20 @@ async function main() {
   assert.ok(!/civilit/i.test(ecran), "l'intitulé « Civilité » est revenu : il l'a fait retirer");
 
   await page.fill('input[placeholder="Bernard"]', client);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
 
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
-  const url = page.url();
-  console.log("Redirigé vers:", url);
-  assert.match(url, /\/chantiers\/[0-9a-f-]{36}$/, "Doit rediriger vers un vrai UUID");
+  // **L'IDENTIFIANT RENDU, PLUS L'ADRESSE D'ARRIVÉE.** Ce contrôle lisait
+  // l'adresse et exigeait qu'elle FINISSE par un UUID — c'est-à-dire la fiche
+  // du chantier, retirée le 4 septembre 2026 (`ARCHITECTURE.md` §254). Ce qu'il
+  // défend n'a pas bougé : la création rend un vrai chantier, pas une
+  // simulation.
+  assert.match(idChantier, /^[0-9a-f-]{36}$/, "La création ne rend pas un vrai UUID");
+
+  // Le nom déduit et l'anneau se regardent sur la FICHE CLIENT : c'est elle qui
+  // les porte depuis le 31 août, et c'était le doublon qu'il a fait retirer.
+  await page.goto(`${BASE}/chantiers/${idChantier}/coordonnees`, {
+    waitUntil: "networkidle",
+  });
 
   // La page hub relit le chantier depuis la base — si ces valeurs s'affichent,
   // la création a bien été persistée (pas de simulation restante).
@@ -122,9 +139,17 @@ async function main() {
   // « strict mode violation » — sur une page parfaitement juste. Ce qui est
   // éprouvé ici, c'est que le nom déduit est bien à l'écran, pas qu'il n'y
   // figure qu'une fois.
-  await page.waitForSelector(`text=${nomAttendu}`, { timeout: 5000 });
-  assert.ok(
-    await page.locator(`text=${nomAttendu}`).first().isVisible(),
+  // **LE NOM SE LIT DANS SON CHAMP, plus dans le texte de la page.** Il
+  // s'affichait en titre de la fiche du chantier ; celle-ci est retirée le
+  // 4 septembre 2026 (`ARCHITECTURE.md` §254), et sur la fiche client ce nom
+  // vit là où il se corrige — dans le formulaire. Un `text=` n'y voit rien : la
+  // valeur d'un champ n'est pas du texte de page, et le contrôle aurait rougi
+  // sur un écran parfaitement juste.
+  const champNom = page.locator('input[placeholder="Bernard"]');
+  await champNom.waitFor({ state: "visible", timeout: 10_000 });
+  assert.equal(
+    (await champNom.inputValue()).trim(),
+    client,
     "Le chantier n'a pas pris le nom de son client : il est devenu impossible à reconnaître."
   );
   // **Ce contrôle réclamait « Ajouter des photos » dans le tiroir — il ne le
@@ -143,7 +168,7 @@ async function main() {
   );
 
   // Revérifie via la liste (autre écran, autre requête) que le chantier y figure aussi.
-  await page.goto("http://localhost:3000/", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
   assert.ok(
     await page.locator(`text=${nomAttendu}`).first().isVisible(),
     "Le nouveau chantier doit apparaître dans la liste, sous son nom déduit"
@@ -153,13 +178,18 @@ async function main() {
   // Le cas qui rendait le champ obligatoire. Un chantier sans client ni adresse
   // doit exister quand même, et rester reconnaissable : la date est la seule
   // chose vraie qui reste, et elle vaut mieux qu'un « Sans titre ».
-  await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
-  const titre = await page.locator("h1").first().innerText();
+  // **LE NOM SE LIT DANS LA LISTE, PLUS DANS LE TITRE DE LA FICHE.** Il se
+  // lisait dans le `h1` de la fiche du chantier ; cette fiche est retirée le
+  // 4 septembre 2026 (`ARCHITECTURE.md` §254). La liste est l'écran où ce nom
+  // SERT — c'est là qu'il reconnaît son chantier —, et c'est déjà par elle que
+  // le cas précédent se vérifie deux blocs plus haut.
+  await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+  const sansNom = page.locator(`text=/^Chantier du /`).first();
   assert.ok(
-    /^Chantier du /.test(titre.trim()),
-    `Un chantier créé sans rien n'a pas de nom lisible : « ${titre} »`
+    await sansNom.isVisible(),
+    "Un chantier créé sans rien n'a pas de nom lisible dans la liste"
   );
 
   await browser.close();

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { colors } from "@/lib/design-tokens";
-import { annonceTransmission, CLE_TRANSMISSION, type Transmission } from "@/lib/annonce-transmission";
+import { annonceTransmission, CLE_TRANSMISSION, TRANSMISSIONS, type Transmission } from "@/lib/annonce-transmission";
 
 /**
  * Le bandeau qui accueille le patron au retour de sa messagerie.
@@ -48,7 +48,7 @@ export default function AnnonceTransmission() {
 
       try {
         const t = JSON.parse(brut) as Transmission;
-        if (t?.quoi !== "devis" && t?.quoi !== "facture") return;
+        if (!TRANSMISSIONS.includes(t?.quoi)) return;
         setMessage(annonceTransmission(t));
       } catch {
         // Contenu illisible : on n'affiche rien plutôt qu'une phrase fabriquée.
