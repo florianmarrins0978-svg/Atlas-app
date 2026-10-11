@@ -24,9 +24,9 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     ou: "« Paysage » dans la barre du bas",
     intitule: "Calculer une terrasse bois",
     motsCles: ["terrasse", "bois", "lambourdes", "plots", "visserie", "lames", "deck"],
-    geste: "« Terrasse bois » est dans « Paysage », marquée « Bientôt » : l'outil n'est pas encore disponible.",
+    geste: "« Paysage » dit sous la liste des outils que la terrasse bois arrive bientôt : l'outil n'est pas encore disponible.",
     source: "src/app/paysage/page.tsx",
-    preuves: ['nom: "Terrasse bois"', "Bientôt", "href: null"],
+    preuves: ["La terrasse bois arrive bientôt."],
     lieu: true,
   },
   // --- Plan d'arrosage ------------------------------------------------------

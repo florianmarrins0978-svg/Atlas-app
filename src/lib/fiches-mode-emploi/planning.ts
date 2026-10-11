@@ -488,7 +488,7 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     geste: "Touchez « Paysage » dans la barre du bas, puis « Fiches de sécurité ».",
     reserve: "Elles y sont gardées deux ans.",
     source: "src/app/paysage/page.tsx",
-    preuves: ['href: "/paysage/fiches-securite"', "Gardées deux ans."],
+    preuves: ['href: "/paysage/fiches-securite"', 'nom: "Fiches de sécurité"'],
     lieu: true,
   },
   // --- Planning -------------------------------------------------------------
