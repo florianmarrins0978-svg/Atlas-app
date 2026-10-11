@@ -6,6 +6,27 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-11
+
+- **Neuf écrans jamais repris par /impeccable, en planches (rien de codé).**
+  Sa demande : *« va regarder les pages de l'appli qui n'ont pas été faites par
+  le skill impeccable et crée-moi des planches en les corrigeant »*. L'inventaire
+  (planches `appli/` et commits qui les appliquent, voir l'entrée du 4 septembre)
+  a désigné : Paysage, la fiche de chantier (accueil, remplir, composer), le
+  catalogue, Mes tarifs, Nouveau compte, Documents légaux, le code reçu par
+  e-mail. Une planche par écran, chacune avec « Aujourd'hui » et « Corrigé »,
+  Origine et Nuit. **Défaut réel trouvé en regardant l'écran** : sur
+  `/catalogue`, la barre du bas allume Chantiers (`AtlasBottomNav` retombe sur
+  l'onglet 0 quand aucune adresse ne correspond ; `/catalogue` n'est pas sous
+  `/reglages`). Restent à faire, sans planche : note vocale, export hors
+  feuille d'envoi, coordonnées d'un client, entretien, retours, fiches de
+  sécurité, compte, grilles de prix, mesures, vocabulaire, avoir, impayé,
+  contrat. `mes-tarifs.html` existait déjà (Arborea, liée ailleurs) : la
+  planche s'appelle `mes-tarifs-corrige.html`.
+  Au passage, `preparer-atelier.ts` lancé avec des adresses non suffixées a
+  migré `atlas_test` (et non `atlas_test_a4`) jusqu'à 0128 : migrations
+  d'extension seulement, sans effet sur ses données (`atlas_dev` intact).
+
 ## 2026-10-09
 
 - **Site de vente : une entreprise fictive, un menu, un contact et des mentions

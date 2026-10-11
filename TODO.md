@@ -1,5 +1,17 @@
 # Prochaines tâches
 
+## ⏳ NEUF PLANCHES /impeccable : SON CHOIX ATTENDU (11 octobre 2026)
+
+Rien n'est codé. Une planche par écran, lien dans `appli/essais.html` sous
+« Neuf écrans jamais repris » : `paysage-les-outils`, `fiche-de-chantier-l-accueil`,
+`fiche-de-chantier-remplir`, `fiche-de-chantier-composer`, `catalogue-les-mots`,
+`mes-tarifs-corrige`, `donner-un-acces-corrige`, `documents-legaux-accepter`,
+`verifier-son-email`. Points à trancher écrits sur les planches : liseré doré de
+« Composer ma fiche », bouton pleine largeur contre capsule serif (`PrimaryButton`),
+sortie « Retour » sur Documents légaux. **Défaut à corriger quoi qu'il choisisse** :
+l'onglet Chantiers allumé sur `/catalogue` (`AtlasBottomNav`). Ensuite : la
+dizaine d'écrans jamais repris listés au `CHANGELOG.md` du 11 octobre.
+
 ## ✅ LE NUMÉRO RM : SON CHOIX B, SUR `main` LE 9 OCTOBRE 2026
 
 Sa question en préparant la vente de l'application : la mention à écrire à

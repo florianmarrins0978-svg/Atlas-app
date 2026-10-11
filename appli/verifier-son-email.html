@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas : le code reçu</title>
+<style>
+  /*
+    LE CODE REÇU PAR E-MAIL, proposition pour /verifier-email.
+
+    ─────────────────────────────────────────────────────────────────────────
+    « AUJOURD'HUI » EST RECONSTITUÉ DEPUIS LE CODE, PAS PHOTOGRAPHIÉ.
+
+    Le compte de démonstration n'attend aucun code : la page le renvoie aux
+    documents légaux (page.tsx, `verificationEnAttente`). Elle ne s'ouvre donc
+    pas ici. L'écran d'aujourd'hui est redessiné d'après :
+
+      src/app/verifier-email/page.tsx       qui arrive ici, et avec quelle adresse
+      src/app/verifier-email/EcranDuCode.tsx  la porte de nuit, sans barre
+      src/components/atlas/SaisieDuCode.tsx  la case, le bouton, Renvoyer, Retour
+      src/components/atlas/PorteDeNuit.tsx   NUIT, le halo, la gélule CHAMP
+      src/lib/code-verification.ts           six chiffres, les refus mot pour mot
+      src/server/repositories/verification-email.ts   l'envoi raté
+      src/lib/ecrans-sans-navigation.ts      ni onglets, ni assistant ici
+
+    La même case sert à la fin de /creer-un-compte et au mot de passe oublié :
+    corriger SaisieDuCode corrige les trois d'un coup.
+
+    Ce qui est exact : les libellés (« Le code reçu à », « Continuer »,
+    « Un instant… », « Renvoyer le code », « Retour »), le champ unique en
+    gélule (inputMode numeric, autocomplete one-time-code, 22 px, espacé),
+    l'indication « 000000 », et chaque refus : « Le code fait 6 chiffres. »,
+    « Code incorrect. », « Ce code a expiré. Demandez-en un nouveau. »,
+    « Trop d'essais. Demandez un nouveau code. », « Un nouveau code est
+    parti. », « Un code vient de partir. Regardez votre boîte, courrier
+    indésirable compris. ». Un code mort vide la case (codeMort).
+    L'adresse est celle du compte de démonstration (seed.ts).
+
+    La page porte la charte NOMMÉE nuit, quelle que soit celle du compte : la
+    bascule Origine ou Nuit ne change rien ici, et c'est exact.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI SERAIT À CODER, tout dans SaisieDuCode.tsx, rien côté serveur
+
+      - six cases dessinées autour d'UN SEUL champ, gardé pour que l'iPhone
+        propose toujours le code lu dans Mail (one-time-code). Le champ réel
+        est transparent, posé sur les cases, en 16 px au moins pour que Safari
+        ne zoome pas ;
+      - « Retour » monte en haut à gauche, avec le chevron des autres écrans
+        de la porte (creer-un-compte, FormulaireConnexion) ;
+      - quand le code est mort (codeMort, déjà renvoyé par le serveur), le
+        bouton principal devient « Renvoyer le code » ;
+      - le titre et l'adresse se séparent : l'adresse ne se coupe plus
+        n'importe où en 24 px.
+  */
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:#e7e4dd;color:#1c1c1a;
+       font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:20px 16px 56px}
+  body[data-charte="nuit"]{background:#070806;color:#e9e8de}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;font-weight:400}
+
+  /* ══ Le banc ═══════════════════════════════════════════════════════════ */
+  .banc{max-width:390px;margin:0 auto 14px}
+  .banc h2{margin:0;font-size:10px;font-weight:500;letter-spacing:.26em;
+           text-transform:uppercase;color:#8a8578}
+  .banc p{margin:6px 0 0;font-size:12.5px;line-height:1.5;color:#4a4a44}
+  body[data-charte="nuit"] .banc p{color:#c1c2b6}
+  .boutons{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .boutons button{font:inherit;font-size:12px;padding:8px 12px;border-radius:6px;
+                  border:1px solid rgba(28,28,26,.18);background:#faf9f5;
+                  color:#1c1c1a;cursor:pointer;min-height:36px}
+  body[data-charte="nuit"] .boutons button{background:#1a1d19;color:#e9e8de;
+                  border-color:rgba(233,232,222,.2)}
+  .boutons button[aria-pressed="true"]{background:#2f3b2f;color:#faf9f5;border-color:#2f3b2f}
+  body[data-charte="nuit"] .boutons button[aria-pressed="true"]{
+                  background:#e9e8de;color:#101210;border-color:#e9e8de}
+  .sep{width:100%;height:0}
+
+  /* ══ Le téléphone : la porte de nuit, valeurs de PorteDeNuit.tsx ═══════ */
+  .tel{max-width:390px;margin:0 auto;height:664px;position:relative;overflow:hidden;
+       border:1px solid rgba(28,28,26,.14);border-radius:14px;
+       background:radial-gradient(120% 62% at 8% 4%, #3d3523 0%, #1a1d19 40%, #101210 78%);
+       color:#e9e8de}
+  body[data-charte="nuit"] .tel{border-color:rgba(233,232,222,.14)}
+  .ecran{height:100%;display:flex;flex-direction:column;padding:0 22px 22px}
+
+  .avant{display:none}
+  body.mode-avant .avant{display:flex}
+  body.mode-avant .apres{display:none}
+
+  /* ══ AUJOURD'HUI ═══════════════════════════════════════════════════════ */
+  .avant .milieu{flex:1;display:flex;flex-direction:column;justify-content:center;padding:42px 0 24px}
+  .avant h1{margin:0 0 16px;font-size:30px;line-height:1.1}
+  .avant h1 span{font-size:24px;word-break:break-all}
+  .avant input{width:100%;border:0;border-radius:999px;padding:15px 20px;text-align:center;
+               font:22px/1.2 ui-sans-serif,-apple-system,sans-serif;letter-spacing:.35em;
+               background:#1a1d19;color:#e9e8de;box-shadow:inset 0 0 0 1px rgba(233,232,222,.12);
+               outline:none}
+  .avant input::placeholder{color:#84887b}
+  .avant .message{margin:12px 0 0;min-height:19px;font-size:13px;line-height:19px;color:#84887b}
+  .avant .message.refus{color:#cd6456}
+  .avant .continuer{width:100%;border:0;border-radius:999px;padding:16px;
+                    font:400 17px/1 ui-serif,Georgia,serif;background:#e9e8de;color:#101210;cursor:pointer}
+  .avant .continuer[disabled]{opacity:.6}
+  .avant .lien{width:100%;border:0;background:none;font:inherit;font-size:14.5px;color:#84887b;cursor:pointer}
+
+  /* ══ CORRIGÉ ═══════════════════════════════════════════════════════════ */
+  /* Le retour de la porte : en haut, avec son chevron, comme sur les
+     questions de /creer-un-compte et sur la connexion. Le chevron montre un
+     sens, il ne décore pas. */
+  .retour{align-self:flex-start;display:flex;align-items:center;gap:6px;min-height:44px;
+          margin-top:8px;padding:0 10px 0 0;border:0;background:none;
+          font:inherit;font-size:14px;color:#84887b;cursor:pointer}
+  .apres .milieu{flex:1;display:flex;flex-direction:column;justify-content:center;padding-bottom:20px}
+  .apres h1{margin:0;font-size:30px;line-height:1.1;letter-spacing:-.01em}
+  .adresse{margin:10px 0 0;font-size:15px;line-height:1.45;color:#c1c2b6;overflow-wrap:anywhere}
+  .adresse b{font-weight:500;color:#e9e8de}
+
+  /* Six cases, UN seul champ. Le champ est posé dessus, transparent : c'est
+     lui que le pouce touche, et lui que l'iPhone remplit depuis Mail. */
+  .code{position:relative;margin-top:26px}
+  .cases{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+  .cases span{height:60px;border-radius:14px;background:#1a1d19;
+              box-shadow:inset 0 0 0 1px rgba(233,232,222,.12);
+              display:grid;place-items:center;font-size:27px;line-height:1;
+              font-variant-numeric:tabular-nums;color:#e9e8de}
+  .code.actif .cases span.ici{box-shadow:inset 0 0 0 1.6px #B98B47}
+  .code.refus .cases span{box-shadow:inset 0 0 0 1.4px #cd6456}
+  .code.attente .cases span{color:#84887b}
+  .code input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;
+              font-size:16px;cursor:text}
+  .apres .message{margin:14px 0 0;min-height:42px;font-size:14px;line-height:21px;color:#c1c2b6}
+  .apres .message.refus{color:#cd6456}
+
+  .principal{width:100%;border:0;border-radius:999px;padding:17px;cursor:pointer;
+             font:400 17px/1 ui-serif,Georgia,serif;background:#e9e8de;color:#101210}
+  .principal[disabled]{opacity:.6}
+  .second{width:100%;min-height:48px;margin-top:6px;border:0;background:none;
+          font:inherit;font-size:15px;color:#c1c2b6;cursor:pointer}
+  .second[hidden]{display:none}
+  .retour:focus-visible,.principal:focus-visible,.second:focus-visible{
+          outline:2px solid #B98B47;outline-offset:2px;border-radius:999px}
+
+  /* ══ Les notes ═════════════════════════════════════════════════════════ */
+  .notes{max-width:390px;margin:20px auto 0;font-size:13.5px;line-height:1.6;color:#3a3a34}
+  body[data-charte="nuit"] .notes{color:#c1c2b6}
+  .notes h3{margin:22px 0 8px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+            text-transform:uppercase;color:#8a8578}
+  .notes ul{margin:0;padding-left:18px}
+  .notes li{margin-bottom:7px}
+</style>
+</head>
+<body data-charte="origine">
+
+<div class="banc">
+  <h2>Le code reçu par e-mail</h2>
+  <p>Aujourd'hui est reconstitué depuis le code : le compte de démonstration n'attend aucun code, l'écran ne s'ouvre plus ici. Il est toujours en Nuit, quelle que soit la charte.</p>
+  <div class="boutons">
+    <button type="button" data-etat="vide" aria-pressed="true">Case vide</button>
+    <button type="button" data-etat="frappe" aria-pressed="false">Je tape</button>
+    <button type="button" data-etat="attente" aria-pressed="false">Vérification</button>
+    <button type="button" data-etat="faux" aria-pressed="false">Code faux</button>
+    <button type="button" data-etat="expire" aria-pressed="false">Code expiré</button>
+    <button type="button" data-etat="renvoye" aria-pressed="false">Nouveau code parti</button>
+    <span class="sep"></span>
+    <button type="button" data-mode="avant" aria-pressed="false">Aujourd'hui</button>
+    <button type="button" data-mode="apres" aria-pressed="true">Corrigé</button>
+    <button type="button" data-charte="origine" aria-pressed="true">Origine</button>
+    <button type="button" data-charte="nuit" aria-pressed="false">Nuit</button>
+  </div>
+</div>
+
+<div class="tel">
+
+  <!-- ══ AUJOURD'HUI ═══════════════════════════════════════════════════ -->
+  <div class="ecran avant">
+    <div class="milieu">
+      <h1 class="serif">Le code reçu à <span>demo@atlas.local</span></h1>
+      <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8"
+             placeholder="000000" aria-label="Le code reçu par e-mail" data-champ-avant>
+      <p class="message" role="alert" data-message-avant></p>
+    </div>
+    <div>
+      <button type="button" class="continuer" data-continuer-avant>Continuer</button>
+      <button type="button" class="lien" style="padding:13px 0 4px" data-renvoyer>Renvoyer le code</button>
+      <button type="button" class="lien" style="padding:6px 0 4px">Retour</button>
+    </div>
+  </div>
+
+  <!-- ══ CORRIGÉ ═══════════════════════════════════════════════════════ -->
+  <div class="ecran apres">
+    <button type="button" class="retour" aria-label="Revenir à la porte d'entrée"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>Retour</button>
+    <div class="milieu">
+      <h1 class="serif">Le code reçu</h1>
+      <p class="adresse">à <b>demo@atlas.local</b></p>
+      <div class="code" data-code>
+        <div class="cases" aria-hidden="true" data-cases>
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+               aria-label="Le code reçu par e-mail, 6 chiffres" data-champ>
+      </div>
+      <p class="message" role="alert" aria-live="polite" data-message></p>
+    </div>
+    <div>
+      <button type="button" class="principal" data-principal>Continuer</button>
+      <button type="button" class="second" data-second>Renvoyer le code</button>
+    </div>
+  </div>
+</div>
+
+<div class="notes">
+  <h3>Ce qui change</h3>
+  <ul>
+    <li>Six cases au lieu d'une gélule avec « 000000 », qu'on prenait pour un code déjà rempli. L'iPhone propose toujours le code lu dans Mail.</li>
+    <li>Les chiffres passent à 27 px, la case qui attend le chiffre suivant est cerclée d'or.</li>
+    <li>L'adresse quitte le titre. Elle ne se coupe plus au milieu d'un mot en gros caractères.</li>
+    <li>« Retour » monte en haut à gauche, comme sur les autres écrans de la porte. Il n'est plus collé sous « Renvoyer le code ».</li>
+    <li>Quand le code a expiré, le gros bouton devient « Renvoyer le code ». On n'appuie plus sur « Continuer » devant une case vide.</li>
+    <li>« Renvoyer le code » se lit plus clair et se touche sur toute sa largeur.</li>
+  </ul>
+</div>
+
+<script>
+const corps = document.body;
+const EMAIL_CODE = "482913";
+const MESSAGES = {
+  court:   "Le code fait 6 chiffres.",
+  faux:    "Code incorrect.",
+  expire:  "Ce code a expiré. Demandez-en un nouveau.",
+  renvoye: "Un nouveau code est parti."
+};
+
+/* ── Corrigé ─────────────────────────────────────────────────────────── */
+const champ = document.querySelector("[data-champ]");
+const code = document.querySelector("[data-code]");
+const cases = [...document.querySelectorAll("[data-cases] span")];
+const message = document.querySelector("[data-message]");
+const principal = document.querySelector("[data-principal]");
+const second = document.querySelector("[data-second]");
+let mort = false;
+
+function dessinerCases(){
+  const v = champ.value;
+  cases.forEach((c, i) => {
+    c.textContent = v[i] || "";
+    c.classList.toggle("ici", i === Math.min(v.length, 5) && document.activeElement === champ);
+  });
+}
+function dire(texte, refus){
+  message.textContent = texte || "";
+  message.classList.toggle("refus", !!refus);
+  code.classList.toggle("refus", !!refus && !mort);
+}
+function codeMort(on){
+  mort = on;
+  principal.textContent = on ? "Renvoyer le code" : "Continuer";
+  second.hidden = on;
+}
+champ.addEventListener("input", () => {
+  champ.value = champ.value.replace(/\D/g, "").slice(0, 6);
+  if(!mort) dire("");
+  dessinerCases();
+});
+champ.addEventListener("focus", () => { code.classList.add("actif"); dessinerCases(); });
+champ.addEventListener("blur", () => { code.classList.remove("actif"); dessinerCases(); });
+champ.addEventListener("keydown", e => { if(e.key === "Enter") valider(); });
+
+function valider(){
+  if(mort){ renvoyer(); return; }
+  if(champ.value.length !== 6){ dire(MESSAGES.court, true); return; }
+  attendre(() => {
+    if(champ.value === EMAIL_CODE) dire("");
+    else dire(MESSAGES.faux, true);
+  });
+}
+function renvoyer(){
+  attendre(() => { champ.value = ""; codeMort(false); dessinerCases(); dire(MESSAGES.renvoye, false); });
+}
+function attendre(suite){
+  principal.disabled = second.disabled = true;
+  principal.textContent = "Un instant…";
+  code.classList.add("attente");
+  setTimeout(() => {
+    principal.disabled = second.disabled = false;
+    code.classList.remove("attente");
+    principal.textContent = mort ? "Renvoyer le code" : "Continuer";
+    suite();
+  }, 900);
+}
+principal.addEventListener("click", valider);
+second.addEventListener("click", renvoyer);
+
+/* ── Aujourd'hui ─────────────────────────────────────────────────────── */
+const champAvant = document.querySelector("[data-champ-avant]");
+const messageAvant = document.querySelector("[data-message-avant]");
+const continuerAvant = document.querySelector("[data-continuer-avant]");
+function direAvant(t, refus){
+  messageAvant.textContent = t || "";
+  messageAvant.classList.toggle("refus", !!refus);
+}
+champAvant.addEventListener("input", () => direAvant(""));
+continuerAvant.addEventListener("click", () => {
+  if(!/^\d{6}$/.test(champAvant.value.replace(/\s+/g, ""))){ direAvant(MESSAGES.court, true); return; }
+  direAvant(champAvant.value.replace(/\s+/g, "") === EMAIL_CODE ? "" : MESSAGES.faux, true);
+});
+document.querySelector("[data-renvoyer]").addEventListener("click", () => {
+  champAvant.value = ""; direAvant(MESSAGES.renvoye, false);
+});
+
+/* ── Les états du banc ───────────────────────────────────────────────── */
+function etat(nom){
+  document.querySelectorAll(".banc [data-etat]").forEach(b =>
+    b.setAttribute("aria-pressed", String(b.dataset.etat === nom)));
+  const valeur = {frappe:"482", attente:"482913", faux:"482193"}[nom] || "";
+  champ.value = valeur;
+  champAvant.value = valeur;
+  codeMort(nom === "expire");
+  principal.disabled = second.disabled = continuerAvant.disabled = false;
+  code.classList.toggle("attente", nom === "attente");
+  code.classList.toggle("actif", nom === "frappe" || nom === "vide");
+  continuerAvant.textContent = "Continuer";
+  if(nom === "attente"){
+    principal.textContent = continuerAvant.textContent = "Un instant…";
+    principal.disabled = second.disabled = continuerAvant.disabled = true;
+  }
+  const t = {faux:MESSAGES.faux, expire:MESSAGES.expire, renvoye:MESSAGES.renvoye}[nom] || "";
+  const refus = nom === "faux" || nom === "expire";
+  dire(t, refus);
+  direAvant(t, refus);
+  cases.forEach((c, i) => {
+    c.textContent = valeur[i] || "";
+    c.classList.toggle("ici", (nom === "frappe" || nom === "vide") && i === Math.min(valeur.length, 5));
+  });
+}
+document.querySelectorAll(".banc [data-etat]").forEach(b =>
+  b.addEventListener("click", () => etat(b.dataset.etat)));
+document.querySelectorAll(".banc [data-mode]").forEach(b => b.addEventListener("click", () => {
+  corps.classList.toggle("mode-avant", b.dataset.mode === "avant");
+  document.querySelectorAll(".banc [data-mode]").forEach(x =>
+    x.setAttribute("aria-pressed", String(x === b)));
+}));
+document.querySelectorAll(".banc [data-charte]").forEach(b => b.addEventListener("click", () => {
+  corps.dataset.charte = b.dataset.charte;
+  document.querySelectorAll(".banc [data-charte]").forEach(x =>
+    x.setAttribute("aria-pressed", String(x === b)));
+}));
+
+etat(new URLSearchParams(location.search).get("etat") || "vide");
+</script>
+</body>
+</html>
