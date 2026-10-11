@@ -85,7 +85,10 @@ Les tailles de texte sont fixes et ne se réinventent pas d'un écran à l'autre
 
 ## Composants
 
-- **Bouton principal** (`PrimaryButton`) : pleine largeur, fond accent plein, coins arrondis `rounded-2xl`, toujours à la même position dans la page (juste sous l'en-tête). Un seul bouton principal par écran. Désactivé, il prend `line` sur `muted` — jamais l'accent en transparence.
+- **Bouton principal** (`PrimaryButton`) : une **capsule** (`border-radius: 9999px`), en **serif** (`font.display`) 17 px, fond `plein` (#7d9a6d) et texte `card`, centrée et à la largeur de son texte (`pleineLargeur` sur demande). Un seul bouton principal par écran. Désactivé, il prend `line` sur `muted`, jamais l'accent en transparence. Secondaire : même capsule, transparente, liseré `line`. Les petits boutons pleins (« Ajouter ») sont aussi des capsules.
+  *(Corrigé le 11 octobre 2026. Ce paragraphe décrivait encore un bouton « pleine largeur, `rounded-2xl` » que le code n'a plus. Neuf planches ont été dessinées sur cette description, avec de faux boutons, et c'est le patron qui l'a vu. Le code fait foi : `src/components/atlas/PrimaryButton.tsx`.)*
+- **Sous-titre doré** (`EnTeteEcran`, prop `surtitre`) : sous le titre, 9,5 px, capitales espacées .28em, `or` (#B98B47). Il est sur 53 écrans. Une planche ne le retire pas d'un écran seul : la cohérence d'un écran à l'autre passe avant (sa règle du 11 octobre 2026).
+- **L'or** : un seul, `or` (#B98B47), en Origine comme en Nuit. Les liens « + Ajouter » sont dans cet or.
 - **Icône de statut** (`StatusIcon`) : avatar circulaire 44px, fond `rustTint`, icône fine (trait 1.8px) en `rust`. Le statut se lit à l'icône, pas à la couleur.
 - **Carte** : coins arrondis `radius.card` (16px), ombre presque invisible (`cardShadow`) **teintée de vert pin et non de gris neutre**, jamais de bordure visible.
 - **Navigation basse** (`AtlasBottomNav`) : identique sur tous les écrans qui la comportent, 4 onglets (Chantiers, Planning, Terminés, Réglages), icône + libellé, accent = actif. La liste est fixe et ne dépend pas de l'état des données : un onglet qui apparaît et disparaît déplace les trois autres sous le doigt.

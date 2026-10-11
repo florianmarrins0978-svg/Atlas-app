@@ -49,11 +49,12 @@
          d'un compte existant : la même forme y arriverait, ce qui est voulu
          (une seule rédaction, CLAUDE.md §3).
       3. Les champs prennent un fond (rustTint) de 52 px, et le contour or au
-         focus. Les libellés passent de muted (3,3) à inkSoft.
+         focus. Les libellés gardent leur dessin d'aujourd'hui (11 px, muted).
       4. Le message de refus du serveur monte au-dessus du bouton : aujourd'hui
          il s'affiche sous « Annuler », souvent hors de l'écran.
-      5. La précision « Équipe » sous le titre est retirée : elle redit le
-         bouton retour et ne porte aucune information.
+      Le surtitre « Équipe » reste sous le titre (EnTeteEcran, surtitre), et
+      les pastilles, « Créer le compte » et « Annuler » reprennent au pixel près
+      ChoixRole.tsx et NouveauCompte.tsx l. 109 et 118.
 
     ─────────────────────────────────────────────────────────────────────────
     COULEURS : src/lib/design-tokens.ts au caractère près (Origine), et les
@@ -120,7 +121,7 @@
   .assistant{width:44px;height:44px;border-radius:50%;background:var(--plein);
              display:flex;align-items:center;justify-content:center;flex:none}
 
-  .caps{font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;
+  .caps{font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;
         color:var(--inkSoft);margin:0}
 
   :focus-visible{outline:2px solid var(--or);outline-offset:2px}
@@ -130,18 +131,18 @@
 
   /* Trois rôles sur une ligne, Patron à part : c'est donner tout. */
   .roles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
-  .role{min-height:48px;border-radius:14px;border:1px solid var(--line);background:transparent;
-        color:var(--inkSoft);font-size:14px;cursor:pointer;display:flex;align-items:center;
-        justify-content:center;gap:5px;padding:0 4px}
-  .role[aria-pressed="true"]{background:var(--rustTint);border-color:transparent;
+  .role{border-radius:9999px;border:1px solid var(--line);background:transparent;
+        color:var(--muted);font-size:12.5px;line-height:1.55;cursor:pointer;display:flex;align-items:center;
+        justify-content:center;gap:6px;padding:10px 4px}
+  .role[aria-pressed="true"]{background:var(--rustTint);border:1px solid transparent;
         color:var(--ink);font-weight:600}
   .role svg{display:none;flex:none}
   .role[aria-pressed="true"] svg{display:block}
-  .patron{margin-top:8px;width:100%;min-height:48px;border-radius:14px;border:1px dashed var(--line);
-          background:transparent;color:var(--inkSoft);font-size:14px;cursor:pointer;
-          display:flex;align-items:center;justify-content:space-between;padding:0 16px;text-align:left}
-  .patron .dit{font-size:13px;color:var(--inkSoft)}
-  .patron[aria-pressed="true"]{background:var(--rustTint);border-style:solid;border-color:transparent;
+  .patron{margin-top:8px;width:100%;border-radius:9999px;border:1px solid var(--line);
+          background:transparent;color:var(--muted);font-size:12.5px;line-height:1.55;cursor:pointer;
+          display:flex;align-items:center;justify-content:space-between;padding:10px 16px;text-align:left}
+  .patron .dit{font-size:12.5px;font-weight:400;color:var(--muted)}
+  .patron[aria-pressed="true"]{background:var(--rustTint);border:1px solid transparent;
           color:var(--ink);font-weight:600}
   .patron .g{display:flex;align-items:center;gap:6px}
   .patron svg{display:none}
@@ -163,7 +164,7 @@
 
   .compte-titre{margin-top:30px}
   .champ{display:block;margin-top:14px}
-  .champ > span:first-child{display:block;margin-bottom:6px;font-size:13px;color:var(--inkSoft)}
+  .champ > span:first-child{display:block;margin-bottom:4px;font-size:11px;color:var(--muted)}
   .boite{display:flex;align-items:center;min-height:52px;border-radius:12px;
          background:var(--rustTint);padding:0 4px 0 14px;box-shadow:inset 0 0 0 1px transparent}
   .boite:focus-within{box-shadow:inset 0 0 0 1.5px var(--or)}
@@ -178,10 +179,14 @@
   .sous.faux{color:var(--alerte)}
 
   .refus{margin:22px 0 0;font-size:14px;color:var(--alerte)}
-  .plein{margin-top:22px;width:100%;min-height:52px;border:0;border-radius:16px;
-         background:var(--plein);color:var(--surPlein);font-size:15px;font-weight:600;cursor:pointer}
-  .annuler{margin-top:4px;width:100%;min-height:48px;border:0;background:none;
-           color:var(--inkSoft);font-size:14px;cursor:pointer}
+  /* NouveauCompte.tsx l. 109 : atlas-plein mt-7 w-full rounded-full py-3.5 text-[14px] font-semibold */
+  .plein{margin-top:28px;width:100%;border:0;border-radius:9999px;padding:14px 0;
+         background:var(--plein);color:var(--surPlein);font-size:14px;line-height:1.55;font-weight:600;cursor:pointer;
+         display:flex;align-items:center;justify-content:center}
+  /* l. 118 : mt-1 w-full py-3 text-[13px], muted */
+  .annuler{margin-top:4px;width:100%;border:0;background:none;padding:12px 0;
+           color:var(--muted);font-size:13px;line-height:1.55;cursor:pointer;
+           display:flex;align-items:center;justify-content:center}
 
   /* ══ AUJOURD'HUI, reproduction fidèle ══════════════════════════════════ */
   .av{padding:0 26px}
@@ -260,7 +265,7 @@
     <div class="titre-ligne">
       <div style="min-width:0">
         <h1 class="serif">Nouveau compte</h1>
-        <span class="precision avant-seul">Équipe</span>
+        <span class="precision">Équipe</span>
       </div>
       <span class="assistant" aria-hidden="true">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--surPlein)" stroke-width="1.8">
@@ -341,7 +346,6 @@
     <li>Les champs ont un fond et font 52 de haut : on les voit au soleil, on les touche sans viser.</li>
     <li>Quand les deux mots de passe diffèrent, le champ se borde de rouge et la phrase est écrite juste dessous.</li>
     <li>Un refus (adresse déjà prise) s'écrit au-dessus du bouton, et non plus sous Annuler, hors de l'écran.</li>
-    <li>Le petit mot Équipe sous le titre est retiré : il redisait le bouton retour.</li>
   </ul>
 </div>
 

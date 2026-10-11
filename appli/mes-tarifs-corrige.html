@@ -48,7 +48,7 @@
        la carte. Mêmes choix, même ligne libre en dernier.
     4. ImportTarifs descend sous « Ajouter un tarif », en action texte ; son
        aperçu (à ajouter, à corriger, laissées de côté) ne bouge pas.
-    5. La précision d'EnTeteEcran passe de « Réglages » au compte des tarifs.
+    5. Le surtitre d'EnTeteEcran reste « Réglages », en or.
        Le titre « Mes tarifs » vaut aussi pour RubriqueReservee (salarié).
 
     Non vérifié : l'import accepte aussi .pdf dans son attribut accept, mais
@@ -118,7 +118,7 @@
   .titre-ligne{display:flex;align-items:flex-start;justify-content:space-between;
                gap:16px;padding:20px 26px 0}
   h1{margin:0;font-size:36px;line-height:1.05;letter-spacing:-.018em}
-  .precision{display:block;margin-top:10px;color:var(--inkSoft)}
+  .precision{display:block;margin-top:12px;color:var(--or)}
   .assistant{width:44px;height:44px;border-radius:50%;background:var(--plein);
              display:flex;align-items:center;justify-content:center;flex:none}
 
@@ -128,8 +128,6 @@
   body.mode-avant .avant{display:block}
   body.mode-avant span.avant{display:inline}
   body.mode-avant .apres{display:none}
-  .precision.avant{display:none}
-  body.mode-avant .precision.avant{display:block}
 
   /* ── Corrigé : la liste ──────────────────────────────────────────────────
      Une seule carte, une ligne par tarif. Le prix est aligné à droite en
@@ -164,7 +162,7 @@
   .prix-champ span{position:absolute;right:14px;top:50%;transform:translateY(-50%);
                    color:var(--inkSoft);font-size:16px;pointer-events:none}
   .pastilles{display:flex;flex-wrap:wrap;gap:8px}
-  .pastille{min-height:44px;padding:0 14px;border-radius:22px;border:1px solid var(--line);
+  .pastille{min-height:44px;padding:0 14px;border-radius:9999px;border:1px solid var(--line);
             background:none;color:var(--ink);font:inherit;font-size:15px;cursor:pointer}
   .pastille[aria-pressed="true"]{background:var(--rust);border-color:var(--rust);
             color:var(--card)}
@@ -184,7 +182,7 @@
   .action{display:flex;align-items:center;gap:10px;min-height:48px;width:100%;
           border:0;background:none;font:inherit;cursor:pointer;padding:0;text-align:left}
   .action svg{flex:none}
-  .ajouter{color:var(--rust);font-size:15px;font-weight:500}
+  .ajouter{color:var(--or);font-size:14px}
   .importer{color:var(--inkSoft);font-size:14px}
   .action:focus-visible{outline:2px solid var(--or);outline-offset:2px;border-radius:6px}
   .vide{margin:26px 26px 0;font-size:14px;color:var(--inkSoft)}
@@ -280,8 +278,7 @@
           <span class="apres">Mes tarifs</span>
           <span class="avant">Tarifs &amp; catalogue</span>
         </h1>
-        <span class="precision caps apres" id="compte">4 tarifs</span>
-        <span class="precision caps avant" style="color:var(--or)">Réglages</span>
+        <span class="precision caps">Réglages</span>
       </div>
       <span class="assistant" aria-hidden="true">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none"
@@ -411,9 +408,10 @@
 <div class="notes">
   <h3>Ce qui change</h3>
   <ul>
-    <li>Le titre devient «&nbsp;Mes tarifs&nbsp;», sans le «&nbsp;&amp;&nbsp;». Sous lui, le nombre de tarifs remplace «&nbsp;Réglages&nbsp;», qui ne disait rien.</li>
+    <li>Le titre devient «&nbsp;Mes tarifs&nbsp;», sans le «&nbsp;&amp;&nbsp;». «&nbsp;Réglages&nbsp;» reste dessous, en doré.</li>
     <li>Les deux paragraphes qui expliquaient l'écran partent.</li>
     <li>Chaque tarif tenait dans une grosse carte de quatre cases. C'est maintenant une ligne : le nom à gauche, le prix à droite, l'unité dessous. Les quatre tarifs se lisent d'un coup.</li>
+    <li>«&nbsp;Ajouter un tarif&nbsp;» passe en doré, comme les autres ajouts de l'appli.</li>
     <li>On touche une ligne pour la modifier. Elle s'ouvre sur place avec le nom, le prix et l'unité en pastilles. «&nbsp;Retirer&nbsp;» est en bas de la ligne ouverte.</li>
     <li>«&nbsp;Choisir…&nbsp;» ne s'affiche plus quand il n'y a pas d'unité : le prix est écrit seul.</li>
     <li>Reprendre ses prix d'un fichier ne sert qu'une fois. Ce geste passe sous «&nbsp;Ajouter un tarif&nbsp;», en simple texte, et ne porte plus le seul bouton plein de l'écran.</li>
@@ -444,7 +442,6 @@ const ligneDepose = document.getElementById("ligne-depose");
 const liste = document.getElementById("liste");
 const vide = document.getElementById("vide");
 const aVide = document.getElementById("a-vide");
-const compte = document.getElementById("compte");
 
 function etat(e){
   document.querySelectorAll("[data-etat]").forEach(b =>
@@ -452,7 +449,6 @@ function etat(e){
   const sansRien = e === "vide";
   liste.hidden = sansRien; vide.hidden = !sansRien;
   aListe.hidden = sansRien; aVide.hidden = !sansRien;
-  compte.textContent = sansRien ? "Aucun tarif" : "4 tarifs";
   ouverte.hidden = e !== "ouvert";
   ligneDepose.hidden = e === "ouvert";
 }

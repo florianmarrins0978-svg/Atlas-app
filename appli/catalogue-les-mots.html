@@ -60,12 +60,12 @@
       2. ses mots sortent de la ligne « Aussi appelé » : une ligne par mot,
          avec « Retirer » en petites capitales (le × en or disparaît). Les
          données sont déjà séparées (carte.motsCommuns / carte.mesMots) ;
-      3. « + mon mot » devient « Ajouter un mot », vert pin, icône dessinée,
-         44 px de haut ; le champ passe à 16 px ;
+      3. « + mon mot » devient « Ajouter un mot », en or (colors.or), sans
+         fond, 44 px de haut ; le champ passe à 16 px ; son bouton « Ajouter »
+         reste la petite capsule pleine de MesMots.tsx ;
       4. les deux grands boutons en pointillés or deviennent une ligne
-         « Nouvelle prestation » / « Nouveau matériel », vert pin ;
-      5. le surtitre « Réglages » est retiré (il ne dit rien que la barre ne
-         dise, une fois corrigée) ;
+         « Nouvelle prestation » / « Nouveau matériel », texte or, sans cadre ;
+      5. le surtitre « Réglages » reste (EnTeteEcran, prop surtitre) ;
       6. pb-24 ne suffit pas : le dernier bouton passe sous la barre ;
       7. la barre du bas (voir plus haut).
 
@@ -86,7 +86,7 @@
   }
   body[data-charte="nuit"]{
     --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
-    --muted:#84887b; --rust:#e9e8de; --plein:#7d9a6d; --surPlein:#101210;
+    --muted:#84887b; --rust:#e9e8de; --plein:#e9e8de; --surPlein:#101210;
     --rustTint:#1f211e; --or:#B98B47; --alerte:#cd6456;
     --line:rgba(233,232,222,.12); --lineSoft:rgba(233,232,222,.07);
     --chevron:rgba(233,232,222,.28); --ombre:rgba(0,0,0,.35);
@@ -131,7 +131,7 @@
   .titre-ligne{display:flex;align-items:flex-start;justify-content:space-between;
                gap:16px;padding:18px 26px 0}
   h1{margin:0;font-size:36px;line-height:1.05;letter-spacing:-.018em}
-  .surtitre{display:block;margin-top:10px;font-size:9.5px;font-weight:500;
+  .surtitre{display:block;margin-top:12px;font-size:9.5px;font-weight:500;
             letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
   .assistant{width:44px;height:44px;border-radius:50%;background:var(--plein);
              display:flex;align-items:center;justify-content:center;flex:none}
@@ -163,7 +163,7 @@
 
   .ajout{display:flex;align-items:center;gap:9px;border:0;background:none;
          padding:0;min-height:46px;width:100%;text-align:left;
-         font-size:14.5px;color:var(--rust);font-weight:500}
+         font-size:14px;color:var(--or)}
   .ajout svg{flex:none}
 
   .champ-ligne{display:flex;gap:8px;align-items:center;padding:10px 0 12px}
@@ -173,15 +173,14 @@
          caret-color:var(--or)}
   .champ-ligne input::placeholder{color:var(--inkSoft);opacity:.72}
   .champ-ligne input:focus{box-shadow:0 0 0 2px var(--or);border-color:transparent}
-  .plein{border:0;border-radius:16px;background:var(--plein);color:#faf9f5;
-         font-size:15px;font-weight:500;padding:0 18px;min-height:48px}
+  .plein{flex:none;border:0;border-radius:9999px;background:var(--plein);color:var(--surPlein);
+         font-size:13.5px;padding:8px 15px}
   .refus{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:var(--alerte)}
 
-  .nouvelle{display:flex;align-items:center;gap:12px;border:0;background:none;
+  .nouvelle{display:flex;align-items:center;gap:9px;border:0;background:none;
             width:100%;min-height:52px;margin-top:6px;padding:0 4px;text-align:left;
-            font-size:15px;font-weight:500;color:var(--rust)}
-  .nouvelle .cercle{width:30px;height:30px;border-radius:50%;
-            background:var(--rustTint);display:flex;align-items:center;justify-content:center}
+            font-size:14px;color:var(--or)}
+  .nouvelle svg{flex:none}
 
   button:focus-visible,.rond:focus-visible{outline:2px solid var(--or);outline-offset:2px;border-radius:8px}
 
@@ -215,7 +214,7 @@
   .av-champ{display:flex;gap:8px;align-items:center;margin-top:9px}
   .av-champ input{flex:1;min-width:0;font:inherit;font-size:14px;color:var(--ink);
                   background:var(--cream);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
-  .av-champ button{border:0;border-radius:999px;background:var(--plein);color:#faf9f5;
+  .av-champ button{border:0;border-radius:999px;background:var(--plein);color:var(--surPlein);
                    font-size:13.5px;padding:8px 15px}
   .av-refus{margin:6px 0 0;font-size:12px;line-height:1.5;color:var(--alerte)}
   .av-nouvelle{display:block;width:100%;margin-top:12px;border:1px dashed var(--or);
@@ -265,7 +264,7 @@
     <div class="titre-ligne">
       <div style="min-width:0">
         <h1 class="serif">Catalogue</h1>
-        <span class="surtitre avant-seul">Réglages</span>
+        <span class="surtitre">Réglages</span>
       </div>
       <span class="assistant" aria-hidden="true">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#faf9f5" stroke-width="1.8">
@@ -295,9 +294,7 @@
           </li>
         </ul>
         <button type="button" class="nouvelle">
-          <span class="cercle" aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-          </span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
           Nouvelle prestation
         </button>
       </section>
@@ -317,9 +314,7 @@
           </li>
         </ul>
         <button type="button" class="nouvelle">
-          <span class="cercle" aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-          </span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
           Nouveau matériel
         </button>
       </section>
@@ -367,10 +362,8 @@
   <ul>
     <li>En bas, c'était Chantiers qui était souligné alors qu'on est dans les Réglages. C'est Réglages, maintenant.</li>
     <li>« En doré, les vôtres » disparaît. Vos mots ne se reconnaissent plus à leur couleur : ils ont chacun leur ligne, sous ceux d'Atlas, avec « Retirer » au bout.</li>
-    <li>Le doré ne sert plus à écrire. Il se lisait mal au soleil.</li>
-    <li>« + mon mot » devient « Ajouter un mot », en vert, assez grand pour le pouce. Le champ qui s'ouvre est plus grand, et le téléphone ne zoome plus dessus.</li>
+    <li>« + mon mot » devient « Ajouter un mot », en doré, assez grand pour le pouce. Le champ qui s'ouvre est plus grand, et le téléphone ne zoome plus dessus.</li>
     <li>Les deux grands cadres en pointillés deviennent une simple ligne « Nouvelle prestation » et « Nouveau matériel ».</li>
-    <li>« Réglages » sous le titre est retiré : la barre du bas le dit déjà.</li>
     <li>Le dernier bouton ne passe plus sous la barre du bas.</li>
     <li>Pas de recherche : le catalogue commun compte une prestation et un matériel. Elle viendra s'il grossit.</li>
   </ul>

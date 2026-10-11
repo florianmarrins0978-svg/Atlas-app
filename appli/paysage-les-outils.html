@@ -36,7 +36,7 @@
     ─────────────────────────────────────────────────────────────────────────
     CE QUI SERAIT À CODER SI LA PROPOSITION EST RETENUE.
 
-    1. page.tsx : retirer le surtitre « Outils du métier », retirer le champ
+    1. page.tsx : garder le surtitre « Outils du métier », retirer le champ
        « dit » (ou ne plus l'afficher), ajouter une icône par outil, sortir la
        terrasse bois de la liste et poser la phrase sous la plage.
     2. ÉTAT ARTISAN, et c'est du code serveur : aujourd'hui la liste ne lit pas
@@ -62,7 +62,7 @@
   }
   body[data-charte="nuit"]{
     --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
-    --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e; --plein:#7d9a6d;
+    --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e; --plein:#e9e8de;
     --surPlein:#101210;
     --line:rgba(233,232,222,.12); --chevron:rgba(233,232,222,.28);
     --ombre:0 1px 2px rgba(0,0,0,.30);
@@ -104,7 +104,7 @@
   .titre-ligne{display:flex;align-items:flex-start;justify-content:space-between;
                gap:16px;padding:34px 26px 0}
   h1{margin:0;font-size:36px;line-height:1.02;letter-spacing:-.018em}
-  .precision{display:block;margin-top:10px;font-size:9.5px;font-weight:500;
+  .precision{display:block;margin-top:12px;font-size:9.5px;font-weight:500;
              letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
   .assistant{width:44px;height:44px;border-radius:50%;background:var(--plein);
              display:flex;align-items:center;justify-content:center;flex:none}
@@ -198,7 +198,7 @@
     <div class="titre-ligne">
       <div style="min-width:0">
         <h1 class="serif">Paysage</h1>
-        <span class="precision avant-seul">Outils du métier</span>
+        <span class="precision">Outils du métier</span>
       </div>
       <span class="assistant" aria-hidden="true">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none"
@@ -237,12 +237,10 @@
       <nav class="plage" aria-label="Outils">
         <a class="outil ferme" href="#">
           <span class="pictos" aria-hidden="true">
-            <!-- arroseur : le corps planté, le jet en éventail -->
+            <!-- goutte d'eau, le motif de l'appli (la-goutte-d-eau) -->
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M10 21h4M11 21v-6h2v6"/>
-              <path d="M12 12v-1"/>
-              <path d="M7.5 9.5a6.5 6.5 0 0 1 9 0"/>
-              <path d="M4.5 6.5a10.5 10.5 0 0 1 15 0"/>
+              <path d="M12 2.5C12 2.5 4.8 10.3 4.8 14.9a7.2 7.2 0 0 0 14.4 0C19.2 10.3 12 2.5 12 2.5z"/>
+              <path d="M8.7 15.3a3.3 3.3 0 0 0 3.3 3.3"/>
             </svg>
           </span>
           <span class="nom serif">Plan d'arrosage automatique</span>
@@ -279,11 +277,10 @@
         </a>
         <a class="outil" href="#">
           <span class="pictos" aria-hidden="true">
-            <!-- casque de chantier -->
+            <!-- bouclier et sa coche -->
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 17.5h18"/>
-              <path d="M5 17.5v-2a7 7 0 0 1 14 0v2"/>
-              <path d="M10 9V6.5h4V9"/>
+              <path d="M12 3l7 2.8v5.6c0 4.5-3 8.1-7 9.6-4-1.5-7-5.1-7-9.6V5.8z"/>
+              <path d="M8.8 12.2l2.2 2.2 4.2-4.4"/>
             </svg>
           </span>
           <span class="nom serif">Fiches de sécurité</span>
@@ -308,7 +305,6 @@
 <div class="notes">
   <h3>Ce qui change</h3>
   <ul>
-    <li>« Outils du métier » sous le titre redisait « Paysage ». Il part.</li>
     <li>Les phrases grises sous chaque outil expliquaient l'outil et se lisaient mal au soleil. Elles partent, et un petit dessin à gauche fait reconnaître l'outil d'un coup d'œil.</li>
     <li>Les quatre outils sont réunis sur une même plage claire, en lignes de 64 px : on touche juste, même avec des gants.</li>
     <li>La terrasse bois ne prend plus la place d'un outil qu'on ne peut pas ouvrir. Une phrase sous la liste dit qu'elle arrive.</li>
