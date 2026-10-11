@@ -18,12 +18,18 @@ import { MOIS_LONGS } from "@/lib/mois";
  * `appli/retours-la-roue-du-jour.html` — les trois mots du titre se touchent,
  * et la croix disparaît avec.
  *
+ * **REMPLACÉE LE 11 OCTOBRE 2026 par sa proposition A**
+ * (`appli/filtre-a-partout.html`) : le mois se feuillette entre deux chevrons,
+ * le toucher ouvre la roue pour un jour, « Tout le mois » y revient. L'année
+ * d'un bloc n'a plus de geste à l'écran ; une adresse `?periode=2026` reste
+ * lue, et se feuillette depuis janvier (`moisVoisin`).
+ *
  * **Le jour se lit à l'heure du patron** (`jourIso`), jamais en UTC : signée à
  * 0 h 30 à Paris, une fiche est à 22 h 30 UTC la veille, et elle sortirait sous
  * un jour que sa carte n'écrit pas.
  */
 
-/** Ce que la période embrasse — c'est ce que les trois mots du titre règlent. */
+/** Ce que la période embrasse : un jour, un mois, ou une année venue d'une adresse. */
 export type Portee = "jour" | "mois" | "annee";
 
 export function dansLaPeriode(instant: Date, periode: string): boolean {
@@ -45,14 +51,29 @@ export function porteeDeLaPeriode(periode: string): Portee {
 }
 
 /**
- * Le même point du calendrier, vu de plus haut ou de plus près.
+ * Le mois d'avant (`-1`) ou d'après (`1`) — ce que font les deux chevrons.
  *
- * **C'est tout le geste de la proposition B** : toucher « septembre » garde le
- * jour sous la main, et le titre continue de l'écrire. Sans ça, élargir
- * perdrait la date, et redescendre demanderait de rouvrir la roue.
+ * **Sa proposition A du 11 octobre 2026**, qui remplace les trois mots
+ * touchables de la B : *« dur à utiliser »*, on ne devinait pas que « 11 »,
+ * « octobre » et « 2026 » se touchaient chacun à part. Le filtre se feuillette
+ * désormais comme le mois de Terminés.
+ *
+ * On part toujours d'un MOIS : un jour choisi passe à son mois voisin (sinon
+ * « suivant » avancerait d'un jour), et une année seule, venue d'une ancienne
+ * adresse, part de son janvier.
  */
-export function avecLaPortee(jour: string, portee: Portee): string {
-  return portee === "jour" ? jour : portee === "mois" ? jour.slice(0, 7) : jour.slice(0, 4);
+export function moisVoisin(periode: string, decalage: -1 | 1): string {
+  const [annee, mois = 1] = periode.split("-").map(Number);
+  const rang = annee * 12 + (mois - 1) + decalage;
+  return `${Math.floor(rang / 12)}-${String((rang % 12) + 1).padStart(2, "0")}`;
+}
+
+/**
+ * Le chevron d'après s'ouvre-t-il ? Rien n'est encore signé ni envoyé dans un
+ * mois à venir : il s'éteint au mois en cours, comme sur Terminés.
+ */
+export function moisSuivantOuvert(periode: string, maintenant: Date = new Date()): boolean {
+  return moisVoisin(periode, 1) <= moisEnCours(maintenant);
 }
 
 /** « 2026 », « Septembre 2026 », ou « 22 septembre 2026 ». */

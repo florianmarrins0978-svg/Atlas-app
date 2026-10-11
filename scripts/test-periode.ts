@@ -10,9 +10,10 @@
 
 import assert from "node:assert/strict";
 import {
-  avecLaPortee,
   dansLaPeriode,
   jourDeLaRoue,
+  moisSuivantOuvert,
+  moisVoisin,
   periodeValide,
   porteeDeLaPeriode,
   titreDeLaPeriode,
@@ -79,19 +80,35 @@ essai("le jour se lit à l'heure de Paris", () => {
   assert.equal(dansLaPeriode(tard, "2026-09-22"), false);
 });
 
-// ── Les trois mots du titre — sa proposition B du 23 septembre ─────────
-essai("élargir garde le point du calendrier", () => {
-  assert.equal(avecLaPortee("2026-09-22", "jour"), "2026-09-22");
-  assert.equal(avecLaPortee("2026-09-22", "mois"), "2026-09");
-  assert.equal(avecLaPortee("2026-09-22", "annee"), "2026");
+// ── Le mois qu'on feuillette, sa proposition A du 11 octobre 2026 ────
+// Les deux chevrons changent de MOIS, d'où que l'on parte : un jour choisi
+// ramène à son mois voisin, sans quoi « suivant » sauterait d'un jour.
+essai("les chevrons passent au mois d'avant et au mois d'après", () => {
+  assert.equal(moisVoisin("2026-10", -1), "2026-09");
+  assert.equal(moisVoisin("2026-10", 1), "2026-11");
+  assert.equal(moisVoisin("2026-09-22", 1), "2026-10");
 });
 
-// C'est ce qui permet de REDESCENDRE : le jour n'est jamais perdu, il est
-// seulement caché sous la portée choisie.
-essai("on remonte et l'on redescend sans rouvrir la roue", () => {
-  const jour = jourDeLaRoue("2026");
-  assert.equal(avecLaPortee(jour, "mois").length, 7);
-  assert.equal(avecLaPortee(jour, "jour").length, 10);
+essai("on passe d'une année à l'autre par décembre et janvier", () => {
+  assert.equal(moisVoisin("2026-01", -1), "2025-12");
+  assert.equal(moisVoisin("2025-12", 1), "2026-01");
+});
+
+// Une année venue d'une ancienne adresse (?periode=2024) n'a pas de mois :
+// on part de son janvier, jamais d'une chaîne qui ne se découpe pas.
+essai("une année seule se feuillette depuis son janvier", () => {
+  assert.equal(moisVoisin("2024", 1), "2024-02");
+  assert.equal(moisVoisin("2024", -1), "2023-12");
+});
+
+// Rien n'est encore signé ni envoyé dans le futur : le chevron d'après
+// s'éteint au mois en cours, comme sur Terminés.
+essai("le mois d'après se ferme au mois en cours", () => {
+  const maintenant = new Date("2026-10-11T09:00:00.000Z");
+  assert.equal(moisSuivantOuvert("2026-09", maintenant), true);
+  assert.equal(moisSuivantOuvert("2026-09-30", maintenant), true);
+  assert.equal(moisSuivantOuvert("2026-10", maintenant), false);
+  assert.equal(moisSuivantOuvert("2026-10-03", maintenant), false);
 });
 
 essai("le titre écrit ce que la liste embrasse", () => {

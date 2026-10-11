@@ -285,21 +285,27 @@ async function main() {
     await page.goto(`${BASE}/paysage/fiches-securite?jour=${aujourdhui}`, { waitUntil: "networkidle" });
     await carte.waitFor({ timeout: 15_000 });
     await page.goto(`${BASE}/paysage/fiches-securite?periode=${laVeille}`, { waitUntil: "networkidle" });
-    // **Le repère est le MOT du titre, plus la croix** : elle est partie le
-    // 23 septembre avec l'année (sa proposition B). Un contrôle qui réclame ce
-    // qu'il a fait retirer rend son écran impossible à changer (§5 bis).
-    const jourActif = page.locator("[data-atlas='portee-jour'][aria-pressed='true']");
-    await jourActif.waitFor({ timeout: 15_000 });
+    // **Un jour choisi se lit à « Tout le mois »**, son unique sortie depuis
+    // la proposition A du 11 octobre 2026 : les trois mots touchables de la B
+    // sont partis, et un contrôle qui les réclamerait rendrait l'écran
+    // impossible à changer (§5 bis).
+    const toutLeMois = page.locator("[data-atlas='tout-le-mois']");
+    await toutLeMois.waitFor({ timeout: 15_000 });
     assert.equal(await carte.count(), 0, "la fiche d'aujourd'hui sort sous la veille");
 
-    // L'ANNÉE — sa demande du 23 septembre : la fiche du jour doit revenir
-    // quand on touche « 2026 », alors qu'elle était hors du jour d'avant.
-    await page.locator("[data-atlas='portee-annee']").click();
+    // LE MOIS — « Tout le mois » rend le mois de la veille ; si la veille est
+    // le mois d'avant (on est le 1er), le chevron d'après ramène au nôtre. La
+    // fiche du jour doit alors revenir.
+    await toutLeMois.click();
+    await toutLeMois.waitFor({ state: "detached", timeout: 15_000 });
+    if (laVeille.slice(0, 7) !== aujourdhui.slice(0, 7)) {
+      await page.locator("[data-atlas='mois-suivant']").click();
+    }
     await carte.waitFor({ timeout: 15_000 });
     assert.equal(
-      await page.locator("[data-atlas='portee-annee'][aria-pressed='true']").count(),
-      1,
-      "l'année touchée ne se souligne pas"
+      await page.locator("[data-atlas='mois-suivant']").isDisabled(),
+      true,
+      "le chevron d'après reste ouvert sur le mois en cours"
     );
     await page.goto(`${BASE}/paysage/fiches-securite`, { waitUntil: "networkidle" });
     await carte.waitFor({ timeout: 15_000 });

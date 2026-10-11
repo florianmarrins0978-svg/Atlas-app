@@ -367,13 +367,13 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     id: "retours-date",
     ecran: "Retours d'intervention",
     ou: "« Terminés » dans la barre du bas, puis « Retours d'intervention »",
-    intitule: "Voir les retours d'un jour, d'un mois ou d'une année",
+    intitule: "Voir les retours d'un autre mois, ou d'un seul jour",
     motsCles: ["jour", "mois", "annee", "date", "periode", "filtrer", "ancien", "retour"],
     geste:
-      "Dans la date en haut, touchez le jour, le mois ou l'année : la liste suit. Le chevron ouvre la roue pour choisir un autre jour.",
+      "En haut, les chevrons passent au mois d'avant ou d'après. Touchez le mois pour choisir un jour ; « Tout le mois » y revient.",
     source: RET,
     preuves: ["<FiltreDeDate"],
-    ailleurs: [{ source: "src/components/atlas/FiltreDeDate.tsx", preuves: ['aria-label="Choisir un jour"', 'portee="annee"', 'portee="mois"'] }],
+    ailleurs: [{ source: "src/components/atlas/FiltreDeDate.tsx", preuves: ['aria-label="Choisir un jour"', 'aria-label={sens === "passe" ? "Mois précédent" : "Mois suivant"}', "Tout le mois"] }],
   },
   // --- Ma TVA -------------------------------------------------------------------
   {

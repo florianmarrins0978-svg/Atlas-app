@@ -8,6 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-11
 
+- **Le filtre de date se feuillette, comme le mois de Terminés (sa A).** Il
+  trouvait « 11 octobre 2026 » *« dur à utiliser »* : trois mots qui se
+  touchaient chacun à part, sans que rien ne le dise. Sur les rapports envoyés,
+  les fiches de sécurité et les retours d'intervention, `FiltreDeDate` montre
+  désormais « Octobre 2026 » entre deux chevrons d'or (le dessin de
+  `NavigationMois`), le mois touché ouvre la roue pour un jour, « Tout le mois »
+  y revient, et le chevron d'après s'éteint au mois en cours. L'année d'un bloc
+  n'a plus de geste ; une adresse `?periode=2026` reste lue. Une seule pièce
+  change pour les trois écrans ; `avecLaPortee` part avec les mots touchables,
+  `moisVoisin` et `moisSuivantOuvert` (`src/lib/periode.ts`) arrivent, éprouvés
+  dans `test-periode.ts`. Ma TVA (période déclarée) et la fiche qu'on remplit
+  (`TitreAvecRoue`, jour du passage) ne bougent pas. Planches :
+  `appli/filtre-de-date-plus-simple.html`, `appli/filtre-a-partout.html`.
+
 - **Neuf écrans jamais repris par /impeccable, en planches (rien de codé).**
   Sa demande : *« va regarder les pages de l'appli qui n'ont pas été faites par
   le skill impeccable et crée-moi des planches en les corrigeant »*. L'inventaire

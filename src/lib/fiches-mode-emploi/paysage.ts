@@ -290,10 +290,10 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     id: "securite-periode",
     ecran: "Fiches de sécurité",
     ou: "« Paysage », Fiches de sécurité, en haut",
-    intitule: "Voir les fiches de sécurité d'un autre mois, d'un jour ou d'une année",
+    intitule: "Voir les fiches de sécurité d'un autre mois, ou d'un seul jour",
     motsCles: ["mois", "jour", "annee", "date", "periode", "filtre", "filtrer", "ancienne"],
     geste:
-      "En haut, touchez le jour, le mois ou l'année pour ne voir que cette période. Le petit chevron à côté ouvre la roue pour choisir une autre date.",
+      "En haut, les chevrons passent au mois d'avant ou d'après. Touchez le mois pour choisir un jour ; « Tout le mois » y revient.",
     source: SECU,
     preuves: ["<FiltreDeDate"],
     ailleurs: [{ source: FILTRE, preuves: ['data-atlas="periode-choisie"', 'aria-label="Choisir un jour"'] }],
@@ -433,7 +433,7 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     intitule: "Retrouver les rapports de fiche déjà envoyés",
     motsCles: ["rapports", "envoyes", "anciens", "retrouver", "historique", "mois", "chercher", "sont"],
     geste:
-      "Descendez à « Rapports envoyés » : touchez le jour, le mois ou l'année pour choisir la période, ou tapez un nom de client, puis touchez la ligne.",
+      "Descendez à « Rapports envoyés » : les chevrons changent de mois, le mois touché choisit un jour, ou tapez un nom de client, puis touchez la ligne.",
     source: "src/app/paysage/fiche/RapportsEnvoyes.tsx",
     preuves: ["Rapports envoyés", 'placeholder="Un nom de client"', "<FiltreDeDate"],
     ailleurs: [{ source: FILTRE, preuves: ['data-atlas="periode-choisie"'] }],
