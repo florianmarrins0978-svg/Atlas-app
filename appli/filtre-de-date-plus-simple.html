@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atlas : un filtre de date plus simple</title>
+<style>
+  /*
+    UN FILTRE DE DATE PLUS SIMPLE. Planche du 11 octobre 2026, pour /paysage/fiche.
+
+    SA DEMANDE : le filtre de date est « dur à utiliser », il veut « quelque chose de
+    plus simple ». Rien n'est codé tant qu'il n'a pas choisi.
+
+    CE QUI EST LU DANS LE DÉPÔT, ET REPRODUIT TEL QUEL
+      src/components/atlas/FiltreDeDate.tsx   les trois mots « 11 octobre 2026 », le mot
+                                              qui commande souligné d'or, le chevron doré
+                                              qui couvre un champ date invisible (16 px).
+      src/lib/periode.ts                      la période (2026, 2026-10, 2026-10-09), le
+                                              jour retenu quand on élargit, le titre.
+      src/app/paysage/fiche/page.tsx          l'ordre de l'écran : en-tête, carte Composer
+                                              ma fiche, Créer une fiche, En cours, puis les
+                                              rapports envoyés.
+      src/app/paysage/fiche/RapportsEnvoyes.tsx  le filtre, puis la recherche, puis le titre
+                                              « Rapports envoyés », puis la liste ; les trois
+                                              phrases quand rien ne sort.
+      src/lib/passage-entretien.ts            rapportsAMontrer : le mois en cours à
+                                              l'ouverture, et UN NOM TAPÉ CHERCHE DANS TOUS
+                                              LES MOIS (la période est alors ignorée). La
+                                              planche fait pareil dans Aujourd'hui, A et C.
+      LignePassage.tsx, FichesEnCours.tsx      la ligne : nom en serif 16, puis « vendredi 9
+                                              octobre, 4 prestations, 1 h 30 » (jourLisible,
+                                              libelleMinutes de src/lib/jour.ts et
+                                              passage-entretien.ts).
+      EnTeteEcran.tsx, ChampRecherche.tsx,    l'en-tête (titre 36, sous-titre doré dessous),
+      PrimaryButton.tsx, BottomSheet.tsx      le champ souligné, la capsule serif, la feuille
+                                              (voile 35 %, coins 26 px en haut, poignée).
+
+    CE QUI EST UN EXEMPLE
+      Les trois rapports d'octobre sont ceux qu'on nous a donnés. Les trois de septembre
+      (Mme Moreau, M. Bernard, Mme Chauvin) sont ajoutés pour que filtrer serve à quelque
+      chose. « 20 prestations » est le modèle fourni (MODELE_FOURNI). Les deux fiches en
+      cours et, dans A, B et C, la carte pleine largeur et « Retirer » sont recopiés de la
+      planche validée appli/fiche-de-chantier-l-accueil.html, version Corrigé.
+      Aujourd'hui est fixé au dimanche 11 octobre 2026.
+
+    L'OR
+      Un seul or partout, #B98B47, son choix. L'appli peint aujourd'hui le mot actif du
+      filtre en orTexte (#8b6835) ; la planche le peint en #B98B47 dans les deux versions.
+
+    CE QUI SERAIT À CODER (aucune ligne serveur dans les trois cas)
+      A  FiltreDeDate réécrit : deux chevrons de mois et le titre à roue qui existe déjà
+         (TitreAvecRoue). periode.ts ne bouge presque pas : la portée « annee » ne sert plus.
+      B  FiltreDeDate retiré des écrans qui le portent ; rapportsAMontrer apprend à lire
+         une date tapée (règle pure dans src/lib, éprouvée sans base) ; la liste se range
+         par mois.
+      C  FiltreDeDate devient une ligne qui ouvre une BottomSheet ; periode.ts inchangé.
+  */
+
+  :root{
+    --scene:#e7e4dd;
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
+    --plein:#7d9a6d; --surPlein:#faf9f5;
+    --or:#B98B47; --alerte:#9C3B2E;
+    --line:rgba(28,28,26,.12); --chevron:rgba(28,28,26,.28);
+    --voile:rgba(0,0,0,.35); --ombre:rgba(47,59,47,.10);
+  }
+  body[data-charte="nuit"]{
+    --scene:#070806;
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e;
+    --plein:#e9e8de; --surPlein:#101210;
+    --or:#B98B47; --alerte:#cd6456;
+    --line:rgba(233,232,222,.12); --chevron:rgba(233,232,222,.28);
+    --voile:rgba(0,0,0,.55); --ombre:rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:var(--scene);color:var(--ink);
+       font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:20px 0 56px}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+  button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid var(--or);outline-offset:3px;border-radius:4px}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;font-weight:400}
+
+  /* La tête de planche, hors de l'écran */
+  .tete{max-width:390px;margin:0 auto;padding:0 16px;font-size:13.5px;line-height:1.6;color:var(--inkSoft)}
+  .tete h2,.notes h3,.banc h2{margin:0 0 8px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+         text-transform:uppercase;color:var(--inkSoft)}
+  .tete ul{margin:0;padding-left:18px}
+  .tete li{margin-bottom:5px}
+  .tete p{margin:8px 0 0}
+
+  /* Le banc */
+  .banc{max-width:390px;margin:18px auto 12px;padding:0 16px}
+  .boutons{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+  .boutons button{font-size:12.5px;padding:8px 13px;border-radius:6px;min-height:40px;
+                  border:1px solid rgba(28,28,26,.18);background:#faf9f5;color:#1c1c1a}
+  body[data-charte="nuit"] .boutons button{background:#1a1d19;color:#e9e8de;border-color:rgba(233,232,222,.2)}
+  .boutons button[aria-pressed="true"]{background:#2f3b2f;color:#faf9f5;border-color:#2f3b2f}
+  body[data-charte="nuit"] .boutons button[aria-pressed="true"]{background:#e9e8de;color:#101210;border-color:#e9e8de}
+  .quelle{margin:2px 0 0;font-size:12.5px;color:var(--inkSoft)}
+
+  /* Le téléphone */
+  .tel{width:100%;max-width:390px;height:844px;margin:0 auto;background:var(--cream);color:var(--ink);
+       border-radius:30px;overflow:hidden;position:relative;display:flex;flex-direction:column;
+       box-shadow:0 18px 46px rgba(20,18,14,.18)}
+  @media (max-width:420px){.tel{border-radius:22px}}
+  .ecran{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding-bottom:40px}
+
+  /* En-tête, grammaire d'EnTeteEcran */
+  .haut{padding:28px 26px 0}
+  .retour{width:44px;height:44px;border-radius:50%;background:var(--rustTint);color:var(--rust);
+          display:flex;align-items:center;justify-content:center}
+  .titre-ligne{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 26px 0}
+  h1{margin:0;font-size:36px;line-height:1.02;letter-spacing:-.018em}
+  .surtitre{margin:12px 0 0;font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+  .assistant{width:44px;height:44px;border-radius:50%;background:var(--plein);color:var(--surPlein);
+             display:flex;align-items:center;justify-content:center;flex:none}
+
+  /* Composer ma fiche */
+  .composer{margin:20px 26px 0;display:flex;width:fit-content;max-width:270px;min-height:44px;
+            align-items:center;gap:14px;border-radius:4px;padding:13px 16px;
+            background:var(--card);border:1px solid var(--or);color:var(--ink);text-decoration:none}
+  .composer b{display:block;font-weight:400;font-size:16px;line-height:1.2}
+  .composer small{display:block;margin-top:3px;font-size:11.5px;line-height:1.45;color:var(--muted)}
+  .chev{flex:none;width:8px;height:8px;transform:rotate(45deg);
+        border-right:1.5px solid var(--chevron);border-top:1.5px solid var(--chevron)}
+
+  /* A, B, C : le haut de l'écran de la planche validée appli/fiche-de-chantier-l-accueil.html
+     (version Corrigé), recopié pour ne pas la contredire. Aujourd'hui garde l'appli actuelle. */
+  .carte{display:flex;align-items:center;gap:14px;margin:22px 26px 0;padding:15px 18px;
+         min-height:64px;border-radius:16px;background:var(--card);border:1px solid #B98B47;
+         box-shadow:0 1px 2px rgba(47,59,47,.06),0 6px 18px rgba(47,59,47,.07);color:var(--ink);text-decoration:none}
+  body[data-charte="nuit"] .carte{box-shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25)}
+  .carte .t{display:block;font-size:19px;line-height:1.2}
+  .carte .s{display:block;margin-top:3px;font-size:13px;color:var(--inkSoft)}
+  .carte .gauche{flex:1;min-width:0}
+  .retirer{flex:none;display:flex;align-items:center;justify-content:flex-end;min-height:44px;min-width:44px;
+           padding:0 0 0 12px;font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--inkSoft)}
+  body.vue-auj .apres,body:not(.vue-auj) .avant{display:none !important}
+
+  /* La capsule, PrimaryButton */
+  .centre{display:flex;justify-content:center;margin:22px 26px 0}
+  .capsule{border-radius:9999px;padding:13px 36px;font-size:17px;background:var(--plein);color:var(--surPlein)}
+
+  /* Les sections */
+  .section{margin:28px 26px 0}
+  .petit-titre{margin:0;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink)}
+  .ligne{display:flex;align-items:center;border-bottom:1px solid var(--line)}
+  .ligne a{display:flex;flex:1;min-width:0;min-height:56px;align-items:center;gap:15px;padding:13px 0;
+           color:inherit;text-decoration:none}
+  .ligne .q{flex:1;min-width:0}
+  .ligne .nom{display:block;font-size:16px;line-height:1.25}
+  .ligne .dit{display:block;margin-top:3px;font-size:11.5px;line-height:1.5;color:var(--muted)}
+  .brouillon{flex:none;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+  .croix{margin-left:10px;width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;
+         font-size:18px;color:var(--muted)}
+
+  /* AUJOURD'HUI : les trois mots, copie de FiltreDeDate */
+  .f-auj{margin:12px 22px 0;display:flex;align-items:center;justify-content:center;gap:4px}
+  .mot{min-height:44px;display:flex;align-items:center;padding:0 3px;font-size:20px;line-height:1.2}
+  .mot.actif{color:var(--or);box-shadow:inset 0 -2px 0 var(--or)}
+  .roue{position:relative;min-height:44px;width:32px;display:flex;align-items:center;justify-content:center;
+        color:var(--or);cursor:pointer}
+  .roue input,.titre-roue input,.jour-roue input{position:absolute;inset:0;width:100%;height:100%;opacity:0;
+        font-size:16px;border:0;padding:0;margin:0;cursor:pointer}
+
+  /* A : le mois qu'on feuillette */
+  .f-a{margin:12px 0 0;display:flex;align-items:center;justify-content:space-between;gap:4px}
+  .nav{width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;color:var(--ink);border-radius:50%}
+  .titre-roue{position:relative;min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;
+              cursor:pointer;flex:1;min-width:0}
+  .titre-roue span{font-size:20px;line-height:1.2;white-space:nowrap}
+  .titre-roue svg{color:var(--or);flex:none}
+  .tout-mois{display:block;margin:0 auto;min-height:36px;padding:0 10px;font-size:13.5px;color:var(--or)}
+
+  /* C : une ligne comme les champs, qui ouvre la feuille */
+  .champ-date{margin-top:12px;width:100%;display:flex;align-items:center;gap:10px;min-height:48px;
+              border-bottom:1.5px solid var(--muted);text-align:left}
+  .champ-date .lib{font-size:15px;color:var(--inkSoft)}
+  .champ-date .val{flex:1;min-width:0;font-size:18px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .champ-date svg{color:var(--or);flex:none}
+
+  /* La recherche, ChampRecherche */
+  .cherche{margin-top:12px;position:relative;display:flex;align-items:center;gap:12px;
+           border-bottom:1.5px solid var(--muted)}
+  .cherche:focus-within{border-bottom-color:var(--or)}
+  .cherche input{flex:1;min-width:0;border:0;background:none;outline:none;padding:11px 0;
+                 font:inherit;font-size:17px;color:var(--ink);caret-color:var(--or)}
+  .cherche input::placeholder{color:var(--muted);opacity:1}
+  .cherche input:focus-visible{outline:none}
+  .effacer{width:40px;height:44px;flex:none;display:none;align-items:center;justify-content:center;color:var(--muted);font-size:17px}
+  .effacer.vu{display:flex}
+
+  .liste{margin-top:10px}
+  .bande{margin:22px 0 2px;font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--inkSoft)}
+  .liste .bande:first-child{margin-top:12px}
+  .rien{margin:28px 0 0;text-align:center;font-size:13.5px;line-height:1.65;color:var(--inkSoft)}
+
+  /* La barre du bas */
+  .barre{flex:none;background:var(--cream);border-top:1px solid var(--line);padding:16px 14px 18px}
+  .onglets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:relative}
+  .onglets span{text-align:center;font-size:8.5px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;
+                color:var(--muted);padding-bottom:8px}
+  .onglets span.actif{color:var(--ink)}
+  .filet{position:absolute;bottom:0;left:60%;width:20%;height:1px;background:var(--or)}
+
+  /* La feuille de C, BottomSheet */
+  .voile{position:absolute;inset:0;z-index:10;background:var(--voile);display:none;align-items:flex-end}
+  .voile.ouvert{display:flex}
+  .feuille{width:100%;max-height:88%;overflow-y:auto;background:var(--cream);border-radius:26px 26px 0 0;
+           padding:12px 24px 34px}
+  .poignee{display:flex;align-items:center;justify-content:center;width:100%;height:28px;margin-bottom:6px}
+  .poignee i{display:block;width:40px;height:4px;border-radius:9999px;background:var(--line)}
+  .feuille h3{margin:0 0 8px;font-size:22px;line-height:1.2}
+  .choix{display:flex;align-items:center;gap:14px;width:100%;min-height:60px;padding:10px 0;
+         border-bottom:1px solid var(--line);text-align:left}
+  .choix .rond{width:24px;height:24px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1.5px var(--chevron);
+               display:flex;align-items:center;justify-content:center;color:var(--surPlein)}
+  .choix[aria-checked="true"] .rond{background:var(--plein);box-shadow:none}
+  .choix .q{flex:1;min-width:0}
+  .choix b{display:block;font-weight:400;font-size:18px;line-height:1.25}
+  .choix small{display:block;margin-top:2px;font-size:13px;color:var(--inkSoft)}
+  .jour-lib{margin:20px 0 0;font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--inkSoft)}
+  .jour-roue{position:relative;display:flex;align-items:center;gap:8px;min-height:48px;cursor:pointer;
+             border-bottom:1.5px solid var(--muted)}
+  .jour-roue span{flex:1;font-size:18px}
+  .jour-roue svg{color:var(--or)}
+  .feuille .centre{margin:26px 0 0}
+
+  /* Les notes, sous le téléphone */
+  .notes{max-width:390px;margin:22px auto 0;padding:0 16px;font-size:13.5px;line-height:1.6;color:var(--inkSoft)}
+  .notes h3{margin:22px 0 8px}
+  .notes h4{margin:14px 0 4px;font-size:15px;font-weight:400;color:var(--ink)}
+  .notes ul{margin:0;padding-left:18px}
+  .notes li{margin-bottom:5px}
+  .notes b{color:var(--ink);font-weight:600}
+  .notes .avis{margin-top:10px;color:var(--ink)}
+</style>
+</head>
+<body data-charte="origine">
+
+<div class="tete">
+  <h2>Pourquoi le filtre est dur aujourd'hui</h2>
+  <ul>
+    <li>On ne devine pas que « 11 », « octobre » et « 2026 » se touchent chacun à part : ils ont l'air d'un simple titre.</li>
+    <li>Le trait d'or sous un mot est le seul signe de ce que la liste montre, le jour, le mois ou l'année.</li>
+    <li>Le petit chevron ouvre un calendrier, alors que les mots juste à côté changent autre chose.</li>
+  </ul>
+  <p>Trois rapports de septembre sont ajoutés à l'exemple pour que filtrer serve. Chaque proposition marche au doigt.</p>
+</div>
+
+<div class="banc">
+  <h2>Proposition</h2>
+  <div class="boutons" id="lesModes">
+    <button type="button" data-mode="auj" aria-pressed="true">Aujourd'hui</button>
+    <button type="button" data-mode="A" aria-pressed="false">A</button>
+    <button type="button" data-mode="B" aria-pressed="false">B</button>
+    <button type="button" data-mode="C" aria-pressed="false">C</button>
+  </div>
+  <div class="boutons" id="lesChartes">
+    <button type="button" data-charte="origine" aria-pressed="true">Origine</button>
+    <button type="button" data-charte="nuit" aria-pressed="false">Nuit</button>
+  </div>
+  <p class="quelle" id="quelle"></p>
+</div>
+
+<div class="tel">
+  <div class="ecran" id="ecran">
+
+    <div class="haut">
+      <span class="retour" aria-label="Retour à Paysage">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </div>
+    <div class="titre-ligne">
+      <div style="min-width:0">
+        <h1 class="serif">Fiche de chantier</h1>
+        <p class="surtitre">Outils du métier</p>
+      </div>
+      <span class="assistant" aria-hidden="true">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+      </span>
+    </div>
+
+    <a class="composer avant" href="#">
+      <span style="min-width:0;flex:1"><b class="serif">Composer ma fiche</b><small>20 prestations</small></span>
+      <span class="chev" aria-hidden="true"></span>
+    </a>
+    <a class="carte apres" href="#">
+      <span class="gauche"><span class="t serif">Composer ma fiche</span><span class="s">20 prestations</span></span>
+      <span class="chev" aria-hidden="true"></span>
+    </a>
+
+    <div class="centre"><button type="button" class="capsule serif">Créer une fiche</button></div>
+
+    <section class="section">
+      <h2 class="petit-titre">En cours</h2>
+      <div style="margin-top:10px">
+        <div class="ligne">
+          <a href="#"><span class="q"><span class="nom serif">Mme Aubry</span><span class="dit">dimanche 11 octobre, 2 prestations, 1 h 40</span></span><span class="brouillon avant">Brouillon</span></a>
+          <button type="button" class="croix avant" aria-label="Supprimer la fiche Mme Aubry">×</button>
+          <button type="button" class="retirer apres" aria-label="Retirer la fiche Mme Aubry">Retirer</button>
+        </div>
+        <div class="ligne">
+          <a href="#"><span class="q"><span class="nom serif">Sans client</span><span class="dit apres">samedi 10 octobre, aucune prestation</span><span class="dit avant">samedi 10 octobre, 0 prestation</span></span><span class="brouillon avant">Brouillon</span></a>
+          <button type="button" class="croix avant" aria-label="Supprimer la fiche Sans client">×</button>
+          <button type="button" class="retirer apres" aria-label="Retirer la fiche Sans client">Retirer</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="rapports">
+      <div id="filtre"></div>
+      <div class="cherche">
+        <svg aria-hidden="true" width="21" height="21" viewBox="0 0 20 20" fill="none" stroke="#B98B47" stroke-width="1.5" style="flex:none"><circle cx="8.2" cy="8.2" r="6.2"/><path d="M12.8 12.8L18 18" stroke-linecap="round"/></svg>
+        <input type="text" inputmode="search" autocomplete="off" id="champ" placeholder="Un nom de client" aria-label="Chercher un client">
+        <button type="button" class="effacer" id="effacer" aria-label="Effacer la recherche">✕</button>
+      </div>
+      <h2 class="petit-titre" style="margin-top:22px">Rapports envoyés</h2>
+      <div class="liste" id="liste"></div>
+    </section>
+
+  </div>
+
+  <nav class="barre" aria-hidden="true">
+    <div class="onglets">
+      <span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Paysage</span><span>Réglages</span>
+      <i class="filet"></i>
+    </div>
+  </nav>
+
+  <!-- C : la feuille, celle de BottomSheet -->
+  <div class="voile" id="voile">
+    <div class="feuille" id="feuille" role="dialog" aria-label="Choisir la période">
+      <button type="button" class="poignee" id="poignee" aria-label="Refermer"><i></i></button>
+      <h3 class="serif">Période</h3>
+      <div id="lesChoix"></div>
+      <p class="jour-lib">Le jour</p>
+      <label class="jour-roue">
+        <span class="serif" id="jourEcrit"></span>
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <input type="date" id="roueC" aria-label="Choisir un jour">
+      </label>
+      <div class="centre"><button type="button" class="capsule serif" id="voir">Voir les rapports</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="notes">
+  <h3>Ce qui change</h3>
+
+  <h4 class="serif">A, le mois qu'on feuillette</h4>
+  <ul>
+    <li>Une seule ligne, « Octobre 2026 », et deux chevrons pour passer au mois d'avant ou d'après. Plus de mot à deviner.</li>
+    <li>Toucher le mois ouvre la roue du téléphone pour choisir un jour. Il s'écrit en entier : « Vendredi 9 octobre ».</li>
+    <li>« Tout le mois », en or sous le jour, ramène au mois entier.</li>
+    <li>L'année ne se voit plus d'un seul coup : elle se feuillette mois par mois.</li>
+  </ul>
+
+  <h4 class="serif">B, le mois par défaut, rien à toucher</h4>
+  <ul>
+    <li>Plus de filtre : la liste est rangée par mois, le plus récent en haut.</li>
+    <li>La recherche comprend aussi une date : « septembre », « 9 octobre » ou « 2026 », seule ou avec un nom.</li>
+    <li>Le mois en cours est en haut sans rien toucher.</li>
+    <li>La liste s'allonge avec le temps : au bout d'un an, douze mois à faire défiler, ou un mot à taper.</li>
+  </ul>
+
+  <h4 class="serif">C, un seul champ date</h4>
+  <ul>
+    <li>Une ligne comme les autres champs de l'appli : « Période : octobre 2026 ».</li>
+    <li>La toucher ouvre une feuille avec trois grands choix, Ce jour-là, Ce mois-ci, Toute l'année, et la roue du jour.</li>
+    <li>Tout est écrit en clair, rien à deviner.</li>
+    <li>Mais c'est un écran de plus : deux gestes au lieu d'un pour changer de mois.</li>
+  </ul>
+
+  <h3>À savoir</h3>
+  <ul>
+    <li>Ce filtre est le même sur les rapports envoyés, les fiches de sécurité et les retours d'intervention : le choix vaudra pour les trois. La fiche elle-même garde sa date à roue, qui ressemble déjà au titre de A.</li>
+    <li>Aucune des trois n'ajoute de rangée de boutons de filtre : A, B et C respectent votre consigne du 21 septembre.</li>
+    <li>Votre demande du 23 septembre, filtrer par jour, par mois ou par année : B et C la tiennent entière, A garde le jour et le mois, l'année seulement mois par mois.</li>
+    <li>Sur les retours d'intervention, la liste est rangée par client : B y poserait les mois au-dessus des clients, à regarder sur cet écran-là.</li>
+    <li>Partout, taper un nom cherche dans tous les mois, comme aujourd'hui.</li>
+  </ul>
+
+  <h3>Notre avis</h3>
+  <p class="avis">B, parce qu'on vient presque toujours chercher un client ou le dernier rapport, et que B les montre sans un seul geste ; le jour, le mois et l'année restent possibles en les tapant.</p>
+</div>
+
+<script>
+/* Les rapports de l'exemple. Octobre : ceux qu'on nous a donnés. Septembre : ajoutés. */
+const RAPPORTS = [
+  {nom:"M. Bernard",  jour:"2026-10-09", n:4, min:90},
+  {nom:"Mme Costa",   jour:"2026-10-06", n:3, min:45},
+  {nom:"M. Faucher",  jour:"2026-10-01", n:5, min:120},
+  {nom:"Mme Moreau",  jour:"2026-09-22", n:3, min:60},
+  {nom:"M. Bernard",  jour:"2026-09-11", n:4, min:90},
+  {nom:"Mme Chauvin", jour:"2026-09-03", n:2, min:40}
+];
+const AUJ = "2026-10-11";
+const JOURS = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+
+const maj = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+const decoupe = (iso) => iso.split("-").map(Number);
+function nomDuJour(iso){ const [a,m,j] = decoupe(iso); return JOURS[new Date(Date.UTC(a,m-1,j)).getUTCDay()]; }
+/* jourLisible, src/lib/jour.ts : l'année seulement si ce n'est pas la nôtre. */
+function jourLisible(iso){
+  const [a,m,j] = decoupe(iso);
+  return nomDuJour(iso) + " " + (j === 1 ? "1er" : j) + " " + MOIS[m-1] + (a === 2026 ? "" : " " + a);
+}
+/* libelleMinutes, src/lib/passage-entretien.ts */
+function minutes(n){ const h = Math.floor(n/60), m = n%60; return h === 0 ? m + " min" : m === 0 ? h + " h" : h + " h " + String(m).padStart(2,"0"); }
+/* titreDeLaPeriode, src/lib/periode.ts */
+function titrePeriode(p){
+  const [a,m,j] = decoupe(p);
+  if(!m) return String(a);
+  const nom = MOIS[m-1] + " " + a;
+  return j ? j + " " + nom : maj(nom);
+}
+const norm = (t) => t.normalize("NFD").replace(/\p{Diacritic}/gu,"").toLowerCase().replace(/[.'’\-_]/g," ");
+const motsDe = (t) => norm(t).split(/\s+/).filter(Boolean);
+const echapper = (t) => t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+/* Le jour sur lequel la roue s'ouvre : jourDeLaRoue. */
+function jourDeLaRoue(p){
+  if(p.length === 10) return p;
+  if(AUJ.startsWith(p)) return AUJ;
+  return p.length === 7 ? p + "-01" : p + "-01-01";
+}
+
+let mode = "auj";
+const etat = {
+  auj:{periode:"2026-10", jourRetenu:AUJ},
+  A:{periode:"2026-10"},
+  C:{portee:"mois", jour:AUJ}
+};
+const periodeC = () => etat.C.portee === "jour" ? etat.C.jour : etat.C.portee === "mois" ? etat.C.jour.slice(0,7) : etat.C.jour.slice(0,4);
+
+const champ = document.getElementById("champ");
+const effacer = document.getElementById("effacer");
+const filtre = document.getElementById("filtre");
+const liste = document.getElementById("liste");
+const quelle = document.getElementById("quelle");
+const voile = document.getElementById("voile");
+
+const SVG_BAS = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const SVG_GAUCHE = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12.5 4.5L7 10l5.5 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const SVG_DROITE = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7.5 4.5L13 10l-5.5 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const SVG_COCHE = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+/* ── Le filtre, selon la proposition ── */
+function dessinerFiltre(){
+  if(mode === "auj"){
+    const p = etat.auj.periode;
+    const jr = etat.auj.jourRetenu.startsWith(p) ? etat.auj.jourRetenu : jourDeLaRoue(p);
+    const portee = p.length === 10 ? "jour" : p.length === 7 ? "mois" : "annee";
+    const [a,m,j] = jr.split("-");
+    filtre.innerHTML =
+      '<div class="f-auj">' +
+        '<button type="button" class="mot serif' + (portee==="jour"?" actif":"") + '" data-portee="jour">' + Number(j) + '</button>' +
+        '<button type="button" class="mot serif' + (portee==="mois"?" actif":"") + '" data-portee="mois">' + MOIS[Number(m)-1] + '</button>' +
+        '<button type="button" class="mot serif' + (portee==="annee"?" actif":"") + '" data-portee="annee">' + a + '</button>' +
+        '<label class="roue">' + SVG_BAS + '<input type="date" data-roue aria-label="Choisir un jour" value="' + jr + '"></label>' +
+      '</div>';
+  } else if(mode === "A"){
+    const p = etat.A.periode;
+    const titre = p.length === 10 ? maj(jourLisible(p)) : titrePeriode(p);
+    filtre.innerHTML =
+      '<div class="f-a">' +
+        '<button type="button" class="nav" data-nav="-1" aria-label="Mois d\'avant">' + SVG_GAUCHE + '</button>' +
+        '<label class="titre-roue"><span class="serif">' + titre + '</span>' + SVG_BAS +
+          '<input type="date" data-roue aria-label="Choisir un jour" value="' + jourDeLaRoue(p) + '"></label>' +
+        '<button type="button" class="nav" data-nav="1" aria-label="Mois d\'après">' + SVG_DROITE + '</button>' +
+      '</div>' +
+      (p.length === 10 ? '<button type="button" class="tout-mois" data-tout-mois>Tout le mois</button>' : '');
+  } else if(mode === "B"){
+    filtre.innerHTML = "";
+  } else {
+    const p = periodeC();
+    const val = p.length === 10 ? jourLisible(p) : p.length === 7 ? titrePeriode(p).toLowerCase() : "année " + p;
+    filtre.innerHTML =
+      '<button type="button" class="champ-date" data-ouvrir-feuille aria-haspopup="dialog">' +
+        '<span class="lib">Période&nbsp;:</span><span class="val serif">' + val + '</span>' + SVG_BAS +
+      '</button>';
+  }
+}
+
+/* ── Ce que la liste montre ── */
+function parNom(saisie){
+  const ms = motsDe(saisie);
+  return RAPPORTS.filter(r => ms.every(m => norm(r.nom).includes(m)));
+}
+/* B : chaque mot tapé doit se trouver dans le nom OU dans la date écrite. */
+function motsDeLaDate(r){
+  const [a,m,j] = decoupe(r.jour);
+  return [nomDuJour(r.jour), String(j), j === 1 ? "1er" : "", norm(MOIS[m-1]), String(a)].filter(Boolean);
+}
+function parNomOuDate(saisie){
+  const ms = motsDe(saisie);
+  return RAPPORTS.filter(r => {
+    const tas = motsDe(r.nom).concat(motsDeLaDate(r));
+    return ms.every(m => /^\d/.test(m) ? tas.includes(m) : tas.some(t => t.startsWith(m)));
+  });
+}
+function periodeCourante(){
+  return mode === "auj" ? etat.auj.periode : mode === "A" ? etat.A.periode : periodeC();
+}
+function ligne(r){
+  return '<div class="ligne"><a href="#"><span class="q"><span class="nom serif">' + echapper(r.nom) +
+    '</span><span class="dit">' + jourLisible(r.jour) + ", " + r.n + " prestation" + (r.n > 1 ? "s" : "") + ", " + minutes(r.min) +
+    '</span></span><span class="chev" aria-hidden="true"></span></a></div>';
+}
+function dessinerListe(){
+  const saisie = champ.value.trim();
+  effacer.classList.toggle("vu", champ.value.length > 0);
+  let vus, rien;
+  if(mode === "B"){
+    vus = saisie ? parNomOuDate(saisie) : RAPPORTS.slice();
+    rien = "Aucun rapport pour « " + echapper(saisie) + " ».";
+  } else if(saisie){
+    vus = parNom(saisie);
+    rien = "Aucun rapport pour « " + echapper(saisie) + " ».";
+  } else {
+    const p = periodeCourante();
+    vus = RAPPORTS.filter(r => r.jour.startsWith(p));
+    rien = p.length === 10 ? "Aucun rapport envoyé le " + titrePeriode(p) + "." : "Aucun rapport envoyé en " + titrePeriode(p).toLowerCase() + ".";
+  }
+  vus.sort((x,y) => x.jour < y.jour ? 1 : -1);
+  if(!vus.length){ liste.innerHTML = '<p class="rien">' + rien + '</p>'; return; }
+  if(mode !== "B"){ liste.innerHTML = vus.map(ligne).join(""); return; }
+  let html = "", bande = null;
+  for(const r of vus){
+    const [a,m] = decoupe(r.jour);
+    const b = MOIS[m-1] + " " + a;
+    if(b !== bande){ html += '<p class="bande">' + b + '</p>'; bande = b; }
+    html += ligne(r);
+  }
+  liste.innerHTML = html;
+}
+function dessiner(){ dessinerFiltre(); dessinerListe(); }
+
+/* ── Les gestes ── */
+filtre.addEventListener("click", (e) => {
+  const mot = e.target.closest("[data-portee]");
+  if(mot){
+    const p = etat.auj.periode;
+    const jr = etat.auj.jourRetenu.startsWith(p) ? etat.auj.jourRetenu : jourDeLaRoue(p);
+    const po = mot.dataset.portee;
+    etat.auj.periode = po === "jour" ? jr : po === "mois" ? jr.slice(0,7) : jr.slice(0,4);
+    etat.auj.jourRetenu = jr;
+    dessiner(); return;
+  }
+  const nav = e.target.closest("[data-nav]");
+  if(nav){
+    const [a,m] = decoupe(etat.A.periode.slice(0,7));
+    const d = new Date(Date.UTC(a, m - 1 + Number(nav.dataset.nav), 1));
+    etat.A.periode = d.getUTCFullYear() + "-" + String(d.getUTCMonth()+1).padStart(2,"0");
+    dessiner(); return;
+  }
+  if(e.target.closest("[data-tout-mois]")){ etat.A.periode = etat.A.periode.slice(0,7); dessiner(); return; }
+  if(e.target.closest("[data-ouvrir-feuille]")){ ouvrirFeuille(); return; }
+  /* Sur un ordinateur, le champ date invisible ne s'ouvre pas tout seul. */
+  const roue = e.target.closest("[data-roue]");
+  if(roue && roue.showPicker){ try{ roue.showPicker(); }catch(err){ /* déjà ouvert */ } }
+});
+filtre.addEventListener("change", (e) => {
+  const roue = e.target.closest("[data-roue]");
+  if(!roue || !roue.value) return;
+  if(mode === "auj"){ etat.auj.periode = roue.value; etat.auj.jourRetenu = roue.value; }
+  else if(mode === "A"){ etat.A.periode = roue.value; }
+  dessiner();
+});
+champ.addEventListener("input", dessinerListe);
+effacer.addEventListener("click", () => { champ.value = ""; dessinerListe(); champ.focus(); });
+
+/* ── La feuille de C ── */
+const lesChoix = document.getElementById("lesChoix");
+const roueC = document.getElementById("roueC");
+function dessinerFeuille(){
+  const j = etat.C.jour, [a,m] = decoupe(j);
+  const options = [
+    ["jour", "Ce jour-là", jourLisible(j)],
+    ["mois", "Ce mois-ci", MOIS[m-1] + " " + a],
+    ["annee", "Toute l'année", String(a)]
+  ];
+  lesChoix.innerHTML = options.map(([cle, lib, val]) =>
+    '<button type="button" class="choix" role="radio" data-choix="' + cle + '" aria-checked="' + (etat.C.portee === cle) + '">' +
+      '<span class="rond">' + (etat.C.portee === cle ? SVG_COCHE : "") + '</span>' +
+      '<span class="q"><b class="serif">' + lib + '</b><small>' + val + '</small></span>' +
+    '</button>').join("");
+  document.getElementById("jourEcrit").textContent = maj(jourLisible(j)) + (a === 2026 ? " " + a : "");
+  roueC.value = j;
+}
+function ouvrirFeuille(){ dessinerFeuille(); voile.classList.add("ouvert"); }
+function fermerFeuille(){ voile.classList.remove("ouvert"); dessiner(); }
+lesChoix.addEventListener("click", (e) => {
+  const c = e.target.closest("[data-choix]");
+  if(!c) return;
+  etat.C.portee = c.dataset.choix;
+  dessinerFeuille(); dessinerListe();
+});
+roueC.addEventListener("click", () => { if(roueC.showPicker){ try{ roueC.showPicker(); }catch(err){ /* déjà ouvert */ } } });
+roueC.addEventListener("change", () => { if(roueC.value){ etat.C.jour = roueC.value; dessinerFeuille(); dessinerListe(); } });
+voile.addEventListener("click", (e) => { if(e.target === voile) fermerFeuille(); });
+document.getElementById("poignee").addEventListener("click", fermerFeuille);
+document.getElementById("voir").addEventListener("click", fermerFeuille);
+
+/* ── Le banc ── */
+const DITS = {
+  auj:"Aujourd'hui : les trois mots, le trait d'or, le chevron qui ouvre la roue.",
+  A:"A : le mois qu'on feuillette.",
+  B:"B : le mois par défaut, rien à toucher.",
+  C:"C : un seul champ date, qui ouvre une feuille."
+};
+function choisirMode(m){
+  mode = m;
+  document.body.classList.toggle("vue-auj", m === "auj");
+  document.querySelectorAll("[data-mode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === m)));
+  quelle.textContent = DITS[m];
+  champ.placeholder = m === "B" ? "Un nom, un mois ou un jour" : "Un nom de client";
+  champ.value = "";
+  voile.classList.remove("ouvert");
+  dessiner();
+}
+document.querySelectorAll("[data-mode]").forEach(b => b.addEventListener("click", () => choisirMode(b.dataset.mode)));
+document.querySelectorAll("#lesChartes [data-charte]").forEach(b => b.addEventListener("click", () => {
+  document.body.dataset.charte = b.dataset.charte;
+  document.querySelectorAll("#lesChartes [data-charte]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+}));
+
+/* Une adresse peut ouvrir une proposition : #A, #B, #C, et #nuit. */
+const ancre = location.hash.slice(1).split(",");
+if(ancre.includes("nuit")) document.querySelector('#lesChartes [data-charte="nuit"]').click();
+choisirMode(["A","B","C"].find(x => ancre.includes(x)) || "auj");
+</script>
+</body>
+</html>

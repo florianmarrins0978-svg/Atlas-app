@@ -193,6 +193,10 @@
   .principal{margin-top:8px;width:100%;border:0;border-radius:999px;padding:16px;
              background:#e9e8de;color:#101210;font:400 17px/1 ui-serif,Georgia,serif;cursor:pointer}
   .principal[disabled]{opacity:.6}
+  /* La seule sortie : on accepte, ou l'on s'en va. Elle ne laisse entrer nulle part (sa décision du 11 octobre 2026). */
+  .sortie{display:block;width:100%;min-height:44px;margin-top:4px;border:0;background:none;
+          color:#84887b;font:400 14px/1.4 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;cursor:pointer}
+  .sortie:focus-visible{outline:2px solid #B98B47;outline-offset:2px;border-radius:999px}
 
   /* ══ Les notes ═════════════════════════════════════════════════════════ */
   .notes{max-width:390px;margin:20px auto 0;font-size:13.5px;line-height:1.6;color:#3a3a34}
@@ -309,6 +313,7 @@ instructions, pour vous permettre d'utiliser Atlas.</pre></div>
     <div class="pied">
       <p class="refus" role="alert" data-refus></p>
       <button type="button" class="principal" data-continuer>Continuer</button>
+      <button type="button" class="sortie">Se déconnecter</button>
     </div>
   </div>
 </div>
@@ -324,10 +329,7 @@ instructions, pour vous permettre d'utiliser Atlas.</pre></div>
     <li>Le refus s'écrit dans la couleur d'alerte de l'application, et la carte oubliée est entourée.</li>
     <li>« Continuer » reste en bas de l'écran, les cartes défilent dessous. Ouvrir un texte ne le pousse plus hors de vue.</li>
     <li>Quand seule une nouvelle version est à accepter, le titre dit « Les conditions ont changé ».</li>
-  </ul>
-  <h3>À trancher</h3>
-  <ul>
-    <li>Il n'y a aucune sortie sur cet écran. Faut-il le même « Retour » que sur l'écran du code, qui ramène à la porte d'entrée ?</li>
+    <li>« Se déconnecter », discret, sous « Continuer » : on accepte, ou l'on s'en va. Pas de « Retour », rien n'entre dans l'appli sans accepter.</li>
   </ul>
 </div>
 

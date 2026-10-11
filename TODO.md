@@ -7,8 +7,9 @@ Rien n'est codé. Une planche par écran, lien dans `appli/essais.html` sous
 `fiche-de-chantier-remplir`, `fiche-de-chantier-composer`, `catalogue-les-mots`,
 `mes-tarifs-corrige`, `donner-un-acces-corrige`, `documents-legaux-accepter`,
 `verifier-son-email`. Reprises le 11 octobre sur sa relecture : boutons en capsule serif, or #B98B47,
-sous-titre doré remis partout, liseré d'or de « Composer ma fiche » gardé. Reste à
-trancher : une sortie « Retour » sur Documents légaux. **Défaut à corriger quoi qu'il choisisse** :
+sous-titre doré remis partout, liseré d'or de « Composer ma fiche » gardé. Documents légaux :
+pas de « Retour », un « Se déconnecter » discret (son accord du 11 octobre). À trancher :
+le filtre de date, planche `filtre-de-date-plus-simple` (A, B ou C, pour trois écrans). **Défaut à corriger quoi qu'il choisisse** :
 l'onglet Chantiers allumé sur `/catalogue` (`AtlasBottomNav`). Ensuite : la
 dizaine d'écrans jamais repris listés au `CHANGELOG.md` du 11 octobre.
 
