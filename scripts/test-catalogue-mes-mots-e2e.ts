@@ -255,10 +255,10 @@ async function main() {
   assert.equal(
     await retour.count(),
     1,
-    "Aucune flèche de retour sur le catalogue : on y arrive depuis « Tarifs & catalogue » et on n'en repartait que par la barre du bas."
+    "Aucune flèche de retour sur le catalogue : on y arrive depuis « Mes tarifs » et on n'en repartait que par la barre du bas."
   );
   await retour.click();
-  await page.getByRole("heading", { name: "Tarifs & catalogue" }).waitFor({ timeout: 15000 });
+  await page.getByRole("heading", { name: "Mes tarifs" }).waitFor({ timeout: 15000 });
 
   console.log("✅ Catalogue — ses mots se posent, Atlas en propose, tout se retire, et la flèche ramène.");
   await browser.close();

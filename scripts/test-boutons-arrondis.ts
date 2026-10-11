@@ -100,8 +100,8 @@ const HORS_CHARTE: Array<{
    *
    * **Ajouté le 21 août 2026, et c'est une réponse à un défaut de ce contrôle
    * lui-même :** une exception portant sur le fichier entier laisse passer tous
-   * les boutons qu'on y écrira demain. `ChoixUnite.tsx` le dit déjà en toutes
-   * lettres, et c'était acceptable parce qu'il ne tient qu'une case. Le
+   * les boutons qu'on y écrira demain. `ChoixUnite.tsx` le disait en toutes
+   * lettres, et c'était acceptable parce qu'il ne tenait qu'une case. Le
    * planning, lui, porte une vingtaine de boutons : l'exempter en entier
    * reviendrait à retirer l'écran le plus consulté de la surveillance.
    *
@@ -159,26 +159,6 @@ const HORS_CHARTE: Array<{
     motif: /^src[/\\]app[/\\]paysage[/\\]fiche[/\\]page\.tsx$/,
     pourquoi: "carte qu'on parcourt, plage à 4 px et non geste en capsule",
     seulement: /data-atlas="carte-composer-ma-fiche"/,
-  },
-  {
-    // **Une case qu'on REMPLIT, pas un geste qu'on appuie.** La charte est
-    // citée juste au-dessus : « elle ne donne la capsule qu'à ce qu'on APPUIE,
-    // jamais à ce qu'on remplit ». La case de l'unité est un champ — elle se
-    // tient à côté du champ « Prix », dans la même grille, et porte ses 4 px
-    // comme lui. En capsule, elle serait le seul galet d'une rangée de champs
-    // droits. C'est aussi la forme que le patron a choisie le 14 août 2026
-    // (`maquettes/atlas-unite-deroulante.html`, forme 1).
-    //
-    // Elle est écrite en `<button>` et non en `<input>` parce que sa valeur se
-    // CHOISIT : c'est ce que la balise doit dire à qui n'emploie pas ses yeux.
-    // La forme et la balise ne se commandent pas l'une l'autre.
-    //
-    // **Ce que cette exception laisse passer, et qu'il faut savoir :** elle
-    // porte sur le fichier entier. Un vrai bouton d'action écrit un jour dans
-    // `ChoixUnite.tsx` ne serait plus dénoncé — le fichier ne tient aujourd'hui
-    // que cette case et les rangs de sa liste.
-    motif: /^src[/\\]components[/\\]atlas[/\\]ChoixUnite\.tsx$/,
-    pourquoi: "case d'un champ qu'on remplit, alignée sur le champ « Prix » voisin",
   },
   {
     // **UNE VIGNETTE PHOTO, PAS UN BOUTON D'ACTION.** Arrivée le 8 septembre

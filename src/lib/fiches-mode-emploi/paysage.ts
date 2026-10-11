@@ -611,7 +611,7 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     geste: "Touchez « Réglages » dans la barre du bas, puis « Tarifs & catalogue », puis « Le catalogue ».",
     reserve: "Le catalogue ne porte aucun prix : les prix sont dans « Mes prix », juste au-dessus.",
     source: "src/app/reglages/tarifs/page.tsx",
-    preuves: ['href="/catalogue"', 'nom="Le catalogue"', "Il ne porte aucun prix.", 'nom="Mes prix"'],
+    preuves: ['href="/catalogue"', 'nom="Le catalogue"', "Sans prix.", 'nom="Mes prix"'],
     ailleurs: [{ source: "src/lib/rubriques-reglages.ts", preuves: ['nom: "Tarifs & catalogue"'] }],
     lieu: true,
   },

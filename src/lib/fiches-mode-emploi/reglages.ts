@@ -133,36 +133,33 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     preuves: ["Ces réglages appartiennent au patron de l&apos;entreprise."],
     ailleurs: [{ source: "src/app/reglages/page.tsx", preuves: ["Le reste de l&apos;entreprise n&apos;est pas ici"] }],
   },
-  // --- Tarifs & catalogue -----------------------------------------------------
+  // --- Mes tarifs -------------------------------------------------------------
   {
     id: "reglages-tarifs",
-    ecran: "Tarifs & catalogue",
+    ecran: "Mes tarifs",
     ou: `${R}, puis Tarifs & catalogue`,
     intitule: "Ajouter, corriger ou retirer un tarif",
     motsCles: ["tarif", "tarifs", "prix", "ajouter", "modifier", "supprimer", "retirer", "unite", "catalogue"],
     geste:
-      "Touchez « + Ajouter un tarif », écrivez l'intitulé et le prix, puis touchez la case de l'unité. " +
-      "Pour retirer un tarif : glissez sa ligne de droite à gauche, puis « Retirer ».",
+      "Touchez « + Ajouter un tarif », écrivez le nom et le prix, puis touchez l'unité. " +
+      "Pour corriger un tarif, touchez sa ligne : elle s'ouvre. « Retirer » est en bas de la ligne ouverte, « Fermer » la replie.",
     reserve: "Chaque case s'enregistre dès que vous la quittez. Après un retrait, « Annuler » reste un instant en bas.",
     source: "src/app/reglages/ReglagesClient.tsx",
-    preuves: ["+ Ajouter un tarif", "Intitulé du tarif", "Prix du tarif", "LigneRetirable", "TiroirDesRetires"],
-    ailleurs: [
-      { source: "src/components/atlas/LigneRetirable.tsx", preuves: ["Retirer"] },
-      { source: "src/components/atlas/ChoixUnite.tsx", preuves: ['aria-label="Unité du tarif"'] },
-    ],
+    preuves: ["+ Ajouter un tarif", "Nom du tarif", "Prix du tarif", "Retirer", "Fermer", "TiroirDesRetires"],
+    ailleurs: [{ source: "src/components/atlas/ChoixUnite.tsx", preuves: ['aria-label="Unité du tarif"', "Une autre unité"] }],
   },
   {
     id: "reglages-tarifs-importer",
-    ecran: "Tarifs & catalogue",
+    ecran: "Mes tarifs",
     ou: `${R}, puis Tarifs & catalogue`,
     intitule: "Importer ses prix depuis un fichier Excel ou CSV",
     motsCles: ["importer", "import", "excel", "csv", "fichier", "tableur", "liste", "tarifs", "charger"],
     geste:
-      "Sous « J'ai déjà mes prix ailleurs », touchez « Choisir un fichier ». " +
+      "Sous « + Ajouter un tarif », touchez « Reprendre mes prix d'un fichier Excel ou CSV ». " +
       "Vérifiez ce qu'Atlas ajouterait, puis « Enregistrer ces tarifs ».",
     reserve: "Rien n'est enregistré avant « Enregistrer ces tarifs ». « Annuler » laisse vos tarifs tels quels.",
     source: "src/app/reglages/ImportTarifs.tsx",
-    preuves: ["J&apos;ai déjà mes prix ailleurs", "Choisir un fichier", "Enregistrer ces tarifs", "Annuler"],
+    preuves: ["Reprendre mes prix d'un fichier Excel ou CSV", "Enregistrer ces tarifs", "Annuler"],
   },
   // --- Mes prix et mes mesures ------------------------------------------------
   {

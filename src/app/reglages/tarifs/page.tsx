@@ -10,7 +10,12 @@ import ReglagesClient from "../ReglagesClient";
 export const dynamic = "force-dynamic";
 
 /**
- * « Tarifs & catalogue » — tout ce qui décide d'un prix, au même endroit.
+ * « Mes tarifs » — tout ce qui décide d'un prix, au même endroit.
+ *
+ * **Le titre était « Tarifs & catalogue » jusqu'au 11 octobre 2026**, et la
+ * planche validée ce jour-là (`appli/mes-tarifs-corrige.html`, version
+ * Corrigé) l'a ramené à ce qu'il vient y faire. Les deux paragraphes qui
+ * expliquaient l'écran sont partis avec lui. Le sommaire, lui, garde son nom.
  *
  * **Le patron, le 14 août 2026 :** *« s'il y a des catégories qu'on a déjà
  * créées dans la partie réglage — exemple, les prix de main-d'œuvre et de
@@ -38,7 +43,7 @@ export default async function TarifsPage() {
   if (!(await estProprietaire(ctx))) {
     return (
       <RubriqueReservee
-        titre="Tarifs & catalogue"
+        titre="Mes tarifs"
         quoi="Les prix de vente ne se consultent pas depuis un compte salarié."
       />
     );
@@ -51,14 +56,11 @@ export default async function TarifsPage() {
       <div className="pb-24">
         <EnTeteEcran
           surtitre="Réglages"
-          titre="Tarifs & catalogue"
+          titre="Mes tarifs"
           retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
         />
 
         <section className="mx-[26px] mt-[26px]">
-          <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
-            Mes tarifs
-          </p>
           <ReglagesClient
             initialTarifs={tarifs.map((t) => ({ id: t.id, intitule: t.intitule, prix: t.prix, unite: t.unite }))}
           />
@@ -71,18 +73,18 @@ export default async function TarifsPage() {
             exactement celui qu'on vient de défaire. */}
         <section className="mx-[26px] mt-[30px] border-t pt-[18px]" style={{ borderColor: colors.line }}>
           <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
-            Main-d&apos;œuvre, machine et matière
+            Mes autres prix
           </p>
 
           <Renvoi
             href="/reglages/prix"
             nom="Mes prix"
-            dit="Abattre, enlever les grumes, fendre, dessoucher, tailler une haie : le montant par diamètre, par hauteur et par technique."
+            dit="Abattage, dessouchage, taille de haie."
           />
           <Renvoi
             href="/catalogue"
             nom="Le catalogue"
-            dit="Le vocabulaire du métier, partagé : prestations et matériels qu'Atlas sait reconnaître. Il ne porte aucun prix."
+            dit="Prestations et matériels reconnus. Sans prix."
             derniere
           />
         </section>
@@ -113,7 +115,7 @@ function Renvoi({
         <span className="block text-[17px] leading-[1.25]" style={{ fontFamily: font.display, color: colors.ink }}>
           {nom}
         </span>
-        <span className="mt-[3px] block text-[11.5px] leading-[1.5]" style={{ color: colors.muted }}>
+        <span className="mt-[3px] block text-[12.5px] leading-[1.5]" style={{ color: colors.inkSoft }}>
           {dit}
         </span>
       </span>

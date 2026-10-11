@@ -52,21 +52,26 @@ async function enregistrer(
   await reponse;
 }
 
-/** Recharge la page jusqu'à ce que le champ porte la valeur attendue. */
-async function attendreValeurPersistee(
-  page: Page,
-  libelleUnique: string,
-  indexChamp: number,
-  attendu: string
-): Promise<void> {
+/**
+ * La ligne REPLIÉE du tarif : depuis le 11 octobre 2026 (`appli/mes-tarifs-corrige.html`),
+ * un tarif est une ligne qu'on touche pour l'ouvrir, et non plus une carte de champs.
+ */
+function ligneDuTarif(page: Page, libelleUnique: string) {
+  return page.locator('[data-atlas="tarif"]', { hasText: libelleUnique });
+}
+
+/** Recharge la page jusqu'à ce que la ligne repliée écrive le prix attendu (« 42,50 € »). */
+async function attendreValeurPersistee(page: Page, libelleUnique: string, attendu: string): Promise<void> {
   const debut = Date.now();
   let derniereVue = "(ligne absente)";
   while (Date.now() - debut < LIMITE_MS) {
     await page.reload({ waitUntil: "networkidle" });
-    const ligne = page.locator("li", { has: page.locator(`input[value="${libelleUnique}"]`) });
+    const ligne = ligneDuTarif(page, libelleUnique);
     if ((await ligne.count()) > 0) {
-      derniereVue = await ligne.locator("input").nth(indexChamp).inputValue();
-      if (derniereVue === attendu) return;
+      // L'espace insécable du montant sort en espace ordinaire d'`innerText`,
+      // ou non, selon le navigateur : on compare sans elle.
+      derniereVue = (await ligne.innerText()).replace(/s+/g, " ");
+      if (derniereVue.includes(attendu)) return;
     }
     await page.waitForTimeout(PAUSE_MS);
   }
@@ -81,7 +86,7 @@ async function attendreDisparition(page: Page, libelleUnique: string): Promise<v
   const debut = Date.now();
   while (Date.now() - debut < LIMITE_MS) {
     await page.reload({ waitUntil: "networkidle" });
-    if ((await page.locator(`input[value="${libelleUnique}"]`).count()) === 0) return;
+    if ((await ligneDuTarif(page, libelleUnique).count()) === 0) return;
     await page.waitForTimeout(PAUSE_MS);
   }
   throw new Error(
@@ -110,51 +115,49 @@ async function main() {
   await page.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
   assert.ok(await page.locator("text=Réglages").first().isVisible());
   await page.getByRole("link", { name: /Tarifs & catalogue/ }).click();
-  await page.getByRole("heading", { name: "Tarifs & catalogue" }).waitFor({ timeout: 15000 });
+  // Le sommaire garde « Tarifs & catalogue » ; l'écran s'appelle « Mes tarifs »
+  // depuis le 11 octobre 2026.
+  await page.getByRole("heading", { name: "Mes tarifs" }).waitFor({ timeout: 15000 });
 
   const libelleUnique = `Tarif e2e ${Date.now()}`;
 
   // --- Ajout ---
   // Le compte se prend **avant** le clic : le prendre après reviendrait à
   // attendre un seuil déjà franchi, c'est-à-dire à n'attendre rien du tout.
-  const lignes = page.locator("li");
-  const nbInitial = await lignes.count();
+  const lignes = page.locator('[data-atlas="tarif"]');
   await page.click("text=Ajouter un tarif");
-  // La ligne naît d'une action serveur : on l'attend elle, pas une durée.
-  await page.waitForFunction(
-    (attendu) => document.querySelectorAll("li").length > attendu,
-    nbInitial,
-    { timeout: 15000 }
-  );
-  const derniereLigne = lignes.last();
-  const inputs = derniereLigne.locator("input");
-  await inputs.nth(0).fill(libelleUnique);
-  await inputs.nth(1).fill("42.50");
-  await enregistrer(page, () => inputs.nth(1).blur());
+  // La ligne naît d'une action serveur, et s'ouvre d'elle-même : on attend
+  // son champ, pas une durée.
+  const nom = page.getByLabel("Nom du tarif");
+  await nom.waitFor({ state: "visible", timeout: 15000 });
+  await nom.fill(libelleUnique);
+  await page.getByLabel("Prix du tarif").fill("42.50");
+  await enregistrer(page, () => page.getByLabel("Prix du tarif").blur());
 
   // --- Persistance après rechargement ---
-  await attendreValeurPersistee(page, libelleUnique, 1, "42.50");
+  await attendreValeurPersistee(page, libelleUnique, "42,50 €");
 
-  // --- Modification ---
-  const ligneAModifier = page.locator("li", { has: page.locator(`input[value="${libelleUnique}"]`) });
-  await ligneAModifier.locator("input").nth(1).fill("50.00");
-  await enregistrer(page, () => ligneAModifier.locator("input").nth(1).blur());
-  await attendreValeurPersistee(page, libelleUnique, 1, "50.00");
+  // --- Modification : on touche la ligne, elle s'ouvre sur place ---
+  await ligneDuTarif(page, libelleUnique).getByRole("button").first().click();
+  await page.getByLabel("Prix du tarif").fill("50.00");
+  await enregistrer(page, () => page.getByLabel("Prix du tarif").blur());
+  await attendreValeurPersistee(page, libelleUnique, "50,00 €");
 
   // --- Suppression ---
-  const nbAvant = await page.locator("li").count();
-  const ligneASupprimer = page.locator("li", { has: page.locator(`input[value="${libelleUnique}"]`) });
-  // « Retirer le tarif « … » » depuis le 10 août 2026, et l'écriture n'a lieu
-  // qu'à la fermeture du tiroir : `enregistrer` attend donc la vraie requête,
-  // qui arrive après le délai d'annulation.
+  const nbAvant = await lignes.count();
+  await ligneDuTarif(page, libelleUnique).getByRole("button").first().click();
+  // « Retirer le tarif « … » » depuis le 10 août 2026, en bas de la ligne
+  // ouverte depuis le 11 octobre ; l'écriture n'a lieu qu'à la fermeture du
+  // tiroir : `enregistrer` attend donc la vraie requête, qui arrive après le
+  // délai d'annulation.
   await enregistrer(
     page,
-    () => ligneASupprimer.getByRole("button", { name: /^Retirer le tarif/ }).click(),
+    () => page.getByRole("button", { name: /^Retirer le tarif/ }).click(),
     { timeout: 20000 }
   );
   await attendreDisparition(page, libelleUnique);
 
-  const nbApres = await page.locator("li").count();
+  const nbApres = await lignes.count();
   assert.equal(nbApres, nbAvant - 1, "Le tarif supprimé ne doit plus apparaître après rechargement");
 
   // --- L'IA est-elle branchée ? La réponse doit être À L'ÉCRAN --------------
