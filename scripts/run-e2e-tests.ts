@@ -166,9 +166,9 @@ async function serveurVivant(url: string, tentatives = 6, delaiMs = 10_000): Pro
  */
 async function prechaufferLesEcrans(): Promise<void> {
   try {
-    const { cookieDeSession, ecransDeChantier, ECRANS_A_PRECHAUFFER, prechauffer } = await import(
-      "./prechauffer.mjs"
-    );
+      const { cookieDeSession, ecransDeChantier, ECRANS_A_PRECHAUFFER, prechauffer } = await import(
+        "./prechauffer.mjs"
+      );
     let motif: string | null = null;
     const cookie = await cookieDeSession({
       databaseUrl: process.env.DATABASE_URL,
@@ -479,16 +479,30 @@ async function main() {
   // code juste. Un empaqueteur qui fabrique des faux rouges ne mesure rien —
   // il fait pire que ne rien mesurer, puisqu'on cherche la panne dans le
   // produit (`CLAUDE.md` §5). La mémoire reste donc à traiter ailleurs.
-  const serveur = spawn(NPM, ["run", "dev", "--", "-p", "3000"], {
-    env: { ...process.env, ATLAS_URL_PUBLIQUE: "https://atlas-suites.test" },
-    stdio: ["ignore", journalFd, journalFd],
-    detached: true,
-  });
+  const detached = process.platform !== "win32";
+  // Always capture server stdout/stderr into the journal file so traces can be
+  // correlated with server logs, including on Windows where tests run.
+  const stdioOption = ["ignore", journalFd, journalFd];
 
+  const externalServer = (process.env.ATLAS_E2E_EXTERNAL_SERVER ?? "").trim() === "1";
   let serveurTermine: string | null = null;
-  serveur.on("exit", (code, signal) => {
-    serveurTermine = signal ? `signal ${signal}` : `code ${code}`;
-  });
+  let serveur: ReturnType<typeof spawn> | null = null;
+  const NEXT_BIN = path.join(__dirname, "..", "node_modules", "next", "dist", "bin", "next");
+
+  if (externalServer) {
+    console.log("Utilisation d'un serveur externe (ATLAS_E2E_EXTERNAL_SERVER=1) — aucun spawn.");
+  } else {
+    // Start next directly with node to avoid platform-specific shell wrappers
+    serveur = spawn(NODE, [NEXT_BIN, "dev", "-p", "3000"], {
+      env: { ...process.env, ATLAS_URL_PUBLIQUE: "https://atlas-suites.test" },
+      stdio: stdioOption as any,
+      detached,
+    });
+
+    serveur.on("exit", (code, signal) => {
+      serveurTermine = signal ? `signal ${signal}` : `code ${code}`;
+    });
+  }
 
   function montrerJournalServeur() {
     console.error("\n--- Dernières lignes du serveur de développement ---");
@@ -509,8 +523,37 @@ async function main() {
   if (!pret) {
     console.error("❌ Le serveur n'a jamais répondu — abandon.");
     montrerJournalServeur();
-    process.kill(-serveur.pid!);
+    if (serveur && serveur.pid) process.kill(-serveur.pid);
     process.exit(1);
+  }
+
+  // If requested, only start the server, show journal excerpt, then stop it.
+  if (process.argv.includes("--only-start-server")) {
+    console.log("--only-start-server : serveur démarré et prêt.");
+    // allow some time for the server to emit startup logs
+    await attendre(1500);
+    montrerJournalServeur();
+    if (serveur) {
+      try {
+        if (process.platform === "win32") {
+          process.kill(serveur.pid);
+        } else {
+          process.kill(-serveur.pid);
+        }
+      } catch (err) {
+        // ignore
+      }
+    }
+    // wait a bit for process to exit and for OS to free the port
+    await attendre(800);
+    const encore = await quelquUnEcouteDeja("http://localhost:3000/api/health/live");
+    if (encore) {
+      console.error("❌ Le serveur refuse de s'arrêter proprement ou le port reste occupé.");
+      montrerJournalServeur();
+      process.exit(1);
+    }
+    console.log("✅ Serveur arrêté proprement et port 3000 libéré.");
+    process.exit(0);
   }
 
   const fichiers = readdirSync(DOSSIER)
@@ -537,7 +580,7 @@ async function main() {
     );
     if (fichiers.length === 0) {
       console.error(`❌ Aucune suite ne correspond à « ${motifDemande} ».`);
-      process.kill(-serveur.pid!);
+      if (serveur && serveur.pid) process.kill(-serveur.pid);
       process.exit(1);
     }
   }
@@ -597,7 +640,7 @@ async function main() {
   // Le serveur a pu mourir de lui-même : le tuer alors lève ESRCH et masque le
   // bilan, qui est la seule ligne que quiconque va lire.
   try {
-    process.kill(-serveur.pid!);
+    if (serveur && serveur.pid) process.kill(-serveur.pid);
   } catch {
     // Déjà parti — rien à faire, et surtout rien à cacher.
   }

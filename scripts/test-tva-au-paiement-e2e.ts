@@ -1,6 +1,8 @@
 import assert from "node:assert";
 import type { BrowserContext, Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
+import path from "node:path";
+import { tmpdir } from "node:os";
 import { avecCivilite } from "../src/lib/civilite";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
@@ -118,6 +120,13 @@ async function main() {
   const navigateur = await lancerNavigateur();
   // Son écran : c'est sur un téléphone qu'il note ses règlements.
   const contexte = await navigateur.newContext({ viewport: { width: 390, height: 664 } });
+  // Playwright tracing for diagnostics
+  try {
+    // @ts-ignore - tracing is available on BrowserContext
+    await (contexte as any).tracing?.start?.({ screenshots: true, snapshots: true });
+  } catch {
+    // ignore if tracing not available
+  }
   const page = await seConnecter(contexte);
 
   // Le régime de l'entreprise de démonstration est remis au défaut : une autre
@@ -376,6 +385,15 @@ async function main() {
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);
+  // Save tracing output if available
+  try {
+    const tracePath = path.join(tmpdir(), "trace-tva-e2e.zip");
+    // @ts-ignore
+    await (contexte as any).tracing?.stop?.({ path: tracePath });
+    console.log(`Tracing saved to ${tracePath}`);
+  } catch {
+    // ignore
+  }
   await contexte.close();
   await navigateur.close();
   await pool.end();
