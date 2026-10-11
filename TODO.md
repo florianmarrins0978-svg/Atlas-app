@@ -8,8 +8,9 @@ Rien n'est codé. Une planche par écran, lien dans `appli/essais.html` sous
 `mes-tarifs-corrige`, `donner-un-acces-corrige`, `documents-legaux-accepter`,
 `verifier-son-email`. Reprises le 11 octobre sur sa relecture : boutons en capsule serif, or #B98B47,
 sous-titre doré remis partout, liseré d'or de « Composer ma fiche » gardé. Documents légaux :
-pas de « Retour », un « Se déconnecter » discret (son accord du 11 octobre). À trancher :
-le filtre de date, planche `filtre-de-date-plus-simple` (A, B ou C, pour trois écrans). **Défaut à corriger quoi qu'il choisisse** :
+pas de « Retour », un « Se déconnecter » discret (son accord du 11 octobre). Filtre de date :
+sa A (11 octobre), planche `filtre-a-partout` qui montre les trois listes où elle arrive
+(rapports envoyés, fiches de sécurité, retours), dessinée comme le mois de Terminés. Rien de codé. **Défaut à corriger quoi qu'il choisisse** :
 l'onglet Chantiers allumé sur `/catalogue` (`AtlasBottomNav`). Ensuite : la
 dizaine d'écrans jamais repris listés au `CHANGELOG.md` du 11 octobre.
 
