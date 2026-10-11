@@ -467,14 +467,20 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     intitule: "Ajouter un salarié, lui donner un accès à Atlas",
     motsCles: ["ajouter", "salarie", "salaries", "employe", "ouvrier", "acces", "inviter", "compte", "gars"],
     geste:
-      "Ouvrez « Équipe », puis « Donner un accès ». Remplissez nom, adresse e-mail, mot de passe et sa confirmation, " +
-      "choisissez le rôle, puis « Créer le compte ».",
+      "Ouvrez « Équipe », puis « Donner un accès ». Choisissez d'abord son rôle, puis remplissez nom, adresse e-mail, " +
+      "mot de passe et sa confirmation, et touchez « Créer le compte ».",
     source: "src/app/reglages/equipe/QuiAAcces.tsx",
     preuves: ['href="/reglages/equipe/nouveau"', "Donner un accès"],
     ailleurs: [
       {
         source: "src/app/reglages/equipe/nouveau/NouveauCompte.tsx",
-        preuves: ['etiquette="Adresse e-mail"', 'etiquette="Confirmer le mot de passe"', "Créer le compte"],
+        preuves: [
+          "<ChoixRole titre",
+          "Son compte",
+          'etiquette="Adresse e-mail"',
+          'etiquette="Confirmer le mot de passe"',
+          "Créer le compte",
+        ],
       },
     ],
   },
@@ -485,11 +491,11 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     intitule: "Changer le rôle d'une personne (patron, facturation, commercial, salarié)",
     motsCles: ["role", "droits", "permission", "facturation", "commercial", "salarie", "patron", "changer"],
     geste: "Dans « Accès », touchez la personne, puis le rôle voulu : Patron, Facturation, Commercial ou Salarié.",
-    reserve: "Sous les rôles, la liste dit ce que ce rôle peut faire et ce qu'il ne peut plus.",
+    reserve: "Sous les rôles, deux colonnes disent ce que la personne pourra faire, et ce qu'elle ne pourra pas.",
     source: "src/app/reglages/equipe/QuiAAcces.tsx",
     preuves: ["Accès", "<ChoixRole"],
     ailleurs: [
-      { source: "src/app/reglages/equipe/ChoixRole.tsx", preuves: ["libelleRole(r)"] },
+      { source: "src/app/reglages/equipe/ChoixRole.tsx", preuves: ["libelleRole(role)", "Pourra", "Ne pourra pas"] },
       { source: "src/lib/acces-roles.ts", preuves: ['return "Patron"', 'return "Facturation"', 'return "Commercial"', 'return "Salarié"'] },
     ],
   },

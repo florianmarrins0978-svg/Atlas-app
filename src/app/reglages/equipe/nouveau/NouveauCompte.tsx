@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { colors, font, surPlein } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import { etatConfirmation, LONGUEUR_MINIMALE } from "@/lib/mot-de-passe";
 import OeilMotDePasse from "@/components/atlas/OeilMotDePasse";
 import type { Role } from "@/lib/acces-roles";
@@ -25,6 +25,12 @@ import { donnerUnAccesAction } from "../actions";
  * comptes existants, juste sous sa propre ligne : deux blocs de champs et de
  * pastilles se suivaient, et rien ne disait où le sien finissait. Ici il n'y a
  * plus rien à confondre — sa ligne n'est pas sur cet écran.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **LA PLANCHE DU 11 OCTOBRE 2026** (`appli/donner-un-acces-corrige.html`,
+ * version Corrigé) : le rôle d'abord, puis « Son compte » ; des champs à fond
+ * teinté de 52 px, qu'on voit au soleil et qu'on touche sans viser ; le refus
+ * du serveur au-dessus du bouton. Aucune règle d'accès n'a bougé.
  *
  * ═══════════════════════════════════════════════════════════════════════════
  * **CE QUI NE SE DÉCIDE PAS ICI : le droit d'y être.** L'adresse est sous
@@ -68,12 +74,17 @@ export default function NouveauCompte({
 
   return (
     <form
-      className="px-[26px] pb-24"
+      className="px-[26px] pb-24 pt-[26px]"
       onSubmit={(e) => {
         e.preventDefault();
         creer();
       }}
     >
+      {/* **LE RÔLE D'ABORD** (planche du 11 octobre 2026) : c'est la vraie
+          décision de l'écran ; le nom et le mot de passe ne sont que la clé. */}
+      <ChoixRole titre valeur={role} inerte={enCours} onChoisir={setRole} />
+
+      <p className={`mt-[30px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>Son compte</p>
       <Champ etiquette="Nom" valeur={nom} onChange={setNom} autoComplete="off" />
       <Champ
         etiquette="Adresse e-mail"
@@ -98,11 +109,19 @@ export default function NouveauCompte({
         // Vert d'accord, rouge en désaccord : la phrase change de sens, sa
         // couleur aussi. Grise, elle se lirait comme une consigne.
         souligne={disent ? (disent.identiques ? colors.rust : colors.alert) : undefined}
+        // Le champ se borde aussi : sous un clavier ouvert, la phrase seule ne
+        // se voit pas toujours (planche du 11 octobre 2026).
+        faux={disent?.identiques === false}
       />
 
-      <div className="mt-7">
-        <ChoixRole titre valeur={role} inerte={enCours} onChoisir={setRole} />
-      </div>
+      {/* **Le refus AU-DESSUS du bouton** (planche du 11 octobre 2026). Sous
+          « Annuler », il tombait souvent hors de l'écran : le patron appuyait,
+          et rien ne semblait se passer. */}
+      {message && (
+        <p className="mt-[22px] text-[14px]" style={{ color: colors.alert }} role="alert">
+          {message}
+        </p>
+      )}
 
       {/* **LE SEUL APLAT PLEIN DE L'ÉCRAN**, et c'est tout l'objet de sa
           deuxième remarque. Les pastilles de rôle, au-dessus, sont teintées. */}
@@ -123,21 +142,30 @@ export default function NouveauCompte({
       >
         Annuler
       </button>
-
-      {message && (
-        <p className="mt-2 text-center text-[12.5px]" style={{ color: colors.alert }} role="alert">
-          {message}
-        </p>
-      )}
     </form>
   );
 }
 
-const STYLE_CHAMP = {
-  borderBottom: `1px solid ${colors.line}`,
-  color: colors.ink,
-  fontFamily: font.body,
-} as const;
+/**
+ * LA BOÎTE D'UN CHAMP : fond teinté, 52 px, contour or à la mise au point et
+ * rouge quand la saisie est fausse (planche du 11 octobre 2026). Le trait seul
+ * d'avant disparaissait au soleil, et un champ vide sans repère se lit comme
+ * « pas touchable » (`HANDOVER.md`, piège 18).
+ */
+function Boite({ faux = false, children }: { faux?: boolean; children: (focus: (v: boolean) => void) => React.ReactNode }) {
+  const [focus, setFocus] = useState(false);
+  const contour = faux ? `inset 0 0 0 1.5px ${colors.alert}` : focus ? `inset 0 0 0 1.5px ${colors.or}` : "none";
+  return (
+    <span
+      className="flex min-h-[52px] items-center rounded-xl pl-3.5 pr-1"
+      style={{ backgroundColor: colors.rustTint, boxShadow: contour }}
+    >
+      {children(setFocus)}
+    </span>
+  );
+}
+
+const STYLE_SAISIE = { color: colors.ink, fontFamily: font.body, caretColor: colors.or } as const;
 
 function Champ({
   etiquette,
@@ -152,19 +180,25 @@ function Champ({
   // l'événement, et les deux ne peuvent pas porter le même nom.
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value">) {
   return (
-    <label className="block pt-4">
+    <label className="mt-3.5 block">
       <span className="mb-1 block text-[11px]" style={{ color: colors.muted }}>
         {etiquette}
       </span>
-      <input
-        // 17 px : en dessous de 16, Safari zoome à la mise au point et l'écran
-        // saute sous le doigt. La leçon est déjà écrite dans `atlas-reglages-moi`.
-        className="w-full bg-transparent py-2 text-[17px] outline-none"
-        style={STYLE_CHAMP}
-        value={valeur}
-        onChange={(e) => onChange(e.target.value)}
-        {...reste}
-      />
+      <Boite>
+        {(focus) => (
+          <input
+            // 17 px : en dessous de 16, Safari zoome à la mise au point et l'écran
+            // saute sous le doigt. La leçon est déjà écrite dans `atlas-reglages-moi`.
+            className="min-w-0 flex-1 bg-transparent py-[13px] text-[17px] outline-none"
+            style={STYLE_SAISIE}
+            value={valeur}
+            onChange={(e) => onChange(e.target.value)}
+            onFocus={() => focus(true)}
+            onBlur={() => focus(false)}
+            {...reste}
+          />
+        )}
+      </Boite>
     </label>
   );
 }
@@ -189,43 +223,51 @@ function ChampSecret({
   onChange,
   sous,
   souligne,
+  faux = false,
 }: {
   etiquette: string;
   valeur: string;
   onChange: (v: string) => void;
   sous?: string;
   souligne?: string;
+  faux?: boolean;
 }) {
   const [ouvert, setOuvert] = useState(false);
 
   return (
-    <div className="pt-4">
+    <div className="mt-3.5">
       <span className="mb-1 block text-[11px]" style={{ color: colors.muted }}>
         {etiquette}
       </span>
-      <div className="flex items-center gap-2" style={{ borderBottom: `1px solid ${colors.line}` }}>
-        <input
-          className="min-w-0 flex-1 bg-transparent py-2 text-[17px] outline-none"
-          style={{ color: colors.ink, fontFamily: font.body }}
-          type={ouvert ? "text" : "password"}
-          // **`new-password`, jamais `off`.** Sans lui, le gestionnaire du
-          // navigateur propose au patron SON mot de passe — et c'est celui-là
-          // qui partirait dans le compte du salarié.
-          autoComplete="new-password"
-          value={valeur}
-          onChange={(e) => onChange(e.target.value)}
-        />
-        <OeilMotDePasse
-          ouvert={ouvert}
-          onBasculer={() => setOuvert((o) => !o)}
-          quoi={etiquette.toLowerCase()}
-          couleur={colors.muted}
-          couleurOuvert={colors.or}
-          className="-mr-2.5"
-        />
-      </div>
+      <Boite faux={faux}>
+        {(focus) => (
+          <>
+            <input
+              className="min-w-0 flex-1 bg-transparent py-[13px] text-[17px] outline-none"
+              style={STYLE_SAISIE}
+              type={ouvert ? "text" : "password"}
+              // **`new-password`, jamais `off`.** Sans lui, le gestionnaire du
+              // navigateur propose au patron SON mot de passe — et c'est celui-là
+              // qui partirait dans le compte du salarié.
+              autoComplete="new-password"
+              aria-label={etiquette}
+              value={valeur}
+              onChange={(e) => onChange(e.target.value)}
+              onFocus={() => focus(true)}
+              onBlur={() => focus(false)}
+            />
+            <OeilMotDePasse
+              ouvert={ouvert}
+              onBasculer={() => setOuvert((o) => !o)}
+              quoi={etiquette.toLowerCase()}
+              couleur={colors.muted}
+              couleurOuvert={colors.or}
+            />
+          </>
+        )}
+      </Boite>
       {sous && (
-        <span className="mt-1.5 block text-[11.5px]" style={{ color: souligne ?? colors.muted }}>
+        <span className="mt-1.5 block text-[13px]" style={{ color: souligne ?? colors.inkSoft }}>
           {sous}
         </span>
       )}
