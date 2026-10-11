@@ -54,9 +54,11 @@ async function main() {
 
   // --- 2. Poser un mot, et le retrouver après rechargement -------------------
   const mot = `motessai${Date.now()}`;
-  await page.getByRole("button", { name: "+ mon mot" }).first().click();
-  await page.locator('input[placeholder*="Comme vous le dites"]').first().fill(mot);
-  await page.getByRole("button", { name: "Ajouter" }).first().click();
+  // « Ajouter un mot » depuis la planche du 11 octobre 2026 : le nom exact,
+  // sans quoi « Ajouter » attraperait aussi les boutons des autres cartes.
+  await page.getByRole("button", { name: "Ajouter un mot", exact: true }).first().click();
+  await page.locator('input[placeholder*="Par exemple"]').first().fill(mot);
+  await page.getByRole("button", { name: "Ajouter", exact: true }).first().click();
 
   await page.getByText(mot, { exact: false }).first().waitFor({ timeout: 15000 });
   mkdirSync(CAPTURES, { recursive: true });
@@ -68,9 +70,12 @@ async function main() {
     apres.includes(mot),
     `Le mot « ${mot} » a disparu au rechargement : il n'a pas été enregistré.`
   );
+  // Ses mots ne se distinguent plus par l'or mais par leur propre ligne
+  // (planche du 11 octobre 2026) : le mot doit être DANS cette liste, pas
+  // seulement quelque part dans la page.
   assert.ok(
-    (await page.locator('[data-atlas="mes-mots-marque"]').count()) > 0,
-    "Ses mots doivent être marqués « vous » : sans la marque, il croit corriger le vocabulaire commun."
+    (await page.locator('[data-atlas="mes-mots"]', { hasText: mot }).count()) > 0,
+    "Ses mots doivent avoir leur propre ligne : fondus dans « Aussi appelé », il croit corriger le vocabulaire commun."
   );
 
   // --- 3. Le retirer ---------------------------------------------------------
@@ -174,7 +179,7 @@ async function main() {
     const apresRetenu = await page.locator("body").innerText();
     assert.ok(
       apresRetenu.includes(entendu),
-      "le mot retenu doit rejoindre sa carte, en doré, sous l'entrée d'Atlas."
+      "le mot retenu doit rejoindre sa carte, sur sa ligne, sous l'entrée d'Atlas."
     );
 
     // On repart d'un écran propre : le mot d'essai n'a rien à faire dans son

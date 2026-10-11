@@ -8,6 +8,13 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-11
 
+- **Le catalogue, sa planche corrigée, et la barre du bas qui allumait Chantiers.** La barre ne
+  regardait que le début de l'adresse : /catalogue n'est pas sous /reglages, aucun onglet ne la
+  revendiquait, et le trait tombait sous Chantiers. Un onglet déclare désormais les adresses qu'il
+  possède en plus de la sienne (`ongletActif`, `src/lib/onglet-actif.ts`, éprouvé rouge puis vert).
+  À l'écran (`appli/catalogue-les-mots.html`) : plus de légende « en doré, les vôtres », ses mots
+  sur leur ligne avec « Retirer », « Ajouter un mot » et les nouvelles entrées en texte or.
+
 - **Le filtre de date se feuillette, comme le mois de Terminés (sa A).** Il
   trouvait « 11 octobre 2026 » *« dur à utiliser »* : trois mots qui se
   touchaient chacun à part, sans que rien ne le dise. Sur les rapports envoyés,
