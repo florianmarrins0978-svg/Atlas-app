@@ -33,7 +33,8 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     ou: "juste après la création du compte",
     intitule: "Saisir le code reçu par e-mail, recevoir un nouveau code",
     motsCles: ["code", "email", "mail", "recu", "verification", "verifier", "renvoyer", "chiffres"],
-    geste: "Tapez le code reçu par e-mail, puis « Continuer ». Pas reçu ? Touchez « Renvoyer le code ».",
+    geste:
+      "Tapez les six chiffres reçus par e-mail, puis « Continuer ». Pas reçu, ou le code a expiré ? Touchez « Renvoyer le code ».",
     source: "src/components/atlas/SaisieDuCode.tsx",
     preuves: ["Le code reçu par e-mail", "Renvoyer le code", '"Continuer"'],
   },
@@ -80,10 +81,11 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     intitule: "Accepter les conditions d'utilisation pour entrer",
     motsCles: ["conditions", "accepter", "cgu", "confidentialite", "documents", "legaux", "cocher", "lire"],
     geste:
-      "Touchez « Lire le texte » pour le lire, cochez « J'ai lu et j'accepte » sous chaque document, puis « Continuer ».",
+      "Touchez « Lire le texte » pour le lire, touchez « J'ai lu et j'accepte » sous chaque document, puis « Continuer ». " +
+      "Pour partir sans accepter, « Se déconnecter ».",
     reserve: "Atlas ne s'ouvre pas tant que chaque document n'est pas coché.",
     source: "src/app/documents-legaux/formulaire.tsx",
-    preuves: ["Lire le texte", "J&apos;ai lu et j&apos;accepte", '"Continuer"'],
+    preuves: ["Lire le texte", "J&apos;ai lu et j&apos;accepte", '"Continuer"', "Se déconnecter"],
     ailleurs: [{ source: "src/app/documents-legaux/page.tsx", preuves: ["Avant de commencer"] }],
   },
   // --- Réglages : l'écran lui-même --------------------------------------------

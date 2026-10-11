@@ -96,9 +96,9 @@ async function repondreATout(
 
   for (let etape = 0; etape < 30; etape += 1) {
     const titre = ((await page.locator("h1, h2").first().textContent()) ?? "").trim();
-    // « Le code reçu à … » : la dix-septième question, celle du code envoyé
+    // « Le code reçu » : la dix-septième question, celle du code envoyé
     // à l'adresse. Le parcours s'arrête là ; `entrerLeCode` prend la suite.
-    if (/Une erreur|Tout est prêt|C’est fait|Le code reçu à/.test(titre)) {
+    if (/Une erreur|Tout est prêt|C’est fait|^Le code reçu$/.test(titre)) {
       const refus = ((await page.locator("[role=alert]").first().textContent()) ?? "").trim();
       return { titre, refus };
     }
@@ -221,7 +221,10 @@ async function main() {
 
   await cas("les seize questions mènent au code, et le compte attend son code", async () => {
     const { titre } = await repondreATout(page, email);
-    assert.equal(titre, `Le code reçu à ${email}`, `le parcours a fini sur « ${titre} »`);
+    assert.equal(titre, "Le code reçu", `le parcours a fini sur « ${titre} »`);
+    // L'adresse a quitté le titre (planche `appli/verifier-son-email.html`,
+    // 11 octobre 2026) : elle se lit juste dessous, entière.
+    await page.getByText(email, { exact: true }).waitFor({ timeout: 30_000 });
 
     const lignes = await surLaBase(async (c) => {
       const { rows } = await c.query(
@@ -244,7 +247,8 @@ async function main() {
     // l'application. La session est là ; la garde doit le ramener au code.
     await page.goto(`${BASE}/`, { waitUntil: "domcontentloaded" });
     await page.waitForURL(/\/verifier-email(?:\?|$)/, { timeout: 30_000 });
-    await page.getByRole("heading", { name: `Le code reçu à ${email}` }).waitFor({ timeout: 30_000 });
+    await page.getByRole("heading", { name: "Le code reçu", exact: true }).waitFor({ timeout: 30_000 });
+    await page.getByText(email, { exact: true }).waitFor({ timeout: 30_000 });
     // Et les documents légaux non plus ne se lisent pas avant le code.
     await page.goto(`${BASE}/documents-legaux`, { waitUntil: "domcontentloaded" });
     await page.waitForURL(/\/verifier-email(?:\?|$)/, { timeout: 30_000 });
@@ -312,7 +316,8 @@ async function main() {
     // le chemin ordinaire, et c'est lui qui montre l'écran de fin.
     const second = `porte-fin-${Date.now()}@exemple.fr`;
     const { titre } = await repondreATout(page, second);
-    assert.equal(titre, `Le code reçu à ${second}`, `le parcours a fini sur « ${titre} »`);
+    assert.equal(titre, "Le code reçu", `le parcours a fini sur « ${titre} »`);
+    await page.getByText(second, { exact: true }).waitFor({ timeout: 30_000 });
     await forgerLeCode(second, "004213");
     await entrerLeCode(page, "004213");
     await page.getByRole("heading", { name: /Tout est prêt|C’est fait/ }).waitFor({ timeout: 30_000 });
