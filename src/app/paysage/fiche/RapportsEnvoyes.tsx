@@ -47,7 +47,7 @@ export default function RapportsEnvoyes({ rapports }: { rapports: PassageListe[]
       </h2>
 
       {montres.length === 0 ? (
-        <p className="mt-7 text-center text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
+        <p className="mt-7 text-center text-[13.5px] leading-[1.65]" style={{ color: colors.inkSoft }}>
           {saisie.trim()
             ? `Aucun rapport pour « ${saisie.trim()} ».`
             : porteeDeLaPeriode(periode) === "jour"

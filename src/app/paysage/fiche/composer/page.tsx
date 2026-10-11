@@ -1,4 +1,3 @@
-import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { listerPrestations } from "@/server/repositories/prestations-entretien";
@@ -45,10 +44,8 @@ export default async function ComposerMaFichePage() {
 
   return (
     <main className="min-h-dvh">
-      <EnTeteEcran
-        titre="Composer ma fiche"
-        retour={{ href: "/paysage/fiche", libelle: "Retour à la fiche de chantier" }}
-      />
+      {/* L'en-tête est posé par `ComposerMaFiche` : son compte de prestations
+          suit les retraits faits à l'écran (planche du 11 octobre 2026). */}
       <ComposerMaFiche
         prestationsInitiales={prestations.map((p) => ({
           id: p.id,

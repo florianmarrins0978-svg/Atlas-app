@@ -1,7 +1,7 @@
 import Link from "next/link";
 import AnnonceTransmission from "@/components/atlas/AnnonceTransmission";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
-import { colors, font } from "@/lib/design-tokens";
+import { cardShadow, colors, font, radius, texteSituation } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { listerPassages } from "@/server/repositories/passages-entretien";
@@ -78,46 +78,36 @@ export default async function FichesPage() {
             n'ouvre rien : un salarié ne voit pas cette rubrique, et la page
             qu'elle ouvre le refuserait de toute façon. */}
         {proprietaire && modele.length > 0 && (
-          <section className="mx-[26px] mt-[20px]">
-            {/* **UNE CARTE, ET PAS PLEINE LARGEUR** — ses deux mots du 26 août
-                2026, une heure après la première version : *« c'est bien mais
-                juste une phrase, on la trouve difficilement ; je pense qu'un
-                onglet carré serait le mieux »*, puis, devant les trois formes
-                proposées : *« une carte mais fais-la moins large »*.
+          <section className="mx-[26px] mt-[22px]">
+            {/* **PLEINE LARGEUR, LE LISERÉ D'OR GARDÉ — sa planche du
+                11 octobre 2026** (`appli/fiche-de-chantier-l-accueil.html`,
+                version Corrigé) : *« remets le bouton d'avant, juste mets-lui
+                un bandeau doré celui de l'appli »*. La carte étroite du 26 août
+                (*« une carte mais fais-la moins large »*) cède à sa demande la
+                plus récente.
 
-                **Ce que la phrase ne faisait pas.** Une ligne de texte au milieu
-                d'un écran de texte ne se distingue pas d'un intertitre : ni
-                fond, ni cadre, ni couleur d'action, et un chevron de huit
-                pixels pour seul aveu qu'on peut appuyer.
-
-                **Moins large qu'une carte pleine.** Elle prend la largeur de
-                son texte, plafonnée — un pavé bord à bord pèserait autant que
-                « Créer une fiche », qui est le geste de tous les jours, et
-                c'est le défaut que la planche annonçait. Le plafond existe pour
-                les gros caractères du téléphone : sans lui la carte redeviendrait
-                pleine largeur chez qui grossit son texte, c'est-à-dire là où
-                l'on croyait avoir réglé la question. */}
+                Les coins et l'ombre sont ceux des cartes de Paysage
+                (`radius.card`, `cardShadow`). Le fond reste `card` et le liseré
+                `colors.or`, ses deux demandes du 22 septembre 2026 : sur les
+                chartes sombres, `card` devient leur carte sombre, jamais un
+                aplat blanc illisible. « Créer une fiche », dessous, reste la
+                capsule : c'est le geste de tous les jours. */}
             <Link
               href="/paysage/fiche/composer"
               data-atlas="carte-composer-ma-fiche"
-              // **4 px, et non 14** : la charte veut ses plages presque droites
-              // — « au-delà de 6 px, une plage devient un galet et l'écran perd
-              // sa tenue ». La capsule est réservée à ce qu'on APPUIE ; ceci est
-              // une carte qu'on parcourt, comme « Ma TVA à déclarer ».
-              className="flex w-fit max-w-[270px] min-h-[44px] items-center gap-[14px] rounded-[4px] px-[16px] py-[13px]"
-              // **Le fond est BLANC, le liseré d'OR, ses deux demandes du
-              // 22 septembre 2026** : « mets un liseré doré, celui de l'appli »,
-              // puis « mets l'intérieur en blanc ». Le blanc est `card`, celui
-              // des cartes et des champs : sur les deux chartes sombres il
-              // devient leur carte sombre, jamais un aplat blanc illisible.
-              // `colors.or` est l'or des canaux pris (`ChoixCanal`).
-              style={{ backgroundColor: colors.card, border: `1px solid ${colors.or}` }}
+              className="flex min-h-[64px] w-full items-center gap-[14px] px-[18px] py-[15px]"
+              style={{
+                backgroundColor: colors.card,
+                border: `1px solid ${colors.or}`,
+                borderRadius: radius.card,
+                boxShadow: cardShadow,
+              }}
             >
               <span className="min-w-0 flex-1">
-                <span className="block text-[16px] leading-[1.2]" style={{ fontFamily: font.display }}>
+                <span className="block text-[19px] leading-[1.2]" style={{ fontFamily: font.display }}>
                   Composer ma fiche
                 </span>
-                <span className="mt-[3px] block text-[11.5px] leading-[1.45]" style={{ color: colors.muted }}>
+                <span className={`mt-[3px] block ${texteSituation}`} style={{ color: colors.inkSoft }}>
                   {modele.length} prestation{modele.length > 1 ? "s" : ""}
                 </span>
               </span>
@@ -170,6 +160,21 @@ export default async function FichesPage() {
             <OuvrirFiche />
           )}
         </section>
+
+        {/* **Aucune fiche encore : une ligne le dit** (planche du 11 octobre
+            2026, état « Aucune fiche »), plutôt qu'un bas d'écran vide qui
+            ressemble à une page pas finie de venir. Seulement quand une fiche
+            PEUT s'ouvrir : sans modèle, la carte du dessus dit déjà ce qui
+            manque. */}
+        {passages.length === 0 && modele.length > 0 && (
+          <p
+            className="mx-[26px] mt-[26px] text-center text-[14px] leading-[1.6]"
+            style={{ color: colors.inkSoft }}
+            data-atlas="aucune-fiche"
+          >
+            Aucune fiche pour l&apos;instant.
+          </p>
+        )}
 
         <FichesEnCours brouillons={brouillons} />
 

@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { ChampRecherche } from "@/components/atlas/ChampRecherche";
-import { colors, font, smallCaps, surPlein } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, smallCaps, surPlein, texteSituation } from "@/lib/design-tokens";
 import { jourEnTitre, jourLisible } from "@/lib/jour";
 import { TitreAvecRoue } from "@/components/atlas/FiltreDeDate";
 import { parFamilles } from "@/lib/prestations-entretien";
@@ -330,16 +330,21 @@ export default function FicheChantierClient({
             « + Ajouter une prestation » (`colors.or`). */}
         {clientId ? (
           <>
-            <div className="mt-[8px] flex items-center gap-[10px]">
-              <span className="text-[17px]" style={{ fontFamily: font.display }}>
+            {/* **Planche du 11 octobre 2026** (`appli/fiche-de-chantier-remplir.html`,
+                version Corrigé) : le nom en 21 px, « Changer » en petites
+                capitales sur 44 px, au bout de la ligne, et les phrases grises
+                en inkSoft. Ce qui se touche se touche avec des gants ; ce qui
+                se lit se lit au soleil. */}
+            <div className="mt-[6px] flex items-center gap-[10px]">
+              <span className="min-w-0 flex-1 text-[21px] leading-[1.2]" style={{ fontFamily: font.display }}>
                 {clientNom}
               </span>
               {!parti && (
                 <button
                   type="button"
                   onClick={() => setChoixOuvert(true)}
-                  className="text-[12px] underline"
-                  style={{ color: colors.muted }}
+                  className={`min-h-[44px] flex-none pl-[12px] ${libelleCaps}`}
+                  style={{ color: colors.rust }}
                 >
                   Changer
                 </button>
@@ -347,8 +352,8 @@ export default function FicheChantierClient({
             </div>
             {constat && !parti && (
               <p
-                className="mt-[5px] text-[11.5px] leading-[1.5]"
-                style={{ color: colors.muted }}
+                className={`mt-[4px] ${texteSituation}`}
+                style={{ color: colors.inkSoft }}
               >
                 {constat}
               </p>
@@ -363,7 +368,7 @@ export default function FicheChantierClient({
               type="button"
               data-atlas="pont-client"
               onClick={() => setChoixOuvert(true)}
-              className="mt-[14px] block min-h-[44px] w-full text-center text-[20px]"
+              className="mt-[10px] block min-h-[52px] w-full text-center text-[20px]"
               style={{ color: colors.or }}
             >
               + Ajouter un client
@@ -383,10 +388,12 @@ export default function FicheChantierClient({
       )}
 
       {/* ─── LES PRESTATIONS ────────────────────────────────────────────────── */}
-      <section className="mx-[26px] mt-[24px]">
+      {/* Lignes et cases un peu plus hautes, noms de famille en inkSoft :
+          planche du 11 octobre 2026, moins d'appuis ratés sous un gant. */}
+      <section className="mx-[26px] mt-[26px]">
         {familles.map((groupe) => (
-          <div key={groupe.famille} className="mt-[18px] first:mt-0">
-            <h2 className={smallCaps} style={{ color: colors.muted }}>
+          <div key={groupe.famille} className="mt-[22px] first:mt-0">
+            <h2 className={smallCaps} style={{ color: colors.inkSoft }}>
               {groupe.famille}
             </h2>
             <div className="mt-[8px]">
@@ -398,12 +405,12 @@ export default function FicheChantierClient({
                   onClick={() => cocher(l)}
                   aria-pressed={l.faite}
                   data-atlas="prestation"
-                  className="flex min-h-[48px] w-full items-center gap-[13px] border-b py-[11px] text-left"
+                  className="flex min-h-[52px] w-full items-center gap-[14px] border-b py-[12px] text-left"
                   style={{ borderColor: colors.line }}
                 >
                   <span
                     aria-hidden="true"
-                    className="flex h-[22px] w-[22px] items-center justify-center rounded-[7px] text-[13px]"
+                    className="flex h-[24px] w-[24px] items-center justify-center rounded-[7px] text-[14px]"
                     style={{
                       flex: "none",
                       backgroundColor: l.faite ? colors.rust : "transparent",
@@ -414,7 +421,7 @@ export default function FicheChantierClient({
                     {l.faite ? "✓" : ""}
                   </span>
                   <span
-                    className="min-w-0 flex-1 text-[15px] leading-[1.3]"
+                    className="min-w-0 flex-1 text-[16px] leading-[1.3]"
                     style={{ color: l.faite ? colors.ink : colors.inkSoft }}
                   >
                     {l.libelle}
@@ -427,13 +434,13 @@ export default function FicheChantierClient({
       </section>
 
       {/* ─── LE TEMPS PASSÉ, À LA MOLETTE ───────────────────────────────────── */}
-      <section className="mx-[26px] mt-[28px]">
+      <section className="mx-[26px] mt-[30px]">
         {/* **L'état s'écrit en toutes lettres, à gauche du curseur.** Un
             interrupteur nu se décode ; cet écran se regarde avec un gant, entre
             deux chantiers. Et le mot est CONTRE son curseur : posé à droite, il
             se rattacherait au titre de la section suivante. */}
         <div className="flex items-center justify-between gap-3">
-          <h2 className={smallCaps} style={{ color: colors.muted }}>
+          <h2 className={smallCaps} style={{ color: colors.inkSoft }}>
             Temps passé
           </h2>
           <button
@@ -443,7 +450,7 @@ export default function FicheChantierClient({
             aria-label="Montrer le temps passé sur le retour d'intervention du client"
             disabled={parti}
             onClick={basculerTemps}
-            className="flex items-center gap-2 disabled:opacity-40"
+            className="flex min-h-[44px] items-center gap-2 disabled:opacity-40"
           >
             <span className={smallCaps} style={{ color: tempsVisible ? colors.rust : colors.muted }}>
               {tempsVisible ? "Visible" : "Masqué"}
@@ -476,15 +483,15 @@ export default function FicheChantierClient({
         {/* La phrase qu'il a dictée le 23 août, mot pour mot. Elle n'existe que
             masqué : un écran qui commente un réglage au repos est du bruit. */}
         {!tempsVisible && (
-          <p className="mt-[9px] text-[12.5px] leading-[1.5]" style={{ color: colors.muted }}>
+          <p className={`mt-[9px] ${texteSituation}`} style={{ color: colors.inkSoft }}>
             Votre client ne le verra pas sur son retour d&apos;intervention.
           </p>
         )}
       </section>
 
       {/* ─── LES OBSERVATIONS ───────────────────────────────────────────────── */}
-      <section className="mx-[26px] mt-[24px]">
-        <h2 className={smallCaps} style={{ color: colors.muted }}>
+      <section className="mx-[26px] mt-[26px]">
+        <h2 className={smallCaps} style={{ color: colors.inkSoft }}>
           Observations
         </h2>
         <textarea
@@ -497,19 +504,21 @@ export default function FicheChantierClient({
           }}
           rows={3}
           placeholder="Ce que le client doit savoir : une haie à reprendre, un arrosage coupé…"
-          className="mt-[8px] w-full rounded-[14px] px-[15px] py-3 text-[15px] leading-[1.5] outline-none"
+          // 16 px : en dessous, l'iPhone agrandit la page dès qu'on touche le
+          // champ (planche du 11 octobre 2026, `styleChampPlage`).
+          className="mt-[8px] w-full rounded-[14px] px-[15px] py-3 text-[16px] leading-[1.5] outline-none"
           style={{ backgroundColor: colors.card, color: colors.ink, border: `1px solid ${colors.line}` }}
         />
       </section>
 
       {/* ─── L'ENVOI ────────────────────────────────────────────────────────── */}
-      <section className="mx-[26px] mt-[30px]">
+      <section className="mx-[26px] mt-[32px]">
         {/* **La date d'envoi est pour LUI** — sa demande du 22 septembre
             2026 : *« ça, c'est à garder seulement pour l'utilisateur dans
             l'appli, supprime-le pour le client »*. Elle a quitté la page du
             client pour venir ici. */}
         {envoyeLe && (
-          <p className="mb-[14px] text-center text-[12.5px]" style={{ color: colors.muted }} data-atlas="envoye-le">
+          <p className="mb-[14px] text-center text-[13.5px]" style={{ color: colors.inkSoft }} data-atlas="envoye-le">
             Envoyé le{" "}
             {new Date(envoyeLe).toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short", timeZone: "Europe/Paris" })}.
           </p>
@@ -533,8 +542,8 @@ export default function FicheChantierClient({
                 cassé, et il appuie trois fois avant d'abandonner. */}
             {empechement && (
               <p
-                className="mt-[12px] text-center text-[12.5px] leading-[1.6]"
-                style={{ color: colors.muted }}
+                className="mt-[12px] text-center text-[13.5px] leading-[1.6]"
+                style={{ color: colors.inkSoft }}
               >
                 {empechement}
               </p>
@@ -590,8 +599,8 @@ function ChoixDuCanal({
   ];
 
   return (
-    <div className="mt-[10px] flex items-center gap-[8px]" data-atlas="choix-du-canal">
-      <span className={smallCaps} style={{ color: colors.muted, flex: "none" }}>
+    <div className="mt-[12px] flex flex-wrap items-center gap-[8px]" data-atlas="choix-du-canal">
+      <span className={`mr-[4px] ${smallCaps}`} style={{ color: colors.inkSoft, flex: "none" }}>
         Envoyé par
       </span>
       {cases.map((c) => {
@@ -603,9 +612,9 @@ function ChoixDuCanal({
             aria-pressed={actif}
             data-canal={c.valeur}
             onClick={() => setCanal(c.valeur)}
-            // 34 px de haut, touchable au pouce sans peser sur l'écran : la
-            // pastille est un choix, pas l'action principale.
-            className="rounded-full px-[13px] py-[7px] text-[12.5px] leading-none"
+            // 44 px de haut, la mesure d'un pouce ganté : planche du
+            // 11 octobre 2026. Les 34 px d'avant se manquaient sur un chantier.
+            className="inline-flex min-h-[44px] items-center rounded-full px-[16px] text-[14px] leading-none"
             style={{
               flex: "none",
               // Le vert des boutons depuis le 4 septembre 2026 : la pastille
@@ -617,7 +626,7 @@ function ChoixDuCanal({
           >
             {c.mot}
             {!c.coordonnee?.trim() && (
-              <span style={{ opacity: 0.7 }}>, absent</span>
+              <span style={{ opacity: 0.85 }}>, absent</span>
             )}
           </button>
         );
@@ -664,7 +673,7 @@ function MoletteDuree({
         disabled={figee}
         value={heures}
         onChange={(e) => poser(Number(e.target.value) * 60 + reste)}
-        className="flex-1 rounded-[14px] px-[15px] py-3 text-[17px] outline-none"
+        className="min-h-[52px] flex-1 rounded-[14px] px-[15px] py-3 text-[17px] outline-none"
         style={style}
       >
         {Array.from({ length: MINUTES_MAX / 60 + 1 }, (_, h) => (
@@ -678,7 +687,7 @@ function MoletteDuree({
         disabled={figee}
         value={reste}
         onChange={(e) => poser(heures * 60 + Number(e.target.value))}
-        className="flex-1 rounded-[14px] px-[15px] py-3 text-[17px] outline-none"
+        className="min-h-[52px] flex-1 rounded-[14px] px-[15px] py-3 text-[17px] outline-none"
         style={style}
       >
         {Array.from({ length: 60 / PAS_MINUTES }, (_, i) => i * PAS_MINUTES).map((m) => (
