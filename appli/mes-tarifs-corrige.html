@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas : mes tarifs, corrigé</title>
+<style>
+  /*
+    MES TARIFS, proposition pour /reglages/tarifs.
+
+    Nom du fichier : appli/mes-tarifs.html existe déjà (la page Arborea,
+    reliée par app.html, nav.js et les suites) ; cette planche vit donc à côté.
+
+    ─────────────────────────────────────────────────────────────────────────
+    D'OÙ VIENT CE QUI EST DESSINÉ
+
+    Fichiers lus :
+      src/app/reglages/tarifs/page.tsx      l'en-tête, les deux renvois
+      src/app/reglages/ReglagesClient.tsx   la liste, l'ajout, le retrait
+      src/app/reglages/ImportTarifs.tsx     l'import Excel ou CSV
+      src/components/atlas/ChoixUnite.tsx   la case et le bandeau d'unités
+      src/lib/unites-tarif.ts               les six unités proposées
+      src/app/reglages/RubriqueReservee.tsx l'écran d'un compte salarié
+      src/server/db/seed.ts (l. 440)        les quatre tarifs de l'exemple
+
+    Un tarif porte trois champs, et rien d'autre : intitulé, prix, unité
+    (facultative). Les quatre tarifs, leurs prix et leurs unités sont ceux du
+    jeu de démonstration, à la lettre. Les unités proposées sont celles de
+    UNITES_PROPOSEES, dans leur ordre, plus « Aucune unité » et la ligne libre.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI NE CHANGE PAS DANS CE QUE FAIT L'ÉCRAN
+
+    Chaque champ s'enregistre quand on le quitte (onBlur), comme aujourd'hui.
+    « Fermer » ne fait que replier la ligne : il n'enregistre rien de plus.
+    Retirer reste le retrait réversible de l'app, avec son tiroir.
+    L'import garde ses deux temps (lire, montrer, puis enregistrer sur appui).
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI SERAIT À CODER (présentation seulement, aucun serveur)
+
+    1. ReglagesClient : une ligne repliée (nom, prix, unité) et une seule
+       ligne dépliée à la fois (un état « ouvert », comme uniteOuverte).
+    2. L'unité s'écrit « par jour/homme », « par m² ». Le mot « par » évite
+       de deviner le genre d'une unité libre (le stère, l'arbre) : la règle du
+       22 septembre interdit de le deviner. Sans unité, rien n'est écrit.
+    3. Les unités en pastilles dans la ligne dépliée, au lieu du bandeau sous
+       la carte. Mêmes choix, même ligne libre en dernier.
+    4. ImportTarifs descend sous « Ajouter un tarif », en action texte ; son
+       aperçu (à ajouter, à corriger, laissées de côté) ne bouge pas.
+    5. Le surtitre d'EnTeteEcran reste « Réglages », en or.
+       Le titre « Mes tarifs » vaut aussi pour RubriqueReservee (salarié).
+
+    Non vérifié : l'import accepte aussi .pdf dans son attribut accept, mais
+    la lecture ne rend que csv ou excel. L'écran dit donc « Excel ou CSV ».
+
+    Ce que l'on retire et qu'il faut savoir : la phrase « Sans tarif
+    correspondant, le prix est calculé à partir de vos paramètres de
+    chiffrage » quitte l'écran.
+
+    Couleurs : src/lib/design-tokens.ts (Origine) et la charte Nuit de
+    src/lib/chartes.ts (fond #101210, plage #1a1d19, encre #e9e8de,
+    gris #84887b, plein #e9e8de).
+  */
+
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1; --plein:#7d9a6d;
+    --surPlein:#faf9f5; --or:#B98B47; --alerte:#9C3B2E;
+    --line:rgba(28,28,26,.12); --chevron:rgba(28,28,26,.28);
+    --ombre:0 1px 2px rgba(47,59,47,.06), 0 6px 18px rgba(47,59,47,.06);
+  }
+  body[data-charte="nuit"]{
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e; --plein:#e9e8de;
+    --surPlein:#101210; --or:#B98B47; --alerte:#cd6456;
+    --line:rgba(233,232,222,.12); --chevron:rgba(233,232,222,.28);
+    --ombre:0 1px 2px rgba(0,0,0,.3);
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:#e7e4dd;color:#1c1c1a;
+       font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:20px 12px 56px}
+  body[data-charte="nuit"]{background:#070806;color:#e9e8de}
+  a{color:inherit;text-decoration:none}
+
+  /* ══ Le banc, hors de l'écran ═══════════════════════════════════════════ */
+  .banc{max-width:390px;margin:0 auto 14px;padding:0 4px}
+  .banc h2{margin:0;font-size:10px;font-weight:500;letter-spacing:.26em;
+           text-transform:uppercase;color:#8a8578}
+  .boutons{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .boutons button{font:inherit;font-size:12px;padding:8px 12px;border-radius:6px;
+                  border:1px solid rgba(28,28,26,.18);background:#faf9f5;
+                  color:#1c1c1a;cursor:pointer;min-height:36px}
+  body[data-charte="nuit"] .boutons button{background:#1a1d19;color:#e9e8de;
+                  border-color:rgba(233,232,222,.2)}
+  .boutons button[aria-pressed="true"]{background:#2f3b2f;color:#faf9f5;border-color:#2f3b2f}
+  body[data-charte="nuit"] .boutons button[aria-pressed="true"]{
+                  background:#e9e8de;color:#101210;border-color:#e9e8de}
+  .sep{width:100%;height:0}
+
+  /* ══ L'écran ═══════════════════════════════════════════════════════════ */
+  .tel{max-width:390px;margin:0 auto;background:var(--cream);color:var(--ink);
+       position:relative;overflow:hidden;border:1px solid rgba(28,28,26,.14);
+       border-radius:14px}
+  body[data-charte="nuit"] .tel{border-color:rgba(233,232,222,.14)}
+  .defile{height:740px;overflow-y:auto;overscroll-behavior:contain;padding-bottom:110px;
+          scrollbar-width:thin;scrollbar-color:var(--chevron) transparent}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;
+         font-weight:400;letter-spacing:-.01em}
+  .caps{font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+
+  .haut{padding:26px 26px 0}
+  .rond{width:40px;height:40px;border-radius:50%;background:var(--rustTint);
+        display:flex;align-items:center;justify-content:center}
+  .titre-ligne{display:flex;align-items:flex-start;justify-content:space-between;
+               gap:16px;padding:20px 26px 0}
+  h1{margin:0;font-size:36px;line-height:1.05;letter-spacing:-.018em}
+  .precision{display:block;margin-top:12px;color:var(--or)}
+  .assistant{width:44px;height:44px;border-radius:50%;background:var(--plein);
+             display:flex;align-items:center;justify-content:center;flex:none}
+
+  /* Les deux écrans vivent côte à côte dans le HTML ; le banc choisit.
+     Sans script, seul le Corrigé se voit. */
+  .avant{display:none}
+  body.mode-avant .avant{display:block}
+  body.mode-avant span.avant{display:inline}
+  body.mode-avant .apres{display:none}
+
+  /* ── Corrigé : la liste ──────────────────────────────────────────────────
+     Une seule carte, une ligne par tarif. Le prix est aligné à droite en
+     chiffres de même largeur : 280,00 et 18,00 se lisent en colonne. */
+  .liste{margin:26px 26px 0;background:var(--card);border-radius:16px;
+         box-shadow:var(--ombre);overflow:hidden}
+  .liste[hidden]{display:none}
+  .tarif{display:flex;align-items:center;gap:14px;width:100%;min-height:62px;
+         padding:12px 18px;border:0;background:none;font:inherit;color:inherit;
+         text-align:left;cursor:pointer;border-top:1px solid var(--line)}
+  .tarif[hidden]{display:none}
+  .liste > :first-child{border-top:0}
+  .tarif:focus-visible{outline:2px solid var(--or);outline-offset:-2px;border-radius:16px}
+  .nom{flex:1;min-width:0;font-size:16px;line-height:1.3}
+  .prix{flex:none;text-align:right}
+  .montant{display:block;font-size:16px;font-weight:500;line-height:1.2;
+           font-variant-numeric:tabular-nums;white-space:nowrap}
+  .unite{display:block;margin-top:2px;font-size:12.5px;color:var(--inkSoft);white-space:nowrap}
+
+  /* ── Corrigé : la ligne qu'on vient de toucher ──────────────────────── */
+  .ouverte{border-top:1px solid var(--line);padding:16px 18px 0}
+  .ouverte[hidden]{display:none}
+  .ouverte .caps{display:block;color:var(--inkSoft);margin-bottom:6px}
+  .champ{display:block;width:100%;border:0;border-radius:10px;background:var(--rustTint);
+         color:var(--ink);font:inherit;font-size:16px;padding:12px 14px;min-height:48px;
+         outline:none}
+  .champ:focus{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .champ::placeholder{color:var(--inkSoft);opacity:.72}
+  .bloc{margin-bottom:14px}
+  .prix-champ{position:relative;width:60%}
+  .prix-champ .champ{text-align:right;padding-right:34px;font-variant-numeric:tabular-nums}
+  .prix-champ span{position:absolute;right:14px;top:50%;transform:translateY(-50%);
+                   color:var(--inkSoft);font-size:16px;pointer-events:none}
+  .pastilles{display:flex;flex-wrap:wrap;gap:8px}
+  .pastille{min-height:44px;padding:0 14px;border-radius:9999px;border:1px solid var(--line);
+            background:none;color:var(--ink);font:inherit;font-size:15px;cursor:pointer}
+  .pastille[aria-pressed="true"]{background:var(--rust);border-color:var(--rust);
+            color:var(--card)}
+  .pastille:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+  .autre{margin-top:10px}
+  .pied{display:flex;justify-content:space-between;align-items:center;
+        border-top:1px solid var(--line);margin-top:4px}
+  .pied button{min-height:48px;border:0;background:none;font:inherit;cursor:pointer;padding:0}
+  .pied .retirer{font-size:9.5px;font-weight:500;letter-spacing:.28em;color:var(--alerte)}
+  .fermer{color:var(--rust);font-size:15px;font-weight:500}
+  .pied button:focus-visible{outline:2px solid var(--or);outline-offset:2px;border-radius:6px}
+
+  /* ── Corrigé : les deux gestes d'ajout, en texte ──────────────────────
+     Ajouter est le geste de tous les jours. Importer sert une fois : il
+     passe dessous, à voix basse, au lieu de porter le seul bouton plein. */
+  .actions{margin:8px 26px 0}
+  .action{display:flex;align-items:center;gap:10px;min-height:48px;width:100%;
+          border:0;background:none;font:inherit;cursor:pointer;padding:0;text-align:left}
+  .action svg{flex:none}
+  .ajouter{color:var(--or);font-size:14px}
+  .importer{color:var(--inkSoft);font-size:14px}
+  .action:focus-visible{outline:2px solid var(--or);outline-offset:2px;border-radius:6px}
+  .vide{margin:26px 26px 0;font-size:14px;color:var(--inkSoft)}
+  .vide[hidden]{display:none}
+
+  /* ── Les renvois, dans la grammaire du sommaire ───────────────────────*/
+  .renvois{margin:30px 26px 0;border-top:1px solid var(--line);padding-top:18px}
+  .renvois .caps{color:var(--inkSoft);margin:0 0 4px}
+  .renvoi{display:flex;align-items:center;gap:15px;min-height:56px;padding:13px 0;
+          border-bottom:1px solid var(--line)}
+  .renvoi:last-child{border-bottom:0}
+  .renvoi .g{flex:1;min-width:0}
+  .renvoi .n{display:block;font-size:17px;line-height:1.25}
+  .renvoi .d{display:block;margin-top:3px;font-size:12.5px;line-height:1.5;color:var(--inkSoft)}
+  .chev{flex:none;width:8px;height:8px;transform:rotate(45deg);
+        border-right:1.5px solid var(--chevron);border-top:1.5px solid var(--chevron)}
+
+  /* ══ Aujourd'hui, reproduit tel quel ════════════════════════════════════ */
+  .a-sect{margin:26px 26px 0}
+  .a-libelle{color:var(--inkSoft);margin:0 0 10px}
+  .a-texte{font-size:13px;line-height:1.55;color:var(--muted);margin:0}
+  .a-texte[hidden]{display:none}
+  .a-import{margin-top:24px;background:var(--card);border-radius:4px;padding:16px}
+  .a-import .caps{color:var(--muted)}
+  .a-import p{margin:6px 0 0;font-size:13px;line-height:1.4;color:var(--muted)}
+  .a-plein{display:inline-block;margin-top:12px;background:var(--plein);color:var(--surPlein);
+           border-radius:4px;padding:10px 16px;font-size:14px;font-weight:500}
+  .a-liste{margin-top:20px;display:flex;flex-direction:column;gap:12px}
+  .a-liste[hidden]{display:none}
+  .a-carte{background:var(--card);border-radius:4px;padding:16px;display:flex;
+           flex-direction:column;gap:8px}
+  .a-case{background:var(--cream);border-radius:4px;padding:10px 12px;font-size:16px;
+          min-height:44px;display:flex;align-items:center;justify-content:space-between}
+  .a-grille{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .a-grille .caps{color:var(--muted);display:block;margin-bottom:4px;font-size:9px;letter-spacing:.2em}
+  .a-droite{justify-content:flex-end}
+  .a-vide{color:var(--muted)}
+  .a-tri{font-size:12px;color:var(--muted)}
+  .a-ajout{margin-top:16px;color:var(--rust);font-size:14px;font-weight:500}
+  .a-renvois .d{font-size:11.5px;color:var(--muted)}
+
+  /* ── La barre du bas ────────────────────────────────────────────────── */
+  .barre{position:absolute;left:0;right:0;bottom:0;background:var(--cream);
+         border-top:1px solid var(--line);padding:18px 14px 10px}
+  .onglets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:relative}
+  .onglets span{text-align:center;font-size:8.5px;font-weight:500;letter-spacing:.14em;
+                text-transform:uppercase;color:var(--muted);padding-bottom:8px}
+  .onglets span.actif{color:var(--ink);transform:translateY(-2px)}
+  .filet{position:absolute;bottom:0;left:80%;height:1px;width:20%;background:var(--or)}
+
+  /* ══ Les notes ═════════════════════════════════════════════════════════ */
+  .notes{max-width:390px;margin:20px auto 0;padding:0 4px;font-size:13.5px;
+         line-height:1.6;color:#3a3a34}
+  body[data-charte="nuit"] .notes{color:#c1c2b6}
+  .notes h3{margin:22px 0 8px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+            text-transform:uppercase;color:#8a8578}
+  .notes ul{margin:0;padding-left:18px}
+  .notes li{margin-bottom:7px}
+</style>
+</head>
+<body data-charte="origine">
+
+<div class="banc">
+  <h2>Mes tarifs, proposition</h2>
+  <div class="boutons">
+    <button type="button" data-ecran="avant" aria-pressed="false">Aujourd'hui</button>
+    <button type="button" data-ecran="apres" aria-pressed="true">Corrigé</button>
+    <span class="sep"></span>
+    <button type="button" data-etat="liste" aria-pressed="true">La liste</button>
+    <button type="button" data-etat="ouvert" aria-pressed="false">Je touche un tarif</button>
+    <button type="button" data-etat="vide" aria-pressed="false">Aucun tarif</button>
+    <span class="sep"></span>
+    <button type="button" data-charte="origine" aria-pressed="true">Origine</button>
+    <button type="button" data-charte="nuit" aria-pressed="false">Nuit</button>
+  </div>
+</div>
+
+<div class="tel">
+  <div class="defile" id="defile">
+
+    <div class="haut">
+      <a class="rond" href="#" aria-label="Retour aux réglages">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.4" style="color:var(--rust)">
+          <path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+
+    <div class="titre-ligne">
+      <div style="min-width:0">
+        <h1 class="serif">
+          <span class="apres">Mes tarifs</span>
+          <span class="avant">Tarifs &amp; catalogue</span>
+        </h1>
+        <span class="precision caps">Réglages</span>
+      </div>
+      <span class="assistant" aria-hidden="true">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"
+             stroke="var(--surPlein)" stroke-width="1.8">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
+      </span>
+    </div>
+
+    <!-- ═══ CORRIGÉ ═══ -->
+    <div class="apres">
+      <div class="liste" id="liste">
+        <button class="tarif" type="button">
+          <span class="nom">Main d'œuvre (jour/homme)</span>
+          <span class="prix"><span class="montant">280,00 €</span><span class="unite">par jour/homme</span></span>
+        </button>
+        <button class="tarif" type="button" id="ligne-depose">
+          <span class="nom">Dépose carrelage</span>
+          <span class="prix"><span class="montant">18,00 €</span><span class="unite">par m²</span></span>
+        </button>
+
+        <!-- La ligne dépliée, à la place de « Dépose carrelage » -->
+        <div class="ouverte" id="ouverte" hidden>
+          <div class="bloc">
+            <label class="caps" for="f-nom">Nom</label>
+            <input class="champ" id="f-nom" value="Dépose carrelage" autocomplete="off">
+          </div>
+          <div class="bloc">
+            <label class="caps" for="f-prix">Prix</label>
+            <div class="prix-champ">
+              <input class="champ" id="f-prix" inputmode="decimal" value="18,00">
+              <span aria-hidden="true">€</span>
+            </div>
+          </div>
+          <div class="bloc">
+            <span class="caps">Unité</span>
+            <div class="pastilles" role="group" aria-label="Unité du tarif">
+              <button class="pastille" type="button" aria-pressed="false">Aucune</button>
+              <button class="pastille" type="button" aria-pressed="false">jour/homme</button>
+              <button class="pastille" type="button" aria-pressed="true">m²</button>
+              <button class="pastille" type="button" aria-pressed="false">ml</button>
+              <button class="pastille" type="button" aria-pressed="false">heure</button>
+              <button class="pastille" type="button" aria-pressed="false">forfait</button>
+              <button class="pastille" type="button" aria-pressed="false">tonne</button>
+            </div>
+            <input class="champ autre" placeholder="Une autre unité" aria-label="Une autre unité" autocomplete="off">
+          </div>
+          <div class="pied">
+            <button type="button" class="retirer">RETIRER</button>
+            <button type="button" class="fermer" id="fermer">Fermer</button>
+          </div>
+        </div>
+
+        <button class="tarif" type="button">
+          <span class="nom">Pose faïence</span>
+          <span class="prix"><span class="montant">45,00 €</span><span class="unite">par m²</span></span>
+        </button>
+        <button class="tarif" type="button">
+          <span class="nom">Forfait déplacement</span>
+          <span class="prix"><span class="montant">35,00 €</span></span>
+        </button>
+      </div>
+      <p class="vide" id="vide" hidden>Aucun tarif pour l'instant.</p>
+
+      <div class="actions">
+        <button class="action ajouter" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Ajouter un tarif
+        </button>
+        <button class="action importer" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 18v-6M9.5 14.5 12 12l2.5 2.5"/></svg>
+          Reprendre mes prix d'un fichier Excel ou CSV
+        </button>
+      </div>
+
+      <div class="renvois">
+        <p class="caps">Mes autres prix</p>
+        <a class="renvoi" href="#">
+          <span class="g"><span class="n serif">Mes prix</span>
+            <span class="d">Abattage, dessouchage, taille de haie.</span></span>
+          <span class="chev" aria-hidden="true"></span>
+        </a>
+        <a class="renvoi" href="#">
+          <span class="g"><span class="n serif">Le catalogue</span>
+            <span class="d">Prestations et matériels reconnus. Sans prix.</span></span>
+          <span class="chev" aria-hidden="true"></span>
+        </a>
+      </div>
+    </div>
+
+    <!-- ═══ AUJOURD'HUI ═══ -->
+    <div class="avant">
+      <div class="a-sect">
+        <p class="caps a-libelle">Mes tarifs</p>
+        <p class="a-texte">Vos tarifs servent en priorité au calcul du prix d'un chantier. Sans tarif correspondant, le prix est calculé à partir de vos paramètres de chiffrage.</p>
+        <div class="a-import">
+          <span class="caps">J'ai déjà mes prix ailleurs</span>
+          <p>Déposez votre fichier Excel ou CSV : Atlas y lit les désignations, les prix et les unités, et vous montre ce qu'il ajouterait <strong>avant</strong> d'enregistrer quoi que ce soit.</p>
+          <span class="a-plein">Choisir un fichier</span>
+        </div>
+        <div class="a-liste" id="a-liste"></div>
+        <p class="a-texte" id="a-vide" hidden style="margin-top:20px">Aucun tarif pour l'instant.</p>
+        <div class="a-ajout">+ Ajouter un tarif</div>
+      </div>
+      <div class="renvois a-renvois">
+        <p class="caps">Main-d'œuvre, machine et matière</p>
+        <a class="renvoi" href="#"><span class="g"><span class="n serif">Mes prix</span>
+          <span class="d">Abattre, enlever les grumes, fendre, dessoucher, tailler une haie : le montant par diamètre, par hauteur et par technique.</span></span>
+          <span class="chev" aria-hidden="true"></span></a>
+        <a class="renvoi" href="#"><span class="g"><span class="n serif">Le catalogue</span>
+          <span class="d">Le vocabulaire du métier, partagé : prestations et matériels qu'Atlas sait reconnaître. Il ne porte aucun prix.</span></span>
+          <span class="chev" aria-hidden="true"></span></a>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="barre" aria-hidden="true">
+    <div class="onglets">
+      <span>Chantiers</span><span>Planning</span><span>Terminés</span>
+      <span>Paysage</span><span class="actif">Réglages</span>
+      <i class="filet"></i>
+    </div>
+  </nav>
+</div>
+
+<div class="notes">
+  <h3>Ce qui change</h3>
+  <ul>
+    <li>Le titre devient «&nbsp;Mes tarifs&nbsp;», sans le «&nbsp;&amp;&nbsp;». «&nbsp;Réglages&nbsp;» reste dessous, en doré.</li>
+    <li>Les deux paragraphes qui expliquaient l'écran partent.</li>
+    <li>Chaque tarif tenait dans une grosse carte de quatre cases. C'est maintenant une ligne : le nom à gauche, le prix à droite, l'unité dessous. Les quatre tarifs se lisent d'un coup.</li>
+    <li>«&nbsp;Ajouter un tarif&nbsp;» passe en doré, comme les autres ajouts de l'appli.</li>
+    <li>On touche une ligne pour la modifier. Elle s'ouvre sur place avec le nom, le prix et l'unité en pastilles. «&nbsp;Retirer&nbsp;» est en bas de la ligne ouverte.</li>
+    <li>«&nbsp;Choisir…&nbsp;» ne s'affiche plus quand il n'y a pas d'unité : le prix est écrit seul.</li>
+    <li>Reprendre ses prix d'un fichier ne sert qu'une fois. Ce geste passe sous «&nbsp;Ajouter un tarif&nbsp;», en simple texte, et ne porte plus le seul bouton plein de l'écran.</li>
+    <li>«&nbsp;Main d'œuvre, machine et matière&nbsp;» devient «&nbsp;Mes autres prix&nbsp;», et les phrases sous «&nbsp;Mes prix&nbsp;» et «&nbsp;Le catalogue&nbsp;» sont raccourcies.</li>
+  </ul>
+</div>
+
+<script>
+const TARIFS = [
+  {nom:"Main d'œuvre (jour/homme)", prix:"280,00", unite:"jour/homme"},
+  {nom:"Dépose carrelage", prix:"18,00", unite:"m²"},
+  {nom:"Pose faïence", prix:"45,00", unite:"m²"},
+  {nom:"Forfait déplacement", prix:"35,00", unite:null}
+];
+const aListe = document.getElementById("a-liste");
+aListe.innerHTML = TARIFS.map(t =>
+  '<div class="a-carte">' +
+    '<div class="a-case">' + t.nom + '</div>' +
+    '<div class="a-grille">' +
+      '<div><span class="caps">Prix (€)</span><div class="a-case a-droite">' + t.prix + '</div></div>' +
+      '<div><span class="caps">Unité (facultatif)</span><div class="a-case' + (t.unite ? '' : ' a-vide') + '">' +
+        (t.unite || 'Choisir…') + '<span class="a-tri">▾</span></div></div>' +
+    '</div>' +
+  '</div>').join("");
+
+const ouverte = document.getElementById("ouverte");
+const ligneDepose = document.getElementById("ligne-depose");
+const liste = document.getElementById("liste");
+const vide = document.getElementById("vide");
+const aVide = document.getElementById("a-vide");
+
+function etat(e){
+  document.querySelectorAll("[data-etat]").forEach(b =>
+    b.setAttribute("aria-pressed", String(b.dataset.etat === e)));
+  const sansRien = e === "vide";
+  liste.hidden = sansRien; vide.hidden = !sansRien;
+  aListe.hidden = sansRien; aVide.hidden = !sansRien;
+  ouverte.hidden = e !== "ouvert";
+  ligneDepose.hidden = e === "ouvert";
+}
+document.querySelectorAll("[data-etat]").forEach(b =>
+  b.addEventListener("click", () => etat(b.dataset.etat)));
+ligneDepose.addEventListener("click", () => etat("ouvert"));
+document.getElementById("fermer").addEventListener("click", () => etat("liste"));
+document.querySelectorAll(".pastille").forEach(p => p.addEventListener("click", () => {
+  document.querySelectorAll(".pastille").forEach(q => q.setAttribute("aria-pressed", String(q === p)));
+}));
+document.querySelectorAll("[data-ecran]").forEach(b => b.addEventListener("click", () => {
+  document.body.classList.toggle("mode-avant", b.dataset.ecran === "avant");
+  document.querySelectorAll("[data-ecran]").forEach(c =>
+    c.setAttribute("aria-pressed", String(c === b)));
+}));
+document.querySelectorAll("button[data-charte]").forEach(b => b.addEventListener("click", () => {
+  document.body.dataset.charte = b.dataset.charte;
+  document.querySelectorAll("button[data-charte]").forEach(c =>
+    c.setAttribute("aria-pressed", String(c === b)));
+}));
+</script>
+</body>
+</html>

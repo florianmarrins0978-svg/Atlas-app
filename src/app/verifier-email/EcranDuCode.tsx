@@ -18,7 +18,7 @@ export default function EcranDuCode({ email }: { email: string }) {
   const router = useRouter();
   return (
     <PorteDeNuit className="atlas-bas-sans-barre flex min-h-[100dvh] flex-col px-[22px]">
-      <div className="flex flex-1 flex-col pt-[18px]">
+      <div className="flex flex-1 flex-col">
         <SaisieDuCode
           email={email}
           onVerifie={() => router.push("/documents-legaux")}

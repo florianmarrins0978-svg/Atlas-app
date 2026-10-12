@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas : accepter les conditions</title>
+<style>
+  /*
+    ACCEPTER LES CONDITIONS, proposition pour /documents-legaux.
+
+    ─────────────────────────────────────────────────────────────────────────
+    « AUJOURD'HUI » EST RECONSTITUÉ DEPUIS LE CODE, PAS PHOTOGRAPHIÉ.
+
+    Le compte de démonstration a déjà tout accepté : la page le renvoie sur
+    l'accueil (page.tsx, `if (documents.length === 0) redirect("/")`). Elle ne
+    s'ouvre donc pas ici. L'écran d'aujourd'hui est redessiné d'après :
+
+      src/app/documents-legaux/page.tsx        le titre, la phrase, le fond
+      src/app/documents-legaux/formulaire.tsx  les cartes, la case, le bouton
+      src/app/documents-legaux/actions.ts      les deux messages de refus
+      src/server/repositories/documents-legaux.ts   quels documents, quel ordre
+      src/server/documents-legaux/versions.ts  titres, versions, textes
+      src/lib/ecrans-sans-navigation.ts        ni onglets, ni assistant ici
+
+    Ce qui est exact : les deux documents à accepter (CGU version 3, contrat de
+    sous-traitance version canevas-1 ; la politique de confidentialité n'est
+    pas à accepter), leur ordre, leurs titres, le début de leur texte, la
+    phrase d'en-tête qu'il a corrigée le 9 septembre (« stipulent »), les
+    messages « Il reste à accepter : … » et « Il reste N documents à
+    accepter. », les libellés « Lire le texte », « Replier le texte »,
+    « Continuer », « Enregistrement… ». Le texte du contrat de
+    sous-traitance est rendu dans un <pre> : ses # et ses ** s'affichent tels
+    quels, c'est ce que montre l'écran d'aujourd'hui.
+
+    Ce qui est approché : le rouge du refus (text-red-600 de Tailwind, hors
+    charte) et l'ombre « shadow-sm ».
+
+    ─────────────────────────────────────────────────────────────────────────
+    LA PROPOSITION PASSE CET ÉCRAN SUR LA PORTE DE NUIT.
+
+    Il vient juste après /creer-un-compte et /verifier-email, qui sont posés
+    sur `PorteDeNuit` (src/components/atlas/PorteDeNuit.tsx, choisie le
+    8 septembre). Aujourd'hui il retombe sur la charte de l'intérieur : crème,
+    cartes à coins de 4 px, bouton vert. On sort de la porte pour un écran,
+    puis on entre. Les couleurs de la proposition sont celles de NUIT dans
+    PorteDeNuit, au caractère près, halo compris (or à 22 % sur la plage :
+    #3d3523). Ce halo est le fond déjà codé de la porte : il est repris, pas
+    inventé. Sur la porte, la charte est NOMMÉE (nuit) : la bascule Origine
+    ou Nuit ne change donc que l'écran d'aujourd'hui.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI SERAIT À CODER
+
+      - page.tsx : envelopper dans <PorteDeNuit> au lieu de bg-paper.
+        Une ligne, aucune donnée.
+      - formulaire.tsx : la case dessinée, la ligne entière cliquable, la
+        carte oubliée marquée, la répétition du titre retirée.
+      - Le texte lu en clair : un rendu minimal du Markdown (titres, gras,
+        listes, citation) à la place du <pre>. Seul le contrat de
+        sous-traitance en a besoin aujourd'hui ; les CGU 3 sont du texte.
+      - « Les conditions ont changé » quand la personne avait accepté une
+        version plus ancienne du même document : une lecture de plus côté
+        serveur (acceptationsDe existe déjà dans le dépôt). Sans elle, le
+        titre reste « Avant de commencer ».
+      - Le refus marque la carte oubliée : l'action renvoie aujourd'hui une
+        phrase ; il faudrait qu'elle renvoie aussi les identifiants
+        manquants (la liste `manquants` est déjà calculée dans actions.ts),
+        et l'écran fait défiler jusqu'à la première carte oubliée.
+  */
+
+  /* Les jetons de l'INTÉRIEUR : ils ne servent qu'à l'écran d'aujourd'hui. */
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --plein:#7d9a6d; --surPlein:#faf9f5;
+    --line:rgba(28,28,26,.12); --rouge:#dc2626;
+  }
+  body[data-charte="nuit"]{
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --plein:#e9e8de; --surPlein:#1a1d19;
+    --line:rgba(233,232,222,.12);
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:#e7e4dd;color:#1c1c1a;
+       font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:20px 16px 56px}
+  body[data-charte="nuit"]{background:#070806;color:#e9e8de}
+
+  /* ══ Le banc ═══════════════════════════════════════════════════════════ */
+  .banc{max-width:390px;margin:0 auto 14px}
+  .banc h2{margin:0;font-size:10px;font-weight:500;letter-spacing:.26em;
+           text-transform:uppercase;color:#8a8578}
+  .banc p{margin:6px 0 0;font-size:12.5px;line-height:1.5;color:#4a4a44}
+  body[data-charte="nuit"] .banc p{color:#c1c2b6}
+  .boutons{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .boutons button{font:inherit;font-size:12px;padding:8px 12px;border-radius:6px;
+                  border:1px solid rgba(28,28,26,.18);background:#faf9f5;
+                  color:#1c1c1a;cursor:pointer;min-height:36px}
+  body[data-charte="nuit"] .boutons button{background:#1a1d19;color:#e9e8de;
+                  border-color:rgba(233,232,222,.2)}
+  .boutons button[aria-pressed="true"]{background:#2f3b2f;color:#faf9f5;border-color:#2f3b2f}
+  body[data-charte="nuit"] .boutons button[aria-pressed="true"]{
+                  background:#e9e8de;color:#101210;border-color:#e9e8de}
+  .sep{width:100%;height:0}
+
+  /* ══ Le téléphone ══════════════════════════════════════════════════════ */
+  .tel{max-width:390px;margin:0 auto;position:relative;overflow:hidden;
+       border:1px solid rgba(28,28,26,.14);border-radius:14px;height:664px}
+  body[data-charte="nuit"] .tel{border-color:rgba(233,232,222,.14)}
+  .defile{height:100%;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+
+  .avant{display:none}
+  body.mode-avant .avant{display:block}
+  body.mode-avant .apres{display:none}
+
+  /* ══ AUJOURD'HUI : la charte de l'intérieur, comme page.tsx ════════════ */
+  .avant .defile{background:var(--cream);color:var(--ink);padding:32px 20px}
+  .avant h1{margin:0;font-size:22px;font-weight:600;line-height:1.25}
+  .avant .intro{margin:8px 0 0;font-size:14px;line-height:1.625;
+                color:color-mix(in srgb,var(--ink) 70%,transparent)}
+  .avant form{display:flex;flex-direction:column;gap:16px;margin-top:20px}
+  .avant section{background:var(--card);border-radius:4px;padding:20px;
+                 box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  .avant h3{margin:0;font-size:17px;font-weight:600;line-height:1.3}
+  .avant .version{margin:4px 0 0;font-size:12px;color:color-mix(in srgb,var(--ink) 50%,transparent)}
+  .avant .lire{margin-top:12px;padding:0;border:0;background:none;font:inherit;
+               font-size:14px;font-weight:500;color:var(--rust);
+               text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+  .avant .texte{margin-top:12px;max-height:320px;overflow-y:auto;border-radius:4px;
+                border:1px solid var(--line);background:var(--cream);padding:16px}
+  .avant pre{margin:0;white-space:pre-wrap;font:13px/1.625 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+             color:color-mix(in srgb,var(--ink) 80%,transparent)}
+  .avant label{margin-top:16px;display:flex;align-items:flex-start;gap:12px;font-size:14px}
+  .avant input[type=checkbox]{margin:2px 0 0;width:20px;height:20px;flex:none}
+  .avant .refus{margin:0;font-size:13px;color:var(--rouge)}
+  .avant .continuer{border:0;border-radius:999px;padding:12px;font:inherit;font-size:15px;
+                    font-weight:500;background:var(--plein);color:var(--surPlein);cursor:pointer}
+
+  /* ══ CORRIGÉ : la porte de nuit, valeurs de PorteDeNuit.tsx ════════════ */
+  /* Le bouton reste en bas de l'écran, comme sur les questions de la porte :
+     les cartes défilent dessous, « Continuer » ne s'enfuit pas. */
+  .apres{background:radial-gradient(120% 62% at 8% 4%, #3d3523 0%, #1a1d19 40%, #101210 78%);
+         color:#e9e8de;flex-direction:column}
+  body:not(.mode-avant) .apres{display:flex}
+  .apres .defile{flex:1;min-height:0;height:auto;padding:34px 22px 12px}
+  .apres .pied{flex:none;padding:0 22px 22px}
+  .apres h1{margin:0;font-size:30px;font-weight:400;line-height:1.1;letter-spacing:-.01em}
+  .apres .intro{margin:12px 0 0;font-size:14.5px;line-height:1.6;color:#c1c2b6}
+  .apres form{display:flex;flex-direction:column;gap:12px;margin-top:24px}
+
+  .doc{background:#1a1d19;border-radius:20px;box-shadow:inset 0 0 0 1px rgba(233,232,222,.12);
+       overflow:hidden}
+  .doc.oublie{box-shadow:inset 0 0 0 1.6px #cd6456}
+  .doc-tete{padding:18px 18px 0}
+  .doc h3{margin:0;font-size:20px;font-weight:400;line-height:1.2}
+  .doc .version{margin:5px 0 0;font-size:12.5px;color:#c1c2b6}
+
+  /* Lire : une vraie rangée de 48 px, pas un mot souligné de 14 px. */
+  .ouvrir{display:flex;align-items:center;justify-content:space-between;width:100%;
+          min-height:48px;margin-top:8px;padding:0 18px;border:0;background:none;
+          font:inherit;font-size:15px;color:#e9e8de;cursor:pointer;text-align:left}
+  .ouvrir:focus-visible,.accord:focus-within,.principal:focus-visible{
+          outline:2px solid #B98B47;outline-offset:-2px}
+  .chev{width:9px;height:9px;border-right:1.6px solid #84887b;border-bottom:1.6px solid #84887b;
+        transform:translateY(-3px) rotate(45deg);transition:transform .18s ease}
+  .ouvrir[aria-expanded="true"] .chev{transform:translateY(2px) rotate(-135deg)}
+
+  /* Le texte, lu en clair : titres, gras, listes. Plus de # ni de **. */
+  .lu{margin:0 12px;max-height:320px;overflow-y:auto;border-radius:14px;background:#101210;
+      padding:16px 16px 6px;font-size:14px;line-height:1.6;color:#c1c2b6}
+  .lu[hidden]{display:none}
+  .lu h4{margin:0 0 6px;font-size:15px;font-weight:500;color:#e9e8de}
+  .lu p{margin:0 0 12px}
+  .lu ul{margin:0 0 12px;padding-left:18px}
+  .lu b{color:#e9e8de;font-weight:600}
+  .lu .note{padding-left:12px;border-left:1.6px solid rgba(233,232,222,.24)}
+
+  /* L'accord : toute la rangée se touche, la case est dessinée. */
+  .accord{display:flex;align-items:center;gap:14px;min-height:60px;margin-top:6px;
+          padding:0 18px 4px;border-top:1px solid rgba(233,232,222,.12);cursor:pointer;
+          font-size:15.5px}
+  .accord input{position:absolute;opacity:0;width:1px;height:1px}
+  .case{flex:none;width:26px;height:26px;border-radius:8px;
+        box-shadow:inset 0 0 0 1.6px #84887b;display:grid;place-items:center}
+  .case svg{opacity:0}
+  .accord input:checked + .case{background:#e9e8de;box-shadow:none}
+  .accord input:checked + .case svg{opacity:1}
+  .doc.oublie .case{box-shadow:inset 0 0 0 1.6px #cd6456}
+
+  .refus{margin:6px 2px 4px;min-height:21px;font-size:13.5px;line-height:21px;color:#cd6456}
+  .principal{margin-top:8px;width:100%;border:0;border-radius:999px;padding:16px;
+             background:#e9e8de;color:#101210;font:400 17px/1 ui-serif,Georgia,serif;cursor:pointer}
+  .principal[disabled]{opacity:.6}
+  /* La seule sortie : on accepte, ou l'on s'en va. Elle ne laisse entrer nulle part (sa décision du 11 octobre 2026). */
+  .sortie{display:block;width:100%;min-height:44px;margin-top:4px;border:0;background:none;
+          color:#84887b;font:400 14px/1.4 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;cursor:pointer}
+  .sortie:focus-visible{outline:2px solid #B98B47;outline-offset:2px;border-radius:999px}
+
+  /* ══ Les notes ═════════════════════════════════════════════════════════ */
+  .notes{max-width:390px;margin:20px auto 0;font-size:13.5px;line-height:1.6;color:#3a3a34}
+  body[data-charte="nuit"] .notes{color:#c1c2b6}
+  .notes h3{margin:22px 0 8px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+            text-transform:uppercase;color:#8a8578}
+  .notes ul{margin:0;padding-left:18px}
+  .notes li{margin-bottom:7px}
+</style>
+</head>
+<body data-charte="origine" data-etat="premiere">
+
+<div class="banc">
+  <h2>Accepter les conditions</h2>
+  <p>Aujourd'hui est reconstitué depuis le code : le compte de démonstration a déjà tout accepté, l'écran ne s'ouvre plus ici.</p>
+  <div class="boutons">
+    <button type="button" data-etat="premiere" aria-pressed="true">Première fois</button>
+    <button type="button" data-etat="ouvert" aria-pressed="false">Texte ouvert</button>
+    <button type="button" data-etat="oubli" aria-pressed="false">Case oubliée</button>
+    <button type="button" data-etat="nouvelle" aria-pressed="false">Nouvelle version</button>
+    <span class="sep"></span>
+    <button type="button" data-mode="avant" aria-pressed="false">Aujourd'hui</button>
+    <button type="button" data-mode="apres" aria-pressed="true">Corrigé</button>
+    <button type="button" data-charte="origine" aria-pressed="true">Origine</button>
+    <button type="button" data-charte="nuit" aria-pressed="false">Nuit</button>
+  </div>
+</div>
+
+<div class="tel">
+
+  <!-- ══ AUJOURD'HUI ═══════════════════════════════════════════════════ -->
+  <div class="avant" style="height:100%">
+    <div class="defile">
+      <h1 class="serif">Avant de commencer</h1>
+      <p class="intro">Vos clients vous confient leurs coordonnées&nbsp;; vous nous les confiez à votre tour. Ces documents stipulent ce que nous en faisons, et ce que nous nous engageons à ne pas en faire.</p>
+      <form onsubmit="return false">
+        <section data-doc="cgu">
+          <h3 class="serif">Conditions générales d'utilisation</h3>
+          <p class="version">Version 3</p>
+          <button type="button" class="lire" data-lire>Lire le texte</button>
+          <div class="texte" data-texte hidden><pre>ARTICLE 1 : Qui édite Atlas
+
+Atlas est édité par :
+
+Dénomination sociale : [À COMPLÉTER]
+
+Forme juridique : [À COMPLÉTER]
+
+Capital social : [À COMPLÉTER]
+
+Siège social : [À COMPLÉTER]
+
+RCS et numéro SIREN : [À COMPLÉTER]</pre></div>
+          <label><input type="checkbox" data-case><span>J'ai lu et j'accepte&nbsp;: <strong>Conditions générales d'utilisation</strong></span></label>
+        </section>
+        <section data-doc="st">
+          <h3 class="serif">Contrat de sous-traitance (article 28 RGPD)</h3>
+          <p class="version">Version canevas-1</p>
+          <button type="button" class="lire" data-lire>Lire le texte</button>
+          <div class="texte" data-texte hidden><!-- La première ligne du texte publié (son titre, avec un tiret) n'est pas recopiée : versions.ts la garde parce qu'une version publiée ne se modifie jamais, et le titre est déjà écrit au-dessus. --><pre>> **Canevas non juridique.** Ce document doit être rédigé ou relu par un
+> juriste avant toute utilisation avec de vrais artisans.
+
+## 1. Qui est qui
+
+**Vous, l'artisan, êtes responsable de traitement** des données de vos clients.
+Vous décidez pourquoi et comment elles sont traitées.
+
+**Nous sommes sous-traitant.** Nous traitons ces données uniquement sur vos
+instructions, pour vous permettre d'utiliser Atlas.</pre></div>
+          <label><input type="checkbox" data-case><span>J'ai lu et j'accepte&nbsp;: <strong>Contrat de sous-traitance (article 28 RGPD)</strong></span></label>
+        </section>
+        <p class="refus" data-refus hidden></p>
+        <button type="button" class="continuer" data-continuer>Continuer</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══ CORRIGÉ ═══════════════════════════════════════════════════════ -->
+  <div class="apres" style="height:100%">
+    <div class="defile">
+      <h1 class="serif" data-titre>Avant de commencer</h1>
+      <p class="intro">Vos clients vous confient leurs coordonnées&nbsp;; vous nous les confiez à votre tour. Ces documents stipulent ce que nous en faisons, et ce que nous nous engageons à ne pas en faire.</p>
+      <form onsubmit="return false">
+        <section class="doc" data-doc="cgu">
+          <div class="doc-tete">
+            <h3 class="serif">Conditions générales d'utilisation</h3>
+            <p class="version">Version 3</p>
+          </div>
+          <button type="button" class="ouvrir" data-lire aria-expanded="false"><span data-mot>Lire le texte</span><i class="chev" aria-hidden="true"></i></button>
+          <div class="lu" data-texte hidden>
+            <h4>Article 1 : Qui édite Atlas</h4>
+            <p>Atlas est édité par :</p>
+            <p>Dénomination sociale : [À COMPLÉTER]<br>Forme juridique : [À COMPLÉTER]<br>Capital social : [À COMPLÉTER]<br>Siège social : [À COMPLÉTER]<br>RCS et numéro SIREN : [À COMPLÉTER]</p>
+          </div>
+          <label class="accord"><input type="checkbox" data-case><span class="case" aria-hidden="true"><svg width="14" height="11" viewBox="0 0 14 11" fill="none" stroke="#101210" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 5.5l4 4 7-8"/></svg></span><span>J'ai lu et j'accepte</span></label>
+        </section>
+        <section class="doc" data-doc="st">
+          <div class="doc-tete">
+            <h3 class="serif">Contrat de sous-traitance (article 28 RGPD)</h3>
+            <p class="version">Version canevas-1</p>
+          </div>
+          <button type="button" class="ouvrir" data-lire aria-expanded="false"><span data-mot>Lire le texte</span><i class="chev" aria-hidden="true"></i></button>
+          <div class="lu" data-texte hidden>
+            <h4>Contrat de sous-traitance, article 28 du RGPD</h4>
+            <p class="note"><b>Canevas non juridique.</b> Ce document doit être rédigé ou relu par un juriste avant toute utilisation avec de vrais artisans.</p>
+            <h4>1. Qui est qui</h4>
+            <p><b>Vous, l'artisan, êtes responsable de traitement</b> des données de vos clients. Vous décidez pourquoi et comment elles sont traitées.</p>
+            <p><b>Nous sommes sous-traitant.</b> Nous traitons ces données uniquement sur vos instructions, pour vous permettre d'utiliser Atlas.</p>
+          </div>
+          <label class="accord"><input type="checkbox" data-case><span class="case" aria-hidden="true"><svg width="14" height="11" viewBox="0 0 14 11" fill="none" stroke="#101210" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 5.5l4 4 7-8"/></svg></span><span>J'ai lu et j'accepte</span></label>
+        </section>
+      </form>
+    </div>
+    <div class="pied">
+      <p class="refus" role="alert" data-refus></p>
+      <button type="button" class="principal" data-continuer>Continuer</button>
+      <button type="button" class="sortie">Se déconnecter</button>
+    </div>
+  </div>
+</div>
+
+<div class="notes">
+  <h3>Ce qui change</h3>
+  <ul>
+    <li>L'écran reste sur la porte sombre, comme la création du compte et le code juste avant. Aujourd'hui il redevient crème pour une seule page.</li>
+    <li>Le texte d'un document se lit en clair. Aujourd'hui le contrat de sous-traitance montre ses dièses et ses astérisques.</li>
+    <li>« Lire le texte » devient une rangée qu'on touche au pouce, avec un chevron qui dit si c'est ouvert.</li>
+    <li>« J'ai lu et j'accepte » ne répète plus le titre écrit juste au-dessus.</li>
+    <li>Toute la rangée coche la case, plus grande et dessinée. Elle n'est toujours jamais cochée d'avance.</li>
+    <li>Le refus s'écrit dans la couleur d'alerte de l'application, et la carte oubliée est entourée.</li>
+    <li>« Continuer » reste en bas de l'écran, les cartes défilent dessous. Ouvrir un texte ne le pousse plus hors de vue.</li>
+    <li>Quand seule une nouvelle version est à accepter, le titre dit « Les conditions ont changé ».</li>
+    <li>« Se déconnecter », discret, sous « Continuer » : on accepte, ou l'on s'en va. Pas de « Retour », rien n'entre dans l'appli sans accepter.</li>
+  </ul>
+</div>
+
+<script>
+const corps = document.body;
+const MSG_UN = "Il reste à accepter : Contrat de sous-traitance (article 28 RGPD).";
+const MSG_DEUX = "Il reste 2 documents à accepter.";
+/* La carte oubliée remonte sous les yeux : entourée hors de vue, elle ne dirait rien. */
+function montrer(s){
+  const d = s.closest(".defile");
+  d.scrollTop = Math.max(0, s.offsetTop - d.offsetTop - 16);
+}
+
+function presse(attr, val){
+  document.querySelectorAll("[data-" + attr + "]").forEach(b => {
+    if(b.tagName === "BUTTON" && b.closest(".banc"))
+      b.setAttribute("aria-pressed", String(b.dataset[attr] === val));
+  });
+}
+
+function ouvrir(section, on){
+  const bouton = section.querySelector("[data-lire]");
+  const texte = section.querySelector("[data-texte]");
+  texte.hidden = !on;
+  const mot = section.querySelector("[data-mot]") || bouton;
+  mot.textContent = on ? "Replier le texte" : "Lire le texte";
+  bouton.setAttribute("aria-expanded", String(on));
+}
+
+function etat(nom){
+  corps.dataset.etat = nom;
+  presse("etat", nom);
+  document.querySelectorAll(".tel section").forEach(s => {
+    s.hidden = (nom === "nouvelle" && s.dataset.doc === "st");
+    s.classList.remove("oublie");
+    ouvrir(s, nom === "ouvert" && s.dataset.doc === "cgu");
+    s.querySelector("[data-case]").checked = (nom === "oubli" && s.dataset.doc === "cgu");
+  });
+  document.querySelector("[data-titre]").textContent =
+    nom === "nouvelle" ? "Les conditions ont changé" : "Avant de commencer";
+  document.querySelectorAll("[data-refus]").forEach(p => {
+    p.textContent = nom === "oubli" ? MSG_UN : "";
+    if(p.closest(".avant")) p.hidden = nom !== "oubli";
+  });
+  if(nom === "oubli")
+    document.querySelector('.apres [data-doc="st"]').classList.add("oublie");
+  document.querySelectorAll(".defile").forEach(d => d.scrollTop = 0);
+  if(nom === "oubli") montrer(document.querySelector('.apres [data-doc="st"]'));
+}
+
+document.querySelectorAll("[data-lire]").forEach(b => b.addEventListener("click", () => {
+  const s = b.closest("section");
+  ouvrir(s, s.querySelector("[data-texte]").hidden);
+}));
+
+document.querySelectorAll("[data-case]").forEach(c => c.addEventListener("change", () => {
+  if(c.checked) c.closest("section").classList.remove("oublie");
+}));
+
+document.querySelectorAll("[data-continuer]").forEach(b => b.addEventListener("click", () => {
+  const ecran = b.closest(".avant, .apres");
+  const visibles = [...ecran.querySelectorAll("section")].filter(s => !s.hidden);
+  const manquants = visibles.filter(s => !s.querySelector("[data-case]").checked);
+  const refus = ecran.querySelector("[data-refus]");
+  if(manquants.length && ecran.classList.contains("apres")) montrer(manquants[0]);
+  visibles.forEach(s => s.classList.toggle("oublie", manquants.includes(s)));
+  if(manquants.length){
+    refus.hidden = false;
+    refus.textContent = manquants.length === 1
+      ? "Il reste à accepter : " + manquants[0].querySelector("h3").textContent + "."
+      : MSG_DEUX;
+    return;
+  }
+  refus.textContent = "";
+  b.disabled = true;
+  b.textContent = "Enregistrement…";
+  setTimeout(() => { b.disabled = false; b.textContent = "Continuer"; }, 1600);
+}));
+
+document.querySelectorAll(".banc [data-etat]").forEach(b =>
+  b.addEventListener("click", () => etat(b.dataset.etat)));
+document.querySelectorAll(".banc [data-mode]").forEach(b => b.addEventListener("click", () => {
+  corps.classList.toggle("mode-avant", b.dataset.mode === "avant");
+  presse("mode", b.dataset.mode);
+}));
+document.querySelectorAll(".banc [data-charte]").forEach(b => b.addEventListener("click", () => {
+  corps.dataset.charte = b.dataset.charte;
+  presse("charte", b.dataset.charte);
+}));
+
+etat(new URLSearchParams(location.search).get("etat") || "premiere");
+</script>
+</body>
+</html>

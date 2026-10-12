@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atlas : le filtre A partout</title>
+<style>
+  /*
+    LE FILTRE A, LÀ OÙ IL ARRIVE. Planche du 11 octobre 2026.
+
+    SA DEMANDE : il a choisi A sur appli/filtre-de-date-plus-simple.html, « le mois
+    qu'on feuillette ». Puis : « va regarder dans l'appli d'autres pages qui ont ce
+    filtre date, mets le A partout, mais montre-moi d'abord où tu vas le modifier,
+    ne code rien, juste des planches ».
+
+    LES ÉCRANS QUI PORTENT FiltreDeDate (src/components/atlas/FiltreDeDate.tsx)
+      1  /paysage/fiche           src/app/paysage/fiche/RapportsEnvoyes.tsx
+                                  surtitre « Outils du métier » (page.tsx)
+      2  /paysage/fiches-securite src/app/paysage/fiches-securite/ListeDesFiches.tsx
+                                  surtitre « Paysage » (page.tsx), champ gris
+                                  « Chercher un client », rangées par client
+      3  /termines/retours        src/app/termines/retours/ListeDesRetours.tsx
+                                  aucun surtitre, et /termines n'en a pas non plus
+                                  (page.tsx : « Ni surtitre ni cheveu »)
+
+    LE MODÈLE DE A : NavigationMois de src/app/termines/ListeTermines.tsx
+      Centré, nom du mois en serif 26 px, interligne 1,2, couleur encre, 2 px de
+      marge de chaque côté. Les chevrons dans des boutons de 44 x 34, couleur or
+      #B98B47, éteints en couleur line quand on ne peut pas aller plus loin.
+      L'appli écrit les deux guillemets simples en serif 22 px. scripts/test-aucune-fleche.ts
+      refuse ces deux caractères hors de ses exceptions : la planche les DESSINE en
+      SVG de même allure. Le code, lui, pourra reprendre le composant de Terminés.
+
+    CE QUE A AJOUTE SUR LES TROIS LISTES, ET QUE TERMINÉS N'A PAS
+      Toucher le nom du mois ouvre la roue du téléphone (un champ date invisible
+      posé dessus, 16 px pour que Safari n'agrandisse pas la page : c'est déjà le
+      dessin de TitreAvecRoue). Un jour choisi s'écrit « Vendredi 9 octobre ».
+      « Tout le mois », en or dessous, revient au mois. Le mois d'après s'éteint
+      au mois en cours : rien n'est signé ni envoyé dans le futur.
+      Un jour long (« Mercredi 30 septembre ») ne tient pas à 26 px sur un
+      téléphone de 360 : la planche baisse la taille juste assez pour qu'il
+      tienne. Le code devra faire de même, ou écrire le jour sans son nom.
+
+    CE QUI NE BOUGE PAS, ET POURQUOI
+      Terminés : c'est déjà A, c'est le modèle.
+      Ma TVA (src/app/termines/tva/FrisePeriodes.tsx) : la frise a remplacé des
+      flèches à sa demande, et c'est la période qu'on DÉCLARE, pas un filtre.
+      La fiche qu'on remplit (/paysage/fiche/[id], TitreAvecRoue) : on y choisit
+      le jour du passage, ce n'est pas un filtre.
+
+    CE QUI EST LU DANS LE CODE, ET REPRODUIT
+      L'en-tête (EnTeteEcran), le champ de chaque écran (souligné pour les
+      rapports et les retours, gris pour les fiches), les phrases quand rien ne
+      sort (RapportsEnvoyes, ListeDesFiches, ListeDesRetours), la ligne d'une
+      fiche (« Terrasse bois, 6 octobre 2026 » puis « Signée, gardée jusqu'au... »),
+      celle d'un retour (le jour en entier, puis « 4 sur 4, 2 photos » de
+      compteDesTaches et phrasePhotos), le rangement par client (rangerLesRetours).
+      Un nom tapé cherche dans tous les mois, la période est alors ignorée : la
+      planche fait pareil (rapportsAMontrer, fichesAMontrer, rangerLesRetours).
+
+    CE QUI EST UN EXEMPLE
+      Les six rapports sont ceux de filtre-de-date-plus-simple.html. Les fiches et
+      les retours sont inventés pour que filtrer serve, avec les clients et les
+      chantiers du jeu de démonstration (src/server/db/seed.ts). Aucun nom de
+      salarié : le seed n'en porte pas, la ligne s'écrit alors sans lui, comme le
+      code le prévoit. Aujourd'hui est fixé au dimanche 11 octobre 2026.
+
+    L'OR
+      Un seul or, #B98B47, dans les deux versions. L'appli peint aujourd'hui le mot
+      actif du filtre et quelques icônes en orTexte (#8b6835).
+
+    CE QUI SERAIT À CODER (aucune ligne serveur)
+      FiltreDeDate réécrit une fois, en A, et les trois écrans le gardent tel quel :
+      ils ne savent que recevoir une période. periode.ts ne bouge presque pas : la
+      portée « annee » ne sert plus.
+  */
+
+  :root{
+    --scene:#e7e4dd;
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
+    --plein:#7d9a6d; --surPlein:#faf9f5;
+    --or:#B98B47; --orVoile:rgba(185,139,71,.13);
+    --line:rgba(28,28,26,.12); --chevron:rgba(28,28,26,.28);
+  }
+  body[data-charte="nuit"]{
+    --scene:#070806;
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e;
+    --plein:#e9e8de; --surPlein:#101210;
+    --or:#B98B47; --orVoile:rgba(185,139,71,.16);
+    --line:rgba(233,232,222,.12); --chevron:rgba(233,232,222,.28);
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:var(--scene);color:var(--ink);
+       font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:22px 0 64px}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+  button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid var(--or);outline-offset:3px;border-radius:4px}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;font-weight:400}
+
+  /* La planche, hors des écrans */
+  .page{max-width:422px;margin:0 auto;padding:0 16px}
+  .entete h1{margin:0;font-size:28px;line-height:1.15;font-weight:400;color:var(--ink)}
+  .entete p{margin:10px 0 0;font-size:13.5px;line-height:1.6;color:var(--inkSoft)}
+  .caps{font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+  .boutons{display:flex;flex-wrap:wrap;gap:6px}
+  .boutons button{font-size:12.5px;padding:8px 13px;border-radius:6px;min-height:40px;
+                  border:1px solid rgba(28,28,26,.18);background:#faf9f5;color:#1c1c1a}
+  body[data-charte="nuit"] .boutons button{background:#1a1d19;color:#e9e8de;border-color:rgba(233,232,222,.2)}
+  .boutons button[aria-pressed="true"]{background:#2f3b2f;color:#faf9f5;border-color:#2f3b2f}
+  body[data-charte="nuit"] .boutons button[aria-pressed="true"]{background:#e9e8de;color:#101210;border-color:#e9e8de}
+  .global{margin-top:16px}
+
+  .bloc{margin-top:44px}
+  .bloc-tete{display:flex;align-items:baseline;gap:10px}
+  .num{flex:none;font-size:22px;line-height:1;color:var(--or)}
+  .bloc-tete h2{margin:0;font-size:22px;line-height:1.2;font-weight:400}
+  .adresse{margin:4px 0 0;font-size:12.5px;color:var(--inkSoft)}
+  .bloc .boutons{margin:12px 0 14px}
+  .change{margin:14px 2px 0;padding:0;list-style:none;font-size:13.5px;line-height:1.6;color:var(--inkSoft)}
+  .change li{margin-bottom:4px}
+  .change b{color:var(--ink);font-weight:600}
+  .separe{margin:52px 0 0;padding-top:28px;border-top:1px solid var(--line)}
+  .separe > h2{margin:0;font-size:22px;line-height:1.2;font-weight:400}
+
+  /* Le téléphone */
+  .tel{width:100%;max-width:390px;margin:0 auto;background:var(--cream);color:var(--ink);
+       border-radius:30px;overflow:hidden;display:flex;flex-direction:column;
+       box-shadow:0 18px 46px rgba(20,18,14,.18)}
+  @media (max-width:420px){.tel{border-radius:22px}}
+  .ecran{flex:1;min-height:470px;padding-bottom:30px;overflow:hidden}
+
+  /* En-tête, grammaire d'EnTeteEcran */
+  .haut{padding:28px 26px 0}
+  .retour{width:44px;height:44px;border-radius:50%;background:var(--rustTint);color:var(--rust);
+          display:flex;align-items:center;justify-content:center}
+  .titre-ligne{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 26px 0}
+  .titre-ligne.sans-retour{padding-top:34px}
+  .tel h3{margin:0;font-size:36px;line-height:1.02;letter-spacing:-.018em;font-weight:400}
+  .surtitre{margin:12px 0 0;font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+  .assistant{width:44px;height:44px;border-radius:50%;background:var(--plein);color:var(--surPlein);
+             display:flex;align-items:center;justify-content:center;flex:none}
+
+  /* Fiche de chantier : le haut de l'écran, tel qu'il est */
+  .composer{margin:20px 26px 0;display:flex;width:fit-content;max-width:270px;min-height:44px;
+            align-items:center;gap:14px;border-radius:4px;padding:13px 16px;
+            background:var(--card);border:1px solid var(--or);color:var(--ink)}
+  .composer b{display:block;font-weight:400;font-size:16px;line-height:1.2}
+  .composer small{display:block;margin-top:3px;font-size:11.5px;line-height:1.45;color:var(--muted)}
+  .chev{flex:none;width:8px;height:8px;transform:rotate(45deg);
+        border-right:1.5px solid var(--chevron);border-top:1.5px solid var(--chevron)}
+  .centre{display:flex;justify-content:center;margin:22px 26px 0}
+  .capsule{border-radius:9999px;padding:13px 36px;font-size:17px;background:var(--plein);color:var(--surPlein)}
+
+  /* AUJOURD'HUI : les trois mots de FiltreDeDate */
+  .f-auj{margin-top:12px;display:flex;align-items:center;justify-content:center;gap:4px}
+  .mot{min-height:44px;display:flex;align-items:center;padding:0 3px;font-size:20px;line-height:1.2;color:var(--ink)}
+  .mot.actif{color:var(--or);box-shadow:inset 0 -2px 0 var(--or)}
+  .roue{position:relative;min-height:44px;width:32px;display:flex;align-items:center;justify-content:center;color:var(--or);cursor:pointer}
+  .roue input,.mois-roue input,.jour-fiche input{position:absolute;inset:0;width:100%;height:100%;opacity:0;
+        font-size:16px;border:0;padding:0;margin:0;cursor:pointer}
+
+  /* A : NavigationMois de Terminés, au pixel */
+  .nav-mois{margin-top:12px;display:flex;align-items:center;justify-content:center;gap:2px}
+  .fl{flex:none;height:44px;width:34px;display:flex;align-items:center;justify-content:center;color:var(--or)}
+  .fl:disabled{color:var(--line);cursor:default}
+  .mois-roue{position:relative;display:block;flex:none;margin:0 2px;font-size:26px;line-height:1.2;
+             white-space:nowrap;color:var(--ink);cursor:pointer}
+  .tout-mois{display:flex;align-items:center;justify-content:center;margin:0 auto;min-height:44px;padding:0 12px;
+             font-size:13.5px;color:var(--or)}
+
+  /* Les champs de recherche */
+  .cherche{margin-top:12px;position:relative;display:flex;align-items:center;gap:12px;border-bottom:1.5px solid var(--muted)}
+  .cherche:focus-within{border-bottom-color:var(--or)}
+  .cherche input{flex:1;min-width:0;border:0;background:none;outline:none;padding:11px 0;
+                 font:inherit;font-size:17px;color:var(--ink);caret-color:var(--or)}
+  .cherche-gris{margin-top:12px;position:relative;display:flex;align-items:center;min-height:50px;border-radius:10px;
+                background:var(--rustTint);padding:0 46px 0 44px}
+  .cherche-gris:focus-within{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .cherche-gris svg{position:absolute;left:15px;top:50%;transform:translateY(-50%)}
+  .cherche-gris input{width:100%;border:0;background:none;outline:none;padding:13px 0;font:inherit;font-size:16px;color:var(--ink);caret-color:var(--or)}
+  .cherche input::placeholder,.cherche-gris input::placeholder{color:var(--muted);opacity:1}
+  .cherche input:focus-visible,.cherche-gris input:focus-visible{outline:none}
+  .effacer{width:40px;height:44px;flex:none;display:none;align-items:center;justify-content:center;color:var(--muted);font-size:17px}
+  .cherche-gris .effacer{position:absolute;right:0;top:0;height:100%;width:46px}
+  .effacer.vu{display:flex}
+
+  .petit-titre{margin:22px 0 0;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink)}
+  .rien{margin:28px 0 0;font-size:13.5px;line-height:1.65;color:var(--muted)}
+  .rien.centre-t{text-align:center}
+
+  /* Les lignes de chaque écran */
+  .ligne{display:flex;align-items:center;min-height:56px;gap:15px;padding:13px 0;border-bottom:1px solid var(--line)}
+  .ligne .q{flex:1;min-width:0}
+  .ligne .nom{display:block;font-size:16px;line-height:1.25}
+  .ligne .dit{display:block;margin-top:3px;font-size:11.5px;line-height:1.5;color:var(--muted)}
+  .client{margin:24px 0 0;font-size:19px;line-height:1.2}
+  .fiche,.retour-c{margin-top:10px;display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:13px;background:var(--card)}
+  .fiche{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .retour-c{box-shadow:inset 0 0 0 1px var(--line)}
+  .pastille{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:var(--or)}
+  .fiche .pastille{background:var(--orVoile)}
+  .retour-c .pastille{background:var(--rustTint)}
+  .fiche .q,.retour-c .q{flex:1;min-width:0}
+  .fiche b,.retour-c b{display:flex;align-items:center;gap:8px;font-size:14px;line-height:1.3;font-weight:600}
+  .retour-c b.lu{font-weight:500}
+  .point{flex:none;width:9px;height:9px;border-radius:50%;background:var(--or)}
+  .fiche small,.retour-c small{display:block;margin-top:3px;font-size:12.5px;line-height:1.45;color:var(--muted)}
+  .droite{flex:none;margin-top:6px;color:var(--muted)}
+
+  /* La barre du bas */
+  .barre{flex:none;background:var(--cream);border-top:1px solid var(--line);padding:16px 14px 18px}
+  .onglets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:relative}
+  .onglets span{text-align:center;font-size:8.5px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;
+                color:var(--muted);padding-bottom:8px}
+  .onglets span.actif{color:var(--ink)}
+  .filet{position:absolute;bottom:0;width:20%;height:1px;background:var(--or)}
+
+  /* Terminés */
+  .carte-tva{margin:20px 26px 0;padding:20px 18px;border-radius:4px;background:var(--card);
+             box-shadow:inset 0 0 0 1.5px rgba(185,139,71,.55);display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .carte-tva .caps{color:var(--or)}
+  .carte-tva .m{display:block;margin-top:6px;font-size:20px;line-height:1.2}
+  .carte-tva .s{font-size:22px;color:var(--rust)}
+  .deux{display:flex;justify-content:space-between;gap:10px;margin:28px 26px 0}
+  .deux span{display:flex;align-items:center;min-height:44px;padding:0 13px;border-radius:9999px;font-size:13.5px}
+  .deux .a{background:var(--card);box-shadow:inset 0 0 0 1.5px var(--line);color:var(--ink)}
+  .deux .b{box-shadow:inset 0 0 0 1.5px var(--or);color:var(--or)}
+
+  /* Les deux écrans qui ne bougent pas */
+  .petit{max-width:330px;margin-top:16px}
+  .petit .ecran{min-height:0;padding-bottom:26px}
+  .frise{margin:22px 0 0 26px;display:flex;align-items:center;gap:22px;white-space:nowrap;overflow:hidden}
+  .frise .an{display:flex;align-items:center;gap:8px;padding-right:14px;border-right:1px solid var(--line);font-size:19px;color:var(--ink)}
+  .frise .an svg{color:var(--or)}
+  .frise .mo{font-size:10.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);padding-bottom:6px}
+  .frise .mo.actif{color:var(--ink);box-shadow:inset 0 -1.5px 0 var(--or)}
+  .decl{margin:18px 26px 0;font-size:13.5px;color:var(--muted)}
+  .decl span{color:var(--ink);box-shadow:inset 0 -1.5px 0 var(--or)}
+  .jour-fiche{position:relative;display:inline-flex;align-items:center;gap:8px;min-height:48px;margin:18px 26px 0;cursor:pointer}
+  .jour-fiche span{font-size:20px;line-height:1.2}
+  .jour-fiche svg{color:var(--or)}
+  .pourquoi{margin:14px 2px 0;font-size:13.5px;line-height:1.6;color:var(--inkSoft)}
+</style>
+</head>
+<body data-charte="origine">
+<div class="page">
+
+  <div class="entete">
+    <h1 class="serif">Le filtre A, là où il arrive</h1>
+    <p>Trois écrans le reçoivent. Les rapports, les fiches et les retours de l'exemple sont inventés pour que filtrer serve. On est le dimanche 11 octobre 2026.</p>
+    <div class="boutons global" id="lesChartes">
+      <button type="button" data-charte="origine" aria-pressed="true">Origine</button>
+      <button type="button" data-charte="nuit" aria-pressed="false">Nuit</button>
+    </div>
+  </div>
+
+  <!-- 1. Rapports envoyés -->
+  <section class="bloc" data-ecran="rapports">
+    <div class="bloc-tete"><span class="num serif">1</span><h2 class="serif">Rapports envoyés</h2></div>
+    <p class="adresse">Paysage, Fiche de chantier, en bas de l'écran</p>
+    <div class="boutons" role="group" aria-label="Version">
+      <button type="button" data-mode="auj" aria-pressed="false">Aujourd'hui</button>
+      <button type="button" data-mode="A" aria-pressed="true">Avec A</button>
+    </div>
+    <div class="tel">
+      <div class="ecran">
+        <div class="haut"><span class="retour" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+        <div class="titre-ligne">
+          <div style="min-width:0"><h3 class="serif">Fiche de chantier</h3><p class="surtitre">Outils du métier</p></div>
+          <span class="assistant" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+        </div>
+        <div class="composer"><span style="min-width:0;flex:1"><b class="serif">Composer ma fiche</b><small>20 prestations</small></span><span class="chev" aria-hidden="true"></span></div>
+        <div class="centre"><span class="capsule serif">Créer une fiche</span></div>
+        <div style="margin:28px 26px 0">
+          <div data-filtre></div>
+          <div class="cherche">
+            <svg aria-hidden="true" width="21" height="21" viewBox="0 0 20 20" fill="none" stroke="#B98B47" stroke-width="1.5" style="flex:none"><circle cx="8.2" cy="8.2" r="6.2"/><path d="M12.8 12.8L18 18" stroke-linecap="round"/></svg>
+            <input type="text" inputmode="search" autocomplete="off" data-champ placeholder="Un nom de client" aria-label="Chercher un client">
+            <button type="button" class="effacer" data-effacer aria-label="Effacer la recherche">✕</button>
+          </div>
+          <p class="petit-titre">Rapports envoyés</p>
+          <div data-liste style="margin-top:10px"></div>
+        </div>
+      </div>
+      <nav class="barre" aria-hidden="true"><div class="onglets"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Paysage</span><span>Réglages</span><i class="filet" style="left:60%"></i></div></nav>
+    </div>
+    <ul class="change">
+      <li><b>Le filtre.</b> « 11 octobre 2026 » devient « Octobre 2026 » entre deux chevrons d'or, comme sur Terminés.</li>
+      <li><b>Un jour.</b> Toucher le mois ouvre la roue. « Tout le mois » revient au mois. Le reste de l'écran ne bouge pas.</li>
+    </ul>
+  </section>
+
+  <!-- 2. Fiches de sécurité -->
+  <section class="bloc" data-ecran="fiches">
+    <div class="bloc-tete"><span class="num serif">2</span><h2 class="serif">Fiches de sécurité</h2></div>
+    <p class="adresse">Paysage, Fiches de sécurité</p>
+    <div class="boutons" role="group" aria-label="Version">
+      <button type="button" data-mode="auj" aria-pressed="false">Aujourd'hui</button>
+      <button type="button" data-mode="A" aria-pressed="true">Avec A</button>
+    </div>
+    <div class="tel">
+      <div class="ecran">
+        <div class="haut"><span class="retour" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+        <div class="titre-ligne">
+          <div style="min-width:0"><h3 class="serif">Fiches de sécurité</h3><p class="surtitre">Paysage</p></div>
+          <span class="assistant" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+        </div>
+        <div style="margin:0 22px">
+          <div data-filtre></div>
+          <div class="cherche-gris">
+            <svg aria-hidden="true" width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" style="color:var(--muted)"><circle cx="8.2" cy="8.2" r="6.2"/><path d="M12.8 12.8L18 18" stroke-linecap="round"/></svg>
+            <input type="text" inputmode="search" autocomplete="off" data-champ placeholder="Chercher un client" aria-label="Chercher un client">
+            <button type="button" class="effacer" data-effacer aria-label="Effacer la recherche">✕</button>
+          </div>
+          <div data-liste></div>
+        </div>
+      </div>
+      <nav class="barre" aria-hidden="true"><div class="onglets"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Paysage</span><span>Réglages</span><i class="filet" style="left:60%"></i></div></nav>
+    </div>
+    <ul class="change">
+      <li><b>Le filtre.</b> Le même que sur les rapports, au même endroit, entre le titre et la recherche.</li>
+      <li><b>Le reste.</b> Le surtitre PAYSAGE, le champ gris et les fiches rangées par client restent tels quels.</li>
+    </ul>
+  </section>
+
+  <!-- 3. Retours d'intervention -->
+  <section class="bloc" data-ecran="retours">
+    <div class="bloc-tete"><span class="num serif">3</span><h2 class="serif">Retours d'intervention</h2></div>
+    <p class="adresse">Terminés, Retours d'intervention</p>
+    <div class="boutons" role="group" aria-label="Version">
+      <button type="button" data-mode="auj" aria-pressed="false">Aujourd'hui</button>
+      <button type="button" data-mode="A" aria-pressed="true">Avec A</button>
+    </div>
+    <div class="tel">
+      <div class="ecran">
+        <div class="haut"><span class="retour" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+        <div class="titre-ligne">
+          <div style="min-width:0"><h3 class="serif">Retours d'intervention</h3></div>
+          <span class="assistant" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+        </div>
+        <div style="margin:0 22px">
+          <div data-filtre></div>
+          <div class="cherche">
+            <svg aria-hidden="true" width="21" height="21" viewBox="0 0 20 20" fill="none" stroke="#B98B47" stroke-width="1.5" style="flex:none"><circle cx="8.2" cy="8.2" r="6.2"/><path d="M12.8 12.8L18 18" stroke-linecap="round"/></svg>
+            <input type="text" inputmode="search" autocomplete="off" data-champ placeholder="Un nom de client" aria-label="Chercher un client">
+            <button type="button" class="effacer" data-effacer aria-label="Effacer la recherche">✕</button>
+          </div>
+          <div data-liste></div>
+        </div>
+      </div>
+      <nav class="barre" aria-hidden="true"><div class="onglets"><span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Paysage</span><span>Réglages</span><i class="filet" style="left:40%"></i></div></nav>
+    </div>
+    <ul class="change">
+      <li><b>Le filtre.</b> Le même, au même endroit. Les retours restent rangés par client, le point d'or des non lus aussi.</li>
+      <li><b>Pas de surtitre.</b> Il n'en a pas aujourd'hui, et Terminés non plus : on n'en ajoute pas.</li>
+    </ul>
+  </section>
+
+  <!-- 4. Terminés -->
+  <section class="bloc" data-ecran="termines">
+    <div class="bloc-tete"><span class="num serif">4</span><h2 class="serif">Terminés, déjà ainsi, ne bouge pas</h2></div>
+    <p class="adresse">C'est le modèle de A, votre choix du 13 septembre.</p>
+    <div class="tel" style="margin-top:14px">
+      <div class="ecran" style="min-height:0">
+        <div class="titre-ligne sans-retour">
+          <div style="min-width:0"><h3 class="serif">Terminés</h3></div>
+          <span class="assistant" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+        </div>
+        <div class="carte-tva"><span><span class="caps">Ma TVA à déclarer</span><span class="m serif">Octobre 2026</span></span><span class="s serif">0,00 €</span></div>
+        <div class="deux"><span class="a">Retours d'intervention</span><span class="b">Créer une facture</span></div>
+        <div style="margin:32px 26px 0" data-filtre></div>
+      </div>
+      <nav class="barre" aria-hidden="true"><div class="onglets"><span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Paysage</span><span>Réglages</span><i class="filet" style="left:40%"></i></div></nav>
+    </div>
+    <ul class="change">
+      <li>Les chevrons feuillettent les mois. Le mois ne s'ouvre pas sur un jour ici, et il ne le fera pas : rien ne change sur cet écran.</li>
+    </ul>
+  </section>
+
+  <!-- On n'y touche pas -->
+  <section class="separe">
+    <h2 class="serif">On n'y touche pas</h2>
+
+    <div class="bloc" style="margin-top:22px">
+      <div class="bloc-tete"><h2 class="serif" style="font-size:19px">Ma TVA</h2></div>
+      <div class="tel petit">
+        <div class="ecran">
+          <div class="titre-ligne" style="padding-top:26px;align-items:center">
+            <span class="retour" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="assistant" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+          </div>
+          <div style="padding:22px 26px 0"><h3 class="serif">Octobre 2026</h3><p class="surtitre">Ma TVA</p></div>
+          <div class="frise">
+            <span class="an serif"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2.5" y="3.5" width="15" height="14" rx="2"/><path d="M2.5 8h15M6.5 2v3M13.5 2v3" stroke-linecap="round"/></svg>2026</span>
+            <span class="mo">Septembre</span><span class="mo actif">Octobre</span><span class="mo">Novembre</span>
+          </div>
+          <p class="decl">Déclaration <span>mensuelle</span></p>
+        </div>
+      </div>
+      <p class="pourquoi">C'est la période qu'on déclare, pas un filtre de liste. La frise a déjà remplacé des flèches à votre demande, elle reste.</p>
+    </div>
+
+    <div class="bloc" style="margin-top:34px">
+      <div class="bloc-tete"><h2 class="serif" style="font-size:19px">La fiche qu'on remplit</h2></div>
+      <div class="tel petit">
+        <div class="ecran">
+          <label class="jour-fiche"><span class="serif" id="jourFiche">Vendredi 9 octobre</span><svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><input type="date" id="roueFiche" value="2026-10-09" aria-label="Choisir le jour du passage"></label>
+        </div>
+      </div>
+      <p class="pourquoi">On y choisit le jour du passage, ce n'est pas un filtre. Son titre ressemble déjà à A quand un jour est choisi.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+const AUJ = "2026-10-11";
+const JOURS = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+
+/* Rapports : ceux de filtre-de-date-plus-simple.html. */
+const RAPPORTS = [
+  {nom:"M. Bernard",  jour:"2026-10-09", n:4, min:90},
+  {nom:"Mme Costa",   jour:"2026-10-06", n:3, min:45},
+  {nom:"M. Faucher",  jour:"2026-10-01", n:5, min:120},
+  {nom:"Mme Moreau",  jour:"2026-09-22", n:3, min:60},
+  {nom:"M. Bernard",  jour:"2026-09-11", n:4, min:90},
+  {nom:"Mme Chauvin", jour:"2026-09-03", n:2, min:40}
+];
+/* Fiches de sécurité : clients et chantiers du jeu de démonstration, dates inventées. */
+const FICHES = [
+  {client:"Mme Costa",  chantier:"Terrasse bois",       jour:"2026-10-06", transmise:true},
+  {client:"Mme Aubry",  chantier:"Pose de clôture",     jour:"2026-10-02", transmise:false},
+  {client:"M. Faucher", chantier:"Reprise de toiture",  jour:"2026-09-22", transmise:true},
+  {client:"M. Bernard", chantier:"Rénovation salle de bain", jour:"2026-09-08", transmise:true}
+];
+/* Retours : idem. Aucun nom de salarié, le seed n'en porte pas. */
+const RETOURS = [
+  {client:"Mme Costa",  jour:"2026-10-08", faites:4, taches:4, photos:2, lu:false},
+  {client:"M. Faucher", jour:"2026-10-05", faites:2, taches:3, photos:1, lu:true},
+  {client:"Mme Costa",  jour:"2026-09-17", faites:3, taches:3, photos:1, lu:true},
+  {client:"M. Bernard", jour:"2026-09-24", faites:5, taches:5, photos:3, lu:true}
+];
+
+const maj = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+const decoupe = (iso) => iso.split("-").map(Number);
+function nomDuJour(iso){ const [a,m,j] = decoupe(iso); return JOURS[new Date(Date.UTC(a,m-1,j)).getUTCDay()]; }
+/* jourLisible, src/lib/jour.ts */
+function jourLisible(iso){ const [a,m,j] = decoupe(iso); return nomDuJour(iso) + " " + (j === 1 ? "1er" : j) + " " + MOIS[m-1] + (a === 2026 ? "" : " " + a); }
+/* dateLongue de ListeDesFiches */
+function dateLongue(iso){ const [a,m,j] = decoupe(iso); return j + " " + MOIS[m-1] + " " + a; }
+/* le jour des retours : toLocaleDateString, jour, mois et année */
+function jourRetour(iso){ const [a,m,j] = decoupe(iso); return nomDuJour(iso) + " " + j + " " + MOIS[m-1] + " " + a; }
+function minutes(n){ const h = Math.floor(n/60), m = n%60; return h === 0 ? m + " min" : m === 0 ? h + " h" : h + " h " + String(m).padStart(2,"0"); }
+function titrePeriode(p){ const [a,m,j] = decoupe(p); if(!m) return String(a); const nom = MOIS[m-1] + " " + a; return j ? j + " " + nom : maj(nom); }
+const norm = (t) => t.normalize("NFD").replace(/\p{Diacritic}/gu,"").toLowerCase().replace(/[.'’\-_]/g," ");
+const motsDe = (t) => norm(t).split(/\s+/).filter(Boolean);
+const echapper = (t) => t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const correspond = (texte, saisie) => motsDe(saisie).every(m => norm(texte).includes(m));
+function jourDeLaRoue(p){ if(p.length === 10) return p; if(AUJ.startsWith(p)) return AUJ; return p.length === 7 ? p + "-01" : p + "-01-01"; }
+function decaler(cle, n){ const [a,m] = decoupe(cle); const d = new Date(Date.UTC(a, m - 1 + n, 1)); return d.getUTCFullYear() + "-" + String(d.getUTCMonth()+1).padStart(2,"0"); }
+
+/* Les chevrons de Terminés, deux guillemets simples en serif 22 px, dessinés. */
+const CHEV_G = '<svg width="10" height="14" viewBox="0 0 10 14" fill="none" aria-hidden="true"><path d="M7 2.5 2.8 7 7 11.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const CHEV_D = '<svg width="10" height="14" viewBox="0 0 10 14" fill="none" aria-hidden="true"><path d="M3 2.5 7.2 7 3 11.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const SVG_BAS = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const SVG_DROITE = '<svg width="9" height="15" viewBox="0 0 9 15" fill="none" aria-hidden="true"><path d="m1.5 1.5 6 6-6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const SVG_BOUCLIER = '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2.5 4 5v5c0 3.6 2.6 6.4 6 7.5 3.4-1.1 6-3.9 6-7.5V5z"/><path d="m7.3 10 1.9 1.9L12.8 8"/></svg>';
+const SVG_COCHE = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+/* ── Le filtre, une seule fonction pour les quatre écrans ── */
+function filtreAujourdhui(e){
+  const p = e.auj.periode;
+  const jr = e.auj.jourRetenu.startsWith(p) ? e.auj.jourRetenu : jourDeLaRoue(p);
+  const portee = p.length === 10 ? "jour" : p.length === 7 ? "mois" : "annee";
+  const [a,m,j] = jr.split("-");
+  return '<div class="f-auj">' +
+    '<button type="button" class="mot serif' + (portee==="jour"?" actif":"") + '" data-portee="jour">' + Number(j) + '</button>' +
+    '<button type="button" class="mot serif' + (portee==="mois"?" actif":"") + '" data-portee="mois">' + MOIS[Number(m)-1] + '</button>' +
+    '<button type="button" class="mot serif' + (portee==="annee"?" actif":"") + '" data-portee="annee">' + a + '</button>' +
+    '<label class="roue">' + SVG_BAS + '<input type="date" data-roue aria-label="Choisir un jour" value="' + jr + '"></label>' +
+  '</div>';
+}
+function filtreA(p, avecRoue){
+  const cle = p.slice(0,7);
+  const titre = p.length === 10 ? maj(jourLisible(p)) : titrePeriode(p);
+  const avance = cle < AUJ.slice(0,7);
+  const nom = avecRoue
+    ? '<label class="mois-roue serif"><span data-nom>' + titre + '</span><input type="date" data-roue aria-label="Choisir un jour" value="' + jourDeLaRoue(p) + '"></label>'
+    : '<span class="mois-roue serif" style="cursor:default"><span data-nom>' + titre + '</span></span>';
+  return '<div class="nav-mois">' +
+      '<button type="button" class="fl" data-nav="-1" aria-label="Mois précédent">' + CHEV_G + '</button>' + nom +
+      '<button type="button" class="fl" data-nav="1" aria-label="Mois suivant"' + (avance ? "" : " disabled") + '>' + CHEV_D + '</button>' +
+    '</div>' +
+    (p.length === 10 ? '<button type="button" class="tout-mois" data-tout-mois>Tout le mois</button>' : '');
+}
+/* Un jour long ne tient pas à 26 px sur un petit téléphone : on baisse juste assez. */
+function ajuster(racine){
+  const nav = racine.querySelector(".nav-mois"); if(!nav) return;
+  const lab = nav.querySelector(".mois-roue"), nom = nav.querySelector("[data-nom]");
+  const place = nav.clientWidth - 2 * 34 - 2 * 2 - 2 * 2;
+  let t = 26; lab.style.fontSize = t + "px";
+  while(nom.offsetWidth > place && t > 17){ t--; lab.style.fontSize = t + "px"; }
+}
+
+/* ── Ce que chaque liste montre ── */
+const ECRANS = {
+  rapports(saisie, p){
+    const vus = (saisie ? RAPPORTS.filter(r => correspond(r.nom, saisie)) : RAPPORTS.filter(r => r.jour.startsWith(p)))
+      .sort((x,y) => x.jour < y.jour ? 1 : -1);
+    if(!vus.length) return '<p class="rien centre-t">' + (saisie ? "Aucun rapport pour « " + echapper(saisie) + " »." :
+      p.length === 10 ? "Aucun rapport envoyé le " + titrePeriode(p) + "." : "Aucun rapport envoyé en " + titrePeriode(p).toLowerCase() + ".") + '</p>';
+    return vus.slice(0,3).map(r => '<div class="ligne"><span class="q"><span class="nom serif">' + echapper(r.nom) +
+      '</span><span class="dit">' + jourLisible(r.jour) + ", " + r.n + " prestation" + (r.n > 1 ? "s" : "") + ", " + minutes(r.min) +
+      '</span></span><span class="chev" aria-hidden="true"></span></div>').join("");
+  },
+  fiches(saisie, p){
+    const vus = saisie ? FICHES.filter(f => correspond(f.client + " " + f.chantier, saisie)) : FICHES.filter(f => f.jour.startsWith(p));
+    if(!vus.length) return '<p class="rien centre-t">' + (saisie ? "Aucune fiche pour « " + echapper(saisie) + " »." :
+      p.length === 10 ? "Aucune fiche signée le " + titrePeriode(p) + "." : "Aucune fiche signée en " + titrePeriode(p).toLowerCase() + ".") + '</p>';
+    const groupes = [];
+    for(const f of vus.slice(0,3)){ let g = groupes.find(x => x.client === f.client); if(!g){ g = {client:f.client, fiches:[]}; groupes.push(g); } g.fiches.push(f); }
+    return groupes.map(g => '<p class="client serif">' + g.client + '</p>' + g.fiches.map(f => {
+      const [a,m,j] = decoupe(f.jour);
+      const garde = dateLongue((a+2) + "-" + String(m).padStart(2,"0") + "-" + String(j).padStart(2,"0"));
+      return '<div class="fiche"><span class="pastille">' + SVG_BOUCLIER + '</span><span class="q"><b>' + f.chantier + ", " + dateLongue(f.jour) +
+        '</b><small>Signée, gardée jusqu’au ' + garde + (f.transmise ? ", transmise" : "") + '</small></span><span class="droite">' + SVG_DROITE + '</span></div>';
+    }).join("")).join("");
+  },
+  retours(saisie, p){
+    const vus = saisie ? RETOURS.filter(r => norm(r.client).includes(norm(saisie).trim())) : RETOURS.filter(r => r.jour.startsWith(p));
+    if(!vus.length) return '<p class="rien">Aucun retour ne correspond.</p>';
+    const map = new Map();
+    for(const r of vus){ if(!map.has(r.client)) map.set(r.client, []); map.get(r.client).push(r); }
+    const groupes = [...map.entries()].map(([client, rs]) => ({client, rs: rs.sort((x,y) => x.jour < y.jour ? 1 : -1)}))
+      .sort((x,y) => x.rs[0].jour < y.rs[0].jour ? 1 : -1);
+    let reste = 3, html = "";
+    for(const g of groupes){
+      if(reste <= 0) break;
+      html += '<p class="client serif">' + g.client + '</p>';
+      for(const r of g.rs.slice(0, reste)){
+        html += '<div class="retour-c"><span class="pastille">' + SVG_COCHE + '</span><span class="q"><b class="' + (r.lu ? "lu" : "") + '">' +
+          (r.lu ? "" : '<span class="point"></span>') + jourRetour(r.jour) + '</b><small>' + r.faites + " sur " + r.taches + ", " +
+          r.photos + " photo" + (r.photos > 1 ? "s" : "") + '</small></span><span class="droite">' + SVG_DROITE + '</span></div>';
+        reste--;
+      }
+    }
+    return html;
+  }
+};
+
+/* ── Chaque carte vit seule ── */
+document.querySelectorAll("[data-ecran]").forEach(bloc => {
+  const quoi = bloc.dataset.ecran;
+  const estTermines = quoi === "termines";
+  const e = {mode:"A", auj:{periode:"2026-10", jourRetenu:AUJ}, A:{periode:"2026-10"}};
+  const filtre = bloc.querySelector("[data-filtre]");
+  const liste = bloc.querySelector("[data-liste]");
+  const champ = bloc.querySelector("[data-champ]");
+  const effacer = bloc.querySelector("[data-effacer]");
+
+  function dessiner(){
+    filtre.innerHTML = e.mode === "auj" ? filtreAujourdhui(e) : filtreA(e.A.periode, !estTermines);
+    ajuster(filtre);
+    if(!liste) return;
+    const saisie = champ.value.trim();
+    effacer.classList.toggle("vu", champ.value.length > 0);
+    liste.innerHTML = ECRANS[quoi](saisie, e.mode === "auj" ? e.auj.periode : e.A.periode);
+  }
+
+  bloc.querySelectorAll("[data-mode]").forEach(b => b.addEventListener("click", () => {
+    e.mode = b.dataset.mode;
+    bloc.querySelectorAll("[data-mode]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    dessiner();
+  }));
+  filtre.addEventListener("click", (ev) => {
+    const mot = ev.target.closest("[data-portee]");
+    if(mot){
+      const p = e.auj.periode;
+      const jr = e.auj.jourRetenu.startsWith(p) ? e.auj.jourRetenu : jourDeLaRoue(p);
+      const po = mot.dataset.portee;
+      e.auj.periode = po === "jour" ? jr : po === "mois" ? jr.slice(0,7) : jr.slice(0,4);
+      e.auj.jourRetenu = jr; dessiner(); return;
+    }
+    const nav = ev.target.closest("[data-nav]");
+    if(nav && !nav.disabled){ e.A.periode = decaler(e.A.periode.slice(0,7), Number(nav.dataset.nav)); dessiner(); return; }
+    if(ev.target.closest("[data-tout-mois]")){ e.A.periode = e.A.periode.slice(0,7); dessiner(); return; }
+    /* Sur un ordinateur, le champ date invisible ne s'ouvre pas tout seul. */
+    const roue = ev.target.closest("[data-roue]");
+    if(roue && roue.showPicker){ try{ roue.showPicker(); }catch(err){ /* déjà ouvert */ } }
+  });
+  filtre.addEventListener("change", (ev) => {
+    const roue = ev.target.closest("[data-roue]");
+    if(!roue || !roue.value) return;
+    if(e.mode === "auj"){ e.auj.periode = roue.value; e.auj.jourRetenu = roue.value; }
+    else e.A.periode = roue.value;
+    dessiner();
+  });
+  if(champ){
+    champ.addEventListener("input", dessiner);
+    effacer.addEventListener("click", () => { champ.value = ""; dessiner(); champ.focus(); });
+  }
+  window.addEventListener("resize", () => ajuster(filtre));
+  dessiner();
+});
+
+/* La fiche qu'on remplit : la roue de TitreAvecRoue, telle qu'elle est. */
+const roueFiche = document.getElementById("roueFiche");
+roueFiche.addEventListener("click", () => { if(roueFiche.showPicker){ try{ roueFiche.showPicker(); }catch(err){ /* déjà ouvert */ } } });
+roueFiche.addEventListener("change", () => { if(roueFiche.value) document.getElementById("jourFiche").textContent = maj(jourLisible(roueFiche.value)); });
+
+/* Origine, Nuit */
+document.querySelectorAll("#lesChartes [data-charte]").forEach(b => b.addEventListener("click", () => {
+  document.body.dataset.charte = b.dataset.charte;
+  document.querySelectorAll("#lesChartes [data-charte]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+}));
+if(location.hash.includes("nuit")) document.querySelector('#lesChartes [data-charte="nuit"]').click();
+</script>
+</body>
+</html>

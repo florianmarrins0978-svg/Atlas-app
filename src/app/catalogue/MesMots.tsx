@@ -10,10 +10,17 @@ import { ajouterMotAction, creerEntreeAction, retirerMotAction } from "./actions
  * Le catalogue, et ses mots par-dessus — arrangement **B** de la planche 72,
  * choisi par le patron le 17 août 2026.
  *
- * **Ses mots s'accrochent aux entrées d'Atlas**, en or, suivis de « vous ». Ils
- * ne vivent pas à côté : c'est ce qui fait qu'une dictée « écime-moi le
- * tilleul » est reconnue comme un élagage, avec les prix et les questions qui
- * vont avec, au lieu d'ouvrir une prestation neuve.
+ * **Ses mots s'accrochent aux entrées d'Atlas**, chacun sur sa ligne sous la
+ * carte. Ils ne vivent pas à côté : c'est ce qui fait qu'une dictée « écime-moi
+ * le tilleul » est reconnue comme un élagage, avec les prix et les questions
+ * qui vont avec, au lieu d'ouvrir une prestation neuve.
+ *
+ * **La ligne les distingue, plus la couleur** — planche
+ * `appli/catalogue-les-mots.html`, validée le 11 octobre 2026. Ils étaient
+ * fondus en or dans « Aussi appelé », suivis d'une croix et de « dont les
+ * vôtres », et l'en-tête devait expliquer le code couleur. Une ligne par mot,
+ * avec « Retirer » au bout, se comprend sans légende : seuls ses mots se
+ * retirent. L'or ne reste que sur les gestes d'ajout.
  *
  * **Rien ne retire un mot d'Atlas**, et l'écran ne le propose pas : il est
  * commun à toutes les entreprises. On n'ajoute que par-dessus.
@@ -30,7 +37,7 @@ export default function MesMots({
   libelleNouvelle: string;
 }) {
   const [cartes, setCartes] = useState<CarteCatalogue[]>(cartesInitiales);
-  /** L'entrée dont le champ « + mon mot » est ouvert. Un seul à la fois. */
+  /** L'entrée dont le champ « Ajouter un mot » est ouvert. Un seul à la fois. */
   const [ouverte, setOuverte] = useState<string | null>(null);
   const [saisie, setSaisie] = useState("");
   const [nouvelle, setNouvelle] = useState<string | null>(null);
@@ -120,48 +127,53 @@ export default function MesMots({
                 comme deux provenances — or c'est la même chose, et il la
                 cochera de la même façon sur un chantier.
 
-                L'or reste sur SES MOTS, dans la ligne « Aussi appelé » : là, il
-                distingue deux choses qui sont vraiment différentes — le mot du
-                commun et celui qu'il a ajouté, qu'il peut retirer. */}
+                Ses mots à lui ont leur ligne, sous « Aussi appelé » : la ligne
+                et « Retirer » disent qu'ils sont à lui, sans couleur à
+                expliquer (11 octobre 2026). */}
             <span className="block text-[17px] leading-[1.25]" style={{ fontFamily: font.display, color: colors.ink }}>
               {carte.nom}
             </span>
 
-            {(carte.motsCommuns.length > 0 || carte.mesMots.length > 0) && (
+            {carte.motsCommuns.length > 0 && (
               <p className="mt-[3px] text-[12.5px] leading-[1.5]" style={{ color: colors.muted }}>
                 Aussi appelé : {carte.motsCommuns.join(", ")}
-                {carte.motsCommuns.length > 0 && carte.mesMots.length > 0 ? ", " : ""}
-                {carte.mesMots.map((m, i) => (
-                  <span key={m.id} style={{ color: colors.or }}>
-                    {i > 0 ? ", " : ""}
-                    {m.mot}
+              </p>
+            )}
+
+            {carte.mesMots.length > 0 && (
+              <ul data-atlas="mes-mots" className="mt-[10px]" style={{ borderTop: `1px solid ${colors.line}` }}>
+                {carte.mesMots.map((m) => (
+                  <li
+                    key={m.id}
+                    className="flex min-h-[46px] items-center gap-[10px]"
+                    style={{ borderBottom: `1px solid ${colors.line}` }}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="h-[6px] w-[6px] flex-none rounded-full"
+                      // L'encre, pas le vert pin : un aplat `rust` se lit comme un bouton
+                      // (`test-boutons-pleins.ts`), et ce point ne fait que marquer la ligne.
+                      style={{ backgroundColor: colors.ink }}
+                    />
+                    <span className="flex-1 text-[15px]" style={{ color: colors.ink }}>
+                      {m.mot}
+                    </span>
                     <button
                       type="button"
                       aria-label={`Retirer le mot « ${m.mot} »`}
                       onClick={() => retirer(carte, m.id)}
-                      // Une croix de trois pixels ne se vise pas au pouce sur un
-                      // chantier : la zone touchable est élargie sans grossir le
-                      // signe, qui doit rester discret à côté du mot.
-                      className="ml-[2px] inline-flex h-[24px] w-[24px] items-center justify-center align-middle"
-                      style={{ color: colors.or }}
+                      className={`min-h-[44px] pl-[12px] ${libelleCaps}`}
+                      style={{ color: colors.inkSoft }}
                     >
-                      ×
+                      Retirer
                     </button>
-                  </span>
+                  </li>
                 ))}
-                {carte.mesMots.length > 0 && (
-                  /* Le repère porte la marque : le mot « vôtres » se lit
-                     ailleurs dans l'écran, et une suite qui le chercherait
-                     dans la page entière rendrait un vert qui ne prouve rien. */
-                  <span data-atlas="mes-mots-marque" style={{ color: colors.or }}>
-                    , dont les vôtres
-                  </span>
-                )}
-              </p>
+              </ul>
             )}
 
             {ouverte === carte.id ? (
-              <div className="mt-[9px] flex items-center gap-[8px]">
+              <div className="flex items-center gap-[8px] pb-[4px] pt-[10px]">
                 <input
                   autoFocus
                   value={saisie}
@@ -172,8 +184,12 @@ export default function MesMots({
                   // **Le mot se dit court.** Atlas rapproche par inclusion : le
                   // mot posé doit se retrouver dans la phrase dictée. « écime »
                   // attrape « écime-moi le tilleul » ; « écimage », non.
-                  placeholder="Comme vous le dites : « écime »"
-                  className="min-w-0 flex-1 rounded-[8px] px-[10px] py-[8px] text-[14px]"
+                  //
+                  // **16 px, et l'exemple raccourci** (11 octobre 2026) : en
+                  // dessous, le téléphone zoome sur le champ ; à 16 px,
+                  // « Comme vous le dites : « écime » » était coupé.
+                  placeholder="Par exemple : écime"
+                  className="min-h-[48px] min-w-0 flex-1 rounded-[12px] px-[12px] py-[11px] text-[16px]"
                   style={{
                     backgroundColor: colors.cream,
                     border: `1px solid ${colors.line}`,
@@ -194,10 +210,13 @@ export default function MesMots({
               <button
                 type="button"
                 onClick={() => ouvrir(carte.id)}
-                className="mt-[8px] text-[12.5px]"
+                // 44 px de haut : « + mon mot » en 12,5 px ne se visait pas au
+                // pouce sur un chantier (11 octobre 2026).
+                className="flex min-h-[44px] w-full items-center gap-[9px] text-left text-[14px]"
                 style={{ color: colors.or }}
               >
-                + mon mot
+                <Plus />
+                Ajouter un mot
               </button>
             )}
 
@@ -217,9 +236,13 @@ export default function MesMots({
             setNouvelle("");
             setRefus(null);
           }}
-          className="mt-[12px] w-full rounded-full px-[12px] py-[10px] text-[13.5px]"
-          style={{ border: `1px dashed ${colors.or}`, color: colors.or }}
+          // Une ligne de texte, plus un grand cadre en pointillés or : deux
+          // cadres pareils pesaient plus lourd que les cartes qu'ils suivent
+          // (planche `appli/catalogue-les-mots.html`, 11 octobre 2026).
+          className="mt-[6px] flex min-h-[52px] w-full items-center gap-[9px] px-[4px] text-left text-[14px]"
+          style={{ color: colors.or }}
         >
+          <Plus />
           {libelleNouvelle}
         </button>
       ) : (
@@ -233,7 +256,8 @@ export default function MesMots({
                 if (e.key === "Enter") creer();
               }}
               placeholder="Son nom"
-              className="min-w-0 flex-1 rounded-[8px] px-[10px] py-[8px] text-[14px]"
+              // 16 px, comme le champ d'un mot : en dessous, le téléphone zoome.
+              className="min-h-[48px] min-w-0 flex-1 rounded-[12px] px-[12px] py-[11px] text-[16px]"
               style={{ backgroundColor: colors.cream, border: `1px solid ${colors.line}`, color: colors.ink }}
             />
             <button
@@ -254,5 +278,15 @@ export default function MesMots({
         </div>
       )}
     </section>
+  );
+}
+
+/** Le signe des deux gestes d'ajout, dessiné : un « + » tapé dans le libellé
+ *  se lisait comme un mot de plus. */
+function Plus() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true" className="flex-none">
+      <path d="M12 5v14M5 12h14" />
+    </svg>
   );
 }

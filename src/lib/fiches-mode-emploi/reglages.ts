@@ -33,7 +33,8 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     ou: "juste après la création du compte",
     intitule: "Saisir le code reçu par e-mail, recevoir un nouveau code",
     motsCles: ["code", "email", "mail", "recu", "verification", "verifier", "renvoyer", "chiffres"],
-    geste: "Tapez le code reçu par e-mail, puis « Continuer ». Pas reçu ? Touchez « Renvoyer le code ».",
+    geste:
+      "Tapez les six chiffres reçus par e-mail, puis « Continuer ». Pas reçu, ou le code a expiré ? Touchez « Renvoyer le code ».",
     source: "src/components/atlas/SaisieDuCode.tsx",
     preuves: ["Le code reçu par e-mail", "Renvoyer le code", '"Continuer"'],
   },
@@ -80,10 +81,11 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     intitule: "Accepter les conditions d'utilisation pour entrer",
     motsCles: ["conditions", "accepter", "cgu", "confidentialite", "documents", "legaux", "cocher", "lire"],
     geste:
-      "Touchez « Lire le texte » pour le lire, cochez « J'ai lu et j'accepte » sous chaque document, puis « Continuer ».",
+      "Touchez « Lire le texte » pour le lire, touchez « J'ai lu et j'accepte » sous chaque document, puis « Continuer ». " +
+      "Pour partir sans accepter, « Se déconnecter ».",
     reserve: "Atlas ne s'ouvre pas tant que chaque document n'est pas coché.",
     source: "src/app/documents-legaux/formulaire.tsx",
-    preuves: ["Lire le texte", "J&apos;ai lu et j&apos;accepte", '"Continuer"'],
+    preuves: ["Lire le texte", "J&apos;ai lu et j&apos;accepte", '"Continuer"', "Se déconnecter"],
     ailleurs: [{ source: "src/app/documents-legaux/page.tsx", preuves: ["Avant de commencer"] }],
   },
   // --- Réglages : l'écran lui-même --------------------------------------------
@@ -133,36 +135,33 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     preuves: ["Ces réglages appartiennent au patron de l&apos;entreprise."],
     ailleurs: [{ source: "src/app/reglages/page.tsx", preuves: ["Le reste de l&apos;entreprise n&apos;est pas ici"] }],
   },
-  // --- Tarifs & catalogue -----------------------------------------------------
+  // --- Mes tarifs -------------------------------------------------------------
   {
     id: "reglages-tarifs",
-    ecran: "Tarifs & catalogue",
+    ecran: "Mes tarifs",
     ou: `${R}, puis Tarifs & catalogue`,
     intitule: "Ajouter, corriger ou retirer un tarif",
     motsCles: ["tarif", "tarifs", "prix", "ajouter", "modifier", "supprimer", "retirer", "unite", "catalogue"],
     geste:
-      "Touchez « + Ajouter un tarif », écrivez l'intitulé et le prix, puis touchez la case de l'unité. " +
-      "Pour retirer un tarif : glissez sa ligne de droite à gauche, puis « Retirer ».",
+      "Touchez « + Ajouter un tarif », écrivez le nom et le prix, puis touchez l'unité. " +
+      "Pour corriger un tarif, touchez sa ligne : elle s'ouvre. « Retirer » est en bas de la ligne ouverte, « Fermer » la replie.",
     reserve: "Chaque case s'enregistre dès que vous la quittez. Après un retrait, « Annuler » reste un instant en bas.",
     source: "src/app/reglages/ReglagesClient.tsx",
-    preuves: ["+ Ajouter un tarif", "Intitulé du tarif", "Prix du tarif", "LigneRetirable", "TiroirDesRetires"],
-    ailleurs: [
-      { source: "src/components/atlas/LigneRetirable.tsx", preuves: ["Retirer"] },
-      { source: "src/components/atlas/ChoixUnite.tsx", preuves: ['aria-label="Unité du tarif"'] },
-    ],
+    preuves: ["+ Ajouter un tarif", "Nom du tarif", "Prix du tarif", "Retirer", "Fermer", "TiroirDesRetires"],
+    ailleurs: [{ source: "src/components/atlas/ChoixUnite.tsx", preuves: ['aria-label="Unité du tarif"', "Une autre unité"] }],
   },
   {
     id: "reglages-tarifs-importer",
-    ecran: "Tarifs & catalogue",
+    ecran: "Mes tarifs",
     ou: `${R}, puis Tarifs & catalogue`,
     intitule: "Importer ses prix depuis un fichier Excel ou CSV",
     motsCles: ["importer", "import", "excel", "csv", "fichier", "tableur", "liste", "tarifs", "charger"],
     geste:
-      "Sous « J'ai déjà mes prix ailleurs », touchez « Choisir un fichier ». " +
+      "Sous « + Ajouter un tarif », touchez « Reprendre mes prix d'un fichier Excel ou CSV ». " +
       "Vérifiez ce qu'Atlas ajouterait, puis « Enregistrer ces tarifs ».",
     reserve: "Rien n'est enregistré avant « Enregistrer ces tarifs ». « Annuler » laisse vos tarifs tels quels.",
     source: "src/app/reglages/ImportTarifs.tsx",
-    preuves: ["J&apos;ai déjà mes prix ailleurs", "Choisir un fichier", "Enregistrer ces tarifs", "Annuler"],
+    preuves: ["Reprendre mes prix d'un fichier Excel ou CSV", "Enregistrer ces tarifs", "Annuler"],
   },
   // --- Mes prix et mes mesures ------------------------------------------------
   {
@@ -470,14 +469,20 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     intitule: "Ajouter un salarié, lui donner un accès à Atlas",
     motsCles: ["ajouter", "salarie", "salaries", "employe", "ouvrier", "acces", "inviter", "compte", "gars"],
     geste:
-      "Ouvrez « Équipe », puis « Donner un accès ». Remplissez nom, adresse e-mail, mot de passe et sa confirmation, " +
-      "choisissez le rôle, puis « Créer le compte ».",
+      "Ouvrez « Équipe », puis « Donner un accès ». Choisissez d'abord son rôle, puis remplissez nom, adresse e-mail, " +
+      "mot de passe et sa confirmation, et touchez « Créer le compte ».",
     source: "src/app/reglages/equipe/QuiAAcces.tsx",
     preuves: ['href="/reglages/equipe/nouveau"', "Donner un accès"],
     ailleurs: [
       {
         source: "src/app/reglages/equipe/nouveau/NouveauCompte.tsx",
-        preuves: ['etiquette="Adresse e-mail"', 'etiquette="Confirmer le mot de passe"', "Créer le compte"],
+        preuves: [
+          "<ChoixRole titre",
+          "Son compte",
+          'etiquette="Adresse e-mail"',
+          'etiquette="Confirmer le mot de passe"',
+          "Créer le compte",
+        ],
       },
     ],
   },
@@ -488,11 +493,11 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     intitule: "Changer le rôle d'une personne (patron, facturation, commercial, salarié)",
     motsCles: ["role", "droits", "permission", "facturation", "commercial", "salarie", "patron", "changer"],
     geste: "Dans « Accès », touchez la personne, puis le rôle voulu : Patron, Facturation, Commercial ou Salarié.",
-    reserve: "Sous les rôles, la liste dit ce que ce rôle peut faire et ce qu'il ne peut plus.",
+    reserve: "Sous les rôles, deux colonnes disent ce que la personne pourra faire, et ce qu'elle ne pourra pas.",
     source: "src/app/reglages/equipe/QuiAAcces.tsx",
     preuves: ["Accès", "<ChoixRole"],
     ailleurs: [
-      { source: "src/app/reglages/equipe/ChoixRole.tsx", preuves: ["libelleRole(r)"] },
+      { source: "src/app/reglages/equipe/ChoixRole.tsx", preuves: ["libelleRole(role)", "Pourra", "Ne pourra pas"] },
       { source: "src/lib/acces-roles.ts", preuves: ['return "Patron"', 'return "Facturation"', 'return "Commercial"', 'return "Salarié"'] },
     ],
   },

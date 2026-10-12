@@ -573,7 +573,7 @@ async function main() {
     // `supprimerPassage` resterait vert si l'écran ne l'appelait jamais. On
     // supprime donc au doigt, depuis la liste, et l'on regarde la base.
     //
-    // `networkidle` : la section est un composant client, et une croix touchée
+    // `networkidle` : la section est un composant client, et un « Retirer » touché
     // avant l'hydratation ne déclenche rien.
     await page.goto(`${BASE}/paysage/fiche`, { waitUntil: "networkidle" });
 
@@ -585,9 +585,9 @@ async function main() {
     assert.equal(brouillons.length, 1, "ce cas n'a pas de brouillon à supprimer : il ne prouverait rien");
     const id = brouillons[0].id as string;
 
-    // **Le rapport parti n'a PAS de croix.** Son lien vit chez le client : le
+    // **Le rapport parti n'a PAS de « Retirer ».** Son lien vit chez le client : le
     // supprimer changerait son adresse en page morte. L'écran ne doit donc pas
-    // même le proposer — et sans ce contrôle, la croix se poserait sur les deux
+    // même le proposer — et sans ce contrôle, le geste se poserait sur les deux
     // sections au premier remaniement.
     const { rows: envoyes } = await pool.query(
       `SELECT p.id FROM passages_entretien p JOIN clients c ON c.id = p.client_id
@@ -598,12 +598,12 @@ async function main() {
     assert.equal(
       await page.locator(`[data-supprimer-fiche="${envoyes[0].id}"]`).count(),
       0,
-      "un rapport déjà parti chez le client porte une croix de suppression"
+      "un rapport déjà parti chez le client porte un « Retirer »"
     );
 
-    const croix = page.locator(`[data-supprimer-fiche="${id}"]`);
-    await croix.waitFor({ state: "visible", timeout: 15_000 });
-    await croix.click();
+    const retirer = page.locator(`[data-supprimer-fiche="${id}"]`);
+    await retirer.waitFor({ state: "visible", timeout: 15_000 });
+    await retirer.click();
     await capturer(page, "11-fiche-retiree-annulable");
 
     // **« Annuler » est là, et rien n'est encore écrit** — sa règle du 10 août.

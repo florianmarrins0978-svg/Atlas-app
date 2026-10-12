@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { colors, libelleCaps, smallCaps, texteSituation } from "@/lib/design-tokens";
+import { cardShadow, colors, font, libelleCaps, radius, texteSituation } from "@/lib/design-tokens";
+import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
@@ -169,7 +170,7 @@ export default function FicheEntretienClient({
     if (r.ajoutees.length === 0) return;
     // Chaque ligne remise retrouve son identifiant par son libellé. S'il en
     // manquait un, l'écran et la base ne diraient plus la même chose : la page
-    // se relit plutôt que d'afficher une ligne qu'aucun « × » ne pourrait viser.
+    // se relit plutôt que d'afficher une ligne qu'aucun « Retirer » ne pourrait viser.
     const fiche = modeleRemis(avant);
     const complete = fiche.map((l) => ("id" in l ? l : r.ajoutees.find((a) => a.libelle === l.libelle)));
     if (complete.some((l) => l === undefined)) {
@@ -222,195 +223,253 @@ export default function FicheEntretienClient({
   }
 
   // ─── La fiche composée ─────────────────────────────────────────────────────
+  //
+  // **Planche du 11 octobre 2026** (`appli/fiche-de-chantier-composer.html`,
+  // version Corrigé) : une carte par famille, une rangée de familles collée en
+  // haut pour sauter de l'une à l'autre, et « Retirer » en toutes lettres à la
+  // place des croix. Vingt lignes à plat se parcouraient au pouce, du haut en
+  // bas, pour atteindre « Propreté ».
   return (
-    <div className="px-6 pb-10">
-      {/* **PLUS DE PHRASE GRISE SOUS LE TITRE** — sa demande du 27 août 2026 :
-          *« supprime la phrase en gris sous composer ma fiche »*.
+    <div className="pb-10">
+      {/* **Le compte vit ICI, sous le titre, et il suit l'écran** : planche du
+          11 octobre 2026, qui montre « 19 prestations » juste après un
+          retrait. Posé par le serveur, il dirait encore 20 pendant que le
+          tiroir propose « Annuler ».
 
-          Elle disait « n prestations, rangées par famille. C'est cette liste que
-          vous cocherez sur un chantier. » — c'est-à-dire un écran qui explique
-          son propre fonctionnement, ce que sa consigne du 25 août interdit
-          (`CLAUDE.md` §3) : les familles sont sous les yeux, et le compte est
-          déjà sur la carte qui mène ici. */}
-      {phrase && (
-        <p
+          **Ce n'est pas la phrase grise du 27 août qui revient** (*« supprime
+          la phrase en gris sous composer ma fiche »*) : celle-là expliquait
+          l'écran ; celle-ci est un compte, comme sur la carte qui mène ici. */}
+      <EnTeteEcran
+        surtitre="Outils du métier"
+        titre="Composer ma fiche"
+        precision={`${visibles.length} prestation${visibles.length > 1 ? "s" : ""}`}
+        retour={{ href: "/paysage/fiche", libelle: "Retour à la fiche de chantier" }}
+      />
+
+      {/* **La rangée des familles, collée en haut.** Une pastille par famille,
+          lue dans SES données (`parFamilles`) : une famille qu'il crée demain y
+          entre toute seule. Des boutons et non des ancres : l'adresse de la
+          page ne change pas, et la flèche de retour ramène aux fiches, pas à
+          « Pelouse ». */}
+      {familles.length > 0 && (
+        <nav
+          aria-label="Familles"
+          data-atlas="familles-de-la-fiche"
+          className="sticky top-0 z-[4] mt-[16px] flex gap-[6px] overflow-x-auto px-[26px] pb-[12px] pt-[16px]"
+          style={{ backgroundColor: colors.cream, boxShadow: `0 1px 0 ${colors.line}`, scrollbarWidth: "none" }}
+        >
+          {familles.map((f, rang) => (
+            <button
+              key={f.famille}
+              type="button"
+              onClick={() =>
+                document.getElementById(`famille-${rang}`)?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }
+              className="flex min-h-[44px] flex-none items-center rounded-full px-[14px] text-[14px]"
+              style={{ backgroundColor: colors.rustTint, color: colors.rust }}
+            >
+              {f.famille}
+            </button>
+          ))}
+        </nav>
+      )}
+
+      <div className="px-[26px]">
+        {phrase && (
+          <p
             className="mt-4 text-[14px]"
             style={{ color: colors.rust }}
             role="alert"
             data-refus
           >
-          {phrase}
-        </p>
-      )}
+            {phrase}
+          </p>
+        )}
 
-      {familles.map((f) => (
-        <section key={f.famille} className="mt-6">
-          {/* La famille se renomme sur place : c'est son mot, pas une
-              nomenclature imposée. Et elle se retire d'un geste — avant le
-              24 août 2026, il fallait vider ses six lignes une par une. */}
-          <div className="flex items-center gap-3">
+        {familles.map((f, rang) => (
+          <section
+            key={f.famille}
+            id={`famille-${rang}`}
+            data-atlas="carte-famille"
+            className="mt-[18px] px-[18px] pb-[6px] pt-[16px]"
+            // La marge de défilement laisse la rangée collée au-dessus du nom
+            // de la famille : sans elle, l'appui sur une pastille cacherait
+            // justement le titre qu'on venait chercher.
+            style={{ backgroundColor: colors.card, borderRadius: radius.card, boxShadow: cardShadow, scrollMarginTop: 84 }}
+          >
+            {/* La famille se renomme sur place : c'est son mot, pas une
+                nomenclature imposée. En serif, comme un nom : c'est le titre
+                de sa carte. */}
             <input
               defaultValue={f.famille}
               aria-label={`Nom de la famille ${f.famille}`}
               data-famille={f.famille}
               onBlur={(e) => renommerLaFamille(f.famille, e.target.value)}
-              className={`min-w-0 flex-1 bg-transparent ${smallCaps}`}
-              style={{ color: colors.or, border: "none", padding: 0 }}
+              className="block w-full bg-transparent text-[21px] leading-[1.2] outline-none"
+              style={{ color: colors.ink, border: "none", padding: 0, fontFamily: font.display }}
             />
-            {/* **CE BOUTON S'ÉCRIT, il ne se dessine pas — et c'est une capture
-                qui l'a imposé, le 24 août 2026.** Posé en croix, il était le
-                jumeau exact de celui des lignes : même signe, même taille, même
-                colonne. Rien à l'œil ne disait que l'un retire une prestation
-                et l'autre en emporte six d'un coup. Sur un chantier, avec des
-                gants, c'est la faute qu'on fait — et le tiroir ne la rattrape
-                que six secondes.
+            <p className={`mt-[4px] mb-[6px] ${texteSituation}`} style={{ color: colors.inkSoft }}>
+              {f.lignes.length} prestation{f.lignes.length > 1 ? "s" : ""}
+            </p>
 
-                Le compte est DANS le libellé, pour la même raison : « Retirer
-                Massifs » laisse croire qu'on retire un titre. */}
-            <button
-              type="button"
-              aria-label={`Retirer la famille ${f.famille} et ses ${f.lignes.length} prestation${f.lignes.length > 1 ? "s" : ""}`}
-              data-retirer-famille={f.famille}
-              onClick={() =>
-                retraits.retirer(
-                  PREFIXE_FAMILLE + f.famille,
-                  `« ${f.famille} » et ses ${f.lignes.length} prestation${f.lignes.length > 1 ? "s" : ""}`
-                )
-              }
-              className={`-mr-2 flex min-h-[44px] flex-none items-center px-2 ${libelleCaps}`}
-              style={{ color: colors.muted }}
-            >
-              Retirer la famille
-            </button>
-          </div>
-
-          {f.lignes.map((p) => (
-            <div
-              key={p.id}
-              className="flex items-center gap-3 py-1"
-              style={{ borderBottom: `1px solid ${colors.line}` }}
-            >
-              <input
-                defaultValue={p.libelle}
-                aria-label={`Prestation ${p.libelle}`}
-                data-prestation={p.id}
-                onBlur={(e) => renommer(p.id, p.libelle, e.target.value)}
-                className="min-h-[48px] flex-1 bg-transparent text-[15px]"
-                style={{ color: colors.ink, border: "none", padding: 0 }}
-              />
-              {/* 44 px de côté : la mesure d'un doigt, pas d'un curseur. */}
-              <button
-                type="button"
-                aria-label={`Retirer ${p.libelle}`}
-                onClick={() => retraits.retirer(p.id, `« ${p.libelle} »`)}
-                className="flex h-11 w-11 flex-none items-center justify-center text-[18px]"
-                style={{ color: colors.muted }}
+            {f.lignes.map((p) => (
+              <div
+                key={p.id}
+                className="flex items-center gap-[10px]"
+                style={{ borderBottom: `1px solid ${colors.line}` }}
               >
-                ×
-              </button>
-            </div>
-          ))}
-
-          {ajoutOuvert === f.famille ? (
-            <div className="mt-3">
-              <input
-                autoFocus
-                value={saisie}
-                onChange={(e) => setSaisie(e.target.value)}
-                placeholder="Nom de la prestation"
-                aria-label={`Nouvelle prestation dans ${f.famille}`}
-                className="w-full rounded-[10px] px-3 py-3 text-[16px]"
-                style={{ border: `1px solid ${colors.line}`, color: colors.ink }}
-              />
-              <div className="mt-3">
-                <PrimaryButton onClick={() => ajouter(f.famille)}>Ajouter à {f.famille}</PrimaryButton>
+                <input
+                  defaultValue={p.libelle}
+                  aria-label={`Prestation ${p.libelle}`}
+                  data-prestation={p.id}
+                  onBlur={(e) => renommer(p.id, p.libelle, e.target.value)}
+                  className="min-h-[50px] min-w-0 flex-1 bg-transparent text-[16px]"
+                  style={{ color: colors.ink, border: "none", padding: 0 }}
+                />
+                {/* « Retirer » et non plus « × » : le mot du reste de
+                    l'application, et le même tiroir « Annuler ». 44 px : la
+                    mesure d'un doigt. */}
+                <button
+                  type="button"
+                  aria-label={`Retirer ${p.libelle}`}
+                  onClick={() => retraits.retirer(p.id, `« ${p.libelle} »`)}
+                  className={`flex min-h-[44px] min-w-[44px] flex-none items-center justify-end pl-[12px] ${libelleCaps}`}
+                  style={{ color: colors.inkSoft }}
+                >
+                  Retirer
+                </button>
               </div>
+            ))}
+
+            {ajoutOuvert === f.famille ? (
+              <div className="py-3">
+                <input
+                  autoFocus
+                  value={saisie}
+                  onChange={(e) => setSaisie(e.target.value)}
+                  placeholder="Nom de la prestation"
+                  aria-label={`Nouvelle prestation dans ${f.famille}`}
+                  className="w-full rounded-[10px] px-3 py-3 text-[16px]"
+                  style={{ border: `1px solid ${colors.line}`, color: colors.ink }}
+                />
+                <div className="mt-3">
+                  <PrimaryButton onClick={() => ajouter(f.famille)}>Ajouter à {f.famille}</PrimaryButton>
+                </div>
+              </div>
+            ) : (
+              <div className="flex min-h-[52px] flex-wrap items-center justify-between gap-x-[10px]">
+                <button
+                  type="button"
+                  className="min-h-[44px] whitespace-nowrap text-left text-[14px]"
+                  style={{ color: colors.or }}
+                  onClick={() => {
+                    setSaisie("");
+                    setAjoutOuvert(f.famille);
+                  }}
+                >
+                  + Ajouter une prestation
+                </button>
+                {/* **AU PIED DE SA CARTE**, planche du 11 octobre 2026 : posé
+                    contre le nom, il se lisait comme le geste du titre ; ici,
+                    il se lit après les lignes qu'il emporte.
+
+                    **CE BOUTON S'ÉCRIT, il ne se dessine pas** — une capture du
+                    24 août 2026 l'a imposé : en croix, il était le jumeau exact
+                    de celui des lignes, et rien ne disait que l'un retire une
+                    prestation et l'autre en emporte six. Le compte est DANS le
+                    libellé lu à voix haute, pour la même raison. */}
+                <button
+                  type="button"
+                  aria-label={`Retirer la famille ${f.famille} et ses ${f.lignes.length} prestation${f.lignes.length > 1 ? "s" : ""}`}
+                  data-retirer-famille={f.famille}
+                  onClick={() =>
+                    retraits.retirer(
+                      PREFIXE_FAMILLE + f.famille,
+                      `« ${f.famille} » et ses ${f.lignes.length} prestation${f.lignes.length > 1 ? "s" : ""}`
+                    )
+                  }
+                  className={`ml-auto flex min-h-[44px] flex-none items-center whitespace-nowrap pl-[8px] ${libelleCaps}`}
+                  style={{ color: colors.inkSoft }}
+                >
+                  Retirer la famille
+                </button>
+              </div>
+            )}
+          </section>
+        ))}
+
+        {/* Une famille neuve naît d'une prestation : une famille vide n'aurait
+            rien à cocher, et il faudrait la ramasser plus tard. **Mais elle se
+            NOMME ici**, dans le même geste : jusqu'au 24 août 2026, ce bouton
+            rangeait la ligne dans « Divers » et lui laissait renommer la famille
+            au-dessus — un second geste que rien n'annonçait, sur un bouton qui
+            promettait une famille. */}
+        {ajoutOuvert === "__neuve__" ? (
+          <div className="mt-[22px]">
+            <input
+              autoFocus
+              value={saisieFamille}
+              onChange={(e) => setSaisieFamille(e.target.value)}
+              placeholder="Nom de la famille"
+              aria-label="Nom de la nouvelle famille"
+              data-nouvelle-famille
+              className="w-full rounded-[10px] px-3 py-3 text-[16px]"
+              style={{ border: `1px solid ${colors.line}`, color: colors.ink }}
+            />
+            <input
+              value={saisie}
+              onChange={(e) => setSaisie(e.target.value)}
+              placeholder="Sa première prestation"
+              aria-label="Première prestation de la nouvelle famille"
+              className="mt-3 w-full rounded-[10px] px-3 py-3 text-[16px]"
+              style={{ border: `1px solid ${colors.line}`, color: colors.ink }}
+            />
+            <div className="mt-3">
+              <PrimaryButton onClick={creerFamille}>Créer la famille</PrimaryButton>
             </div>
-          ) : (
-            <button
-              type="button"
-              className="mt-3 min-h-[44px] text-[14px]"
-              style={{ color: colors.or }}
-              onClick={() => {
-                setSaisie("");
-                setAjoutOuvert(f.famille);
-              }}
-            >
-              + Ajouter une prestation
-            </button>
-          )}
-        </section>
-      ))}
-
-      {/* Une famille neuve naît d'une prestation : une famille vide n'aurait
-          rien à cocher, et il faudrait la ramasser plus tard. **Mais elle se
-          NOMME ici**, dans le même geste : jusqu'au 24 août 2026, ce bouton
-          rangeait la ligne dans « Divers » et lui laissait renommer la famille
-          au-dessus — un second geste que rien n'annonçait, sur un bouton qui
-          promettait une famille. */}
-      {ajoutOuvert === "__neuve__" ? (
-        <div className="mt-8">
-          <input
-            autoFocus
-            value={saisieFamille}
-            onChange={(e) => setSaisieFamille(e.target.value)}
-            placeholder="Nom de la famille"
-            aria-label="Nom de la nouvelle famille"
-            data-nouvelle-famille
-            className="w-full rounded-[10px] px-3 py-3 text-[16px]"
-            style={{ border: `1px solid ${colors.line}`, color: colors.ink }}
-          />
-          <input
-            value={saisie}
-            onChange={(e) => setSaisie(e.target.value)}
-            placeholder="Sa première prestation"
-            aria-label="Première prestation de la nouvelle famille"
-            className="mt-3 w-full rounded-[10px] px-3 py-3 text-[16px]"
-            style={{ border: `1px solid ${colors.line}`, color: colors.ink }}
-          />
-          <div className="mt-3">
-            <PrimaryButton onClick={creerFamille}>Créer la famille</PrimaryButton>
+            <p className="mt-2 text-[13px]" style={{ color: colors.muted }}>
+              Vous ajouterez ses autres prestations juste après.
+            </p>
           </div>
-          <p className="mt-2 text-[13px]" style={{ color: colors.muted }}>
-            Vous ajouterez ses autres prestations juste après.
-          </p>
-        </div>
-      ) : (
-        <button
-          type="button"
-          className="mt-8 min-h-[44px] text-[14px]"
-          style={{ color: colors.or }}
-          onClick={() => {
-            setSaisie("");
-            setSaisieFamille("");
-            setAjoutOuvert("__neuve__");
-          }}
-        >
-          + Ajouter une famille
-        </button>
-      )}
+        ) : (
+          <button
+            type="button"
+            className="mt-[22px] min-h-[44px] text-[14px]"
+            style={{ color: colors.or }}
+            onClick={() => {
+              setSaisie("");
+              setSaisieFamille("");
+              setAjoutOuvert("__neuve__");
+            }}
+          >
+            + Ajouter une famille
+          </button>
+        )}
 
-      {/* **Le bouton des messages préremplis, pour la fiche** — sa demande du
-          29 septembre 2026 : *« il doit pouvoir la remettre en cliquant sur une
-          touche, comme on fait pour les messages préremplis envoyés par SMS »*.
-          Même dessin que « Remettre le message d'Atlas » (`MessagesClient.tsx`),
-          et, comme lui, montré seulement quand il y a quelque chose à remettre. */}
-      {modeleManquant(visibles).length > 0 && (
-        <button
-          type="button"
-          data-atlas="remettre-modele"
-          onClick={() => void remettre()}
-          className="mt-8 block min-h-[44px] rounded-full px-4 text-[13.5px]"
-          style={{ color: colors.muted, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
-        >
-          Remettre le modèle Atlas
-        </button>
-      )}
+        {/* **Le bouton des messages préremplis, pour la fiche** — sa demande du
+            29 septembre 2026 : *« il doit pouvoir la remettre en cliquant sur une
+            touche, comme on fait pour les messages préremplis envoyés par SMS »*.
+            Même dessin que « Remettre le message d'Atlas » (`MessagesClient.tsx`),
+            et, comme lui, montré seulement quand il y a quelque chose à remettre. */}
+        {modeleManquant(visibles).length > 0 && (
+          <button
+            type="button"
+            data-atlas="remettre-modele"
+            onClick={() => void remettre()}
+            className="mt-[18px] block min-h-[44px] rounded-full px-[18px] text-[14px]"
+            style={{ color: colors.inkSoft, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+          >
+            Remettre le modèle Atlas
+          </button>
+        )}
 
-      <p className="mt-8 text-[13px] leading-relaxed" style={{ color: colors.muted }}>
-        Modifier cette fiche ne change <b style={{ color: colors.ink }}>aucun rapport déjà envoyé</b>.
-      </p>
+        <p className="mt-[26px] text-[13.5px] leading-[1.6]" style={{ color: colors.inkSoft }}>
+          Modifier cette fiche ne change <b style={{ color: colors.ink, fontWeight: 600 }}>aucun rapport déjà envoyé</b>.
+        </p>
+      </div>
 
+      {/* Hors de la marge de 26 px : les tiroirs la portent déjà, et
+          l'imbriquer la doublerait (`FichesEnCours`). */}
       {remises && (
         <div
           className="atlas-tiroir mx-[26px]"

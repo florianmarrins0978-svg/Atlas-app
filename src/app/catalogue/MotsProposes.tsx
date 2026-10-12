@@ -35,7 +35,7 @@ export default function MotsProposes({ proposes }: { proposes: MotPropose[] }) {
       if (retenir) await retenirMotProposeAction(p.entreeId, p.mot);
       else await ecarterMotAction(p.mot);
       setRestants((cur) => cur.filter((x) => x.mot !== p.mot));
-      // Le mot retenu doit apparaître dans sa carte, en doré, tout de suite :
+      // Le mot retenu doit apparaître dans sa carte, sur sa ligne, tout de suite :
       // sans ce rafraîchissement il faudrait quitter l'écran pour le voir, et
       // rien ne prouverait que le « oui » a servi à quelque chose.
       if (retenir) router.refresh();
@@ -46,7 +46,12 @@ export default function MotsProposes({ proposes }: { proposes: MotPropose[] }) {
 
   return (
     <section className="mx-[26px] mt-[26px]">
-      <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.or }}>
+      {/* **L'or ne reste que sur les gestes d'ajout** — même remède que les
+          cartes du catalogue (11 octobre 2026, planche
+          `appli/catalogue-les-mots.html`). Un libellé et un cadre dorés
+          tiraient l'œil sans rien proposer, et le « Non » en gris pâle ne se
+          lisait plus : il passe en encre douce. */}
+      <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.muted }}>
         Atlas a entendu ces mots
       </p>
 
@@ -55,7 +60,7 @@ export default function MotsProposes({ proposes }: { proposes: MotPropose[] }) {
           <li
             key={p.mot}
             className="rounded-[11px] px-[13px] py-[12px]"
-            style={{ backgroundColor: colors.card, border: `1px solid ${colors.or}` }}
+            style={{ backgroundColor: colors.card, border: `1px solid ${colors.lineSoft}` }}
           >
             <span className="block text-[17px] leading-[1.25]" style={{ fontFamily: font.display }}>
               « {p.mot} »
@@ -82,7 +87,7 @@ export default function MotsProposes({ proposes }: { proposes: MotPropose[] }) {
                 onClick={() => repondre(p, false)}
                 disabled={enCours === p.mot}
                 className="rounded-full px-[15px] py-[8px] text-[13.5px]"
-                style={{ border: `1px solid ${colors.line}`, color: colors.muted }}
+                style={{ border: `1px solid ${colors.line}`, color: colors.inkSoft }}
               >
                 Non
               </button>

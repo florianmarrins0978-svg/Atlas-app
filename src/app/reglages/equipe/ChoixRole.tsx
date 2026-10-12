@@ -30,7 +30,8 @@ import { ROLES, ceQueLeRoleChange, libelleRole, type Role } from "@/lib/acces-ro
  * change le rôle de quelqu'un qui en a déjà un. Deux rédactions divergeraient
  * (`CLAUDE.md` §3), et ici la divergence se lirait ainsi — la pastille teintée
  * d'un côté, noire de l'autre, c'est-à-dire le défaut qu'il vient de signaler,
- * revenu par la moitié de l'écran qu'on aurait oubliée.
+ * revenu par la moitié de l'écran qu'on aurait oubliée. La planche du
+ * 11 octobre 2026 arrive donc aux deux endroits à la fois, et c'est voulu.
  *
  * **Les phrases viennent de `acces-roles.ts`**, avec la règle qu'elles
  * décrivent. Écrites ici, elles auraient vieilli à la première restriction
@@ -46,7 +47,7 @@ export default function ChoixRole({
   valeur: Role;
   inerte?: boolean;
   /** Le libellé « SON RÔLE » au-dessus. Utile sur l'écran de création, où rien
-   *  d'autre ne dit ce que ces trois pastilles règlent. */
+   *  d'autre ne dit ce que ces pastilles règlent. */
   titre?: boolean;
   onChoisir: (role: Role) => void;
 }) {
@@ -60,83 +61,146 @@ export default function ChoixRole({
         // bord. Il était revenu ici le 26, sur un écran neuf ;
         // `test-accueil-en-tete.ts` l'a repris. Les séparateurs de BLOCS, eux,
         // restent : *« ceux qui séparent les blocs, laisse-les »*.
-        <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.inkSoft }}>Son rôle</p>
+        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>Son rôle</p>
       )}
 
-      {/* **DEUX PAR LIGNE DEPUIS LE 30 AOÛT 2026, et c'est le rôle
-          « Facturation » qui l'impose.** À trois, la rangée tenait ; à quatre,
-          le plus long des libellés se casse en deux et les pastilles cessent
-          d'avoir la même hauteur. Un quadrillage 2×2 garde des pastilles de
-          largeur égale, quel que soit le mot — et il en tiendra six sans qu'on
-          y revienne. */}
-      <div className="grid grid-cols-2 gap-2">
-        {ROLES.map((r) => {
-          const choisi = r === valeur;
-          return (
-            <button
-              key={r}
-              type="button"
-              disabled={inerte}
-              onClick={() => !choisi && onChoisir(r)}
-              aria-pressed={choisi}
-              className="flex items-center justify-center gap-1.5 rounded-full py-2.5 text-[12.5px]"
-              style={
-                choisi
-                  ? {
-                      // Teinté, jamais plein : c'est un ÉTAT. Le plein est réservé
-                      // au geste qui crée le compte.
-                      backgroundColor: colors.rustTint,
-                      color: colors.ink,
-                      fontWeight: 600,
-                      border: "1px solid transparent",
-                    }
-                  : { border: `1px solid ${colors.line}`, color: colors.muted }
-              }
-            >
-              {/* Le coche dit « celui-là », sans avoir à comparer trois fonds.
-                  Il est en or : c'est ce qu'on LIT, et il se voit sur les sept
-                  chartes — le fond teinté, lui, bouge d'une charte à l'autre. */}
-              {choisi && (
+      {/* **TROIS SUR UNE LIGNE, PATRON À PART — sa planche du 11 octobre 2026**
+          (`appli/donner-un-acces-corrige.html`, version Corrigé). Le 2×2 du
+          30 août mettait Patron au rang des trois autres ; or le choisir, c'est
+          donner tout Atlas. Il est donc posé seul, dessous, et dit ce qu'il
+          donne. L'ordre des trois reste celui de `ROLES`. */}
+      <div className="grid grid-cols-3 gap-2">
+        {ROLES.filter((r) => r !== "proprietaire").map((r) => (
+          <Pastille key={r} role={r} choisi={r === valeur} inerte={inerte} onChoisir={onChoisir} />
+        ))}
+      </div>
+      <Pastille
+        role="proprietaire"
+        choisi={valeur === "proprietaire"}
+        inerte={inerte}
+        onChoisir={onChoisir}
+        dit="Tout, comme vous"
+      />
+
+      {/* **La liste SUIT le rôle choisi.** Trouvé sur la planche du 26 août,
+          avant de la lui donner : elle montrait « Commercial » coché et, dessous,
+          le périmètre du SALARIÉ. Un écran qui ment sur ce que fait un rôle est
+          pire qu'un écran absent.
+
+          **Deux colonnes, plus rien de barré** (planche du 11 octobre 2026) :
+          une ligne barrée se lit comme une erreur effacée, pas comme un refus.
+          Le droit porte un coche, le refus un cadenas. */}
+      <div
+        data-atlas="droits-du-role"
+        className="mt-3.5 grid grid-cols-2 gap-3.5 rounded-2xl px-4 pb-1.5 pt-4"
+        style={{ backgroundColor: colors.card }}
+      >
+        <div>
+          <p className={TITRE_COLONNE} style={{ color: colors.inkSoft }}>Pourra</p>
+          <ul>
+            {dit.peut.map((l) => (
+              <li key={l} className={LIGNE} style={{ color: colors.ink }}>
                 <svg
                   aria-hidden="true"
                   viewBox="0 0 24 24"
-                  className="h-[13px] w-[13px]"
-                  style={{ fill: "none", stroke: colors.or, strokeWidth: 2.2, strokeLinecap: "round", strokeLinejoin: "round" }}
+                  className={PICTO}
+                  style={{ ...TRAIT, stroke: colors.rust, strokeWidth: 1.8 }}
                 >
                   <path d="m5 13 4.5 4.5L19 7" />
                 </svg>
-              )}
-              {libelleRole(r)}
-            </button>
-          );
-        })}
+                {l}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="border-l pl-3.5" style={{ borderColor: colors.line }}>
+          <p className={TITRE_COLONNE} style={{ color: colors.inkSoft }}>Ne pourra pas</p>
+          {dit.nonPlus.length > 0 ? (
+            <ul>
+              {dit.nonPlus.map((l) => (
+                <li key={l} className={LIGNE} style={{ color: colors.inkSoft }}>
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    className={PICTO}
+                    style={{ ...TRAIT, stroke: colors.inkSoft, strokeWidth: 1.7 }}
+                  >
+                    <rect x="5" y="11" width="14" height="9" rx="2" />
+                    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                  </svg>
+                  {l}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mb-2 text-[13.5px]" style={{ color: colors.inkSoft }}>Rien ne lui est fermé.</p>
+          )}
+        </div>
       </div>
-
-      {/* **La liste SUIT le rôle choisi.** Trouvé sur la planche même, avant de
-          la lui donner : elle montrait « Commercial » coché et, dessous, le
-          périmètre du SALARIÉ. Une maquette — ou un écran — qui ment sur ce que
-          fait un rôle est pire qu'un écran absent : il aurait choisi
-          « Commercial » en lisant « le planning et rien d'autre ». */}
-      <ul className="mt-3 space-y-1">
-        {dit.peut.map((l) => (
-          <li key={l} className="relative pl-4 text-[12.5px]" style={{ color: colors.ink }}>
-            <i
-              className="absolute left-0.5 top-[9px] block h-1 w-1 rounded-full"
-              style={{ backgroundColor: colors.or }}
-            />
-            {l}
-          </li>
-        ))}
-        {dit.nonPlus.map((l) => (
-          <li key={l} className="relative pl-4 text-[12.5px] line-through" style={{ color: colors.muted }}>
-            <i
-              className="absolute left-0.5 top-[9px] block h-1 w-1 rounded-full"
-              style={{ backgroundColor: colors.line }}
-            />
-            {l}
-          </li>
-        ))}
-      </ul>
     </>
+  );
+}
+
+const TITRE_COLONNE = "mb-2 text-[9.5px] font-medium uppercase tracking-[0.28em]";
+const LIGNE = "relative mb-2 pl-5 text-[13.5px] leading-[1.4]";
+const PICTO = "absolute left-0 top-[2px] h-[14px] w-[14px]";
+const TRAIT = { fill: "none", strokeLinecap: "round", strokeLinejoin: "round" } as const;
+
+/**
+ * Une pastille de rôle : teintée et cochée quand elle est choisie, jamais
+ * pleine. C'est un ÉTAT, et le plein est réservé au geste qui crée le compte
+ * (sa capture du 26 août, en tête de ce fichier). `dit`, que seul Patron porte,
+ * s'écrit à droite de la pastille.
+ */
+function Pastille({
+  role,
+  choisi,
+  inerte,
+  onChoisir,
+  dit,
+}: {
+  role: Role;
+  choisi: boolean;
+  inerte: boolean;
+  onChoisir: (role: Role) => void;
+  dit?: string;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={inerte}
+      onClick={() => !choisi && onChoisir(role)}
+      aria-pressed={choisi}
+      className={`flex items-center gap-1.5 rounded-full py-2.5 text-[12.5px] ${
+        dit ? "mt-2 w-full justify-between px-4 text-left" : "justify-center px-1"
+      }`}
+      style={
+        choisi
+          ? { backgroundColor: colors.rustTint, color: colors.ink, fontWeight: 600, border: "1px solid transparent" }
+          : { border: `1px solid ${colors.line}`, color: colors.muted }
+      }
+    >
+      <span className="flex items-center gap-1.5">
+        {/* Le coche dit « celui-là », sans avoir à comparer les fonds. Il est en
+            or : il se voit sur les sept chartes, le fond teinté bouge de l'une
+            à l'autre. */}
+        {choisi && (
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            className="h-[13px] w-[13px] flex-none"
+            style={{ ...TRAIT, stroke: colors.or, strokeWidth: 2.2 }}
+          >
+            <path d="m5 13 4.5 4.5L19 7" />
+          </svg>
+        )}
+        {libelleRole(role)}
+      </span>
+      {dit && (
+        <span className="font-normal" style={{ color: colors.muted }}>
+          {dit}
+        </span>
+      )}
+    </button>
   );
 }

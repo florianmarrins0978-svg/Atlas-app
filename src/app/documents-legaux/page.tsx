@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { documentsAAccepter } from "@/server/repositories/documents-legaux";
+import PorteDeNuit, { SERIF } from "@/components/atlas/PorteDeNuit";
+import { colors } from "@/lib/design-tokens";
 import FormulaireAcceptation from "./formulaire";
 
 export const dynamic = "force-dynamic";
@@ -21,35 +23,30 @@ export default async function DocumentsLegauxPage() {
   if (documents.length === 0) redirect("/");
 
   return (
-    /* **`bg-paper` et non un crème écrit en clair — 4 septembre 2026.**
-       Cet écran est celui du PATRON, pas de son client : il reçoit donc la
-       charte comme les autres (`estPageDuClient` ne le compte pas). Son fond
-       était figé pendant que son texte suivait `--atlas-ink` : sur Nuit,
-       l'encre passait au clair sur un fond resté crème, et la page devenait
-       illisible — le défaut même qu'il a signalé le 22 août. */
-    <div className="min-h-dvh bg-paper px-5 py-8">
-      <div className="mx-auto flex w-full max-w-md flex-col gap-5">
-        <header>
-          <h1
-            className="text-[22px] font-semibold text-ink"
-            style={{ fontFamily: "ui-serif, Georgia, serif" }}
-          >
-            Avant de commencer
-          </h1>
-          {/* **« Stipulent », et non « disent » — sa correction du 9 septembre
-              2026.** Ce n'est pas de l'ornement : cet écran est le seul de
-              l'application qui ENGAGE, et « dire » n'engage à rien. Un document
-              qui stipule pose une obligation ; c'est le mot du contrat, et
-              c'est le registre que la page doit tenir. */}
-          <p className="mt-2 text-[14px] leading-relaxed text-ink/70">
-            Vos clients vous confient leurs coordonnées&nbsp;; vous nous les
-            confiez à votre tour. Ces documents stipulent ce que nous en
-            faisons, et ce que nous nous engageons à ne pas en faire.
-          </p>
-        </header>
+    /* **Sur la porte de nuit, et non sur la charte de l'intérieur — planche
+       `appli/documents-legaux-accepter.html`, 11 octobre 2026.** Cet écran
+       vient juste après /creer-un-compte et /verifier-email, posés sur
+       `PorteDeNuit` : il redevenait crème pour une seule page, avant d'entrer.
+       La porte pose ses propres variables de charte, si bien que les jetons
+       `colors.*` de cet écran y suivent la nuit sans rien recopier. */
+    <PorteDeNuit className="flex min-h-[100dvh] flex-col px-[22px]">
+      <header className="pt-[34px]">
+        <h1 className="text-[30px] leading-[1.1] tracking-[-0.01em]" style={SERIF}>
+          Avant de commencer
+        </h1>
+        {/* **« Stipulent », et non « disent » — sa correction du 9 septembre
+            2026.** Ce n'est pas de l'ornement : cet écran est le seul de
+            l'application qui ENGAGE, et « dire » n'engage à rien. Un document
+            qui stipule pose une obligation ; c'est le mot du contrat, et
+            c'est le registre que la page doit tenir. */}
+        <p className="mt-3 text-[14.5px] leading-[1.6]" style={{ color: colors.inkSoft }}>
+          Vos clients vous confient leurs coordonnées&nbsp;; vous nous les
+          confiez à votre tour. Ces documents stipulent ce que nous en
+          faisons, et ce que nous nous engageons à ne pas en faire.
+        </p>
+      </header>
 
-        <FormulaireAcceptation documents={documents} />
-      </div>
-    </div>
+      <FormulaireAcceptation documents={documents} />
+    </PorteDeNuit>
   );
 }

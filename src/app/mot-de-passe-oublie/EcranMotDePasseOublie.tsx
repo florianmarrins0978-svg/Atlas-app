@@ -38,7 +38,7 @@ export default function EcranMotDePasseOublie({ adresseDeDepart }: { adresseDeDe
 
   if (etape === "code") {
     return (
-      <div className="flex flex-1 flex-col pt-[18px]">
+      <div className="flex flex-1 flex-col">
         <SaisieDuCode
           email={adresse.trim().toLowerCase()}
           onVerifie={() => setEtape("nouveau")}

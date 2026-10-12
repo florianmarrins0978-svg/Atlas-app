@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas : le catalogue, les mots</title>
+<style>
+  /*
+    LE CATALOGUE, LES MOTS. Proposition pour /catalogue (src/app/catalogue/).
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI EST DESSINÉ ICI VIENT DU DÉPÔT, ET RIEN D'AUTRE.
+
+    Fichiers lus : src/app/catalogue/page.tsx, MesMots.tsx, MotsProposes.tsx,
+    src/server/repositories/mots-catalogue.ts, src/lib/mots-catalogue.ts,
+    src/server/db/seed.ts (seedCatalogue), src/components/atlas/AtlasBottomNav.tsx,
+    src/components/atlas/EnTeteEcran.tsx, src/app/reglages/tarifs/page.tsx.
+
+      Élagage, ses six mots      seed.ts : synonymes abattage, démontage,
+                                 dessouchage ; variantes sapin, arbre, conifère.
+                                 Fondus en une ligne « Aussi appelé » par
+                                 vocabulaireCommun(), variantes d'abord.
+      Nacelle                    seed.ts : variante « plateforme élévatrice ».
+      « écime »                  l'exemple du code lui-même (placeholder du champ
+                                 et commentaire de MesMots.tsx). Il sert ici à
+                                 montrer un mot À LUI ; il n'est pas dans le seed.
+      Le refus                   phraseDuRefus("deja_chez_atlas"), mot pour mot.
+      Le champ                   MesMots.tsx. Son exemple raccourci : à 16 px,
+                                 « Comme vous le dites : « écime » » est coupé.
+
+    ─────────────────────────────────────────────────────────────────────────
+    LE DÉFAUT DE LA BARRE DU BAS (onglet Chantiers souligné sur cet écran).
+
+    AtlasBottomNav.tsx calcule l'onglet actif avec
+      estActif(chemin, href) = chemin.startsWith(href)
+    et retombe sur l'onglet 0 (« Chantiers ») quand rien ne correspond. Or
+    l'adresse est /catalogue, pas /reglages/catalogue : aucun onglet ne la
+    revendique, le trait tombe donc sous Chantiers. Même chose pour tout écran
+    atteint depuis les Réglages mais rangé hors de /reglages.
+    À coder : soit déplacer l'écran sous /reglages/catalogue (le retour vise
+    déjà /reglages/tarifs), soit donner à l'onglet Réglages la liste des
+    adresses qui lui appartiennent. Ce n'est PAS du code serveur.
+
+    ─────────────────────────────────────────────────────────────────────────
+    FAUT-IL UNE RECHERCHE ? NON, ET C'EST MESURÉ.
+
+    Le catalogue commun ne contient que ce que seedCatalogue() y pose : UNE
+    prestation et UN matériel. Aucun écran, aucune action n'en ajoute
+    (creerPrestationCatalogue n'est appelé que par le seed). Les entrées à lui
+    sont plafonnées à 100 (MAX_ENTREES_A_MOI), 20 mots par entrée. Une recherche
+    sur deux cartes serait un outil de plus à ignorer. À reconsidérer le jour où
+    le commun grossit. Pas vérifiable ICI : le contenu réel de SA base ; si
+    elle porte plus d'entrées que le seed, c'est à regarder sur son espace.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI SERAIT À CODER (tout dans MesMots.tsx et page.tsx, rien au serveur)
+
+      1. le paragraphe d'en-tête perd « En doré, les vôtres, visibles de vous
+         seul » et le span or ;
+      2. ses mots sortent de la ligne « Aussi appelé » : une ligne par mot,
+         avec « Retirer » en petites capitales (le × en or disparaît). Les
+         données sont déjà séparées (carte.motsCommuns / carte.mesMots) ;
+      3. « + mon mot » devient « Ajouter un mot », en or (colors.or), sans
+         fond, 44 px de haut ; le champ passe à 16 px ; son bouton « Ajouter »
+         reste la petite capsule pleine de MesMots.tsx ;
+      4. les deux grands boutons en pointillés or deviennent une ligne
+         « Nouvelle prestation » / « Nouveau matériel », texte or, sans cadre ;
+      5. le surtitre « Réglages » reste (EnTeteEcran, prop surtitre) ;
+      6. pb-24 ne suffit pas : le dernier bouton passe sous la barre ;
+      7. la barre du bas (voir plus haut).
+
+    Non dessiné : MotsProposes (« Atlas a entendu ces mots »), vide la plupart
+    du temps. Il porte lui aussi un libellé et un cadre en or, et un bouton
+    « Non » en gris muted : même remède, à reprendre avec lui.
+
+    Couleurs : src/lib/design-tokens.ts, au caractère près. Nuit : valeurs de
+    appli/vos-clients.html (dérivées par depuisPlanche()).
+  */
+
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --plein:#7d9a6d; --surPlein:#faf9f5;
+    --rustTint:#ece9e1; --or:#B98B47; --alerte:#9C3B2E;
+    --line:rgba(28,28,26,.12); --lineSoft:rgba(28,28,26,.07);
+    --chevron:rgba(28,28,26,.28); --ombre:rgba(47,59,47,.07);
+  }
+  body[data-charte="nuit"]{
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --plein:#e9e8de; --surPlein:#101210;
+    --rustTint:#1f211e; --or:#B98B47; --alerte:#cd6456;
+    --line:rgba(233,232,222,.12); --lineSoft:rgba(233,232,222,.07);
+    --chevron:rgba(233,232,222,.28); --ombre:rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:#e7e4dd;color:#1c1c1a;
+       font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:20px 0 56px}
+  body[data-charte="nuit"]{background:#070806;color:#e9e8de}
+  button{font:inherit;cursor:pointer}
+
+  /* ══ Le banc d'essai ════════════════════════════════════════════════════ */
+  .banc{max-width:390px;margin:0 auto 14px;padding:0 12px}
+  .banc h2{margin:0;font-size:10px;font-weight:500;letter-spacing:.26em;
+           text-transform:uppercase;color:#8a8578}
+  .boutons{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .boutons button{font-size:12px;padding:8px 12px;border-radius:6px;
+                  border:1px solid rgba(28,28,26,.18);background:#faf9f5;
+                  color:#1c1c1a;min-height:36px}
+  body[data-charte="nuit"] .boutons button{background:#1a1d19;color:#e9e8de;
+                  border-color:rgba(233,232,222,.2)}
+  .boutons button[aria-pressed="true"]{background:#2f3b2f;color:#faf9f5;border-color:#2f3b2f}
+  body[data-charte="nuit"] .boutons button[aria-pressed="true"]{
+                  background:#e9e8de;color:#101210;border-color:#e9e8de}
+
+  /* ══ L'écran ═══════════════════════════════════════════════════════════ */
+  .tel{max-width:390px;margin:0 auto;background:var(--cream);color:var(--ink);
+       position:relative;overflow:hidden;border:1px solid rgba(28,28,26,.14);
+       border-radius:14px}
+  body[data-charte="nuit"] .tel{border-color:rgba(233,232,222,.14)}
+  .defile{height:700px;overflow-y:auto;overscroll-behavior:contain;
+          padding-bottom:110px;scrollbar-width:thin;
+          scrollbar-color:var(--chevron) transparent}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;
+         font-weight:400;letter-spacing:-.01em}
+
+  .haut{padding:26px 26px 0}
+  .rond{width:44px;height:44px;border-radius:50%;background:var(--rustTint);
+        display:flex;align-items:center;justify-content:center;border:0;color:var(--rust)}
+  .titre-ligne{display:flex;align-items:flex-start;justify-content:space-between;
+               gap:16px;padding:18px 26px 0}
+  h1{margin:0;font-size:36px;line-height:1.05;letter-spacing:-.018em}
+  .surtitre{display:block;margin-top:12px;font-size:9.5px;font-weight:500;
+            letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+  .assistant{width:44px;height:44px;border-radius:50%;background:var(--plein);
+             display:flex;align-items:center;justify-content:center;flex:none}
+
+  .intro{margin:14px 26px 0;font-size:14px;line-height:1.55;color:var(--inkSoft);
+         max-width:32ch}
+
+  section{margin:30px 26px 0}
+  .etiquette{margin:0 0 10px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+             text-transform:uppercase;color:var(--inkSoft)}
+
+  .cartes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+  .carte{background:var(--card);border-radius:16px;padding:16px 18px 6px;
+         box-shadow:0 1px 2px var(--ombre),0 6px 18px var(--ombre)}
+  .carte h3{margin:0;font-size:21px;line-height:1.2}
+  .aussi{margin:6px 0 0;font-size:14px;line-height:1.5;color:var(--inkSoft)}
+
+  /* Ses mots : une ligne chacun, et c'est la ligne qui les distingue, pas une
+     couleur. Seuls eux se retirent : « Retirer » suffit à dire qu'ils sont à
+     lui. Le petit rond plein marque le début de la ligne, rien de plus. */
+  .miens{list-style:none;margin:10px 0 0;padding:0;border-top:1px solid var(--line)}
+  .mien{display:flex;align-items:center;gap:10px;min-height:46px;
+        border-bottom:1px solid var(--line)}
+  .mien .point{flex:none;width:6px;height:6px;border-radius:50%;background:var(--rust)}
+  .mien .mot{flex:1;font-size:15px;color:var(--ink)}
+  .retirer{border:0;background:none;min-height:44px;padding:0 0 0 12px;
+           font-size:9.5px;font-weight:500;letter-spacing:.28em;
+           text-transform:uppercase;color:var(--inkSoft)}
+
+  .ajout{display:flex;align-items:center;gap:9px;border:0;background:none;
+         padding:0;min-height:46px;width:100%;text-align:left;
+         font-size:14px;color:var(--or)}
+  .ajout svg{flex:none}
+
+  .champ-ligne{display:flex;gap:8px;align-items:center;padding:10px 0 12px}
+  .champ-ligne input{flex:1;min-width:0;font:inherit;font-size:16px;
+         color:var(--ink);background:var(--cream);border:1px solid var(--line);
+         border-radius:12px;padding:11px 12px;min-height:48px;outline:none;
+         caret-color:var(--or)}
+  .champ-ligne input::placeholder{color:var(--inkSoft);opacity:.72}
+  .champ-ligne input:focus{box-shadow:0 0 0 2px var(--or);border-color:transparent}
+  .plein{flex:none;border:0;border-radius:9999px;background:var(--plein);color:var(--surPlein);
+         font-size:13.5px;padding:8px 15px}
+  .refus{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:var(--alerte)}
+
+  .nouvelle{display:flex;align-items:center;gap:9px;border:0;background:none;
+            width:100%;min-height:52px;margin-top:6px;padding:0 4px;text-align:left;
+            font-size:14px;color:var(--or)}
+  .nouvelle svg{flex:none}
+
+  button:focus-visible,.rond:focus-visible{outline:2px solid var(--or);outline-offset:2px;border-radius:8px}
+
+  /* ── La barre du bas ────────────────────────────────────────────────────*/
+  .barre{position:absolute;left:0;right:0;bottom:0;background:var(--cream);
+         border-top:1px solid var(--line);padding:18px 14px 10px}
+  .onglets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:relative}
+  .onglets span{text-align:center;font-size:8.5px;font-weight:500;
+                letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding-bottom:8px}
+  .onglets span.actif{color:var(--ink);transform:translateY(-2px)}
+  .filet-onglet{position:absolute;bottom:0;left:0;height:1px;background:var(--or);
+                width:calc(100% / 5);transition:transform 300ms ease-out}
+
+  /* ══ L'écran d'AUJOURD'HUI, reproduit tel quel ═════════════════════════ */
+  .avant-seul{display:none}
+  body.mode-avant .avant-seul{display:block}
+  body.mode-avant span.avant-seul,body.mode-avant button.avant-seul{display:inline}
+  body.mode-avant .apres-seul{display:none!important}
+  .av-intro{margin:18px 26px 0;font-size:13px;line-height:1.55;color:var(--muted)}
+  .av-intro .or{color:var(--or)}
+  .av-section{margin:26px 26px 0}
+  .av-etiq{margin:0 0 10px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+           text-transform:uppercase;color:var(--muted)}
+  .av-carte{background:var(--card);border:1px solid var(--lineSoft);border-radius:11px;
+            padding:11px 13px;margin-bottom:9px}
+  .av-nom{display:block;font-size:17px;line-height:1.25}
+  .av-aussi{margin:3px 0 0;font-size:12.5px;line-height:1.5;color:var(--muted)}
+  .av-aussi .or{color:var(--or)}
+  .av-x{border:0;background:none;color:var(--or);width:24px;height:24px;padding:0}
+  .av-mon{border:0;background:none;padding:0;margin-top:8px;font-size:12.5px;color:var(--or)}
+  .av-champ{display:flex;gap:8px;align-items:center;margin-top:9px}
+  .av-champ input{flex:1;min-width:0;font:inherit;font-size:14px;color:var(--ink);
+                  background:var(--cream);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+  .av-champ button{border:0;border-radius:999px;background:var(--plein);color:var(--surPlein);
+                   font-size:13.5px;padding:8px 15px}
+  .av-refus{margin:6px 0 0;font-size:12px;line-height:1.5;color:var(--alerte)}
+  .av-nouvelle{display:block;width:100%;margin-top:12px;border:1px dashed var(--or);
+               background:none;border-radius:999px;padding:10px 12px;font-size:13.5px;color:var(--or)}
+  body.mode-avant .defile{padding-bottom:24px}
+
+  /* ══ Les notes ═════════════════════════════════════════════════════════ */
+  .notes{max-width:390px;margin:20px auto 0;padding:0 12px;font-size:13.5px;
+         line-height:1.6;color:#3a3a34}
+  body[data-charte="nuit"] .notes{color:#c1c2b6}
+  .notes h3{margin:22px 0 8px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+            text-transform:uppercase;color:#6b675e}
+  body[data-charte="nuit"] .notes h3{color:#a7a99c}
+  .notes ul{margin:0;padding-left:18px}
+  .notes li{margin-bottom:7px}
+</style>
+</head>
+<body data-charte="origine">
+
+<div class="banc">
+  <h2>Le catalogue, proposition</h2>
+  <div class="boutons">
+    <button type="button" data-mode="avant" aria-pressed="false">Aujourd'hui</button>
+    <button type="button" data-mode="apres" aria-pressed="true">Corrigé</button>
+    <button type="button" data-charte-btn="origine" aria-pressed="true">Origine</button>
+    <button type="button" data-charte-btn="nuit" aria-pressed="false">Nuit</button>
+  </div>
+  <div class="boutons">
+    <button type="button" data-etat="repos" aria-pressed="true">Au repos</button>
+    <button type="button" data-etat="mien" aria-pressed="false">Avec un mot à vous</button>
+    <button type="button" data-etat="champ" aria-pressed="false">J'ajoute un mot</button>
+    <button type="button" data-etat="refus" aria-pressed="false">Mot refusé</button>
+  </div>
+</div>
+
+<div class="tel">
+  <div class="defile" id="defile">
+
+    <div class="haut">
+      <button class="rond" type="button" aria-label="Retour aux tarifs">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="titre-ligne">
+      <div style="min-width:0">
+        <h1 class="serif">Catalogue</h1>
+        <span class="surtitre">Réglages</span>
+      </div>
+      <span class="assistant" aria-hidden="true">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#faf9f5" stroke-width="1.8">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
+      </span>
+    </div>
+
+    <!-- ═══════════════ CORRIGÉ ═══════════════ -->
+    <div class="apres-seul">
+      <p class="intro">Les mots qu'Atlas reconnaît quand vous dictez.</p>
+
+      <section>
+        <p class="etiquette">Prestations</p>
+        <ul class="cartes">
+          <li class="carte">
+            <h3 class="serif">Élagage</h3>
+            <p class="aussi">Aussi appelé : sapin, arbre, conifère, abattage, démontage, dessouchage</p>
+            <ul class="miens" id="miens-elagage" hidden>
+              <li class="mien">
+                <span class="point" aria-hidden="true"></span>
+                <span class="mot">écime</span>
+                <button type="button" class="retirer" aria-label="Retirer le mot écime">Retirer</button>
+              </li>
+            </ul>
+            <div id="zone-elagage"></div>
+          </li>
+        </ul>
+        <button type="button" class="nouvelle">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          Nouvelle prestation
+        </button>
+      </section>
+
+      <section>
+        <p class="etiquette">Matériels</p>
+        <ul class="cartes">
+          <li class="carte">
+            <h3 class="serif">Nacelle</h3>
+            <p class="aussi">Aussi appelé : plateforme élévatrice</p>
+            <div>
+              <button type="button" class="ajout">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                Ajouter un mot
+              </button>
+            </div>
+          </li>
+        </ul>
+        <button type="button" class="nouvelle">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          Nouveau matériel
+        </button>
+      </section>
+    </div>
+
+    <!-- ═══════════════ AUJOURD'HUI ═══════════════ -->
+    <div class="avant-seul">
+      <p class="av-intro">Les mots qu'Atlas reconnaît quand vous dictez.
+        <span class="or">En doré, les vôtres</span>, visibles de vous seul.</p>
+
+      <div class="av-section">
+        <p class="av-etiq">Prestations</p>
+        <div class="av-carte">
+          <span class="av-nom serif">Élagage</span>
+          <p class="av-aussi">Aussi appelé : sapin, arbre, conifère, abattage, démontage, dessouchage<span id="av-mien" hidden><span class="or">, écime<button type="button" class="av-x" aria-label="Retirer le mot écime">×</button></span><span class="or">, dont les vôtres</span></span></p>
+          <div id="av-zone-elagage"></div>
+        </div>
+        <button type="button" class="av-nouvelle">+ Nouvelle prestation</button>
+      </div>
+
+      <div class="av-section">
+        <p class="av-etiq">Matériels</p>
+        <div class="av-carte">
+          <span class="av-nom serif">Nacelle</span>
+          <p class="av-aussi">Aussi appelé : plateforme élévatrice</p>
+          <button type="button" class="av-mon">+ mon mot</button>
+        </div>
+        <button type="button" class="av-nouvelle">+ Nouveau matériel</button>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="barre" aria-hidden="true">
+    <div class="onglets">
+      <span id="o0">Chantiers</span><span>Planning</span><span>Terminés</span>
+      <span>Paysage</span><span id="o4" class="actif">Réglages</span>
+      <i class="filet-onglet" id="filet" style="transform:translateX(400%)"></i>
+    </div>
+  </nav>
+</div>
+
+<div class="notes">
+  <h3>Ce qui change</h3>
+  <ul>
+    <li>En bas, c'était Chantiers qui était souligné alors qu'on est dans les Réglages. C'est Réglages, maintenant.</li>
+    <li>« En doré, les vôtres » disparaît. Vos mots ne se reconnaissent plus à leur couleur : ils ont chacun leur ligne, sous ceux d'Atlas, avec « Retirer » au bout.</li>
+    <li>« + mon mot » devient « Ajouter un mot », en doré, assez grand pour le pouce. Le champ qui s'ouvre est plus grand, et le téléphone ne zoome plus dessus.</li>
+    <li>Les deux grands cadres en pointillés deviennent une simple ligne « Nouvelle prestation » et « Nouveau matériel ».</li>
+    <li>Le dernier bouton ne passe plus sous la barre du bas.</li>
+    <li>Pas de recherche : le catalogue commun compte une prestation et un matériel. Elle viendra s'il grossit.</li>
+  </ul>
+</div>
+
+<script>
+const PLUS = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+const REFUS = "Atlas connaît déjà ce mot pour cette entrée : il est reconnu quand vous dictez.";
+const PLACE = "Par exemple : écime";
+let etat = "repos";
+
+function dessiner(){
+  const mien = etat !== "repos";
+  const champ = etat === "champ" || etat === "refus";
+  const valeur = etat === "refus" ? "abattage" : "";
+
+  document.getElementById("miens-elagage").hidden = !mien;
+  document.getElementById("av-mien").hidden = !mien;
+
+  const z = document.getElementById("zone-elagage");
+  z.innerHTML = champ
+    ? '<div class="champ-ligne"><input type="text" aria-label="Votre mot pour Élagage" placeholder="' + PLACE + '" value="' + valeur + '"><button type="button" class="plein">Ajouter</button></div>'
+      + (etat === "refus" ? '<p class="refus">' + REFUS + '</p>' : '')
+    : '<button type="button" class="ajout">' + PLUS + 'Ajouter un mot</button>';
+
+  const av = document.getElementById("av-zone-elagage");
+  av.innerHTML = champ
+    ? '<div class="av-champ"><input type="text" aria-label="Votre mot" placeholder="' + PLACE + '" value="' + valeur + '"><button type="button">Ajouter</button></div>'
+      + (etat === "refus" ? '<p class="av-refus">' + REFUS + '</p>' : '')
+    : '<button type="button" class="av-mon">+ mon mot</button>';
+
+  z.querySelector(".ajout")?.addEventListener("click", () => choisir("champ"));
+  av.querySelector(".av-mon")?.addEventListener("click", () => choisir("champ"));
+}
+function choisir(e){
+  etat = e;
+  document.querySelectorAll("[data-etat]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.etat === etat)));
+  dessiner();
+}
+document.querySelectorAll("[data-etat]").forEach(b => b.addEventListener("click", () => choisir(b.dataset.etat)));
+
+/* Aujourd'hui : le trait tombe sous Chantiers, comme dans l'app (voir en tête). */
+function mode(avant){
+  document.body.classList.toggle("mode-avant", avant);
+  document.querySelectorAll("[data-mode]").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.mode === "avant") === avant)));
+  document.getElementById("o0").classList.toggle("actif", avant);
+  document.getElementById("o4").classList.toggle("actif", !avant);
+  document.getElementById("filet").style.transform = avant ? "translateX(0)" : "translateX(400%)";
+}
+document.querySelectorAll("[data-mode]").forEach(b => b.addEventListener("click", () => mode(b.dataset.mode === "avant")));
+document.querySelectorAll("[data-charte-btn]").forEach(b => b.addEventListener("click", () => {
+  document.body.dataset.charte = b.dataset.charteBtn;
+  document.querySelectorAll("[data-charte-btn]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+}));
+dessiner();
+</script>
+</body>
+</html>

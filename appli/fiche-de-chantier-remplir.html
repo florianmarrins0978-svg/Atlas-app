@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas : fiche de chantier, remplir</title>
+<style>
+  /*
+    FICHE DE CHANTIER, REMPLIR. Proposition pour /paysage/fiche/[id].
+
+    LA VERSION « AUJOURD'HUI » EST RECONSTITUÉE DEPUIS LE CODE.
+    L'écran n'a pas pu être ouvert : le jeu d'essai ne porte aucune fiche. Elle
+    a été redessinée en lisant les composants, classe par classe ; elle n'a pas
+    été comparée à une capture.
+
+    D'OÙ VIENT CE QUI EST DESSINÉ
+      src/app/paysage/fiche/[id]/page.tsx   l'en-tête (surtitre « Outils du métier »)
+      src/app/paysage/fiche/[id]/FicheChantierClient.tsx  tout le corps :
+        TitreAvecRoue (le jour), « + Ajouter un client », ChoixDuCanal,
+        les familles et leurs cases, MoletteDuree, l'interrupteur du temps,
+        Observations, PrimaryButton, RapportParti
+      src/lib/passage-entretien.ts  constatDesCoches, empechementEnvoi (phrases au mot près)
+      src/lib/jour.ts  jourEnTitre, jourLisible
+      src/lib/prestations-entretien.ts  MODELE_FOURNI, les 20 lignes et leurs familles
+
+    CE QUI EST EXACT
+      Les libellés, les phrases d'empêchement et de constat, le placeholder des
+      observations. M. Bernard et son 06 12 34 56 78 viennent du jeu de
+      démonstration ; il n'a pas d'e-mail, d'où « E-mail, absent ».
+      Les trois prestations cochées « du dernier chantier » sont un exemple.
+
+    CE QUI SERAIT À CODER (aucun code serveur)
+      [id]/page.tsx : rien, le surtitre reste.
+      FicheChantierClient.tsx : couleurs muted vers inkSoft pour les phrases ;
+        « Changer » en petites capitales sur 44 px ; pastilles SMS / E-mail à
+        44 px ; textarea à 16 px ; noms de famille en inkSoft. « + Ajouter un
+        client » garde colors.or, PrimaryButton garde sa capsule centrée.
+  */
+
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --plein:#7d9a6d; --surPlein:#faf9f5;
+    --rustTint:#ece9e1; --or:#B98B47; --alerte:#9C3B2E;
+    --line:rgba(28,28,26,.12); --chevron:rgba(28,28,26,.28);
+    --ombre:0 1px 2px rgba(47,59,47,.06),0 6px 18px rgba(47,59,47,.07);
+  }
+  body[data-charte="nuit"]{
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --plein:#e9e8de; --surPlein:#1a1d19;
+    --rustTint:#1f211e; --or:#B98B47; --alerte:#cd6456;
+    --line:rgba(233,232,222,.12); --chevron:rgba(233,232,222,.28);
+    --ombre:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:#e7e4dd;color:#1c1c1a;
+       font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:20px 0 56px}
+  body[data-charte="nuit"]{background:#070806;color:#e9e8de}
+  a{color:inherit;text-decoration:none}
+  button,input,textarea,select{font:inherit;color:inherit}
+  :focus-visible{outline:2px solid var(--or);outline-offset:2px;border-radius:4px}
+
+  /* Le banc d'essai, hors de l'écran */
+  .banc{max-width:390px;margin:0 auto 14px;padding:0 12px}
+  .banc h2{margin:0;font-size:10px;font-weight:500;letter-spacing:.26em;
+           text-transform:uppercase;color:#8a8578}
+  .boutons{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .boutons + .boutons{margin-top:6px}
+  .boutons button{font-size:12px;padding:8px 12px;border-radius:6px;
+                  border:1px solid rgba(28,28,26,.18);background:#faf9f5;
+                  color:#1c1c1a;cursor:pointer;min-height:36px}
+  body[data-charte="nuit"] .boutons button{background:#1a1d19;color:#e9e8de;
+                  border-color:rgba(233,232,222,.2)}
+  .boutons button[aria-pressed="true"]{background:#2f3b2f;color:#faf9f5;border-color:#2f3b2f}
+  body[data-charte="nuit"] .boutons button[aria-pressed="true"]{
+                  background:#e9e8de;color:#101210;border-color:#e9e8de}
+
+  /* Le téléphone */
+  .tel{max-width:390px;margin:0 auto;background:var(--cream);color:var(--ink);
+       position:relative;overflow:hidden;border:1px solid rgba(28,28,26,.14);border-radius:14px}
+  body[data-charte="nuit"] .tel{border-color:rgba(233,232,222,.14)}
+  .defile{height:700px;overflow-y:auto;overscroll-behavior:contain;padding-bottom:110px;
+          scrollbar-width:thin;scrollbar-color:var(--chevron) transparent}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;
+         font-weight:400;letter-spacing:-.01em}
+
+  /* Aujourd'hui ou Corrigé, et l'état montré */
+  body:not([data-mode="avant"]) .avant{display:none !important}
+  body[data-mode="avant"] .apres{display:none !important}
+
+  /* L'en-tête, grammaire d'EnTeteEcran */
+  .haut{display:flex;align-items:center;justify-content:space-between;padding:28px 26px 0}
+  .rond{width:40px;height:40px;border-radius:50%;background:var(--rustTint);
+        display:flex;align-items:center;justify-content:center;flex:none;color:var(--rust)}
+  .titre-ligne{display:flex;align-items:flex-start;justify-content:space-between;
+               gap:16px;padding:20px 26px 0}
+  h1{margin:0;font-size:36px;line-height:1.05;letter-spacing:-.018em}
+  .surtitre{margin:12px 0 0;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+            text-transform:uppercase;color:var(--or)}
+  .precision{margin:10px 0 0;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+             text-transform:uppercase;color:var(--muted)}
+  .assistant{width:44px;height:44px;border-radius:50%;background:var(--plein);
+             display:flex;align-items:center;justify-content:center;flex:none;margin-top:-2px}
+
+  /* Les voix communes */
+  .caps{font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+  .caps-11{font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase}
+  .libelle-11{font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+  .chev{flex:none;width:8px;height:8px;transform:rotate(45deg);
+        border-right:1.5px solid var(--chevron);border-top:1.5px solid var(--chevron)}
+  .capsule{display:inline-flex;align-items:center;justify-content:center;border:0;
+           border-radius:999px;background:var(--plein);color:var(--surPlein);
+           padding:13px 36px;font-size:17px;font-weight:400;line-height:1.3;cursor:pointer;
+           font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .capsule[disabled]{background:var(--line);color:var(--muted);cursor:default}
+  .retirer{flex:none;display:flex;align-items:center;justify-content:flex-end;
+           min-height:44px;min-width:44px;padding:0 0 0 12px;border:0;background:none;
+           color:var(--inkSoft);cursor:pointer}
+  .croix{flex:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;
+         border:0;background:none;color:var(--muted);font-size:18px;margin-left:10px}
+  .tiroir{display:flex;justify-content:space-between;align-items:center;margin:18px 26px 0;
+          padding:6px 0;border-top:1px solid var(--line);font-size:13px;color:var(--inkSoft)}
+  .tiroir button{border:0;background:none;padding:10px 0 10px 10px;min-height:44px;
+                 color:var(--or);cursor:pointer}
+
+  /* La barre du bas */
+  .barre{position:absolute;left:0;right:0;bottom:0;background:var(--cream);
+         border-top:1px solid var(--line);padding:18px 10px 10px;z-index:6}
+  .onglets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:relative}
+  .onglets span{text-align:center;font-size:8.5px;font-weight:500;letter-spacing:.12em;
+                text-transform:uppercase;color:var(--muted);padding-bottom:8px}
+  .onglets span.actif{color:var(--ink);transform:translateY(-2px)}
+  .filet-onglet{position:absolute;bottom:0;left:60%;height:1px;background:var(--or);width:20%}
+
+  /* Les notes, sous l'écran */
+  .notes{max-width:390px;margin:20px auto 0;padding:0 12px;font-size:13.5px;line-height:1.6;color:#3a3a34}
+  body[data-charte="nuit"] .notes{color:#c1c2b6}
+  .notes h3{margin:22px 0 8px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+            text-transform:uppercase;color:#6f6a5e}
+  body[data-charte="nuit"] .notes h3{color:#a3a597}
+  .notes ul{margin:0;padding-left:18px}
+  .notes li{margin-bottom:7px}
+  .notes p{margin:0 0 8px}
+
+
+  body:not([data-etat="ouverte"]) .seul-ouverte{display:none !important}
+  body:not([data-etat="nomme"]) .seul-nomme{display:none !important}
+  body:not([data-etat="envoyee"]) .seul-envoyee{display:none !important}
+  body[data-etat="envoyee"] .sauf-envoyee{display:none !important}
+  body[data-etat="ouverte"] .sauf-ouverte{display:none !important}
+
+  .zone{margin:20px 26px 0}
+  .jour{display:inline-flex;align-items:center;gap:8px;min-height:48px;font-size:20px;line-height:1.2}
+  .jour svg{color:var(--or)}
+  .jour-parti{margin:0;font-size:13px;font-weight:600}
+
+  /* Le pont vers le client */
+  .pont{display:block;width:100%;min-height:52px;margin-top:10px;border:0;background:none;
+        font-size:20px;color:var(--or);cursor:pointer}
+  body[data-mode="avant"] .pont{min-height:44px;margin-top:14px}
+  .client{display:flex;align-items:center;gap:10px;margin-top:6px}
+  .client .nom{font-size:21px;line-height:1.2;flex:1;min-width:0}
+  .changer{border:0;background:none;min-height:44px;padding:0 0 0 12px;color:var(--rust);cursor:pointer}
+  .constat{margin:4px 0 0;font-size:13px;line-height:1.5;color:var(--inkSoft)}
+  .canal{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .canal .lab{color:var(--inkSoft);margin-right:4px}
+  .pastille{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;
+            font-size:14px;line-height:1;border:1px solid var(--line);background:none;color:var(--inkSoft)}
+  .pastille.actif{background:var(--plein);border-color:var(--plein);color:var(--surPlein)}
+  .pastille .absent{opacity:.85}
+
+  /* Aujourd'hui : les voix d'origine du pont */
+  body[data-mode="avant"] .client{margin-top:8px}
+  body[data-mode="avant"] .client .nom{font-size:17px;flex:none}
+  .changer-avant{border:0;background:none;padding:0;font-size:12px;text-decoration:underline;color:var(--muted)}
+  body[data-mode="avant"] .constat{margin-top:5px;font-size:11.5px;color:var(--muted)}
+  body[data-mode="avant"] .canal{margin-top:10px;flex-wrap:nowrap}
+  body[data-mode="avant"] .canal .lab{color:var(--muted);margin-right:0}
+  body[data-mode="avant"] .pastille{min-height:0;padding:7px 13px;font-size:12.5px}
+  body[data-mode="avant"] .pastille .absent{opacity:.7}
+
+  /* Les prestations */
+  .prestations{margin:26px 26px 0}
+  .famille{margin-top:22px}
+  .famille:first-child{margin-top:0}
+  .famille h2{margin:0;color:var(--inkSoft)}
+  .presta{display:flex;align-items:center;gap:14px;width:100%;min-height:52px;padding:12px 0;
+          border:0;border-bottom:1px solid var(--line);background:none;text-align:left;cursor:pointer}
+  .case{flex:none;width:24px;height:24px;border-radius:7px;border:1.5px solid var(--chevron);
+        display:flex;align-items:center;justify-content:center;color:var(--card)}
+  .case svg{display:none}
+  .presta .lib{flex:1;min-width:0;font-size:16px;line-height:1.3;color:var(--inkSoft)}
+  body:not([data-etat="ouverte"]) .faite .case{background:var(--rust);border-color:var(--rust)}
+  body:not([data-etat="ouverte"]) .faite .case svg{display:block}
+  body:not([data-etat="ouverte"]) .faite .lib{color:var(--ink)}
+  body[data-mode="avant"] .prestations{margin-top:24px}
+  body[data-mode="avant"] .famille{margin-top:18px}
+  body[data-mode="avant"] .famille:first-child{margin-top:0}
+  body[data-mode="avant"] .famille h2{color:var(--muted)}
+  body[data-mode="avant"] .presta{min-height:48px;padding:11px 0;gap:13px}
+  body[data-mode="avant"] .case{width:22px;height:22px}
+  body[data-mode="avant"] .presta .lib{font-size:15px}
+
+  /* Le temps passé */
+  .temps{margin:30px 26px 0}
+  .temps-tete{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .temps-tete h2,.obs h2{margin:0;color:var(--inkSoft)}
+  body[data-mode="avant"] .temps-tete h2,body[data-mode="avant"] .obs h2{color:var(--muted)}
+  .bascule{display:flex;align-items:center;gap:8px;min-height:44px;border:0;background:none;padding:0}
+  .bascule .etat{color:var(--rust)}
+  .interrupteur{position:relative;display:block;width:44px;height:26px;border-radius:999px;background:var(--plein)}
+  .interrupteur i{position:absolute;left:21px;top:3px;width:20px;height:20px;border-radius:50%;
+                  background:var(--surPlein);box-shadow:0 1px 3px rgba(20,18,14,.28)}
+  .molette{display:flex;gap:10px;margin-top:8px}
+  .select{flex:1;display:flex;align-items:center;justify-content:space-between;min-height:52px;
+          padding:0 15px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-size:17px}
+  .select svg{color:var(--inkSoft)}
+  body[data-mode="avant"] .select{min-height:50px}
+
+  .obs{margin:26px 26px 0}
+  textarea{display:block;width:100%;margin-top:8px;border-radius:14px;padding:12px 15px;
+           font-size:16px;line-height:1.5;background:var(--card);color:var(--ink);
+           border:1px solid var(--line);resize:none;outline:none}
+  textarea::placeholder{color:var(--inkSoft);opacity:.75}
+  textarea:focus{border-color:var(--or)}
+  body[data-mode="avant"] textarea{font-size:15px}
+  body[data-mode="avant"] textarea::placeholder{color:var(--muted);opacity:1}
+
+  .envoi{margin:32px 26px 0}
+  .raison{margin:12px 0 0;text-align:center;font-size:13.5px;line-height:1.6;color:var(--inkSoft)}
+  body[data-mode="avant"] .raison{font-size:12.5px;color:var(--muted)}
+  .envoye-le{margin:0 0 14px;text-align:center;font-size:13.5px;color:var(--inkSoft)}
+  body[data-mode="avant"] .envoye-le{font-size:12.5px;color:var(--muted)}
+  .centre{text-align:center}
+
+</style>
+</head>
+<body data-mode="apres" data-charte="origine" data-etat="nomme">
+
+<div class="banc">
+  <h2>Fiche de chantier, remplir</h2>
+  <div class="boutons">
+    <button type="button" data-groupe="mode" data-valeur="avant" aria-pressed="false">Aujourd'hui</button>
+    <button type="button" data-groupe="mode" data-valeur="apres" aria-pressed="true">Corrigé</button>
+    <button type="button" data-groupe="charte" data-valeur="origine" aria-pressed="true">Origine</button>
+    <button type="button" data-groupe="charte" data-valeur="nuit" aria-pressed="false">Nuit</button>
+  </div>
+  <div class="boutons"><button type="button" data-groupe="etat" data-valeur="nomme" aria-pressed="true">Client nommé</button><button type="button" data-groupe="etat" data-valeur="ouverte" aria-pressed="false">Sans client</button><button type="button" data-groupe="etat" data-valeur="envoyee" aria-pressed="false">Envoyée</button></div>
+</div>
+
+<div class="tel">
+  <div class="defile">
+
+    <div class="haut">
+      <a class="rond" href="#" aria-label="Retour aux fiches"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      <span></span>
+    </div>
+    <div class="titre-ligne">
+      <div style="min-width:0">
+        <h1 class="serif">Fiche de chantier</h1>
+        <p class="surtitre">Outils du métier</p>
+      </div>
+      <span class="assistant" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--surPlein)" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+    </div>
+
+    <section class="zone">
+      <label class="jour serif sauf-envoyee">Dimanche 11 octobre 2026 <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></label>
+      <p class="jour-parti seul-envoyee avant">dimanche 11 octobre</p>
+      <p class="jour serif seul-envoyee apres" style="margin:0">Dimanche 11 octobre 2026</p>
+
+      <button type="button" class="pont seul-ouverte">+ Ajouter un client</button>
+
+      <div class="sauf-ouverte">
+        <div class="client">
+          <span class="nom serif">M. Bernard</span>
+          <button type="button" class="changer caps apres seul-nomme">Changer</button>
+          <button type="button" class="changer-avant avant seul-nomme">Changer</button>
+        </div>
+        <p class="constat seul-nomme">3 prestations cochées, celles du dernier chantier.</p>
+        <div class="canal seul-nomme">
+          <span class="lab caps apres">Envoyé par</span>
+          <span class="lab caps-11 avant">Envoyé par</span>
+          <button type="button" class="pastille actif" aria-pressed="true">SMS</button>
+          <button type="button" class="pastille" aria-pressed="false">E-mail<span class="absent">, absent</span></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="prestations">
+      <div class="famille">
+        <h2 class="caps apres" style="font-weight:600">Pelouse</h2>
+        <h2 class="caps-11 avant">Pelouse</h2>
+        <div style="margin-top:8px">
+          <button type="button" class="presta faite"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Tonte et ébarbage</span></button>
+          <button type="button" class="presta"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Traitement pelouse</span></button>
+          <button type="button" class="presta"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Scarification</span></button>
+          <button type="button" class="presta"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Engrais</span></button>
+        </div>
+      </div>
+      <div class="famille">
+        <h2 class="caps apres" style="font-weight:600">Tailles</h2>
+        <h2 class="caps-11 avant">Tailles</h2>
+        <div style="margin-top:8px">
+          <button type="button" class="presta"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Taille arbuste automne</span></button>
+          <button type="button" class="presta"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Taille arbuste printemps</span></button>
+          <button type="button" class="presta faite"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Taille de haie automne</span></button>
+          <button type="button" class="presta"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Taille de haie printemps</span></button>
+          <button type="button" class="presta"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Taille des rosiers</span></button>
+        </div>
+      </div>
+      <div class="famille">
+        <h2 class="caps apres" style="font-weight:600">Massifs</h2>
+        <h2 class="caps-11 avant">Massifs</h2>
+        <div style="margin-top:8px">
+          <button type="button" class="presta"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Bêchage</span></button>
+          <button type="button" class="presta"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Bordures massifs</span></button>
+          <button type="button" class="presta"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Griffage massifs</span></button>
+          <button type="button" class="presta"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Désherbage massifs</span></button>
+          <button type="button" class="presta"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Coupe des fleurs fanées</span></button>
+        </div>
+      </div>
+      <div class="famille">
+        <h2 class="caps apres" style="font-weight:600">Propreté</h2>
+        <h2 class="caps-11 avant">Propreté</h2>
+        <div style="margin-top:8px">
+          <button type="button" class="presta"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Nettoyage pied de haies</span></button>
+          <button type="button" class="presta"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Désherbant allée</span></button>
+          <button type="button" class="presta"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Lierre, liseron, liane</span></button>
+          <button type="button" class="presta"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Démoussage voirie</span></button>
+          <button type="button" class="presta faite"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Ramassage des feuilles</span></button>
+          <button type="button" class="presta"><span class="case"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lib">Évacuation des déchets</span></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="temps">
+      <div class="temps-tete">
+        <h2 class="caps apres" style="font-weight:600">Temps passé</h2>
+        <h2 class="caps-11 avant">Temps passé</h2>
+        <button type="button" class="bascule" aria-pressed="true" aria-label="Montrer le temps passé sur le retour d'intervention du client">
+          <span class="etat caps apres" style="font-weight:600">Visible</span>
+          <span class="etat caps-11 avant">Visible</span>
+          <span class="interrupteur" aria-hidden="true"><i></i></span>
+        </button>
+      </div>
+      <div class="molette">
+        <span class="select serif" aria-label="Heures"><span class="seul-ouverte">0 h</span><span class="sauf-ouverte">1 h</span><svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="select serif" aria-label="Minutes"><span class="seul-ouverte">00</span><span class="sauf-ouverte">30</span><svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+    </section>
+
+    <section class="obs">
+      <h2 class="caps apres" style="font-weight:600">Observations</h2>
+      <h2 class="caps-11 avant">Observations</h2>
+      <textarea rows="3" aria-label="Observations" placeholder="Ce que le client doit savoir : une haie à reprendre, un arrosage coupé…"></textarea>
+    </section>
+
+    <section class="envoi">
+      <div class="seul-ouverte">
+        <div class="centre"><button type="button" class="capsule" disabled>Enregistrer et envoyer</button></div>
+        <p class="raison">Nommez d'abord le client : c'est lui qui recevra le rapport.</p>
+      </div>
+      <div class="seul-nomme">
+        <div class="centre"><button type="button" class="capsule">Enregistrer et envoyer</button></div>
+      </div>
+      <div class="seul-envoyee">
+        <p class="envoye-le">Envoyé le 11 octobre 2026 à 10:42.</p>
+        <div class="centre"><button type="button" class="capsule">Envoyer par SMS</button></div>
+      </div>
+    </section>
+
+  </div>
+  <nav class="barre" aria-hidden="true"><div class="onglets">
+  <span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Paysage</span><span>Réglages</span>
+  <i class="filet-onglet"></i></div></nav>
+</div>
+
+<div class="notes">
+  <h3>Ce qui change</h3>
+  <ul>
+    <li>« Changer » et les choix SMS ou E-mail passent à la hauteur d'un pouce, 44 px : ils se touchent avec des gants.</li>
+    <li>Les phrases grises (prestations reprises, temps masqué, raison du bouton éteint) et les noms de famille passent au gris foncé, lisible au soleil.</li>
+    <li>Le champ Observations passe à 16 px : en dessous, l'iPhone agrandit la page dès qu'on le touche.</li>
+    <li>Les lignes à cocher grandissent un peu, cases comprises : moins d'appuis ratés.</li>
+  </ul>
+  <h3>Pas vérifiable ici</h3>
+  <p>L'écran d'aujourd'hui n'a pas pu être ouvert, faute de fiche dans le jeu d'essai : sa version « Aujourd'hui » est reconstituée depuis le code. Le panneau « Pour qui ? » n'est pas redessiné.</p>
+</div>
+
+<script>
+/* Les bascules du banc. Sans script, le body garde ses attributs d'origine :
+   la version corrigée, en Origine, dans son premier état. */
+document.querySelectorAll(".banc [data-groupe]").forEach(function (b) {
+  b.addEventListener("click", function () {
+    var g = b.dataset.groupe;
+    document.body.setAttribute("data-" + g, b.dataset.valeur);
+    document.querySelectorAll('.banc [data-groupe="' + g + '"]').forEach(function (x) {
+      x.setAttribute("aria-pressed", String(x === b));
+    });
+    var d = document.querySelector(".defile");
+    if (d && g === "etat") d.scrollTop = 0;
+  });
+});
+</script>
+</body>
+</html>

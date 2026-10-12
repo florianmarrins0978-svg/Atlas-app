@@ -8,6 +8,56 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-11
 
+- **Six écrans repris d'après leurs planches /impeccable, en un seul lot (sa décision).** Il a
+  demandé une seule batterie pour les six : Paysage (une icône par outil, la formule Artisan dite
+  dès la liste), la fiche de chantier (accueil, remplir, composer : carte pleine largeur au liseré
+  d'or, « Retirer » à la place des croix, une rangée pour sauter d'une famille à l'autre), Mes
+  tarifs (une ligne par tarif qu'on ouvre sur place, l'import en lien), Nouveau compte (le rôle
+  d'abord, « Pourra / Ne pourra pas » au lieu de lignes barrées), Accepter les conditions (sur la
+  porte sombre, le texte rendu, « Se déconnecter ») et le code reçu (six cases autour d'un seul
+  champ, aussi à la création de compte et au mot de passe oublié). Aucune règle d'accès, de prix
+  ni d'authentification ne change. Le revers assumé : un rouge sur l'un retient les six.
+
+- **Le catalogue, sa planche corrigée, et la barre du bas qui allumait Chantiers.** La barre ne
+  regardait que le début de l'adresse : /catalogue n'est pas sous /reglages, aucun onglet ne la
+  revendiquait, et le trait tombait sous Chantiers. Un onglet déclare désormais les adresses qu'il
+  possède en plus de la sienne (`ongletActif`, `src/lib/onglet-actif.ts`, éprouvé rouge puis vert).
+  À l'écran (`appli/catalogue-les-mots.html`) : plus de légende « en doré, les vôtres », ses mots
+  sur leur ligne avec « Retirer », « Ajouter un mot » et les nouvelles entrées en texte or.
+
+- **Le filtre de date se feuillette, comme le mois de Terminés (sa A).** Il
+  trouvait « 11 octobre 2026 » *« dur à utiliser »* : trois mots qui se
+  touchaient chacun à part, sans que rien ne le dise. Sur les rapports envoyés,
+  les fiches de sécurité et les retours d'intervention, `FiltreDeDate` montre
+  désormais « Octobre 2026 » entre deux chevrons d'or (le dessin de
+  `NavigationMois`), le mois touché ouvre la roue pour un jour, « Tout le mois »
+  y revient, et le chevron d'après s'éteint au mois en cours. L'année d'un bloc
+  n'a plus de geste ; une adresse `?periode=2026` reste lue. Une seule pièce
+  change pour les trois écrans ; `avecLaPortee` part avec les mots touchables,
+  `moisVoisin` et `moisSuivantOuvert` (`src/lib/periode.ts`) arrivent, éprouvés
+  dans `test-periode.ts`. Ma TVA (période déclarée) et la fiche qu'on remplit
+  (`TitreAvecRoue`, jour du passage) ne bougent pas. Planches :
+  `appli/filtre-de-date-plus-simple.html`, `appli/filtre-a-partout.html`.
+
+- **Neuf écrans jamais repris par /impeccable, en planches (rien de codé).**
+  Sa demande : *« va regarder les pages de l'appli qui n'ont pas été faites par
+  le skill impeccable et crée-moi des planches en les corrigeant »*. L'inventaire
+  (planches `appli/` et commits qui les appliquent, voir l'entrée du 4 septembre)
+  a désigné : Paysage, la fiche de chantier (accueil, remplir, composer), le
+  catalogue, Mes tarifs, Nouveau compte, Documents légaux, le code reçu par
+  e-mail. Une planche par écran, chacune avec « Aujourd'hui » et « Corrigé »,
+  Origine et Nuit. **Défaut réel trouvé en regardant l'écran** : sur
+  `/catalogue`, la barre du bas allume Chantiers (`AtlasBottomNav` retombe sur
+  l'onglet 0 quand aucune adresse ne correspond ; `/catalogue` n'est pas sous
+  `/reglages`). Restent à faire, sans planche : note vocale, export hors
+  feuille d'envoi, coordonnées d'un client, entretien, retours, fiches de
+  sécurité, compte, grilles de prix, mesures, vocabulaire, avoir, impayé,
+  contrat. `mes-tarifs.html` existait déjà (Arborea, liée ailleurs) : la
+  planche s'appelle `mes-tarifs-corrige.html`.
+  Au passage, `preparer-atelier.ts` lancé avec des adresses non suffixées a
+  migré `atlas_test` (et non `atlas_test_a4`) jusqu'à 0128 : migrations
+  d'extension seulement, sans effet sur ses données (`atlas_dev` intact).
+
 ### L'établi de qualification remis sur l'application d'aujourd'hui
 
 **Sa demande :** *« faut le mettre à jour pour qu'il prenne en compte les

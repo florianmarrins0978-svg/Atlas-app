@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas : fiche de chantier, l'accueil</title>
+<style>
+  /*
+    FICHE DE CHANTIER, L'ACCUEIL. Proposition pour /paysage/fiche.
+
+    D'OÙ VIENT CE QUI EST DESSINÉ
+      src/app/paysage/fiche/page.tsx        l'ordre de l'écran, la carte Composer
+      src/app/paysage/fiche/OuvrirFiche.tsx  « Créer une fiche » (PrimaryButton)
+      src/app/paysage/fiche/FichesEnCours.tsx  la section « En cours », la croix, le tiroir
+      src/app/paysage/fiche/RapportsEnvoyes.tsx  filtre de date, recherche, « Rapports envoyés »
+      src/app/paysage/fiche/LignePassage.tsx  une ligne : nom, jour, prestations, durée
+      src/components/atlas/FiltreDeDate.tsx, ChampRecherche.tsx, TiroirDesRetires.tsx
+      src/lib/jour.ts (jourLisible), src/lib/passage-entretien.ts (libelleMinutes)
+
+    CE QUI EST EXACT
+      Les libellés de l'écran, au mot près. « 20 prestations » est le modèle fourni
+      (MODELE_FOURNI). Les clients M. Bernard, Mme Costa, M. Faucher, Mme Aubry
+      sont ceux du jeu de démonstration (src/server/db/seed.ts). Les dates sont
+      celles d'octobre 2026, la ligne du dessous est celle que LignePassage
+      compose : « dimanche 11 octobre, 2 prestations, 1 h 40 ».
+      La version Aujourd'hui a été comparée à la capture de l'écran vide ; l'état
+      avec des fiches est reconstitué depuis le code (aucune fiche dans le jeu
+      d'essai).
+
+    CE QUI SERAIT À CODER (aucun code serveur)
+      page.tsx : la carte Composer prend toute la largeur, coins 16 px, ombre
+        légère, et garde son liseré d'or ; le surtitre et la capsule
+        « Créer une fiche » restent tels quels ; une ligne quand il n'y a ni
+        brouillon ni rapport.
+      FichesEnCours.tsx : la croix devient « Retirer » (même tiroir, même geste).
+      LignePassage.tsx : la ligne grise passe de muted à inkSoft ; l'étiquette
+        « Brouillon » part ; « 0 prestation » devient « aucune prestation ».
+      RapportsEnvoyes.tsx : la phrase « Aucun rapport… » passe en inkSoft.
+  */
+
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --plein:#7d9a6d; --surPlein:#faf9f5;
+    --rustTint:#ece9e1; --or:#B98B47; --alerte:#9C3B2E;
+    --line:rgba(28,28,26,.12); --chevron:rgba(28,28,26,.28);
+    --ombre:0 1px 2px rgba(47,59,47,.06),0 6px 18px rgba(47,59,47,.07);
+  }
+  body[data-charte="nuit"]{
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --plein:#e9e8de; --surPlein:#1a1d19;
+    --rustTint:#1f211e; --or:#B98B47; --alerte:#cd6456;
+    --line:rgba(233,232,222,.12); --chevron:rgba(233,232,222,.28);
+    --ombre:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:#e7e4dd;color:#1c1c1a;
+       font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:20px 0 56px}
+  body[data-charte="nuit"]{background:#070806;color:#e9e8de}
+  a{color:inherit;text-decoration:none}
+  button,input,textarea,select{font:inherit;color:inherit}
+  :focus-visible{outline:2px solid var(--or);outline-offset:2px;border-radius:4px}
+
+  /* Le banc d'essai, hors de l'écran */
+  .banc{max-width:390px;margin:0 auto 14px;padding:0 12px}
+  .banc h2{margin:0;font-size:10px;font-weight:500;letter-spacing:.26em;
+           text-transform:uppercase;color:#8a8578}
+  .boutons{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .boutons + .boutons{margin-top:6px}
+  .boutons button{font-size:12px;padding:8px 12px;border-radius:6px;
+                  border:1px solid rgba(28,28,26,.18);background:#faf9f5;
+                  color:#1c1c1a;cursor:pointer;min-height:36px}
+  body[data-charte="nuit"] .boutons button{background:#1a1d19;color:#e9e8de;
+                  border-color:rgba(233,232,222,.2)}
+  .boutons button[aria-pressed="true"]{background:#2f3b2f;color:#faf9f5;border-color:#2f3b2f}
+  body[data-charte="nuit"] .boutons button[aria-pressed="true"]{
+                  background:#e9e8de;color:#101210;border-color:#e9e8de}
+
+  /* Le téléphone */
+  .tel{max-width:390px;margin:0 auto;background:var(--cream);color:var(--ink);
+       position:relative;overflow:hidden;border:1px solid rgba(28,28,26,.14);border-radius:14px}
+  body[data-charte="nuit"] .tel{border-color:rgba(233,232,222,.14)}
+  .defile{height:700px;overflow-y:auto;overscroll-behavior:contain;padding-bottom:110px;
+          scrollbar-width:thin;scrollbar-color:var(--chevron) transparent}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;
+         font-weight:400;letter-spacing:-.01em}
+
+  /* Aujourd'hui ou Corrigé, et l'état montré */
+  body:not([data-mode="avant"]) .avant{display:none !important}
+  body[data-mode="avant"] .apres{display:none !important}
+
+  /* L'en-tête, grammaire d'EnTeteEcran */
+  .haut{display:flex;align-items:center;justify-content:space-between;padding:28px 26px 0}
+  .rond{width:40px;height:40px;border-radius:50%;background:var(--rustTint);
+        display:flex;align-items:center;justify-content:center;flex:none;color:var(--rust)}
+  .titre-ligne{display:flex;align-items:flex-start;justify-content:space-between;
+               gap:16px;padding:20px 26px 0}
+  h1{margin:0;font-size:36px;line-height:1.05;letter-spacing:-.018em}
+  .surtitre{margin:12px 0 0;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+            text-transform:uppercase;color:var(--or)}
+  .precision{margin:10px 0 0;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+             text-transform:uppercase;color:var(--muted)}
+  .assistant{width:44px;height:44px;border-radius:50%;background:var(--plein);
+             display:flex;align-items:center;justify-content:center;flex:none;margin-top:-2px}
+
+  /* Les voix communes */
+  .caps{font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+  .caps-11{font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase}
+  .libelle-11{font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+  .chev{flex:none;width:8px;height:8px;transform:rotate(45deg);
+        border-right:1.5px solid var(--chevron);border-top:1.5px solid var(--chevron)}
+  .capsule{display:inline-flex;align-items:center;justify-content:center;border:0;
+           border-radius:999px;background:var(--plein);color:var(--surPlein);
+           padding:13px 36px;font-size:17px;font-weight:400;line-height:1.3;cursor:pointer;
+           font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif}
+  .capsule[disabled]{background:var(--line);color:var(--muted);cursor:default}
+  .retirer{flex:none;display:flex;align-items:center;justify-content:flex-end;
+           min-height:44px;min-width:44px;padding:0 0 0 12px;border:0;background:none;
+           color:var(--inkSoft);cursor:pointer}
+  .croix{flex:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;
+         border:0;background:none;color:var(--muted);font-size:18px;margin-left:10px}
+  .tiroir{display:flex;justify-content:space-between;align-items:center;margin:18px 26px 0;
+          padding:6px 0;border-top:1px solid var(--line);font-size:13px;color:var(--inkSoft)}
+  .tiroir button{border:0;background:none;padding:10px 0 10px 10px;min-height:44px;
+                 color:var(--or);cursor:pointer}
+
+  /* La barre du bas */
+  .barre{position:absolute;left:0;right:0;bottom:0;background:var(--cream);
+         border-top:1px solid var(--line);padding:18px 10px 10px;z-index:6}
+  .onglets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:relative}
+  .onglets span{text-align:center;font-size:8.5px;font-weight:500;letter-spacing:.12em;
+                text-transform:uppercase;color:var(--muted);padding-bottom:8px}
+  .onglets span.actif{color:var(--ink);transform:translateY(-2px)}
+  .filet-onglet{position:absolute;bottom:0;left:60%;height:1px;background:var(--or);width:20%}
+
+  /* Les notes, sous l'écran */
+  .notes{max-width:390px;margin:20px auto 0;padding:0 12px;font-size:13.5px;line-height:1.6;color:#3a3a34}
+  body[data-charte="nuit"] .notes{color:#c1c2b6}
+  .notes h3{margin:22px 0 8px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+            text-transform:uppercase;color:#6f6a5e}
+  body[data-charte="nuit"] .notes h3{color:#a3a597}
+  .notes ul{margin:0;padding-left:18px}
+  .notes li{margin-bottom:7px}
+  .notes p{margin:0 0 8px}
+
+
+  body:not([data-etat="vide"]) .si-vide{display:none !important}
+  body[data-etat="vide"] .si-plein{display:none !important}
+
+  /* La carte étroite bordée d'or (page.tsx), puis la capsule centrée (OuvrirFiche) */
+  .carte-etroite{display:flex;width:fit-content;max-width:270px;min-height:44px;
+                 align-items:center;gap:14px;border-radius:4px;padding:13px 16px;
+                 background:var(--card);border:1px solid var(--or);margin:20px 26px 0}
+  .carte-etroite .t{display:block;font-size:16px;line-height:1.2}
+  .carte-etroite .s{display:block;margin-top:3px;font-size:11.5px;line-height:1.45;color:var(--muted)}
+  /* Corrigé : la carte pleine largeur de la première planche, bordée de l'or de l'appli */
+  .carte{display:flex;align-items:center;gap:14px;margin:22px 26px 0;padding:15px 18px;
+         min-height:64px;border-radius:16px;background:var(--card);box-shadow:var(--ombre);
+         border:1px solid #B98B47}
+  .carte .t{display:block;font-size:19px;line-height:1.2}
+  .carte .s{display:block;margin-top:3px;font-size:13px;color:var(--inkSoft)}
+  .carte .gauche{flex:1;min-width:0}
+  .centre{text-align:center;margin:22px 26px 0}
+
+  section.liste{margin:30px 26px 0}
+  .titre-section{margin:0;font-size:9.5px;font-weight:700;letter-spacing:.28em;
+                 text-transform:uppercase;color:var(--ink)}
+  .ligne{display:flex;align-items:center;border-bottom:1px solid var(--line)}
+  .ligne a{display:flex;flex:1;min-width:0;min-height:60px;align-items:center;gap:15px;padding:13px 0}
+  .ligne .g{flex:1;min-width:0}
+  .ligne .nom{display:block;font-size:17px;line-height:1.25;overflow:hidden;
+              text-overflow:ellipsis;white-space:nowrap}
+  .ligne .dit{display:block;margin-top:3px;font-size:13px;line-height:1.45;color:var(--inkSoft)}
+  .brouillon{flex:none;color:var(--or);opacity:.9}
+
+  /* Aujourd'hui : les voix d'origine */
+  body[data-mode="avant"] section.liste{margin-top:28px}
+  body[data-mode="avant"] .titre-section{font-size:11px;letter-spacing:.18em}
+  body[data-mode="avant"] .ligne a{min-height:56px}
+  body[data-mode="avant"] .ligne .nom{font-size:16px}
+  body[data-mode="avant"] .ligne .dit{font-size:11.5px;line-height:1.5;color:var(--muted)}
+
+  /* Le filtre de date, dessin de FiltreDeDate */
+  .periode{display:flex;align-items:center;justify-content:center;gap:4px;margin:0 -4px}
+  .mot{display:flex;align-items:center;min-height:44px;padding:0 3px;font-size:20px;
+       line-height:1.2;border:0;background:none;color:var(--ink)}
+  .mot.actif{color:var(--or);box-shadow:inset 0 -2px 0 var(--or)}
+  .roue{display:flex;align-items:center;justify-content:center;width:32px;min-height:44px;color:var(--or)}
+  .cherche{display:flex;align-items:center;gap:12px;margin-top:12px;
+           border-bottom:1.5px solid var(--muted)}
+  .cherche input{flex:1;min-width:0;border:0;background:none;outline:none;
+                 padding:11px 0;font-size:16px;color:var(--ink)}
+  .cherche input::placeholder{color:var(--inkSoft);opacity:.75}
+  .cherche:focus-within{border-color:var(--or)}
+  .apres-rapports{margin-top:22px}
+  .rien{margin:26px 26px 0;text-align:center;font-size:14px;line-height:1.6;color:var(--inkSoft)}
+
+</style>
+</head>
+<body data-mode="apres" data-charte="origine" data-etat="plein">
+
+<div class="banc">
+  <h2>Fiche de chantier, l'accueil</h2>
+  <div class="boutons">
+    <button type="button" data-groupe="mode" data-valeur="avant" aria-pressed="false">Aujourd'hui</button>
+    <button type="button" data-groupe="mode" data-valeur="apres" aria-pressed="true">Corrigé</button>
+    <button type="button" data-groupe="charte" data-valeur="origine" aria-pressed="true">Origine</button>
+    <button type="button" data-groupe="charte" data-valeur="nuit" aria-pressed="false">Nuit</button>
+  </div>
+  <div class="boutons"><button type="button" data-groupe="etat" data-valeur="plein" aria-pressed="true">Avec des fiches</button><button type="button" data-groupe="etat" data-valeur="vide" aria-pressed="false">Aucune fiche</button></div>
+</div>
+
+<div class="tel">
+  <div class="defile">
+
+    <div class="haut">
+      <a class="rond" href="#" aria-label="Retour à Paysage"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      <span></span>
+    </div>
+    <div class="titre-ligne">
+      <div style="min-width:0">
+        <h1 class="serif">Fiche de chantier</h1>
+        <p class="surtitre">Outils du métier</p>
+      </div>
+      <span class="assistant" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--surPlein)" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+    </div>
+
+    <!-- Aujourd'hui : la carte étroite bordée d'or, le dessin de l'appli -->
+    <a class="carte-etroite avant" href="#">
+      <span style="min-width:0;flex:1">
+        <span class="t serif">Composer ma fiche</span>
+        <span class="s">20 prestations</span>
+      </span>
+      <span class="chev" aria-hidden="true"></span>
+    </a>
+    <!-- Corrigé : la carte pleine largeur, liseré doré gardé -->
+    <a class="carte apres" href="#">
+      <span class="gauche">
+        <span class="t serif">Composer ma fiche</span>
+        <span class="s">20 prestations</span>
+      </span>
+      <span class="chev" aria-hidden="true"></span>
+    </a>
+    <!-- La capsule centrée, inchangée -->
+    <div class="centre">
+      <button type="button" class="capsule">Créer une fiche</button>
+    </div>
+
+    <p class="rien si-vide apres">Aucune fiche pour l'instant.</p>
+
+    <section class="liste si-plein">
+      <h2 class="titre-section">En cours</h2>
+      <div style="margin-top:10px">
+        <div class="ligne">
+          <a href="#">
+            <span class="g">
+              <span class="nom serif">Mme Aubry</span>
+              <span class="dit apres">dimanche 11 octobre, 2 prestations, 1 h 40</span>
+              <span class="dit avant">dimanche 11 octobre, 2 prestations, 1 h 40</span>
+            </span>
+            <span class="brouillon libelle-11 avant">Brouillon</span>
+          </a>
+          <button type="button" class="retirer caps apres" aria-label="Retirer la fiche Mme Aubry">Retirer</button>
+          <button type="button" class="croix avant" aria-label="Supprimer la fiche Mme Aubry">×</button>
+        </div>
+        <div class="ligne">
+          <a href="#">
+            <span class="g">
+              <span class="nom serif">Sans client</span>
+              <span class="dit apres">samedi 10 octobre, aucune prestation</span>
+              <span class="dit avant">samedi 10 octobre, 0 prestation</span>
+            </span>
+            <span class="brouillon libelle-11 avant">Brouillon</span>
+          </a>
+          <button type="button" class="retirer caps apres" aria-label="Retirer la fiche Sans client">Retirer</button>
+          <button type="button" class="croix avant" aria-label="Supprimer la fiche Sans client">×</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="liste si-plein">
+      <div class="periode">
+        <button type="button" class="mot serif">11</button>
+        <button type="button" class="mot serif actif" aria-pressed="true">octobre</button>
+        <button type="button" class="mot serif">2026</button>
+        <span class="roue" aria-label="Choisir un jour"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+      <label class="cherche">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--inkSoft)" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5" stroke-linecap="round"/></svg>
+        <input type="text" placeholder="Un nom de client" aria-label="Chercher un client">
+      </label>
+      <h2 class="titre-section apres-rapports">Rapports envoyés</h2>
+      <div style="margin-top:10px">
+        <div class="ligne">
+          <a href="#">
+            <span class="g">
+              <span class="nom serif">M. Bernard</span>
+              <span class="dit">vendredi 9 octobre, 4 prestations, 1 h 30</span>
+            </span>
+            <span class="chev" aria-hidden="true"></span>
+          </a>
+        </div>
+        <div class="ligne">
+          <a href="#">
+            <span class="g">
+              <span class="nom serif">Mme Costa</span>
+              <span class="dit">mardi 6 octobre, 3 prestations, 45 min</span>
+            </span>
+            <span class="chev" aria-hidden="true"></span>
+          </a>
+        </div>
+        <div class="ligne">
+          <a href="#">
+            <span class="g">
+              <span class="nom serif">M. Faucher</span>
+              <span class="dit">jeudi 1er octobre, 5 prestations, 2 h</span>
+            </span>
+            <span class="chev" aria-hidden="true"></span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </div>
+  <nav class="barre" aria-hidden="true"><div class="onglets">
+  <span>Chantiers</span><span>Planning</span><span>Terminés</span><span class="actif">Paysage</span><span>Réglages</span>
+  <i class="filet-onglet"></i></div></nav>
+</div>
+
+<div class="notes">
+  <h3>Ce qui change</h3>
+  <ul>
+    <li>« Composer ma fiche » prend toute la largeur et garde son liseré doré.</li>
+    <li>Les fiches en cours perdent l'étiquette dorée « Brouillon », puisqu'elles le sont toutes, et leur croix devient « Retirer », le mot du reste de l'appli.</li>
+    <li>Sous chaque nom, la date et la durée passent du gris pâle au gris foncé : elles se lisent au soleil.</li>
+    <li>Une fiche vide affiche « aucune prestation » au lieu de « 0 prestation ».</li>
+    <li>Quand il n'y a encore aucune fiche, une ligne le dit au lieu d'un écran blanc.</li>
+  </ul>
+</div>
+
+<script>
+/* Les bascules du banc. Sans script, le body garde ses attributs d'origine :
+   la version corrigée, en Origine, dans son premier état. */
+document.querySelectorAll(".banc [data-groupe]").forEach(function (b) {
+  b.addEventListener("click", function () {
+    var g = b.dataset.groupe;
+    document.body.setAttribute("data-" + g, b.dataset.valeur);
+    document.querySelectorAll('.banc [data-groupe="' + g + '"]').forEach(function (x) {
+      x.setAttribute("aria-pressed", String(x === b));
+    });
+    var d = document.querySelector(".defile");
+    if (d && g === "etat") d.scrollTop = 0;
+  });
+});
+</script>
+</body>
+</html>

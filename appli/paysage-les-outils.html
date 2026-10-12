@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas : Paysage, les outils</title>
+<style>
+  /*
+    PAYSAGE, L'ACCUEIL DES OUTILS : proposition pour /paysage.
+
+    ─────────────────────────────────────────────────────────────────────────
+    D'OÙ VIENT CE QUI EST DESSINÉ ICI.
+
+    src/app/paysage/page.tsx           la liste OUTILS : quatre outils ouverts
+                                       (arrosage, fiche de chantier, diagnostic,
+                                       fiches de sécurité) et la terrasse bois
+                                       sans lien. Les noms sont recopiés tels
+                                       quels, les phrases « dit » aussi pour
+                                       l'écran d'aujourd'hui.
+    src/components/atlas/EnTeteEcran   titre 36 px serif, précision dorée sous
+                                       le titre, assistant rond vert plein.
+    src/app/paysage/OuvertParLaFormule la porte des outils réservés : montée dans
+                                       le layout.tsx de arrosage, diagnostic et
+                                       fiche. Fermée, elle affiche
+                                       FonctionReservee (cadenas, « ... est dans
+                                       Entreprise », bouton « Voir la formule
+                                       Entreprise »).
+    src/lib/abonnements.ts             fonctionOuverte : à la formule Artisan,
+                                       arrosage, diagnostic et fiche de chantier
+                                       sont fermés ; les fiches de sécurité
+                                       restent ouvertes à tous ; sans ligne
+                                       d'abonnement, tout est ouvert.
+
+    Aucune donnée inventée : cet écran ne montre que des noms d'outils.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI SERAIT À CODER SI LA PROPOSITION EST RETENUE.
+
+    1. page.tsx : garder le surtitre « Outils du métier », retirer le champ
+       « dit » (ou ne plus l'afficher), ajouter une icône par outil, sortir la
+       terrasse bois de la liste et poser la phrase sous la plage.
+    2. ÉTAT ARTISAN, et c'est du code serveur : aujourd'hui la liste ne lit pas
+       l'abonnement, si bien que l'artisan voit quatre chevrons identiques et ne
+       découvre la fermeture qu'après avoir appuyé. Il faudrait que page.tsx
+       (composant serveur) appelle getCurrentCtx puis abonnementDeLEntreprise,
+       et demande fonctionOuverte pour chaque outil réservé. La ligne reste un
+       lien : l'écran fermé reste atteignable, c'est la règle de
+       FonctionReservee. Aucune nouvelle règle : la décision reste dans
+       fonctionOuverte.
+
+    Couleurs : src/lib/design-tokens.ts au caractère près ; Nuit : les valeurs
+    de appli/vos-clients.html. Polices du système, aucune ressource externe.
+    Un peu de JS pour le banc ; sans JS, l'écran corrigé reste visible.
+  */
+
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1; --plein:#7d9a6d;
+    --surPlein:#faf9f5; --or:#B98B47;
+    --line:rgba(28,28,26,.12); --chevron:rgba(28,28,26,.28);
+    --ombre:0 1px 2px rgba(47,59,47,.06),0 6px 18px rgba(47,59,47,.06);
+  }
+  body[data-charte="nuit"]{
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e; --plein:#e9e8de;
+    --surPlein:#101210;
+    --line:rgba(233,232,222,.12); --chevron:rgba(233,232,222,.28);
+    --ombre:0 1px 2px rgba(0,0,0,.30);
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:#e7e4dd;color:#1c1c1a;
+       font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:20px 12px 56px}
+  body[data-charte="nuit"]{background:#070806;color:#e9e8de}
+  a{color:inherit;text-decoration:none}
+
+  /* ══ Le banc, hors de l'écran ══════════════════════════════════════════ */
+  .banc{max-width:390px;margin:0 auto 14px;padding:0 4px}
+  .banc h2{margin:0;font-size:10px;font-weight:500;letter-spacing:.26em;
+           text-transform:uppercase;color:#8a8578}
+  .boutons{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .boutons button{font:inherit;font-size:12px;padding:8px 12px;border-radius:6px;
+                  border:1px solid rgba(28,28,26,.18);background:#faf9f5;
+                  color:#1c1c1a;cursor:pointer;min-height:36px}
+  body[data-charte="nuit"] .boutons button{background:#1a1d19;color:#e9e8de;
+                  border-color:rgba(233,232,222,.2)}
+  .boutons button[aria-pressed="true"]{background:#2f3b2f;color:#faf9f5;border-color:#2f3b2f}
+  body[data-charte="nuit"] .boutons button[aria-pressed="true"]{
+                  background:#e9e8de;color:#101210;border-color:#e9e8de}
+  .groupe{display:flex;gap:6px;margin-right:6px}
+
+  /* ══ Le téléphone ══════════════════════════════════════════════════════ */
+  .tel{max-width:390px;margin:0 auto;background:var(--cream);color:var(--ink);
+       position:relative;overflow:hidden;border:1px solid rgba(28,28,26,.14);
+       border-radius:14px}
+  body[data-charte="nuit"] .tel{border-color:rgba(233,232,222,.14)}
+  .defile{height:664px;overflow-y:auto;padding-bottom:96px}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;
+         font-weight:400;letter-spacing:-.01em}
+
+  /* L'en-tête, grammaire « commune » d'EnTeteEcran : 34 px au-dessus. */
+  .titre-ligne{display:flex;align-items:flex-start;justify-content:space-between;
+               gap:16px;padding:34px 26px 0}
+  h1{margin:0;font-size:36px;line-height:1.02;letter-spacing:-.018em}
+  .precision{display:block;margin-top:12px;font-size:9.5px;font-weight:500;
+             letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+  .assistant{width:44px;height:44px;border-radius:50%;background:var(--plein);
+             display:flex;align-items:center;justify-content:center;flex:none}
+
+  .chev{flex:none;width:8px;height:8px;transform:rotate(45deg);
+        border-right:1.5px solid var(--chevron);border-top:1.5px solid var(--chevron)}
+  a:focus-visible{outline:2px solid var(--or);outline-offset:2px;border-radius:12px}
+
+  /* ── L'écran d'AUJOURD'HUI, fidèle à page.tsx ───────────────────────── */
+  .avant{margin:26px 26px 0}
+  .avant .ligne{display:flex;align-items:center;gap:15px;min-height:56px;
+                padding:13px 0;border-bottom:1px solid var(--line)}
+  .avant .ligne:last-child{border-bottom:0}
+  .avant .nom{display:block;font-size:17px;line-height:1.25}
+  .avant .dit{display:block;margin-top:3px;font-size:11.5px;line-height:1.5;color:var(--muted)}
+  .avant .gauche{flex:1;min-width:0}
+  .avant .a-venir .nom{color:var(--muted)}
+  .bientot-caps{flex:none;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+                text-transform:uppercase;color:var(--or);opacity:.9}
+
+  /* ── La proposition ──────────────────────────────────────────────────
+     Une seule plage, quatre lignes de 64 px. Un dessin à gauche, le nom, le
+     chevron. Pas de phrase dessous : le nom et le dessin suffisent à
+     reconnaître l'outil, et l'outil s'explique une fois ouvert. */
+  .plage{margin:28px 16px 0;background:var(--card);border-radius:16px;
+         box-shadow:var(--ombre);overflow:hidden}
+  .outil{display:flex;align-items:center;gap:14px;min-height:64px;
+         padding:10px 18px 10px 14px;position:relative}
+  .outil + .outil::before{content:"";position:absolute;top:0;right:0;left:68px;
+                          height:1px;background:var(--line)}
+  .pictos{flex:none;width:40px;height:40px;border-radius:12px;background:var(--rustTint);
+          display:flex;align-items:center;justify-content:center;color:var(--rust)}
+  .pictos svg{display:block}
+  .outil .nom{flex:1;min-width:0;font-size:18px;line-height:1.25}
+  /* État Artisan : ce qui est dans « Entreprise » se dit dès la liste. */
+  .reserve{flex:none;display:none;align-items:center;gap:6px;font-size:9.5px;
+           font-weight:500;letter-spacing:.2em;text-transform:uppercase;
+           color:var(--inkSoft)}
+  body.artisan .outil.ferme .reserve{display:flex}
+  body.artisan .outil.ferme .chev{display:none}
+  body.artisan .outil.ferme .pictos{color:var(--inkSoft)}
+
+  .bientot{margin:22px 26px 0;font-size:13.5px;line-height:1.5;color:var(--inkSoft)}
+
+  .avant-seul{display:none}
+  body.mode-avant .avant-seul{display:block}
+  body.mode-avant .apres-seul{display:none}
+
+  /* ── La barre du bas ─────────────────────────────────────────────────── */
+  .barre{position:absolute;left:0;right:0;bottom:0;background:var(--cream);
+         border-top:1px solid var(--line);padding:18px 14px 10px}
+  .onglets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:relative}
+  .onglets span{text-align:center;font-size:8.5px;font-weight:500;letter-spacing:.14em;
+                text-transform:uppercase;color:var(--muted);padding-bottom:8px}
+  .onglets span.actif{color:var(--ink);transform:translateY(-2px)}
+  .filet-onglet{position:absolute;bottom:0;left:calc(300% / 5);height:1px;
+                background:var(--or);width:calc(100% / 5)}
+
+  /* ── Les notes ───────────────────────────────────────────────────────── */
+  .notes{max-width:390px;margin:20px auto 0;padding:0 4px;font-size:13.5px;
+         line-height:1.6;color:#3a3a34}
+  body[data-charte="nuit"] .notes{color:#c1c2b6}
+  .notes h3{margin:22px 0 8px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+            text-transform:uppercase;color:#6f6b60}
+  .notes ul{margin:0;padding-left:18px}
+  .notes li{margin-bottom:7px}
+</style>
+</head>
+<body data-charte="origine">
+
+<div class="banc">
+  <h2>Paysage, proposition</h2>
+  <div class="boutons">
+    <span class="groupe">
+      <button type="button" data-mode="avant" aria-pressed="false">Aujourd'hui</button>
+      <button type="button" data-mode="apres" aria-pressed="true">Corrigé</button>
+    </span>
+    <span class="groupe">
+      <button type="button" data-charte="origine" aria-pressed="true">Origine</button>
+      <button type="button" data-charte="nuit" aria-pressed="false">Nuit</button>
+    </span>
+    <span class="groupe">
+      <button type="button" id="artisan" aria-pressed="false">Formule Artisan</button>
+    </span>
+  </div>
+</div>
+
+<div class="tel">
+  <div class="defile">
+
+    <div class="titre-ligne">
+      <div style="min-width:0">
+        <h1 class="serif">Paysage</h1>
+        <span class="precision">Outils du métier</span>
+      </div>
+      <span class="assistant" aria-hidden="true">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"
+             stroke="var(--surPlein)" stroke-width="1.8">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
+      </span>
+    </div>
+
+    <!-- ═══ AUJOURD'HUI ═══ -->
+    <section class="avant avant-seul">
+      <a class="ligne" href="#"><span class="gauche">
+        <span class="nom serif">Plan d'arrosage automatique</span>
+        <span class="dit">Le piquage, le croquis photographié, et le plan sort.</span>
+      </span><span class="chev" aria-hidden="true"></span></a>
+      <a class="ligne" href="#"><span class="gauche">
+        <span class="nom serif">Fiche de chantier</span>
+        <span class="dit">Cocher ce qui a été fait, puis l'envoyer au client.</span>
+      </span><span class="chev" aria-hidden="true"></span></a>
+      <a class="ligne" href="#"><span class="gauche">
+        <span class="nom serif">Diagnostic végétal</span>
+        <span class="dit">Photographier une anomalie, et savoir quoi faire.</span>
+      </span><span class="chev" aria-hidden="true"></span></a>
+      <a class="ligne" href="#"><span class="gauche">
+        <span class="nom serif">Fiches de sécurité</span>
+        <span class="dit">Avant un chantier d'élagage ou d'abattage. Gardées deux ans.</span>
+      </span><span class="chev" aria-hidden="true"></span></a>
+      <div class="ligne a-venir"><span class="gauche">
+        <span class="nom serif">Terrasse bois</span>
+        <span class="dit">Lambourdes, plots, visserie : le même principe, à partir des mesures.</span>
+      </span><span class="bientot-caps">Bientôt</span></div>
+    </section>
+
+    <!-- ═══ CORRIGÉ ═══ -->
+    <div class="apres-seul">
+      <nav class="plage" aria-label="Outils">
+        <a class="outil ferme" href="#">
+          <span class="pictos" aria-hidden="true">
+            <!-- goutte d'eau, le motif de l'appli (la-goutte-d-eau) -->
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2.5C12 2.5 4.8 10.3 4.8 14.9a7.2 7.2 0 0 0 14.4 0C19.2 10.3 12 2.5 12 2.5z"/>
+              <path d="M8.7 15.3a3.3 3.3 0 0 0 3.3 3.3"/>
+            </svg>
+          </span>
+          <span class="nom serif">Plan d'arrosage automatique</span>
+          <span class="reserve"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>Entreprise</span>
+          <span class="chev" aria-hidden="true"></span>
+        </a>
+        <a class="outil ferme" href="#">
+          <span class="pictos" aria-hidden="true">
+            <!-- planchette avec une case cochée -->
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="4.5" width="14" height="16.5" rx="2"/>
+              <path d="M9 3h6v3H9z"/>
+              <path d="M8.5 12.5l2 2 4-4.5"/>
+              <path d="M8.5 18h7"/>
+            </svg>
+          </span>
+          <span class="nom serif">Fiche de chantier</span>
+          <span class="reserve"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>Entreprise</span>
+          <span class="chev" aria-hidden="true"></span>
+        </a>
+        <a class="outil ferme" href="#">
+          <span class="pictos" aria-hidden="true">
+            <!-- feuille et sa nervure, une loupe posée dessus -->
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19c0-8 5-14 15-15-0.5 4-1.6 7-3.3 9.2"/>
+              <path d="M4 19c2.5-4 5.5-7 9-9.5"/>
+              <circle cx="15.5" cy="16.5" r="3"/>
+              <path d="M17.7 18.7L20.5 21.5"/>
+            </svg>
+          </span>
+          <span class="nom serif">Diagnostic végétal</span>
+          <span class="reserve"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>Entreprise</span>
+          <span class="chev" aria-hidden="true"></span>
+        </a>
+        <a class="outil" href="#">
+          <span class="pictos" aria-hidden="true">
+            <!-- bouclier et sa coche -->
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3l7 2.8v5.6c0 4.5-3 8.1-7 9.6-4-1.5-7-5.1-7-9.6V5.8z"/>
+              <path d="M8.8 12.2l2.2 2.2 4.2-4.4"/>
+            </svg>
+          </span>
+          <span class="nom serif">Fiches de sécurité</span>
+          <span class="chev" aria-hidden="true"></span>
+        </a>
+      </nav>
+
+      <p class="bientot">La terrasse bois arrive bientôt.</p>
+    </div>
+
+  </div>
+
+  <nav class="barre" aria-hidden="true">
+    <div class="onglets">
+      <span>Chantiers</span><span>Planning</span><span>Terminés</span>
+      <span class="actif">Paysage</span><span>Réglages</span>
+      <i class="filet-onglet"></i>
+    </div>
+  </nav>
+</div>
+
+<div class="notes">
+  <h3>Ce qui change</h3>
+  <ul>
+    <li>Les phrases grises sous chaque outil expliquaient l'outil et se lisaient mal au soleil. Elles partent, et un petit dessin à gauche fait reconnaître l'outil d'un coup d'œil.</li>
+    <li>Les quatre outils sont réunis sur une même plage claire, en lignes de 64 px : on touche juste, même avec des gants.</li>
+    <li>La terrasse bois ne prend plus la place d'un outil qu'on ne peut pas ouvrir. Une phrase sous la liste dit qu'elle arrive.</li>
+    <li>Avec la formule Artisan, l'arrosage, la fiche de chantier et le diagnostic le disent dès la liste, avec un cadenas et « Entreprise ». Aujourd'hui on le découvre après avoir appuyé. La ligne s'ouvre toujours sur l'écran qui présente la formule.</li>
+    <li>L'ordre reste le même et aucun outil n'est mis plus gros que les autres : rien ne dit lequel sert le plus, cela change d'un chantier à l'autre.</li>
+    <li>Le vide en bas reste : il n'y a rien d'utile à y mettre.</li>
+  </ul>
+</div>
+
+<script>
+document.querySelectorAll("[data-mode]").forEach(b => b.addEventListener("click", () => {
+  document.body.classList.toggle("mode-avant", b.dataset.mode === "avant");
+  document.querySelectorAll("[data-mode]").forEach(x =>
+    x.setAttribute("aria-pressed", String(x === b)));
+}));
+document.querySelectorAll("button[data-charte]").forEach(b => b.addEventListener("click", () => {
+  document.body.dataset.charte = b.dataset.charte;
+  document.querySelectorAll("button[data-charte]").forEach(x =>
+    x.setAttribute("aria-pressed", String(x === b)));
+}));
+document.getElementById("artisan").addEventListener("click", e => {
+  const on = !document.body.classList.contains("artisan");
+  document.body.classList.toggle("artisan", on);
+  e.currentTarget.setAttribute("aria-pressed", String(on));
+});
+</script>
+</body>
+</html>

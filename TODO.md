@@ -1,5 +1,37 @@
 # Prochaines tâches
 
+## 🔜 L'OUTIL DE COMPARAISON AVEC MAIN SE TROMPE SUR CE PC (11 octobre 2026)
+
+Trouvé en livrant le catalogue. Trois défauts d'outillage, aucun dans le produit :
+- `preparerLeTemoin` (`scripts/_temoin-de-main.mjs`) ne renouvelle jamais le `node_modules` du
+  témoin une fois posé : main avance, une dépendance arrive (`qrcode-generator`), et toute suite
+  navigateur rend « illisible » côté main. Il faut le reprêter quand le `package-lock.json` change.
+- son cache `.next-a4` laissé d'une construction précédente fait échouer la suivante
+  (`CssSyntaxError … globals.css`) : à effacer avant chaque construction du témoin.
+- `test-recherche-client-e2e.ts` vise `127.0.0.1:3000` en dur (`BASE_URL`) au lieu de
+  `ADRESSE` : rouge partout hors de l'atelier 0.
+Et `test-anneau-dictee-e2e.ts` rougit sur main quand il passe après les suites de base, vert
+seul : à comprendre, il ne vient d'aucun des lots du 11 octobre.
+Et la gravité « argent » se lit dans le NOM d'un fichier (`_niveau-de-risque.mjs`) : corriger
+`scripts/test-import-tarifs-e2e.ts`, une suite navigateur, met le lot au niveau 3 à cause du mot
+« tarifs », et `verifier-ce-qui-a-bouge` renvoie à la batterie entière. Côté sûr, mais cinquante
+minutes pour une ligne de contrôle.
+
+## ✅ NEUF PLANCHES /impeccable : CODÉES LE 11 OCTOBRE 2026
+
+Une planche par écran, lien dans `appli/essais.html` sous
+« Neuf écrans jamais repris » : `paysage-les-outils`, `fiche-de-chantier-l-accueil`,
+`fiche-de-chantier-remplir`, `fiche-de-chantier-composer`, `catalogue-les-mots`,
+`mes-tarifs-corrige`, `donner-un-acces-corrige`, `documents-legaux-accepter`,
+`verifier-son-email`. Reprises le 11 octobre sur sa relecture : boutons en capsule serif, or #B98B47,
+sous-titre doré remis partout, liseré d'or de « Composer ma fiche » gardé. Documents légaux :
+pas de « Retour », un « Se déconnecter » discret (son accord du 11 octobre). Filtre de date :
+sa A (11 octobre), SUR `main` le 11 octobre (b4e117ac) : rapports envoyés, fiches de
+sécurité, retours. Catalogue sur `main` (aa61c564), avec l'onglet Réglages allumé sur `/catalogue`.
+Les six autres (Paysage, fiche de chantier, Mes tarifs, nouveau compte, documents légaux,
+vérifier son email) codés le 11 octobre en un seul lot, `lot/six-ecrans`, une seule batterie. Ensuite : la
+dizaine d'écrans jamais repris listés au `CHANGELOG.md` du 11 octobre.
+
 ## ✅ LE NUMÉRO RM : SON CHOIX B, SUR `main` LE 9 OCTOBRE 2026
 
 Sa question en préparant la vente de l'application : la mention à écrire à

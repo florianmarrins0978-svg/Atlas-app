@@ -78,6 +78,25 @@ async function main() {
     assert.equal(await page.locator('input[type="password"]').count(), 2, "il n'y a pas deux saisies");
   });
 
+  await cas("le rôle se choisit AVANT le nom, et rien n'est barré, sa planche du 11 octobre 2026", async () => {
+    const droits = page.locator('[data-atlas="droits-du-role"]');
+    await droits.waitFor({ timeout: 10_000 });
+    const avant = await page.evaluate(() => {
+      const d = document.querySelector('[data-atlas="droits-du-role"]');
+      const nom = document.querySelector("form input");
+      return !!d && !!nom && (d.compareDocumentPosition(nom) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+    });
+    assert.ok(avant, "le choix du rôle n'est plus au-dessus des champs");
+    const texte = await droits.innerText();
+    assert.ok(/Pourra/i.test(texte) && /Ne pourra pas/i.test(texte), `les deux colonnes manquent :\n${texte}`);
+    // Un compte de zéro ne prouve rien s'il n'y a aucune ligne à mesurer.
+    assert.ok((await droits.locator("li").count()) > 0, "aucune ligne de droits à mesurer");
+    const barres = await droits
+      .locator("li")
+      .evaluateAll((l) => l.filter((e) => getComputedStyle(e).textDecorationLine.includes("line-through")).length);
+    assert.equal(barres, 0, "une ligne de refus est encore barrée");
+  });
+
   await cas("chaque saisie porte SON œil, et l'œil bascule vraiment", async () => {
     const yeux = page.locator('button[aria-label^="Afficher"], button[aria-label^="Masquer"]');
     assert.equal(await yeux.count(), 2, "les deux champs n'ont pas chacun leur œil");

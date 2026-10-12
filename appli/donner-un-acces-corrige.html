@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas : nouveau compte, corrigé</title>
+<style>
+  /*
+    NOUVEAU COMPTE, proposition corrigée pour /reglages/equipe/nouveau.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI EST DESSINÉ ICI VIENT DU DÉPÔT, ET RIEN D'AUTRE.
+
+    Fichiers lus :
+      src/app/reglages/equipe/nouveau/page.tsx       l'en-tête (titre « Nouveau
+                                                      compte », précision « Équipe »)
+      src/app/reglages/equipe/nouveau/NouveauCompte.tsx  les quatre champs, les
+                                                      deux yeux, « Au moins 12
+                                                      caractères », « Créer le
+                                                      compte », « Un instant… »,
+                                                      « Annuler »
+      src/app/reglages/equipe/ChoixRole.tsx          « Son rôle », la grille 2×2,
+                                                      le coche or, la liste
+      src/lib/acces-roles.ts                          ROLES, libelleRole et
+                                                      ceQueLeRoleChange : les
+                                                      phrases des deux colonnes
+                                                      sont recopiées mot pour mot
+      src/lib/mot-de-passe.ts                         LONGUEUR_MINIMALE = 12 et
+                                                      etatConfirmation (« Les deux
+                                                      sont identiques ✓ », « Les
+                                                      deux saisies ne sont pas
+                                                      identiques. »)
+      src/lib/donner-un-acces.ts                      messageRefusAcces (« Un compte
+                                                      Atlas utilise déjà cette
+                                                      adresse. »)
+
+    AUCUNE RÈGLE D'ACCÈS NE BOUGE. Les quatre rôles restent quatre, le rôle par
+    défaut reste Salarié, et les deux colonnes sont exactement `peut` et
+    `nonPlus` de ceQueLeRoleChange : seule la façon de les montrer change.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI SERAIT À CODER, SI IL CHOISIT CETTE PLANCHE (écran seulement, rien
+    côté serveur) :
+
+      1. NouveauCompte.tsx : le choix du rôle passe AU-DESSUS des champs.
+      2. ChoixRole.tsx : trois pastilles sur une ligne (Facturation, Commercial,
+         Salarié, dans l'ordre de ROLES), Patron à part dessous ; la liste devient
+         deux colonnes, sans line-through. ChoixRole sert aussi à changer le rôle
+         d'un compte existant : la même forme y arriverait, ce qui est voulu
+         (une seule rédaction, CLAUDE.md §3).
+      3. Les champs prennent un fond (rustTint) de 52 px, et le contour or au
+         focus. Les libellés gardent leur dessin d'aujourd'hui (11 px, muted).
+      4. Le message de refus du serveur monte au-dessus du bouton : aujourd'hui
+         il s'affiche sous « Annuler », souvent hors de l'écran.
+      Le surtitre « Équipe » reste sous le titre (EnTeteEcran, surtitre), et
+      les pastilles, « Créer le compte » et « Annuler » reprennent au pixel près
+      ChoixRole.tsx et NouveauCompte.tsx l. 109 et 118.
+
+    ─────────────────────────────────────────────────────────────────────────
+    COULEURS : src/lib/design-tokens.ts au caractère près (Origine), et les
+    valeurs Nuit de appli/vos-clients.html et de chartes.ts (plein #e9e8de sur
+    Nuit, surPlein sombre).
+  */
+
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
+    --or:#B98B47; --alerte:#9C3B2E; --plein:#7d9a6d; --surPlein:#faf9f5;
+    --line:rgba(28,28,26,.12); --lineSoft:rgba(28,28,26,.07);
+    --chevron:rgba(28,28,26,.28); --ombre:rgba(47,59,47,.08);
+  }
+  body[data-charte="nuit"]{
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e;
+    --or:#B98B47; --alerte:#cd6456; --plein:#e9e8de; --surPlein:#101210;
+    --line:rgba(233,232,222,.12); --lineSoft:rgba(233,232,222,.07);
+    --chevron:rgba(233,232,222,.28); --ombre:rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  [hidden]{display:none!important}
+  html,body{margin:0}
+  body{background:#e7e4dd;color:#1c1c1a;
+       font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:20px 0 56px}
+  body[data-charte="nuit"]{background:#070806;color:#e9e8de}
+  button,input{font-family:inherit}
+
+  /* ══ Le banc, hors de l'écran ══════════════════════════════════════════ */
+  .banc{max-width:390px;margin:0 auto 14px;padding:0 12px}
+  .banc h2{margin:0;font-size:10px;font-weight:500;letter-spacing:.26em;
+           text-transform:uppercase;color:#8a8578}
+  .boutons{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .boutons button{font-size:12px;padding:8px 12px;border-radius:6px;
+                  border:1px solid rgba(28,28,26,.18);background:#faf9f5;
+                  color:#1c1c1a;cursor:pointer;min-height:36px}
+  body[data-charte="nuit"] .boutons button{background:#1a1d19;color:#e9e8de;
+                  border-color:rgba(233,232,222,.2)}
+  .boutons button[aria-pressed="true"]{background:#2f3b2f;color:#faf9f5;border-color:#2f3b2f}
+  body[data-charte="nuit"] .boutons button[aria-pressed="true"]{
+                  background:#e9e8de;color:#101210;border-color:#e9e8de}
+
+  /* ══ Le téléphone ══════════════════════════════════════════════════════ */
+  .tel{max-width:390px;margin:0 auto;background:var(--cream);color:var(--ink);
+       position:relative;overflow:hidden;
+       border:1px solid rgba(28,28,26,.14);border-radius:14px}
+  body[data-charte="nuit"] .tel{border-color:rgba(233,232,222,.14)}
+  .defile{height:760px;overflow-y:auto;overscroll-behavior:contain;padding-bottom:110px;
+          scrollbar-width:thin;scrollbar-color:var(--chevron) transparent}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;
+         font-weight:400;letter-spacing:-.01em}
+
+  .haut{display:flex;align-items:center;padding:26px 26px 0}
+  .rond{width:44px;height:44px;border-radius:50%;background:var(--rustTint);border:0;
+        display:flex;align-items:center;justify-content:center;flex:none;cursor:pointer}
+  .titre-ligne{display:flex;align-items:flex-start;justify-content:space-between;
+               gap:16px;padding:18px 26px 0}
+  h1{margin:0;font-size:36px;line-height:1.02;letter-spacing:-.018em}
+  .precision{display:block;margin-top:12px;font-size:9.5px;font-weight:500;
+             letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+  .assistant{width:44px;height:44px;border-radius:50%;background:var(--plein);
+             display:flex;align-items:center;justify-content:center;flex:none}
+
+  .caps{font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;
+        color:var(--inkSoft);margin:0}
+
+  :focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+  /* ══ CORRIGÉ ═══════════════════════════════════════════════════════════ */
+  .corps{padding:26px 26px 0}
+
+  /* Trois rôles sur une ligne, Patron à part : c'est donner tout. */
+  .roles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+  .role{border-radius:9999px;border:1px solid var(--line);background:transparent;
+        color:var(--muted);font-size:12.5px;line-height:1.55;cursor:pointer;display:flex;align-items:center;
+        justify-content:center;gap:6px;padding:10px 4px}
+  .role[aria-pressed="true"]{background:var(--rustTint);border:1px solid transparent;
+        color:var(--ink);font-weight:600}
+  .role svg{display:none;flex:none}
+  .role[aria-pressed="true"] svg{display:block}
+  .patron{margin-top:8px;width:100%;border-radius:9999px;border:1px solid var(--line);
+          background:transparent;color:var(--muted);font-size:12.5px;line-height:1.55;cursor:pointer;
+          display:flex;align-items:center;justify-content:space-between;padding:10px 16px;text-align:left}
+  .patron .dit{font-size:12.5px;font-weight:400;color:var(--muted)}
+  .patron[aria-pressed="true"]{background:var(--rustTint);border:1px solid transparent;
+          color:var(--ink);font-weight:600}
+  .patron .g{display:flex;align-items:center;gap:6px}
+  .patron svg{display:none}
+  .patron[aria-pressed="true"] svg{display:block}
+
+  /* Ce que le rôle permet : deux colonnes, rien de barré. */
+  .droits{margin-top:14px;background:var(--card);border-radius:16px;padding:16px 16px 14px;
+          box-shadow:0 1px 2px var(--ombre),0 6px 18px var(--ombre);
+          display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .droits h3{margin:0 0 8px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+             text-transform:uppercase;color:var(--inkSoft)}
+  .droits ul{margin:0;padding:0;list-style:none}
+  .droits li{position:relative;padding-left:20px;font-size:13.5px;line-height:1.4;margin-bottom:9px}
+  .droits li svg{position:absolute;left:0;top:2px}
+  .droits .oui li{color:var(--ink)}
+  .droits .non li{color:var(--inkSoft)}
+  .droits .rien{font-size:13.5px;color:var(--inkSoft);margin:0}
+  .droits .non{border-left:1px solid var(--line);padding-left:14px}
+
+  .compte-titre{margin-top:30px}
+  .champ{display:block;margin-top:14px}
+  .champ > span:first-child{display:block;margin-bottom:4px;font-size:11px;color:var(--muted)}
+  .boite{display:flex;align-items:center;min-height:52px;border-radius:12px;
+         background:var(--rustTint);padding:0 4px 0 14px;box-shadow:inset 0 0 0 1px transparent}
+  .boite:focus-within{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .boite.faux{box-shadow:inset 0 0 0 1.5px var(--alerte)}
+  .boite input{flex:1;min-width:0;border:0;background:none;outline:none;font-size:17px;
+               color:var(--ink);padding:13px 0;caret-color:var(--or)}
+  .oeil{width:44px;height:44px;border:0;background:none;color:var(--inkSoft);cursor:pointer;
+        display:flex;align-items:center;justify-content:center;flex:none}
+  .oeil[aria-pressed="true"]{color:var(--or)}
+  .sous{display:block;margin-top:6px;font-size:13px;color:var(--inkSoft)}
+  .sous.bon{color:var(--rust)}
+  .sous.faux{color:var(--alerte)}
+
+  .refus{margin:22px 0 0;font-size:14px;color:var(--alerte)}
+  /* NouveauCompte.tsx l. 109 : atlas-plein mt-7 w-full rounded-full py-3.5 text-[14px] font-semibold */
+  .plein{margin-top:28px;width:100%;border:0;border-radius:9999px;padding:14px 0;
+         background:var(--plein);color:var(--surPlein);font-size:14px;line-height:1.55;font-weight:600;cursor:pointer;
+         display:flex;align-items:center;justify-content:center}
+  /* l. 118 : mt-1 w-full py-3 text-[13px], muted */
+  .annuler{margin-top:4px;width:100%;border:0;background:none;padding:12px 0;
+           color:var(--muted);font-size:13px;line-height:1.55;cursor:pointer;
+           display:flex;align-items:center;justify-content:center}
+
+  /* ══ AUJOURD'HUI, reproduction fidèle ══════════════════════════════════ */
+  .av{padding:0 26px}
+  .av label,.av .bloc{display:block;padding-top:16px}
+  .av .lib{display:block;margin-bottom:4px;font-size:11px;color:var(--muted)}
+  .av .trait{display:flex;align-items:center;border-bottom:1px solid var(--line)}
+  .av input{flex:1;min-width:0;border:0;background:none;outline:none;font-size:17px;
+            color:var(--ink);padding:8px 0}
+  .av .oeil{color:var(--muted);margin-right:-10px}
+  .av .sous{font-size:11.5px;color:var(--muted)}
+  .av .sous.bon{color:var(--rust)} .av .sous.faux{color:var(--alerte)}
+  .av .grille{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .av .pil{border-radius:999px;padding:10px 0;font-size:12.5px;border:1px solid var(--line);
+           color:var(--muted);background:none;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer}
+  .av .pil[aria-pressed="true"]{background:var(--rustTint);color:var(--ink);font-weight:600;border-color:transparent}
+  .av .pil svg{display:none} .av .pil[aria-pressed="true"] svg{display:block}
+  .av ul{margin:12px 0 0;padding:0;list-style:none}
+  .av li{position:relative;padding-left:16px;font-size:12.5px;margin-bottom:4px}
+  .av li i{position:absolute;left:2px;top:9px;width:4px;height:4px;border-radius:50%}
+  .av li.non{color:var(--muted);text-decoration:line-through}
+  .av .plein{border-radius:999px;margin-top:28px;font-size:14px;min-height:0;padding:14px 0}
+  .av .annuler{color:var(--muted);font-size:13px}
+  .av .refus{text-align:center;font-size:12.5px;margin-top:8px}
+
+  .avant-seul{display:none}
+  body.mode-avant .avant-seul{display:block}
+  body.mode-avant .apres-seul{display:none}
+
+  /* ── La barre du bas ── */
+  .barre{position:absolute;left:0;right:0;bottom:0;background:var(--cream);
+         border-top:1px solid var(--line);padding:18px 14px 10px}
+  .onglets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:relative}
+  .onglets span{text-align:center;font-size:8.5px;font-weight:500;letter-spacing:.14em;
+                text-transform:uppercase;color:var(--inkSoft);padding-bottom:8px}
+  .onglets span.actif{color:var(--ink);transform:translateY(-2px)}
+  .filet{position:absolute;bottom:0;right:0;height:1px;background:var(--or);width:calc(100% / 5)}
+
+  /* ══ Les notes ══ */
+  .notes{max-width:390px;margin:20px auto 0;padding:0 14px;font-size:13.5px;line-height:1.6;color:#3a3a34}
+  body[data-charte="nuit"] .notes{color:#c1c2b6}
+  .notes h3{margin:22px 0 8px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+            text-transform:uppercase;color:#8a8578}
+  .notes ul{margin:0;padding-left:18px}
+  .notes li{margin-bottom:7px}
+</style>
+</head>
+<body data-charte="origine">
+
+<div class="banc">
+  <h2>Nouveau compte, proposition</h2>
+  <div class="boutons">
+    <button type="button" data-mode="apres" aria-pressed="true">Corrigé</button>
+    <button type="button" data-mode="avant" aria-pressed="false">Aujourd'hui</button>
+    <button type="button" data-charte="origine" aria-pressed="true">Origine</button>
+    <button type="button" data-charte="nuit" aria-pressed="false">Nuit</button>
+  </div>
+  <div class="boutons">
+    <button type="button" data-etat="vide" aria-pressed="true">Vide</button>
+    <button type="button" data-etat="different" aria-pressed="false">Mots de passe différents</button>
+    <button type="button" data-etat="refus" aria-pressed="false">Adresse déjà prise</button>
+  </div>
+</div>
+
+<div class="tel">
+  <div class="defile" id="defile">
+
+    <div class="haut">
+      <button class="rond" type="button" aria-label="Retour à l'équipe">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.4" style="color:var(--rust)">
+          <path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="titre-ligne">
+      <div style="min-width:0">
+        <h1 class="serif">Nouveau compte</h1>
+        <span class="precision">Équipe</span>
+      </div>
+      <span class="assistant" aria-hidden="true">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--surPlein)" stroke-width="1.8">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
+      </span>
+    </div>
+
+    <!-- ══ CORRIGÉ ══ -->
+    <form class="corps apres-seul" id="form-apres" onsubmit="return false">
+      <p class="caps">Son rôle</p>
+      <div class="roles">
+        <button type="button" class="role" data-role="facturation" aria-pressed="false"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4.5 4.5L19 7"/></svg>Facturation</button>
+        <button type="button" class="role" data-role="commercial" aria-pressed="false"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4.5 4.5L19 7"/></svg>Commercial</button>
+        <button type="button" class="role" data-role="salarie" aria-pressed="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4.5 4.5L19 7"/></svg>Salarié</button>
+      </div>
+      <button type="button" class="patron" data-role="proprietaire" aria-pressed="false">
+        <span class="g"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4.5 4.5L19 7"/></svg>Patron</span>
+        <span class="dit">Tout, comme vous</span>
+      </button>
+
+      <div class="droits" id="droits"></div>
+
+      <p class="caps compte-titre">Son compte</p>
+      <label class="champ"><span>Nom</span>
+        <span class="boite"><input id="a-nom" autocomplete="off"></span></label>
+      <label class="champ"><span>Adresse e-mail</span>
+        <span class="boite" id="a-boite-email"><input id="a-email" type="email" inputmode="email" autocomplete="off"></span></label>
+      <div class="champ"><span>Mot de passe</span>
+        <span class="boite"><input id="a-mdp" type="password" autocomplete="new-password" aria-label="Mot de passe">
+          <button type="button" class="oeil" aria-pressed="false" aria-label="Afficher le mot de passe"></button></span>
+        <span class="sous">Au moins 12 caractères</span></div>
+      <div class="champ"><span>Confirmer le mot de passe</span>
+        <span class="boite" id="a-boite-conf"><input id="a-conf" type="password" autocomplete="new-password" aria-label="Confirmer le mot de passe">
+          <button type="button" class="oeil" aria-pressed="false" aria-label="Afficher la confirmation"></button></span>
+        <span class="sous" id="a-sous-conf" hidden></span></div>
+
+      <p class="refus" id="a-refus" role="alert" hidden></p>
+      <button type="submit" class="plein">Créer le compte</button>
+      <button type="button" class="annuler">Annuler</button>
+    </form>
+
+    <!-- ══ AUJOURD'HUI ══ -->
+    <form class="av avant-seul" id="form-avant" onsubmit="return false">
+      <label><span class="lib">Nom</span><span class="trait"><input id="b-nom" autocomplete="off"></span></label>
+      <label><span class="lib">Adresse e-mail</span><span class="trait"><input id="b-email" type="email" autocomplete="off"></span></label>
+      <div class="bloc"><span class="lib">Mot de passe</span><span class="trait"><input id="b-mdp" type="password" autocomplete="new-password" aria-label="Mot de passe"><button type="button" class="oeil" aria-pressed="false" aria-label="Afficher"></button></span>
+        <span class="sous" style="display:block;margin-top:6px">Au moins 12 caractères</span></div>
+      <div class="bloc"><span class="lib">Confirmer le mot de passe</span><span class="trait"><input id="b-conf" type="password" autocomplete="new-password" aria-label="Confirmer"><button type="button" class="oeil" aria-pressed="false" aria-label="Afficher"></button></span>
+        <span class="sous" id="b-sous-conf" style="display:block;margin-top:6px" hidden></span></div>
+      <div style="margin-top:28px">
+        <p class="caps" style="margin-bottom:8px">Son rôle</p>
+        <div class="grille" id="b-roles"></div>
+        <ul id="b-liste"></ul>
+      </div>
+      <button type="submit" class="plein">Créer le compte</button>
+      <button type="button" class="annuler">Annuler</button>
+      <p class="refus" id="b-refus" role="alert" hidden></p>
+    </form>
+
+  </div>
+
+  <nav class="barre" aria-hidden="true">
+    <div class="onglets">
+      <span>Chantiers</span><span>Planning</span><span>Terminés</span>
+      <span>Paysage</span><span class="actif">Réglages</span>
+      <i class="filet"></i>
+    </div>
+  </nav>
+</div>
+
+<div class="notes">
+  <h3>Ce qui change</h3>
+  <ul>
+    <li>Le rôle se choisit en premier, avant le nom et le mot de passe. C'est la vraie décision de l'écran.</li>
+    <li>Ce que la personne pourra faire se lit en deux colonnes : ce qu'elle pourra, ce qu'elle ne pourra pas. Plus rien n'est barré.</li>
+    <li>Patron est posé à part, sous les trois autres. Le choisir, c'est donner tout Atlas, comme vous.</li>
+    <li>Les champs ont un fond et font 52 de haut : on les voit au soleil, on les touche sans viser.</li>
+    <li>Quand les deux mots de passe diffèrent, le champ se borde de rouge et la phrase est écrite juste dessous.</li>
+    <li>Un refus (adresse déjà prise) s'écrit au-dessus du bouton, et non plus sous Annuler, hors de l'écran.</li>
+  </ul>
+</div>
+
+<script>
+/* Les phrases : ceQueLeRoleChange (src/lib/acces-roles.ts), mot pour mot. */
+const DIT = {
+  proprietaire:{peut:["Tout Atlas","Les tarifs, l'identité, l'IBAN, l'abonnement","Donner et retirer les accès"],nonPlus:[]},
+  facturation:{peut:["Les clients, les devis, les factures","Le relevé de TVA, les paiements, les achats","Le planning, en lecture"],
+               nonPlus:["Modifier le planning","Les tarifs et les grilles de prix","L'identité de l'entreprise et l'IBAN","Les accès et l'abonnement"]},
+  commercial:{peut:["Les chantiers, le planning, les devis et les prix","Poser, déplacer et supprimer un chantier"],
+              nonPlus:["Les factures et le relevé de TVA","La mise en page des devis","L'identité de l'entreprise et l'IBAN","Les accès et l'abonnement"]},
+  salarie:{peut:["Le planning, en lecture","La feuille de chantier, sans un seul montant"],
+           nonPlus:["Modifier le planning","Les prix, les devis, les factures","Les chantiers et les clients","Les réglages de l'entreprise"]}
+};
+const ROLES = ["proprietaire","facturation","commercial","salarie"];
+const LIB = {proprietaire:"Patron",facturation:"Facturation",commercial:"Commercial",salarie:"Salarié"};
+const COCHE = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4.5 4.5L19 7"/></svg>';
+const OUI = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4.5 4.5L19 7"/></svg>';
+const CADENAS = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--inkSoft)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+const OEIL = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const OEIL_OUVERT = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7a9.6 9.6 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+
+let role = "salarie";
+const esc = t => t.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+
+function dessinerRoles(){
+  document.querySelectorAll("#form-apres [data-role]").forEach(b =>
+    b.setAttribute("aria-pressed", String(b.dataset.role === role)));
+  const d = DIT[role];
+  document.getElementById("droits").innerHTML =
+    '<div class="oui"><h3>Pourra</h3><ul>' + d.peut.map(l => '<li>'+OUI+esc(l)+'</li>').join("") + '</ul></div>' +
+    '<div class="non"><h3>Ne pourra pas</h3>' +
+      (d.nonPlus.length ? '<ul>' + d.nonPlus.map(l => '<li>'+CADENAS+esc(l)+'</li>').join("") + '</ul>'
+                        : '<p class="rien">Rien ne lui est fermé.</p>') + '</div>';
+  document.getElementById("b-roles").innerHTML = ROLES.map(r =>
+    '<button type="button" class="pil" data-brole="'+r+'" aria-pressed="'+(r===role)+'">'+COCHE+LIB[r]+'</button>').join("");
+  document.getElementById("b-liste").innerHTML =
+    d.peut.map(l => '<li><i style="background:var(--or)"></i>'+esc(l)+'</li>').join("") +
+    d.nonPlus.map(l => '<li class="non"><i style="background:var(--line)"></i>'+esc(l)+'</li>').join("");
+  document.querySelectorAll("[data-brole]").forEach(b => b.onclick = () => { role = b.dataset.brole; dessinerRoles(); });
+}
+document.querySelectorAll("#form-apres [data-role]").forEach(b =>
+  b.addEventListener("click", () => { role = b.dataset.role; dessinerRoles(); }));
+
+/* etatConfirmation (src/lib/mot-de-passe.ts) */
+function confirmer(p){
+  const mdp = document.getElementById(p+"-mdp").value, conf = document.getElementById(p+"-conf").value;
+  const sous = document.getElementById(p+"-sous-conf");
+  const boite = document.getElementById("a-boite-conf");
+  if(conf === ""){ sous.hidden = true; if(p==="a") boite.classList.remove("faux"); return; }
+  sous.hidden = false;
+  const ok = conf === mdp;
+  sous.textContent = ok ? "Les deux sont identiques ✓" : "Les deux saisies ne sont pas identiques.";
+  sous.className = "sous " + (ok ? "bon" : "faux");
+  if(p==="a") boite.classList.toggle("faux", !ok);
+}
+["a","b"].forEach(p => ["mdp","conf"].forEach(c =>
+  document.getElementById(p+"-"+c).addEventListener("input", () => confirmer(p))));
+
+document.querySelectorAll(".oeil").forEach(b => {
+  b.innerHTML = OEIL;
+  b.onclick = () => {
+    const on = b.getAttribute("aria-pressed") !== "true";
+    b.setAttribute("aria-pressed", String(on));
+    b.innerHTML = on ? OEIL_OUVERT : OEIL;
+    b.parentElement.querySelector("input").type = on ? "text" : "password";
+  };
+});
+
+function poserEtat(etat){
+  document.querySelectorAll("[data-etat]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.etat === etat)));
+  const v = etat === "vide";
+  ["a","b"].forEach(p => {
+    document.getElementById(p+"-nom").value = v ? "" : "Karim";
+    document.getElementById(p+"-email").value = v ? "" : "karim@atelier-demo.fr";
+    document.getElementById(p+"-mdp").value = v ? "" : "chantier vert pelouse";
+    document.getElementById(p+"-conf").value = v ? "" : (etat === "different" ? "chantier vert pelous" : "chantier vert pelouse");
+    confirmer(p);
+    const r = document.getElementById(p+"-refus");
+    r.hidden = etat !== "refus";
+    r.textContent = "Un compte Atlas utilise déjà cette adresse.";
+  });
+  document.getElementById("a-boite-email").classList.toggle("faux", etat === "refus");
+  if(etat === "different") document.getElementById("defile").scrollTop = 9999;
+  else if(etat === "refus") document.getElementById("defile").scrollTop = 9999;
+  else document.getElementById("defile").scrollTop = 0;
+}
+document.querySelectorAll("[data-etat]").forEach(b => b.addEventListener("click", () => poserEtat(b.dataset.etat)));
+
+document.querySelectorAll("[data-mode]").forEach(b => b.addEventListener("click", () => {
+  document.body.classList.toggle("mode-avant", b.dataset.mode === "avant");
+  document.querySelectorAll("[data-mode]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+}));
+document.querySelectorAll(".banc [data-charte]").forEach(b => b.addEventListener("click", () => {
+  document.body.dataset.charte = b.dataset.charte;
+  document.querySelectorAll(".banc [data-charte]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+}));
+
+dessinerRoles();
+</script>
+</body>
+</html>

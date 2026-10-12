@@ -155,7 +155,7 @@ export default function CreerUnComptePage() {
   return (
     <PorteDeNuit className="atlas-bas-sans-barre flex min-h-[100dvh] flex-col px-[22px]">
       {etapeDuCode && (
-        <div className="flex flex-1 flex-col pt-[18px]">
+        <div className="flex flex-1 flex-col">
           {/* Pas de « Retour » ici : le compte est créé, les seize réponses
               sont en base. Revenir en arrière n'aurait rien à défaire. */}
           <SaisieDuCode

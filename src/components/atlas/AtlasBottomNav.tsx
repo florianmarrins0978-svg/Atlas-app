@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { colors } from "@/lib/design-tokens";
 import { cheminAutorise, type Role } from "@/lib/acces-roles";
+import { ongletActif, type OngletDeLaBarre } from "@/lib/onglet-actif";
 
 // Le bandeau du bas, refait le 10 août 2026 d'après la version retenue.
 //
@@ -46,7 +47,7 @@ import { cheminAutorise, type Role } from "@/lib/acces-roles";
 // police. `scripts/verifier-barre-basse.mjs` mesure la barre à 360 px avant
 // chaque livraison, plutôt que de refaire confiance à ce commentaire.
 
-const ONGLETS = [
+const ONGLETS: (OngletDeLaBarre & { label: string })[] = [
   { href: "/", label: "Chantiers" },
   { href: "/planning", label: "Planning" },
   { href: "/termines", label: "Terminés" },
@@ -63,7 +64,13 @@ const ONGLETS = [
   { href: "/paysage", label: "Paysage" },
   // « Réglages » depuis que cet écran porte aussi le nombre d'équipes : un
   // onglet nommé « Tarifs » cacherait le réglage qui commande le planning.
-  { href: "/reglages", label: "Réglages" },
+  //
+  // **Il possède aussi /catalogue** (11 octobre 2026, planche
+  // `appli/catalogue-les-mots.html`) : on y arrive depuis « Tarifs &
+  // catalogue », mais son adresse n'est pas sous /reglages, et le trait tombait
+  // sous « Chantiers ». Pourquoi on déclare plutôt que déplacer :
+  // `src/lib/onglet-actif.ts`.
+  { href: "/reglages", label: "Réglages", possede: ["/catalogue"] },
 ];
 
 /**
@@ -149,12 +156,7 @@ export default function AtlasBottomNav({ role = null }: { role?: Role | null }) 
   // serait la seconde copie que `CLAUDE.md` §3 interdit — et la couche qui
   // compensait s'en va avec la racine corrigée (§4 quater).
   const onglets = role === null ? ONGLETS : ONGLETS.filter((o) => cheminAutorise(role, o.href));
-  const indexActif = onglets.reduce(
-    (trouve, t, i) => (estActif(pathname, t.href) ? i : trouve),
-    // Aucun onglet ne correspond (une fiche chantier, par exemple) : le trait
-    // reste sous « Chantiers », d'où l'on vient forcément.
-    0,
-  );
+  const indexActif = ongletActif(pathname, onglets);
 
   return (
     <nav
@@ -224,8 +226,4 @@ export default function AtlasBottomNav({ role = null }: { role?: Role | null }) 
       </div>
     </nav>
   );
-}
-
-function estActif(chemin: string, href: string): boolean {
-  return href === "/" ? chemin === "/" : chemin.startsWith(href);
 }

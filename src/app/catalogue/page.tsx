@@ -49,9 +49,12 @@ export default async function CataloguePage() {
           retour={{ href: "/reglages/tarifs", libelle: "Retour aux tarifs" }}
         />
 
-        <p className="mx-[26px] mt-[18px] text-[13px] leading-[1.55]" style={{ color: colors.muted }}>
-          Les mots qu&apos;Atlas reconnaît quand vous dictez.{" "}
-          <span style={{ color: colors.or }}>En doré, les vôtres</span>, visibles de vous seul.
+        {/* « En doré, les vôtres, visibles de vous seul » est parti le
+            11 octobre 2026 (planche `appli/catalogue-les-mots.html`) : ses mots
+            ont désormais leur ligne avec « Retirer », il n'y a plus de couleur
+            à expliquer. */}
+        <p className="mx-[26px] mt-[14px] max-w-[32ch] text-[14px] leading-[1.55]" style={{ color: colors.inkSoft }}>
+          Les mots qu&apos;Atlas reconnaît quand vous dictez.
         </p>
 
         <MotsProposes proposes={proposes} />
@@ -60,13 +63,13 @@ export default async function CataloguePage() {
           famille="prestation"
           titre="Prestations"
           cartesInitiales={prestations}
-          libelleNouvelle="+ Nouvelle prestation"
+          libelleNouvelle="Nouvelle prestation"
         />
         <MesMots
           famille="materiel"
           titre="Matériels"
           cartesInitiales={materiels}
-          libelleNouvelle="+ Nouveau matériel"
+          libelleNouvelle="Nouveau matériel"
         />
       </div>
     </div>

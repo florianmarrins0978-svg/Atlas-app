@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { colors, smallCaps } from "@/lib/design-tokens";
+import { colors, libelleCaps, smallCaps } from "@/lib/design-tokens";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { jourLisible } from "@/lib/jour";
@@ -61,7 +61,7 @@ export default function FichesEnCours({ brouillons }: { brouillons: PassageListe
 
   // **LE TITRE PART AVEC SA DERNIÈRE LIGNE, et il l'a fallu.** La capture prise
   // pendant le délai d'annulation montrait « EN COURS » suivi de rien : un
-  // écran qui paraît cassé à l'instant précis où il vient de toucher une croix,
+  // écran qui paraît cassé à l'instant précis où il vient de toucher « Retirer »,
   // et où il se demande s'il a effacé plus que prévu. Le tiroir, lui, reste —
   // c'est lui qui dit ce qui s'est passé, et il porte « Annuler ».
   //
@@ -83,19 +83,23 @@ export default function FichesEnCours({ brouillons }: { brouillons: PassageListe
                 passage={p}
                 href={`/paysage/fiche/${p.id}`}
                 action={
-                  // 44 px de côté : la mesure d'un doigt, pas d'un curseur.
+                  // **« Retirer », et non plus une croix** : le mot du reste de
+                  // l'application (`LigneRetirable`), sa planche du 11 octobre
+                  // 2026. Écrit en clair au bout de la ligne plutôt que caché
+                  // sous un glissement : la croix d'avant se voyait, son
+                  // remplaçant doit se voir aussi. 44 px : la mesure d'un doigt.
                   <button
                     type="button"
                     data-supprimer-fiche={p.id}
-                    aria-label={`Supprimer la fiche ${p.clientNom ?? "sans client"} du ${jourLisible(p.jour)}`}
+                    aria-label={`Retirer la fiche ${p.clientNom ?? "sans client"} du ${jourLisible(p.jour)}`}
                     onClick={() => {
                       setPhrase(null);
                       retraits.retirer(p.id, `la fiche ${p.clientNom ?? "sans client"}`);
                     }}
-                    className="ml-[10px] flex h-11 w-11 flex-none items-center justify-center text-[18px]"
-                    style={{ color: colors.muted }}
+                    className={`flex min-h-[44px] min-w-[44px] flex-none items-center justify-end pl-[12px] ${libelleCaps}`}
+                    style={{ color: colors.inkSoft }}
                   >
-                    ×
+                    Retirer
                   </button>
                 }
               />
@@ -106,7 +110,7 @@ export default function FichesEnCours({ brouillons }: { brouillons: PassageListe
 
       {/* **Le refus du serveur, s'il y en a un.** La ligne est revenue dans la
           liste au-dessus ; sans cette phrase, elle réapparaîtrait sans un mot
-          et il croirait la croix cassée. */}
+          et il croirait le geste cassé. */}
       {phrase && (
         <p
           className="mx-[26px] mt-[12px] text-[13.5px]"

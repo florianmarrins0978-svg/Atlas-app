@@ -78,16 +78,13 @@ export default function ImportTarifs({ onImporte }: { onImporte: (tarifs: Tarif[
   }
 
   return (
-    <div className="mt-6 rounded-[4px] p-4" style={{ backgroundColor: colors.card }}>
-      <span className={smallCaps} style={{ color: colors.muted }}>
-        J&apos;ai déjà mes prix ailleurs
-      </span>
-      <p className="mt-1.5 text-[13px] leading-snug" style={{ color: colors.muted }}>
-        Déposez votre fichier Excel ou CSV : Atlas y lit les désignations, les prix et les unités, et vous montre
-        ce qu&apos;il ajouterait <strong>avant</strong>{" "}
-        d&apos;enregistrer quoi que ce soit.
-      </p>
-
+    <div>
+      {/* **Un lien texte sous « Ajouter un tarif », et plus le seul bouton plein
+          de l'écran** : la planche validée le 11 octobre 2026
+          (`appli/mes-tarifs-corrige.html`). Reprendre ses prix d'un fichier ne
+          sert qu'une fois ; l'aperçu qui suit, lui, ne bouge pas.
+          « Excel ou CSV », et pas le PDF que l'attribut `accept` laisse
+          choisir : la lecture ne rend que ces deux-là. */}
       <input
         ref={champ}
         id="fichier-tarifs"
@@ -98,10 +95,10 @@ export default function ImportTarifs({ onImporte }: { onImporte: (tarifs: Tarif[
       />
       <label
         htmlFor="fichier-tarifs"
-        className="atlas-plein mt-3 inline-block cursor-pointer rounded-[4px] px-4 py-2.5 text-[14px] font-medium text-white"
-        style={{ backgroundColor: colors.plein }}
+        className="flex min-h-[48px] cursor-pointer items-center text-[14px]"
+        style={{ color: colors.inkSoft }}
       >
-        {enCours ? "Lecture…" : "Choisir un fichier"}
+        {enCours ? "Lecture…" : "Reprendre mes prix d'un fichier Excel ou CSV"}
       </label>
 
       {bilan && (
