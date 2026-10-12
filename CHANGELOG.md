@@ -8,6 +8,16 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-11
 
+- **Six écrans repris d'après leurs planches /impeccable, en un seul lot (sa décision).** Il a
+  demandé une seule batterie pour les six : Paysage (une icône par outil, la formule Artisan dite
+  dès la liste), la fiche de chantier (accueil, remplir, composer : carte pleine largeur au liseré
+  d'or, « Retirer » à la place des croix, une rangée pour sauter d'une famille à l'autre), Mes
+  tarifs (une ligne par tarif qu'on ouvre sur place, l'import en lien), Nouveau compte (le rôle
+  d'abord, « Pourra / Ne pourra pas » au lieu de lignes barrées), Accepter les conditions (sur la
+  porte sombre, le texte rendu, « Se déconnecter ») et le code reçu (six cases autour d'un seul
+  champ, aussi à la création de compte et au mot de passe oublié). Aucune règle d'accès, de prix
+  ni d'authentification ne change. Le revers assumé : un rouge sur l'un retient les six.
+
 - **Le catalogue, sa planche corrigée, et la barre du bas qui allumait Chantiers.** La barre ne
   regardait que le début de l'adresse : /catalogue n'est pas sous /reglages, aucun onglet ne la
   revendiquait, et le trait tombait sous Chantiers. Un onglet déclare désormais les adresses qu'il

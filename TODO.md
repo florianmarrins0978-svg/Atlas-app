@@ -1,5 +1,18 @@
 # Prochaines tâches
 
+## 🔜 L'OUTIL DE COMPARAISON AVEC MAIN SE TROMPE SUR CE PC (11 octobre 2026)
+
+Trouvé en livrant le catalogue. Trois défauts d'outillage, aucun dans le produit :
+- `preparerLeTemoin` (`scripts/_temoin-de-main.mjs`) ne renouvelle jamais le `node_modules` du
+  témoin une fois posé : main avance, une dépendance arrive (`qrcode-generator`), et toute suite
+  navigateur rend « illisible » côté main. Il faut le reprêter quand le `package-lock.json` change.
+- son cache `.next-a4` laissé d'une construction précédente fait échouer la suivante
+  (`CssSyntaxError … globals.css`) : à effacer avant chaque construction du témoin.
+- `test-recherche-client-e2e.ts` vise `127.0.0.1:3000` en dur (`BASE_URL`) au lieu de
+  `ADRESSE` : rouge partout hors de l'atelier 0.
+Et `test-anneau-dictee-e2e.ts` rougit sur main quand il passe après les suites de base, vert
+seul : à comprendre, il ne vient d'aucun des lots du 11 octobre.
+
 ## ⏳ NEUF PLANCHES /impeccable : SON CHOIX ATTENDU (11 octobre 2026)
 
 Rien n'est codé. Une planche par écran, lien dans `appli/essais.html` sous
