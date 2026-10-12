@@ -122,13 +122,13 @@ async function main() {
   console.log("  ✓ après son appui, les tarifs sont là — et rien d'inventé");
 
   // --- 6. Et ils s'affichent, sans recharger -------------------------------
-  const champTarif = page.locator(`input[value="Débroussaillage ${MARQUE}"]`);
-  await champTarif.waitFor({ state: "visible" });
-  // `innerText` ne contient PAS la valeur d'un champ de saisie, et la liste des
-  // tarifs en est faite. On interroge donc les valeurs, pas le texte — l'oublier
-  // rend un contrôle qui échoue sur un écran parfaitement juste.
+  // Un tarif est une ligne repliée depuis le 11 octobre 2026
+  // (`appli/mes-tarifs-corrige.html`) : son nom s'y lit en texte, il n'est
+  // plus la valeur d'un champ de saisie.
+  const ligneTarif = page.locator('[data-atlas="tarif"]', { hasText: `Débroussaillage ${MARQUE}` });
+  await ligneTarif.waitFor({ state: "visible" });
   assert.equal(
-    await champTarif.count(),
+    await ligneTarif.count(),
     1,
     "Le tarif est en base mais l'écran ne le montre pas : il croirait l'import raté et recommencerait."
   );
