@@ -12,10 +12,14 @@ Trouvé en livrant le catalogue. Trois défauts d'outillage, aucun dans le produ
   `ADRESSE` : rouge partout hors de l'atelier 0.
 Et `test-anneau-dictee-e2e.ts` rougit sur main quand il passe après les suites de base, vert
 seul : à comprendre, il ne vient d'aucun des lots du 11 octobre.
+Et la gravité « argent » se lit dans le NOM d'un fichier (`_niveau-de-risque.mjs`) : corriger
+`scripts/test-import-tarifs-e2e.ts`, une suite navigateur, met le lot au niveau 3 à cause du mot
+« tarifs », et `verifier-ce-qui-a-bouge` renvoie à la batterie entière. Côté sûr, mais cinquante
+minutes pour une ligne de contrôle.
 
-## ⏳ NEUF PLANCHES /impeccable : SON CHOIX ATTENDU (11 octobre 2026)
+## ✅ NEUF PLANCHES /impeccable : CODÉES LE 11 OCTOBRE 2026
 
-Rien n'est codé. Une planche par écran, lien dans `appli/essais.html` sous
+Une planche par écran, lien dans `appli/essais.html` sous
 « Neuf écrans jamais repris » : `paysage-les-outils`, `fiche-de-chantier-l-accueil`,
 `fiche-de-chantier-remplir`, `fiche-de-chantier-composer`, `catalogue-les-mots`,
 `mes-tarifs-corrige`, `donner-un-acces-corrige`, `documents-legaux-accepter`,
@@ -23,8 +27,9 @@ Rien n'est codé. Une planche par écran, lien dans `appli/essais.html` sous
 sous-titre doré remis partout, liseré d'or de « Composer ma fiche » gardé. Documents légaux :
 pas de « Retour », un « Se déconnecter » discret (son accord du 11 octobre). Filtre de date :
 sa A (11 octobre), SUR `main` le 11 octobre (b4e117ac) : rapports envoyés, fiches de
-sécurité, retours. Batterie jouée, aucun rouge nouveau. **Défaut à corriger quoi qu'il choisisse** :
-l'onglet Chantiers allumé sur `/catalogue` (`AtlasBottomNav`). Ensuite : la
+sécurité, retours. Catalogue sur `main` (aa61c564), avec l'onglet Réglages allumé sur `/catalogue`.
+Les six autres (Paysage, fiche de chantier, Mes tarifs, nouveau compte, documents légaux,
+vérifier son email) codés le 11 octobre en un seul lot, `lot/six-ecrans`, une seule batterie. Ensuite : la
 dizaine d'écrans jamais repris listés au `CHANGELOG.md` du 11 octobre.
 
 ## ✅ LE NUMÉRO RM : SON CHOIX B, SUR `main` LE 9 OCTOBRE 2026
