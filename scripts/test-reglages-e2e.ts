@@ -70,7 +70,7 @@ async function attendreValeurPersistee(page: Page, libelleUnique: string, attend
     if ((await ligne.count()) > 0) {
       // L'espace insécable du montant sort en espace ordinaire d'`innerText`,
       // ou non, selon le navigateur : on compare sans elle.
-      derniereVue = (await ligne.innerText()).replace(/s+/g, " ");
+      derniereVue = (await ligne.innerText()).replace(/\s+/g, " ");
       if (derniereVue.includes(attendu)) return;
     }
     await page.waitForTimeout(PAUSE_MS);
