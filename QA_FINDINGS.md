@@ -24,6 +24,10 @@ Immediate next steps (in progress):
 
 Severity: NON CLASSÉ (investigation in progress)
 
+**Statut au 2026-10-12 : RÉSOLU PAR MAIN (non reproduit).** Vert rejoué seul, puis vert dans la batterie complète (0 échec, aucun plantage natif). Explication probable, non prouvée : les suites tournent désormais sur 
+ext start (version bâtie) et non plus 
+ext dev.
+
 Owner: infra / devops (investigation ongoing)
 
 2) test-tva-au-paiement-e2e.ts — timeout on marking invoice paid
@@ -46,6 +50,8 @@ Suggested mitigations:
 
 Severity: P2
 
+**Statut au 2026-10-12 : RÉSOLU PAR MAIN (non reproduit).** 9/9 rejoué seul, puis 9/9 dans la batterie complète. Explication probable, non prouvée : main a corrigé le lanceur qui, en passant par un shell sous Windows, avalait le journal serveur (d'où le journal de 590 octets) ; les suites servent aussi la version bâtie.
+
 Owner: feature/test author
 
 Forensic correlation notes (2026-08-31):
@@ -63,3 +69,38 @@ Actionable recommendations:
 	- After the run, correlate trace timestamps with server log lines (search by timestamp ±2s and request path) and then query the admin DB for any UUIDs that appear in both the trace and the server logs.
 - If logs show request handling but no DB commits, add logging around DB transactions to capture commit/rollback reasons and surface errors.
 - If run-mismatch repeats, ensure the test runner and browser use the exact same `ATLAS_URL_PUBLIQUE`/host/port and that no external server overrides the harness spawn.
+
+3) test-devis-client-e2e.ts : le premier affichage d'un lien de devis arrive après la vérification
+---------------------------------------------------------------------------------------------------
+Constaté le 2026-10-12, batterie complète après fusion de main.
+
+Symptôme :
+- `❌ un jeton inconnu ne révèle rien au visiteur` : `le message générique n'est pas affiché`.
+- Rejouée seule : rouge encore, avec en plus `❌ le client voit son devis sans être connecté` : `émetteur absent`.
+
+Ce qui a été regardé (version bâtie, environnement du lanceur, base QA) :
+- Le HTML servi pour `/devis/<jeton inconnu>` contient bien « Ce lien n'est plus valable » (200).
+- La capture du navigateur montre bien la carte « Ce lien n'est plus valable ».
+- Mais au moment de `networkidle`, `innerText` ne vaut que « ATLAS Chargement… » (`src/app/loading.tsx`) et `isVisible()` rend `false`.
+- Mesure, 3 ouvertures sur un serveur tout juste démarré : 1re ouverture, `networkidle` à 563 ms et message visible à 2 416 ms ; 2e et 3e, visible dès 568 ms et 587 ms.
+
+Lecture : course au premier rendu de la route `/devis/[jeton]` sur un serveur froid. Les deux tests en échec sont les deux premiers de la suite. Ils lisent `isVisible()`, qui ne patiente pas, juste après `networkidle`. Le contenu arrive ensuite (fallback `loading.tsx` remplacé par le rendu en flux).
+
+Classement : FRAGILITÉ DE TEST + LENTEUR AU PREMIER RENDU SOUS WINDOWS. Pas un défaut fonctionnel : le client finit par voir le bon écran. Côté client, sur un serveur froid, « Chargement… » reste environ 2 s.
+
+Severity: P3
+
+Pas encore fait :
+- Rejouer cette suite sur la base de `main` (`npx tsx scripts/verifier-rouge-prealable.ts`) pour dire si ce rouge préexiste à la campagne.
+- Correction possible côté test : attendre le texte (`waitFor({ state: "visible" })` ou `expect(...).toBeVisible()`) au lieu de `isVisible()`. Non appliquée : hors du périmètre demandé.
+
+Owner: test author
+
+4) Deux suites non mesurables sous Windows
+------------------------------------------
+- `test-bandeau-banc-e2e.ts` : `« npx » est absent de cette machine`.
+- `test-connexion-service-en-panne-e2e.ts` : `« bash » est absent de cette machine`.
+
+Le lanceur les classe lui-même « non mesurables ici » : ce ne sont pas des rouges. À jouer sur une machine Linux (CI ou espace du patron).
+
+Severity: NON CLASSÉ (couverture manquante sur cet établi)

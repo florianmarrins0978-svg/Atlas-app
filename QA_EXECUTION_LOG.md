@@ -32,3 +32,31 @@ Forensic correlation (2026-08-31):
 - Findings: trace shows repeated POSTs to `/chantiers/<uuid>/prix` and `/chantiers/<uuid>/devis-complet` between `2026-08-31T10:08:36Z` and `2026-08-31T10:09:23Z` for seven UUIDs. The server journal contains only startup lines and a single `GET /api/health/live` entry (the journal is ~590 bytes). Admin DB queries for the seven UUIDs returned no matching `chantiers`, `factures` or `paiements` rows.
 - Interim conclusion: no server-side evidence of request handling or DB writes was found for the trace slice. Two likely explanations remain: (A) the browser trace belongs to a run that did not reach the same server process whose stdout was captured in the journal (mismatch of runs/instances), or (B) the server processed requests but did not persist writes (transaction rollbacks or silent failures) and did not emit log lines for them. Current evidence favours (A) because the server journal lacks any request lines matching the trace timestamps.
 - Recommended immediate steps: re-run the isolated `test-tva-au-paiement-e2e.ts` with the harness in `--only-start-server` mode, enable verbose server/application logging (so each request and DB commit/rollback is logged), keep the journal file (do not rotate), and collect the Playwright trace in the same run for deterministic correlation. Owner: test author + infra.
+
+Run 2026-10-12 (après fusion de main dans qa/campagne, commit d042d9b7)
+-----------------------------------------------------------------------
+
+Préalables : `atlas-qa-postgres` et `atlas-qa-redis` Up, `npm run qa:preuve` 15/15 vert.
+
+Command (DATABASE_URL superutilisateur QA posé pour cette seule commande, `.env` inchangé) :
+
+```powershell
+$env:DATABASE_URL="postgresql://postgres:postgres_qa_pw@localhost:55432/atlas_qa"
+npx tsx --env-file=.env scripts/run-e2e-tests.ts *> "$env:TEMP\claude\qa-e2e\batterie.log"
+```
+
+Pourquoi ce rôle : sous `atlas_app` (le `.env`), le lanceur s'arrête avant toute suite, sur l'amorçage de la base : `permission denied for table lignes_facture`, puis `❌ Impossible de lancer le seed de la base de développement (code: 1)`.
+
+Résultat : **180/183 suites réussies. 2 non mesurables ici. 1 rouge.**
+
+| Suite | Verdict | Ligne d'erreur |
+|---|---|---|
+| `test-devis-client-e2e.ts` | rouge (16 réussis, 1 échoué) | `❌ un jeton inconnu ne révèle rien au visiteur` : `le message générique n'est pas affiché` |
+| `test-bandeau-banc-e2e.ts` | non mesurable | `« npx » est absent de cette machine` (Windows) |
+| `test-connexion-service-en-panne-e2e.ts` | non mesurable | `« bash » est absent de cette machine` (Windows) |
+
+Les deux constats du 31 août sont verts dans la batterie complète : `test-tva-au-paiement-e2e.ts` 9/9, `test-pages-publiques-sans-navigation-e2e.ts` 0 échec, aucun plantage natif. Ils avaient aussi été verts rejoués seuls plus tôt le même jour.
+
+Rejeu seul de `test-devis-client-e2e.ts` : rouge encore, 15 réussis et 2 échoués (le même, plus `le client voit son devis sans être connecté` : `émetteur absent`). Analyse dans `QA_FINDINGS.md` §3.
+
+Artifacts (hors dépôt, peuvent disparaître) : `%TEMP%\claude\qa-e2e\batterie.log`, `devis-client.log`, `devis-jeton-inconnu.png`.
