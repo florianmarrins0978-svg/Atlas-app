@@ -900,6 +900,33 @@ et le champ de saisie ne pousse plus le bouton d'envoi hors de l'écran.
 Regardé à 320, 390 et 430 px. Niveau 3 avec le lot ci-dessus : batterie
 à lui demander avant `main`.
 
+## ⏳ UNE PLANCHE À REGARDER — LA MAIN D'ŒUVRE QUI S'ADDITIONNE, DANS CHAQUE TVA (13 octobre 2026)
+
+**Sa demande :** *« il faut pouvoir ajouter une main d'œuvre dans chaque devis,
+pas seulement "dont main d'œuvre" comme aujourd'hui, mais dire main d'œuvre
+500 € par exemple et que ça s'additionne comme une tâche normale ; faut pouvoir
+le faire pour les lignes TVA à 10 et TVA à 20 »*. C'est la **lecture A** de la
+planche du 12 septembre, qu'il avait écartée ce jour-là pour la B.
+
+**Planche :** `appli/devis-main-d-oeuvre-par-tva.html`. Sous chaque catégorie
+de TVA, « + Main d'œuvre » à côté de « + Ajouter une ligne » pose une ligne
+« Main d'œuvre » (libellé modifiable), montant vide, « − » pour la retirer.
+Elle compte dans le sous-total, la TVA de sa catégorie et le TTC. Sur le papier,
+elle s'imprime **1 forfait** au montant tapé.
+
+**À trancher par lui :** la ligne « dont main d'œuvre HT » sous le total.
+A, calculée toute seule (somme des lignes de main d'œuvre ; le champ tapé
+disparaît) ; B, tapée à part comme aujourd'hui.
+
+**Pour coder ensuite (proposé) :** une ligne de devis ORDINAIRE, quantité 1,
+unité forfait, au taux de la catégorie (`ajouterLigneAction(chantierId, taux)`
+existe déjà) : aucune migration, et les totaux, la TVA par taux, le PDF et la
+facture la portent sans une ligne de calcul en plus. Pour la réponse A, il faut
+reconnaître une ligne de main d'œuvre sans se fier au libellé (il le change) :
+une colonne `nature` sur la ligne, donc une migration expand. Niveau 3 (argent).
+**NE RIEN CODER avant sa réponse** (`CLAUDE.md` §3 bis), et ne lancer aucune
+batterie sans son accord (sa consigne du 13 octobre).
+
 ## ⏳ UNE PLANCHE À REGARDER — FICHE 6, LA CHALAROSE DU FRÊNE (25 septembre 2026)
 
 `appli/fiche-chalarose-du-frene.html`, liée depuis `appli/essais.html`. **Sa
