@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>La fiche de sécurité, complète</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  LA FICHE DE SÉCURITÉ, COMPLÈTE. Planche du 13 octobre 2026.
+
+  SA DEMANDE : « regarde les photos pour créer une fiche ; si t'as pas ça,
+  c'est pas bon », avec seize photos de l'appli Kleyk prises sur son écran, puis
+  « vois s'il faut réimaginer l'outil pour qu'il soit plus fonctionnel ».
+
+  LA RÈGLE DE CETTE PLANCHE : tout ce que la fiche Kleyk demande est ici, et ce
+  que la nôtre avait déjà reste (les mots de la feuille MSA, la reprise de la
+  fiche d'avant, les consignes de secours, les liens officiels).
+
+  Ce qui vient de Kleyk, relevé sur ses photos et sur le relevé de l'autre
+  session : les sous-traitants ; le client, son rôle, l'adresse d'accès des
+  secours ; le point GPS posé sur une carte ; plusieurs responsables ; les
+  dates de début et de fin ; le protocole d'entrée en zone de danger ; les EPI ;
+  les moyens d'élévation « Pas besoin » et « nacelle impossible » ; le matériel
+  en plus ; la situation des travaux ; les arbres dangereux UN PAR UN (ou en
+  groupe), avec intervention, dangers et consignes, et leur numéro repris sur
+  le croquis ; la noyade ; « Rien à signaler » ; l'outil de dessin du croquis ;
+  jusqu'à dix photos ; les compétences de chaque personne.
+
+  CE QUI N'EST PAS RECOPIÉ DE KLEYK : leurs textes. Les listes sont des noms de
+  matériel et de risques, communs au métier ; le protocole d'entrée en zone de
+  danger est écrit ici, à notre façon.
+
+  CE QUI EST MIEUX QUE KLEYK, et c'est la refonte :
+  1. Le croquis se dessine SUR LA PHOTO du chantier, pas sur une page blanche,
+     avec des symboles (accès, zone de chute, arbre numéroté, rendez-vous des
+     secours) en plus du crayon. Les arbres dangereux y prennent leur numéro.
+  2. Les SST et GSA se calculent sur leur date : 24 mois, et l'écran prévient.
+  3. Chaque personne signe qu'elle a lu la fiche (la notice MSA : « chaque
+     intervenant doit avoir pris connaissance de cette fiche »).
+  4. Le sommaire dit ce qui reste vide, étape par étape : rien ne bloque.
+  5. Ce qu'Atlas sait est déjà posé (devis, client, adresse, dates, équipe).
+
+  « RIEN À SIGNALER » est une réponse qu'il donne, pas une case cochée d'avance :
+  elle dit « j'ai regardé, il n'y a rien ». Rien ne se pré-coche toujours.
+
+  Couleurs : celles de `fiche-de-securite.html`. Cibles de 44 px au moins.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --scene:#e6e3dc; --fond:#f5f3ee; --carte:#faf9f5; --teinte:#ece9e1; --encre:#1c1c1a;
+    --encre-douce:#4a4a44; --gris:#8a8578; --or:#B98B47; --or-texte:#8b6835; --plein:#7d9a6d; --sur-plein:#faf9f5;
+    --pin:#2f3b2f; --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+    --ombre-forte:rgba(20,18,14,.18); --or-papier:rgba(185,139,71,.13);
+    --vert-pale:#b9c6b4; --vert-voile:rgba(125,154,109,.16);
+    --alerte:#a14a2e; --alerte-voile:rgba(161,74,46,.12);
+    --herbe:#a9b98f; --herbe-fonce:#8ea275; --route:#cfc9bc; --toit:#b9a58a; --arbre:#5f7a4f; --eau:#a9c3cf;
+  }
+  body.nuit{
+    --scene:#070908; --fond:#101210; --carte:#1a1d19; --teinte:#151814; --encre:#e9e8de;
+    --encre-douce:#c1c2b6; --gris:#84887b; --or:#C9A05E; --or-texte:#d9b676; --plein:#e9e8de; --sur-plein:#101210;
+    --pin:#b9c6b4; --trait:rgba(233,232,222,.14); --trait-doux:rgba(233,232,222,.08);
+    --ombre-forte:rgba(0,0,0,.6); --or-papier:rgba(201,160,94,.16);
+    --vert-pale:#4f5f4c; --vert-voile:rgba(185,198,180,.12);
+    --alerte:#e39a7e; --alerte-voile:rgba(227,154,126,.14);
+    --herbe:#3d4a35; --herbe-fonce:#33402d; --route:#3a3833; --toit:#5a4f42; --arbre:#6f8c5e; --eau:#2f4650;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--scene)}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 48px;font-variant-numeric:tabular-nums}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+  button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:4px}
+
+  .commandes{display:flex;justify-content:center;gap:22px;padding:16px 16px 0;font-size:13px;flex-wrap:wrap}
+  .commandes button{min-height:40px;color:var(--gris)}
+  .commandes button[aria-pressed="true"]{color:var(--encre);text-decoration:underline;text-decoration-color:var(--or);text-underline-offset:6px}
+
+  .tel{width:calc(100% - 32px);max-width:390px;height:760px;margin:12px auto 0;background:var(--fond);border-radius:30px;overflow:hidden;
+       box-shadow:0 18px 46px var(--ombre-forte);display:flex;flex-direction:column;position:relative}
+  @media (max-width:420px){.tel{border-radius:22px}}
+  .ecran{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:4px 16px 24px;scrollbar-width:thin}
+  .entete{flex:none;display:flex;align-items:center;gap:6px;min-height:58px;padding:8px 14px 0 4px}
+  .entete .retour{display:grid;place-items:center;width:44px;height:44px;color:var(--pin);flex:none}
+  .entete .quoi{flex:1;min-width:0;line-height:1.15}
+  .entete .grand{display:block;font:400 17px/1.15 ui-serif,Georgia,serif}
+  .entete .petit{display:block;font-size:12px;color:var(--gris);margin-top:1px}
+  .entete .ou{flex:none;font-size:12.5px;color:var(--or-texte);font-weight:600}
+  body.nuit .entete .ou{color:var(--or)}
+  .avancee{flex:none;display:grid;grid-template-columns:repeat(6,1fr);gap:4px;padding:6px 16px 0}
+  .avancee i{display:block;height:3px;border-radius:2px;background:var(--trait)}
+  .avancee i.fait{background:var(--or)} .avancee i.la{background:var(--pin)}
+  .pied{flex:none;padding:10px 16px 14px;border-top:1px solid var(--trait-doux)}
+  .pied .reste{margin:0 0 8px;text-align:center;font-size:13px;color:var(--gris)}
+
+  h2{margin:10px 0 4px;font:400 24px/1.15 ui-serif,Georgia,serif}
+  .sous{margin:0 0 12px;font-size:13.5px;color:var(--gris)}
+  .bloc{margin-top:16px;padding-top:14px;border-top:1px solid var(--trait-doux)}
+  .bloc.premier{margin-top:4px;padding-top:0;border-top:0}
+  .etiquette{margin:0 0 8px;font:600 10px/1 inherit;letter-spacing:.16em;text-transform:uppercase;color:var(--encre)}
+  .aide{margin:6px 0 8px;font-size:13px;color:var(--gris);line-height:1.45}
+  .aide.alerte{color:var(--alerte);font-weight:600}
+  .vigilance{margin:8px 0;padding-left:12px;border-left:2px solid var(--or);font-size:13px;color:var(--encre-douce);line-height:1.45}
+  .lien{color:var(--pin);font-weight:600;text-decoration:underline;text-decoration-color:var(--or);text-underline-offset:3px}
+  body.nuit .lien{color:var(--encre)}
+
+  .vert{display:flex;width:100%;min-height:46px;align-items:center;justify-content:center;border-radius:999px;background:var(--plein);color:var(--sur-plein);font:400 15.5px/1 ui-serif,Georgia,serif}
+  .vert:active{filter:brightness(.94)}
+  .creux{display:flex;width:100%;min-height:46px;align-items:center;justify-content:center;border-radius:999px;color:var(--pin);box-shadow:inset 0 0 0 1.5px var(--vert-pale);font:400 15.5px/1 ui-serif,Georgia,serif}
+  body.nuit .creux{color:var(--encre)}
+  .ajouter{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border-radius:999px;background:var(--vert-voile);color:var(--pin);box-shadow:inset 0 0 0 1px var(--vert-pale);font-size:14px}
+  body.nuit .ajouter{color:var(--encre)}
+  .rangee{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+
+  .rond{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:transparent;box-shadow:inset 0 0 0 1.5px var(--vert-pale);background:var(--carte)}
+  .rond.plein{background:var(--plein);box-shadow:none;color:var(--sur-plein)}
+  .case{display:flex;width:100%;align-items:flex-start;gap:12px;min-height:44px;padding:8px 0;font-size:14.5px;line-height:1.4;border-top:1px solid var(--trait-doux)}
+  .case:first-child{border-top:0}
+  .case.rien{font-weight:600}
+  .liste{margin-top:2px}
+
+  /* le sommaire, et les sous-étapes */
+  .ligne{display:flex;width:100%;align-items:center;gap:14px;min-height:64px;padding:10px 0;border-top:1px solid var(--trait-doux)}
+  .ligne:first-child{border-top:0}
+  .num{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font:400 16px/1 ui-serif,Georgia,serif;box-shadow:inset 0 0 0 1.5px var(--vert-pale);color:var(--pin)}
+  body.nuit .num{color:var(--encre)}
+  .num.fait{background:var(--plein);color:var(--sur-plein);box-shadow:none}
+  .ligne .t{flex:1;min-width:0}
+  .ligne .t b{display:block;font-weight:400;font-size:15.5px;line-height:1.25}
+  .ligne .t small{display:block;margin-top:2px;font-size:12.5px;color:var(--gris);line-height:1.35}
+  .ligne .t small.vide{color:var(--or-texte)}
+  body.nuit .ligne .t small.vide{color:var(--or)}
+  .chev{flex:none;color:var(--gris)}
+
+  /* champs */
+  .champ{display:block;margin-top:10px}
+  .champ .nom{display:block;font-size:12.5px;color:var(--gris);margin-bottom:3px}
+  .champ input,.champ textarea{display:block;width:100%;min-height:46px;padding:10px 12px;border:0;border-radius:10px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);color:var(--encre);font:inherit;font-size:16px;line-height:1.4;resize:none}
+  .champ input:focus,.champ textarea:focus{outline:0;box-shadow:inset 0 0 0 1.5px var(--or)}
+  .champ .fixe{display:flex;align-items:center;min-height:46px;padding:10px 12px;border-radius:10px;background:var(--teinte);font-size:16px}
+  .deux{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .choix{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px}
+  .choix button{display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:10px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);font-size:14.5px;text-align:center}
+  .choix button[aria-pressed="true"]{background:var(--vert-voile);box-shadow:inset 0 0 0 1.5px var(--pin);color:var(--pin);font-weight:600}
+  body.nuit .choix button[aria-pressed="true"]{color:var(--encre)}
+
+  .pastilles{display:flex;flex-wrap:wrap;gap:6px}
+  .pastilles button{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:8px 14px 8px 12px;border-radius:999px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);font-size:14px;line-height:1.2}
+  .pastilles button .p{width:18px;height:18px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1.5px var(--vert-pale);display:grid;place-items:center;color:transparent}
+  .pastilles button[aria-pressed="true"]{background:var(--vert-voile);box-shadow:inset 0 0 0 1.5px var(--plein)}
+  .pastilles button[aria-pressed="true"] .p{background:var(--plein);box-shadow:none;color:var(--sur-plein)}
+
+  .carte-bloc{margin-top:10px;padding:12px 14px;border-radius:14px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait)}
+  .carte-bloc .haut{display:flex;align-items:baseline;gap:8px}
+  .carte-bloc .haut b{flex:1;font:400 17px/1.2 ui-serif,Georgia,serif}
+  .carte-bloc .haut small{font-size:12px;color:var(--gris)}
+  .retirer{min-height:40px;padding:0 4px;font-size:13px;font-weight:700;color:var(--alerte)}
+
+  /* la carte du GPS */
+  .plan{position:relative;margin-top:10px;border-radius:12px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--trait)}
+  .plan svg{display:block;width:100%;height:auto;cursor:crosshair}
+
+  /* le croquis */
+  .photo{position:relative;margin-top:6px;border-radius:12px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--trait);touch-action:none}
+  .photo svg{display:block;width:100%;height:auto}
+  .outils{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .outil{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:8px 12px 8px 10px;border-radius:999px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);font-size:13.5px}
+  .outil[aria-pressed="true"]{background:var(--vert-voile);box-shadow:inset 0 0 0 1.5px var(--plein)}
+  .legende{margin:10px 0 0;padding:0;list-style:none}
+  .legende li{display:flex;align-items:center;gap:10px;min-height:30px;font-size:13.5px}
+  .gestes{display:flex;gap:18px;margin-top:4px}
+  .gestes button{min-height:44px;font-size:13.5px;font-weight:700}
+  .methode{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+
+  .vignettes{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+  .vignettes span,.vignettes button{width:58px;height:58px;border-radius:10px;flex:none;box-shadow:inset 0 0 0 1px var(--trait)}
+  .vignettes span{background:var(--arbre);opacity:.55}
+  .vignettes button{display:grid;place-items:center;background:var(--vert-voile);color:var(--pin)}
+
+  /* équipe */
+  .qui{display:flex;width:100%;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--trait-doux)}
+  .qui:first-child{border-top:0}
+  .qui .nom{display:block;font-size:15px}
+  .qui .comp{display:block;margin-top:2px;font-size:12.5px;color:var(--encre-douce);line-height:1.4}
+  .qui .al{display:block;margin-top:3px;font-size:12.5px;color:var(--alerte);font-weight:600}
+
+  /* secours */
+  .urgence{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:8px 0 12px}
+  .urgence a{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:56px;border-radius:999px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);text-decoration:none;color:var(--encre)}
+  .urgence a b{font:400 20px/1 ui-serif,Georgia,serif}
+  .urgence a span{font-size:9.5px;color:var(--gris);margin-top:3px;text-align:center;line-height:1.1}
+  .consignes{margin:0;padding:0;list-style:none;counter-reset:c}
+  .consignes li{position:relative;padding:4px 0 4px 26px;font-size:14px;line-height:1.45;counter-increment:c}
+  .consignes li::before{content:counter(c);position:absolute;left:0;top:5px;width:18px;height:18px;border-radius:50%;background:var(--or-papier);color:var(--or-texte);font-size:11px;font-weight:700;display:grid;place-items:center}
+
+  /* signature */
+  .toile{margin-top:8px;height:150px;border-radius:12px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);position:relative;overflow:hidden}
+  .toile canvas{display:block;width:100%;height:100%;touch-action:none}
+  .toile .ligne-sig{position:absolute;left:18px;right:18px;bottom:30px;border-top:1px dashed var(--trait);pointer-events:none}
+  .personne{display:flex;align-items:center;gap:12px;min-height:52px;border-top:1px solid var(--trait-doux)}
+  .personne:first-child{border-top:0}
+  .personne .nom{flex:1;min-width:0;font-size:15px}
+  .personne .nom small{display:block;font-size:12px;color:var(--gris)}
+  .petit-bouton{flex:none;min-height:40px;padding:0 16px;border-radius:999px;background:var(--plein);color:var(--sur-plein);font-size:14px}
+  .voile{position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;z-index:2}
+  .feuillet{width:100%;background:var(--fond);border-radius:20px 20px 0 0;padding:18px 16px 16px}
+  .feuillet h3{margin:0;font:400 20px/1.2 ui-serif,Georgia,serif}
+  .feuillet p{margin:4px 0 0;font-size:13.5px;color:var(--gris)}
+  .deux-boutons{display:flex;gap:8px;margin-top:12px}
+  .deux-boutons > *{flex:1}
+
+  .note{max-width:430px;margin:28px auto 0;padding:0 22px;font-size:13.5px;line-height:1.6;color:var(--encre-douce)}
+  .note h2{font:400 20px/1.2 ui-serif,Georgia,serif;color:var(--encre);margin:20px 0 8px}
+  .note table{border-collapse:collapse;width:100%}
+  .note td{padding:6px 8px 6px 0;vertical-align:top;border-top:1px solid var(--trait-doux)}
+  .note td:first-child{color:var(--encre);width:40%}
+  .note b{color:var(--encre)}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" id="nuit" aria-pressed="false">Voir sur Nuit</button>
+  <button type="button" id="rejouer">Recommencer</button>
+</div>
+<div class="tel" id="tel"></div>
+
+<div class="note">
+  <h2>Ce qui vient de Kleyk</h2>
+  <p>Tout ce que montrent vos photos est dans la fiche : les sous-traitants, la carte du point GPS, l’adresse d’accès des secours, plusieurs responsables, le protocole de zone de danger, les EPI, la situation des travaux, les arbres dangereux un par un, la noyade, « Rien à signaler », l’outil de dessin, dix photos, les compétences de chaque personne.</p>
+  <h2>Ce qui est mieux que Kleyk</h2>
+  <table>
+    <tr><td>Le croquis</td><td>Dessiné sur la photo du chantier, avec des symboles. Les arbres dangereux y prennent leur numéro.</td></tr>
+    <tr><td>SST et GSA</td><td>Atlas compte les 24 mois et prévient. Kleyk fait recocher à la main.</td></tr>
+    <tr><td>Lu par l’équipe</td><td>Chacun signe qu’il a lu la fiche, comme le demande la MSA.</td></tr>
+    <tr><td>Le sommaire</td><td>Il dit ce qui reste vide, étape par étape.</td></tr>
+    <tr><td>Ce qu’Atlas sait déjà</td><td>Devis, client, adresse, dates, équipe : rien à retaper.</td></tr>
+    <tr><td>Les secours</td><td>Point de rencontre, 15, 18, 112, protéger, alerter, secourir.</td></tr>
+  </table>
+  <h2>À vous</h2>
+  <p>Touchez chaque étape. Dites-moi ce qui manque, ce qui est de trop. Rien n’est codé.</p>
+</div>
+
+<script>
+const coche = '<svg width="13" height="13" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.4 8.2 14.6 16 5.8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const retourSvg = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const ouvrir = '<svg class="chev" width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7.5 4l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const plus = '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+const RIEN = "Rien à signaler";
+
+/* ═══ LES LISTES ═══ Les mots de la feuille MSA d'abord, puis ce que Kleyk demande en plus. */
+const L = {
+  travaux: ["Éhoupage","Élagage de formation","Élagage d’entretien","Haubanage","Démontage avec rétention","Démontage sans rétention","Abattage directionnel","Abattage non directionnel","Ébranchage","Billonnage","Broyage","Évacuation des rémanents","Rognage / essouchage","Débitage d’arbre au sol","Débroussaillage","Démontage d’arbres tombés sur un obstacle","Conduite d’engins","Entretien d’espace vert","Création d’espace vert"],
+  epi: ["Contrôle visuel des EPI fait","Chaussures de sécurité anti-coupure","Pantalon anti-coupure","Manchettes anti-coupure","Visière et lunettes","Gants","Casque de protection","Casque de communication","Protection auditive","Talkie-walkie","Harnais ou baudrier d’élagage","Corde de travail (rappel)","Corde d’accès (secours)","Longe de maintien","Mousqueton à triple verrouillage","Descendeur mécanique","Descendeur textile","Sifflet"],
+  elevation: ["Pas besoin pour ce chantier","Nacelle (PEMP)","PIRL","EPI de grimper","Échelle","Échafaudage","La nacelle ne peut pas être utilisée ici"],
+  materiel: ["Tronçonneuse élagueuse","Tronçonneuse abatteuse","Lamier d’élagage","Scie sur perche","Sécateur","Scie à main","Broyeur","Essoucheuse / Rogneuse","Treuil / Câble","Mini chargeur","Souffleur","Matériel de rétention et de freinage","Grue","Engin de coupe mécanisé"],
+  situation: ["Jardin privé","Voie publique en ville","Voie ferrée","Ligne électrique de transport","Forêt ouverte au public","Site industriel classé Seveso","Arrêté municipal ou document particulier"],
+  dangersArbre: ["Arbre mort","Bois mort","Défaut de structure","Fissure","Cavité","Champignons","Chancre","Suie","Frelons","Charpentière cassée récemment"],
+  consignesArbre: ["Utiliser une nacelle","Utiliser un engin de coupe mécanisé","Rubalise autour du tronc","Prévenir toute l’équipe"],
+  arbres: [RIEN,"Chute de branches ou de charges pendant les travaux","Chute de bois avec la grue","Repérer la présence de bois morts ou dépérissants sur les sujets à traiter (ou à proximité)","Identifier les affections dangereuses pour la santé et la sécurité des travailleurs (suie, chancre, capricorne, champignon lignivore…)","Évaluer l’état d’ancrage des arbres (enracinement)","Fissures, champignons ou cavités visibles du sol","Charpentière cassée récemment"],
+  biologique: [RIEN,"Chenilles processionnaires","Frelons sp et autres hyménoptères","Berce du Caucase, Ambroisie sp…","Tiques sp","Suie de l’Érable","Chancre du Platane"],
+  biologiqueMesures: ["EPI appropriés (masque, combinaison, gants…)","Appel à un spécialiste pour circonscrire le danger","Certi biocide (si utilisation de produits biocides)"],
+  reseaux: [RIEN,"Électrique","Eau, Vapeur","Gaz","Télécom","Fibre"],
+  tensions: ["HTB (U > 50 000 V)","HTA (U ≤ 50 000 V)","BT (U ≤ 1 000 V)"],
+  reseauxMesures: ["DT DICT (chantier distant de moins de 50 m de conducteurs électriques nus, arrachage d’arbre, tranchée…)","AIPR","Distance de sécurité respectée avec les conducteurs électriques nus"],
+  noyade: ["Pas de risque de noyade","Piscine","Rivière","Lac","Fleuve","Étang ou bassin"],
+  environnement: [RIEN,"Routier","Facteurs météo ambiants","Bruit","État des sols","Conditions de vie sur le chantier","Éclairage","Vapeurs","Poussières","Passants non autorisés","Corde happée par un outil en marche","Pollution accidentelle"],
+  environnementMesures: ["Balisage du chantier sur voie publique","Adaptation des heures de travail","Mise à disposition d’eau en quantité suffisante","Mise à disposition de cabinet d’aisance","Signal d’alarme (sifflet)","Plan de prévention (entreprise utilisatrice)"],
+  coactivite: [RIEN,"Entraînement par les éléments mobiles des équipements de travail (rogneuse, broyeur…)","Projection (avec broyeur, rogneuse…)"],
+  balisage: ["Balisage externe du chantier vis-à-vis des personnes extérieures avec panneaux d’interdiction d’accès et de signalisation du danger","Balisage interne au chantier pour limiter les risques de chute d’objet/branche sur l’homme de pied (délimitation organisationnelle)","Surveillance de l’accès au chantier (intrusion du public)"],
+  meteo: ["Sécuriser les travaux en cours puis arrêter les travaux","Protéger les zones dangereuses ou potentiellement dangereuses (matérialisation, interdiction d’accès…)","Prévenir le responsable du chantier ou le chef d’entreprise"],
+  secours: ["Trousse de secours (contenu approprié à l’activité)","Kit d’urgence portatif (élagueur)","Tous les travailleurs sur le chantier sont Sauveteurs Secouristes du Travail (SST)","Travailleurs, disposant des compétences (type Grimpeur Sauveteur dans l’Arbre) et des moyens pour porter secours à victime dans l’arbre, en nombre suffisant sur le chantier","Moyen de communication fonctionnel","Protocole de secours propre au site, lu"],
+};
+const PROTOCOLE = "1. Se faire voir ou entendre de celui qui travaille dans la zone.\n2. Attendre qu’il arrête sa machine ou sa coupe.\n3. Entrer seulement quand il fait signe, avec ses EPI.\n4. Lui dire où l’on se trouve tant qu’on est dans la zone.\n5. Le prévenir en sortant, avant qu’il reprenne.";
+
+const EQUIPE = {
+  "Florian Martins": ["CS élagage, Grimpeur élagueur. SST jusqu’au 3 mars 2027, GSA jusqu’au 9 juin 2027.", ""],
+  "Kevin Morel": ["Grimpeur élagueur, CACES nacelle. SST jusqu’au 18 janvier 2027.", "Pas de GSA."],
+  "Lucas Petit": ["Autorisation de conduite interne, AIPR.", "SST dépassé depuis le 2 septembre."],
+};
+
+/* ═══ LES SIX ÉTAPES ET LEURS SOUS-ÉTAPES ═══ */
+const ETAPES = [
+  { titre: "Le chantier", sous: [
+    ["ident", "Le chantier et le donneur d’ordre"],
+    ["sous-traitants", "Sous-traitants et autres entreprises"],
+    ["lieu", "Le lieu et le point GPS"],
+    ["dates", "Les dates et les heures"],
+    ["responsables", "Responsables sur le chantier"],
+    ["equipe", "L’équipe et ses compétences"],
+  ]},
+  { titre: "Les travaux", sous: [
+    ["travaux", "Les travaux"],
+    ["epi", "Les EPI"],
+    ["elevation", "Les moyens d’élévation"],
+    ["materiel", "Le matériel"],
+    ["situation", "La situation des travaux"],
+    ["arbres-dangereux", "Les arbres dangereux"],
+  ]},
+  { titre: "Croquis et balisage", sous: [
+    ["croquis", "Le croquis"],
+    ["photos", "Photos du balisage"],
+    ["balisage", "Le balisage"],
+  ]},
+  { titre: "Les risques", sous: [
+    ["r-arbres", "Les arbres pendant l’intervention"],
+    ["r-bio", "Les risques biologiques"],
+    ["r-reseaux", "Les réseaux"],
+    ["r-noyade", "La noyade"],
+    ["r-env", "L’environnement du chantier"],
+    ["r-coact", "La co-activité"],
+    ["r-autres", "Autres risques observés"],
+  ]},
+  { titre: "Mesures et secours", sous: [
+    ["protocole", "Entrer dans une zone de danger"],
+    ["meteo", "Si le temps tourne"],
+    ["secours", "Les secours"],
+  ]},
+  { titre: "Signer", sous: [] },
+];
+
+let e;
+function depart() {
+  e = {
+    vue: { etape: null, sous: null },
+    coches: {},          // id -> Set
+    champs: { trousse: "Dans la cabine du camion", prs: "", protocole: PROTOCOLE, autresR: "", autresM: "", acces: "" },
+    donneur: "client",
+    soustraitants: null, // null | "non" | [ {nom,tel,quoi} ]
+    responsables: ["Florian Martins"],
+    gens: { "Florian Martins": true, "Kevin Morel": true, "Lucas Petit": true },
+    gps: { x: 228, y: 120 },
+    dangereux: null,     // null | "non" | [ {groupe, inter, dangers:Set, consignes:Set} ]
+    croquis: null,       // null | "photo" | "blanc"
+    outil: "crayon", marques: [], trace: null, accesDebut: null,
+    photos: 2,
+    lus: {}, pad: null, signee: false, sig: false,
+  };
+}
+const S = (id) => (e.coches[id] ??= new Set());
+
+/* ═══ CE QUI EST RENSEIGNÉ ═══ Une sous-étape est faite quand elle porte une réponse ; « Rien à signaler » en est une. */
+function fait(id) {
+  const n = (k) => S(k).size;
+  switch (id) {
+    case "ident": case "dates": return true;
+    case "sous-traitants": return e.soustraitants !== null;
+    case "lieu": return true;
+    case "responsables": return e.responsables.length > 0;
+    case "equipe": return Object.values(e.gens).some(Boolean);
+    case "arbres-dangereux": return e.dangereux !== null;
+    case "croquis": return e.marques.length > 0;
+    case "photos": return e.photos > 0;
+    case "r-autres": return !!(e.champs.autresR || e.champs.autresM);
+    case "protocole": return !!e.champs.protocole.trim();
+    case "secours": return n("secours") > 0 && !!e.champs.prs.trim();
+    case "r-reseaux": return n("reseaux") > 0;
+    case "r-env": return n("environnement") > 0;
+    case "r-bio": return n("biologique") > 0;
+    case "r-arbres": return n("arbres") > 0;
+    case "r-noyade": return n("noyade") > 0;
+    case "r-coact": return n("coactivite") > 0;
+    default: return n(id) > 0;
+  }
+}
+function resume(id) {
+  const n = (k) => S(k).size;
+  if (id === "ident") return "Mme Roux, devis D-2026-041";
+  if (id === "lieu") return "12 rue des Tilleuls, Angers";
+  if (id === "dates") return "14 octobre, de 8 h à 17 h";
+  if (id === "responsables") return e.responsables.join(", ");
+  if (id === "equipe") { const k = Object.values(e.gens).filter(Boolean).length; return `${k} personne${k > 1 ? "s" : ""}, 1 SST dépassé`; }
+  if (id === "sous-traitants") return e.soustraitants === null ? "à remplir" : e.soustraitants === "non" ? "Aucun" : `${e.soustraitants.length} entreprise${e.soustraitants.length > 1 ? "s" : ""}`;
+  if (id === "arbres-dangereux") return e.dangereux === null ? "à remplir" : e.dangereux === "non" ? "Aucun" : `${e.dangereux.length} arbre${e.dangereux.length > 1 ? "s" : ""} ou groupe${e.dangereux.length > 1 ? "s" : ""}`;
+  if (id === "croquis") return e.marques.length ? `${e.marques.length} repère${e.marques.length > 1 ? "s" : ""}` : "à faire";
+  if (id === "photos") return `${e.photos} sur 10`;
+  if (id === "protocole") return "Texte modèle, modifiable";
+  if (id === "secours") return e.champs.prs.trim() ? "Point de rencontre posé" : "Point de rencontre à préciser";
+  const cle = { "r-arbres": "arbres", "r-bio": "biologique", "r-reseaux": "reseaux", "r-noyade": "noyade", "r-env": "environnement", "r-coact": "coactivite" }[id] || id;
+  if (id === "r-autres") return fait(id) ? "Écrit" : "Rien d’écrit";
+  if (S(cle).has(RIEN) || S(cle).has("Pas de risque de noyade") || S(cle).has("Pas besoin pour ce chantier")) return [...S(cle)][0];
+  return n(cle) ? `${n(cle)} coché${n(cle) > 1 ? "s" : ""}` : "à remplir";
+}
+const etapeFaite = (i) => i === 5 ? e.signee : ETAPES[i].sous.every(([id]) => fait(id));
+const vides = () => ETAPES.flatMap((et, i) => et.sous.filter(([id]) => !fait(id)).map(([id, t]) => ({ i, id, t })));
+
+/* ═══ LES MORCEAUX ═══ */
+function entete(grand, petit, ou) {
+  return `<div class="entete"><button type="button" class="retour" data-retour="1" aria-label="Retour">${retourSvg}</button>
+    <span class="quoi"><span class="grand">${grand}</span><span class="petit">${petit}</span></span>${ou ? `<span class="ou">${ou}</span>` : ""}</div>`;
+}
+function avancee(ici) {
+  return `<div class="avancee" aria-hidden="true">${ETAPES.map((_, i) => `<i class="${etapeFaite(i) ? "fait" : i === ici ? "la" : ""}"></i>`).join("")}</div>`;
+}
+function cases(id, liste, { rien } = {}) {
+  return `<div class="liste">${liste.map((x) => {
+    const on = S(id).has(x);
+    const estRien = x === RIEN || x === "Pas de risque de noyade" || x === "Pas besoin pour ce chantier";
+    return `<button type="button" class="case${estRien ? " rien" : ""}" data-c="${id}" data-v="${x}" data-rien="${estRien ? 1 : ""}" aria-pressed="${on}"><span class="rond${on ? " plein" : ""}">${coche}</span><span>${x}</span></button>`;
+  }).join("")}</div><div class="rangee"><button type="button" class="ajouter">${plus} Ajouter</button></div>`;
+}
+function pastilles(set, liste, cle) {
+  return `<div class="pastilles">${liste.map((x) => `<button type="button" data-past="${cle}" data-v="${x}" aria-pressed="${set.has(x)}"><span class="p">${coche}</span>${x}</button>`).join("")}</div>`;
+}
+const champ = (nom, cle, ph = "", lignes = 0) => `<label class="champ"><span class="nom">${nom}</span>${lignes ? `<textarea rows="${lignes}" data-champ="${cle}" placeholder="${ph}">${e.champs[cle] ?? ""}</textarea>` : `<input data-champ="${cle}" value="${e.champs[cle] ?? ""}" placeholder="${ph}">`}</label>`;
+const fixe = (nom, val) => `<label class="champ"><span class="nom">${nom}</span><span class="fixe">${val}</span></label>`;
+const saisie = (nom, val = "", ph = "", type = "text") => `<label class="champ"><span class="nom">${nom}</span><input type="${type}" value="${val}" placeholder="${ph}"></label>`;
+
+/* ═══ LE SOMMAIRE ═══ */
+function sommaire() {
+  const v = vides();
+  return `${entete("Fiche de sécurité", "Chez Mme Roux, le 14 octobre", "")}${avancee(-1)}
+  <div class="ecran">
+    <h2>La fiche</h2>
+    <p class="sous">Reprise de votre fiche d’avant. Vérifiez chaque étape.</p>
+    ${ETAPES.map((et, i) => {
+      const reste = i === 5 ? (e.signee ? "Signée" : "Pas encore signée") : (() => { const k = et.sous.filter(([id]) => !fait(id)).length; return k ? `${k} à remplir` : "Tout est rempli"; })();
+      return `<button type="button" class="ligne" data-etape="${i}"><span class="num${etapeFaite(i) ? " fait" : ""}">${etapeFaite(i) ? coche.replace(/13/g, "16") : i + 1}</span>
+        <span class="t"><b>${et.titre}</b><small class="${etapeFaite(i) ? "" : "vide"}">${reste}</small></span>${ouvrir}</button>`;
+    }).join("")}
+  </div>
+  <div class="pied"><p class="reste">${v.length ? `${v.length} partie${v.length > 1 ? "s" : ""} encore vide${v.length > 1 ? "s" : ""}` : "Tout est rempli"}</p>
+    <button type="button" class="vert" data-etape="5">Aller signer</button></div>`;
+}
+
+/* ═══ UNE ÉTAPE : la liste de ses sous-étapes ═══ */
+function etape(i) {
+  if (i === 5) return signer();
+  const et = ETAPES[i];
+  return `${entete(et.titre, `Étape ${i + 1} sur 6`, "")}${avancee(i)}
+  <div class="ecran">
+    <h2>${et.titre}</h2>
+    ${et.sous.map(([id, t], k) => `<button type="button" class="ligne" data-sous="${id}"><span class="num${fait(id) ? " fait" : ""}">${fait(id) ? coche.replace(/13/g, "16") : k + 1}</span>
+      <span class="t"><b>${t}</b><small class="${fait(id) ? "" : "vide"}">${resume(id)}</small></span>${ouvrir}</button>`).join("")}
+  </div>
+  <div class="pied"><button type="button" class="vert" data-etape="${i + 1}">${i < 4 ? "Étape suivante" : "Aller signer"}</button></div>`;
+}
+
+/* ═══ LES SOUS-ÉTAPES ═══ */
+const SOUS = {
+  ident: () => `
+    <div class="bloc premier">${fixe("Nom du chantier", "Chez Mme Roux")}${fixe("N° de devis et/ou de commande afférent", "D-2026-041")}</div>
+    <div class="bloc"><p class="etiquette">Donneur d’ordre</p>
+      <div class="choix"><button type="button" data-donneur="client" aria-pressed="${e.donneur === "client"}">Le client du devis</button><button type="button" data-donneur="autre" aria-pressed="${e.donneur === "autre"}">Quelqu’un d’autre</button></div>
+      ${e.donneur === "client" ? `${fixe("Client", "Mme Roux")}${fixe("Téléphone", "06 12 34 56 78")}${saisie("Rôle du client", "", "Exemple : propriétaire, syndic, mairie")}`
+        : `<div class="deux">${saisie("Nom", "", "Exemple : Dubeaujardin")}${saisie("Prénom", "", "Exemple : Marc")}</div>${saisie("Téléphone", "", "06 00 00 00 00", "tel")}${saisie("Rôle", "", "Exemple : entreprise qui vous sous-traite")}`}
+    </div>`,
+  "sous-traitants": () => `
+    <p class="aide">Toute entreprise qui travaille avec vous sur le chantier. Les secours s’organisent ensemble, et elle doit voir cette fiche.</p>
+    <div class="choix"><button type="button" data-st="non" aria-pressed="${e.soustraitants === "non"}">Aucune</button><button type="button" data-st="oui" aria-pressed="${Array.isArray(e.soustraitants)}">Oui</button></div>
+    ${Array.isArray(e.soustraitants) ? e.soustraitants.map((_, k) => `<div class="carte-bloc"><div class="haut"><b>Entreprise ${k + 1}</b><button type="button" class="retirer" data-st-retirer="${k}">Retirer</button></div>
+      ${saisie("Raison sociale", "", "Exemple : Élec Services")}<div class="deux">${saisie("Téléphone", "", "06 00 00 00 00", "tel")}${saisie("Ce qu’elle fait", "", "Exemple : coupe la ligne")}</div>
+      <button type="button" class="case" data-c="st${k}" data-v="Fiche présentée à son responsable" aria-pressed="${S("st" + k).has("Fiche présentée à son responsable")}"><span class="rond${S("st" + k).has("Fiche présentée à son responsable") ? " plein" : ""}">${coche}</span><span>Fiche présentée à son responsable</span></button></div>`).join("")
+      + `<div class="rangee"><button type="button" class="ajouter" data-st-ajouter="1">${plus} Ajouter une entreprise</button></div>` : ""}`,
+  lieu: () => `
+    ${fixe("Adresse du chantier", "12 rue des Tilleuls, 49000 Angers")}
+    <p class="etiquette" style="margin-top:16px">Point GPS</p>
+    <div class="plan"><svg id="plan" viewBox="0 0 400 240" role="img" aria-label="Carte du chantier">
+      <rect width="400" height="240" fill="var(--herbe)"/>
+      <path d="M0 160 C120 150 260 190 400 170" stroke="var(--route)" stroke-width="18" fill="none"/>
+      <path d="M150 0 C160 80 140 160 170 240" stroke="var(--route)" stroke-width="12" fill="none"/>
+      <path d="M300 0 C320 50 360 70 400 60 L400 0z" fill="var(--eau)"/>
+      ${[[40,40],[80,60],[60,100],[250,40],[270,90],[330,200],[60,210],[230,210]].map(([x,y]) => `<rect x="${x}" y="${y}" width="34" height="24" rx="3" fill="var(--toit)"/>`).join("")}
+      <circle cx="${e.gps.x}" cy="${e.gps.y}" r="34" fill="var(--alerte-voile)"/>
+      <path d="M${e.gps.x} ${e.gps.y} c-10 -14 -14 -20 -14 -27 a14 14 0 1 1 28 0 c0 7 -4 13 -14 27z" fill="var(--alerte)"/>
+      <circle cx="${e.gps.x}" cy="${e.gps.y - 27}" r="5" fill="var(--carte)"/>
+    </svg></div>
+    <div class="deux">${fixe("Latitude", (47.4712 + (120 - e.gps.y) / 20000).toFixed(5))}${fixe("Longitude", (-0.5518 + (e.gps.x - 228) / 20000).toFixed(5))}</div>
+    <div class="rangee"><button type="button" class="ajouter">Relever ici</button></div>
+    <p class="aide">Touchez la carte pour déplacer le point.</p>
+    ${champ("Adresse d’accès des secours, si elle est différente", "acces", "Exemple : portail arrière, chemin des Saules")}`,
+  dates: () => `
+    <div class="deux">${fixe("Début", "14 octobre 2026")}${fixe("Fin", "15 octobre 2026")}</div>
+    <p class="aide">D’après le planning.</p>
+    <div class="deux">${saisie("Début, heure", "08:00", "", "time")}${saisie("Fin, heure", "17:00", "", "time")}</div>
+    <p class="vigilance">Horaires, délais de réalisation…</p>`,
+  responsables: () => `
+    ${e.responsables.map((r, k) => `<div class="carte-bloc"><div class="haut"><b>Responsable ${k + 1}</b>${k ? `<button type="button" class="retirer" data-resp-retirer="${k}">Retirer</button>` : ""}</div>
+      <div class="deux">${saisie("Nom et prénom", r)}${saisie("Téléphone", k ? "" : "06 98 76 54 32", "06 00 00 00 00", "tel")}</div></div>`).join("")}
+    <div class="rangee"><button type="button" class="ajouter" data-resp-ajouter="1">${plus} Ajouter un responsable</button></div>`,
+  equipe: () => `
+    <p class="aide">D’après le planning. Les compétences s’écrivent une fois, dans Réglages.</p>
+    ${Object.keys(EQUIPE).map((p) => `<button type="button" class="qui" data-qui="${p}" aria-pressed="${e.gens[p]}"><span class="rond${e.gens[p] ? " plein" : ""}">${coche}</span>
+      <span><span class="nom">${p}</span><span class="comp">${EQUIPE[p][0]}</span>${EQUIPE[p][1] ? `<span class="al">${EQUIPE[p][1]}</span>` : ""}</span></button>`).join("")}
+    <div class="rangee"><button type="button" class="ajouter">${plus} Ajouter une personne</button></div>
+    <p class="vigilance">Niveau de formation, ancienneté, habilitation, autorisation de conduite…</p>`,
+  travaux: () => `<p class="aide">Le devis dit : abattage d’un frêne, élagage de deux chênes, broyage.</p>${cases("travaux", L.travaux)}<p class="vigilance">Moyens de prévention mis en œuvre, EPI appropriés à l’activité et aux travailleurs…</p>`,
+  epi: () => `<p class="vigilance">Vérifications périodiques des EPI à jour.</p><p class="aide">Pour les vêtements anti-coupure, la classe 1, 2 ou 3 se précise dans « Ajouter ».</p>${cases("epi", L.epi)}`,
+  elevation: () => `<p class="vigilance">Privilégier les équipements de protection collective. Échelle = moyen d’accès.</p>${cases("elevation", L.elevation)}`,
+  materiel: () => `<p class="vigilance">Approprié à l’activité, conforme, vérifié (VGP), état (maintenance…)</p>${cases("materiel", L.materiel)}<p class="vigilance">Distance de sécurité à respecter vis-à-vis des matériels.</p>`,
+  situation: () => cases("situation", L.situation),
+  "arbres-dangereux": () => `
+    <p class="aide">Des arbres dangereux sur le chantier ?</p>
+    <div class="choix"><button type="button" data-dg="non" aria-pressed="${e.dangereux === "non"}">Non</button><button type="button" data-dg="oui" aria-pressed="${Array.isArray(e.dangereux)}">Oui</button></div>
+    ${Array.isArray(e.dangereux) ? e.dangereux.map((a, k) => `<div class="carte-bloc">
+      <div class="haut"><b>${a.groupe ? "Groupe d’arbres" : "Arbre"} ${k + 1}</b><small>numéro ${k + 1} sur le croquis</small><button type="button" class="retirer" data-dg-retirer="${k}">Retirer</button></div>
+      <p class="etiquette" style="margin-top:12px">Intervention</p>
+      <div class="choix"><button type="button" data-dg-inter="${k}" data-v="Abattage" aria-pressed="${a.inter === "Abattage"}">Abattage</button><button type="button" data-dg-inter="${k}" data-v="Élagage" aria-pressed="${a.inter === "Élagage"}">Élagage</button></div>
+      <p class="etiquette" style="margin-top:14px">Dangers vus</p>${pastilles(a.dangers, L.dangersArbre, "dgd" + k)}
+      <p class="etiquette" style="margin-top:14px">Consignes</p>${pastilles(a.consignes, L.consignesArbre, "dgc" + k)}
+      <label class="champ"><span class="nom">Autres consignes pour cet arbre</span><input placeholder="Exemple : démonter par le haut, côté maison"></label>
+    </div>`).join("") + `<div class="rangee"><button type="button" class="ajouter" data-dg-ajouter="0">${plus} Un arbre</button><button type="button" class="ajouter" data-dg-ajouter="1">${plus} Un groupe d’arbres</button></div>` : ""}`,
+  croquis: croquis,
+  photos: () => `<p class="aide">Le balisage, les zones sensibles, un document. Jusqu’à 10.</p>
+    <div class="vignettes">${Array.from({ length: e.photos }, () => "<span></span>").join("")}${e.photos < 10 ? `<button type="button" data-photo="1" aria-label="Ajouter une photo">${plus}</button>` : ""}</div>
+    <p class="aide">${e.photos} sur 10</p>`,
+  balisage: () => `<p class="aide">Délimitation matérielle du chantier obligatoire.</p>
+    <div class="carte-bloc" style="background:var(--or-papier);box-shadow:none"><p class="etiquette">Périmètre de sécurité, d’après le décret</p>
+      <p class="aide" style="color:var(--encre-douce)">Abattage à la main : 2 fois la hauteur de l’arbre.<br>Élagage, éhoupage : personne sous l’arbre.<br>Machines : la distance marquée dessus.</p></div>
+    ${cases("balisage", L.balisage)}
+    <label class="champ"><span class="nom">Communication entre travailleurs</span><input placeholder="Exemple : casques communicants"></label>`,
+  "r-arbres": () => cases("arbres", L.arbres) + `<p class="vigilance">Fragilisation des points d’ancrage, de la structure des arbres (branches, tronc…)</p>`,
+  "r-bio": () => cases("biologique", L.biologique) + (S("biologique").size && !S("biologique").has(RIEN) ? `<p class="etiquette" style="margin-top:16px">Mesures</p>${cases("biologiqueMesures", L.biologiqueMesures)}` : ""),
+  "r-reseaux": () => cases("reseaux", L.reseaux) + (S("reseaux").has("Électrique") ? `<p class="etiquette" style="margin-top:16px">Tension</p>${pastilles(S("tensions"), L.tensions, "tensions")}` : "")
+    + (S("reseaux").size && !S("reseaux").has(RIEN) ? `<p class="etiquette" style="margin-top:16px">Mesures</p>${cases("reseauxMesures", L.reseauxMesures)}<p class="aide">HTB : 5 m. HTA et BT : 3 m.</p>` : ""),
+  "r-noyade": () => cases("noyade", L.noyade) + (S("noyade").size && !S("noyade").has("Pas de risque de noyade") ? `<p class="etiquette" style="margin-top:16px">Mesures</p>${cases("noyadeMesures", ["Équipement individuel de flottaison / barque / bouée de sauvetage"])}` : ""),
+  "r-env": () => cases("environnement", L.environnement) + (S("environnement").size && !S("environnement").has(RIEN) ? `<p class="etiquette" style="margin-top:16px">Mesures</p>${cases("environnementMesures", L.environnementMesures)}` : ""),
+  "r-coact": () => `<p class="aide">D’autres personnes travaillent dans la zone en même temps ?</p>${cases("coactivite", L.coactivite)}<p class="etiquette" style="margin-top:16px">Organisation</p>${cases("organisation", ["Répartition des tâches dans le temps et l’espace (travailleur/matériel)", "Respect des consignes de sécurité des machines"])}<p class="vigilance">Manuel d’utilisation du matériel.</p>`,
+  "r-autres": () => `${champ("Risques autres identifiés", "autresR", "Exemple : coups de vent annoncés l’après-midi", 2)}${champ("Mesures de prévention autres", "autresM", "Exemple : rubalise autour de la propriété", 2)}`,
+  protocole: () => `<p class="aide">Zone de chute, zone de broyage, zone avec engin. Un texte modèle, à adapter au chantier.</p>${champ("Protocole d’entrée en zone de danger", "protocole", "", 7)}`,
+  meteo: () => `<p class="vigilance">Bulletins d’alerte météorologiques.</p>${cases("meteo", L.meteo)}`,
+  secours: () => `${e.gens["Lucas Petit"] ? `<p class="aide alerte">Lucas Petit n’a plus de SST à jour. Kevin Morel n’a pas de GSA.</p>` : ""}${cases("secours", L.secours)}
+    ${champ("Lieu de la trousse de secours", "trousse", "Exemple : dans la cabine du camion")}
+    ${champ("Point de Rencontre des Secours", "prs", "Exemple : devant le portail")}
+    <label class="champ"><span class="nom">Réseau mobile, consignes particulières</span><input placeholder="Exemple : une barre de réseau au portail seulement"></label>
+    <p class="etiquette" style="margin-top:18px">Alerter</p>
+    <div class="urgence">${[["15","SAMU"],["18","Pompiers"],["112","Europe"],["17","Police"],["114","Sourd"]].map(([n,q]) => `<a href="tel:${n}"><b>${n}</b><span>${q}</span></a>`).join("")}</div>
+    <ol class="consignes"><li>S’identifier, donner le lieu et l’accès.</li><li>Dire ce qui s’est passé, combien de blessés, dans quel état.</li><li>Donner le point de rencontre, et ne jamais raccrocher le premier.</li></ol>`,
+};
+
+/* ═══ LE CROQUIS ═══ */
+const OUTILS = [["crayon","Crayon"],["acces","Accès"],["chute","Zone de chute"],["arbre","Arbre"],["secours","Rendez-vous des secours"]];
+function symbole(t) {
+  if (t === "crayon") return `<svg width="20" height="20" viewBox="0 0 22 22" aria-hidden="true"><path d="M4 18c3-1 5-6 8-7s4 2 6-2" stroke="var(--encre)" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>`;
+  if (t === "acces") return `<svg width="20" height="20" viewBox="0 0 22 22" aria-hidden="true"><path d="M3 18 19 4" stroke="var(--pin)" stroke-width="2.6" stroke-dasharray="4 3" stroke-linecap="round"/></svg>`;
+  if (t === "chute") return `<svg width="20" height="20" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="8.5" fill="var(--alerte-voile)" stroke="var(--alerte)" stroke-width="2" stroke-dasharray="3 2.5"/></svg>`;
+  if (t === "arbre") return `<svg width="20" height="20" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="8.5" fill="var(--carte)" stroke="var(--or)" stroke-width="2.4"/></svg>`;
+  return `<svg width="20" height="20" viewBox="0 0 22 22" aria-hidden="true"><rect x="3" y="3" width="16" height="16" rx="3" fill="var(--plein)"/><path d="M7.5 11h7M11 7.5v7" stroke="var(--sur-plein)" stroke-width="2.2" stroke-linecap="round"/></svg>`;
+}
+function dessinMarques() {
+  let n = 0;
+  return e.marques.map((m) => {
+    if (m.t === "crayon") return `<polyline points="${m.pts.join(" ")}" fill="none" stroke="var(--encre)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    if (m.t === "acces") return `<line x1="${m.x}" y1="${m.y}" x2="${m.x2}" y2="${m.y2}" stroke="var(--pin)" stroke-width="5" stroke-dasharray="10 7" stroke-linecap="round"/>`;
+    if (m.t === "chute") return `<circle cx="${m.x}" cy="${m.y}" r="46" fill="var(--alerte-voile)" stroke="var(--alerte)" stroke-width="3" stroke-dasharray="7 5"/>`;
+    if (m.t === "arbre") { n++; return `<circle cx="${m.x}" cy="${m.y}" r="15" fill="var(--carte)" stroke="var(--or)" stroke-width="4"/><text x="${m.x}" y="${m.y + 6}" text-anchor="middle" font-size="17" font-weight="700" fill="var(--encre)">${n}</text>`; }
+    return `<rect x="${m.x - 15}" y="${m.y - 15}" width="30" height="30" rx="6" fill="var(--plein)"/><path d="M${m.x - 8} ${m.y}h16M${m.x} ${m.y - 8}v16" stroke="var(--sur-plein)" stroke-width="4" stroke-linecap="round"/>`;
+  }).join("") + (e.trace ? `<polyline points="${e.trace.join(" ")}" fill="none" stroke="var(--encre)" stroke-width="3.5" stroke-linecap="round"/>` : "")
+    + (e.accesDebut ? `<circle cx="${e.accesDebut.x}" cy="${e.accesDebut.y}" r="7" fill="var(--pin)"/>` : "");
+}
+function croquis() {
+  if (!e.croquis) return `<p class="aide">Les accès, les passages, les arbres à traiter.</p>
+    <div class="methode"><button type="button" class="vert" data-croquis="photo">Dessiner sur une photo du chantier</button>
+    <button type="button" class="creux" data-croquis="blanc">Dessiner sur une page blanche</button>
+    <button type="button" class="creux">Importer un croquis déjà fait</button></div>`;
+  const fond = e.croquis === "photo" ? `
+    <rect width="400" height="300" fill="var(--herbe)"/><rect x="0" y="246" width="400" height="54" fill="var(--route)"/>
+    <rect x="150" y="238" width="62" height="10" fill="var(--toit)" opacity=".7"/>
+    <rect x="18" y="26" width="128" height="92" rx="3" fill="var(--toit)"/><path d="M18 26 82 4 146 26z" fill="var(--toit)" opacity=".8"/>
+    <circle cx="262" cy="96" r="44" fill="var(--arbre)"/><circle cx="246" cy="84" r="20" fill="var(--herbe-fonce)" opacity=".5"/>
+    <circle cx="336" cy="170" r="34" fill="var(--arbre)"/><circle cx="96" cy="196" r="24" fill="var(--arbre)" opacity=".85"/>`
+    : `<rect width="400" height="300" fill="var(--carte)"/>${Array.from({ length: 13 }, (_, i) => Array.from({ length: 10 }, (_, j) => `<circle cx="${15 + i * 31}" cy="${15 + j * 31}" r="1.3" fill="var(--trait)"/>`).join("")).join("")}`;
+  const compte = (t) => e.marques.filter((m) => m.t === t).length;
+  const leg = OUTILS.filter(([t]) => t !== "crayon" && compte(t)).map(([t, mot]) => `<li>${symbole(t)} ${t === "arbre" && compte(t) > 1 ? `Arbres, de 1 à ${compte(t)}` : mot}</li>`).join("");
+  return `<p class="aide">${e.outil === "crayon" ? "Dessinez du doigt." : e.outil === "acces" && e.accesDebut ? "Touchez où l’accès arrive." : "Touchez pour poser."}</p>
+    <div class="photo"><svg id="photo" viewBox="0 0 400 300" role="img" aria-label="Croquis du chantier">${fond}${dessinMarques()}</svg></div>
+    <div class="outils">${OUTILS.map(([t, mot]) => `<button type="button" class="outil" data-outil="${t}" aria-pressed="${e.outil === t}">${symbole(t)} ${mot}</button>`).join("")}</div>
+    ${leg ? `<ul class="legende">${leg}</ul>` : ""}
+    <div class="gestes"><button type="button" data-geste="annuler">Annuler le dernier</button><button type="button" data-geste="effacer">Tout effacer</button><button type="button" data-croquis="">Changer de fond</button></div>
+    ${Array.isArray(e.dangereux) ? `<p class="aide">Les numéros des arbres sont ceux des arbres dangereux.</p>` : ""}`;
+}
+
+/* ═══ SIGNER ═══ */
+function signer() {
+  const v = vides();
+  if (e.signee) {
+    const lus = Object.keys(e.lus).length, tous = Object.keys(EQUIPE).filter((p) => e.gens[p] && p !== "Florian Martins");
+    return `${entete("Signer", "Étape 6 sur 6", "")}${avancee(5)}
+    <div class="ecran">
+      <h2>Fiche signée</h2><p class="sous">Le 14 octobre à 7 h 52. Gardée jusqu’au 14 octobre 2028.</p>
+      <div class="bloc premier"><p class="etiquette">Lu par l’équipe</p><p class="aide">Chacun signe avant de commencer.</p>
+        ${tous.map((p) => `<div class="personne"><span class="rond${e.lus[p] ? " plein" : ""}">${coche}</span><span class="nom">${p}${e.lus[p] ? `<small>A lu la fiche à ${e.lus[p]}</small>` : ""}</span>${e.lus[p] ? "" : `<button type="button" class="petit-bouton" data-signer-lu="${p}">Signer</button>`}</div>`).join("")}
+      </div>
+    </div>
+    <div class="pied"><p class="reste">${lus === tous.length ? "Toute l’équipe a lu la fiche" : `${tous.length - lus} pas encore signé${tous.length - lus > 1 ? "s" : ""}`}</p><button type="button" class="vert">Transmettre le PDF</button></div>
+    ${e.pad ? `<div class="voile"><div class="feuillet"><h3>${e.pad}</h3><p>J’ai pris connaissance de la fiche.</p>
+      <div class="toile"><canvas id="toile"></canvas><div class="ligne-sig"></div></div>
+      <div class="deux-boutons"><button type="button" class="creux" data-pad="non">Annuler</button><button type="button" class="vert" data-pad="ok">Valider</button></div></div></div>` : ""}`;
+  }
+  return `${entete("Signer", "Étape 6 sur 6", "")}${avancee(5)}
+  <div class="ecran">
+    <h2>Signer</h2>
+    <div class="bloc premier"><p class="etiquette">${v.length ? "Encore vide" : "Tout est rempli"}</p>
+      ${v.length ? v.map((x) => `<button type="button" class="ligne" style="min-height:48px" data-aller="${x.i}|${x.id}"><span class="t"><b style="font-size:14.5px">${x.t}</b><small>${ETAPES[x.i].titre}</small></span>${ouvrir}</button>`).join("") : ""}
+      ${v.length ? `<p class="aide">Vous pouvez signer quand même. C’est votre fiche.</p>` : ""}
+    </div>
+    <div class="bloc"><p class="etiquette">Le chef d’entreprise</p>${fixe("Nom et prénom", "Florian Martins")}${fixe("Date", "14 octobre 2026")}
+      <div class="toile"><canvas id="toile"></canvas><div class="ligne-sig"></div></div></div>
+  </div>
+  <div class="pied"><button type="button" class="vert" data-signer="1">Signer la fiche</button></div>`;
+}
+
+/* ═══ L'AFFICHAGE ═══ */
+function dessiner() {
+  const { etape: i, sous } = e.vue;
+  let html;
+  if (i === null) html = sommaire();
+  else if (!sous) html = etape(i);
+  else {
+    const titre = ETAPES[i].sous.find(([id]) => id === sous)[1];
+    html = `${entete(ETAPES[i].titre, `Étape ${i + 1} sur 6`, "")}${avancee(i)}<div class="ecran"><h2>${titre}</h2>${SOUS[sous]()}</div>
+      <div class="pied"><button type="button" class="vert" data-retour="1">Valider</button></div>`;
+  }
+  const garde = document.querySelector(".tel .ecran")?.scrollTop ?? 0;
+  const memeVue = dessiner.derniere === JSON.stringify(e.vue);
+  document.getElementById("tel").innerHTML = html;
+  if (memeVue) { const ec = document.querySelector(".tel .ecran"); if (ec) ec.scrollTop = garde; }
+  dessiner.derniere = JSON.stringify(e.vue);
+  brancherToile(); brancherCroquis();
+}
+
+function brancherToile() {
+  const c = document.getElementById("toile"); if (!c) return;
+  const r = c.getBoundingClientRect(), k = window.devicePixelRatio || 1;
+  c.width = r.width * k; c.height = r.height * k;
+  const g = c.getContext("2d"); g.scale(k, k); g.lineWidth = 2.4; g.lineCap = "round";
+  g.strokeStyle = getComputedStyle(document.body).getPropertyValue("--encre");
+  let bas = false; const pos = (ev) => { const b = c.getBoundingClientRect(); return [ev.clientX - b.left, ev.clientY - b.top]; };
+  c.onpointerdown = (ev) => { bas = true; c.setPointerCapture(ev.pointerId); const [x, y] = pos(ev); g.beginPath(); g.moveTo(x, y); };
+  c.onpointermove = (ev) => { if (!bas) return; const [x, y] = pos(ev); g.lineTo(x, y); g.stroke(); e.sig = true; };
+  c.onpointerup = () => { bas = false; };
+}
+function point(svg, ev, l = 400, h = 300) { const r = svg.getBoundingClientRect(); return { x: Math.round((ev.clientX - r.left) * l / r.width), y: Math.round((ev.clientY - r.top) * h / r.height) }; }
+function brancherCroquis() {
+  const svg = document.getElementById("photo"); if (!svg) return;
+  svg.onpointerdown = (ev) => {
+    const p = point(svg, ev);
+    if (e.outil === "crayon") { svg.setPointerCapture(ev.pointerId); e.trace = [`${p.x},${p.y}`]; return; }
+    if (e.outil === "acces") { if (!e.accesDebut) e.accesDebut = p; else { e.marques.push({ t: "acces", x: e.accesDebut.x, y: e.accesDebut.y, x2: p.x, y2: p.y }); e.accesDebut = null; } }
+    else e.marques.push({ t: e.outil, ...p });
+    dessiner();
+  };
+  svg.onpointermove = (ev) => {
+    if (!e.trace) return; const p = point(svg, ev); e.trace.push(`${p.x},${p.y}`);
+    const pl = svg.querySelector("polyline:last-of-type"); if (pl && e.trace.length > 2) pl.setAttribute("points", e.trace.join(" ")); else dessiner();
+  };
+  svg.onpointerup = () => { if (e.trace) { if (e.trace.length > 1) e.marques.push({ t: "crayon", pts: e.trace }); e.trace = null; dessiner(); } };
+}
+
+/* ═══ LES GESTES ═══ */
+const basculer = (set, v) => (set.has(v) ? set.delete(v) : set.add(v));
+const RIENS = new Set([RIEN, "Pas de risque de noyade", "Pas besoin pour ce chantier"]);
+document.addEventListener("input", (ev) => { const k = ev.target.dataset?.champ; if (k) e.champs[k] = ev.target.value; });
+document.addEventListener("click", (ev) => {
+  const plan = ev.target.closest("svg#plan");
+  if (plan) { e.gps = point(plan, ev, 400, 240); dessiner(); return; }
+  const b = ev.target.closest("button"); if (!b) return;
+  const d = b.dataset;
+  if (d.retour) { if (e.vue.sous) e.vue.sous = null; else e.vue.etape = null; e.pad = null; }
+  else if (d.etape !== undefined) { e.vue = { etape: Math.min(+d.etape, 5), sous: null }; }
+  else if (d.sous) { e.vue.sous = d.sous; }
+  else if (d.aller) { const [i, id] = d.aller.split("|"); e.vue = { etape: +i, sous: id }; }
+  else if (d.c) {
+    const set = S(d.c);
+    if (d.rien) { const on = set.has(d.v); set.clear(); if (!on) set.add(d.v); }
+    else { [...set].forEach((x) => RIENS.has(x) && set.delete(x)); basculer(set, d.v); }
+  }
+  else if (d.past) {
+    if (d.past.startsWith("dgd")) basculer(e.dangereux[+d.past.slice(3)].dangers, d.v);
+    else if (d.past.startsWith("dgc")) basculer(e.dangereux[+d.past.slice(3)].consignes, d.v);
+    else basculer(S(d.past), d.v);
+  }
+  else if (d.donneur) e.donneur = d.donneur;
+  else if (d.st === "non") e.soustraitants = "non";
+  else if (d.st === "oui") { if (!Array.isArray(e.soustraitants)) e.soustraitants = [{}]; }
+  else if (d.stAjouter) e.soustraitants.push({});
+  else if (d.stRetirer !== undefined) { e.soustraitants.splice(+d.stRetirer, 1); if (!e.soustraitants.length) e.soustraitants = null; }
+  else if (d.respAjouter) e.responsables.push("");
+  else if (d.respRetirer !== undefined) e.responsables.splice(+d.respRetirer, 1);
+  else if (d.qui) e.gens[d.qui] = !e.gens[d.qui];
+  else if (d.dg === "non") e.dangereux = "non";
+  else if (d.dg === "oui") { if (!Array.isArray(e.dangereux)) e.dangereux = [{ groupe: false, inter: null, dangers: new Set(), consignes: new Set() }]; }
+  else if (d.dgAjouter !== undefined) e.dangereux.push({ groupe: d.dgAjouter === "1", inter: null, dangers: new Set(), consignes: new Set() });
+  else if (d.dgRetirer !== undefined) { e.dangereux.splice(+d.dgRetirer, 1); if (!e.dangereux.length) e.dangereux = null; }
+  else if (d.dgInter !== undefined) e.dangereux[+d.dgInter].inter = d.v;
+  else if (d.croquis !== undefined) { e.croquis = d.croquis || null; }
+  else if (d.outil) { e.outil = d.outil; e.accesDebut = null; }
+  else if (d.geste === "annuler") { if (e.accesDebut) e.accesDebut = null; else e.marques.pop(); }
+  else if (d.geste === "effacer") { e.marques = []; e.accesDebut = null; }
+  else if (d.photo) e.photos = Math.min(10, e.photos + 1);
+  else if (d.signer) e.signee = true;
+  else if (d.signerLu) e.pad = d.signerLu;
+  else if (d.pad === "non") e.pad = null;
+  else if (d.pad === "ok") { e.lus[e.pad] = `7 h ${54 + Object.keys(e.lus).length}`; e.pad = null; }
+  else return;
+  dessiner();
+});
+document.getElementById("rejouer").onclick = () => { depart(); dessiner(); };
+document.getElementById("nuit").onclick = () => { const on = document.body.classList.toggle("nuit"); document.getElementById("nuit").setAttribute("aria-pressed", String(on)); dessiner(); };
+depart(); dessiner();
+</script>
+</body>
+</html>
