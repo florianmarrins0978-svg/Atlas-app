@@ -5,6 +5,18 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## CODÉ, PAS ENCORE SUR `main` : LA TVA QUI NE SE RÉCUPÈRE PAS (13 octobre 2026)
+
+Branche `claude/tva-non-recuperable`, migration 0129. Chaque achat porte sa nature ; la part
+déductible se calcule au dépôt par `recuperation` et se pose dans
+`tva_deductible`, qui garde son sens (`ARCHITECTURE.md` §459). Règle pure
+rouge puis verte (`test-achat-tva`), dépôt 16/16 sous RLS sur une base dédiée,
+migration éprouvée sur une table habitée, suite navigateur neuve
+`test-tva-non-recuperable-e2e` 6/6, suites TVA touchées vertes, écrans
+regardés. **Batterie non jouée, à sa demande du 13 octobre** : niveau 3
+(migration, argent), le garde-fou refuse la fusion sans elle.
+
+---
 ## CODÉ, PAS ENCORE SUR `main` : LA MENTION DU RÉPERTOIRE DES MÉTIERS (9 octobre 2026)
 
 Branche `claude/domain-name-availability-check-9rqv57`, migration 0128. Son

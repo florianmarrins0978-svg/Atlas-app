@@ -8,6 +8,16 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-13
 
+- **Un hôtel ne fait plus baisser la TVA à payer.** Tout achat saisi dans « Ma TVA » comptait en
+  entier dans la TVA déductible. Chaque achat dit désormais ce qu'il est (Carburant, Matériel, Repas,
+  Hôtel, Train ou taxi, Autre), et `recuperation` (`src/lib/achat-tva.ts`) en tire la part qui
+  compte : le plein d'un utilitaire en entier, celui d'une voiture à 80 %, l'hôtel, le train et le
+  repas perso jamais. Le repas d'affaires ne compte qu'avec ses trois preuves (avec qui, pourquoi, la
+  mention de l'entreprise sur la note ou la facture au delà de 150 € HT, BOI-TVA-DECLA-30-20-20), et
+  se complète depuis la liste. Tout reste noté. Migration 0129, expand seul : les achats d'avant
+  gardent leur compte. Sa demande et ses choix du 13 octobre (`appli/tva-ticket-carburant.html`).
+  Branche `claude/tva-non-recuperable`, **batterie non jouée à sa demande**.
+
 - **Redis en panne ne fait plus attendre la connexion.** Mesuré dans le vrai serveur : 0,7 seconde
   Redis debout, 5,4 puis 7,8 secondes Redis coupé, de plus en plus. Le client Redis du limiteur
   mettait chaque vérification en file jusqu'à sa tentative de reconnexion suivante, de plus en plus

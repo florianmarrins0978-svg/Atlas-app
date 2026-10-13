@@ -2,10 +2,10 @@
 
 import { exigerFacturation } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
-import { creerAchatTva, supprimerAchatTva } from "@/server/repositories/achats-tva";
+import { completerRepasAchat, creerAchatTva, supprimerAchatTva } from "@/server/repositories/achats-tva";
 import { enregistrerObjet } from "@/server/storage";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
-import { achatComplet, montantSaisi, type SaisieAchat } from "@/lib/achat-tva";
+import { achatComplet, estNatureAchat, montantSaisi, type SaisieAchat } from "@/lib/achat-tva";
 import { causeDeLaPanne, codeSqlDe, messageSansLesValeurs, phraseDeLaPanne } from "@/lib/panne-de-base";
 import { estBancDEssai } from "@/profil-banc";
 import { logger } from "@/server/logger";
@@ -43,10 +43,30 @@ export async function ajouterAchatAction(formData: FormData): Promise<ResultatAc
 
   const totalTtc = montantSaisi(String(formData.get("totalTtc") ?? ""));
   const tauxTva = montantSaisi(String(formData.get("tauxTva") ?? ""));
-  const tvaDeductible = montantSaisi(String(formData.get("tvaDeductible") ?? ""));
+  // La TVA ÉCRITE SUR LE TICKET. Ce qui en compte se calcule au dépôt, par la
+  // règle (`recuperation`) : le navigateur ne dit jamais ce qui se déduit.
+  const tvaTicket = montantSaisi(String(formData.get("tvaTicket") ?? ""));
 
-  if (!achatComplet(fournisseur, tvaDeductible)) {
+  if (!achatComplet(fournisseur, tvaTicket)) {
     return { ok: false, raison: "Il manque le fournisseur ou le montant de TVA." };
+  }
+
+  // **Un achat neuf a toujours une nature** : c'est elle qui dit ce qui se
+  // récupère (sa demande du 13 octobre 2026). Seuls les achats d'avant ce jour
+  // en sont dépourvus.
+  const nature = String(formData.get("nature") ?? "");
+  if (!estNatureAchat(nature)) {
+    return { ok: false, raison: "Dites ce qu'est cet achat." };
+  }
+  const vehiculeBrut = String(formData.get("vehicule") ?? "");
+  const repasBrut = String(formData.get("repas") ?? "");
+  const vehicule = vehiculeBrut === "utilitaire" || vehiculeBrut === "voiture" ? vehiculeBrut : null;
+  const repas = repasBrut === "affaires" || repasBrut === "perso" ? repasBrut : null;
+  if (nature === "carburant" && !vehicule) {
+    return { ok: false, raison: "Dites si c'est un utilitaire ou une voiture." };
+  }
+  if (nature === "repas" && !repas) {
+    return { ok: false, raison: "Dites si c'est un repas d'affaires ou perso." };
   }
   // **La date de l'ACHAT, jamais celle de la saisie.** Un ticket de juillet
   // scanné en septembre appartient à juillet : le ranger au jour de la saisie
@@ -97,11 +117,33 @@ export async function ajouterAchatAction(formData: FormData): Promise<ResultatAc
     fournisseur,
     totalTtc,
     tauxTva,
-    tvaDeductible: tvaDeductible as number,
+    tvaTicket: tvaTicket as number,
+    nature,
+    vehicule,
+    repas,
+    avecQui: String(formData.get("avecQui") ?? ""),
+    pourquoi: String(formData.get("pourquoi") ?? ""),
+    justificatif: formData.get("justificatif") === "oui",
     photoCle,
     saisie,
   });
   if (!ligne) return { ok: false, raison: "L'achat n'a pas pu être enregistré." };
+  return { ok: true, id: ligne.id };
+}
+
+/**
+ * Compléter un repas d'affaires noté sans ses preuves : il compte dès qu'elles
+ * sont là (`completerRepasAchat`).
+ */
+export async function completerRepasAction(id: string, formData: FormData): Promise<ResultatAchat> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "compléter un repas d'affaires");
+  const ligne = await completerRepasAchat(ctx, id, {
+    avecQui: String(formData.get("avecQui") ?? ""),
+    pourquoi: String(formData.get("pourquoi") ?? ""),
+    justificatif: formData.get("justificatif") === "oui",
+  });
+  if (!ligne) return { ok: false, raison: "Ce repas n'a pas pu être complété." };
   return { ok: true, id: ligne.id };
 }
 

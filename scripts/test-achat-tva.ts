@@ -1,5 +1,14 @@
 import assert from "node:assert/strict";
-import { achatComplet, montantSaisi, tvaDepuisTtc, tvaDue } from "../src/lib/achat-tva";
+import {
+  achatComplet,
+  factureRepasExigee,
+  montantSaisi,
+  natureEnMots,
+  recuperation,
+  tvaDepuisTtc,
+  tvaDue,
+  type AchatARecuperer,
+} from "../src/lib/achat-tva";
 
 // La TVA d'un achat, et ce qu'il reste à payer.
 //
@@ -93,6 +102,124 @@ cas("sans fournisseur ou sans TVA, l'achat n'est pas enregistrable", () => {
   assert.equal(achatComplet("   ", 16), false);
   assert.equal(achatComplet("Station Total", null), false);
   assert.equal(achatComplet("Station Total", -1), false);
+});
+
+// ─── Ce qui se récupère — sa demande du 13 octobre 2026 ─────────────────────
+//
+// *« Chaque entrée et chaque sortie doit être notée, mais si c'est une
+// catégorie où il ne récupère pas la TVA, elle ne doit pas être
+// comptabilisée. »* Avant, tout achat comptait en entier : un hôtel faisait
+// baisser la TVA à payer. Planche : `appli/tva-ticket-carburant.html`.
+
+const base: AchatARecuperer = {
+  nature: "materiel",
+  vehicule: null,
+  repas: null,
+  avecQui: null,
+  pourquoi: null,
+  justificatif: false,
+  totalTtc: null,
+  tauxTva: null,
+  tvaTicket: 10,
+};
+
+cas("le plein d'un utilitaire se récupère en entier", () => {
+  const r = recuperation({ ...base, nature: "carburant", vehicule: "utilitaire" });
+  assert.equal(r.tvaRecuperee, 10);
+  assert.deepEqual(r.manques, []);
+});
+
+// **Sa question : « c'est pas 20 % plutôt ? ».** Non : 20 % est le taux de la
+// TVA dans le plein ; 80 % est la part de cette TVA que l'État rend pour une
+// voiture. Un plein de 60 € porte 10 € de TVA, la voiture en récupère 8.
+cas("le plein d'une voiture récupère 80 % de sa TVA, pas 20 %", () => {
+  const r = recuperation({ ...base, nature: "carburant", vehicule: "voiture" });
+  assert.equal(r.tvaRecuperee, 8);
+  assert.notEqual(r.tvaRecuperee, 2);
+});
+
+cas("un carburant sans véhicule dit qu'il manque, il ne suppose pas", () => {
+  const r = recuperation({ ...base, nature: "carburant", vehicule: null });
+  assert.equal(r.tvaRecuperee, 0);
+  assert.deepEqual(r.manques, ["le véhicule"]);
+});
+
+cas("l'hôtel, le train et le repas perso sont notés, jamais comptés", () => {
+  assert.equal(recuperation({ ...base, nature: "hotel" }).tvaRecuperee, 0);
+  assert.equal(recuperation({ ...base, nature: "transport" }).tvaRecuperee, 0);
+  assert.equal(recuperation({ ...base, nature: "repas", repas: "perso" }).tvaRecuperee, 0);
+});
+
+cas("le matériel et « autre » comptent en entier, comme avant", () => {
+  assert.equal(recuperation({ ...base, nature: "materiel" }).tvaRecuperee, 10);
+  assert.equal(recuperation({ ...base, nature: "autre" }).tvaRecuperee, 10);
+});
+
+// **Sa consigne : « qu'on ne puisse pas nous reprocher quoi que ce soit ».**
+// BOI-TVA-DECLA-30-20-20 § 150 : la déduction est subordonnée à
+// l'identification du client portée sur la note. Sans les trois preuves, le
+// repas est noté mais sa TVA ne compte pas.
+const affaires: AchatARecuperer = {
+  ...base,
+  nature: "repas",
+  repas: "affaires",
+  totalTtc: 86,
+  tauxTva: 10,
+  tvaTicket: 7.82,
+};
+
+cas("un repas d'affaires sans ses preuves ne compte pas, et dit ce qui manque", () => {
+  const r = recuperation(affaires);
+  assert.equal(r.tvaRecuperee, 0);
+  assert.deepEqual(r.manques, ["avec qui", "pourquoi", "le nom de l’entreprise sur la note"]);
+});
+
+cas("des preuves faites d'espaces ne sont pas des preuves", () => {
+  const r = recuperation({ ...affaires, avecQui: "   ", pourquoi: " ", justificatif: true });
+  assert.equal(r.tvaRecuperee, 0);
+  assert.deepEqual(r.manques, ["avec qui", "pourquoi"]);
+});
+
+cas("un repas d'affaires avec ses trois preuves compte en entier", () => {
+  const r = recuperation({ ...affaires, avecQui: "M. Durand", pourquoi: "Devis du jardin", justificatif: true });
+  assert.equal(r.tvaRecuperee, 7.82);
+  assert.deepEqual(r.manques, []);
+});
+
+// § 140 : l'allègement de la note ne vaut que jusqu'à 150 € HT. 150 € HT à
+// 10 % font 165 € TTC : le seuil se lit sur le HT, jamais sur le total payé.
+cas("au delà de 150 € HT, c'est une facture qui est exigée, pas la note", () => {
+  assert.equal(factureRepasExigee(165, 10), false);
+  assert.equal(factureRepasExigee(165.01, 10), true);
+  assert.equal(factureRepasExigee(160, 10), false);
+  const r = recuperation({ ...affaires, totalTtc: 220, avecQui: "M. Durand", pourquoi: "Devis" });
+  assert.deepEqual(r.manques, ["la facture au nom de l’entreprise"]);
+});
+
+// Un HT qu'on ne connaît pas ne se suppose pas sous le seuil : c'est la pièce
+// la plus exigeante qu'on demande.
+cas("sans total ni taux, la facture est exigée", () => {
+  assert.equal(factureRepasExigee(null, 10), true);
+  assert.equal(factureRepasExigee(86, null), true);
+});
+
+cas("un repas sans « affaires » ni « perso » ne compte pas", () => {
+  const r = recuperation({ ...base, nature: "repas", repas: null });
+  assert.equal(r.tvaRecuperee, 0);
+  assert.deepEqual(r.manques, ["affaires ou perso"]);
+});
+
+cas("la liste dit ce qu'est l'achat, en phrase, et n'invente rien aux anciens", () => {
+  const vide = { vehicule: null, repas: null, avecQui: null };
+  assert.equal(natureEnMots({ ...vide, nature: null }), null);
+  assert.equal(natureEnMots({ ...vide, nature: "carburant", vehicule: "voiture" }), "Carburant d’une voiture");
+  assert.equal(natureEnMots({ ...vide, nature: "repas", repas: "affaires", avecQui: " M. Durand " }), "Repas d’affaires avec M. Durand");
+  assert.equal(natureEnMots({ ...vide, nature: "transport" }), "Train, taxi");
+});
+
+cas("la part se calcule sur la TVA du ticket, arrondie au centime", () => {
+  const r = recuperation({ ...base, nature: "carburant", vehicule: "voiture", tvaTicket: 13.33 });
+  assert.equal(r.tvaRecuperee, 10.66);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} TVA d'un achat — ${echecs} échec(s).`);

@@ -4,7 +4,18 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font, libelleCaps, voile } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
-import { montantSaisi, tvaDepuisTtc } from "@/lib/achat-tva";
+import {
+  factureRepasExigee,
+  LIBELLE_NATURE,
+  montantSaisi,
+  NATURES_ACHAT,
+  recuperation,
+  tvaDepuisTtc,
+  type NatureAchat,
+  type RepasAchat,
+  type VehiculeAchat,
+} from "@/lib/achat-tva";
+import PreuvesRepas from "./PreuvesRepas";
 import { ajouterAchatAction, rangerTicketAction } from "./actions";
 import {
   dansLaPeriode,
@@ -22,6 +33,7 @@ type TicketLuAffiche = {
   totalTtc: number | null;
   tauxTva: number | null;
   tvaDeductible: number | null;
+  nature: NatureAchat | null;
 };
 
 /**
@@ -95,6 +107,16 @@ export default function AchatsTva({
   // fait foi, pas notre calcul.
   const [tvaEcrite, setTvaEcrite] = useState(false);
 
+  // **Ce qu'est l'achat — sa demande du 13 octobre 2026.** Tout se note ; seul
+  // ce qui se récupère compte (`recuperation`, `src/lib/achat-tva.ts`).
+  // Utilitaire et Perso sont cochés d'avance : *« 99 % du temps ce sera ça »*.
+  const [nature, setNature] = useState<NatureAchat | null>(null);
+  const [vehicule, setVehicule] = useState<VehiculeAchat>("utilitaire");
+  const [repas, setRepas] = useState<RepasAchat>("perso");
+  const [avecQui, setAvecQui] = useState("");
+  const [pourquoi, setPourquoi] = useState("");
+  const [justificatif, setJustificatif] = useState(false);
+
   /**
    * Ouvrir la feuille, éventuellement pré-remplie par la lecture.
    *
@@ -111,6 +133,14 @@ export default function AchatsTva({
     // Une TVA venue de la lecture ne doit pas être écrasée par le calcul si le
     // patron corrige ensuite le total : elle vient de son ticket.
     setTvaEcrite(lu?.tvaDeductible != null);
+    // La lecture PROPOSE la nature ; sans elle, aucune puce n'est cochée à sa
+    // place, et le bouton attend qu'il choisisse.
+    setNature(lu?.nature ?? null);
+    setVehicule("utilitaire");
+    setRepas("perso");
+    setAvecQui("");
+    setPourquoi("");
+    setJustificatif(false);
     setRefus(null);
     setLecture(mot ?? null);
     setPhotoCle(cle);
@@ -120,6 +150,14 @@ export default function AchatsTva({
   /** La TVA se calcule pendant la frappe — la faire calculer de tête sur un
    *  coin de camionnette, c'est la faire écrire fausse. */
   function recalculer(nouveauTtc: string, nouveauTaux: string) {
+    // La pièce exigée d'un repas change au seuil de 150 € HT : la coche donnée
+    // pour la note ne vaut pas pour une facture, elle se décoche.
+    if (
+      factureRepasExigee(montantSaisi(ttc), montantSaisi(taux)) !==
+      factureRepasExigee(montantSaisi(nouveauTtc), montantSaisi(nouveauTaux))
+    ) {
+      setJustificatif(false);
+    }
     if (tvaEcrite) return;
     const calcul = tvaDepuisTtc(montantSaisi(nouveauTtc), montantSaisi(nouveauTaux));
     setTva(calcul === null ? "" : calcul.toFixed(2).replace(".", ","));
@@ -148,7 +186,17 @@ export default function AchatsTva({
     fd.set("dateAchat", date);
     fd.set("totalTtc", ttc);
     fd.set("tauxTva", taux);
-    fd.set("tvaDeductible", tva);
+    fd.set("tvaTicket", tva);
+    if (nature) fd.set("nature", nature);
+    if (nature === "carburant") fd.set("vehicule", vehicule);
+    if (nature === "repas") {
+      fd.set("repas", repas);
+      if (repas === "affaires") {
+        fd.set("avecQui", avecQui);
+        fd.set("pourquoi", pourquoi);
+        if (justificatif) fd.set("justificatif", "oui");
+      }
+    }
     fd.set("saisie", photoCle ? "scan" : "main");
     if (photoCle) fd.set("photoCle", photoCle);
     const r = await ajouterAchatAction(fd);
@@ -187,7 +235,26 @@ export default function AchatsTva({
   const periodeDeLaSaisie = periodeContenant(periodicite, date);
   const ailleurs = periodeDeLaSaisie !== null && !dansLaPeriode(periodeVue, date);
 
-  const armé = fournisseur.trim() !== "" && montantSaisi(tva) !== null && !enCours;
+  // Ce qui comptera, calculé par la MÊME règle que le dépôt : l'écran l'annonce
+  // avant l'appui, le serveur le recalcule, et les deux ne peuvent pas diverger.
+  const tvaTicket = montantSaisi(tva);
+  const affaires = nature === "repas" && repas === "affaires";
+  const compte =
+    nature && tvaTicket !== null
+      ? recuperation({
+          nature,
+          vehicule: nature === "carburant" ? vehicule : null,
+          repas: nature === "repas" ? repas : null,
+          avecQui,
+          pourquoi,
+          justificatif,
+          totalTtc: montantSaisi(ttc),
+          tauxTva: montantSaisi(taux),
+          tvaTicket,
+        })
+      : null;
+
+  const armé = fournisseur.trim() !== "" && tvaTicket !== null && nature !== null && !enCours;
 
   return (
     <>
@@ -282,6 +349,66 @@ export default function AchatsTva({
               className="w-full bg-transparent text-right text-[15.5px] outline-none"
             />
           </Ligne>
+          <div className="px-[15px] pb-3.5 pt-[13px]" style={{ backgroundColor: colors.card }}>
+            <span className="mb-2 block text-[13px]" style={{ color: colors.muted }}>Quoi</span>
+            <div className="flex flex-wrap gap-1.5" data-atlas="nature-achat">
+              {NATURES_ACHAT.map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  aria-pressed={nature === n}
+                  data-nature={n}
+                  onClick={() => setNature(n)}
+                  className="min-h-10 rounded-full px-[13px] py-2 text-[13.5px]"
+                  style={
+                    nature === n
+                      ? { backgroundColor: colors.ink, color: colors.cream, border: `1px solid ${colors.ink}` }
+                      : { color: colors.inkSoft, border: `1px solid ${colors.line}` }
+                  }
+                >
+                  {LIBELLE_NATURE[n]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {nature === "carburant" && (
+            <EnDeux
+              libelle="Véhicule"
+              marque="vehicule-achat"
+              choix={[
+                ["utilitaire", "Utilitaire"],
+                ["voiture", "Voiture (VP)"],
+              ]}
+              valeur={vehicule}
+              onChoix={setVehicule}
+            />
+          )}
+          {nature === "repas" && (
+            <EnDeux
+              libelle="Repas"
+              marque="repas-achat"
+              choix={[
+                ["affaires", "D’affaires"],
+                ["perso", "Perso"],
+              ]}
+              valeur={repas}
+              onChoix={setRepas}
+            />
+          )}
+          {affaires && (
+            <PreuvesRepas
+              avecQui={avecQui}
+              pourquoi={pourquoi}
+              justificatif={justificatif}
+              totalTtc={montantSaisi(ttc)}
+              tauxTva={montantSaisi(taux)}
+              onAvecQui={setAvecQui}
+              onPourquoi={setPourquoi}
+              onJustificatif={setJustificatif}
+            />
+          )}
+
           <Ligne libelle="Total payé">
             <input
               inputMode="decimal"
@@ -306,7 +433,7 @@ export default function AchatsTva({
               className="w-full bg-transparent text-right text-[15.5px] tabular-nums outline-none"
             />
           </Ligne>
-          <Ligne libelle="TVA déductible" accent>
+          <Ligne libelle="TVA du ticket">
             <input
               inputMode="decimal"
               value={tva}
@@ -318,7 +445,46 @@ export default function AchatsTva({
               className="w-full bg-transparent text-right text-[15.5px] tabular-nums outline-none"
             />
           </Ligne>
+          <div
+            className="flex items-center justify-between gap-3 px-[15px] py-[13px]"
+            style={{ backgroundColor: colors.rustTint }}
+            data-atlas="tva-recuperee"
+          >
+            <span className="flex-shrink-0 text-[13px]" style={{ color: colors.or }}>TVA récupérée</span>
+            <span
+              className="text-[16px] tabular-nums"
+              style={
+                compte && compte.tvaRecuperee > 0
+                  ? { color: colors.or, fontFamily: font.display }
+                  : { color: colors.muted }
+              }
+            >
+              {compte === null
+                ? ""
+                : compte.manques.length > 0
+                  ? "Pas encore"
+                  : compte.tvaRecuperee > 0
+                    ? compte.tvaRecuperee.toFixed(2).replace(".", ",") + " €"
+                    : "Non récupérable"}
+            </span>
+          </div>
         </div>
+
+        {/* Ce que la règle a décidé, dit en une phrase quand ce n'est pas
+            « tout compte ». Rien quand tout compte : il n'y a rien à dire. */}
+        {compte && (compte.manques.length > 0 || compte.tvaRecuperee < (tvaTicket ?? 0)) && (
+          <p
+            className="mt-2.5 rounded-xl px-3.5 py-3 text-[12.5px] leading-[1.5]"
+            style={{ backgroundColor: colors.rustTint, color: colors.inkSoft }}
+            data-atlas="mot-recuperation"
+          >
+            {compte.manques.length > 0
+              ? `Il manque ${enPhrase(compte.manques)}.${affaires ? " Le repas est noté, sa TVA ne compte pas encore." : ""}`
+              : compte.tvaRecuperee > 0
+                ? "Voiture : 80 % de la TVA du carburant."
+                : "Noté, mais pas compté dans la TVA déductible."}
+          </p>
+        )}
 
         <p
           className="mt-2.5 rounded-xl px-3.5 py-3 text-[12.5px] leading-[1.5]"
@@ -374,6 +540,62 @@ export default function AchatsTva({
         </button>
       </BottomSheet>
     </>
+  );
+}
+
+/** « a, b et c » : ce qui manque se lit comme une phrase. */
+function enPhrase(liste: string[]): string {
+  return liste.length < 2 ? liste.join("") : `${liste.slice(0, -1).join(", ")} et ${liste[liste.length - 1]}`;
+}
+
+/**
+ * Deux choix sur une ligne, l'un coché d'avance : le véhicule, le repas.
+ *
+ * *Sa demande : « véhicule utilitaire coché direct, et un bouton à côté pour
+ * noter VP si c'est le cas pour ce ticket »*. Pas un réglage : un geste par
+ * ticket, là où il le fait.
+ */
+function EnDeux<T extends string>({
+  libelle,
+  marque,
+  choix,
+  valeur,
+  onChoix,
+}: {
+  libelle: string;
+  marque: string;
+  choix: [T, string][];
+  valeur: T;
+  onChoix: (v: T) => void;
+}) {
+  return (
+    <div className="px-[15px] pb-[13px] pt-[11px]" style={{ backgroundColor: colors.card }}>
+      <span className="mb-2 block text-[13px]" style={{ color: colors.muted }}>{libelle}</span>
+      <div className="flex rounded-full p-[3px]" style={{ border: `1px solid ${colors.line}` }} data-atlas={marque}>
+        {choix.map(([v, mot]) => (
+          <button
+            key={v}
+            type="button"
+            aria-pressed={valeur === v}
+            data-choix={v}
+            onClick={() => onChoix(v)}
+            className="flex min-h-[42px] flex-1 items-center justify-center gap-[7px] rounded-full px-2 py-2.5 text-[14px]"
+            style={
+              valeur === v
+                ? { backgroundColor: colors.plein, color: colors.cream }
+                : { color: colors.inkSoft }
+            }
+          >
+            {valeur === v && (
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <path d="M3 8.5l3.2 3L13 4.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+            {mot}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 

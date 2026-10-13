@@ -10,6 +10,23 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LA TVA QUI NE SE RÉCUPÈRE PAS : 13 octobre 2026, PAS ENCORE SUR `main`
+
+Branche `claude/tva-non-recuperable`, migration 0129. Avant de toucher aux achats
+(`ARCHITECTURE.md` §459) :
+
+- **`tva_deductible` veut toujours dire « ce qui compte »** : le total, le
+  relevé et la calculette le somment sans rien savoir des natures. Ne pas les
+  faire recalculer ailleurs ;
+- **la part se calcule au dépôt, jamais ne se reçoit** : le navigateur envoie
+  la TVA du ticket (`tvaTicket`) et la nature, `creerAchatTva` et
+  `completerRepasAchat` appellent `recuperation`. Un écran trafiqué ne fait
+  pas compter un hôtel ;
+- **une ligne sans nature est un achat d'avant 0129** : elle garde sa ligne
+  « TVA déductible » d'avant. Rien ne la réécrit ;
+- **la mention de l'entreprise se COCHE, elle ne s'écrit pas dans l'appli** :
+  sa question « et sans stylo ? » a été tranchée, la loi la veut sur la note.
+
 ## LA MENTION DU RÉPERTOIRE DES MÉTIERS : 9 octobre 2026, PAS ENCORE SUR `main`
 
 Branche `claude/domain-name-availability-check-9rqv57`, migration 0128. Avant

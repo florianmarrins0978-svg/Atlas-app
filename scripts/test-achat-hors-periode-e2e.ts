@@ -144,6 +144,10 @@ async function main() {
     );
   });
 
+  // Depuis le 13 octobre 2026, un achat dit ce qu'il est : un plein
+  // d'utilitaire (coché d'avance) compte en entier, comme le ticket de gazole
+  // de juillet qui a fait naître cette suite.
+  await page.getByRole("button", { name: "Carburant", exact: true }).click();
   await page.getByRole("button", { name: "Ajouter aux achats" }).click();
 
   await test("Après l'ajout, l'écran emmène le patron là où l'achat a atterri", async () => {

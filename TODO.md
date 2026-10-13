@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## 🔜 LA TVA QUI NE SE RÉCUPÈRE PAS : PLANCHE POSÉE, SES CHOIX DONNÉS (13 octobre 2026)
+## 🔜 LA TVA QUI NE SE RÉCUPÈRE PAS : CODÉE SUR SA BRANCHE, BATTERIE À JOUER (13 octobre 2026)
 
 **Le défaut** : tout achat saisi dans « Ma TVA » entre EN ENTIER dans la TVA
 déductible (`src/lib/achat-tva.ts`, `achats_tva` n'a aucune nature). Un hôtel
@@ -23,11 +23,11 @@ comptabilisée »*. Planche : `appli/tva-ticket-carburant.html`.
 **Pas tranché, à son comptable** : la TVA sur l'alcool, le repas pris seul, le
 gazole non routier des machines (aucun texte officiel lu).
 
-**À coder, niveau 3** (migration + argent, donc batterie, et on le prévient
-avant) : une colonne de nature et la TVA du ticket séparée de la part
-récupérée, en expand/contract ; les achats déjà saisis restent « non classés »
-et comptés comme avant ; la part vit dans UNE fonction de `src/lib/`, servie à
-l'écran et au total ; la lecture du ticket propose la nature, il confirme.
+**CODÉE LE 13 OCTOBRE 2026** sur `claude/tva-non-recuperable`, migration 0129
+(`ARCHITECTURE.md` §459). Reste : **la batterie** (niveau 3, migration et
+argent), qu'il a demandé de ne pas lancer ; on le prévient avant. Puis la
+fusion sur `main`. Sur son espace, la lecture d'un vrai ticket qui propose la
+nature n'a pas été éprouvée (aucune clé ici).
 
 ## 🔜 L'OUTIL DE COMPARAISON AVEC MAIN SE TROMPE SUR CE PC (11 octobre 2026)
 
