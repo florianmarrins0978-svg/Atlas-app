@@ -19,6 +19,18 @@ Format : le plus récent en tête.
   saisir ce qui serait refusé. Éprouvé rouge puis vert sous de vrais comptes :
   `test-roles-capacites-db.ts`.
 
+- **Next.js passe de 16.3.2 à 16.3.8, et sharp de 0.35.3 à 0.35.5 : trois failles critiques
+  fermées.** La campagne de sécurité de l'établi QA (`npm audit`, 13 octobre) a relevé, sur la
+  version servie, une exécution de code à distance sans compte par l'optimisation d'images
+  (`next/image`, employée par cinq écrans), deux autres critiques, une falsification de requête
+  côté serveur, et deux failles de libheif et librsvg dans sharp, que cette optimisation appelle.
+  Toutes sont corrigées à partir de 16.3.8. La 16.4.0, proposée par l'audit, a été écartée : une
+  version mineure apporte des changements de fonctionnement dont on n'a pas besoin pour fermer ces
+  failles, une version de correction non. `eslint-config-next` suit le même numéro. Ce qui reste
+  dans `npm audit` ne sert qu'aux outils de développement, sauf `@simplewebauthn/server`, peu
+  exposé (aucune attestation demandée) et dont le correctif change de version majeure : laissé
+  pour un lot à part.
+
 ## 2026-10-11
 
 - **Six écrans repris d'après leurs planches /impeccable, en un seul lot (sa décision).** Il a
