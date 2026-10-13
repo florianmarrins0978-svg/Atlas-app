@@ -116,7 +116,7 @@ async function main() {
     assert.ok(transmise?.transmiseLe);
     assert.equal(await marquerTransmise(ctxA, chantierA.id), null, "transmettre deux fois ne réécrit pas la date");
     assert.equal(await signerLaFiche(ctxB, chantierA.id, { signaturePng: PNG, signataire: "Bruno" }), null, "B ne signe pas la fiche de A");
-    const rouverte = await rouvrirLaFiche(ctxA, chantierA.id);
+    const rouverte = await rouvrirLaFiche(ctxA, chantierA.id, { memeTransmise: true });
     assert.ok(rouverte);
     assert.equal(rouverte.signeeLe, null);
     assert.equal(rouverte.signaturePng, null);
@@ -134,6 +134,59 @@ async function main() {
     assert.equal(deA[0].signataire, "Anne");
   });
 
+  // ─── SIGNÉE, ELLE EST FIGÉE ; TRANSMISE, SEUL LE PATRON LA ROUVRE ─────────
+  //
+  // Sa règle du 13 octobre 2026 : *« s'il se trompe, il faut qu'il puisse
+  // supprimer une photo ; s'il a mal fait sa signature, la supprimer pour la
+  // refaire. Une fois le document envoyé, il ne faut plus qu'il puisse ni
+  // modifier sa signature, ni retirer une photo. »* La campagne de sécurité de
+  // l'établi QA avait trouvé la porte : « Modifier » rouvrait une fiche déjà
+  // transmise, pour n'importe quel rôle, et l'enregistrement réécrivait une fiche
+  // signée sans passer par « Modifier ».
+  await essai("une fiche signée est figée : ni réécrite, ni re-signée, ni augmentée d'une photo sans « Modifier »", async () => {
+    const saule = await chantiersRepo.creerChantier(ctxA, { nom: "Saule Martin" });
+    await ouvrirLaFiche(ctxA, saule.id);
+    await enregistrerLaFiche(ctxA, saule.id, { contenu: cocher(contenuVide(), "travaux", "Abattage"), etapeVue: 6, loiLue: true });
+    await signerLaFiche(ctxA, saule.id, { signaturePng: PNG, signataire: "Anne" });
+
+    const reecrite = await enregistrerLaFiche(ctxA, saule.id, { contenu: cocher(contenuVide(), "travaux", "Haubanage"), etapeVue: 6, loiLue: true });
+    assert.equal(reecrite, null, "le contenu d'une fiche signée a été réécrit sans la rouvrir");
+    const apres = await ficheDuChantier(ctxA, saule.id);
+    assert.ok(apres && estCoche(apres.contenu, "travaux", "Abattage") && !estCoche(apres.contenu, "travaux", "Haubanage"));
+
+    assert.equal(await signerLaFiche(ctxA, saule.id, { signaturePng: PNG, signataire: "Quelqu'un d'autre" }), null, "une fiche signée a été re-signée par-dessus");
+    assert.equal((await ficheDuChantier(ctxA, saule.id))?.signataire, "Anne");
+
+    const ajout = await photosRepo.ajouterPhoto(ctxA, saule.id, {
+      storageKey: `chantiers/${saule.id}/photos/apres-coup.jpg`,
+      mimeType: "image/jpeg",
+      tailleOctets: 10,
+      nomOriginal: "apres-coup.jpg",
+      checksum: "c".repeat(64),
+    });
+    assert.ok(ajout.ok);
+    assert.equal(await attacherPhotoALaFiche(ctxA, saule.id, ajout.photo.id), false, "une photo a été ajoutée à une fiche signée");
+    assert.equal(await photoTenueParUneFiche(ctxA, ajout.photo.id), false);
+  });
+
+  await essai("signée mais pas transmise, elle se rouvre pour refaire la signature ; transmise, seul celui qui en a le droit la rouvre", async () => {
+    const frene = await chantiersRepo.creerChantier(ctxA, { nom: "Frêne Lucas" });
+    await ouvrirLaFiche(ctxA, frene.id);
+    await signerLaFiche(ctxA, frene.id, { signaturePng: PNG, signataire: "Anne" });
+    const pourResigner = await rouvrirLaFiche(ctxA, frene.id, { memeTransmise: false });
+    assert.ok(pourResigner, "une fiche pas encore transmise ne s'est pas rouverte : il ne pourrait plus refaire sa signature");
+    assert.equal(pourResigner.signeeLe, null);
+
+    await signerLaFiche(ctxA, frene.id, { signaturePng: PNG, signataire: "Anne" });
+    await marquerTransmise(ctxA, frene.id);
+    assert.equal(await rouvrirLaFiche(ctxA, frene.id, { memeTransmise: false }), null, "une fiche transmise s'est rouverte sans le droit de le faire");
+    const intacte = await ficheDuChantier(ctxA, frene.id);
+    assert.ok(intacte?.signeeLe && intacte.transmiseLe, "la fiche transmise a perdu sa signature ou sa date d'envoi");
+
+    const parLePatron = await rouvrirLaFiche(ctxA, frene.id, { memeTransmise: true });
+    assert.ok(parLePatron && parLePatron.signeeLe === null && parLePatron.transmiseLe === null);
+  });
+
   await essai("une photo qu'une fiche montre ne part pas en purge quand on l'efface de la pellicule", async () => {
     const ajout = await photosRepo.ajouterPhoto(ctxA, chantierA.id, {
       storageKey: `chantiers/${chantierA.id}/photos/fiche-securite-essai.jpg`,
@@ -144,7 +197,9 @@ async function main() {
     });
     assert.ok(ajout.ok);
     const photoId = ajout.photo.id;
-    const fiche = await ficheDuChantier(ctxA, chantierA.id);
+    // La fiche de A est signée par le cas précédent : on la rouvre, comme
+    // « Modifier » à l'écran, sans quoi elle ne s'écrit plus.
+    const fiche = await rouvrirLaFiche(ctxA, chantierA.id, { memeTransmise: true });
     assert.ok(fiche);
     await enregistrerLaFiche(ctxA, chantierA.id, { contenu: { ...fiche.contenu, photoIds: [photoId] }, etapeVue: 6, loiLue: true });
     assert.equal(await photoTenueParUneFiche(ctxA, photoId), true);

@@ -256,7 +256,7 @@ export default function FormulaireFicheDeSecurite({
   // ══════════════════ CE QUE DEMANDE LA LOI — à la première ouverture ══════════════════
   if (ecran === "loi") {
     return (
-      <Cadre pied={<Vert onClick={() => { void enregistrer(etapeVue); setEcran(signeeLe ? "signee" : "fiche"); }}>Compris, je remplis</Vert>}>
+      <Cadre pied={<Vert onClick={() => { if (!signeeLe) void enregistrer(etapeVue); setEcran(signeeLe ? "signee" : "fiche"); }}>Compris, je remplis</Vert>}>
         <h2 className="m-0 mb-3.5 text-[24px] leading-[1.15]" style={{ fontFamily: font.display }}>Décret 2021-1833, en vigueur depuis le 1er mars 2022</h2>
         <Loi>Avant un chantier d’élagage ou d’abattage, le chef d’entreprise remplit une fiche d’intervention, la signe, la montre à son équipe, la garde sur le chantier, la transmet à l’entreprise qui l’a fait venir quand il y a un plan de prévention, et la conserve deux ans. Elle doit dire :</Loi>
         <ol className="m-0 mt-2.5 list-none p-0">

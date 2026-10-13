@@ -6,6 +6,22 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-13
+
+- **La fiche de sécurité : signée, elle est figée ; transmise, le salarié ne la rouvre plus.** Sa
+  règle du 13 octobre : *« s'il se trompe, il faut qu'il puisse supprimer une photo ; s'il a mal
+  fait sa signature, la supprimer pour la refaire. Une fois le document envoyé, il ne faut plus
+  qu'il puisse ni modifier sa signature, ni retirer une photo. »* La campagne de sécurité de
+  l'établi QA avait trouvé que « Modifier » rouvrait une fiche déjà transmise pour n'importe quel
+  rôle, ce qui effaçait sa date d'envoi et rendait ses photos retirables. En la corrigeant, deux
+  autres portes sont apparues, au même endroit : l'enregistrement réécrivait le contenu d'une fiche
+  signée (donc sa liste de photos) sans passer par « Modifier », et une signature pouvait se poser
+  par-dessus une autre. Les trois se ferment dans le dépôt (`src/server/repositories/fiches-securite.ts`),
+  par une condition dans le `WHERE` et non par un test fait avant l'écriture. Qui peut rouvrir une
+  fiche transmise se lit dans une seule fonction, `peutRouvrirUneFicheTransmise`, que l'écran
+  emploie aussi pour ne pas dessiner « Modifier ». Avant l'envoi, rien ne change pour personne.
+  Éprouvé rouge puis vert : `test-fiche-securite-db.ts`, `test-acces-roles.ts`.
+
 ## 2026-10-11
 
 - **Six écrans repris d'après leurs planches /impeccable, en un seul lot (sa décision).** Il a

@@ -30,6 +30,7 @@ export default function FicheDeSecurite({ chantierId }: { chantierId: string }) 
   const [refus, setRefus] = useState<string | null>(null);
   const [occupe, setOccupe] = useState(false);
   const [paysageOuvert, setPaysageOuvert] = useState(false);
+  const [modifiable, setModifiable] = useState(false);
 
   useEffect(() => {
     let vivant = true;
@@ -38,6 +39,7 @@ export default function FicheDeSecurite({ chantierId }: { chantierId: string }) 
         if (!vivant) return;
         setFiche(etat.fiche);
         setPaysageOuvert(etat.paysageOuvert);
+        setModifiable(etat.modifiable);
       })
       .catch(() => {
         if (vivant) setFiche(null);
@@ -152,9 +154,11 @@ export default function FicheDeSecurite({ chantierId }: { chantierId: string }) 
                       Voir où elle est gardée
                     </Link>
                   )}
-                  <button type="button" data-atlas="modifier-la-fiche" disabled={occupe} onClick={modifier} className="px-2 py-2 text-[14px] font-bold" style={{ color: colors.ink }}>
-                    Modifier
-                  </button>
+                  {modifiable && (
+                    <button type="button" data-atlas="modifier-la-fiche" disabled={occupe} onClick={modifier} className="px-2 py-2 text-[14px] font-bold" style={{ color: colors.ink }}>
+                      Modifier
+                    </button>
+                  )}
                 </div>
               </div>
             ) : (

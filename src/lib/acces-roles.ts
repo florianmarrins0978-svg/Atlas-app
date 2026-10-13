@@ -617,6 +617,27 @@ export function peutPoserUnRetour(role: Role): boolean {
 }
 
 /**
+ * **UNE FICHE DE SÉCURITÉ DÉJÀ TRANSMISE, QUI PEUT LA ROUVRIR ?**
+ *
+ * Sa règle du 13 octobre 2026 : *« s'il se trompe, il faut qu'il puisse
+ * supprimer une photo ; s'il a mal fait sa signature, la supprimer pour la
+ * refaire. Une fois le document envoyé, il ne faut plus qu'il puisse ni modifier
+ * sa signature, ni retirer une photo. »*
+ *
+ * Avant l'envoi, tout le monde rouvre : c'est ainsi qu'on refait une signature
+ * ratée. Après, rouvrir effacerait la date d'envoi et rendrait les photos
+ * retirables, donc réécrirait un document que le client ou un contrôleur a déjà
+ * reçu. Le salarié ne le peut plus ; les autres rôles, oui, parce que c'est la
+ * responsabilité du chef d'entreprise qui est engagée, et c'est lui qui corrige.
+ *
+ * La campagne de sécurité de l'établi QA (13 octobre 2026) a trouvé la porte :
+ * « Modifier » rouvrait une fiche transmise pour n'importe quel rôle.
+ */
+export function peutRouvrirUneFicheTransmise(role: Role): boolean {
+  return role !== "salarie";
+}
+
+/**
  * L'assistant, est-ce pour cette personne ? **NON, sauf le patron.**
  *
  * ───────────────────────────────────────────────────────────────────────────
