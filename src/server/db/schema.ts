@@ -3026,6 +3026,20 @@ export const achatsTva = pgTable("achats_tva", {
    *  fautive : il faut pouvoir retrouver ce qui vient de la machine sans
    *  toucher à ce que le patron a écrit lui-même. */
   saisie: text("saisie", { enum: ["scan", "main"] }).notNull(),
+  /** Ce qu'est l'achat (migration 0129, 13 octobre 2026). `null` : un achat
+   *  d'avant ce jour, compté comme il l'était. La part qui compte se calcule
+   *  dans `recuperation` (`src/lib/achat-tva.ts`) et se pose dans
+   *  `tvaDeductible`, qui garde son sens. */
+  nature: text("nature", { enum: ["carburant", "materiel", "repas", "hotel", "transport", "autre"] }),
+  vehicule: text("vehicule", { enum: ["utilitaire", "voiture"] }),
+  repas: text("repas", { enum: ["affaires", "perso"] }),
+  /** Les preuves d'un repas d'affaires (BOI-TVA-DECLA-30-20-20). */
+  avecQui: text("avec_qui"),
+  pourquoi: text("pourquoi"),
+  justificatif: boolean("justificatif"),
+  /** La TVA écrite sur le ticket, celle qu'il a payée. `null` sur un achat
+   *  d'avant 0129, où elle se confondait avec la part déductible. */
+  tvaTicket: numeric("tva_ticket", { precision: 12, scale: 2 }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),

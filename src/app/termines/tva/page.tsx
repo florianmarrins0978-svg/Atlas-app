@@ -24,8 +24,9 @@ import EnAttenteDePaiement from "./EnAttenteDePaiement";
 import { receptionsDesFactures } from "@/server/repositories/envois-factures";
 import { receptionEnMots } from "@/lib/reception-facture";
 import { facturesEnAttente } from "@/server/repositories/paiements-facture";
-import { listerAchatsTva, totalTvaDeductible } from "@/server/repositories/achats-tva";
-import { tvaDue } from "@/lib/achat-tva";
+import { listerAchatsTva, totalTvaDeductible, type AchatTva } from "@/server/repositories/achats-tva";
+import { natureEnMots, recuperation, tvaDue } from "@/lib/achat-tva";
+import CompleterRepas from "./CompleterRepas";
 import { facturesAvecAncienIban } from "@/server/repositories/factures";
 
 export const dynamic = "force-dynamic";
@@ -390,12 +391,13 @@ export default async function ReleveTvaPage({
                   </p>
                   <p className="mt-0.5 text-[11.5px]" style={{ color: colors.muted }}>
                     {jourEtMois(a.dateAchat)}
+                    {natureEnMots(a) && `. ${natureEnMots(a)}.`}
                   </p>
                   {/* Le TTC n'est pas toujours connu — un achat écrit à la main
                       peut ne porter que sa TVA. Sans lui, la ligne ne dit que
                       ce qu'elle sait ; elle n'invente pas un montant. */}
                   {a.totalTtc && <Paire quoi="Montant" combien={`${enEuros(Number(a.totalTtc))} TTC`} />}
-                  <Paire quoi="TVA déductible" combien={enEuros(Number(a.tvaDeductible))} tva />
+                  <LigneTvaAchat achat={a} />
                 </li>
               ))}
               <Total quoi="Total déductible" combien={enEuros(deductible)} marque="total-deductible" />
@@ -425,6 +427,59 @@ export default async function ReleveTvaPage({
  * doré aussi. Le TTC reste en gris : il dit d'où vient le chiffre, il ne
  * compte pas.
  */
+/**
+ * La TVA d'un achat, telle qu'elle compte.
+ *
+ * *Sa demande du 13 octobre 2026 : tout se note, seul ce qui se récupère
+ * compte.* Un achat d'avant ce jour (sans nature) garde sa ligne d'avant. Les
+ * autres disent la TVA récupérée, ou « Non récupérable » avec la TVA payée à
+ * côté, ou « Pas encore » pour un repas d'affaires sans ses preuves, qu'on
+ * complète sur place. Le montant vient de la base, où la règle l'a posé ;
+ * l'écran n'y refait aucun calcul (`CLAUDE.md` §3).
+ */
+function LigneTvaAchat({ achat: a }: { achat: AchatTva }) {
+  if (a.nature === null || a.tvaTicket === null) {
+    return <Paire quoi="TVA déductible" combien={enEuros(Number(a.tvaDeductible))} tva />;
+  }
+  if (Number(a.tvaDeductible) > 0) {
+    return <Paire quoi="TVA récupérée" combien={enEuros(Number(a.tvaDeductible))} tva />;
+  }
+  const tvaTicket = Number(a.tvaTicket);
+  const { manques } = recuperation({
+    nature: a.nature,
+    vehicule: a.vehicule,
+    repas: a.repas,
+    avecQui: a.avecQui,
+    pourquoi: a.pourquoi,
+    justificatif: Boolean(a.justificatif),
+    totalTtc: a.totalTtc === null ? null : Number(a.totalTtc),
+    tauxTva: a.tauxTva === null ? null : Number(a.tauxTva),
+    tvaTicket,
+  });
+  const enAttente = a.nature === "repas" && a.repas === "affaires" && manques.length > 0;
+  return (
+    <>
+      <p className="mt-[7px] flex items-baseline justify-between gap-2.5 text-[13px]" data-atlas="tva-non-comptee">
+        <span style={{ color: colors.muted }}>TVA {enEuros(tvaTicket)}</span>
+        <span className="whitespace-nowrap" style={{ color: colors.muted }}>
+          {enAttente ? "Pas encore" : "Non récupérable"}
+        </span>
+      </p>
+      {enAttente && (
+        <CompleterRepas
+          id={a.id}
+          avecQui={a.avecQui}
+          pourquoi={a.pourquoi}
+          justificatif={Boolean(a.justificatif)}
+          totalTtc={a.totalTtc === null ? null : Number(a.totalTtc)}
+          tauxTva={a.tauxTva === null ? null : Number(a.tauxTva)}
+          tvaTicket={tvaTicket}
+        />
+      )}
+    </>
+  );
+}
+
 function Paire({ quoi, combien, tva = false }: { quoi: string; combien: string; tva?: boolean }) {
   return (
     <p className="mt-[7px] flex items-baseline justify-between gap-2.5 text-[13px]">

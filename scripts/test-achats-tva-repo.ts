@@ -36,7 +36,9 @@ async function main() {
       fournisseur: "Station Total — Pessac",
       totalTtc: 96,
       tauxTva: 20,
-      tvaDeductible: 16,
+      tvaTicket: 16,
+      nature: "carburant",
+      vehicule: "utilitaire",
       photoCle: "tickets/abc.jpg",
       saisie: "scan",
     });
@@ -53,7 +55,8 @@ async function main() {
     const a = await achatsRepo.creerAchatTva(A, {
       dateAchat: "2026-08-08",
       fournisseur: "Espace Émeraude",
-      tvaDeductible: 13,
+      tvaTicket: 13,
+      nature: "materiel",
       saisie: "main",
     });
     assert.ok(a);
@@ -72,10 +75,10 @@ async function main() {
   // apercevrait avant de comparer avec le comptable.
   await test("Un achat du dernier jour du mois appartient à ce mois", async () => {
     await achatsRepo.creerAchatTva(A, {
-      dateAchat: "2026-08-31", fournisseur: "Dernier jour", tvaDeductible: 5, saisie: "main",
+      dateAchat: "2026-08-31", fournisseur: "Dernier jour", tvaTicket: 5, nature: "materiel", saisie: "main",
     });
     await achatsRepo.creerAchatTva(A, {
-      dateAchat: "2026-09-01", fournisseur: "Mois suivant", tvaDeductible: 100, saisie: "main",
+      dateAchat: "2026-09-01", fournisseur: "Mois suivant", tvaTicket: 100, nature: "materiel", saisie: "main",
     });
     assert.equal(await achatsRepo.totalTvaDeductible(A, "2026-08-01", "2026-08-31"), 34);
     assert.equal(await achatsRepo.totalTvaDeductible(A, "2026-09-01", "2026-09-30"), 100);
@@ -119,10 +122,83 @@ async function main() {
     let leve = false;
     try {
       await achatsRepo.creerAchatTva(A, {
-        dateAchat: "2026-08-12", fournisseur: "Négatif", tvaDeductible: -5, saisie: "main",
+        dateAchat: "2026-08-12", fournisseur: "Négatif", tvaTicket: -5, nature: "materiel", saisie: "main",
       });
     } catch { leve = true; }
     assert.ok(leve, "la contrainte doit refuser un montant négatif");
+  });
+
+  // ─── Ce qui se récupère — sa demande du 13 octobre 2026 ────────────────────
+  //
+  // Tout se note, seul ce qui se récupère compte. **La part se calcule au
+  // dépôt, jamais ne se reçoit** : ces cas passent par `creerAchatTva` comme
+  // l'écran, et lisent ce que la BASE a posé, sous `atlas_app` et la RLS.
+
+  await test("Un hôtel est noté, et sa TVA ne compte pas", async () => {
+    const a = await achatsRepo.creerAchatTva(A, {
+      dateAchat: "2026-07-03", fournisseur: "Ibis Montpellier", totalTtc: 89, tauxTva: 10,
+      tvaTicket: 8.09, nature: "hotel", saisie: "main",
+    });
+    assert.ok(a);
+    assert.equal(a.tvaTicket, "8.09");
+    assert.equal(a.tvaDeductible, "0.00");
+    assert.equal(await achatsRepo.totalTvaDeductible(A, "2026-07-03", "2026-07-03"), 0);
+  });
+
+  await test("Le plein d'une voiture compte pour 80 % de sa TVA", async () => {
+    const a = await achatsRepo.creerAchatTva(A, {
+      dateAchat: "2026-07-04", fournisseur: "Esso", totalTtc: 60, tauxTva: 20,
+      tvaTicket: 10, nature: "carburant", vehicule: "voiture", saisie: "scan",
+    });
+    assert.equal(a?.tvaDeductible, "8.00");
+  });
+
+  // Une précision qui ne concerne pas la nature ne s'enregistre pas : un
+  // véhicule sur du matériel mentirait sur la ligne.
+  await test("Une précision étrangère à la nature n'est pas enregistrée", async () => {
+    const a = await achatsRepo.creerAchatTva(A, {
+      dateAchat: "2026-07-05", fournisseur: "Point.P", tvaTicket: 40, nature: "materiel",
+      vehicule: "voiture", repas: "affaires", avecQui: "Personne", saisie: "main",
+    });
+    assert.equal(a?.vehicule, null);
+    assert.equal(a?.repas, null);
+    assert.equal(a?.avecQui, null);
+    assert.equal(a?.tvaDeductible, "40.00");
+  });
+
+  // Sa consigne : « qu'on ne puisse pas nous reprocher quoi que ce soit ».
+  // Sans stylo à table, le repas est noté sans compter ; il compte dès que les
+  // trois preuves sont complétées, recalculé au dépôt.
+  await test("Un repas d'affaires sans preuves ne compte pas, puis compte une fois complété", async () => {
+    const a = await achatsRepo.creerAchatTva(A, {
+      dateAchat: "2026-07-06", fournisseur: "Le Petit Jardin", totalTtc: 86, tauxTva: 10,
+      tvaTicket: 7.82, nature: "repas", repas: "affaires", avecQui: "M. Durand", saisie: "scan",
+    });
+    assert.equal(a?.tvaDeductible, "0.00");
+    const complete = await achatsRepo.completerRepasAchat(A, a!.id, {
+      avecQui: "M. Durand", pourquoi: "Devis du jardin", justificatif: true,
+    });
+    assert.equal(complete?.tvaDeductible, "7.82");
+    assert.equal(complete?.pourquoi, "Devis du jardin");
+  });
+
+  await test("Une autre entreprise ne peut pas compléter ce repas", async () => {
+    const a = await achatsRepo.creerAchatTva(A, {
+      dateAchat: "2026-07-07", fournisseur: "Chez Paul", totalTtc: 50, tauxTva: 10,
+      tvaTicket: 4.55, nature: "repas", repas: "affaires", saisie: "main",
+    });
+    const vol = await achatsRepo.completerRepasAchat(B, a!.id, {
+      avecQui: "X", pourquoi: "Y", justificatif: true,
+    });
+    assert.equal(vol, undefined);
+  });
+
+  await test("Seul un repas d'affaires se complète", async () => {
+    const a = await achatsRepo.creerAchatTva(A, {
+      dateAchat: "2026-07-08", fournisseur: "Ibis", tvaTicket: 5, nature: "hotel", saisie: "main",
+    });
+    const r = await achatsRepo.completerRepasAchat(A, a!.id, { avecQui: "X", pourquoi: "Y", justificatif: true });
+    assert.equal(r, undefined);
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

@@ -34655,3 +34655,52 @@ plutôt que de disparaître avec lui.
 
 Contrôle : `test-numero-rm-sur-les-pieces-db` (base, le chemin de Mon
 entreprise jusqu'au papier), rouge avant `ligneSiret`, vert après.
+
+## §459 : Un achat dit ce qu'il est, et seule la part récupérable compte
+
+**Sa demande du 13 octobre 2026** : *« chaque entrée et chaque sortie doit être
+notée, mais si c'est une catégorie où il ne récupère pas la TVA, elle ne doit
+pas être comptabilisée »*. Jusque-là `achat-tva.ts` déclarait ne jamais juger
+une déductibilité, faute de source ; le prix de cette prudence était que tout
+comptait, hôtel compris. Les sources ont été lues, la décision révisée.
+
+**Décision** : chaque achat neuf porte une nature (`achats_tva.nature`, six
+valeurs), et `recuperation` (`src/lib/achat-tva.ts`) en tire la part :
+
+| | |
+|---|---|
+| carburant d'un utilitaire | 100 % |
+| carburant d'une voiture | 80 % (essence et gazole alignés depuis 2022) |
+| matériel, autre | 100 % |
+| hôtel, train ou taxi, repas perso | 0 % |
+| repas d'affaires | 100 % avec ses trois preuves, sinon 0 % |
+
+**Ses choix, à ne pas lui redemander** : Utilitaire coché d'avance à chaque
+plein et Voiture à côté, jamais un réglage dans Réglages ; 80 % pour la voiture
+(il avait d'abord dit « rien », croyant que c'était la règle) ; Perso coché
+d'avance pour un repas.
+
+**Le repas d'affaires** (BOI-TVA-DECLA-30-20-20 § 130 à 150) : jusqu'à 150 € HT
+la note suffit si le client y écrit le nom et l'adresse de son entreprise, au
+delà il faut une facture à son nom ; et avec qui, pourquoi, pour un contrôle.
+Le seuil se lit sur le HT, arrondi au centime ; un HT incalculable exige la
+facture. La mention **se coche** : la loi la veut sur la note, une case dans
+l'appli donnerait l'air d'être en règle sans l'être. Sans stylo à table, le
+repas est noté sans compter, puis complété depuis la liste
+(`completerRepasAchat`).
+
+**Pourquoi `tva_deductible` garde son sens** : le total, le relevé et la
+calculette n'ont pas à changer, et un achat d'avant 0129 reste juste sans être
+réécrit. La TVA payée vit à côté (`tva_ticket`). Migration expand seule, aucun
+`UPDATE`, donc rien à prouver sous FORCE RLS.
+
+**Pourquoi au dépôt** : la même fonction annonce la part dans la feuille et la
+pose en base (`CLAUDE.md` §3) ; le navigateur n'envoie jamais ce qui se
+déduit. Une précision étrangère à la nature (un véhicule sur un repas) ne
+s'enregistre pas.
+
+**Non tranché, faute de texte officiel lu** : l'alcool d'un repas, le repas pris
+seul, le gazole non routier des machines. À son comptable.
+
+Contrôles : `test-achat-tva` (règle, rouge sans elle), `test-achats-tva-repo`
+(base, RLS), `test-tva-non-recuperable-e2e` (son geste, du doigt au total).

@@ -2,7 +2,13 @@ import { and, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { achatsTva } from "../db/schema";
 import type { Ctx } from "./context";
-import type { SaisieAchat } from "@/lib/achat-tva";
+import {
+  recuperation,
+  type NatureAchat,
+  type RepasAchat,
+  type SaisieAchat,
+  type VehiculeAchat,
+} from "@/lib/achat-tva";
 
 /**
  * Les achats du patron, et la TVA qu'il peut déduire.
@@ -21,6 +27,13 @@ export type AchatTva = {
   tvaDeductible: string;
   photoCle: string | null;
   saisie: SaisieAchat;
+  nature: NatureAchat | null;
+  vehicule: VehiculeAchat | null;
+  repas: RepasAchat | null;
+  avecQui: string | null;
+  pourquoi: string | null;
+  justificatif: boolean | null;
+  tvaTicket: string | null;
 };
 
 /**
@@ -43,6 +56,13 @@ export async function listerAchatsTva(ctx: Ctx, debut: string, fin: string) {
         tvaDeductible: achatsTva.tvaDeductible,
         photoCle: achatsTva.photoCle,
         saisie: achatsTva.saisie,
+        nature: achatsTva.nature,
+        vehicule: achatsTva.vehicule,
+        repas: achatsTva.repas,
+        avecQui: achatsTva.avecQui,
+        pourquoi: achatsTva.pourquoi,
+        justificatif: achatsTva.justificatif,
+        tvaTicket: achatsTva.tvaTicket,
       })
       .from(achatsTva)
       .where(
@@ -83,6 +103,14 @@ export async function totalTvaDeductible(ctx: Ctx, debut: string, fin: string): 
   });
 }
 
+/**
+ * Enregistrer un achat.
+ *
+ * **La part qui compte se calcule ICI, jamais ne se reçoit.** Le navigateur
+ * envoie la TVA du ticket et la nature ; `recuperation` en tire ce qui entre
+ * au total, avec la même fonction que l'écran (`CLAUDE.md` §3). Un écran
+ * trafiqué ne peut donc pas faire compter un hôtel.
+ */
 export async function creerAchatTva(
   ctx: Ctx,
   data: {
@@ -90,11 +118,37 @@ export async function creerAchatTva(
     fournisseur: string;
     totalTtc?: number | null;
     tauxTva?: number | null;
-    tvaDeductible: number;
+    tvaTicket: number;
+    nature: NatureAchat;
+    vehicule?: VehiculeAchat | null;
+    repas?: RepasAchat | null;
+    avecQui?: string | null;
+    pourquoi?: string | null;
+    justificatif?: boolean;
     photoCle?: string | null;
     saisie: SaisieAchat;
   }
 ) {
+  // Une précision qui ne concerne pas cette nature ne s'enregistre pas : un
+  // véhicule sur un repas mentirait sur la ligne, et on ne saurait plus lequel
+  // des deux croire.
+  const vehicule = data.nature === "carburant" ? (data.vehicule ?? null) : null;
+  const repas = data.nature === "repas" ? (data.repas ?? null) : null;
+  const affaires = repas === "affaires";
+  const avecQui = affaires ? data.avecQui?.trim() || null : null;
+  const pourquoi = affaires ? data.pourquoi?.trim() || null : null;
+  const justificatif = affaires ? Boolean(data.justificatif) : null;
+  const { tvaRecuperee } = recuperation({
+    nature: data.nature,
+    vehicule,
+    repas,
+    avecQui,
+    pourquoi,
+    justificatif: Boolean(justificatif),
+    totalTtc: data.totalTtc ?? null,
+    tauxTva: data.tauxTva ?? null,
+    tvaTicket: data.tvaTicket,
+  });
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [row] = await tx
       .insert(achatsTva)
@@ -106,7 +160,14 @@ export async function creerAchatTva(
         // le pilote perdrait des centimes sur les grands montants.
         totalTtc: data.totalTtc === null || data.totalTtc === undefined ? null : data.totalTtc.toFixed(2),
         tauxTva: data.tauxTva === null || data.tauxTva === undefined ? null : data.tauxTva.toFixed(2),
-        tvaDeductible: data.tvaDeductible.toFixed(2),
+        tvaTicket: data.tvaTicket.toFixed(2),
+        tvaDeductible: tvaRecuperee.toFixed(2),
+        nature: data.nature,
+        vehicule,
+        repas,
+        avecQui,
+        pourquoi,
+        justificatif,
         photoCle: data.photoCle ?? null,
         saisie: data.saisie,
         createdBy: ctx.utilisateurId,
@@ -129,6 +190,58 @@ export async function supprimerAchatTva(ctx: Ctx, id: string) {
     const [row] = await tx
       .update(achatsTva)
       .set({ deletedAt: new Date(), updatedAt: new Date() })
+      .where(and(eq(achatsTva.id, id), isNull(achatsTva.deletedAt)))
+      .returning();
+    return row;
+  });
+}
+
+/**
+ * Compléter les preuves d'un repas d'affaires noté sans elles.
+ *
+ * *« Si on n'a pas de stylo pour l'écrire sur le ticket, comment on fait ? »*
+ * On l'écrit plus tard, dans le camion : le texte ne dit pas que ce doit être
+ * fait à table. Le repas a été noté sans compter ; il compte dès que les trois
+ * preuves sont là, recalculé ici par la même règle.
+ *
+ * Rend `undefined` quand la ligne n'est pas un repas d'affaires de cette
+ * entreprise : la RLS filtre sans lever, et l'écran doit le dire.
+ */
+export async function completerRepasAchat(
+  ctx: Ctx,
+  id: string,
+  preuves: { avecQui: string; pourquoi: string; justificatif: boolean }
+) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [ligne] = await tx
+      .select()
+      .from(achatsTva)
+      .where(and(eq(achatsTva.id, id), isNull(achatsTva.deletedAt)));
+    if (!ligne || ligne.nature !== "repas" || ligne.repas !== "affaires" || ligne.tvaTicket === null) {
+      return undefined;
+    }
+    const avecQui = preuves.avecQui.trim() || null;
+    const pourquoi = preuves.pourquoi.trim() || null;
+    const { tvaRecuperee } = recuperation({
+      nature: "repas",
+      vehicule: null,
+      repas: "affaires",
+      avecQui,
+      pourquoi,
+      justificatif: preuves.justificatif,
+      totalTtc: ligne.totalTtc === null ? null : Number(ligne.totalTtc),
+      tauxTva: ligne.tauxTva === null ? null : Number(ligne.tauxTva),
+      tvaTicket: Number(ligne.tvaTicket),
+    });
+    const [row] = await tx
+      .update(achatsTva)
+      .set({
+        avecQui,
+        pourquoi,
+        justificatif: preuves.justificatif,
+        tvaDeductible: tvaRecuperee.toFixed(2),
+        updatedAt: new Date(),
+      })
       .where(and(eq(achatsTva.id, id), isNull(achatsTva.deletedAt)))
       .returning();
     return row;

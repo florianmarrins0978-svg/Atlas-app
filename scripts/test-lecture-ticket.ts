@@ -126,5 +126,16 @@ cas("chaque champ manquant est nommé dans la réserve, pas résumé", () => {
   assert.ok(/TVA/.test(reserve) && /fournisseur/.test(reserve) && /date/.test(reserve), reserve);
 });
 
+// La nature n'est qu'une PROPOSITION (13 octobre 2026) : il la confirme. Une
+// valeur hors de la liste est une invention du modèle, et ne coche rien.
+cas("la nature lue se propose, une nature inventée ne coche rien", () => {
+  const lu = lireReponseTicket(`{"fournisseur":"Total","tva":16,"nature":"carburant"}`);
+  assert.equal(lu.ok && lu.ticket.nature, "carburant");
+  const invente = lireReponseTicket(`{"fournisseur":"Total","tva":16,"nature":"essence"}`);
+  assert.equal(invente.ok && invente.ticket.nature, null);
+  const absent = lireReponseTicket(`{"fournisseur":"Total","tva":16}`);
+  assert.equal(absent.ok && absent.ticket.nature, null);
+});
+
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Lecture d'un ticket — ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);

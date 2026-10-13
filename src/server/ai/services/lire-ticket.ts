@@ -1,6 +1,6 @@
 import { getFournisseurLLM } from "../providers/llm/fabrique";
 import { METIER_ATLAS_COURT } from "../../../lib/metier-atlas";
-import { tvaDepuisTtc } from "@/lib/achat-tva";
+import { estNatureAchat, tvaDepuisTtc, type NatureAchat } from "@/lib/achat-tva";
 
 /**
  * Lire un ticket de caisse photographié.
@@ -34,6 +34,10 @@ export type TicketLu = {
   totalTtc: number | null;
   tauxTva: number | null;
   tvaDeductible: number | null;
+  /** Ce qu'est l'achat, PROPOSÉ : la puce arrive cochée, il la change d'un
+   *  doigt. `null` si la lecture ne sait pas ; aucune puce n'est alors
+   *  cochée à sa place. */
+  nature: NatureAchat | null;
   /** Ce que la lecture n'a pas su faire, dit en français au patron. */
   reserve: string | null;
 };
@@ -47,7 +51,8 @@ const SYSTEME = `${METIER_ATLAS_COURT}
 Tu lis ses tickets de caisse et ses factures d'achat.
 Tu réponds UNIQUEMENT par un objet JSON, sans phrase avant ni après, sans balises de code.
 Champs attendus : fournisseur (string|null), date (string|null au format AAAA-MM-JJ),
-total_ttc (number|null), taux_tva (number|null, en pour-cent), tva (number|null).
+total_ttc (number|null), taux_tva (number|null, en pour-cent), tva (number|null),
+nature (string|null) : "carburant", "materiel", "repas", "hotel", "transport" (train, taxi, avion) ou "autre".
 Règles :
 - Tu ne DEVINES jamais. Un champ illisible vaut null.
 - « tva » est le montant de TVA écrit sur le ticket. S'il n'y figure pas, rends null : ne le calcule pas.
@@ -144,6 +149,9 @@ export function lireReponseTicket(texte: string): ResultatLecture {
       totalTtc,
       tauxTva,
       tvaDeductible: tva,
+      // Une nature hors de la liste est une invention : elle retombe à null,
+      // et il choisit lui-même.
+      nature: estNatureAchat(chaine(brut.nature)) ? (chaine(brut.nature) as NatureAchat) : null,
       reserve: reserves.length === 0 ? null : `${reserves.join(", ")}. Vérifiez avant d’ajouter.`,
     },
   };

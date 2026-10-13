@@ -51,9 +51,9 @@ const SORTIE = process.argv[2] ?? "/tmp/captures-tva";
 
 /** Ses achats, tels qu'il les scanne : une station, un fournisseur, une jardinerie. */
 const ACHATS = [
-  { fournisseur: "Aqua Plus", totalTtc: 612.4, tva: 102.07, saisie: "scan" as const, jour: 6 },
-  { fournisseur: "TotalEnergies", totalTtc: 96.0, tva: 16.0, saisie: "scan" as const, jour: 14 },
-  { fournisseur: "Pépinière Marnier", totalTtc: 770.58, tva: 128.43, saisie: "main" as const, jour: 21 },
+  { fournisseur: "Aqua Plus", totalTtc: 612.4, tva: 102.07, saisie: "scan" as const, jour: 6, nature: "materiel" as const },
+  { fournisseur: "TotalEnergies", totalTtc: 96.0, tva: 16.0, saisie: "scan" as const, jour: 14, nature: "carburant" as const },
+  { fournisseur: "Pépinière Marnier", totalTtc: 770.58, tva: 128.43, saisie: "main" as const, jour: 21, nature: "materiel" as const },
 ];
 
 /** Le jour N de la période donnée, en ISO. */
@@ -110,7 +110,9 @@ async function poserLeDecor() {
         fournisseur: a.fournisseur,
         totalTtc: a.totalTtc,
         tauxTva: 20,
-        tvaDeductible: a.tva,
+        tvaTicket: a.tva,
+        nature: a.nature,
+        vehicule: a.nature === "carburant" ? "utilitaire" : null,
         saisie: a.saisie,
       });
     }
@@ -122,7 +124,8 @@ async function poserLeDecor() {
       fournisseur: "Husqvarna Lyon",
       totalTtc: 5340.0,
       tauxTva: 20,
-      tvaDeductible: 890.0,
+      tvaTicket: 890.0,
+      nature: "materiel",
       saisie: "scan",
     });
 
