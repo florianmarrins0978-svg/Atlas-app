@@ -75,7 +75,12 @@ export default function ReglagesClient({ initialTarifs }: { initialTarifs: Tarif
           Aucun tarif pour l&apos;instant.
         </p>
       ) : (
-        <ul className="overflow-hidden rounded-[16px]" style={{ backgroundColor: colors.card }}>
+        // **`overflow-clip`, pas `overflow-hidden`** : les deux arrondissent les
+        // coins, mais `hidden` fait de la liste une zone de défilement à part
+        // entière. Le navigateur la faisait alors défiler d'abord, et la marge
+        // qui garde « Fermer » au-dessus de la barre basse se perdait : la ligne
+        // ouverte s'arrêtait sous la barre, intouchable (13 octobre 2026).
+        <ul className="overflow-clip rounded-[16px]" style={{ backgroundColor: colors.card }}>
           {tarifsVisibles.map((t, i) => {
             const libelle = t.intitule ? `le tarif « ${t.intitule} »` : "ce tarif";
             return (

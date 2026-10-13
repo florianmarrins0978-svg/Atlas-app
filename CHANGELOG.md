@@ -38,6 +38,13 @@ Format : le plus récent en tête.
   (« accès à tout », 13 août). Éprouvé rouge puis vert : `test-retour-intervention.ts`,
   `test-retour-intervention-db.ts`.
 
+- **« Fermer » ne passe plus sous la barre du bas quand on ajoute un tarif.** La liste de Mes tarifs
+  arrondissait ses coins avec `overflow-hidden`, qui en fait une zone de défilement à part entière :
+  le navigateur la faisait défiler d'abord, et la marge qui garde la ligne ouverte au-dessus de la
+  barre se perdait. Le bas de la ligne s'arrêtait au bord de l'écran, sous la barre, intouchable.
+  `overflow-clip` arrondit de la même façon sans créer de zone de défilement. Le défaut faisait
+  rougir `test-unite-tarif-e2e` sur `main` ; il est vert, et la capture à 390 × 664 le confirme.
+
 - **La facturation change la durée et l'équipe d'un chantier tant qu'il n'est pas posé au
   planning, plus après (sa décision « A » du 13 octobre).** La durée sert à deux choses : chiffrer
   la main-d'œuvre du devis, que la facturation rédige, et réserver des jours au planning, qu'elle
