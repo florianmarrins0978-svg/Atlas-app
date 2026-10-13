@@ -1241,7 +1241,7 @@ export const lignesPrix = pgTable(
     prixAncien: numeric("prix_ancien", { precision: 10, scale: 2 }),
     prixGrille: numeric("prix_grille", { precision: 10, scale: 2 }),
     /**
-     * Une ligne de main d'œuvre (migration 0129) : « + Main d'œuvre » dans sa
+     * Une ligne de main d'œuvre (migration 0130) : « + Main d'œuvre » dans sa
      * catégorie de TVA, sa demande du 13 octobre 2026. Elle s'additionne comme
      * les autres ; le drapeau ne sert qu'à faire la somme « dont main d'œuvre
      * HT », que le libellé ne peut pas porter : il le change au doigt.
@@ -1559,7 +1559,7 @@ export const lignesDevis = pgTable(
      * validité. Nul sur les devis d'avant : ils suivent `devis.tauxTva`.
      */
     tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
-    /** Recopié de la ligne de prix (migration 0129), comme le taux. */
+    /** Recopié de la ligne de prix (migration 0130), comme le taux. */
     mainDoeuvre: boolean("main_doeuvre").notNull().default(false),
     ordre: integer("ordre").notNull().default(0),
   },

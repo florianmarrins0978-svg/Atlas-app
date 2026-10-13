@@ -12,7 +12,7 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 ---
 ## LA MAIN D'ŒUVRE QUI S'ADDITIONNE : 13 octobre 2026, PAS ENCORE SUR `main`
 
-Branche `lot/main-doeuvre-par-tva`, dossier `atlas-app-lot-mo`, migration 0129.
+Branche `lot/main-doeuvre-par-tva`, dossier `atlas-app-lot-mo`, migration 0130.
 Avant de toucher la main d'œuvre du devis (`ARCHITECTURE.md` §459) :
 
 - **c'est une LIGNE** (drapeau `main_doeuvre`), jamais un montant d'en-tête ;

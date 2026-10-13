@@ -34671,7 +34671,7 @@ retrait, déplacement de catégorie : tout ce qui sait déjà porter une ligne l
 porte, sans un calcul de plus. L'écrire en en-tête aurait demandé une TVA par
 taux à part, et une seconde règle de totaux.
 
-**Le drapeau `main_doeuvre` (migration 0129) ne sert qu'à la reconnaître.**
+**Le drapeau `main_doeuvre` (migration 0130) ne sert qu'à la reconnaître.**
 Le libellé ne peut pas : il le change au doigt (« Main d'œuvre plantation »),
 et une ligne ordinaire peut s'appeler « Main d'œuvre ». Il descend de
 `lignes_prix` à `lignes_devis` comme le taux.

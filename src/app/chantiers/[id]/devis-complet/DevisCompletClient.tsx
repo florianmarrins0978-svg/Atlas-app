@@ -125,7 +125,7 @@ type Ligne = {
   prixAncien?: string | null;
   /** Le tarif du jour, quand il diffère de l'ancien prix (migration 0106). */
   prixGrille?: string | null;
-  /** Une ligne de main d'œuvre (migration 0129) : elle se dit en un montant. */
+  /** Une ligne de main d'œuvre (migration 0130) : elle se dit en un montant. */
   mainDoeuvre?: boolean | null;
 };
 

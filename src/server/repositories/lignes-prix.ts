@@ -66,7 +66,7 @@ export async function ajouterLignePrix(
     /** Une ligne reprise (migration 0106) : son prix sur l'ancien devis, et le tarif du jour s'il diffère. */
     prixAncien?: string | null;
     prixGrille?: string | null;
-    /** Une ligne de main d'œuvre (migration 0129) : « + Main d'œuvre » dans sa catégorie. */
+    /** Une ligne de main d'œuvre (migration 0130) : « + Main d'œuvre » dans sa catégorie. */
     mainDoeuvre?: boolean;
   }
 ) {

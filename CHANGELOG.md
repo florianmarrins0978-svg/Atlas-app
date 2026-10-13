@@ -16,7 +16,7 @@ Format : le plus récent en tête.
   doigt arrive dans son montant. « dont main d'œuvre HT » ne se tape plus sur le devis : c'est la
   somme de ces lignes (`mainDoeuvreDesLignes`, la même fonction pour l'écran et le dépôt). Ce
   que ça évite : une main d'œuvre glissée dans le prix d'une autre ligne, et une TVA fausse quand
-  elle ne relève pas du taux de cette ligne-là. **Migration 0129** (`main_doeuvre` sur
+  elle ne relève pas du taux de cette ligne-là. **Migration 0130** (`main_doeuvre` sur
   `lignes_prix` et `lignes_devis`, étendre seulement). La facture ne change pas : elle reprend
   le « dont » du devis et la page « Remplir la facture » le saisit encore. `ARCHITECTURE.md` §459.
 
