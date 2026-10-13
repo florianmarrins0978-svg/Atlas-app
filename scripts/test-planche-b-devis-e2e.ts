@@ -101,6 +101,19 @@ async function main() {
       await page.keyboard.press("Tab");
       await page.waitForTimeout(400);
     }
+    // **La base doit porter les deux prix AVANT de recharger** (batterie commune
+    // du 13 octobre 2026). Le prix part à la sortie du champ, à la suite de la
+    // création de la ligne ; rechargé 400 ms après, l'écran lisait encore le
+    // gazon à zéro, et le total montrait 880 au lieu de 1 660 — alors que le
+    // rechargement suivant, lui, était juste.
+    for (const essai of [0, 1, 2, 3, 4, 5, 6, 7]) {
+      const { rows } = await pool.query(
+        `SELECT count(*)::int AS n FROM lignes_prix WHERE chantier_id = $1 AND montant > 0`,
+        [chantierId]
+      );
+      if (rows[0].n === 2) break;
+      await page.waitForTimeout(400 * (essai + 1));
+    }
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
 
     const totaux = () => page.locator("section").filter({ hasText: "Total TTC" }).last();

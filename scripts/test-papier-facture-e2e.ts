@@ -94,7 +94,8 @@ async function main() {
     await pool.query(
       `UPDATE lignes_prix SET quantite = CASE libelle WHEN 'Fourniture de gazon en rouleau' THEN 120 WHEN 'Bordures acier corten' THEN 24 ELSE 1 END,
          prix_unitaire = CASE libelle WHEN 'Fourniture de gazon en rouleau' THEN 6.50 WHEN 'Bordures acier corten' THEN 18 ELSE 380 END,
-         unite = CASE libelle WHEN 'Fourniture de gazon en rouleau' THEN 'm²' WHEN 'Bordures acier corten' THEN 'ml' ELSE 'forfait' END
+         unite = CASE libelle WHEN 'Fourniture de gazon en rouleau' THEN 'm²' WHEN 'Bordures acier corten' THEN 'ml' ELSE 'forfait' END,
+         main_doeuvre = (libelle = 'Terrassement et préparation du sol')
        WHERE chantier_id = $1`,
       [chantierId]
     );
@@ -110,22 +111,23 @@ async function main() {
       assert.ok((await page.locator('input[aria-label^="Unité"]').count()) >= 1, "la colonne Unité manque au devis");
     });
 
-    await cas("le titre tapé sur le devis part en base, et la main d'œuvre aussi", async () => {
+    // **« dont main d'œuvre HT » ne se tape plus sur le devis** — sa réponse A
+    // du 13 octobre 2026 : c'est la somme des lignes de main d'œuvre. Le
+    // terrassement en est une (posé en base ci-dessus) : 380 €, et les totaux
+    // de toute la suite ne bougent pas. Le geste lui-même est éprouvé par
+    // `test-planche-b-devis-e2e`.
+    await cas("le titre tapé sur le devis part en base, et « dont » suit sa ligne de main d'œuvre", async () => {
       const titre = page.locator('[data-atlas="titre-devis"]');
       await titre.fill("Aménagement du jardin");
-      await page.keyboard.press("Tab");
-      await page.click('[data-atlas="poser-main-doeuvre"]');
-      const mo = page.locator('[data-atlas="montant-main-doeuvre"]');
-      await mo.fill("450");
       await page.keyboard.press("Tab");
       let lu: { titre: string | null; mo: string | null } | undefined;
       for (const essai of [0, 1, 2, 3, 4, 5]) {
         if (essai > 0) await new Promise((r) => setTimeout(r, essai * 500));
         const { rows } = await pool.query(`SELECT titre, main_doeuvre_ht AS mo FROM devis WHERE chantier_id = $1 ORDER BY numero_version DESC LIMIT 1`, [chantierId]);
         lu = rows[0];
-        if (lu?.titre === "Aménagement du jardin" && lu?.mo === "450.00") break;
+        if (lu?.titre === "Aménagement du jardin" && lu?.mo === "380.00") break;
       }
-      assert.deepEqual(lu, { titre: "Aménagement du jardin", mo: "450.00" });
+      assert.deepEqual(lu, { titre: "Aménagement du jardin", mo: "380.00" });
       await page.screenshot({ path: `${CAPTURES}/papier-devis-ecran.png`, fullPage: true });
     });
 
@@ -150,7 +152,7 @@ async function main() {
     // (`CLAUDE.md` §5 bis : on adapte le contrôle, on ne remet pas l'écran).
     await cas("la facture LIT le titre, la main d'œuvre et le net — elle ne les saisit plus", async () => {
       assert.equal(await page.locator('[data-atlas="titre-facture"]').inputValue(), "Aménagement du jardin");
-      assert.equal(await page.locator('[data-atlas="montant-main-doeuvre"]').inputValue(), "450");
+      assert.equal(await page.locator('[data-atlas="montant-main-doeuvre"]').inputValue(), "380");
       assert.equal(await page.locator('[data-atlas="poser-main-doeuvre"]').count(), 0, "« + Main d’œuvre » est resté sur la facture");
       assert.equal(await page.locator('[data-atlas="poser-reglement"]').count(), 0, "« + Règlement reçu » est resté sur la facture");
       const net = lisible(await page.locator('[data-atlas="net-a-payer"]').innerText());
