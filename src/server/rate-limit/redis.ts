@@ -7,8 +7,38 @@ import type { MagasinLimite, ResultatLimite } from "./types";
 export class MagasinLimiteRedis implements MagasinLimite {
   private client: Redis;
 
+  /** Vrai entre la première erreur d'une panne et le retour du service : une panne ne s'écrit qu'une fois. */
+  private enPanne = false;
+
   constructor(url: string) {
     this.client = new Redis(url, { lazyConnect: true, maxRetriesPerRequest: 1 });
+    // **Sans écouteur, chaque tentative de reconnexion ratée s'imprimait** :
+    // « [ioredis] Unhandled error event », des dizaines de fois par minute de
+    // panne, au point de noyer le journal qu'on lit justement à ce moment-là.
+    this.client.on("error", (erreur) => {
+      if (this.enPanne) return;
+      this.enPanne = true;
+      console.error("[limite] Redis ne répond plus ; le limiteur compte en mémoire jusqu'à son retour.", erreur.message);
+    });
+    this.client.on("ready", () => {
+      this.enPanne = false;
+    });
+  }
+
+  /**
+   * **Pendant une panne, on n'attend pas Redis : on échoue tout de suite.**
+   * Payé le 13 octobre 2026. Chaque commande attendait la tentative de
+   * reconnexion suivante, de plus en plus espacée, et la connexion d'un artisan
+   * montait à 5 puis 8 secondes pendant la panne, alors que `verifierLimite`
+   * sait déjà compter en mémoire quand le magasin échoue. Seule la toute
+   * première connexion (`wait`, `connecting`) peut encore faire patienter : elle
+   * ne dure que le temps d'ouvrir la socket.
+   */
+  private exigerDisponible(): void {
+    const { status } = this.client;
+    if (status === "reconnecting" || status === "close" || status === "end") {
+      throw new Error(`Redis indisponible (${status})`);
+    }
   }
 
   async fermer(): Promise<void> {
@@ -23,6 +53,7 @@ export class MagasinLimiteRedis implements MagasinLimite {
    * pas au dernier.
    */
   async rendre(cle: string): Promise<void> {
+    this.exigerDisponible();
     await this.client.eval(
       `if redis.call('EXISTS', KEYS[1]) == 1 then
          local n = redis.call('DECR', KEYS[1])
@@ -35,6 +66,7 @@ export class MagasinLimiteRedis implements MagasinLimite {
   }
 
   async verifierEtIncrementer(cle: string, max: number, fenetreMs: number): Promise<ResultatLimite> {
+    this.exigerDisponible();
     const cleRedis = `ratelimit:${cle}`;
     const compte = await this.client.incr(cleRedis);
     if (compte === 1) {

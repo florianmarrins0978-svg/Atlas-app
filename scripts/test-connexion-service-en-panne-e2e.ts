@@ -122,8 +122,14 @@ async function main() {
         "    Le dire plutôt que de le taire — c'est le cas qui a coûté sa soirée au patron."
     );
   } else {
+    // **`setsid` : la base relancée ne doit rien devoir à ce contrôle.** Rallumée
+    // depuis son processus, elle restait dans son groupe ; quand la batterie
+    // finissait et que ses processus étaient nettoyés, PostgreSQL partait avec
+    // eux, et la batterie suivante échouait tout entière sur « connect
+    // ECONNREFUSED » (deux fois le 13 octobre 2026).
     const pg = (action: string) =>
-      execFileSync("su", [
+      execFileSync("setsid", [
+        "su",
         "postgres",
         "-c",
         `${BIN}/pg_ctl -D ${PGDATA} -o '-p 5432 -c listen_addresses=localhost' -l ${PGDATA}/log ${action}`,

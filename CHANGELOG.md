@@ -8,6 +8,21 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-13
 
+- **Redis en panne ne fait plus attendre la connexion.** Mesuré dans le vrai serveur : 0,7 seconde
+  Redis debout, 5,4 puis 7,8 secondes Redis coupé, de plus en plus. Le client Redis du limiteur
+  mettait chaque vérification en file jusqu'à sa tentative de reconnexion suivante, de plus en plus
+  espacée, alors que `verifierLimite` sait déjà compter en mémoire quand le magasin échoue. Pendant
+  une reconnexion, `MagasinLimiteRedis` échoue désormais tout de suite, et la bascule en mémoire est
+  immédiate. Chaque tentative ratée imprimait aussi « [ioredis] Unhandled error event », des
+  dizaines de fois par minute de panne : la panne ne s'écrit plus qu'une fois. Éprouvé rouge puis
+  vert : `test-rate-limit-redis-real.ts` (un port fermé, sans couper le Redis des autres suites), et
+  `test-connexion-service-en-panne-e2e`, qui rougissait sur `main`, est vert.
+- **La batterie ne laisse plus la base de test à terre.** `test-connexion-service-en-panne-e2e`
+  arrête PostgreSQL pour éprouver l'écran, puis le relançait depuis son propre processus : quand la
+  batterie finissait et que ses processus étaient nettoyés, la base partait avec eux, et la batterie
+  suivante tombait tout entière sur « connect ECONNREFUSED » (deux fois le 13 octobre). Elle se
+  relance désormais détachée (`setsid`).
+
 - **Les retours d'intervention passés au crible, après la fiche de sécurité : deux trous fermés.**
   1. **Ce que la fiche d'intervention envoie n'était pas vérifié.** Une tâche dont le texte n'est pas
      un texte faisait tomber l'écriture, un « à signaler » de plusieurs mégaoctets entrait en base, un

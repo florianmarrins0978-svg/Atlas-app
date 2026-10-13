@@ -119,6 +119,28 @@ async function main() {
     );
   });
 
+  // **Redis tombé : le magasin échoue VITE, il ne fait pas attendre.** Payé le
+  // 13 octobre 2026 : chaque commande attendait la tentative de reconnexion
+  // suivante, de plus en plus espacée, et la connexion d'un artisan montait à
+  // 5 puis 8 secondes pendant la panne. Le limiteur bascule déjà sur le
+  // compteur en mémoire quand le magasin échoue ; encore faut-il qu'il échoue
+  // tout de suite. Un port fermé suffit à l'éprouver, sans couper le Redis des
+  // autres suites.
+  await test("Redis injoignable : chaque vérification échoue en moins de 200 ms, même après des secondes de panne", async () => {
+    const injoignable = new MagasinLimiteRedis("redis://127.0.0.1:1");
+    try {
+      await new Promise((r) => setTimeout(r, 3_000));
+      for (let i = 0; i < 3; i++) {
+        const debut = Date.now();
+        await assert.rejects(() => injoignable.verifierEtIncrementer(`panne-${i}`, 5, 60_000));
+        const duree = Date.now() - debut;
+        assert.ok(duree < 200, `la vérification ${i + 1} a attendu ${duree} ms un Redis absent`);
+      }
+    } finally {
+      await injoignable.fermer().catch(() => undefined);
+    }
+  });
+
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);
   await magasin.fermer();
   if (failed > 0) process.exit(1);
