@@ -30,15 +30,29 @@
     · la TVA du ticket ET la part récupérée, distinctes ;
     · la liste : tout est noté, seul le récupéré entre au total.
 
-  LE POINT À TRANCHER, ET IL EST DANS LA BARRE DU HAUT.
+  TRANCHÉ LE 13 OCTOBRE 2026.
 
-  Il a dit « VP, ça ne compte pas la TVA ». La loi dit 80 % pour le carburant
-  d'une voiture de tourisme (alignement essence/gazole achevé en 2022). Ne rien
-  compter est prudent mais lui fait perdre 80 % de cette TVA. Les deux se
-  regardent ici ; c'est lui qui choisit.
+  · Voiture : 80 %, comme la loi. Il avait d'abord dit « rien » ; expliqué
+    sur un plein de 60 € (10 € de TVA, 8 € rendus), il a retenu 80 %. Le bouton
+    Voiture se propose à CHAQUE ticket, Utilitaire coché d'avance.
+  · Repas : Perso coché d'avance, « D'affaires » à côté. Oui.
 
-  Repas : « Affaires » ou « Perso », Perso coché d'avance par prudence. Il n'a
-  pas encore répondu sur ce point ; à confirmer.
+  LE REPAS D'AFFAIRES NE COMPTE QUE SI LA PREUVE EST LÀ. Sa consigne : « je veux
+  qu'on ne puisse pas nous reprocher quoi que ce soit ». Ce que la règle exige
+  (BOI-TVA-DECLA-30-20-20, art. 242 nonies A ann. II CGI) :
+
+    · jusqu'à 150 € HT, une note de restaurant suffit SI le client y écrit le
+      nom et l'adresse de son entreprise dans l'espace prévu ;
+    · au-delà, une facture au nom de l'entreprise, complète ;
+    · et, pour un contrôle, avec qui et pourquoi.
+
+  Donc trois cases : avec qui, pourquoi, et la coche qui correspond au montant.
+  Tant qu'il en manque une, l'achat est NOTÉ mais sa TVA ne compte pas, et la
+  feuille dit ce qui manque. Le seuil se lit sur le HT : 150 € HT font 165 € TTC
+  à 10 %.
+
+  Non retenus faute de texte officiel lu : l'alcool, le repas pris seul. À son
+  comptable.
 
   AUCUNE LIGNE DE L'APPLICATION N'A BOUGÉ (`CLAUDE.md` §3 bis). La feuille est
   recopiée de `src/app/termines/tva/AchatsTva.tsx`, la liste de `page.tsx`, les
@@ -131,6 +145,11 @@ body.nuit .deux button[aria-pressed="true"]{color:#101210}
 .deux button[aria-pressed="false"] svg{display:none}
 [hidden]{display:none!important}
 
+#preuves{display:flex;flex-direction:column;gap:1px}
+.coche{display:flex;align-items:flex-start;gap:12px;padding:13px 15px;background:var(--carte);
+       font-size:13.5px;line-height:1.4;color:var(--encre);cursor:pointer;min-height:50px}
+.coche input{flex:0 0 auto;width:20px;height:20px;margin:0;accent-color:var(--plein)}
+
 .mot{margin:10px 0 0;border-radius:12px;padding:12px 14px;font-size:12.5px;line-height:1.5}
 .mot.or{background:rgba(185,139,71,.11);color:var(--or)}
 .mot.gris{background:var(--papier);color:var(--encre-douce)}
@@ -185,12 +204,9 @@ body.nuit .ajouter{color:#101210}
 
 <div class="etats">
   <div class="groupe">
-    <span class="quoi">Carburant d'une voiture</span>
-    <button type="button" data-vp="80" aria-pressed="true">80 % récupérés, la loi</button>
-    <button type="button" data-vp="0" aria-pressed="false">Rien, par prudence</button>
-  </div>
-  <div class="groupe">
-    <span class="quoi">Affichage</span>
+    <span class="quoi">Essayer</span>
+    <button type="button" id="voirCarburant" aria-pressed="true">Un plein</button>
+    <button type="button" id="voirRepas" aria-pressed="false">Un repas d'affaires</button>
     <button type="button" id="jourNuit" aria-pressed="false">Mode nuit</button>
   </div>
 </div>
@@ -241,6 +257,17 @@ body.nuit .ajouter{color:#101210}
               </div>
             </div>
 
+            <div id="preuves" hidden>
+              <label class="l"><span class="lib">Avec qui</span>
+                <input id="avecQui" placeholder="M. Durand, Durand Immobilier"></label>
+              <label class="l"><span class="lib">Pourquoi</span>
+                <input id="pourquoi" placeholder="Devis du jardin"></label>
+              <label class="coche">
+                <input type="checkbox" id="cochePreuve">
+                <span id="libPreuve">Le nom et l'adresse de mon entreprise sont écrits sur la note.</span>
+              </label>
+            </div>
+
             <label class="l"><span class="lib">Total payé</span>
               <input id="ttc" inputmode="decimal" value="78,00 €"></label>
             <label class="l"><span class="lib">Taux</span>
@@ -275,19 +302,19 @@ body.nuit .ajouter{color:#101210}
           </li>
           <li class="achat">
             <p class="f">Point.P Lunel</p>
-            <p class="d">9 oct. Matériel</p>
+            <p class="d">9 oct. Matériel.</p>
             <p class="paire"><span class="q">Montant</span><span class="c">240,00 € TTC</span></p>
             <p class="paire tva"><span class="q">TVA récupérée</span><span class="c">40,00 €</span></p>
           </li>
           <li class="achat">
             <p class="f">Ibis Montpellier Sud</p>
-            <p class="d">7 oct. Hôtel</p>
+            <p class="d">7 oct. Hôtel.</p>
             <p class="paire"><span class="q">Montant</span><span class="c">89,00 € TTC</span></p>
             <p class="paire non"><span class="q">TVA 8,09 €</span><span class="c">Non récupérable</span></p>
           </li>
           <li class="achat">
             <p class="f">Esso Castelnau</p>
-            <p class="d">2 oct. Carburant, voiture</p>
+            <p class="d">2 oct. Carburant, voiture.</p>
             <p class="paire"><span class="q">Montant</span><span class="c">60,00 € TTC</span></p>
             <p class="paire tva" id="essoPaire"><span class="q">TVA récupérée</span><span class="c" id="essoTva">8,00 €</span></p>
           </li>
@@ -313,12 +340,16 @@ body.nuit .ajouter{color:#101210}
 </div>
 
 <div class="note">
-  <span class="t">À choisir</span>
-  <b>Le carburant d'une voiture</b> : 80 % comme la loi, ou rien. La barre du
-  haut montre les deux.<br>
-  <b>Le repas</b> : Perso est coché d'avance, par prudence. D'affaires si le
-  repas est avec un client, et la note doit alors porter son nom.<br>
-  <b>Autre</b> compte la TVA entière, comme aujourd'hui.
+  <span class="t">Le repas d'affaires, pour qu'on ne puisse rien vous reprocher</span>
+  Sa TVA ne compte que si les trois preuves sont là : <b>avec qui</b>,
+  <b>pourquoi</b>, et le justificatif. Jusqu'à 150 € HT, la note du restaurant
+  suffit si vous y écrivez le nom et l'adresse de votre entreprise. Au delà, il
+  faut une facture au nom de votre entreprise. Sans les trois, le repas est noté
+  mais sa TVA ne compte pas.<br><br>
+  <b>Tranché le 13 octobre</b> : la voiture récupère 80 %, Utilitaire est coché
+  d'avance à chaque plein. Perso est coché d'avance pour un repas.
+  <b>Autre</b> compte la TVA entière, comme aujourd'hui.<br>
+  <b>À demander à votre comptable</b> : l'alcool et le repas pris seul.
 </div>
 
 <script>
@@ -333,18 +364,48 @@ const NOMS = { carburant: "Carburant", materiel: "Matériel", repas: "Repas", ho
 
 function part() {
   if (etat.cat === "carburant") return etat.veh === "vu" ? 1 : etat.vp;
-  if (etat.cat === "repas") return etat.repas === "affaires" ? 1 : 0;
+  if (etat.cat === "repas") return etat.repas === "affaires" && manques().length === 0 ? 1 : 0;
   if (etat.cat === "hotel" || etat.cat === "transport") return 0;
   return 1;
+}
+
+/** Au delà de 150 € HT, la note ne suffit plus : il faut une vraie facture. */
+function horsTaxe() {
+  const ttc = nombre($("ttc").value), taux = nombre($("taux").value);
+  return ttc === null || !(taux > 0) ? null : ttc / (1 + taux / 100);
+}
+function factureExigee() { const ht = horsTaxe(); return ht !== null && ht > 150; }
+
+/** Ce qui manque pour qu'un repas d'affaires compte. Vide : il compte. */
+function manques() {
+  const m = [];
+  if (!$("avecQui").value.trim()) m.push("avec qui");
+  if (!$("pourquoi").value.trim()) m.push("pourquoi");
+  if (!$("cochePreuve").checked) m.push(factureExigee() ? "la facture" : "le nom de l'entreprise sur la note");
+  return m;
+}
+function enPhrase(liste) {
+  return liste.length < 2 ? liste.join("") : liste.slice(0, -1).join(", ") + " et " + liste[liste.length - 1];
 }
 
 function rendre() {
   document.querySelectorAll(".puce").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.cat === etat.cat)));
   document.querySelectorAll("[data-veh]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.veh === etat.veh)));
   document.querySelectorAll("[data-repas]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.repas === etat.repas)));
-  document.querySelectorAll("[data-vp]").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.vp) / 100 === etat.vp)));
+  $("voirCarburant").setAttribute("aria-pressed", String(etat.cat === "carburant"));
+  $("voirRepas").setAttribute("aria-pressed", String(etat.cat === "repas" && etat.repas === "affaires"));
   $("choixVehicule").hidden = etat.cat !== "carburant";
   $("choixRepas").hidden = etat.cat !== "repas";
+  const affaires = etat.cat === "repas" && etat.repas === "affaires";
+  $("preuves").hidden = !affaires;
+
+  // Le seuil change la pièce exigée : la coche d'avant ne vaut plus pour la
+  // nouvelle, elle se décoche.
+  const exigee = factureExigee();
+  if (etat.facture !== exigee) { etat.facture = exigee; $("cochePreuve").checked = false; }
+  $("libPreuve").textContent = exigee
+    ? "J'ai une facture au nom de mon entreprise. Au delà de 150 € HT, la note ne suffit pas."
+    : "Le nom et l'adresse de mon entreprise sont écrits sur la note.";
 
   const ttc = nombre($("ttc").value), taux = nombre($("taux").value);
   const tva = ttc !== null && taux > 0 ? Math.round((ttc - ttc / (1 + taux / 100)) * 100) / 100 : null;
@@ -352,11 +413,18 @@ function rendre() {
   const recup = tva === null ? null : Math.round(tva * p * 100) / 100;
 
   $("tvaTicket").textContent = tva === null ? "" : euros(tva);
-  $("tvaRecup").textContent = p === 0 ? "Non récupérable" : recup === null ? "" : euros(recup);
+  const enAttente = affaires && manques().length > 0;
+  $("tvaRecup").textContent = enAttente ? "Pas encore" : p === 0 ? "Non récupérable" : recup === null ? "" : euros(recup);
   $("ligneRecup").classList.toggle("zero", p === 0);
 
   const mot = $("motPart");
-  if (p === 0) { mot.hidden = false; mot.textContent = "Noté, mais pas compté dans la TVA déductible."; }
+  const manque = affaires ? manques() : [];
+  if (manque.length) {
+    const t = enPhrase(manque);
+    mot.hidden = false;
+    mot.textContent = "Il manque " + t + ". Le repas est noté, sa TVA ne compte pas encore.";
+  }
+  else if (p === 0) { mot.hidden = false; mot.textContent = "Noté, mais pas compté dans la TVA déductible."; }
   else if (p < 1) { mot.hidden = false; mot.textContent = "Voiture : 80 % de la TVA du carburant."; }
   else mot.hidden = true;
 
@@ -365,9 +433,13 @@ function rendre() {
   let quoi = NOMS[etat.cat];
   if (etat.cat === "carburant") quoi += etat.veh === "vu" ? ", utilitaire" : ", voiture";
   if (etat.cat === "repas") quoi += etat.repas === "affaires" ? " d'affaires" : " perso";
+  if (affaires && $("avecQui").value.trim()) quoi += " avec " + $("avecQui").value.trim();
+  quoi += ".";
+  if (affaires && $("pourquoi").value.trim()) quoi += " " + $("pourquoi").value.trim() + ".";
   $("neufQuoi").textContent = "13 oct. " + quoi;
   $("neufTtc").textContent = ttc === null ? "" : euros(ttc) + " TTC";
   paire($("neufPaire"), $("neufTva"), tva, p);
+  if (enAttente) $("neufTva").textContent = "Pas encore";
 
   // L'Esso de la liste est une voiture : il suit le réglage du haut.
   paire($("essoPaire"), $("essoTva"), 10, etat.vp);
@@ -389,7 +461,8 @@ document.addEventListener("click", (e) => {
   if (b.dataset.cat) etat.cat = b.dataset.cat;
   else if (b.dataset.veh) etat.veh = b.dataset.veh;
   else if (b.dataset.repas) etat.repas = b.dataset.repas;
-  else if (b.dataset.vp) etat.vp = Number(b.dataset.vp) / 100;
+  else if (b.id === "voirCarburant") remplir("TotalEnergies Lunel", "78,00 €", "20", "carburant");
+  else if (b.id === "voirRepas") remplir("Le Petit Jardin, Lunel", "86,00 €", "10", "repas");
   else if (b.id === "jourNuit") {
     const nuit = document.body.classList.toggle("nuit");
     b.setAttribute("aria-pressed", String(nuit));
@@ -399,7 +472,14 @@ document.addEventListener("click", (e) => {
   neuf.classList.remove("neuf"); void neuf.offsetWidth; neuf.classList.add("neuf");
   rendre();
 });
-["ou", "ttc", "taux"].forEach((id) => $(id).addEventListener("input", rendre));
+/** Les deux essais de la barre du haut : un plein, ou un repas d'affaires vierge. */
+function remplir(ou, ttc, taux, cat) {
+  $("ou").value = ou; $("ttc").value = ttc; $("taux").value = taux;
+  etat.cat = cat; etat.veh = "vu"; etat.repas = cat === "repas" ? "affaires" : "perso";
+  $("avecQui").value = ""; $("pourquoi").value = ""; $("cochePreuve").checked = false;
+}
+["ou", "ttc", "taux", "avecQui", "pourquoi"].forEach((id) => $(id).addEventListener("input", rendre));
+$("cochePreuve").addEventListener("change", rendre);
 rendre();
 </script>
 </body>

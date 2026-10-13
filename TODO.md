@@ -1,5 +1,34 @@
 # Prochaines tâches
 
+## 🔜 LA TVA QUI NE SE RÉCUPÈRE PAS : PLANCHE POSÉE, SES CHOIX DONNÉS (13 octobre 2026)
+
+**Le défaut** : tout achat saisi dans « Ma TVA » entre EN ENTIER dans la TVA
+déductible (`src/lib/achat-tva.ts`, `achats_tva` n'a aucune nature). Un hôtel
+ou un repas perso fait donc baisser la TVA à payer, ce qui est faux.
+
+**Sa demande** : *« chaque entrée et chaque sortie doit être notée, mais si
+c'est une catégorie où il ne récupère pas la TVA, elle ne doit pas être
+comptabilisée »*. Planche : `appli/tva-ticket-carburant.html`.
+
+**Ce qu'il a tranché le 13 octobre 2026**, à ne pas lui redemander :
+
+| | |
+|---|---|
+| carburant | **Utilitaire coché d'avance à chaque ticket**, « Voiture (VP) » à côté. Pas de réglage dans Réglages, c'est sa demande |
+| voiture | **80 %**, comme la loi (essence et gazole alignés depuis 2022). Il avait dit « rien » en croyant que c'était la règle |
+| repas | « Perso » coché d'avance, « D'affaires » à côté |
+| repas d'affaires | sa consigne : *« qu'on ne puisse pas nous reprocher quoi que ce soit »*. Sa TVA ne compte qu'avec **avec qui, pourquoi**, et la coche « nom et adresse de l'entreprise écrits sur la note » (jusqu'à 150 € HT) ou « facture au nom de l'entreprise » (au delà). Sinon noté, pas compté |
+| hôtel, train, taxi, avion | notés, jamais comptés |
+
+**Pas tranché, à son comptable** : la TVA sur l'alcool, le repas pris seul, le
+gazole non routier des machines (aucun texte officiel lu).
+
+**À coder, niveau 3** (migration + argent, donc batterie, et on le prévient
+avant) : une colonne de nature et la TVA du ticket séparée de la part
+récupérée, en expand/contract ; les achats déjà saisis restent « non classés »
+et comptés comme avant ; la part vit dans UNE fonction de `src/lib/`, servie à
+l'écran et au total ; la lecture du ticket propose la nature, il confirme.
+
 ## 🔜 L'OUTIL DE COMPARAISON AVEC MAIN SE TROMPE SUR CE PC (11 octobre 2026)
 
 Trouvé en livrant le catalogue. Trois défauts d'outillage, aucun dans le produit :
