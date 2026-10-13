@@ -15,6 +15,7 @@ import {
   retourModifiable,
   retourDuJourAttendu,
   retoursPasRecus,
+  retourRecu,
   type RetourEnListe,
 } from "../src/lib/retour-intervention";
 
@@ -328,6 +329,45 @@ essai("un nom tapé passe par-dessus la date : tous les retours du client", () =
     assert.deepEqual(retoursPasRecus({ demande: true, travailles, retours: [], vus: vide, aujourdHui: "2026-09-01" }), []);
   });
 }
+
+// ─── CE QUE LE TÉLÉPHONE ENVOIE SE VÉRIFIE — 13 octobre 2026 ──────────────
+//
+// Trouvé en passant les retours au crible, après la fiche de sécurité : rien
+// ne vérifiait la forme ni la taille de ce qu'un appel fait à la main pouvait
+// poser. Une tâche sans texte valide faisait tomber l'écriture ; un « à
+// signaler » de plusieurs mégaoctets entrait en base.
+const PHOTO = "8f5c2a0e-1b2c-4d3e-9f40-123456789abc";
+
+essai("ce que la fiche d'intervention envoie passe tel quel", () => {
+  const r = retourRecu({ taches: [{ libelle: "Tonte", faite: true }], photoIds: [PHOTO], aSignaler: "Portail cassé" });
+  assert.ok(r.ok, r.ok ? "" : r.raison);
+  assert.deepEqual(r.retour.taches, [{ libelle: "Tonte", faite: true }]);
+  assert.equal(r.retour.aSignaler, "Portail cassé");
+  assert.ok(retourRecu({ taches: [], photoIds: [], aSignaler: null }).ok, "un retour vide doit passer : sa règle du 19 septembre");
+});
+
+essai("une forme fausse est refusée, avant d'atteindre la base", () => {
+  const fausses: unknown[] = [
+    null,
+    { taches: "tonte", photoIds: [], aSignaler: null },
+    { taches: [{ libelle: 42, faite: true }], photoIds: [], aSignaler: null },
+    { taches: [{ libelle: "Tonte", faite: "oui" }], photoIds: [], aSignaler: null },
+    { taches: [], photoIds: ["pas-un-identifiant"], aSignaler: null },
+    { taches: [], photoIds: "x", aSignaler: null },
+    { taches: [], photoIds: [], aSignaler: 12 },
+  ];
+  for (const f of fausses) assert.equal(retourRecu(f).ok, false, `accepté : ${JSON.stringify(f)}`);
+});
+
+essai("trop long est refusé : une tâche, la liste, le mot à signaler, les photos", () => {
+  const tropLongs: unknown[] = [
+    { taches: [{ libelle: "a".repeat(2_000), faite: false }], photoIds: [], aSignaler: null },
+    { taches: Array.from({ length: 1_000 }, (_, i) => ({ libelle: `t${i}`, faite: false })), photoIds: [], aSignaler: null },
+    { taches: [], photoIds: [], aSignaler: "a".repeat(10_000) },
+    { taches: [], photoIds: Array.from({ length: 50 }, () => PHOTO), aSignaler: null },
+  ];
+  for (const f of tropLongs) assert.equal(retourRecu(f).ok, false, "un envoi démesuré est passé");
+});
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Le retour d'intervention — ${echecs} échec(s).`);
 process.exit(echecs === 0 ? 0 : 1);

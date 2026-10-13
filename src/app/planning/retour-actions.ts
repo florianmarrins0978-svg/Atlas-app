@@ -15,8 +15,7 @@ import {
 } from "@/server/repositories/retours-intervention";
 import { tachesDuChantier } from "@/server/repositories/devis";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
-import type { TacheDuRetour } from "@/lib/retour-intervention";
-import { refusDesPhotosDuRetour } from "@/lib/photos-plafonds";
+import { retourRecu, type TacheDuRetour } from "@/lib/retour-intervention";
 
 /**
  * LE RETOUR D'INTERVENTION — les gestes du salarié, depuis le planning.
@@ -104,22 +103,19 @@ export async function poserLeRetourAction(
 ): Promise<{ ok: true; id: string } | Refus> {
   const ctx = await garder(chantierId, "poser un retour d'intervention");
 
-  // **Le seul plafond du retour : ses photos** (sa décision du 20 septembre
-  // 2026, `PHOTOS_MAX_PAR_RETOUR`). L'écran le tient déjà ; le serveur le
-  // retient, parce que l'écran n'est pas la seule porte.
-  const tropDePhotos = refusDesPhotosDuRetour(quoi.photoIds.length);
-  if (tropDePhotos) return { ok: false, raison: tropDePhotos };
+  // **Ce qui arrive se vérifie avant d'écrire** (`retourRecu`) : la forme, les
+  // tailles, et le plafond des photos (sa décision du 20 septembre 2026,
+  // `PHOTOS_MAX_PAR_RETOUR`). L'écran le tient déjà ; le serveur le retient,
+  // parce que l'écran n'est pas la seule porte.
+  const recu = retourRecu(quoi);
+  if (!recu.ok) return recu;
 
   // **Aucun refus sur ce qui manque — sa règle du 19 septembre 2026.** Le
   // retour du jour part avec ce qu'il a : sans photo, sans tout cocher. Ce que
   // le patron attend encore se lit sur la fiche (`ceQuiManque`), il ne ferme
   // plus la porte. Les gardes qui restent sont celles qui comptent : le rôle,
   // la portée du chantier, l'entreprise.
-  const retour = await poserLeRetour(ctx, chantierId, {
-    taches: quoi.taches,
-    photoIds: quoi.photoIds,
-    aSignaler: quoi.aSignaler,
-  });
+  const retour = await poserLeRetour(ctx, chantierId, recu.retour);
 
   revalidatePath("/planning");
   // Le patron le lit dans Terminés : sans cela il verrait la liste d'hier.
@@ -145,14 +141,10 @@ export async function modifierLeRetourAction(
 ): Promise<{ ok: true } | Refus> {
   const ctx = await garder(chantierId, "modifier un retour d'intervention");
 
-  const tropDePhotos = refusDesPhotosDuRetour(quoi.photoIds.length);
-  if (tropDePhotos) return { ok: false, raison: tropDePhotos };
+  const recu = retourRecu(quoi);
+  if (!recu.ok) return recu;
 
-  const fait = await modifierLeDernierRetour(ctx, chantierId, retourId, {
-    taches: quoi.taches,
-    photoIds: quoi.photoIds,
-    aSignaler: quoi.aSignaler,
-  });
+  const fait = await modifierLeDernierRetour(ctx, chantierId, retourId, recu.retour);
   // Un autre retour est parti entre-temps, ou le jour est passé (la page était
   // restée ouverte après minuit) : celui-ci est la preuve d'un jour fini.
   if (!fait) return { ok: false, raison: "Ce retour ne se modifie plus. Envoyez le retour du jour." };

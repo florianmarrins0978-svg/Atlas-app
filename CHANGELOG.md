@@ -8,6 +8,21 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-13
 
+- **Les retours d'intervention passés au crible, après la fiche de sécurité : deux trous fermés.**
+  1. **Ce que la fiche d'intervention envoie n'était pas vérifié.** Une tâche dont le texte n'est pas
+     un texte faisait tomber l'écriture, un « à signaler » de plusieurs mégaoctets entrait en base, un
+     identifiant de photo mal formé faisait échouer la requête. `retourRecu`
+     (`src/lib/retour-intervention.ts`) borne la forme et les tailles avant toute écriture, et porte
+     désormais le plafond des photos que chaque action vérifiait à part. Un retour vide passe
+     toujours (sa règle du 19 septembre).
+  2. **Une photo de la fiche de sécurité pouvait s'accrocher à un retour**, par un appel fait à la
+     main, et ressortir dans les retours. Sa règle du 22 septembre veut qu'elles restent dans la
+     fiche : le dépôt les écarte en relisant les photos du retour.
+  Regardé et laissé : seul le dernier retour se modifie, et le jour même ; un salarié dont l'accès
+  au planning est « tout » pose un retour sur n'importe quel chantier, comme le patron l'a voulu
+  (« accès à tout », 13 août). Éprouvé rouge puis vert : `test-retour-intervention.ts`,
+  `test-retour-intervention-db.ts`.
+
 - **La facturation change la durée et l'équipe d'un chantier tant qu'il n'est pas posé au
   planning, plus après (sa décision « A » du 13 octobre).** La durée sert à deux choses : chiffrer
   la main-d'œuvre du devis, que la facturation rédige, et réserver des jours au planning, qu'elle

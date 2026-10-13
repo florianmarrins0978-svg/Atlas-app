@@ -43,6 +43,7 @@ import {
 } from "../src/server/repositories/retours-intervention";
 import { retoursPasRecusEnCours, marquerRappelVu } from "../src/server/repositories/rappels";
 import { jourIso } from "../src/lib/jour";
+import { attacherPhotoALaFiche, ouvrirLaFiche } from "../src/server/repositories/fiches-securite";
 
 let echecs = 0;
 async function essai(nom: string, fn: () => Promise<void>) {
@@ -416,6 +417,26 @@ async function main() {
       assert.deepEqual(await retoursPasRecusEnCours(ctxB, true, demain), []);
     });
   }
+
+  // Sa règle du 22 septembre 2026 : *« les photos dans la fiche de sécurité
+  // restent à l'intérieur de la fiche »*. L'écran ne propose jamais une photo
+  // de la fiche au retour ; un appel fait à la main pouvait l'y accrocher, et
+  // elle ressortait dans les retours (13 octobre 2026).
+  await essai("une photo de la fiche de sécurité ne s'accroche pas à un retour", async () => {
+    const chantier = await chantiersRepo.creerChantier(ctxA, { nom: "Fiche et retour" });
+    await ouvrirLaFiche(ctxA, chantier.id);
+    const ajout = await photosRepo.ajouterPhoto(ctxA, chantier.id, {
+      storageKey: `chantiers/${chantier.id}/photos/de-la-fiche.jpg`,
+      mimeType: "image/jpeg",
+      tailleOctets: 10,
+      checksum: "f".repeat(64),
+    });
+    assert.ok(ajout.ok);
+    assert.equal(await attacherPhotoALaFiche(ctxA, chantier.id, ajout.photo.id), true);
+    await poserLeRetour(ctxA, chantier.id, { taches: [], photoIds: [ajout.photo.id], aSignaler: null });
+    const r = await dernierRetourDuChantier(ctxA, chantier.id);
+    assert.equal(r?.photos.length, 0, "la photo de la fiche de sécurité est sortie dans le retour");
+  });
 
   await admin.end();
   await pool.end();

@@ -34,6 +34,7 @@
 
 import { dansLaPeriode } from "./periode";
 import { jourIso } from "./jour";
+import { refusDesPhotosDuRetour } from "./photos-plafonds";
 
 /**
  * CE RETOUR PEUT-IL ENCORE SE MODIFIER ?
@@ -141,6 +142,52 @@ export type TacheDuRetour = {
   libelle: string;
   faite: boolean;
 };
+
+/**
+ * **CE QUE LA FICHE D'INTERVENTION ENVOIE SE VÉRIFIE, AVANT TOUTE ÉCRITURE.**
+ *
+ * Trouvé le 13 octobre 2026 en passant les retours au crible, après la fiche de
+ * sécurité : l'écran envoie toujours un retour bien formé, un appel fait à la
+ * main non. Une tâche dont le texte n'est pas un texte faisait tomber
+ * l'écriture ; un « à signaler » de plusieurs mégaoctets entrait en base ; un
+ * identifiant de photo mal formé faisait échouer la requête.
+ *
+ * Les bornes sont larges : aucun retour fait au doigt ne les approche. **Un
+ * retour vide passe** : sa règle du 19 septembre 2026, le retour du jour part
+ * avec ce qu'il a. Le plafond des photos est celui de `photos-plafonds.ts`,
+ * lu, jamais recopié.
+ */
+export const LONGUEUR_MAX_D_UNE_TACHE = 1_000;
+export const TACHES_MAX_PAR_RETOUR = 300;
+export const LONGUEUR_MAX_A_SIGNALER = 4_000;
+
+const IDENTIFIANT = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export type RetourRecu = { taches: TacheDuRetour[]; photoIds: string[]; aSignaler: string | null };
+
+export function retourRecu(brut: unknown): { ok: true; retour: RetourRecu } | { ok: false; raison: string } {
+  if (typeof brut !== "object" || brut === null) return { ok: false, raison: "Le retour reçu n’a pas la bonne forme." };
+  const { taches, photoIds, aSignaler } = brut as Record<string, unknown>;
+  if (!Array.isArray(taches) || taches.length > TACHES_MAX_PAR_RETOUR) return { ok: false, raison: "Les tâches du retour sont fausses." };
+  const propres: TacheDuRetour[] = [];
+  for (const t of taches) {
+    if (typeof t !== "object" || t === null) return { ok: false, raison: "Les tâches du retour sont fausses." };
+    const { libelle, faite } = t as Record<string, unknown>;
+    if (typeof libelle !== "string" || libelle.length > LONGUEUR_MAX_D_UNE_TACHE || typeof faite !== "boolean") {
+      return { ok: false, raison: "Une tâche du retour est fausse ou trop longue." };
+    }
+    propres.push({ libelle, faite });
+  }
+  if (!Array.isArray(photoIds) || !photoIds.every((id) => typeof id === "string" && IDENTIFIANT.test(id))) {
+    return { ok: false, raison: "Les photos du retour sont fausses." };
+  }
+  const tropDePhotos = refusDesPhotosDuRetour(photoIds.length);
+  if (tropDePhotos) return { ok: false, raison: tropDePhotos };
+  if (aSignaler !== null && (typeof aSignaler !== "string" || aSignaler.length > LONGUEUR_MAX_A_SIGNALER)) {
+    return { ok: false, raison: "Ce qui est à signaler est trop long." };
+  }
+  return { ok: true, retour: { taches: propres, photoIds: photoIds as string[], aSignaler } };
+}
 
 /**
  * Les cases du retour du jour : la liste d'AUJOURD'HUI, cochée comme le

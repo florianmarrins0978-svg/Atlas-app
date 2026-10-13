@@ -110,10 +110,20 @@ async function poserLeContenu(
     // d'identifiants qui voyage est une liste qu'on peut changer en chemin, et
     // la RLS ne dirait rien d'une photo d'une autre entreprise — elle la
     // rendrait simplement introuvable, ce qui est exactement ce qu'on veut.
+    //
+    // **Et jamais une photo de la fiche de sécurité** : sa règle du
+    // 22 septembre 2026, elles restent dans la fiche. L'écran ne les propose
+    // pas ; un appel fait à la main les accrochait (13 octobre 2026).
     const siennes = await tx
       .select({ id: photos.id })
       .from(photos)
-      .where(and(eq(photos.chantierId, chantierId), inArray(photos.id, [...quoi.photoIds])));
+      .where(
+        and(
+          eq(photos.chantierId, chantierId),
+          inArray(photos.id, [...quoi.photoIds]),
+          notExists(tx.select({ un: sql`1` }).from(fichesSecuritePhotos).where(eq(fichesSecuritePhotos.photoId, photos.id)))
+        )
+      );
     if (siennes.length > 0) {
       await tx.insert(retoursInterventionPhotos).values(
         siennes.map((p, ordre) => ({
