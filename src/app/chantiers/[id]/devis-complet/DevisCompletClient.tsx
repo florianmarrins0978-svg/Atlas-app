@@ -9,7 +9,7 @@ import {
   ligneOuverteAEcrire,
   ligneOuverteAPoser,
 } from "@/lib/ligne-ouverte-devis";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font, voile } from "@/lib/design-tokens";
 import {
@@ -56,6 +56,7 @@ import RepriseDuDevis from "./RepriseDuDevis";
 import { memeValeur } from "@/lib/hausse-du-devis";
 import LigneAcompte from "./LigneAcompte";
 import LigneMainDoeuvre from "./LigneMainDoeuvre";
+import { mainDoeuvreDesLignes } from "@/lib/main-doeuvre-devis";
 import ChampUnite from "./ChampUnite";
 import { acompteSuivantPropose, echeancierDevis, phrasesAcomptesDuDevis, type AcompteDevis } from "@/lib/acomptes-devis";
 import { lignesConditionsDevis, lireConditions, type ConditionsLues } from "@/lib/conditions-documents";
@@ -75,6 +76,7 @@ import {
   majAdresseChantierAction,
   majLigneAction,
   ajouterLigneAction,
+  ajouterMainDoeuvreAction,
   retirerLigneAction,
   majEnTeteDevisAction,
   ajouterCategorieTvaAction,
@@ -123,6 +125,8 @@ type Ligne = {
   prixAncien?: string | null;
   /** Le tarif du jour, quand il diffère de l'ancien prix (migration 0106). */
   prixGrille?: string | null;
+  /** Une ligne de main d'œuvre (migration 0129) : elle se dit en un montant. */
+  mainDoeuvre?: boolean | null;
 };
 
 /**
@@ -200,8 +204,6 @@ type Props = {
   tauxTva: string;
   /** La remise, en pourcentage. `null` : aucune. */
   reductionPourcent: string | null;
-  /** « dont main d'œuvre HT » (migration 0090). `null` : pas de ligne. */
-  mainDoeuvreHt: string | null;
   /** Son titre, s'il en a donné un (migration 0092). */
   titre: string | null;
   /** Sur un devis repris : sa réponse au tarif du jour, et la hausse posée (migration 0106). */
@@ -407,35 +409,9 @@ export default function DevisCompletClient(props: Props) {
   }
   const [conditions, setConditions] = useState(props.conditionsPaiement);
 
-  /**
-   * ─── « DONT MAIN D'ŒUVRE HT » — la lecture B du 12 septembre 2026 ────────
-   *
-   * Nommée, jamais comptée : les totaux ne bougent pas. Le champ porte ce
-   * qu'il tape ; la borne (jamais plus que le brut HT) se pose quand le doigt
-   * quitte le champ, et l'on se referme sur ce que le serveur a RETENU — comme
-   * la remise. `null` rendu par le serveur veut dire « rien à nommer », et la
-   * ligne se retire d'elle-même.
-   */
-  // Lue comme elle se réécrit après une saisie (`sansZerosInutiles`) : la base
-  // porte « 450.00 », et un point sous un total écrit « 1 160,00 » se voyait au
-  // rechargement (14 septembre 2026).
-  const [mainDoeuvre, setMainDoeuvre] = useState(sansZerosInutiles(props.mainDoeuvreHt ?? ""));
   // Son titre — « Aménagement du jardin ». Jamais d'office ; vide, rien ne
   // s'imprime (sa demande du 14 septembre 2026).
   const [titre, setTitre] = useState(props.titre ?? "");
-  const [mainDoeuvreOuverte, setMainDoeuvreOuverte] = useState(props.mainDoeuvreHt !== null);
-
-  async function enregistrerMainDoeuvre(valeurBrute: string) {
-    const valeur = valeurBrute.trim() || null;
-    const retenu = await aLaSuite(() => majEnTeteDevisAction(props.devisId, { mainDoeuvreHt: valeur }));
-    const montant = retenu?.mainDoeuvreHt ?? null;
-    if (montant === null) {
-      setMainDoeuvre("");
-      setMainDoeuvreOuverte(false);
-    } else {
-      setMainDoeuvre(sansZerosInutiles(montant));
-    }
-  }
 
   /**
    * ─── LES ACOMPTES — sa demande du 12 septembre 2026 ─────────────────────
@@ -525,19 +501,6 @@ export default function DevisCompletClient(props: Props) {
   // porterait sur un total qui n'a pas bougé — et le geste semblerait sans
   // effet, ce qui est précisément la plainte du 17 août.
   const remiseVisible = remiseOuverte && !retraits.estRetire(CLE_REDUCTION);
-  // La ligne « dont main d'œuvre HT » se pose sous le PREMIER « Total HT »
-  // écrit — brut avec une remise, net sans —, d'où une seule définition pour
-  // les deux branches du rendu.
-  const ligneMainDoeuvre = mainDoeuvreOuverte ? (
-    <LigneMainDoeuvre
-      montant={mainDoeuvre}
-      fige={fige}
-      onChange={setMainDoeuvre}
-      onFini={(v) => void enregistrerMainDoeuvre(v)}
-      onRetirer={() => void enregistrerMainDoeuvre("")}
-    />
-  ) : null;
-
   // Les totaux se recalculent sous ses yeux, à chaque frappe : un devis dont le
   // total n'apparaît qu'après enregistrement se relit deux fois.
   //
@@ -550,6 +513,17 @@ export default function DevisCompletClient(props: Props) {
   // ferait diverger l'écran du PDF au premier arrondi — et c'est le client qui
   // verrait la différence (`CLAUDE.md` §3).
   const lignesVisibles = lignes.filter((l) => !retraits.estRetire(l.id));
+
+  // **« dont main d'œuvre HT » se CALCULE, il ne se tape plus** — sa réponse A
+  // du 13 octobre 2026 : la somme de ses lignes de main d'œuvre, par la même
+  // fonction que le dépôt. Elle se pose sous le PREMIER « Total HT » écrit —
+  // brut avec une remise, net sans —, d'où une seule définition pour les deux
+  // branches du rendu.
+  const dontMainDoeuvre = mainDoeuvreDesLignes(
+    lignesVisibles.map((l) => ({ mainDoeuvre: l.mainDoeuvre, montant: montantDeLaLigne(l).toFixed(2) }))
+  );
+  const ligneMainDoeuvre =
+    dontMainDoeuvre === null ? null : <LigneMainDoeuvre montant={sansZerosInutiles(dontMainDoeuvre)} fige />;
 
   /**
    * ═══════════════════════════════════════════════════════════════════════════
@@ -781,6 +755,41 @@ export default function DevisCompletClient(props: Props) {
       },
     ]);
   }
+
+  /**
+   * « + Main d'œuvre », dans la catégorie où il a appuyé — sa demande du
+   * 13 octobre 2026. Une ligne comme celle d'« + Ajouter une ligne », mais déjà
+   * nommée, et le doigt arrive dans son montant : c'est le seul chiffre à dire.
+   */
+  async function ajouterMainDoeuvre(tauxDeLaCategorie?: string | null) {
+    const ouverte = lignes.find((l) => estLigneOuverte(l.id));
+    const creee = await aLaSuite(async () => {
+      if (ouverte) await idEnBase(ouverte);
+      return ajouterMainDoeuvreAction(props.chantierId, tauxDeLaCategorie ?? null);
+    });
+    setLignes((cur) => [
+      ...cur,
+      {
+        id: creee.id,
+        libelle: creee.libelle,
+        quantite: "1",
+        prixUnitaire: "",
+        montant: "0.00",
+        unite: creee.unite,
+        aChiffrer: creee.aChiffrer,
+        tauxTva: creee.tauxTva ?? null,
+        mainDoeuvre: true,
+      },
+    ]);
+    setMontantAOuvrir(creee.id);
+  }
+  // Le champ n'existe qu'au rendu qui suit l'ajout : c'est là qu'on le prend.
+  const [montantAOuvrir, setMontantAOuvrir] = useState<string | null>(null);
+  useEffect(() => {
+    if (montantAOuvrir === null) return;
+    document.querySelector<HTMLInputElement>(`[data-prix-ligne="${montantAOuvrir}"]`)?.focus();
+    setMontantAOuvrir(null);
+  }, [montantAOuvrir, lignes]);
 
   /**
    * « Ajouter une TVA » — sa demande du 1er septembre 2026.
@@ -1351,6 +1360,32 @@ export default function DevisCompletClient(props: Props) {
               )}
             </div>
 
+            {l.mainDoeuvre ? (
+              <>
+                {/* **Une main d'œuvre se dit en un montant** — sa demande du
+                    13 octobre 2026 : « main d'œuvre 500 € ». En base, c'est une
+                    fois au forfait, et ce montant est son prix unitaire : la
+                    multiplication reste celle de toutes les lignes. Les trois
+                    cases vides gardent l'alignement du tableau sur grand écran. */}
+                <div className="hidden sm:block" />
+                <div className="hidden sm:block" />
+                <div className="hidden sm:block" />
+                <Cellule libelle="Montant HT">
+                  <ChiffreSaisi
+                    valeur={l.prixUnitaire}
+                    fige={fige}
+                    marqueLigne={l.id}
+                    aria={`Montant de la main d’œuvre ${i + 1}`}
+                    placeholder="0,00"
+                    onChange={(v) => majLigneLocale(l.id, "prixUnitaire", v)}
+                    onFini={(fraiche) => {
+                      void persisterLigne(l, { prixUnitaire: fraiche });
+                    }}
+                  />
+                </Cellule>
+              </>
+            ) : (
+            <>
             <Cellule libelle="Qté">
               <ChiffreSaisi
                 valeur={l.quantite}
@@ -1419,6 +1454,8 @@ export default function DevisCompletClient(props: Props) {
                 <span className="text-[16px]">{enEuros(montantDeLaLigne(l))}</span>
               )}
             </Cellule>
+            </>
+            )}
 
             {/* Ce que l'agent a retenu la dernière fois, sur un travail
                 comparable. Discret et sous la ligne : c'est un rappel, pas une
@@ -1444,15 +1481,30 @@ export default function DevisCompletClient(props: Props) {
           );
         })}
 
+        {/* **« + Main d'œuvre » à côté de « + Ajouter une ligne », dans CHAQUE
+            catégorie** — sa demande du 13 octobre 2026, la A de sa planche
+            (`appli/devis-main-d-oeuvre-par-tva.html`) : la main d'œuvre naît
+            au taux de la catégorie où il a appuyé, 10 % comme 20 %. */}
         {!fige && (
-          <button
-            type="button"
-            onClick={() => void ajouter(plusieursTva ? categorie.taux : null)}
-            className="mt-4 text-[14px] font-medium"
-            style={{ color: colors.rust }}
-          >
-            + Ajouter une ligne
-          </button>
+          <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
+            <button
+              type="button"
+              onClick={() => void ajouter(plusieursTva ? categorie.taux : null)}
+              className="text-[14px] font-medium"
+              style={{ color: colors.rust }}
+            >
+              + Ajouter une ligne
+            </button>
+            <button
+              type="button"
+              data-atlas="poser-main-doeuvre"
+              onClick={() => void ajouterMainDoeuvre(plusieursTva ? categorie.taux : null)}
+              className="text-[14px] font-medium"
+              style={{ color: colors.or }}
+            >
+              + Main d’œuvre
+            </button>
+          </div>
         )}
 
         {/* **Le sous-total permet au client de refaire le calcul de SA TVA.**
@@ -1484,20 +1536,6 @@ export default function DevisCompletClient(props: Props) {
             style={{ color: colors.or }}
           >
             + Ajouter une TVA
-          </button>
-        )}
-        {/* **« + Main d'œuvre », comme « + Ajouter une TVA »** — sa demande du
-            12 septembre 2026. Il ouvre la ligne « dont main d'œuvre HT » sous le
-            total HT, vide : le chiffre est à lui, pas à nous. */}
-        {!fige && !mainDoeuvreOuverte && (
-          <button
-            type="button"
-            data-atlas="poser-main-doeuvre"
-            onClick={() => setMainDoeuvreOuverte(true)}
-            className="mt-2.5 block text-[14px] font-medium"
-            style={{ color: colors.or }}
-          >
-            + Main d’œuvre
           </button>
         )}
 

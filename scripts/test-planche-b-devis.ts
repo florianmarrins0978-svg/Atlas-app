@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { LIBELLE_REDUCTION, libelleReduction } from "../src/lib/reduction-devis";
-import { LIBELLE_MAIN_DOEUVRE, montantMainDoeuvreValide } from "../src/lib/main-doeuvre-devis";
+import { LIBELLE_MAIN_DOEUVRE, mainDoeuvreDesLignes, montantMainDoeuvreValide } from "../src/lib/main-doeuvre-devis";
 import {
   TEXTE_ORIGINE_CONDITIONS_GENERALES,
   TITRE_CONDITIONS_GENERALES,
@@ -109,6 +109,28 @@ async function main() {
   await cas("sans ligne chiffrée, le montant tapé se GARDE — rien à borner encore", () => {
     assert.equal(montantMainDoeuvreValide("450", "0.00"), "450.00");
     assert.equal(montantMainDoeuvreValide("450", 0), "450.00");
+  });
+
+  // Sa réponse A du 13 octobre 2026 : sur le DEVIS, « dont » n'est plus tapé,
+  // il est la somme des lignes de main d'œuvre. La borne d'au-dessus ne sert
+  // plus qu'à la facture, qui le saisit encore.
+  await cas("sur le devis, « dont » est la somme des lignes de main d'œuvre, et d'elles seules", () => {
+    assert.equal(
+      mainDoeuvreDesLignes([
+        { mainDoeuvre: true, montant: "500.00" },
+        { mainDoeuvre: false, montant: "780.00" },
+        { mainDoeuvre: true, montant: "500.5" },
+        { montant: "380.00" },
+      ]),
+      "1000.50"
+    );
+  });
+
+  await cas("sans ligne de main d'œuvre, ou à zéro, pas de ligne « dont »", () => {
+    assert.equal(mainDoeuvreDesLignes([]), null);
+    assert.equal(mainDoeuvreDesLignes([{ mainDoeuvre: false, montant: "780.00" }]), null);
+    assert.equal(mainDoeuvreDesLignes([{ mainDoeuvre: true, montant: "0.00" }]), null);
+    assert.equal(mainDoeuvreDesLignes([{ mainDoeuvre: true, montant: "" }]), null);
   });
 
   await cas("sur le papier : sous le total HT, au-dessus de la TVA, et les totaux n'ont pas bougé", async () => {

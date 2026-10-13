@@ -66,6 +66,8 @@ export async function ajouterLignePrix(
     /** Une ligne reprise (migration 0106) : son prix sur l'ancien devis, et le tarif du jour s'il diffère. */
     prixAncien?: string | null;
     prixGrille?: string | null;
+    /** Une ligne de main d'œuvre (migration 0129) : « + Main d'œuvre » dans sa catégorie. */
+    mainDoeuvre?: boolean;
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -85,6 +87,7 @@ export async function ajouterLignePrix(
         tauxTva: sansTva ? null : (options?.tauxTva ?? null),
         prixAncien: options?.prixAncien ?? null,
         prixGrille: options?.prixGrille ?? null,
+        mainDoeuvre: options?.mainDoeuvre ?? false,
         ordre: existantes.length,
       })
       .returning();

@@ -3,8 +3,8 @@ import { pool } from "../src/server/db/client";
 import { nettoyerBase } from "./_test-db";
 import { creerEntreprise, mettreAJourEntreprise, getEntreprise } from "../src/server/repositories/entreprises";
 import { creerChantier } from "../src/server/repositories/chantiers";
-import { ajouterLignePrix, supprimerLignePrix } from "../src/server/repositories/lignes-prix";
-import { getOuCreerDevisBrouillon, mettreAJourEnTeteDevis } from "../src/server/repositories/devis";
+import { ajouterLignePrix, modifierLignePrix, supprimerLignePrix } from "../src/server/repositories/lignes-prix";
+import { getLignesDevis, getOuCreerDevisBrouillon, mettreAJourEnTeteDevis } from "../src/server/repositories/devis";
 import { conditionsDepuisEntreprise } from "../src/lib/conditions-documents";
 import { TEXTE_ORIGINE_CONDITIONS_GENERALES } from "../src/lib/conditions-generales";
 import type { Ctx } from "../src/server/repositories/context";
@@ -15,8 +15,9 @@ import type { Ctx } from "../src/server/repositories/context";
  *   · les conditions générales descendent sur le devis comme les cinq
  *     conditions de la 0064 : un brouillon rouvert reprend le réglage du jour,
  *     un devis envoyé est figé (trigger) ;
- *   · « dont main d'œuvre HT » s'écrit par le dépôt, bornée au brut HT du
- *     devis du moment, et `null` retire la ligne ;
+ *   · la main d'œuvre est une LIGNE qui s'additionne, à 10 % comme à 20 %, et
+ *     « dont main d'œuvre HT » est la somme de ces lignes, jamais un montant
+ *     tapé à part (sa réponse A du 13 octobre 2026) ;
  *
  * Ce que le PDF en fait est éprouvé par sa trace dans `test-planche-b-devis.ts`.
  *
@@ -51,7 +52,7 @@ async function main() {
   });
 
   let devisA!: { id: string; chantierId: string };
-  let ligneGazon!: string;
+
   await essai("un devis créé sans rien avoir réglé porte le texte d'origine", async () => {
     const chantier = await creerChantier(ctx, { nom: "Gazon — A" });
     const d = await getOuCreerDevisBrouillon(ctx, chantier.id);
@@ -102,50 +103,63 @@ async function main() {
     await mettreAJourEntreprise(ctx, { conditions: { conditionsGenerales: "" } });
   });
 
-  console.log("\n=== « dont main d'œuvre HT », par le dépôt ===\n");
+  // ── LA A DU 13 OCTOBRE 2026 ─────────────────────────────────────────────
+  // *« Dire main d'œuvre 500 € et que ça s'additionne comme une tâche
+  // normale, pour les lignes TVA à 10 et TVA à 20. »* La main d'œuvre est une
+  // ligne ; « dont main d'œuvre HT » est la somme de ces lignes.
+  console.log("\n=== La main d'œuvre qui s'additionne, dans chaque TVA ===\n");
 
-  await essai("elle s'écrit, à deux décimales, et les totaux ne bougent pas", async () => {
+  let moDix!: string;
+  let moVingt!: string;
+  await essai("500 € à 10 % et 500 € à 20 % s'ajoutent au total et à la TVA de leur taux", async () => {
     await ajouterLignePrix(ctx, devisA.chantierId, "Terrassement", "380.00");
-    ligneGazon = (await ajouterLignePrix(ctx, devisA.chantierId, "Gazon", "780.00")).id;
-    await getOuCreerDevisBrouillon(ctx, devisA.chantierId);
-    const d = await mettreAJourEnTeteDevis(ctx, devisA.id, { mainDoeuvreHt: "450" });
-    assert.equal(d?.mainDoeuvreHt, "450.00");
-    assert.equal(d?.totalHt, "1160.00", "la main d'œuvre a changé le total : elle est « dont », pas « plus »");
-  });
-
-  await essai("« dont » ne dépasse pas le tout : 4 500 sur 1 160 de lignes est ramené à 1 160", async () => {
-    const d = await mettreAJourEnTeteDevis(ctx, devisA.id, { mainDoeuvreHt: "4500" });
-    assert.equal(d?.mainDoeuvreHt, "1160.00");
-  });
-
-  await essai("quand les lignes fondent sous elle, un brouillon rouvert la ramène au nouveau brut", async () => {
-    await mettreAJourEnTeteDevis(ctx, devisA.id, { mainDoeuvreHt: "1000" });
-    await supprimerLignePrix(ctx, ligneGazon);
+    await ajouterLignePrix(ctx, devisA.chantierId, "Gazon", "780.00", { tauxTva: "10.00" });
+    moDix = (await ajouterLignePrix(ctx, devisA.chantierId, "Main d’œuvre", "500.00", { tauxTva: "10.00", mainDoeuvre: true })).id;
+    moVingt = (await ajouterLignePrix(ctx, devisA.chantierId, "Main d’œuvre", "500.00", { mainDoeuvre: true })).id;
     const d = await getOuCreerDevisBrouillon(ctx, devisA.chantierId);
-    assert.equal(d.totalHt, "380.00");
-    assert.equal(d.mainDoeuvreHt, "380.00", `« dont ${d.mainDoeuvreHt} » sous un total de 380`);
+    assert.equal(d.totalHt, "2160.00", "la main d'œuvre ne s'additionne pas au total HT");
+    // 10 % de (780 + 500) + 20 % de (380 + 500) = 128 + 176
+    assert.equal(d.totalTva, "304.00", "la main d'œuvre n'est pas comptée à la TVA de sa catégorie");
+    assert.equal(d.mainDoeuvreHt, "1000.00", "« dont main d'œuvre HT » n'est pas la somme des deux lignes");
   });
 
-  await essai("sur un devis sans ligne chiffrée, elle se garde — à la saisie ET au brouillon rouvert", async () => {
-    // Sa plainte du 14 septembre 2026 : ouverte sur un devis encore vide, la
-    // ligne partait au premier enregistrement, puis au rechargement.
-    const chantier = await creerChantier(ctx, { nom: "Gazon — vide" });
-    const d0 = await getOuCreerDevisBrouillon(ctx, chantier.id);
-    const d1 = await mettreAJourEnTeteDevis(ctx, d0.id, { mainDoeuvreHt: "450" });
-    assert.equal(d1?.mainDoeuvreHt, "450.00", "effacée à la saisie sur un devis vide");
-    const d2 = await getOuCreerDevisBrouillon(ctx, chantier.id);
-    assert.equal(d2.mainDoeuvreHt, "450.00", "effacée au rechargement sur un devis vide");
-    // Et la borne se pose dès qu'une ligne existe.
-    await ajouterLignePrix(ctx, chantier.id, "Bordures", "380.00");
-    const d3 = await getOuCreerDevisBrouillon(ctx, chantier.id);
-    assert.equal(d3.mainDoeuvreHt, "380.00", `« dont ${d3.mainDoeuvreHt} » sous un total de 380`);
+  await essai("la ligne du devis garde qu'elle est de la main d'œuvre, à son taux", async () => {
+    const d = await getOuCreerDevisBrouillon(ctx, devisA.chantierId);
+    const lignes = await getLignesDevis(ctx, d.id);
+    const mo = lignes.filter((l) => l.mainDoeuvre);
+    assert.equal(mo.length, 2, "le drapeau ne descend pas du chantier au devis");
+    assert.deepEqual(mo.map((l) => l.tauxTva ?? "taux du devis").sort(), ["10.00", "taux du devis"]);
   });
 
-  await essai("vide ou nul la retire ; les autres champs de l'en-tête ne bougent pas", async () => {
-    const d = await mettreAJourEnTeteDevis(ctx, devisA.id, { mainDoeuvreHt: null });
-    assert.equal(d?.mainDoeuvreHt, null);
-    const d2 = await mettreAJourEnTeteDevis(ctx, devisA.id, { conditionsPaiement: "Accès par le portail." });
-    assert.equal(d2?.mainDoeuvreHt, null, "une écriture voisine a ressuscité la main d'œuvre");
+  await essai("le libellé changé au doigt ne la fait pas sortir de « dont »", async () => {
+    await modifierLignePrix(ctx, moDix, { libelle: "Main d’œuvre plantation" });
+    const d = await getOuCreerDevisBrouillon(ctx, devisA.chantierId);
+    assert.equal(d.mainDoeuvreHt, "1000.00");
+  });
+
+  await essai("une ligne ORDINAIRE nommée « Main d'œuvre » n'entre pas dans « dont »", async () => {
+    const id = (await ajouterLignePrix(ctx, devisA.chantierId, "Main d’œuvre", "200.00")).id;
+    const d = await getOuCreerDevisBrouillon(ctx, devisA.chantierId);
+    assert.equal(d.mainDoeuvreHt, "1000.00", "le libellé a été pris pour le drapeau");
+    await supprimerLignePrix(ctx, id);
+  });
+
+  await essai("retirée, elle sort du total et de « dont » ; les deux retirées, « dont » disparaît", async () => {
+    await supprimerLignePrix(ctx, moVingt);
+    const d1 = await getOuCreerDevisBrouillon(ctx, devisA.chantierId);
+    assert.equal(d1.totalHt, "1660.00");
+    assert.equal(d1.mainDoeuvreHt, "500.00");
+    await supprimerLignePrix(ctx, moDix);
+    const d2 = await getOuCreerDevisBrouillon(ctx, devisA.chantierId);
+    assert.equal(d2.mainDoeuvreHt, null, "« dont main d'œuvre 0,00 € » sous un devis sans main d'œuvre");
+  });
+
+  await essai("une écriture voisine de l'en-tête ne la touche pas", async () => {
+    await ajouterLignePrix(ctx, devisA.chantierId, "Main d’œuvre", "300.00", { mainDoeuvre: true });
+    const d = await getOuCreerDevisBrouillon(ctx, devisA.chantierId);
+    assert.equal(d.mainDoeuvreHt, "300.00");
+    const d2 = await mettreAJourEnTeteDevis(ctx, d.id, { conditionsPaiement: "Accès par le portail." });
+    assert.equal(d2?.mainDoeuvreHt, "300.00", "une écriture voisine a effacé la main d'œuvre");
   });
 
   console.log(`\n${echecs === 0 ? "✅" : "❌"} La planche B du devis, en base — ${echecs} échec(s).`);

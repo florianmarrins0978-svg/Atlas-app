@@ -27,6 +27,7 @@ import {
   majAutoliquidationDevis,
 } from "@/server/repositories/devis";
 import { logger } from "@/server/logger";
+import { LIBELLE_LIGNE_MAIN_DOEUVRE } from "@/lib/main-doeuvre-devis";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerAudioEntrant } from "@/server/audio-entrant";
 import { lireRetouchesDictees } from "@/server/ai/services/retouches-devis-service";
@@ -147,6 +148,27 @@ export async function ajouterLigneAction(chantierId: string, tauxTva?: string | 
   // Le taux vient de la catégorie sous laquelle il a appuyé : la ligne naît au
   // bon endroit plutôt que de tomber dans la première puis d'être déplacée.
   return ajouterLignePrix(ctx, chantierId, "", "0.00", { tauxTva: tauxTva ?? null });
+}
+
+/**
+ * « + Main d'œuvre », dans une catégorie de TVA — sa demande du 13 octobre 2026.
+ *
+ * Une ligne ORDINAIRE, une fois au forfait : elle s'additionne comme une tâche,
+ * à son taux. **Elle naît « à chiffrer »** : un prix de main d'œuvre n'a pas de
+ * valeur plausible (`docs/AGENT.md` §3), et c'est ce drapeau qui retient le
+ * devis tant qu'il n'a pas tapé son montant. Il tombe de lui-même dès qu'un
+ * montant est posé (`ligneAttendSonPrix`).
+ */
+export async function ajouterMainDoeuvreAction(chantierId: string, tauxTva?: string | null) {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "ajouter une main d'œuvre au devis");
+  return ajouterLignePrix(ctx, chantierId, LIBELLE_LIGNE_MAIN_DOEUVRE, "0.00", {
+    quantite: "1",
+    unite: "forfait",
+    aChiffrer: true,
+    tauxTva: tauxTva ?? null,
+    mainDoeuvre: true,
+  });
 }
 
 /**
@@ -386,7 +408,7 @@ export async function retirerAcompteAction(devisId: string, rang: number) {
 
 export async function majEnTeteDevisAction(
   devisId: string,
-  data: { tauxTva?: string; conditionsPaiement?: string; reductionPourcent?: string | null; mainDoeuvreHt?: string | null; titre?: string | null }
+  data: { tauxTva?: string; conditionsPaiement?: string; reductionPourcent?: string | null; titre?: string | null }
 ) {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "modifier l'en-tête du devis");

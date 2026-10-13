@@ -7,7 +7,7 @@ import { withEntreprise } from "../db/with-entreprise";
 import { allureDesDocuments, attestationLue, formatNumeroDe } from "./entreprises";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
 import { totauxAvecReduction, pourcentValide, tauxTvaValide } from "@/lib/reduction-devis";
-import { montantMainDoeuvreValide } from "@/lib/main-doeuvre-devis";
+import { mainDoeuvreDesLignes } from "@/lib/main-doeuvre-devis";
 import { ibanEnGroupes } from "@/lib/modalites-paiement";
 import type { DbOrTx } from "../db/client";
 import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises, acomptesDevis } from "../db/schema";
@@ -343,27 +343,16 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       // Régénération : remplace les lignes et recalcule les totaux, ne change
       // ni le numéro commercial ni le numéro de version.
       await tx.delete(lignesDevis).where(eq(lignesDevis.devisId, dernier.id));
-      // **La main d'œuvre survit aussi, mais reste « dont »** : si les lignes ont
-      // fondu sous elle, on la ramène au nouveau brut plutôt que d'imprimer
-      // « dont 450 € » sous un total de 380 €. **Un brut nul ne borne rien**
-      // (14 septembre 2026) : sur un devis pas encore chiffré elle se garde —
-      // la première version l'effaçait au rechargement, comme
-      // `montantMainDoeuvreValide` l'effaçait à la saisie.
-      //
-      // **Calculée par Postgres sur la valeur du MOMENT, jamais recopiée d'une
-      // lecture.** Ce rendu se joue en même temps que le geste du patron : le
-      // « − » de la main d'œuvre écrivait `null` pendant qu'un rendu, parti une
-      // seconde avant, réécrivait le 1 160 qu'il avait lu — et la ligne
-      // revenait sous ses yeux (13 septembre 2026, `test-planche-b-devis-e2e`).
-      const brutHt = totauxAvecReduction(lignesPrixActuelles, taux, null).brutHt;
+      // **« dont main d'œuvre HT » se recalcule avec les lignes** (sa réponse A
+      // du 13 octobre 2026) : la somme de ses lignes de main d'œuvre, lues dans
+      // cette transaction, sous le verrou du chantier. Plus rien ne la tape à
+      // part, donc plus rien ne peut la contredire.
       const [d] = await tx
         .update(devis)
         .set({
           ...snapshotEnTete,
           ...totaux,
-          mainDoeuvreHt: sql`CASE
-            WHEN ${brutHt}::numeric > 0 AND ${devis.mainDoeuvreHt} > ${brutHt}::numeric THEN ${brutHt}::numeric
-            ELSE ${devis.mainDoeuvreHt} END`,
+          mainDoeuvreHt: mainDoeuvreDesLignes(lignesPrixActuelles),
         })
         .where(eq(devis.id, dernier.id))
         .returning();
@@ -387,6 +376,7 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
             // la ligne du chantier l'an prochain ne doit pas réécrire une pièce
             // déjà partie. Nul quand il n'a qu'un taux — le devis commande.
             tauxTva: l.tauxTva,
+            mainDoeuvre: l.mainDoeuvre,
             ordre: i,
           }))
         );
@@ -416,11 +406,9 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
         ...totaux,
         titre: dernier?.titre ?? null,
         conditionsPaiement: dernier?.conditionsPaiement ?? null,
-        // Toujours « dont » : bornée au nouveau brut, comme à la régénération.
-        mainDoeuvreHt: montantMainDoeuvreValide(
-          dernier?.mainDoeuvreHt ?? null,
-          totauxAvecReduction(lignesPrixActuelles, taux, null).brutHt
-        ),
+        // Ses lignes de main d'œuvre sont celles du chantier : elles passent
+        // d'une version à l'autre avec les lignes, et « dont » les suit.
+        mainDoeuvreHt: mainDoeuvreDesLignes(lignesPrixActuelles),
         createdBy: ctx.utilisateurId,
       })
       .returning();
@@ -437,6 +425,7 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
           unite: l.unite,
           aChiffrer: l.aChiffrer,
           tauxTva: l.tauxTva,
+          mainDoeuvre: l.mainDoeuvre,
           ordre: i,
         }))
       );
@@ -900,8 +889,6 @@ export async function mettreAJourEnTeteDevis(
     tauxTva?: string;
     conditionsPaiement?: string;
     reductionPourcent?: string | null;
-    /** « dont main d'œuvre HT » ; `null` retire la ligne. Bornée au brut HT. */
-    mainDoeuvreHt?: string | null;
     /** Son titre (migration 0092). Vide ou `null` : aucun. */
     titre?: string | null;
   }
@@ -928,7 +915,6 @@ export async function mettreAJourEnTeteDevis(
       tauxTva?: string;
       conditionsPaiement?: string;
       reductionPourcent?: string | null;
-      mainDoeuvreHt?: string | null;
       titre?: string | null;
       updatedAt: Date;
     } = { updatedAt: new Date() };
@@ -964,12 +950,6 @@ export async function mettreAJourEnTeteDevis(
       valeurs.tauxTva ?? avant.tauxTva,
       data.reductionPourcent !== undefined ? valeurs.reductionPourcent : avant.reductionPourcent
     );
-    // **La main d'œuvre passe par la MÊME borne que l'écran** (`montantMainDoeuvreValide`),
-    // et le plafond est le brut HT du moment : « dont » ne dépasse pas le tout.
-    if (data.mainDoeuvreHt !== undefined) {
-      const brutHt = totauxAvecReduction(lignes, valeurs.tauxTva ?? avant.tauxTva, null).brutHt;
-      valeurs.mainDoeuvreHt = montantMainDoeuvreValide(data.mainDoeuvreHt, brutHt);
-    }
 
     const [row] = await tx
       .update(devis)

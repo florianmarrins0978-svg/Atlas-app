@@ -24,7 +24,7 @@ comptabilisée »*. Planche : `appli/tva-ticket-carburant.html`.
 gazole non routier des machines (aucun texte officiel lu).
 
 **CODÉE LE 13 OCTOBRE 2026** sur `claude/tva-non-recuperable`, migration 0129
-(`ARCHITECTURE.md` §459). Reste : **la batterie** (niveau 3, migration et
+(`ARCHITECTURE.md` §460). Reste : **la batterie** (niveau 3, migration et
 argent), qu'il a demandé de ne pas lancer ; on le prévient avant. Puis la
 fusion sur `main`. Sur son espace, la lecture d'un vrai ticket qui propose la
 nature n'a pas été éprouvée (aucune clé ici).
@@ -900,7 +900,7 @@ et le champ de saisie ne pousse plus le bouton d'envoi hors de l'écran.
 Regardé à 320, 390 et 430 px. Niveau 3 avec le lot ci-dessus : batterie
 à lui demander avant `main`.
 
-## ⏳ UNE PLANCHE À REGARDER — LA MAIN D'ŒUVRE QUI S'ADDITIONNE, DANS CHAQUE TVA (13 octobre 2026)
+## LA MAIN D'ŒUVRE QUI S'ADDITIONNE, DANS CHAQUE TVA : SA RÉPONSE A, CODÉE LE 13 OCTOBRE 2026, ATTEND SA BATTERIE
 
 **Sa demande :** *« il faut pouvoir ajouter une main d'œuvre dans chaque devis,
 pas seulement "dont main d'œuvre" comme aujourd'hui, mais dire main d'œuvre
@@ -914,7 +914,9 @@ de TVA, « + Main d'œuvre » à côté de « + Ajouter une ligne » pose une li
 Elle compte dans le sous-total, la TVA de sa catégorie et le TTC. Sur le papier,
 elle s'imprime **1 forfait** au montant tapé.
 
-**À trancher par lui :** la ligne « dont main d'œuvre HT » sous le total.
+**Sa réponse, le 13 octobre : A.** Codé le soir même (`ARCHITECTURE.md` §459), branche `lot/main-doeuvre-par-tva`. Reste : la batterie entière, avec son accord, puis `main`.
+
+**Ce qui était à trancher :** la ligne « dont main d'œuvre HT » sous le total.
 A, calculée toute seule (somme des lignes de main d'œuvre ; le champ tapé
 disparaît) ; B, tapée à part comme aujourd'hui.
 

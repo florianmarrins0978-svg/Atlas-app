@@ -5,11 +5,17 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## CODÉ, PAS ENCORE SUR `main` : LA MAIN D'ŒUVRE QUI S'ADDITIONNE (13 octobre 2026)
+
+« + Main d'œuvre » dans chaque TVA pose une ligne qui compte au total et à la
+TVA de son taux ; « dont main d'œuvre HT » en est la somme. Migration 0129.
+Attend la batterie (niveau 3), puis `main`. `ARCHITECTURE.md` §459.
+
 ## CODÉ, PAS ENCORE SUR `main` : LA TVA QUI NE SE RÉCUPÈRE PAS (13 octobre 2026)
 
 Branche `claude/tva-non-recuperable`, migration 0129. Chaque achat porte sa nature ; la part
 déductible se calcule au dépôt par `recuperation` et se pose dans
-`tva_deductible`, qui garde son sens (`ARCHITECTURE.md` §459). Règle pure
+`tva_deductible`, qui garde son sens (`ARCHITECTURE.md` §460). Règle pure
 rouge puis verte (`test-achat-tva`), dépôt 16/16 sous RLS sur une base dédiée,
 migration éprouvée sur une table habitée, suite navigateur neuve
 `test-tva-non-recuperable-e2e` 6/6, suites TVA touchées vertes, écrans

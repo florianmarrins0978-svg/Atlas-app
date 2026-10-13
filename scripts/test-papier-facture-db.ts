@@ -80,11 +80,11 @@ async function main() {
     adresseChantier: "8 rue des Lilas, 84000 Avignon",
     clientId: client.id,
   });
-  await prixRepo.ajouterLignePrix(ctx, chantier.id, "Terrassement et préparation du sol", "380.00", { quantite: "1", prixUnitaire: "380.00", unite: "forfait" });
+  await prixRepo.ajouterLignePrix(ctx, chantier.id, "Terrassement et préparation du sol", "380.00", { quantite: "1", prixUnitaire: "380.00", unite: "forfait", mainDoeuvre: true });
   await prixRepo.ajouterLignePrix(ctx, chantier.id, "Fourniture de gazon en rouleau", "780.00", { quantite: "120", prixUnitaire: "6.50", unite: "m²", tauxTva: "10.00" });
   await prixRepo.ajouterLignePrix(ctx, chantier.id, "Bordures acier corten", "432.00", { quantite: "24", prixUnitaire: "18.00", unite: "ml" });
   const devis = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
-  await devisRepo.mettreAJourEnTeteDevis(ctx, devis.id, { mainDoeuvreHt: "450", titre: "Aménagement du jardin", reductionPourcent: "5" });
+  await devisRepo.mettreAJourEnTeteDevis(ctx, devis.id, { titre: "Aménagement du jardin", reductionPourcent: "5" });
   await devisRepo.poserAcompteSuivant(ctx, devis.id); // le 2ᵉ, à 50 % d'office
   await devisRepo.envoyerDevis(ctx, devis.id);
 
@@ -97,7 +97,7 @@ async function main() {
     assert.ok(f);
     factureId = f.facture.id;
     assert.equal(f.facture.titre, "Aménagement du jardin");
-    assert.equal(f.facture.mainDoeuvreHt, "450.00");
+    assert.equal(f.facture.mainDoeuvreHt, "380.00");
     assert.deepEqual(
       f.lignes.map((l) => l.unite),
       ["forfait", "m²", "ml"],

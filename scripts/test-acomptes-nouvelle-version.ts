@@ -117,8 +117,10 @@ async function main() {
   // Le check-up du 7 octobre 2026, point 4 : « Corriger le devis » ouvre une
   // version qui repartait à 20 %, sans remise, sans titre, sans main d'œuvre
   // ni notes. La facture reprise perdait tout cela avec elle : une remise de
-  // 10 % disparaissait, et le client recevait le plein tarif.
-  await test("la version corrigée garde la remise, le taux, le titre, la main d'œuvre et les notes", async () => {
+  // 10 % disparaissait, et le client recevait le plein tarif. La main d'œuvre,
+  // depuis le 13 octobre 2026, est une LIGNE du chantier : elle passe d'une
+  // version à l'autre avec les lignes (test-planche-b-devis-db).
+  await test("la version corrigée garde la remise, le taux, le titre et les notes", async () => {
     const { ctx, chantierId } = await creerEntreprise("Ferrand", "30");
     const v1 = await getOuCreerDevisBrouillon(ctx, chantierId);
     await regler(ctx.entrepriseId, v1.id, {
@@ -126,7 +128,6 @@ async function main() {
       reduction_pourcent: "10.00",
       reduction_montant: "237.00",
       titre: "Aménagement du jardin",
-      main_doeuvre_ht: "800.00",
       conditions_paiement: "Accès par le portail de gauche.",
     });
     await marquerEnvoye(ctx.entrepriseId, v1.id);
@@ -135,7 +136,6 @@ async function main() {
     assert.equal(v2.tauxTva, "10.00", "la version corrigée repart à 20 %");
     assert.equal(v2.reductionPourcent, "10.00", "la remise accordée a disparu de la version corrigée");
     assert.equal(v2.titre, "Aménagement du jardin");
-    assert.equal(v2.mainDoeuvreHt, "800.00");
     assert.equal(v2.conditionsPaiement, "Accès par le portail de gauche.");
     // 2 370 € HT moins 10 %, au taux de 10 % : le total suit la remise reprise.
     assert.equal(v2.totalHt, "2133.00", "le total de la version corrigée ignore la remise reprise");

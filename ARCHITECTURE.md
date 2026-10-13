@@ -34656,7 +34656,48 @@ plutôt que de disparaître avec lui.
 Contrôle : `test-numero-rm-sur-les-pieces-db` (base, le chemin de Mon
 entreprise jusqu'au papier), rouge avant `ligneSiret`, vert après.
 
-## §459 : Un achat dit ce qu'il est, et seule la part récupérable compte
+## §459 : La main d'œuvre est une ligne, et « dont » en est la somme
+
+**Sa demande du 13 octobre 2026**, puis **A** sur la planche
+`appli/devis-main-d-oeuvre-par-tva.html`. La lecture B du 12 septembre
+(§348 : un « dont main d'œuvre HT » tapé à part, déjà compris dans les lignes)
+ne lui suffisait plus : il veut poser 500 € de main d'œuvre qui s'ajoutent, à
+10 % comme à 20 %.
+
+**Une ligne ordinaire, pas un montant d'en-tête.** « + Main d'œuvre », dans
+chaque catégorie, pose une ligne de prix une fois au forfait, au taux de la
+catégorie (`ajouterMainDoeuvreAction`). Totaux, TVA par taux, PDF, facture,
+retrait, déplacement de catégorie : tout ce qui sait déjà porter une ligne la
+porte, sans un calcul de plus. L'écrire en en-tête aurait demandé une TVA par
+taux à part, et une seconde règle de totaux.
+
+**Le drapeau `main_doeuvre` (migration 0129) ne sert qu'à la reconnaître.**
+Le libellé ne peut pas : il le change au doigt (« Main d'œuvre plantation »),
+et une ligne ordinaire peut s'appeler « Main d'œuvre ». Il descend de
+`lignes_prix` à `lignes_devis` comme le taux.
+
+**« dont main d'œuvre HT » se calcule** (`mainDoeuvreDesLignes`) : à l'écran
+sur les lignes visibles, au dépôt sur celles qu'il fige, par la même fonction.
+`mettreAJourEnTeteDevis` ne l'accepte plus ; `devis.main_doeuvre_ht` reste la
+colonne que le PDF et la facture lisent, écrite au seul rendu du brouillon.
+
+**Ce qui a été choisi et ce que ça coûte.** Un brouillon qui portait un
+« dont » tapé à la main et aucune ligne de main d'œuvre le perd à son prochain
+rendu : c'est la A telle qu'il l'a choisie (« le champ tapé disparaît »). Un
+devis envoyé garde le sien, figé. **La facture n'a pas changé** : elle reprend
+le « dont » du devis, et « Remplir la facture » le saisit encore à la main
+(`montantMainDoeuvreValide`), faute de demande pour elle. `lignes_facture`
+n'a donc pas reçu le drapeau.
+
+**Une ligne copiée d'un ancien devis par l'assistant** (`getLigneDevisPourCopie`)
+redevient une ligne ordinaire : la copie ne porte que libellé et montant.
+
+Contrôles : `test-planche-b-devis` (la somme, pure), `test-planche-b-devis-db`
+(500 € à 10 % et à 20 % s'additionnent, TVA par taux, libellé changé, ligne
+ordinaire homonyme, retrait), `test-planche-b-devis-e2e` (le geste, du bouton
+au rechargement, dans les deux TVA).
+
+## §460 : Un achat dit ce qu'il est, et seule la part récupérable compte
 
 **Sa demande du 13 octobre 2026** : *« chaque entrée et chaque sortie doit être
 notée, mais si c'est une catégorie où il ne récupère pas la TVA, elle ne doit

@@ -126,8 +126,9 @@ async function main() {
   });
 
   await cas("la main d'œuvre ne touche PAS aux acomptes", async () => {
-    await page.click('[data-atlas="poser-main-doeuvre"]');
-    const champ = page.locator('[data-atlas="montant-main-doeuvre"]');
+    await page.locator('[data-atlas="poser-main-doeuvre"]').first().click();
+    const champ = page.locator('input[aria-label*="Montant de la main d’œuvre"]');
+    await champ.waitFor({ timeout: 10_000 });
     await champ.fill("2546");
     await page.keyboard.press("Tab");
     await page.waitForTimeout(1200);
@@ -146,10 +147,12 @@ async function main() {
     const zones = page.locator('textarea[aria-label*="escription"]');
     const rang = (await zones.count()) - 1;
     await zones.nth(rang).fill("Fleurs de saison");
-    const qte = page.locator('input[aria-label*="Quantité"]').nth(rang);
+    // .last() : la ligne de main d'œuvre n'a ni quantité ni prix unitaire,
+    // le rang des descriptions ne vaut plus pour ces cases-là.
+    const qte = page.locator('input[aria-label*="Quantité"]').last();
     await qte.click();
     await qte.fill("12");
-    const prix = page.locator('input[aria-label*="Prix unitaire"]').nth(rang);
+    const prix = page.locator('input[aria-label*="Prix unitaire"]').last();
     await prix.click();
     await prix.fill("3,50");
     await page.keyboard.press("Tab");

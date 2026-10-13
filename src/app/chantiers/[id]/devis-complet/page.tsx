@@ -203,10 +203,10 @@ export default async function DevisCompletPage({
           tauxTva: l.tauxTva,
           prixAncien: l.prixAncien,
           prixGrille: l.prixGrille,
+          mainDoeuvre: l.mainDoeuvre,
         }))}
         tauxTva={devisRow.tauxTva}
         reductionPourcent={devisRow.reductionPourcent}
-        mainDoeuvreHt={devisRow.mainDoeuvreHt}
         titre={devisRow.titre}
         repriseGrille={chantier.repriseGrille ?? null}
         hausseReprise={chantier.hausseReprise === null ? 0 : Number(chantier.hausseReprise)}

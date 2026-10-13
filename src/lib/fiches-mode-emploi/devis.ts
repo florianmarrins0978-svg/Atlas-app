@@ -207,15 +207,14 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
   {
     id: "devis-main-doeuvre",
     ecran: "Devis",
-    ou: "un chantier, écran Devis, sous les lignes",
-    intitule: "Indiquer la part de main d'œuvre",
+    ou: "un chantier, écran Devis, sous les lignes de chaque TVA",
+    intitule: "Ajouter de la main d'œuvre au devis",
     motsCles: ["main", "oeuvre", "doeuvre", "credit", "impot", "services", "personne", "part"],
-    geste: "Appuyez sur « + Main d’œuvre », puis tapez le montant sur la ligne « dont main d’œuvre HT ». Le « − » devant la retire.",
+    geste: "Appuyez sur « + Main d’œuvre », à côté de « + Ajouter une ligne » dans la TVA voulue, puis tapez le montant. Il s’ajoute au total, et la ligne « dont main d’œuvre HT » le reprend toute seule.",
     source: DC,
     preuves: ["+ Main d’œuvre"],
     ailleurs: [
-      { source: "src/app/chantiers/[id]/devis-complet/LigneMainDoeuvre.tsx", preuves: ["Retirer la main d’œuvre"] },
-      { source: "src/lib/main-doeuvre-devis.ts", preuves: ["dont main d’œuvre HT"] },
+      { source: "src/lib/main-doeuvre-devis.ts", preuves: ["dont main d’œuvre HT", "Main d’œuvre"] },
     ],
   },
   {

@@ -10,8 +10,8 @@ import { TEXTE_ORIGINE_CONDITIONS_GENERALES } from "../src/lib/conditions-genera
  * LA PLANCHE B DU DEVIS, PAR SES YEUX — `appli/devis-remise-main-d-oeuvre-conditions.html`,
  * ses réponses du 12 septembre 2026, codées le 13 :
  *
- *   · « + Main d'œuvre » ouvre « dont main d'œuvre HT » sous le total HT, vide ;
- *     le chiffre tapé part en base, borné au brut ; le « − » le retire ;
+ *   · « + Main d'œuvre », dans chaque TVA, pose une ligne qui s'ADDITIONNE ;
+ *     « dont main d'œuvre HT » en est la somme (sa réponse A du 13 octobre 2026) ;
  *   · la remise s'appelle « Remise de N % » ;
  *   · les Réglages portent ses conditions générales, remplies d'office, avec le
  *     compte des crochets qu'il lui reste à remplir.
@@ -106,52 +106,85 @@ async function main() {
     const totaux = () => page.locator("section").filter({ hasText: "Total TTC" }).last();
     const lisible = (t: string) => t.replace(/[  ]/g, " ");
 
-    await cas("sans main d'œuvre, la ligne n'existe pas ; le bouton « + Main d’œuvre » attend sous les lignes", async () => {
-      assert.equal(await page.locator('[data-atlas="montant-main-doeuvre"]').count(), 0);
+    // ── LA A DU 13 OCTOBRE 2026 : la main d'œuvre s'additionne, dans chaque TVA.
+    const lignesDeMainDoeuvre = async () =>
+      (
+        await pool.query(
+          `SELECT montant, taux_tva FROM lignes_prix WHERE chantier_id = $1 AND main_doeuvre ORDER BY ordre`,
+          [chantierId]
+        )
+      ).rows as { montant: string; taux_tva: string | null }[];
+
+    await cas("sans main d'œuvre, pas de « dont » ; « + Main d’œuvre » attend à côté de « + Ajouter une ligne »", async () => {
+      const texte = lisible(await totaux().innerText());
+      assert.ok(!texte.includes("dont main d’œuvre HT"), `une ligne « dont » sans main d'œuvre :\n${texte}`);
       assert.equal(await page.locator('[data-atlas="poser-main-doeuvre"]').count(), 1);
     });
 
-    await cas("« + Main d’œuvre » ouvre « dont main d’œuvre HT » sous le total HT, VIDE — le chiffre est à lui", async () => {
+    await cas("« + Main d’œuvre » pose une ligne « Main d’œuvre », le doigt dans son montant, vide", async () => {
       await page.click('[data-atlas="poser-main-doeuvre"]');
-      const champ = page.locator('[data-atlas="montant-main-doeuvre"]');
+      const champ = page.locator('input[aria-label*="Montant de la main d’œuvre"]');
       await champ.waitFor({ timeout: 10_000 });
-      assert.equal(await champ.inputValue(), "");
+      assert.equal(await champ.inputValue(), "", "un montant posé d'office");
+      const actif = await page.evaluate(() => document.activeElement?.getAttribute("aria-label") ?? "");
+      assert.match(actif, /Montant de la main d’œuvre/, `le doigt n'est pas dans le montant : ${actif}`);
+      const zones = page.locator('textarea[aria-label*="escription"]');
+      assert.equal(await zones.nth((await zones.count()) - 1).inputValue(), "Main d’œuvre");
+    });
+
+    await cas("500 tapé s'ADDITIONNE : total HT 1 660, TTC 1 992, et « dont main d’œuvre HT » sous le total", async () => {
+      const champ = page.locator('input[aria-label*="Montant de la main d’œuvre"]');
+      await champ.fill("500");
+      await page.keyboard.press("Tab");
       const texte = lisible(await totaux().innerText());
+      assert.ok(texte.includes("1 660,00"), `le total HT n'a pas pris la main d'œuvre :\n${texte}`);
+      assert.ok(texte.includes("1 992,00"), `le total TTC n'a pas pris la main d'œuvre :\n${texte}`);
       assert.match(texte, /Total HT[\s\S]*dont main d’œuvre HT[\s\S]*TVA/);
-      assert.equal(await page.locator('[data-atlas="poser-main-doeuvre"]').count(), 0, "le bouton reste alors que la ligne est là");
+      for (const essai of [0, 1, 2, 3, 4, 5]) {
+        if ((await lignesDeMainDoeuvre()).some((l) => l.montant === "500.00")) break;
+        await page.waitForTimeout(400 * (essai + 1));
+      }
+      assert.deepEqual(await lignesDeMainDoeuvre(), [{ montant: "500.00", taux_tva: null }]);
+      await page.screenshot({ path: `${CAPTURES}/main-doeuvre-qui-s-additionne.png` });
     });
 
-    await cas("450 tapé part en base à 450,00 — et les totaux n'ont pas bougé", async () => {
-      const champ = page.locator('[data-atlas="montant-main-doeuvre"]');
-      await champ.fill("450");
-      await page.keyboard.press("Tab");
-      assert.equal(await quandLaBasePorte(chantierId, "450.00"), "450.00");
+    await cas("au rechargement, la ligne et « dont » sont là, et le devis en base porte 500", async () => {
+      await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
       const texte = lisible(await totaux().innerText());
-      assert.ok(texte.includes("1 160,00"), `le total HT a bougé :\n${texte}`);
-      assert.ok(texte.includes("1 392,00"), `le total TTC a bougé :\n${texte}`);
-      await page.screenshot({ path: `${CAPTURES}/planche-b-main-doeuvre.png` });
+      assert.ok(texte.includes("1 660,00"), `le total HT a perdu la main d'œuvre :\n${texte}`);
+      assert.match(texte, /dont main d’œuvre HT/);
+      assert.equal(await quandLaBasePorte(chantierId, "500.00"), "500.00");
     });
 
-    await cas("4 500 sur 1 160 de lignes est ramené au brut — à l'écran comme en base", async () => {
-      const champ = page.locator('[data-atlas="montant-main-doeuvre"]');
-      await champ.fill("4500");
+    await cas("dans la TVA à 10 %, sa main d'œuvre naît à 10 % et compte à la TVA de 10 %", async () => {
+      await page.getByRole("button", { name: /Ajouter une TVA/ }).click();
+      const boutons = page.locator('[data-atlas="poser-main-doeuvre"]');
+      for (const essai of [1, 2, 3, 4, 5]) {
+        if ((await boutons.count()) > 1) break;
+        await page.waitForTimeout(essai * 300);
+      }
+      await boutons.nth(1).click();
+      const champs = page.locator('input[aria-label*="Montant de la main d’œuvre"]');
+      for (const essai of [1, 2, 3, 4, 5]) {
+        if ((await champs.count()) > 1) break;
+        await page.waitForTimeout(essai * 300);
+      }
+      await champs.nth(1).fill("500");
       await page.keyboard.press("Tab");
-      assert.equal(await quandLaBasePorte(chantierId, "1160.00"), "1160.00");
-      await page.waitForTimeout(300);
-      assert.equal(await champ.inputValue(), "1160");
-    });
-
-    await cas("le « − » la retire, à l'écran et en base ; le bouton revient", async () => {
-      await page.click('[data-atlas="retirer-main-doeuvre"]');
-      const lu = await quandLaBasePorte(chantierId, null);
-      assert.equal(
-        lu,
-        null,
-        `la base porte encore ${lu} ; à l'écran : champ ${await page.locator('[data-atlas="montant-main-doeuvre"]').count()}, bouton ${await page.locator('[data-atlas="poser-main-doeuvre"]').count()}, actif ${await page.evaluate(() => document.activeElement?.getAttribute("data-atlas") ?? document.activeElement?.tagName)}`
-      );
-      await page.waitForTimeout(300);
-      assert.equal(await page.locator('[data-atlas="montant-main-doeuvre"]').count(), 0);
-      assert.equal(await page.locator('[data-atlas="poser-main-doeuvre"]').count(), 1);
+      for (const essai of [0, 1, 2, 3, 4, 5]) {
+        if ((await lignesDeMainDoeuvre()).length === 2 && (await lignesDeMainDoeuvre())[1].montant === "500.00") break;
+        await page.waitForTimeout(400 * (essai + 1));
+      }
+      assert.deepEqual(await lignesDeMainDoeuvre(), [
+        { montant: "500.00", taux_tva: null },
+        { montant: "500.00", taux_tva: "10.00" },
+      ]);
+      const texte = lisible(await totaux().innerText());
+      assert.ok(texte.includes("2 160,00"), `le total HT n'a pas pris la seconde main d'œuvre :\n${texte}`);
+      assert.match(texte, /TVA \(10 %\)\s*50,00/, `la TVA à 10 % ne porte pas sa main d'œuvre :\n${texte}`);
+      // Le montant de « dont » vit dans un champ figé : innerText ne le lit pas.
+      assert.equal(await page.locator('[data-atlas="montant-main-doeuvre"]').inputValue(), "1000", "« dont » n'est pas la somme");
+      await page.screenshot({ path: `${CAPTURES}/main-doeuvre-dans-chaque-tva.png`, fullPage: true });
     });
 
     await cas("la remise se dit « Remise de 5 % » — plus « Prix accordé au client »", async () => {

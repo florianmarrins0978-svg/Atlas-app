@@ -8,6 +8,18 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-13
 
+- **La main d'œuvre s'additionne, dans chaque TVA.** Sa demande du 13 octobre : *« dire main
+  d'œuvre 500 € et que ça s'additionne comme une tâche normale, pour les lignes TVA à 10 et TVA à
+  20 »*, puis **A** sur la planche `appli/devis-main-d-oeuvre-par-tva.html`. « + Main d'œuvre »
+  vit désormais à côté de « + Ajouter une ligne », dans chaque catégorie : il pose une ligne
+  ordinaire (1 forfait, au taux de la catégorie, « à chiffrer » tant que le montant manque), et le
+  doigt arrive dans son montant. « dont main d'œuvre HT » ne se tape plus sur le devis : c'est la
+  somme de ces lignes (`mainDoeuvreDesLignes`, la même fonction pour l'écran et le dépôt). Ce
+  que ça évite : une main d'œuvre glissée dans le prix d'une autre ligne, et une TVA fausse quand
+  elle ne relève pas du taux de cette ligne-là. **Migration 0129** (`main_doeuvre` sur
+  `lignes_prix` et `lignes_devis`, étendre seulement). La facture ne change pas : elle reprend
+  le « dont » du devis et la page « Remplir la facture » le saisit encore. `ARCHITECTURE.md` §459.
+
 - **Un hôtel ne fait plus baisser la TVA à payer.** Tout achat saisi dans « Ma TVA » comptait en
   entier dans la TVA déductible. Chaque achat dit désormais ce qu'il est (Carburant, Matériel, Repas,
   Hôtel, Train ou taxi, Autre), et `recuperation` (`src/lib/achat-tva.ts`) en tire la part qui
