@@ -345,6 +345,100 @@ export function contenuVide(): ContenuFiche {
   };
 }
 
+/**
+ * **CE QUE LE TÉLÉPHONE ENVOIE SE VÉRIFIE, AVANT TOUTE ÉCRITURE.**
+ *
+ * Trouvé par la campagne de sécurité de l'établi QA, le 13 octobre 2026. Le
+ * formulaire envoie toujours une fiche bien formée ; un appel fait à la main,
+ * non. Rien n'était vérifié : n'importe quelle forme entrait en base, jusqu'à
+ * 15 Mo par envoi (la limite des actions serveur) et toutes les deux secondes,
+ * et une forme fausse (des cases qui ne sont pas une liste, des photos qui ne
+ * sont pas un tableau) rendait la fiche et son PDF illisibles. Pour un document
+ * qu'un contrôleur peut demander deux ans durant, c'est une fiche détruite.
+ *
+ * Les bornes sont larges : aucune fiche remplie au doigt ne les approche. Ce qui
+ * n'est pas un champ de la fiche est laissé de côté, jamais écrit.
+ */
+export const LONGUEUR_MAX_D_UN_TEXTE = 4_000;
+export const LONGUEUR_MAX_D_UN_MOT = 200;
+export const MOTS_MAX_PAR_FAMILLE = 100;
+/** Un chantier ne porte pas plus de photos que son plafond (`photos-plafonds.ts`). */
+export const PHOTOS_MAX_SUR_LA_FICHE = 30;
+
+const IDENTIFIANT = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export type EcritureDeLaFiche = { contenu: ContenuFiche; etapeVue: number; loiLue: boolean };
+
+function estUnObjet(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+/** Des cases ou des ajouts : famille connue, liste de mots courts, en nombre borné. */
+function motsRecus(brut: unknown, quoi: string): { ok: true; mots: Partial<Record<Famille, string[]>> } | { ok: false; raison: string } {
+  if (brut === undefined) return { ok: true, mots: {} };
+  if (!estUnObjet(brut)) return { ok: false, raison: `${quoi} : la forme est fausse.` };
+  const mots: Partial<Record<Famille, string[]>> = {};
+  for (const [famille, liste] of Object.entries(brut)) {
+    if (!(famille in LIBELLES)) return { ok: false, raison: `${quoi} : famille inconnue.` };
+    if (!Array.isArray(liste) || liste.length > MOTS_MAX_PAR_FAMILLE) return { ok: false, raison: `${quoi} : la liste est fausse ou trop longue.` };
+    if (!liste.every((m) => typeof m === "string" && m.length <= LONGUEUR_MAX_D_UN_MOT)) {
+      return { ok: false, raison: `${quoi} : un mot est faux ou trop long.` };
+    }
+    mots[famille as Famille] = liste as string[];
+  }
+  return { ok: true, mots };
+}
+
+export function contenuRecu(brut: unknown): { ok: true; contenu: ContenuFiche } | { ok: false; raison: string } {
+  if (!estUnObjet(brut)) return { ok: false, raison: "La fiche reçue n’a pas la bonne forme." };
+  const contenu = contenuVide();
+  const textes = contenu as unknown as Record<string, unknown>;
+  for (const champ of Object.keys(textes)) {
+    if (typeof textes[champ] !== "string" || brut[champ] === undefined) continue;
+    const valeur = brut[champ];
+    if (typeof valeur !== "string" || valeur.length > LONGUEUR_MAX_D_UN_TEXTE) {
+      return { ok: false, raison: "Un champ de la fiche est faux ou trop long." };
+    }
+    textes[champ] = valeur;
+  }
+  if (brut.donneur !== undefined) {
+    if (brut.donneur !== null && brut.donneur !== "client" && brut.donneur !== "autre") return { ok: false, raison: "Le donneur d’ordre est faux." };
+    contenu.donneur = brut.donneur;
+  }
+  if (brut.nombreDeTravailleurs !== undefined) {
+    const n = brut.nombreDeTravailleurs;
+    if (typeof n !== "number" || !Number.isInteger(n) || n < 1 || n > 999) return { ok: false, raison: "Le nombre de travailleurs est faux." };
+    contenu.nombreDeTravailleurs = n;
+  }
+  const lesCoches = motsRecus(brut.coches, "Les cases");
+  if (!lesCoches.ok) return lesCoches;
+  const lesAjouts = motsRecus(brut.ajouts, "Les ajouts");
+  if (!lesAjouts.ok) return lesAjouts;
+  contenu.coches = lesCoches.mots;
+  contenu.ajouts = lesAjouts.mots;
+  if (brut.photoIds !== undefined) {
+    const ids = brut.photoIds;
+    if (!Array.isArray(ids) || ids.length > PHOTOS_MAX_SUR_LA_FICHE || !ids.every((id) => typeof id === "string" && IDENTIFIANT.test(id))) {
+      return { ok: false, raison: "Les photos de la fiche sont fausses." };
+    }
+    contenu.photoIds = ids as string[];
+  }
+  return { ok: true, contenu };
+}
+
+/** Le contenu, l'étape où l'on en est, la loi lue : ce qu'un « Suivant » écrit. */
+export function ecritureRecue(brut: unknown): { ok: true; ecriture: EcritureDeLaFiche } | { ok: false; raison: string } {
+  if (!estUnObjet(brut)) return { ok: false, raison: "La fiche reçue n’a pas la bonne forme." };
+  const { etapeVue, loiLue } = brut;
+  if (typeof etapeVue !== "number" || !Number.isInteger(etapeVue) || etapeVue < 0 || etapeVue > NOMBRE_D_ETAPES) {
+    return { ok: false, raison: "L’étape de la fiche est fausse." };
+  }
+  if (typeof loiLue !== "boolean") return { ok: false, raison: "La fiche reçue n’a pas la bonne forme." };
+  const contenu = contenuRecu(brut.contenu);
+  if (!contenu.ok) return contenu;
+  return { ok: true, ecriture: { contenu: contenu.contenu, etapeVue, loiLue } };
+}
+
 export function coches(contenu: ContenuFiche, famille: Famille): readonly string[] {
   return contenu.coches[famille] ?? [];
 }
@@ -500,6 +594,32 @@ export function compteDuBandeau(fiche: { signeeLe: Date | null; transmiseLe: Dat
 
 /** Une signature au doigt compte quand elle a plus de quelques points : un tap n'est pas une signature. */
 export const POINTS_MINIMUM_D_UNE_SIGNATURE = 8;
+
+/**
+ * Le trait mesure 600 sur 260 (`pngDeLaSignature`) : même dense, il tient très
+ * en dessous. Au-delà, ce n'est pas une signature, c'est un envoi qui remplit
+ * la base.
+ */
+export const LONGUEUR_MAX_D_UNE_SIGNATURE = 500_000;
+
+const ENTETE_PNG = "data:image/png;base64,";
+/** Les huit octets qui ouvrent tout PNG, écrits en base64. */
+const MAGIE_PNG = "iVBORw0KGgo";
+
+/**
+ * **Une signature est un vrai PNG, tracé au doigt** : sinon le PDF de la fiche
+ * embarque ce qu'on lui a donné, et une image qui n'en est pas une le fait
+ * tomber, pour une fiche que le contrôleur demandera.
+ */
+export function refusDeLaSignature(png: unknown, points: unknown): string | null {
+  if (typeof points !== "number" || points < POINTS_MINIMUM_D_UNE_SIGNATURE) return "Signez au doigt avant de signer la fiche.";
+  if (typeof png !== "string" || !png.startsWith(ENTETE_PNG) || png.length > LONGUEUR_MAX_D_UNE_SIGNATURE) {
+    return "Signez au doigt avant de signer la fiche.";
+  }
+  const donnees = png.slice(ENTETE_PNG.length);
+  if (!donnees.startsWith(MAGIE_PNG) || !/^[A-Za-z0-9+/]+={0,2}$/.test(donnees)) return "Signez au doigt avant de signer la fiche.";
+  return null;
+}
 
 /** Le texte que le PDF (et la liste) écrivent sous une fiche signée. */
 export function phraseDeGarde(signeeLe: Date, jourLong: (d: Date) => string): string {

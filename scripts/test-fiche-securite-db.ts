@@ -187,7 +187,12 @@ async function main() {
     assert.ok(parLePatron && parLePatron.signeeLe === null && parLePatron.transmiseLe === null);
   });
 
-  await essai("une photo qu'une fiche montre ne part pas en purge quand on l'efface de la pellicule", async () => {
+  // La campagne de sécurité du 13 octobre 2026 a trouvé que cette protection
+  // ne protégeait rien : le fichier restait, mais la photo, effacée de la
+  // pellicule, disparaissait du PDF, qui ne lit que les photos vivantes. Et le
+  // geste existait pour n'importe quelle photo de l'entreprise. Une photo de la
+  // fiche ne part donc plus que par la fiche, tant qu'elle n'est pas signée.
+  await essai("une photo qu'une fiche montre ne s'efface pas par la pellicule", async () => {
     const ajout = await photosRepo.ajouterPhoto(ctxA, chantierA.id, {
       storageKey: `chantiers/${chantierA.id}/photos/fiche-securite-essai.jpg`,
       mimeType: "image/jpeg",
@@ -197,16 +202,35 @@ async function main() {
     });
     assert.ok(ajout.ok);
     const photoId = ajout.photo.id;
-    // La fiche de A est signée par le cas précédent : on la rouvre, comme
+    // La fiche de A est signée par un cas précédent : on la rouvre, comme
     // « Modifier » à l'écran, sans quoi elle ne s'écrit plus.
     const fiche = await rouvrirLaFiche(ctxA, chantierA.id, { memeTransmise: true });
     assert.ok(fiche);
     await enregistrerLaFiche(ctxA, chantierA.id, { contenu: { ...fiche.contenu, photoIds: [photoId] }, etapeVue: 6, loiLue: true });
     assert.equal(await photoTenueParUneFiche(ctxA, photoId), true);
     const enPurgeAvant = Number((await admin.query<{ n: number }>("SELECT count(*)::int AS n FROM fichiers_a_purger")).rows[0].n);
-    await photosRepo.supprimerPhoto(ctxA, photoId);
+    const refus = await photosRepo.supprimerPhoto(ctxA, photoId);
+    assert.equal(refus.ok, false, "la photo de la fiche s'est effacée par la pellicule");
     const enPurgeApres = Number((await admin.query<{ n: number }>("SELECT count(*)::int AS n FROM fichiers_a_purger")).rows[0].n);
-    assert.equal(enPurgeApres, enPurgeAvant, "le fichier de la fiche a été mis en purge : dans deux ans, la fiche montrerait un trou");
+    assert.equal(enPurgeApres, enPurgeAvant, "le fichier de la fiche a été mis en purge");
+    assert.ok((await photosRepo.listerPhotos(ctxA, chantierA.id)).some((p) => p.id === photoId), "la photo a disparu, donc du PDF aussi");
+  });
+
+  await essai("retirer de la fiche une photo qui n'y est pas est refusé : la photo d'un autre chantier reste", async () => {
+    const orme = await chantiersRepo.creerChantier(ctxA, { nom: "Orme Petit" });
+    await ouvrirLaFiche(ctxA, orme.id);
+    const charme = await chantiersRepo.creerChantier(ctxA, { nom: "Charme Roux" });
+    const ailleurs = await photosRepo.ajouterPhoto(ctxA, charme.id, {
+      storageKey: `chantiers/${charme.id}/photos/du-client.jpg`,
+      mimeType: "image/jpeg",
+      tailleOctets: 10,
+      nomOriginal: "du-client.jpg",
+      checksum: "d".repeat(64),
+    });
+    assert.ok(ailleurs.ok);
+    const r = await detacherPhotoDeLaFiche(ctxA, orme.id, ailleurs.photo.id);
+    assert.equal(r.ok, false, "une photo étrangère à la fiche a été « retirée », donc ouverte à l'effacement");
+    assert.ok((await photosRepo.listerPhotos(ctxA, charme.id)).some((p) => p.id === ailleurs.photo.id));
   });
 
   // ─── CHACUNE CHEZ SOI — sa règle du 22 septembre 2026 ─────────────────────

@@ -21,7 +21,7 @@ import {
 import { listerPhotos, recevoirPhotoDeChantier, supprimerPhoto } from "@/server/repositories/photos";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import type { Ctx } from "@/server/repositories/context";
-import { POINTS_MINIMUM_D_UNE_SIGNATURE, type ContenuFiche } from "@/lib/fiche-securite";
+import { NOMBRE_D_ETAPES, contenuRecu, ecritureRecue, refusDeLaSignature, type ContenuFiche } from "@/lib/fiche-securite";
 
 // LES GESTES DE LA FICHE DE SÉCURITÉ, depuis le planning.
 //
@@ -146,7 +146,8 @@ export async function retirerPhotoDeLaFicheAction(
   // **Détachée d'abord, effacée ensuite** : `supprimerPhoto` regarde qui tient
   // encore la photo pour décider de la purge du fichier. Tant que la liaison
   // existe, il la croirait gardée par la fiche et laisserait le fichier.
-  await supprimerPhoto(ctx, photoId);
+  const effacee = await supprimerPhoto(ctx, photoId);
+  if (!effacee.ok) return effacee;
   rafraichir(chantierId);
   return { ok: true };
 }
@@ -170,7 +171,9 @@ export async function enregistrerLaFicheAction(
   quoi: { contenu: ContenuFiche; etapeVue: number; loiLue: boolean; rafraichirLesEcrans?: boolean }
 ): Promise<{ ok: true } | Refus> {
   const ctx = await garder(chantierId, "enregistrer la fiche de sécurité");
-  const fiche = await enregistrerLaFiche(ctx, chantierId, quoi);
+  const recue = ecritureRecue(quoi);
+  if (!recue.ok) return recue;
+  const fiche = await enregistrerLaFiche(ctx, chantierId, recue.ecriture);
   if (!fiche) return { ok: false, raison: await raisonDuRefusDEcriture(ctx, chantierId) };
   if (quoi.rafraichirLesEcrans !== false) rafraichir(chantierId);
   return { ok: true };
@@ -181,13 +184,14 @@ export async function signerLaFicheAction(
   quoi: { contenu: ContenuFiche; signaturePng: string; points: number }
 ): Promise<{ ok: true; signeeLe: string } | Refus> {
   const ctx = await garder(chantierId, "signer la fiche de sécurité");
-  if (quoi.points < POINTS_MINIMUM_D_UNE_SIGNATURE || !quoi.signaturePng.startsWith("data:image/png;base64,")) {
-    return { ok: false, raison: "Signez au doigt avant de signer la fiche." };
-  }
-  if (!quoi.contenu.signataire.trim()) return { ok: false, raison: "Le nom du signataire manque." };
-  const enregistree = await enregistrerLaFiche(ctx, chantierId, { contenu: quoi.contenu, etapeVue: 6, loiLue: true });
+  const refusDuTrait = refusDeLaSignature(quoi.signaturePng, quoi.points);
+  if (refusDuTrait) return { ok: false, raison: refusDuTrait };
+  const recu = contenuRecu(quoi.contenu);
+  if (!recu.ok) return recu;
+  if (!recu.contenu.signataire.trim()) return { ok: false, raison: "Le nom du signataire manque." };
+  const enregistree = await enregistrerLaFiche(ctx, chantierId, { contenu: recu.contenu, etapeVue: NOMBRE_D_ETAPES, loiLue: true });
   if (!enregistree) return { ok: false, raison: await raisonDuRefusDEcriture(ctx, chantierId) };
-  const signee = await signerLaFiche(ctx, chantierId, { signaturePng: quoi.signaturePng, signataire: quoi.contenu.signataire });
+  const signee = await signerLaFiche(ctx, chantierId, { signaturePng: quoi.signaturePng, signataire: recu.contenu.signataire });
   if (!signee?.signeeLe) return { ok: false, raison: "La signature n’a pas pu être enregistrée." };
   rafraichir(chantierId);
   return { ok: true, signeeLe: signee.signeeLe.toISOString() };

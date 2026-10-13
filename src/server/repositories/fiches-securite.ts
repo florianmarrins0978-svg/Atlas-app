@@ -393,6 +393,10 @@ export async function detacherPhotoDeLaFiche(
     if (!ligne) return { ok: false, raison: "La fiche n’existe pas encore." };
     if (ligne.signeeLe !== null) return { ok: false, raison: "La fiche est signée : ses photos ne se retirent plus." };
     const contenu = lireContenu(ligne.contenu);
+    // **Seulement une photo de CETTE fiche.** Sans cette condition, n'importe
+    // quelle photo de l'entreprise passait pour « retirée », et l'action qui
+    // suit l'effaçait (campagne QA, 13 octobre 2026).
+    if (!contenu.photoIds.includes(photoId)) return { ok: false, raison: "Cette photo n’est pas sur la fiche." };
     await tx
       .update(fichesSecurite)
       .set({

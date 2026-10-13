@@ -17,6 +17,8 @@ import {
   manques,
   memoireDepuis,
   memoireVide,
+  ecritureRecue,
+  refusDeLaSignature,
   refusDuReleveGps,
 } from "../src/lib/fiche-securite";
 import { composerFicheSecuritePdf } from "../src/server/pdf/fiche-securite-pdf";
@@ -194,6 +196,68 @@ async function main() {
     for (const m of [refuse, sansSignal, tropLong, refusDuReleveGps(undefined)]) {
       assert.match(m, /écrivez les coordonnées/i, "chaque refus laisse la sortie : les écrire à la main");
     }
+  });
+
+  // ─── CE QUE LE TÉLÉPHONE ENVOIE SE VÉRIFIE — campagne de sécurité, 13 octobre 2026
+  //
+  // Le formulaire envoie toujours une fiche bien formée. Un appel fait à la
+  // main, non : il pouvait poser n'importe quoi en base, jusqu'à 15 Mo toutes
+  // les deux secondes, et une forme fausse rendait la fiche et son PDF
+  // illisibles. Ce qui est vérifié ici l'est avant toute écriture.
+  await cas("ce que le formulaire envoie passe tel quel", () => {
+    const contenu = ajouter(cocher(contenuVide(), "travaux", "Abattage"), "travaux", "Rognage de souche");
+    const r = ecritureRecue({ contenu: { ...contenu, observations: "Ligne électrique au fond", photoIds: ["8f5c2a0e-1b2c-4d3e-9f40-123456789abc"] }, etapeVue: 3, loiLue: true });
+    assert.ok(r.ok, r.ok ? "" : r.raison);
+    assert.equal(r.ecriture.etapeVue, 3);
+    assert.ok(estCoche(r.ecriture.contenu, "travaux", "Rognage de souche"));
+  });
+
+  await cas("une forme fausse est refusée, avant d'atteindre la base", () => {
+    const vide = contenuVide();
+    const fausses: unknown[] = [
+      null,
+      "texte",
+      { contenu: "pas une fiche", etapeVue: 1, loiLue: true },
+      { contenu: { ...vide, coches: "abattage" }, etapeVue: 1, loiLue: true },
+      { contenu: { ...vide, coches: { travaux: [42] } }, etapeVue: 1, loiLue: true },
+      { contenu: { ...vide, coches: { inventee: ["x"] } }, etapeVue: 1, loiLue: true },
+      { contenu: { ...vide, photoIds: "abc" }, etapeVue: 1, loiLue: true },
+      { contenu: { ...vide, photoIds: ["pas-un-identifiant"] }, etapeVue: 1, loiLue: true },
+      { contenu: { ...vide, observations: 12 }, etapeVue: 1, loiLue: true },
+      { contenu: { ...vide, donneur: "voisin" }, etapeVue: 1, loiLue: true },
+      { contenu: { ...vide, nombreDeTravailleurs: -3 }, etapeVue: 1, loiLue: true },
+      { contenu: { ...vide, nombreDeTravailleurs: 2.5 }, etapeVue: 1, loiLue: true },
+      { contenu: vide, etapeVue: -1, loiLue: true },
+      { contenu: vide, etapeVue: 99, loiLue: true },
+      { contenu: vide, etapeVue: 1, loiLue: "oui" },
+    ];
+    for (const f of fausses) assert.equal(ecritureRecue(f).ok, false, `accepté : ${JSON.stringify(f)?.slice(0, 120)}`);
+  });
+
+  await cas("trop long est refusé : un texte, un mot ajouté, une liste, des photos", () => {
+    const vide = contenuVide();
+    const tropLongues: unknown[] = [
+      { contenu: { ...vide, observations: "a".repeat(5_000) }, etapeVue: 1, loiLue: true },
+      { contenu: { ...vide, ajouts: { travaux: ["a".repeat(500)] } }, etapeVue: 1, loiLue: true },
+      { contenu: { ...vide, coches: { travaux: Array.from({ length: 500 }, (_, i) => `mot ${i}`) } }, etapeVue: 1, loiLue: true },
+      { contenu: { ...vide, photoIds: Array.from({ length: 200 }, () => "8f5c2a0e-1b2c-4d3e-9f40-123456789abc") }, etapeVue: 1, loiLue: true },
+    ];
+    for (const f of tropLongues) assert.equal(ecritureRecue(f).ok, false, "un envoi démesuré est passé");
+  });
+
+  await cas("ce qui ne fait pas partie de la fiche ne s'écrit pas", () => {
+    const r = ecritureRecue({ contenu: { ...contenuVide(), intrus: "x".repeat(1_000) }, etapeVue: 1, loiLue: true });
+    assert.ok(r.ok);
+    assert.equal("intrus" in r.ecriture.contenu, false);
+  });
+
+  await cas("la signature : un vrai PNG, de taille raisonnable, tracé au doigt", () => {
+    const png = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEklEQVQIW2NkYGD4z8DAwMAAAAgEAQC6xj9EAAAAAElFTkSuQmCC";
+    assert.equal(refusDeLaSignature(png, 50), null);
+    assert.ok(refusDeLaSignature(png, 2), "un point n'est pas une signature");
+    assert.ok(refusDeLaSignature("data:image/png;base64,PHN2Zz48L3N2Zz4=", 50), "du SVG déguisé en PNG est passé");
+    assert.ok(refusDeLaSignature("data:image/png;base64,iVBORw0KGgo%%%", 50), "du base64 cassé est passé");
+    assert.ok(refusDeLaSignature(`data:image/png;base64,iVBORw0KGgo${"A".repeat(2_000_000)}`, 50), "une signature de 2 Mo est passée");
   });
 
   console.log(echecs === 0 ? "\n✅ La fiche de sécurité tient ses règles." : `\n❌ ${echecs} cas en échec.`);
