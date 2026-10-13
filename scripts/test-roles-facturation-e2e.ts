@@ -155,6 +155,9 @@ async function main() {
     await pageP.fill('input[placeholder="Station, magasin…"]', NOM_PATRON);
     await pageP.fill('input[placeholder="0,00 €"]', "120,00");
     await pageP.fill('input[placeholder="20"]', "20");
+    // Depuis le 13 octobre 2026, un achat dit ce qu'il est, sans quoi
+    // « Ajouter » reste fermé. La première nature, par la structure.
+    await pageP.locator('[data-atlas="nature-achat"] button').first().click();
     await pageP.screenshot({ path: `${CAPTURES}/patron-achat.png` });
     // Le bouton d'engagement : le dernier de la feuille, plein.
     await pageP.locator('button:has-text("Ajouter")').last().click();
