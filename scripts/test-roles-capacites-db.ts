@@ -52,6 +52,7 @@ import {
   exigerGestionDevis,
   exigerMontants,
   exigerEcritureSurLePlanning,
+  exigerDureeEtEquipeModifiables,
   ActionRefuseeError,
 } from "../src/server/garde-action";
 import {
@@ -60,11 +61,13 @@ import {
   peutFacturer,
   peutGererDevis,
   peutModifierLePlanning,
+  dureeEtEquipeModifiables,
   peutVoirLesMontants,
   peutUtiliserLAssistant,
   type Role,
 } from "../src/lib/acces-roles";
 import { pool } from "../src/server/db/client";
+import * as chantiersRepo from "../src/server/repositories/chantiers";
 import type { Ctx } from "../src/server/repositories/context";
 
 const RACINE = process.cwd();
@@ -327,6 +330,30 @@ async function main() {
       await exigerGestionDevis(ctx, "modifier une ligne du devis");
     }
     await refuse(() => exigerGestionDevis(ctxSalarie, "modifier une ligne du devis"), "salarié / devis");
+  });
+
+  // Sa décision du 13 octobre 2026 (« A ») : la durée et l'équipe servent au
+  // chiffrage du devis, que la facturation rédige, ET au planning, qu'elle ne
+  // touche pas. Elle les change donc tant que le chantier n'est pas posé ;
+  // une fois posé, seuls le patron et le commercial. La campagne de sécurité de
+  // l'établi QA avait trouvé qu'elle les changeait toujours.
+  await essai("LA DURÉE ET L'ÉQUIPE : la facturation les change avant le planning, plus après", async () => {
+    assert.equal(dureeEtEquipeModifiables("facturation", false), true);
+    assert.equal(dureeEtEquipeModifiables("facturation", true), false);
+    for (const role of ["proprietaire", "commercial"] as const) {
+      assert.equal(dureeEtEquipeModifiables(role, true), true, `${role} ne change plus la durée d'un chantier posé`);
+    }
+    assert.equal(dureeEtEquipeModifiables("salarie", false), false, "le salarié change une durée");
+
+    const libre = await chantiersRepo.creerChantier(ctxPatron, { nom: "Haie Moreau" });
+    const pose = await chantiersRepo.creerChantier(ctxPatron, { nom: "Pelouse Garnier" });
+    await chantiersRepo.planifierChantier(ctxPatron, pose.id, "2026-11-03");
+
+    await exigerDureeEtEquipeModifiables(ctxFacturation, libre.id, "changer la durée ou l'équipe");
+    await refuse(() => exigerDureeEtEquipeModifiables(ctxFacturation, pose.id, "changer la durée ou l'équipe"), "facturation / durée d'un chantier posé");
+    await exigerDureeEtEquipeModifiables(ctxPatron, pose.id, "changer la durée ou l'équipe");
+    await exigerDureeEtEquipeModifiables(ctxCommercial, pose.id, "changer la durée ou l'équipe");
+    await refuse(() => exigerDureeEtEquipeModifiables(ctxSalarie, libre.id, "changer la durée ou l'équipe"), "salarié / durée");
   });
 
   await essai("LE PLANNING : la facturation LIT, elle n'écrit pas", async () => {

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { chantierDuGeste } from "@/server/ai/tools/chantier-vise";
 import { jourIso } from "@/lib/jour";
 import { montantEcrivable } from "@/lib/montant-ecrivable";
-import { exigerEcran } from "@/server/garde-action";
+import { exigerDureeEtEquipeModifiables, exigerEcran } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { preparerDevisDepuisDictee, enregistrerPrecisionsEtReprendre } from "@/server/services/devis-depuis-dictee";
 import {
@@ -125,6 +125,7 @@ export async function mettreAJourDureeEquipeAction(
 ) {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/chantiers", "changer la durée ou l'équipe");
+  await exigerDureeEtEquipeModifiables(ctx, chantierId, "changer la durée ou l'équipe");
   return mettreAJourDureeEquipe(ctx, chantierId, data);
 }
 

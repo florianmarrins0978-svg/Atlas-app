@@ -35,6 +35,7 @@ export default function InformationsClient({
   initialMateriel,
   initialDuree,
   initialEquipe,
+  dureeEtEquipeModifiables,
   brouillonInitial,
   transcriptionDisponible,
   dicteeNonTranscrite,
@@ -44,6 +45,8 @@ export default function InformationsClient({
   initialMateriel: Ligne[];
   initialDuree: string;
   initialEquipe: string;
+  /** Faux pour la facturation sur un chantier déjà posé au planning (`dureeEtEquipeModifiables`). */
+  dureeEtEquipeModifiables: boolean;
   brouillonInitial: BrouillonInitial;
   transcriptionDisponible: boolean;
   dicteeNonTranscrite: boolean;
@@ -191,6 +194,7 @@ export default function InformationsClient({
         {casesVisibles && (
         <BandeDuree
           label="Ce chantier prend"
+          disabled={!dureeEtEquipeModifiables}
           valeur={dureeDemiJournees}
           onChange={(dj) => {
             const texte = libelleDuree(dj);
@@ -206,6 +210,7 @@ export default function InformationsClient({
           value={equipe}
           onChange={setEquipe}
           onBlurCommit={(duChamp) => mettreAJourDureeEquipeAction(chantierId, { tailleEquipe: duChamp })}
+          disabled={!dureeEtEquipeModifiables}
         />
         )}
 
@@ -340,12 +345,14 @@ function Field({
   value,
   onChange,
   onBlurCommit,
+  disabled,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   /** À la sortie du champ, **avec ce qu'il porte** (`test-valeur-du-champ.ts`). */
   onBlurCommit: (valeurDuChamp: string) => void;
+  disabled?: boolean;
 }) {
   return (
     <label className="flex flex-col gap-2">
@@ -356,7 +363,8 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onBlur={(e) => onBlurCommit(e.currentTarget.value)}
-        className={`w-full ${champPlage}`}
+        disabled={disabled}
+        className={`w-full ${champPlage} disabled:opacity-40`}
         style={styleChampPlage}
       />
     </label>

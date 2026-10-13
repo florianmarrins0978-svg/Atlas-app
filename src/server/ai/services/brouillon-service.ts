@@ -9,6 +9,7 @@ import {
 import { ajouterPrestation, listerPrestations, completerPrestation } from "../../repositories/prestations";
 import { ajouterMateriel, listerMateriel } from "../../repositories/materiel";
 import { mettreAJourDureeEquipe } from "../../repositories/chantiers";
+import { dureeEtEquipeModifiablesIci } from "../../garde-action";
 import { extraire } from "./extraction-service";
 import { termesPourConsigne, correctionsRecentes } from "../../repositories/termes-metier";
 import { construireConsigneMetier } from "../../../lib/consigne-metier";
@@ -203,7 +204,11 @@ export async function confirmerBrouillon(ctx: Ctx, chantierId: string): Promise<
     materielConnu.add(libelle.toLowerCase());
     materielCree.push(await ajouterMateriel(ctx, chantierId, libelle));
   }
-  if (contenu.dureePrevue || contenu.tailleEquipe) {
+  // La durée et l'équipe suivent la même règle qu'à la main
+  // (`dureeEtEquipeModifiables`) : un brouillon confirmé par la facturation sur
+  // un chantier déjà posé ne déplace pas ses jours. Le reste du brouillon, lui,
+  // s'applique : c'est le devis qu'elle rédige.
+  if ((contenu.dureePrevue || contenu.tailleEquipe) && (await dureeEtEquipeModifiablesIci(ctx, chantierId))) {
     await mettreAJourDureeEquipe(ctx, chantierId, {
       dureePrevue: contenu.dureePrevue ?? undefined,
       tailleEquipe: contenu.tailleEquipe ?? undefined,

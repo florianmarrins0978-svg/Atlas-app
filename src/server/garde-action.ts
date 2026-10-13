@@ -1,5 +1,6 @@
 import {
   cheminAutorise,
+  dureeEtEquipeModifiables,
   peutFacturer,
   peutGererDevis,
   peutModifierLePlanning,
@@ -8,7 +9,7 @@ import {
 import { fonctionOuverte, type FonctionReservee } from "@/lib/abonnements";
 import { accesDeLaPersonne, getRole } from "./autorisation";
 import { abonnementDeLEntreprise } from "./repositories/abonnements";
-import { chantiersDeLEquipe } from "./repositories/chantiers";
+import { chantiersDeLEquipe, getChantier } from "./repositories/chantiers";
 import type { Ctx } from "./repositories/context";
 
 /**
@@ -236,6 +237,26 @@ export async function exigerEcritureSurLePlanning(ctx: Ctx, action: string): Pro
   if (!role || !peutModifierLePlanning(role)) {
     throw new ActionRefuseeError(action);
   }
+}
+
+/**
+ * **CETTE PERSONNE PEUT-ELLE CHANGER LA DURÉE OU L'ÉQUIPE DE CE CHANTIER ?**
+ *
+ * La règle est `dureeEtEquipeModifiables` ; ce qui s'ajoute ici, c'est de
+ * savoir si le chantier est posé au planning. Le patron et le commercial ne
+ * paient pas cette lecture : la réponse ne dépend pas du chantier pour eux.
+ */
+export async function dureeEtEquipeModifiablesIci(ctx: Ctx, chantierId: string): Promise<boolean> {
+  const role = await getRole(ctx);
+  if (!role) return false;
+  if (dureeEtEquipeModifiables(role, true)) return true;
+  const chantier = await getChantier(ctx, chantierId);
+  return chantier !== null && dureeEtEquipeModifiables(role, chantier.datePlanifiee !== null);
+}
+
+/** La même question, posée par une action : un refus lève. */
+export async function exigerDureeEtEquipeModifiables(ctx: Ctx, chantierId: string, action: string): Promise<void> {
+  if (!(await dureeEtEquipeModifiablesIci(ctx, chantierId))) throw new ActionRefuseeError(action);
 }
 
 /**

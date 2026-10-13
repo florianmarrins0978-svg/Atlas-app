@@ -3,6 +3,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
+import { dureeEtEquipeModifiablesIci } from "@/server/garde-action";
 import { listerPrestations } from "@/server/repositories/prestations";
 import { listerMateriel } from "@/server/repositories/materiel";
 import { getBrouillon } from "@/server/repositories/brouillons-informations";
@@ -21,11 +22,13 @@ export default async function InformationsPage({ params }: { params: Promise<{ i
   const chantier = await getChantier(ctx, id);
   if (!chantier) notFound();
 
-  const [prestations, materiel, brouillon, note] = await Promise.all([
+  const [prestations, materiel, brouillon, note, dureeModifiable] = await Promise.all([
     listerPrestations(ctx, id),
     listerMateriel(ctx, id),
     getBrouillon(ctx, id),
     getNoteVocale(ctx, id),
+    // La même question que celle que l'action pose avant d'écrire.
+    dureeEtEquipeModifiablesIci(ctx, id),
   ]);
 
   // Une transcription « réussie » qui ne porte que notre texte de remplacement
@@ -102,6 +105,7 @@ export default async function InformationsPage({ params }: { params: Promise<{ i
           initialMateriel={materiel.map((m) => ({ id: m.id, libelle: m.libelle }))}
           initialDuree={chantier.dureePrevue ?? ""}
           initialEquipe={chantier.tailleEquipe ?? ""}
+          dureeEtEquipeModifiables={dureeModifiable}
           brouillonInitial={
             brouillon
               ? {

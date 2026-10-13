@@ -6,6 +6,19 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-13
+
+- **La facturation change la durée et l'équipe d'un chantier tant qu'il n'est pas posé au
+  planning, plus après (sa décision « A » du 13 octobre).** La durée sert à deux choses : chiffrer
+  la main-d'œuvre du devis, que la facturation rédige, et réserver des jours au planning, qu'elle
+  ne touche pas. La campagne de sécurité de l'établi QA avait trouvé qu'elle la changeait toujours,
+  la garde ne demandant que l'écran Chantiers. La règle vit dans `dureeEtEquipeModifiables`
+  (`src/lib/acces-roles.ts`) ; `dureeEtEquipeModifiablesIci` (`src/server/garde-action.ts`) la pose
+  sur un chantier, et sert aux trois endroits qui écrivent ou montrent la durée : l'action, la
+  confirmation du brouillon de devis, et l'écran, qui grise la bande et le champ au lieu de laisser
+  saisir ce qui serait refusé. Éprouvé rouge puis vert sous de vrais comptes :
+  `test-roles-capacites-db.ts`.
+
 ## 2026-10-11
 
 - **Six écrans repris d'après leurs planches /impeccable, en un seul lot (sa décision).** Il a

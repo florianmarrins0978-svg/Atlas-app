@@ -572,6 +572,22 @@ export function peutModifierLePlanning(role: Role): boolean {
 }
 
 /**
+ * **LA DURÉE ET L'ÉQUIPE D'UN CHANTIER, QUI LES CHANGE ?**
+ *
+ * Elles servent à deux choses : chiffrer la main-d'œuvre du devis, que la
+ * facturation rédige, et réserver des jours au planning, qu'elle ne touche pas.
+ * Sa décision du 13 octobre 2026 (« A ») tranche entre les deux : la
+ * facturation les change **tant que le chantier n'est pas posé au planning** ;
+ * une fois posé, seuls ceux qui écrivent au planning.
+ *
+ * La campagne de sécurité de l'établi QA (13 octobre 2026) avait trouvé
+ * qu'elle les changeait toujours, la garde ne demandant que l'écran Chantiers.
+ */
+export function dureeEtEquipeModifiables(role: Role, auPlanning: boolean): boolean {
+  return peutModifierLePlanning(role) || (peutGererDevis(role) && !auPlanning);
+}
+
+/**
  * POSER UN RETOUR D'INTERVENTION — **la première écriture jamais rendue au
  * salarié**, et la seule.
  *
