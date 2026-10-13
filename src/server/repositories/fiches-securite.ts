@@ -196,7 +196,10 @@ export async function enregistrerLaFiche(
     const [ligne] = await tx
       .update(fichesSecurite)
       .set({ contenu: quoi.contenu, etapeVue: quoi.etapeVue, loiLue: quoi.loiLue, updatedAt: new Date() })
-      .where(eq(fichesSecurite.chantierId, chantierId))
+      // **Signée, elle ne se réécrit plus** : sinon le contenu, et avec lui la
+      // liste des photos, changeait sous une signature sans passer par
+      // « Modifier ». C'est la porte que la campagne QA du 13 octobre a ouverte.
+      .where(and(eq(fichesSecurite.chantierId, chantierId), isNull(fichesSecurite.signeeLe)))
       .returning();
     if (!ligne) return null;
     await tx
@@ -247,19 +250,32 @@ export async function signerLaFiche(
         transmiseLe: null,
         updatedAt: new Date(),
       })
-      .where(eq(fichesSecurite.chantierId, chantierId))
+      // Une signature ne se pose pas par-dessus une autre : elle effacerait la
+      // date d'envoi d'une fiche transmise. On la refait après « Modifier ».
+      .where(and(eq(fichesSecurite.chantierId, chantierId), isNull(fichesSecurite.signeeLe)))
       .returning();
     return ligne ? versFiche(ligne) : null;
   });
 }
 
-/** Rouvrir une fiche signée pour la modifier : la signature part, on re-signe. */
-export async function rouvrirLaFiche(ctx: Ctx, chantierId: string): Promise<FicheEnregistree | null> {
+/**
+ * Rouvrir une fiche signée pour la modifier : la signature part, on re-signe.
+ *
+ * `memeTransmise` vient de `peutRouvrirUneFicheTransmise`. Faux, la condition
+ * est dans le `WHERE` et non dans un test fait avant : une fiche transmise entre
+ * la lecture et l'écriture ne se rouvrirait pas davantage.
+ */
+export async function rouvrirLaFiche(
+  ctx: Ctx,
+  chantierId: string,
+  { memeTransmise }: { memeTransmise: boolean }
+): Promise<FicheEnregistree | null> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const cible = eq(fichesSecurite.chantierId, chantierId);
     const [ligne] = await tx
       .update(fichesSecurite)
       .set({ signaturePng: null, signataire: null, signeePar: null, signeeLe: null, transmiseLe: null, updatedAt: new Date() })
-      .where(eq(fichesSecurite.chantierId, chantierId))
+      .where(memeTransmise ? cible : and(cible, isNull(fichesSecurite.transmiseLe)))
       .returning();
     return ligne ? versFiche(ligne) : null;
   });
@@ -343,7 +359,8 @@ export async function listerLesFichesSignees(ctx: Ctx): Promise<FicheEnListe[]> 
 export async function attacherPhotoALaFiche(ctx: Ctx, chantierId: string, photoId: string): Promise<boolean> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [ligne] = await tx.select().from(fichesSecurite).where(eq(fichesSecurite.chantierId, chantierId)).limit(1);
-    if (!ligne) return false;
+    // Signée, la fiche ne gagne pas plus de photos qu'elle n'en perd.
+    if (!ligne || ligne.signeeLe !== null) return false;
     const contenu = lireContenu(ligne.contenu);
     if (contenu.photoIds.includes(photoId)) return true;
     await tx
@@ -376,6 +393,10 @@ export async function detacherPhotoDeLaFiche(
     if (!ligne) return { ok: false, raison: "La fiche n’existe pas encore." };
     if (ligne.signeeLe !== null) return { ok: false, raison: "La fiche est signée : ses photos ne se retirent plus." };
     const contenu = lireContenu(ligne.contenu);
+    // **Seulement une photo de CETTE fiche.** Sans cette condition, n'importe
+    // quelle photo de l'entreprise passait pour « retirée », et l'action qui
+    // suit l'effaçait (campagne QA, 13 octobre 2026).
+    if (!contenu.photoIds.includes(photoId)) return { ok: false, raison: "Cette photo n’est pas sur la fiche." };
     await tx
       .update(fichesSecurite)
       .set({

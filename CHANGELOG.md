@@ -19,6 +19,40 @@ Format : le plus récent en tête.
   saisir ce qui serait refusé. Éprouvé rouge puis vert sous de vrais comptes :
   `test-roles-capacites-db.ts`.
 
+- **La fiche de sécurité : signée, elle est figée ; transmise, le salarié ne la rouvre plus.** Sa
+  règle du 13 octobre : *« s'il se trompe, il faut qu'il puisse supprimer une photo ; s'il a mal
+  fait sa signature, la supprimer pour la refaire. Une fois le document envoyé, il ne faut plus
+  qu'il puisse ni modifier sa signature, ni retirer une photo. »* La campagne de sécurité de
+  l'établi QA avait trouvé que « Modifier » rouvrait une fiche déjà transmise pour n'importe quel
+  rôle, ce qui effaçait sa date d'envoi et rendait ses photos retirables. En la corrigeant, deux
+  autres portes sont apparues, au même endroit : l'enregistrement réécrivait le contenu d'une fiche
+  signée (donc sa liste de photos) sans passer par « Modifier », et une signature pouvait se poser
+  par-dessus une autre. Les trois se ferment dans le dépôt (`src/server/repositories/fiches-securite.ts`),
+  par une condition dans le `WHERE` et non par un test fait avant l'écriture. Qui peut rouvrir une
+  fiche transmise se lit dans une seule fonction, `peutRouvrirUneFicheTransmise`, que l'écran
+  emploie aussi pour ne pas dessiner « Modifier ». Avant l'envoi, rien ne change pour personne.
+  Éprouvé rouge puis vert : `test-fiche-securite-db.ts`, `test-acces-roles.ts`.
+
+- **La fiche de sécurité passée au crible, à sa demande : trois failles de plus, fermées.** *« Fais
+  des tests sur la fiche de sécurité pour voir s'il n'existe pas d'autres failles, et corrige-les. »*
+  1. **Retirer une photo de la fiche effaçait n'importe quelle photo de l'entreprise.** Le retrait
+     ne vérifiait pas que la photo était sur cette fiche ; l'effacement qui suit l'emportait donc,
+     pour qui avait accès au planning, salarié compris, avec l'identifiant d'une photo d'un autre
+     chantier ou d'un retour. `detacherPhotoDeLaFiche` refuse désormais une photo qui n'est pas la
+     sienne.
+  2. **Une photo de la fiche s'effaçait par la pellicule, et disparaissait du PDF signé.** La
+     précaution d'avant gardait le fichier, mais le PDF ne lit que les photos vivantes : la fiche
+     montrait un trou. `supprimerPhoto` refuse une photo tenue par une fiche ; elle ne part que par
+     la fiche, tant qu'elle n'est pas signée. La pellicule rend le refus au lieu de cacher la photo.
+  3. **Ce que le téléphone envoie n'était pas vérifié.** N'importe quelle forme entrait en base,
+     jusqu'à 15 Mo toutes les deux secondes, et une forme fausse rendait la fiche et son PDF
+     illisibles. `ecritureRecue` et `refusDeLaSignature` (`src/lib/fiche-securite.ts`) bornent
+     chaque champ, chaque liste, les photos, l'étape, et exigent un vrai PNG pour la signature,
+     avant toute écriture. Ce qui n'est pas un champ de la fiche ne s'écrit plus.
+  Éprouvé rouge puis vert : `test-fiche-securite.ts`, `test-fiche-securite-db.ts`. Regardé et
+  laissé : la mémoire des fiches, qu'un salarié alimente aussi, ne fait que préremplir la fiche
+  suivante, que le chef d'entreprise relit avant de signer.
+
 - **Next.js passe de 16.3.2 à 16.3.8, et sharp de 0.35.3 à 0.35.5 : trois failles critiques
   fermées.** La campagne de sécurité de l'établi QA (`npm audit`, 13 octobre) a relevé, sur la
   version servie, une exécution de code à distance sans compte par l'optimisation d'images

@@ -29,6 +29,7 @@ import {
   peutFacturer,
   peutModifierLePlanning,
   peutPoserUnRetour,
+  peutRouvrirUneFicheTransmise,
   peutVoirLesMontants,
 } from "../src/lib/acces-roles";
 import { rubriquesReglages, adressesAutorisees } from "../src/lib/rubriques-reglages";
@@ -437,6 +438,19 @@ essai("L'ÉCRAN NE PROMET PAS CE QUE LA RÈGLE REFUSE — le mensonge du 13 aoû
 // élargit la brèche « puisqu'il écrit déjà ».
 essai("le salarié peut poser un retour d'intervention", () => {
   assert.equal(peutPoserUnRetour("salarie"), true);
+});
+
+// Sa règle du 13 octobre 2026 : une fois la fiche de sécurité envoyée, le
+// salarié ne retire plus ni sa signature ni une photo. Le patron, lui, garde
+// « Modifier » : c'est sa responsabilité qui est engagée.
+essai("une fiche de sécurité transmise ne se rouvre pas par le salarié", () => {
+  assert.equal(peutRouvrirUneFicheTransmise("salarie"), false);
+});
+
+essai("les autres rôles la rouvrent, transmise ou non", () => {
+  for (const role of ROLES.filter((r) => r !== "salarie")) {
+    assert.equal(peutRouvrirUneFicheTransmise(role), true, `${role} ne peut plus rouvrir une fiche transmise`);
+  }
 });
 
 essai("tous les rôles le peuvent — un retour n'est pas un privilège", () => {

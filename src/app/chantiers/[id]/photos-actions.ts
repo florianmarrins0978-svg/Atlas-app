@@ -75,7 +75,6 @@ export async function ajouterPhotoAction(
 
 export async function supprimerPhotoAction(photoId: string) {
   const ctx = await getCurrentCtx();
-  // Une suppression DURE : `supprimerPhoto` efface la ligne, pas un `deletedAt`.
   await exigerEcran(ctx, "/chantiers", "supprimer une photo de chantier");
-  await supprimerPhoto(ctx, photoId);
+  return supprimerPhoto(ctx, photoId);
 }

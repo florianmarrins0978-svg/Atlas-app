@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getRole } from "@/server/autorisation";
 import { exigerEcran, exigerChantierDansSaPortee } from "@/server/garde-action";
-import { cheminAutorise, peutPoserUnRetour } from "@/lib/acces-roles";
+import { cheminAutorise, peutPoserUnRetour, peutRouvrirUneFicheTransmise } from "@/lib/acces-roles";
 import {
   attacherPhotoALaFiche,
   contexteDuChantier,
@@ -20,7 +20,8 @@ import {
 } from "@/server/repositories/fiches-securite";
 import { listerPhotos, recevoirPhotoDeChantier, supprimerPhoto } from "@/server/repositories/photos";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
-import { POINTS_MINIMUM_D_UNE_SIGNATURE, type ContenuFiche } from "@/lib/fiche-securite";
+import type { Ctx } from "@/server/repositories/context";
+import { NOMBRE_D_ETAPES, contenuRecu, ecritureRecue, refusDeLaSignature, type ContenuFiche } from "@/lib/fiche-securite";
 
 // LES GESTES DE LA FICHE DE SÉCURITÉ, depuis le planning.
 //
@@ -45,6 +46,14 @@ async function garder(chantierId: string, action: string) {
   return ctx;
 }
 
+const FICHE_SIGNEE = "La fiche est signée : touchez « Modifier » pour la changer.";
+
+/** Une écriture refusée : la fiche n'existe pas, ou elle est signée. Les deux ne se corrigent pas pareil. */
+async function raisonDuRefusDEcriture(ctx: Ctx, chantierId: string): Promise<string> {
+  const fiche = await ficheDuChantier(ctx, chantierId);
+  return fiche?.signeeLe ? FICHE_SIGNEE : "La fiche n’existe pas encore : ouvrez-la d’abord.";
+}
+
 function rafraichir(chantierId: string) {
   revalidatePath("/planning");
   revalidatePath(`/planning/fiche-de-securite/${chantierId}`);
@@ -58,10 +67,17 @@ function rafraichir(chantierId: string) {
  */
 export async function etatDeLaFicheAction(
   chantierId: string
-): Promise<{ fiche: FicheEnregistree | null; paysageOuvert: boolean }> {
+): Promise<{ fiche: FicheEnregistree | null; paysageOuvert: boolean; modifiable: boolean }> {
   const ctx = await garder(chantierId, "lire la fiche de sécurité");
   const role = await getRole(ctx);
-  return { fiche: await ficheDuChantier(ctx, chantierId), paysageOuvert: role !== null && cheminAutorise(role, "/paysage") };
+  const fiche = await ficheDuChantier(ctx, chantierId);
+  return {
+    fiche,
+    paysageOuvert: role !== null && cheminAutorise(role, "/paysage"),
+    // La même règle que celle qui refuse : un « Modifier » qu'on toucherait pour
+    // se voir refuser se lirait comme une panne.
+    modifiable: role !== null && (!fiche?.transmiseLe || peutRouvrirUneFicheTransmise(role)),
+  };
 }
 
 export type FicheOuverte = {
@@ -98,6 +114,9 @@ export async function ajouterPhotoDeLaFicheAction(
   const chantierId = String(formData.get("chantierId") ?? "");
   if (!chantierId) return { ok: false, raison: "Chantier inconnu." };
   const ctx = await garder(chantierId, "ajouter une photo à la fiche de sécurité");
+  // Avant de recevoir l'image : refusée après coup, elle resterait une photo
+  // de chantier ordinaire, visible dans « Travaux à faire ».
+  if ((await ficheDuChantier(ctx, chantierId))?.signeeLe) return { ok: false, raison: FICHE_SIGNEE };
 
   const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
   if (!limite.autorise) return { ok: false, raison: limite.message };
@@ -127,7 +146,8 @@ export async function retirerPhotoDeLaFicheAction(
   // **Détachée d'abord, effacée ensuite** : `supprimerPhoto` regarde qui tient
   // encore la photo pour décider de la purge du fichier. Tant que la liaison
   // existe, il la croirait gardée par la fiche et laisserait le fichier.
-  await supprimerPhoto(ctx, photoId);
+  const effacee = await supprimerPhoto(ctx, photoId);
+  if (!effacee.ok) return effacee;
   rafraichir(chantierId);
   return { ok: true };
 }
@@ -151,8 +171,10 @@ export async function enregistrerLaFicheAction(
   quoi: { contenu: ContenuFiche; etapeVue: number; loiLue: boolean; rafraichirLesEcrans?: boolean }
 ): Promise<{ ok: true } | Refus> {
   const ctx = await garder(chantierId, "enregistrer la fiche de sécurité");
-  const fiche = await enregistrerLaFiche(ctx, chantierId, quoi);
-  if (!fiche) return { ok: false, raison: "La fiche n’existe pas encore : ouvrez-la d’abord." };
+  const recue = ecritureRecue(quoi);
+  if (!recue.ok) return recue;
+  const fiche = await enregistrerLaFiche(ctx, chantierId, recue.ecriture);
+  if (!fiche) return { ok: false, raison: await raisonDuRefusDEcriture(ctx, chantierId) };
   if (quoi.rafraichirLesEcrans !== false) rafraichir(chantierId);
   return { ok: true };
 }
@@ -162,13 +184,14 @@ export async function signerLaFicheAction(
   quoi: { contenu: ContenuFiche; signaturePng: string; points: number }
 ): Promise<{ ok: true; signeeLe: string } | Refus> {
   const ctx = await garder(chantierId, "signer la fiche de sécurité");
-  if (quoi.points < POINTS_MINIMUM_D_UNE_SIGNATURE || !quoi.signaturePng.startsWith("data:image/png;base64,")) {
-    return { ok: false, raison: "Signez au doigt avant de signer la fiche." };
-  }
-  if (!quoi.contenu.signataire.trim()) return { ok: false, raison: "Le nom du signataire manque." };
-  const enregistree = await enregistrerLaFiche(ctx, chantierId, { contenu: quoi.contenu, etapeVue: 6, loiLue: true });
-  if (!enregistree) return { ok: false, raison: "La fiche n’existe pas encore : ouvrez-la d’abord." };
-  const signee = await signerLaFiche(ctx, chantierId, { signaturePng: quoi.signaturePng, signataire: quoi.contenu.signataire });
+  const refusDuTrait = refusDeLaSignature(quoi.signaturePng, quoi.points);
+  if (refusDuTrait) return { ok: false, raison: refusDuTrait };
+  const recu = contenuRecu(quoi.contenu);
+  if (!recu.ok) return recu;
+  if (!recu.contenu.signataire.trim()) return { ok: false, raison: "Le nom du signataire manque." };
+  const enregistree = await enregistrerLaFiche(ctx, chantierId, { contenu: recu.contenu, etapeVue: NOMBRE_D_ETAPES, loiLue: true });
+  if (!enregistree) return { ok: false, raison: await raisonDuRefusDEcriture(ctx, chantierId) };
+  const signee = await signerLaFiche(ctx, chantierId, { signaturePng: quoi.signaturePng, signataire: recu.contenu.signataire });
   if (!signee?.signeeLe) return { ok: false, raison: "La signature n’a pas pu être enregistrée." };
   rafraichir(chantierId);
   return { ok: true, signeeLe: signee.signeeLe.toISOString() };
@@ -177,8 +200,16 @@ export async function signerLaFicheAction(
 /** « Modifier » une fiche signée : la signature part, tout se relit, on re-signe. */
 export async function rouvrirLaFicheAction(chantierId: string): Promise<{ ok: true } | Refus> {
   const ctx = await garder(chantierId, "modifier la fiche de sécurité");
-  const fiche = await rouvrirLaFiche(ctx, chantierId);
-  if (!fiche) return { ok: false, raison: "Aucune fiche à modifier." };
+  const role = await getRole(ctx);
+  const memeTransmise = role !== null && peutRouvrirUneFicheTransmise(role);
+  const fiche = await rouvrirLaFiche(ctx, chantierId, { memeTransmise });
+  if (!fiche) {
+    const actuelle = await ficheDuChantier(ctx, chantierId);
+    if (actuelle?.transmiseLe && !memeTransmise) {
+      return { ok: false, raison: "La fiche est transmise : seul le chef d’entreprise peut la modifier." };
+    }
+    return { ok: false, raison: "Aucune fiche à modifier." };
+  }
   rafraichir(chantierId);
   return { ok: true };
 }

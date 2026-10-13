@@ -82,7 +82,10 @@ export default function Pellicule({
   const retraits = useRetraits({
     valider: async (id) => {
       try {
-        await supprimerPhotoAction(id);
+        const r = await supprimerPhotoAction(id);
+        // Un refus ramène la photo avec son motif (`useRetraits`), plutôt que
+        // de la laisser disparaître d'un écran où elle est toujours.
+        if (!r.ok) return { succes: false, erreur: r.raison };
         setPhotos((p) => p.filter((ph) => ph.id !== id));
         // La fiche compte les photos pour dire où en est le chantier ; elle se
         // redemande d'elle-même une fois l'écriture faite (`useRetraits`), ici

@@ -284,16 +284,23 @@ function extensionDe(storageKey: string): string {
 // La ligne disparaît quand même de la pellicule du chantier : c'est son geste,
 // et il reste vrai. C'est le FICHIER qui survit, parce qu'un autre écran en
 // dépend.
-export async function supprimerPhoto(ctx: Ctx, photoId: string) {
-  // …ou une fiche de sécurité, gardée deux ans (migration 0099) : même règle.
-  const tenueParUnRetour = (await photoTenueParUnRetour(ctx, photoId)) || (await photoTenueParUneFiche(ctx, photoId));
+export async function supprimerPhoto(ctx: Ctx, photoId: string): Promise<{ ok: true } | { ok: false; raison: string }> {
+  // **Une photo de la fiche de sécurité ne part que par la fiche**, et tant
+  // qu'elle n'est pas signée (`detacherPhotoDeLaFiche`). Effacée d'ici, elle
+  // gardait son fichier mais disparaissait du PDF, qui ne lit que les photos
+  // vivantes : la fiche signée montrait un trou. Et ce geste valait pour
+  // n'importe quelle photo de l'entreprise (campagne QA, 13 octobre 2026).
+  if (await photoTenueParUneFiche(ctx, photoId)) {
+    return { ok: false, raison: "Cette photo est dans la fiche de sécurité : elle se retire depuis la fiche." };
+  }
+  const tenueParUnRetour = await photoTenueParUnRetour(ctx, photoId);
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [photo] = await tx.select().from(photos).where(eq(photos.id, photoId)).limit(1);
-    if (!photo) return null;
+    if (!photo) return { ok: false, raison: "Cette photo n’existe plus." };
     await tx.update(photos).set({ deletedAt: new Date() }).where(eq(photos.id, photoId));
     if (!tenueParUnRetour) {
       await tx.insert(fichiersAPurger).values({ storageKey: photo.storageKey });
     }
-    return photo;
+    return { ok: true };
   });
 }
