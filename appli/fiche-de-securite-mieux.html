@@ -238,6 +238,17 @@
   .personne .nom{flex:1;min-width:0;font-size:15px}
   .personne .nom small{display:block;font-size:12px;color:var(--gris)}
   .personne img.trace{flex:none;width:84px;height:40px;object-fit:contain;border-radius:6px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait-doux)}
+  .destinataire{margin-top:10px;padding:12px 14px;border-radius:14px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait)}
+  .destinataire b{font:400 17px/1.2 ui-serif,Georgia,serif}
+  .destinataire p{margin:6px 0 0;font-size:14px;line-height:1.45;color:var(--encre-douce)}
+  .destinataire p b{font:inherit;font-weight:700;color:var(--encre)}
+  .destinataire .choix{margin-top:10px}
+  .obligation{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;background:var(--or-papier);color:var(--or-texte);font-size:11.5px;font-weight:600;vertical-align:2px}
+  body.nuit .obligation{color:var(--or)}
+  .obligation.libre{background:var(--vert-voile);color:var(--pin)}
+  body.nuit .obligation.libre{color:var(--encre)}
+  .destinataire p.envoye{display:flex;align-items:center;gap:8px;margin-top:10px;color:var(--pin);font-weight:600}
+  body.nuit .destinataire p.envoye{color:var(--encre)}
   .petit-bouton{flex:none;min-height:40px;padding:0 16px;border-radius:999px;background:var(--plein);color:var(--sur-plein);font-size:14px}
   .voile{position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;z-index:2}
   .feuillet{width:100%;background:var(--fond);border-radius:20px 20px 0 0;padding:18px 16px 16px}
@@ -400,6 +411,7 @@ function depart() {
     croquis: null,       // null | "photo" | "blanc"
     outil: "crayon", marques: [], edition: false, accesDebut: null,
     photos: 2,
+    envoyes: new Set(), prevention: null,
     signatures: {}, pad: null, signee: false, sig: false, refus: null,
   };
 }
@@ -735,6 +747,36 @@ function feuilletPersonne() {
   </div></div>`;
 }
 
+/* À QUI L'ENVOYER, ET QUAND. Sa consigne du 14 octobre : « il faut se dire que l'utilisateur ne connaît
+   pas la loi, donc il faut tout lui expliquer pour qu'il soit en règle ». Et sa question juste avant : « c'est
+   bien au client qu'on envoie la fiche ? ». Non, en règle générale. La notice MSA 12350, lue à la source :
+   la fiche est « présentée aux travailleurs avant le début des travaux », « disponible en permanence sur le
+   chantier », « communiquée au chef de l'entreprise utilisatrice » quand il y a un plan de prévention
+   (art. L. 4511-1 du code du travail), et chaque entreprise intervenante en fait une. Un client particulier
+   n'a donc rien à recevoir ; on le dit, plutôt que de lui envoyer par habitude. */
+function aQuiLEnvoyer(equipeASigne) {
+  const autres = [...EXTERNES.filter((x) => e.externes.has(x.nom)).map((x) => x.nom), ...Array.from({ length: e.nouvelles }, (_, k) => `Nouvelle entreprise ${k + 1}`)];
+  const envoyer = (cle, mot) => e.envoyes.has(cle)
+    ? `<p class="envoye"><span class="rond plein" style="width:20px;height:20px">${coche}</span>Envoyée</p>`
+    : `<button type="button" class="creux" data-envoyer="${cle}" style="margin-top:10px">${mot}</button>`;
+  return `<div class="bloc"><p class="etiquette">À qui l’envoyer</p>
+    <div class="destinataire"><b>Votre équipe</b><span class="obligation">Obligatoire, avant de commencer</span>
+      <p>Chacun doit l’avoir lue avant le premier coup de tronçonneuse. ${equipeASigne ? "C’est fait : tout le monde a signé." : "Faites signer chacun ci-dessus."}</p>
+      ${envoyer("equipe", "Envoyer à l’équipe")}</div>
+    <div class="destinataire"><b>Les entreprises sur place</b>${autres.length ? `<span class="obligation">Obligatoire, avant de commencer</span>
+      <p>Montrez-leur la fiche : les secours s’organisent ensemble. Chacune fait aussi la sienne.</p>
+      ${autres.map((n) => envoyer("st-" + n, `Envoyer à ${n}`)).join("")}` : `<span class="obligation libre">Rien à faire</span><p>Aucune autre entreprise sur ce chantier.</p>`}</div>
+    <div class="destinataire"><b>Votre client</b>
+      <p>Ce client (une entreprise, une mairie, un syndic) vous a-t-il fait remplir un plan de prévention ?</p>
+      <p style="font-size:13px;color:var(--gris)">C’est le document qu’un client professionnel vous fait signer avant de travailler sur son site.</p>
+      <div class="choix"><button type="button" data-prevention="non" aria-pressed="${e.prevention === "non"}">Non</button><button type="button" data-prevention="oui" aria-pressed="${e.prevention === "oui"}">Oui</button></div>
+      ${e.prevention === "oui" ? `<p><b>Obligatoire</b> : envoyez-lui la fiche.</p>${envoyer("client", "Envoyer au client")}`
+        : e.prevention === "non" ? `<p>Rien à envoyer. Un particulier n’a pas à la recevoir.</p>` : ""}</div>
+    <div class="destinataire"><b>La garder</b><span class="obligation libre">Fait par Atlas</span>
+      <p>Elle doit rester sur le chantier pendant les travaux : votre téléphone suffit. Atlas la garde deux ans, jusqu’au 14 octobre 2028, rangée dans Paysage.</p></div>
+  </div>`;
+}
+
 /* ═══ SIGNER ═══ */
 function signer() {
   const v = vides();
@@ -750,8 +792,9 @@ function signer() {
         <p class="aide" style="margin-top:10px">Chacun signe qu’il a lu la fiche, avant de commencer.</p>
         ${tous.map((p) => { const s = e.signatures[p]; return `<div class="personne"><span class="rond${s ? " plein" : ""}">${coche}</span><span class="nom">${p}${s ? `<small>A lu la fiche à ${s.heure}</small>` : ""}</span>${s ? `<img class="trace" src="${s.img}" alt="Signature de ${p}">` : `<button type="button" class="petit-bouton" data-signer-lu="${p}">Signer</button>`}</div>`; }).join("")}
       </div>
+      ${aQuiLEnvoyer(tous.length === lus)}
     </div>
-    <div class="pied"><p class="reste">${lus === tous.length ? "Toute l’équipe a lu la fiche" : `${tous.length - lus} pas encore signé${tous.length - lus > 1 ? "s" : ""}`}</p><button type="button" class="vert">Transmettre le PDF</button></div>
+    <div class="pied"><div class="deux-boutons" style="margin-top:0"><button type="button" class="creux">Ouvrir le PDF</button><button type="button" class="creux">Enregistrer le PDF</button></div></div>
     ${e.pad ? `<div class="voile"><div class="feuillet"><h3>${e.pad}</h3><p>J’ai pris connaissance de la fiche.</p>
       <div class="toile"><canvas id="toile"></canvas><div class="ligne-sig"></div></div>
       ${e.refus ? `<p class="aide alerte">${e.refus}</p>` : ""}
@@ -902,6 +945,8 @@ document.addEventListener("click", (ev) => {
   // regarder la toile. Une signature est désormais le trait lui-même, et sans trait, rien n'est signé.
   else if (d.signer) { if (!garderLaSignature(CHEF)) e.refus = "Signez dans le cadre d’abord."; else e.signee = true; }
   else if (d.signerLu) e.pad = d.signerLu;
+  else if (d.envoyer) e.envoyes.add(d.envoyer);
+  else if (d.prevention) e.prevention = d.prevention;
   else if (d.pad === "non") e.pad = null;
   else if (d.pad === "ok") { if (!garderLaSignature(e.pad)) e.refus = "Signez dans le cadre d’abord."; else e.pad = null; }
   else return;
