@@ -11,6 +11,7 @@
 import type { LigneAvoirStockee } from "../../lib/avoir";
 import type { AttestationLue } from "../../lib/attestation-lue";
 import type { PrestationContrat } from "../../lib/contrats-entretien";
+import type { SourcesVehicule } from "../../lib/vehicules";
 
 import {
   pgTable,
@@ -3919,4 +3920,41 @@ export const fichesSecuriteMemoire = pgTable("fiches_securite_memoire", {
     .references(() => entreprises.id, { onDelete: "cascade" }),
   contenu: jsonb("contenu").notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * Les véhicules de l'entreprise — sa planche du 14 octobre 2026 (migration
+ * 0131). Les règles vivent dans `src/lib/vehicules.ts`.
+ *
+ * Les trois papiers sont des colonnes, pas une table à part : un véhicule en a
+ * trois, chacun remplacé par le suivant, et c'est le dernier qu'on montre au
+ * salarié. L'ancien fichier reste dans le stockage.
+ */
+export const vehicules = pgTable("vehicules", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  nom: text("nom").notNull(),
+  plaque: text("plaque"),
+  modele: text("modele"),
+  ptacKg: integer("ptac_kg"),
+  genre: text("genre"),
+  assureur: text("assureur"),
+  numeroContrat: text("numero_contrat"),
+  assistance: text("assistance"),
+  controleTechniqueAvant: date("controle_technique_avant"),
+  pollutionAvant: date("pollution_avant"),
+  contreVisiteAvant: date("contre_visite_avant"),
+  sources: jsonb("sources").$type<SourcesVehicule>().notNull().default({}),
+  carteGriseCle: text("carte_grise_cle"),
+  carteGriseLe: timestamp("carte_grise_le", { withTimezone: true }),
+  assuranceCle: text("assurance_cle"),
+  assuranceLe: timestamp("assurance_le", { withTimezone: true }),
+  controleCle: text("controle_cle"),
+  controleLe: timestamp("controle_le", { withTimezone: true }),
+  createdBy: uuid("created_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });

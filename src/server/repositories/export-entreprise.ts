@@ -65,6 +65,7 @@ import {
   evenementsPaiement,
   tarifs,
   motsCatalogue,
+  vehicules,
 } from "../db/schema";
 import type { Ctx } from "./context";
 import { rangerLesFichiers, type FichierARanger } from "@/lib/rangement-sauvegarde";
@@ -197,6 +198,7 @@ export async function exporterEntreprise(
       sesFichesDeSecurite,
       sesPhotosDeFiche,
       saMemoireDesFiches,
+      sesVehicules,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -399,6 +401,9 @@ export async function exporterEntreprise(
       tx.select().from(fichesSecurite).where(eq(fichesSecurite.entrepriseId, e)),
       tx.select().from(fichesSecuritePhotos).where(eq(fichesSecuritePhotos.entrepriseId, e)),
       tx.select().from(fichesSecuriteMemoire).where(eq(fichesSecuriteMemoire.entrepriseId, e)),
+      // Les véhicules (migration 0131) : leurs papiers et les dates de leurs
+      // contrôles. Un véhicule retiré part aussi : la ligne garde ses papiers.
+      tx.select().from(vehicules).where(eq(vehicules.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -497,6 +502,7 @@ export async function exporterEntreprise(
       fiches_securite: sesFichesDeSecurite,
       fiches_securite_photos: sesPhotosDeFiche,
       fiches_securite_memoire: saMemoireDesFiches,
+      vehicules: sesVehicules,
     };
 
     const compte: Record<string, number> = {};
@@ -563,6 +569,12 @@ export async function exporterEntreprise(
      */
     for (const a of lesAchatsTva) ajouter(a.photoCle, "ticket-tva", null, a.fournisseur, jourDe(a.dateAchat));
     for (const ent of entreprise) ajouter(ent.logoStorageKey, "logo");
+    // Les papiers des véhicules, rangés sous « Véhicules » au nom du camion.
+    for (const v of sesVehicules) {
+      ajouter(v.carteGriseCle, "vehicule", null, `${v.nom} carte grise`, jourDe(v.carteGriseLe));
+      ajouter(v.assuranceCle, "vehicule", null, `${v.nom} assurance`, jourDe(v.assuranceLe));
+      ajouter(v.controleCle, "vehicule", null, `${v.nom} contrôle technique`, jourDe(v.controleLe));
+    }
 
     // Rangés sous le nom du client et du chantier, jamais sous leur
     // identifiant : c'est ce qu'il voit en ouvrant l'archive sur son téléphone.

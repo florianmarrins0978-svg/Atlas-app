@@ -219,7 +219,13 @@ const REGLAGES_A_SOI = [
  * personne : l'organigramme ne lui appartient pas, il se lit, et seul le patron
  * y écrit (`exigerProprietaire` dans ses actions).
  */
-const REGLAGES_A_TOUS = ["/reglages/organigramme"] as const;
+const REGLAGES_A_TOUS = [
+  "/reglages/organigramme",
+  // **Les véhicules, 14 octobre 2026** : le salarié y lit l'assurance de son
+  // camion pour le constat, et ouvre la copie de la carte grise. Seul le patron
+  // y écrit (`exigerProprietaire` dans `reglages/vehicules/actions.ts`).
+  "/reglages/vehicules",
+] as const;
 
 /**
  * CE QUE LA FACTURATION ATTEINT, ET RIEN D'AUTRE.

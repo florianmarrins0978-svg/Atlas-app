@@ -5,6 +5,13 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## CODÉ LE 14 OCTOBRE 2026, PAS ENCORE SUR `main` : LES VÉHICULES DE L'ENTREPRISE
+
+Réglages > Véhicules : papiers déposés en photo ou PDF et lus par l'IA, cases
+corrigibles à la main, rappels des contrôles sur l'accueil du patron, « En cas
+d'accident » pour les autres rôles. Migration 0131. Branche `lot/vehicules-code`.
+Reste : la batterie (niveau 3), puis `main`. `ARCHITECTURE.md` §461, `TODO.md`.
+
 ## SUR `main` LE 14 OCTOBRE 2026 : LA MAIN D'ŒUVRE QUI S'ADDITIONNE (13 octobre 2026)
 
 « + Main d'œuvre » dans chaque TVA pose une ligne qui compte au total et à la

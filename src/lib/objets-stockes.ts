@@ -169,6 +169,28 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
     absenceNormale: true,
     raisonAbsence: "un achat peut être saisi à la main, sans photo",
   },
+  // Les trois papiers d'un véhicule (migration 0131, 14 octobre 2026).
+  {
+    table: "vehicules",
+    colonne: "carte_grise_cle",
+    quoi: "la carte grise d'un véhicule",
+    absenceNormale: true,
+    raisonAbsence: "un véhicule peut être rempli à la main, sans papier déposé",
+  },
+  {
+    table: "vehicules",
+    colonne: "assurance_cle",
+    quoi: "l'assurance d'un véhicule",
+    absenceNormale: true,
+    raisonAbsence: "même raison que la carte grise",
+  },
+  {
+    table: "vehicules",
+    colonne: "controle_cle",
+    quoi: "le procès-verbal de contrôle technique d'un véhicule",
+    absenceNormale: true,
+    raisonAbsence: "même raison que la carte grise",
+  },
   {
     table: "images_phyto",
     colonne: "storage_key",

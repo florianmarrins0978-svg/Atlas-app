@@ -23,6 +23,9 @@ import { jourLisibleCourt } from "@/lib/mois";
 import { depuisCombien, joursEcoules } from "@/lib/rappels";
 import { enEuros } from "@/lib/euros";
 import Notifications from "./Notifications";
+import RappelsVehicules from "./RappelsVehicules";
+import { listerVehicules } from "@/server/repositories/vehicules";
+import { rappelsDesVehicules } from "@/lib/vehicules";
 import { receptionsASignaler } from "@/server/repositories/envois-factures";
 import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
 import { PHRASE_LECTURE_SEULE, etatDeLEssai } from "@/lib/abonnements";
@@ -72,7 +75,7 @@ export default async function ChantiersPage() {
   // siens lui-même ; ces trois-là se lisent ici, sur la même règle.
   const role = await getRole(ctx);
   const recoit = (domaine: DomaineDesRappels) => role !== null && recoitLesRappels(role, domaine);
-  const [chantiers, contrats, notifications, caducs, rappels, receptions, abonnement, retoursManques] = await Promise.all([
+  const [chantiers, contrats, notifications, caducs, rappels, receptions, abonnement, retoursManques, vehicules] = await Promise.all([
     listerChantiersPourAffichage(ctx),
     // Qui ne rédige pas de contrat n'en voit pas : il ne pourrait ni les
     // reprendre, ni les retirer.
@@ -89,6 +92,9 @@ export default async function ChantiersPage() {
     // « Retour pas reçu » : sa planche du 26 septembre 2026, seulement quand
     // il a allumé « Demander une preuve ».
     reglesDuRetour(ctx).then((r) => retoursPasRecusEnCours(ctx, r.demande, maintenant)),
+    // Les contrôles des véhicules, sa planche du 14 octobre 2026 : c'est le
+    // patron qui les fait passer, lui seul en reçoit le rappel.
+    role === "proprietaire" ? listerVehicules(ctx) : [],
   ]);
 
   // Le ruban et le bouton éteint se décident ICI, sur le même instant que les
@@ -262,6 +268,18 @@ export default async function ChantiersPage() {
                   facture: undefined,
                 };
               })
+            )}
+          />
+          <RappelsVehicules
+            rappels={rappelsDesVehicules(
+              vehicules.map((v) => ({
+                id: v.id,
+                nom: v.nom,
+                controleTechniqueAvant: v.controleTechniqueAvant,
+                pollutionAvant: v.pollutionAvant,
+                contreVisiteAvant: v.contreVisiteAvant,
+              })),
+              jourIso(maintenant)
             )}
           />
         </>

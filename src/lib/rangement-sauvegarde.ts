@@ -21,7 +21,9 @@ export type OrigineFichier =
   | "facture-pdf"
   | "avoir-pdf"
   | "logo"
-  | "ticket-tva";
+  | "ticket-tva"
+  /** Les papiers d'un véhicule (14 octobre 2026). */
+  | "vehicule";
 
 export type FichierARanger = {
   storageKey: string;
@@ -44,6 +46,7 @@ const DOSSIER_PAR_ORIGINE: Record<OrigineFichier, string> = {
   "avoir-pdf": "Factures",
   logo: "Entreprise",
   "ticket-tva": "Tickets de caisse",
+  vehicule: "Véhicules",
 };
 
 const NOM_PAR_ORIGINE: Record<OrigineFichier, string> = {
@@ -54,6 +57,7 @@ const NOM_PAR_ORIGINE: Record<OrigineFichier, string> = {
   "avoir-pdf": "Avoir",
   logo: "Logo",
   "ticket-tva": "Ticket",
+  vehicule: "Papier",
 };
 
 /**
@@ -101,8 +105,8 @@ export function rangerLesFichiers(
       dossiers.push(DOSSIER_PAR_ORIGINE[f.origine]);
     } else if (f.origine === "logo") {
       dossiers.push(DOSSIER_PAR_ORIGINE.logo);
-    } else if (f.origine === "ticket-tva") {
-      dossiers.push(DOSSIER_PAR_ORIGINE["ticket-tva"]);
+    } else if (f.origine === "ticket-tva" || f.origine === "vehicule") {
+      dossiers.push(DOSSIER_PAR_ORIGINE[f.origine]);
     } else {
       // Un diagnostic fait hors chantier : rien ne le rattache à un client.
       dossiers.push("Sans chantier", DOSSIER_PAR_ORIGINE[f.origine]);

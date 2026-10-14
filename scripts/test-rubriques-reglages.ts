@@ -171,7 +171,11 @@ essai("et AUCUNE adresse de l'entreprise ne lui est ouverte", () => {
   // **Une seule exception, et elle est la sienne** (27 septembre 2026) :
   // *« L'organigramme doit être visible par tout le monde ! »*. Toute autre
   // adresse de l'entreprise ouverte au membre est une fuite.
-  const fuites = delEntreprise.filter((a) => siennes.includes(a) && a !== "/reglages/organigramme");
+  // **Et les véhicules, 14 octobre 2026** : le salarié y lit l'assurance de
+  // son camion pour le constat ; il n'y écrit rien.
+  const fuites = delEntreprise.filter(
+    (a) => siennes.includes(a) && a !== "/reglages/organigramme" && a !== "/reglages/vehicules"
+  );
   assert.deepEqual(fuites, [], `un membre peut ouvrir : ${fuites.join(", ")}`);
 });
 
@@ -188,7 +192,7 @@ essai("un rôle inconnu est traité comme un membre, jamais comme le patron", ()
 essai("un membre reçoit ses cinq réglages personnels, et le même ensemble", () => {
   const ensembles = rubriquesReglages("salarie");
   assert.deepEqual(ensembles.map((e) => e.titre), ["L'entreprise", "Moi"]);
-  assert.deepEqual(ensembles[0].rubriques.map((r) => r.href), ["/reglages/organigramme"]);
+  assert.deepEqual(ensembles[0].rubriques.map((r) => r.href), ["/reglages/vehicules", "/reglages/organigramme"]);
   assert.deepEqual(
     ensembles[1].rubriques.map((r) => r.href),
     [

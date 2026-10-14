@@ -34745,3 +34745,58 @@ seul, le gazole non routier des machines. À son comptable.
 
 Contrôles : `test-achat-tva` (règle, rouge sans elle), `test-achats-tva-repo`
 (base, RLS), `test-tva-non-recuperable-e2e` (son geste, du doigt au total).
+
+## §461 : Un véhicule naît de sa carte grise, et ses dates se recopient
+
+Sa planche du 14 octobre 2026, la troisième (`appli/vehicules-plus-simple.html`),
+migration 0131. Les règles : `src/lib/vehicules.ts`.
+
+**Vérifié avec lui avant de dessiner, et cela borne tout** : au contrôle
+routier, la carte grise se montre en ORIGINAL (la copie ne vaut que pour une
+location ou un véhicule de PLUS de 3,5 t ; ses camions font 3,5 t pile), et
+l'assurance ne se montre plus depuis le 1er avril 2024. La rubrique sert au
+constat, à la copie de secours et aux rappels des contrôles ; jamais à
+remplacer les papiers de la boîte à gants.
+
+**Les dates limites se RECOPIENT du procès-verbal, jamais ne se calculent.** Le
+contrôle pollution annuel des utilitaires N1 (art. R323-22) et la contre-visite
+ont des règles que le PV applique déjà ; les recalculer ferait une seconde
+version, et une date fausse fait rater le contrôle. Un PV sans contre-visite
+EFFACE celle d'avant : son rappel ne doit pas survivre au papier qui la clôt.
+
+**Les seuils** : deux mois avant (la fenêtre où le passer ne fait perdre aucun
+jour), doré à quinze jours, rouge une fois dépassé ; une contre-visite se montre
+tout de suite. Une seule fonction (`echeance`) pour la liste, la fiche et
+l'accueil. Pas de « J'ai vu » sur ces cartes : elles partent quand la situation
+change (nouveau PV, date tapée), pas quand on les fait taire.
+
+**L'IA lit, elle ne décide pas.** `lire-document-vehicule.ts` (patron de
+`lire-attestation.ts`) rend une nature et des champs, relus par une fonction
+pure ; ce qu'elle ne lit pas reste vide. Ce qu'elle ne reconnaît pas, la feuille
+le DEMANDE au patron. **Un papier d'une autre plaque ne se range jamais**, ni
+fichier ni case : un numéro de contrat faux sur un constat coûte plus cher
+qu'une case vide. Chaque case garde sa source (`sources`, « d'après la carte
+grise ») ; une case corrigée à la main la perd.
+
+**Le type d'un papier servi vient de l'extension de sa clé**, posée par le
+serveur (`typeDuDocument`), jamais d'un type déclaré par le navigateur : c'est
+la leçon M1 de la route des fichiers. D'où l'absence de colonne « mime ».
+
+**Pourquoi trois colonnes et pas une table de documents** : un véhicule a
+trois papiers, chacun remplacé par le suivant, et c'est le dernier qu'on
+montre. L'ancien fichier reste dans le stockage, comme l'attestation.
+
+**Pourquoi `REGLAGES_A_TOUS` et non « Moi »** : l'ensemble « Moi » doit être le
+même pour tous les rôles, et les véhicules appartiennent à l'entreprise.
+Comme l'organigramme, tout le monde lit et le patron seul écrit
+(`exigerProprietaire`). Le papier s'ouvre par
+`/reglages/vehicules/[id]/document/[nature]`, sous la même garde que l'écran,
+et non par `/api/fichiers`, qui donnerait au salarié les photos de chantier.
+
+**Pourquoi une feuille à nous, avec trois choix** : le menu de l'iPhone ne
+porte pas de titre, et sans titre il ne savait pas quoi photographier (sa
+remarque du 14 octobre). La feuille dit QUOI ajouter, puis chaque choix ouvre
+son propre champ de fichier.
+
+Contrôles : `test-vehicules` (règles, rouge sans elles), `test-vehicules-rls`
+(isolation et sauvegarde sous `atlas_app`, rouge sans la RLS).

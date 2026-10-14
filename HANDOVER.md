@@ -37,6 +37,16 @@ docker start atlas-postgres atlas-redis      # puis attendre « healthy » : doc
 `npx tsx scripts/verifier-ce-qui-a-bouge.ts`, pas en entier.
 
 ---
+## LES VÉHICULES DE L'ENTREPRISE : codé le 14 octobre 2026, PAS ENCORE SUR `main`
+
+Branche `lot/vehicules-code`, dossier `C:/Users/Flori/AppData/Local/Temp/atlas-lot-vehicules`.
+Codé sans batterie, à sa demande. Joué ici : types, style, les contrôles statiques
+du lot, `test-vehicules.ts`, `test-vehicules-rls.ts`, `test-export-entreprise.ts`
+sur une base jetable migrée de 0 à 0131, et le parcours dans un navigateur
+(feuille titrée, papier non reconnu puis classé, PDF servi, case corrigée, vue
+salarié). **Pas joué ici** : la lecture par l'IA (aucune clé) et les champs de
+fichier sur un vrai iPhone. Pour reprendre : la batterie, avec son accord.
+
 ## LA MAIN D'ŒUVRE QUI S'ADDITIONNE : sur `main` le 14 octobre 2026
 
 Branche `lot/main-doeuvre-par-tva`, dossier `atlas-app-lot-mo`, migration 0130.

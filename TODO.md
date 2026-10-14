@@ -52,6 +52,8 @@ libre avec `DATABASE_URL` vers `atlas_test`, et dans Git Bash
 
 ## ⏳ UNE PLANCHE À REGARDER — LES VÉHICULES DE L'ENTREPRISE (14 octobre 2026)
 
+## CODÉ LE 14 OCTOBRE 2026, PAS ENCORE SUR `main` : LES VÉHICULES DE L'ENTREPRISE
+
 **Sa demande :** une rubrique où le patron dépose la carte grise et l'assurance
 de chaque véhicule, pour que les salariés les montrent au contrôle, avec
 *« les rappels au bon moment pour les choses importantes »*.
@@ -98,15 +100,31 @@ feuille, puis les trois choix par trois `<input type="file">` (la photo avec
 `capture`), car le menu de l'iPhone ne porte pas de titre.
 « Ajouter un document » ouvre les trois choix de
 l'iPhone (Photothèque, Prendre une photo, Choisir un fichier), son choix du
-14 octobre. **Il doit choisir entre la deuxième et la troisième avant le code.**
+14 octobre.
 
-**Pour coder ensuite (proposé) :** table `vehicules` sous RLS par entreprise,
-documents par le rangement existant, un service `lire-document-vehicule.ts`
-(une fonction pure qui relit le JSON, éprouvée sans clé), une règle pure dans `src/lib/` pour les
-seuils (la liste et l'accueil la partagent), les rappels dans
-`src/lib/rappels.ts`, le salarié en lecture dans `acces-roles.ts`. **Niveau 3**
-(migration, permissions). **NE RIEN CODER avant sa réponse** (`CLAUDE.md`
-§3 bis), et ne lancer aucune batterie sans son accord.
+**Il a choisi la troisième** (*« t'es bien, code la 3, pas de batterie »*,
+14 octobre 2026). **Codée le même soir**, branche `lot/vehicules-code`, dossier
+`C:/Users/Flori/AppData/Local/Temp/atlas-lot-vehicules` :
+
+| | |
+|---|---|
+| base | migration `0131_vehicules.sql` (table neuve sous FORCE RLS, expand seul) |
+| règles | `src/lib/vehicules.ts`, `src/lib/document-vehicule-lu.ts` |
+| lecture | `src/server/ai/services/lire-document-vehicule.ts` |
+| écrans | `src/app/reglages/vehicules/` (liste, fiche, feuille, route du papier), `src/app/RappelsVehicules.tsx` sur l'accueil |
+| droits | `REGLAGES_A_TOUS` : tout le monde lit, le patron seul écrit |
+| suites | `test-vehicules.ts` (pures), `test-vehicules-rls.ts` (isolation, sauvegarde), vues rouges |
+
+**Ce qui reste, dans l'ordre :**
+
+1. **la batterie** (niveau 3 : migration, permissions), avec son accord, puis
+   `main` ;
+2. **pas éprouvé ici** : la LECTURE par l'IA (aucune clé sur ce poste ; seul le
+   chemin « Atlas ne l'a pas reconnu, quel est ce document ? » a été joué), et le
+   comportement réel des trois champs de fichier sur iPhone (« Photothèque » peut
+   y ouvrir le menu complet de l'iPhone). À essayer sur son espace ;
+3. le numéro de migration 0131 : si une autre session en pose une avant, le
+   renuméroter au moment de fusionner (`test-numeros-migrations.ts`).
 
 ## ✅ LA TVA QUI NE SE RÉCUPÈRE PAS : SUR `main` LE 14 OCTOBRE 2026
 

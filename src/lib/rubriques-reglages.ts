@@ -190,6 +190,10 @@ const ENTREPRISE: Rubrique[] = [
   // monde ! »*. Le patron seul y change quelque chose ; l'écran le décide, et
   // le serveur le refuse (`exigerProprietaire`). **En dernier**, pour ne pas
   // s'insérer entre ses quatre priorités (`test-rubriques-reglages.ts`).
+  // **Les véhicules, sa planche du 14 octobre 2026** : leurs papiers, et les
+  // rappels du contrôle technique. Ouverte à tous comme l'organigramme, parce
+  // que le salarié y trouve l'assurance pour le constat ; le patron seul y écrit.
+  { nom: "Véhicules", icone: "camion", href: "/reglages/vehicules" },
   { nom: "Organigramme", icone: "organigramme", href: "/reglages/organigramme" },
 ];
 

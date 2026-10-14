@@ -20,6 +20,17 @@ Format : le plus récent en tête.
   `loading.tsx` était encore peint (constat P3 de l'établi QA, 12 octobre). Ils attendent le
   verdict, comme `test-fiche-chantier-e2e`. Le rouge n'a été reproduit que sur son PC, pas ici.
 
+- **Les véhicules de l'entreprise, leurs papiers et les rappels de leurs contrôles.** Sa demande du
+  14 octobre, sur sa troisième planche (`appli/vehicules-plus-simple.html`). Réglages > Véhicules :
+  « Ajouter un document » (photo ou PDF) range la carte grise, l'assurance ou le procès-verbal et
+  remplit les cases, marquées « d'après … » ; toute case se corrige à la main. Rappels du contrôle
+  technique, du contrôle pollution et de la contre-visite sur l'accueil du patron : deux mois avant,
+  doré à quinze jours, rouge une fois dépassé. Le salarié lit « En cas d'accident ». **Ce que ça
+  évite** : un contrôle technique oublié découvert au bord de la route, et un numéro de contrat
+  cherché sur le lieu d'un accrochage. Une assurance d'une autre plaque ne se range jamais. Vérifié
+  avec lui avant de dessiner : la carte grise reste en original dans le camion (3,5 t pile, pas de
+  copie admise). Migration 0131. `ARCHITECTURE.md` §461. **Pas encore sur `main` : batterie à jouer.**
+
 ## 2026-10-13
 
 - **La main d'œuvre s'additionne, dans chaque TVA.** Sa demande du 13 octobre : *« dire main
