@@ -195,7 +195,8 @@
   body.nuit .obligatoire{color:var(--or)}
   .obligatoire.fait{color:var(--pin);background:var(--vert-voile)}
   body.nuit .obligatoire.fait{color:var(--encre)}
-  .methode{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+  .choix.trois{grid-template-columns:repeat(3,1fr)}
+  .choix.trois button{font-size:13.5px;padding:4px 6px;line-height:1.2}
 
   .vignettes{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
   .vignettes span,.vignettes button{width:58px;height:58px;border-radius:10px;flex:none;box-shadow:inset 0 0 0 1px var(--trait)}
@@ -648,11 +649,16 @@ function dessinMarques() {
     + (e.accesDebut ? `<circle cx="${e.accesDebut.x}" cy="${e.accesDebut.y}" r="7" fill="var(--encre)"/>` : "");
 }
 function croquis() {
-  if (!e.croquis) return `<p class="aide">Les accès, les voies de circulation, les arbres à traiter.</p>
-    <div class="methode"><button type="button" class="vert" data-croquis="photo">Dessiner sur une photo du chantier</button>
-    <button type="button" class="creux" data-croquis="blanc">Dessiner sur une page blanche</button>
-    <button type="button" class="creux">Importer un croquis déjà fait</button></div>`;
-  const fond = e.croquis === "photo" ? `
+  // Sa remarque du 14 octobre : « quand je sélectionne l'un des trois, je ne peux plus revenir en choisir un
+  // autre ». Le retour existait, tout en bas sous treize outils. Le fond se choisit donc en haut, toujours
+  // visible, et en changer garde ce qui est déjà dessiné.
+  const fonds = `<div class="choix trois">${[["photo", "Photo du chantier"], ["blanc", "Page blanche"], ["import", "Croquis importé"]].map(([v, mot]) => `<button type="button" data-croquis="${v}" aria-pressed="${e.croquis === v}">${mot}</button>`).join("")}</div>`;
+  if (!e.croquis) return `${fonds}<p class="aide">Les accès, les voies de circulation, les arbres à traiter. Choisissez sur quoi dessiner.</p>`;
+  const fond = e.croquis === "import" ? `
+    <rect width="400" height="300" fill="#f3efe4"/>
+    <path d="M30 40 L210 36 L214 140 L34 146 Z M60 260 C140 250 260 268 380 252 M250 70 a30 30 0 1 0 1 0 M320 150 a24 24 0 1 0 1 0" fill="none" stroke="#5b5a52" stroke-width="2" stroke-linecap="round"/>
+    <text x="96" y="96" font-size="16" fill="#5b5a52" font-style="italic">maison</text><text x="150" y="285" font-size="14" fill="#5b5a52" font-style="italic">rue des Tilleuls</text>`
+    : e.croquis === "photo" ? `
     <rect width="400" height="300" fill="var(--herbe)"/><rect x="0" y="246" width="400" height="54" fill="var(--route)"/>
     <rect x="150" y="238" width="62" height="10" fill="var(--toit)" opacity=".7"/>
     <rect x="18" y="26" width="128" height="92" rx="3" fill="var(--toit)"/><path d="M18 26 82 4 146 26z" fill="var(--toit)" opacity=".8"/>
@@ -664,13 +670,13 @@ function croquis() {
   const leg = OUTILS.filter(([t]) => t !== "crayon" && types.has(t)).map(([t, mot]) => `<li>${symbole(t)} ${mot}</li>`).join("");
   const zones = e.marques.map((m, i) => [m, i]).filter(([m]) => m.t === "danger");
   const consigne = e.outil === "crayon" ? "Dessinez du doigt." : TRAITS.has(e.outil) ? (e.accesDebut ? "Touchez où le trait arrive." : "Touchez où le trait part.") : "Touchez pour poser.";
-  return `<div class="pastilles" style="margin-bottom:8px">${OBLIGATOIRES.map(([mot, test]) => { const on = [...types].some(test); return `<span class="obligatoire${on ? " fait" : ""}"><span class="rond${on ? " plein" : ""}" style="width:18px;height:18px">${coche}</span>${mot}</span>`; }).join("")}</div>
+  return `${fonds}<div class="pastilles" style="margin:10px 0 8px">${OBLIGATOIRES.map(([mot, test]) => { const on = [...types].some(test); return `<span class="obligatoire${on ? " fait" : ""}"><span class="rond${on ? " plein" : ""}" style="width:18px;height:18px">${coche}</span>${mot}</span>`; }).join("")}</div>
     <p class="aide">${consigne}</p>
     <div class="photo"><svg id="photo" viewBox="0 0 400 300" role="img" aria-label="Croquis du chantier">${fond}${dessinMarques()}</svg></div>
     <div class="outils">${OUTILS.map(([t, mot]) => `<button type="button" class="outil" data-outil="${t}" aria-pressed="${e.outil === t}">${symbole(t)} ${mot}</button>`).join("")}</div>
     ${zones.map(([m, i], k) => `<label class="champ"><span class="nom">Zone de danger ${k + 1}, ce que c’est</span><input data-zone="${i}" data-zone-n="${k + 1}" value="${m.mot ?? ""}" placeholder="Exemple : chute de branches"></label>`).join("")}
     ${leg ? `<ul class="legende">${leg}</ul>` : ""}
-    <div class="gestes"><button type="button" data-geste="annuler">Annuler le dernier</button><button type="button" data-geste="effacer">Tout effacer</button><button type="button" data-croquis="">Changer de fond</button></div>
+    <div class="gestes"><button type="button" data-geste="annuler">Annuler le dernier</button><button type="button" data-geste="effacer">Tout effacer</button></div>
     ${Array.isArray(e.dangereux) && nArbres ? `<p class="aide">Les numéros des arbres sont ceux des arbres dangereux.</p>` : ""}`;
 }
 
