@@ -383,7 +383,11 @@ function dessinerMois() {
   while (cases.length % 7) cases.push(null);
   for (let r = 0; r < cases.length / 7; r++) {
     const semaine = cases.slice(r * 7, r * 7 + 7);
-    const rang = el("div", "rang" + (semaine.includes(touche) ? " lue" : ""));
+    // Les cases vides du mois valent null, comme un jour refermé : sans ce
+    // test, refermer la fiche en ouvrait deux « null » sur la première et la
+    // dernière semaine (sa capture du 14 octobre).
+    const porteLeJour = touche !== null && semaine.includes(touche);
+    const rang = el("div", "rang" + (porteLeJour ? " lue" : ""));
     semaine.forEach((j, col) => {
       if (j === null) { rang.appendChild(el("span", "case")); return; }
       const cls = ["case"];
@@ -400,7 +404,7 @@ function dessinerMois() {
       rang.appendChild(b);
     });
     box.appendChild(rang);
-    if (semaine.includes(touche)) box.appendChild(fiche(touche));
+    if (porteLeJour) box.appendChild(fiche(touche));
   }
 }
 
