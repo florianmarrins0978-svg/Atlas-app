@@ -29,6 +29,7 @@ import {
 } from "../src/lib/fiche-securite";
 import { composerFicheSecuritePdf } from "../src/server/pdf/fiche-securite-pdf";
 import { croquisRecu, manquesDuCroquis, type Marque } from "../src/lib/croquis-securite";
+import configurationDeNext from "../next.config";
 import { ecrireLeGps, lireLeGps, pointSousLAppui, tuileDemandee, tuilesAutour, versTuile } from "../src/lib/carte-du-point";
 
 // LA FICHE DE SÉCURITÉ — les règles pures, et le PDF qu'elles produisent.
@@ -328,6 +329,17 @@ async function main() {
   });
 
   // ─── LA CARTE DU POINT GPS — sa planche du 14 octobre 2026 ───
+  // Trouvé le 14 octobre 2026 en regardant l'écran : « Relever ici » n'a JAMAIS pu marcher. L'en-tête
+  // posé au premier jour (`geolocation=()`) interdisait la position à toutes les pages, la nôtre comprise ;
+  // le navigateur refusait sans rien demander, et l'écran disait « refusé ». C'est sa remarque du
+  // 22 septembre : « la position exacte fonctionne pas ».
+  await cas("les pages d'Atlas ont le droit de demander la position du téléphone", async () => {
+    const regles = (await configurationDeNext.headers?.()) ?? [];
+    const politique = regles.flatMap((r) => r.headers).find((h) => h.key === "Permissions-Policy")?.value ?? "";
+    assert.ok(politique, "aucune politique des permissions : le contrôle ne mesure rien");
+    assert.match(politique, /(^|,\s*)geolocation=\(self\)/, `la position est interdite aux pages d'Atlas : « ${politique} »`);
+  });
+
   await cas("la carte : le GPS se lit, l'appui retombe sur le point touché, les tuiles couvrent la vue", () => {
     assert.deepEqual(lireLeGps("48.99387, 1.71077"), { lat: 48.99387, lon: 1.71077 });
     assert.deepEqual(lireLeGps(" 48,99387 ; 1,71077 "), { lat: 48.99387, lon: 1.71077 }, "les virgules à la française se lisent");

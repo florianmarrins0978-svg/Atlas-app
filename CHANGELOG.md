@@ -52,6 +52,11 @@ Format : le plus récent en tête.
   l'adresse du chantier ; un appui déplace le point, et l'adresse officielle au point s'affiche.
   Plan ou photo aérienne. Le PDF porte la même carte pour les secours. Ce que ça évite : des
   secours guidés par des chiffres que personne ne sait lire, sur un chantier sans numéro de rue.
+- **« Relever ici » n'avait jamais pu marcher.** L'en-tête des pages posé le premier jour
+  (`Permissions-Policy: geolocation=()`) interdisait la position à Atlas lui-même : le navigateur
+  refusait sans rien demander, et l'écran disait « refusé ». C'est sa remarque du 22 septembre,
+  *« la position exacte fonctionne pas »*. Trouvé en regardant l'écran de la carte. La position est
+  désormais permise à nos seules pages (`geolocation=(self)`), comme la caméra et le micro.
 
 ## 2026-10-13
 

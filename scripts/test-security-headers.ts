@@ -45,12 +45,14 @@ async function main() {
     assert.equal(r.headers.get("referrer-policy"), "strict-origin-when-cross-origin");
   });
 
-  await test("Permissions-Policy est présent (caméra/micro restreints à l'origine elle-même)", async () => {
+  await test("Permissions-Policy est présent (caméra, micro et position restreints à l'origine elle-même)", async () => {
     const pp = r.headers.get("permissions-policy");
     assert.ok(pp, "Permissions-Policy absent");
     assert.ok(pp!.includes("camera=(self)"));
     assert.ok(pp!.includes("microphone=(self)"));
-    assert.ok(pp!.includes("geolocation=()"));
+    // À l'origine seule, et non interdite : la fiche de sécurité relève la position pour les
+    // secours, et `geolocation=()` faisait échouer « Relever ici » sans rien demander (14 octobre 2026).
+    assert.ok(pp!.includes("geolocation=(self)"));
   });
 
   await test("Les en-têtes de sécurité sont appliqués à une seconde route distincte (pas seulement /login)", async () => {

@@ -59,7 +59,8 @@ async function main() {
   await pool.query(`DELETE FROM fiches_securite_memoire WHERE entreprise_id = (SELECT entreprise_id FROM chantiers WHERE id = $1)`, [chantierId]);
 
   const navigateur = await lancerNavigateur();
-  const contexte = await navigateur.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true });
+  // Un téléphone qui donne sa position, comme le sien sur le chantier.
+  const contexte = await navigateur.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, geolocation: { latitude: 48.99387, longitude: 1.71077 }, permissions: ["geolocation"] });
   const page = await contexte.newPage();
   await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
   await page.fill('input[name="email"]', "demo@atlas.local");
@@ -133,6 +134,19 @@ async function main() {
     await page.goto(`${BASE}/planning/fiche-de-securite/${chantierId}`, { waitUntil: "networkidle" });
     await page.locator("[data-atlas='etape-de-la-fiche']").filter({ hasText: "1 sur 6" }).waitFor({ timeout: 15_000 });
     assert.equal(await page.getByLabel(TEL_DE_L_ENTREPRISE).inputValue(), ecrit, "au retour dans l'application, sa saisie est là");
+  });
+
+  // Trouvé le 14 octobre 2026 en regardant l'écran : l'en-tête des pages interdisait la position, et
+  // « Relever ici » répondait « refusé » sans rien demander. Sa remarque du 22 septembre.
+  await cas("ÉCRAN 1 — « Relever ici » pose le point, et la carte s'ouvre dessus", async () => {
+    await page.locator("[data-atlas='relever-gps']").click();
+    await page.locator("[data-atlas='repere-du-point']").waitFor({ timeout: 30_000 });
+    assert.equal(await page.getByPlaceholder("Exemple : 48.94123, 1.72004").inputValue(), "48.99387, 1.71077", "le point relevé n'est pas celui du téléphone");
+    const tuile = await page.evaluate(async () => {
+      const r = await fetch("/api/carte/tuile?fond=plan&z=99&x=0&y=0");
+      return r.status;
+    });
+    assert.equal(tuile, 400, "la route des tuiles relaie une tuile qui n'existe pas");
   });
 
   await cas("l'écran 1 porte ce qu'Atlas sait, et « Suivant » enregistre l'étape", async () => {
