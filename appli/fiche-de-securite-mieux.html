@@ -629,24 +629,28 @@ function ondule(m) {
   }
   return d;
 }
+/* Chaque repère vit dans son groupe `data-m`, pour qu'on puisse le déplacer du doigt sans rien redessiner. */
+const estArbre = (m) => m.t === "abattre" || m.t === "tailler";
 function dessinMarques() {
-  let arbre = 0, zone = 0;
-  return e.marques.map((m) => {
+  return e.marques.map((m, i) => `<g data-m="${i}">${rendreMarque(m, i)}</g>`).join("")
+    + (e.accesDebut ? `<circle cx="${e.accesDebut.x}" cy="${e.accesDebut.y}" r="7" fill="var(--encre)"/>` : "");
+}
+function rendreMarque(m, i) {
+  const avant = e.marques.slice(0, i + 1), arbre = avant.filter(estArbre).length, zone = avant.filter((x) => x.t === "danger").length;
+  {
     if (m.t === "crayon") return `<polyline points="${m.pts.join(" ")}" fill="none" stroke="var(--encre)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`;
     if (m.t === "ruisseau") return `<path d="${ondule(m)}" fill="none" ${STYLE_TRAIT.ruisseau} stroke-linecap="round"/>`;
     if (TRAITS.has(m.t)) return `<line x1="${m.x}" y1="${m.y}" x2="${m.x2}" y2="${m.y2}" ${STYLE_TRAIT[m.t]} stroke-linecap="round"/>`;
-    if (m.t === "abattre" || m.t === "tailler") {
-      arbre++;
+    if (estArbre(m)) {
       const plein = m.t === "abattre";
       return `<circle cx="${m.x}" cy="${m.y}" r="15" fill="${plein ? "var(--alerte)" : "var(--carte)"}" stroke="${plein ? "var(--carte)" : "var(--or)"}" stroke-width="${plein ? 2 : 4}"/><text x="${m.x}" y="${m.y + 6}" text-anchor="middle" font-size="17" font-weight="700" fill="${plein ? "var(--carte)" : "var(--encre)"}">${arbre}</text>`;
     }
     if (m.t === "maison") return `<rect x="${m.x - 34}" y="${m.y - 26}" width="68" height="52" fill="var(--toit)" stroke="var(--encre)" stroke-width="2"/><path d="M${m.x - 34} ${m.y - 26} L${m.x + 34} ${m.y + 26} M${m.x + 34} ${m.y - 26} L${m.x - 34} ${m.y + 26}" stroke="var(--encre)" stroke-width="1" opacity=".35"/>`;
-    if (m.t === "danger") { zone++; return `<circle cx="${m.x}" cy="${m.y}" r="46" fill="var(--alerte-voile)" stroke="var(--alerte)" stroke-width="3" stroke-dasharray="7 5"/><text id="zone-${zone}" x="${m.x}" y="${m.y + 64}" text-anchor="middle" font-size="14" font-weight="700" fill="var(--alerte)">${m.mot || `Zone ${zone}`}</text>`; }
+    if (m.t === "danger") { return `<circle cx="${m.x}" cy="${m.y}" r="46" fill="var(--alerte-voile)" stroke="var(--alerte)" stroke-width="3" stroke-dasharray="7 5"/><text id="zone-${zone}" x="${m.x}" y="${m.y + 64}" text-anchor="middle" font-size="14" font-weight="700" fill="var(--alerte)">${m.mot || `Zone ${zone}`}</text>`; }
     if (m.t === "stockage") return `<rect x="${m.x - 36}" y="${m.y - 22}" width="72" height="44" rx="4" fill="var(--or-papier)" stroke="var(--or)" stroke-width="2.5" stroke-dasharray="6 4"/>`;
     if (m.t === "reseau") return `<g transform="translate(${m.x - 14} ${m.y - 14})"><rect x="0" y="18" width="7" height="10" fill="var(--pin)"/><rect x="10" y="10" width="7" height="18" fill="var(--pin)"/><rect x="20" y="2" width="7" height="26" fill="var(--pin)"/></g>`;
     return `<rect x="${m.x - 15}" y="${m.y - 15}" width="30" height="30" rx="6" fill="var(--plein)"/><path d="M${m.x - 8} ${m.y}h16M${m.x} ${m.y - 8}v16" stroke="var(--sur-plein)" stroke-width="4" stroke-linecap="round"/>`;
-  }).join("")
-    + (e.accesDebut ? `<circle cx="${e.accesDebut.x}" cy="${e.accesDebut.y}" r="7" fill="var(--encre)"/>` : "");
+  }
 }
 function croquis() {
   // Sa remarque du 14 octobre : « quand je sélectionne l'un des trois, je ne peux plus revenir en choisir un
@@ -669,7 +673,7 @@ function croquis() {
   const nArbres = e.marques.filter((m) => m.t === "abattre" || m.t === "tailler").length;
   const leg = OUTILS.filter(([t]) => t !== "crayon" && types.has(t)).map(([t, mot]) => `<li>${symbole(t)} ${mot}</li>`).join("");
   const zones = e.marques.map((m, i) => [m, i]).filter(([m]) => m.t === "danger");
-  const consigne = e.outil === "crayon" ? "Dessinez du doigt." : TRAITS.has(e.outil) ? (e.accesDebut ? "Touchez où le trait arrive." : "Touchez où le trait part.") : "Touchez pour poser.";
+  const consigne = e.outil === "crayon" ? "Dessinez du doigt." : TRAITS.has(e.outil) ? (e.accesDebut ? "Touchez où le trait arrive." : "Touchez où le trait part.") : "Touchez pour poser. Restez appuyé pour déplacer.";
   return `${fonds}<div class="pastilles" style="margin:10px 0 8px">${OBLIGATOIRES.map(([mot, test]) => { const on = [...types].some(test); return `<span class="obligatoire${on ? " fait" : ""}"><span class="rond${on ? " plein" : ""}" style="width:18px;height:18px">${coche}</span>${mot}</span>`; }).join("")}</div>
     <p class="aide">${consigne}</p>
     <div class="photo"><svg id="photo" viewBox="0 0 400 300" role="img" aria-label="Croquis du chantier">${fond}${dessinMarques()}</svg></div>
@@ -764,7 +768,7 @@ function point(svg, ev, l = 400, h = 300) { const r = svg.getBoundingClientRect(
    seulement un par image. On ne redessine qu'une fois le doigt levé. */
 function brancherCroquis() {
   const svg = document.getElementById("photo"); if (!svg) return;
-  let trait = null, points = [];
+  let trait = null, points = [], prise = null, origine = null, groupe = null;
   svg.onpointerdown = (ev) => {
     const p = point(svg, ev);
     if (e.outil === "crayon") {
@@ -775,16 +779,25 @@ function brancherCroquis() {
       svg.appendChild(trait);
       return;
     }
-    if (TRAITS.has(e.outil)) { if (!e.accesDebut) e.accesDebut = p; else { e.marques.push({ t: e.outil, x: e.accesDebut.x, y: e.accesDebut.y, x2: p.x, y2: p.y }); e.accesDebut = null; } }
-    else e.marques.push({ t: e.outil, ...p });
-    dessiner();
+    if (TRAITS.has(e.outil)) { if (!e.accesDebut) e.accesDebut = p; else { e.marques.push({ t: e.outil, x: e.accesDebut.x, y: e.accesDebut.y, x2: p.x, y2: p.y }); e.accesDebut = null; } dessiner(); return; }
+    // Un repère suit le doigt tant qu'il reste appuyé, et se pose au lâcher (sa demande du 14 octobre).
+    // Appuyer sur un repère déjà posé le reprend, au lieu d'en poser un second par-dessus.
+    const repris = e.marques.findLastIndex((m) => !TRAITS.has(m.t) && m.t !== "crayon" && Math.hypot(m.x - p.x, m.y - p.y) < (m.t === "maison" || m.t === "danger" ? 40 : 22));
+    if (repris >= 0) prise = repris;
+    else { e.marques.push({ t: e.outil, ...p }); prise = e.marques.length - 1; svg.insertAdjacentHTML("beforeend", `<g data-m="${prise}">${rendreMarque(e.marques[prise], prise)}</g>`); }
+    svg.setPointerCapture(ev.pointerId);
+    origine = p; groupe = svg.querySelector(`g[data-m="${prise}"]`);
   };
   svg.onpointermove = (ev) => {
+    if (prise !== null) { const p = point(svg, ev); groupe?.setAttribute("transform", `translate(${p.x - origine.x} ${p.y - origine.y})`); return; }
     if (!trait) return;
     for (const m of ev.getCoalescedEvents?.() ?? [ev]) { const p = point(svg, m); points.push(`${p.x},${p.y}`); }
     trait.setAttribute("points", points.join(" "));
   };
-  const finir = () => { if (!trait) return; if (points.length > 1) e.marques.push({ t: "crayon", pts: points }); trait = null; dessiner(); };
+  const finir = (ev) => {
+    if (prise !== null) { const p = point(svg, ev), m = e.marques[prise]; m.x += p.x - origine.x; m.y += p.y - origine.y; prise = null; dessiner(); return; }
+    if (!trait) return; if (points.length > 1) e.marques.push({ t: "crayon", pts: points }); trait = null; dessiner();
+  };
   svg.onpointerup = finir; svg.onpointercancel = finir;
 }
 
