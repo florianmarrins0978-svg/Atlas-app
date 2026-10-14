@@ -391,13 +391,15 @@
   const feuille = document.getElementById("feuille");
   function ouvrirFeuille() {
     feuille.innerHTML = `<div class="poignee"></div>`
+      // le menu même de l’iPhone, celui qu’ouvre déjà l’attestation décennale : la planche l’imite
+      + `<button type="button" data-f="phototheque">Photothèque</button>`
       + `<button type="button" data-f="photo">Prendre une photo</button>`
-      + `<button type="button" data-f="fichier">Choisir une photo ou un PDF</button>`
+      + `<button type="button" data-f="fichier">Choisir un fichier</button>`
       + `<button type="button" data-f="non">Annuler</button>`;
     voile.classList.add("ouvert");
     feuille.querySelectorAll("button").forEach((b) => b.onclick = () => {
       if (b.dataset.f === "non") return fermerFeuille();
-      lire(b.dataset.f === "photo" ? "Photo" : "PDF");
+      lire(b.dataset.f === "fichier" ? "PDF" : "Photo");
     });
   }
   function fermerFeuille() { voile.classList.remove("ouvert"); }
