@@ -27,7 +27,13 @@
   2. sous les arbres le GPS se trompe : un appui sur la carte déplace le
      point ;
   3. Plan ou Photo aérienne, et le zoom ;
-  4. la même carte dans le PDF, pour les secours.
+  4. la même carte dans le PDF, pour les secours ;
+  5. SA REMARQUE DU 14 OCTOBRE, position relevée chez lui : « c'est pas la
+     bonne adresse qui s'affiche ». L'adresse était un exemple fixe. Elle se
+     lit désormais au point : relevé ou appui, l'adresse officielle la plus
+     proche s'écrit (Base Adresse Nationale, le service que l'appli emploie
+     déjà, `src/server/adresses/base-adresse-nationale.ts`). Et une adresse
+     tapée y emmène la carte.
 
   Couleurs : celles de `fiche-de-securite-mieux.html`. Cibles de 44 px au moins.
   ════════════════════════════════════════════════════════════════════════════
@@ -56,6 +62,7 @@
   .bloc-expl{font-size:13px;color:var(--gris);margin:0 0 12px}
   .etiquette{display:block;font-size:12.5px;color:var(--gris);margin:12px 0 3px}
   .champ{background:var(--carte);border-radius:12px;box-shadow:inset 0 0 0 1px var(--trait);padding:12px 14px;min-height:46px}
+  input.champ{display:block;width:100%;border:0;font:inherit;font-size:16px;color:var(--encre)}
   .bouton{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;border:0;border-radius:999px;font:16px Georgia,serif;cursor:pointer}
   .bouton.creux{background:var(--carte);color:var(--rust);box-shadow:inset 0 0 0 1px var(--trait)}
   .bouton.plein{background:var(--plein);color:var(--sur-plein)}
@@ -96,7 +103,8 @@
     <p class="bloc-expl">Relevez la position sur place : elle guide les secours.</p>
 
     <span class="etiquette">Adresse du chantier</span>
-    <div class="champ">12 chemin des Saules, 49000 Angers</div>
+    <input class="champ" id="adresse" value="Place du Ralliement, 49000 Angers" autocomplete="off" enterkeyhint="search">
+    <p class="refus" id="adresse-refus" hidden></p>
 
     <span class="etiquette">Point GPS</span>
     <button type="button" class="bouton creux" id="relever">Relever ma position</button>
@@ -131,7 +139,7 @@
 <p class="section">La même carte, dans le PDF</p>
 <div class="pdf">
   <h3>Lieu du chantier</h3>
-  <div class="ligne"><span>Adresse</span><span>12 chemin des Saules, 49000 Angers</span></div>
+  <div class="ligne"><span>Adresse</span><span id="pdf-adresse"></span></div>
   <div class="ligne"><span>Point GPS</span><span id="pdf-gps"></span></div>
   <div class="vue" id="pdf-vue"></div>
 </div>
@@ -189,6 +197,44 @@
     for (const b of document.querySelectorAll("[data-fond]")) b.setAttribute("aria-pressed", String(b.dataset.fond === etat.fond));
   }
 
+  const champAdresse = document.getElementById("adresse"), refusAdresse = document.getElementById("adresse-refus");
+  const BAN = "https://api-adresse.data.gouv.fr";
+  const ecrireAdresse = (a) => { champAdresse.value = a; document.getElementById("pdf-adresse").textContent = a; };
+  // Seules les coordonnées partent : jamais un nom de client.
+  async function lireLAdresse() {
+    const demande = etat.lat + "," + etat.lon;
+    lireLAdresse.derniere = demande;
+    try {
+      const r = await fetch(BAN + "/reverse/?lat=" + etat.lat + "&lon=" + etat.lon + "&limit=1");
+      const f = (await r.json()).features?.[0];
+      if (lireLAdresse.derniere !== demande) return;
+      refusAdresse.hidden = true;
+      if (f) ecrireAdresse(f.properties.label);
+      else { refusAdresse.textContent = "Aucune adresse connue à cet endroit. Écrivez-la."; refusAdresse.hidden = false; }
+    } catch {
+      refusAdresse.textContent = "L’adresse ne s’est pas lue. Écrivez-la.";
+      refusAdresse.hidden = false;
+    }
+  }
+  async function allerALAdresse() {
+    const q = champAdresse.value.trim();
+    if (q.length < 4) return;
+    try {
+      const r = await fetch(BAN + "/search/?q=" + encodeURIComponent(q) + "&limit=1");
+      const f = (await r.json()).features?.[0];
+      refusAdresse.hidden = true;
+      if (!f) { refusAdresse.textContent = "Adresse introuvable. Vérifiez-la, ou touchez la carte."; refusAdresse.hidden = false; return; }
+      [etat.lon, etat.lat] = f.geometry.coordinates;
+      ecrireAdresse(f.properties.label);
+      dessiner();
+    } catch {
+      refusAdresse.textContent = "La carte ne trouve pas cette adresse pour l’instant.";
+      refusAdresse.hidden = false;
+    }
+  }
+  champAdresse.addEventListener("change", allerALAdresse);
+  champAdresse.addEventListener("keydown", (ev) => { if (ev.key === "Enter") champAdresse.blur(); });
+
   // Un appui sur la carte déplace le point là, et la carte s'y recentre.
   carte.addEventListener("click", (ev) => {
     if (ev.target.closest("button")) return;
@@ -197,6 +243,7 @@
     const c = versCoord(centre.x + (ev.clientX - b.left - b.width / 2) / 256, centre.y + (ev.clientY - b.top - b.height / 2) / 256, etat.zoom);
     etat.lat = c.lat; etat.lon = c.lon;
     dessiner();
+    lireLAdresse();
   });
   document.getElementById("plus").onclick = () => { etat.zoom = Math.min(19, etat.zoom + 1); dessiner(); };
   document.getElementById("moins").onclick = () => { etat.zoom = Math.max(12, etat.zoom - 1); dessiner(); };
@@ -211,6 +258,7 @@
       etat.lat = p.coords.latitude; etat.lon = p.coords.longitude;
       relever.textContent = "Relever ma position";
       dessiner();
+      lireLAdresse();
     }, () => {
       relever.textContent = "Relever ma position";
       refus.textContent = "La position n’a pas été donnée. Autorisez la localisation, ou touchez la carte à l’endroit du chantier.";
@@ -219,6 +267,7 @@
   };
   addEventListener("resize", dessiner);
   dessiner();
+  allerALAdresse();
 </script>
 </body>
 </html>
