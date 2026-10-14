@@ -249,6 +249,9 @@
   body.nuit .obligation.libre{color:var(--encre)}
   .destinataire p.envoye{display:flex;align-items:center;gap:8px;margin-top:10px;color:var(--pin);font-weight:600}
   body.nuit .destinataire p.envoye{color:var(--encre)}
+  .creux.bloque{opacity:.45}
+  .envoye-pied{gap:8px;color:var(--pin)}
+  body.nuit .envoye-pied{color:var(--encre)}
   .petit-bouton{flex:none;min-height:40px;padding:0 16px;border-radius:999px;background:var(--plein);color:var(--sur-plein);font-size:14px}
   .voile{position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;z-index:2}
   .feuillet{width:100%;background:var(--fond);border-radius:20px 20px 0 0;padding:18px 16px 16px}
@@ -411,7 +414,7 @@ function depart() {
     croquis: null,       // null | "photo" | "blanc"
     outil: "crayon", marques: [], edition: false, accesDebut: null,
     photos: 2,
-    envoyes: new Set(), prevention: null,
+    envoyes: new Set(), prevention: null, enregistree: false,
     signatures: {}, pad: null, signee: false, sig: false, refus: null,
   };
 }
@@ -689,11 +692,11 @@ function fondDuCroquis() {
     <circle cx="336" cy="170" r="34" fill="var(--arbre)"/><circle cx="96" cy="196" r="24" fill="var(--arbre)" opacity=".85"/>`;
   return `<rect width="400" height="300" fill="var(--carte)"/>${Array.from({ length: 13 }, (_, i) => Array.from({ length: 10 }, (_, j) => `<circle cx="${15 + i * 31}" cy="${15 + j * 31}" r="1.3" fill="var(--trait)"/>`).join("")).join("")}`;
 }
-const obligatoires = () => { const types = new Set(e.marques.map((m) => m.t)); return `<div class="pastilles">${OBLIGATOIRES.map(([mot, test]) => { const on = [...types].some(test); return `<span class="obligatoire${on ? " fait" : ""}"><span class="rond${on ? " plein" : ""}" style="width:18px;height:18px">${coche}</span>${mot}</span>`; }).join("")}</div>`; };
+const obligatoires = () => { const types = new Set(e.marques.map((m) => m.t)); return `<p class="aide" style="margin:0 0 6px">Obligatoire sur le croquis :</p><div class="pastilles">${OBLIGATOIRES.map(([mot, test]) => { const on = [...types].some(test); return `<span class="obligatoire${on ? " fait" : ""}"><span class="rond${on ? " plein" : ""}" style="width:18px;height:18px">${coche}</span>${mot}</span>`; }).join("")}</div>`; };
 
 /* DANS L'ÉTAPE : un aperçu, sa légende, et la porte de l'éditeur. */
 function croquis() {
-  if (!e.croquis) return `<p class="aide">Les accès, les voies de circulation, les arbres à traiter.</p>
+  if (!e.croquis) return `<p class="aide">Obligatoire sur le croquis : les accès, les voies de circulation, les arbres à traiter.</p>
     <div class="methode"><button type="button" class="vert" data-croquis="photo">Dessiner sur une photo du chantier</button>
     <button type="button" class="creux" data-croquis="blanc">Dessiner sur une page blanche</button>
     <button type="button" class="creux" data-croquis="import">Importer un croquis déjà fait</button></div>`;
@@ -755,6 +758,7 @@ function feuilletPersonne() {
    (art. L. 4511-1 du code du travail), et chaque entreprise intervenante en fait une. Un client particulier
    n'a donc rien à recevoir ; on le dit, plutôt que de lui envoyer par habitude. */
 function aQuiLEnvoyer(equipeASigne) {
+  const garde = equipeASigne && e.enregistree;
   const autres = [...EXTERNES.filter((x) => e.externes.has(x.nom)).map((x) => x.nom), ...Array.from({ length: e.nouvelles }, (_, k) => `Nouvelle entreprise ${k + 1}`)];
   const envoyer = (cle, mot) => e.envoyes.has(cle)
     ? `<p class="envoye"><span class="rond plein" style="width:20px;height:20px">${coche}</span>Envoyée</p>`
@@ -772,8 +776,8 @@ function aQuiLEnvoyer(equipeASigne) {
       <div class="choix"><button type="button" data-prevention="non" aria-pressed="${e.prevention === "non"}">Non</button><button type="button" data-prevention="oui" aria-pressed="${e.prevention === "oui"}">Oui</button></div>
       ${e.prevention === "oui" ? `<p><b>Obligatoire</b> : envoyez-lui la fiche.</p>${envoyer("client", "Envoyer au client")}`
         : e.prevention === "non" ? `<p>Rien à envoyer. Un particulier n’a pas à la recevoir.</p>` : ""}</div>
-    <div class="destinataire"><b>La garder</b><span class="obligation libre">Fait par Atlas</span>
-      <p>Elle doit rester sur le chantier pendant les travaux : votre téléphone suffit. Atlas la garde deux ans, jusqu’au 14 octobre 2028, rangée dans Paysage.</p></div>
+    <div class="destinataire"><b>La garder</b><span class="obligation${garde ? " libre" : ""}">${garde ? "Fait par Atlas" : "Après toutes les signatures"}</span>
+      <p>Elle doit rester sur le chantier pendant les travaux : votre téléphone suffit. ${garde ? "Atlas la garde deux ans, jusqu’au 14 octobre 2028, rangée dans Paysage." : "Atlas la garde deux ans, dès qu’elle est enregistrée."}</p></div>
   </div>`;
 }
 
@@ -782,19 +786,23 @@ function signer() {
   const v = vides();
   if (e.signee) {
     const tous = presents().map((p) => p.nom).filter((p) => p !== CHEF), lus = tous.filter((p) => e.signatures[p]).length;
+    // Sa règle du 14 octobre : « si un des gars n'a pas signé, le document ne doit pas pouvoir être
+    // enregistré ». Un absent ne bloque pas pour autant : on le retire de l'équipe, à l'étape 1.
+    const manquent = tous.filter((p) => !e.signatures[p]);
     // Sa question du 14 octobre : « et moi je ne peux plus signer ? ». Il a signé à l'écran d'avant ;
     // sa ligne vient en tête de la liste, pour qu'on voie la fiche signée par tous, lui compris.
     return `${entete("Signer", "Étape 6 sur 6", "")}${avancee(5)}
     <div class="ecran">
-      <h2>Fiche signée</h2><p class="sous">Gardée jusqu’au 14 octobre 2028.</p>
+      <h2>${manquent.length ? "Signatures en attente" : "Fiche signée"}</h2><p class="sous">${manquent.length ? "Elle s’enregistre quand tout le monde a signé." : e.enregistree ? "Enregistrée. Gardée jusqu’au 14 octobre 2028." : "Tout le monde a signé."}</p>
       <div class="bloc premier"><p class="etiquette">Les signatures</p>
         <div class="personne"><span class="rond plein">${coche}</span><span class="nom">${CHEF}<small>Chef d’entreprise. A signé la fiche à ${e.signatures[CHEF].heure}.</small></span><img class="trace" src="${e.signatures[CHEF].img}" alt="Signature de ${CHEF}"></div>
         <p class="aide" style="margin-top:10px">Chacun signe qu’il a lu la fiche, avant de commencer.</p>
         ${tous.map((p) => { const s = e.signatures[p]; return `<div class="personne"><span class="rond${s ? " plein" : ""}">${coche}</span><span class="nom">${p}${s ? `<small>A lu la fiche à ${s.heure}</small>` : ""}</span>${s ? `<img class="trace" src="${s.img}" alt="Signature de ${p}">` : `<button type="button" class="petit-bouton" data-signer-lu="${p}">Signer</button>`}</div>`; }).join("")}
+        ${manquent.length ? `<p class="aide alerte" style="margin-top:10px">${manquent.join(" et ")} ${manquent.length > 1 ? "doivent" : "doit"} signer avant d’enregistrer la fiche.</p><button type="button" class="ligne" style="min-height:44px" data-aller="0|equipe"><span class="t"><b style="font-size:14px">Quelqu’un n’est pas venu ? Retirez-le de l’équipe.</b></span>${ouvrir}</button>` : ""}
       </div>
       ${aQuiLEnvoyer(tous.length === lus)}
     </div>
-    <div class="pied"><div class="deux-boutons" style="margin-top:0"><button type="button" class="creux">Ouvrir le PDF</button><button type="button" class="creux">Enregistrer le PDF</button></div></div>
+    <div class="pied">${e.refus && !e.pad ? `<p class="reste" style="color:var(--alerte);font-weight:600">${e.refus}</p>` : ""}<div class="deux-boutons" style="margin-top:0"><button type="button" class="creux">Ouvrir le PDF</button>${e.enregistree && !manquent.length ? `<span class="creux envoye-pied"><span class="rond plein" style="width:20px;height:20px">${coche}</span>Enregistrée</span>` : `<button type="button" class="${manquent.length ? "creux bloque" : "vert"}" data-enregistrer="1" aria-disabled="${manquent.length > 0}">Enregistrer</button>`}</div></div>
     ${e.pad ? `<div class="voile"><div class="feuillet"><h3>${e.pad}</h3><p>J’ai pris connaissance de la fiche.</p>
       <div class="toile"><canvas id="toile"></canvas><div class="ligne-sig"></div></div>
       ${e.refus ? `<p class="aide alerte">${e.refus}</p>` : ""}
@@ -946,6 +954,10 @@ document.addEventListener("click", (ev) => {
   else if (d.signer) { if (!garderLaSignature(CHEF)) e.refus = "Signez dans le cadre d’abord."; else e.signee = true; }
   else if (d.signerLu) e.pad = d.signerLu;
   else if (d.envoyer) e.envoyes.add(d.envoyer);
+  else if (d.enregistrer) {
+    const manque = presents().filter((x) => x.nom !== CHEF && !e.signatures[x.nom]).map((x) => x.nom);
+    if (manque.length) e.refus = `${manque.join(" et ")} ${manque.length > 1 ? "doivent" : "doit"} signer d’abord.`; else e.enregistree = true;
+  }
   else if (d.prevention) e.prevention = d.prevention;
   else if (d.pad === "non") e.pad = null;
   else if (d.pad === "ok") { if (!garderLaSignature(e.pad)) e.refus = "Signez dans le cadre d’abord."; else e.pad = null; }
