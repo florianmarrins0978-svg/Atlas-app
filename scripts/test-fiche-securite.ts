@@ -14,14 +14,21 @@ import {
   estCoche,
   gardeeJusquAu,
   libellesAvecLesSiens,
-  manques,
+  lecturesManquantes,
+  minimumLegal,
   memoireDepuis,
+  refusDeFinaliser,
+  validite,
+  PROTOCOLE_MODELE,
+  RIEN_A_SIGNALER,
+  type ContenuFiche,
   memoireVide,
   ecritureRecue,
   refusDeLaSignature,
   refusDuReleveGps,
 } from "../src/lib/fiche-securite";
 import { composerFicheSecuritePdf } from "../src/server/pdf/fiche-securite-pdf";
+import { croquisRecu, manquesDuCroquis, type Marque } from "../src/lib/croquis-securite";
 
 // LA FICHE DE SÉCURITÉ — les règles pures, et le PDF qu'elles produisent.
 //
@@ -47,8 +54,9 @@ async function main() {
 
   await cas("les mots de la feuille, dans son ordre : la page 1", () => {
     assert.deepEqual(LIBELLES.travaux.slice(0, 5), ["Éhoupage", "Élagage de formation", "Élagage d’entretien", "Haubanage", "Démontage avec rétention"]);
-    assert.equal(LIBELLES.travaux.at(-1), "Rognage / essouchage", "la faute de la feuille (« essoussage ») n'est pas recopiée");
-    assert.deepEqual([...LIBELLES.elevation], ["Nacelle (PEMP)", "PIRL", "EPI de grimper", "Échelle"]);
+    assert.equal(LIBELLES.travaux[12], "Rognage / essouchage", "la faute de la feuille (« essoussage ») n'est pas recopiée");
+    // Les mots de la MSA restent dans leur ordre ; ceux du 14 octobre s'ajoutent autour, sans les réécrire.
+    assert.deepEqual(LIBELLES.elevation.slice(1, 5), ["Nacelle (PEMP)", "PIRL", "EPI de grimper", "Échelle"]);
     assert.equal(LIBELLES.matieres.length, 3, "trois vérifications sur l'arbre, pas une de plus : le décret n'en impose aucune");
   });
 
@@ -93,20 +101,105 @@ async function main() {
     assert.equal(libellesAvecLesSiens(c, "elevation").length, LIBELLES.elevation.length + 1, "les mots de la MSA restent devant");
   });
 
-  await cas("ce qui manque : les sept éléments du décret, et une catégorie vide n'est pas un manque", () => {
-    const rien = manques(contenuVide());
-    assert.ok(rien.some((m) => m.quoi === "Travaux à réaliser"));
-    assert.ok(rien.some((m) => m.quoi === "Point de Rencontre des Secours"));
-    let c = contenuVide();
-    c = { ...c, donneur: "client", heureDebut: "08:00", photoIds: ["p1"], pointDeRencontre: "devant le portail", lieuTrousse: "camion" };
+  // ─── LE MINIMUM LÉGAL — sa règle du 14 octobre 2026 : sans lui, la fiche ne se signe pas ───
+  const chantier = { adresse: "12 rue des Lilas", datePlanifiee: "2026-10-14" };
+  const croquisComplet: Marque[] = [
+    { t: "acces", x: 10, y: 10, x2: 50, y2: 50 },
+    { t: "voie", x: 0, y: 280, x2: 400, y2: 280 },
+    { t: "abattre", x: 200, y: 100 },
+  ];
+  const ficheComplete = (): ContenuFiche => {
+    let c: ContenuFiche = { ...contenuVide(), pointDeRencontre: "devant le portail", lieuTrousse: "camion", croquis: { fond: "blanc", fondPhotoId: null, marques: croquisComplet } };
     c = cocher(c, "travaux", "Haubanage");
     c = cocher(c, "coupe", "Sécateur");
     c = cocher(c, "balisage", LIBELLES.balisage[0]);
+    for (const f of ["risquesArbres", "biologique", "reseaux", "environnement"] as const) c = cocher(c, f, RIEN_A_SIGNALER);
+    c = cocher(c, "noyade", "Pas de risque de noyade");
     c = cocher(c, "meteo", LIBELLES.meteo[0]);
     c = cocher(c, "secours", LIBELLES.secours[0]);
-    assert.deepEqual(manques(c), [], `complète sans co-activité ni risque biologique : ${manques(c).map((m) => m.quoi).join(", ")}`);
-    const sansDonneur = { ...c, donneur: "autre" as const, donneurNom: "" };
-    assert.ok(manques(sansDonneur).some((m) => m.quoi === "Donneur d’ordre"), "« quelqu'un d'autre » sans nom est un manque");
+    return c;
+  };
+
+  await cas("le minimum légal : une fiche vide liste chaque élément, avec quoi faire et où", () => {
+    const rien = minimumLegal(contenuVide(), chantier).map((m) => m.quoi);
+    assert.deepEqual(rien, ["Les travaux", "Le matériel", "Le croquis", "La délimitation du chantier", "Les risques", "La météo", "Les secours"]);
+    for (const m of minimumLegal(contenuVide(), chantier)) assert.ok(m.faire.length > 10 && m.etape >= 1 && m.bloc, `« ${m.quoi} » ne dit pas quoi faire ni où`);
+    assert.ok(minimumLegal(contenuVide(), { adresse: null, datePlanifiee: null }).some((m) => m.quoi === "Le lieu"), "sans adresse ni GPS, le lieu manque");
+  });
+
+  await cas("le minimum légal : rempli, il ne bloque plus ; et le reste ne bloque jamais", () => {
+    assert.deepEqual(minimumLegal(ficheComplete(), chantier), [], minimumLegal(ficheComplete(), chantier).map((m) => m.quoi).join(", "));
+    // Sans EPI, sans sous-traitants, sans arbres dangereux, sans co-activité : conseillé, pas exigé.
+    assert.equal(ficheComplete().coches.epi, undefined);
+  });
+
+  await cas("« Rien à signaler » est une réponse ; un risque oublié n'en est pas une", () => {
+    let c = ficheComplete();
+    c = { ...c, coches: { ...c.coches, noyade: [] } };
+    const m = minimumLegal(c, chantier).find((x) => x.quoi === "Les risques");
+    assert.ok(m, "un risque sans réponse doit bloquer");
+    assert.match(m.faire, /la noyade/);
+    assert.equal(m.bloc, "risques-noyade", "la ligne emmène au risque qui manque");
+  });
+
+  await cas("« Rien à signaler » décoche le reste de sa famille, et un risque coché le décoche", () => {
+    let c = cocher(contenuVide(), "biologique", "Tiques sp");
+    c = cocher(c, "biologique", RIEN_A_SIGNALER);
+    assert.deepEqual(c.coches.biologique, [RIEN_A_SIGNALER]);
+    c = cocher(c, "biologique", "Tiques sp");
+    assert.deepEqual(c.coches.biologique, ["Tiques sp"]);
+    c = cocher(cocher(contenuVide(), "elevation", "Pas besoin pour ce chantier"), "elevation", "Échelle");
+    assert.deepEqual(c.coches.elevation, ["Échelle"], "« Pas besoin » et une échelle ne se contredisent pas");
+  });
+
+  await cas("le croquis : les trois éléments de la loi, et rien d'autre ne bloque", () => {
+    assert.deepEqual(manquesDuCroquis({ fond: "blanc", fondPhotoId: null, marques: [] }), ["accès", "voie de circulation", "arbres à traiter"]);
+    assert.deepEqual(manquesDuCroquis({ fond: "blanc", fondPhotoId: null, marques: croquisComplet }), []);
+    const sansVoie = croquisComplet.filter((m) => m.t !== "voie");
+    assert.deepEqual(manquesDuCroquis({ fond: "blanc", fondPhotoId: null, marques: sansVoie }), ["voie de circulation"]);
+    assert.deepEqual(manquesDuCroquis({ fond: "blanc", fondPhotoId: null, marques: [...sansVoie, { t: "tailler", x: 1, y: 1 }, { t: "voie", x: 0, y: 0, x2: 1, y2: 1 }] }), [], "un arbre à tailler compte comme arbre à traiter");
+  });
+
+  await cas("le croquis reçu se vérifie : forme, bornes, trop de points", () => {
+    assert.ok(croquisRecu({ fond: "photo", fondPhotoId: "8f5c2a0e-1b2c-4d3e-9f40-123456789abc", marques: croquisComplet }).ok);
+    const faux: unknown[] = [
+      { fond: "dessin", fondPhotoId: null, marques: [] },
+      { fond: "blanc", fondPhotoId: "pas-un-id", marques: [] },
+      { fond: "blanc", fondPhotoId: null, marques: [{ t: "inventee", x: 1, y: 1 }] },
+      { fond: "blanc", fondPhotoId: null, marques: [{ t: "acces", x: 1, y: 1 }] },
+      { fond: "blanc", fondPhotoId: null, marques: [{ t: "maison", x: 9_999, y: 1 }] },
+      { fond: "blanc", fondPhotoId: null, marques: [{ t: "crayon", pts: [1, 2, 3] }] },
+      { fond: "blanc", fondPhotoId: null, marques: [{ t: "danger", x: 1, y: 1, mot: "a".repeat(500) }] },
+      { fond: "blanc", fondPhotoId: null, marques: Array.from({ length: 20 }, () => ({ t: "crayon", pts: Array.from({ length: 3_000 }, () => 10) })) },
+    ];
+    for (const x of faux) assert.equal(croquisRecu(x).ok, false, `accepté : ${JSON.stringify(x).slice(0, 100)}`);
+  });
+
+  await cas("l'équipe : chacun signe l'avoir lue, sauf le chef qui a signé la fiche ; un absent ne signe pas", () => {
+    const c: ContenuFiche = {
+      ...ficheComplete(),
+      signataire: "Florian Martins",
+      equipe: [
+        { nom: "Florian Martins", present: true, formations: [], sst: "", gsa: "" },
+        { nom: "Kevin Morel", present: true, formations: [], sst: "", gsa: "" },
+        { nom: "Lucas Petit", present: false, formations: [], sst: "", gsa: "" },
+      ],
+    };
+    assert.deepEqual(lecturesManquantes(c), ["Kevin Morel"]);
+    assert.match(refusDeFinaliser(c, true, chantier) ?? "", /Kevin Morel doit signer/);
+    const lue = { ...c, lectures: [{ nom: "kevin  morel", png: "x", le: "2026-10-14T07:55:00Z" }] };
+    assert.deepEqual(lecturesManquantes(lue), [], "le nom se compare sans casse ni espaces en trop");
+    assert.equal(refusDeFinaliser(lue, true, chantier), null);
+    assert.match(refusDeFinaliser(lue, false, chantier) ?? "", /Signez la fiche/);
+    assert.match(refusDeFinaliser({ ...lue, coches: {} }, true, chantier) ?? "", /que la loi exige/, "le minimum légal se revérifie à l'enregistrement");
+  });
+
+  await cas("le SST et le GSA durent 24 mois, comptés depuis leur date", () => {
+    const ceJour = new Date("2026-10-14T12:00:00Z");
+    assert.equal(validite("2024-11-01", ceJour).ok, true);
+    assert.equal(validite("2024-09-02", ceJour).ok, false, "obtenu il y a plus de 24 mois");
+    assert.equal(validite("", ceJour).ok, false);
+    assert.equal(validite("2025-03-03", ceJour).fin?.toISOString().slice(0, 10), "2027-03-03");
   });
 
   await cas("ce qui est gardé d'une fiche à l'autre : les cases, les textes, les ajouts — pas ce qui est propre au chantier", () => {
@@ -127,6 +220,26 @@ async function main() {
     assert.equal(suivante.donneur, null);
     assert.equal(suivante.donneurNom, "");
     assert.deepEqual(appliquerLaMemoire(contenuVide(), memoireVide()), contenuVide(), "sans mémoire, la fiche est vide");
+  });
+
+  await cas("sa règle du 14 octobre : l'équipe, les entreprises et le protocole reviennent ; leur présence non", () => {
+    const c: ContenuFiche = {
+      ...contenuVide(),
+      equipe: [{ nom: "Kevin Morel", present: false, formations: ["CACES nacelle"], sst: "2025-01-18", gsa: "" }],
+      entreprises: [{ nom: "Élec Services", tel: "02 41", quoi: "coupe la ligne", presente: true, montree: true }],
+      protocole: "Mon protocole",
+      autresResponsables: [{ nom: "Jean", tel: "06" }],
+      arbres: [{ groupe: false, intervention: "Abattage", dangers: ["Arbre mort"], consignes: [], autres: "" }],
+      croquis: { fond: "blanc", fondPhotoId: null, marques: croquisComplet },
+    };
+    const suivante = appliquerLaMemoire(contenuVide(), memoireDepuis(c));
+    assert.deepEqual(suivante.equipe, [{ nom: "Kevin Morel", present: true, formations: ["CACES nacelle"], sst: "2025-01-18", gsa: "" }], "l'équipe revient, cochée");
+    assert.deepEqual(suivante.entreprises, [{ nom: "Élec Services", tel: "02 41", quoi: "coupe la ligne", presente: false, montree: false }], "l'entreprise revient, pas sa présence");
+    assert.equal(suivante.protocole, "Mon protocole");
+    assert.deepEqual(suivante.autresResponsables, [{ nom: "Jean", tel: "06" }]);
+    assert.deepEqual(suivante.arbres, [], "les arbres dangereux sont propres au chantier");
+    assert.deepEqual(suivante.croquis.marques, [], "le croquis est propre au chantier");
+    assert.equal(appliquerLaMemoire(contenuVide(), memoireVide()).protocole, PROTOCOLE_MODELE, "sans protocole gardé, le modèle");
   });
 
   await cas("le nom et le prénom sont repris d'une fiche à l'autre : le signataire et le responsable sur place", () => {
@@ -152,6 +265,10 @@ async function main() {
     assert.equal(compteDuBandeau({ signeeLe: null, transmiseLe: null, etapeVue: 3 }), "3 sur 6");
     assert.equal(compteDuBandeau({ signeeLe: signee, transmiseLe: null, etapeVue: 6 }), "signée");
     assert.equal(compteDuBandeau({ signeeLe: signee, transmiseLe: signee, etapeVue: 6 }), "transmise");
+    const equipe = [{ nom: "Kevin", present: true, formations: [], sst: "", gsa: "" }];
+    assert.equal(compteDuBandeau({ signeeLe: signee, transmiseLe: null, etapeVue: 6, contenu: { ...contenuVide(), equipe } }), "à faire lire");
+    assert.equal(compteDuBandeau({ signeeLe: signee, transmiseLe: null, etapeVue: 6, contenu: { ...contenuVide(), equipe, lectures: [{ nom: "Kevin", png: "", le: "" }] } }), "à enregistrer");
+    assert.equal(compteDuBandeau({ signeeLe: signee, transmiseLe: null, etapeVue: 6, contenu: { ...contenuVide(), equipe, finaliseeLe: "2026-10-14" } }), "signée");
   });
 
   await cas("le PDF se compose, cases cochées et non cochées, signature et note de la feuille comprises", async () => {
@@ -161,6 +278,29 @@ async function main() {
     c = cocher(c, "reseauxMesures", LIBELLES.reseauxMesures[2]);
     c = cocher(c, "distances", LIBELLES.distances[2]);
     c = { ...c, donneur: "autre", donneurNom: "Dubeaujardin", donneurPrenom: "Marc", mainDOeuvre: "3 personnes en CDI", observations: "Prévenir le chef si quelque chose change", heureDebut: "08:00", heureFin: "12:30" };
+    const toutesLesMarques: Marque[] = [
+      ...croquisComplet,
+      { t: "crayon", pts: [10, 10, 20, 30, 40, 35] },
+      { t: "ligne", x: 0, y: 20, x2: 400, y2: 40 },
+      { t: "limite", x: 380, y: 280, x2: 20, y2: 20 },
+      { t: "ruisseau", x: 0, y: 150, x2: 170, y2: 140 },
+      { t: "tailler", x: 336, y: 170 },
+      { t: "maison", x: 80, y: 70 },
+      { t: "danger", x: 262, y: 110, mot: "chute du frêne" },
+      { t: "stockage", x: 80, y: 200 },
+      { t: "reseau", x: 370, y: 230 },
+      { t: "secours", x: 200, y: 230 },
+    ];
+    c = {
+      ...c,
+      croquis: { fond: "blanc", fondPhotoId: null, marques: toutesLesMarques },
+      equipe: [{ nom: "Kevin Morel", present: true, formations: ["CACES nacelle"], sst: "2025-01-18", gsa: "" }],
+      entreprisesSurPlace: "oui",
+      entreprises: [{ nom: "Élec Services", tel: "02 41", quoi: "coupe la ligne", presente: true, montree: true }],
+      arbresDangereux: "oui",
+      arbres: [{ groupe: false, intervention: "Abattage", dangers: ["Arbre mort"], consignes: ["Rubalise autour du tronc"], autres: "" }],
+      lectures: [{ nom: "Kevin Morel", png: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEklEQVQIW2NkYGD4z8DAwMAAAAgEAQC6xj9EAAAAAElFTkSuQmCC", le: "2026-09-18T06:10:00Z" }],
+    };
     // un PNG minuscule et valide (2 × 2), en guise de trait
     const signature = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEklEQVQIW2NkYGD4z8DAwMAAAAgEAQC6xj9EAAAAAElFTkSuQmCC";
     const pdf = await composerFicheSecuritePdf({
@@ -232,6 +372,28 @@ async function main() {
       { contenu: vide, etapeVue: 1, loiLue: "oui" },
     ];
     for (const f of fausses) assert.equal(ecritureRecue(f).ok, false, `accepté : ${JSON.stringify(f)?.slice(0, 120)}`);
+  });
+
+  await cas("les parties neuves se vérifient aussi : l'équipe, les entreprises, les arbres, le croquis", () => {
+    const vide = contenuVide();
+    const fausses: unknown[] = [
+      { contenu: { ...vide, equipe: [{ nom: "Kevin", present: true, formations: [], sst: "hier", gsa: "" }] }, etapeVue: 1, loiLue: true },
+      { contenu: { ...vide, equipe: "Kevin" }, etapeVue: 1, loiLue: true },
+      { contenu: { ...vide, entreprises: [{ nom: "Élec", tel: "", quoi: "", presente: "oui", montree: false }] }, etapeVue: 1, loiLue: true },
+      { contenu: { ...vide, arbres: [{ groupe: false, intervention: "Dessouchage", dangers: [], consignes: [], autres: "" }] }, etapeVue: 1, loiLue: true },
+      { contenu: { ...vide, arbresDangereux: "peut-être" }, etapeVue: 1, loiLue: true },
+      { contenu: { ...vide, croquis: { fond: "blanc", fondPhotoId: null, marques: "dessin" } }, etapeVue: 1, loiLue: true },
+    ];
+    for (const f of fausses) assert.equal(ecritureRecue(f).ok, false, `accepté : ${JSON.stringify(f)?.slice(0, 120)}`);
+  });
+
+  await cas("une lecture ou un enregistrement ne se déclarent pas avec le contenu : ils ont leurs propres gestes", () => {
+    const r = ecritureRecue({ contenu: { ...contenuVide(), lectures: [{ nom: "Kevin", png: "x", le: "x" }], finaliseeLe: "2026-10-14", envois: ["client"], prevention: "oui" }, etapeVue: 1, loiLue: true });
+    assert.ok(r.ok);
+    assert.deepEqual(r.ecriture.contenu.lectures, []);
+    assert.equal(r.ecriture.contenu.finaliseeLe, null);
+    assert.deepEqual(r.ecriture.contenu.envois, []);
+    assert.equal(r.ecriture.contenu.prevention, null);
   });
 
   await cas("trop long est refusé : un texte, un mot ajouté, une liste, des photos", () => {

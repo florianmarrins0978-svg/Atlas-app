@@ -9,10 +9,12 @@ import { jpegDeTaille } from "./_images-temoins";
 //
 // Le chemin du patron, du premier geste au dernier (`CLAUDE.md` §5 quater) :
 // le bandeau sur la fiche du jour, « ce que demande la loi » une fois, les six
-// écrans, une case cochée sans que l'écran remonte, un mot ajouté, la
-// signature au doigt, le PDF qui répond, la liste dans Paysage, et le bandeau
-// qui dit « signée » au retour. Puis la base : une fiche, signée, et la mémoire
-// de l'entreprise qui porte ce qui a été coché.
+// écrans, une case cochée sans que l'écran remonte, un mot ajouté, le croquis
+// dessiné, la signature REFUSÉE tant que le minimum légal manque (sa règle du
+// 14 octobre 2026), la signature au doigt, la lecture signée par l'équipe,
+// l'enregistrement final, le PDF qui répond, la liste dans Paysage, et le
+// bandeau qui dit « signée » au retour. Puis la base : une fiche, signée, et la
+// mémoire de l'entreprise qui porte ce qui a été coché.
 
 const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -207,15 +209,89 @@ async function main() {
     assert.ok(await page.locator("[data-atlas='etape-de-la-fiche']").filter({ hasText: "3 sur 6" }).isVisible(), "on ne revient pas sur l'écran 3 en fermant la photo");
   });
 
-  await cas("les écrans 4 et 5 se passent, puis la signature au doigt ouvre « Fiche signée »", async () => {
+  // ─── LE CROQUIS — sa règle du 14 octobre 2026 : *« il ne doit pas pouvoir
+  // valider le croquis sans ces éléments »*. On éprouve SON geste : ouvrir,
+  // vouloir finir trop tôt, poser l'accès, la voie et un arbre, finir.
+  await cas("ÉCRAN 3 — le croquis refuse de finir sans l'accès, la voie et un arbre, puis les accepte", async () => {
+    await page.locator("[data-atlas='croquis-page-blanche']").click();
+    const dessin = page.locator("[data-atlas='dessin-du-croquis']");
+    await dessin.waitFor({ state: "visible", timeout: 10_000 });
+    await page.locator("[data-atlas='croquis-termine']").click();
+    await page.locator("[data-atlas='consigne-du-croquis']").filter({ hasText: "Il manque encore" }).waitFor({ timeout: 5_000 });
+    assert.ok(await dessin.isVisible(), "« Terminé » a fermé un croquis incomplet");
+    // Un appui au point (x, y) de la feuille de 400 sur 300, quelle que soit la taille de l'écran.
+    const toucher = async (x: number, y: number) => {
+      const [px, py] = await dessin.evaluate((s, [a, b]) => {
+        const q = new DOMPoint(a, b).matrixTransform((s as SVGSVGElement).getScreenCTM()!);
+        return [q.x, q.y];
+      }, [x, y] as [number, number]);
+      await page.mouse.click(px, py);
+    };
+    await page.locator("[data-atlas='outil-acces']").click();
+    await toucher(180, 290);
+    await toucher(180, 200);
+    await page.locator("[data-atlas='outil-voie']").click();
+    await toucher(10, 270);
+    await toucher(390, 270);
+    await page.locator("[data-atlas='outil-abattre']").click();
+    await toucher(260, 100);
+    await page.locator("[data-atlas='croquis-termine']").click();
+    await dessin.waitFor({ state: "detached", timeout: 5_000 });
+    assert.equal(await page.locator("[data-atlas='obligatoire-du-croquis'][data-pose='true']").count(), 3, "les trois éléments de la loi ne sont pas cochés");
+    const enBase = async () => {
+      const { rows } = await pool.query<{ contenu: { croquis?: { marques?: { t: string }[] } } }>(`SELECT contenu FROM fiches_securite WHERE chantier_id = $1`, [chantierId]);
+      return (rows[0]?.contenu?.croquis?.marques ?? []).map((m) => m.t).join(",");
+    };
+    const jusqua = Date.now() + 15_000;
+    while ((await enBase()) !== "acces,voie,abattre" && Date.now() < jusqua) await page.waitForTimeout(500);
+    assert.equal(await enBase(), "acces,voie,abattre", "le croquis n'est pas enregistré");
+  });
+
+  await cas("sans le minimum légal, la signature est refusée, et chaque ligne emmène où remplir", async () => {
     for (const n of [4, 5, 6]) {
       await page.locator("[data-atlas='suivant']").click();
       await page.locator("[data-atlas='etape-de-la-fiche']").filter({ hasText: `${n} sur 6` }).waitFor({ timeout: 15_000 });
     }
     const texte = await page.locator("body").innerText();
-    assert.match(texte, /Encore vide/i, "ce qui manque se dit avant de signer");
+    assert.match(texte, /Pour pouvoir signer/, "ce que la loi exige se dit avant de signer");
     const signer = page.locator("[data-atlas='signer-la-fiche']");
-    assert.equal(await signer.isDisabled(), true, "sans trait, on ne signe pas");
+    assert.equal(await signer.getAttribute("aria-disabled"), "true", "le bouton se montre refusé");
+    await signer.click();
+    await page.getByText(/que la loi exige\. Touchez/).waitFor({ timeout: 5_000 });
+    assert.equal(await page.locator("[data-atlas='fiche-signee']").count(), 0, "une fiche sans le minimum légal a été signée");
+    // La ligne des risques emmène à l'écran 4.
+    await page.locator("[data-atlas='manque-de-la-fiche']").filter({ hasText: "Les risques" }).click();
+    await page.locator("[data-atlas='etape-de-la-fiche']").filter({ hasText: "4 sur 6" }).waitFor({ timeout: 10_000 });
+  });
+
+  await cas("le minimum légal se remplit : « Rien à signaler » compte comme une réponse", async () => {
+    for (const famille of ["risquesArbres", "biologique", "reseaux", "environnement"]) {
+      await page.locator(`[data-atlas='groupe-${famille}']`).getByRole("button", { name: "Rien à signaler", exact: true }).click();
+    }
+    await page.locator("[data-atlas='groupe-noyade']").getByRole("button", { name: "Pas de risque de noyade", exact: true }).click();
+    await page.locator("[data-atlas='suivant']").click();
+    await page.locator("[data-atlas='etape-de-la-fiche']").filter({ hasText: "5 sur 6" }).waitFor({ timeout: 15_000 });
+    await page.locator("[data-atlas='groupe-meteo'] [data-atlas='case-de-la-fiche']").first().click();
+    await page.locator("[data-atlas='groupe-secours'] [data-atlas='case-de-la-fiche']").first().click();
+    await page.getByLabel("Préciser le lieu où se trouve la trousse de secours :").fill("Dans la cabine du camion");
+    await page.getByLabel("Préciser le Point de Rencontre des Secours :").fill("Devant le portail");
+    // La délimitation, sur l'écran 3.
+    await page.locator("[data-atlas='retour-de-la-fiche']").click();
+    await page.locator("[data-atlas='retour-de-la-fiche']").click();
+    await page.locator("[data-atlas='etape-de-la-fiche']").filter({ hasText: "3 sur 6" }).waitFor({ timeout: 15_000 });
+    await page.locator("[data-atlas='groupe-balisage'] [data-atlas='case-de-la-fiche']").first().click();
+    for (const n of [4, 5, 6]) {
+      await page.locator("[data-atlas='suivant']").click();
+      await page.locator("[data-atlas='etape-de-la-fiche']").filter({ hasText: `${n} sur 6` }).waitFor({ timeout: 15_000 });
+    }
+    await page.getByText("Tout ce que la loi exige est rempli").waitFor({ timeout: 10_000 });
+  });
+
+  await cas("la signature au doigt ouvre la suite : l'équipe signe, puis on enregistre", async () => {
+    const signer = page.locator("[data-atlas='signer-la-fiche']");
+    await signer.click();
+    await page.getByText("Signez dans le cadre d’abord.").waitFor({ timeout: 5_000 });
+    assert.equal(await page.locator("[data-atlas='fiche-signee']").count(), 0, "sans trait, on ne signe pas");
     await page.getByLabel(SIGNATAIRE).fill(NOM_SIGNE);
     const toile = page.locator("[data-atlas='signature'] canvas");
     await toile.scrollIntoViewIfNeeded();
@@ -246,6 +322,43 @@ async function main() {
     assert.ok(r[0].signee_le, "la signature n'est pas en base");
     assert.ok(r[0].signature_png?.startsWith("data:image/png;base64,"), "le trait n'est pas en base");
     assert.equal(r[0].signataire, NOM_SIGNE, "le nom tapé n'est pas celui qui est signé");
+  });
+
+  // ─── LA LECTURE DE L'ÉQUIPE — sa règle du 14 octobre 2026 : *« si un des gars
+  // n'a pas signé, le document ne doit pas pouvoir être enregistré »*. L'équipe
+  // de la fiche neuve porte le compte du patron ; le nom signé est un autre :
+  // le compte du patron doit donc signer l'avoir lue.
+  await cas("tant qu'un de l'équipe n'a pas signé, la fiche ne s'enregistre pas ; signée, elle s'enregistre", async () => {
+    const enregistrer = page.locator("[data-atlas='enregistrer-la-fiche']");
+    await enregistrer.waitFor({ timeout: 10_000 });
+    const enAttente = page.locator("[data-atlas='faire-signer']");
+    assert.ok((await enAttente.count()) >= 1, "personne n'attend de signer : le contrôle ne mesure rien");
+    await enregistrer.click();
+    await page.getByText(/doit signer avant d’enregistrer|doivent signer avant d’enregistrer/).first().waitFor({ timeout: 5_000 });
+    const finalisee = async () => {
+      const { rows } = await pool.query<{ contenu: { finaliseeLe?: string | null } }>(`SELECT contenu FROM fiches_securite WHERE chantier_id = $1`, [chantierId]);
+      return rows[0]?.contenu?.finaliseeLe ?? null;
+    };
+    assert.equal(await finalisee(), null, "une fiche a été enregistrée sans la signature de l'équipe");
+    while ((await enAttente.count()) > 0) {
+      await enAttente.first().click();
+      const feuillet = page.locator("[data-atlas='feuillet-de-lecture']");
+      await feuillet.waitFor({ timeout: 5_000 });
+      const toile = feuillet.locator("[data-atlas='signature'] canvas");
+      const bb = await toile.boundingBox();
+      assert.ok(bb, "la toile de lecture ne se mesure pas");
+      await page.mouse.move(bb.x + 30, bb.y + 60);
+      await page.mouse.down();
+      for (let i = 0; i < 25; i++) await page.mouse.move(bb.x + 30 + i * 8, bb.y + 60 + Math.sin(i / 3) * 20);
+      await page.mouse.up();
+      await page.locator("[data-atlas='valider-la-lecture']").click();
+      await feuillet.waitFor({ state: "detached", timeout: 10_000 });
+    }
+    await enregistrer.click();
+    await page.locator("[data-atlas='fiche-enregistree']").waitFor({ timeout: 10_000 });
+    assert.ok(await finalisee(), "l'enregistrement n'est pas en base");
+    const { rows } = await pool.query<{ contenu: { lectures?: { png: string }[] } }>(`SELECT contenu FROM fiches_securite WHERE chantier_id = $1`, [chantierId]);
+    assert.ok((rows[0].contenu.lectures ?? []).every((l) => l.png.startsWith("data:image/png;base64,")), "une lecture sans son trait");
   });
 
   await cas("le PDF répond, en PDF, et se télécharge sous son nom", async () => {

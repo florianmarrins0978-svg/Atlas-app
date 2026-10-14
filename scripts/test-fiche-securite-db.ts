@@ -7,6 +7,7 @@ import * as chantiersRepo from "../src/server/repositories/chantiers";
 import * as photosRepo from "../src/server/repositories/photos";
 import {
   attacherPhotoALaFiche,
+  completerLaFicheSignee,
   contexteDuChantier,
   detacherPhotoDeLaFiche,
   enregistrerLaFiche,
@@ -132,6 +133,33 @@ async function main() {
     assert.deepEqual(deA.map((f) => f.chantierNom), ["Chêne Rialland"], "la fiche non signée de « Tilleuls Bernard » n'y est pas, ni celle de B");
     assert.equal(deA[0].client, "Sans client");
     assert.equal(deA[0].signataire, "Anne");
+  });
+
+  // ─── SIGNÉE N'EST PAS ENREGISTRÉE — sa règle du 14 octobre 2026 : *« si un
+  // des gars n'a pas signé, le document ne doit pas pouvoir être enregistré »*.
+  // Une fiche qui a une équipe n'entre dans Paysage qu'une fois enregistrée ;
+  // la lecture s'ajoute à une fiche signée sans la rouvrir, et rouvrir l'efface.
+  await essai("une fiche avec une équipe n'entre dans Paysage qu'enregistrée ; rouvrir efface lectures et enregistrement", async () => {
+    const pin = await chantiersRepo.creerChantier(ctxA, { nom: "Pin Lebrun" });
+    await ouvrirLaFiche(ctxA, pin.id);
+    const avecEquipe = { ...contenuVide(), equipe: [{ nom: "Anne", present: true, formations: [], sst: "", gsa: "" }, { nom: "Paul", present: true, formations: [], sst: "", gsa: "" }] };
+    await enregistrerLaFiche(ctxA, pin.id, { contenu: avecEquipe, etapeVue: 6, loiLue: true });
+    await signerLaFiche(ctxA, pin.id, { signaturePng: PNG, signataire: "Anne" });
+    const noms = async () => (await listerLesFichesSignees(ctxA)).map((x) => x.chantierNom);
+    assert.ok(!(await noms()).includes("Pin Lebrun"), "une fiche signée mais pas enregistrée est dans Paysage");
+
+    assert.equal(await completerLaFicheSignee(ctxB, pin.id, (c) => ({ ...c, finaliseeLe: new Date().toISOString() })), null, "B a complété la fiche de A");
+    const lue = await completerLaFicheSignee(ctxA, pin.id, (c) => ({ ...c, lectures: [{ nom: "Paul", png: PNG, le: new Date().toISOString() }] }));
+    assert.equal(lue?.contenu.lectures.length, 1, "la lecture de Paul n'est pas écrite");
+    const finalisee = await completerLaFicheSignee(ctxA, pin.id, (c) => ({ ...c, finaliseeLe: new Date().toISOString() }));
+    assert.ok(finalisee?.contenu.finaliseeLe, "l'enregistrement n'est pas écrit");
+    assert.ok((await noms()).includes("Pin Lebrun"), "la fiche enregistrée n'est pas dans Paysage");
+    assert.equal(await completerLaFicheSignee(ctxA, pin.id, (c) => ({ ...c, lectures: [] })), null, "une fiche enregistrée a été modifiée sans la rouvrir");
+
+    const rouverte = await rouvrirLaFiche(ctxA, pin.id, { memeTransmise: true });
+    assert.equal(rouverte?.contenu.lectures.length, 0, "rouvrir garde des lectures d'une version qui n'existe plus");
+    assert.equal(rouverte?.contenu.finaliseeLe, null, "rouvrir garde l'enregistrement");
+    assert.equal(await completerLaFicheSignee(ctxA, pin.id, (c) => c), null, "une fiche non signée a reçu une lecture");
   });
 
   // ─── SIGNÉE, ELLE EST FIGÉE ; TRANSMISE, SEUL LE PATRON LA ROUVRE ─────────

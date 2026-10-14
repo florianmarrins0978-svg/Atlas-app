@@ -34800,3 +34800,40 @@ son propre champ de fichier.
 
 Contrôles : `test-vehicules` (règles, rouge sans elles), `test-vehicules-rls`
 (isolation et sauvegarde sous `atlas_app`, rouge sans la RLS).
+
+## §461 : La fiche de sécurité se signe sur un minimum légal, et s'enregistre sur la lecture de chacun
+
+**Ses règles du 14 octobre 2026** : *« si il n'y a pas le minimum légal la
+fiche ne peut pas s'enregistrer et se finaliser, et un message doit indiquer ce
+qu'il faut faire »* ; *« si un des gars n'a pas signé, le document ne doit pas
+pouvoir être enregistré »* ; *« il ne doit pas pouvoir valider le croquis sans
+ces éléments »*.
+
+| Le moment | Ce qui le refuse | Où |
+|---|---|---|
+| « Terminé » sur le croquis | accès, voie de circulation, un arbre à traiter | `manquesDuCroquis` |
+| la signature du chef | le minimum légal : travaux, matériel, croquis complet, balisage, les cinq familles de risques, météo, secours, PRS, trousse | `minimumLegal`, revérifié par `signerLaFicheAction` |
+| « Enregistrer » | un présent de l'équipe sans sa lecture signée | `refusDeFinaliser`, revérifié par `finaliserLaFicheAction` |
+
+**Une seule fonction pour l'écran et pour l'action** (CLAUDE.md §3) : chaque
+`Manque` porte son étape et son bloc, l'écran en fait un bouton qui y emmène,
+l'action serveur en fait son refus.
+
+**« Rien à signaler » est une réponse, pas un vide.** Exiger une case cochée
+par famille de risques sans cette réponse aurait poussé à cocher un risque
+absent pour pouvoir signer, et une fiche fausse est pire qu'une fiche vide.
+
+**Une fiche signée se complète sans se rouvrir.** Les lectures et
+l'enregistrement s'écrivent par `completerLaFicheSignee`, sous `FOR UPDATE`,
+et `contenuRecu` ignore ces champs quand ils viennent de l'écran : sinon
+l'enregistrement ordinaire pourrait forger la lecture d'un ouvrier. Rouvrir la
+fiche les efface, puisqu'ils portaient sur la version d'avant.
+
+**Paysage ne liste que l'enregistré**, sauf les fiches d'avant ce lot, qui
+n'ont pas d'équipe : leur filtre `finaliseeLe IS NOT NULL OR équipe vide` les
+garde visibles sans migration.
+
+**Le croquis est vectoriel**, sur une feuille de 400 sur 300, et la photo de
+fond s'y pose « contenue » : le PDF la redessine au même endroit, ce qu'une
+image aplatie n'aurait pas permis sans perdre la netteté des traits.
+

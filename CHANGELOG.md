@@ -31,6 +31,23 @@ Format : le plus récent en tête.
   avec lui avant de dessiner : la carte grise reste en original dans le camion (3,5 t pile, pas de
   copie admise). Migration 0131. `ARCHITECTURE.md` §461. **Pas encore sur `main` : batterie à jouer.**
 
+- **La fiche de sécurité fait tout ce que fait Kleyk, et refuse de se finaliser sans le minimum
+  légal.** Sa demande du 13 octobre (*« regarde les photos pour créer une fiche ; si t'as pas ça,
+  c'est pas bon »*), puis *« Parfait, code ça »* sur `appli/fiche-de-securite-mieux.html`. Les six
+  écrans gardent leur place, tout est à la suite : rôle du donneur d'ordre, plusieurs responsables,
+  entreprises sur place (retenues par nom), équipe et compétences (SST et GSA valables 24 mois),
+  EPI, situation, arbres dangereux un par un, noyade, protocole de zone de danger, « Rien à
+  signaler » qui compte comme une réponse. **Le croquis** se dessine en plein écran (13 outils, les
+  repères suivent le doigt, la limite est un rectangle, la maison se pose seule) et **refuse
+  « Terminé »** sans l'accès, la voie de circulation et un arbre à traiter. **La signature est
+  refusée** tant que le minimum légal manque (`minimumLegal`, `src/lib/fiche-securite.ts`), et
+  chaque manque emmène à l'endroit où le remplir. **Après la signature**, chaque présent signe
+  qu'il a lu la fiche ; **« Enregistrer » est refusé** tant qu'un seul manque, et seule une fiche
+  enregistrée entre dans Paysage. « À qui l'envoyer » explique la loi à qui ne la connaît pas.
+  Le PDF porte tout, croquis vectoriel compris. Aucune migration : tout vit dans `contenu`.
+  Ce que ça évite : une fiche signée par le chef seul, un croquis sans accès ni voie, et une fiche
+  « en règle » à l'écran qui ne l'est pas devant un inspecteur.
+
 ## 2026-10-13
 
 - **La main d'œuvre s'additionne, dans chaque TVA.** Sa demande du 13 octobre : *« dire main

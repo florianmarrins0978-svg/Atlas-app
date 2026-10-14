@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, isNotNull, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import {
   chantiers,
@@ -272,9 +272,13 @@ export async function rouvrirLaFiche(
 ): Promise<FicheEnregistree | null> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const cible = eq(fichesSecurite.chantierId, chantierId);
+    const [actuelle] = await tx.select().from(fichesSecurite).where(cible).limit(1);
+    if (!actuelle) return null;
+    // Les lectures de l'équipe portaient sur la fiche d'avant : une fiche modifiée se relit et se re-signe.
+    const contenu = { ...lireContenu(actuelle.contenu), lectures: [], envois: [], prevention: null, finaliseeLe: null };
     const [ligne] = await tx
       .update(fichesSecurite)
-      .set({ signaturePng: null, signataire: null, signeePar: null, signeeLe: null, transmiseLe: null, updatedAt: new Date() })
+      .set({ contenu, signaturePng: null, signataire: null, signeePar: null, signeeLe: null, transmiseLe: null, updatedAt: new Date() })
       .where(memeTransmise ? cible : and(cible, isNull(fichesSecurite.transmiseLe)))
       .returning();
     return ligne ? versFiche(ligne) : null;
@@ -296,6 +300,42 @@ export async function marquerTransmise(ctx: Ctx, chantierId: string): Promise<Fi
   });
 }
 
+/**
+ * APRÈS LA SIGNATURE DU CHEF : la lecture de chaque salarié, l'envoi, la
+ * question du plan de prévention, l'enregistrement final.
+ *
+ * **Seulement sur une fiche signée et pas encore enregistrée**, et seulement
+ * ces champs-là : le reste du contenu ne bouge plus sans « Modifier »
+ * (`enregistrerLaFiche` refuse d'écrire une fiche signée). La décision de ce
+ * qui est permis est prise AVANT, par l'action, avec les règles pures ; ici,
+ * on écrit sous la même condition, dans la même transaction que la lecture.
+ */
+export async function completerLaFicheSignee(
+  ctx: Ctx,
+  chantierId: string,
+  changer: (contenu: ContenuFiche) => ContenuFiche | null
+): Promise<FicheEnregistree | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [ligne] = await tx
+      .select()
+      .from(fichesSecurite)
+      .where(and(eq(fichesSecurite.chantierId, chantierId), isNotNull(fichesSecurite.signeeLe)))
+      .limit(1)
+      .for("update");
+    if (!ligne) return null;
+    const avant = lireContenu(ligne.contenu);
+    if (avant.finaliseeLe) return null;
+    const apres = changer(avant);
+    if (!apres) return null;
+    const [ecrite] = await tx
+      .update(fichesSecurite)
+      .set({ contenu: apres, updatedAt: new Date() })
+      .where(and(eq(fichesSecurite.id, ligne.id), isNotNull(fichesSecurite.signeeLe)))
+      .returning();
+    return ecrite ? versFiche(ecrite) : null;
+  });
+}
+
 export type FicheEnListe = {
   chantierId: string;
   chantierNom: string;
@@ -306,9 +346,10 @@ export type FicheEnListe = {
 };
 
 /**
- * TOUTES les fiches SIGNÉES, de la plus récente à la plus ancienne — la liste
- * de Paysage. Une fiche commencée et non signée n'y est pas : elle vit sur la
- * fiche du jour du planning, tant qu'elle n'est pas signée.
+ * TOUTES les fiches ENREGISTRÉES, de la plus récente à la plus ancienne — la
+ * liste de Paysage. Une fiche commencée, ou signée mais pas encore lue par toute
+ * l'équipe, n'y est pas : elle vit sur la fiche du jour du planning jusqu'à son
+ * enregistrement (sa règle du 14 octobre 2026).
  *
  * **Pas un mois, toutes** — depuis sa demande du 22 septembre 2026 : *« une
  * recherche par nom, et il te sort toutes les fiches de ce client »*. Le mois
@@ -329,7 +370,17 @@ export async function listerLesFichesSignees(ctx: Ctx): Promise<FicheEnListe[]> 
       .from(fichesSecurite)
       .innerJoin(chantiers, eq(fichesSecurite.chantierId, chantiers.id))
       .leftJoin(clients, eq(chantiers.clientId, clients.id))
-      .where(isNotNull(fichesSecurite.signeeLe))
+      .where(
+        and(
+          isNotNull(fichesSecurite.signeeLe),
+          // Enregistrée pour de bon, ou signée avant que l'équipe signe à son tour
+          // (les fiches d'avant le 14 octobre 2026 n'ont pas d'équipe à faire lire).
+          or(
+            sql`${fichesSecurite.contenu}->>'finaliseeLe' is not null`,
+            sql`coalesce(jsonb_array_length(${fichesSecurite.contenu}->'equipe'), 0) = 0`
+          )
+        )
+      )
       .orderBy(desc(fichesSecurite.signeeLe));
     return lignes
       .filter((l): l is typeof l & { signeeLe: Date } => l.signeeLe !== null)

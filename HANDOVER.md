@@ -47,6 +47,19 @@ sur une base jetable migrée de 0 à 0131, et le parcours dans un navigateur
 salarié). **Pas joué ici** : la lecture par l'IA (aucune clé) et les champs de
 fichier sur un vrai iPhone. Pour reprendre : la batterie, avec son accord.
 
+## LA FICHE DE SÉCURITÉ COMPLÈTE : codée le 14 octobre 2026, PAS ENCORE SUR `main`
+
+| | |
+|---|---|
+| la règle | `minimumLegal`, `refusDeFinaliser`, `lecturesManquantes`, `validite` dans `src/lib/fiche-securite.ts` ; le croquis dans `src/lib/croquis-securite.ts` |
+| l'écran | `FormulaireFicheDeSecurite.tsx` (six étapes, puis signatures et envoi), `Croquis.tsx` (éditeur plein écran) |
+| la base | `completerLaFicheSignee` ajoute une lecture ou l'enregistrement à une fiche signée **sans la rouvrir** ; Paysage ne liste une fiche à équipe qu'enregistrée |
+| à jouer avant `main` | `test-fiche-securite-db.ts` et `test-fiche-securite-e2e.ts`, réécrites et **jamais jouées** : demander son « oui » |
+
+**Le piège** : `contenuRecu` ignore `lectures`, `prevention`, `envois` et
+`finaliseeLe` venus de l'écran. Ils ne s'écrivent que par leurs actions,
+sinon un enregistrement ordinaire forgerait la lecture d'un ouvrier.
+
 ## LA MAIN D'ŒUVRE QUI S'ADDITIONNE : sur `main` le 14 octobre 2026
 
 Branche `lot/main-doeuvre-par-tva`, dossier `atlas-app-lot-mo`, migration 0130.

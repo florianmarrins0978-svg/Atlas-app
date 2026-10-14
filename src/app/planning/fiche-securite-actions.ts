@@ -7,6 +7,7 @@ import { exigerEcran, exigerChantierDansSaPortee } from "@/server/garde-action";
 import { cheminAutorise, peutPoserUnRetour, peutRouvrirUneFicheTransmise } from "@/lib/acces-roles";
 import {
   attacherPhotoALaFiche,
+  completerLaFicheSignee,
   contexteDuChantier,
   detacherPhotoDeLaFiche,
   enregistrerLaFiche,
@@ -21,7 +22,17 @@ import {
 import { listerPhotos, recevoirPhotoDeChantier, supprimerPhoto } from "@/server/repositories/photos";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import type { Ctx } from "@/server/repositories/context";
-import { NOMBRE_D_ETAPES, contenuRecu, ecritureRecue, refusDeLaSignature, type ContenuFiche } from "@/lib/fiche-securite";
+import {
+  NOMBRE_D_ETAPES,
+  contenuRecu,
+  ecritureRecue,
+  lecturesManquantes,
+  minimumLegal,
+  refusDeFinaliser,
+  refusDeLaSignature,
+  refusDuMinimumLegal,
+  type ContenuFiche,
+} from "@/lib/fiche-securite";
 
 // LES GESTES DE LA FICHE DE SÉCURITÉ, depuis le planning.
 //
@@ -189,6 +200,12 @@ export async function signerLaFicheAction(
   const recu = contenuRecu(quoi.contenu);
   if (!recu.ok) return recu;
   if (!recu.contenu.signataire.trim()) return { ok: false, raison: "Le nom du signataire manque." };
+  // **Le minimum légal se vérifie ICI, pas seulement à l'écran** — sa règle du
+  // 14 octobre 2026. Un bouton grisé n'empêche rien : c'est le serveur qui refuse.
+  const contexte = await contexteDuChantier(ctx, chantierId);
+  if (!contexte) return { ok: false, raison: "Chantier introuvable." };
+  const legal = minimumLegal(recu.contenu, contexte);
+  if (legal.length > 0) return { ok: false, raison: refusDuMinimumLegal(legal) };
   const enregistree = await enregistrerLaFiche(ctx, chantierId, { contenu: recu.contenu, etapeVue: NOMBRE_D_ETAPES, loiLue: true });
   if (!enregistree) return { ok: false, raison: await raisonDuRefusDEcriture(ctx, chantierId) };
   const signee = await signerLaFiche(ctx, chantierId, { signaturePng: quoi.signaturePng, signataire: recu.contenu.signataire });
@@ -220,6 +237,93 @@ export async function marquerTransmiseAction(chantierId: string): Promise<{ ok: 
   const fiche = await ficheDuChantier(ctx, chantierId);
   if (!fiche?.signeeLe) return { ok: false, raison: "Signez la fiche avant de la transmettre." };
   await marquerTransmise(ctx, chantierId);
+  rafraichir(chantierId);
+  return { ok: true };
+}
+
+/**
+ * UN SALARIÉ SIGNE QU'IL A LU LA FICHE — après le chef d'entreprise, sur le
+ * même téléphone, avant de commencer. La notice MSA : *« chaque intervenant sur
+ * le chantier doit avoir pris connaissance de cette fiche »*.
+ *
+ * Seul un nom ATTENDU signe (`lecturesManquantes`) : on ne déclare pas lue une
+ * fiche par quelqu'un qui n'est pas de l'équipe du chantier, ni deux fois.
+ */
+export async function signerUneLectureAction(
+  chantierId: string,
+  quoi: { nom: string; signaturePng: string; points: number }
+): Promise<{ ok: true; le: string } | Refus> {
+  const ctx = await garder(chantierId, "signer la lecture de la fiche de sécurité");
+  const refusDuTrait = refusDeLaSignature(quoi.signaturePng, quoi.points);
+  if (refusDuTrait) return { ok: false, raison: refusDuTrait };
+  const le = new Date().toISOString();
+  const fiche = await completerLaFicheSignee(ctx, chantierId, (c) => {
+    const attendu = lecturesManquantes(c).find((n) => n === quoi.nom);
+    if (!attendu) return null;
+    return { ...c, lectures: [...c.lectures, { nom: attendu, png: quoi.signaturePng, le }] };
+  });
+  if (!fiche) return { ok: false, raison: "Cette personne ne peut pas signer : elle a déjà signé, n’est pas de l’équipe, ou la fiche est enregistrée." };
+  rafraichir(chantierId);
+  return { ok: true, le };
+}
+
+/** La réponse à « ce client vous a-t-il fait remplir un plan de prévention ? ». Elle décide s'il faut lui envoyer la fiche. */
+export async function noterLaPreventionAction(chantierId: string, reponse: "oui" | "non"): Promise<{ ok: true } | Refus> {
+  const ctx = await garder(chantierId, "noter le plan de prévention");
+  if (reponse !== "oui" && reponse !== "non") return { ok: false, raison: "Réponse inconnue." };
+  const fiche = await completerLaFicheSignee(ctx, chantierId, (c) => ({ ...c, prevention: reponse }));
+  if (!fiche) return { ok: false, raison: "Signez la fiche d’abord." };
+  return { ok: true };
+}
+
+/**
+ * La feuille de partage s'est ouverte pour l'équipe, une entreprise ou le
+ * client : c'est noté. Atlas n'envoie rien lui-même. Le CLIENT seul marque la
+ * fiche transmise, comme avant : c'est ce qui réserve sa modification au chef.
+ */
+export async function noterUnEnvoiAction(chantierId: string, a: string): Promise<{ ok: true } | Refus> {
+  const ctx = await garder(chantierId, "noter l’envoi de la fiche de sécurité");
+  if (typeof a !== "string" || a.length > 200) return { ok: false, raison: "Destinataire inconnu." };
+  const fiche = await completerLaFicheSignee(ctx, chantierId, (c) => (c.envois.includes(a) ? c : { ...c, envois: [...c.envois, a] }));
+  if (!fiche) return { ok: false, raison: "Signez la fiche d’abord." };
+  if (a === "client") await marquerTransmise(ctx, chantierId);
+  rafraichir(chantierId);
+  return { ok: true };
+}
+
+/**
+ * ENREGISTRER LA FICHE POUR DE BON — sa règle du 14 octobre 2026 : *« si un des
+ * gars n'a pas signé, le document ne doit pas pouvoir être enregistré »*, et
+ * pas davantage sans le minimum légal. Enregistrée, elle rejoint Paysage et ne
+ * bouge plus sans « Modifier ».
+ */
+export async function finaliserLaFicheAction(chantierId: string): Promise<{ ok: true } | Refus> {
+  const ctx = await garder(chantierId, "enregistrer la fiche de sécurité");
+  const contexte = await contexteDuChantier(ctx, chantierId);
+  if (!contexte) return { ok: false, raison: "Chantier introuvable." };
+  let refus: string | null = null;
+  const fiche = await completerLaFicheSignee(ctx, chantierId, (c) => {
+    refus = refusDeFinaliser(c, true, contexte);
+    return refus ? null : { ...c, finaliseeLe: new Date().toISOString() };
+  });
+  if (!fiche) return { ok: false, raison: refus ?? "Signez la fiche d’abord." };
+  rafraichir(chantierId);
+  return { ok: true };
+}
+
+/**
+ * UN ABSENT SE DÉCOCHE, MÊME APRÈS LA SIGNATURE — sinon il bloquerait
+ * l'enregistrement (sa règle du 14 octobre 2026 : la fiche ne s'enregistre pas
+ * tant qu'un des gars n'a pas signé). Seulement quelqu'un qui n'a pas encore
+ * signé : une lecture signée ne se défait pas.
+ */
+export async function marquerAbsentAction(chantierId: string, nom: string): Promise<{ ok: true } | Refus> {
+  const ctx = await garder(chantierId, "marquer un absent sur la fiche de sécurité");
+  const fiche = await completerLaFicheSignee(ctx, chantierId, (c) => {
+    if (!lecturesManquantes(c).includes(nom)) return null;
+    return { ...c, equipe: c.equipe.map((p) => (p.nom.trim() === nom ? { ...p, present: false } : p)) };
+  });
+  if (!fiche) return { ok: false, raison: "Cette personne a déjà signé, ou n’est pas de l’équipe." };
   rafraichir(chantierId);
   return { ok: true };
 }

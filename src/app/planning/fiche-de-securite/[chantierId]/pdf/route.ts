@@ -30,7 +30,7 @@ export async function GET(requete: Request, { params }: { params: Promise<{ chan
     .map((id) => photosDuChantier.find((p) => p.id === id))
     .filter((p): p is NonNullable<typeof p> => p !== undefined);
   const photos = await Promise.all(
-    gardees.map(async (p) => ({ octets: new Uint8Array(await lireObjet(p.storageKey)), mime: p.mimeType }))
+    gardees.map(async (p) => ({ id: p.id, octets: new Uint8Array(await lireObjet(p.storageKey)), mime: p.mimeType }))
   );
   const pdf = await composerFicheSecuritePdf({
     chantierNom: contexte.chantierNom,

@@ -1,4 +1,4 @@
-import { PDFDocument, PDFFont, PDFImage, PDFPage, rgb, type RGB } from "pdf-lib";
+import { LineCapStyle, PDFDocument, PDFFont, PDFImage, PDFPage, rgb, type RGB } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -8,6 +8,8 @@ import {
   DECOUVERTE_FORTUITE,
   LIBELLES,
   NOTE_DE_LA_FEUILLE,
+  lecturesManquantes,
+  validite,
   PERIMETRE_DU_DECRET,
   POINTS_DE_VIGILANCE,
   gardeeJusquAu,
@@ -16,6 +18,17 @@ import {
   type ContenuFiche,
   type Famille,
 } from "../../lib/fiche-securite";
+import {
+  HAUTEUR_DU_CROQUIS,
+  LARGEUR_DU_CROQUIS,
+  OUTILS_DU_CROQUIS,
+  cheminDuRuisseau,
+  manquesDuCroquis,
+  numeroDeLArbre,
+  numeroDeLaZone,
+  rectangleDeLaLimite,
+  type Croquis,
+} from "../../lib/croquis-securite";
 
 // LE PDF DE LA FICHE DE SÉCURITÉ — la feuille MSA, refaite depuis le contenu.
 //
@@ -43,8 +56,8 @@ export type FicheSecuritePdfData = {
   signataire: string | null;
   signeeLe: Date | null;
   signaturePng: string | null;
-  /** Les photos jointes, déjà lues (JPEG ou PNG). */
-  photos: readonly { octets: Uint8Array; mime: string }[];
+  /** Les photos jointes, déjà lues (JPEG ou PNG). Celle qui porte l'identifiant du fond du croquis va sous le croquis. */
+  photos: readonly { id: string; octets: Uint8Array; mime: string }[];
 };
 
 const LARGEUR = 595.28;
@@ -177,6 +190,100 @@ class Plume {
   }
 }
 
+/**
+ * LES TEINTES DU CROQUIS IMPRIMÉ. Un document ne suit pas les thèmes de l'écran
+ * (`couleursDocument`) : ce sont les valeurs d'Origine des jetons qu'emploie le
+ * croquis à l'écran (`Croquis.tsx`), pour qu'un repère ait la même couleur
+ * sur la feuille que sur le téléphone.
+ */
+const TEINTES_DU_CROQUIS = {
+  pin: "#2f3b2f",
+  pinClair: "#4f5f4c",
+  or: "#B98B47",
+  alerte: "#9C3B2E",
+  plein: "#7d9a6d",
+  papier: "#faf9f5",
+  fond: "#ece9e1",
+} as const;
+
+async function dessinerLeCroquis(doc: PDFDocument, plume: Plume, croquis: Croquis, fond: { octets: Uint8Array; mime: string } | null, police: { normale: PDFFont; grasse: PDFFont }) {
+  const largeur = LARGEUR - 2 * MARGE;
+  const k = largeur / LARGEUR_DU_CROQUIS;
+  const hauteur = HAUTEUR_DU_CROQUIS * k;
+  plume.place(hauteur + 8);
+  const page = plume.page;
+  const haut = plume.y;
+  const X = (x: number) => MARGE + x * k;
+  const Y = (y: number) => haut - y * k;
+  const t = (h: string) => teinte(h);
+  page.drawRectangle({ x: MARGE, y: haut - hauteur, width: largeur, height: hauteur, color: t(croquis.fond === "blanc" ? TEINTES_DU_CROQUIS.papier : TEINTES_DU_CROQUIS.fond), borderColor: t(TEINTES_DU_CROQUIS.pin), borderWidth: 0.4, borderOpacity: 0.3 });
+  if (fond) {
+    try {
+      const img = fond.mime === "image/png" ? await doc.embedPng(fond.octets) : await doc.embedJpg(fond.octets);
+      // Entière, centrée : la même règle qu'à l'écran (`meet`), sinon les repères tomberaient à côté.
+      const e = Math.min(largeur / img.width, hauteur / img.height);
+      const w = img.width * e, h = img.height * e;
+      page.drawImage(img, { x: MARGE + (largeur - w) / 2, y: haut - hauteur + (hauteur - h) / 2, width: w, height: h });
+    } catch (erreur) {
+      console.error("[fiche-securite-pdf] fond du croquis illisible", erreur);
+      page.drawText("La photo sous le croquis n’a pas pu être imprimée.", { x: MARGE + 6, y: haut - 14, size: 8, font: police.normale, color: t(TEINTES_DU_CROQUIS.alerte) });
+    }
+  }
+  const trait = (d: string, couleur: string, epaisseur: number, tirets?: number[], opacite = 1) =>
+    page.drawSvgPath(d, { x: MARGE, y: haut, scale: k, borderColor: t(couleur), borderWidth: epaisseur, borderDashArray: tirets, borderOpacity: opacite, borderLineCap: LineCapStyle.Round });
+  croquis.marques.forEach((m, rang) => {
+    switch (m.t) {
+      case "crayon": {
+        let d = `M${m.pts[0]} ${m.pts[1]}`;
+        for (let i = 2; i < m.pts.length; i += 2) d += ` L${m.pts[i]} ${m.pts[i + 1]}`;
+        trait(d, TEINTES_DU_CROQUIS.pin, 3.5);
+        break;
+      }
+      case "acces": trait(`M${m.x} ${m.y} L${m.x2} ${m.y2}`, TEINTES_DU_CROQUIS.pin, 5, [10, 7]); break;
+      case "voie": trait(`M${m.x} ${m.y} L${m.x2} ${m.y2}`, TEINTES_DU_CROQUIS.or, 8, undefined, 0.8); break;
+      case "ligne": trait(`M${m.x} ${m.y} L${m.x2} ${m.y2}`, TEINTES_DU_CROQUIS.alerte, 3, [14, 4, 2, 4]); break;
+      case "ruisseau": trait(cheminDuRuisseau(m), TEINTES_DU_CROQUIS.pinClair, 6); break;
+      case "limite": {
+        const r = rectangleDeLaLimite(m);
+        trait(`M${r.x} ${r.y} h${r.largeur} v${r.hauteur} h${-r.largeur} Z`, TEINTES_DU_CROQUIS.pin, 2, [3, 5]);
+        break;
+      }
+      case "abattre":
+      case "tailler": {
+        const plein = m.t === "abattre";
+        page.drawCircle({ x: X(m.x), y: Y(m.y), size: 15 * k, color: t(plein ? TEINTES_DU_CROQUIS.alerte : TEINTES_DU_CROQUIS.papier), borderColor: t(plein ? TEINTES_DU_CROQUIS.papier : TEINTES_DU_CROQUIS.or), borderWidth: (plein ? 2 : 4) * k });
+        const n = String(numeroDeLArbre(croquis.marques, rang));
+        const taille = 17 * k;
+        page.drawText(n, { x: X(m.x) - police.grasse.widthOfTextAtSize(n, taille) / 2, y: Y(m.y) - taille * 0.36, size: taille, font: police.grasse, color: t(plein ? TEINTES_DU_CROQUIS.papier : TEINTES_DU_CROQUIS.pin) });
+        break;
+      }
+      case "maison":
+        page.drawRectangle({ x: X(m.x - 34), y: Y(m.y + 26), width: 68 * k, height: 52 * k, color: t(TEINTES_DU_CROQUIS.or), opacity: 0.35, borderColor: t(TEINTES_DU_CROQUIS.pin), borderWidth: 2 * k });
+        break;
+      case "danger": {
+        page.drawCircle({ x: X(m.x), y: Y(m.y), size: 46 * k, color: t(TEINTES_DU_CROQUIS.alerte), opacity: 0.12, borderColor: t(TEINTES_DU_CROQUIS.alerte), borderWidth: 3 * k, borderDashArray: [7 * k, 5 * k] });
+        const mot = m.mot.trim() || `Zone ${numeroDeLaZone(croquis.marques, rang)}`;
+        const taille = 14 * k;
+        page.drawText(mot, { x: X(m.x) - police.grasse.widthOfTextAtSize(mot, taille) / 2, y: Y(m.y + 64) + taille * 0.3, size: taille, font: police.grasse, color: t(TEINTES_DU_CROQUIS.alerte) });
+        break;
+      }
+      case "stockage":
+        page.drawRectangle({ x: X(m.x - 36), y: Y(m.y + 22), width: 72 * k, height: 44 * k, color: t(TEINTES_DU_CROQUIS.or), opacity: 0.13, borderColor: t(TEINTES_DU_CROQUIS.or), borderWidth: 2.5 * k, borderDashArray: [6 * k, 4 * k] });
+        break;
+      case "reseau":
+        for (const [dx, hy] of [[0, 10], [10, 18], [20, 26]] as const) {
+          page.drawRectangle({ x: X(m.x - 14 + dx), y: Y(m.y + 14), width: 7 * k, height: hy * k, color: t(TEINTES_DU_CROQUIS.pin) });
+        }
+        break;
+      case "secours":
+        page.drawRectangle({ x: X(m.x - 15), y: Y(m.y + 15), width: 30 * k, height: 30 * k, color: t(TEINTES_DU_CROQUIS.plein) });
+        trait(`M${m.x - 8} ${m.y} h16 M${m.x} ${m.y - 8} v16`, TEINTES_DU_CROQUIS.papier, 4);
+        break;
+    }
+  });
+  plume.y = haut - hauteur - 8;
+}
+
 async function polices(doc: PDFDocument): Promise<{ normale: PDFFont; grasse: PDFFont }> {
   // Inter, embarquée : les polices standard d'un PDF (WinAnsi) n'ont ni « ≤ »
   // ni « … », et la feuille en est pleine (HTA (U ≤ 50 000 V)).
@@ -219,21 +326,44 @@ export async function composerFicheSecuritePdf(data: FicheSecuritePdfData): Prom
     plume.champ("Nom, prénom", `${c.donneurPrenom} ${c.donneurNom}`.trim());
     plume.champ("Téléphone (en cas d’incident ou d’accident)", c.donneurTel);
   } else plume.champ("Raison sociale", "");
+  if (c.donneurRole.trim()) plume.champ("Ce qu’il est pour le chantier", c.donneurRole);
 
   plume.titre("Identification du chantier");
-  plume.champ("Lieu (adresse, coordonnées GPS)", [data.adresse, c.gps].filter((x) => x && x.trim()).join(" — "));
+  plume.champ("Lieu (adresse, coordonnées GPS)", [data.adresse, c.gps].filter((x) => x && x.trim()).join(", "));
+  if (c.adresseSecours.trim()) plume.champ("Adresse d’accès des secours", c.adresseSecours);
   plume.champ("Dates d’exécution, début", [data.jour ? jourDepuisIso(data.jour) : "", c.heureDebut].filter(Boolean).join(", "));
   plume.champ("Dates d’exécution, fin", [data.jour ? jourDepuisIso(data.jour) : "", c.heureFin].filter(Boolean).join(", "));
   plume.vigilance(POINTS_DE_VIGILANCE.horaires);
   plume.sousTitre("Main d’œuvre");
   plume.champ("Responsable de l’entreprise sur le chantier", `${c.responsablePrenom} ${c.responsableNom}`.trim() + (c.responsableTel.trim() ? `, ${c.responsableTel.trim()}` : ""));
+  for (const r of c.autresResponsables) if (r.nom.trim()) plume.champ("Autre responsable", r.nom.trim() + (r.tel.trim() ? `, ${r.tel.trim()}` : ""));
   plume.champ("Nombre de travailleurs de l’entreprise", String(c.nombreDeTravailleurs));
   plume.vigilance(POINTS_DE_VIGILANCE.mainDOeuvre);
+  // Les compétences à la date de la signature : c'est ce jour-là que la fiche les affirme.
+  const ceJour = data.signeeLe ?? new Date();
+  for (const personne of c.equipe.filter((x) => x.present && x.nom.trim())) {
+    const sst = validite(personne.sst, ceJour), gsa = validite(personne.gsa, ceJour);
+    const dit = [
+      ...personne.formations,
+      sst.ok && sst.fin ? `SST jusqu’au ${dateLongue(sst.fin)}` : "SST : non à jour",
+      gsa.ok && gsa.fin ? `GSA jusqu’au ${dateLongue(gsa.fin)}` : "GSA : non",
+    ];
+    plume.texte(`${personne.nom.trim()} : ${dit.join(", ")}.`, { retrait: 4 });
+  }
   if (c.mainDOeuvre.trim()) plume.texte(c.mainDOeuvre.trim(), { retrait: 4 });
+  plume.sousTitre("Sous-traitants et autres entreprises sur le chantier");
+  const surPlace = c.entreprisesSurPlace === "oui" ? c.entreprises.filter((x) => x.presente && x.nom.trim()) : [];
+  if (surPlace.length === 0) plume.texte(c.entreprisesSurPlace === "aucune" ? "Aucune." : "—", { retrait: 4 });
+  for (const x of surPlace) {
+    plume.texte(`${x.nom.trim()}${x.quoi.trim() ? `, ${x.quoi.trim()}` : ""}${x.tel.trim() ? `, ${x.tel.trim()}` : ""}. Fiche présentée à son responsable : ${x.montree ? "oui" : "non"}.`, { retrait: 4 });
+  }
 
   plume.titre("Travaux à réaliser");
   famille(plume, c, "travaux");
   plume.vigilance(POINTS_DE_VIGILANCE.activites);
+
+  plume.titre("Les EPI");
+  famille(plume, c, "epi");
 
   plume.titre("Matériels");
   plume.vigilance(POINTS_DE_VIGILANCE.materiels);
@@ -248,14 +378,38 @@ export async function composerFicheSecuritePdf(data: FicheSecuritePdfData): Prom
   plume.vigilance(POINTS_DE_VIGILANCE.distanceMateriels);
   famille(plume, c, "autresMateriels");
 
-  plume.titre("Matières. État sanitaire et physiologique des arbres");
+  plume.titre("La situation des travaux");
+  famille(plume, c, "situation");
+
+  plume.titre("Les arbres dangereux");
+  if (c.arbresDangereux !== "oui" || c.arbres.length === 0) plume.texte(c.arbresDangereux === "non" ? "Aucun." : "—", { retrait: 4 });
+  else c.arbres.forEach((a, i) => {
+    plume.sousTitre(`${a.groupe ? "Groupe d’arbres" : "Arbre"} ${i + 1}, numéro ${i + 1} sur le croquis`);
+    plume.champ("Intervention", a.intervention ?? "");
+    plume.champ("Dangers vus", a.dangers.join(", "));
+    plume.champ("Consignes", [...a.consignes, a.autres.trim()].filter(Boolean).join(", "));
+  });
+
+  plume.titre("Les arbres pendant l’intervention");
+  famille(plume, c, "risquesArbres");
+  plume.sousTitre("Matières. État sanitaire et physiologique des arbres");
   famille(plume, c, "matieres");
   plume.vigilance(POINTS_DE_VIGILANCE.matieres);
   if (c.matieresAutres.trim()) plume.champ("Autres (à préciser)", c.matieresAutres);
 
   plume.titre("Carte / croquis / photo du chantier indiquant les accès, voies de circulation et les végétaux à traiter");
-  if (data.photos.length === 0) plume.texte("Aucune photo jointe.", { opacite: 0.7 });
-  for (const photo of data.photos) {
+  const fond = data.photos.find((x) => x.id === c.croquis.fondPhotoId) ?? null;
+  if (c.croquis.fond) {
+    await dessinerLeCroquis(doc, plume, c.croquis, fond, p);
+    const poses = new Set(c.croquis.marques.map((m) => m.t));
+    const legende = OUTILS_DU_CROQUIS.filter((o) => o.t !== "crayon" && poses.has(o.t)).map((o) => o.libelle);
+    if (legende.length) plume.texte(`Légende : ${legende.join(", ")}. Les numéros des arbres sont ceux des arbres dangereux.`, { taille: 8.5 });
+    const manque = manquesDuCroquis(c.croquis);
+    if (manque.length) plume.texte(`Croquis incomplet, il manque : ${manque.join(", ")}.`, { taille: 8.5, grasse: true });
+  } else plume.texte("Aucun croquis.", { opacite: 0.7 });
+  const autresPhotos = data.photos.filter((x) => x.id !== c.croquis.fondPhotoId);
+  if (autresPhotos.length) plume.sousTitre("Photos du balisage et des zones sensibles");
+  for (const photo of autresPhotos) {
     try {
       const img = photo.mime === "image/png" ? await doc.embedPng(photo.octets) : await doc.embedJpg(photo.octets);
       plume.image(img, LARGEUR - 2 * MARGE, 300);
@@ -287,6 +441,9 @@ export async function composerFicheSecuritePdf(data: FicheSecuritePdfData): Prom
   }
   plume.texte(`Au cas où : ${DECOUVERTE_FORTUITE.mot}`, { taille: 8.5, opacite: 0.75 });
 
+  plume.titre("La noyade");
+  famille(plume, c, "noyade");
+
   plume.titre("Risques liés à l’environnement du chantier");
   famille(plume, c, "environnement");
   plume.sousTitre("Mesures");
@@ -302,6 +459,9 @@ export async function composerFicheSecuritePdf(data: FicheSecuritePdfData): Prom
   famille(plume, c, "organisation");
   if (c.organisationCommunication.trim()) plume.champ("Mode de communication", c.organisationCommunication);
   plume.vigilance(POINTS_DE_VIGILANCE.manuel);
+
+  plume.titre("Entrer dans une zone de danger");
+  for (const ligne of (c.protocole.trim() || "—").split("\n")) plume.texte(ligne, { retrait: 4 });
 
   plume.titre("Consignes sur la conduite à tenir en cas de phénomènes météorologiques imprévus");
   plume.vigilance(POINTS_DE_VIGILANCE.bulletins);
@@ -339,6 +499,21 @@ export async function composerFicheSecuritePdf(data: FicheSecuritePdfData): Prom
       plume.texte("Signature illisible.", { opacite: 0.7 });
     }
   } else plume.texte("Non signée.", { opacite: 0.7 });
+
+  // La lecture de chaque salarié, sa signature et son heure : la preuve que la fiche lui a été présentée.
+  if (c.lectures.length > 0 || (data.signeeLe && lecturesManquantes(c).length > 0)) {
+    plume.titre("Présentée aux travailleurs");
+    for (const l of c.lectures) {
+      plume.texte(`${l.nom}, a lu la fiche le ${dateLongue(new Date(l.le))} à ${new Date(l.le).toLocaleTimeString("fr-FR", { hour: "numeric", minute: "2-digit", timeZone: "Europe/Paris" }).replace(":", " h ")}.`, { grasse: true, taille: 8.5 });
+      try {
+        plume.image(await doc.embedPng(Buffer.from(l.png.slice("data:image/png;base64,".length), "base64")), 160, 60);
+      } catch (erreur) {
+        console.error("[fiche-securite-pdf] signature de lecture illisible", erreur);
+        plume.texte("Signature illisible.", { opacite: 0.7 });
+      }
+    }
+    for (const nom of lecturesManquantes(c)) plume.texte(`${nom} : pas encore signé.`, { taille: 8.5, opacite: 0.8 });
+  }
 
   plume.filet();
   plume.texte(NOTE_DE_LA_FEUILLE.titre, { grasse: true, taille: 8.5 });

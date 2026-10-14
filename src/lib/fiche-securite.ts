@@ -32,12 +32,33 @@
  * **L'APPLICATION NE PRÉ-COCHE RIEN.** Une fiche de sécurité qui affirme à tort
  * qu'un risque est couvert est pire qu'une fiche absente : c'est lui qui la
  * signe. Ce qu'une fiche neuve porte déjà, c'est SA fiche d'avant, reprise
- * (`MemoireDesFiches`) — jamais un choix de l'application. Ce qui est vide se
- * dit avant de signer (`manques`), et la signature reste possible — c'est sa
- * fiche, et c'est lui qui décide (*« au bon vouloir de l'utilisateur »*).
+ * (`MemoireDesFiches`) — jamais un choix de l'application.
+ *
+ * **CE QUE LA LOI EXIGE BLOQUE ; LE RESTE NON — sa règle du 14 octobre 2026.**
+ * Il avait d'abord voulu une signature toujours possible (*« au bon vouloir de
+ * l'utilisateur »*, 21 septembre). Après avoir signé et enregistré une fiche au
+ * croquis inachevé sur la planche `appli/fiche-de-securite-mieux.html` : *« si
+ * il n'y a pas le minimum légal, la fiche ne peut pas s'enregistrer et se
+ * finaliser, et un message doit indiquer ce qu'il faut faire »*. Le minimum
+ * légal (`minimumLegal`) bloque donc la signature ; tout le reste se dit
+ * « conseillé » et ne bloque rien. « Rien à signaler » est une réponse : un
+ * risque regardé et absent compte, un risque oublié non.
+ *
+ * **La fiche complète, codée le 14 octobre 2026** d'après les photos de Kleyk
+ * qu'il a envoyées (*« si t'as pas ça, c'est pas bon »*) : sous-traitants,
+ * plusieurs responsables, l'équipe et ses compétences, EPI, situation des
+ * travaux, arbres dangereux un par un, noyade, protocole d'entrée en zone de
+ * danger, croquis dessiné (`croquis-securite.ts`), signature de chaque salarié.
+ * Les mots ajoutés aux listes de la MSA sont des noms de matériel et de risques
+ * communs au métier ; les textes de Kleyk ne sont pas recopiés.
  */
 import { filtrerClientsParNom, normaliserPourRecherche } from "./recherche-client";
 import { dansLaPeriode } from "./periode";
+import { croquisRecu, croquisVide, manquesDuCroquis, type Croquis } from "./croquis-securite";
+
+/** La réponse « j'ai regardé, il n'y a rien » : elle se coche seule, et décoche le reste de sa famille. */
+export const RIEN_A_SIGNALER = "Rien à signaler";
+export const REPONSES_VIDES: readonly string[] = [RIEN_A_SIGNALER, "Pas de risque de noyade", "Pas besoin pour ce chantier"];
 
 /** Une famille de cases à cocher : les mots de la MSA, dans l'ordre de la feuille. */
 export const LIBELLES = {
@@ -55,10 +76,52 @@ export const LIBELLES = {
     "Broyage",
     "Évacuation des rémanents",
     "Rognage / essouchage",
+    "Débitage d’arbre au sol",
+    "Débroussaillage",
+    "Démontage d’arbres tombés sur un obstacle",
+    "Conduite d’engins",
+    "Entretien d’espace vert",
+    "Création d’espace vert",
   ],
-  elevation: ["Nacelle (PEMP)", "PIRL", "EPI de grimper", "Échelle"],
+  epi: [
+    "Contrôle visuel des EPI fait",
+    "Chaussures de sécurité anti-coupure",
+    "Pantalon anti-coupure",
+    "Manchettes anti-coupure",
+    "Visière et lunettes",
+    "Gants",
+    "Casque de protection",
+    "Casque de communication",
+    "Protection auditive",
+    "Talkie-walkie",
+    "Harnais ou baudrier d’élagage",
+    "Corde de travail (rappel)",
+    "Corde d’accès (secours)",
+    "Longe de maintien",
+    "Mousqueton à triple verrouillage",
+    "Descendeur mécanique",
+    "Descendeur textile",
+    "Sifflet",
+  ],
+  elevation: ["Pas besoin pour ce chantier", "Nacelle (PEMP)", "PIRL", "EPI de grimper", "Échelle", "Échafaudage", "La nacelle ne peut pas être utilisée ici"],
   coupe: ["Tronçonneuse élagueuse", "Tronçonneuse abatteuse", "Lamier d’élagage", "Scie sur perche", "Sécateur"],
-  autresMateriels: ["Broyeur", "Essoucheuse / Rogneuse", "Treuil / Câble", "Mini chargeur", "Souffleur"],
+  autresMateriels: ["Broyeur", "Essoucheuse / Rogneuse", "Treuil / Câble", "Mini chargeur", "Souffleur", "Scie à main", "Matériel de rétention et de freinage", "Grue", "Engin de coupe mécanisé"],
+  situation: [
+    "Jardin privé",
+    "Voie publique en ville",
+    "Voie ferrée",
+    "Ligne électrique de transport",
+    "Forêt ouverte au public",
+    "Site industriel classé Seveso",
+    "Arrêté municipal ou document particulier",
+  ],
+  risquesArbres: [
+    "Rien à signaler",
+    "Chute de branches ou de charges pendant les travaux",
+    "Chute de bois avec la grue",
+    "Fissures, champignons ou cavités visibles du sol",
+    "Charpentière cassée récemment",
+  ],
   matieres: [
     "Repérer la présence de bois morts ou dépérissants sur les sujets à traiter (ou à proximité)",
     "Identifier les affections dangereuses pour la santé et la sécurité des travailleurs (suie, chancre, capricorne, champignon lignivore…)",
@@ -71,6 +134,7 @@ export const LIBELLES = {
     "Surveillance de l’accès au chantier (intrusion du public)",
   ],
   biologique: [
+    "Rien à signaler",
     "Chenilles processionnaires",
     "Frelons sp et autres hyménoptères",
     "Berce du Caucase, Ambroisie sp…",
@@ -83,7 +147,7 @@ export const LIBELLES = {
     "Appel à un spécialiste pour circonscrire le danger",
     "Certi biocide (si utilisation de produits biocides)",
   ],
-  reseaux: ["Électrique", "Eau, Vapeur", "Gaz", "Télécom"],
+  reseaux: ["Rien à signaler", "Électrique", "Eau, Vapeur", "Gaz", "Télécom", "Fibre"],
   tensions: ["HTB (U > 50 000 V)", "HTA (U ≤ 50 000 V)", "BT (U ≤ 1 000 V)"],
   reseauxMesures: [
     "DT DICT declaration-travaux-proximite-reseaux (chantier distant < 50 m conducteurs électriques nus ou lors d’arrachage d’arbre, de creusement de tranchées…)",
@@ -91,7 +155,9 @@ export const LIBELLES = {
     "Distance de sécurité à respecter vis-à-vis des conducteurs électriques nus :",
   ],
   distances: ["HTB (U > 50 000 V) : 5 m", "HTA (U ≤ 50 000 V) : 3 m", "BT (U ≤ 1 000 V) : 3 m"],
+  noyade: ["Pas de risque de noyade", "Piscine", "Rivière", "Lac", "Fleuve", "Étang ou bassin"],
   environnement: [
+    "Rien à signaler",
     "Routier",
     "Facteurs météo ambiants",
     "Bruit",
@@ -101,6 +167,9 @@ export const LIBELLES = {
     "Vapeurs",
     "Poussières",
     "Noyade",
+    "Passants non autorisés",
+    "Corde happée par un outil en marche",
+    "Pollution accidentelle",
   ],
   environnementMesures: [
     "Balisage du chantier sur voie publique (https://www.jebalise.fr/)",
@@ -113,6 +182,7 @@ export const LIBELLES = {
     "Plan de prévention (entreprise utilisatrice)",
   ],
   coactivite: [
+    "Rien à signaler",
     "Entraînement par les éléments mobiles des équipements de travail (rogneuse, broyeur…)",
     "Projection (avec broyeur, rogneuse…)",
   ],
@@ -132,8 +202,27 @@ export const LIBELLES = {
     "Tous les travailleurs sur le chantier sont Sauveteurs Secouristes du Travail (SST)",
     "Travailleurs, disposant des compétences (type Grimpeur Sauveteur dans l’Arbre) et des moyens pour porter secours à victime dans l’arbre, en nombre suffisant sur le chantier",
     "Moyen de communication fonctionnel",
+    "Protocole de secours propre au site, lu",
   ],
 } as const;
+
+/** Ce qu'on voit sur un arbre dangereux, et ce qu'on fait pour lui : des mots, que l'artisan complète. */
+export const DANGERS_D_UN_ARBRE = ["Arbre mort", "Bois mort", "Défaut de structure", "Fissure", "Cavité", "Champignons", "Chancre", "Suie", "Frelons", "Charpentière cassée récemment"] as const;
+export const CONSIGNES_D_UN_ARBRE = ["Utiliser une nacelle", "Utiliser un engin de coupe mécanisé", "Rubalise autour du tronc", "Prévenir toute l’équipe"] as const;
+/** Ce qu'une personne de l'équipe sait faire : des diplômes et des formations, qu'on complète. */
+export const FORMATIONS = ["CS élagage", "Grimpeur élagueur (taille)", "Grimpeur élagueur (démontage)", "CACES nacelle", "Habilitation électrique", "AIPR", "Autorisation de conduite interne", "Mini-pelle et chargeur", "CAP", "BTS"] as const;
+
+/**
+ * LE PROTOCOLE D'ENTRÉE EN ZONE DE DANGER — un texte modèle, écrit ici, à
+ * adapter au chantier. Kleyk en propose un ; le leur n'est pas recopié.
+ */
+export const PROTOCOLE_MODELE = [
+  "1. Se faire voir ou entendre de celui qui travaille dans la zone.",
+  "2. Attendre qu’il arrête sa machine ou sa coupe.",
+  "3. Entrer seulement quand il fait signe, avec ses EPI.",
+  "4. Lui dire où l’on se trouve tant qu’on est dans la zone.",
+  "5. Le prévenir en sortant, avant qu’il reprenne.",
+].join("\n");
 
 export type Famille = keyof typeof LIBELLES;
 
@@ -143,6 +232,10 @@ export type Famille = keyof typeof LIBELLES;
  */
 export const FAMILLES_AVEC_AJOUTS: readonly Famille[] = [
   "travaux",
+  "epi",
+  "situation",
+  "risquesArbres",
+  "noyade",
   "elevation",
   "coupe",
   "autresMateriels",
@@ -271,11 +364,35 @@ export const NOTE_DE_LA_FEUILLE = {
   ],
 } as const;
 
-export const ETAPES = ["Le chantier", "Les travaux", "Le terrain", "Réseaux, environnement, météo", "Les secours", "Signer"] as const;
-export const ETAPES_COURTES = ["Chantier", "Travaux", "Terrain", "Réseaux", "Secours", "Signer"] as const;
+export const ETAPES = ["Le chantier", "Les travaux", "Croquis et balisage", "Les risques", "Mesures et secours", "Signer"] as const;
+export const ETAPES_COURTES = ["Chantier", "Travaux", "Croquis", "Risques", "Secours", "Signer"] as const;
 export const NOMBRE_D_ETAPES = ETAPES.length;
 
-/** Ce que la fiche porte. Tout est facultatif : rien ne se pré-coche, rien ne bloque. */
+/** Une personne de l'équipe. Ses compétences s'écrivent une fois et reviennent sur chaque fiche. */
+export type Personne = {
+  nom: string;
+  /** Vient sur CE chantier. Un absent se décoche : il n'a pas à signer la fiche. */
+  present: boolean;
+  formations: string[];
+  /** Date d'obtention, `AAAA-MM-JJ`, ou vide. Les 24 mois se calculent (`validite`). */
+  sst: string;
+  gsa: string;
+};
+/** Une entreprise qui travaille sur le même chantier : sous-traitant, électricien, grutier… */
+export type EntrepriseSurPlace = { nom: string; tel: string; quoi: string; presente: boolean; montree: boolean };
+export type Responsable = { nom: string; tel: string };
+export type ArbreDangereux = {
+  /** Un arbre seul, ou un groupe d'arbres traités ensemble. Son numéro est celui du croquis. */
+  groupe: boolean;
+  intervention: "Abattage" | "Élagage" | null;
+  dangers: string[];
+  consignes: string[];
+  autres: string;
+};
+/** La signature d'un salarié qui a lu la fiche, posée APRÈS celle du chef d'entreprise. */
+export type Lecture = { nom: string; png: string; le: string };
+
+/** Ce que la fiche porte. Rien ne se pré-coche ; seul le minimum légal bloque (`minimumLegal`). */
 export type ContenuFiche = {
   /** Le client du devis, ou quelqu'un d'autre — *« pas toujours le client »*. */
   donneur: "client" | "autre" | null;
@@ -312,6 +429,30 @@ export type ContenuFiche = {
    * nom FIGÉ à la signature, celui du PDF.
    */
   signataire: string;
+  /** Propriétaire, syndic, mairie : ce que le client est pour le chantier. */
+  donneurRole: string;
+  /** Le portail ou le chemin par où les secours entrent, s'il n'est pas l'adresse du chantier. */
+  adresseSecours: string;
+  /** Les responsables en plus du premier (`responsableNom`, qui reste à sa place). */
+  autresResponsables: Responsable[];
+  entreprisesSurPlace: "aucune" | "oui" | null;
+  entreprises: EntrepriseSurPlace[];
+  equipe: Personne[];
+  arbresDangereux: "non" | "oui" | null;
+  arbres: ArbreDangereux[];
+  croquis: Croquis;
+  protocole: string;
+  /**
+   * **Ce qui vient APRÈS la signature du chef**, par des gestes à eux
+   * (`completerLaFicheSignee`) : les salariés qui signent l'avoir lue, à qui
+   * elle a été envoyée, et l'enregistrement final. Le téléphone ne les écrit
+   * jamais avec le reste du contenu (`contenuRecu` les laisse de côté) : une
+   * fiche ne se déclare pas lue par quelqu'un qui ne l'a pas signée.
+   */
+  lectures: Lecture[];
+  prevention: "oui" | "non" | null;
+  envois: string[];
+  finaliseeLe: string | null;
 };
 
 export function contenuVide(): ContenuFiche {
@@ -342,6 +483,20 @@ export function contenuVide(): ContenuFiche {
     observations: "",
     photoIds: [],
     signataire: "",
+    donneurRole: "",
+    adresseSecours: "",
+    autresResponsables: [],
+    entreprisesSurPlace: null,
+    entreprises: [],
+    equipe: [],
+    arbresDangereux: null,
+    arbres: [],
+    croquis: croquisVide(),
+    protocole: PROTOCOLE_MODELE,
+    lectures: [],
+    prevention: null,
+    envois: [],
+    finaliseeLe: null,
   };
 }
 
@@ -364,6 +519,27 @@ export const LONGUEUR_MAX_D_UN_MOT = 200;
 export const MOTS_MAX_PAR_FAMILLE = 100;
 /** Un chantier ne porte pas plus de photos que son plafond (`photos-plafonds.ts`). */
 export const PHOTOS_MAX_SUR_LA_FICHE = 30;
+export const PERSONNES_MAX = 60;
+export const ENTREPRISES_MAX = 40;
+export const RESPONSABLES_MAX = 10;
+export const ARBRES_MAX = 60;
+const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
+const texteCourt = (v: unknown, max = LONGUEUR_MAX_D_UN_MOT): v is string => typeof v === "string" && v.length <= max;
+const motsCourts = (v: unknown, max = MOTS_MAX_PAR_FAMILLE): v is string[] => Array.isArray(v) && v.length <= max && v.every((m) => texteCourt(m));
+
+/** Une liste d'objets du formulaire : bornée, chaque élément relu par `lire`, sinon refusée entière. */
+function listeRecue<T>(brut: unknown, max: number, lire: (x: Record<string, unknown>) => T | null): T[] | null {
+  if (brut === undefined) return [];
+  if (!Array.isArray(brut) || brut.length > max) return null;
+  const sortie: T[] = [];
+  for (const x of brut) {
+    if (!estUnObjet(x)) return null;
+    const lu = lire(x);
+    if (lu === null) return null;
+    sortie.push(lu);
+  }
+  return sortie;
+}
 
 const IDENTIFIANT = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -423,6 +599,46 @@ export function contenuRecu(brut: unknown): { ok: true; contenu: ContenuFiche } 
     }
     contenu.photoIds = ids as string[];
   }
+  const forme = (raison: string) => ({ ok: false as const, raison });
+  if (brut.entreprisesSurPlace !== undefined) {
+    if (brut.entreprisesSurPlace !== null && brut.entreprisesSurPlace !== "aucune" && brut.entreprisesSurPlace !== "oui") return forme("Les entreprises sur place sont fausses.");
+    contenu.entreprisesSurPlace = brut.entreprisesSurPlace;
+  }
+  if (brut.arbresDangereux !== undefined) {
+    if (brut.arbresDangereux !== null && brut.arbresDangereux !== "non" && brut.arbresDangereux !== "oui") return forme("Les arbres dangereux sont faux.");
+    contenu.arbresDangereux = brut.arbresDangereux;
+  }
+  const responsables = listeRecue(brut.autresResponsables, RESPONSABLES_MAX, (x) =>
+    texteCourt(x.nom) && texteCourt(x.tel) ? { nom: x.nom, tel: x.tel } : null
+  );
+  if (!responsables) return forme("Les responsables sont faux.");
+  const entreprises = listeRecue(brut.entreprises, ENTREPRISES_MAX, (x) =>
+    texteCourt(x.nom) && texteCourt(x.tel) && texteCourt(x.quoi) && typeof x.presente === "boolean" && typeof x.montree === "boolean"
+      ? { nom: x.nom, tel: x.tel, quoi: x.quoi, presente: x.presente, montree: x.montree }
+      : null
+  );
+  if (!entreprises) return forme("Les entreprises sont fausses.");
+  const equipe = listeRecue(brut.equipe, PERSONNES_MAX, (x) =>
+    texteCourt(x.nom) && typeof x.present === "boolean" && motsCourts(x.formations, 40) &&
+    typeof x.sst === "string" && (x.sst === "" || DATE_ISO.test(x.sst)) && typeof x.gsa === "string" && (x.gsa === "" || DATE_ISO.test(x.gsa))
+      ? { nom: x.nom, present: x.present, formations: x.formations, sst: x.sst, gsa: x.gsa }
+      : null
+  );
+  if (!equipe) return forme("L’équipe est fausse.");
+  const arbres = listeRecue(brut.arbres, ARBRES_MAX, (x) =>
+    typeof x.groupe === "boolean" && (x.intervention === null || x.intervention === "Abattage" || x.intervention === "Élagage") &&
+    motsCourts(x.dangers, 40) && motsCourts(x.consignes, 40) && texteCourt(x.autres, LONGUEUR_MAX_D_UN_TEXTE)
+      ? { groupe: x.groupe, intervention: x.intervention as ArbreDangereux["intervention"], dangers: x.dangers, consignes: x.consignes, autres: x.autres }
+      : null
+  );
+  if (!arbres) return forme("Les arbres dangereux sont faux.");
+  const croquis = croquisRecu(brut.croquis);
+  if (!croquis.ok) return croquis;
+  contenu.autresResponsables = responsables;
+  contenu.entreprises = entreprises;
+  contenu.equipe = equipe;
+  contenu.arbres = arbres;
+  contenu.croquis = croquis.croquis;
   return { ok: true, contenu };
 }
 
@@ -451,7 +667,14 @@ export function libellesAvecLesSiens(contenu: ContenuFiche, famille: Famille): r
 }
 export function cocher(contenu: ContenuFiche, famille: Famille, libelle: string): ContenuFiche {
   const avant = coches(contenu, famille);
-  const apres = avant.includes(libelle) ? avant.filter((x) => x !== libelle) : [...avant, libelle];
+  const vide = REPONSES_VIDES.includes(libelle);
+  // « Rien à signaler » et un risque coché ne se contredisent pas sur la même fiche :
+  // l'un décoche l'autre, dans les deux sens.
+  const apres = avant.includes(libelle)
+    ? avant.filter((x) => x !== libelle)
+    : vide
+      ? [libelle]
+      : [...avant.filter((x) => !REPONSES_VIDES.includes(x)), libelle];
   return { ...contenu, coches: { ...contenu.coches, [famille]: apres } };
 }
 /**
@@ -502,9 +725,21 @@ export type MemoireDesFiches = {
   responsablePrenom: string;
   responsableTel: string;
   signataire: string;
+  /**
+   * **Sa règle du 14 octobre 2026 : « tout ce qui peut être enregistré pour être
+   * réappris sur les prochaines fiches, il faut le faire ».** L'équipe et ses
+   * compétences, les entreprises habituelles, son protocole, ses responsables.
+   * Ce qui ne se garde jamais reste propre au chantier : le lieu, le GPS, les
+   * dates, le donneur d'ordre, le croquis, les photos, les arbres dangereux, le
+   * point de rencontre.
+   */
+  equipe: Personne[];
+  entreprises: EntrepriseSurPlace[];
+  protocole: string;
+  autresResponsables: Responsable[];
 };
 export function memoireVide(): MemoireDesFiches {
-  return { mainDOeuvre: "", lieuTrousse: "", risquesAutres: "", mesuresAutres: "", observations: "", ajouts: {}, coches: {}, communication: "", environnementPreciser: "", organisationCommunication: "", responsableNom: "", responsablePrenom: "", responsableTel: "", signataire: "" };
+  return { mainDOeuvre: "", lieuTrousse: "", risquesAutres: "", mesuresAutres: "", observations: "", ajouts: {}, coches: {}, communication: "", environnementPreciser: "", organisationCommunication: "", responsableNom: "", responsablePrenom: "", responsableTel: "", signataire: "", equipe: [], entreprises: [], protocole: "", autresResponsables: [] };
 }
 export function memoireDepuis(contenu: ContenuFiche): MemoireDesFiches {
   return {
@@ -522,6 +757,11 @@ export function memoireDepuis(contenu: ContenuFiche): MemoireDesFiches {
     responsablePrenom: contenu.responsablePrenom,
     responsableTel: contenu.responsableTel,
     signataire: contenu.signataire,
+    // Les personnes et les entreprises se gardent ; leur présence, non : elle est propre au chantier.
+    equipe: contenu.equipe,
+    entreprises: contenu.entreprises.map((x) => ({ ...x, presente: false, montree: false })),
+    protocole: contenu.protocole,
+    autresResponsables: contenu.autresResponsables,
   };
 }
 /** Une fiche neuve part de ce qui a été gardé ; ce qui est propre au chantier reste vide. */
@@ -542,37 +782,98 @@ export function appliquerLaMemoire(contenu: ContenuFiche, memoire: MemoireDesFic
     responsablePrenom: memoire.responsablePrenom,
     responsableTel: memoire.responsableTel,
     signataire: memoire.signataire,
+    // Sur un chantier neuf, toute l'équipe est cochée : un absent se décoche, il ne s'oublie pas.
+    equipe: memoire.equipe.map((x) => ({ ...x, present: true })),
+    entreprises: memoire.entreprises,
+    protocole: memoire.protocole || PROTOCOLE_MODELE,
+    autresResponsables: memoire.autresResponsables,
   };
 }
 
-export type Manque = { quoi: string; etape: number };
+/** Un élément que la loi exige et qui manque : ce que c'est, ce qu'il faut faire, et où. */
+export type Manque = { quoi: string; faire: string; etape: number; bloc: string };
+
+/** Les cinq familles de risques à regarder, chacune avec sa réponse « rien ». */
+export const RISQUES_A_REGARDER: readonly (readonly [Famille, string, string])[] = [
+  ["risquesArbres", "les arbres", "risques-arbres"],
+  ["biologique", "le biologique", "risques-biologiques"],
+  ["reseaux", "les réseaux", "risques-reseaux"],
+  ["noyade", "la noyade", "risques-noyade"],
+  ["environnement", "l’environnement", "risques-environnement"],
+];
 
 /**
- * Ce que la fiche ne sait pas encore — les sept éléments du décret, et rien
- * d'autre. Une catégorie sans rien de coché n'est pas un manque (*« s'il n'y a
- * pas de co-activité, on ne coche rien »*) : ne compte que le vide TOTAL d'un
- * élément obligatoire.
+ * LE MINIMUM LÉGAL — ce que l'art. R. 717-85-16 exige, relu dans la notice MSA :
+ * le lieu, les travaux, le matériel, les dates ; le croquis ; les risques ; les
+ * mesures, dont la délimitation du chantier que le décret rend obligatoire ; les
+ * secours ; la conduite à tenir si le temps tourne. Sans eux, la fiche ne se
+ * signe pas (sa règle du 14 octobre 2026). Le lieu et les dates viennent du
+ * chantier : ils ne manquent que si le chantier ne les porte pas.
  */
-export function manques(contenu: ContenuFiche): Manque[] {
+export function minimumLegal(contenu: ContenuFiche, chantier: { adresse: string | null; datePlanifiee: string | null }): Manque[] {
   const c = contenu;
-  const n = (famille: Famille) => coches(c, famille).length;
+  const n = (famille: Famille) => coches(c, famille).filter((x) => !REPONSES_VIDES.includes(x)).length;
   const m: Manque[] = [];
-  if (c.heureDebut === "" && c.heureFin === "") m.push({ quoi: "Heures d’exécution", etape: 1 });
-  if (c.donneur === null || (c.donneur === "autre" && c.donneurNom.trim() === "")) m.push({ quoi: "Donneur d’ordre", etape: 1 });
-  if (n("travaux") === 0) m.push({ quoi: "Travaux à réaliser", etape: 2 });
-  if (n("elevation") + n("coupe") + n("autresMateriels") === 0) m.push({ quoi: "Matériels", etape: 2 });
-  if (c.photoIds.length === 0) m.push({ quoi: "Carte / croquis / photo du chantier", etape: 3 });
-  if (n("biologique") + n("balisage") + n("reseaux") + n("environnement") + n("coactivite") === 0 && c.risquesAutres.trim() === "") {
-    m.push({ quoi: "Risques spécifiques au chantier", etape: 3 });
+  if (!chantier.adresse && !c.gps.trim()) m.push({ quoi: "Le lieu", faire: "Relevez la position GPS : le chantier n’a pas d’adresse.", etape: 1, bloc: "lieu" });
+  if (!chantier.datePlanifiee) m.push({ quoi: "Les dates", faire: "Posez le chantier au planning : la fiche reprend ses jours.", etape: 1, bloc: "lieu" });
+  if (n("travaux") === 0) m.push({ quoi: "Les travaux", faire: "Cochez au moins un type de travaux.", etape: 2, bloc: "travaux" });
+  if (n("elevation") + n("coupe") + n("autresMateriels") === 0) m.push({ quoi: "Le matériel", faire: "Cochez le matériel ou les moyens d’élévation utilisés.", etape: 2, bloc: "materiel" });
+  const croquis = manquesDuCroquis(c.croquis);
+  if (croquis.length > 0) m.push({ quoi: "Le croquis", faire: `Posez sur le croquis : ${croquis.join(", ")}.`, etape: 3, bloc: "croquis" });
+  if (coches(c, "balisage").length === 0) m.push({ quoi: "La délimitation du chantier", faire: "Cochez comment le chantier est balisé.", etape: 3, bloc: "balisage" });
+  const sansReponse = RISQUES_A_REGARDER.filter(([f]) => coches(c, f).length === 0);
+  if (sansReponse.length > 0) {
+    m.push({ quoi: "Les risques", faire: `Répondez pour ${sansReponse.map(([, mot]) => mot).join(", ")}. « Rien à signaler » compte comme une réponse.`, etape: 4, bloc: sansReponse[0][2] });
   }
-  if (n("biologiqueMesures") + n("balisage") + n("reseauxMesures") + n("environnementMesures") + n("organisation") === 0 && c.mesuresAutres.trim() === "") {
-    m.push({ quoi: "Mesures de sécurité", etape: 4 });
+  if (coches(c, "meteo").length === 0) m.push({ quoi: "La météo", faire: "Cochez la conduite à tenir si le temps tourne.", etape: 5, bloc: "meteo" });
+  if (coches(c, "secours").length === 0 || !c.pointDeRencontre.trim() || !c.lieuTrousse.trim()) {
+    m.push({ quoi: "Les secours", faire: "Cochez les secours prévus, et écrivez le point de rencontre et le lieu de la trousse.", etape: 5, bloc: "secours" });
   }
-  if (n("meteo") === 0) m.push({ quoi: "Conduite à tenir en cas de phénomènes météorologiques imprévus", etape: 4 });
-  if (n("secours") === 0) m.push({ quoi: "Organisation des secours", etape: 5 });
-  if (c.pointDeRencontre.trim() === "") m.push({ quoi: "Point de Rencontre des Secours", etape: 5 });
-  if (c.lieuTrousse.trim() === "") m.push({ quoi: "Lieu où se trouve la trousse de secours", etape: 5 });
   return m;
+}
+
+/** La même phrase partout où la signature est refusée faute du minimum légal. */
+export function refusDuMinimumLegal(m: readonly Manque[]): string {
+  return `Il manque ${m.length} élément${m.length > 1 ? "s" : ""} que la loi exige : ${m.map((x) => x.quoi.toLowerCase()).join(", ")}.`;
+}
+
+/** Deux noms désignent-ils la même personne ? Sans casse ni espaces en trop. */
+const memeNom = (a: string, b: string) => a.trim().toLowerCase().replace(/\s+/g, " ") === b.trim().toLowerCase().replace(/\s+/g, " ");
+
+/**
+ * QUI DOIT ENCORE SIGNER L'AVOIR LUE — chaque personne présente, sauf le chef
+ * d'entreprise qui a signé la fiche. La notice MSA : *« chaque intervenant sur
+ * le chantier doit avoir pris connaissance de cette fiche avant le début des
+ * travaux »*. Sa règle du 14 octobre : tant qu'il en manque un, la fiche ne
+ * s'enregistre pas ; un absent se décoche de l'équipe.
+ */
+export function lecturesManquantes(contenu: ContenuFiche): string[] {
+  return contenu.equipe
+    .filter((p) => p.present && p.nom.trim() && !memeNom(p.nom, contenu.signataire))
+    .filter((p) => !contenu.lectures.some((l) => memeNom(l.nom, p.nom)))
+    .map((p) => p.nom.trim());
+}
+
+/** Peut-on enregistrer la fiche pour de bon ? `null` si oui, sinon la phrase qui dit quoi faire. */
+export function refusDeFinaliser(contenu: ContenuFiche, signee: boolean, chantier: { adresse: string | null; datePlanifiee: string | null }): string | null {
+  const legal = minimumLegal(contenu, chantier);
+  if (legal.length > 0) return refusDuMinimumLegal(legal);
+  if (!signee) return "Signez la fiche avant de l’enregistrer.";
+  const manquent = lecturesManquantes(contenu);
+  if (manquent.length > 0) return `${manquent.join(" et ")} ${manquent.length > 1 ? "doivent" : "doit"} signer avant d’enregistrer la fiche.`;
+  return null;
+}
+
+/**
+ * LE SST ET LE GSA DURENT 24 MOIS — ils se calculent sur la date d'obtention,
+ * ils ne se cochent pas (Kleyk les fait recocher à la main sur chaque fiche).
+ */
+export const MOIS_DE_VALIDITE = 24;
+export function validite(obtenu: string, aujourdhui: Date): { ok: boolean; fin: Date | null } {
+  if (!DATE_ISO.test(obtenu)) return { ok: false, fin: null };
+  const [a, m, j] = obtenu.split("-").map(Number);
+  const fin = new Date(Date.UTC(a, m - 1 + MOIS_DE_VALIDITE, j));
+  return { ok: fin.getTime() >= aujourdhui.getTime(), fin };
 }
 
 /** Deux ans à compter de la signature — la durée du décret, jamais moins. */
@@ -584,8 +885,12 @@ export function gardeeJusquAu(signeeLe: Date): Date {
 }
 
 /** Ce que le bandeau du planning écrit à droite de « Fiche de sécurité ». */
-export function compteDuBandeau(fiche: { signeeLe: Date | null; transmiseLe: Date | null; etapeVue: number } | null): string {
+export function compteDuBandeau(fiche: { signeeLe: Date | null; transmiseLe: Date | null; etapeVue: number; contenu?: ContenuFiche } | null): string {
   if (!fiche) return "à remplir";
+  // Signée par le chef, la fiche n'est pas finie tant que l'équipe ne l'a pas lue et qu'elle n'est pas enregistrée.
+  if (fiche.signeeLe && fiche.contenu && fiche.contenu.equipe.length > 0 && !fiche.contenu.finaliseeLe) {
+    return lecturesManquantes(fiche.contenu).length > 0 ? "à faire lire" : "à enregistrer";
+  }
   if (fiche.transmiseLe) return "transmise";
   if (fiche.signeeLe) return "signée";
   if (fiche.etapeVue <= 0) return "à remplir";
