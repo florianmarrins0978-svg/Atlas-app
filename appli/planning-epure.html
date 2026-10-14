@@ -24,8 +24,9 @@
   1. Les chiffres du mois sont « à l'ancienne » dans Playfair : 3, 4, 5, 7 et
      9 descendent sous la ligne. Le mois saute d'une case à l'autre. On pose
      font-variant-numeric: lining-nums sur MoisCharge.
-  2. Les demi-journées vides : soixante rectangles cerclés sur un mois vide.
-     Le vide devient un trait plein très pâle, sans contour.
+  2. Les demi-journées vides restent blanches et cerclées comme aujourd'hui :
+     sa réponse du 14 octobre au soir (« rien » blanc comme avant). Elles ne
+     s'effacent que sur les jours passés.
   3. Les jours passés passent en gris. Les jours à venir gardent leur encre,
      et le week-end son carré gris : sa réponse du 14 octobre au soir, « remets
      les carrés autour des samedi dimanche comme avant ».
@@ -130,9 +131,12 @@
   .case.ojd .n{color:var(--or);font-weight:500}
   .case.ojd{box-shadow:inset 0 0 0 1px var(--or)}
   .case.touche:not(.ojd){box-shadow:inset 0 0 0 1.5px var(--encre)}
-  /* 2. LES DEUX DEMI-JOURNÉES — le vide est un trait pâle, sans contour */
+  /* LES DEUX DEMI-JOURNÉES — « rien » reste blanc et cerclé comme dans l’application
+     (sa réponse du 14 octobre au soir) ; il ne s’efface que sur un jour passé */
   .barres{display:flex;flex-direction:column;gap:2px;width:22px}
-  .barres i{display:block;height:4px;border-radius:2px;background:var(--vide);transition:background .35s}
+  .barres i{display:block;height:5px;border-radius:2px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);transition:background .35s}
+  .case.passe .barres i:not([data-e="dispo"]):not([data-e="plein"]):not([data-e="audela"]){background:var(--vide);box-shadow:none}
+  .barres i[data-e="dispo"],.barres i[data-e="plein"],.barres i[data-e="audela"]{box-shadow:none}
   .barres i[data-e="dispo"]{background:var(--pale)}
   .barres i[data-e="plein"]{background:var(--pin)}
   .barres i[data-e="audela"]{background:var(--bordeaux)}
@@ -181,10 +185,11 @@
   .legende{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 16px 0;
     font-size:11.5px;color:var(--gris)}
   .legende span{display:inline-flex;align-items:center;gap:5px}
-  .legende i{width:9px;height:9px;border-radius:2px;display:inline-block;background:var(--vide)}
+  .legende i{width:9px;height:9px;border-radius:2px;display:inline-block;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait)}
+  .legende i.dispo,.legende i.plein,.legende i.audela{box-shadow:none}
   .legende i.dispo{background:var(--pale)} .legende i.plein{background:var(--pin)} .legende i.audela{background:var(--bordeaux)}
   .legende .deuxbarres{display:inline-flex;flex-direction:column;gap:2px}
-  .legende .deuxbarres b{display:block;width:16px;height:3px;border-radius:2px;background:var(--vide)}
+  .legende .deuxbarres b{display:block;width:16px;height:4px;border-radius:2px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait)}
   .legende .deuxmots{display:inline-flex;flex-direction:column;line-height:1.05;font-size:10.5px}
 
   /* ─── 7. « La semaine », à la place des deux points ─── */
@@ -319,7 +324,7 @@
   <h2>Ce qui change</h2>
   <ol>
     <li><b>Les chiffres ne sautent plus.</b> Aujourd’hui le 5, le 7 et le 9 descendent sous la ligne, le 6 et le 8 non. Ils sont posés sur la même ligne.</li>
-    <li><b>Les demi-journées vides s’effacent presque.</b> Sur un mois vide, on voit soixante petits rectangles cerclés. Le vide devient un trait très pâle, et le travail posé ressort d’un coup d’œil. Les quatre couleurs ne changent pas.</li>
+    <li><b>Les demi-journées vides restent blanches</b>, comme aujourd’hui. Sur les jours passés seulement, elles s’effacent avec le chiffre.</li>
     <li><b>Les jours passés s’éteignent</b>, pour voir où l’on en est dans le mois. Les jours à venir et le carré gris du week-end restent comme aujourd’hui.</li>
     <li><b>Le mois se change par deux chevrons</b>, sans les grands ronds. Son nom passe dans la police des titres.</li>
     <li><b>L’agenda tient sur une ligne</b>, à la même place : « Agenda Google non relié », et « Connecter » en or.</li>

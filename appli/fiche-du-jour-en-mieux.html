@@ -126,9 +126,12 @@
   .case.ojd .n{color:var(--or);font-weight:500}
   .case.ojd{box-shadow:inset 0 0 0 1px var(--or)}
   .case.touche:not(.ojd){box-shadow:inset 0 0 0 1.5px var(--encre)}
-  /* 2. LES DEUX DEMI-JOURNÉES — le vide est un trait pâle, sans contour */
+  /* LES DEUX DEMI-JOURNÉES — « rien » reste blanc et cerclé comme dans l’application
+     (sa réponse du 14 octobre au soir) ; il ne s’efface que sur un jour passé */
   .barres{display:flex;flex-direction:column;gap:2px;width:22px}
-  .barres i{display:block;height:4px;border-radius:2px;background:var(--vide);transition:background .35s}
+  .barres i{display:block;height:5px;border-radius:2px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);transition:background .35s}
+  .case.passe .barres i:not([data-e="dispo"]):not([data-e="plein"]):not([data-e="audela"]){background:var(--vide);box-shadow:none}
+  .barres i[data-e="dispo"],.barres i[data-e="plein"],.barres i[data-e="audela"]{box-shadow:none}
   .barres i[data-e="dispo"]{background:var(--pale)}
   .barres i[data-e="plein"]{background:var(--pin)}
   .barres i[data-e="audela"]{background:var(--bordeaux)}
@@ -203,10 +206,11 @@
   .legende{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 16px 0;
     font-size:11.5px;color:var(--gris)}
   .legende span{display:inline-flex;align-items:center;gap:5px}
-  .legende i{width:9px;height:9px;border-radius:2px;display:inline-block;background:var(--vide)}
+  .legende i{width:9px;height:9px;border-radius:2px;display:inline-block;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait)}
+  .legende i.dispo,.legende i.plein,.legende i.audela{box-shadow:none}
   .legende i.dispo{background:var(--pale)} .legende i.plein{background:var(--pin)} .legende i.audela{background:var(--bordeaux)}
   .legende .deuxbarres{display:inline-flex;flex-direction:column;gap:2px}
-  .legende .deuxbarres b{display:block;width:16px;height:3px;border-radius:2px;background:var(--vide)}
+  .legende .deuxbarres b{display:block;width:16px;height:4px;border-radius:2px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait)}
   .legende .deuxmots{display:inline-flex;flex-direction:column;line-height:1.05;font-size:10.5px}
 
   /* ─── 7. « La semaine », à la place des deux points ─── */

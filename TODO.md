@@ -29,7 +29,7 @@ Six retouches, chacune relevée sur l'écran ouvert le 14 octobre :
 | | Ce qui change | Où, si oui |
 |---|---|---|
 | 1 | les chiffres du mois sur une même ligne (Playfair dessine 3 4 5 7 9 sous la ligne) | `lining-nums` dans `MoisCharge` |
-| 2 | demi-journée vide : un trait plein très pâle, sans contour | `MoisCharge` |
+| 2 | demi-journée vide : **reste blanche et cerclée** (sa réponse du 14 au soir) ; elle ne s'efface que sur un jour passé | `MoisCharge` |
 | 3 | jours passés en gris ; les jours à venir gardent leur encre | `MoisCharge` |
 | 4 | chevrons du mois sans leurs ronds (cible de 44 px gardée), mois en Playfair | `MoisCharge` |
 | 5 | l'agenda sur une ligne : « Agenda Google non relié », « Connecter » | `PlanningClient.tsx` |
