@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import { ACCEPT_PHOTOS } from "@/lib/exif";
 import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
+import { CarteDuPoint, adresseAuPoint } from "./CarteDuPoint";
 import {
   CONSIGNES_DE_SECOURS,
   CONSIGNES_D_UN_ARBRE,
@@ -120,6 +121,18 @@ export default function FormulaireFicheDeSecurite({
   const viser = useRef<string | null>(null);
   const choixDuFond = useRef<HTMLInputElement>(null);
   const fondDemande = useRef<FondDuCroquis | null>(null);
+  // L'adresse au point GPS se relit dès que le point bouge, qu'il soit relevé, touché sur la carte ou
+  // tapé : un seul chemin, sinon une adresse resterait celle d'un point d'avant.
+  const gpsLu = useRef(contenu.gps);
+  useEffect(() => {
+    if (contenu.gps === gpsLu.current) return;
+    const gps = contenu.gps;
+    const attente = setTimeout(() => {
+      gpsLu.current = gps;
+      void adresseAuPoint(gps).then((adresse) => setContenu((c) => (c.gps === gps ? { ...c, adresseDuPoint: adresse ?? "" } : c)));
+    }, 600);
+    return () => clearTimeout(attente);
+  }, [contenu.gps]);
   useEffect(() => {
     const bloc = viser.current;
     viser.current = null;
@@ -578,17 +591,15 @@ export default function FormulaireFicheDeSecurite({
             <Fixe nom="Lieu (adresse)" vide={!contexte.adresse}>{contexte.adresse ?? "non renseignée"}</Fixe>
             <div className="mt-2.5">
               <span className="mb-[3px] block text-[12.5px]" style={{ color: colors.muted }}>Coordonnées GPS</span>
-              {contenu.gps ? (
-                <Champ nom="" {...champ("gps")} placeholder="Exemple : 48.94123, 1.72004" />
-              ) : (
-                <>
-                  <button type="button" data-atlas="relever-gps" disabled={releveEnCours} onClick={() => { setReleveEnCours(true); setRefus(null); releverLaPosition((gps) => setContenu((c) => ({ ...c, gps })), (r) => { setRefus(r); setGpsAEcrire(true); }, () => setReleveEnCours(false)); }} className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full text-[15px]" style={{ background: colors.card, color: releveEnCours ? colors.muted : colors.rust, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
-                    <Cible /> {releveEnCours ? "Relevé en cours…" : "Relever ici"}
-                  </button>
-                  {gpsAEcrire && <Champ nom="" {...champ("gps")} placeholder="Exemple : 48.94123, 1.72004" />}
-                </>
-              )}
+              <button type="button" data-atlas="relever-gps" disabled={releveEnCours} onClick={() => { setReleveEnCours(true); setRefus(null); releverLaPosition((gps) => setContenu((c) => ({ ...c, gps })), (r) => { setRefus(r); setGpsAEcrire(true); }, () => setReleveEnCours(false)); }} className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full text-[15px]" style={{ background: colors.card, color: releveEnCours ? colors.muted : colors.rust, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+                <Cible /> {releveEnCours ? "Relevé en cours…" : "Relever ici"}
+              </button>
+              <CarteDuPoint gps={contenu.gps} repli={contexte.position} onPoint={(gps) => setContenu((c) => ({ ...c, gps }))} />
+              {(contenu.gps || gpsAEcrire) && <Champ nom="" {...champ("gps")} placeholder="Exemple : 48.94123, 1.72004" />}
             </div>
+            {contenu.gps.trim() && (
+              <Fixe nom="Adresse au point GPS" vide={!contenu.adresseDuPoint}>{contenu.adresseDuPoint || "aucune adresse connue à cet endroit"}</Fixe>
+            )}
             <Champ nom="Adresse d’accès des secours, si elle est différente" {...champ("adresseSecours")} placeholder="Exemple : portail arrière, chemin des Saules" />
             <Aide haut>Dates d’exécution, d’après le planning</Aide>
             <div className="mt-2.5 grid grid-cols-2 gap-2 [&>*]:mt-0 [&>*]:min-w-0">

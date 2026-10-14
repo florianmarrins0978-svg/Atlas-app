@@ -1,4 +1,5 @@
-import { LineCapStyle, PDFDocument, PDFFont, PDFImage, PDFPage, rgb, type RGB } from "pdf-lib";
+import { LineCapStyle, PDFDocument, PDFFont, PDFImage, PDFPage, clip, endPath, popGraphicsState, pushGraphicsState, rectangle, rgb, type RGB } from "pdf-lib";
+import type { CarteImprimee } from "../carte/geoplateforme-tuiles";
 import fontkit from "@pdf-lib/fontkit";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -58,6 +59,8 @@ export type FicheSecuritePdfData = {
   signaturePng: string | null;
   /** Les photos jointes, déjà lues (JPEG ou PNG). Celle qui porte l'identifiant du fond du croquis va sous le croquis. */
   photos: readonly { id: string; octets: Uint8Array; mime: string }[];
+  /** La carte IGN autour du point GPS, déjà lue ; `null` sans point, ou quand l'IGN n'a pas répondu. */
+  carte?: CarteImprimee | null;
 };
 
 const LARGEUR = 595.28;
@@ -284,6 +287,33 @@ async function dessinerLeCroquis(doc: PDFDocument, plume: Plume, croquis: Croqui
   plume.y = haut - hauteur - 8;
 }
 
+/** La carte du point, rognée à son cadre, le repère au centre : la même vue qu'à l'écran. */
+async function dessinerLaCarte(doc: PDFDocument, plume: Plume, carte: CarteImprimee, police: PDFFont) {
+  const largeur = LARGEUR - 2 * MARGE;
+  const k = largeur / carte.largeur;
+  const hauteur = carte.hauteur * k;
+  plume.place(hauteur + 8);
+  const page = plume.page;
+  const haut = plume.y;
+  page.pushOperators(pushGraphicsState(), rectangle(MARGE, haut - hauteur, largeur, hauteur), clip(), endPath());
+  for (const t of carte.tuiles) {
+    try {
+      const img = t.mime === "image/png" ? await doc.embedPng(t.octets) : await doc.embedJpg(t.octets);
+      page.drawImage(img, { x: MARGE + t.gauche * k, y: haut - (t.haut + 256) * k, width: 256 * k, height: 256 * k });
+    } catch (erreur) {
+      console.error("[fiche-securite-pdf] tuile de carte illisible", erreur);
+    }
+  }
+  page.pushOperators(popGraphicsState());
+  page.drawRectangle({ x: MARGE, y: haut - hauteur, width: largeur, height: hauteur, borderColor: teinte(TEINTES_DU_CROQUIS.pin), borderWidth: 0.4, borderOpacity: 0.3 });
+  // Le repère : une goutte dont la pointe est le point.
+  const cx = MARGE + largeur / 2, cy = haut - hauteur / 2;
+  page.drawSvgPath("M17 43c-12-16-16-23-16-28a16 16 0 1 1 32 0c0 5-4 12-16 28z", { x: cx - 17 * 0.6, y: cy + 43 * 0.6, scale: 0.6, color: teinte(TEINTES_DU_CROQUIS.alerte), borderColor: rgb(1, 1, 1), borderWidth: 1.2 });
+  page.drawCircle({ x: cx, y: cy + (43 - 15) * 0.6, size: 6 * 0.6, color: rgb(1, 1, 1) });
+  page.drawText("Carte IGN", { x: MARGE + largeur - 40, y: haut - hauteur + 4, size: 6.5, font: police, color: teinte(TEINTES_DU_CROQUIS.pin) });
+  plume.y = haut - hauteur - 8;
+}
+
 async function polices(doc: PDFDocument): Promise<{ normale: PDFFont; grasse: PDFFont }> {
   // Inter, embarquée : les polices standard d'un PDF (WinAnsi) n'ont ni « ≤ »
   // ni « … », et la feuille en est pleine (HTA (U ≤ 50 000 V)).
@@ -330,6 +360,11 @@ export async function composerFicheSecuritePdf(data: FicheSecuritePdfData): Prom
 
   plume.titre("Identification du chantier");
   plume.champ("Lieu (adresse, coordonnées GPS)", [data.adresse, c.gps].filter((x) => x && x.trim()).join(", "));
+  if (c.gps.trim()) {
+    plume.champ("Adresse au point GPS", c.adresseDuPoint || "aucune adresse connue à cet endroit");
+    if (data.carte) await dessinerLaCarte(doc, plume, data.carte, p.normale);
+    else plume.texte("La carte du point n’a pas pu être imprimée.", { taille: 8.5, opacite: 0.75 });
+  }
   if (c.adresseSecours.trim()) plume.champ("Adresse d’accès des secours", c.adresseSecours);
   plume.champ("Dates d’exécution, début", [data.jour ? jourDepuisIso(data.jour) : "", c.heureDebut].filter(Boolean).join(", "));
   plume.champ("Dates d’exécution, fin", [data.jour ? jourDepuisIso(data.jour) : "", c.heureFin].filter(Boolean).join(", "));

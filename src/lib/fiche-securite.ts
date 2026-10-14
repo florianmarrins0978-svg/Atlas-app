@@ -400,6 +400,8 @@ export type ContenuFiche = {
   donneurPrenom: string;
   donneurTel: string;
   gps: string;
+  /** L'adresse officielle la plus proche du point GPS, lue à la Base Adresse Nationale ; vide quand rien n'y est connu. */
+  adresseDuPoint: string;
   heureDebut: string;
   heureFin: string;
   responsableNom: string;
@@ -462,6 +464,7 @@ export function contenuVide(): ContenuFiche {
     donneurPrenom: "",
     donneurTel: "",
     gps: "",
+    adresseDuPoint: "",
     heureDebut: "",
     heureFin: "",
     responsableNom: "",

@@ -79,6 +79,8 @@ export async function ficheDuChantier(ctx: Ctx, chantierId: string): Promise<Fic
 export type ContexteDuChantier = {
   chantierNom: string;
   adresse: string | null;
+  /** Où le chantier est, d'après son adresse : là que s'ouvre la carte du point GPS avant tout relevé. */
+  position: { lat: number; lon: number } | null;
   datePlanifiee: string | null;
   numeroDevis: string | null;
   lignesDuDevis: string[];
@@ -94,6 +96,9 @@ export async function contexteDuChantier(ctx: Ctx, chantierId: string): Promise<
       .select({
         nom: chantiers.nom,
         adresse: chantiers.adresseChantier,
+        latitude: chantiers.latitude,
+        longitude: chantiers.longitude,
+        adresseSituee: chantiers.adresseSituee,
         datePlanifiee: chantiers.datePlanifiee,
         clientNom: clients.nom,
         clientTelephone: clients.telephone,
@@ -135,6 +140,11 @@ export async function contexteDuChantier(ctx: Ctx, chantierId: string): Promise<
     return {
       chantierNom: c.nom,
       adresse: c.adresse,
+      // Des coordonnées posées sur une adresse corrigée depuis seraient pires que rien (schéma, `adresseSituee`).
+      position:
+        c.latitude !== null && c.longitude !== null && c.adresseSituee !== null && c.adresseSituee === c.adresse
+          ? { lat: Number(c.latitude), lon: Number(c.longitude) }
+          : null,
       datePlanifiee: c.datePlanifiee,
       numeroDevis: dernierDevis?.numero ?? null,
       lignesDuDevis: lignes.map((l) => l.libelle).filter((l) => !ligneSansTexte(l)),

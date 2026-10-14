@@ -124,6 +124,10 @@ export const LIMITES = {
   // protège pas Atlas, il évite que l'adresse publique du banc d'essai serve de
   // relais vers un service public qui, lui, nous couperait.
   rechercheAdresse: { max: 120, fenetreMs: 60 * 1000 },
+  // La carte du point GPS : une vue en demande une douzaine, chaque zoom ou
+  // déplacement autant. Même raison que `rechercheAdresse` : ne pas servir de
+  // relais vers l'IGN.
+  tuilesDeCarte: { max: 400, fenetreMs: 60 * 1000 },
   /**
    * Ouvrir la page de paiement — comptée PAR ENTREPRISE, et serrée.
    *

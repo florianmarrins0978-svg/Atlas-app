@@ -64,3 +64,33 @@ export async function chercherAdresses(
     return { ok: false, raison: "injoignable" };
   }
 }
+
+/**
+ * L'adresse officielle la plus proche d'un point GPS — sa remarque du
+ * 14 octobre 2026, position relevée chez lui : *« c'est pas la bonne adresse
+ * qui s'affiche »*. Seules deux coordonnées partent.
+ *
+ * `null` quand la base ne connaît rien là (un bois, un champ) ou ne répond
+ * pas : l'écran le dit, il n'invente pas d'adresse.
+ */
+export async function adresseAuPoint(
+  lat: number,
+  lon: number,
+  base: string = process.env.ADRESSE_BASE_URL || BASE_PAR_DEFAUT
+): Promise<string | null> {
+  const url = new URL("/reverse/", base);
+  url.searchParams.set("lat", String(lat));
+  url.searchParams.set("lon", String(lon));
+  url.searchParams.set("limit", "1");
+  try {
+    const reponse = await fetch(url, { signal: AbortSignal.timeout(DELAI_MS), headers: { Accept: "application/json" } });
+    if (!reponse.ok) {
+      console.error("[adresses] adresse au point refusée", { statut: reponse.status });
+      return null;
+    }
+    return lireSuggestions(await reponse.json())[0]?.libelle ?? null;
+  } catch (erreur) {
+    console.error("[adresses] adresse au point injoignable", { erreur: String(erreur) });
+    return null;
+  }
+}

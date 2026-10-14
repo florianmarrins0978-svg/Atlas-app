@@ -7,6 +7,7 @@ import { contexteDuChantier, ficheDuChantier } from "@/server/repositories/fiche
 import { listerPhotos } from "@/server/repositories/photos";
 import { lireObjet } from "@/server/storage";
 import { composerFicheSecuritePdf } from "@/server/pdf/fiche-securite-pdf";
+import { carteDuPointImprimee } from "@/server/carte/geoplateforme-tuiles";
 import { enTetesDeRemise, veutTelecharger } from "@/lib/remise-de-fichier";
 
 // LE PDF DE LA FICHE DE SÉCURITÉ — refait à la demande depuis le contenu gardé.
@@ -29,9 +30,10 @@ export async function GET(requete: Request, { params }: { params: Promise<{ chan
   const gardees = fiche.contenu.photoIds
     .map((id) => photosDuChantier.find((p) => p.id === id))
     .filter((p): p is NonNullable<typeof p> => p !== undefined);
-  const photos = await Promise.all(
-    gardees.map(async (p) => ({ id: p.id, octets: new Uint8Array(await lireObjet(p.storageKey)), mime: p.mimeType }))
-  );
+  const [photos, carte] = await Promise.all([
+    Promise.all(gardees.map(async (p) => ({ id: p.id, octets: new Uint8Array(await lireObjet(p.storageKey)), mime: p.mimeType }))),
+    carteDuPointImprimee(fiche.contenu.gps),
+  ]);
   const pdf = await composerFicheSecuritePdf({
     chantierNom: contexte.chantierNom,
     numeroDevis: contexte.numeroDevis,
@@ -44,6 +46,7 @@ export async function GET(requete: Request, { params }: { params: Promise<{ chan
     signeeLe: fiche.signeeLe,
     signaturePng: fiche.signaturePng,
     photos,
+    carte,
   });
   return new NextResponse(new Uint8Array(pdf), {
     headers: enTetesDeRemise({

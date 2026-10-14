@@ -29,6 +29,7 @@ import {
 } from "../src/lib/fiche-securite";
 import { composerFicheSecuritePdf } from "../src/server/pdf/fiche-securite-pdf";
 import { croquisRecu, manquesDuCroquis, type Marque } from "../src/lib/croquis-securite";
+import { ecrireLeGps, lireLeGps, pointSousLAppui, tuileDemandee, tuilesAutour, versTuile } from "../src/lib/carte-du-point";
 
 // LA FICHE DE SÉCURITÉ — les règles pures, et le PDF qu'elles produisent.
 //
@@ -300,6 +301,8 @@ async function main() {
       arbresDangereux: "oui",
       arbres: [{ groupe: false, intervention: "Abattage", dangers: ["Arbre mort"], consignes: ["Rubalise autour du tronc"], autres: "" }],
       lectures: [{ nom: "Kevin Morel", png: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEklEQVQIW2NkYGD4z8DAwMAAAAgEAQC6xj9EAAAAAElFTkSuQmCC", le: "2026-09-18T06:10:00Z" }],
+      gps: "48.99387, 1.71077",
+      adresseDuPoint: "10 Rue Denfert Rochereau 78200 Mantes-la-Jolie",
     };
     // un PNG minuscule et valide (2 × 2), en guise de trait
     const signature = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEklEQVQIW2NkYGD4z8DAwMAAAAgEAQC6xj9EAAAAAElFTkSuQmCC";
@@ -315,11 +318,41 @@ async function main() {
       signeeLe: new Date(2026, 8, 18, 8, 5),
       signaturePng: signature,
       photos: [],
+      // Une tuile de carte en guise de vraie (la vraie demande le réseau) : le rognage doit passer.
+      carte: { largeur: 640, hauteur: 250, tuiles: [{ gauche: -40, haut: -60, octets: Buffer.from(signature.split(",")[1], "base64"), mime: "image/png" }] },
     });
     const doc = await PDFDocument.load(pdf);
     assert.ok(doc.getPageCount() >= 2, `une fiche entière tient sur plusieurs pages, pas ${doc.getPageCount()}`);
     assert.equal(doc.getTitle(), "Fiche de sécurité, Pagnol");
     assert.equal(NOTE_DE_LA_FEUILLE.lignes.length, 4, "la note au bas de la feuille a quatre lignes");
+  });
+
+  // ─── LA CARTE DU POINT GPS — sa planche du 14 octobre 2026 ───
+  await cas("la carte : le GPS se lit, l'appui retombe sur le point touché, les tuiles couvrent la vue", () => {
+    assert.deepEqual(lireLeGps("48.99387, 1.71077"), { lat: 48.99387, lon: 1.71077 });
+    assert.deepEqual(lireLeGps(" 48,99387 ; 1,71077 "), { lat: 48.99387, lon: 1.71077 }, "les virgules à la française se lisent");
+    for (const faux of ["", "derrière l'église", "48.9", "91, 2", "48.9, 200", "48.9, 1.7, 3"]) assert.equal(lireLeGps(faux), null, `« ${faux} » a donné un point`);
+    const p = { lat: 48.99387, lon: 1.71077 };
+    assert.equal(ecrireLeGps(p), "48.99387, 1.71077");
+    // Un appui au centre ne déplace rien ; un appui de 256 pixels à droite avance d'une tuile.
+    assert.equal(ecrireLeGps(pointSousLAppui(p, 17, 0, 0)), ecrireLeGps(p), "un appui au centre a déplacé le point");
+    const aDroite = pointSousLAppui(p, 17, 256, 0);
+    assert.ok(Math.abs(versTuile(aDroite, 17).x - versTuile(p, 17).x - 1) < 1e-9, "l'appui ne retombe pas où il a été fait");
+    assert.ok(Math.abs(aDroite.lat - p.lat) < 1e-9, "un appui horizontal a changé la latitude");
+    // Toute la vue est couverte, sans trou : chaque pixel sous une tuile.
+    const tuiles = tuilesAutour(p, 17, 390, 260);
+    for (const [px, py] of [[0, 0], [389, 0], [0, 259], [389, 259], [195, 130]]) {
+      assert.ok(tuiles.some((t) => px >= t.gauche && px < t.gauche + 256 && py >= t.haut && py < t.haut + 256), `le pixel ${px},${py} n'a pas de tuile`);
+    }
+  });
+
+  await cas("la route des tuiles ne demande à l'IGN que des tuiles qui existent", () => {
+    assert.deepEqual(tuileDemandee("plan", "17", "66338", "45076"), { fond: "plan", z: 17, x: 66338, y: 45076 });
+    assert.equal(tuileDemandee("satellite", "17", "1", "1"), null, "un fond inconnu passe");
+    assert.equal(tuileDemandee("plan", "25", "1", "1"), null, "un zoom hors bornes passe");
+    assert.equal(tuileDemandee("plan", "12", "4096", "1"), null, "une colonne hors de la carte passe");
+    assert.equal(tuileDemandee("photo", "17", "1.5", "1"), null, "une colonne non entière passe");
+    assert.equal(tuileDemandee("plan", null, "1", "1"), null, "un zoom absent passe");
   });
 
   await cas("le refus du relevé GPS nomme sa cause, et chaque cause donne un geste différent", () => {
