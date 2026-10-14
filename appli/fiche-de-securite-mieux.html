@@ -705,7 +705,7 @@ function editeur() {
   const consigne = e.outil === "crayon" ? "Dessinez du doigt." : e.outil === "limite" ? (e.accesDebut ? "Touchez le coin opposé." : "Touchez un coin de la parcelle.") : TRAITS.has(e.outil) ? (e.accesDebut ? "Touchez où le trait arrive." : "Touchez où le trait part.") : "Touchez pour poser. Restez appuyé pour déplacer.";
   return `<div class="editeur">
     <div class="ed-haut">
-      <button type="button" class="ed-geste" data-geste="annuler">Annuler</button>
+      <button type="button" class="ed-geste" data-geste="annuler">Retirer le dernier</button>
       <button type="button" class="ed-geste" data-geste="effacer">Tout effacer</button>
       <button type="button" class="ed-fin" data-editer="0">Terminé</button>
     </div>
