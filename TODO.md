@@ -4,13 +4,18 @@
 
 | | qui | niveau |
 |---|---|---|
-| son rapport de vérification `docs/qa-rapport-2026-10-13-verification.md`, sur `qa/campagne` | lui (prompt collé sur son PC) | |
-| `@simplewebauthn/server` : faille faible, correctif en version majeure | nous, **batterie sur son accord** | 3 |
+| son rapport de vérification du 13 octobre, à venir sur la branche `qa/campagne` | lui (prompt collé sur son PC) | |
 | charge à plusieurs processus, avec écritures | l'établi QA | |
 | hébergement, test d'intrusion externe, bêta de 3 à 5 artisans, facturation électronique | lui, son comptable | |
 
 **Déjà fait, ne pas le reproposer** : les maquettes `/design` sont fermées en
 production (`src/app/design/layout.tsx`, `notFound()`, constat F12).
+
+**Laissé délibérément** : `@simplewebauthn/server` (faible). La faille touche
+la chaîne des certificats d'attestation ; Atlas demande `attestationType:
+"none"` et ne se fie à aucune attestation. La corriger, c'est passer de la 9 à
+la 14 et contredire `next-auth`, qui attend la 9. À rouvrir quand `next-auth`
+la suivra.
 
 **Aucune batterie sans son autorisation** (sa consigne du 14 octobre 2026).
 

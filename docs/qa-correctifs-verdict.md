@@ -40,10 +40,18 @@ Chaque correction a son test, rouge avant, vert après : `test-fiche-securite.ts
 `test-retour-intervention.ts`, `test-retour-intervention-db.ts`,
 `test-rate-limit-redis-real.ts`.
 
+## 2 bis. Corrigé le 14 octobre, en attente de la batterie commune
+
+| | Ce qui a été fait |
+|---|---|
+| `npm audit --omit=dev` : trois failles hautes (`fast-uri`, `brace-expansion`, `source-map-js`) | fichier de verrouillage seul, sans version majeure. Elles ne servaient qu'à la construction |
+| `test-devis-client-e2e` rouge sur son PC (P3) | les deux premiers cas attendent le verdict au lieu de lire l'écran d'attente. Rouge reproduit sur son PC seulement |
+
 ## 3. Regardé et laissé
 
 | | Pourquoi |
 |---|---|
+| `@simplewebauthn/server`, faille faible | elle touche la chaîne des certificats d'attestation ; Atlas demande `attestationType: "none"` (`src/server/cle-appareil.ts`) et ne s'y fie pas. La corriger : cinq versions majeures, et `next-auth` attend la 9 |
 | la 16.4.0 de Next, proposée par l'audit | une version mineure change le fonctionnement ; la 16.3.8 ferme les mêmes failles |
 | un salarié dont l'accès est « tout » pose un retour sur n'importe quel chantier | voulu par le patron (13 août) |
 | la mémoire des fiches, qu'un salarié alimente | elle ne fait que préremplir, et le chef relit avant de signer |
@@ -60,7 +68,6 @@ Chaque correction a son test, rouge avant, vert après : `test-fiche-securite.ts
 
 | | Qui tranche |
 |---|---|
-| `@simplewebauthn/server` : faille faible, correctif en version majeure, batterie nécessaire | le patron (accord pour la batterie) |
 | charge à plusieurs processus, avec écritures | l'établi QA |
 | rapport de vérification `docs/qa-rapport-2026-10-13-verification.md` | le patron, depuis son PC |
 | hébergement, test d'intrusion externe, bêta, facturation électronique | le patron, son comptable |

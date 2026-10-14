@@ -6,6 +6,20 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-14
+
+- **Trois failles « hautes » de l'audit fermées sans changer de version majeure.** `fast-uri`
+  3.1.8, `brace-expansion` 5.0.12 et `source-map-js` 1.2.2, par le fichier de verrouillage seul
+  (`npm audit fix`, sans `--force`). Les trois ne servent qu'à la construction (Sentry, webpack,
+  postcss), aucune ne lit ce qu'envoie un visiteur. `npm audit --omit=dev` ne porte plus que
+  `@simplewebauthn/server`, laissé délibérément : sa faille touche la chaîne des certificats
+  d'attestation, et Atlas demande `attestationType: "none"` sans se fier à aucune attestation.
+  La corriger demande cinq versions majeures et contredit `next-auth`, qui attend la 9.
+- **`test-devis-client-e2e` ne lit plus l'écran d'attente.** Ses deux premiers cas lisaient
+  `isVisible()`, qui n'attend pas, juste après `networkidle` : sur un serveur froid,
+  `loading.tsx` était encore peint (constat P3 de l'établi QA, 12 octobre). Ils attendent le
+  verdict, comme `test-fiche-chantier-e2e`. Le rouge n'a été reproduit que sur son PC, pas ici.
+
 ## 2026-10-13
 
 - **Redis en panne ne fait plus attendre la connexion.** Mesuré dans le vrai serveur : 0,7 seconde
