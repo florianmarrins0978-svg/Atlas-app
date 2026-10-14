@@ -110,6 +110,22 @@ seuils (la liste et l'accueil la partagent), les rappels dans
 
 ## ✅ LA TVA QUI NE SE RÉCUPÈRE PAS : SUR `main` LE 14 OCTOBRE 2026
 
+## 🔜 CE QUI RESTE DE LA CAMPAGNE QA (14 octobre 2026)
+
+| | qui | niveau |
+|---|---|---|
+| son rapport de vérification `docs/qa-rapport-2026-10-13-verification.md`, sur `qa/campagne` | lui (prompt collé sur son PC) | |
+| `@simplewebauthn/server` : faille faible, correctif en version majeure | nous, **batterie sur son accord** | 3 |
+| charge à plusieurs processus, avec écritures | l'établi QA | |
+| hébergement, test d'intrusion externe, bêta de 3 à 5 artisans, facturation électronique | lui, son comptable | |
+
+**Déjà fait, ne pas le reproposer** : les maquettes `/design` sont fermées en
+production (`src/app/design/layout.tsx`, `notFound()`, constat F12).
+
+**Aucune batterie sans son autorisation** (sa consigne du 14 octobre 2026).
+
+## 🔜 LA TVA QUI NE SE RÉCUPÈRE PAS : PLANCHE POSÉE, SES CHOIX DONNÉS (13 octobre 2026)
+
 **Le défaut** : tout achat saisi dans « Ma TVA » entre EN ENTIER dans la TVA
 déductible (`src/lib/achat-tva.ts`, `achats_tva` n'a aucune nature). Un hôtel
 ou un repas perso fait donc baisser la TVA à payer, ce qui est faux.
