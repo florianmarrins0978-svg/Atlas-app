@@ -10,6 +10,33 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## SUR SON PC, APRÈS UN REDÉMARRAGE : RALLUMER DOCKER AVANT TOUTE MESURE (14 octobre 2026)
+
+**Docker Desktop ne se relance pas tout seul quand son PC redémarre**, et ses
+sessions se ferment avec lui. Payé deux fois dans la même batterie commune, le
+14 octobre : la base de test et Redis étaient éteints, et rien ne le disait
+clairement.
+
+**Les symptômes, qui accusent tous le mauvais coupable :**
+
+| Ce qu'on voit | Ce que c'est |
+|---|---|
+| `ECONNREFUSED` dans une suite, ou au seed | la base est éteinte, pas cassée |
+| `verifier-rouge-prealable` rend « illisible » des deux côtés | le moteur des suites n'a pas pu démarrer |
+| une commande lancée en arrière-plan « n'a pas fini avant la fin de la session précédente » | le PC a redémarré pendant qu'elle tournait |
+
+**Le geste, sûr, il n'efface rien** (les conteneurs et leurs données restent) :
+
+```bash
+docker info >/dev/null 2>&1 || powershell -c 'Start-Process "C:\Users\Flori\AppData\Local\Programs\DockerDesktop\Docker Desktop.exe"'
+docker start atlas-postgres atlas-redis      # puis attendre « healthy » : docker ps
+```
+
+**Donc, en reprenant une session coupée, avant de croire un rouge :**
+`docker ps`. Et une batterie interrompue se reprend par
+`npx tsx scripts/verifier-ce-qui-a-bouge.ts`, pas en entier.
+
+---
 ## LA MAIN D'ŒUVRE QUI S'ADDITIONNE : sur `main` le 14 octobre 2026
 
 Branche `lot/main-doeuvre-par-tva`, dossier `atlas-app-lot-mo`, migration 0130.

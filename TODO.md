@@ -32,6 +32,11 @@ nature n'a pas été éprouvée (aucune clé ici).
 ## 🔜 L'OUTIL DE COMPARAISON AVEC MAIN SE TROMPE SUR CE PC (11 octobre 2026)
 
 Trouvé en livrant le catalogue. Trois défauts d'outillage, aucun dans le produit :
+- **revu le 14 octobre 2026 :** le témoin emprunte le `node_modules` du DOSSIER PRINCIPAL
+  (`racine`), qui peut avoir des centaines de commits de retard sur `main` (593 ce jour-là).
+  Contourné à la main en le vidant (`.next`, `.next-a4`, `node_modules`) puis en lui prêtant
+  celui du dossier du lot (`cp -al`, dix minutes sous Windows). La racine reste à corriger :
+  prêter les dépendances d'un dossier dont le `package-lock.json` est celui du commit visé ;
 - `preparerLeTemoin` (`scripts/_temoin-de-main.mjs`) ne renouvelle jamais le `node_modules` du
   témoin une fois posé : main avance, une dépendance arrive (`qrcode-generator`), et toute suite
   navigateur rend « illisible » côté main. Il faut le reprêter quand le `package-lock.json` change.
