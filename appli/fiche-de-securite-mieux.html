@@ -46,6 +46,20 @@
   deviennent des titres ; « le croquis fait des traits saccadés » : réparé à
   la racine (voir `brancherCroquis`) ; « les sociétés externes doivent rester
   enregistrées » : ses entreprises habituelles reviennent d'un appui.
+
+  SA RÈGLE DU 14 OCTOBRE : « tout ce qui peut être enregistré pour être
+  réappris sur les prochaines fiches, il faut le faire ». Gardé d'une fiche à
+  l'autre : les cases cochées et les ajouts (déjà codé, `MemoireDesFiches`),
+  les textes (main d'œuvre, trousse, observations, autres risques), les
+  responsables, les entreprises externes, le protocole de zone de danger, les
+  compétences de l'équipe, les dangers ajoutés aux arbres. Jamais gardé, parce
+  que propre au chantier : le lieu, le GPS, les dates, le donneur d'ordre, le
+  croquis, les photos, les arbres dangereux, le point de rencontre.
+
+  LE CROQUIS, MÊME JOUR : la légende de l'exemple MSA entière, plus la maison
+  posée d'un appui ; les trois éléments du décret (accès, voies de
+  circulation, végétaux à traiter) se cochent en haut à mesure qu'ils sont
+  posés.
   5. Ce qu'Atlas sait est déjà posé (devis, client, adresse, dates, équipe).
 
   « RIEN À SIGNALER » est une réponse qu'il donne, pas une case cochée d'avance :
@@ -62,7 +76,7 @@
     --ombre-forte:rgba(20,18,14,.18); --or-papier:rgba(185,139,71,.13);
     --vert-pale:#b9c6b4; --vert-voile:rgba(125,154,109,.16);
     --alerte:#a14a2e; --alerte-voile:rgba(161,74,46,.12);
-    --herbe:#a9b98f; --herbe-fonce:#8ea275; --route:#cfc9bc; --toit:#b9a58a; --arbre:#5f7a4f; --eau:#a9c3cf;
+    --herbe:#a9b98f; --herbe-fonce:#8ea275; --route:#cfc9bc; --toit:#b9a58a; --arbre:#5f7a4f; --eau:#a9c3cf; --eau-trait:#4f8fb0;
   }
   body.nuit{
     --scene:#070908; --fond:#101210; --carte:#1a1d19; --teinte:#151814; --encre:#e9e8de;
@@ -71,7 +85,7 @@
     --ombre-forte:rgba(0,0,0,.6); --or-papier:rgba(201,160,94,.16);
     --vert-pale:#4f5f4c; --vert-voile:rgba(185,198,180,.12);
     --alerte:#e39a7e; --alerte-voile:rgba(227,154,126,.14);
-    --herbe:#3d4a35; --herbe-fonce:#33402d; --route:#3a3833; --toit:#5a4f42; --arbre:#6f8c5e; --eau:#2f4650;
+    --herbe:#3d4a35; --herbe-fonce:#33402d; --route:#3a3833; --toit:#5a4f42; --arbre:#6f8c5e; --eau:#2f4650; --eau-trait:#7fb3cc;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;background:var(--scene)}
@@ -177,6 +191,10 @@
   .legende li{display:flex;align-items:center;gap:10px;min-height:30px;font-size:13.5px}
   .gestes{display:flex;gap:18px;margin-top:4px}
   .gestes button{min-height:44px;font-size:13.5px;font-weight:700}
+  .obligatoire{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:4px 10px 4px 6px;border-radius:999px;font-size:13px;color:var(--or-texte);background:var(--or-papier)}
+  body.nuit .obligatoire{color:var(--or)}
+  .obligatoire.fait{color:var(--pin);background:var(--vert-voile)}
+  body.nuit .obligatoire.fait{color:var(--encre)}
   .methode{display:flex;flex-direction:column;gap:8px;margin-top:6px}
 
   .vignettes{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
@@ -367,7 +385,7 @@ function fait(id) {
     case "responsables": return e.responsables.length > 0;
     case "equipe": return Object.values(e.gens).some(Boolean);
     case "arbres-dangereux": return e.dangereux !== null;
-    case "croquis": return e.marques.length > 0;
+    case "croquis": return OBLIGATOIRES.every(([, test]) => e.marques.some((m) => test(m.t)));
     case "photos": return e.photos > 0;
     case "r-autres": return !!(e.champs.autresR || e.champs.autresM);
     case "protocole": return !!e.champs.protocole.trim();
@@ -470,7 +488,8 @@ const SOUS = {
   responsables: () => `
     ${e.responsables.map((r, k) => `<div class="carte-bloc"><div class="haut"><b>Responsable ${k + 1}</b>${k ? `<button type="button" class="retirer" data-resp-retirer="${k}">Retirer</button>` : ""}</div>
       <div class="deux">${saisie("Nom et prénom", r)}${saisie("Téléphone", k ? "" : "06 98 76 54 32", "06 00 00 00 00", "tel")}</div></div>`).join("")}
-    <div class="rangee"><button type="button" class="ajouter" data-resp-ajouter="1">${plus} Ajouter un responsable</button></div>`,
+    <div class="rangee"><button type="button" class="ajouter" data-resp-ajouter="1">${plus} Ajouter un responsable</button></div>
+    <p class="aide">Gardés pour vos prochaines fiches.</p>`,
   equipe: () => `
     <p class="aide">D’après le planning. Les compétences s’écrivent une fois, dans Réglages.</p>
     ${Object.keys(EQUIPE).map((p) => `<button type="button" class="qui" data-qui="${p}" aria-pressed="${e.gens[p]}"><span class="rond${e.gens[p] ? " plein" : ""}">${coche}</span>
@@ -510,7 +529,7 @@ const SOUS = {
   "r-env": () => cases("environnement", L.environnement) + (S("environnement").size && !S("environnement").has(RIEN) ? `<p class="etiquette" style="margin-top:16px">Mesures</p>${cases("environnementMesures", L.environnementMesures)}` : ""),
   "r-coact": () => `<p class="aide">D’autres personnes travaillent dans la zone en même temps ?</p>${cases("coactivite", L.coactivite)}<p class="etiquette" style="margin-top:16px">Organisation</p>${cases("organisation", ["Répartition des tâches dans le temps et l’espace (travailleur/matériel)", "Respect des consignes de sécurité des machines"])}<p class="vigilance">Manuel d’utilisation du matériel.</p>`,
   "r-autres": () => `${champ("Risques autres identifiés", "autresR", "Exemple : coups de vent annoncés l’après-midi", 2)}${champ("Mesures de prévention autres", "autresM", "Exemple : rubalise autour de la propriété", 2)}`,
-  protocole: () => `<p class="aide">Zone de chute, zone de broyage, zone avec engin. Un texte modèle, à adapter au chantier.</p>${champ("Protocole d’entrée en zone de danger", "protocole", "", 7)}`,
+  protocole: () => `<p class="aide">Zone de chute, zone de broyage, zone avec engin. Un texte modèle, à adapter au chantier.</p>${champ("Protocole d’entrée en zone de danger", "protocole", "", 7)}<p class="aide">Votre version est gardée pour vos prochaines fiches.</p>`,
   meteo: () => `<p class="vigilance">Bulletins d’alerte météorologiques.</p>${cases("meteo", L.meteo)}`,
   secours: () => `${e.gens["Lucas Petit"] ? `<p class="aide alerte">Lucas Petit n’a plus de SST à jour. Kevin Morel n’a pas de GSA.</p>` : ""}${cases("secours", L.secours)}
     ${champ("Lieu de la trousse de secours", "trousse", "Exemple : dans la cabine du camion")}
@@ -521,28 +540,85 @@ const SOUS = {
     <ol class="consignes"><li>S’identifier, donner le lieu et l’accès.</li><li>Dire ce qui s’est passé, combien de blessés, dans quel état.</li><li>Donner le point de rencontre, et ne jamais raccrocher le premier.</li></ol>`,
 };
 
-/* ═══ LE CROQUIS ═══ */
-const OUTILS = [["crayon","Crayon"],["acces","Accès"],["chute","Zone de chute"],["arbre","Arbre"],["secours","Rendez-vous des secours"]];
+/* ═══ LE CROQUIS ═══
+   Ce que le décret impose (art. R. 717-85-16, repris par la notice MSA) : les
+   accès, les voies de circulation, les végétaux à traiter. Les outils
+   reprennent la légende de l'exemple rempli de la MSA, plus la maison, posée
+   d'un appui (sa demande du 14 octobre : « un carré automatique pour la
+   maison, comme tu fais pour le reste »).
+   Deux sortes d'outils : un trait se pose en deux appuis (départ, arrivée),
+   un repère en un seul. */
+const TRAITS = new Set(["acces", "voie", "ligne", "limite", "ruisseau"]);
+const OUTILS = [
+  ["crayon", "Crayon"],
+  ["acces", "Accès au chantier"],
+  ["voie", "Voie de circulation"],
+  ["abattre", "Arbre à abattre"],
+  ["tailler", "Arbre à tailler"],
+  ["maison", "Maison"],
+  ["danger", "Zone de danger"],
+  ["stockage", "Stockage et broyage"],
+  ["ligne", "Ligne électrique"],
+  ["reseau", "Le téléphone capte"],
+  ["secours", "Rendez-vous des secours"],
+  ["limite", "Limite de parcelle"],
+  ["ruisseau", "Ruisseau"],
+];
+const OBLIGATOIRES = [
+  ["Accès", (t) => t === "acces"],
+  ["Voie de circulation", (t) => t === "voie"],
+  ["Arbres à traiter", (t) => t === "abattre" || t === "tailler"],
+];
+const STYLE_TRAIT = {
+  acces: 'stroke="var(--pin)" stroke-width="5" stroke-dasharray="10 7"',
+  voie: 'stroke="var(--or)" stroke-width="8" stroke-opacity=".75"',
+  ligne: 'stroke="var(--alerte)" stroke-width="3" stroke-dasharray="14 4 2 4"',
+  limite: 'stroke="var(--encre)" stroke-width="2" stroke-dasharray="3 5"',
+  ruisseau: 'stroke="var(--eau-trait)" stroke-width="6"',
+};
 function symbole(t) {
-  if (t === "crayon") return `<svg width="20" height="20" viewBox="0 0 22 22" aria-hidden="true"><path d="M4 18c3-1 5-6 8-7s4 2 6-2" stroke="var(--encre)" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>`;
-  if (t === "acces") return `<svg width="20" height="20" viewBox="0 0 22 22" aria-hidden="true"><path d="M3 18 19 4" stroke="var(--pin)" stroke-width="2.6" stroke-dasharray="4 3" stroke-linecap="round"/></svg>`;
-  if (t === "chute") return `<svg width="20" height="20" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="8.5" fill="var(--alerte-voile)" stroke="var(--alerte)" stroke-width="2" stroke-dasharray="3 2.5"/></svg>`;
-  if (t === "arbre") return `<svg width="20" height="20" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="8.5" fill="var(--carte)" stroke="var(--or)" stroke-width="2.4"/></svg>`;
-  return `<svg width="20" height="20" viewBox="0 0 22 22" aria-hidden="true"><rect x="3" y="3" width="16" height="16" rx="3" fill="var(--plein)"/><path d="M7.5 11h7M11 7.5v7" stroke="var(--sur-plein)" stroke-width="2.2" stroke-linecap="round"/></svg>`;
+  const s = (corps) => `<svg width="20" height="20" viewBox="0 0 22 22" aria-hidden="true">${corps}</svg>`;
+  if (t === "crayon") return s('<path d="M4 18c3-1 5-6 8-7s4 2 6-2" stroke="var(--encre)" stroke-width="2.2" fill="none" stroke-linecap="round"/>');
+  if (TRAITS.has(t)) return s(`<path d="M3 18 19 4" ${STYLE_TRAIT[t].replace(/stroke-width="\d+"/, 'stroke-width="2.6"')} fill="none" stroke-linecap="round"/>`);
+  if (t === "abattre") return s('<circle cx="11" cy="11" r="8.5" fill="var(--alerte)"/>');
+  if (t === "tailler") return s('<circle cx="11" cy="11" r="8.5" fill="var(--carte)" stroke="var(--or)" stroke-width="2.4"/>');
+  if (t === "maison") return s('<rect x="4" y="8" width="14" height="11" fill="var(--toit)" stroke="var(--encre)" stroke-width="1.4"/><path d="M3 9 11 3l8 6" fill="none" stroke="var(--encre)" stroke-width="1.6" stroke-linejoin="round"/>');
+  if (t === "danger") return s('<circle cx="11" cy="11" r="8.5" fill="var(--alerte-voile)" stroke="var(--alerte)" stroke-width="2" stroke-dasharray="3 2.5"/>');
+  if (t === "stockage") return s('<rect x="3" y="6" width="16" height="11" rx="2" fill="var(--or-papier)" stroke="var(--or)" stroke-width="1.6" stroke-dasharray="3 2"/>');
+  if (t === "reseau") return s('<rect x="4" y="13" width="3" height="5" fill="var(--pin)"/><rect x="9.5" y="9" width="3" height="9" fill="var(--pin)"/><rect x="15" y="5" width="3" height="13" fill="var(--pin)"/>');
+  return s('<rect x="3" y="3" width="16" height="16" rx="3" fill="var(--plein)"/><path d="M7.5 11h7M11 7.5v7" stroke="var(--sur-plein)" stroke-width="2.2" stroke-linecap="round"/>');
+}
+/* Un ruisseau ondule entre ses deux appuis : la même ligne qu'un trait, pliée. */
+function ondule(m) {
+  const dx = m.x2 - m.x, dy = m.y2 - m.y, l = Math.hypot(dx, dy) || 1, nx = -dy / l, ny = dx / l, pas = Math.max(2, Math.round(l / 28));
+  let d = `M${m.x} ${m.y}`;
+  for (let i = 1; i <= pas; i++) {
+    const t0 = (i - 0.5) / pas, t1 = i / pas, a = i % 2 ? 9 : -9;
+    d += ` Q${m.x + dx * t0 + nx * a} ${m.y + dy * t0 + ny * a} ${m.x + dx * t1} ${m.y + dy * t1}`;
+  }
+  return d;
 }
 function dessinMarques() {
-  let n = 0;
+  let arbre = 0, zone = 0;
   return e.marques.map((m) => {
     if (m.t === "crayon") return `<polyline points="${m.pts.join(" ")}" fill="none" stroke="var(--encre)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`;
-    if (m.t === "acces") return `<line x1="${m.x}" y1="${m.y}" x2="${m.x2}" y2="${m.y2}" stroke="var(--pin)" stroke-width="5" stroke-dasharray="10 7" stroke-linecap="round"/>`;
-    if (m.t === "chute") return `<circle cx="${m.x}" cy="${m.y}" r="46" fill="var(--alerte-voile)" stroke="var(--alerte)" stroke-width="3" stroke-dasharray="7 5"/>`;
-    if (m.t === "arbre") { n++; return `<circle cx="${m.x}" cy="${m.y}" r="15" fill="var(--carte)" stroke="var(--or)" stroke-width="4"/><text x="${m.x}" y="${m.y + 6}" text-anchor="middle" font-size="17" font-weight="700" fill="var(--encre)">${n}</text>`; }
+    if (m.t === "ruisseau") return `<path d="${ondule(m)}" fill="none" ${STYLE_TRAIT.ruisseau} stroke-linecap="round"/>`;
+    if (TRAITS.has(m.t)) return `<line x1="${m.x}" y1="${m.y}" x2="${m.x2}" y2="${m.y2}" ${STYLE_TRAIT[m.t]} stroke-linecap="round"/>`;
+    if (m.t === "abattre" || m.t === "tailler") {
+      arbre++;
+      const plein = m.t === "abattre";
+      return `<circle cx="${m.x}" cy="${m.y}" r="15" fill="${plein ? "var(--alerte)" : "var(--carte)"}" stroke="${plein ? "var(--carte)" : "var(--or)"}" stroke-width="${plein ? 2 : 4}"/><text x="${m.x}" y="${m.y + 6}" text-anchor="middle" font-size="17" font-weight="700" fill="${plein ? "var(--carte)" : "var(--encre)"}">${arbre}</text>`;
+    }
+    if (m.t === "maison") return `<rect x="${m.x - 34}" y="${m.y - 26}" width="68" height="52" fill="var(--toit)" stroke="var(--encre)" stroke-width="2"/><path d="M${m.x - 34} ${m.y - 26} L${m.x + 34} ${m.y + 26} M${m.x + 34} ${m.y - 26} L${m.x - 34} ${m.y + 26}" stroke="var(--encre)" stroke-width="1" opacity=".35"/>`;
+    if (m.t === "danger") { zone++; return `<circle cx="${m.x}" cy="${m.y}" r="46" fill="var(--alerte-voile)" stroke="var(--alerte)" stroke-width="3" stroke-dasharray="7 5"/><text id="zone-${zone}" x="${m.x}" y="${m.y + 64}" text-anchor="middle" font-size="14" font-weight="700" fill="var(--alerte)">${m.mot || `Zone ${zone}`}</text>`; }
+    if (m.t === "stockage") return `<rect x="${m.x - 36}" y="${m.y - 22}" width="72" height="44" rx="4" fill="var(--or-papier)" stroke="var(--or)" stroke-width="2.5" stroke-dasharray="6 4"/>`;
+    if (m.t === "reseau") return `<g transform="translate(${m.x - 14} ${m.y - 14})"><rect x="0" y="18" width="7" height="10" fill="var(--pin)"/><rect x="10" y="10" width="7" height="18" fill="var(--pin)"/><rect x="20" y="2" width="7" height="26" fill="var(--pin)"/></g>`;
     return `<rect x="${m.x - 15}" y="${m.y - 15}" width="30" height="30" rx="6" fill="var(--plein)"/><path d="M${m.x - 8} ${m.y}h16M${m.x} ${m.y - 8}v16" stroke="var(--sur-plein)" stroke-width="4" stroke-linecap="round"/>`;
   }).join("")
-    + (e.accesDebut ? `<circle cx="${e.accesDebut.x}" cy="${e.accesDebut.y}" r="7" fill="var(--pin)"/>` : "");
+    + (e.accesDebut ? `<circle cx="${e.accesDebut.x}" cy="${e.accesDebut.y}" r="7" fill="var(--encre)"/>` : "");
 }
 function croquis() {
-  if (!e.croquis) return `<p class="aide">Les accès, les passages, les arbres à traiter.</p>
+  if (!e.croquis) return `<p class="aide">Les accès, les voies de circulation, les arbres à traiter.</p>
     <div class="methode"><button type="button" class="vert" data-croquis="photo">Dessiner sur une photo du chantier</button>
     <button type="button" class="creux" data-croquis="blanc">Dessiner sur une page blanche</button>
     <button type="button" class="creux">Importer un croquis déjà fait</button></div>`;
@@ -553,14 +629,19 @@ function croquis() {
     <circle cx="262" cy="96" r="44" fill="var(--arbre)"/><circle cx="246" cy="84" r="20" fill="var(--herbe-fonce)" opacity=".5"/>
     <circle cx="336" cy="170" r="34" fill="var(--arbre)"/><circle cx="96" cy="196" r="24" fill="var(--arbre)" opacity=".85"/>`
     : `<rect width="400" height="300" fill="var(--carte)"/>${Array.from({ length: 13 }, (_, i) => Array.from({ length: 10 }, (_, j) => `<circle cx="${15 + i * 31}" cy="${15 + j * 31}" r="1.3" fill="var(--trait)"/>`).join("")).join("")}`;
-  const compte = (t) => e.marques.filter((m) => m.t === t).length;
-  const leg = OUTILS.filter(([t]) => t !== "crayon" && compte(t)).map(([t, mot]) => `<li>${symbole(t)} ${t === "arbre" && compte(t) > 1 ? `Arbres, de 1 à ${compte(t)}` : mot}</li>`).join("");
-  return `<p class="aide">${e.outil === "crayon" ? "Dessinez du doigt." : e.outil === "acces" && e.accesDebut ? "Touchez où l’accès arrive." : "Touchez pour poser."}</p>
+  const types = new Set(e.marques.map((m) => m.t));
+  const nArbres = e.marques.filter((m) => m.t === "abattre" || m.t === "tailler").length;
+  const leg = OUTILS.filter(([t]) => t !== "crayon" && types.has(t)).map(([t, mot]) => `<li>${symbole(t)} ${mot}</li>`).join("");
+  const zones = e.marques.map((m, i) => [m, i]).filter(([m]) => m.t === "danger");
+  const consigne = e.outil === "crayon" ? "Dessinez du doigt." : TRAITS.has(e.outil) ? (e.accesDebut ? "Touchez où le trait arrive." : "Touchez où le trait part.") : "Touchez pour poser.";
+  return `<div class="pastilles" style="margin-bottom:8px">${OBLIGATOIRES.map(([mot, test]) => { const on = [...types].some(test); return `<span class="obligatoire${on ? " fait" : ""}"><span class="rond${on ? " plein" : ""}" style="width:18px;height:18px">${coche}</span>${mot}</span>`; }).join("")}</div>
+    <p class="aide">${consigne}</p>
     <div class="photo"><svg id="photo" viewBox="0 0 400 300" role="img" aria-label="Croquis du chantier">${fond}${dessinMarques()}</svg></div>
     <div class="outils">${OUTILS.map(([t, mot]) => `<button type="button" class="outil" data-outil="${t}" aria-pressed="${e.outil === t}">${symbole(t)} ${mot}</button>`).join("")}</div>
+    ${zones.map(([m, i], k) => `<label class="champ"><span class="nom">Zone de danger ${k + 1}, ce que c’est</span><input data-zone="${i}" data-zone-n="${k + 1}" value="${m.mot ?? ""}" placeholder="Exemple : chute de branches"></label>`).join("")}
     ${leg ? `<ul class="legende">${leg}</ul>` : ""}
     <div class="gestes"><button type="button" data-geste="annuler">Annuler le dernier</button><button type="button" data-geste="effacer">Tout effacer</button><button type="button" data-croquis="">Changer de fond</button></div>
-    ${Array.isArray(e.dangereux) ? `<p class="aide">Les numéros des arbres sont ceux des arbres dangereux.</p>` : ""}`;
+    ${Array.isArray(e.dangereux) && nArbres ? `<p class="aide">Les numéros des arbres sont ceux des arbres dangereux.</p>` : ""}`;
 }
 
 /* ═══ SIGNER ═══ */
@@ -636,7 +717,7 @@ function brancherCroquis() {
       svg.appendChild(trait);
       return;
     }
-    if (e.outil === "acces") { if (!e.accesDebut) e.accesDebut = p; else { e.marques.push({ t: "acces", x: e.accesDebut.x, y: e.accesDebut.y, x2: p.x, y2: p.y }); e.accesDebut = null; } }
+    if (TRAITS.has(e.outil)) { if (!e.accesDebut) e.accesDebut = p; else { e.marques.push({ t: e.outil, x: e.accesDebut.x, y: e.accesDebut.y, x2: p.x, y2: p.y }); e.accesDebut = null; } }
     else e.marques.push({ t: e.outil, ...p });
     dessiner();
   };
@@ -652,7 +733,12 @@ function brancherCroquis() {
 /* ═══ LES GESTES ═══ */
 const basculer = (set, v) => (set.has(v) ? set.delete(v) : set.add(v));
 const RIENS = new Set([RIEN, "Pas de risque de noyade", "Pas besoin pour ce chantier"]);
-document.addEventListener("input", (ev) => { const k = ev.target.dataset?.champ; if (k) e.champs[k] = ev.target.value; });
+document.addEventListener("input", (ev) => {
+  const d = ev.target.dataset ?? {};
+  if (d.champ) e.champs[d.champ] = ev.target.value;
+  // Le mot d'une zone s'écrit sur le croquis sans redessiner l'écran : le clavier se fermerait à chaque lettre.
+  if (d.zone !== undefined) { e.marques[+d.zone].mot = ev.target.value; const t = document.getElementById("zone-" + d.zoneN); if (t) t.textContent = ev.target.value || `Zone ${d.zoneN}`; }
+});
 document.addEventListener("click", (ev) => {
   const plan = ev.target.closest("svg#plan");
   if (plan) { e.gps = point(plan, ev, 400, 240); dessiner(); return; }
