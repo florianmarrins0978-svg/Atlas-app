@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Campagne QA du 13 octobre 2026 : ce qui a été corrigé</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="campagne-qa-du-13-octobre-2026--ce-qui-a-été-corrigé">Campagne QA du 13 octobre 2026 : ce qui a été corrigé</h1>
+<p>Ce document répond aux rapports de l'établi QA (<code>qa/campagne</code>, 12 et 13 octobre 2026). Tout ce qui suit est sur <code>main</code>. Chaque point indique le fichier qui le fonde.</p>
+<p><strong>Batterie complète au vert</strong> : 462/462 suites base, 183/183 suites navigateur, connexion réelle derrière une origine étrangère.</p>
+<hr>
+<h2 id="1-verdicts">1. Verdicts</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Constat de l'établi</th>
+<th>Verdict</th>
+<th>Ce qui a été fait</th>
+<th>Commit</th>
+</tr></thead><tbody>
+<tr>
+<td><code>npm audit</code> : trois failles critiques dans Next</td>
+<td>vrai</td>
+<td>Next 16.3.8 et sharp 0.35.5 (<code>package.json</code>)</td>
+<td><code>08a1d0bb</code></td>
+</tr>
+<tr>
+<td>« Modifier » rouvre une fiche de sécurité transmise</td>
+<td>vrai</td>
+<td><code>peutRouvrirUneFicheTransmise</code> (<code>src/lib/acces-roles.ts</code>) : tout rôle sauf salarié</td>
+<td><code>49564a24</code></td>
+</tr>
+<tr>
+<td>la facturation change la durée d'un chantier</td>
+<td>vrai, à moitié</td>
+<td>sa décision « A » : permis tant que le chantier n'est pas au planning (<code>dureeEtEquipeModifiables</code>)</td>
+<td><code>49564a24</code></td>
+</tr>
+<tr>
+<td>ZAP bloqué</td>
+<td>non conclu</td>
+<td>rien à corriger dans le produit</td>
+<td></td>
+</tr>
+</tbody></table></div>
+<h2 id="2-trouvé-en-plus-pendant-la-correction">2. Trouvé en plus, pendant la correction</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Aucun de ces points n'était dans les rapports :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Le défaut</th>
+<th>La correction</th>
+</tr></thead><tbody>
+<tr>
+<td>fiche</td>
+<td>l'enregistrement réécrivait une fiche signée</td>
+<td><code>isNull(signeeLe)</code> dans le <code>WHERE</code> (<code>src/server/repositories/fiches-securite.ts</code>)</td>
+</tr>
+<tr>
+<td>fiche</td>
+<td>une signature se posait par-dessus une autre</td>
+<td>même condition, dans <code>signerLaFiche</code></td>
+</tr>
+<tr>
+<td>fiche</td>
+<td>retirer une photo effaçait n'importe quelle photo de l'entreprise</td>
+<td><code>detacherPhotoDeLaFiche</code> refuse une photo qui n'est pas sur la fiche</td>
+</tr>
+<tr>
+<td>fiche</td>
+<td>une photo effacée par la pellicule laissait un trou dans le PDF signé</td>
+<td><code>supprimerPhoto</code> refuse une photo tenue par une fiche (<code>src/server/repositories/photos.ts</code>)</td>
+</tr>
+<tr>
+<td>fiche</td>
+<td>forme et tailles non vérifiées, jusqu'à 15 Mo</td>
+<td><code>ecritureRecue</code>, <code>refusDeLaSignature</code> (<code>src/lib/fiche-securite.ts</code>), vrai PNG exigé</td>
+</tr>
+<tr>
+<td>retours</td>
+<td>même défaut de forme et de tailles</td>
+<td><code>retourRecu</code> (<code>src/lib/retour-intervention.ts</code>)</td>
+</tr>
+<tr>
+<td>retours</td>
+<td>une photo de la fiche pouvait s'accrocher à un retour</td>
+<td>écartée à la relecture (<code>src/server/repositories/retours-intervention.ts</code>)</td>
+</tr>
+<tr>
+<td>connexion</td>
+<td>Redis coupé : 5 à 8 secondes d'attente, journal inondé</td>
+<td><code>MagasinLimiteRedis</code> échoue tout de suite (<code>src/server/rate-limit/redis.ts</code>)</td>
+</tr>
+<tr>
+<td>tarifs</td>
+<td>« Fermer » passait sous la barre du bas</td>
+<td><code>overflow-clip</code> (<code>src/app/reglages/ReglagesClient.tsx</code>)</td>
+</tr>
+<tr>
+<td>batterie</td>
+<td>la base de test restait à terre après une batterie</td>
+<td><code>setsid</code> dans <code>test-connexion-service-en-panne-e2e.ts</code></td>
+</tr>
+</tbody></table></div>
+<p>Chaque correction a son test, rouge avant, vert après : <code>test-fiche-securite.ts</code>, <code>test-fiche-securite-db.ts</code>, <code>test-acces-roles.ts</code>, <code>test-roles-capacites-db.ts</code>, <code>test-retour-intervention.ts</code>, <code>test-retour-intervention-db.ts</code>, <code>test-rate-limit-redis-real.ts</code>.</p>
+<h2 id="3-regardé-et-laissé">3. Regardé et laissé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td>la 16.4.0 de Next, proposée par l'audit</td>
+<td>une version mineure change le fonctionnement ; la 16.3.8 ferme les mêmes failles</td>
+</tr>
+<tr>
+<td>un salarié dont l'accès est « tout » pose un retour sur n'importe quel chantier</td>
+<td>voulu par le patron (13 août)</td>
+</tr>
+<tr>
+<td>la mémoire des fiches, qu'un salarié alimente</td>
+<td>elle ne fait que préremplir, et le chef relit avant de signer</td>
+</tr>
+</tbody></table></div>
+<h2 id="4-corrections-à-mes-propres-affirmations">4. Corrections à mes propres affirmations</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li>J'ai dit que la campagne n'avait jamais commencé. <strong>C'était faux</strong> : les rapports existaient.</li>
+<li>Le 14 octobre, j'ai compté « masquer <code>/design</code> en production » parmi les restes. <strong>C'était faux</strong> : <code>src/app/design/layout.tsx</code> renvoie déjà <code>notFound()</code> en production (constat F12).</li>
+</ul>
+<h2 id="5-ce-qui-reste-ouvert">5. Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui tranche</th>
+</tr></thead><tbody>
+<tr>
+<td><code>@simplewebauthn/server</code> : faille faible, correctif en version majeure, batterie nécessaire</td>
+<td>le patron (accord pour la batterie)</td>
+</tr>
+<tr>
+<td>charge à plusieurs processus, avec écritures</td>
+<td>l'établi QA</td>
+</tr>
+<tr>
+<td>rapport de vérification <code>docs/qa-rapport-2026-10-13-verification.md</code></td>
+<td>le patron, depuis son PC</td>
+</tr>
+<tr>
+<td>hébergement, test d'intrusion externe, bêta, facturation électronique</td>
+<td>le patron, son comptable</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

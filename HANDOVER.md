@@ -10,6 +10,25 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LA CAMPAGNE QA : 13 octobre 2026, SUR `main`
+
+Avant de toucher la fiche de sécurité, les rôles ou le limiteur :
+
+- **la fiche se ferme dans le `WHERE`, pas avant l'écriture** : `enregistrerLaFiche`
+  et `signerLaFiche` exigent `signee_le IS NULL` ; `rouvrirLaFiche` ne touche une
+  fiche transmise que si `peutRouvrirUneFicheTransmise` (tout rôle sauf salarié) ;
+- **une photo de la fiche ne part que par la fiche** : `supprimerPhoto` refuse
+  une photo tenue par une fiche et rend `{ ok: false, raison }` ;
+- **ce que le téléphone envoie se borne dans `src/lib/`** : `ecritureRecue`,
+  `refusDeLaSignature` (vrai PNG), `retourRecu`. Ne pas revalider à côté ;
+- **la durée et l'équipe** : une seule règle, `dureeEtEquipeModifiables`, posée
+  sur un chantier par `dureeEtEquipeModifiablesIci` ;
+- **Redis** : `MagasinLimiteRedis` échoue tout de suite pendant une reconnexion,
+  et `verifierLimite` compte en mémoire. Ne pas remettre d'attente ;
+- **l'établi QA de son PC** : Postgres 55432, Redis 56379, `npm run qa:preuve`.
+  Jamais `qa:reset`, jamais `docker compose down -v`. Il pousse `qa/campagne`
+  lui-même.
+
 ## LA MENTION DU RÉPERTOIRE DES MÉTIERS : 9 octobre 2026, PAS ENCORE SUR `main`
 
 Branche `claude/domain-name-availability-check-9rqv57`, migration 0128. Avant
