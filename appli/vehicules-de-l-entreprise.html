@@ -153,7 +153,7 @@
 <body data-charte="origine">
 
 <div class="bandeau">
-  <b>Votre demande du 14 octobre, deuxième version.</b> Sur la fiche d’un camion, <b>Ajouter un document</b> : une photo ou un PDF. Atlas reconnaît la carte grise, l’assurance ou le contrôle technique, range le fichier et remplit les cases tout seul. Tout se corrige à la main. Essayez : ouvrez la fiche, choisissez plus bas le document « photographié », puis ajoutez‑le.
+  <b>Votre demande du 14 octobre, deuxième version.</b> Sur la fiche d’un camion, <b>Ajouter un document</b> : une photo ou un PDF. Atlas reconnaît la carte grise, l’assurance ou le contrôle technique, range le fichier et remplit les cases tout seul. Tout se corrige à la main. Essayez : appuyez sur un document juste en dessous, Atlas le lit sur la fiche ouverte.
 </div>
 
 <div class="choix">
@@ -165,7 +165,7 @@
 </div>
 
 <div class="essai-doc" id="essai-doc">
-  <span>Pour l’essai, le document photographié</span>
+  <span>Appuyez sur un document : Atlas le lit sur la fiche ouverte</span>
   <button data-doc="cg" aria-pressed="true">Carte grise</button>
   <button data-doc="assu" aria-pressed="false">Assurance</button>
   <button data-doc="ct" aria-pressed="false">Contrôle technique</button>
@@ -492,7 +492,14 @@
   document.querySelectorAll("[data-aller]").forEach((b) => b.onclick = () => montrer(b.dataset.aller));
 
   function marquerEssai() { document.querySelectorAll("#essai-doc button").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.doc === sorteEssai))); }
-  document.querySelectorAll("#essai-doc button").forEach((b) => b.onclick = () => { sorteEssai = b.dataset.doc; marquerEssai(); });
+  // un appui joue toute la scène : la fiche s’ouvre, la lecture tourne, le résultat se montre
+  document.querySelectorAll("#essai-doc button").forEach((b) => b.onclick = () => {
+    sorteEssai = b.dataset.doc; marquerEssai();
+    ouvrirFiche(ouverte);
+    document.querySelector(".tel").scrollIntoView({ block: "start" });
+    voile.classList.add("ouvert");
+    lire(sorteEssai === "assu" || sorteEssai === "autre" ? "PDF" : "Photo");
+  });
 
   document.querySelectorAll("#jours button").forEach((b) => b.onclick = () => {
     aujourdhui = b.dataset.j;
