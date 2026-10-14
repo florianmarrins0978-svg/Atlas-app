@@ -34801,7 +34801,7 @@ son propre champ de fichier.
 Contrôles : `test-vehicules` (règles, rouge sans elles), `test-vehicules-rls`
 (isolation et sauvegarde sous `atlas_app`, rouge sans la RLS).
 
-## §461 : La fiche de sécurité se signe sur un minimum légal, et s'enregistre sur la lecture de chacun
+## §462 : La fiche de sécurité se signe sur un minimum légal, et s'enregistre sur la lecture de chacun
 
 **Ses règles du 14 octobre 2026** : *« si il n'y a pas le minimum légal la
 fiche ne peut pas s'enregistrer et se finaliser, et un message doit indiquer ce
@@ -34837,3 +34837,12 @@ garde visibles sans migration.
 fond s'y pose « contenue » : le PDF la redessine au même endroit, ce qu'une
 image aplatie n'aurait pas permis sans perdre la netteté des traits.
 
+**La carte du point GPS passe par Atlas** (sa planche du 14 octobre, essayée
+chez lui). Les tuiles de l'IGN et l'adresse au point (Base Adresse Nationale)
+sont demandées par `/api/carte/tuile` et `/api/carte/adresse`, gardées et
+comptées comme l'aide aux adresses : la politique des pages n'admet que nos
+images, le PDF pose la même carte, et seules des coordonnées partent. Les
+tuiles se calculent dans `src/lib/carte-du-point.ts`, une seule fois pour
+l'écran et le PDF. L'adresse au point se relit dès que le point bouge, par un
+seul effet : relevé, appui ou saisie, sinon une adresse resterait celle d'un
+point d'avant. Elle n'écrase jamais l'adresse du chantier, qui vient du client.

@@ -47,6 +47,11 @@ Format : le plus récent en tête.
   Le PDF porte tout, croquis vectoriel compris. Aucune migration : tout vit dans `contenu`.
   Ce que ça évite : une fiche signée par le chef seul, un croquis sans accès ni voie, et une fiche
   « en règle » à l'écran qui ne l'est pas devant un inspecteur.
+- **La vraie carte du point GPS, sur la fiche et dans le PDF.** Sa planche du 14 octobre, essayée
+  chez lui, puis *« ça marche, code ça »*. La carte IGN s'ouvre sur le point relevé, ou sur
+  l'adresse du chantier ; un appui déplace le point, et l'adresse officielle au point s'affiche.
+  Plan ou photo aérienne. Le PDF porte la même carte pour les secours. Ce que ça évite : des
+  secours guidés par des chiffres que personne ne sait lire, sur un chantier sans numéro de rue.
 
 ## 2026-10-13
 
