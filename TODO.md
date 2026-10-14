@@ -1,5 +1,34 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER — LE PLANNING ÉPURÉ (14 octobre 2026)
+
+**Sa demande :** *« va regarder la page du planning et fais-moi une planche
+améliorée de la page »*. Planche `appli/planning-epure.html`, sa page
+d'aujourd'hui en photo à gauche. **Rien n'est codé ; ne pas coder avant son oui.**
+
+Sept retouches, chacune relevée sur l'écran ouvert le 14 octobre :
+
+| | Ce qui change | Où, si oui |
+|---|---|---|
+| 1 | les chiffres du mois sur une même ligne (Playfair dessine 3 4 5 7 9 sous la ligne) | `lining-nums` dans `MoisCharge` |
+| 2 | demi-journée vide : un trait plein très pâle, sans contour | `MoisCharge` |
+| 3 | samedi, dimanche : plus de pavé gris, le chiffre reste gris | `MoisCharge` |
+| 4 | jours passés en gris | `MoisCharge` |
+| 5 | chevrons du mois sans leurs ronds (cible de 44 px gardée), mois en Playfair | `MoisCharge` |
+| 6 | l'agenda sur une ligne : « Agenda Google non relié », « Connecter » | `PlanningClient.tsx` |
+| 7 | **le seul geste qui change** : la liste « jour » sous le mois redit la fiche du jour ; elle part avec les deux points, « La semaine » ouvre les sept jours | `PlanningClient.tsx` (`portee`) |
+
+**`MoisCharge` sert aussi l'écran d'envoi** (`EnvoiAuClient.tsx`,
+`JourneeRegardee.tsx`) **et les équipes des Réglages** (`VosEquipes.tsx`) : 1 à 5
+s'y verront aussi, et se regardent là aussi avant fusion. Niveau à calculer au moment du lot. Ne bougent pas : l'en-tête
+(partagé par onze écrans), la fiche du jour du 19 septembre, le tiroir.
+
+**Pour regarder l'écran sur ce PC :** `atlas_dev` est en retard de migrations
+(le planning y tombe sur `equipes_du_chantier`). Servir `next dev` sur un port
+libre avec `DATABASE_URL` vers `atlas_test`, et dans Git Bash
+`MSYS_NO_PATHCONV=1 ATLAS_ADRESSE=http://localhost:<port> npm run voir -- /planning`
+(sans la variable, Git Bash change `/planning` en chemin Windows).
+
 ## ⏳ UNE PLANCHE À REGARDER — LES VÉHICULES DE L'ENTREPRISE (14 octobre 2026)
 
 **Sa demande :** une rubrique où le patron dépose la carte grise et l'assurance

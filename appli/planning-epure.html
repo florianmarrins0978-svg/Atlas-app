@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Le planning épuré</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  SA DEMANDE DU 14 OCTOBRE 2026 : « va regarder la page du planning et fais-moi
+  une planche améliorée de la page ».
+
+  L'écran a été OUVERT avant d'écrire une ligne (npm run voir, sur atlas_test :
+  sa base de développement est en retard de migrations et le planning y tombe).
+  La photo de gauche est cet écran-là, prise le 14 octobre au soir.
+
+  ─── CE QUI NE BOUGE PAS, ET POURQUOI ────────────────────────────────────
+  L'en-tête est partagé par tous les écrans (EnTeteEcran) : le toucher ici
+  serait hors périmètre. La fiche du jour a été codée le 19 septembre d'après
+  planning-tout-ensemble-en-mieux.html : ses mots et ses places restent. Le
+  tiroir, la barre du bas, les quatre couleurs du mois (vertPale, rust,
+  bordeaux, et le vide) restent.
+
+  ─── CE QUI CHANGE, et chaque point vient de l'écran regardé ────────────
+  1. Les chiffres du mois sont « à l'ancienne » dans Playfair : 3, 4, 5, 7 et
+     9 descendent sous la ligne. Le mois saute d'une case à l'autre. On pose
+     font-variant-numeric: lining-nums sur MoisCharge.
+  2. Les demi-journées vides : soixante rectangles cerclés sur un mois vide.
+     Le vide devient un trait plein très pâle, sans contour.
+  3. Le samedi et le dimanche perdent leur pavé gris : c'étaient les cases les
+     plus lourdes du mois.
+  4. Les jours passés passent en gris.
+  5. Les flèches du mois perdent leurs ronds de 44 px ; la cible reste.
+     « octobre 2026 » passe en Playfair.
+  6. L'agenda tient sur une ligne, à la même place.
+  7. La liste « jour » sous le mois redit la fiche du jour : elle part, avec
+     les deux points. « La semaine » ouvre les sept jours, à la même place.
+     C'est le seul point qui change un geste : il peut le refuser seul.
+
+  RIEN N'EST CODÉ.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --scene:#e6e3dc; --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --or:#B98B47; --pin:#2f3b2f; --pale:#b9c6b4; --bordeaux:#6E2433; --plein:#7d9a6d;
+    --papier:#ece9e1; --bande:rgba(28,28,26,.035); --vide:rgba(28,28,26,.07);
+    --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+    --ombre:rgba(28,28,26,.07); --ombre-forte:rgba(20,18,14,.18); --or-voile:rgba(185,139,71,.12);
+    --titre:"Playfair Display",Georgia,serif; --corps:Inter,ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  body.nuit{
+    --scene:#070908; --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+    --gris:#84887b; --or:#C9A05E; --pin:#e9e8de; --pale:#4f5f4c; --bordeaux:#c4677a; --plein:#7d9a6d;
+    --papier:#22261f; --bande:rgba(233,232,222,.04); --vide:rgba(233,232,222,.09);
+    --trait:rgba(233,232,222,.14); --trait-doux:rgba(233,232,222,.08);
+    --ombre:rgba(0,0,0,.35); --ombre-forte:rgba(0,0,0,.6); --or-voile:rgba(201,160,94,.16);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--scene)}
+  body{font:16px/1.5 var(--corps);color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 56px}
+  ::selection{background:var(--or-voile);color:var(--encre)}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+  button:focus-visible{outline:2px solid var(--or);outline-offset:2px;border-radius:6px}
+
+  .commandes{display:flex;justify-content:center;gap:16px;padding:16px 16px 0;font-size:13px;flex-wrap:wrap}
+  .commandes button{min-height:40px;color:var(--gris)}
+  .commandes button[aria-pressed="true"]{color:var(--encre);text-decoration:underline;
+    text-decoration-color:var(--or);text-underline-offset:6px}
+  .commandes .sep{width:1px;height:18px;background:var(--trait);align-self:center}
+
+  .deux{display:flex;justify-content:center;gap:28px;align-items:flex-start;padding:0 12px}
+  .cote{flex:none;max-width:100%}
+  .cote .quel{margin:10px 0 0;text-align:center;font:600 11px/1 var(--corps);letter-spacing:.14em;
+    text-transform:uppercase;color:var(--gris)}
+  .cote.ojd img{display:block;width:100%;height:auto}
+  @media (max-width:839px){
+    .deux{display:block;padding:0}
+    .cote{margin:0 auto}
+    body[data-vue="ojd"] .cote.prop{display:none}
+    body[data-vue="prop"] .cote.ojd{display:none}
+  }
+  @media (min-width:840px){.commandes .vue,.commandes .sep{display:none}}
+
+  .tel{width:390px;height:760px;max-width:100%;margin:12px auto 0;background:var(--fond);
+    border-radius:30px;overflow:hidden;box-shadow:0 18px 46px var(--ombre-forte);
+    display:flex;flex-direction:column;position:relative}
+  .cote.ojd .tel{display:block}
+  .ecran{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding-bottom:28px;
+    scrollbar-width:thin;scrollbar-color:var(--trait) transparent}
+
+  /* ─── l'en-tête : celui de tous les écrans, inchangé ─── */
+  .entete{display:flex;justify-content:space-between;align-items:flex-start;padding:34px 26px 0}
+  .entete h1{margin:0;font:400 36px/1.02 var(--titre)}
+  .entete p{margin:12px 0 0;font:500 9.5px/1 var(--corps);letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+  .assistant{width:44px;height:44px;border-radius:50%;background:var(--plein);display:grid;place-items:center;margin-top:4px}
+
+  /* ─── 6. l'agenda, sur une ligne ─── */
+  .agenda{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 26px 0;
+    min-height:46px;border-bottom:1px solid var(--trait);font-size:14px}
+  .agenda .quoi{color:var(--encre-douce)}
+  .agenda a{color:var(--or);text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
+
+  /* ─── 5. le mois : deux chevrons, le nom en Playfair ─── */
+  .tete-mois{display:flex;align-items:center;justify-content:space-between;margin:14px 12px 0}
+  .tete-mois button{width:44px;height:44px;display:grid;place-items:center;color:var(--gris);border-radius:50%}
+  .tete-mois button:active{background:var(--bande)}
+  .tete-mois h2{margin:0;font:400 21px/1 var(--titre);font-variant-numeric:lining-nums}
+  .lettres{display:grid;grid-template-columns:repeat(7,1fr);margin:10px 12px 4px;text-align:center;
+    font:600 10.5px/1 var(--corps);letter-spacing:.12em;text-transform:uppercase;color:var(--gris)}
+  .lettres span:nth-child(n+6){opacity:.6}
+
+  .semaines{margin:0 12px}
+  .rang{display:grid;grid-template-columns:repeat(7,1fr);border-radius:12px;transition:background .25s}
+  .rang.lue{background:var(--bande)}
+  .case{height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    border-radius:11px;position:relative}
+  .case[disabled]{cursor:default}
+  /* 1. LES CHIFFRES SUR UNE MÊME LIGNE — lining-nums, sans quoi 3 4 5 7 9 descendent */
+  .case .n{font:400 18px/1 var(--titre);font-variant-numeric:lining-nums tabular-nums;transition:color .2s}
+  /* 3. le week-end : le chiffre en gris, sans pavé */
+  .case.repos .n{color:var(--gris)}
+  /* 4. les jours passés s'éteignent */
+  .case.passe .n{color:var(--gris);opacity:.7}
+  .case.passe .barres{opacity:.55}
+  .case.ojd .n{color:var(--or);font-weight:500}
+  .case.ojd{box-shadow:inset 0 0 0 1px var(--or)}
+  .case.touche:not(.ojd){box-shadow:inset 0 0 0 1.5px var(--encre)}
+  /* 2. LES DEUX DEMI-JOURNÉES — le vide est un trait pâle, sans contour */
+  .barres{display:flex;flex-direction:column;gap:2px;width:22px}
+  .barres i{display:block;height:4px;border-radius:2px;background:var(--vide);transition:background .35s}
+  .barres i[data-e="dispo"]{background:var(--pale)}
+  .barres i[data-e="plein"]{background:var(--pin)}
+  .barres i[data-e="audela"]{background:var(--bordeaux)}
+
+  /* ─── la fiche du jour, attachée à sa case : celle du 19 septembre ─── */
+  .attache{position:relative;margin:10px 6px 12px}
+  .pointe{position:absolute;bottom:100%;width:11px;height:11px;z-index:2;transform:translate(-50%,6px) rotate(45deg);
+    background:var(--carte);border-left:1px solid var(--trait-doux);border-top:1px solid var(--trait-doux);
+    transition:left .25s cubic-bezier(.2,.7,.2,1)}
+  .fiche{background:var(--carte);border-radius:16px;border:1px solid var(--trait-doux);
+    box-shadow:0 8px 24px var(--ombre);padding:16px 18px 6px;animation:ouvre .32s cubic-bezier(.16,1,.3,1)}
+  @keyframes ouvre{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  .fiche .titre{margin:0;text-align:center;font:700 12.5px/1 var(--corps);letter-spacing:.2em;text-transform:uppercase}
+  .filet{margin:14px 0 2px;border:0;border-top:1px solid var(--trait)}
+  .centre{display:flex;width:100%;min-height:46px;align-items:center;justify-content:center;gap:10px;font-size:15px;color:var(--or)}
+  .centre .plus{font-size:20px;line-height:1;margin-top:-2px}
+  .chantier{padding:10px 0 4px;border-radius:8px;margin:0 -8px;padding-left:8px;padding-right:8px}
+  .chantier + .chantier{border-top:1px solid var(--trait-doux)}
+  .chantier.neuf{animation:pose 1.5s cubic-bezier(.16,1,.3,1) both}
+  @keyframes pose{0%{background:var(--or-voile);opacity:.3;transform:translateY(-3px)}30%{opacity:1;transform:none}100%{background:transparent}}
+  .chantier .nom{margin:0;font:400 20px/1.2 var(--titre)}
+  .chantier .ou{margin:2px 0 0;font-size:13px;color:var(--gris)}
+  .chantier .duree{margin:1px 0 4px;font-size:13.5px;color:var(--or)}
+  .fiche.lecture .chantier .nom{color:var(--gris)}
+  .fiche.lecture .chantier .duree{color:var(--gris)}
+  .demi{display:flex;min-height:44px;align-items:center;gap:16px;font:600 11px/1 var(--corps);letter-spacing:.16em;text-transform:uppercase}
+  .demi .a{display:flex;align-items:center;gap:12px;min-width:118px}
+  .demi .b{font:400 14.5px/1.4 var(--corps);letter-spacing:0;text-transform:none;flex:1;text-align:right}
+  .demi .b .geste{color:var(--or)}
+  .demi .b .plus{color:var(--or);margin-left:6px}
+  .demi .libre{color:var(--gris);font-size:14px}
+  .pastille{width:16px;height:16px;border-radius:4px;flex:none;box-shadow:inset 0 0 0 1px var(--trait)}
+  .pastille[data-e="dispo"]{background:var(--pale);box-shadow:none}
+  .pastille[data-e="plein"]{background:var(--pin);box-shadow:none}
+  .pastille[data-e="audela"]{background:var(--bordeaux);box-shadow:none}
+  .actions{display:flex;justify-content:flex-end;gap:16px;min-height:44px;align-items:center;font:700 14.5px/1 var(--corps)}
+  .actions button{min-height:44px}
+  .absents{display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
+  .absents button{min-height:44px;color:var(--or);font-size:14.5px}
+  .absent{display:flex;align-items:center;min-height:44px;font-size:14.5px;gap:14px}
+  .absent .a{width:86px;color:var(--gris);font-size:13px}
+  .absent .b{flex:1}
+  .absent .x{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:flex-end}
+
+  /* la légende : une ligne, la même qu'aujourd'hui */
+  .legende{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 16px 0;
+    font-size:11.5px;color:var(--gris)}
+  .legende span{display:inline-flex;align-items:center;gap:5px}
+  .legende i{width:9px;height:9px;border-radius:2px;display:inline-block;background:var(--vide)}
+  .legende i.dispo{background:var(--pale)} .legende i.plein{background:var(--pin)} .legende i.audela{background:var(--bordeaux)}
+  .legende .deuxbarres{display:inline-flex;flex-direction:column;gap:2px}
+  .legende .deuxbarres b{display:block;width:16px;height:3px;border-radius:2px;background:var(--vide)}
+  .legende .deuxmots{display:inline-flex;flex-direction:column;line-height:1.05;font-size:10.5px}
+
+  /* ─── 7. « La semaine », à la place des deux points ─── */
+  .voir-semaine{display:flex;justify-content:center;margin-top:10px}
+  .voir-semaine button{min-height:44px;padding:0 10px;font-size:14.5px;color:var(--or)}
+  .voir-semaine button[aria-pressed="true"]{color:var(--encre);text-decoration:underline;
+    text-decoration-color:var(--or);text-underline-offset:7px;text-decoration-thickness:1.5px}
+  .semaine{margin:2px 18px 0;animation:ouvre .3s cubic-bezier(.16,1,.3,1)}
+  .jour-liste{margin-top:18px}
+  .date{display:inline-block;padding:6px 10px;border-radius:7px;background:var(--papier);
+    font:700 11px/1 var(--corps);letter-spacing:.16em;text-transform:uppercase;font-variant-numeric:lining-nums}
+  .date.ojd{color:var(--or)}
+  .jour-liste.passe .date,.jour-liste.passe .nom,.jour-liste.passe .duree{color:var(--gris)}
+  .ligne-sem{margin-top:10px}
+  .ligne-sem .nom{display:block;font:400 19px/1.2 var(--titre)}
+  .ligne-sem .duree{display:block;margin-top:3px;font-size:12.5px;color:var(--or)}
+  .ligne-sem .ou{display:block;margin-top:1px;font-size:12.5px;color:var(--gris)}
+  .rien{margin:16px 0 0;text-align:center;font-size:13.5px;color:var(--gris)}
+
+  /* ─── le tiroir et la barre : inchangés ─── */
+  .tiroir{flex:none;background:var(--carte);border-top:2px solid var(--or);border-radius:16px 16px 0 0;
+    box-shadow:0 -14px 34px var(--ombre);z-index:3}
+  .poignee{display:flex;width:100%;align-items:center;gap:12px;padding:15px 20px;min-height:54px}
+  .poignee .resume{flex:1;min-width:0;font:500 15px/1.3 var(--corps);color:var(--or);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .poignee .resume.neutre{color:var(--encre)}
+  .poignee svg{flex:none;color:var(--gris);transition:transform .25s cubic-bezier(.2,.7,.2,1)}
+  .dedans{border-top:1px solid var(--trait);padding:2px 20px 12px;max-height:220px;overflow-y:auto}
+  .consigne{margin:12px 0 4px;font-size:13.5px;color:var(--gris)}
+  .poser{display:flex;width:100%;align-items:center;gap:12px;min-height:54px}
+  .poser .nom{flex:1;font:400 20px/1.25 var(--titre)}
+  .poser .duree{font-size:13px;color:var(--gris)}
+  .poser[aria-disabled="true"]{opacity:.5;cursor:default}
+  .fait{display:flex;align-items:center;gap:12px;min-height:46px;font-size:14px}
+  .fait .quoi{flex:1}
+  .fait button{color:var(--gris);min-height:44px}
+  .barre{flex:none;display:grid;grid-template-columns:repeat(5,1fr);height:62px;background:var(--fond);
+    border-top:1px solid var(--trait)}
+  .barre span{display:flex;align-items:center;justify-content:center;font:600 10px/1 var(--corps);
+    letter-spacing:.12em;text-transform:uppercase;color:var(--gris)}
+  .barre span.actif{color:var(--encre);box-shadow:inset 0 -2px 0 var(--or)}
+
+  /* ─── la note ─── */
+  .note{max-width:460px;margin:30px auto 0;padding:0 22px;font-size:14px;line-height:1.6;color:var(--encre-douce)}
+  .note h2{font:400 22px/1.2 var(--titre);color:var(--encre);margin:26px 0 10px}
+  .note ol{margin:0;padding:0 0 0 20px}
+  .note li{margin:0 0 12px;padding-left:4px}
+  .note li::marker{font:500 13px var(--corps);color:var(--or)}
+  .note b{color:var(--encre);font-weight:600}
+  .note p{margin:0 0 10px}
+  .note a{color:var(--or)}
+
+  @media (max-width:420px){.tel{border-radius:0;margin-top:10px;width:100%}}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" class="vue" data-vue="ojd" aria-pressed="false">Aujourd’hui</button>
+  <button type="button" class="vue" data-vue="prop" aria-pressed="true">La proposition</button>
+  <span class="sep" aria-hidden="true"></span>
+  <button type="button" id="nuit" aria-pressed="false">Voir sur Nuit</button>
+  <button type="button" id="rejouer">Recommencer</button>
+</div>
+
+<div class="deux">
+  <div class="cote ojd">
+    <p class="quel">Aujourd’hui, votre application</p>
+    <div class="tel">
+      <img src="images/planning-aujourdhui-octobre.png" width="390" height="760"
+           alt="Le planning tel qu’il est aujourd’hui dans l’application, le 14 octobre">
+    </div>
+  </div>
+
+  <div class="cote prop">
+    <p class="quel">La proposition</p>
+    <div class="tel">
+      <div class="ecran" id="ecran">
+        <div class="entete">
+          <div><h1>Planning</h1><p>Vos journées</p></div>
+          <span class="assistant" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.4-4A8 8 0 1 1 20 11.5Z"/></svg>
+          </span>
+        </div>
+
+        <div class="agenda">
+          <span class="quoi">Agenda Google non relié</span>
+          <a href="#" onclick="return false">Connecter</a>
+        </div>
+
+        <div class="tete-mois">
+          <button type="button" aria-label="Mois d’avant" id="avant">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+          </button>
+          <h2 id="nom-mois">octobre 2026</h2>
+          <button type="button" aria-label="Mois d’après" id="apres">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+        <div class="lettres" aria-hidden="true">
+          <span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span>
+        </div>
+        <div class="semaines" id="semaines"></div>
+
+        <div class="legende" aria-hidden="true">
+          <span><i></i>rien</span><span><i class="dispo"></i>incomplet</span>
+          <span><i class="plein"></i>complet</span><span><i class="audela"></i>au-delà</span>
+          <span><span class="deuxbarres"><b></b><b></b></span><span class="deuxmots"><span>matin</span><span>après-midi</span></span></span>
+        </div>
+
+        <div class="voir-semaine">
+          <button type="button" id="voir-semaine" aria-pressed="false">La semaine</button>
+        </div>
+        <div id="semaine"></div>
+      </div>
+
+      <div class="tiroir">
+        <button class="poignee" type="button" id="poignee" aria-expanded="false">
+          <span class="resume" id="resume"></span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="chev"><path d="M5 15l7-7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="dedans" id="dedans"></div>
+      </div>
+
+      <div class="barre" aria-hidden="true">
+        <span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <h2>Ce qui change</h2>
+  <ol>
+    <li><b>Les chiffres ne sautent plus.</b> Aujourd’hui le 5, le 7 et le 9 descendent sous la ligne, le 6 et le 8 non. Ils sont posés sur la même ligne.</li>
+    <li><b>Les demi-journées vides s’effacent presque.</b> Sur un mois vide, on voit soixante petits rectangles cerclés. Le vide devient un trait très pâle, et le travail posé ressort d’un coup d’œil. Les quatre couleurs ne changent pas.</li>
+    <li><b>Le samedi et le dimanche perdent leur pavé gris.</b> C’étaient les cases les plus lourdes du mois. Le chiffre reste en gris.</li>
+    <li><b>Les jours passés s’éteignent</b>, pour voir où l’on en est dans le mois.</li>
+    <li><b>Le mois se change par deux chevrons</b>, sans les grands ronds. Son nom passe dans la police des titres.</li>
+    <li><b>L’agenda tient sur une ligne</b>, à la même place : « Agenda Google non relié », et « Connecter » en or.</li>
+    <li><b>La journée n’est plus écrite deux fois.</b> Aujourd’hui la fiche du jour dit « libre », et la liste du dessous redit « Rien de posé ce jour-là ». Cette liste part, avec les deux points. « La semaine », en or, ouvre les sept jours à la même place. <b>C’est le seul point qui change un geste</b> : vous pouvez le refuser seul.</li>
+  </ol>
+  <h2>Ce qui ne bouge pas</h2>
+  <p>L’en-tête, qui est le même sur tous les écrans. La fiche du jour codée le 19 septembre, ses mots et ses places. Le tiroir, la barre du bas.</p>
+  <p><b>À gauche</b>, une photo de votre application prise ce soir, sur une base d’essai sans chantier.</p>
+  <p><b>Touchez</b> un jour, « La semaine », le tiroir, « + Absent ? ». <b>Rien n’est codé.</b></p>
+</div>
+
+<script>
+/* La planche ne calcule aucune règle : deux équipes, une barre par
+   demi-journée, pâle quand il reste de la place, pleine à deux, bordeaux
+   au-delà. Les noms sont inventés. */
+const AUJOURDHUI = 14, EQUIPES = 2, PREMIER = 3; // le 1er octobre 2026 est un jeudi (rang 3 depuis lundi)
+const NOMS_JOURS = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
+const SALARIES = ["Antoine", "Julien"];
+const J = (nom, ou, duree, demis, equipe = {}) => ({ nom, ou, duree, demis, equipe });
+function depart() {
+  return {
+    1:[J("Mme Roussel","Triel-sur-Seine","deux jours",["matin","apres_midi"])],
+    2:[J("Mme Roussel","Triel-sur-Seine","deux jours",["matin","apres_midi"])],
+    5:[J("Mr. Garnier","Poissy","une demi-journée",["matin"])],
+    6:[J("Mr. Linotte","Vernouillet","deux jours",["matin","apres_midi"])],
+    7:[J("Mr. Linotte","Vernouillet","deux jours",["matin","apres_midi"]),J("Mme Delaunay","Meulan","une demi-journée",["matin"])],
+    9:[J("Mr. Garnier","Poissy","une demi-journée",["apres_midi"])],
+    12:[J("Jean-Louis","Les Mureaux","une journée",["matin","apres_midi"]),J("Mme Morel","Mantes-la-Ville","une journée",["matin","apres_midi"])],
+    13:[J("Mme Delaunay","Meulan","une demi-journée",["matin"])],
+    14:[J("Mr. Frédéric","Mantes-la-Jolie","une demi-journée",["matin"],{matin:["Antoine"]}),
+        J("Jean-Louis","Les Mureaux","une journée",["matin","apres_midi"],{matin:["Julien"],apres_midi:["Julien"]})],
+    15:[J("Mr. Beauchamp-Lavallée","Mantes-la-Ville","deux jours",["matin","apres_midi"])],
+    16:[J("Mr. Beauchamp-Lavallée","Mantes-la-Ville","deux jours",["matin","apres_midi"])],
+    19:[J("Mr. Linotte","Vernouillet","une journée",["matin","apres_midi"])],
+    20:[J("Mr. Linotte","Vernouillet","une journée",["matin","apres_midi"]),J("Mme Morel","Mantes-la-Ville","une demi-journée",["matin"]),J("Mr. Garnier","Poissy","une demi-journée",["matin"])],
+    21:[J("Mme Delaunay","Meulan","une demi-journée",["apres_midi"])],
+    26:[J("Mr. Petit","Poissy","une journée",["matin","apres_midi"])],
+  };
+}
+let jours, touche, semaineOuverte, tiroirOuvert, attente, dernier, absentsOuverts, absent;
+function initial() {
+  jours = depart(); touche = AUJOURDHUI; semaineOuverte = false; tiroirOuvert = false;
+  attente = [{ nom:"Reprise de toiture", duree:"une journée" }]; dernier = null; absentsOuverts = false; absent = null;
+}
+
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const bouton = (cls, html, fn) => { const b = el("button", cls, html); b.type = "button"; b.onclick = fn; return b; };
+const rangDe = (j) => (PREMIER + j - 1) % 7;
+const nomDuJour = (j) => `${NOMS_JOURS[rangDe(j)]} ${j} octobre`;
+const majuscule = (s) => s.replace(/^./, (c) => c.toUpperCase());
+const liste = (j) => jours[j] || [];
+function etat(j, demi) {
+  const n = liste(j).filter((c) => c.demis.includes(demi)).length;
+  return n === 0 ? "" : n < EQUIPES ? "dispo" : n === EQUIPES ? "plein" : "audela";
+}
+
+/* ─── le mois, semaine par semaine, et la fiche glissée sous la semaine du jour touché ─── */
+function dessinerMois() {
+  const box = $("semaines"); box.innerHTML = "";
+  const cases = [...Array(PREMIER).fill(null), ...Array.from({ length: 31 }, (_, i) => i + 1)];
+  while (cases.length % 7) cases.push(null);
+  for (let r = 0; r < cases.length / 7; r++) {
+    const semaine = cases.slice(r * 7, r * 7 + 7);
+    const rang = el("div", "rang" + (semaine.includes(touche) ? " lue" : ""));
+    semaine.forEach((j, col) => {
+      if (j === null) { rang.appendChild(el("span", "case")); return; }
+      const cls = ["case"];
+      if (col >= 5) cls.push("repos");
+      if (j < AUJOURDHUI) cls.push("passe");
+      if (j === AUJOURDHUI) cls.push("ojd");
+      if (j === touche) cls.push("touche");
+      const b = bouton(cls.join(" "),
+        `<span class="n">${j}</span><span class="barres" aria-hidden="true"><i data-e="${etat(j,"matin")}"></i><i data-e="${etat(j,"apres_midi")}"></i></span>`,
+        () => { touche = touche === j ? null : j; absentsOuverts = false; absent = null; dernier = null; tout(); });
+      b.dataset.jour = j;
+      b.setAttribute("aria-label", majuscule(nomDuJour(j)));
+      b.setAttribute("aria-pressed", String(j === touche));
+      rang.appendChild(b);
+    });
+    box.appendChild(rang);
+    if (semaine.includes(touche)) box.appendChild(fiche(touche));
+  }
+}
+
+function demi(cle, mot, droite) {
+  return el("div", "demi", `<span class="a"><span class="pastille" data-e="${etat(touche, cle)}"></span>${mot}</span><span class="b">${droite}</span>`);
+}
+function fiche(j) {
+  const ecrire = j >= AUJOURDHUI;
+  const a = el("div", "attache"); a.id = "attache";
+  a.appendChild(el("span", "pointe", "")).id = "pointe";
+  const f = el("div", "fiche" + (ecrire ? "" : " lecture"));
+  f.appendChild(el("p", "titre", nomDuJour(j)));
+  f.appendChild(el("hr", "filet"));
+
+  if (ecrire) {
+    f.appendChild(bouton("centre", `<span class="plus" aria-hidden="true">${absentsOuverts ? "✕" : "+"}</span><span>${absentsOuverts ? "Fermer" : "Absent ?"}</span>`,
+      () => { absentsOuverts = !absentsOuverts; tout(); }));
+    if (absentsOuverts) {
+      const r = el("div", "absents");
+      for (const s of SALARIES) r.appendChild(bouton("", s, () => { absent = s; absentsOuverts = false; tout(); }));
+      f.appendChild(r);
+    }
+    if (absent) {
+      const l = el("div", "absent", `<span class="a">Absent</span><span class="b">${absent}</span><span class="doux" style="color:var(--gris);font-size:13px">la journée</span>`);
+      const x = bouton("x", "✕", () => { absent = null; tout(); }); x.setAttribute("aria-label", `Supprimer l’absence de ${absent}`);
+      l.appendChild(x); f.appendChild(l);
+    }
+  }
+
+  const chantiers = liste(j);
+  chantiers.forEach((c, i) => {
+    const neuf = dernier && dernier.jour === j && i === chantiers.length - 1 && dernier.neuf;
+    if (neuf) dernier.neuf = false;
+    const d = el("div", "chantier" + (neuf ? " neuf" : ""), `<p class="nom">${c.nom}</p><p class="ou">${c.ou}</p><p class="duree">${c.duree}</p>`);
+    for (const cle of c.demis) {
+      const noms = c.equipe[cle] || [];
+      const droite = !ecrire ? `<span class="libre">${noms.join(" / ") || "personne"}</span>`
+        : noms.length ? `${noms.join(" / ")}<span class="plus">+</span>` : `<span class="geste">+ Salarié</span>`;
+      d.appendChild(demi(cle, cle === "matin" ? "Matin" : "Après-midi", droite));
+    }
+    f.appendChild(d);
+  });
+  for (const [cle, mot] of [["matin","Matin"],["apres_midi","Après-midi"]]) {
+    if (!etat(j, cle)) f.appendChild(el("div", "chantier")).appendChild(demi(cle, mot, `<span class="libre">libre</span>`));
+  }
+  if (ecrire && chantiers.length) {
+    const act = el("div", "actions");
+    act.appendChild(bouton("", "Déplacer", () => {})); act.appendChild(bouton("", "Retirer", () => {}));
+    f.appendChild(act);
+  }
+  if (ecrire) f.appendChild(bouton("centre", "Ajouter", () => { tiroirOuvert = true; tout(); }));
+  a.appendChild(f);
+  return a;
+}
+function poserLaPointe() {
+  const p = $("pointe"), a = $("attache"), b = document.querySelector(`.case[data-jour="${touche}"]`);
+  if (!p || !a || !b) return;
+  p.style.left = (b.getBoundingClientRect().left + b.offsetWidth / 2 - a.getBoundingClientRect().left) + "px";
+}
+
+/* ─── 7. les sept jours, sur demande ─── */
+function dessinerSemaine() {
+  const btn = $("voir-semaine"), box = $("semaine");
+  btn.setAttribute("aria-pressed", String(semaineOuverte));
+  box.innerHTML = "";
+  if (!semaineOuverte) return;
+  const ref = touche || AUJOURDHUI, lundi = ref - rangDe(ref);
+  const s = el("div", "semaine");
+  let vu = 0;
+  for (let j = lundi; j < lundi + 7; j++) {
+    if (j < 1 || j > 31 || !liste(j).length) continue;
+    vu++;
+    const bloc = el("div", "jour-liste" + (j < AUJOURDHUI ? " passe" : ""));
+    bloc.appendChild(el("span", "date" + (j === AUJOURDHUI ? " ojd" : ""), j === AUJOURDHUI ? "Aujourd’hui" : `${NOMS_JOURS[rangDe(j)].slice(0,3)}. ${j} oct.`));
+    for (const c of liste(j))
+      bloc.appendChild(el("div", "ligne-sem", `<span class="nom">${c.nom}</span><span class="duree">${c.duree}</span><span class="ou">${c.ou}</span>`));
+    s.appendChild(bloc);
+  }
+  if (!vu) s.appendChild(el("p", "rien", "Aucun chantier posé sur ces sept jours."));
+  box.appendChild(s);
+}
+
+/* ─── le tiroir : son geste d'aujourd'hui ─── */
+function dessinerTiroir() {
+  const r = $("resume"), n = attente.length, peut = touche && touche >= AUJOURDHUI;
+  if (peut && n) { r.textContent = "À poser sur " + nomDuJour(touche); r.classList.remove("neutre"); }
+  else { r.textContent = n ? `${n} client${n > 1 ? "s" : ""} sans date` : "Aucun client sans date"; r.classList.add("neutre"); }
+  $("poignee").setAttribute("aria-expanded", String(tiroirOuvert));
+  $("chev").style.transform = tiroirOuvert ? "rotate(180deg)" : "none";
+  const d = $("dedans"); d.style.display = tiroirOuvert ? "block" : "none"; d.innerHTML = "";
+  if (!tiroirOuvert) return;
+  if (dernier) {
+    const l = el("div", "fait", `<span class="quoi">${dernier.nom} est sur le ${dernier.jour}</span>`);
+    l.appendChild(bouton("", "Annuler", () => {
+      jours[dernier.jour] = liste(dernier.jour).filter((c) => c.nom !== dernier.nom);
+      attente.push({ nom: dernier.nom, duree: dernier.duree }); dernier = null; tout();
+    }));
+    d.appendChild(l);
+  }
+  if (!peut && n) d.appendChild(el("p", "consigne", "Touchez d’abord un jour du calendrier"));
+  if (!n && !dernier) d.appendChild(el("p", "consigne", "Plus personne n’attend de jour."));
+  for (const c of attente) {
+    const b = bouton("poser", `<span class="nom">${c.nom}</span><span class="duree">${c.duree}</span>`, () => {
+      if (!peut) return;
+      jours[touche] = [...liste(touche), J(c.nom, "Aubergenville", c.duree, ["matin","apres_midi"])];
+      attente = attente.filter((x) => x !== c);
+      dernier = { nom: c.nom, duree: c.duree, jour: touche, neuf: true };
+      tout();
+      const neuf = document.querySelector(".chantier.neuf");
+      if (neuf) neuf.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    });
+    b.setAttribute("aria-disabled", String(!peut));
+    d.appendChild(b);
+  }
+}
+
+function tout() { dessinerMois(); dessinerSemaine(); dessinerTiroir(); poserLaPointe(); }
+$("voir-semaine").onclick = () => { semaineOuverte = !semaineOuverte; tout(); if (semaineOuverte) $("semaine").scrollIntoView({ block: "nearest", behavior: "smooth" }); };
+$("poignee").onclick = () => { tiroirOuvert = !tiroirOuvert; tout(); };
+$("avant").onclick = $("apres").onclick = () => {};
+$("rejouer").onclick = () => { initial(); tout(); $("ecran").scrollTo({ top: 0 }); };
+for (const b of document.querySelectorAll(".commandes .vue")) b.onclick = () => {
+  document.body.dataset.vue = b.dataset.vue;
+  for (const x of document.querySelectorAll(".commandes .vue")) x.setAttribute("aria-pressed", String(x === b));
+};
+document.body.dataset.vue = "prop";
+$("nuit").onclick = () => { const on = document.body.classList.toggle("nuit"); $("nuit").setAttribute("aria-pressed", String(on)); };
+window.addEventListener("resize", poserLaPointe);
+initial(); tout();
+if (document.fonts) document.fonts.ready.then(poserLaPointe);
+</script>
+</body>
+</html>
