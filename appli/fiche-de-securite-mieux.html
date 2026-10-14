@@ -786,9 +786,35 @@ function aQuiLEnvoyer(equipeASigne) {
   </div>`;
 }
 
+/* LE MINIMUM LÉGAL. Sa règle du 14 octobre, après avoir signé et enregistré une fiche au croquis
+   inachevé : « si il n'y a pas le minimum légal, la fiche ne peut pas s'enregistrer et se finaliser, et un
+   message doit indiquer ce qu'il faut faire ». Elle remplace sa réponse du 21 septembre (« au bon vouloir »,
+   on signait quand même) pour ce que la loi exige, et pour cela seulement : le reste de la fiche reste libre.
+   Les éléments viennent de l'art. R. 717-85-16, relus dans la notice MSA : lieu, travaux, matériel, dates ;
+   croquis ; risques ; mesures (dont la délimitation du chantier, que le décret rend obligatoire) ; secours ;
+   conduite à tenir si le temps tourne. Le lieu et les dates viennent du chantier : ils sont toujours là.
+   « Rien à signaler » est une réponse : un risque regardé et absent compte, un risque oublié non. */
+const RISQUES = [["arbres", "les arbres", "r-arbres"], ["biologique", "le biologique", "r-bio"], ["reseaux", "les réseaux", "r-reseaux"], ["noyade", "la noyade", "r-noyade"], ["environnement", "l’environnement", "r-env"]];
+function minimumLegal() {
+  const sansReponse = RISQUES.filter(([cle]) => S(cle).size === 0);
+  return [
+    ["Les travaux", "Cochez au moins un type de travaux.", "1|travaux", S("travaux").size > 0],
+    ["Le matériel", "Cochez le matériel ou les moyens d’élévation utilisés.", "1|materiel", S("materiel").size + S("elevation").size > 0],
+    ["Le croquis", `Posez sur le croquis : ${manquesDuCroquis().join(", ")}.`, "2|croquis", manquesDuCroquis().length === 0],
+    ["La délimitation du chantier", "Cochez comment le chantier est balisé.", "2|balisage", S("balisage").size > 0],
+    ["Les risques", `Répondez pour ${sansReponse.map(([, mot]) => mot).join(", ")}. « Rien à signaler » compte comme une réponse.`, `3|${sansReponse[0]?.[2] ?? "r-arbres"}`, sansReponse.length === 0],
+    ["La météo", "Cochez la conduite à tenir si le temps tourne.", "4|meteo", S("meteo").size > 0],
+    ["Les secours", "Cochez les secours prévus, et écrivez le point de rencontre et le lieu de la trousse.", "4|secours", S("secours").size > 0 && !!e.champs.prs.trim() && !!e.champs.trousse.trim()],
+  ].filter(([, , , ok]) => !ok).map(([quoi, faire, aller]) => ({ quoi, faire, aller }));
+}
+const refusLegal = (m) => `Il manque ${m.length} élément${m.length > 1 ? "s" : ""} que la loi exige. Touchez-${m.length > 1 ? "les" : "le"} pour ${m.length > 1 ? "les" : "le"} remplir.`;
+
 /* ═══ SIGNER ═══ */
 function signer() {
   const v = vides();
+  const legal = minimumLegal();
+  const couverts = new Set(legal.map((x) => x.aller.split("|")[1]).concat(["travaux", "materiel", "croquis", "balisage", "meteo", "secours", ...RISQUES.map(([, , id]) => id)]));
+  const conseille = v.filter((x) => !couverts.has(x.id));
   if (e.signee) {
     const tous = presents().map((p) => p.nom).filter((p) => p !== CHEF), lus = tous.filter((p) => e.signatures[p]).length;
     // Sa règle du 14 octobre : « si un des gars n'a pas signé, le document ne doit pas pouvoir être
@@ -816,15 +842,18 @@ function signer() {
   return `${entete("Signer", "Étape 6 sur 6", "")}${avancee(5)}
   <div class="ecran">
     <h2>Signer</h2>
-    <div class="bloc premier"><p class="etiquette">${v.length ? "Encore vide" : "Tout est rempli"}</p>
-      ${v.length ? v.map((x) => `<button type="button" class="ligne" style="min-height:48px" data-aller="${x.i}|${x.id}"><span class="t"><b style="font-size:14.5px">${x.t}</b><small>${ETAPES[x.i].titre}</small></span>${ouvrir}</button>`).join("") : ""}
-      ${v.length ? `<p class="aide">Vous pouvez signer quand même. C’est votre fiche.</p>` : ""}
-    </div>
+    ${legal.length ? `<div class="bloc premier"><p class="etiquette">Pour pouvoir signer</p>
+      <p class="aide alerte">La loi exige ces éléments. Sans eux, la fiche ne peut être ni signée ni enregistrée.</p>
+      ${legal.map((x) => `<button type="button" class="ligne" style="min-height:52px" data-aller="${x.aller}"><span class="t"><b style="font-size:14.5px">${x.quoi}</b><small class="vide">${x.faire}</small></span>${ouvrir}</button>`).join("")}
+    </div>` : `<div class="bloc premier"><p class="etiquette">Le minimum légal</p><p class="aide">Tout ce que la loi exige est rempli.</p></div>`}
+    ${conseille.length ? `<div class="bloc"><p class="etiquette">Encore vide, conseillé</p>
+      ${conseille.map((x) => `<button type="button" class="ligne" style="min-height:48px" data-aller="${x.i}|${x.id}"><span class="t"><b style="font-size:14.5px">${x.t}</b><small>${ETAPES[x.i].titre}</small></span>${ouvrir}</button>`).join("")}
+      <p class="aide">La loi ne l’exige pas : vous pouvez signer sans.</p></div>` : ""}
     <div class="bloc"><p class="etiquette">Le chef d’entreprise</p>${fixe("Nom et prénom", "Florian Martins")}${fixe("Date", "14 octobre 2026")}
       <div class="toile"><canvas id="toile"></canvas><div class="ligne-sig"></div></div>
       ${e.refus ? `<p class="aide alerte">${e.refus}</p>` : ""}</div>
   </div>
-  <div class="pied"><button type="button" class="vert" data-signer="1">Signer la fiche</button></div>`;
+  <div class="pied"><button type="button" class="${legal.length ? "creux bloque" : "vert"}" data-signer="1" aria-disabled="${legal.length > 0}">Signer la fiche</button></div>`;
 }
 
 /* ═══ L'AFFICHAGE ═══ */
@@ -958,12 +987,14 @@ document.addEventListener("click", (ev) => {
   else if (d.photo) e.photos = Math.min(10, e.photos + 1);
   // Sa remarque du 14 octobre : « j'ai pas signé mais ça me dit que j'ai signé ». Le bouton validait sans
   // regarder la toile. Une signature est désormais le trait lui-même, et sans trait, rien n'est signé.
-  else if (d.signer) { if (!garderLaSignature(CHEF)) e.refus = "Signez dans le cadre d’abord."; else e.signee = true; }
+  else if (d.signer) { const m = minimumLegal(); if (m.length) e.refus = refusLegal(m); else if (!garderLaSignature(CHEF)) e.refus = "Signez dans le cadre d’abord."; else e.signee = true; }
   else if (d.signerLu) e.pad = d.signerLu;
   else if (d.envoyer) e.envoyes.add(d.envoyer);
   else if (d.enregistrer) {
     const manque = presents().filter((x) => x.nom !== CHEF && !e.signatures[x.nom]).map((x) => x.nom);
-    if (manque.length) e.refus = `${manque.join(" et ")} ${manque.length > 1 ? "doivent" : "doit"} signer d’abord.`; else e.enregistree = true;
+    const m = minimumLegal();
+    if (m.length) { e.refus = refusLegal(m); e.signee = false; }
+    else if (manque.length) e.refus = `${manque.join(" et ")} ${manque.length > 1 ? "doivent" : "doit"} signer d’abord.`; else e.enregistree = true;
   }
   else if (d.prevention) e.prevention = d.prevention;
   else if (d.pad === "non") e.pad = null;
