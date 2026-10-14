@@ -1,6 +1,6 @@
 # Prochaines tâches
 
-## 🔜 LA TVA QUI NE SE RÉCUPÈRE PAS : CODÉE SUR SA BRANCHE, BATTERIE À JOUER (13 octobre 2026)
+## ✅ LA TVA QUI NE SE RÉCUPÈRE PAS : SUR `main` LE 14 OCTOBRE 2026
 
 **Le défaut** : tout achat saisi dans « Ma TVA » entre EN ENTIER dans la TVA
 déductible (`src/lib/achat-tva.ts`, `achats_tva` n'a aucune nature). Un hôtel
@@ -24,9 +24,9 @@ comptabilisée »*. Planche : `appli/tva-ticket-carburant.html`.
 gazole non routier des machines (aucun texte officiel lu).
 
 **CODÉE LE 13 OCTOBRE 2026** sur `claude/tva-non-recuperable`, migration 0129
-(`ARCHITECTURE.md` §460). Reste : **la batterie** (niveau 3, migration et
-argent), qu'il a demandé de ne pas lancer ; on le prévient avant. Puis la
-fusion sur `main`. Sur son espace, la lecture d'un vrai ticket qui propose la
+(`ARCHITECTURE.md` §460). Batterie commune avec le lot main d'œuvre, **sur `main` le 14 octobre**
+(a9cc3c97). Seul reste à éprouver :
+sur son espace, la lecture d'un vrai ticket qui propose la
 nature n'a pas été éprouvée (aucune clé ici).
 
 ## 🔜 L'OUTIL DE COMPARAISON AVEC MAIN SE TROMPE SUR CE PC (11 octobre 2026)
@@ -900,7 +900,7 @@ et le champ de saisie ne pousse plus le bouton d'envoi hors de l'écran.
 Regardé à 320, 390 et 430 px. Niveau 3 avec le lot ci-dessus : batterie
 à lui demander avant `main`.
 
-## LA MAIN D'ŒUVRE QUI S'ADDITIONNE, DANS CHAQUE TVA : SA RÉPONSE A, CODÉE LE 13 OCTOBRE 2026, ATTEND SA BATTERIE
+## LA MAIN D'ŒUVRE QUI S'ADDITIONNE, DANS CHAQUE TVA : SA RÉPONSE A, SUR `main` LE 14 OCTOBRE 2026
 
 **Sa demande :** *« il faut pouvoir ajouter une main d'œuvre dans chaque devis,
 pas seulement "dont main d'œuvre" comme aujourd'hui, mais dire main d'œuvre
@@ -914,7 +914,7 @@ de TVA, « + Main d'œuvre » à côté de « + Ajouter une ligne » pose une li
 Elle compte dans le sous-total, la TVA de sa catégorie et le TTC. Sur le papier,
 elle s'imprime **1 forfait** au montant tapé.
 
-**Sa réponse, le 13 octobre : A.** Codé le soir même (`ARCHITECTURE.md` §459), branche `lot/main-doeuvre-par-tva`. Reste : la batterie entière, avec son accord, puis `main`.
+**Sa réponse, le 13 octobre : A.** Codé le soir même (`ARCHITECTURE.md` §459), branche `lot/main-doeuvre-par-tva`. Batterie commune avec le lot TVA, sur `main` le 14 octobre.
 
 **Ce qui était à trancher :** la ligne « dont main d'œuvre HT » sous le total.
 A, calculée toute seule (somme des lignes de main d'œuvre ; le champ tapé

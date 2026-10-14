@@ -10,7 +10,7 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## LA MAIN D'ŒUVRE QUI S'ADDITIONNE : 13 octobre 2026, PAS ENCORE SUR `main`
+## LA MAIN D'ŒUVRE QUI S'ADDITIONNE : sur `main` le 14 octobre 2026
 
 Branche `lot/main-doeuvre-par-tva`, dossier `atlas-app-lot-mo`, migration 0130.
 Avant de toucher la main d'œuvre du devis (`ARCHITECTURE.md` §459) :
@@ -20,7 +20,7 @@ Avant de toucher la main d'œuvre du devis (`ARCHITECTURE.md` §459) :
 - **la facture n'a pas suivi** : elle saisit encore son « dont » à la main ;
 - niveau 3 (migration, argent) : **batterie entière, avec son accord**.
 
-## LA TVA QUI NE SE RÉCUPÈRE PAS : 13 octobre 2026, PAS ENCORE SUR `main`
+## LA TVA QUI NE SE RÉCUPÈRE PAS : sur `main` le 14 octobre 2026
 
 Branche `claude/tva-non-recuperable`, migration 0129. Avant de toucher aux achats
 (`ARCHITECTURE.md` §460) :
