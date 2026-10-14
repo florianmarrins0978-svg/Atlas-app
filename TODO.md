@@ -36,6 +36,15 @@ s'efface en ajoutant le nouveau PV, ou « Taper la date ». La lecture se fera
 comme `src/server/ai/services/lire-attestation.ts`, qui lit DÉJÀ une photo ou un
 PDF (`lireImages` accepte `application/pdf`).
 
+**Troisième version, même soir, à côté de la deuxième (il a demandé de ne pas
+la supprimer) :** `appli/vehicules-plus-simple.html`. Les boutons au vert
+`plein` de l'appli ; la fiche commence par la prochaine date et « À ajouter :
+… » (les documents manquants), la carte grise descend tout en bas ;
+« Ajouter un véhicule » ouvre directement le menu photo ; le salarié lit « En
+cas d'accident » par camion. « Ajouter un document » ouvre les trois choix de
+l'iPhone (Photothèque, Prendre une photo, Choisir un fichier), son choix du
+14 octobre. **Il doit choisir entre la deuxième et la troisième avant le code.**
+
 **Pour coder ensuite (proposé) :** table `vehicules` sous RLS par entreprise,
 documents par le rangement existant, un service `lire-document-vehicule.ts`
 (une fonction pure qui relit le JSON, éprouvée sans clé), une règle pure dans `src/lib/` pour les
