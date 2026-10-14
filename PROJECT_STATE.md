@@ -5,6 +5,26 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## SUR `main` LE 13 OCTOBRE 2026 : LA CAMPAGNE QA, SES FAILLES FERMÉES
+
+Les rapports de l'établi QA de son PC (`qa/campagne`) ont donné cinq lots,
+tous sur `main` (`08a1d0bb`, `49564a24`, `5d7bbf58`, `77f39912`) :
+
+- **Next.js 16.3.8, sharp 0.35.5** : trois failles critiques fermées ;
+- **la fiche de sécurité** : signée, elle est figée ; transmise, le salarié ne
+  la rouvre plus ; six failles fermées (photo d'autrui retirable, photo effacée
+  par la pellicule, forme et tailles non vérifiées, signature sur signature) ;
+- **la durée et l'équipe** : la facturation les change tant que le chantier
+  n'est pas au planning (sa réponse « A ») ;
+- **les retours d'intervention** : forme et tailles bornées, photos de la fiche
+  écartées ;
+- **Redis en panne** : la connexion ne patiente plus ; « Fermer » des tarifs
+  ne passe plus sous la barre ; la batterie ne laisse plus la base à terre.
+
+Dernière batterie : **462/462** suites base, **183/183** navigateur, connexion
+derrière un proxy. Le détail : `docs/qa-correctifs-verdict.md`.
+
+---
 ## CODÉ, PAS ENCORE SUR `main` : LA MENTION DU RÉPERTOIRE DES MÉTIERS (9 octobre 2026)
 
 Branche `claude/domain-name-availability-check-9rqv57`, migration 0128. Son
