@@ -184,17 +184,26 @@
   /* le croquis */
   .photo{position:relative;margin-top:6px;border-radius:12px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--trait);touch-action:none}
   .photo svg{display:block;width:100%;height:auto}
-  .outils{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-  .outil{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:8px 12px 8px 10px;border-radius:999px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);font-size:13.5px}
-  .outil[aria-pressed="true"]{background:var(--vert-voile);box-shadow:inset 0 0 0 1.5px var(--plein)}
   .legende{margin:10px 0 0;padding:0;list-style:none}
   .legende li{display:flex;align-items:center;gap:10px;min-height:30px;font-size:13.5px}
-  .gestes{display:flex;gap:18px;margin-top:4px}
-  .gestes button{min-height:44px;font-size:13.5px;font-weight:700}
   .obligatoire{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:4px 10px 4px 6px;border-radius:999px;font-size:13px;color:var(--or-texte);background:var(--or-papier)}
   body.nuit .obligatoire{color:var(--or)}
   .obligatoire.fait{color:var(--pin);background:var(--vert-voile)}
   body.nuit .obligatoire.fait{color:var(--encre)}
+  .apercu{display:block;width:100%;margin-top:10px;border-radius:12px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--trait)}
+  .apercu svg{display:block;width:100%;height:auto}
+  /* l'éditeur du croquis, plein écran : le dessin, et les outils à portée de pouce */
+  .editeur{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;background:var(--fond)}
+  .ed-haut{flex:none;display:flex;align-items:center;gap:14px;min-height:56px;padding:6px 12px}
+  .ed-geste{min-height:44px;font-size:14px;font-weight:700;color:var(--encre)}
+  .ed-fin{margin-left:auto;min-height:40px;padding:0 18px;border-radius:999px;background:var(--plein);color:var(--sur-plein);font:400 15px/1 ui-serif,Georgia,serif}
+  .ed-dessin{flex:1;min-height:0;display:flex;flex-direction:column;padding:6px 12px}
+  .ed-dessin .photo{flex:1;min-height:0;margin-top:0;background:var(--teinte)}
+  .ed-dessin .photo svg{width:100%;height:100%}
+  .ed-outils{flex:none;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;padding:8px 12px 14px;border-top:1px solid var(--trait-doux)}
+  .ed-outils button{min-width:0;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:12px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);font-size:11.5px;line-height:1.1;text-align:center}
+  .ed-outils button[aria-pressed="true"]{background:var(--vert-voile);box-shadow:inset 0 0 0 1.5px var(--plein)}
+  .methode{display:flex;flex-direction:column;gap:8px;margin-top:6px}
   .choix.trois{grid-template-columns:repeat(3,1fr)}
   .choix.trois button{font-size:13.5px;padding:4px 6px;line-height:1.2}
 
@@ -228,6 +237,7 @@
   .personne:first-child{border-top:0}
   .personne .nom{flex:1;min-width:0;font-size:15px}
   .personne .nom small{display:block;font-size:12px;color:var(--gris)}
+  .personne img.trace{flex:none;width:84px;height:40px;object-fit:contain;border-radius:6px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait-doux)}
   .petit-bouton{flex:none;min-height:40px;padding:0 16px;border-radius:999px;background:var(--plein);color:var(--sur-plein);font-size:14px}
   .voile{position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;z-index:2}
   .feuillet{width:100%;background:var(--fond);border-radius:20px 20px 0 0;padding:18px 16px 16px}
@@ -388,9 +398,9 @@ function depart() {
     gps: { x: 228, y: 120 },
     dangereux: null,     // null | "non" | [ {groupe, inter, dangers:Set, consignes:Set} ]
     croquis: null,       // null | "photo" | "blanc"
-    outil: "crayon", marques: [], accesDebut: null,
+    outil: "crayon", marques: [], edition: false, accesDebut: null,
     photos: 2,
-    lus: {}, pad: null, signee: false, sig: false,
+    signatures: {}, pad: null, signee: false, sig: false, refus: null,
   };
 }
 const S = (id) => (e.coches[id] ??= new Set());
@@ -581,19 +591,19 @@ const SOUS = {
    un repère en un seul. */
 const TRAITS = new Set(["acces", "voie", "ligne", "limite", "ruisseau"]);
 const OUTILS = [
-  ["crayon", "Crayon"],
-  ["acces", "Accès au chantier"],
-  ["voie", "Voie de circulation"],
-  ["abattre", "Arbre à abattre"],
-  ["tailler", "Arbre à tailler"],
-  ["maison", "Maison"],
-  ["danger", "Zone de danger"],
-  ["stockage", "Stockage et broyage"],
-  ["ligne", "Ligne électrique"],
-  ["reseau", "Le téléphone capte"],
-  ["secours", "Rendez-vous des secours"],
-  ["limite", "Limite de parcelle"],
-  ["ruisseau", "Ruisseau"],
+  ["crayon", "Crayon", "Crayon"],
+  ["acces", "Accès au chantier", "Accès"],
+  ["voie", "Voie de circulation", "Voie"],
+  ["abattre", "Arbre à abattre", "À abattre"],
+  ["tailler", "Arbre à tailler", "À tailler"],
+  ["maison", "Maison", "Maison"],
+  ["danger", "Zone de danger", "Danger"],
+  ["stockage", "Stockage et broyage", "Stockage"],
+  ["ligne", "Ligne électrique", "Ligne élec."],
+  ["reseau", "Le téléphone capte", "Réseau tél."],
+  ["secours", "Rendez-vous des secours", "Secours"],
+  ["limite", "Limite de parcelle", "Limite"],
+  ["ruisseau", "Ruisseau", "Ruisseau"],
 ];
 const OBLIGATOIRES = [
   ["Accès", (t) => t === "acces"],
@@ -640,6 +650,7 @@ function rendreMarque(m, i) {
   {
     if (m.t === "crayon") return `<polyline points="${m.pts.join(" ")}" fill="none" stroke="var(--encre)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`;
     if (m.t === "ruisseau") return `<path d="${ondule(m)}" fill="none" ${STYLE_TRAIT.ruisseau} stroke-linecap="round"/>`;
+    if (m.t === "limite") return `<rect x="${Math.min(m.x, m.x2)}" y="${Math.min(m.y, m.y2)}" width="${Math.abs(m.x2 - m.x)}" height="${Math.abs(m.y2 - m.y)}" fill="none" ${STYLE_TRAIT.limite}/>`;
     if (TRAITS.has(m.t)) return `<line x1="${m.x}" y1="${m.y}" x2="${m.x2}" y2="${m.y2}" ${STYLE_TRAIT[m.t]} stroke-linecap="round"/>`;
     if (estArbre(m)) {
       const plein = m.t === "abattre";
@@ -652,36 +663,58 @@ function rendreMarque(m, i) {
     return `<rect x="${m.x - 15}" y="${m.y - 15}" width="30" height="30" rx="6" fill="var(--plein)"/><path d="M${m.x - 8} ${m.y}h16M${m.x} ${m.y - 8}v16" stroke="var(--sur-plein)" stroke-width="4" stroke-linecap="round"/>`;
   }
 }
-function croquis() {
-  // Sa remarque du 14 octobre : « quand je sélectionne l'un des trois, je ne peux plus revenir en choisir un
-  // autre ». Le retour existait, tout en bas sous treize outils. Le fond se choisit donc en haut, toujours
-  // visible, et en changer garde ce qui est déjà dessiné.
-  const fonds = `<div class="choix trois">${[["photo", "Photo du chantier"], ["blanc", "Page blanche"], ["import", "Croquis importé"]].map(([v, mot]) => `<button type="button" data-croquis="${v}" aria-pressed="${e.croquis === v}">${mot}</button>`).join("")}</div>`;
-  if (!e.croquis) return `${fonds}<p class="aide">Les accès, les voies de circulation, les arbres à traiter. Choisissez sur quoi dessiner.</p>`;
-  const fond = e.croquis === "import" ? `
+/* LE FOND du croquis : la photo, une page blanche, ou un croquis papier importé. */
+function fondDuCroquis() {
+  if (e.croquis === "import") return `
     <rect width="400" height="300" fill="#f3efe4"/>
     <path d="M30 40 L210 36 L214 140 L34 146 Z M60 260 C140 250 260 268 380 252 M250 70 a30 30 0 1 0 1 0 M320 150 a24 24 0 1 0 1 0" fill="none" stroke="#5b5a52" stroke-width="2" stroke-linecap="round"/>
-    <text x="96" y="96" font-size="16" fill="#5b5a52" font-style="italic">maison</text><text x="150" y="285" font-size="14" fill="#5b5a52" font-style="italic">rue des Tilleuls</text>`
-    : e.croquis === "photo" ? `
+    <text x="96" y="96" font-size="16" fill="#5b5a52" font-style="italic">maison</text><text x="150" y="285" font-size="14" fill="#5b5a52" font-style="italic">rue des Tilleuls</text>`;
+  if (e.croquis === "photo") return `
     <rect width="400" height="300" fill="var(--herbe)"/><rect x="0" y="246" width="400" height="54" fill="var(--route)"/>
     <rect x="150" y="238" width="62" height="10" fill="var(--toit)" opacity=".7"/>
     <rect x="18" y="26" width="128" height="92" rx="3" fill="var(--toit)"/><path d="M18 26 82 4 146 26z" fill="var(--toit)" opacity=".8"/>
     <circle cx="262" cy="96" r="44" fill="var(--arbre)"/><circle cx="246" cy="84" r="20" fill="var(--herbe-fonce)" opacity=".5"/>
-    <circle cx="336" cy="170" r="34" fill="var(--arbre)"/><circle cx="96" cy="196" r="24" fill="var(--arbre)" opacity=".85"/>`
-    : `<rect width="400" height="300" fill="var(--carte)"/>${Array.from({ length: 13 }, (_, i) => Array.from({ length: 10 }, (_, j) => `<circle cx="${15 + i * 31}" cy="${15 + j * 31}" r="1.3" fill="var(--trait)"/>`).join("")).join("")}`;
+    <circle cx="336" cy="170" r="34" fill="var(--arbre)"/><circle cx="96" cy="196" r="24" fill="var(--arbre)" opacity=".85"/>`;
+  return `<rect width="400" height="300" fill="var(--carte)"/>${Array.from({ length: 13 }, (_, i) => Array.from({ length: 10 }, (_, j) => `<circle cx="${15 + i * 31}" cy="${15 + j * 31}" r="1.3" fill="var(--trait)"/>`).join("")).join("")}`;
+}
+const obligatoires = () => { const types = new Set(e.marques.map((m) => m.t)); return `<div class="pastilles">${OBLIGATOIRES.map(([mot, test]) => { const on = [...types].some(test); return `<span class="obligatoire${on ? " fait" : ""}"><span class="rond${on ? " plein" : ""}" style="width:18px;height:18px">${coche}</span>${mot}</span>`; }).join("")}</div>`; };
+
+/* DANS L'ÉTAPE : un aperçu, sa légende, et la porte de l'éditeur. */
+function croquis() {
+  if (!e.croquis) return `<p class="aide">Les accès, les voies de circulation, les arbres à traiter.</p>
+    <div class="methode"><button type="button" class="vert" data-croquis="photo">Dessiner sur une photo du chantier</button>
+    <button type="button" class="creux" data-croquis="blanc">Dessiner sur une page blanche</button>
+    <button type="button" class="creux" data-croquis="import">Importer un croquis déjà fait</button></div>`;
   const types = new Set(e.marques.map((m) => m.t));
-  const nArbres = e.marques.filter((m) => m.t === "abattre" || m.t === "tailler").length;
+  const nArbres = e.marques.filter(estArbre).length;
   const leg = OUTILS.filter(([t]) => t !== "crayon" && types.has(t)).map(([t, mot]) => `<li>${symbole(t)} ${mot}</li>`).join("");
   const zones = e.marques.map((m, i) => [m, i]).filter(([m]) => m.t === "danger");
-  const consigne = e.outil === "crayon" ? "Dessinez du doigt." : TRAITS.has(e.outil) ? (e.accesDebut ? "Touchez où le trait arrive." : "Touchez où le trait part.") : "Touchez pour poser. Restez appuyé pour déplacer.";
-  return `${fonds}<div class="pastilles" style="margin:10px 0 8px">${OBLIGATOIRES.map(([mot, test]) => { const on = [...types].some(test); return `<span class="obligatoire${on ? " fait" : ""}"><span class="rond${on ? " plein" : ""}" style="width:18px;height:18px">${coche}</span>${mot}</span>`; }).join("")}</div>
-    <p class="aide">${consigne}</p>
-    <div class="photo"><svg id="photo" viewBox="0 0 400 300" role="img" aria-label="Croquis du chantier">${fond}${dessinMarques()}</svg></div>
-    <div class="outils">${OUTILS.map(([t, mot]) => `<button type="button" class="outil" data-outil="${t}" aria-pressed="${e.outil === t}">${symbole(t)} ${mot}</button>`).join("")}</div>
+  return `${obligatoires()}
+    <button type="button" class="apercu" data-editer="1" aria-label="Ouvrir le croquis"><svg viewBox="0 0 400 300" aria-hidden="true">${fondDuCroquis()}${dessinMarques()}</svg></button>
+    <button type="button" class="creux" data-editer="1" style="margin-top:8px">${e.marques.length ? "Modifier le croquis" : "Dessiner le croquis"}</button>
     ${zones.map(([m, i], k) => `<label class="champ"><span class="nom">Zone de danger ${k + 1}, ce que c’est</span><input data-zone="${i}" data-zone-n="${k + 1}" value="${m.mot ?? ""}" placeholder="Exemple : chute de branches"></label>`).join("")}
     ${leg ? `<ul class="legende">${leg}</ul>` : ""}
-    <div class="gestes"><button type="button" data-geste="annuler">Annuler le dernier</button><button type="button" data-geste="effacer">Tout effacer</button></div>
     ${Array.isArray(e.dangereux) && nArbres ? `<p class="aide">Les numéros des arbres sont ceux des arbres dangereux.</p>` : ""}`;
+}
+
+/* L'ÉDITEUR, EN PLEIN ÉCRAN. Sa remarque du 14 octobre : « on est obligé de slider pour aller chercher les
+   infos à mettre sur le croquis, il faut qu'il soit à portée de doigt tout le temps ». Le dessin occupe
+   l'écran, et les treize outils tiennent juste dessous, tous visibles, sans rien faire défiler. */
+function editeur() {
+  if (!e.edition) return "";
+  const consigne = e.outil === "crayon" ? "Dessinez du doigt." : e.outil === "limite" ? (e.accesDebut ? "Touchez le coin opposé." : "Touchez un coin de la parcelle.") : TRAITS.has(e.outil) ? (e.accesDebut ? "Touchez où le trait arrive." : "Touchez où le trait part.") : "Touchez pour poser. Restez appuyé pour déplacer.";
+  return `<div class="editeur">
+    <div class="ed-haut">
+      <button type="button" class="ed-geste" data-geste="annuler">Annuler</button>
+      <button type="button" class="ed-geste" data-geste="effacer">Tout effacer</button>
+      <button type="button" class="ed-fin" data-editer="0">Terminé</button>
+    </div>
+    <div class="choix trois" style="margin:0 12px">${[["photo", "Photo"], ["blanc", "Page blanche"], ["import", "Importé"]].map(([v, mot]) => `<button type="button" data-croquis="${v}" aria-pressed="${e.croquis === v}">${mot}</button>`).join("")}</div>
+    <div style="padding:8px 12px 0">${obligatoires()}</div>
+    <div class="ed-dessin"><div class="photo"><svg id="photo" viewBox="0 0 400 300" role="img" aria-label="Croquis du chantier">${fondDuCroquis()}${dessinMarques()}</svg></div>
+      <p class="aide" style="text-align:center">${consigne}</p></div>
+    <div class="ed-outils">${OUTILS.map(([t, mot, court]) => `<button type="button" data-outil="${t}" aria-pressed="${e.outil === t}" aria-label="${mot}">${symbole(t)}<span>${court}</span></button>`).join("")}</div>
+  </div>`;
 }
 
 /* Les compétences d'une personne : un feuillet, qui se ferme sur la fiche. */
@@ -706,21 +739,22 @@ function feuilletPersonne() {
 function signer() {
   const v = vides();
   if (e.signee) {
-    const tous = presents().map((p) => p.nom).filter((p) => p !== CHEF), lus = tous.filter((p) => e.lus[p]).length;
+    const tous = presents().map((p) => p.nom).filter((p) => p !== CHEF), lus = tous.filter((p) => e.signatures[p]).length;
     // Sa question du 14 octobre : « et moi je ne peux plus signer ? ». Il a signé à l'écran d'avant ;
     // sa ligne vient en tête de la liste, pour qu'on voie la fiche signée par tous, lui compris.
     return `${entete("Signer", "Étape 6 sur 6", "")}${avancee(5)}
     <div class="ecran">
       <h2>Fiche signée</h2><p class="sous">Gardée jusqu’au 14 octobre 2028.</p>
       <div class="bloc premier"><p class="etiquette">Les signatures</p>
-        <div class="personne"><span class="rond plein">${coche}</span><span class="nom">${CHEF}<small>Chef d’entreprise. A signé la fiche à 7 h 52.</small></span></div>
+        <div class="personne"><span class="rond plein">${coche}</span><span class="nom">${CHEF}<small>Chef d’entreprise. A signé la fiche à ${e.signatures[CHEF].heure}.</small></span><img class="trace" src="${e.signatures[CHEF].img}" alt="Signature de ${CHEF}"></div>
         <p class="aide" style="margin-top:10px">Chacun signe qu’il a lu la fiche, avant de commencer.</p>
-        ${tous.map((p) => `<div class="personne"><span class="rond${e.lus[p] ? " plein" : ""}">${coche}</span><span class="nom">${p}${e.lus[p] ? `<small>A lu la fiche à ${e.lus[p]}</small>` : ""}</span>${e.lus[p] ? "" : `<button type="button" class="petit-bouton" data-signer-lu="${p}">Signer</button>`}</div>`).join("")}
+        ${tous.map((p) => { const s = e.signatures[p]; return `<div class="personne"><span class="rond${s ? " plein" : ""}">${coche}</span><span class="nom">${p}${s ? `<small>A lu la fiche à ${s.heure}</small>` : ""}</span>${s ? `<img class="trace" src="${s.img}" alt="Signature de ${p}">` : `<button type="button" class="petit-bouton" data-signer-lu="${p}">Signer</button>`}</div>`; }).join("")}
       </div>
     </div>
     <div class="pied"><p class="reste">${lus === tous.length ? "Toute l’équipe a lu la fiche" : `${tous.length - lus} pas encore signé${tous.length - lus > 1 ? "s" : ""}`}</p><button type="button" class="vert">Transmettre le PDF</button></div>
     ${e.pad ? `<div class="voile"><div class="feuillet"><h3>${e.pad}</h3><p>J’ai pris connaissance de la fiche.</p>
       <div class="toile"><canvas id="toile"></canvas><div class="ligne-sig"></div></div>
+      ${e.refus ? `<p class="aide alerte">${e.refus}</p>` : ""}
       <div class="deux-boutons"><button type="button" class="creux" data-pad="non">Annuler</button><button type="button" class="vert" data-pad="ok">Valider</button></div></div></div>` : ""}`;
   }
   return `${entete("Signer", "Étape 6 sur 6", "")}${avancee(5)}
@@ -731,14 +765,15 @@ function signer() {
       ${v.length ? `<p class="aide">Vous pouvez signer quand même. C’est votre fiche.</p>` : ""}
     </div>
     <div class="bloc"><p class="etiquette">Le chef d’entreprise</p>${fixe("Nom et prénom", "Florian Martins")}${fixe("Date", "14 octobre 2026")}
-      <div class="toile"><canvas id="toile"></canvas><div class="ligne-sig"></div></div></div>
+      <div class="toile"><canvas id="toile"></canvas><div class="ligne-sig"></div></div>
+      ${e.refus ? `<p class="aide alerte">${e.refus}</p>` : ""}</div>
   </div>
   <div class="pied"><button type="button" class="vert" data-signer="1">Signer la fiche</button></div>`;
 }
 
 /* ═══ L'AFFICHAGE ═══ */
 function dessiner() {
-  const html = etape(e.vue.etape) + feuilletPersonne();
+  const html = etape(e.vue.etape) + feuilletPersonne() + editeur();
   const garde = document.querySelector(".tel .ecran")?.scrollTop ?? 0;
   const memeVue = dessiner.derniere === JSON.stringify(e.vue);
   document.getElementById("tel").innerHTML = html;
@@ -748,8 +783,16 @@ function dessiner() {
   if (dessiner.viser) { document.getElementById(dessiner.viser)?.scrollIntoView({ block: "start" }); dessiner.viser = null; }
 }
 
+/* Une signature, c'est le trait dessiné dans la toile, avec l'heure où il est validé. Sans trait, rien. */
+function garderLaSignature(qui) {
+  const c = document.getElementById("toile");
+  if (!c || !e.sig) return false;
+  e.signatures[qui] = { img: c.toDataURL("image/png"), heure: new Date().toLocaleTimeString("fr-FR", { hour: "numeric", minute: "2-digit" }).replace(":", " h ") };
+  return true;
+}
 function brancherToile() {
   const c = document.getElementById("toile"); if (!c) return;
+  e.sig = false; // une toile neuve est vide : rien n'y est signé tant qu'aucun trait n'y passe
   const r = c.getBoundingClientRect(), k = window.devicePixelRatio || 1;
   c.width = r.width * k; c.height = r.height * k;
   const g = c.getContext("2d"); g.scale(k, k); g.lineWidth = 2.4; g.lineCap = "round";
@@ -759,7 +802,7 @@ function brancherToile() {
   c.onpointermove = (ev) => { if (!bas) return; const [x, y] = pos(ev); g.lineTo(x, y); g.stroke(); e.sig = true; };
   c.onpointerup = () => { bas = false; };
 }
-function point(svg, ev, l = 400, h = 300) { const r = svg.getBoundingClientRect(); return { x: Math.round((ev.clientX - r.left) * l / r.width), y: Math.round((ev.clientY - r.top) * h / r.height) }; }
+function point(svg, ev) { const q = new DOMPoint(ev.clientX, ev.clientY).matrixTransform(svg.getScreenCTM().inverse()); return { x: Math.round(q.x), y: Math.round(q.y) }; }
 /* LE TRAIT HACHÉ DU 14 OCTOBRE. La première version redessinait toute la page
    au début de chaque trait : le dessin du doigt était remplacé sous lui, la
    capture du doigt partait avec, et il ne restait que des tirets. Désormais
@@ -814,9 +857,10 @@ document.addEventListener("input", (ev) => {
 });
 document.addEventListener("click", (ev) => {
   const plan = ev.target.closest("svg#plan");
-  if (plan) { e.gps = point(plan, ev, 400, 240); dessiner(); return; }
+  if (plan) { e.gps = point(plan, ev); dessiner(); return; }
   const b = ev.target.closest("button"); if (!b) return;
   const d = b.dataset;
+  e.refus = null;
   if (d.retour) { e.vue = { etape: Math.max(0, e.vue.etape - 1) }; e.pad = null; }
   else if (d.etape !== undefined) { e.vue = { etape: Math.min(+d.etape, 5) }; }
   else if (d.aller) { const [i, id] = d.aller.split("|"); e.vue = { etape: +i }; dessiner.viser = "b-" + id; }
@@ -848,15 +892,18 @@ document.addEventListener("click", (ev) => {
   else if (d.dgAjouter !== undefined) e.dangereux.push({ groupe: d.dgAjouter === "1", inter: null, dangers: new Set(), consignes: new Set() });
   else if (d.dgRetirer !== undefined) { e.dangereux.splice(+d.dgRetirer, 1); if (!e.dangereux.length) e.dangereux = null; }
   else if (d.dgInter !== undefined) e.dangereux[+d.dgInter].inter = d.v;
-  else if (d.croquis !== undefined) { e.croquis = d.croquis || null; }
+  else if (d.croquis) { e.croquis = d.croquis; e.edition = true; }
+  else if (d.editer) { e.edition = d.editer === "1"; e.accesDebut = null; }
   else if (d.outil) { e.outil = d.outil; e.accesDebut = null; }
   else if (d.geste === "annuler") { if (e.accesDebut) e.accesDebut = null; else e.marques.pop(); }
   else if (d.geste === "effacer") { e.marques = []; e.accesDebut = null; }
   else if (d.photo) e.photos = Math.min(10, e.photos + 1);
-  else if (d.signer) e.signee = true;
+  // Sa remarque du 14 octobre : « j'ai pas signé mais ça me dit que j'ai signé ». Le bouton validait sans
+  // regarder la toile. Une signature est désormais le trait lui-même, et sans trait, rien n'est signé.
+  else if (d.signer) { if (!garderLaSignature(CHEF)) e.refus = "Signez dans le cadre d’abord."; else e.signee = true; }
   else if (d.signerLu) e.pad = d.signerLu;
   else if (d.pad === "non") e.pad = null;
-  else if (d.pad === "ok") { e.lus[e.pad] = `7 h ${54 + Object.keys(e.lus).length}`; e.pad = null; }
+  else if (d.pad === "ok") { if (!garderLaSignature(e.pad)) e.refus = "Signez dans le cadre d’abord."; else e.pad = null; }
   else return;
   dessiner();
 });
