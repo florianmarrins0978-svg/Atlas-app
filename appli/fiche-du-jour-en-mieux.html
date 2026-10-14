@@ -355,7 +355,8 @@
   <h2>Ce qui ne bouge pas</h2>
   <p>Le mois se change toujours en glissant le doigt, en plus des deux chevrons. Les carrés changent de couleur tout seuls quand la journée se remplit, comme aujourd’hui.</p>
   <p>Les mots et leurs places : « + Absent ? » sous la date, « Déplacer  Retirer » en gras à droite, « Ajouter » au milieu. La fiche d’intervention est recopiée telle qu’elle est, sans les photos : ses planches 4 et 5 attendent votre choix.</p>
-  <p><b>À gauche</b>, la fiche du jeudi 15 octobre dans votre application, prise ce soir sur une base d’essai.</p>
+  <p><b>Un seul chantier sur le jour : sa fiche d’intervention s’ouvre toute seule</b>, comme dans votre application depuis votre réponse du 3 octobre. Touchez le 15 pour le voir.</p>
+  <p><b>À gauche</b>, la fiche du jeudi 15 octobre, prise ce soir sur une base d’essai et sur une version un peu plus ancienne : la fiche d’intervention ne s’y ouvre pas toute seule. Votre application à jour l’ouvre.</p>
   <p><b>Touchez</b> « + Salarié », « + Absent ? », le nom d’un chantier, un autre jour. <b>Rien n’est codé.</b></p>
 </div>
 
@@ -428,7 +429,13 @@ function dessinerMois() {
       if (j === touche) cls.push("touche");
       const b = bouton(cls.join(" "),
         `<span class="n">${j}</span><span class="barres" aria-hidden="true"><i data-e="${etat(j,"matin")}"></i><i data-e="${etat(j,"apres_midi")}"></i></span>`,
-        () => { touche = touche === j ? null : j; absentsOuverts = false; absent = null; dernier = null; equipeOuverte = null; interOuverte = null; tout(); });
+        () => {
+          touche = touche === j ? null : j; absentsOuverts = false; absent = null; dernier = null; equipeOuverte = null;
+          // un seul chantier : sa fiche d'intervention s'ouvre avec le jour, comme dans
+          // l'application (sa réponse du 3 octobre, ficheOuverteDOffice)
+          interOuverte = touche !== null && liste(touche).length === 1 ? 0 : null;
+          tout();
+        });
       b.dataset.jour = j;
       b.setAttribute("aria-label", majuscule(nomDuJour(j)));
       b.setAttribute("aria-pressed", String(j === touche));
