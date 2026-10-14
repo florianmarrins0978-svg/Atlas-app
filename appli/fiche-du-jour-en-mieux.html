@@ -17,8 +17,10 @@
   ─── CE QUI CHANGE, chaque point vu sur l'écran ─────────────────────────
   1. « Aujourd'hui » en or au-dessus de la date, quand c'est aujourd'hui : sa
      règle du 9 septembre pour la liste, qui n'atteignait pas la fiche.
-  2. Chaque demi-journée dit qui part, ou « + Salarié » en or. Sur la base
-     d'essai la ligne Matin était vide à droite.
+  2. CORRIGÉ LE 14 OCTOBRE AU SOIR : ce point était faux. La ligne Matin
+     était vide parce que la base d'essai n'a aucun salarié
+     (nombreSalaries <= 0 dans CarteDuJour) ; avec des salariés, l'application
+     montre déjà les prénoms et « + Salarié ». Rien ne change ici.
   3. « + Absent ? » montre d'abord les noms. Avec une seule personne, l'écran
      la marquait absente d'un seul appui : vu en le touchant.
   4. Le nom du chantier porte le chevron de la liste, qui tourne : rien ne
@@ -345,12 +347,13 @@
   <h2>Ce qui change</h2>
   <ol>
     <li><b>« Aujourd’hui », en or, au-dessus de la date</b>, quand la fiche est celle du jour. C’est votre règle du 9 septembre pour la liste : elle n’allait pas jusqu’à la fiche.</li>
-    <li><b>Chaque demi-journée dit qui part</b>, ou « + Salarié » en or. Touchez-le : les prénoms s’affichent, un appui coche, un appui décoche. Sur la base d’essai, la ligne Matin était vide à droite.</li>
+    <li><b>Corrigé : ce point était faux.</b> J’avais écrit que la ligne Matin ne disait pas qui part. Elle était vide parce que la base d’essai n’a aucun salarié. Avec vos salariés, l’application montre déjà les prénoms et « + Salarié ». Rien ne change ici.</li>
     <li><b>« + Absent ? » montre d’abord les noms.</b> Aujourd’hui, quand il n’y a qu’une personne, un seul appui la marque absente sans qu’on l’ait choisie. Ici on touche le nom, puis Matin, Après-midi ou Journée.</li>
     <li><b>Le nom du chantier porte un petit chevron</b>, le même que dans la liste. Il tourne quand la fiche d’intervention s’ouvre. Aujourd’hui rien ne dit que le nom s’ouvre.</li>
     <li><b>Un rythme régulier.</b> Les lignes ont toutes la même hauteur, les grands blancs avant « Déplacer  Retirer » et avant « Ajouter » partent. Deux chantiers sont séparés par un filet, et chacun garde « Déplacer  Retirer » sous lui.</li>
   </ol>
   <h2>Ce qui ne bouge pas</h2>
+  <p>Le mois se change toujours en glissant le doigt, en plus des deux chevrons. Les carrés changent de couleur tout seuls quand la journée se remplit, comme aujourd’hui.</p>
   <p>Les mots et leurs places : « + Absent ? » sous la date, « Déplacer  Retirer » en gras à droite, « Ajouter » au milieu. La fiche d’intervention est recopiée telle qu’elle est, sans les photos : ses planches 4 et 5 attendent votre choix.</p>
   <p><b>À gauche</b>, la fiche du jeudi 15 octobre dans votre application, prise ce soir sur une base d’essai.</p>
   <p><b>Touchez</b> « + Salarié », « + Absent ? », le nom d’un chantier, un autre jour. <b>Rien n’est codé.</b></p>

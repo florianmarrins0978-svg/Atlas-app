@@ -10,7 +10,7 @@ sur le 15 puis retiré). **Rien n'est codé ; ne pas coder avant son oui.**
 | | Ce qui change | Où, si oui |
 |---|---|---|
 | 1 | « Aujourd'hui » en or au-dessus de la date | `CarteDuJour` |
-| 2 | chaque demi-journée dit qui part, ou « + Salarié » en or | `CarteDuJour` |
+| 2 | ~~chaque demi-journée dit qui part~~ : **faux, retiré le 14 au soir**. La ligne était vide parce que `atlas_test` n'a aucun salarié (`nombreSalaries <= 0`) ; avec des salariés l'application le fait déjà | rien |
 | 3 | **« + Absent ? » montre les noms d'abord** : avec une seule personne, un seul appui marquait « Vous » absent (vu en touchant) | `GesteAbsence` |
 | 4 | le nom du chantier porte le chevron de la liste, qui tourne quand la fiche d'intervention s'ouvre | `CarteDuJour` |
 | 5 | rythme régulier, plus de grands blancs avant « Déplacer  Retirer » et « Ajouter » ; un filet entre deux chantiers | `CarteDuJour` |
