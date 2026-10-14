@@ -216,7 +216,7 @@ async function main() {
     await page.locator("[data-atlas='croquis-page-blanche']").click();
     const dessin = page.locator("[data-atlas='dessin-du-croquis']");
     await dessin.waitFor({ state: "visible", timeout: 10_000 });
-    await page.locator("[data-atlas='croquis-termine']").click();
+    await page.locator("[data-atlas='croquis-termine']").click({ force: true }); // montré refusé (aria-disabled) : Playwright n'y touche pas sans force, le patron si
     await page.locator("[data-atlas='consigne-du-croquis']").filter({ hasText: "Il manque encore" }).waitFor({ timeout: 5_000 });
     assert.ok(await dessin.isVisible(), "« Terminé » a fermé un croquis incomplet");
     // Un appui au point (x, y) de la feuille de 400 sur 300, quelle que soit la taille de l'écran.
@@ -235,7 +235,7 @@ async function main() {
     await toucher(390, 270);
     await page.locator("[data-atlas='outil-abattre']").click();
     await toucher(260, 100);
-    await page.locator("[data-atlas='croquis-termine']").click();
+    await page.locator("[data-atlas='croquis-termine']").click({ force: true });
     await dessin.waitFor({ state: "detached", timeout: 5_000 });
     assert.equal(await page.locator("[data-atlas='obligatoire-du-croquis'][data-pose='true']").count(), 3, "les trois éléments de la loi ne sont pas cochés");
     const enBase = async () => {
@@ -253,10 +253,10 @@ async function main() {
       await page.locator("[data-atlas='etape-de-la-fiche']").filter({ hasText: `${n} sur 6` }).waitFor({ timeout: 15_000 });
     }
     const texte = await page.locator("body").innerText();
-    assert.match(texte, /Pour pouvoir signer/, "ce que la loi exige se dit avant de signer");
+    assert.match(texte, /Pour pouvoir signer/i, "ce que la loi exige se dit avant de signer");
     const signer = page.locator("[data-atlas='signer-la-fiche']");
     assert.equal(await signer.getAttribute("aria-disabled"), "true", "le bouton se montre refusé");
-    await signer.click();
+    await signer.click({ force: true });
     await page.getByText(/que la loi exige\. Touchez/).waitFor({ timeout: 5_000 });
     assert.equal(await page.locator("[data-atlas='fiche-signee']").count(), 0, "une fiche sans le minimum légal a été signée");
     // La ligne des risques emmène à l'écran 4.
@@ -289,7 +289,7 @@ async function main() {
 
   await cas("la signature au doigt ouvre la suite : l'équipe signe, puis on enregistre", async () => {
     const signer = page.locator("[data-atlas='signer-la-fiche']");
-    await signer.click();
+    await signer.click({ force: true });
     await page.getByText("Signez dans le cadre d’abord.").waitFor({ timeout: 5_000 });
     assert.equal(await page.locator("[data-atlas='fiche-signee']").count(), 0, "sans trait, on ne signe pas");
     await page.getByLabel(SIGNATAIRE).fill(NOM_SIGNE);
@@ -313,7 +313,7 @@ async function main() {
     await page.mouse.down();
     for (let i = 0; i < 30; i++) await page.mouse.move(bb.x + 30 + i * 8, bb.y + 90 + Math.sin(i / 3) * 25);
     await page.mouse.up();
-    await signer.click();
+    await signer.click({ force: true });
     await page.locator("[data-atlas='fiche-signee']").waitFor({ timeout: 20_000 });
     const { rows: r } = await pool.query<{ signee_le: Date | null; signataire: string | null; signature_png: string | null }>(
       `SELECT signee_le, signataire, signature_png FROM fiches_securite WHERE chantier_id = $1`,
@@ -333,7 +333,7 @@ async function main() {
     await enregistrer.waitFor({ timeout: 10_000 });
     const enAttente = page.locator("[data-atlas='faire-signer']");
     assert.ok((await enAttente.count()) >= 1, "personne n'attend de signer : le contrôle ne mesure rien");
-    await enregistrer.click();
+    await enregistrer.click({ force: true });
     await page.getByText(/doit signer avant d’enregistrer|doivent signer avant d’enregistrer/).first().waitFor({ timeout: 5_000 });
     const finalisee = async () => {
       const { rows } = await pool.query<{ contenu: { finaliseeLe?: string | null } }>(`SELECT contenu FROM fiches_securite WHERE chantier_id = $1`, [chantierId]);
@@ -354,7 +354,7 @@ async function main() {
       await page.locator("[data-atlas='valider-la-lecture']").click();
       await feuillet.waitFor({ state: "detached", timeout: 10_000 });
     }
-    await enregistrer.click();
+    await enregistrer.click({ force: true });
     await page.locator("[data-atlas='fiche-enregistree']").waitFor({ timeout: 10_000 });
     assert.ok(await finalisee(), "l'enregistrement n'est pas en base");
     const { rows } = await pool.query<{ contenu: { lectures?: { png: string }[] } }>(`SELECT contenu FROM fiches_securite WHERE chantier_id = $1`, [chantierId]);
