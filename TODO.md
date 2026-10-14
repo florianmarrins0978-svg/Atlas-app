@@ -41,7 +41,12 @@ la supprimer) :** `appli/vehicules-plus-simple.html`. Les boutons au vert
 `plein` de l'appli ; la fiche commence par la prochaine date et « À ajouter :
 … » (les documents manquants), la carte grise descend tout en bas ;
 « Ajouter un véhicule » ouvre directement le menu photo ; le salarié lit « En
-cas d'accident » par camion. « Ajouter un document » ouvre les trois choix de
+cas d'accident » par camion. Le menu dit QUOI ajouter (« Ajoutez la carte
+grise du véhicule » pour un véhicule neuf) : sa remarque du même soir, sans
+titre on ne comprenait pas quoi photographier. Au code, ce titre impose NOTRE
+feuille, puis les trois choix par trois `<input type="file">` (la photo avec
+`capture`), car le menu de l'iPhone ne porte pas de titre.
+« Ajouter un document » ouvre les trois choix de
 l'iPhone (Photothèque, Prendre une photo, Choisir un fichier), son choix du
 14 octobre. **Il doit choisir entre la deuxième et la troisième avant le code.**
 

@@ -129,6 +129,8 @@
   .feuille{width:100%;max-width:430px;background:var(--card);border-radius:20px 20px 0 0;padding:10px 18px 22px;
            animation:monte .22s cubic-bezier(.2,.8,.2,1)}
   @keyframes monte{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+  .titre-feuille{margin:0;font:400 22px/1.2 ui-serif,Georgia,serif;color:var(--ink)}
+  .sous-feuille{margin:4px 0 8px;font-size:14px;color:var(--inkSoft)}
   .feuille .poignee{width:38px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px}
   .feuille button{display:block;width:100%;min-height:52px;border:0;border-bottom:1px solid var(--lineSoft);
                   background:none;text-align:left;color:var(--ink);font:500 16px/1 ui-sans-serif,sans-serif;cursor:pointer}
@@ -408,8 +410,11 @@
   // ---- ajouter un document : photo ou fichier, puis lecture
   const voile = document.getElementById("voile");
   const feuille = document.getElementById("feuille");
-  function ouvrirFeuille() {
-    feuille.innerHTML = `<div class="poignee"></div>`
+  function ouvrirFeuille(quoi) {
+    // le menu dit d’abord QUOI photographier : seul, « Prendre une photo » laissait
+    // deviner (sa remarque du 14 octobre devant « Ajouter un véhicule »)
+    const t = quoi && quoi.titre ? quoi : { titre: "Ajoutez un document du véhicule", sous: "Carte grise, assurance ou contrôle technique." };
+    feuille.innerHTML = `<div class="poignee"></div><p class="titre-feuille">${t.titre}</p><p class="sous-feuille">${t.sous}</p>`
       // le menu même de l’iPhone, celui qu’ouvre déjà l’attestation décennale : la planche l’imite
       + `<button type="button" data-f="phototheque">Photothèque</button>`
       + `<button type="button" data-f="photo">Prendre une photo</button>`
@@ -469,7 +474,8 @@
     // un véhicule naît de sa carte grise : le menu photo s’ouvre tout de suite, sans écran vide entre les deux
     avis = null;
     sorteEssai = "cg"; marquerEssai();
-    montrer("fiche"); dessinerFiche(); ouvrirFeuille();
+    montrer("fiche"); dessinerFiche();
+    ouvrirFeuille({ titre: "Ajoutez la carte grise du véhicule", sous: "Atlas y lit la plaque, le modèle et le poids." });
   };
 
   // ---- l'accueil
@@ -486,7 +492,7 @@
       c.innerHTML = `<div class="q">${echap(x.v.nom)}, ${LIBELLES[x.cle].toLowerCase()} avant le ${lisible(x.jusqua)}.</div>`
         + `<div class="d ${x.e.ton}">${x.e.texte}</div>`
         + `<div class="gestes"><button type="button" class="pv">Ajouter le procès‑verbal</button><button type="button" class="doux main">Taper la date</button></div>`;
-      c.querySelector(".pv").onclick = () => { ouvrirFiche(x.v); sorteEssai = "ct"; marquerEssai(); ouvrirFeuille(); };
+      c.querySelector(".pv").onclick = () => { ouvrirFiche(x.v); sorteEssai = "ct"; marquerEssai(); ouvrirFeuille({ titre: "Ajoutez le nouveau procès‑verbal", sous: "Atlas y lit les prochaines dates." }); };
       c.querySelector(".main").onclick = () => { ouvrirFiche(x.v); const i = document.querySelector(`#fiche input[data-cle="${x.cle}"]`); i.scrollIntoView({ block: "center" }); i.focus(); };
       zone.appendChild(c);
     }
