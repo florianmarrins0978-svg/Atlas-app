@@ -95,7 +95,7 @@ export function CarteDuPoint({ gps, repli, onPoint }: { gps: string; repli: { la
         </div>
         <div className="absolute right-2 top-2 flex flex-col gap-1.5">
           {([["+", "Rapprocher", 1], ["−", "Éloigner", -1]] as const).map(([signe, nom, pas]) => (
-            <button key={nom} type="button" aria-label={nom} onClick={() => setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z + pas)))} className="h-11 w-11 rounded-xl text-[22px] leading-none" style={{ background: colors.card, color: colors.rust, fontFamily: font.display, boxShadow: `0 2px 6px ${voile(colors.ink, 0.18)}` }}>
+            <button key={nom} type="button" aria-label={nom} onClick={() => setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z + pas)))} className="h-11 w-11 rounded-full text-[22px] leading-none" style={{ background: colors.card, color: colors.rust, fontFamily: font.display, boxShadow: `0 2px 6px ${voile(colors.ink, 0.18)}` }}>
               {signe}
             </button>
           ))}

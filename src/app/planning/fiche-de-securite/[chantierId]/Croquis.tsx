@@ -376,7 +376,7 @@ export function EditeurDuCroquis({
       </div>
       <div className="grid flex-none grid-cols-5 gap-1.5 border-t px-3 pb-[max(14px,env(safe-area-inset-bottom))] pt-2" style={{ borderColor: colors.lineSoft }}>
         {OUTILS_DU_CROQUIS.map((o) => (
-          <button key={o.t} type="button" data-atlas={`outil-${o.t}`} aria-pressed={outil === o.t} aria-label={o.libelle} onClick={() => { setOutil(o.t); setDebut(null); setRefus(null); }} className="flex min-h-[56px] min-w-0 flex-col items-center justify-center gap-1 rounded-[12px] text-center text-[11.5px] leading-[1.1]" style={{ background: outil === o.t ? voile(colors.plein, 0.16) : colors.card, boxShadow: `inset 0 0 0 ${outil === o.t ? "1.5px" : "1px"} ${outil === o.t ? colors.plein : colors.line}` }}>
+          <button key={o.t} type="button" data-atlas={`outil-${o.t}`} aria-pressed={outil === o.t} aria-label={o.libelle} onClick={() => { setOutil(o.t); setDebut(null); setRefus(null); }} className="flex min-h-[56px] min-w-0 flex-col items-center justify-center gap-1 rounded-full text-center text-[11.5px] leading-[1.1]" style={{ background: outil === o.t ? voile(colors.plein, 0.16) : colors.card, boxShadow: `inset 0 0 0 ${outil === o.t ? "1.5px" : "1px"} ${outil === o.t ? colors.plein : colors.line}` }}>
             <SymboleDOutil t={o.t} />
             <span>{o.court}</span>
           </button>

@@ -357,10 +357,13 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     ou: "fiche de sécurité, étape « Le chantier »",
     intitule: "Relever la position GPS du chantier pour les secours",
     motsCles: ["gps", "position", "coordonnees", "localiser", "secours", "releve", "emplacement"],
-    geste: "Sur place, appuyez sur « Relever ici ».",
+    geste:
+      "Sur place, appuyez sur « Relever ici » : la carte s'ouvre sur le point, et l'adresse au point s'affiche. " +
+      "Si le point n'est pas au bon endroit, touchez la carte à l'endroit exact du chantier.",
     reserve: "Si le téléphone refuse, un champ apparaît pour écrire les coordonnées à la main.",
     source: FORM,
-    preuves: ['"Relever ici"', 'data-atlas="relever-gps"', "Coordonnées GPS"],
+    preuves: ['"Relever ici"', 'data-atlas="relever-gps"', "Coordonnées GPS", "Adresse au point GPS"],
+    ailleurs: [{ source: "src/app/planning/fiche-de-securite/[chantierId]/CarteDuPoint.tsx", preuves: ["Touchez la carte à l’endroit exact du chantier.", "Photo aérienne"] }],
   },
   {
     id: "fiche-securite-donneur",
@@ -414,9 +417,10 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     geste:
       "À la dernière étape, signez dans le cadre au doigt, puis « Signer la fiche ». « Effacer » recommence la signature.",
     reserve:
-      "La liste « Encore vide » montre ce qui manque : touchez une ligne pour y aller. Rien n'empêche de signer.",
+      "Tant que manque ce que la loi exige, la signature est refusée : « Pour pouvoir signer » dit quoi, et chaque ligne emmène où le remplir. " +
+      "Ensuite, chaque personne de l'équipe signe l'avoir lue, puis « Enregistrer ».",
     source: FORM,
-    preuves: ["Signer la fiche", "Encore vide", "Touchez une ligne pour y aller."],
+    preuves: ["Signer la fiche", "Pour pouvoir signer", "que la loi exige", "signer avant d’enregistrer la fiche", "Enregistrer"],
     ailleurs: [{ source: "src/app/planning/fiche-de-securite/[chantierId]/Signature.tsx", preuves: ["Signez ici, au doigt", "Effacer"] }],
   },
   {
@@ -430,7 +434,7 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     reserve: "C'est vous qui envoyez. Une fois transmise, le bandeau dit « Transmise le ».",
     source: FS,
     preuves: ["Transmettre le PDF", "Transmise le"],
-    ailleurs: [{ source: FORM, preuves: ["ouvre la feuille de partage du téléphone"] }],
+    ailleurs: [{ source: FORM, preuves: ["À qui l’envoyer"] }],
   },
   {
     id: "fiche-securite-pdf",

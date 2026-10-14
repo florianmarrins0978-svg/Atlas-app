@@ -248,6 +248,15 @@ const HORS_CHARTE: Array<{
     pourquoi: "vignette d'une photo du terrain : un cercle rognerait l'image",
   },
   {
+    // **L'APERÇU DU CROQUIS — 14 octobre 2026.** Le dessin du chantier, en 4 sur 3, qu'on
+    // touche pour le rouvrir. Même arbitrage que les vignettes : c'est une IMAGE, et une
+    // capsule rognerait les coins du plan, là où se posent souvent l'accès et la limite.
+    // Les outils du croquis, eux, sont des gestes : ils portent la capsule.
+    motif: /^src[/\\]app[/\\]planning[/\\]fiche-de-securite[/\\]\[chantierId\][/\\]FormulaireFicheDeSecurite\.tsx$/,
+    seulement: /data-atlas="apercu-du-croquis"/,
+    pourquoi: "aperçu du croquis qu'on rouvre : une capsule rognerait les coins du plan",
+  },
+  {
     // **UNE PHOTO QU'ON OUVRE, PAS UN BOUTON** — la quatrième de cette famille,
     // arrivée le 11 septembre 2026 avec sa demande : *« ce qui serait bien,
     // c'est qu'on puisse cliquer dessus pour qu'elle apparaisse en grand »*.
@@ -362,13 +371,15 @@ function main() {
 
   const coupables: string[] = [];
   for (const f of fichiers(RACINE)) {
-    const exception = HORS_CHARTE.find((e) => e.motif.test(f));
+    // TOUTES les exceptions du fichier, pas la première : la fiche de sécurité en porte deux (ses
+    // vignettes et l'aperçu du croquis), et `find` taisait la seconde (14 octobre 2026).
+    const exceptions = HORS_CHARTE.filter((e) => e.motif.test(f));
     // Sans `seulement`, l'exception couvre le fichier entier — c'est le cas des
     // deux premières, écrites avant que ce champ n'existe.
-    if (exception && !exception.seulement) continue;
+    if (exceptions.some((e) => !e.seulement)) continue;
     const t = sansCommentaires(readFileSync(f, "utf8"));
     for (const m of t.matchAll(RECTANGULAIRE)) {
-      if (exception?.seulement?.test(m[0])) continue;
+      if (exceptions.some((e) => e.seulement?.test(m[0]))) continue;
       const ligne = t.slice(0, m.index).split("\n").length;
       const rayon = m[1] ? `rayon ${m[1]} px` : `rounded-${m[2]}`;
       coupables.push(`${f}:${ligne} — ${rayon}`);

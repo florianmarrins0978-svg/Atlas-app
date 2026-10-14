@@ -195,6 +195,10 @@ const OUVERT_AU_SALARIE = [
   // voit sur le planning. Cette route ne sert QUE des photos de personnes,
   // jamais celles des chantiers (`api/tetes`).
   "/api/tetes",
+  // **La carte du point GPS de la fiche de sécurité** (14 octobre 2026) : c'est
+  // souvent lui qui la remplit sur place. Des tuiles de l'IGN et l'adresse au
+  // point, rien de l'entreprise.
+  "/api/carte",
 ] as const;
 
 /**
@@ -283,6 +287,8 @@ const OUVERT_A_LA_FACTURATION = [
   "/api/tetes",
   "/api/notes-vocales",
   "/api/adresses",
+  // La carte du point GPS de la fiche de sécurité, sous /planning comme la fiche.
+  "/api/carte",
   "/api/polices",
   "/api/health",
 ] as const;

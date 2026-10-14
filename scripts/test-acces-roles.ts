@@ -103,6 +103,13 @@ const OUVERT_AU_SALARIE = [
   "/reglages/apparence",
   // L'organigramme, visible par tous depuis le 27 septembre 2026 (sa règle).
   "/reglages/organigramme",
+  // Les véhicules, lus par tous depuis le 14 octobre 2026 (§461) : la liste, la fiche, le papier.
+  "/reglages/vehicules",
+  "/reglages/vehicules/xxxx",
+  "/reglages/vehicules/xxxx/document/xxxx",
+  // La carte du point GPS de la fiche de sécurité, qu'il remplit sur place.
+  "/api/carte/adresse",
+  "/api/carte/tuile",
   "/api/chantiers/xxxx/feuille/pdf",
   "/api/polices/xxxx",
   "/api/health/live",
@@ -295,11 +302,14 @@ essai("le sommaire des réglages dit exactement ce que la règle autorise", () =
 
 // **Depuis le 27 septembre 2026, le salarié reçoit aussi l'organigramme**, et
 // lui seul de l'entreprise : sa règle, *« L'organigramme doit être visible par
-// tout le monde ! »*. Le reste de l'entreprise lui reste fermé.
-essai("un salarié ne reçoit que « Moi » et l'organigramme dans les réglages", () => {
+// tout le monde ! »*. **Et depuis le 14 octobre 2026, les véhicules**, que
+// tout le monde lit et que le patron seul écrit (`ARCHITECTURE.md` §461) : ils
+// appartiennent à l'entreprise, et c'est le salarié qui les conduit. Le reste
+// de l'entreprise lui reste fermé.
+essai("un salarié ne reçoit que « Moi », les véhicules et l'organigramme dans les réglages", () => {
   const ensembles = rubriquesReglages("salarie");
   assert.deepEqual(ensembles.map((e) => e.titre), ["L'entreprise", "Moi"]);
-  assert.deepEqual(ensembles[0].rubriques.map((r) => r.href), ["/reglages/organigramme"]);
+  assert.deepEqual(ensembles[0].rubriques.map((r) => r.href), ["/reglages/vehicules", "/reglages/organigramme"]);
   assert.deepEqual(adressesAutorisees("salarie").sort(), [
     "/reglages/apparence",
     "/reglages/compte",
@@ -307,6 +317,7 @@ essai("un salarié ne reçoit que « Moi » et l'organigramme dans les réglages
     "/reglages/connexion/double-verification",
     "/reglages/notifications",
     "/reglages/organigramme",
+    "/reglages/vehicules",
   ]);
 });
 
