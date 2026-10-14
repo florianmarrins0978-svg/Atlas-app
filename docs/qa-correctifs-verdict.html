@@ -154,12 +154,31 @@
 </tr>
 </tbody></table></div>
 <p>Chaque correction a son test, rouge avant, vert après : <code>test-fiche-securite.ts</code>, <code>test-fiche-securite-db.ts</code>, <code>test-acces-roles.ts</code>, <code>test-roles-capacites-db.ts</code>, <code>test-retour-intervention.ts</code>, <code>test-retour-intervention-db.ts</code>, <code>test-rate-limit-redis-real.ts</code>.</p>
+<h2 id="2-bis-corrigé-le-14-octobre-en-attente-de-la-batterie-commune">2 bis. Corrigé le 14 octobre, en attente de la batterie commune</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce qui a été fait</th>
+</tr></thead><tbody>
+<tr>
+<td><code>npm audit --omit=dev</code> : trois failles hautes (<code>fast-uri</code>, <code>brace-expansion</code>, <code>source-map-js</code>)</td>
+<td>fichier de verrouillage seul, sans version majeure. Elles ne servaient qu'à la construction</td>
+</tr>
+<tr>
+<td><code>test-devis-client-e2e</code> rouge sur son PC (P3)</td>
+<td>les deux premiers cas attendent le verdict au lieu de lire l'écran d'attente. Rouge reproduit sur son PC seulement</td>
+</tr>
+</tbody></table></div>
 <h2 id="3-regardé-et-laissé">3. Regardé et laissé</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
 <th></th>
 <th>Pourquoi</th>
 </tr></thead><tbody>
+<tr>
+<td><code>@simplewebauthn/server</code>, faille faible</td>
+<td>elle touche la chaîne des certificats d'attestation ; Atlas demande <code>attestationType: "none"</code> (<code>src/server/cle-appareil.ts</code>) et ne s'y fie pas. La corriger : cinq versions majeures, et <code>next-auth</code> attend la 9</td>
+</tr>
 <tr>
 <td>la 16.4.0 de Next, proposée par l'audit</td>
 <td>une version mineure change le fonctionnement ; la 16.3.8 ferme les mêmes failles</td>
@@ -185,10 +204,6 @@
 <th></th>
 <th>Qui tranche</th>
 </tr></thead><tbody>
-<tr>
-<td><code>@simplewebauthn/server</code> : faille faible, correctif en version majeure, batterie nécessaire</td>
-<td>le patron (accord pour la batterie)</td>
-</tr>
 <tr>
 <td>charge à plusieurs processus, avec écritures</td>
 <td>l'établi QA</td>

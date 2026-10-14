@@ -91,10 +91,12 @@ async function main() {
   await test("un jeton inconnu ne révèle rien au visiteur", async () => {
     const page = await context.newPage();
     await page.goto(`${BASE}/devis/${genererJeton()}`, { waitUntil: "networkidle" });
-    assert.ok(
-      await page.locator("text=Ce lien n'est plus valable").isVisible(),
-      "le message générique n'est pas affiché"
-    );
+    // **Attendre le verdict, pas l'écran d'attente** (comme
+    // `test-fiche-chantier-e2e.ts`). Sur un serveur froid, `networkidle` rend
+    // la main pendant que `src/app/loading.tsx` est encore peint : l'établi QA
+    // a mesuré le message à 2,4 s pour un `networkidle` à 0,56 s, et
+    // `isVisible()`, qui n'attend pas, accusait la page (12 octobre 2026).
+    await page.getByText("Ce lien n'est plus valable").waitFor({ timeout: 30_000 });
     await page.close();
   });
 
@@ -105,8 +107,9 @@ async function main() {
     page.on("pageerror", (e) => erreurs.push(e.message));
 
     await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
+    // Le même écran d'attente que ci-dessus, quand cette suite est jouée seule.
+    await page.getByText("Atelier du Test").waitFor({ timeout: 30_000 });
 
-    assert.ok(await page.locator("text=Atelier du Test").isVisible(), "émetteur absent");
     assert.ok(await page.locator("text=Quelle date vous arrange").isVisible(), "choix de date absent");
     assert.ok(await page.locator('button:has-text("J\'accepte ce devis")').isVisible());
     assert.ok(await page.locator('button:has-text("Je ne donne pas suite")').isVisible());
