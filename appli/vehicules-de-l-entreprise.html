@@ -8,7 +8,10 @@
   /* Jetons recopiés de src/lib/chartes.ts (origine et nuit), comme les planches
      voisines. Les rappels se CALCULENT ici à partir de la date choisie en haut :
      une planche qui écrirait ses rappels à la main ne montrerait pas quand ils
-     apparaissent, et c'est justement ce qu'il demande de voir. */
+     apparaissent, et c'est justement ce qu'il demande de voir.
+     La lecture des documents est SIMULÉE : la planche n'a pas de clé d'IA. Le
+     produit le ferait comme lire-attestation.ts, qui lit déjà une photo ou un
+     PDF et rend null pour ce qu'il ne trouve pas. */
   :root{
     --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
     --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1; --or:#B98B47; --alerte:#9C3B2E;
@@ -35,19 +38,19 @@
   .choix{position:sticky;top:0;z-index:5;background:var(--hors);padding:12px 12px 10px;
          display:flex;gap:7px;justify-content:center;flex-wrap:wrap;
          box-shadow:0 6px 18px -12px rgba(0,0,0,.45);transition:background .25s}
-  .choix button,.jours button{min-height:44px;min-width:44px;padding:0 13px;border-radius:999px;
+  .choix button,.jours button,.essai-doc button{min-height:44px;min-width:44px;padding:0 13px;border-radius:999px;
                 border:1px solid var(--line);background:var(--card);color:var(--ink);
                 font:600 12px/1 ui-sans-serif,sans-serif;letter-spacing:.04em;cursor:pointer;
                 -webkit-tap-highlight-color:transparent}
-  .choix button[aria-pressed="true"],.jours button[aria-pressed="true"]{background:var(--rust);color:var(--surPlein);border-color:var(--rust)}
+  .choix button[aria-pressed="true"],.jours button[aria-pressed="true"],.essai-doc button[aria-pressed="true"]{background:var(--rust);color:var(--surPlein);border-color:var(--rust)}
 
-  .jours{max-width:430px;margin:14px auto 0;padding:0 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:center}
-  .jours span{width:100%;text-align:center;font-size:12.5px;color:var(--horsTexte)}
-  .jours button{font-weight:500;letter-spacing:0}
+  .jours,.essai-doc{max-width:430px;margin:14px auto 0;padding:0 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:center}
+  .jours span,.essai-doc span{width:100%;text-align:center;font-size:12.5px;color:var(--horsTexte)}
+  .jours button,.essai-doc button{font-weight:500;letter-spacing:0}
 
-  .tel{max-width:430px;margin:14px auto 0;background:var(--cream);border-radius:26px;
+  .tel{max-width:430px;margin:14px auto 0;background:var(--cream);border-radius:26px;position:relative;
        overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.22);transition:background .25s}
-  .ecran{display:none;min-height:560px}
+  .ecran{display:none;min-height:600px}
   .ecran.ouvert{display:block}
 
   .entete{padding:26px 22px 0}
@@ -62,7 +65,6 @@
   .caps{margin:22px 0 8px;font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
         text-transform:uppercase;color:var(--inkSoft)}
 
-  /* la liste des véhicules : une ligne, un nom, une plaque, l'état en mots */
   .vehicule{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;width:100%;
             padding:14px 0;border:0;border-bottom:1px solid var(--lineSoft);background:none;
             text-align:left;color:var(--ink);font:inherit;cursor:pointer}
@@ -73,57 +75,73 @@
           font:600 12.5px/1.4 ui-monospace,Menlo,monospace;letter-spacing:.04em;color:var(--ink)}
   .ajouter{display:block;margin-top:14px;border:0;background:none;padding:0;color:var(--rust);
            font:500 14px/1.2 ui-sans-serif,sans-serif;cursor:pointer;min-height:44px}
-
   .etat.or{color:var(--or)} .etat.alerte{color:var(--alerte);font-weight:600}
 
-  /* la fiche */
+  /* le bouton qui fait tout : on ajoute un document, Atlas range */
+  .deposer{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;margin-top:16px;
+           border-radius:12px;border:0;background:var(--rust);color:var(--surPlein);
+           font:600 15px/1 ui-sans-serif,sans-serif;cursor:pointer}
+
   .champ{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;
          padding:11px 0;border-bottom:1px solid var(--lineSoft);font-size:15px}
-  .champ span{color:var(--inkSoft)}
+  .champ > span{color:var(--inkSoft)}
   .champ .v{text-align:right;color:var(--ink)}
-  .champ input{width:150px;border:0;background:transparent;padding:2px 0;text-align:right;
+  .champ input{width:160px;border:0;background:transparent;padding:2px 0;text-align:right;
                font:inherit;font-size:16px;color:var(--ink);outline:none;border-radius:4px}
   .champ input:focus{background:var(--voileChamp)}
-  .champ input[type="date"]{width:160px}
+  .champ input::placeholder{color:var(--muted);font-size:14px}
   .champ small{display:block;font-size:12px;color:var(--muted)}
+  .champ small.lu{color:var(--or)}
+  .champ.vient-d-etre-lu{animation:lu 1.6s ease}
+  @keyframes lu{0%{background:rgba(185,139,71,.22)}100%{background:transparent}}
   .reserve{margin:10px 0 0;font-size:13px;color:var(--inkSoft)}
 
   .doc{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--lineSoft)}
   .doc .ic{flex:none;width:34px;height:42px;border:1px solid var(--line);border-radius:5px;
            display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;
            font:700 8.5px/1 ui-sans-serif,sans-serif;letter-spacing:.06em;color:var(--alerte);background:var(--card)}
-  .doc .ic.vide{color:var(--muted);border-style:dashed;align-items:center;padding:0;font-size:18px;font-weight:400}
+  .doc .ic.photo{color:var(--rust)}
   .doc .t{flex:1;min-width:0}
   .doc .t b{display:block;font-weight:500;font-size:15px}
   .doc .t small{color:var(--muted);font-size:12.5px}
   .doc button{border:0;background:none;color:var(--rust);font:500 14px/1 ui-sans-serif,sans-serif;
               min-height:44px;padding:0 2px;cursor:pointer}
+  .aucun{color:var(--muted);font-size:14px;padding:8px 0}
+
+  .avis{margin-top:14px;padding:12px 14px;border-radius:12px;background:var(--rustTint);font-size:14px;line-height:1.45;color:var(--ink)}
+  .avis.alerte{background:transparent;border:1px solid var(--alerte);color:var(--alerte)}
+  .avis button{display:block;margin-top:6px;border:0;background:none;padding:0;min-height:36px;color:var(--rust);
+               font:600 14px/1 ui-sans-serif,sans-serif;cursor:pointer}
+  .avis.alerte button{color:var(--alerte)}
 
   .appel{display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;margin-top:14px;
          border-radius:12px;border:0;background:var(--rust);color:var(--surPlein);
          font:600 15px/1 ui-sans-serif,sans-serif;cursor:pointer}
 
-  /* l'accueil : une carte par rappel, comme les rappels existants */
-  .carte{margin-top:12px;padding:15px 16px;border-radius:14px;background:var(--card);
-         border:1px solid var(--line)}
+  /* la feuille qui monte du bas : photo ou fichier */
+  .voile{position:absolute;inset:0;background:rgba(0,0,0,.35);display:none;align-items:flex-end;z-index:3}
+  .voile.ouvert{display:flex}
+  .feuille{width:100%;background:var(--card);border-radius:20px 20px 0 0;padding:10px 18px 22px;
+           animation:monte .22s cubic-bezier(.2,.8,.2,1)}
+  @keyframes monte{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+  .feuille .poignee{width:38px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px}
+  .feuille button{display:block;width:100%;min-height:52px;border:0;border-bottom:1px solid var(--lineSoft);
+                  background:none;text-align:left;color:var(--ink);font:500 16px/1 ui-sans-serif,sans-serif;cursor:pointer}
+  .feuille button:last-child{border-bottom:0;color:var(--inkSoft);text-align:center}
+  .lecture{padding:18px 0 8px;text-align:center;color:var(--inkSoft);font-size:15px}
+  .lecture .rond{width:26px;height:26px;margin:0 auto 10px;border-radius:50%;border:3px solid var(--line);
+                 border-top-color:var(--rust);animation:tourne .8s linear infinite}
+  @keyframes tourne{to{transform:rotate(360deg)}}
+
+  .carte{margin-top:12px;padding:15px 16px;border-radius:14px;background:var(--card);border:1px solid var(--line)}
   .carte .q{font-size:15.5px;line-height:1.35;color:var(--ink)}
   .carte .d{margin-top:4px;font-size:13px;color:var(--muted)}
   .carte .d.or{color:var(--or)} .carte .d.alerte{color:var(--alerte);font-weight:600}
-  .carte .gestes{margin-top:10px;display:flex;gap:18px}
+  .carte .gestes{margin-top:10px;display:flex;gap:18px;flex-wrap:wrap}
   .carte .gestes button{border:0;background:none;padding:0;min-height:40px;color:var(--rust);
          font:600 14px/1 ui-sans-serif,sans-serif;cursor:pointer}
   .carte .gestes button.doux{color:var(--inkSoft);font-weight:500}
-  .carte.fait{animation:part .3s ease forwards}
-  @keyframes part{to{opacity:0;transform:translateY(-6px)}}
   .vide-accueil{margin-top:16px;color:var(--muted);font-size:14px}
-  .nouvelle{margin-top:12px;display:none}
-  .nouvelle.ouverte{display:block}
-  .nouvelle label{display:block;font-size:13.5px;color:var(--inkSoft);margin-bottom:6px}
-  .nouvelle .r{display:flex;gap:10px;align-items:center}
-  .nouvelle input{flex:1;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:0 10px;
-                  background:var(--cream);color:var(--ink);font:inherit;font-size:16px}
-  .nouvelle button{min-height:44px;padding:0 14px;border-radius:10px;border:0;background:var(--rust);
-                   color:var(--surPlein);font:600 14px/1 ui-sans-serif,sans-serif;cursor:pointer}
 
   .note{max-width:430px;margin:18px auto 0;padding:0 18px;font-size:13px;line-height:1.6;color:var(--horsTexte)}
   .note b{color:var(--horsFort)}
@@ -135,7 +153,7 @@
 <body data-charte="origine">
 
 <div class="bandeau">
-  <b>Votre demande du 14 octobre.</b> Une rubrique <b>Véhicules</b> dans Réglages : pour chaque camion, la carte grise, l’assurance et le contrôle technique en PDF, et les deux dates limites lues sur le procès‑verbal. Les rappels arrivent sur l’accueil au bon moment. Changez la date ci‑dessous pour les voir apparaître, puis appuyez sur « C’est fait ».
+  <b>Votre demande du 14 octobre, deuxième version.</b> Sur la fiche d’un camion, <b>Ajouter un document</b> : une photo ou un PDF. Atlas reconnaît la carte grise, l’assurance ou le contrôle technique, range le fichier et remplit les cases tout seul. Tout se corrige à la main. Essayez : ouvrez la fiche, choisissez plus bas le document « photographié », puis ajoutez‑le.
 </div>
 
 <div class="choix">
@@ -144,6 +162,15 @@
   <button data-vue="accueil" aria-pressed="false">Accueil</button>
   <button data-vue="salarie" aria-pressed="false">Salarié</button>
   <button id="nuit" aria-pressed="false">Nuit</button>
+</div>
+
+<div class="essai-doc" id="essai-doc">
+  <span>Pour l’essai, le document photographié</span>
+  <button data-doc="cg" aria-pressed="true">Carte grise</button>
+  <button data-doc="assu" aria-pressed="false">Assurance</button>
+  <button data-doc="ct" aria-pressed="false">Contrôle technique</button>
+  <button data-doc="cv" aria-pressed="false">Contre‑visite</button>
+  <button data-doc="autre" aria-pressed="false">Assurance d’un autre camion</button>
 </div>
 
 <div class="jours" id="jours">
@@ -156,7 +183,6 @@
 
 <div class="tel">
 
-  <!-- 1. RÉGLAGES : la liste -->
   <section class="ecran ouvert" id="v-reglages">
     <div class="entete">
       <button class="retour" type="button">‹ Réglages</button>
@@ -165,38 +191,18 @@
     </div>
     <div class="corps">
       <div id="liste"></div>
-      <button class="ajouter" type="button">+ Ajouter un véhicule</button>
+      <button class="ajouter" type="button" id="nouveau">+ Ajouter un véhicule</button>
     </div>
   </section>
 
-  <!-- 2. LA FICHE, côté patron -->
   <section class="ecran" id="v-fiche">
     <div class="entete">
       <button class="retour" type="button" data-aller="reglages">‹ Véhicules</button>
-      <h1 id="f-nom">Camion benne</h1>
+      <h1 id="f-titre">Camion benne</h1>
     </div>
-    <div class="corps">
-      <div class="champ"><span>Plaque</span><input value="GH-412-PK" aria-label="Plaque"></div>
-      <div class="champ"><span>Poids total (case F.2)</span><span class="v">3 500 kg</span></div>
-      <p class="reserve">La carte grise originale reste dans le véhicule.</p>
-
-      <p class="caps">Documents</p>
-      <div class="doc"><div class="ic">PDF</div><div class="t"><b>Carte grise</b><small>ajoutée le 14 octobre</small></div><button type="button">Voir</button></div>
-      <div class="doc"><div class="ic">PDF</div><div class="t"><b>Assurance</b><small>mémo véhicule assuré</small></div><button type="button">Voir</button></div>
-      <div class="doc"><div class="ic">PDF</div><div class="t"><b>Contrôle technique</b><small>procès‑verbal du 30 novembre 2024</small></div><button type="button">Voir</button></div>
-
-      <p class="caps">Assurance</p>
-      <div class="champ"><span>Assureur</span><input value="Mutuelle de l’Ouest" aria-label="Assureur"></div>
-      <div class="champ"><span>Numéro de contrat</span><input value="40 118 552 07" aria-label="Numéro de contrat"></div>
-      <div class="champ"><span>Assistance</span><input value="01 23 45 67 89" aria-label="Téléphone d’assistance" inputmode="tel"></div>
-
-      <p class="caps">Dates limites</p>
-      <div class="champ"><span>Contrôle technique<small>lue sur le procès‑verbal</small></span><input type="date" id="f-ct" aria-label="Date limite du contrôle technique"></div>
-      <div class="champ"><span>Contrôle pollution<small>lue sur le procès‑verbal</small></span><input type="date" id="f-pol" aria-label="Date limite du contrôle pollution"></div>
-    </div>
+    <div class="corps" id="fiche"></div>
   </section>
 
-  <!-- 3. L'ACCUEIL du patron -->
   <section class="ecran" id="v-accueil">
     <div class="entete">
       <p class="sur" id="a-jour">Mercredi 14 octobre</p>
@@ -205,27 +211,28 @@
     <div class="corps" id="cartes"></div>
   </section>
 
-  <!-- 4. Le SALARIÉ : lecture seule -->
   <section class="ecran" id="v-salarie">
     <div class="entete">
       <button class="retour" type="button">‹ Réglages</button>
       <p class="sur">Moi</p>
       <h1>Véhicules</h1>
     </div>
-    <div class="corps">
-      <p class="caps">Camion benne <span class="plaque">GH-412-PK</span></p>
-      <div class="champ"><span>Assureur</span><span class="v">Mutuelle de l’Ouest</span></div>
-      <div class="champ"><span>Numéro de contrat</span><span class="v">40 118 552 07</span></div>
-      <button class="appel" type="button">Appeler l’assistance</button>
-      <div class="doc" style="margin-top:8px"><div class="ic">PDF</div><div class="t"><b>Assurance</b></div><button type="button">Voir</button></div>
-      <div class="doc"><div class="ic">PDF</div><div class="t"><b>Carte grise</b><small>copie, l’originale est dans le véhicule</small></div><button type="button">Voir</button></div>
-
-      <p class="caps">Camion plateau <span class="plaque">FT-907-LM</span></p>
-      <div class="champ"><span>Assureur</span><span class="v">Mutuelle de l’Ouest</span></div>
-      <div class="champ"><span>Numéro de contrat</span><span class="v">40 118 553 12</span></div>
-      <button class="appel" type="button">Appeler l’assistance</button>
-    </div>
+    <div class="corps" id="salarie"></div>
   </section>
+
+  <div class="voile" id="voile">
+    <div class="feuille" id="feuille"></div>
+  </div>
+</div>
+
+<div class="note">
+  <b>Ce qu’Atlas lit sur chaque document</b>, et range dans la bonne case :
+  <table>
+    <tr><td>Carte grise</td><td>la plaque, la marque et le modèle, le poids total (case F.2), le genre (case J.1 : une camionnette a aussi le contrôle pollution).</td></tr>
+    <tr><td>Assurance</td><td>l’assureur, le numéro de contrat, l’assistance. Si la plaque du document n’est pas celle du camion, Atlas le dit et ne range rien.</td></tr>
+    <tr><td>Contrôle technique</td><td>les dates limites du prochain contrôle technique et du contrôle pollution, telles qu’elles sont imprimées. En cas de contre‑visite, sa date limite, qui devient un rappel.</td></tr>
+  </table>
+  Ce qu’Atlas ne trouve pas reste vide et le dit : il ne devine jamais une date. Une case touchée à la main perd sa mention « d’après… » : c’est votre chiffre qui compte.
 </div>
 
 <div class="note">
@@ -235,133 +242,270 @@
     <tr><td>15 jours avant</td><td>le rappel passe en doré.</td></tr>
     <tr><td>Date dépassée</td><td>le rappel passe en rouge : 135 € d’amende, et le camion peut être immobilisé.</td></tr>
   </table>
-  Le rappel reste tant que vous n’avez pas appuyé sur <b>C’est fait</b>. Atlas vous demande alors la nouvelle date limite, celle du nouveau procès‑verbal, et tout repart.
+  Le rappel s’en va quand le nouveau procès‑verbal est ajouté : Atlas y lit les nouvelles dates. Ou bien « Taper la date » sans photo.
 </div>
 
 <div class="note">
-  <b>Ce qui n’a pas de rappel, et pourquoi.</b> L’assurance : depuis avril 2024 les gendarmes la vérifient sur la plaque, et le contrat se renouvelle tout seul. La révision : elle dépend des kilomètres, qu’Atlas ne connaît pas. Les dates ne sont <b>jamais calculées</b> par Atlas : elles sont recopiées du procès‑verbal, parce qu’une date devinée fausse ferait rater le contrôle.
-</div>
-
-<div class="note">
-  <b>Le salarié</b> voit les véhicules sous « Moi », sans rien pouvoir changer : l’assureur et le numéro de contrat pour le constat, l’assistance en un appui, les PDF.
+  <b>Ce qui n’a pas de rappel, et pourquoi.</b> L’assurance : depuis avril 2024 les gendarmes la vérifient sur la plaque, et le contrat se renouvelle tout seul. La révision : elle dépend des kilomètres, qu’Atlas ne connaît pas.
 </div>
 
 <script>
-  // Les véhicules de démonstration. Les dates limites sont celles qu'il recopie
-  // du procès-verbal ; rien ici ne les déduit de la date de mise en circulation.
+  // ---- Les documents « photographiés » de l'essai : ce qu'un vrai papier porterait.
+  // Les dates d'un procès-verbal sont IMPRIMÉES dessus ; on les fabrique ici à
+  // partir du jour choisi seulement pour simuler un PV qui sort du garage.
+  const plusMois = (iso, m) => { const d = new Date(iso); d.setUTCMonth(d.getUTCMonth() + m); return d.toISOString().slice(0, 10); };
+  function documentPhotographie(sorte, vehicule) {
+    const plaque = vehicule.plaque || "EK-238-RV";
+    switch (sorte) {
+      case "cg": return { sorte: "cg", nom: "Carte grise", champs: {
+        plaque, modele: vehicule.plaque ? vehicule.modele || "Renault Master" : "Renault Master",
+        ptac: "3 500 kg", genre: "Camionnette (CTTE)" } };
+      case "assu": return { sorte: "assu", nom: "Assurance", plaqueLue: plaque, champs: {
+        assureur: "Mutuelle de l’Ouest", contrat: "40 118 552 07", assistance: "01 23 45 67 89" } };
+      case "autre": return { sorte: "assu", nom: "Assurance", plaqueLue: "BR-551-XA", champs: {
+        assureur: "Mutuelle de l’Ouest", contrat: "40 118 990 31", assistance: "01 23 45 67 89" } };
+      case "ct": return { sorte: "ct", nom: "Contrôle technique", champs: {
+        ct: plusMois(aujourdhui, 24), pol: plusMois(aujourdhui, 12), cv: "" } };
+      case "cv": return { sorte: "ct", nom: "Contrôle technique", champs: {
+        cv: plusMois(aujourdhui, 2) } };
+    }
+  }
+
+  const LIBELLES = { plaque: "Plaque", modele: "Marque et modèle", ptac: "Poids total (case F.2)", genre: "Genre (case J.1)",
+    assureur: "Assureur", contrat: "Numéro de contrat", assistance: "Assistance",
+    ct: "Contrôle technique", pol: "Contrôle pollution", cv: "Contre‑visite" };
+  const DATES = new Set(["ct", "pol", "cv"]);
+
   const vehicules = [
-    { id: "benne",   nom: "Camion benne",   plaque: "GH-412-PK", ct: "2026-11-30", pol: "2027-11-30" },
-    { id: "plateau", nom: "Camion plateau", plaque: "FT-907-LM", ct: "2027-12-20", pol: "2026-12-20" },
+    { nom: "Camion benne", plaque: "GH-412-PK", modele: "Renault Master", ptac: "3 500 kg", genre: "Camionnette (CTTE)",
+      assureur: "Mutuelle de l’Ouest", contrat: "40 118 552 07", assistance: "01 23 45 67 89",
+      ct: "2026-11-30", pol: "2027-11-30", cv: "",
+      lu: { plaque: "carte grise", modele: "carte grise", ptac: "carte grise", genre: "carte grise",
+            assureur: "assurance", contrat: "assurance", assistance: "assurance", ct: "procès‑verbal", pol: "procès‑verbal" },
+      docs: [{ nom: "Carte grise", type: "PDF", quand: "le 14 octobre" }, { nom: "Assurance", type: "PDF", quand: "le 14 octobre" },
+             { nom: "Contrôle technique", type: "Photo", quand: "le 30 novembre 2024" }] },
+    { nom: "Camion plateau", plaque: "FT-907-LM", modele: "Iveco Daily", ptac: "3 500 kg", genre: "Camionnette (CTTE)",
+      assureur: "Mutuelle de l’Ouest", contrat: "40 118 553 12", assistance: "01 23 45 67 89",
+      ct: "2027-12-20", pol: "2026-12-20", cv: "",
+      lu: { plaque: "carte grise", modele: "carte grise", ptac: "carte grise", genre: "carte grise", assureur: "assurance",
+            contrat: "assurance", assistance: "assurance", ct: "procès‑verbal", pol: "procès‑verbal" },
+      docs: [{ nom: "Carte grise", type: "PDF", quand: "le 2 septembre" }, { nom: "Assurance", type: "PDF", quand: "le 2 septembre" }] },
   ];
   let aujourdhui = "2026-10-14";
+  let sorteEssai = "cg";
+  let ouverte = vehicules[0];
+  let avis = null;          // ce qu'Atlas vient de dire après une lecture
+  let justeLus = [];        // pour faire clignoter ce qui vient d'être rempli
 
   const JOUR = 86400000;
   const jours = (a, b) => Math.round((new Date(b) - new Date(a)) / JOUR);
   const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
   const SEMAINE = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
-  const lisible = (iso) => { const d = new Date(iso); return `${d.getDate() === 1 ? "1er" : d.getDate()} ${MOIS[d.getMonth()]}`; };
+  const lisible = (iso) => { const d = new Date(iso); return `${d.getUTCDate() === 1 ? "1er" : d.getUTCDate()} ${MOIS[d.getUTCMonth()]}`; };
+  const lisibleAn = (iso) => `${lisible(iso)} ${new Date(iso).getUTCFullYear()}`;
+  const echap = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
   // Une seule règle, pour la liste comme pour l'accueil : deux écrans qui
   // calculeraient chacun leur seuil finiraient par ne plus dire la même chose.
-  function echeance(dateLimite) {
+  function echeance(dateLimite, contreVisite = false) {
+    if (!dateLimite) return null;
     const reste = jours(aujourdhui, dateLimite);
-    if (reste > 60) return null;
+    // une contre-visite se montre tout de suite : deux mois seulement, et le PV vient de la poser
+    if (reste > 60 && !contreVisite) return null;
     if (reste < 0) return { ton: "alerte", texte: `Dépassé depuis ${-reste} jour${-reste > 1 ? "s" : ""}` };
     if (reste <= 15) return { ton: "or", texte: reste === 0 ? "Dernier jour aujourd’hui" : `Plus que ${reste} jour${reste > 1 ? "s" : ""}` };
     return { ton: "", texte: "Vous pouvez le passer dès maintenant" };
   }
-
   function rappels() {
     const r = [];
-    for (const v of vehicules) {
-      for (const [cle, nom] of [["ct", "Contrôle technique"], ["pol", "Contrôle pollution"]]) {
-        const e = echeance(v[cle]);
-        if (e) r.push({ v, cle, nom, e, jusqua: v[cle] });
-      }
+    for (const v of vehicules) for (const cle of ["cv", "ct", "pol"]) {
+      const e = echeance(v[cle], cle === "cv");
+      if (e) r.push({ v, cle, e, jusqua: v[cle] });
     }
-    // le plus pressé en haut
     return r.sort((a, b) => a.jusqua.localeCompare(b.jusqua));
   }
 
+  // ---- la liste
   function dessinerListe() {
     const liste = document.getElementById("liste");
     liste.innerHTML = "";
     for (const v of vehicules) {
-      const pire = rappels().filter((r) => r.v === v)[0];
+      const pire = rappels().find((r) => r.v === v);
       const b = document.createElement("button");
-      b.className = "vehicule";
-      b.type = "button";
-      b.innerHTML = `<b>${v.nom}</b><small><span class="plaque">${v.plaque}</span></small>`
-        + `<span class="etat ${pire ? pire.e.ton : ""}">${pire ? `${pire.nom}<br>avant le ${lisible(pire.jusqua)}` : "À jour"}</span>`;
+      b.className = "vehicule"; b.type = "button";
+      b.innerHTML = `<b>${echap(v.nom)}</b><small>${v.plaque ? `<span class="plaque">${echap(v.plaque)}</span>` : "Plaque à lire"}</small>`
+        + `<span class="etat ${pire ? pire.e.ton : ""}">${pire ? `${LIBELLES[pire.cle]}<br>avant le ${lisible(pire.jusqua)}` : (v.plaque ? "À jour" : "")}</span>`;
       b.onclick = () => ouvrirFiche(v);
       liste.appendChild(b);
     }
   }
 
+  // ---- la fiche
+  function champ(cle) {
+    const v = ouverte;
+    const source = v.lu[cle];
+    const SUR = { "carte grise": "la carte grise", "assurance": "l’assurance", "procès‑verbal": "le procès‑verbal" };
+    const sous = source ? `<small class="lu">d’après ${SUR[source]}</small>` : (DATES.has(cle) && cle !== "cv" ? `<small>pas encore lue</small>` : "");
+    const type = DATES.has(cle) ? "date" : "text";
+    return `<div class="champ${justeLus.includes(cle) ? " vient-d-etre-lu" : ""}"><span>${LIBELLES[cle]}${sous}</span>`
+      + `<input type="${type}" data-cle="${cle}" value="${echap(v[cle] || "")}" placeholder="à remplir" aria-label="${LIBELLES[cle]}"></div>`;
+  }
+  function dessinerFiche() {
+    const v = ouverte;
+    document.getElementById("f-titre").textContent = v.nom || "Nouveau véhicule";
+    let h = `<button class="deposer" type="button" id="deposer">Ajouter un document</button>`;
+    if (avis) h += `<div class="avis ${avis.ton || ""}">${avis.texte}${avis.geste ? `<button type="button" id="avis-geste">${avis.geste}</button>` : ""}</div>`;
+
+    h += `<p class="caps">Le véhicule</p>`;
+    h += `<div class="champ"><span>Nom</span><input data-cle="nom" value="${echap(v.nom)}" placeholder="Camion benne" aria-label="Nom"></div>`;
+    h += ["plaque", "modele", "ptac", "genre"].map(champ).join("");
+    h += `<p class="reserve">La carte grise originale reste dans le véhicule.</p>`;
+
+    h += `<p class="caps">Assurance</p>` + ["assureur", "contrat", "assistance"].map(champ).join("");
+    h += `<p class="caps">Dates limites</p>` + ["ct", "pol"].map(champ).join("");
+    if (v.cv) h += champ("cv");
+
+    h += `<p class="caps">Documents</p>`;
+    h += v.docs.length ? v.docs.map((d) => `<div class="doc"><div class="ic ${d.type === "Photo" ? "photo" : ""}">${d.type === "Photo" ? "JPG" : "PDF"}</div>`
+      + `<div class="t"><b>${d.nom}</b><small>ajouté ${d.quand}</small></div><button type="button">Voir</button></div>`).join("")
+      : `<p class="aucun">Aucun document pour l’instant.</p>`;
+
+    const corps = document.getElementById("fiche");
+    corps.innerHTML = h;
+    justeLus = [];
+    corps.querySelector("#deposer").onclick = ouvrirFeuille;
+    const g = corps.querySelector("#avis-geste");
+    if (g) g.onclick = () => { avis = null; dessinerFiche(); };
+    // une case touchée à la main : c'est sa valeur qui compte, la mention « lu » s'en va
+    corps.querySelectorAll("input[data-cle]").forEach((i) => i.onchange = () => {
+      const cle = i.dataset.cle;
+      v[cle] = i.value.trim();
+      delete v.lu[cle];
+      tout();
+    });
+  }
+  function ouvrirFiche(v) { ouverte = v; avis = null; montrer("fiche"); dessinerFiche(); }
+
+  // ---- ajouter un document : photo ou fichier, puis lecture
+  const voile = document.getElementById("voile");
+  const feuille = document.getElementById("feuille");
+  function ouvrirFeuille() {
+    feuille.innerHTML = `<div class="poignee"></div>`
+      + `<button type="button" data-f="photo">Prendre une photo</button>`
+      + `<button type="button" data-f="fichier">Choisir une photo ou un PDF</button>`
+      + `<button type="button" data-f="non">Annuler</button>`;
+    voile.classList.add("ouvert");
+    feuille.querySelectorAll("button").forEach((b) => b.onclick = () => {
+      if (b.dataset.f === "non") return fermerFeuille();
+      lire(b.dataset.f === "photo" ? "Photo" : "PDF");
+    });
+  }
+  function fermerFeuille() { voile.classList.remove("ouvert"); }
+  voile.onclick = (e) => { if (e.target === voile) fermerFeuille(); };
+
+  function lire(type) {
+    feuille.innerHTML = `<div class="poignee"></div><div class="lecture"><div class="rond"></div>Atlas lit le document</div>`;
+    // ce qu'Atlas vient de dire se montre, même si la fiche était défilée plus bas
+    setTimeout(() => {
+      fermerFeuille();
+      ranger(documentPhotographie(sorteEssai, ouverte), type);
+      document.querySelector("#fiche .avis")?.scrollIntoView({ block: "center" });
+    }, 1300);
+  }
+
+  function ranger(doc, type) {
+    const v = ouverte;
+    // L'assurance d'un AUTRE camion ne se range pas : un numéro de contrat faux
+    // sur le constat coûte plus cher qu'une case vide.
+    if (doc.sorte === "assu" && v.plaque && doc.plaqueLue !== v.plaque) {
+      avis = { ton: "alerte", texte: `Ce document est pour le véhicule <b>${doc.plaqueLue}</b>, pas pour ${echap(v.plaque)}. Rien n’a été rangé.`, geste: "Compris" };
+      return dessinerFiche();
+    }
+    const source = { cg: "carte grise", assu: "assurance", ct: "procès‑verbal" }[doc.sorte];
+    const remplis = [];
+    for (const [cle, val] of Object.entries(doc.champs)) {
+      if (cle === "cv" && !val) { v.cv = ""; delete v.lu.cv; continue; }
+      v[cle] = val;
+      v.lu[cle] = source;
+      remplis.push(cle);
+    }
+    if (doc.sorte === "cg" && !v.nom) v.nom = v.modele;
+    v.docs = v.docs.filter((d) => d.nom !== doc.nom);
+    v.docs.push({ nom: doc.nom, type, quand: `le ${lisible(aujourdhui)}` });
+    justeLus = remplis;
+    const n = remplis.length;
+    if (doc.champs.cv) {
+      avis = { ton: "alerte", texte: `Contre‑visite à passer avant le <b>${lisibleAn(doc.champs.cv)}</b>. Le rappel est posé.` };
+    } else {
+      avis = { texte: `${{ cg: "Carte grise lue", assu: "Assurance lue", ct: "Contrôle technique lu" }[doc.sorte]}. ${n} information${n > 1 ? "s" : ""} remplie${n > 1 ? "s" : ""}, en doré. Une erreur ? Touchez la case.` };
+    }
+    if (!vehicules.includes(v)) vehicules.push(v);
+    tout();
+  }
+
+  document.getElementById("nouveau").onclick = () => {
+    ouverte = { nom: "", plaque: "", modele: "", ptac: "", genre: "", assureur: "", contrat: "", assistance: "", ct: "", pol: "", cv: "", lu: {}, docs: [] };
+    avis = { texte: "Commencez par la carte grise : Atlas y lit la plaque et le modèle." };
+    montrer("fiche"); dessinerFiche();
+  };
+
+  // ---- l'accueil
   function dessinerAccueil() {
     const d = new Date(aujourdhui);
-    document.getElementById("a-jour").textContent = `${SEMAINE[d.getDay()]} ${lisible(aujourdhui)}`;
+    document.getElementById("a-jour").textContent = `${SEMAINE[d.getUTCDay()]} ${lisible(aujourdhui)}`;
     const zone = document.getElementById("cartes");
     zone.innerHTML = "";
     const r = rappels();
-    if (r.length === 0) {
-      zone.innerHTML = `<p class="vide-accueil">Aucun contrôle à prévoir pour vos véhicules.</p>`;
-      return;
-    }
+    if (r.length === 0) { zone.innerHTML = `<p class="vide-accueil">Aucun contrôle à prévoir pour vos véhicules.</p>`; return; }
     for (const x of r) {
       const c = document.createElement("div");
       c.className = "carte";
-      c.innerHTML = `<div class="q">${x.nom} du ${x.v.nom.toLowerCase()} avant le ${lisible(x.jusqua)}.</div>`
+      c.innerHTML = `<div class="q">${echap(x.v.nom)}, ${LIBELLES[x.cle].toLowerCase()} avant le ${lisible(x.jusqua)}.</div>`
         + `<div class="d ${x.e.ton}">${x.e.texte}</div>`
-        + `<div class="gestes"><button type="button" class="fait">C’est fait</button><button type="button" class="doux voir">Voir le véhicule</button></div>`
-        + `<div class="nouvelle"><label>Nouvelle date limite, sur le procès‑verbal</label>`
-        + `<div class="r"><input type="date" aria-label="Nouvelle date limite"><button type="button">Valider</button></div></div>`;
-      const nouvelle = c.querySelector(".nouvelle");
-      c.querySelector(".fait").onclick = () => { nouvelle.classList.add("ouverte"); nouvelle.querySelector("input").focus(); };
-      c.querySelector(".voir").onclick = () => ouvrirFiche(x.v);
-      c.querySelector(".nouvelle button").onclick = () => {
-        const val = nouvelle.querySelector("input").value;
-        if (!val) { nouvelle.querySelector("input").focus(); return; }
-        x.v[x.cle] = val;
-        c.classList.add("fait");
-        setTimeout(tout, 300);
-      };
+        + `<div class="gestes"><button type="button" class="pv">Ajouter le procès‑verbal</button><button type="button" class="doux main">Taper la date</button></div>`;
+      c.querySelector(".pv").onclick = () => { ouvrirFiche(x.v); sorteEssai = "ct"; marquerEssai(); ouvrirFeuille(); };
+      c.querySelector(".main").onclick = () => { ouvrirFiche(x.v); const i = document.querySelector(`#fiche input[data-cle="${x.cle}"]`); i.scrollIntoView({ block: "center" }); i.focus(); };
       zone.appendChild(c);
     }
   }
 
-  let ficheOuverte = vehicules[0];
-  function ouvrirFiche(v) {
-    ficheOuverte = v;
-    document.getElementById("f-nom").textContent = v.nom;
-    document.getElementById("f-ct").value = v.ct;
-    document.getElementById("f-pol").value = v.pol;
-    montrer("fiche");
+  // ---- le salarié : lecture seule
+  function dessinerSalarie() {
+    document.getElementById("salarie").innerHTML = vehicules.filter((v) => v.plaque).map((v) =>
+      `<p class="caps">${echap(v.nom)} <span class="plaque">${echap(v.plaque)}</span></p>`
+      + `<div class="champ"><span>Assureur</span><span class="v">${echap(v.assureur || "pas encore lu")}</span></div>`
+      + `<div class="champ"><span>Numéro de contrat</span><span class="v">${echap(v.contrat || "pas encore lu")}</span></div>`
+      + (v.assistance ? `<button class="appel" type="button">Appeler l’assistance</button>` : "")
+      + v.docs.filter((d) => d.nom !== "Contrôle technique").map((d) => `<div class="doc"><div class="ic">${d.type === "Photo" ? "JPG" : "PDF"}</div><div class="t"><b>${d.nom}</b>`
+        + `${d.nom === "Carte grise" ? "<small>copie, l’originale est dans le véhicule</small>" : ""}</div><button type="button">Voir</button></div>`).join("")
+    ).join("");
   }
-  document.getElementById("f-ct").onchange = (e) => { if (e.target.value) { ficheOuverte.ct = e.target.value; tout(); } };
-  document.getElementById("f-pol").onchange = (e) => { if (e.target.value) { ficheOuverte.pol = e.target.value; tout(); } };
 
+  // ---- navigation et réglages de l'essai
   function montrer(vue) {
     document.querySelectorAll(".ecran").forEach((s) => s.classList.toggle("ouvert", s.id === "v-" + vue));
     document.querySelectorAll(".choix [data-vue]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.vue === vue)));
   }
-  document.querySelectorAll(".choix [data-vue]").forEach((b) => b.onclick = () => vue(b.dataset.vue));
-  function vue(n) { if (n === "fiche") ouvrirFiche(ficheOuverte); else montrer(n); }
+  document.querySelectorAll(".choix [data-vue]").forEach((b) => b.onclick = () => {
+    if (b.dataset.vue === "fiche") ouvrirFiche(ouverte); else montrer(b.dataset.vue);
+  });
   document.querySelectorAll("[data-aller]").forEach((b) => b.onclick = () => montrer(b.dataset.aller));
+
+  function marquerEssai() { document.querySelectorAll("#essai-doc button").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.doc === sorteEssai))); }
+  document.querySelectorAll("#essai-doc button").forEach((b) => b.onclick = () => { sorteEssai = b.dataset.doc; marquerEssai(); });
 
   document.querySelectorAll("#jours button").forEach((b) => b.onclick = () => {
     aujourdhui = b.dataset.j;
     document.querySelectorAll("#jours button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
     tout();
   });
-
   document.getElementById("nuit").onclick = (e) => {
     const nuit = document.body.dataset.charte !== "nuit";
     document.body.dataset.charte = nuit ? "nuit" : "origine";
     e.currentTarget.setAttribute("aria-pressed", String(nuit));
   };
 
-  function tout() { dessinerListe(); dessinerAccueil(); document.getElementById("f-ct").value = ficheOuverte.ct; document.getElementById("f-pol").value = ficheOuverte.pol; }
+  function tout() { dessinerListe(); dessinerAccueil(); dessinerSalarie(); if (document.getElementById("v-fiche").classList.contains("ouvert")) dessinerFiche(); }
   tout();
 </script>
 </body>

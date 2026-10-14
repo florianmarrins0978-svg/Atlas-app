@@ -23,8 +23,22 @@ jusqu'à « C'est fait », qui demande la nouvelle date limite. **Les dates sont
 recopiées du procès-verbal, jamais calculées.** Pas de rappel d'assurance ni de
 révision (kilomètres inconnus).
 
+**Deuxième version, même jour — il l'a trouvée bien et a demandé :** *« que
+l'appli enregistre tout seul les infos au bon endroit lorsqu'on joint les photos
+des documents ou le PDF »*, et *« pouvoir modifier les infos à la main si elle
+s'est trompée ou si ça a changé »*. Un seul bouton **Ajouter un document**
+(photo ou PDF) ; Atlas reconnaît carte grise / assurance / PV, range le fichier
+et remplit les cases, marquées « d'après la carte grise » en doré. Une case
+retouchée perd sa mention. Rien de deviné : ce qui n'est pas lu reste vide.
+L'assurance d'une AUTRE plaque est refusée sans rien ranger. Un PV de
+contre-visite pose un rappel immédiat (pas de seuil à 60 jours). Le rappel
+s'efface en ajoutant le nouveau PV, ou « Taper la date ». La lecture se fera
+comme `src/server/ai/services/lire-attestation.ts`, qui lit DÉJÀ une photo ou un
+PDF (`lireImages` accepte `application/pdf`).
+
 **Pour coder ensuite (proposé) :** table `vehicules` sous RLS par entreprise,
-documents par le rangement existant, une règle pure dans `src/lib/` pour les
+documents par le rangement existant, un service `lire-document-vehicule.ts`
+(une fonction pure qui relit le JSON, éprouvée sans clé), une règle pure dans `src/lib/` pour les
 seuils (la liste et l'accueil la partagent), les rappels dans
 `src/lib/rappels.ts`, le salarié en lecture dans `acces-roles.ts`. **Niveau 3**
 (migration, permissions). **NE RIEN CODER avant sa réponse** (`CLAUDE.md`
