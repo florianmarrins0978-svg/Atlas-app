@@ -26,13 +26,13 @@
      font-variant-numeric: lining-nums sur MoisCharge.
   2. Les demi-journées vides : soixante rectangles cerclés sur un mois vide.
      Le vide devient un trait plein très pâle, sans contour.
-  3. Le samedi et le dimanche perdent leur pavé gris : c'étaient les cases les
-     plus lourdes du mois.
-  4. Les jours passés passent en gris.
-  5. Les flèches du mois perdent leurs ronds de 44 px ; la cible reste.
+  3. Les jours passés passent en gris. Les jours à venir gardent leur encre,
+     et le week-end son carré gris : sa réponse du 14 octobre au soir, « remets
+     les carrés autour des samedi dimanche comme avant ».
+  4. Les flèches du mois perdent leurs ronds de 44 px ; la cible reste.
      « octobre 2026 » passe en Playfair.
-  6. L'agenda tient sur une ligne, à la même place.
-  7. La liste « jour » sous le mois redit la fiche du jour : elle part, avec
+  5. L'agenda tient sur une ligne, à la même place.
+  6. La liste « jour » sous le mois redit la fiche du jour : elle part, avec
      les deux points. « La semaine » ouvre les sept jours, à la même place.
      C'est le seul point qui change un geste : il peut le refuser seul.
 
@@ -46,7 +46,7 @@
   :root{
     --scene:#e6e3dc; --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
     --gris:#8a8578; --or:#B98B47; --pin:#2f3b2f; --pale:#b9c6b4; --bordeaux:#6E2433; --plein:#7d9a6d;
-    --papier:#ece9e1; --bande:rgba(28,28,26,.035); --vide:rgba(28,28,26,.07);
+    --papier:#ece9e1; --pave:rgba(28,28,26,.045); --pave-lue:rgba(28,28,26,.06); --bande:rgba(28,28,26,.035); --vide:rgba(28,28,26,.07);
     --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
     --ombre:rgba(28,28,26,.07); --ombre-forte:rgba(20,18,14,.18); --or-voile:rgba(185,139,71,.12);
     --titre:"Playfair Display",Georgia,serif; --corps:Inter,ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
@@ -54,7 +54,7 @@
   body.nuit{
     --scene:#070908; --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
     --gris:#84887b; --or:#C9A05E; --pin:#e9e8de; --pale:#4f5f4c; --bordeaux:#c4677a; --plein:#7d9a6d;
-    --papier:#22261f; --bande:rgba(233,232,222,.04); --vide:rgba(233,232,222,.09);
+    --papier:#22261f; --pave:rgba(233,232,222,.06); --pave-lue:rgba(233,232,222,.08); --bande:rgba(233,232,222,.04); --vide:rgba(233,232,222,.09);
     --trait:rgba(233,232,222,.14); --trait-doux:rgba(233,232,222,.08);
     --ombre:rgba(0,0,0,.35); --ombre-forte:rgba(0,0,0,.6); --or-voile:rgba(201,160,94,.16);
   }
@@ -120,7 +120,9 @@
   .case[disabled]{cursor:default}
   /* 1. LES CHIFFRES SUR UNE MÊME LIGNE — lining-nums, sans quoi 3 4 5 7 9 descendent */
   .case .n{font:400 18px/1 var(--titre);font-variant-numeric:lining-nums tabular-nums;transition:color .2s}
-  /* 3. le week-end : le chiffre en gris, sans pavé */
+  /* le week-end : son carré gris et son chiffre gris, comme dans l’application (sa réponse du 14 octobre) */
+  .case.repos{background:var(--pave);margin:2px;height:48px}
+  .rang.lue .case.repos{background:var(--pave-lue)}
   .case.repos .n{color:var(--gris)}
   /* 4. les jours passés s'éteignent */
   .case.passe .n{color:var(--gris);opacity:.7}
@@ -318,14 +320,13 @@
   <ol>
     <li><b>Les chiffres ne sautent plus.</b> Aujourd’hui le 5, le 7 et le 9 descendent sous la ligne, le 6 et le 8 non. Ils sont posés sur la même ligne.</li>
     <li><b>Les demi-journées vides s’effacent presque.</b> Sur un mois vide, on voit soixante petits rectangles cerclés. Le vide devient un trait très pâle, et le travail posé ressort d’un coup d’œil. Les quatre couleurs ne changent pas.</li>
-    <li><b>Le samedi et le dimanche perdent leur pavé gris.</b> C’étaient les cases les plus lourdes du mois. Le chiffre reste en gris.</li>
-    <li><b>Les jours passés s’éteignent</b>, pour voir où l’on en est dans le mois.</li>
+    <li><b>Les jours passés s’éteignent</b>, pour voir où l’on en est dans le mois. Les jours à venir et le carré gris du week-end restent comme aujourd’hui.</li>
     <li><b>Le mois se change par deux chevrons</b>, sans les grands ronds. Son nom passe dans la police des titres.</li>
     <li><b>L’agenda tient sur une ligne</b>, à la même place : « Agenda Google non relié », et « Connecter » en or.</li>
     <li><b>La journée n’est plus écrite deux fois.</b> Aujourd’hui la fiche du jour dit « libre », et la liste du dessous redit « Rien de posé ce jour-là ». Cette liste part, avec les deux points. « La semaine », en or, ouvre les sept jours à la même place. <b>C’est le seul point qui change un geste</b> : vous pouvez le refuser seul.</li>
   </ol>
   <h2>Ce qui ne bouge pas</h2>
-  <p>L’en-tête, qui est le même sur tous les écrans. La fiche du jour codée le 19 septembre, ses mots et ses places. Le tiroir, la barre du bas.</p>
+  <p>Le carré gris du samedi et du dimanche, votre réponse du 14 octobre. L’en-tête, qui est le même sur tous les écrans. La fiche du jour codée le 19 septembre, ses mots et ses places. Le tiroir, la barre du bas.</p>
   <p><b>À gauche</b>, une photo de votre application prise ce soir, sur une base d’essai sans chantier.</p>
   <p><b>Touchez</b> un jour, « La semaine », le tiroir, « + Absent ? ». <b>Rien n’est codé.</b></p>
 </div>

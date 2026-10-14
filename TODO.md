@@ -1,25 +1,46 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER — LA FICHE DU JOUR, EN MIEUX (14 octobre 2026)
+
+**Sa demande :** *« quand je clique sur un jour, fais-moi une planche de ce qui
+s'affiche, mais amélioré »*. Planche `appli/fiche-du-jour-en-mieux.html`, sa
+fiche d'aujourd'hui en photo à gauche (prise sur `atlas_test`, un client posé
+sur le 15 puis retiré). **Rien n'est codé ; ne pas coder avant son oui.**
+
+| | Ce qui change | Où, si oui |
+|---|---|---|
+| 1 | « Aujourd'hui » en or au-dessus de la date | `CarteDuJour` |
+| 2 | chaque demi-journée dit qui part, ou « + Salarié » en or | `CarteDuJour` |
+| 3 | **« + Absent ? » montre les noms d'abord** : avec une seule personne, un seul appui marquait « Vous » absent (vu en touchant) | `GesteAbsence` |
+| 4 | le nom du chantier porte le chevron de la liste, qui tourne quand la fiche d'intervention s'ouvre | `CarteDuJour` |
+| 5 | rythme régulier, plus de grands blancs avant « Déplacer  Retirer » et « Ajouter » ; un filet entre deux chantiers | `CarteDuJour` |
+
+Ne bougent pas : les mots et leurs places, et la fiche d'intervention (ses
+planches 4 et 5 attendent son choix).
+
 ## ⏳ UNE PLANCHE À REGARDER — LE PLANNING ÉPURÉ (14 octobre 2026)
 
 **Sa demande :** *« va regarder la page du planning et fais-moi une planche
 améliorée de la page »*. Planche `appli/planning-epure.html`, sa page
 d'aujourd'hui en photo à gauche. **Rien n'est codé ; ne pas coder avant son oui.**
 
-Sept retouches, chacune relevée sur l'écran ouvert le 14 octobre :
+Six retouches, chacune relevée sur l'écran ouvert le 14 octobre :
 
 | | Ce qui change | Où, si oui |
 |---|---|---|
 | 1 | les chiffres du mois sur une même ligne (Playfair dessine 3 4 5 7 9 sous la ligne) | `lining-nums` dans `MoisCharge` |
 | 2 | demi-journée vide : un trait plein très pâle, sans contour | `MoisCharge` |
-| 3 | samedi, dimanche : plus de pavé gris, le chiffre reste gris | `MoisCharge` |
-| 4 | jours passés en gris | `MoisCharge` |
-| 5 | chevrons du mois sans leurs ronds (cible de 44 px gardée), mois en Playfair | `MoisCharge` |
-| 6 | l'agenda sur une ligne : « Agenda Google non relié », « Connecter » | `PlanningClient.tsx` |
-| 7 | **le seul geste qui change** : la liste « jour » sous le mois redit la fiche du jour ; elle part avec les deux points, « La semaine » ouvre les sept jours | `PlanningClient.tsx` (`portee`) |
+| 3 | jours passés en gris ; les jours à venir gardent leur encre | `MoisCharge` |
+| 4 | chevrons du mois sans leurs ronds (cible de 44 px gardée), mois en Playfair | `MoisCharge` |
+| 5 | l'agenda sur une ligne : « Agenda Google non relié », « Connecter » | `PlanningClient.tsx` |
+| 6 | **le seul geste qui change** : la liste « jour » sous le mois redit la fiche du jour ; elle part avec les deux points, « La semaine » ouvre les sept jours | `PlanningClient.tsx` (`portee`) |
+
+**Le samedi et le dimanche gardent leur carré gris** : une septième retouche
+le retirait, **il l'a refusée le 14 octobre au soir** (*« remets les carrés
+autour des jours samedi dimanche comme avant »*). Ne pas la reproposer.
 
 **`MoisCharge` sert aussi l'écran d'envoi** (`EnvoiAuClient.tsx`,
-`JourneeRegardee.tsx`) **et les équipes des Réglages** (`VosEquipes.tsx`) : 1 à 5
+`JourneeRegardee.tsx`) **et les équipes des Réglages** (`VosEquipes.tsx`) : 1 à 4
 s'y verront aussi, et se regardent là aussi avant fusion. Niveau à calculer au moment du lot. Ne bougent pas : l'en-tête
 (partagé par onze écrans), la fiche du jour du 19 septembre, le tiroir.
 
