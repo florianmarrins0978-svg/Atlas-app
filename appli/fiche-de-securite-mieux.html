@@ -37,7 +37,15 @@
   2. Les SST et GSA se calculent sur leur date : 24 mois, et l'écran prévient.
   3. Chaque personne signe qu'elle a lu la fiche (la notice MSA : « chaque
      intervenant doit avoir pris connaissance de cette fiche »).
-  4. Le sommaire dit ce qui reste vide, étape par étape : rien ne bloque.
+  4. L'écran Signer dit ce qui reste vide, et y renvoie d'un appui : rien ne
+     bloque.
+
+  14 OCTOBRE, SES TROIS REMARQUES SUR CETTE PLANCHE :
+  « trop de sous-catégories, c'est plus lent que ce qu'on a déjà » : on garde
+  les six écrans de l'appli, tout à la suite, et les sujets de Kleyk y
+  deviennent des titres ; « le croquis fait des traits saccadés » : réparé à
+  la racine (voir `brancherCroquis`) ; « les sociétés externes doivent rester
+  enregistrées » : ses entreprises habituelles reviennent d'un appui.
   5. Ce qu'Atlas sait est déjà posé (devis, client, adresse, dates, équipe).
 
   « RIEN À SIGNALER » est une réponse qu'il donne, pas une case cochée d'avance :
@@ -118,12 +126,12 @@
   .case.rien{font-weight:600}
   .liste{margin-top:2px}
 
-  /* le sommaire, et les sous-étapes */
+  /* un bloc par sujet, tous à la suite dans l'étape */
+  .titre-bloc{margin:0 0 8px;font:400 19px/1.2 ui-serif,Georgia,serif;color:var(--encre)}
+  .bloc{scroll-margin-top:12px}
+  /* ce qui reste vide, sur l'écran Signer */
   .ligne{display:flex;width:100%;align-items:center;gap:14px;min-height:64px;padding:10px 0;border-top:1px solid var(--trait-doux)}
   .ligne:first-child{border-top:0}
-  .num{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font:400 16px/1 ui-serif,Georgia,serif;box-shadow:inset 0 0 0 1.5px var(--vert-pale);color:var(--pin)}
-  body.nuit .num{color:var(--encre)}
-  .num.fait{background:var(--plein);color:var(--sur-plein);box-shadow:none}
   .ligne .t{flex:1;min-width:0}
   .ligne .t b{display:block;font-weight:400;font-size:15.5px;line-height:1.25}
   .ligne .t small{display:block;margin-top:2px;font-size:12.5px;color:var(--gris);line-height:1.35}
@@ -232,7 +240,9 @@
     <tr><td>Le croquis</td><td>Dessiné sur la photo du chantier, avec des symboles. Les arbres dangereux y prennent leur numéro.</td></tr>
     <tr><td>SST et GSA</td><td>Atlas compte les 24 mois et prévient. Kleyk fait recocher à la main.</td></tr>
     <tr><td>Lu par l’équipe</td><td>Chacun signe qu’il a lu la fiche, comme le demande la MSA.</td></tr>
-    <tr><td>Le sommaire</td><td>Il dit ce qui reste vide, étape par étape.</td></tr>
+    <tr><td>La vitesse</td><td>Six écrans, tout à la suite, comme dans l’appli. Pas de porte à ouvrir pour arriver aux cases.</td></tr>
+    <tr><td>Les entreprises externes</td><td>Gardées. Un appui sur son nom, et sa fiche revient.</td></tr>
+    <tr><td>Ce qui reste vide</td><td>L’écran Signer le dit, et y renvoie d’un appui.</td></tr>
     <tr><td>Ce qu’Atlas sait déjà</td><td>Devis, client, adresse, dates, équipe : rien à retaper.</td></tr>
     <tr><td>Les secours</td><td>Point de rencontre, 15, 18, 112, protéger, alerter, secourir.</td></tr>
   </table>
@@ -270,7 +280,15 @@ const L = {
   meteo: ["Sécuriser les travaux en cours puis arrêter les travaux","Protéger les zones dangereuses ou potentiellement dangereuses (matérialisation, interdiction d’accès…)","Prévenir le responsable du chantier ou le chef d’entreprise"],
   secours: ["Trousse de secours (contenu approprié à l’activité)","Kit d’urgence portatif (élagueur)","Tous les travailleurs sur le chantier sont Sauveteurs Secouristes du Travail (SST)","Travailleurs, disposant des compétences (type Grimpeur Sauveteur dans l’Arbre) et des moyens pour porter secours à victime dans l’arbre, en nombre suffisant sur le chantier","Moyen de communication fonctionnel","Protocole de secours propre au site, lu"],
 };
-const PROTOCOLE = "1. Se faire voir ou entendre de celui qui travaille dans la zone.\n2. Attendre qu’il arrête sa machine ou sa coupe.\n3. Entrer seulement quand il fait signe, avec ses EPI.\n4. Lui dire où l’on se trouve tant qu’on est dans la zone.\n5. Le prévenir en sortant, avant qu’il reprenne.";
+/* Ses entreprises habituelles. Sa demande du 14 octobre : « si on travaille
+   souvent avec les mêmes, on a juste à recliquer sur leur fiche et elle
+   apparaît ». Une entreprise saisie une fois est gardée, comme ses ajouts. */
+const EXTERNES = [
+  { nom: "Élec Services", tel: "02 41 00 11 22", quoi: "coupe la ligne" },
+  { nom: "Grue Loc 49", tel: "06 45 12 78 90", quoi: "grue avec chauffeur" },
+  { nom: "Bois et Broyage Anjou", tel: "06 71 33 20 14", quoi: "broyage et évacuation" },
+];
+const PROTOCOLE ="1. Se faire voir ou entendre de celui qui travaille dans la zone.\n2. Attendre qu’il arrête sa machine ou sa coupe.\n3. Entrer seulement quand il fait signe, avec ses EPI.\n4. Lui dire où l’on se trouve tant qu’on est dans la zone.\n5. Le prévenir en sortant, avant qu’il reprenne.";
 
 const EQUIPE = {
   "Florian Martins": ["CS élagage, Grimpeur élagueur. SST jusqu’au 3 mars 2027, GSA jusqu’au 9 juin 2027.", ""],
@@ -321,17 +339,18 @@ const ETAPES = [
 let e;
 function depart() {
   e = {
-    vue: { etape: null, sous: null },
+    vue: { etape: 0 },
     coches: {},          // id -> Set
     champs: { trousse: "Dans la cabine du camion", prs: "", protocole: PROTOCOLE, autresR: "", autresM: "", acces: "" },
     donneur: "client",
-    soustraitants: null, // null | "non" | [ {nom,tel,quoi} ]
+    soustraitants: null, // null | "non" | "oui"
+    externes: new Set(), nouvelles: 0,
     responsables: ["Florian Martins"],
     gens: { "Florian Martins": true, "Kevin Morel": true, "Lucas Petit": true },
     gps: { x: 228, y: 120 },
     dangereux: null,     // null | "non" | [ {groupe, inter, dangers:Set, consignes:Set} ]
     croquis: null,       // null | "photo" | "blanc"
-    outil: "crayon", marques: [], trace: null, accesDebut: null,
+    outil: "crayon", marques: [], accesDebut: null,
     photos: 2,
     lus: {}, pad: null, signee: false, sig: false,
   };
@@ -362,24 +381,6 @@ function fait(id) {
     default: return n(id) > 0;
   }
 }
-function resume(id) {
-  const n = (k) => S(k).size;
-  if (id === "ident") return "Mme Roux, devis D-2026-041";
-  if (id === "lieu") return "12 rue des Tilleuls, Angers";
-  if (id === "dates") return "14 octobre, de 8 h à 17 h";
-  if (id === "responsables") return e.responsables.join(", ");
-  if (id === "equipe") { const k = Object.values(e.gens).filter(Boolean).length; return `${k} personne${k > 1 ? "s" : ""}, 1 SST dépassé`; }
-  if (id === "sous-traitants") return e.soustraitants === null ? "à remplir" : e.soustraitants === "non" ? "Aucun" : `${e.soustraitants.length} entreprise${e.soustraitants.length > 1 ? "s" : ""}`;
-  if (id === "arbres-dangereux") return e.dangereux === null ? "à remplir" : e.dangereux === "non" ? "Aucun" : `${e.dangereux.length} arbre${e.dangereux.length > 1 ? "s" : ""} ou groupe${e.dangereux.length > 1 ? "s" : ""}`;
-  if (id === "croquis") return e.marques.length ? `${e.marques.length} repère${e.marques.length > 1 ? "s" : ""}` : "à faire";
-  if (id === "photos") return `${e.photos} sur 10`;
-  if (id === "protocole") return "Texte modèle, modifiable";
-  if (id === "secours") return e.champs.prs.trim() ? "Point de rencontre posé" : "Point de rencontre à préciser";
-  const cle = { "r-arbres": "arbres", "r-bio": "biologique", "r-reseaux": "reseaux", "r-noyade": "noyade", "r-env": "environnement", "r-coact": "coactivite" }[id] || id;
-  if (id === "r-autres") return fait(id) ? "Écrit" : "Rien d’écrit";
-  if (S(cle).has(RIEN) || S(cle).has("Pas de risque de noyade") || S(cle).has("Pas besoin pour ce chantier")) return [...S(cle)][0];
-  return n(cle) ? `${n(cle)} coché${n(cle) > 1 ? "s" : ""}` : "à remplir";
-}
 const etapeFaite = (i) => i === 5 ? e.signee : ETAPES[i].sous.every(([id]) => fait(id));
 const vides = () => ETAPES.flatMap((et, i) => et.sous.filter(([id]) => !fait(id)).map(([id, t]) => ({ i, id, t })));
 
@@ -402,55 +403,48 @@ function pastilles(set, liste, cle) {
   return `<div class="pastilles">${liste.map((x) => `<button type="button" data-past="${cle}" data-v="${x}" aria-pressed="${set.has(x)}"><span class="p">${coche}</span>${x}</button>`).join("")}</div>`;
 }
 const champ = (nom, cle, ph = "", lignes = 0) => `<label class="champ"><span class="nom">${nom}</span>${lignes ? `<textarea rows="${lignes}" data-champ="${cle}" placeholder="${ph}">${e.champs[cle] ?? ""}</textarea>` : `<input data-champ="${cle}" value="${e.champs[cle] ?? ""}" placeholder="${ph}">`}</label>`;
+const presentee = (cle) => { const on = S("st-" + cle).size > 0; return `<button type="button" class="case" data-c="st-${cle}" data-v="oui" aria-pressed="${on}"><span class="rond${on ? " plein" : ""}">${coche}</span><span>Fiche présentée à son responsable</span></button>`; };
 const fixe = (nom, val) => `<label class="champ"><span class="nom">${nom}</span><span class="fixe">${val}</span></label>`;
 const saisie = (nom, val = "", ph = "", type = "text") => `<label class="champ"><span class="nom">${nom}</span><input type="${type}" value="${val}" placeholder="${ph}"></label>`;
 
-/* ═══ LE SOMMAIRE ═══ */
-function sommaire() {
-  const v = vides();
-  return `${entete("Fiche de sécurité", "Chez Mme Roux, le 14 octobre", "")}${avancee(-1)}
-  <div class="ecran">
-    <h2>La fiche</h2>
-    <p class="sous">Reprise de votre fiche d’avant. Vérifiez chaque étape.</p>
-    ${ETAPES.map((et, i) => {
-      const reste = i === 5 ? (e.signee ? "Signée" : "Pas encore signée") : (() => { const k = et.sous.filter(([id]) => !fait(id)).length; return k ? `${k} à remplir` : "Tout est rempli"; })();
-      return `<button type="button" class="ligne" data-etape="${i}"><span class="num${etapeFaite(i) ? " fait" : ""}">${etapeFaite(i) ? coche.replace(/13/g, "16") : i + 1}</span>
-        <span class="t"><b>${et.titre}</b><small class="${etapeFaite(i) ? "" : "vide"}">${reste}</small></span>${ouvrir}</button>`;
-    }).join("")}
-  </div>
-  <div class="pied"><p class="reste">${v.length ? `${v.length} partie${v.length > 1 ? "s" : ""} encore vide${v.length > 1 ? "s" : ""}` : "Tout est rempli"}</p>
-    <button type="button" class="vert" data-etape="5">Aller signer</button></div>`;
-}
-
-/* ═══ UNE ÉTAPE : la liste de ses sous-étapes ═══ */
+/* ═══ UNE ÉTAPE : tout à la suite, sur un seul écran ═══
+   Sa réponse du 14 octobre 2026, devant la version à sous-catégories : « on
+   clique sur une catégorie, puis sur une autre, puis sur une autre pour arriver
+   sur les cases ; ce que j'aimais dans notre appli, c'est que tout est à la
+   suite ». Six écrans comme aujourd'hui, et dans chacun tout se lit en faisant
+   défiler. Le rangement de Kleyk reste, mais en titres, pas en portes. */
 function etape(i) {
   if (i === 5) return signer();
   const et = ETAPES[i];
-  return `${entete(et.titre, `Étape ${i + 1} sur 6`, "")}${avancee(i)}
+  return `${entete("Fiche de sécurité", "Chez Mme Roux", `${i + 1} sur 6`)}${avancee(i)}
   <div class="ecran">
     <h2>${et.titre}</h2>
-    ${et.sous.map(([id, t], k) => `<button type="button" class="ligne" data-sous="${id}"><span class="num${fait(id) ? " fait" : ""}">${fait(id) ? coche.replace(/13/g, "16") : k + 1}</span>
-      <span class="t"><b>${t}</b><small class="${fait(id) ? "" : "vide"}">${resume(id)}</small></span>${ouvrir}</button>`).join("")}
+    ${et.sous.map(([id, t], k) => `<section class="bloc${k ? "" : " premier"}" id="b-${id}"><p class="titre-bloc">${t}</p>${SOUS[id]()}</section>`).join("")}
   </div>
-  <div class="pied"><button type="button" class="vert" data-etape="${i + 1}">${i < 4 ? "Étape suivante" : "Aller signer"}</button></div>`;
+  <div class="pied"><button type="button" class="vert" data-etape="${i + 1}">${i < 4 ? "Suivant" : "Aller signer"}</button></div>`;
 }
 
 /* ═══ LES SOUS-ÉTAPES ═══ */
 const SOUS = {
   ident: () => `
-    <div class="bloc premier">${fixe("Nom du chantier", "Chez Mme Roux")}${fixe("N° de devis et/ou de commande afférent", "D-2026-041")}</div>
-    <div class="bloc"><p class="etiquette">Donneur d’ordre</p>
+    ${fixe("Nom du chantier", "Chez Mme Roux")}${fixe("N° de devis et/ou de commande afférent", "D-2026-041")}
+    <div><p class="etiquette" style="margin-top:16px">Donneur d’ordre</p>
       <div class="choix"><button type="button" data-donneur="client" aria-pressed="${e.donneur === "client"}">Le client du devis</button><button type="button" data-donneur="autre" aria-pressed="${e.donneur === "autre"}">Quelqu’un d’autre</button></div>
       ${e.donneur === "client" ? `${fixe("Client", "Mme Roux")}${fixe("Téléphone", "06 12 34 56 78")}${saisie("Rôle du client", "", "Exemple : propriétaire, syndic, mairie")}`
         : `<div class="deux">${saisie("Nom", "", "Exemple : Dubeaujardin")}${saisie("Prénom", "", "Exemple : Marc")}</div>${saisie("Téléphone", "", "06 00 00 00 00", "tel")}${saisie("Rôle", "", "Exemple : entreprise qui vous sous-traite")}`}
     </div>`,
   "sous-traitants": () => `
     <p class="aide">Toute entreprise qui travaille avec vous sur le chantier. Les secours s’organisent ensemble, et elle doit voir cette fiche.</p>
-    <div class="choix"><button type="button" data-st="non" aria-pressed="${e.soustraitants === "non"}">Aucune</button><button type="button" data-st="oui" aria-pressed="${Array.isArray(e.soustraitants)}">Oui</button></div>
-    ${Array.isArray(e.soustraitants) ? e.soustraitants.map((_, k) => `<div class="carte-bloc"><div class="haut"><b>Entreprise ${k + 1}</b><button type="button" class="retirer" data-st-retirer="${k}">Retirer</button></div>
-      ${saisie("Raison sociale", "", "Exemple : Élec Services")}<div class="deux">${saisie("Téléphone", "", "06 00 00 00 00", "tel")}${saisie("Ce qu’elle fait", "", "Exemple : coupe la ligne")}</div>
-      <button type="button" class="case" data-c="st${k}" data-v="Fiche présentée à son responsable" aria-pressed="${S("st" + k).has("Fiche présentée à son responsable")}"><span class="rond${S("st" + k).has("Fiche présentée à son responsable") ? " plein" : ""}">${coche}</span><span>Fiche présentée à son responsable</span></button></div>`).join("")
-      + `<div class="rangee"><button type="button" class="ajouter" data-st-ajouter="1">${plus} Ajouter une entreprise</button></div>` : ""}`,
+    <div class="choix"><button type="button" data-st="non" aria-pressed="${e.soustraitants === "non"}">Aucune</button><button type="button" data-st="oui" aria-pressed="${e.soustraitants === "oui"}">Oui</button></div>
+    ${e.soustraitants === "oui" ? `
+      <p class="aide" style="margin-top:12px">Vos entreprises habituelles. Un appui, et sa fiche revient.</p>
+      ${pastilles(e.externes, EXTERNES.map((x) => x.nom), "externes")}
+      ${EXTERNES.filter((x) => e.externes.has(x.nom)).map((x) => `<div class="carte-bloc"><div class="haut"><b>${x.nom}</b></div>
+        <div class="deux">${fixe("Téléphone", x.tel)}${fixe("Ce qu’elle fait", x.quoi)}</div>${presentee(x.nom)}</div>`).join("")}
+      ${Array.from({ length: e.nouvelles }, (_, k) => `<div class="carte-bloc"><div class="haut"><b>Nouvelle entreprise</b><button type="button" class="retirer" data-st-retirer="1">Retirer</button></div>
+        ${saisie("Raison sociale", "", "Exemple : Grue Loc 49")}<div class="deux">${saisie("Téléphone", "", "06 00 00 00 00", "tel")}${saisie("Ce qu’elle fait", "", "Exemple : grue avec chauffeur")}</div>
+        ${presentee("nouvelle" + k)}<p class="aide">Gardée pour vos prochaines fiches.</p></div>`).join("")}
+      <div class="rangee"><button type="button" class="ajouter" data-st-ajouter="1">${plus} Nouvelle entreprise</button></div>` : ""}`,
   lieu: () => `
     ${fixe("Adresse du chantier", "12 rue des Tilleuls, 49000 Angers")}
     <p class="etiquette" style="margin-top:16px">Point GPS</p>
@@ -544,7 +538,7 @@ function dessinMarques() {
     if (m.t === "chute") return `<circle cx="${m.x}" cy="${m.y}" r="46" fill="var(--alerte-voile)" stroke="var(--alerte)" stroke-width="3" stroke-dasharray="7 5"/>`;
     if (m.t === "arbre") { n++; return `<circle cx="${m.x}" cy="${m.y}" r="15" fill="var(--carte)" stroke="var(--or)" stroke-width="4"/><text x="${m.x}" y="${m.y + 6}" text-anchor="middle" font-size="17" font-weight="700" fill="var(--encre)">${n}</text>`; }
     return `<rect x="${m.x - 15}" y="${m.y - 15}" width="30" height="30" rx="6" fill="var(--plein)"/><path d="M${m.x - 8} ${m.y}h16M${m.x} ${m.y - 8}v16" stroke="var(--sur-plein)" stroke-width="4" stroke-linecap="round"/>`;
-  }).join("") + (e.trace ? `<polyline points="${e.trace.join(" ")}" fill="none" stroke="var(--encre)" stroke-width="3.5" stroke-linecap="round"/>` : "")
+  }).join("")
     + (e.accesDebut ? `<circle cx="${e.accesDebut.x}" cy="${e.accesDebut.y}" r="7" fill="var(--pin)"/>` : "");
 }
 function croquis() {
@@ -601,21 +595,14 @@ function signer() {
 
 /* ═══ L'AFFICHAGE ═══ */
 function dessiner() {
-  const { etape: i, sous } = e.vue;
-  let html;
-  if (i === null) html = sommaire();
-  else if (!sous) html = etape(i);
-  else {
-    const titre = ETAPES[i].sous.find(([id]) => id === sous)[1];
-    html = `${entete(ETAPES[i].titre, `Étape ${i + 1} sur 6`, "")}${avancee(i)}<div class="ecran"><h2>${titre}</h2>${SOUS[sous]()}</div>
-      <div class="pied"><button type="button" class="vert" data-retour="1">Valider</button></div>`;
-  }
+  const html = etape(e.vue.etape);
   const garde = document.querySelector(".tel .ecran")?.scrollTop ?? 0;
   const memeVue = dessiner.derniere === JSON.stringify(e.vue);
   document.getElementById("tel").innerHTML = html;
   if (memeVue) { const ec = document.querySelector(".tel .ecran"); if (ec) ec.scrollTop = garde; }
   dessiner.derniere = JSON.stringify(e.vue);
   brancherToile(); brancherCroquis();
+  if (dessiner.viser) { document.getElementById(dessiner.viser)?.scrollIntoView({ block: "start" }); dessiner.viser = null; }
 }
 
 function brancherToile() {
@@ -630,20 +617,36 @@ function brancherToile() {
   c.onpointerup = () => { bas = false; };
 }
 function point(svg, ev, l = 400, h = 300) { const r = svg.getBoundingClientRect(); return { x: Math.round((ev.clientX - r.left) * l / r.width), y: Math.round((ev.clientY - r.top) * h / r.height) }; }
+/* LE TRAIT HACHÉ DU 14 OCTOBRE. La première version redessinait toute la page
+   au début de chaque trait : le dessin du doigt était remplacé sous lui, la
+   capture du doigt partait avec, et il ne restait que des tirets. Désormais
+   le trait en cours vit dans SON élément, qu'on allonge sans jamais rien
+   redessiner, et il reçoit tous les points du doigt (getCoalescedEvents), pas
+   seulement un par image. On ne redessine qu'une fois le doigt levé. */
 function brancherCroquis() {
   const svg = document.getElementById("photo"); if (!svg) return;
+  let trait = null, points = [];
   svg.onpointerdown = (ev) => {
     const p = point(svg, ev);
-    if (e.outil === "crayon") { svg.setPointerCapture(ev.pointerId); e.trace = [`${p.x},${p.y}`]; return; }
+    if (e.outil === "crayon") {
+      svg.setPointerCapture(ev.pointerId);
+      points = [`${p.x},${p.y}`];
+      trait = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+      for (const [k, v] of Object.entries({ fill: "none", stroke: "var(--encre)", "stroke-width": "3.5", "stroke-linecap": "round", "stroke-linejoin": "round", points: points[0] })) trait.setAttribute(k, v);
+      svg.appendChild(trait);
+      return;
+    }
     if (e.outil === "acces") { if (!e.accesDebut) e.accesDebut = p; else { e.marques.push({ t: "acces", x: e.accesDebut.x, y: e.accesDebut.y, x2: p.x, y2: p.y }); e.accesDebut = null; } }
     else e.marques.push({ t: e.outil, ...p });
     dessiner();
   };
   svg.onpointermove = (ev) => {
-    if (!e.trace) return; const p = point(svg, ev); e.trace.push(`${p.x},${p.y}`);
-    const pl = svg.querySelector("polyline:last-of-type"); if (pl && e.trace.length > 2) pl.setAttribute("points", e.trace.join(" ")); else dessiner();
+    if (!trait) return;
+    for (const m of ev.getCoalescedEvents?.() ?? [ev]) { const p = point(svg, m); points.push(`${p.x},${p.y}`); }
+    trait.setAttribute("points", points.join(" "));
   };
-  svg.onpointerup = () => { if (e.trace) { if (e.trace.length > 1) e.marques.push({ t: "crayon", pts: e.trace }); e.trace = null; dessiner(); } };
+  const finir = () => { if (!trait) return; if (points.length > 1) e.marques.push({ t: "crayon", pts: points }); trait = null; dessiner(); };
+  svg.onpointerup = finir; svg.onpointercancel = finir;
 }
 
 /* ═══ LES GESTES ═══ */
@@ -655,10 +658,9 @@ document.addEventListener("click", (ev) => {
   if (plan) { e.gps = point(plan, ev, 400, 240); dessiner(); return; }
   const b = ev.target.closest("button"); if (!b) return;
   const d = b.dataset;
-  if (d.retour) { if (e.vue.sous) e.vue.sous = null; else e.vue.etape = null; e.pad = null; }
-  else if (d.etape !== undefined) { e.vue = { etape: Math.min(+d.etape, 5), sous: null }; }
-  else if (d.sous) { e.vue.sous = d.sous; }
-  else if (d.aller) { const [i, id] = d.aller.split("|"); e.vue = { etape: +i, sous: id }; }
+  if (d.retour) { e.vue = { etape: Math.max(0, e.vue.etape - 1) }; e.pad = null; }
+  else if (d.etape !== undefined) { e.vue = { etape: Math.min(+d.etape, 5) }; }
+  else if (d.aller) { const [i, id] = d.aller.split("|"); e.vue = { etape: +i }; dessiner.viser = "b-" + id; }
   else if (d.c) {
     const set = S(d.c);
     if (d.rien) { const on = set.has(d.v); set.clear(); if (!on) set.add(d.v); }
@@ -667,13 +669,14 @@ document.addEventListener("click", (ev) => {
   else if (d.past) {
     if (d.past.startsWith("dgd")) basculer(e.dangereux[+d.past.slice(3)].dangers, d.v);
     else if (d.past.startsWith("dgc")) basculer(e.dangereux[+d.past.slice(3)].consignes, d.v);
+    else if (d.past === "externes") basculer(e.externes, d.v);
     else basculer(S(d.past), d.v);
   }
   else if (d.donneur) e.donneur = d.donneur;
   else if (d.st === "non") e.soustraitants = "non";
-  else if (d.st === "oui") { if (!Array.isArray(e.soustraitants)) e.soustraitants = [{}]; }
-  else if (d.stAjouter) e.soustraitants.push({});
-  else if (d.stRetirer !== undefined) { e.soustraitants.splice(+d.stRetirer, 1); if (!e.soustraitants.length) e.soustraitants = null; }
+  else if (d.st === "oui") e.soustraitants = "oui";
+  else if (d.stAjouter) e.nouvelles++;
+  else if (d.stRetirer) e.nouvelles = Math.max(0, e.nouvelles - 1);
   else if (d.respAjouter) e.responsables.push("");
   else if (d.respRetirer !== undefined) e.responsables.splice(+d.respRetirer, 1);
   else if (d.qui) e.gens[d.qui] = !e.gens[d.qui];
