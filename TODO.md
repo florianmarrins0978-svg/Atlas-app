@@ -1,5 +1,35 @@
 # Prochaines tâches
 
+## ⏳ UNE PLANCHE À REGARDER — LES VÉHICULES DE L'ENTREPRISE (14 octobre 2026)
+
+**Sa demande :** une rubrique où le patron dépose la carte grise et l'assurance
+de chaque véhicule, pour que les salariés les montrent au contrôle, avec
+*« les rappels au bon moment pour les choses importantes »*.
+
+**Vérifié avec lui avant de dessiner, et cela change l'usage :** au contrôle
+routier, la carte grise se présente en **ORIGINAL** ; la copie n'est admise que
+pour un véhicule de location ou de **plus** de 3,5 t, et ses camions font
+3,5 t pile. L'assurance n'est plus demandée depuis le 1er avril 2024 (fichier
+des véhicules assurés). Il a retenu la fiche pour le **constat** (assureur,
+contrat, assistance), la copie de secours, et les **rappels du contrôle
+technique**.
+
+**Planche :** `appli/vehicules-de-l-entreprise.html`. Réglages > L'entreprise >
+Véhicules (liste, fiche), l'accueil, la vue salarié (sous « Moi », lecture
+seule). Rappels du contrôle technique ET du contrôle pollution annuel des
+utilitaires N1 (art. R323-22 du code de la route) : à J-60 (fenêtre où le passer
+ne fait perdre aucun jour), doré à J-15, rouge une fois dépassé ; ils restent
+jusqu'à « C'est fait », qui demande la nouvelle date limite. **Les dates sont
+recopiées du procès-verbal, jamais calculées.** Pas de rappel d'assurance ni de
+révision (kilomètres inconnus).
+
+**Pour coder ensuite (proposé) :** table `vehicules` sous RLS par entreprise,
+documents par le rangement existant, une règle pure dans `src/lib/` pour les
+seuils (la liste et l'accueil la partagent), les rappels dans
+`src/lib/rappels.ts`, le salarié en lecture dans `acces-roles.ts`. **Niveau 3**
+(migration, permissions). **NE RIEN CODER avant sa réponse** (`CLAUDE.md`
+§3 bis), et ne lancer aucune batterie sans son accord.
+
 ## ✅ LA TVA QUI NE SE RÉCUPÈRE PAS : SUR `main` LE 14 OCTOBRE 2026
 
 **Le défaut** : tout achat saisi dans « Ma TVA » entre EN ENTIER dans la TVA
