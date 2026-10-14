@@ -207,6 +207,7 @@
   .qui:first-child{border-top:0}
   .qui .nom{display:block;font-size:15px}
   .qui .comp{display:block;margin-top:2px;font-size:12.5px;color:var(--encre-douce);line-height:1.4}
+  .qui .modifier-qui{flex:none;min-height:44px;padding:0 2px;font-size:13.5px;font-weight:700;color:var(--encre)}
   .qui .al{display:block;margin-top:3px;font-size:12.5px;color:var(--alerte);font-weight:600}
 
   /* secours */
@@ -308,11 +309,29 @@ const EXTERNES = [
 ];
 const PROTOCOLE ="1. Se faire voir ou entendre de celui qui travaille dans la zone.\n2. Attendre qu’il arrête sa machine ou sa coupe.\n3. Entrer seulement quand il fait signe, avec ses EPI.\n4. Lui dire où l’on se trouve tant qu’on est dans la zone.\n5. Le prévenir en sortant, avant qu’il reprenne.";
 
-const EQUIPE = {
-  "Florian Martins": ["CS élagage, Grimpeur élagueur. SST jusqu’au 3 mars 2027, GSA jusqu’au 9 juin 2027.", ""],
-  "Kevin Morel": ["Grimpeur élagueur, CACES nacelle. SST jusqu’au 18 janvier 2027.", "Pas de GSA."],
-  "Lucas Petit": ["Autorisation de conduite interne, AIPR.", "SST dépassé depuis le 2 septembre."],
-};
+/* LES COMPÉTENCES S'ÉCRIVENT ICI, DANS LA FICHE. Sa question du 14 octobre :
+   « il faut pouvoir écrire les compétences facilement ici aussi, ou tu as vu
+   que du planning on a la compétence des gars ? ». Non : une équipe du
+   planning n'est qu'un nom (`equipes` : rang et nom, aucune personne). Les
+   compétences naissent donc ici, une fois par personne, et reviennent sur
+   chaque fiche. Le SST et le GSA se donnent par leur date d'obtention ; les
+   24 mois se calculent, ils ne se cochent pas. */
+const AUJOURDHUI = new Date("2026-10-14");
+const FORMATIONS = ["CS élagage", "Grimpeur élagueur (taille)", "Grimpeur élagueur (démontage)", "CACES nacelle", "Habilitation électrique", "AIPR", "Autorisation de conduite interne", "Mini-pelle et chargeur", "CAP", "BTS"];
+const CHEF = "Florian Martins";
+const equipeDeDepart = () => [
+  { nom: CHEF, present: true, formations: new Set(["CS élagage", "Grimpeur élagueur (taille)"]), sst: "2025-03-03", gsa: "2025-06-09" },
+  { nom: "Kevin Morel", present: true, formations: new Set(["Grimpeur élagueur (démontage)", "CACES nacelle"]), sst: "2025-01-18", gsa: "" },
+  { nom: "Lucas Petit", present: true, formations: new Set(["Autorisation de conduite interne", "AIPR"]), sst: "2024-09-02", gsa: "" },
+];
+const jourLong = (d) => d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+/* Ce que dit une date d'obtention, 24 mois plus tard : à jour, dépassé, ou rien. */
+function validite(quoi, obtenu) {
+  if (!obtenu) return { ok: false, phrase: `Pas de ${quoi}.` };
+  const fin = new Date(obtenu); fin.setMonth(fin.getMonth() + 24);
+  return fin >= AUJOURDHUI ? { ok: true, phrase: `${quoi} jusqu’au ${jourLong(fin)}` } : { ok: false, phrase: `${quoi} dépassé depuis le ${jourLong(fin)}.` };
+}
+const presents = () => e.equipe.filter((p) => p.present);
 
 /* ═══ LES SIX ÉTAPES ET LEURS SOUS-ÉTAPES ═══ */
 const ETAPES = [
@@ -364,7 +383,7 @@ function depart() {
     soustraitants: null, // null | "non" | "oui"
     externes: new Set(), nouvelles: 0,
     responsables: ["Florian Martins"],
-    gens: { "Florian Martins": true, "Kevin Morel": true, "Lucas Petit": true },
+    equipe: equipeDeDepart(), personne: null,
     gps: { x: 228, y: 120 },
     dangereux: null,     // null | "non" | [ {groupe, inter, dangers:Set, consignes:Set} ]
     croquis: null,       // null | "photo" | "blanc"
@@ -383,7 +402,7 @@ function fait(id) {
     case "sous-traitants": return e.soustraitants !== null;
     case "lieu": return true;
     case "responsables": return e.responsables.length > 0;
-    case "equipe": return Object.values(e.gens).some(Boolean);
+    case "equipe": return presents().length > 0;
     case "arbres-dangereux": return e.dangereux !== null;
     case "croquis": return OBLIGATOIRES.every(([, test]) => e.marques.some((m) => test(m.t)));
     case "photos": return e.photos > 0;
@@ -491,10 +510,16 @@ const SOUS = {
     <div class="rangee"><button type="button" class="ajouter" data-resp-ajouter="1">${plus} Ajouter un responsable</button></div>
     <p class="aide">Gardés pour vos prochaines fiches.</p>`,
   equipe: () => `
-    <p class="aide">D’après le planning. Les compétences s’écrivent une fois, dans Réglages.</p>
-    ${Object.keys(EQUIPE).map((p) => `<button type="button" class="qui" data-qui="${p}" aria-pressed="${e.gens[p]}"><span class="rond${e.gens[p] ? " plein" : ""}">${coche}</span>
-      <span><span class="nom">${p}</span><span class="comp">${EQUIPE[p][0]}</span>${EQUIPE[p][1] ? `<span class="al">${EQUIPE[p][1]}</span>` : ""}</span></button>`).join("")}
-    <div class="rangee"><button type="button" class="ajouter">${plus} Ajouter une personne</button></div>
+    <p class="aide">Cochez qui vient. Les compétences s’écrivent une fois, et reviennent sur chaque fiche.</p>
+    ${e.equipe.map((p, k) => {
+      const sst = validite("SST", p.sst), gsa = validite("GSA", p.gsa);
+      const bien = [...p.formations, sst.ok && sst.phrase, gsa.ok && gsa.phrase].filter(Boolean).join(", ");
+      const mal = [!sst.ok && sst.phrase, !gsa.ok && gsa.phrase].filter(Boolean).join(" ");
+      return `<div class="qui"><button type="button" class="rond${p.present ? " plein" : ""}" data-qui="${k}" aria-pressed="${p.present}" aria-label="${p.nom} vient">${coche}</button>
+        <span style="flex:1;min-width:0"><span class="nom">${p.nom || "Sans nom"}</span>${bien ? `<span class="comp">${bien}</span>` : ""}${mal ? `<span class="al">${mal}</span>` : ""}</span>
+        <button type="button" class="modifier-qui" data-pers="${k}">Compétences</button></div>`;
+    }).join("")}
+    <div class="rangee"><button type="button" class="ajouter" data-pers-ajouter="1">${plus} Ajouter une personne</button></div>
     <p class="vigilance">Niveau de formation, ancienneté, habilitation, autorisation de conduite…</p>`,
   travaux: () => `<p class="aide">Le devis dit : abattage d’un frêne, élagage de deux chênes, broyage.</p>${cases("travaux", L.travaux)}<p class="vigilance">Moyens de prévention mis en œuvre, EPI appropriés à l’activité et aux travailleurs…</p>`,
   epi: () => `<p class="vigilance">Vérifications périodiques des EPI à jour.</p><p class="aide">Pour les vêtements anti-coupure, la classe 1, 2 ou 3 se précise dans « Ajouter ».</p>${cases("epi", L.epi)}`,
@@ -531,13 +556,18 @@ const SOUS = {
   "r-autres": () => `${champ("Risques autres identifiés", "autresR", "Exemple : coups de vent annoncés l’après-midi", 2)}${champ("Mesures de prévention autres", "autresM", "Exemple : rubalise autour de la propriété", 2)}`,
   protocole: () => `<p class="aide">Zone de chute, zone de broyage, zone avec engin. Un texte modèle, à adapter au chantier.</p>${champ("Protocole d’entrée en zone de danger", "protocole", "", 7)}<p class="aide">Votre version est gardée pour vos prochaines fiches.</p>`,
   meteo: () => `<p class="vigilance">Bulletins d’alerte météorologiques.</p>${cases("meteo", L.meteo)}`,
-  secours: () => `${e.gens["Lucas Petit"] ? `<p class="aide alerte">Lucas Petit n’a plus de SST à jour. Kevin Morel n’a pas de GSA.</p>` : ""}${cases("secours", L.secours)}
+  secours: () => {
+    const sansSst = presents().filter((p) => !validite("SST", p.sst).ok).map((p) => p.nom);
+    const gsa = presents().some((p) => validite("GSA", p.gsa).ok);
+    const alertes = [sansSst.length && `${sansSst.join(" et ")} ${sansSst.length > 1 ? "n’ont" : "n’a"} pas de SST à jour.`, !gsa && "Personne n’a de GSA à jour sur ce chantier."].filter(Boolean).join(" ");
+    return `${alertes ? `<p class="aide alerte">${alertes}</p>` : ""}${cases("secours", L.secours)}
     ${champ("Lieu de la trousse de secours", "trousse", "Exemple : dans la cabine du camion")}
     ${champ("Point de Rencontre des Secours", "prs", "Exemple : devant le portail")}
     <label class="champ"><span class="nom">Réseau mobile, consignes particulières</span><input placeholder="Exemple : une barre de réseau au portail seulement"></label>
     <p class="etiquette" style="margin-top:18px">Alerter</p>
     <div class="urgence">${[["15","SAMU"],["18","Pompiers"],["112","Europe"],["17","Police"],["114","Sourd"]].map(([n,q]) => `<a href="tel:${n}"><b>${n}</b><span>${q}</span></a>`).join("")}</div>
-    <ol class="consignes"><li>S’identifier, donner le lieu et l’accès.</li><li>Dire ce qui s’est passé, combien de blessés, dans quel état.</li><li>Donner le point de rencontre, et ne jamais raccrocher le premier.</li></ol>`,
+    <ol class="consignes"><li>S’identifier, donner le lieu et l’accès.</li><li>Dire ce qui s’est passé, combien de blessés, dans quel état.</li><li>Donner le point de rencontre, et ne jamais raccrocher le premier.</li></ol>`;
+  },
 };
 
 /* ═══ LE CROQUIS ═══
@@ -644,15 +674,37 @@ function croquis() {
     ${Array.isArray(e.dangereux) && nArbres ? `<p class="aide">Les numéros des arbres sont ceux des arbres dangereux.</p>` : ""}`;
 }
 
+/* Les compétences d'une personne : un feuillet, qui se ferme sur la fiche. */
+function feuilletPersonne() {
+  if (e.personne === null) return "";
+  const p = e.equipe[e.personne];
+  return `<div class="voile"><div class="feuillet" style="max-height:88%;overflow-y:auto">
+    <label class="champ" style="margin-top:0"><span class="nom">Nom et prénom</span><input data-pers-nom="1" value="${p.nom}" placeholder="Exemple : Kevin Morel"></label>
+    <p class="etiquette" style="margin-top:16px">Formations et diplômes</p>
+    <div class="pastilles">${FORMATIONS.map((x) => `<button type="button" data-form="${x}" aria-pressed="${p.formations.has(x)}"><span class="p">${coche}</span>${x}</button>`).join("")}
+      <button type="button" class="ajouter" style="margin:0">${plus} Ajouter</button></div>
+    <div class="deux" style="margin-top:6px">
+      <label class="champ"><span class="nom">SST obtenu le</span><input type="date" data-pers-date="sst" value="${p.sst}"></label>
+      <label class="champ"><span class="nom">GSA obtenu le</span><input type="date" data-pers-date="gsa" value="${p.gsa}"></label>
+    </div>
+    <p class="aide">Les 24 mois se comptent tout seuls. Gardé pour vos prochaines fiches.</p>
+    <button type="button" class="vert" data-pers-fin="1" style="margin-top:8px">Valider</button>
+  </div></div>`;
+}
+
 /* ═══ SIGNER ═══ */
 function signer() {
   const v = vides();
   if (e.signee) {
-    const lus = Object.keys(e.lus).length, tous = Object.keys(EQUIPE).filter((p) => e.gens[p] && p !== "Florian Martins");
+    const tous = presents().map((p) => p.nom).filter((p) => p !== CHEF), lus = tous.filter((p) => e.lus[p]).length;
+    // Sa question du 14 octobre : « et moi je ne peux plus signer ? ». Il a signé à l'écran d'avant ;
+    // sa ligne vient en tête de la liste, pour qu'on voie la fiche signée par tous, lui compris.
     return `${entete("Signer", "Étape 6 sur 6", "")}${avancee(5)}
     <div class="ecran">
-      <h2>Fiche signée</h2><p class="sous">Le 14 octobre à 7 h 52. Gardée jusqu’au 14 octobre 2028.</p>
-      <div class="bloc premier"><p class="etiquette">Lu par l’équipe</p><p class="aide">Chacun signe avant de commencer.</p>
+      <h2>Fiche signée</h2><p class="sous">Gardée jusqu’au 14 octobre 2028.</p>
+      <div class="bloc premier"><p class="etiquette">Les signatures</p>
+        <div class="personne"><span class="rond plein">${coche}</span><span class="nom">${CHEF}<small>Chef d’entreprise. A signé la fiche à 7 h 52.</small></span></div>
+        <p class="aide" style="margin-top:10px">Chacun signe qu’il a lu la fiche, avant de commencer.</p>
         ${tous.map((p) => `<div class="personne"><span class="rond${e.lus[p] ? " plein" : ""}">${coche}</span><span class="nom">${p}${e.lus[p] ? `<small>A lu la fiche à ${e.lus[p]}</small>` : ""}</span>${e.lus[p] ? "" : `<button type="button" class="petit-bouton" data-signer-lu="${p}">Signer</button>`}</div>`).join("")}
       </div>
     </div>
@@ -676,7 +728,7 @@ function signer() {
 
 /* ═══ L'AFFICHAGE ═══ */
 function dessiner() {
-  const html = etape(e.vue.etape);
+  const html = etape(e.vue.etape) + feuilletPersonne();
   const garde = document.querySelector(".tel .ecran")?.scrollTop ?? 0;
   const memeVue = dessiner.derniere === JSON.stringify(e.vue);
   document.getElementById("tel").innerHTML = html;
@@ -736,6 +788,8 @@ const RIENS = new Set([RIEN, "Pas de risque de noyade", "Pas besoin pour ce chan
 document.addEventListener("input", (ev) => {
   const d = ev.target.dataset ?? {};
   if (d.champ) e.champs[d.champ] = ev.target.value;
+  if (d.persNom) e.equipe[e.personne].nom = ev.target.value;
+  if (d.persDate) e.equipe[e.personne][d.persDate] = ev.target.value;
   // Le mot d'une zone s'écrit sur le croquis sans redessiner l'écran : le clavier se fermerait à chaque lettre.
   if (d.zone !== undefined) { e.marques[+d.zone].mot = ev.target.value; const t = document.getElementById("zone-" + d.zoneN); if (t) t.textContent = ev.target.value || `Zone ${d.zoneN}`; }
 });
@@ -765,7 +819,11 @@ document.addEventListener("click", (ev) => {
   else if (d.stRetirer) e.nouvelles = Math.max(0, e.nouvelles - 1);
   else if (d.respAjouter) e.responsables.push("");
   else if (d.respRetirer !== undefined) e.responsables.splice(+d.respRetirer, 1);
-  else if (d.qui) e.gens[d.qui] = !e.gens[d.qui];
+  else if (d.qui !== undefined) { const p = e.equipe[+d.qui]; p.present = !p.present; }
+  else if (d.pers !== undefined) e.personne = +d.pers;
+  else if (d.persAjouter) { e.equipe.push({ nom: "", present: true, formations: new Set(), sst: "", gsa: "" }); e.personne = e.equipe.length - 1; }
+  else if (d.persFin) e.personne = null;
+  else if (d.form) basculer(e.equipe[e.personne].formations, d.form);
   else if (d.dg === "non") e.dangereux = "non";
   else if (d.dg === "oui") { if (!Array.isArray(e.dangereux)) e.dangereux = [{ groupe: false, inter: null, dangers: new Set(), consignes: new Set() }]; }
   else if (d.dgAjouter !== undefined) e.dangereux.push({ groupe: d.dgAjouter === "1", inter: null, dangers: new Set(), consignes: new Set() });
