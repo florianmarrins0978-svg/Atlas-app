@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Points ou semaine</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  SA DEMANDE DU 15 OCTOBRE 2026 : « fais une planche avec les 2 exemples côte
+  à côte ». La question : sous le calendrier, garder les deux points (son
+  choix du 9 septembre) ou les remplacer par le mot « La semaine ».
+
+  Les deux téléphones partent de l'écran de main au 15 octobre :
+  - au repos, aucun jour n'est ouvert ;
+  - un jour touché ouvre sa fiche, et la liste du dessous s'efface (sa
+    réponse « la B » du 7 octobre) : c'est vrai des DEUX côtés.
+
+  A : les deux points. Le premier montre les chantiers d'aujourd'hui, le
+      second les sept jours, avec ses deux chevrons.
+  B : le mot « La semaine », en or. Rien dessous tant qu'on ne le touche pas.
+
+  Le mois est celui du lot codé le 15 (chiffres alignés, jours passés gris,
+  chevrons sans rond). La fiche du jour est réduite à ce qui sert à la
+  comparaison. Noms inventés.
+
+  RIEN N'EST CODÉ DE CETTE QUESTION.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --scene:#e6e3dc; --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --or:#B98B47; --pin:#2f3b2f; --pale:#b9c6b4; --bordeaux:#6E2433;
+    --papier:#ece9e1; --pave:rgba(28,28,26,.045); --bande:rgba(236,233,225,.72);
+    --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07); --ombre:rgba(28,28,26,.07); --ombre-forte:rgba(20,18,14,.18);
+    --titre:"Playfair Display",Georgia,serif; --corps:Inter,ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  body.nuit{
+    --scene:#070908; --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+    --gris:#84887b; --or:#C9A05E; --pin:#e9e8de; --pale:#4f5f4c; --bordeaux:#c4677a;
+    --papier:#22261f; --pave:rgba(233,232,222,.06); --bande:rgba(233,232,222,.05);
+    --trait:rgba(233,232,222,.14); --trait-doux:rgba(233,232,222,.08); --ombre:rgba(0,0,0,.35); --ombre-forte:rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--scene)}
+  body{font:16px/1.5 var(--corps);color:var(--encre);padding:0 0 56px}
+  ::selection{background:rgba(185,139,71,.15)}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+  button:focus-visible{outline:2px solid var(--or);outline-offset:2px;border-radius:6px}
+
+  .commandes{display:flex;justify-content:center;gap:16px;padding:16px 16px 0;font-size:13px;flex-wrap:wrap}
+  .commandes button{min-height:40px;color:var(--gris)}
+  .commandes button[aria-pressed="true"]{color:var(--encre);text-decoration:underline;text-decoration-color:var(--or);text-underline-offset:6px}
+  .commandes .sep{width:1px;height:18px;background:var(--trait);align-self:center}
+
+  .deux{display:flex;justify-content:center;gap:28px;align-items:flex-start;padding:0 12px}
+  .cote{flex:none;max-width:100%}
+  .quel{margin:10px 0 0;text-align:center;font:600 11px/1.3 var(--corps);letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+  .quel b{display:block;margin-top:4px;font:400 17px/1.2 var(--titre);letter-spacing:0;text-transform:none;color:var(--encre)}
+  @media (max-width:839px){
+    .deux{display:block;padding:0}
+    .cote{margin:0 auto}
+    body[data-vue="a"] .cote.b{display:none}
+    body[data-vue="b"] .cote.a{display:none}
+  }
+  @media (min-width:840px){.commandes .vue,.commandes .sep{display:none}}
+
+  .tel{width:390px;height:760px;max-width:100%;margin:12px auto 0;background:var(--fond);border-radius:30px;overflow:hidden;
+       box-shadow:0 18px 46px var(--ombre-forte);display:flex;flex-direction:column}
+  .ecran{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding-bottom:24px;scrollbar-width:thin;scrollbar-color:var(--trait) transparent}
+  .entete{padding:28px 26px 0}
+  .entete h1{margin:0;font:400 36px/1.02 var(--titre)}
+  .entete p{margin:12px 0 0;font:500 9.5px/1 var(--corps);letter-spacing:.3em;text-transform:uppercase;color:var(--or)}
+
+  .tete-mois{display:flex;align-items:center;justify-content:space-between;margin:16px 12px 0}
+  .tete-mois span{width:42px;height:42px;display:grid;place-items:center;color:var(--gris);font-size:22px}
+  .tete-mois h2{margin:0;font:400 21px/1 var(--titre);font-variant-numeric:lining-nums}
+  .lettres{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:12px 12px 6px;text-align:center;font:600 10px/1 var(--corps);letter-spacing:.1em;text-transform:uppercase;color:var(--gris)}
+  .lettres span:nth-child(n+6){opacity:.55}
+  .semaines{margin:0 12px;display:flex;flex-direction:column;gap:4px}
+  .rang{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;border-radius:12px}
+  .rang.lue{background:var(--bande)}
+  .case{aspect-ratio:1/1.06;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-radius:10px}
+  .case .n{font:400 17px/1 var(--titre);font-variant-numeric:lining-nums tabular-nums}
+  .case.repos{background:var(--pave)} .case.repos .n{color:var(--gris)} .case.repos .barres{visibility:hidden}
+  .case.passe .n{color:var(--gris)} .case.passe .barres{opacity:.5}
+  .case.ojd{box-shadow:inset 0 0 0 1.5px var(--or)} .case.ojd .n{color:var(--or);font-weight:600}
+  .case.touche{box-shadow:inset 0 0 0 1.5px var(--encre);background:var(--papier)}
+  .barres{display:flex;flex-direction:column;gap:2.5px;width:24px}
+  .barres i{height:6px;border-radius:2px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait)}
+  .barres i[data-e="dispo"]{background:var(--pale);box-shadow:none}
+  .barres i[data-e="plein"]{background:var(--pin);box-shadow:none}
+  .barres i[data-e="audela"]{background:var(--bordeaux);box-shadow:none}
+
+  .fiche{position:relative;margin:9px 0 4px;background:var(--carte);border:1px solid var(--trait-doux);border-radius:14px;
+         box-shadow:0 6px 20px var(--ombre);padding:14px 15px 8px;animation:ouvre .3s cubic-bezier(.16,1,.3,1)}
+  @keyframes ouvre{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  .fiche .pointe{position:absolute;bottom:100%;width:11px;height:11px;transform:translate(-50%,6px) rotate(45deg);background:var(--carte);
+                 border-left:1px solid var(--trait-doux);border-top:1px solid var(--trait-doux)}
+  .fiche .quand{margin:0 0 8px;text-align:center;font:600 11px/1 var(--corps);letter-spacing:.2em;text-transform:uppercase;color:var(--or)}
+  .fiche .date{margin:0 0 12px;text-align:center;font:700 12.5px/1 var(--corps);letter-spacing:.14em;text-transform:uppercase}
+  .fiche .ligne{padding:8px 0;border-top:1px solid var(--trait-doux)}
+  .fiche .nom{display:block;font:400 19px/1.2 var(--titre)}
+  .fiche .duree{display:block;margin-top:3px;font-size:12.5px;color:var(--or)}
+  .fiche .libre{display:flex;justify-content:space-between;font-size:13px;color:var(--gris);padding:6px 0}
+
+  .legende{display:flex;justify-content:center;align-items:center;gap:7px;margin:14px 10px 0;font-size:9px;color:var(--gris);flex-wrap:nowrap}
+  .legende span{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+  .legende i{width:10px;height:10px;border-radius:3px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait)}
+  .legende i.dispo{background:var(--pale);box-shadow:none} .legende i.plein{background:var(--pin);box-shadow:none} .legende i.audela{background:var(--bordeaux);box-shadow:none}
+
+  /* A : les deux points */
+  .points{display:flex;justify-content:center;gap:9px;margin-top:22px}
+  .points button{width:34px;height:34px;display:grid;place-items:center}
+  .points i{width:6px;height:6px;border-radius:50%;background:#c9c5bb;transition:background .3s,transform .3s}
+  .points button[aria-pressed="true"] i{background:var(--or);transform:scale(1.5)}
+  /* B : le mot */
+  .mot{display:flex;justify-content:center;margin-top:16px}
+  .mot button{min-height:44px;padding:0 10px;font-size:14.5px;color:var(--or)}
+  .mot button[aria-pressed="true"]{color:var(--encre);text-decoration:underline;text-decoration-color:var(--or);text-underline-offset:7px;text-decoration-thickness:1.5px}
+
+  .feuilleter{display:flex;align-items:center;justify-content:space-between;margin:14px 18px 0}
+  .feuilleter button{width:42px;height:42px;border-radius:50%;border:1px solid var(--trait);background:var(--carte);display:grid;place-items:center;font-size:19px}
+  .feuilleter b{font-size:15px}
+  .liste{margin:0 18px}
+  .jour{margin-top:20px}
+  .pastille-date{display:inline-block;padding:6px 10px;border-radius:7px;background:var(--papier);font:700 11px/1 var(--corps);letter-spacing:.14em;text-transform:uppercase;font-variant-numeric:lining-nums}
+  .pastille-date.ojd{color:var(--or);letter-spacing:.08em}
+  .jour.passe .pastille-date,.jour.passe .nom,.jour.passe .duree{color:var(--gris)}
+  .ch{margin-top:10px}
+  .ch .nom{display:block;font:400 19px/1.2 var(--titre)}
+  .ch .duree{display:block;margin-top:3px;font-size:12.5px;color:var(--or)}
+  .ch .ou{display:block;margin-top:1px;font-size:12.5px;color:var(--gris)}
+  .rien{margin:14px 0 0;text-align:center;font-size:13.5px;color:var(--gris)}
+
+  .tiroir{flex:none;background:var(--carte);border-top:2px solid var(--or);border-radius:16px 16px 0 0;box-shadow:0 -14px 34px var(--ombre);
+          padding:15px 20px;font:500 15px/1.3 var(--corps)}
+  .barre{flex:none;display:grid;grid-template-columns:repeat(5,1fr);height:58px;background:var(--fond);border-top:1px solid var(--trait)}
+  .barre span{display:flex;align-items:center;justify-content:center;font:600 9.5px/1 var(--corps);letter-spacing:.12em;text-transform:uppercase;color:var(--gris)}
+  .barre span.actif{color:var(--encre);box-shadow:inset 0 -2px 0 var(--or)}
+
+  .note{max-width:520px;margin:30px auto 0;padding:0 22px;font-size:14px;line-height:1.6;color:var(--encre-douce)}
+  .note h2{font:400 22px/1.2 var(--titre);color:var(--encre);margin:24px 0 10px}
+  .note p{margin:0 0 10px}
+  .note b{color:var(--encre);font-weight:600}
+  .note table{width:100%;border-collapse:collapse;font-size:13.5px;margin:4px 0 12px}
+  .note th,.note td{text-align:left;vertical-align:top;padding:8px 8px 8px 0;border-bottom:1px solid var(--trait-doux)}
+  .note th{font-weight:600;color:var(--encre)}
+  @media (max-width:420px){.tel{border-radius:0;margin-top:10px;width:100%}}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" class="vue" data-vue="a" aria-pressed="true">A, les deux points</button>
+  <button type="button" class="vue" data-vue="b" aria-pressed="false">B, La semaine</button>
+  <span class="sep" aria-hidden="true"></span>
+  <button type="button" id="nuit" aria-pressed="false">Voir sur Nuit</button>
+  <button type="button" id="rejouer">Recommencer</button>
+</div>
+
+<div class="deux">
+  <div class="cote a"><p class="quel">A<b>Les deux points, comme aujourd’hui</b></p><div class="tel" id="tel-a"></div></div>
+  <div class="cote b"><p class="quel">B<b>Le mot « La semaine »</b></p><div class="tel" id="tel-b"></div></div>
+</div>
+
+<div class="note">
+  <h2>Ce qui change entre les deux</h2>
+  <table>
+    <tr><th></th><th>A, les deux points</th><th>B, La semaine</th></tr>
+    <tr><td>En ouvrant le planning</td><td>les chantiers d’aujourd’hui, sous le mois</td><td>rien sous le mois</td></tr>
+    <tr><td>Pour voir la semaine</td><td>le second point</td><td>le mot « La semaine »</td></tr>
+    <tr><td>Un jour touché</td><td>sa fiche s’ouvre, la liste s’efface</td><td>pareil</td></tr>
+    <tr><td>Ce qu’on comprend tout seul</td><td>deux points qu’il faut avoir essayés</td><td>un mot qui dit ce qu’il ouvre</td></tr>
+  </table>
+  <p><b>Ce que je conseille : A.</b> En ouvrant l’application, on voit le travail du jour sans rien toucher. B le cache derrière un appui.</p>
+  <p><b>Touchez</b> les points ou « La semaine », un jour, puis le même jour pour le refermer. <b>Rien n’est codé de cette question.</b></p>
+</div>
+
+<script>
+const AUJOURDHUI = 15, PREMIER = 3, EQUIPES = 2; // le 1er octobre 2026 est un jeudi
+const NOMS = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
+const C = (nom, ou, duree, demis) => ({ nom, ou, duree, demis });
+const JOURS = {
+  5:[C("Mr. Garnier","Poissy","une demi-journée",["matin"])],
+  6:[C("Mr. Linotte","Vernouillet","deux jours",["matin","apres_midi"])],
+  7:[C("Mr. Linotte","Vernouillet","deux jours",["matin","apres_midi"])],
+  13:[C("Mme Delaunay","Meulan","une demi-journée",["matin"])],
+  14:[C("Mme Morel","Mantes-la-Ville","une journée",["matin","apres_midi"])],
+  15:[C("Mr. Frédéric","Mantes-la-Jolie","une demi-journée",["matin"]),C("Jean-Louis","Les Mureaux","une journée",["matin","apres_midi"])],
+  16:[C("Mr. Beauchamp-Lavallée","Mantes-la-Ville","une journée",["matin","apres_midi"])],
+  19:[C("Mr. Linotte","Vernouillet","une journée",["matin","apres_midi"])],
+  20:[C("Mr. Linotte","Vernouillet","une journée",["matin","apres_midi"]),C("Mme Morel","Mantes-la-Ville","une demi-journée",["matin"]),C("Mr. Garnier","Poissy","une demi-journée",["matin"])],
+  22:[C("Mme Delaunay","Meulan","une demi-journée",["apres_midi"])],
+};
+const rangDe = (j) => (PREMIER + j - 1) % 7;
+const liste = (j) => JOURS[j] || [];
+const etat = (j, d) => { const n = liste(j).filter((c) => c.demis.includes(d)).length; return n === 0 ? "" : n < EQUIPES ? "dispo" : n === EQUIPES ? "plein" : "audela"; };
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const bouton = (cls, html, fn) => { const b = el("button", cls, html); b.type = "button"; b.onclick = fn; return b; };
+const court = (j) => j === AUJOURDHUI ? "Aujourd’hui" : `${NOMS[rangDe(j)].slice(0, 3)}. ${j} oct.`;
+
+function telephone(racine, variante) {
+  const etatTel = { touche: null, portee: variante === "a" ? "jour" : null, lundi: AUJOURDHUI - rangDe(AUJOURDHUI) };
+  racine.innerHTML = `<div class="ecran"></div><div class="tiroir">1 client sans date</div>
+    <div class="barre" aria-hidden="true"><span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></div>`;
+  const ecran = racine.querySelector(".ecran");
+
+  function dessiner() {
+    ecran.innerHTML = `<div class="entete"><h1>Planning</h1><p>Vos journées</p></div>
+      <div class="tete-mois"><span>‹</span><h2>octobre 2026</h2><span>›</span></div>
+      <div class="lettres"><span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span></div>`;
+    const sem = el("div", "semaines");
+    const cases = [...Array(PREMIER).fill(null), ...Array.from({ length: 31 }, (_, i) => i + 1)];
+    while (cases.length % 7) cases.push(null);
+    for (let r = 0; r < cases.length / 7; r++) {
+      const semaine = cases.slice(r * 7, r * 7 + 7);
+      const porte = etatTel.touche !== null && semaine.includes(etatTel.touche);
+      const lue = etatTel.touche === null && etatTel.portee === "semaine" && semaine.includes(etatTel.lundi);
+      const rang = el("div", "rang" + (lue ? " lue" : ""));
+      semaine.forEach((j, col) => {
+        if (j === null) { rang.appendChild(el("span", "case")); return; }
+        const cls = ["case"];
+        if (col >= 5) cls.push("repos");
+        if (j < AUJOURDHUI) cls.push("passe");
+        if (j === AUJOURDHUI) cls.push("ojd");
+        if (j === etatTel.touche) cls.push("touche");
+        const b = bouton(cls.join(" "), `<span class="n">${j}</span><span class="barres"><i data-e="${etat(j, "matin")}"></i><i data-e="${etat(j, "apres_midi")}"></i></span>`,
+          () => { etatTel.touche = etatTel.touche === j ? null : j; dessiner(); });
+        b.dataset.jour = j;
+        b.setAttribute("aria-label", `${NOMS[rangDe(j)]} ${j} octobre`);
+        rang.appendChild(b);
+      });
+      sem.appendChild(rang);
+      if (porte) sem.appendChild(fiche(etatTel.touche, semaine.indexOf(etatTel.touche)));
+    }
+    ecran.appendChild(sem);
+    ecran.appendChild(el("div", "legende", `<span><i></i>rien</span><span><i class="dispo"></i>incomplet</span><span><i class="plein"></i>complet</span><span><i class="audela"></i>au-delà</span>`));
+
+    // ─── ce qui distingue A de B ───
+    if (variante === "a") {
+      const p = el("div", "points");
+      for (const [q, nom] of [["jour", "La journée"], ["semaine", "Les sept jours"]]) {
+        const b = bouton("", "<i></i>", () => { etatTel.portee = q; dessiner(); });
+        b.setAttribute("aria-label", nom); b.setAttribute("aria-pressed", String(etatTel.portee === q));
+        p.appendChild(b);
+      }
+      ecran.appendChild(p);
+    } else {
+      const m = el("div", "mot");
+      const b = bouton("", "La semaine", () => { etatTel.portee = etatTel.portee === "semaine" ? null : "semaine"; dessiner(); });
+      b.setAttribute("aria-pressed", String(etatTel.portee === "semaine"));
+      m.appendChild(b); ecran.appendChild(m);
+    }
+    // un jour ouvert retire la liste, des deux côtés (sa réponse du 7 octobre)
+    if (etatTel.touche !== null || !etatTel.portee) return;
+    if (etatTel.portee === "semaine") {
+      const f = el("div", "feuilleter");
+      f.appendChild(bouton("", "‹", () => { etatTel.lundi -= 7; dessiner(); }));
+      const fin = etatTel.lundi + 6;
+      f.appendChild(el("b", "", `du ${Math.max(etatTel.lundi, 1)} au ${Math.min(fin, 31)} octobre`));
+      f.appendChild(bouton("", "›", () => { etatTel.lundi += 7; dessiner(); }));
+      ecran.appendChild(f);
+    }
+    const l = el("div", "liste");
+    const jours = etatTel.portee === "jour" ? [AUJOURDHUI] : Array.from({ length: 7 }, (_, i) => etatTel.lundi + i);
+    let vu = 0;
+    for (const j of jours) {
+      if (!liste(j).length) continue;
+      vu++;
+      const bloc = el("div", "jour" + (j < AUJOURDHUI ? " passe" : ""));
+      bloc.appendChild(el("span", "pastille-date" + (j === AUJOURDHUI ? " ojd" : ""), court(j)));
+      for (const c of liste(j)) bloc.appendChild(el("div", "ch", `<span class="nom">${c.nom}</span><span class="duree">${c.duree}</span><span class="ou">${c.ou}</span>`));
+      l.appendChild(bloc);
+    }
+    if (!vu) l.appendChild(el("p", "rien", etatTel.portee === "jour" ? "Rien de posé ce jour-là." : "Aucun chantier posé sur ces sept jours."));
+    ecran.appendChild(l);
+  }
+
+  function fiche(j, col) {
+    const f = el("div", "fiche");
+    const p = el("span", "pointe"); p.style.left = `${((col + 0.5) / 7) * 100}%`; f.appendChild(p);
+    if (j === AUJOURDHUI) f.appendChild(el("p", "quand", "Aujourd’hui"));
+    f.appendChild(el("p", "date", `${NOMS[rangDe(j)]} ${j} octobre`));
+    for (const c of liste(j)) f.appendChild(el("div", "ligne", `<span class="nom">${c.nom}</span><span class="duree">${c.duree}</span>`));
+    if (!liste(j).length) { f.appendChild(el("div", "libre", "<span>MATIN</span><span>libre</span>")); f.appendChild(el("div", "libre", "<span>APRÈS-MIDI</span><span>libre</span>")); }
+    return f;
+  }
+  dessiner();
+  return { recommencer() { etatTel.touche = null; etatTel.portee = variante === "a" ? "jour" : null; etatTel.lundi = AUJOURDHUI - rangDe(AUJOURDHUI); dessiner(); ecran.scrollTop = 0; } };
+}
+
+const a = telephone(document.getElementById("tel-a"), "a");
+const b = telephone(document.getElementById("tel-b"), "b");
+document.getElementById("rejouer").onclick = () => { a.recommencer(); b.recommencer(); };
+document.getElementById("nuit").onclick = () => { const on = document.body.classList.toggle("nuit"); document.getElementById("nuit").setAttribute("aria-pressed", String(on)); };
+document.body.dataset.vue = "a";
+for (const v of document.querySelectorAll(".commandes .vue")) v.onclick = () => {
+  document.body.dataset.vue = v.dataset.vue;
+  for (const x of document.querySelectorAll(".commandes .vue")) x.setAttribute("aria-pressed", String(x === v));
+};
+</script>
+</body>
+</html>
