@@ -1,13 +1,16 @@
 # Prochaines tâches
 
-## 🔜 LE PLANNING ÉPURÉ ET LA FICHE DU JOUR : CODÉS, À VÉRIFIER AVANT `main` (15 octobre 2026)
+## ✅ LE PLANNING ÉPURÉ ET LA FICHE DU JOUR : SUR `main` LE 15 OCTOBRE 2026
 
 **Son oui du 15 octobre :** *« tu peux coder ces deux planches, et ne lance pas
 de batterie »*. Le lot est sur la branche locale `lot/planning-epure`, dossier
-`atlas-app-lot-epure`, **non poussé**. Niveau calculé : **2** (rayon de 2 et
-3 points d'entrée, écrans /planning, /chantiers, /reglages/equipe) : il faut
-`npm run verifier:avant-fusion` (23 suites navigateur) **avec son accord**,
-puis la poussée.
+`atlas-app-lot-epure`. **Niveau 3**, parce qu'une suite adaptée porte « facture »
+dans son nom (gravité argent, par le chemin) : batterie complète jouée avec son
+accord. **Base 455/464, navigateur 182/184** ; le rouge navigateur
+(`test-note-hors-documents-e2e`, qui cherchait le chantier sous le mois au repos)
+a été corrigé et rejoué vert (8/8) ; `test-garde-fusion-main` (EPERM sur un lien
+symbolique Windows) est rouge de la même façon sur `main`
+(`verifier-rouge-prealable`).
 
 **Codé et regardé à l'écran** (`next dev` du dossier du lot sur `atlas_test`) :
 
@@ -26,7 +29,7 @@ défaut) : `test-fiche-securite-e2e`, `test-travaux-a-faire-e2e`,
 `test-travaux-a-la-main-e2e`, `test-salarie-planning-lecture-seule-e2e` touchent
 « La semaine » d'abord. **Deux contrôles ajoutés** dans `test-planning-e2e` :
 le repos, l'ouverture et la fermeture de « La semaine » ; « Aujourd'hui » sur la
-fiche du jour seulement. **Aucune n'a été jouée** : pas de batterie, sa consigne.
+fiche du jour seulement. Jouées dans la batterie : vertes.
 
 **Ce qui n'a PAS été codé, et pourquoi** (mes planches partaient d'un `main`
 périmé, celui du dossier principal au 13 octobre) :
