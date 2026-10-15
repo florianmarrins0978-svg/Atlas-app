@@ -47,14 +47,15 @@ sur une base jetable migrée de 0 à 0131, et le parcours dans un navigateur
 salarié). **Pas joué ici** : la lecture par l'IA (aucune clé) et les champs de
 fichier sur un vrai iPhone : à essayer sur son espace. Batterie jouée (commune, 14 octobre).
 
-## LA FICHE DE SÉCURITÉ COMPLÈTE : codée le 14 octobre 2026, PAS ENCORE SUR `main`
+## LA FICHE DE SÉCURITÉ COMPLÈTE ET LA CARTE GPS : sur `main` le 15 octobre 2026
 
 | | |
 |---|---|
 | la règle | `minimumLegal`, `refusDeFinaliser`, `lecturesManquantes`, `validite` dans `src/lib/fiche-securite.ts` ; le croquis dans `src/lib/croquis-securite.ts` |
 | l'écran | `FormulaireFicheDeSecurite.tsx` (six étapes, puis signatures et envoi), `Croquis.tsx` (éditeur plein écran) |
 | la base | `completerLaFicheSignee` ajoute une lecture ou l'enregistrement à une fiche signée **sans la rouvrir** ; Paysage ne liste une fiche à équipe qu'enregistrée |
-| à jouer avant `main` | `test-fiche-securite-db.ts` et `test-fiche-securite-e2e.ts`, réécrites et **jamais jouées** : demander son « oui » |
+| la carte | `src/lib/carte-du-point.ts` (tuiles, une fois pour l'écran et le PDF), `CarteDuPoint.tsx`, `/api/carte/tuile` et `/api/carte/adresse` (gardées, comptées, ouvertes au salarié) |
+| la position | `next.config.ts` : `geolocation=(self)`. Le `()` du premier jour tuait « Relever ici » ; deux contrôles le tiennent |
 
 **Le piège** : `contenuRecu` ignore `lectures`, `prevention`, `envois` et
 `finaliseeLe` venus de l'écran. Ils ne s'écrivent que par leurs actions,

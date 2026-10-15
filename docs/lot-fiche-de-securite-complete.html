@@ -58,7 +58,7 @@
 <body>
 <main>
 <h1 id="la-fiche-de-sécurité-complète--verdict-du-lot">La fiche de sécurité complète : verdict du lot</h1>
-<p><em>14 octobre 2026. Codé d'après la planche <code>appli/fiche-de-securite-mieux.html</code>, validée par « Parfait, code ça ». Aucune batterie jouée : sa consigne.</em></p>
+<p><em>14 et 15 octobre 2026. Codé d'après la planche <code>appli/fiche-de-securite-mieux.html</code>, validée par « Parfait, code ça », puis la carte d'après <code>appli/fiche-securite-carte-gps.html</code>. Sur <code>main</code> le 15 octobre, dans une batterie commune avec les véhicules et le banc d'essai.</em></p>
 <h2 id="ce-qui-est-codé">Ce qui est codé</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
@@ -144,11 +144,40 @@
 <li><strong>Paysage ne liste que les fiches enregistrées.</strong> Les fiches signées avant ce lot n'ont pas d'équipe : elles restent visibles, sans migration.</li>
 <li><strong>Rouvrir une fiche efface les lectures</strong> : elles portaient sur la version d'avant.</li>
 </ul>
-<h2 id="ce-qui-nest-pas-fait">Ce qui n'est pas fait</h2>
+<h2 id="la-carte-du-point-gps-ajoutée-le-15-octobre">La carte du point GPS, ajoutée le 15 octobre</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<ul>
-<li><strong>La carte du point GPS.</strong> Celle de la planche était dessinée ; une vraie carte demande un fournisseur de fonds de carte. À décider s'il la veut.</li>
-</ul>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Verdict</th>
+<th>Où</th>
+</tr></thead><tbody>
+<tr>
+<td>La carte IGN, centrée sur le point, plan ou photo aérienne</td>
+<td>fait</td>
+<td><code>CarteDuPoint.tsx</code>, <code>src/lib/carte-du-point.ts</code></td>
+</tr>
+<tr>
+<td>Un appui déplace le point</td>
+<td>fait</td>
+<td><code>pointSousLAppui</code></td>
+</tr>
+<tr>
+<td>L'adresse officielle au point</td>
+<td>fait</td>
+<td><code>adresseAuPoint</code>, Base Adresse Nationale</td>
+</tr>
+<tr>
+<td>La même carte dans le PDF</td>
+<td>fait</td>
+<td><code>dessinerLaCarte</code></td>
+</tr>
+<tr>
+<td>Ouverte au salarié, qui remplit la fiche sur place</td>
+<td>fait</td>
+<td><code>acces-roles.ts</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>Trouvé en regardant l'écran, et c'est le plus important du lot</strong> : « Relever ici » n'avait <strong>jamais</strong> pu marcher. L'en-tête posé le premier jour, <code>geolocation=()</code>, interdisait la position à Atlas lui-même ; le navigateur refusait sans rien demander. C'était sa remarque du 22 septembre, <em>« la position exacte fonctionne pas »</em>. Corrigé (<code>geolocation=(self)</code>), avec un contrôle vu rouge d'abord, et la suite navigateur relève désormais une vraie position. Un contrôle de sécurité exigeait l'interdiction : il exige maintenant « nos pages seules », comme pour la caméra.</p>
 <h2 id="ce-qui-a-été-éprouvé">Ce qui a été éprouvé</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
@@ -169,15 +198,19 @@
 </tr>
 <tr>
 <td><code>test-fiche-securite-db.ts</code> (base)</td>
-<td>réécrit, <strong>pas joué</strong></td>
+<td>14 sur 14</td>
 </tr>
 <tr>
 <td><code>test-fiche-securite-e2e.ts</code> (navigateur)</td>
-<td>réécrit, <strong>pas joué</strong></td>
+<td>17 sur 17, puis 18 avec le relevé GPS</td>
 </tr>
 <tr>
-<td>Batterie</td>
-<td><strong>pas jouée</strong>, sa consigne</td>
+<td>Batterie commune, 1ʳᵉ</td>
+<td>quatre rouges de nos lots : carte fermée au salarié, trois boutons carrés, mode d'emploi périmé, contrôle des accès des véhicules. Corrigés</td>
+</tr>
+<tr>
+<td>Batterie commune, 2ᵉ</td>
+<td>base 455/464, navigateur 180/184 ; les trois rouges navigateur rejoués <strong>verts</strong> sur le lot, le rouge Windows <strong>déjà rouge sur <code>main</code></strong></td>
 </tr>
 </tbody></table></div>
 <h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
@@ -187,16 +220,12 @@
 <th>Qui</th>
 </tr></thead><tbody>
 <tr>
-<td>Jouer les suites base et navigateur</td>
-<td>lui : son « oui »</td>
+<td>La carte et l'adresse au point, sur son téléphone</td>
+<td>lui, sur son espace</td>
 </tr>
 <tr>
-<td>Regarder les écrans dans l'application</td>
-<td>nous, une fois le serveur autorisé</td>
-</tr>
-<tr>
-<td>La batterie (niveau 3) puis <code>main</code></td>
-<td>lui : son « oui »</td>
+<td>« Relever ici » sur un vrai téléphone</td>
+<td>lui, sur son espace</td>
 </tr>
 </tbody></table></div>
 </main>

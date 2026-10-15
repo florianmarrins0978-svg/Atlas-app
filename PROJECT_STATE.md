@@ -12,16 +12,15 @@ corrigibles à la main, rappels des contrôles sur l'accueil du patron, « En ca
 d'accident » pour les autres rôles. Migration 0131. Branche `lot/vehicules-code`.
 Sur `main` par la batterie commune du 14 octobre (`0f0d3cd3`). `ARCHITECTURE.md` §461, `TODO.md`.
 
-## CODÉ, PAS ENCORE SUR `main` : LA FICHE DE SÉCURITÉ COMPLÈTE (14 octobre 2026)
+## SUR `main` LE 15 OCTOBRE 2026 : LA FICHE DE SÉCURITÉ COMPLÈTE, ET LA VRAIE CARTE GPS
 
 Tout ce que montrent ses captures de Kleyk, codé d'après sa planche
 `appli/fiche-de-securite-mieux.html` : équipe, compétences, entreprises,
 arbres dangereux, croquis en plein écran, lectures signées, « Enregistrer ».
 Le minimum légal bloque la signature, la lecture de chacun bloque
-l'enregistrement. Branche `lot/fiche-securite-complete`, dossier
-`atlas-app-lot-securite`. `test-fiche-securite.ts` vert (26/26) ; les suites
-base et navigateur sont **réécrites mais pas jouées** : il a demandé « pas de
-batterie ». Document : `docs/lot-fiche-de-securite-complete.md`.
+l'enregistrement. La carte IGN du point GPS, à l'écran et dans le PDF. Et
+« Relever ici », mort depuis le premier jour (`geolocation=()`), remarche.
+Livré par une batterie commune (banc d'essai, véhicules, fiche) : base 455/464, navigateur 180/184 puis les quatre rouges rejoués verts ou déjà rouges sur `main`. Document : `docs/lot-fiche-de-securite-complete.md`.
 
 ## SUR `main` LE 14 OCTOBRE 2026 : LA MAIN D'ŒUVRE QUI S'ADDITIONNE (13 octobre 2026)
 

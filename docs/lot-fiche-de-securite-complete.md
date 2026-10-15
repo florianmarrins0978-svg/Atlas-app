@@ -1,7 +1,8 @@
 # La fiche de sécurité complète : verdict du lot
 
-*14 octobre 2026. Codé d'après la planche `appli/fiche-de-securite-mieux.html`,
-validée par « Parfait, code ça ». Aucune batterie jouée : sa consigne.*
+*14 et 15 octobre 2026. Codé d'après la planche `appli/fiche-de-securite-mieux.html`,
+validée par « Parfait, code ça », puis la carte d'après `appli/fiche-securite-carte-gps.html`.
+Sur `main` le 15 octobre, dans une batterie commune avec les véhicules et le banc d'essai.*
 
 ## Ce qui est codé
 
@@ -32,10 +33,24 @@ validée par « Parfait, code ça ». Aucune batterie jouée : sa consigne.*
 - **Rouvrir une fiche efface les lectures** : elles portaient sur la version
   d'avant.
 
-## Ce qui n'est pas fait
+## La carte du point GPS, ajoutée le 15 octobre
 
-- **La carte du point GPS.** Celle de la planche était dessinée ; une vraie
-  carte demande un fournisseur de fonds de carte. À décider s'il la veut.
+| | Verdict | Où |
+|---|---|---|
+| La carte IGN, centrée sur le point, plan ou photo aérienne | fait | `CarteDuPoint.tsx`, `src/lib/carte-du-point.ts` |
+| Un appui déplace le point | fait | `pointSousLAppui` |
+| L'adresse officielle au point | fait | `adresseAuPoint`, Base Adresse Nationale |
+| La même carte dans le PDF | fait | `dessinerLaCarte` |
+| Ouverte au salarié, qui remplit la fiche sur place | fait | `acces-roles.ts` |
+
+**Trouvé en regardant l'écran, et c'est le plus important du lot** :
+« Relever ici » n'avait **jamais** pu marcher. L'en-tête posé le premier jour,
+`geolocation=()`, interdisait la position à Atlas lui-même ; le navigateur
+refusait sans rien demander. C'était sa remarque du 22 septembre, *« la position
+exacte fonctionne pas »*. Corrigé (`geolocation=(self)`), avec un contrôle
+vu rouge d'abord, et la suite navigateur relève désormais une vraie position.
+Un contrôle de sécurité exigeait l'interdiction : il exige maintenant « nos
+pages seules », comme pour la caméra.
 
 ## Ce qui a été éprouvé
 
@@ -44,14 +59,14 @@ validée par « Parfait, code ça ». Aucune batterie jouée : sa consigne.*
 | Types (`tsc`) | vert |
 | `test-fiche-securite.ts` (règles, croquis, PDF) | 26 sur 26 |
 | Pas de pansement, pas de code mort, couches, flèches, boutons, rôles | verts |
-| `test-fiche-securite-db.ts` (base) | réécrit, **pas joué** |
-| `test-fiche-securite-e2e.ts` (navigateur) | réécrit, **pas joué** |
-| Batterie | **pas jouée**, sa consigne |
+| `test-fiche-securite-db.ts` (base) | 14 sur 14 |
+| `test-fiche-securite-e2e.ts` (navigateur) | 17 sur 17, puis 18 avec le relevé GPS |
+| Batterie commune, 1ʳᵉ | quatre rouges de nos lots : carte fermée au salarié, trois boutons carrés, mode d'emploi périmé, contrôle des accès des véhicules. Corrigés |
+| Batterie commune, 2ᵉ | base 455/464, navigateur 180/184 ; les trois rouges navigateur rejoués **verts** sur le lot, le rouge Windows **déjà rouge sur `main`** |
 
 ## Ce qui reste ouvert
 
 | | Qui |
 |---|---|
-| Jouer les suites base et navigateur | lui : son « oui » |
-| Regarder les écrans dans l'application | nous, une fois le serveur autorisé |
-| La batterie (niveau 3) puis `main` | lui : son « oui » |
+| La carte et l'adresse au point, sur son téléphone | lui, sur son espace |
+| « Relever ici » sur un vrai téléphone | lui, sur son espace |

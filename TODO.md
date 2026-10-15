@@ -50,16 +50,11 @@ libre avec `DATABASE_URL` vers `atlas_test`, et dans Git Bash
 `MSYS_NO_PATHCONV=1 ATLAS_ADRESSE=http://localhost:<port> npm run voir -- /planning`
 (sans la variable, Git Bash change `/planning` en chemin Windows).
 
-## 🔜 LA FICHE DE SÉCURITÉ COMPLÈTE : À ÉPROUVER PUIS LIVRER (14 octobre 2026)
+## ✅ LA FICHE DE SÉCURITÉ COMPLÈTE ET LA CARTE GPS : SUR `main` LE 15 OCTOBRE 2026
 
-CODÉE LE 14 OCTOBRE 2026, dans `atlas-app-lot-securite`. Il reste :
-
-1. jouer `test-fiche-securite-db.ts` et `test-fiche-securite-e2e.ts`, **avec son « oui »** ;
-2. regarder les six écrans, le croquis et l'écran signé (`npm run voir`) ;
-3. la batterie (niveau 3 : `src/lib/fiche-securite.ts` touche l'écran du planning), puis `main`, avec son accord.
-
-**Pas fait, délibérément** : une vraie carte pour le point GPS (celle de la
-planche était dessinée). À proposer plus tard s'il la demande.
+Livrée avec les véhicules et le banc d'essai, une seule batterie. **À regarder
+sur son espace** : la carte IGN et l'adresse au point (ce poste les joint, la
+batterie les éprouve sans l'IGN), et « Relever ici » sur un vrai téléphone.
 
 ## SUR `main` LE 15 OCTOBRE 2026 : LES VÉHICULES DE L'ENTREPRISE (14 octobre 2026)
 
