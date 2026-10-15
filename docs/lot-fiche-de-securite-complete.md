@@ -42,6 +42,7 @@ Sur `main` le 15 octobre, dans une batterie commune avec les véhicules et le ba
 | L'adresse officielle au point | fait | `adresseAuPoint`, Base Adresse Nationale |
 | La même carte dans le PDF | fait | `dessinerLaCarte` |
 | Ouverte au salarié, qui remplit la fiche sur place | fait | `acces-roles.ts` |
+| « Chercher une adresse » pose le point, même sur un chantier qu'Atlas n'a pas su situer (sa demande du 15 octobre) | fait | `CarteDuPoint.tsx`, `ChampAdresse.tsx` (`onChoisir`) |
 
 **Trouvé en regardant l'écran, et c'est le plus important du lot** :
 « Relever ici » n'avait **jamais** pu marcher. L'en-tête posé le premier jour,

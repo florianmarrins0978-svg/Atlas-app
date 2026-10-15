@@ -176,6 +176,11 @@
 <td>fait</td>
 <td><code>acces-roles.ts</code></td>
 </tr>
+<tr>
+<td>« Chercher une adresse » pose le point, même sur un chantier qu'Atlas n'a pas su situer (sa demande du 15 octobre)</td>
+<td>fait</td>
+<td><code>CarteDuPoint.tsx</code>, <code>ChampAdresse.tsx</code> (<code>onChoisir</code>)</td>
+</tr>
 </tbody></table></div>
 <p><strong>Trouvé en regardant l'écran, et c'est le plus important du lot</strong> : « Relever ici » n'avait <strong>jamais</strong> pu marcher. L'en-tête posé le premier jour, <code>geolocation=()</code>, interdisait la position à Atlas lui-même ; le navigateur refusait sans rien demander. C'était sa remarque du 22 septembre, <em>« la position exacte fonctionne pas »</em>. Corrigé (<code>geolocation=(self)</code>), avec un contrôle vu rouge d'abord, et la suite navigateur relève désormais une vraie position. Un contrôle de sécurité exigeait l'interdiction : il exige maintenant « nos pages seules », comme pour la caméra.</p>
 <h2 id="ce-qui-a-été-éprouvé">Ce qui a été éprouvé</h2>
