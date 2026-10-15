@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { colors, font, surPlein, voile } from "@/lib/design-tokens";
+import ChampAdresse from "@/components/atlas/ChampAdresse";
 import {
   ZOOM_MAX,
   ZOOM_MIN,
@@ -20,6 +21,12 @@ import {
 // La carte s'ouvre sur le point relevé ; avant tout relevé, sur l'adresse du
 // chantier quand Atlas la sait située. Un appui déplace le point : sous les
 // arbres, le GPS se trompe de quelques maisons, et c'est lui qui sait où il est.
+//
+// **Et une adresse tapée y emmène** — sa demande du 15 octobre 2026, *« il faut
+// pouvoir écrire l'adresse »*. Sans elle, un téléphone qui refuse sa position
+// sur un chantier qu'Atlas n'a pas su situer ne laissait que des coordonnées à
+// taper, que personne ne connaît. L'adresse choisie pose le point ; c'est
+// ensuite l'adresse au point qui s'affiche, comme pour un relevé.
 
 const HAUTEUR = 260;
 
@@ -40,19 +47,21 @@ export function CarteDuPoint({ gps, repli, onPoint }: { gps: string; repli: { la
   const [zoom, setZoom] = useState(ZOOM_PAR_DEFAUT);
   const [fond, setFond] = useState<FondDeCarte>("plan");
   const [largeur, setLargeur] = useState(0);
+  const [recherche, setRecherche] = useState("");
+  const [sansPosition, setSansPosition] = useState(false);
   const boite = useRef<HTMLDivElement>(null);
+  const visible = Boolean(lireLeGps(gps) ?? repli);
   useEffect(() => {
     const el = boite.current;
     if (!el) return;
     const mesure = new ResizeObserver(() => setLargeur(el.clientWidth));
     mesure.observe(el);
     return () => mesure.disconnect();
-  }, []);
+  }, [visible]);
 
   const releve = lireLeGps(gps);
   const centre = releve ?? repli;
-  if (!centre) return null;
-  const tuiles = largeur ? tuilesAutour(centre, zoom, largeur, HAUTEUR) : [];
+  const tuiles = centre && largeur ? tuilesAutour(centre, zoom, largeur, HAUTEUR) : [];
 
   function toucher(ev: React.MouseEvent<HTMLDivElement>) {
     if (!centre || (ev.target as HTMLElement).closest("button")) return;
@@ -60,8 +69,28 @@ export function CarteDuPoint({ gps, repli, onPoint }: { gps: string; repli: { la
     onPoint(ecrireLeGps(pointSousLAppui(centre, zoom, ev.clientX - b.left - b.width / 2, ev.clientY - b.top - b.height / 2)));
   }
 
+  const chercher = (
+    <div className="mt-2.5">
+      <ChampAdresse
+        label="Chercher une adresse"
+        sansLibelle
+        placeholder="Chercher une adresse"
+        value={recherche}
+        onChange={(v) => { setRecherche(v); setSansPosition(false); }}
+        onChoisir={(s) => {
+          if (s.latitude === null || s.longitude === null) setSansPosition(true);
+          else onPoint(ecrireLeGps({ lat: s.latitude, lon: s.longitude }));
+        }}
+      />
+      {sansPosition && <p className="m-0 mt-1.5 text-[13px] font-semibold" style={{ color: colors.alert }}>Cette adresse n’a pas de position connue. Touchez la carte, ou écrivez les coordonnées.</p>}
+    </div>
+  );
+  // Sans point ni adresse située, la carte n'a rien à montrer : seule la recherche l'ouvre.
+  if (!centre) return chercher;
+
   return (
     <div className="mt-2.5">
+      {chercher}
       <div
         ref={boite}
         data-atlas="carte-du-point"

@@ -149,6 +149,22 @@ async function main() {
     assert.equal(tuile, 400, "la route des tuiles relaie une tuile qui n'existe pas");
   });
 
+  // Sa demande du 15 octobre 2026 : *« il faut pouvoir écrire l'adresse »*. Le téléphone qui refuse
+  // sa position ne doit pas laisser que des coordonnées à taper. La liste est servie ici : la
+  // recherche elle-même est éprouvée par `test-adresse-suggestions-e2e`.
+  await cas("ÉCRAN 1 — une adresse cherchée pose le point, et la carte y va", async () => {
+    await page.route("**/api/adresses**", (route) =>
+      route.fulfill({ json: { suggestions: [{ libelle: "12 Rue des Ecoles 78200 Mantes-la-Jolie", contexte: "78, Yvelines", latitude: 48.99296, longitude: 1.71384 }] } })
+    );
+    await page.getByLabel("Chercher une adresse").fill("12 rue des écoles mantes");
+    await page.getByRole("option").filter({ hasText: "12 Rue des Ecoles" }).click();
+    const gps = page.getByPlaceholder("Exemple : 48.94123, 1.72004");
+    await page.waitForFunction(() => (document.querySelector('input[placeholder="Exemple : 48.94123, 1.72004"]') as HTMLInputElement | null)?.value === "48.99296, 1.71384", null, { timeout: 10_000 });
+    assert.equal(await gps.inputValue(), "48.99296, 1.71384", "l'adresse choisie n'a pas posé le point");
+    await page.locator("[data-atlas='repere-du-point']").waitFor({ timeout: 10_000 });
+    await page.unroute("**/api/adresses**");
+  });
+
   await cas("l'écran 1 porte ce qu'Atlas sait, et « Suivant » enregistre l'étape", async () => {
     const texte = await page.locator("body").innerText();
     assert.match(texte, new RegExp(chantierNom.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));

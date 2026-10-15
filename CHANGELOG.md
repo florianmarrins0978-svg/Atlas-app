@@ -6,6 +6,14 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-15
+
+- **Une adresse écrite emmène la carte du point GPS.** Sa demande du 15 octobre : *« il faut
+  pouvoir écrire l'adresse »*. « Chercher une adresse », au-dessus de la carte de la fiche de
+  sécurité, propose comme ailleurs ; l'adresse touchée pose le point, et la carte s'ouvre même
+  quand Atlas n'avait pas su situer le chantier. Ce que ça évite : un téléphone qui refuse sa
+  position, sur un lieu-dit, ne laissait que des coordonnées à taper, que personne ne connaît.
+
 ## 2026-10-14
 
 - **Trois failles « hautes » de l'audit fermées sans changer de version majeure.** `fast-uri`

@@ -29,6 +29,7 @@ export default function ChampAdresse({
   placeholder,
   value,
   onChange,
+  onChoisir,
   apparence = "carte",
   sansLibelle = false,
 }: {
@@ -36,6 +37,12 @@ export default function ChampAdresse({
   placeholder: string;
   value: string;
   onChange: (v: string) => void;
+  /**
+   * L'adresse TOUCHÉE dans la liste, avec sa position quand la base la donne.
+   * La carte du point GPS s'y déplace (sa demande du 15 octobre 2026 : *« il
+   * faut pouvoir écrire l'adresse »*) ; ailleurs, seul le texte compte.
+   */
+  onChoisir?: (suggestion: SuggestionAdresse) => void;
   /**
    * L'étiquette ne se DESSINE plus, elle se dit au lecteur d'écran.
    *
@@ -130,6 +137,7 @@ export default function ChampAdresse({
   function retenir(suggestion: SuggestionAdresse) {
     choisi.current = suggestion.libelle;
     onChange(suggestion.libelle);
+    onChoisir?.(suggestion);
     setOuverte(false);
   }
 

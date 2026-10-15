@@ -356,14 +356,16 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     ecran: "Fiche de sécurité",
     ou: "fiche de sécurité, étape « Le chantier »",
     intitule: "Relever la position GPS du chantier pour les secours",
-    motsCles: ["gps", "position", "coordonnees", "localiser", "secours", "releve", "emplacement"],
+    motsCles: ["gps", "position", "coordonnees", "localiser", "secours", "releve", "emplacement", "adresse", "carte"],
     geste:
       "Sur place, appuyez sur « Relever ici » : la carte s'ouvre sur le point, et l'adresse au point s'affiche. " +
       "Si le point n'est pas au bon endroit, touchez la carte à l'endroit exact du chantier.",
-    reserve: "Si le téléphone refuse, un champ apparaît pour écrire les coordonnées à la main.",
+    reserve:
+      "Si le téléphone refuse, écrivez l'adresse dans « Chercher une adresse » et touchez-la dans la liste : la carte y va. " +
+      "Les coordonnées peuvent aussi s'écrire à la main.",
     source: FORM,
     preuves: ['"Relever ici"', 'data-atlas="relever-gps"', "Coordonnées GPS", "Adresse au point GPS"],
-    ailleurs: [{ source: "src/app/planning/fiche-de-securite/[chantierId]/CarteDuPoint.tsx", preuves: ["Touchez la carte à l’endroit exact du chantier.", "Photo aérienne"] }],
+    ailleurs: [{ source: "src/app/planning/fiche-de-securite/[chantierId]/CarteDuPoint.tsx", preuves: ["Touchez la carte à l’endroit exact du chantier.", "Photo aérienne", "Chercher une adresse"] }],
   },
   {
     id: "fiche-securite-donneur",
