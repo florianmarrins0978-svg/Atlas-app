@@ -2,7 +2,7 @@
 
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { colors, surPlein } from "@/lib/design-tokens";
-import type { ChantierPlanning } from "./PlanningClient";
+import type { ChantierPlanning } from "./types-du-planning";
 
 /**
  * LA QUESTION AVANT DE SUPPRIMER — la B de sa planche du 7 octobre 2026.

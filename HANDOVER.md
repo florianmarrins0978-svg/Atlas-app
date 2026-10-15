@@ -10,6 +10,20 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LE PLANNING DÉCOUPÉ EN DOUZE FICHIERS : 15 octobre 2026, PAS ENCORE SUR `main`
+
+`src/app/planning/PlanningClient.tsx` (6 095 lignes, 39 composants) est
+découpé en douze fichiers du même dossier, **à l'identique** : aucune ligne de
+comportement n'a bougé, seul `export` s'ajoute. Le plan des fichiers et la
+règle du sens unique sont dans `ARCHITECTURE.md` §463. Le document de retour
+est `docs/decoupage-du-planning.md`.
+
+**Pour la suite** : un défaut de la fiche d'un jour se cherche dans
+`CarteDuJour.tsx`, du tiroir dans `TiroirDuBas.tsx`, d'« Ajouter » dans
+`AjoutAuJour.tsx` et ses deux voisins. `PlanningClient.tsx` ne garde que
+l'écran et son état. Les types (`ChantierPlanning`…) se lisent dans
+`types-du-planning.ts`, jamais depuis `PlanningClient`.
+
 ## SUR SON PC, APRÈS UN REDÉMARRAGE : RALLUMER DOCKER AVANT TOUTE MESURE (14 octobre 2026)
 
 **Docker Desktop ne se relance pas tout seul quand son PC redémarre**, et ses

@@ -10,7 +10,7 @@ import {
   creneauxPoses,
   type JourIso,
 } from "@/lib/disponibilites";
-import type { ChantierPlanning } from "@/app/planning/PlanningClient";
+import type { ChantierPlanning } from "@/app/planning/types-du-planning";
 
 /**
  * QUI OCCUPE QUELLE DEMI-JOURNÉE — la règle, écrite une fois.

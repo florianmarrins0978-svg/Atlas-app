@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { communeDeLAdresse } from "../src/lib/commune-adresse";
 
@@ -87,11 +87,17 @@ cas("La saisie sale se ramasse : espaces, retours, points-virgules", () => {
 // découpages écrits séparément nommeraient un jour deux communes différentes
 // sur deux lignes qui se lisent ensemble — la ligne des planifiés et la fiche
 // de la journée, à deux centimètres d'écart.
+//
+// **L'écran se lit sur tout son dossier**, pas dans un seul fichier : depuis le
+// découpage du 15 octobre 2026, la commune s'écrit dans `LieuDuChantier`
+// (`ElementsDuPlanning.tsx`), et un contrôle qui ne lirait que
+// `PlanningClient.tsx` laisserait passer une seconde règle posée à côté.
 cas("Le planning emploie la règle partagée, et n'en réécrit pas une seconde", () => {
-  const ecran = readFileSync(
-    path.join(__dirname, "..", "src", "app", "planning", "PlanningClient.tsx"),
-    "utf8"
-  );
+  const dossier = path.join(__dirname, "..", "src", "app", "planning");
+  const ecran = readdirSync(dossier)
+    .filter((nom) => /\.tsx?$/.test(nom))
+    .map((nom) => readFileSync(path.join(dossier, nom), "utf8"))
+    .join("\n");
   assert.match(
     ecran,
     /communeDeLAdresse/,

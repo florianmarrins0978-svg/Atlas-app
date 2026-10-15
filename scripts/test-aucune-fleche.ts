@@ -58,8 +58,16 @@ const AUTORISEES: { fichier: string; motif: RegExp; pourquoi: string }[] = [
   },
   {
     fichier: "src/app/planning/PlanningClient.tsx",
-    motif: /(signe="[‹›]"|^\s*[‹›]\s*$)/,
+    motif: /signe="[‹›]"/,
     pourquoi: "feuilleter les semaines du planning",
+  },
+  {
+    // Il vivait dans `PlanningClient.tsx` jusqu'au découpage du 15 octobre
+    // 2026, couvert par l'entrée du feuilletage juste au-dessus ; il porte
+    // désormais sa raison à lui.
+    fichier: "src/app/planning/ElementsDuPlanning.tsx",
+    motif: /^\s*›\s*$/,
+    pourquoi: "« Ouvrir le chantier » : le chevron seul EST le bouton (ChevronDesPortes), il ne décore aucun libellé",
   },
   {
     fichier: "src/app/termines/ListeTermines.tsx",

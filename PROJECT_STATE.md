@@ -5,6 +5,20 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## CODÉ, PAS ENCORE SUR `main` : LE PLANNING DÉCOUPÉ EN DOUZE FICHIERS (15 octobre 2026)
+
+`src/app/planning/PlanningClient.tsx` (6 095 lignes, 39 composants) est
+découpé en douze fichiers du même dossier, **à l'identique** : aucune ligne de
+comportement n'a bougé, seul `export` s'ajoute. Le plan des fichiers et la
+règle du sens unique sont dans `ARCHITECTURE.md` §463. Le document de retour
+est `docs/decoupage-du-planning.md`.
+
+**Pour la suite** : un défaut de la fiche d'un jour se cherche dans
+`CarteDuJour.tsx`, du tiroir dans `TiroirDuBas.tsx`, d'« Ajouter » dans
+`AjoutAuJour.tsx` et ses deux voisins. `PlanningClient.tsx` ne garde que
+l'écran et son état. Les types (`ChantierPlanning`…) se lisent dans
+`types-du-planning.ts`, jamais depuis `PlanningClient`.
+
 ## SUR `main` LE 15 OCTOBRE 2026 : LES VÉHICULES DE L'ENTREPRISE
 
 Réglages > Véhicules : papiers déposés en photo ou PDF et lus par l'IA, cases

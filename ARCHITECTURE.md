@@ -26740,7 +26740,7 @@ carte porte la date en tête, deux centimètres plus haut.
 
 | | |
 |---|---|
-| le geste | `GesteAbsence` dans `src/app/planning/PlanningClient.tsx` |
+| le geste | `GesteAbsence` dans `src/app/planning/PasLaCeJour.tsx` |
 | la planche | `appli/salarie-s-absente.html` — trois tailles de +, A retenu |
 | le contrôle | `scripts/test-pas-la-ce-jour-e2e.ts` |
 
@@ -27144,7 +27144,7 @@ rouvrirait).
 
 | | |
 |---|---|
-| l'écran | `PasLaCeJour` et `BasculeDuMoment` dans `src/app/planning/PlanningClient.tsx` |
+| l'écran | `PasLaCeJour` dans `src/app/planning/PasLaCeJour.tsx`, `BasculeDuMoment` dans `src/app/planning/BasculeDuMoment.tsx` |
 | la planche | `appli/absence-l-ordre.html`, validée le 10 septembre |
 | le contrôle | `scripts/test-pas-la-ce-jour-e2e.ts` — l'interrupteur, son effacement, et « Annuler » derrière le + |
 
@@ -34846,3 +34846,55 @@ tuiles se calculent dans `src/lib/carte-du-point.ts`, une seule fois pour
 l'écran et le PDF. L'adresse au point se relit dès que le point bouge, par un
 seul effet : relevé, appui ou saisie, sinon une adresse resterait celle d'un
 point d'avant. Elle n'écrase jamais l'adresse du chantier, qui vient du client.
+
+## §463 : Le planning se lit par fichiers, et les flèches ne remontent jamais vers `PlanningClient`
+
+**Sa décision du 15 octobre 2026**, après le compte des lignes de
+l'application : *« vas-y, lance le découpage du planning, mais prends ton
+temps, vérifie chaque chose, je veux aucun bug »*. `PlanningClient.tsx`
+faisait 6 095 lignes et portait 39 composants : le plus gros fichier du
+dépôt, celui qu'un développeur appelé un jour aurait dû lire en entier pour
+corriger une ligne (`CLAUDE.md` §4 sexies).
+
+**Un déplacement, pas une réécriture.** Chaque déclaration a été recopiée
+**à l'identique**, commentaires compris, par un outil qui lit l'arbre de
+syntaxe et vérifie qu'aucune ne s'est perdue ; seul le mot `export` s'ajoute
+quand un autre fichier la lit. Aucun comportement n'a été retouché, aucune
+dépendance de crochet, aucun libellé. Le HTML du planning a été relevé dans
+des centaines d'états avant et après, et comparé au caractère près.
+
+| Fichier | Ce qu'il porte |
+|---|---|
+| `PlanningClient.tsx` | l'écran : l'état, le mois, la semaine, les actions |
+| `types-du-planning.ts` | les formes partagées : `ChantierPlanning`, `GestesCarte`… |
+| `outils-du-planning.ts` | trois fonctions pures lues de plusieurs fichiers |
+| `ElementsDuPlanning.tsx` | les petites pièces communes : pastilles, chevron, mots |
+| `CarteDuJour.tsx` | la fiche d'une journée |
+| `FeuilleChantier.tsx` | la feuille d'un chantier, sa note, ses gestes |
+| `AjoutAuJour.tsx`, `AjoutDunClient.tsx`, `RelancesDuDevis.tsx` | « Ajouter » sur un jour |
+| `PasLaCeJour.tsx`, `BasculeDuMoment.tsx` | l'absence d'un salarié |
+| `TiroirDuBas.tsx` | le tiroir du bas |
+
+**Le sens unique.** `PlanningClient` importe les morceaux ; aucun morceau
+n'importe `PlanningClient`, même pour un type. Les trois fichiers qui
+lisaient `ChantierPlanning` depuis l'écran (`useOccupation.ts`,
+`JourneeRegardee.tsx`, `QuestionDeSuppression.tsx`) le lisent désormais dans
+`types-du-planning.ts` : une forme de données n'a pas à vivre dans un écran.
+
+**Ce qui reste gros, et pourquoi.** `PlanningClient` garde environ 1 950
+lignes : son composant tient seul l'état de l'écran (72 crochets), et le
+couper demanderait de faire passer cet état d'un fichier à l'autre, donc de
+réécrire. C'est un second lot, à décider ; celui-ci ne touche à aucune
+logique. `CarteDuJour.tsx` (environ 1 000 lignes) est dans le même cas.
+
+**Les imports de types des actions restent sur une ligne à part** : la règle
+de `scripts/test-actions-serveur-sans-export-de-type.ts` suit son import dans
+`AjoutDunClient.tsx`, commentaire compris.
+
+**Deux contrôles lisaient `PlanningClient.tsx` par son nom.**
+`test-commune-adresse.ts` lit désormais tout le dossier du planning (la
+commune s'écrit dans `LieuDuChantier`), et `test-aucune-fleche.ts` déclare le
+chevron d'`ElementsDuPlanning.tsx` avec sa vraie raison ; l'entrée de
+`PlanningClient` ne couvre plus que le feuilletage des semaines. Les deux ont
+été vus rouges sur la faute qu'ils doivent attraper, posée dans un fichier
+déplacé.

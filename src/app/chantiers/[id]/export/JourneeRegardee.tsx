@@ -10,7 +10,7 @@ import {
   type EtatDemi,
 } from "@/lib/planning-jour";
 import { styleDuCarre } from "@/components/atlas/MoisCharge";
-import type { ChantierPlanning } from "@/app/planning/PlanningClient";
+import type { ChantierPlanning } from "@/app/planning/types-du-planning";
 import type { JourIso } from "@/lib/disponibilites";
 import { equipesDuJour } from "@/lib/equipes-par-jour";
 
