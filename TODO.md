@@ -61,9 +61,11 @@ CODÉE LE 14 OCTOBRE 2026, dans `atlas-app-lot-securite`. Il reste :
 **Pas fait, délibérément** : une vraie carte pour le point GPS (celle de la
 planche était dessinée). À proposer plus tard s'il la demande.
 
-## ⏳ UNE PLANCHE À REGARDER — LES VÉHICULES DE L'ENTREPRISE (14 octobre 2026)
+## SUR `main` LE 15 OCTOBRE 2026 : LES VÉHICULES DE L'ENTREPRISE (14 octobre 2026)
 
-## CODÉ LE 14 OCTOBRE 2026, PAS ENCORE SUR `main` : LES VÉHICULES DE L'ENTREPRISE
+Livré par la batterie commune du 14 octobre (`0f0d3cd3`), avec la fiche de
+sécurité et le banc d'essai. Le point 1 ci-dessous est donc fait ; les points 2
+et 3 restent à essayer sur son espace.
 
 **Sa demande :** une rubrique où le patron dépose la carte grise et l'assurance
 de chaque véhicule, pour que les salariés les montrent au contrôle, avec

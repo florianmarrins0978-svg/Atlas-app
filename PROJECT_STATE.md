@@ -5,12 +5,12 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
-## CODÉ LE 14 OCTOBRE 2026, PAS ENCORE SUR `main` : LES VÉHICULES DE L'ENTREPRISE
+## SUR `main` LE 15 OCTOBRE 2026 : LES VÉHICULES DE L'ENTREPRISE
 
 Réglages > Véhicules : papiers déposés en photo ou PDF et lus par l'IA, cases
 corrigibles à la main, rappels des contrôles sur l'accueil du patron, « En cas
 d'accident » pour les autres rôles. Migration 0131. Branche `lot/vehicules-code`.
-Reste : la batterie (niveau 3), puis `main`. `ARCHITECTURE.md` §461, `TODO.md`.
+Sur `main` par la batterie commune du 14 octobre (`0f0d3cd3`). `ARCHITECTURE.md` §461, `TODO.md`.
 
 ## CODÉ, PAS ENCORE SUR `main` : LA FICHE DE SÉCURITÉ COMPLÈTE (14 octobre 2026)
 
