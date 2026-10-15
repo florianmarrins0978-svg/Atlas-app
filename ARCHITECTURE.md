@@ -34891,7 +34891,16 @@ logique. `CarteDuJour.tsx` (environ 1 000 lignes) est dans le même cas.
 de `scripts/test-actions-serveur-sans-export-de-type.ts` suit son import dans
 `AjoutDunClient.tsx`, commentaire compris.
 
-**Deux contrôles lisaient `PlanningClient.tsx` par son nom.**
+**Le mode d'emploi de l'assistant prouvait ses gestes dans `PlanningClient.tsx`**
+(`src/lib/fiches-mode-emploi/planning.ts`) : vingt-deux fiches y cherchaient des
+mots qui avaient déménagé, et la batterie l'a attrapé
+(`scripts/test-mode-emploi.ts`). Chaque preuve pointe désormais sur le fichier où
+elle vit, le fichier qui en porte le plus devenant `source` et les autres
+`ailleurs` ; aucune n'a été retirée ni réécrite. **Un morceau qui déménage
+emporte donc ses preuves** : déplacer un geste du planning sans relire ce
+fichier rougit ce contrôle, et c'est voulu.
+
+**Deux autres contrôles lisaient `PlanningClient.tsx` par son nom.**
 `test-commune-adresse.ts` lit désormais tout le dossier du planning (la
 commune s'écrit dans `LieuDuChantier`), et `test-aucune-fleche.ts` déclare le
 chevron d'`ElementsDuPlanning.tsx` avec sa vraie raison ; l'entrée de

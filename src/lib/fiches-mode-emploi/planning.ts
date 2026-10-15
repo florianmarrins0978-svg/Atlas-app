@@ -7,6 +7,15 @@
 import type { FicheModeEmploi } from "../mode-emploi";
 
 const PC = "src/app/planning/PlanningClient.tsx";
+const CARTE = "src/app/planning/CarteDuJour.tsx";
+const FEUILLE = "src/app/planning/FeuilleChantier.tsx";
+const TIROIR = "src/app/planning/TiroirDuBas.tsx";
+const AJOUT = "src/app/planning/AjoutAuJour.tsx";
+const AJOUT_CLIENT = "src/app/planning/AjoutDunClient.tsx";
+const RELANCES = "src/app/planning/RelancesDuDevis.tsx";
+const ELEMENTS = "src/app/planning/ElementsDuPlanning.tsx";
+const ABSENCE = "src/app/planning/PasLaCeJour.tsx";
+const MOMENT = "src/app/planning/BasculeDuMoment.tsx";
 const FS = "src/app/planning/FicheDeSecurite.tsx";
 const FORM = "src/app/planning/fiche-de-securite/[chantierId]/FormulaireFicheDeSecurite.tsx";
 const TRAVAUX = "src/app/planning/TravauxAFaire.tsx";
@@ -25,7 +34,7 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     reserve:
       "Seul ce que le chantier occupe ce jour-là part. « Journée » n'est proposé que s'il y occupe le matin et l'après-midi. " +
       "Un jour passé ne se déplace plus. « Annuler » arrête le geste.",
-    source: PC,
+    source: CARTE,
     preuves: ['data-atlas="deplacer"', "Déplacer", "Touchez le jour au-dessus", "Quel moment ?", 'journee: "Journée"', "Annuler"],
     ailleurs: [{ source: "src/lib/creneaux-chantier.ts", preuves: ["Ce chantier occupe déjà ce moment-là."] }],
   },
@@ -40,9 +49,12 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
       "Il perd sa date et retourne dans la liste du bas, « sans date ».",
     reserve:
       "Refusé si sa facture est déjà préparée : le chantier garde sa date. Un jour passé ne se modifie plus.",
-    source: PC,
-    preuves: ['data-atlas="retirer"', "Retirer", "deplanifierChantierAction"],
-    ailleurs: [{ source: "src/app/planning/actions.ts", preuves: ["Sa facture est déjà préparée : le chantier garde sa date."] }],
+    source: CARTE,
+    preuves: ['data-atlas="retirer"', "Retirer"],
+    ailleurs: [
+      { source: PC, preuves: ["deplanifierChantierAction"] },
+      { source: "src/app/planning/actions.ts", preuves: ["Sa facture est déjà préparée : le chantier garde sa date."] },
+    ],
   },
   {
     id: "planning-feuille",
@@ -53,7 +65,7 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     geste:
       "Touchez le nom du chantier dans sa journée : « Ouvrir le devis sans les prix » est au bas de sa fiche d'intervention.",
     reserve: "Le bouton n'apparaît que si le chantier a un devis.",
-    source: PC,
+    source: FEUILLE,
     preuves: ["pdf-sans-prix", "Ouvrir le devis sans les prix", "feuille?.avecDevis"],
   },
   // --- Le calendrier --------------------------------------------------------
@@ -118,8 +130,9 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     reserve:
       "Un nom inconnu crée sa fiche : Atlas demande alors téléphone, e-mail et adresse du chantier. " +
       "« Annuler » ramène aux trois choix.",
-    source: PC,
-    preuves: ['data-atlas="voie-client"', "Un client", 'placeholder="Nom du client"', "Inconnu, sa fiche sera créée", 'data-atlas="poser-le-client"', '"Poser"'],
+    source: AJOUT_CLIENT,
+    preuves: ['placeholder="Nom du client"', "Inconnu, sa fiche sera créée", 'data-atlas="poser-le-client"', '"Poser"'],
+    ailleurs: [{ source: AJOUT, preuves: ['data-atlas="voie-client"', "Un client"] }],
   },
   {
     id: "planning-ajouter-autre-chose",
@@ -130,8 +143,9 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     geste:
       "Ouvrez le jour, appuyez sur « Ajouter » puis « Autre chose ». Écrivez ce que c'est, " +
       "choisissez le moment, puis « Poser ».",
-    source: PC,
-    preuves: ['data-atlas="voie-temps"', "Autre chose", 'placeholder="Rendez-vous à la banque, livraison…"', 'data-atlas="poser-le-temps"'],
+    source: AJOUT,
+    preuves: ['data-atlas="voie-temps"', "Autre chose"],
+    ailleurs: [{ source: AJOUT_CLIENT, preuves: ['placeholder="Rendez-vous à la banque, livraison…"', 'data-atlas="poser-le-temps"'] }],
   },
   {
     id: "planning-poser-depuis-le-bas",
@@ -142,7 +156,7 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     geste:
       "Touchez d'abord le jour dans le calendrier, ouvrez la barre du bas (« À poser sur… »), puis touchez le nom du client.",
     reserve: "Sans jour touché, la liste montre les clients « en attente d'un jour » sans pouvoir les poser.",
-    source: PC,
+    source: TIROIR,
     preuves: ['data-atlas="poignee-tiroir"', "À poser sur", " sans date", "Touchez d’abord un jour du calendrier", "en attente d’un jour"],
   },
   {
@@ -153,7 +167,7 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     motsCles: ["annuler", "pose", "erreur", "trompe", "mauvais", "jour", "defaire", "revenir"],
     geste: "Ouvrez la barre du bas : sur la ligne « est sur… », appuyez sur « Annuler ».",
     reserve: "Le chantier repart sans date.",
-    source: PC,
+    source: TIROIR,
     preuves: ['data-atlas="defaire-la-pose"', "est sur", "Annuler"],
   },
   {
@@ -166,9 +180,10 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
       "Ouvrez la barre du bas, glissez la ligne du chantier de droite à gauche, appuyez sur « Retirer », " +
       "puis sur « Supprimer » pour confirmer. « Annuler » reste six secondes.",
     reserve: "Un chantier facturé ne se supprime pas : sa facture figure au relevé de TVA.",
-    source: PC,
-    preuves: ["LigneRetirable", 'data-atlas="sans-date"', "TiroirDesRetires", "supprimerChantierAction", "QuestionDeSuppression"],
+    source: TIROIR,
+    preuves: ["LigneRetirable", 'data-atlas="sans-date"', "TiroirDesRetires"],
     ailleurs: [
+      { source: PC, preuves: ["supprimerChantierAction", "QuestionDeSuppression"] },
       { source: "src/components/atlas/LigneRetirable.tsx", preuves: ["Retirer"] },
       { source: "src/app/planning/actions.ts", preuves: ["Ce chantier est facturé"] },
       { source: "src/app/planning/QuestionDeSuppression.tsx", preuves: ['data-atlas="confirmer-suppression"', "Supprimer"] },
@@ -184,9 +199,10 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
       "Ouvrez le jour, appuyez sur « Supprimer » sous le chantier, puis sur « Supprimer » pour confirmer. " +
       "« Annuler » reste six secondes dans la barre du bas.",
     reserve: "Le client reste dans vos clients. Un chantier facturé ne se supprime pas.",
-    source: PC,
-    preuves: ['data-atlas="supprimer"', "demanderSuppression", "TiroirDesRetires"],
+    source: CARTE,
+    preuves: ['data-atlas="supprimer"', "demanderSuppression"],
     ailleurs: [
+      { source: TIROIR, preuves: ["TiroirDesRetires"] },
       { source: "src/app/planning/QuestionDeSuppression.tsx", preuves: ['data-atlas="confirmer-suppression"', "Il reste dans vos clients."] },
     ],
   },
@@ -200,8 +216,9 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
       "Ouvrez la barre du bas, touchez la ligne « ½ journée à poser », puis ouvrez un jour et appuyez sur « Poser ici » " +
       "en face du matin ou de l'après-midi libre.",
     reserve: "Le même morceau se prend aussi par « Ajouter », puis « Client en attente ».",
-    source: PC,
-    preuves: ["½ journée à poser", "demi-journées à poser", "touchez une demi-journée", "Poser ici", "{m.chantier.nom}, ½"],
+    source: TIROIR,
+    preuves: ["½ journée à poser", "demi-journées à poser", "touchez une demi-journée"],
+    ailleurs: [{ source: CARTE, preuves: ["Poser ici"] }, { source: AJOUT, preuves: ["{m.chantier.nom}, ½"] }],
   },
   {
     id: "planning-attente-client",
@@ -212,7 +229,7 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     geste:
       "Ouvrez la barre du bas : sous « En attente du client », chaque ligne dit « Il choisit sa date ». " +
       "Le chantier se pose tout seul quand il a choisi.",
-    source: PC,
+    source: TIROIR,
     preuves: ['"En attente du client"', "Il choisit sa date"],
     lieu: true,
   },
@@ -228,8 +245,9 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
       "touchez les noms à cocher ou décocher, puis « Fermer ».",
     reserve:
       "Il faut des salariés déclarés dans Réglages, Équipe. Un salarié absent ce jour-là est grisé.",
-    source: PC,
-    preuves: ['data-atlas="equipe"', "Salarié", "Fermer", "basculerEquipe(c.id, jour, demi, e.rang)"],
+    source: ELEMENTS,
+    preuves: ['data-atlas="equipe"', "Salarié"],
+    ailleurs: [{ source: CARTE, preuves: ["Fermer", "basculerEquipe(c.id, jour, demi, e.rang)"] }],
   },
   {
     id: "planning-absence",
@@ -242,9 +260,10 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
       "touchez « Matin » ou « Après-midi » pour réduire.",
     reserve:
       "Seul, sans salarié, le bouton s'appelle « Absent ? ». Pour plusieurs jours d'affilée : Réglages, Équipe.",
-    source: PC,
+    source: ABSENCE,
     // L'écran écrit une espace insécable avant le point d'interrogation.
-    preuves: ['"Salarié absent ?"', '"Absent ?"','data-atlas="qui-nest-pas-la"', 'mot: "Journée"'],
+    preuves: ['"Salarié absent ?"', '"Absent ?"', 'data-atlas="qui-nest-pas-la"'],
+    ailleurs: [{ source: MOMENT, preuves: ['mot: "Journée"'] }],
   },
   {
     id: "planning-absence-retirer",
@@ -255,7 +274,7 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     geste:
       "Ouvrez le jour : sur la ligne « Absent », appuyez sur la croix à droite. " +
       "Ou « Salarié absent ? » puis « son nom, annuler ».",
-    source: PC,
+    source: ABSENCE,
     preuves: ['data-atlas="retirer-absence"', "Supprimer l’absence de", ", annuler", "Absent"],
   },
   {
@@ -268,7 +287,8 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
       "Un salarié consulte le planning : il ne voit ni « Ajouter », ni « Déplacer », ni « Retirer », et lit la note sans l'écrire.",
     reserve: "Il peut tout de même envoyer le retour du jour, dans « Travaux à faire ».",
     source: PC,
-    preuves: ["peutModifierLePlanning(role)", "La note"],
+    preuves: ["peutModifierLePlanning(role)"],
+    ailleurs: [{ source: FEUILLE, preuves: ["La note"] }],
   },
   // --- Les portes du chantier -----------------------------------------------
   {
@@ -281,7 +301,7 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
       "Dans la liste sous le calendrier, touchez le chevron à droite du nom du chantier : " +
       "« Le devis », « La fiche client », et « Créer la facture » ou « La facture ».",
     reserve: "Réservé au patron. La ligne du devis dit s'il est parti, accepté, refusé ou si une correction est demandée.",
-    source: PC,
+    source: ELEMENTS,
     preuves: ["Ouvrir le chantier", "ChevronDesPortes"],
     ailleurs: [
       {
@@ -300,7 +320,7 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     reserve: "Le bouton n'apparaît qu'une fois le jour du chantier passé. Une fois envoyée, il devient « La facture ».",
     source: "src/lib/portes-du-planning.ts",
     preuves: ['libelle: "Créer la facture"', 'etat: "envoyée"', "aEuLieu"],
-    ailleurs: [{ source: PC, preuves: ["Ouvrir le chantier"] }],
+    ailleurs: [{ source: ELEMENTS, preuves: ["Ouvrir le chantier"] }],
   },
   // --- L'agenda -------------------------------------------------------------
   {
@@ -468,8 +488,9 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     geste:
       "Touchez « Planning » dans la barre du bas, puis le nom du chantier dans sa journée : " +
       "sa fiche d'intervention se déplie dessous.",
-    source: "src/app/planning/PlanningClient.tsx",
-    preuves: ["Fiche d&apos;intervention", 'data-atlas="nom-du-jour"'],
+    source: FEUILLE,
+    preuves: ["Fiche d&apos;intervention"],
+    ailleurs: [{ source: CARTE, preuves: ['data-atlas="nom-du-jour"'] }],
     lieu: true,
   },
   {
@@ -513,7 +534,7 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     geste:
       "Touchez le jour, puis « Ajouter » et « Client en attente », et touchez le nom : " +
       "sa durée fait le reste.",
-    source: "src/app/planning/PlanningClient.tsx",
+    source: AJOUT,
     preuves: ['data-atlas="ajouter"', "Client en attente"],
   },
   {
@@ -530,9 +551,13 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     reserve:
       "Sur son lien, il ne choisit plus rien : il lit le jour posé et appuie sur « J'accepte ce devis ». " +
       "Tant qu'il ne l'a pas fait, le planning écrit « Pas encore signé ». « Signé sur papier » ferme son lien : gardez le papier signé.",
-    source: "src/app/planning/PlanningClient.tsx",
-    preuves: ["Client en attente", "devis envoyé", "Signe sur son lien", "Signé sur papier", "Pas encore signé"],
-    ailleurs: [{ source: "src/app/devis/[jeton]/formulaire.tsx", preuves: ["Votre intervention", 'data-atlas="jours-fixes"'] }],
+    source: AJOUT,
+    preuves: ["Client en attente", "devis envoyé"],
+    ailleurs: [
+      { source: RELANCES, preuves: ["Signe sur son lien", "Signé sur papier"] },
+      { source: ELEMENTS, preuves: ["Pas encore signé"] },
+      { source: "src/app/devis/[jeton]/formulaire.tsx", preuves: ["Votre intervention", 'data-atlas="jours-fixes"'] },
+    ],
   },
   {
     id: "planning-note",
@@ -541,7 +566,7 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     intitule: "Laisser une note sur une journée",
     motsCles: ["note", "penser", "rappel", "ecrire", "memo", "journee", "planning"],
     geste: "Écrivez dans « Ma note », sur la fiche du jour. Elle s'enregistre toute seule.",
-    source: "src/app/planning/PlanningClient.tsx",
+    source: FEUILLE,
     preuves: ["Ma note", "Enregistré."],
   },
   {
@@ -551,7 +576,7 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     intitule: "Y aller, appeler le client, copier l'adresse",
     motsCles: ["maps", "waze", "itineraire", "route", "aller", "appeler", "telephone", "adresse", "copier"],
     geste: "Sur la fiche du chantier : « Maps », « Waze », « Appeler le client » ou « Copier l'adresse ».",
-    source: "src/app/planning/PlanningClient.tsx",
+    source: FEUILLE,
     preuves: ["Maps", "Waze", "Appeler le client"],
   },
   {

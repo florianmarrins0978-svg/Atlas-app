@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le planning découpé en douze fichiers</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-planning-découpé-en-douze-fichiers">Le planning découpé en douze fichiers</h1>
+<p><em>Lot ouvert et codé le 15 octobre 2026, sur votre « vas-y, lance le découpage du planning, mais prends ton temps, vérifie chaque chose, je veux aucun bug ».</em></p>
+<hr>
+<h2 id="ce-qui-a-été-fait-en-cinq-lignes">Ce qui a été fait, en cinq lignes</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong><code>PlanningClient.tsx</code> (6 095 lignes, 39 morceaux d'écran) est rangé en douze fichiers</strong> du même dossier. Le plus gros fait désormais 1 953 lignes.</li>
+<li><strong>Rien n'a été réécrit.</strong> Chaque morceau a été déplacé tel quel, commentaires compris, par un outil qui lit le code et vérifie qu'aucun ne s'est perdu. Seul le mot <code>export</code> s'ajoute quand un autre fichier lit le morceau.</li>
+<li><strong>L'écran est identique.</strong> Le planning a été parcouru clic par clic dans 261 états, avant et après, et le code HTML comparé au caractère près : 261 identiques sur 261.</li>
+<li><strong>Les liens vont dans un seul sens</strong> : l'écran importe les morceaux, aucun morceau n'importe l'écran.</li>
+<li><strong>Trois contrôles ont suivi le déménagement</strong>, dont le mode d'emploi de l'assistant, que la batterie a attrapé (§3).</li>
+</ol>
+<hr>
+<h2 id="1-les-douze-fichiers">1. Les douze fichiers</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Fichier</th>
+<th>Ce qu'il porte</th>
+<th>Lignes</th>
+</tr></thead><tbody>
+<tr>
+<td><code>PlanningClient.tsx</code></td>
+<td>l'écran : son état, le mois, la semaine, les actions</td>
+<td>1 953</td>
+</tr>
+<tr>
+<td><code>CarteDuJour.tsx</code></td>
+<td>la fiche d'une journée</td>
+<td>998</td>
+</tr>
+<tr>
+<td><code>TiroirDuBas.tsx</code></td>
+<td>le tiroir du bas</td>
+<td>859</td>
+</tr>
+<tr>
+<td><code>ElementsDuPlanning.tsx</code></td>
+<td>les petites pièces communes : pastilles, chevron, mots</td>
+<td>451</td>
+</tr>
+<tr>
+<td><code>FeuilleChantier.tsx</code></td>
+<td>la feuille d'un chantier, sa note, ses quatre cases</td>
+<td>449</td>
+</tr>
+<tr>
+<td><code>AjoutDunClient.tsx</code></td>
+<td>« Ajouter » un client ou du temps sur un jour</td>
+<td>327</td>
+</tr>
+<tr>
+<td><code>AjoutAuJour.tsx</code></td>
+<td>le bouton « Ajouter » et ses voies</td>
+<td>308</td>
+</tr>
+<tr>
+<td><code>types-du-planning.ts</code></td>
+<td>les formes de données partagées</td>
+<td>300</td>
+</tr>
+<tr>
+<td><code>PasLaCeJour.tsx</code></td>
+<td>l'absence d'un salarié</td>
+<td>268</td>
+</tr>
+<tr>
+<td><code>RelancesDuDevis.tsx</code></td>
+<td>relancer un devis expiré, dire comment il signe</td>
+<td>213</td>
+</tr>
+<tr>
+<td><code>BasculeDuMoment.tsx</code></td>
+<td>matin, après-midi, journée</td>
+<td>74</td>
+</tr>
+<tr>
+<td><code>outils-du-planning.ts</code></td>
+<td>trois petits calculs lus de plusieurs fichiers</td>
+<td>38</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="2-comment-on-sait-quaucun-bug-nest-entré">2. Comment on sait qu'aucun bug n'est entré</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>La preuve</th>
+<th>Le résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>deux outils indépendants comparent chaque morceau, avant et après</td>
+<td><strong>53 sur 53 identiques</strong> ; un seul pixel changé, le second le trouve</td>
+</tr>
+<tr>
+<td>les types</td>
+<td>verts ; et rouges dès qu'on retire un import, donc le contrôle mesure bien</td>
+</tr>
+<tr>
+<td>le style</td>
+<td>les 4 mêmes avertissements qu'avant, déjà sur <code>main</code>, aucun nouveau</td>
+</tr>
+<tr>
+<td>les imports inutiles</td>
+<td>aucun, ni avant ni après</td>
+</tr>
+<tr>
+<td>le planning parcouru clic par clic, base remise à l'identique entre les deux</td>
+<td><strong>261 états sur 261 au caractère près</strong>, le même parcours, aucune erreur</td>
+</tr>
+<tr>
+<td>la batterie complète</td>
+<td>suites navigateur <strong>184 sur 184</strong>, suites base <strong>462 sur 464</strong> (les deux rouges sont au §3 et §4), construction, connexion derrière un proxy : vert</td>
+</tr>
+</tbody></table></div>
+<p><strong>Le niveau demandé par le dépôt était 2</strong> (impact borné). La batterie complète (niveau 3) a été jouée quand même, sur votre « je veux aucun bug ».</p>
+<hr>
+<h2 id="3-ce-que-la-batterie-a-attrapé-et-qui-a-été-corrigé">3. Ce que la batterie a attrapé, et qui a été corrigé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Le mode d'emploi de l'assistant pointait sur l'ancien fichier.</strong> Chaque fiche du mode d'emploi prouve son geste en retrouvant ses mots dans un fichier nommé (<code>src/lib/fiches-mode-emploi/planning.ts</code>). Vingt-deux fiches cherchaient dans <code>PlanningClient.tsx</code> des mots qui avaient déménagé. Rien ne cassait à l'écran, mais le contrôle qui empêche l'assistant d'enseigner un geste disparu ne mesurait plus rien. Chaque preuve pointe désormais sur le fichier où elle vit ; aucune n'a été retirée ni réécrite. Le contrôle est vert : 32 sur 32.</p>
+<p><strong>Ce qui a été corrigé avant tout essai.</strong> L'outil de découpage regroupait d'abord tous les imports d'un même fichier sur une ligne. Or une règle du planning l'interdit pour les actions serveur : un type mêlé aux actions fait tomber TOUTES les actions de l'écran (<code>scripts/test-actions-serveur-sans-export-de-type.ts</code>). La relecture l'a vu ; l'outil a été corrigé pour garder chaque ligne d'import telle quelle.</p>
+<p><strong>Deux autres contrôles lisaient <code>PlanningClient.tsx</code> par son nom</strong> : celui de la commune d'une adresse lit désormais tout le dossier du planning, et celui des flèches déclare le chevron « Ouvrir le chantier » dans son nouveau fichier, avec sa vraie raison. Les deux ont été vus rouges sur la faute qu'ils doivent attraper, posée dans un fichier déplacé.</p>
+<hr>
+<h2 id="4-un-rouge-qui-ne-vient-pas-de-ce-lot">4. Un rouge qui ne vient pas de ce lot</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong><code>/reglages/vehicules</code> manque à la liste des écrans préparés d'avance</strong> (<code>scripts/test-prechauffage.ts</code>). L'écran est arrivé avec le lot des véhicules, déjà sur <code>main</code>. Le même contrôle rejoué sur <code>main</code> seul rougit de la même façon. Il n'est pas corrigé ici : c'est hors de ce lot.</p>
+<hr>
+<h2 id="5-ce-qui-na-pas-été-fait-et-pourquoi">5. Ce qui n'a pas été fait, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong><code>PlanningClient.tsx</code> garde 1 953 lignes, et <code>CarteDuJour.tsx</code> 998.</strong> Ces deux fichiers tiennent chacun un seul gros composant qui porte l'état de l'écran (72 mémoires internes pour le premier). Les couper demanderait de faire passer cet état d'un fichier à l'autre, donc de réécrire du comportement. C'est un autre lot, avec un autre risque, et il se décide : celui-ci ne touche à aucune logique.</p>
+<hr>
+<h2 id="6-ce-qui-reste-ouvert">6. Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>la fusion sur <code>main</code></td>
+<td><strong>vous</strong> : votre accord</td>
+</tr>
+<tr>
+<td>l'écran des véhicules oublié du préchauffage (§4)</td>
+<td>la session des véhicules, ou un lot à part</td>
+</tr>
+<tr>
+<td>couper aussi le composant de l'écran (second lot, avec de la réécriture)</td>
+<td><strong>vous</strong> : à décider, rien ne presse</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>
