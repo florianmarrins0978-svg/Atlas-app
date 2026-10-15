@@ -95,7 +95,7 @@ export function CarteDuPoint({ gps, repli, onPoint }: { gps: string; repli: { la
         ref={boite}
         data-atlas="carte-du-point"
         onClick={toucher}
-        className="relative cursor-crosshair overflow-hidden rounded-[14px]"
+        className="relative mt-2.5 cursor-crosshair overflow-hidden rounded-[14px]"
         style={{ height: HAUTEUR, background: colors.rustTint, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
       >
         {tuiles.map((t) => (
