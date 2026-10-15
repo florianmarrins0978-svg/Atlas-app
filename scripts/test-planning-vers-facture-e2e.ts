@@ -144,6 +144,10 @@ async function ongletsOuIlFigure(page: Page, nom: string): Promise<string[]> {
     ["termines", "/termines", "Terminés"],
   ] as const) {
     await ouvrir(page, chemin, titre);
+    // Au repos, rien sous le mois du planning depuis le 15 octobre 2026 (sa
+    // réponse « la semaine ») : les chantiers se lisent en ouvrant les sept
+    // jours, qui commencent aujourd'hui.
+    if (onglet === "planning") await page.click('[data-atlas="point-semaine"]');
     let vu = (await page.locator(`text=${nom}`).count()) > 0;
     // **« Terminés » ne montre qu'UN MOIS à la fois**, depuis l'écran refait le
     // 22 août 2026. Ce contrôle-ci parle de RANGEMENT — dans quel onglet le

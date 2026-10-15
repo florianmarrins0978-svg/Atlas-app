@@ -565,17 +565,18 @@ export const FICHES_PLANNING: FicheModeEmploi[] = [
     preuves: ["Sept jours avant", "Sept jours après"],
   },
   {
-    // **Un geste qui ne se voit pas ne s'apprend pas seul** : le balayage a donc
-    // sa fiche, et les deux points sous le calendrier se touchent aussi.
+    // **« La semaine » remplace les deux points et le balayage** — sa réponse
+    // du 15 octobre 2026 (`appli/deux-points-ou-la-semaine.html`). Au repos,
+    // rien sous le mois ; la journée se lit en touchant son jour.
     id: "planning-journee-ou-semaine",
     ecran: "Planning",
     ou: "sous le calendrier du mois",
-    intitule: "Passer de la journée aux sept jours",
-    motsCles: ["journee", "semaine", "aujourdhui", "jour", "liste", "planning", "balayer"],
+    intitule: "Voir les sept jours sous le calendrier",
+    motsCles: ["journee", "semaine", "aujourdhui", "jour", "liste", "planning", "sept"],
     geste:
-      "Balayez la liste du doigt, ou appuyez sur l'un des deux points. " +
-      "L'écran s'ouvre toujours sur la journée du jour.",
+      "Appuyez sur « La semaine », sous le calendrier ; le même mot les referme. " +
+      "Pour une seule journée, touchez son jour dans le calendrier.",
     source: "src/app/planning/PlanningClient.tsx",
-    preuves: ["La journée", "Les sept jours"],
+    preuves: ["La semaine"],
   },
 ];
