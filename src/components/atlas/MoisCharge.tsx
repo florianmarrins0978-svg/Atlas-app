@@ -738,7 +738,15 @@ export function MarqueDuJour({
   );
 }
 
-function Fleche({ libelle, signe, onClick }: { libelle: string; signe: string; onClick: () => void }) {
+/**
+ * Le chevron qui feuillette : le mois ici, les sept jours au planning.
+ *
+ * **Écrit une fois.** Le planning en portait une copie exacte pour ses sept
+ * jours ; retirer le rond d'un seul côté (sa demande du 15 octobre 2026 : *« retire
+ * les gros ronds autour des flèches comme pour le mois »*) aurait laissé deux
+ * flèches différentes à trois centimètres l'une de l'autre.
+ */
+export function Fleche({ libelle, signe, onClick }: { libelle: string; signe: string; onClick: () => void }) {
   return (
     <button
       type="button"

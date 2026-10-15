@@ -18,6 +18,15 @@ puis la poussée.
 | `MoisCharge` | chevrons du mois sans leur rond, cible de 42 px gardée ; mois en Playfair | vu |
 | `PlanningClient` | bandeau de l'agenda sur une ligne : la phrase du conseil part, celle de la panne reste ; « Ouvrir » et « Masquer » en minuscules | vu |
 | `CarteDuJour` | « Aujourd'hui » en or au-dessus de la date (`data-atlas="aujourdhui-fiche"`) | vu |
+| `PlanningClient` | **« La semaine » remplace les deux points** (sa réponse du 15, planche `deux-points-ou-la-semaine.html`) : au repos rien sous le mois, le mot ouvre et referme les sept jours ; le balayage jour/semaine part avec la journée | vu |
+| `MoisCharge` → `PlanningClient` | les chevrons des sept jours perdent leur rond : `Fleche` n'existe plus qu'une fois (exportée de `MoisCharge`), la copie du planning est retirée | vu |
+
+**Suites adaptées au geste** (elles lisaient la liste du jour affichée par
+défaut) : `test-fiche-securite-e2e`, `test-travaux-a-faire-e2e`,
+`test-travaux-a-la-main-e2e`, `test-salarie-planning-lecture-seule-e2e` touchent
+« La semaine » d'abord. **Deux contrôles ajoutés** dans `test-planning-e2e` :
+le repos, l'ouverture et la fermeture de « La semaine » ; « Aujourd'hui » sur la
+fiche du jour seulement. **Aucune n'a été jouée** : pas de batterie, sa consigne.
 
 **Ce qui n'a PAS été codé, et pourquoi** (mes planches partaient d'un `main`
 périmé, celui du dossier principal au 13 octobre) :
@@ -27,7 +36,6 @@ périmé, celui du dossier principal au 13 octobre) :
 | « + Absent ? » montre les noms d'abord | **contraire à sa planche validée le 10 septembre** (commit `ba299c7e`) : seul, un appui le pose absent puis l'interrupteur du moment s'ouvre ; avec des salariés les noms viennent déjà d'abord |
 | chevron sur le nom du chantier | **déjà sur `main`** depuis sa réponse du 3 octobre (`chevron-fiche`) |
 | rythme de la fiche | mesuré : les blancs sont les cibles de 44 px de « Déplacer  Retirer » et « Ajouter », rien à retirer |
-| la liste du jour et les deux points remplacés par « La semaine » | **la raison a disparu** : depuis le 7 octobre (« la B ») la liste s'efface quand un jour est ouvert. **Question posée** : garde-t-il les deux points ? |
 | « rien » blanc, carré du week-end | ses réponses du 14 au soir : rien ne change |
 
 ## ✅ LA FICHE DE SÉCURITÉ COMPLÈTE ET LA CARTE GPS : SUR `main` LE 15 OCTOBRE 2026

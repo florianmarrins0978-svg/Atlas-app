@@ -25,6 +25,7 @@ import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { ADRESSE } from "./_adresse";
 import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
+import { jourIso } from "../src/lib/jour";
 
 const BASE = ADRESSE;
 // DATABASE_URL, jamais une base codée en dur : la suite doit viser la même base
@@ -1014,6 +1015,11 @@ async function main() {
   // choisi « la B » : un jour ouvert retire la liste.
   await essai("un jour ouvert : son chantier ne se lit qu'une fois", async () => {
     await allerAuPlanning();
+    // Les sept jours d'abord ouverts : c'est là que le doublon pourrait
+    // revenir. Au repos il n'y a rien sous le mois (sa réponse du
+    // 15 octobre 2026), et la suite le vérifie plus bas.
+    await page.click('[data-atlas="point-semaine"]');
+    await page.locator('[data-atlas="liste-planifies"]').waitFor({ state: "visible", timeout: 10_000 });
     await toucherLeJour(JOUR);
     // D'abord, la fiche le porte : sans cela, « absent de la liste » serait
     // vrai d'un écran vide.
@@ -1032,6 +1038,42 @@ async function main() {
   await essai("refermer le jour rend la liste", async () => {
     await page.click(`[data-atlas="grille-mois"] [data-jour="${JOUR}"]`);
     await page.locator('[data-atlas="liste-planifies"]').waitFor({ state: "visible", timeout: 10_000 });
+  });
+
+  // **« LA SEMAINE » À LA PLACE DES DEUX POINTS** — sa réponse du 15 octobre
+  // 2026 (`appli/deux-points-ou-la-semaine.html`). Au repos, rien sous le
+  // mois ; le mot ouvre les sept jours, le même mot les referme.
+  await essai("au repos rien sous le mois, « La semaine » ouvre puis referme", async () => {
+    await allerAuPlanning();
+    const fiche = page.locator('[data-atlas="carte-jour"]');
+    assert.equal(await fiche.count(), 0, "un jour est déjà ouvert à l'arrivée : le repos ne se mesure pas");
+    const liste = page.locator('[data-atlas="liste-planifies"]');
+    assert.equal(await liste.count(), 0, "une liste est sous le mois au repos");
+    const mot = page.locator('[data-atlas="point-semaine"]');
+    assert.equal((await mot.innerText()).trim(), "La semaine", "le geste ne dit pas « La semaine »");
+    await mot.click();
+    await liste.waitFor({ state: "visible", timeout: 10_000 });
+    assert.equal(await mot.getAttribute("aria-pressed"), "true", "le mot ne dit pas que la semaine est ouverte");
+    await mot.click();
+    await liste.waitFor({ state: "detached", timeout: 10_000 });
+  });
+
+  // **« AUJOURD'HUI », EN OR, SUR LA FICHE DU JOUR** — sa planche du
+  // 14 octobre 2026 (`appli/fiche-du-jour-en-mieux.html`). Sur un autre jour,
+  // la fiche ne dit que la date.
+  await essai("la fiche d'aujourd'hui dit « Aujourd'hui », celle d'un autre jour non", async () => {
+    await allerAuPlanning();
+    const aujourdHui = jourIso(new Date());
+    await toucherLeJour(aujourdHui);
+    const mot = page.locator(`[data-atlas="carte-jour"][data-jour="${aujourdHui}"] [data-atlas="aujourdhui-fiche"]`);
+    await mot.waitFor({ state: "visible", timeout: 10_000 });
+    assert.match(await mot.innerText(), /aujourd.hui/i, "le mot n'est pas « Aujourd'hui »");
+    await toucherLeJour(JOUR);
+    assert.equal(
+      await page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"] [data-atlas="aujourdhui-fiche"]`).count(),
+      0,
+      "la fiche d'un autre jour dit « Aujourd'hui »"
+    );
   });
 
   // **La ligne dit la DURÉE, plus le moment** — sa demande du 22 août 2026,

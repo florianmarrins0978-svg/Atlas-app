@@ -23,7 +23,7 @@ import { cheminAutorise, peutModifierLePlanning, type Role } from "@/lib/acces-r
 import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
 import { colors, font, surPlein, texteSituation, voile } from "@/lib/design-tokens";
 import TeteRonde from "@/components/atlas/TeteRonde";
-import MoisCharge, { styleDuCarre } from "@/components/atlas/MoisCharge";
+import MoisCharge, { Fleche, styleDuCarre } from "@/components/atlas/MoisCharge";
 import CouleursDesEtats from "@/components/atlas/CouleursDesEtats";
 import { AUCUNE_COULEUR_CHOISIE, type CouleursPlanning } from "@/lib/couleurs-planning";
 import type { NomCharte } from "@/lib/chartes";
@@ -530,27 +530,12 @@ export default function PlanningClient({
    */
   const [debutFenetre, setDebutFenetre] = useState<JourIso>(jourDArrivee as JourIso);
   /**
-   * **Ce qu'on regarde : la journée, ou les sept jours.** Sa demande du même
-   * jour : *« qu'on ait seulement la journée d'aujourd'hui, pour avoir moins
-   * d'informations ; néanmoins, en un clic, le visuel de la semaine »*. La
-   * journée est le défaut à chaque arrivée sur l'écran — c'est ce qu'il a
-   * demandé, et c'est ce que le salarié cherche à sept heures du matin.
+   * **Les sept jours sous le mois, ouverts ou non.** Jusqu'au 15 octobre 2026,
+   * deux points choisissaient entre la journée d'aujourd'hui (le défaut) et la
+   * semaine. Sa réponse du 15 octobre (`appli/deux-points-ou-la-semaine.html`) :
+   * *« la semaine »*. Au repos, rien sous le mois ; le mot ouvre les sept jours.
    */
-  const [portee, setPortee] = useState<"jour" | "semaine">("jour");
-  /** D'où le doigt est parti — `null` tant qu'aucun balayage n'est en cours. */
-  const departBalayage = useRef<{ x: number; y: number } | null>(null);
-
-  /**
-   * Passer de la journée aux sept jours, et l'inverse.
-   *
-   * **Revenir sur la journée REPART d'aujourd'hui.** Sans cela, celui qui a
-   * reculé de trois fenêtres retomberait sur une journée d'il y a trois
-   * semaines sans comprendre pourquoi — et il la lirait comme la sienne.
-   */
-  function allerVers(quoi: "jour" | "semaine") {
-    setPortee(quoi);
-    if (quoi === "jour") setDebutFenetre(aujourdHui);
-  }
+  const [semaineOuverte, setSemaineOuverte] = useState(false);
   const [, enTransition] = useTransition();
 
   const grilleRef = useRef<HTMLDivElement>(null);
@@ -1561,10 +1546,10 @@ export default function PlanningClient({
 
   const joursDeLaSemaine = useMemo(
     () =>
-      Array.from({ length: portee === "jour" ? 1 : JOURS_DE_LA_FENETRE }, (_, i) =>
+      Array.from({ length: JOURS_DE_LA_FENETRE }, (_, i) =>
         plusDeJours(debutFenetre, i)
       ),
-    [debutFenetre, portee]
+    [debutFenetre]
   );
 
   /**
@@ -1751,7 +1736,7 @@ export default function PlanningClient({
             // deux navigations cessent de s'ignorer : changer de semaine ne
             // disait rien au mois, et rien ne montrait d'où venait la liste.
             // Sans liste à l'écran (un jour est ouvert), aucune semaine n'est lue.
-            semaineLue={jourTouche === null ? lundiDe(debutFenetre) : null}
+            semaineLue={jourTouche === null && semaineOuverte ? lundiDe(debutFenetre) : null}
             // **Le patron seul** : c'est un réglage de l'entreprise, sa réponse
             // du 29 septembre 2026. Ses salariés voient ses couleurs.
             sousLaLegende={
@@ -1804,52 +1789,43 @@ export default function PlanningClient({
           />
         </div>
 
-        {/* ─── LA JOURNÉE, OU LES SEPT JOURS ───────────────────────────────
-            **Le mot « Planifiés » est parti le 9 septembre 2026, à sa demande.**
-            Il titrait une liste qui n'a plus besoin d'être nommée : sous le
-            calendrier, ce qui suit ne peut être que des chantiers posés, et
-            l'écran a déjà « Planning » écrit en tête. Un titre qui répète son
-            écran est du bruit (`CLAUDE.md` §3).
+        {/* ─── « LA SEMAINE », À LA PLACE DES DEUX POINTS ──────────────────
+            **Sa réponse du 15 octobre 2026**, planche
+            `appli/deux-points-ou-la-semaine.html` : *« la semaine »*. Les deux
+            points (son choix du 9 septembre) montraient au repos les chantiers
+            d'aujourd'hui ; depuis le 7 octobre la fiche d'un jour ouvert les
+            porte déjà, et un point ne disait pas ce qu'il ouvrait. Un mot en or
+            est un geste sur cet écran (sa planche du 18 septembre) : il ouvre
+            les sept jours, et le même mot les referme. Au repos, rien dessous.
 
-            **On passe de l'une à l'autre AU DOIGT** — son choix du même jour :
-            *« pas en appuyant sur deux gros boutons, quelque chose de plus
-            subtil »*. Les deux points disent où l'on est, et se touchent aussi :
-            un geste qui ne se voit pas ne s'apprend pas seul. */}
-        <div
-          data-atlas="portee-liste"
-          className="mt-[22px] flex items-center justify-center gap-[9px]"
-        >
-          {(["jour", "semaine"] as const).map((quoi) => (
-            <button
-              key={quoi}
-              type="button"
-              data-atlas={`point-${quoi}`}
-              aria-pressed={portee === quoi}
-              aria-label={quoi === "jour" ? "La journée" : "Les sept jours"}
-              onClick={() => allerVers(quoi)}
-              className="flex h-[34px] w-[34px] cursor-pointer items-center justify-center border-0 bg-transparent p-0"
-              style={{ WebkitTapHighlightColor: "transparent" }}
-            >
-              <i
-                className="block h-[6px] w-[6px] rounded-full"
-                style={{
-                  background: portee === quoi ? colors.or : colors.chevron,
-                  transform: portee === quoi ? "scale(1.5)" : "none",
-                  transition: "background 300ms, transform 300ms",
-                }}
-              />
-            </button>
-          ))}
+            Le repère `point-semaine` reste : il désigne toujours le geste qui
+            ouvre les sept jours, et les suites s'y tiennent. */}
+        <div data-atlas="portee-liste" className="mt-[14px] flex justify-center">
+          <button
+            type="button"
+            data-atlas="point-semaine"
+            aria-pressed={semaineOuverte}
+            aria-expanded={semaineOuverte}
+            onClick={() => setSemaineOuverte((o) => !o)}
+            className="min-h-[44px] cursor-pointer border-0 bg-transparent px-2.5 text-[14.5px]"
+            style={{
+              color: semaineOuverte ? colors.ink : colors.or,
+              textDecorationLine: semaineOuverte ? "underline" : "none",
+              textDecorationColor: colors.or,
+              textUnderlineOffset: 7,
+              textDecorationThickness: 1.5,
+              WebkitTapHighlightColor: "transparent",
+            }}
+          >
+            La semaine
+          </button>
         </div>
 
-        {/* Les flèches ne servent qu'en grand : sur la journée, il n'y a rien à
-            feuilleter, et deux cibles inertes se touchent quand même. */}
         {/* **Un jour ouvert retire la liste, ses flèches avec elle** : sa fiche
             montre déjà ces chantiers, et les relire en dessous était le doublon
             qu'il a vu le 7 octobre 2026 (« la B »). */}
-        {jourTouche === null && (
+        {jourTouche === null && semaineOuverte && (
         <>
-        {portee === "semaine" && (
         <div className="mx-[18px] mt-[14px] flex items-center justify-between gap-2.5">
           <Fleche
             libelle="Sept jours avant"
@@ -1871,31 +1847,14 @@ export default function PlanningClient({
             onClick={() => setDebutFenetre((d) => plusDeJours(d, JOURS_DE_LA_FENETRE))}
           />
         </div>
-        )}
 
-        {/* **Le balayage vit ICI, sur la liste elle-même.** Posé plus haut, il
-            aurait pris le doigt qui fait défiler le calendrier. */}
-        <div
-          data-atlas="liste-planifies"
-          onPointerDown={(e) => {
-            departBalayage.current = { x: e.clientX, y: e.clientY };
-          }}
-          onPointerUp={(e) => {
-            const d = departBalayage.current;
-            departBalayage.current = null;
-            if (!d) return;
-            const dx = e.clientX - d.x;
-            const dy = e.clientY - d.y;
-            // **Plus horizontal que vertical, et quarante pixels au moins** :
-            // sans ces deux conditions, un simple défilement du pouce changerait
-            // de vue sans qu'on comprenne pourquoi.
-            if (Math.abs(dx) < 40 || Math.abs(dx) <= Math.abs(dy)) return;
-            allerVers(dx < 0 ? "semaine" : "jour");
-          }}
-        >
+        {/* Le balayage entre la journée et la semaine est parti avec la
+            journée : il n'y a plus qu'une vue à ouvrir, et « La semaine » la
+            ferme. */}
+        <div data-atlas="liste-planifies">
         {joursAvecChantiers.length === 0 ? (
           <p className="mx-[18px] mt-3.5 text-center text-[13.5px]" style={{ color: colors.muted }}>
-            {portee === "jour" ? "Rien de posé ce jour-là." : "Aucun chantier posé sur ces sept jours."}
+            Aucun chantier posé sur ces sept jours.
           </p>
         ) : (
           joursAvecChantiers.map((jour) => (
@@ -2251,33 +2210,6 @@ function ChevronDesPortes({
       style={{ color: colors.chevron }}
     >
       ›
-    </button>
-  );
-}
-
-function Fleche({
-  libelle,
-  signe,
-  onClick,
-}: {
-  libelle: string;
-  signe: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={libelle}
-      onClick={onClick}
-      className="h-[42px] w-[42px] flex-shrink-0 cursor-pointer rounded-full text-[19px] leading-none"
-      style={{
-        border: `1px solid ${colors.line}`,
-        background: colors.card,
-        color: colors.ink,
-        WebkitTapHighlightColor: "transparent",
-      }}
-    >
-      {signe}
     </button>
   );
 }

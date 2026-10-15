@@ -114,6 +114,9 @@ async function main() {
     // qui intercepte le clic. Le chantier est posé sur AUJOURD'HUI, et c'est
     // là que le planning s'ouvre.
     await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
+    // Au repos, rien sous le mois depuis le 15 octobre 2026 (sa réponse « la
+    // semaine ») : la liste s'ouvre par le mot « La semaine ».
+    await page.click('[data-atlas="point-semaine"]');
     const ligne = page.locator(`${LIGNE}:has-text("${chantierNom}")`).first();
     await ligne.waitFor({ state: "visible", timeout: 20_000 });
     await ligne.click();

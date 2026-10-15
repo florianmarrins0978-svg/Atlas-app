@@ -21,6 +21,10 @@ Format : le plus récent en tête.
   `planning-epure` et `fiche-du-jour-en-mieux`, son oui du 15 octobre. Trois
   points des planches n'ont pas été codés : ils étaient déjà faits, ou
   contraires à une décision du 10 septembre (`TODO.md`).
+- **« La semaine » remplace les deux points sous le calendrier**, sa réponse du
+  15 octobre devant les deux versions côte à côte : un point ne disait pas ce
+  qu'il ouvrait. Au repos, rien sous le mois. Les flèches des sept jours perdent
+  leur rond, et n'existent plus qu'en un exemplaire, partagé avec le mois.
 
 ## 2026-10-14
 
