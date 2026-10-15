@@ -21,7 +21,7 @@ import { retourDuJourAttendu } from "@/lib/retour-intervention";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { cheminAutorise, peutModifierLePlanning, type Role } from "@/lib/acces-roles";
 import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
-import { colors, font, libelleCaps, surPlein, texteSituation, voile } from "@/lib/design-tokens";
+import { colors, font, surPlein, texteSituation, voile } from "@/lib/design-tokens";
 import TeteRonde from "@/components/atlas/TeteRonde";
 import MoisCharge, { styleDuCarre } from "@/components/atlas/MoisCharge";
 import CouleursDesEtats from "@/components/atlas/CouleursDesEtats";
@@ -1693,23 +1693,37 @@ export default function PlanningClient({
           <div className="mt-5 px-[26px]">
             <div className="flex items-center justify-between py-3.5" style={{ borderBottom: `1px solid ${colors.line}` }}>
               <Link href="/reglages/agenda" className="min-w-0 flex-1">
-                <span className="block text-[15px]" style={{ fontFamily: font.display }}>
+                {/* **Une ligne pour le conseil, deux pour la panne** — sa planche
+                    du 14 octobre 2026. La phrase du conseil redisait le titre ;
+                    celle de la panne dit un risque, elle reste. Le titre passe en
+                    texte courant et les deux gestes en minuscules : en capitales
+                    espacées, « OUVRIR MASQUER » repoussait le titre sur deux
+                    lignes (vu à l'écran). */}
+                <span
+                  className="block text-[14px]"
+                  style={{ color: bandeauAgenda === "panne" ? colors.ink : colors.inkSoft }}
+                >
                   {bandeauAgenda === "panne" ? "Votre agenda n'est plus lu" : "Vous pouvez relier votre agenda"}
                 </span>
-                <span className="block text-[12.5px] leading-snug" style={{ color: colors.muted }}>
-                  {bandeauAgenda === "panne"
-                    ? "Un client peut retenir un jour où vous êtes déjà pris."
-                    : "Atlas évitera vos jours déjà pris."}
-                </span>
+                {bandeauAgenda === "panne" && (
+                  <span className="block text-[12.5px] leading-snug" style={{ color: colors.muted }}>
+                    Un client peut retenir un jour où vous êtes déjà pris.
+                  </span>
+                )}
               </Link>
-              <span className="ml-4 flex flex-shrink-0 flex-col items-end gap-2">
-                <Link href="/reglages/agenda" className={libelleCaps} style={{ color: colors.or }}>
+              <span className="ml-3 flex flex-shrink-0 items-center gap-3.5 text-[14px]">
+                <Link href="/reglages/agenda" className="flex min-h-[44px] items-center" style={{ color: colors.or }}>
                   Ouvrir
                 </Link>
                 {/* « Masquer » n'existe pas pour la panne : ce n'est pas un
                     conseil qu'on écarte, c'est un raccordement qui a lâché. */}
                 {bandeauAgenda === "proposer" && (
-                  <button type="button" onClick={masquerLeRappel} className={libelleCaps} style={{ color: colors.muted }}>
+                  <button
+                    type="button"
+                    onClick={masquerLeRappel}
+                    className="flex min-h-[44px] cursor-pointer items-center border-0 bg-transparent p-0 text-[14px]"
+                    style={{ color: colors.muted }}
+                  >
                     Masquer
                   </button>
                 )}
@@ -4487,6 +4501,19 @@ function CarteDuJour({
             : { background: colors.card }
         }
       >
+        {/* **« Aujourd'hui », en or, au-dessus de la date** — sa planche du
+            14 octobre 2026 (`appli/fiche-du-jour-en-mieux.html`). C'est sa règle
+            du 9 septembre pour la liste du bas ; la fiche du jour, elle, ne
+            disait que la date. La date reste : « Aujourd'hui » s'ajoute. */}
+        {!seulement && jour === jourIso(new Date()) && (
+          <p
+            data-atlas="aujourdhui-fiche"
+            className="mb-2 text-center text-[11px] font-semibold uppercase leading-none"
+            style={{ letterSpacing: "0.2em", color: colors.or }}
+          >
+            Aujourd’hui
+          </p>
+        )}
         {!seulement && (
           <p
             className="mb-3.5 text-center text-[12.5px] font-bold uppercase leading-none"

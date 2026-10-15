@@ -1,54 +1,34 @@
 # Prochaines tâches
 
-## ⏳ UNE PLANCHE À REGARDER — LA FICHE DU JOUR, EN MIEUX (14 octobre 2026)
+## 🔜 LE PLANNING ÉPURÉ ET LA FICHE DU JOUR : CODÉS, À VÉRIFIER AVANT `main` (15 octobre 2026)
 
-**Sa demande :** *« quand je clique sur un jour, fais-moi une planche de ce qui
-s'affiche, mais amélioré »*. Planche `appli/fiche-du-jour-en-mieux.html`, sa
-fiche d'aujourd'hui en photo à gauche (prise sur `atlas_test`, un client posé
-sur le 15 puis retiré). **Rien n'est codé ; ne pas coder avant son oui.**
+**Son oui du 15 octobre :** *« tu peux coder ces deux planches, et ne lance pas
+de batterie »*. Le lot est sur la branche locale `lot/planning-epure`, dossier
+`atlas-app-lot-epure`, **non poussé**. Niveau calculé : **2** (rayon de 2 et
+3 points d'entrée, écrans /planning, /chantiers, /reglages/equipe) : il faut
+`npm run verifier:avant-fusion` (23 suites navigateur) **avec son accord**,
+puis la poussée.
 
-| | Ce qui change | Où, si oui |
+**Codé et regardé à l'écran** (`next dev` du dossier du lot sur `atlas_test`) :
+
+| | | |
 |---|---|---|
-| 1 | « Aujourd'hui » en or au-dessus de la date | `CarteDuJour` |
-| 2 | ~~chaque demi-journée dit qui part~~ : **faux, retiré le 14 au soir**. La ligne était vide parce que `atlas_test` n'a aucun salarié (`nombreSalaries <= 0`) ; avec des salariés l'application le fait déjà | rien |
-| 3 | **« + Absent ? » montre les noms d'abord** : avec une seule personne, un seul appui marquait « Vous » absent (vu en touchant) | `GesteAbsence` |
-| 4 | le nom du chantier porte le chevron de la liste, qui tourne quand la fiche d'intervention s'ouvre | `CarteDuJour` |
-| 5 | rythme régulier, plus de grands blancs avant « Déplacer  Retirer » et « Ajouter » ; un filet entre deux chantiers | `CarteDuJour` |
+| `MoisCharge` | chiffres sur une même ligne (`lining-nums`) | vu |
+| `MoisCharge` | jour passé : chiffre gris, barres pâlies (`eteinte`, opacité seule : une couleur choisie aux Réglages reste la sienne) | vu |
+| `MoisCharge` | chevrons du mois sans leur rond, cible de 42 px gardée ; mois en Playfair | vu |
+| `PlanningClient` | bandeau de l'agenda sur une ligne : la phrase du conseil part, celle de la panne reste ; « Ouvrir » et « Masquer » en minuscules | vu |
+| `CarteDuJour` | « Aujourd'hui » en or au-dessus de la date (`data-atlas="aujourdhui-fiche"`) | vu |
 
-Ne bougent pas : les mots et leurs places, et la fiche d'intervention (ses
-planches 4 et 5 attendent son choix).
+**Ce qui n'a PAS été codé, et pourquoi** (mes planches partaient d'un `main`
+périmé, celui du dossier principal au 13 octobre) :
 
-## ⏳ UNE PLANCHE À REGARDER — LE PLANNING ÉPURÉ (14 octobre 2026)
-
-**Sa demande :** *« va regarder la page du planning et fais-moi une planche
-améliorée de la page »*. Planche `appli/planning-epure.html`, sa page
-d'aujourd'hui en photo à gauche. **Rien n'est codé ; ne pas coder avant son oui.**
-
-Six retouches, chacune relevée sur l'écran ouvert le 14 octobre :
-
-| | Ce qui change | Où, si oui |
-|---|---|---|
-| 1 | les chiffres du mois sur une même ligne (Playfair dessine 3 4 5 7 9 sous la ligne) | `lining-nums` dans `MoisCharge` |
-| 2 | demi-journée vide : **reste blanche et cerclée** (sa réponse du 14 au soir) ; elle ne s'efface que sur un jour passé | `MoisCharge` |
-| 3 | jours passés en gris ; les jours à venir gardent leur encre | `MoisCharge` |
-| 4 | chevrons du mois sans leurs ronds (cible de 44 px gardée), mois en Playfair | `MoisCharge` |
-| 5 | l'agenda sur une ligne : « Agenda Google non relié », « Connecter » | `PlanningClient.tsx` |
-| 6 | **le seul geste qui change** : la liste « jour » sous le mois redit la fiche du jour ; elle part avec les deux points, « La semaine » ouvre les sept jours | `PlanningClient.tsx` (`portee`) |
-
-**Le samedi et le dimanche gardent leur carré gris** : une septième retouche
-le retirait, **il l'a refusée le 14 octobre au soir** (*« remets les carrés
-autour des jours samedi dimanche comme avant »*). Ne pas la reproposer.
-
-**`MoisCharge` sert aussi l'écran d'envoi** (`EnvoiAuClient.tsx`,
-`JourneeRegardee.tsx`) **et les équipes des Réglages** (`VosEquipes.tsx`) : 1 à 4
-s'y verront aussi, et se regardent là aussi avant fusion. Niveau à calculer au moment du lot. Ne bougent pas : l'en-tête
-(partagé par onze écrans), la fiche du jour du 19 septembre, le tiroir.
-
-**Pour regarder l'écran sur ce PC :** `atlas_dev` est en retard de migrations
-(le planning y tombe sur `equipes_du_chantier`). Servir `next dev` sur un port
-libre avec `DATABASE_URL` vers `atlas_test`, et dans Git Bash
-`MSYS_NO_PATHCONV=1 ATLAS_ADRESSE=http://localhost:<port> npm run voir -- /planning`
-(sans la variable, Git Bash change `/planning` en chemin Windows).
+| point des planches | raison |
+|---|---|
+| « + Absent ? » montre les noms d'abord | **contraire à sa planche validée le 10 septembre** (commit `ba299c7e`) : seul, un appui le pose absent puis l'interrupteur du moment s'ouvre ; avec des salariés les noms viennent déjà d'abord |
+| chevron sur le nom du chantier | **déjà sur `main`** depuis sa réponse du 3 octobre (`chevron-fiche`) |
+| rythme de la fiche | mesuré : les blancs sont les cibles de 44 px de « Déplacer  Retirer » et « Ajouter », rien à retirer |
+| la liste du jour et les deux points remplacés par « La semaine » | **la raison a disparu** : depuis le 7 octobre (« la B ») la liste s'efface quand un jour est ouvert. **Question posée** : garde-t-il les deux points ? |
+| « rien » blanc, carré du week-end | ses réponses du 14 au soir : rien ne change |
 
 ## ✅ LA FICHE DE SÉCURITÉ COMPLÈTE ET LA CARTE GPS : SUR `main` LE 15 OCTOBRE 2026
 

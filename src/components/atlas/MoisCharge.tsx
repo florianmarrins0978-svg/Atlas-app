@@ -400,8 +400,10 @@ export default function MoisCharge({
         <div className="flex-1 text-center">
           <b
             data-atlas={`${reperePrefixe}mois-titre`}
-            className="block text-[15px] font-bold leading-[1.2]"
-            style={{ color: colors.ink }}
+            // **Le mois dans la police des titres** — sa planche du 14 octobre
+            // 2026 : c'est la seule ligne en gras sans empattement de l'écran.
+            className="block text-[21px] font-normal leading-[1.2]"
+            style={{ color: colors.ink, fontFamily: font.display, fontVariantNumeric: "lining-nums" }}
           >
             {MOIS_LONGS[moisEcrit.mois]} {moisEcrit.annee}
           </b>
@@ -522,6 +524,12 @@ function caseDuJour(
   // tient pas le contraste avec le crème, ni avec l'encre sur Nuit et Sylve.
   const entoure = entoures.get(c.jour) ?? null;
   const caseEntiere = retenus.has(c.jour) && !entoure;
+  // **Un jour passé s'éteint** — sa planche du 14 octobre 2026 : on voit d'un
+  // coup d'œil où l'on en est dans le mois. Le chiffre prend le gris du
+  // week-end, les barres pâlissent sans changer de couleur : une couleur
+  // choisie aux Réglages reste la sienne. Un jour retenu ou entouré garde son
+  // dessin, c'est un choix en cours.
+  const passe = c.jour < aujourdHui && !retenus.has(c.jour) && !entoure;
     return c.horsMois ? (
       <span key={c.jour} data-atlas={milieu ? "creux" : undefined} style={{ aspectRatio: "1 / 1.06" }} />
     ) : (
@@ -587,6 +595,12 @@ function caseDuJour(
                 data-entoure={entoure ?? undefined}
                 style={{
                   fontFamily: font.display,
+                  // **Les chiffres sur une même ligne** — sa planche du
+                  // 14 octobre 2026 (`appli/planning-epure.html`). Playfair
+                  // dessine par défaut des chiffres « à l'ancienne » : 3, 4, 5,
+                  // 7 et 9 descendent sous la ligne, et le mois sautait d'une
+                  // case à l'autre.
+                  fontVariantNumeric: "lining-nums tabular-nums",
                   ...(entoure
                     ? {
                         width: 25,
@@ -604,7 +618,7 @@ function caseDuJour(
                     ? surPlein
                     : c.jour === aujourdHui
                       ? colors.or
-                      : c.weekEnd
+                      : c.weekEnd || passe
                         ? voile(colors.ink, 0.42)
                         : colors.ink,
                   fontWeight: c.jour === aujourdHui ? 600 : 400,
@@ -617,6 +631,7 @@ function caseDuJour(
                 apres={occupationDe(c.jour, "apres_midi")}
                 cache={c.weekEnd}
                 surFondPlein={caseEntiere}
+                eteinte={passe}
               />
             </button>
     );
@@ -677,12 +692,15 @@ export function MarqueDuJour({
   apres,
   cache,
   surFondPlein = false,
+  eteinte = false,
 }: {
   matin: OccupationLue;
   apres: OccupationLue;
   cache?: boolean;
   /** Sur un jour retenu, peint en vert plein : le creux des barres s'éclaircit. */
   surFondPlein?: boolean;
+  /** Un jour passé : les barres pâlissent, leurs couleurs ne changent pas. */
+  eteinte?: boolean;
 }) {
   const barre = (o: OccupationLue, quoi: string) => {
     const etat = etatDemi(o);
@@ -712,7 +730,7 @@ export function MarqueDuJour({
     <span
       data-atlas="marque"
       className="flex w-[24px] flex-col gap-[2.5px]"
-      style={{ visibility: cache ? "hidden" : "visible" }}
+      style={{ visibility: cache ? "hidden" : "visible", opacity: eteinte ? 0.5 : undefined }}
     >
       {barre(matin, "matin")}
       {barre(apres, "apres_midi")}
@@ -726,11 +744,11 @@ function Fleche({ libelle, signe, onClick }: { libelle: string; signe: string; o
       type="button"
       aria-label={libelle}
       onClick={onClick}
-      className="h-[42px] w-[42px] flex-shrink-0 cursor-pointer rounded-full text-[19px] leading-none"
+      // **Plus de rond autour du chevron** — sa planche du 14 octobre 2026.
+      // La cible garde ses 42 px : seul le dessin s'en va.
+      className="h-[42px] w-[42px] flex-shrink-0 cursor-pointer rounded-full border-0 bg-transparent text-[22px] leading-none"
       style={{
-        border: `1px solid ${colors.line}`,
-        background: colors.card,
-        color: colors.ink,
+        color: colors.muted,
         WebkitTapHighlightColor: "transparent",
       }}
     >

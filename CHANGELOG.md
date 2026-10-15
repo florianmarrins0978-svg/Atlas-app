@@ -13,6 +13,14 @@ Format : le plus récent en tête.
   sécurité, propose comme ailleurs ; l'adresse touchée pose le point, et la carte s'ouvre même
   quand Atlas n'avait pas su situer le chantier. Ce que ça évite : un téléphone qui refuse sa
   position, sur un lieu-dit, ne laissait que des coordonnées à taper, que personne ne connaît.
+- **Le mois du planning se lit d'un coup d'œil** (branche `lot/planning-epure`,
+  pas encore sur `main`) : les chiffres ne sautent plus d'une case à l'autre
+  (Playfair dessinait 3 4 5 7 9 sous la ligne), les jours passés s'éteignent, les
+  chevrons perdent leur rond, le mois passe en Playfair, l'agenda tient sur une
+  ligne, et la fiche du jour dit « Aujourd'hui » en or. Ses planches
+  `planning-epure` et `fiche-du-jour-en-mieux`, son oui du 15 octobre. Trois
+  points des planches n'ont pas été codés : ils étaient déjà faits, ou
+  contraires à une décision du 10 septembre (`TODO.md`).
 
 ## 2026-10-14
 
