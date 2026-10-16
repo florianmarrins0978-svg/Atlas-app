@@ -142,6 +142,30 @@ const g = gaines[0];
 dire(g.marque === "Toro" && g.debitGoutteur === 2 && g.ecartGoutteurs === 0.33 && g.source === "patron",
   `UGGCBL23050 : Toro, 2 l/h tous les 33 cm (lu : ${g.marque}, ${g.debitGoutteur} l/h, ${g.ecartGoutteurs} m)`);
 
+// ── Les pièces qu'on ajoute à la main (relevé du 16 octobre 2026) ───────────
+// Désignation mot pour mot, page imprimée, et JAMAIS un prix : sa consigne du
+// 17 août, « ne les enregistre pas, ce sont des prix pour les clients ».
+type Piece = { ref: string; nom: string; categorie: string; releve: string; colisage?: string };
+const ajoutables = (CATALOGUE as unknown as { piecesAjoutables: Piece[] }).piecesAjoutables;
+dire(ajoutables.length === 709, `${ajoutables.length} pièces relevées, le relevé en compte 709`);
+// Un prix se lit « 49,28 » : deux décimales après la virgule, et aucune unité
+// derrière (« 0,06 à 9,06 m3/h » est une plage de débit, « ép.0,15mm » une
+// épaisseur).
+const avecPrix = ajoutables.filter((p) =>
+  [p.nom, p.colisage ?? ""].some((s) => /\b\d{1,4},\d\d\b(?!\s*(?:m|mm|bar|l|L|V|°|x|"|à\s*\d))/.test(s)));
+dire(avecPrix.length === 0, `aucun prix dans les pièces (${avecPrix.map((p) => p.ref + " " + p.nom).join(" | ") || "aucun"})`);
+dire(ajoutables.every((p) => /^Aqua Plus 2026, p\. \d+$/.test(p.releve)), "chaque pièce dit sa page");
+for (const [ref, nom] of [
+  ["OPL73403225", "té 90° réduit 32 x 25 x 32"],
+  ["OPL71503220", "coude taraudé 32 x 3/4\""],
+  ["OPL704032", "té 90° 32 x 32 x 32"],
+  ["MID6321", "té Palaplast Ø16"],
+  ["UPE232", "tube P.E.H.D. irrigation Ø 32mm 10 bars (26,2 x 32)"],
+]) {
+  const p = ajoutables.find((x) => x.ref === ref);
+  dire(p?.nom === nom, `${ref} : « ${p?.nom} », le PDF dit « ${nom} »`);
+}
+
 if (echecs > 0) {
   console.log(`\n✗ ${echecs} écart(s) avec Aqua Plus 2026`);
   process.exit(1);

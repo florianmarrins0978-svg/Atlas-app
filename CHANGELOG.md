@@ -8,6 +8,17 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-16
 
+- **709 pièces d'Aqua Plus au catalogue, pour la touche « ajouter une pièce ».**
+  Raccords PE de 16 à 110 (dont tout le Ø32 et le té réduit 32 × 25 × 32),
+  électrovannes, regards, programmateurs, tubes, goutte-à-goutte, robinetterie,
+  électricité : désignation mot pour mot, page imprimée, aucun prix
+  (`piecesAjoutables`). Le calcul ne les compte pas ; elles complètent la liste.
+- **Le calcul d'arrosage ne bride plus les réseaux, et chaque tête se lève.**
+  Le bridage suit la vis de chaque turbine (Aqua Plus), chaque tête doit tenir
+  la pression mini de sa fiche, le plafond de 1,53 m³/h disparaît, une vanne
+  s'ajoute quand la pression ne tient pas, et les 4, 6 et 8-VAN (330°) ne vont
+  qu'aux coins et aux bords. Au compteur sans mesure : 3 bar et 2 m³/h, en rouge.
+
 - **La légende du plan d'arrosage écrit « bridée à 6 m »** pour une turbine
   réglée à la vis sous la portée de sa buse, sa réponse « la B ». Ce que ça
   évite : un poseur qui laisse la buse à fond, au-delà de ce que le plan

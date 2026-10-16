@@ -167,6 +167,19 @@ fin : *« un bandeau déroulant, diam 25 ou diam 32 »*, et les pièces suivent.
 Les références de ces pièces en 32 ne sont pas au catalogue : à relever (Aqua
 Plus, pages des raccords PE), ou à lui demander, jamais à déduire des 25.
 
+## ⏳ ARROSAGE : 141 BUSES RELEVÉES DANS AQUA PLUS, À TRANCHER AVANT D'ENTRER (16 octobre 2026)
+
+`docs/arrosage-releve-aquaplus/buses-a-trancher.json` : 570Z MPR+ et PRECISION
+(p. 5 et 6), MPR 1800 (p. 7), PSU (p. 9), MP Rotator (p. 10), Mini 8 buse 2,5
+(p. 11), Toro 300 et T5 (p. 12), Maxi-Paw (p. 13). Aucun prix. Rien n'est
+entré au catalogue : trois questions lui sont posées.
+
+| | |
+|---|---|
+| les lettres d'angle (Q, T, H, TT, TQ, F) | non écrites au catalogue ; la convention 90, 120, 180, 240, 270, 360 se confirme (fiche du fabricant ou lui). Et le calcul doit apprendre une buse par angle (Q au coin, H au bord, F au milieu, même série) |
+| MP Rotator, série 300 | « turbines » chez Aqua Plus, mais débit proportionnel au secteur : tuyère pour le débit ? |
+| six chiffres douteux | MPR+ 12T 0,60 ; PRECISION 15Q 0,089 et 8F 0,124 ; PSU 17A 90° 0,41 ; Maxi-Paw 06 11,4 m ; Mini 8 2,5 0,56 |
+
 ## ⏳ ARROSAGE : AJOUTER OU RETIRER UNE PIÈCE DE LA LISTE — sa demande du 16 octobre 2026
 
 *« Une fois que la liste des pièces est créée pour l'utilisateur, qu'il y ait
