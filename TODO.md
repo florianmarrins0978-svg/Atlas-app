@@ -97,6 +97,35 @@ Palaplast Ø16 » (MID6321), « embout Palaplast taraudé 16 x 3/4" » (MID6362)
 « jonction Palaplast Ø16 » (MID6301). Lui faire confirmer la référence avant de
 l'écrire au catalogue ; ses mots à lui en attendant, sans référence.
 
+## ⏳ ARROSAGE : PLUS DE PLAFOND DE VITESSE, LA PRESSION AU BOUT DÉCIDE — sa décision du 16 octobre 2026
+
+*« Je ne veux pas que tu brides les réseaux. Je veux que tu prennes le calcul
+de débit pression […] la seule chose à prendre en compte, c'est la perte de
+charge dans le tuyau, liée au nombre de raccords et au nombre d'arroseurs […]
+il ne faut pas qu'on décide de mettre 5 arroseurs et qu'il n'y en ait que 4
+qui se lèvent. »*
+
+**Elle remplace sa règle du 22 août** (« en diamètre 25 c'est 1,76 m³/h, le
+calcul doit se faire là-dessus ») : le plafond du tuyau à 1,5 m/s (1,53 m³/h
+en Ø25, 2,87 en Ø32) **disparaît**. À barrer dans `.claude/rules/arrosage.md`
+avec la date, la nouvelle au-dessous, et `test-regles-du-patron.ts` suivant
+le chemin daté qu'il exige. Ce qui reste, et décide seul :
+
+| | |
+|---|---|
+| la source | le seau × 0,85 (*« garde les 85 % »*) |
+| la pression | au DERNIER arroseur, au bout de CHAQUE ligne de goutte-à-goutte, après le tuyau, ses raccords, l'électrovanne, débit décroissant tête par tête : chaque tête doit tenir sa pression mini, **sans exception** |
+| Ø25 ou Ø32 | le Ø32 quand la perte en Ø25 empêche une tête de se lever |
+| les réseaux | toujours le moins possible ; les autres règles ne bougent pas |
+
+**Une inconnue dite au patron le 16 octobre** : la pression au compteur sous
+débit. Il donne une pression au repos ; elle baisse quand l'eau coule, et le
+plafond de 1,5 m/s la masquait en partie. À trancher avec lui avant de coder :
+la faire mesurer robinet ouvert, ou la réduire d'une marge écrite.
+
+À coder dans `calcul.js` par-dessus le travail de l'autre session, une fois
+ses branches sur `main`.
+
 ## ⏳ ARROSAGE : LE Ø32 QUAND LE Ø25 NE PASSE PAS — sa règle du 16 octobre 2026
 
 *« La règle est bonne ! »* Pour CHAQUE réseau, goutte-à-goutte ET arroseurs :
