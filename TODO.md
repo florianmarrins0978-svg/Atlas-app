@@ -55,9 +55,34 @@ couronnes, pas seulement en mètres. Ses règles du même jour, à coder :
 | un filtre | **JAMAIS** : *« on ne pose jamais de filtre, jamais »*, même si la fiche Rain Bird en exige un (120 mesh). Ne pas l'ajouter « par prudence » |
 | la durée d'arrosage | se calcule : débit au mètre ÷ écart entre lignes, au lieu des 23 mm/h que rien ne justifiait |
 
-Un schéma de 350 m lui a été montré (3 vannes, car 350 m font 3,5 m³/h pour
-1,53 par vanne). **En attente** : son accord sur le découpage, et la pièce qui
-relie le Ø25 au tube de 16 mm.
+Un croquis de 350 m lui a été montré (3 vannes, car 350 m font 3,5 m³/h pour
+1,53 par vanne) : https://claude.ai/artifact/VukpwXTzLq8mSACriCvhZa.
+**En attente** : son accord sur le découpage.
+
+**Ses pièces du goutte-à-goutte, dites le 16 octobre 2026, mot pour mot :**
+
+| | |
+|---|---|
+| du Ø25 au goutte-à-goutte | *« le coude taraudé 3/4" sur lequel on vient visser un T égal Palaplast diamètre 16 en 3/4" »* |
+| recoller deux bouts de goutte-à-goutte | *« un manchon Palaplast diamètre 16 en 3/4" »* |
+
+Aqua Plus 2026 (p. 49) n'a pas ces libellés à l'identique : il porte « té
+Palaplast Ø16 » (MID6321), « embout Palaplast taraudé 16 x 3/4" » (MID6362),
+« jonction Palaplast Ø16 » (MID6301). Lui faire confirmer la référence avant de
+l'écrire au catalogue ; ses mots à lui en attendant, sans référence.
+
+## ⏳ ARROSAGE : AJOUTER OU RETIRER UNE PIÈCE DE LA LISTE — sa demande du 16 octobre 2026
+
+*« Une fois que la liste des pièces est créée pour l'utilisateur, qu'il y ait
+une petite touche "ajouter une pièce" ; on clique, ça ouvre des catégories,
+genre électrovanne, avec les différentes qui existent, leur photo, et
+l'utilisateur choisit les pièces qu'il veut rajouter ou enlever. D'ailleurs il
+doit pouvoir en enlever sur la liste qu'on lui donne, s'il a des pièces en
+double déjà. »*
+
+Planche d'abord (`CLAUDE.md` §3 bis), dans celle de l'écran Plan d'arrosage.
+Les catégories sortent du catalogue, qui n'a pas de photos : à trouver (les
+photos du PDF Aqua Plus ne s'extraient pas sur ce PC).
 
 **Ce qui manque désormais se voit** : une zone en tuyères Toro n'est plus
 arrosée (aucune buse de tuyère Toro au catalogue). Le lot des ajouts Aqua Plus
