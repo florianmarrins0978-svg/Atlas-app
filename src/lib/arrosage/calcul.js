@@ -98,24 +98,42 @@ CATALOGUE.arroseurs.concat(CATALOGUE.gaines).forEach(function(m){ MATERIELS[m.re
    le moins d'arroseurs possible. S'il en choisit une autre (confort de pose,
    régularité, stock d'agence), une ligne suffit à la changer. L'écran l'annonce
    plutôt que de la cacher dans le calcul. */
-/* **UN CÔTÉ SE PAVE-T-IL AVEC CETTE PORTÉE ?** Sa règle impose un écart compris
-   entre la portée et 1,2 × la portée, coins occupés aux deux bouts. Sur un côté
-   de longueur D, le nombre d'arroseurs est donc contraint : on prend le moins
-   possible (écart maximal), et on regarde si l'écart obtenu reste au-dessus de
-   la portée.
+/* **UNE ZONE SE PAVE-T-ELLE AVEC CETTE BUSE ?** Coins occupés aux deux bouts,
+   et entre deux têtes voisines un recouvrement (portée réglée ÷ écart) de
+   80 à 100 % : pour une portée de 10 m, de 10 m à 12,5 m.
 
-   Exemple qui a tout déclenché : une pelouse de 12 m de large avec une portée
-   de 9 m. Deux rangées feraient 12 m d'écart — au-delà de sa limite. Trois
-   rangées font 6 m — sous la portée, ce qu'il refuse en majuscules. **Aucune
-   pose valable : c'est la BUSE qui est trop grande**, et il faut en prendre une
-   plus petite. L'outil choisissait la plus grande qui « rentrait » et affichait
-   ensuite une alerte sur chaque zone ; il choisit maintenant celle qui SATISFAIT
-   la règle. L'alerte ne parle plus que des cas réellement impossibles. */
-function paveSelonSaRegle(dimension, portee){
-  if (!(dimension > 0) || !(portee > 0)) return null;
-  var n = Math.max(2, Math.ceil(dimension / (portee * ECART_MAX_FACTEUR)) + 1);
-  var ecart = dimension / (n - 1);
-  return ecart >= portee - 0.01 ? { n:n, ecart:ecart } : null;
+   **La portée se RÈGLE, sa réponse du 16 octobre 2026.** Une turbine se bride à
+   la vis jusqu'à 40 % ; la tête bridée tient la même règle. Avant, une buse
+   qui portait 10,1 m ne pouvait pas paver 20 m (écart 10 m, 10 cm sous la
+   portée) : la pelouse de 20 × 12 partait sur la grosse buse et six vannes. On
+   bride donc le moins possible : la portée réglée est la plus grande que
+   l'écart le plus serré permette.
+
+   **`tolerant` élargit la règle à 75 à 105 %.** Elle ne sert que si elle fait
+   gagner des sous, un réseau ou une gamme : c'est `poser()` qui en juge, en
+   comparant aux poses strictes.
+
+   On prend le moins de têtes possible (écart maximal), puis l'on ajoute une
+   rangée du côté le plus lâche tant que la règle ne tient pas sur les deux.
+   Rend `null` quand il faudrait brider au-delà de 40 % : c'est alors la BUSE
+   qui est trop grande, et il en faut une plus petite. */
+function poseSelonSaRegle(L, l, portee, type, tolerant){
+  if (!(L > 0) || !(l > 0) || !(portee > 0)) return null;
+  var rMin = tolerant ? RECOUVREMENT_MIN_TOLERE : RECOUVREMENT_MIN;
+  var rMax = tolerant ? RECOUVREMENT_MAX_TOLERE : RECOUVREMENT_MAX;
+  var plancher = type === 'turbine' ? portee * (1 - BRIDAGE_MAX) : portee;
+  var nx = Math.max(2, Math.ceil(L * rMin / portee - 1e-9) + 1);
+  var ny = Math.max(2, Math.ceil(l * rMin / portee - 1e-9) + 1);
+  for (var t = 0; t < 400; t++){
+    var ex = L / (nx - 1), ey = l / (ny - 1);
+    var reglee = Math.min(portee, Math.min(ex, ey) * rMax);
+    if (reglee < plancher - 0.01) return null;
+    if (Math.max(ex, ey) * rMin <= reglee + 0.01){
+      return { nx:nx, ny:ny, ecartX:ex, ecartY:ey, reglee:Math.round(reglee * 100) / 100 };
+    }
+    if (ex >= ey) nx++; else ny++;
+  }
+  return null;
 }
 
 /* ══ LE DÉBIT ET LA PORTÉE D'UNE BUSE À LA PRESSION DU CHANTIER ═════════════
@@ -253,7 +271,7 @@ function modelePour(type, plusPetitCote, dims, refImposee){
       // deux côtés selon sa règle est la bonne — c'est le moins d'arroseurs
       // possible SANS enfreindre l'écart minimum.
       for (var i = 0; i < buses.length; i++){
-        if (paveSelonSaRegle(dims.L, buses[i].rayon) && paveSelonSaRegle(dims.l, buses[i].rayon)){
+        if (poseSelonSaRegle(dims.L, dims.l, buses[i].rayon, type, false)){
           b = buses[i]; break;
         }
       }
@@ -284,7 +302,8 @@ function modelePour(type, plusPetitCote, dims, refImposee){
       // rayon au plus petit. C'est le champ des possibles que `poser()` explore.
       candidates: (dims && dims.L > 0 && dims.l > 0)
         ? buses.filter(function(x){
-            return paveSelonSaRegle(dims.L, x.rayon) && paveSelonSaRegle(dims.l, x.rayon);
+            return poseSelonSaRegle(dims.L, dims.l, x.rayon, type, false) ||
+                   poseSelonSaRegle(dims.L, dims.l, x.rayon, type, true);
           }).map(function(x){ return x.ref; })
         : [],
       // Corps de CETTE marque, pas tous marques confondues : Rain Bird peut
@@ -386,8 +405,14 @@ var MARGE = 0.85;         // on ne charge jamais un secteur jusqu'au robinet
      qu'il écrit en majuscules. Un arroseur de plus tous les quatre mètres,
      c'est un secteur de plus, un devis plus cher, et un client qui compare.
    ═══════════════════════════════════════════════════════════════════════ */
-var RECOUVREMENT_MIN = 0.80;   // portée / écart ≥ 0,80
-var ECART_MAX_FACTEUR = 1.20;  // sa limite à lui : 6 m pour une portée de 5
+// **Ses chiffres du 16 octobre 2026.** Le 17 août il avait dit « 6 m max pour
+// une portée de 5 » (1,20) ; le 16 octobre : « 12,5, je me suis trompé dans mes
+// calculs ». C'est le second qui vaut : 80 % de recouvrement, 1,25 × la portée.
+var RECOUVREMENT_MIN = 0.80;          // portée réglée / écart
+var RECOUVREMENT_MAX = 1.00;
+var RECOUVREMENT_MIN_TOLERE = 0.75;   // seulement si cela gagne un réseau ou une gamme
+var RECOUVREMENT_MAX_TOLERE = 1.05;
+var BRIDAGE_MAX = 0.40;               // une turbine se bride à la vis jusqu'à 40 %
 
 /* Quinconce au-delà de quatre arroseurs, carré en dessous — sa règle du
    17 août. Et dans les deux cas : « les derniers arroseurs doivent toujours
@@ -844,7 +869,20 @@ function couvreTout(points, portee, L, l){
   return true;
 }
 
-function poser(z, refImposee){
+/* **La gamme d'un arroseur, pour aller au moins cher** (sa règle du
+   16 octobre 2026 : « plus tu montes en gamme, plus l'arroseur va loin, plus il
+   coûte cher »). Le calcul ne connaît pas ses prix : la gamme se lit donc à la
+   plus grande portée que son corps sait donner, toutes buses confondues. Une
+   tuyère passe avant toute turbine. */
+function gammeDe(m){
+  if (!m || !m.buse || m.type !== 'turbine') return 0;
+  var base = m.buse.ref.split('-B')[0];
+  return CATALOGUE.buses.reduce(function(max, b){
+    return b.ref.split('-B')[0] === base ? Math.max(max, Number(b.rayon) || 0) : max;
+  }, 0);
+}
+
+function poser(z, refImposee, tolerant){
   // **Sa buse imposée à la zone gagne sur tout** — ajouté le 23 août 2026 avec
   // la discussion. Quand il demande « passe en 15-VAN », c'est un paramètre du
   // calcul qui se pose, pas un dessin qu'on retouche : le plan se refait
@@ -869,11 +907,11 @@ function poser(z, refImposee){
     // le plan serait posable et faux, ce qui est le pire des deux.
     var repliPermis = Math.min(dims.L, dims.l) <= TUYERE_JUSQUA;
     if (z.materiel === 'auto' && choix.m && dims.L > 0 &&
-        !(paveSelonSaRegle(dims.L, choix.m.portee) && paveSelonSaRegle(dims.l, choix.m.portee))){
+        !poseSelonSaRegle(dims.L, dims.l, choix.m.portee, cle, false)){
       var vers = cle === 'turbine' ? 'tuyere' : 'turbine';
       if (vers === 'turbine' || repliPermis){
         var autre = modelePour(vers, petitCote || null, dims);
-        if (autre.m && paveSelonSaRegle(dims.L, autre.m.portee) && paveSelonSaRegle(dims.l, autre.m.portee)){
+        if (autre.m && poseSelonSaRegle(dims.L, dims.l, autre.m.portee, vers, false)){
           choix = autre; cle = vers;
         }
       }
@@ -888,12 +926,18 @@ function poser(z, refImposee){
     var L = Number(z.L)||0, l = Number(z.l)||0;
     if (L <= 0 || l <= 0) return Object.assign(r, { nombre:0, debit:0, minutes:0, nx:0, ny:0 });
     // On écarte AU MAXIMUM dans sa limite, puis on répartit : c'est le moins
-    // d'arroseurs possible sans jamais descendre sous la portée.
-    var px = paveSelonSaRegle(L, m.portee), py = paveSelonSaRegle(l, m.portee);
-    var ecartMax = m.portee * ECART_MAX_FACTEUR;
-    var nx = px ? px.n : Math.max(2, Math.ceil(L / ecartMax) + 1);
-    var ny = py ? py.n : Math.max(2, Math.ceil(l / ecartMax) + 1);
+    // d'arroseurs possible sans jamais descendre sous la portée RÉGLÉE.
+    var pose = poseSelonSaRegle(L, l, m.portee, cle, Boolean(tolerant));
+    var ecartMax = m.portee / RECOUVREMENT_MIN;
+    var nx = pose ? pose.nx : Math.max(2, Math.ceil(L / ecartMax) + 1);
+    var ny = pose ? pose.ny : Math.max(2, Math.ceil(l / ecartMax) + 1);
     var ecartX = L / (nx - 1), ecartY = l / (ny - 1);
+    // **La portée à laquelle la tête se règle sur le terrain** : celle de la
+    // buse, ou moins si elle est bridée. C'est elle que le plan affiche, et
+    // elle seule qui juge l'écart.
+    var portee = pose ? pose.reglee : m.portee;
+    r.porteeReglee = portee;
+    r.tolerant = Boolean(tolerant);
     r.ecart = Math.max(ecartX, ecartY);
     r.ecartX = ecartX; r.ecartY = ecartY;
     // « Jamais moins que la portée. » Quand la zone est trop étroite pour cette
@@ -903,7 +947,7 @@ function poser(z, refImposee){
     // L'écart entre deux têtes voisines sert aussi à `decouper()`, qui vérifie
     // que la règle tient encore à la pression qui arrive vraiment.
     r.ecartEntreTetes = Math.min(ecartX, ecartY);
-    r.tropSerre = r.ecartEntreTetes < m.portee - 0.01;
+    r.tropSerre = !pose;
     // ── LE QUINCONCE : ON L'ESSAIE, ON LE MESURE, ON RESSERRE ────────────
     //
     // Sa règle du 18 août, croquis à l'appui : un couloir à 14 arroseurs
@@ -962,8 +1006,8 @@ function poser(z, refImposee){
         // (pas 1,67 m, portée 1,80 — mais 2,60 m entre deux têtes), et le
         // renvoyait à douze alignées : sa règle du 18 août, morte le 24 août
         // quand le contrôle rouge a été réécrit au lieu d'être compris.
-        if (distanceEntreTetesDuDamier(ex2, ey2) < m.portee - 0.01) break;
-        if (couvreTout(damier, m.portee, L, l)){
+        if (distanceEntreTetesDuDamier(ex2, ey2) < portee - 0.01) break;
+        if (couvreTout(damier, portee, L, l)){
           essai = { pts: damier, nx: ax, ny: ay, ecartX: ex2, ecartY: ey2 };
           break;
         }
@@ -977,7 +1021,7 @@ function poser(z, refImposee){
         r.ecartX = ecartX; r.ecartY = ecartY;
         // « Trop serré » se juge lui aussi entre deux têtes du damier.
         r.ecartEntreTetes = distanceEntreTetesDuDamier(ecartX, ecartY);
-        r.tropSerre = r.ecartEntreTetes < m.portee - 0.01;
+        r.tropSerre = r.ecartEntreTetes < portee - 0.01;
       } else {
         quinconceVoulu = false;   // le damier ne couvre pas : on reste aligné
       }
@@ -1022,26 +1066,46 @@ function poser(z, refImposee){
     // deux façons de poser des arroseurs finiraient par diverger
     // (`CLAUDE.md` §3). L'appel récursif porte une buse imposée, donc il ne
     // rappelle pas cette boucle — la profondeur est de un.
-    if (!refImposee && choix.candidates && choix.candidates.length > 1){
+    if (!refImposee && choix.candidates && choix.candidates.length > 0){
       var plafond = limiteParVoie();
       // Les vannes se COMPTENT par la coupe du plan, tête par tête : un débit
       // total divisé par la limite ignorait qu'un arroseur ne se partage pas.
       var vannesDe = function(pose){
         return couperEnVannes(pose.points, plafond).length;
       };
-      var meilleur = { r: r, vannes: vannesDe(r), nombre: r.nombre };
+      // **Sa règle du 16 octobre 2026 : aller au moins cher.** Le moins de
+      // réseaux, puis la gamme la moins chère, puis le moins d'arroseurs ; à
+      // égalité, la tête la moins bridée (*« autant passer sur des arroseurs
+      // moins puissants que de trop brider des plus puissants »*).
+      var noter = function(pose){
+        return { r: pose, vannes: vannesDe(pose), gamme: gammeDe(pose.m), nombre: pose.nombre,
+                 bridage: pose.m.portee > 0 ? 1 - pose.porteeReglee / pose.m.portee : 0 };
+      };
+      var avant = function(a, b){
+        if (a.vannes !== b.vannes) return a.vannes < b.vannes;
+        if (a.gamme !== b.gamme) return a.gamme < b.gamme;
+        if (a.nombre !== b.nombre) return a.nombre < b.nombre;
+        return a.bridage < b.bridage - 1e-9;
+      };
+      var strict = null, tolere = null;
+      var essayer = function(pose){
+        if (!pose.m || !(pose.debit > 0) || pose.tropSerre) return;
+        var n = noter(pose);
+        if (pose.tolerant){ if (!tolere || avant(n, tolere)) tolere = n; }
+        else if (!strict || avant(n, strict)) strict = n;
+      };
+      essayer(r);
       choix.candidates.forEach(function(ref){
-        if (m && ref === m.ref) return;
-        var autre = poser(z, ref);
-        if (!autre.m || !(autre.debit > 0) || autre.tropSerre) return;
-        var v = vannesDe(autre);
-        // À nombre de vannes égal, le moins d'arroseurs — c'est l'ancien
-        // critère, qui redevient le départage et non plus la règle.
-        if (v < meilleur.vannes || (v === meilleur.vannes && autre.nombre < meilleur.nombre)){
-          meilleur = { r: autre, vannes: v, nombre: autre.nombre };
-        }
+        if (!(m && ref === m.ref)) essayer(poser(z, ref, false));
+        essayer(poser(z, ref, true));
       });
-      if (meilleur.r !== r) return meilleur.r;
+      // **Les 5 % de plus ne servent que s'ils font gagner des sous** : un
+      // réseau de moins, ou une gamme moins chère. Un arroseur de moins ne
+      // suffit pas, la règle de 80 à 100 % reste la règle.
+      var meilleur = strict;
+      if (tolere && (!strict || tolere.vannes < strict.vannes ||
+          (tolere.vannes === strict.vannes && tolere.gamme < strict.gamme))) meilleur = tolere;
+      if (meilleur && meilleur.r !== r) return meilleur.r;
     }
   } else if (TYPES[z.type].forme === 'nappe') {
     // Des lignes parallèles dans la largeur, à l'écart qu'il a donné. La
@@ -1206,13 +1270,14 @@ function decouper(){
     if (limite > 0 && essai.secteurs.some(function(s){ return s.debit * gonfle > limite + 1e-9; })) continue;
     var vannes = essai.secteurs.length;
     var tetes = essai.secteurs.reduce(function(t, s){ return t + (s.points ? s.points.length : 0); }, 0);
-    // Sa règle du 23 août : le moins de vannes, puis le moins d'arroseurs ; à
-    // égalité, le plan le plus proche de ce qui arrive.
+    var gamme = essai.poses.reduce(function(t, x){ return t + (x.gamme || 0); }, 0);
+    // Sa règle du 16 octobre : le moins de réseaux, puis la gamme la moins
+    // chère, puis le moins d'arroseurs ; à égalité, le plus proche de ce qui
+    // arrive.
     var ecart = Math.abs(p - arrive);
-    if (!retenu || vannes < retenu.vannes || (vannes === retenu.vannes && (tetes < retenu.tetes ||
-        (tetes === retenu.tetes && ecart < retenu.ecart)))){
-      retenu = { d: essai, p: p, vannes: vannes, tetes: tetes, ecart: ecart };
-    }
+    var mieux = !retenu || vannes < retenu.vannes || (vannes === retenu.vannes && (gamme < retenu.gamme ||
+        (gamme === retenu.gamme && (tetes < retenu.tetes || (tetes === retenu.tetes && ecart < retenu.ecart)))));
+    if (mieux) retenu = { d: essai, p: p, vannes: vannes, gamme: gamme, tetes: tetes, ecart: ecart };
   }
   if (retenu){
     pressionDeCalcul = retenu.p;
@@ -1328,7 +1393,7 @@ function decouperUneFois(){
     groupes[clef].passages = p.passages;
     groupes[clef].nombre = (groupes[clef].nombre || 0) + p.nombre;
     if (p.m && p.m.buse && p.ecartEntreTetes > 0){
-      poses.push({ ecartEntreTetes: p.ecartEntreTetes, portee: p.m.portee,
+      poses.push({ ecartEntreTetes: p.ecartEntreTetes, portee: p.porteeReglee || p.m.portee, gamme: gammeDe(p.m),
                    buse: CATALOGUE.buses.filter(function(x){ return x.ref === p.m.ref; })[0] });
     }
     groupes[clef].forme = TYPES[z.type].forme;
@@ -1822,7 +1887,9 @@ function dessinDesZones(d){
       cle: p.cle,
       modele: p.m ? p.m.nom : null,
       buse: p.m ? (p.m.detail || null) : null,
-      portee: p.m ? (Number(p.m.portee) || 0) : 0,
+      // La portée RÉGLÉE : celle de la buse, ou moins si elle est bridée à la
+      // vis. C'est le chiffre que le poseur règle sur le terrain.
+      portee: p.m ? (Number(p.porteeReglee || p.m.portee) || 0) : 0,
       points: (p.points || []).map(function(pt){
         return {
           x: ox + pt.x, y: oy + pt.y,
