@@ -1,0 +1,35 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/devis-croix-plus-a-droite.html"
+        ],
+        "createdAt": "2026-10-16T06:03:38.077Z",
+        "reason": "Planche reproduit au pixel la charte de l'application Atlas (src/lib/design-tokens.ts, card #faf9f5)"
+      },
+      {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "appli/devis-croix-plus-a-droite.html"
+        ],
+        "createdAt": "2026-10-16T06:03:38.087Z",
+        "reason": "Surtitre commun à toutes les planches du dépôt (appli/retirer-par-une-croix.html)"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "appli/devis-croix-plus-a-droite.html"
+        ],
+        "createdAt": "2026-10-16T06:03:38.097Z",
+        "reason": "Gris #8a8578 = jeton muted de l'application, reproduit tel quel"
+      }
+    ]
+  }
+}
