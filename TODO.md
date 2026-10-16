@@ -129,6 +129,7 @@ garantie, et aucune n'existe.
 | ce qui a été mesuré | ce que fait l'outil |
 |---|---|
 | le seau ET le manomètre avec la buse n° 5 (pression dynamique) | il calcule, sans réserve |
+| **au compteur, sans mesure** : *« tu pars du principe qu'il y a 3 bar et 2 m³/h, mais tu mets le message en rouge, car c'est une estimation et qu'on ne garantit rien »* (16 octobre 2026). `DEBIT_COMPTEUR` passe de 1,80 à **2,00** | il calcule sur 3 bar et 2 m³/h, et écrit le message en rouge |
 | tout le reste : seau seul, manomètre seul, pression statique, rien au compteur | il calcule, et écrit en rouge **« Nous ne garantissons pas la bonne levée des arroseurs. »** |
 
 À lui demander encore : le débit de la buse n° 5 de l'outil Aqua Plus (ou sa
