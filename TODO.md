@@ -42,6 +42,22 @@ demander son tube (une photo de l'étiquette, comme pour le PEHD), puis la
 remplacer. Aqua Plus a l'UGGRBXFS, « tube Ø16mm 2,3l/h esp.33cm autorégulé
 enterrable » (p. 48), aux mêmes chiffres.
 
+**Son tube, dit le 16 octobre 2026** : Rain Bird XFS (fiche D39978B), de
+2,3 à 3 l/h par goutteur tous les 30 cm, *« tu peux prendre cette mesure »* :
+le calcul retient **3 l/h** (le côté sûr, moins de mètres par vanne). Ses
+règles du même jour, à coder :
+
+| | |
+|---|---|
+| une ligne de goutte-à-goutte | **100 m au plus** (*« tous les 100 m on refait une sortie en 25 ou 32 »* ; la fiche Rain Bird donne 109,7 m à 2,1 bar pour 2,3 l/h) |
+| au-delà | le Ø25 ou Ø32 continue, un **té égal** fait la nouvelle sortie |
+| un filtre | **JAMAIS** : *« on ne pose jamais de filtre, jamais »*, même si la fiche Rain Bird en exige un (120 mesh). Ne pas l'ajouter « par prudence » |
+| la durée d'arrosage | se calcule : débit au mètre ÷ écart entre lignes, au lieu des 23 mm/h que rien ne justifiait |
+
+Un schéma de 350 m lui a été montré (3 vannes, car 350 m font 3,5 m³/h pour
+1,53 par vanne). **En attente** : son accord sur le découpage, et la pièce qui
+relie le Ø25 au tube de 16 mm.
+
 **Ce qui manque désormais se voit** : une zone en tuyères Toro n'est plus
 arrosée (aucune buse de tuyère Toro au catalogue). Le lot des ajouts Aqua Plus
 y entre les buses Toro 570Z (p. 5 et 6).
