@@ -76,8 +76,8 @@ goutte-à-goutte ? »*
 | une ligne, mais partie d'un té égal | deux bouts ouverts | **deux bouchons** |
 | **deux lignes** | boucle, circuit fermé | le **té Palaplast** MID6321, **aucun bouchon** |
 
-Références à lui faire confirmer : Aqua Plus p. 49 porte « coude Palaplast Ø16 »
-(MID6341) et « embout fileté Palaplast 16 x 3/4" » (MID6352, le droit qui se
+**MID6341 confirmé par lui**, « coude Palaplast Ø16 » (photo
+`appli/arrosage-photos/MID6341.png`). Reste à confirmer : « embout fileté Palaplast 16 x 3/4" » (MID6352, le droit qui se
 visse dans le coude taraudé). Question par zone, dans la planche de l'écran.
 | recoller deux bouts de goutte-à-goutte | **MID6301**, « jonction Palaplast Ø16 » (Aqua Plus p. 49) : *« permet de rabouter deux morceaux de goutte-à-goutte entre eux »*. Ø16 des deux côtés, sur sa photo (`appli/arrosage-photos/MID6301.png`) : le « en 3/4" » de son premier message ne s'y voit pas |
 | MID6362 | « embout Palaplast taraudé 16 x 3/4" » : du tube de 16 à un filetage femelle 3/4". **Ne se visse pas sur le coude taraudé**, femelle lui aussi : question posée, le MID6352 (« embout fileté », mâle) ou un té ? |
