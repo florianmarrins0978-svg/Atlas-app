@@ -10,6 +10,27 @@
 | `test-regles-du-patron.ts` : la règle du 22 août (1,76 m³/h) a été réécrite EN PLACE sur la branche des tubes (`claude/tubes-arrosage`), avec son accord, mais hors du chemin que la suite exige (une entrée datée sous le repère, l'ancienne barrée). À refaire avant de pousser ce lot-là | nous |
 | les débits et durées affichés peuvent être jusqu'à 5 % sous le réel, quand le plan retenu reçoit jusqu'à 0,2 bar de plus que sa pression de choix (la limite du tuyau, elle, est vérifiée au débit réel) | nous, si cela compte |
 | un plan coûte environ 0,1 s depuis le §468 (une recherche de 5 en 5 centièmes, puis au centième là où le plan change) ; la page publiée `appli/arrosage.html` recalcule à chaque frappe | nous, à regarder sur téléphone |
+## ⏳ ARROSAGE : CE QUE LE CATALOGUE AQUA PLUS LAISSE AU CALCUL (16 octobre 2026)
+
+Ses réponses du 16 octobre, sur `docs/arrosage-catalogue-aquaplus.md`. Toutes
+touchent `src/lib/arrosage/calcul.js`, que deux branches réécrivent
+(`claude/tubes-arrosage`, `claude/recouvrement-et-bridage`) : **à faire une
+fois les deux sur `main`**, par-dessus leur travail, jamais à côté.
+
+| | sa réponse | ce qu'il faut faire |
+|---|---|---|
+| **le bridage** | *« prends la règle d'Aqua Plus et supprime la mienne »* : son 40 % disparaît | chaque turbine se bride jusqu'au chiffre de sa vis : 5000 Plus et Mini 8 **25 %** (p. 13 et 11), 3504 **35 %** (p. 11). PGP, PGP Ultra, PGJ, SRM, I-20 : Aqua Plus ne donne rien, donc **pas de bridage**. Le chiffre vit dans le catalogue, par corps ; `BRIDAGE_MAX` (branche du bridage) disparaît, et sa règle de `.claude/rules/arrosage.md` se barre avec la date, la nouvelle au-dessous |
+| **les VAN à 330°** | *« oui pour les VAN »* : 4, 6 et 8-VAN aux coins et sur les bords seulement | `busesDe` exige 90°, 180° ET 360° même pour une zone qui ne pose que des bords. N'exiger que les angles que la pose emploie, puis écrire `330:` au lieu de `360:` pour ces trois buses (fiche Rain Bird, p. 27 et 28). Fait seul dans le catalogue, son couloir de 10 × 2 perd ses 7 6-VAN pour des 10-VAN qui arrosent 70 cm au-delà (`test-regles-du-patron.ts` rougit, essayé le 16 octobre) |
+| **la sonde de pluie** | *« en option, si l'utilisateur coche oui on la rajoute dans la liste »*, la Rain Bird filaire blanche | le calcul sait déjà la compter (`etat.sonde`), sous le nom écrit en dur « Sonde de pluie » : le lire dans le catalogue, RP403 « sonde pluie RSD-Bex Rain Bird » (p. 27). La case se dessine dans la planche de l'écran avant d'être codée (`CLAUDE.md` §3 bis) |
+| **les buses livrées avec l'arroseur** | *« corrige-les simplement, rien ne doit être inventé »* | fait dans le catalogue (plus de référence ni de colisage à elles). La ligne de la liste peut le dire : « buse 3,0, livrée avec l'arroseur » |
+
+## ⏳ ARROSAGE : LES SIX PROVISOIRES DU CATALOGUE (16 octobre 2026)
+
+Électrovanne, regard, disconnecteur, réducteur de pression, gaine de
+goutte-à-goutte, tuyaux PE génériques : posés avant ses références, ils n'en
+ont aucune. Aqua Plus 2026 porte une référence pour chacun
+(`docs/arrosage-catalogue-aquaplus.md`, partie 4). **Question posée le
+16 octobre, sans réponse encore.**
 
 ## ✅ LE PLANNING ÉPURÉ ET LA FICHE DU JOUR : SUR `main` LE 15 OCTOBRE 2026
 

@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le catalogue d'arrosage confronté à Aqua Plus 2026</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-catalogue-darrosage-confronté-à-aqua-plus-2026">Le catalogue d'arrosage confronté à Aqua Plus 2026</h1>
+<p>Relevé le 16 octobre 2026 sur <code>Catalogue-Aquaplus-2026.pdf</code>, page par page. Aucun prix n'est recopié ici.</p>
+<p>Les pages citées sont celles imprimées en bas du PDF (« Page 13 »).</p>
+<h2 id="ce-que-tu-as-tranché-et-ce-qui-est-fait">Ce que tu as tranché, et ce qui est fait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Question</th>
+<th>Ta réponse</th>
+<th>Où on en est</th>
+</tr></thead><tbody>
+<tr>
+<td>1. La 6,0 Portée+</td>
+<td>oui, 1,36</td>
+<td><strong>fait</strong> dans le catalogue. Sur le calcul de l'autre session, aucun plan ne bouge (528 jardins essayés). Sur celui de <code>main</code>, 8 sur 528</td>
+</tr>
+<tr>
+<td>2. Dura ou Plasson</td>
+<td>tes fiches de nourrice et ta planche du réseau font foi</td>
+<td><strong>rien ne change</strong>, j'avais tort de les mettre en doute</td>
+</tr>
+<tr>
+<td>3. Le tube Ø25</td>
+<td>tes photos : Elydan 25×3.0, Alfatubo 32×3.0</td>
+<td>déjà codé par la branche <code>tubes-arrosage</code>, je n'y touche pas</td>
+</tr>
+<tr>
+<td>4. Les références de buses inventées</td>
+<td>corrige-les, rien ne doit être inventé</td>
+<td><strong>fait</strong> : 43 buses de turbine n'ont plus ni référence ni colisage à elles. Aucune n'est supprimée</td>
+</tr>
+<tr>
+<td>5. Le bridage</td>
+<td>la règle d'Aqua Plus, la tienne disparaît</td>
+<td>dans <code>TODO.md</code> : c'est le calcul de l'autre session, à faire une fois sur <code>main</code></td>
+</tr>
+<tr>
+<td>6. La sonde de pluie</td>
+<td>en option, la Rain Bird filaire blanche (RSD-Bex, RP403)</td>
+<td>dans <code>TODO.md</code>, et la case entre dans la planche de l'écran</td>
+</tr>
+<tr>
+<td>7. 8-VAN et SRS 7A</td>
+<td>les chiffres d'Aqua Plus, ou une source sûre</td>
+<td>8-VAN : la fiche Rain Bird donne les mêmes chiffres, <strong>le doute est levé</strong>. SRS 7A : le site Hunter refuse l'accès, on garde Aqua Plus</td>
+</tr>
+<tr>
+<td>Les 4, 6 et 8-VAN à 330°</td>
+<td>oui, coins et bords seulement</td>
+<td><strong>pas encore fait</strong>, voir plus bas</td>
+</tr>
+<tr>
+<td>Les six provisoires</td>
+<td>pas encore répondu</td>
+<td>voir la partie 4</td>
+</tr>
+</tbody></table></div>
+<p><strong>Pourquoi les VAN à 330° ne sont pas encore corrigées.</strong> Je l'ai fait, et ta règle du couloir a rougi : ton couloir de 10 × 2 perdait ses 7 6-VAN pour 5 10-VAN qui arrosent 70 cm au-delà du couloir. La raison : l'outil écarte toute buse sans chiffre à 360°, même pour une zone où elle ne pose que des bords. Ça se corrige dans le calcul, que l'autre session réécrit. J'ai donc remis le 360° en attendant, et c'est écrit dans le code et dans <code>TODO.md</code>.</p>
+<p><strong>Les contrôles joués sur ce lot</strong>, sans batterie à ta demande : le contrôle du catalogue, le calcul d'arrosage, tes règles (19 sur 19), les consignes de la discussion, le tracé, les deux maquettes d'arrosage, les tirets, les pansements, le code mort. Tous verts.</p>
+<h2 id="1-ce-qui-est-faux">1. Ce qui est faux</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Référence</th>
+<th>Le catalogue dit</th>
+<th>Aqua Plus dit</th>
+<th>Page</th>
+</tr></thead><tbody>
+<tr>
+<td>RA5004 buse 6,0 Portée+</td>
+<td>0,92 m³/h à 13,70 m</td>
+<td><strong>1,36 m³/h</strong> à 13,70 m</td>
+<td>13</td>
+</tr>
+<tr>
+<td>Té taraudé 25×3/4"×25</td>
+<td>marque Dura</td>
+<td>Plasson, OPL71402520</td>
+<td>31</td>
+</tr>
+<tr>
+<td>Coude taraudé 25×3/4"</td>
+<td>marque Dura</td>
+<td>Plasson, OPL71502520</td>
+<td>33</td>
+</tr>
+<tr>
+<td>Té 25×25×25</td>
+<td>marque Dura</td>
+<td>Plasson, OPL704025</td>
+<td>30</td>
+</tr>
+<tr>
+<td>Raccord mâle 25 1"</td>
+<td>marque Dura</td>
+<td>Plasson, OPL70202526</td>
+<td>29</td>
+</tr>
+<tr>
+<td>Té 1" de la nourrice</td>
+<td>« Té 1" MMF »</td>
+<td>« DURA Té 1" MFF », ODU301010</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Union de la nourrice</td>
+<td>« Union droite taraudée MM 1" »</td>
+<td>« DURA Union 1" MF », ODU34MF</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Coude MM 1" de la nourrice</td>
+<td>« Coude 90° taraudé MM 1" »</td>
+<td>Dura ne vend que MF (ODU306009) et FF (ODU306010)</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Regard rectangle 12"</td>
+<td>marque Dura</td>
+<td>RG17100, série VB Carson Nike Rain Bird</td>
+<td>21</td>
+</tr>
+<tr>
+<td>Régulateur FF 3/4"</td>
+<td>marque Dura</td>
+<td>BRP870500, laiton, 1 à 3 m³/h</td>
+<td>54</td>
+</tr>
+<tr>
+<td>Électrovanne DV</td>
+<td>débit de 0,05 à 9,08 m³/h, de 1 à 10 bar</td>
+<td><strong>0,75</strong> à 9,1 m³/h, de 1,0 à 10,4 bar</td>
+<td>19</td>
+</tr>
+</tbody></table></div>
+<p><strong>La 6,0 Portée+ change le calcul.</strong> Avec 1,36 m³/h, elle consomme presque la moitié de plus que ce que l'outil compte. Un plan qui la pose aujourd'hui met trop de têtes sur une vanne.</p>
+<p><strong>Pour les marques des raccords</strong>, il est possible que tu achètes du Dura ailleurs et que tes fiches viennent de là. Aqua Plus vend ces quatre pièces sous Plasson. À toi de dire laquelle est la bonne.</p>
+<h2 id="2-les-tuyaux--aqua-plus-contredit-la-branche-des-tubes">2. Les tuyaux : Aqua Plus contredit la branche des tubes</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Branche <code>tubes-arrosage</code> (tes photos)</th>
+<th>Aqua Plus</th>
+<th>Page</th>
+</tr></thead><tbody>
+<tr>
+<td>Ø25</td>
+<td>Elydan 25×3.0, passage 19,0 mm</td>
+<td>UPE225, PE80 10 bars, <strong>20,4 × 25</strong></td>
+<td>47</td>
+</tr>
+<tr>
+<td>Ø32</td>
+<td>Alfatubo 32×3.0, passage 26,0 mm</td>
+<td>UPE232, PE80 10 bars, <strong>26,2 × 32</strong></td>
+<td>47</td>
+</tr>
+<tr>
+<td>Ø16</td>
+<td>« PEBD rigide Ø16 », marque Dura</td>
+<td>UPE1116, PEBD 6,3 bars, <strong>12 × 16</strong></td>
+<td>14 et 47</td>
+</tr>
+</tbody></table></div>
+<p>Les deux sont vrais : ce sont deux tubes différents. Le passage change le plafond d'un réseau en Ø25 (1,53 m³/h avec le tien, 1,76 avec celui d'Aqua Plus). <strong>Tant que tu n'as pas dit lequel tu poses, je garde le plus étroit, le tien :</strong> c'est le côté sûr.</p>
+<h2 id="3-ce-qui-est-juste-chiffre-par-chiffre">3. Ce qui est juste, chiffre par chiffre</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Famille</th>
+<th>Références</th>
+<th>Ce qui a été comparé</th>
+<th>Page</th>
+</tr></thead><tbody>
+<tr>
+<td>Buses VAN</td>
+<td>RBT648, 601, 636, 637, 638, 639, 640</td>
+<td>portée, débits à 90°, 180°, 270° et 360°, 2 bar, par 25</td>
+<td>8</td>
+</tr>
+<tr>
+<td>Buses R-VAN</td>
+<td>RBT1418, 1419, 1428, 1429, 1438, 1439</td>
+<td>portée, débits, 2,4 bar, par 25</td>
+<td>8</td>
+</tr>
+<tr>
+<td>Buses Hunter SRS</td>
+<td>HBT1559 à HBT1563</td>
+<td>portée, débits à 5 angles, 2,1 bar, par 25</td>
+<td>9</td>
+</tr>
+<tr>
+<td>PGP-ADJ</td>
+<td>buses 1 à 7</td>
+<td>portée, débit, 2,8 bar</td>
+<td>13</td>
+</tr>
+<tr>
+<td>PGP Ultra</td>
+<td>buses 1,5 à 8</td>
+<td>portée, débit, 3 bar</td>
+<td>13</td>
+</tr>
+<tr>
+<td>5000 Plus</td>
+<td>buses u+ et Portée+, sauf la 6,0</td>
+<td>portée, débit, 2,5 bar</td>
+<td>13</td>
+</tr>
+<tr>
+<td>5000 Plus MPR</td>
+<td>RBA2195, 2196, 2197</td>
+<td>portée, par 10, aucun débit chez Aqua Plus non plus</td>
+<td>13</td>
+</tr>
+<tr>
+<td>Mini 8</td>
+<td>buses 0,75 à 2,0</td>
+<td>portée, débit, 2,5 bar</td>
+<td>11</td>
+</tr>
+<tr>
+<td>3504</td>
+<td>buses 0,75 à 4,0</td>
+<td>portée, débit, 2,5 bar</td>
+<td>11</td>
+</tr>
+<tr>
+<td>SRM-04</td>
+<td>buses 0,50 à 3,0</td>
+<td>portée, débit, 2,8 bar</td>
+<td>11</td>
+</tr>
+<tr>
+<td>PGJ</td>
+<td>buses 0,75 à 3,0</td>
+<td>portée, débit, 2,8 bar</td>
+<td>11</td>
+</tr>
+<tr>
+<td>Tuyères 1800</td>
+<td>RT1802 à RT1832</td>
+<td>hauteur, SAM, PRS à 2,1 bar, 1/2"</td>
+<td>7</td>
+</tr>
+<tr>
+<td>Pro-Spray, I-Spray</td>
+<td>HT1541 à HT1546, HT1521 à HT1523</td>
+<td>hauteur, régulateur, 1/2"</td>
+<td>9</td>
+</tr>
+<tr>
+<td>Corps de turbine</td>
+<td>HA2211, HA2210, RA2181, RA5004FC, RA5006PC, RA5012PCSAM, TAMINI8-4P, RA3504, RA3504SAM, HA2264, HA2274, HA2272</td>
+<td>hauteur, 3/4" ou 1/2", nombre de buses livrées</td>
+<td>11 et 13</td>
+</tr>
+<tr>
+<td>Coudes SBE</td>
+<td>OD501, OD502</td>
+<td>16 × 1/2" et 16 × 3/4" coudés</td>
+<td>14</td>
+</tr>
+<tr>
+<td>Électrovannes 9 V</td>
+<td>100-DV 1" MM 9V (REV100DVM9V), FF 9V (REV100DV9V)</td>
+<td>1", 9 V à impulsion</td>
+<td>19</td>
+</tr>
+<tr>
+<td>Programmateurs</td>
+<td>BL-IP 1, 2, 4, 6 stations 9 V (SP1721, SP1722, SP1724, SP1726)</td>
+<td>stations, 9 V</td>
+<td>26</td>
+</tr>
+<tr>
+<td>Pile</td>
+<td>ELD60481, pile alcaline 9V 6LR61</td>
+<td>9 V</td>
+<td>27</td>
+</tr>
+<tr>
+<td>Regard Jumbo</td>
+<td>RG17106</td>
+<td>référence</td>
+<td>21</td>
+</tr>
+</tbody></table></div>
+<h2 id="4-les-entrées-douteuses-une-par-une">4. Les entrées douteuses, une par une</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Entrée</th>
+<th>Ce qu'Aqua Plus dit</th>
+<th>Verdict</th>
+</tr></thead><tbody>
+<tr>
+<td>8-VAN, 0,16 m³/h à 90°</td>
+<td><strong>0,16 aussi</strong></td>
+<td>ce n'est pas une faute de recopie : le chiffre douteux est dans le catalogue Aqua Plus lui-même. Seule la fiche Rain Bird peut trancher</td>
+</tr>
+<tr>
+<td>SRS 7A et 10A</td>
+<td><strong>les mêmes débits</strong> pour 2,1 m et 3,0 m</td>
+<td>même chose : recopié juste, douteux à la source</td>
+</tr>
+<tr>
+<td>R-VAN réglables, 270° absent</td>
+<td><strong>absent aussi</strong></td>
+<td>le tableau n'a pas de ligne 270°. Rien à corriger</td>
+</tr>
+<tr>
+<td>5000 Plus MPR, aucun débit</td>
+<td><strong>aucun débit</strong></td>
+<td>confirmé. Elles restent hors du calcul</td>
+</tr>
+<tr>
+<td>5000 Plus 6,0 Portée+ à 0,92</td>
+<td><strong>1,36</strong></td>
+<td>faux, voir la partie 1</td>
+</tr>
+<tr>
+<td>Tuyaux PEHD Ø25 et Ø32 provisoires</td>
+<td>20,4 et 26,2 mm</td>
+<td>voir la partie 2</td>
+</tr>
+<tr>
+<td>Électrovanne 9 V provisoire</td>
+<td>100-DV 1" MM 9V, REV100DVM9V</td>
+<td>elle peut devenir une vraie référence</td>
+</tr>
+<tr>
+<td>Regard de vannes provisoire</td>
+<td>RG17100, regard rectangle 12"</td>
+<td>idem</td>
+</tr>
+<tr>
+<td>Disconnecteur provisoire</td>
+<td>SOCLA BA 2860, de 3/4" à 2"</td>
+<td>idem, une taille par diamètre</td>
+</tr>
+<tr>
+<td>Réducteur de pression provisoire</td>
+<td>BRP870500 à BRP870800, de 3/4" à 1"1/2</td>
+<td>idem</td>
+</tr>
+<tr>
+<td>Sonde de pluie provisoire</td>
+<td>RSD-Bex (RP403), Mini-Clik (HPMINICLIK), WR2 sans fil (RP6231)</td>
+<td>il faut que tu choisisses celle que tu branches sur tes BL-IP</td>
+</tr>
+<tr>
+<td>Gaine de goutte-à-goutte provisoire</td>
+<td>UGGRBXFS, « tube Ø16mm 2,3l/h esp.33cm autorégulé enterrable »</td>
+<td><strong>les mêmes chiffres.</strong> La pluviométrie (23 mm/h), elle, n'est nulle part</td>
+</tr>
+<tr>
+<td>Turbine et tuyère génériques</td>
+<td>rien</td>
+<td>elles ne servent plus que de secours caché</td>
+</tr>
+</tbody></table></div>
+<h2 id="5-ce-qui-est-introuvable-chez-aqua-plus-rien-nest-effacé">5. Ce qui est introuvable chez Aqua Plus (rien n'est effacé)</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Entrée</th>
+<th>Ce qui manque</th>
+</tr></thead><tbody>
+<tr>
+<td>« Regard jumbo 5 voies », « Regard jumbo 6 voies »</td>
+<td>aucun regard ne porte ce nom. Aqua Plus vend le Jumbo VB1220, le Super Jumbo VB1324 et le Maxi Jumbo VB1730</td>
+</tr>
+<tr>
+<td>« Clarinette taraudée 1" pour 2, 3, 4 vannes »</td>
+<td>Aqua Plus vend des « DURA Collecteur M x F x 2, 3, 4 sorties 1" » (ODU3010102 à 104). Peut-être les mêmes pièces sous un autre nom</td>
+</tr>
+<tr>
+<td>« Vanne avec vis de purge 3/4" », Dura</td>
+<td>Aqua Plus vend une « vanne 1/4 de tour + purge FF 3/4" » (BVA932), sans marque</td>
+</tr>
+<tr>
+<td>Les références de buses de turbine</td>
+<td><strong>voir ci-dessous</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Une référence que j'ai trouvée inventée.</strong> Les buses de turbine portent des références comme <code>RA5004-B3u</code>, <code>HA2211-B4</code>, <code>TAMINI8-B075</code>. Aqua Plus n'en vend aucune : les buses sont livrées avec l'arroseur. Ces références ont été fabriquées dans le dépôt, et l'outil les affiche comme des références relevées. C'est exactement ce que tu as interdit le 22 août.</p>
+<h2 id="6-ce-que-le-catalogue-aqua-plus-dit-du-réglage-à-la-vis">6. Ce que le catalogue Aqua Plus dit du réglage à la vis</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Ta règle : les tuyères ne se brident jamais, les turbines jusqu'à 40 %. Ce que le catalogue imprime :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Matériel</th>
+<th>Ce qu'Aqua Plus écrit</th>
+<th>Page</th>
+</tr></thead><tbody>
+<tr>
+<td>Mini 8</td>
+<td>« Réduction portée de 25% par vis brise jet »</td>
+<td>11</td>
+</tr>
+<tr>
+<td>3504</td>
+<td>« Vis brise jet jusqu'à 35% »</td>
+<td>11</td>
+</tr>
+<tr>
+<td>5000 Plus</td>
+<td>« Vis brise jet permettant de réduire la portée de 25% »</td>
+<td>13</td>
+</tr>
+<tr>
+<td>Buses Toro 570Z, tuyères</td>
+<td>« réduction de 25% de la portée »</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Buses Rain Bird MPR, tuyères</td>
+<td>« Vis de réglage permet une réduction de la portée et du débit »</td>
+<td>7</td>
+</tr>
+</tbody></table></div>
+<p>Ta règle ne bouge pas. Mais pour trois turbines, le constructeur annonce moins que 40 %. Un plan qui bride une 5000 Plus à 40 % lui demande ce qu'elle ne sait pas faire.</p>
+<h2 id="7-ce-que-tu-dois-trancher">7. Ce que tu dois trancher</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>La 6,0 Portée+</strong> : je corrige à 1,36 ?</li>
+<li><strong>Les raccords du réseau</strong> : Dura ou Plasson ?</li>
+<li><strong>Le tube Ø25</strong> : ton Elydan 25×3.0 ou l'UPE225 d'Aqua Plus ?</li>
+<li><strong>Les références de buses fabriquées</strong> : je les retire de l'écran, et la liste dit « buse 3,0, livrée avec l'arroseur RA2181 » ?</li>
+<li><strong>Le bridage</strong> : 40 % partout, ou le chiffre du constructeur quand il est plus petit (25 % ou 35 %) ?</li>
+<li><strong>Les provisoires</strong> : je les remplace par les références Aqua Plus de la partie 4 ? Pour la sonde, laquelle ?</li>
+<li><strong>8-VAN et SRS 7A</strong> : on garde le chiffre Aqua Plus, ou tu as la fiche Rain Bird ou Hunter ?</li>
+</ol>
+<h2 id="8-trois-fautes-de-recopie-dans-le-dépôt-sans-effet-sur-le-calcul">8. Trois fautes de recopie dans le dépôt, sans effet sur le calcul</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Où</th>
+<th>Ce qui est écrit</th>
+<th>Ce qui est vrai</th>
+</tr></thead><tbody>
+<tr>
+<td><code>catalogue.js</code>, R-VAN</td>
+<td>« Aqua Plus 2026, p. 9 bis »</td>
+<td>page 8</td>
+</tr>
+<tr>
+<td><code>catalogue.js</code>, tuyères 1800</td>
+<td>« Aqua Plus 2026, p. 8 »</td>
+<td>page 7</td>
+</tr>
+<tr>
+<td><code>catalogue.js</code>, commentaire sur la 6-VAN</td>
+<td>« 0,27 à 90° »</td>
+<td>0,08 à 90°, 0,27 à 360°</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

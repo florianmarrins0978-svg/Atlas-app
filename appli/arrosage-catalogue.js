@@ -114,7 +114,7 @@ var CATALOGUE = {
      │    le débit du cercle entier. C'est ce que faisait l'outil jusqu'ici.  │
      │    Sur les grosses buses la division tombe juste (18-VAN : 1,20 / 4 =  │
      │    0,30, exactement la valeur du tableau) ; sur les petites, non —     │
-     │    la 6-VAN donne 0,27 à 360° quand quatre fois son 90° ferait 0,32.   │
+     │    la 6-VAN donne 0,27 à 330° quand quatre fois son 90° ferait 0,32.   │
      │    Les valeurs du tableau sont donc lues, jamais déduites.             │
      │                                                                        │
      │ 3. LA PRESSION DE RÉFÉRENCE EST 2 BAR, pas 3. Une portée relevée à     │
@@ -155,11 +155,24 @@ var CATALOGUE = {
       pourType:'tuyere', rayon:2.7, pression:2,
       debit:{ 90:0.14, 180:0.29, 270:0.43, 360:0.57 },
       colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' },
+    // **LES 8, 6 ET 4-VAN S'ARRÊTENT À 330°** (fiche Rain Bird des VAN, pages
+    // 27 et 28). Aqua Plus imprime leur dernier chiffre sous « 360° » : c'est
+    // celui du 330°. Sa réponse du 16 octobre 2026 : « oui pour les VAN »,
+    // coins et bords seulement.
+    //
+    // **Le 360° reste écrit, et c'est faux.** Le retirer ici écarte ces buses
+    // de TOUTE pose, car `busesDe` exige les trois angles même pour une zone
+    // qui ne pose que des bords : son couloir de 10 × 2 perd ses 7 6-VAN pour
+    // des 10-VAN qui arrosent 70 cm au-delà. La racine est dans le choix des
+    // buses (n'exiger que les angles que la zone pose), dans `calcul.js`, que
+    // deux branches réécrivent : `TODO.md`, « les VAN à 330° ».
+    //
+    // La 8-VAN porte 0,16 m³/h à 90°, plus que la 10-VAN : Rain Bird donne le
+    // même chiffre (trajectoire de 5°, la 10-VAN est à 10°). Le doute est levé.
     { ref:'RBT638', nom:'8-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:2.3, pression:2,
       debit:{ 90:0.16, 180:0.26, 270:0.34, 360:0.38 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8',
-      aVerifier:'0,16 m³/h à 90° : plus que la 10-VAN, qui porte pourtant plus loin' },
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' },
     { ref:'RBT639', nom:'6-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:1.8, pression:2,
       debit:{ 90:0.08, 180:0.13, 270:0.24, 360:0.27 },
@@ -213,32 +226,32 @@ var CATALOGUE = {
     { ref:'RBT1418', nom:'14 R-VAN réglable', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:4.0, pression:2.4,
       debit:{ 90:0.066, 180:0.132 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9 bis',
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8',
       aVerifier:'270° absent du relevé, seuls 90° et 180° étaient lisibles' },
     { ref:'RBT1419', nom:'14 R-VAN 360°', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:4.0, pression:2.4,
       debit:{ 360:0.264 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9 bis',
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8',
       pairAvec:'RBT1418' },
     { ref:'RBT1428', nom:'18 R-VAN réglable', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:4.9, pression:2.4,
       debit:{ 90:0.106, 180:0.206 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9 bis',
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8',
       aVerifier:'270° absent du relevé, seuls 90° et 180° étaient lisibles' },
     { ref:'RBT1429', nom:'18 R-VAN 360°', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:4.9, pression:2.4,
       debit:{ 360:0.412 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9 bis',
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8',
       pairAvec:'RBT1428' },
     { ref:'RBT1438', nom:'24 R-VAN réglable', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:6.1, pression:2.4,
       debit:{ 90:0.148, 180:0.295 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9 bis',
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8',
       aVerifier:'270° absent du relevé, seuls 90° et 180° étaient lisibles' },
     { ref:'RBT1439', nom:'24 R-VAN 360°', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:6.1, pression:2.4,
       debit:{ 360:0.590 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 9 bis',
+      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8',
       pairAvec:'RBT1438' },
 
     /* ── LES BUSES DE TURBINE — cinquième page, le 17 août 2026 ─────────────
@@ -270,153 +283,155 @@ var CATALOGUE = {
        ses mesures. */
     { ref:'HA2211-B1', nom:'PGP-ADJ buse 1 (rouge std)', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:8.8, pression:2.8, debit:{ 360:0.14 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 13' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'HA2211-B2', nom:'PGP-ADJ buse 2 (rouge std)', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:9.1, pression:2.8, debit:{ 360:0.18 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 13' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'HA2211-B3', nom:'PGP-ADJ buse 3 (rouge std)', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:9.4, pression:2.8, debit:{ 360:0.23 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 13' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'HA2211-B4', nom:'PGP-ADJ buse 4 (rouge std)', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:10.1, pression:2.8, debit:{ 360:0.32 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 13' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'HA2211-B5', nom:'PGP-ADJ buse 5 (rouge std)', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:11.0, pression:2.8, debit:{ 360:0.41 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 13' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'HA2211-B6', nom:'PGP-ADJ buse 6 (rouge std)', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:11.6, pression:2.8, debit:{ 360:0.55 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 13' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'HA2211-B7', nom:'PGP-ADJ buse 7 (rouge std)', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:12.2, pression:2.8, debit:{ 360:0.68 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 13' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
 
     { ref:'HA2210-B1.5', nom:'PGP Ultra buse 1,5', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:9.8, pression:3, debit:{ 360:0.35 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 13' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'HA2210-B2', nom:'PGP Ultra buse 2', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:10.4, pression:3, debit:{ 360:0.43 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 13' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'HA2210-B3', nom:'PGP Ultra buse 3', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:11.6, pression:3, debit:{ 360:0.68 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 13' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'HA2210-B4', nom:'PGP Ultra buse 4', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:12.2, pression:3, debit:{ 360:0.90 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 13' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'HA2210-B5', nom:'PGP Ultra buse 5', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:12.8, pression:3, debit:{ 360:1.14 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 13' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'HA2210-B6', nom:'PGP Ultra buse 6', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:13.10, pression:3, debit:{ 360:1.36 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 13' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'HA2210-B8', nom:'PGP Ultra buse 8', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:13.4, pression:3, debit:{ 360:1.81 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 13' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
 
     { ref:'RBA2195', nom:'5000 Plus MPR 7,62 m', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:7.62, pression:null, debit:{},
-      colisage:10, source:'patron', releve:'Aqua Plus 2026, p. 13 bis',
+      colisage:10, source:'patron', releve:'Aqua Plus 2026, p. 13',
       aVerifier:'Buse MPR (débit proportionnel à la surface, 90°-120°-180°-360°) : aucun débit donné sur la photo' },
     { ref:'RBA2196', nom:'5000 Plus MPR 9,14 m', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:9.14, pression:null, debit:{},
-      colisage:10, source:'patron', releve:'Aqua Plus 2026, p. 13 bis',
+      colisage:10, source:'patron', releve:'Aqua Plus 2026, p. 13',
       aVerifier:'Buse MPR (débit proportionnel à la surface, 90°-120°-180°-360°) : aucun débit donné sur la photo' },
     { ref:'RBA2197', nom:'5000 Plus MPR 10,67 m', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:10.67, pression:null, debit:{},
-      colisage:10, source:'patron', releve:'Aqua Plus 2026, p. 13 bis',
+      colisage:10, source:'patron', releve:'Aqua Plus 2026, p. 13',
       aVerifier:'Buse MPR (débit proportionnel à la surface, 90°-120°-180°-360°) : aucun débit donné sur la photo' },
 
     { ref:'RA5004-B1u', nom:'5000 Plus buse 1,0 u+', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:8.5, pression:2.5, debit:{ 360:0.22 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 13 bis' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'RA5004-B15u', nom:'5000 Plus buse 1,5 u+', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:9.4, pression:2.5, debit:{ 360:0.28 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 13 bis' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'RA5004-B2u', nom:'5000 Plus buse 2,0 u+', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:9.8, pression:2.5, debit:{ 360:0.45 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 13 bis' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'RA5004-B3u', nom:'5000 Plus buse 3,0 u+', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:11.1, pression:2.5, debit:{ 360:0.71 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 13 bis' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'RA5004-B15p', nom:'5000 Plus buse 1,5 Portée+', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:10.1, pression:2.5, debit:{ 360:0.39 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 13 bis' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'RA5004-B3p', nom:'5000 Plus buse 3,0 Portée+', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:12.20, pression:2.5, debit:{ 360:0.92 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 13 bis' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'RA5004-B6p', nom:'5000 Plus buse 6,0 Portée+', marqueCle:'rainbird', fournisseur:'Aqua Plus',
-      pourType:'turbine', rayon:13.70, pression:2.5, debit:{ 360:0.92 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 13 bis',
-      aVerifier:'débit identique à la buse 3,0 Portée+ (0,92), recopié tel quel de la photo, à confirmer' },
+      pourType:'turbine', rayon:13.70, pression:2.5, debit:{ 360:1.36 },
+      // 0,92 jusqu'au 16 octobre 2026 : recopié de la buse 3,0 Portée+ sur une
+      // photo. Le catalogue Aqua Plus 2026 donne 1,36, corrigé avec son accord.
+      // Comptée 0,92, elle mettait une tête de trop sur une vanne.
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 13' },
 
     { ref:'TAMINI8-B075', nom:'Mini 8 buse 0,75', marqueCle:'toro', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:6.0, pression:2.5, debit:{ 360:0.20 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
     { ref:'TAMINI8-B1', nom:'Mini 8 buse 1,0', marqueCle:'toro', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:6.9, pression:2.5, debit:{ 360:0.28 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
     { ref:'TAMINI8-B15', nom:'Mini 8 buse 1,5', marqueCle:'toro', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:8.3, pression:2.5, debit:{ 360:0.30 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
     { ref:'TAMINI8-B2', nom:'Mini 8 buse 2,0', marqueCle:'toro', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:9.3, pression:2.5, debit:{ 360:0.36 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
 
     { ref:'RA3504-B075', nom:'3504 buse 0,75', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:5.2, pression:2.5, debit:{ 360:0.16 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
     { ref:'RA3504-B1', nom:'3504 buse 1,0', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:6.4, pression:2.5, debit:{ 360:0.21 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
     { ref:'RA3504-B15', nom:'3504 buse 1,5', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:7.0, pression:2.5, debit:{ 360:0.30 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
     { ref:'RA3504-B2', nom:'3504 buse 2,0', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:8.2, pression:2.5, debit:{ 360:0.39 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
     { ref:'RA3504-B3', nom:'3504 buse 3,0', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:9.4, pression:2.5, debit:{ 360:0.60 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
     { ref:'RA3504-B4', nom:'3504 buse 4,0', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:10.1, pression:2.5, debit:{ 360:0.83 },
-      colisage:20, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
 
     { ref:'HA2264-B050', nom:'SRM-04 buse 0,50', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:4.9, pression:2.8, debit:{ 360:0.11 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
     { ref:'HA2264-B075', nom:'SRM-04 buse 0,75', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:5.5, pression:2.8, debit:{ 360:0.17 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
     { ref:'HA2264-B1', nom:'SRM-04 buse 1,0', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:6.1, pression:2.8, debit:{ 360:0.23 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
     { ref:'HA2264-B15', nom:'SRM-04 buse 1,5', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:7.3, pression:2.8, debit:{ 360:0.34 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
     { ref:'HA2264-B2', nom:'SRM-04 buse 2,0', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:7.90, pression:2.8, debit:{ 360:0.45 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
     { ref:'HA2264-B3', nom:'SRM-04 buse 3,0', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:9.1, pression:2.8, debit:{ 360:0.68 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
 
     { ref:'HA2274-B075', nom:'PGJ buse 0,75', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:4.9, pression:2.8, debit:{ 360:0.17 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
     { ref:'HA2274-B1', nom:'PGJ buse 1,0', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:5.8, pression:2.8, debit:{ 360:0.23 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
     { ref:'HA2274-B15', nom:'PGJ buse 1,5', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:6.7, pression:2.8, debit:{ 360:0.34 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
     { ref:'HA2274-B2', nom:'PGJ buse 2,0', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:7.6, pression:2.8, debit:{ 360:0.45 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
     { ref:'HA2274-B25', nom:'PGJ buse 2,5', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:8.50, pression:2.8, debit:{ 360:0.57 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 11' },
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' },
     { ref:'HA2274-B3', nom:'PGJ buse 3,0', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'turbine', rayon:9.4, pression:2.8, debit:{ 360:0.68 },
-      colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 11' }
+      livreeAvecLArroseur:true, source:'patron', releve:'Aqua Plus 2026, p. 11' }
   ],
 
   /* ── LES BUSES « BANDE » (strip) — vues, pas enregistrées comme poseables.
@@ -454,37 +469,37 @@ var CATALOGUE = {
   corps: [
     { ref:'RT1802', nom:'Tuyère 1800', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:5, options:[], detail:'escamotable 5 cm',
-      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+      source:'patron', releve:'Aqua Plus 2026, p. 7' },
     { ref:'RT1804', nom:'Tuyère 1800', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:10, options:[], detail:'escamotable 10 cm',
-      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+      source:'patron', releve:'Aqua Plus 2026, p. 7' },
     { ref:'RT1806', nom:'Tuyère 1800', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:15, options:[], detail:'escamotable 15 cm',
-      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+      source:'patron', releve:'Aqua Plus 2026, p. 7' },
     { ref:'RT1812', nom:'Tuyère 1800', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:30, options:[], detail:'escamotable 30 cm',
-      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+      source:'patron', releve:'Aqua Plus 2026, p. 7' },
     { ref:'RT1824', nom:'Tuyère 1800 SAM', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:10, options:['clapet anti-vidange'], detail:'escamotable 10 cm, SAM',
-      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+      source:'patron', releve:'Aqua Plus 2026, p. 7' },
     { ref:'RT1826', nom:'Tuyère 1800 SAM', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:15, options:['clapet anti-vidange'], detail:'escamotable 15 cm, SAM',
-      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+      source:'patron', releve:'Aqua Plus 2026, p. 7' },
     { ref:'RT1822', nom:'Tuyère 1800 SAM', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:30, options:['clapet anti-vidange'], detail:'escamotable 30 cm, SAM',
-      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+      source:'patron', releve:'Aqua Plus 2026, p. 7' },
     { ref:'RT1834', nom:'Tuyère 1800 SAM-PRS', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:10, options:['clapet anti-vidange','régulateur de pression'],
       detail:'escamotable 10 cm, SAM-PRS (2,1 bar)',
-      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+      source:'patron', releve:'Aqua Plus 2026, p. 7' },
     { ref:'RT1836', nom:'Tuyère 1800 SAM-PRS', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:15, options:['clapet anti-vidange','régulateur de pression'],
       detail:'escamotable 15 cm, SAM-PRS (2,1 bar)',
-      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+      source:'patron', releve:'Aqua Plus 2026, p. 7' },
     { ref:'RT1832', nom:'Tuyère 1800 SAM-PRS', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:30, options:['clapet anti-vidange','régulateur de pression'],
       detail:'escamotable 30 cm, SAM-PRS (2,1 bar)',
-      source:'patron', releve:'Aqua Plus 2026, p. 8' },
+      source:'patron', releve:'Aqua Plus 2026, p. 7' },
     { ref:'HT1541', nom:'Tuyère Pro-Spray-02', marqueCle:'hunter', fournisseur:'Aqua Plus',
       pourType:'tuyere', filetage:'1/2', hauteur:5, options:[], detail:'escamotable 5 cm',
       source:'patron', releve:'Aqua Plus 2026, p. 9' },
@@ -531,23 +546,23 @@ var CATALOGUE = {
     { ref:'RA2181', nom:'Turbine 5004 Plus', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'3/4', hauteur:10, options:['réglable'],
       detail:'escamotable 10 cm, secteur réglable, fermeture de débit sur l\'arroseur',
-      source:'patron', releve:'Aqua Plus 2026, p. 13 bis' },
+      source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'RA5004FC', nom:'Turbine 5004 Plus', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'3/4', hauteur:10, options:['plein cercle'],
       detail:'escamotable 10 cm, plein cercle',
-      source:'patron', releve:'Aqua Plus 2026, p. 13 bis' },
+      source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'RA5006PC', nom:'Turbine 5006 Plus', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'3/4', hauteur:15, options:['réglable'],
       detail:'escamotable 15 cm, secteur réglable',
-      source:'patron', releve:'Aqua Plus 2026, p. 13 bis' },
+      source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'RA5012PCSAM', nom:'Turbine 5012 Plus', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'3/4', hauteur:30, options:['réglable','clapet anti-vidange'],
       detail:'escamotable 30 cm, secteur réglable, SAM',
-      source:'patron', releve:'Aqua Plus 2026, p. 13 bis' },
+      source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'RA2180', nom:'Turbine 5004 Plus SS', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'3/4', hauteur:10, options:['réglable','clapet anti-vidange','tige inox'],
       detail:'tige escamotable inox, secteur réglable, SAM',
-      source:'patron', releve:'Aqua Plus 2026, p. 13 bis' },
+      source:'patron', releve:'Aqua Plus 2026, p. 13' },
     { ref:'TAMINI8-4P', nom:'Turbine Mini 8', marqueCle:'toro', fournisseur:'Aqua Plus',
       pourType:'turbine', filetage:'1/2', hauteur:9.5, options:['faible consommation'],
       detail:'escamotable 9,5 cm, réglage sur le dessus, 5 buses interchangeables',
@@ -584,9 +599,9 @@ var CATALOGUE = {
      le fait que le tube arrive de côté quand le corps est vertical. */
   coudes: [
     { ref:'OD501', nom:'Coude SBE 050', marqueCle:'generique', fournisseur:'Aqua Plus',
-      filetage:'1/2', detail:'16 x 1/2" coudé', source:'patron', releve:'Aqua Plus 2026' },
+      filetage:'1/2', detail:'16 x 1/2" coudé', source:'patron', releve:'Aqua Plus 2026, p. 14' },
     { ref:'OD502', nom:'Coude SBE 075', marqueCle:'generique', fournisseur:'Aqua Plus',
-      filetage:'3/4', detail:'16 x 3/4" coudé', source:'patron', releve:'Aqua Plus 2026' }
+      filetage:'3/4', detail:'16 x 3/4" coudé', source:'patron', releve:'Aqua Plus 2026, p. 14' }
   ],
 
   /* ── LE RÉSEAU LATÉRAL — sa planche manuscrite du 17 août 2026, deux pages.
@@ -929,7 +944,7 @@ CATALOGUE.ficheNourrice = function (n, combienGoutte) {
    arrose plus souvent la même bande. C'est l'inverse d'une tuyère, dont le
    jet est un éventail dont la largeur change avec l'arc : d'où des valeurs
    par angle dans SES tableaux à elle, et la 6-VAN qui n'est pas
-   proportionnelle (0,27 à 90°, 0,32 à 360°).
+   proportionnelle (0,08 à 90°, donc 0,32 sur quatre quarts, mais 0,27 à 330°).
 
    DONC, ET LA DISTINCTION EST TOUT : quand le tableau donne UN chiffre, il
    vaut pour tous les arcs ; quand il en donne un PAR ANGLE, on lit chaque
@@ -1007,7 +1022,11 @@ CATALOGUE.referenceDe = function (cle) {
     var trouve = (listes[i] || []).filter(function (x) { return x.ref === cle; })[0];
     // **`releve` est le seul juge.** Une entrée sans relevé est une entrée
     // dont la référence n'a jamais été lue sur un document du patron.
-    if (trouve) return trouve.releve ? trouve.ref : null;
+    //
+    // **Et une buse livrée avec l'arroseur n'en a pas.** Sa clé (`RA5004-B3u`)
+    // a été fabriquée dans le dépôt pour la lier à son corps ; Aqua Plus ne la
+    // vend pas seule (16 octobre 2026, « rien ne doit être inventé »).
+    if (trouve) return trouve.releve && !trouve.livreeAvecLArroseur ? trouve.ref : null;
   }
   return null;
 };
@@ -1019,7 +1038,8 @@ CATALOGUE.tousLesProduits = function () {
   CATALOGUE.buses.forEach(function (b) {
     out.push({ ref:b.ref, nom:'Buse ' + b.nom + ' — ' + (b.marque || 'Rain Bird'),
                detail:'rayon ' + String(b.rayon).replace('.', ',') + ' m à ' +
-                      String(b.pression).replace('.', ',') + ' bar, par ' + b.colisage,
+                      String(b.pression).replace('.', ',') + ' bar' +
+                      (b.livreeAvecLArroseur ? ', livrée avec l\'arroseur' : ', par ' + b.colisage),
                famille:'Buses' });
   });
   CATALOGUE.corps.forEach(function (c) {

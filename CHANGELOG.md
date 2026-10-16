@@ -20,6 +20,14 @@ Format : le plus récent en tête.
   au-dessus de la pression réelle (des portées prêtées, un réseau qui ne se
   lève pas), et une vanne de trop sur 68 jardins d'un balayage de 392
   (`ARCHITECTURE.md` §467).
+- **Le catalogue d'arrosage confronté au catalogue Aqua Plus 2026, page par
+  page.** La 5000 Plus 6,0 Portée+ débitait 0,92 m³/h dans l'outil, 1,36 chez
+  Aqua Plus : elle mettait une tête de trop sur une vanne. Les buses de
+  turbine livrées avec l'arroseur portaient une référence fabriquée dans le
+  dépôt et un colisage qui n'est pas le leur : retirés, sans rien supprimer.
+  Les pages des relevés et deux commentaires faux sur la 6-VAN sont corrigés.
+  La 8-VAN à 0,16 m³/h au quart de tour est juste (fiche Rain Bird).
+  `scripts/test-catalogue-arrosage-aquaplus.ts` tient ce qu'il a tranché.
 
 - **Un message qui parle d'arrosage fait lire ses règles d'arrosage d'abord**
   (`scripts/rappel-arrosage.mjs`). Ce que ça évite : une planche d'arrosage neuve
