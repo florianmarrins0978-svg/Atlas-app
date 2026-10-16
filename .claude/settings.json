@@ -63,6 +63,11 @@
           {
             "type": "command",
             "command": "node \"${CLAUDE_PROJECT_DIR:-.}/scripts/rappel-regarder-l-ecran.mjs\""
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR:-.}/scripts/rappel-arrosage.mjs\"",
+            "timeout": 10
           }
         ]
       }

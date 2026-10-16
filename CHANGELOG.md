@@ -8,6 +8,10 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-16
 
+- **Un message qui parle d'arrosage fait lire ses règles d'arrosage d'abord**
+  (`scripts/rappel-arrosage.mjs`). Ce que ça évite : une planche d'arrosage neuve
+  dessinée avant que les règles soient chargées, donc avec une nourrice placée
+  par l'outil ou du matériel inventé.
 - **Les règles d'arrosage ne se chargent plus que quand une session touche à
   l'arrosage** (`.claude/rules/arrosage.md`, mot pour mot). `CLAUDE.md` passe de
   2 162 à 1 562 lignes chargées dans chaque session. Ce que ça évite : des

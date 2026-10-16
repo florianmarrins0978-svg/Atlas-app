@@ -874,6 +874,11 @@ Aucune valeur ne se devine ; devant une inconnue, le moins d'arroseurs par vanne
 **sans croquis complet (métrés, piquage, nourrice), aucun plan** ; la nourrice se
 place par lui, jamais par l'outil ; ce qui n'est pas calculé se dit à l'écran.
 
+**Et un message du patron qui parle d'arrosage** (arroseur, buse, nourrice,
+tuyère…) fait partir `scripts/rappel-arrosage.mjs`, qui fait lire ce fichier
+avant tout premier jet : une planche neuve se dessine parfois avant qu'un
+fichier d'arrosage soit ouvert.
+
 ## 5. Vérifier : ce qui compte comme « fait »
 
 Rien n'est terminé sans **la batterie complète**, en une commande :

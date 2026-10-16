@@ -34960,6 +34960,20 @@ soit ouvert. **Un fichier `@` importé depuis `CLAUDE.md` se charge en entier
 au démarrage, `paths:` ou pas** : une règle à portée de chemin ne s'importe
 donc jamais par `@`.
 
-**Le lot suivant, à décider** : raccourcir les récits (« payé le… ») des §5 et
-§6 en gardant la règle et sa raison en une ligne. C'est une réécriture, avec
-son propre risque.
+**Le trou qui restait, et le rappel qui le ferme (même jour).** Une règle à
+portée de chemin entre au contexte à la LECTURE d'un fichier qui correspond.
+Une session à qui il demande une planche d'arrosage neuve peut écrire son
+premier jet avant d'en avoir lu un. `scripts/rappel-arrosage.mjs`, branché sur
+chaque message (comme `rappel-panne.mjs`), fait lire `.claude/rules/arrosage.md`
+dès qu'un mot du métier apparaît : arros…, buse, nourrice, tuyère, turbine,
+électrovanne, programmateur, piquage, pluviométrie, PEHD, PEBD. **« Croquis »
+n'y est pas** : la fiche de sécurité en porte un, et le rappel parlerait à tort.
+`scripts/test-rappel-arrosage.ts` le confronte à ses vraies phrases et à des
+demandes ordinaires, et l'a vu rougir avant d'être branché. Éprouvé aussi avec
+une vraie session : il part sur « une planche pour l'arrosage d'un jardin », il
+se tait sur « ajoute une colonne au planning ».
+
+**Le raccourcissement des récits des §5 et §6 n'est PAS fait, et c'est une
+décision** : il retirerait le « pourquoi » qui fait tenir des règles qu'il a dû
+imposer plusieurs fois, pour un gain incertain. On y revient seulement si des
+consignes continuent de s'oublier.
