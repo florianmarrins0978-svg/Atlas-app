@@ -88,6 +88,27 @@ Palaplast Ø16 » (MID6321), « embout Palaplast taraudé 16 x 3/4" » (MID6362)
 « jonction Palaplast Ø16 » (MID6301). Lui faire confirmer la référence avant de
 l'écrire au catalogue ; ses mots à lui en attendant, sans référence.
 
+## ⏳ ARROSAGE : LE Ø32 QUAND LE Ø25 NE PASSE PAS — sa règle du 16 octobre 2026
+
+*« La règle est bonne ! »* Pour CHAQUE réseau, goutte-à-goutte ET arroseurs :
+
+1. calculer le débit et la pression ;
+2. le Ø25 ne passe pas : essayer le Ø32 ;
+3. le Ø32 ne passe pas non plus : un réseau de plus, donc une électrovanne.
+
+Le Ø32 ne sert que si c'est le TUYAU qui plafonne (Ø25 1,53 m³/h, Ø32 2,87).
+Quand c'est la source qui plafonne (chez lui, 1,80 × 0,85 = 1,53), il ne fait
+rien gagner. **Il faut prévenir l'utilisateur**, et lui laisser le choix à la
+fin : *« un bandeau déroulant, diam 25 ou diam 32 »*, et les pièces suivent.
+
+| | |
+|---|---|
+| un réseau en Ø32 | **ses raccords passent en 32** : té taraudé 32×3/4"×32, coude taraudé 32×3/4", té 32×32×32 |
+| passer de l'un à l'autre | des tés de réduction ; *« des tés en 32 25 32 »* quand la ligne principale est en 32 et la sortie en 25, et l'inverse |
+
+Les références de ces pièces en 32 ne sont pas au catalogue : à relever (Aqua
+Plus, pages des raccords PE), ou à lui demander, jamais à déduire des 25.
+
 ## ⏳ ARROSAGE : AJOUTER OU RETIRER UNE PIÈCE DE LA LISTE — sa demande du 16 octobre 2026
 
 *« Une fois que la liste des pièces est créée pour l'utilisateur, qu'il y ait
