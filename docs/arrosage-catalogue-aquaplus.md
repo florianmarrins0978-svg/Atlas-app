@@ -9,7 +9,7 @@ Les pages citées sont celles imprimées en bas du PDF (« Page 13 »).
 
 | Question | Ta réponse | Où on en est |
 |---|---|---|
-| 1. La 6,0 Portée+ | oui, 1,36 | **fait** dans le catalogue. Sur le calcul de l'autre session, aucun plan ne bouge (528 jardins essayés). Sur celui de `main`, 8 sur 528 |
+| 1. La 6,0 Portée+ | oui, 1,36 | **fait** dans le catalogue. Sur le calcul de `main` (celui de l'autre session, fusionné le 16 octobre), aucun plan ne bouge sur 528 jardins essayés |
 | 2. Dura ou Plasson | tes fiches de nourrice et ta planche du réseau font foi | **rien ne change**, j'avais tort de les mettre en doute |
 | 3. Le tube Ø25 | tes photos : Elydan 25×3.0, Alfatubo 32×3.0 | déjà codé par la branche `tubes-arrosage`, je n'y touche pas |
 | 4. Les références de buses inventées | corrige-les, rien ne doit être inventé | **fait** : 43 buses de turbine n'ont plus ni référence ni colisage à elles. Aucune n'est supprimée |
@@ -27,7 +27,7 @@ buse sans chiffre à 360°, même pour une zone où elle ne pose que des bords.
 360° en attendant, et c'est écrit dans le code et dans `TODO.md`.
 
 **Les contrôles joués sur ce lot**, sans batterie à ta demande : le contrôle
-du catalogue, le calcul d'arrosage, tes règles (19 sur 19), les consignes de la
+du catalogue, le calcul d'arrosage, tes règles (21 sur 21), les consignes de la
 discussion, le tracé, les deux maquettes d'arrosage, les tirets, les
 pansements, le code mort. Tous verts.
 
