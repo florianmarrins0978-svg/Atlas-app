@@ -246,6 +246,11 @@ plus ça coûte cher. »*
 Le calcul ne connaît pas ses prix (ils sont dans son registre, jamais dans le
 catalogue) : « moins cher » s'y lit dans cet ordre, rien d'autre.
 
+**LES TUYÈRES NE SE BRIDENT PAS — sa réponse du 16 octobre 2026 :** *« non, les
+tuyères on ne les règle pas à la vis, on ne peut donc pas les brider »*. Le
+bridage de 40 % ne vaut que pour les turbines ; une tuyère se pose à sa portée,
+entre 80 et 100 % de recouvrement (`poseSelonSaRegle`, `BRIDAGE_MAX`).
+
 **LA TENSION S'ACCORDE, SINON RIEN N'ARROSE.** Sa règle du 21 août :
 
 | Le programmateur | L'électrovanne |
