@@ -8,6 +8,11 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-16
 
+- **Les règles d'arrosage ne se chargent plus que quand une session touche à
+  l'arrosage** (`.claude/rules/arrosage.md`, mot pour mot). `CLAUDE.md` passe de
+  2 162 à 1 562 lignes chargées dans chaque session. Ce que ça évite : des
+  consignes noyées dans 600 lignes qui ne servent qu'un jour sur dix, et donc
+  oubliées les autres jours (`ARCHITECTURE.md` §465).
 - **Le devis ne glisse plus, et sa croix s'éloigne du texte.** Sa demande :
   *« il arrive encore fréquemment qu'on appuie sur la petite croix pour
   supprimer une ligne sans faire exprès »*, et *« il faut totalement retirer le

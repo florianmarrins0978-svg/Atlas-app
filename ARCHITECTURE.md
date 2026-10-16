@@ -34929,3 +34929,37 @@ au-dessus de la colonne des chiffres, en haut de la ligne, 18 px du texte. Elle
 déborde de la colonne de 20 px ; l'enveloppe, qui masque ce qui dépasse pour
 pouvoir se refermer, est donc élargie d'autant (`-mr-5 pr-5`, la marge de la
 feuille). Sur grand écran, elle s'arrête au bord de la colonne Qté.
+
+## §465 : Les règles d'arrosage se chargent quand on touche à l'arrosage, pas avant
+
+**Sa décision du 16 octobre 2026**, sur le plan qu'il a validé : *« regarde si
+tu peux, vas-y »*. `CLAUDE.md` faisait 2 162 lignes, chargées en entier dans
+chaque session ; la documentation de Claude Code dit qu'au-delà d'environ 200
+lignes, une consigne est moins bien suivie. C'est ce qu'il constatait en
+devant répéter des règles.
+
+**Ce qui a bougé.** Les trois sections d'arrosage (§4 ter, §4 bis « tout
+schéma d'arrosage », §4 bis « une maquette qui montre du matériel »), soit
+600 lignes, vivent dans `.claude/rules/arrosage.md`, **mot pour mot**. Son
+en-tête `paths:` le fait charger par Claude Code dès qu'une session lit ou
+modifie un fichier qui correspond (`**/*arrosage*`, `**/arrosage/**`, la
+lecture du croquis, `test-regles-du-patron.ts`), et seulement alors.
+`CLAUDE.md` garde les trois titres (les renvois « §4 bis » partout dans le
+dépôt mènent toujours quelque part), l'essentiel en six lignes, et le renvoi.
+
+**C'est éprouvé, pas supposé.** Une session lancée à froid (`claude -p`) n'a
+pas ces règles ; la même, après avoir lu `src/lib/arrosage/pieces.ts`, cite
+mot pour mot la phrase qui suit « LA TENSION S'ACCORDE, SINON RIEN
+N'ARROSE. ». Et un relevé mécanique a vérifié qu'aucune ligne de l'ancien
+`CLAUDE.md` ne manque à la réunion des deux fichiers, ni aucune de ses 214
+citations « … ».
+
+**Ce qui n'a pas bougé, et pourquoi.** « La maquette d'abord » (§3 bis) reste
+chargée partout : elle décide de la marche à suivre avant même qu'un fichier
+soit ouvert. **Un fichier `@` importé depuis `CLAUDE.md` se charge en entier
+au démarrage, `paths:` ou pas** : une règle à portée de chemin ne s'importe
+donc jamais par `@`.
+
+**Le lot suivant, à décider** : raccourcir les récits (« payé le… ») des §5 et
+§6 en gardant la règle et sa raison en une ligne. C'est une réécriture, avec
+son propre risque.
