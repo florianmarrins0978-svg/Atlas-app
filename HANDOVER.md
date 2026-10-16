@@ -10,7 +10,7 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## LE PLANNING DÉCOUPÉ EN DOUZE FICHIERS : 15 octobre 2026, PAS ENCORE SUR `main`
+## LE PLANNING DÉCOUPÉ EN DOUZE FICHIERS : sur `main` le 16 octobre 2026
 
 `src/app/planning/PlanningClient.tsx` (6 095 lignes, 39 composants) est
 découpé en douze fichiers du même dossier, **à l'identique** : aucune ligne de

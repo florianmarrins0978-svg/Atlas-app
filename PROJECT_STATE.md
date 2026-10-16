@@ -5,7 +5,7 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
-## CODÉ, PAS ENCORE SUR `main` : LE PLANNING DÉCOUPÉ EN DOUZE FICHIERS (15 octobre 2026)
+## SUR `main` LE 16 OCTOBRE 2026 : LE PLANNING DÉCOUPÉ EN DOUZE FICHIERS (15 octobre 2026)
 
 `src/app/planning/PlanningClient.tsx` (6 095 lignes, 39 composants) est
 découpé en douze fichiers du même dossier, **à l'identique** : aucune ligne de
