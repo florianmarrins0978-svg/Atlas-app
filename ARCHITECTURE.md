@@ -35060,3 +35060,34 @@ vanne ; un seul en prend une (20 × 2 à 2,5 bar), et l'ancien plan y comptait u
 portée de 1,68 m que la pression ne donne pas (1,62). Ses règles écrites dans
 `test-regles-du-patron.ts` tiennent toutes, dont ses neuf turbines du 12 × 12.
 
+## §469 : Le diamètre d'un tube d'arrosage se lit sur le tube
+
+**16 octobre 2026, ses photos à l'appui, et son accord** (« oui fais les
+deux »). Le catalogue portait des diamètres intérieurs supposés, 20,4 mm en
+Ø25 et 26,2 en Ø32, « ceux du PN10 », marqués `provisoire` depuis le 22 août et
+jamais confrontés à ses tubes. Ses tubes sont des **Elydan Polybleu 25×3.0**
+(PE100, SDR 9) et des **Alfatubo 32×3.0** (PE100, SDR 11, PN16) : 19,0 et
+26,0 mm de passage.
+
+| | supposé | relevé | effet |
+|---|---|---|---|
+| Ø25, diamètre intérieur | 20,4 mm | **19,0 mm** | perte × 1,41 (le diamètre entre à la puissance 4,87) |
+| Ø25, débit à 1,5 m/s | 1,76 m³/h | **1,53** | plafond d'un réseau |
+| Ø32, diamètre intérieur | 26,2 mm | **26,0 mm** | perte × 1,04 |
+| Ø32, débit à 1,5 m/s | 2,91 m³/h | **2,87** | |
+
+**Ce que §144 et §146 disaient de faux.** Le 1,76 « recoupait sa mesure au
+seau » (1,80). C'était une coïncidence : le seau mesure le compteur, la vitesse
+dit ce qu'une ligne enterrée supporte. Elle a fait croire un chiffre supposé
+pendant deux mois. Les deux paragraphes restent tels quels, comme récit ; ce
+paragraphe-ci les corrige.
+
+**Pourquoi ses tubes pour tout le monde, en attendant le réglage.** Une paroi
+plus fine (un PN10 en 25×2.0, 21 mm) a plus de passage. Tenir 19,0 mm pour un
+artisan qui pose du PN10 lui coûte au pire une vanne de trop, jamais un réseau
+qui ne se lève pas (`.claude/rules/arrosage.md`, « se tromper vers le sûr »).
+Le choix du tube par artisan attend sa planche (`TODO.md`).
+
+**Ce que le relevé a mis au jour** : les buses étaient choisies à une pression
+qui n'arrivait pas au dernier arroseur. Corrigé avant ce lot, au §467 ; c'est
+sur ce calcul corrigé que les diamètres relevés s'appliquent.

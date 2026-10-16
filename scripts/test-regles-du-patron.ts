@@ -184,7 +184,12 @@ regle("21 août 2026", "« sans ça il ne doit rien proposer » — pas de nourr
 regle("22 août 2026", "« en Ø25 c'est 1,76 m³/h, le calcul doit se faire là-dessus » — une source à 9 m³/h est plafonnée par le tuyau", () => {
   const p = calculerPlan({ seau: 10, temps: 4, pression: 3, compteur: "non", zones: [{ id: 1, type: "gazon", nom: "P", x: 0, y: 0, L: 30, l: 20 }] } as never) as Plan;
   exige(p.limitePar === "tuyau", `c'est « ${p.limitePar} » qui plafonne, pas le Ø25`);
-  exige(Math.abs(p.limiteDuTuyau - 1.76) < 0.02, `le Ø25 passe ${p.limiteDuTuyau.toFixed(2)} m³/h au lieu de 1,76`);
+  // ~~1,76~~ BARRÉ le 16 octobre 2026, avec son accord (« oui fais les deux ») :
+  // ce chiffre était celui d'un Ø25 SUPPOSÉ de 20,4 mm de passage. Ses tubes
+  // photographiés font 19,0 mm, et le Ø25 passe 1,53 : c'est la règle datée du
+  // 16 octobre, sous le repère. La règle de fond, elle, tient toujours ici :
+  // le tuyau plafonne le réseau. Le 1,76 reste, comme la trace de son calcul.
+  exige(Math.abs(Math.PI * Math.pow(0.0102, 2) * 1.5 * 3600 - 1.76) < 0.02, `1,76 était le Ø25 supposé de 20,4 mm (${(Math.PI * Math.pow(0.0102, 2) * 1.5 * 3600).toFixed(2)}), pas au lieu de 1,76`);
   for (const s of p.secteurs) exige(s.debit <= p.limiteDuTuyau + 1e-9, `un réseau à ${s.debit} m³/h dépasse le Ø25`);
 });
 
@@ -286,6 +291,13 @@ regle("16 octobre 2026", "« le bridage à la vis, on peut aller jusqu'à 40 % �
     }
   }
   exige(vues > 0, "aucune tête mesurée");
+});
+
+regle("16 octobre 2026", "« 25 × 3 » sur ses tubes photographiés — son Ø25 a 19,0 mm de passage et plafonne un réseau à 1,53 m³/h, pas 1,76", () => {
+  const p = calculerPlan({ seau: 10, temps: 4, pression: 3, compteur: "non", zones: [{ id: 1, type: "gazon", nom: "P", x: 0, y: 0, L: 30, l: 20 }] } as never) as Plan;
+  exige(p.limitePar === "tuyau", `c'est « ${p.limitePar} » qui plafonne, pas le Ø25`);
+  exige(Math.abs(p.limiteDuTuyau - 1.53) < 0.02, `le Ø25 passe ${p.limiteDuTuyau.toFixed(2)} m³/h au lieu de 1,53`);
+  for (const s of p.secteurs) exige(s.debit <= p.limiteDuTuyau + 1e-9, `un réseau à ${s.debit} m³/h dépasse le Ø25`);
 });
 
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────

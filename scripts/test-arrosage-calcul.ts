@@ -554,7 +554,12 @@ dire(
   // n'arrivait pas (§467) ; corrigé, le même jardin tient sur DEUX vannes au
   // lieu de trois (8 × 3504 buse 1,0 et 6 × 5000 Plus buse 1,0 u+). Une vanne
   // de moins, ce sont des lignes plus chargées, donc qui perdent plus.
-  const PERTE_RESEAU_ATTENDUE = 0.523;
+  //
+  // **ELLE A BOUGÉ LE 16 OCTOBRE 2026 AU SOIR, DE 0,523 À 0,606**, et cette fois
+  // c'est bien le tuyau : son Ø25 relevé sur ses photos a 19,0 mm de passage, et
+  // non 20,4 (§469). Le plan est le même (deux vannes, 8 × 3504 buse 0,75 et
+  // 6 × 3504 buse 1,0) ; la ligne, plus étroite, perd davantage.
+  const PERTE_RESEAU_ATTENDUE = 0.606;
   dire(
     Math.abs(p.perteReseau - PERTE_RESEAU_ATTENDUE) < 0.005,
     `la perte du réseau vaut ${p.perteReseau.toFixed(3)} bar (${PERTE_RESEAU_ATTENDUE} attendu — ` +

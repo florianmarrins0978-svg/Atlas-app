@@ -47,6 +47,11 @@ Format : le plus récent en tête.
   connu, le dit sous le plan au lieu d'afficher une durée inventée. En chemin :
   un massif de 2,40 m perdait une ligne, 2,4 ÷ 0,80 valant 2,9999999999999996
   en virgule flottante.
+- **Le calcul d'arrosage prend le diamètre de SES tubes, relevé sur ses photos**
+  (Ø25 25×3.0 : 19,0 mm ; Ø32 32×3.0 : 26,0 mm), au lieu de valeurs PN10
+  supposées. Ce que ça évite : des réseaux plafonnés à 1,76 m³/h dans un tube
+  qui en passe 1,53, avec 40 % de perte de charge non comptée, le sens où le
+  dernier arroseur ne se lève pas (`ARCHITECTURE.md` §469).
 
 - **Un message qui parle d'arrosage fait lire ses règles d'arrosage d'abord**
   (`scripts/rappel-arrosage.mjs`). Ce que ça évite : une planche d'arrosage neuve

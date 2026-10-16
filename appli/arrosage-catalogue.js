@@ -639,19 +639,25 @@ var CATALOGUE = {
      Sa règle du 17 août : « Du compteur au regard : Ø25 par défaut. Passer en
      Ø32 uniquement si le calcul hydraulique démontre que le Ø25 est
      insuffisant. » Le calcul, lui, ne travaille pas sur le diamètre écrit sur
-     le tuyau (extérieur) mais sur le diamètre INTÉRIEUR — et celui-ci dépend
-     de l'épaisseur de paroi, donc de la pression nominale du tube (PN6, PN10,
-     PN16), qu'il n'a pas précisée.
+     le tuyau (extérieur) mais sur le diamètre INTÉRIEUR : l'extérieur moins
+     deux fois la paroi, les deux chiffres imprimés sur chaque tube (« 25×3.0 »).
 
-     **Ces deux valeurs sont donc `provisoire`, et l'écran le dit.** Ce sont
-     celles du PN10, le plus courant en arrosage — mais un PN16 a la paroi plus
-     épaisse, donc moins de passage, donc plus de perte : se tromper de gamme
-     fausse le verdict Ø25/Ø32 dans le sens dangereux. À confirmer par lui. */
+     **Relevés de ses photos du 16 octobre 2026**, et non plus supposés. Le
+     catalogue portait jusque-là 20,4 et 26,2 mm, « ceux du PN10, le plus
+     courant », marqués provisoires et jamais confrontés à ses tubes. Son Ø25
+     a une paroi de 3 mm : 19,0 mm de passage. L'écart n'est pas un détail, le
+     diamètre entre à la puissance 4,87 dans la perte : **40 % de perte en
+     plus**, et un plafond par réseau qui tombe de 1,76 à 1,53 m³/h. L'erreur
+     allait dans le sens dangereux, celui du réseau qui ne se lève pas.
+
+     Ce sont SES tubes. Un artisan qui pose une paroi plus fine a plus de
+     passage : les tenir pour lui aussi pose une vanne de trop, jamais un
+     réseau qui ne se lève pas. Le choix par artisan est dans `TODO.md`. */
   tuyaux: {
-    pe25: { nom:'Tuyau PEHD Ø25', dInterieur:20.4, source:'provisoire',
-            aVerifier:'Diamètre intérieur du PN10, il dépend de la pression nominale, non précisée' },
-    pe32: { nom:'Tuyau PEHD Ø32', dInterieur:26.2, source:'provisoire',
-            aVerifier:'Diamètre intérieur du PN10, il dépend de la pression nominale, non précisée' }
+    pe25: { nom:'Tuyau PEHD Ø25', dInterieur:19.0, source:'patron',
+            releve:'Elydan Polybleu 25×3.0, PE100, SDR 9' },
+    pe32: { nom:'Tuyau PEHD Ø32', dInterieur:26.0, source:'patron',
+            releve:'Alfatubo AL 32×3.0, PE100, SDR 11, PN16' }
   },
 
   piecesReseau: {
