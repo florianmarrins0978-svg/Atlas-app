@@ -228,6 +228,24 @@ recouvrent à 100 %, ce qui est confortable et cher. Le seuil est **0,8**, soit
 un espacement jusqu'à **1,25 × la portée**. Exiger 100 % partout fait poser des
 arroseurs et des raccords que personne ne paie.
 
+**LE RECOUVREMENT VA DE 80 À 100 %, LE BRIDAGE EST PERMIS, ET L'ON VA AU MOINS
+CHER — ses réponses du 16 octobre 2026**, devant une pelouse de 20 × 12 qui
+recevait six vannes parce qu'une turbine portait 10 cm de trop :
+
+| | sa règle |
+|---|---|
+| **recouvrement** | entre **80 % et 100 %** : pour une portée de 10 m, de **10 m à 12,5 m** entre deux têtes (*« 12,5, je me suis trompé dans mes calculs »* ; le code disait 12 m depuis le 17 août) |
+| **bridage à la vis** | permis, **jusqu'à 40 %** de portée en moins, et la tête bridée tient la même règle de 80 à 100 %. Mais *« je perds de son intérêt : autant passer sur des arroseurs moins puissants que de trop brider des arroseurs plus puissants »* |
+| **l'écart permis** | **75 % à 105 %**, mais SEULEMENT si cela fait gagner des sous : un réseau de moins, ou une gamme moins chère (*« si on passe d'arroseurs 5000 à des 3500, les 5 % sont valables si ça fait gagner des sous »*). Sinon, 80 à 100 % |
+| **l'ordre du moins cher** | **1.** le moins de réseaux ; **2.** la gamme la moins chère (3504 avant 5000, 5000 avant les gros arroseurs) ; **3.** le moins d'arroseurs. *« Ton ordre est le bon. »* |
+
+*« L'idée, c'est d'aller au moins cher à chaque fois. Plus tu montes en gamme,
+plus l'arroseur va loin, plus il coûte cher. Pareil, plus tu fais de réseaux,
+plus ça coûte cher. »*
+
+Le calcul ne connaît pas ses prix (ils sont dans son registre, jamais dans le
+catalogue) : « moins cher » s'y lit dans cet ordre, rien d'autre.
+
 **LA TENSION S'ACCORDE, SINON RIEN N'ARROSE.** Sa règle du 21 août :
 
 | Le programmateur | L'électrovanne |
