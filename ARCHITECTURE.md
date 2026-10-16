@@ -34977,3 +34977,40 @@ se tait sur « ajoute une colonne au planning ».
 décision** : il retirerait le « pourquoi » qui fait tenir des règles qu'il a dû
 imposer plusieurs fois, pour un gain incertain. On y revient seulement si des
 consignes continuent de s'oublier.
+
+## §466 : Le diamètre d'un tube d'arrosage se lit sur le tube
+
+**16 octobre 2026, ses photos à l'appui, et son accord** (« oui fais les
+deux »). Le catalogue portait des diamètres intérieurs supposés, 20,4 mm en
+Ø25 et 26,2 en Ø32, « ceux du PN10 », marqués `provisoire` depuis le 22 août et
+jamais confrontés à ses tubes. Ses tubes sont des **Elydan Polybleu 25×3.0**
+(PE100, SDR 9) et des **Alfatubo 32×3.0** (PE100, SDR 11, PN16) : 19,0 et
+26,0 mm de passage.
+
+| | supposé | relevé | effet |
+|---|---|---|---|
+| Ø25, diamètre intérieur | 20,4 mm | **19,0 mm** | perte × 1,41 (le diamètre entre à la puissance 4,87) |
+| Ø25, débit à 1,5 m/s | 1,76 m³/h | **1,53** | plafond d'un réseau |
+| Ø32, diamètre intérieur | 26,2 mm | **26,0 mm** | perte × 1,04 |
+| Ø32, débit à 1,5 m/s | 2,91 m³/h | **2,87** | |
+
+**Ce que §144 et §146 disaient de faux.** Le 1,76 « recoupait sa mesure au
+seau » (1,80). C'était une coïncidence : le seau mesure le compteur, la vitesse
+dit ce qu'une ligne enterrée supporte. Elle a fait croire un chiffre supposé
+pendant deux mois. Les deux paragraphes restent tels quels, comme récit ; ce
+paragraphe-ci les corrige.
+
+**Pourquoi ses tubes pour tout le monde, en attendant le réglage.** Une paroi
+plus fine (un PN10 en 25×2.0, 21 mm) a plus de passage. Tenir 19,0 mm pour un
+artisan qui pose du PN10 lui coûte au pire une vanne de trop, jamais un réseau
+qui ne se lève pas (`.claude/rules/arrosage.md`, « se tromper vers le sûr »).
+Le choix du tube par artisan attend sa planche (`TODO.md`).
+
+**Ce que le relevé a mis au jour, et qui n'est PAS corrigé dans ce lot.** Les
+deux passes de `decouper()` choisissent les buses à la pression que laisse le
+plan de la PASSE 1, puis annoncent celle du plan de la PASSE 2. Le commentaire
+promet que l'écart va « dans le sens sûr » : c'est faux dès que la passe 2
+change de plan. Mesuré sur trois jardins, de 2 à 4 bar : buses choisies jusqu'à
+**0,31 bar au-dessus** de la pression réelle au dernier arroseur avec les
+anciens diamètres, **0,50 bar** avec les vrais. Le plan saute aussi d'un nombre
+de vannes à l'autre pour cinq centièmes de bar à la source. `TODO.md`, en tête.

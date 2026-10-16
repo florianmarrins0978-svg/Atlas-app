@@ -181,10 +181,15 @@ regle("21 août 2026", "« sans ça il ne doit rien proposer » — pas de nourr
 });
 
 // ── Le débit et la pression ────────────────────────────────────────────────
-regle("22 août 2026", "« en Ø25 c'est 1,76 m³/h, le calcul doit se faire là-dessus » — une source à 9 m³/h est plafonnée par le tuyau", () => {
+// **Le chiffre a changé le 16 octobre 2026, avec son accord** (« oui fais les
+// deux »). 1,76 venait d'un diamètre intérieur supposé (20,4 mm, « le PN10 le
+// plus courant ») ; ses tubes photographiés sont des 25×3.0, soit 19,0 mm de
+// passage, donc 1,53 m³/h à 1,5 m/s. La règle ne bouge pas : le réseau se
+// calcule sur ce que le Ø25 passe. C'est le chiffre qui était faux.
+regle("22 août 2026", "« en Ø25 c'est 1,76 m³/h, le calcul doit se faire là-dessus » — une source à 9 m³/h est plafonnée par le tuyau (1,53 avec ses tubes, 16 octobre 2026)", () => {
   const p = calculerPlan({ seau: 10, temps: 4, pression: 3, compteur: "non", zones: [{ id: 1, type: "gazon", nom: "P", x: 0, y: 0, L: 30, l: 20 }] } as never) as Plan;
   exige(p.limitePar === "tuyau", `c'est « ${p.limitePar} » qui plafonne, pas le Ø25`);
-  exige(Math.abs(p.limiteDuTuyau - 1.76) < 0.02, `le Ø25 passe ${p.limiteDuTuyau.toFixed(2)} m³/h au lieu de 1,76`);
+  exige(Math.abs(p.limiteDuTuyau - 1.53) < 0.02, `le Ø25 passe ${p.limiteDuTuyau.toFixed(2)} m³/h au lieu de 1,53`);
   for (const s of p.secteurs) exige(s.debit <= p.limiteDuTuyau + 1e-9, `un réseau à ${s.debit} m³/h dépasse le Ø25`);
 });
 

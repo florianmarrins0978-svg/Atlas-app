@@ -290,7 +290,13 @@ raccords. La limite d'un réseau est donc **le plus petit** de :
 | | |
 |---|---|
 | ce que la source donne | débit au seau × 0,85 |
-| ce que le tuyau passe | **1,76 m³/h en Ø25** |
+| ce que le tuyau passe | **1,53 m³/h en Ø25** (ses tubes 25×3.0) |
+
+**Le 1,76 était faux, corrigé le 16 octobre 2026 avec son accord.** Il venait
+d'un diamètre intérieur supposé (20,4 mm). Ses tubes photographiés : Ø25
+Elydan Polybleu 25×3.0, donc 19,0 mm de passage ; Ø32 Alfatubo 32×3.0, donc
+26,0 mm. Sur le Ø25, **40 % de perte en plus** que ce que l'outil comptait.
+La règle reste la sienne ; c'est le chiffre qui était faux.
 
 **Ce défaut était invisible chez lui** : son compteur donne 1,80, donc la source
 a toujours commandé. Il serait apparu chez le premier utilisateur mieux
@@ -322,7 +328,7 @@ calcul, pas un tour de main.
 
 | Ce qui impose le Ø32 | La règle | Le chiffre |
 |---|---|---|
-| **le débit** — l'eau va trop vite | vitesse ≤ 1,5 m/s | Ø25 : **1,76 m³/h** · Ø32 : **2,91** |
+| **le débit** — l'eau va trop vite | vitesse ≤ 1,5 m/s | Ø25 : **1,53 m³/h**, Ø32 : **2,87** (ses tubes, 16 octobre 2026) |
 | **la longueur** — la perte mange la marge | Hazen-Williams, retournée | dépend du débit et du budget |
 
 **Le piège, et il était dans le dépôt.** Le calcul ne regardait QUE la perte de
@@ -333,9 +339,11 @@ faux — au-delà de 1,5 m/s l'eau cogne, le coup de bélier fatigue les
 donc entré, et c'est lui qui donne les débits maximaux que les fournisseurs
 annoncent par diamètre.
 
-**Ce chiffre recoupe SA mesure**, et c'est ce qui permet de le croire : au seau,
-sur son compteur en Ø25, il a relevé 1,80 m³/h ; la formule en donne 1,76. Le
-tuyau ne laissait pas passer davantage.
+**Ce paragraphe disait que le chiffre recoupait SA mesure au seau** (1,80
+contre 1,76). C'était une coïncidence bâtie sur un diamètre supposé, et elle a
+fait croire le 1,76 pendant deux mois. Le seau mesure ce que donne le compteur ;
+la vitesse dit ce qu'une ligne enterrée supporte. **Un diamètre se lit sur le
+tube (« 25×3.0 »), il ne se déduit pas d'une coïncidence.**
 
 **Et l'outil dit le SEUIL, pas seulement le verdict.** « Le Ø25 tient jusqu'à
 73 m à ce débit » se compare au mètre ruban avant de creuser ; un oui/non sur

@@ -515,12 +515,15 @@ function longueurMaxEn(budgetBar, debitM3h, dInterieurMm){
    faux : au-delà d'environ 1,5 m/s l'eau cogne, le coup de bélier fatigue les
    électrovannes, et le bruit s'entend dans la maison. Les abaques de
    fournisseur s'arrêtent tous là, et c'est de cette limite que sortent les
-   débits maximaux qu'ils annoncent par diamètre — 1,76 m³/h en Ø25, 2,91 en
-   Ø32.
+   débits maximaux qu'ils annoncent par diamètre. Sur ses tubes à lui (paroi
+   de 3 mm, relevée le 16 octobre 2026) : 1,53 m³/h en Ø25, 2,87 en Ø32.
 
-   **Ce chiffre recoupe SA propre mesure**, et c'est ce qui permet de le
-   croire : au seau, sur son compteur en Ø25, il a relevé 1,80 m³/h. La formule
-   en donne 1,76. Le tuyau ne laissait pas passer davantage.
+   **Ce chiffre ne se recoupe PAS avec sa mesure au seau, et il ne le doit
+   pas.** Ce commentaire disait le contraire jusqu'au 16 octobre : 1,76 contre
+   1,80, « le tuyau ne laissait pas passer davantage ». C'était une coïncidence
+   bâtie sur un diamètre supposé. Le seau mesure ce que donne le COMPTEUR, à
+   tuyau ouvert ; la vitesse dit ce qu'une ligne enterrée supporte sans cogner.
+   Deux questions, deux chiffres.
 
    Sans ce critère, un jardin dont la source est généreuse se verrait poser du
    Ø25 sur quinze mètres au motif que la perte y reste faible. */
@@ -1076,17 +1079,18 @@ function saisonCourante(){
    | | |
    |---|---|
    | ce que la SOURCE donne | le seau, moins la marge (0,85) |
-   | ce que le TUYAU passe | 1,76 m³/h en Ø25, à 1,5 m/s |
+   | ce que le TUYAU passe | 1,53 m³/h en Ø25, à 1,5 m/s (1,76 avant le relevé de ses tubes) |
 
    **Et toutes ses lignes de réseau sont en Ø25** — c'est le diamètre de tous
    ses raccords : té 25×3/4"×25, coude 25×3/4". Un réseau ne peut donc jamais
-   porter plus de 1,76 m³/h, quelle que soit la générosité du compteur.
+   porter plus que ce que son Ø25 passe, quelle que soit la générosité du
+   compteur.
 
    **Ce que cela corrigeait, et personne ne l'avait vu.** Tant que la source
    reste modeste, c'est elle qui commande et rien ne change : à 1,80 m³/h, la
    limite était déjà 1,53. Mais dès qu'un artisan mesure 2,5 ou 3 m³/h au seau,
    l'ancien calcul faisait des réseaux à 2,1 puis 2,55 m³/h — dans un tuyau qui
-   n'en passe que 1,76. L'eau y filerait à plus de 2 m/s, la ligne cogne, et la
+   n'en passe que 1,53. L'eau y filerait à plus de 2 m/s, la ligne cogne, et la
    pression tombe avant le dernier arroseur. **C'est exactement le défaut que
    sa règle du 22 août interdit** (`CLAUDE.md` §4 ter) : il ne se voit qu'en
    juillet, sur un gazon jauni, tranchée refermée.
@@ -1345,7 +1349,7 @@ function decouperUneFois(){
   });
   return { secteurs:secteurs, dispo:dispo, limite:limite, reseauDuPoint:reseauDuPoint,
            // **QUI commande la limite**, pour que l'écran puisse le dire. Un
-           // artisan qui mesure 3 m³/h et voit des réseaux plafonnés à 1,76
+           // artisan qui mesure 3 m³/h et voit des réseaux plafonnés à 1,53
            // croirait à un défaut de calcul : c'est son tuyau, et il le lira.
            limitePar: (duTuyau > 0 && duTuyau < deLaSource) ? 'tuyau' : 'source',
            limiteDuTuyau: duTuyau, limiteDeLaSource: deLaSource,

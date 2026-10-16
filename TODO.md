@@ -1,5 +1,27 @@
 # Prochaines tâches
 
+## 🔴 ARROSAGE : LES BUSES SONT CHOISIES À UNE PRESSION QUI N'ARRIVE PAS — trouvé le 16 octobre 2026
+
+`decouper()` (`src/lib/arrosage/calcul.js`, copie `appli/`) choisit les buses à
+la pression laissée par le plan de la passe 1, puis annonce celle du plan de la
+passe 2. Quand la passe 2 change de plan, l'écart va dans le sens DANGEREUX :
+jusqu'à 0,31 bar avec les anciens diamètres, 0,50 avec ses tubes réels
+(`ARCHITECTURE.md` §466). Le nombre de vannes saute aussi pour 0,05 bar à la
+source (son jardin du 23 août : 2 vannes à 2,8 et 3,1 bar, 3 à 3,0 bar).
+
+**Bloque la livraison du lot des tubes** (branche `claude/tubes-arrosage`) :
+trois contrôles de `test-arrosage-calcul.ts` rougissent avec les vrais
+diamètres, dont « son jardin du 23 août tient sur 2 réseaux ». Ils ne se
+recalent pas tant que le choix des buses n'est pas sûr : sinon on fige un plan
+choisi à une pression fausse. Racine à corriger : n'accepter un plan que si la
+pression réelle au dernier arroseur est AU MOINS celle qui a servi à choisir.
+
+## ⏳ ARROSAGE : LE TUBE DE CHAQUE ARTISAN — son oui du 16 octobre 2026, planche à faire
+
+Le calcul tient ses tubes (paroi 3 mm) pour tout le monde, ce qui est le côté
+sûr. Un réglage doit laisser chaque artisan dire son tube (« 25×2.0 », lu sur le
+tube). Maquette d'abord (`CLAUDE.md` §3 bis), puis code.
+
 ## ✅ LE PLANNING ÉPURÉ ET LA FICHE DU JOUR : SUR `main` LE 15 OCTOBRE 2026
 
 **Son oui du 15 octobre :** *« tu peux coder ces deux planches, et ne lance pas

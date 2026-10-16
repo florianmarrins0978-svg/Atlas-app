@@ -8,6 +8,12 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-16
 
+- **Le calcul d'arrosage prend le diamètre de SES tubes, relevé sur ses photos**
+  (Ø25 25×3.0 : 19,0 mm ; Ø32 32×3.0 : 26,0 mm), au lieu de valeurs PN10
+  supposées. Ce que ça évite : des réseaux plafonnés à 1,76 m³/h dans un tube
+  qui en passe 1,53, avec 40 % de perte de charge non comptée, le sens où le
+  dernier arroseur ne se lève pas (`ARCHITECTURE.md` §466).
+
 - **Un message qui parle d'arrosage fait lire ses règles d'arrosage d'abord**
   (`scripts/rappel-arrosage.mjs`). Ce que ça évite : une planche d'arrosage neuve
   dessinée avant que les règles soient chargées, donc avec une nourrice placée
