@@ -1,5 +1,11 @@
 # Prochaines tâches
 
+## ⏳ ARROSAGE : LE TUBE DE CHAQUE ARTISAN — son oui du 16 octobre 2026, planche à faire
+
+Le calcul tient ses tubes (paroi 3 mm) pour tout le monde, ce qui est le côté
+sûr. Un réglage doit laisser chaque artisan dire son tube (« 25×2.0 », lu sur le
+tube). Maquette d'abord (`CLAUDE.md` §3 bis), puis code.
+
 ## ⏳ ARROSAGE : CE QUE LA CORRECTION DE LA PRESSION DE CHOIX LAISSE OUVERT — 16 octobre 2026
 
 | | qui |
@@ -7,7 +13,7 @@
 | ~~une pelouse de 20 × 12 reçoit six vannes dès 3,7 bar~~ **tranché le 16 octobre 2026** : bridage permis jusqu'à 40 %, recouvrement de 80 à 100 %, l'ordre du moins cher (§468). Elle tient sur deux vannes | fait |
 | le plan affiche la portée RÉGLÉE d'une tête bridée (« portée 6 m » pour une buse de 6,4), sans le mot « bridée » : faut-il l'écrire sur le plan ? Planche à faire (`CLAUDE.md` §3 bis) | lui |
 | le bridage ne vaut que pour les turbines ; les tuyères VAN se règlent aussi à la vis : même règle de 40 % ? | lui |
-| `test-regles-du-patron.ts` : la règle du 22 août (1,76 m³/h) a été réécrite EN PLACE sur la branche des tubes (`claude/tubes-arrosage`), avec son accord, mais hors du chemin que la suite exige (une entrée datée sous le repère, l'ancienne barrée). À refaire avant de pousser ce lot-là | nous |
+| ~~`test-regles-du-patron.ts` : la règle du 22 août (1,76 m³/h) réécrite en place sur l'ancienne branche des tubes~~ **refait le 16 octobre 2026** sur `claude/tubes-arrosage-v2` : l'entrée du 22 août reste, son 1,76 devient la trace du tube supposé, et la règle du 16 octobre (1,53) s'ajoute sous le repère | fait |
 | les débits et durées affichés peuvent être jusqu'à 5 % sous le réel, quand le plan retenu reçoit jusqu'à 0,2 bar de plus que sa pression de choix (la limite du tuyau, elle, est vérifiée au débit réel) | nous, si cela compte |
 | un plan coûte environ 0,1 s depuis le §468 (une recherche de 5 en 5 centièmes, puis au centième là où le plan change) ; la page publiée `appli/arrosage.html` recalcule à chaque frappe | nous, à regarder sur téléphone |
 
