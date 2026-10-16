@@ -109,13 +109,19 @@ function charger(){
 
    On prend le moins de têtes possible (écart maximal), puis l'on ajoute une
    rangée du côté le plus lâche tant que la règle ne tient pas sur les deux.
-   Rend `null` quand il faudrait brider au-delà de 40 % : c'est alors la BUSE
-   qui est trop grande, et il en faut une plus petite. */
-function poseSelonSaRegle(L, l, portee, type, tolerant){
+   Rend `null` quand il faudrait brider plus que sa vis ne le permet : c'est
+   alors la BUSE qui est trop grande, et il en faut une plus petite.
+
+   **`bridage` : ce que SA vis retire au plus, la fraction d'Aqua Plus.** Sa
+   décision du 16 octobre 2026 : *« prends la règle d'Aqua Plus et supprime la
+   mienne »*. Les 40 % pour toutes les turbines disparaissent : 25 % pour la
+   5000 Plus et la Mini 8, 35 % pour la 3504, rien pour celles dont le
+   catalogue ne dit rien, et rien pour une tuyère (`bridageDe`). */
+function poseSelonSaRegle(L, l, portee, bridage, tolerant){
   if (!(L > 0) || !(l > 0) || !(portee > 0)) return null;
   var rMin = tolerant ? RECOUVREMENT_MIN_TOLERE : RECOUVREMENT_MIN;
   var rMax = tolerant ? RECOUVREMENT_MAX_TOLERE : RECOUVREMENT_MAX;
-  var plancher = type === 'turbine' ? portee * (1 - BRIDAGE_MAX) : portee;
+  var plancher = portee * (1 - (bridage || 0));
   var nx = Math.max(2, Math.ceil(L * rMin / portee - 1e-9) + 1);
   var ny = Math.max(2, Math.ceil(l * rMin / portee - 1e-9) + 1);
   for (var t = 0; t < 400; t++){
@@ -269,7 +275,7 @@ function modelePour(type, plusPetitCote, dims, refImposee){
       // deux côtés selon sa règle est la bonne — c'est le moins d'arroseurs
       // possible SANS enfreindre l'écart minimum.
       for (var i = 0; i < buses.length; i++){
-        if (poseSelonSaRegle(dims.L, dims.l, buses[i].rayon, type, false)){
+        if (poseSelonSaRegle(dims.L, dims.l, buses[i].rayon, bridageDe(buses[i]), false)){
           b = buses[i]; break;
         }
       }
@@ -299,8 +305,8 @@ function modelePour(type, plusPetitCote, dims, refImposee){
       // rayon au plus petit. C'est le champ des possibles que `poser()` explore.
       candidates: (dims && dims.L > 0 && dims.l > 0)
         ? buses.filter(function(x){
-            return poseSelonSaRegle(dims.L, dims.l, x.rayon, type, false) ||
-                   poseSelonSaRegle(dims.L, dims.l, x.rayon, type, true);
+            return poseSelonSaRegle(dims.L, dims.l, x.rayon, bridageDe(x), false) ||
+                   poseSelonSaRegle(dims.L, dims.l, x.rayon, bridageDe(x), true);
           }).map(function(x){ return x.ref; })
         : [],
       // Corps de CETTE marque, pas tous marques confondues : Rain Bird peut
@@ -409,7 +415,15 @@ var RECOUVREMENT_MIN = 0.80;          // portée réglée / écart
 var RECOUVREMENT_MAX = 1.00;
 var RECOUVREMENT_MIN_TOLERE = 0.75;   // seulement si cela gagne un réseau ou une gamme
 var RECOUVREMENT_MAX_TOLERE = 1.05;
-var BRIDAGE_MAX = 0.40;               // une turbine se bride à la vis jusqu'à 40 %
+/* Ce que la vis d'une buse lui retire au plus : la fraction écrite sur SON
+   corps par Aqua Plus. Une tuyère ne se règle pas à la vis (sa réponse du
+   16 octobre 2026) ; une turbine dont le catalogue ne dit rien ne se bride pas
+   non plus, plutôt que de lui prêter une vis que rien ne décrit. */
+function bridageDe(buse){
+  if (!buse || buse.pourType !== 'turbine') return 0;
+  var c = CATALOGUE.corpsDeLaBuse(buse);
+  return c && c.bridage > 0 ? c.bridage : 0;
+}
 
 /* Quinconce au-delà de quatre arroseurs, carré en dessous — sa règle du
    17 août. Et dans les deux cas : « les derniers arroseurs doivent toujours
@@ -912,11 +926,11 @@ function poser(z, refImposee, tolerant){
     // le plan serait posable et faux, ce qui est le pire des deux.
     var repliPermis = Math.min(dims.L, dims.l) <= TUYERE_JUSQUA;
     if (z.materiel === 'auto' && choix.m && dims.L > 0 &&
-        !poseSelonSaRegle(dims.L, dims.l, choix.m.portee, cle, false)){
+        !poseSelonSaRegle(dims.L, dims.l, choix.m.portee, bridageDe(choix.m.buse), false)){
       var vers = cle === 'turbine' ? 'tuyere' : 'turbine';
       if (vers === 'turbine' || repliPermis){
         var autre = modelePour(vers, petitCote || null, dims);
-        if (autre.m && poseSelonSaRegle(dims.L, dims.l, autre.m.portee, vers, false)){
+        if (autre.m && poseSelonSaRegle(dims.L, dims.l, autre.m.portee, bridageDe(autre.m.buse), false)){
           choix = autre; cle = vers;
         }
       }
@@ -932,7 +946,7 @@ function poser(z, refImposee, tolerant){
     if (L <= 0 || l <= 0) return Object.assign(r, { nombre:0, debit:0, minutes:0, nx:0, ny:0 });
     // On écarte AU MAXIMUM dans sa limite, puis on répartit : c'est le moins
     // d'arroseurs possible sans jamais descendre sous la portée RÉGLÉE.
-    var pose = poseSelonSaRegle(L, l, m.portee, cle, Boolean(tolerant));
+    var pose = poseSelonSaRegle(L, l, m.portee, bridageDe(m.buse), Boolean(tolerant));
     var ecartMax = m.portee / RECOUVREMENT_MIN;
     var nx = pose ? pose.nx : Math.max(2, Math.ceil(L / ecartMax) + 1);
     var ny = pose ? pose.ny : Math.max(2, Math.ceil(l / ecartMax) + 1);

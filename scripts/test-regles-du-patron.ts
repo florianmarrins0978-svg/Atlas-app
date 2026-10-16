@@ -281,6 +281,10 @@ regle("16 octobre 2026", "« aller au moins cher » — sa pelouse de 20 × 12 �
   exige(p.secteurs.length <= 2, `${p.secteurs.length} vannes, avec ${p.dessin.map((z: ZoneDessinee) => `${z.points.length} × ${z.buse}`).join(", ")}`);
 });
 
+// ~~40 % pour toutes les turbines~~ BARRÉ le 16 octobre 2026 au soir, sur sa
+// décision : *« dans ce cas prends la règle d'Aqua Plus et supprime la mienne »*.
+// Chaque vis a désormais SON chiffre (règle datée sous le repère) ; celle-ci
+// reste, et tient toujours, puisqu'aucune vis d'Aqua Plus ne va au-delà de 40 %.
 regle("16 octobre 2026", "« le bridage à la vis, on peut aller jusqu'à 40 % » — aucune tête réglée sous 60 % de sa portée", () => {
   const buses = (CATALOGUE as unknown as { buses: { nom: string; rayon: number }[] }).buses;
   let vues = 0;
@@ -313,6 +317,39 @@ regle("16 octobre 2026", "« au compteur, 3 bar et 2 m³/h, mais le message en r
   exige(lesDeux.ok && lesDeux.debit === 2.4 && lesDeux.reserve === null, "avec le seau et le manomètre, rien n'est supposé");
   const seauSeul = debitRetenu({ piquage: "ailleurs", secondes: 20, barStatique: null, barDynamique: null });
   exige(seauSeul.ok && seauSeul.reserve !== null && seauSeul.reserve.endsWith("Nous ne garantissons pas la bonne levée des arroseurs."), "le seau seul ne dit pas son rouge");
+});
+
+regle("16 octobre 2026", "« prends la règle d'Aqua Plus » — chaque turbine se bride au plus de ce que dit SA vis : 25 % la 5000 Plus et la Mini 8, 35 % la 3504, rien les autres", () => {
+  const cat = CATALOGUE as unknown as {
+    buses: { nom: string; ref: string; rayon: number; pourType: string; marqueCle: string }[];
+    corpsDeLaBuse: (b: unknown) => { ref: string; bridage?: number } | null;
+  };
+  const vis: Record<string, number> = { RA5004FC: 0.25, TAMINI8_4P: 0.25, RA3504: 0.35, HA2211: 0, HA2210: 0, HA2264: 0, HA2274: 0 };
+  for (const [ref, attendu] of Object.entries(vis)) {
+    const buse = cat.buses.find((b) => b.pourType === "turbine" && cat.corpsDeLaBuse(b)?.ref === ref.replace("_", "-"));
+    exige(buse, `aucune buse ne mène au corps ${ref}`);
+    exige((cat.corpsDeLaBuse(buse)?.bridage ?? 0) === attendu, `${ref} : vis à ${cat.corpsDeLaBuse(buse)?.bridage} au lieu de ${attendu}`);
+  }
+  let vues = 0;
+  for (const marque of ["rainbird", "hunter", "toro"]) {
+    for (const [L, l] of [[20, 12], [20, 15], [12, 12], [30, 18], [16, 10]]) {
+      for (const pression of [2.5, 3, 3.7, 4.5]) {
+        const p = calculerPlan({ seau: 10, temps: 20, pression, marque, zones: [{ id: 1, type: "gazon", nom: "P", x: 0, y: 0, L, l }] } as never) as Plan;
+        for (const z of p.dessin as ZoneDessinee[]) {
+          const b = cat.buses.find((x) => x.nom === z.buse && x.pourType === "turbine");
+          if (!b) continue;
+          vues++;
+          const permis = cat.corpsDeLaBuse(b)?.bridage ?? 0;
+          // Sous sa pression de référence, une portée baisse d'elle-même
+          // (`porteeALaPression`) : ce n'est pas la vis. Seule une tête BRIDÉE
+          // se juge contre ce que sa vis permet.
+          exige(permis > 0 || !z.bridee, `${marque}, ${L} × ${l} à ${pression} bar : ${z.buse} est bridée, et sa vis ne se règle pas`);
+          exige(!z.bridee || z.portee >= (1 - permis) * b.rayon - 0.01, `${marque}, ${L} × ${l} à ${pression} bar : ${z.buse} bridée à ${z.portee} m, sa vis ne retire que ${permis * 100} % de ${b.rayon}`);
+        }
+      }
+    }
+  }
+  exige(vues > 0, "aucune turbine posée");
 });
 
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────
