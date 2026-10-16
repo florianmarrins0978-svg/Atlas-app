@@ -687,10 +687,9 @@ function dessinerMateriel(d){
     // par oui ou par non sur la longueur SAISIE ; il fallait la ressaisir trois
     // fois pour trouver où la bascule se produit. Le seuil se lit une fois et
     // se compare au mètre ruban, avant de creuser.
-    var seuil = a.motif === 'debit'
-      ? '<b>Aucune longueur de Ø25 ne convient</b> : à ' + nb(a.debit) + ' m³/h, l\'eau y filerait ' +
-        'au-dessus de 1,5 m/s (le Ø25 en passe ' + nb(a.debitMax25) + ' m³/h au maximum).'
-      : '<b>Le Ø25 tient jusqu\'à ' + nb(a.longueurMax25, 0) + ' m</b> à ce débit, le Ø32 jusqu\'à ' +
+    // La vitesse ne décide plus (16 octobre 2026) : seule la perte, donc la
+    // longueur, fait passer en Ø32.
+    var seuil = '<b>Le Ø25 tient jusqu\'à ' + nb(a.longueurMax25, 0) + ' m</b> à ce débit, le Ø32 jusqu\'à ' +
         nb(a.longueurMax32, 0) + ' m.';
     note.innerHTML = '<b>Amenée : Ø' + a.diametre + '</b> sur ' + nb(a.longueur,0) + ' m. ' +
       'Le plus gros secteur tire ' + nb(a.debit) + ' m³/h ; en Ø25 la perte est de ' +
@@ -702,8 +701,8 @@ function dessinerMateriel(d){
           nb(a.source - a.perte32,2) + ' bar au regard). ') +
       seuil +
       (a.insuffisantMemeEn32
-        ? ' <b>Et le Ø32 lui-même est en surrégime à ce débit</b> (' + nb(a.debitMax32) + ' m³/h au ' +
-          'maximum) : c\'est du Ø40, ou un secteur de plus.'
+        ? ' <b>Et même en Ø32, la perte laisse moins que ce que les buses exigent</b> : ' +
+          'c\'est du Ø40, ou un secteur de plus.'
         : '') +
       // **CE QUI ARRIVE AU DERNIER ARROSEUR : le trou fermé le 22 août au soir.**
       // Cette phrase disait « ce calcul ne compte QUE l'amenée ». Ce n'est plus

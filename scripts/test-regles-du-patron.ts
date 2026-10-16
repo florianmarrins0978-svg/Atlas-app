@@ -183,14 +183,17 @@ regle("21 août 2026", "« sans ça il ne doit rien proposer » — pas de nourr
 // ── Le débit et la pression ────────────────────────────────────────────────
 regle("22 août 2026", "« en Ø25 c'est 1,76 m³/h, le calcul doit se faire là-dessus » — une source à 9 m³/h est plafonnée par le tuyau", () => {
   const p = calculerPlan({ seau: 10, temps: 4, pression: 3, compteur: "non", zones: [{ id: 1, type: "gazon", nom: "P", x: 0, y: 0, L: 30, l: 20 }] } as never) as Plan;
-  exige(p.limitePar === "tuyau", `c'est « ${p.limitePar} » qui plafonne, pas le Ø25`);
+  // ~~LE TUYAU PLAFONNE LE RÉSEAU~~ BARRÉ le 16 octobre 2026 au soir, sur sa
+  // décision : *« je ne veux pas que tu brides les réseaux, je veux que tu
+  // prennes le calcul de débit pression »*. La règle datée du même jour, sous
+  // le repère, tient ce qui la remplace. Les chiffres restent, comme la trace.
+  exige(!("limitePar" in p), `le tuyau ne plafonne plus rien (« ${String((p as { limitePar?: unknown }).limitePar)} »), pas même le Ø25`);
   // ~~1,76~~ BARRÉ le 16 octobre 2026, avec son accord (« oui fais les deux ») :
   // ce chiffre était celui d'un Ø25 SUPPOSÉ de 20,4 mm de passage. Ses tubes
   // photographiés font 19,0 mm, et le Ø25 passe 1,53 : c'est la règle datée du
-  // 16 octobre, sous le repère. La règle de fond, elle, tient toujours ici :
-  // le tuyau plafonne le réseau. Le 1,76 reste, comme la trace de son calcul.
+  // 16 octobre, sous le repère. Le 1,76 reste, comme la trace de son calcul.
   exige(Math.abs(Math.PI * Math.pow(0.0102, 2) * 1.5 * 3600 - 1.76) < 0.02, `1,76 était le Ø25 supposé de 20,4 mm (${(Math.PI * Math.pow(0.0102, 2) * 1.5 * 3600).toFixed(2)}), pas au lieu de 1,76`);
-  for (const s of p.secteurs) exige(s.debit <= p.limiteDuTuyau + 1e-9, `un réseau à ${s.debit} m³/h dépasse le Ø25`);
+  for (const s of p.secteurs) exige(s.debit <= p.limite + 1e-9, `un réseau à ${s.debit} m³/h dépasse ce que la source donne, plus le Ø25`);
 });
 
 regle("21 août 2026", "« les débits à 360° sont les mêmes qu'à 180° et 90° » — pour les turbines, et pour elles seules", () => {
@@ -304,9 +307,13 @@ regle("16 octobre 2026", "« le bridage à la vis, on peut aller jusqu'à 40 % �
 
 regle("16 octobre 2026", "« 25 × 3 » sur ses tubes photographiés — son Ø25 a 19,0 mm de passage et plafonne un réseau à 1,53 m³/h, pas 1,76", () => {
   const p = calculerPlan({ seau: 10, temps: 4, pression: 3, compteur: "non", zones: [{ id: 1, type: "gazon", nom: "P", x: 0, y: 0, L: 30, l: 20 }] } as never) as Plan;
-  exige(p.limitePar === "tuyau", `c'est « ${p.limitePar} » qui plafonne, pas le Ø25`);
-  exige(Math.abs(p.limiteDuTuyau - 1.53) < 0.02, `le Ø25 passe ${p.limiteDuTuyau.toFixed(2)} m³/h au lieu de 1,53`);
-  for (const s of p.secteurs) exige(s.debit <= p.limiteDuTuyau + 1e-9, `un réseau à ${s.debit} m³/h dépasse le Ø25`);
+  // ~~ET PLAFONNE UN RÉSEAU À 1,53 m³/h~~ BARRÉ le 16 octobre 2026 au soir, sur
+  // sa décision (« je ne veux pas que tu brides les réseaux »). Ses 19,0 mm de
+  // passage restent : ils servent aux pertes de charge. Le 1,53 reste, comme la
+  // trace de ce que le Ø25 passait à 1,5 m/s.
+  exige(!("limitePar" in p), `le tuyau ne plafonne plus (« ${String((p as { limitePar?: unknown }).limitePar)} »), pas même le Ø25`);
+  exige(Math.abs(Math.PI * Math.pow(0.0095, 2) * 1.5 * 3600 - 1.53) < 0.02, `1,53 était ce que le Ø25 de 19,0 mm passe à 1,5 m/s (${(Math.PI * Math.pow(0.0095, 2) * 1.5 * 3600).toFixed(2)}), pas au lieu de 1,53`);
+  for (const s of p.secteurs) exige(s.debit <= p.limite + 1e-9, `un réseau à ${s.debit} m³/h dépasse ce que la source donne, plus le Ø25`);
 });
 
 regle("16 octobre 2026", "« au compteur, 3 bar et 2 m³/h, mais le message en rouge » — seuls le seau ET le manomètre garantissent la levée", () => {
@@ -378,6 +385,19 @@ regle("16 octobre 2026", "« il ne faut pas qu'on décide de mettre 5 arroseurs 
     }
   }
   exige(vus > 0, "aucune tête éprouvée");
+});
+
+regle("16 octobre 2026", "« je ne veux pas que tu brides les réseaux » — une source généreuse charge une vanne au-delà de 1,53 m³/h si la pression tient, et ajoute une vanne si elle ne tient pas", () => {
+  // 10 L en 12 s à 4 bar : 3 m³/h au seau, 2,55 de limite. Le Ø25 aurait
+  // plafonné à 1,53 ; la pression, elle, tient à plus.
+  const genereux = calculerPlan({ seau: 10, temps: 12, pression: 4, compteur: "non", zones: [{ id: 1, type: "gazon", nom: "P", x: 0, y: 0, L: 30, l: 20 }] } as never) as Plan & { pressionTropBasse: boolean; limite: number };
+  exige(!genereux.pressionTropBasse, "à 4 bar, la pression doit tenir");
+  exige(genereux.secteurs.some((s: { debit: number }) => s.debit > 1.53 + 0.01), `aucune vanne au-delà de 1,53 m³/h : le réseau est encore bridé (${genereux.secteurs.map((s: { debit: number }) => s.debit.toFixed(2)).join(", ")})`);
+  // 10 L en 4 s à 3 bar : 9 m³/h. Sur UNE vanne il ne resterait rien au bout :
+  // le calcul en ajoute jusqu'à ce que tout se lève.
+  const enorme = calculerPlan({ seau: 10, temps: 4, pression: 3, compteur: "non", zones: [{ id: 1, type: "gazon", nom: "P", x: 0, y: 0, L: 30, l: 20 }] } as never) as Plan & { pressionTropBasse: boolean };
+  exige(!enorme.pressionTropBasse, "une source généreuse ne doit pas laisser les têtes sans pression : il faut des vannes de plus");
+  exige(enorme.secteurs.length >= 2, `${enorme.secteurs.length} vanne pour 30 × 20 à 9 m³/h`);
 });
 
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────

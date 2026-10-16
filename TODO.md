@@ -28,7 +28,7 @@ travail, jamais à côté.**
 
 | | sa réponse | ce qu'il faut faire |
 |---|---|---|
-| **le bridage** | *« prends la règle d'Aqua Plus et supprime la mienne »* : son 40 % disparaît | chaque turbine se bride jusqu'au chiffre de sa vis : 5000 Plus et Mini 8 **25 %** (p. 13 et 11), 3504 **35 %** (p. 11). PGP, PGP Ultra, PGJ, SRM, I-20 : Aqua Plus ne donne rien, donc **pas de bridage**. Le chiffre vit dans le catalogue, par corps ; `BRIDAGE_MAX` disparaît, et sa règle de `.claude/rules/arrosage.md` se barre avec la date, la nouvelle au-dessous |
+| ~~**le bridage**~~ **fait le 16 octobre** | *« prends la règle d'Aqua Plus et supprime la mienne »* : son 40 % disparaît | chaque turbine se bride jusqu'au chiffre de sa vis : 5000 Plus et Mini 8 **25 %** (p. 13 et 11), 3504 **35 %** (p. 11). PGP, PGP Ultra, PGJ, SRM, I-20 : Aqua Plus ne donne rien, donc **pas de bridage**. Le chiffre vit dans le catalogue, par corps ; `BRIDAGE_MAX` disparaît, et sa règle de `.claude/rules/arrosage.md` se barre avec la date, la nouvelle au-dessous |
 | **les VAN à 330°** | *« oui pour les VAN »* : 4, 6 et 8-VAN aux coins et sur les bords seulement | `busesDe` exige 90°, 180° ET 360° même pour une zone qui ne pose que des bords. N'exiger que les angles que la pose emploie, puis écrire `330:` au lieu de `360:` pour ces trois buses (fiche Rain Bird, p. 27 et 28). Fait seul dans le catalogue, son couloir de 10 × 2 perd ses 7 6-VAN pour des 10-VAN qui arrosent 70 cm au-delà (`test-regles-du-patron.ts` rougit, essayé le 16 octobre) |
 | **la sonde de pluie** | *« en option, si l'utilisateur coche oui on la rajoute dans la liste »*, la Rain Bird filaire blanche | ~~le nom écrit en dur~~ fait le 16 octobre : le calcul lit RP403 « sonde pluie RSD-Bex Rain Bird » (p. 27) dans le catalogue. Reste **la case à cocher**, dans la planche de l'écran avant d'être codée (`CLAUDE.md` §3 bis) |
 | **les buses livrées avec l'arroseur** | *« corrige-les simplement, rien ne doit être inventé »* | fait dans le catalogue (plus de référence ni de colisage à elles). La ligne de la liste peut le dire : « buse 3,0, livrée avec l'arroseur » |
@@ -135,8 +135,16 @@ garantie, et aucune n'existe.
 À lui demander encore : le débit de la buse n° 5 de l'outil Aqua Plus (ou sa
 référence), pour savoir à quel débit la pression dynamique est lue.
 
-À coder dans `calcul.js` par-dessus le travail de l'autre session, une fois
-ses branches sur `main`.
+**Codé le 16 octobre 2026**, par-dessus les trois branches de l'autre session
+fusionnées dans ce lot : `limiteParVoie` ne garde que la source ; chaque tête
+doit tenir la pression mini de SA fiche (`seLeve`, plages d'Aqua Plus sur les
+corps) ; quand rien ne tient, `decouper` ajoute une vanne et recommence. Sur
+378 jardins d'essai : 155 plans changent, les alertes passent de 50 à 0.
+
+**Reste, et c'est le lot de l'écran** : les lignes de RÉSEAU sont toujours
+calculées en Ø25 ; le Ø32 n'est proposé que pour l'amenée. Sa demande (le
+bandeau « diam 25 ou diam 32 » à la fin, les raccords en 32, les tés 32×25×32)
+attend la planche et les références des pièces en 32.
 
 ## ⏳ ARROSAGE : LE Ø32 QUAND LE Ø25 NE PASSE PAS — sa règle du 16 octobre 2026
 

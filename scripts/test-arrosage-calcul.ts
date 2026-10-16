@@ -189,29 +189,17 @@ dire(
     `le Ø32 tient plus loin (${auSeuil.amenee.longueurMax32.toFixed(0)} m) que le Ø25 (${seuil.toFixed(0)} m)`,
   );
 
-  // **LE DÉBIT PASSE AVANT LA LONGUEUR — et depuis le plafond du découpage,
-  // ce cas ne se produit PLUS par le chemin normal.** Un tuyau court ne perd
-  // presque rien : sur la seule perte de charge, un Ø25 « passerait » à
-  // n'importe quel débit pourvu qu'il soit assez court. Le critère de vitesse
-  // d'`amenee()` existe pour ça, et il reste en place — mais depuis que le
-  // découpage plafonne chaque réseau à ce que le Ø25 laisse passer (§11
-  // ci-dessous, sa déduction du 22 août), aucun secteur ne peut plus l'armer.
-  //
-  // **On le dit plutôt que de laisser croire qu'il veille.** Un contrôle qui ne
-  // peut plus rougir ne prouve rien (`CLAUDE.md` §5), et le prétendre serait
-  // pire que de l'avoir retiré. Ce qui est éprouvé ici, c'est la GARANTIE qui
-  // l'a rendu inatteignable : quelle que soit la source, l'amenée n'est jamais
-  // en surrégime.
-  //
-  // 10 L en 8 s font 4,50 m³/h — de quoi charger un réseau bien au-delà, avant.
+  // **LA VITESSE NE FAIT PLUS PASSER EN Ø32** (sa décision du 16 octobre 2026,
+  // « je ne veux pas que tu brides les réseaux ») : seule la perte, donc la
+  // longueur, décide. Une amenée courte reste en Ø25 même sous un gros débit.
+  // 10 L en 8 s font 4,50 m³/h.
   const gros = calculerPlan({
     seau: 10, temps: 8, pression: 3, amenee: 5,
     zones: [{ type: "gazon", nom: "Grande pelouse", L: 40, l: 30 }],
   });
   dire(
-    gros.amenee.debit <= gros.amenee.debitMax25 + 1e-9,
-    `source à 4,50 m³/h : l'amenée ne porte que ${gros.amenee.debit.toFixed(2)} m³/h ` +
-      `pour ${gros.amenee.debitMax25.toFixed(2)} admis en Ø25 — le plafond a tenu en amont`,
+    !("debitMax25" in gros.amenee) && gros.amenee.motif !== "debit",
+    `plus aucun plafond de vitesse sur l'amenée (motif : ${gros.amenee.motif})`,
   );
   dire(
     gros.amenee.longueurMax25 > 0,
@@ -298,22 +286,14 @@ dire(
   );
 }
 
-// ── 11. AUCUN RÉSEAU NE DÉPASSE CE QUE LE TUYAU PASSE ───────────────────────
+// ── 11. LA PRESSION AU BOUT DÉCIDE, LE TUYAU NE PLAFONNE PLUS ───────────────
 //
-// **Sa déduction du 22 août 2026, et elle a trouvé un trou :** *« tu ne viens
-// pas de me dire qu'en diamètre vingt-cinq c'était 1,76 m³/h ? Donc dans tous
-// les cas le calcul doit se faire là-dessus, peu importe qu'on ait 2 ou 1,80. »*
-//
-// Il avait raison. Le découpage ne regardait que la SOURCE. Tant qu'elle reste
-// modeste, elle commande et rien ne se voit — à 1,80 m³/h la limite était déjà
-// 1,53. Mais dès qu'un artisan mesure 3 m³/h au seau, l'ancien calcul faisait
-// des réseaux à 2,55 m³/h dans un tuyau qui n'en passe que 1,76 : l'eau y file
-// à plus de 2 m/s, la ligne cogne, et la pression tombe avant le dernier
-// arroseur. C'est le défaut qui ne se voit qu'en juillet.
+// ~~Aucun réseau ne dépasse ce que le tuyau passe~~ (sa déduction du 22 août
+// 2026) : **barré le 16 octobre 2026**, sur sa décision : *« je ne veux pas que
+// tu brides les réseaux, je veux que tu prennes le calcul de débit pression »*.
+// Ce qui le remplace : quelle que soit la source, chaque tête se lève, et le
+// calcul ajoute une vanne plutôt que de laisser le bout de ligne sans pression.
 {
-  // **On monte la source jusqu'à l'absurde exprès** : c'est le seul régime où
-  // le défaut existait, et une suite qui n'éprouve que son compteur à lui
-  // n'aurait jamais rien vu.
   for (const secondes of [20, 12, 8, 4]) {
     const p = calculerPlan({
       seau: 10, temps: secondes, pression: 3,
@@ -322,26 +302,11 @@ dire(
         { type: "gazon", nom: "Autre pelouse", L: 24, l: 14 },
       ],
     });
-    const pire = Math.max(...p.secteurs.map((s: { debit: number }) => s.debit));
     dire(
-      pire <= p.limiteDuTuyau + 1e-9,
-      `source ${p.debitDisponible.toFixed(2)} m³/h : le pire réseau tire ${pire.toFixed(2)} ` +
-        `pour ${p.limiteDuTuyau.toFixed(2)} que le Ø25 laisse passer`,
+      !p.pressionTropBasse && !("limiteDuTuyau" in p),
+      `source ${p.debitDisponible.toFixed(2)} m³/h : ${p.secteurs.length} réseaux, ${p.pressionAuxArroseurs.toFixed(2)} bar au dernier arroseur, rien de bridé par le tuyau`,
     );
   }
-
-  // **Et l'écran doit pouvoir DIRE qui commande.** Un artisan qui mesure
-  // 3 m³/h et voit ses réseaux plafonnés croirait à un défaut de calcul.
-  const genereuse = calculerPlan({
-    seau: 10, temps: 8, pression: 3, zones: [{ type: "gazon", L: 30, l: 20 }],
-  });
-  const modeste = calculerPlan({
-    seau: 10, temps: 20, pression: 3, zones: [{ type: "gazon", L: 30, l: 20 }],
-  });
-  dire(
-    genereuse.limitePar === "tuyau" && modeste.limitePar === "source",
-    `source généreuse : « ${genereuse.limitePar} » commande · source modeste : « ${modeste.limitePar} »`,
-  );
 }
 
 // ── LA PLUVIOMÉTRIE NE SÉPARE PLUS DEUX SECTEURS (23 août 2026) ─────────────

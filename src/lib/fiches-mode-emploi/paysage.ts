@@ -152,9 +152,9 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     intitule: "Savoir quand passer du tuyau Ø25 au Ø32",
     motsCles: ["diametre", "tuyau", "25", "32", "pehd", "longueur", "metres", "seuil"],
     geste: "Sous les cartes des réseaux, une ligne dit jusqu'à combien de mètres le Ø25 tient, et le Ø32 au-delà.",
-    reserve: "Quand le débit est trop fort pour le Ø25, elle dit Ø32 d'office.",
+    reserve: "Quand même le Ø32 perd trop de pression, elle le dit en rouge.",
     source: ARROSAGE,
-    preuves: ["Ø32 au-delà.", "Ø32 d’office", 'data-atlas="seuil-tuyau"'],
+    preuves: ["Ø32 au-delà.", "même le Ø32 est trop juste.", 'data-atlas="seuil-tuyau"'],
   },
   {
     id: "arrosage-liste-pieces",

@@ -94,17 +94,13 @@ export type LePlan = {
    * piquage à la nourrice — la ligne de pièces dit alors Ø25 ou Ø32.
    */
   tuyau: {
-    /** Mètres de Ø25 admissibles. **Zéro quand le débit l'interdit.** */
+    /** Mètres de Ø25 admissibles avant que la perte mange la pression. */
     seuil25: number;
     seuil32: number;
     /** Le débit du réseau le plus gourmand : c'est lui qui dimensionne. */
     debit: number;
-    /** Au-delà, même le Ø32 est en surrégime : Ø40, ou un réseau de plus. */
+    /** Même le Ø32 perd trop : Ø40, ou un réseau de plus. */
     insuffisantMemeEn32: boolean;
-    /** Qui plafonne un réseau : la source (le seau) ou le tuyau (Ø25). */
-    limitePar: "source" | "tuyau";
-    /** Ce qu'un réseau en Ø25 peut porter, en m³/h. */
-    plafond: number;
   };
   /** Ce qui arrive au pied du DERNIER arroseur, en bar. */
   pressionAuxArroseurs: number;
@@ -398,12 +394,6 @@ function lePlan(
       seuil32: plan.amenee.longueurMax32,
       debit: plan.amenee.debit,
       insuffisantMemeEn32: plan.amenee.insuffisantMemeEn32,
-      // **Le calcul repris n'est pas typé** (`allowJs`, `checkJs` coupé) : il
-      // rend une chaîne. On la RESSERRE ici plutôt que d'élargir le type de
-      // l'écran — c'est la frontière, et c'est là qu'un « tuyeau » mal
-      // orthographié doit tomber, pas trois écrans plus loin.
-      limitePar: (plan.limitePar === "tuyau" ? "tuyau" : "source") as "tuyau" | "source",
-      plafond: plan.limiteDuTuyau,
     },
     pressionAuxArroseurs: plan.pressionAuxArroseurs,
     reserves,

@@ -534,32 +534,19 @@ function longueurMaxEn(budgetBar, debitM3h, dInterieurMm){
   return budgetBar * 10.2 * Math.pow(d, 4.87) / (10.67 * Math.pow(q / 150, 1.852));
 }
 
-/* ══ LE SECOND CRITÈRE, QUE LA LONGUEUR NE VOIT PAS : LA VITESSE ════════════
+/* ══ PLUS DE PLAFOND DE VITESSE : LA PRESSION AU BOUT DÉCIDE SEULE ═════════
 
-   Un tuyau court ne perd presque rien — donc, sur la seule perte de charge, un
-   Ø25 « passe » à n'importe quel débit pourvu qu'il soit assez court. C'est
-   faux : au-delà d'environ 1,5 m/s l'eau cogne, le coup de bélier fatigue les
-   électrovannes, et le bruit s'entend dans la maison. Les abaques de
-   fournisseur s'arrêtent tous là, et c'est de cette limite que sortent les
-   débits maximaux qu'ils annoncent par diamètre. Sur ses tubes à lui (paroi
-   de 3 mm, relevée le 16 octobre 2026) : 1,53 m³/h en Ø25, 2,87 en Ø32.
+   **Sa décision du 16 octobre 2026 :** *« je ne veux pas que tu brides les
+   réseaux. Je veux que tu prennes le calcul de débit pression […] la seule
+   chose à prendre en compte, c'est la perte de charge dans le tuyau. »*
 
-   **Ce chiffre ne se recoupe PAS avec sa mesure au seau, et il ne le doit
-   pas.** Ce commentaire disait le contraire jusqu'au 16 octobre : 1,76 contre
-   1,80, « le tuyau ne laissait pas passer davantage ». C'était une coïncidence
-   bâtie sur un diamètre supposé. Le seau mesure ce que donne le COMPTEUR, à
-   tuyau ouvert ; la vitesse dit ce qu'une ligne enterrée supporte sans cogner.
-   Deux questions, deux chiffres.
-
-   Sans ce critère, un jardin dont la source est généreuse se verrait poser du
-   Ø25 sur quinze mètres au motif que la perte y reste faible. */
-var VITESSE_MAX = 1.5;   // m/s dans un PEHD enterré — au-delà, ça cogne
-
-function debitMaxDe(dInterieurMm){
-  if (!(dInterieurMm > 0)) return 0;
-  var d = dInterieurMm / 1000;      // m
-  return Math.PI * Math.pow(d / 2, 2) * VITESSE_MAX * 3600;
-}
+   Jusque-là, un réseau ne portait jamais plus que 1,5 m/s dans son tuyau
+   (1,53 m³/h en Ø25, 2,87 en Ø32), règle de l'art des fournisseurs contre le
+   coup de bélier. Rien ne bride l'eau dans un tuyau : ce plafond était le
+   NÔTRE, et il ajoutait des vannes là où la pression tenait. Ce qui reste,
+   et suffit à ce que tout se lève : la source moins sa marge
+   (`limiteParVoie`), et la pression mini de chaque tête au bout de la pire
+   ligne, pertes comprises (`decouper`, `seLeve`). */
 
 /* ══ CE QUE LE RÉSEAU LUI-MÊME MANGE, DU REGARD AU DERNIER ARROSEUR ═════════
 
@@ -699,37 +686,22 @@ function amenee(d){
   var perte32 = perteDeCharge(pire, longueur, t32.dInterieur);
   var source = Number(etat.pression) || 0;
   var budget = source - exigee;
-  var debitMax25 = debitMaxDe(t25.dInterieur), debitMax32 = debitMaxDe(t32.dInterieur);
 
-  /* **DEUX RAISONS DE PASSER EN Ø32, et l'une ne remplace pas l'autre.**
-
-     · la LONGUEUR : la perte cumulée finit par manger le budget ;
-     · le DÉBIT : l'eau va trop vite, quelle que soit la longueur.
-
-     Une amenée de trois mètres échappe à la première et pas à la seconde. Ne
-     retenir que la perte de charge — ce que faisait ce calcul — revient à
-     poser du Ø25 sur une source généreuse, et à l'entendre cogner. */
-  var tropVite = pire > 0 && debitMax25 > 0 && pire > debitMax25;
+  // **La longueur seule fait passer en Ø32** depuis le 16 octobre 2026 : la
+  // perte cumulée mange le budget. La vitesse n'est plus un motif.
   var tropLoin = longueur > 0 && pire > 0 && exigee > 0 && (source - perte25 < exigee);
-  var suffit = !(tropVite || tropLoin);
-  // Le débit prime : aucune longueur ne le rattrape, alors qu'une amenée trop
-  // longue se raccourcit parfois en déplaçant le regard.
-  var motif = tropVite ? 'debit' : (tropLoin ? 'longueur' : null);
+  var suffit = !tropLoin;
+  var motif = tropLoin ? 'longueur' : null;
 
   return { longueur:longueur, debit:pire, exigee:exigee, source:source,
            perte25:perte25, perte32:perte32, suffit:suffit, motif:motif,
            auRegard: source - (suffit ? perte25 : perte32),
            diametre: suffit ? 25 : 32,
-           // **Zéro quand le débit l'interdit, et non le seuil calculé.**
-           // Annoncer « Ø25 jusqu'à 12 m » alors que l'eau y filerait à
-           // 2 m/s serait un seuil qu'on croit et qui ne tient pas.
-           longueurMax25: tropVite ? 0 : longueurMaxEn(budget, pire, t25.dInterieur),
+           longueurMax25: longueurMaxEn(budget, pire, t25.dInterieur),
            longueurMax32: longueurMaxEn(budget, pire, t32.dInterieur),
-           debitMax25: debitMax25, debitMax32: debitMax32,
-           // Au-delà, même le Ø32 est en surrégime : c'est le Ø40 ou un
-           // secteur de plus, et cela se DIT plutôt que de sortir un plan qui
-           // ne tiendra pas.
-           insuffisantMemeEn32: pire > 0 && debitMax32 > 0 && pire > debitMax32,
+           // Au-delà, même le Ø32 perd trop : c'est le Ø40 ou un secteur de
+           // plus, et cela se DIT plutôt que de sortir un plan qui ne tiendra pas.
+           insuffisantMemeEn32: longueur > 0 && pire > 0 && exigee > 0 && (source - perte32 < exigee),
            budget: budget,
            provisoire: (suffit ? t25 : t32).source === 'provisoire' };
 }
@@ -1154,38 +1126,14 @@ function saisonCourante(){
   return SAISONS[2];
 }
 
-/* ══ CE QU'UN RÉSEAU PEUT PORTER : LE PLUS PETIT DES DEUX ═══════════════════
+/* ══ CE QU'UN RÉSEAU PEUT PORTER : CE QUE LA SOURCE DONNE ═══════════════════
 
-   **Sa déduction du 22 août 2026, et elle a trouvé un trou :** *« tu ne viens
-   pas de me dire qu'en diamètre vingt-cinq c'était 1,76 m³/h ? Donc dans tous
-   les cas le calcul doit se faire là-dessus, peu importe qu'on ait 2 ou 1,80,
-   non ? »*
-
-   **Oui.** Un réseau est limité par DEUX choses, et le découpage n'en regardait
-   qu'une :
-
-   | | |
-   |---|---|
-   | ce que la SOURCE donne | le seau, moins la marge (0,85) |
-   | ce que le TUYAU passe | 1,53 m³/h en Ø25, à 1,5 m/s (1,76 avant le relevé de ses tubes) |
-
-   **Et toutes ses lignes de réseau sont en Ø25** — c'est le diamètre de tous
-   ses raccords : té 25×3/4"×25, coude 25×3/4". Un réseau ne peut donc jamais
-   porter plus que ce que son Ø25 passe, quelle que soit la générosité du
-   compteur.
-
-   **Ce que cela corrigeait, et personne ne l'avait vu.** Tant que la source
-   reste modeste, c'est elle qui commande et rien ne change : à 1,80 m³/h, la
-   limite était déjà 1,53. Mais dès qu'un artisan mesure 2,5 ou 3 m³/h au seau,
-   l'ancien calcul faisait des réseaux à 2,1 puis 2,55 m³/h — dans un tuyau qui
-   n'en passe que 1,53. L'eau y filerait à plus de 2 m/s, la ligne cogne, et la
-   pression tombe avant le dernier arroseur. **C'est exactement le défaut que
-   sa règle du 22 août interdit** (`CLAUDE.md` §4 ter) : il ne se voit qu'en
-   juillet, sur un gazon jauni, tranchée refermée.
-
-   Le plafond du tuyau ne porte PAS la marge de 0,85 en plus : les 1,5 m/s sont
-   déjà une limite de bonne pratique, pas un maximum physique. L'empiler
-   reviendrait à payer deux fois la même prudence, en vannes. */
+   ~~Le plus petit de la source et du tuyau~~ (sa déduction du 22 août 2026,
+   *« en diamètre vingt-cinq c'est 1,76 m³/h, le calcul doit se faire
+   là-dessus »*, puis 1,53 avec ses tubes) : **barré le 16 octobre 2026 sur sa
+   décision**, *« je ne veux pas que tu brides les réseaux »*. Le tuyau ne
+   plafonne plus rien ; c'est la pression au dernier arroseur qui refuse un
+   plan trop chargé, pertes du tuyau comprises. */
 /* ══ LA PRESSION DE CHOIX DESCEND JUSQU'À CE QUI ARRIVE VRAIMENT ════════════
 
    Le serpent se mord la queue : la pression au pied du dernier arroseur dépend
@@ -1231,21 +1179,28 @@ var PAS_CHOIX = 0.01;       // bar : la finesse avec laquelle on cherche la pres
 var PAS_GROSSIER = 0.05;    // bar : le premier passage, avant de descendre au centième
 var SURPRESSION_ADMISE = 0.2; // bar : au plus 5 % de débit en plus qu'affiché, vérifié contre la limite
 
-/* Ce qu'une seule voie peut porter, en m³/h : le plus petit de la source et du
-   tuyau. **Sortie en fonction le 23 août 2026** parce que le CHOIX DE LA BUSE en
-   a besoin lui aussi — et deux façons de calculer la même limite finiraient par
-   choisir une buse pour un plafond que le découpage n'applique pas. */
+/* Ce qu'une seule voie peut porter, en m³/h : ce que la source donne, moins
+   sa marge. **Sortie en fonction le 23 août 2026** parce que le CHOIX DE LA
+   BUSE en a besoin lui aussi : deux façons de calculer la même limite
+   finiraient par choisir une buse pour un plafond que le découpage n'applique
+   pas. */
 function limiteParVoie(){
-  var duTuyau = debitMaxDe(CATALOGUE.tuyaux.pe25.dInterieur);
   var deLaSource = debitDisponible() * MARGE;
-  return duTuyau > 0 ? Math.min(deLaSource, duTuyau) : deLaSource;
+  return LIMITE_IMPOSEE !== null ? Math.min(deLaSource, LIMITE_IMPOSEE) : deLaSource;
 }
+
+// Posée par `decouper` quand la pression oblige à charger moins chaque vanne,
+// et gardée pour tout le plan : le choix des buses et la liste des pièces
+// doivent voir la même limite que le découpage.
+var LIMITE_IMPOSEE = null;
+var VANNES_EN_PLUS_MAX = 12;
 
 // Vidée à chaque plan : la marque et la pression changent d'un jardin à l'autre.
 var BUSES_A_LA_PRESSION = {};
 
 function decouper(){
   BUSES_A_LA_PRESSION = {};
+  LIMITE_IMPOSEE = null;
   var source = Number(etat.pression) || 0;
   // **La première passe part TOUJOURS de la source**, sinon un appel précédent
   // laisserait sa pression derrière lui et deux plans identiques
@@ -1256,6 +1211,34 @@ function decouper(){
   // connue, il n'y a rien à chercher : aucune buse ne dépend de la pression.
   if (!(source > 0) || !(pirePerteDeReseau(d) > 0)) return finirLePlan(d, source, true);
 
+  var trouve = chercherUnPlan(source);
+  if (trouve) return trouve;
+
+  /* **UNE VANNE DE PLUS, TANT QUE LA PRESSION NE TIENT PAS** — sa règle du
+     16 octobre 2026 : le moins de réseaux possible, mais *« il faut que les
+     arroseurs se lèvent, sans exception »*. Le plafond de vitesse (1,53 m³/h
+     en Ø25) retirait ce cas sans le dire ; sans lui, une source de 9 m³/h
+     posait tout sur UNE vanne, qui ne laissait rien au bout. On retire donc
+     de la charge à chaque vanne, une vanne à la fois, jusqu'à ce que toutes
+     les têtes se lèvent. */
+  var demande = d.demande;
+  var deLaSource = limiteParVoie();
+  var dejaLa = deLaSource > 0 ? Math.max(1, Math.ceil(demande / deLaSource - 1e-9)) : 1;
+  for (var n = dejaLa + 1; demande > 0 && n <= dejaLa + VANNES_EN_PLUS_MAX; n++){
+    LIMITE_IMPOSEE = demande / n * (1 + 1e-6);
+    trouve = chercherUnPlan(source);
+    if (trouve) return trouve;
+  }
+  LIMITE_IMPOSEE = null;
+  // **Aucun plan ne tient au-dessus du plancher** : la pression ne suffit pas
+  // à porter ce jardin. On rend le plan de la source, et il porte l'ALERTE.
+  pressionDeCalcul = null;
+  return finirLePlan(decouperUneFois(), source, false);
+}
+
+/* Le meilleur plan à la limite d'une voie en cours : `null` si aucun ne tient
+   au-dessus du plancher. */
+function chercherUnPlan(source){
   // On essaie chaque pression de choix, de la source au plancher, et l'on ne
   // garde que les plans qui TIENNENT à la pression qui arrive vraiment au
   // dernier arroseur (les trois épreuves ci-dessous). Le réseau perd TOUJOURS au moins l'électrovanne (`perteDuReseau`) : aucune
@@ -1345,10 +1328,7 @@ function decouper(){
     pressionDeCalcul = retenu.p;
     return finirLePlan(retenu.d, source, true);
   }
-  // **Aucun plan ne tient au-dessus du plancher** : la pression ne suffit pas
-  // à porter ce jardin. On rend le plan de la source, et il porte l'ALERTE.
-  pressionDeCalcul = null;
-  return finirLePlan(decouperUneFois(), source, false);
+  return null;
 }
 
 /* Une tête se lève-t-elle à cette pression ? Sans pression mini relevée, on ne
@@ -1426,8 +1406,6 @@ function couperEnVannes(elements, limite){
 
 function decouperUneFois(){
   var dispo = debitDisponible();
-  var duTuyau = debitMaxDe(CATALOGUE.tuyaux.pe25.dInterieur);
-  var deLaSource = dispo * MARGE;
   var limite = limiteParVoie();
   var groupes = {}, ordre = [], poses = [];
   etat.zones.forEach(function(z){
@@ -1577,11 +1555,6 @@ function decouperUneFois(){
     });
   });
   return { secteurs:secteurs, dispo:dispo, limite:limite, reseauDuPoint:reseauDuPoint, poses:poses,
-           // **QUI commande la limite**, pour que l'écran puisse le dire. Un
-           // artisan qui mesure 3 m³/h et voit des réseaux plafonnés à 1,53
-           // croirait à un défaut de calcul : c'est son tuyau, et il le lira.
-           limitePar: (duTuyau > 0 && duTuyau < deLaSource) ? 'tuyau' : 'source',
-           limiteDuTuyau: duTuyau, limiteDeLaSource: deLaSource,
            reseauxDeZone:reseauxDeZone,
            demande: etat.zones.reduce(function(s,z){ return s + poser(z).debit; }, 0) };
 }
