@@ -5,6 +5,7 @@ import {
   PRESSION_COMPTEUR,
   BAR_SUPPOSE_AU_SEAU,
   BAR_MINIMUM_DYNAMIQUE,
+  GARANTIE_ABSENTE,
 } from "../src/lib/arrosage/mesure-debit";
 
 // D'où vient le débit — sa correction du 20 août 2026 au soir.
@@ -33,21 +34,38 @@ if (auCompteur.ok) {
   dire(auCompteur.debit === DEBIT_COMPTEUR, `le débit vaut ${auCompteur.debit} m³/h`);
   dire(auCompteur.pression === PRESSION_COMPTEUR, `la pression du réseau vaut ${auCompteur.pression} bar`);
   dire(auCompteur.mesure === "compteur", "la provenance est nommée : le compteur");
-  // **AUCUNE RÉSERVE, et c'est une correction du 20 août au soir.** « Si on se
-  // repique directement après le compteur en Ø25, on aura au moins trois bars
-  // […] tu sais d'office que tu es bien. » La première version avertissait
-  // « à vérifier au seau sur place » : un avertissement inutile s'apprend à
-  // être ignoré, et celui-là faisait douter de la seule situation sûre.
-  dire(auCompteur.reserve === null, `le compteur ne s'excuse pas (réserve : ${auCompteur.reserve ?? "aucune"})`);
+  // **LA PHRASE EN ROUGE, sa décision du 16 octobre 2026.** Elle remplace sa
+  // règle du 20 août (« au compteur, tu sais d'office que tu es bien ») : la
+  // ville ne garantit que 0,3 bar et aucun débit. 3 bar et 2 m³/h sont une
+  // estimation, et le plan le dit.
+  dire(auCompteur.reserve === GARANTIE_ABSENTE, `le compteur dit qu'il estime (réserve : ${auCompteur.reserve ?? "aucune"})`);
 }
 
-// **Une saisie au compteur ne change rien.** Les cases n'existent pas sur cet
-// écran-là ; si elles arrivaient quand même, elles ne doivent pas décider.
-const compteurAvecSaisie = debitRetenu({ piquage: "compteur", secondes: 5, barStatique: null, barDynamique: 6 });
+// **Au compteur, ses deux mesures prennent la main** (16 octobre 2026 :
+// « le seau ET le manomètre partout, compteur compris »), et rien n'est alors
+// supposé : plus de phrase en rouge.
+const compteurMesure = debitRetenu({ piquage: "compteur", secondes: 15, barStatique: null, barDynamique: 3.2 });
 dire(
-  compteurAvecSaisie.ok && compteurAvecSaisie.debit === DEBIT_COMPTEUR,
-  "au compteur, une saisie parasite ne prend pas la main",
+  compteurMesure.ok && compteurMesure.debit === 2.4 && compteurMesure.pression === 3.2 && compteurMesure.reserve === null,
+  `au compteur, le seau et le manomètre décident (${JSON.stringify(compteurMesure)})`,
 );
+// Une seule des deux ne suffit pas : on garde l'estimation, et le rouge.
+const compteurSeauSeul = debitRetenu({ piquage: "compteur", secondes: 15, barStatique: null, barDynamique: null });
+dire(
+  compteurSeauSeul.ok && compteurSeauSeul.reserve === GARANTIE_ABSENTE,
+  `au compteur, le seau seul ne garantit rien (${compteurSeauSeul.ok ? compteurSeauSeul.reserve : ""})`,
+);
+
+// ── Hors compteur, sans les deux mesures : la phrase en rouge, toujours ─────
+for (const [quoi, saisie] of [
+  ["le seau seul", { piquage: "ailleurs", secondes: 20, barStatique: null, barDynamique: null }],
+  ["le manomètre seul", { piquage: "ailleurs", secondes: null, barStatique: null, barDynamique: 3 }],
+  ["la statique seule", { piquage: "ailleurs", secondes: null, barStatique: 3.5, barDynamique: null }],
+  ["le seau et la statique", { piquage: "ailleurs", secondes: 20, barStatique: 3.5, barDynamique: null }],
+] as const) {
+  const r = debitRetenu(saisie);
+  dire(r.ok && r.reserve !== null && r.reserve.endsWith(GARANTIE_ABSENTE), `${quoi} : « ${r.ok ? r.reserve : "refusé"} »`);
+}
 
 // ── Ailleurs, le seau chronométré : la seule vraie mesure ───────────────────
 const auSeau = debitRetenu({ piquage: "ailleurs", secondes: 20, barStatique: null, barDynamique: null });

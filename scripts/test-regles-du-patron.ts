@@ -213,7 +213,12 @@ regle("20 août 2026", "« la pression ne donne pas le débit » — hors compte
   const r = debitRetenu({ piquage: "ailleurs", secondes: null, barStatique: null, barDynamique: null });
   exige(!r.ok, "un débit a été rendu sans aucune mesure");
   const c = debitRetenu({ piquage: "compteur", secondes: null, barStatique: null, barDynamique: null });
-  exige(c.ok && c.debit === 1.8 && c.pression === 3, "au compteur, ce sont SES chiffres : 1,80 m³/h et 3 bar");
+  // ~~1,80 m³/h au compteur~~ BARRÉ le 16 octobre 2026, sur sa décision : *« au
+  // compteur, tu pars du principe qu'il y a 3 bar et 2 m³/h, mais tu mets le
+  // message en rouge »*. La règle datée du 16 octobre, sous le repère, tient
+  // les nouveaux chiffres. Le 1,80 reste, comme la trace de son seau du 20 août.
+  const debitReleveLe20Aout = 1.8;
+  exige(c.ok && c.pression === 3 && debitReleveLe20Aout === 1.8, "au compteur, ce sont SES chiffres : 1,80 m³/h et 3 bar");
 });
 
 regle("23 août 2026", "« là, il y a tous les métrés » — l'agencement n'est pas obligatoire : sans dessin, le plan et ses pièces sortent quand même", () => {
@@ -298,6 +303,16 @@ regle("16 octobre 2026", "« 25 × 3 » sur ses tubes photographiés — son Ø2
   exige(p.limitePar === "tuyau", `c'est « ${p.limitePar} » qui plafonne, pas le Ø25`);
   exige(Math.abs(p.limiteDuTuyau - 1.53) < 0.02, `le Ø25 passe ${p.limiteDuTuyau.toFixed(2)} m³/h au lieu de 1,53`);
   for (const s of p.secteurs) exige(s.debit <= p.limiteDuTuyau + 1e-9, `un réseau à ${s.debit} m³/h dépasse le Ø25`);
+});
+
+regle("16 octobre 2026", "« au compteur, 3 bar et 2 m³/h, mais le message en rouge » — seuls le seau ET le manomètre garantissent la levée", () => {
+  const c = debitRetenu({ piquage: "compteur", secondes: null, barStatique: null, barDynamique: null });
+  exige(c.ok && c.debit === 2 && c.pression === 3, "au compteur sans mesure : 2 m³/h et 3 bar");
+  exige(c.ok && c.reserve === "Nous ne garantissons pas la bonne levée des arroseurs.", `au compteur, le rouge manque : « ${c.ok ? c.reserve : ""} »`);
+  const lesDeux = debitRetenu({ piquage: "compteur", secondes: 15, barStatique: null, barDynamique: 3 });
+  exige(lesDeux.ok && lesDeux.debit === 2.4 && lesDeux.reserve === null, "avec le seau et le manomètre, rien n'est supposé");
+  const seauSeul = debitRetenu({ piquage: "ailleurs", secondes: 20, barStatique: null, barDynamique: null });
+  exige(seauSeul.ok && seauSeul.reserve !== null && seauSeul.reserve.endsWith("Nous ne garantissons pas la bonne levée des arroseurs."), "le seau seul ne dit pas son rouge");
 });
 
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────

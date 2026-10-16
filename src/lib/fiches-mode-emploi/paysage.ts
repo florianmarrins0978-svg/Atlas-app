@@ -108,9 +108,9 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     motsCles: ["reseau", "reseaux", "vanne", "vannes", "buse", "arroseurs", "portee", "debit", "zone"],
     geste:
       "Sous le dessin, une carte par réseau : la zone arrosée, le matériel et sa buse avec sa portée, " +
-      "puis le compte des arroseurs, tés, coudes et mètres de tuyau.",
+      "« bridée à » quand la vis la réduit, puis le compte des arroseurs, tés, coudes et mètres de tuyau.",
     source: ARROSAGE,
-    preuves: ["Réseau {i + 1}", 'data-atlas="carte-reseau"', ", portée ${virgule(m.portee)} m"],
+    preuves: ["Réseau {i + 1}", 'data-atlas="carte-reseau"', '${m.bridee ? "bridée à" : "portée"} ${virgule(m.portee)} m'],
     lieu: true,
   },
   {

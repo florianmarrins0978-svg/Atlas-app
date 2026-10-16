@@ -62,7 +62,16 @@ export const SEAU_LITRES = 10;
  * dépôt dispose ; le jour où il en fait d'autres, elle se corrige ici, à un seul
  * endroit.
  */
-export const DEBIT_COMPTEUR = 1.8;
+export const DEBIT_COMPTEUR = 2;
+/*
+ * **2,00 DEPUIS LE 16 OCTOBRE 2026, ET C'EST UNE ESTIMATION QUI SE DIT.** Sa
+ * décision : *« au compteur, tu pars du principe qu'il y a 3 bar et 2 m³/h, mais
+ * tu mets le message en rouge, car c'est une estimation et qu'on ne garantit
+ * rien »*. La ville ne garantit que 0,3 bar et aucun débit (Code de la santé
+ * publique, R1321-58) : ces deux chiffres sont un ordre de grandeur du métier,
+ * jamais une mesure, et le plan l'écrit en rouge (`GARANTIE_ABSENTE`). Le
+ * paragraphe qui suit dit pourquoi 1,80 avait été retenu avant.
+ */
 
 /*
  * **POURQUOI 1,80 ET NON 2,00 — sa précision du 22 août 2026.**
@@ -159,28 +168,21 @@ export type DebitRetenu =
  * chiffre plausible. Un plan calculé sur un débit inventé a toutes les
  * apparences d'un plan juste.
  */
-export function debitRetenu(saisie: MesureSaisie): DebitRetenu {
-  if (saisie.piquage === "compteur") {
-    // **Rien à demander, rien à signaler.** En Ø25 après compteur, on a au
-    // moins 3 bar : c'est la situation où l'on est sûr d'être bien, et un
-    // avertissement y ferait douter pour rien.
-    return {
-      ok: true,
-      debit: DEBIT_COMPTEUR,
-      pression: PRESSION_COMPTEUR,
-      mesure: "compteur",
-      reserve: null,
-    };
-  }
+/**
+ * La phrase en rouge, sa décision du 16 octobre 2026 : seules les DEUX mesures
+ * (le seau ET le manomètre au kit buse 5, en dynamique) garantissent que tous
+ * les arroseurs se lèvent. Tout le reste, compteur compris, se calcule et le dit.
+ */
+export const GARANTIE_ABSENTE = "Nous ne garantissons pas la bonne levée des arroseurs.";
 
+export function debitRetenu(saisie: MesureSaisie): DebitRetenu {
   const dyn = saisie.barDynamique !== null && saisie.barDynamique > 0 ? saisie.barDynamique : null;
   const stat = saisie.barStatique !== null && saisie.barStatique > 0 ? saisie.barStatique : null;
-
+  const secondes = saisie.secondes !== null && saisie.secondes > 0 ? saisie.secondes : null;
   // **Les réserves s'empilent, elles ne se remplacent pas.** Un débit estimé ET
   // une pression trop faible sont deux problèmes distincts : n'en dire qu'un
   // laisserait l'autre se découvrir sur le chantier.
   const reserves: string[] = [];
-
   if (dyn !== null && dyn < BAR_MINIMUM_DYNAMIQUE) {
     reserves.push(
       `${dyn.toString().replace(".", ",")} bar en dynamique : sous ` +
@@ -196,49 +198,54 @@ export function debitRetenu(saisie: MesureSaisie): DebitRetenu {
         "la conduite qui alimente ce robinet est étroite ou longue"
     );
   }
+  // La garantie ne tient qu'aux deux mesures : sans elles, la phrase en rouge
+  // finit la réserve, après ce qui est su.
+  const dire = (garantie: boolean) => {
+    const phrases = reserves.length > 0 ? [reserves.join(", ") + "."] : [];
+    if (!garantie) phrases.push(GARANTIE_ABSENTE);
+    return phrases.length > 0 ? phrases.join(" ") : null;
+  };
+  const auSeau = secondes !== null ? Math.round((SEAU_LITRES / secondes) * 3.6 * 100) / 100 : null;
 
-  // **Le seau d'abord : c'est la seule mesure du débit.** S'il l'a fait, elle
-  // prime sur toute estimation, même quand les pressions sont relevées.
-  if (saisie.secondes !== null && saisie.secondes > 0) {
-    const debit = (SEAU_LITRES / saisie.secondes) * 3.6;
-    if (dyn === null) {
-      reserves.push(
-        `pression non relevée : calcul mené à ${BAR_SUPPOSE_AU_SEAU.toString().replace(".", ",")} bar`
-      );
-    }
-    return {
-      ok: true,
-      debit: Math.round(debit * 100) / 100,
-      // **La DYNAMIQUE, jamais la statique.** C'est elle qui décide de la portée
-      // des arroseurs ; la statique, robinet fermé, est toujours flatteuse.
-      //
-      // **Et sans manomètre : 2,5 bar, pas 3.** À un robinet, rien ne garantit
-      // le Ø25 du compteur — on retient le minimum viable (sa règle du 21 août).
-      pression: dyn ?? BAR_SUPPOSE_AU_SEAU,
-      mesure: "seau",
-      reserve: reserves.length > 0 ? reserves.join(", ") : null,
-    };
+  // **Les deux mesures, où que l'on se pique** (sa décision du 16 octobre 2026,
+  // compteur compris) : le seau donne le débit, le manomètre la pression en
+  // débit. C'est le seul cas garanti.
+  if (auSeau !== null && dyn !== null) {
+    return { ok: true, debit: auSeau, pression: dyn, mesure: "seau", reserve: dire(true) };
   }
-
-  if (dyn !== null) {
+  // **Au compteur sans les deux mesures : 3 bar et 2 m³/h**, une estimation du
+  // métier, et le plan le dit en rouge.
+  if (saisie.piquage === "compteur") {
+    return { ok: true, debit: DEBIT_COMPTEUR, pression: PRESSION_COMPTEUR, mesure: "compteur", reserve: dire(false) };
+  }
+  // **Le seau d'abord : c'est la seule mesure du débit.** Sans manomètre en
+  // dynamique, la pression se suppose (sa règle du 21 août : 2,5 bar), ou se
+  // lit sur la statique s'il n'a que celle-là, toujours flatteuse.
+  if (auSeau !== null) {
+    if (stat === null) {
+      reserves.push(`pression non relevée : calcul mené à ${BAR_SUPPOSE_AU_SEAU.toString().replace(".", ",")} bar`);
+    } else {
+      reserves.push("pression relevée robinet fermé : la statique est toujours plus haute que ce qui arrive aux arroseurs");
+    }
+    return { ok: true, debit: auSeau, pression: stat ?? BAR_SUPPOSE_AU_SEAU, mesure: "seau", reserve: dire(false) };
+  }
+  // **Une pression sans seau : le débit s'estime**, et la réserve nomme le piège.
+  const pression = dyn ?? stat;
+  if (pression !== null) {
+    if (dyn === null) {
+      reserves.push("pression relevée robinet fermé : la statique est toujours plus haute que ce qui arrive aux arroseurs");
+    }
     reserves.push(
       "la pression ne donne pas le débit : il est ESTIMÉ à " +
         `${DEBIT_COMPTEUR.toFixed(2).replace(".", ",")} m³/h. Chronométrez un seau de ` +
         `${SEAU_LITRES} L pour le mesurer`
     );
-    return {
-      ok: true,
-      debit: DEBIT_COMPTEUR,
-      pression: dyn,
-      mesure: "estime",
-      reserve: reserves.join(", "),
-    };
+    return { ok: true, debit: DEBIT_COMPTEUR, pression, mesure: "estime", reserve: dire(false) };
   }
-
   return {
     ok: false,
     raison:
       `Aucune mesure : chronométrez un seau de ${SEAU_LITRES} L, ` +
-      "ou relevez la pression dynamique au kit buse 5.",
+      "et relevez la pression dynamique au kit buse 5.",
   };
 }

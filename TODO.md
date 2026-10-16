@@ -33,7 +33,7 @@ travail, jamais à côté.**
 | **la sonde de pluie** | *« en option, si l'utilisateur coche oui on la rajoute dans la liste »*, la Rain Bird filaire blanche | ~~le nom écrit en dur~~ fait le 16 octobre : le calcul lit RP403 « sonde pluie RSD-Bex Rain Bird » (p. 27) dans le catalogue. Reste **la case à cocher**, dans la planche de l'écran avant d'être codée (`CLAUDE.md` §3 bis) |
 | **les buses livrées avec l'arroseur** | *« corrige-les simplement, rien ne doit être inventé »* | fait dans le catalogue (plus de référence ni de colisage à elles). La ligne de la liste peut le dire : « buse 3,0, livrée avec l'arroseur » |
 
-## ⏳ ARROSAGE : LA GAINE DE GOUTTEURS, SEULE PROVISOIRE RESTANTE (16 octobre 2026)
+## ⏳ ARROSAGE : PLUS AUCUNE LIGNE PROVISOIRE, ET SON GOUTTE-À-GOUTTE (16 octobre 2026)
 
 Sa consigne : *« supprime toutes les lignes provisoires, garde le Régulateur de
 pression FF 3/4" »*. Fait le 16 octobre : arroseurs génériques, électrovanne et
@@ -42,17 +42,11 @@ pression, tuyaux PE génériques. Le plan DIT désormais ce qui manque
 (`manquants` dans `calcul.js`, posé avec les réserves par `actions.ts`) :
 une zone sans matériel de la marque, une nourrice de plus de six voies.
 
-**La gaine reste**, parce qu'elle EST le tube de goutte-à-goutte : la retirer
-arrête toute zone en goutte-à-goutte. Il ne savait pas ce que c'était. Lui
-demander son tube (une photo de l'étiquette, comme pour le PEHD), puis la
-remplacer. Aqua Plus a l'UGGRBXFS, « tube Ø16mm 2,3l/h esp.33cm autorégulé
-enterrable » (p. 48), aux mêmes chiffres.
-
 **Son tube, dit le 16 octobre 2026, et SEULE donnée à garder** (*« garde que
 cette info pour le goutte-à-goutte ! »*) : **Toro UGGCBL23050**, « tube Ø16mm
 2l/h esp.33cm autorégulé », **2 l/h tous les 33 cm**, soit 6,06 l/h par mètre.
-Les chiffres d'avant (Rain Bird XFS, 2,3 à 3 l/h tous les 30 cm) sont faux pour
-lui : il s'était trompé de fiche. **Entré au catalogue** le 16 octobre, sa
+Il remplace la gaine provisoire, et les chiffres donnés plus tôt le même jour
+(fiche Rain Bird XFS, 2,3 à 3 l/h tous les 30 cm) ne servent plus. **Entré au catalogue** le 16 octobre, sa
 durée d'arrosage calculée sur l'écart des lignes de la zone. Il l'achète en
 couronnes de 50 m ou de 100 m. Ses règles du même jour :
 
@@ -96,7 +90,7 @@ goutte-à-goutte ? »*
 le droit qui se visse dans le coude taraudé (photo `appli/arrosage-photos/MID6352.png`). Question par zone, dans la planche de l'écran.
 | recoller deux bouts de goutte-à-goutte | **MID6301**, « jonction Palaplast Ø16 » (Aqua Plus p. 49) : *« permet de rabouter deux morceaux de goutte-à-goutte entre eux »*. Ø16 des deux côtés, sur sa photo (`appli/arrosage-photos/MID6301.png`) : le « en 3/4" » de son premier message ne s'y voit pas |
 | MID6362 | « embout Palaplast taraudé 16 x 3/4" » : *« oublie-le pour les réseaux, garde-le juste pour la liste des pièces à ajouter, quasi personne ne s'en sert »*. Jamais compté par le calcul |
-| le bout de chaque ligne | **MID6371**, *« un bouchon de fin de ligne Palaplast diam 16 3/4 »* ; Aqua Plus p. 49 l'écrit « bouchon Palaplast Ø16 ». Sa référence : elle s'écrit au catalogue |
+| le bout de chaque ligne | **MID6371**, *« un bouchon de fin de ligne Palaplast diam 16 3/4 »* . Sa référence : elle s'écrit au catalogue |
 
 Aqua Plus 2026 (p. 49) n'a pas ces libellés à l'identique : il porte « té
 Palaplast Ø16 » (MID6321), « embout Palaplast taraudé 16 x 3/4" » (MID6362),
@@ -135,7 +129,7 @@ garantie, et aucune n'existe.
 | ce qui a été mesuré | ce que fait l'outil |
 |---|---|
 | le seau ET le manomètre avec la buse n° 5 (pression dynamique) | il calcule, sans réserve |
-| **au compteur, sans mesure** : *« tu pars du principe qu'il y a 3 bar et 2 m³/h, mais tu mets le message en rouge, car c'est une estimation et qu'on ne garantit rien »* (16 octobre 2026). `DEBIT_COMPTEUR` passe de 1,80 à **2,00** | il calcule sur 3 bar et 2 m³/h, et écrit le message en rouge |
+| **au compteur, sans mesure** : *« tu pars du principe qu'il y a 3 bar et 2 m³/h, mais tu mets le message en rouge, car c'est une estimation et qu'on ne garantit rien »* (16 octobre 2026). `DEBIT_COMPTEUR` passe de 1,80 à **2,00** | il calcule sur 3 bar et 2 m³/h, et écrit le message en rouge. **Fait le 16 octobre** dans `mesure-debit.ts` (`GARANTIE_ABSENTE`). **Reste l'écran** : les cases du seau et du manomètre n'existent qu'au robinet ; elles doivent paraître aussi au compteur (planche), et la fiche « arrosage-mesure-robinet » du mode d'emploi suivre |
 | tout le reste : seau seul, manomètre seul, pression statique, rien au compteur | il calcule, et écrit en rouge **« Nous ne garantissons pas la bonne levée des arroseurs. »** |
 
 À lui demander encore : le débit de la buse n° 5 de l'outil Aqua Plus (ou sa

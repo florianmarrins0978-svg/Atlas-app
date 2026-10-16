@@ -685,8 +685,9 @@ var CATALOGUE = {
     { ref:'UGGCBL23050', marqueCle:'toro', marque:'Toro', type:'gaine',
       nom:'tube Ø16mm 2l/h esp.33cm autorégulé',
       detail:'2 l/h tous les 33 cm', debitGoutteur:2, ecartGoutteurs:0.33,
-      famille:'Goutte-à-goutte', source:'patron',
-      releve:'Aqua Plus, sa référence du 16 octobre 2026' }
+      // Par 50 : la colonne « colisage » d'Aqua Plus, et ses couronnes de 50 m.
+      colisage:50, famille:'Goutte-à-goutte', source:'patron',
+      releve:'Aqua Plus 2026, p. 48' }
   ],
 
   /* ── Le reste du matériel ───────────────────────────────────────────────
