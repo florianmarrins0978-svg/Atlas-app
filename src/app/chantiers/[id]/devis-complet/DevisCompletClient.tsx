@@ -29,7 +29,6 @@ import { adressesDuDocument } from "@/lib/adresses";
 import { enEuros } from "@/lib/euros";
 import { jourNumerique } from "@/lib/jour";
 import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
-import LigneRetirable from "@/components/atlas/LigneRetirable";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
@@ -1292,17 +1291,26 @@ export default function DevisCompletClient(props: Props) {
           const i = lignes.indexOf(l);
           const nomDeLaLigne = l.libelle ? `« ${l.libelle.split("\n")[0]} »` : `la ligne ${i + 1}`;
           return (
-          <LigneRetirable
+          // **Plus de glissement sur le devis** : sa demande du 16 octobre 2026,
+          // « il faut totalement retirer le slide pour supprimer une ligne pour
+          // le devis ». La ligne ne passe donc plus par `LigneRetirable`, dont
+          // la colonne qui défile s'entrouvrait sous ses chiffres et coupait la
+          // croix au bord du texte. Reste la chute (`.atlas-ligne`), que la
+          // croix déclenche comme le reste de l'application.
+          //
+          // **`-mr-5 pr-5` rend à la ligne la marge de la feuille** (`px-5`,
+          // la plus étroite) : l'enveloppe masque ce qui dépasse pour se
+          // refermer, et la croix déborde de 20 px vers le bord.
+          <div
             key={l.id}
-            libelle={nomDeLaLigne}
-            retiree={retraits.estRetire(l.id)}
-            onRetirer={() => retraits.retirer(l.id, nomDeLaLigne)}
+            className="atlas-ligne -mr-5 pr-5"
+            data-retiree={retraits.estRetire(l.id) ? "oui" : "non"}
             // Une ligne de devis porte un libellé sur plusieurs lignes, une
-            // quantité, un prix : elle monte bien au-delà des 170 px par défaut,
-            // et l'enveloppe la tronquerait au repos.
-            hauteurMax={420}
-            className="flex"
+            // quantité, un prix : elle monte bien au-delà de 170 px, et
+            // l'enveloppe la tronquerait au repos.
+            style={{ maxHeight: 420 }}
           >
+          <div className="atlas-chute">
           <div
             className="grid w-full gap-2 py-3 sm:grid-cols-[1fr_70px_84px_130px_130px] sm:items-start sm:gap-3"
             style={{
@@ -1328,7 +1336,7 @@ export default function DevisCompletClient(props: Props) {
                 (« abattage / broyage / évacuation »). Compter les retours à la
                 ligne ne suffisait pas : un seul travail au libellé long en
                 occupe deux à l'écran. Voir `ZoneQuiGrandit`. */}
-            <div className="flex items-start gap-2">
+            <div className="relative pr-[42px]">
               <ZoneQuiGrandit
                 valeur={l.libelle}
                 fige={fige}
@@ -1341,18 +1349,27 @@ export default function DevisCompletClient(props: Props) {
                 className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[var(--voile-champ)]"
                 style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.45 }}
               />
-              {/* **La croix, au bout de la description — sa réponse « A » du
-                  3 octobre 2026**, le glissement restant. Sur la rangée du
-                  TEXTE, jamais sur celle des chiffres : c'est sur la quantité
-                  et le prix que « Retirer » se posait sous son doigt. Même
-                  retrait que le glissement, donc même « Annuler ». */}
+              {/* **La croix au-dessus de la colonne des chiffres, montée au
+                  haut de la ligne** : sa réponse « D » du 16 octobre 2026
+                  (`appli/devis-croix-plus-a-droite.html`), après *« il arrive
+                  encore fréquemment qu'on appuie sur la petite croix sans faire
+                  exprès »*. Sa zone de 44 px commençait 8 px après la fin du
+                  texte : en retouchant une description, on retirait la ligne.
+                  Elle en est à 18 px, poussée de 20 px vers le bord de la
+                  feuille (`-right-5`), et le × se dessine en haut de sa zone
+                  (`items-start`), qui reste entière dans la ligne (`-top-3`
+                  annule le `py-3`). Toujours sur la rangée du TEXTE : c'est
+                  sur la quantité et le prix que « Retirer » se posait sous son
+                  doigt. Sur grand écran, la ligne devient un tableau : 20 px
+                  la poseraient sur la colonne Qté, elle s'arrête donc au bord
+                  de l'espace entre les deux (`sm:-right-3`, le `sm:gap-3`). */}
               {!fige && (
                 <button
                   type="button"
                   aria-label={`Retirer ${nomDeLaLigne}`}
                   data-atlas="croix-ligne"
                   onClick={() => retraits.retirer(l.id, nomDeLaLigne)}
-                  className="-mr-2.5 -mt-2.5 flex h-11 w-11 flex-none items-center justify-center text-[22px] leading-none"
+                  className="absolute -right-5 -top-3 flex sm:-right-3 h-11 w-11 items-start justify-center text-[22px] leading-none"
                   style={{ color: colors.muted }}
                 >
                   ×
@@ -1477,7 +1494,8 @@ export default function DevisCompletClient(props: Props) {
             )}
 
           </div>
-          </LigneRetirable>
+          </div>
+          </div>
           );
         })}
 

@@ -5,6 +5,14 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## LE DEVIS SANS GLISSEMENT, SA CROIX PLUS LOIN DU TEXTE (16 octobre 2026), PAS ENCORE SUR `main`
+
+Branche `claude/devis-croix-plus-a-droite`. La ligne du devis ne glisse plus
+(`LigneRetirable` retiré de `DevisCompletClient.tsx`, la chute `.atlas-ligne`
+gardée), la croix est en « D » (planche n° 136) : 18 px du texte au lieu de 8.
+La fiche `devis-ligne-retirer` dit désormais « appuyez sur la croix ». Niveau 3
+(gravité argent) : batterie entière, puis `main` avec son accord.
+
 ## SUR `main` LE 16 OCTOBRE 2026 : LE PLANNING DÉCOUPÉ EN DOUZE FICHIERS (15 octobre 2026)
 
 `src/app/planning/PlanningClient.tsx` (6 095 lignes, 39 composants) est

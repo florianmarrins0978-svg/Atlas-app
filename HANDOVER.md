@@ -10,6 +10,22 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LE DEVIS SANS GLISSEMENT : branche `claude/devis-croix-plus-a-droite` (16 octobre 2026)
+
+**Ce qui est fait** : sur le devis seulement, plus de glissement ; la croix
+seule retire, avec « Annuler ». Elle est en `absolute -right-5 -top-3` dans la
+rangée de la description (`pr-[42px]`), et l'enveloppe `.atlas-ligne` reçoit
+`-mr-5 pr-5` pour ne pas la couper : elle masque ce qui dépasse pour se
+refermer. Sur grand écran, `sm:-right-3` l'arrête au bord de la colonne Qté.
+
+**Le piège** : remettre la croix dans `LigneRetirable` la recouperait au bord
+de `.atlas-glisse`, qui défile. C'est pour ça qu'elle ne pouvait pas aller plus
+loin avant.
+
+**Ce qui reste** : les autres écrans (prix, informations, note vocale,
+planning, liste des chantiers, nouveau chantier) glissent toujours ; sa demande
+visait le devis.
+
 ## LE PLANNING DÉCOUPÉ EN DOUZE FICHIERS : sur `main` le 16 octobre 2026
 
 `src/app/planning/PlanningClient.tsx` (6 095 lignes, 39 composants) est

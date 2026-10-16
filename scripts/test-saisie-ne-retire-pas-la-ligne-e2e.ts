@@ -23,10 +23,20 @@ import { ADRESSE } from "./_adresse";
  * dessous, et c'est « Retirer » que le second appui rencontre. Sur une ligne
  * déjà chiffrée, il ne touche pas le prix après la quantité : rien ne part.
  *
- * Chromium ne fait pas ce défilement de lui-même : la suite le pose à la main,
- * comme Safari, pendant que le champ a le doigt. Ce qu'elle défend : **tant
- * qu'il écrit dans une ligne, la ligne ne s'ouvre pas** — et le geste de
- * retrait, lui, reste entier quand il n'écrit rien.
+ * **Le glissement a été RETIRÉ du devis le 16 octobre 2026**, sa demande :
+ * *« il faut totalement retirer le slide pour supprimer une ligne pour le
+ * devis »*. La ligne ne défile plus : rien ne peut s'entrouvrir sous ses
+ * chiffres. Seule la croix retire, et elle a quitté le bord du texte, où son
+ * doigt la rencontrait en voulant retoucher une description (*« il arrive
+ * encore fréquemment qu'on appuie sur la petite croix sans faire exprès »*).
+ * Elle se tient au-dessus de la colonne des chiffres, montée au haut de la
+ * ligne, sa réponse « D » (`appli/devis-croix-plus-a-droite.html`) : 8 px la
+ * séparaient du texte, 18 aujourd'hui.
+ *
+ * Ce que la suite défend : **aucune colonne qui glisse sur une ligne du
+ * devis**, la croix assez loin du texte et entière (une zone coupée par
+ * l'enveloppe ne se touche plus), le doigt posé sur le prix tombe sur le
+ * prix, et la croix retire toujours, avec « Annuler ».
  */
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -70,14 +80,6 @@ async function main() {
   await page.waitForTimeout(800);
   await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
 
-  const colonne = page.locator(".atlas-glisse").filter({ has: page.getByLabel("Quantité 1", { exact: true }) });
-  const decalage = () => colonne.evaluate((g) => g.scrollLeft);
-  /** Ce que Safari fait en entrant dans le champ : il pousse la colonne pour montrer le curseur. */
-  const pousserCommeSafari = () =>
-    colonne.evaluate((g) => {
-      g.scrollLeft = g.scrollWidth;
-    });
-
   // **Là où il VOIT le prix avant de toucher la quantité** : c'est ce point que
   // son doigt vise ensuite, que la ligne ait bougé dessous ou non. Mesurer le
   // champ après coup suivrait la ligne, et passerait au vert sur le défaut.
@@ -95,14 +97,40 @@ async function main() {
       return { x: e.left + ec.dx, y: e.top + ec.dy };
     }, ecart);
 
-  await cas("toucher la quantité ne découvre pas « Retirer »", async () => {
-    await page.getByLabel("Quantité 1", { exact: true }).tap();
-    await pousserCommeSafari();
-    await page.waitForTimeout(600);
-    assert.equal(await decalage(), 0, "la ligne s'est ouverte pendant qu'il écrivait dans sa quantité");
+  await cas("la ligne du devis ne glisse plus", async () => {
+    const ligne = page.locator(".atlas-ligne").filter({ has: page.getByLabel("Quantité 1", { exact: true }) });
+    assert.equal(await ligne.count(), 1, "la ligne du devis est introuvable : rien à conclure");
+    assert.equal(await ligne.locator(".atlas-glisse").count(), 0, "la ligne porte encore une colonne qui glisse");
+    assert.equal(await ligne.locator(".atlas-decouvre").count(), 0, "« Retirer » est encore caché derrière la ligne");
   });
 
-  await cas("le doigt posé ensuite sur le prix vide tombe sur le prix, pas sur « Retirer »", async () => {
+  await cas("la croix se tient loin du texte, entière et au haut de la ligne", async () => {
+    const m = await page.locator('[data-atlas="croix-ligne"]').evaluate((b) => {
+      // `elementFromPoint` ne voit que l'écran : hors de lui, il ne rend rien.
+      b.scrollIntoView({ block: "center" });
+      const c = b.getBoundingClientRect();
+      const t = b.closest(".atlas-ligne")!.querySelector("textarea")!.getBoundingClientRect();
+      const e = b.closest(".atlas-ligne")!.getBoundingClientRect();
+      const dessous = document.elementFromPoint(c.left + c.width / 2, c.top + c.height / 2);
+      return {
+        largeur: c.width,
+        ecart: c.left - t.right,
+        dedans: c.left >= e.left && c.right <= e.right && c.top >= e.top,
+        auHaut: c.top < t.top,
+        touchee: !!dessous && b.contains(dessous),
+      };
+    });
+    assert.ok(m.largeur > 0, "la croix ne se mesure pas : rien à conclure");
+    assert.ok(m.ecart >= 16, `la croix est à ${m.ecart} px du texte (8 avant le 16 octobre)`);
+    assert.ok(m.dedans, "l'enveloppe de la ligne coupe la croix : sa zone ne se touche plus en entier");
+    assert.ok(m.auHaut, "la croix n'est pas montée au-dessus du texte");
+    assert.ok(m.touchee, "le centre de la croix ne tombe pas sur elle");
+  });
+
+  await cas("après la quantité, le doigt posé sur le prix vide tombe sur le prix", async () => {
+    // Son enchaînement : la quantité d'abord, puis le prix vide juste dessous.
+    await page.getByLabel("Quantité 1", { exact: true }).tap();
+    await page.waitForTimeout(600);
     assert.ok(ecart.largeur > 0, "le champ du prix ne se mesure pas : rien à conclure");
     const { x, y } = await pointVise();
     const touche = await page.evaluate(
@@ -120,23 +148,7 @@ async function main() {
     assert.equal(Number(rows[0].prix_unitaire), 25, `le prix n'est pas celui tapé : ${rows[0].prix_unitaire}`);
   });
 
-  await cas("sans champ sous le doigt, la ligne glisse toujours jusqu'à « Retirer »", async () => {
-    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-    await pousserCommeSafari();
-    await page.waitForTimeout(600);
-    assert.ok((await decalage()) > 0, "le geste de retrait ne s'ouvre plus du tout");
-    assert.equal(
-      await colonne.locator(".atlas-decouvre").isVisible(),
-      true,
-      "« Retirer » n'est pas découvert"
-    );
-  });
-
-  await cas("la croix au bout de la description retire la ligne, et « Annuler » la rend", async () => {
-    await colonne.evaluate((g) => {
-      g.scrollLeft = 0;
-    });
-    await page.waitForTimeout(400);
+  await cas("la croix retire la ligne, et « Annuler » la rend", async () => {
     const croix = page.locator('[data-atlas="croix-ligne"]');
     assert.equal(await croix.count(), 1, "pas de croix sur la ligne");
     await croix.tap();

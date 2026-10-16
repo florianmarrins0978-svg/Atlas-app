@@ -34907,3 +34907,25 @@ chevron d'`ElementsDuPlanning.tsx` avec sa vraie raison ; l'entrée de
 `PlanningClient` ne couvre plus que le feuilletage des semaines. Les deux ont
 été vus rouges sur la faute qu'ils doivent attraper, posée dans un fichier
 déplacé.
+
+## §464 : Le devis ne glisse plus : seule la croix y retire une ligne
+
+**Décidé le 16 octobre 2026, à sa demande** : *« il faut totalement retirer le
+slide pour supprimer une ligne pour le devis »*. Le 10 août, il avait retenu
+une seule façon de retirer, partout : le glissement (`LigneRetirable`). Le
+3 octobre, la croix s'y est ajoutée sur le devis. Le devis sort maintenant de
+la règle commune : sa ligne garde la chute (`.atlas-ligne`, `.atlas-chute`) et
+le tiroir « Annuler » (`useRetraits`), sans colonne qui défile.
+
+**Pourquoi le devis et lui seul** : c'est l'écran où l'on écrit dans la ligne.
+La colonne qui défile s'entrouvrait sous les chiffres (§ du 3 octobre, la
+ligne partie en touchant la quantité), et elle coupait la croix au bord du
+texte, d'où les 8 px qui la séparaient de la description. Les autres écrans
+qui emploient `LigneRetirable` ne portent pas de champs : ils gardent le
+glissement tant qu'il ne demande pas autre chose.
+
+**La place de la croix** est sa réponse « D » (`appli/devis-croix-plus-a-droite.html`) :
+au-dessus de la colonne des chiffres, en haut de la ligne, 18 px du texte. Elle
+déborde de la colonne de 20 px ; l'enveloppe, qui masque ce qui dépasse pour
+pouvoir se refermer, est donc élargie d'autant (`-mr-5 pr-5`, la marge de la
+feuille). Sur grand écran, elle s'arrête au bord de la colonne Qté.

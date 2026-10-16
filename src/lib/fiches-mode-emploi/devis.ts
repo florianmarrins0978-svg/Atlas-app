@@ -5,7 +5,6 @@
  * règle, la recherche et le pourquoi vivent dans `src/lib/mode-emploi.ts`.
  */
 import type { FicheModeEmploi } from "../mode-emploi";
-import { FICHE_RETRAIT } from "./chantier";
 
 const DC = "src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx";
 const ENVOI = "src/app/chantiers/[id]/export/EnvoiAuClient.tsx";
@@ -585,10 +584,14 @@ export const FICHES_DEVIS: FicheModeEmploi[] = [
     ou: "le devis complet d'un chantier",
     intitule: "Retirer une ligne du devis",
     motsCles: ["devis", "ligne", "supprimer", "retirer", "enlever", "effacer"],
-    geste: FICHE_RETRAIT,
+    // **Plus de glissement sur le devis depuis le 16 octobre 2026** : la croix
+    // seule retire, `FICHE_RETRAIT` (« glissez ») ne vaut plus pour lui.
+    geste:
+      "Appuyez sur la croix, en haut à droite de la ligne. " +
+      "La ligne tombe et « Annuler » reste six secondes en bas de l'écran.",
     reserve: "Un devis déjà parti chez le client ne se modifie plus : il faut le reprendre (voir « Corriger un devis envoyé »).",
     source: "src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx",
-    preuves: ["LigneRetirable", "useRetraits"],
+    preuves: ['data-atlas="croix-ligne"', "useRetraits"],
   },
   {
     id: "devis-remise",

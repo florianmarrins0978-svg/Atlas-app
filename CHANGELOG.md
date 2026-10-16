@@ -6,6 +6,21 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-16
+
+- **Le devis ne glisse plus, et sa croix s'éloigne du texte.** Sa demande :
+  *« il arrive encore fréquemment qu'on appuie sur la petite croix pour
+  supprimer une ligne sans faire exprès »*, et *« il faut totalement retirer le
+  slide »*. Mesuré à 390 px : la zone de la croix commençait 8 px après la fin
+  de la description, on retirait la ligne en voulant retoucher son texte. La
+  ligne du devis ne passe plus par `LigneRetirable` (seule la chute reste) ; la
+  croix, sa réponse « D » de la planche `appli/devis-croix-plus-a-droite.html`,
+  se tient au-dessus de la colonne des chiffres, montée au haut de la ligne,
+  à 18 px du texte. Sur grand écran, elle s'arrête au bord de la colonne Qté.
+  `test-saisie-ne-retire-pas-la-ligne-e2e` le tient, et a rougi avant la
+  correction. Les autres écrans gardent leur glissement : la demande visait le
+  devis.
+
 ## 2026-10-15
 
 - **Le planning est rangé en douze fichiers au lieu d'un seul de 6 095 lignes**,
