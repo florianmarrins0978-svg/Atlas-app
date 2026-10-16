@@ -28,6 +28,18 @@ Format : le plus récent en tête.
   Les pages des relevés et deux commentaires faux sur la 6-VAN sont corrigés.
   La 8-VAN à 0,16 m³/h au quart de tour est juste (fiche Rain Bird).
   `scripts/test-catalogue-arrosage-aquaplus.ts` tient ce qu'il a tranché.
+- **Plus aucune ligne d'arrosage inventée, et ce qui manque se dit.** Sur sa
+  consigne, les lignes provisoires sortent du catalogue : une « Tuyère » et
+  une « Turbine » sans marque posaient des têtes inventées quand une marque
+  n'avait rien (une zone en tuyères Toro en recevait, sans un mot à l'écran),
+  et un « Réducteur de pression » générique doublait son « Régulateur de
+  pression FF 3/4" ». Le plan écrit désormais sous lui la zone sans matériel
+  et la nourrice sans fiche. La sonde de pluie prend son vrai nom, la RSD-Bex.
+- **La page d'arrosage publiée tombait au chargement** depuis la fusion du
+  bridage : elle écrivait la règle de pose avec une constante retirée du
+  calcul, et sa phrase disait encore « entre 5 et 6 m » quand la règle donne
+  6,25. Les chiffres se lisent désormais dans le calcul, et le contrôle de la
+  page (`essai-arrosage-detaille.cjs`, 78 sur 78) suit sa marge de 75 à 105 %.
 
 - **Un message qui parle d'arrosage fait lire ses règles d'arrosage d'abord**
   (`scripts/rappel-arrosage.mjs`). Ce que ça évite : une planche d'arrosage neuve

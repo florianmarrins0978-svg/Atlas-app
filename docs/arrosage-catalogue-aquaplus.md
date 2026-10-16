@@ -17,7 +17,9 @@ Les pages citées sont celles imprimées en bas du PDF (« Page 13 »).
 | 6. La sonde de pluie | en option, la Rain Bird filaire blanche (RSD-Bex, RP403) | dans `TODO.md`, et la case entre dans la planche de l'écran |
 | 7. 8-VAN et SRS 7A | les chiffres d'Aqua Plus, ou une source sûre | 8-VAN : la fiche Rain Bird donne les mêmes chiffres, **le doute est levé**. SRS 7A : le site Hunter refuse l'accès, on garde Aqua Plus |
 | Les 4, 6 et 8-VAN à 330° | oui, coins et bords seulement | **pas encore fait**, voir plus bas |
-| Les six provisoires | pas encore répondu | voir la partie 4 |
+| Les lignes provisoires | supprime tout, garde mon « Régulateur de pression FF 3/4" » | **fait**. Le plan dit maintenant sous lui ce qui manque. Seule la gaine de goutteurs reste : c'est le tube de goutte-à-goutte, envoie-moi la photo de ton étiquette |
+| La sonde de pluie | la Rain Bird filaire blanche, en option | le nom est fait (RSD-Bex, RP403). La case à cocher entre dans la planche de l'écran |
+| La mesure au seau | à demander dans l'outil | la planche de l'écran |
 
 **Pourquoi les VAN à 330° ne sont pas encore corrigées.** Je l'ai fait, et ta
 règle du couloir a rougi : ton couloir de 10 × 2 perdait ses 7 6-VAN pour 5
@@ -25,6 +27,12 @@ règle du couloir a rougi : ton couloir de 10 × 2 perdait ses 7 6-VAN pour 5
 buse sans chiffre à 360°, même pour une zone où elle ne pose que des bords.
 Ça se corrige dans le calcul, que l'autre session réécrit. J'ai donc remis le
 360° en attendant, et c'est écrit dans le code et dans `TODO.md`.
+
+**Un défaut trouvé en chemin, et réparé.** Depuis la fusion du bridage, la page
+d'arrosage publiée tombait au chargement : elle écrivait ta règle de pose avec
+un chiffre retiré du calcul, et disait encore « entre 5 et 6 m » au lieu de
+6,25. Ses essais passent de 76 sur 78 à 78 sur 78, et l'autre essai de la page
+à 107 sur 107.
 
 **Les contrôles joués sur ce lot**, sans batterie à ta demande : le contrôle
 du catalogue, le calcul d'arrosage, tes règles (21 sur 21), les consignes de la

@@ -91,6 +91,8 @@ type Buse = Entree & {
   livreeAvecLArroseur?: boolean;
 };
 const buses = CATALOGUE.buses as Buse[];
+// `referenceDe` est posée sur l'objet après sa déclaration : TypeScript ne la voit pas.
+const { referenceDe } = CATALOGUE as unknown as { referenceDe: (cle: string) => string | null };
 
 for (const r of RELEVES) {
   const b = buses.find((x) => x.ref === r.ref);
@@ -124,11 +126,11 @@ for (const [ref, page] of Object.entries(PAGES)) {
 
 for (const b of buses.filter((x) => x.pourType === "turbine")) {
   if (BUSES_DE_TURBINE_VENDUES_SEULES.includes(b.ref)) {
-    dire(CATALOGUE.referenceDe(b.ref) === b.ref, `${b.ref} : vendue seule, sa référence se montre`);
+    dire(referenceDe(b.ref) === b.ref, `${b.ref} : vendue seule, sa référence se montre`);
     continue;
   }
   dire(
-    b.livreeAvecLArroseur === true && CATALOGUE.referenceDe(b.ref) === null && b.colisage == null,
+    b.livreeAvecLArroseur === true && referenceDe(b.ref) === null && b.colisage == null,
     `${b.nom ?? b.ref} : livrée avec l'arroseur, ni référence ni colisage à elle`,
   );
 }

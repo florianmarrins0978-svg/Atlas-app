@@ -77,11 +77,10 @@ const COUDE_LIGNE = "coude-taraude-25-34";
 const TE_EGAL = "te-25-25-25";
 const PEBD16 = "pebd16";
 
-/** Ce que le calcul pose au regard : sa fiche de nourrice, ou les lignes génériques. */
+/** Ce que le calcul pose au regard : sa fiche de nourrice, et la sonde de pluie quand il l'a cochée. */
 function auRegard(l: LigneCalcul): boolean {
-  if (!l.ref) return true; // « Programmateur N voies », sans référence
-  if (CAT.piece(l.ref)) return true;
-  return ["electrovanne", "regard", "reducteur", "sonde-pluie"].includes(l.ref);
+  if (!l.ref) return false;
+  return Boolean(CAT.piece(l.ref)) || l.ref === "RP403";
 }
 
 function nomDe(ref: string): string {

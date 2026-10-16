@@ -46,13 +46,7 @@ function charger(){
    une portée qu'on croit juste et qui ne l'est pas fait acheter le mauvais
    nombre d'arroseurs, et c'est lui qui revient poser les manquants.
    ═══════════════════════════════════════════════════════════════════════════ */
-var MATERIELS = {};
-CATALOGUE.arroseurs.concat(CATALOGUE.gaines).forEach(function(m){ MATERIELS[m.ref] = m; });
 
-/* Le modèle retenu pour un type d'arroseur, dans la marque choisie.
-   **Le repli sur le générique est BRUYANT** : il rend aussi `emprunte`, et
-   l'écran l'affiche. Un repli muet ferait croire que Rain Bird est renseigné
-   alors qu'aucune de ses références n'est encore entrée. */
 /* Le modèle retenu pour un type d'arroseur, dans la marque choisie.
 
    **La buse se choisit sur la ZONE, pas dans l'absolu** : on prend la plus
@@ -266,7 +260,6 @@ function modelePour(type, plusPetitCote, dims, refImposee){
         pluvio: pluviometrie(b),
         famille: 'Arroseurs'
       },
-      emprunte: false,
       // Les autres buses de cette marque qui PAVENT la zone, du plus grand
       // rayon au plus petit. C'est le champ des possibles que `poser()` explore.
       candidates: (dims && dims.L > 0 && dims.l > 0)
@@ -281,10 +274,10 @@ function modelePour(type, plusPetitCote, dims, refImposee){
     };
   }
 
-  var chez = CATALOGUE.arroseursDe(marque, type);
-  if (chez.length) return { m: chez[0], emprunte: false };
-  var generique = CATALOGUE.arroseursDe('generique', type);
-  return { m: generique[0] || null, emprunte: true };
+  // **Rien pour cette marque : rien, et le plan le dit** (`manquants`). Le
+  // repli sur une « Tuyère » générique posait des têtes inventées sans que
+  // l'écran le dise ; il est retiré avec elle le 16 octobre 2026.
+  return { m: null };
 }
 
 /* Millimètres par heure, en pose tête-bêche : le débit d'un cercle entier
@@ -867,7 +860,7 @@ function poser(z, refImposee, tolerant){
   var dims = { L: Number(z.L)||0, l: Number(z.l)||0 };
   var cle = materielDe(z), choix;
   if (cle === 'gaine'){
-    choix = { m: CATALOGUE.gaines[0], emprunte: CATALOGUE.gaines[0].marqueCle === 'generique' };
+    choix = { m: CATALOGUE.gaines[0] || null };
   } else {
     choix = modelePour(cle, petitCote || null, dims, refImposee);
     // Si le type retenu d'office ne donne aucune pose valable, on essaie
@@ -892,9 +885,9 @@ function poser(z, refImposee, tolerant){
     }
   }
   var m = choix.m, sais = saisonCourante();
-  if (!m) return { cle:cle, m:null, nombre:0, debit:0, minutes:0, nx:0, ny:0, emprunte:true };
+  if (!m) return { cle:cle, m:null, nombre:0, debit:0, minutes:0, nx:0, ny:0 };
   var besoin = sais[TYPES[z.type].famille][0], passages = sais[TYPES[z.type].famille][1];
-  var r = { cle:cle, m:m, besoin:besoin, passages:passages, emprunte:choix.emprunte };
+  var r = { cle:cle, m:m, besoin:besoin, passages:passages };
 
   if (TYPES[z.type].forme === 'surface'){
     var L = Number(z.L)||0, l = Number(z.l)||0;
@@ -1564,6 +1557,30 @@ function voiesProgrammateur(n){
 var COULEURS_RESEAU = ['#2F6FB5','#3E8F4E','#D9A520','#B5502F','#7A4FA3','#1F8A8A','#B5417F','#6B7A2F'];
 function couleurReseau(i){ return COULEURS_RESEAU[i % COULEURS_RESEAU.length]; }
 
+/* ══ CE QUI MANQUE SE DIT SOUS LE PLAN ══════════════════════════════════════
+
+   Sa règle : « ce qui n'est pas calculé se DIT à l'écran ». Depuis que les
+   lignes provisoires sont retirées (16 octobre 2026), deux trous ne sont plus
+   comblés par de l'inventé : une zone dont la marque n'a aucun matériel qui
+   convienne, et une nourrice de plus de voies que ses fiches. Chacun rend sa
+   phrase ; l'écran la pose avec les autres réserves. */
+function manquants(d){
+  var phrases = [];
+  var marque = nomDeMarque(marqueCourante());
+  etat.zones.forEach(function(z){
+    var p = poser(z);
+    if (p.m) return;
+    var quoi = p.cle === 'gaine' ? 'aucun tube de goutte-à-goutte'
+             : p.cle === 'turbine' ? 'aucune turbine ' + marque
+             : 'aucune tuyère ' + marque;
+    phrases.push((z.nom || 'Une zone') + ' : ' + quoi + ' au catalogue, elle n’est pas arrosée.');
+  });
+  if (d.secteurs.length && !CATALOGUE.nourrices[d.secteurs.length]){
+    phrases.push('Nourrice de ' + d.secteurs.length + ' voies : aucune fiche, ses pièces ne sont pas comptées.');
+  }
+  return phrases;
+}
+
 function listeMateriel(d){
   var lignes = [], compte = {}, modeles = {};
   // Le tracé du réseau latéral, sa règle du 17 août (planche 73) : un té
@@ -1720,11 +1737,11 @@ function listeMateriel(d){
     }
   }
   if (d.secteurs.length){
-    // **Sa fiche de nourrice REMPLACE les lignes génériques**, quand elle
-    // existe : électrovanne, regard, clarinette, programmateur — tout ce
-    // qu'il a relevé dans le regard, avec les VRAIES références. Tant qu'elle
-    // manque, les lignes génériques (source « provisoire ») tiennent la
-    // place, comme avant.
+    // **Sa fiche de nourrice, ou rien.** Électrovanne, regard, clarinette,
+    // programmateur : tout ce qu'il a relevé dans le regard, avec les VRAIES
+    // références. Au-delà de ses six fiches, les lignes génériques qui
+    // tenaient la place sont retirées (16 octobre 2026) : le plan dit qu'il
+    // manque la fiche (`manquants`), il ne la compose pas.
     var fiche = CATALOGUE.ficheNourrice(d.secteurs.length, combienGoutteAGoutte(d));
     if (fiche){
       fiche.pieces.forEach(function(x){
@@ -1732,12 +1749,6 @@ function listeMateriel(d){
         if (!p) return;
         lignes.push({ ref:x.ref, nom:(p.marque ? p.marque + ' ' : '') + p.nom, q:x.q, u:'u' });
       });
-    } else {
-      // 9 V, pour s'accorder au programmateur à pile de la ligne suivante :
-      // ses fiches de nourrice le sont toutes, et une 24 V demanderait du 220 V.
-      lignes.push({ ref:'electrovanne', nom:'Électrovannes 9 V', q: d.secteurs.length, u:'u' });
-      lignes.push({ ref:'regard', nom:'Regards de vannes', q: Math.ceil(d.secteurs.length/3), u:'u' });
-      lignes.push({ nom:'Programmateur ' + voiesProgrammateur(d.secteurs.length) + ' voies', q:1, u:'u' });
     }
     // Pièces de tête de réseau, pas du regard : jamais dans une fiche de
     // nourrice, toujours présentes.
@@ -1750,6 +1761,13 @@ function listeMateriel(d){
     // posée et tranchée, et ce commentaire existe pour éviter qu'on la
     // rouvre.
     /* ══ LE RÉDUCTEUR EST POUR LE GOUTTE-À-GOUTTE, ET POUR LUI SEUL ══════════
+
+       **ET C'EST SON « RÉGULATEUR DE PRESSION FF 3/4" », DEPUIS LE 16 OCTOBRE
+       2026.** Sa fiche de nourrice le pose déjà sur chaque voie de
+       goutte-à-goutte (`ficheNourrice`). La ligne « Réducteur de pression »
+       ci-dessous, générique et sans référence, le comptait une seconde fois ;
+       elle est retirée sur sa consigne : *« garde celui-là ! Régulateur de
+       pression FF 3/4" »*. Le récit qui suit dit pourquoi la pièce existe.
 
        **Sa règle du 22 août 2026, en deux temps.** Il était d'abord facturé
        d'office sur chaque chantier — une pièce que j'avais posée sans source
@@ -1768,10 +1786,10 @@ function listeMateriel(d){
        **La leçon vaut au-delà de cette pièce.** Une notice de constructeur dit
        ce que le MATÉRIEL supporte, jamais ce que le CHANTIER exige. Prendre
        l'une pour l'autre a retiré du devis une pièce qui devait y être. */
-    if (combienGoutteAGoutte(d) > 0){
-      lignes.push({ ref:'reducteur', nom:'Réducteur de pression', q:1, u:'u' });
+    if (etat.sonde){
+      var sonde = CATALOGUE.materiel.filter(function(x){ return x.regle === 'option'; })[0];
+      if (sonde) lignes.push({ ref:sonde.ref, nom:sonde.nom, q:1, u:'u' });
     }
-    if (etat.sonde) lignes.push({ ref:'sonde-pluie', nom:'Sonde de pluie', q:1, u:'u' });
   }
   return lignes;
 }

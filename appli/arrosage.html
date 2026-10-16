@@ -349,8 +349,7 @@ function dessinerZones(){
               (p.ecartLignes ? ' à ' + Math.round(p.ecartLignes*100) + ' cm' : '') + ' · ' : '') +
             p.nombre + ' m de gaine')
         + ' · ' + nb(p.debit) + ' m³/h · ' + p.minutes + ' min, ' + p.passages + '×/semaine'
-        + (p.emprunte ? ' : <span class="provisoire">modèle générique, pas encore ' + nomDeMarque(marqueCourante()) + '</span>'
-                      : (p.m.source === 'provisoire' ? ', <span class="provisoire">portée à confirmer</span>' : ''))
+        + (p.m.source === 'provisoire' ? ', <span class="provisoire">portée à confirmer</span>' : '')
       : 'Mesures à compléter.';
 
     bloc.innerHTML =
@@ -392,14 +391,13 @@ function dessinerMarques(){
   choix.value = marqueCourante();
 
   var cle = marqueCourante();
-  var combien = CATALOGUE.arroseursDe(cle).length +
-                CATALOGUE.buses.filter(function(b){ return b.marqueCle === cle; }).length;
+  var combien = CATALOGUE.buses.filter(function(b){ return b.marqueCle === cle; }).length;
   document.getElementById('marqueNote').innerHTML = combien
     ? combien + ' modèle' + (combien>1?'s':'') + ' ' + nomDeMarque(cle) + ' au catalogue.' +
       (function(){
         var trous = [];
-        if (!CATALOGUE.busesDe(cle,'turbine').length && !CATALOGUE.arroseursDe(cle,'turbine').length)
-          trous.push('aucune turbine');
+        if (!CATALOGUE.busesDe(cle,'turbine').length) trous.push('aucune turbine');
+        if (!CATALOGUE.busesDe(cle,'tuyere').length) trous.push('aucune tuyère');
         var corpsDeLaMarque = CATALOGUE.corps.filter(function(c){ return c.marqueCle === cle; }).length;
         if (!corpsDeLaMarque) trous.push('aucun corps d\'arroseur');
         return trous.length
@@ -850,10 +848,14 @@ function recalculer(redessinerZones){
   document.getElementById('compteur').value = etat.compteur === 'non' ? 'non' : 'oui';
 
   document.getElementById('recouvrementNote').innerHTML =
+    // Les chiffres sortent du calcul : la phrase disait « 1,2 × » et « entre 5
+    // et 6 m » après qu'il a porté sa règle à 1,25 le 16 octobre 2026, et
+    // `ECART_MAX_FACTEUR`, retiré du calcul, faisait tomber la page.
     '<b>Votre règle de pose :</b> écart entre arroseurs jamais inférieur à la ' +
-    'portée, jamais au-delà de ' + nb(ECART_MAX_FACTEUR,1).replace(',0','') +
+    'portée, jamais au-delà de ' + nb(1 / RECOUVREMENT_MIN, 2).replace(/,?0+$/, '') +
     ' × la portée (' + Math.round(RECOUVREMENT_MIN*100) + ' % de recouvrement au minimum). ' +
-    'Une portée de 5 m donne donc entre 5 et 6 m. Quinconce dès ' +
+    'Une portée de 5 m donne donc entre ' + nb(5 / RECOUVREMENT_MAX, 2).replace(/,?0+$/, '') +
+    ' et ' + nb(5 / RECOUVREMENT_MIN, 2).replace(/,?0+$/, '') + ' m. Quinconce dès ' +
     (QUINCONCE_AU_DELA_DE + 1) + ' arroseurs, et les coins toujours occupés.';
   var mail = document.getElementById('envoyer');
   mail.href = 'mailto:?subject=' + encodeURIComponent('Demande de prix, arrosage automatique') +

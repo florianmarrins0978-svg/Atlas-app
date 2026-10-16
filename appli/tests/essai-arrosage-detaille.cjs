@@ -144,22 +144,33 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
       const entreTetes = p.quinconce
         ? Math.min(2 * p.ecartX, 2 * p.ecartY, Math.hypot(p.ecartX, p.ecartY))
         : Math.min(p.ecartX, p.ecartY);
-      return { zone: z.nom, portee: p.m.portee, ex: p.ecartX, ey: p.ecartY, entreTetes, quinconce: p.quinconce, serre: p.tropSerre }; })
+      // **La portée RÉGLÉE, et la marge que la pose a prise** (sa règle du
+      // 16 octobre 2026) : de 80 à 100 %, ou de 75 à 105 % quand cela gagne un
+      // réseau ou une gamme. Les bornes se lisent dans le calcul, pas ici.
+      const portee = p.porteeReglee || p.m.portee;
+      const rMin = p.tolerant ? RECOUVREMENT_MIN_TOLERE : RECOUVREMENT_MIN;
+      const rMax = p.tolerant ? RECOUVREMENT_MAX_TOLERE : RECOUVREMENT_MAX;
+      return { zone: z.nom, portee, ecartMin: portee / rMax, ecartMax: portee / rMin,
+               ex: p.ecartX, ey: p.ecartY, entreTetes, quinconce: p.quinconce, serre: p.tropSerre }; })
     .filter(Boolean));
   cas('des poses à éprouver, sur plusieurs zones', poses.length >= 2, JSON.stringify(poses));
   cas('le couloir est en quinconce — sa règle du 18 août, tenue', poses.some(p => p.quinconce), JSON.stringify(poses));
   const horsRegle = poses.filter(p => !p.serre &&
-    (p.entreTetes < p.portee - 0.01 ||
-     p.ex > p.portee * 1.2 + 0.01 || p.ey > p.portee * 1.2 + 0.01));
-  cas('sur CHAQUE zone, l\'écart tient entre la portée et 1,2 × la portée',
+    (p.entreTetes < p.ecartMin - 0.01 ||
+     p.ex > p.ecartMax + 0.01 || p.ey > p.ecartMax + 0.01));
+  cas('sur CHAQUE zone, l\'écart tient dans sa règle de recouvrement',
       horsRegle.length === 0, JSON.stringify(horsRegle));
 
   const resume = await page.locator('.zone-res').nth(1).innerText();
   const mEcart = resume.match(/un tous les (\d+,\d+) m/);
   const mRec = resume.match(/recouvrement (\d+) %/);
   cas('l\'écart de pose est chiffré en mètres', !!mEcart, resume.slice(0, 90));
-  cas('le recouvrement obtenu tient ses 80 %',
-      mRec && Number(mRec[1]) >= 80, resume.slice(0, 90));
+  const plancher = await page.evaluate(() => {
+    const z = etat.zones.filter(x => TYPES[x.type].forme === 'surface')[1];
+    return Math.round(100 * (poser(z).tolerant ? RECOUVREMENT_MIN_TOLERE : RECOUVREMENT_MIN));
+  });
+  cas('le recouvrement obtenu tient son plancher (80 %, ou 75 % quand la marge gagne)',
+      mRec && Number(mRec[1]) >= plancher, resume.slice(0, 90) + ' plancher ' + plancher);
   cas('la pose est annoncée (carré ou quinconce)',
       /en quinconce|en carré/.test(resume), resume.slice(0, 90));
 

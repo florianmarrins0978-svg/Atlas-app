@@ -619,15 +619,43 @@ dire(
     seau: 10, temps: 20, pression: 6,
     zones: [{ type: "gazon", nom: "Pelouse", L: 16, l: 6 }],
   });
-  const reducteur = (p: { materiel: { nom: string }[] }) =>
-    p.materiel.some((m) => /Réducteur/i.test(m.nom));
+  // **C'est SON « Régulateur de pression FF 3/4" » depuis le 16 octobre 2026**,
+  // celui de sa fiche de nourrice, posé sur chaque voie de goutte-à-goutte. La
+  // ligne générique « Réducteur de pression » le comptait une seconde fois :
+  // retirée sur sa consigne (« garde celui-là ! »).
+  const regulateurs = (p: { materiel: { ref?: string; q: number }[] }) =>
+    p.materiel.filter((m) => m.ref === "regulateur-ff34").reduce((n, m) => n + m.q, 0);
+  const generique = (p: { materiel: { nom: string }[] }) =>
+    p.materiel.some((m) => /Réducteur de pression/i.test(m.nom));
 
-  dire(!reducteur(arroseursSeuls), "que des arroseurs : aucun réducteur facturé");
-  dire(reducteur(avecGoutteAGoutte), "une gaine de goutteurs : le réducteur est facturé");
+  dire(regulateurs(arroseursSeuls) === 0, "que des arroseurs : aucun régulateur facturé");
+  dire(regulateurs(avecGoutteAGoutte) >= 1, "une voie de goutte-à-goutte : son régulateur FF 3/4\" est facturé");
   dire(
-    !reducteur(arroseursAHautePression),
-    "à 6 bar sans goutte-à-goutte : toujours aucun réducteur — c'est l'emploi qui décide, pas la pression",
+    regulateurs(arroseursAHautePression) === 0,
+    "à 6 bar sans goutte-à-goutte : toujours aucun régulateur, c'est l'emploi qui décide, pas la pression",
   );
+  dire(!generique(avecGoutteAGoutte), "plus aucun « Réducteur de pression » générique dans la liste");
+}
+
+// ── CE QUI MANQUE AU CATALOGUE SE DIT, IL NE SE COMBLE PAS ──────────────────
+// Sa consigne du 16 octobre 2026 : « supprime toutes les lignes provisoires ».
+// Une « Tuyère » générique servait de repli quand une marque n'en avait pas,
+// et elle posait des têtes inventées sans que l'écran le dise.
+{
+  const toro = calculerPlan({
+    seau: 10, temps: 20, pression: 3, marque: "toro",
+    zones: [{ type: "gazon", nom: "Couloir", L: 10, l: 2, materiel: "tuyere" }],
+  } as never) as { materiel: { ref?: string; nom: string }[]; manquants: string[] };
+  dire(
+    toro.manquants.some((p) => /Couloir : aucune tuyère Toro au catalogue/.test(p)),
+    `une zone en tuyères Toro : le plan le dit (${JSON.stringify(toro.manquants)})`,
+  );
+  dire(
+    !toro.materiel.some((m) => /generique|Tuyères 12/.test(`${m.ref} ${m.nom}`)),
+    "et aucune tuyère inventée n'entre dans la liste",
+  );
+  const sansManque = calculerPlan(JARDIN) as { manquants: string[] };
+  dire(sansManque.manquants.length === 0, `le jardin de la maquette ne manque de rien (${JSON.stringify(sansManque.manquants)})`);
 }
 
 // ── LE MOINS DE VANNES D'ABORD, LE MOINS D'ARROSEURS ENSUITE ────────────────

@@ -379,6 +379,9 @@ function lePlan(
     );
   }
   reserves.push(...reservesDuDessin);
+  // **Ce qui manque au catalogue se dit, jamais ne se comble** (16 octobre
+  // 2026) : une zone sans matériel de la marque, une nourrice sans fiche.
+  reserves.push(...(plan.manquants as string[]));
 
   return {
     debitDisponible: plan.debitDisponible,

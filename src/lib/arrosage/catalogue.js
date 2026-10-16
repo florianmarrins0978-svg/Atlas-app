@@ -80,20 +80,13 @@ export const CATALOGUE = {
     { cle:'generique', nom:'Générique (provisoire)', cache:true }
   ],
 
-  /* ── Les arroseurs ──────────────────────────────────────────────────────
-     `portee` en mètres à `pression` bars. `debit360` en m³/h pour un cercle
-     entier — un arroseur de bord n'en consomme que la moitié, un coin le quart.
-     `pluvio` en mm/h : c'est elle qui donne les DURÉES, jamais la surface. */
-  arroseurs: [
-    { ref:'turbine-generique', marqueCle:'generique', marque:'—',
-      type:'turbine', nom:'Turbine', detail:'buse 3,0',
-      portee:9, pression:3, debit360:0.44, pluvio:11, famille:'Arroseurs',
-      source:'provisoire' },
-    { ref:'tuyere-generique', marqueCle:'generique', marque:'—',
-      type:'tuyere', nom:'Tuyère', detail:'buse 12',
-      portee:3.7, pression:3, debit360:0.48, pluvio:38, famille:'Arroseurs',
-      source:'provisoire' }
-  ],
+  /* ── Les arroseurs génériques sont RETIRÉS, le 16 octobre 2026 ──────────
+     Une « Turbine » et une « Tuyère » sans marque, posées avant ses photos,
+     servaient de repli quand une marque n'avait rien : une zone en tuyères
+     Toro recevait ainsi des tuyères inventées (portée 3,7 m, 0,48 m³/h), sans
+     que rien le dise. Sa consigne : « supprime toutes les lignes provisoires ».
+     Une marque qui n'a rien pour une zone le DIT désormais sous le plan
+     (`manquants`, dans `calcul.js`). */
 
   /* ── LES BUSES — relevées de SES photos de catalogue ────────────────────
      Sa première page, le 17 août 2026 : catalogue Aqua Plus 2026, page 8,
@@ -682,38 +675,21 @@ export const CATALOGUE = {
   ],
 
   /* ── Le reste du matériel ───────────────────────────────────────────────
-     Ce qui ne s'arrose pas mais qu'il faut acheter. `parSecteur` : une pièce
-     par secteur. `parArroseur` : une par arroseur. `fixe` : une par chantier.
-     `aMesurer` : la quantité ne se déduit pas, elle se relève sur le terrain. */
+     **Ses lignes provisoires sont RETIRÉES, le 16 octobre 2026** (« supprime
+     toutes les lignes provisoires ») : électrovanne et regard génériques,
+     disconnecteur, réducteur de pression, tuyaux PE 25 et 32. Aucune n'avait de
+     référence ni ne venait de ses documents. Ce qui les remplace, et vient de
+     lui : ses fiches de nourrice (électrovanne 100 DV, regard, programmateur
+     BL-IP), son « Régulateur de pression FF 3/4" » par voie de goutte-à-goutte,
+     et ses tubes dans `tuyaux`. Ne pas les remettre « pour dépanner ».
+
+     Reste la sonde de pluie, qu'il veut EN OPTION : *« si l'utilisateur coche
+     oui on la rajoute dans la liste »*, la Rain Bird filaire blanche. */
   materiel: [
-    // **La marque vaut pour elle aussi** — sa réponse du 17 août : « ça sera
-    // valable aussi pour les électrovannes, pour le reste non. » Le jour où ses
-    // références arriveront, cette ligne se dédoublera par marque.
-    // **9 V, PAS 24 V — sa correction du 21 août 2026.** Cette ligne portait
-    // « Électrovanne 24 V », une valeur générique posée avant qu'il donne ses
-    // références, et jamais confrontée à elles. Il a demandé d'où elle sortait :
-    // de nulle part. Toutes SES fiches de nourrice (17 août) sont en 9 V —
-    // `electrovanne-100dv`, `prog-N` à pile, `pile-9v`.
-    //
-    // **Et sa règle rend la faute grave, pas seulement inexacte** : une
-    // électrovanne 24 V veut un programmateur sur secteur 220 V ; une 9 V veut
-    // un programmateur à pile. Les mélanger ne fait pas un réseau qui arrose
-    // mal, mais un réseau qui n'arrose PAS — et on ne s'en aperçoit qu'après
-    // avoir rebouché.
-    { ref:'electrovanne', nom:'Électrovanne 9 V', regle:'parSecteur',
-      suitLaMarque:true, source:'provisoire' },
-    // « crosse » générique retirée le 17 août : remplacée par les coudes SBE
-    // réels, choisis selon le taraudage du corps (voir CATALOGUE.coudes).
-    { ref:'regard', nom:'Regard de vannes', regle:'parTroisSecteurs', source:'provisoire' },
-    // Le disconnecteur a été retiré de la liste le 18 août sur sa décision
-    // (« je n'en mets jamais »). L'entrée reste ici, inutilisée : le jour où il
-    // en poserait un, elle est prête, et sa suppression pure et simple ferait
-    // reperdre la référence.
-    { ref:'disconnecteur', nom:'Disconnecteur (obligatoire sur l\'eau potable)', regle:'fixe', source:'provisoire' },
-    { ref:'reducteur', nom:'Réducteur de pression', regle:'fixe', source:'provisoire' },
-    { ref:'sonde-pluie', nom:'Sonde de pluie', regle:'option', source:'provisoire' },
-    { ref:'pe32', nom:'Tuyau PE 32 (ligne principale)', regle:'aMesurer', unite:'ml', source:'provisoire' },
-    { ref:'pe25', nom:'Tuyau PE 25 (antennes)', regle:'aMesurer', unite:'ml', source:'provisoire' }
+    // Le libellé est celui d'Aqua Plus, mot pour mot : c'est ce qu'il demande
+    // au comptoir.
+    { ref:'RP403', nom:'sonde pluie RSD-Bex Rain Bird', regle:'option',
+      source:'patron', releve:'Aqua Plus 2026, p. 27' }
   ],
 
   /* ══ CE QUE SA NOTICE RAIN BIRD DIT DE L'ÉLECTROVANNE ══════════════════════
@@ -960,16 +936,6 @@ CATALOGUE.buses.forEach(function (b) {
   b.debitMemeQuelQueSoitLArc = true;
 });
 
-/* Ce que l'écran doit savoir dire, et qui se compte ici plutôt qu'à trois
-   endroits : combien de valeurs attendent encore ses données. */
-/* Les arroseurs d'une marque, par type. Rend un tableau VIDE quand la marque
-   n'a rien : c'est à l'écran de le dire, pas à ce fichier de le masquer par un
-   repli silencieux — un repli muet ferait croire que Rain Bird est renseigné. */
-CATALOGUE.arroseursDe = function (marqueCle, type) {
-  return CATALOGUE.arroseurs.filter(function (a) {
-    return a.marqueCle === marqueCle && (!type || a.type === type);
-  });
-};
 
 /* Les buses d'une marque pour un type d'arroseur, de la plus grande portée à
    la plus petite : c'est dans cet ordre qu'on cherche celle qui tient. */
@@ -1016,8 +982,8 @@ CATALOGUE.busesDe = function (marqueCle, pourType) {
    une référence inventée fait perdre une matinée. */
 CATALOGUE.referenceDe = function (cle) {
   if (!cle) return null;
-  var listes = [CATALOGUE.arroseurs, CATALOGUE.buses, CATALOGUE.corps,
-                CATALOGUE.coudes, CATALOGUE.gaines];
+  var listes = [CATALOGUE.buses, CATALOGUE.corps, CATALOGUE.coudes,
+                CATALOGUE.gaines, CATALOGUE.materiel];
   for (var i = 0; i < listes.length; i++) {
     var trouve = (listes[i] || []).filter(function (x) { return x.ref === cle; })[0];
     // **`releve` est le seul juge.** Une entrée sans relevé est une entrée
@@ -1139,9 +1105,11 @@ CATALOGUE.marqueParDefaut = function () {
   return d ? d.cle : CATALOGUE.marques[0].cle;
 };
 
+/* Ce que l'écran doit savoir dire, et qui se compte ici plutôt qu'à trois
+   endroits : combien de valeurs attendent encore ses données. */
 CATALOGUE.provisoires = function () {
   var n = 0;
-  ['arroseurs','gaines','materiel'].forEach(function (famille) {
+  ['gaines','materiel'].forEach(function (famille) {
     CATALOGUE[famille].forEach(function (x) { if (x.source === 'provisoire') n++; });
   });
   return n;
