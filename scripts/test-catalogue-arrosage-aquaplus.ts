@@ -135,6 +135,14 @@ for (const b of buses.filter((x) => x.pourType === "turbine")) {
   );
 }
 
+// Son tube de goutte-à-goutte, dit le 16 octobre 2026 : *« et c'est bien 2 l/h »*.
+type Gaine = Entree & { marque: string; debitGoutteur: number; ecartGoutteurs: number; debitMetre: number; source: string };
+const gaines = CATALOGUE.gaines as unknown as Gaine[];
+dire(gaines.length === 1 && gaines[0].ref === "UGGCBL23050", `un seul tube, le sien : ${gaines.map((g) => g.ref).join(", ")}`);
+const g = gaines[0];
+dire(g.marque === "Toro" && g.debitGoutteur === 2 && g.ecartGoutteurs === 0.33 && g.source === "patron",
+  `UGGCBL23050 : Toro, 2 l/h tous les 33 cm (lu : ${g.marque}, ${g.debitGoutteur} l/h, ${g.ecartGoutteurs} m)`);
+
 if (echecs > 0) {
   console.log(`\n✗ ${echecs} écart(s) avec Aqua Plus 2026`);
   process.exit(1);

@@ -274,8 +274,14 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
       /à renseigner/.test(fiches.grand.texte), fiches.grand.texte.slice(0, 120));
 
   // Et les valeurs provisoires sont signalées, jamais présentées comme acquises.
+  // **Depuis le 16 octobre 2026, il n'en reste plus** (« supprime toutes les
+  // lignes provisoires ») : le bandeau doit alors dire « à jour », et
+  // « provisoire » sinon. Le contrôle suit le catalogue, pas un état figé.
   const bandeau = await page.locator('#bandeau').innerText();
-  cas('les valeurs provisoires sont signalées', /provisoire/.test(bandeau), bandeau.slice(0, 70));
+  const provisoires = await page.evaluate(() => CATALOGUE.provisoires());
+  cas('le bandeau dit vrai sur les valeurs provisoires',
+      provisoires === 0 ? /à jour/.test(bandeau) : /provisoire/.test(bandeau),
+      provisoires + ' provisoire(s) : ' + bandeau.slice(0, 90));
 
   // ── LE DÉBIT DES TURBINES NE DÉPEND PAS DE L'ARC — sa règle du 17 août ────
   // « Les débits, portées qui sont dans le tableau sont donnés pour les

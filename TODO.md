@@ -42,18 +42,20 @@ demander son tube (une photo de l'étiquette, comme pour le PEHD), puis la
 remplacer. Aqua Plus a l'UGGRBXFS, « tube Ø16mm 2,3l/h esp.33cm autorégulé
 enterrable » (p. 48), aux mêmes chiffres.
 
-**Son tube, dit le 16 octobre 2026** : Rain Bird XFS (fiche D39978B), de
-2,3 à 3 l/h par goutteur tous les 30 cm, *« tu peux prendre cette mesure »* :
-le calcul retient **3 l/h** (le côté sûr, moins de mètres par vanne). Il
-l'achète **en couronnes de 50 m ou de 100 m** : la liste doit le dire en
-couronnes, pas seulement en mètres. Ses règles du même jour, à coder :
+**Son tube, dit le 16 octobre 2026, et SEULE donnée à garder** (*« garde que
+cette info pour le goutte-à-goutte ! »*) : **Toro UGGCBL23050**, « tube Ø16mm
+2l/h esp.33cm autorégulé », **2 l/h tous les 33 cm**, soit 6,06 l/h par mètre.
+Les chiffres d'avant (Rain Bird XFS, 2,3 à 3 l/h tous les 30 cm) sont faux pour
+lui : il s'était trompé de fiche. **Entré au catalogue** le 16 octobre, sa
+durée d'arrosage calculée sur l'écart des lignes de la zone. Il l'achète en
+couronnes de 50 m ou de 100 m. Ses règles du même jour :
 
 | | |
 |---|---|
-| une ligne de goutte-à-goutte | **100 m au plus** (*« tous les 100 m on refait une sortie en 25 ou 32 »* ; la fiche Rain Bird donne 109,7 m à 2,1 bar pour 2,3 l/h) |
+| une ligne de goutte-à-goutte | **100 m au plus** (*« tous les 100 m on refait une sortie en 25 ou 32 »*) |
 | au-delà | le Ø25 ou Ø32 continue, un **té égal** fait la nouvelle sortie |
 | un filtre | **JAMAIS** : *« on ne pose jamais de filtre, jamais »*, même si la fiche Rain Bird en exige un (120 mesh). Ne pas l'ajouter « par prudence » |
-| la durée d'arrosage | se calcule : débit au mètre ÷ écart entre lignes, au lieu des 23 mm/h que rien ne justifiait |
+| la durée d'arrosage | ~~à faire~~ **fait le 16 octobre** : débit au mètre ÷ écart entre lignes. Une haie n'a pas d'écart : sa durée n'est pas calculée et le plan le dit. **Lui demander la largeur qu'arrose une ligne de haie** |
 
 Un croquis de 350 m lui a été montré (3 vannes, car 350 m font 3,5 m³/h pour
 1,53 par vanne) : https://claude.ai/artifact/VukpwXTzLq8mSACriCvhZa.

@@ -40,6 +40,13 @@ Format : le plus récent en tête.
   calcul, et sa phrase disait encore « entre 5 et 6 m » quand la règle donne
   6,25. Les chiffres se lisent désormais dans le calcul, et le contrôle de la
   page (`essai-arrosage-detaille.cjs`, 78 sur 78) suit sa marge de 75 à 105 %.
+- **Le goutte-à-goutte est son tube, et sa durée se calcule.** La « gaine de
+  goutteurs » provisoire (2,3 l/h, 23 mm/h tirés de nulle part) devient son
+  Toro UGGCBL23050, 2 l/h tous les 33 cm, dont le débit au mètre se calcule.
+  La durée d'un massif se lit sur l'écart de ses lignes ; une haie, sans écart
+  connu, le dit sous le plan au lieu d'afficher une durée inventée. En chemin :
+  un massif de 2,40 m perdait une ligne, 2,4 ÷ 0,80 valant 2,9999999999999996
+  en virgule flottante.
 
 - **Un message qui parle d'arrosage fait lire ses règles d'arrosage d'abord**
   (`scripts/rappel-arrosage.mjs`). Ce que ça évite : une planche d'arrosage neuve

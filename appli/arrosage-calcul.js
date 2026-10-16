@@ -1080,7 +1080,10 @@ function poser(z, refImposee, tolerant){
     var L2 = Number(z.L)||0, l2 = Number(z.l)||0;
     if (L2 <= 0 || l2 <= 0) return Object.assign(r, { nombre:0, debit:0, minutes:0 });
     var e = TYPES[z.type].ecartLignes;
-    var lignes = Math.max(1, Math.floor(l2 / e) + 1);
+    // **Le millionième ajouté n'est pas une marge** : 2,4 ÷ 0,80 vaut
+    // 2,9999999999999996 en virgule flottante, et l'arrondi par le bas
+    // retirait une ligne à un massif de 2,40 m (trouvé le 16 octobre 2026).
+    var lignes = Math.max(1, Math.floor(l2 / e + 1e-9) + 1);
     r.lignes = lignes; r.ecartLignes = e;
     r.nombre = Math.round(lignes * L2);
     r.debit = r.nombre * m.debitMetre;
@@ -1095,7 +1098,16 @@ function poser(z, refImposee, tolerant){
   }
   // La durée dépend de la PLUVIOMÉTRIE, jamais de la surface : la même
   // quantité d'eau demande 45 min de turbine et 13 min de tuyère.
-  r.minutes = passages > 0 ? Math.round((besoin / passages / m.pluvio) * 60) : 0;
+  //
+  // **Celle du goutte-à-goutte se calcule sur la zone** (16 octobre 2026) :
+  // le débit au mètre de son tube, réparti sur l'écart entre deux lignes.
+  // Les 23 mm/h écrits au catalogue ne venaient de nulle part. Une haie n'a
+  // pas d'écart connu : sa durée n'est pas calculée, et le plan le dit.
+  var pluvio = m.type === 'gaine'
+    ? (r.ecartLignes ? m.debitMetre * 1000 / r.ecartLignes : null)
+    : m.pluvio;
+  r.dureeInconnue = passages > 0 && !pluvio;
+  r.minutes = passages > 0 && pluvio ? Math.round((besoin / passages / pluvio) * 60) : 0;
   return r;
 }
 
@@ -1574,6 +1586,11 @@ function manquants(d){
              : p.cle === 'turbine' ? 'aucune turbine ' + marque
              : 'aucune tuyère ' + marque;
     phrases.push((z.nom || 'Une zone') + ' : ' + quoi + ' au catalogue, elle n’est pas arrosée.');
+  });
+  etat.zones.forEach(function(z){
+    if (poser(z).dureeInconnue){
+      phrases.push((z.nom || 'Une haie') + ' : la durée d’arrosage n’est pas calculée, il manque la largeur que sa ligne arrose.');
+    }
   });
   if (d.secteurs.length && !CATALOGUE.nourrices[d.secteurs.length]){
     phrases.push('Nourrice de ' + d.secteurs.length + ' voies : aucune fiche, ses pièces ne sont pas comptées.');

@@ -654,8 +654,30 @@ dire(
     !toro.materiel.some((m) => /generique|Tuyères 12/.test(`${m.ref} ${m.nom}`)),
     "et aucune tuyère inventée n'entre dans la liste",
   );
-  const sansManque = calculerPlan(JARDIN) as { manquants: string[] };
-  dire(sansManque.manquants.length === 0, `le jardin de la maquette ne manque de rien (${JSON.stringify(sansManque.manquants)})`);
+  // **Seule la durée de la haie manque**, et c'est vrai : son tube donne
+  // 6,06 l/h par mètre, mais rien ne dit sur quelle largeur. Les 23 mm/h qui
+  // tenaient la place ne venaient de nulle part (16 octobre 2026).
+  const jardin = calculerPlan(JARDIN) as { manquants: string[] };
+  dire(
+    jardin.manquants.length === 1 && /^Haie : la durée d’arrosage n’est pas calculée/.test(jardin.manquants[0]),
+    `le jardin de la maquette ne manque que la durée de sa haie (${JSON.stringify(jardin.manquants)})`,
+  );
+}
+
+// ── LE GOUTTE-À-GOUTTE EST SON TUBE TORO, ET SA DURÉE SE CALCULE ────────────
+// UGGCBL23050, 2 l/h tous les 33 cm (16 octobre 2026). Un massif à 80 cm
+// entre lignes reçoit 6,06 l/h par mètre sur 0,80 m : 7,6 mm/h.
+{
+  const massif = calculerPlan({
+    seau: 10, temps: 20, pression: 3,
+    zones: [{ type: "massif", nom: "Massif", L: 10, l: 2.4 }],
+  } as never) as { secteurs: { debit: number; minutes: number }[]; materiel: { ref?: string; nom: string; q: number }[]; manquants: string[] };
+  const tube = massif.materiel.find((m) => m.ref === "UGGCBL23050");
+  dire(Boolean(tube), `la liste porte son tube UGGCBL23050 (${JSON.stringify(massif.materiel.map((m) => m.ref))})`);
+  // 4 lignes (2,4 m ÷ 0,80 + 1) de 10 m : 40 m à 6,06 l/h par mètre.
+  dire(tube?.q === 40, `40 m de tube pour 4 lignes de 10 m (lu : ${tube?.q})`);
+  dire(Math.abs(massif.secteurs[0].debit - 40 * 2 / 0.33 / 1000) < 1e-9, `le débit vient de ses goutteurs (${massif.secteurs[0].debit})`);
+  dire(massif.secteurs[0].minutes > 0 && massif.manquants.length === 0, "un massif a sa durée, calculée sur l'écart de ses lignes");
 }
 
 // ── LE MOINS DE VANNES D'ABORD, LE MOINS D'ARROSEURS ENSUITE ────────────────

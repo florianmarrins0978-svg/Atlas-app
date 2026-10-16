@@ -665,13 +665,22 @@ var CATALOGUE = {
     'pebd16':              { nom:'PEBD rigide Ø16 (tube de reprise)', marque:'Dura', unite:'ml' }
   },
 
-  /* ── Le goutte-à-goutte ─────────────────────────────────────────────────
-     `debitMetre` en m³/h par mètre de gaine. */
+  /* ── Le goutte-à-goutte : SON tube, le 16 octobre 2026 ──────────────────
+     *« Voici le goutte-à-goutte que j'utilise : UGGCBL23050, un tube de 16 mm
+     à goutteurs intégrés autorégulants, 2 l/h espacés de 33 cm, la marque
+     Toro »*, puis *« et c'est bien 2 l/h »*. Il remplace la « gaine de
+     goutteurs » provisoire (2,3 l/h, 23 mm/h), qui ne venait de nulle part.
+
+     `debitMetre` se CALCULE sur ses deux chiffres (plus bas), il ne s'écrit
+     pas : 2 l/h tous les 33 cm font 6,06 l/h par mètre. La pluviométrie, elle,
+     dépend de l'écart entre les lignes de la zone : c'est le calcul qui la
+     fait (`poser`), plus ce fichier. */
   gaines: [
-    { ref:'gaine-generique', marqueCle:'generique', marque:'—', type:'gaine',
-      nom:'Gaine de goutteurs',
-      detail:'2,3 L/h tous les 33 cm', debitMetre:0.007, pluvio:23,
-      famille:'Goutte-à-goutte', source:'provisoire' }
+    { ref:'UGGCBL23050', marqueCle:'toro', marque:'Toro', type:'gaine',
+      nom:'tube Ø16mm 2l/h esp.33cm autorégulé',
+      detail:'2 l/h tous les 33 cm', debitGoutteur:2, ecartGoutteurs:0.33,
+      famille:'Goutte-à-goutte', source:'patron',
+      releve:'Aqua Plus, sa référence du 16 octobre 2026' }
   ],
 
   /* ── Le reste du matériel ───────────────────────────────────────────────
@@ -927,6 +936,13 @@ CATALOGUE.ficheNourrice = function (n, combienGoutte) {
    angle. Ce passage n'écrit donc que ce qui manque, et ne recouvre jamais une
    valeur relevée. Il ne touche pas non plus les buses sans aucun débit (les
    MPR 5000 Plus, dont la photo ne portait qu'un rayon) : rien à étendre. */
+// Le débit au mètre d'un tube de goutte-à-goutte : ses goutteurs, divisés par
+// leur écart, en m³/h. Calculé une fois, ici, pour que l'écran et le calcul
+// lisent le même chiffre.
+CATALOGUE.gaines.forEach(function (g) {
+  g.debitMetre = g.debitGoutteur / g.ecartGoutteurs / 1000;
+});
+
 CATALOGUE.buses.forEach(function (b) {
   if (b.pourType !== 'turbine') return;
   if (b.debit[360] == null) return;
