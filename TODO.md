@@ -118,10 +118,21 @@ le chemin daté qu'il exige. Ce qui reste, et décide seul :
 | Ø25 ou Ø32 | le Ø32 quand la perte en Ø25 empêche une tête de se lever |
 | les réseaux | toujours le moins possible ; les autres règles ne bougent pas |
 
-**Une inconnue dite au patron le 16 octobre** : la pression au compteur sous
-débit. Il donne une pression au repos ; elle baisse quand l'eau coule, et le
-plafond de 1,5 m/s la masquait en partie. À trancher avec lui avant de coder :
-la faire mesurer robinet ouvert, ou la réduire d'une marge écrite.
+**LES DEUX MESURES PARTOUT, COMPTEUR COMPRIS — sa décision du 16 octobre 2026**
+(*« 1, et pour le reste on met le message en rouge »*). Elle remplace sa règle
+du 20 août (« au compteur, tu n'as pas besoin de demander les calculs, fais-les
+comme si tu avais trois bars ») : **la ville ne garantit que 0,3 bar** (Code de
+la santé publique, R1321-58 ; certains règlements de service 1 bar) et
+**aucun débit**. Les 3 bar et 1,80 m³/h de `mesure-debit.ts` ne sont pas une
+garantie, et aucune n'existe.
+
+| ce qui a été mesuré | ce que fait l'outil |
+|---|---|
+| le seau ET le manomètre avec la buse n° 5 (pression dynamique) | il calcule, sans réserve |
+| tout le reste : seau seul, manomètre seul, pression statique, rien au compteur | il calcule, et écrit en rouge **« Nous ne garantissons pas la bonne levée des arroseurs. »** |
+
+À lui demander encore : le débit de la buse n° 5 de l'outil Aqua Plus (ou sa
+référence), pour savoir à quel débit la pression dynamique est lue.
 
 À coder dans `calcul.js` par-dessus le travail de l'autre session, une fois
 ses branches sur `main`.
