@@ -36,16 +36,15 @@ const RELEVES: Releve[] = [
   },
   // **Les 4, 6 et 8-VAN tournent au plus à 330°** (fiche Rain Bird des VAN,
   // pages 27 et 28). Aqua Plus imprime leur dernier chiffre sous « 360° » :
-  // c'est celui du 330°. Il reste écrit 360° tant que le calcul ne sait pas
-  // poser une buse aux seuls coins et bords (`TODO.md`, « les VAN à 330° »).
-  // Ce jour-là, ces trois lignes passent à `330:` avec `sansAngle: [360]`.
-  { ref: "RBT640", rayon: 1.2, pression: 2, debit: { 90: 0.06, 180: 0.1, 270: 0.16, 360: 0.2 },
+  // c'est celui du 330°. Elles n'ont donc pas de 360° : le calcul les réserve
+  // aux coins et aux bords (sa réponse du 16 octobre 2026, « oui pour les VAN »).
+  { ref: "RBT640", rayon: 1.2, pression: 2, debit: { 90: 0.06, 180: 0.1, 270: 0.16, 330: 0.2 }, sansAngle: [360],
     page: "Aqua Plus 2026, p. 8, et Rain Bird, VAN, p. 27", tranche: "16 octobre 2026, « oui pour les VAN »" },
-  { ref: "RBT639", rayon: 1.8, pression: 2, debit: { 90: 0.08, 180: 0.13, 270: 0.24, 360: 0.27 },
+  { ref: "RBT639", rayon: 1.8, pression: 2, debit: { 90: 0.08, 180: 0.13, 270: 0.24, 330: 0.27 }, sansAngle: [360],
     page: "Aqua Plus 2026, p. 8, et Rain Bird, VAN, p. 28", tranche: "16 octobre 2026, « oui pour les VAN »" },
   // 0,16 à 90°, plus que la 10-VAN : Rain Bird donne le même chiffre (trajectoire
   // de 5°, quand la 10-VAN est à 10°). Le doute est levé.
-  { ref: "RBT638", rayon: 2.3, pression: 2, debit: { 90: 0.16, 180: 0.26, 270: 0.34, 360: 0.38 },
+  { ref: "RBT638", rayon: 2.3, pression: 2, debit: { 90: 0.16, 180: 0.26, 270: 0.34, 330: 0.38 }, sansAngle: [360],
     page: "Aqua Plus 2026, p. 8, et Rain Bird, VAN, p. 28", tranche: "16 octobre 2026, « oui pour les VAN »" },
 ];
 
@@ -90,7 +89,7 @@ type Buse = Entree & {
   aVerifier?: string;
   livreeAvecLArroseur?: boolean;
 };
-const buses = CATALOGUE.buses as Buse[];
+const buses = CATALOGUE.buses as unknown as Buse[];
 // `referenceDe` est posée sur l'objet après sa déclaration : TypeScript ne la voit pas.
 const { referenceDe } = CATALOGUE as unknown as { referenceDe: (cle: string) => string | null };
 

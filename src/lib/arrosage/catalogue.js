@@ -151,28 +151,22 @@ export const CATALOGUE = {
     // **LES 8, 6 ET 4-VAN S'ARRÊTENT À 330°** (fiche Rain Bird des VAN, pages
     // 27 et 28). Aqua Plus imprime leur dernier chiffre sous « 360° » : c'est
     // celui du 330°. Sa réponse du 16 octobre 2026 : « oui pour les VAN »,
-    // coins et bords seulement.
-    //
-    // **Le 360° reste écrit, et c'est faux.** Le retirer ici écarte ces buses
-    // de TOUTE pose, car `busesDe` exige les trois angles même pour une zone
-    // qui ne pose que des bords : son couloir de 10 × 2 perd ses 7 6-VAN pour
-    // des 10-VAN qui arrosent 70 cm au-delà. La racine est dans le choix des
-    // buses (n'exiger que les angles que la zone pose), dans `calcul.js`, que
-    // deux branches réécrivent : `TODO.md`, « les VAN à 330° ».
+    // coins et bords seulement. Le calcul ne les pose donc jamais sur une zone
+    // qui a une rangée intérieure (`poseSelonSaRegle`, `faitLeTour`).
     //
     // La 8-VAN porte 0,16 m³/h à 90°, plus que la 10-VAN : Rain Bird donne le
     // même chiffre (trajectoire de 5°, la 10-VAN est à 10°). Le doute est levé.
     { ref:'RBT638', pressionMin:1.0, pressionMax:2.1, plageReleve:'Rain Bird, fiche des buses VAN, p. 27', nom:'8-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:2.3, pression:2,
-      debit:{ 90:0.16, 180:0.26, 270:0.34, 360:0.38 },
+      debit:{ 90:0.16, 180:0.26, 270:0.34, 330:0.38 },
       colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' },
     { ref:'RBT639', pressionMin:1.0, pressionMax:2.1, plageReleve:'Rain Bird, fiche des buses VAN, p. 27', nom:'6-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:1.8, pression:2,
-      debit:{ 90:0.08, 180:0.13, 270:0.24, 360:0.27 },
+      debit:{ 90:0.08, 180:0.13, 270:0.24, 330:0.27 },
       colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' },
     { ref:'RBT640', pressionMin:1.0, pressionMax:2.1, plageReleve:'Rain Bird, fiche des buses VAN, p. 27', nom:'4-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:1.2, pression:2,
-      debit:{ 90:0.06, 180:0.10, 270:0.16, 360:0.20 },
+      debit:{ 90:0.06, 180:0.10, 270:0.16, 330:0.20 },
       colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' },
 
     /* ── LES BUSES HUNTER SRS — sa deuxième page, le 17 août 2026 ───────────
@@ -999,7 +993,10 @@ CATALOGUE.busesDe = function (marqueCle, pourType) {
       // les coins et les bords, l'autre l'intérieur. Toutes deux restent
       // visibles dans son registre de prix (`tousLesProduits`, qui ne filtre
       // rien) — seul le CALCUL les met de côté.
-      return b.debit[90] != null && b.debit[180] != null && b.debit[360] != null;
+      // Les 4, 6 et 8-VAN s'arrêtent à 330° : sans 360°, elles restent
+      // posables aux coins et aux bords, et le pavage les refuse dès qu'une
+      // rangée intérieure existe (`calcul.js`, `faitLeTour`).
+      return b.debit[90] != null && b.debit[180] != null && (b.debit[360] != null || b.debit[330] != null);
     })
     .sort(function (a, b) { return b.rayon - a.rayon; });
 };

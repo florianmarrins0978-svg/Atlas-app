@@ -508,8 +508,11 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
       const z = etat.zones[0], p = poser(z);
       if (!p.m || !p.points) return { pose: false };
       const parTable = p.debit;
+      // La 6-VAN s'arrête à 330° (16 octobre 2026) : son dernier chiffre tient
+      // lieu de tour complet pour la division qu'on compare.
+      const tour = p.m.debit360 != null ? p.m.debit360 : p.m.debitParAngle[330];
       const parDivision = p.points.reduce((s, pt) =>
-        s + (pt.zone === 'coin' ? p.m.debit360/4 : pt.zone === 'bord' ? p.m.debit360/2 : p.m.debit360), 0);
+        s + (pt.zone === 'coin' ? tour/4 : pt.zone === 'bord' ? tour/2 : tour), 0);
       return { pose: true, buse: p.m.nom + ' ' + p.m.detail, tetes: p.points.length,
                lu: !!p.m.debitParAngle, parTable: +parTable.toFixed(3), parDivision: +parDivision.toFixed(3) };
     });

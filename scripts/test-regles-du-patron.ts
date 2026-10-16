@@ -400,6 +400,25 @@ regle("16 octobre 2026", "« je ne veux pas que tu brides les réseaux » — un
   exige(enorme.secteurs.length >= 2, `${enorme.secteurs.length} vanne pour 30 × 20 à 9 m³/h`);
 });
 
+regle("16 octobre 2026", "« oui pour les VAN » — les 4, 6 et 8-VAN s'arrêtent à 330° : aux coins et aux bords seulement, jamais au milieu d'une pelouse", () => {
+  const cat = CATALOGUE as unknown as { buses: { ref: string; nom: string; debit: Record<string, number | undefined> }[] };
+  const petites = ["RBT638", "RBT639", "RBT640"];
+  for (const ref of petites) {
+    const b = cat.buses.find((x) => x.ref === ref);
+    exige(b && b.debit[330] !== undefined && b.debit[360] === undefined, `${ref} : son dernier chiffre est celui du 330°, pas un 360°`);
+  }
+  const noms = petites.map((ref) => cat.buses.find((x) => x.ref === ref)?.nom);
+  // Son couloir de 10 × 2 n'a que des bords : la 6-VAN y reste (sa règle du 18 août).
+  const couloir = plan([{ id: 1, type: "gazon", nom: "Couloir", x: 0, y: 0, L: 10, l: 2 }]).dessin[0];
+  exige(couloir.points.length === 7, `${couloir.points.length} têtes sur son couloir de 10 × 2, il en pose 7`);
+  // Une pelouse à rangée intérieure ne reçoit jamais une buse qui ne fait pas le tour.
+  for (const [L, l] of [[6, 6], [5, 5], [7, 4.5], [8, 6]]) {
+    const z = plan([{ id: 1, type: "gazon", nom: "P", x: 0, y: 0, L, l }]).dessin[0];
+    const auMilieu = z.points.some((p: { x: number; y: number }) => p.x > 0.01 && p.x < L - 0.01 && p.y > 0.01 && p.y < l - 0.01);
+    exige(!(auMilieu && noms.includes(z.buse)), `${L} × ${l} : une ${z.buse} posée au milieu, elle laisserait un trou`);
+  }
+});
+
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────
 
 console.log(`\n${failed === 0 ? "✅" : "❌"} Les règles du patron — ${passed} tenue(s), ${failed} rompue(s).`);

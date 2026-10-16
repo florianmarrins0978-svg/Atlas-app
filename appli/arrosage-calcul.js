@@ -82,7 +82,7 @@ function charger(){
    mienne »*. Les 40 % pour toutes les turbines disparaissent : 25 % pour la
    5000 Plus et la Mini 8, 35 % pour la 3504, rien pour celles dont le
    catalogue ne dit rien, et rien pour une tuyère (`bridageDe`). */
-function poseSelonSaRegle(L, l, portee, bridage, tolerant){
+function poseSelonSaRegle(L, l, portee, bridage, tolerant, tour){
   if (!(L > 0) || !(l > 0) || !(portee > 0)) return null;
   var rMin = tolerant ? RECOUVREMENT_MIN_TOLERE : RECOUVREMENT_MIN;
   var rMax = tolerant ? RECOUVREMENT_MAX_TOLERE : RECOUVREMENT_MAX;
@@ -94,6 +94,9 @@ function poseSelonSaRegle(L, l, portee, bridage, tolerant){
     var reglee = Math.min(portee, Math.min(ex, ey) * rMax);
     if (reglee < plancher - 0.01) return null;
     if (Math.max(ex, ey) * rMin <= reglee + 0.01){
+      // **Une buse qui ne fait pas le tour ne pave pas un intérieur** (les 4, 6
+      // et 8-VAN, 330° au plus) : au milieu, elle laisserait un trou.
+      if (tour === false && nx > 2 && ny > 2) return null;
       return { nx:nx, ny:ny, ecartX:ex, ecartY:ey, reglee:Math.round(reglee * 100) / 100 };
     }
     if (ex >= ey) nx++; else ny++;
@@ -240,7 +243,7 @@ function modelePour(type, plusPetitCote, dims, refImposee){
       // deux côtés selon sa règle est la bonne — c'est le moins d'arroseurs
       // possible SANS enfreindre l'écart minimum.
       for (var i = 0; i < buses.length; i++){
-        if (poseSelonSaRegle(dims.L, dims.l, buses[i].rayon, bridageDe(buses[i]), false)){
+        if (poseSelonSaRegle(dims.L, dims.l, buses[i].rayon, bridageDe(buses[i]), false, faitLeTour(buses[i]))){
           b = buses[i]; break;
         }
       }
@@ -270,8 +273,8 @@ function modelePour(type, plusPetitCote, dims, refImposee){
       // rayon au plus petit. C'est le champ des possibles que `poser()` explore.
       candidates: (dims && dims.L > 0 && dims.l > 0)
         ? buses.filter(function(x){
-            return poseSelonSaRegle(dims.L, dims.l, x.rayon, bridageDe(x), false) ||
-                   poseSelonSaRegle(dims.L, dims.l, x.rayon, bridageDe(x), true);
+            return poseSelonSaRegle(dims.L, dims.l, x.rayon, bridageDe(x), false, faitLeTour(x)) ||
+                   poseSelonSaRegle(dims.L, dims.l, x.rayon, bridageDe(x), true, faitLeTour(x));
           }).map(function(x){ return x.ref; })
         : [],
       // Corps de CETTE marque, pas tous marques confondues : Rain Bird peut
@@ -291,7 +294,10 @@ function modelePour(type, plusPetitCote, dims, refImposee){
    valant la portée). 1 m³/h sur 1 m² = 1000 mm/h. */
 function pluviometrie(b){
   var carre = b.rayon * b.rayon;
-  return carre > 0 ? Math.round((b.debit[360] * 1000) / carre * 10) / 10 : 0;
+  // Une buse à 330° au plus n'a pas de 360° : son demi-tour, doublé, donne la
+  // même grandeur, sur l'arc qu'elle fait vraiment aux bords.
+  var tour = b.debit[360] != null ? b.debit[360] : 2 * b.debit[180];
+  return carre > 0 ? Math.round((tour * 1000) / carre * 10) / 10 : 0;
 }
 
 function marqueCourante(){
@@ -397,6 +403,13 @@ function pressionMinDe(buse){
   if (buse.pressionMin > 0) return buse.pressionMin;
   var t = corpsCourant();
   return t && t.pressionMin > 0 ? t.pressionMin : null;
+}
+
+/* Une buse fait-elle le tour entier ? Les 4, 6 et 8-VAN s'arrêtent à 330°
+   (fiche Rain Bird) : elles ne vont qu'aux coins et aux bords, sa réponse du
+   16 octobre 2026. Sans buse connue, on ne restreint rien. */
+function faitLeTour(buse){
+  return !buse || buse.debit[360] != null;
 }
 
 function bridageDe(buse){
@@ -878,11 +891,11 @@ function poser(z, refImposee, tolerant){
     // le plan serait posable et faux, ce qui est le pire des deux.
     var repliPermis = Math.min(dims.L, dims.l) <= TUYERE_JUSQUA;
     if (z.materiel === 'auto' && choix.m && dims.L > 0 &&
-        !poseSelonSaRegle(dims.L, dims.l, choix.m.portee, bridageDe(choix.m.buse), false)){
+        !poseSelonSaRegle(dims.L, dims.l, choix.m.portee, bridageDe(choix.m.buse), false, faitLeTour(choix.m.buse))){
       var vers = cle === 'turbine' ? 'tuyere' : 'turbine';
       if (vers === 'turbine' || repliPermis){
         var autre = modelePour(vers, petitCote || null, dims);
-        if (autre.m && poseSelonSaRegle(dims.L, dims.l, autre.m.portee, bridageDe(autre.m.buse), false)){
+        if (autre.m && poseSelonSaRegle(dims.L, dims.l, autre.m.portee, bridageDe(autre.m.buse), false, faitLeTour(autre.m.buse))){
           choix = autre; cle = vers;
         }
       }
@@ -898,10 +911,15 @@ function poser(z, refImposee, tolerant){
     if (L <= 0 || l <= 0) return Object.assign(r, { nombre:0, debit:0, minutes:0, nx:0, ny:0 });
     // On écarte AU MAXIMUM dans sa limite, puis on répartit : c'est le moins
     // d'arroseurs possible sans jamais descendre sous la portée RÉGLÉE.
-    var pose = poseSelonSaRegle(L, l, m.portee, bridageDe(m.buse), Boolean(tolerant));
+    var pose = poseSelonSaRegle(L, l, m.portee, bridageDe(m.buse), Boolean(tolerant), faitLeTour(m.buse));
     var ecartMax = m.portee / RECOUVREMENT_MIN;
     var nx = pose ? pose.nx : Math.max(2, Math.ceil(L / ecartMax) + 1);
     var ny = pose ? pose.ny : Math.max(2, Math.ceil(l / ecartMax) + 1);
+    // Une buse imposée qui ne fait pas le tour, sur une zone à intérieur : on
+    // ne la pose pas, et le plan le dit (`manquants`).
+    if (!faitLeTour(m.buse) && nx > 2 && ny > 2){
+      return Object.assign(r, { nombre:0, debit:0, minutes:0, nx:0, ny:0, tourIncomplet:true });
+    }
     var ecartX = L / (nx - 1), ecartY = l / (ny - 1);
     // **La portée à laquelle la tête se règle sur le terrain** : celle de la
     // buse, ou moins si elle est bridée. C'est elle que le plan affiche, et
@@ -1008,7 +1026,7 @@ function poser(z, refImposee, tolerant){
     var d = m.debitParAngle ? m.debitParAngle[180] : m.debit360 / 2;
     r.nx = nx; r.ny = ny; r.points = points; r.nombre = points.length;
     r.quinconce = quinconceVoulu;
-    r.debit = coins*q + bords*d + inter*m.debit360;
+    r.debit = coins*q + bords*d + (inter ? inter*m.debit360 : 0);
     // Le débit de CHAQUE tête, porté par le point lui-même : c'est ce qui
     // permet au découpage de répartir les arroseurs entre les vannes en
     // sachant ce que chacun boit, au lieu de diviser le total en parts égales
@@ -1606,6 +1624,11 @@ function manquants(d){
              : p.cle === 'turbine' ? 'aucune turbine ' + marque
              : 'aucune tuyère ' + marque;
     phrases.push((z.nom || 'Une zone') + ' : ' + quoi + ' au catalogue, elle n’est pas arrosée.');
+  });
+  etat.zones.forEach(function(z){
+    if (poser(z).tourIncomplet){
+      phrases.push((z.nom || 'Une zone') + ' : sa buse ne fait pas le tour entier, elle ne se pose qu’aux coins et aux bords.');
+    }
   });
   etat.zones.forEach(function(z){
     if (poser(z).dureeInconnue){
