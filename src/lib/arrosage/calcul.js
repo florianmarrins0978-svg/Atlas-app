@@ -1984,6 +1984,7 @@ function dessinDesZones(d){
       // La portée RÉGLÉE : celle de la buse, ou moins si elle est bridée à la
       // vis. C'est le chiffre que le poseur règle sur le terrain.
       portee: p.m ? (Number(p.porteeReglee || p.m.portee) || 0) : 0,
+      bridee: Boolean(p.m && p.porteeReglee && p.porteeReglee < p.m.portee - 0.01),
       points: (p.points || []).map(function(pt){
         return {
           x: ox + pt.x, y: oy + pt.y,

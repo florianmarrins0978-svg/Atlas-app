@@ -11,7 +11,7 @@ tube). Maquette d'abord (`CLAUDE.md` §3 bis), puis code.
 | | qui |
 |---|---|
 | ~~une pelouse de 20 × 12 reçoit six vannes dès 3,7 bar~~ **tranché le 16 octobre 2026** : bridage permis jusqu'à 40 %, recouvrement de 80 à 100 %, l'ordre du moins cher (§468). Elle tient sur deux vannes | fait |
-| le plan affiche la portée RÉGLÉE d'une tête bridée (« portée 6 m » pour une buse de 6,4), sans le mot « bridée » : faut-il l'écrire sur le plan ? Planche à faire (`CLAUDE.md` §3 bis) | lui |
+| ~~le plan affiche la portée réglée d'une tête bridée sans le mot « bridée »~~ **sa réponse « la B » du 16 octobre 2026** : la légende écrit « bridée à 6 m » (`claude/legende-bridee`) | fait |
 | ~~les tuyères se brident-elles ?~~ **non, sa réponse du 16 octobre 2026** : elles ne se règlent pas à la vis | fait |
 | ~~`test-regles-du-patron.ts` : la règle du 22 août (1,76 m³/h) réécrite en place sur l'ancienne branche des tubes~~ **refait le 16 octobre 2026** sur `claude/tubes-arrosage-v2` : l'entrée du 22 août reste, son 1,76 devient la trace du tube supposé, et la règle du 16 octobre (1,53) s'ajoute sous le repère | fait |
 | les débits et durées affichés peuvent être jusqu'à 5 % sous le réel, quand le plan retenu reçoit jusqu'à 0,2 bar de plus que sa pression de choix (la limite du tuyau, elle, est vérifiée au débit réel) | nous, si cela compte |

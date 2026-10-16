@@ -251,6 +251,11 @@ tuyères on ne les règle pas à la vis, on ne peut donc pas les brider »*. Le
 bridage de 40 % ne vaut que pour les turbines ; une tuyère se pose à sa portée,
 entre 80 et 100 % de recouvrement (`poseSelonSaRegle`, `BRIDAGE_MAX`).
 
+**UNE TÊTE BRIDÉE SE DIT « BRIDÉE À 6 M » DANS LA LÉGENDE — « la B », sa
+réponse du 16 octobre 2026** devant la planche des trois écritures (« portée
+6 m », « bridée à 6 m », « portée 6,4 m bridée à 6 m »). Une tête à sa portée
+garde « portée 6,4 m ».
+
 **LA TENSION S'ACCORDE, SINON RIEN N'ARROSE.** Sa règle du 21 août :
 
 | Le programmateur | L'électrovanne |

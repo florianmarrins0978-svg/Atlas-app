@@ -75,6 +75,13 @@ export type ZoneDessinee = {
   modele: string | null;
   buse: string | null;
   portee: number;
+  /**
+   * La tête est réglée à la vis sous la portée de sa buse — sa règle du
+   * 16 octobre 2026 (jusqu'à 40 %, turbines seulement). La légende l'écrit
+   * « bridée à 6 m », sa réponse « la B » devant la planche du même jour :
+   * sans le mot, le poseur règle la buse à fond.
+   */
+  bridee: boolean;
   points: { x: number; y: number; reseau: number | undefined }[];
 };
 
@@ -117,7 +124,7 @@ export type ReseauDessine = {
    * pluviométrie »*) : une vanne peut désormais porter deux buses, et n'en
    * nommer qu'une ferait commander de travers.
    */
-  materiels: { libelle: string; portee: number; nombre: number }[];
+  materiels: { libelle: string; portee: number; bridee: boolean; nombre: number }[];
   lignes: Point[][];
   /**
    * Les mêmes lignes, DÉCALÉES pour être vues.
@@ -283,7 +290,7 @@ export function dessinerPlan(
   // coin de l'autre tombent alors aux MÊMES coordonnées. Une clé sur le seul
   // point faisait que la seconde effaçait la première, et le plan dessinait un
   // carré là où une turbine est posée.
-  type TeteLue = { x: number; y: number; forme: "rond" | "carre"; portee: number; modele: string | null; buse: string | null };
+  type TeteLue = { x: number; y: number; forme: "rond" | "carre"; portee: number; bridee: boolean; modele: string | null; buse: string | null };
   /** Les têtes de chaque réseau, rangées par le PIED qui les alimente. */
   const tetesAuPied = new Map<string, TeteLue[]>();
   const parEndroit = new Map<string, Set<number>>();
@@ -297,6 +304,7 @@ export function dessinerPlan(
         y: pt.y,
         forme: z.cle === "tuyere" ? "carre" : "rond",
         portee: z.portee,
+        bridee: z.bridee,
         modele: z.modele,
         buse: z.buse,
       });
@@ -360,7 +368,7 @@ export function dessinerPlan(
       let tes = 0;
       let coudes = 0;
       let tesEgaux = 0;
-      const materiels = new Map<string, { libelle: string; portee: number; nombre: number }>();
+      const materiels = new Map<string, { libelle: string; portee: number; bridee: boolean; nombre: number }>();
       const vus = new Set<string>();
       for (const ligne of lignes) {
         for (const p of ligne) {
@@ -381,7 +389,7 @@ export function dessinerPlan(
             const libelle = [tete.modele, tete.buse].filter(Boolean).join(" ");
             const deja = materiels.get(libelle);
             if (deja) deja.nombre++;
-            else materiels.set(libelle, { libelle, portee: tete.portee, nombre: 1 });
+            else materiels.set(libelle, { libelle, portee: tete.portee, bridee: tete.bridee, nombre: 1 });
           });
           if (degre > 2) {
             tesEgaux += degre - 2;
