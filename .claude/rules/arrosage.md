@@ -246,6 +246,11 @@ plus ça coûte cher. »*
 Le calcul ne connaît pas ses prix (ils sont dans son registre, jamais dans le
 catalogue) : « moins cher » s'y lit dans cet ordre, rien d'autre.
 
+**UNE TÊTE BRIDÉE SE DIT « BRIDÉE À 6 M » DANS LA LÉGENDE — « la B », sa
+réponse du 16 octobre 2026** devant la planche des trois écritures (« portée
+6 m », « bridée à 6 m », « portée 6,4 m bridée à 6 m »). Une tête à sa portée
+garde « portée 6,4 m ».
+
 **LA TENSION S'ACCORDE, SINON RIEN N'ARROSE.** Sa règle du 21 août :
 
 | Le programmateur | L'électrovanne |

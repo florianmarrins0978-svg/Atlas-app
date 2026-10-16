@@ -8,6 +8,11 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-16
 
+- **La légende du plan d'arrosage écrit « bridée à 6 m »** pour une turbine
+  réglée à la vis sous la portée de sa buse, sa réponse « la B ». Ce que ça
+  évite : un poseur qui laisse la buse à fond, au-delà de ce que le plan
+  suppose.
+
 - **Les arroseurs se posent entre 80 et 100 % de recouvrement, se brident à la
   vis jusqu'à 40 %, et le calcul va au moins cher** (réseaux, gamme, arroseurs),
   ses réponses du jour. Ce que ça évite : six vannes sur une pelouse de 20 × 12

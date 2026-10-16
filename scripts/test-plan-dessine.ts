@@ -213,6 +213,31 @@ dire(
   "l’arête entre deux zones qui se touchent n’est PAS un bord du terrain",
 );
 
+// ── UNE TÊTE BRIDÉE SE DIT « BRIDÉE » DANS LA LÉGENDE ──────────────────────
+//
+// **Sa réponse du 16 octobre 2026, « la B »**, devant la planche qui montrait
+// sa pelouse de 20 × 12 à 3,7 bar : 3504 buse 1,0 (6,4 m au catalogue)
+// réglées à 6 m. Sans le mot, la légende disait « portée 6 m » et le poseur
+// laissait la buse à fond, 40 cm au-delà de ce que le plan suppose.
+{
+  const bride = calculerPlan({ seau: 10, temps: 20, pression: 3.7, zones: [{ id: 1, type: "gazon", nom: "P", x: 0, y: 0, L: 20, l: 12 }] });
+  const avecBride = dessinerPlan(bride.dessin, { x: 0, y: 6 }, bride.couleurs);
+  const legende = avecBride.ok ? avecBride.dessin.reseaux.flatMap((x) => x.materiels) : [];
+  dire(
+    legende.length > 0 && legende.every((m) => m.bridee === true),
+    `20 × 12 à 3,7 bar : la légende dit bridée (${legende.map((m) => `${m.libelle} ${m.bridee ? "bridée à" : "portée"} ${m.portee}`).join(", ")})`,
+  );
+  // Et une tête à sa portée ne se dit jamais bridée : un mot qui parle à tort
+  // s'apprend à être ignoré.
+  const libre = calculerPlan({ seau: 10, temps: 20, pression: 3, zones: [{ id: 1, type: "gazon", nom: "P", x: 0, y: 0, L: 12, l: 12 }] });
+  const sansDessin = dessinerPlan(libre.dessin, { x: 0, y: 6 }, libre.couleurs);
+  const sansBride = sansDessin.ok ? sansDessin.dessin.reseaux.flatMap((x) => x.materiels) : [];
+  dire(
+    sansBride.length > 0 && sansBride.every((m) => m.bridee === false),
+    `12 × 12 à 3 bar : aucune tête dite bridée (${sansBride.map((m) => `${m.libelle} portée ${m.portee}`).join(", ")})`,
+  );
+}
+
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Le plan dessiné — ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);
 assert.equal(echecs, 0);
