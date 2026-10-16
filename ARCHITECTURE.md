@@ -34977,3 +34977,47 @@ se tait sur « ajoute une colonne au planning ».
 décision** : il retirerait le « pourquoi » qui fait tenir des règles qu'il a dû
 imposer plusieurs fois, pour un gain incertain. On y revient seulement si des
 consignes continuent de s'oublier.
+
+## §467 : Les buses se choisissent à une pression qui arrive vraiment
+
+**16 octobre 2026, trouvé en relevant le diamètre de ses tubes, et son « Vas-y ».**
+Le calcul tournait deux fois : un plan à la pression de la source, puis un
+second à la pression que laissait le premier. Il annonçait ensuite la pression
+du second plan, qui pouvait perdre PLUS que le premier. Mesuré sur trois jardins
+de 2 à 4 bar : buses choisies jusqu'à **0,31 bar au-dessus** de ce qui arrive au
+dernier arroseur. Des portées prêtées, donc des trous d'arrosage.
+
+**Ce qui le remplace (`decouper`, `calcul.js`).** Un plan à chaque pression de
+choix, de la source moins l'électrovanne au plancher, au centième. On garde un
+plan s'il marche à la pression qui arrive vraiment :
+
+| épreuve | pourquoi |
+|---|---|
+| la portée réelle de chaque buse tient celle qui a servi au pavage (`porteeALaPression`) | sinon un trou d'arrosage ; au-dessus de sa pression de référence, une portée ne bouge plus |
+| il n'arrive pas plus de 0,2 bar au-dessus de la pression de choix (`SURPRESSION_ADMISE`) | au-delà, les buses boivent plus que compté et peuvent sortir de leur plage |
+| chaque vanne tient sous la limite d'une voie au débit RÉEL (√P) | le Ø25 ne passe pas plus |
+
+Parmi eux : le moins de vannes, puis le moins d'arroseurs (sa règle du 23 août),
+puis le plus proche de ce qui arrive.
+
+**Trois autres façons ont été essayées et écartées le même jour**, chiffres à
+l'appui dans le commentaire de `decouper` : sauter à la pression qui arrive
+(enjambe des plans), s'arrêter au premier plan sûr (retient le plus haut, pas le
+meilleur), n'accepter que les plans exacts (il n'en existe pas toujours, la
+pression saute quand la buse change, et le seul exact peut porter sept vannes
+quand trois tiennent).
+
+**La coupe en vannes est une seule fonction (`couperEnVannes`)**, pour le plan
+et pour le choix des buses. Le choix divisait le débit total par la limite,
+comme si un arroseur se partageait : six têtes à 0,78 m³/h « tenaient » sur
+quatre vannes et en demandaient six.
+
+**Mesuré sur 392 jardins (une pelouse de 4 × 2 à 28 × 26, plus un couloir de
+10 × 2, de 1,5 à 5 bar)** : 68 gagnent une vanne, 5 en prennent une, aucune
+alerte nouvelle. **Les 5 sont des plans que l'ancien calcul rendait faux** : il y
+comptait une portée que la pression réelle ne donne pas.
+
+**Ce qui reste ouvert** est dans `TODO.md` : six vannes sur un 20 × 12 dès
+3,7 bar (sa règle d'écart, une question pour lui), 5 % de débit affiché sous le
+réel dans la marge de 0,2 bar, et le coût du calcul (0,1 à 0,5 s).
+

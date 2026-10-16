@@ -8,6 +8,13 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-16
 
+- **Le calcul d'arrosage choisit ses buses à une pression qui arrive vraiment
+  au dernier arroseur**, et compte les vannes tête par tête au lieu de diviser
+  le débit total. Ce que ça évite : des buses choisies jusqu'à 0,31 bar
+  au-dessus de la pression réelle (des portées prêtées, un réseau qui ne se
+  lève pas), et une vanne de trop sur 68 jardins d'un balayage de 392
+  (`ARCHITECTURE.md` §467).
+
 - **Un message qui parle d'arrosage fait lire ses règles d'arrosage d'abord**
   (`scripts/rappel-arrosage.mjs`). Ce que ça évite : une planche d'arrosage neuve
   dessinée avant que les règles soient chargées, donc avec une nourrice placée

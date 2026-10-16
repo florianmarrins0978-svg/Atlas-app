@@ -1,5 +1,13 @@
 # Prochaines tâches
 
+## ⏳ ARROSAGE : CE QUE LA CORRECTION DE LA PRESSION DE CHOIX LAISSE OUVERT — 16 octobre 2026
+
+| | qui |
+|---|---|
+| **une pelouse de 20 × 12 reçoit six vannes dès 3,7 bar** (déjà vrai sur `main` avant le §467). Sa règle « l'écart ne descend jamais sous la portée » interdit à une turbine de 10,1 m de paver 20 m (écart 10), et seule la grosse buse reste. Un poseur visserait la portée de 1 %. **Faut-il permettre de réduire la portée d'une turbine** (vis de réglage) ? | lui |
+| les débits et durées affichés peuvent être jusqu'à 5 % sous le réel, quand le plan retenu reçoit jusqu'à 0,2 bar de plus que sa pression de choix (la limite du tuyau, elle, est vérifiée au débit réel) | nous, si cela compte |
+| un plan coûte désormais 0,1 à 0,5 s (une recherche au centième) ; la page publiée `appli/arrosage.html` recalcule à chaque frappe | nous, à regarder sur téléphone |
+
 ## ✅ LE PLANNING ÉPURÉ ET LA FICHE DU JOUR : SUR `main` LE 15 OCTOBRE 2026
 
 **Son oui du 15 octobre :** *« tu peux coder ces deux planches, et ne lance pas

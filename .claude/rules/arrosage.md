@@ -259,11 +259,16 @@ vanne et la première tête passe le débit du réseau entier, puis une tête de
 moins à chaque tronçon. Compter le débit total partout surestime la perte de
 75 % — assez pour condamner des plans qui tiennent.
 
-**Deux passes, jamais trois.** La pression au bout dépend des débits, qui
-dépendent d'elle. On calcule un plan à la pression de la source, on mesure ce
-qui se perd, on refait. Une troisième passe remonterait la pression et l'on
-tournerait autour de la valeur : s'arrêter à deux garde les pertes des débits
-les plus forts, donc le côté sûr.
+**Deux passes, jamais trois : FAUX, corrigé le 16 octobre 2026.** La règle
+(la nôtre, pas la sienne) disait qu'une troisième passe remonterait la pression.
+En réalité la deuxième passe peut changer de plan et perdre PLUS que la
+première : les buses étaient alors choisies jusqu'à 0,31 bar au-dessus de ce
+qui arrive au dernier arroseur. **Ce qui la remplace** : on essaie chaque
+pression de choix, de centième en centième, et l'on ne garde qu'un plan qui
+marche à la pression qui arrive vraiment (portées tenues, chaque vanne sous la
+limite du tuyau au débit réel, au plus 0,2 bar de plus que la pression de
+choix). Parmi ceux-là, le moins de vannes puis le moins d'arroseurs
+(`ARCHITECTURE.md` §467).
 
 **LES PLACES SE LISENT SUR LE CROQUIS, EN FRACTION — les mètres se DÉDUISENT.**
 Sa demande du 22 août au soir : *« oui fais-le lire les proportions »*, après

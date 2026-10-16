@@ -187,6 +187,18 @@ function pressionRetenue(){
   return pressionDeCalcul !== null ? pressionDeCalcul : (Number(etat.pression) || 0);
 }
 
+/* La portée d'une buse à une pression donnée : réduite sous la pression de
+   référence, jamais gonflée au-dessus. Une seule écriture de la loi, pour le
+   choix des buses et pour la vérification du plan retenu (`decouper`). */
+function porteeALaPression(b, reelle){
+  var reference = Number(b.pression) || 0;
+  if (!(reference > 0) || !(reelle > 0)) return b.rayon;
+  var rapport = reelle / reference;
+  return rapport < 1
+    ? Math.round(b.rayon * Math.pow(rapport, EXPOSANT_PORTEE) * 100) / 100
+    : b.rayon;
+}
+
 function buseALaPression(b){
   var reference = Number(b.pression) || 0;
   var reelle = pressionRetenue();
@@ -205,9 +217,7 @@ function buseALaPression(b){
   var corrigee = {};
   Object.keys(b).forEach(function(k){ corrigee[k] = b[k]; });
   corrigee.debit = debit;
-  corrigee.rayon = rapport < 1
-    ? Math.round(b.rayon * Math.pow(rapport, EXPOSANT_PORTEE) * 100) / 100
-    : b.rayon;
+  corrigee.rayon = porteeALaPression(b, reelle);
   corrigee.rayonCatalogue = b.rayon;
   corrigee.debitCatalogue = b.debit;
   corrigee.pressionRetenue = reelle;
@@ -890,7 +900,10 @@ function poser(z, refImposee){
     // buse, l'écart tombe sous la portée quoi qu'on fasse — puisque les coins
     // doivent rester occupés. L'écran le DIT au lieu de rendre une pose qu'il
     // refuse : c'est le signe qu'il faut une buse plus petite.
-    r.tropSerre = (ecartX < m.portee - 0.01) || (ecartY < m.portee - 0.01);
+    // L'écart entre deux têtes voisines sert aussi à `decouper()`, qui vérifie
+    // que la règle tient encore à la pression qui arrive vraiment.
+    r.ecartEntreTetes = Math.min(ecartX, ecartY);
+    r.tropSerre = r.ecartEntreTetes < m.portee - 0.01;
     // ── LE QUINCONCE : ON L'ESSAIE, ON LE MESURE, ON RESSERRE ────────────
     //
     // Sa règle du 18 août, croquis à l'appui : un couloir à 14 arroseurs
@@ -963,7 +976,8 @@ function poser(z, refImposee){
         r.ecart = Math.max(ecartX, ecartY);
         r.ecartX = ecartX; r.ecartY = ecartY;
         // « Trop serré » se juge lui aussi entre deux têtes du damier.
-        r.tropSerre = distanceEntreTetesDuDamier(ecartX, ecartY) < m.portee - 0.01;
+        r.ecartEntreTetes = distanceEntreTetesDuDamier(ecartX, ecartY);
+        r.tropSerre = r.ecartEntreTetes < m.portee - 0.01;
       } else {
         quinconceVoulu = false;   // le damier ne couvre pas : on reste aligné
       }
@@ -1010,15 +1024,17 @@ function poser(z, refImposee){
     // rappelle pas cette boucle — la profondeur est de un.
     if (!refImposee && choix.candidates && choix.candidates.length > 1){
       var plafond = limiteParVoie();
-      var vannesDe = function(debit){
-        return plafond > 0 ? Math.ceil((debit - 1e-9) / plafond) : 1;
+      // Les vannes se COMPTENT par la coupe du plan, tête par tête : un débit
+      // total divisé par la limite ignorait qu'un arroseur ne se partage pas.
+      var vannesDe = function(pose){
+        return couperEnVannes(pose.points, plafond).length;
       };
-      var meilleur = { r: r, vannes: vannesDe(r.debit), nombre: r.nombre };
+      var meilleur = { r: r, vannes: vannesDe(r), nombre: r.nombre };
       choix.candidates.forEach(function(ref){
         if (m && ref === m.ref) return;
         var autre = poser(z, ref);
         if (!autre.m || !(autre.debit > 0) || autre.tropSerre) return;
-        var v = vannesDe(autre.debit);
+        var v = vannesDe(autre);
         // À nombre de vannes égal, le moins d'arroseurs — c'est l'ancien
         // critère, qui redevient le départage et non plus la règle.
         if (v < meilleur.vannes || (v === meilleur.vannes && autre.nombre < meilleur.nombre)){
@@ -1094,31 +1110,49 @@ function saisonCourante(){
    Le plafond du tuyau ne porte PAS la marge de 0,85 en plus : les 1,5 m/s sont
    déjà une limite de bonne pratique, pas un maximum physique. L'empiler
    reviendrait à payer deux fois la même prudence, en vannes. */
-/* ══ DEUX PASSES, ET POURQUOI IL EN FAUT DEUX ═══════════════════════════════
+/* ══ LA PRESSION DE CHOIX DESCEND JUSQU'À CE QUI ARRIVE VRAIMENT ════════════
 
    Le serpent se mord la queue : la pression au pied du dernier arroseur dépend
    de ce que le réseau perd, ce qui dépend du débit des buses, qui dépend de la
    pression. On ne peut pas commencer par la fin.
 
-   **On tourne donc deux fois, jamais plus :**
+   **On part de la source, et l'on ne fait que DESCENDRE :**
 
-   1. un plan à la pression de la SOURCE — c'est ce que faisait le calcul
-      jusqu'ici, et il donne un ordre de grandeur des débits ;
-   2. on mesure ce que perdent l'amenée et le pire réseau, on retire, et l'on
-      REFAIT le plan à cette pression-là.
+   1. on fait un plan à chaque pression de choix, de la source au plancher,
+      de centième en centième ;
+   2. on mesure ce que perdent l'amenée et le pire réseau DE CE PLAN, donc ce
+      qui arrive vraiment au dernier arroseur ;
+   3. on ne garde que les plans qui TIENNENT à cette pression-là : les portées
+      ne sont pas prêtées (il arrive au moins la pression de choix), chaque
+      vanne reste sous la limite d'une voie au débit réel, et deux têtes ne
+      sont pas plus près que leur portée réelle (sa règle du 17 août) ;
+   4. parmi eux, le moins de vannes, puis le moins d'arroseurs (sa règle du
+      23 août), puis le plus proche de ce qui arrive.
 
-   **Deux suffisent, et une troisième serait pire.** La correction de la
-   seconde passe baisse les débits (moins de pression, moins de débit), donc
-   les pertes de la troisième passe seraient PLUS FAIBLES et la pression
-   remonterait : on tournerait autour de la vraie valeur au lieu de s'en
-   approcher. S'arrêter à deux, c'est rester du côté PRUDENT — les pertes
-   retenues sont celles des débits les plus forts.
+   **Ce qui a été faux du 22 août au 16 octobre 2026.** Le calcul s'arrêtait à
+   deux passes, au motif qu'une troisième « remonterait la pression ». Il
+   choisissait les buses à la pression laissée par le plan de la passe 1, puis
+   annonçait celle du plan de la passe 2 ; et quand la passe 2 change de plan,
+   le second peut perdre PLUS que le premier. Mesuré : buses choisies jusqu'à
+   0,31 bar au-dessus de ce qui arrive (`ARCHITECTURE.md` §467).
+
+   **Quatre façons ont été essayées le 16 octobre, et trois écartées.**
+
+   | | ce qui n'allait pas |
+   |---|---|
+   | sauter à la pression qui arrive | enjambe des plans : 20 × 12 à 3 bar, six vannes quand trois tenaient |
+   | s'arrêter au premier plan sûr | retient le plus HAUT, pas le meilleur : 28 × 24 à 3,5 bar, cinq vannes quand quatre tenaient |
+   | n'accepter que les plans exacts | il n'en existe pas toujours (la pression saute quand la buse change), et le seul exact peut être absurde : 16 × 14 à 2,5 bar, sept vannes quand trois tenaient |
+   | **retenu : les trois épreuves physiques** | un plan est bon s'il marche à la pression qui arrive, quelle que soit celle qui l'a choisi |
 
    **Et l'on ne descend jamais sous un demi-bar de marge** (`PLANCHER_UTILE`) :
    en dessous, ce n'est plus un ajustement de portée, c'est un réseau qui ne
-   fonctionne pas — et cela se DIT à l'écran plutôt que de sortir un plan bâti
+   fonctionne pas, et cela se DIT à l'écran plutôt que de sortir un plan bâti
    sur une pression que rien ne garantit. */
 var PLANCHER_UTILE = 0.5;   // bar : sous ce reste, on ne raffine plus, on alerte
+var TOLERANCE_CHOIX = 0.01; // bar : en deçà, l'écart ne change aucune portée lisible
+var PAS_CHOIX = 0.01;       // bar : la finesse avec laquelle on cherche la pression de choix
+var SURPRESSION_ADMISE = 0.2; // bar : au plus 5 % de débit en plus qu'affiché, vérifié contre la limite
 
 /* Ce qu'une seule voie peut porter, en m³/h : le plus petit de la source et du
    tuyau. **Sortie en fonction le 23 août 2026** parce que le CHOIX DE LA BUSE en
@@ -1131,35 +1165,71 @@ function limiteParVoie(){
 }
 
 function decouper(){
-  // **La passe 1 part TOUJOURS de la source**, sinon un appel précédent
+  var source = Number(etat.pression) || 0;
+  // **La première passe part TOUJOURS de la source**, sinon un appel précédent
   // laisserait sa pression derrière lui et deux plans identiques
   // différeraient selon ce qui a été calculé avant.
   pressionDeCalcul = null;
-  var essai = decouperUneFois();
-
-  var source = Number(etat.pression) || 0;
-  var perteReseau = pirePerteDeReseau(essai);
-  var perteAmenee = amenee(essai).perte25;
-  var reste = source - perteAmenee - perteReseau;
-
-  if (source > 0 && perteReseau > 0 && reste >= PLANCHER_UTILE){
-    pressionDeCalcul = reste;
-  }
   var d = decouperUneFois();
+  // Sans perte de réseau calculable (que du goutte-à-goutte) ou sans pression
+  // connue, il n'y a rien à chercher : aucune buse ne dépend de la pression.
+  if (!(source > 0) || !(pirePerteDeReseau(d) > 0)) return finirLePlan(d, source, true);
 
-  /* **CE QU'ON AFFICHE VIENT DE LA PASSE 2, ET D'ELLE SEULE.**
+  // On essaie chaque pression de choix, de la source au plancher, et l'on ne
+  // garde que les plans qui TIENNENT à la pression qui arrive vraiment au
+  // dernier arroseur (les trois épreuves ci-dessous). Le réseau perd TOUJOURS au moins l'électrovanne (`perteDuReseau`) : aucune
+  // pression au-dessus de la source moins cette perte ne peut arriver au bout,
+  // on n'y cherche donc pas.
+  var retenu = null;
+  var limite = limiteParVoie();
+  var depart = Math.round((source - PERTE_ELECTROVANNE + TOLERANCE_CHOIX) * 100) / 100;
+  for (var p = depart; p >= PLANCHER_UTILE - 1e-9; p = Math.round((p - PAS_CHOIX) * 1000) / 1000){
+    pressionDeCalcul = p;
+    var essai = decouperUneFois();
+    var arrive = source - amenee(essai).perte25 - pirePerteDeReseau(essai);
+    // Les portées ont été prises à `p` : à la pression qui arrive, chacune doit
+    // porter au moins autant. Au-dessus de sa pression de référence, une
+    // portée ne bouge plus (`porteeALaPression`) : quelques centièmes de moins
+    // n'y enlèvent rien, et ce serait refuser un plan qui arrose.
+    if (essai.poses.some(function(x){
+      return x.buse && porteeALaPression(x.buse, arrive) < x.portee - 0.01;
+    })) continue;
+    // Et il ne doit pas en arriver BEAUCOUP PLUS : les buses boiraient plus
+    // que compté (√P), et une buse choisie à 2 bar peut sortir de sa plage à
+    // 4,5. Un plan choisi bien sous ce qui arrive n'est pas le plan de ce
+    // jardin. `SURPRESSION_ADMISE` laisse passer le saut de pression qui suit un
+    // changement de buse ; au-delà, le plan est d'un autre jardin.
+    if (arrive > p + SURPRESSION_ADMISE) continue;
+    // Et dans cette marge, chaque vanne doit encore tenir sous la limite d'une
+    // voie au débit réel.
+    var gonfle = arrive - p > TOLERANCE_CHOIX ? Math.sqrt(arrive / p) : 1;
+    if (limite > 0 && essai.secteurs.some(function(s){ return s.debit * gonfle > limite + 1e-9; })) continue;
+    var vannes = essai.secteurs.length;
+    var tetes = essai.secteurs.reduce(function(t, s){ return t + (s.points ? s.points.length : 0); }, 0);
+    // Sa règle du 23 août : le moins de vannes, puis le moins d'arroseurs ; à
+    // égalité, le plan le plus proche de ce qui arrive.
+    var ecart = Math.abs(p - arrive);
+    if (!retenu || vannes < retenu.vannes || (vannes === retenu.vannes && (tetes < retenu.tetes ||
+        (tetes === retenu.tetes && ecart < retenu.ecart)))){
+      retenu = { d: essai, p: p, vannes: vannes, tetes: tetes, ecart: ecart };
+    }
+  }
+  if (retenu){
+    pressionDeCalcul = retenu.p;
+    return finirLePlan(retenu.d, source, true);
+  }
+  // **Aucun plan ne tient au-dessus du plancher** : la pression ne suffit pas
+  // à porter ce jardin. On rend le plan de la source, et il porte l'ALERTE.
+  pressionDeCalcul = null;
+  return finirLePlan(decouperUneFois(), source, false);
+}
 
-     Les deux passes ne donnent pas les mêmes pertes — la seconde travaille sur
-     des débits plus faibles, donc elle perd moins. Publier les chiffres de la
-     passe 1 à côté d'un plan issu de la passe 2 mettrait DEUX pertes d'amenée
-     différentes dans le même écran, et c'est le pire des cas : on relit sans
-     méfiance, on ne retombe pas sur ses pieds, et c'est toute la liste dont on
-     doute (`CLAUDE.md` §4 bis).
-
-     La pression qui a servi à CHOISIR les buses reste, elle, celle de la passe
-     1 — plus basse de quelques centièmes. L'écart va dans le sens sûr : les
-     buses sont choisies pour une pression un peu plus dure que celle annoncée,
-     jamais l'inverse. */
+function finirLePlan(d, source, tient){
+  /* **CE QU'ON AFFICHE VIENT DU PLAN RETENU, ET DE LUI SEUL.** Publier les
+     pertes d'un plan intermédiaire à côté du plan retenu mettrait deux pertes
+     d'amenée différentes dans le même écran, et c'est le pire des cas : on
+     relit sans méfiance, on ne retombe pas sur ses pieds, et c'est toute la
+     liste dont on doute. */
   d.perteAmenee = amenee(d).perte25;
   d.perteReseau = pirePerteDeReseau(d);
   d.pressionAuxArroseurs = source > 0 ? source - d.perteAmenee - d.perteReseau : 0;
@@ -1168,9 +1238,54 @@ function decouper(){
   // arroseur ne se valent pas, et le second est le seul qui engage.
   d.pressionRaffinee = pressionDeCalcul !== null;
   // Sous le plancher, aucune buse ne tient ses caractéristiques : c'est une
-  // alerte, pas un ajustement.
-  d.pressionTropBasse = source > 0 && reste < PLANCHER_UTILE;
+  // alerte, pas un ajustement. Elle se lit sur le plan RETENU.
+  d.pressionTropBasse = source > 0 && (!tient || d.pressionAuxArroseurs < PLANCHER_UTILE);
+  d.pressionDeChoix = pressionRetenue();
   return d;
+}
+
+/* ══ COMBIEN DE VANNES, ET QUELLES TÊTES SUR CHACUNE ═══════════════════════
+
+   **Une seule coupe, pour le plan ET pour le choix des buses.** Jusqu'au
+   16 octobre 2026, le choix des buses estimait les vannes en divisant le débit
+   TOTAL par la limite d'une voie, comme si l'eau se partageait au litre près.
+   Or un arroseur ne se coupe pas : six têtes à 0,78 m³/h sous une limite de
+   1,53 ne tiennent pas à deux par vanne. L'estimation disait quatre vannes, le
+   plan en posait six, et le choix gardait la grosse buse. Sur un balayage de
+   1 190 pelouses, 26 perdaient ainsi une vanne de trop. Deux façons de compter
+   les vannes avaient divergé (`CLAUDE.md` §3) ; il n'en reste qu'une.
+
+   **On coupe AU POINT PRÈS, pas à la rangée.** Couper seulement entre rangées
+   paraissait plus propre, jusqu'à ce que la pelouse avant le démente : sa
+   rangée du milieu boit 1,77 m³/h à elle seule, au-dessus de la limite de
+   1,53. Insécable, elle fabriquait un secteur en dépassement. Une rangée
+   longue alimentée par deux vannes, une à chaque bout, est pourtant ce qu'on
+   pose tous les jours.
+
+   **Et l'on VISE l'équilibre au lieu de remplir à ras bord.** Remplir jusqu'à
+   la limite donnait 9 têtes sur une vanne et 2 sur l'autre : juste au sens du
+   débit, absurde au sens du chantier. On calcule donc d'abord combien de
+   vannes il faudrait, puis on répartit autour de cette moyenne, en gardant la
+   limite comme garde-fou dur, jamais franchi.
+
+   `elements` : les têtes dans l'ordre où le tuyau les visite, chacune avec son
+   `debit`. Rend les paquets, un par vanne, dans le même ordre. */
+function couperEnVannes(elements, limite){
+  var total = elements.reduce(function(s,x){ return s + x.debit; }, 0);
+  var combien = limite > 0 ? Math.max(1, Math.ceil(total / limite)) : 1;
+  var visee = total / combien;
+  var paquets = [[]], debits = [0];
+  elements.forEach(function(x){
+    var i = paquets.length - 1;
+    var trop = debits[i] + x.debit;
+    var ouvrirUnAutre = paquets[i].length > 0 && (
+      (paquets.length < combien && trop > visee + 1e-9) ||   // l'équilibre visé
+      (limite > 0 && trop > limite + 1e-9)                   // le garde-fou dur
+    );
+    if (ouvrirUnAutre){ paquets.push([]); debits.push(0); i++; }
+    paquets[i].push(x); debits[i] += x.debit;
+  });
+  return paquets;
 }
 
 function decouperUneFois(){
@@ -1178,7 +1293,7 @@ function decouperUneFois(){
   var duTuyau = debitMaxDe(CATALOGUE.tuyaux.pe25.dInterieur);
   var deLaSource = dispo * MARGE;
   var limite = limiteParVoie();
-  var groupes = {}, ordre = [];
+  var groupes = {}, ordre = [], poses = [];
   etat.zones.forEach(function(z){
     var p = poser(z);
     if (p.debit <= 0) return;
@@ -1212,6 +1327,10 @@ function decouperUneFois(){
     groupes[clef].minutes = p.minutes;
     groupes[clef].passages = p.passages;
     groupes[clef].nombre = (groupes[clef].nombre || 0) + p.nombre;
+    if (p.m && p.m.buse && p.ecartEntreTetes > 0){
+      poses.push({ ecartEntreTetes: p.ecartEntreTetes, portee: p.m.portee,
+                   buse: CATALOGUE.buses.filter(function(x){ return x.ref === p.m.ref; })[0] });
+    }
     groupes[clef].forme = TYPES[z.type].forme;
   });
 
@@ -1309,32 +1428,10 @@ function decouperUneFois(){
       return;
     }
 
-    // **On coupe AU POINT PRÈS, pas à la rangée.** Couper seulement entre
-    // rangées paraissait plus propre, jusqu'à ce que la pelouse avant le
-    // démente : sa rangée du milieu boit 1,77 m³/h à elle seule, au-dessus de
-    // la limite de 1,53 — insécable, elle fabriquait un secteur en
-    // dépassement. Une rangée longue alimentée par deux vannes, une à chaque
-    // bout, est pourtant ce qu'on pose tous les jours.
-    //
-    // **Et l'on VISE l'équilibre au lieu de remplir à ras bord.** Remplir
-    // jusqu'à la limite donnait 9 têtes sur une vanne et 2 sur l'autre : juste
-    // au sens du débit, absurde au sens du chantier. On calcule donc d'abord
-    // combien de vannes il faut, puis on répartit autour de cette moyenne — en
-    // gardant la limite comme garde-fou dur, jamais franchi.
-    var total = suite.reduce(function(s,x){ return s + x.debit; }, 0);
-    var combien = limite > 0 ? Math.max(1, Math.ceil(total / limite)) : 1;
-    var visee = total / combien;
-    var paquets = [[]], debits = [0];
-    suite.forEach(function(x){
-      var i = paquets.length - 1;
-      var trop = debits[i] + x.debit;
-      var ouvrirUnAutre = paquets[i].length > 0 && (
-        (paquets.length < combien && trop > visee + 1e-9) ||   // l'équilibre visé
-        (limite > 0 && trop > limite + 1e-9)                   // le garde-fou dur
-      );
-      if (ouvrirUnAutre){ paquets.push([]); debits.push(0); i++; }
-      paquets[i].push(x); debits[i] += x.debit;
-    });
+    // La coupe elle-même vit dans `couperEnVannes` : le choix des buses s'en
+    // sert aussi, et deux façons de compter les vannes finiraient par diverger.
+    var paquets = couperEnVannes(suite, limite);
+    var debits = paquets.map(function(pq){ return pq.reduce(function(t,x){ return t + x.debit; }, 0); });
     paquets.forEach(function(pq, i){
       ajouter(debits[i], paquets.length, i+1, pq.map(function(x){ return x.pt; }), pq);
       pq.forEach(function(x){
@@ -1343,7 +1440,7 @@ function decouperUneFois(){
       });
     });
   });
-  return { secteurs:secteurs, dispo:dispo, limite:limite, reseauDuPoint:reseauDuPoint,
+  return { secteurs:secteurs, dispo:dispo, limite:limite, reseauDuPoint:reseauDuPoint, poses:poses,
            // **QUI commande la limite**, pour que l'écran puisse le dire. Un
            // artisan qui mesure 3 m³/h et voit des réseaux plafonnés à 1,76
            // croirait à un défaut de calcul : c'est son tuyau, et il le lira.
@@ -1652,6 +1749,10 @@ export function calculerPlan(entree) {
       pressionAuxArroseurs: d.pressionAuxArroseurs,
       pressionRaffinee: d.pressionRaffinee,
       pressionTropBasse: d.pressionTropBasse,
+      // **La pression à laquelle les buses ont été CHOISIES.** Elle ne doit
+      // jamais dépasser `pressionAuxArroseurs` : sinon les portées retenues
+      // sont celles d'une pression qui n'arrive pas (§467).
+      pressionDeChoix: d.pressionDeChoix,
       reseauxDeZone: d.reseauxDeZone,
       voies: voiesProgrammateur(d.secteurs.length),
       couleurs: d.secteurs.map(function (_, i) { return couleurReseau(i); }),

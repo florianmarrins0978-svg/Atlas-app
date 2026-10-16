@@ -250,16 +250,21 @@ dire(
   //
   // On compare donc deux pressions PROCHES, où la même buse est retenue, et
   // l'on exige alors l'égalité avec √(P₂/P₁) — les pressions étant celles qui
-  // arrivent vraiment aux arroseurs, pas celles de la source.
-  const bas = calculerPlan({ seau: 10, temps: 20, pression: 3, zones: ZONE });
-  const haut = calculerPlan({ seau: 10, temps: 20, pression: 3.2, zones: ZONE });
+  // ont CHOISI les buses, pas celles de la source.
+  //
+  // **3,3 et 3,5 bar depuis le 16 octobre 2026.** La recherche de la pression
+  // de choix (§467) a déplacé la bascule de buse sur cette pelouse : à 3 bar,
+  // elle tient désormais sur deux vannes en buse 1,5, à 3,2 sur trois en buse
+  // 3,0. Les deux pressions comparées doivent tomber du même côté.
+  const bas = calculerPlan({ seau: 10, temps: 20, pression: 3.3, zones: ZONE });
+  const haut = calculerPlan({ seau: 10, temps: 20, pression: 3.5, zones: ZONE });
   const buses = (p: { materiel: { nom: string; q: number }[] }) =>
     JSON.stringify(p.materiel.filter((m) => /buse/i.test(m.nom)));
-  const attendu = Math.sqrt(haut.pressionAuxArroseurs / bas.pressionAuxArroseurs);
+  const attendu = Math.sqrt(haut.pressionDeChoix / bas.pressionDeChoix);
   const observe = haut.demande / bas.demande;
   dire(
     buses(bas) === buses(haut) && Math.abs(observe - attendu) < 0.005,
-    `même buse à 3 et 3,2 bar : le débit suit √P (${observe.toFixed(4)} observé, ` +
+    `même buse à 3,3 et 3,5 bar : le débit suit √P (${observe.toFixed(4)} observé, ` +
       `${attendu.toFixed(4)} attendu)`,
   );
 
@@ -415,16 +420,30 @@ dire(
       { id: 2, type: "gazon", nom: "Derrière", L: 15, l: 8 },
     ],
   });
-  const noms = (surLaLimite.secteurs as { nom: string }[]).map((x) => x.nom);
   // **On éprouve la RÈGLE, pas la mise en page.** La première version figeait
   // « deux vannes nommées Devant et Derrière » : le 23 août, le choix de buse a
   // changé, la coupe est tombée à trois vannes, et le contrôle a rougi sur un
-  // plan parfaitement juste. Ce qui doit tenir, c'est qu'une vanne ne s'annonce
-  // jamais sous le nom d'une zone qu'elle n'arrose pas — donc jamais deux noms
-  // là où la coupe ne mêle pas réellement deux zones.
+  // plan parfaitement juste. La seconde exigeait qu'aucune vanne ne porte deux
+  // noms : le 16 octobre, la recherche de la pression de choix a ramené ce
+  // jardin à deux vannes, dont une arrose VRAIMENT les deux pelouses. Ce qui
+  // doit tenir, et rien d'autre : le nom d'une vanne est celui des zones de ses
+  // têtes, ni plus ni moins.
+  const zonesDeVanne = new Map<number, Set<string>>();
+  for (const z of surLaLimite.dessin as { nom: string; points: { reseau?: number }[] }[]) {
+    for (const pt of z.points) {
+      if (pt.reseau === undefined) continue;
+      if (!zonesDeVanne.has(pt.reseau)) zonesDeVanne.set(pt.reseau, new Set());
+      zonesDeVanne.get(pt.reseau)!.add(z.nom);
+    }
+  }
+  const noms = (surLaLimite.secteurs as { nom: string }[]).map((x) => x.nom);
+  const fautes = noms.filter((nom, i) => {
+    const vraies = [...(zonesDeVanne.get(i) ?? [])].sort().join(" + ");
+    return nom.split(" + ").sort().join(" + ") !== vraies;
+  });
   dire(
-    noms.length >= 2 && noms.every((n) => n === "Devant" || n === "Derrière"),
-    `chaque vanne nomme la zone qu'elle arrose, pas tout son groupe (${noms.join(" · ")})`,
+    noms.length >= 2 && zonesDeVanne.size === noms.length && fautes.length === 0,
+    `chaque vanne nomme la zone qu'elle arrose, pas tout son groupe (${noms.join(", ")})`,
   );
 }
 
@@ -528,7 +547,13 @@ dire(
   // Des buses plus fines font des lignes qui portent moins de débit, donc qui
   // perdent moins. Ce n'est toujours pas la formule qui a changé : c'est le plan
   // qu'on lui donne.
-  const PERTE_RESEAU_ATTENDUE = 0.386;
+  //
+  // **ELLE A BOUGÉ LE 16 OCTOBRE 2026, DE 0,386 À 0,523**, et ce n'est toujours
+  // pas la formule. Le plan d'avant choisissait ses buses à une pression qui
+  // n'arrivait pas (§467) ; corrigé, le même jardin tient sur DEUX vannes au
+  // lieu de trois (8 × 3504 buse 1,0 et 6 × 5000 Plus buse 1,0 u+). Une vanne
+  // de moins, ce sont des lignes plus chargées, donc qui perdent plus.
+  const PERTE_RESEAU_ATTENDUE = 0.523;
   dire(
     Math.abs(p.perteReseau - PERTE_RESEAU_ATTENDUE) < 0.005,
     `la perte du réseau vaut ${p.perteReseau.toFixed(3)} bar (${PERTE_RESEAU_ATTENDUE} attendu — ` +
@@ -634,6 +659,64 @@ dire(
   dire(
     haut?.points.length === 9 && /0,75/.test(haut?.buse ?? ""),
     `le carré de 12 m reçoit ${haut?.points.length} × ${haut?.buse} — sa pose du 21 août`,
+  );
+}
+
+// ── LES BUSES SONT CHOISIES À UNE PRESSION QUI ARRIVE VRAIMENT ─────────────
+//
+// **Trouvé le 16 octobre 2026, en relevant le diamètre de ses tubes.** Les
+// deux passes choisissaient les buses à la pression laissée par le plan de la
+// passe 1, puis annonçaient celle du plan de la passe 2. Quand la passe 2
+// changeait de plan, les buses étaient choisies jusqu'à 0,31 bar AU-DESSUS de
+// ce qui arrive au dernier arroseur : une portée prêtée qu'il n'a pas, le
+// réseau qui ne se lève pas (`.claude/rules/arrosage.md`, « se tromper vers le
+// sûr »).
+//
+// **Plusieurs jardins et toute une plage de pressions**, parce que le défaut ne
+// se montrait que là où la passe 2 change de plan : un seul cas aurait pu
+// tomber à côté. Son jardin du 23 août en est, c'est sur lui qu'on l'a vu.
+{
+  const jardins = [
+    [{ id: 1, type: "gazon", nom: "Haut", L: 12, l: 12 }, { id: 2, type: "gazon", nom: "Bas", L: 8, l: 8 }],
+    [{ id: 1, type: "gazon", nom: "P", L: 20, l: 15 }],
+    [{ id: 1, type: "gazon", nom: "P", L: 18, l: 12 }, { id: 2, type: "gazon", nom: "Q", L: 10, l: 2 }],
+  ];
+  let mesures = 0;
+  let pire = 0;
+  let cas = "";
+  for (const zones of jardins) {
+    for (let centiemes = 200; centiemes <= 400; centiemes += 5) {
+      const pression = centiemes / 100;
+      const p = calculerPlan({ seau: 10, temps: 20, pression, zones });
+      // Sous le plancher, l'outil ALERTE au lieu de conclure : ce n'est pas le
+      // cas que ce contrôle tient.
+      if (p.pressionTropBasse) continue;
+      // Une pression de choix absente n'est pas un vert : on refuse de conclure.
+      if (typeof p.pressionDeChoix !== "number") { pire = Infinity; cas = "pression de choix absente"; continue; }
+      mesures++;
+      // Choisies au-dessus de ce qui arrive, les portées sont prêtées.
+      const ecart = p.pressionDeChoix - p.pressionAuxArroseurs;
+      // Choisies au-dessous, les buses boivent plus que compté (√P) : chaque
+      // vanne doit encore tenir sous la limite d'une voie à ce débit réel.
+      const gonfle = Math.sqrt(Math.max(p.pressionAuxArroseurs, p.pressionDeChoix) / p.pressionDeChoix);
+      for (const s of p.secteurs as { debit: number }[]) {
+        if (s.debit * gonfle > p.limite + 1e-6) {
+          pire = Infinity;
+          cas = `${zones.map((z) => `${z.L}×${z.l}`).join(" + ")} à ${pression} bar : une vanne à ` +
+            `${(s.debit * gonfle).toFixed(2)} m³/h réels pour ${p.limite.toFixed(2)} permis`;
+        }
+      }
+      if (ecart > pire) {
+        pire = ecart;
+        cas = `${zones.map((z) => `${z.L}×${z.l}`).join(" + ")} à ${pression} bar : choisies à ` +
+          `${p.pressionDeChoix.toFixed(2)}, ${p.pressionAuxArroseurs.toFixed(2)} au dernier arroseur`;
+      }
+    }
+  }
+  dire(mesures > 50, `${mesures} plans mesurés (un contrôle qui ne mesure rien ne prouve rien)`);
+  dire(
+    pire <= 0.01,
+    `aucune buse choisie au-dessus de la pression qui arrive, aucune vanne au-delà de sa limite (pire écart ${pire.toFixed(3)} bar${cas ? ", " + cas : ""})`,
   );
 }
 
