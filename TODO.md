@@ -65,6 +65,7 @@ Un croquis de 350 m lui a été montré (3 vannes, car 350 m font 3,5 m³/h pour
 |---|---|
 | du Ø25 au goutte-à-goutte | *« le coude taraudé 3/4" sur lequel on vient visser un T égal Palaplast diamètre 16 en 3/4" »* |
 | recoller deux bouts de goutte-à-goutte | *« un manchon Palaplast diamètre 16 en 3/4" »* |
+| le bout de chaque ligne | **MID6371**, *« un bouchon de fin de ligne Palaplast diam 16 3/4 »* ; Aqua Plus p. 49 l'écrit « bouchon Palaplast Ø16 ». Sa référence : elle s'écrit au catalogue |
 
 Aqua Plus 2026 (p. 49) n'a pas ces libellés à l'identique : il porte « té
 Palaplast Ø16 » (MID6321), « embout Palaplast taraudé 16 x 3/4" » (MID6362),
