@@ -64,6 +64,7 @@ Un croquis de 350 m lui a été montré (3 vannes, car 350 m font 3,5 m³/h pour
 | | |
 |---|---|
 | du Ø25 au goutte-à-goutte | *« le coude taraudé 3/4" sur lequel on vient visser un T égal Palaplast diamètre 16 en 3/4" »* |
+| le té de la sortie | **MID6321**, « té Palaplast Ø16 » (p. 49, photo `appli/arrosage-photos/MID6321.png`) : *« on le visse sur le raccord coude diamètre 25 en 3/4", puis il permet de créer une boucle dans notre massif ou autour des arbres en isolé pour faire un circuit fermé »*. **Une ligne bouclée revient sur son té : elle n'a pas de bout, donc pas de bouchon.** Le bouchon MID6371 ne sert qu'à une ligne ouverte |
 | recoller deux bouts de goutte-à-goutte | **MID6301**, « jonction Palaplast Ø16 » (Aqua Plus p. 49) : *« permet de rabouter deux morceaux de goutte-à-goutte entre eux »*. Ø16 des deux côtés, sur sa photo (`appli/arrosage-photos/MID6301.png`) : le « en 3/4" » de son premier message ne s'y voit pas |
 | MID6362 | « embout Palaplast taraudé 16 x 3/4" » : du tube de 16 à un filetage femelle 3/4". **Ne se visse pas sur le coude taraudé**, femelle lui aussi : question posée, le MID6352 (« embout fileté », mâle) ou un té ? |
 | le bout de chaque ligne | **MID6371**, *« un bouchon de fin de ligne Palaplast diam 16 3/4 »* ; Aqua Plus p. 49 l'écrit « bouchon Palaplast Ø16 ». Sa référence : elle s'écrit au catalogue |
