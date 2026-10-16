@@ -82,6 +82,13 @@
   .tel[data-choix="b"] .desc-boite{padding-right:42px}
   .tel[data-choix="c"] .croix{right:-32px}
   .tel[data-choix="c"] .desc-boite{padding-right:66px}
+  /* D, sa réponse du 16 octobre 2026 : « mets-la un peu au-dessus du
+     chiffre ». La croix au-dessus de la colonne des chiffres, comme A, et
+     montée de 14 px : elle ne se tient plus à côté de la première ligne du
+     texte, elle la surplombe. Le montant de la ligne d'au-dessus n'est pas un
+     champ, un appui qui déborde dessus ne fait rien. */
+  .tel[data-choix="d"] .croix{right:-20px;top:-24px}
+  .tel[data-choix="d"] .desc-boite{padding-right:42px}
 
   .tel.zones .croix{background:var(--zone)}
   .tel.zones .desc{background:var(--zone-texte)}
@@ -105,15 +112,16 @@
 
   <div class="onglets" role="group" aria-label="Choisir une place">
     <button class="onglet" type="button" data-choix="avant">Aujourd’hui</button>
-    <button class="onglet" type="button" data-choix="a" aria-pressed="true">A</button>
+    <button class="onglet" type="button" data-choix="a">A</button>
     <button class="onglet" type="button" data-choix="b">B</button>
     <button class="onglet" type="button" data-choix="c">C</button>
+    <button class="onglet" type="button" data-choix="d" aria-pressed="true">D</button>
   </div>
   <p class="dit" id="dit"></p>
 
   <label class="bascule"><input type="checkbox" id="zones"> Montrer où le doigt touche</label>
 
-  <div class="tel" id="tel" data-choix="a">
+  <div class="tel" id="tel" data-choix="d">
     <div class="feuille">
       <p class="client">Client</p>
       <p class="nom">M. Bernard</p>
@@ -123,7 +131,7 @@
     </div>
   </div>
 
-  <p class="note">Plus de glissement dans aucune des trois : seule la croix retire une ligne. Touchez la fin d’une description pour la retoucher, puis la croix.</p>
+  <p class="note">Plus de glissement dans aucune des quatre : seule la croix retire une ligne. Touchez la fin d’une description pour la retoucher, puis la croix.</p>
 </div>
 
 <div class="annuler" id="annuler" role="status"><span>Retiré à l’instant</span><button type="button" id="annulerBtn">Annuler</button></div>
@@ -133,7 +141,8 @@
     avant: "8 px entre la fin du texte et la croix.",
     a: "La croix au bout des chiffres. 18 px entre le texte et la croix.",
     b: "La croix contre le bord de la feuille, le doigt la touche jusqu’au bord de l’écran. 30 px.",
-    c: "Comme B, et la description s’arrête un peu plus tôt. 54 px."
+    c: "Comme B, et la description s’arrête un peu plus tôt. 54 px.",
+    d: "Au-dessus de la colonne des chiffres, montée de 14 px. 18 px du texte sur le côté, et elle le surplombe."
   };
   const LIGNES = [
     { libelle: "Taille de haie de thuyas sur 25 m, évacuation des déchets verts", qte: "25", unite: "m", pu: 12 },
@@ -196,7 +205,7 @@
     conteneur.querySelectorAll("textarea").forEach(grandir);
   }
   document.querySelectorAll(".onglet").forEach((b) => b.addEventListener("click", () => choisir(b.dataset.choix)));
-  choisir("a");
+  choisir("d");
 </script>
 </body>
 </html>

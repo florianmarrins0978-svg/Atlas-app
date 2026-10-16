@@ -597,7 +597,9 @@ dépasse. Retirer le glissement du devis libère la place jusqu'au bord.
 
 Planche `appli/devis-croix-plus-a-droite.html` (n° 136) : A 18 px, B 30 px
 (zone jusqu'au bord de l'écran), C 54 px (B, et la description s'arrête plus
-tôt). **Les deux se codent dans le même lot** une fois son choix donné : la
+tôt). Sa réponse du même jour, *« mets-la un peu au-dessus du chiffre »*,
+a donné **D** : la place de A, montée de 14 px (`top: -24px` au lieu de
+-10). À lui faire confirmer. **Les deux se codent dans le même lot** une fois son choix donné : la
 place de la croix dépend du retrait du glissement, et un seul lot de devis
 (niveau 3, gravité argent) coûte une batterie au lieu de deux. À faire suivre
 dans ce lot : `FICHE_RETRAIT` pour la fiche `devis-ligne-retirer`
