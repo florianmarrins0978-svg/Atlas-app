@@ -1708,12 +1708,13 @@ function listeMateriel(d){
     lignes.push({ ref: m.ref,
                   nom: (m.marqueCle === 'generique' ? '' : m.marque + ' ') +
                        m.nom + 's ' + m.detail +
-                       (m.colisage ? ' — par ' + m.colisage : ''),
+                       (m.colisage ? ', par ' + m.colisage : ''),
                   q: compte[ref], u:'u' });
   });
   if (totalGaine){
     var g = CATALOGUE.gaines[0];
-    lignes.push({ ref:g.ref, nom:'Gaine de goutteurs ' + g.detail, q: totalGaine, u:'ml' });
+    // Le libellé d'Aqua Plus, mot pour mot : c'est ce qu'il demande au comptoir.
+    lignes.push({ ref:g.ref, nom:g.nom, q: totalGaine, u:'ml' });
   }
   // **UN CORPS PAR ARROSEUR, MAIS LE CORPS DE SA FAMILLE.** Une tuyère prend
   // le corps qu'il a choisi à l'écran (10 cm sans option par défaut, sa
@@ -1742,7 +1743,8 @@ function listeMateriel(d){
   });
   Object.keys(parCorps).forEach(function(cref){
     var c = corpsDe[cref];
-    lignes.push({ ref:c.ref, nom:c.nom + ' — ' + c.detail, q: parCorps[cref], u:'u' });
+    // Une virgule, jamais un tiret entre deux mots (sa règle du 22 septembre 2026).
+    lignes.push({ ref:c.ref, nom:c.nom + ', ' + c.detail, q: parCorps[cref], u:'u' });
   });
   // « Sous les arroseurs il faut obligatoirement des coudes SBE, choisis-les
   // en fonction des diamètres, un à chaque fois par arroseur » — sa consigne
@@ -1796,7 +1798,7 @@ function listeMateriel(d){
   // Les SBE, une fois les DEUX emplois comptés : une ligne par référence.
   ordreSbe.forEach(function(ref){
     var e = parSbe[ref];
-    lignes.push({ ref: ref, nom: e.c.nom + ' — ' + e.c.detail, q: e.q, u:'u' });
+    lignes.push({ ref: ref, nom: e.c.nom + ', ' + e.c.detail, q: e.q, u:'u' });
   });
   // **Le tracé du réseau latéral — comptable depuis sa réponse du 17 août
   // (planche 73) : « c'est le B », plusieurs lignes parallèles, avec sa

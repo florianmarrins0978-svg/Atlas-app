@@ -170,13 +170,13 @@ export function piecesDuPlan(
     const bas = coudeDe("3/4");
     const haut12 = coudeDe("1/2");
     if (bas && tetes.length > 0) {
-      jardin.push({ ref: bas.ref, reference: bas.reference, nom: `${bas.nom} — ${bas.detail}`, q: tetes.length, u: "u", ou: "jardin", detail: "en bas de chaque arroseur, sur la ligne" });
+      jardin.push({ ref: bas.ref, reference: bas.reference, nom: `${bas.nom}, ${bas.detail}`, q: tetes.length, u: "u", ou: "jardin", detail: "en bas de chaque arroseur, sur la ligne" });
       if (turbines > 0) {
-        jardin.push({ ref: bas.ref, reference: bas.reference, nom: `${bas.nom} — ${bas.detail}`, q: turbines, u: "u", ou: "jardin", detail: `en haut des ${turbines} turbines` });
+        jardin.push({ ref: bas.ref, reference: bas.reference, nom: `${bas.nom}, ${bas.detail}`, q: turbines, u: "u", ou: "jardin", detail: `en haut des ${turbines} turbines` });
       }
     }
     if (haut12 && tuyeres > 0) {
-      jardin.push({ ref: haut12.ref, reference: haut12.reference, nom: `${haut12.nom} — ${haut12.detail}`, q: tuyeres, u: "u", ou: "jardin", detail: `en haut des ${tuyeres} tuyères` });
+      jardin.push({ ref: haut12.ref, reference: haut12.reference, nom: `${haut12.nom}, ${haut12.detail}`, q: tuyeres, u: "u", ou: "jardin", detail: `en haut des ${tuyeres} tuyères` });
     }
 
     // **Les raccords de ligne, lus sur le tracé** — réseau par réseau.

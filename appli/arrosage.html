@@ -422,7 +422,7 @@ function dessinerCorps(){
   }
   chez.forEach(function(c){
     var o = document.createElement('option');
-    o.value = c.ref; o.textContent = c.nom + ' — ' + c.detail;
+    o.value = c.ref; o.textContent = c.nom + ', ' + c.detail;
     choix.appendChild(o);
   });
   var courant = corpsCourant();
@@ -610,7 +610,7 @@ function dessinerPlans(){
     var id = 'gz' + z.id;
     var bloc = document.createElement('div');
     bloc.innerHTML =
-      '<p class="plan-nom">' + (z.nom || TYPES[z.type].nom) + ' — ' + p.nombre + ' ' +
+      '<p class="plan-nom">' + (z.nom || TYPES[z.type].nom) + ', ' + p.nombre + ' ' +
         p.m.nom.toLowerCase() + (p.nombre>1?'s':'') + ', portée ' + nb(p.m.portee,0) + ' m</p>' +
       '<svg viewBox="0 0 ' + (L+margeG+marge) + ' ' + (H+marge*2) + '" class="plan" role="img" ' +
         'aria-label="Plan de ' + (z.nom||'la zone') + ' : ' + p.nombre + ' arroseurs">' +
