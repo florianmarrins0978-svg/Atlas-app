@@ -66,13 +66,20 @@ Un croquis de 350 m lui a été montré (3 vannes, car 350 m font 3,5 m³/h pour
 | du Ø25 au goutte-à-goutte | *« le coude taraudé 3/4" sur lequel on vient visser un T égal Palaplast diamètre 16 en 3/4" »* |
 | le té de la sortie | **MID6321**, « té Palaplast Ø16 » (p. 49, photo `appli/arrosage-photos/MID6321.png`) : *« on le visse sur le raccord coude diamètre 25 en 3/4", puis il permet de créer une boucle dans notre massif ou autour des arbres en isolé pour faire un circuit fermé »*. **Une ligne bouclée revient sur son té : elle n'a pas de bout, donc pas de bouchon.** Le bouchon MID6371 ne sert qu'à une ligne ouverte |
 
+**CHAQUE PIÈCE PALAPLAST SE VISSE DIRECTEMENT DANS LE COUDE TARAUDÉ** — sa
+correction du 16 octobre 2026 : *« sous la bague noire que tu vois sur les
+photos, c'est un embout fileté à chaque fois, donc tu peux visser »*. Le té
+MID6321, le coude MID6341, le droit MID6301 se vissent sur le coude taraudé,
+sans pièce entre les deux. **Une boucle fait 100 m au plus, comme une ligne**
+(*« 100 m max dans tous les cas »*).
+
 **UNE QUESTION À POSER À L'UTILISATEUR, PAR ZONE DE GOUTTE-À-GOUTTE** — sa
 règle du 16 octobre 2026 : *« est-ce qu'il veut qu'une seule ligne de
 goutte-à-goutte ? »*
 
 | sa réponse | la pose | les pièces à la sortie |
 |---|---|---|
-| **une seule ligne** | ligne ouverte | sur le coude taraudé 25×3/4", un **coude Palaplast** ou un **droit Palaplast** (pas le té), et **un bouchon** MID6371 au bout |
+| **une seule ligne** | ligne ouverte | sur le coude taraudé 25×3/4", un **coude Palaplast** MID6341 ou un **droit Palaplast** MID6301 (pas le té), et **un bouchon** MID6371 au bout |
 | une ligne, mais partie d'un té égal | deux bouts ouverts | **deux bouchons** |
 | **deux lignes** | boucle, circuit fermé | le **té Palaplast** MID6321, **aucun bouchon** |
 
@@ -80,7 +87,7 @@ goutte-à-goutte ? »*
 `appli/arrosage-photos/MID6341.png`). **MID6352 confirmé par lui**, « embout fileté Palaplast 16 x 3/4" » (mâle),
 le droit qui se visse dans le coude taraudé (photo `appli/arrosage-photos/MID6352.png`). Question par zone, dans la planche de l'écran.
 | recoller deux bouts de goutte-à-goutte | **MID6301**, « jonction Palaplast Ø16 » (Aqua Plus p. 49) : *« permet de rabouter deux morceaux de goutte-à-goutte entre eux »*. Ø16 des deux côtés, sur sa photo (`appli/arrosage-photos/MID6301.png`) : le « en 3/4" » de son premier message ne s'y voit pas |
-| MID6362 | « embout Palaplast taraudé 16 x 3/4" », femelle 20x27 : *« permet de connecter un tuyau de 16 mm directement sur un robinet, une clarinette de distribution ou une vanne dotée d'un filetage mâle 3/4" »*. **Pas sur le coude taraudé** (femelle aussi) : là, c'est le MID6352. Où il le pose dans SES réseaux : question posée |
+| MID6362 | « embout Palaplast taraudé 16 x 3/4" » : *« oublie-le pour les réseaux, garde-le juste pour la liste des pièces à ajouter, quasi personne ne s'en sert »*. Jamais compté par le calcul |
 | le bout de chaque ligne | **MID6371**, *« un bouchon de fin de ligne Palaplast diam 16 3/4 »* ; Aqua Plus p. 49 l'écrit « bouchon Palaplast Ø16 ». Sa référence : elle s'écrit au catalogue |
 
 Aqua Plus 2026 (p. 49) n'a pas ces libellés à l'identique : il porte « té
