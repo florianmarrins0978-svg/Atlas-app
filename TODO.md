@@ -80,7 +80,7 @@ goutte-à-goutte ? »*
 `appli/arrosage-photos/MID6341.png`). **MID6352 confirmé par lui**, « embout fileté Palaplast 16 x 3/4" » (mâle),
 le droit qui se visse dans le coude taraudé (photo `appli/arrosage-photos/MID6352.png`). Question par zone, dans la planche de l'écran.
 | recoller deux bouts de goutte-à-goutte | **MID6301**, « jonction Palaplast Ø16 » (Aqua Plus p. 49) : *« permet de rabouter deux morceaux de goutte-à-goutte entre eux »*. Ø16 des deux côtés, sur sa photo (`appli/arrosage-photos/MID6301.png`) : le « en 3/4" » de son premier message ne s'y voit pas |
-| MID6362 | « embout Palaplast taraudé 16 x 3/4" » : du tube de 16 à un filetage femelle 3/4". **Ne se visse pas sur le coude taraudé**, femelle lui aussi : question posée, le MID6352 (« embout fileté », mâle) ou un té ? |
+| MID6362 | « embout Palaplast taraudé 16 x 3/4" », femelle 20x27 : *« permet de connecter un tuyau de 16 mm directement sur un robinet, une clarinette de distribution ou une vanne dotée d'un filetage mâle 3/4" »*. **Pas sur le coude taraudé** (femelle aussi) : là, c'est le MID6352. Où il le pose dans SES réseaux : question posée |
 | le bout de chaque ligne | **MID6371**, *« un bouchon de fin de ligne Palaplast diam 16 3/4 »* ; Aqua Plus p. 49 l'écrit « bouchon Palaplast Ø16 ». Sa référence : elle s'écrit au catalogue |
 
 Aqua Plus 2026 (p. 49) n'a pas ces libellés à l'identique : il porte « té
