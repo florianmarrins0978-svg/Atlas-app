@@ -4,9 +4,12 @@
 
 | | qui |
 |---|---|
-| **une pelouse de 20 × 12 reçoit six vannes dès 3,7 bar** (déjà vrai sur `main` avant le §467). Sa règle « l'écart ne descend jamais sous la portée » interdit à une turbine de 10,1 m de paver 20 m (écart 10), et seule la grosse buse reste. Un poseur visserait la portée de 1 %. **Faut-il permettre de réduire la portée d'une turbine** (vis de réglage) ? | lui |
+| ~~une pelouse de 20 × 12 reçoit six vannes dès 3,7 bar~~ **tranché le 16 octobre 2026** : bridage permis jusqu'à 40 %, recouvrement de 80 à 100 %, l'ordre du moins cher (§468). Elle tient sur deux vannes | fait |
+| le plan affiche la portée RÉGLÉE d'une tête bridée (« portée 6 m » pour une buse de 6,4), sans le mot « bridée » : faut-il l'écrire sur le plan ? Planche à faire (`CLAUDE.md` §3 bis) | lui |
+| le bridage ne vaut que pour les turbines ; les tuyères VAN se règlent aussi à la vis : même règle de 40 % ? | lui |
+| `test-regles-du-patron.ts` : la règle du 22 août (1,76 m³/h) a été réécrite EN PLACE sur la branche des tubes (`claude/tubes-arrosage`), avec son accord, mais hors du chemin que la suite exige (une entrée datée sous le repère, l'ancienne barrée). À refaire avant de pousser ce lot-là | nous |
 | les débits et durées affichés peuvent être jusqu'à 5 % sous le réel, quand le plan retenu reçoit jusqu'à 0,2 bar de plus que sa pression de choix (la limite du tuyau, elle, est vérifiée au débit réel) | nous, si cela compte |
-| un plan coûte désormais 0,1 à 0,5 s (une recherche au centième) ; la page publiée `appli/arrosage.html` recalcule à chaque frappe | nous, à regarder sur téléphone |
+| un plan coûte environ 0,1 s depuis le §468 (une recherche de 5 en 5 centièmes, puis au centième là où le plan change) ; la page publiée `appli/arrosage.html` recalcule à chaque frappe | nous, à regarder sur téléphone |
 
 ## ✅ LE PLANNING ÉPURÉ ET LA FICHE DU JOUR : SUR `main` LE 15 OCTOBRE 2026
 

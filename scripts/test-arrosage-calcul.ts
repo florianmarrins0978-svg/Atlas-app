@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 // et `checkJs` étant coupé, il n'est pas typé. C'est voulu — le typer aurait
 // été le réécrire, donc en faire une seconde implémentation.
 import { calculerPlan, optionsCatalogue, quantiteEcrite } from "../src/lib/arrosage/calcul.js";
+import { CATALOGUE } from "../src/lib/arrosage/catalogue.js";
 
 // Le calcul d'arrosage, tel qu'il tourne dans l'application.
 //
@@ -694,11 +695,24 @@ dire(
       // Une pression de choix absente n'est pas un vert : on refuse de conclure.
       if (typeof p.pressionDeChoix !== "number") { pire = Infinity; cas = "pression de choix absente"; continue; }
       mesures++;
-      // Choisies au-dessus de ce qui arrive, les portées sont prêtées.
-      const ecart = p.pressionDeChoix - p.pressionAuxArroseurs;
+      // **La portée se juge à la pression qui arrive, buse par buse.** Depuis le
+      // bridage (16 octobre 2026), une tête se règle souvent sous sa portée :
+      // quelques centièmes de bar de moins n'y enlèvent rien. La loi est écrite
+      // ICI une seconde fois, exprès : un contrôle qui emprunterait la fonction
+      // du calcul ne pourrait pas la prendre en défaut.
+      let ecart = 0;
+      for (const z of p.dessin as { buse: string | null; portee: number }[]) {
+        const b = (CATALOGUE as unknown as { buses: { nom: string; rayon: number; pression: number }[] }).buses
+          .find((x) => x.nom === z.buse);
+        if (!b) continue;
+        const rapport = Math.min(1, p.pressionAuxArroseurs / b.pression);
+        const reelle = b.rayon * Math.pow(rapport, 1 / 3);
+        ecart = Math.max(ecart, z.portee - reelle);
+      }
       // Choisies au-dessous, les buses boivent plus que compté (√P) : chaque
       // vanne doit encore tenir sous la limite d'une voie à ce débit réel.
-      const gonfle = Math.sqrt(Math.max(p.pressionAuxArroseurs, p.pressionDeChoix) / p.pressionDeChoix);
+      const gonfle = p.pressionAuxArroseurs - p.pressionDeChoix > 0.01
+        ? Math.sqrt(p.pressionAuxArroseurs / p.pressionDeChoix) : 1;
       for (const s of p.secteurs as { debit: number }[]) {
         if (s.debit * gonfle > p.limite + 1e-6) {
           pire = Infinity;
@@ -708,15 +722,17 @@ dire(
       }
       if (ecart > pire) {
         pire = ecart;
-        cas = `${zones.map((z) => `${z.L}×${z.l}`).join(" + ")} à ${pression} bar : choisies à ` +
-          `${p.pressionDeChoix.toFixed(2)}, ${p.pressionAuxArroseurs.toFixed(2)} au dernier arroseur`;
+        cas = `${zones.map((z) => `${z.L}×${z.l}`).join(" + ")} à ${pression} bar : une portée réglée ` +
+          `${ecart.toFixed(2)} m au-delà de ce que ${p.pressionAuxArroseurs.toFixed(2)} bar donnent`;
       }
     }
   }
   dire(mesures > 50, `${mesures} plans mesurés (un contrôle qui ne mesure rien ne prouve rien)`);
   dire(
-    pire <= 0.01,
-    `aucune buse choisie au-dessus de la pression qui arrive, aucune vanne au-delà de sa limite (pire écart ${pire.toFixed(3)} bar${cas ? ", " + cas : ""})`,
+    // Deux centimètres : le centimètre de tolérance du calcul, plus l'arrondi des
+    // portées au centimètre. Sa propre tolérance est de dix (16 octobre 2026).
+    pire <= 0.02,
+    `aucune portée prêtée à la pression qui arrive, aucune vanne au-delà de sa limite (pire écart ${pire.toFixed(3)} m${cas ? ", " + cas : ""})`,
   );
 }
 

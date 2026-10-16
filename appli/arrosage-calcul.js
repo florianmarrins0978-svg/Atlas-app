@@ -219,9 +219,13 @@ function modelePour(type, plusPetitCote, dims, refImposee){
   // ne se réduisent pas du même facteur : l'ordre du catalogue, décroissant
   // par portée, pourrait ne plus l'être après correction — et tout le choix
   // « la plus grande qui tient » repose sur cet ordre.
-  var buses = CATALOGUE.busesDe(marque, type)
+  // **Gardées en mémoire par pression** : la recherche de la pression de
+  // choix (`decouper`) pose chaque zone des centaines de fois, et chaque pose
+  // recorrigeait tout le catalogue. C'était les deux tiers du temps d'un plan.
+  var cleMemo = marque + '|' + type + '|' + pressionRetenue();
+  var buses = BUSES_A_LA_PRESSION[cleMemo] || (BUSES_A_LA_PRESSION[cleMemo] = CATALOGUE.busesDe(marque, type)
     .map(buseALaPression)
-    .sort(function(x, y){ return y.rayon - x.rayon; });
+    .sort(function(x, y){ return y.rayon - x.rayon; }));
   if (buses.length){
     var b = null;
     // **Une buse peut être IMPOSÉE** — c'est ainsi que `poser()` essaie les
@@ -842,10 +846,15 @@ function couvreTout(points, portee, L, l){
 function gammeDe(m){
   if (!m || !m.buse || m.type !== 'turbine') return 0;
   var base = m.buse.ref.split('-B')[0];
-  return CATALOGUE.buses.reduce(function(max, b){
-    return b.ref.split('-B')[0] === base ? Math.max(max, Number(b.rayon) || 0) : max;
-  }, 0);
+  if (!(base in GAMMES)){
+    GAMMES[base] = CATALOGUE.buses.reduce(function(max, b){
+      return b.ref.split('-B')[0] === base ? Math.max(max, Number(b.rayon) || 0) : max;
+    }, 0);
+  }
+  return GAMMES[base];
 }
+// Le catalogue ne change pas pendant la vie du module : la gamme d'un corps non plus.
+var GAMMES = {};
 
 function poser(z, refImposee, tolerant){
   // **Sa buse imposée à la zone gagne sur tout** — ajouté le 23 août 2026 avec
@@ -1181,6 +1190,7 @@ function saisonCourante(){
 var PLANCHER_UTILE = 0.5;   // bar : sous ce reste, on ne raffine plus, on alerte
 var TOLERANCE_CHOIX = 0.01; // bar : en deçà, l'écart ne change aucune portée lisible
 var PAS_CHOIX = 0.01;       // bar : la finesse avec laquelle on cherche la pression de choix
+var PAS_GROSSIER = 0.05;    // bar : le premier passage, avant de descendre au centième
 var SURPRESSION_ADMISE = 0.2; // bar : au plus 5 % de débit en plus qu'affiché, vérifié contre la limite
 
 /* Ce qu'une seule voie peut porter, en m³/h : le plus petit de la source et du
@@ -1193,7 +1203,11 @@ function limiteParVoie(){
   return duTuyau > 0 ? Math.min(deLaSource, duTuyau) : deLaSource;
 }
 
+// Vidée à chaque plan : la marque et la pression changent d'un jardin à l'autre.
+var BUSES_A_LA_PRESSION = {};
+
 function decouper(){
+  BUSES_A_LA_PRESSION = {};
   var source = Number(etat.pression) || 0;
   // **La première passe part TOUJOURS de la source**, sinon un appel précédent
   // laisserait sa pression derrière lui et deux plans identiques
@@ -1209,41 +1223,81 @@ function decouper(){
   // dernier arroseur (les trois épreuves ci-dessous). Le réseau perd TOUJOURS au moins l'électrovanne (`perteDuReseau`) : aucune
   // pression au-dessus de la source moins cette perte ne peut arriver au bout,
   // on n'y cherche donc pas.
-  var retenu = null;
   var limite = limiteParVoie();
   var depart = Math.round((source - PERTE_ELECTROVANNE + TOLERANCE_CHOIX) * 100) / 100;
-  for (var p = depart; p >= PLANCHER_UTILE - 1e-9; p = Math.round((p - PAS_CHOIX) * 1000) / 1000){
+
+  // Un plan à la pression de choix `p`, jugé à la pression qui arrive : `null`
+  // s'il ne tient pas, sinon ce qui le classe.
+  var evaluer = function(p){
     pressionDeCalcul = p;
     var essai = decouperUneFois();
     var arrive = source - amenee(essai).perte25 - pirePerteDeReseau(essai);
+    var signature = essai.secteurs.length + '|' + essai.poses.map(function(x){ return x.buse ? x.buse.ref : ''; }).join(',');
     // Les portées ont été prises à `p` : à la pression qui arrive, chacune doit
     // porter au moins autant. Au-dessus de sa pression de référence, une
     // portée ne bouge plus (`porteeALaPression`) : quelques centièmes de moins
     // n'y enlèvent rien, et ce serait refuser un plan qui arrose.
-    if (essai.poses.some(function(x){
+    var tient = !essai.poses.some(function(x){
       return x.buse && porteeALaPression(x.buse, arrive) < x.portee - 0.01;
-    })) continue;
+    });
     // Et il ne doit pas en arriver BEAUCOUP PLUS : les buses boiraient plus
     // que compté (√P), et une buse choisie à 2 bar peut sortir de sa plage à
     // 4,5. Un plan choisi bien sous ce qui arrive n'est pas le plan de ce
     // jardin. `SURPRESSION_ADMISE` laisse passer le saut de pression qui suit un
     // changement de buse ; au-delà, le plan est d'un autre jardin.
-    if (arrive > p + SURPRESSION_ADMISE) continue;
-    // Et dans cette marge, chaque vanne doit encore tenir sous la limite d'une
-    // voie au débit réel.
+    var horsMarge = arrive > p + SURPRESSION_ADMISE;
+    // Et chaque vanne doit encore tenir sous la limite d'une voie au débit
+    // réel.
     var gonfle = arrive - p > TOLERANCE_CHOIX ? Math.sqrt(arrive / p) : 1;
-    if (limite > 0 && essai.secteurs.some(function(s){ return s.debit * gonfle > limite + 1e-9; })) continue;
-    var vannes = essai.secteurs.length;
-    var tetes = essai.secteurs.reduce(function(t, s){ return t + (s.points ? s.points.length : 0); }, 0);
-    var gamme = essai.poses.reduce(function(t, x){ return t + (x.gamme || 0); }, 0);
-    // Sa règle du 16 octobre : le moins de réseaux, puis la gamme la moins
-    // chère, puis le moins d'arroseurs ; à égalité, le plus proche de ce qui
-    // arrive.
-    var ecart = Math.abs(p - arrive);
-    var mieux = !retenu || vannes < retenu.vannes || (vannes === retenu.vannes && (gamme < retenu.gamme ||
-        (gamme === retenu.gamme && (tetes < retenu.tetes || (tetes === retenu.tetes && ecart < retenu.ecart)))));
-    if (mieux) retenu = { d: essai, p: p, vannes: vannes, gamme: gamme, tetes: tetes, ecart: ecart };
+    if (tient && limite > 0 && essai.secteurs.some(function(s){ return s.debit * gonfle > limite + 1e-9; })) tient = false;
+    if (!tient) return { p: p, tient: false, signature: signature };
+    return { d: essai, p: p, tient: true, horsMarge: horsMarge, signature: signature,
+             vannes: essai.secteurs.length,
+             gamme: essai.poses.reduce(function(t, x){ return t + (x.gamme || 0); }, 0),
+             tetes: essai.secteurs.reduce(function(t, s){ return t + (s.points ? s.points.length : 0); }, 0),
+             ecart: Math.abs(p - arrive) };
+  };
+  // Sa règle du 16 octobre : le moins de réseaux, puis la gamme la moins
+  // chère, puis le moins d'arroseurs ; à égalité, le plus proche de ce qui
+  // arrive.
+  var retenu = null, secours = null;
+  var garder = function(e){
+    if (!e.tient) return;
+    /* **Le secours, hors de la marge.** Quand le plan change de buse, la
+       pression qui arrive peut sauter de plus de 0,2 bar au-dessus de celle
+       qui choisit, et aucun plan ne tombe dans la marge. Le plan d'en dessous
+       marche pourtant : ses portées tiennent, ses vannes aussi au débit réel.
+       Le refuser donnait une alerte « pression trop basse » sur un jardin à
+       1,4 bar (28 × 26 à 2 bar). On garde le plus proche de ce qui arrive, et
+       il ne sert que si rien ne tient dans la marge. */
+    if (e.horsMarge){
+      if (!secours || e.ecart < secours.ecart) secours = e;
+      return;
+    }
+    var r = retenu;
+    if (!r || e.vannes < r.vannes || (e.vannes === r.vannes && (e.gamme < r.gamme ||
+        (e.gamme === r.gamme && (e.tetes < r.tetes || (e.tetes === r.tetes && e.ecart < r.ecart)))))) retenu = e;
+  };
+
+  /* **De cinq en cinq centièmes, puis au centième là où quelque chose change.**
+     Un plan coûtait jusqu'à 3,6 s quand chaque centième était essayé. Entre deux
+     points voisins qui rendent le même plan, tenu ou non des deux côtés, il n'y
+     a rien à trouver : on ne descend au centième qu'entre deux points qui
+     diffèrent (une buse, un nombre de vannes, ou le verdict). */
+  var grossiers = [];
+  for (var p = depart; p >= PLANCHER_UTILE - 1e-9; p = Math.round((p - PAS_GROSSIER) * 1000) / 1000){
+    var e = evaluer(p);
+    garder(e);
+    grossiers.push(e);
   }
+  for (var k = 0; k + 1 < grossiers.length; k++){
+    var a = grossiers[k], b = grossiers[k + 1];
+    if (a.tient === b.tient && a.signature === b.signature) continue;
+    for (var q = Math.round((a.p - PAS_CHOIX) * 1000) / 1000; q > b.p + 1e-9; q = Math.round((q - PAS_CHOIX) * 1000) / 1000){
+      garder(evaluer(q));
+    }
+  }
+  retenu = retenu || secours;
   if (retenu){
     pressionDeCalcul = retenu.p;
     return finirLePlan(retenu.d, source, true);

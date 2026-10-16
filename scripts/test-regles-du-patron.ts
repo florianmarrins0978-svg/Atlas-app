@@ -266,6 +266,28 @@ regle("11 septembre 2026", "« la A » — les turbines des grandes pelouses se 
   exige(plan([{ id: 1, type: "gazon", nom: "Pelouse", x: 0, y: 0, L: 12, l: 12 }]).dessin[0].points.length === 9, "ses 9 turbines sur le 12 × 12");
 });
 
+regle("16 octobre 2026", "« aller au moins cher » — sa pelouse de 20 × 12 à 3,7 bar ne prend pas six vannes pour 10 cm de portée", () => {
+  const p = calculerPlan({ seau: 10, temps: 20, pression: 3.7, zones: [{ id: 1, type: "gazon", nom: "P", x: 0, y: 0, L: 20, l: 12 }] } as never) as Plan;
+  exige(p.secteurs.length <= 2, `${p.secteurs.length} vannes, avec ${p.dessin.map((z: ZoneDessinee) => `${z.points.length} × ${z.buse}`).join(", ")}`);
+});
+
+regle("16 octobre 2026", "« le bridage à la vis, on peut aller jusqu'à 40 % » — aucune tête réglée sous 60 % de sa portée", () => {
+  const buses = (CATALOGUE as unknown as { buses: { nom: string; rayon: number }[] }).buses;
+  let vues = 0;
+  for (const [L, l] of [[20, 12], [20, 15], [12, 12], [30, 18], [16, 10]]) {
+    for (const pression of [2.5, 3, 3.7, 4.5]) {
+      const p = calculerPlan({ seau: 10, temps: 20, pression, zones: [{ id: 1, type: "gazon", nom: "P", x: 0, y: 0, L, l }] } as never) as Plan;
+      for (const z of p.dessin as ZoneDessinee[]) {
+        const b = buses.find((x) => x.nom === z.buse);
+        if (!b) continue;
+        vues++;
+        exige(z.portee >= 0.6 * b.rayon - 0.01, `${L} × ${l} à ${pression} bar : ${z.buse} réglée à ${z.portee} m pour ${b.rayon}`);
+      }
+    }
+  }
+  exige(vues > 0, "aucune tête mesurée");
+});
+
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────
 
 console.log(`\n${failed === 0 ? "✅" : "❌"} Les règles du patron — ${passed} tenue(s), ${failed} rompue(s).`);

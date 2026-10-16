@@ -35021,3 +35021,42 @@ comptait une portée que la pression réelle ne donne pas.
 3,7 bar (sa règle d'écart, une question pour lui), 5 % de débit affiché sous le
 réel dans la marge de 0,2 bar, et le coût du calcul (0,1 à 0,5 s).
 
+## §468 : Le recouvrement va de 80 à 100 %, une turbine se bride, et l'on va au moins cher
+
+**16 octobre 2026, ses réponses devant la planche de la pelouse de 20 × 12**
+(`.claude/rules/arrosage.md`, « le recouvrement va de 80 à 100 % »).
+
+| | avant | maintenant (`poseSelonSaRegle`) |
+|---|---|---|
+| écart maximal | 1,20 × la portée (« 6 m pour 5 », 17 août) | **1,25** (« 12,5, je me suis trompé ») |
+| écart minimal | la portée de la buse | la portée **réglée** : une turbine se bride jusqu'à 40 % |
+| marge | aucune | **75 à 105 %**, seulement si elle gagne un réseau ou une gamme |
+| le choix entre buses | le moins de vannes, puis le moins d'arroseurs | le moins de vannes, puis la **gamme** la moins chère, puis le moins d'arroseurs, puis le moins de bridage |
+
+**La gamme se lit sans prix** (`gammeDe`) : la plus grande portée que le corps
+sait donner, toutes buses confondues. Ses prix vivent dans son registre, et sa
+phrase dit le lien : *« plus tu montes en gamme, plus l'arroseur va loin, plus
+il coûte cher »*.
+
+**La portée réglée descend partout où la portée servait** : l'écart entre
+têtes, le damier des tuyères, la vérification à la pression qui arrive
+(§467), et la portée dessinée sur le plan. Le débit d'une tête bridée reste
+celui de sa buse : c'est le côté sûr, une vanne n'en porte pas plus.
+
+**Le coût du calcul.** La recherche de la pression de choix (§467) posait
+chaque zone des centaines de fois, et chaque pose recorrigeait tout le
+catalogue : 3,6 s pour un jardin de quatre zones à 6 bar. Les buses corrigées
+sont gardées par pression (`BUSES_A_LA_PRESSION`, vidé à chaque plan), et la
+recherche va de 5 en 5 centièmes avant de descendre au centième là où le plan
+change : 0,1 s.
+
+**Le secours hors marge** : quand aucun plan ne tombe dans les 0,2 bar de
+surpression, le plus proche qui marche (portées tenues, vannes sous la limite
+au débit réel) est retenu, au lieu d'une alerte « pression trop basse » sur un
+jardin à 1,4 bar.
+
+**Mesuré sur 392 jardins** (même balayage que §467) : 154 gagnent au moins une
+vanne ; un seul en prend une (20 × 2 à 2,5 bar), et l'ancien plan y comptait une
+portée de 1,68 m que la pression ne donne pas (1,62). Ses règles écrites dans
+`test-regles-du-patron.ts` tiennent toutes, dont ses neuf turbines du 12 × 12.
+

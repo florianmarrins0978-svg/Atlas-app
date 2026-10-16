@@ -8,6 +8,12 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-16
 
+- **Les arroseurs se posent entre 80 et 100 % de recouvrement, se brident à la
+  vis jusqu'à 40 %, et le calcul va au moins cher** (réseaux, gamme, arroseurs),
+  ses réponses du jour. Ce que ça évite : six vannes sur une pelouse de 20 × 12
+  parce qu'une buse portait 10 cm de trop ; sur 392 jardins d'essai, 154
+  gagnent au moins une vanne (`ARCHITECTURE.md` §468).
+
 - **Le calcul d'arrosage choisit ses buses à une pression qui arrive vraiment
   au dernier arroseur**, et compte les vannes tête par tête au lieu de diviser
   le débit total. Ce que ça évite : des buses choisies jusqu'à 0,31 bar
