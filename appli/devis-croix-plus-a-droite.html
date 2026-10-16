@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La croix du devis plus à droite</title>
+<style>
+  /*
+    LA CROIX DU DEVIS, PLUS À DROITE : la planche avant le code.
+
+    Sa demande du 16 octobre 2026 : « il arrive encore fréquemment qu'on
+    appuie sur la petite croix pour supprimer une ligne sans faire exprès ;
+    est-ce qu'on ne pourrait pas la décaler encore un peu plus sur la droite ?
+    Et il faut totalement retirer le slide pour supprimer une ligne pour le
+    devis. »
+
+    CE QUI A ÉTÉ MESURÉ sur l'écran réel (DevisCompletClient.tsx, iPhone 13,
+    390 px) : la zone que le doigt touche pour la croix fait 44 × 44 px, de
+    x = 324 à 368. La description s'arrête à x = 316. Il reste donc 8 px entre
+    la fin du texte et la croix : en voulant retoucher la fin d'une
+    description, on retire la ligne.
+
+    POURQUOI ELLE NE POUVAIT PAS ALLER PLUS LOIN : la croix vit dans la
+    colonne qui glisse (LigneRetirable), et cette colonne coupe ce qui
+    dépasse. Retirer le glissement, comme il le demande, libère la place
+    jusqu'au bord de l'écran.
+
+    Les trois réponses gardent le geste tel qu'il est : un appui, la ligne
+    tombe, « Annuler » reste quelques secondes. Le glissement n'existe dans
+    aucune. Les positions sont celles de l'écran, au pixel, sur 390 px.
+  */
+  :root{
+    --etabli:#e6e3dc; --carte:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
+    --gris:#8a8578; --or:#b98b47; --vert:#7d9c6e; --trait-doux:rgba(28,28,26,.08);
+    --zone:rgba(185,139,71,.28); --zone-texte:rgba(125,156,110,.22);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--etabli)}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);-webkit-text-size-adjust:100%}
+  button{font-family:inherit;color:inherit}
+  .page{max-width:560px;margin:0 auto;padding:22px 16px 120px}
+  .surtitre{font:600 11.5px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#8b6835;margin:0 0 10px}
+  h1{font:600 26px/1.15 ui-serif,Georgia,serif;margin:0 0 16px}
+  .onglets{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+  .onglet{min-height:40px;padding:0 16px;border-radius:999px;border:1px solid rgba(28,28,26,.12);
+          background:var(--carte);color:var(--doux);font-size:14px;cursor:pointer}
+  .onglet[aria-pressed="true"]{background:var(--encre);color:#faf9f5;border-color:transparent}
+  .dit{margin:0 0 12px;color:var(--doux);font-size:15px;min-height:45px}
+  .bascule{display:flex;align-items:center;gap:10px;margin:0 0 16px;font-size:14px;color:var(--doux);cursor:pointer}
+  .bascule input{width:20px;height:20px;accent-color:var(--encre)}
+
+  /* Le téléphone : 390 px, bord à bord sur un téléphone, centré ailleurs. */
+  .tel{position:relative;margin:0 auto;width:390px;max-width:calc(100% + 32px);
+       margin-left:max(-16px, calc((100% - 390px) / 2));overflow:hidden;
+       background:var(--etabli);padding:16px 0 24px}
+  .feuille{position:relative;margin:0 12px;background:var(--carte);padding:18px 20px 22px;border-radius:2px}
+  .client{font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--doux);margin:0 0 6px}
+  .nom{margin:0 0 18px}
+
+  .ligne{position:relative;display:grid;gap:8px;padding:12px 0;border-bottom:1px solid var(--trait-doux);
+         max-height:420px;overflow:visible;transition:max-height .4s ease, opacity .3s ease, padding .4s ease}
+  .ligne.partie{max-height:0;opacity:0;padding:0;border-bottom-color:transparent;overflow:hidden}
+  .haut{position:relative;min-height:44px}
+  .desc{display:block;width:100%;border:0;background:transparent;padding:0;margin:0;resize:none;overflow:hidden;
+        font:16px/1.45 inherit;font-family:inherit;color:var(--encre);outline:none;border-radius:4px}
+  .desc:focus{background:rgba(28,28,26,.04)}
+  .cell{display:flex;justify-content:space-between;align-items:baseline;min-height:36px}
+  .cell span:first-child{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+  .cell span:last-child{font-variant-numeric:tabular-nums}
+
+  .croix{position:absolute;top:-10px;width:44px;height:44px;border:0;background:none;padding:0;
+         display:grid;place-items:center;cursor:pointer;color:var(--gris);font-size:22px;line-height:1;
+         -webkit-tap-highlight-color:transparent}
+
+  /* Les trois places, mesurées depuis le bord droit de la feuille (x = 378).
+     La description garde sa largeur d'aujourd'hui sauf en C. */
+  .tel[data-choix="avant"] .croix{right:-10px}
+  .tel[data-choix="avant"] .desc-boite{padding-right:42px}
+  .tel[data-choix="a"] .croix{right:-20px}
+  .tel[data-choix="a"] .desc-boite{padding-right:42px}
+  .tel[data-choix="b"] .croix{right:-32px}
+  .tel[data-choix="b"] .desc-boite{padding-right:42px}
+  .tel[data-choix="c"] .croix{right:-32px}
+  .tel[data-choix="c"] .desc-boite{padding-right:66px}
+
+  .tel.zones .croix{background:var(--zone)}
+  .tel.zones .desc{background:var(--zone-texte)}
+
+  .ajouter{margin-top:14px;border:0;background:none;padding:8px 0;color:var(--or);font-size:15px;cursor:pointer}
+  .total{display:flex;justify-content:space-between;margin-top:14px;font-weight:600;font-variant-numeric:tabular-nums}
+
+  .annuler{position:fixed;left:50%;bottom:22px;transform:translate(-50%,140%);opacity:0;
+           display:flex;align-items:center;gap:18px;padding:12px 18px;border-radius:999px;
+           background:var(--encre);color:#faf9f5;font-size:14px;transition:transform .25s ease,opacity .25s ease;z-index:5}
+  .annuler.vu{transform:translate(-50%,0);opacity:1}
+  .annuler button{border:0;background:none;color:var(--or);font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;padding:6px 0}
+
+  .note{margin:22px 0 0;font-size:13.5px;color:var(--gris)}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="surtitre">Le devis</p>
+  <h1>La croix plus à droite</h1>
+
+  <div class="onglets" role="group" aria-label="Choisir une place">
+    <button class="onglet" type="button" data-choix="avant">Aujourd’hui</button>
+    <button class="onglet" type="button" data-choix="a" aria-pressed="true">A</button>
+    <button class="onglet" type="button" data-choix="b">B</button>
+    <button class="onglet" type="button" data-choix="c">C</button>
+  </div>
+  <p class="dit" id="dit"></p>
+
+  <label class="bascule"><input type="checkbox" id="zones"> Montrer où le doigt touche</label>
+
+  <div class="tel" id="tel" data-choix="a">
+    <div class="feuille">
+      <p class="client">Client</p>
+      <p class="nom">M. Bernard</p>
+      <div id="lignes"></div>
+      <button class="ajouter" type="button" id="ajouter">+ Ajouter une ligne</button>
+      <div class="total"><span>Total HT</span><span id="total"></span></div>
+    </div>
+  </div>
+
+  <p class="note">Plus de glissement dans aucune des trois : seule la croix retire une ligne. Touchez la fin d’une description pour la retoucher, puis la croix.</p>
+</div>
+
+<div class="annuler" id="annuler" role="status"><span>Retiré à l’instant</span><button type="button" id="annulerBtn">Annuler</button></div>
+
+<script>
+  const DITS = {
+    avant: "8 px entre la fin du texte et la croix.",
+    a: "La croix au bout des chiffres. 18 px entre le texte et la croix.",
+    b: "La croix contre le bord de la feuille, le doigt la touche jusqu’au bord de l’écran. 30 px.",
+    c: "Comme B, et la description s’arrête un peu plus tôt. 54 px."
+  };
+  const LIGNES = [
+    { libelle: "Taille de haie de thuyas sur 25 m, évacuation des déchets verts", qte: "25", unite: "m", pu: 12 },
+    { libelle: "Tonte de pelouse", qte: "500", unite: "m²", pu: 0.35 },
+    { libelle: "Désherbage manuel des massifs", qte: "4", unite: "h", pu: 45 }
+  ];
+  const euros = (n) => n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+  const tel = document.getElementById("tel");
+  const conteneur = document.getElementById("lignes");
+  let derniere = null, minuterie = null;
+
+  function grandir(t){ t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }
+  function total(){
+    let s = 0;
+    conteneur.querySelectorAll(".ligne:not(.partie)").forEach((l) => { s += Number(l.dataset.montant); });
+    document.getElementById("total").textContent = euros(s);
+  }
+  function ligne(d){
+    const montant = Number(d.qte) * d.pu;
+    const el = document.createElement("div");
+    el.className = "ligne";
+    el.dataset.montant = String(montant);
+    el.innerHTML =
+      '<div class="haut"><div class="desc-boite"><textarea class="desc" rows="1" aria-label="Description"></textarea></div>' +
+      '<button class="croix" type="button" aria-label="Retirer la ligne">×</button></div>' +
+      '<div class="cell"><span>Qté</span><span>' + d.qte + '</span></div>' +
+      '<div class="cell"><span>Unité</span><span>' + d.unite + '</span></div>' +
+      '<div class="cell"><span>Prix unitaire HT</span><span>' + String(d.pu).replace(".", ",") + '</span></div>' +
+      '<div class="cell"><span>Montant HT</span><span>' + euros(montant) + '</span></div>';
+    const t = el.querySelector("textarea");
+    t.value = d.libelle;
+    t.addEventListener("input", () => grandir(t));
+    el.querySelector(".croix").addEventListener("click", () => {
+      el.classList.add("partie");
+      derniere = el; total();
+      const a = document.getElementById("annuler");
+      a.classList.add("vu");
+      clearTimeout(minuterie);
+      minuterie = setTimeout(() => a.classList.remove("vu"), 6000);
+    });
+    conteneur.appendChild(el);
+    requestAnimationFrame(() => grandir(t));
+  }
+  LIGNES.forEach(ligne); total();
+
+  document.getElementById("annulerBtn").addEventListener("click", () => {
+    if (derniere) derniere.classList.remove("partie");
+    derniere = null; total();
+    document.getElementById("annuler").classList.remove("vu");
+  });
+  document.getElementById("ajouter").addEventListener("click", () => {
+    ligne({ libelle: "", qte: "1", unite: "u", pu: 0 }); total();
+  });
+  document.getElementById("zones").addEventListener("change", (e) => tel.classList.toggle("zones", e.target.checked));
+
+  function choisir(c){
+    tel.dataset.choix = c;
+    document.querySelectorAll(".onglet").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.choix === c)));
+    document.getElementById("dit").textContent = DITS[c];
+    conteneur.querySelectorAll("textarea").forEach(grandir);
+  }
+  document.querySelectorAll(".onglet").forEach((b) => b.addEventListener("click", () => choisir(b.dataset.choix)));
+  choisir("a");
+</script>
+</body>
+</html>

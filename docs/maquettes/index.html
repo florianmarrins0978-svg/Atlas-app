@@ -89,6 +89,11 @@
     <span class="quoi">13 octobre 2026 : chaque achat reçoit sa nature, Utilitaire coché d’avance au carburant, Voiture à 80 % (tranché) ; ce qui ne se récupère pas est noté sans compter. Le repas d’affaires ne compte qu’avec ses trois preuves : avec qui, pourquoi, et la mention de l’entreprise sur la note, ou la facture au delà de 150 € HT.</span>
   </a>
 
+  <a class="item" href="../../appli/devis-croix-plus-a-droite.html">
+    <span class="no">136</span><span class="titre">La croix du devis plus à droite</span>
+    <span class="quoi">Sa demande du 16 octobre 2026 : <b>« il arrive encore fréquemment qu’on appuie sur la petite croix sans faire exprès »</b>, et retirer le glissement du devis. Mesuré : 8 px entre la fin de la description et la zone de la croix. A : 18 px, B : 30 px jusqu’au bord de l’écran, C : 54 px. <b>Rien n’est codé.</b></span>
+  </a>
+
   <a class="item" href="../../appli/travaux-sans-devis.html">
     <span class="no">135</span><span class="titre">Les travaux d’un client posé sans devis — ESSAYABLE — CODÉE le 7 octobre 2026 (oui, et 1)</span>
     <span class="quoi">Sa demande du 7 octobre 2026 : <b>« on peut ajouter un client au planning sans avoir envoyé le devis ; il faut pouvoir ajouter les travaux à faire dans la fiche du client »</b>. <b>Constat dans le code :</b> <code>tachesDuChantier</code> rend une liste vide sans devis, et <code>TravauxAFaire.tsx</code> n’offre aucun geste pour en ajouter. <b>La planche :</b> un champ « Ajouter un travail » dans le bandeau, sur la fiche d’intervention ; avec un devis, rien ne change. Question ouverte : quand le devis part, ses lignes remplacent (1, recommandé) ou s’ajoutent (2). <b>Rien n’est codé.</b></span>

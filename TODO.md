@@ -579,6 +579,32 @@ son accord. Ensuite, lui demander de vérifier sur le téléphone de son amie.
 **Ne pas retoucher le texte de la page du devis** : il est juste, et il a
 demandé de le garder tel quel.
 
+## ⏳ LA CROIX DU DEVIS PLUS À DROITE, ET PLUS DE GLISSEMENT : la planche attend son choix (16 octobre 2026)
+
+Sa demande : *« il arrive encore fréquemment qu'on appuie sur la petite croix
+pour supprimer une ligne sans faire exprès ; est-ce qu'on ne pourrait pas la
+décaler encore un peu plus sur la droite ? Et il faut totalement retirer le
+slide pour supprimer une ligne pour le devis. »*
+
+**Mesuré sur l'écran (iPhone 13, 390 px)** : la zone de la croix
+(`data-atlas="croix-ligne"`, 44 × 44) va de x = 324 à 368, la description
+s'arrête à x = 316. **8 px** les séparent. Le glissement est toujours là :
+`DevisCompletClient.tsx` enveloppe chaque ligne dans `LigneRetirable`.
+
+**Pourquoi la croix ne peut pas aller plus loin aujourd'hui** : elle vit dans
+`.atlas-volet`, à l'intérieur de `.atlas-glisse` qui défile, donc coupe ce qui
+dépasse. Retirer le glissement du devis libère la place jusqu'au bord.
+
+Planche `appli/devis-croix-plus-a-droite.html` (n° 136) : A 18 px, B 30 px
+(zone jusqu'au bord de l'écran), C 54 px (B, et la description s'arrête plus
+tôt). **Les deux se codent dans le même lot** une fois son choix donné : la
+place de la croix dépend du retrait du glissement, et un seul lot de devis
+(niveau 3, gravité argent) coûte une batterie au lieu de deux. À faire suivre
+dans ce lot : `FICHE_RETRAIT` pour la fiche `devis-ligne-retirer`
+(`fiches-mode-emploi/devis.ts`, qui dit « glissez ») et
+`scripts/test-saisie-ne-retire-pas-la-ligne-e2e.ts`, qui éprouve le
+glissement sur le devis.
+
 ## ✅ RETIRER PAR UNE CROIX : sa réponse « A », codée par une autre session (3 octobre 2026)
 
 Sa demande en essayant la version ordinateur : *« pour retirer une ligne il
