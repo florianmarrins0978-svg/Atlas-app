@@ -132,19 +132,19 @@ export const CATALOGUE = {
      sur le catalogue papier. Un chiffre douteux qu'on tait devient un chiffre
      faux qu'on croit. */
   buses: [
-    { ref:'RBT648', nom:'18-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RBT648', pressionMin:1.0, pressionMax:2.1, plageReleve:'Rain Bird, fiche des buses VAN, p. 27', nom:'18-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:5.4, pression:2,
       debit:{ 90:0.30, 180:0.60, 270:0.90, 360:1.20 },
       colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' },
-    { ref:'RBT601', nom:'15-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RBT601', pressionMin:1.0, pressionMax:2.1, plageReleve:'Rain Bird, fiche des buses VAN, p. 27', nom:'15-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:4.5, pression:2,
       debit:{ 90:0.21, 180:0.42, 270:0.63, 360:0.84 },
       colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' },
-    { ref:'RBT636', nom:'12-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RBT636', pressionMin:1.0, pressionMax:2.1, plageReleve:'Rain Bird, fiche des buses VAN, p. 27', nom:'12-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:3.6, pression:2,
       debit:{ 90:0.15, 180:0.30, 270:0.45, 360:0.59 },
       colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' },
-    { ref:'RBT637', nom:'10-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RBT637', pressionMin:1.0, pressionMax:2.1, plageReleve:'Rain Bird, fiche des buses VAN, p. 27', nom:'10-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:2.7, pression:2,
       debit:{ 90:0.14, 180:0.29, 270:0.43, 360:0.57 },
       colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' },
@@ -162,15 +162,15 @@ export const CATALOGUE = {
     //
     // La 8-VAN porte 0,16 m³/h à 90°, plus que la 10-VAN : Rain Bird donne le
     // même chiffre (trajectoire de 5°, la 10-VAN est à 10°). Le doute est levé.
-    { ref:'RBT638', nom:'8-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RBT638', pressionMin:1.0, pressionMax:2.1, plageReleve:'Rain Bird, fiche des buses VAN, p. 27', nom:'8-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:2.3, pression:2,
       debit:{ 90:0.16, 180:0.26, 270:0.34, 360:0.38 },
       colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' },
-    { ref:'RBT639', nom:'6-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RBT639', pressionMin:1.0, pressionMax:2.1, plageReleve:'Rain Bird, fiche des buses VAN, p. 27', nom:'6-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:1.8, pression:2,
       debit:{ 90:0.08, 180:0.13, 270:0.24, 360:0.27 },
       colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' },
-    { ref:'RBT640', nom:'4-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
+    { ref:'RBT640', pressionMin:1.0, pressionMax:2.1, plageReleve:'Rain Bird, fiche des buses VAN, p. 27', nom:'4-VAN', marqueCle:'rainbird', fournisseur:'Aqua Plus',
       pourType:'tuyere', rayon:1.2, pression:2,
       debit:{ 90:0.06, 180:0.10, 270:0.16, 360:0.20 },
       colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8' },

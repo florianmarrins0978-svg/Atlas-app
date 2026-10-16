@@ -419,6 +419,21 @@ var RECOUVREMENT_MAX_TOLERE = 1.05;
    corps par Aqua Plus. Une tuyère ne se règle pas à la vis (sa réponse du
    16 octobre 2026) ; une turbine dont le catalogue ne dit rien ne se bride pas
    non plus, plutôt que de lui prêter une vis que rien ne décrit. */
+/* La pression sous laquelle une tête ne se lève pas : celle de SA fiche, sur son
+   corps pour une turbine (Aqua Plus), sur sa buse ou son corps pour une tuyère.
+   `null` quand aucune fiche ne la donne : le plan ne peut alors rien garantir,
+   et on ne lui prête pas une pression que rien ne décrit. */
+function pressionMinDe(buse){
+  if (!buse) return null;
+  if (buse.pourType === 'turbine'){
+    var c = CATALOGUE.corpsDeLaBuse(buse);
+    return c && c.pressionMin > 0 ? c.pressionMin : null;
+  }
+  if (buse.pressionMin > 0) return buse.pressionMin;
+  var t = corpsCourant();
+  return t && t.pressionMin > 0 ? t.pressionMin : null;
+}
+
 function bridageDe(buse){
   if (!buse || buse.pourType !== 'turbine') return 0;
   var c = CATALOGUE.corpsDeLaBuse(buse);
@@ -1298,6 +1313,11 @@ function decouper(){
     var tient = !essai.poses.some(function(x){
       return x.buse && porteeALaPression(x.buse, arrive) < x.portee - 0.01;
     });
+    // **Et chaque tête SE LÈVE** — sa règle du 16 octobre 2026 : *« il ne faut
+    // pas qu'on décide de mettre 5 arroseurs et qu'il n'y en ait que 4 qui se
+    // lèvent »*. Ce qui arrive au dernier arroseur doit tenir la pression mini
+    // de SA fiche ; jusque-là, une 5000 Plus se posait à 0,82 bar pour 1,7.
+    if (tient && !essai.poses.every(function(x){ return seLeve(x.buse, arrive); })) tient = false;
     // Et il ne doit pas en arriver BEAUCOUP PLUS : les buses boiraient plus
     // que compté (√P), et une buse choisie à 2 bar peut sortir de sa plage à
     // 4,5. Un plan choisi bien sous ce qui arrive n'est pas le plan de ce
@@ -1366,6 +1386,14 @@ function decouper(){
   return finirLePlan(decouperUneFois(), source, false);
 }
 
+/* Une tête se lève-t-elle à cette pression ? Sans pression mini relevée, on ne
+   peut pas le dire : c'est non. */
+function seLeve(buse, pression){
+  if (!buse) return true;
+  var min = pressionMinDe(buse);
+  return min !== null && pression >= min - 1e-9;
+}
+
 function finirLePlan(d, source, tient){
   /* **CE QU'ON AFFICHE VIENT DU PLAN RETENU, ET DE LUI SEUL.** Publier les
      pertes d'un plan intermédiaire à côté du plan retenu mettrait deux pertes
@@ -1381,7 +1409,8 @@ function finirLePlan(d, source, tient){
   d.pressionRaffinee = pressionDeCalcul !== null;
   // Sous le plancher, aucune buse ne tient ses caractéristiques : c'est une
   // alerte, pas un ajustement. Elle se lit sur le plan RETENU.
-  d.pressionTropBasse = source > 0 && (!tient || d.pressionAuxArroseurs < PLANCHER_UTILE);
+  d.pressionTropBasse = source > 0 && (!tient || d.pressionAuxArroseurs < PLANCHER_UTILE ||
+    !(d.poses || []).every(function(x){ return seLeve(x.buse, d.pressionAuxArroseurs); }));
   d.pressionDeChoix = pressionRetenue();
   return d;
 }

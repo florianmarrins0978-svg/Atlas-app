@@ -352,6 +352,34 @@ regle("16 octobre 2026", "« prends la règle d'Aqua Plus » — chaque turbine 
   exige(vues > 0, "aucune turbine posée");
 });
 
+regle("16 octobre 2026", "« il ne faut pas qu'on décide de mettre 5 arroseurs et qu'il n'y en ait que 4 qui se lèvent » — chaque tête reçoit au moins la pression mini de sa fiche", () => {
+  const cat = CATALOGUE as unknown as {
+    buses: { nom: string; pourType: string; pressionMin?: number }[];
+    corpsDeLaBuse: (b: unknown) => { pressionMin?: number } | null;
+    corpsParDefaut: (marque: string) => { pressionMin?: number } | null;
+  };
+  let vus = 0;
+  for (const marque of ["rainbird", "hunter", "toro"]) {
+    for (const [L, l] of [[20, 12], [12, 12], [30, 18], [10, 2], [8, 4], [16, 10]]) {
+      for (const pression of [2, 2.5, 3, 3.7]) {
+        const p = calculerPlan({ seau: 10, temps: 20, pression, marque, zones: [{ id: 1, type: "gazon", nom: "P", x: 0, y: 0, L, l }] } as never) as Plan & { pressionAuxArroseurs: number; pressionTropBasse: boolean };
+        // Un plan qui le DIT n'engage pas : l'écran porte alors l'alerte.
+        if (p.pressionTropBasse) continue;
+        for (const z of p.dessin as ZoneDessinee[]) {
+          const b = cat.buses.find((x) => x.nom === z.buse);
+          if (!b) continue;
+          const min = b.pourType === "turbine" ? cat.corpsDeLaBuse(b)?.pressionMin : (b.pressionMin ?? cat.corpsParDefaut(marque)?.pressionMin);
+          vus++;
+          exige(min !== undefined, `${z.buse} : aucune pression mini relevée, rien ne dit qu'elle se lève`);
+          exige(p.pressionAuxArroseurs >= (min ?? 0) - 0.005,
+            `${marque}, ${L} × ${l} à ${pression} bar : ${z.buse} reçoit ${p.pressionAuxArroseurs.toFixed(2)} bar, sa fiche en demande ${min}`);
+        }
+      }
+    }
+  }
+  exige(vus > 0, "aucune tête éprouvée");
+});
+
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────
 
 console.log(`\n${failed === 0 ? "✅" : "❌"} Les règles du patron — ${passed} tenue(s), ${failed} rompue(s).`);
