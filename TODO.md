@@ -44,8 +44,9 @@ enterrable » (p. 48), aux mêmes chiffres.
 
 **Son tube, dit le 16 octobre 2026** : Rain Bird XFS (fiche D39978B), de
 2,3 à 3 l/h par goutteur tous les 30 cm, *« tu peux prendre cette mesure »* :
-le calcul retient **3 l/h** (le côté sûr, moins de mètres par vanne). Ses
-règles du même jour, à coder :
+le calcul retient **3 l/h** (le côté sûr, moins de mètres par vanne). Il
+l'achète **en couronnes de 50 m ou de 100 m** : la liste doit le dire en
+couronnes, pas seulement en mètres. Ses règles du même jour, à coder :
 
 | | |
 |---|---|
