@@ -2,10 +2,11 @@
 
 ## 🔜 UNE PAGE OUVERTE AVANT UNE BASCULE RESTE VIEILLIE — 17 octobre 2026
 
-La feuille d'envoi et le planning disent maintenant « Rechargez la page »
-quand une action est inconnue du serveur. Les autres écrans, non : leurs
-gestes échouent avec la phrase de secours de chacun, qui ne dit pas de
-recharger. La racine est la bascule de version sous une page ouverte ; un
+Une action inconnue qui tombe jusqu'à l'écran d'erreur recharge maintenant
+la page seule (`estPageVieillie`, le même soir). La feuille d'envoi et le
+planning le disent aussi quand ils attrapent eux-mêmes le refus. Les écrans
+qui attrapent leurs refus avec leur propre phrase de secours, non : elle ne
+dit pas de recharger. La racine est la bascule de version sous une page ouverte ; un
 remède commun (reconnaître le refus une fois pour toute l'application, sans
 recharger d'office une page où il saisit) reste à concevoir. Détail :
 `CHANGELOG.md` du 17 octobre.
@@ -10285,7 +10286,7 @@ longtemps avant d'agir : c'est celui qui encaisse la bascule.
 **Et le rattrapage de `reprise-erreur.ts` ne s'est PAS déclenché.** L'écran a
 montré « Cette page n'a pas pu s'afficher », c'est-à-dire la phrase des pannes
 ordinaires — pas « la page se recharge ». La reconnaissance se fait sur le
-MESSAGE de l'erreur (`estMorceauIntrouvable`), or **en version bâtie React ne
+MESSAGE de l'erreur (`estPageVieillie`, alors nommée `estMorceauIntrouvable`), or **en version bâtie React ne
 transmet pas ce message** : le rattrapage écrit le 11 août tient en
 développement et lâche exactement là où le patron vit.
 

@@ -10,6 +10,16 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## UNE ACTION INCONNUE RECHARGE LA PAGE (17 octobre 2026)
+
+**Le piège** : chaque bascule de version de son espace laisse les pages
+ouvertes avec des identifiants d'action périmés. Une action lancée par un
+formulaire (`useActionState`) jette le refus jusqu'à l'écran d'erreur ;
+`estPageVieillie` (`src/lib/reprise-erreur.ts`) le reconnaît désormais par le
+nom `UnrecognizedActionError` et par le message, et recharge une fois. Un
+écran qui attrape le refus lui-même doit le dire à sa façon (feuille d'envoi,
+planning). Côté client, rien n'est parti : il refait son choix.
+
 ## LA FEUILLE D'ENVOI SUR UNE PAGE VIEILLIE (17 octobre 2026)
 
 **Le piège à ne pas refaire** : sa plainte « je ne peux plus choisir de date,

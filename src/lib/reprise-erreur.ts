@@ -69,25 +69,33 @@ const MOTIFS = [
   /failed to fetch dynamically imported module/i,
   /error loading dynamically imported module/i,
   /importing a module script failed/i,
+  // **L'autre visage de la même page vieillie — 17 octobre 2026.** Son client
+  // choisissait sa date pendant que l'espace changeait de version :
+  // l'acceptation portait l'identifiant d'action de l'ancienne, le serveur
+  // neuf la refusait, et l'écran d'erreur offrait « Réessayer », qui rejoue
+  // la même action périmée. Message et nom sont ceux de Next.js
+  // (`UnrecognizedActionError`, `server-action-reducer.js`).
+  /server action "[^"]*" was not found on the server/i,
 ];
 
 /**
- * Cette erreur vient-elle d'un morceau de code que le serveur ne sert plus ?
+ * Cette page a-t-elle vieilli sous un serveur qui ne sert plus son code ?
+ * Un morceau qu'il ne sert plus, ou une action qu'il ne connaît plus.
  *
  * La cause est suivie sur quelques niveaux : React et Next.js enveloppent
  * volontiers l'erreur d'origine, et c'est elle seule qui porte le message.
  * La profondeur est bornée — une chaîne de causes peut boucler sur elle-même.
  */
-export function estMorceauIntrouvable(erreur: unknown, profondeur = 0): boolean {
+export function estPageVieillie(erreur: unknown, profondeur = 0): boolean {
   if (profondeur > 4 || erreur === null || typeof erreur !== "object") return false;
   const e = erreur as { name?: unknown; message?: unknown; cause?: unknown };
 
   // Le nom que webpack et Turbopack donnent tous deux à cette panne.
-  if (e.name === "ChunkLoadError") return true;
+  if (e.name === "ChunkLoadError" || e.name === "UnrecognizedActionError") return true;
 
   if (typeof e.message === "string" && MOTIFS.some((m) => m.test(e.message as string))) return true;
 
-  return estMorceauIntrouvable(e.cause, profondeur + 1);
+  return estPageVieillie(e.cause, profondeur + 1);
 }
 
 /**
@@ -121,7 +129,7 @@ export function repriseApresErreur(
   erreur: unknown,
   { phraseDeLEcran, rechargementPossible }: { phraseDeLEcran: string; rechargementPossible: boolean }
 ): Reprise {
-  if (!estMorceauIntrouvable(erreur)) {
+  if (!estPageVieillie(erreur)) {
     return {
       rechargement: false,
       automatique: false,

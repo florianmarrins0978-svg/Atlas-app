@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import {
-  estMorceauIntrouvable,
+  estPageVieillie,
   peutRechargerSeul,
   repriseApresErreur,
   FENETRE_RECHARGEMENT_MS,
@@ -37,13 +37,13 @@ function main() {
   // ── Reconnaître la panne ───────────────────────────────────────────────────
 
   test("L'erreur exacte du 11 août est reconnue", () => {
-    assert.equal(estMorceauIntrouvable(erreurDuPatron()), true);
+    assert.equal(estPageVieillie(erreurDuPatron()), true);
   });
 
   test("Le seul NOM suffit, même sans message", () => {
     const e = new Error("");
     e.name = "ChunkLoadError";
-    assert.equal(estMorceauIntrouvable(e), true);
+    assert.equal(estPageVieillie(e), true);
   });
 
   // Le patron est sur un iPhone : si ce cas tombe, c'est LUI qui reste devant
@@ -56,14 +56,30 @@ function main() {
       "Loading chunk 428 failed.", // webpack, version bâtie
       "Loading CSS chunk 12 failed.", // webpack, feuilles de style
     ]) {
-      assert.equal(estMorceauIntrouvable(new Error(message)), true, message);
+      assert.equal(estPageVieillie(new Error(message)), true, message);
     }
+  });
+
+  // Son client, le 17 octobre 2026 : une acceptation partie pendant une
+  // bascule de version, et « Réessayer » qui rejouait l'action disparue.
+  test("Une action que le serveur ne connaît plus est reconnue, par son nom comme par son message", () => {
+    const parLeNom = new Error("");
+    parLeNom.name = "UnrecognizedActionError";
+    assert.equal(estPageVieillie(parLeNom), true);
+    assert.equal(
+      estPageVieillie(
+        new Error(
+          'Server Action "7f3a" was not found on the server. \nRead more: https://nextjs.org/docs/messages/failed-to-find-server-action'
+        )
+      ),
+      true
+    );
   });
 
   test("Une cause enveloppée est retrouvée", () => {
     const dessous = erreurDuPatron();
     const dessus = new Error("An error occurred in the Server Components render.", { cause: dessous });
-    assert.equal(estMorceauIntrouvable(dessus), true);
+    assert.equal(estPageVieillie(dessus), true);
   });
 
   // ── Et savoir DIRE NON : c'est ce cas qui rend les autres crédibles ────────
@@ -79,7 +95,7 @@ function main() {
       undefined,
       "ChunkLoadError", // une chaîne, pas une erreur
     ]) {
-      assert.equal(estMorceauIntrouvable(e), false, String(e));
+      assert.equal(estPageVieillie(e), false, String(e));
     }
   });
 
@@ -88,7 +104,7 @@ function main() {
     const b = new Error("b") as Error & { cause?: unknown };
     a.cause = b;
     b.cause = a;
-    assert.equal(estMorceauIntrouvable(a), false);
+    assert.equal(estPageVieillie(a), false);
   });
 
   // ── La garde contre la page qui tourne en rond ─────────────────────────────

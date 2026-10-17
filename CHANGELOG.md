@@ -8,6 +8,19 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-17
 
+- **Un client qui accepte depuis une page vieillie n'est plus dans une
+  impasse.** Le soir même, à 23 h 17 : son client choisit sa date et tombe
+  sur « Une erreur, cette page n'a pas pu s'afficher », sans notification ni
+  chantier au planning. La page du client datait d'avant la bascule vers
+  cc9458b ; l'acceptation partait avec une action inconnue, `useActionState`
+  jetait le refus jusqu'à l'écran d'erreur, et « Réessayer » rejouait la même
+  action. `src/lib/reprise-erreur.ts` reconnaissait le morceau de code
+  disparu, pas l'action disparue : `estPageVieillie` (ex
+  `estMorceauIntrouvable`) reconnaît les deux, et la page se recharge seule,
+  une fois. Aucune acceptation n'était partie : rechargée, elle aboutit.
+  Écran reproduit à l'identique ici avant correction.
+  `scripts/test-client-page-vieillie-e2e.ts`, vu rouge.
+
 - **La feuille d'envoi dit « Rien n'est parti. Rechargez la page. » quand sa
   page date d'avant une mise à jour.** Sa panne du soir : *« je ne peux plus
   choisir deux dates, ni même envoyer le devis avec une seule »*. Son espace

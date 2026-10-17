@@ -5,6 +5,12 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## UNE ACTION INCONNUE RECHARGE LA PAGE (17 octobre 2026)
+
+L'écran d'erreur reconnaît une action que le serveur ne connaît plus et
+recharge seul, comme pour un morceau de code disparu (`estPageVieillie`).
+`scripts/test-client-page-vieillie-e2e.ts` (2).
+
 ## LA FEUILLE D'ENVOI SUR UNE PAGE VIEILLIE (17 octobre 2026)
 
 Un jour touché, l'envoi et la préparation disent « Rien n'est parti. Rechargez
