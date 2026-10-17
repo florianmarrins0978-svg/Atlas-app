@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La nourrice éclatée</title>
+<!--
+  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Sa demande du 17 octobre 2026 :
+  « une vue éclatée, mais bien alignée, vraiment comme si on ouvrait un regard
+  et qu'on regardait la clarinette ». Planche à part ; une fois validée, elle
+  entre dans arrosage-vue-eclatee.html.
+
+  LA DISPOSITION EST LA SIENNE, MOT POUR MOT, pour une nourrice de 3 réseaux :
+  1. en haut au milieu, la clarinette 2 sorties ;
+  2. à sa gauche, le coude MF « comme la photo le montre » ;
+  3. à sa droite, le même coude dans l'autre sens : « le bout femelle en haut,
+     et le bas du coude, le filetage » ;
+  4. sous la clarinette et le coude de droite, les trois électrovannes,
+     numérotées « en partant de la droite », filetage aligné sur les sorties ;
+  5. sous le coude de gauche, un mamelon mâle-mâle puis la vanne 3/4 FF.
+  Les autres pièces de sa fiche du 17 août n'ont pas encore de place : elles
+  attendent dans le bac, sous le regard. Rien n'y est placé de tête.
+
+  LES PIÈCES ET LEURS NOMBRES SONT CEUX DE SA FICHE (CATALOGUE.nourrices[3]),
+  lus dans le calcul empaqueté (arrosage-schema-calcul.js). Les photos sont
+  celles qu'il a validées (arrosage-photos/).
+
+  À NOTER : sa fiche porte un coude MF et un coude MM ; il dessine ici deux
+  coudes MF. Il vérifie lequel il pose (TODO.md) ; la planche suit ce qu'il a
+  dit aujourd'hui, et le dit sous le regard.
+-->
+<style>
+[data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#8a8578;--atlas-rust:#2f3b2f;--atlas-or:#B98B47;--atlas-orTexte:#8b6835;--atlas-line:rgba(28,28,26,0.12);--atlas-lineSoft:rgba(28,28,26,0.07);--atlas-alerte:#9C3B2E;--atlas-rustTint:#ece9e1}
+[data-charte="nuit"]{--atlas-cream:#101210;--atlas-card:#1a1d19;--atlas-ink:#e9e8de;--atlas-inkSoft:#c1c2b6;--atlas-muted:#84887b;--atlas-rust:#e9e8de;--atlas-or:#B98B47;--atlas-orTexte:#b98b47;--atlas-line:rgba(233,232,222,0.12);--atlas-lineSoft:rgba(233,232,222,0.07);--atlas-alerte:#cd6456;--atlas-rustTint:#1f211e}
+  *{box-sizing:border-box}
+  html{background:var(--atlas-rustTint)}
+  body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint)}
+  .entete{max-width:430px;margin:0 auto;padding:18px 16px 6px}
+  .entete h1{margin:0;font:400 24px/1.15 Georgia,"Times New Roman",serif}
+  .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .entete select{margin-top:10px;font-size:16px;padding:8px 10px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink)}
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--atlas-cream);padding:14px 16px 70px;min-height:100vh}
+  .caps{display:block;margin:0;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-or)}
+  h2{margin:6px 0 0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+  .sous{margin:4px 0 0;font-size:13.5px;color:var(--atlas-muted)}
+
+  /* LE REGARD OUVERT : quatre colonnes, chaque pièce sous celle où elle se visse. */
+  .regard{position:relative;margin-top:14px;border-radius:16px;background:#ffffff;padding:18px 8px 20px;box-shadow:inset 0 0 0 1px var(--atlas-line)}
+  .grille{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:auto;row-gap:26px;column-gap:4px;align-items:start;justify-items:center}
+  .p{position:relative;display:flex;flex-direction:column;align-items:center;width:100%;min-width:0;text-align:center}
+  .p .ph{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:1;max-width:84px}
+  .p .ph img{max-width:100%;max-height:100%;object-fit:contain}
+  .p .n{margin-top:4px;font-size:10.5px;line-height:1.25;color:#4a4a44}
+  .p .num{position:absolute;top:-8px;right:4px;min-width:20px;height:20px;border-radius:10px;padding:0 5px;background:#1c1c1a;color:#ffffff;font-size:11px;font-weight:600;line-height:20px}
+  /* Le fil qui relie une pièce à celle du dessus : un trait fin, en pointillé. */
+  .p.relie::before{content:"";position:absolute;left:50%;top:-24px;height:20px;border-left:1.5px dashed rgba(28,28,26,.3)}
+  .clarinette{grid-column:2 / span 2}
+  .clarinette .ph{max-width:170px;aspect-ratio:2}
+  .tourne-180 img{transform:rotate(180deg)}
+  .vide{border:1.5px dashed rgba(28,28,26,.2);border-radius:10px;font-size:10px;color:#8a8578}
+
+  .bac{margin-top:18px}
+  .bac h3{margin:0;font-size:14px;font-weight:600}
+  .bac .sous{margin-top:2px}
+  .rangee{display:flex;flex-wrap:wrap;gap:12px 8px;margin-top:10px;border-radius:14px;background:var(--atlas-card);padding:14px 10px}
+  .rangee .p{width:72px}
+  .rangee .p .ph{max-width:64px}
+  .rangee .p .n{color:var(--atlas-inkSoft)}
+  .note{margin:14px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .note b{color:var(--atlas-alerte);font-weight:600}
+</style>
+<body data-charte="origine">
+<div class="entete">
+  <h1>La nourrice éclatée</h1>
+  <p>Planche à part, rien n’est codé. Le regard ouvert, chaque pièce sous celle où elle se visse.</p>
+  <select id="charte" aria-label="Charte"><option value="origine">Origine</option><option value="nuit">Nuit</option></select>
+</div>
+<main class="ecran">
+  <span class="caps">Dans le regard</span>
+  <h2 id="titre"></h2>
+  <p class="sous">Nourrice de 3 réseaux, vue du dessus.</p>
+  <div class="regard"><div class="grille" id="grille"></div></div>
+  <p class="note" id="note"></p>
+
+  <div class="bac">
+    <h3>Pièces à placer</h3>
+    <p class="sous">Elles sont dans ta fiche, leur place reste à me donner.</p>
+    <div class="rangee" id="bac"></div>
+  </div>
+</main>
+
+<script src="arrosage-schema-calcul.js"></script>
+<script>
+(function () {
+  var CAT = window.CALCUL.CATALOGUE;
+  var PHOTOS = { "clarinette-2v": "clarinette-2v.jpg", "coude-mf": "coude-mf.jpg", "coude-mm": null,
+    "electrovanne-100dv": "electrovanne-100dv.jpg", "mamelon": "mamelon.png", "vanne-purge": "vanne-purge.jpg",
+    "union": "union.jpg", "raccord-male25": "raccord-male25.jpg", "regard-rect12": "regard-rect12.jpg",
+    "prog-4": "prog-4.jpg", "pile-9v": "pile-9v.jpg", "connexion": "connexion.jpg", "mamelon-droit-1": "mamelon-droit-1.jpg" };
+  var $ = function (id) { return document.getElementById(id); };
+  var texte = function (s) { var e = document.createElement("span"); e.textContent = s; return e.innerHTML; };
+  $("charte").onchange = function () { document.body.dataset.charte = this.value; };
+
+  var fiche = CAT.nourrices[3];
+  $("titre").textContent = fiche.nom;
+  var nom = function (ref) { var p = CAT.piece(ref); return p ? (p.marque ? p.marque + " " : "") + p.nom : ref; };
+  // Ce que la fiche porte, pièce par pièce ; chaque pièce posée dans le regard en sort.
+  var reste = {};
+  fiche.pieces.forEach(function (x) { reste[x.ref] = x.q; });
+  function piece(ref, opts) {
+    opts = opts || {};
+    if (reste[ref] > 0) reste[ref]--;
+    var photo = PHOTOS[ref] ? '<img src="arrosage-photos/' + PHOTOS[ref] + '" alt="">' : "photo à venir";
+    return '<div class="p' + (opts.cls ? " " + opts.cls : "") + '"' + (opts.style ? ' style="' + opts.style + '"' : "") + ">" +
+      (opts.num ? '<span class="num">' + opts.num + "</span>" : "") +
+      '<span class="ph' + (PHOTOS[ref] ? "" : " vide") + '">' + photo + "</span>" +
+      '<span class="n">' + texte(opts.legende || nom(ref)) + "</span></div>";
+  }
+
+  // Sa disposition, colonne par colonne (1 à 4, de gauche à droite).
+  var g = "";
+  // Rangée 1 : le coude, la clarinette, le coude retourné.
+  g += piece("coude-mf", { style: "grid-column:1;grid-row:1", legende: "Coude MF 1\"" });
+  g += piece("clarinette-2v", { cls: "clarinette", style: "grid-row:1", legende: nom("clarinette-2v") });
+  g += piece("coude-mf", { cls: "tourne-180", style: "grid-column:4;grid-row:1", legende: "Coude MF 1\", retourné" });
+  // Rangée 2 : sous la clarinette et le coude de droite, les trois électrovannes, comptées de la droite.
+  g += piece("electrovanne-100dv", { cls: "relie", style: "grid-column:4;grid-row:2", num: 1, legende: "Électrovanne 1" });
+  g += piece("electrovanne-100dv", { cls: "relie", style: "grid-column:3;grid-row:2", num: 2, legende: "Électrovanne 2" });
+  g += piece("electrovanne-100dv", { cls: "relie", style: "grid-column:2;grid-row:2", num: 3, legende: "Électrovanne 3" });
+  // Colonne de gauche : sous le coude, le mamelon MM, puis la vanne 3/4 FF.
+  g += piece("mamelon", { cls: "relie", style: "grid-column:1;grid-row:2", legende: "Mamelon MM 1\"-3/4\"" });
+  g += piece("vanne-purge", { cls: "relie", style: "grid-column:1;grid-row:3", legende: "Vanne 3/4\" FF" });
+  $("grille").innerHTML = g;
+
+  // Sa fiche porte un coude MM ; il dessine deux coudes MF, et le vérifie.
+  if (reste["coude-mf"] < 0 || fiche.pieces.some(function (x) { return x.ref === "coude-mm"; })) {
+    $("note").innerHTML = "Ta fiche porte un coude MF et un coude MM. Ici, les deux coudes sont des MF, comme tu l’as décrit. <b>À confirmer.</b>";
+  }
+  // Le coude MM de la fiche n'est pas posé : le second coude MF le remplace sur ce dessin.
+  if (reste["coude-mm"] > 0) reste["coude-mm"]--;
+
+  // Le bac se compose sur ce qui reste APRÈS le regard : on fige les nombres d'abord.
+  var bac = "", fige = JSON.parse(JSON.stringify(reste));
+  Object.keys(fige).forEach(function (ref) {
+    for (var i = 0; i < fige[ref]; i++) bac += piece(ref, { legende: nom(ref) + (fige[ref] > 1 ? ", " + (i + 1) + " sur " + fige[ref] : "") });
+  });
+  $("bac").innerHTML = bac;
+})();
+</script>
+</body>
+</html>
