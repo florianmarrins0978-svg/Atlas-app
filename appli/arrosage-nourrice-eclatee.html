@@ -56,7 +56,8 @@
   .p.relie::before{content:"";position:absolute;left:50%;top:-24px;height:20px;border-left:1.5px dashed rgba(28,28,26,.3)}
   .clarinette{grid-column:2 / span 2}
   .clarinette .ph{max-width:170px;aspect-ratio:2}
-  .miroir img{transform:scaleX(-1)}
+  /* Sa correction du 17 octobre 2026 : chaque filetage tourné vers la pièce où il se visse. */
+  .quart img{transform:rotate(90deg)}
   .vertical img{transform:rotate(90deg);max-width:70%}
   .hors-fiche .n::after{content:" (hors fiche)";color:#9C3B2E}
   .vide{border:1.5px dashed rgba(28,28,26,.2);border-radius:10px;font-size:10px;color:#8a8578}
@@ -130,17 +131,17 @@
   var col = function (c, r) { return "grid-column:" + c + ";grid-row:" + r; };
   g += piece("coude-mf", { style: col(1, 1), legende: "Coude MF 1\"" });
   g += piece("clarinette-2v", { cls: "clarinette", style: "grid-row:1", legende: nom("clarinette-2v") });
-  g += piece("coude-mf", { cls: "miroir", style: col(4, 1), legende: "Coude MF 1\"" });
+  g += piece("coude-mf", { cls: "quart", style: col(4, 1), legende: "Coude MF 1\"" });
   // L'arrivée d'eau, à gauche, de haut en bas.
   g += piece("mamelon", { cls: "relie", style: col(1, 2), legende: "Mamelon MM 1\"-3/4\"" });
-  g += piece("vanne-purge", { cls: "relie", style: col(1, 3), legende: "Vanne 3/4\" FF" });
+  g += piece("vanne-purge", { cls: "relie quart", style: col(1, 3), legende: "Vanne 3/4\" FF" });
   g += piece("mamelon", { cls: "relie", style: col(1, 4), legende: "Mamelon MM" });
   g += piece("OPL70302520", { cls: "relie hors-fiche", style: col(1, 5), legende: "Plasson raccord femelle 25 x 3/4\"" });
   g += piece("pehd", { cls: "relie vertical", style: col(1, 6), legende: "PEHD Ø25, l’arrivée" });
   // Les trois voies, comptées de la droite : la 1 sous le coude, la 2 et la 3 sous la clarinette.
   [[4, 1], [3, 2], [2, 3]].forEach(function (v) {
     g += piece("union", { cls: "relie", style: col(v[0], 2), legende: "Union 1\"" });
-    g += piece("electrovanne-100dv", { cls: "relie", style: col(v[0], 3), num: v[1], legende: "Électrovanne " + v[1] });
+    g += piece("electrovanne-100dv", { cls: "relie quart", style: col(v[0], 3), num: v[1], legende: "Électrovanne " + v[1] });
     g += piece("raccord-male25", { cls: "relie", style: col(v[0], 4), legende: "Plasson raccord mâle 25 1\"" });
     g += piece("pehd", { cls: "relie vertical", style: col(v[0], 5), legende: "PEHD Ø25, réseau " + v[1] });
   });
