@@ -44,24 +44,18 @@
   h2{margin:6px 0 0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
   .sous{margin:4px 0 0;font-size:13.5px;color:var(--atlas-muted)}
 
-  /* LE REGARD OUVERT : quatre colonnes, chaque pièce sous celle où elle se visse. */
-  .regard{position:relative;margin-top:14px;border-radius:16px;background:#ffffff;padding:18px 8px 20px;box-shadow:inset 0 0 0 1px var(--atlas-line)}
-  .grille{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:auto;row-gap:26px;column-gap:4px;align-items:start;justify-items:center}
-  .p{position:relative;display:flex;flex-direction:column;align-items:center;width:100%;min-width:0;text-align:center}
-  .p .ph{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:1;max-width:84px}
+  /* LE REGARD OUVERT : une seule image, chaque pièce sur l'axe où elle se visse. */
+  .regard{position:relative;margin-top:14px;border-radius:16px;background:#ffffff;padding:8px 0;box-shadow:inset 0 0 0 1px var(--atlas-line);overflow:hidden}
+  .regard canvas{display:block;width:358px;max-width:100%;margin:0 auto}
+  .legende{margin:12px 0 0;padding:0;list-style:none;columns:2;column-gap:14px;font-size:12.5px;color:var(--atlas-inkSoft)}
+  .legende li{display:flex;gap:6px;break-inside:avoid;padding:2px 0}
+  .legende b{flex:none;width:17px;height:17px;border-radius:50%;background:var(--atlas-ink);color:var(--atlas-card);font-size:10px;line-height:17px;text-align:center}
+  /* Le bac : les pièces de la fiche qui n'ont pas encore de place. */
+  .p{position:relative;display:flex;flex-direction:column;align-items:center;min-width:0;text-align:center}
+  .p .ph{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:1}
   .p .ph img{max-width:100%;max-height:100%;object-fit:contain}
-  .p .n{margin-top:4px;font-size:10.5px;line-height:1.25;color:#4a4a44}
-  .p .num{position:absolute;top:-8px;right:4px;min-width:20px;height:20px;border-radius:10px;padding:0 5px;background:#1c1c1a;color:#ffffff;font-size:11px;font-weight:600;line-height:20px}
-  /* Le fil qui relie une pièce à celle du dessus : un trait fin, en pointillé. */
-  .p.relie::before{content:"";position:absolute;left:50%;top:-24px;height:20px;border-left:1.5px dashed rgba(28,28,26,.3)}
-  .clarinette{grid-column:2 / span 2}
-  .clarinette .ph{max-width:170px;aspect-ratio:2}
-  /* Sa correction du 17 octobre 2026 : chaque filetage tourné vers la pièce où il se visse. */
-  .quart img{transform:rotate(90deg)}
-  .demi img{transform:rotate(180deg)}
-  .vertical img{transform:rotate(90deg);max-width:70%}
-  .hors-fiche .n::after{content:" (hors fiche)";color:#9C3B2E}
-  .vide{border:1.5px dashed rgba(28,28,26,.2);border-radius:10px;font-size:10px;color:#8a8578}
+  .p .n{margin-top:4px;font-size:10.5px;line-height:1.25}
+  .vide{border:1.5px dashed var(--atlas-line);border-radius:10px;font-size:10px;color:var(--atlas-muted)}
 
   .bac{margin-top:18px}
   .bac h3{margin:0;font-size:14px;font-weight:600}
@@ -83,7 +77,8 @@
   <span class="caps">Dans le regard</span>
   <h2 id="titre"></h2>
   <p class="sous">Nourrice de 3 réseaux, la clarinette fermée par un coude à chaque bout.</p>
-  <div class="regard"><div class="grille" id="grille"></div></div>
+  <div class="regard"><canvas id="dessin" width="358" height="420" role="img" aria-label="La nourrice de 3 réseaux, pièce par pièce"></canvas></div>
+  <ol class="legende" id="legende"></ol>
   <p class="note" id="note"></p>
 
   <div class="bac">
@@ -128,42 +123,159 @@
   // (coude, mamelon, vanne FF, mamelon, raccord femelle Plasson 25 x 3/4", PEHD
   // 25) ; à droite, le coude et une électrovanne de plus. Sous chaque sortie,
   // comme sur sa photo : l'union, l'électrovanne, le raccord Plasson, le PEHD.
-  var g = "";
-  var col = function (c, r) { return "grid-column:" + c + ";grid-row:" + r; };
-  g += piece("coude-mf", { style: col(1, 1), legende: "Coude MF 1\"" });
-  g += piece("clarinette-2v", { cls: "clarinette", style: "grid-row:1", legende: nom("clarinette-2v") });
-  g += piece("coude-mf", { cls: "quart", style: col(4, 1), legende: "Coude MF 1\"" });
-  // L'arrivée d'eau, à gauche, de haut en bas.
-  // Le même mamelon réduit 1" x 3/4" des deux côtés de la vanne (sa photo du
-  // 17 octobre 2026) : au-dessus retourné, le 1" vers le coude ; en dessous, le
-  // 3/4" vers la vanne.
-  g += piece("mamelon", { cls: "relie demi", style: col(1, 2), legende: "Mamelon MM 1\"-3/4\"" });
-  g += piece("vanne-purge", { cls: "relie quart", style: col(1, 3), legende: "Vanne 3/4\" FF" });
-  g += piece("mamelon", { cls: "relie", style: col(1, 4), legende: "Mamelon MM 1\"-3/4\"" });
-  g += piece("OPL70302520", { cls: "relie hors-fiche", style: col(1, 5), legende: "Plasson raccord femelle 25 x 3/4\"" });
-  g += piece("pehd", { cls: "relie vertical", style: col(1, 6), legende: "PEHD Ø25, l’arrivée" });
-  // Les trois voies, comptées de la droite : la 1 sous le coude, la 2 et la 3 sous la clarinette.
-  [[4, 1], [3, 2], [2, 3]].forEach(function (v) {
-    g += piece("union", { cls: "relie", style: col(v[0], 2), legende: "Union 1\"" });
-    g += piece("electrovanne-100dv", { cls: "relie quart", style: col(v[0], 3), num: v[1], legende: "Électrovanne " + v[1] });
-    g += piece("raccord-male25", { cls: "relie", style: col(v[0], 4), legende: "Plasson raccord mâle 25 1\"" });
-    g += piece("pehd", { cls: "relie vertical", style: col(v[0], 5), legende: "PEHD Ø25, réseau " + v[1] });
-  });
-  $("grille").innerHTML = g;
-
-  // Sa fiche porte un coude MM ; il dessine deux coudes MF, et le vérifie.
-  if (reste["coude-mf"] < 0 || fiche.pieces.some(function (x) { return x.ref === "coude-mm"; })) {
-    $("note").innerHTML = "Ta fiche porte un coude MF et un coude MM. Ici, les deux coudes sont des MF, comme tu l’as décrit. <b>À confirmer.</b>";
+  // ALIGNÉ COMME SUR SA PHOTO — sa correction du même soir : « tu vois bien que
+  // toi, il n'y a rien qui est aligné ». Une seule image : chaque photo est
+  // détourée, posée sur l'AXE où elle se visse (la sortie de la clarinette, le
+  // filetage du dessus), et un peu écartée de la suivante. Pas d'union entre la
+  // clarinette et l'électrovanne (« tu peux les supprimer »).
+  //
+  // Les axes se lisent sur ses photos validées, en fraction de la pièce détourée :
+  // la clarinette sort à 31 % et 78 % de sa longueur ; le coude descend à 27 % ;
+  // les filetages de l'électrovanne sont à 88 % de sa hauteur, ceux de la vanne
+  // à 80 %, celui du raccord Plasson à 60 %. Tourner une photo d'un quart de tour
+  // fait passer cet axe de l'autre côté : c'est `axe` après rotation.
+  var LEGENDE = [
+    ["coude-mf", "Coude MF 1\""], ["clarinette-2v", nom("clarinette-2v")], ["mamelon", "Mamelon réduit MM 1\" x 3/4\""],
+    ["vanne-purge", "Vanne 3/4\" FF"], ["OPL70302520", "Plasson raccord femelle 25 x 3/4\" (hors fiche)"],
+    ["pehd", "PEHD Ø25"], ["electrovanne-100dv", nom("electrovanne-100dv")], ["raccord-male25", nom("raccord-male25")]
+  ];
+  var numero = function (ref) { for (var i = 0; i < LEGENDE.length; i++) if (LEGENDE[i][0] === ref) return i + 1; return 0; };
+  // h : hauteur dessinée (px) ; rot : quart de tour à droite ; demi : retourné ;
+  // axe : où passe l'axe de vissage, en fraction de la largeur DESSINÉE.
+  var FORMES = {
+    "coude-mf":           { h: 46, axe: 0.27 },
+    "coude-mf-droite":    { h: 54, rot: true, axe: 0.78, src: "coude-mf" },
+    "clarinette-2v":      { w: 150, sorties: [0.307, 0.778] },
+    "mamelon":            { h: 29, axe: 0.5 },
+    "mamelon-demi":       { h: 29, axe: 0.5, demi: true, src: "mamelon" },
+    "vanne-purge":        { h: 46, rot: true, axe: 0.20 },
+    "OPL70302520":        { h: 36, w: 30, axe: 0.5, vide: true },
+    "pehd":               { h: 46, rot: true, axe: 0.5 },
+    "electrovanne-100dv": { h: 50, rot: true, axe: 0.12 },
+    "raccord-male25":     { h: 44, rot: true, axe: 0.40 }
+  };
+  var images = {};
+  function charger(ref) {
+    return new Promise(function (ok) {
+      if (!PHOTOS[ref]) return ok(null);
+      var img = new Image(); img.onload = function () { ok(detourer(img)); }; img.onerror = function () { ok(null); };
+      img.src = "arrosage-photos/" + PHOTOS[ref];
+    });
   }
-  // Le coude MM de la fiche n'est pas posé : le second coude MF le remplace sur ce dessin.
-  if (reste["coude-mm"] > 0) reste["coude-mm"]--;
+  // Détourer : garder le rectangle où la pièce n'est pas blanche.
+  function detourer(img) {
+    var c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight;
+    var g = c.getContext("2d"); g.drawImage(img, 0, 0);
+    var d = g.getImageData(0, 0, c.width, c.height).data, x0 = c.width, y0 = c.height, x1 = 0, y1 = 0;
+    for (var y = 0; y < c.height; y += 2) for (var x = 0; x < c.width; x += 2) {
+      var i = (y * c.width + x) * 4;
+      if (d[i + 3] > 20 && (d[i] < 225 || d[i + 1] < 225 || d[i + 2] < 225)) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    }
+    var k = document.createElement("canvas"); k.width = x1 - x0 + 1; k.height = y1 - y0 + 1;
+    k.getContext("2d").drawImage(c, x0, y0, k.width, k.height, 0, 0, k.width, k.height);
+    return k;
+  }
+  // La taille DESSINÉE d'une pièce, rotation comprise.
+  function taille(cle) {
+    var f = FORMES[cle], im = images[f.src || cle];
+    if (!im) return { w: f.w || 30, h: f.h };
+    var rw = f.rot ? im.height : im.width, rh = f.rot ? im.width : im.height;
+    if (f.w && !f.h) return { w: f.w, h: f.w * rh / rw };
+    return { w: f.h * rw / rh, h: f.h };
+  }
+  var poses = [];
+  // Poser une pièce : son axe sur x, son haut en y. Rend le bas, pour la suivante.
+  function poser(cle, x, y, ref) {
+    var t = taille(cle), f = FORMES[cle];
+    poses.push({ cle: cle, ref: ref || f.src || cle, x: x - f.axe * t.w, y: y, w: t.w, h: t.h });
+    pris(ref || f.src || cle);
+    return y + t.h;
+  }
+  function pris(ref) { if (reste[ref] > 0) reste[ref]--; }
 
-  // Le bac se compose sur ce qui reste APRÈS le regard : on fige les nombres d'abord.
-  var bac = "", fige = JSON.parse(JSON.stringify(reste));
-  Object.keys(fige).forEach(function (ref) {
-    for (var i = 0; i < fige[ref]; i++) bac += piece(ref, { legende: nom(ref) + (fige[ref] > 1 ? ", " + (i + 1) + " sur " + fige[ref] : "") });
-  });
-  $("bac").innerHTML = bac;
+  var ECART = 9, W = 358;
+  function dessiner() {
+    poses = [];
+    var cl = taille("clarinette-2v"), cg = taille("coude-mf"), cd = taille("coude-mf-droite");
+    var x0 = 10, xc = x0 + cg.w + ECART, yTop = 12;
+    // Le haut : le coude, la clarinette, le coude tourné. Leurs bras horizontaux
+    // sur l'axe du tube de la clarinette (35 % de sa hauteur).
+    var axeTube = yTop + cl.h * 0.35;
+    poses.push({ cle: "coude-mf", ref: "coude-mf", x: x0, y: axeTube - cg.h * 0.22, w: cg.w, h: cg.h }); pris("coude-mf");
+    poses.push({ cle: "clarinette-2v", ref: "clarinette-2v", x: xc, y: yTop, w: cl.w, h: cl.h }); pris("clarinette-2v");
+    var xd = xc + cl.w + ECART;
+    poses.push({ cle: "coude-mf-droite", ref: "coude-mf", x: xd, y: axeTube - cd.h * 0.27, w: cd.w, h: cd.h }); pris("coude-mf");
+    var bas = Math.max(axeTube - cg.h * 0.22 + cg.h, yTop + cl.h, axeTube - cd.h * 0.27 + cd.h) + ECART;
+    // Les axes : la branche du coude de gauche, les deux sorties, la branche du coude de droite.
+    var xL = x0 + 0.27 * cg.w, x3 = xc + 0.307 * cl.w, x2 = xc + 0.778 * cl.w, x1 = xd + 0.78 * cd.w;
+    // L'arrivée, à gauche, de haut en bas.
+    var y = bas;
+    y = poser("mamelon-demi", xL, y) + ECART;
+    y = poser("vanne-purge", xL, y) + ECART;
+    y = poser("mamelon", xL, y) + ECART;
+    y = poser("OPL70302520", xL, y) + ECART;
+    var fin = poser("pehd", xL, y);
+    // Les trois voies, comptées de la droite.
+    var voies = [[x1, 1], [x2, 2], [x3, 3]], etiquettes = [];
+    voies.forEach(function (v) {
+      var yv = poser("electrovanne-100dv", v[0], bas) + ECART;
+      yv = poser("raccord-male25", v[0], yv) + ECART;
+      yv = poser("pehd", v[0], yv);
+      etiquettes.push([v[0], yv, "Voie " + v[1]]);
+      fin = Math.max(fin, yv);
+    });
+
+    var H = fin + 34, c = $("dessin"), r = window.devicePixelRatio || 1;
+    c.width = W * r; c.height = H * r; c.style.height = H + "px";
+    var g = c.getContext("2d"); g.setTransform(r, 0, 0, r, 0, 0);
+    g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H);
+    poses.forEach(function (p) {
+      var f = FORMES[p.cle], im = images[f.src || p.cle];
+      if (!im) {
+        g.setLineDash([3, 3]); g.strokeStyle = "rgba(28,28,26,.35)"; g.strokeRect(p.x, p.y, p.w, p.h); g.setLineDash([]);
+      } else {
+        g.save(); g.translate(p.x + p.w / 2, p.y + p.h / 2);
+        if (f.rot) g.rotate(Math.PI / 2);
+        if (f.demi) g.rotate(Math.PI);
+        var dw = f.rot ? p.h : p.w, dh = f.rot ? p.w : p.h;
+        // En « multiplier », le blanc d'une photo disparaît : une pièce ne cache
+        // plus sa voisine quand leurs cadres se chevauchent.
+        g.globalCompositeOperation = "multiply";
+        g.drawImage(im, -dw / 2, -dh / 2, dw, dh); g.restore();
+      }
+      // Le numéro de la pièce, renvoyé à la légende.
+      var n = numero(p.ref);
+      if (n) {
+        g.fillStyle = "#1c1c1a"; g.beginPath(); g.arc(p.x + p.w + 2, p.y + 5, 7, 0, Math.PI * 2); g.fill();
+        g.fillStyle = "#ffffff"; g.font = "600 9px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+        g.fillText(String(n), p.x + p.w + 2, p.y + 5.5);
+      }
+    });
+    g.fillStyle = "#4a4a44"; g.font = "11px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "top";
+    etiquettes.forEach(function (e) { g.fillText(e[2], e[0], e[1] + 6); });
+    g.fillText("Arrivée", xL, fin + 6);
+
+    $("legende").innerHTML = LEGENDE.map(function (l, i) { return "<li><b>" + (i + 1) + "</b>" + texte(l[1]) + "</li>"; }).join("");
+  }
+
+  Promise.all(Object.keys(PHOTOS).filter(function (r) { return FORMES[r]; }).map(function (r) {
+    return charger(r).then(function (im) { images[r] = im; });
+  })).then(function () { dessiner(); finir(); });
+
+  function finir() {
+    // Sa fiche porte un coude MM ; il dessine deux coudes MF, et le vérifie.
+    if (fiche.pieces.some(function (x) { return x.ref === "coude-mm"; })) {
+      $("note").innerHTML = "Ta fiche porte un coude MF et un coude MM. Ici, les deux coudes sont des MF, comme tu l’as décrit. <b>À confirmer.</b>";
+    }
+    // Le coude MM de la fiche n'est pas posé : le second coude MF le remplace sur ce dessin.
+    if (reste["coude-mm"] > 0) reste["coude-mm"]--;
+    // Le bac se compose sur ce qui reste APRÈS le regard : on fige les nombres d'abord.
+    var bac = "", fige = JSON.parse(JSON.stringify(reste));
+    Object.keys(fige).forEach(function (ref) {
+      for (var i = 0; i < fige[ref]; i++) bac += piece(ref, { legende: nom(ref) + (fige[ref] > 1 ? ", " + (i + 1) + " sur " + fige[ref] : "") });
+    });
+    $("bac").innerHTML = bac;
+  }
 })();
 </script>
 </body>
