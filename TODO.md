@@ -212,12 +212,11 @@ fichiers dans le dossier temporaire de la session du 17 octobre ; seules les
 validées seront copiées dans `appli/arrosage-photos/`). Les faibles : aucun coude
 PVC MM 1", aucune photo du tube BlueLine 16 mm, électrovannes montrées en 24 V.
 Ses deux électrovannes (MM et FF) remplacées par ses photos le même jour.
-**Trois références du catalogue à confronter, trouvées par la recherche de
-photos** : RT1822 (« 1800 SAM », 1802) et RT1832 (« 1800 SAM-PRS », 1802),
-alors que l'option SAM de Rain Bird commence au 1804 et qu'aucun revendeur ne
-les vend ; HT1523 (« I-Spray-12 »), alors que la PS Ultra s'arrête au 06. Une
-référence qui n'existe pas ne doit pas rester au catalogue : à vérifier dans
-Aqua Plus avant d'en parler comme d'un fait.
+~~Trois références du catalogue à confronter (RT1822, RT1832, HT1523)~~ :
+**fausse alerte, vérifiée le même jour dans Aqua Plus**. RT1822 est la tuyère
+1812-SAM et RT1832 la 1812-SAM-PRS (p. 7, 30 cm, ce que le catalogue porte
+déjà) ; HT1523 la « I-SRAY-12 régulateur de pression » (p. 9). L'erreur venait
+des libellés de la planche (« 1802 »), écrits sans relire le relevé.
 
 **Importer le devis d'un fournisseur** — sa demande du 17 octobre 2026 : *« une
 petite case où, si quelqu'un a déjà fait un devis chez un fournisseur, il
