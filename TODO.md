@@ -37,7 +37,14 @@ travail, jamais à côté.**
 
 **Les sorties codées le 17 octobre 2026** (`sortiesGoutte`), voir
 `docs/arrosage-relais-session.md`. En attente de lui : le raccord d'une ligne
-seule et les couronnes **réglés le 17 octobre** (« le coude » ; « 50 m par 50 m », une jonction MID6301 à chaque raccord). Reste : la fiche Toro du tube.
+seule et les couronnes **réglés le 17 octobre** (« le coude » ; « 50 m par 50 m », une jonction MID6301 à chaque raccord). Reste : la fiche Toro du tube. **Cherchée le 17 octobre 2026** : rien sous
+« UGGCBL23050 ». Deux tubes Toro de 16 mm à 2 l/h, tous deux de 0,550"
+(14,0 mm) de passage : BlueLine Classic (ALT188, **non** autorégulant, 5 à
+60 psi), BlueLine PC (ALT106, autorégulant de 0,69 à 4,14 bar). Aqua Plus dit
+« autorégulé », la référence dit peut-être « Classic BlueLine » : lui faire
+confirmer lequel (marquage du tube) avant d'entrer un chiffre. Sa décision du
+même jour sur la question 3 (turbines par réseau) : rien ne change, il y
+réfléchit.
 L'écran doit poser `sortieGoutte` par zone.
 
 Sa consigne : *« supprime toutes les lignes provisoires, garde le Régulateur de
