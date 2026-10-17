@@ -12,6 +12,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 ---
 ## UNE ACTION INCONNUE RECHARGE LA PAGE (17 octobre 2026)
 
+**Les trois familles de gestes sur une page vieillie**, et qui les tient :
+le refus attrapé par l'écran (sa propre phrase, à faire dire « Rechargez »
+écran par écran, `TODO.md`) ; le refus jeté au rendu (`error.tsx`, recharge
+seul) ; le refus que personne n'attend (`VeilleReponseServeur`, bandeau).
+
 **Le piège** : chaque bascule de version de son espace laisse les pages
 ouvertes avec des identifiants d'action périmés. Une action lancée par un
 formulaire (`useActionState`) jette le refus jusqu'à l'écran d'erreur ;

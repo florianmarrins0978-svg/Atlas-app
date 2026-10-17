@@ -8,6 +8,19 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-17
 
+- **Un enregistrement lancé sans attendre sa réponse ne se perd plus sans un
+  mot sur une page vieillie.** Sa demande : *« va regarder s'il n'y a pas
+  d'autres problèmes »*. Trois familles de gestes sur une page ouverte avant
+  une bascule : ceux qui attrapent le refus (ils le disent), ceux qui le
+  jettent à l'écran d'erreur (il recharge seul depuis ce soir), et ceux qui
+  n'attendent rien, comme le titre du devis enregistré en quittant le champ :
+  le refus n'allait nulle part, le titre semblait écrit. `VeilleReponseServeur`
+  reconnaît maintenant la page vieillie et dit de recharger.
+  `scripts/test-geste-muet-page-vieillie-e2e.ts`, vu rouge.
+  **Le découpage du planning (c58cfab) n'y est pour rien** : comparé ligne à
+  ligne, ses 6 573 lignes sont identiques hors imports. La racine commune des
+  pannes du soir est la bascule de version sous une page ouverte.
+
 - **Un client qui accepte depuis une page vieillie n'est plus dans une
   impasse.** Le soir même, à 23 h 17 : son client choisit sa date et tombe
   sur « Une erreur, cette page n'a pas pu s'afficher », sans notification ni

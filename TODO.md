@@ -3,7 +3,8 @@
 ## 🔜 UNE PAGE OUVERTE AVANT UNE BASCULE RESTE VIEILLIE — 17 octobre 2026
 
 Une action inconnue qui tombe jusqu'à l'écran d'erreur recharge maintenant
-la page seule (`estPageVieillie`, le même soir). La feuille d'envoi et le
+la page seule (`estPageVieillie`, le même soir), et un refus que personne
+n'attend est dit par `VeilleReponseServeur`. La feuille d'envoi et le
 planning le disent aussi quand ils attrapent eux-mêmes le refus. Les écrans
 qui attrapent leurs refus avec leur propre phrase de secours, non : elle ne
 dit pas de recharger. La racine est la bascule de version sous une page ouverte ; un
