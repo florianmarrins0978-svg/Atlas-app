@@ -71,9 +71,19 @@
   .piece .photo.vide{box-shadow:none;border:1.5px dashed var(--atlas-line);font-size:10.5px;line-height:1.25;color:var(--atlas-muted);padding:6px}
   .piece .nom{display:block;margin-top:6px;font-size:11.5px;line-height:1.3;color:var(--atlas-inkSoft)}
   .piece .rang{position:absolute;top:-7px;left:-5px;min-width:22px;height:22px;border-radius:11px;padding:0 6px;background:var(--atlas-ink);color:var(--atlas-card);font-size:11px;font-weight:600;line-height:22px;font-variant-numeric:tabular-nums}
-  .piece.retiree{opacity:.32}
-  .piece.retiree .nom{text-decoration:line-through}
-  .piece.ajoutee .photo{box-shadow:0 0 0 2px var(--atlas-or),0 6px 16px var(--atlas-lineSoft)}
+  /* Supprimée par lui : elle RESTE, grisée et barrée de rouge (sa demande du
+     17 octobre 2026) : « qu'on comprenne que nous on l'a proposée, mais que
+     c'est lui qui l'a enlevée ». */
+  .piece.retiree .photo{filter:grayscale(1);opacity:.45;position:relative}
+  .piece.retiree .photo::after{content:"";position:absolute;left:8%;right:8%;top:50%;height:2.5px;border-radius:2px;background:var(--atlas-alerte);transform:rotate(-35deg)}
+  .piece.retiree .nom{color:var(--atlas-muted);text-decoration:line-through;text-decoration-color:var(--atlas-alerte);text-decoration-thickness:2px}
+  .piece.ajoutee .photo,.piece.changee .photo{box-shadow:0 0 0 2px var(--atlas-or),0 6px 16px var(--atlas-lineSoft)}
+  .piece .mention{display:block;font-size:10px;color:var(--atlas-orTexte)}
+  .menu .gestes{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+  .menu .gestes button{min-height:52px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:15.5px;cursor:pointer}
+  .menu .gestes button.danger{color:var(--atlas-alerte)}
+  .menu .propose{margin:6px 0 0;font-size:13px;color:var(--atlas-muted)}
+  .recherche{display:block;width:100%;margin-top:12px;border:0;border-radius:10px;padding:12px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
   .piece:focus-visible{outline:2px solid var(--atlas-or);outline-offset:4px;border-radius:12px}
 
   /* LE RÉSEAU : le Ø25 est un rail de sa couleur, chaque tête s'en écarte. */
@@ -126,7 +136,7 @@
 <body data-charte="origine">
 <div class="entete">
   <h1>La vue éclatée</h1>
-  <p>Planche, rien n’est codé. Touchez une pièce pour la retirer, touchez encore pour la remettre.</p>
+  <p>Planche, rien n’est codé. Touchez une pièce pour la changer ou la supprimer.</p>
   <select id="charte" aria-label="Charte"></select>
 </div>
 <main class="ecran">
@@ -161,8 +171,17 @@
 <div class="feuille" id="feuille" hidden>
   <div class="boite" role="dialog" aria-modal="true" aria-labelledby="feuille-titre">
     <div class="haut"><h2 id="feuille-titre">Ajouter une pièce</h2><button class="fermer" type="button" id="fermer">Fermer</button></div>
+    <input class="recherche" id="recherche" type="search" placeholder="Chercher une pièce" aria-label="Chercher une pièce">
     <div class="chips" id="categories"></div>
     <div id="choix"></div>
+  </div>
+</div>
+
+<div class="feuille menu" id="menu" hidden>
+  <div class="boite" role="dialog" aria-modal="true" aria-labelledby="menu-titre">
+    <div class="haut"><h2 id="menu-titre"></h2><button class="fermer" type="button" id="fermer-menu">Fermer</button></div>
+    <p class="propose" id="menu-propose" hidden></p>
+    <div class="gestes" id="menu-gestes"></div>
   </div>
 </div>
 
@@ -179,7 +198,20 @@
     ["programmateur","Programmateurs"],["raccord goutte-à-goutte","Goutte-à-goutte"],
     ["tube PE","Tubes PE"],["robinetterie","Robinetterie"],["électricité","Électricité"]
   ];
-  var etat = { sortie: "boucle", retirees: {}, ajoutees: [], ou: "regard", categorie: "raccord PE" };
+  // TOUTES LES PIÈCES RECENSÉES, pour « changer la pièce » : celles que le calcul
+  // pose (nourrice, réseau, arroseurs, goutte-à-goutte), puis les 709 pièces
+  // Aqua Plus. Une seule liste, lue dans le catalogue, rien de recopié.
+  var LISTE = [];
+  Object.keys(CAT.piecesNourrice).forEach(function (r) { var p = CAT.piecesNourrice[r]; LISTE.push({ ref: r, nom: (p.marque ? p.marque + " " : "") + p.nom, categorie: "nourrice" }); });
+  Object.keys(CAT.piecesReseau).forEach(function (r) { var p = CAT.piecesReseau[r]; LISTE.push({ ref: r, nom: (p.marque ? p.marque + " " : "") + p.nom, categorie: "reseau" }); });
+  CAT.coudes.forEach(function (c) { LISTE.push({ ref: c.ref, nom: c.nom + ", " + c.detail, categorie: "reseau" }); });
+  CAT.corps.forEach(function (c) { LISTE.push({ ref: c.ref, nom: c.nom + (c.detail ? ", " + c.detail : ""), categorie: "arroseur" }); });
+  CAT.gaines.forEach(function (g) { LISTE.push({ ref: g.ref, nom: g.nom, categorie: "raccord goutte-à-goutte" }); });
+  CAT.piecesAjoutables.forEach(function (x) { if (!LISTE.some(function (y) { return y.ref === x.ref; })) LISTE.push({ ref: x.ref, nom: x.nom, categorie: x.categorie }); });
+  CATEGORIES = [["nourrice","Nourrice"],["reseau","Réseau"],["arroseur","Arroseurs"]].concat(CATEGORIES);
+  var trouver = function (ref) { return LISTE.filter(function (x) { return x.ref === ref; })[0]; };
+
+  var etat = { sortie: "boucle", retirees: {}, remplacees: {}, ajoutees: [], ou: "regard", categorie: "nourrice", cible: null, recherche: "" };
   var $ = function (id) { return document.getElementById(id); };
   var texte = function (s) { var e = document.createElement("span"); e.textContent = s == null ? "" : String(s); return e.innerHTML; };
 
@@ -203,20 +235,27 @@
   }
 
   // Une pièce posée sur le plateau. `cle` est unique : c'est elle qui se retire.
+  // Ce que chaque case proposait, pour le menu : « proposée : … » quand il l'a changée.
+  var proposees = {};
   function piece(cle, ref, nom, detail) {
-    var retiree = etat.retirees[cle];
+    proposees[cle] = { ref: ref, nom: nom };
+    var retiree = etat.retirees[cle], change = etat.remplacees[cle];
+    if (change) { ref = change.ref; nom = change.nom; detail = change.nom; }
     var photo = PHOTOS[ref]
       ? '<span class="photo"><img src="arrosage-photos/' + PHOTOS[ref] + '" alt=""></span>'
       : '<span class="photo vide">photo à venir</span>';
-    return '<button type="button" class="piece' + (retiree ? " retiree" : "") + (cle.indexOf("plus:") === 0 ? " ajoutee" : "") +
-      '" data-cle="' + texte(cle) + '" data-ref="' + texte(ref) + '" aria-pressed="' + Boolean(retiree) + '">' + photo +
-      '<span class="nom">' + texte(detail || nom) + "</span></button>";
+    var mention = retiree ? "supprimée" : change ? "changée" : "";
+    return '<button type="button" class="piece' + (retiree ? " retiree" : "") + (change ? " changee" : "") + (cle.indexOf("plus:") === 0 ? " ajoutee" : "") +
+      '" data-cle="' + texte(cle) + '" data-ref="' + texte(ref) + '" aria-label="' + texte(nom) + '">' + photo +
+      '<span class="nom">' + texte(detail || nom) + "</span>" + (mention ? '<span class="mention">' + mention + "</span>" : "") + "</button>";
   }
 
   var compte = {};
   function poser(cle, ref, nom, detail, q, u) {
     // Une pièce de l'amenée ne se compare pas au calcul du réseau : piecesDuPlan l'ajoute à part.
-    if (!etat.retirees[cle]) { compte[ref] = compte[ref] || { nom: nom, q: 0, u: u || "u" }; compte[ref].q += q === undefined ? 1 : q; }
+    // Supprimée, elle ne compte plus ; changée, c'est la nouvelle qui compte.
+    var change = etat.remplacees[cle], r = change ? change.ref : ref, n = change ? change.nom : nom;
+    if (!etat.retirees[cle]) { compte[r] = compte[r] || { nom: n, q: 0, u: change ? "u" : (u || "u") }; compte[r].q += change || q === undefined ? 1 : q; }
     return piece(cle, ref, nom, detail);
   }
   function ajoutees(ou) {
@@ -322,7 +361,7 @@
       lignes += '<div class="ligne"><span class="q">' + q + '</span><span class="n">' + texte(e.nom) + "</span>" + (dit ? '<span class="ecart">' + texte(dit) + "</span>" : "") + "</div>";
     });
     $("liste").innerHTML = lignes;
-    var touche = Object.keys(etat.retirees).length + etat.ajoutees.length;
+    var touche = Object.keys(etat.retirees).length + Object.keys(etat.remplacees).length + etat.ajoutees.length;
     $("verdict").className = "verdict" + (ecarts && !touche ? " rouge" : "");
     $("verdict").textContent = touche
       ? touche + " changement" + (touche > 1 ? "s" : "") + " à la main. Les écarts avec le calcul sont écrits à droite."
@@ -333,28 +372,62 @@
   document.addEventListener("click", function (e) {
     var b = e.target.closest("button");
     if (!b) return;
-    if (b.dataset.cle && b.dataset.ref !== "?") {
-      if (b.dataset.cle.indexOf("plus:") === 0) {
-        etat.ajoutees = etat.ajoutees.filter(function (a) { return "plus:" + a.n !== b.dataset.cle; });
-      } else if (etat.retirees[b.dataset.cle]) delete etat.retirees[b.dataset.cle];
-      else etat.retirees[b.dataset.cle] = true;
-      dessiner();
-    } else if (b.dataset.sortie) { etat.sortie = b.dataset.sortie; dessiner(); }
-    else if (b.dataset.ajouter) { etat.ou = b.dataset.ajouter; ouvrir(); }
-    else if (b.dataset.categorie) { etat.categorie = b.dataset.categorie; ouvrir(); }
+    if (b.dataset.cle) { menu(b.dataset.cle); return; }
+    if (b.dataset.geste) {
+      var cle = etat.cible;
+      if (b.dataset.geste === "changer") { $("menu").hidden = true; etat.ou = null; etat.recherche = ""; $("recherche").value = ""; etat.categorie = categorieDe(cle); ouvrir(); return; }
+      if (b.dataset.geste === "supprimer") {
+        if (cle.indexOf("plus:") === 0) etat.ajoutees = etat.ajoutees.filter(function (a) { return "plus:" + a.n !== cle; });
+        else etat.retirees[cle] = true;
+      }
+      if (b.dataset.geste === "remettre") delete etat.retirees[cle];
+      if (b.dataset.geste === "revenir") delete etat.remplacees[cle];
+      $("menu").hidden = true; dessiner(); return;
+    }
+    if (b.dataset.sortie) { etat.sortie = b.dataset.sortie; dessiner(); }
+    else if (b.dataset.ajouter) { etat.ou = b.dataset.ajouter; etat.cible = null; ouvrir(); }
+    else if (b.dataset.categorie) { etat.categorie = b.dataset.categorie; etat.recherche = ""; $("recherche").value = ""; ouvrir(); }
     else if (b.dataset.choisir) {
-      var x = CAT.pieceAjoutable(b.dataset.choisir);
-      etat.ajoutees.push({ n: Date.now(), ou: etat.ou, ref: x.ref, nom: x.nom });
+      var x = trouver(b.dataset.choisir);
+      // « Changer la pièce » : la nouvelle prend la place, la case garde ce qui était proposé.
+      if (etat.ou === null && etat.cible) { etat.remplacees[etat.cible] = { ref: x.ref, nom: x.nom }; delete etat.retirees[etat.cible]; }
+      else etat.ajoutees.push({ n: Date.now(), ou: etat.ou, ref: x.ref, nom: x.nom });
       $("feuille").hidden = true; dessiner();
     }
   });
   $("fermer").onclick = function () { $("feuille").hidden = true; };
+  $("fermer-menu").onclick = function () { $("menu").hidden = true; };
+  $("recherche").oninput = function () { etat.recherche = this.value; ouvrir(); };
+
+  // La catégorie où chercher la remplaçante : celle de la pièce proposée.
+  function categorieDe(cle) {
+    var p = proposees[cle], x = p && trouver(p.ref);
+    return x ? x.categorie : cle.indexOf("rg:") === 0 ? "nourrice" : "reseau";
+  }
+
+  // Le petit menu d'une pièce : la changer, la supprimer, ou défaire.
+  function menu(cle) {
+    etat.cible = cle;
+    var p = proposees[cle] || {}, change = etat.remplacees[cle], retiree = etat.retirees[cle];
+    $("menu-titre").textContent = change ? change.nom : p.nom;
+    $("menu-propose").hidden = !change;
+    $("menu-propose").textContent = change ? "Proposée : " + p.nom : "";
+    var g = '<button type="button" data-geste="changer">Changer la pièce</button>';
+    g += retiree ? '<button type="button" data-geste="remettre">Remettre la pièce</button>'
+                 : '<button type="button" class="danger" data-geste="supprimer">Supprimer la pièce</button>';
+    if (change) g += '<button type="button" data-geste="revenir">Revenir à la pièce proposée</button>';
+    $("menu-gestes").innerHTML = g;
+    $("menu").hidden = false;
+  }
 
   function ouvrir() {
+    $("feuille-titre").textContent = etat.ou === null ? "Changer la pièce" : "Ajouter une pièce";
     $("categories").innerHTML = CATEGORIES.map(function (c) {
-      return '<button type="button" data-categorie="' + texte(c[0]) + '" aria-pressed="' + (etat.categorie === c[0]) + '">' + texte(c[1]) + "</button>";
+      return '<button type="button" data-categorie="' + texte(c[0]) + '" aria-pressed="' + (!etat.recherche && etat.categorie === c[0]) + '">' + texte(c[1]) + "</button>";
     }).join("");
-    $("choix").innerHTML = CAT.piecesAjoutables.filter(function (x) { return x.categorie === etat.categorie; }).slice(0, 40).map(function (x) {
+    var q = etat.recherche.trim().toLowerCase();
+    var vues = LISTE.filter(function (x) { return q ? (x.nom + " " + x.ref).toLowerCase().indexOf(q) >= 0 : x.categorie === etat.categorie; });
+    $("choix").innerHTML = vues.slice(0, 60).map(function (x) {
       var v = PHOTOS[x.ref] ? '<span class="vignette pleine"><img src="arrosage-photos/' + PHOTOS[x.ref] + '" alt=""></span>' : '<span class="vignette"></span>';
       return '<button type="button" class="choix" data-choisir="' + texte(x.ref) + '">' + v + "<span>" + texte(x.nom) + "<small>" + texte(x.ref) + "</small></span></button>";
     }).join("");
