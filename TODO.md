@@ -211,6 +211,13 @@ La planche : https://claude.ai/artifact/66tzBpLozFXinZJnpNxNR3 (47 photos, les
 fichiers dans le dossier temporaire de la session du 17 octobre ; seules les
 validées seront copiées dans `appli/arrosage-photos/`). Les faibles : aucun coude
 PVC MM 1", aucune photo du tube BlueLine 16 mm, électrovannes montrées en 24 V.
+Ses deux électrovannes (MM et FF) remplacées par ses photos le même jour.
+**Trois références du catalogue à confronter, trouvées par la recherche de
+photos** : RT1822 (« 1800 SAM », 1802) et RT1832 (« 1800 SAM-PRS », 1802),
+alors que l'option SAM de Rain Bird commence au 1804 et qu'aucun revendeur ne
+les vend ; HT1523 (« I-Spray-12 »), alors que la PS Ultra s'arrête au 06. Une
+référence qui n'existe pas ne doit pas rester au catalogue : à vérifier dans
+Aqua Plus avant d'en parler comme d'un fait.
 
 **Importer le devis d'un fournisseur** — sa demande du 17 octobre 2026 : *« une
 petite case où, si quelqu'un a déjà fait un devis chez un fournisseur, il
