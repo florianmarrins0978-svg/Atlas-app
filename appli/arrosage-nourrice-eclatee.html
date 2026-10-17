@@ -92,7 +92,7 @@
 <script>
 (function () {
   var CAT = window.CALCUL.CATALOGUE;
-  var PHOTOS = { "clarinette-2v": "clarinette-2v.jpg", "coude-mf": "coude-mf.jpg", "coude-mm": null,
+  var PHOTOS = { "clarinette-2v": "clarinette-2v.jpg", "coude-mf": "coude-mf.jpg", "coude-ff": "coude-ff.png", "coude-mm": null,
     "electrovanne-100dv": "electrovanne-100dv.jpg", "mamelon": "mamelon.jpg", "vanne-purge": "vanne-purge.jpg",
     "union": "union.jpg", "raccord-male25": "raccord-male25.jpg", "regard-rect12": "regard-rect12.jpg",
     "prog-4": "prog-4.jpg", "pile-9v": "pile-9v.jpg", "connexion": "connexion.jpg", "mamelon-droit-1": "mamelon-droit-1.jpg",
@@ -135,7 +135,7 @@
   // à 80 %, celui du raccord Plasson à 60 %. Tourner une photo d'un quart de tour
   // fait passer cet axe de l'autre côté : c'est `axe` après rotation.
   var LEGENDE = [
-    ["coude-mf", "Coude MF 1\""], ["clarinette-2v", nom("clarinette-2v")], ["mamelon", "Mamelon réduit MM 1\" x 3/4\""],
+    ["coude-mf", "Coude MF 1\""], ["coude-ff", "DURA Coude 1\" FF"], ["clarinette-2v", nom("clarinette-2v")], ["mamelon", "Mamelon réduit MM 1\" x 3/4\""],
     ["vanne-purge", "Vanne 3/4\" FF"], ["OPL70302520", "Plasson raccord femelle 25 x 3/4\" (hors fiche, photo à valider)"],
     ["pehd", "PEHD Ø25"], ["electrovanne-100dv", nom("electrovanne-100dv")]
   ];
@@ -144,7 +144,10 @@
   // axe : où passe l'axe de vissage, en fraction de la largeur DESSINÉE.
   var FORMES = {
     "coude-mf":           { h: 46, axe: 0.27 },
-    "coude-mf-droite":    { h: 54, rot: true, axe: 0.78, src: "coude-mf" },
+    // En haut à droite, le coude Dura FEMELLE-FEMELLE (sa correction du 18 octobre
+    // 2026) : retourné en miroir, un taraudage vers le filetage de la clarinette,
+    // l'autre vers l'électrovanne 1. Son bras vertical passe à 65 %, l'horizontal à 40 %.
+    "coude-ff-droite":    { h: 52, miroir: true, axe: 0.65, src: "coude-ff" },
     "clarinette-2v":      { w: 150, sorties: [0.307, 0.778] },
     // LES PIÈCES DES COLONNES : « les taraudés en face des taraudés » (sa
     // correction du même soir). Ses photos sont prises de trois quarts : un quart
@@ -223,7 +226,7 @@
   var ECART = 9, W = 358;
   function dessiner() {
     poses = [];
-    var cl = taille("clarinette-2v"), cg = taille("coude-mf"), cd = taille("coude-mf-droite");
+    var cl = taille("clarinette-2v"), cg = taille("coude-mf"), cd = taille("coude-ff-droite");
     var x0 = 10, xc = x0 + cg.w + ECART, yTop = 12;
     // Le haut : le coude, la clarinette, le coude tourné. Leurs bras horizontaux
     // sur l'axe du tube de la clarinette (35 % de sa hauteur).
@@ -231,10 +234,11 @@
     poses.push({ cle: "coude-mf", ref: "coude-mf", x: x0, y: axeTube - cg.h * 0.22, w: cg.w, h: cg.h }); pris("coude-mf");
     poses.push({ cle: "clarinette-2v", ref: "clarinette-2v", x: xc, y: yTop, w: cl.w, h: cl.h }); pris("clarinette-2v");
     var xd = xc + cl.w + ECART;
-    poses.push({ cle: "coude-mf-droite", ref: "coude-mf", x: xd, y: axeTube - cd.h * 0.27, w: cd.w, h: cd.h }); pris("coude-mf");
-    var bas = Math.max(axeTube - cg.h * 0.22 + cg.h, yTop + cl.h, axeTube - cd.h * 0.27 + cd.h) + ECART;
+    // Le coude FF tient la place du coude « MM » de sa fiche du 17 août.
+    poses.push({ cle: "coude-ff-droite", ref: "coude-ff", x: xd, y: axeTube - cd.h * 0.40, w: cd.w, h: cd.h }); pris("coude-mm");
+    var bas = Math.max(axeTube - cg.h * 0.22 + cg.h, yTop + cl.h, axeTube - cd.h * 0.40 + cd.h) + ECART;
     // Les axes : la branche du coude de gauche, les deux sorties, la branche du coude de droite.
-    var xL = x0 + 0.27 * cg.w, x3 = xc + 0.307 * cl.w, x2 = xc + 0.778 * cl.w, x1 = xd + 0.78 * cd.w;
+    var xL = x0 + 0.27 * cg.w, x3 = xc + 0.307 * cl.w, x2 = xc + 0.778 * cl.w, x1 = xd + 0.65 * cd.w;
     // L'arrivée, à gauche, de haut en bas.
     var y = bas;
     y = poser("mamelon-demi", xL, y) + ECART;
@@ -272,6 +276,7 @@
         g.save(); g.translate(p.x + p.w / 2, p.y + p.h / 2);
         if (f.rot) g.rotate(Math.PI / 2);
         if (f.demi) g.rotate(Math.PI);
+        if (f.miroir) g.scale(-1, 1);
         var dw = f.rot ? p.h : p.w, dh = f.rot ? p.w : p.h;
         // En « multiplier », le blanc d'une photo disparaît : une pièce ne cache
         // plus sa voisine quand leurs cadres se chevauchent.
@@ -289,17 +294,19 @@
     $("legende").innerHTML = LEGENDE.map(function (l, i) { return "<li><b>" + (i + 1) + "</b>" + texte(l[1]) + "</li>"; }).join("");
   }
 
-  Promise.all(Object.keys(PHOTOS).filter(function (r) { return FORMES[r]; }).map(function (r) {
+  // Une photo se charge dès qu'une forme la dessine, sous son nom ou par `src`.
+  var dessinees = Object.keys(PHOTOS).filter(function (r) {
+    return FORMES[r] || Object.keys(FORMES).some(function (k) { return FORMES[k].src === r; });
+  });
+  Promise.all(dessinees.map(function (r) {
     return charger(r).then(function (im) { images[r] = im; });
   })).then(function () { dessiner(); finir(); });
 
   function finir() {
-    // Sa fiche porte un coude MM ; il dessine deux coudes MF, et le vérifie.
+    // Sa fiche du 17 août porte un coude « MM » ; il pose un coude FF (18 octobre).
     if (fiche.pieces.some(function (x) { return x.ref === "coude-mm"; })) {
-      $("note").innerHTML = "Ta fiche porte un coude MF et un coude MM. Ici, les deux coudes sont des MF, comme tu l’as décrit. <b>À confirmer.</b>";
+      $("note").innerHTML = "Ta fiche porte un coude MM. Ici, c’est le coude Dura FF que tu poses en haut à droite. <b>Je corrige la fiche ?</b>";
     }
-    // Le coude MM de la fiche n'est pas posé : le second coude MF le remplace sur ce dessin.
-    if (reste["coude-mm"] > 0) reste["coude-mm"]--;
     // Le bac se compose sur ce qui reste APRÈS le regard : on fige les nombres d'abord.
     var bac = "", fige = JSON.parse(JSON.stringify(reste));
     Object.keys(fige).forEach(function (ref) {
