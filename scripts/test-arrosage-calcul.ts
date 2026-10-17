@@ -663,15 +663,25 @@ dire(
     !toro.materiel.some((m) => /generique|Tuyères 12/.test(`${m.ref} ${m.nom}`)),
     "et aucune tuyère inventée n'entre dans la liste",
   );
-  // **Parmi les durées, seule celle de la haie manque**, et c'est vrai : son
-  // tube donne 6,06 l/h par mètre, mais rien ne dit sur quelle largeur. Les
-  // 23 mm/h qui tenaient la place ne venaient de nulle part (16 octobre 2026).
+  // **Plus aucune durée ne manque.** La haie attendait la largeur qu'arrose sa
+  // ligne ; sa réponse du 17 octobre 2026 : « 50 cm à gauche, 50 cm à
+  // droite ». Les 23 mm/h d'avant ne venaient de nulle part (16 octobre).
   // Ses autres réserves (les sorties du goutte-à-goutte) ont leur suite plus bas.
   const jardin = calculerPlan(JARDIN) as { manquants: string[] };
-  const durees = jardin.manquants.filter((p) => /durée/.test(p));
   dire(
-    durees.length === 1 && /^Haie : la durée d’arrosage n’est pas calculée/.test(durees[0]),
-    `le jardin de la maquette ne manque que la durée de sa haie (${JSON.stringify(jardin.manquants)})`,
+    !jardin.manquants.some((p) => /durée/.test(p)),
+    `le jardin de la maquette ne manque plus aucune durée (${JSON.stringify(jardin.manquants)})`,
+  );
+  // Sa bande de 1 m : 6,06 l/h par mètre de tube font 6,06 mm/h.
+  const haie = calculerPlan({
+    seau: 10, temps: 20, pression: 3, saison: "juillet",
+    zones: [{ type: "haie", nom: "Haie", ml: 20, sortieGoutte: "boucle" }],
+  } as never) as { secteurs: { minutes: number }[] };
+  // Juillet, arbustes : 20 mm en 2 passages, 10 mm à 6,06 mm/h.
+  const attendu = Math.round((20 / 2 / (2 / 0.33)) * 60);
+  dire(
+    haie.secteurs[0].minutes === attendu,
+    `une haie arrose sa bande de 1 m : ${haie.secteurs[0].minutes} min par passage en juillet (attendu ${attendu})`,
   );
 }
 

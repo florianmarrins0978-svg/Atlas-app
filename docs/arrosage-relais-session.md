@@ -69,10 +69,10 @@ essais de la page publiée (78/78, 107/107) et les quatre maquettes d'arrosage.
      le débit ?
    - six chiffres douteux : MPR+ 12T 0,60 ; PRECISION 15Q 0,089 et 8F 0,124 ;
      PSU 17A à 90° 0,41 ; Maxi-Paw 06 à 11,4 m ; Mini 8 buse 2,5 à 0,56.
-3. **Combien de turbines au plus par réseau ?** Il trouve 8 ou 9 3504 « trop »,
+3. **Combien de turbines au plus par réseau ?** (17 octobre : *« je vais réfléchir, pour l'instant reste comme c'est »*) Il trouve 8 ou 9 3504 « trop »,
    le calcul les pose parce qu'elles se lèvent (2,11 bar pour 1,7). Question
    posée, sans réponse : ne pas inventer de plafond.
-4. **La largeur qu'arrose une ligne de haie**, pour calculer sa durée.
+4. ~~**La largeur qu'arrose une ligne de haie**~~ **réglé le 17 octobre 2026** : « 50 cm à gauche, 50 cm à droite », une bande de 1 m par ligne (`LARGEUR_ARROSEE_PAR_LIGNE`). La durée d'une haie se calcule.
 5. **La vue éclatée** (sa demande du 17 octobre 2026) :
    `appli/arrosage-vue-eclatee.html`, lien privé
    https://claude.ai/artifact/LXfjCHKAbZUm78ncXpVqjn. Chaque pièce en photo,

@@ -392,6 +392,7 @@ var TYPES = {
   potager: { nom:'Potager',  forme:'nappe',    famille:'potager',  ecartLignes:0.70 }
 };
 
+var LARGEUR_ARROSEE_PAR_LIGNE = 1.0;   // m, 50 cm de chaque côté : sa réponse du 17 octobre 2026
 var MARGE = 0.85;         // on ne charge jamais un secteur jusqu'au robinet
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -1165,6 +1166,11 @@ function poser(z, refImposee, tolerant){
     r.lignes = n2;
     r.nombre = Math.round(ml * n2);
     r.debit = r.nombre * m.debitMetre;
+    // **Une ligne arrose 50 cm de part et d'autre** — sa réponse du
+    // 17 octobre 2026 : « quand elle est au milieu, elle arrose 50 cm à
+    // gauche, 50 cm à droite ». Chaque ligne a donc sa bande de 1 m ; deux
+    // lignes, deux bandes.
+    r.largeurArrosee = LARGEUR_ARROSEE_PAR_LIGNE;
   }
   // La durée dépend de la PLUVIOMÉTRIE, jamais de la surface : la même
   // quantité d'eau demande 45 min de turbine et 13 min de tuyère.
@@ -1172,9 +1178,10 @@ function poser(z, refImposee, tolerant){
   // **Celle du goutte-à-goutte se calcule sur la zone** (16 octobre 2026) :
   // le débit au mètre de son tube, réparti sur l'écart entre deux lignes.
   // Les 23 mm/h écrits au catalogue ne venaient de nulle part. Une haie n'a
-  // pas d'écart connu : sa durée n'est pas calculée, et le plan le dit.
+  // pas d'écart entre lignes : sa ligne arrose sa bande de 1 m.
+  var bande = r.ecartLignes || r.largeurArrosee;
   var pluvio = m.type === 'gaine'
-    ? (r.ecartLignes ? m.debitMetre * 1000 / r.ecartLignes : null)
+    ? (bande ? m.debitMetre * 1000 / bande : null)
     : m.pluvio;
   r.dureeInconnue = passages > 0 && !pluvio;
   r.minutes = passages > 0 && pluvio ? Math.round((besoin / passages / pluvio) * 60) : 0;
@@ -1767,7 +1774,7 @@ function manquants(d){
   });
   etat.zones.forEach(function(z){
     if (poser(z).dureeInconnue){
-      phrases.push((z.nom || 'Une haie') + ' : la durée d’arrosage n’est pas calculée, il manque la largeur que sa ligne arrose.');
+      phrases.push((z.nom || 'Une zone') + ' : la durée d’arrosage n’est pas calculée.');
     }
   });
   var sg = sortiesGoutte(d);
