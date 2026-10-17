@@ -192,6 +192,33 @@ entré au catalogue : trois questions lui sont posées.
 | MP Rotator, série 300 | « turbines » chez Aqua Plus, mais débit proportionnel au secteur : tuyère pour le débit ? |
 | six chiffres douteux | MPR+ 12T 0,60 ; PRECISION 15Q 0,089 et 8F 0,124 ; PSU 17A 90° 0,41 ; Maxi-Paw 06 11,4 m ; Mini 8 2,5 0,56 |
 
+## ⏳ ARROSAGE : LA VUE ÉCLATÉE, SES PHOTOS, ET LE DEVIS D'UN FOURNISSEUR (17 octobre 2026)
+
+**La vue éclatée** : `appli/arrosage-vue-eclatee.html`, planche, rien de codé.
+Chaque pièce en photo, écartée, sur fond blanc ; retirer ou ajouter refait la
+liste. Attend son avis et **l'ordre de montage de sa nourrice** (*« je te
+ferai ça plus tard »*). Codée, la place de chaque té et coude doit sortir du
+calcul.
+
+**Les photos** : sa demande, *« va les chercher sur Internet, sur fond blanc,
+et tu me montres ; à chaque fois je vais te valider »*. Une planche à deux
+boutons par photo (« Je valide », « Non »), ses choix lus dans sa base de
+planche (collection `choix`). Seules les photos validées entrent dans l'outil.
+**Les droits** lui ont été signalés : une photo de fabricant ou de revendeur
+ne lui appartient pas ; pour l'application publiée, celles de ses
+fournisseurs avec accord, ou les siennes.
+
+**Importer le devis d'un fournisseur** — sa demande du 17 octobre 2026 : *« une
+petite case où, si quelqu'un a déjà fait un devis chez un fournisseur, il
+puisse rentrer le devis, et que l'outil récupère la nomenclature et lui crée
+le montage »*. Faisable sur le modèle de `lire-ticket.ts` (photo ou PDF lu par
+l'IA, pièces reconnues par leur référence Aqua Plus). Ce qu'un devis donne :
+les pièces, les quantités, le nombre de réseaux (une électrovanne, un réseau),
+la nourrice dessinée. **Ce qu'il ne donne pas, et qui ne s'invente pas** : le
+découpage du jardin (ni cotes, ni places), et toute pièce hors catalogue,
+montrée « non reconnue ». Ordre : son montage de nourrice, ses photos
+validées, puis la planche, puis le code.
+
 ## ⏳ ARROSAGE : AJOUTER OU RETIRER UNE PIÈCE DE LA LISTE — sa demande du 16 octobre 2026
 
 *« Une fois que la liste des pièces est créée pour l'utilisateur, qu'il y ait
