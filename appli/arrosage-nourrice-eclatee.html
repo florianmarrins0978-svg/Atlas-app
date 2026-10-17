@@ -96,7 +96,7 @@
     "electrovanne-100dv": "electrovanne-100dv.jpg", "mamelon": "mamelon.jpg", "vanne-purge": "vanne-purge.jpg",
     "union": "union.jpg", "raccord-male25": "raccord-male25.jpg", "regard-rect12": "regard-rect12.jpg",
     "prog-4": "prog-4.jpg", "pile-9v": "pile-9v.jpg", "connexion": "connexion.jpg", "mamelon-droit-1": "mamelon-droit-1.jpg",
-    "pehd": "pehd.jpg", "OPL70302520": null };
+    "pehd": "pehd.jpg", "OPL70302520": "OPL70302520.jpg" };
   var $ = function (id) { return document.getElementById(id); };
   var texte = function (s) { var e = document.createElement("span"); e.textContent = s; return e.innerHTML; };
   $("charte").onchange = function () { document.body.dataset.charte = this.value; };
@@ -136,8 +136,8 @@
   // fait passer cet axe de l'autre côté : c'est `axe` après rotation.
   var LEGENDE = [
     ["coude-mf", "Coude MF 1\""], ["clarinette-2v", nom("clarinette-2v")], ["mamelon", "Mamelon réduit MM 1\" x 3/4\""],
-    ["vanne-purge", "Vanne 3/4\" FF"], ["OPL70302520", "Plasson raccord femelle 25 x 3/4\" (hors fiche)"],
-    ["pehd", "PEHD Ø25"], ["electrovanne-100dv", nom("electrovanne-100dv")], ["raccord-male25", nom("raccord-male25")]
+    ["vanne-purge", "Vanne 3/4\" FF"], ["OPL70302520", "Plasson raccord femelle 25 x 3/4\" (hors fiche, photo à valider)"],
+    ["pehd", "PEHD Ø25"], ["electrovanne-100dv", nom("electrovanne-100dv")]
   ];
   var numero = function (ref) { for (var i = 0; i < LEGENDE.length; i++) if (LEGENDE[i][0] === ref) return i + 1; return 0; };
   // h : hauteur dessinée (px) ; rot : quart de tour à droite ; demi : retourné ;
@@ -146,13 +146,18 @@
     "coude-mf":           { h: 46, axe: 0.27 },
     "coude-mf-droite":    { h: 54, rot: true, axe: 0.78, src: "coude-mf" },
     "clarinette-2v":      { w: 150, sorties: [0.307, 0.778] },
-    "mamelon":            { h: 29, axe: 0.5 },
-    "mamelon-demi":       { h: 29, axe: 0.5, demi: true, src: "mamelon" },
-    "vanne-purge":        { h: 46, rot: true, axe: 0.20 },
-    "OPL70302520":        { h: 36, w: 30, axe: 0.5, vide: true },
-    "pehd":               { h: 46, rot: true, axe: 0.5 },
-    "electrovanne-100dv": { h: 50, rot: true, axe: 0.12 },
-    "raccord-male25":     { h: 44, rot: true, axe: 0.40 }
+    // LES PIÈCES DES COLONNES : « les taraudés en face des taraudés » (sa
+    // correction du même soir). Ses photos sont prises de trois quarts : un quart
+    // de tour les laisse de travers. Chaque pièce porte donc ses DEUX bouts de
+    // vissage, a (celui du haut) et b (celui du bas), relevés sur sa photo
+    // détourée ; elle est tournée de l'angle exact qui met b sous a, et L est la
+    // longueur dessinée de a à b.
+    "mamelon":            { a: [0.5, 0.02], b: [0.5, 0.98], L: 28 },
+    "mamelon-demi":       { a: [0.5, 0.98], b: [0.5, 0.02], L: 28, src: "mamelon" },
+    "vanne-purge":        { a: [0.02, 0.79], b: [0.61, 0.73], L: 40 },
+    "OPL70302520":        { a: [0.08, 0.66], b: [0.98, 0.27], L: 40 },
+    "pehd":               { a: [0, 0.5], b: [1, 0.5], L: 44 },
+    "electrovanne-100dv": { a: [0.01, 0.88], b: [0.99, 0.88], L: 50 }
   };
   var images = {};
   function charger(ref) {
@@ -184,14 +189,36 @@
     return { w: f.h * rw / rh, h: f.h };
   }
   var poses = [];
-  // Poser une pièce : son axe sur x, son haut en y. Rend le bas, pour la suivante.
-  function poser(cle, x, y, ref) {
-    var t = taille(cle), f = FORMES[cle];
-    poses.push({ cle: cle, ref: ref || f.src || cle, x: x - f.axe * t.w, y: y, w: t.w, h: t.h });
-    pris(ref || f.src || cle);
-    return y + t.h;
+  // Empiler une pièce de colonne : son bout a en (x, y), son bout b juste dessous.
+  // Rend le y du bout b, d'où part la pièce suivante.
+  function poser(cle, x, y) {
+    var f = FORMES[cle];
+    poses.push({ cle: cle, ref: f.src || cle, colonne: true, x: x, y: y });
+    pris(f.src || cle);
+    return y + f.L;
+  }
+  // Dessiner une pièce de colonne : tourner la photo pour que a→b pointe vers le bas.
+  function dessinerColonne(g, p) {
+    var f = FORMES[p.cle], im = images[f.src || p.cle];
+    if (!im) {
+      var v = f.vide || [24, f.L];
+      g.setLineDash([3, 3]); g.strokeStyle = "rgba(28,28,26,.35)"; g.strokeRect(p.x - v[0] / 2, p.y, v[0], v[1]); g.setLineDash([]);
+      return;
+    }
+    var ax = f.a[0] * im.width, ay = f.a[1] * im.height, bx = f.b[0] * im.width, by = f.b[1] * im.height;
+    var s = f.L / Math.hypot(bx - ax, by - ay), angle = Math.PI / 2 - Math.atan2(by - ay, bx - ax);
+    g.save(); g.translate(p.x, p.y); g.rotate(angle); g.scale(s, s);
+    g.globalCompositeOperation = "multiply";
+    g.drawImage(im, -ax, -ay); g.restore();
   }
   function pris(ref) { if (reste[ref] > 0) reste[ref]--; }
+  // Le numéro d'une pièce, renvoyé à la légende.
+  function badge(g, n, x, y) {
+    g.globalCompositeOperation = "source-over";
+    g.fillStyle = "#1c1c1a"; g.beginPath(); g.arc(x, y, 7, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "#ffffff"; g.font = "600 9px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+    g.fillText(String(n), x, y + 0.5);
+  }
 
   var ECART = 9, W = 358;
   function dessiner() {
@@ -219,7 +246,9 @@
     var voies = [[x1, 1], [x2, 2], [x3, 3]], etiquettes = [];
     voies.forEach(function (v) {
       var yv = poser("electrovanne-100dv", v[0], bas) + ECART;
-      yv = poser("raccord-male25", v[0], yv) + ECART;
+      // Sous l'électrovanne, le raccord Plasson 25 TARAUDÉ 3/4" (sa correction :
+      // « les 8, c'est des 25 taraudés 3/4 »), le même qu'au bas de l'arrivée.
+      yv = poser("OPL70302520", v[0], yv) + ECART;
       yv = poser("pehd", v[0], yv);
       etiquettes.push([v[0], yv, "Voie " + v[1]]);
       fin = Math.max(fin, yv);
@@ -231,6 +260,12 @@
     g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H);
     poses.forEach(function (p) {
       var f = FORMES[p.cle], im = images[f.src || p.cle];
+      if (p.colonne) {
+        dessinerColonne(g, p);
+        var nc = numero(p.ref);
+        if (nc) badge(g, nc, p.x + 24, p.y + f.L / 2);
+        return;
+      }
       if (!im) {
         g.setLineDash([3, 3]); g.strokeStyle = "rgba(28,28,26,.35)"; g.strokeRect(p.x, p.y, p.w, p.h); g.setLineDash([]);
       } else {
@@ -245,11 +280,7 @@
       }
       // Le numéro de la pièce, renvoyé à la légende.
       var n = numero(p.ref);
-      if (n) {
-        g.fillStyle = "#1c1c1a"; g.beginPath(); g.arc(p.x + p.w + 2, p.y + 5, 7, 0, Math.PI * 2); g.fill();
-        g.fillStyle = "#ffffff"; g.font = "600 9px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
-        g.fillText(String(n), p.x + p.w + 2, p.y + 5.5);
-      }
+      if (n) badge(g, n, p.x + p.w + 2, p.y + 5);
     });
     g.fillStyle = "#4a4a44"; g.font = "11px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "top";
     etiquettes.forEach(function (e) { g.fillText(e[2], e[0], e[1] + 6); });
