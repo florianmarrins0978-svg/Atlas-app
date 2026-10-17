@@ -1684,19 +1684,26 @@ function couleurReseau(i){ return COULEURS_RESEAU[i % COULEURS_RESEAU.length]; }
    |---|---|---|
    | 'boucle' | deux lignes, circuit fermé | le té MID6321, aucun bouchon |
    | 'deux-bouts' | une ligne partie d'un té, deux bouts | le té MID6321, deux bouchons MID6371 |
-   | 'ligne' | une seule ligne ouverte | un raccord, et un bouchon MID6371 au bout |
+   | 'ligne' | une seule ligne ouverte | le coude MID6341, et un bouchon MID6371 au bout |
    | absente | la question n'a pas de réponse | rien, et le plan le dit |
 
-   **Le raccord d'une ligne seule n'est pas tranché** : le coude MID6341 ou
-   un droit, et lequel des deux droits (MID6352, MID6301). Il ne se compte pas
-   tant qu'il n'a pas répondu, et le plan le dit. Jamais de filtre : *« on ne
-   pose jamais de filtre, jamais »*. */
+   **Le coude pour une ligne seule** : sa réponse du 17 octobre 2026, « le
+   coude ». Jamais de filtre : *« on ne pose jamais de filtre, jamais »*.
+
+   **LE TUBE SE COMMANDE PAR COURONNES DE 50 M, ET CHAQUE RACCORD DE COURONNES
+   PREND UNE JONCTION** — sa réponse du 17 octobre 2026 : *« prends la réf
+   d'Aqua Plus, ça sera 50 m par 50 m, donc faut prévoir une jonction droite à
+   chaque fois pour rajouter s'il y a plus que 50 m »*. Une ligne de 75 m prend
+   donc une couronne entière, 25 m d'une seconde, et une jonction MID6301
+   entre les deux. Le bout qui reste d'une couronne entamée sert à une autre
+   ligne qu'il finit sans raccord ; il n'en recolle jamais deux, sinon une
+   jonction manquerait (`couronnesDuTube`). */
 var METRES_PAR_SORTIE = 100;
-var RACCORD_LIGNE_SEULE = null;
+var RACCORD_LIGNE_SEULE = 'MID6341';
 var SORTIES_GOUTTE = ['boucle', 'deux-bouts', 'ligne'];
 
 function sortiesGoutte(d){
-  var zones = [], sorties = 0;
+  var zones = [], sorties = 0, lignes = [];
   etat.zones.forEach(function(z){
     var p = poser(z);
     if (!p.m || p.m.type !== 'gaine' || !p.nombre) return;
@@ -1706,9 +1713,40 @@ function sortiesGoutte(d){
     var reponse = SORTIES_GOUTTE.indexOf(z.sortieGoutte) >= 0 ? z.sortieGoutte : null;
     zones.push({ nom: z.nom || TYPES[z.type].nom, sorties: n, reponse: reponse });
     sorties += n;
+    // Chaque sortie porte sa part du tube de la zone : c'est une ligne, ou une
+    // boucle, d'un seul tenant.
+    for (var i = 0; i < n; i++) lignes.push(p.nombre / n);
   });
   var vannes = combienGoutteAGoutte(d);
-  return { zones: zones, sorties: sorties, tesEgaux: Math.max(0, sorties - vannes) };
+  var c = couronnesDuTube(lignes);
+  return { zones: zones, sorties: sorties, tesEgaux: Math.max(0, sorties - vannes),
+           couronnes: c.couronnes, jonctions: c.jonctions };
+}
+
+/* Combien de couronnes, et combien de jonctions pour les raccorder. Chaque
+   ligne prend ses couronnes entières, puis un bout ; les bouts se rangent dans
+   les couronnes entamées, le plus long d'abord, sans jamais en couper un en
+   deux. Une ligne de L mètres a donc ⌈L ÷ 50⌉ − 1 jonctions, ni plus ni moins. */
+var METRES_PAR_COURONNE = 50;
+function couronnesDuTube(lignes){
+  var pleines = 0, jonctions = 0, bouts = [];
+  lignes.forEach(function(l){
+    // Le millionième retiré : 50 m tiennent dans une couronne, sans jonction.
+    var entieres = Math.floor(l / METRES_PAR_COURONNE + 1e-9);
+    var reste = l - entieres * METRES_PAR_COURONNE;
+    if (reste < 1e-6) reste = 0;
+    pleines += entieres;
+    jonctions += Math.max(0, entieres + (reste ? 1 : 0) - 1);
+    if (reste) bouts.push(reste);
+  });
+  var entamees = [];
+  bouts.sort(function(a, b){ return b - a; }).forEach(function(b){
+    for (var i = 0; i < entamees.length; i++){
+      if (entamees[i] + b <= METRES_PAR_COURONNE + 1e-9){ entamees[i] += b; return; }
+    }
+    entamees.push(b);
+  });
+  return { couronnes: pleines + entamees.length, jonctions: jonctions };
 }
 
 function manquants(d){
@@ -1736,8 +1774,6 @@ function manquants(d){
   sg.zones.forEach(function(zg){
     if (!zg.reponse){
       phrases.push(zg.nom + ' : une seule ligne de goutte-à-goutte ou une boucle ? Ses raccords ne sont pas comptés.');
-    } else if (zg.reponse === 'ligne' && !RACCORD_LIGNE_SEULE){
-      phrases.push(zg.nom + ' : le raccord Palaplast d’une ligne seule n’est pas compté.');
     }
   });
   // La pression au bout du tube : ni sa pression mini, ni son diamètre
@@ -1790,7 +1826,9 @@ function listeMateriel(d){
   if (totalGaine){
     var g = CATALOGUE.gaines[0];
     // Le libellé d'Aqua Plus, mot pour mot : c'est ce qu'il demande au comptoir.
-    lignes.push({ ref:g.ref, nom:g.nom, q: totalGaine, u:'ml' });
+    // Compté en couronnes, comme il le commande (`couronnesDuTube`).
+    lignes.push({ ref:g.ref, nom:g.nom + ', couronne de ' + g.colisage + ' m',
+                  q: sortiesGoutte(d).couronnes, u:'u' });
   }
   // **UN CORPS PAR ARROSEUR, MAIS LE CORPS DE SA FAMILLE.** Une tuyère prend
   // le corps qu'il a choisi à l'écran (10 cm sans option par défaut, sa
@@ -1924,6 +1962,8 @@ function listeMateriel(d){
     if (zg.reponse === 'deux-bouts'){ noterPalaplast('MID6321', zg.sorties); noterPalaplast('MID6371', 2 * zg.sorties); }
     if (zg.reponse === 'ligne'){ noterPalaplast(RACCORD_LIGNE_SEULE, zg.sorties); noterPalaplast('MID6371', zg.sorties); }
   });
+  // Les jonctions entre couronnes, quelle que soit la pose.
+  noterPalaplast('MID6301', sg.jonctions);
   ['MID6321', 'MID6341', 'MID6352', 'MID6301', 'MID6371'].forEach(function(ref){
     if (!palaplast[ref]) return;
     var x = CATALOGUE.pieceAjoutable(ref);

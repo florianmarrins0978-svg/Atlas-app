@@ -15,7 +15,8 @@
   catalogue de src/lib/arrosage/, empaquetés tels quels le 17 octobre 2026
   dans arrosage-schema-calcul.js (esbuild, aucune ligne réécrite ; il porte
   déjà les sorties du goutte-à-goutte, `sortiesGoutte`). Jardin d'exemple :
-  le sien du 23 août (12 × 12 et 8 × 8) et un massif de 10 × 2,40.
+  le sien du 23 août (12 × 12 et 8 × 8) et un massif de 20 × 2,40 (80 m de
+  tube : deux couronnes de 50 m, une jonction).
 
   CE QUE LA PLANCHE DÉDUIT, ET QUE L'APPLICATION DEVRA RECEVOIR DU CALCUL :
   la place de chaque té et de chaque coude, tête par tête, lue sur les rangées
@@ -81,7 +82,7 @@
   .tete{position:relative;display:flex;align-items:flex-start;gap:8px;margin-top:14px}
   .tete:first-child{margin-top:0}
   .tete::before{content:"";position:absolute;left:-12px;top:26px;width:12px;height:2px;background:var(--couleur)}
-  .tete{gap:6px}
+  .tete{gap:6px;flex-wrap:wrap}
   .tete .piece,.tete .piece .photo{width:54px}
   .tete .piece .photo{height:54px}
   .tete .piece .photo img{max-width:48px;max-height:48px}
@@ -187,7 +188,7 @@
     return C.calculerPlan({ seau: 10, temps: 18, pression: 3, compteur: "oui", zones: [
       { id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
       { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },
-      { id: 3, type: "massif", nom: "Massif", x: 14, y: 10, L: 10, l: 2.4, sortieGoutte: etat.sortie }
+      { id: 3, type: "massif", nom: "Massif", x: 14, y: 10, L: 20, l: 2.4, sortieGoutte: etat.sortie }
     ] });
   }
 
@@ -220,6 +221,19 @@
     return etat.ajoutees.filter(function (a) { return a.ou === ou; }).map(function (a) {
       return poser("plus:" + a.n, a.ref, a.nom, "ajoutée", 1);
     }).join("");
+  }
+
+  // Les couronnes du tube, et entre deux une jonction MID6301 : les deux nombres
+  // sont ceux du calcul (couronnesDuTube), la planche ne fait que les poser.
+  function couronnes(i, M) {
+    var n = (M.filter(function (m) { return m.ref === "UGGCBL23050"; })[0] || { q: 0 }).q;
+    var j = (M.filter(function (m) { return m.ref === "MID6301"; })[0] || { q: 0 }).q;
+    var html = "";
+    for (var c = 0; c < n; c++) {
+      if (c > 0 && c <= j) html += poser("r" + i + ":jonction" + c, "MID6301", nomDe("MID6301", M), "jonction Palaplast Ø16");
+      html += poser("r" + i + ":couronne" + c, "UGGCBL23050", nomDe("UGGCBL23050", M), "tube Toro, couronne de 50 m");
+    }
+    return html;
   }
 
   function dessiner() {
@@ -269,9 +283,9 @@
       if (s.famille === "Goutte-à-goutte") {
         jardin += '<div class="tete">' + poser("r" + i + ":coude", "coude-taraude-25-34", nomDe("coude-taraude-25-34", M), "Coude taraudé") +
           (etat.sortie === "ligne"
-            ? piece("r" + i + ":raccord", "?", "raccord à trancher", "raccord à trancher")
+            ? poser("r" + i + ":coude16", "MID6341", nomDe("MID6341", M), "coude Palaplast Ø16")
             : poser("r" + i + ":te16", "MID6321", nomDe("MID6321", M), "té Palaplast Ø16")) +
-          poser("r" + i + ":tube", "UGGCBL23050", nomDe("UGGCBL23050", M), "tube Toro, " + (M.filter(function (m) { return m.ref === "UGGCBL23050"; })[0] || { q: 0 }).q + " m", (M.filter(function (m) { return m.ref === "UGGCBL23050"; })[0] || { q: 0 }).q, "ml") +
+          couronnes(i, M) +
           (etat.sortie === "boucle" ? "" : poser("r" + i + ":bouchon", "MID6371", nomDe("MID6371", M), "bouchon Palaplast Ø16")) +
           "</div>";
       }

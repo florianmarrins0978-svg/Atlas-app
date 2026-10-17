@@ -685,8 +685,12 @@ dire(
   } as never) as { secteurs: { debit: number; minutes: number }[]; materiel: { ref?: string; nom: string; q: number }[]; manquants: string[] };
   const tube = massif.materiel.find((m) => m.ref === "UGGCBL23050");
   dire(Boolean(tube), `la liste porte son tube UGGCBL23050 (${JSON.stringify(massif.materiel.map((m) => m.ref))})`);
-  // 4 lignes (2,4 m ÷ 0,80 + 1) de 10 m : 40 m à 6,06 l/h par mètre.
-  dire(tube?.q === 40, `40 m de tube pour 4 lignes de 10 m (lu : ${tube?.q})`);
+  // 4 lignes (2,4 m ÷ 0,80 + 1) de 10 m : 40 m à 6,06 l/h par mètre, donc une
+  // couronne de 50 m (sa réponse du 17 octobre 2026 : « 50 m par 50 m »).
+  dire(
+    tube?.q === 1 && tube?.nom === "tube Ø16mm 2l/h esp.33cm autorégulé, couronne de 50 m",
+    `40 m de tube pour 4 lignes de 10 m : une couronne de 50 m (lu : ${tube?.q}x ${tube?.nom})`,
+  );
   dire(Math.abs(massif.secteurs[0].debit - 40 * 2 / 0.33 / 1000) < 1e-9, `le débit vient de ses goutteurs (${massif.secteurs[0].debit})`);
   dire(
     massif.secteurs[0].minutes > 0 && !massif.manquants.some((p) => /durée/.test(p)),
@@ -739,12 +743,51 @@ dire(
     `300 m sur deux vannes : 3 coudes taraudés, 1 té égal (${pieces(deuxVannes)})`,
   );
 
-  // Une ligne seule : le bouchon au bout, et le raccord non tranché se dit.
+  // Une ligne seule : le coude Palaplast MID6341 (sa réponse du 17 octobre
+  // 2026, « le coude »), et le bouchon au bout.
   const ligne = plan([{ type: "massif", nom: "Massif", L: 10, l: 2.4, sortieGoutte: "ligne" }]);
   dire(
-    q(ligne, "MID6371") === 1 && q(ligne, "MID6321") === 0 &&
-      ligne.manquants.some((p) => /^Massif : le raccord Palaplast d’une ligne seule n’est pas compté/.test(p)),
-    `une ligne seule : 1 bouchon, et le plan dit que son raccord manque (${pieces(ligne)})`,
+    q(ligne, "MID6341") === 1 && q(ligne, "MID6371") === 1 && q(ligne, "MID6321") === 0 &&
+      !ligne.manquants.some((p) => /raccord/.test(p)),
+    `une ligne seule : 1 coude Palaplast, 1 bouchon, plus rien à trancher (${pieces(ligne)})`,
+  );
+
+  // LES COURONNES DE 50 M, ET UNE JONCTION MID6301 À CHAQUE RACCORD — sa
+  // réponse du 17 octobre 2026. Ses chiffres se recomposent à la main :
+  // 150 m en deux sorties font deux lignes de 75 m. Chacune : une couronne
+  // entière, 25 m d'une autre, une jonction. Les deux bouts de 25 m tiennent
+  // dans une même couronne : 3 couronnes, 2 jonctions.
+  dire(
+    q(deuxBouts, "UGGCBL23050") === 3 && q(deuxBouts, "MID6301") === 2,
+    `150 m en deux lignes de 75 m : 3 couronnes, 2 jonctions (${pieces(deuxBouts)})`,
+  );
+  // 200 m en deux lignes de 100 m : 4 couronnes, une jonction par ligne.
+  dire(q(pile, "UGGCBL23050") === 4 && q(pile, "MID6301") === 2, `200 m : 4 couronnes, 2 jonctions (${pieces(pile)})`);
+  // 50 m pile : une couronne, aucune jonction.
+  const cinquante = plan([{ type: "haie", nom: "Haie", ml: 50, sortieGoutte: "boucle" }]);
+  dire(
+    q(cinquante, "UGGCBL23050") === 1 && q(cinquante, "MID6301") === 0,
+    `50 m : une couronne, aucune jonction (${pieces(cinquante)})`,
+  );
+  // Deux massifs de 40 m : deux couronnes. Le bout de 10 m de l'une ne finit
+  // pas l'autre, et il ne se recolle pas : une jonction manquerait.
+  const deuxMassifs = plan([
+    { type: "massif", nom: "Massif A", L: 10, l: 2.4, sortieGoutte: "boucle" },
+    { type: "massif", nom: "Massif B", L: 10, l: 2.4, sortieGoutte: "boucle" },
+  ]);
+  dire(
+    q(deuxMassifs, "UGGCBL23050") === 2 && q(deuxMassifs, "MID6301") === 0,
+    `deux massifs de 40 m : 2 couronnes, aucune jonction (${pieces(deuxMassifs)})`,
+  );
+  // Une haie de 60 m et une de 30 m : la seconde se pose dans le bout de 40 m
+  // laissé par la première. 2 couronnes, une jonction (celle des 60 m).
+  const bout = plan([
+    { type: "haie", nom: "Haie A", ml: 60, sortieGoutte: "boucle" },
+    { type: "haie", nom: "Haie B", ml: 30, sortieGoutte: "boucle" },
+  ]);
+  dire(
+    q(bout, "UGGCBL23050") === 2 && q(bout, "MID6301") === 1,
+    `60 m et 30 m : 2 couronnes, 1 jonction (${pieces(bout)})`,
   );
 
   // Sans réponse : aucune pièce Palaplast inventée, et la question se pose.

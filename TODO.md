@@ -37,7 +37,7 @@ travail, jamais à côté.**
 
 **Les sorties codées le 17 octobre 2026** (`sortiesGoutte`), voir
 `docs/arrosage-relais-session.md`. En attente de lui : le raccord d'une ligne
-seule (`RACCORD_LIGNE_SEULE`), une référence en 100 m, la fiche Toro du tube.
+seule et les couronnes **réglés le 17 octobre** (« le coude » ; « 50 m par 50 m », une jonction MID6301 à chaque raccord). Reste : la fiche Toro du tube.
 L'écran doit poser `sortieGoutte` par zone.
 
 Sa consigne : *« supprime toutes les lignes provisoires, garde le Régulateur de

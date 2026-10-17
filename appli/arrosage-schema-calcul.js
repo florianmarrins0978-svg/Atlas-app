@@ -3626,10 +3626,10 @@ var CALCUL = (() => {
     return COULEURS_RESEAU[i % COULEURS_RESEAU.length];
   }
   var METRES_PAR_SORTIE = 100;
-  var RACCORD_LIGNE_SEULE = null;
+  var RACCORD_LIGNE_SEULE = "MID6341";
   var SORTIES_GOUTTE = ["boucle", "deux-bouts", "ligne"];
   function sortiesGoutte(d) {
-    var zones = [], sorties = 0;
+    var zones = [], sorties = 0, lignes = [];
     etat.zones.forEach(function(z) {
       var p = poser(z);
       if (!p.m || p.m.type !== "gaine" || !p.nombre) return;
@@ -3638,9 +3638,42 @@ var CALCUL = (() => {
       var reponse = SORTIES_GOUTTE.indexOf(z.sortieGoutte) >= 0 ? z.sortieGoutte : null;
       zones.push({ nom: z.nom || TYPES[z.type].nom, sorties: n, reponse });
       sorties += n;
+      for (var i = 0; i < n; i++) lignes.push(p.nombre / n);
     });
     var vannes = combienGoutteAGoutte(d);
-    return { zones, sorties, tesEgaux: Math.max(0, sorties - vannes) };
+    var c = couronnesDuTube(lignes);
+    return {
+      zones,
+      sorties,
+      tesEgaux: Math.max(0, sorties - vannes),
+      couronnes: c.couronnes,
+      jonctions: c.jonctions
+    };
+  }
+  var METRES_PAR_COURONNE = 50;
+  function couronnesDuTube(lignes) {
+    var pleines = 0, jonctions = 0, bouts = [];
+    lignes.forEach(function(l) {
+      var entieres = Math.floor(l / METRES_PAR_COURONNE + 1e-9);
+      var reste = l - entieres * METRES_PAR_COURONNE;
+      if (reste < 1e-6) reste = 0;
+      pleines += entieres;
+      jonctions += Math.max(0, entieres + (reste ? 1 : 0) - 1);
+      if (reste) bouts.push(reste);
+    });
+    var entamees = [];
+    bouts.sort(function(a, b) {
+      return b - a;
+    }).forEach(function(b) {
+      for (var i = 0; i < entamees.length; i++) {
+        if (entamees[i] + b <= METRES_PAR_COURONNE + 1e-9) {
+          entamees[i] += b;
+          return;
+        }
+      }
+      entamees.push(b);
+    });
+    return { couronnes: pleines + entamees.length, jonctions };
   }
   function manquants(d) {
     var phrases = [];
@@ -3665,8 +3698,6 @@ var CALCUL = (() => {
     sg.zones.forEach(function(zg) {
       if (!zg.reponse) {
         phrases.push(zg.nom + " : une seule ligne de goutte-\xE0-goutte ou une boucle ? Ses raccords ne sont pas compt\xE9s.");
-      } else if (zg.reponse === "ligne" && !RACCORD_LIGNE_SEULE) {
-        phrases.push(zg.nom + " : le raccord Palaplast d\u2019une ligne seule n\u2019est pas compt\xE9.");
       }
     });
     if (sg.zones.length) {
@@ -3708,7 +3739,12 @@ var CALCUL = (() => {
     });
     if (totalGaine) {
       var g = CATALOGUE.gaines[0];
-      lignes.push({ ref: g.ref, nom: g.nom, q: totalGaine, u: "ml" });
+      lignes.push({
+        ref: g.ref,
+        nom: g.nom + ", couronne de " + g.colisage + " m",
+        q: sortiesGoutte(d).couronnes,
+        u: "u"
+      });
     }
     var parCorps = {}, corpsDe = {};
     Object.keys(compte).forEach(function(ref) {
@@ -3783,6 +3819,7 @@ var CALCUL = (() => {
         noterPalaplast("MID6371", zg.sorties);
       }
     });
+    noterPalaplast("MID6301", sg.jonctions);
     ["MID6321", "MID6341", "MID6352", "MID6301", "MID6371"].forEach(function(ref) {
       if (!palaplast[ref]) return;
       var x = CATALOGUE.pieceAjoutable(ref);

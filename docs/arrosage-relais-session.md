@@ -96,8 +96,7 @@ essais de la page publiée (78/78, 107/107) et les quatre maquettes d'arrosage.
    sorties = max(⌈mètres ÷ 100⌉, vannes de la zone) ; par vanne un coude
    taraudé par sortie, un té égal de moins ; sur le coude, selon
    `z.sortieGoutte` : `'boucle'` MID6321, `'deux-bouts'` MID6321 et deux
-   MID6371, `'ligne'` un MID6371 (son raccord attend sa réponse :
-   `RACCORD_LIGNE_SEULE` reste `null`). Sans réponse, rien n'est compté et le
+   MID6371, `'ligne'` un MID6371 et le coude MID6341. Sans réponse, rien n'est compté et le
    plan pose la question. **Trois questions lui sont posées** : le raccord d'une
    ligne seule (MID6341, MID6352 ou MID6301) ; une référence en 100 m
    (Aqua Plus ne vend l'UGGCBL23050 que par 50, la ligne du tube reste en
