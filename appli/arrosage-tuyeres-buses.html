@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tuyères et buses</title>
+<!--
+  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Sa demande du 17 octobre 2026 :
+  « quand on dit la tuyère avec la buse 2, tu sors la photo avec la buse 2 ; avec
+  la buse 8, la photo avec la buse 8 », et le lendemain : « les photos des
+  tuyères avec les buses juste à côté ».
+
+  CHAQUE COUPLE SE COMPOSE ICI, à partir des deux photos qu'il a validées
+  (arrosage-photos/) : 10 corps Rain Bird sur 13 buses font 130 couples, et
+  une photo corrigée se corrige partout d'un coup. Les corps et les buses sont
+  ceux du catalogue (CATALOGUE.corps, CATALOGUE.buses), lus dans le calcul
+  empaqueté, avec leur portée relevée.
+
+  Le numéro de modèle (1802, 1804, 1806, 1812) se lit sur la hauteur de sortie
+  du catalogue (5, 10, 15, 30 cm), comme Aqua Plus l'écrit page 7.
+-->
+<style>
+[data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#8a8578;--atlas-or:#B98B47;--atlas-line:rgba(28,28,26,0.12);--atlas-rustTint:#ece9e1}
+[data-charte="nuit"]{--atlas-cream:#101210;--atlas-card:#1a1d19;--atlas-ink:#e9e8de;--atlas-inkSoft:#c1c2b6;--atlas-muted:#84887b;--atlas-or:#B98B47;--atlas-line:rgba(233,232,222,0.12);--atlas-rustTint:#1f211e}
+  *{box-sizing:border-box}
+  html{background:var(--atlas-rustTint)}
+  body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint)}
+  .entete{max-width:560px;margin:0 auto;padding:18px 16px 6px}
+  .entete h1{margin:0;font:400 24px/1.15 Georgia,"Times New Roman",serif}
+  .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .ecran{max-width:560px;margin:10px auto 0;background:var(--atlas-cream);padding:14px 16px 70px;min-height:100vh}
+  .caps{display:block;margin:0;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-or)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .chips button{border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);border-radius:999px;padding:8px 12px;font-size:13.5px;cursor:pointer}
+  .chips button[aria-pressed="true"]{background:var(--atlas-ink);color:var(--atlas-card);border-color:var(--atlas-ink)}
+  .chips button:focus-visible{outline:2px solid var(--atlas-or);outline-offset:2px}
+  h2{margin:22px 0 0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+  .sous{margin:2px 0 0;font-size:13px;color:var(--atlas-muted)}
+  .grille{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+  .couple{border-radius:14px;background:#ffffff;padding:10px 10px 12px;box-shadow:0 1px 2px var(--atlas-line)}
+  /* La tuyère, et sa buse juste à côté, au même pied. */
+  .duo{display:flex;align-items:flex-end;justify-content:center;gap:6px;height:140px}
+  .duo img{mix-blend-mode:multiply;object-fit:contain}
+  .duo .corps{height:100%;max-width:62%}
+  .duo .buse{height:42%;max-width:34%}
+  .duo .vide{display:flex;align-items:center;justify-content:center;width:56px;height:100%;border:1.5px dashed rgba(28,28,26,.2);border-radius:10px;font-size:10px;color:#8a8578}
+  .couple b{display:block;margin-top:8px;font-size:13.5px;color:#1c1c1a}
+  .couple span{display:block;font-size:12px;color:#5d6458}
+</style>
+<body data-charte="origine">
+<div class="entete">
+  <h1>Tuyères et buses</h1>
+  <p>Planche, rien n’est codé. Chaque tuyère Rain Bird avec chacune de ses buses à côté.</p>
+</div>
+<main class="ecran">
+  <span class="caps">La tuyère</span>
+  <div class="chips" id="corps" role="group" aria-label="Tuyère"></div>
+  <h2 id="titre"></h2>
+  <p class="sous" id="sous"></p>
+  <div class="grille" id="grille"></div>
+</main>
+<script src="arrosage-schema-calcul.js"></script>
+<script>
+(function () {
+  var CAT = window.CALCUL.CATALOGUE;
+  var PHOTOS = {"RT1802":"RT1802.jpg","RT1804":"RT1804.jpg","RT1806":"RT1806.jpg","RT1822":"RT1822.jpg","RT1824":"RT1824.jpg","RT1826":"RT1826.jpg","RT1832":"RT1832.jpg","RT1834":"RT1834.jpg","RT1836":"RT1836.jpg",
+    "RBT640":"RBT640.jpg","RBT639":"RBT639.jpg","RBT638":"RBT638.jpg","RBT637":"RBT637.jpg","RBT636":"RBT636.jpg","RBT601":"RBT601.jpg","RBT648":"RBT648.jpg",
+    "RBT1418":"RBT1418.jpg","RBT1419":"RBT1419.jpg","RBT1428":"RBT1428.jpg","RBT1429":"RBT1429.jpg","RBT1438":"RBT1438.jpg","RBT1439":"RBT1439.jpg"};
+  var $ = function (id) { return document.getElementById(id); };
+  var texte = function (s) { var e = document.createElement("span"); e.textContent = s; return e.innerHTML; };
+  var virgule = function (x) { return String(x).replace(".", ","); };
+  var MODELE = { 5: "1802", 10: "1804", 15: "1806", 30: "1812" };
+  var corps = CAT.corps.filter(function (c) { return c.marqueCle === "rainbird" && c.pourType === "tuyere"; });
+  var buses = CAT.buses.filter(function (b) { return b.marqueCle === "rainbird" && b.pourType === "tuyere"; })
+    .sort(function (a, b) { return (a.nom.indexOf("R-VAN") >= 0) - (b.nom.indexOf("R-VAN") >= 0) || a.rayon - b.rayon; });
+  var nomCorps = function (c) { return MODELE[c.hauteur] + c.nom.replace("Tuyère 1800", ""); };
+  var choisi = corps[1] ? corps[1].ref : corps[0].ref;
+
+  function dessiner() {
+    $("corps").innerHTML = corps.map(function (c) {
+      return '<button type="button" data-corps="' + c.ref + '" aria-pressed="' + (c.ref === choisi) + '">' + texte(nomCorps(c)) + "</button>";
+    }).join("");
+    var c = corps.filter(function (x) { return x.ref === choisi; })[0];
+    $("titre").textContent = "Tuyère " + nomCorps(c);
+    $("sous").textContent = c.ref + ", " + c.detail;
+    var photoCorps = PHOTOS[c.ref] ? '<img class="corps" src="arrosage-photos/' + PHOTOS[c.ref] + '" alt="">' : '<span class="vide">photo à venir</span>';
+    $("grille").innerHTML = buses.map(function (b) {
+      var photoBuse = PHOTOS[b.ref] ? '<img class="buse" src="arrosage-photos/' + PHOTOS[b.ref] + '" alt="">' : "";
+      return '<div class="couple"><div class="duo">' + photoCorps + photoBuse + "</div>" +
+        "<b>" + texte(nomCorps(c) + " et " + b.nom) + "</b><span>portée " + virgule(b.rayon) + " m</span></div>";
+    }).join("");
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-corps]");
+    if (b) { choisi = b.dataset.corps; dessiner(); }
+  });
+  dessiner();
+})();
+</script>
+</body>
+</html>
