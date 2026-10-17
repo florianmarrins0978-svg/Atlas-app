@@ -73,6 +73,14 @@ essais de la page publiée (78/78, 107/107) et les quatre maquettes d'arrosage.
    le calcul les pose parce qu'elles se lèvent (2,11 bar pour 1,7). Question
    posée, sans réponse : ne pas inventer de plafond.
 4. **La largeur qu'arrose une ligne de haie**, pour calculer sa durée.
+5. **La vue éclatée** (sa demande du 17 octobre 2026) :
+   `appli/arrosage-vue-eclatee.html`, lien privé
+   https://claude.ai/artifact/LXfjCHKAbZUm78ncXpVqjn. Chaque pièce en photo,
+   écartée, par zone (amenée, regard, réseau par réseau, tête par tête) ;
+   retirer et ajouter refont la liste, comparée au calcul. Attend : son avis,
+   **ses photos** des pièces (seules les cinq Palaplast existent), et **l'ordre
+   de montage de la nourrice** (la fiche ne donne que les pièces). Codée pour de
+   vrai, la place de chaque té et coude doit sortir du calcul, pas de l'écran.
 
 ## Ce qui reste à faire, dans cet ordre
 
