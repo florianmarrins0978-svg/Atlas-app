@@ -28,7 +28,7 @@
   1. l'ordre de montage de la nourrice : sa fiche du 17 août donne les pièces
     et leurs nombres, pas l'ordre. Elles s'écartent ici dans l'ordre de la
     fiche, et la planche le dit ;
-  2. les photos : seules ses cinq photos Palaplast existent
+  2. les photos : celles qu'il a validées le 17 octobre 2026, plus ses cinq Palaplast
     (appli/arrosage-photos/). Les autres pièces portent un cadre vide et leur
     nom, jusqu'à ce qu'il envoie les siennes.
 
@@ -170,7 +170,9 @@
 <script>
 (function () {
   var C = window.CALCUL, CAT = C.CATALOGUE;
-  var PHOTOS = { MID6301: 1, MID6321: 1, MID6341: 1, MID6352: 1, MID6371: 1 };
+  // Les photos qu'il a validées sur la planche « Photos des pièces » (17 octobre
+  // 2026), copiées dans arrosage-photos/ ; une pièce sans photo validée n'en a pas.
+  var PHOTOS = {"clarinette-2v":"clarinette-2v.jpg","clarinette-3v":"clarinette-3v.jpg","clarinette-4v":"clarinette-4v.jpg","coude-mf":"coude-mf.jpg","coude-taraude-25-34":"coude-taraude-25-34.jpg","electrovanne-100dv":"electrovanne-100dv.jpg","electrovanne-100dv-ff":"electrovanne-100dv-ff.png","mamelon":"mamelon.png","mamelon-droit-1":"mamelon-droit-1.jpg","OD501":"OD501.jpg","OD502":"OD502.jpg","pile-9v":"pile-9v.jpg","prog-1":"prog-1.jpg","prog-4":"prog-4.jpg","RA2181":"RA2181.jpg","RA3504":"RA3504.jpg","RA5006PC":"RA5006PC.jpg","raccord-male25":"raccord-male25.jpg","regard-rect12":"regard-rect12.jpg","regard-rg17106":"regard-rg17106.jpg","RP403":"RP403.jpg","RT1802":"RT1802.jpg","RT1804":"RT1804.jpg","RT1806":"RT1806.jpg","te-25-25-25":"te-25-25-25.jpg","te-mmf":"te-mmf.jpg","te-taraude-25-34-25":"te-taraude-25-34-25.jpg","UGGCBL23050":"UGGCBL23050.jpg","union":"union.jpg","VAN":"VAN.jpg","vanne-purge":"vanne-purge.jpg","MID6301":"MID6301.png","MID6321":"MID6321.png","MID6341":"MID6341.png","MID6352":"MID6352.png","MID6371":"MID6371.png","te-25-25-25-compteur":"te-25-25-25.jpg"};
   var CHARTES = [["origine","Origine"],["brume","Brume"],["pierre","Pierre"],["beurre","Beurre"],["moka","Moka"],["prune","Prune"],["sylve","Sylve"],["nuit","Nuit"]];
   var CATEGORIES = [
     ["raccord PE","Raccords PE"],["electrovanne","Électrovannes"],["regard","Regards"],
@@ -204,7 +206,7 @@
   function piece(cle, ref, nom, detail) {
     var retiree = etat.retirees[cle];
     var photo = PHOTOS[ref]
-      ? '<span class="photo"><img src="arrosage-photos/' + ref + '.png" alt=""></span>'
+      ? '<span class="photo"><img src="arrosage-photos/' + PHOTOS[ref] + '" alt=""></span>'
       : '<span class="photo vide">photo à venir</span>';
     return '<button type="button" class="piece' + (retiree ? " retiree" : "") + (cle.indexOf("plus:") === 0 ? " ajoutee" : "") +
       '" data-cle="' + texte(cle) + '" data-ref="' + texte(ref) + '" aria-pressed="' + Boolean(retiree) + '">' + photo +
@@ -353,7 +355,7 @@
       return '<button type="button" data-categorie="' + texte(c[0]) + '" aria-pressed="' + (etat.categorie === c[0]) + '">' + texte(c[1]) + "</button>";
     }).join("");
     $("choix").innerHTML = CAT.piecesAjoutables.filter(function (x) { return x.categorie === etat.categorie; }).slice(0, 40).map(function (x) {
-      var v = PHOTOS[x.ref] ? '<span class="vignette pleine"><img src="arrosage-photos/' + x.ref + '.png" alt=""></span>' : '<span class="vignette"></span>';
+      var v = PHOTOS[x.ref] ? '<span class="vignette pleine"><img src="arrosage-photos/' + PHOTOS[x.ref] + '" alt=""></span>' : '<span class="vignette"></span>';
       return '<button type="button" class="choix" data-choisir="' + texte(x.ref) + '">' + v + "<span>" + texte(x.nom) + "<small>" + texte(x.ref) + "</small></span></button>";
     }).join("");
     $("feuille").hidden = false;
