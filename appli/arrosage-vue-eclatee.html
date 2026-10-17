@@ -79,6 +79,10 @@
   .piece.retiree .nom{color:var(--atlas-muted);text-decoration:line-through;text-decoration-color:var(--atlas-alerte);text-decoration-thickness:2px}
   .piece.ajoutee .photo,.piece.changee .photo{box-shadow:0 0 0 2px var(--atlas-or),0 6px 16px var(--atlas-lineSoft)}
   .piece .mention{display:block;font-size:10px;color:var(--atlas-orTexte)}
+  /* La buse posée au pied de sa tuyère, dans la même case. */
+  .piece .photo{position:relative}
+  .piece .photo img.pied{position:absolute;right:-6px;bottom:-6px;width:46%;max-width:46%;height:auto;max-height:46%;border-radius:8px;background:var(--atlas-card);box-shadow:0 1px 3px var(--atlas-line)}
+  .tete .piece .photo img.pied{max-width:50%;width:50%;max-height:50%}
   .menu .gestes{display:flex;flex-direction:column;gap:8px;margin-top:14px}
   .menu .gestes button{min-height:52px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:15.5px;cursor:pointer}
   .menu .gestes button.danger{color:var(--atlas-alerte)}
@@ -191,7 +195,7 @@
   var C = window.CALCUL, CAT = C.CATALOGUE;
   // Les photos qu'il a validées sur la planche « Photos des pièces » (17 octobre
   // 2026), copiées dans arrosage-photos/ ; une pièce sans photo validée n'en a pas.
-  var PHOTOS = {"electrovanne-100dv":"electrovanne-100dv.jpg","electrovanne-100dv-ff":"electrovanne-100dv-ff.png","pebd16":"pebd16.png","pehd":"pehd.jpg","clarinette-2v":"clarinette-2v.jpg","clarinette-3v":"clarinette-3v.jpg","clarinette-4v":"clarinette-4v.jpg","connexion":"connexion.jpg","coude-mf":"coude-mf.jpg","coude-taraude-25-34":"coude-taraude-25-34.jpg","HT1521":"HT1521.jpg","HT1522":"HT1522.jpg","HT1523":"HT1523.jpg","HT1541":"HT1541.jpg","HT1543":"HT1543.jpg","HT1544":"HT1544.jpg","HT1546":"HT1546.png","mamelon":"mamelon.png","mamelon-droit-1":"mamelon-droit-1.jpg","OD501":"OD501.jpg","OD502":"OD502.jpg","pile-9v":"pile-9v.jpg","prog-1":"prog-1.jpg","prog-2":"prog-2.jpg","prog-4":"prog-4.jpg","prog-6":"prog-6.jpg","RA2180":"RA2180.jpg","RA2181":"RA2181.jpg","RA3504":"RA3504.jpg","RA3504SAM":"RA3504SAM.jpg","RA5004FC":"RA5004FC.jpg","RA5006PC":"RA5006PC.jpg","raccord-male25":"raccord-male25.jpg","regard-jumbo5":"regard-jumbo5.jpg","regard-jumbo6":"regard-jumbo6.jpg","regard-rect12":"regard-rect12.jpg","regard-rg17106":"regard-rg17106.jpg","RP403":"RP403.jpg","RT1802":"RT1802.jpg","RT1804":"RT1804.jpg","RT1806":"RT1806.jpg","RT1822":"RT1822.jpg","RT1824":"RT1824.jpg","RT1826":"RT1826.jpg","RT1832":"RT1832.jpg","RT1834":"RT1834.jpg","RT1836":"RT1836.jpg","TAMINI8-4P":"TAMINI8-4P.png","te-25-25-25":"te-25-25-25.jpg","te-mmf":"te-mmf.jpg","te-taraude-25-34-25":"te-taraude-25-34-25.jpg","UGGCBL23050":"UGGCBL23050.png","union":"union.jpg","VAN":"VAN.jpg","vanne-purge":"vanne-purge.jpg","MID6301":"MID6301.png","MID6321":"MID6321.png","MID6341":"MID6341.png","MID6352":"MID6352.png","MID6371":"MID6371.png","te-25-25-25-compteur":"te-25-25-25.jpg","pe25-amenee":"pehd.jpg","pe25-reseau":"pehd.jpg"};
+  var PHOTOS = {"electrovanne-100dv":"electrovanne-100dv.jpg","electrovanne-100dv-ff":"electrovanne-100dv-ff.png","pebd16":"pebd16.png","pehd":"pehd.jpg","clarinette-2v":"clarinette-2v.jpg","clarinette-3v":"clarinette-3v.jpg","clarinette-4v":"clarinette-4v.jpg","connexion":"connexion.jpg","coude-mf":"coude-mf.jpg","coude-taraude-25-34":"coude-taraude-25-34.jpg","HT1521":"HT1521.jpg","HT1522":"HT1522.jpg","HT1523":"HT1523.jpg","HT1541":"HT1541.jpg","HT1543":"HT1543.jpg","HT1544":"HT1544.jpg","HT1546":"HT1546.png","mamelon":"mamelon.png","mamelon-droit-1":"mamelon-droit-1.jpg","OD501":"OD501.jpg","OD502":"OD502.jpg","pile-9v":"pile-9v.jpg","prog-1":"prog-1.jpg","prog-2":"prog-2.jpg","prog-4":"prog-4.jpg","prog-6":"prog-6.jpg","RA2180":"RA2180.jpg","RA2181":"RA2181.jpg","RA3504":"RA3504.jpg","RA3504SAM":"RA3504SAM.jpg","RA5004FC":"RA5004FC.jpg","RA5006PC":"RA5006PC.jpg","raccord-male25":"raccord-male25.jpg","regard-jumbo5":"regard-jumbo5.jpg","regard-jumbo6":"regard-jumbo6.jpg","regard-rect12":"regard-rect12.jpg","regard-rg17106":"regard-rg17106.jpg","RP403":"RP403.jpg","RT1802":"RT1802.jpg","RT1804":"RT1804.jpg","RT1806":"RT1806.jpg","RT1822":"RT1822.jpg","RT1824":"RT1824.jpg","RT1826":"RT1826.jpg","RT1832":"RT1832.jpg","RT1834":"RT1834.jpg","RT1836":"RT1836.jpg","TAMINI8-4P":"TAMINI8-4P.png","te-25-25-25":"te-25-25-25.jpg","te-mmf":"te-mmf.jpg","te-taraude-25-34-25":"te-taraude-25-34-25.jpg","UGGCBL23050":"UGGCBL23050.png","union":"union.jpg","VAN":"VAN.jpg","vanne-purge":"vanne-purge.jpg","MID6301":"MID6301.png","MID6321":"MID6321.png","MID6341":"MID6341.png","MID6352":"MID6352.png","MID6371":"MID6371.png","te-25-25-25-compteur":"te-25-25-25.jpg","pe25-amenee":"pehd.jpg","pe25-reseau":"pehd.jpg","RBT640":"RBT640.jpg","RBT639":"RBT639.jpg","RBT638":"RBT638.jpg","RBT637":"RBT637.jpg","RBT636":"RBT636.jpg","RBT601":"RBT601.jpg","RBT648":"RBT648.jpg","RBT1418":"RBT1418.jpg","RBT1419":"RBT1419.jpg","RBT1428":"RBT1428.jpg","RBT1429":"RBT1429.jpg","RBT1438":"RBT1438.jpg","RBT1439":"RBT1439.jpg"};
   var CHARTES = [["origine","Origine"],["brume","Brume"],["pierre","Pierre"],["beurre","Beurre"],["moka","Moka"],["prune","Prune"],["sylve","Sylve"],["nuit","Nuit"]];
   var CATEGORIES = [
     ["raccord PE","Raccords PE"],["electrovanne","Électrovannes"],["regard","Regards"],
@@ -222,7 +226,8 @@
     return C.calculerPlan({ seau: 10, temps: 18, pression: 3, compteur: "oui", zones: [
       { id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
       { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },
-      { id: 3, type: "massif", nom: "Massif", x: 14, y: 10, L: 20, l: 2.4, sortieGoutte: etat.sortie }
+      { id: 3, type: "massif", nom: "Massif", x: 14, y: 10, L: 20, l: 2.4, sortieGoutte: etat.sortie },
+      { id: 4, type: "gazon", nom: "Couloir", x: 0, y: 14, L: 10, l: 2, materiel: "tuyere" }
     ] });
   }
 
@@ -258,6 +263,21 @@
     if (!etat.retirees[cle]) { compte[r] = compte[r] || { nom: n, q: 0, u: change ? "u" : (u || "u") }; compte[r].q += change || q === undefined ? 1 : q; }
     return piece(cle, ref, nom, detail);
   }
+  // UNE TUYÈRE ET SA BUSE AU PIED — sa demande du 17 octobre 2026 : « quand on
+  // dit la tuyère avec la buse 8, tu sors la photo avec la buse 8 ». La photo se
+  // COMPOSE ici, à partir des deux photos qu'il a validées : 13 buses sur 10 corps
+  // font 130 couples, et une photo corrigée se corrige partout d'un coup.
+  // La case compte les deux pièces ; supprimée, elle n'en compte aucune.
+  function tuyere(cle, corps, buse) {
+    var html = poser(cle, corps.ref, corps.nom, corps.nom.replace("Tuyère ", "") + " et " + buse.nom);
+    if (!etat.retirees[cle] && !etat.remplacees[cle]) {
+      var nb = "Rain Bird Tuyères " + buse.nom + (buse.colisage ? ", par " + buse.colisage : "");
+      compte[buse.ref] = compte[buse.ref] || { nom: nb, q: 0, u: "u" }; compte[buse.ref].q += 1;
+    }
+    if (etat.remplacees[cle] || !PHOTOS[buse.ref]) return html;
+    return html.replace("</span>", '<img class="pied" src="arrosage-photos/' + PHOTOS[buse.ref] + '" alt="' + texte(buse.nom) + '"></span>');
+  }
+
   function ajoutees(ou) {
     return etat.ajoutees.filter(function (a) { return a.ou === ou; }).map(function (a) {
       return poser("plus:" + a.n, a.ref, a.nom, "ajoutée", 1);
@@ -302,15 +322,20 @@
 
     // ── Au jardin : un rail par réseau, une rangée de pièces par tête.
     var parReseau = p.secteurs.map(function () { return []; });
+    // Le corps d'une tuyère ne vient pas de sa buse (une VAN se visse sur tous les
+    // 1800) : c'est celui que la liste du calcul porte.
+    var corpsTuyere = CAT.corps.filter(function (c) { return c.pourType === "tuyere" && M.some(function (m) { return m.ref === c.ref; }); })[0];
     p.dessin.forEach(function (z) {
       if (z.cle === "gaine") return;
-      var corps = CAT.corpsDeLaBuse(CAT.buses.filter(function (b) { return b.nom === z.buse; })[0]);
+      var buse = CAT.buses.filter(function (b) { return b.nom === z.buse; })[0];
+      var corps = z.cle === "tuyere" ? corpsTuyere : CAT.corpsDeLaBuse(buse);
+      if (!corps) return;
       var rangees = {};
       z.points.forEach(function (t) { var k = t.reseau + ":" + t.y; (rangees[k] = rangees[k] || []).push(t); });
       Object.keys(rangees).forEach(function (k, ir) {
         var r = rangees[k];
         r.forEach(function (t, i) {
-          parReseau[t.reseau].push({ zone: z, corps: corps, fin: i === r.length - 1, jonction: i === 0 && ir > 0 });
+          parReseau[t.reseau].push({ zone: z, corps: corps, buse: z.cle === "tuyere" ? buse : null, fin: i === r.length - 1, jonction: i === 0 && ir > 0 });
         });
       });
     });
@@ -340,7 +365,7 @@
           poser(k + ":sbeb", sbeBas.ref, sbeBas.nom + ", " + sbeBas.detail, "SBE 3/4\"") +
           poser(k + ":pebd", "pebd16", nomDe("pebd16", M), "PEBD Ø16, 2 m", 2, "ml") +
           poser(k + ":sbeh", sbeHaut.ref, sbeHaut.nom + ", " + sbeHaut.detail, "SBE " + sbeHaut.filetage + "\"") +
-          poser(k + ":corps", t.corps.ref, t.corps.nom, t.zone.buse) +
+          (t.buse ? tuyere(k + ":corps", t.corps, t.buse) : poser(k + ":corps", t.corps.ref, t.corps.nom, t.zone.buse)) +
           "</div>";
       });
       jardin += ajoutees("r" + i) + "</div>";
