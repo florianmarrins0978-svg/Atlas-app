@@ -212,6 +212,10 @@ fichiers dans le dossier temporaire de la session du 17 octobre ; seules les
 validées seront copiées dans `appli/arrosage-photos/`). Les faibles : aucun coude
 PVC MM 1", aucune photo du tube BlueLine 16 mm, électrovannes montrées en 24 V.
 Ses deux électrovannes (MM et FF) remplacées par ses photos le même jour.
+**Le coude « MM 1" » de ses six fiches de nourrice (17 août)** : Aqua Plus ne
+vend chez Dura que le MF (ODU306009) et le FF (ODU306010), et aucune photo de
+MM n'existe. Il vérifie lequel il pose (17 octobre 2026) ; rien ne change dans
+les fiches avant sa réponse.
 ~~Trois références du catalogue à confronter (RT1822, RT1832, HT1523)~~ :
 **fausse alerte, vérifiée le même jour dans Aqua Plus**. RT1822 est la tuyère
 1812-SAM et RT1832 la 1812-SAM-PRS (p. 7, 30 cm, ce que le catalogue porte
