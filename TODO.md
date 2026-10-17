@@ -200,6 +200,16 @@ liste. Attend son avis et **l'ordre de montage de sa nourrice** (*« je te
 ferai ça plus tard »*). Codée, la place de chaque té et coude doit sortir du
 calcul.
 
+**Changer ou supprimer une pièce** (sa demande du 17 octobre 2026), sur la
+vue éclatée : toucher une pièce ouvre « Changer la pièce » (toutes les pièces
+recensées, avec une recherche) ou « Supprimer la pièce » (elle reste, grisée,
+barrée de rouge, et sort de la liste). Codé dans la planche.
+
+**Une tuyère avec SA buse au pied** (même jour) : une photo par buse Rain Bird,
+validée par lui, puis chaque couple tuyère et buse COMPOSÉ à l'affichage à partir
+des deux photos (13 buses × 10 corps), plutôt que 130 images fabriquées à la
+main. Les 13 photos de buses attendent sa validation.
+
 **Les photos** : sa demande, *« va les chercher sur Internet, sur fond blanc,
 et tu me montres ; à chaque fois je vais te valider »*. Une planche à deux
 boutons par photo (« Je valide », « Non »), ses choix lus dans sa base de
