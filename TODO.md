@@ -190,6 +190,7 @@ entré au catalogue : trois questions lui sont posées.
 |---|---|
 | les lettres d'angle (Q, T, H, TT, TQ, F) | non écrites au catalogue ; la convention 90, 120, 180, 240, 270, 360 se confirme (fiche du fabricant ou lui). Et le calcul doit apprendre une buse par angle (Q au coin, H au bord, F au milieu, même série) |
 | MP Rotator, série 300 | « turbines » chez Aqua Plus, mais débit proportionnel au secteur : tuyère pour le débit ? |
+| suite, 17 octobre 2026 | **sa réponse : « je pense comme les tuyères »**, confirmé par la fiche Hunter (pluviométrie égale, environ 10 mm/h, donc débit selon l'angle ; 2,8 bar, corps PRS40 conseillé). **Reste à lui** : sur une vanne, avec les VAN (4 fois plus rapides), avec les turbines (même vitesse), ou seules ? Rien n'entre avant |
 | six chiffres douteux | MPR+ 12T 0,60 ; PRECISION 15Q 0,089 et 8F 0,124 ; PSU 17A 90° 0,41 ; Maxi-Paw 06 11,4 m ; Mini 8 2,5 0,56 |
 
 ## ⏳ ARROSAGE : LA VUE ÉCLATÉE, SES PHOTOS, ET LE DEVIS D'UN FOURNISSEUR (17 octobre 2026)
