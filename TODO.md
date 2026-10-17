@@ -206,6 +206,19 @@ vue éclatée : toucher une pièce ouvre « Changer la pièce » (toutes les pi�
 recensées, avec une recherche) ou « Supprimer la pièce » (elle reste, grisée,
 barrée de rouge, et sort de la liste). Codé dans la planche.
 
+**LA NOURRICE ÉCLATÉE, LE MODÈLE VALIDÉ** — sa réponse du 18 octobre 2026 sur la
+nourrice de 3 voies : « parfait, c'est exactement ça ; lorsqu'on est sur des
+électrovannes MM, c'est ce schéma-là ». 
+(lien privé https://claude.ai/artifact/JEXjH6tjyFLQJKePMUEBZc) : la clarinette
+fermée (coude MF à gauche, coude Dura FF à droite), l'arrivée à gauche
+(mamelon réduit, vanne FF, mamelon réduit, union MF, raccord femelle Plasson
+25 x 3/4", PEHD), et sous chaque voie électrovanne, union MF, raccord femelle,
+PEHD ; les voies numérotées de gauche à droite après l'arrivée. Les tailles 1,
+2, 4, 5, 6 appliquent ce modèle à leur fiche ; **restent des propositions** : la
+place du té MMF (2 et 6 voies) et la nourrice d'une voie (deux coudes vissés).
+**Suite demandée** : la même chose avec une voie de goutte-à-goutte (électrovanne
+FF, régulateur, mamelons).
+
 **Une tuyère avec SA buse au pied** (même jour) : une photo par buse Rain Bird,
 validée par lui, puis chaque couple tuyère et buse COMPOSÉ à l'affichage à partir
 des deux photos (13 buses × 10 corps), plutôt que 130 images fabriquées à la
