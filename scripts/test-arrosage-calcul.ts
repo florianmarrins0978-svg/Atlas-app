@@ -524,7 +524,11 @@ dire(
   // c'est bien le tuyau : son Ø25 relevé sur ses photos a 19,0 mm de passage, et
   // non 20,4 (§469). Le plan est le même (deux vannes, 8 × 3504 buse 0,75 et
   // 6 × 3504 buse 1,0) ; la ligne, plus étroite, perd davantage.
-  const PERTE_RESEAU_ATTENDUE = 0.606;
+  //
+  // **ELLE A BOUGÉ LE 17 OCTOBRE 2026, DE 0,606 À 0,618**, et c'est l'électrovanne :
+  // le forfait de 0,25 bar cède la place à la fiche Rain Bird de sa 100-DV, lue
+  // au débit de la vanne (Valves, p. 89). Le plan ne change pas.
+  const PERTE_RESEAU_ATTENDUE = 0.618;
   dire(
     Math.abs(p.perteReseau - PERTE_RESEAU_ATTENDUE) < 0.005,
     `la perte du réseau vaut ${p.perteReseau.toFixed(3)} bar (${PERTE_RESEAU_ATTENDUE} attendu — ` +
@@ -605,6 +609,41 @@ dire(
     "à 6 bar sans goutte-à-goutte : toujours aucun régulateur, c'est l'emploi qui décide, pas la pression",
   );
   dire(!generique(avecGoutteAGoutte), "plus aucun « Réducteur de pression » générique dans la liste");
+}
+
+// ── LA PERTE DE SON ÉLECTROVANNE, LUE SUR LA FICHE RAIN BIRD ────────────────
+// Son accord du 17 octobre 2026 : le forfait de 0,25 bar cède la place au
+// tableau de la 100-DV 1" (catalogue Rain Bird, Valves, p. 89, métrique), lu au
+// débit de la vanne. À 1,32 m³/h, le tableau donne 0,263 bar : le forfait
+// comptait trop peu, du côté qui fait poser une tête de trop.
+{
+  const p = calculerPlan({
+    seau: 10, temps: 20, pression: 3, compteur: "oui",
+    zones: [
+      { id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
+      { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },
+    ],
+  } as never) as { secteurs: { debit: number; debitUnitaire: number; points: { x: number; y: number; debit: number }[] }[]; perteReseau: number };
+  const hw = (q: number, L: number, d: number) => (10.67 * L * Math.pow(q / 3600 / 150, 1.852)) / Math.pow(d / 1000, 4.87) / 10.2;
+  const TABLE: [number, number][] = [[0.23, 0.23], [0.6, 0.24], [1.2, 0.26], [3.6, 0.32], [4.5, 0.35], [6, 0.41], [9, 0.59]];
+  const vanne = (q: number) => {
+    if (q <= TABLE[0][0]) return TABLE[0][1];
+    for (let i = 1; i < TABLE.length; i++) {
+      const [q0, p0] = TABLE[i - 1], [q1, p1] = TABLE[i];
+      if (q <= q1) return p0 + ((p1 - p0) * (q - q0)) / (q1 - q0);
+    }
+    return NaN;
+  };
+  const pire = Math.max(...p.secteurs.map((s) => {
+    let restant = s.points.reduce((n, x) => n + x.debit, 0), lin = 0;
+    for (let i = 1; i < s.points.length; i++) {
+      restant -= s.points[i - 1].debit;
+      lin += hw(restant, Math.abs(s.points[i].x - s.points[i - 1].x) + Math.abs(s.points[i].y - s.points[i - 1].y), 19.0);
+    }
+    return lin * 1.15 + vanne(s.debit) + hw(s.debitUnitaire, 2, 12.4);
+  }));
+  dire(Math.abs(p.perteReseau - pire) < 0.002, `la perte du pire réseau suit la fiche de la 100-DV : ${p.perteReseau.toFixed(3)} bar, à la main ${pire.toFixed(3)}`);
+  dire(Math.abs(vanne(1.32) - 0.263) < 0.001, "à 1,32 m³/h, la fiche donne 0,263 bar");
 }
 
 // ── CE QUI MANQUE AU CATALOGUE SE DIT, IL NE SE COMBLE PAS ──────────────────

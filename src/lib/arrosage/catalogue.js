@@ -1476,7 +1476,14 @@ export const CATALOGUE = {
     reducteurAuDelaDe: 5.5,
     // Les modèles mâle-mâle et mâle-cannelé sont déconseillés au-delà.
     debitMaxMMetMB: 6.8,
-    source: 'patron', releve: 'Notice Rain Bird DV/DVF, P/N 231576-B (2011)'
+    source: 'patron', releve: 'Notice Rain Bird DV/DVF, P/N 231576-B (2011)',
+    // **SA PERTE DE CHARGE, relevée le 17 octobre 2026 avec son accord** :
+    // catalogue Rain Bird, Valves, p. 89, « DV and DVF Valve Pressure Loss (bar)
+    // METRIC », colonne « 100-DV/100-DVF 1" », la sienne en MM comme en FF.
+    // [débit en m³/h, perte en bar]. Elle remplace le forfait de 0,25 bar,
+    // qui comptait trop peu dès 1,2 m³/h.
+    perte: [[0.23, 0.23], [0.60, 0.24], [1.20, 0.26], [3.60, 0.32], [4.50, 0.35], [6.00, 0.41], [9.00, 0.59]],
+    perteReleve: 'Catalogue Rain Bird, Valves, p. 89'
   },
 
   /* ── LES PIÈCES DE NOURRICE — un catalogue à part, référencé par les fiches

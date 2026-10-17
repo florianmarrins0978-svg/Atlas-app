@@ -629,7 +629,7 @@ function longueurMaxEn(budgetBar, debitM3h, dInterieurMm){
 
    | | Valeur | Source |
    |---|---|---|
-   | l'électrovanne | 0,25 bar | **non relevée** — majorant de la littérature |
+   | l'électrovanne | sa fiche, au débit de la vanne | catalogue Rain Bird, Valves, p. 89 (17 octobre 2026) |
    | les raccords (tés, coudes) | +15 % du linéaire | **non relevée** — règle de l'art |
    | l'antenne PEBD Ø16 | calculée, 2 m par tête | longueur relevée de sa nomenclature |
 
@@ -643,7 +643,20 @@ function longueurMaxEn(budgetBar, debitM3h, dInterieurMm){
    première tête. Il dépend de l'endroit où la nourrice est posée dans le
    jardin, et aucune saisie ne le donne aujourd'hui. La perte rendue est donc
    un PLANCHER, et l'écran le dit. */
-var PERTE_ELECTROVANNE = 0.25;   // bar, forfait majorant — non relevé
+/* La perte de SON électrovanne, la 100-DV 1", lue sur la fiche Rain Bird au
+   débit de la vanne (`CATALOGUE.electrovanneDV.perte`) : entre deux lignes, au
+   prorata ; sous la première, la première. Au-delà de la dernière (9 m³/h), la
+   fiche ne dit rien : on rend la dernière, et aucun jardin n'y arrive. */
+function perteElectrovanne(debitM3h){
+  var t = CATALOGUE.electrovanneDV.perte;
+  if (!(debitM3h > t[0][0])) return t[0][1];
+  for (var i = 1; i < t.length; i++){
+    if (debitM3h <= t[i][0]){
+      return t[i-1][1] + (t[i][1] - t[i-1][1]) * (debitM3h - t[i-1][0]) / (t[i][0] - t[i-1][0]);
+    }
+  }
+  return t[t.length - 1][1];
+}
 var MAJORATION_RACCORDS = 0.15;  // +15 % du linéaire — règle de l'art, non relevée
 var METRES_ANTENNE = 2;          // PEBD Ø16 par tête — sa nomenclature du 17 août
 var DIAMETRE_INT_PEBD16 = 12.4;  // mm, Ø16 PN6 — le plus étroit, donc le plus prudent
@@ -693,9 +706,9 @@ function perteDuReseau(secteur){
     lineaire: lineaire,
     amont: amont,
     raccords: (lineaire + amont) * MAJORATION_RACCORDS,
-    electrovanne: PERTE_ELECTROVANNE,
+    electrovanne: perteElectrovanne(debitDuReseau),
     antenne: antenne,
-    total: (lineaire + amont) * (1 + MAJORATION_RACCORDS) + PERTE_ELECTROVANNE + antenne
+    total: (lineaire + amont) * (1 + MAJORATION_RACCORDS) + perteElectrovanne(debitDuReseau) + antenne
   };
 }
 
@@ -1298,7 +1311,8 @@ function chercherUnPlan(source){
   // pression au-dessus de la source moins cette perte ne peut arriver au bout,
   // on n'y cherche donc pas.
   var limite = limiteParVoie();
-  var depart = Math.round((source - PERTE_ELECTROVANNE + TOLERANCE_CHOIX) * 100) / 100;
+  // La vanne perd au moins ce que sa fiche donne au plus petit débit.
+  var depart = Math.round((source - perteElectrovanne(0) + TOLERANCE_CHOIX) * 100) / 100;
 
   // Un plan à la pression de choix `p`, jugé à la pression qui arrive : `null`
   // s'il ne tient pas, sinon ce qui le classe.
