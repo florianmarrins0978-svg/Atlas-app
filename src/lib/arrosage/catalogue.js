@@ -1499,7 +1499,7 @@ export const CATALOGUE = {
     'coude-mf':      { nom:'Coude 90° taraudé/fileté MF 1"', marque:'Dura' },
     'coude-mm':      { nom:'Coude 90° taraudé MM 1"', marque:'Dura' },
     'mamelon':       { nom:'Mamelon réduit fileté MM 1"-3/4"', marque:'Dura' },
-    'union':         { nom:'Union droite taraudée MM 1"', marque:'Dura' },
+    'union':         { nom:'Union droite taraudée MF 1"', marque:'Dura' },
     'vanne-purge':   { nom:'Vanne avec vis de purge 3/4"', marque:'Dura' },
     'electrovanne-100dv': { nom:'Électrovanne 100 DV 1" MM 9V', marque:'Rain Bird' },
     'raccord-male25':{ nom:'Raccord mâle 25 1"', marque:'Plasson' },

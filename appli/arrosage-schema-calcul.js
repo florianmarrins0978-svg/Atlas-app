@@ -2493,7 +2493,7 @@ var CALCUL = (() => {
       "coude-mf": { nom: 'Coude 90\xB0 taraud\xE9/filet\xE9 MF 1"', marque: "Dura" },
       "coude-mm": { nom: 'Coude 90\xB0 taraud\xE9 MM 1"', marque: "Dura" },
       "mamelon": { nom: 'Mamelon r\xE9duit filet\xE9 MM 1"-3/4"', marque: "Dura" },
-      "union": { nom: 'Union droite taraud\xE9e MM 1"', marque: "Dura" },
+      "union": { nom: 'Union droite taraud\xE9e MF 1"', marque: "Dura" },
       "vanne-purge": { nom: 'Vanne avec vis de purge 3/4"', marque: "Dura" },
       "electrovanne-100dv": { nom: '\xC9lectrovanne 100 DV 1" MM 9V', marque: "Rain Bird" },
       "raccord-male25": { nom: 'Raccord m\xE2le 25 1"', marque: "Plasson" },
