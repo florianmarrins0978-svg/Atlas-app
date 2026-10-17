@@ -209,7 +209,7 @@ ne lui appartient pas ; pour l'application publiée, celles de ses
 fournisseurs avec accord, ou les siennes. Sa réponse : *« ne t'en fais pas pour ça, on s'en fiche »* ; on avance.
 La planche : https://claude.ai/artifact/66tzBpLozFXinZJnpNxNR3 (47 photos, les
 fichiers dans le dossier temporaire de la session du 17 octobre ; seules les
-validées seront copiées dans ). Les faibles : aucun coude
+validées seront copiées dans `appli/arrosage-photos/`). Les faibles : aucun coude
 PVC MM 1", aucune photo du tube BlueLine 16 mm, électrovannes montrées en 24 V.
 
 **Importer le devis d'un fournisseur** — sa demande du 17 octobre 2026 : *« une
