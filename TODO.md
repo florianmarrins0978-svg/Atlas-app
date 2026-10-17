@@ -35,6 +35,11 @@ travail, jamais à côté.**
 
 ## ⏳ ARROSAGE : PLUS AUCUNE LIGNE PROVISOIRE, ET SON GOUTTE-À-GOUTTE (16 octobre 2026)
 
+**Les sorties codées le 17 octobre 2026** (`sortiesGoutte`), voir
+`docs/arrosage-relais-session.md`. En attente de lui : le raccord d'une ligne
+seule (`RACCORD_LIGNE_SEULE`), une référence en 100 m, la fiche Toro du tube.
+L'écran doit poser `sortieGoutte` par zone.
+
 Sa consigne : *« supprime toutes les lignes provisoires, garde le Régulateur de
 pression FF 3/4" »*. Fait le 16 octobre : arroseurs génériques, électrovanne et
 regard génériques, programmateur générique, disconnecteur, réducteur de

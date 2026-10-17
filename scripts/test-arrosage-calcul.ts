@@ -663,12 +663,14 @@ dire(
     !toro.materiel.some((m) => /generique|Tuyères 12/.test(`${m.ref} ${m.nom}`)),
     "et aucune tuyère inventée n'entre dans la liste",
   );
-  // **Seule la durée de la haie manque**, et c'est vrai : son tube donne
-  // 6,06 l/h par mètre, mais rien ne dit sur quelle largeur. Les 23 mm/h qui
-  // tenaient la place ne venaient de nulle part (16 octobre 2026).
+  // **Parmi les durées, seule celle de la haie manque**, et c'est vrai : son
+  // tube donne 6,06 l/h par mètre, mais rien ne dit sur quelle largeur. Les
+  // 23 mm/h qui tenaient la place ne venaient de nulle part (16 octobre 2026).
+  // Ses autres réserves (les sorties du goutte-à-goutte) ont leur suite plus bas.
   const jardin = calculerPlan(JARDIN) as { manquants: string[] };
+  const durees = jardin.manquants.filter((p) => /durée/.test(p));
   dire(
-    jardin.manquants.length === 1 && /^Haie : la durée d’arrosage n’est pas calculée/.test(jardin.manquants[0]),
+    durees.length === 1 && /^Haie : la durée d’arrosage n’est pas calculée/.test(durees[0]),
     `le jardin de la maquette ne manque que la durée de sa haie (${JSON.stringify(jardin.manquants)})`,
   );
 }
@@ -686,7 +688,88 @@ dire(
   // 4 lignes (2,4 m ÷ 0,80 + 1) de 10 m : 40 m à 6,06 l/h par mètre.
   dire(tube?.q === 40, `40 m de tube pour 4 lignes de 10 m (lu : ${tube?.q})`);
   dire(Math.abs(massif.secteurs[0].debit - 40 * 2 / 0.33 / 1000) < 1e-9, `le débit vient de ses goutteurs (${massif.secteurs[0].debit})`);
-  dire(massif.secteurs[0].minutes > 0 && massif.manquants.length === 0, "un massif a sa durée, calculée sur l'écart de ses lignes");
+  dire(
+    massif.secteurs[0].minutes > 0 && !massif.manquants.some((p) => /durée/.test(p)),
+    "un massif a sa durée, calculée sur l'écart de ses lignes",
+  );
+}
+
+// ── LES SORTIES DU GOUTTE-À-GOUTTE, SES RÈGLES DU 16 OCTOBRE 2026 ───────────
+// Une sortie tous les 100 m au plus. Par vanne : un coude taraudé 25×3/4" par
+// sortie, un té égal pour chaque sortie qui n'est pas la dernière. Sur le
+// coude : le té Palaplast MID6321 pour une boucle, aucun bouchon ; deux
+// bouchons MID6371 quand le té laisse deux bouts ouverts. Jamais de filtre.
+{
+  type Plan = { secteurs: unknown[]; materiel: { ref?: string; nom: string; q: number }[]; manquants: string[] };
+  const plan = (zones: unknown[]) => calculerPlan({ seau: 10, temps: 20, pression: 3, zones } as never) as Plan;
+  const q = (p: Plan, ref: string) => p.materiel.find((m) => m.ref === ref)?.q ?? 0;
+  const pieces = (p: Plan) => JSON.stringify(p.materiel.map((m) => `${m.ref}:${m.q}`));
+
+  // 4 lignes de 10 m : 40 m, une sortie.
+  const boucle = plan([{ type: "massif", nom: "Massif", L: 10, l: 2.4, sortieGoutte: "boucle" }]);
+  dire(
+    q(boucle, "coude-taraude-25-34") === 1 && q(boucle, "te-25-25-25") === 0 &&
+      q(boucle, "MID6321") === 1 && q(boucle, "MID6371") === 0,
+    `40 m en boucle : 1 coude taraudé, 1 té Palaplast, aucun bouchon (${pieces(boucle)})`,
+  );
+  dire(
+    !boucle.manquants.some((p) => /raccords ne sont pas comptés/.test(p)) &&
+      boucle.manquants.some((p) => /pression au bout des lignes n’est pas vérifiée/.test(p)),
+    `sa réponse donnée, le plan ne dit plus que la pression non vérifiée (${JSON.stringify(boucle.manquants)})`,
+  );
+  dire(!boucle.materiel.some((m) => /filtre/i.test(m.nom)), "aucun filtre, jamais");
+
+  // 5 lignes de 30 m : 150 m sur une vanne (0,91 m³/h), donc deux sorties.
+  const deuxBouts = plan([{ type: "massif", nom: "Massif", L: 30, l: 3.2, sortieGoutte: "deux-bouts" }]);
+  dire(
+    deuxBouts.secteurs.length === 1 && q(deuxBouts, "coude-taraude-25-34") === 2 && q(deuxBouts, "te-25-25-25") === 1 &&
+      q(deuxBouts, "MID6321") === 2 && q(deuxBouts, "MID6371") === 4,
+    `150 m, deux bouts par té : 2 sorties, 1 té égal, 2 tés Palaplast, 4 bouchons (${pieces(deuxBouts)})`,
+  );
+
+  // 200 m pile : deux sorties, pas trois.
+  const pile = plan([{ type: "haie", nom: "Haie", ml: 200, sortieGoutte: "boucle" }]);
+  dire(q(pile, "coude-taraude-25-34") === 2, `200 m font deux sorties (${pieces(pile)})`);
+
+  // 300 m : 1,82 m³/h pour 1,53 par vanne, deux vannes, trois sorties. Un té
+  // égal seulement : chaque vanne ferme sa ligne sur sa dernière sortie.
+  const deuxVannes = plan([{ type: "haie", nom: "Haie", ml: 300, sortieGoutte: "boucle" }]);
+  dire(
+    deuxVannes.secteurs.length === 2 && q(deuxVannes, "coude-taraude-25-34") === 3 && q(deuxVannes, "te-25-25-25") === 1,
+    `300 m sur deux vannes : 3 coudes taraudés, 1 té égal (${pieces(deuxVannes)})`,
+  );
+
+  // Une ligne seule : le bouchon au bout, et le raccord non tranché se dit.
+  const ligne = plan([{ type: "massif", nom: "Massif", L: 10, l: 2.4, sortieGoutte: "ligne" }]);
+  dire(
+    q(ligne, "MID6371") === 1 && q(ligne, "MID6321") === 0 &&
+      ligne.manquants.some((p) => /^Massif : le raccord Palaplast d’une ligne seule n’est pas compté/.test(p)),
+    `une ligne seule : 1 bouchon, et le plan dit que son raccord manque (${pieces(ligne)})`,
+  );
+
+  // Sans réponse : aucune pièce Palaplast inventée, et la question se pose.
+  const muet = plan([{ type: "massif", nom: "Massif", L: 10, l: 2.4 }]);
+  dire(
+    !muet.materiel.some((m) => /^MID6/.test(m.ref ?? "")) && q(muet, "coude-taraude-25-34") === 1 &&
+      muet.manquants.some((p) => /^Massif : une seule ligne de goutte-à-goutte ou une boucle \?/.test(p)),
+    `sans sa réponse : le coude seul, aucune pièce Palaplast, et la question (${JSON.stringify(muet.manquants)})`,
+  );
+
+  // Avec des arroseurs : les coudes taraudés s'additionnent sur une seule ligne.
+  const seul = plan([{ type: "gazon", nom: "Pelouse", L: 12, l: 12 }]);
+  const mele = plan([
+    { type: "gazon", nom: "Pelouse", L: 12, l: 12 },
+    { type: "massif", nom: "Massif", L: 10, l: 2.4, sortieGoutte: "boucle" },
+  ]);
+  dire(
+    q(mele, "coude-taraude-25-34") === q(seul, "coude-taraude-25-34") + 1 &&
+      mele.materiel.filter((m) => m.ref === "coude-taraude-25-34").length === 1,
+    `la sortie du massif ajoute son coude à ceux des arroseurs, sur une ligne (${q(seul, "coude-taraude-25-34")} puis ${q(mele, "coude-taraude-25-34")})`,
+  );
+  dire(
+    mele.materiel.find((m) => m.ref === "MID6321")?.nom === "té Palaplast Ø16",
+    "le té Palaplast porte le libellé d'Aqua Plus, mot pour mot",
+  );
 }
 
 // ── LE MOINS DE VANNES D'ABORD, LE MOINS D'ARROSEURS ENSUITE ────────────────

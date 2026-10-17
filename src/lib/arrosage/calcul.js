@@ -1663,6 +1663,54 @@ function couleurReseau(i){ return COULEURS_RESEAU[i % COULEURS_RESEAU.length]; }
    comblés par de l'inventé : une zone dont la marque n'a aucun matériel qui
    convienne, et une nourrice de plus de voies que ses fiches. Chacun rend sa
    phrase ; l'écran la pose avec les autres réserves. */
+/* ══ LES SORTIES DU GOUTTE-À-GOUTTE, ses règles du 16 octobre 2026 ═══════
+
+   *« Tous les 100 m on refait une sortie en 25 ou 32 »*, et *« 100 m max dans
+   tous les cas »*, ligne comme boucle. Une zone a donc au moins une sortie par
+   tranche de 100 m de tube, et au moins une par vanne qui la dessert : deux
+   vannes n'alimentent pas le même bout de tube.
+
+   À chaque sortie, ses pièces, mot pour mot :
+   *« le coude taraudé 3/4" sur lequel on vient visser un T égal Palaplast
+   diamètre 16 en 3/4" »*, et *« au-delà, le Ø25 continue, un té égal fait la
+   nouvelle sortie »*. Sur une vanne de goutte-à-goutte, la dernière sortie
+   ferme la ligne Ø25 ; chaque autre part d'un té égal. D'où, par vanne,
+   autant de coudes taraudés que de sorties, et un té égal de moins.
+
+   Ce qui se visse sur le coude dépend de SA réponse, posée par zone
+   (*« est-ce qu'il veut qu'une seule ligne de goutte-à-goutte ? »*) :
+
+   | `sortieGoutte` | la pose | les pièces Palaplast |
+   |---|---|---|
+   | 'boucle' | deux lignes, circuit fermé | le té MID6321, aucun bouchon |
+   | 'deux-bouts' | une ligne partie d'un té, deux bouts | le té MID6321, deux bouchons MID6371 |
+   | 'ligne' | une seule ligne ouverte | un raccord, et un bouchon MID6371 au bout |
+   | absente | la question n'a pas de réponse | rien, et le plan le dit |
+
+   **Le raccord d'une ligne seule n'est pas tranché** : le coude MID6341 ou
+   un droit, et lequel des deux droits (MID6352, MID6301). Il ne se compte pas
+   tant qu'il n'a pas répondu, et le plan le dit. Jamais de filtre : *« on ne
+   pose jamais de filtre, jamais »*. */
+var METRES_PAR_SORTIE = 100;
+var RACCORD_LIGNE_SEULE = null;
+var SORTIES_GOUTTE = ['boucle', 'deux-bouts', 'ligne'];
+
+function sortiesGoutte(d){
+  var zones = [], sorties = 0;
+  etat.zones.forEach(function(z){
+    var p = poser(z);
+    if (!p.m || p.m.type !== 'gaine' || !p.nombre) return;
+    var vannes = ((d.reseauxDeZone || {})[z.id] || []).length || 1;
+    // Le millionième retiré : 200 m font deux sorties, pas trois.
+    var n = Math.max(Math.ceil(p.nombre / METRES_PAR_SORTIE - 1e-9), vannes);
+    var reponse = SORTIES_GOUTTE.indexOf(z.sortieGoutte) >= 0 ? z.sortieGoutte : null;
+    zones.push({ nom: z.nom || TYPES[z.type].nom, sorties: n, reponse: reponse });
+    sorties += n;
+  });
+  var vannes = combienGoutteAGoutte(d);
+  return { zones: zones, sorties: sorties, tesEgaux: Math.max(0, sorties - vannes) };
+}
+
 function manquants(d){
   var phrases = [];
   var marque = nomDeMarque(marqueCourante());
@@ -1684,6 +1732,20 @@ function manquants(d){
       phrases.push((z.nom || 'Une haie') + ' : la durée d’arrosage n’est pas calculée, il manque la largeur que sa ligne arrose.');
     }
   });
+  var sg = sortiesGoutte(d);
+  sg.zones.forEach(function(zg){
+    if (!zg.reponse){
+      phrases.push(zg.nom + ' : une seule ligne de goutte-à-goutte ou une boucle ? Ses raccords ne sont pas comptés.');
+    } else if (zg.reponse === 'ligne' && !RACCORD_LIGNE_SEULE){
+      phrases.push(zg.nom + ' : le raccord Palaplast d’une ligne seule n’est pas compté.');
+    }
+  });
+  // La pression au bout du tube : ni sa pression mini, ni son diamètre
+  // intérieur ne sont relevés (Aqua Plus 2026 p. 48 n'en dit rien). Le calcul
+  // ne la vérifie donc pas, et ce silence se dit (§4 ter, règle 3).
+  if (sg.zones.length){
+    phrases.push('Goutte-à-goutte : la pression au bout des lignes n’est pas vérifiée, la fiche du tube Toro manque.');
+  }
   if (d.secteurs.length && !CATALOGUE.nourrices[d.secteurs.length]){
     phrases.push('Nourrice de ' + d.secteurs.length + ' voies : aucune fiche, ses pièces ne sont pas comptées.');
   }
@@ -1836,17 +1898,37 @@ function listeMateriel(d){
   // confondre une fois le commentaire retiré : le té de ligne est taraudé
   // (25×3/4"×25), la jonction ne l'est pas (25×25×25), et le coude de fin est
   // un coude. Ce sont trois produits différents, pas trois emplois d'un même.
-  if (totalPointsReseau){
+  // Les sorties du goutte-à-goutte prennent les MÊMES pièces Ø25 que les
+  // lignes d'arroseurs : un coude taraudé par sortie, un té égal par sortie
+  // qui n'est pas la dernière de sa vanne (`sortiesGoutte`). Une référence, une
+  // ligne : elles s'additionnent à celles des arroseurs.
+  var sg = sortiesGoutte(d);
+  var coudesDeLigne = totalRangeesReseau + sg.sorties;
+  var jonctions = totalJonctionsReseau + sg.tesEgaux;
+  if (totalPointsReseau || sg.sorties){
     var teLigne = CATALOGUE.piecesReseau['te-taraude-25-34-25'];
     var coudeLigne = CATALOGUE.piecesReseau['coude-taraude-25-34'];
     var totalTesLigne = totalPointsReseau - totalRangeesReseau;
     if (totalTesLigne > 0) lignes.push({ ref:'te-taraude-25-34-25', nom: teLigne.nom, q: totalTesLigne, u:'u' });
-    lignes.push({ ref:'coude-taraude-25-34', nom: coudeLigne.nom, q: totalRangeesReseau, u:'u' });
-    if (totalJonctionsReseau > 0){
+    lignes.push({ ref:'coude-taraude-25-34', nom: coudeLigne.nom, q: coudesDeLigne, u:'u' });
+    if (jonctions > 0){
       var jonction = CATALOGUE.piecesReseau['te-25-25-25'];
-      lignes.push({ ref:'te-25-25-25', nom: jonction.nom, q: totalJonctionsReseau, u:'u' });
+      lignes.push({ ref:'te-25-25-25', nom: jonction.nom, q: jonctions, u:'u' });
     }
   }
+  // Ce qui se visse sur le coude, selon sa réponse par zone.
+  var palaplast = {};
+  var noterPalaplast = function(ref, q){ if (ref && q > 0) palaplast[ref] = (palaplast[ref] || 0) + q; };
+  sg.zones.forEach(function(zg){
+    if (zg.reponse === 'boucle') noterPalaplast('MID6321', zg.sorties);
+    if (zg.reponse === 'deux-bouts'){ noterPalaplast('MID6321', zg.sorties); noterPalaplast('MID6371', 2 * zg.sorties); }
+    if (zg.reponse === 'ligne'){ noterPalaplast(RACCORD_LIGNE_SEULE, zg.sorties); noterPalaplast('MID6371', zg.sorties); }
+  });
+  ['MID6321', 'MID6341', 'MID6352', 'MID6301', 'MID6371'].forEach(function(ref){
+    if (!palaplast[ref]) return;
+    var x = CATALOGUE.pieceAjoutable(ref);
+    lignes.push({ ref: ref, nom: x.nom, q: palaplast[ref], u:'u' });
+  });
   if (d.secteurs.length){
     // **Sa fiche de nourrice, ou rien.** Électrovanne, regard, clarinette,
     // programmateur : tout ce qu'il a relevé dans le regard, avec les VRAIES

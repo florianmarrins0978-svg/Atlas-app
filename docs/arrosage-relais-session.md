@@ -83,6 +83,19 @@ essais de la page publiée (78/78, 107/107) et les quatre maquettes d'arrosage.
    MID6301 avec un bouchon MID6371 au bout (une seule ligne), jamais de filtre,
    la commande en couronnes de 50 ou 100 m. La question « une ligne ou deux »
    se pose par zone (écran).
+
+   **Codé le 17 octobre 2026** (`sortiesGoutte`, `calcul.js`, les deux copies) :
+   sorties = max(⌈mètres ÷ 100⌉, vannes de la zone) ; par vanne un coude
+   taraudé par sortie, un té égal de moins ; sur le coude, selon
+   `z.sortieGoutte` : `'boucle'` MID6321, `'deux-bouts'` MID6321 et deux
+   MID6371, `'ligne'` un MID6371 (son raccord attend sa réponse :
+   `RACCORD_LIGNE_SEULE` reste `null`). Sans réponse, rien n'est compté et le
+   plan pose la question. **Trois questions lui sont posées** : le raccord d'une
+   ligne seule (MID6341, MID6352 ou MID6301) ; une référence en 100 m
+   (Aqua Plus ne vend l'UGGCBL23050 que par 50, la ligne du tube reste en
+   mètres) ; la fiche Toro du tube (pression mini, diamètre intérieur), sans
+   laquelle la pression au bout d'une ligne n'est pas vérifiée et le plan le
+   dit.
 2. **Les lignes de réseau en Ø32** : aujourd'hui toutes en Ø25 dans le calcul.
    Sa règle : Ø32 quand le Ø25 ne tient pas la pression, puis une vanne de plus ;
    le choix 25/32 à la fin ; raccords en 32 (OPL71403220, OPL71503220,

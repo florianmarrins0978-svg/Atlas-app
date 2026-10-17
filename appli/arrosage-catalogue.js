@@ -714,8 +714,10 @@ var CATALOGUE = {
      le catalogue Aqua Plus 2026 (raccords PE dont le Ø32, électrovannes,
      regards, programmateurs, tubes, goutte-à-goutte, robinetterie, électricité).
 
-     **Le calcul ne les compte pas** : il pose ses pièces à lui (nourrices,
-     réseau, arroseurs). Celles-ci ne servent qu'à compléter la liste.
+     **Le calcul n'en compte que cinq** : les pièces Palaplast d'une sortie de
+     goutte-à-goutte (MID6321, MID6341, MID6352, MID6301, MID6371), ses règles
+     du 16 octobre 2026 (`sortiesGoutte`). Les autres ne servent qu'à
+     compléter la liste.
      Désignation recopiée mot pour mot, page imprimée, AUCUN prix. Un doute du
      relevé reste écrit dans `aVerifier` : une tension lue dans un titre de
      section, une référence imprimée deux fois. */
@@ -1624,6 +1626,12 @@ CATALOGUE.piece = function (ref) {
   return CATALOGUE.piecesNourrice[ref] || null;
 };
 
+/* Une pièce Aqua Plus relevée, par sa référence : celles que le calcul compte
+   à la sortie du goutte-à-goutte se lisent ici, pas recopiées à côté. */
+CATALOGUE.pieceAjoutable = function (ref) {
+  return CATALOGUE.piecesAjoutables.filter(function (x) { return x.ref === ref; })[0] || null;
+};
+
 /* La fiche RÉELLEMENT posée pour N voies, DONT `combienGoutte` alimentent une
    zone goutte-à-goutte. La fiche de base (`CATALOGUE.nourrices[n]`) suppose
    tout en arroseur/tuyère ; sa consigne du 17 août modifie CHAQUE VOIE
@@ -1757,7 +1765,7 @@ CATALOGUE.busesDe = function (marqueCle, pourType) {
 CATALOGUE.referenceDe = function (cle) {
   if (!cle) return null;
   var listes = [CATALOGUE.buses, CATALOGUE.corps, CATALOGUE.coudes,
-                CATALOGUE.gaines, CATALOGUE.materiel];
+                CATALOGUE.gaines, CATALOGUE.materiel, CATALOGUE.piecesAjoutables];
   for (var i = 0; i < listes.length; i++) {
     var trouve = (listes[i] || []).filter(function (x) { return x.ref === cle; })[0];
     // **`releve` est le seul juge.** Une entrée sans relevé est une entrée
