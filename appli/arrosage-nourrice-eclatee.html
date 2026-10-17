@@ -58,6 +58,7 @@
   .clarinette .ph{max-width:170px;aspect-ratio:2}
   /* Sa correction du 17 octobre 2026 : chaque filetage tourné vers la pièce où il se visse. */
   .quart img{transform:rotate(90deg)}
+  .demi img{transform:rotate(180deg)}
   .vertical img{transform:rotate(90deg);max-width:70%}
   .hors-fiche .n::after{content:" (hors fiche)";color:#9C3B2E}
   .vide{border:1.5px dashed rgba(28,28,26,.2);border-radius:10px;font-size:10px;color:#8a8578}
@@ -97,7 +98,7 @@
 (function () {
   var CAT = window.CALCUL.CATALOGUE;
   var PHOTOS = { "clarinette-2v": "clarinette-2v.jpg", "coude-mf": "coude-mf.jpg", "coude-mm": null,
-    "electrovanne-100dv": "electrovanne-100dv.jpg", "mamelon": "mamelon.png", "vanne-purge": "vanne-purge.jpg",
+    "electrovanne-100dv": "electrovanne-100dv.jpg", "mamelon": "mamelon.jpg", "vanne-purge": "vanne-purge.jpg",
     "union": "union.jpg", "raccord-male25": "raccord-male25.jpg", "regard-rect12": "regard-rect12.jpg",
     "prog-4": "prog-4.jpg", "pile-9v": "pile-9v.jpg", "connexion": "connexion.jpg", "mamelon-droit-1": "mamelon-droit-1.jpg",
     "pehd": "pehd.jpg", "OPL70302520": null };
@@ -133,9 +134,12 @@
   g += piece("clarinette-2v", { cls: "clarinette", style: "grid-row:1", legende: nom("clarinette-2v") });
   g += piece("coude-mf", { cls: "quart", style: col(4, 1), legende: "Coude MF 1\"" });
   // L'arrivée d'eau, à gauche, de haut en bas.
-  g += piece("mamelon", { cls: "relie", style: col(1, 2), legende: "Mamelon MM 1\"-3/4\"" });
+  // Le même mamelon réduit 1" x 3/4" des deux côtés de la vanne (sa photo du
+  // 17 octobre 2026) : au-dessus retourné, le 1" vers le coude ; en dessous, le
+  // 3/4" vers la vanne.
+  g += piece("mamelon", { cls: "relie demi", style: col(1, 2), legende: "Mamelon MM 1\"-3/4\"" });
   g += piece("vanne-purge", { cls: "relie quart", style: col(1, 3), legende: "Vanne 3/4\" FF" });
-  g += piece("mamelon", { cls: "relie", style: col(1, 4), legende: "Mamelon MM" });
+  g += piece("mamelon", { cls: "relie", style: col(1, 4), legende: "Mamelon MM 1\"-3/4\"" });
   g += piece("OPL70302520", { cls: "relie hors-fiche", style: col(1, 5), legende: "Plasson raccord femelle 25 x 3/4\"" });
   g += piece("pehd", { cls: "relie vertical", style: col(1, 6), legende: "PEHD Ø25, l’arrivée" });
   // Les trois voies, comptées de la droite : la 1 sous le coude, la 2 et la 3 sous la clarinette.
