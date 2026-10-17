@@ -1658,13 +1658,13 @@ var CALCUL = (() => {
       }
     },
     piecesReseau: {
-      "te-taraude-25-34-25": { nom: 'T\xE9 90\xB0 taraud\xE9 25\xD73/4"\xD725', marque: "Dura" },
-      "coude-taraude-25-34": { nom: 'Coude 90\xB0 taraud\xE9 25\xD73/4"', marque: "Dura" },
+      "te-taraude-25-34-25": { nom: 'T\xE9 90\xB0 taraud\xE9 25\xD73/4"\xD725', marque: "Plasson" },
+      "coude-taraude-25-34": { nom: 'Coude 90\xB0 taraud\xE9 25\xD73/4"', marque: "Plasson" },
       // Le « (jonction, non taraudé) » qui suivait ce nom a été retiré le 18 août
       // sur sa consigne : c'est l'emploi de la pièce, pas sa désignation, et il
       // commande sur la désignation. Le 25×25×25 dit déjà qu'il n'est pas taraudé
       // — un taraudé porte son filetage dans son nom (25×3/4"×25).
-      "te-25-25-25": { nom: "T\xE9 90\xB0 25\xD725\xD725", marque: "Dura" },
+      "te-25-25-25": { nom: "T\xE9 90\xB0 25\xD725\xD725", marque: "Plasson" },
       "pebd16": { nom: "PEBD rigide \xD816 (tube de reprise)", marque: "Dura", unite: "ml" }
     },
     /* ── Le goutte-à-goutte : SON tube, le 16 octobre 2026 ──────────────────
@@ -2496,19 +2496,19 @@ var CALCUL = (() => {
       "union": { nom: 'Union droite taraud\xE9e MM 1"', marque: "Dura" },
       "vanne-purge": { nom: 'Vanne avec vis de purge 3/4"', marque: "Dura" },
       "electrovanne-100dv": { nom: '\xC9lectrovanne 100 DV 1" MM 9V', marque: "Rain Bird" },
-      "raccord-male25": { nom: 'Raccord m\xE2le 25 1"', marque: "Dura" },
+      "raccord-male25": { nom: 'Raccord m\xE2le 25 1"', marque: "Plasson" },
       "regard-rect12": { nom: 'Regard rectangle 12"', marque: "Dura" },
       "regard-rg17106": { nom: "Regard jumbo RG17106", marque: "Dura" },
       "regard-jumbo5": { nom: "Regard jumbo 5 voies", marque: "Dura" },
       "regard-jumbo6": { nom: "Regard jumbo 6 voies", marque: "Dura" },
       "te-mmf": { nom: 'T\xE9 taraud\xE9/filet\xE9 1" MMF', marque: "Dura" },
-      "clarinette-2v": { nom: 'Clarinette taraud\xE9e 1" pour 2 vannes', marque: "Dura" },
-      "clarinette-3v": { nom: 'Clarinette taraud\xE9e 1" pour 3 vannes', marque: "Dura" },
-      "clarinette-4v": { nom: 'Clarinette taraud\xE9e 1" pour 4 vannes', marque: "Dura" },
-      "prog-1": { nom: "Programmateur BL-IP 1 station 9V" },
-      "prog-2": { nom: "Programmateur BL-IP 2 stations 9V" },
-      "prog-4": { nom: "Programmateur BL-IP 4 stations 9V" },
-      "prog-6": { nom: "Programmateur BL-IP 6 stations 9V" },
+      "clarinette-2v": { nom: 'Collecteur M x F x 2 sorties 1"', marque: "Dura" },
+      "clarinette-3v": { nom: 'Collecteur M x F x 3 sorties 1"', marque: "Dura" },
+      "clarinette-4v": { nom: 'Collecteur M x F x 4 sorties 1"', marque: "Dura" },
+      "prog-1": { nom: "Programmateur BL-IP 1 station 9V", marque: "Solem" },
+      "prog-2": { nom: "Programmateur BL-IP 2 stations 9V", marque: "Solem" },
+      "prog-4": { nom: "Programmateur BL-IP 4 stations 9V", marque: "Solem" },
+      "prog-6": { nom: "Programmateur BL-IP 6 stations 9V", marque: "Solem" },
       "pile-9v": { nom: "Pile alcaline 9V" },
       "connexion": { nom: "Connexion \xE9tanche" },
       /* ── Modification GOUTTE-À-GOUTTE — reçue le 17 août 2026 ───────────────
@@ -2975,6 +2975,7 @@ var CALCUL = (() => {
     haie: { nom: "Haie", forme: "lineaire", famille: "arbustes" },
     potager: { nom: "Potager", forme: "nappe", famille: "potager", ecartLignes: 0.7 }
   };
+  var LARGEUR_ARROSEE_PAR_LIGNE = 1;
   var MARGE = 0.85;
   var RECOUVREMENT_MIN = 0.8;
   var RECOUVREMENT_MAX = 1;
@@ -3354,8 +3355,10 @@ var CALCUL = (() => {
       r.lignes = n2;
       r.nombre = Math.round(ml * n2);
       r.debit = r.nombre * m.debitMetre;
+      r.largeurArrosee = LARGEUR_ARROSEE_PAR_LIGNE;
     }
-    var pluvio = m.type === "gaine" ? r.ecartLignes ? m.debitMetre * 1e3 / r.ecartLignes : null : m.pluvio;
+    var bande = r.ecartLignes || r.largeurArrosee;
+    var pluvio = m.type === "gaine" ? bande ? m.debitMetre * 1e3 / bande : null : m.pluvio;
     r.dureeInconnue = passages > 0 && !pluvio;
     r.minutes = passages > 0 && pluvio ? Math.round(besoin / passages / pluvio * 60) : 0;
     return r;
@@ -3691,7 +3694,7 @@ var CALCUL = (() => {
     });
     etat.zones.forEach(function(z) {
       if (poser(z).dureeInconnue) {
-        phrases.push((z.nom || "Une haie") + " : la dur\xE9e d\u2019arrosage n\u2019est pas calcul\xE9e, il manque la largeur que sa ligne arrose.");
+        phrases.push((z.nom || "Une zone") + " : la dur\xE9e d\u2019arrosage n\u2019est pas calcul\xE9e.");
       }
     });
     var sg = sortiesGoutte(d);

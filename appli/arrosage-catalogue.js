@@ -677,13 +677,13 @@ var CATALOGUE = {
   },
 
   piecesReseau: {
-    'te-taraude-25-34-25': { nom:'Té 90° taraudé 25×3/4"×25', marque:'Dura' },
-    'coude-taraude-25-34': { nom:'Coude 90° taraudé 25×3/4"', marque:'Dura' },
+    'te-taraude-25-34-25': { nom:'Té 90° taraudé 25×3/4"×25', marque:'Plasson' },
+    'coude-taraude-25-34': { nom:'Coude 90° taraudé 25×3/4"', marque:'Plasson' },
     // Le « (jonction, non taraudé) » qui suivait ce nom a été retiré le 18 août
     // sur sa consigne : c'est l'emploi de la pièce, pas sa désignation, et il
     // commande sur la désignation. Le 25×25×25 dit déjà qu'il n'est pas taraudé
     // — un taraudé porte son filetage dans son nom (25×3/4"×25).
-    'te-25-25-25':         { nom:'Té 90° 25×25×25', marque:'Dura' },
+    'te-25-25-25':         { nom:'Té 90° 25×25×25', marque:'Plasson' },
     'pebd16':              { nom:'PEBD rigide Ø16 (tube de reprise)', marque:'Dura', unite:'ml' }
   },
 
@@ -1502,19 +1502,19 @@ var CATALOGUE = {
     'union':         { nom:'Union droite taraudée MM 1"', marque:'Dura' },
     'vanne-purge':   { nom:'Vanne avec vis de purge 3/4"', marque:'Dura' },
     'electrovanne-100dv': { nom:'Électrovanne 100 DV 1" MM 9V', marque:'Rain Bird' },
-    'raccord-male25':{ nom:'Raccord mâle 25 1"', marque:'Dura' },
+    'raccord-male25':{ nom:'Raccord mâle 25 1"', marque:'Plasson' },
     'regard-rect12': { nom:'Regard rectangle 12"', marque:'Dura' },
     'regard-rg17106':{ nom:'Regard jumbo RG17106', marque:'Dura' },
     'regard-jumbo5': { nom:'Regard jumbo 5 voies', marque:'Dura' },
     'regard-jumbo6': { nom:'Regard jumbo 6 voies', marque:'Dura' },
     'te-mmf':        { nom:'Té taraudé/fileté 1" MMF', marque:'Dura' },
-    'clarinette-2v': { nom:'Clarinette taraudée 1" pour 2 vannes', marque:'Dura' },
-    'clarinette-3v': { nom:'Clarinette taraudée 1" pour 3 vannes', marque:'Dura' },
-    'clarinette-4v': { nom:'Clarinette taraudée 1" pour 4 vannes', marque:'Dura' },
-    'prog-1':        { nom:'Programmateur BL-IP 1 station 9V' },
-    'prog-2':        { nom:'Programmateur BL-IP 2 stations 9V' },
-    'prog-4':        { nom:'Programmateur BL-IP 4 stations 9V' },
-    'prog-6':        { nom:'Programmateur BL-IP 6 stations 9V' },
+    'clarinette-2v': { nom:'Collecteur M x F x 2 sorties 1"', marque:'Dura' },
+    'clarinette-3v': { nom:'Collecteur M x F x 3 sorties 1"', marque:'Dura' },
+    'clarinette-4v': { nom:'Collecteur M x F x 4 sorties 1"', marque:'Dura' },
+    'prog-1':        { nom:'Programmateur BL-IP 1 station 9V', marque:'Solem' },
+    'prog-2':        { nom:'Programmateur BL-IP 2 stations 9V', marque:'Solem' },
+    'prog-4':        { nom:'Programmateur BL-IP 4 stations 9V', marque:'Solem' },
+    'prog-6':        { nom:'Programmateur BL-IP 6 stations 9V', marque:'Solem' },
     'pile-9v':       { nom:'Pile alcaline 9V' },
     'connexion':     { nom:'Connexion étanche' },
 

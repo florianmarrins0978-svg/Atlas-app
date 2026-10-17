@@ -123,7 +123,7 @@ c'est le côté sûr.
 | Entrée | Ce qui manque |
 |---|---|
 | « Regard jumbo 5 voies », « Regard jumbo 6 voies » | aucun regard ne porte ce nom. Aqua Plus vend le Jumbo VB1220, le Super Jumbo VB1324 et le Maxi Jumbo VB1730 |
-| « Clarinette taraudée 1" pour 2, 3, 4 vannes » | Aqua Plus vend des « DURA Collecteur M x F x 2, 3, 4 sorties 1" » (ODU3010102 à 104). Peut-être les mêmes pièces sous un autre nom |
+| ~~« Clarinette taraudée 1" pour 2, 3, 4 vannes »~~ | **réglé le 17 octobre 2026** : ce sont les « DURA Collecteur M x F x 2, 3, 4 sorties 1" » (ODU3010102 à 104), sa réponse ; le catalogue porte ce nom. La 2 sorties sert une nourrice de 3 réseaux, la 3 sorties une de 4, la 4 sorties une de 5 ou 6 |
 | « Vanne avec vis de purge 3/4" », Dura | Aqua Plus vend une « vanne 1/4 de tour + purge FF 3/4" » (BVA932), sans marque |
 | Les références de buses de turbine | **voir ci-dessous** |
 
