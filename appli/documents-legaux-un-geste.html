@@ -83,6 +83,7 @@
   .principal{width:100%;border:0;border-radius:999px;padding:16px;
              background:var(--encre);color:var(--nuit);font:400 17px/1 ui-serif,Georgia,serif;cursor:pointer}
   .principal[disabled]{opacity:.6}
+  .sortie[hidden]{display:none}
   .sortie{display:block;width:100%;min-height:44px;margin-top:4px;border:0;background:none;
           color:var(--gris);font:400 14px/1.4 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;cursor:pointer}
 
@@ -100,6 +101,15 @@
   .lu p{margin:0 0 12px}
   .lu b{color:var(--encre);font-weight:600}
   .lu .note{padding-left:12px;border-left:1.6px solid rgba(233,232,222,.24)}
+
+  /* Refuser une nouvelle version : ses données d'abord, la résiliation ensuite. */
+  .refus{padding:22px 22px 0}
+  .refus p{margin:0 0 20px;font-size:15px;line-height:1.55;color:var(--doux)}
+  .geste{display:block;width:100%;min-height:52px;margin-bottom:10px;border-radius:999px;
+         border:1px solid rgba(233,232,222,.24);background:none;color:var(--encre);
+         font:inherit;font-size:16px;cursor:pointer}
+  .geste.fait{border-color:transparent;background:var(--carte);color:var(--doux)}
+  .geste:focus-visible{outline:2px solid var(--or);outline-offset:2px}
 
   .notes{max-width:390px;margin:20px auto 0;font-size:13.5px;line-height:1.6;color:var(--doux)}
   .notes h3{margin:22px 0 8px;font-size:11px;font-weight:500;letter-spacing:.28em;
@@ -138,7 +148,8 @@
 
   <div class="pied">
     <button type="button" class="principal" data-accepter>Accepter</button>
-    <button type="button" class="sortie">Se déconnecter</button>
+    <button type="button" class="sortie" data-sortie>Se déconnecter</button>
+    <button type="button" class="sortie" data-refuser hidden>Refuser</button>
   </div>
 
   <section class="feuille" data-feuille="cgu" aria-hidden="true">
@@ -159,6 +170,15 @@
       <p><b>Nous sommes sous-traitant.</b> Nous traitons ces données uniquement sur vos instructions, pour vous permettre d'utiliser Atlas.</p>
     </div>
   </section>
+
+  <section class="feuille" data-feuille="refus" aria-hidden="true">
+    <header><h2 class="serif">Refuser la nouvelle version</h2><button type="button" class="fermer" data-fermer>Fermer</button></header>
+    <div class="refus">
+      <p>Vos données restent à vous. Récupérez-les, puis résiliez sans frais.</p>
+      <button type="button" class="geste" data-geste="export">Récupérer mes données</button>
+      <button type="button" class="geste" data-geste="resilier">Résilier sans frais</button>
+    </div>
+  </section>
 </div>
 
 <div class="notes">
@@ -166,7 +186,8 @@
   <ul>
     <li>Plus de case à cocher. Une phrase dit que toucher « Accepter » vaut accord sur les documents listés.</li>
     <li>Chaque document s'ouvre en entier, sur tout l'écran, avant d'accepter.</li>
-    <li>Un seul bouton, « Accepter », toujours en bas. « Se déconnecter » reste la seule sortie.</li>
+    <li>Un seul bouton, « Accepter », toujours en bas. À la première fois, « Se déconnecter » reste la seule sortie.</li>
+    <li>Quand les conditions changent, un client déjà là peut refuser : il récupère ses données, puis résilie sans frais, comme ses conditions le lui promettent (article 15).</li>
     <li>La preuve ne change pas : une ligne par document, avec la date, l'heure et la version.</li>
   </ul>
   <h3>À trancher</h3>
@@ -188,13 +209,25 @@ function etat(nom){
   document.querySelector("[data-titre]").textContent =
     nom === "nouvelle" ? "Les conditions ont changé" : "Avant de commencer";
   document.querySelector("[data-engage]").textContent = PHRASE[nom];
+  document.querySelector("[data-sortie]").hidden = nom === "nouvelle";
+  document.querySelector("[data-refuser]").hidden = nom !== "nouvelle";
 }
 
 document.querySelectorAll(".rangee").forEach(r => r.addEventListener("click", () => {
   const f = document.querySelector('[data-feuille="' + r.dataset.doc + '"]');
   f.classList.add("ouverte");
   f.setAttribute("aria-hidden", "false");
-  f.querySelector("[data-fermer]").focus();
+  f.querySelector("[data-fermer]").focus({ preventScroll: true });
+}));
+document.querySelector("[data-refuser]").addEventListener("click", () => {
+  const f = document.querySelector('[data-feuille="refus"]');
+  f.classList.add("ouverte");
+  f.setAttribute("aria-hidden", "false");
+  f.querySelector("[data-fermer]").focus({ preventScroll: true });
+});
+document.querySelectorAll("[data-geste]").forEach(b => b.addEventListener("click", () => {
+  b.classList.add("fait");
+  b.textContent = b.dataset.geste === "export" ? "Données téléchargées" : "Résiliation enregistrée";
 }));
 document.querySelectorAll("[data-fermer]").forEach(b => b.addEventListener("click", () => {
   const f = b.closest(".feuille");
