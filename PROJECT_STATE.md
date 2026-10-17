@@ -5,6 +5,13 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## LA FEUILLE D'ENVOI SUR UNE PAGE VIEILLIE (17 octobre 2026)
+
+Un jour touché, l'envoi et la préparation disent « Rien n'est parti. Rechargez
+la page. » quand l'action est inconnue du serveur (bascule de version sous une
+page ouverte). `scripts/test-envoi-page-vieillie-e2e.ts` (3). Détail :
+`CHANGELOG.md` du 17 octobre.
+
 ## LE DEVIS SANS GLISSEMENT, SA CROIX PLUS LOIN DU TEXTE (16 octobre 2026), PAS ENCORE SUR `main`
 
 Branche `claude/devis-croix-plus-a-droite`. La ligne du devis ne glisse plus

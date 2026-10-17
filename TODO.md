@@ -1,5 +1,15 @@
 # Prochaines tâches
 
+## 🔜 UNE PAGE OUVERTE AVANT UNE BASCULE RESTE VIEILLIE — 17 octobre 2026
+
+La feuille d'envoi et le planning disent maintenant « Rechargez la page »
+quand une action est inconnue du serveur. Les autres écrans, non : leurs
+gestes échouent avec la phrase de secours de chacun, qui ne dit pas de
+recharger. La racine est la bascule de version sous une page ouverte ; un
+remède commun (reconnaître le refus une fois pour toute l'application, sans
+recharger d'office une page où il saisit) reste à concevoir. Détail :
+`CHANGELOG.md` du 17 octobre.
+
 ## ⏳ ARROSAGE : CE QUE LA CORRECTION DE LA PRESSION DE CHOIX LAISSE OUVERT — 16 octobre 2026
 
 | | qui |

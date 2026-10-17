@@ -10,6 +10,20 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LA FEUILLE D'ENVOI SUR UNE PAGE VIEILLIE (17 octobre 2026)
+
+**Le piège à ne pas refaire** : sa plainte « je ne peux plus choisir de date,
+ni envoyer » arrivait quatre minutes après une bascule de version de son
+espace (la fiche l'horodate). Rejouée ici sur la version servie, la feuille
+marchait. La cause était sa page, ouverte d'avant. Lire la fiche AVANT de
+chercher dans le produit (`CLAUDE.md` §1 bis, `AGENTS.md`).
+
+**Ce qui est fait** : `EnvoiAuClient.tsx` reconnaît une action inconnue
+(`unstable_isUnrecognizedActionError` de `next/navigation`) et écrit
+`PAGE_VIEILLIE` au pied. **Pour éprouver une page vieillie sans rebâtir** :
+réécrire l'en-tête `next-action` des requêtes avec un identifiant inconnu,
+c'est le vrai serveur qui répond « inconnue » (voir la suite).
+
 ## LE DEVIS SANS GLISSEMENT : branche `claude/devis-croix-plus-a-droite` (16 octobre 2026)
 
 **Ce qui est fait** : sur le devis seulement, plus de glissement ; la croix

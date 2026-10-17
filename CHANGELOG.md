@@ -6,6 +6,25 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-17
+
+- **La feuille d'envoi dit « Rien n'est parti. Rechargez la page. » quand sa
+  page date d'avant une mise à jour.** Sa panne du soir : *« je ne peux plus
+  choisir deux dates, ni même envoyer le devis avec une seule »*. Son espace
+  avait basculé de 5fa7ce1 à df3c822 sous sa feuille ouverte (fiche de
+  l'espace : 20 h 59 en construction, 21 h 14 basculé ; capture à 21 h 04).
+  Toutes les actions de la page étaient refusées comme inconnues ; l'écran
+  disait « Réessayez » dans la fiche du jour, cachée sous le pied collé, puis
+  la phrase anglaise de Next.js à l'envoi. Le jour touché, l'envoi et la
+  préparation reconnaissent désormais ce refus
+  (`unstable_isUnrecognizedActionError`) et disent le seul geste qui répare,
+  au pied, à côté du bouton. **Le produit n'avait pas de défaut** : sur la
+  version servie, deux dates se choisissent et partent (suite des deux dates
+  verte, et son cas exact rejoué : 29 octobre, Lafonte sans équipe).
+  `scripts/test-envoi-page-vieillie-e2e.ts`, vue rouge avant la correction.
+  Ce qui reste, et n'est pas corrigé : une page ouverte avant une bascule
+  reste vieillie partout ailleurs que sur ce geste et le planning (`TODO.md`).
+
 ## 2026-10-16
 
 - **Les arroseurs se posent entre 80 et 100 % de recouvrement, se brident à la
