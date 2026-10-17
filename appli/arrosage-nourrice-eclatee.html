@@ -94,7 +94,7 @@
   var CAT = window.CALCUL.CATALOGUE;
   var PHOTOS = { "clarinette-2v": "clarinette-2v.jpg", "coude-mf": "coude-mf.jpg", "coude-ff": "coude-ff.png", "coude-mm": null,
     "electrovanne-100dv": "electrovanne-100dv.jpg", "mamelon": "mamelon.jpg", "vanne-purge": "vanne-purge.jpg",
-    "union": "union.jpg", "raccord-male25": "raccord-male25.jpg", "regard-rect12": "regard-rect12.jpg",
+    "union": "union.png", "raccord-male25": "raccord-male25.jpg", "regard-rect12": "regard-rect12.jpg",
     "prog-4": "prog-4.jpg", "pile-9v": "pile-9v.jpg", "connexion": "connexion.jpg", "mamelon-droit-1": "mamelon-droit-1.jpg",
     "pehd": "pehd.jpg", "OPL70302520": "OPL70302520.jpg" };
   var $ = function (id) { return document.getElementById(id); };
@@ -137,7 +137,7 @@
   var LEGENDE = [
     ["coude-mf", "Coude MF 1\""], ["coude-ff", "DURA Coude 1\" FF"], ["clarinette-2v", nom("clarinette-2v")], ["mamelon", "Mamelon réduit MM 1\" x 3/4\""],
     ["vanne-purge", "Vanne 3/4\" FF"], ["OPL70302520", "Plasson raccord femelle 25 x 3/4\" (hors fiche, photo à valider)"],
-    ["pehd", "PEHD Ø25"], ["electrovanne-100dv", nom("electrovanne-100dv")]
+    ["pehd", "PEHD Ø25"], ["electrovanne-100dv", nom("electrovanne-100dv")], ["union", nom("union")]
   ];
   var numero = function (ref) { for (var i = 0; i < LEGENDE.length; i++) if (LEGENDE[i][0] === ref) return i + 1; return 0; };
   // h : hauteur dessinée (px) ; rot : quart de tour à droite ; demi : retourné ;
@@ -160,7 +160,8 @@
     "vanne-purge":        { a: [0.02, 0.79], b: [0.61, 0.73], L: 40 },
     "OPL70302520":        { a: [0.08, 0.66], b: [0.98, 0.27], L: 40 },
     "pehd":               { a: [0, 0.5], b: [1, 0.5], L: 44 },
-    "electrovanne-100dv": { a: [0.01, 0.88], b: [0.99, 0.88], L: 50 }
+    "electrovanne-100dv": { a: [0.01, 0.88], b: [0.99, 0.88], L: 50 },
+    "union":              { a: [0.5, 0.03], b: [0.5, 0.98], L: 30 }
   };
   var images = {};
   function charger(ref) {
@@ -244,12 +245,16 @@
     y = poser("mamelon-demi", xL, y) + ECART;
     y = poser("vanne-purge", xL, y) + ECART;
     y = poser("mamelon", xL, y) + ECART;
+    // L'union Dura, qui permet de démonter (sa correction du 18 octobre 2026).
+    y = poser("union", xL, y) + ECART;
     y = poser("OPL70302520", xL, y) + ECART;
     var fin = poser("pehd", xL, y);
     // Les trois voies, comptées de la droite.
     var voies = [[x1, 1], [x2, 2], [x3, 3]], etiquettes = [];
     voies.forEach(function (v) {
       var yv = poser("electrovanne-100dv", v[0], bas) + ECART;
+      // Entre l'électrovanne et le raccord Plasson, l'union Dura (18 octobre 2026).
+      yv = poser("union", v[0], yv) + ECART;
       // Sous l'électrovanne, le raccord Plasson 25 TARAUDÉ 3/4" (sa correction :
       // « les 8, c'est des 25 taraudés 3/4 »), le même qu'au bas de l'arrivée.
       yv = poser("OPL70302520", v[0], yv) + ECART;
