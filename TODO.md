@@ -208,7 +208,7 @@ barrée de rouge, et sort de la liste). Codé dans la planche.
 
 **LA NOURRICE ÉCLATÉE, LE MODÈLE VALIDÉ** — sa réponse du 18 octobre 2026 sur la
 nourrice de 3 voies : « parfait, c'est exactement ça ; lorsqu'on est sur des
-électrovannes MM, c'est ce schéma-là ». 
+électrovannes MM, c'est ce schéma-là ». `appli/arrosage-nourrice-eclatee.html`
 (lien privé https://claude.ai/artifact/JEXjH6tjyFLQJKePMUEBZc) : la clarinette
 fermée (coude MF à gauche, coude Dura FF à droite), l'arrivée à gauche
 (mamelon réduit, vanne FF, mamelon réduit, union MF, raccord femelle Plasson
