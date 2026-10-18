@@ -491,7 +491,7 @@
       });
       if (s.famille === "Goutte-à-goutte") {
         var g = CAT.gaines[0];
-        lignes += '<li><span class="q"></span><span>' + texte("Goutte-à-goutte Toro, " + g.detail + ", " + (etat.sortie === "boucle" ? "en boucle" : "une seule ligne")) + "</span></li>";
+        lignes += '<li><span class="q"></span><span>' + texte("Goutte-à-goutte Toro, " + g.detail + ", " + (etat.sortie === "boucle" ? "deux lignes en circuit fermé" : "une seule ligne")) + "</span></li>";
       }
       // « 83 min » seul ne se comprenait pas (sa question du 18 octobre 2026) :
       // c'est la durée d'UN arrosage, à la saison que le calcul retient.
@@ -591,9 +591,9 @@
       jardin += '<div class="reseau" style="--couleur:' + c + '"><div class="reseau-titre"><span class="pastille"></span><b>Réseau ' + (i + 1) + "</b><span>" + texte(s.nom) + "</span></div>";
       // Ligne ou boucle : posé AU-DESSUS du réseau qu'il change (sa demande du
       // 18 octobre 2026), pour qu'on voie les pièces changer juste dessous.
-      if (s.famille === "Goutte-à-goutte") jardin += '<div class="chips" role="group" aria-label="Ligne ou boucle">' +
+      if (s.famille === "Goutte-à-goutte") jardin += '<div class="chips" role="group" aria-label="Une ligne ou un circuit fermé">' +
         '<button type="button" data-sortie="ligne" aria-pressed="' + (etat.sortie === "ligne") + '">Une seule ligne</button>' +
-        '<button type="button" data-sortie="boucle" aria-pressed="' + (etat.sortie === "boucle") + '">Deux, en boucle</button></div>';
+        '<button type="button" data-sortie="boucle" aria-pressed="' + (etat.sortie === "boucle") + '">Deux, en circuit fermé</button></div>';
       // La couronne que vend son fournisseur : 50 m ou 100 m (sa demande du 18 octobre 2026).
       if (s.famille === "Goutte-à-goutte") jardin += '<div class="chips" role="group" aria-label="Couronnes">' +
         '<button type="button" data-couronne="50" aria-pressed="' + (etat.couronne === 50) + '">Couronnes de 50 m</button>' +
