@@ -1,0 +1,1088 @@
+[
+ {
+  "forme": "toro-evo-4id",
+  "nom": "Programmateur Toro Evolution 4 voies intérieur",
+  "refs": [
+   "TPEVO4IDEU"
+  ],
+  "fichier": "toro-evo-4id-1.jpg",
+  "montre": "Evolution intérieur, couvercle fermé, cordon secteur visible en bas",
+  "vise": "EVO-4ID intérieur",
+  "preuve": "page dédiée à l'EVO-4ID, image propre à cette page",
+  "source": "https://www.sprinklersupplystore.com/products/toro-4-station-indoor-controller",
+  "image": "https://cdn.shopify.com/s/files/1/1987/5531/products/EVO-4ID_e17b60bf-a9fa-4bd7-a93e-e9aef5762f4b.jpg?v=1617471979",
+  "site": "sprinklersupplystore.com",
+  "doute": "Modèle américain : la version EU d'Aqua Plus a sans doute une prise européenne."
+ },
+ {
+  "forme": "toro-evo-4id",
+  "nom": "Programmateur Toro Evolution 4 voies intérieur",
+  "refs": [
+   "TPEVO4IDEU"
+  ],
+  "fichier": "toro-evo-4id-2.jpg",
+  "montre": "Evolution intérieur, couvercle ouvert",
+  "vise": "EVO-4ID intérieur",
+  "preuve": "page dédiée à l'EVO-4ID, image propre à cette page",
+  "source": "https://www.sprinklersupplystore.com/products/toro-4-station-indoor-controller",
+  "image": "https://cdn.shopify.com/s/files/1/1987/5531/products/EVO-4ID.jpg?v=1617471976",
+  "site": "sprinklersupplystore.com",
+  "doute": "Modèle américain, prise à vérifier."
+ },
+ {
+  "forme": "toro-evo-4od",
+  "nom": "Programmateur Toro Evolution 4 voies extérieur",
+  "refs": [
+   "TPEVO4ODEU"
+  ],
+  "fichier": "toro-evo-4od-1.jpg",
+  "montre": "Evolution extérieur, coffret ouvert",
+  "vise": "EVO-4OD extérieur",
+  "preuve": "page dédiée à l'EVO-4OD, fichier nommé EVO-4OD",
+  "source": "https://www.sprinklersupplystore.com/products/toro-evo-4od-4-station-outdoor-controller",
+  "image": "https://cdn.shopify.com/s/files/1/1987/5531/products/EVO-4OD-2_ec06626d-853c-4d10-b906-4ff8943bc436.jpg?v=1503337599",
+  "site": "sprinklersupplystore.com",
+  "doute": "L'intérieur et l'extérieur se ressemblent beaucoup."
+ },
+ {
+  "forme": "toro-emod-4",
+  "nom": "Module d'extension Toro Evolution 4 voies",
+  "refs": [
+   "TPEMOD4"
+  ],
+  "fichier": "toro-emod-4-1.png",
+  "montre": "module marqué EMOD4, 4 bornes",
+  "vise": "EMOD-4",
+  "preuve": "marquage EMOD4 lu sur la pièce",
+  "source": "https://cheapsprinklers.com/products/toro-emod-4-4-station-expansion-module-for-evolution-controller",
+  "image": "https://cdn.shopify.com/s/files/1/0167/3543/6900/files/EMOD4.png?v=1766436680",
+  "site": "cheapsprinklers.com",
+  "doute": ""
+ },
+ {
+  "forme": "toro-emod-12",
+  "nom": "Module d'extension Toro Evolution 12 voies",
+  "refs": [
+   "TPEMOD12"
+  ],
+  "fichier": "toro-emod-12-1.jpg",
+  "montre": "module marqué EMOD12, bornes 5 à 16",
+  "vise": "EMOD-12",
+  "preuve": "marquage EMOD12 lu sur la pièce",
+  "source": "https://www.sprinklersupplystore.com/products/toro-12-station-module",
+  "image": "https://cdn.shopify.com/s/files/1/1987/5531/products/EMOD-12-2_fa1ac208-c2f8-4d1f-b11b-a8830e7e27dd.jpg?v=1503337537",
+  "site": "sprinklersupplystore.com",
+  "doute": ""
+ },
+ {
+  "forme": "toro-tempus",
+  "nom": "Programmateur Toro Tempus intérieur",
+  "refs": [
+   "TPTEMP-4",
+   "TPTEMP-6",
+   "TPTEMP-8"
+  ],
+  "fichier": "toro-tempus-1.png",
+  "montre": "façade du Tempus intérieur, sans nombre de voies visible",
+  "vise": "Tempus 4, 6 et 8 voies, transformateur externe",
+  "preuve": "photo de la page fabricant de la gamme Tempus ; le nombre de voies ne se voit pas sur la façade",
+  "source": "https://www.toro.com/en-gb/product/TEMPUS-Series-Controller",
+  "image": "https://cdn.thetorocompany.com/api/assetstorage/623_3dcf5bf3-5a32-4433-b3c9-26444c6327dd/Large",
+  "site": "toro.com",
+  "doute": "Une seule photo pour la gamme : la façade est la même en 4, 6 et 8 voies, rien ne les distingue de l'extérieur."
+ },
+ {
+  "forme": "rb-esp-tm2",
+  "nom": "Programmateur Rain Bird ESP-TM2",
+  "refs": [
+   "RP3242",
+   "RP3193",
+   "RP3146",
+   "RP3147"
+  ],
+  "fichier": "rb-esp-tm2-1.jpg",
+  "montre": "ESP-TM2 de face, couvercle fermé",
+  "vise": "ESP-TM2 4, 6, 8 et 12 stations",
+  "preuve": "marquage ESP-TM2 lu sur la façade ; photo de la page fabricant",
+  "source": "https://www.rainbird.com/fr/products/programmateurs-de-la-serie-esp-tm2",
+  "image": "https://www.rainbird.com/sites/default/files/media/images/2019-02/esp-tm2_front_0.jpg",
+  "site": "rainbird.com",
+  "doute": "Une photo pour les quatre tailles : le nombre de stations ne se lit pas sur la façade."
+ },
+ {
+  "forme": "rb-esp-tm2",
+  "nom": "Programmateur Rain Bird ESP-TM2",
+  "refs": [
+   "RP3242",
+   "RP3193",
+   "RP3146",
+   "RP3147"
+  ],
+  "fichier": "rb-esp-tm2-2.jpg",
+  "montre": "ESP-TM2 ouvert, bornier visible",
+  "vise": "ESP-TM2 4, 6, 8 et 12 stations",
+  "preuve": "photo de la page fabricant",
+  "source": "https://www.rainbird.com/fr/products/programmateurs-de-la-serie-esp-tm2",
+  "image": "https://www.rainbird.com/sites/default/files/media/images/2019-03/esp-tm2_dooropen.jpg",
+  "site": "rainbird.com",
+  "doute": "Ce cliché ne prouve pas une taille précise."
+ },
+ {
+  "forme": "rb-lnk2",
+  "nom": "Clé WiFi Rain Bird LNK2",
+  "refs": [
+   "RP3315"
+  ],
+  "fichier": "rb-lnk2-1.jpg",
+  "montre": "module LNK2 de face",
+  "vise": "clé LNK WiFi pour ESP-ME3, ESP-TM2 et RZXe",
+  "preuve": "page fabricant du module LNK2",
+  "source": "https://www.rainbird.com/fr/products/controle-ameliore-lnk2",
+  "image": "https://www.rainbird.com/sites/default/files/media/images/2021-09/lnk2-front-lowangle.jpg",
+  "site": "rainbird.com",
+  "doute": "La désignation dit LNK, la photo montre le LNK2 actuel, qui l'a remplacé."
+ },
+ {
+  "forme": "rb-esp-me3",
+  "nom": "Programmateur Rain Bird ESP-ME3 avec WiFi",
+  "refs": [
+   "RP3314"
+  ],
+  "fichier": "rb-esp-me3-1.jpg",
+  "montre": "ESP-ME3 de face, sans le module WiFi visible",
+  "vise": "ESP-ME3 4 stations livré avec la clé WiFi",
+  "preuve": "marquage ESP-ME3 lu sur la façade",
+  "source": "https://www.rainbird.com/fr/products/programmateurs-serie-esp-me3",
+  "image": "https://www.rainbird.com/sites/default/files/media/images/2019-04/esp-me3_front.jpg",
+  "site": "rainbird.com",
+  "doute": "La clé WiFi se branche sur le côté et ne se voit pas sur cette photo."
+ },
+ {
+  "forme": "rb-espsm3",
+  "nom": "Module d'extension Rain Bird ESP 3 stations",
+  "refs": [
+   "RP3312"
+  ],
+  "fichier": "rb-espsm3-1.jpg",
+  "montre": "module à 3 bornes",
+  "vise": "module 3 stations pour ESP-ME3",
+  "preuve": "3 bornes comptées sur la pièce",
+  "source": "https://www.rainbird.com/fr/products/programmateurs-serie-esp-me3",
+  "image": "https://www.rainbird.com/sites/default/files/media/images/2017-11/ESP-Me-3-6-modules.jpg",
+  "site": "rainbird.com",
+  "doute": "Recadré à partir d'une photo fabricant qui montre les modules 3 et 6 côte à côte."
+ },
+ {
+  "forme": "rb-espsm6",
+  "nom": "Module d'extension Rain Bird ESP 6 stations",
+  "refs": [
+   "RP3313"
+  ],
+  "fichier": "rb-espsm6-1.jpg",
+  "montre": "module à 6 bornes",
+  "vise": "module 6 stations pour ESP-ME3",
+  "preuve": "6 bornes comptées sur la pièce",
+  "source": "https://www.rainbird.com/fr/products/programmateurs-serie-esp-me3",
+  "image": "https://www.rainbird.com/sites/default/files/media/images/2017-11/ESP-Me-3-6-modules.jpg",
+  "site": "rainbird.com",
+  "doute": "Recadré à partir d'une photo fabricant qui montre les modules 3 et 6 côte à côte."
+ },
+ {
+  "forme": "rb-esp-lxme2",
+  "nom": "Programmateur Rain Bird ESP-LXME2 et LXME2 PRO",
+  "refs": [
+   "RP3322",
+   "RP3326"
+  ],
+  "fichier": "rb-esp-lxme2-1.jpg",
+  "montre": "ESP-LXME2 de face, marqué LXME2",
+  "vise": "ESP-LXME2 12 stations et ESP-LXME2 PRO 12 stations",
+  "preuve": "marquage LXME2 lu sur la façade ; page fabricant commune aux deux modèles",
+  "source": "https://www.rainbird.com/fr/products/programmateurs-modulaires-esp-lxme2-et-esp-lxme2-pro",
+  "image": "https://www.rainbird.com/sites/default/files/media/images/2022-02/lxme_2.jpg",
+  "site": "rainbird.com",
+  "doute": "La version PRO se distingue par son module intérieur, pas par la façade ; aucune photo propre au PRO trouvée."
+ },
+ {
+  "forme": "rb-lxmsm12",
+  "nom": "Module d'extension Rain Bird 12 stations pour ESP-LXME2",
+  "refs": [
+   "RP3329"
+  ],
+  "fichier": "rb-lxmsm12-1.jpg",
+  "montre": "module ESPLXMSM12, bornier à 14 vis",
+  "vise": "module 12 stations ESPLXMSM12",
+  "preuve": "page dédiée à l'ESPLXMSM12, image propre à cette page",
+  "source": "https://www.sprinklersupplystore.com/products/esplxmsm12-12-station-controller-module",
+  "image": "https://cdn.shopify.com/s/files/1/1987/5531/files/IMG_4325.jpg?v=1728577188",
+  "site": "sprinklersupplystore.com",
+  "doute": "Photo d'amateur avec un reflet bleu sur les bords."
+ },
+ {
+  "forme": "rb-lxmsm12",
+  "nom": "Module d'extension Rain Bird 12 stations pour ESP-LXME2",
+  "refs": [
+   "RP3329"
+  ],
+  "fichier": "rb-lxmsm12-2.jpg",
+  "montre": "module ESPLXMSM12 vu de biais",
+  "vise": "module 12 stations ESPLXMSM12",
+  "preuve": "page dédiée à l'ESPLXMSM12, image propre à cette page",
+  "source": "https://www.sprinklersupplystore.com/products/esplxmsm12-12-station-controller-module",
+  "image": "https://cdn.shopify.com/s/files/1/1987/5531/files/IMG_4323.jpg?v=1728577188",
+  "site": "sprinklersupplystore.com",
+  "doute": "Photo d'amateur avec un reflet violet."
+ },
+ {
+  "forme": "rb-esp-bat-bt-1st",
+  "nom": "Programmateur Rain Bird ESP-BAT-BT 1 station",
+  "refs": [
+   "RP13711"
+  ],
+  "fichier": "rb-esp-bat-bt-1st-1.jpg",
+  "montre": "ESP-BAT-BT avec les fils d'une seule station",
+  "vise": "ESP-BAT-BT 1 station",
+  "preuve": "image légendée 1 Station sur la page fabricant, fils comptés",
+  "source": "https://www.rainbird.com/fr/products/esp-bat-bt",
+  "image": "https://www.rainbird.com/sites/default/files/media/images/2023-12/esp-bat_5.png",
+  "site": "rainbird.com",
+  "doute": "Rendu 3D du fabricant, fond transparent remplacé par du blanc."
+ },
+ {
+  "forme": "rb-esp-bat-bt-2st",
+  "nom": "Programmateur Rain Bird ESP-BAT-BT 2 stations",
+  "refs": [
+   "RP13722"
+  ],
+  "fichier": "rb-esp-bat-bt-2st-1.jpg",
+  "montre": "ESP-BAT-BT avec les fils de 2 stations",
+  "vise": "ESP-BAT-BT 2 stations",
+  "preuve": "image légendée 2 Station sur la page fabricant, fils comptés",
+  "source": "https://www.rainbird.com/fr/products/esp-bat-bt",
+  "image": "https://www.rainbird.com/sites/default/files/media/images/2023-12/esp-bat_6.png",
+  "site": "rainbird.com",
+  "doute": "Rendu 3D du fabricant, fond transparent remplacé par du blanc."
+ },
+ {
+  "forme": "rb-esp-bat-bt-4st",
+  "nom": "Programmateur Rain Bird ESP-BAT-BT 4 stations",
+  "refs": [
+   "RP13744"
+  ],
+  "fichier": "rb-esp-bat-bt-4st-1.jpg",
+  "montre": "ESP-BAT-BT avec les fils de 4 stations",
+  "vise": "ESP-BAT-BT 4 stations",
+  "preuve": "image légendée 4 Station sur la page fabricant",
+  "source": "https://www.rainbird.com/fr/products/esp-bat-bt",
+  "image": "https://www.rainbird.com/sites/default/files/media/images/2023-12/esp-bat_7.png",
+  "site": "rainbird.com",
+  "doute": "Rendu 3D du fabricant, fond transparent remplacé par du blanc."
+ },
+ {
+  "forme": "rb-esp-bat-bt-6st",
+  "nom": "Programmateur Rain Bird ESP-BAT-BT 6 stations",
+  "refs": [
+   "RP13766"
+  ],
+  "fichier": "rb-esp-bat-bt-6st-1.jpg",
+  "montre": "ESP-BAT-BT avec les fils de 6 stations",
+  "vise": "ESP-BAT-BT 6 stations",
+  "preuve": "image légendée 6 Station sur la page fabricant, fils comptés",
+  "source": "https://www.rainbird.com/fr/products/esp-bat-bt",
+  "image": "https://www.rainbird.com/sites/default/files/media/images/2023-12/esp-bat_8.png",
+  "site": "rainbird.com",
+  "doute": "Rendu 3D du fabricant, fond transparent remplacé par du blanc."
+ },
+ {
+  "forme": "rb-esp-9v",
+  "nom": "Programmateur Rain Bird ESP-9V",
+  "refs": [
+   "RP1371",
+   "RP1372",
+   "RP1374",
+   "RP1376"
+  ],
+  "fichier": "rb-esp-9v-1.jpg",
+  "montre": "ESP-9V de face",
+  "vise": "ESP-9V 1, 2, 4 et 6 voies",
+  "preuve": "marquage ESP-9V lu sur la façade ; page fabricant de la gamme",
+  "source": "https://www.rainbird.com/fr/esp-9v-series",
+  "image": "https://www.rainbird.com/sites/default/files/media/images/2022-04/esp-9v-front-small_0.png",
+  "site": "rainbird.com",
+  "doute": "Une photo pour les quatre tailles : la façade est la même, seuls les fils qui sortent dessous changent et ils ne se voient pas."
+ },
+ {
+  "forme": "rb-esp-9v",
+  "nom": "Programmateur Rain Bird ESP-9V",
+  "refs": [
+   "RP1371",
+   "RP1372",
+   "RP1374",
+   "RP1376"
+  ],
+  "fichier": "rb-esp-9v-2.jpg",
+  "montre": "ESP-9V de face",
+  "vise": "ESP-9V 1, 2, 4 et 6 voies",
+  "preuve": "marquage ESP-9V lu sur la façade",
+  "source": "https://www.rainbird.com/fr/products/serie-esp-9v",
+  "image": "https://www.rainbird.com/sites/default/files/media/images/2022-01/esp_9v_la_front-159_rgb_f.jpg",
+  "site": "rainbird.com",
+  "doute": "Image de 550 x 399 px, un peu petite en hauteur."
+ },
+ {
+  "forme": "rb-kit-esp-9v-vanne",
+  "nom": "Kit Rain Bird ESP-9V et électrovanne",
+  "refs": [
+   "RP1313"
+  ],
+  "fichier": "rb-kit-esp-9v-vanne-1.jpg",
+  "montre": "ESP-9V monté sur une électrovanne DV",
+  "vise": "kit ESP9VDVKIT, 1 voie et vanne DV 1 pouce",
+  "preuve": "page dédiée à l'ESP9VDVKIT",
+  "source": "https://plumbersstock.com/rainbird-esp9vdvkit-f48332.html",
+  "image": "https://images.plumbersstock.com/default/500/500/716732-TxxmqZ.jpg",
+  "site": "plumbersstock.com",
+  "doute": "Fond gris, vanne montée sur tube PVC américain ; la version vendue en France peut avoir une vanne filetée. Rien ne confirme que RP1313 est bien ce kit."
+ },
+ {
+  "forme": "rb-wr2-rc",
+  "nom": "Sonde de pluie sans fil Rain Bird WR2-RC",
+  "refs": [
+   "RP6231"
+  ],
+  "fichier": "rb-wr2-rc-1.jpg",
+  "montre": "récepteur marqué WR2 Wireless Sensor",
+  "vise": "WR2-RC, pluie seule, sonde et récepteur",
+  "preuve": "marquage WR2 lu sur le récepteur",
+  "source": "https://www.rainbird.com/fr/products/sondes-pluviometre-gel-sans-fil-des-series-wr2-et-wr2-48",
+  "image": "https://www.rainbird.com/sites/default/files/media/images/2018-06/wr2_with_callouts.jpg",
+  "site": "rainbird.com",
+  "doute": "Recadré dans une planche annotée du fabricant : on ne voit que le récepteur, pas la sonde, et l'image est petite (510 x 685)."
+ },
+ {
+  "forme": "rb-wr2-rc",
+  "nom": "Sonde de pluie sans fil Rain Bird WR2-RC",
+  "refs": [
+   "RP6231"
+  ],
+  "fichier": "rb-wr2-rc-2.jpg",
+  "montre": "sonde et récepteur WR2-48, version pluie et gel avec délai de 48 h",
+  "vise": "WR2-RC, pluie seule",
+  "preuve": "marquage WR2-48 lu sur le récepteur",
+  "source": "https://www.rainbird.com/fr/products/sondes-pluviometre-gel-sans-fil-des-series-wr2-et-wr2-48",
+  "image": "https://www.rainbird.com/sites/default/files/media/images/2018-06/wr2-48_sensor-inbracket.jpg",
+  "site": "rainbird.com",
+  "doute": "Ce n'est pas la WR2-RC : c'est la WR2-48, de même forme mais marquée WR2-48 sur le récepteur."
+ },
+ {
+  "forme": "rb-smrt-y",
+  "nom": "Sonde d'humidité de sol Rain Bird SMRT-Y",
+  "refs": [
+   "RPSMRT-Y"
+  ],
+  "fichier": "rb-smrt-y-1.jpg",
+  "montre": "sonde inox et boîtier d'interface",
+  "vise": "kit SMRT-Y",
+  "preuve": "page dédiée au SMRT-Y",
+  "source": "https://www.sprinklersupplystore.com/products/rain-bird-smrt-y-rain-bird-moisture-sensor",
+  "image": "https://cdn.shopify.com/s/files/1/1987/5531/files/RAINBIRD_SMRT-YRainBirdMoistureSensor.png?v=1709670894",
+  "site": "sprinklersupplystore.com",
+  "doute": "Fond transparent remplacé par du blanc."
+ },
+ {
+  "forme": "hu-x-core-ext",
+  "nom": "Programmateur Hunter X-Core extérieur à coffret verrouillable",
+  "refs": [
+   "HPXC-E-XC401-E",
+   "HPXC-E-XC601-E",
+   "HPXC-801-X"
+  ],
+  "fichier": "hu-x-core-ext-1.jpg",
+  "montre": "X-Core extérieur, coffret ouvert avec sa clé, câble secteur",
+  "vise": "XC-401-E, XC-601-E et XC-801-E, coffret extérieur",
+  "preuve": "marquage X-CORE lu sur la façade ; fichier nommé XC-400 sur la page fabricant",
+  "source": "https://www.hunterirrigation.com/en-metric/irrigation-product/x-coretm/xc-400",
+  "image": "https://www.hunterirrigation.com/sites/default/files/XC-400_004_RT.jpeg",
+  "site": "hunterirrigation.com",
+  "doute": "Même image sur les pages XC-400 et XC-600 : la façade ne dit pas le nombre de stations. Photo de la version américaine (XC-400), la version E européenne a le même boîtier."
+ },
+ {
+  "forme": "hu-hpc",
+  "nom": "Programmateur Hunter HPC 4 stations extensible",
+  "refs": [
+   "HPPC-301-E"
+  ],
+  "fichier": "hu-hpc-1.jpg",
+  "montre": "HPC à écran tactile Hydrawise, coffret ouvert, marqué HPC Wi-Fi",
+  "vise": "HPC 4 stations, version E",
+  "preuve": "page dédiée au modèle HPC-401E",
+  "source": "https://www.hunterirrigation.com/en-metric/irrigation-product/hpc/hpc-401e",
+  "image": "https://www.hunterirrigation.com/sites/default/files/2025/03/20/HPC-400_002_RT2.jpg",
+  "site": "hunterirrigation.com",
+  "doute": "La référence Aqua Plus dit 301 et la désignation dit 4 stations : j'ai pris le HPC-401E, mais ce pourrait aussi être un Pro-C (PC-301-E). À confirmer. Image de 800 x 533 px."
+ },
+ {
+  "forme": "hu-pcm-300",
+  "nom": "Module Hunter Pro-C et HPC 3 stations",
+  "refs": [
+   "HP3942"
+  ],
+  "fichier": "hu-pcm-300-1.jpg",
+  "montre": "module PCM-300 à 3 bornes",
+  "vise": "PCM-300",
+  "preuve": "page dédiée au PCM-300 ; 3 bornes comptées",
+  "source": "https://www.hunterirrigation.com/en-metric/irrigation-product/pcm-300",
+  "image": "https://www.hunterirrigation.com/sites/default/files/PCM-300.jpeg",
+  "site": "hunterirrigation.com",
+  "doute": ""
+ },
+ {
+  "forme": "hu-pcm-900",
+  "nom": "Module Hunter Pro-C et HPC 9 stations",
+  "refs": [
+   "HP3943"
+  ],
+  "fichier": "hu-pcm-900-1.jpg",
+  "montre": "module PCM-900 à 9 bornes",
+  "vise": "PCM-900",
+  "preuve": "page dédiée au PCM-900 ; 9 bornes comptées",
+  "source": "https://www.hunterirrigation.com/en-metric/irrigation-product/pcm-900",
+  "image": "https://www.hunterirrigation.com/sites/default/files/PCM-900.jpeg",
+  "site": "hunterirrigation.com",
+  "doute": ""
+ },
+ {
+  "forme": "hu-pcm-1600",
+  "nom": "Module Hunter Pro-C et HPC 16 stations",
+  "refs": [
+   "HP3947"
+  ],
+  "fichier": "hu-pcm-1600-1.jpg",
+  "montre": "module PCM-1600, deux rangées de 8 bornes numérotées 8 à 23",
+  "vise": "PCM-1600",
+  "preuve": "page dédiée au PCM-1600 ; numéros de stations lus sur la pièce",
+  "source": "https://www.hunterirrigation.com/en-metric/irrigation-product/pcm-1600",
+  "image": "https://www.hunterirrigation.com/sites/default/files/PCM-1600_003_RT.jpeg",
+  "site": "hunterirrigation.com",
+  "doute": ""
+ },
+ {
+  "forme": "hu-x2",
+  "nom": "Programmateur Hunter X2",
+  "refs": [
+   "HPX2-4",
+   "HPX2-6",
+   "HPX2-8",
+   "HPX2"
+  ],
+  "fichier": "hu-x2-1.jpg",
+  "montre": "X2 ouvert, bornier visible, câble secteur",
+  "vise": "X2 4, 6, 8 et 14 stations",
+  "preuve": "marquage X2 lu sur la façade ; photo de la page fabricant de la gamme",
+  "source": "https://www.hunterirrigation.com/irrigation-product/controllers/x2tm",
+  "image": "https://www.hunterirrigation.com/sites/default/files/2023/07/05/X2_120VAC_011_RT_1.jpg",
+  "site": "hunterirrigation.com",
+  "doute": "Une photo pour les quatre tailles, la façade est la même. Version américaine 120 V."
+ },
+ {
+  "forme": "hu-x2",
+  "nom": "Programmateur Hunter X2",
+  "refs": [
+   "HPX2-4"
+  ],
+  "fichier": "hu-x2-2.jpg",
+  "montre": "boîte du X2 4 zones",
+  "vise": "X2 4 stations",
+  "preuve": "page dédiée au X2-400, 4 ZONE lu sur la boîte",
+  "source": "https://www.hunterirrigation.com/irrigation-product/wand-x2tm/x2-400",
+  "image": "https://www.hunterirrigation.com/sites/default/files/X2-400_Box_001_RT.jpeg",
+  "site": "hunterirrigation.com",
+  "doute": "C'est l'emballage, pas l'appareil. Des boîtes 6, 8 et 14 zones existent aussi sur les pages X2-600, X2-800 et X2-1400."
+ },
+ {
+  "forme": "hu-wand",
+  "nom": "Module WiFi Hunter WAND pour X2",
+  "refs": [
+   "HP3995"
+  ],
+  "fichier": "hu-wand-1.jpg",
+  "montre": "module WAND seul, marqué MODEL WAND",
+  "vise": "module WiFi 2,4 GHz WAND",
+  "preuve": "marquage MODEL WAND lu sur la pièce ; page dédiée au WAND",
+  "source": "https://cheapsprinklers.com/products/hunter-wand-wifi-module-for-hydrawise-software",
+  "image": "https://cdn.shopify.com/s/files/1/0167/3543/6900/files/WAND_2.png?v=1713549437",
+  "site": "cheapsprinklers.com",
+  "doute": "La désignation dit seulement module WIFI 2,4 GHz ; c'est le WAND si la ligne est bien rattachée au X2."
+ },
+ {
+  "forme": "hu-wand",
+  "nom": "Module WiFi Hunter WAND pour X2",
+  "refs": [
+   "HP3995"
+  ],
+  "fichier": "hu-wand-2.jpg",
+  "montre": "dos du module avec l'étiquette WAND for X2 Controller",
+  "vise": "module WiFi 2,4 GHz WAND",
+  "preuve": "étiquette WAND for X2 Controller lue",
+  "source": "https://cheapsprinklers.com/products/hunter-wand-wifi-module-for-hydrawise-software",
+  "image": "https://cdn.shopify.com/s/files/1/0167/3543/6900/products/wandbt_012_rt.jpg?v=1713359045",
+  "site": "cheapsprinklers.com",
+  "doute": ""
+ },
+ {
+  "forme": "hu-node-100-valve",
+  "nom": "Programmateur Hunter Node 100 monté sur électrovanne PGV 1 pouce FF",
+  "refs": [
+   "HP1500"
+  ],
+  "fichier": "hu-node-100-valve-1.jpg",
+  "montre": "Node monté sur une PGV à taraudages femelles",
+  "vise": "NODE-100-VALVE-B, PGV 1 pouce FF",
+  "preuve": "page dédiée au NODE-100-VALVE-B",
+  "source": "https://www.bricomarche.com/p/vanne-programmable-9v-1-avec-electrovanne-node-100-valve-b/0611698283097",
+  "image": "https://assets-big.cdn-mousquetaires.com/medias/domain11440/media10829/1632505-w5wp2ff0o9-epreview.jpg",
+  "site": "bricomarche.com",
+  "doute": "Image de 600 px avec une ombre ; le marquage BSP ne se lit pas."
+ },
+ {
+  "forme": "hu-node-100-valve",
+  "nom": "Programmateur Hunter Node 100 monté sur électrovanne PGV 1 pouce FF",
+  "refs": [
+   "HP1500"
+  ],
+  "fichier": "hu-node-100-valve-2.jpg",
+  "montre": "Node capot fermé sur une PGV",
+  "vise": "NODE-100-VALVE-B, PGV 1 pouce FF",
+  "preuve": "page dédiée au NODE-100-VALVE-B",
+  "source": "https://www.bricomarche.com/p/vanne-programmable-9v-1-avec-electrovanne-node-100-valve-b/0611698283097",
+  "image": "https://assets-big.cdn-mousquetaires.com/medias/domain11440/media122414/6724475-glkms1p81d-epreview.jpg",
+  "site": "bricomarche.com",
+  "doute": "Fond gris clair, pas tout à fait blanc."
+ },
+ {
+  "forme": "hu-node-bt-100",
+  "nom": "Programmateur Hunter Node BT 100 avec solénoïde 9V",
+  "refs": [
+   "HP1541"
+  ],
+  "fichier": "hu-node-bt-100-1.jpg",
+  "montre": "Node BT une station avec son solénoïde à impulsion",
+  "vise": "NODE-BT-100, livré avec solénoïde",
+  "preuve": "page dédiée au NODE-BT-100 ; solénoïde visible",
+  "source": "https://www.hunterirrigation.com/en-metric/irrigation-product/node-bt/node-bt-100",
+  "image": "https://www.hunterirrigation.com/sites/default/files/Node_BT_019_RT.jpeg",
+  "site": "hunterirrigation.com",
+  "doute": ""
+ },
+ {
+  "forme": "hu-node-bt-100-ls",
+  "nom": "Programmateur Hunter Node BT 100 sans solénoïde",
+  "refs": [
+   "HP1541-L"
+  ],
+  "fichier": "hu-node-bt-100-ls-1.jpg",
+  "montre": "Node BT une station, fils seuls, sans solénoïde",
+  "vise": "NODE-BT-100-LS, sans solénoïde",
+  "preuve": "page dédiée au NODE-BT-100-LS",
+  "source": "https://www.hunterirrigation.com/en-metric/irrigation-product/node-bt/node-bt-100-ls",
+  "image": "https://www.hunterirrigation.com/sites/default/files/Node-BT-100-LS.jpeg",
+  "site": "hunterirrigation.com",
+  "doute": "J'ai rattaché HP1541-L au modèle LS, sans solénoïde, d'après la désignation qui ne cite pas de solénoïde : à confirmer."
+ },
+ {
+  "forme": "hu-node-bt-200",
+  "nom": "Programmateur Hunter Node BT 200",
+  "refs": [
+   "HP1542"
+  ],
+  "fichier": "hu-node-bt-200-1.jpg",
+  "montre": "Node BT deux stations, faisceau de fils",
+  "vise": "NODE-BT-200",
+  "preuve": "page dédiée au NODE-BT-200",
+  "source": "https://www.hunterirrigation.com/en-metric/irrigation-product/node-bt/node-bt-200",
+  "image": "https://www.hunterirrigation.com/sites/default/files/Node_BT_017_RT.jpeg",
+  "site": "hunterirrigation.com",
+  "doute": ""
+ },
+ {
+  "forme": "hu-node-bt-400",
+  "nom": "Programmateur Hunter Node BT 400",
+  "refs": [
+   "HP1544"
+  ],
+  "fichier": "hu-node-bt-400-1.jpg",
+  "montre": "Node BT quatre stations, faisceau de fils et quatre voyants",
+  "vise": "NODE-BT-400",
+  "preuve": "page dédiée au NODE-BT-400",
+  "source": "https://www.hunterirrigation.com/en-metric/irrigation-product/node-bt/node-bt-400",
+  "image": "https://www.hunterirrigation.com/sites/default/files/Node_BT_015_RT.jpeg",
+  "site": "hunterirrigation.com",
+  "doute": ""
+ },
+ {
+  "forme": "hu-mini-clik",
+  "nom": "Pluviomètre Hunter Mini-Clik",
+  "refs": [
+   "HPMINICLIK"
+  ],
+  "fichier": "hu-mini-clik-1.jpg",
+  "montre": "Mini-Clik sur son support métallique, câble bleu",
+  "vise": "Mini-Clik filaire",
+  "preuve": "page dédiée au MINI-CLIK",
+  "source": "https://www.hunterirrigation.com/en-metric/irrigation-product/mini-cliktm-sensor/mini-clik",
+  "image": "https://www.hunterirrigation.com/sites/default/files/Mini-Clik_001_RT.jpeg",
+  "site": "hunterirrigation.com",
+  "doute": ""
+ },
+ {
+  "forme": "hu-wr-clik",
+  "nom": "Pluviomètre radio Hunter Rain-Clik sans fil",
+  "refs": [
+   "HPRAINCLIK"
+  ],
+  "fichier": "hu-wr-clik-1.jpg",
+  "montre": "capteur sans fil marqué WRC, sur son support",
+  "vise": "Wireless Rain-Clik, capteur et récepteur",
+  "preuve": "marquage WRC lu sur la pièce",
+  "source": "https://www.hunterirrigation.com/en-metric/irrigation-product/sensors/rain-clik",
+  "image": "https://www.hunterirrigation.com/sites/default/files/2023/07/25/slick_wrc_rt2.jpg",
+  "site": "hunterirrigation.com",
+  "doute": "On ne voit que le capteur, pas le récepteur qui va dans le programmateur."
+ },
+ {
+  "forme": "hu-wr-clik",
+  "nom": "Pluviomètre radio Hunter Rain-Clik sans fil",
+  "refs": [
+   "HPRAINCLIK"
+  ],
+  "fichier": "hu-wr-clik-2.jpg",
+  "montre": "boîte du WR-CLIK, capteur et récepteur dessinés",
+  "vise": "Wireless Rain-Clik",
+  "preuve": "page dédiée au WR-CLIK, WR-CLIK lu sur la boîte",
+  "source": "https://www.hunterirrigation.com/en-metric/irrigation-product/rain-cliktm-sensor/wr-clik",
+  "image": "https://www.hunterirrigation.com/sites/default/files/2025/03/26/WR-Clik_Box_001_RT_0.jpg",
+  "site": "hunterirrigation.com",
+  "doute": "C'est l'emballage. La désignation dit WRC-INT, version internationale : même aspect, fréquence différente."
+ },
+ {
+  "forme": "hu-solar-sync",
+  "nom": "Sonde Hunter Solar Sync filaire",
+  "refs": [
+   "HP6226"
+  ],
+  "fichier": "hu-solar-sync-1.jpg",
+  "montre": "capteur Solar Sync filaire, marqué Solar Sync",
+  "vise": "Solar Sync filaire, capteur et module",
+  "preuve": "page dédiée au SOLAR-SYNC-SEN",
+  "source": "https://www.hunterirrigation.com/en-metric/irrigation-product/solar-synctm-sensor/solar-sync-sen",
+  "image": "https://www.hunterirrigation.com/sites/default/files/2026/09/03/Solar_Sync_001_RT.jpg",
+  "site": "hunterirrigation.com",
+  "doute": "On ne voit que le capteur ; si la référence Aqua Plus comprend aussi le module, il n'est pas sur la photo. Image de 800 x 489 px."
+ },
+ {
+  "forme": "hu-wss",
+  "nom": "Sonde Hunter Solar Sync sans fil",
+  "refs": [
+   "HP6228"
+  ],
+  "fichier": "hu-wss-1.jpg",
+  "montre": "capteur Solar Sync sans fil avec son antenne",
+  "vise": "Wireless Solar Sync, capteur et récepteur",
+  "preuve": "page dédiée au WSS-SEN",
+  "source": "https://www.hunterirrigation.com/en-metric/irrigation-product/solar-synctm-sensor/wss-sen",
+  "image": "https://www.hunterirrigation.com/sites/default/files/SolarSync_1_RT.jpeg",
+  "site": "hunterirrigation.com",
+  "doute": "On ne voit que le capteur, pas le récepteur."
+ },
+ {
+  "forme": "so-villa",
+  "nom": "Programmateur Solem Villa",
+  "refs": [
+   "SPVIL4",
+   "SPVIL6",
+   "SPVIL9",
+   "SPVIL12"
+  ],
+  "fichier": "so-villa-1.jpg",
+  "montre": "Villa de face, marqué VILLA SOLEM",
+  "vise": "Villa 4, 6, 9 et 12 voies",
+  "preuve": "marquage VILLA lu sur le boîtier ; page fabricant",
+  "source": "https://solem-irrigation.com/produit/villa/",
+  "image": "https://solem-irrigation.com/wp-content/uploads/2023/11/VILLA-VF-512x512-1.png",
+  "site": "solem-irrigation.com",
+  "doute": "Une photo pour les quatre tailles, le nombre de voies ne se voit pas. Rendu de 512 px, juste au-dessus du seuil."
+ },
+ {
+  "forme": "so-villa",
+  "nom": "Programmateur Solem Villa",
+  "refs": [
+   "SPVIL4",
+   "SPVIL6",
+   "SPVIL9",
+   "SPVIL12"
+  ],
+  "fichier": "so-villa-2.jpg",
+  "montre": "Villa vu de trois quarts avec sa coque",
+  "vise": "Villa 4, 6, 9 et 12 voies",
+  "preuve": "marquage VILLA lu sur le boîtier",
+  "source": "https://solem-irrigation.com/produit/villa/",
+  "image": "https://solem-irrigation.com/wp-content/uploads/2023/11/VILLAcoque.png",
+  "site": "solem-irrigation.com",
+  "doute": "Rendu de 512 px."
+ },
+ {
+  "forme": "so-smart-is",
+  "nom": "Programmateur Solem Smart-IS WiFi",
+  "refs": [
+   "SP2741",
+   "SP2742",
+   "SP2743",
+   "SP2744",
+   "SP2745"
+  ],
+  "fichier": "so-smart-is-1.jpg",
+  "montre": "Smart-IS de face, marqué SMART-IS",
+  "vise": "Smart-IS 2, 4, 6, 9 et 12 stations",
+  "preuve": "marquage SMART-IS lu sur le boîtier ; page fabricant",
+  "source": "https://solem-irrigation.com/produit/smart-is/",
+  "image": "https://solem-irrigation.com/wp-content/uploads/2022/06/photo-smart-is-512x512-1.png",
+  "site": "solem-irrigation.com",
+  "doute": "Une photo pour les cinq tailles, le nombre de stations ne se voit pas. Rendu de 512 px."
+ },
+ {
+  "forme": "so-lr-mb10",
+  "nom": "Relais Solem LR-MB10",
+  "refs": [
+   "SP1739"
+  ],
+  "fichier": "so-lr-mb10-1.jpg",
+  "montre": "passerelle marquée LR-MB10 avec antenne",
+  "vise": "LR-MB10",
+  "preuve": "marquage LR-MB10 lu sur le boîtier",
+  "source": "https://solem-irrigation.com/produit/lr-mb-10/",
+  "image": "https://solem-irrigation.com/wp-content/uploads/2022/06/LRMB10.png",
+  "site": "solem-irrigation.com",
+  "doute": "Rendu de 512 px."
+ },
+ {
+  "forme": "so-lr-mb30",
+  "nom": "Relais Solem LR-MB30",
+  "refs": [
+   "SP1740"
+  ],
+  "fichier": "so-lr-mb30-1.jpg",
+  "montre": "passerelle marquée LR-MB30 avec antenne",
+  "vise": "LR-MB30",
+  "preuve": "marquage LR-MB30 lu sur le boîtier",
+  "source": "https://solem-irrigation.com/produit/lr-mb-30/",
+  "image": "https://solem-irrigation.com/wp-content/uploads/2022/06/LRMB-30-512.png",
+  "site": "solem-irrigation.com",
+  "doute": "Rendu de 512 px. Le LR-MB10 et le LR-MB30 ne se distinguent que par ce marquage."
+ },
+ {
+  "forme": "so-lr-ip",
+  "nom": "Programmateur Solem LR-IP 9V",
+  "refs": [
+   "SP1741",
+   "SP1742",
+   "SP1743",
+   "SP1744"
+  ],
+  "fichier": "so-lr-ip-1.jpg",
+  "montre": "LR-IP, marqué LR-IP",
+  "vise": "LR-IP 1, 2, 4 et 6 stations",
+  "preuve": "marquage LR-IP lu sur le boîtier ; page fabricant",
+  "source": "https://solem-irrigation.com/produit/lr-ip/",
+  "image": "https://solem-irrigation.com/wp-content/uploads/2025/11/LR-IP-512.png",
+  "site": "solem-irrigation.com",
+  "doute": "Une photo pour les quatre tailles, le nombre de stations ne se voit pas. Rendu de 512 px."
+ },
+ {
+  "forme": "so-lr-ms",
+  "nom": "Module sondes Solem LR-MS",
+  "refs": [
+   "SP174011"
+  ],
+  "fichier": "so-lr-ms-1.jpg",
+  "montre": "module marqué LR-MS",
+  "vise": "LR-MS 1",
+  "preuve": "marquage LR-MS lu sur le boîtier",
+  "source": "https://solem-irrigation.com/produit/lr-ms/",
+  "image": "https://solem-irrigation.com/wp-content/uploads/2026/03/LR-MS_512.png",
+  "site": "solem-irrigation.com",
+  "doute": "La désignation dit LR-MS 1 ; le chiffre ne se lit pas sur la photo. Rendu de 512 px."
+ },
+ {
+  "forme": "so-smt50",
+  "nom": "Sonde d'humidité Truebner SMT50",
+  "refs": [
+   "SP67669398"
+  ],
+  "fichier": "so-smt50-1.jpg",
+  "montre": "sonde marquée SMT50 Soil Moisture Sensor",
+  "vise": "SMT50",
+  "preuve": "marquage SMT50 lu sur la sonde ; page Solem",
+  "source": "https://solem-irrigation.com/produit/smt50-truebner/",
+  "image": "https://solem-irrigation.com/wp-content/uploads/2022/06/sonde-smt50-truebner_.png",
+  "site": "solem-irrigation.com",
+  "doute": "Fabriquée par Truebner, vendue par Solem. Rendu de 512 px."
+ },
+ {
+  "forme": "so-woobee",
+  "nom": "Programmateur Solem Woobee",
+  "refs": [
+   "SPWOOBEE1",
+   "SPWOOBEE2",
+   "SPWOOBEE4",
+   "SPWOOBEE6"
+  ],
+  "fichier": "so-woobee-1.jpg",
+  "montre": "Woobee de face avec écran",
+  "vise": "Woobee 1, 2, 4 et 6 voies",
+  "preuve": "page fabricant du Woobee ; marquage SOLEM",
+  "source": "https://solem-irrigation.com/produit/woobee/",
+  "image": "https://solem-irrigation.com/wp-content/uploads/2022/06/WooBee_512x512.png",
+  "site": "solem-irrigation.com",
+  "doute": "Une photo pour les quatre tailles. Le nom Woobee n'est pas lisible sur la pièce. Rendu de 512 px."
+ },
+ {
+  "forme": "so-bl-nr",
+  "nom": "Programmateur nez de robinet Solem BL-NR",
+  "refs": [
+   "SP1151"
+  ],
+  "fichier": "so-bl-nr-1.jpg",
+  "montre": "nez de robinet Bluetooth",
+  "vise": "BL-NR 1 voie",
+  "preuve": "page dédiée au BL-NR",
+  "source": "https://solem-irrigation.com/produit/bl-nr/",
+  "image": "https://solem-irrigation.com/wp-content/uploads/2025/11/BL-NR_V2-512.png",
+  "site": "solem-irrigation.com",
+  "doute": "Aucun marquage lisible ; le BL-NR et le LR-NR ont la même forme. Rendu de 512 px."
+ },
+ {
+  "forme": "so-lr-nr",
+  "nom": "Programmateur nez de robinet Solem LR-NR",
+  "refs": [
+   "SP1152"
+  ],
+  "fichier": "so-lr-nr-1.jpg",
+  "montre": "nez de robinet LoRa",
+  "vise": "BL - LR, 1 voie",
+  "preuve": "page dédiée au LR-NR",
+  "source": "https://solem-irrigation.com/produit/lr-nr/",
+  "image": "https://solem-irrigation.com/wp-content/uploads/2025/11/LR-NR-512.png",
+  "site": "solem-irrigation.com",
+  "doute": "La désignation Aqua Plus dit BL - LR, modèle que Solem ne vend pas sous ce nom : j'ai pris le LR-NR, nez de robinet LoRa. Même forme que le BL-NR, aucun marquage lisible."
+ },
+ {
+  "forme": "toro-tempus-wf",
+  "nom": "Module WiFi pour programmateur Toro Tempus",
+  "refs": [
+   "TPTEMP-WF"
+  ],
+  "fichier": null,
+  "montre": "",
+  "vise": "TEMP-WF",
+  "preuve": "",
+  "source": "https://cdn2.toro.com/en/-/media/Files/Toro/res-com-irrigation/TEMPUS-Lit/Temp_Leaflet_Eng.ashx",
+  "image": "",
+  "site": "toro.com",
+  "doute": "Aucune photo du module trouvée : la référence n'existe que dans la notice Toro, sans image."
+ },
+ {
+  "forme": "orbit-buddy-1",
+  "nom": "Programmateur de robinet Buddy 1 sortie",
+  "refs": [
+   "AEV11401"
+  ],
+  "fichier": "orbit-buddy-1-1.jpg",
+  "montre": "programmateur de robinet Orbit à une sortie",
+  "vise": "Buddy tap timer 1 station",
+  "preuve": "page dédiée à l'Orbit Buddy une sortie",
+  "source": "https://www.mitre10.co.nz/shop/orbit-buddy-single-outlet-tap-timer/p/393651",
+  "image": "https://ccapi.mitre10.co.nz/medias/sys_master/productimages/he1/he9/8861699112990/Mitre10-1500x1500_393651xlg/Mitre10-1500x1500-393651xlg.jpg",
+  "site": "mitre10.co.nz",
+  "doute": "La marque n'est pas donnée par Aqua Plus : Buddy est le nom d'Orbit, je l'ai supposé. Le mot Buddy ne se lit pas sur l'appareil et la version vendue en France peut différer."
+ },
+ {
+  "forme": "orbit-buddy-2",
+  "nom": "Programmateur de robinet Buddy 2 sorties",
+  "refs": [
+   "AEV11422"
+  ],
+  "fichier": "orbit-buddy-2-1.jpg",
+  "montre": "programmateur de robinet Orbit à deux sorties",
+  "vise": "Buddy tap timer 2 stations",
+  "preuve": "page dédiée à l'Orbit Buddy deux sorties ; deux sorties visibles",
+  "source": "https://www.mitre10.co.nz/shop/orbit-buddy-dual-outlet-tap-timer/p/393650",
+  "image": "https://ccapi.mitre10.co.nz/medias/sys_master/productimages/hf1/hcc/8861296001054/Mitre10-1500x1500_393650xlg/Mitre10-1500x1500-393650xlg.jpg",
+  "site": "mitre10.co.nz",
+  "doute": "Même réserve que pour la version 1 sortie : marque Orbit supposée, Buddy non lisible sur l'appareil."
+ },
+ {
+  "forme": "pile-lr6",
+  "nom": "Pile alcaline 1,5V LR6",
+  "refs": [
+   "ELDM3"
+  ],
+  "fichier": "pile-lr6-1.jpg",
+  "montre": "pile AA alcaline Panasonic Powerline",
+  "vise": "pile LR6 1,5 V",
+  "preuve": "Alkaline et Powerline lus sur la pile ; page dédiée à la LR6",
+  "source": "https://www.audiophonics.fr/fr/piles-et-accumulateurs/panasonic-powerline-lr6-aa-pile-alcaline-15v-3100ma-unite-p-9561.html",
+  "image": "https://www.audiophonics.fr/9345-big_default/panasonic-powerline-lr6-aa-pile-alcaline-15v-3100ma-unite.jpg",
+  "site": "audiophonics.fr",
+  "doute": "Marque inconnue chez Aqua Plus : Panasonic pris comme exemple, la forme est la même pour toutes les LR6."
+ },
+ {
+  "forme": "accu-9v",
+  "nom": "Accumulateur rechargeable 9V",
+  "refs": [
+   "ELD40034"
+  ],
+  "fichier": "accu-9v-1.jpg",
+  "montre": "accumulateur 9V NiMH Varta sous blister",
+  "vise": "accumulateur rechargeable 9V",
+  "preuve": "9V, NiMH et Recharge Accu lus sur le blister",
+  "source": "https://www.bricozor.com/accumulateurs-rechargeables-mh-varta.html",
+  "image": "https://static.lceassets.com/thumbnails/0e/0ec68f2075a7c5a1b9fdb72e31ef4bc6c33b548c/mh-9v-capacite-200mah-varta-square-1000x1000.jpg",
+  "site": "bricozor.com",
+  "doute": "Marque inconnue chez Aqua Plus ; photo sous emballage."
+ },
+ {
+  "forme": "accu-9v",
+  "nom": "Accumulateur rechargeable 9V",
+  "refs": [
+   "ELD40034"
+  ],
+  "fichier": "accu-9v-2.jpg",
+  "montre": "accumulateur 9V Energizer Recharge sous blister",
+  "vise": "accumulateur rechargeable 9V",
+  "preuve": "9V et recharge lus sur le blister",
+  "source": "https://www.ldlc.pro/fr-ch/fiche/PB00103287.html",
+  "image": "https://media.ldlc.com/r1600/ld/products/00/01/49/20/LD0001492080_2.jpg",
+  "site": "ldlc.pro",
+  "doute": "Marque inconnue chez Aqua Plus ; photo sous emballage."
+ },
+ {
+  "forme": "pile-cr2032",
+  "nom": "Pile CR2032 3V",
+  "refs": [
+   "ELD1605"
+  ],
+  "fichier": "pile-cr2032-1.jpg",
+  "montre": "piles bouton lithium en vrac",
+  "vise": "pile CR2032 3 V",
+  "preuve": "page dédiée aux CR2032",
+  "source": "https://ldlc.com/en/product/PB00246797.html",
+  "image": "https://media.ldlc.com/r1600/ld/products/00/04/83/23/LD0004832369_2.jpg",
+  "site": "ldlc.com",
+  "doute": "Le marquage CR2032 ne se lit pas sur les piles de la photo ; plusieurs piles au lieu d'une seule."
+ },
+ {
+  "forme": "toro-trs",
+  "nom": "Pluviomètre Toro TRS câblé",
+  "refs": [
+   "TPTRS"
+  ],
+  "fichier": "toro-trs-1.jpg",
+  "montre": "pluviomètre TRS gris sur son support, avec sa bobine de câble",
+  "vise": "TRS câblé 7,6 m",
+  "preuve": "page fabricant du TRS ; marquage TORO lu sur le boîtier",
+  "source": "https://www.toro.com/en-gb/product/TRS-Wired-Rainsensor",
+  "image": "https://cdn.thetorocompany.com/api/assetstorage/623_eb235ada-8e06-4a15-9a8d-1a26aebff28b/Large",
+  "site": "toro.com",
+  "doute": "Recadré : la photo fabricant montre aussi un second pluviomètre, blanc, marqué RainSensor Freeze, que j'ai retiré. Image un peu terne."
+ },
+ {
+  "forme": "cable-pluviometre-2x08",
+  "nom": "Câble pluviomètre 2 x 0,8 mm²",
+  "refs": [
+   "ELC40060"
+  ],
+  "fichier": null,
+  "montre": "",
+  "vise": "câble à 2 conducteurs de 0,8 mm²",
+  "preuve": "",
+  "source": "",
+  "image": "",
+  "site": "",
+  "doute": "Rien trouvé à 2 conducteurs de 0,8 mm² : les câbles d'arrosage trouvés en 0,8 mm² ont 5 fils ou plus. Pas de photo, pour ne pas montrer un autre nombre de fils."
+ },
+ {
+  "forme": "3m-ur2",
+  "nom": "Connecteur 3M UR2",
+  "refs": [
+   "ELDTRM85778"
+  ],
+  "fichier": "3m-ur2-1.jpg",
+  "montre": "un connecteur UR2 rouge à trois entrées",
+  "vise": "connexion 3M UR2, boîte de 100",
+  "preuve": "page dédiée au Scotchlok UR2",
+  "source": "https://www.ideal.co.nz/products/mmmt060010pk",
+  "image": "https://cdn.shopify.com/s/files/1/0624/1878/0271/files/3M_3M070_209a12c4-c6e1-4ee5-a559-94bdd12a7871.jpg?v=1791489671",
+  "site": "ideal.co.nz",
+  "doute": "Image petite, 400 x 267 px, sous le seuil de 500 px. Elle montre un connecteur seul, pas la boîte de 100."
+ },
+ {
+  "forme": "leg-coffret-1m",
+  "nom": "Coffret cache-bornes 1 module",
+  "refs": [
+   "ELDLEG01301"
+  ],
+  "fichier": "leg-coffret-1m-1.jpg",
+  "montre": "coffret Legrand 1 module",
+  "vise": "coffret cache 1 module",
+  "preuve": "page fabricant de la référence 001301",
+  "source": "https://www.legrand.fr/pro/catalogue/coffret-cache-bornes-1-module-blanc-ral9003",
+  "image": "https://www.legrand.fr/sites/default/files/ecat/th_001301-LEGRAND-1000.jpg.webp",
+  "site": "legrand.fr",
+  "doute": "Marque Legrand déduite du préfixe LEG et du numéro 01301, qui correspond au Legrand 001301."
+ },
+ {
+  "forme": "leg-coffret-4m",
+  "nom": "Coffret cache-bornes 4 modules",
+  "refs": [
+   "ELDLEG01304"
+  ],
+  "fichier": "leg-coffret-4m-1.jpg",
+  "montre": "coffret Legrand 4 modules",
+  "vise": "coffret cache 4 modules",
+  "preuve": "page fabricant de la référence 001304",
+  "source": "https://www.legrand.fr/pro/catalogue/coffret-cache-bornes-4-modules-blanc-ral9003",
+  "image": "https://www.legrand.fr/sites/default/files/ecat/th_001304-LEGRAND-1000.jpg.webp",
+  "site": "legrand.fr",
+  "doute": "Marque Legrand déduite du préfixe LEG et du numéro."
+ },
+ {
+  "forme": "leg-coffret-6m",
+  "nom": "Coffret cache-bornes 6 modules",
+  "refs": [
+   "ELDLEG01306"
+  ],
+  "fichier": "leg-coffret-6m-1.jpg",
+  "montre": "coffret Legrand 6 modules",
+  "vise": "coffret cache 6 modules",
+  "preuve": "page fabricant de la référence 001306",
+  "source": "https://www.legrand.fr/pro/catalogue/coffret-cache-bornes-6-modules-blanc-ral9003",
+  "image": "https://www.legrand.fr/sites/default/files/ecat/th_001306-LEGRAND-1000.jpg.webp",
+  "site": "legrand.fr",
+  "doute": "Marque Legrand déduite du préfixe LEG et du numéro."
+ },
+ {
+  "forme": "transfo-itc-image",
+  "nom": "Transformateur pour programmateurs ITC et Image",
+  "refs": [
+   "RD20001"
+  ],
+  "fichier": null,
+  "montre": "",
+  "vise": "transformateur ITC / Image",
+  "preuve": "",
+  "source": "",
+  "image": "",
+  "site": "",
+  "doute": "Je n'ai pas identifié la marque ni le modèle : ITC et Image ne correspondent à aucun produit trouvé. Pas de photo."
+ }
+]

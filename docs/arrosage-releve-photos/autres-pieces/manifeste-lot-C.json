@@ -1,0 +1,1320 @@
+[
+ {
+  "forme": "gag-6mm",
+  "nom": "Tube goutte-à-goutte Ø6 mm, 2 l/h tous les 15 cm",
+  "refs": [
+   "UGGMC-206",
+   "UGGMC-206_N"
+  ],
+  "fichier": null,
+  "montre": null,
+  "vise": "Ø6 mm, 2 l/h, pas de 15 cm, et la version noire",
+  "preuve": null,
+  "source": null,
+  "image": null,
+  "site": null,
+  "doute": "Rien trouvé à 2 l/h en Ø6 : le seul tube Ø6 à goutteurs trouvé (Rain Bird) donne 3 l/h, et ses photos montrent du tube sans goutteurs. Rien téléchargé."
+ },
+ {
+  "forme": "gag-tube-xfs",
+  "nom": "Tube goutte-à-goutte enterrable Rain Bird XFS Ø16",
+  "refs": [
+   "UGGRBXFS"
+  ],
+  "fichier": "gag-tube-xfs-1.jpg",
+  "montre": "Couronne de tube XFS marron, vue d'ensemble",
+  "vise": "Ø16, 2,3 l/h, pas de 33 cm",
+  "preuve": "Page dédiée à la référence RBXFS2333100 (16 mm, 33 cm, 2,3 l/h)",
+  "source": "https://lws.uk.com/RBXFS2333100-Rain-Bird-XFS-16mm-x-33cm-x-23-lh-SubSurface-Dripline-100-metre-coil",
+  "image": "https://lws.uk.com/images/thumbs/0041153_RBXFS2333100-01.jpg.jpeg",
+  "site": "lws.uk.com",
+  "doute": "Image de 400 px seulement, sous le seuil de 500 px. La photo 2 en 1000 px est la même couronne prise chez Rain Bird."
+ },
+ {
+  "forme": "gag-tube-xfs",
+  "nom": "Tube goutte-à-goutte enterrable Rain Bird XFS Ø16",
+  "refs": [
+   "UGGRBXFS"
+  ],
+  "fichier": "gag-tube-xfs-2.jpg",
+  "montre": "Couronne XFS marron, marquage lu « 0.6GPH 12\" » et « XFS »",
+  "vise": "Ø16, 2,3 l/h, pas de 33 cm",
+  "preuve": "Marquage lu sur le tube",
+  "source": "https://www.rainbird.com/products/xfs-subsurface-dripline-copper-shieldtm-technology",
+  "image": "https://www.rainbird.com/sites/default/files/media/images/2019-06/xfs-500ftcoil-newlook.jpg",
+  "site": "rainbird.com",
+  "doute": "C'est la version américaine : le marquage lu dit 0,6 gal/h et 12 pouces, soit 2,3 l/h mais un pas de 30,5 cm, pas 33 cm. La forme est la même."
+ },
+ {
+  "forme": "tuyau-poreux-16",
+  "nom": "Tuyau poreux Ø16",
+  "refs": [
+   "UGG1516"
+  ],
+  "fichier": "tuyau-poreux-16-1.webp",
+  "montre": "Couronne de tuyau poreux noir avec ses raccords",
+  "vise": "Ø16 mm",
+  "preuve": "Page dédiée « tuyau micro-poreux 15 m x 16 mm » (Werka Pro)",
+  "source": "https://www.brico.be/fr/jardin-terrasse-exterieur/arrosage-pompes-recuperation-eau-de-pluie/tuyaux-d-arrosage-accessoires/tuyaux-d-arrosage/werka-pro-tuyau-micro-poreux-de-15-m-x-16-mm/10534310",
+  "image": "https://d2fb1ew6v6wv87.cloudfront.net/products/10534310/s00/1400x1400/origin.webp",
+  "site": "brico.be",
+  "doute": "Marque Werka Pro, pas celle d'Aqua Plus (inconnue). Le débit de 4 l/h par mètre ne se voit pas sur une photo."
+ },
+ {
+  "forme": "shrubbler-bouton",
+  "nom": "Shrubbler réglable 8 jets sur bouton cannelé",
+  "refs": [
+   "MIAOCTA8"
+  ],
+  "fichier": "shrubbler-bouton-1.jpg",
+  "montre": "Ottima 360° 8 jets réglable, embout cannelé 4,5 mm",
+  "vise": "bouton cannelé pour micro-tube 4x6, 0 à 50 l/h",
+  "preuve": "Page dédiée Teco Ottima 360° 8 jets, 4,5 mm Barb (réf. 200016)",
+  "source": "https://dvs-beregnung.de/ottima-360-einstellbarer-8-strahl-sprueher-4-5-mm-barb-200016-bewaesserung",
+  "image": "https://dvs-beregnung.de/media/image/product/7946/lg/ottima-360-einstellbarer-8-strahl-sprueher-4-5-mm-barb-200016-bewaesserung.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Le vendeur annonce 0 à 60 l/h, pas 0 à 50. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus. Pièce petite au centre de l'image."
+ },
+ {
+  "forme": "shrubbler-bouton",
+  "nom": "Shrubbler réglable sur bouton cannelé",
+  "refs": [
+   "MIAOCTA8"
+  ],
+  "fichier": "shrubbler-bouton-2.webp",
+  "montre": "Antelco Shrubbler à pointe cannelée, marquage « SHRUBBLER » lu sur la tête",
+  "vise": "bouton cannelé pour micro-tube 4x6, 0 à 50 l/h",
+  "preuve": "Marquage lu sur la pièce",
+  "source": "https://www.antelco.com/products/drippers/landscape-adjustable-flow/shrubbler",
+  "image": "https://www.antelco.com/assets/images/_productImage/912/31445.webp",
+  "site": "antelco.com",
+  "doute": "Antelco, marque d'origine du nom Shrubbler ; on ne sait pas si Aqua Plus vend celui-ci ou l'Ottima de Teco."
+ },
+ {
+  "forme": "shrubbler-pique",
+  "nom": "Shrubbler réglable sur pique",
+  "refs": [
+   "MIAOCTA8P"
+  ],
+  "fichier": "shrubbler-pique-1.jpg",
+  "montre": "Ottima 360° 8 jets sur pique de 150 mm",
+  "vise": "pique de 10 cm, 0 à 50 l/h",
+  "preuve": "Page dédiée Teco Ottima 360° 8 jets sur pique 150 mm (réf. 204294)",
+  "source": "https://dvs-beregnung.de/ottima-360-einstellbarer-8-strahl-sprueher-150-mm-spiess-in-line-204294-gartenbewaesserung",
+  "image": "https://dvs-beregnung.de/media/image/product/7899/lg/ottima-360-einstellbarer-8-strahl-sprueher-150-mm-spiess-in-line-204294-gartenbewaesserung.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Pique de 15 cm et non 10 cm. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus."
+ },
+ {
+  "forme": "shrubbler-pique",
+  "nom": "Shrubbler réglable sur pique",
+  "refs": [
+   "MIAOCTA8P"
+  ],
+  "fichier": "shrubbler-pique-2.webp",
+  "montre": "Antelco Shrubbler sur pique avec adaptateur pour micro-tube",
+  "vise": "pique de 10 cm, 0 à 50 l/h",
+  "preuve": "Page fabricant Antelco Shrubbler, variante « Spike with Adaptor »",
+  "source": "https://www.antelco.com/products/drippers/landscape-adjustable-flow/shrubbler",
+  "image": "https://www.antelco.com/assets/images/_productImage/914/31495-new.webp",
+  "site": "antelco.com",
+  "doute": "Longueur de la pique non donnée par Antelco ; marque d'Aqua Plus inconnue."
+ },
+ {
+  "forme": "micro-stake",
+  "nom": "Pique 30 cm avec tubing (Micro Stake)",
+  "refs": [
+   "MIALST4A"
+  ],
+  "fichier": "micro-stake-1.jpg",
+  "montre": "Pique Ultra Stake 310 mm avec micro-tube souple et adaptateur",
+  "vise": "pique 30 cm, tubing 40 cm, prise 4x6",
+  "preuve": "Page dédiée Teco Ultra Stake 310 mm mit Mikro Adapter 500 mm (réf. 205702)",
+  "source": "https://dvs-beregnung.de/ultra-stake-310-mm-mit-mikro-adapter-500-mm-fpvc-205702",
+  "image": "https://dvs-beregnung.de/media/image/product/755/lg/ultra-stake-310-mm-mit-mikro-adapter-500-mm-fpvc-205702.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Tubing de 50 cm sur cette pièce, pas 40 cm, et le nom « Micro Stake » est celui d'Antelco. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus."
+ },
+ {
+  "forme": "allonge-30",
+  "nom": "Allonge 30 cm pour pique",
+  "refs": [
+   "MIA4254"
+  ],
+  "fichier": "allonge-30-1.jpg",
+  "montre": "Tube rigide de 300 mm avec adaptateur fileté",
+  "vise": "allonge 30 cm",
+  "preuve": "Page dédiée Teco Festes Steigrohr 300 mm (réf. 200846)",
+  "source": "https://dvs-beregnung.de/festes-steigrohr-300-mm-mit-fast-gewinde-adapter-200846",
+  "image": "https://dvs-beregnung.de/media/image/product/749/lg/festes-steigrohr-300-mm-mit-fast-gewinde-adapter-200846.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Rien ne prouve que cette allonge s'emboîte sur la pique MIALST4A. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus."
+ },
+ {
+  "forme": "micro-jet-360",
+  "nom": "Micro-jet 360° réglable",
+  "refs": [
+   "MIA2131"
+  ],
+  "fichier": "micro-jet-360-1.jpg",
+  "montre": "Teco Idra 360° : jet monté sur une mini-vanne de réglage",
+  "vise": "360°, 98 l/h, réglable 0 à 4 m",
+  "preuve": "Page dédiée Teco Idra 360° (réf. 200115)",
+  "source": "https://dvs-beregnung.de/idra-360-x-18-strahl-10-32-unf-gewinde-schwarz-200115-garten-bewaessern",
+  "image": "https://dvs-beregnung.de/media/image/product/468/lg/idra-360-x-18-strahl-10-32-unf-gewinde-schwarz-200115-garten-bewaessern.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Douteux : l'Idra donne 54 à 119 l/h et 5 à 7,5 m de portée, pas 0 à 4 m. Le secteur ne se lit pas sur la photo, et le jet est petit à côté de la vanne. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus."
+ },
+ {
+  "forme": "micro-jet-180",
+  "nom": "Micro-jet 180° réglable",
+  "refs": [
+   "MIA2132"
+  ],
+  "fichier": "micro-jet-180-1.jpg",
+  "montre": "Teco Idra 180° : jet monté sur une mini-vanne de réglage",
+  "vise": "180°, 98 l/h, réglable 0 à 3 m",
+  "preuve": "Page dédiée Teco Idra 180° (réf. 200095)",
+  "source": "https://dvs-beregnung.de/idra-180-10-32-unf-gewinde-schwarz-200095-garten-bewaessern",
+  "image": "https://dvs-beregnung.de/media/image/product/466/lg/idra-180-10-32-unf-gewinde-schwarz-200095-garten-bewaessern.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Douteux : l'Idra donne 54 à 119 l/h et 5 à 7,5 m de portée, pas 0 à 4 m. Le secteur ne se lit pas sur la photo, et le jet est petit à côté de la vanne. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus."
+ },
+ {
+  "forme": "micro-jet-90",
+  "nom": "Micro-jet 90° réglable",
+  "refs": [
+   "MIA2133"
+  ],
+  "fichier": "micro-jet-90-1.jpg",
+  "montre": "Teco Idra 90° : jet monté sur une mini-vanne de réglage",
+  "vise": "90°, 98 l/h, réglable 0 à 2,9 m",
+  "preuve": "Page dédiée Teco Idra 90° (réf. 200075)",
+  "source": "https://dvs-beregnung.de/idra-90-10-32-unf-gewinde-schwarz-200075-beregnen",
+  "image": "https://dvs-beregnung.de/media/image/product/464/lg/idra-90-10-32-unf-gewinde-schwarz-200075-beregnen.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Douteux : l'Idra donne 54 à 119 l/h et 5 à 7,5 m de portée, pas 0 à 4 m. Le secteur ne se lit pas sur la photo, et le jet est petit à côté de la vanne. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus."
+ },
+ {
+  "forme": "vari-aquila-spike-360",
+  "nom": "Vari Aquila Spike 360°",
+  "refs": [
+   "MIA5121"
+  ],
+  "fichier": "vari-aquila-spike-360-1.jpg",
+  "montre": "Teco Aquila Jet Spike 310 mm 360° avec son tube",
+  "vise": "360°",
+  "preuve": "Page dédiée Teco Aquila Jet Spike 310 mm 360° (réf. 200362)",
+  "source": "https://dvs-beregnung.de/aquila-jet-spiess-310-mm-360-x-18-strahl-schwarze-kappe-rote-basis-200362",
+  "image": "https://dvs-beregnung.de/media/image/product/477/lg/aquila-jet-spiess-310-mm-360-x-18-strahl-schwarze-kappe-rote-basis-200362.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Le nom vendeur est « Aquila Jet Spike », pas « Vari Aquila Spike ». Pièce fine et petite dans le cadre ; le secteur ne se lit pas sur la photo."
+ },
+ {
+  "forme": "vari-aquila-spike-180",
+  "nom": "Vari Aquila Spike 180°",
+  "refs": [
+   "MIA5122"
+  ],
+  "fichier": "vari-aquila-spike-180-1.jpg",
+  "montre": "Teco Aquila Jet Spike 310 mm 180° avec son tube",
+  "vise": "180°",
+  "preuve": "Page dédiée Teco Aquila Jet Spike 310 mm 180° (réf. 200352)",
+  "source": "https://dvs-beregnung.de/aquila-jet-spiess-310-mm-180-schwarz-kapperot-basis-200352",
+  "image": "https://dvs-beregnung.de/media/image/product/476/lg/aquila-jet-spiess-310-mm-180-schwarz-kapperot-basis-200352.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Le nom vendeur est « Aquila Jet Spike », pas « Vari Aquila Spike ». Pièce fine et petite dans le cadre ; le secteur ne se lit pas sur la photo."
+ },
+ {
+  "forme": "vari-aquila-spike-90",
+  "nom": "Vari Aquila Spike 90°",
+  "refs": [
+   "MIA5123"
+  ],
+  "fichier": "vari-aquila-spike-90-1.jpg",
+  "montre": "Teco Aquila Jet Spike 310 mm 90° avec son tube",
+  "vise": "90°",
+  "preuve": "Page dédiée Teco Aquila Jet Spike 310 mm 90° (réf. 200342)",
+  "source": "https://dvs-beregnung.de/aquila-jet-spiess-310-mm-90-schwarze-kappe-rote-basis-200342",
+  "image": "https://dvs-beregnung.de/media/image/product/475/lg/aquila-jet-spiess-310-mm-90-schwarze-kappe-rote-basis-200342.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Le nom vendeur est « Aquila Jet Spike », pas « Vari Aquila Spike ». Pièce fine et petite dans le cadre ; le secteur ne se lit pas sur la photo."
+ },
+ {
+  "forme": "vari-aquila-spike-180",
+  "nom": "Vari Aquila Spike 180°",
+  "refs": [
+   "MIA5122"
+  ],
+  "fichier": "vari-aquila-spike-180-2.jpg",
+  "montre": "Dessin de la pique avec tube et jet à capuchon rouge",
+  "vise": "180°",
+  "preuve": "Page dédiée « Vari Aquila Spike 180° » (marque Teco)",
+  "source": "https://www.pompes-arrosage.com/produit/vari-aquila-spike-180/",
+  "image": "https://www.pompes-arrosage.com/wp-content/uploads/2020/11/micro-jets-aquila.jpg",
+  "site": "pompes-arrosage.com",
+  "doute": "C'est un dessin, pas une photo, et l'image s'appelle « micro-jets-aquila » : elle sert peut-être aux trois secteurs du vendeur. Seul le nom exact de la page colle."
+ },
+ {
+  "forme": "micro-jet-brouillard",
+  "nom": "Micro-jet brouillard",
+  "refs": [
+   "MIA20340"
+  ],
+  "fichier": "micro-jet-brouillard-1.jpg",
+  "montre": "Teco Aquila Micro-Mist, buse noire sur embase jaune",
+  "vise": "20 l/h, 0,4 m",
+  "preuve": "Page dédiée Teco Aquila Jet Micro-Mist (réf. 205026)",
+  "source": "https://dvs-beregnung.de/aquila-jet-micro-mist-nebelduese-mikro-nebler-fuer-befeuchtung-und-kuehlung-205026",
+  "image": "https://dvs-beregnung.de/media/image/product/544/lg/aquila-jet-micro-mist-nebelduese-mikro-nebler-fuer-befeuchtung-und-kuehlung-205026.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "18 l/h annoncés, pas 20 l/h. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus."
+ },
+ {
+  "forme": "micro-jet-rotatif",
+  "nom": "Micro-jet 360° 123 l/h",
+  "refs": [
+   "MIA2137"
+  ],
+  "fichier": "micro-jet-rotatif-1.jpg",
+  "montre": "Teco Single Piece Jet 360° bleu",
+  "vise": "360°, 123 l/h, réglable 0 à 4 m",
+  "preuve": "Page dédiée Teco Single Piece Jet 360° 123 l/h (réf. 100946)",
+  "source": "https://dvs-beregnung.de/single-piece-jet-blau360-100946-garten-bewaessern",
+  "image": "https://dvs-beregnung.de/media/image/product/613/lg/single-piece-jet-blau360-100946-garten-bewaessern.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Le débit de 123 l/h colle, mais ce jet n'est ni rotatif ni réglable. Probablement pas la bonne pièce."
+ },
+ {
+  "forme": "single-jet-strip",
+  "nom": "Micro single jet strip bleu",
+  "refs": [
+   "MIA2035"
+  ],
+  "fichier": "single-jet-strip-1.jpg",
+  "montre": "Teco Single Piece Jet Strip bleu",
+  "vise": "jet en bande, bleu",
+  "preuve": "Page dédiée Teco Single Piece Jet Strip 63 l/h (réf. 100956)",
+  "source": "https://dvs-beregnung.de/single-piece-jet-blaustrip-100956-garten-bewaessern",
+  "image": "https://dvs-beregnung.de/media/image/product/614/lg/single-piece-jet-blaustrip-100956-garten-bewaessern.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus."
+ },
+ {
+  "forme": "minijet-90",
+  "nom": "Minijet 90° bleu",
+  "refs": [
+   "MIA2036"
+  ],
+  "fichier": null,
+  "montre": null,
+  "vise": "90°, bleu",
+  "preuve": null,
+  "source": "https://dvs-beregnung.de/single-piece-jet-blau180-100936-bewaessern",
+  "image": null,
+  "site": "dvs-beregnung.de",
+  "doute": "Trouvé seulement les versions 180°, 360° et bande du même jet bleu Teco. Rien à 90°, rien téléchargé."
+ },
+ {
+  "forme": "micro-tube-4x6",
+  "nom": "Micro-tube",
+  "refs": [
+   "MIDT7MM25",
+   "MIDT7MM50"
+  ],
+  "fichier": "micro-tube-4x6-1.jpg",
+  "montre": "Couronne de micro-tube vinyle noir 4 x 7 mm, 10 m",
+  "vise": "4x6 mm",
+  "preuve": "Page dédiée « Mikroschlauch 4 mm ID x 7 mm AD »",
+  "source": "https://dvs-beregnung.de/10m-von-mikroschlauch-4mm-id-x-7mm-ad",
+  "image": "https://dvs-beregnung.de/media/image/product/6711/lg/10m-von-mikroschlauch-4mm-id-x-7mm-ad.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "C'est du 4 x 7 et non du 4 x 6 : même aspect, mais pas la taille visée. À refuser si la règle est stricte."
+ },
+ {
+  "forme": "perceur-3mm",
+  "nom": "Perceur 3 mm pour PE",
+  "refs": [
+   "MID3904"
+  ],
+  "fichier": "perceur-3mm-1.png",
+  "montre": "Emporte-pièce à manche noir et pointe laiton",
+  "vise": "perceur 3 mm",
+  "preuve": "Page dédiée « emporte-pièce pour capillaire et goutteur »",
+  "source": "https://www.mon-irrigation.com/goutte-a-goutte/100-emporte-piece-pour-capillaire-et-goutteur.html",
+  "image": "https://www.mon-irrigation.com/68-product_zoom/emporte-piece-pour-capillaire-et-goutteur.jpg",
+  "site": "mon-irrigation.com",
+  "doute": "Diamètre de perçage non donné par la page. Filigrane « mon-irrigation.com » sur tout le fond."
+ },
+ {
+  "forme": "perceur-pince-16-20",
+  "nom": "Pince perforatrice 16/20",
+  "refs": [
+   "MID1221"
+  ],
+  "fichier": "perceur-pince-16-20-1.png",
+  "montre": "Pince perforatrice blanche et bleue",
+  "vise": "pince 3 mm pour tube 16/20",
+  "preuve": "Page dédiée « pince perforatrice pour tuyau goutte à goutte 16-20 mm »",
+  "source": "https://www.mon-irrigation.com/goutteurs-et-accessoires/733-pince-perforatrice-pour-tuyau-goutte-a-goutte-16-20-mm.html",
+  "image": "https://www.mon-irrigation.com/1344-product_zoom/pince-perforatrice-pour-tuyau-goutte-a-goutte-16-20-mm.jpg",
+  "site": "mon-irrigation.com",
+  "doute": "Filigrane « mon-irrigation.com » sur tout le fond. Diamètre du trou non dit."
+ },
+ {
+  "forme": "perceur-pince-25-32",
+  "nom": "Pince perforatrice 25/32",
+  "refs": [
+   "MID1222"
+  ],
+  "fichier": "perceur-pince-25-32-1.png",
+  "montre": "Pince perforatrice noire et bleue",
+  "vise": "pince 3 mm pour tube 25/32",
+  "preuve": "Page dédiée « pince perforatrice pour tuyaux goutte à goutte 25-32 mm »",
+  "source": "https://www.mon-irrigation.com/goutteurs-et-accessoires/732-pince-perforatrice-pour-tuyaux-goutte-a-goutte-25-32mm.html",
+  "image": "https://www.mon-irrigation.com/1339-product_zoom/pince-perforatrice-pour-tuyaux-goutte-a-goutte-25-32mm.jpg",
+  "site": "mon-irrigation.com",
+  "doute": "Filigrane « mon-irrigation.com » sur tout le fond. La pince 25/32 a un corps noir, la 16/20 un corps blanc : deux formes."
+ },
+ {
+  "forme": "prise-eau-4x6",
+  "nom": "Prise d'eau 4x6",
+  "refs": [
+   "MID3201"
+  ],
+  "fichier": "prise-eau-4x6-1.jpg",
+  "montre": "Raccord droit double cannelé 4,5 mm",
+  "vise": "4x6 mm",
+  "preuve": "Page dédiée Teco Verbinder gerade / Doppel-Nippel 3/16\" (réf. 100406)",
+  "source": "https://dvs-beregnung.de/verbinder-gerade-doppel-nippel-3-16-45mm-mikrobewaesserung",
+  "image": "https://dvs-beregnung.de/media/image/product/719/lg/verbinder-gerade-doppel-nippel-3-16-zoll-45mm-100406-bewaesserung.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Une prise d'eau se pique dans le tube PE ; celle-ci est un double cannelé, peut-être une simple jonction. Raccord Teco pour micro-tube 3/16\" (embout 4,5 mm), prévu pour du 4 x 6 et du 4 x 7. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus. Pièce petite au centre."
+ },
+ {
+  "forme": "te-4x6",
+  "nom": "Té 4x6",
+  "refs": [
+   "MID3302"
+  ],
+  "fichier": "te-4x6-1.jpg",
+  "montre": "Té cannelé noir 4,5 mm",
+  "vise": "4x6 mm",
+  "preuve": "Page dédiée Teco T-Stück 3/16\" (réf. 100445)",
+  "source": "https://dvs-beregnung.de/t-stueck-verbinder-3-16-zoll-45mm-100445-bewaesserung",
+  "image": "https://dvs-beregnung.de/media/image/product/7348/lg/t-stueck-verbinder-3-16-zoll-45mm-100445-bewaesserung.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Raccord Teco pour micro-tube 3/16\" (embout 4,5 mm), prévu pour du 4 x 6 et du 4 x 7. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus. Pièce petite au centre."
+ },
+ {
+  "forme": "croix-4x6",
+  "nom": "Croix 4x6",
+  "refs": [
+   "MID3303"
+  ],
+  "fichier": "croix-4x6-1.jpg",
+  "montre": "Croix cannelée noire 4,5 mm",
+  "vise": "4x6 mm",
+  "preuve": "Page dédiée Teco Kreuz-Stück 4,5 mm (réf. 100675)",
+  "source": "https://dvs-beregnung.de/kreuz-verbinder-3-16-zoll-45mm-barb-100675-gartenbewaesserung",
+  "image": "https://dvs-beregnung.de/media/image/product/726/lg/kreuz-verbinder-3-16-zoll-45mm-barb-100675-gartenbewaesserung~2.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Raccord Teco pour micro-tube 3/16\" (embout 4,5 mm), prévu pour du 4 x 6 et du 4 x 7. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus. Pièce petite au centre."
+ },
+ {
+  "forme": "coude-4x6",
+  "nom": "Coude 4x6",
+  "refs": [
+   "MID3304"
+  ],
+  "fichier": "coude-4x6-1.jpg",
+  "montre": "Coude cannelé noir 4,5 mm",
+  "vise": "4x6 mm",
+  "preuve": "Page dédiée Winkel Verbinder 90° 3/16\" (4,5 mm)",
+  "source": "https://dvs-beregnung.de/winkel-verbinder-90-3-16-45mm",
+  "image": "https://dvs-beregnung.de/media/image/product/8215/lg/winkel-verbinder-90-3-16-45mm.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Raccord Teco pour micro-tube 3/16\" (embout 4,5 mm), prévu pour du 4 x 6 et du 4 x 7. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus. Pièce petite au centre."
+ },
+ {
+  "forme": "bouchon-4x6",
+  "nom": "Bouchon 4x6 en grappe de 10",
+  "refs": [
+   "MID3412"
+  ],
+  "fichier": "bouchon-4x6-1.jpg",
+  "montre": "Grappe de 10 bouchons cannelés, vue de face",
+  "vise": "4x6 mm, grappe de 10",
+  "preuve": "Page dédiée Teco Endverschluss 4,5 mm, 10 Stück (réf. 100802)",
+  "source": "https://dvs-beregnung.de/endverschluss-4-5mm-10er-pack-100802-garten-bewaessern",
+  "image": "https://dvs-beregnung.de/media/image/product/727/lg/endverschluss-4-5mm-10er-pack-100802-garten-bewaessern.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Raccord Teco pour micro-tube 3/16\" (embout 4,5 mm), prévu pour du 4 x 6 et du 4 x 7. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus. Pièce petite au centre."
+ },
+ {
+  "forme": "bouchon-4x6",
+  "nom": "Bouchon 4x6 en grappe de 10",
+  "refs": [
+   "MID3412"
+  ],
+  "fichier": "bouchon-4x6-2.jpg",
+  "montre": "Même grappe, vue de biais",
+  "vise": "4x6 mm, grappe de 10",
+  "preuve": "Page dédiée Teco Endverschluss 4,5 mm, 10 Stück (réf. 100802)",
+  "source": "https://dvs-beregnung.de/endverschluss-4-5mm-10er-pack-100802-garten-bewaessern",
+  "image": "https://dvs-beregnung.de/media/image/product/727/lg/endverschluss-4-5mm-10er-pack-100802-garten-bewaessern~2.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Raccord Teco pour micro-tube 3/16\" (embout 4,5 mm), prévu pour du 4 x 6 et du 4 x 7. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus. Pièce petite au centre."
+ },
+ {
+  "forme": "vannette-4x6",
+  "nom": "Vannette 4x6",
+  "refs": [
+   "MIAL3401"
+  ],
+  "fichier": "vannette-4x6-1.jpg",
+  "montre": "Mini-robinet à boisseau, deux embouts cannelés 4,5 mm",
+  "vise": "4x6 mm",
+  "preuve": "Page dédiée Teco Micro-Drip Mini-Kugelhahn 4,5 mm (réf. 200865)",
+  "source": "https://dvs-beregnung.de/mikroventil-mikrokugelhahn-3-16-zoll-45mm-barb-200865-bewaessern",
+  "image": "https://dvs-beregnung.de/media/image/product/671/lg/mikroventil-mikrokugelhahn-3-16-zoll-45mm-barb-200865-bewaessern~2.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Raccord Teco pour micro-tube 3/16\" (embout 4,5 mm), prévu pour du 4 x 6 et du 4 x 7. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus. Pièce petite au centre."
+ },
+ {
+  "forme": "jonction-cannelee-16",
+  "nom": "Jonction cannelée",
+  "refs": [
+   "MID6101",
+   "MID6102"
+  ],
+  "fichier": "jonction-cannelee-16-1.jpg",
+  "montre": "Jonction droite cannelée noire",
+  "vise": "Ø16",
+  "preuve": "Page dédiée « Verbinder gerade / Kupplung für PE-Rohr 1/2\" (13mm ID) »",
+  "source": "https://dvs-beregnung.de/verbinder-gerade-kupplung-pe-rohr-1-2-zoll-bewaesserung",
+  "image": "https://dvs-beregnung.de/media/image/product/7380/lg/verbinder-gerade-kupplung-pe-rohr-1-2-zoll-bewaesserung.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Raccord Teco pour tube PE 1/2\" (13 mm intérieur), donc du Ø16 extérieur. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus."
+ },
+ {
+  "forme": "te-cannele-16",
+  "nom": "Té cannelé",
+  "refs": [
+   "MID6121",
+   "MID6122"
+  ],
+  "fichier": "te-cannele-16-1.jpg",
+  "montre": "Té cannelé noir",
+  "vise": "Ø16",
+  "preuve": "Page dédiée « T-Stück Verbinder für PE-Rohr 1/2\" (13mm ID) »",
+  "source": "https://dvs-beregnung.de/t-stueck-verbinder-pe-rohr-1-2-zoll-bewaesserung",
+  "image": "https://dvs-beregnung.de/media/image/product/7356/lg/t-stueck-verbinder-pe-rohr-1-2-zoll-bewaesserung.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Raccord Teco pour tube PE 1/2\" (13 mm intérieur), donc du Ø16 extérieur. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus."
+ },
+ {
+  "forme": "coude-cannele-16",
+  "nom": "Coude cannelé",
+  "refs": [
+   "MID6141",
+   "MID6142"
+  ],
+  "fichier": "coude-cannele-16-1.jpg",
+  "montre": "Coude 90° cannelé noir",
+  "vise": "Ø16",
+  "preuve": "Page dédiée « Winkel Verbinder 90° für PE-Rohr 1/2\" (13mm ID) »",
+  "source": "https://dvs-beregnung.de/winkel-verbinder-90-grad-pe-rohr-1-2-zoll-bewaesserung",
+  "image": "https://dvs-beregnung.de/media/image/product/7352/lg/winkel-verbinder-90-grad-pe-rohr-1-2-zoll-bewaesserung.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Raccord Teco pour tube PE 1/2\" (13 mm intérieur), donc du Ø16 extérieur. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus."
+ },
+ {
+  "forme": "bouchon-cannele-16",
+  "nom": "Bouchon cannelé",
+  "refs": [
+   "MID6171",
+   "MID6172"
+  ],
+  "fichier": "bouchon-cannele-16-1.jpg",
+  "montre": "Bouchon cannelé noir à anneau",
+  "vise": "Ø16",
+  "preuve": "Page dédiée « Endstopfen / Verschluss für PE-Rohr 1/2\" (13mm ID) »",
+  "source": "https://dvs-beregnung.de/endstopfen-verschluss-pe-rohr-1-2-zoll-beregnung-mikrobewaesserung",
+  "image": "https://dvs-beregnung.de/media/image/product/7344/lg/endstopfen-verschluss-pe-rohr-1-2-zoll-beregnung-mikrobewaesserung.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Raccord Teco pour tube PE 1/2\" (13 mm intérieur), donc du Ø16 extérieur. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus."
+ },
+ {
+  "forme": "bouchon-8-16",
+  "nom": "Bouchon « 8 » fin de ligne",
+  "refs": [
+   "MID6451"
+  ],
+  "fichier": "bouchon-8-16-1.jpg",
+  "montre": "Bouchon en forme de 8, Netafim",
+  "vise": "Ø16",
+  "preuve": "Page dédiée Netafim Figure 8 Line End 16 mm (H620FIG8-B)",
+  "source": "https://hydrobuilder.com/products/netafim-figure-8-line-end-16mm-pack-of-100-h620fig8-b",
+  "image": "https://hydrobuilder.com/cdn/shop/files/print_tlfig8_1-gigapixel-high_fidelity_v2-3x_ed18c759-c4af-4970-985e-bc6c32e801e2.jpg?v=1778266784",
+  "site": "hydrobuilder.com",
+  "doute": "Image agrandie par logiciel (nom « gigapixel »), un peu floue. Marque Netafim, celle d'Aqua Plus inconnue."
+ },
+ {
+  "forme": "bouchon-8-16",
+  "nom": "Bouchon « 8 » fin de ligne",
+  "refs": [
+   "MID6451"
+  ],
+  "fichier": "bouchon-8-16-2.jpg",
+  "montre": "Bouchon en forme de 8, noir, PP",
+  "vise": "Ø16",
+  "preuve": "Page dédiée « Figure 8 end closure PP 16 mm black »",
+  "source": "https://www.bosta.com/figure-8-end-closure-7020667m",
+  "image": "https://swfile.azureedge.net/sw6media/media/de/b8/1c/1707840984/fd76fd6d-7020667M-optimized.jpg?ts=1707842095",
+  "site": "bosta.com",
+  "doute": "Marque du distributeur Bosta, celle d'Aqua Plus inconnue."
+ },
+ {
+  "forme": "collier-16",
+  "nom": "Collier plastique",
+  "refs": [
+   "MID6711",
+   "MID6712"
+  ],
+  "fichier": "collier-16-1.jpg",
+  "montre": "Collier plastique à cran noir",
+  "vise": "Ø16",
+  "preuve": "Page dédiée « Schlauchklemme für Versorgungsleitung 1/2\" (AD 16-18) »",
+  "source": "https://dvs-beregnung.de/schlauchklemme-fuer-versorgungsleitung-1-2-zoll-ad-16-18-101336-bewaesserung",
+  "image": "https://dvs-beregnung.de/media/image/product/7376/lg/schlauchklemme-fuer-versorgungsleitung-1-2-zoll-ad-16-18-101336-bewaesserung.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Raccord Teco pour tube PE 1/2\" (13 mm intérieur), donc du Ø16 extérieur. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus."
+ },
+ {
+  "forme": "crampon-noir",
+  "nom": "Crampon de sol noir",
+  "refs": [
+   "MID6511"
+  ],
+  "fichier": "crampon-noir-1.png",
+  "montre": "Crampon de sol noir à crochet",
+  "vise": "Ø16-20, noir",
+  "preuve": "Page dédiée « crampon de sol polyéthylène 16-20 mm »",
+  "source": "https://www.mon-irrigation.com/polyethylene-goutte-a-goutte-accessoires/283-crampon-de-sol-polyethylene-16-20-mm-0000000000000.html",
+  "image": "https://www.mon-irrigation.com/1119-product_zoom/crampon-de-sol-polyethylene-16-20-mm.jpg",
+  "site": "mon-irrigation.com",
+  "doute": "Filigrane « mon-irrigation.com » sur le fond."
+ },
+ {
+  "forme": "crampon-noir",
+  "nom": "Crampon de sol noir",
+  "refs": [
+   "MID6511"
+  ],
+  "fichier": "crampon-noir-2.jpg",
+  "montre": "Crampon de sol noir, vu couché",
+  "vise": "Ø16-20, noir",
+  "preuve": "Page dédiée « Erdhaken für PE-Rohr 16 bis 20mm »",
+  "source": "https://dvs-beregnung.de/erdhaken-fuer-pe-rohr-16-bis-20mm",
+  "image": "https://dvs-beregnung.de/media/image/product/7298/lg/erdhaken-fuer-pe-rohr-16-bis-20mm.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": ""
+ },
+ {
+  "forme": "crampon-marron",
+  "nom": "Crampon de sol marron",
+  "refs": [
+   "MID6514"
+  ],
+  "fichier": "crampon-marron-1.jpg",
+  "montre": "Crampon de sol marron",
+  "vise": "Ø16-20, marron",
+  "preuve": "Page dédiée « Erdhaken (Braun) für PE-Rohr 16 bis 20 mm »",
+  "source": "https://dvs-beregnung.de/erdhaken-braun-fuer-pe-rohr-mit-16-mm-bis-20-mm-ad-103943_1",
+  "image": "https://dvs-beregnung.de/media/image/product/7321/lg/erdhaken-braun-fuer-pe-rohr-mit-16-mm-bis-20-mm-ad-103943_1.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": ""
+ },
+ {
+  "forme": "embout-can16-fil",
+  "nom": "Embout cannelé x fileté",
+  "refs": [
+   "MID6151",
+   "MID6152",
+   "MID6254"
+  ],
+  "fichier": "embout-can16-fil-1.webp",
+  "montre": "Antelco Director : embout cannelé, marquage « 13mm » lu, filetage mâle",
+  "vise": "Ø16 x fileté",
+  "preuve": "Marquage « 13mm » lu sur la pièce",
+  "source": "https://antelco.com/products/fittings/low-density-polyetheylene/directors-end-plugs-saddles",
+  "image": "https://www.antelco.com/assets/images/_productImage/995/Director.webp",
+  "site": "antelco.com",
+  "doute": "Le 13 mm d'Antelco est le diamètre intérieur, à peu près notre Ø16. La taille du filetage (1/2\" ou 3/4\") ne se lit pas. Marque d'Aqua Plus inconnue."
+ },
+ {
+  "forme": "embout-can16-tar34",
+  "nom": "Embout cannelé Ø16 x taraudé 3/4\" écrou tournant",
+  "refs": [
+   "MID6162"
+  ],
+  "fichier": "embout-can16-tar34-1.jpg",
+  "montre": "Embout cannelé avec écrou tournant taraudé",
+  "vise": "Ø16 x 3/4\" taraudé",
+  "preuve": "Page dédiée Teco Reduzierung 3/4\" IG x 1/2\" (16 mm) (réf. 203964)",
+  "source": "https://dvs-beregnung.de/reduzierung-von-3-4-innengewinde-auf-pe-rohr-1-2-zoll-16mm-203964",
+  "image": "https://dvs-beregnung.de/media/image/product/732/lg/reduzierung-von-3-4-innengewinde-auf-pe-rohr-1-2-zoll-16mm-203964.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Raccord Teco pour tube PE 1/2\" (13 mm intérieur), donc du Ø16 extérieur. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus."
+ },
+ {
+  "forme": "vannette-can16",
+  "nom": "Vannette cannelée",
+  "refs": [
+   "MID6601",
+   "MID6602"
+  ],
+  "fichier": "vannette-can16-1.jpg",
+  "montre": "Robinet à boisseau, deux embouts cannelés, poignée rouge",
+  "vise": "Ø16 x 16",
+  "preuve": "Page dédiée Teco Kugelhahn Heavy Duty 1/2\" PE-Rohr (13 mm ID)",
+  "source": "https://dvs-beregnung.de/heavy-duty-kugelhahn-absperr-ventil-fuer-1-2-zoll-pe-rohr-13mm-id",
+  "image": "https://dvs-beregnung.de/media/image/product/676/lg/heavy-duty-kugelhahn-absperr-ventil-fuer-1-2-zoll-pe-rohr-13mm-id.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Raccord Teco pour tube PE 1/2\" (13 mm intérieur), donc du Ø16 extérieur. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus."
+ },
+ {
+  "forme": "vannette-fil34-can16",
+  "nom": "Vannette fileté 3/4\" x cannelée",
+  "refs": [
+   "MID6611",
+   "MID6612"
+  ],
+  "fichier": "vannette-fil34-can16-1.jpg",
+  "montre": "Robinet à boisseau, un côté fileté mâle, un côté cannelé",
+  "vise": "fil 3/4\" x Ø16",
+  "preuve": "Page dédiée Teco Kugelhahn 13 mm x 3/4\" AG (réf. 201913)",
+  "source": "https://dvs-beregnung.de/kugelhahn-13-mm-kunststoff-barb-x-3-4-zoll-bsp-m-aussengewinde-maennlich-201913",
+  "image": "https://dvs-beregnung.de/media/image/product/695/lg/kugelhahn-13-mm-kunststoff-barb-x-3-4-zoll-bsp-m-aussengewinde-maennlich-201913.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Raccord Teco pour tube PE 1/2\" (13 mm intérieur), donc du Ø16 extérieur. Pièce Teco (fabricant italien des Aquila et Ottima), forme seule ; aucune page ne prouve que c'est la marque vendue par Aqua Plus."
+ },
+ {
+  "forme": "vannette-fil-fil",
+  "nom": "Vannette fileté x fileté",
+  "refs": [
+   "MID6621",
+   "MID31562020"
+  ],
+  "fichier": null,
+  "montre": null,
+  "vise": "fil 3/4\" x 3/4\"",
+  "preuve": null,
+  "source": "https://www.mon-irrigation.com/vannettes-plastique/154-187-vannette-plastique-filetee-pour-goutte-a-goutte.html",
+  "image": null,
+  "site": "mon-irrigation.com",
+  "doute": "Une bonne photo mâle x mâle existe, mais la page sert à la fois le 1/2\" et le 3/4\" avec les mêmes images : la taille n'est pas prouvée. Rien téléchargé."
+ },
+ {
+  "forme": "palaplast-embout-tar-16-34",
+  "nom": "Embout Palaplast taraudé 16 x 3/4\"",
+  "refs": [
+   "MID6362"
+  ],
+  "fichier": "palaplast-embout-tar-16-34-1.jpg",
+  "montre": "Raccord Palaplast à bague, vu côté tube",
+  "vise": "16 x 3/4\" taraudé",
+  "preuve": "Page dédiée Palaplast FA 16-2, 16 mm x 3/4\" IG (marque lue dans la fiche)",
+  "source": "https://dvs-beregnung.de/anschluss-gerade-16-mm-x-3-4-zoll-ig-fa-16-2-bewaesserung",
+  "image": "https://dvs-beregnung.de/media/image/product/6342/lg/anschluss-gerade-16-mm-x-3-4-zoll-ig-fa-16-2-bewaesserung.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Pièce petite au centre de l'image."
+ },
+ {
+  "forme": "palaplast-embout-tar-16-34",
+  "nom": "Embout Palaplast taraudé 16 x 3/4\"",
+  "refs": [
+   "MID6362"
+  ],
+  "fichier": "palaplast-embout-tar-16-34-2.jpg",
+  "montre": "Même raccord, vu côté taraudage",
+  "vise": "16 x 3/4\" taraudé",
+  "preuve": "Page dédiée Palaplast FA 16-2",
+  "source": "https://dvs-beregnung.de/anschluss-gerade-16-mm-x-3-4-zoll-ig-fa-16-2-bewaesserung",
+  "image": "https://dvs-beregnung.de/media/image/product/6342/lg/anschluss-gerade-16-mm-x-3-4-zoll-ig-fa-16-2-bewaesserung~2.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Pièce petite au centre de l'image."
+ },
+ {
+  "forme": "palaplast-vannette-16",
+  "nom": "Vannette Palaplast Ø16",
+  "refs": [
+   "MID6631"
+  ],
+  "fichier": "palaplast-vannette-16-1.jpg",
+  "montre": "Vanne Palaplast VRTP 16 à bagues, poignée rouge",
+  "vise": "Ø16",
+  "preuve": "Page dédiée Palaplast VRTP 16, 16 x 16 mm",
+  "source": "https://dvs-beregnung.de/kugelventil-16-x-16-mm-kombiniert-vrtp-16-bewaesserung",
+  "image": "https://dvs-beregnung.de/media/image/product/6370/lg/kugelventil-16-x-16-mm-kombiniert-vrtp-16-bewaesserung.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": ""
+ },
+ {
+  "forme": "palaplast-vannette-16",
+  "nom": "Vannette Palaplast Ø16",
+  "refs": [
+   "MID6631"
+  ],
+  "fichier": "palaplast-vannette-16-2.jpg",
+  "montre": "Même vanne, vue de biais",
+  "vise": "Ø16",
+  "preuve": "Page dédiée Palaplast VRTP 16",
+  "source": "https://dvs-beregnung.de/kugelventil-16-x-16-mm-kombiniert-vrtp-16-bewaesserung",
+  "image": "https://dvs-beregnung.de/media/image/product/6370/lg/kugelventil-16-x-16-mm-kombiniert-vrtp-16-bewaesserung~2.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": ""
+ },
+ {
+  "forme": "cable-r2v-1x15",
+  "nom": "Câble RO2V 1 x 1,5 mm²",
+  "refs": [
+   "ELC4001"
+  ],
+  "fichier": null,
+  "montre": null,
+  "vise": "1 conducteur",
+  "preuve": null,
+  "source": null,
+  "image": null,
+  "site": null,
+  "doute": "Pas trouvé de page dédiée avec une photo propre. Rien téléchargé."
+ },
+ {
+  "forme": "cable-r2v-2x15",
+  "nom": "Câble RO2V 2 x 1,5 mm²",
+  "refs": [
+   "ELC4002"
+  ],
+  "fichier": null,
+  "montre": null,
+  "vise": "2 conducteurs",
+  "preuve": null,
+  "source": null,
+  "image": null,
+  "site": null,
+  "doute": "Pas trouvé de page dédiée avec une photo propre. Rien téléchargé."
+ },
+ {
+  "forme": "cable-r2v-3g",
+  "nom": "Câble RO2V 3G",
+  "refs": [
+   "ELC4003",
+   "ELC40325"
+  ],
+  "fichier": "cable-r2v-3g15-1.jpg",
+  "montre": "Câble noir 3 conducteurs, coupe à 3 fils (bleu, marron, vert-jaune)",
+  "vise": "3G 1,5 mm²",
+  "preuve": "Page dédiée « câble RO2V 3G 1,5 mm² au mètre »",
+  "source": "https://www.domomat.com/8340-bobine-de-cable-ro2v-3g-15-mm-au-metre-fils-et-cables-generiques-filr2v3g15tgl.html",
+  "image": "https://www.domomat.com/141317-thickbox_default/bobine-de-cable-ro2v-3g-15-mm-au-metre.jpg",
+  "site": "domomat.com",
+  "doute": "Le vendeur met exactement la même image (même empreinte) sur sa page 3G 2,5 mm² : elle ne prouve donc pas la section. Les trois conducteurs se comptent bien."
+ },
+ {
+  "forme": "cable-r2v-4g15",
+  "nom": "Câble RO2V 4G 1,5 mm²",
+  "refs": [
+   "ELC4004"
+  ],
+  "fichier": "cable-r2v-4g15-1.jpg",
+  "montre": "Couronne noire, bout dénudé à 4 fils, étiquette « 4G1,5mm² - 50m » lue",
+  "vise": "4G 1,5 mm²",
+  "preuve": "Marquage « 4G1,5mm² » lu sur l'image, page Nexans 4G1,5",
+  "source": "https://www.123elec.com/cable-electrique-ro2v-4g1-5a-couronne-de-50m.html",
+  "image": "https://www.123elec.com/media/catalog/product/n/e/nex10216504-ro2v-cable-electrique-rigide-nexans-50m-1-v2.jpg",
+  "site": "123elec.com",
+  "doute": "L'étiquette est incrustée dans l'image par le vendeur ; la 4G 2,5 a la même photo avec une autre étiquette."
+ },
+ {
+  "forme": "cable-r2v-4g25",
+  "nom": "Câble RO2V 4G 2,5 mm²",
+  "refs": [
+   "ELC4024"
+  ],
+  "fichier": "cable-r2v-4g25-1.jpg",
+  "montre": "Couronne noire, bout dénudé à 4 fils, étiquette « 4G2,5mm² - 50m » lue",
+  "vise": "4G 2,5 mm²",
+  "preuve": "Marquage « 4G2,5mm² » lu sur l'image, page Nexans 4G2,5",
+  "source": "https://www.123elec.com/cable-electrique-ro2v-4g-2-5a-couronne-de-50m.html",
+  "image": "https://www.123elec.com/media/catalog/product/n/e/nex10216505-cable-ro2v-4g-couronne-v2.jpg",
+  "site": "123elec.com",
+  "doute": "Même photo que la 4G 1,5, seule l'étiquette incrustée change."
+ },
+ {
+  "forme": "cable-r2v-5g15",
+  "nom": "Câble RO2V 5G 1,5 mm²",
+  "refs": [
+   "ELC4005"
+  ],
+  "fichier": "cable-r2v-5g15-1.jpg",
+  "montre": "Câble noir, coupe à 5 conducteurs",
+  "vise": "5G 1,5 mm²",
+  "preuve": "Page dédiée « câble R2V 5G1,5 mm au mètre »",
+  "source": "https://www.domomat.com/14023-cable-r2v-5g15mm-au-metre-truc-fils-et-cables-generiques-filr2v5g15tgl.html",
+  "image": "https://www.domomat.com/141336-thickbox_default/cable-r2v-5g15mm-au-metre-truc.jpg",
+  "site": "domomat.com",
+  "doute": "La section ne se lit pas ; image à vérifier contre la page 5G 2,5 du même vendeur (non relevée)."
+ },
+ {
+  "forme": "cable-r2v-7g15",
+  "nom": "Câble RO2V 7G 1,5 mm²",
+  "refs": [
+   "ELC4007"
+  ],
+  "fichier": "cable-r2v-7g15-1.jpg",
+  "montre": "Câble noir à écran cuivre, coupe à 7 conducteurs",
+  "vise": "7G 1,5 mm²",
+  "preuve": "Page dédiée « câble U1000 R2V multiconducteurs 7G1,5 au mètre »",
+  "source": "https://www.domomat.com/13263-cable-industriel-u1000-r2v-multiconducteurs-7g15-au-metre-fils-et-cables-generiques-filr2v7g15tgl.html",
+  "image": "https://www.domomat.com/141765-thickbox_default/cable-industriel-u1000-r2v-multiconducteurs-7g15-au-metre.jpg",
+  "site": "domomat.com",
+  "doute": "Le dessin montre une tresse de blindage en cuivre qu'un RO2V n'a pas. Le nombre de conducteurs est juste, la photo non."
+ },
+ {
+  "forme": "cable-r2v-12g15",
+  "nom": "Câble RO2V 12G 1,5 mm²",
+  "refs": [
+   "ELC40012"
+  ],
+  "fichier": null,
+  "montre": null,
+  "vise": "12 conducteurs",
+  "preuve": null,
+  "source": null,
+  "image": null,
+  "site": null,
+  "doute": "Pas trouvé de page 12G avec photo. Rien téléchargé."
+ },
+ {
+  "forme": "cable-irrig-2x08",
+  "nom": "Câble d'irrigation 2 x 0,8 mm²",
+  "refs": [
+   "ELC40060"
+  ],
+  "fichier": null,
+  "montre": null,
+  "vise": "2 conducteurs",
+  "preuve": null,
+  "source": null,
+  "image": null,
+  "site": null,
+  "doute": "Pas trouvé de page 2 conducteurs non blindée. Rien téléchargé."
+ },
+ {
+  "forme": "cable-irrig-3x08",
+  "nom": "Câble d'irrigation 3 x 0,8 mm²",
+  "refs": [
+   "ELC4083"
+  ],
+  "fichier": null,
+  "montre": null,
+  "vise": "3 conducteurs",
+  "preuve": null,
+  "source": null,
+  "image": null,
+  "site": null,
+  "doute": "Pas trouvé de page 3 conducteurs. Rien téléchargé."
+ },
+ {
+  "forme": "cable-irrig-5x08",
+  "nom": "Câble d'irrigation 5 x 0,8 mm²",
+  "refs": [
+   "ELC4085"
+  ],
+  "fichier": "cable-irrig-5x08-1.jpg",
+  "montre": "Bout de câble noir dénudé, 5 fils de couleur comptés",
+  "vise": "5 conducteurs",
+  "preuve": "5 fils comptés sur la photo",
+  "source": "https://www.rainbird.com/products/multi-conductor-irrigation-cable",
+  "image": "https://www.rainbird.com/sites/default/files/media/images/2020-11/rb_multi-conductor_ti-q_1.jpg",
+  "site": "rainbird.com",
+  "doute": "Page Rain Bird commune à toute la gamme ; c'est le compte des fils sur l'image qui fait la preuve. 827 x 480 px."
+ },
+ {
+  "forme": "cable-irrig-5x08",
+  "nom": "Câble d'irrigation 5 x 0,8 mm²",
+  "refs": [
+   "ELC4085"
+  ],
+  "fichier": "cable-irrig-5x08-2.jpg",
+  "montre": "Touret de 75 m, fils non visibles",
+  "vise": "5 conducteurs",
+  "preuve": "Page dédiée « 5 fils codés par couleur, 75 m, Irricable 5-75 »",
+  "source": "https://dvs-beregnung.de/5-fils-cod-es-par-couleur-75m-de-cable-de-commande-irricable-5-75",
+  "image": "https://dvs-beregnung.de/media/image/product/2870/lg/5-farbig-kodierte-adern-75m-beregnungskabel-irricable-5-75.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Le touret est le même pour toutes les tailles du vendeur ; seule la page le rattache au 5 fils."
+ },
+ {
+  "forme": "cable-irrig-7x08",
+  "nom": "Câble d'irrigation 7 x 0,8 mm²",
+  "refs": [
+   "ELC4087"
+  ],
+  "fichier": "cable-irrig-7x08-1.jpg",
+  "montre": "Bout de câble noir dénudé, fils de couleur",
+  "vise": "7 conducteurs",
+  "preuve": "Page dédiée « câble de commande 7 conducteurs » (Irricable 7-75)",
+  "source": "https://dvs-beregnung.de/cable-de-commande-7-conducteurs-diff-erentes-longueurs",
+  "image": "https://dvs-beregnung.de/media/image/product/8037/lg/7-farbig-kodierte-adern-beregnungskabel-irricable-7-75.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Les fils sont fins, à recompter à l'œil."
+ },
+ {
+  "forme": "cable-irrig-9x08",
+  "nom": "Câble d'irrigation 9 x 0,8 mm²",
+  "refs": [
+   "ELC4089"
+  ],
+  "fichier": "cable-irrig-9x08-1.jpg",
+  "montre": "Bout de câble noir dénudé, 9 fils comptés",
+  "vise": "9 conducteurs",
+  "preuve": "9 fils comptés sur la photo, page dédiée Irricable 9",
+  "source": "https://dvs-beregnung.de/cable-de-commande-9-conducteurs-diff-erentes-longueurs",
+  "image": "https://dvs-beregnung.de/media/image/product/8034/lg/9-farbig-kodierte-adern-beregnungskabel-irricable-9-75.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": ""
+ },
+ {
+  "forme": "cable-irrig-13x08",
+  "nom": "Câble d'irrigation 13 x 0,8 mm²",
+  "refs": [
+   "ELC4090"
+  ],
+  "fichier": "cable-irrig-13x08-1.jpg",
+  "montre": "Bout de câble noir dénudé, nombreux fils de couleur",
+  "vise": "13 conducteurs",
+  "preuve": "Page dédiée « câble de commande 13 fils » (Irricable)",
+  "source": "https://dvs-beregnung.de/cable-de-commande-13-fils-diff-erentes-longueurs",
+  "image": "https://dvs-beregnung.de/media/image/product/8035/lg/irrigation-beregnungskabel-13-adern-rolle-irricable.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Les fils sont fins, à recompter à l'œil."
+ },
+ {
+  "forme": "connexion-dbry6",
+  "nom": "Connexion étanche 3M DBR/Y-6",
+  "refs": [
+   "ELD55008"
+  ],
+  "fichier": "connexion-dbry6-1.jpg",
+  "montre": "Tube à gel 3M et connecteur R/Y+ rouge et jaune",
+  "vise": "DBR/Y-6",
+  "preuve": "Page dédiée « 3M DBR/Y-6 Direct Bury Splice Kit »",
+  "source": "https://www.sprinklersupplystore.com/products/3m-dbr-y-6-direct-bury-splice-kit",
+  "image": "https://cdn.shopify.com/s/files/1/1987/5531/products/270672-1.jpg",
+  "site": "sprinklersupplystore.com",
+  "doute": "Le tube est bleu clair, comme le dit la fiche 3M ; le « jaune » d'Aqua Plus est sans doute le connecteur."
+ },
+ {
+  "forme": "connexion-dbry6",
+  "nom": "Connexion étanche 3M DBR/Y-6",
+  "refs": [
+   "ELD55008"
+  ],
+  "fichier": "connexion-dbry6-2.jpg",
+  "montre": "Même kit, tube couché",
+  "vise": "DBR/Y-6",
+  "preuve": "Page dédiée « 3M DBR/Y-6 Direct Bury Splice Kit »",
+  "source": "https://www.sprinklersupplystore.com/products/3m-dbr-y-6-direct-bury-splice-kit",
+  "image": "https://cdn.shopify.com/s/files/1/1987/5531/products/270672.jpg",
+  "site": "sprinklersupplystore.com",
+  "doute": ""
+ },
+ {
+  "forme": "connexion-dby20",
+  "nom": "Connexion étanche jaune DBY-20",
+  "refs": [
+   "ELD550081"
+  ],
+  "fichier": null,
+  "montre": null,
+  "vise": "DBY-20",
+  "preuve": null,
+  "source": null,
+  "image": null,
+  "site": null,
+  "doute": "Référence DBY-20 introuvable (3M vend un DBY-6). Rien téléchargé."
+ },
+ {
+  "forme": "wago-221-413",
+  "nom": "Borne Wago 221-413, 3 entrées",
+  "refs": [
+   "ELD221413."
+  ],
+  "fichier": "wago-221-413-1.jpg",
+  "montre": "Borne Wago transparente à 3 leviers orange, « 221 » lu",
+  "vise": "3 x 4 mm²",
+  "preuve": "Marquage « WAGO 221 » lu, 3 leviers comptés, page dédiée 221-413",
+  "source": "https://www.zone-outillage.fr/fiche-accessoire/wago/bornes-de-connexion-automatique/221-413",
+  "image": "https://www.zone-outillage.fr/sites/default/files/fiche-produit/accessoires/wago-221-413-borne-de-connexion-3-fils.jpg",
+  "site": "zone-outillage.fr",
+  "doute": ""
+ },
+ {
+  "forme": "wago-221-415",
+  "nom": "Borne Wago 221-415, 5 entrées",
+  "refs": [
+   "ELD221415."
+  ],
+  "fichier": "wago-221-415-1.jpg",
+  "montre": "Borne Wago transparente à 5 leviers orange, « 221 » lu",
+  "vise": "5 x 4 mm²",
+  "preuve": "Marquage « WAGO 221 » lu, 5 leviers comptés, page dédiée 221-415",
+  "source": "https://www.zone-outillage.fr/fiche-accessoire/wago/bornes-de-connexion-automatique/221-415",
+  "image": "https://www.zone-outillage.fr/sites/default/files/fiche-produit/accessoires/wago-221-415-borne-de-connexion-5-fils.jpg",
+  "site": "zone-outillage.fr",
+  "doute": ""
+ },
+ {
+  "forme": "connexion-blazing",
+  "nom": "Connexion Blazing 30 V",
+  "refs": [
+   "ELD5111"
+  ],
+  "fichier": "connexion-blazing-1.jpg",
+  "montre": "Connecteur Blazing SnapLoc bleu et transparent (BVS-1)",
+  "vise": "Blazing BBS, 1,5 mm², 30 V maxi",
+  "preuve": "Page dédiée Blazing BVS-1",
+  "source": "https://www.sprinklersupplystore.com/products/blue-and-clear-waterproof-wire-connector",
+  "image": "https://cdn.shopify.com/s/files/1/1987/5531/products/BVS-1-1.jpg",
+  "site": "sprinklersupplystore.com",
+  "doute": "Aqua Plus écrit « BBS » et je n'ai trouvé que le BVS-1 (30 V, fils de 18 à 16 AWG, environ 1,5 mm²). Peut-être une coquille, peut-être un autre modèle."
+ },
+ {
+  "forme": "connexion-blazing",
+  "nom": "Connexion Blazing 30 V",
+  "refs": [
+   "ELD5111"
+  ],
+  "fichier": "connexion-blazing-2.jpg",
+  "montre": "Même connecteur, autre angle",
+  "vise": "Blazing BBS, 1,5 mm², 30 V maxi",
+  "preuve": "Page dédiée Blazing BVS-1",
+  "source": "https://www.sprinklersupplystore.com/products/blue-and-clear-waterproof-wire-connector",
+  "image": "https://cdn.shopify.com/s/files/1/1987/5531/products/BVS-1-2.jpg",
+  "site": "sprinklersupplystore.com",
+  "doute": "Même doute sur BBS contre BVS-1."
+ },
+ {
+  "forme": "domino-6",
+  "nom": "Domino 6 mm²",
+  "refs": [
+   "ELD40038"
+  ],
+  "fichier": "domino-6-1.jpg",
+  "montre": "Barrette noire 12 plots",
+  "vise": "6 mm²",
+  "preuve": "Page dédiée Batilec « barrette de connexion 12 plots 6 mm² »",
+  "source": "https://www.123elec.com/barrette-dominos-de-connexion-6mma.html",
+  "image": "https://www.123elec.com/media/catalog/product/b/a/bat211041-domino-de-connexion-6mm.jpg",
+  "site": "123elec.com",
+  "doute": ""
+ },
+ {
+  "forme": "domino-6",
+  "nom": "Domino 6 mm²",
+  "refs": [
+   "ELD40038"
+  ],
+  "fichier": "domino-6-2.webp",
+  "montre": "Barrette grise Legrand Suprem 960",
+  "vise": "6 mm²",
+  "preuve": "Page dédiée Legrand Suprem 960, capacité 6 mm²",
+  "source": "https://www.legrand.fr/pro/catalogue/barrette-de-connexion-suprem-960-avec-capacite-assignee-6mm2-gris",
+  "image": "https://www.legrand.fr/sites/default/files/ecat/th_034231-LEGRAND-1000.jpg.webp",
+  "site": "legrand.fr",
+  "doute": "Grise, alors que la couleur vendue par Aqua Plus est inconnue."
+ },
+ {
+  "forme": "domino-10",
+  "nom": "Domino 10 mm²",
+  "refs": [
+   "ELD40039"
+  ],
+  "fichier": null,
+  "montre": null,
+  "vise": "10 mm²",
+  "preuve": null,
+  "source": "https://www.123elec.com/barrette-dominos-de-connexion-10mma.html",
+  "image": null,
+  "site": "123elec.com",
+  "doute": "Le vendeur trouvé met la même image (même empreinte) en 10 et 16 mm² : pas une preuve. Rien gardé."
+ },
+ {
+  "forme": "domino-16",
+  "nom": "Domino 16 mm²",
+  "refs": [
+   "ELD34233"
+  ],
+  "fichier": null,
+  "montre": null,
+  "vise": "16 mm²",
+  "preuve": null,
+  "source": "https://www.123elec.com/barrette-dominos-de-connexion-16mma.html",
+  "image": null,
+  "site": "123elec.com",
+  "doute": "Même image que la page 10 mm² du même vendeur : pas une preuve. Rien gardé."
+ },
+ {
+  "forme": "domino-25",
+  "nom": "Domino 25 mm²",
+  "refs": [
+   "ELD34219"
+  ],
+  "fichier": "domino-25-1.jpg",
+  "montre": "Barrette noire 12 plots",
+  "vise": "25 mm²",
+  "preuve": "Page dédiée « domino barrette de connexion 25 mm² » (image propre, empreinte différente)",
+  "source": "https://www.123elec.com/barrette-dominos-de-connexion-25mma.html",
+  "image": "https://www.123elec.com/media/catalog/product/p/h/phn839020-domino-barrette-de-connexion-25mm.jpg",
+  "site": "123elec.com",
+  "doute": "La barrette paraît presque identique à celle de 6 mm², alors qu'une 25 mm² est bien plus grosse : à vérifier."
+ },
+ {
+  "forme": "plexo-ronde-60",
+  "nom": "Boîte de dérivation Plexo ronde Ø60",
+  "refs": [
+   "ELD40025"
+  ],
+  "fichier": "plexo-ronde-60-1.webp",
+  "montre": "Boîte ronde grise Legrand, « IP55 legrand » lu",
+  "vise": "Ø60 mm",
+  "preuve": "Image Legrand nommée par sa référence 092001 (ronde Ø60)",
+  "source": "https://www.legrand.fr/pro/catalogue/boite-et-borne-de-connexion/boite-de-derivation",
+  "image": "https://www.legrand.fr/sites/default/files/ecat/th_092001-LEGRAND-1000.jpg.webp",
+  "site": "legrand.fr",
+  "doute": "La correspondance 092001 = Ø60 vient d'un catalogue revendeur ; image en 600 px."
+ },
+ {
+  "forme": "plexo-ronde-70",
+  "nom": "Boîte de dérivation Plexo ronde Ø70",
+  "refs": [
+   "ELD40024"
+  ],
+  "fichier": "plexo-ronde-70-1.webp",
+  "montre": "Boîte ronde grise Legrand, « IP55 legrand » lu",
+  "vise": "Ø70 mm",
+  "preuve": "Image Legrand nommée par sa référence 092002 (ronde Ø70)",
+  "source": "https://www.legrand.fr/pro/catalogue/boite-et-borne-de-connexion/boite-de-derivation",
+  "image": "https://www.legrand.fr/sites/default/files/ecat/th_092002-LEGRAND-1000.jpg.webp",
+  "site": "legrand.fr",
+  "doute": "Même forme que la Ø60 ; seule la référence de l'image les distingue."
+ },
+ {
+  "forme": "plexo-65x65",
+  "nom": "Boîte de dérivation Plexo 65 x 65 x 40",
+  "refs": [
+   "ELDLEG92110"
+  ],
+  "fichier": "plexo-65x65-1.webp",
+  "montre": "Boîte carrée grise Legrand à 7 embouts, « legrand » lu",
+  "vise": "65 x 65 x 40 mm",
+  "preuve": "Page Legrand dédiée 0 920 05, 65 x 65 x 40 mm",
+  "source": "https://www.legrand.fr/pro/catalogue/boite-de-derivation-carree-plexo-dimensions-65x65x40mm-gris-ral7035",
+  "image": "https://www.legrand.fr/sites/default/files/ecat/th_092005-LEGRAND-1000.jpg.webp",
+  "site": "legrand.fr",
+  "doute": "La référence Aqua Plus « LEG92110 » ne correspond pas à une référence Legrand trouvée ; la 65 x 65 x 40 est la 0 920 05."
+ },
+ {
+  "forme": "plexo-105x105",
+  "nom": "Boîte de dérivation Plexo 105 x 105 x 55",
+  "refs": [
+   "ELD40050"
+  ],
+  "fichier": "plexo-105x105-1.webp",
+  "montre": "Boîte carrée blanche Legrand",
+  "vise": "105 x 105 x 55 mm",
+  "preuve": "Image Legrand nommée par sa référence 092023 (105 x 105 x 55 blanc)",
+  "source": "https://www.legrand.fr/pro/catalogue/boite-de-derivation-carree-plexo-dimensions-105x105x55mm-blanc-ral9010",
+  "image": "https://www.legrand.fr/sites/default/files/ecat/th_092023-LEGRAND-1000.jpg.webp",
+  "site": "legrand.fr",
+  "doute": "Version blanche ; la grise (092022) n'a pas d'image. Fichier de 3 Ko seulement, mais c'est bien une image nette de 600 px."
+ },
+ {
+  "forme": "scotchcast-90",
+  "nom": "Résine Scotchcast 90 g",
+  "refs": [
+   "ELD40021"
+  ],
+  "fichier": null,
+  "montre": null,
+  "vise": "sachet 90 g",
+  "preuve": null,
+  "source": null,
+  "image": null,
+  "site": null,
+  "doute": "3M vend plusieurs résines en sachet de 90 g (n°4, 40, 1471, 4 GS) : sans savoir laquelle, pas de photo. 3m.com ne répond pas d'ici."
+ },
+ {
+  "forme": "scotchcast-420",
+  "nom": "Résine Scotchcast 420 g",
+  "refs": [
+   "ELDTRM92802"
+  ],
+  "fichier": null,
+  "montre": null,
+  "vise": "sachet 420 g",
+  "preuve": null,
+  "source": null,
+  "image": null,
+  "site": null,
+  "doute": "Aucun sachet de 420 g trouvé. Rien téléchargé."
+ },
+ {
+  "forme": "scotchcast-92mao",
+  "nom": "Trousse de jonction Scotchcast 92MAO",
+  "refs": [
+   "ELDTRM80155"
+  ],
+  "fichier": null,
+  "montre": null,
+  "vise": "trousse 92MAO",
+  "preuve": null,
+  "source": null,
+  "image": null,
+  "site": null,
+  "doute": "Référence 92MAO introuvable (3M vend les 92 NBA, NBB, NBC). Rien téléchargé."
+ },
+ {
+  "forme": "ruban-isolant",
+  "nom": "Ruban isolant électrique",
+  "refs": [
+   "ELD100PAN"
+  ],
+  "fichier": "ruban-isolant-1.jpg",
+  "montre": "Rouleau de ruban PVC noir HellermannTyton",
+  "vise": "10 m x 15 mm, ép. 0,15 mm",
+  "preuve": "Page dédiée HellermannTyton 15 mm x 10 m, ép. 0,15 mm (réf. 71000104)",
+  "source": "https://pro.123elec.com/hellermanntyton-ruban-adhesif-isolant-noir-15mm-x-10m-hel71000104.html",
+  "image": "https://pro.123elec.com/media/catalog/product/h/e/hel71000104-hellermanntyton-ruban-adhesif-isolant-noir-15mm-x-10m-3.jpg",
+  "site": "pro.123elec.com",
+  "doute": "Marque et couleur d'Aqua Plus inconnues."
+ },
+ {
+  "forme": "gel-isolant-2x500",
+  "nom": "Gel isolant bi-composant 2 x 500 ml",
+  "refs": [
+   "ELDGEL"
+  ],
+  "fichier": "gel-isolant-2x500-1.jpg",
+  "montre": "Deux flacons de 500 ml et une boîte de dérivation remplie",
+  "vise": "2 x 500 ml",
+  "preuve": "Page dédiée E-robur 231002, 2 flacons de 500 ml",
+  "source": "https://www.domomat.com/16898-gel-silicone-bi-composant-etancheite-isolation-pour-boitiers-derivation-e-robur-231002.html",
+  "image": "https://www.domomat.com/67226-thickbox_default/gel-silicone-bi-composant-etancheite-isolation-pour-boitiers-derivation.jpg",
+  "site": "domomat.com",
+  "doute": "Marque E-robur, celle d'Aqua Plus inconnue. Les flacons sont petits dans l'image."
+ }
+]

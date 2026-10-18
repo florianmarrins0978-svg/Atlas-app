@@ -1,0 +1,611 @@
+[
+ {
+  "ref": "TPTEMP-4",
+  "nom": "programmateur Tempus 4 voies avec transformateurs",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 22"
+ },
+ {
+  "ref": "TPTEMP-6",
+  "nom": "programmateur Tempus 6 voies avec transformateurs",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 22"
+ },
+ {
+  "ref": "TPTEMP-8",
+  "nom": "programmateur Tempus 8 voies avec transformateurs",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 22"
+ },
+ {
+  "ref": "TPTEMP-WF",
+  "nom": "module WIFI pour programmateur Tempus",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 22"
+ },
+ {
+  "ref": "TPEVO4IDEU",
+  "nom": "Programmateur EVOLUTION 4 voies intérieur",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 22"
+ },
+ {
+  "ref": "TPEVO4ODEU",
+  "nom": "Programmateur EVOLUTION 4 voies extérieur",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 22"
+ },
+ {
+  "ref": "TPEMOD4",
+  "nom": "Module extension 4 voies",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 22"
+ },
+ {
+  "ref": "TPEMOD12",
+  "nom": "Module extension 12 voies",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 22"
+ },
+ {
+  "ref": "RP3242",
+  "nom": "ESP-TM2 4 stations",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 22"
+ },
+ {
+  "ref": "RP3193",
+  "nom": "ESP-TM2 6 stations",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 22"
+ },
+ {
+  "ref": "RP3146",
+  "nom": "ESP-TM2 8 stations",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 22"
+ },
+ {
+  "ref": "RP3147",
+  "nom": "ESP-TM2 12 stations",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 22"
+ },
+ {
+  "ref": "RP3315",
+  "nom": "CLÉ LNK WIFI ESP/ME-RZX",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 22"
+ },
+ {
+  "ref": "RP3314",
+  "nom": "ESP-ME3 WIFI 4 STATIONS",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 22"
+ },
+ {
+  "ref": "RP3312",
+  "nom": "module d'extension ESP 3 stations",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 22"
+ },
+ {
+  "ref": "RP3313",
+  "nom": "module d’extension ESP 6 stations",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 22"
+ },
+ {
+  "ref": "RP3322",
+  "nom": "ESP-LXME2 12 stations",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 22"
+ },
+ {
+  "ref": "RP3326",
+  "nom": "ESP-LXME2 PRO 12 stations",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 22"
+ },
+ {
+  "ref": "RP3329",
+  "nom": "Module extension 12 voies",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 22"
+ },
+ {
+  "ref": "HPXC-E-XC401-E",
+  "nom": "programmateur XC-401x-E 4 stations avec coffret verrouillable",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 23"
+ },
+ {
+  "ref": "HPXC-E-XC601-E",
+  "nom": "programmateur XC-601x-E 6 stations avec coffret verrouillable",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 23"
+ },
+ {
+  "ref": "HPXC-801-X",
+  "nom": "programmateur XC-801x-E 8 stations avec coffret verrouillable",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 23"
+ },
+ {
+  "ref": "HPPC-301-E",
+  "nom": "programmateur HPC 4 stations extensible",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 23"
+ },
+ {
+  "ref": "HP3942",
+  "nom": "module Pro-C et P2C - 3 Stations",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 23"
+ },
+ {
+  "ref": "HP3943",
+  "nom": "module Pro-C et P2C - 9 Stations",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 23"
+ },
+ {
+  "ref": "HP3947",
+  "nom": "module Pro-C et P2C - 16 Stations",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 23"
+ },
+ {
+  "ref": "HPX2-4",
+  "nom": "programmateur X2 4 stations",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 23"
+ },
+ {
+  "ref": "HPX2-6",
+  "nom": "programmateur X2 6 stations",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 23"
+ },
+ {
+  "ref": "HPX2-8",
+  "nom": "programmateur X2 8 stations",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 23"
+ },
+ {
+  "ref": "HPX2",
+  "nom": "programmateur X2 14 stations",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 23"
+ },
+ {
+  "ref": "HP3995",
+  "nom": "module WIFI 2,4 GHz",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 23"
+ },
+ {
+  "ref": "SPVIL4",
+  "nom": "PROG SOLEM VILLA 4 VOIES",
+  "categorie": "programmateur",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 24"
+ },
+ {
+  "ref": "SPVIL6",
+  "nom": "PROG SOLEM VILLA 6 VOIES",
+  "categorie": "programmateur",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 24"
+ },
+ {
+  "ref": "SPVIL9",
+  "nom": "PROG SOLEM VILLA 9 VOIES",
+  "categorie": "programmateur",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 24"
+ },
+ {
+  "ref": "SPVIL12",
+  "nom": "PROG SOLEM VILLA 12 VOIES",
+  "categorie": "programmateur",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 24"
+ },
+ {
+  "ref": "SP2741",
+  "nom": "PROG SOLEM WIFI SMART-IS 2 STATIONS",
+  "categorie": "programmateur",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 24"
+ },
+ {
+  "ref": "SP2742",
+  "nom": "PROG SOLEM WIFI SMART-IS 4 STATIONS",
+  "categorie": "programmateur",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 24"
+ },
+ {
+  "ref": "SP2743",
+  "nom": "PROG SOLEM WIFI SMART-IS 6 STATIONS",
+  "categorie": "programmateur",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 24"
+ },
+ {
+  "ref": "SP2744",
+  "nom": "PROG SOLEM WIFI SMART-IS 9 STATIONS",
+  "categorie": "programmateur",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 24"
+ },
+ {
+  "ref": "SP2745",
+  "nom": "PROG SOLEM WIFI SMART-IS 12 STATIONS",
+  "categorie": "programmateur",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 24"
+ },
+ {
+  "ref": "SP1739",
+  "nom": "RELAIS SOLEM LR-MB10",
+  "categorie": "accessoire de programmation",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 24"
+ },
+ {
+  "ref": "SP1740",
+  "nom": "RELAIS SOLEM LR-MB30",
+  "categorie": "accessoire de programmation",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 24"
+ },
+ {
+  "ref": "AEV11401",
+  "nom": "PROG BUDDY TAP TIMER 1 STAT.",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 25"
+ },
+ {
+  "ref": "AEV11422",
+  "nom": "PROG BUDDY TAP TIMER 2 STAT.",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 25"
+ },
+ {
+  "ref": "RP13711",
+  "nom": "ESP-BAT-BT 1 STATION",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 25"
+ },
+ {
+  "ref": "RP13722",
+  "nom": "ESP-BAT-BT 2 STATIONS",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 25"
+ },
+ {
+  "ref": "RP13744",
+  "nom": "ESP-BAT-BT 4 STATIONS",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 25"
+ },
+ {
+  "ref": "RP13766",
+  "nom": "ESP-BAT-BT 6 STATIONS",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 25"
+ },
+ {
+  "ref": "RP1313",
+  "nom": "KIT ESP-9V + vanne",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 25"
+ },
+ {
+  "ref": "RP1371",
+  "nom": "PROG RB ESP 9V 1 VOIE",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 25"
+ },
+ {
+  "ref": "RP1372",
+  "nom": "PROG RB ESP 9V 2 VOIES",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 25"
+ },
+ {
+  "ref": "RP1374",
+  "nom": "PROG RB ESP 9V 4 VOIES",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 25"
+ },
+ {
+  "ref": "RP1376",
+  "nom": "PROG RB ESP 9V 6 VOIES",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 25"
+ },
+ {
+  "ref": "HP1500",
+  "nom": "NODE 100+ EV PGV prog 1 station avec électrovanne PGV 1\" FF",
+  "categorie": "programmateur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 25"
+ },
+ {
+  "ref": "HP1541",
+  "nom": "HUNTER PROG NODE BT 100 + SOLENOIDE 9V",
+  "categorie": "programmateur",
+  "marque": "Hunter",
+  "page": "Aqua Plus 2026, p. 25"
+ },
+ {
+  "ref": "HP1541-L",
+  "nom": "HUNTER PROG NODE BT 100",
+  "categorie": "programmateur",
+  "marque": "Hunter",
+  "page": "Aqua Plus 2026, p. 25"
+ },
+ {
+  "ref": "HP1542",
+  "nom": "HUNTER PROG NODE BT 200",
+  "categorie": "programmateur",
+  "marque": "Hunter",
+  "page": "Aqua Plus 2026, p. 25"
+ },
+ {
+  "ref": "HP1544",
+  "nom": "HUNTER PROG NODE BT 400",
+  "categorie": "programmateur",
+  "marque": "Hunter",
+  "page": "Aqua Plus 2026, p. 25"
+ },
+ {
+  "ref": "SP1741",
+  "nom": "PROG SOLEM LR-IP 1 STATION 9V",
+  "categorie": "programmateur",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 26"
+ },
+ {
+  "ref": "SP1742",
+  "nom": "PROG SOLEM LR-IP 2 STATION 9V",
+  "categorie": "programmateur",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 26"
+ },
+ {
+  "ref": "SP1743",
+  "nom": "PROG SOLEM LR-IP 4 STATION 9V",
+  "categorie": "programmateur",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 26"
+ },
+ {
+  "ref": "SP1744",
+  "nom": "PROG SOLEM LR-IP 6 STATION 9V",
+  "categorie": "programmateur",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 26"
+ },
+ {
+  "ref": "SP174011",
+  "nom": "SOLEM MODULE LR-MS 1",
+  "categorie": "accessoire de programmation",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 26"
+ },
+ {
+  "ref": "SP67669398",
+  "nom": "SONDE SOLEM TRUEBNER SMT50",
+  "categorie": "accessoire de programmation",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 26"
+ },
+ {
+  "ref": "SPWOOBEE1",
+  "nom": "PROG SOLEM WOOBEE 1 VOIE",
+  "categorie": "programmateur",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 26"
+ },
+ {
+  "ref": "SPWOOBEE2",
+  "nom": "PROG SOLEM WOOBEE 2 VOIES",
+  "categorie": "programmateur",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 26"
+ },
+ {
+  "ref": "SPWOOBEE4",
+  "nom": "PROG SOLEM WOOBEE 4 VOIES",
+  "categorie": "programmateur",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 26"
+ },
+ {
+  "ref": "SPWOOBEE6",
+  "nom": "PROG SOLEM WOOBEE 6 VOIES",
+  "categorie": "programmateur",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 26"
+ },
+ {
+  "ref": "SP1151",
+  "nom": "Programmateur nez de rob. SOLEM BL - NR - 1 voie",
+  "categorie": "programmateur",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 26"
+ },
+ {
+  "ref": "SP1152",
+  "nom": "Programmateur nez de rob. SOLEM BL - LR - 1 voie",
+  "categorie": "programmateur",
+  "marque": "SOLEM",
+  "page": "Aqua Plus 2026, p. 26"
+ },
+ {
+  "ref": "ELDM3",
+  "nom": "pile alcaline 1,5V LR6",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 27"
+ },
+ {
+  "ref": "ELD40034",
+  "nom": "accumulateur rechargeable 9V pour SIRR+,HP et DIALOG+",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 27"
+ },
+ {
+  "ref": "TPTRS",
+  "nom": "pluviomètre TRS câblé 7,6 m TORO",
+  "categorie": "accessoire de programmation",
+  "marque": "Toro",
+  "page": "Aqua Plus 2026, p. 27"
+ },
+ {
+  "ref": "ELD1605",
+  "nom": "pile CR2032 3V pour RainSensor sans fil",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 27"
+ },
+ {
+  "ref": "RP6231",
+  "nom": "SONDE SANS FIL WR2-RC Rain Bird",
+  "categorie": "accessoire de programmation",
+  "marque": "Rain Bird",
+  "page": "Aqua Plus 2026, p. 27"
+ },
+ {
+  "ref": "HPMINICLIK",
+  "nom": "pluviomètre Mini-Clik Hunter",
+  "categorie": "accessoire de programmation",
+  "marque": "Hunter",
+  "page": "Aqua Plus 2026, p. 27"
+ },
+ {
+  "ref": "HPRAINCLIK",
+  "nom": "pluviomètre Rain-Clik WRC-INT radio Hunter",
+  "categorie": "accessoire de programmation",
+  "marque": "Hunter",
+  "page": "Aqua Plus 2026, p. 27"
+ },
+ {
+  "ref": "RPSMRT-Y",
+  "nom": "Sonde d'humidité de sol SMRT-Y",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 27"
+ },
+ {
+  "ref": "RP6231",
+  "nom": "Sonde de pluie sans fil",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 27"
+ },
+ {
+  "ref": "HP6226",
+  "nom": "Sonde d'humidité et solaire Solar SYNC",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 27"
+ },
+ {
+  "ref": "HP6228",
+  "nom": "Sonde d'humidité et solaire Solar SYNC SANS FIL",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 27"
+ },
+ {
+  "ref": "ELC40060",
+  "nom": "câble pluviomètre 2 x 0,8 mm²",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 27"
+ },
+ {
+  "ref": "ELDTRM85778",
+  "nom": "connexion 3M UR2 (la boîte de 100)",
+  "categorie": "accessoire de programmation",
+  "marque": "3M",
+  "page": "Aqua Plus 2026, p. 27"
+ },
+ {
+  "ref": "ELDLEG01301",
+  "nom": "coffret cache 1 module",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 27"
+ },
+ {
+  "ref": "ELDLEG01304",
+  "nom": "coffret cache 4 modules",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 27"
+ },
+ {
+  "ref": "ELDLEG01306",
+  "nom": "coffret cache 6 modules",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 27"
+ },
+ {
+  "ref": "RD20001",
+  "nom": "transformateur ITC / Image",
+  "categorie": "accessoire de programmation",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 27"
+ }
+]

@@ -1,0 +1,527 @@
+[
+ {
+  "ref": "TD102-2024",
+  "nom": "clé Toro Mini8",
+  "categorie": "accessoire d'arroseur",
+  "marque": "Toro",
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "TD99533",
+  "nom": "clé Toro Série S700",
+  "categorie": "accessoire d'arroseur",
+  "marque": "Toro",
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "RD2198",
+  "nom": "tournevis arroseur Série 5000 (Rotortool)",
+  "categorie": "accessoire d'arroseur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "HA2253",
+  "nom": "clé HUNTER PGM / PGP / I20",
+  "categorie": "accessoire d'arroseur",
+  "marque": "Hunter",
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "NA2316",
+  "nom": "clé MP ROTATOR",
+  "categorie": "accessoire d'arroseur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "TD92825",
+  "nom": "joint étoile arroseur 300 & 340",
+  "categorie": "accessoire d'arroseur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "TD890805",
+  "nom": "bague anti-fuite Toro Série S700",
+  "categorie": "accessoire d'arroseur",
+  "marque": "Toro",
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "TD890266",
+  "nom": "clapet anti-vidange Toro Série S700",
+  "categorie": "accessoire d'arroseur",
+  "marque": "Toro",
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "RD2105",
+  "nom": "kit anti-vidange SAM Rain Bird arroseur 5000 Plus",
+  "categorie": "accessoire d'arroseur",
+  "marque": "Rain Bird",
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "HD2268",
+  "nom": "clapet anti-vidange Hunter PGJ / SRM",
+  "categorie": "accessoire d'arroseur",
+  "marque": "Hunter",
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "HD2256",
+  "nom": "clapet anti-vidange Hunter PGP / I20 - I-20 ULTRA INOX",
+  "categorie": "accessoire d'arroseur",
+  "marque": "Hunter",
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "OD85046",
+  "nom": "allonge réglable 14 cm 1/2\" x 1/2\"",
+  "categorie": "accessoire d'arroseur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "OD85040",
+  "nom": "allonge réglable 14 cm 3/4\" x 1/2\"",
+  "categorie": "accessoire d'arroseur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "OD85051",
+  "nom": "allonge réglable 14 cm 3/4\" x 3/4\"",
+  "categorie": "accessoire d'arroseur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "OD503",
+  "nom": "SBA 050 droit 16 x 1/2\"",
+  "categorie": "accessoire d'arroseur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "OD504",
+  "nom": "SBA 075 droit 16 x 3/4\"",
+  "categorie": "accessoire d'arroseur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "OD505",
+  "nom": "té SB-TEE",
+  "categorie": "accessoire d'arroseur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "OD506",
+  "nom": "jonction SB-CPLG",
+  "categorie": "accessoire d'arroseur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "RDACV050",
+  "nom": "clapet anti-vidange réglable 1/2\"",
+  "categorie": "accessoire d'arroseur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "RDACV0_75",
+  "nom": "clapet anti-vidange réglable 3/4\"",
+  "categorie": "accessoire d'arroseur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "BCL304",
+  "nom": "raccord anti-vandale MF 3/4\"x3/4\" coudé",
+  "categorie": "accessoire d'arroseur",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 14"
+ },
+ {
+  "ref": "TEVEZP0254",
+  "nom": "électrovanne EZ FLO+ 1\" MM - 24 V",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEVEZP0354",
+  "nom": "électrovanne EZ FLO+ 1\" FF - 24 V",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEVEZP2254",
+  "nom": "électrovanne EZ FLO+ 1\" MM RMD - 24 V",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEVEZP2354",
+  "nom": "électrovanne EZ FLO+ 1\" FF RMD - 24 V",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEVEZP02649V",
+  "nom": "électrovanne EZ FLO+ 1\" MM solénoïde 9V à impulsion",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEVTPV100MMBSP",
+  "nom": "EV TPV 1\" MM 0,06 à 9,06 m3/h",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEVTPV100BSP",
+  "nom": "EV TPV 1\" FF 0,06 à 9,06 m³/h",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEV2522656",
+  "nom": "électrovanne 252 1\"1/2 FF RMD 6 à 27 m³/h",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEV2522658",
+  "nom": "électrovanne 252 2\" FF RMD 13,8 à 40,8 m³/h",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEV2640603",
+  "nom": "électrovanne 264 3/4\" MM",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEVP2202354",
+  "nom": "EV P220 1\" FF 1,2 à 11,3 m³/h - pré-équipée EZReg",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEVP2202356",
+  "nom": "EV P220 1\"1/2 FF RMD 6,9 à 24,9 m³/h - pré-équipée EZReg",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEVP2202358",
+  "nom": "EV P220 2\" FF RMD 18,2 à 40,8 m³/h - pré-équipée EZReg",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEVP2202350",
+  "nom": "EV P220 3\" FF RMD 34,1 à 68,1m³/h - pré-équipée EZReg",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TPDCLS",
+  "nom": "Solénoïde DC 9V à impulsion pour EZFLO et P220",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "REVV1100",
+  "nom": "électrovanne 75-DV 3/4\" FF 24V",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 19"
+ },
+ {
+  "ref": "REV201",
+  "nom": "électrovanne 100-DV 1\" FF 24V",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 19"
+ },
+ {
+  "ref": "REVM201",
+  "nom": "électrovanne 100-DV 1\" MM 24V",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 19"
+ },
+ {
+  "ref": "REV75DV9V",
+  "nom": "électrovanne 75-DV 3/4\" FF 9V à impulsion",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 19"
+ },
+ {
+  "ref": "REVPGA100",
+  "nom": "électrovanne 100-PGA 1\" FF 0,5 à 9 m³/h",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 19"
+ },
+ {
+  "ref": "REVPGA150",
+  "nom": "électrovanne 150-PGA 1\"1/2 FF 7 à 22 m³/h",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 19"
+ },
+ {
+  "ref": "REVPGA200",
+  "nom": "électrovanne 200-PGA 2\" FF 12 à 34 m³/h",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 19"
+ },
+ {
+  "ref": "REVPGA1009V",
+  "nom": "électrovanne 100-PGA 1\" FF 9V 0,5 à 9 m³/h",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 19"
+ },
+ {
+  "ref": "REVPGA1509V",
+  "nom": "électrovanne 150-PGA 1\"1/2 FF 9V 7 à 22 m³/h",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 19"
+ },
+ {
+  "ref": "REVPEB100",
+  "nom": "électrovanne 100-PEB 1\" FF 1 à 10 m³/h",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 19"
+ },
+ {
+  "ref": "REVPEB150",
+  "nom": "électrovanne 150-PEB 1\"1/2 FF 5 à 34 m³/h",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 19"
+ },
+ {
+  "ref": "REVPEB200",
+  "nom": "électrovanne 200-PEB 2\" FF 12 à 45 m³/h",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 19"
+ },
+ {
+  "ref": "REV300-BPE",
+  "nom": "EV 300-BPE 3\" FF",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 20"
+ },
+ {
+  "ref": "AEV1201",
+  "nom": "EV RICHDEL 2400 MT 1\" FF",
+  "categorie": "electrovanne",
+  "marque": "RICHDEL",
+  "page": "Aqua Plus 2026, p. 20"
+ },
+ {
+  "ref": "AEV1205",
+  "nom": "EV RICHDEL 2400 MT 1\" FF-L 9V",
+  "categorie": "electrovanne",
+  "marque": "RICHDEL",
+  "page": "Aqua Plus 2026, p. 20"
+ },
+ {
+  "ref": "HEV1701",
+  "nom": "électrovanne PGV 100 1\"FF 4 VIS 24V",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 20"
+ },
+ {
+  "ref": "HEV1731",
+  "nom": "électrovanne PGV 100 1\"FF 4 VIS 9V",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 20"
+ },
+ {
+  "ref": "HEV1721",
+  "nom": "électrovanne PGV-100JT DC 1\" FF 9V",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 20"
+ },
+ {
+  "ref": "HEV1724",
+  "nom": "électrovanne PGV 100 JT FIL 1'' 9V",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 20"
+ },
+ {
+  "ref": "HEV2611",
+  "nom": "électrovanne PGV-151G 1\"1/2 FF en ligne ou en angle",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 20"
+ },
+ {
+  "ref": "HEV2612",
+  "nom": "électrovanne PGV-201G 2\" FF en ligne ou en angle",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 20"
+ },
+ {
+  "ref": "ODU320010",
+  "nom": "DURA Croix 1\" MFFF",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 20"
+ },
+ {
+  "ref": "ODU348010",
+  "nom": "DURA Bouchon 1\"F",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 20"
+ },
+ {
+  "ref": "ODU34MF",
+  "nom": "DURA Union 1\" MF",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 20"
+ },
+ {
+  "ref": "RG17104",
+  "nom": "regard mini-rond 7\" VB708B",
+  "categorie": "regard",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 21"
+ },
+ {
+  "ref": "RG6200",
+  "nom": "regard rond 10\" VB910B",
+  "categorie": "regard",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 21"
+ },
+ {
+  "ref": "RGVB910C",
+  "nom": "couvercle regard 10\" VB910C",
+  "categorie": "regard",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 21"
+ },
+ {
+  "ref": "RG17101",
+  "nom": "réhausse regard 12\" VB1419E",
+  "categorie": "regard",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 21"
+ },
+ {
+  "ref": "RG1710009",
+  "nom": "couvercle regard 12\" VB1419C",
+  "categorie": "regard",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 21"
+ },
+ {
+  "ref": "RG17107",
+  "nom": "réhausse regard Jumbo VB1220E",
+  "categorie": "regard",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 21"
+ },
+ {
+  "ref": "RG17108",
+  "nom": "couvercle regard Jumbo VB1220C",
+  "categorie": "regard",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 21"
+ },
+ {
+  "ref": "RGVB1324",
+  "nom": "regard Super Jumbo L x l x h = 83 x 59 x 39 VB1324",
+  "categorie": "regard",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 21"
+ },
+ {
+  "ref": "RG17109",
+  "nom": "regard Maxi Jumbo L x l x h = 103 x 69 x 46 VB1730",
+  "categorie": "regard",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 21"
+ },
+ {
+  "ref": "RD6210",
+  "nom": "vis verrouillage 5 pans nue VBLOCK",
+  "categorie": "regard",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 21"
+ },
+ {
+  "ref": "RD6212",
+  "nom": "vis verrouillage 5 pans RB 71P51186",
+  "categorie": "regard",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 21"
+ },
+ {
+  "ref": "RGVB1419CA",
+  "nom": "couvercle fonte pour regard 12\" VBSTDCA",
+  "categorie": "regard",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 21"
+ },
+ {
+  "ref": "RGVB1220CA",
+  "nom": "couvercle fonte pour regard jumbo VBJMBCA",
+  "categorie": "regard",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 21"
+ },
+ {
+  "ref": "RG6221",
+  "nom": "grille de base pour regard 12\" VB1419G",
+  "categorie": "regard",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 21"
+ },
+ {
+  "ref": "RPJVP300",
+  "nom": "solénoïde compact 9V à impulsion LU3100",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 25"
+ }
+]

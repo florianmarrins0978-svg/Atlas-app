@@ -1,0 +1,611 @@
+[
+ {
+  "ref": "UGGMC-206",
+  "nom": "G A G Ø 6MM 0.15M 2L/H 30ML",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "UGGMC-206_N",
+  "nom": "G AG Ø 6MM 0.15M 2L/H 30ML noir",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "UGGRBXFS",
+  "nom": "tube Ø16mm 2,3l/h esp.33cm autorégulé enterrable",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "UGG1516",
+  "nom": "tuyau poreux Ø 16mm 4l/h par mètre à 0.5 bars - PS maxi 1 bar",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "MIAOCTA8",
+  "nom": "schrubbler réglable 0 à 50l/h bouton can 4x6mm",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "MIAOCTA8P",
+  "nom": "schrubbler réglable 0 à 50l/h sur pique 10cm",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "MIALST4A",
+  "nom": "pique 30cm avec tubing 40cm prise d'eau 4x6m (Micro Stake)",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "MIA4254",
+  "nom": "allonge 30cm (pour MIALST4A)",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "MIA2131",
+  "nom": "micro jet 360° 98l/h - réglable 0 à 4m",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "MIA2132",
+  "nom": "micro jet 180° 98l/h - réglable 0 à 3m",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "MIA2133",
+  "nom": "micro jet 90° 98l/h - réglable 0 à 2,9m",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "MIA5121",
+  "nom": "VARI AQUILA SPIKE 360°",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "MIA5122",
+  "nom": "VARI AQUILA SPIKE 180°",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "MIA5123",
+  "nom": "VARI AQUILA SPIKE 90°",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "MIA20340",
+  "nom": "micro jet brouillard 20l/h - 0,4m",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "MIA2137",
+  "nom": "micro jet rotatif 360° 123l/h - réglable 0 à 4m",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "MIA2035",
+  "nom": "MICRO SINGLE JET STRIP BLEU",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "MIA2036",
+  "nom": "MINIJET 90° BLEU (100)",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "MIDT7MM25",
+  "nom": "micro-tube 4x6mm par 25ml",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "MIDT7MM50",
+  "nom": "micro-tube 4x6mm par 50ml",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "MID3904",
+  "nom": "perceur 3mm pour PE",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID1221",
+  "nom": "perceur pince 3mm 16/20",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID1222",
+  "nom": "perceur pince 3mm 25/32",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID3201",
+  "nom": "prise d'eau 4x6mm",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID3302",
+  "nom": "té 4x6mm",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID3303",
+  "nom": "croix 4x6mm",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID3304",
+  "nom": "coude 4x6mm",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID3412",
+  "nom": "bouchon gaffeur 4x6mm - grappe de 10",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MIAL3401",
+  "nom": "vannette 4x6mm",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6101",
+  "nom": "jonction cannelée Ø 16",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6102",
+  "nom": "jonction cannelée Ø 20",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6121",
+  "nom": "té cannelé Ø 16",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6122",
+  "nom": "té cannelé Ø 20",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6141",
+  "nom": "coude cannelé Ø 16",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6142",
+  "nom": "coude cannelé Ø 20",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6171",
+  "nom": "bouchon cannelé Ø 16",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6172",
+  "nom": "bouchon cannelé Ø 20",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6451",
+  "nom": "bouchon \"8 fin de ligne\" Ø 16",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6711",
+  "nom": "collier plastique Ø 16",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6712",
+  "nom": "collier plastique Ø 20",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6511",
+  "nom": "crampon de sol Ø 16-20 noir",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6514",
+  "nom": "crampon de sol Ø 16-20 marron",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6151",
+  "nom": "embout can Ø 16 x fil 1/2\"",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6152",
+  "nom": "embout can Ø 16 x fil 3/4\"",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6254",
+  "nom": "embout can Ø 20 x fil 3/4\"",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6162",
+  "nom": "embout can Ø 16 x tar 3/4\" écrou tournant + joint",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6601",
+  "nom": "vannette plastique cannelée Ø 16 x 16",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6602",
+  "nom": "vannette plastique cannelée Ø 20 x 20",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6611",
+  "nom": "vannette plastique fil 3/4\" x cannelée Ø 16",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6612",
+  "nom": "vannette plastique fil 3/4\" x cannelée Ø 20",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6621",
+  "nom": "vannette plastique fil 1/2\" x 1/2\"",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID31562020",
+  "nom": "vannette plastique fil 3/4\" x 3/4\"",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6362",
+  "nom": "embout Palaplast taraudé 16 x 3/4\"",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": "Palaplast",
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "MID6631",
+  "nom": "vannette Palaplast Ø16",
+  "categorie": "raccord goutte-à-goutte",
+  "marque": "Palaplast",
+  "page": "Aqua Plus 2026, p. 49"
+ },
+ {
+  "ref": "ELC4001",
+  "nom": "câble 1000 RO2V 1x1,5mm²",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELC4002",
+  "nom": "câble 1000 RO2V 2x1,5mm²",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELC4003",
+  "nom": "câble 1000 RO2V 3 G 1,5mm²",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELC4004",
+  "nom": "câble 1000 RO2V 4 G 1,5mm²",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELC4005",
+  "nom": "câble 1000 RO2V 5 G 1,5mm²",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELC4007",
+  "nom": "câble 1000 RO2V 7 G 1,5mm²",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELC40012",
+  "nom": "câble 1000 RO2V 12 G 1,5mm²",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELC40325",
+  "nom": "câble 1000 RO2V 3 G 2,5mm²",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELC4024",
+  "nom": "câble 1000 RO2V 4 G 2,5mm²",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELC40060",
+  "nom": "câble irrigation 2x0,8mm² 30V maxi - enterrable",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELC4083",
+  "nom": "câble irrigation 3x0,8mm² 30V maxi - enterrable",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELC4085",
+  "nom": "câble irrigation 5x0,8mm² 30V maxi - enterrable",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELC4087",
+  "nom": "câble irrigation 7x0,8mm² 30V maxi - enterrable",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELC4089",
+  "nom": "câble irrigation 9x0,8mm² 30V maxi - enterrable",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELC4090",
+  "nom": "câble irrigation 13x0,8mm² 30V maxi - enterrable",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELD55008",
+  "nom": "connexion étanche jaune DBRY-6 (3 fils de 2,5 mm²)",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELD550081",
+  "nom": "connexion étanche jaune DBY-20",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELD221413.",
+  "nom": "connexion Wago 3x4 mm²",
+  "categorie": "électricité",
+  "marque": "Wago",
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELD221415.",
+  "nom": "connexion Wago 5x4 mm²",
+  "categorie": "électricité",
+  "marque": "Wago",
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELD5111",
+  "nom": "connexion Blazing BBS 1,5mm MAX 30V",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 57"
+ },
+ {
+  "ref": "ELD40038",
+  "nom": "domino 6 mm²",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 58"
+ },
+ {
+  "ref": "ELD40039",
+  "nom": "domino 10 mm²",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 58"
+ },
+ {
+  "ref": "ELD34233",
+  "nom": "domino 16 mm²",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 58"
+ },
+ {
+  "ref": "ELD34219",
+  "nom": "domino 25 mm²",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 58"
+ },
+ {
+  "ref": "ELD40025",
+  "nom": "boîte de dérivation Plexo Ø 60mm",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 58"
+ },
+ {
+  "ref": "ELD40024",
+  "nom": "boîte de dérivation Plexo Ø 70mm",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 58"
+ },
+ {
+  "ref": "ELDLEG92110",
+  "nom": "boîte de dérivation Plexo 65x65x40mm",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 58"
+ },
+ {
+  "ref": "ELD40050",
+  "nom": "boîte de dérivation Plexo 105x105x55mm",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 58"
+ },
+ {
+  "ref": "ELD40021",
+  "nom": "résine Scotchcast 90gr",
+  "categorie": "électricité",
+  "marque": "Scotchcast",
+  "page": "Aqua Plus 2026, p. 58"
+ },
+ {
+  "ref": "ELDTRM92802",
+  "nom": "résine Scotchcast 420gr",
+  "categorie": "électricité",
+  "marque": "Scotchcast",
+  "page": "Aqua Plus 2026, p. 58"
+ },
+ {
+  "ref": "ELDTRM80155",
+  "nom": "résine - trousse de jonction Scotchcast 92MAO",
+  "categorie": "électricité",
+  "marque": "Scotchcast",
+  "page": "Aqua Plus 2026, p. 58"
+ },
+ {
+  "ref": "ELD100PAN",
+  "nom": "ruban isolant électrique (10mx15mm - ép.0,15mm)",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 58"
+ },
+ {
+  "ref": "ELDGEL",
+  "nom": "Gel isolant bi-composant 2 x 500 ml",
+  "categorie": "électricité",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 58"
+ }
+]

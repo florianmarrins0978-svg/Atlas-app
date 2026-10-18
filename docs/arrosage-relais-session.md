@@ -265,3 +265,16 @@ d'arrosage, tirets, flèches, pansements, code mort, couches, types.
 - Lancer une batterie ou pousser sans lui demander.
 - Toucher `src/app` avant qu'il ait choisi la planche.
 - Tuer un processus par son nom : `Stop-Process -Id <pid>` seulement.
+
+## Les photos des autres pièces (18 octobre 2026)
+
+Sa demande : chercher les photos de toutes les pièces de la liste qui n'en ont pas, et « ne pas montrer des photos de 32 pour du 25 ou inversement ».
+
+| | |
+|---|---|
+| déjà entrées, sans recherche | 20 pièces de la liste qui sont les pièces de nourrice déjà validées (même référence Aqua Plus) : `entrer-photos-par-reference.mjs` |
+| la planche | https://claude.ai/artifact/K7Gc7XTXHB7hSrqcevwa8r (base `choix`), 186 photos, quatre lots : polypro, colliers, robinetterie, tubes ; électrovannes, regards, accessoires d'arroseur ; goutte-à-goutte, électricité ; programmateurs et accessoires |
+| ses sources | `docs/arrosage-releve-photos/autres-pieces/` : la consigne donnée aux recherches, les pièces et le manifeste de chaque lot, le générateur |
+| écartées par nous | une photo qui montre une autre pièce, un autre modèle ou une autre taille (liste `ECARTEES` et `DESSINS` du générateur) |
+| pas cherchées | la gamme Millenium (raccords PE 75 à 110) |
+| **état** | **attend ses choix**. Ensuite : recopier la base dans `choix-autres-pieces.json`, et chaque photo validée va à toutes les références de son `refs` dans `PHOTOS` (les deux planches) |

@@ -1,0 +1,544 @@
+[
+ {
+  "forme": "pp-mamelon-double",
+  "nom": "mamelon double polypro",
+  "refs": [
+   "OPP506715",
+   "OPP506720",
+   "OPP506726",
+   "OPP506733",
+   "OPP506740",
+   "OPP506750"
+  ],
+  "fichier": "pp-mamelon-double-1.jpg",
+  "montre": "mamelon double 1\" x 1\", Plasson 5067",
+  "vise": "1\" x 1\"",
+  "preuve": "marquage « 1\"-1\" » et « PLASSON » lus sur l’hexagone",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/mamelon-double-filete-serie-7",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1124___.jpg",
+  "site": "plasson.fr",
+  "doute": ""
+ },
+ {
+  "forme": "pp-mamelon-reduit",
+  "nom": "mamelon réduit polypro",
+  "refs": [
+   "OPP50652015",
+   "OPP50652615",
+   "OPP50652620",
+   "OPP50653315",
+   "OPP50653320",
+   "OPP50653326",
+   "OPP50654015",
+   "OPP50654020",
+   "OPP50654026",
+   "OPP50654033",
+   "OPP50655015",
+   "OPP50655020",
+   "OPP50655026",
+   "OPP50655033",
+   "OPP50655040"
+  ],
+  "fichier": "pp-mamelon-reduit-1.jpg",
+  "montre": "mamelon réduit 1\" x 1/2\", Plasson 5065",
+  "vise": "1\" x 3/4\"",
+  "preuve": "marquage « 1\"-1/2\" » et « PLASSON » lus sur l’hexagone",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/mamelon-reduit-filete-serie-7",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1126___.jpg",
+  "site": "plasson.fr",
+  "doute": "La photo montre le 1\" x 1/2\" (OPP50652615, dans la liste), pas le 1\" x 3/4\". La forme est la même, seul le petit côté change."
+ },
+ {
+  "forme": "pp-manchon-reduit-mf",
+  "nom": "manchon réduit mâle femelle polypro",
+  "refs": [
+   "OPP50272015",
+   "OPP50272615",
+   "OPP50272620",
+   "OPP50273315",
+   "OPP50273320",
+   "OPP50273326",
+   "OPP50274015",
+   "OPP50274020",
+   "OPP50274026",
+   "OPP50274033",
+   "OPP50275015",
+   "OPP50275020",
+   "OPP50275026",
+   "OPP50275033",
+   "OPP50275040",
+   "OPP50276650",
+   "OPP50278040",
+   "OPP50278050",
+   "OPP50278065",
+   "OPP502710280"
+  ],
+  "fichier": "pp-manchon-reduit-mf-1.jpg",
+  "montre": "réduction mâle 1\" x femelle 1/2\", Plasson 5027",
+  "vise": "1\" x 3/4\"",
+  "preuve": "marquage « 1\"-1/2\" » et « PLASSON » lus sur l’hexagone",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/manchon-reduit-filete-x-taraude-serie",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1127___.jpg",
+  "site": "plasson.fr",
+  "doute": "La photo montre le 1\" x 1/2\" (OPP50272615, dans la liste), pas le 1\" x 3/4\"."
+ },
+ {
+  "forme": "pp-manchon",
+  "nom": "manchon taraudé polypro",
+  "refs": [
+   "OPP501715",
+   "OPP501720",
+   "OPP501726",
+   "OPP501733",
+   "OPP501740",
+   "OPP501750"
+  ],
+  "fichier": "pp-manchon-1.jpg",
+  "montre": "manchon femelle 3/4\" x 3/4\", Plasson 5017",
+  "vise": "1\" x 1\"",
+  "preuve": "marquage « 3/4\" » et « PLASSON » lus sur le corps",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/manchon-taraude-serie-7",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1129___.jpg",
+  "site": "plasson.fr",
+  "doute": "Pas de 1\" trouvé : c’est le 3/4\" (OPP501720), la taille de repli."
+ },
+ {
+  "forme": "pp-te-90",
+  "nom": "té 90° taraudé polypro",
+  "refs": [
+   "OPP504715",
+   "OPP504720",
+   "OPP504726",
+   "OPP504733",
+   "OPP504740",
+   "OPP504750"
+  ],
+  "fichier": "pp-te-90-1.jpg",
+  "montre": "té égal femelle 1\", Plasson 5047",
+  "vise": "1\"",
+  "preuve": "marquage « 1\" », « PP » et « PLASSON » lus sur le corps",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/te-a-90deg-taraude-serie-7",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1132___.jpg",
+  "site": "plasson.fr",
+  "doute": ""
+ },
+ {
+  "forme": "pp-coude-90",
+  "nom": "coude 90° taraudé polypro",
+  "refs": [
+   "OPP505715",
+   "OPP505720",
+   "OPP505726",
+   "OPP505733",
+   "OPP505740",
+   "OPP505750"
+  ],
+  "fichier": "pp-coude-90-1.jpg",
+  "montre": "coude femelle femelle 1\", Plasson 5057",
+  "vise": "1\"",
+  "preuve": "marquage « 1\" », « PP » et « PLASSON » lus sur le corps",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/coude-a-90deg-taraude-serie-7",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1133___.jpg",
+  "site": "plasson.fr",
+  "doute": ""
+ },
+ {
+  "forme": "pp-coude-90-mf",
+  "nom": "coude 90° mâle femelle polypro",
+  "refs": [
+   "OPP505915",
+   "OPP505920",
+   "OPP505926"
+  ],
+  "fichier": "pp-coude-90-mf-1.jpg",
+  "montre": "coude mâle 3/4\" x femelle 3/4\", Plasson 5157",
+  "vise": "1\"",
+  "preuve": "marquage « 3/4\" » lu deux fois sur le corps, et « PLASSON »",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/coude-a-90deg-filete-x-taraude-serie-7",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1128___.jpg",
+  "site": "plasson.fr",
+  "doute": "Pas de 1\" trouvé : c’est le 3/4\" (OPP505920). Plasson nomme cette forme 5157, la référence Aqua Plus dit 5059 : même forme, à confirmer."
+ },
+ {
+  "forme": "pp-bouchon-taraude",
+  "nom": "bouchon taraudé polypro",
+  "refs": [
+   "OPP507715",
+   "OPP507720",
+   "OPP507726",
+   "OPP507733",
+   "OPP507740",
+   "OPP507750"
+  ],
+  "fichier": null,
+  "montre": "",
+  "vise": "1\"",
+  "preuve": "",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/bouchon-taraude-serie-7",
+  "image": "",
+  "site": "plasson.fr",
+  "doute": "La seule photo Plasson (PLA_1131) ne laisse pas lire sa taille. Rien de prouvé à la bonne taille, donc rien téléchargé."
+ },
+ {
+  "forme": "pp-bouchon-filete",
+  "nom": "bouchon fileté polypro",
+  "refs": [
+   "OPP517715",
+   "OPP517720",
+   "OPP517726",
+   "OPP517733",
+   "OPP517740",
+   "OPP517750"
+  ],
+  "fichier": null,
+  "montre": "",
+  "vise": "1\"",
+  "preuve": "",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/bouchon-filete-serie-7",
+  "image": "",
+  "site": "plasson.fr",
+  "doute": "La photo Plasson montre un 2\" (marquage lu), pas le 1\" ni le 3/4\". Les autres images trouvées (jdpipes) sont des rendus sans taille. Rien téléchargé."
+ },
+ {
+  "forme": "pp-manchon-reduit-fm",
+  "nom": "manchon réduit femelle mâle polypro",
+  "refs": [
+   "OPP50372015",
+   "OPP50372615",
+   "OPP50372620"
+  ],
+  "fichier": null,
+  "montre": "",
+  "vise": "1\" x 3/4\"",
+  "preuve": "",
+  "source": "",
+  "image": "",
+  "site": "",
+  "doute": "Le code 5037 n’existe pas au catalogue Plasson 2026, et le 5117 Plasson est un femelle femelle. Forme exacte à confirmer chez Aqua Plus, rien téléchargé."
+ },
+ {
+  "forme": "cpc",
+  "nom": "collier de prise en charge",
+  "refs": [
+   "OD60862015",
+   "OD60862515",
+   "OD60862520",
+   "OD60863215",
+   "OD60863220",
+   "OD60863226",
+   "OD60864015",
+   "OD60864020",
+   "OD60864026",
+   "OD60865015",
+   "OD60865020",
+   "OD60865026",
+   "OD60865033",
+   "OD60866315",
+   "OD60866320",
+   "OD60866326",
+   "OD60866333",
+   "OD60866340"
+  ],
+  "fichier": "cpc-1.jpg",
+  "montre": "collier de prise Plasson 6086 à 2 boulons, marquage lu 25 x 3/4\"",
+  "vise": "25 x 3/4\"",
+  "preuve": "marquage moulé lu sur la selle, la tête en bas : « 25 - 3/4\" »",
+  "source": "https://www.plasson.fr/raccords-mecaniques/colliers-cpc-et-prises-de-branchement/collier-de-prise",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1153___.jpg",
+  "site": "plasson.fr",
+  "doute": "Le marquage est petit et à l’envers : je le lis 25 - 3/4\", mais le premier chiffre pourrait être un 3 (32 - 3/4\"). À vérifier à l’oeil sur l’image."
+ },
+ {
+  "forme": "cpc-renforce",
+  "nom": "collier de prise renforcé inox",
+  "refs": [
+   "OD160762515",
+   "OD160762520",
+   "OD160763215",
+   "OD160763220",
+   "OD160763226",
+   "OD160764015",
+   "OD160764020",
+   "OD160764026",
+   "OD160765015",
+   "OD160765020",
+   "OD160765026",
+   "OD160766315",
+   "OD160766320",
+   "OD160766326",
+   "OD160766340",
+   "OD160767515",
+   "OD160767520",
+   "OD160767526",
+   "OD160767540",
+   "OD160767550",
+   "OD160769020",
+   "OD160769026",
+   "OD160769040",
+   "OD160769050",
+   "OD17111020",
+   "OD1607611026",
+   "OD1701140",
+   "OD1607611050"
+  ],
+  "fichier": null,
+  "montre": "",
+  "vise": "25 x 3/4\"",
+  "preuve": "",
+  "source": "https://www.plasson.fr/raccords-mecaniques/colliers-cpc-et-prises-de-branchement/collier-de-prise-avec-bague-de-renfort-en",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1154___.jpg",
+  "site": "plasson.fr",
+  "doute": "La seule photo Plasson 6076 montre un 63 x 1\"1/4 (marquage lu). Rien trouvé en 25 x 3/4\", rien téléchargé."
+ },
+ {
+  "forme": "tube-pehd-irrigation",
+  "nom": "tube PEHD irrigation",
+  "refs": [
+   "UPE220",
+   "UPE225",
+   "UPE232",
+   "UPE290"
+  ],
+  "fichier": "tube-pehd-irrigation-1.jpg",
+  "montre": "couronne PE Ø25 x 2,3 à bande verte, 25 m",
+  "vise": "Ø25",
+  "preuve": "page dédiée au Ø25 (produit 8467), image propre à cette page",
+  "source": "https://dvs-beregnung.de/25-m-tube-pe-eau-de25-pn125-vert",
+  "image": "https://dvs-beregnung.de/media/image/product/8467/lg/25-m-pe-rohr-trinkwasser-de25-pn-12-5-gruener-streifen.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Autre marque, et PN12,5 au lieu de 10 bars. La bande du tube Aqua Plus n’est pas connue : si le sien est noir uni, la bande verte trompe. Le marquage n’est pas lisible sur la photo."
+ },
+ {
+  "forme": "tube-pehd-irrigation",
+  "nom": "tube PEHD irrigation, vue rapprochée",
+  "refs": [
+   "UPE220",
+   "UPE225",
+   "UPE232",
+   "UPE290"
+  ],
+  "fichier": "tube-pehd-irrigation-2.jpg",
+  "montre": "même couronne Ø25, vue rapprochée",
+  "vise": "Ø25",
+  "preuve": "même page dédiée au Ø25",
+  "source": "https://dvs-beregnung.de/25-m-tube-pe-eau-de25-pn125-vert",
+  "image": "https://dvs-beregnung.de/media/image/product/8467/lg/25-m-pe-rohr-trinkwasser-de25-pn-12-5-gruener-streifen~2.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Mêmes réserves que la première."
+ },
+ {
+  "forme": "tube-pehd-nf",
+  "nom": "tube PEHD NF eau potable",
+  "refs": [
+   "UPE240",
+   "UPE250",
+   "UPE263",
+   "UPE275"
+  ],
+  "fichier": null,
+  "montre": "",
+  "vise": "Ø40, le plus proche du 25 dans la liste",
+  "preuve": "",
+  "source": "",
+  "image": "",
+  "site": "",
+  "doute": "Tube NF à bandes bleues, qui ne ressemble pas au tube irrigation. Aucune photo trouvée avec la taille prouvée, rien téléchargé."
+ },
+ {
+  "forme": "tube-pebd",
+  "nom": "tube PEBD",
+  "refs": [
+   "UPE1116",
+   "UPE500600",
+   "UPE101220"
+  ],
+  "fichier": "tube-pebd-1.jpg",
+  "montre": "couronne PEBD noire Ø16, marquage « Ø16X1,4 PFA4 »",
+  "vise": "Ø16",
+  "preuve": "marquage imprimé lu sur le tube : Ø16X1,4 PFA4",
+  "source": "https://dvs-beregnung.de/tuyau-pe-1-2-rouleau-de-100-m-pn-4-2-rouleaux-de-50-m-conduite-d-alimentation-irrigation-16mm-ad-epaisseur-de-paroi-1-mm",
+  "image": "https://dvs-beregnung.de/media/image/product/1045/lg/1-2-zoll-pe-rohr-100m-rolle-pn-4-versorgungsleitung-bewaesserung-16mm-ad-wandstaerke-1mm~2.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Autre marque. Paroi de 1,4 mm, alors que les tubes Aqua Plus font 1,2 mm (4 bars) et 2 mm (6,3 bars) : à l’oeil c’est le même tube noir. Sert aussi au Ø20 UPE101220, qui n’a pas de photo à lui."
+ },
+ {
+  "forme": "tube-pebd",
+  "nom": "tube PEBD, couronne entière",
+  "refs": [
+   "UPE1116",
+   "UPE500600",
+   "UPE101220"
+  ],
+  "fichier": "tube-pebd-2.jpg",
+  "montre": "même couronne Ø16, vue entière",
+  "vise": "Ø16",
+  "preuve": "même page dédiée au Ø16 PN4",
+  "source": "https://dvs-beregnung.de/tuyau-pe-1-2-rouleau-de-100-m-pn-4-2-rouleaux-de-50-m-conduite-d-alimentation-irrigation-16mm-ad-epaisseur-de-paroi-1-mm",
+  "image": "https://dvs-beregnung.de/media/image/product/1045/lg/1-2-zoll-pe-rohr-100m-rolle-pn-4-versorgungsleitung-bewaesserung-16mm-ad-wandstaerke-1mm.jpg",
+  "site": "dvs-beregnung.de",
+  "doute": "Mêmes réserves que la première."
+ },
+ {
+  "forme": "reg-toro-ezr-100",
+  "nom": "régulateur de pression Toro EZReg 100",
+  "refs": [
+   "TEVEZR-100"
+  ],
+  "fichier": "reg-toro-ezr-100-1.jpg",
+  "montre": "module régulateur Toro EZR-100 seul",
+  "vise": "EZReg 100",
+  "preuve": "page dédiée au EZR-100 (Toro EZR-100 Pressure Regulator Module for P-220 Valves)",
+  "source": "https://www.sprinklersupplystore.com/products/ezr-100-toro-regulator-module",
+  "image": "https://cdn.shopify.com/s/files/1/1987/5531/products/EZR-100-2_4167a410-08fd-4c3d-9545-ec16f245e07f.jpg",
+  "site": "sprinklersupplystore.com",
+  "doute": "Image en 600 px. Les autres vues du vendeur portent un filigrane, écartées."
+ },
+ {
+  "forme": "reg-rb-prs-dial",
+  "nom": "régulateur de pression Rain Bird PRS-Dial",
+  "refs": [
+   "REVPRSDIAL"
+  ],
+  "fichier": "reg-rb-prs-dial-1.jpg",
+  "montre": "module PRS-Dial seul, avec son capot à côté",
+  "vise": "PRS-Dial",
+  "preuve": "page du fabricant dédiée au PRS-Dial",
+  "source": "https://www.rainbird.com/products/prs-dial-valve-pressure-regulator",
+  "image": "https://www.rainbird.com/sites/default/files/media/images/2017-11/PRS-Dial%20new.jpg",
+  "site": "rainbird.com",
+  "doute": ""
+ },
+ {
+  "forme": "reg-rb-prs-dial",
+  "nom": "régulateur de pression Rain Bird PRS-Dial",
+  "refs": [
+   "REVPRSDIAL"
+  ],
+  "fichier": "reg-rb-prs-dial-2.jpg",
+  "montre": "module PRS-Dial capot monté, logo Rain Bird",
+  "vise": "PRS-Dial",
+  "preuve": "page dédiée au PRS-Dial (Rain Bird PRS-Dial Pressure Regulating Module)",
+  "source": "https://www.sprinklersupplystore.com/products/rain-bird-pressure-regulator",
+  "image": "https://cdn.shopify.com/s/files/1/1987/5531/products/PRSDIAL-2_26ac47e8-f4cc-44f7-8879-afb1ea7371b0.jpg",
+  "site": "sprinklersupplystore.com",
+  "doute": "Image en 600 px."
+ },
+ {
+  "forme": "filtre-tamis-3-4",
+  "nom": "filtre à tamis inox MM 3/4\"",
+  "refs": [
+   "BFI2011"
+  ],
+  "fichier": null,
+  "montre": "",
+  "vise": "3/4\" MM, tamis inox 130 µ",
+  "preuve": "",
+  "source": "",
+  "image": "",
+  "site": "",
+  "doute": "Marque du filtre Aqua Plus inconnue, aucune page trouvée pour BFI2011. Rien téléchargé."
+ },
+ {
+  "forme": "filtre-arkal-3-4",
+  "nom": "filtre à disques Arkal 3/4\"",
+  "refs": [
+   "BFI210140"
+  ],
+  "fichier": "filtre-arkal-3-4-1.jpg",
+  "montre": "filtre Arkal 3/4\" en Y, deux mâles",
+  "vise": "3/4\"",
+  "preuve": "page dédiée au 3/4\" 120 mesh (25A45-120), même forme en Y que la fiche Arkal 3/4\" (cat. 1070)",
+  "source": "https://hydrobuilder.com/products/netafim-manual-disc-filter-3-4-inch-120-mesh-25a45-120",
+  "image": "https://cdn.shopify.com/s/files/1/0910/5912/6550/files/ls-man-disc-filter-.75-inch_2.jpg",
+  "site": "hydrobuilder.com",
+  "doute": "Vendu sous le nom Netafim, c’est le même filtre Arkal. Image en 700 px."
+ },
+ {
+  "forme": "filtre-arkal-1",
+  "nom": "filtre à disques Arkal 1\"",
+  "refs": [
+   "BFI210110"
+  ],
+  "fichier": "filtre-arkal-1-1.jpg",
+  "montre": "filtre Arkal 1\" en T, deux mâles",
+  "vise": "1\"",
+  "preuve": "page dédiée au 1\" 120 mesh (DF100-121), image différente de celles du 3/4\" et du 1\"1/2",
+  "source": "https://hydrobuilder.com/products/netafim-manual-disc-filter-1-inch-120-mesh-df100-121",
+  "image": "https://cdn.shopify.com/s/files/1/0910/5912/6550/files/ls-man-disc-filter-1-inch.jpg",
+  "site": "hydrobuilder.com",
+  "doute": "Vendu sous le nom Netafim. Image en 700 px."
+ },
+ {
+  "forme": "filtre-arkal-1-1-2",
+  "nom": "filtre à disques Arkal 1\"1/2",
+  "refs": [
+   "BFI210313"
+  ],
+  "fichier": "filtre-arkal-1-1-2-1.jpg",
+  "montre": "filtre Arkal 1\"1/2 en T, deux mâles, « 1 1/2\" » moulé près de la flèche",
+  "vise": "1\"1/2",
+  "preuve": "page dédiée au 1\"1/2 120 mesh (DF150-120), et « 1 1/2\" » lu sur le corps",
+  "source": "https://hydrobuilder.com/products/netafim-manual-disc-filter-1-5-inch-120-mesh-df150-120",
+  "image": "https://cdn.shopify.com/s/files/1/0910/5912/6550/files/ls-man-disc-filter-1.5-inch-gigapixel-high_fidelity_v2-3x_ec2b4e81-b778-4682-b613-40d107cc9af5.jpg",
+  "site": "hydrobuilder.com",
+  "doute": "Image agrandie par logiciel chez le vendeur (nom « gigapixel ») : nette mais retouchée."
+ },
+ {
+  "forme": "clapet-ea",
+  "nom": "clapet antipollution type EA",
+  "refs": [
+   "BDI9001",
+   "BDI9002",
+   "BDI9003",
+   "BDI9004",
+   "BDI9005"
+  ],
+  "fichier": null,
+  "montre": "",
+  "vise": "1\"",
+  "preuve": "",
+  "source": "https://watts.eu/fr/products/eu/antipollution-devices/ea-antipollution-check-valves/check-valve-w-f-brass-plugs",
+  "image": "",
+  "site": "watts.eu",
+  "doute": "Marque Aqua Plus inconnue. La gamme Watts EA a les mêmes tailles (3/4\" à 2\") mais une seule photo pour toutes, sans taille lisible. Rien téléchargé."
+ },
+ {
+  "forme": "vanne-1-4-tour-ff",
+  "nom": "vanne 1/4 de tour FF",
+  "refs": [
+   "BVA3861",
+   "BVA3862",
+   "BVA3863",
+   "BVA3864",
+   "BVA3865",
+   "BVA3866"
+  ],
+  "fichier": null,
+  "montre": "",
+  "vise": "1\"",
+  "preuve": "",
+  "source": "https://www.hellopro.fr/vanne-26-34-en-laiton-307689-2005596-9474084-produit.html",
+  "image": "",
+  "site": "hellopro.fr",
+  "doute": "Marque Aqua Plus inconnue. Seule page 26x34 trouvée : image de 330 px, sans taille lisible. Rien téléchargé."
+ },
+ {
+  "forme": "vanne-1-4-tour-purge-ff",
+  "nom": "vanne 1/4 de tour avec purge FF",
+  "refs": [
+   "BVA931",
+   "BVA933",
+   "BVA934",
+   "BVA935",
+   "BVA936"
+  ],
+  "fichier": null,
+  "montre": "",
+  "vise": "1\"",
+  "preuve": "",
+  "source": "https://www.hellopro.fr/vanne-avec-purge-26-34-307681-2005596-9474076-produit.html",
+  "image": "",
+  "site": "hellopro.fr",
+  "doute": "La page 26x34 a la même image (même sha1sum) que la page 20x27 : pas une preuve. Rien téléchargé."
+ }
+]
