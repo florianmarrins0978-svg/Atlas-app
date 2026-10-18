@@ -245,6 +245,11 @@
   .menu .gestes{display:flex;flex-direction:column;gap:8px;margin-top:14px}
   .menu .gestes button{min-height:52px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:15.5px;cursor:pointer}
   .menu .gestes button.danger{color:var(--atlas-alerte)}
+  /* Combien de pièces : il choisit le nombre, 1, 2, 3, 4, jamais « une » ou
+     « toutes » (sa correction du 18 octobre 2026). */
+  .menu .gestes .rang{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .menu .gestes .rang span{flex:0 0 96px;font-size:15.5px}
+  .menu .gestes .rang button{flex:1 1 44px;min-width:44px}
   .menu .propose{margin:6px 0 0;font-size:13px;color:var(--atlas-muted)}
   .recherche{display:block;width:100%;margin-top:12px;border:0;border-radius:10px;padding:12px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
@@ -401,19 +406,18 @@
   PHOTOS["plasson-16-rigide"] = "../arrosage-robinet-photos/plasson-16-rigide.jpg"; PHOTOS.OPL70302520 = "OPL70302520.jpg"; PHOTOS.OPL70303220 = "OPL70302520.jpg";
   var etat = { sortie: "boucle", couronne: 50, grillage: false, sonde: false, retirees: {}, remplacees: {}, ajoutees: [], listeRetirees: {}, nrUne: {}, modifierListe: false, ou: "amenee", categorie: "reseau", cible: null, recherche: "" };
   function plan() {
-    // Le nez de robinet n'a qu'une voie : son jardin d'exemple est une seule
-    // pelouse (8 × 8, un réseau). Avec la nourrice, le jardin entier.
-    var zones = robinet.montage === "nez"
-      ? [{ id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 }]
-      : [{ id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
+    // Le même jardin pour les deux montages. Le nez de robinet n'a qu'une voie et
+    // le jardin demande quatre réseaux : l'outil le GARDE et prévient qu'il manque
+    // des voies (sa réponse du 18 octobre 2026 : « s'il est en nez de robinet, il
+    // le garde et il prévient qu'il manque des voies »).
+    var zones = [{ id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
          { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },
          { id: 3, type: "massif", nom: "Massif", x: 14, y: 10, L: 20, l: 2.4, sortieGoutte: etat.sortie },
          { id: 4, type: "gazon", nom: "Couloir", x: 0, y: 14, L: 10, l: 2, materiel: "tuyere" }];
     return C.calculerPlan({ seau: SAISIE.seau, temps: SAISIE.temps, pression: SAISIE.pression, compteur: SAISIE.compteur, couronne: etat.couronne, sonde: etat.sonde, zones: zones });
   }
   function direSaisie() {
-    $("saisie").textContent = "Au seau, 10 L en 18 s. Pression 3 bar. Piquage sur un robinet. Croquis : " +
-      (robinet.montage === "nez" ? "pelouse de 8 × 8." : "pelouse de 12 × 12, pelouse de 8 × 8, massif de 20 × 2,40 en goutte-à-goutte, couloir de 10 × 2.");
+    $("saisie").textContent = "Au seau, 10 L en 18 s. Pression 3 bar. Piquage sur un robinet. Croquis : pelouse de 12 × 12, pelouse de 8 × 8, massif de 20 × 2,40 en goutte-à-goutte, couloir de 10 × 2.";
   }
   // LE DÉPART : l'outil choisit, il peut le changer. Ø16 seulement quand tout est
   // en goutte-à-goutte (sa règle du 18 octobre 2026) ; sinon le diamètre que le
@@ -572,7 +576,7 @@
     var NOMS = { "coude-mf": "Coude MF 1\"", "mamelon": "Mamelon réduit MM 1\" x 3/4\"", "vanne-purge": "Vanne 3/4\" FF", "pehd": "PEHD Ø25" };
     // CHAQUE PIÈCE DE LA NOURRICE SE TOUCHE, par sa ligne de légende ou dans le bac
     // (sa demande du 18 octobre 2026) : sur le dessin, elles sont trop serrées.
-    var etatNr = function (ref) { return etat.retirees["nr:" + ref] ? " retiree" : etat.remplacees["nr:" + ref] ? " changee" : ""; };
+    var etatNr = function (ref) { return etat.retirees["nr:" + ref] || (etat.nrUne[ref] || 0) >= (nombreNourrice[ref] || 1) ? " retiree" : etat.remplacees["nr:" + ref] ? " changee" : ""; };
     var nomNr = function (ref) { var c = etat.remplacees["nr:" + ref]; return c ? c.nom : (NOMS[ref] || nomCatalogue(ref)) + (etat.nrUne[ref] ? ", " + etat.nrUne[ref] + " en moins" : ""); };
     $("legende").innerHTML = ordre.map(function (ref, i) { return '<li><button type="button" class="leg' + etatNr(ref) + '" data-nr="' + texte(ref) + '"><b>' + (i + 1) + "</b><span>" + texte(nomNr(ref)) + "</span></button></li>"; }).join("");
     var bac = "";
@@ -954,7 +958,7 @@
       var lignes = {}, retirees = {};
       Object.keys(g.lignes).forEach(function (ref) { (etat.listeRetirees[g.titre + "|" + ref] ? retirees : lignes)[ref] = g.lignes[ref]; });
       etat.ajoutees.filter(function (a) { return a.ou === "liste:" + g.titre; }).forEach(function (a) {
-        var e = lignes[a.ref] = lignes[a.ref] || { nom: a.nom, q: 0, u: "u" }; e.q += 1;
+        var e = lignes[a.ref] = lignes[a.ref] || { nom: a.nom, q: 0, u: "u" }; e.q += a.q || 1;
       });
       return { titre: g.titre, couleur: g.couleur, lignes: lignes, retirees: retirees };
     });
@@ -1052,7 +1056,12 @@
           return noms[ref] + ", " + pose[ref] + " ici, " + attendu[ref] + " dans l’outil";
         }).join(" ; ") + "." : "Le schéma et la liste de l’outil comptent les mêmes pièces.";
     var res = p.manquants.slice();
-    if (robinet.montage === "nez" && p.secteurs.length > ROBINET.prog.voies) res.unshift("Le programmateur en nez de robinet n’a qu’une voie, ce jardin en demande " + p.secteurs.length + ".");
+    // Plus de réseaux que de voies : on garde le nez de robinet et on prévient
+    // (sa réponse du 18 octobre 2026). Le manque est dit en nombre de voies.
+    if (robinet.montage === "nez" && p.secteurs.length > ROBINET.prog.voies) {
+      var manque = p.secteurs.length - ROBINET.prog.voies;
+      res.unshift("Il manque " + manque + " voie" + (manque > 1 ? "s" : "") + " au programmateur : il en a " + ROBINET.prog.voies + ", ce jardin demande " + p.secteurs.length + " réseaux.");
+    }
     $("reserves").innerHTML = res.map(function (r) { return "<li>" + texte(r) + "</li>"; }).join("");
   }
 
@@ -1115,12 +1124,14 @@
       var r0 = b.dataset.nr, n0 = nombreNourrice[r0] || 1;
       proposees["nr:" + r0] = { ref: r0, nom: nomCatalogue(r0) };
       menu("nr:" + r0);
-      // Plusieurs pièces du même numéro : on peut n'en toucher qu'une.
+      // PLUSIEURS PIÈCES DU MÊME NUMÉRO : IL CHOISIT COMBIEN il en change ou en
+      // supprime, 1, 2, 3, 4 (sa correction du 18 octobre 2026 : « on ne va pas à
+      // chaque fois faire une par une »). Une rangée par geste, un bouton par nombre.
+      var restant = n0 - (etat.nrUne[r0] || 0);
       if (n0 > 1 && !etat.retirees["nr:" + r0] && !etat.remplacees["nr:" + r0]) {
-        $("menu-gestes").innerHTML = '<button type="button" data-geste="changer-une">Changer une seule pièce</button>' +
-          '<button type="button" class="danger" data-geste="supprimer-une">Supprimer une seule pièce</button>' +
-          '<button type="button" data-geste="changer">Changer les ' + n0 + "</button>" +
-          '<button type="button" class="danger" data-geste="supprimer">Supprimer les ' + n0 + "</button>" +
+        var nombres = function (geste, classe) { var s = ""; for (var k = 1; k <= restant; k++) s += '<button type="button"' + (classe ? ' class="' + classe + '"' : "") + ' data-geste="' + geste + '" data-n="' + k + '">' + k + "</button>"; return s; };
+        $("menu-gestes").innerHTML = (restant > 0 ? '<div class="rang"><span>Changer</span>' + nombres("changer-n", "") + "</div>" +
+          '<div class="rang"><span>Supprimer</span>' + nombres("supprimer-n", "danger") + "</div>" : "") +
           (etat.nrUne[r0] ? '<button type="button" data-geste="remettre-une">Remettre les ' + n0 + "</button>" : "");
       }
       return;
@@ -1136,9 +1147,10 @@
       if (b.dataset.geste === "remettre-chaine") { lc.forEach(function (x) { delete etat.retirees[x]; }); $("menu").hidden = true; dessiner(); return; }
       if (b.dataset.geste === "revenir-chaine") { lc.forEach(function (x) { delete etat.remplacees[x]; }); $("menu").hidden = true; dessiner(); return; }
       if (b.dataset.geste === "changer-chaine") { $("menu").hidden = true; etat.ou = null; etat.recherche = ""; $("recherche").value = ""; etat.categorie = categorieDe(lc[0]); etat.chaineEnAttente = lc; ouvrir(); return; }
-      if (refNr && b.dataset.geste === "changer-une") { etat.nrEnAttente = refNr; $("menu").hidden = true; etat.ou = "liste:" + titreNourrice; etat.cible = null; etat.recherche = ""; $("recherche").value = ""; etat.categorie = "nourrice"; ouvrir(); dessiner(); return; }
-      if (refNr && b.dataset.geste === "supprimer-une") { etat.nrUne[refNr] = (etat.nrUne[refNr] || 0) + 1; $("menu").hidden = true; dessiner(); return; }
-      if (refNr && b.dataset.geste === "remettre-une") { delete etat.nrUne[refNr]; $("menu").hidden = true; dessiner(); return; }
+      if (refNr && b.dataset.geste === "changer-n") { etat.nrEnAttente = { ref: refNr, n: Number(b.dataset.n) }; $("menu").hidden = true; etat.ou = "liste:" + titreNourrice; etat.cible = null; etat.recherche = ""; $("recherche").value = ""; etat.categorie = "nourrice"; ouvrir(); dessiner(); return; }
+      if (refNr && b.dataset.geste === "supprimer-n") { etat.nrUne[refNr] = (etat.nrUne[refNr] || 0) + Number(b.dataset.n); $("menu").hidden = true; dessiner(); return; }
+      // Remettre rend aussi les remplaçantes entrées à leur place dans la liste.
+      if (refNr && b.dataset.geste === "remettre-une") { delete etat.nrUne[refNr]; etat.ajoutees = etat.ajoutees.filter(function (a) { return a.de !== refNr; }); $("menu").hidden = true; dessiner(); return; }
       if (b.dataset.geste === "changer") { $("menu").hidden = true; etat.ou = null; etat.recherche = ""; $("recherche").value = ""; etat.categorie = categorieDe(cle); ouvrir(); return; }
       if (b.dataset.geste === "supprimer") {
         if (cle.indexOf("plus:") === 0) etat.ajoutees = etat.ajoutees.filter(function (a) { return "plus:" + a.n !== cle; });
@@ -1158,9 +1170,9 @@
       var x = trouver(b.dataset.choisir);
       if (etat.chaineEnAttente) { etat.chaineEnAttente.forEach(function (c) { etat.remplacees[c] = { ref: x.ref, nom: x.nom }; delete etat.retirees[c]; }); etat.chaineEnAttente = null; }
       else if (etat.ou === null && etat.cible) { etat.remplacees[etat.cible] = { ref: x.ref, nom: x.nom }; delete etat.retirees[etat.cible]; }
-      else etat.ajoutees.push({ n: Date.now(), ou: etat.ou, ref: x.ref, nom: x.nom });
-      // La pièce de la nourrice ne sort du compte qu'une fois sa remplaçante choisie.
-      if (etat.nrEnAttente) { etat.nrUne[etat.nrEnAttente] = (etat.nrUne[etat.nrEnAttente] || 0) + 1; etat.nrEnAttente = null; }
+      else etat.ajoutees.push({ n: Date.now(), ou: etat.ou, ref: x.ref, nom: x.nom, q: etat.nrEnAttente ? etat.nrEnAttente.n : 1, de: etat.nrEnAttente ? etat.nrEnAttente.ref : null });
+      // Les pièces de la nourrice ne sortent du compte qu'une fois leur remplaçante choisie, au nombre choisi.
+      if (etat.nrEnAttente) { etat.nrUne[etat.nrEnAttente.ref] = (etat.nrUne[etat.nrEnAttente.ref] || 0) + etat.nrEnAttente.n; etat.nrEnAttente = null; }
       $("feuille").hidden = true; dessiner();
     }
   });

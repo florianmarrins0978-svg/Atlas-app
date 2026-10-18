@@ -209,6 +209,11 @@
   .menu .gestes{display:flex;flex-direction:column;gap:8px;margin-top:14px}
   .menu .gestes button{min-height:52px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:15.5px;cursor:pointer}
   .menu .gestes button.danger{color:var(--atlas-alerte)}
+  /* Combien de pièces : il choisit le nombre, 1, 2, 3, 4, jamais « une » ou
+     « toutes » (sa correction du 18 octobre 2026). */
+  .menu .gestes .rang{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .menu .gestes .rang span{flex:0 0 96px;font-size:15.5px}
+  .menu .gestes .rang button{flex:1 1 44px;min-width:44px}
   .menu .propose{margin:6px 0 0;font-size:13px;color:var(--atlas-muted)}
   .recherche{display:block;width:100%;margin-top:12px;border:0;border-radius:10px;padding:12px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
@@ -491,7 +496,7 @@
     var NOMS = { "coude-mf": "Coude MF 1\"", "mamelon": "Mamelon réduit MM 1\" x 3/4\"", "vanne-purge": "Vanne 3/4\" FF", "pehd": "PEHD Ø25" };
     // CHAQUE PIÈCE DE LA NOURRICE SE TOUCHE, par sa ligne de légende ou dans le bac
     // (sa demande du 18 octobre 2026) : sur le dessin, elles sont trop serrées.
-    var etatNr = function (ref) { return etat.retirees["nr:" + ref] ? " retiree" : etat.remplacees["nr:" + ref] ? " changee" : ""; };
+    var etatNr = function (ref) { return etat.retirees["nr:" + ref] || (etat.nrUne[ref] || 0) >= (nombreNourrice[ref] || 1) ? " retiree" : etat.remplacees["nr:" + ref] ? " changee" : ""; };
     var nomNr = function (ref) { var c = etat.remplacees["nr:" + ref]; return c ? c.nom : (NOMS[ref] || nomCatalogue(ref)) + (etat.nrUne[ref] ? ", " + etat.nrUne[ref] + " en moins" : ""); };
     $("legende").innerHTML = ordre.map(function (ref, i) { return '<li><button type="button" class="leg' + etatNr(ref) + '" data-nr="' + texte(ref) + '"><b>' + (i + 1) + "</b><span>" + texte(nomNr(ref)) + "</span></button></li>"; }).join("");
     var bac = "";
@@ -838,7 +843,7 @@
       var lignes = {}, retirees = {};
       Object.keys(g.lignes).forEach(function (ref) { (etat.listeRetirees[g.titre + "|" + ref] ? retirees : lignes)[ref] = g.lignes[ref]; });
       etat.ajoutees.filter(function (a) { return a.ou === "liste:" + g.titre; }).forEach(function (a) {
-        var e = lignes[a.ref] = lignes[a.ref] || { nom: a.nom, q: 0, u: "u" }; e.q += 1;
+        var e = lignes[a.ref] = lignes[a.ref] || { nom: a.nom, q: 0, u: "u" }; e.q += a.q || 1;
       });
       return { titre: g.titre, couleur: g.couleur, lignes: lignes, retirees: retirees };
     });
@@ -984,12 +989,14 @@
       var r0 = b.dataset.nr, n0 = nombreNourrice[r0] || 1;
       proposees["nr:" + r0] = { ref: r0, nom: nomCatalogue(r0) };
       menu("nr:" + r0);
-      // Plusieurs pièces du même numéro : on peut n'en toucher qu'une.
+      // PLUSIEURS PIÈCES DU MÊME NUMÉRO : IL CHOISIT COMBIEN il en change ou en
+      // supprime, 1, 2, 3, 4 (sa correction du 18 octobre 2026 : « on ne va pas à
+      // chaque fois faire une par une »). Une rangée par geste, un bouton par nombre.
+      var restant = n0 - (etat.nrUne[r0] || 0);
       if (n0 > 1 && !etat.retirees["nr:" + r0] && !etat.remplacees["nr:" + r0]) {
-        $("menu-gestes").innerHTML = '<button type="button" data-geste="changer-une">Changer une seule pièce</button>' +
-          '<button type="button" class="danger" data-geste="supprimer-une">Supprimer une seule pièce</button>' +
-          '<button type="button" data-geste="changer">Changer les ' + n0 + "</button>" +
-          '<button type="button" class="danger" data-geste="supprimer">Supprimer les ' + n0 + "</button>" +
+        var nombres = function (geste, classe) { var s = ""; for (var k = 1; k <= restant; k++) s += '<button type="button"' + (classe ? ' class="' + classe + '"' : "") + ' data-geste="' + geste + '" data-n="' + k + '">' + k + "</button>"; return s; };
+        $("menu-gestes").innerHTML = (restant > 0 ? '<div class="rang"><span>Changer</span>' + nombres("changer-n", "") + "</div>" +
+          '<div class="rang"><span>Supprimer</span>' + nombres("supprimer-n", "danger") + "</div>" : "") +
           (etat.nrUne[r0] ? '<button type="button" data-geste="remettre-une">Remettre les ' + n0 + "</button>" : "");
       }
       return;
@@ -1005,9 +1012,10 @@
       if (b.dataset.geste === "remettre-chaine") { lc.forEach(function (x) { delete etat.retirees[x]; }); $("menu").hidden = true; dessiner(); return; }
       if (b.dataset.geste === "revenir-chaine") { lc.forEach(function (x) { delete etat.remplacees[x]; }); $("menu").hidden = true; dessiner(); return; }
       if (b.dataset.geste === "changer-chaine") { $("menu").hidden = true; etat.ou = null; etat.recherche = ""; $("recherche").value = ""; etat.categorie = categorieDe(lc[0]); etat.chaineEnAttente = lc; ouvrir(); return; }
-      if (refNr && b.dataset.geste === "changer-une") { etat.nrEnAttente = refNr; $("menu").hidden = true; etat.ou = "liste:" + titreNourrice; etat.cible = null; etat.recherche = ""; $("recherche").value = ""; etat.categorie = "nourrice"; ouvrir(); dessiner(); return; }
-      if (refNr && b.dataset.geste === "supprimer-une") { etat.nrUne[refNr] = (etat.nrUne[refNr] || 0) + 1; $("menu").hidden = true; dessiner(); return; }
-      if (refNr && b.dataset.geste === "remettre-une") { delete etat.nrUne[refNr]; $("menu").hidden = true; dessiner(); return; }
+      if (refNr && b.dataset.geste === "changer-n") { etat.nrEnAttente = { ref: refNr, n: Number(b.dataset.n) }; $("menu").hidden = true; etat.ou = "liste:" + titreNourrice; etat.cible = null; etat.recherche = ""; $("recherche").value = ""; etat.categorie = "nourrice"; ouvrir(); dessiner(); return; }
+      if (refNr && b.dataset.geste === "supprimer-n") { etat.nrUne[refNr] = (etat.nrUne[refNr] || 0) + Number(b.dataset.n); $("menu").hidden = true; dessiner(); return; }
+      // Remettre rend aussi les remplaçantes entrées à leur place dans la liste.
+      if (refNr && b.dataset.geste === "remettre-une") { delete etat.nrUne[refNr]; etat.ajoutees = etat.ajoutees.filter(function (a) { return a.de !== refNr; }); $("menu").hidden = true; dessiner(); return; }
       if (b.dataset.geste === "changer") { $("menu").hidden = true; etat.ou = null; etat.recherche = ""; $("recherche").value = ""; etat.categorie = categorieDe(cle); ouvrir(); return; }
       if (b.dataset.geste === "supprimer") {
         if (cle.indexOf("plus:") === 0) etat.ajoutees = etat.ajoutees.filter(function (a) { return "plus:" + a.n !== cle; });
@@ -1025,9 +1033,9 @@
       var x = trouver(b.dataset.choisir);
       if (etat.chaineEnAttente) { etat.chaineEnAttente.forEach(function (c) { etat.remplacees[c] = { ref: x.ref, nom: x.nom }; delete etat.retirees[c]; }); etat.chaineEnAttente = null; }
       else if (etat.ou === null && etat.cible) { etat.remplacees[etat.cible] = { ref: x.ref, nom: x.nom }; delete etat.retirees[etat.cible]; }
-      else etat.ajoutees.push({ n: Date.now(), ou: etat.ou, ref: x.ref, nom: x.nom });
-      // La pièce de la nourrice ne sort du compte qu'une fois sa remplaçante choisie.
-      if (etat.nrEnAttente) { etat.nrUne[etat.nrEnAttente] = (etat.nrUne[etat.nrEnAttente] || 0) + 1; etat.nrEnAttente = null; }
+      else etat.ajoutees.push({ n: Date.now(), ou: etat.ou, ref: x.ref, nom: x.nom, q: etat.nrEnAttente ? etat.nrEnAttente.n : 1, de: etat.nrEnAttente ? etat.nrEnAttente.ref : null });
+      // Les pièces de la nourrice ne sortent du compte qu'une fois leur remplaçante choisie, au nombre choisi.
+      if (etat.nrEnAttente) { etat.nrUne[etat.nrEnAttente.ref] = (etat.nrUne[etat.nrEnAttente.ref] || 0) + etat.nrEnAttente.n; etat.nrEnAttente = null; }
       $("feuille").hidden = true; dessiner();
     }
   });
