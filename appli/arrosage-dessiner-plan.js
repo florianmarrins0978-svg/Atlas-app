@@ -24,8 +24,12 @@
   SA RÉPONSE, LE MÊME SOIR : « la 2 ». La largeur PROPOSE le nombre de lignes
   de goutte-à-goutte, et c'est lui qui décide. Sa règle (relais, « le calcul
   du goutte-à-goutte ») : une ligne arrose 50 cm de part et d'autre, une bande
-  de 1 m. Jusqu'à 1 m de large, une ligne ; au delà, deux. Le calcul n'en
-  connaît que une ou deux (lignesHaie) : une haie de plus de 2 m le dit.
+  de 1 m. Donc une ligne par mètre de large, arrondi au-dessus : 1 m, une
+  ligne ; 2,5 m, trois. Sa correction du même soir : « il ne faut pas
+  forcément mettre une touche, une ou deux, parce que si le carré il est plus
+  grand, peut-être qu'il en faudra 4, 5 ». Le nombre se règle donc par « − »
+  et « + », sans plafond. Le calcul, lui, n'en connaît encore que une ou deux
+  (lignesHaie, calcul.js) : à changer quand on codera.
 
   CE QUE L'OUTIL REND EST CE QUE LA PHOTO REND (CroquisLu de
   src/server/ai/services/lire-croquis.ts) : des zones avec leur centre et leur
@@ -106,9 +110,10 @@
      décision : la feuille la présélectionne, il la change d'un doigt. */
   var BANDE_PAR_LIGNE = 1;
   function lignesProposees(largeur) {
-    return largeur == null ? null : largeur <= BANDE_PAR_LIGNE ? 1 : 2;
+    // Le millionième retiré : 2 ÷ 1 doit rester 2, pas devenir 3 par l'arrondi.
+    return largeur == null ? null : Math.max(1, Math.ceil(largeur / BANDE_PAR_LIGNE - 1e-9));
   }
-  function ecritLignes(n) { return n === 2 ? "deux lignes" : "une ligne"; }
+  function ecritLignes(n) { return n === 1 ? "une ligne" : n + " lignes"; }
 
   /* En B, la taille d'une zone sort de ses cotes, jamais du doigt. */
   function tailleSelonCotes(z) {
@@ -379,11 +384,10 @@
 
   var lignesEnCours = { n: null, choisies: false };
   function rendreLignes() {
-    document.querySelectorAll("#f-lignes [data-lignes]").forEach(function (b) {
-      b.setAttribute("aria-pressed", String(+b.dataset.lignes === lignesEnCours.n));
-    });
+    $("f-nombre").textContent = lignesEnCours.n ? ecritLignes(lignesEnCours.n) : "?";
+    $("f-moins").disabled = !lignesEnCours.n || lignesEnCours.n <= 1;
     var p = lignesProposees(nombre($("f-l").value));
-    $("f-propose").textContent = p ? "Proposé : " + ecritLignes(p) + "." : "";
+    $("f-propose").textContent = p && p !== lignesEnCours.n ? "Proposé : " + ecritLignes(p) + "." : p ? "Proposé." : "";
   }
 
   function ouvrirPoint(id) {
@@ -564,7 +568,6 @@
     }
     e.manque.forEach(function (m) { ligne(C.LIBELLES[m].titre, "rouge"); });
     etat.zones.forEach(function (z) {
-      if (z.type === "haie" && z.l > 2 * BANDE_PAR_LIGNE) ligne("Deux lignes arrosent 2 m, " + nomDe(z) + " en fait " + ecrit(z.l) + " m.");
       if (!mesuree(z)) ligne("Les métrés de " + nomDe(z) + " manquent, cette zone n’entre pas dans le plan.");
     });
     var faire = $("faire");
@@ -647,8 +650,12 @@
       if (!lignesEnCours.choisies) lignesEnCours.n = lignesProposees(nombre($("f-l").value));
       rendreLignes();
     });
-    document.querySelectorAll("#f-lignes [data-lignes]").forEach(function (b) {
-      b.addEventListener("click", function () { lignesEnCours = { n: +b.dataset.lignes, choisies: true }; rendreLignes(); });
+    [["f-moins", -1], ["f-plus", 1]].forEach(function (c) {
+      $(c[0]).addEventListener("click", function () {
+        var n = (lignesEnCours.n || lignesProposees(nombre($("f-l").value)) || 1) + c[1];
+        lignesEnCours = { n: Math.max(1, n), choisies: true };
+        rendreLignes();
+      });
     });
     $("f-tourner").addEventListener("click", tourner);
     $("f-supprimer").addEventListener("click", supprimer);

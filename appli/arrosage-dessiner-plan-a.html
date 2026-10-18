@@ -84,9 +84,10 @@
     </div>
     <div id="f-lignes" hidden>
       <span class="caps doux" id="f-lignes-titre">Lignes de goutte-à-goutte</span>
-      <div class="deux" role="group" aria-labelledby="f-lignes-titre">
-        <button class="bouton" type="button" data-lignes="1" aria-pressed="false">Une</button>
-        <button class="bouton" type="button" data-lignes="2" aria-pressed="false">Deux</button>
+      <div class="compteur-lignes" role="group" aria-labelledby="f-lignes-titre">
+        <button id="f-moins" class="bouton" type="button" aria-label="Une ligne de moins">−</button>
+        <output id="f-nombre" aria-live="polite"></output>
+        <button id="f-plus" class="bouton" type="button" aria-label="Une ligne de plus">+</button>
       </div>
       <p id="f-propose" class="propose"></p>
     </div>
