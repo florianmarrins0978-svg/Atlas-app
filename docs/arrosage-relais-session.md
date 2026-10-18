@@ -118,7 +118,7 @@ tuyères 1800 et la 3504, jamais sur la ligne ; le BL-IP est un Solem ; les
    Mini 8 buse 2,5 à 0,56).
 3. ~~**Combien de turbines au plus par réseau**~~ : *« oui, reste comme ça »*
    (18 octobre). On ne touche à rien.
-4. **Le tube Toro** (il envoie la photo, 18 octobre) : la fiche (pression mini, diamètre intérieur). Deux tubes
+4. **Le tube Toro** (18 octobre : 2 l/h tous les 33 cm, déjà au catalogue ; la fiche qu'il a envoyée dit 2,2 ou 3,5 l/h, 31 ou 46 cm, intérieur 14,2 mm, bobine marron : ce n'est pas ce tube, et elle ne donne ni la pression mini ni « autorégulant ») : la fiche (pression mini, diamètre intérieur). Deux tubes
    Toro de 16 mm à 2 l/h existent (BlueLine Classic non autorégulant, BlueLine
    PC autorégulant de 0,69 à 4,14 bar), 14 mm de passage tous deux ; Aqua Plus dit
    « autorégulé ». Sans confirmation, la pression au bout des lignes n'est pas
