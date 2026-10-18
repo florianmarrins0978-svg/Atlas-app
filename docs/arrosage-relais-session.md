@@ -27,11 +27,7 @@ barrées ou annotées).
 
 **ATTENTION : une autre session travaille dans CE MÊME dossier.** Elle a fait la
 planche des photos de raccords PE (https://claude.ai/artifact/R3viQnoxAi7biZ6tD5syYS,
-commits `9e9db77f` et `724d500e`) et, au moment où la session du 18 s'est
-arrêtée, l'arbre portait **son travail non commité** : `appli/arrosage-photos/pe-*.jpg`
-et des entrées `PHOTOS` (OPL…) dans `appli/arrosage-plan.html` et
-`appli/arrosage-vue-eclatee.html`. **Ne pas le commiter, ne pas l'écraser, ne pas
-le jeter** : demander au patron à qui il est avant de toucher à ces deux fichiers.
+commits `9e9db77f`, `724d500e`, puis `941952ea` qui donne leurs photos validées aux raccords PE de la liste dans `arrosage-plan.html` et `arrosage-vue-eclatee.html`). Avant de toucher à ces fichiers, `git log` pour voir si elle a bougé, et ne jamais jeter son travail non commité : demander au patron.
 
 **Côté `main`** : le lot part de `5e850cc1` ; `origin/main` était à `8d3c0c1d`
 (15 commits de plus, rien d'arrosage vu) le 18 au soir. Le lot porte 116 commits,
