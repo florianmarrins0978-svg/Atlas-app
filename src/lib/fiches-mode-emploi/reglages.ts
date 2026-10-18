@@ -82,10 +82,10 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     motsCles: ["conditions", "accepter", "cgu", "confidentialite", "documents", "legaux", "cocher", "lire"],
     geste:
       "Touchez un document pour le lire en entier, « Fermer » pour revenir, puis « Accepter ». " +
-      "Pour partir sans accepter, « Se déconnecter ».",
+      "Pour partir sans accepter, « Se déconnecter ». Déjà client, « Refuser » mène à vos données, puis à la résiliation remboursée.",
     reserve: "Atlas ne s'ouvre pas tant que les documents ne sont pas acceptés.",
     source: "src/app/documents-legaux/formulaire.tsx",
-    preuves: ['"Accepter"', "Fermer", "Se déconnecter"],
+    preuves: ['"Accepter"', "Fermer", "Se déconnecter", "Refuser"],
     ailleurs: [{ source: "src/app/documents-legaux/page.tsx", preuves: ["Avant de commencer"] }],
   },
   // --- Réglages : l'écran lui-même --------------------------------------------

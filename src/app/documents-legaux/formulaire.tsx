@@ -9,6 +9,17 @@ import { colors } from "@/lib/design-tokens";
 import { phraseDAcceptation } from "@/lib/acceptation-documents";
 import { NUIT, SERIF } from "@/components/atlas/PorteDeNuit";
 import { rendreMarkdownSimple } from "@/components/atlas/rendreMarkdownSimple";
+import FeuilleRefus from "./FeuilleRefus";
+
+/**
+ * Ce que « Refuser » peut offrir à un patron déjà client : `null` pour un
+ * nouvel inscrit ou un salarié, qui gardent « Se déconnecter ».
+ */
+export type OptionRefus = {
+  nomFichier: string;
+  /** `null` sans abonnement payé en cours : rien à résilier, l'export seul. */
+  resiliation: { formule: string; payeJusquAu: string; moisNonUtilises: number } | null;
+};
 
 // **Accepter en un geste, comme Apple — planche du 17 octobre 2026**
 // (`appli/documents-legaux-un-geste.html`). Les cases sont parties : une phrase
@@ -18,9 +29,16 @@ import { rendreMarkdownSimple } from "@/components/atlas/rendreMarkdownSimple";
 // sous-traitance (RGPD art. 28.9), et entre professionnels aucune case n'est
 // exigée (CJUE, C‑358/21). Ce qui reste exigé, et que cet écran tient : chaque
 // document nommé à part, lisible avant, et une acceptation expresse.
-export default function FormulaireAcceptation({ documents }: { documents: DocumentAAccepter[] }) {
+export default function FormulaireAcceptation({
+  documents,
+  refus,
+}: {
+  documents: DocumentAAccepter[];
+  refus: OptionRefus | null;
+}) {
   const [etat, action, enCours] = useActionState(accepterDocumentsAction, undefined);
   const [lu, setLu] = useState<DocumentAAccepter | null>(null);
+  const [refuser, setRefuser] = useState(false);
   const [sortieEnCours, demarrerSortie] = useTransition();
   const routeur = useRouter();
   const occupe = enCours || sortieEnCours;
@@ -108,20 +126,36 @@ export default function FormulaireAcceptation({ documents }: { documents: Docume
           {enCours ? "Enregistrement…" : "Accepter"}
         </button>
 
-        {/* **La seule sortie, sa décision du 11 octobre 2026 : on accepte, ou
-            l'on s'en va.** Le « Refuser » d'un client déjà abonné, qui mène à
-            ses données puis à la résiliation remboursée, est un lot à part
-            (`docs/A-FAIRE.md` §17). */}
-        <button
-          type="button"
-          onClick={sortir}
-          disabled={occupe}
-          className="mt-1 min-h-[44px] w-full bg-transparent text-[14px] disabled:opacity-60"
-          style={{ color: colors.muted }}
-        >
-          Se déconnecter
-        </button>
+        {/* **On accepte, ou l'on s'en va — sa décision du 11 octobre 2026.**
+            Un patron déjà client a ses données dedans : « Refuser », aussi
+            visible qu'« Accepter », le mène à ses données puis à la
+            résiliation remboursée (planche du 18 octobre). Un nouvel inscrit
+            garde « Se déconnecter ». */}
+        {refus ? (
+          <button
+            type="button"
+            onClick={() => setRefuser(true)}
+            disabled={occupe}
+            data-atlas="refuser"
+            className="mt-2 min-h-[52px] w-full rounded-full text-[16px] disabled:opacity-60"
+            style={{ border: `1px solid ${colors.line}`, color: colors.ink }}
+          >
+            Refuser
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={sortir}
+            disabled={occupe}
+            className="mt-1 min-h-[44px] w-full bg-transparent text-[14px] disabled:opacity-60"
+            style={{ color: colors.muted }}
+          >
+            Se déconnecter
+          </button>
+        )}
       </div>
+
+      {refuser && refus && <FeuilleRefus refus={refus} fermer={() => setRefuser(false)} sortir={sortir} />}
 
       {lu && (
         // Le texte entier, sur tout l'écran, comme chez Apple : un cadre de

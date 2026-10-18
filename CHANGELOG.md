@@ -8,6 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-18
 
+- **Un patron déjà client peut refuser de nouvelles conditions sans être
+  enfermé dehors.** Avant, refuser ne laissait que « Se déconnecter » : ni ses
+  données, ni la résiliation que l'article 15 lui promet. « Refuser », aussi
+  visible qu'« Accepter », ouvre une feuille : ses données à télécharger, puis
+  « Résilier et être remboursé », qui annonce les mois non utilisés, résilie
+  tout de suite et rend ces mois sur le paiement réellement encaissé (son choix
+  du 18 octobre, la B). Le montant ne vient jamais de l'écran ; s'il ne se lit
+  pas, rien ne part et le journal le dit. Le titre devient « Les conditions ont
+  changé ». Un nouvel inscrit et un salarié gardent « Se déconnecter ». Joué
+  dans un navigateur contre un faux prestataire : 5 mois, 295 € TTC sur 708 €.
+  **Non éprouvé ici** : le téléchargement depuis la feuille (il demande la
+  preuve d'identité récente) et un vrai remboursement Stripe, à jouer sur son
+  espace avec une clé de test.
+
 - **Résilier se fait dans Atlas, par « Avant de partir ».** Sa crainte : une
   résiliation trop facile ferait partir les artisans. Pas de barrage (opposition
   bancaire, réputation) : la formule juste en dessous proposée d'abord, au

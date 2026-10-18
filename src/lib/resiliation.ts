@@ -65,11 +65,21 @@ export function remboursementAuProrata(p: {
 }): { moisNonUtilises: number; centimes: number } | null {
   if (!p.finDePeriode || !Number.isFinite(p.payeCentimes) || p.payeCentimes < 0) return null;
   const moisDeLaPeriode = p.periodicite === "annuelle" ? 12 : 1;
-  const moisNonUtilises = Math.min(moisDeLaPeriode, moisEntiersEntre(p.maintenant, p.finDePeriode));
+  const moisNonUtilises = moisNonUtilisesDeLaPeriode(p.periodicite, p.finDePeriode, p.maintenant);
   return {
     moisNonUtilises,
     centimes: Math.floor((p.payeCentimes * moisNonUtilises) / moisDeLaPeriode),
   };
+}
+
+/**
+ * Les mois payés et pas encore entamés, bornés à la période : ce que l'écran
+ * annonce AVANT le geste, et ce sur quoi le remboursement se calcule APRÈS.
+ * Une seule fonction pour les deux, sans quoi l'écran promettrait six mois et
+ * la carte en recevrait cinq.
+ */
+export function moisNonUtilisesDeLaPeriode(periodicite: Periodicite, finDePeriode: Date, maintenant: Date): number {
+  return Math.min(periodicite === "annuelle" ? 12 : 1, moisEntiersEntre(maintenant, finDePeriode));
 }
 
 /** Les mois ENTIERS de `debut` à `fin` : du 18 octobre au 18 avril, six ; au 17 avril, cinq. */
