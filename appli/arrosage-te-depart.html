@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le té au départ</title>
+<!--
+  PLANCHE, RIEN N'EST CODÉ. Sa règle du 18 octobre 2026 : « si on descend du
+  robinet et qu'on a un réseau qui va à droite, à gauche, il nous faut un té
+  égal ». Le calcul (plan-dessine.ts) compte un té égal par branche au-delà de
+  deux, mais le point où la ligne ENTRE dans le jardin ne compte pas son
+  arrivée : une ligne qui y part dans deux sens n'a aucun té. Cette planche
+  montre, sur le jardin d'exemple, où le calcul en pose et où il en manque.
+  Tout vient du calcul (arrosage-plan-calcul.js), rien n'est dessiné à la main.
+-->
+<style>
+:root{--fond:#ece9e1;--carte:#faf9f5;--encre:#1c1c1a;--doux:#4a4a44;--pale:#8a8578;--or:#B98B47;--alerte:#9C3B2E;--pelouse:#7d9a6d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fond);color:var(--encre);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.page{max-width:430px;margin:0 auto;padding:18px 16px 60px}
+h1{margin:0;font:400 24px/1.15 Georgia,"Times New Roman",serif}
+.intro{margin:6px 0 0;font-size:14px;color:var(--doux)}
+h2{margin:26px 0 0;font:400 19px/1.2 Georgia,"Times New Roman",serif}
+.carte{margin-top:10px;border-radius:14px;background:var(--carte);padding:10px}
+svg{display:block;width:100%;height:auto}
+.compte{margin:10px 0 0;font-size:14px}
+.compte b{color:var(--alerte)}
+.legende{margin-top:16px;border-radius:12px;background:var(--carte);padding:8px 14px;font-size:13.5px}
+.legende p{display:flex;align-items:center;gap:10px;margin:0;padding:4px 0}
+.legende svg{flex:none;width:18px;height:18px}
+</style>
+<div class="page">
+  <h1>Le té au départ</h1>
+  <p class="intro">Le jardin d’exemple, réseau par réseau. Le cercle rouge montre l’endroit où la ligne entre dans la pelouse et part dans deux sens.</p>
+  <div id="reseaux"></div>
+  <div class="legende">
+    <p><svg viewBox="-1 -1 2 2"><rect x="-0.55" y="-0.55" width="1.1" height="1.1" transform="rotate(45)" fill="#fff" stroke="#1c1c1a" stroke-width="0.25"/></svg>té égal que l’outil compte déjà</p>
+    <p><svg viewBox="-1 -1 2 2"><circle r="0.75" fill="none" stroke="#9C3B2E" stroke-width="0.25"/></svg>té égal qui manque au départ</p>
+    <p><svg viewBox="-1 -1 2 2"><rect x="-0.4" y="-0.7" width="0.8" height="1.4" rx="0.15" fill="#fff" stroke="#1c1c1a" stroke-width="0.2"/></svg>la nourrice</p>
+  </div>
+</div>
+<script src="arrosage-plan-calcul.js"></script>
+<script>
+(function () {
+  var C = window.CALCUL;
+  var p = C.calculerPlan({ seau: 10, temps: 18, pression: 3, compteur: "oui", couronne: 50, zones: [
+    { id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
+    { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },
+    { id: 3, type: "massif", nom: "Massif", x: 14, y: 10, L: 20, l: 2.4, sortieGoutte: "boucle" },
+    { id: 4, type: "gazon", nom: "Couloir", x: 0, y: 14, L: 10, l: 2, materiel: "tuyere" }] });
+  var d = C.dessinerPlan(p.dessin, { x: 13, y: 6 }, p.couleurs).dessin;
+  var cle = function (q) { return q.x.toFixed(3) + "," + q.y.toFixed(3); };
+  var html = "";
+  [0, 1].forEach(function (i) {
+    var r = d.reseaux.filter(function (x) { return x.numero === i; })[0];
+    // Le point d'entrée : le départ commun des lignes du réseau.
+    var v = {};
+    r.lignes.forEach(function (l) { for (var j = 0; j < l.length - 1; j++) { (v[cle(l[j])] = v[cle(l[j])] || {})[cle(l[j + 1])] = 1; (v[cle(l[j + 1])] = v[cle(l[j + 1])] || {})[cle(l[j])] = 1; } });
+    var entree = r.lignes[0][0], degre = Object.keys(v[cle(entree)] || {}).length;
+    var manque = Math.max(0, degre - 1) - (degre > 2 ? degre - 2 : 0);
+    var pts = function (c) { return c.map(function (q) { return q.x + "," + q.y; }).join(" "); };
+    var s = '<svg viewBox="' + d.viewBox + '">';
+    s += d.contours.map(function (c) { return '<polygon points="' + pts(c) + '" fill="#7d9a6d" fill-opacity=".16" stroke="#1c1c1a" stroke-opacity=".45" stroke-width=".26"/>'; }).join("");
+    s += d.cotes.map(function (c) { return '<text x="' + c.x + '" y="' + c.y + '" text-anchor="' + c.ancre + '" font-size=".95" fill="#8a8578">' + c.texte + "</text>"; }).join("");
+    s += r.traits.map(function (t) { return '<line x1="' + t.de.x + '" y1="' + t.de.y + '" x2="' + t.a.x + '" y2="' + t.a.y + '" stroke="' + r.couleur + '" stroke-width=".3" stroke-linecap="round"/>'; }).join("");
+    s += d.liaisons.filter(function (l) { return Math.abs(l.a.x - entree.x) < 1e-6 && Math.abs(l.a.y - entree.y) < 1e-6; }).map(function (l) { return '<line x1="' + l.de.x + '" y1="' + l.de.y + '" x2="' + l.a.x + '" y2="' + l.a.y + '" stroke="#1c1c1a" stroke-width=".2" stroke-dasharray=".5 .4"/>'; }).join("");
+    s += r.tetes.map(function (t) { return '<circle cx="' + (t.x + t.decalage.x) + '" cy="' + (t.y + t.decalage.y) + '" r=".45" fill="' + (t.plein ? r.couleur : "#faf9f5") + '" stroke="' + r.couleur + '" stroke-width=".25"/>'; }).join("");
+    s += r.jonctions.map(function (q) { return '<rect x="' + (q.x - .4) + '" y="' + (q.y - .4) + '" width=".8" height=".8" transform="rotate(45 ' + q.x + " " + q.y + ')" fill="#fff" stroke="#1c1c1a" stroke-width=".25"/>'; }).join("");
+    s += '<rect x="' + (d.nourrice.x - .75) + '" y="' + (d.nourrice.y - 1.4) + '" width="1.5" height="2.8" rx=".3" fill="#fff" stroke="#1c1c1a" stroke-width=".22"/>';
+    if (manque > 0) s += '<circle cx="' + entree.x + '" cy="' + entree.y + '" r="1.3" fill="none" stroke="#9C3B2E" stroke-width=".28"/>';
+    s += "</svg>";
+    html += "<h2>Réseau " + (i + 1) + ", " + p.secteurs[i].nom + '</h2><div class="carte">' + s + "</div>" +
+      '<p class="compte">L’outil compte ' + r.tesEgaux + " té" + (r.tesEgaux > 1 ? "s" : "") + " égal" + (r.tesEgaux > 1 ? "aux" : "") + ". Avec le départ, il en faut <b>" + (r.tesEgaux + manque) + "</b>.</p>";
+  });
+  document.getElementById("reseaux").innerHTML = html;
+})();
+</script>
+</html>
