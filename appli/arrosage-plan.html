@@ -343,11 +343,11 @@
       yv = colonne("raccord-femelle25", xv, yv) + ECART;
       yv = colonne("pehd", xv, yv);
       // La voie porte le numéro de son réseau, et sa couleur sur le plan.
-      etiquettes.push([xv, yv, "Réseau " + (i + 1), i]);
+      etiquettes.push([xv, yv, "Réseau " + (i + 1), i, goutte ? i - (axes.length - nbGoutte) : -1]);
       fin = Math.max(fin, yv);
     });
     var largeur = Math.max(x + cd.w, axes[axes.length - 1] + 70) + 8;
-    var k = Math.min(1, W / largeur), H = (fin + 34) * k, c = $("dessin"), r = window.devicePixelRatio || 1;
+    var k = Math.min(1, W / largeur), H = (fin + (nbGoutte ? 34 + (nbGoutte > 1 ? 50 : 22) : 34)) * k, c = $("dessin"), r = window.devicePixelRatio || 1;
     c.width = W * r; c.height = H * r; c.style.height = H + "px";
     var g = c.getContext("2d"); g.setTransform(r, 0, 0, r, 0, 0);
     g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H);
@@ -378,9 +378,13 @@
     g.font = "600 10px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "top";
     etiquettes.forEach(function (e) {
       g.fillStyle = e[3] === undefined ? "#4a4a44" : couleursPlan[e[3]];
-      // Deux voies voisines sont serrées : les numéros pairs descendent d'une ligne.
-      var dy = e[3] !== undefined && e[3] % 2 === 1 ? 13 : 0;
+      // Deux voies voisines sont serrées : une sur deux descend. Une voie de
+      // goutte-à-goutte le dit sous son numéro (sa demande du 18 octobre 2026),
+      // et deux voies de goutte-à-goutte voisines s'écartent de deux lignes.
+      var goutte = e[4] !== undefined && e[4] >= 0;
+      var dy = goutte ? (e[4] % 2) * 26 : e[3] !== undefined && e[3] % 2 === 1 ? 13 : 0;
       g.fillText(e[3] === undefined ? e[2] : "R" + (e[3] + 1), e[0], e[1] + 6 + dy);
+      if (goutte) g.fillText("goutte-à-goutte", e[0], e[1] + 18 + dy);
     });
     $("titre-nourrice").textContent = fiche.nom;
     $("sous-nourrice").textContent = "Une voie par réseau, numérotées de gauche à droite après l’arrivée." + (nbGoutte ? " Le goutte-à-goutte est à droite." : "");
