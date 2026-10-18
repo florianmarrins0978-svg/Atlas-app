@@ -81,6 +81,11 @@
   .regard canvas{display:block;width:358px;max-width:100%;margin:0 auto}
   .legende{margin:12px 0 0;padding:0;list-style:none;columns:2;column-gap:14px;font-size:12.5px;color:var(--atlas-inkSoft)}
   .legende li{display:flex;gap:6px;break-inside:avoid;padding:2px 0}
+  .legende .leg{display:flex;gap:6px;width:100%;border:0;background:none;padding:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
+  .leg.retiree span,.p.retiree .n{color:var(--atlas-alerte);text-decoration:line-through}
+  .p.retiree .ph{opacity:.35;filter:grayscale(1)}
+  .leg.changee span,.p.changee .n{color:var(--atlas-orTexte)}
+  button.p{border:0;background:none;padding:0;font:inherit;color:inherit;cursor:pointer}
   .legende b{flex:none;width:17px;height:17px;border-radius:50%;background:var(--atlas-ink);color:var(--atlas-card);font-size:10px;line-height:17px;text-align:center}
   .bac{margin-top:14px}
   .bac h3{margin:0;font-size:14px;font-weight:600}
@@ -197,6 +202,12 @@
   .ajouter{margin-top:10px;display:flex;width:100%;min-height:48px;align-items:center;justify-content:center;border-radius:12px;border:1.5px dashed var(--atlas-line);background:none;color:var(--atlas-ink);font-size:14.5px;cursor:pointer}
   .groupe{margin:16px 0 0;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
   .groupe .pastille{flex:none;width:10px;height:10px;border-radius:3px;background:var(--couleur)}
+  .modifier{margin-top:16px;width:100%;min-height:52px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:16px;cursor:pointer}
+  .modifier + .envoyer{margin-top:10px}
+  .geste-ligne{flex:none;border:0;background:none;padding:0 0 0 6px;font-size:13px;color:var(--atlas-alerte);text-decoration:underline;cursor:pointer}
+  .ligne.otee .n,.ligne.otee .q{color:var(--atlas-muted);text-decoration:line-through}
+  .ligne.otee .geste-ligne{color:var(--atlas-ink)}
+  .ajouter-ligne{display:block;width:100%;margin:6px 0 8px;min-height:40px;border-radius:10px;border:1.5px dashed var(--atlas-line);background:none;color:var(--atlas-ink);font-size:14px;cursor:pointer}
   .envoyer{margin-top:16px;width:100%;min-height:52px;border:0;border-radius:12px;background:var(--atlas-ink);color:var(--atlas-card);font-size:16px;cursor:pointer}
   .message{display:block;width:100%;min-height:300px;margin-top:12px;border:0;border-radius:12px;padding:12px;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line);resize:vertical}
   .gestes-message{display:flex;gap:8px;margin-top:12px}
@@ -310,6 +321,10 @@
   <section class="bloc">
     <span class="caps">La liste</span>
     <div id="liste"></div>
+    <!-- MODIFIER MA LISTE : sa demande du 18 octobre 2026. Les pièces de la nourrice
+         sont trop serrées pour se toucher une à une ; la liste, elle, se modifie
+         ligne par ligne : supprimer, remettre, ajouter une pièce dans un groupe. -->
+    <button class="modifier" type="button" id="modifier-liste">Modifier ma liste</button>
     <button class="envoyer" type="button" id="envoyer">Envoyer la liste au fournisseur</button>
     <p class="verdict" id="verdict"></p>
     <ul class="reserves" id="reserves"></ul>
@@ -386,7 +401,7 @@
   };
   [ROBINET.double, ROBINET.prog].forEach(function (x) { PHOTOS[x.ref] = "../arrosage-robinet-photos/" + x.photo; });
   PHOTOS["plasson-16-rigide"] = "../arrosage-robinet-photos/plasson-16-rigide.jpg"; PHOTOS.OPL70302520 = "OPL70302520.jpg"; PHOTOS.OPL70303220 = "OPL70302520.jpg";
-  var etat = { sortie: "boucle", couronne: 50, grillage: false, sonde: false, retirees: {}, remplacees: {}, ajoutees: [], ou: "amenee", categorie: "reseau", cible: null, recherche: "" };
+  var etat = { sortie: "boucle", couronne: 50, grillage: false, sonde: false, retirees: {}, remplacees: {}, ajoutees: [], listeRetirees: {}, modifierListe: false, ou: "amenee", categorie: "reseau", cible: null, recherche: "" };
   function plan() {
     // Le nez de robinet n'a qu'une voie : son jardin d'exemple est une seule
     // pelouse (8 × 8, un réseau). Avec la nourrice, le jardin entier.
@@ -557,12 +572,16 @@
     $("titre-nourrice").textContent = fiche.nom;
     $("sous-nourrice").textContent = "Une voie par réseau, numérotées de gauche à droite après l’arrivée." + (nbGoutte ? " Le goutte-à-goutte est à droite." : "");
     var NOMS = { "coude-mf": "Coude MF 1\"", "mamelon": "Mamelon réduit MM 1\" x 3/4\"", "vanne-purge": "Vanne 3/4\" FF", "pehd": "PEHD Ø25" };
-    $("legende").innerHTML = ordre.map(function (ref, i) { return "<li><b>" + (i + 1) + "</b>" + texte(NOMS[ref] || nomCatalogue(ref)) + "</li>"; }).join("");
+    // CHAQUE PIÈCE DE LA NOURRICE SE TOUCHE, par sa ligne de légende ou dans le bac
+    // (sa demande du 18 octobre 2026) : sur le dessin, elles sont trop serrées.
+    var etatNr = function (ref) { return etat.retirees["nr:" + ref] ? " retiree" : etat.remplacees["nr:" + ref] ? " changee" : ""; };
+    var nomNr = function (ref) { var c = etat.remplacees["nr:" + ref]; return c ? c.nom : NOMS[ref] || nomCatalogue(ref); };
+    $("legende").innerHTML = ordre.map(function (ref, i) { return '<li><button type="button" class="leg' + etatNr(ref) + '" data-nr="' + texte(ref) + '"><b>' + (i + 1) + "</b><span>" + texte(nomNr(ref)) + "</span></button></li>"; }).join("");
     var bac = "";
     Object.keys(reste).forEach(function (ref) {
       if (!reste[ref]) return;
       var photo = PHOTOS[ref] ? '<img src="arrosage-photos/' + PHOTOS[ref] + '" alt="">' : "photo à venir";
-      bac += '<div class="p"><span class="ph">' + photo + '</span><span class="n">' + (reste[ref] > 1 ? reste[ref] + "x " : "") + texte(nomCatalogue(ref)) + "</span></div>";
+      bac += '<button type="button" class="p' + etatNr(ref) + '" data-nr="' + texte(ref) + '"><span class="ph">' + photo + '</span><span class="n">' + (reste[ref] > 1 ? reste[ref] + "x " : "") + texte(nomNr(ref)) + "</span></button>";
     });
     $("bac").innerHTML = bac;
   }
@@ -907,11 +926,27 @@
   // fournisseur, tout additionné : *« lui va devoir se faire chier à compter
   // trois pour le réseau 1, trois pour le réseau 2 »*.
   var quantite = function (e) { return e.u === "ml" ? (e.q ? e.q + " m" : "à mesurer") : e.q + "x"; };
-  function lignesDe(g) {
-    return '<div class="liste">' + Object.keys(g).map(function (ref) {
-      var e = g[ref];
-      return '<div class="ligne"><span class="q">' + quantite(e) + '</span><span class="n">' + texte(e.nom) + "</span></div>";
-    }).join("") + "</div>";
+  function lignesDe(g, titre, retirees) {
+    var edition = etat.modifierListe;
+    var ligne = function (ref, e, ote) {
+      var geste = edition ? '<button type="button" class="geste-ligne" data-' + (ote ? "remettre" : "retirer") + '-ligne="' + texte(titre + "|" + ref) + '">' + (ote ? "Remettre" : "Supprimer") + "</button>" : "";
+      return '<div class="ligne' + (ote ? " otee" : "") + '"><span class="q">' + quantite(e) + '</span><span class="n">' + texte(e.nom) + "</span>" + geste + "</div>";
+    };
+    return '<div class="liste">' + Object.keys(g).map(function (ref) { return ligne(ref, g[ref], false); }).join("") +
+      (edition ? Object.keys(retirees || {}).map(function (ref) { return ligne(ref, retirees[ref], true); }).join("") +
+        '<button type="button" class="ajouter-ligne" data-ajouter="liste:' + texte(titre) + '">Ajouter une pièce</button>' : "") + "</div>";
+  }
+  // Ce qu'il a changé dans la liste : les lignes supprimées sortent du compte et du
+  // message au fournisseur, les pièces ajoutées y entrent, à 1 chacune.
+  function modifierLaListe(groupes) {
+    return groupes.map(function (g) {
+      var lignes = {}, retirees = {};
+      Object.keys(g.lignes).forEach(function (ref) { (etat.listeRetirees[g.titre + "|" + ref] ? retirees : lignes)[ref] = g.lignes[ref]; });
+      etat.ajoutees.filter(function (a) { return a.ou === "liste:" + g.titre; }).forEach(function (a) {
+        var e = lignes[a.ref] = lignes[a.ref] || { nom: a.nom, q: 0, u: "u" }; e.q += 1;
+      });
+      return { titre: g.titre, couleur: g.couleur, lignes: lignes, retirees: retirees };
+    });
   }
   // La nourrice se compte sur SA fiche, comme le dessin du regard.
   function groupeNourrice(p) {
@@ -919,7 +954,13 @@
     (fiche ? fiche.pieces : []).forEach(function (x) { (g[x.ref] = g[x.ref] || { nom: nomCatalogue(x.ref), q: 0, u: "u" }).q += x.q; });
     // La sonde se compte comme elle est posée au-dessus du regard : changée ou supprimée, la liste suit.
     Object.keys(compte.sonde || {}).forEach(function (ref) { g[ref] = compte.sonde[ref]; });
-    return { nom: fiche ? fiche.nom : "La nourrice", lignes: g };
+    var h = {};
+    Object.keys(g).forEach(function (ref) {
+      if (etat.retirees["nr:" + ref]) return;
+      var c = etat.remplacees["nr:" + ref];
+      if (c) { var e = h[c.ref] = h[c.ref] || { nom: c.nom, q: 0, u: "u" }; e.q += g[ref].q; } else h[ref] = g[ref];
+    });
+    return { nom: fiche ? fiche.nom : "La nourrice", lignes: h };
   }
   function groupesDuPlan(p, d) {
     var n = groupeNourrice(p), out = [{ titre: robinet.montage === "nez" ? "Au robinet" : "Du robinet à la nourrice", lignes: compte.amenee || {} }];
@@ -968,9 +1009,10 @@
   var dernierMessage = "", materielCourant = [];
   function dessinerListe(p, d) {
     materielCourant = p.materiel;
-    var groupes = groupesDuPlan(p, d);
+    var groupes = modifierLaListe(groupesDuPlan(p, d));
+    $("modifier-liste").textContent = etat.modifierListe ? "Terminer" : "Modifier ma liste";
     $("liste").innerHTML = groupes.map(function (g) {
-      return '<p class="groupe"' + (g.couleur ? ' style="--couleur:' + g.couleur + '"' : "") + ">" + (g.couleur ? '<span class="pastille"></span>' : "") + texte(g.titre) + "</p>" + lignesDe(g.lignes);
+      return '<p class="groupe"' + (g.couleur ? ' style="--couleur:' + g.couleur + '"' : "") + ">" + (g.couleur ? '<span class="pastille"></span>' : "") + texte(g.titre) + "</p>" + lignesDe(g.lignes, g.titre, g.retirees);
     }).join("");
     dernierMessage = message(groupes);
 
@@ -983,7 +1025,7 @@
       Object.keys(g.lignes).forEach(function (ref) { pose[ref] = (pose[ref] || 0) + g.lignes[ref].q; noms[ref] = g.lignes[ref].nom; });
     });
     var ecarts = Object.keys(pose).filter(function (ref) { return attendu[ref] !== undefined && attendu[ref] !== pose[ref] && ref !== "pe25-amenee"; });
-    var touche = Object.keys(etat.retirees).length + Object.keys(etat.remplacees).length + etat.ajoutees.length;
+    var touche = Object.keys(etat.retirees).length + Object.keys(etat.remplacees).length + etat.ajoutees.length + Object.keys(etat.listeRetirees).length;
     $("verdict").className = "verdict" + (ecarts.length && !touche ? " rouge" : "");
     $("verdict").textContent = touche
       ? touche + " changement" + (touche > 1 ? "s" : "") + " à la main."
@@ -1039,6 +1081,10 @@
     var b = e.target.closest("button");
     if (!b) return;
     if (b.dataset.cle) { menu(b.dataset.cle); return; }
+    if (b.dataset.nr) { proposees["nr:" + b.dataset.nr] = { ref: b.dataset.nr, nom: nomCatalogue(b.dataset.nr) }; menu("nr:" + b.dataset.nr); return; }
+    if (b.id === "modifier-liste") { etat.modifierListe = !etat.modifierListe; dessiner(); return; }
+    if (b.dataset.retirerLigne) { etat.listeRetirees[b.dataset.retirerLigne] = true; dessiner(); return; }
+    if (b.dataset.remettreLigne) { delete etat.listeRetirees[b.dataset.remettreLigne]; dessiner(); return; }
     if (b.dataset.geste) {
       var cle = etat.cible;
       if (b.dataset.geste === "changer") { $("menu").hidden = true; etat.ou = null; etat.recherche = ""; $("recherche").value = ""; etat.categorie = categorieDe(cle); ouvrir(); return; }
