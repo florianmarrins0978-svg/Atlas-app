@@ -263,6 +263,25 @@ temps d'arrosage. Ça, il faut pas le faire. »* Le calcul garde ses durées
 les produisent (`SAISONS`) n'ont d'ailleurs aucune source venue de lui.
 L'ancienne page publiée `appli/arrosage.html` en montre encore.
 
+**LE ROBINET SE DESSINE EN CROIX BLANCHE — sa règle du 18 octobre 2026 :** *« une
+croix blanche avec un trait vers la gauche, et tu écris à côté robinet. À chaque
+fois que l'utilisateur mettra sur son plan l'endroit où il se repique avec le
+robinet, tu le comprendras ainsi. »* Sur le plan, le piquage au robinet est une
+croix blanche, un petit trait à gauche et le mot « robinet » (jamais le
+rectangle de la nourrice) ; sur le croquis, ce même signe se LIT comme le
+piquage, avec « robinet » pour point d'eau (`lire-croquis.ts`).
+
+**LE Ø16 SE RACCORDE AU ROBINET PAR UN EMBOUT PALAPLAST TARAUDÉ 3/4" — sa règle
+du 18 octobre 2026.** Le Plasson à bague blanche ne prend que le PE 25 ou 32.
+Bague blanche (MID6362) : Ø16 **souple** ; bague noire : Ø16 **rigide**, sans
+référence relevée (*« n'importe quel fournisseur sait de quoi on parle, au pire
+il mettra sa référence »*). Bague en haut, embout en bas.
+
+**AUCUNE PÉRIODE NON PLUS — 18 octobre 2026 :** *« on ne donne pas les durées
+d'arrosage ni les périodes à arroser »*. Les besoins par saison, les heures de
+départ et la pluviométrie, qui ne servaient qu'aux durées, sont retirés du
+calcul.
+
 **LA TENSION S'ACCORDE, SINON RIEN N'ARROSE.** Sa règle du 21 août :
 
 | Le programmateur | L'électrovanne |

@@ -329,15 +329,24 @@
   // ── LA SAISIE : ce que le patron a rempli, et le croquis qu'il a donné.
   var SAISIE = { seau: 10, temps: 18, pression: 3, compteur: "non" };
   var NOURRICE = { x: 13, y: 6 };
+  // Le robinet du jardin d'exemple est contre la pelouse avant, sur son bord.
+  // Posé à la place de la nourrice (un mètre dehors), il cachait sous son
+  // dessin un pointillé d'un mètre que la phrase sous le plan annonçait
+  // pourtant : il l'a relevé le 18 octobre (« il n'y a aucun pointillé »).
+  var ROBINET_POSE = { x: 14, y: 6 };
   var robinet = { montage: "nez", double: false, departMain: null };
   // LES PIÈCES DU ROBINET, PROPOSÉES (catalogue Aqua Plus 2026), à valider.
   var ROBINET = {
-    double: { ref: "BRO3493", nom: "robinet 2 voies entrée 3/4\" - 2 sorties 3/4\"", photo: "BRO3493.png" },
+    double: { ref: "BRO3493", nom: "robinet 2 voies entrée 3/4\" - 2 sorties 3/4\"", photo: "BRO3493.jpg" },
     prog: { ref: "SP1151", nom: "Programmateur nez de rob. SOLEM BL - NR - 1 voie", photo: "SP1151.png", voies: 1 },
-    raccord: { 16: { ref: "OPL70301620", nom: "raccord femelle 16 x 3/4\"" }, 25: { ref: "OPL70302520", nom: "raccord femelle 25 x 3/4\"" }, 32: { ref: "OPL70303220", nom: "raccord femelle 32 x 3/4\"" } }
+    // Le Plasson à bague blanche ne prend que le PE 25 ou 32 (sa correction du
+    // 18 octobre 2026) : le Ø16 rigide se raccorde par un embout Palaplast, proposé.
+    // Bague noire pour le rigide, bague blanche (MID6362) pour le souple : sa
+    // règle du 18 octobre 2026. Bague en haut, embout en bas.
+    raccord: { 16: { ref: "embout-16-rigide", sansReference: true, nom: "embout Palaplast taraudé 16 x 3/4\", pour 16 rigide", photo: "embout-16-rigide-debout.png" }, 25: { ref: "OPL70302520", nom: "raccord femelle 25 x 3/4\"", photo: "OPL703016.png" }, 32: { ref: "OPL70303220", nom: "raccord femelle 32 x 3/4\"", photo: "OPL703016.png" } }
   };
   [ROBINET.double, ROBINET.prog].forEach(function (x) { PHOTOS[x.ref] = "../arrosage-robinet-photos/" + x.photo; });
-  PHOTOS.OPL70301620 = "OPL70302520.jpg"; PHOTOS.OPL70302520 = "OPL70302520.jpg"; PHOTOS.OPL70303220 = "OPL70302520.jpg";
+  PHOTOS["embout-16-rigide"] = "../arrosage-robinet-photos/embout-16-rigide.png"; PHOTOS.OPL70302520 = "OPL70302520.jpg"; PHOTOS.OPL70303220 = "OPL70302520.jpg";
   var etat = { sortie: "boucle", couronne: 50, grillage: false, sonde: false, retirees: {}, remplacees: {}, ajoutees: [], ou: "amenee", categorie: "reseau", cible: null, recherche: "" };
   function plan() {
     // Le nez de robinet n'a qu'une voie : son jardin d'exemple est une seule
@@ -565,7 +574,17 @@
           : '<rect x="' + (cx - 0.44) + '" y="' + (cy - 0.44) + '" width="0.88" height="0.88" rx="0.12" fill="' + f + '" stroke="' + r.couleur + '" stroke-width="' + w + '"/>';
       }).join("");
     }
-    s += '<rect x="' + (d.nourrice.x - 0.75) + '" y="' + (d.nourrice.y - 1.4) + '" width="1.5" height="2.8" rx="0.3" fill="' + carte + '" stroke="' + encre + '" stroke-width="0.22"/>';
+    // LE ROBINET : une croix blanche, un petit trait à gauche, et le mot à côté
+    // (sa demande du 18 octobre 2026). C'est aussi ce qu'il dessinera sur son
+    // croquis pour dire où il se repique. La nourrice garde son rectangle.
+    if (robinet.montage === "nez") {
+      var X = d.nourrice.x, Y = d.nourrice.y;
+      s += '<line x1="' + (X - 1.6) + '" y1="' + Y + '" x2="' + (X - 0.7) + '" y2="' + Y + '" stroke="' + encre + '" stroke-width="0.26" stroke-linecap="round"/>';
+      s += '<path d="M' + (X - 0.7) + " " + Y + "H" + (X + 0.7) + "M" + X + " " + (Y - 0.7) + "V" + (Y + 0.7) + '" stroke="' + encre + '" stroke-width="0.62" stroke-linecap="round"/>';
+      s += '<path d="M' + (X - 0.7) + " " + Y + "H" + (X + 0.7) + "M" + X + " " + (Y - 0.7) + "V" + (Y + 0.7) + '" stroke="#ffffff" stroke-width="0.34" stroke-linecap="round"/>';
+    } else {
+      s += '<rect x="' + (d.nourrice.x - 0.75) + '" y="' + (d.nourrice.y - 1.4) + '" width="1.5" height="2.8" rx="0.3" fill="' + carte + '" stroke="' + encre + '" stroke-width="0.22"/>';
+    }
     s += '<text x="' + d.etiquetteNourrice.x + '" y="' + d.etiquetteNourrice.y + '" text-anchor="' + d.etiquetteNourrice.ancre + '" font-size="0.95" fill="' + encre + '">' + (robinet.montage === "nez" ? "robinet" : "nourrice") + "</text>";
     return s + "</svg>";
   }
@@ -681,18 +700,18 @@
     var dia = robinet.departMain || departDeLOutil(p), rac = ROBINET.raccord[dia];
     var tuyau = dia === 16 ? "PEBD rigide Ø16" : "PEHD Ø" + dia;
     $("titre-amenee").textContent = robinet.montage === "nez" ? "Au robinet" : "Du robinet à la nourrice";
-    // La double sortie se pose décalée : sa sortie de GAUCHE (18 % de sa photo)
+    // La double sortie se pose décalée : sa sortie de GAUCHE (10 % de sa photo, la sienne du 18 octobre 2026)
     // tombe sur l'axe de la pile, à 60 px. Les autres pièces se centrent sur cet axe.
     var etages = [];
-    if (robinet.double) etages.push('<div class="etage"><span class="ph" style="--h:66px"><img src="arrosage-robinet-photos/BRO3493.png" alt="" style="margin-left:' + (60 - 0.18 * 104) + 'px"></span><span class="lib"><b>' + texte(ROBINET.double.nom) + "</b>Réf. " + ROBINET.double.ref + ", proposé</span></div>");
-    if (robinet.montage === "nez") etages.push('<div class="etage"><span class="ph" style="--h:90px;--w:62px"><img src="arrosage-robinet-photos/SP1151.png" alt=""></span><span class="lib"><b>' + texte(ROBINET.prog.nom) + "</b>Réf. " + ROBINET.prog.ref + ", proposé</span></div>");
-    etages.push('<div class="etage"><span class="ph" style="--h:70px;--w:41px"><img src="arrosage-robinet-photos/OPL703016.png" alt=""></span><span class="lib"><b>' + texte(rac.nom) + "</b>Réf. " + rac.ref + ", proposé</span></div>");
+    if (robinet.double) etages.push('<div class="etage"><span class="ph" style="--h:66px"><img src="arrosage-robinet-photos/' + ROBINET.double.photo + '" alt="" style="margin-left:' + (60 - 0.10 * 102) + 'px"></span><span class="lib"><b>' + texte(ROBINET.double.nom) + "</b>Réf. " + ROBINET.double.ref + "</span></div>");
+    if (robinet.montage === "nez") etages.push('<div class="etage"><span class="ph" style="--h:90px;--w:62px"><img src="arrosage-robinet-photos/SP1151.png" alt=""></span><span class="lib"><b>' + texte(ROBINET.prog.nom) + "</b>Réf. " + ROBINET.prog.ref + "</span></div>");
+    etages.push('<div class="etage"><span class="ph" style="--h:70px;--w:41px"><img src="arrosage-robinet-photos/' + rac.photo + '" alt=""></span><span class="lib"><b>' + texte(rac.nom) + "</b>" + (rac.sansReference ? "Réf. du fournisseur" : "Réf. " + rac.ref) + "</span></div>");
     etages.push('<div class="etage"><span class="ph" style="--h:60px;--w:14px"><span class="tube' + (dia === 16 ? " seize" : "") + '"></span></span><span class="lib"><b>' + texte(tuyau) + "</b>" + (robinet.montage === "nez" ? "jusqu’au réseau, à mesurer" : "jusqu’à la nourrice, à mesurer") + "</span></div>");
     $("pile").innerHTML = etages.join("");
     $("amenee").innerHTML =
-      (robinet.double ? poser("am:double", ROBINET.double.ref, ROBINET.double.nom, "Double sortie, proposé") : "") +
-      (robinet.montage === "nez" ? poser("am:prog", ROBINET.prog.ref, ROBINET.prog.nom, "Programmateur nez de robinet, proposé") : "") +
-      poser("am:raccord", rac.ref, rac.nom, rac.nom + ", proposé") +
+      (robinet.double ? poser("am:double", ROBINET.double.ref, ROBINET.double.nom, "Double sortie") : "") +
+      (robinet.montage === "nez" ? poser("am:prog", ROBINET.prog.ref, ROBINET.prog.nom, "Programmateur nez de robinet") : "") +
+      poser("am:raccord", rac.ref, rac.nom, rac.nom) +
       poser("am:pe", "pe25-amenee", tuyau + (robinet.montage === "nez" ? ", du robinet au réseau" : ", du robinet à la nourrice"), tuyau + ", à mesurer", 0, "ml") +
       ajoutees("amenee");
     var corpsTuyere = CAT.corps.filter(function (c) { return c.pourType === "tuyere" && M.some(function (m) { return m.ref === c.ref; }); })[0];
@@ -900,7 +919,6 @@
         }).join(" ; ") + "." : "Le schéma et la liste de l’outil comptent les mêmes pièces.";
     var res = p.manquants.slice();
     if (robinet.montage === "nez" && p.secteurs.length > ROBINET.prog.voies) res.unshift("Le programmateur en nez de robinet n’a qu’une voie, ce jardin en demande " + p.secteurs.length + ".");
-    res.unshift("Les pièces du robinet sont proposées : elles attendent votre validation.");
     $("reserves").innerHTML = res.map(function (r) { return "<li>" + texte(r) + "</li>"; }).join("");
   }
 
@@ -915,7 +933,7 @@
     $("departs").innerHTML = [16, 25, 32].map(function (n) { return '<button type="button" data-depart="' + n + '" aria-pressed="' + (dia === n) + '">' + (n === 16 ? "Ø16 rigide" : "Ø" + n) + "</button>"; }).join("");
     $("depart-choisi").textContent = "L’outil choisit le Ø" + auto + (auto === 16 ? " rigide" : "") + "." + (robinet.departMain && robinet.departMain !== auto ? " Changé à la main." : "");
     couleursPlan = p.couleurs;
-    var res = C.dessinerPlan(p.dessin, NOURRICE, p.couleurs);
+    var res = C.dessinerPlan(p.dessin, robinet.montage === "nez" ? ROBINET_POSE : NOURRICE, p.couleurs);
     if (!res.ok) { $("reseaux").textContent = res.raison; return; }
     compte = {};
     dessinerNourrice(p.secteurs.length, p.secteurs.filter(function (s) { return s.famille === "Goutte-à-goutte"; }).length);
