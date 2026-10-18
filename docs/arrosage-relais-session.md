@@ -157,6 +157,8 @@ tuyères 1800 et la 3504, jamais sur la ligne ; le BL-IP est un Solem ; les
 | durées d'arrosage | **plus jamais à l'écran** (sa règle, écrite dans `.claude/rules/arrosage.md`) |
 | cote coupée | corrigée à la racine : le cadre du plan (`plan-dessine.ts`) contient le texte des cotes ; contrôle dans `test-plan-dessine.ts` |
 | pièces sur le plan | essai validé dans l'esprit (« j'aime bien ») : chaque tête porte son té ou coude et son arroseur à sa place, le té égal SUR le croisement avec la tête à côté, et sous le plan la chaîne d'une tête avec des « + » (té + SBE 3/4", PEBD Ø16 2 m, SBE 1/2" + arroseur), tuyère avec sa buse. Essai dans le scratchpad, pas encore dans la planche |
+| la chaîne d'une tête | **« la B », validée** : « + » là où ça se visse (té ou coude taraudé + SBE 3/4", SBE 1/2" + arroseur), une **double flèche de chaque côté du PEBD Ø16** là où il s'emboîte |
+| té égal sur le plan | **sur le croisement** ; juste dessous, l'arroseur à gauche du trait et le té taraudé à droite |
 | **à faire, demandé** | (1) un exemple de piquage **sur un robinet** : proposer, sans l'imposer, une **double sortie** sous le robinet (une pour l'arrosage, une pour le client), un **programmateur en nez de robinet**, puis un départ en Ø25 ou en Ø16 rigide ; pièces et modèles à lui demander, rien à inventer. (2) les pièces de chaque réseau **posées sur le plan du jardin**, à leur place, au lieu d'une colonne : une capture d'abord |
 
 ## Ce qui reste à faire, dans cet ordre
