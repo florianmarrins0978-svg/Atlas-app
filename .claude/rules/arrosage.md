@@ -282,6 +282,19 @@ ses manchons de réparation. Sans référence relevée : *« n'importe quel
 fournisseur sait de quoi on parle, au pire il mettra sa référence »*. Le
 taraudé en haut, l'embout en bas.
 
+**LE TÉ ÉGAL AU DÉPART — sa règle du 18 octobre 2026 :** *« si on descend du
+robinet et qu'on a un réseau qui va à droite, à gauche, il nous faut un té
+égal »*, puis, devant la planche `appli/arrosage-te-depart.html` : *« oui,
+c'est exactement ça »*. L'eau arrive au point d'entrée d'un réseau par une
+branche que le dessin ne porte pas (de la nourrice ou du robinet) : elle compte
+comme une branche (`plan-dessine.ts`). Ça vaut au robinet comme à la nourrice.
+Le té selon le diamètre : **25x25x25 en Ø25, 32x32x32 en Ø32, le té à
+compression Plasson Ø16 en 16 rigide, le té Palaplast Ø16 (MID6321) en 16
+souple**. Et un losange par té égal sur le plan, côte à côte.
+
+**DÈS QU'IL Y A DES ARROSEURS, LE DÉPART EST EN Ø25 OU EN Ø32** (même jour) : le
+Ø16, rigide ou souple, ne sert qu'au goutte-à-goutte.
+
 **AUCUNE PÉRIODE NON PLUS — 18 octobre 2026 :** *« on ne donne pas les durées
 d'arrosage ni les périodes à arroser »*. Les besoins par saison, les heures de
 départ et la pluviométrie, qui ne servaient qu'aux durées, sont retirés du

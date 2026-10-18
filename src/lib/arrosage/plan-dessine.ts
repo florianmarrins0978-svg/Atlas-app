@@ -244,7 +244,7 @@ export function dessinerPlan(
   const reserves: string[] = [];
   const liaisons: Segment[] = [];
   const tranchee: Segment[] = [];
-  const parReseau = new Map<number, { lignes: Point[][]; antennes: Segment[]; tuyau: number }>();
+  const parReseau = new Map<number, { lignes: Point[][]; antennes: Segment[]; tuyau: number; entrees: Set<string> }>();
 
   // ── Chaque morceau de terrain se trace pour lui-même ──────────────────────
   //
@@ -282,7 +282,8 @@ export function dessinerPlan(
     tranchee.push(...t.tranchee);
     for (const [numero, chemins] of Object.entries(t.lignes)) {
       const n = Number(numero);
-      const dejaLa = parReseau.get(n) ?? { lignes: [], antennes: [], tuyau: 0 };
+      const dejaLa = parReseau.get(n) ?? { lignes: [], antennes: [], tuyau: 0, entrees: new Set<string>() };
+      dejaLa.entrees.add(cle(entree));
       dejaLa.lignes.push(...chemins);
       dejaLa.antennes.push(...(t.antennes[n] ?? []).map((a) => ({ de: a.de, a: a.a })));
       dejaLa.tuyau += t.metresTuyau[n] ?? 0;
@@ -357,7 +358,7 @@ export function dessinerPlan(
 
   const reseaux: ReseauDessine[] = [...parReseau.entries()]
     .sort((a, b) => a[0] - b[0])
-    .map(([numero, { lignes, antennes, tuyau }]) => {
+    .map(([numero, { lignes, antennes, tuyau, entrees }]) => {
       // **Le degré du PIED décide de la pièce**, et rien d'autre : c'est la
       // seule lecture qui ne puisse pas diverger du dessin. Un pied traversé
       // porte un té taraudé, un pied terminal un coude — et chaque branche
@@ -386,7 +387,13 @@ export function dessinerPlan(
           const k = cle(p);
           if (vus.has(k)) continue;
           vus.add(k);
-          const degre = voisins.get(k)?.size ?? 0;
+          // **L'eau ARRIVE au point d'entrée par une branche que le dessin du
+          // réseau ne porte pas** (elle vient de la nourrice, ou du robinet) : elle
+          // compte comme les autres. Une ligne qui entre et part dans deux sens
+          // demande donc un té égal (sa règle du 18 octobre 2026, « si on descend
+          // du robinet et qu'on a un réseau qui va à droite, à gauche, il nous faut
+          // un té égal »). Sans elle, ce té manquait à tous les plans.
+          const degre = (voisins.get(k)?.size ?? 0) + (entrees.has(k) ? 1 : 0);
           const portees = tetesAuPied.get(`${k}|${numero}`) ?? [];
           // Deux têtes sur un même pied se montent en série : un seul coude
           // possible, au bout — les autres sont des tés.
@@ -406,7 +413,15 @@ export function dessinerPlan(
             tesEgaux += degre - 2;
             // Le losange se pose SUR le pied quand rien n'y arrose, et JUSTE À
             // CÔTÉ quand une tête l'occupe — décalé vers la branche qui part.
-            jonctions.push(portees.length === 0 ? p : aCote(p, voisins.get(k)!));
+            // **Un losange par té égal**, côte à côte (sa règle du 11 septembre 2026) :
+            // un point qui en demande deux en montre deux, sinon la liste en compte
+            // un que le plan ne montre pas. Le premier se pose sur le pied s'il est
+            // libre ; les suivants s'écartent chacun vers une autre branche.
+            const branches = [...(voisins.get(k) ?? [])].reverse();
+            for (let j = 0; j < degre - 2; j++) {
+              const libre = portees.length === 0 && j === 0;
+              jonctions.push(libre ? p : versLaBranche(p, branches[(portees.length === 0 ? j - 1 : j) % branches.length]));
+            }
           }
         }
       }
@@ -490,8 +505,8 @@ export function piedDeLaTete(z: { x: number; y: number; L: number; l: number }, 
 
 /** Un point à 0,8 m du pied, vers la dernière branche qui en part. */
 /** Un point à 1,1 m du pied, vers la dernière branche qui en part : le losange ne touche pas la tête. */
-function aCote(p: Point, voisins: Set<string>): Point {
-  const [x, y] = [...voisins][voisins.size - 1].split(",").map(Number);
+function versLaBranche(p: Point, voisin: string): Point {
+  const [x, y] = voisin.split(",").map(Number);
   const l = Math.hypot(x - p.x, y - p.y);
   if (l < 1e-9) return p;
   return { x: p.x + ((x - p.x) / l) * 1.1, y: p.y + ((y - p.y) / l) * 1.1 };

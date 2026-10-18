@@ -30,11 +30,11 @@ svg{display:block;width:100%;height:auto}
 </style>
 <div class="page">
   <h1>Le té au départ</h1>
-  <p class="intro">Le jardin d’exemple, réseau par réseau. Le cercle rouge montre l’endroit où la ligne entre dans la pelouse et part dans deux sens.</p>
+  <p class="intro">Le jardin d’exemple, réseau par réseau. Là où la ligne entre dans la pelouse et part dans deux sens, l’outil pose maintenant un té égal.</p>
   <div id="reseaux"></div>
   <div class="legende">
-    <p><svg viewBox="-1 -1 2 2"><rect x="-0.55" y="-0.55" width="1.1" height="1.1" transform="rotate(45)" fill="#fff" stroke="#1c1c1a" stroke-width="0.25"/></svg>té égal que l’outil compte déjà</p>
-    <p><svg viewBox="-1 -1 2 2"><circle r="0.75" fill="none" stroke="#9C3B2E" stroke-width="0.25"/></svg>té égal qui manque au départ</p>
+    <p><svg viewBox="-1 -1 2 2"><rect x="-0.55" y="-0.55" width="1.1" height="1.1" transform="rotate(45)" fill="#fff" stroke="#1c1c1a" stroke-width="0.25"/></svg>té égal compté par l’outil</p>
+    <p><svg viewBox="-1 -1 2 2"><circle r="0.75" fill="none" stroke="#9C3B2E" stroke-width="0.25"/></svg>le départ, où il manquait</p>
     <p><svg viewBox="-1 -1 2 2"><rect x="-0.4" y="-0.7" width="0.8" height="1.4" rx="0.15" fill="#fff" stroke="#1c1c1a" stroke-width="0.2"/></svg>la nourrice</p>
   </div>
 </div>
@@ -56,7 +56,6 @@ svg{display:block;width:100%;height:auto}
     var v = {};
     r.lignes.forEach(function (l) { for (var j = 0; j < l.length - 1; j++) { (v[cle(l[j])] = v[cle(l[j])] || {})[cle(l[j + 1])] = 1; (v[cle(l[j + 1])] = v[cle(l[j + 1])] || {})[cle(l[j])] = 1; } });
     var entree = r.lignes[0][0], degre = Object.keys(v[cle(entree)] || {}).length;
-    var manque = Math.max(0, degre - 1) - (degre > 2 ? degre - 2 : 0);
     var pts = function (c) { return c.map(function (q) { return q.x + "," + q.y; }).join(" "); };
     var s = '<svg viewBox="' + d.viewBox + '">';
     s += d.contours.map(function (c) { return '<polygon points="' + pts(c) + '" fill="#7d9a6d" fill-opacity=".16" stroke="#1c1c1a" stroke-opacity=".45" stroke-width=".26"/>'; }).join("");
@@ -66,10 +65,10 @@ svg{display:block;width:100%;height:auto}
     s += r.tetes.map(function (t) { return '<circle cx="' + (t.x + t.decalage.x) + '" cy="' + (t.y + t.decalage.y) + '" r=".45" fill="' + (t.plein ? r.couleur : "#faf9f5") + '" stroke="' + r.couleur + '" stroke-width=".25"/>'; }).join("");
     s += r.jonctions.map(function (q) { return '<rect x="' + (q.x - .4) + '" y="' + (q.y - .4) + '" width=".8" height=".8" transform="rotate(45 ' + q.x + " " + q.y + ')" fill="#fff" stroke="#1c1c1a" stroke-width=".25"/>'; }).join("");
     s += '<rect x="' + (d.nourrice.x - .75) + '" y="' + (d.nourrice.y - 1.4) + '" width="1.5" height="2.8" rx=".3" fill="#fff" stroke="#1c1c1a" stroke-width=".22"/>';
-    if (manque > 0) s += '<circle cx="' + entree.x + '" cy="' + entree.y + '" r="1.3" fill="none" stroke="#9C3B2E" stroke-width=".28"/>';
+    if (degre >= 2) s += '<circle cx="' + entree.x + '" cy="' + entree.y + '" r="1.3" fill="none" stroke="#9C3B2E" stroke-width=".28"/>';
     s += "</svg>";
     html += "<h2>Réseau " + (i + 1) + ", " + p.secteurs[i].nom + '</h2><div class="carte">' + s + "</div>" +
-      '<p class="compte">L’outil compte ' + r.tesEgaux + " té" + (r.tesEgaux > 1 ? "s" : "") + " égal" + (r.tesEgaux > 1 ? "aux" : "") + ". Avec le départ, il en faut <b>" + (r.tesEgaux + manque) + "</b>.</p>";
+      '<p class="compte">L’outil compte <b>' + r.tesEgaux + (r.tesEgaux > 1 ? " tés égaux" : " té égal") + "</b>, celui du départ compris.</p>";
   });
   document.getElementById("reseaux").innerHTML = html;
 })();

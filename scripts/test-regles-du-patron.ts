@@ -496,6 +496,22 @@ regle("18 octobre 2026", "« on ne donne pas les durées d'arrosage ni les péri
   exige(!p.manquants.some((m) => /durée|saison|passage/i.test(m)), `le plan parle encore de durée : ${JSON.stringify(p.manquants)}`);
 });
 
+regle("18 octobre 2026", "« si on descend du robinet et qu'on a un réseau qui va à droite, à gauche, il nous faut un té égal » : l'arrivée compte comme une branche au point d'entrée", () => {
+  // Au robinet : sa pelouse de 8 × 8, le robinet sur le bord gauche. La ligne
+  // entre et part vers le haut et vers le bas : un té égal.
+  const robinet = dessine(plan([{ id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 }]), { x: 14, y: 6 });
+  exige(robinet.reseaux[0].tesEgaux === 1, `au robinet, ${robinet.reseaux[0].tesEgaux} té égal au départ, il en faut 1`);
+  // À la nourrice : le jardin de la planche, qu'il a regardé (« oui, c'est exactement ça »).
+  const p = plan([
+    { id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
+    { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },
+  ]);
+  const d = dessine(p, { x: 13, y: 6 });
+  const n = (nom: string) => d.reseaux.filter((r) => r.numero === p.secteurs.findIndex((s: { nom: string }) => s.nom === nom))[0]?.tesEgaux;
+  exige(n("Pelouse avant") === 1, `Pelouse avant : ${n("Pelouse avant")} té égal, il en faut 1`);
+  exige(n("Pelouse arrière") === 2, `Pelouse arrière : ${n("Pelouse arrière")} tés égaux, il en faut 2`);
+});
+
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────
 
 console.log(`\n${failed === 0 ? "✅" : "❌"} Les règles du patron — ${passed} tenue(s), ${failed} rompue(s).`);

@@ -4254,7 +4254,8 @@ var CALCUL = (() => {
       tranchee.push(...t2.tranchee);
       for (const [numero, chemins] of Object.entries(t2.lignes)) {
         const n = Number(numero);
-        const dejaLa = parReseau.get(n) ?? { lignes: [], antennes: [], tuyau: 0 };
+        const dejaLa = parReseau.get(n) ?? { lignes: [], antennes: [], tuyau: 0, entrees: /* @__PURE__ */ new Set() };
+        dejaLa.entrees.add(cle2(entree));
         dejaLa.lignes.push(...chemins);
         dejaLa.antennes.push(...(t2.antennes[n] ?? []).map((a) => ({ de: a.de, a: a.a })));
         dejaLa.tuyau += t2.metresTuyau[n] ?? 0;
@@ -4302,7 +4303,7 @@ var CALCUL = (() => {
         }
       }
     }
-    const reseaux = [...parReseau.entries()].sort((a, b) => a[0] - b[0]).map(([numero, { lignes, antennes, tuyau }]) => {
+    const reseaux = [...parReseau.entries()].sort((a, b) => a[0] - b[0]).map(([numero, { lignes, antennes, tuyau, entrees }]) => {
       const voisins = /* @__PURE__ */ new Map();
       const relier = (a, b) => {
         if (!voisins.has(cle2(a))) voisins.set(cle2(a), /* @__PURE__ */ new Set());
@@ -4326,7 +4327,7 @@ var CALCUL = (() => {
           const k = cle2(p);
           if (vus.has(k)) continue;
           vus.add(k);
-          const degre = voisins.get(k)?.size ?? 0;
+          const degre = (voisins.get(k)?.size ?? 0) + (entrees.has(k) ? 1 : 0);
           const portees = tetesAuPied.get(`${k}|${numero}`) ?? [];
           portees.forEach((tete, rang) => {
             const plein = degre > 1 || rang < portees.length - 1;
@@ -4340,7 +4341,11 @@ var CALCUL = (() => {
           });
           if (degre > 2) {
             tesEgaux += degre - 2;
-            jonctions.push(portees.length === 0 ? p : aCote(p, voisins.get(k)));
+            const branches = [...voisins.get(k) ?? []].reverse();
+            for (let j = 0; j < degre - 2; j++) {
+              const libre = portees.length === 0 && j === 0;
+              jonctions.push(libre ? p : versLaBranche(p, branches[(portees.length === 0 ? j - 1 : j) % branches.length]));
+            }
           }
         }
       }
@@ -4400,8 +4405,8 @@ var CALCUL = (() => {
     const arrondir = (v) => Math.round(v * 1e3) / 1e3;
     return z.L >= z.l ? { x: pt.x, y: arrondir(z.y + z.l / 2) } : { x: arrondir(z.x + z.L / 2), y: pt.y };
   }
-  function aCote(p, voisins) {
-    const [x, y] = [...voisins][voisins.size - 1].split(",").map(Number);
+  function versLaBranche(p, voisin) {
+    const [x, y] = voisin.split(",").map(Number);
     const l = Math.hypot(x - p.x, y - p.y);
     if (l < 1e-9) return p;
     return { x: p.x + (x - p.x) / l * 1.1, y: p.y + (y - p.y) / l * 1.1 };
