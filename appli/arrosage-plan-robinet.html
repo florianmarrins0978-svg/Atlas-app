@@ -160,6 +160,19 @@
   .chaine small{margin-top:4px;font-size:10.5px;line-height:1.25;color:var(--atlas-inkSoft)}
   .chaine .plus{flex:none;margin-top:12px;font-size:17px;font-weight:700;color:var(--atlas-inkSoft)}
   .chaine .dbl{flex:none;margin-top:17px}
+  /* LE MONTAGE AU ROBINET, éclaté comme la nourrice (sa demande du 18 octobre
+     2026) : la double sortie en haut, puis sous UNE de ses sorties le
+     programmateur, le raccord femelle, le tuyau. */
+  .pile{margin-top:10px;border-radius:16px;background:#ffffff;padding:14px 12px;box-shadow:inset 0 0 0 1px var(--atlas-line)}
+  .etage{display:grid;grid-template-columns:150px 1fr;align-items:center;gap:10px;min-height:20px}
+  .etage + .etage{margin-top:8px}
+  .etage .ph{position:relative;height:var(--h);display:flex;justify-content:flex-start}
+  .etage .ph > *{margin-left:calc(60px - var(--w) / 2)}
+  .etage .ph img{height:100%;mix-blend-mode:multiply}
+  .etage .lib{font-size:13px;line-height:1.35;color:#4a4a44}
+  .etage .lib b{display:block;font-weight:600;color:#1c1c1a}
+  .etage .tube{width:14px;height:100%;border-radius:3px;background:linear-gradient(90deg,#2b2d31 0 30%,#2f7fd6 30% 42%,#2b2d31 42% 100%)}
+  .etage .tube.seize{width:9px;background:#1f1f1f}
   .ajouter{margin-top:10px;display:flex;width:100%;min-height:48px;align-items:center;justify-content:center;border-radius:12px;border:1.5px dashed var(--atlas-line);background:none;color:var(--atlas-ink);font-size:14.5px;cursor:pointer}
   .groupe{margin:16px 0 0;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
   .groupe .pastille{flex:none;width:10px;height:10px;border-radius:3px;background:var(--couleur)}
@@ -226,6 +239,8 @@
     <p class="sous">Une sortie pour l’arrosage, l’autre reste au client.</p>
     <div class="chips" role="group" aria-label="Le départ" id="departs"></div>
     <p class="sous" id="depart-choisi"></p>
+    <h2 id="titre-amenee" style="margin-top:16px">Au robinet</h2>
+    <div class="pile" id="pile" role="img" aria-label="Le montage au robinet, pièce sous pièce"></div>
   </section>
 
   <section class="bloc" id="bloc-nourrice">
@@ -250,9 +265,7 @@
 
   <section class="bloc">
     <span class="caps">Les pièces</span>
-    <h2 id="titre-amenee">Au robinet</h2>
-    <div class="plateau"><div class="eclate" id="amenee"></div></div>
-    <button class="ajouter" type="button" data-ajouter="amenee">Ajouter une pièce</button>
+    <div id="amenee" hidden></div>
     <div id="jardin"></div>
   </section>
 
@@ -656,6 +669,14 @@
     var dia = robinet.departMain || departDeLOutil(p), rac = ROBINET.raccord[dia];
     var tuyau = dia === 16 ? "PEBD rigide Ø16" : "PEHD Ø" + dia;
     $("titre-amenee").textContent = robinet.montage === "nez" ? "Au robinet" : "Du robinet à la nourrice";
+    // La double sortie se pose décalée : sa sortie de GAUCHE (18 % de sa photo)
+    // tombe sur l'axe de la pile, à 60 px. Les autres pièces se centrent sur cet axe.
+    var etages = [];
+    if (robinet.double) etages.push('<div class="etage"><span class="ph" style="--h:66px"><img src="arrosage-robinet-photos/BRO3493.png" alt="" style="margin-left:' + (60 - 0.18 * 104) + 'px"></span><span class="lib"><b>' + texte(ROBINET.double.nom) + "</b>Réf. " + ROBINET.double.ref + ", proposé</span></div>");
+    if (robinet.montage === "nez") etages.push('<div class="etage"><span class="ph" style="--h:90px;--w:62px"><img src="arrosage-robinet-photos/SP1151.png" alt=""></span><span class="lib"><b>' + texte(ROBINET.prog.nom) + "</b>Réf. " + ROBINET.prog.ref + ", proposé</span></div>");
+    etages.push('<div class="etage"><span class="ph" style="--h:70px;--w:41px"><img src="arrosage-robinet-photos/OPL703016.png" alt=""></span><span class="lib"><b>' + texte(rac.nom) + "</b>Réf. " + rac.ref + ", proposé</span></div>");
+    etages.push('<div class="etage"><span class="ph" style="--h:60px;--w:14px"><span class="tube' + (dia === 16 ? " seize" : "") + '"></span></span><span class="lib"><b>' + texte(tuyau) + "</b>" + (robinet.montage === "nez" ? "jusqu’au réseau, à mesurer" : "jusqu’à la nourrice, à mesurer") + "</span></div>");
+    $("pile").innerHTML = etages.join("");
     $("amenee").innerHTML =
       (robinet.double ? poser("am:double", ROBINET.double.ref, ROBINET.double.nom, "Double sortie, proposé") : "") +
       (robinet.montage === "nez" ? poser("am:prog", ROBINET.prog.ref, ROBINET.prog.nom, "Programmateur nez de robinet, proposé") : "") +
