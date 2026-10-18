@@ -402,5 +402,6 @@ Sa demande : chercher les photos de toutes les pièces de la liste qui n'en ont 
 | sans prix | aucun prix ne se devine : si une pièce qui DIFFÈRE entre les deux plans n'a pas de prix, on garde son ordre (Ø32 d'abord, puis une vanne) et l'écran dit « faute de prix, Ø32 retenu » |
 | les pièces | suivent le diamètre : té taraudé 32 x 3/4" x 32 (OPL71403220), coude taraudé 32 x 3/4" (OPL71503220), té égal 32 (OPL704032), té réduit 32 x 25 x 32 (OPL73403225), PEHD Ø32 (UPE232) |
 | imposé | il peut forcer 25 ou 32 à la fin |
-| **question posée** | la main d'œuvre (tranchée au mètre, câble) entre-t-elle dans la comparaison, ou seulement le matériel ? |
+| **tranché** | *« non, c'est juste du matériel qui change »* : seul le matériel entre dans la comparaison |
+| **⚠ CORRIGÉ PAR LUI LE MÊME SOIR** | *« je pense qu'il faut plutôt une vanne de plus que le 32, sinon tu vas tout me passer en 32 à chaque fois ; il faudra nuancer cette règle mais je ne sais pas comment encore »*. Donc **on ne code RIEN du Ø32 pour l'instant** : le calcul garde ce qu'il fait (une vanne de plus en Ø25), et la nuance (quand le 32 vaut mieux qu'une vanne) **reste à lui**. Ne pas la deviner |
 | **pourquoi pas encore codé** | l'autre session code l'écran (`src/app/paysage/arrosage`, `le-plan.ts`, `postes.ts`) dans les mêmes fichiers ; attendre qu'elle ait fini. Et les prix fournisseurs n'existent pas encore |
