@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Les pièces du robinet</title>
+<!--
+  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Sa demande du 18 octobre 2026 :
+  quand on se pique sur un robinet, proposer sans l'imposer une double sortie
+  sous le robinet, un programmateur en nez de robinet (et dans ce cas pas de
+  nourrice), ou garder la nourrice avec le nez de robinet comme départ, puis un
+  départ en Ø16 rigide, Ø25 ou Ø32. « Cherche-les dans le catalogue d'Aqua
+  Plus, tu me les proposes et je te les valide. »
+
+  CHAQUE PIÈCE EST CELLE DU CATALOGUE AQUA PLUS 2026, nom et référence mot pour
+  mot, la page écrite à côté. Les photos sont découpées dans ce catalogue ; elles
+  n'entrent dans l'outil (appli/arrosage-photos/) qu'une fois validées par lui.
+  Aucun prix.
+-->
+<style>
+[data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#8a8578;--atlas-or:#B98B47;--atlas-line:rgba(28,28,26,0.12);--atlas-lineSoft:rgba(28,28,26,0.07);--atlas-rustTint:#ece9e1}
+[data-charte="nuit"]{--atlas-cream:#101210;--atlas-card:#1a1d19;--atlas-ink:#e9e8de;--atlas-inkSoft:#c1c2b6;--atlas-muted:#84887b;--atlas-or:#B98B47;--atlas-line:rgba(233,232,222,0.12);--atlas-lineSoft:rgba(233,232,222,0.07);--atlas-rustTint:#1f211e}
+  *{box-sizing:border-box}
+  html,body{background:var(--atlas-rustTint)}
+  body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink)}
+  .entete{max-width:430px;margin:0 auto;padding:18px 16px 6px}
+  .entete h1{margin:0;font:400 24px/1.15 Georgia,"Times New Roman",serif}
+  .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .entete select{margin-top:10px;font-size:16px;padding:8px 10px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink)}
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--atlas-cream);padding:6px 16px 60px;min-height:100vh}
+  .caps{display:block;margin:22px 0 0;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-or)}
+  .carte{display:flex;gap:14px;align-items:center;margin-top:10px;border-radius:14px;background:var(--atlas-card);padding:12px}
+  .photo{flex:none;display:flex;align-items:center;justify-content:center;width:96px;height:96px;border-radius:12px;background:#fff;box-shadow:0 0 0 1px var(--atlas-line)}
+  .photo img{max-width:88px;max-height:88px;mix-blend-mode:multiply}
+  .carte b{display:block;font-size:15px;font-weight:600}
+  .carte span{display:block;margin-top:3px;font-size:13px;color:var(--atlas-inkSoft)}
+  .carte small{display:block;margin-top:3px;font-size:12px;color:var(--atlas-muted)}
+</style>
+<body data-charte="origine">
+<div class="entete">
+  <h1>Les pièces du robinet</h1>
+  <p>Proposées dans le catalogue Aqua Plus 2026. Dites oui ou non pour chacune.</p>
+  <select id="charte" aria-label="Charte"><option value="origine">Origine</option><option value="nuit">Nuit</option></select>
+</div>
+<main class="ecran">
+  <span class="caps">Sous le robinet, proposée au client</span>
+  <div class="carte"><span class="photo"><img src="arrosage-robinet-photos/BRO3493.png" alt=""></span>
+    <div><b>robinet 2 voies entrée 3/4" - 2 sorties 3/4"</b><span>Une sortie pour l’arrosage, l’autre reste au client.</span><small>Réf. BRO3493, page 52</small></div></div>
+
+  <span class="caps">Le programmateur en nez de robinet</span>
+  <div class="carte"><span class="photo"><img src="arrosage-robinet-photos/SP1151.png" alt=""></span>
+    <div><b>Programmateur nez de rob. SOLEM BL - NR - 1 voie</b><span>Solem, en Bluetooth comme le BL-IP. Une seule voie.</span><small>Réf. SP1151, page 26</small></div></div>
+  <div class="carte"><span class="photo"><img src="arrosage-robinet-photos/AEV11401.png" alt=""></span>
+    <div><b>PROG BUDDY TAP TIMER 1 STAT. ou 2 STAT.</b><span>Orbit, à visser sur la sortie du robinet. Une ou deux voies.</span><small>Réf. AEV11401 et AEV11422, page 25</small></div></div>
+
+  <span class="caps">Le départ, après le robinet</span>
+  <div class="carte"><span class="photo"><img src="arrosage-robinet-photos/OPL703016.png" alt=""></span>
+    <div><b>raccord femelle 16 x 3/4", 25 x 3/4" ou 32 x 3/4"</b><span>Plasson. Il se visse sur la sortie 3/4" et prend le Ø16 rigide, le Ø25 ou le Ø32.</span><small>Réf. OPL70301620, OPL70302520, OPL70303220, page 30</small></div></div>
+</main>
+<script>document.getElementById("charte").onchange = function () { document.body.dataset.charte = this.value; };</script>
+</body>
+</html>
