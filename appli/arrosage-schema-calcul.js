@@ -2434,14 +2434,14 @@ var CALCUL = (() => {
        photo et le nom, n'importe quel fournisseur sait de quoi on parle ». Sans
        `releve`, `referenceDe` n'en écrit donc aucune. Les noms sont les siens :
        « manchon à compression, Plasson, et après 16 par 16 ». Le filetage du té
-       taraudé et du manchon fileté n'est pas donné : il n'est pas écrit. */
+       taraudé et du manchon fileté : 3/4", sa réponse du 18 octobre 2026. */
     raccords16Rigide: [
       { ref: "plasson16-raccord-taraude", nom: 'raccord taraud\xE9 \xE0 compression Plasson 16 x 3/4", pour 16 rigide', categorie: "raccord PE", marque: "Plasson", diametre: "16", filetage: '3/4"', source: "patron", photo: "sa photo du 18 octobre 2026" },
       { ref: "plasson16-manchon", nom: "manchon \xE0 compression Plasson 16 x 16, pour 16 rigide", categorie: "raccord PE", marque: "Plasson", diametre: "16", source: "patron", photo: "sa photo du 18 octobre 2026" },
       { ref: "plasson16-te", nom: "t\xE9 \xE0 compression Plasson 16 x 16 x 16, pour 16 rigide", categorie: "raccord PE", marque: "Plasson", diametre: "16", source: "patron", photo: "sa photo du 18 octobre 2026" },
-      { ref: "plasson16-te-taraude", nom: "t\xE9 taraud\xE9 \xE0 compression Plasson 16, pour 16 rigide", categorie: "raccord PE", marque: "Plasson", diametre: "16", source: "patron", photo: "sa photo du 18 octobre 2026" },
+      { ref: "plasson16-te-taraude", nom: 't\xE9 taraud\xE9 \xE0 compression Plasson 16 x 3/4" x 16, pour 16 rigide', categorie: "raccord PE", marque: "Plasson", diametre: "16", filetage: '3/4"', source: "patron", photo: "sa photo du 18 octobre 2026" },
       { ref: "plasson16-coude", nom: "coude \xE0 compression Plasson 16 x 16, pour 16 rigide", categorie: "raccord PE", marque: "Plasson", diametre: "16", source: "patron", photo: "sa photo du 18 octobre 2026" },
-      { ref: "plasson16-manchon-filete", nom: "manchon filet\xE9 \xE0 compression Plasson 16, pour 16 rigide", categorie: "raccord PE", marque: "Plasson", diametre: "16", source: "patron", photo: "sa photo du 18 octobre 2026" }
+      { ref: "plasson16-manchon-filete", nom: 'manchon filet\xE9 \xE0 compression Plasson 16 x 3/4", pour 16 rigide', categorie: "raccord PE", marque: "Plasson", diametre: "16", filetage: '3/4"', source: "patron", photo: "sa photo du 18 octobre 2026" }
     ],
     /* ── Le reste du matériel ───────────────────────────────────────────────
          **Ses lignes provisoires sont RETIRÉES, le 16 octobre 2026** (« supprime
