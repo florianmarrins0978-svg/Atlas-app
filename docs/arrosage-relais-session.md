@@ -390,3 +390,17 @@ Sa demande : chercher les photos de toutes les pièces de la liste qui n'en ont 
 **Ses réponses du 18 octobre au soir, sur cette planche :** *« les deux raccords de Millennium, tu peux les supprimer »* (le té égal 75 et 110, l'adaptateur à bride : 6 références retirées du catalogue et des instantanés, il en reste 539) ; *« les vannes, c'est bon, je t'ai envoyé les photos »* ; *« pour les électrovannes, mets-moi les photos que tu as trouvées, ça suffira »* : les 15 électrovannes et le solénoïde LU3100 du lot E ont leur photo SANS passer par la planche, y compris les trois EZ-Flo à étiquette retouchée ; le Richdel 2400 MT 9 V et la PGV-100 JT 9 V prennent la photo validée du même corps (24 V, et JT FF 9 V). Les 51 électrovannes de la liste ont une photo (`entrer-electrovannes-et-retirer-millenium.mjs`). La planche ne garde que ce qui attend encore ses choix : 20 photos (rehausse, PEHD NF, goutte-à-goutte Ø6, Millenium).
 
 **Toutes les photos sont tranchées (18 octobre 2026, au soir)** : *« c'est bon, toutes les pièces ont été validées »*, 33 « oui » sur la dernière planche (`choix-dernieres-pieces.json`, `entrer-lots2.mjs`). Les **539 pièces** de la liste ont une photo. Neuf photos qu'il avait validées sur la PREMIÈRE planche n'étaient jamais entrées dans l'outil (turbines Hunter HA2210, 2211, 2222, 2225, 2264, 2272, 2274, la 5012 Plus SAM, la tuyère 1812) : elles dormaient dans le dossier de travail d'une autre session ; copiées dans `appli/arrosage-photos/`. Contrôlé à l'écran, catégorie par catégorie, sur la planche du plan : aucune image cassée. **Seul le grillage avertisseur bleu reste sans photo** (pièce de réseau, hors liste).
+
+## Le Ø32 des lignes de réseau : SA RÈGLE DU 18 OCTOBRE 2026 AU SOIR (pas encore codée)
+
+*« Il faudrait calculer ce qui fait gagner le plus d'argent : ajouter un réseau et rester en 25, ou passer en 32 »* ; *« oui, la liste des pièces suit »* ; *« oui »* au choix imposé à la fin.
+
+| | |
+|---|---|
+| le calcul | rend DEUX plans quand le Ø25 ne tient pas la pression au dernier arroseur : même nombre de vannes en Ø32, et une vanne de plus en Ø25 (puis, si aucun ne tient, on recommence d'une vanne) |
+| le choix | le moins cher des deux, chiffré avec SES prix d'achat (Réglages, Mes fournisseurs, planche https://claude.ai/artifact/4perJc9eRHYA3WvVS4bEoQ) ; les deux totaux s'affichent |
+| sans prix | aucun prix ne se devine : si une pièce qui DIFFÈRE entre les deux plans n'a pas de prix, on garde son ordre (Ø32 d'abord, puis une vanne) et l'écran dit « faute de prix, Ø32 retenu » |
+| les pièces | suivent le diamètre : té taraudé 32 x 3/4" x 32 (OPL71403220), coude taraudé 32 x 3/4" (OPL71503220), té égal 32 (OPL704032), té réduit 32 x 25 x 32 (OPL73403225), PEHD Ø32 (UPE232) |
+| imposé | il peut forcer 25 ou 32 à la fin |
+| **question posée** | la main d'œuvre (tranchée au mètre, câble) entre-t-elle dans la comparaison, ou seulement le matériel ? |
+| **pourquoi pas encore codé** | l'autre session code l'écran (`src/app/paysage/arrosage`, `le-plan.ts`, `postes.ts`) dans les mêmes fichiers ; attendre qu'elle ait fini. Et les prix fournisseurs n'existent pas encore |
