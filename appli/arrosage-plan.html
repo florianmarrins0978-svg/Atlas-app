@@ -209,11 +209,11 @@
   .menu .gestes{display:flex;flex-direction:column;gap:8px;margin-top:14px}
   .menu .gestes button{min-height:52px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:15.5px;cursor:pointer}
   .menu .gestes button.danger{color:var(--atlas-alerte)}
-  /* Combien de pièces : il choisit le nombre, 1, 2, 3, 4, jamais « une » ou
-     « toutes » (sa correction du 18 octobre 2026). */
-  .menu .gestes .rang{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-  .menu .gestes .rang span{flex:0 0 96px;font-size:15.5px}
-  .menu .gestes .rang button{flex:1 1 44px;min-width:44px}
+  /* COMBIEN DE PIÈCES, « la A » (son choix du 18 octobre 2026) : un bandeau
+     déroulant « Combien », le sélecteur du téléphone, puis le geste. */
+  .menu .gestes .combien{display:flex;align-items:center;gap:12px;min-height:52px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-card);padding:0 14px}
+  .menu .gestes .combien span{flex:1;font-size:15.5px}
+  .menu .gestes select{appearance:none;-webkit-appearance:none;min-width:110px;min-height:40px;border:0;border-radius:10px;padding:0 34px 0 14px;font:600 17px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-cream) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%231c1c1a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center;box-shadow:0 0 0 1px var(--atlas-line)}
   .menu .propose{margin:6px 0 0;font-size:13px;color:var(--atlas-muted)}
   .recherche{display:block;width:100%;margin-top:12px;border:0;border-radius:10px;padding:12px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
@@ -1000,8 +1000,7 @@
       // pièces où il y en a plusieurs. Si j'ai envie de changer qu'une seule
       // tuyère, il faut que je puisse le faire. » Un bouton par nombre.
       var otees = liste.filter(function (x) { return etat.retirees[x]; }).length, vivantes = liste.length - otees;
-      $("menu-gestes").innerHTML = (vivantes ? '<div class="rang"><span>Changer</span>' + boutonsNombre("changer-chaine-n", "", vivantes) + "</div>" +
-          '<div class="rang"><span>Supprimer</span>' + boutonsNombre("supprimer-chaine-n", "danger", vivantes) + "</div>" : "") +
+      $("menu-gestes").innerHTML = (vivantes ? menuNombre(vivantes, "changer-chaine-n", "supprimer-chaine-n") : "") +
         (otees ? '<button type="button" data-geste="remettre-chaine">Remettre les ' + otees + "</button>" : "") +
         (change0 ? '<button type="button" data-geste="revenir-chaine">Revenir à la pièce proposée</button>' : "");
       $("menu").hidden = false; return;
@@ -1015,8 +1014,7 @@
       // chaque fois faire une par une »). Une rangée par geste, un bouton par nombre.
       var restant = n0 - (etat.nrUne[r0] || 0);
       if (n0 > 1 && !etat.retirees["nr:" + r0] && !etat.remplacees["nr:" + r0]) {
-        $("menu-gestes").innerHTML = (restant > 0 ? '<div class="rang"><span>Changer</span>' + boutonsNombre("changer-n", "", restant) + "</div>" +
-          '<div class="rang"><span>Supprimer</span>' + boutonsNombre("supprimer-n", "danger", restant) + "</div>" : "") +
+        $("menu-gestes").innerHTML = (restant > 0 ? menuNombre(restant, "changer-n", "supprimer-n") : "") +
           (etat.nrUne[r0] ? '<button type="button" data-geste="remettre-une">Remettre les ' + n0 + "</button>" : "");
       }
       return;
@@ -1028,7 +1026,7 @@
       if (qL <= 1) { etat.listeRetirees[cleL] = (etat.listeRetirees[cleL] || 0) + 1; dessiner(); return; }
       etat.ligneCible = cleL; etat.cible = null; etat.chaineCles = null;
       $("menu-titre").textContent = b.dataset.nom || ""; $("menu-propose").hidden = true;
-      $("menu-gestes").innerHTML = '<div class="rang"><span>Supprimer</span>' + boutonsNombre("supprimer-ligne-n", "danger", qL) + "</div>";
+      $("menu-gestes").innerHTML = menuNombre(qL, null, "supprimer-ligne-n");
       $("menu").hidden = false; return;
     }
     if (b.dataset.remettreLigne) { delete etat.listeRetirees[b.dataset.remettreLigne]; dessiner(); return; }
@@ -1036,18 +1034,18 @@
       var cle = etat.cible;
       var refNr = cle && cle.indexOf("nr:") === 0 ? cle.slice(3) : null;
       var lc = etat.chaineCles || [];
-      if (b.dataset.geste === "supprimer-ligne-n") { etat.listeRetirees[etat.ligneCible] = (etat.listeRetirees[etat.ligneCible] || 0) + Number(b.dataset.n); $("menu").hidden = true; dessiner(); return; }
+      if (b.dataset.geste === "supprimer-ligne-n") { etat.listeRetirees[etat.ligneCible] = (etat.listeRetirees[etat.ligneCible] || 0) + nChoisi(); $("menu").hidden = true; dessiner(); return; }
       // Les têtes touchées sont les premières encore entières ; les autres restent.
-      if (b.dataset.geste === "supprimer-chaine-n") { lc.filter(function (x) { return !etat.retirees[x]; }).slice(0, Number(b.dataset.n)).forEach(function (x) { etat.retirees[x] = true; }); $("menu").hidden = true; dessiner(); return; }
+      if (b.dataset.geste === "supprimer-chaine-n") { lc.filter(function (x) { return !etat.retirees[x]; }).slice(0, nChoisi()).forEach(function (x) { etat.retirees[x] = true; }); $("menu").hidden = true; dessiner(); return; }
       if (b.dataset.geste === "remettre-chaine") { lc.forEach(function (x) { delete etat.retirees[x]; }); $("menu").hidden = true; dessiner(); return; }
       if (b.dataset.geste === "revenir-chaine") { lc.forEach(function (x) { delete etat.remplacees[x]; }); $("menu").hidden = true; dessiner(); return; }
       if (b.dataset.geste === "changer-chaine-n") {
         var vivantesC = lc.filter(function (x) { return !etat.retirees[x]; });
-        var ciblesC = vivantesC.filter(function (x) { return !etat.remplacees[x]; }).concat(vivantesC.filter(function (x) { return etat.remplacees[x]; })).slice(0, Number(b.dataset.n));
+        var ciblesC = vivantesC.filter(function (x) { return !etat.remplacees[x]; }).concat(vivantesC.filter(function (x) { return etat.remplacees[x]; })).slice(0, nChoisi());
         $("menu").hidden = true; etat.ou = null; etat.recherche = ""; $("recherche").value = ""; etat.categorie = categorieDe(lc[0]); etat.chaineEnAttente = ciblesC; ouvrir(); return;
       }
-      if (refNr && b.dataset.geste === "changer-n") { etat.nrEnAttente = { ref: refNr, n: Number(b.dataset.n) }; $("menu").hidden = true; etat.ou = "liste:" + titreNourrice; etat.cible = null; etat.recherche = ""; $("recherche").value = ""; etat.categorie = "nourrice"; ouvrir(); dessiner(); return; }
-      if (refNr && b.dataset.geste === "supprimer-n") { etat.nrUne[refNr] = (etat.nrUne[refNr] || 0) + Number(b.dataset.n); $("menu").hidden = true; dessiner(); return; }
+      if (refNr && b.dataset.geste === "changer-n") { etat.nrEnAttente = { ref: refNr, n: nChoisi() }; $("menu").hidden = true; etat.ou = "liste:" + titreNourrice; etat.cible = null; etat.recherche = ""; $("recherche").value = ""; etat.categorie = "nourrice"; ouvrir(); dessiner(); return; }
+      if (refNr && b.dataset.geste === "supprimer-n") { etat.nrUne[refNr] = (etat.nrUne[refNr] || 0) + nChoisi(); $("menu").hidden = true; dessiner(); return; }
       // Remettre rend aussi les remplaçantes entrées à leur place dans la liste.
       if (refNr && b.dataset.geste === "remettre-une") { delete etat.nrUne[refNr]; etat.ajoutees = etat.ajoutees.filter(function (a) { return a.de !== refNr; }); $("menu").hidden = true; dessiner(); return; }
       if (b.dataset.geste === "changer") { $("menu").hidden = true; etat.ou = null; etat.recherche = ""; $("recherche").value = ""; etat.categorie = categorieDe(cle); ouvrir(); return; }
@@ -1090,13 +1088,25 @@
   $("partager").onclick = function () { navigator.share({ text: $("message").value }); };
   $("recherche").oninput = function () { etat.recherche = this.value; ouvrir(); };
   function categorieDe(cle) { var p = proposees[cle], x = p && trouver(p.ref); return x ? x.categorie : "reseau"; }
-  // Un bouton par nombre, de 1 à n : le même pour la nourrice, la chaîne d'une
-  // tête et les lignes de la liste (sa règle du 18 octobre 2026).
-  function boutonsNombre(geste, classe, n) {
-    var s = "";
-    for (var k = 1; k <= n; k++) s += '<button type="button"' + (classe ? ' class="' + classe + '"' : "") + ' data-geste="' + geste + '" data-n="' + k + '">' + k + "</button>";
-    return s;
+  // LE CHOIX DU NOMBRE, « la A » (son choix du 18 octobre 2026, planche
+  // arrosage-choix-du-nombre.html) : un bandeau « Combien » qui part sur toutes,
+  // puis Changer ou Supprimer. Le même partout où une pièce est en plusieurs :
+  // la nourrice, la chaîne d'une tête, une ligne de la liste.
+  function menuNombre(n, gesteChanger, gesteSupprimer) {
+    var options = "";
+    for (var k = n; k >= 1; k--) options += '<option value="' + k + '">' + (k === n && n > 1 ? "toutes les " + n : k === 1 ? "une seule" : k) + "</option>";
+    var mot = function (geste) { return geste + (n > 1 ? " les " + n : " une seule"); };
+    return '<label class="combien"><span>Combien</span><select id="menu-n" aria-label="Combien de pièces">' + options + "</select></label>" +
+      (gesteChanger ? '<button type="button" data-geste="' + gesteChanger + '" data-mot="Changer">' + mot("Changer") + "</button>" : "") +
+      '<button type="button" class="danger" data-geste="' + gesteSupprimer + '" data-mot="Supprimer">' + mot("Supprimer") + "</button>";
   }
+  // Le nombre choisi dans le bandeau du menu ouvert.
+  function nChoisi() { var s = $("menu-n"); return s ? Number(s.value) : 1; }
+  document.addEventListener("change", function (e) {
+    if (e.target.id !== "menu-n") return;
+    var n = Number(e.target.value), total = e.target.options.length;
+    document.querySelectorAll("#menu-gestes button[data-mot]").forEach(function (b) { b.textContent = b.dataset.mot + (n === total && n > 1 ? " les " + n : n === 1 ? " une seule" : " " + n); });
+  });
   function menu(cle) {
     etat.cible = cle;
     var p = proposees[cle] || {}, change = etat.remplacees[cle], retiree = etat.retirees[cle];

@@ -319,6 +319,14 @@ têtes d'un réseau), les lignes de la liste : toute pièce comptée à plus d'u
 se change ou se supprime au nombre choisi, sur toutes les planches, et dans
 l'écran quand on le codera.
 
+**LA FORME, « LA A » (même soir, planche `appli/arrosage-choix-du-nombre.html`) :**
+*« Pourquoi tu ne mets pas un bandeau déroulant avec le choix ? On choisit le
+nombre. »*, puis *« mets-moi la A partout où il y a des choix multiples, dans
+les deux planches arrosage et robinet »*. Un bandeau déroulant « Combien » (le
+sélecteur du téléphone, qui part sur « toutes les N »), puis le geste : Changer
+ou Supprimer, dont le libellé suit le nombre. Jamais une rangée de boutons
+numérotés (la B, un bandeau par geste, est écartée).
+
 **UN PASSAGE EN POINTILLÉS QUI SE MESURE SUR LE PLAN NE SE DIT PAS « À MESURER »** — sa
 règle du 18 octobre 2026 : *« si quelqu'un te fait un plan à l'échelle et que tu
 sais que la pelouse fait tant de mètres, que le passage entre la pelouse et
