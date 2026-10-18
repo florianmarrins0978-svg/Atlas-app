@@ -3,6 +3,40 @@
 À lire EN ENTIER, avant toute chose, par la session qui reprend. Tout ce qui
 suit est dans le dépôt ; rien ne repose sur la conversation.
 
+## OÙ ON S'EST ARRÊTÉ — 18 octobre 2026 au soir (à lire en premier)
+
+La session du 18 octobre a fini pleine. Ce qui suit est l'état exact ; le
+reste du document garde l'historique (lire les corrections comme elles sont
+barrées ou annotées).
+
+**Les planches en cours, celles qu'il regarde maintenant :**
+
+| Planche | Lien | Ce qu'il attend / ce qu'on attend de lui |
+|---|---|---|
+| Le plan d'arrosage (`appli/arrosage-plan.html`) | https://claude.ai/artifact/5JivFEkQW2X7DpwoLnMzHB | C'est LA planche de l'écran à coder. Validé dessus : nourrice éclatée en tête, réseaux sur le plan (pointillé seulement sous le réseau qui l'emprunte, avec la raison), pièces de chaque réseau **posées sur le plan du jardin** (té égal sur le croisement, arroseur à gauche du trait et té taraudé à droite juste dessous), chaîne d'une tête « la B » (« + » vissé, double flèche autour du PEBD emboîté), pièces avec cadre sans fond blanc, liste par nourrice puis réseau, message au fournisseur modifiable (« réf. » seul), grillage avertisseur et sonde de pluie à cocher, couronnes 50 ou 100 m, « deux, en circuit fermé », aucune durée d'arrosage |
+| Le plan au robinet (`appli/arrosage-plan-robinet.html`) | https://claude.ai/artifact/Bcdsm4bPC3KDZ5CDhYv5tX | Ses deux montages : nez de robinet SANS nourrice, ou nourrice avec le robinet pour départ. Double sortie proposée. Départ Ø16 (goutte-à-goutte seul), Ø25 ou Ø32 choisi par l'outil, modifiable. Le montage est éclaté sous « Le piquage », sur un axe. **À lui faire regarder** |
+| Les pièces du robinet (`appli/arrosage-pieces-robinet.html`) | https://claude.ai/artifact/WwTin3f2Zvq42RiobvWErG | **Son oui ou non par pièce** : BRO3493, Solem BL-NR SP1151, Buddy AEV11401 / AEV11422, raccords femelles Plasson 16, 25, 32 x 3/4" (OPL70301620, OPL70302520, OPL70303220). Photos découpées du catalogue, hors outil tant que non validées |
+| La nourrice éclatée | https://claude.ai/artifact/JEXjH6tjyFLQJKePMUEBZc | Validée, puis **corrigée par lui** : pièce 6 = DURA Manchon union 1" FF (ODU329010, SA photo `union-ff.jpg`), pièce 7 = raccord mâle Plasson 25 x 1" (OPL70202526). Vanne de purge retournée (vis en haut, poignée à gauche), « Arrivée d'eau » avec une flèche qui monte au PEHD, « R4 goutte-à-goutte » |
+
+**Les questions ouvertes, à lui reposer telles quelles :**
+1. Les pièces du robinet : oui ou non pour chacune (lien ci-dessus).
+2. Plus de réseaux que de voies au programmateur en nez de robinet (le BL-NR n'a qu'une voie, le Buddy deux) : l'outil refuse le nez de robinet et garde la nourrice, ou il le propose en prévenant qu'il manque des voies ?
+3. Les besoins en eau par saison (`SAISONS` dans `calcul.js`) n'ont aucune source de lui : a-t-il ses chiffres ? (on n'affiche plus de durée, mais le calcul s'en sert)
+4. Les buses douteuses, qu'il vérifie lui-même (10SS / 35SS, PRECISION 15Q et 8F, PSU 17A, Maxi-Paw 06, Mini 8 buse 2,5) ; le tube Toro (fiche de SON tube 2 l/h 33 cm : pression mini, autorégulant ou non).
+5. La planche de ses demandes du 16 octobre (https://claude.ai/artifact/Aw7JKKNFKZ7ggG9MERVWcj) : clavier iPhone corrigé (toucher ailleurs le referme), son avis général reste à venir.
+
+**ATTENTION : une autre session travaille dans CE MÊME dossier.** Elle a fait la
+planche des photos de raccords PE (https://claude.ai/artifact/R3viQnoxAi7biZ6tD5syYS,
+commits `9e9db77f` et `724d500e`) et, au moment où la session du 18 s'est
+arrêtée, l'arbre portait **son travail non commité** : `appli/arrosage-photos/pe-*.jpg`
+et des entrées `PHOTOS` (OPL…) dans `appli/arrosage-plan.html` et
+`appli/arrosage-vue-eclatee.html`. **Ne pas le commiter, ne pas l'écraser, ne pas
+le jeter** : demander au patron à qui il est avant de toucher à ces deux fichiers.
+
+**Côté `main`** : le lot part de `5e850cc1` ; `origin/main` était à `8d3c0c1d`
+(15 commits de plus, rien d'arrosage vu) le 18 au soir. Le lot porte 116 commits,
+**jamais poussés**, aucune batterie jouée.
+
 ## Où est le travail
 
 | | |
@@ -177,8 +211,7 @@ Les photos : le raccord mâle reprend `raccord-male25.jpg` (photo de gamme, vali
 
 ## Ce qui reste à faire, dans cet ordre
 
-1. **Lui refaire le topo** : lui redonner ces planches pour son contrôle
-   complet (il l'a demandé).
+1. ~~**Lui refaire le topo**~~ (fait le 18 octobre).
 2. **Faire entrer la nourrice éclatée validée dans la vue éclatée** (la vue
    éclatée montre encore la nourrice en vrac, dans l'ordre de la fiche).
 3. **Les lignes de réseau en Ø32** : aujourd'hui toutes en Ø25 dans le calcul.
@@ -188,9 +221,12 @@ Les photos : le raccord mâle reprend `raccord-male25.jpg` (photo de gamme, vali
    modifier une règle ou un chiffre du calcul, lui en parler.**
 4. **Importer le devis d'un fournisseur** (sa demande, `TODO.md`) : planche
    d'abord.
-5. **L'écran** (`src/app`), seulement une fois les planches choisies : les deux
-   mesures au compteur, ligne ou boucle par zone, le choix 25/32, la sonde,
-   ajouter / changer / supprimer une pièce, la vue éclatée. Codé pour de vrai,
+5. **L'écran** (`src/app`), seulement une fois les planches choisies : il suit
+   `appli/arrosage-plan.html` (validée dans l'esprit le 18 octobre), puis le
+   robinet une fois ses pièces validées. Le clavier numérique de l'iPhone doit
+   se refermer en touchant ailleurs (`ArrosageClient.tsx`, `inputMode="decimal"`),
+   et un coude taraudé se dessine en rond creux sous une tuyère aussi
+   (`PlanDessine.tsx`). Codé pour de vrai,
    la place de chaque té et coude doit sortir du CALCUL, pas de l'écran.
 6. **La batterie unique** (`npm run verifier:avant-livraison`, le prévenir
    avant), le document `docs/arrosage-catalogue-aquaplus.md` mis à jour, puis
