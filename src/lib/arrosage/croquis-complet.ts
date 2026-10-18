@@ -19,6 +19,21 @@
 
 export type Manque = "metres" | "nourrice" | "piquage";
 
+/**
+ * **Une zone est mesurée quand le calcul peut en faire quelque chose** — une
+ * seule règle, pour la photo, le dessin et le serveur.
+ *
+ * La haie par ses mètres linéaires ; tout le reste par sa longueur ET sa
+ * largeur, **massif compris**. Le calcul mesure le massif en surface (forme
+ * « nappe », `calcul.js`) ; la lecture de la photo et le filtre du serveur le
+ * prenaient en mètres linéaires, si bien qu'un massif lu n'avait ni longueur ni
+ * largeur et ne recevait aucune ligne, sans rien dire. Trouvé le 18 octobre
+ * 2026 en dessinant le plan, `scripts/test-dessin-du-plan.ts`.
+ */
+export function zoneMesuree(z: { type: string; L: number | null; l: number | null; ml: number | null }): boolean {
+  return z.type === "haie" ? z.ml !== null : z.L !== null && z.l !== null;
+}
+
 export type EtatDuCroquis = {
   complet: boolean;
   manque: Manque[];

@@ -1,4 +1,5 @@
 import { getFournisseurVision } from "../providers/llm/fabrique";
+import { zoneMesuree } from "@/lib/arrosage/croquis-complet";
 
 /**
  * Lire un croquis de jardin photographié, avec ses métrés.
@@ -17,7 +18,7 @@ import { getFournisseurVision } from "../providers/llm/fabrique";
  * ## Ce que la lecture rend, et ce qu'elle ne rend pas
  *
  * **Trois choses, et rien d'autre :** les surfaces de chaque partie du jardin,
- * les longueurs de haie et de massif, et où se trouve le point d'eau. Le
+ * la longueur des haies, et où se trouve le point d'eau. Le
  * découpage en réseaux et la liste des pièces se déduisent de là, et ce
  * calcul-là est déjà écrit (`src/lib/arrosage/calcul.js`).
  *
@@ -53,8 +54,14 @@ export type ZoneLue = {
   /** Pour une surface : longueur et largeur en mètres. `null` si non lues. */
   L: number | null;
   l: number | null;
-  /** Pour une haie ou un massif : les mètres linéaires. */
+  /** Pour une haie : les mètres linéaires. Le massif est une surface (L × l). */
   ml: number | null;
+  /**
+   * Combien de lignes de goutte-à-goutte pour une haie. Le dessin du plan le
+   * donne (sa demande du 18 octobre 2026 : la largeur PROPOSE, il décide) ; la
+   * photo, non, et le calcul en pose alors une.
+   */
+  lignesHaie?: number;
   /**
    * Où la zone se trouve SUR LE DESSIN, en fraction (0 à 1) — pas en mètres.
    *
@@ -110,7 +117,7 @@ Règles :
 - « Tu ne devines jamais » NE S'APPLIQUE PAS AUX PLACES. Une cote se LIT (illisible = null) ; une place se MESURE SUR L'IMAGE, et tu la vois toujours dès que la zone est dessinée. Rends donc x, y, largeur_fraction et hauteur_fraction pour CHAQUE zone visible, même approximativement : le croquis est fait à main levée et n'est pas à l'échelle, personne n'attend d'exactitude. Ne les laisse à null que si la zone est citée par écrit sans être dessinée.
 - La nourrice est le regard d'où partent les réseaux (souvent un rectangle marqué « nourrice », « regard » ou « vannes »). Si elle n'est pas dessinée, rends x et y à null, et ne la place pas au point d'eau pour dépanner.
 - Le piquage est l'endroit où l'arrosage se branche sur l'eau (le compteur, le robinet, souvent marqué « compteur », « piquage », « arrivée d'eau », ou un rond avec un robinet). Une croix avec le mot « robinet » à côté est un piquage sur un robinet : rends sa place, et « robinet » pour point_d_eau. Rends sa place en fraction du dessin, comme la nourrice ; s'il n'est pas dessiné, x et y à null, et ne le place pas à la nourrice pour dépanner.
-- Les pelouses et potagers se mesurent en longueur x largeur. Les haies et massifs se mesurent en mètres linéaires.
+- Les pelouses, massifs et potagers se mesurent en longueur x largeur. Les haies se mesurent en mètres linéaires.
 - Les mesures sont en MÈTRES, en nombre décimal à point. Un « 1200 » à côté d'une haie est probablement 12,00 m : rends 12.
 - N'invente aucune zone qui ne figure pas sur le dessin.
 - Si le croquis ne montre pas d'où vient l'eau, rends null.`;
@@ -216,7 +223,10 @@ export function lireReponseCroquis(texte: string): ResultatCroquis {
     }
     const type = typeBrut as ZoneLue["type"];
     const nom = chaine(o.nom);
-    const lineaire = type === "haie" || type === "massif";
+    // **Le massif est une surface** : le calcul y couche des lignes parallèles
+    // sur sa longueur et sa largeur. Lu en mètres linéaires, il n'en avait
+    // aucune, et ne recevait pas une goutte (18 octobre 2026).
+    const lineaire = type === "haie";
     const zone: ZoneLue = {
       type,
       nom,
@@ -231,7 +241,7 @@ export function lireReponseCroquis(texte: string): ResultatCroquis {
     // Une zone dont aucune cote n'a été lue reste dans la liste — le patron sait
     // qu'elle existe et la complète. La faire disparaître lui ferait croire que
     // le croquis ne la montrait pas.
-    if (lineaire ? zone.ml === null : zone.L === null || zone.l === null) {
+    if (!zoneMesuree(zone)) {
       reserves.push(`les cotes de « ${nom ?? type} » n’ont pas pu être lues`);
     }
     zones.push(zone);

@@ -1098,7 +1098,11 @@ function poser(z, refImposee, tolerant){
     // Une haie : une ou deux lignes, c'est LUI qui décide — sa consigne du
     // 17 août, et l'écran pose la question au lieu de trancher.
     var ml = Number(z.ml)||0;
-    var n2 = Number(z.lignesHaie) === 2 ? 2 : 1;
+    // **Autant de lignes qu'il en faut** — sa correction du 18 octobre 2026 :
+    // « si le carré il est plus grand, peut-être qu'il en faudra 4, 5 ». Le
+    // nombre vient de lui (la largeur le propose, il décide) ; plafonné à 20,
+    // au-delà ce n'est plus une haie. Sans nombre lisible, une ligne.
+    var n2 = Math.max(1, Math.min(20, Math.floor(Number(z.lignesHaie)) || 1));
     r.lignes = n2;
     r.nombre = Math.round(ml * n2);
     r.debit = r.nombre * m.debitMetre;

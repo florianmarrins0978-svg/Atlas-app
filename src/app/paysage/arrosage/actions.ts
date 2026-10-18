@@ -2,14 +2,15 @@
 
 import { exigerEcran, exigerFonction } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
-import { lireCroquis } from "@/server/ai/services/lire-croquis";
+import { lireCroquis, type CroquisLu } from "@/server/ai/services/lire-croquis";
 // Module JavaScript repris tel quel de `appli/` — voir l'en-tête du fichier.
 import { calculerPlan } from "@/lib/arrosage/calcul.js";
 import { trajetLePlusLong, poserSurLeTerrain, longueurDeLAmenee } from "@/lib/arrosage/geometrie-croquis";
 import { debitRetenu, SEAU_LITRES } from "@/lib/arrosage/mesure-debit";
 import type { Dessin } from "@/lib/arrosage/plan-dessine";
 import { calculerEtDessiner, type LePlan } from "@/lib/arrosage/le-plan";
-import { etatDuCroquis, LIBELLES, type EtatDuCroquis } from "@/lib/arrosage/croquis-complet";
+import { etatDuCroquis, LIBELLES, zoneMesuree, type EtatDuCroquis } from "@/lib/arrosage/croquis-complet";
+import { croquisDuDessin, lireLeDessin } from "@/lib/arrosage/dessin-du-plan";
 import { appliquer, cotesDuPlanTiennentDebout, type ParametresPlan } from "@/lib/arrosage/consignes";
 import { discuterLePlan, etatDuPlanEnClair, type Tour } from "@/server/ai/services/discuter-plan";
 import { preparerPhotoEntrante } from "@/server/photo-entrante";
@@ -81,6 +82,9 @@ export type EtatPlan =
 // que l'écran rejoue sans serveur pour ses gestes : une seule règle.
 export type { LePlan };
 
+/** Au-delà, ce n'est plus un dessin de jardin : c'est un envoi qui a dérapé. */
+const DESSIN_MAX_CARACTERES = 100_000;
+
 export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData): Promise<EtatPlan> {
   // La session est exigée avant tout : cet écran fait travailler l'IA, et
   // c'est un coût. Personne d'anonyme ne le déclenche — et l'entreprise sert
@@ -88,6 +92,25 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/paysage", "lire un croquis d'arrosage");
   await exigerFonction(ctx, "arrosage", "lire un croquis d'arrosage");
+
+  // **LE PLAN DESSINÉ AU DOIGT** — sa planche B, choisie le 18 octobre 2026.
+  // Il ne passe pas par l'IA : tout y est déjà en mètres. Il rejoint la photo
+  // juste après la lecture, et tout le reste est le même chemin.
+  const dessin = formulaire.get("dessin");
+  if (typeof dessin === "string" && dessin !== "") {
+    if (dessin.length > DESSIN_MAX_CARACTERES) return { etat: "refus", raison: "Ce dessin est trop lourd. Reprenez-le." };
+    let brut: unknown;
+    try {
+      brut = JSON.parse(dessin);
+    } catch {
+      // Un envoi illisible se dit, comme un dessin faux : jamais un plan supposé.
+      return { etat: "refus", raison: "Ce dessin n’est pas lisible. Reprenez-le." };
+    }
+    const relu = lireLeDessin(brut);
+    if (!relu.ok) return { etat: "refus", raison: relu.raison };
+    const branchement = String(formulaire.get("piquage") ?? "compteur");
+    return planDuCroquis(croquisDuDessin(relu.dessin, branchement === "compteur" ? "compteur" : "robinet"), formulaire);
+  }
 
   const limite = await verifierLimite(`croquis:${ctx.entrepriseId}`, LIMITES.diagnosticVegetal);
   if (!limite.autorise) return { etat: "refus", raison: limite.message };
@@ -116,14 +139,23 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
 
   const lu = await lireCroquis(prete.photo.octets.toString("base64"), prete.photo.mimeType);
   if (!lu.ok) return { etat: "refus", raison: lu.raison };
+  return planDuCroquis(lu.croquis, formulaire);
+}
 
+/**
+ * Du croquis lu au plan — **le même chemin pour la photo et pour le dessin**.
+ * Deux chemins finiraient par poser la même pelouse à deux endroits
+ * (`CLAUDE.md` §3).
+ */
+function planDuCroquis(lu: CroquisLu, formulaire: FormData): EtatPlan {
   // **Les zones sans cote ne partent PAS au calcul.** Une pelouse dont on
   // ignore les dimensions ne peut pas recevoir d'arroseurs : la compter pour
   // zéro donnerait un plan qui l'oublie en silence. Elle reste affichée, avec
   // sa réserve, et c'est au patron de la compléter.
-  const mesurees = lu.croquis.zones.filter((z) =>
-    z.type === "haie" || z.type === "massif" ? z.ml !== null : z.L !== null && z.l !== null
-  );
+  //
+  // **Le massif est une surface**, comme le calcul le mesure : la règle vit
+  // dans `zoneMesuree`, une seule pour la photo, le dessin et ce filtre.
+  const mesurees = lu.zones.filter(zoneMesuree);
   const piquage = String(formulaire.get("piquage") ?? "compteur");
 
   // ── SANS CROQUIS COMPLET, AUCUN PLAN — `CLAUDE.md` §4 bis ────────────────
@@ -141,8 +173,8 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   // ce qui a été lu, ce qui manque, et le geste qui débloque.
   const croquis = etatDuCroquis({
     zonesMesurees: mesurees.length,
-    nourrice: lu.croquis.nourrice !== null,
-    piquage: lu.croquis.piquage !== null,
+    nourrice: lu.nourrice !== null,
+    piquage: lu.piquage !== null,
     branchement: piquage,
   });
   if (!croquis.complet) {
@@ -196,13 +228,14 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
     // jetait la moitié de ce que le dessin disait.
     ml: z.ml,
   }));
-  const trajet = trajetLePlusLong(lu.croquis.nourrice, places);
-  const terrain = poserSurLeTerrain(lu.croquis.nourrice, places);
+  const trajet = trajetLePlusLong(lu.nourrice, places);
+  // Le piquage se place comme la nourrice : au nez de robinet, les réseaux partent de lui.
+  const terrain = poserSurLeTerrain(lu.nourrice, places, lu.piquage);
   // **L'AMENÉE SE CALCULE, NI LUE NI SUPPOSÉE** — sa règle du 11 septembre
   // 2026. Du piquage à la nourrice, à l'échelle des cotes. Quand l'échelle ne
   // se déduit pas, elle n'est pas comptée — et l'écran le dit, comme pour le
   // trajet du regard : un zéro annoncé vaut mieux que 30 m tus.
-  const amenee = longueurDeLAmenee(lu.croquis.piquage, lu.croquis.nourrice, places);
+  const amenee = longueurDeLAmenee(lu.piquage, lu.nourrice, places);
 
   // **LES PARAMÈTRES SONT UNE VALEUR, ET ILS REPARTENT VERS L'ÉCRAN.**
   //
@@ -232,6 +265,8 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
       L: z.L ?? undefined,
       l: z.l ?? undefined,
       ml: z.ml ?? undefined,
+      // Le nombre de lignes d'une haie, quand le dessin le donne.
+      lignesHaie: z.lignesHaie,
       // **Où la zone se trouve, EN MÈTRES** — sans quoi le plan se compte mais
       // ne se dessine pas. Ce n'est pas la fraction lue : c'est elle passée à
       // l'échelle du croquis. `undefined` traverse jusqu'au dessin, qui refuse
@@ -240,11 +275,12 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
       y: terrain.ok ? terrain.terrain.zones[i].y : undefined,
     })),
     nourrice: terrain.ok ? terrain.terrain.nourrice : null,
+    piquage: terrain.ok ? terrain.terrain.piquage : null,
   };
 
   // **Ce qui ne bouge plus une fois le croquis lu** : la lecture, la mesure, le
   // trajet. Les réserves du calcul, elles, vivent avec le plan (`lePlan`).
-  const reserves = [...lu.croquis.reserves];
+  const reserves = [...lu.reserves];
   if (mesure.reserve) reserves.push(mesure.reserve);
   if (!trajet.ok) {
     reserves.push(`${trajet.raison} : le trajet du regard jusqu'au premier arroseur n'est pas compté`);
@@ -264,7 +300,7 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   // lire mon croquis... là, il y a tous les métrés »*. Il avait raison.
   const sansDessin = terrain.ok ? null : `${terrain.raison} : le plan est calculé, mais il n’est pas dessiné`;
   const calcule = calculerEtDessiner(parametres, sansDessin);
-  return { etat: "lu", zones: lu.croquis.zones, reserves, sansDessin, ...calcule };
+  return { etat: "lu", zones: lu.zones, reserves, sansDessin, ...calcule };
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

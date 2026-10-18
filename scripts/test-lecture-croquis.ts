@@ -177,14 +177,16 @@ const sansCote = lireReponseCroquis(
   JSON.stringify({
     zones: [
       { type: "gazon", nom: "Pelouse devant", longueur_m: 16, largeur_m: 6 },
-      { type: "massif", nom: "Massif du fond", metres_lineaires: null },
+      // Le massif est une surface depuis le 18 octobre 2026 : ce sont sa
+      // longueur et sa largeur qui manquent (`test-dessin-du-plan.ts`).
+      { type: "massif", nom: "Massif du fond", longueur_m: null, largeur_m: null },
     ],
     point_d_eau: "compteur",
   })
 );
 dire(sansCote.ok && sansCote.croquis.zones.length === 2, "une zone sans cote reste dans la liste");
 dire(
-  sansCote.ok && sansCote.croquis.zones[1].ml === null,
+  sansCote.ok && sansCote.croquis.zones[1].L === null && sansCote.croquis.zones[1].l === null,
   "elle reste VIDE plutôt que de recevoir une mesure par défaut",
 );
 dire(

@@ -59,6 +59,8 @@ export type ZoneParametre = {
   materiel?: string;
   /** La référence de buse qu'il a demandée, ou rien — et le calcul choisit. */
   buse?: string;
+  /** Une haie : combien de lignes de goutte-à-goutte, choisi par lui sur le dessin. */
+  lignesHaie?: number;
   /** Un massif en goutte-à-goutte : une seule ligne, ou deux en circuit fermé. Sans réponse, rien n'est compté. */
   sortieGoutte?: "ligne" | "boucle";
 };
@@ -244,6 +246,8 @@ export function cotesDuPlanTiennentDebout(
   const LINEAIRE_MAX_ML = 200;
   /** Au-delà, ce n'est plus un jardin : c'est une saisie qui a dérapé. */
   const ZONES_MAX = 40;
+  /** Le plafond du calcul (`calcul.js`, haie) : au-delà, ce n'est plus une haie. */
+  const LIGNES_HAIE_MAX = 20;
 
   if (!Array.isArray(parametres?.zones)) {
     return { ok: false, raison: "Ce plan n'est pas lisible." };
@@ -259,15 +263,16 @@ export function cotesDuPlanTiennentDebout(
     // repartait vers le calcul — le contrôle aurait été vert sur le cas qu'il
     // existe pour attraper.
     for (const [valeur, plafond, quoi] of [
-      [z?.L, COTE_MAX_M, "longueur"],
-      [z?.l, COTE_MAX_M, "largeur"],
-      [z?.ml, LINEAIRE_MAX_ML, "métrage"],
+      [z?.L, COTE_MAX_M, "La longueur"],
+      [z?.l, COTE_MAX_M, "La largeur"],
+      [z?.ml, LINEAIRE_MAX_ML, "Le métrage"],
+      [z?.lignesHaie, LIGNES_HAIE_MAX, "Le nombre de lignes"],
     ] as const) {
       if (valeur === undefined || valeur === null) continue;
       if (!Number.isFinite(valeur) || valeur < 0 || valeur > plafond) {
         return {
           ok: false,
-          raison: `La ${quoi} de « ${nom} » sort de ce que cet outil sait calculer (${plafond} maximum).`,
+          raison: `${quoi} de « ${nom} » sort de ce que cet outil sait calculer (${plafond} maximum).`,
         };
       }
     }
