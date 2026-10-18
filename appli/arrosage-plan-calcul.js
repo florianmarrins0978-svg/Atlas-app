@@ -2491,6 +2491,10 @@ var CALCUL = (() => {
        chiffre — et l'écart se serait vu exactement là où il compare deux
        fiches. Reçues le 17 août 2026 : « voici toutes les pièces pour la
        nourrice, ce qui se trouve dans le regard d'arrosage. » */
+    // Les références Aqua Plus (`aquaplus`) : posées avec son accord le 18 octobre 2026. Le té MMF, la
+    // vanne de purge et les regards jumbo 5 et 6 voies sont, selon lui, les pièces que vend Aqua Plus
+    // sous un autre nom. Le BL-IP, le régulateur et le PEBD Ø16 s'achètent là-bas sans référence :
+    // « juste cette nomenclature-là, ils comprendront ».
     piecesNourrice: {
       "coude-mf": { nom: 'Coude 90\xB0 taraud\xE9/filet\xE9 MF 1"', marque: "Dura", aquaplus: "ODU306009" },
       // Le coude FF et le raccord femelle 25 x 3/4" remplacent, le 18 octobre 2026
@@ -2499,14 +2503,14 @@ var CALCUL = (() => {
       "coude-ff": { nom: 'Coude 1" FF', marque: "Dura", aquaplus: "ODU306010" },
       "mamelon": { nom: 'Mamelon r\xE9duit filet\xE9 MM 1"-3/4"', marque: "Dura", aquaplus: "ODU8303131" },
       "union": { nom: 'Union droite taraud\xE9e MF 1"', marque: "Dura", aquaplus: "ODU34MF" },
-      "vanne-purge": { nom: 'Vanne avec vis de purge 3/4"', marque: "Dura" },
+      "vanne-purge": { nom: 'Vanne avec vis de purge 3/4"', marque: "Dura", aquaplus: "BVA932" },
       "electrovanne-100dv": { nom: '\xC9lectrovanne 100 DV 1" MM 9V', marque: "Rain Bird", aquaplus: "REV100DVM9V" },
       "raccord-femelle25": { nom: 'Raccord femelle 25 x 3/4"', marque: "Plasson", aquaplus: "OPL70302520" },
       "regard-rect12": { nom: 'Regard rectangle 12"', marque: "Dura", aquaplus: "RG17100" },
       "regard-rg17106": { nom: "Regard jumbo RG17106", marque: "Dura", aquaplus: "RG17106" },
-      "regard-jumbo5": { nom: "Regard jumbo 5 voies", marque: "Dura" },
-      "regard-jumbo6": { nom: "Regard jumbo 6 voies", marque: "Dura" },
-      "te-mmf": { nom: 'T\xE9 taraud\xE9/filet\xE9 1" MMF', marque: "Dura" },
+      "regard-jumbo5": { nom: "Regard jumbo 5 voies", marque: "Dura", aquaplus: "RG17106" },
+      "regard-jumbo6": { nom: "Regard jumbo 6 voies", marque: "Dura", aquaplus: "RG17106" },
+      "te-mmf": { nom: 'T\xE9 taraud\xE9/filet\xE9 1" MMF', marque: "Dura", aquaplus: "ODU301010" },
       "clarinette-2v": { nom: 'Collecteur M x F x 2 sorties 1"', marque: "Dura", aquaplus: "ODU3010102" },
       "clarinette-3v": { nom: 'Collecteur M x F x 3 sorties 1"', marque: "Dura", aquaplus: "ODU3010103" },
       "clarinette-4v": { nom: 'Collecteur M x F x 4 sorties 1"', marque: "Dura", aquaplus: "ODU3010104" },
