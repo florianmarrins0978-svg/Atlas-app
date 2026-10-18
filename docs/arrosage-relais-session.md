@@ -145,6 +145,17 @@ tuyères 1800 et la 3504, jamais sur la ligne ; le BL-IP est un Solem ; les
 | coude taraudé sur le plan | **sa règle du 18 octobre** : un coude taraudé se dessine en ROND CREUX, sous une tuyère comme sous une turbine. Fait sur la planche du plan ; `PlanDessine.tsx` dessine encore un carré creux sous une tuyère, à changer quand on codera l’écran |
 | cote coupée | sur le plan dessiné, la cote d’un massif qui touche le bord droit sort du cadre (« 2,4 r ») |
 
+## Ses décisions du 18 octobre, l'après-midi (planche du plan)
+
+| | |
+|---|---|
+| grillage avertisseur | case à cocher en bas du plan ; quantité = tranchée + amenée, en rouleaux de 100 m (Aqua Plus p. 58), **sans référence** (« ils sauront ce que c'est ») ; `piecesDuPlan({ grillage })`, règle dans `test-regles-du-patron.ts` |
+| couronnes | 50 m par défaut, 100 m au choix (`couronne` dans `calculerPlan`) ; en 100 m la ligne perd la référence Aqua Plus (`sansReference`), qui désigne la couronne de 50 m |
+| les pièces | **B, avec cadre** : le blanc des photos se fond dans la vignette (`mix-blend-mode: multiply`) |
+| le message | les références s'écrivent « réf. Aqua Plus … » pour un autre fournisseur |
+| vanne de purge | retournée sur la nourrice : vis en haut, poignée à gauche |
+| **à faire, demandé** | (1) un exemple de piquage **sur un robinet** : proposer, sans l'imposer, une **double sortie** sous le robinet (une pour l'arrosage, une pour le client), un **programmateur en nez de robinet**, puis un départ en Ø25 ou en Ø16 rigide ; pièces et modèles à lui demander, rien à inventer. (2) les pièces de chaque réseau **posées sur le plan du jardin**, à leur place, au lieu d'une colonne : une capture d'abord |
+
 ## Ce qui reste à faire, dans cet ordre
 
 1. **Lui refaire le topo** : lui redonner ces planches pour son contrôle

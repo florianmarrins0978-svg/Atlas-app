@@ -444,6 +444,8 @@ var DEFAUTS = {
   seau:10, temps:20, pression:3, saison:'juillet', compteur:null, corps:null,
   marque:null, // null = la marque par défaut du catalogue (Rain Bird)
   amenee:30, pe25:120, sonde:false, croquis:null,
+  // La couronne de tube de goutte-à-goutte que vend son fournisseur, en mètres.
+  couronne:50,
   // Du regard à la première tête, en mètres. Lu sur le croquis quand il montre
   // la nourrice (`geometrie-croquis.ts`) ; zéro sinon, et l'écran le dit.
   regardVersZone:0,
@@ -1706,10 +1708,20 @@ function sortiesGoutte(d){
 /* Combien de couronnes, et combien de jonctions pour les raccorder. Chaque
    ligne prend ses couronnes entières, puis un bout ; les bouts se rangent dans
    les couronnes entamées, le plus long d'abord, sans jamais en couper un en
-   deux. Une ligne de L mètres a donc ⌈L ÷ 50⌉ − 1 jonctions, ni plus ni moins. */
-var METRES_PAR_COURONNE = 50;
+   deux. Une ligne de L mètres a donc ⌈L ÷ C⌉ − 1 jonctions, ni plus ni moins,
+   C étant la longueur d'une couronne.
+
+   **50 m ou 100 m, selon son fournisseur.** Sa règle du 16 octobre 2026 disait
+   50 m (« ça sera 50 m par 50 m ») ; le 18 octobre il a demandé le choix, pour
+   un fournisseur qui vend en couronnes de 100 m. Les deux seules longueurs
+   acceptées sont celles-là : une autre valeur garde 50 m. */
+var COURONNES_VENDUES = [50, 100];
+function metresParCouronne(){
+  return COURONNES_VENDUES.indexOf(Number(etat.couronne)) >= 0 ? Number(etat.couronne) : 50;
+}
 function couronnesDuTube(lignes){
   var pleines = 0, jonctions = 0, bouts = [];
+  var METRES_PAR_COURONNE = metresParCouronne();
   lignes.forEach(function(l){
     // Le millionième retiré : 50 m tiennent dans une couronne, sans jonction.
     var entieres = Math.floor(l / METRES_PAR_COURONNE + 1e-9);
@@ -1807,8 +1819,11 @@ function listeMateriel(d){
     var g = CATALOGUE.gaines[0];
     // Le libellé d'Aqua Plus, mot pour mot : c'est ce qu'il demande au comptoir.
     // Compté en couronnes, comme il le commande (`couronnesDuTube`).
-    lignes.push({ ref:g.ref, nom:g.nom + ', couronne de ' + g.colisage + ' m',
-                  q: sortiesGoutte(d).couronnes, u:'u' });
+    // La couronne choisie (50 ou 100 m). La référence d'Aqua Plus est celle de SA
+    // couronne : sur une autre longueur, elle désignerait un autre produit.
+    var parCouronne = metresParCouronne();
+    lignes.push({ ref:g.ref, nom:g.nom + ', couronne de ' + parCouronne + ' m',
+                  q: sortiesGoutte(d).couronnes, u:'u', sansReference: parCouronne !== g.colisage });
   }
   // **UN CORPS PAR ARROSEUR, MAIS LE CORPS DE SA FAMILLE.** Une tuyère prend
   // le corps qu'il a choisi à l'écran (10 cm sans option par défaut, sa

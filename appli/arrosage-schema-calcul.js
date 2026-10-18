@@ -1666,7 +1666,12 @@ var CALCUL = (() => {
       // commande sur la désignation. Le 25×25×25 dit déjà qu'il n'est pas taraudé
       // — un taraudé porte son filetage dans son nom (25×3/4"×25).
       "te-25-25-25": { nom: "T\xE9 90\xB0 25\xD725\xD725", marque: "Plasson", aquaplus: "OPL704025" },
-      "pebd16": { nom: "PEBD rigide \xD816 (tube de reprise)", marque: "Dura", unite: "ml" }
+      "pebd16": { nom: "PEBD rigide \xD816 (tube de reprise)", marque: "Dura", unite: "ml" },
+      // **Le grillage avertisseur bleu**, au-dessus des tuyaux enterrés : sa demande
+      // du 18 octobre 2026, une case à cocher. Le nom et le rouleau de 100 m sont
+      // ceux d'Aqua Plus 2026, p. 58 ; sans référence, à sa demande (« ils sauront
+      // ce que c'est »).
+      "grillage-bleu": { nom: "Grillage avertisseur bleu (dim. 0,3 X 100 ml)", metresParRouleau: 100 }
     },
     /* ── Le goutte-à-goutte : SON tube, le 16 octobre 2026 ──────────────────
          *« Voici le goutte-à-goutte que j'utilise : UGGCBL23050, un tube de 16 mm
@@ -3027,6 +3032,8 @@ var CALCUL = (() => {
     pe25: 120,
     sonde: false,
     croquis: null,
+    // La couronne de tube de goutte-à-goutte que vend son fournisseur, en mètres.
+    couronne: 50,
     // Du regard à la première tête, en mètres. Lu sur le croquis quand il montre
     // la nourrice (`geometrie-croquis.ts`) ; zéro sinon, et l'écran le dit.
     regardVersZone: 0,
@@ -3671,9 +3678,13 @@ var CALCUL = (() => {
       jonctions: c.jonctions
     };
   }
-  var METRES_PAR_COURONNE = 50;
+  var COURONNES_VENDUES = [50, 100];
+  function metresParCouronne() {
+    return COURONNES_VENDUES.indexOf(Number(etat.couronne)) >= 0 ? Number(etat.couronne) : 50;
+  }
   function couronnesDuTube(lignes) {
     var pleines = 0, jonctions = 0, bouts = [];
+    var METRES_PAR_COURONNE = metresParCouronne();
     lignes.forEach(function(l) {
       var entieres = Math.floor(l / METRES_PAR_COURONNE + 1e-9);
       var reste = l - entieres * METRES_PAR_COURONNE;
@@ -3760,11 +3771,13 @@ var CALCUL = (() => {
     });
     if (totalGaine) {
       var g = CATALOGUE.gaines[0];
+      var parCouronne = metresParCouronne();
       lignes.push({
         ref: g.ref,
-        nom: g.nom + ", couronne de " + g.colisage + " m",
+        nom: g.nom + ", couronne de " + parCouronne + " m",
         q: sortiesGoutte(d).couronnes,
-        u: "u"
+        u: "u",
+        sansReference: parCouronne !== g.colisage
       });
     }
     var parCorps = {}, corpsDe = {};
@@ -3911,7 +3924,7 @@ var CALCUL = (() => {
         // mais `reference` ne porte que ce qui a été RELEVÉ sur ses documents.
         // C'est `reference` que l'écran montre, et rien d'autre.
         materiel: listeMateriel(d).map(function(l) {
-          return Object.assign({}, l, { reference: CATALOGUE.referenceDe(l.ref) });
+          return Object.assign({}, l, { reference: l.sansReference ? null : CATALOGUE.referenceDe(l.ref) });
         }),
         manquants: manquants(d),
         // **Les sorties du goutte-à-goutte, comptées une fois.** La liste de
@@ -3988,6 +4001,7 @@ var CALCUL = (() => {
   var COUDE_LIGNE = "coude-taraude-25-34";
   var TE_EGAL = "te-25-25-25";
   var PEBD16 = "pebd16";
+  var GRILLAGE = "grillage-bleu";
   function auRegard(l) {
     if (!l.ref) return false;
     return Boolean(CAT.piece(l.ref)) || l.ref === "RP403";
@@ -4074,6 +4088,14 @@ var CALCUL = (() => {
       if (egaux > 0) jardin.push({ ref: TE_EGAL, reference: CAT.referenceDe(TE_EGAL), nom: nomDe(TE_EGAL), q: egaux, u: "u", ou: "jardin", detail: `${parReseau((r) => r.tesEgaux)}${etGoutte(egauxGoutte)}` });
       const ml = somme((r) => r.metresTuyau);
       if (ml > 0) jardin.push({ ref: "pe25", nom: "PEHD \xD825", q: Math.ceil(ml), u: "ml", ou: "jardin", detail: parReseau((r) => r.metresTuyau) });
+      if (options.grillage) {
+        const g = CAT.piecesReseau[GRILLAGE];
+        const parRouleau = g.metresParRouleau ?? 100;
+        const metres = dessin.metresTranchee + (options.amenee ?? 0);
+        const rouleaux = Math.max(1, Math.ceil(metres / parRouleau));
+        const detail = options.amenee !== null ? `${Math.ceil(dessin.metresTranchee)} m de tranch\xE9e et ${Math.ceil(options.amenee)} m d\u2019amen\xE9e` : `${Math.ceil(dessin.metresTranchee)} m de tranch\xE9e ; l\u2019amen\xE9e n\u2019est pas mesur\xE9e, il reste ${Math.floor(rouleaux * parRouleau - dessin.metresTranchee)} m dans le dernier rouleau`;
+        jardin.push({ ref: GRILLAGE, nom: g.nom, q: rouleaux, u: "u", ou: "jardin", detail });
+      }
     } else {
       jardin.push({ ref: "pe25", nom: "PEHD \xD825", q: null, u: "ml", ou: "jardin", detail: "le plan n\u2019est pas dessin\xE9 : \xE0 mesurer sur place" });
     }

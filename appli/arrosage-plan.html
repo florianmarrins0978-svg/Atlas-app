@@ -88,6 +88,8 @@
   .materiel .q{flex:none;width:58px;font-weight:600;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
   .symboles{margin-top:12px;border-radius:12px;background:var(--atlas-card);padding:8px 14px}
   .symboles p{display:flex;align-items:center;gap:10px;margin:0;padding:4px 0;font-size:13.5px}
+  .coche{margin-top:12px;display:flex;align-items:center;gap:12px;border-radius:12px;padding:14px 16px;background:var(--atlas-card);font-size:15px;cursor:pointer}
+  .coche input{width:22px;height:22px;accent-color:var(--atlas-ink)}
   .symboles svg{flex:none;width:15px;height:15px}
 
   /* 3. LES PIÈCES : la vue éclatée, un rail par réseau, une rangée par tête. */
@@ -95,7 +97,7 @@
   .eclate{position:relative;display:flex;flex-wrap:wrap;gap:16px 12px;justify-content:center}
   .piece{position:relative;width:88px;border:0;background:none;padding:0;color:inherit;font:inherit;text-align:center;cursor:pointer}
   .piece .photo{position:relative;display:flex;align-items:center;justify-content:center;width:88px;height:88px;border-radius:12px;background:var(--atlas-card);box-shadow:0 1px 2px var(--atlas-line),0 6px 16px var(--atlas-lineSoft)}
-  .piece .photo img{max-width:78px;max-height:78px;object-fit:contain}
+  .piece .photo img{max-width:78px;max-height:78px;object-fit:contain;mix-blend-mode:multiply}
   .piece .photo.vide{box-shadow:none;border:1.5px dashed var(--atlas-line);font-size:10.5px;line-height:1.25;color:var(--atlas-muted);padding:6px}
   .piece .photo img.pied{position:absolute;right:-6px;bottom:-6px;width:50%;max-width:50%;height:auto;max-height:50%;border-radius:8px;background:var(--atlas-card);box-shadow:0 1px 3px var(--atlas-line)}
   .piece .nom{display:block;margin-top:6px;font-size:11.5px;line-height:1.3;color:var(--atlas-inkSoft)}
@@ -189,6 +191,7 @@
     <h2 id="titre-reseaux"></h2>
     <div id="reseaux"></div>
     <div class="symboles" id="symboles"></div>
+    <label class="coche"><input type="checkbox" id="grillage"> Grillage avertisseur</label>
   </section>
 
   <section class="bloc">
@@ -258,9 +261,9 @@
   // ── LA SAISIE : ce que le patron a rempli, et le croquis qu'il a donné.
   var SAISIE = { seau: 10, temps: 18, pression: 3, compteur: "oui" };
   var NOURRICE = { x: 13, y: 6 };
-  var etat = { sortie: "boucle", retirees: {}, remplacees: {}, ajoutees: [], ou: "amenee", categorie: "reseau", cible: null, recherche: "" };
+  var etat = { sortie: "boucle", couronne: 50, grillage: false, retirees: {}, remplacees: {}, ajoutees: [], ou: "amenee", categorie: "reseau", cible: null, recherche: "" };
   function plan() {
-    return C.calculerPlan({ seau: SAISIE.seau, temps: SAISIE.temps, pression: SAISIE.pression, compteur: SAISIE.compteur, zones: [
+    return C.calculerPlan({ seau: SAISIE.seau, temps: SAISIE.temps, pression: SAISIE.pression, compteur: SAISIE.compteur, couronne: etat.couronne, zones: [
       { id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
       { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },
       { id: 3, type: "massif", nom: "Massif", x: 14, y: 10, L: 20, l: 2.4, sortieGoutte: etat.sortie },
@@ -562,7 +565,7 @@
     var html = "";
     for (var c = 0; c < n; c++) {
       if (c > 0 && c <= j) html += poser("r" + i + ":jonction" + c, "MID6301", nomDe("MID6301", M), "jonction Palaplast Ø16");
-      html += poser("r" + i + ":couronne" + c, "UGGCBL23050", nomDe("UGGCBL23050", M), "tube Toro, couronne de 50 m");
+      html += poser("r" + i + ":couronne" + c, "UGGCBL23050", nomDe("UGGCBL23050", M), "tube Toro, couronne de " + etat.couronne + " m");
     }
     return html;
   }
@@ -591,6 +594,10 @@
       if (s.famille === "Goutte-à-goutte") jardin += '<div class="chips" role="group" aria-label="Ligne ou boucle">' +
         '<button type="button" data-sortie="ligne" aria-pressed="' + (etat.sortie === "ligne") + '">Une seule ligne</button>' +
         '<button type="button" data-sortie="boucle" aria-pressed="' + (etat.sortie === "boucle") + '">Deux, en boucle</button></div>';
+      // La couronne que vend son fournisseur : 50 m ou 100 m (sa demande du 18 octobre 2026).
+      if (s.famille === "Goutte-à-goutte") jardin += '<div class="chips" role="group" aria-label="Couronnes">' +
+        '<button type="button" data-couronne="50" aria-pressed="' + (etat.couronne === 50) + '">Couronnes de 50 m</button>' +
+        '<button type="button" data-couronne="100" aria-pressed="' + (etat.couronne === 100) + '">De 100 m</button></div>';
       jardin += '<div class="rail"><div class="tete">' + poser("r" + i + ":pe", "pe25", "PEHD Ø25", "PEHD Ø25, " + (r ? r.metresTuyau + " m" : "à mesurer"), r ? r.metresTuyau : 0, "ml") + "</div>";
       if (s.famille === "Goutte-à-goutte") {
         jardin += '<div class="tete">' + poser("r" + i + ":coude", "coude-taraude-25-34", nomDe("coude-taraude-25-34", M), "Coude taraudé") +
@@ -664,23 +671,37 @@
     (fiche ? fiche.pieces : []).forEach(function (x) { (g[x.ref] = g[x.ref] || { nom: nomCatalogue(x.ref), q: 0, u: "u" }).q += x.q; });
     return { nom: fiche ? fiche.nom : "La nourrice", lignes: g };
   }
-  function groupesDuPlan(p) {
+  function groupesDuPlan(p, d) {
     var n = groupeNourrice(p), out = [{ titre: "Du compteur à la nourrice", lignes: compte.amenee || {} }, { titre: n.nom, lignes: n.lignes }];
     p.secteurs.forEach(function (s, i) { out.push({ titre: "Réseau " + (i + 1) + ", " + s.nom, couleur: p.couleurs[i], lignes: compte["r" + i] || {} }); });
+    // Le grillage couvre toute la tranchée : il se compte dans la liste de l'outil, pas ici.
+    if (etat.grillage) {
+      var g = {};
+      piecesOutil(p, d).filter(function (x) { return x.ref === "grillage-bleu"; }).forEach(function (x) {
+        g[x.ref] = { nom: x.nom + ", " + x.detail, nomCourt: x.nom, q: x.q, u: x.u };
+      });
+      out.push({ titre: "Pour toute la tranchée", lignes: g });
+    }
     return out;
+  }
+  function piecesOutil(p, d) {
+    return C.piecesDuPlan(p.materiel, d, { compteur: true, seuil25: p.amenee.longueurMax25, amenee: null, goutte: p.goutteAGoutte, grillage: etat.grillage });
   }
   // Le nom pour le comptoir : la marque devant, et la référence quand elle a été
   // relevée sur ses documents (CATALOGUE.referenceDe, jamais inventée).
   function nomFournisseur(ref, nom) {
-    var p = CAT.piece(ref) || CAT.piecesReseau[ref], marque = p && p.marque, ref2 = CAT.referenceDe(ref);
-    return (marque && nom.indexOf(marque) < 0 ? marque + " " : "") + nom + (ref2 ? ", réf. " + ref2 : "");
+    // La référence est celle que le calcul a posée sur la ligne : une couronne de
+    // 100 m n'a pas celle de la couronne de 50 m d'Aqua Plus.
+    var ligne = materielCourant.filter(function (l) { return l.ref === ref; })[0];
+    var p = CAT.piece(ref) || CAT.piecesReseau[ref], marque = p && p.marque, ref2 = ligne ? ligne.reference : CAT.referenceDe(ref);
+    return (marque && nom.indexOf(marque) < 0 ? marque + " " : "") + nom + (ref2 ? ", réf. Aqua Plus " + ref2 : "");
   }
   function message(groupes) {
     var total = {}, ordre = [];
     groupes.forEach(function (g) {
       Object.keys(g.lignes).forEach(function (ref) {
         var e = g.lignes[ref];
-        if (!total[ref]) { total[ref] = { nom: e.nom, q: 0, u: e.u, inconnu: false }; ordre.push(ref); }
+        if (!total[ref]) { total[ref] = { nom: e.nomCourt || e.nom, q: 0, u: e.u, inconnu: false }; ordre.push(ref); }
         total[ref].q += e.q;
         // Une longueur qu'un réseau ne donne pas ne disparaît pas dans la somme.
         if (e.u === "ml" && !e.q) total[ref].inconnu = true;
@@ -693,16 +714,17 @@
     return ["Bonjour,", "", "Voici ma commande pour un chantier d’arrosage :", ""].concat(lignes, ["", "Merci."]).join("\n");
   }
 
-  var dernierMessage = "";
+  var dernierMessage = "", materielCourant = [];
   function dessinerListe(p, d) {
-    var groupes = groupesDuPlan(p);
+    materielCourant = p.materiel;
+    var groupes = groupesDuPlan(p, d);
     $("liste").innerHTML = groupes.map(function (g) {
       return '<p class="groupe"' + (g.couleur ? ' style="--couleur:' + g.couleur + '"' : "") + ">" + (g.couleur ? '<span class="pastille"></span>' : "") + texte(g.titre) + "</p>" + lignesDe(g.lignes);
     }).join("");
     dernierMessage = message(groupes);
 
     // Le schéma comparé à la liste de l'application, sur les totaux hors nourrice.
-    var reference = C.piecesDuPlan(p.materiel, d, { compteur: true, seuil25: p.amenee.longueurMax25, amenee: null, goutte: p.goutteAGoutte });
+    var reference = piecesOutil(p, d);
     var attendu = {}, pose = {}, noms = {};
     reference.forEach(function (x) { if (x.ou !== "regard") attendu[x.ref] = (attendu[x.ref] || 0) + (x.q || 0); });
     groupes.forEach(function (g, i) {
@@ -749,6 +771,7 @@
       $("menu").hidden = true; dessiner(); return;
     }
     if (b.dataset.sortie) { etat.sortie = b.dataset.sortie; dessiner(); }
+    else if (b.dataset.couronne) { etat.couronne = Number(b.dataset.couronne); dessiner(); }
     else if (b.dataset.ajouter) { etat.ou = b.dataset.ajouter; etat.cible = null; ouvrir(); }
     else if (b.dataset.categorie) { etat.categorie = b.dataset.categorie; etat.recherche = ""; $("recherche").value = ""; ouvrir(); }
     else if (b.dataset.choisir) {
@@ -760,6 +783,7 @@
   });
   $("fermer").onclick = function () { $("feuille").hidden = true; };
   $("fermer-menu").onclick = function () { $("menu").hidden = true; };
+  $("grillage").onchange = function () { etat.grillage = this.checked; dessiner(); };
   // Le message au fournisseur : il le lit, le copie, ou l'envoie par le partage du téléphone.
   $("envoyer").onclick = function () {
     // Ce qu'il a retouché reste, tant que la liste n'a pas changé.

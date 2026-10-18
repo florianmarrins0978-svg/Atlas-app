@@ -463,6 +463,29 @@ regle("16 octobre 2026", "« un coude taraudé 25x3/4\" par sortie » de goutte-
   exige(q("te-25-25-25") === somme((r) => r.tesEgaux) + p.goutteAGoutte.tesEgaux, "les tés égaux du goutte-à-goutte manquent à la liste");
 });
 
+regle("18 octobre 2026", "« le grillage avertisseur bleu, une case à cocher » : la tranchée plus l'amenée, en rouleaux de 100 m, et rien s'il n'est pas coché", () => {
+  const p = plan(DEUX_PELOUSES);
+  const d = dessine(p, { x: 13, y: 10 });
+  const avec = (amenee: number | null) => piecesDuPlan(p.materiel, d, { compteur: true, seuil25: p.amenee.longueurMax25, amenee, goutte: p.goutteAGoutte, grillage: true }).filter((x) => x.ref === "grillage-bleu");
+  const sans = piecesDuPlan(p.materiel, d, { compteur: true, seuil25: p.amenee.longueurMax25, amenee: 30, goutte: p.goutteAGoutte, grillage: false }).filter((x) => x.ref === "grillage-bleu");
+  exige(sans.length === 0, "pas coché, le grillage ne doit pas entrer dans la liste");
+  const m = d.metresTranchee;
+  exige(avec(30).length === 1 && avec(30)[0].q === Math.ceil((m + 30) / 100), `${m} m de tranchée et 30 m d'amenée : ${Math.ceil((m + 30) / 100)} rouleau(x) de 100 m`);
+  exige(avec(130)[0].q === Math.ceil((m + 130) / 100), "une amenée longue ajoute ses rouleaux");
+  // Sans amenée mesurée, on compte la tranchée, et la liste le dit.
+  exige(avec(null)[0].q === Math.ceil(m / 100) && /amenée/.test(avec(null)[0].detail ?? ""), "sans amenée mesurée, la liste doit dire qu'elle manque au compte");
+});
+
+regle("18 octobre 2026", "« un autre fournisseur a des couronnes de 100 m » : 50 m par défaut (16 octobre), 100 m au choix, et les jonctions suivent", () => {
+  // Un massif de 20 × 2,40 en une seule ligne : 80 m de tube Toro.
+  const massif = (couronne?: number) => calculerPlan({ seau: 10, temps: 20, pression: 3, compteur: "oui", couronne,
+    zones: [{ id: 1, type: "massif", nom: "Massif", x: 0, y: 0, L: 20, l: 2.4, sortieGoutte: "ligne" }] } as never) as Plan;
+  const q = (p: Plan, ref: string) => (p.materiel.find((l) => l.ref === ref)?.q ?? 0);
+  const p50 = massif(), p100 = massif(100);
+  exige(q(p50, "UGGCBL23050") === 2 && q(p50, "MID6301") === 1, `en 50 m : ${q(p50, "UGGCBL23050")} couronnes et ${q(p50, "MID6301")} jonction, il en faut 2 et 1`);
+  exige(q(p100, "UGGCBL23050") === 1 && q(p100, "MID6301") === 0, `en 100 m : ${q(p100, "UGGCBL23050")} couronne et ${q(p100, "MID6301")} jonction, il en faut 1 et 0`);
+});
+
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────
 
 console.log(`\n${failed === 0 ? "✅" : "❌"} Les règles du patron — ${passed} tenue(s), ${failed} rompue(s).`);

@@ -684,7 +684,12 @@ var CATALOGUE = {
     // commande sur la désignation. Le 25×25×25 dit déjà qu'il n'est pas taraudé
     // — un taraudé porte son filetage dans son nom (25×3/4"×25).
     'te-25-25-25':         { nom:'Té 90° 25×25×25', marque:'Plasson', aquaplus:'OPL704025' },
-    'pebd16':              { nom:'PEBD rigide Ø16 (tube de reprise)', marque:'Dura', unite:'ml' }
+    'pebd16':              { nom:'PEBD rigide Ø16 (tube de reprise)', marque:'Dura', unite:'ml' },
+    // **Le grillage avertisseur bleu**, au-dessus des tuyaux enterrés : sa demande
+    // du 18 octobre 2026, une case à cocher. Le nom et le rouleau de 100 m sont
+    // ceux d'Aqua Plus 2026, p. 58 ; sans référence, à sa demande (« ils sauront
+    // ce que c'est »).
+    'grillage-bleu':       { nom:'Grillage avertisseur bleu (dim. 0,3 X 100 ml)', metresParRouleau:100 }
   },
 
   /* ── Le goutte-à-goutte : SON tube, le 16 octobre 2026 ──────────────────

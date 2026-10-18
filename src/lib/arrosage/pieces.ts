@@ -67,7 +67,7 @@ export const TITRES_DES_ZONES: Record<Zone, string> = {
  */
 type Catalogue = {
   piece(ref: string): { nom: string; marque?: string } | null;
-  piecesReseau: Record<string, { nom: string; marque?: string }>;
+  piecesReseau: Record<string, { nom: string; marque?: string; metresParRouleau?: number }>;
   coudes: { ref: string; nom: string; detail: string; filetage: string }[];
   corps: { ref: string; nom: string; filetage: string }[];
   referenceDe(cle: string): string | null;
@@ -78,6 +78,7 @@ const TE_LIGNE = "te-taraude-25-34-25";
 const COUDE_LIGNE = "coude-taraude-25-34";
 const TE_EGAL = "te-25-25-25";
 const PEBD16 = "pebd16";
+const GRILLAGE = "grillage-bleu";
 
 /** Ce que le calcul pose au regard : sa fiche de nourrice, et la sonde de pluie quand il l'a cochée. */
 function auRegard(l: LigneCalcul): boolean {
@@ -105,6 +106,8 @@ export function piecesDuPlan(
      * qu'aucun appel ne puisse l'oublier en silence.
      */
     goutte: { sorties: number; tesEgaux: number };
+    /** Il a coché « Grillage avertisseur » (sa demande du 18 octobre 2026). Absent : pas coché. */
+    grillage?: boolean;
   }
 ): Piece[] {
   const parReseau = (f: (r: Dessin["reseaux"][number]) => number) =>
@@ -218,6 +221,20 @@ export function piecesDuPlan(
     // supérieur : un tuyau se coupe, il ne s'allonge pas.
     const ml = somme((r) => r.metresTuyau);
     if (ml > 0) jardin.push({ ref: "pe25", nom: "PEHD Ø25", q: Math.ceil(ml), u: "ml", ou: "jardin", detail: parReseau((r) => r.metresTuyau) });
+
+    // **Le grillage avertisseur couvre toute la tranchée, amenée comprise** —
+    // sa règle du 18 octobre 2026, en rouleaux de 100 m. Une amenée non mesurée
+    // ne s'invente pas : la liste dit ce qu'il reste dans le dernier rouleau.
+    if (options.grillage) {
+      const g = CAT.piecesReseau[GRILLAGE];
+      const parRouleau = g.metresParRouleau ?? 100;
+      const metres = dessin.metresTranchee + (options.amenee ?? 0);
+      const rouleaux = Math.max(1, Math.ceil(metres / parRouleau));
+      const detail = options.amenee !== null
+        ? `${Math.ceil(dessin.metresTranchee)} m de tranchée et ${Math.ceil(options.amenee)} m d’amenée`
+        : `${Math.ceil(dessin.metresTranchee)} m de tranchée ; l’amenée n’est pas mesurée, il reste ${Math.floor(rouleaux * parRouleau - dessin.metresTranchee)} m dans le dernier rouleau`;
+      jardin.push({ ref: GRILLAGE, nom: g.nom, q: rouleaux, u: "u", ou: "jardin", detail });
+    }
   } else {
     jardin.push({ ref: "pe25", nom: "PEHD Ø25", q: null, u: "ml", ou: "jardin", detail: "le plan n’est pas dessiné : à mesurer sur place" });
   }
