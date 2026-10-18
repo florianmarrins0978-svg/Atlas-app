@@ -35060,3 +35060,24 @@ vanne ; un seul en prend une (20 × 2 à 2,5 bar), et l'ancien plan y comptait u
 portée de 1,68 m que la pression ne donne pas (1,62). Ses règles écrites dans
 `test-regles-du-patron.ts` tiennent toutes, dont ses neuf turbines du 12 × 12.
 
+## §469 : Une phrase engage, et la preuve la garde
+
+**18 octobre 2026, sa planche « accepter en un geste »**
+(`appli/documents-legaux-un-geste.html`).
+
+Les cases à cocher sont parties : une phrase au-dessus de « Accepter » dit ce
+que le geste engage, et chaque document s'ouvre en entier avant. Le droit le
+permet entre professionnels (`docs/A-FAIRE.md` §17, sources comprises) ; ce
+qui devient alors décisif est la **preuve de ce qu'il avait sous les yeux**.
+
+| | |
+|---|---|
+| la phrase | `phraseDAcceptation` (`src/lib/acceptation-documents.ts`), seule source : l'écran l'affiche, l'action la recalcule depuis la liste du serveur et l'enregistre (`formule_acceptee`, migration 0132) |
+| ce qu'il a lu | le formulaire renvoie les identifiants affichés ; `memesDocuments` refuse si la liste du serveur a changé entre-temps, et l'écran se recharge. On n'accepte ni la liste du navigateur ni une version qu'il n'a pas vue |
+| les acceptations d'avant | `formule_acceptee` NULL, ce qui est vrai : elles ont été données par des cases |
+
+**Ce qui n'a pas été fait, et pourquoi** : une variante « la nouvelle version
+du document » de la phrase. Elle demande de savoir s'il avait accepté une
+version précédente du même type ; le nombre de documents suffit à rendre la
+phrase juste.
+

@@ -10,8 +10,10 @@ import {
 } from "@/server/repositories/documents-legaux";
 import { logger } from "@/server/logger";
 import { adresseClient } from "@/lib/adresse-client";
+import { memesDocuments, phraseDAcceptation } from "@/lib/acceptation-documents";
 
-export type EtatAcceptation = { erreur: string } | undefined;
+// `relire` : la liste a changé sous ses yeux ; l'écran se recharge pour la montrer.
+export type EtatAcceptation = { erreur: string; relire?: boolean } | undefined;
 
 export async function accepterDocumentsAction(
   _etatPrecedent: EtatAcceptation,
@@ -34,14 +36,11 @@ export async function accepterDocumentsAction(
   const attendus = await documentsAAccepter(utilisateurId);
   if (attendus.length === 0) redirect("/");
 
-  const manquants = attendus.filter((d) => formData.get(`accepte_${d.id}`) !== "oui");
-  if (manquants.length > 0) {
-    return {
-      erreur:
-        manquants.length === 1
-          ? `Il reste à accepter : ${manquants[0].titre}.`
-          : `Il reste ${manquants.length} documents à accepter.`,
-    };
+  // **Ce qu'il a lu, et rien d'autre.** Une version publiée entre l'affichage
+  // et le geste ne s'accepte pas à son insu : il relit (`memesDocuments`).
+  const affiches = formData.getAll("affiche").map(String);
+  if (!memesDocuments(affiches, attendus.map((d) => d.id))) {
+    return { erreur: "Un document vient de changer. Relisez la liste, puis acceptez.", relire: true };
   }
 
   const entetes = await headers();
@@ -51,6 +50,9 @@ export async function accepterDocumentsAction(
     {
       adresseIp: adresseClient(entetes),
       agentUtilisateur: entetes.get("user-agent"),
+      // Recalculée ici depuis la liste du serveur, par la fonction même qui l'a
+      // affichée : les deux listes étant égales, c'est la phrase qu'il a lue.
+      formuleAcceptee: phraseDAcceptation(attendus.length),
     }
   );
 

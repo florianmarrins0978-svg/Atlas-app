@@ -1,0 +1,13 @@
+-- LA PHRASE QUI ENGAGE, GARDÉE AVEC L'ACCEPTATION — sa planche du 17 octobre
+-- 2026 (`appli/documents-legaux-un-geste.html`).
+--
+-- Les cases à cocher partent : un seul bouton « Accepter », sous une phrase qui
+-- dit ce qu'il engage. La preuve doit alors porter cette phrase. Le jour d'un
+-- litige, montrer qu'il a touché un bouton ne suffit pas : il faut montrer ce
+-- qu'il avait sous les yeux (TJ Paris, 7 mai 2024, n° 23/09970, une acceptation
+-- écartée faute de preuve ; `docs/A-FAIRE.md` §17).
+--
+-- Expand seul : une colonne vide, aucune ligne touchée. Les acceptations
+-- d'avant restent NULL, ce qui est vrai : elles ont été données par des cases,
+-- sans phrase. Le code d'avant l'ignore ; rien n'est à contracter.
+ALTER TABLE "acceptations_documents" ADD COLUMN IF NOT EXISTS "formule_acceptee" text;

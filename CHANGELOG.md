@@ -6,6 +6,20 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-18
+
+- **Les conditions s'acceptent en un geste, comme chez Apple, et la preuve
+  garde la phrase lue.** Sa demande du 17 octobre. Plus de case par document :
+  une phrase (« En touchant « Accepter », vous acceptez les deux documents
+  ci-dessous. »), chaque texte qui s'ouvre en entier avant, un seul bouton. La
+  phrase est enregistrée avec chaque acceptation (migration 0132, expand seul) :
+  sans elle, on prouve un toucher de bouton, pas ce qu'il engageait. Une version
+  publiée entre l'affichage et le geste est refusée et la liste se recharge,
+  plutôt que d'être acceptée à son insu. Sources juridiques vérifiées dans
+  `docs/A-FAIRE.md` §17. `scripts/test-documents-legaux.ts` (vu rouge sans la
+  phrase), `scripts/test-acceptation-documents.ts`. **Pas encore sur `main`** :
+  le lot est de niveau 3 et la batterie n'a pas été jouée, à sa demande.
+
 ## 2026-10-17
 
 - **Un enregistrement lancé sans attendre sa réponse ne se perd plus sans un

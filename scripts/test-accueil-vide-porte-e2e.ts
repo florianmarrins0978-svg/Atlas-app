@@ -106,7 +106,7 @@ async function main() {
     await enregistrerAcceptations(
       compte.utilisateurId,
       aAccepter.map((d) => d.id),
-      { adresseIp: "127.0.0.1", agentUtilisateur: "suite d'essai" }
+      { adresseIp: "127.0.0.1", agentUtilisateur: "suite d'essai", formuleAcceptee: null }
     );
   }
 

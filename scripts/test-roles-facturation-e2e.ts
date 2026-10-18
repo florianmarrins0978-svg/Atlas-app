@@ -88,7 +88,7 @@ async function creerCompte(ctx: Ctx, role: "commercial" | "facturation", email: 
     await enregistrerAcceptations(
       lui.utilisateurId,
       aAccepter.map((d) => d.id),
-      { adresseIp: "127.0.0.1", agentUtilisateur: "suite d'essai" }
+      { adresseIp: "127.0.0.1", agentUtilisateur: "suite d'essai", formuleAcceptee: null }
     );
   }
 }

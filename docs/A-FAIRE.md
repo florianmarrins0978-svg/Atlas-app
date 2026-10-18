@@ -1229,6 +1229,10 @@ inscrit, « Se déconnecter » suffit, il n'a encore rien chez nous.
 - **aucun effacement** n'existe : ni fermeture de compte, ni suppression après résiliation ;
 - l'article 13 des CGU promet un délai « [À COMPLÉTER] » puis la suppression : il faudra y écrire trente jours.
 
+### Ce qui est codé
+
+**L'acceptation en un geste, le 18 octobre 2026**, avec la phrase gardée dans la preuve. Sur la branche `claude/accepter-en-un-geste` : pas encore sur `main`, la batterie n'a pas été jouée, à votre demande.
+
 ### Ce qui reste, et qui le fait
 
 | | Qui |

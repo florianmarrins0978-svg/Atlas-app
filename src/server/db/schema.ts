@@ -1983,6 +1983,9 @@ export const acceptationsDocuments = pgTable(
     accepteAt: timestamp("accepte_at", { withTimezone: true }).notNull().defaultNow(),
     adresseIp: text("adresse_ip"),
     agentUtilisateur: text("agent_utilisateur"),
+    // La phrase affichée au-dessus du bouton « Accepter » (migration 0132).
+    // NULL pour les acceptations données par des cases, avant elle.
+    formuleAcceptee: text("formule_acceptee"),
   },
   (t) => [
     unique("acceptations_documents_uk").on(t.utilisateurId, t.documentId),

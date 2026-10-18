@@ -25,6 +25,8 @@ export type DocumentAAccepter = {
 export type PreuveAcceptation = {
   adresseIp: string | null;
   agentUtilisateur: string | null;
+  /** La phrase qu'il avait sous les yeux en touchant « Accepter » ; NULL hors écran. */
+  formuleAcceptee: string | null;
 };
 
 // La PUBLICATION d'une version n'a délibérément pas sa place ici : elle exige
@@ -133,6 +135,7 @@ export async function enregistrerAcceptations(
           documentId,
           adresseIp: preuve.adresseIp,
           agentUtilisateur: preuve.agentUtilisateur,
+          formuleAcceptee: preuve.formuleAcceptee,
         }))
       )
       .onConflictDoNothing({
@@ -154,6 +157,7 @@ export async function acceptationsDe(utilisateurId: string) {
         accepteAt: acceptationsDocuments.accepteAt,
         adresseIp: acceptationsDocuments.adresseIp,
         agentUtilisateur: acceptationsDocuments.agentUtilisateur,
+        formuleAcceptee: acceptationsDocuments.formuleAcceptee,
         type: documentsLegaux.type,
         version: documentsLegaux.version,
         empreinte: documentsLegaux.empreinte,

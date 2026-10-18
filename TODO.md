@@ -1,5 +1,17 @@
 # Prochaines tâches
 
+## 🔜 LES CONDITIONS, LE REFUS ET LA RÉSILIATION — 18 octobre 2026
+
+Planche `appli/documents-legaux-un-geste.html`, choisie le 18 octobre ; tout
+est détaillé dans `docs/A-FAIRE.md` §17. **Codé** : l'acceptation en un geste,
+sur la branche `claude/accepter-en-un-geste`, en attente de sa batterie (il a
+demandé de ne pas la lancer). **Reste, un lot chacun** : « Refuser » pour un
+client existant (données puis résiliation remboursée au prorata) ; la lecture
+seule d'un abonnement résilié (aujourd'hui il reste ouvert en écriture) ;
+l'effacement trente jours après ; « Avant de partir » avec la raison et le
+texte envoyés à Stripe (`cancellation_details`) ; vérifier que le blocage
+attend les trente jours de préavis de l'article 15.
+
 ## 🔜 UNE PAGE OUVERTE AVANT UNE BASCULE RESTE VIEILLIE — 17 octobre 2026
 
 Une action inconnue qui tombe jusqu'à l'écran d'erreur recharge maintenant

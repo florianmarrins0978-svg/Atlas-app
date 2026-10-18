@@ -108,7 +108,7 @@ if (page.url().includes("/login")) {
 for (let essai = 0; essai < 3 && /documents-legaux|bienvenue/.test(page.url()); essai++) {
   const cases = page.locator('input[type="checkbox"]');
   for (let i = 0; i < (await cases.count()); i++) await cases.nth(i).check().catch(() => {});
-  await page.getByRole("button", { name: /continuer|j'accepte|commencer/i }).click().catch(() => {});
+  await page.getByRole("button", { name: /^accepter$|continuer|j'accepte|commencer/i }).click().catch(() => {});
   await page.waitForLoadState("domcontentloaded");
   await page.waitForTimeout(800);
 }
