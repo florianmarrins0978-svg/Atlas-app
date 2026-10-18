@@ -1,0 +1,3016 @@
+var NOURRICE = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+  // ../../../AppData/Local/Temp/claude/c--Users-Flori-Desktop-atlas-real-app-atlas-app/4251adad-43ba-4fe8-814f-173f45a18fa4/scratchpad/entree-nourrice/entree.ts
+  var entree_exports = {};
+  __export(entree_exports, {
+    CATALOGUE: () => CATALOGUE,
+    HAUT: () => HAUT,
+    PHOTOS_NOURRICE: () => PHOTOS_NOURRICE,
+    composerNourrice: () => composerNourrice
+  });
+
+  // src/lib/arrosage/catalogue.js
+  var CATALOGUE = {
+    /* ── Les marques ────────────────────────────────────────────────────────
+         Sa demande du 17 août 2026 : « de base on va mettre les arroseurs et les
+         tuyères de la marque Rain Bird, mais s'il veut, il faudra créer un petit
+         bandeau déroulant avec le choix de la marque Toro par exemple, et dans ce
+         cas-là tu lui proposeras des arroseurs et des tuyères de la marque Toro.
+         Mais de base, ça sera Rain Bird. »
+    
+         **RAIN BIRD EST LE DÉFAUT, ET AUCUN MODÈLE NE LUI EST ENCORE ATTRIBUÉ.**
+         Les deux entrées ci-dessous portent la marque « générique » : ce sont des
+         valeurs de catalogue courantes, et les coller sous le nom de Rain Bird
+         ferait passer une supposition pour une référence — c'est précisément ce
+         que ce fichier interdit. L'écran choisit donc Rain Bird, constate qu'il n'a
+         rien, et le DIT en utilisant les valeurs génériques en attendant.
+         `marques` s'allonge sans toucher au code : une marque de plus est une ligne. */
+    marques: [
+      { cle: "rainbird", nom: "Rain Bird", defaut: true },
+      { cle: "toro", nom: "Toro" },
+      // Ajoutée le 17 août 2026 : il a envoyé ses photos Hunter sans qu'on la
+      // lui demande — les buses SRS (Hunter, p. 9) et les corps Pro-Spray /
+      // I-Spray. Une marque de plus est une ligne, comme prévu.
+      { cle: "hunter", nom: "Hunter" },
+      { cle: "generique", nom: "G\xE9n\xE9rique (provisoire)", cache: true }
+    ],
+    /* ── Les arroseurs génériques sont RETIRÉS, le 16 octobre 2026 ──────────
+       Une « Turbine » et une « Tuyère » sans marque, posées avant ses photos,
+       servaient de repli quand une marque n'avait rien : une zone en tuyères
+       Toro recevait ainsi des tuyères inventées (portée 3,7 m, 0,48 m³/h), sans
+       que rien le dise. Sa consigne : « supprime toutes les lignes provisoires ».
+       Une marque qui n'a rien pour une zone le DIT désormais sous le plan
+       (`manquants`, dans `calcul.js`). */
+    /* ── LES BUSES — relevées de SES photos de catalogue ────────────────────
+         Sa première page, le 17 août 2026 : catalogue Aqua Plus 2026, page 8,
+         « ARROSEURS ESCAMOTABLES », buses série VAN à secteur réglable (RBT6xx).
+    
+         **Ses mots :** « ça c'est les buses qui vont venir se visser sur les
+         tuyères. Donc là tu as toutes les buses avec les distances, les pressions,
+         tout. »
+    
+         ┌────────────────────────────────────────────────────────────────────────┐
+         │ CE QUE CETTE PAGE CHANGE DANS LE CALCUL, ET CE N'EST PAS UN DÉTAIL     │
+         │                                                                        │
+         │ 1. UN ARROSEUR, C'EST UN CORPS + UNE BUSE. La portée et le débit       │
+         │    viennent de la BUSE, pas du corps. Les corps escamotables sont      │
+         │    encore à recevoir (`corps` ci-dessous, vide).                       │
+         │                                                                        │
+         │ 2. LE DÉBIT EST DONNÉ PAR ANGLE, et il ne se calcule PAS en divisant   │
+         │    le débit du cercle entier. C'est ce que faisait l'outil jusqu'ici.  │
+         │    Sur les grosses buses la division tombe juste (18-VAN : 1,20 / 4 =  │
+         │    0,30, exactement la valeur du tableau) ; sur les petites, non —     │
+         │    la 6-VAN donne 0,27 à 330° quand quatre fois son 90° ferait 0,32.   │
+         │    Les valeurs du tableau sont donc lues, jamais déduites.             │
+         │                                                                        │
+         │ 3. LA PRESSION DE RÉFÉRENCE EST 2 BAR, pas 3. Une portée relevée à     │
+         │    2 bars sur une installation à 3 n'est pas la même — l'écran le dit  │
+         │    quand les deux diffèrent.                                           │
+         │                                                                        │
+         │ 4. LE COLISAGE EST DE 25. Il commande par paquets ; la liste au        │
+         │    fournisseur doit le rappeler plutôt que de lui faire découvrir à la │
+         │    commande.                                                           │
+         └────────────────────────────────────────────────────────────────────────┘
+    
+         **LES PRIX NE SONT PAS ICI, ET C'EST SA CONSIGNE :** « sur certaines photos
+         tu auras les prix, néanmoins ne les enregistre pas, car c'est des prix pour
+         les clients et pas pour les pros. » Un P.U.H.T. figurait sur la page ; il n'est
+         recopié nulle part, pas même en commentaire — un prix « pour mémoire » finit
+         par être lu comme un prix. Ses prix à lui se saisissent
+         dans `arrosage-tarifs.html`, et vivent dans son navigateur.
+    
+         **UNE VALEUR À CONFIRMER, et elle n'est pas recopiée à l'aveugle :** la
+         8-VAN annonce 0,16 m³/h à 90°, soit PLUS que la 10-VAN (0,14) qui porte
+         pourtant plus loin. Recopié tel quel du tableau, signalé ici, à vérifier
+         sur le catalogue papier. Un chiffre douteux qu'on tait devient un chiffre
+         faux qu'on croit. */
+    buses: [
+      {
+        ref: "RBT648",
+        pressionMin: 1,
+        pressionMax: 2.1,
+        plageReleve: "Rain Bird, fiche des buses VAN, p. 27",
+        nom: "18-VAN",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        rayon: 5.4,
+        pression: 2,
+        debit: { 90: 0.3, 180: 0.6, 270: 0.9, 360: 1.2 },
+        colisage: 25,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 8"
+      },
+      {
+        ref: "RBT601",
+        pressionMin: 1,
+        pressionMax: 2.1,
+        plageReleve: "Rain Bird, fiche des buses VAN, p. 27",
+        nom: "15-VAN",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        rayon: 4.5,
+        pression: 2,
+        debit: { 90: 0.21, 180: 0.42, 270: 0.63, 360: 0.84 },
+        colisage: 25,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 8"
+      },
+      {
+        ref: "RBT636",
+        pressionMin: 1,
+        pressionMax: 2.1,
+        plageReleve: "Rain Bird, fiche des buses VAN, p. 27",
+        nom: "12-VAN",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        rayon: 3.6,
+        pression: 2,
+        debit: { 90: 0.15, 180: 0.3, 270: 0.45, 360: 0.59 },
+        colisage: 25,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 8"
+      },
+      {
+        ref: "RBT637",
+        pressionMin: 1,
+        pressionMax: 2.1,
+        plageReleve: "Rain Bird, fiche des buses VAN, p. 27",
+        nom: "10-VAN",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        rayon: 2.7,
+        pression: 2,
+        debit: { 90: 0.14, 180: 0.29, 270: 0.43, 360: 0.57 },
+        colisage: 25,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 8"
+      },
+      // **LES 8, 6 ET 4-VAN S'ARRÊTENT À 330°** (fiche Rain Bird des VAN, pages
+      // 27 et 28). Aqua Plus imprime leur dernier chiffre sous « 360° » : c'est
+      // celui du 330°. Sa réponse du 16 octobre 2026 : « oui pour les VAN »,
+      // coins et bords seulement. Le calcul ne les pose donc jamais sur une zone
+      // qui a une rangée intérieure (`poseSelonSaRegle`, `faitLeTour`).
+      //
+      // La 8-VAN porte 0,16 m³/h à 90°, plus que la 10-VAN : Rain Bird donne le
+      // même chiffre (trajectoire de 5°, la 10-VAN est à 10°). Le doute est levé.
+      {
+        ref: "RBT638",
+        pressionMin: 1,
+        pressionMax: 2.1,
+        plageReleve: "Rain Bird, fiche des buses VAN, p. 27",
+        nom: "8-VAN",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        rayon: 2.3,
+        pression: 2,
+        debit: { 90: 0.16, 180: 0.26, 270: 0.34, 330: 0.38 },
+        colisage: 25,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 8"
+      },
+      {
+        ref: "RBT639",
+        pressionMin: 1,
+        pressionMax: 2.1,
+        plageReleve: "Rain Bird, fiche des buses VAN, p. 27",
+        nom: "6-VAN",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        rayon: 1.8,
+        pression: 2,
+        debit: { 90: 0.08, 180: 0.13, 270: 0.24, 330: 0.27 },
+        colisage: 25,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 8"
+      },
+      {
+        ref: "RBT640",
+        pressionMin: 1,
+        pressionMax: 2.1,
+        plageReleve: "Rain Bird, fiche des buses VAN, p. 27",
+        nom: "4-VAN",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        rayon: 1.2,
+        pression: 2,
+        debit: { 90: 0.06, 180: 0.1, 270: 0.16, 330: 0.2 },
+        colisage: 25,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 8"
+      },
+      /* ── LES BUSES HUNTER SRS — sa deuxième page, le 17 août 2026 ───────────
+         Même forme que les VAN : UNE référence couvre tous les angles, donnée
+         « à 2,1 bars ». Il donne aussi le 120°, que le calcul n'utilise pas
+         encore (seuls 90°/180°/360° comptent pour les coins, bords, intérieurs) —
+         gardé quand même, une donnée relevée ne se jette pas. */
+      {
+        ref: "HBT1559",
+        nom: "SRS 7A",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        rayon: 2.1,
+        pression: 2.1,
+        debit: { 90: 0.11, 120: 0.15, 180: 0.22, 270: 0.33, 360: 0.44 },
+        colisage: 25,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 9"
+      },
+      {
+        ref: "HBT1560",
+        nom: "SRS 10A",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        rayon: 3,
+        pression: 2.1,
+        debit: { 90: 0.11, 120: 0.15, 180: 0.22, 270: 0.33, 360: 0.44 },
+        colisage: 25,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 9"
+      },
+      {
+        ref: "HBT1561",
+        nom: "SRS 12A",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        rayon: 3.7,
+        pression: 2.1,
+        debit: { 90: 0.16, 120: 0.22, 180: 0.33, 270: 0.49, 360: 0.65 },
+        colisage: 25,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 9"
+      },
+      {
+        ref: "HBT1562",
+        nom: "SRS 15A",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        rayon: 4.6,
+        pression: 2.1,
+        debit: { 90: 0.21, 120: 0.28, 180: 0.42, 270: 0.63, 360: 0.84 },
+        colisage: 25,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 9"
+      },
+      {
+        ref: "HBT1563",
+        nom: "SRS 17A",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        rayon: 5.5,
+        pression: 2.1,
+        debit: { 90: 0.27, 120: 0.36, 180: 0.55, 270: 0.82, 360: 1.09 },
+        colisage: 25,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 9"
+      },
+      /* ── LES BUSES R-VAN — sa troisième page, et une structure DIFFÉRENTE ───
+             Contrairement aux VAN : CHAQUE PORTÉE SE VEND EN DEUX RÉFÉRENCES
+             SÉPARÉES — une réglable de 45° à 270° (jamais 360°), une fixe à 360°
+             (jamais autre chose). Le tableau le montre par ses « X » : la ligne
+             « Débit à 360° » est vide pour la réglable, les lignes 90°/180° sont
+             vides pour la fixe.
+      
+             **CE QUE ÇA CHANGE, ET QUE LA QUESTION POSÉE PLUS BAS DEMANDE À
+             CONFIRMER :** une buse qui n'a QUE le 360° ne peut physiquement pas se
+             poser dans un coin ou sur un bord (elle arroserait le trottoir du
+             voisin) — il y faut sa jumelle réglable. `busesDe()` retient donc
+             seulement les entrées qui couvrent 90° ET 180° pour les coins/bords : la
+             360°-seule reste au catalogue, visible dans son registre de prix, mais
+             n'est pas encore choisie automatiquement par le calcul. RIEN N'EST
+             DÉDUIT pour combler le manque — c'est sa règle du 17 août. */
+      {
+        ref: "RBT1418",
+        nom: "14 R-VAN r\xE9glable",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        rayon: 4,
+        pression: 2.4,
+        debit: { 90: 0.066, 180: 0.132 },
+        colisage: 25,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 8",
+        aVerifier: "270\xB0 absent du relev\xE9, seuls 90\xB0 et 180\xB0 \xE9taient lisibles"
+      },
+      {
+        ref: "RBT1419",
+        nom: "14 R-VAN 360\xB0",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        rayon: 4,
+        pression: 2.4,
+        debit: { 360: 0.264 },
+        colisage: 25,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 8",
+        pairAvec: "RBT1418"
+      },
+      {
+        ref: "RBT1428",
+        nom: "18 R-VAN r\xE9glable",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        rayon: 4.9,
+        pression: 2.4,
+        debit: { 90: 0.106, 180: 0.206 },
+        colisage: 25,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 8",
+        aVerifier: "270\xB0 absent du relev\xE9, seuls 90\xB0 et 180\xB0 \xE9taient lisibles"
+      },
+      {
+        ref: "RBT1429",
+        nom: "18 R-VAN 360\xB0",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        rayon: 4.9,
+        pression: 2.4,
+        debit: { 360: 0.412 },
+        colisage: 25,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 8",
+        pairAvec: "RBT1428"
+      },
+      {
+        ref: "RBT1438",
+        nom: "24 R-VAN r\xE9glable",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        rayon: 6.1,
+        pression: 2.4,
+        debit: { 90: 0.148, 180: 0.295 },
+        colisage: 25,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 8",
+        aVerifier: "270\xB0 absent du relev\xE9, seuls 90\xB0 et 180\xB0 \xE9taient lisibles"
+      },
+      {
+        ref: "RBT1439",
+        nom: "24 R-VAN 360\xB0",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        rayon: 6.1,
+        pression: 2.4,
+        debit: { 360: 0.59 },
+        colisage: 25,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 8",
+        pairAvec: "RBT1438"
+      },
+      /* ── LES BUSES MP ROTATOR (Hunter) — Aqua Plus 2026, page 10, entrées le
+         18 octobre 2026 avec son oui (« oui je pense que c'est le mieux »).
+         La page dit : « turbine multijets à visser sur un corps de tuyère (M&F),
+         faible consommation, débit proportionnel au secteur arrosé, pression
+         d'utilisation 2 à 3,5 bars, performances débit / portée à 2,8 bars ».
+         SA RÈGLE DU 18 OCTOBRE : « les MP Rotator sont pour les tuyères » :
+         pourType 'tuyere', elles vont avec les tuyères sur une vanne, jamais
+         avec une turbine. Et leur débit SUIT L'ANGLE, lu par angle comme une VAN,
+         pas la règle des turbines (débit indépendant de l'arc).
+         COMME LES R-VAN, CHAQUE SECTEUR EST UNE RÉFÉRENCE : 90-210°, 210-270°,
+         360°. Aucune ne porte les trois angles d'une pose : `busesDe` ne les
+         choisit donc pas automatiquement tant que le pavage à deux références
+         n'existe pas. Elles sont au catalogue et dans les listes, et se posent à
+         la main. Les débits sont ceux du tableau, aux angles que la référence
+         couvre ; la colonne 270° de la MP1000 est vide dans le PDF. La portée :
+         le tableau dit 4,1 m pour la MP1000 quand l'en-tête annonce « de 4,9 à
+         9,1 m » : le tableau est recopié, l'écart est noté. La version Toro
+         (MP1000T, MP2000T, MP3000T, tuyère femelle) n'a ni portée ni débit sur
+         la page : elle n'entre pas, rien ne s'invente. Les photos (mp1000,
+         mp2000, mp3000, une par modèle) sont validées par lui le 18 octobre. */
+      {
+        ref: "NA2302",
+        nom: "MP1000 90-210\xB0",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        serie: "MP Rotator",
+        pourType: "tuyere",
+        rayon: 4.1,
+        pression: 2.8,
+        pressionMin: 2,
+        pressionMax: 3.5,
+        plageReleve: "Aqua Plus 2026, p. 10",
+        debit: { 90: 0.04, 180: 0.09, 210: 0.1 },
+        colisage: 10,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 10",
+        aVerifier: "l'en-t\xEAte de la page dit \xAB port\xE9e de 4,9 \xE0 9,1 m \xBB, le tableau donne 4,1 m"
+      },
+      {
+        ref: "NA2303",
+        nom: "MP1000 210-270\xB0",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        serie: "MP Rotator",
+        pourType: "tuyere",
+        rayon: 4.1,
+        pression: 2.8,
+        pressionMin: 2,
+        pressionMax: 3.5,
+        plageReleve: "Aqua Plus 2026, p. 10",
+        debit: { 210: 0.1 },
+        colisage: 10,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 10",
+        aVerifier: "la colonne 270\xB0 de la ligne MP1000 est vide dans le PDF ; port\xE9e 4,1 m au tableau, \xAB 4,9 \xE0 9,1 m \xBB en en-t\xEAte"
+      },
+      {
+        ref: "NA2301",
+        nom: "MP1000 360\xB0",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        serie: "MP Rotator",
+        pourType: "tuyere",
+        rayon: 4.1,
+        pression: 2.8,
+        pressionMin: 2,
+        pressionMax: 3.5,
+        plageReleve: "Aqua Plus 2026, p. 10",
+        debit: { 360: 0.17 },
+        colisage: 10,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 10",
+        aVerifier: "0,17 m\xB3/h plac\xE9 sous la colonne 360\xB0 d'apr\xE8s sa position dans le PDF ; port\xE9e 4,1 m au tableau, \xAB 4,9 \xE0 9,1 m \xBB en en-t\xEAte"
+      },
+      {
+        ref: "NA2312",
+        nom: "MP2000 90-210\xB0",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        serie: "MP Rotator",
+        pourType: "tuyere",
+        rayon: 5.8,
+        pression: 2.8,
+        pressionMin: 2,
+        pressionMax: 3.5,
+        plageReleve: "Aqua Plus 2026, p. 10",
+        debit: { 90: 0.09, 180: 0.17, 210: 0.2 },
+        colisage: 10,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 10"
+      },
+      {
+        ref: "NA2313",
+        nom: "MP2000 210-270\xB0",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        serie: "MP Rotator",
+        pourType: "tuyere",
+        rayon: 5.8,
+        pression: 2.8,
+        pressionMin: 2,
+        pressionMax: 3.5,
+        plageReleve: "Aqua Plus 2026, p. 10",
+        debit: { 210: 0.2, 270: 0.25 },
+        colisage: 10,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 10"
+      },
+      {
+        ref: "NA2311",
+        nom: "MP2000 360\xB0",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        serie: "MP Rotator",
+        pourType: "tuyere",
+        rayon: 5.8,
+        pression: 2.8,
+        pressionMin: 2,
+        pressionMax: 3.5,
+        plageReleve: "Aqua Plus 2026, p. 10",
+        debit: { 360: 0.33 },
+        colisage: 10,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 10"
+      },
+      {
+        ref: "NA2321",
+        nom: "MP3000 90-210\xB0",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        serie: "MP Rotator",
+        pourType: "tuyere",
+        rayon: 9.1,
+        pression: 2.8,
+        pressionMin: 2,
+        pressionMax: 3.5,
+        plageReleve: "Aqua Plus 2026, p. 10",
+        debit: { 90: 0.2, 180: 0.41, 210: 0.48 },
+        colisage: 10,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 10"
+      },
+      {
+        ref: "NA2322",
+        nom: "MP3000 210-270\xB0",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        serie: "MP Rotator",
+        pourType: "tuyere",
+        rayon: 9.1,
+        pression: 2.8,
+        pressionMin: 2,
+        pressionMax: 3.5,
+        plageReleve: "Aqua Plus 2026, p. 10",
+        debit: { 210: 0.48, 270: 0.62 },
+        colisage: 10,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 10"
+      },
+      {
+        ref: "NA2323",
+        nom: "MP3000 360\xB0",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        serie: "MP Rotator",
+        pourType: "tuyere",
+        rayon: 9.1,
+        pression: 2.8,
+        pressionMin: 2,
+        pressionMax: 3.5,
+        plageReleve: "Aqua Plus 2026, p. 10",
+        debit: { 360: 0.82 },
+        colisage: 10,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 10"
+      },
+      /* ── LES BUSES DE TURBINE — cinquième page, le 17 août 2026 ─────────────
+             Six familles (Hunter PGP-ADJ, PGP Ultra, I 20-04 ; Rain Bird 5000 Plus,
+             3504 ; Hunter SRM-04, PGJ ; Toro Mini 8). PARTOUT LE MÊME TROU : une
+             seule valeur de débit par numéro de buse, à une pression de référence —
+             AUCUNE répartition par angle, contrairement aux tuyères VAN/SRS/R-VAN.
+      
+             **TRANCHÉ PAR LE PATRON LE 21 AOÛT 2026 :** *« les débits à 360° sont les
+             mêmes qu'à 180° et 90° »*. Sur une turbine, le jet est UN SEUL filet qui
+             balaie l'arc réglé : il sort autant d'eau par seconde qu'il balaie un
+             quart de cercle ou le tour entier — seule la durée passée sur chaque
+             point change. **Le débit d'une turbine ne dépend donc PAS de son arc**,
+             et `debit:{360: …}` vaut pour tous les angles.
+      
+             **C'EST L'INVERSE DE CE QU'ON AVAIT SUPPOSÉ ICI**, et c'est pour cela
+             qu'on ne l'avait pas déduit : on imaginait un débit proportionnel à
+             l'arc (« deux fois moins d'angle, deux fois moins d'eau »). Faux. La
+             règle du 17 août — « les valeurs sont lues, jamais déduites » — a bien
+             servi : la déduction plausible aurait divisé par quatre le débit d'un
+             arroseur de coin, et fait poser quatre fois trop d'arroseurs sur une
+             même voie.
+      
+             **ET CELA NE VAUT QUE POUR LES TURBINES.** Une buse VAN projette
+             PLUSIEURS filets simultanés : moins d'arc, moins de filets, moins de
+             débit. Ses propres relevés le montrent (12-VAN : 0,15 à 90°, 0,30 à
+             180°, 0,59 à 360°) — pour une tuyère, le débit se lit par angle, comme
+             il est écrit. Étendre la règle des turbines aux tuyères contredirait
+             ses mesures. */
+      {
+        ref: "HA2211-B1",
+        nom: "PGP-ADJ buse 1 (rouge std)",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 8.8,
+        pression: 2.8,
+        debit: { 360: 0.14 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "HA2211-B2",
+        nom: "PGP-ADJ buse 2 (rouge std)",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 9.1,
+        pression: 2.8,
+        debit: { 360: 0.18 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "HA2211-B3",
+        nom: "PGP-ADJ buse 3 (rouge std)",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 9.4,
+        pression: 2.8,
+        debit: { 360: 0.23 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "HA2211-B4",
+        nom: "PGP-ADJ buse 4 (rouge std)",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 10.1,
+        pression: 2.8,
+        debit: { 360: 0.32 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "HA2211-B5",
+        nom: "PGP-ADJ buse 5 (rouge std)",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 11,
+        pression: 2.8,
+        debit: { 360: 0.41 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "HA2211-B6",
+        nom: "PGP-ADJ buse 6 (rouge std)",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 11.6,
+        pression: 2.8,
+        debit: { 360: 0.55 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "HA2211-B7",
+        nom: "PGP-ADJ buse 7 (rouge std)",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 12.2,
+        pression: 2.8,
+        debit: { 360: 0.68 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "HA2210-B1.5",
+        nom: "PGP Ultra buse 1,5",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 9.8,
+        pression: 3,
+        debit: { 360: 0.35 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "HA2210-B2",
+        nom: "PGP Ultra buse 2",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 10.4,
+        pression: 3,
+        debit: { 360: 0.43 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "HA2210-B3",
+        nom: "PGP Ultra buse 3",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 11.6,
+        pression: 3,
+        debit: { 360: 0.68 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "HA2210-B4",
+        nom: "PGP Ultra buse 4",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 12.2,
+        pression: 3,
+        debit: { 360: 0.9 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "HA2210-B5",
+        nom: "PGP Ultra buse 5",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 12.8,
+        pression: 3,
+        debit: { 360: 1.14 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "HA2210-B6",
+        nom: "PGP Ultra buse 6",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 13.1,
+        pression: 3,
+        debit: { 360: 1.36 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "HA2210-B8",
+        nom: "PGP Ultra buse 8",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 13.4,
+        pression: 3,
+        debit: { 360: 1.81 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "RBA2195",
+        nom: "5000 Plus MPR 7,62 m",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 7.62,
+        pression: null,
+        debit: {},
+        colisage: 10,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13",
+        aVerifier: "Buse MPR (d\xE9bit proportionnel \xE0 la surface, 90\xB0-120\xB0-180\xB0-360\xB0) : aucun d\xE9bit donn\xE9 sur la photo"
+      },
+      {
+        ref: "RBA2196",
+        nom: "5000 Plus MPR 9,14 m",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 9.14,
+        pression: null,
+        debit: {},
+        colisage: 10,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13",
+        aVerifier: "Buse MPR (d\xE9bit proportionnel \xE0 la surface, 90\xB0-120\xB0-180\xB0-360\xB0) : aucun d\xE9bit donn\xE9 sur la photo"
+      },
+      {
+        ref: "RBA2197",
+        nom: "5000 Plus MPR 10,67 m",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 10.67,
+        pression: null,
+        debit: {},
+        colisage: 10,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13",
+        aVerifier: "Buse MPR (d\xE9bit proportionnel \xE0 la surface, 90\xB0-120\xB0-180\xB0-360\xB0) : aucun d\xE9bit donn\xE9 sur la photo"
+      },
+      {
+        ref: "RA5004-B1u",
+        nom: "5000 Plus buse 1,0 u+",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 8.5,
+        pression: 2.5,
+        debit: { 360: 0.22 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "RA5004-B15u",
+        nom: "5000 Plus buse 1,5 u+",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 9.4,
+        pression: 2.5,
+        debit: { 360: 0.28 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "RA5004-B2u",
+        nom: "5000 Plus buse 2,0 u+",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 9.8,
+        pression: 2.5,
+        debit: { 360: 0.45 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "RA5004-B3u",
+        nom: "5000 Plus buse 3,0 u+",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 11.1,
+        pression: 2.5,
+        debit: { 360: 0.71 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "RA5004-B15p",
+        nom: "5000 Plus buse 1,5 Port\xE9e+",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 10.1,
+        pression: 2.5,
+        debit: { 360: 0.39 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "RA5004-B3p",
+        nom: "5000 Plus buse 3,0 Port\xE9e+",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 12.2,
+        pression: 2.5,
+        debit: { 360: 0.92 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "RA5004-B6p",
+        nom: "5000 Plus buse 6,0 Port\xE9e+",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 13.7,
+        pression: 2.5,
+        debit: { 360: 1.36 },
+        // 0,92 jusqu'au 16 octobre 2026 : recopié de la buse 3,0 Portée+ sur une
+        // photo. Le catalogue Aqua Plus 2026 donne 1,36, corrigé avec son accord.
+        // Comptée 0,92, elle mettait une tête de trop sur une vanne.
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "TAMINI8-B075",
+        nom: "Mini 8 buse 0,75",
+        marqueCle: "toro",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 6,
+        pression: 2.5,
+        debit: { 360: 0.2 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "TAMINI8-B1",
+        nom: "Mini 8 buse 1,0",
+        marqueCle: "toro",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 6.9,
+        pression: 2.5,
+        debit: { 360: 0.28 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "TAMINI8-B15",
+        nom: "Mini 8 buse 1,5",
+        marqueCle: "toro",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 8.3,
+        pression: 2.5,
+        debit: { 360: 0.3 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "TAMINI8-B2",
+        nom: "Mini 8 buse 2,0",
+        marqueCle: "toro",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 9.3,
+        pression: 2.5,
+        debit: { 360: 0.36 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "RA3504-B075",
+        nom: "3504 buse 0,75",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 5.2,
+        pression: 2.5,
+        debit: { 360: 0.16 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "RA3504-B1",
+        nom: "3504 buse 1,0",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 6.4,
+        pression: 2.5,
+        debit: { 360: 0.21 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "RA3504-B15",
+        nom: "3504 buse 1,5",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 7,
+        pression: 2.5,
+        debit: { 360: 0.3 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "RA3504-B2",
+        nom: "3504 buse 2,0",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 8.2,
+        pression: 2.5,
+        debit: { 360: 0.39 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "RA3504-B3",
+        nom: "3504 buse 3,0",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 9.4,
+        pression: 2.5,
+        debit: { 360: 0.6 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "RA3504-B4",
+        nom: "3504 buse 4,0",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 10.1,
+        pression: 2.5,
+        debit: { 360: 0.83 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "HA2264-B050",
+        nom: "SRM-04 buse 0,50",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 4.9,
+        pression: 2.8,
+        debit: { 360: 0.11 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "HA2264-B075",
+        nom: "SRM-04 buse 0,75",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 5.5,
+        pression: 2.8,
+        debit: { 360: 0.17 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "HA2264-B1",
+        nom: "SRM-04 buse 1,0",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 6.1,
+        pression: 2.8,
+        debit: { 360: 0.23 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "HA2264-B15",
+        nom: "SRM-04 buse 1,5",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 7.3,
+        pression: 2.8,
+        debit: { 360: 0.34 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "HA2264-B2",
+        nom: "SRM-04 buse 2,0",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 7.9,
+        pression: 2.8,
+        debit: { 360: 0.45 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "HA2264-B3",
+        nom: "SRM-04 buse 3,0",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 9.1,
+        pression: 2.8,
+        debit: { 360: 0.68 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "HA2274-B075",
+        nom: "PGJ buse 0,75",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 4.9,
+        pression: 2.8,
+        debit: { 360: 0.17 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "HA2274-B1",
+        nom: "PGJ buse 1,0",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 5.8,
+        pression: 2.8,
+        debit: { 360: 0.23 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "HA2274-B15",
+        nom: "PGJ buse 1,5",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 6.7,
+        pression: 2.8,
+        debit: { 360: 0.34 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "HA2274-B2",
+        nom: "PGJ buse 2,0",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 7.6,
+        pression: 2.8,
+        debit: { 360: 0.45 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "HA2274-B25",
+        nom: "PGJ buse 2,5",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 8.5,
+        pression: 2.8,
+        debit: { 360: 0.57 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "HA2274-B3",
+        nom: "PGJ buse 3,0",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        rayon: 9.4,
+        pression: 2.8,
+        debit: { 360: 0.68 },
+        livreeAvecLArroseur: true,
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      }
+    ],
+    /* ── LES BUSES « BANDE » (strip) — vues, pas enregistrées comme poseables.
+       RBT1400/-D/-G (Rain Bird), HBT1567/1568/1569 (Hunter SS-530, RCS-515,
+       LCS-515) : leur zone n'est pas un cercle mais un rectangle
+       (« 1,5 × 9,1 m »). Tout le calcul de cette page — portée, coins, bords —
+       suppose des couronnes circulaires. Les compter comme une buse ronde
+       donnerait une couverture fausse. Elles attendent une question à part :
+       le paillage/bordures en jet plat n'est pas encore un cas du calculateur. */
+    /* ── LES BUSES MP ROTATOR — vues, pas enregistrées : AUCUNE portée/débit
+       n'était lisible sur la photo (juste réf et prix). NA23xx (filetage mâle,
+       universel Rain Bird/Hunter/Nelson) et TBT10xxx-1xxx (filetage femelle,
+       Toro). Sans rayon ni débit, une entrée ne calculerait rien de juste —
+       mieux vaut les demander à part que deviner. */
+    /* ── Les corps d'arroseur ───────────────────────────────────────────────
+       VIDE : la page reçue donne les BUSES, pas les corps escamotables sur
+       lesquels elles se vissent. Ils viendront. Tant qu'ils manquent, la liste au
+       fournisseur commande des buses et le DIT — commander une buse sans son
+       corps, c'est un chantier arrêté à la pose. */
+    /* ── LES CORPS — arrivés le 17 août 2026, série 1800 (Rain Bird) et
+         Pro-Spray / I-Spray (Hunter). « Livrée sans buse » : c'est exactement le
+         corps qui manquait pour poser les buses ci-dessus.
+    
+         `hauteur` = la hauteur d'escamotage en cm (5/10/15/30 selon la gamme).
+         `options` : SAM = clapet anti-vidange (évite les fuites en point bas
+         après l'arrêt), PRS = régulateur de pression intégré, pré-réglé.
+    
+         **CE QUI N'EST PAS TRANCHÉ, et l'écran ne choisit rien à sa place :**
+         quatre hauteurs, trois niveaux d'option — c'est un choix de chantier
+         (terrain plat ou en pente, herbe haute ou tondue ras), pas une valeur que
+         l'outil peut deviner. Tant qu'il n'a pas dit lequel prendre par défaut,
+         aucun corps n'est choisi automatiquement dans la liste au fournisseur. */
+    corps: [
+      {
+        ref: "RT1802",
+        nom: "Tuy\xE8re 1800",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        filetage: "1/2",
+        hauteur: 5,
+        options: [],
+        detail: "escamotable 5 cm",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 7"
+      },
+      {
+        ref: "RT1804",
+        nom: "Tuy\xE8re 1800",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        filetage: "1/2",
+        hauteur: 10,
+        options: [],
+        detail: "escamotable 10 cm",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 7"
+      },
+      {
+        ref: "RT1806",
+        nom: "Tuy\xE8re 1800",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        filetage: "1/2",
+        hauteur: 15,
+        options: [],
+        detail: "escamotable 15 cm",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 7"
+      },
+      {
+        ref: "RT1812",
+        nom: "Tuy\xE8re 1800",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        filetage: "1/2",
+        hauteur: 30,
+        options: [],
+        detail: "escamotable 30 cm",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 7"
+      },
+      {
+        ref: "RT1824",
+        nom: "Tuy\xE8re 1800 SAM",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        filetage: "1/2",
+        hauteur: 10,
+        options: ["clapet anti-vidange"],
+        detail: "escamotable 10 cm, SAM",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 7"
+      },
+      {
+        ref: "RT1826",
+        nom: "Tuy\xE8re 1800 SAM",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        filetage: "1/2",
+        hauteur: 15,
+        options: ["clapet anti-vidange"],
+        detail: "escamotable 15 cm, SAM",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 7"
+      },
+      {
+        ref: "RT1822",
+        nom: "Tuy\xE8re 1800 SAM",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        filetage: "1/2",
+        hauteur: 30,
+        options: ["clapet anti-vidange"],
+        detail: "escamotable 30 cm, SAM",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 7"
+      },
+      {
+        ref: "RT1834",
+        nom: "Tuy\xE8re 1800 SAM-PRS",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        filetage: "1/2",
+        hauteur: 10,
+        options: ["clapet anti-vidange", "r\xE9gulateur de pression"],
+        detail: "escamotable 10 cm, SAM-PRS (2,1 bar)",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 7"
+      },
+      {
+        ref: "RT1836",
+        nom: "Tuy\xE8re 1800 SAM-PRS",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        filetage: "1/2",
+        hauteur: 15,
+        options: ["clapet anti-vidange", "r\xE9gulateur de pression"],
+        detail: "escamotable 15 cm, SAM-PRS (2,1 bar)",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 7"
+      },
+      {
+        ref: "RT1832",
+        nom: "Tuy\xE8re 1800 SAM-PRS",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        filetage: "1/2",
+        hauteur: 30,
+        options: ["clapet anti-vidange", "r\xE9gulateur de pression"],
+        detail: "escamotable 30 cm, SAM-PRS (2,1 bar)",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 7"
+      },
+      {
+        ref: "HT1541",
+        nom: "Tuy\xE8re Pro-Spray-02",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        filetage: "1/2",
+        hauteur: 5,
+        options: [],
+        detail: "escamotable 5 cm",
+        pressionMin: 1,
+        pressionMax: 4.8,
+        plageReleve: "Aqua Plus 2026, p. 9",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 9"
+      },
+      {
+        ref: "HT1543",
+        nom: "Tuy\xE8re Pro-Spray-04",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        filetage: "1/2",
+        hauteur: 10,
+        options: [],
+        detail: "escamotable 10 cm",
+        pressionMin: 1,
+        pressionMax: 4.8,
+        plageReleve: "Aqua Plus 2026, p. 9",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 9"
+      },
+      {
+        ref: "HT1544",
+        nom: "Tuy\xE8re Pro-Spray-06",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        filetage: "1/2",
+        hauteur: 15,
+        options: [],
+        detail: "escamotable 15 cm",
+        pressionMin: 1,
+        pressionMax: 4.8,
+        plageReleve: "Aqua Plus 2026, p. 9",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 9"
+      },
+      {
+        ref: "HT1546",
+        nom: "Tuy\xE8re Pro-Spray-12",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        filetage: "1/2",
+        hauteur: 30,
+        options: [],
+        detail: "escamotable 30 cm",
+        pressionMin: 1,
+        pressionMax: 4.8,
+        plageReleve: "Aqua Plus 2026, p. 9",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 9"
+      },
+      {
+        ref: "HT1521",
+        nom: "Tuy\xE8re I-Spray-04",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        filetage: "1/2",
+        hauteur: 10,
+        options: ["r\xE9gulateur de pression"],
+        detail: "escamotable 10 cm, r\xE9gulateur",
+        pressionMin: 1,
+        pressionMax: 4.8,
+        plageReleve: "Aqua Plus 2026, p. 9",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 9"
+      },
+      {
+        ref: "HT1522",
+        nom: "Tuy\xE8re I-Spray-06",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        filetage: "1/2",
+        hauteur: 15,
+        options: ["r\xE9gulateur de pression"],
+        detail: "escamotable 15 cm, r\xE9gulateur",
+        pressionMin: 1,
+        pressionMax: 4.8,
+        plageReleve: "Aqua Plus 2026, p. 9",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 9"
+      },
+      {
+        ref: "HT1523",
+        nom: "Tuy\xE8re I-Spray-12",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "tuyere",
+        filetage: "1/2",
+        hauteur: 30,
+        options: ["r\xE9gulateur de pression"],
+        detail: "escamotable 30 cm, r\xE9gulateur",
+        pressionMin: 1,
+        pressionMax: 4.8,
+        plageReleve: "Aqua Plus 2026, p. 9",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 9"
+      },
+      /* ── LES CORPS DE TURBINE — quatrième page, le 17 août 2026 ────────────
+         `pourType:'turbine'` : une famille à part des corps de tuyères
+         ci-dessus. Un jour où les turbines seront posées automatiquement, le
+         sélecteur de corps devra distinguer les deux — pour l'instant seuls
+         les corps `tuyere` sont câblés dans la liste au fournisseur. */
+      {
+        ref: "HA2211",
+        nom: "Turbine PGP-ADJ",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        filetage: "3/4",
+        hauteur: 10,
+        options: ["r\xE9glable 40\xB0-360\xB0"],
+        detail: "escamotable 10 cm, secteur r\xE9glable 40\xB0-360\xB0, livr\xE9 avec 12 buses",
+        pressionMin: 2.1,
+        pressionMax: 4.8,
+        bridage: 0,
+        plageReleve: "Aqua Plus 2026, p. 13",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "HA2210",
+        nom: "Turbine PGP Ultra",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        filetage: "3/4",
+        hauteur: 10,
+        options: ["r\xE9glable et plein cercle"],
+        detail: "escamotable 10 cm, r\xE9glable ET plein cercle (mod\xE8le unique), livr\xE9 avec 8 buses",
+        pressionMin: 2.1,
+        pressionMax: 4.8,
+        bridage: 0,
+        plageReleve: "Aqua Plus 2026, p. 13",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "HA2222",
+        nom: "Turbine I 20-04 Ultra",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        filetage: "3/4",
+        hauteur: 10,
+        options: ["FloStop"],
+        detail: "escamotable, r\xE9glage par cl\xE9 40\xB0-360\xB0, coupure FloStop \xE0 la cl\xE9, livr\xE9 avec 12 buses dont 4 angle bas",
+        pressionMin: 2.1,
+        pressionMax: 4.8,
+        bridage: 0,
+        plageReleve: "Aqua Plus 2026, p. 13",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "HA2225",
+        nom: "Turbine I 20-04 Ultra SS Inox",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        filetage: "3/4",
+        hauteur: 10,
+        options: ["FloStop", "tige inox"],
+        detail: "comme I 20-04 Ultra, tige escamotable en acier inox",
+        pressionMin: 2.1,
+        pressionMax: 4.8,
+        bridage: 0,
+        plageReleve: "Aqua Plus 2026, p. 13",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "RA2181",
+        nom: "Turbine 5004 Plus",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        filetage: "3/4",
+        hauteur: 10,
+        options: ["r\xE9glable"],
+        detail: "escamotable 10 cm, secteur r\xE9glable, fermeture de d\xE9bit sur l'arroseur",
+        pressionMin: 1.7,
+        pressionMax: 4.5,
+        bridage: 0.25,
+        plageReleve: "Aqua Plus 2026, p. 13",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "RA5004FC",
+        nom: "Turbine 5004 Plus",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        filetage: "3/4",
+        hauteur: 10,
+        options: ["plein cercle"],
+        detail: "escamotable 10 cm, plein cercle",
+        pressionMin: 1.7,
+        pressionMax: 4.5,
+        bridage: 0.25,
+        plageReleve: "Aqua Plus 2026, p. 13",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "RA5006PC",
+        nom: "Turbine 5006 Plus",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        filetage: "3/4",
+        hauteur: 15,
+        options: ["r\xE9glable"],
+        detail: "escamotable 15 cm, secteur r\xE9glable",
+        pressionMin: 1.7,
+        pressionMax: 4.5,
+        bridage: 0.25,
+        plageReleve: "Aqua Plus 2026, p. 13",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "RA5012PCSAM",
+        nom: "Turbine 5012 Plus",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        filetage: "3/4",
+        hauteur: 30,
+        options: ["r\xE9glable", "clapet anti-vidange"],
+        detail: "escamotable 30 cm, secteur r\xE9glable, SAM",
+        pressionMin: 1.7,
+        pressionMax: 4.5,
+        bridage: 0.25,
+        plageReleve: "Aqua Plus 2026, p. 13",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "RA2180",
+        nom: "Turbine 5004 Plus SS",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        filetage: "3/4",
+        hauteur: 10,
+        options: ["r\xE9glable", "clapet anti-vidange", "tige inox"],
+        detail: "tige escamotable inox, secteur r\xE9glable, SAM",
+        pressionMin: 1.7,
+        pressionMax: 4.5,
+        bridage: 0.25,
+        plageReleve: "Aqua Plus 2026, p. 13",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 13"
+      },
+      {
+        ref: "TAMINI8-4P",
+        nom: "Turbine Mini 8",
+        marqueCle: "toro",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        filetage: "1/2",
+        hauteur: 9.5,
+        options: ["faible consommation"],
+        detail: "escamotable 9,5 cm, r\xE9glage sur le dessus, 5 buses interchangeables",
+        pressionMin: 2,
+        pressionMax: 4.1,
+        bridage: 0.25,
+        plageReleve: "Aqua Plus 2026, p. 11",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "RA3504",
+        nom: "Turbine 3504",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        filetage: "1/2",
+        hauteur: 0,
+        options: ["r\xE9glable"],
+        detail: "un seul mod\xE8le r\xE9glable 40\xB0-360\xB0, livr\xE9 avec 6 buses",
+        pressionMin: 1.7,
+        pressionMax: 3.8,
+        bridage: 0.35,
+        plageReleve: "Aqua Plus 2026, p. 11",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "RA3504SAM",
+        nom: "Turbine 3504 SAM",
+        marqueCle: "rainbird",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        filetage: "1/2",
+        hauteur: 0,
+        options: ["r\xE9glable", "clapet anti-vidange"],
+        detail: "comme 3504, SAM",
+        pressionMin: 1.7,
+        pressionMax: 3.8,
+        bridage: 0.35,
+        plageReleve: "Aqua Plus 2026, p. 11",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "HA2264",
+        nom: "Turbine SRM-04",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        filetage: "1/2",
+        hauteur: 0,
+        options: ["r\xE9glable et plein cercle"],
+        detail: "faible d\xE9bit, un seul mod\xE8le r\xE9glable et plein cercle",
+        pressionMin: 2.1,
+        pressionMax: 3.4,
+        bridage: 0,
+        plageReleve: "Aqua Plus 2026, p. 11",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "HA2274",
+        nom: "Turbine PGJ-04",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        filetage: "1/2",
+        hauteur: 10,
+        options: ["r\xE9glable et plein cercle"],
+        detail: "faible d\xE9bit, escamotable 10 cm, r\xE9glable et plein cercle",
+        pressionMin: 2.1,
+        pressionMax: 3.4,
+        bridage: 0,
+        plageReleve: "Aqua Plus 2026, p. 11",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      },
+      {
+        ref: "HA2272",
+        nom: "Turbine PGJ-12",
+        marqueCle: "hunter",
+        fournisseur: "Aqua Plus",
+        pourType: "turbine",
+        filetage: "1/2",
+        hauteur: 30,
+        options: ["r\xE9glable et plein cercle"],
+        detail: "faible d\xE9bit, escamotable 30 cm, r\xE9glable et plein cercle",
+        pressionMin: 2.1,
+        pressionMax: 3.4,
+        bridage: 0,
+        plageReleve: "Aqua Plus 2026, p. 11",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 11"
+      }
+    ],
+    /* ── LES COUDES SBE — sixième page, le 17 août 2026 ─────────────────────
+         « Sous les arroseurs il faut obligatoirement des coudes SBE, choisis-les
+         en fonction des diamètres, un à chaque fois par arroseur. »
+    
+         Tube 16 mm (le tuyau souple qui descend du réseau enterré au corps) vers
+         le taraudage du corps : 1/2" ou 3/4" selon la famille. Un coude, jamais un
+         droit — c'est le nom de la pièce sur la photo (« coudé »), et il absorbe
+         le fait que le tube arrive de côté quand le corps est vertical. */
+    coudes: [
+      {
+        ref: "OD501",
+        nom: "Coude SBE 050",
+        marqueCle: "generique",
+        fournisseur: "Aqua Plus",
+        filetage: "1/2",
+        detail: '16 x 1/2" coud\xE9',
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 14"
+      },
+      {
+        ref: "OD502",
+        nom: "Coude SBE 075",
+        marqueCle: "generique",
+        fournisseur: "Aqua Plus",
+        filetage: "3/4",
+        detail: '16 x 3/4" coud\xE9',
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 14"
+      }
+    ],
+    /* ── LE RÉSEAU LATÉRAL — sa planche manuscrite du 17 août 2026, deux pages.
+         Comment le PE25 relie les arroseurs D'UN MÊME SECTEUR entre eux, depuis
+         le regard : ce qu'aucune donnée reçue jusqu'ici ne couvrait — tout portait
+         sur UN arroseur (buse, corps, coude), rien sur la LIGNE qui les relie.
+    
+         Trois positions le long d'une ligne, sa règle mot pour mot :
+    
+           · DÉPART  — Té 90° taraudé 25×3/4"×25 : la ligne continue en 25, une
+             sortie 3/4" monte vers l'arroseur.
+           · MILIEU  — « exactement la même chose » que le départ. Même té : la
+             ligne entre, continue, ET une sortie 3/4" alimente l'arroseur.
+           · FIN     — Coude taraudé 25×3/4" : rien ne continue après, donc un
+             coude plutôt qu'un té.
+    
+         Et une quatrième pièce, PAS un point d'arrosage : JONCTION — Té 90°
+         25×25×25 (aucun taraudage), pour un coude de tuyauterie qui ne nourrit
+         rien à cet endroit précis.
+    
+         **À chaque position d'arrosage (départ, milieu ou fin) :** 1 SBE 3/4"
+         (le raccord du bas, sur le té ou le coude — TOUJOURS 3/4", quel que soit
+         le corps) + environ 2 m de PEBD rigide Ø16 + l'arroseur complet (corps +
+         SON PROPRE SBE, au diamètre du corps cette fois — 1/2" ou 3/4" selon la
+         famille, voir `CATALOGUE.corps` — + la buse). Sa phrase : « peu importe
+         que ce soit arroseur ou tuyère » — la règle ne distingue pas les deux.
+    
+         **DEUX SBE PAR ARROSEUR, PAS UN : celui du bas (toujours 3/4", sur la
+         tuyauterie) et celui du haut (au diamètre du corps).** C'était manquant
+         dans la liste au fournisseur jusqu'ici — un seul SBE y était compté par
+         arroseur, celui du haut.
+    
+         **CE QUI N'EST PAS ENCORE CALCULÉ, et ne doit pas être deviné :** combien
+         de départs, de milieux, de fins pour UN secteur donné dépend de l'ORDRE
+         dans lequel le tuyau visite les arroseurs — une question de tracé, pas de
+         position. `pointsDeLaPose` sait où les arroseurs sont, pas dans quel ordre
+         un tuyau les relierait. Tant que ce tracé n'est pas donné, ces pièces
+         restent au catalogue, VISIBLES au registre de prix, mais ne comptent pas
+         encore dans la liste au fournisseur — comme les R-VAN et les turbines
+         avant elles. */
+    /* ── LES TUYAUX D'AMENÉE, et leur diamètre INTÉRIEUR ────────────────────
+         Sa règle du 17 août : « Du compteur au regard : Ø25 par défaut. Passer en
+         Ø32 uniquement si le calcul hydraulique démontre que le Ø25 est
+         insuffisant. » Le calcul, lui, ne travaille pas sur le diamètre écrit sur
+         le tuyau (extérieur) mais sur le diamètre INTÉRIEUR : l'extérieur moins
+         deux fois la paroi, les deux chiffres imprimés sur chaque tube (« 25×3.0 »).
+    
+         **Relevés de ses photos du 16 octobre 2026**, et non plus supposés. Le
+         catalogue portait jusque-là 20,4 et 26,2 mm, « ceux du PN10, le plus
+         courant », marqués provisoires et jamais confrontés à ses tubes. Son Ø25
+         a une paroi de 3 mm : 19,0 mm de passage. L'écart n'est pas un détail, le
+         diamètre entre à la puissance 4,87 dans la perte : **40 % de perte en
+         plus**, et un plafond par réseau qui tombe de 1,76 à 1,53 m³/h. L'erreur
+         allait dans le sens dangereux, celui du réseau qui ne se lève pas.
+    
+         Ce sont SES tubes. Un artisan qui pose une paroi plus fine a plus de
+         passage : les tenir pour lui aussi pose une vanne de trop, jamais un
+         réseau qui ne se lève pas. Le choix par artisan est dans `TODO.md`. */
+    tuyaux: {
+      pe25: {
+        nom: "Tuyau PEHD \xD825",
+        dInterieur: 19,
+        source: "patron",
+        releve: "Elydan Polybleu 25\xD73.0, PE100, SDR 9"
+      },
+      pe32: {
+        nom: "Tuyau PEHD \xD832",
+        dInterieur: 26,
+        source: "patron",
+        releve: "Alfatubo AL 32\xD73.0, PE100, SDR 11, PN16"
+      }
+    },
+    piecesReseau: {
+      "te-taraude-25-34-25": { nom: 'T\xE9 90\xB0 taraud\xE9 25\xD73/4"\xD725', marque: "Plasson", aquaplus: "OPL71402520" },
+      "coude-taraude-25-34": { nom: 'Coude 90\xB0 taraud\xE9 25\xD73/4"', marque: "Plasson", aquaplus: "OPL71502520" },
+      // Le « (jonction, non taraudé) » qui suivait ce nom a été retiré le 18 août
+      // sur sa consigne : c'est l'emploi de la pièce, pas sa désignation, et il
+      // commande sur la désignation. Le 25×25×25 dit déjà qu'il n'est pas taraudé
+      // — un taraudé porte son filetage dans son nom (25×3/4"×25).
+      "te-25-25-25": { nom: "T\xE9 90\xB0 25\xD725\xD725", marque: "Plasson", aquaplus: "OPL704025" },
+      "pebd16": { nom: "PEBD rigide \xD816 (tube de reprise)", marque: "Dura", unite: "ml" },
+      // **Le grillage avertisseur bleu**, au-dessus des tuyaux enterrés : sa demande
+      // du 18 octobre 2026, une case à cocher. Le nom et le rouleau de 100 m sont
+      // ceux d'Aqua Plus 2026, p. 58 ; sans référence, à sa demande (« ils sauront
+      // ce que c'est »).
+      "grillage-bleu": { nom: "Grillage avertisseur bleu (dim. 0,3 X 100 ml)", metresParRouleau: 100 }
+    },
+    /* ── Le goutte-à-goutte : SON tube, le 16 octobre 2026 ──────────────────
+         *« Voici le goutte-à-goutte que j'utilise : UGGCBL23050, un tube de 16 mm
+         à goutteurs intégrés autorégulants, 2 l/h espacés de 33 cm, la marque
+         Toro »*, puis *« et c'est bien 2 l/h »*. Il remplace la « gaine de
+         goutteurs » provisoire (2,3 l/h, 23 mm/h), qui ne venait de nulle part.
+    
+         `debitMetre` se CALCULE sur ses deux chiffres (plus bas), il ne s'écrit
+         pas : 2 l/h tous les 33 cm font 6,06 l/h par mètre. La pluviométrie, elle,
+         dépend de l'écart entre les lignes de la zone : c'est le calcul qui la
+         fait (`poser`), plus ce fichier. */
+    gaines: [
+      {
+        ref: "UGGCBL23050",
+        marqueCle: "toro",
+        marque: "Toro",
+        type: "gaine",
+        nom: "tube \xD816mm 2l/h esp.33cm autor\xE9gul\xE9",
+        detail: "2 l/h tous les 33 cm",
+        debitGoutteur: 2,
+        ecartGoutteurs: 0.33,
+        // Par 50 : la colonne « colisage » d'Aqua Plus, et ses couronnes de 50 m.
+        colisage: 50,
+        famille: "Goutte-\xE0-goutte",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 48"
+      }
+    ],
+    /* ── LES PIÈCES QU'ON AJOUTE À LA MAIN — relevées le 16 octobre 2026 ──────
+         Sa demande du même jour : *« une petite touche "ajouter une pièce" ; on
+         clique, ça ouvre des catégories, genre électrovanne, avec les différentes
+         qui existent, et l'utilisateur choisit les pièces qu'il veut rajouter ou
+         enlever »*. Ce sont ces pièces-là : tout ce qui sert à poser un réseau dans
+         le catalogue Aqua Plus 2026 (raccords PE dont le Ø32, électrovannes,
+         regards, programmateurs, tubes, goutte-à-goutte, robinetterie, électricité).
+    
+         **Le calcul n'en compte que cinq** : les pièces Palaplast d'une sortie de
+         goutte-à-goutte (MID6321, MID6341, MID6352, MID6301, MID6371), ses règles
+         du 16 octobre 2026 (`sortiesGoutte`). Les autres ne servent qu'à
+         compléter la liste.
+         Désignation recopiée mot pour mot, page imprimée, AUCUN prix. Un doute du
+         relevé reste écrit dans `aVerifier` : une tension lue dans un titre de
+         section, une référence imprimée deux fois. */
+    piecesAjoutables: [
+      { ref: "RD2198", nom: "tournevis arroseur S\xE9rie 5000 (Rotortool)", categorie: "accessoire d'arroseur", colisage: "10", source: "patron", releve: "Aqua Plus 2026, p. 14" },
+      { ref: "HA2253", nom: "cl\xE9 HUNTER PGM / PGP / I20", categorie: "accessoire d'arroseur", marque: "Hunter", source: "patron", releve: "Aqua Plus 2026, p. 14" },
+      { ref: "NA2316", nom: "cl\xE9 MP ROTATOR", categorie: "accessoire d'arroseur", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 14" },
+      { ref: "OD501", nom: 'SBE 050 coud\xE9 16 x 1/2"', categorie: "accessoire d'arroseur", diametre: "16", filetage: '1/2"', colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 14" },
+      { ref: "OD502", nom: 'SBE 075 coud\xE9 16 x 3/4"', categorie: "accessoire d'arroseur", diametre: "16", filetage: '3/4"', colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 14" },
+      { ref: "OD505", nom: "t\xE9 SB-TEE", categorie: "accessoire d'arroseur", colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 14" },
+      { ref: "OD506", nom: "jonction SB-CPLG", categorie: "accessoire d'arroseur", colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 14" },
+      { ref: "UPE1116", nom: "tube P.E.B.D. \xD8 16mm 6,3 bars (12 x 16)", categorie: "tube PE", diametre: "16", colisage: "25/50", source: "patron", releve: "Aqua Plus 2026, p. 14", aVerifier: "m\xEAme r\xE9f\xE9rence p. 47 avec un colisage de 50 au lieu de 25/50" },
+      { ref: "TEVEZP0254", nom: '\xE9lectrovanne EZ FLO+ 1" MM - 24 V', categorie: "electrovanne", diametre: '1"', filetage: "MM", tension: "24 V", colisage: "1/20", source: "patron", releve: "Aqua Plus 2026, p. 18" },
+      { ref: "TEVEZP0354", nom: '\xE9lectrovanne EZ FLO+ 1" FF - 24 V', categorie: "electrovanne", diametre: '1"', filetage: "FF", tension: "24 V", colisage: "1/20", source: "patron", releve: "Aqua Plus 2026, p. 18" },
+      { ref: "TEVEZP2254", nom: '\xE9lectrovanne EZ FLO+ 1" MM RMD - 24 V', categorie: "electrovanne", diametre: '1"', filetage: "MM", tension: "24 V", colisage: "1/20", source: "patron", releve: "Aqua Plus 2026, p. 18" },
+      { ref: "TEVEZP2354", nom: '\xE9lectrovanne EZ FLO+ 1" FF RMD - 24 V', categorie: "electrovanne", diametre: '1"', filetage: "FF", tension: "24 V", colisage: "1/20", source: "patron", releve: "Aqua Plus 2026, p. 18" },
+      { ref: "TEVEZP02649V", nom: '\xE9lectrovanne EZ FLO+ 1" MM sol\xE9no\xEFde 9V \xE0 impulsion', categorie: "electrovanne", diametre: '1"', filetage: "MM", tension: "9 V", colisage: "1/20", source: "patron", releve: "Aqua Plus 2026, p. 18" },
+      { ref: "TEVTPV100MMBSP", nom: 'EV TPV 1" MM 0,06 \xE0 9,06 m3/h', categorie: "electrovanne", diametre: '1"', filetage: "MM", tension: "24 V", colisage: "1/20", source: "patron", releve: "Aqua Plus 2026, p. 18", aVerifier: "tension non \xE9crite sur la ligne : lue dans le titre de section \xAB \xC9LECTROVANNES R\xC9SIDENTIELLES ET GRANDS ESPACES 24V \xBB" },
+      { ref: "TEVTPV100BSP", nom: 'EV TPV 1" FF 0,06 \xE0 9,06 m\xB3/h', categorie: "electrovanne", diametre: '1"', filetage: "FF", tension: "24 V", colisage: "1/20", source: "patron", releve: "Aqua Plus 2026, p. 18", aVerifier: "tension non \xE9crite sur la ligne : lue dans le titre de section \xAB \xC9LECTROVANNES R\xC9SIDENTIELLES ET GRANDS ESPACES 24V \xBB" },
+      { ref: "TEV2522656", nom: '\xE9lectrovanne 252 1"1/2 FF RMD 6 \xE0 27 m\xB3/h', categorie: "electrovanne", diametre: '1"1/2', filetage: "FF", tension: "24 V", colisage: "1/10", source: "patron", releve: "Aqua Plus 2026, p. 18", aVerifier: "tension non \xE9crite sur la ligne : lue dans le titre de section \xAB \xC9LECTROVANNES R\xC9SIDENTIELLES ET GRANDS ESPACES 24V \xBB" },
+      { ref: "TEV2522658", nom: '\xE9lectrovanne 252 2" FF RMD 13,8 \xE0 40,8 m\xB3/h', categorie: "electrovanne", diametre: '2"', filetage: "FF", tension: "24 V", colisage: "1/4", source: "patron", releve: "Aqua Plus 2026, p. 18", aVerifier: "tension non \xE9crite sur la ligne : lue dans le titre de section \xAB \xC9LECTROVANNES R\xC9SIDENTIELLES ET GRANDS ESPACES 24V \xBB" },
+      { ref: "TEV2640603", nom: '\xE9lectrovanne 264 3/4" MM', categorie: "electrovanne", diametre: '3/4"', filetage: "MM", tension: "24 V", source: "patron", releve: "Aqua Plus 2026, p. 18", aVerifier: "tension non \xE9crite sur la ligne : lue dans le titre de section \xAB \xC9LECTROVANNES R\xC9SIDENTIELLES ET GRANDS ESPACES 24V \xBB ; ligne rang\xE9e sous la \xAB S\xC9RIE 252 \xBB sans \xEAtre une 252, et sans colisage imprim\xE9" },
+      { ref: "TEVP2202354", nom: 'EV P220 1" FF 1,2 \xE0 11,3 m\xB3/h - pr\xE9-\xE9quip\xE9e EZReg', categorie: "electrovanne", diametre: '1"', filetage: "FF", tension: "24 V", colisage: "1/24", source: "patron", releve: "Aqua Plus 2026, p. 18", aVerifier: "tension non \xE9crite sur la ligne : lue dans le titre de section \xAB \xC9LECTROVANNES R\xC9SIDENTIELLES ET GRANDS ESPACES 24V \xBB" },
+      { ref: "TEVP2202356", nom: 'EV P220 1"1/2 FF RMD 6,9 \xE0 24,9 m\xB3/h - pr\xE9-\xE9quip\xE9e EZReg', categorie: "electrovanne", diametre: '1"1/2', filetage: "FF", tension: "24 V", colisage: "1/12", source: "patron", releve: "Aqua Plus 2026, p. 18", aVerifier: "tension non \xE9crite sur la ligne : lue dans le titre de section \xAB \xC9LECTROVANNES R\xC9SIDENTIELLES ET GRANDS ESPACES 24V \xBB" },
+      { ref: "TEVP2202358", nom: 'EV P220 2" FF RMD 18,2 \xE0 40,8 m\xB3/h - pr\xE9-\xE9quip\xE9e EZReg', categorie: "electrovanne", diametre: '2"', filetage: "FF", tension: "24 V", colisage: "1/4", source: "patron", releve: "Aqua Plus 2026, p. 18", aVerifier: "tension non \xE9crite sur la ligne : lue dans le titre de section \xAB \xC9LECTROVANNES R\xC9SIDENTIELLES ET GRANDS ESPACES 24V \xBB" },
+      { ref: "TEVP2202350", nom: 'EV P220 3" FF RMD 34,1 \xE0 68,1m\xB3/h - pr\xE9-\xE9quip\xE9e EZReg', categorie: "electrovanne", diametre: '3"', filetage: "FF", tension: "24 V", colisage: "1/4", source: "patron", releve: "Aqua Plus 2026, p. 18", aVerifier: "tension non \xE9crite sur la ligne : lue dans le titre de section \xAB \xC9LECTROVANNES R\xC9SIDENTIELLES ET GRANDS ESPACES 24V \xBB" },
+      { ref: "TPDCLS", nom: "Sol\xE9no\xEFde DC 9V \xE0 impulsion pour EZFLO et P220", categorie: "electrovanne", tension: "9 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 18", aVerifier: "sol\xE9no\xEFde seul (pi\xE8ce d'\xE9lectrovanne), pas une \xE9lectrovanne compl\xE8te" },
+      { ref: "REVV1100", nom: '\xE9lectrovanne 75-DV 3/4" FF 24V', categorie: "electrovanne", diametre: '3/4"', filetage: "FF", tension: "24 V", colisage: "1/20", source: "patron", releve: "Aqua Plus 2026, p. 19" },
+      { ref: "REV201", nom: '\xE9lectrovanne 100-DV 1" FF 24V', categorie: "electrovanne", diametre: '1"', filetage: "FF", tension: "24 V", colisage: "1/20", source: "patron", releve: "Aqua Plus 2026, p. 19" },
+      { ref: "REVM201", nom: '\xE9lectrovanne 100-DV 1" MM 24V', categorie: "electrovanne", diametre: '1"', filetage: "MM", tension: "24 V", colisage: "1/20", source: "patron", releve: "Aqua Plus 2026, p. 19" },
+      { ref: "REV75DV9V", nom: '\xE9lectrovanne 75-DV 3/4" FF 9V \xE0 impulsion', categorie: "electrovanne", diametre: '3/4"', filetage: "FF", tension: "9 V", colisage: "1/20", source: "patron", releve: "Aqua Plus 2026, p. 19" },
+      { ref: "REV100DV9V", nom: '\xE9lectrovanne 100-DV 1" FF 9V \xE0 impulsion', categorie: "electrovanne", diametre: '1"', filetage: "FF", tension: "9 V", colisage: "1/20", source: "patron", releve: "Aqua Plus 2026, p. 19" },
+      { ref: "REV100DVM9V", nom: '\xE9lectrovanne 100-DV 1" MM 9V \xE0 impulsion', categorie: "electrovanne", diametre: '1"', filetage: "MM", tension: "9 V", colisage: "1/20", source: "patron", releve: "Aqua Plus 2026, p. 19" },
+      { ref: "REVPGA100", nom: '\xE9lectrovanne 100-PGA 1" FF 0,5 \xE0 9 m\xB3/h', categorie: "electrovanne", diametre: '1"', filetage: "FF", tension: "24 V", colisage: "1/10", source: "patron", releve: "Aqua Plus 2026, p. 19", aVerifier: "tension non \xE9crite sur la ligne : lue dans la description de la s\xE9rie PGA (\xAB Sol\xE9no\xEFde 24V \xE0 fils \xBB)" },
+      { ref: "REVPGA150", nom: '\xE9lectrovanne 150-PGA 1"1/2 FF 7 \xE0 22 m\xB3/h', categorie: "electrovanne", diametre: '1"1/2', filetage: "FF", tension: "24 V", colisage: "1/8", source: "patron", releve: "Aqua Plus 2026, p. 19", aVerifier: "tension non \xE9crite sur la ligne : lue dans la description de la s\xE9rie PGA (\xAB Sol\xE9no\xEFde 24V \xE0 fils \xBB)" },
+      { ref: "REVPGA200", nom: '\xE9lectrovanne 200-PGA 2" FF 12 \xE0 34 m\xB3/h', categorie: "electrovanne", diametre: '2"', filetage: "FF", tension: "24 V", colisage: "1/4", source: "patron", releve: "Aqua Plus 2026, p. 19", aVerifier: "tension non \xE9crite sur la ligne : lue dans la description de la s\xE9rie PGA (\xAB Sol\xE9no\xEFde 24V \xE0 fils \xBB)" },
+      { ref: "REVPGA1009V", nom: '\xE9lectrovanne 100-PGA 1" FF 9V 0,5 \xE0 9 m\xB3/h', categorie: "electrovanne", diametre: '1"', filetage: "FF", tension: "9 V", colisage: "1/10", source: "patron", releve: "Aqua Plus 2026, p. 19" },
+      { ref: "REVPGA1509V", nom: '\xE9lectrovanne 150-PGA 1"1/2 FF 9V 7 \xE0 22 m\xB3/h', categorie: "electrovanne", diametre: '1"1/2', filetage: "FF", tension: "9 V", colisage: "1/8", source: "patron", releve: "Aqua Plus 2026, p. 19" },
+      { ref: "REVPEB100", nom: '\xE9lectrovanne 100-PEB 1" FF 1 \xE0 10 m\xB3/h', categorie: "electrovanne", diametre: '1"', filetage: "FF", colisage: "1/10", source: "patron", releve: "Aqua Plus 2026, p. 19", aVerifier: "tension non \xE9crite (ni sur la ligne, ni dans le titre de section)" },
+      { ref: "REVPEB150", nom: '\xE9lectrovanne 150-PEB 1"1/2 FF 5 \xE0 34 m\xB3/h', categorie: "electrovanne", diametre: '1"1/2', filetage: "FF", colisage: "1/8", source: "patron", releve: "Aqua Plus 2026, p. 19", aVerifier: "tension non \xE9crite (ni sur la ligne, ni dans le titre de section)" },
+      { ref: "REVPEB200", nom: '\xE9lectrovanne 200-PEB 2" FF 12 \xE0 45 m\xB3/h', categorie: "electrovanne", diametre: '2"', filetage: "FF", colisage: "1/4", source: "patron", releve: "Aqua Plus 2026, p. 19", aVerifier: "tension non \xE9crite (ni sur la ligne, ni dans le titre de section)" },
+      { ref: "REV300-BPE", nom: 'EV 300-BPE 3" FF', categorie: "electrovanne", diametre: '3"', filetage: "FF", tension: "24 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 20", aVerifier: "tension non \xE9crite sur la ligne : lue dans le titre de section \xAB \xC9LECTROVANNES R\xC9SIDENTIELLES ET GRANDS ESPACES 24V \xBB" },
+      { ref: "AEV1201", nom: 'EV RICHDEL 2400 MT 1" FF', categorie: "electrovanne", marque: "RICHDEL", diametre: '1"', filetage: "FF", tension: "24 V", colisage: "1/20", source: "patron", releve: "Aqua Plus 2026, p. 20", aVerifier: "tension non \xE9crite sur la ligne : lue dans le titre de section \xAB \xC9LECTROVANNES R\xC9SIDENTIELLES ET GRANDS ESPACES 24V \xBB" },
+      { ref: "AEV1205", nom: 'EV RICHDEL 2400 MT 1" FF-L 9V', categorie: "electrovanne", marque: "RICHDEL", diametre: '1"', filetage: "FF", tension: "9 V", colisage: "1/20", source: "patron", releve: "Aqua Plus 2026, p. 20" },
+      { ref: "HEV1701", nom: '\xE9lectrovanne PGV 100 1"FF 4 VIS 24V', categorie: "electrovanne", diametre: '1"', filetage: "FF", tension: "24 V", colisage: "1/20", source: "patron", releve: "Aqua Plus 2026, p. 20" },
+      { ref: "HEV1731", nom: '\xE9lectrovanne PGV 100 1"FF 4 VIS 9V', categorie: "electrovanne", diametre: '1"', filetage: "FF", tension: "9 V", colisage: "1/20", source: "patron", releve: "Aqua Plus 2026, p. 20" },
+      { ref: "HEV1721", nom: '\xE9lectrovanne PGV-100JT DC 1" FF 9V', categorie: "electrovanne", diametre: '1"', filetage: "FF", tension: "9 V", colisage: "1/20", source: "patron", releve: "Aqua Plus 2026, p. 20" },
+      { ref: "HEV1724", nom: "\xE9lectrovanne PGV 100 JT FIL 1'' 9V", categorie: "electrovanne", diametre: "1''", tension: "9 V", colisage: "1/20", source: "patron", releve: "Aqua Plus 2026, p. 20" },
+      { ref: "HEV2611", nom: '\xE9lectrovanne PGV-151G 1"1/2 FF en ligne ou en angle', categorie: "electrovanne", diametre: '1"1/2', filetage: "FF", tension: "24 V", colisage: "1/8", source: "patron", releve: "Aqua Plus 2026, p. 20", aVerifier: "tension non \xE9crite sur la ligne : lue dans le titre de section \xAB \xC9LECTROVANNES R\xC9SIDENTIELLES ET GRANDS ESPACES 24V \xBB" },
+      { ref: "HEV2612", nom: '\xE9lectrovanne PGV-201G 2" FF en ligne ou en angle', categorie: "electrovanne", diametre: '2"', filetage: "FF", tension: "24 V", colisage: "1/8", source: "patron", releve: "Aqua Plus 2026, p. 20", aVerifier: "tension non \xE9crite sur la ligne : lue dans le titre de section \xAB \xC9LECTROVANNES R\xC9SIDENTIELLES ET GRANDS ESPACES 24V \xBB" },
+      { ref: "ODU301010", nom: 'DURA T\xE9 1" MFF', categorie: "electrovanne", filetage: '1"', colisage: "25", source: "patron", releve: "Aqua Plus 2026, p. 20", aVerifier: "raccord union d\xE9montable DURA (de quoi monter une nourrice), rang\xE9 page \xE9lectrovannes : mat\xE9riau non \xE9crit, aucune cat\xE9gorie pr\xE9vue pour lui, class\xE9 \xAB electrovanne \xBB faute de mieux" },
+      { ref: "ODU3010102", nom: 'DURA Collecteur M x F x 2 sorties 1"', categorie: "electrovanne", filetage: '1"', colisage: "25", source: "patron", releve: "Aqua Plus 2026, p. 20", aVerifier: "raccord union d\xE9montable DURA (de quoi monter une nourrice), rang\xE9 page \xE9lectrovannes : mat\xE9riau non \xE9crit, aucune cat\xE9gorie pr\xE9vue pour lui, class\xE9 \xAB electrovanne \xBB faute de mieux" },
+      { ref: "ODU3010103", nom: 'DURA Collecteur M x F x 3 sorties 1"', categorie: "electrovanne", filetage: '1"', colisage: "25", source: "patron", releve: "Aqua Plus 2026, p. 20", aVerifier: "raccord union d\xE9montable DURA (de quoi monter une nourrice), rang\xE9 page \xE9lectrovannes : mat\xE9riau non \xE9crit, aucune cat\xE9gorie pr\xE9vue pour lui, class\xE9 \xAB electrovanne \xBB faute de mieux" },
+      { ref: "ODU3010104", nom: 'DURA Collecteur M x F x 4 sorties 1"', categorie: "electrovanne", filetage: '1"', colisage: "25", source: "patron", releve: "Aqua Plus 2026, p. 20", aVerifier: "raccord union d\xE9montable DURA (de quoi monter une nourrice), rang\xE9 page \xE9lectrovannes : mat\xE9riau non \xE9crit, aucune cat\xE9gorie pr\xE9vue pour lui, class\xE9 \xAB electrovanne \xBB faute de mieux" },
+      { ref: "ODU306009", nom: 'DURA Coude 1" MF', categorie: "electrovanne", filetage: '1"', colisage: "25", source: "patron", releve: "Aqua Plus 2026, p. 20", aVerifier: "raccord union d\xE9montable DURA (de quoi monter une nourrice), rang\xE9 page \xE9lectrovannes : mat\xE9riau non \xE9crit, aucune cat\xE9gorie pr\xE9vue pour lui, class\xE9 \xAB electrovanne \xBB faute de mieux" },
+      { ref: "ODU306010", nom: 'DURA Coude 1" FF', categorie: "electrovanne", filetage: '1"', colisage: "25", source: "patron", releve: "Aqua Plus 2026, p. 20", aVerifier: "raccord union d\xE9montable DURA (de quoi monter une nourrice), rang\xE9 page \xE9lectrovannes : mat\xE9riau non \xE9crit, aucune cat\xE9gorie pr\xE9vue pour lui, class\xE9 \xAB electrovanne \xBB faute de mieux" },
+      { ref: "ODU320010", nom: 'DURA Croix 1" MFFF', categorie: "electrovanne", filetage: '1"', colisage: "15", source: "patron", releve: "Aqua Plus 2026, p. 20", aVerifier: "raccord union d\xE9montable DURA (de quoi monter une nourrice), rang\xE9 page \xE9lectrovannes : mat\xE9riau non \xE9crit, aucune cat\xE9gorie pr\xE9vue pour lui, class\xE9 \xAB electrovanne \xBB faute de mieux" },
+      { ref: "ODU329010", nom: 'DURA Manchon union 1" FF', categorie: "electrovanne", filetage: '1"', colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 20", aVerifier: "raccord union d\xE9montable DURA (de quoi monter une nourrice), rang\xE9 page \xE9lectrovannes : mat\xE9riau non \xE9crit, aucune cat\xE9gorie pr\xE9vue pour lui, class\xE9 \xAB electrovanne \xBB faute de mieux" },
+      { ref: "ODU348010", nom: 'DURA Bouchon 1"F', categorie: "electrovanne", filetage: '1"', colisage: "25", source: "patron", releve: "Aqua Plus 2026, p. 20", aVerifier: "raccord union d\xE9montable DURA (de quoi monter une nourrice), rang\xE9 page \xE9lectrovannes : mat\xE9riau non \xE9crit, aucune cat\xE9gorie pr\xE9vue pour lui, class\xE9 \xAB electrovanne \xBB faute de mieux" },
+      { ref: "ODU8303", nom: 'DURA Mamelon 1" MM', categorie: "electrovanne", filetage: '1"', colisage: "75", source: "patron", releve: "Aqua Plus 2026, p. 20", aVerifier: "raccord union d\xE9montable DURA (de quoi monter une nourrice), rang\xE9 page \xE9lectrovannes : mat\xE9riau non \xE9crit, aucune cat\xE9gorie pr\xE9vue pour lui, class\xE9 \xAB electrovanne \xBB faute de mieux" },
+      { ref: "ODU8303131", nom: 'DURA Mamelon R\xE9duit 1"x3/4" MM', categorie: "electrovanne", filetage: '1" x 3/4"', colisage: "75", source: "patron", releve: "Aqua Plus 2026, p. 20", aVerifier: "raccord union d\xE9montable DURA (de quoi monter une nourrice), rang\xE9 page \xE9lectrovannes : mat\xE9riau non \xE9crit, aucune cat\xE9gorie pr\xE9vue pour lui, class\xE9 \xAB electrovanne \xBB faute de mieux" },
+      { ref: "ODU34MF", nom: 'DURA Union 1" MF', categorie: "electrovanne", filetage: '1"', colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 20", aVerifier: "raccord union d\xE9montable DURA (de quoi monter une nourrice), rang\xE9 page \xE9lectrovannes : mat\xE9riau non \xE9crit, aucune cat\xE9gorie pr\xE9vue pour lui, class\xE9 \xAB electrovanne \xBB faute de mieux" },
+      { ref: "RG17104", nom: 'regard mini-rond 7" VB708B', categorie: "regard", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 21" },
+      { ref: "RG6200", nom: 'regard rond 10" VB910B', categorie: "regard", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 21" },
+      { ref: "RGVB910C", nom: 'couvercle regard 10" VB910C', categorie: "regard", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 21" },
+      { ref: "RG17100", nom: 'regard rectangle 12" VB1419', categorie: "regard", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 21" },
+      { ref: "RG17101", nom: 'r\xE9hausse regard 12" VB1419E', categorie: "regard", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 21" },
+      { ref: "RG1710009", nom: 'couvercle regard 12" VB1419C', categorie: "regard", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 21" },
+      { ref: "RG17106", nom: "regard Jumbo VB1220", categorie: "regard", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 21" },
+      { ref: "RG17107", nom: "r\xE9hausse regard Jumbo VB1220E", categorie: "regard", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 21" },
+      { ref: "RG17108", nom: "couvercle regard Jumbo VB1220C", categorie: "regard", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 21" },
+      { ref: "RGVB1324", nom: "regard Super Jumbo L x l x h = 83 x 59 x 39 VB1324", categorie: "regard", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 21" },
+      { ref: "RG17109", nom: "regard Maxi Jumbo L x l x h = 103 x 69 x 46 VB1730", categorie: "regard", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 21" },
+      { ref: "TPEVO4IDEU", nom: "Programmateur EVOLUTION 4 voies int\xE9rieur", categorie: "programmateur", tension: "220 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 22" },
+      { ref: "TPEVO4ODEU", nom: "Programmateur EVOLUTION 4 voies ext\xE9rieur", categorie: "programmateur", tension: "220 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 22" },
+      { ref: "RP3242", nom: "ESP-TM2 4 stations", categorie: "programmateur", tension: "220 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 22" },
+      { ref: "RP3193", nom: "ESP-TM2 6 stations", categorie: "programmateur", tension: "220 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 22" },
+      { ref: "RP3146", nom: "ESP-TM2 8 stations", categorie: "programmateur", tension: "220 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 22" },
+      { ref: "RP3147", nom: "ESP-TM2 12 stations", categorie: "programmateur", tension: "220 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 22" },
+      { ref: "RP3315", nom: "CL\xC9 LNK WIFI ESP/ME-RZX", categorie: "accessoire de programmation", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 22" },
+      { ref: "HPXC-E-XC401-E", nom: "programmateur XC-401x-E 4 stations avec coffret verrouillable", categorie: "programmateur", tension: "220 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 23" },
+      { ref: "HPXC-E-XC601-E", nom: "programmateur XC-601x-E 6 stations avec coffret verrouillable", categorie: "programmateur", tension: "220 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 23" },
+      { ref: "HPXC-801-X", nom: "programmateur XC-801x-E 8 stations avec coffret verrouillable", categorie: "programmateur", tension: "220 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 23" },
+      { ref: "HPPC-301-E", nom: "programmateur HPC 4 stations extensible", categorie: "programmateur", tension: "220 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 23" },
+      { ref: "HPX2-4", nom: "programmateur X2 4 stations", categorie: "programmateur", tension: "220 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 23" },
+      { ref: "HPX2-6", nom: "programmateur X2 6 stations", categorie: "programmateur", tension: "220 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 23" },
+      { ref: "HPX2-8", nom: "programmateur X2 8 stations", categorie: "programmateur", tension: "220 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 23" },
+      { ref: "HPX2", nom: "programmateur X2 14 stations", categorie: "programmateur", tension: "220 V", source: "patron", releve: "Aqua Plus 2026, p. 23", aVerifier: "r\xE9f\xE9rence \xAB HPX2 \xBB sans suffixe, alors que les autres sont HPX2-4, HPX2-6, HPX2-8 : peut-\xEAtre tronqu\xE9e" },
+      { ref: "SPVIL4", nom: "PROG SOLEM VILLA 4 VOIES", categorie: "programmateur", marque: "SOLEM", tension: "220 V", source: "patron", releve: "Aqua Plus 2026, p. 24" },
+      { ref: "SPVIL6", nom: "PROG SOLEM VILLA 6 VOIES", categorie: "programmateur", marque: "SOLEM", tension: "220 V", source: "patron", releve: "Aqua Plus 2026, p. 24" },
+      { ref: "SPVIL9", nom: "PROG SOLEM VILLA 9 VOIES", categorie: "programmateur", marque: "SOLEM", tension: "220 V", source: "patron", releve: "Aqua Plus 2026, p. 24" },
+      { ref: "SPVIL12", nom: "PROG SOLEM VILLA 12 VOIES", categorie: "programmateur", marque: "SOLEM", tension: "220 V", source: "patron", releve: "Aqua Plus 2026, p. 24" },
+      { ref: "SP2741", nom: "PROG SOLEM WIFI SMART-IS 2 STATIONS", categorie: "programmateur", marque: "SOLEM", tension: "220 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 24" },
+      { ref: "SP2742", nom: "PROG SOLEM WIFI SMART-IS 4 STATIONS", categorie: "programmateur", marque: "SOLEM", tension: "220 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 24" },
+      { ref: "SP2743", nom: "PROG SOLEM WIFI SMART-IS 6 STATIONS", categorie: "programmateur", marque: "SOLEM", tension: "220 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 24" },
+      { ref: "SP2744", nom: "PROG SOLEM WIFI SMART-IS 9 STATIONS", categorie: "programmateur", marque: "SOLEM", tension: "220 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 24" },
+      { ref: "SP2745", nom: "PROG SOLEM WIFI SMART-IS 12 STATIONS", categorie: "programmateur", marque: "SOLEM", tension: "220 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 24" },
+      { ref: "SP1739", nom: "RELAIS SOLEM LR-MB10", categorie: "accessoire de programmation", marque: "SOLEM", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 24", aVerifier: "m\xEAme r\xE9f\xE9rence aussi imprim\xE9e p. 26" },
+      { ref: "SP1740", nom: "RELAIS SOLEM LR-MB30", categorie: "accessoire de programmation", marque: "SOLEM", source: "patron", releve: "Aqua Plus 2026, p. 24", aVerifier: "m\xEAme r\xE9f\xE9rence aussi imprim\xE9e p. 26" },
+      { ref: "AEV11401", nom: "PROG BUDDY TAP TIMER 1 STAT.", categorie: "programmateur", colisage: "1/6", source: "patron", releve: "Aqua Plus 2026, p. 25", aVerifier: "tension non \xE9crite pour ce mod\xE8le ; programmateur de robinet (se visse sur un robinet), pas un programmateur de r\xE9seau enterr\xE9" },
+      { ref: "AEV11422", nom: "PROG BUDDY TAP TIMER 2 STAT.", categorie: "programmateur", colisage: "1/6", source: "patron", releve: "Aqua Plus 2026, p. 25", aVerifier: "tension non \xE9crite pour ce mod\xE8le ; programmateur de robinet (se visse sur un robinet), pas un programmateur de r\xE9seau enterr\xE9" },
+      { ref: "RP13711", nom: "ESP-BAT-BT 1 STATION", categorie: "programmateur", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 25", aVerifier: "tension non \xE9crite pour ce mod\xE8le" },
+      { ref: "RP13722", nom: "ESP-BAT-BT 2 STATIONS", categorie: "programmateur", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 25", aVerifier: "tension non \xE9crite pour ce mod\xE8le" },
+      { ref: "RP13744", nom: "ESP-BAT-BT 4 STATIONS", categorie: "programmateur", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 25", aVerifier: "tension non \xE9crite pour ce mod\xE8le" },
+      { ref: "RP13766", nom: "ESP-BAT-BT 6 STATIONS", categorie: "programmateur", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 25", aVerifier: "tension non \xE9crite pour ce mod\xE8le" },
+      { ref: "RP1371", nom: "PROG RB ESP 9V 1 VOIE", categorie: "programmateur", tension: "9 V", colisage: "1/6", source: "patron", releve: "Aqua Plus 2026, p. 25" },
+      { ref: "RP1372", nom: "PROG RB ESP 9V 2 VOIES", categorie: "programmateur", tension: "9 V", colisage: "1/6", source: "patron", releve: "Aqua Plus 2026, p. 25" },
+      { ref: "RP1374", nom: "PROG RB ESP 9V 4 VOIES", categorie: "programmateur", tension: "9 V", colisage: "1/6", source: "patron", releve: "Aqua Plus 2026, p. 25" },
+      { ref: "RP1376", nom: "PROG RB ESP 9V 6 VOIES", categorie: "programmateur", tension: "9 V", colisage: "1/6", source: "patron", releve: "Aqua Plus 2026, p. 25" },
+      { ref: "RPJVP300", nom: "sol\xE9no\xEFde compact 9V \xE0 impulsion LU3100", categorie: "electrovanne", tension: "9 V", colisage: "1/4", source: "patron", releve: "Aqua Plus 2026, p. 25", aVerifier: "sol\xE9no\xEFde seul (pi\xE8ce d'\xE9lectrovanne), pas une \xE9lectrovanne compl\xE8te" },
+      { ref: "SP1721", nom: "PROG SOLEM BL-IP 1 STATION 9 V", categorie: "programmateur", marque: "SOLEM", tension: "9 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 26" },
+      { ref: "SP1722", nom: "PROG SOLEM BL-IP 2 STATION 9 V", categorie: "programmateur", marque: "SOLEM", tension: "9 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 26" },
+      { ref: "SP1724", nom: "PROG SOLEM BL-IP 4 STATION 9 V", categorie: "programmateur", marque: "SOLEM", tension: "9 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 26" },
+      { ref: "SP1726", nom: "PROG SOLEM BL-IP 6 STATION 9 V", categorie: "programmateur", marque: "SOLEM", tension: "9 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 26" },
+      { ref: "SP1741", nom: "PROG SOLEM LR-IP 1 STATION 9V", categorie: "programmateur", marque: "SOLEM", tension: "9 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 26" },
+      { ref: "SP1742", nom: "PROG SOLEM LR-IP 2 STATION 9V", categorie: "programmateur", marque: "SOLEM", tension: "9 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 26" },
+      { ref: "SP1743", nom: "PROG SOLEM LR-IP 4 STATION 9V", categorie: "programmateur", marque: "SOLEM", tension: "9 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 26" },
+      { ref: "SP1744", nom: "PROG SOLEM LR-IP 6 STATION 9V", categorie: "programmateur", marque: "SOLEM", tension: "9 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 26" },
+      { ref: "SP1739", nom: "RELAIS SOLEM LR-MB10", categorie: "accessoire de programmation", marque: "SOLEM", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 26", aVerifier: "m\xEAme r\xE9f\xE9rence aussi imprim\xE9e p. 24" },
+      { ref: "SP1740", nom: "RELAIS SOLEM LR-MB30", categorie: "accessoire de programmation", marque: "SOLEM", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 26", aVerifier: "m\xEAme r\xE9f\xE9rence aussi imprim\xE9e p. 24" },
+      { ref: "SP174011", nom: "SOLEM MODULE LR-MS 1", categorie: "accessoire de programmation", marque: "SOLEM", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 26" },
+      { ref: "SPWOOBEE1", nom: "PROG SOLEM WOOBEE 1 VOIE", categorie: "programmateur", marque: "SOLEM", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 26", aVerifier: "tension non \xE9crite pour ce mod\xE8le" },
+      { ref: "SPWOOBEE2", nom: "PROG SOLEM WOOBEE 2 VOIES", categorie: "programmateur", marque: "SOLEM", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 26", aVerifier: "tension non \xE9crite pour ce mod\xE8le" },
+      { ref: "SPWOOBEE4", nom: "PROG SOLEM WOOBEE 4 VOIES", categorie: "programmateur", marque: "SOLEM", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 26", aVerifier: "tension non \xE9crite pour ce mod\xE8le" },
+      { ref: "SPWOOBEE6", nom: "PROG SOLEM WOOBEE 6 VOIES", categorie: "programmateur", marque: "SOLEM", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 26", aVerifier: "tension non \xE9crite pour ce mod\xE8le" },
+      { ref: "SP1151", nom: "Programmateur nez de rob. SOLEM BL - NR - 1 voie", categorie: "programmateur", marque: "SOLEM", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 26", aVerifier: "tension non \xE9crite pour ce mod\xE8le ; programmateur de nez de robinet, pas un programmateur de r\xE9seau enterr\xE9" },
+      { ref: "SP1152", nom: "Programmateur nez de rob. SOLEM BL - LR - 1 voie", categorie: "programmateur", marque: "SOLEM", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 26", aVerifier: "tension non \xE9crite pour ce mod\xE8le ; la d\xE9signation dit \xAB BL - LR \xBB sous le titre \xAB SERIE LR - NR \xBB : recopi\xE9e telle quelle" },
+      { ref: "SP1739", nom: "RELAIS SOLEM LR-MB10", categorie: "accessoire de programmation", marque: "SOLEM", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 26", aVerifier: "m\xEAme r\xE9f\xE9rence aussi imprim\xE9e p. 24" },
+      { ref: "SP1740", nom: "RELAIS SOLEM LR-MB30", categorie: "accessoire de programmation", marque: "SOLEM", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 26", aVerifier: "m\xEAme r\xE9f\xE9rence aussi imprim\xE9e p. 24" },
+      { ref: "ELD60481", nom: "pile alcaline 9V 6LR61", categorie: "accessoire de programmation", tension: "9 V", colisage: "1/12", source: "patron", releve: "Aqua Plus 2026, p. 27" },
+      { ref: "ELD40034", nom: "accumulateur rechargeable 9V pour SIRR+,HP et DIALOG+", categorie: "accessoire de programmation", tension: "9 V", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 27" },
+      { ref: "ELD1605", nom: "pile CR2032 3V pour RainSensor sans fil", categorie: "accessoire de programmation", tension: "3 V", colisage: "2", source: "patron", releve: "Aqua Plus 2026, p. 27" },
+      { ref: "RP403", nom: "sonde pluie RSD-Bex Rain Bird", categorie: "accessoire de programmation", marque: "Rain Bird", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 27" },
+      { ref: "HPMINICLIK", nom: "pluviom\xE8tre Mini-Clik Hunter", categorie: "accessoire de programmation", marque: "Hunter", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 27" },
+      { ref: "HPRAINCLIK", nom: "pluviom\xE8tre Rain-Clik WRC-INT radio Hunter", categorie: "accessoire de programmation", marque: "Hunter", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 27" },
+      { ref: "HP6226", nom: "Sonde d'humidit\xE9 et solaire Solar SYNC", categorie: "accessoire de programmation", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 27" },
+      { ref: "HP6228", nom: "Sonde d'humidit\xE9 et solaire Solar SYNC SANS FIL", categorie: "accessoire de programmation", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 27" },
+      { ref: "ELD550077", nom: "connexion \xE9tanche 3 fils DBM (3 fils de 1,5 mm\xB2)", categorie: "accessoire de programmation", colisage: "1/10", source: "patron", releve: "Aqua Plus 2026, p. 27", aVerifier: "m\xEAme r\xE9f\xE9rence aussi imprim\xE9e p. 57" },
+      { ref: "OPL701016", nom: "manchon 16 x 16", categorie: "raccord PE", diametre: "16", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL701020", nom: "manchon 20 x 20", categorie: "raccord PE", diametre: "20", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL701025", nom: "manchon 25 x 25", categorie: "raccord PE", diametre: "25", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL701032", nom: "manchon 32 x 32", categorie: "raccord PE", diametre: "32", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL701040", nom: "manchon 40 x 40", categorie: "raccord PE", diametre: "40", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL701050", nom: "manchon 50 x 50", categorie: "raccord PE", diametre: "50", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL701063", nom: "manchon 63 x 63", categorie: "raccord PE", diametre: "63", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL701075", nom: "manchon 75 x 75 MILLENIUM", categorie: "raccord PE", diametre: "75", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL701090", nom: "manchon 90 x 90 MILLENIUM", categorie: "raccord PE", diametre: "90", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL7010110", nom: "manchon 110 x 110 MILLENIUM", categorie: "raccord PE", diametre: "110", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL71102016", nom: "manchon r\xE9duit 20 x 16", categorie: "raccord PE", diametre: "20 x 16", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL71102516", nom: "manchon r\xE9duit 25 x 16", categorie: "raccord PE", diametre: "25 x 16", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL71102520", nom: "manchon r\xE9duit 25 x 20", categorie: "raccord PE", diametre: "25 x 20", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL71103220", nom: "manchon r\xE9duit 32 x 20", categorie: "raccord PE", diametre: "32 x 20", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL71103225", nom: "manchon r\xE9duit 32 x 25", categorie: "raccord PE", diametre: "32 x 25", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL71104025", nom: "manchon r\xE9duit 40 x 25", categorie: "raccord PE", diametre: "40 x 25", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL71104032", nom: "manchon r\xE9duit 40 x 32", categorie: "raccord PE", diametre: "40 x 32", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL71105025", nom: "manchon r\xE9duit 50 x 25", categorie: "raccord PE", diametre: "50 x 25", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL71105032", nom: "manchon r\xE9duit 50 x 32", categorie: "raccord PE", diametre: "50 x 32", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL71105040", nom: "manchon r\xE9duit 50 x 40", categorie: "raccord PE", diametre: "50 x 40", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL71106325", nom: "manchon r\xE9duit 63 x 25", categorie: "raccord PE", diametre: "63 x 25", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL71106332", nom: "manchon r\xE9duit 63 x 32", categorie: "raccord PE", diametre: "63 x 32", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL71106340", nom: "manchon r\xE9duit 63 x 40", categorie: "raccord PE", diametre: "63 x 40", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL71106350", nom: "manchon r\xE9duit 63 x 50", categorie: "raccord PE", diametre: "63 x 50", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL71107550", nom: "manchon r\xE9duit 75 x 50 MILLENIUM", categorie: "raccord PE", diametre: "75 x 50", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL71107563", nom: "manchon r\xE9duit 75 x 63 MILLENIUM", categorie: "raccord PE", diametre: "75 x 63", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL71109063", nom: "manchon r\xE9duit 90 x 63 MILLENIUM", categorie: "raccord PE", diametre: "90 x 63", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL71109075", nom: "manchon r\xE9duit 90 x 75 MILLENIUM", categorie: "raccord PE", diametre: "90 x 75", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL711011090", nom: "manchon r\xE9duit 110 x 90 MILLENIUM", categorie: "raccord PE", diametre: "110 x 90", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL761020", nom: "manchon de r\xE9paration 20", categorie: "raccord PE", diametre: "20", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL761025", nom: "manchon de r\xE9paration 25", categorie: "raccord PE", diametre: "25", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL761032", nom: "manchon de r\xE9paration 32", categorie: "raccord PE", diametre: "32", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL761040", nom: "manchon de r\xE9paration 40", categorie: "raccord PE", diametre: "40", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL761050", nom: "manchon de r\xE9paration 50", categorie: "raccord PE", diametre: "50", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL761063", nom: "manchon de r\xE9paration 63", categorie: "raccord PE", diametre: "63", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL761075", nom: "manchon de r\xE9paration 75 MILLENIUM", categorie: "raccord PE", diametre: "75", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL761090", nom: "manchon de r\xE9paration 90 MILLENIUM", categorie: "raccord PE", diametre: "90", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL7610110", nom: "manchon de r\xE9paration 110 MILLENIUM", categorie: "raccord PE", diametre: "110", source: "patron", releve: "Aqua Plus 2026, p. 28" },
+      { ref: "OPL70201615", nom: 'raccord m\xE2le 16 x 1/2"', categorie: "raccord PE", diametre: "16", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70201620", nom: 'raccord m\xE2le 16 x 3/4"', categorie: "raccord PE", diametre: "16", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70202015", nom: 'raccord m\xE2le 20 x 1/2"', categorie: "raccord PE", diametre: "20", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70202020", nom: 'raccord m\xE2le 20 x 3/4"', categorie: "raccord PE", diametre: "20", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70202026", nom: 'raccord m\xE2le 20 x 1"', categorie: "raccord PE", diametre: "20", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70202515", nom: 'raccord m\xE2le 25 x 1/2"', categorie: "raccord PE", diametre: "25", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70202520", nom: 'raccord m\xE2le 25 x 3/4"', categorie: "raccord PE", diametre: "25", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70202526", nom: 'raccord m\xE2le 25 x 1"', categorie: "raccord PE", diametre: "25", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70203220", nom: 'raccord m\xE2le 32 x 3/4"', categorie: "raccord PE", diametre: "32", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70203226", nom: 'raccord m\xE2le 32 x 1"', categorie: "raccord PE", diametre: "32", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70203233", nom: 'raccord m\xE2le 32 x 1"1/4', categorie: "raccord PE", diametre: "32", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70203240", nom: 'raccord m\xE2le 32 x 1"1/2', categorie: "raccord PE", diametre: "32", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70204026", nom: 'raccord m\xE2le 40 x 1"', categorie: "raccord PE", diametre: "40", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70204033", nom: 'raccord m\xE2le 40 x 1"1/4', categorie: "raccord PE", diametre: "40", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70204040", nom: 'raccord m\xE2le 40 x 1"1/2', categorie: "raccord PE", diametre: "40", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70204050", nom: 'raccord m\xE2le 40 x 2"', categorie: "raccord PE", diametre: "40", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70205026", nom: 'raccord m\xE2le 50 x 1"', categorie: "raccord PE", diametre: "50", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70205033", nom: 'raccord m\xE2le 50 x 1"1/4', categorie: "raccord PE", diametre: "50", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70205040", nom: 'raccord m\xE2le 50 x 1"1/2', categorie: "raccord PE", diametre: "50", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70205050", nom: 'raccord m\xE2le 50 x 2"', categorie: "raccord PE", diametre: "50", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70206333", nom: 'raccord m\xE2le 63 x 1"1/4', categorie: "raccord PE", diametre: "63", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70206340", nom: 'raccord m\xE2le 63 x 1"1/2', categorie: "raccord PE", diametre: "63", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70206350", nom: 'raccord m\xE2le 63 x 2"', categorie: "raccord PE", diametre: "63", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70206366", nom: 'raccord m\xE2le 63 x 2"1/2', categorie: "raccord PE", diametre: "63", filetage: '2"1/2', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70207550", nom: 'raccord m\xE2le 75 x 2" MILLENIUM', categorie: "raccord PE", diametre: "75", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70207566", nom: 'raccord m\xE2le 75 x 2"1/2 MILLENIUM', categorie: "raccord PE", diametre: "75", filetage: '2"1/2', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70207580", nom: 'raccord m\xE2le 75 x 3" MILLENIUM', categorie: "raccord PE", diametre: "75", filetage: '3"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70209050", nom: 'raccord m\xE2le 90 x 2" MILLENIUM', categorie: "raccord PE", diametre: "90", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70209066", nom: 'raccord m\xE2le 90 x 2"1/2 MILLENIUM', categorie: "raccord PE", diametre: "90", filetage: '2"1/2', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70209080", nom: 'raccord m\xE2le 90 x 3" MILLENIUM', categorie: "raccord PE", diametre: "90", filetage: '3"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL702090102", nom: 'raccord m\xE2le 90 x 4" MILLENIUM', categorie: "raccord PE", diametre: "90", filetage: '4"', source: "patron", releve: "Aqua Plus 2026, p. 29", aVerifier: `r\xE9f\xE9rence OPL702090102 imprim\xE9e deux fois sur la page, pour le 90 x 4" et pour le 110 x 4" : l'une des deux est fausse` },
+      { ref: "OPL702011050", nom: 'raccord m\xE2le 110 x 2" MILLENIUM', categorie: "raccord PE", diametre: "110", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL702011080", nom: 'raccord m\xE2le 110 x 3" MILLENIUM', categorie: "raccord PE", diametre: "110", filetage: '3"', source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL702090102", nom: 'raccord m\xE2le 110 x 4" MILLENIUM', categorie: "raccord PE", diametre: "110", filetage: '4"', source: "patron", releve: "Aqua Plus 2026, p. 29", aVerifier: `r\xE9f\xE9rence OPL702090102 imprim\xE9e deux fois sur la page, pour le 90 x 4" et pour le 110 x 4" : l'une des deux est fausse` },
+      { ref: "OPL712020", nom: "bouchon m\xE2le 20", categorie: "raccord PE", diametre: "20", source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL712025", nom: "bouchon m\xE2le 25", categorie: "raccord PE", diametre: "25", source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL712032", nom: "bouchon m\xE2le 32", categorie: "raccord PE", diametre: "32", source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL712040", nom: "bouchon m\xE2le 40", categorie: "raccord PE", diametre: "40", source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL712050", nom: "bouchon m\xE2le 50", categorie: "raccord PE", diametre: "50", source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL712063", nom: "bouchon m\xE2le 63", categorie: "raccord PE", diametre: "63", source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL712075", nom: "bouchon m\xE2le 75 MILLENIUM", categorie: "raccord PE", diametre: "75", source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL712090", nom: "bouchon m\xE2le 90 MILLENIUM", categorie: "raccord PE", diametre: "90", source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL7120110", nom: "bouchon m\xE2le 110 MILLENIUM", categorie: "raccord PE", diametre: "110", source: "patron", releve: "Aqua Plus 2026, p. 29" },
+      { ref: "OPL70301615", nom: 'raccord femelle 16 x 1/2"', categorie: "raccord PE", diametre: "16", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70301620", nom: 'raccord femelle 16 x 3/4"', categorie: "raccord PE", diametre: "16", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70302015", nom: 'raccord femelle 20 x 1/2"', categorie: "raccord PE", diametre: "20", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70302020", nom: 'raccord femelle 20 x 3/4"', categorie: "raccord PE", diametre: "20", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70302026", nom: 'raccord femelle 20 x 1"', categorie: "raccord PE", diametre: "20", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70302520", nom: 'raccord femelle 25 x 3/4"', categorie: "raccord PE", diametre: "25", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70302526", nom: 'raccord femelle 25 x 1"', categorie: "raccord PE", diametre: "25", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70303220", nom: 'raccord femelle 32 x 3/4"', categorie: "raccord PE", diametre: "32", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70303226", nom: 'raccord femelle 32 x 1"', categorie: "raccord PE", diametre: "32", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70303233", nom: 'raccord femelle 32 x 1"1/4', categorie: "raccord PE", diametre: "32", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70304026", nom: 'raccord femelle 40 x 1"', categorie: "raccord PE", diametre: "40", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70304033", nom: 'raccord femelle 40 x 1"1/4', categorie: "raccord PE", diametre: "40", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70304040", nom: 'raccord femelle 40 x 1"1/2', categorie: "raccord PE", diametre: "40", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70305033", nom: 'raccord femelle 50 x 1"1/4', categorie: "raccord PE", diametre: "50", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70305040", nom: 'raccord femelle 50 x 1"1/2', categorie: "raccord PE", diametre: "50", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70305050", nom: 'raccord femelle 50 x 2"', categorie: "raccord PE", diametre: "50", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70306333", nom: 'raccord femelle 63 x 1"1/4', categorie: "raccord PE", diametre: "63", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70306340", nom: 'raccord femelle 63 x 1"1/2', categorie: "raccord PE", diametre: "63", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70306350", nom: 'raccord femelle 63 x 2"', categorie: "raccord PE", diametre: "63", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70307550", nom: 'raccord femelle 75 x 2" MILLENIUM', categorie: "raccord PE", diametre: "75", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70307566", nom: 'raccord femelle 75 x 2"1/2 MILLENIUM', categorie: "raccord PE", diametre: "75", filetage: '2"1/2', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70309050", nom: 'raccord femelle 90 x 2" MILLENIUM', categorie: "raccord PE", diametre: "90", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL70309080", nom: 'raccord femelle 90 x 3" MILLENIUM', categorie: "raccord PE", diametre: "90", filetage: '3"', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL703090102", nom: 'raccord femelle 90 x 4" MILLENIUM', categorie: "raccord PE", diametre: "90", filetage: '4"', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL703011080", nom: 'raccord femelle 110 x 3" MILLENIUM', categorie: "raccord PE", diametre: "110", filetage: '3"', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL7030110102", nom: 'raccord femelle 110 x 4" MILLENIUM', categorie: "raccord PE", diametre: "110", filetage: '4"', source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL704016", nom: "t\xE9 90\xB0 16 x 16 x 16", categorie: "raccord PE", diametre: "16", source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL704020", nom: "t\xE9 90\xB0 20 x 20 x 20", categorie: "raccord PE", diametre: "20", source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL704025", nom: "t\xE9 90\xB0 25 x 25 x 25", categorie: "raccord PE", diametre: "25", source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL704032", nom: "t\xE9 90\xB0 32 x 32 x 32", categorie: "raccord PE", diametre: "32", source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL704040", nom: "t\xE9 90\xB0 40 x 40 x 40", categorie: "raccord PE", diametre: "40", source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL704050", nom: "t\xE9 90\xB0 50 x 50 x 50", categorie: "raccord PE", diametre: "50", source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL704063", nom: "t\xE9 90\xB0 63 x 63 x 63", categorie: "raccord PE", diametre: "63", source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL704090", nom: "t\xE9 90\xB0 90 x 90 x 90 MILLENIUM", categorie: "raccord PE", diametre: "90", source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL704520", nom: "t\xE9 90\xB0 de r\xE9paration 20 x 20 x 20", categorie: "raccord PE", diametre: "20", source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL704525", nom: "t\xE9 90\xB0 de r\xE9paration 25 x 25 x 25", categorie: "raccord PE", diametre: "25", source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL704532", nom: "t\xE9 90\xB0 de r\xE9paration 32 x 32 x 32", categorie: "raccord PE", diametre: "32", source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL704540", nom: "t\xE9 90\xB0 de r\xE9paration 40 x 40 x 40", categorie: "raccord PE", diametre: "40", source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL704550", nom: "t\xE9 90\xB0 de r\xE9paration 50 x 50 x 50", categorie: "raccord PE", diametre: "50", source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL704563", nom: "t\xE9 90\xB0 de r\xE9paration 63 x 63 x 63", categorie: "raccord PE", diametre: "63", source: "patron", releve: "Aqua Plus 2026, p. 30" },
+      { ref: "OPL71401615", nom: 't\xE9 90\xB0 taraud\xE9 16 x 1/2" x 16', categorie: "raccord PE", diametre: "16", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71401620", nom: 't\xE9 90\xB0 taraud\xE9 16 x 3/4" x 16', categorie: "raccord PE", diametre: "16", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71402015", nom: 't\xE9 90\xB0 taraud\xE9 20 x 1/2" x 20', categorie: "raccord PE", diametre: "20", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71402020", nom: 't\xE9 90\xB0 taraud\xE9 20 x 3/4" x 20', categorie: "raccord PE", diametre: "20", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71402515", nom: 't\xE9 90\xB0 taraud\xE9 25 x 1/2" x 25', categorie: "raccord PE", diametre: "25", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71402520", nom: 't\xE9 90\xB0 taraud\xE9 25 x 3/4" x 25', categorie: "raccord PE", diametre: "25", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71402526", nom: 't\xE9 90\xB0 taraud\xE9 25 x 1" x 25', categorie: "raccord PE", diametre: "25", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71402533", nom: 't\xE9 90\xB0 taraud\xE9 25 x 1"1/4 x 25', categorie: "raccord PE", diametre: "25", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71403220", nom: 't\xE9 90\xB0 taraud\xE9 32 x 3/4" x 32', categorie: "raccord PE", diametre: "32", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71403226", nom: 't\xE9 90\xB0 taraud\xE9 32 x 1" x 32', categorie: "raccord PE", diametre: "32", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71403233", nom: 't\xE9 90\xB0 taraud\xE9 32 x 1"1/4 x 32', categorie: "raccord PE", diametre: "32", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71403240", nom: 't\xE9 90\xB0 taraud\xE9 32 x 1"1/2 x 32', categorie: "raccord PE", diametre: "32", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71404026", nom: 't\xE9 90\xB0 taraud\xE9 40 x 1" x 40', categorie: "raccord PE", diametre: "40", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71404033", nom: 't\xE9 90\xB0 taraud\xE9 40 x 1"1/4 x 40', categorie: "raccord PE", diametre: "40", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71404040", nom: 't\xE9 90\xB0 taraud\xE9 40 x 1"1/2 x 40', categorie: "raccord PE", diametre: "40", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71404050", nom: 't\xE9 90\xB0 taraud\xE9 40 x 2" x 40', categorie: "raccord PE", diametre: "40", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71405040", nom: 't\xE9 90\xB0 taraud\xE9 50 x 1"1/2 x 50', categorie: "raccord PE", diametre: "50", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71405050", nom: 't\xE9 90\xB0 taraud\xE9 50 x 2" x 50', categorie: "raccord PE", diametre: "50", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71406333", nom: 't\xE9 90\xB0 taraud\xE9 63 x 1"1/4" x 63', categorie: "raccord PE", diametre: "63", filetage: '1"1/4"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71406340", nom: 't\xE9 90\xB0 taraud\xE9 63 x 1"1/2" x 63', categorie: "raccord PE", diametre: "63", filetage: '1"1/2"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71406350", nom: 't\xE9 90\xB0 taraud\xE9 63 x 2" x 63', categorie: "raccord PE", diametre: "63", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71407550", nom: 't\xE9 90\xB0 taraud\xE9 75 x 2" x 75 MILLENIUM', categorie: "raccord PE", diametre: "75", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71407566", nom: 't\xE9 90\xB0 taraud\xE9 75 x 2"1/2 x 75 MILLENIUM', categorie: "raccord PE", diametre: "75", filetage: '2"1/2', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71407580", nom: 't\xE9 90\xB0 taraud\xE9 75 x 3" x 75 MILLENIUM', categorie: "raccord PE", diametre: "75", filetage: '3"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL71409080", nom: 't\xE9 90\xB0 taraud\xE9 90 x 3" x 90 MILLENIUM', categorie: "raccord PE", diametre: "90", filetage: '3"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL7140110102", nom: 't\xE9 90\xB0 taraud\xE9 110 x 4" x 110 MILLENIUM', categorie: "raccord PE", diametre: "110", filetage: '4"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL78402015", nom: 't\xE9 90\xB0 filet\xE9 20 x 1/2" x 20', categorie: "raccord PE", diametre: "20", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL78402020", nom: 't\xE9 90\xB0 filet\xE9 20 x 3/4" x 20', categorie: "raccord PE", diametre: "20", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL78402515", nom: 't\xE9 90\xB0 filet\xE9 25 x 1/2" x 25', categorie: "raccord PE", diametre: "25", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL78402520", nom: 't\xE9 90\xB0 filet\xE9 25 x 3/4" x 25', categorie: "raccord PE", diametre: "25", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL78403226", nom: 't\xE9 90\xB0 filet\xE9 32 x 1" x 32', categorie: "raccord PE", diametre: "32", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL78404033", nom: 't\xE9 90\xB0 filet\xE9 40 x 1"1/4 x 40', categorie: "raccord PE", diametre: "40", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL78404040", nom: 't\xE9 90\xB0 filet\xE9 40 x 1"1/2 x 40', categorie: "raccord PE", diametre: "40", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL78405033", nom: 't\xE9 90\xB0 filet\xE9 50 x 1"1/4 x 50', categorie: "raccord PE", diametre: "50", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL78405040", nom: 't\xE9 90\xB0 filet\xE9 50 x 1"1/2 x 50', categorie: "raccord PE", diametre: "50", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL78406333", nom: 't\xE9 90\xB0 filet\xE9 63 x 1"1/4 x 63', categorie: "raccord PE", diametre: "63", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL78406340", nom: 't\xE9 90\xB0 filet\xE9 63 x 1"1/2 x 63', categorie: "raccord PE", diametre: "63", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL78406350", nom: 't\xE9 90\xB0 filet\xE9 63 x 2" x 63', categorie: "raccord PE", diametre: "63", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL764063", nom: "t\xE9 45\xB0 63 x 63 x 63", categorie: "raccord PE", diametre: "63", source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL764075", nom: "t\xE9 45\xB0 75 x 75 x 75 MILLENIUM", categorie: "raccord PE", diametre: "75", source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL764090", nom: "t\xE9 45\xB0 90 x 90 x 90 MILLENIUM", categorie: "raccord PE", diametre: "90", source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL7640110", nom: "t\xE9 45\xB0 110 x 110 x 110 MILLENIUM", categorie: "raccord PE", diametre: "110", source: "patron", releve: "Aqua Plus 2026, p. 31" },
+      { ref: "OPL73402016", nom: "t\xE9 90\xB0 r\xE9duit 20 x 16 x 20", categorie: "raccord PE", diametre: "20 x 16 x 20", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL73402520", nom: "t\xE9 90\xB0 r\xE9duit 25 x 20 x 25", categorie: "raccord PE", diametre: "25 x 20 x 25", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL73403225", nom: "t\xE9 90\xB0 r\xE9duit 32 x 25 x 32", categorie: "raccord PE", diametre: "32 x 25 x 32", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL73404025", nom: "t\xE9 90\xB0 r\xE9duit 40 x 25 x 40", categorie: "raccord PE", diametre: "40 x 25 x 40", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL73404032", nom: "t\xE9 90\xB0 r\xE9duit 40 x 32 x 40", categorie: "raccord PE", diametre: "40 x 32 x 40", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL73405025", nom: "t\xE9 90\xB0 r\xE9duit 50 x 25 x 50", categorie: "raccord PE", diametre: "50 x 25 x 50", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL73405032", nom: "t\xE9 90\xB0 r\xE9duit 50 x 32 x 50", categorie: "raccord PE", diametre: "50 x 32 x 50", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL73405040", nom: "t\xE9 90\xB0 r\xE9duit 50 x 40 x 50", categorie: "raccord PE", diametre: "50 x 40 x 50", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL73406332", nom: "t\xE9 90\xB0 r\xE9duit 63 x 32 x 63", categorie: "raccord PE", diametre: "63 x 32 x 63", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL73406340", nom: "t\xE9 90\xB0 r\xE9duit 63 x 40 x 63", categorie: "raccord PE", diametre: "63 x 40 x 63", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL73406350", nom: "t\xE9 90\xB0 r\xE9duit 63 x 50 x 63", categorie: "raccord PE", diametre: "63 x 50 x 63", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL73407563", nom: "t\xE9 90\xB0 r\xE9duit 75 x 63 x 75 MILLENIUM", categorie: "raccord PE", diametre: "75 x 63 x 75", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL705016", nom: "coude \xE0 90\xB0 16 x 16", categorie: "raccord PE", diametre: "16", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL705020", nom: "coude \xE0 90\xB0 20 x 20", categorie: "raccord PE", diametre: "20", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL705025", nom: "coude \xE0 90\xB0 25 x 25", categorie: "raccord PE", diametre: "25", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL705032", nom: "coude \xE0 90\xB0 32 x 32", categorie: "raccord PE", diametre: "32", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL705040", nom: "coude \xE0 90\xB0 40 x 40", categorie: "raccord PE", diametre: "40", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL705050", nom: "coude \xE0 90\xB0 50 x 50", categorie: "raccord PE", diametre: "50", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL705063", nom: "coude \xE0 90\xB0 63 x 63", categorie: "raccord PE", diametre: "63", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL705075", nom: "coude \xE0 90\xB0 75 x 75 MILLENIUM", categorie: "raccord PE", diametre: "75", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL705090", nom: "coude \xE0 90\xB0 90 x 90 MILLENIUM", categorie: "raccord PE", diametre: "90", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL7050110", nom: "coude \xE0 90\xB0 110 x 110 MILLENIUM", categorie: "raccord PE", diametre: "110", source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL78502015", nom: 'coude filet\xE9 20 x 1/2"', categorie: "raccord PE", diametre: "20", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL78502020", nom: 'coude filet\xE9 20 x 3/4"', categorie: "raccord PE", diametre: "20", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL78502515", nom: 'coude filet\xE9 25 x 1/2"', categorie: "raccord PE", diametre: "25", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL78502520", nom: 'coude filet\xE9 25 x 3/4"', categorie: "raccord PE", diametre: "25", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL78502526", nom: 'coude filet\xE9 25 x 1"', categorie: "raccord PE", diametre: "25", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL78503226", nom: 'coude filet\xE9 32 x 1"', categorie: "raccord PE", diametre: "32", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL78503233", nom: 'coude filet\xE9 32 x 1"1/4', categorie: "raccord PE", diametre: "32", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL78504026", nom: 'coude filet\xE9 40 x 1"', categorie: "raccord PE", diametre: "40", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL78504033", nom: 'coude filet\xE9 40 x 1"1/4', categorie: "raccord PE", diametre: "40", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL78504040", nom: 'coude filet\xE9 40 x 1"1/2', categorie: "raccord PE", diametre: "40", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL78505026", nom: 'coude filet\xE9 50 x 1"', categorie: "raccord PE", diametre: "50", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL78505033", nom: 'coude filet\xE9 50 x 1"1/4', categorie: "raccord PE", diametre: "50", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL78505040", nom: 'coude filet\xE9 50 x 1"1/2', categorie: "raccord PE", diametre: "50", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL78506333", nom: 'coude filet\xE9 63 x 1"1/4', categorie: "raccord PE", diametre: "63", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL78506340", nom: 'coude filet\xE9 63 x 1"1/2', categorie: "raccord PE", diametre: "63", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL78506350", nom: 'coude filet\xE9 63 x 2"', categorie: "raccord PE", diametre: "63", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL78507560", nom: 'coude filet\xE9 75 x 2"1/2 MILLENIUM', categorie: "raccord PE", diametre: "75", filetage: '2"1/2', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL78507580", nom: 'coude filet\xE9 75 x 3" MILLENIUM', categorie: "raccord PE", diametre: "75", filetage: '3"', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL78509080", nom: 'coude filet\xE9 90 x 3" MILLENIUM', categorie: "raccord PE", diametre: "90", filetage: '3"', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL7850110102", nom: 'coude filet\xE9 110 x 4" MILLENIUM', categorie: "raccord PE", diametre: "110", filetage: '4"', source: "patron", releve: "Aqua Plus 2026, p. 32" },
+      { ref: "OPL71501615", nom: 'coude taraud\xE9 16 x 1/2"', categorie: "raccord PE", diametre: "16", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71502015", nom: 'coude taraud\xE9 20 x 1/2"', categorie: "raccord PE", diametre: "20", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71502020", nom: 'coude taraud\xE9 20 x 3/4"', categorie: "raccord PE", diametre: "20", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71502515", nom: 'coude taraud\xE9 25 x 1/2"', categorie: "raccord PE", diametre: "25", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71502520", nom: 'coude taraud\xE9 25 x 3/4"', categorie: "raccord PE", diametre: "25", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71502526", nom: 'coude taraud\xE9 25 x 1"', categorie: "raccord PE", diametre: "25", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71503220", nom: 'coude taraud\xE9 32 x 3/4"', categorie: "raccord PE", diametre: "32", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71503226", nom: 'coude taraud\xE9 32 x 1"', categorie: "raccord PE", diametre: "32", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71503233", nom: 'coude taraud\xE9 32 x 1"1/4', categorie: "raccord PE", diametre: "32", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71504026", nom: 'coude taraud\xE9 40 x 1"', categorie: "raccord PE", diametre: "40", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71504033", nom: 'coude taraud\xE9 40 x 1"1/4', categorie: "raccord PE", diametre: "40", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71504040", nom: 'coude taraud\xE9 40 x 1"1/2', categorie: "raccord PE", diametre: "40", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71504050", nom: 'coude taraud\xE9 40 x 2"', categorie: "raccord PE", diametre: "40", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71505026", nom: 'coude taraud\xE9 50 x 1"', categorie: "raccord PE", diametre: "50", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71505033", nom: 'coude taraud\xE9 50 x 1"1/4', categorie: "raccord PE", diametre: "50", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71505040", nom: 'coude taraud\xE9 50 x 1"1/2', categorie: "raccord PE", diametre: "50", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71505050", nom: 'coude taraud\xE9 50 x 2"', categorie: "raccord PE", diametre: "50", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71506333", nom: 'coude taraud\xE9 63 x 1"1/4', categorie: "raccord PE", diametre: "63", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71506340", nom: 'coude taraud\xE9 63 x 1"1/2', categorie: "raccord PE", diametre: "63", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71506350", nom: 'coude taraud\xE9 63 x 2"', categorie: "raccord PE", diametre: "63", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71507550", nom: 'coude taraud\xE9 75 x 2" MILLENIUM', categorie: "raccord PE", diametre: "75", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71507566", nom: 'coude taraud\xE9 75 x 2"1/2 MILLENIUM', categorie: "raccord PE", diametre: "75", filetage: '2"1/2', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL71507580", nom: 'coude taraud\xE9 75 x 3" MILLENIUM', categorie: "raccord PE", diametre: "75", filetage: '3"', source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL746032", nom: "coude \xE0 45\xB0 32 x 32", categorie: "raccord PE", diametre: "32", source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL746040", nom: "coude \xE0 45\xB0 40 x 40", categorie: "raccord PE", diametre: "40", source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL746050", nom: "coude \xE0 45\xB0 50 x 50", categorie: "raccord PE", diametre: "50", source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL746063", nom: "coude \xE0 45\xB0 63 x 63", categorie: "raccord PE", diametre: "63", source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL746075", nom: "coude \xE0 45\xB0 75 x 75 MILLENIUM", categorie: "raccord PE", diametre: "75", source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL746090", nom: "coude \xE0 45\xB0 90 x 90 MILLENIUM", categorie: "raccord PE", diametre: "90", source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL7460110", nom: "coude \xE0 45\xB0 110 x 110 MILLENIUM", categorie: "raccord PE", diametre: "110", source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL72205040", nom: 'raccord \xE0 bride 50 DN 40 (1"1/2)', categorie: "raccord PE", diametre: "50", source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL72205050", nom: 'raccord \xE0 bride 50 DN 50 (2")', categorie: "raccord PE", diametre: "50", source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL72206350", nom: 'raccord \xE0 bride 63 DN 50 (2")', categorie: "raccord PE", diametre: "63", source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL72207565", nom: 'raccord \xE0 bride 75 DN 65 (2"1/2) MILLENIUM', categorie: "raccord PE", diametre: "75", source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL72209080", nom: 'raccord \xE0 bride 90 DN 80 (3") MILLENIUM', categorie: "raccord PE", diametre: "90", source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL722090100", nom: 'raccord \xE0 bride 90 DN 100 (4") MILLENIUM', categorie: "raccord PE", diametre: "90", source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL7220110100", nom: 'raccord \xE0 bride 110 DN 100 (4") MILLENIUM', categorie: "raccord PE", diametre: "110", source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL7220125125", nom: 'raccord \xE0 bride 125 DN 125 (5")', categorie: "raccord PE", diametre: "125", source: "patron", releve: "Aqua Plus 2026, p. 33" },
+      { ref: "OPL72365040", nom: 'adaptateur \xE0 bride 50 DN 40 (1"1/2)', categorie: "raccord PE", diametre: "50", source: "patron", releve: "Aqua Plus 2026, p. 34" },
+      { ref: "OPL72366365", nom: 'adaptateur \xE0 bride 63 DN 65 (2"1/2)', categorie: "raccord PE", diametre: "63", source: "patron", releve: "Aqua Plus 2026, p. 34" },
+      { ref: "OPL79302520", nom: "set de r\xE9duction 25 x 20", categorie: "raccord PE", diametre: "25 x 20", source: "patron", releve: "Aqua Plus 2026, p. 34" },
+      { ref: "OPL79303220", nom: "set de r\xE9duction 32 x 20", categorie: "raccord PE", diametre: "32 x 20", source: "patron", releve: "Aqua Plus 2026, p. 34" },
+      { ref: "OPL79303225", nom: "set de r\xE9duction 32 x 25", categorie: "raccord PE", diametre: "32 x 25", source: "patron", releve: "Aqua Plus 2026, p. 34" },
+      { ref: "OPL79304032", nom: "set de r\xE9duction 40 x 32", categorie: "raccord PE", diametre: "40 x 32", source: "patron", releve: "Aqua Plus 2026, p. 34" },
+      { ref: "OPL79305025", nom: "set de r\xE9duction 50 x 25", categorie: "raccord PE", diametre: "50 x 25", source: "patron", releve: "Aqua Plus 2026, p. 34", aVerifier: "r\xE9f\xE9rence OPL79305025 imprim\xE9e deux fois, pour le 50 x 25 et pour le 63 x 25 : l'une des deux est fausse" },
+      { ref: "OPL79305032", nom: "set de r\xE9duction 50 x 32", categorie: "raccord PE", diametre: "50 x 32", source: "patron", releve: "Aqua Plus 2026, p. 34" },
+      { ref: "OPL79305040", nom: "set de r\xE9duction 50 x 40", categorie: "raccord PE", diametre: "50 x 40", source: "patron", releve: "Aqua Plus 2026, p. 34" },
+      { ref: "OPL79305025", nom: "set de r\xE9duction 63 x 25", categorie: "raccord PE", diametre: "63 x 25", source: "patron", releve: "Aqua Plus 2026, p. 34", aVerifier: "r\xE9f\xE9rence OPL79305025 imprim\xE9e deux fois, pour le 50 x 25 et pour le 63 x 25 : l'une des deux est fausse" },
+      { ref: "OPL79306340", nom: "set de r\xE9duction 63 x 40", categorie: "raccord PE", diametre: "63 x 40", source: "patron", releve: "Aqua Plus 2026, p. 34" },
+      { ref: "OPL79306350", nom: "set de r\xE9duction 63 x 50", categorie: "raccord PE", diametre: "63 x 50", source: "patron", releve: "Aqua Plus 2026, p. 34" },
+      { ref: "OD770101522", nom: "manchon PLASS4 25 x (15 - 22)", categorie: "raccord PE", diametre: "25", source: "patron", releve: "Aqua Plus 2026, p. 34" },
+      { ref: "OD770102027", nom: "manchon PLASS4 25 x (20 - 27)", categorie: "raccord PE", diametre: "25", source: "patron", releve: "Aqua Plus 2026, p. 34" },
+      { ref: "OD77010273525", nom: "manchon PLASS4 25 x (27 - 35)", categorie: "raccord PE", diametre: "25", source: "patron", releve: "Aqua Plus 2026, p. 34" },
+      { ref: "OD77010202732", nom: "manchon PLASS4 32 x (20 - 27)", categorie: "raccord PE", diametre: "32", source: "patron", releve: "Aqua Plus 2026, p. 34" },
+      { ref: "OD770102735", nom: "manchon PLASS4 32 x (27 - 35)", categorie: "raccord PE", diametre: "32", source: "patron", releve: "Aqua Plus 2026, p. 34" },
+      { ref: "OD770103550", nom: "manchon PLASS4 50 x (35 - 50)", categorie: "raccord PE", diametre: "50", source: "patron", releve: "Aqua Plus 2026, p. 34" },
+      { ref: "OPP506715", nom: 'mamelon double 1/2" x 1/2"', categorie: "raccord polypro", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP506720", nom: 'mamelon double 3/4" x 3/4"', categorie: "raccord polypro", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP506726", nom: 'mamelon double 1" x 1"', categorie: "raccord polypro", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP506733", nom: 'mamelon double 1"1/4 x 1"1/4', categorie: "raccord polypro", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP506740", nom: 'mamelon double 1"1/2 x 1"1/2', categorie: "raccord polypro", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP506750", nom: 'mamelon double 2" x 2"', categorie: "raccord polypro", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50652015", nom: 'mamelon r\xE9duit 3/4" x 1/2"', categorie: "raccord polypro", filetage: '3/4" x 1/2"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50652615", nom: 'mamelon r\xE9duit 1" x 1/2"', categorie: "raccord polypro", filetage: '1" x 1/2"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50652620", nom: 'mamelon r\xE9duit 1" x 3/4"', categorie: "raccord polypro", filetage: '1" x 3/4"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50653315", nom: 'mamelon r\xE9duit 1"1/4 x 1/2"', categorie: "raccord polypro", filetage: '1"1/4 x 1/2"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50653320", nom: 'mamelon r\xE9duit 1"1/4 x 3/4"', categorie: "raccord polypro", filetage: '1"1/4 x 3/4"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50653326", nom: 'mamelon r\xE9duit 1"1/4 x 1"', categorie: "raccord polypro", filetage: '1"1/4 x 1"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50654015", nom: 'mamelon r\xE9duit 1"1/2 x 1/2"', categorie: "raccord polypro", filetage: '1"1/2 x 1/2"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50654020", nom: 'mamelon r\xE9duit 1"1/2 x 3/4"', categorie: "raccord polypro", filetage: '1"1/2 x 3/4"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50654026", nom: 'mamelon r\xE9duit 1"1/2 x 1"', categorie: "raccord polypro", filetage: '1"1/2 x 1"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50654033", nom: 'mamelon r\xE9duit 1"1/2 x 1"1/4', categorie: "raccord polypro", filetage: '1"1/2 x 1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50655015", nom: 'mamelon r\xE9duit 2" x 1/2"', categorie: "raccord polypro", filetage: '2" x 1/2"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50655020", nom: 'mamelon r\xE9duit 2" x 3/4"', categorie: "raccord polypro", filetage: '2" x 3/4"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50655026", nom: 'mamelon r\xE9duit 2" x 1"', categorie: "raccord polypro", filetage: '2" x 1"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50655033", nom: 'mamelon r\xE9duit 2" x 1"1/4', categorie: "raccord polypro", filetage: '2" x 1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50655040", nom: 'mamelon r\xE9duit 2" x 1"1/2', categorie: "raccord polypro", filetage: '2" x 1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50272015", nom: 'manchon r\xE9duit MxF 3/4" x 1/2"', categorie: "raccord polypro", filetage: '3/4" x 1/2"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50272615", nom: 'manchon r\xE9duit MxF 1" x 1/2"', categorie: "raccord polypro", filetage: '1" x 1/2"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50272620", nom: 'manchon r\xE9duit MxF 1" x 3/4"', categorie: "raccord polypro", filetage: '1" x 3/4"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50273315", nom: 'manchon r\xE9duit MxF 1"1/4 x 1/2"', categorie: "raccord polypro", filetage: '1"1/4 x 1/2"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50273320", nom: 'manchon r\xE9duit MxF 1"1/4 x 3/4"', categorie: "raccord polypro", filetage: '1"1/4 x 3/4"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50273326", nom: 'manchon r\xE9duit MxF 1"1/4 x 1"', categorie: "raccord polypro", filetage: '1"1/4 x 1"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50274015", nom: 'manchon r\xE9duit MxF 1"1/2 x 1/2"', categorie: "raccord polypro", filetage: '1"1/2 x 1/2"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50274020", nom: 'manchon r\xE9duit MxF 1"1/2 x 3/4"', categorie: "raccord polypro", filetage: '1"1/2 x 3/4"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50274026", nom: 'manchon r\xE9duit MxF 1"1/2 x 1"', categorie: "raccord polypro", filetage: '1"1/2 x 1"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50274033", nom: 'manchon r\xE9duit MxF 1"1/2 x 1"1/4', categorie: "raccord polypro", filetage: '1"1/2 x 1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50275015", nom: 'manchon r\xE9duit MxF 2" x 1/2"', categorie: "raccord polypro", filetage: '2" x 1/2"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50275020", nom: 'manchon r\xE9duit MxF 2" x 3/4"', categorie: "raccord polypro", filetage: '2" x 3/4"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50275026", nom: 'manchon r\xE9duit MxF 2" x 1"', categorie: "raccord polypro", filetage: '2" x 1"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50275033", nom: 'manchon r\xE9duit MxF 2" x 1"1/4', categorie: "raccord polypro", filetage: '2" x 1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50275040", nom: 'manchon r\xE9duit MxF 2" x 1"1/2', categorie: "raccord polypro", filetage: '2" x 1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50276650", nom: 'manchon r\xE9duit MxF 2"1/2 x 2"', categorie: "raccord polypro", filetage: '2"1/2 x 2"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50278040", nom: 'manchon r\xE9duit MxF 3" x 1"1/2', categorie: "raccord polypro", filetage: '3" x 1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50278050", nom: 'manchon r\xE9duit MxF 3" x 2"', categorie: "raccord polypro", filetage: '3" x 2"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP50278065", nom: 'manchon r\xE9duit MxF 3" x 2"1/2', categorie: "raccord polypro", filetage: '3" x 2"1/2', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP502710280", nom: 'manchon r\xE9duit MxF 4" x 3"', categorie: "raccord polypro", filetage: '4" x 3"', source: "patron", releve: "Aqua Plus 2026, p. 35" },
+      { ref: "OPP501715", nom: 'manchon 1/2" x 1/2"', categorie: "raccord polypro", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP501720", nom: 'manchon 3/4" x 3/4"', categorie: "raccord polypro", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP501726", nom: 'manchon 1" x 1"', categorie: "raccord polypro", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP501733", nom: 'manchon 1"1/4 x 1"1/4', categorie: "raccord polypro", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP501740", nom: 'manchon 1"1/2 x 1"1/2', categorie: "raccord polypro", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP501750", nom: 'manchon 2" x 2"', categorie: "raccord polypro", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP504715", nom: 't\xE9 90\xB0 1/2" x 1/2" x 1/2"', categorie: "raccord polypro", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP504720", nom: 't\xE9 90\xB0 3/4" x 3/4" x 3/4"', categorie: "raccord polypro", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP504726", nom: 't\xE9 90\xB0 1" x 1" x 1"', categorie: "raccord polypro", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP504733", nom: 't\xE9 90\xB0 1"1/4 x 1"1/4 x 1"1/4', categorie: "raccord polypro", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP504740", nom: 't\xE9 90\xB0 1"1/2 x 1"1/2 x 1"1/2', categorie: "raccord polypro", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP504750", nom: 't\xE9 90\xB0 2" x 2" x 2"', categorie: "raccord polypro", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP505715", nom: 'coude 90\xB0 1/2" x 1/2"', categorie: "raccord polypro", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP505720", nom: 'coude 90\xB0 3/4" x 3/4"', categorie: "raccord polypro", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP505726", nom: 'coude 90\xB0 1" x 1"', categorie: "raccord polypro", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP505733", nom: 'coude 90\xB0 1"1/4 x 1"1/4', categorie: "raccord polypro", filetage: '1"1/4', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP505740", nom: 'coude 90\xB0 1"1/2 x 1"1/2', categorie: "raccord polypro", filetage: '1"1/2', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP505750", nom: 'coude 90\xB0 2" x 2"', categorie: "raccord polypro", filetage: '2"', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP505915", nom: 'coude 90\xB0 MxF 1/2"', categorie: "raccord polypro", filetage: '1/2"', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP505920", nom: 'coude 90\xB0 MxF 3/4"', categorie: "raccord polypro", filetage: '3/4"', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "OPP505926", nom: 'coude 90\xB0 MxF 1"', categorie: "raccord polypro", filetage: '1"', source: "patron", releve: "Aqua Plus 2026, p. 36" },
+      { ref: "UPE500600", nom: "tube P.E.B.D. \xD8 16mm 4 bars (13,6 x 16)", categorie: "tube PE", diametre: "16", colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 47", aVerifier: "longueur de couronne non \xE9crite ; le colisage (50) est peut-\xEAtre la couronne en m\xE8tres, \xE0 confirmer" },
+      { ref: "UPE1116", nom: "tube P.E.B.D. \xD8 16mm 6,3 bars (12 x 16)", categorie: "tube PE", diametre: "16", colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 47", aVerifier: "longueur de couronne non \xE9crite ; le colisage (50) est peut-\xEAtre la couronne en m\xE8tres, \xE0 confirmer ; m\xEAme r\xE9f\xE9rence aussi imprim\xE9e p. 14" },
+      { ref: "UPE225", nom: "tube P.E.H.D. irrigation \xD8 25mm 10 bars (20,4 x 25)", categorie: "tube PE", diametre: "25", colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 47", aVerifier: "longueur de couronne non \xE9crite ; le colisage (50) est peut-\xEAtre la couronne en m\xE8tres, \xE0 confirmer" },
+      { ref: "UPE232", nom: "tube P.E.H.D. irrigation \xD8 32mm 10 bars (26,2 x 32)", categorie: "tube PE", diametre: "32", colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 47", aVerifier: "longueur de couronne non \xE9crite ; le colisage (50) est peut-\xEAtre la couronne en m\xE8tres, \xE0 confirmer" },
+      { ref: "UPE240", nom: "tube P.E.H.D. NF \xD8 40mm 10 bars (32,6 x 40)", categorie: "tube PE", diametre: "40", colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 47", aVerifier: "longueur de couronne non \xE9crite ; le colisage (50) est peut-\xEAtre la couronne en m\xE8tres, \xE0 confirmer" },
+      { ref: "UPE250", nom: "tube P.E.H.D. NF \xD8 50mm 10 bars (40,8 x 50)", categorie: "tube PE", diametre: "50", colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 47", aVerifier: "longueur de couronne non \xE9crite ; le colisage (50) est peut-\xEAtre la couronne en m\xE8tres, \xE0 confirmer" },
+      { ref: "UPE263", nom: "tube P.E.H.D. NF \xD8 63mm 10 bars (51,4 x 63)", categorie: "tube PE", diametre: "63", colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 47", aVerifier: "longueur de couronne non \xE9crite ; le colisage (50) est peut-\xEAtre la couronne en m\xE8tres, \xE0 confirmer" },
+      { ref: "UPE275", nom: "tube P.E.H.D. NF \xD8 75mm 10 bars (61,4 x 75)", categorie: "tube PE", diametre: "75", colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 47", aVerifier: "longueur de couronne non \xE9crite ; le colisage (50) est peut-\xEAtre la couronne en m\xE8tres, \xE0 confirmer" },
+      { ref: "UGGMC-206", nom: "G A G \xD8 6MM 0.15M 2L/H 30ML", categorie: "goutte-\xE0-goutte", diametre: "6", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 48" },
+      { ref: "UGGMC-206_N", nom: "G AG \xD8 6MM 0.15M 2L/H 30ML noir", categorie: "goutte-\xE0-goutte", diametre: "6", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 48", aVerifier: "d\xE9signation imprim\xE9e \xAB G AG \xBB (la ligne du dessus dit \xAB G A G \xBB) : recopi\xE9e telle quelle" },
+      { ref: "UGGCBL23050", nom: "tube \xD816mm 2l/h esp.33cm autor\xE9gul\xE9", categorie: "goutte-\xE0-goutte", diametre: "16", colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 48" },
+      { ref: "UGGRBXFS", nom: "tube \xD816mm 2,3l/h esp.33cm autor\xE9gul\xE9 enterrable", categorie: "goutte-\xE0-goutte", diametre: "16", colisage: "100", source: "patron", releve: "Aqua Plus 2026, p. 48" },
+      { ref: "UGG1516", nom: "tuyau poreux \xD8 16mm 4l/h par m\xE8tre \xE0 0.5 bars - PS maxi 1 bar", categorie: "goutte-\xE0-goutte", diametre: "16", colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 48" },
+      { ref: "MIAOCTA8", nom: "schrubbler r\xE9glable 0 \xE0 50l/h bouton can 4x6mm", categorie: "goutte-\xE0-goutte", diametre: "4x6mm", colisage: "100", source: "patron", releve: "Aqua Plus 2026, p. 48", aVerifier: "diffuseur ou micro-tube de micro-irrigation, pas un tube goutte-\xE0-goutte : class\xE9 \xAB goutte-\xE0-goutte \xBB faute de cat\xE9gorie plus juste" },
+      { ref: "MIAOCTA8P", nom: "schrubbler r\xE9glable 0 \xE0 50l/h sur pique 10cm", categorie: "goutte-\xE0-goutte", colisage: "25", source: "patron", releve: "Aqua Plus 2026, p. 48", aVerifier: "diffuseur ou micro-tube de micro-irrigation, pas un tube goutte-\xE0-goutte : class\xE9 \xAB goutte-\xE0-goutte \xBB faute de cat\xE9gorie plus juste" },
+      { ref: "MIALST4A", nom: "pique 30cm avec tubing 40cm prise d'eau 4x6m (Micro Stake)", categorie: "goutte-\xE0-goutte", diametre: "4x6m", colisage: "1/100", source: "patron", releve: "Aqua Plus 2026, p. 48", aVerifier: "diffuseur ou micro-tube de micro-irrigation, pas un tube goutte-\xE0-goutte : class\xE9 \xAB goutte-\xE0-goutte \xBB faute de cat\xE9gorie plus juste" },
+      { ref: "MID3904", nom: "perceur 3mm pour PE", categorie: "raccord goutte-\xE0-goutte", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 49", aVerifier: "outil (perceur), pas un raccord : class\xE9 avec les accessoires pour micro-tube o\xF9 le catalogue le range" },
+      { ref: "MID1221", nom: "perceur pince 3mm 16/20", categorie: "raccord goutte-\xE0-goutte", source: "patron", releve: "Aqua Plus 2026, p. 49", aVerifier: "outil (perceur), pas un raccord : class\xE9 avec les accessoires pour micro-tube o\xF9 le catalogue le range" },
+      { ref: "MID1222", nom: "perceur pince 3mm 25/32", categorie: "raccord goutte-\xE0-goutte", source: "patron", releve: "Aqua Plus 2026, p. 49", aVerifier: "outil (perceur), pas un raccord : class\xE9 avec les accessoires pour micro-tube o\xF9 le catalogue le range" },
+      { ref: "MID3302", nom: "t\xE9 4x6mm", categorie: "raccord goutte-\xE0-goutte", diametre: "4x6mm", colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID3303", nom: "croix 4x6mm", categorie: "raccord goutte-\xE0-goutte", diametre: "4x6mm", colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID3304", nom: "coude 4x6mm", categorie: "raccord goutte-\xE0-goutte", diametre: "4x6mm", colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID3412", nom: "bouchon gaffeur 4x6mm - grappe de 10", categorie: "raccord goutte-\xE0-goutte", diametre: "4x6mm", colisage: "10", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MIAL3401", nom: "vannette 4x6mm", categorie: "raccord goutte-\xE0-goutte", diametre: "4x6mm", colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6101", nom: "jonction cannel\xE9e \xD8 16", categorie: "raccord goutte-\xE0-goutte", diametre: "16", colisage: "100", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6102", nom: "jonction cannel\xE9e \xD8 20", categorie: "raccord goutte-\xE0-goutte", diametre: "20", colisage: "100", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6121", nom: "t\xE9 cannel\xE9 \xD8 16", categorie: "raccord goutte-\xE0-goutte", diametre: "16", colisage: "100", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6122", nom: "t\xE9 cannel\xE9 \xD8 20", categorie: "raccord goutte-\xE0-goutte", diametre: "20", colisage: "100", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6141", nom: "coude cannel\xE9 \xD8 16", categorie: "raccord goutte-\xE0-goutte", diametre: "16", colisage: "100", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6142", nom: "coude cannel\xE9 \xD8 20", categorie: "raccord goutte-\xE0-goutte", diametre: "20", colisage: "100", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6171", nom: "bouchon cannel\xE9 \xD8 16", categorie: "raccord goutte-\xE0-goutte", diametre: "16", colisage: "100", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6172", nom: "bouchon cannel\xE9 \xD8 20", categorie: "raccord goutte-\xE0-goutte", diametre: "20", colisage: "100", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6711", nom: "collier plastique \xD8 16", categorie: "raccord goutte-\xE0-goutte", diametre: "16", colisage: "100", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6712", nom: "collier plastique \xD8 20", categorie: "raccord goutte-\xE0-goutte", diametre: "20", colisage: "100", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6511", nom: "crampon de sol \xD8 16-20 noir", categorie: "raccord goutte-\xE0-goutte", diametre: "16-20", colisage: "100", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6514", nom: "crampon de sol \xD8 16-20 marron", categorie: "raccord goutte-\xE0-goutte", diametre: "16-20", colisage: "100", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6151", nom: 'embout can \xD8 16 x fil 1/2"', categorie: "raccord goutte-\xE0-goutte", diametre: "16", filetage: '1/2"', colisage: "100", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6152", nom: 'embout can \xD8 16 x fil 3/4"', categorie: "raccord goutte-\xE0-goutte", diametre: "16", filetage: '3/4"', colisage: "100", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6254", nom: 'embout can \xD8 20 x fil 3/4"', categorie: "raccord goutte-\xE0-goutte", diametre: "20", filetage: '3/4"', colisage: "100", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6162", nom: 'embout can \xD8 16 x tar 3/4" \xE9crou tournant + joint', categorie: "raccord goutte-\xE0-goutte", diametre: "16", filetage: '3/4"', colisage: "100", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6601", nom: "vannette plastique cannel\xE9e \xD8 16 x 16", categorie: "raccord goutte-\xE0-goutte", diametre: "16", colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6602", nom: "vannette plastique cannel\xE9e \xD8 20 x 20", categorie: "raccord goutte-\xE0-goutte", diametre: "20", colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6611", nom: 'vannette plastique fil 3/4" x cannel\xE9e \xD8 16', categorie: "raccord goutte-\xE0-goutte", diametre: "16", filetage: '3/4"', colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6612", nom: 'vannette plastique fil 3/4" x cannel\xE9e \xD8 20', categorie: "raccord goutte-\xE0-goutte", diametre: "20", filetage: '3/4"', colisage: "50", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6301", nom: "jonction Palaplast \xD816", categorie: "raccord goutte-\xE0-goutte", marque: "Palaplast", diametre: "16", colisage: "1/50", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6321", nom: "t\xE9 Palaplast \xD816", categorie: "raccord goutte-\xE0-goutte", marque: "Palaplast", diametre: "16", colisage: "1/50", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6341", nom: "coude Palaplast \xD816", categorie: "raccord goutte-\xE0-goutte", marque: "Palaplast", diametre: "16", colisage: "1/50", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6352", nom: 'embout filet\xE9 Palaplast 16 x 3/4"', categorie: "raccord goutte-\xE0-goutte", marque: "Palaplast", diametre: "16", filetage: '3/4"', colisage: "1/50", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6362", nom: 'embout Palaplast taraud\xE9 16 x 3/4"', categorie: "raccord goutte-\xE0-goutte", marque: "Palaplast", diametre: "16", filetage: '3/4"', colisage: "1/50", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6371", nom: "bouchon Palaplast \xD816", categorie: "raccord goutte-\xE0-goutte", marque: "Palaplast", diametre: "16", colisage: "1/50", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "MID6631", nom: "vannette Palaplast \xD816", categorie: "raccord goutte-\xE0-goutte", marque: "Palaplast", diametre: "16", colisage: "1/50", source: "patron", releve: "Aqua Plus 2026, p. 49" },
+      { ref: "BVA3861", nom: 'vanne 1/4 de tour FF 1/2"', categorie: "robinetterie", diametre: '1/2"', filetage: "FF", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 56" },
+      { ref: "BVA3862", nom: 'vanne 1/4 de tour FF 3/4"', categorie: "robinetterie", diametre: '3/4"', filetage: "FF", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 56" },
+      { ref: "BVA3863", nom: 'vanne 1/4 de tour FF 1"', categorie: "robinetterie", diametre: '1"', filetage: "FF", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 56" },
+      { ref: "BVA3864", nom: 'vanne 1/4 de tour FF 1"1/4', categorie: "robinetterie", diametre: '1"1/4', filetage: "FF", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 56" },
+      { ref: "BVA3865", nom: 'vanne 1/4 de tour FF 1"1/2', categorie: "robinetterie", diametre: '1"1/2', filetage: "FF", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 56" },
+      { ref: "BVA3866", nom: 'vanne 1/4 de tour FF 2"', categorie: "robinetterie", diametre: '2"', filetage: "FF", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 56" },
+      { ref: "BVA931", nom: 'vanne 1/4 de tour + purge FF 1/2"', categorie: "robinetterie", diametre: '1/2"', filetage: "FF", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 56" },
+      { ref: "BVA932", nom: 'vanne 1/4 de tour + purge FF 3/4"', categorie: "robinetterie", diametre: '3/4"', filetage: "FF", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 56" },
+      { ref: "BVA933", nom: 'vanne 1/4 de tour + purge FF 1"', categorie: "robinetterie", diametre: '1"', filetage: "FF", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 56" },
+      { ref: "BVA934", nom: 'vanne 1/4 de tour + purge FF 1"1/4', categorie: "robinetterie", diametre: '1"1/4', filetage: "FF", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 56" },
+      { ref: "BVA935", nom: 'vanne 1/4 de tour + purge FF 1"1/2', categorie: "robinetterie", diametre: '1"1/2', filetage: "FF", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 56" },
+      { ref: "BVA936", nom: 'vanne 1/4 de tour + purge FF 2"', categorie: "robinetterie", diametre: '2"', filetage: "FF", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 56" },
+      { ref: "ELC4003", nom: "c\xE2ble 1000 RO2V 3 G 1,5mm\xB2", categorie: "\xE9lectricit\xE9", colisage: "1/300", source: "patron", releve: "Aqua Plus 2026, p. 57" },
+      { ref: "ELC4004", nom: "c\xE2ble 1000 RO2V 4 G 1,5mm\xB2", categorie: "\xE9lectricit\xE9", colisage: "1/300", source: "patron", releve: "Aqua Plus 2026, p. 57" },
+      { ref: "ELC4005", nom: "c\xE2ble 1000 RO2V 5 G 1,5mm\xB2", categorie: "\xE9lectricit\xE9", colisage: "1/300", source: "patron", releve: "Aqua Plus 2026, p. 57" },
+      { ref: "ELC40325", nom: "c\xE2ble 1000 RO2V 3 G 2,5mm\xB2", categorie: "\xE9lectricit\xE9", colisage: "1/300", source: "patron", releve: "Aqua Plus 2026, p. 57" },
+      { ref: "ELC4024", nom: "c\xE2ble 1000 RO2V 4 G 2,5mm\xB2", categorie: "\xE9lectricit\xE9", colisage: "1/300", source: "patron", releve: "Aqua Plus 2026, p. 57" },
+      { ref: "ELC4085", nom: "c\xE2ble irrigation 5x0,8mm\xB2 30V maxi - enterrable", categorie: "\xE9lectricit\xE9", colisage: "75/150/300", source: "patron", releve: "Aqua Plus 2026, p. 57" },
+      { ref: "ELC4087", nom: "c\xE2ble irrigation 7x0,8mm\xB2 30V maxi - enterrable", categorie: "\xE9lectricit\xE9", colisage: "75/150/300", source: "patron", releve: "Aqua Plus 2026, p. 57" },
+      { ref: "ELC4089", nom: "c\xE2ble irrigation 9x0,8mm\xB2 30V maxi - enterrable", categorie: "\xE9lectricit\xE9", colisage: "75/150/300", source: "patron", releve: "Aqua Plus 2026, p. 57" },
+      { ref: "ELC4090", nom: "c\xE2ble irrigation 13x0,8mm\xB2 30V maxi - enterrable", categorie: "\xE9lectricit\xE9", colisage: "75/150/300", source: "patron", releve: "Aqua Plus 2026, p. 57" },
+      { ref: "ELD550077", nom: "connexion \xE9tanche 3 fils DBM (3 fils de 1,5 mm\xB2)", categorie: "\xE9lectricit\xE9", colisage: "1/10", source: "patron", releve: "Aqua Plus 2026, p. 57", aVerifier: "m\xEAme r\xE9f\xE9rence aussi imprim\xE9e p. 27" },
+      { ref: "ELD221413.", nom: "connexion Wago 3x4 mm\xB2", categorie: "\xE9lectricit\xE9", marque: "Wago", colisage: "1/50", source: "patron", releve: "Aqua Plus 2026, p. 57", aVerifier: "la r\xE9f\xE9rence porte un point final dans le catalogue : recopi\xE9e telle quelle" },
+      { ref: "ELD221415.", nom: "connexion Wago 5x4 mm\xB2", categorie: "\xE9lectricit\xE9", marque: "Wago", colisage: "1/25", source: "patron", releve: "Aqua Plus 2026, p. 57", aVerifier: "la r\xE9f\xE9rence porte un point final dans le catalogue : recopi\xE9e telle quelle" },
+      { ref: "ELD5111", nom: "connexion Blazing BBS 1,5mm MAX 30V", categorie: "\xE9lectricit\xE9", tension: "30 V", colisage: "1/25", source: "patron", releve: "Aqua Plus 2026, p. 57" },
+      { ref: "ELD40038", nom: "domino 6 mm\xB2", categorie: "\xE9lectricit\xE9", colisage: "1/10", source: "patron", releve: "Aqua Plus 2026, p. 58" },
+      { ref: "ELD40025", nom: "bo\xEEte de d\xE9rivation Plexo \xD8 60mm", categorie: "\xE9lectricit\xE9", colisage: "1/5", source: "patron", releve: "Aqua Plus 2026, p. 58" },
+      { ref: "ELD40024", nom: "bo\xEEte de d\xE9rivation Plexo \xD8 70mm", categorie: "\xE9lectricit\xE9", colisage: "1/5", source: "patron", releve: "Aqua Plus 2026, p. 58" },
+      { ref: "ELDLEG92110", nom: "bo\xEEte de d\xE9rivation Plexo 65x65x40mm", categorie: "\xE9lectricit\xE9", colisage: "1/5", source: "patron", releve: "Aqua Plus 2026, p. 58" },
+      { ref: "ELD40050", nom: "bo\xEEte de d\xE9rivation Plexo 105x105x55mm", categorie: "\xE9lectricit\xE9", colisage: "1/5", source: "patron", releve: "Aqua Plus 2026, p. 58" },
+      { ref: "ELD100PAN", nom: "ruban isolant \xE9lectrique (10mx15mm - \xE9p.0,15mm)", categorie: "\xE9lectricit\xE9", colisage: "10", source: "patron", releve: "Aqua Plus 2026, p. 58" }
+    ],
+    /* ── SES RACCORDS À COMPRESSION PLASSON DU Ø16 RIGIDE ────────────────────
+       Ses photos du 18 octobre 2026 : « tout ce que je t'envoie, c'est de la même
+       gamme et c'est pour du 16 rigide ». Le Plasson à bague blanche du relevé
+       Aqua Plus ne prend que le PE 25 ou 32 : ces pièces-ci sont d'une autre
+       gamme. AUCUNE RÉFÉRENCE : il ne sait pas laquelle c'est, et « avec cette
+       photo et le nom, n'importe quel fournisseur sait de quoi on parle ». Sans
+       `releve`, `referenceDe` n'en écrit donc aucune. Les noms sont les siens :
+       « manchon à compression, Plasson, et après 16 par 16 ». Le filetage du té
+       taraudé et du manchon fileté : 3/4", sa réponse du 18 octobre 2026. */
+    raccords16Rigide: [
+      { ref: "plasson16-raccord-taraude", nom: 'raccord taraud\xE9 \xE0 compression Plasson 16 x 3/4", pour 16 rigide', categorie: "raccord PE", marque: "Plasson", diametre: "16", filetage: '3/4"', source: "patron", photo: "sa photo du 18 octobre 2026" },
+      { ref: "plasson16-manchon", nom: "manchon \xE0 compression Plasson 16 x 16, pour 16 rigide", categorie: "raccord PE", marque: "Plasson", diametre: "16", source: "patron", photo: "sa photo du 18 octobre 2026" },
+      { ref: "plasson16-te", nom: "t\xE9 \xE0 compression Plasson 16 x 16 x 16, pour 16 rigide", categorie: "raccord PE", marque: "Plasson", diametre: "16", source: "patron", photo: "sa photo du 18 octobre 2026" },
+      { ref: "plasson16-te-taraude", nom: 't\xE9 taraud\xE9 \xE0 compression Plasson 16 x 3/4" x 16, pour 16 rigide', categorie: "raccord PE", marque: "Plasson", diametre: "16", filetage: '3/4"', source: "patron", photo: "sa photo du 18 octobre 2026" },
+      { ref: "plasson16-coude", nom: "coude \xE0 compression Plasson 16 x 16, pour 16 rigide", categorie: "raccord PE", marque: "Plasson", diametre: "16", source: "patron", photo: "sa photo du 18 octobre 2026" },
+      { ref: "plasson16-manchon-filete", nom: 'manchon filet\xE9 \xE0 compression Plasson 16 x 3/4", pour 16 rigide', categorie: "raccord PE", marque: "Plasson", diametre: "16", filetage: '3/4"', source: "patron", photo: "sa photo du 18 octobre 2026" }
+    ],
+    /* ── Le reste du matériel ───────────────────────────────────────────────
+         **Ses lignes provisoires sont RETIRÉES, le 16 octobre 2026** (« supprime
+         toutes les lignes provisoires ») : électrovanne et regard génériques,
+         disconnecteur, réducteur de pression, tuyaux PE 25 et 32. Aucune n'avait de
+         référence ni ne venait de ses documents. Ce qui les remplace, et vient de
+         lui : ses fiches de nourrice (électrovanne 100 DV, regard, programmateur
+         BL-IP), son « Régulateur de pression FF 3/4" » par voie de goutte-à-goutte,
+         et ses tubes dans `tuyaux`. Ne pas les remettre « pour dépanner ».
+    
+         Reste la sonde de pluie, qu'il veut EN OPTION : *« si l'utilisateur coche
+         oui on la rajoute dans la liste »*, la Rain Bird filaire blanche. */
+    materiel: [
+      // Le libellé est celui d'Aqua Plus, mot pour mot : c'est ce qu'il demande
+      // au comptoir.
+      {
+        ref: "RP403",
+        nom: "sonde pluie RSD-Bex Rain Bird",
+        regle: "option",
+        source: "patron",
+        releve: "Aqua Plus 2026, p. 27"
+      }
+    ],
+    /* ══ CE QUE SA NOTICE RAIN BIRD DIT DE L'ÉLECTROVANNE ══════════════════════
+    
+         **Relevé le 22 août 2026** sur la notice qu'il a envoyée
+         (`man_DV_DVF.pdf`, Rain Bird, P/N 231576-B). Ce sont ses vannes : toutes
+         ses fiches de nourrice montent des 100-DV.
+    
+         | | 075-DV (3/4") | 100-DV (1") |
+         |---|---|---|
+         | débit admis | 0,05 à 5,0 m³/h | 0,05 à 9,08 m³/h |
+         | pression admise | 1 à 10 bar | 1 à 10 bar |
+    
+         Et une règle que le dépôt appliquait de travers : **le réducteur de
+         pression ne sert qu'au-delà de 5,5 bar** (*« if pressure is greater than
+         80 psi (5,5 bar), install a pressure regulator on the line before the
+         valve »*). Il était facturé d'office sur chaque chantier.
+    
+         ⚠ **CE QUE CETTE NOTICE NE DONNE PAS :** la perte de charge de la vanne.
+         C'est une notice d'installation, pas une fiche technique — il n'y a ni
+         courbe ni tableau ΔP. Le forfait majorant de `PERTE_ELECTROVANNE` reste
+         donc en place, et reste non relevé. */
+    electrovanneDV: {
+      debitMin: 0.05,
+      debitMax100: 9.08,
+      debitMax075: 5,
+      pressionMin: 1,
+      pressionMax: 10,
+      // Au-delà, la notice impose un réducteur AVANT la vanne.
+      reducteurAuDelaDe: 5.5,
+      // Les modèles mâle-mâle et mâle-cannelé sont déconseillés au-delà.
+      debitMaxMMetMB: 6.8,
+      source: "patron",
+      releve: "Notice Rain Bird DV/DVF, P/N 231576-B (2011)",
+      // **SA PERTE DE CHARGE, relevée le 17 octobre 2026 avec son accord** :
+      // catalogue Rain Bird, Valves, p. 89, « DV and DVF Valve Pressure Loss (bar)
+      // METRIC », colonne « 100-DV/100-DVF 1" », la sienne en MM comme en FF.
+      // [débit en m³/h, perte en bar]. Elle remplace le forfait de 0,25 bar,
+      // qui comptait trop peu dès 1,2 m³/h.
+      perte: [[0.23, 0.23], [0.6, 0.24], [1.2, 0.26], [3.6, 0.32], [4.5, 0.35], [6, 0.41], [9, 0.59]],
+      perteReleve: "Catalogue Rain Bird, Valves, p. 89"
+    },
+    /* ── LES PIÈCES DE NOURRICE — un catalogue à part, référencé par les fiches
+       ci-dessous. Chaque pièce n'est écrite QU'UNE FOIS ici, même si elle
+       revient dans les six fiches (l'électrovanne, par exemple, est dans les
+       six) : la retaper à chaque fois aurait fini par diverger — un accent, un
+       chiffre — et l'écart se serait vu exactement là où il compare deux
+       fiches. Reçues le 17 août 2026 : « voici toutes les pièces pour la
+       nourrice, ce qui se trouve dans le regard d'arrosage. » */
+    // Les références Aqua Plus (`aquaplus`) : posées avec son accord le 18 octobre 2026. Le té MMF, la
+    // vanne de purge et les regards jumbo 5 et 6 voies sont, selon lui, les pièces que vend Aqua Plus
+    // sous un autre nom. Le BL-IP, le régulateur et le PEBD Ø16 s'achètent là-bas sans référence :
+    // « juste cette nomenclature-là, ils comprendront ».
+    piecesNourrice: {
+      "coude-mf": { nom: 'Coude 90\xB0 taraud\xE9/filet\xE9 MF 1"', marque: "Dura", aquaplus: "ODU306009" },
+      // Le coude FF et le raccord femelle 25 x 3/4" remplacent, le 18 octobre 2026
+      // et sur ses réponses, le « coude MM » et le « raccord mâle 25 1" » de ses
+      // fiches du 17 août : ce sont les pièces qu'il pose (Aqua Plus ODU306010, OPL70302520).
+      "coude-ff": { nom: 'Coude 1" FF', marque: "Dura", aquaplus: "ODU306010" },
+      "mamelon": { nom: 'Mamelon r\xE9duit filet\xE9 MM 1"-3/4"', marque: "Dura", aquaplus: "ODU8303131" },
+      // **Les pièces 6 et 7 de la nourrice, corrigées par lui le 18 octobre 2026** :
+      // *« je me suis trompé sur le montage, le 6 c'est le même mais en femelle-femelle,
+      // et la pièce en dessous c'est un 25 x 1" »*. L'union MF et le raccord femelle
+      // 25 x 3/4" de la veille sont remplacés partout où la fiche les comptait.
+      "union": { nom: 'Manchon union 1" FF', marque: "Dura", aquaplus: "ODU329010" },
+      "vanne-purge": { nom: 'Vanne avec vis de purge 3/4"', marque: "Dura", aquaplus: "BVA932" },
+      "electrovanne-100dv": { nom: '\xC9lectrovanne 100 DV 1" MM 9V', marque: "Rain Bird", aquaplus: "REV100DVM9V" },
+      "raccord-male25": { nom: 'Raccord m\xE2le 25 x 1"', marque: "Plasson", aquaplus: "OPL70202526" },
+      "regard-rect12": { nom: 'Regard rectangle 12"', marque: "Dura", aquaplus: "RG17100" },
+      "regard-rg17106": { nom: "Regard jumbo RG17106", marque: "Dura", aquaplus: "RG17106" },
+      "regard-jumbo5": { nom: "Regard jumbo 5 voies", marque: "Dura", aquaplus: "RG17106" },
+      "regard-jumbo6": { nom: "Regard jumbo 6 voies", marque: "Dura", aquaplus: "RG17106" },
+      // Le nom d'Aqua Plus, sa demande du 18 octobre 2026 (il l'appelait « té 1" MMF ») : c'est sous ce
+      // nom que le fournisseur le cherche. La clé reste `te-mmf`, elle ne s'affiche nulle part.
+      "te-mmf": { nom: 'T\xE9 1" MFF', marque: "Dura", aquaplus: "ODU301010" },
+      "clarinette-2v": { nom: 'Collecteur M x F x 2 sorties 1"', marque: "Dura", aquaplus: "ODU3010102" },
+      "clarinette-3v": { nom: 'Collecteur M x F x 3 sorties 1"', marque: "Dura", aquaplus: "ODU3010103" },
+      "clarinette-4v": { nom: 'Collecteur M x F x 4 sorties 1"', marque: "Dura", aquaplus: "ODU3010104" },
+      "prog-1": { nom: "Programmateur BL-IP 1 station 9V", marque: "Solem" },
+      "prog-2": { nom: "Programmateur BL-IP 2 stations 9V", marque: "Solem" },
+      "prog-4": { nom: "Programmateur BL-IP 4 stations 9V", marque: "Solem" },
+      "prog-6": { nom: "Programmateur BL-IP 6 stations 9V", marque: "Solem" },
+      "pile-9v": { nom: "Pile alcaline 9V", aquaplus: "ELD60481" },
+      "connexion": { nom: "Connexion \xE9tanche", aquaplus: "ELD550077" },
+      /* ── Modification GOUTTE-À-GOUTTE — reçue le 17 août 2026 ───────────────
+         « Lorsqu'un réseau est pour du goutte-à-goutte, quelques modifications
+         s'appliquent : régulateur de pression FF 3/4", électrovanne 100-DV 1"
+         FF (au lieu de MM), 2 mamelons réduits en plus, 1 mamelon droit. »
+         Ces pièces ne remplacent PAS une fiche entière : elles s'appliquent
+         PAR VOIE, à celles qui alimentent une zone goutte-à-goutte. Voir
+         `CATALOGUE.ficheNourrice`, plus bas, qui fait ce mélange. */
+      "regulateur-ff34": { nom: 'R\xE9gulateur de pression FF 3/4"', marque: "Dura" },
+      "electrovanne-100dv-ff": { nom: '\xC9lectrovanne 100 DV 1" FF 9V', marque: "Rain Bird", aquaplus: "REV100DV9V" },
+      "mamelon-droit-1": { nom: 'Mamelon filet\xE9 MM 1"', marque: "Dura", aquaplus: "ODU8303" }
+    },
+    /* ── Les nourrices, par nombre de voies — reçues le 17 août 2026 ─────────
+         « Ce qui se trouve dans le regard d'arrosage » : une fiche = un regard.
+         De une à six voies, relevées mot pour mot, transcrites sans un prix.
+    
+         **AUCUN PLAFOND À SIX VOIES** — sa réponse du 17 août : « oui tu peux
+         prévoir au-delà de 6 ». `nourrices[12]` se poserait comme `nourrices[1]`,
+         sans rien changer au code, le jour où il l'enverra.
+    
+         **CE QUI N'EST PAS TRANCHÉ, et qui ne sera PAS supposé** : au-delà d'une
+         certaine taille, pose-t-il UNE nourrice de douze voies, ou DEUX de six ?
+         Les deux se font. Composer une nourrice de douze en doublant celle de six
+         serait exactement l'invention que ce fichier interdit — l'écran demande
+         donc la fiche, et attend.
+    
+         **CE QUI N'EST PAS DANS SES FICHES, et qui ne doit pas s'y ajouter en
+         silence** : ni disconnecteur, ni réducteur de pression, ni sonde de
+         pluie. Ce sont des pièces de tête de réseau, pas du regard — elles
+         restent des lignes séparées ailleurs dans la liste. */
+    nourrices: {
+      1: {
+        nom: "Nourrice 1 voie",
+        source: "patron",
+        releve: "17 ao\xFBt 2026",
+        pieces: [
+          { ref: "coude-mf", q: 1 },
+          { ref: "coude-ff", q: 1 },
+          { ref: "mamelon", q: 2 },
+          { ref: "union", q: 2 },
+          { ref: "vanne-purge", q: 1 },
+          { ref: "electrovanne-100dv", q: 1 },
+          { ref: "raccord-male25", q: 2 },
+          { ref: "regard-rect12", q: 1 },
+          { ref: "prog-1", q: 1 },
+          { ref: "pile-9v", q: 1 },
+          { ref: "connexion", q: 2 }
+        ]
+      },
+      2: {
+        nom: "Nourrice 2 voies",
+        source: "patron",
+        releve: "17 ao\xFBt 2026",
+        pieces: [
+          { ref: "te-mmf", q: 1 },
+          { ref: "coude-ff", q: 1 },
+          { ref: "union", q: 3 },
+          { ref: "electrovanne-100dv", q: 2 },
+          { ref: "raccord-male25", q: 3 },
+          { ref: "coude-mf", q: 1 },
+          { ref: "mamelon", q: 2 },
+          { ref: "vanne-purge", q: 1 },
+          { ref: "regard-rect12", q: 1 },
+          { ref: "prog-2", q: 1 },
+          { ref: "pile-9v", q: 1 },
+          { ref: "connexion", q: 6 }
+        ]
+      },
+      3: {
+        nom: "Nourrice 3 voies",
+        source: "patron",
+        releve: "17 ao\xFBt 2026",
+        pieces: [
+          { ref: "clarinette-2v", q: 1 },
+          { ref: "union", q: 4 },
+          { ref: "electrovanne-100dv", q: 3 },
+          { ref: "raccord-male25", q: 4 },
+          { ref: "coude-ff", q: 1 },
+          { ref: "coude-mf", q: 1 },
+          { ref: "mamelon", q: 2 },
+          { ref: "vanne-purge", q: 1 },
+          { ref: "regard-rect12", q: 1 },
+          { ref: "prog-4", q: 1 },
+          { ref: "pile-9v", q: 1 },
+          { ref: "connexion", q: 6 }
+        ]
+      },
+      4: {
+        nom: "Nourrice 4 voies",
+        source: "patron",
+        releve: "17 ao\xFBt 2026",
+        pieces: [
+          { ref: "clarinette-3v", q: 1 },
+          { ref: "union", q: 5 },
+          { ref: "electrovanne-100dv", q: 4 },
+          { ref: "raccord-male25", q: 5 },
+          { ref: "coude-ff", q: 1 },
+          { ref: "coude-mf", q: 1 },
+          { ref: "mamelon", q: 2 },
+          { ref: "vanne-purge", q: 1 },
+          { ref: "regard-rg17106", q: 1 },
+          { ref: "prog-4", q: 1 },
+          { ref: "pile-9v", q: 1 },
+          { ref: "connexion", q: 8 }
+        ]
+      },
+      5: {
+        nom: "Nourrice 5 voies",
+        source: "patron",
+        releve: "17 ao\xFBt 2026",
+        pieces: [
+          { ref: "clarinette-4v", q: 1 },
+          { ref: "union", q: 6 },
+          { ref: "electrovanne-100dv", q: 5 },
+          { ref: "raccord-male25", q: 6 },
+          { ref: "coude-ff", q: 1 },
+          { ref: "coude-mf", q: 1 },
+          { ref: "mamelon", q: 2 },
+          { ref: "vanne-purge", q: 1 },
+          { ref: "regard-jumbo5", q: 1 },
+          { ref: "prog-6", q: 1 },
+          { ref: "pile-9v", q: 1 },
+          { ref: "connexion", q: 12 }
+        ]
+      },
+      6: {
+        // Même clarinette « 4 vannes » que la fiche 5 voies, plus un Té 1" MMF
+        // absent des autres fiches : CONFIRMÉ par lui le 17 août — « oui c'est
+        // voulu, c'est comme ça que se constitue une nourrice 6 voies ». Ce
+        // n'était pas une coquille de transcription ; ne pas y toucher.
+        nom: "Nourrice 6 voies",
+        source: "patron",
+        releve: "17 ao\xFBt 2026",
+        pieces: [
+          { ref: "clarinette-4v", q: 1 },
+          { ref: "union", q: 7 },
+          { ref: "electrovanne-100dv", q: 6 },
+          { ref: "raccord-male25", q: 7 },
+          { ref: "coude-ff", q: 1 },
+          { ref: "coude-mf", q: 1 },
+          { ref: "mamelon", q: 2 },
+          { ref: "vanne-purge", q: 1 },
+          { ref: "te-mmf", q: 1 },
+          { ref: "regard-jumbo6", q: 1 },
+          { ref: "prog-6", q: 1 },
+          { ref: "pile-9v", q: 1 },
+          { ref: "connexion", q: 20 }
+        ]
+      }
+    }
+  };
+  CATALOGUE.piece = function(ref) {
+    return CATALOGUE.piecesNourrice[ref] || null;
+  };
+  CATALOGUE.pieceAjoutable = function(ref) {
+    return CATALOGUE.piecesAjoutables.filter(function(x) {
+      return x.ref === ref;
+    })[0] || null;
+  };
+  CATALOGUE.ficheNourrice = function(n, combienGoutte) {
+    var base = CATALOGUE.nourrices[n];
+    if (!base) return null;
+    var g = Math.max(0, Math.min(combienGoutte || 0, n));
+    var pieces = base.pieces.map(function(p) {
+      return { ref: p.ref, q: p.q };
+    });
+    if (g > 0) {
+      var electro = pieces.filter(function(p) {
+        return p.ref === "electrovanne-100dv";
+      })[0];
+      if (electro) electro.q = Math.max(0, electro.q - g);
+      pieces.push({ ref: "electrovanne-100dv-ff", q: g });
+      pieces.push({ ref: "regulateur-ff34", q: g });
+      pieces.push({ ref: "mamelon", q: g * 2 });
+      pieces.push({ ref: "mamelon-droit-1", q: g });
+    }
+    var fusion = {};
+    pieces.forEach(function(p) {
+      fusion[p.ref] = (fusion[p.ref] || 0) + p.q;
+    });
+    var piecesFusionnees = Object.keys(fusion).filter(function(ref) {
+      return fusion[ref] > 0;
+    }).map(function(ref) {
+      return { ref, q: fusion[ref] };
+    });
+    return { nom: base.nom, source: base.source, pieces: piecesFusionnees };
+  };
+  CATALOGUE.gaines.forEach(function(g) {
+    g.debitMetre = g.debitGoutteur / g.ecartGoutteurs / 1e3;
+  });
+  CATALOGUE.buses.forEach(function(b) {
+    if (b.pourType !== "turbine") return;
+    if (b.debit[360] == null) return;
+    if (b.debit[90] != null || b.debit[180] != null) return;
+    b.debit[90] = b.debit[360];
+    b.debit[180] = b.debit[360];
+    b.debitMemeQuelQueSoitLArc = true;
+  });
+  CATALOGUE.busesDe = function(marqueCle, pourType) {
+    return CATALOGUE.buses.filter(function(b) {
+      if (b.marqueCle !== marqueCle || b.pourType !== pourType) return false;
+      return b.debit[90] != null && b.debit[180] != null && (b.debit[360] != null || b.debit[330] != null);
+    }).sort(function(a, b) {
+      return b.rayon - a.rayon;
+    });
+  };
+  CATALOGUE.referenceDe = function(cle) {
+    if (!cle) return null;
+    var piece = CATALOGUE.piecesNourrice[cle] || CATALOGUE.piecesReseau[cle];
+    if (piece) return piece.aquaplus && CATALOGUE.pieceAjoutable(piece.aquaplus) ? piece.aquaplus : null;
+    var listes = [
+      CATALOGUE.buses,
+      CATALOGUE.corps,
+      CATALOGUE.coudes,
+      CATALOGUE.gaines,
+      CATALOGUE.materiel,
+      CATALOGUE.piecesAjoutables
+    ];
+    for (var i = 0; i < listes.length; i++) {
+      var trouve = (listes[i] || []).filter(function(x) {
+        return x.ref === cle;
+      })[0];
+      if (trouve) return trouve.releve && !trouve.livreeAvecLArroseur ? trouve.ref : null;
+    }
+    return null;
+  };
+  CATALOGUE.tousLesProduits = function() {
+    var out = [];
+    CATALOGUE.buses.forEach(function(b) {
+      out.push({
+        ref: b.ref,
+        nom: "Buse " + b.nom + " \u2014 " + (b.marque || "Rain Bird"),
+        detail: "rayon " + String(b.rayon).replace(".", ",") + " m \xE0 " + String(b.pression).replace(".", ",") + " bar" + (b.livreeAvecLArroseur ? ", livr\xE9e avec l'arroseur" : ", par " + b.colisage),
+        famille: "Buses"
+      });
+    });
+    CATALOGUE.corps.forEach(function(c) {
+      out.push({ ref: c.ref, nom: c.nom, detail: c.detail || "", famille: "Corps d'arroseur" });
+    });
+    CATALOGUE.coudes.forEach(function(c) {
+      out.push({ ref: c.ref, nom: c.nom, detail: c.detail, famille: "Raccordement" });
+    });
+    Object.keys(CATALOGUE.piecesNourrice).forEach(function(ref) {
+      var p = CATALOGUE.piecesNourrice[ref];
+      out.push({ ref, nom: (p.marque ? p.marque + " " : "") + p.nom, detail: "", famille: "Nourrice" });
+    });
+    Object.keys(CATALOGUE.piecesReseau).forEach(function(ref) {
+      var p = CATALOGUE.piecesReseau[ref];
+      out.push({ ref, nom: (p.marque ? p.marque + " " : "") + p.nom, detail: "", famille: "R\xE9seau lat\xE9ral" });
+    });
+    CATALOGUE.gaines.forEach(function(g) {
+      out.push({ ref: g.ref, nom: g.nom, detail: g.detail, famille: "Goutte-\xE0-goutte" });
+    });
+    CATALOGUE.materiel.forEach(function(m) {
+      out.push({ ref: m.ref, nom: m.nom, detail: m.unite === "ml" ? "au m\xE8tre" : "", famille: "Mat\xE9riel" });
+    });
+    return out;
+  };
+  CATALOGUE.corpsDe = function(marqueCle, pourType) {
+    var type = pourType || "tuyere";
+    return CATALOGUE.corps.filter(function(c) {
+      return c.marqueCle === marqueCle && c.pourType === type;
+    });
+  };
+  CATALOGUE.corpsParDefaut = function(marqueCle) {
+    var chez = CATALOGUE.corpsDe(marqueCle);
+    var dix = chez.filter(function(c) {
+      return c.hauteur === 10 && c.options.length === 0;
+    })[0];
+    return dix || chez[0] || null;
+  };
+  CATALOGUE.corpsDeLaBuse = function(buse) {
+    if (!buse || buse.pourType !== "turbine") return null;
+    var base = buse.ref.split("-B")[0];
+    return CATALOGUE.corps.filter(function(c) {
+      return c.pourType === "turbine" && c.marqueCle === buse.marqueCle && c.ref.indexOf(base) === 0 && c.options.length <= 1;
+    })[0] || CATALOGUE.corps.filter(function(c) {
+      return c.pourType === "turbine" && c.marqueCle === buse.marqueCle && c.ref.indexOf(base) === 0;
+    })[0] || null;
+  };
+  CATALOGUE.explicationCorps = function(c) {
+    var h = "Escamotable " + c.hauteur + " cm \u2014 " + (c.hauteur <= 5 ? "pour un gazon tondu ras." : c.hauteur <= 10 ? "le plus courant." : c.hauteur <= 15 ? "pour une herbe plus haute ou un massif bas." : "pour une v\xE9g\xE9tation haute, loin de la tondeuse.");
+    var opts = c.options.map(function(o) {
+      return o === "clapet anti-vidange" ? "Clapet anti-vidange : \xE9vite les fuites au point bas apr\xE8s l'arr\xEAt, utile sur un terrain en pente." : o === "r\xE9gulateur de pression" ? "Pression r\xE9gul\xE9e : utile si la pression varie sur le r\xE9seau." : o;
+    });
+    return [h].concat(opts).join(" ");
+  };
+  CATALOGUE.marqueParDefaut = function() {
+    var d = CATALOGUE.marques.filter(function(m) {
+      return m.defaut;
+    })[0];
+    return d ? d.cle : CATALOGUE.marques[0].cle;
+  };
+  CATALOGUE.provisoires = function() {
+    var n = 0;
+    ["gaines", "materiel"].forEach(function(famille) {
+      CATALOGUE[famille].forEach(function(x) {
+        if (x.source === "provisoire") n++;
+      });
+    });
+    return n;
+  };
+
+  // src/lib/arrosage/photos-nourrice.ts
+  var PHOTOS_NOURRICE = {
+    "coude-mf": { largeur: 1500, hauteur: 1500, x0: 274, y0: 344, x1: 1261, y1: 1193 },
+    "coude-ff": { largeur: 1512, hauteur: 1512, x0: 178, y0: 124, x1: 1439, y1: 1377 },
+    "te-mmf": { largeur: 1402, hauteur: 1402, x0: 186, y0: 338, x1: 1187, y1: 1155 },
+    "clarinette-2v": { largeur: 1024, hauteur: 825, x0: 42, y0: 292, x1: 983, y1: 567 },
+    "clarinette-3v": { largeur: 1024, hauteur: 825, x0: 26, y0: 376, x1: 995, y1: 569 },
+    "clarinette-4v": { largeur: 1024, hauteur: 825, x0: 24, y0: 378, x1: 999, y1: 521 },
+    "mamelon": { largeur: 800, hauteur: 800, x0: 228, y0: 228, x1: 563, y1: 551 },
+    "vanne-purge": { largeur: 800, hauteur: 800, x0: 82, y0: 118, x1: 709, y1: 687 },
+    "union": { largeur: 470, hauteur: 470, x0: 0, y0: 74, x1: 469, y1: 397 },
+    "raccord-male25": { largeur: 600, hauteur: 600, x0: 42, y0: 92, x1: 559, y1: 477 },
+    "pehd": { largeur: 500, hauteur: 500, x0: 0, y0: 200, x1: 399, y1: 305 },
+    "electrovanne-100dv": { largeur: 1181, hauteur: 1699, x0: 32, y0: 36, x1: 1153, y1: 1673 },
+    "electrovanne-100dv-ff": { largeur: 800, hauteur: 800, x0: 98, y0: 134, x1: 669, y1: 705 },
+    "mamelon-droit-1": { largeur: 1500, hauteur: 1500, x0: 216, y0: 164, x1: 1241, y1: 1315 },
+    "regulateur-ff34": { largeur: 1e3, hauteur: 1e3, x0: 308, y0: 116, x1: 689, y1: 917 }
+  };
+
+  // src/lib/arrosage/nourrice-eclatee.ts
+  var HAUT = {
+    "coude-mf": { h: 46, vertical: 0.27, horizontal: 0.22 },
+    "coude-ff": { h: 52, vertical: 0.65, horizontal: 0.4, miroir: true },
+    "te-mmf": { h: 44, vertical: 0.52, horizontal: 0.28, demi: true },
+    "clarinette-2v": { w: 150, sorties: [0.307, 0.778], tube: 0.35 },
+    "clarinette-3v": { w: 220, sorties: [0.21, 0.535, 0.85], tube: 0.34 },
+    "clarinette-4v": { w: 296, sorties: [0.16, 0.4, 0.64, 0.88], tube: 0.33 }
+  };
+  var COLONNE = {
+    mamelon: { a: [0.5, 0.02], b: [0.5, 0.98], L: 28 },
+    "mamelon-demi": { a: [0.5, 0.98], b: [0.5, 0.02], L: 28, src: "mamelon" },
+    // Retournée, sa demande du 18 octobre 2026 : la vis de purge en haut, la poignée rouge à gauche.
+    "vanne-purge": { a: [0.61, 0.73], b: [0.02, 0.79], L: 40 },
+    union: { a: [0.08, 0.67], b: [0.95, 0.31], L: 46 },
+    "raccord-male25": { a: [0.08, 0.6], b: [0.93, 0.32], L: 40 },
+    pehd: { a: [0, 0.5], b: [1, 0.5], L: 44 },
+    "electrovanne-100dv": { a: [0.01, 0.88], b: [0.99, 0.88], L: 50 },
+    "electrovanne-100dv-ff": { a: [0.28, 0.8], b: [0.97, 0.52], L: 50 },
+    "mamelon-droit-1": { a: [0.5, 0.02], b: [0.5, 0.98], L: 26 },
+    "regulateur-ff34": { a: [0.5, 0.02], b: [0.5, 0.98], L: 44 }
+  };
+  var ECART = 9;
+  function boite(ref) {
+    const m = PHOTOS_NOURRICE[ref];
+    return m ? { ...m, w: m.x1 - m.x0, h: m.y1 - m.y0 } : null;
+  }
+  function tailleHaut(ref) {
+    const f = HAUT[ref];
+    const b = boite(ref);
+    if (!b) return { w: f.w ?? 40, h: f.h ?? 40 };
+    if (f.w) return { w: f.w, h: f.w * b.h / b.w };
+    const h = f.h ?? 40;
+    return { w: h * b.w / b.h, h };
+  }
+  var CAT = CATALOGUE;
+  function composerNourrice(voies, nbGoutte) {
+    const fiche = CAT.ficheNourrice(voies, nbGoutte);
+    if (!fiche) return null;
+    const reste = {};
+    for (const p of fiche.pieces) reste[p.ref] = (reste[p.ref] ?? 0) + p.q;
+    const pris = (ref) => {
+      if ((reste[ref] ?? 0) > 0) reste[ref] -= 1;
+    };
+    const ordre = [];
+    const numero = (ref) => {
+      let i = ordre.indexOf(ref);
+      if (i < 0) {
+        ordre.push(ref);
+        i = ordre.length - 1;
+      }
+      return i + 1;
+    };
+    const poses = [];
+    const haut = (ref, x2, y2) => {
+      const t = tailleHaut(ref);
+      const f = HAUT[ref];
+      const pose = { haut: true, ref, numero: numero(ref), x: x2, y: y2, w: t.w, h: t.h, demi: Boolean(f.demi), miroir: Boolean(f.miroir) };
+      poses.push(pose);
+      pris(ref);
+      return pose;
+    };
+    const colonne = (cle, x2, y2) => {
+      const f = COLONNE[cle];
+      const ref = f.src ?? cle;
+      const b = boite(ref);
+      let angle = 0, echelle = 1, ax = 0, ay = 0;
+      if (b) {
+        ax = f.a[0] * b.w;
+        ay = f.a[1] * b.h;
+        const bx = f.b[0] * b.w, by = f.b[1] * b.h;
+        echelle = f.L / Math.hypot(bx - ax, by - ay);
+        angle = (Math.PI / 2 - Math.atan2(by - ay, bx - ax)) * 180 / Math.PI;
+      }
+      poses.push({ haut: false, ref, numero: numero(ref), x: x2, y: y2, L: f.L, angle, echelle, ax, ay });
+      pris(ref);
+      return y2 + f.L;
+    };
+    const clar = ["clarinette-2v", "clarinette-3v", "clarinette-4v"].filter((r) => reste[r])[0];
+    const avecTe = Boolean(reste["te-mmf"]);
+    let x = 34;
+    const yTop = 12;
+    const axe = yTop + (clar ? tailleHaut(clar).h * (HAUT[clar].tube ?? 0.34) : 22);
+    const axes = [];
+    const cg = haut("coude-mf", x, 0);
+    cg.y = axe - cg.h * (HAUT["coude-mf"].horizontal ?? 0);
+    const xL = x + cg.w * (HAUT["coude-mf"].vertical ?? 0.5);
+    x += cg.w + ECART;
+    if (clar) {
+      const cl = haut(clar, x, yTop);
+      for (const s of HAUT[clar].sorties ?? []) axes.push(x + s * cl.w);
+      x += cl.w + ECART;
+    }
+    if (avecTe) {
+      const te = haut("te-mmf", x, 0);
+      te.y = axe - te.h * (HAUT["te-mmf"].horizontal ?? 0);
+      axes.push(x + te.w * (HAUT["te-mmf"].vertical ?? 0.5));
+      x += te.w + ECART;
+    }
+    const cd = haut("coude-ff", x, 0);
+    cd.y = axe - cd.h * (HAUT["coude-ff"].horizontal ?? 0);
+    axes.push(x + cd.w * (HAUT["coude-ff"].vertical ?? 0.5));
+    let bas = 0;
+    for (const p of poses) if (p.haut) bas = Math.max(bas, p.y + p.h);
+    bas += ECART;
+    let y = colonne("mamelon-demi", xL, bas) + ECART;
+    y = colonne("vanne-purge", xL, y) + ECART;
+    y = colonne("mamelon", xL, y) + ECART;
+    y = colonne("union", xL, y) + ECART;
+    y = colonne("raccord-male25", xL, y) + ECART;
+    const finArrivee = colonne("pehd", xL, y);
+    let fin = finArrivee;
+    const etiquettes = [
+      { x: xL, y: finArrivee + 28, texte: "Arriv\xE9e" },
+      { x: xL, y: finArrivee + 40, texte: "d\u2019eau" }
+    ];
+    axes.forEach((xv, i) => {
+      const goutte = i >= axes.length - nbGoutte;
+      let yv = bas;
+      if (goutte) {
+        yv = colonne("mamelon-droit-1", xv, yv) + ECART;
+        yv = colonne("electrovanne-100dv-ff", xv, yv) + ECART;
+        yv = colonne("mamelon-demi", xv, yv) + ECART;
+        yv = colonne("regulateur-ff34", xv, yv) + ECART;
+        yv = colonne("mamelon", xv, yv) + ECART;
+      } else {
+        yv = colonne("electrovanne-100dv", xv, yv) + ECART;
+      }
+      yv = colonne("union", xv, yv) + ECART;
+      yv = colonne("raccord-male25", xv, yv) + ECART;
+      yv = colonne("pehd", xv, yv);
+      etiquettes.push({ x: xv, y: yv, reseau: i, goutte: goutte ? i - (axes.length - nbGoutte) : -1 });
+      fin = Math.max(fin, yv);
+    });
+    fin = Math.max(fin, finArrivee + 40);
+    const largeur = Math.max(x + cd.w, axes[axes.length - 1] + 70) + 8;
+    const hauteur = fin + (nbGoutte ? 34 + (nbGoutte > 1 ? 50 : 22) : 34);
+    return { nom: fiche.nom, largeur, hauteur, poses, ordre, reste, arrivee: { x: xL, bas: finArrivee }, etiquettes };
+  }
+  return __toCommonJS(entree_exports);
+})();

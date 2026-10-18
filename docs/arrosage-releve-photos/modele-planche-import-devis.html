@@ -97,6 +97,16 @@
   .second{margin-top:10px;width:100%;min-height:52px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:16px;cursor:pointer}
   .principal:focus-visible,.second:focus-visible,.inconnue button:focus-visible{outline:2px solid var(--atlas-or);outline-offset:3px}
   .note{margin:10px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  /* La nourrice éclatée qu'il a validée, au nombre de voies du devis ; ce que le
+     devis n'apporte pas reste à sa place, grisé (sa demande du 18 octobre 2026). */
+  .regard{margin-top:12px;border-radius:16px;background:#ffffff;padding:8px 0;box-shadow:inset 0 0 0 1px var(--atlas-line);overflow:hidden}
+  .regard svg{display:block;width:100%;height:auto;margin:0 auto}
+  .regard .absente{filter:grayscale(1);opacity:.28}
+  .bac h3,.manquent h3{margin:16px 0 0;font-size:14px;font-weight:600}
+  .p.absente .ph{filter:grayscale(1);opacity:.3}
+  .p.absente .n{color:var(--atlas-alerte)}
+  .manquent .liste .q{color:var(--atlas-alerte)}
+  .ajoutees .q{color:var(--atlas-orTexte)}
   .feuille{position:fixed;inset:0;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.35)}
   .feuille[hidden]{display:none}
   .feuille .boite{width:100%;max-width:430px;max-height:86vh;overflow:auto;background:var(--atlas-cream);border-radius:18px 18px 0 0;padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px))}
@@ -110,7 +120,7 @@
 <body data-charte="origine">
 <div class="entete">
   <h1>Importer un devis</h1>
-  <p>Planche, rien n’est codé. Le devis d’exemple est la liste que l’outil rend pour le jardin de la planche du plan.</p>
+  <p>Planche, rien n’est codé. Le devis d’exemple est la liste que l’outil rend pour le jardin de la planche du plan, sans le coude FF et deux unions.</p>
   <select id="charte" aria-label="Charte"></select>
 </div>
 <main class="ecran">
@@ -143,7 +153,9 @@
     <span class="caps">Le montage</span>
     <h2 id="titre-montage"></h2>
     <p class="voies" id="voies"></p>
-    <div class="rangee" id="nourrice"></div>
+    <div class="regard" id="dessin"></div>
+    <div class="bac"><h3>Avec la nourrice</h3><div class="rangee" id="bac"></div></div>
+    <div class="manquent" id="manquent"></div>
   </section>
 
   <section class="bloc" id="bloc-manque" hidden>
@@ -169,6 +181,7 @@
   </div>
 </div>
 
+<script src="arrosage-nourrice-calcul.js"></script>
 <script>
 (function () {
   var PHOTOS = /*PHOTOS*/{};
@@ -202,15 +215,69 @@
         (r ? '<p class="issue">' + texte(r) + "</p>" : "") +
         '<div class="gestes"><button type="button" data-choisir="' + i + '">Choisir la pièce</button><button type="button" data-laisser="' + i + '">Laisser hors liste</button></div></div>';
     }).join("") : "";
-    // Une électrovanne, un réseau : la règle de la fiche (TODO.md, 17 octobre 2026).
-    var vannes = connues.filter(function (l) { return /electrovanne/.test(l.cle); }).reduce(function (s, l) { return s + l.q; }, 0);
-    $("titre-montage").textContent = "La nourrice " + vannes + " voies";
-    $("voies").textContent = vannes + " électrovannes sur le devis, donc " + vannes + " réseaux.";
-    $("nourrice").innerHTML = connues.filter(function (l) { return l.nourrice; }).map(function (l) {
-      var f = PHOTOS[l.photo || l.cle];
-      return '<div class="p"><span class="ph">' + (f ? '<img src="arrosage-photos/' + texte(f) + '" alt="">' : "") + '</span><span class="n">' + texte(l.nomCourt || l.nom) + '</span><span class="x">' + l.q + "x</span></div>";
-    }).join("");
+    montage(connues);
     ["bloc-lu", "bloc-montage", "bloc-manque"].forEach(function (b) { $(b).hidden = false; });
+  }
+
+  // ── LE MONTAGE : la nourrice validée (composerNourrice, le code de l'écran),
+  // au nombre de voies du devis. Une électrovanne, un réseau ; une électrovanne
+  // FF, une voie de goutte-à-goutte (la fiche du 18 octobre 2026).
+  var N = window.NOURRICE;
+  var ajoutees = false;
+  function montage(connues) {
+    var a = {};
+    connues.forEach(function (l) { a[l.cle] = (a[l.cle] || 0) + l.q; });
+    var mm = a["electrovanne-100dv"] || 0, ff = a["electrovanne-100dv-ff"] || 0, voies = mm + ff;
+    var n = N.composerNourrice(voies, ff), fiche = N.CATALOGUE.ficheNourrice(voies, ff);
+    $("titre-montage").textContent = "La nourrice " + voies + " voies";
+    $("voies").textContent = voies + " électrovannes sur le devis, donc " + voies + " réseaux" + (ff ? ", dont " + ff + " en goutte-à-goutte." : ".");
+    if (!n || !fiche) { $("dessin").innerHTML = ""; $("bac").innerHTML = ""; $("manquent").innerHTML = ""; return; }
+    // Ce que le devis apporte de chaque pièce : les poses au-delà restent grises.
+    var apporte = {};
+    fiche.pieces.forEach(function (x) { apporte[x.ref] = ajoutees ? x.q : Math.min(x.q, a[x.ref] || 0); });
+    var reste = {};
+    Object.keys(apporte).forEach(function (r) { reste[r] = apporte[r]; });
+    $("dessin").innerHTML = dessin(n, reste);
+    $("bac").innerHTML = Object.keys(n.reste).filter(function (r) { return n.reste[r] > 0; }).map(function (r) {
+      var f = PHOTOS[r], absente = (reste[r] || 0) < n.reste[r];
+      return '<div class="p' + (absente ? " absente" : "") + '"><span class="ph">' + (f ? '<img src="arrosage-photos/' + texte(f) + '" alt="">' : "") + '</span><span class="n">' + texte(nomCourt(r)) + '</span><span class="x">' + n.reste[r] + "x</span></div>";
+    }).join("");
+    var manque = fiche.pieces.filter(function (x) { return (a[x.ref] || 0) < x.q; }).map(function (x) { return { cle: x.ref, q: x.q - (a[x.ref] || 0) }; });
+    $("manquent").innerHTML = manque.length ? "<h3>" + (ajoutees ? "Ajoutées à la liste" : "Manquent sur le devis") + "</h3>" +
+      '<div class="liste' + (ajoutees ? " ajoutees" : "") + '">' + manque.map(function (x) {
+        return '<div class="ligne">' + vignette(x.cle) + '<span class="n">' + texte(nomCourt(x.cle)) + '</span><span class="q">' + x.q + "x</span></div>";
+      }).join("") + "</div>" + (ajoutees ? "" : '<button class="second" type="button" id="ajouter-manque">Ajouter ce qui manque à la liste</button>') : "";
+  }
+  var nomCourt = function (r) { var p = N.CATALOGUE.piece(r); return p ? p.nom : r; };
+
+  // Le dessin : le même SVG que NourriceEclatee.tsx, photo par photo.
+  function dessin(n, reste) {
+    var encre = "#4a4a44", s = '<svg viewBox="0 0 ' + n.largeur + " " + n.hauteur + '" style="max-width:' + n.largeur + 'px" role="img" aria-label="La nourrice, pièce par pièce">';
+    n.poses.forEach(function (p) {
+      var m = N.PHOTOS_NOURRICE[p.ref], f = PHOTOS[p.ref];
+      var absente = !(reste[p.ref] > 0);
+      if (!absente) reste[p.ref]--;
+      var fenetre = function (w, h) {
+        return f && m ? '<svg width="' + w + '" height="' + h + '" viewBox="' + m.x0 + " " + m.y0 + " " + (m.x1 - m.x0) + " " + (m.y1 - m.y0) + '" preserveAspectRatio="none" style="mix-blend-mode:multiply"><image href="arrosage-photos/' + f + '" width="' + m.largeur + '" height="' + m.hauteur + '"/></svg>' : "";
+      };
+      s += '<g class="' + (absente ? "absente" : "") + '">';
+      if (p.haut) {
+        var h = N.HAUT[p.ref] || {}, t = "translate(" + (p.x + p.w / 2) + " " + (p.y + p.h / 2) + ")" + (h.demi ? " rotate(180)" : "") + (h.miroir ? " scale(-1 1)" : "");
+        s += '<g transform="' + t + '"><g transform="translate(' + (-p.w / 2) + " " + (-p.h / 2) + ')">' + fenetre(p.w, p.h) + "</g></g>";
+      } else {
+        s += '<g transform="translate(' + p.x + " " + p.y + ") rotate(" + p.angle + ") scale(" + p.echelle + ") translate(" + (-p.ax) + " " + (-p.ay) + ')">' + fenetre(m ? m.x1 - m.x0 : 0, m ? m.y1 - m.y0 : 0) + "</g>";
+      }
+      s += "</g>";
+    });
+    s += '<line x1="' + n.arrivee.x + '" y1="' + (n.arrivee.bas + 30) + '" x2="' + n.arrivee.x + '" y2="' + (n.arrivee.bas + 9) + '" stroke="' + encre + '" stroke-width="1.6"/>';
+    s += '<path d="M' + n.arrivee.x + " " + (n.arrivee.bas + 4) + " L" + (n.arrivee.x - 5) + " " + (n.arrivee.bas + 11) + " L" + (n.arrivee.x + 5) + " " + (n.arrivee.bas + 11) + ' Z" fill="' + encre + '"/>';
+    n.etiquettes.forEach(function (e) {
+      if ("texte" in e) { s += '<text x="' + e.x + '" y="' + (e.y + 6) + '" text-anchor="middle" dominant-baseline="hanging" font-size="10" font-weight="600" fill="' + encre + '">' + texte(e.texte) + "</text>"; return; }
+      var g = e.goutte >= 0, dy = g ? (e.goutte % 2) * 26 : e.reseau % 2 === 1 ? 13 : 0;
+      s += '<text x="' + e.x + '" y="' + (e.y + 6 + dy) + '" text-anchor="middle" dominant-baseline="hanging" font-size="10" font-weight="600" fill="' + encre + '">R' + (e.reseau + 1) + "</text>";
+      if (g) s += '<text x="' + e.x + '" y="' + (e.y + 18 + dy) + '" text-anchor="middle" dominant-baseline="hanging" font-size="10" font-weight="600" fill="' + encre + '">goutte-à-goutte</text>';
+    });
+    return s + "</svg>";
   }
 
   var cible = null;
@@ -232,10 +299,11 @@
     var b = e.target.closest("button");
     if (!b) return;
     if (b.id === "porte-devis" || b.id === "autre") {
-      $("fichier-nom").textContent = "devis-aquaplus.pdf"; $("fichier").hidden = false; reglees = {}; lire(); return;
+      $("fichier-nom").textContent = "devis-aquaplus.pdf"; $("fichier").hidden = false; reglees = {}; ajoutees = false; lire(); return;
     }
     if (b.id === "porte-croquis" || b.id === "croquis") { b.textContent = "Ici, l’appareil photo s’ouvre"; return; }
     if (b.id === "garder") { $("garde").hidden = false; return; }
+    if (b.id === "ajouter-manque") { ajoutees = true; montrer(); return; }
     if (b.dataset.choisir) { ouvrirChoix(Number(b.dataset.choisir)); return; }
     if (b.dataset.laisser) { reglees[b.dataset.laisser] = "Laissée hors liste."; montrer(); return; }
     if (b.dataset.piece) {

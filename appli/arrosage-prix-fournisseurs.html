@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prix des fournisseurs</title>
+<!--
+  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Sa demande du 18 octobre 2026 :
+  « une petite case où je puisse intégrer les devis de mes fournisseurs, par
+  exemple Aqua Plus ou France Bonhomme, et il me met à chaque fois les prix à
+  côté des pièces. Le jour où je fais mon plan, il me fait un montant total, à
+  titre indicatif parce que les prix peuvent changer, mais au moins je sais à
+  peu près où je vais. »
+
+  CE SONT DES PRIX D'ACHAT, PAS SES PRIX DE VENTE. Réglages > Tarifs tient déjà
+  ses prix de vente (ImportTarifs.tsx) ; ceux-ci restent à part, par
+  fournisseur, avec la date du devis lu. Les mélanger ferait partir un prix
+  d'achat sur le devis d'un client.
+
+  AUCUN PRIX N'EST INVENTÉ ICI (CLAUDE.md §4, docs/AGENT.md §3) : les cases de
+  prix sont vides. Dans l'outil, elles se remplissent avec ce que l'IA lit sur
+  le devis du fournisseur (comme lire-ticket.ts), et RIEN n'est enregistré
+  avant son appui, comme ImportTarifs. Ici, on tape quelques prix pour voir le
+  total se faire.
+
+  LA LISTE DU PLAN est celle que le calcul rend pour le jardin de la planche du
+  plan (engendrer-planche-prix-fournisseurs.mjs), rien d'écrit à la main.
+-->
+<style>
+[data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#8a8578;--atlas-rustTint:#ece9e1;--atlas-or:#B98B47;--atlas-orTexte:#8b6835;--atlas-line:rgba(28,28,26,0.12);--atlas-lineSoft:rgba(28,28,26,0.07);--atlas-alerte:#9C3B2E}
+[data-charte="brume"]{--atlas-cream:#f4f7fb;--atlas-card:#ffffff;--atlas-ink:#111823;--atlas-inkSoft:#3a434e;--atlas-muted:#78838f;--atlas-rustTint:#e4e7ec;--atlas-or:#B98B47;--atlas-orTexte:#8f6b36;--atlas-line:rgba(17,24,35,0.12);--atlas-lineSoft:rgba(17,24,35,0.07);--atlas-alerte:#9c3b2e}
+[data-charte="pierre"]{--atlas-cream:#e8e8e3;--atlas-card:#f4f4f0;--atlas-ink:#1b1d19;--atlas-inkSoft:#454741;--atlas-muted:#83867c;--atlas-rustTint:#dadad5;--atlas-or:#B98B47;--atlas-orTexte:#826231;--atlas-line:rgba(27,29,25,0.12);--atlas-lineSoft:rgba(27,29,25,0.07);--atlas-alerte:#9c3b2e}
+[data-charte="beurre"]{--atlas-cream:#efe7cf;--atlas-card:#f8f3e4;--atlas-ink:#26221a;--atlas-inkSoft:#4e4939;--atlas-muted:#8b8368;--atlas-rustTint:#e1d9c2;--atlas-or:#B98B47;--atlas-orTexte:#826231;--atlas-line:rgba(38,34,26,0.12);--atlas-lineSoft:rgba(38,34,26,0.07);--atlas-alerte:#9c3b2e}
+[data-charte="moka"]{--atlas-cream:#e6ded5;--atlas-card:#f2ece5;--atlas-ink:#2b241e;--atlas-inkSoft:#524941;--atlas-muted:#8d8175;--atlas-rustTint:#d9d1c8;--atlas-or:#B98B47;--atlas-orTexte:#7c5d2f;--atlas-line:rgba(43,36,30,0.12);--atlas-lineSoft:rgba(43,36,30,0.07);--atlas-alerte:#9c3b2e}
+[data-charte="prune"]{--atlas-cream:#efe6ea;--atlas-card:#f9f2f5;--atlas-ink:#23131c;--atlas-inkSoft:#4d3a44;--atlas-muted:#8c7481;--atlas-rustTint:#e1d7dc;--atlas-or:#B98B47;--atlas-orTexte:#846332;--atlas-line:rgba(35,19,28,0.12);--atlas-lineSoft:rgba(35,19,28,0.07);--atlas-alerte:#9c3b2e}
+[data-charte="sylve"]{--atlas-cream:#16241c;--atlas-card:#1e3026;--atlas-ink:#e6e6da;--atlas-inkSoft:#c2caba;--atlas-muted:#8ba189;--atlas-rustTint:#253229;--atlas-or:#B98B47;--atlas-orTexte:#b98b47;--atlas-line:rgba(230,230,218,0.12);--atlas-lineSoft:rgba(230,230,218,0.07);--atlas-alerte:#d47a6e}
+[data-charte="nuit"]{--atlas-cream:#101210;--atlas-card:#1a1d19;--atlas-ink:#e9e8de;--atlas-inkSoft:#c1c2b6;--atlas-muted:#84887b;--atlas-rustTint:#1f211e;--atlas-or:#B98B47;--atlas-orTexte:#b98b47;--atlas-line:rgba(233,232,222,0.12);--atlas-lineSoft:rgba(233,232,222,0.07);--atlas-alerte:#cd6456}
+  *{box-sizing:border-box}
+  html{background:var(--atlas-rustTint)}
+  body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint)}
+  .entete{max-width:430px;margin:0 auto;padding:18px 16px 6px}
+  .entete h1{margin:0;font:400 24px/1.15 Georgia,"Times New Roman",serif}
+  .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .entete select{margin-top:10px;font-size:16px;padding:8px 10px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink)}
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--atlas-cream);padding:6px 0 80px;min-height:100vh}
+  .caps{display:block;margin:0;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-or)}
+  .bloc{margin:26px 16px 0}
+  .bloc h2{margin:6px 0 0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+  .sous{margin:4px 0 0;font-size:13.5px;color:var(--atlas-muted)}
+  .fournisseur{margin-top:10px;border-radius:14px;background:var(--atlas-card);padding:14px 16px;box-shadow:0 0 0 1px var(--atlas-lineSoft)}
+  .fournisseur .tete{display:flex;align-items:baseline;gap:10px}
+  .fournisseur b{flex:1;font-size:16.5px;font-weight:600}
+  .fournisseur small{font-size:13px;color:var(--atlas-muted)}
+  .fournisseur button{margin-top:10px;width:100%;min-height:46px;border-radius:10px;border:1.5px dashed var(--atlas-line);background:none;color:var(--atlas-ink);font-size:15px;cursor:pointer}
+  .nouveau{display:flex;gap:8px;margin-top:10px}
+  .nouveau input{flex:1;min-width:0;border:0;border-radius:10px;padding:12px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
+  .nouveau button{flex:none;min-height:46px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:15px;padding:0 14px;cursor:pointer}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .chips button{border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);border-radius:999px;padding:8px 12px;font-size:13.5px;cursor:pointer}
+  .chips button[aria-pressed="true"]{background:var(--atlas-ink);color:var(--atlas-card);border-color:var(--atlas-ink)}
+  .liste{margin-top:10px;border-radius:12px;padding:2px 12px;background:var(--atlas-card)}
+  .ligne{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--atlas-line);font-size:14px}
+  .ligne:first-child{border-top:0}
+  .vignette{flex:none;display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:8px;background:#ffffff;box-shadow:0 0 0 1px var(--atlas-lineSoft)}
+  .vignette img{max-width:36px;max-height:36px;object-fit:contain}
+  .vignette.vide{background:none;box-shadow:none;border:1.5px dashed var(--atlas-line)}
+  .ligne .n{flex:1;min-width:0}
+  .ligne .n small{display:block;font-size:12px;color:var(--atlas-muted)}
+  .ligne .q{flex:none;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
+  .ligne .prix{flex:none;width:86px;text-align:right;font-variant-numeric:tabular-nums}
+  .ligne .prix small{display:block;font-size:11.5px;color:var(--atlas-muted)}
+  .ligne .sans{color:var(--atlas-muted);font-size:12.5px}
+  .ligne input{flex:none;width:84px;border:0;border-radius:8px;padding:9px 8px;font-size:16px;text-align:right;background:var(--atlas-cream);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line);font-variant-numeric:tabular-nums}
+  .total{margin-top:14px;border-radius:14px;background:var(--atlas-ink);color:var(--atlas-card);padding:16px}
+  .total .m{display:block;font:400 30px/1.1 Georgia,"Times New Roman",serif;font-variant-numeric:tabular-nums}
+  .total small{display:block;margin-top:6px;font-size:13px;opacity:.8}
+  .manque{margin:10px 0 0;font-size:13.5px;color:var(--atlas-alerte)}
+  .principal{margin-top:16px;width:100%;min-height:52px;border:0;border-radius:12px;background:var(--atlas-ink);color:var(--atlas-card);font-size:16px;cursor:pointer}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--atlas-or);outline-offset:2px}
+  .feuille{position:fixed;inset:0;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.35)}
+  .feuille[hidden]{display:none}
+  .feuille .boite{width:100%;max-width:430px;max-height:88vh;overflow:auto;background:var(--atlas-cream);border-radius:18px 18px 0 0;padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+  .feuille .haut{display:flex;align-items:center}
+  .feuille h2{flex:1;margin:0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+  .feuille .fermer{border:0;background:none;font-size:14px;text-decoration:underline;color:var(--atlas-inkSoft);cursor:pointer}
+</style>
+<body data-charte="origine">
+<div class="entete">
+  <h1>Prix des fournisseurs</h1>
+  <p>Planche, rien n’est codé. Aucun prix n’est inventé : les cases sont vides, tapez-en quelques-uns pour voir le total.</p>
+  <select id="charte" aria-label="Charte"></select>
+</div>
+<main class="ecran">
+  <section class="bloc">
+    <span class="caps">Réglages</span>
+    <h2>Mes fournisseurs</h2>
+    <p class="sous">Prix d’achat, à part de vos prix de vente.</p>
+    <div id="fournisseurs"></div>
+    <div class="nouveau"><input id="nom-fournisseur" placeholder="Un autre fournisseur" aria-label="Nom du fournisseur"><button type="button" id="ajouter-fournisseur">Ajouter</button></div>
+  </section>
+
+  <section class="bloc">
+    <span class="caps">Plan d’arrosage</span>
+    <h2>Le matériel du plan</h2>
+    <div class="chips" id="choix-fournisseur" role="group" aria-label="Prix de"></div>
+    <div class="total" id="total" aria-live="polite"></div>
+    <p class="manque" id="manque"></p>
+    <div class="liste" id="liste"></div>
+  </section>
+</main>
+
+<div class="feuille" id="feuille" hidden>
+  <div class="boite" role="dialog" aria-modal="true" aria-labelledby="feuille-titre">
+    <div class="haut"><h2 id="feuille-titre"></h2><button class="fermer" type="button" id="fermer">Fermer</button></div>
+    <p class="sous" id="feuille-sous"></p>
+    <div class="liste" id="lu"></div>
+    <button class="principal" type="button" id="enregistrer">Enregistrer ces prix</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  var PHOTOS = {"electrovanne-100dv":"electrovanne-100dv.jpg","electrovanne-100dv-ff":"electrovanne-100dv-ff.png","pebd16":"pebd16.png","pehd":"pehd.jpg","clarinette-2v":"clarinette-2v.jpg","clarinette-3v":"clarinette-3v.jpg","clarinette-4v":"clarinette-4v.jpg","connexion":"connexion.jpg","coude-mf":"coude-mf.jpg","coude-ff":"coude-ff.png","coude-taraude-25-34":"coude-taraude-25-34.jpg","HT1521":"HT1521.jpg","HT1522":"HT1522.jpg","HT1523":"HT1523.jpg","HT1541":"HT1541.jpg","HT1543":"HT1543.jpg","HT1544":"HT1544.jpg","HT1546":"HT1546.png","mamelon":"mamelon.jpg","mamelon-droit-1":"mamelon-droit-1.jpg","OD501":"OD501.jpg","OD502":"OD502.jpg","pile-9v":"pile-9v.jpg","prog-1":"prog-1.jpg","prog-2":"prog-2.jpg","prog-4":"prog-4.jpg","prog-6":"prog-6.jpg","RA2180":"RA2180.jpg","RA2181":"RA2181.jpg","RA3504":"RA3504.jpg","RA3504SAM":"RA3504SAM.jpg","RA5004FC":"RA5004FC.jpg","RA5006PC":"RA5006PC.jpg","raccord-male25":"raccord-male25.jpg","regard-jumbo5":"regard-jumbo5.jpg","regard-jumbo6":"regard-jumbo6.jpg","regard-rect12":"regard-rect12.jpg","regard-rg17106":"regard-rg17106.jpg","regulateur-ff34":"regulateur-ff34.jpg","RP403":"RP403.jpg","RT1802":"RT1802.jpg","RT1804":"RT1804.jpg","RT1806":"RT1806.jpg","RT1822":"RT1822.jpg","RT1824":"RT1824.jpg","RT1826":"RT1826.jpg","RT1832":"RT1832.jpg","RT1834":"RT1834.jpg","RT1836":"RT1836.jpg","TAMINI8-4P":"TAMINI8-4P.png","te-25-25-25":"te-25-25-25.jpg","te-mmf":"te-mmf.jpg","te-taraude-25-34-25":"te-taraude-25-34-25.jpg","UGGCBL23050":"UGGCBL23050.png","union":"union-ff.jpg","VAN":"VAN.jpg","vanne-purge":"vanne-purge.jpg","MID6301":"MID6301.png","MID6321":"MID6321.png","MID6341":"MID6341.png","MID6352":"MID6352.png","MID6371":"MID6371.png","pe25-amenee":"pehd.jpg","pe25":"pehd.jpg","RBT640":"RBT640.jpg","RBT639":"RBT639.jpg","RBT638":"RBT638.jpg","RBT637":"RBT637.jpg","RBT636":"RBT636.jpg","RBT601":"RBT601.jpg","RBT648":"RBT648.jpg","RBT1418":"RBT1418.jpg","RBT1419":"RBT1419.jpg","RBT1428":"RBT1428.jpg","RBT1429":"RBT1429.jpg","RBT1438":"RBT1438.jpg","RBT1439":"RBT1439.jpg","OPL701016":"pe-manchon.jpg","OPL701020":"pe-manchon.jpg","OPL701025":"pe-manchon.jpg","OPL701032":"pe-manchon.jpg","OPL701040":"pe-manchon.jpg","OPL701050":"pe-manchon.jpg","OPL701063":"pe-manchon.jpg","OPL71102016":"pe-manchon-reduit.jpg","OPL71102516":"pe-manchon-reduit.jpg","OPL71102520":"pe-manchon-reduit.jpg","OPL71103220":"pe-manchon-reduit.jpg","OPL71103225":"pe-manchon-reduit.jpg","OPL71104025":"pe-manchon-reduit.jpg","OPL71104032":"pe-manchon-reduit.jpg","OPL71105025":"pe-manchon-reduit.jpg","OPL71105032":"pe-manchon-reduit.jpg","OPL71105040":"pe-manchon-reduit.jpg","OPL71106325":"pe-manchon-reduit.jpg","OPL71106332":"pe-manchon-reduit.jpg","OPL71106340":"pe-manchon-reduit.jpg","OPL71106350":"pe-manchon-reduit.jpg","OPL761020":"pe-manchon-reparation.jpg","OPL761025":"pe-manchon-reparation.jpg","OPL761032":"pe-manchon-reparation.jpg","OPL761040":"pe-manchon-reparation.jpg","OPL761050":"pe-manchon-reparation.jpg","OPL761063":"pe-manchon-reparation.jpg","OPL712020":"pe-bouchon.jpg","OPL712025":"pe-bouchon.jpg","OPL712032":"pe-bouchon.jpg","OPL712040":"pe-bouchon.jpg","OPL712050":"pe-bouchon.jpg","OPL712063":"pe-bouchon.jpg","OD770101522":"pe-manchon-plass4.jpg","OD770102027":"pe-manchon-plass4.jpg","OD77010273525":"pe-manchon-plass4.jpg","OD77010202732":"pe-manchon-plass4.jpg","OD770102735":"pe-manchon-plass4.jpg","OD770103550":"pe-manchon-plass4.jpg","OPL704520":"pe-te-reparation.jpg","OPL704525":"pe-te-reparation.jpg","OPL704532":"pe-te-reparation.jpg","OPL704540":"pe-te-reparation.jpg","OPL704550":"pe-te-reparation.jpg","OPL704563":"pe-te-reparation.jpg","OPL78402015":"pe-te-filete.jpg","OPL78402020":"pe-te-filete.jpg","OPL78402515":"pe-te-filete.jpg","OPL78402520":"pe-te-filete.jpg","OPL78403226":"pe-te-filete.jpg","OPL78404033":"pe-te-filete.jpg","OPL78404040":"pe-te-filete.jpg","OPL78405033":"pe-te-filete.jpg","OPL78405040":"pe-te-filete.jpg","OPL78406333":"pe-te-filete.jpg","OPL78406340":"pe-te-filete.jpg","OPL78406350":"pe-te-filete.jpg","OPL764063":"pe-te-45.jpg","OPL73402016":"pe-te-reduit.jpg","OPL73402520":"pe-te-reduit.jpg","OPL73403225":"pe-te-reduit.jpg","OPL73404025":"pe-te-reduit.jpg","OPL73404032":"pe-te-reduit.jpg","OPL73405025":"pe-te-reduit.jpg","OPL73405032":"pe-te-reduit.jpg","OPL73405040":"pe-te-reduit.jpg","OPL73406332":"pe-te-reduit.jpg","OPL73406340":"pe-te-reduit.jpg","OPL73406350":"pe-te-reduit.jpg","OPL705016":"pe-coude-90.jpg","OPL705020":"pe-coude-90.jpg","OPL705025":"pe-coude-90.jpg","OPL705032":"pe-coude-90.jpg","OPL705040":"pe-coude-90.jpg","OPL705050":"pe-coude-90.jpg","OPL705063":"pe-coude-90.jpg","OPL746032":"pe-coude-45.jpg","OPL746040":"pe-coude-45.jpg","OPL746050":"pe-coude-45.jpg","OPL746063":"pe-coude-45.jpg","OPL78502015":"pe-coude-filete.jpg","OPL78502020":"pe-coude-filete.jpg","OPL78502515":"pe-coude-filete.jpg","OPL78502520":"pe-coude-filete.jpg","OPL78502526":"pe-coude-filete.jpg","OPL78503226":"pe-coude-filete.jpg","OPL78503233":"pe-coude-filete.jpg","OPL78504026":"pe-coude-filete.jpg","OPL78504033":"pe-coude-filete.jpg","OPL78504040":"pe-coude-filete.jpg","OPL78505026":"pe-coude-filete.jpg","OPL78505033":"pe-coude-filete.jpg","OPL78505040":"pe-coude-filete.jpg","OPL78506333":"pe-coude-filete.jpg","OPL78506340":"pe-coude-filete.jpg","OPL78506350":"pe-coude-filete.jpg","OPL72205040":"pe-raccord-bride.jpg","OPL72205050":"pe-raccord-bride.jpg","OPL72206350":"pe-raccord-bride.jpg","OPL7220125125":"pe-raccord-bride.jpg","OPL72365040":"pe-adaptateur-bride.jpg","OPL72366365":"pe-adaptateur-bride.jpg","OPL79302520":"pe-set-reduction.jpg","OPL79303220":"pe-set-reduction.jpg","OPL79303225":"pe-set-reduction.jpg","OPL79304032":"pe-set-reduction.jpg","OPL79305025":"pe-set-reduction.jpg","OPL79305032":"pe-set-reduction.jpg","OPL79305040":"pe-set-reduction.jpg","OPL79306340":"pe-set-reduction.jpg","OPL79306350":"pe-set-reduction.jpg","OPL704016":"te-25-25-25.jpg","OPL704020":"te-25-25-25.jpg","OPL704025":"te-25-25-25.jpg","OPL704032":"te-25-25-25.jpg","OPL704040":"te-25-25-25.jpg","OPL704050":"te-25-25-25.jpg","OPL704063":"te-25-25-25.jpg","OPL71401615":"te-taraude-25-34-25.jpg","OPL71401620":"te-taraude-25-34-25.jpg","OPL71402015":"te-taraude-25-34-25.jpg","OPL71402020":"te-taraude-25-34-25.jpg","OPL71402515":"te-taraude-25-34-25.jpg","OPL71402520":"te-taraude-25-34-25.jpg","OPL71402526":"te-taraude-25-34-25.jpg","OPL71402533":"te-taraude-25-34-25.jpg","OPL71403220":"te-taraude-25-34-25.jpg","OPL71403226":"te-taraude-25-34-25.jpg","OPL71403233":"te-taraude-25-34-25.jpg","OPL71403240":"te-taraude-25-34-25.jpg","OPL71404026":"te-taraude-25-34-25.jpg","OPL71404033":"te-taraude-25-34-25.jpg","OPL71404040":"te-taraude-25-34-25.jpg","OPL71404050":"te-taraude-25-34-25.jpg","OPL71405040":"te-taraude-25-34-25.jpg","OPL71405050":"te-taraude-25-34-25.jpg","OPL71406333":"te-taraude-25-34-25.jpg","OPL71406340":"te-taraude-25-34-25.jpg","OPL71406350":"te-taraude-25-34-25.jpg","OPL71501615":"coude-taraude-25-34.jpg","OPL71502015":"coude-taraude-25-34.jpg","OPL71502020":"coude-taraude-25-34.jpg","OPL71502515":"coude-taraude-25-34.jpg","OPL71502520":"coude-taraude-25-34.jpg","OPL71502526":"coude-taraude-25-34.jpg","OPL71503220":"coude-taraude-25-34.jpg","OPL71503226":"coude-taraude-25-34.jpg","OPL71503233":"coude-taraude-25-34.jpg","OPL71504026":"coude-taraude-25-34.jpg","OPL71504033":"coude-taraude-25-34.jpg","OPL71504040":"coude-taraude-25-34.jpg","OPL71504050":"coude-taraude-25-34.jpg","OPL71505026":"coude-taraude-25-34.jpg","OPL71505033":"coude-taraude-25-34.jpg","OPL71505040":"coude-taraude-25-34.jpg","OPL71505050":"coude-taraude-25-34.jpg","OPL71506333":"coude-taraude-25-34.jpg","OPL71506340":"coude-taraude-25-34.jpg","OPL71506350":"coude-taraude-25-34.jpg","OPL70201615":"raccord-male25.jpg","OPL70201620":"raccord-male25.jpg","OPL70202015":"raccord-male25.jpg","OPL70202020":"raccord-male25.jpg","OPL70202026":"raccord-male25.jpg","OPL70202515":"raccord-male25.jpg","OPL70202520":"raccord-male25.jpg","OPL70202526":"raccord-male25.jpg","OPL70203220":"raccord-male25.jpg","OPL70203226":"raccord-male25.jpg","OPL70203233":"raccord-male25.jpg","OPL70203240":"raccord-male25.jpg","OPL70204026":"raccord-male25.jpg","OPL70204033":"raccord-male25.jpg","OPL70204040":"raccord-male25.jpg","OPL70204050":"raccord-male25.jpg","OPL70205026":"raccord-male25.jpg","OPL70205033":"raccord-male25.jpg","OPL70205040":"raccord-male25.jpg","OPL70205050":"raccord-male25.jpg","OPL70206333":"raccord-male25.jpg","OPL70206340":"raccord-male25.jpg","OPL70206350":"raccord-male25.jpg","OPL70206366":"raccord-male25.jpg","OPL70301615":"OPL70302520.jpg","OPL70301620":"OPL70302520.jpg","OPL70302015":"OPL70302520.jpg","OPL70302020":"OPL70302520.jpg","OPL70302026":"OPL70302520.jpg","OPL70302520":"OPL70302520.jpg","OPL70302526":"OPL70302520.jpg","OPL70303220":"OPL70302520.jpg","OPL70303226":"OPL70302520.jpg","OPL70303233":"OPL70302520.jpg","OPL70304026":"OPL70302520.jpg","OPL70304033":"OPL70302520.jpg","OPL70304040":"OPL70302520.jpg","OPL70305033":"OPL70302520.jpg","OPL70305040":"OPL70302520.jpg","OPL70305050":"OPL70302520.jpg","OPL70306333":"OPL70302520.jpg","OPL70306340":"OPL70302520.jpg","OPL70306350":"OPL70302520.jpg","ODU306009":"coude-mf.jpg","ODU306010":"coude-ff.png","ODU8303131":"mamelon.jpg","ODU329010":"union-ff.jpg","BVA932":"vanne-purge.jpg","REV100DVM9V":"electrovanne-100dv.jpg","RG17100":"regard-rect12.jpg","RG17106":"regard-rg17106.jpg","ODU301010":"te-mmf.jpg","ODU3010102":"clarinette-2v.jpg","ODU3010103":"clarinette-3v.jpg","ODU3010104":"clarinette-4v.jpg","ELD60481":"pile-9v.jpg","ELD550077":"connexion.jpg","REV100DV9V":"electrovanne-100dv-ff.png","ODU8303":"mamelon-droit-1.jpg","SP1721":"prog-1.jpg","SP1722":"prog-2.jpg","SP1724":"prog-4.jpg","SP1726":"prog-6.jpg","plasson16-raccord-taraude":"plasson16-raccord-taraude.jpg","plasson16-manchon":"plasson16-manchon.png","plasson16-te":"plasson16-te.png","plasson16-te-taraude":"plasson16-te-taraude.png","plasson16-coude":"plasson16-coude.png","plasson16-manchon-filete":"plasson16-manchon-filete.png","MID6362":"MID6362.png","OPP506715":"pp-mamelon-double.jpg","OPP506720":"pp-mamelon-double.jpg","OPP506726":"pp-mamelon-double.jpg","OPP506733":"pp-mamelon-double.jpg","OPP506740":"pp-mamelon-double.jpg","OPP506750":"pp-mamelon-double.jpg","OPP50652015":"pp-mamelon-reduit.jpg","OPP50652615":"pp-mamelon-reduit.jpg","OPP50652620":"pp-mamelon-reduit.jpg","OPP50653315":"pp-mamelon-reduit.jpg","OPP50653320":"pp-mamelon-reduit.jpg","OPP50653326":"pp-mamelon-reduit.jpg","OPP50654015":"pp-mamelon-reduit.jpg","OPP50654020":"pp-mamelon-reduit.jpg","OPP50654026":"pp-mamelon-reduit.jpg","OPP50654033":"pp-mamelon-reduit.jpg","OPP50655015":"pp-mamelon-reduit.jpg","OPP50655020":"pp-mamelon-reduit.jpg","OPP50655026":"pp-mamelon-reduit.jpg","OPP50655033":"pp-mamelon-reduit.jpg","OPP50655040":"pp-mamelon-reduit.jpg","OPP50272015":"pp-manchon-reduit-mf.jpg","OPP50272615":"pp-manchon-reduit-mf.jpg","OPP50272620":"pp-manchon-reduit-mf.jpg","OPP50273315":"pp-manchon-reduit-mf.jpg","OPP50273320":"pp-manchon-reduit-mf.jpg","OPP50273326":"pp-manchon-reduit-mf.jpg","OPP50274015":"pp-manchon-reduit-mf.jpg","OPP50274020":"pp-manchon-reduit-mf.jpg","OPP50274026":"pp-manchon-reduit-mf.jpg","OPP50274033":"pp-manchon-reduit-mf.jpg","OPP50275015":"pp-manchon-reduit-mf.jpg","OPP50275020":"pp-manchon-reduit-mf.jpg","OPP50275026":"pp-manchon-reduit-mf.jpg","OPP50275033":"pp-manchon-reduit-mf.jpg","OPP50275040":"pp-manchon-reduit-mf.jpg","OPP50276650":"pp-manchon-reduit-mf.jpg","OPP50278040":"pp-manchon-reduit-mf.jpg","OPP50278050":"pp-manchon-reduit-mf.jpg","OPP50278065":"pp-manchon-reduit-mf.jpg","OPP502710280":"pp-manchon-reduit-mf.jpg","OPP501715":"pp-manchon.jpg","OPP501720":"pp-manchon.jpg","OPP501726":"pp-manchon.jpg","OPP501733":"pp-manchon.jpg","OPP501740":"pp-manchon.jpg","OPP501750":"pp-manchon.jpg","OPP504715":"pp-te-90.jpg","OPP504720":"pp-te-90.jpg","OPP504726":"pp-te-90.jpg","OPP504733":"pp-te-90.jpg","OPP504740":"pp-te-90.jpg","OPP504750":"pp-te-90.jpg","OPP505715":"pp-coude-90.jpg","OPP505720":"pp-coude-90.jpg","OPP505726":"pp-coude-90.jpg","OPP505733":"pp-coude-90.jpg","OPP505740":"pp-coude-90.jpg","OPP505750":"pp-coude-90.jpg","OPP505915":"pp-coude-90-mf.jpg","OPP505920":"pp-coude-90-mf.jpg","OPP505926":"pp-coude-90-mf.jpg","RD2198":"rotortool-rb-5000.jpg","HA2253":"cle-hunter-pgp-i20.jpg","NA2316":"cle-mp-rotator.jpg","OD505":"te-sb-tee.jpg","OD506":"jonction-sb-cplg.png","TEVEZP0254":"ev-toro-ezflo-mm-24v.jpg","TEVTPV100BSP":"ev-toro-tpv-ff.jpg","TEV2522656":"ev-toro-252-ff-rmd.jpg","TEV2522658":"ev-toro-252-ff-rmd.jpg","TEV2640603":"ev-toro-264-mm.jpg","TPDCLS":"solenoide-toro-dc-9v.jpg","REVV1100":"ev-rb-dv-ff-24v.jpg","REV201":"ev-rb-dv-ff-24v.jpg","REVM201":"ev-rb-dv-mm-24v.jpg","REVPGA100":"ev-rb-pga-24v.jpg","REVPGA150":"ev-rb-pga-24v.jpg","REVPGA200":"ev-rb-pga-24v.jpg","REVPEB100":"ev-rb-peb.jpg","REVPEB150":"ev-rb-peb.jpg","REVPEB200":"ev-rb-peb.jpg","REV300-BPE":"ev-rb-300-bpe.jpg","AEV1201":"ev-richdel-2400mt-ff-24v.png","HEV1701":"ev-hunter-pgv100-ff-24v.jpg","HEV1731":"ev-hunter-pgv100-ff-9v.jpg","HEV1721":"ev-hunter-pgv100jt-ff-9v.png","HEV2611":"ev-hunter-pgv151-201.jpg","HEV2612":"ev-hunter-pgv151-201.jpg","ODU320010":"dura-croix-1-mfff.jpg","ODU348010":"dura-bouchon-1-f.jpg","ODU34MF":"dura-union-1-mf.jpg","RG17104":"regard-mini-rond-7-vb708.png","RG6200":"regard-rond-10-vb910.png","RGVB910C":"couvercle-regard-10-vb910c.png","RG1710009":"couvercle-regard-12-vb1419c.png","RG17107":"rehausse-regard-jumbo-vb1220e.jpg","RG17108":"couvercle-regard-jumbo-vb1220c.png","RGVB1324":"regard-super-jumbo-vb1324.jpg","RG17109":"regard-maxi-jumbo-vb1730.jpg","UGGRBXFS":"gag-tube-xfs.jpg","UGG1516":"tuyau-poreux-16.webp","MIAOCTA8":"shrubbler-bouton.jpg","MIAOCTA8P":"shrubbler-pique.jpg","MIALST4A":"micro-stake.jpg","MID3904":"perceur-3mm.png","MID1221":"perceur-pince-16-20.png","MID1222":"perceur-pince-25-32.png","MID3302":"te-4x6.jpg","MID3303":"croix-4x6.jpg","MID3304":"coude-4x6.jpg","MID3412":"bouchon-4x6.jpg","MIAL3401":"vannette-4x6.jpg","MID6101":"jonction-cannelee-16.jpg","MID6102":"jonction-cannelee-16.jpg","MID6121":"te-cannele-16.jpg","MID6122":"te-cannele-16.jpg","MID6141":"coude-cannele-16.jpg","MID6142":"coude-cannele-16.jpg","MID6171":"bouchon-cannele-16.jpg","MID6172":"bouchon-cannele-16.jpg","MID6711":"collier-16.jpg","MID6712":"collier-16.jpg","MID6511":"crampon-noir.png","MID6514":"crampon-marron.jpg","MID6151":"embout-can16-fil.webp","MID6152":"embout-can16-fil.webp","MID6254":"embout-can16-fil.webp","MID6162":"embout-can16-tar34.jpg","MID6601":"vannette-can16.jpg","MID6602":"vannette-can16.jpg","MID6611":"vannette-fil34-can16.jpg","MID6612":"vannette-fil34-can16.jpg","MID6631":"palaplast-vannette-16.jpg","ELC4003":"cable-r2v-3g15.jpg","ELC40325":"cable-r2v-3g15.jpg","ELC4004":"cable-r2v-4g15.jpg","ELC4024":"cable-r2v-4g25.jpg","ELC4005":"cable-r2v-5g15.jpg","ELC4085":"cable-irrig-5x08.jpg","ELC4087":"cable-irrig-7x08.jpg","ELC4089":"cable-irrig-9x08.jpg","ELC4090":"cable-irrig-13x08.jpg","ELD221413.":"wago-221-413.jpg","ELD221415.":"wago-221-415.jpg","ELD5111":"connexion-blazing.jpg","ELD40038":"domino-6.jpg","ELD40025":"plexo-ronde-60.webp","ELD40024":"plexo-ronde-70.webp","ELDLEG92110":"plexo-65x65.webp","ELD40050":"plexo-105x105.webp","ELD100PAN":"ruban-isolant.jpg","TPEVO4IDEU":"toro-evo-4id.jpg","TPEVO4ODEU":"toro-evo-4od.jpg","RP3242":"rb-esp-tm2.jpg","RP3193":"rb-esp-tm2.jpg","RP3146":"rb-esp-tm2.jpg","RP3147":"rb-esp-tm2.jpg","RP3315":"rb-lnk2.jpg","RP13711":"rb-esp-bat-bt-1st.jpg","RP13722":"rb-esp-bat-bt-2st.jpg","RP13744":"rb-esp-bat-bt-4st.jpg","RP13766":"rb-esp-bat-bt-6st.jpg","RP1371":"rb-esp-9v.jpg","RP1372":"rb-esp-9v.jpg","RP1374":"rb-esp-9v.jpg","RP1376":"rb-esp-9v.jpg","HPXC-E-XC401-E":"hu-x-core-ext.jpg","HPXC-E-XC601-E":"hu-x-core-ext.jpg","HPXC-801-X":"hu-x-core-ext.jpg","HPPC-301-E":"hu-hpc.jpg","HPX2-4":"hu-x2.jpg","HPX2-6":"hu-x2.jpg","HPX2-8":"hu-x2.jpg","HPX2":"hu-x2.jpg","HPMINICLIK":"hu-mini-clik.jpg","HPRAINCLIK":"hu-wr-clik.jpg","HP6226":"hu-solar-sync.jpg","HP6228":"hu-wss.jpg","SPVIL4":"so-villa.jpg","SPVIL6":"so-villa.jpg","SPVIL9":"so-villa.jpg","SPVIL12":"so-villa.jpg","SP2741":"so-smart-is.jpg","SP2742":"so-smart-is.jpg","SP2743":"so-smart-is.jpg","SP2744":"so-smart-is.jpg","SP2745":"so-smart-is.jpg","SP1739":"so-lr-mb10.jpg","SP1740":"so-lr-mb30.jpg","SP1741":"so-lr-ip.jpg","SP1742":"so-lr-ip.jpg","SP1743":"so-lr-ip.jpg","SP1744":"so-lr-ip.jpg","SP174011":"so-lr-ms.jpg","SPWOOBEE1":"so-woobee.jpg","SPWOOBEE2":"so-woobee.jpg","SPWOOBEE4":"so-woobee.jpg","SPWOOBEE6":"so-woobee.jpg","SP1151":"so-bl-nr.jpg","SP1152":"so-lr-nr.jpg","AEV11401":"orbit-buddy-1.jpg","AEV11422":"orbit-buddy-2.jpg","ELD40034":"accu-9v.jpg","ELD1605":"pile-cr2032.jpg","UPE225":"pehd-couronne.jpg","UPE232":"pehd-couronne.jpg","BDV999":"teflon.jpg","UPE1116":"pebd-couronne-16.jpg","UPE500600":"pebd-couronne-16.jpg","BVA3861":"vanne-1-4-tour-ff.jpg","BVA3862":"vanne-1-4-tour-ff.jpg","BVA3863":"vanne-1-4-tour-ff.jpg","BVA3864":"vanne-1-4-tour-ff.jpg","BVA3865":"vanne-1-4-tour-ff.jpg","BVA3866":"vanne-1-4-tour-ff.jpg","BVA931":"vanne-1-4-tour-purge-ff.jpg","BVA933":"vanne-1-4-tour-purge-ff.jpg","BVA934":"vanne-1-4-tour-purge-ff.jpg","BVA935":"vanne-1-4-tour-purge-ff.jpg","BVA936":"vanne-1-4-tour-purge-ff.jpg","TEVEZP0354":"ev-toro-ezflo-ff-24v.jpg","TEVEZP2254":"ev-toro-ezflo-mm-rmd-24v.jpg","TEVEZP2354":"ev-toro-ezflo-ff-rmd-24v.jpg","TEVEZP02649V":"ev-toro-ezflo-mm-9v.jpg","TEVTPV100MMBSP":"ev-toro-tpv-mm.jpg","TEVP2202354":"ev-toro-p220-1po.jpg","TEVP2202356":"ev-toro-p220-1po12.jpg","TEVP2202358":"ev-toro-p220-2po.png","TEVP2202350":"ev-toro-p220-3po.jpg","REV75DV9V":"ev-rb-75dv-ff-9v.jpg","REVPGA1009V":"ev-rb-pga-9v.jpg","REVPGA1509V":"ev-rb-pga-9v.jpg","RPJVP300":"solenoide-rb-9v-lu3100.jpg","AEV1205":"ev-richdel-2400mt-ff-24v.png","HEV1724":"ev-hunter-pgv100jt-ff-9v.png","RG17101":"rehausse-regard-12-vb1419e.png","UPE240":"tube-pehd-nf-40.jpg","UPE250":"tube-pehd-nf-40.jpg","UPE263":"tube-pehd-nf-40.jpg","UPE275":"tube-pehd-nf-40.jpg","UGGMC-206":"gag-6mm.png","UGGMC-206_N":"gag-6mm-noir.jpg","OPL701075":"pe-mil-manchon.jpg","OPL701090":"pe-mil-manchon.jpg","OPL7010110":"pe-mil-manchon.jpg","OPL71107550":"pe-mil-manchon-reduit.jpg","OPL71107563":"pe-mil-manchon-reduit.jpg","OPL71109063":"pe-mil-manchon-reduit.jpg","OPL71109075":"pe-mil-manchon-reduit.jpg","OPL711011090":"pe-mil-manchon-reduit.jpg","OPL761075":"pe-mil-manchon-reparation.jpg","OPL761090":"pe-mil-manchon-reparation.jpg","OPL7610110":"pe-mil-manchon-reparation.jpg","OPL70207550":"pe-mil-raccord-male.jpg","OPL70207566":"pe-mil-raccord-male.jpg","OPL70207580":"pe-mil-raccord-male.jpg","OPL70209050":"pe-mil-raccord-male.jpg","OPL70209066":"pe-mil-raccord-male.jpg","OPL70209080":"pe-mil-raccord-male.jpg","OPL702090102":"pe-mil-raccord-male.jpg","OPL702011050":"pe-mil-raccord-male.jpg","OPL702011080":"pe-mil-raccord-male.jpg","OPL712075":"pe-mil-bouchon.jpg","OPL712090":"pe-mil-bouchon.jpg","OPL7120110":"pe-mil-bouchon.jpg","OPL70307550":"pe-mil-raccord-femelle.jpg","OPL70307566":"pe-mil-raccord-femelle.jpg","OPL70309050":"pe-mil-raccord-femelle.jpg","OPL70309080":"pe-mil-raccord-femelle.jpg","OPL703090102":"pe-mil-raccord-femelle.jpg","OPL703011080":"pe-mil-raccord-femelle.jpg","OPL7030110102":"pe-mil-raccord-femelle.jpg","OPL704090":"pe-mil-te-90.jpg","OPL71407550":"pe-mil-te-taraude.jpg","OPL71407566":"pe-mil-te-taraude.jpg","OPL71407580":"pe-mil-te-taraude.jpg","OPL71409080":"pe-mil-te-taraude.jpg","OPL7140110102":"pe-mil-te-taraude.jpg","OPL764075":"pe-mil-te-45.jpg","OPL764090":"pe-mil-te-45.jpg","OPL7640110":"pe-mil-te-45.jpg","OPL73407563":"pe-mil-te-reduit.jpg","OPL705075":"pe-mil-coude-90.jpg","OPL705090":"pe-mil-coude-90.jpg","OPL7050110":"pe-mil-coude-90.jpg","OPL78507560":"pe-mil-coude-filete.jpg","OPL78507580":"pe-mil-coude-filete.jpg","OPL78509080":"pe-mil-coude-filete.jpg","OPL7850110102":"pe-mil-coude-filete.jpg","OPL71507550":"pe-mil-coude-taraude.jpg","OPL71507566":"pe-mil-coude-taraude.jpg","OPL71507580":"pe-mil-coude-taraude.jpg","OPL746075":"pe-mil-coude-45.jpg","OPL746090":"pe-mil-coude-45.jpg","OPL7460110":"pe-mil-coude-45.jpg","OPL72207565":"pe-mil-raccord-bride.jpg","OPL72209080":"pe-mil-raccord-bride.jpg","OPL722090100":"pe-mil-raccord-bride.jpg","OPL7220110100":"pe-mil-raccord-bride.jpg","HA2210":"HA2210.jpg","HA2211":"HA2211.jpg","HA2222":"HA2222.jpg","HA2225":"HA2225.jpg","HA2264":"HA2264.jpg","HA2272":"HA2272.jpg","HA2274":"HA2274.jpg","RA5012PCSAM":"RA5012PCSAM.png","RT1812":"RT1812.jpg"};
+  var LIGNES = [{"cle":"te-25-25-25","ref":"OPL704025","nom":"Plasson Té 90° 25×25×25","q":4,"u":"u"},{"cle":"clarinette-3v","ref":"ODU3010103","nom":"Dura Collecteur M x F x 3 sorties 1\"","q":1,"u":"u"},{"cle":"union","ref":"ODU329010","nom":"Dura Manchon union 1\" FF","q":5,"u":"u"},{"cle":"electrovanne-100dv","ref":"REV100DVM9V","nom":"Rain Bird Électrovanne 100 DV 1\" MM 9V","q":3,"u":"u"},{"cle":"raccord-male25","ref":"OPL70202526","nom":"Plasson Raccord mâle 25 x 1\"","q":5,"u":"u"},{"cle":"coude-ff","ref":"ODU306010","nom":"Dura Coude 1\" FF","q":1,"u":"u"},{"cle":"coude-mf","ref":"ODU306009","nom":"Dura Coude 90° taraudé/fileté MF 1\"","q":1,"u":"u"},{"cle":"mamelon","ref":"ODU8303131","nom":"Dura Mamelon réduit fileté MM 1\"-3/4\"","q":4,"u":"u"},{"cle":"vanne-purge","ref":"BVA932","nom":"Dura Vanne avec vis de purge 3/4\"","q":1,"u":"u"},{"cle":"regard-rg17106","ref":"RG17106","nom":"Dura Regard jumbo RG17106","q":1,"u":"u"},{"cle":"prog-4","ref":null,"nom":"Solem Programmateur BL-IP 4 stations 9V","q":1,"u":"u"},{"cle":"pile-9v","ref":"ELD60481","nom":"Pile alcaline 9V","q":1,"u":"u"},{"cle":"connexion","ref":"ELD550077","nom":"Connexion étanche","q":8,"u":"u"},{"cle":"electrovanne-100dv-ff","ref":"REV100DV9V","nom":"Rain Bird Électrovanne 100 DV 1\" FF 9V","q":1,"u":"u"},{"cle":"regulateur-ff34","ref":null,"nom":"Dura Régulateur de pression FF 3/4\"","q":1,"u":"u"},{"cle":"mamelon-droit-1","ref":"ODU8303","nom":"Dura Mamelon fileté MM 1\"","q":1,"u":"u"},{"cle":"RBT639","ref":"RBT639","nom":"Rain Bird Tuyères 6-VAN, par 25","q":7,"u":"u"},{"cle":"UGGCBL23050","ref":"UGGCBL23050","nom":"tube Ø16mm 2l/h esp.33cm autorégulé, couronne de 50 m","q":2,"u":"u"},{"cle":"RA3504","ref":"RA3504","nom":"Turbine 3504, un seul modèle réglable 40°-360°, livré avec 6 buses","q":13,"u":"u"},{"cle":"RT1804","ref":"RT1804","nom":"Tuyère 1800, escamotable 10 cm","q":7,"u":"u"},{"cle":"pebd16","ref":null,"nom":"PEBD rigide Ø16 (tube de reprise)","q":40,"u":"ml"},{"cle":"MID6321","ref":"MID6321","nom":"té Palaplast Ø16","q":1,"u":"u"},{"cle":"MID6301","ref":"MID6301","nom":"jonction Palaplast Ø16","q":1,"u":"u"},{"cle":"OD502","ref":"OD502","nom":"Coude SBE 075, 16 x 3/4\" coudé","q":20,"u":"u"},{"cle":"OD501","ref":"OD501","nom":"Coude SBE 050, 16 x 1/2\" coudé","q":20,"u":"u"},{"cle":"te-taraude-25-34-25","ref":"OPL71402520","nom":"Plasson Té 90° taraudé 25×3/4\"×25","q":14,"u":"u"},{"cle":"coude-taraude-25-34","ref":"OPL71502520","nom":"Plasson Coude 90° taraudé 25×3/4\"","q":7,"u":"u"},{"cle":"pe25","ref":null,"nom":"PEHD Ø25","q":83,"u":"ml"}];
+  var $ = function (id) { return document.getElementById(id); };
+  var texte = function (s) { var e = document.createElement("span"); e.textContent = s == null ? "" : String(s); return e.innerHTML; };
+  var CHARTES = [["origine","Origine"],["brume","Brume"],["pierre","Pierre"],["beurre","Beurre"],["moka","Moka"],["prune","Prune"],["sylve","Sylve"],["nuit","Nuit"]];
+  CHARTES.forEach(function (c) { var o = document.createElement("option"); o.value = c[0]; o.textContent = c[1]; $("charte").appendChild(o); });
+  $("charte").onchange = function () { document.body.dataset.charte = this.value; };
+
+  var euros = function (n) { return n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; };
+  var lirePrix = function (s) { var n = Number(String(s).replace(/\s/g, "").replace(",", ".")); return s !== "" && n >= 0 && isFinite(n) ? n : null; };
+  var aujourdhui = new Date().toLocaleDateString("fr-FR");
+  var vignette = function (cle) { var f = PHOTOS[cle]; return f ? '<span class="vignette"><img src="arrosage-photos/' + texte(f) + '" alt=""></span>' : '<span class="vignette vide"></span>'; };
+
+  // fournisseurs : { nom, date du devis, prix par pièce (HT, à l'unité ou au mètre) }
+  var fournisseurs = [{ nom: "Aqua Plus", date: null, prix: {} }, { nom: "France Bonhomme", date: null, prix: {} }];
+  var vue = "moins";      // le fournisseur dont on lit les prix, ou « le moins cher »
+  var lecture = null;     // le fournisseur dont on lit un devis
+
+  function dessinerFournisseurs() {
+    $("fournisseurs").innerHTML = fournisseurs.map(function (f, i) {
+      var n = Object.keys(f.prix).length;
+      return '<div class="fournisseur"><div class="tete"><b>' + texte(f.nom) + "</b><small>" + (f.date ? n + " prix, devis du " + f.date : "Aucun devis") + "</small></div>" +
+        '<button type="button" data-devis="' + i + '">' + (f.date ? "Mettre à jour avec un devis" : "Ajouter un devis, photo ou PDF") + "</button></div>";
+    }).join("");
+    var chips = [["moins", "Le moins cher"]].concat(fournisseurs.map(function (f, i) { return [String(i), f.nom]; }));
+    $("choix-fournisseur").innerHTML = chips.map(function (c) { return '<button type="button" data-vue="' + c[0] + '" aria-pressed="' + (vue === c[0]) + '">' + texte(c[1]) + "</button>"; }).join("");
+  }
+
+  // Le prix d'une pièce dans la vue choisie : celui du fournisseur, ou le plus bas des deux.
+  function prixDe(cle) {
+    if (vue !== "moins") { var f = fournisseurs[Number(vue)]; return f.prix[cle] != null ? { p: f.prix[cle], de: f } : null; }
+    var mieux = null;
+    fournisseurs.forEach(function (f) { if (f.prix[cle] != null && (!mieux || f.prix[cle] < mieux.p)) mieux = { p: f.prix[cle], de: f }; });
+    return mieux;
+  }
+
+  function dessinerPlan() {
+    var total = 0, sans = 0, dates = {};
+    $("liste").innerHTML = LIGNES.map(function (l) {
+      var x = prixDe(l.cle);
+      var q = l.u === "ml" ? String(l.q).replace(".", ",") + " m" : l.q + "x";
+      if (x) { total += x.p * l.q; dates[x.de.nom] = x.de.date; } else sans++;
+      return '<div class="ligne">' + vignette(l.cle) + '<span class="n">' + texte(l.nom) + "<small>" + q + "</small></span>" +
+        (x ? '<span class="prix">' + euros(x.p * l.q) + "<small>" + (vue === "moins" ? texte(x.de.nom) : euros(x.p) + (l.u === "ml" ? " le m" : " pièce")) + "</small></span>" : '<span class="prix sans">pas de prix</span>') + "</div>";
+    }).join("");
+    var chiffrees = LIGNES.length - sans;
+    $("total").innerHTML = "<small>Total indicatif, hors taxes</small>" + '<span class="m">' + euros(total) + "</span>" +
+      "<small>" + (chiffrees ? Object.keys(dates).map(function (n) { return "Prix " + n + " du " + dates[n]; }).join(". ") + ". Ils ont pu changer." : "Aucun prix encore.") + "</small>";
+    $("manque").textContent = sans ? sans + " pièce" + (sans > 1 ? "s" : "") + " sans prix sur " + LIGNES.length + ", le total ne les compte pas." : "";
+  }
+
+  function ouvrirDevis(i) {
+    lecture = i;
+    var f = fournisseurs[i];
+    $("feuille-titre").textContent = "Devis " + f.nom;
+    $("feuille-sous").textContent = LIGNES.length + " lignes lues. Rien n’est enregistré avant votre appui.";
+    $("lu").innerHTML = LIGNES.map(function (l, k) {
+      var v = f.prix[l.cle];
+      return '<div class="ligne">' + vignette(l.cle) + '<span class="n">' + texte(l.nom) + (l.ref ? "<small>" + texte(l.ref) + "</small>" : "") + "</span>" +
+        '<input inputmode="decimal" data-lu="' + k + '" placeholder="Prix HT" aria-label="Prix ' + texte(l.nom) + '" value="' + (v != null ? String(v).replace(".", ",") : "") + '"></div>';
+    }).join("");
+    $("feuille").hidden = false;
+  }
+
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (!b) return;
+    if (b.dataset.devis) { ouvrirDevis(Number(b.dataset.devis)); return; }
+    if (b.dataset.vue) { vue = b.dataset.vue; dessinerFournisseurs(); dessinerPlan(); return; }
+    if (b.id === "fermer") { $("feuille").hidden = true; return; }
+    if (b.id === "enregistrer") {
+      var f = fournisseurs[lecture];
+      document.querySelectorAll("[data-lu]").forEach(function (inp) {
+        var p = lirePrix(inp.value), cle = LIGNES[Number(inp.dataset.lu)].cle;
+        if (p === null) delete f.prix[cle]; else f.prix[cle] = p;
+      });
+      f.date = aujourdhui;
+      $("feuille").hidden = true; dessinerFournisseurs(); dessinerPlan(); return;
+    }
+    if (b.id === "ajouter-fournisseur") {
+      var nom = $("nom-fournisseur").value.trim();
+      if (!nom) return;
+      fournisseurs.push({ nom: nom, date: null, prix: {} }); $("nom-fournisseur").value = "";
+      dessinerFournisseurs(); return;
+    }
+  });
+
+  dessinerFournisseurs();
+  dessinerPlan();
+})();
+</script>
+</body>
+</html>

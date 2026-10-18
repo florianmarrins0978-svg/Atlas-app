@@ -27,6 +27,10 @@ for (const l of lignes) {
   e.q += l.q;
   total.set(l.ref, e);
 }
+// Un devis de fournisseur oublie des pièces : on retire le coude FF et deux
+// unions, pour montrer ce que la nourrice grise (sa demande du 18 octobre 2026).
+total.delete('coude-ff');
+if (total.get('union')) total.get('union').q -= 2;
 const devis = [...total.values()].map((e) => ({ ...e, nomCourt: e.nom.replace(/^(Dura|Plasson|Rain Bird|Solem) /, '') }));
 devis.push({ cle: null, lu: 'Participation aux frais de port', q: 1, u: 'u' });
 const PHOTOS = JSON.parse(readFileSync(A + 'appli/arrosage-plan.html', 'utf8').match(/var PHOTOS = (\{[^\n]*?\});/)[1]);

@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prix des fournisseurs</title>
+<!--
+  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Sa demande du 18 octobre 2026 :
+  « une petite case où je puisse intégrer les devis de mes fournisseurs, par
+  exemple Aqua Plus ou France Bonhomme, et il me met à chaque fois les prix à
+  côté des pièces. Le jour où je fais mon plan, il me fait un montant total, à
+  titre indicatif parce que les prix peuvent changer, mais au moins je sais à
+  peu près où je vais. »
+
+  CE SONT DES PRIX D'ACHAT, PAS SES PRIX DE VENTE. Réglages > Tarifs tient déjà
+  ses prix de vente (ImportTarifs.tsx) ; ceux-ci restent à part, par
+  fournisseur, avec la date du devis lu. Les mélanger ferait partir un prix
+  d'achat sur le devis d'un client.
+
+  AUCUN PRIX N'EST INVENTÉ ICI (CLAUDE.md §4, docs/AGENT.md §3) : les cases de
+  prix sont vides. Dans l'outil, elles se remplissent avec ce que l'IA lit sur
+  le devis du fournisseur (comme lire-ticket.ts), et RIEN n'est enregistré
+  avant son appui, comme ImportTarifs. Ici, on tape quelques prix pour voir le
+  total se faire.
+
+  LA LISTE DU PLAN est celle que le calcul rend pour le jardin de la planche du
+  plan (engendrer-planche-prix-fournisseurs.mjs), rien d'écrit à la main.
+-->
+<style>
+[data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#8a8578;--atlas-rustTint:#ece9e1;--atlas-or:#B98B47;--atlas-orTexte:#8b6835;--atlas-line:rgba(28,28,26,0.12);--atlas-lineSoft:rgba(28,28,26,0.07);--atlas-alerte:#9C3B2E}
+[data-charte="brume"]{--atlas-cream:#f4f7fb;--atlas-card:#ffffff;--atlas-ink:#111823;--atlas-inkSoft:#3a434e;--atlas-muted:#78838f;--atlas-rustTint:#e4e7ec;--atlas-or:#B98B47;--atlas-orTexte:#8f6b36;--atlas-line:rgba(17,24,35,0.12);--atlas-lineSoft:rgba(17,24,35,0.07);--atlas-alerte:#9c3b2e}
+[data-charte="pierre"]{--atlas-cream:#e8e8e3;--atlas-card:#f4f4f0;--atlas-ink:#1b1d19;--atlas-inkSoft:#454741;--atlas-muted:#83867c;--atlas-rustTint:#dadad5;--atlas-or:#B98B47;--atlas-orTexte:#826231;--atlas-line:rgba(27,29,25,0.12);--atlas-lineSoft:rgba(27,29,25,0.07);--atlas-alerte:#9c3b2e}
+[data-charte="beurre"]{--atlas-cream:#efe7cf;--atlas-card:#f8f3e4;--atlas-ink:#26221a;--atlas-inkSoft:#4e4939;--atlas-muted:#8b8368;--atlas-rustTint:#e1d9c2;--atlas-or:#B98B47;--atlas-orTexte:#826231;--atlas-line:rgba(38,34,26,0.12);--atlas-lineSoft:rgba(38,34,26,0.07);--atlas-alerte:#9c3b2e}
+[data-charte="moka"]{--atlas-cream:#e6ded5;--atlas-card:#f2ece5;--atlas-ink:#2b241e;--atlas-inkSoft:#524941;--atlas-muted:#8d8175;--atlas-rustTint:#d9d1c8;--atlas-or:#B98B47;--atlas-orTexte:#7c5d2f;--atlas-line:rgba(43,36,30,0.12);--atlas-lineSoft:rgba(43,36,30,0.07);--atlas-alerte:#9c3b2e}
+[data-charte="prune"]{--atlas-cream:#efe6ea;--atlas-card:#f9f2f5;--atlas-ink:#23131c;--atlas-inkSoft:#4d3a44;--atlas-muted:#8c7481;--atlas-rustTint:#e1d7dc;--atlas-or:#B98B47;--atlas-orTexte:#846332;--atlas-line:rgba(35,19,28,0.12);--atlas-lineSoft:rgba(35,19,28,0.07);--atlas-alerte:#9c3b2e}
+[data-charte="sylve"]{--atlas-cream:#16241c;--atlas-card:#1e3026;--atlas-ink:#e6e6da;--atlas-inkSoft:#c2caba;--atlas-muted:#8ba189;--atlas-rustTint:#253229;--atlas-or:#B98B47;--atlas-orTexte:#b98b47;--atlas-line:rgba(230,230,218,0.12);--atlas-lineSoft:rgba(230,230,218,0.07);--atlas-alerte:#d47a6e}
+[data-charte="nuit"]{--atlas-cream:#101210;--atlas-card:#1a1d19;--atlas-ink:#e9e8de;--atlas-inkSoft:#c1c2b6;--atlas-muted:#84887b;--atlas-rustTint:#1f211e;--atlas-or:#B98B47;--atlas-orTexte:#b98b47;--atlas-line:rgba(233,232,222,0.12);--atlas-lineSoft:rgba(233,232,222,0.07);--atlas-alerte:#cd6456}
+  *{box-sizing:border-box}
+  html{background:var(--atlas-rustTint)}
+  body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint)}
+  .entete{max-width:430px;margin:0 auto;padding:18px 16px 6px}
+  .entete h1{margin:0;font:400 24px/1.15 Georgia,"Times New Roman",serif}
+  .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .entete select{margin-top:10px;font-size:16px;padding:8px 10px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink)}
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--atlas-cream);padding:6px 0 80px;min-height:100vh}
+  .caps{display:block;margin:0;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-or)}
+  .bloc{margin:26px 16px 0}
+  .bloc h2{margin:6px 0 0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+  .sous{margin:4px 0 0;font-size:13.5px;color:var(--atlas-muted)}
+  .fournisseur{margin-top:10px;border-radius:14px;background:var(--atlas-card);padding:14px 16px;box-shadow:0 0 0 1px var(--atlas-lineSoft)}
+  .fournisseur .tete{display:flex;align-items:baseline;gap:10px}
+  .fournisseur b{flex:1;font-size:16.5px;font-weight:600}
+  .fournisseur small{font-size:13px;color:var(--atlas-muted)}
+  .fournisseur button{margin-top:10px;width:100%;min-height:46px;border-radius:10px;border:1.5px dashed var(--atlas-line);background:none;color:var(--atlas-ink);font-size:15px;cursor:pointer}
+  .nouveau{display:flex;gap:8px;margin-top:10px}
+  .nouveau input{flex:1;min-width:0;border:0;border-radius:10px;padding:12px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
+  .nouveau button{flex:none;min-height:46px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:15px;padding:0 14px;cursor:pointer}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .chips button{border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);border-radius:999px;padding:8px 12px;font-size:13.5px;cursor:pointer}
+  .chips button[aria-pressed="true"]{background:var(--atlas-ink);color:var(--atlas-card);border-color:var(--atlas-ink)}
+  .liste{margin-top:10px;border-radius:12px;padding:2px 12px;background:var(--atlas-card)}
+  .ligne{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--atlas-line);font-size:14px}
+  .ligne:first-child{border-top:0}
+  .vignette{flex:none;display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:8px;background:#ffffff;box-shadow:0 0 0 1px var(--atlas-lineSoft)}
+  .vignette img{max-width:36px;max-height:36px;object-fit:contain}
+  .vignette.vide{background:none;box-shadow:none;border:1.5px dashed var(--atlas-line)}
+  .ligne .n{flex:1;min-width:0}
+  .ligne .n small{display:block;font-size:12px;color:var(--atlas-muted)}
+  .ligne .q{flex:none;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
+  .ligne .prix{flex:none;width:86px;text-align:right;font-variant-numeric:tabular-nums}
+  .ligne .prix small{display:block;font-size:11.5px;color:var(--atlas-muted)}
+  .ligne .sans{color:var(--atlas-muted);font-size:12.5px}
+  .ligne input{flex:none;width:84px;border:0;border-radius:8px;padding:9px 8px;font-size:16px;text-align:right;background:var(--atlas-cream);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line);font-variant-numeric:tabular-nums}
+  .total{margin-top:14px;border-radius:14px;background:var(--atlas-ink);color:var(--atlas-card);padding:16px}
+  .total .m{display:block;font:400 30px/1.1 Georgia,"Times New Roman",serif;font-variant-numeric:tabular-nums}
+  .total small{display:block;margin-top:6px;font-size:13px;opacity:.8}
+  .manque{margin:10px 0 0;font-size:13.5px;color:var(--atlas-alerte)}
+  .principal{margin-top:16px;width:100%;min-height:52px;border:0;border-radius:12px;background:var(--atlas-ink);color:var(--atlas-card);font-size:16px;cursor:pointer}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--atlas-or);outline-offset:2px}
+  .feuille{position:fixed;inset:0;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.35)}
+  .feuille[hidden]{display:none}
+  .feuille .boite{width:100%;max-width:430px;max-height:88vh;overflow:auto;background:var(--atlas-cream);border-radius:18px 18px 0 0;padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+  .feuille .haut{display:flex;align-items:center}
+  .feuille h2{flex:1;margin:0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+  .feuille .fermer{border:0;background:none;font-size:14px;text-decoration:underline;color:var(--atlas-inkSoft);cursor:pointer}
+</style>
+<body data-charte="origine">
+<div class="entete">
+  <h1>Prix des fournisseurs</h1>
+  <p>Planche, rien n’est codé. Aucun prix n’est inventé : les cases sont vides, tapez-en quelques-uns pour voir le total.</p>
+  <select id="charte" aria-label="Charte"></select>
+</div>
+<main class="ecran">
+  <section class="bloc">
+    <span class="caps">Réglages</span>
+    <h2>Mes fournisseurs</h2>
+    <p class="sous">Prix d’achat, à part de vos prix de vente.</p>
+    <div id="fournisseurs"></div>
+    <div class="nouveau"><input id="nom-fournisseur" placeholder="Un autre fournisseur" aria-label="Nom du fournisseur"><button type="button" id="ajouter-fournisseur">Ajouter</button></div>
+  </section>
+
+  <section class="bloc">
+    <span class="caps">Plan d’arrosage</span>
+    <h2>Le matériel du plan</h2>
+    <div class="chips" id="choix-fournisseur" role="group" aria-label="Prix de"></div>
+    <div class="total" id="total" aria-live="polite"></div>
+    <p class="manque" id="manque"></p>
+    <div class="liste" id="liste"></div>
+  </section>
+</main>
+
+<div class="feuille" id="feuille" hidden>
+  <div class="boite" role="dialog" aria-modal="true" aria-labelledby="feuille-titre">
+    <div class="haut"><h2 id="feuille-titre"></h2><button class="fermer" type="button" id="fermer">Fermer</button></div>
+    <p class="sous" id="feuille-sous"></p>
+    <div class="liste" id="lu"></div>
+    <button class="principal" type="button" id="enregistrer">Enregistrer ces prix</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  var PHOTOS = /*PHOTOS*/{};
+  var LIGNES = /*LIGNES*/[];
+  var $ = function (id) { return document.getElementById(id); };
+  var texte = function (s) { var e = document.createElement("span"); e.textContent = s == null ? "" : String(s); return e.innerHTML; };
+  var CHARTES = [["origine","Origine"],["brume","Brume"],["pierre","Pierre"],["beurre","Beurre"],["moka","Moka"],["prune","Prune"],["sylve","Sylve"],["nuit","Nuit"]];
+  CHARTES.forEach(function (c) { var o = document.createElement("option"); o.value = c[0]; o.textContent = c[1]; $("charte").appendChild(o); });
+  $("charte").onchange = function () { document.body.dataset.charte = this.value; };
+
+  var euros = function (n) { return n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; };
+  var lirePrix = function (s) { var n = Number(String(s).replace(/\s/g, "").replace(",", ".")); return s !== "" && n >= 0 && isFinite(n) ? n : null; };
+  var aujourdhui = new Date().toLocaleDateString("fr-FR");
+  var vignette = function (cle) { var f = PHOTOS[cle]; return f ? '<span class="vignette"><img src="arrosage-photos/' + texte(f) + '" alt=""></span>' : '<span class="vignette vide"></span>'; };
+
+  // fournisseurs : { nom, date du devis, prix par pièce (HT, à l'unité ou au mètre) }
+  var fournisseurs = [{ nom: "Aqua Plus", date: null, prix: {} }, { nom: "France Bonhomme", date: null, prix: {} }];
+  var vue = "moins";      // le fournisseur dont on lit les prix, ou « le moins cher »
+  var lecture = null;     // le fournisseur dont on lit un devis
+
+  function dessinerFournisseurs() {
+    $("fournisseurs").innerHTML = fournisseurs.map(function (f, i) {
+      var n = Object.keys(f.prix).length;
+      return '<div class="fournisseur"><div class="tete"><b>' + texte(f.nom) + "</b><small>" + (f.date ? n + " prix, devis du " + f.date : "Aucun devis") + "</small></div>" +
+        '<button type="button" data-devis="' + i + '">' + (f.date ? "Mettre à jour avec un devis" : "Ajouter un devis, photo ou PDF") + "</button></div>";
+    }).join("");
+    var chips = [["moins", "Le moins cher"]].concat(fournisseurs.map(function (f, i) { return [String(i), f.nom]; }));
+    $("choix-fournisseur").innerHTML = chips.map(function (c) { return '<button type="button" data-vue="' + c[0] + '" aria-pressed="' + (vue === c[0]) + '">' + texte(c[1]) + "</button>"; }).join("");
+  }
+
+  // Le prix d'une pièce dans la vue choisie : celui du fournisseur, ou le plus bas des deux.
+  function prixDe(cle) {
+    if (vue !== "moins") { var f = fournisseurs[Number(vue)]; return f.prix[cle] != null ? { p: f.prix[cle], de: f } : null; }
+    var mieux = null;
+    fournisseurs.forEach(function (f) { if (f.prix[cle] != null && (!mieux || f.prix[cle] < mieux.p)) mieux = { p: f.prix[cle], de: f }; });
+    return mieux;
+  }
+
+  function dessinerPlan() {
+    var total = 0, sans = 0, dates = {};
+    $("liste").innerHTML = LIGNES.map(function (l) {
+      var x = prixDe(l.cle);
+      var q = l.u === "ml" ? String(l.q).replace(".", ",") + " m" : l.q + "x";
+      if (x) { total += x.p * l.q; dates[x.de.nom] = x.de.date; } else sans++;
+      return '<div class="ligne">' + vignette(l.cle) + '<span class="n">' + texte(l.nom) + "<small>" + q + "</small></span>" +
+        (x ? '<span class="prix">' + euros(x.p * l.q) + "<small>" + (vue === "moins" ? texte(x.de.nom) : euros(x.p) + (l.u === "ml" ? " le m" : " pièce")) + "</small></span>" : '<span class="prix sans">pas de prix</span>') + "</div>";
+    }).join("");
+    var chiffrees = LIGNES.length - sans;
+    $("total").innerHTML = "<small>Total indicatif, hors taxes</small>" + '<span class="m">' + euros(total) + "</span>" +
+      "<small>" + (chiffrees ? Object.keys(dates).map(function (n) { return "Prix " + n + " du " + dates[n]; }).join(". ") + ". Ils ont pu changer." : "Aucun prix encore.") + "</small>";
+    $("manque").textContent = sans ? sans + " pièce" + (sans > 1 ? "s" : "") + " sans prix sur " + LIGNES.length + ", le total ne les compte pas." : "";
+  }
+
+  function ouvrirDevis(i) {
+    lecture = i;
+    var f = fournisseurs[i];
+    $("feuille-titre").textContent = "Devis " + f.nom;
+    $("feuille-sous").textContent = LIGNES.length + " lignes lues. Rien n’est enregistré avant votre appui.";
+    $("lu").innerHTML = LIGNES.map(function (l, k) {
+      var v = f.prix[l.cle];
+      return '<div class="ligne">' + vignette(l.cle) + '<span class="n">' + texte(l.nom) + (l.ref ? "<small>" + texte(l.ref) + "</small>" : "") + "</span>" +
+        '<input inputmode="decimal" data-lu="' + k + '" placeholder="Prix HT" aria-label="Prix ' + texte(l.nom) + '" value="' + (v != null ? String(v).replace(".", ",") : "") + '"></div>';
+    }).join("");
+    $("feuille").hidden = false;
+  }
+
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (!b) return;
+    if (b.dataset.devis) { ouvrirDevis(Number(b.dataset.devis)); return; }
+    if (b.dataset.vue) { vue = b.dataset.vue; dessinerFournisseurs(); dessinerPlan(); return; }
+    if (b.id === "fermer") { $("feuille").hidden = true; return; }
+    if (b.id === "enregistrer") {
+      var f = fournisseurs[lecture];
+      document.querySelectorAll("[data-lu]").forEach(function (inp) {
+        var p = lirePrix(inp.value), cle = LIGNES[Number(inp.dataset.lu)].cle;
+        if (p === null) delete f.prix[cle]; else f.prix[cle] = p;
+      });
+      f.date = aujourdhui;
+      $("feuille").hidden = true; dessinerFournisseurs(); dessinerPlan(); return;
+    }
+    if (b.id === "ajouter-fournisseur") {
+      var nom = $("nom-fournisseur").value.trim();
+      if (!nom) return;
+      fournisseurs.push({ nom: nom, date: null, prix: {} }); $("nom-fournisseur").value = "";
+      dessinerFournisseurs(); return;
+    }
+  });
+
+  dessinerFournisseurs();
+  dessinerPlan();
+})();
+</script>
+</body>
+</html>
