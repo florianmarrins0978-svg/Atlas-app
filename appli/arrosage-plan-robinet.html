@@ -688,7 +688,7 @@
       if (r) lignes += '<li><span class="q">' + r.metresTuyau + ' m</span><span>de PEHD Ø25</span></li>';
       html += '<div class="reseau" style="--couleur:' + c + '"><div class="reseau-titre"><span class="pastille"></span><b>Réseau ' + (i + 1) + "</b><span>" + texte(s.nom) + "</span></div>" +
         '<div class="schema">' + svgReseau(d, p, i) + "</div>" +
-        (liaisonsDuReseau(d, p, i).length ? '<p class="pointille"><svg class="tirets" viewBox="0 0 24 6" aria-hidden="true"><line x1="1" y1="3" x2="23" y2="3" stroke="currentColor" stroke-width="1.6" stroke-dasharray="3 2.4"/></svg>Le passage de la nourrice à « ' + texte(s.nom) + ' » sort de la pelouse. Le croquis ne montre pas par où il passe (allée, terrasse, bordure). Sa longueur doit être mesurée.</p>' : "") +
+        (liaisonsDuReseau(d, p, i).length ? '<p class="pointille"><svg class="tirets" viewBox="0 0 24 6" aria-hidden="true"><line x1="1" y1="3" x2="23" y2="3" stroke="currentColor" stroke-width="1.6" stroke-dasharray="3 2.4"/></svg>Le passage ' + (robinet.montage === "nez" ? "du robinet" : "de la nourrice") + ' à « ' + texte(s.nom) + ' » sort de la pelouse. Le croquis ne montre pas par où il passe (allée, terrasse, bordure). Sa longueur doit être mesurée.</p>' : "") +
         '<ul class="materiel">' + lignes + "</ul></div>";
     });
     $("reseaux").innerHTML = html;
