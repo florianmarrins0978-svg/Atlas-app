@@ -335,21 +335,6 @@ const CROQUIS_ESSAI = '/tmp/croquis-essai-e2e.png';
     ok('arrosage : aucun secteur au-dessus du robinet',
        debits.length > 0 && debits.every(d => d <= parseFloat(dispo.replace(',', '.')) + 1e-9));
 
-    // La saison change les durées, jamais le câblage : c'est ce qui décide de
-    // l'heure de départ, et un cycle qui déborde envoie arroser en plein soleil.
-    const cycle = await page.evaluate(() => {
-      const lire = () => { const d = decouper();
-        return { n: d.secteurs.length, min: d.secteurs.reduce((a, s) => a + s.minutes, 0) }; };
-      const avant = etat.saison;
-      etat.saison = 'juillet'; const juillet = lire();
-      etat.saison = 'avril';   const avril = lire();
-      etat.saison = avant;     recalculer(true);
-      return { juillet, avril };
-    });
-    await page.waitForTimeout(120);
-    ok('arrosage : les durées existent et baissent en avril',
-       cycle.juillet.min > 0 && cycle.avril.min < cycle.juillet.min);
-    ok('arrosage : changer de saison ne recâble pas', cycle.avril.n === cycle.juillet.n);
 
     // **LE CROQUIS — sa demande du 17 août : « la 2, ça doit être la photo du
     // croquis qu'on ajoute ».** La page est publiée sans serveur : elle ne LIT

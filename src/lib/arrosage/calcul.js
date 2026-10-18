@@ -2,8 +2,8 @@
    **Ce fichier est une COPIE OCTET POUR OCTET de `appli/arrosage-calcul.js`**,
    et `scripts/verifier-arrosage-une-seule-source.mjs` refuse qu'elles divergent.
 
-   Il porte donc des fonctions que le serveur n'appelle jamais : l'affichage des
-   durées, la mémorisation dans le navigateur, la mise en forme des heures.
+   Il porte donc des fonctions que le serveur n'appelle jamais : la mémorisation
+   dans le navigateur, la mise en forme des nombres.
    Les retirer ici ferait diverger les deux copies — c'est-à-dire créer
    exactement le second calcul que `CLAUDE.md` §3 interdit, celui qui finit par
    ne plus dire la même chose que le premier.
@@ -62,8 +62,6 @@ var CLE_ETAT = (typeof window !== 'undefined' && window.CLE_ETAT) || 'atlas-arro
 /* ── Mise en forme française ─────────────────────────────────────────────── */
 function nb(x, d){ d = d === undefined ? 2 : d;
   return (Math.round(x * Math.pow(10,d)) / Math.pow(10,d)).toFixed(d).replace('.', ','); }
-function duree(min){ return min >= 60 ? Math.floor(min/60) + ' h ' + String(min%60).padStart(2,'0') : min + ' min'; }
-function heure(min){ var h = Math.floor(min/60) % 24; return h + ' h ' + String(Math.round(min%60)).padStart(2,'0'); }
 
 function enregistrer(){
   try { localStorage.setItem(CLE_ETAT, JSON.stringify(etat)); } catch (e) {}
@@ -299,9 +297,6 @@ function modelePour(type, plusPetitCote, dims, refImposee){
         pressionRetenue: b.pressionRetenue || b.pression,
         debit360: b.debit[360], debitParAngle: b.debit, colisage: b.colisage,
         source: b.source, buse: b,
-        // La pluviométrie n'est pas au catalogue : elle se déduit du débit et de
-        // la surface couverte. Déduite, donc signalée comme telle.
-        pluvio: pluviometrie(b),
         famille: 'Arroseurs'
       },
       // Les autres buses de cette marque qui PAVENT la zone, du plus grand
@@ -322,17 +317,6 @@ function modelePour(type, plusPetitCote, dims, refImposee){
   // repli sur une « Tuyère » générique posait des têtes inventées sans que
   // l'écran le dise ; il est retiré avec elle le 16 octobre 2026.
   return { m: null };
-}
-
-/* Millimètres par heure, en pose tête-bêche : le débit d'un cercle entier
-   réparti sur le carré qu'il dessert (espacement × espacement, l'espacement
-   valant la portée). 1 m³/h sur 1 m² = 1000 mm/h. */
-function pluviometrie(b){
-  var carre = b.rayon * b.rayon;
-  // Une buse à 330° au plus n'a pas de 360° : son demi-tour, doublé, donne la
-  // même grandeur, sur l'arc qu'elle fait vraiment aux bords.
-  var tour = b.debit[360] != null ? b.debit[360] : 2 * b.debit[180];
-  return carre > 0 ? Math.round((tour * 1000) / carre * 10) / 10 : 0;
 }
 
 function marqueCourante(){
@@ -360,17 +344,6 @@ function corpsCourant(){
   return choisi || CATALOGUE.corpsParDefaut(marqueCourante());
 }
 
-/* Les besoins en millimètres par semaine, et le nombre de passages.
-   LES SECTEURS NE CHANGENT PAS AVEC LA SAISON — c'est du câblage, il est posé
-   une fois. Seules les DURÉES changent, et c'est exactement ce que le client
-   règle sur son programmateur au fil de l'année. */
-var SAISONS = [
-  { cle:'avril',   nom:'Avril',        gazon:[10,2], arbustes:[8,1],  potager:[12,2] },
-  { cle:'maijuin', nom:'Mai–juin',     gazon:[18,2], arbustes:[15,2], potager:[22,3] },
-  { cle:'juillet', nom:'Juillet–août', gazon:[25,3], arbustes:[20,2], potager:[30,3] },
-  { cle:'sept',    nom:'Septembre',    gazon:[12,2], arbustes:[10,2], potager:[15,2] }
-];
-
 /* La famille de plantes commande le rythme : un potager ne s'arrose pas comme
    une haie. Deux familles dans un secteur, c'est l'une des deux qui perd. */
 /* Ses espacements de goutte-à-goutte, le 17 août 2026 :
@@ -392,7 +365,6 @@ var TYPES = {
   potager: { nom:'Potager',  forme:'nappe',    famille:'potager',  ecartLignes:0.70 }
 };
 
-var LARGEUR_ARROSEE_PAR_LIGNE = 1.0;   // m, 50 cm de chaque côté : sa réponse du 17 octobre 2026
 var MARGE = 0.85;         // on ne charge jamais un secteur jusqu'au robinet
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -459,8 +431,6 @@ function bridageDe(buse){
    être dans les coins ». Le pourtour est donc régulier, coins compris, et
    seules les rangées INTÉRIEURES se décalent d'un demi-écart. */
 var QUINCONCE_AU_DELA_DE = 4;
-var DEPART = 3 * 60;      // départ du cycle : 3 h du matin
-var LEVER = 6 * 60 + 30;  // au-delà, l'eau s'évapore avant d'entrer
 
 /* ══ CE QU'IL A SAISI, ET CE QUE L'OUTIL A APPRIS DEPUIS ════════════════════
 
@@ -476,7 +446,7 @@ var LEVER = 6 * 60 + 30;  // au-delà, l'eau s'évapore avant d'entrer
    valeur du jour. C'est ce qui permet d'ajouter un réglage sans casser les
    jardins déjà enregistrés — et il y aura d'autres réglages. */
 var DEFAUTS = {
-  seau:10, temps:20, pression:3, saison:'juillet', compteur:null, corps:null,
+  seau:10, temps:20, pression:3, compteur:null, corps:null,
   marque:null, // null = la marque par défaut du catalogue (Rain Bird)
   amenee:30, pe25:120, sonde:false, croquis:null,
   // La couronne de tube de goutte-à-goutte que vend son fournisseur, en mètres.
@@ -952,14 +922,13 @@ function poser(z, refImposee, tolerant){
       }
     }
   }
-  var m = choix.m, sais = saisonCourante();
-  if (!m) return { cle:cle, m:null, nombre:0, debit:0, minutes:0, nx:0, ny:0 };
-  var besoin = sais[TYPES[z.type].famille][0], passages = sais[TYPES[z.type].famille][1];
-  var r = { cle:cle, m:m, besoin:besoin, passages:passages };
+  var m = choix.m;
+  if (!m) return { cle:cle, m:null, nombre:0, debit:0, nx:0, ny:0 };
+  var r = { cle:cle, m:m };
 
   if (TYPES[z.type].forme === 'surface'){
     var L = Number(z.L)||0, l = Number(z.l)||0;
-    if (L <= 0 || l <= 0) return Object.assign(r, { nombre:0, debit:0, minutes:0, nx:0, ny:0 });
+    if (L <= 0 || l <= 0) return Object.assign(r, { nombre:0, debit:0, nx:0, ny:0 });
     // On écarte AU MAXIMUM dans sa limite, puis on répartit : c'est le moins
     // d'arroseurs possible sans jamais descendre sous la portée RÉGLÉE.
     var pose = poseSelonSaRegle(L, l, m.portee, bridageDe(m.buse), Boolean(tolerant), faitLeTour(m.buse));
@@ -969,7 +938,7 @@ function poser(z, refImposee, tolerant){
     // Une buse imposée qui ne fait pas le tour, sur une zone à intérieur : on
     // ne la pose pas, et le plan le dit (`manquants`).
     if (!faitLeTour(m.buse) && nx > 2 && ny > 2){
-      return Object.assign(r, { nombre:0, debit:0, minutes:0, nx:0, ny:0, tourIncomplet:true });
+      return Object.assign(r, { nombre:0, debit:0, nx:0, ny:0, tourIncomplet:true });
     }
     var ecartX = L / (nx - 1), ecartY = l / (ny - 1);
     // **La portée à laquelle la tête se règle sur le terrain** : celle de la
@@ -1151,7 +1120,7 @@ function poser(z, refImposee, tolerant){
     // Des lignes parallèles dans la largeur, à l'écart qu'il a donné. La
     // première et la dernière longent les bords : d'où le « + 1 ».
     var L2 = Number(z.L)||0, l2 = Number(z.l)||0;
-    if (L2 <= 0 || l2 <= 0) return Object.assign(r, { nombre:0, debit:0, minutes:0 });
+    if (L2 <= 0 || l2 <= 0) return Object.assign(r, { nombre:0, debit:0 });
     var e = TYPES[z.type].ecartLignes;
     // **Le millionième ajouté n'est pas une marge** : 2,4 ÷ 0,80 vaut
     // 2,9999999999999996 en virgule flottante, et l'arrondi par le bas
@@ -1168,25 +1137,7 @@ function poser(z, refImposee, tolerant){
     r.lignes = n2;
     r.nombre = Math.round(ml * n2);
     r.debit = r.nombre * m.debitMetre;
-    // **Une ligne arrose 50 cm de part et d'autre** — sa réponse du
-    // 17 octobre 2026 : « quand elle est au milieu, elle arrose 50 cm à
-    // gauche, 50 cm à droite ». Chaque ligne a donc sa bande de 1 m ; deux
-    // lignes, deux bandes.
-    r.largeurArrosee = LARGEUR_ARROSEE_PAR_LIGNE;
   }
-  // La durée dépend de la PLUVIOMÉTRIE, jamais de la surface : la même
-  // quantité d'eau demande 45 min de turbine et 13 min de tuyère.
-  //
-  // **Celle du goutte-à-goutte se calcule sur la zone** (16 octobre 2026) :
-  // le débit au mètre de son tube, réparti sur l'écart entre deux lignes.
-  // Les 23 mm/h écrits au catalogue ne venaient de nulle part. Une haie n'a
-  // pas d'écart entre lignes : sa ligne arrose sa bande de 1 m.
-  var bande = r.ecartLignes || r.largeurArrosee;
-  var pluvio = m.type === 'gaine'
-    ? (bande ? m.debitMetre * 1000 / bande : null)
-    : m.pluvio;
-  r.dureeInconnue = passages > 0 && !pluvio;
-  r.minutes = passages > 0 && pluvio ? Math.round((besoin / passages / pluvio) * 60) : 0;
   return r;
 }
 
@@ -1194,11 +1145,6 @@ function poser(z, refImposee, tolerant){
    vérifie d'un regard que rien ne descend sous ses 80 %. */
 function recouvrementObtenu(portee, ecart){
   return ecart > 0 ? portee / ecart : 0;
-}
-
-function saisonCourante(){
-  for (var i=0;i<SAISONS.length;i++) if (SAISONS[i].cle === etat.saison) return SAISONS[i];
-  return SAISONS[2];
 }
 
 /* ══ CE QU'UN RÉSEAU PEUT PORTER : CE QUE LA SOURCE DONNE ═══════════════════
@@ -1487,8 +1433,8 @@ function decouperUneFois(){
   etat.zones.forEach(function(z){
     var p = poser(z);
     if (p.debit <= 0) return;
-    // La clé du groupe ne contient QUE ce qui ne change pas avec la saison :
-    // le matériel et la famille de plantes. Un secteur est du câblage.
+    // La clé du groupe ne contient que le matériel et la famille de plantes.
+    // Un secteur est du câblage.
     //
     // **LA PLUVIOMÉTRIE N'EN FAIT PLUS PARTIE — sa décision du 23 août 2026 :**
     // *« ne prends pas en compte la pluviométrie »*. Elle y était depuis le
@@ -1497,25 +1443,20 @@ function decouperUneFois(){
     //
     // **Ce que cela change, pour qui reprendra ce fichier.** Deux turbines de
     // buses différentes peuvent désormais partager une vanne. Elles versent
-    // alors des millimètres/heure différents, et la vanne les ouvre pour la même
-    // durée : la durée calculée (`r.minutes`) convient à l'une et pas à l'autre.
-    // Sur son jardin, l'écart mesuré était de 3 % — entre une 3504 fine et une
-    // grosse PGP, il se compterait en multiples. Il le sait, il arbitre à
-    // l'arrosage.
+    // alors des millimètres/heure différents pour une même ouverture de vanne.
+    // Il le sait, il arbitre à l'arrosage.
     //
-    // **La pluviométrie sert toujours aux DURÉES** (`poser()`), qui restent
-    // calculées par modèle. Ce qui a disparu, c'est son pouvoir de séparer deux
-    // secteurs — rien d'autre.
+    // **Aucune durée n'est calculée** (sa décision du 18 octobre 2026 : « on ne
+    // donne pas les durées d'arrosage ni les périodes à arroser ») : les besoins
+    // par saison, qui n'avaient aucune source venue de lui, sont retirés avec elles.
     var clef = p.cle + '|' + TYPES[z.type].famille;
-    if (!groupes[clef]) { groupes[clef] = { zones:[], nomDeZone:{}, membres:[], debit:0, minutes:0, passages:0, m:p.m, cle:p.cle }; ordre.push(clef); }
+    if (!groupes[clef]) { groupes[clef] = { zones:[], nomDeZone:{}, membres:[], debit:0, m:p.m, cle:p.cle }; ordre.push(clef); }
     groupes[clef].zones.push(z.nom || TYPES[z.type].nom);
     // **Le nom de chaque zone, retrouvable par son identifiant.** Un secteur ne
     // dessert pas forcément tout le groupe : il faut pouvoir nommer LES SIENNES.
     groupes[clef].nomDeZone[z.id] = z.nom || TYPES[z.type].nom;
     groupes[clef].membres.push({ zoneId: z.id, points: p.points });
     groupes[clef].debit += p.debit;
-    groupes[clef].minutes = p.minutes;
-    groupes[clef].passages = p.passages;
     groupes[clef].nombre = (groupes[clef].nombre || 0) + p.nombre;
     if (p.m && p.m.buse && p.ecartEntreTetes > 0){
       poses.push({ ecartEntreTetes: p.ecartEntreTetes, portee: p.porteeReglee || p.m.portee, gamme: gammeDe(p.m),
@@ -1574,8 +1515,6 @@ function decouperUneFois(){
         part: combien > 1 ? rang + ' sur ' + combien : null,
         famille: g.m.famille,
         debit: debit,
-        minutes: g.minutes,
-        passages: g.passages,
         // **Les têtes du réseau, dans l'ordre où le tuyau les visite.** Sans
         // elles, la perte de charge de la ligne ne se calcule pas : il faut
         // savoir combien de mètres séparent chaque arroseur du suivant, et
@@ -1790,11 +1729,6 @@ function manquants(d){
   etat.zones.forEach(function(z){
     if (poser(z).tourIncomplet){
       phrases.push((z.nom || 'Une zone') + ' : sa buse ne fait pas le tour entier, elle ne se pose qu’aux coins et aux bords.');
-    }
-  });
-  etat.zones.forEach(function(z){
-    if (poser(z).dureeInconnue){
-      phrases.push((z.nom || 'Une zone') + ' : la durée d’arrosage n’est pas calculée.');
     }
   });
   var sg = sortiesGoutte(d);

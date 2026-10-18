@@ -13,7 +13,7 @@
   je puisse essayer, pas de photo ».
 
   D'où cette page-ci plutôt qu'une planche de plus : elle CALCULE pour de bon.
-  On entre son propre jardin, et le découpage, les durées et la liste du
+  On entre son propre jardin, et le découpage et la liste du
   matériel se refont à chaque frappe. C'est le seul moyen de savoir si l'outil
   dit des choses justes AVANT d'écrire une ligne de l'application.
 
@@ -36,13 +36,12 @@
   1. LE DÉBIT. Un robinet de pavillon donne 1,5 à 2 m³/h. Un jardin complet en
      demande souvent quatre à cinq fois plus. On ne peut donc pas tout ouvrir
      ensemble : il faut des SECTEURS, ouverts l'un après l'autre.
-  2. LA PLUVIOMÉTRIE. Une turbine verse 11 mm d'eau à l'heure, une tuyère 38.
-     C'est elle qui donne les durées — pas la surface.
-  3. LES DEUX RÈGLES DE DÉCOUPAGE, qui passent avant le remplissage :
-     · un secteur ne porte QU'UNE pluviométrie (la vanne ouvre tout son secteur
-       pour la même durée : mélanger, c'est trois fois trop d'eau d'un côté) ;
-     · un secteur ne porte QU'UNE famille de plantes (le potager veut trois
-       passages par semaine, une haie deux).
+  2. AUCUNE DURÉE, AUCUNE PÉRIODE : sa décision du 18 octobre 2026, « on ne
+     donne pas les durées d'arrosage ni les périodes à arroser ».
+  3. LES RÈGLES DE DÉCOUPAGE, qui passent avant le remplissage :
+     · un secteur ne porte qu'un matériel (la pluviométrie n'en décide plus
+       depuis le 23 août 2026, sa décision) ;
+     · un secteur ne porte QU'UNE famille de plantes.
      Ces deux règles sont ce qui distingue un plan d'une addition.
 
   CE QUE LA PAGE NE FAIT PAS, ET C'EST DIT PLUTÔT QUE TU : les pertes de charge
@@ -131,10 +130,6 @@
   .avert.rouge{box-shadow:inset 3px 0 0 var(--alerte)}
   .avert b{color:var(--alerte)}
 
-  .saisons{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-  .saisons button{flex:1 1 auto;padding:9px 8px;border-radius:999px;border:1px solid var(--trait);
-                  background:transparent;color:var(--gris);font:inherit;font-size:12.5px;cursor:pointer}
-  .saisons button[aria-pressed="true"]{background:var(--pin);color:var(--papier);border-color:var(--pin)}
 
   .plan{width:100%;height:auto;display:block;margin:8px 0 2px}
   .plan .gazon{fill:var(--teinte)}
@@ -197,7 +192,7 @@
   @media print{
     body{background:#fff;padding:0}
     section{border:0;background:#fff;padding:0 0 14px}
-    .ajouts,.gestes,.saisons,.retirer{display:none}
+    .ajouts,.gestes,.retirer{display:none}
   }
 </style>
 </head>
@@ -348,7 +343,7 @@ function dessinerZones(){
           : (p.lignes ? p.lignes + ' ligne' + (p.lignes>1?'s':'') +
               (p.ecartLignes ? ' à ' + Math.round(p.ecartLignes*100) + ' cm' : '') + ' · ' : '') +
             p.nombre + ' m de gaine')
-        + ' · ' + nb(p.debit) + ' m³/h · ' + p.minutes + ' min, ' + p.passages + '×/semaine'
+        + ' · ' + nb(p.debit) + ' m³/h'
         + (p.m.source === 'provisoire' ? ', <span class="provisoire">portée à confirmer</span>' : '')
       : 'Mesures à compléter.';
 
@@ -496,18 +491,6 @@ function dessinerCroquis(){
   }
 }
 
-function dessinerSaisons(){
-  var hote = document.getElementById('saisons');
-  if (!hote) return;   // section retirée le 17 août, sur sa demande
-  hote.innerHTML = '';
-  SAISONS.forEach(function(s){
-    var b = document.createElement('button');
-    b.type = 'button'; b.textContent = s.nom;
-    b.setAttribute('aria-pressed', s.cle === etat.saison ? 'true' : 'false');
-    b.addEventListener('click', function(){ etat.saison = s.cle; recalculer(true); });
-    hote.appendChild(b);
-  });
-}
 
 function dessinerSecteurs(d){
   var hote = document.getElementById('secteurs');
@@ -527,8 +510,7 @@ function dessinerSecteurs(d){
         (s.part ? ' <span class="sec-part">' + s.part + '</span>' : '') + '</p>' +
       '<div class="jauge"><span style="width:' + part + '%"></span></div>' +
       '<p class="sec-d"><span class="sec-fam">' + s.famille + '</span>' +
-        '<span class="sec-q">' + nb(s.debit) + '</span> m³/h · ' +
-        '<span class="sec-min">' + s.minutes + '</span> min · ' + s.passages + '×/sem.</p>';
+        '<span class="sec-q">' + nb(s.debit) + '</span> m³/h</p>';
     hote.appendChild(bloc);
   });
 }
@@ -536,23 +518,14 @@ function dessinerSecteurs(d){
 function dessinerVerdict(d){
   var hote = document.getElementById('verdict');
   if (!hote) return;   // section retirée le 17 août, sur sa demande
-  var cycle = d.secteurs.reduce(function(s,x){ return s + x.minutes; }, 0);
-  var fin = DEPART + cycle;
   var voies = voiesProgrammateur(d.secteurs.length);
   var libres = voies - d.secteurs.length;
   var html = '';
 
   if (d.secteurs.length){
-    html += '<p class="avert">Cycle complet <b style="color:inherit">' + duree(cycle) + '</b> · ' +
-            'départ ' + heure(DEPART) + ', fin ' + heure(fin) + '.<br>' +
-            'Programmateur <b style="color:inherit">' + voies + ' voies</b> — ' +
+    html += '<p class="avert">Programmateur <b style="color:inherit">' + voies + ' voies</b> — ' +
             (libres === 0 ? 'aucune voie libre, un massif de plus et il faut le changer'
                           : libres + ' voie' + (libres>1?'s':'') + ' libre' + (libres>1?'s':'')) + '.</p>';
-    if (fin > LEVER){
-      html += '<p class="avert rouge"><b>Le cycle finit après ' + heure(LEVER) + '.</b> ' +
-              'L\'eau du dernier secteur s\'évapore au lieu d\'entrer : il faut ' +
-              'démarrer plus tôt, ou arroser un jour sur deux en alternant les secteurs.</p>';
-    }
     if (d.demande > d.dispo){
       html += '<p class="avert">Le jardin demande <b style="color:inherit">' + nb(d.demande) + ' m³/h</b> ' +
               'pour ' + nb(d.dispo) + ' disponibles, soit ' + nb(d.demande/d.dispo,1) + ' fois trop : ' +
@@ -948,7 +921,6 @@ document.getElementById('croquisFichier').addEventListener('change', function(e)
   });
 });
 
-dessinerSaisons();
 dessinerCroquis();
 recalculer(true);
 </script>

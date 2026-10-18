@@ -663,36 +663,24 @@ dire(
     !toro.materiel.some((m) => /generique|Tuyères 12/.test(`${m.ref} ${m.nom}`)),
     "et aucune tuyère inventée n'entre dans la liste",
   );
-  // **Plus aucune durée ne manque.** La haie attendait la largeur qu'arrose sa
-  // ligne ; sa réponse du 17 octobre 2026 : « 50 cm à gauche, 50 cm à
-  // droite ». Les 23 mm/h d'avant ne venaient de nulle part (16 octobre).
-  // Ses autres réserves (les sorties du goutte-à-goutte) ont leur suite plus bas.
-  const jardin = calculerPlan(JARDIN) as { manquants: string[] };
+  // **AUCUNE DURÉE, AUCUNE PÉRIODE** — sa décision du 18 octobre 2026 : « on ne
+  // donne pas les durées d'arrosage ni les périodes à arroser ». Le calcul ne
+  // rend plus ni minutes, ni passages, et le plan n'en parle pas.
+  const jardin = calculerPlan(JARDIN) as { manquants: string[]; secteurs: Record<string, unknown>[] };
   dire(
-    !jardin.manquants.some((p) => /durée/.test(p)),
-    `le jardin de la maquette ne manque plus aucune durée (${JSON.stringify(jardin.manquants)})`,
-  );
-  // Sa bande de 1 m : 6,06 l/h par mètre de tube font 6,06 mm/h.
-  const haie = calculerPlan({
-    seau: 10, temps: 20, pression: 3, saison: "juillet",
-    zones: [{ type: "haie", nom: "Haie", ml: 20, sortieGoutte: "boucle" }],
-  } as never) as { secteurs: { minutes: number }[] };
-  // Juillet, arbustes : 20 mm en 2 passages, 10 mm à 6,06 mm/h.
-  const attendu = Math.round((20 / 2 / (2 / 0.33)) * 60);
-  dire(
-    haie.secteurs[0].minutes === attendu,
-    `une haie arrose sa bande de 1 m : ${haie.secteurs[0].minutes} min par passage en juillet (attendu ${attendu})`,
+    !jardin.manquants.some((p) => /durée/.test(p)) &&
+      jardin.secteurs.every((s) => !("minutes" in s) && !("passages" in s)),
+    `le calcul ne rend aucune durée d'arrosage (${JSON.stringify(jardin.manquants)})`,
   );
 }
 
-// ── LE GOUTTE-À-GOUTTE EST SON TUBE TORO, ET SA DURÉE SE CALCULE ────────────
-// UGGCBL23050, 2 l/h tous les 33 cm (16 octobre 2026). Un massif à 80 cm
-// entre lignes reçoit 6,06 l/h par mètre sur 0,80 m : 7,6 mm/h.
+// ── LE GOUTTE-À-GOUTTE EST SON TUBE TORO ─────────────────────────────────────
+// UGGCBL23050, 2 l/h tous les 33 cm (16 octobre 2026).
 {
   const massif = calculerPlan({
     seau: 10, temps: 20, pression: 3,
     zones: [{ type: "massif", nom: "Massif", L: 10, l: 2.4 }],
-  } as never) as { secteurs: { debit: number; minutes: number }[]; materiel: { ref?: string; nom: string; q: number }[]; manquants: string[] };
+  } as never) as { secteurs: { debit: number }[]; materiel: { ref?: string; nom: string; q: number }[]; manquants: string[] };
   const tube = massif.materiel.find((m) => m.ref === "UGGCBL23050");
   dire(Boolean(tube), `la liste porte son tube UGGCBL23050 (${JSON.stringify(massif.materiel.map((m) => m.ref))})`);
   // 4 lignes (2,4 m ÷ 0,80 + 1) de 10 m : 40 m à 6,06 l/h par mètre, donc une
@@ -702,10 +690,6 @@ dire(
     `40 m de tube pour 4 lignes de 10 m : une couronne de 50 m (lu : ${tube?.q}x ${tube?.nom})`,
   );
   dire(Math.abs(massif.secteurs[0].debit - 40 * 2 / 0.33 / 1000) < 1e-9, `le débit vient de ses goutteurs (${massif.secteurs[0].debit})`);
-  dire(
-    massif.secteurs[0].minutes > 0 && !massif.manquants.some((p) => /durée/.test(p)),
-    "un massif a sa durée, calculée sur l'écart de ses lignes",
-  );
 }
 
 // ── LES SORTIES DU GOUTTE-À-GOUTTE, SES RÈGLES DU 16 OCTOBRE 2026 ───────────

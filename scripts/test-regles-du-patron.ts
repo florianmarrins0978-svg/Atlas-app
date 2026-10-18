@@ -486,6 +486,16 @@ regle("18 octobre 2026", "« un autre fournisseur a des couronnes de 100 m » : 
   exige(q(p100, "UGGCBL23050") === 1 && q(p100, "MID6301") === 0, `en 100 m : ${q(p100, "UGGCBL23050")} couronne et ${q(p100, "MID6301")} jonction, il en faut 1 et 0`);
 });
 
+regle("18 octobre 2026", "« on ne donne pas les durées d'arrosage ni les périodes à arroser » : le calcul ne rend ni minutes, ni passages, ni saison", () => {
+  const p = calculerPlan({ seau: 10, temps: 20, pression: 3, compteur: "oui", saison: "juillet",
+    zones: [{ id: 1, type: "gazon", nom: "Pelouse", x: 0, y: 0, L: 12, l: 12 },
+            { id: 2, type: "massif", nom: "Massif", x: 14, y: 0, L: 20, l: 2.4, sortieGoutte: "ligne" }] } as never) as Plan;
+  const secteurs = p.secteurs as unknown as Record<string, unknown>[];
+  const avecDuree = secteurs.filter((s) => "minutes" in s || "passages" in s);
+  exige(avecDuree.length === 0, `${avecDuree.length} réseau(x) portent encore une durée ou un nombre de passages`);
+  exige(!p.manquants.some((m) => /durée|saison|passage/i.test(m)), `le plan parle encore de durée : ${JSON.stringify(p.manquants)}`);
+});
+
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────
 
 console.log(`\n${failed === 0 ? "✅" : "❌"} Les règles du patron — ${passed} tenue(s), ${failed} rompue(s).`);

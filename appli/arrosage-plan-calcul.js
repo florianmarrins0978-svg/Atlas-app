@@ -2940,9 +2940,6 @@ var CALCUL = (() => {
           colisage: b.colisage,
           source: b.source,
           buse: b,
-          // La pluviométrie n'est pas au catalogue : elle se déduit du débit et de
-          // la surface couverte. Déduite, donc signalée comme telle.
-          pluvio: pluviometrie(b),
           famille: "Arroseurs"
         },
         // Les autres buses de cette marque qui PAVENT la zone, du plus grand
@@ -2960,11 +2957,6 @@ var CALCUL = (() => {
       };
     }
     return { m: null };
-  }
-  function pluviometrie(b) {
-    var carre = b.rayon * b.rayon;
-    var tour = b.debit[360] != null ? b.debit[360] : 2 * b.debit[180];
-    return carre > 0 ? Math.round(tour * 1e3 / carre * 10) / 10 : 0;
   }
   function marqueCourante() {
     var connues = CATALOGUE.marques.map(function(x) {
@@ -2985,19 +2977,12 @@ var CALCUL = (() => {
     })[0];
     return choisi || CATALOGUE.corpsParDefaut(marqueCourante());
   }
-  var SAISONS = [
-    { cle: "avril", nom: "Avril", gazon: [10, 2], arbustes: [8, 1], potager: [12, 2] },
-    { cle: "maijuin", nom: "Mai\u2013juin", gazon: [18, 2], arbustes: [15, 2], potager: [22, 3] },
-    { cle: "juillet", nom: "Juillet\u2013ao\xFBt", gazon: [25, 3], arbustes: [20, 2], potager: [30, 3] },
-    { cle: "sept", nom: "Septembre", gazon: [12, 2], arbustes: [10, 2], potager: [15, 2] }
-  ];
   var TYPES = {
     gazon: { nom: "Pelouse", forme: "surface", famille: "gazon", materiels: ["turbine", "tuyere"] },
     massif: { nom: "Massif", forme: "nappe", famille: "arbustes", ecartLignes: 0.8 },
     haie: { nom: "Haie", forme: "lineaire", famille: "arbustes" },
     potager: { nom: "Potager", forme: "nappe", famille: "potager", ecartLignes: 0.7 }
   };
-  var LARGEUR_ARROSEE_PAR_LIGNE = 1;
   var MARGE = 0.85;
   var RECOUVREMENT_MIN = 0.8;
   var RECOUVREMENT_MAX = 1;
@@ -3022,13 +3007,10 @@ var CALCUL = (() => {
     return c && c.bridage > 0 ? c.bridage : 0;
   }
   var QUINCONCE_AU_DELA_DE = 4;
-  var DEPART = 3 * 60;
-  var LEVER = 6 * 60 + 30;
   var DEFAUTS = {
     seau: 10,
     temps: 20,
     pression: 3,
-    saison: "juillet",
     compteur: null,
     corps: null,
     marque: null,
@@ -3251,19 +3233,18 @@ var CALCUL = (() => {
         }
       }
     }
-    var m = choix.m, sais = saisonCourante();
-    if (!m) return { cle: cle3, m: null, nombre: 0, debit: 0, minutes: 0, nx: 0, ny: 0 };
-    var besoin = sais[TYPES[z.type].famille][0], passages = sais[TYPES[z.type].famille][1];
-    var r = { cle: cle3, m, besoin, passages };
+    var m = choix.m;
+    if (!m) return { cle: cle3, m: null, nombre: 0, debit: 0, nx: 0, ny: 0 };
+    var r = { cle: cle3, m };
     if (TYPES[z.type].forme === "surface") {
       var L = Number(z.L) || 0, l = Number(z.l) || 0;
-      if (L <= 0 || l <= 0) return Object.assign(r, { nombre: 0, debit: 0, minutes: 0, nx: 0, ny: 0 });
+      if (L <= 0 || l <= 0) return Object.assign(r, { nombre: 0, debit: 0, nx: 0, ny: 0 });
       var pose = poseSelonSaRegle(L, l, m.portee, bridageDe(m.buse), Boolean(tolerant), faitLeTour(m.buse));
       var ecartMax = m.portee / RECOUVREMENT_MIN;
       var nx = pose ? pose.nx : Math.max(2, Math.ceil(L / ecartMax) + 1);
       var ny = pose ? pose.ny : Math.max(2, Math.ceil(l / ecartMax) + 1);
       if (!faitLeTour(m.buse) && nx > 2 && ny > 2) {
-        return Object.assign(r, { nombre: 0, debit: 0, minutes: 0, nx: 0, ny: 0, tourIncomplet: true });
+        return Object.assign(r, { nombre: 0, debit: 0, nx: 0, ny: 0, tourIncomplet: true });
       }
       var ecartX = L / (nx - 1), ecartY = l / (ny - 1);
       var portee = pose ? pose.reglee : m.portee;
@@ -3366,7 +3347,7 @@ var CALCUL = (() => {
       }
     } else if (TYPES[z.type].forme === "nappe") {
       var L2 = Number(z.L) || 0, l2 = Number(z.l) || 0;
-      if (L2 <= 0 || l2 <= 0) return Object.assign(r, { nombre: 0, debit: 0, minutes: 0 });
+      if (L2 <= 0 || l2 <= 0) return Object.assign(r, { nombre: 0, debit: 0 });
       var e = TYPES[z.type].ecartLignes;
       var lignes = Math.max(1, Math.floor(l2 / e + 1e-9) + 1);
       r.lignes = lignes;
@@ -3379,17 +3360,8 @@ var CALCUL = (() => {
       r.lignes = n2;
       r.nombre = Math.round(ml * n2);
       r.debit = r.nombre * m.debitMetre;
-      r.largeurArrosee = LARGEUR_ARROSEE_PAR_LIGNE;
     }
-    var bande = r.ecartLignes || r.largeurArrosee;
-    var pluvio = m.type === "gaine" ? bande ? m.debitMetre * 1e3 / bande : null : m.pluvio;
-    r.dureeInconnue = passages > 0 && !pluvio;
-    r.minutes = passages > 0 && pluvio ? Math.round(besoin / passages / pluvio * 60) : 0;
     return r;
-  }
-  function saisonCourante() {
-    for (var i = 0; i < SAISONS.length; i++) if (SAISONS[i].cle === etat.saison) return SAISONS[i];
-    return SAISONS[2];
   }
   var PLANCHER_UTILE = 0.5;
   var TOLERANCE_CHOIX = 0.01;
@@ -3539,15 +3511,13 @@ var CALCUL = (() => {
       if (p.debit <= 0) return;
       var clef = p.cle + "|" + TYPES[z.type].famille;
       if (!groupes[clef]) {
-        groupes[clef] = { zones: [], nomDeZone: {}, membres: [], debit: 0, minutes: 0, passages: 0, m: p.m, cle: p.cle };
+        groupes[clef] = { zones: [], nomDeZone: {}, membres: [], debit: 0, m: p.m, cle: p.cle };
         ordre.push(clef);
       }
       groupes[clef].zones.push(z.nom || TYPES[z.type].nom);
       groupes[clef].nomDeZone[z.id] = z.nom || TYPES[z.type].nom;
       groupes[clef].membres.push({ zoneId: z.id, points: p.points });
       groupes[clef].debit += p.debit;
-      groupes[clef].minutes = p.minutes;
-      groupes[clef].passages = p.passages;
       groupes[clef].nombre = (groupes[clef].nombre || 0) + p.nombre;
       if (p.m && p.m.buse && p.ecartEntreTetes > 0) {
         poses.push({
@@ -3593,8 +3563,6 @@ var CALCUL = (() => {
           part: combien > 1 ? rang + " sur " + combien : null,
           famille: g.m.famille,
           debit,
-          minutes: g.minutes,
-          passages: g.passages,
           // **Les têtes du réseau, dans l'ordre où le tuyau les visite.** Sans
           // elles, la perte de charge de la ligne ne se calcule pas : il faut
           // savoir combien de mètres séparent chaque arroseur du suivant, et
@@ -3724,11 +3692,6 @@ var CALCUL = (() => {
     etat.zones.forEach(function(z) {
       if (poser(z).tourIncomplet) {
         phrases.push((z.nom || "Une zone") + " : sa buse ne fait pas le tour entier, elle ne se pose qu\u2019aux coins et aux bords.");
-      }
-    });
-    etat.zones.forEach(function(z) {
-      if (poser(z).dureeInconnue) {
-        phrases.push((z.nom || "Une zone") + " : la dur\xE9e d\u2019arrosage n\u2019est pas calcul\xE9e.");
       }
     });
     var sg = sortiesGoutte(d);
