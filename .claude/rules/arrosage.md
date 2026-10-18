@@ -309,6 +309,16 @@ si on va modifier 1, 2, 3, 4. On ne va pas à chaque fois faire une par une.
 Pareil pour la suppression. »* Une pièce en plusieurs exemplaires offre une
 rangée Changer et une rangée Supprimer, un bouton par nombre.
 
+**ET ÇA VAUT PARTOUT, SANS QU'IL LE REDISE** (même soir, devant « Changer les
+7 » sur la chaîne d'une tête) : *« la modification que je t'ai demandée pour la
+nourrice, c'est valable pour toutes les pièces où il y en a plusieurs. Je vais
+pas te le redire à chaque fois. Si j'ai envie de changer qu'une seule tuyère,
+il faut que je puisse le faire. Et fais-moi ça pour chaque planche, le plan
+d'arrosage comme le plan du robinet. »* La nourrice, la chaîne d'une tête (les
+têtes d'un réseau), les lignes de la liste : toute pièce comptée à plus d'une
+se change ou se supprime au nombre choisi, sur toutes les planches, et dans
+l'écran quand on le codera.
+
 **UN PASSAGE EN POINTILLÉS QUI SE MESURE SUR LE PLAN NE SE DIT PAS « À MESURER »** — sa
 règle du 18 octobre 2026 : *« si quelqu'un te fait un plan à l'échelle et que tu
 sais que la pelouse fait tant de mètres, que le passage entre la pelouse et

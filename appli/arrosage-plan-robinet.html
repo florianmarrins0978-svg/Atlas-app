@@ -944,8 +944,11 @@
   function lignesDe(g, titre, retirees) {
     var edition = etat.modifierListe;
     var ligne = function (ref, e, ote) {
-      var geste = edition ? '<button type="button" class="geste-ligne" data-' + (ote ? "remettre" : "retirer") + '-ligne="' + texte(titre + "|" + ref) + '">' + (ote ? "Remettre" : "Supprimer") + "</button>" : "";
-      return '<div class="ligne' + (ote ? " otee" : "") + '"><span class="q">' + quantite(e) + '</span><span class="n">' + texte(e.nom) + "</span>" + geste + "</div>";
+      var cle = texte(titre + "|" + ref);
+      var remettre = '<button type="button" class="geste-ligne" data-remettre-ligne="' + cle + '">Remettre</button>';
+      var supprimer = '<button type="button" class="geste-ligne" data-retirer-ligne="' + cle + '" data-q="' + (e.u === "ml" ? 1 : e.q) + '" data-nom="' + texte(e.nom) + '">Supprimer</button>';
+      var geste = edition ? (ote ? remettre : (e.enMoins ? remettre : "") + supprimer) : "";
+      return '<div class="ligne' + (ote ? " otee" : "") + '"><span class="q">' + quantite(e) + '</span><span class="n">' + texte(e.nom) + (e.enMoins ? ", " + e.enMoins + " en moins" : "") + "</span>" + geste + "</div>";
     };
     return '<div class="liste">' + Object.keys(g).map(function (ref) { return ligne(ref, g[ref], false); }).join("") +
       (edition ? Object.keys(retirees || {}).map(function (ref) { return ligne(ref, retirees[ref], true); }).join("") +
@@ -956,7 +959,14 @@
   function modifierLaListe(groupes) {
     return groupes.map(function (g) {
       var lignes = {}, retirees = {};
-      Object.keys(g.lignes).forEach(function (ref) { (etat.listeRetirees[g.titre + "|" + ref] ? retirees : lignes)[ref] = g.lignes[ref]; });
+      Object.keys(g.lignes).forEach(function (ref) {
+        // k pièces en moins sur une ligne de q : la ligne reste avec q − k, et le
+        // dit ; toutes en moins, elle passe aux retirées (sa règle du 18 octobre 2026).
+        var e = g.lignes[ref], k = etat.listeRetirees[g.titre + "|" + ref] || 0;
+        if (k === true || k >= e.q || e.u === "ml") { if (k) retirees[ref] = e; else lignes[ref] = e; }
+        else if (k > 0) lignes[ref] = { nom: e.nom, q: e.q - k, u: e.u, enMoins: k };
+        else lignes[ref] = e;
+      });
       etat.ajoutees.filter(function (a) { return a.ou === "liste:" + g.titre; }).forEach(function (a) {
         var e = lignes[a.ref] = lignes[a.ref] || { nom: a.nom, q: 0, u: "u" }; e.q += a.q || 1;
       });
@@ -1111,12 +1121,16 @@
       var parts = b.dataset.chaine.split("|"), liste = (chaines[parts[0]] || {})[parts[1]] || [];
       if (!liste.length) return;
       etat.cible = liste[0]; etat.chaineCles = liste;
-      var p0 = proposees[liste[0]] || {}, change0 = etat.remplacees[liste[0]];
+      var p0 = proposees[liste[0]] || {}, changees = liste.filter(function (x) { return etat.remplacees[x]; }), change0 = changees.length ? etat.remplacees[changees[0]] : null;
       $("menu-titre").textContent = change0 ? change0.nom : p0.nom;
       $("menu-propose").hidden = !change0; $("menu-propose").textContent = change0 ? "Proposée : " + p0.nom : "";
-      var toutes = liste.every(function (x) { return etat.retirees[x]; });
-      $("menu-gestes").innerHTML = '<button type="button" data-geste="changer-chaine">Changer les ' + liste.length + "</button>" +
-        (toutes ? '<button type="button" data-geste="remettre-chaine">Remettre les ' + liste.length + "</button>" : '<button type="button" class="danger" data-geste="supprimer-chaine">Supprimer les ' + liste.length + "</button>") +
+      // COMBIEN de têtes : sa règle du 18 octobre 2026, « valable pour toutes les
+      // pièces où il y en a plusieurs. Si j'ai envie de changer qu'une seule
+      // tuyère, il faut que je puisse le faire. » Un bouton par nombre.
+      var otees = liste.filter(function (x) { return etat.retirees[x]; }).length, vivantes = liste.length - otees;
+      $("menu-gestes").innerHTML = (vivantes ? '<div class="rang"><span>Changer</span>' + boutonsNombre("changer-chaine-n", "", vivantes) + "</div>" +
+          '<div class="rang"><span>Supprimer</span>' + boutonsNombre("supprimer-chaine-n", "danger", vivantes) + "</div>" : "") +
+        (otees ? '<button type="button" data-geste="remettre-chaine">Remettre les ' + otees + "</button>" : "") +
         (change0 ? '<button type="button" data-geste="revenir-chaine">Revenir à la pièce proposée</button>' : "");
       $("menu").hidden = false; return;
     }
@@ -1129,24 +1143,37 @@
       // chaque fois faire une par une »). Une rangée par geste, un bouton par nombre.
       var restant = n0 - (etat.nrUne[r0] || 0);
       if (n0 > 1 && !etat.retirees["nr:" + r0] && !etat.remplacees["nr:" + r0]) {
-        var nombres = function (geste, classe) { var s = ""; for (var k = 1; k <= restant; k++) s += '<button type="button"' + (classe ? ' class="' + classe + '"' : "") + ' data-geste="' + geste + '" data-n="' + k + '">' + k + "</button>"; return s; };
-        $("menu-gestes").innerHTML = (restant > 0 ? '<div class="rang"><span>Changer</span>' + nombres("changer-n", "") + "</div>" +
-          '<div class="rang"><span>Supprimer</span>' + nombres("supprimer-n", "danger") + "</div>" : "") +
+        $("menu-gestes").innerHTML = (restant > 0 ? '<div class="rang"><span>Changer</span>' + boutonsNombre("changer-n", "", restant) + "</div>" +
+          '<div class="rang"><span>Supprimer</span>' + boutonsNombre("supprimer-n", "danger", restant) + "</div>" : "") +
           (etat.nrUne[r0] ? '<button type="button" data-geste="remettre-une">Remettre les ' + n0 + "</button>" : "");
       }
       return;
     }
     if (b.id === "modifier-liste") { etat.modifierListe = !etat.modifierListe; dessiner(); return; }
-    if (b.dataset.retirerLigne) { etat.listeRetirees[b.dataset.retirerLigne] = true; dessiner(); return; }
+    if (b.dataset.retirerLigne) {
+      // Une ligne de plusieurs : il choisit combien en sortent (sa règle du 18 octobre 2026).
+      var qL = Number(b.dataset.q || 1), cleL = b.dataset.retirerLigne;
+      if (qL <= 1) { etat.listeRetirees[cleL] = (etat.listeRetirees[cleL] || 0) + 1; dessiner(); return; }
+      etat.ligneCible = cleL; etat.cible = null; etat.chaineCles = null;
+      $("menu-titre").textContent = b.dataset.nom || ""; $("menu-propose").hidden = true;
+      $("menu-gestes").innerHTML = '<div class="rang"><span>Supprimer</span>' + boutonsNombre("supprimer-ligne-n", "danger", qL) + "</div>";
+      $("menu").hidden = false; return;
+    }
     if (b.dataset.remettreLigne) { delete etat.listeRetirees[b.dataset.remettreLigne]; dessiner(); return; }
     if (b.dataset.geste) {
       var cle = etat.cible;
       var refNr = cle && cle.indexOf("nr:") === 0 ? cle.slice(3) : null;
       var lc = etat.chaineCles || [];
-      if (b.dataset.geste === "supprimer-chaine") { lc.forEach(function (x) { etat.retirees[x] = true; }); $("menu").hidden = true; dessiner(); return; }
+      if (b.dataset.geste === "supprimer-ligne-n") { etat.listeRetirees[etat.ligneCible] = (etat.listeRetirees[etat.ligneCible] || 0) + Number(b.dataset.n); $("menu").hidden = true; dessiner(); return; }
+      // Les têtes touchées sont les premières encore entières ; les autres restent.
+      if (b.dataset.geste === "supprimer-chaine-n") { lc.filter(function (x) { return !etat.retirees[x]; }).slice(0, Number(b.dataset.n)).forEach(function (x) { etat.retirees[x] = true; }); $("menu").hidden = true; dessiner(); return; }
       if (b.dataset.geste === "remettre-chaine") { lc.forEach(function (x) { delete etat.retirees[x]; }); $("menu").hidden = true; dessiner(); return; }
       if (b.dataset.geste === "revenir-chaine") { lc.forEach(function (x) { delete etat.remplacees[x]; }); $("menu").hidden = true; dessiner(); return; }
-      if (b.dataset.geste === "changer-chaine") { $("menu").hidden = true; etat.ou = null; etat.recherche = ""; $("recherche").value = ""; etat.categorie = categorieDe(lc[0]); etat.chaineEnAttente = lc; ouvrir(); return; }
+      if (b.dataset.geste === "changer-chaine-n") {
+        var vivantesC = lc.filter(function (x) { return !etat.retirees[x]; });
+        var ciblesC = vivantesC.filter(function (x) { return !etat.remplacees[x]; }).concat(vivantesC.filter(function (x) { return etat.remplacees[x]; })).slice(0, Number(b.dataset.n));
+        $("menu").hidden = true; etat.ou = null; etat.recherche = ""; $("recherche").value = ""; etat.categorie = categorieDe(lc[0]); etat.chaineEnAttente = ciblesC; ouvrir(); return;
+      }
       if (refNr && b.dataset.geste === "changer-n") { etat.nrEnAttente = { ref: refNr, n: Number(b.dataset.n) }; $("menu").hidden = true; etat.ou = "liste:" + titreNourrice; etat.cible = null; etat.recherche = ""; $("recherche").value = ""; etat.categorie = "nourrice"; ouvrir(); dessiner(); return; }
       if (refNr && b.dataset.geste === "supprimer-n") { etat.nrUne[refNr] = (etat.nrUne[refNr] || 0) + Number(b.dataset.n); $("menu").hidden = true; dessiner(); return; }
       // Remettre rend aussi les remplaçantes entrées à leur place dans la liste.
@@ -1194,6 +1221,13 @@
   $("partager").onclick = function () { navigator.share({ text: $("message").value }); };
   $("recherche").oninput = function () { etat.recherche = this.value; ouvrir(); };
   function categorieDe(cle) { var p = proposees[cle], x = p && trouver(p.ref); return x ? x.categorie : "reseau"; }
+  // Un bouton par nombre, de 1 à n : le même pour la nourrice, la chaîne d'une
+  // tête et les lignes de la liste (sa règle du 18 octobre 2026).
+  function boutonsNombre(geste, classe, n) {
+    var s = "";
+    for (var k = 1; k <= n; k++) s += '<button type="button"' + (classe ? ' class="' + classe + '"' : "") + ' data-geste="' + geste + '" data-n="' + k + '">' + k + "</button>";
+    return s;
+  }
   function menu(cle) {
     etat.cible = cle;
     var p = proposees[cle] || {}, change = etat.remplacees[cle], retiree = etat.retirees[cle];
