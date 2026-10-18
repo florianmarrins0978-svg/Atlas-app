@@ -114,7 +114,7 @@ tuyères 1800 et la 3504, jamais sur la ligne ; le BL-IP est un Solem ; les
    tuyères »*. Elles vont avec les tuyères, jamais avec une turbine. Leur entrée
    au catalogue se fait avec les buses relevées (point 2).
 2. **Les 141 buses relevées** (`docs/arrosage-releve-aquaplus/buses-a-trancher.json`) :
-   les lettres d'angle Q, T, H, TT, TQ, F (**confirmées le 18 octobre** : Q 90°, T 120°, H 180°, TT 240°, TQ 270°, F 360°) ; les chiffres douteux, il va les vérifier lui-même (liste donnée le 18 octobre, plus 10SS et 35SS aux mêmes débits) ; six chiffres douteux (MPR+ 12T 0,60 ;
+   les lettres d'angle Q, T, H, TT, TQ, F (**confirmées le 18 octobre** : Q 90°, T 120°, H 180°, TT 240°, TQ 270°, F 360°) ; les chiffres douteux, il va les vérifier lui-même (liste donnée le 18 octobre, plus 10SS et 35SS aux mêmes débits) ; **MPR+ 12T** : il a envoyé la fiche Toro MPR Plus (p. 22 et 23) le 18 octobre. 12-T = 120°, 0,72 GPM à 30 psi (2,1 bar), soit 0,16 m³/h, 0,64 GPM (0,15 m³/h) en version PC ; portée 12 pieds (3,7 m). Le 0,60 d'Aqua Plus est une coquille. Proposé : 0,16 (le plus fort, côté sûr), en attente de son oui ; six chiffres douteux (MPR+ 12T 0,60 ;
    PRECISION 15Q 0,089 et 8F 0,124 ; PSU 17A à 90° 0,41 ; Maxi-Paw 06 à 11,4 m ;
    Mini 8 buse 2,5 à 0,56).
 3. ~~**Combien de turbines au plus par réseau**~~ : *« oui, reste comme ça »*
