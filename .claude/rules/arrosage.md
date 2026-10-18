@@ -295,6 +295,16 @@ souple**. Et un losange par té égal sur le plan, côte à côte.
 **DÈS QU'IL Y A DES ARROSEURS, LE DÉPART EST EN Ø25 OU EN Ø32** (même jour) : le
 Ø16, rigide ou souple, ne sert qu'au goutte-à-goutte.
 
+**UN PASSAGE EN POINTILLÉS QUI SE MESURE SUR LE PLAN NE SE DIT PAS « À MESURER »** — sa
+règle du 18 octobre 2026 : *« si quelqu'un te fait un plan à l'échelle et que tu
+sais que la pelouse fait tant de mètres, que le passage entre la pelouse et
+l'autre carré fait tant de mètres, tu peux calculer cette mesure ; dans ce
+cas-là, il ne faudra pas afficher ce texte-là »*. Quand la distance est connue
+(cotée entre les zones, ou tracée dans l'outil de dessin du plan), elle se compte
+dans le tuyau et la tranchée, et la phrase disparaît. Sinon : « Sa longueur doit
+être mesurée. » **Pas encore codé** : aujourd'hui `dessinerPlan` ne sait pas si les
+places des zones sont cotées ou estimées sur le croquis.
+
 **AUCUNE PÉRIODE NON PLUS — 18 octobre 2026 :** *« on ne donne pas les durées
 d'arrosage ni les périodes à arroser »*. Les besoins par saison, les heures de
 départ et la pluviométrie, qui ne servaient qu'aux durées, sont retirés du
