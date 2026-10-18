@@ -240,7 +240,7 @@
     "forme": "cercle",
     "pression": 2,
     "debit": {
-      "120": null
+      "120": 0.16
     },
     "colisage": 25,
     "plage": {
@@ -260,7 +260,7 @@
       "Rayon à 2 bars 3,6 m 3,6 m 3,6 m 3,6 m 3,6 m 3,6 m",
       "Débit à 2 bars 0,11 m³/h 0,60 m³/h 0,23 m³/h 0,32 m³/h 0,34 m³/h 0,48 m³/h"
     ],
-    "doute": "DÉBIT ÉCARTÉ : le catalogue imprime 0,60 m³/h, supérieur au plein cercle 12F (0,48) alors que la série est à débit proportionnel à l'angle ; vraisemblablement une coquille (≈0,16 attendu), à confirmer auprès d'Aqua Plus | référence imprimée dans le tableau ; la désignation de commande est « TBTO89xxxx » : la concaténation exacte (ex. TBTO891416) n'est pas écrite | angle déduit du suffixe de la buse (Q=90°, T=120°, H=180°, TT=240°, TQ=270°, F=360°) : convention Rain Bird/Toro, NON écrite sur la page ; le tableau ne donne qu'un « Débit à 2 bars » par buse | marque non écrite sur la page (déduite de la série 570Z et du préfixe TBT : Toro)",
+    "doute": "DÉBIT CORRIGÉ le 18 octobre 2026 avec son accord : 0,16 m³/h, d'après la fiche Toro MPR Plus qu'il a envoyée (p. 23 : 12-T, 0,72 GPM à 30 psi, soit 0,16 m³/h ; 0,15 en version PC, on garde le plus fort). Le catalogue Aqua Plus imprime 0,60, une coquille | référence imprimée dans le tableau ; la désignation de commande est « TBTO89xxxx » : la concaténation exacte (ex. TBTO891416) n'est pas écrite | angle déduit du suffixe de la buse (Q=90°, T=120°, H=180°, TT=240°, TQ=270°, F=360°) : convention Rain Bird/Toro, NON écrite sur la page ; le tableau ne donne qu'un « Débit à 2 bars » par buse | marque non écrite sur la page (déduite de la série 570Z et du préfixe TBT : Toro)",
     "codeAngle": "T"
   },
   {
