@@ -1,0 +1,967 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le plan au robinet</title>
+<!--
+  VARIANTE « AU ROBINET » de arrosage-plan.html, sa demande du 18 octobre 2026 :
+  « tu gardes celle-ci et tu me refais une planche à côté en simulant le fait
+  qu'on se repique sur un robinet ». Deux montages, les siens :
+  1. un programmateur en nez de robinet, et alors PAS de nourrice ;
+  2. pas de programmateur au robinet, la nourrice reste, et le départ est le
+     nez de robinet.
+  Sous le robinet, une double sortie PROPOSÉE au client, jamais imposée. Le
+  départ en Ø16 rigide, Ø25 ou Ø32 : l'outil choisit, l'utilisateur peut changer
+  (Ø16 seulement quand tout est en goutte-à-goutte).
+  LES PIÈCES DU ROBINET SONT DES PROPOSITIONS (catalogue Aqua Plus 2026, à
+  valider sur arrosage-pieces-robinet.html) : elles ne sont pas au calcul, la
+  planche les pose à part et les marque « proposé ».
+
+  CE QUI SUIT EST LE COMMENTAIRE DE LA PLANCHE D'ORIGINE.
+  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Sa demande du 18 octobre 2026,
+  sur l'écran que l'outil rend une fois les mesures remplies et le croquis
+  donné : « tu nous mets en premier la nourrice avec le nombre de voies, avec
+  la vue éclatée. Ensuite, en dessous, les réseaux, réseau 1, 2, 3, avec un
+  schéma, avec les arroseurs que tu utilises. Et puis en dessous, il faut
+  refaire le schéma de la vue éclatée, avec les pièces. Les plans sur lesquels
+  on a travaillé, maintenant, il faut les intégrer dans l'outil. »
+  Et, le même jour : « que tu nous expliques ce que ça veut dire quand il y a
+  marqué tuyère, SAM, PRS, tous les petits trucs à côté ».
+
+  CE QUI EST REPRIS, SANS RIEN RÉINVENTER :
+  1. la nourrice éclatée qu'il a VALIDÉE le 18 octobre
+     (arrosage-nourrice-eclatee.html), même dessin, mêmes formes relevées ;
+  2. le plan de l'application (src/lib/arrosage/plan-dessine.ts, dessiné comme
+     PlanDessine.tsx), un schéma par réseau, les autres réseaux en pâle ;
+  3. la vue éclatée (arrosage-vue-eclatee.html) et ses gestes : changer,
+     supprimer, ajouter une pièce.
+
+  TOUS LES CHIFFRES SORTENT DU CALCUL : calculerPlan, dessinerPlan,
+  piecesDuPlan et le catalogue de src/lib/arrosage/, empaquetés tels quels le
+  18 octobre 2026 dans arrosage-plan-calcul.js (esbuild, aucune ligne
+  réécrite). Le té ou le coude de chaque tête se LIT sur le dessin du plan
+  (plein : té taraudé, creux : coude taraudé, losange : té égal), comme la
+  liste de l'application (pieces.ts) : une seule règle.
+
+  LE JARDIN D'EXEMPLE est le sien du 23 août (12 × 12 et 8 × 8), un massif de
+  20 × 2,40 en goutte-à-goutte et un couloir de 10 × 2. LA NOURRICE EST POSÉE
+  PAR NOUS entre les deux pelouses, parce qu'une maquette n'a pas de croquis :
+  dans l'outil, c'est lui qui la place (sa règle du 21 août), jamais le calcul.
+
+  LES MOTS DU PLAN : chaque définition est celle du catalogue Aqua Plus 2026
+  (la page est écrite à côté) ou une de ses règles ; seuls les mots présents
+  sur le plan s'affichent.
+-->
+<style>
+[data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#8a8578;--atlas-rust:#2f3b2f;--atlas-rustDeep:#4f5f4c;--atlas-rustTint:#ece9e1;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#8b6835;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(28,28,26,0.12);--atlas-lineSoft:rgba(28,28,26,0.07);--atlas-chevron:rgba(28,28,26,0.28);--atlas-alerte:#9C3B2E;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#7d9a6d}
+[data-charte="brume"]{--atlas-cream:#f4f7fb;--atlas-card:#ffffff;--atlas-ink:#111823;--atlas-inkSoft:#3a434e;--atlas-muted:#78838f;--atlas-rust:#22456d;--atlas-rustDeep:#5d7795;--atlas-rustTint:#e4e7ec;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#8f6b36;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(17,24,35,0.12);--atlas-lineSoft:rgba(17,24,35,0.07);--atlas-chevron:rgba(17,24,35,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#22456d;--atlas-police-titres:ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;--atlas-onglet-haut:10px;--atlas-onglet-hauteur:100%;--atlas-onglet-rayon:11px;--atlas-onglet-fond:color-mix(in srgb, #B98B47 11%, transparent)}
+[data-charte="pierre"]{--atlas-cream:#e8e8e3;--atlas-card:#f4f4f0;--atlas-ink:#1b1d19;--atlas-inkSoft:#454741;--atlas-muted:#83867c;--atlas-rust:#1b1d19;--atlas-rustDeep:#545652;--atlas-rustTint:#dadad5;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#826231;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(27,29,25,0.12);--atlas-lineSoft:rgba(27,29,25,0.07);--atlas-chevron:rgba(27,29,25,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#1b1d19}
+[data-charte="beurre"]{--atlas-cream:#efe7cf;--atlas-card:#f8f3e4;--atlas-ink:#26221a;--atlas-inkSoft:#4e4939;--atlas-muted:#8b8368;--atlas-rust:#26221a;--atlas-rustDeep:#5e594d;--atlas-rustTint:#e1d9c2;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#826231;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(38,34,26,0.12);--atlas-lineSoft:rgba(38,34,26,0.07);--atlas-chevron:rgba(38,34,26,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#26221a}
+[data-charte="moka"]{--atlas-cream:#e6ded5;--atlas-card:#f2ece5;--atlas-ink:#2b241e;--atlas-inkSoft:#524941;--atlas-muted:#8d8175;--atlas-rust:#2b241e;--atlas-rustDeep:#5f5851;--atlas-rustTint:#d9d1c8;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#7c5d2f;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(43,36,30,0.12);--atlas-lineSoft:rgba(43,36,30,0.07);--atlas-chevron:rgba(43,36,30,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#2b241e}
+[data-charte="prune"]{--atlas-cream:#efe6ea;--atlas-card:#f9f2f5;--atlas-ink:#23131c;--atlas-inkSoft:#4d3a44;--atlas-muted:#8c7481;--atlas-rust:#3d1730;--atlas-rustDeep:#6f5164;--atlas-rustTint:#e1d7dc;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#846332;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(35,19,28,0.12);--atlas-lineSoft:rgba(35,19,28,0.07);--atlas-chevron:rgba(35,19,28,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#3d1730}
+[data-charte="sylve"]{--atlas-cream:#16241c;--atlas-card:#1e3026;--atlas-ink:#e6e6da;--atlas-inkSoft:#c2caba;--atlas-muted:#8ba189;--atlas-rust:#e6e6da;--atlas-rustDeep:#acb0a5;--atlas-rustTint:#253229;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#b98b47;--atlas-orSurEncre:#806031;--atlas-line:rgba(230,230,218,0.12);--atlas-lineSoft:rgba(230,230,218,0.07);--atlas-chevron:rgba(230,230,218,0.28);--atlas-alerte:#d47a6e;--atlas-bordeaux:#c44b63;--atlas-vertPale:#728a69;--atlas-plein:#e6e6da}
+[data-charte="nuit"]{--atlas-cream:#101210;--atlas-card:#1a1d19;--atlas-ink:#e9e8de;--atlas-inkSoft:#c1c2b6;--atlas-muted:#84887b;--atlas-rust:#e9e8de;--atlas-rustDeep:#acaca4;--atlas-rustTint:#1f211e;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#b98b47;--atlas-orSurEncre:#826231;--atlas-line:rgba(233,232,222,0.12);--atlas-lineSoft:rgba(233,232,222,0.07);--atlas-chevron:rgba(233,232,222,0.28);--atlas-alerte:#cd6456;--atlas-bordeaux:#b53b54;--atlas-vertPale:#738b6a;--atlas-plein:#e9e8de}
+  *{box-sizing:border-box}
+  html{background:var(--atlas-rustTint)}
+  body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint)}
+  .entete{max-width:430px;margin:0 auto;padding:18px 16px 6px}
+  .entete h1{margin:0;font:400 24px/1.15 Georgia,"Times New Roman",serif}
+  .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .entete select{margin-top:10px;font-size:16px;padding:8px 10px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink)}
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--atlas-cream);padding:6px 0 80px;min-height:100vh}
+  .caps{display:block;margin:0;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-or)}
+  .bloc{margin:26px 16px 0}
+  .bloc h2{margin:6px 0 0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+  .sous{margin:4px 0 0;font-size:13.5px;color:var(--atlas-muted)}
+  .saisie{margin:14px 16px 0;border-radius:12px;background:var(--atlas-card);padding:10px 14px;font-size:13.5px;color:var(--atlas-inkSoft)}
+
+  /* 1. LA NOURRICE : le dessin qu'il a validé, à l'identique. */
+  .regard{position:relative;margin-top:12px;border-radius:16px;background:#ffffff;padding:8px 0;box-shadow:inset 0 0 0 1px var(--atlas-line);overflow:hidden}
+  .regard canvas{display:block;width:358px;max-width:100%;margin:0 auto}
+  .legende{margin:12px 0 0;padding:0;list-style:none;columns:2;column-gap:14px;font-size:12.5px;color:var(--atlas-inkSoft)}
+  .legende li{display:flex;gap:6px;break-inside:avoid;padding:2px 0}
+  .legende b{flex:none;width:17px;height:17px;border-radius:50%;background:var(--atlas-ink);color:var(--atlas-card);font-size:10px;line-height:17px;text-align:center}
+  .bac{margin-top:14px}
+  .bac h3{margin:0;font-size:14px;font-weight:600}
+  .rangee{display:flex;flex-wrap:wrap;gap:12px 8px;margin-top:8px;border-radius:14px;background:var(--atlas-card);padding:14px 10px}
+  .p{display:flex;flex-direction:column;align-items:center;width:72px;min-width:0;text-align:center}
+  .p .ph{display:flex;align-items:center;justify-content:center;width:100%;max-width:64px;aspect-ratio:1}
+  .p .ph img{max-width:100%;max-height:100%;object-fit:contain}
+  .p .n{margin-top:4px;font-size:10.5px;line-height:1.25;color:var(--atlas-inkSoft)}
+
+  /* 2. LES RÉSEAUX : un schéma chacun, le sien en couleur, les autres en pâle. */
+  .reseau{margin-top:18px}
+  .reseau-titre{display:flex;align-items:center;gap:10px}
+  .reseau-titre .pastille{flex:none;width:12px;height:12px;border-radius:3px;background:var(--couleur)}
+  .reseau-titre b{font:400 18px/1.2 Georgia,"Times New Roman",serif}
+  .reseau-titre span{font-size:12.5px;color:var(--atlas-muted)}
+  .schema{margin-top:8px;border-radius:12px;background:var(--atlas-card);padding:10px}
+  .schema svg{display:block;width:100%;height:auto}
+  .materiel{margin:8px 0 0;padding:0;list-style:none;font-size:14px}
+  .materiel li{display:flex;gap:10px;padding:3px 0}
+  .materiel .q{flex:none;width:58px;font-weight:600;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
+  .symboles{margin-top:12px;border-radius:12px;background:var(--atlas-card);padding:8px 14px}
+  .symboles p{display:flex;align-items:center;gap:10px;margin:0;padding:4px 0;font-size:13.5px}
+  .coche{margin-top:12px;display:flex;align-items:center;gap:12px;border-radius:12px;padding:14px 16px;background:var(--atlas-card);font-size:15px;cursor:pointer}
+  .coche input{width:22px;height:22px;accent-color:var(--atlas-ink)}
+  .symboles svg{flex:none;width:15px;height:15px}
+
+  /* 3. LES PIÈCES : la vue éclatée, un rail par réseau, une rangée par tête. */
+  .plateau{position:relative;margin-top:12px;border-radius:16px;background:var(--atlas-card);padding:18px 12px 14px;overflow:hidden}
+  .eclate{position:relative;display:flex;flex-wrap:wrap;gap:16px 12px;justify-content:center}
+  .piece{position:relative;width:88px;border:0;background:none;padding:0;color:inherit;font:inherit;text-align:center;cursor:pointer}
+  .piece .photo{position:relative;display:flex;align-items:center;justify-content:center;width:88px;height:88px;border-radius:12px;background:var(--atlas-card);box-shadow:0 1px 2px var(--atlas-line),0 6px 16px var(--atlas-lineSoft)}
+  .piece .photo img{max-width:78px;max-height:78px;object-fit:contain;mix-blend-mode:multiply}
+  .piece .photo.vide{box-shadow:none;border:1.5px dashed var(--atlas-line);font-size:10.5px;line-height:1.25;color:var(--atlas-muted);padding:6px}
+  .piece .photo img.pied{position:absolute;right:-6px;bottom:-6px;width:50%;max-width:50%;height:auto;max-height:50%;border-radius:8px;background:var(--atlas-card);box-shadow:0 1px 3px var(--atlas-line)}
+  .piece .nom{display:block;margin-top:6px;font-size:11.5px;line-height:1.3;color:var(--atlas-inkSoft)}
+  .piece .mention{display:block;font-size:10px;color:var(--atlas-orTexte)}
+  .piece:focus-visible{outline:2px solid var(--atlas-or);outline-offset:4px;border-radius:12px}
+  /* Supprimée par lui : elle RESTE, grisée et barrée (sa demande du 17 octobre 2026). */
+  .piece.retiree .photo{filter:grayscale(1);opacity:.45}
+  .piece.retiree .photo::after{content:"";position:absolute;left:8%;right:8%;top:50%;height:2.5px;border-radius:2px;background:var(--atlas-alerte);transform:rotate(-35deg)}
+  .piece.retiree .nom{color:var(--atlas-muted);text-decoration:line-through;text-decoration-color:var(--atlas-alerte);text-decoration-thickness:2px}
+  .piece.ajoutee .photo,.piece.changee .photo{box-shadow:0 0 0 2px var(--atlas-or),0 6px 16px var(--atlas-lineSoft)}
+  .rail{position:relative;margin-top:10px;border-radius:16px;background:var(--atlas-card);padding:16px 10px 16px 28px}
+  .rail::before{content:"";position:absolute;left:14px;top:18px;bottom:18px;width:5px;border-radius:3px;background:var(--couleur)}
+  .tete{position:relative;display:flex;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-top:14px}
+  .tete:first-child{margin-top:0}
+  .tete::before{content:"";position:absolute;left:-12px;top:26px;width:12px;height:2px;background:var(--couleur)}
+  .tete .piece,.tete .piece .photo{width:54px}
+  .tete .piece .photo{height:54px}
+  .tete .piece .photo img{max-width:48px;max-height:48px}
+  .tete .piece:nth-child(2){margin-left:10px}
+  .tete .piece .nom{font-size:10.5px}
+  /* LES PIÈCES SUR LE PLAN, validées le 18 octobre 2026 : chaque tête porte son
+     té ou son coude et son arroseur, à sa place sur le jardin. */
+  .plan-pieces{margin-top:10px;border-radius:16px;background:var(--atlas-card);padding:12px}
+  .surface{position:relative}
+  .surface svg{display:block;width:100%;height:auto}
+  .pp{position:absolute;transform:translate(-50%,-50%);display:flex;gap:2px}
+  .pp .piece,.pp .piece .photo{width:32px}
+  .pp .piece .photo{height:32px;border-radius:7px}
+  .pp .piece .photo img{max-width:28px;max-height:28px}
+  .pp .piece .photo img.pied{max-width:60%;width:60%;max-height:60%;right:-5px;bottom:-5px;border-radius:5px}
+  .pp .piece .nom,.pp .piece .mention{display:none}
+  .pp .egal .photo{box-shadow:0 0 0 2px var(--atlas-or),0 2px 5px var(--atlas-lineSoft)}
+  .pp .piece.retiree .photo::after{left:4%;right:4%}
+  .ligne-pe{margin-top:10px;display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .ligne-pe .piece,.ligne-pe .piece .photo{width:44px}
+  .ligne-pe .piece .photo{height:44px}
+  .ligne-pe .piece .photo img{max-width:40px;max-height:40px}
+  .ligne-pe .piece .nom{display:none}
+  /* La chaîne d'une tête : « + » là où ça se visse, double flèche là où le PEBD
+     s'emboîte (« la B », sa réponse du 18 octobre 2026). */
+  .chaine{margin-top:10px;display:flex;gap:3px;align-items:flex-start}
+  .chaine .m{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;text-align:center}
+  .chaine .v{position:relative;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:9px;background:var(--atlas-card);box-shadow:0 0 0 1px var(--atlas-line),0 2px 5px var(--atlas-lineSoft)}
+  .chaine .v img{max-width:40px;max-height:40px;mix-blend-mode:multiply}
+  .chaine .v img.pied{position:absolute;right:-5px;bottom:-5px;width:55%;max-width:55%;height:auto;border-radius:5px;background:var(--atlas-card);mix-blend-mode:normal}
+  .chaine small{margin-top:4px;font-size:10.5px;line-height:1.25;color:var(--atlas-inkSoft)}
+  .chaine .plus{flex:none;margin-top:12px;font-size:17px;font-weight:700;color:var(--atlas-inkSoft)}
+  .chaine .dbl{flex:none;margin-top:17px}
+  .ajouter{margin-top:10px;display:flex;width:100%;min-height:48px;align-items:center;justify-content:center;border-radius:12px;border:1.5px dashed var(--atlas-line);background:none;color:var(--atlas-ink);font-size:14.5px;cursor:pointer}
+  .groupe{margin:16px 0 0;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
+  .groupe .pastille{flex:none;width:10px;height:10px;border-radius:3px;background:var(--couleur)}
+  .envoyer{margin-top:16px;width:100%;min-height:52px;border:0;border-radius:12px;background:var(--atlas-ink);color:var(--atlas-card);font-size:16px;cursor:pointer}
+  .message{display:block;width:100%;min-height:300px;margin-top:12px;border:0;border-radius:12px;padding:12px;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line);resize:vertical}
+  .gestes-message{display:flex;gap:8px;margin-top:12px}
+  .gestes-message button{flex:1;min-height:52px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:15.5px;cursor:pointer}
+  .gestes-message button:last-child{background:var(--atlas-ink);border-color:var(--atlas-ink);color:var(--atlas-card)}
+  .liste{margin-top:8px;border-radius:12px;padding:2px 14px;background:var(--atlas-card)}
+  .ligne{display:flex;align-items:baseline;gap:12px;padding:9px 0;border-top:1px solid var(--atlas-line);font-size:14px}
+  .ligne:first-child{border-top:0}
+  .ligne .q{flex:none;width:58px;font-weight:600;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
+  .ligne .n{flex:1;min-width:0}
+  .ligne .ecart{flex:none;font-size:12px;color:var(--atlas-alerte)}
+  .verdict{margin:10px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .verdict.rouge{color:var(--atlas-alerte);font-weight:600}
+  .reserves{margin:10px 0 0;padding:0;list-style:none}
+  .reserves li{display:flex;gap:10px;padding:4px 0;font-size:13.5px;line-height:1.45}
+  .reserves li::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--atlas-alerte);margin-top:7px}
+
+  /* 4. LES MOTS DU PLAN : un mot, une phrase. */
+  .mots{margin:10px 0 0;border-radius:12px;background:var(--atlas-card);padding:4px 14px}
+  .mots div{padding:9px 0;border-top:1px solid var(--atlas-line)}
+  .mots div:first-child{border-top:0}
+  .mots dt{font-weight:600;font-size:14.5px}
+  .mots dd{margin:2px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+
+  .feuille{position:fixed;inset:0;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.35)}
+  .feuille[hidden]{display:none}
+  .feuille .boite{width:100%;max-width:430px;max-height:86vh;overflow:auto;background:var(--atlas-cream);border-radius:18px 18px 0 0;padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+  .feuille .haut{display:flex;align-items:center}
+  .feuille h2{flex:1;margin:0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+  .feuille .fermer{border:0;background:none;font-size:14px;text-decoration:underline;color:var(--atlas-inkSoft);cursor:pointer}
+  .menu .gestes{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+  .menu .gestes button{min-height:52px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:15.5px;cursor:pointer}
+  .menu .gestes button.danger{color:var(--atlas-alerte)}
+  .menu .propose{margin:6px 0 0;font-size:13px;color:var(--atlas-muted)}
+  .recherche{display:block;width:100%;margin-top:12px;border:0;border-radius:10px;padding:12px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .chips button{border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);border-radius:999px;padding:8px 12px;font-size:13.5px;cursor:pointer}
+  .chips button[aria-pressed="true"]{background:var(--atlas-ink);color:var(--atlas-card);border-color:var(--atlas-ink)}
+  .choix{display:flex;align-items:center;gap:12px;width:100%;margin-top:8px;border:0;border-radius:12px;padding:10px 12px;background:var(--atlas-card);color:var(--atlas-ink);text-align:left;font-size:14px;cursor:pointer}
+  .choix .vignette{flex:none;display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:8px;border:1.5px dashed var(--atlas-line)}
+  .choix .vignette img{max-width:44px;max-height:44px}
+  .choix .vignette.pleine{border:0}
+  .choix small{display:block;color:var(--atlas-muted);font-size:12px}
+</style>
+<body data-charte="origine">
+<div class="entete">
+  <h1>Le plan au robinet</h1>
+  <p>Planche, rien n’est codé. Le même plan, piqué sur un robinet au lieu du compteur.</p>
+  <select id="charte" aria-label="Charte"></select>
+</div>
+<main class="ecran">
+  <p class="saisie" id="saisie"></p>
+
+  <section class="bloc">
+    <span class="caps">Le piquage, sur un robinet</span>
+    <div class="chips" role="group" aria-label="Le montage">
+      <button type="button" data-montage="nez" aria-pressed="true">Programmateur en nez de robinet</button>
+      <button type="button" data-montage="nourrice" aria-pressed="false">Avec la nourrice</button>
+    </div>
+    <label class="coche"><input type="checkbox" id="double"> Double sortie sous le robinet</label>
+    <p class="sous">Une sortie pour l’arrosage, l’autre reste au client.</p>
+    <div class="chips" role="group" aria-label="Le départ" id="departs"></div>
+    <p class="sous" id="depart-choisi"></p>
+  </section>
+
+  <section class="bloc" id="bloc-nourrice">
+    <span class="caps">La nourrice</span>
+    <h2 id="titre-nourrice"></h2>
+    <p class="sous" id="sous-nourrice"></p>
+    <div class="regard"><canvas id="dessin" width="358" height="420" role="img" aria-label="La nourrice, pièce par pièce"></canvas></div>
+    <ol class="legende" id="legende"></ol>
+    <div class="bac">
+      <h3>Avec la nourrice</h3>
+      <div class="rangee" id="bac"></div>
+    </div>
+  </section>
+
+  <section class="bloc">
+    <span class="caps">Les réseaux</span>
+    <h2 id="titre-reseaux"></h2>
+    <div id="reseaux"></div>
+    <div class="symboles" id="symboles"></div>
+    <label class="coche"><input type="checkbox" id="grillage"> Grillage avertisseur</label>
+  </section>
+
+  <section class="bloc">
+    <span class="caps">Les pièces</span>
+    <h2 id="titre-amenee">Au robinet</h2>
+    <div class="plateau"><div class="eclate" id="amenee"></div></div>
+    <button class="ajouter" type="button" data-ajouter="amenee">Ajouter une pièce</button>
+    <div id="jardin"></div>
+  </section>
+
+  <section class="bloc">
+    <span class="caps">La liste</span>
+    <h2>Ce que vous emportez</h2>
+    <div id="liste"></div>
+    <button class="envoyer" type="button" id="envoyer">Envoyer la liste au fournisseur</button>
+    <p class="verdict" id="verdict"></p>
+    <ul class="reserves" id="reserves"></ul>
+  </section>
+
+  <section class="bloc">
+    <span class="caps">Les mots du plan</span>
+    <dl class="mots" id="mots"></dl>
+  </section>
+</main>
+
+<div class="feuille" id="feuille" hidden>
+  <div class="boite" role="dialog" aria-modal="true" aria-labelledby="feuille-titre">
+    <div class="haut"><h2 id="feuille-titre">Ajouter une pièce</h2><button class="fermer" type="button" id="fermer">Fermer</button></div>
+    <input class="recherche" id="recherche" type="search" placeholder="Chercher une pièce" aria-label="Chercher une pièce">
+    <div class="chips" id="categories"></div>
+    <div id="choix"></div>
+  </div>
+</div>
+
+<div class="feuille" id="fournisseur" hidden>
+  <div class="boite" role="dialog" aria-modal="true" aria-labelledby="fournisseur-titre">
+    <div class="haut"><h2 id="fournisseur-titre">Au fournisseur</h2><button class="fermer" type="button" id="fermer-fournisseur">Fermer</button></div>
+    <p class="propose">Tout est additionné, sans prix. Vous pouvez modifier le texte.</p>
+    <textarea class="message" id="message" aria-label="Le message au fournisseur"></textarea>
+    <div class="gestes-message"><button type="button" id="copier">Copier</button><button type="button" id="partager">Envoyer</button></div>
+  </div>
+</div>
+
+<div class="feuille menu" id="menu" hidden>
+  <div class="boite" role="dialog" aria-modal="true" aria-labelledby="menu-titre">
+    <div class="haut"><h2 id="menu-titre"></h2><button class="fermer" type="button" id="fermer-menu">Fermer</button></div>
+    <p class="propose" id="menu-propose" hidden></p>
+    <div class="gestes" id="menu-gestes"></div>
+  </div>
+</div>
+
+<script src="arrosage-plan-calcul.js"></script>
+<script>
+(function () {
+  var C = window.CALCUL, CAT = C.CATALOGUE;
+  var $ = function (id) { return document.getElementById(id); };
+  var texte = function (s) { var e = document.createElement("span"); e.textContent = s == null ? "" : String(s); return e.innerHTML; };
+  var virgule = function (n) { return String(n).replace(".", ","); };
+
+  // Les photos qu'il a validées (planche « Photos des pièces »), dans arrosage-photos/.
+  var PHOTOS = {"electrovanne-100dv":"electrovanne-100dv.jpg","electrovanne-100dv-ff":"electrovanne-100dv-ff.png","pebd16":"pebd16.png","pehd":"pehd.jpg","clarinette-2v":"clarinette-2v.jpg","clarinette-3v":"clarinette-3v.jpg","clarinette-4v":"clarinette-4v.jpg","connexion":"connexion.jpg","coude-mf":"coude-mf.jpg","coude-ff":"coude-ff.png","coude-taraude-25-34":"coude-taraude-25-34.jpg","HT1521":"HT1521.jpg","HT1522":"HT1522.jpg","HT1523":"HT1523.jpg","HT1541":"HT1541.jpg","HT1543":"HT1543.jpg","HT1544":"HT1544.jpg","HT1546":"HT1546.png","mamelon":"mamelon.jpg","mamelon-droit-1":"mamelon-droit-1.jpg","OD501":"OD501.jpg","OD502":"OD502.jpg","pile-9v":"pile-9v.jpg","prog-1":"prog-1.jpg","prog-2":"prog-2.jpg","prog-4":"prog-4.jpg","prog-6":"prog-6.jpg","RA2180":"RA2180.jpg","RA2181":"RA2181.jpg","RA3504":"RA3504.jpg","RA3504SAM":"RA3504SAM.jpg","RA5004FC":"RA5004FC.jpg","RA5006PC":"RA5006PC.jpg","raccord-femelle25":"OPL70302520.jpg","regard-jumbo5":"regard-jumbo5.jpg","regard-jumbo6":"regard-jumbo6.jpg","regard-rect12":"regard-rect12.jpg","regard-rg17106":"regard-rg17106.jpg","regulateur-ff34":"regulateur-ff34.jpg","RP403":"RP403.jpg","RT1802":"RT1802.jpg","RT1804":"RT1804.jpg","RT1806":"RT1806.jpg","RT1822":"RT1822.jpg","RT1824":"RT1824.jpg","RT1826":"RT1826.jpg","RT1832":"RT1832.jpg","RT1834":"RT1834.jpg","RT1836":"RT1836.jpg","TAMINI8-4P":"TAMINI8-4P.png","te-25-25-25":"te-25-25-25.jpg","te-mmf":"te-mmf.jpg","te-taraude-25-34-25":"te-taraude-25-34-25.jpg","UGGCBL23050":"UGGCBL23050.png","union":"union.jpg","VAN":"VAN.jpg","vanne-purge":"vanne-purge.jpg","MID6301":"MID6301.png","MID6321":"MID6321.png","MID6341":"MID6341.png","MID6352":"MID6352.png","MID6371":"MID6371.png","pe25-amenee":"pehd.jpg","pe25":"pehd.jpg","RBT640":"RBT640.jpg","RBT639":"RBT639.jpg","RBT638":"RBT638.jpg","RBT637":"RBT637.jpg","RBT636":"RBT636.jpg","RBT601":"RBT601.jpg","RBT648":"RBT648.jpg","RBT1418":"RBT1418.jpg","RBT1419":"RBT1419.jpg","RBT1428":"RBT1428.jpg","RBT1429":"RBT1429.jpg","RBT1438":"RBT1438.jpg","RBT1439":"RBT1439.jpg"};
+  var CHARTES = [["origine","Origine"],["brume","Brume"],["pierre","Pierre"],["beurre","Beurre"],["moka","Moka"],["prune","Prune"],["sylve","Sylve"],["nuit","Nuit"]];
+  CHARTES.forEach(function (c) { var o = document.createElement("option"); o.value = c[0]; o.textContent = c[1]; $("charte").appendChild(o); });
+  $("charte").onchange = function () { document.body.dataset.charte = this.value; dessiner(); };
+  var jeton = function (nom) { return getComputedStyle(document.body).getPropertyValue("--atlas-" + nom).trim(); };
+
+  // ── LA SAISIE : ce que le patron a rempli, et le croquis qu'il a donné.
+  var SAISIE = { seau: 10, temps: 18, pression: 3, compteur: "non" };
+  var NOURRICE = { x: 13, y: 6 };
+  var robinet = { montage: "nez", double: false, departMain: null };
+  // LES PIÈCES DU ROBINET, PROPOSÉES (catalogue Aqua Plus 2026), à valider.
+  var ROBINET = {
+    double: { ref: "BRO3493", nom: "robinet 2 voies entrée 3/4\" - 2 sorties 3/4\"", photo: "BRO3493.png" },
+    prog: { ref: "SP1151", nom: "Programmateur nez de rob. SOLEM BL - NR - 1 voie", photo: "SP1151.png", voies: 1 },
+    raccord: { 16: { ref: "OPL70301620", nom: "raccord femelle 16 x 3/4\"" }, 25: { ref: "OPL70302520", nom: "raccord femelle 25 x 3/4\"" }, 32: { ref: "OPL70303220", nom: "raccord femelle 32 x 3/4\"" } }
+  };
+  [ROBINET.double, ROBINET.prog].forEach(function (x) { PHOTOS[x.ref] = "../arrosage-robinet-photos/" + x.photo; });
+  PHOTOS.OPL70301620 = "OPL70302520.jpg"; PHOTOS.OPL70302520 = "OPL70302520.jpg"; PHOTOS.OPL70303220 = "OPL70302520.jpg";
+  var etat = { sortie: "boucle", couronne: 50, grillage: false, retirees: {}, remplacees: {}, ajoutees: [], ou: "amenee", categorie: "reseau", cible: null, recherche: "" };
+  function plan() {
+    // Le nez de robinet n'a qu'une voie : son jardin d'exemple est une seule
+    // pelouse (8 × 8, un réseau). Avec la nourrice, le jardin entier.
+    var zones = robinet.montage === "nez"
+      ? [{ id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 }]
+      : [{ id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
+         { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },
+         { id: 3, type: "massif", nom: "Massif", x: 14, y: 10, L: 20, l: 2.4, sortieGoutte: etat.sortie },
+         { id: 4, type: "gazon", nom: "Couloir", x: 0, y: 14, L: 10, l: 2, materiel: "tuyere" }];
+    return C.calculerPlan({ seau: SAISIE.seau, temps: SAISIE.temps, pression: SAISIE.pression, compteur: SAISIE.compteur, couronne: etat.couronne, zones: zones });
+  }
+  function direSaisie() {
+    $("saisie").textContent = "Au seau, 10 L en 18 s. Pression 3 bar. Piquage sur un robinet. Croquis : " +
+      (robinet.montage === "nez" ? "pelouse de 8 × 8." : "pelouse de 12 × 12, pelouse de 8 × 8, massif de 20 × 2,40 en goutte-à-goutte, couloir de 10 × 2.");
+  }
+  // LE DÉPART : l'outil choisit, il peut le changer. Ø16 seulement quand tout est
+  // en goutte-à-goutte (sa règle du 18 octobre 2026) ; sinon le diamètre que le
+  // calcul donne à l'amenée (Ø25, ou Ø32 quand le Ø25 ne tient pas).
+  function departDeLOutil(p) {
+    if (p.secteurs.length && p.secteurs.every(function (s) { return s.famille === "Goutte-à-goutte"; })) return 16;
+    return p.amenee.diametre === 32 ? 32 : 25;
+  }
+
+  // ═══ 1. LA NOURRICE ÉCLATÉE, validée le 18 octobre 2026 ═══════════════════
+  // Les formes relevées sur ses photos détourées (fraction de la photo), reprises
+  // telles quelles de arrosage-nourrice-eclatee.html.
+  var HAUT = {
+    "coude-mf":      { h: 46, vertical: 0.27, horizontal: 0.22 },
+    "coude-ff":      { h: 52, vertical: 0.65, horizontal: 0.40, miroir: true },
+    "te-mmf":        { h: 44, vertical: 0.52, horizontal: 0.28, demi: true },
+    "clarinette-2v": { w: 150, sorties: [0.307, 0.778], tube: 0.35 },
+    "clarinette-3v": { w: 220, sorties: [0.21, 0.535, 0.85], tube: 0.34 },
+    "clarinette-4v": { w: 296, sorties: [0.16, 0.40, 0.64, 0.88], tube: 0.33 }
+  };
+  var COLONNE = {
+    "mamelon":            { a: [0.5, 0.02], b: [0.5, 0.98], L: 28 },
+    "mamelon-demi":       { a: [0.5, 0.98], b: [0.5, 0.02], L: 28, src: "mamelon" },
+    // Retournée, sa demande du 18 octobre 2026 : la vis de purge en haut, la poignée rouge à gauche.
+    "vanne-purge":        { a: [0.61, 0.73], b: [0.02, 0.79], L: 40 },
+    "union":              { a: [0.06, 0.68], b: [0.96, 0.32], L: 46 },
+    "raccord-femelle25":  { a: [0.08, 0.66], b: [0.98, 0.27], L: 40 },
+    "pehd":               { a: [0, 0.5], b: [1, 0.5], L: 44 },
+    "electrovanne-100dv": { a: [0.01, 0.88], b: [0.99, 0.88], L: 50 },
+    "electrovanne-100dv-ff": { a: [0.28, 0.80], b: [0.97, 0.52], L: 50 },
+    "mamelon-droit-1":    { a: [0.5, 0.02], b: [0.5, 0.98], L: 26 },
+    "regulateur-ff34":    { a: [0.5, 0.02], b: [0.5, 0.98], L: 44 }
+  };
+  var images = {};
+  function charger(ref) {
+    return new Promise(function (ok) {
+      if (!PHOTOS[ref]) return ok(null);
+      var img = new Image(); img.onload = function () { ok(detourer(img)); }; img.onerror = function () { ok(null); };
+      img.src = "arrosage-photos/" + PHOTOS[ref];
+    });
+  }
+  function detourer(img) {
+    var c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight;
+    var g = c.getContext("2d"); g.drawImage(img, 0, 0);
+    var d = g.getImageData(0, 0, c.width, c.height).data, x0 = c.width, y0 = c.height, x1 = 0, y1 = 0;
+    for (var y = 0; y < c.height; y += 2) for (var x = 0; x < c.width; x += 2) {
+      var i = (y * c.width + x) * 4;
+      if (d[i + 3] > 20 && (d[i] < 225 || d[i + 1] < 225 || d[i + 2] < 225)) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    }
+    var k = document.createElement("canvas"); k.width = x1 - x0 + 1; k.height = y1 - y0 + 1;
+    k.getContext("2d").drawImage(c, x0, y0, k.width, k.height, 0, 0, k.width, k.height);
+    return k;
+  }
+  function taille(ref) {
+    var f = HAUT[ref], im = images[ref];
+    if (!im) return { w: f.w || 40, h: f.h || 40 };
+    if (f.w) return { w: f.w, h: f.w * im.height / im.width };
+    return { w: f.h * im.width / im.height, h: f.h };
+  }
+  function nomCatalogue(ref) { var p = CAT.piece(ref); return p ? (p.marque ? p.marque + " " : "") + p.nom : ref; }
+
+  function dessinerNourrice(n, nbGoutte) {
+    var fiche = CAT.ficheNourrice(n, nbGoutte), reste = {}, poses = [], ordre = [];
+    if (!fiche) { $("titre-nourrice").textContent = "Aucune fiche pour " + n + " voies"; return; }
+    fiche.pieces.forEach(function (x) { reste[x.ref] = (reste[x.ref] || 0) + x.q; });
+    var pris = function (ref) { if (reste[ref] > 0) reste[ref]--; };
+    var numero = function (ref) { var i = ordre.indexOf(ref); if (i < 0) { ordre.push(ref); i = ordre.length - 1; } return i + 1; };
+    var haut = function (ref, x, y) { var t = taille(ref); poses.push({ haut: true, ref: ref, x: x, y: y, w: t.w, h: t.h }); pris(ref); return t; };
+    var colonne = function (cle, x, y) { var f = COLONNE[cle]; poses.push({ cle: cle, ref: f.src || cle, x: x, y: y }); pris(f.src || cle); return y + f.L; };
+    var ECART = 9, W = 358;
+    var clar = ["clarinette-2v", "clarinette-3v", "clarinette-4v"].filter(function (r) { return reste[r]; })[0];
+    var avecTe = Boolean(reste["te-mmf"]);
+    // La poignée de la vanne retournée dépasse à gauche de son axe : la marge la garde dans le dessin.
+    var x = 34, yTop = 12, axe = yTop + (clar ? taille(clar).h * HAUT[clar].tube : 22), axes = [];
+    var cg = haut("coude-mf", x, 0); poses[poses.length - 1].y = axe - cg.h * HAUT["coude-mf"].horizontal;
+    var xL = x + cg.w * HAUT["coude-mf"].vertical; x += cg.w + ECART;
+    if (clar) { var cl = haut(clar, x, yTop); HAUT[clar].sorties.forEach(function (s) { axes.push(x + s * cl.w); }); x += cl.w + ECART; }
+    if (avecTe) { var te = haut("te-mmf", x, 0); poses[poses.length - 1].y = axe - te.h * HAUT["te-mmf"].horizontal; axes.push(x + te.w * HAUT["te-mmf"].vertical); x += te.w + ECART; }
+    var cd = haut("coude-ff", x, 0); poses[poses.length - 1].y = axe - cd.h * HAUT["coude-ff"].horizontal;
+    axes.push(x + cd.w * HAUT["coude-ff"].vertical);
+    var bas = 0; poses.forEach(function (p) { bas = Math.max(bas, p.y + p.h); }); bas += ECART;
+    var y = colonne("mamelon-demi", xL, bas) + ECART;
+    y = colonne("vanne-purge", xL, y) + ECART;
+    y = colonne("mamelon", xL, y) + ECART;
+    y = colonne("union", xL, y) + ECART;
+    y = colonne("raccord-femelle25", xL, y) + ECART;
+    var fin = colonne("pehd", xL, y), finArrivee = fin, etiquettes = [[xL, fin + 28, "Arrivée"], [xL, fin + 40, "d’eau"]];
+    axes.forEach(function (xv, i) {
+      var goutte = i >= axes.length - nbGoutte, yv = bas;
+      if (goutte) {
+        yv = colonne("mamelon-droit-1", xv, yv) + ECART;
+        yv = colonne("electrovanne-100dv-ff", xv, yv) + ECART;
+        yv = colonne("mamelon-demi", xv, yv) + ECART;
+        yv = colonne("regulateur-ff34", xv, yv) + ECART;
+        yv = colonne("mamelon", xv, yv) + ECART;
+      } else {
+        yv = colonne("electrovanne-100dv", xv, yv) + ECART;
+      }
+      yv = colonne("union", xv, yv) + ECART;
+      yv = colonne("raccord-femelle25", xv, yv) + ECART;
+      yv = colonne("pehd", xv, yv);
+      // La voie porte le numéro de son réseau, et sa couleur sur le plan.
+      etiquettes.push([xv, yv, "Réseau " + (i + 1), i, goutte ? i - (axes.length - nbGoutte) : -1]);
+      fin = Math.max(fin, yv);
+    });
+    fin = Math.max(fin, finArrivee + 40);
+    var largeur = Math.max(x + cd.w, axes[axes.length - 1] + 70) + 8;
+    var k = Math.min(1, W / largeur), H = (fin + (nbGoutte ? 34 + (nbGoutte > 1 ? 50 : 22) : 34)) * k, c = $("dessin"), r = window.devicePixelRatio || 1;
+    c.width = W * r; c.height = H * r; c.style.height = H + "px";
+    var g = c.getContext("2d"); g.setTransform(r, 0, 0, r, 0, 0);
+    g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H);
+    g.setTransform(r * k, 0, 0, r * k, (W - largeur * k) / 2 * r, 0);
+    poses.forEach(function (p) {
+      var im = images[p.ref];
+      if (p.haut) {
+        var f = HAUT[p.ref];
+        if (im) {
+          g.save(); g.translate(p.x + p.w / 2, p.y + p.h / 2);
+          if (f.demi) g.rotate(Math.PI);
+          if (f.miroir) g.scale(-1, 1);
+          g.globalCompositeOperation = "multiply"; g.drawImage(im, -p.w / 2, -p.h / 2, p.w, p.h); g.restore();
+        }
+        badge(g, numero(p.ref), p.x + p.w + 2, p.y + 5);
+        return;
+      }
+      var fc = COLONNE[p.cle];
+      if (im) {
+        var ax = fc.a[0] * im.width, ay = fc.a[1] * im.height, bx = fc.b[0] * im.width, by = fc.b[1] * im.height;
+        var s = fc.L / Math.hypot(bx - ax, by - ay), angle = Math.PI / 2 - Math.atan2(by - ay, bx - ax);
+        g.save(); g.translate(p.x, p.y); g.rotate(angle); g.scale(s, s);
+        g.globalCompositeOperation = "multiply"; g.drawImage(im, -ax, -ay); g.restore();
+      }
+      badge(g, numero(p.ref), p.x + 24, p.y + fc.L / 2);
+    });
+    g.globalCompositeOperation = "source-over";
+    g.font = "600 10px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "top";
+    // L'ARRIVÉE D'EAU : le mot en bas, puis une flèche qui monte jusqu'au PEHD
+    // (sa demande du 18 octobre 2026). Une flèche qui montre d'où vient l'eau,
+    // pas un ornement.
+    g.strokeStyle = "#4a4a44"; g.fillStyle = "#4a4a44"; g.lineWidth = 1.6;
+    g.beginPath(); g.moveTo(xL, finArrivee + 30); g.lineTo(xL, finArrivee + 9); g.stroke();
+    g.beginPath(); g.moveTo(xL, finArrivee + 4); g.lineTo(xL - 5, finArrivee + 11); g.lineTo(xL + 5, finArrivee + 11); g.closePath(); g.fill();
+    g.font = "600 10px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "top";
+    etiquettes.forEach(function (e) {
+      g.fillStyle = e[3] === undefined ? "#4a4a44" : couleursPlan[e[3]];
+      // Deux voies voisines sont serrées : une sur deux descend. Une voie de
+      // goutte-à-goutte le dit sous son numéro (sa demande du 18 octobre 2026),
+      // et deux voies de goutte-à-goutte voisines s'écartent de deux lignes.
+      var goutte = e[4] !== undefined && e[4] >= 0;
+      var dy = goutte ? (e[4] % 2) * 26 : e[3] !== undefined && e[3] % 2 === 1 ? 13 : 0;
+      g.fillText(e[3] === undefined ? e[2] : "R" + (e[3] + 1), e[0], e[1] + 6 + dy);
+      if (goutte) g.fillText("goutte-à-goutte", e[0], e[1] + 18 + dy);
+    });
+    $("titre-nourrice").textContent = fiche.nom;
+    $("sous-nourrice").textContent = "Une voie par réseau, numérotées de gauche à droite après l’arrivée." + (nbGoutte ? " Le goutte-à-goutte est à droite." : "");
+    var NOMS = { "coude-mf": "Coude MF 1\"", "mamelon": "Mamelon réduit MM 1\" x 3/4\"", "vanne-purge": "Vanne 3/4\" FF", "pehd": "PEHD Ø25" };
+    $("legende").innerHTML = ordre.map(function (ref, i) { return "<li><b>" + (i + 1) + "</b>" + texte(NOMS[ref] || nomCatalogue(ref)) + "</li>"; }).join("");
+    var bac = "";
+    Object.keys(reste).forEach(function (ref) {
+      if (!reste[ref]) return;
+      var photo = PHOTOS[ref] ? '<img src="arrosage-photos/' + PHOTOS[ref] + '" alt="">' : "photo à venir";
+      bac += '<div class="p"><span class="ph">' + photo + '</span><span class="n">' + (reste[ref] > 1 ? reste[ref] + "x " : "") + texte(nomCatalogue(ref)) + "</span></div>";
+    });
+    $("bac").innerHTML = bac;
+  }
+  function badge(g, n, x, y) {
+    g.globalCompositeOperation = "source-over";
+    g.fillStyle = "#1c1c1a"; g.beginPath(); g.arc(x, y, 7, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "#ffffff"; g.font = "600 9px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+    g.fillText(String(n), x, y + 0.5);
+  }
+
+  // ═══ 2. LES RÉSEAUX : le plan de l'application, un réseau à la fois ═══════
+  var couleursPlan = [];
+  var NS = "http://www.w3.org/2000/svg";
+  function svgReseau(d, p, i) {
+    var r = d.reseaux.filter(function (x) { return x.numero === i; })[0];
+    var encre = jeton("ink"), carte = jeton("card"), plein = jeton("plein");
+    var pts = function (c) { return c.map(function (q) { return q.x + "," + q.y; }).join(" "); };
+    var s = '<svg viewBox="' + d.viewBox + '" role="img" aria-label="Réseau ' + (i + 1) + ' sur le plan">';
+    s += '<defs><clipPath id="pelouse-' + i + '">' + d.contours.map(function (c) { return '<polygon points="' + pts(c) + '"/>'; }).join("") + "</clipPath></defs>";
+    s += d.contours.map(function (c) { return '<polygon points="' + pts(c) + '" fill="' + plein + '" fill-opacity="0.16"/>'; }).join("");
+    s += d.tranchee.map(function (t) { return '<line x1="' + t.de.x + '" y1="' + t.de.y + '" x2="' + t.a.x + '" y2="' + t.a.y + '" stroke="' + encre + '" stroke-opacity="0.12" stroke-width="0.95" stroke-linecap="round"/>'; }).join("");
+    s += d.contours.map(function (c) { return '<polygon points="' + pts(c) + '" fill="none" stroke="' + encre + '" stroke-opacity="0.45" stroke-width="0.26"/>'; }).join("");
+    s += d.cotes.map(function (c) { return '<text x="' + c.x + '" y="' + c.y + '" text-anchor="' + c.ancre + '" font-size="0.95" fill="' + jeton("muted") + '">' + texte(c.texte) + "</text>"; }).join("");
+    s += d.liaisons.map(function (t) { return '<line x1="' + t.de.x + '" y1="' + t.de.y + '" x2="' + t.a.x + '" y2="' + t.a.y + '" stroke="' + encre + '" stroke-width="0.2" stroke-dasharray="0.5 0.4"/>'; }).join("");
+    // Les autres réseaux, en pâle : on voit par où ils passent, sans les confondre.
+    d.reseaux.forEach(function (o) {
+      if (o.numero === i) return;
+      s += o.traits.map(function (t) { return '<line x1="' + t.de.x + '" y1="' + t.de.y + '" x2="' + t.a.x + '" y2="' + t.a.y + '" stroke="' + encre + '" stroke-opacity="0.18" stroke-width="0.2"/>'; }).join("");
+      s += o.tetes.map(function (t) { return '<circle cx="' + t.x + '" cy="' + t.y + '" r="0.3" fill="' + encre + '" fill-opacity="0.18"/>'; }).join("");
+    });
+    var zone = p.dessin.filter(function (z) { return z.cle === "gaine" && (p.reseauxDeZone[z.id] || []).indexOf(i) >= 0; })[0];
+    if (zone) {
+      // Le goutte-à-goutte : la zone se borde de sa couleur, le tube n'a pas de tête.
+      s += '<rect x="' + zone.x + '" y="' + zone.y + '" width="' + zone.L + '" height="' + zone.l + '" fill="' + p.couleurs[i] + '" fill-opacity="0.18" stroke="' + p.couleurs[i] + '" stroke-width="0.26" stroke-dasharray="0.6 0.4"/>';
+    }
+    if (r) {
+      s += r.tetes.map(function (t) { return '<circle cx="' + t.x + '" cy="' + t.y + '" r="' + t.portee + '" fill="' + r.couleur + '" fill-opacity="0.13" clip-path="url(#pelouse-' + i + ')"/>'; }).join("");
+      s += r.traits.map(function (t) { return '<line x1="' + t.de.x + '" y1="' + t.de.y + '" x2="' + t.a.x + '" y2="' + t.a.y + '" stroke="' + r.couleur + '" stroke-width="0.26" stroke-linecap="round"/>'; }).join("");
+      s += r.antennes.map(function (a) { return '<line x1="' + a.de.x + '" y1="' + a.de.y + '" x2="' + a.a.x + '" y2="' + a.a.y + '" stroke="' + r.couleur + '" stroke-width="0.13" stroke-linecap="round"/>'; }).join("");
+      s += r.jonctions.map(function (q) { return '<rect x="' + (q.x - 0.38) + '" y="' + (q.y - 0.38) + '" width="0.76" height="0.76" transform="rotate(45 ' + q.x + " " + q.y + ')" fill="' + carte + '" stroke="' + r.couleur + '" stroke-width="0.26"/>'; }).join("");
+      s += r.tetes.map(function (t) {
+        var cx = t.x + t.decalage.x, cy = t.y + t.decalage.y, f = t.plein ? r.couleur : carte, w = t.plein ? 0.2 : 0.34;
+        // UN COUDE TARAUDÉ EST UN ROND CREUX, sous une turbine comme sous une
+        // tuyère : sa règle du 18 octobre 2026 (« un coude taraudé se nomme par un
+        // rond creux, que ce soit pour des tuyères ou pour de l'arrosage »).
+        return t.forme === "rond" || !t.plein
+          ? '<circle cx="' + cx + '" cy="' + cy + '" r="' + (t.plein ? 0.5 : 0.42) + '" fill="' + f + '" stroke="' + r.couleur + '" stroke-width="' + w + '"/>'
+          : '<rect x="' + (cx - 0.44) + '" y="' + (cy - 0.44) + '" width="0.88" height="0.88" rx="0.12" fill="' + f + '" stroke="' + r.couleur + '" stroke-width="' + w + '"/>';
+      }).join("");
+    }
+    s += '<rect x="' + (d.nourrice.x - 0.75) + '" y="' + (d.nourrice.y - 1.4) + '" width="1.5" height="2.8" rx="0.3" fill="' + carte + '" stroke="' + encre + '" stroke-width="0.22"/>';
+    s += '<text x="' + d.etiquetteNourrice.x + '" y="' + d.etiquetteNourrice.y + '" text-anchor="' + d.etiquetteNourrice.ancre + '" font-size="0.95" fill="' + encre + '">' + (robinet.montage === "nez" ? "robinet" : "nourrice") + "</text>";
+    return s + "</svg>";
+  }
+
+  function dessinerReseaux(p, d) {
+    $("titre-reseaux").textContent = p.secteurs.length + " réseau" + (p.secteurs.length > 1 ? "x" : "") + ", " + virgule(d.metresTranchee) + " m de tranchée";
+    var html = "";
+    p.secteurs.forEach(function (s, i) {
+      var r = d.reseaux.filter(function (x) { return x.numero === i; })[0], c = p.couleurs[i];
+      var lignes = "";
+      if (r) r.materiels.forEach(function (m) {
+        lignes += '<li><span class="q">' + m.nombre + "x</span><span>" + texte(m.libelle) + ", " + (m.bridee ? "bridée à " : "portée ") + virgule(m.portee) + " m</span></li>";
+      });
+      if (s.famille === "Goutte-à-goutte") {
+        var g = CAT.gaines[0];
+        lignes += '<li><span class="q"></span><span>' + texte("Goutte-à-goutte Toro, " + g.detail + ", " + (etat.sortie === "boucle" ? "deux lignes en circuit fermé" : "une seule ligne")) + "</span></li>";
+      }
+      // AUCUNE DURÉE D'ARROSAGE : sa règle du 18 octobre 2026 (« tu es en train de
+      // leur donner le temps d'arrosage, ça, il faut pas le faire »).
+      if (r) lignes += '<li><span class="q">' + r.metresTuyau + ' m</span><span>de PEHD Ø25</span></li>';
+      html += '<div class="reseau" style="--couleur:' + c + '"><div class="reseau-titre"><span class="pastille"></span><b>Réseau ' + (i + 1) + "</b><span>" + texte(s.nom) + "</span></div>" +
+        '<div class="schema">' + svgReseau(d, p, i) + '</div><ul class="materiel">' + lignes + "</ul></div>";
+    });
+    $("reseaux").innerHTML = html;
+    var e = "var(--atlas-ink)", k = "var(--atlas-card)";
+    var sym = function (svg, t) { return '<p><svg viewBox="-1 -1 2 2" aria-hidden="true">' + svg + "</svg><span>" + t + "</span></p>"; };
+    var rondPlein = '<circle r="0.72" fill="' + e + '"/>', carrePlein = '<rect x="-0.66" y="-0.66" width="1.32" height="1.32" rx="0.18" fill="' + e + '"/>';
+    var rondCreux = '<circle r="0.6" fill="' + k + '" stroke="' + e + '" stroke-width="0.3"/>';
+    $("symboles").innerHTML =
+      sym(rondPlein, "rond : une turbine") +
+      sym(carrePlein, "carré : une tuyère") +
+      sym(rondPlein, "plein : la ligne continue, té taraudé 25×3/4″×25") +
+      sym(rondCreux, "creux : la ligne s’arrête là, coude taraudé 25×3/4″") +
+      sym('<rect x="-0.56" y="-0.56" width="1.12" height="1.12" transform="rotate(45)" fill="' + k + '" stroke="' + e + '" stroke-width="0.3"/>', "losange : la ligne se sépare, té égal 25×25×25") +
+      sym('<line x1="-0.85" y1="0" x2="0.85" y2="0" stroke="' + e + '" stroke-width="0.18"/>', "trait fin : l’antenne Ø16 rigide, 2 m au plus");
+  }
+
+  // ═══ 3. LES PIÈCES : la vue éclatée, tête par tête ════════════════════════
+  var LISTE = [];
+  Object.keys(CAT.piecesNourrice).forEach(function (r) { var p = CAT.piecesNourrice[r]; LISTE.push({ ref: r, nom: (p.marque ? p.marque + " " : "") + p.nom, categorie: "nourrice" }); });
+  Object.keys(CAT.piecesReseau).forEach(function (r) { var p = CAT.piecesReseau[r]; LISTE.push({ ref: r, nom: (p.marque ? p.marque + " " : "") + p.nom, categorie: "reseau" }); });
+  CAT.coudes.forEach(function (c) { LISTE.push({ ref: c.ref, nom: c.nom + ", " + c.detail, categorie: "reseau" }); });
+  CAT.corps.forEach(function (c) { LISTE.push({ ref: c.ref, nom: c.nom + (c.detail ? ", " + c.detail : ""), categorie: "arroseur" }); });
+  CAT.gaines.forEach(function (g) { LISTE.push({ ref: g.ref, nom: g.nom, categorie: "raccord goutte-à-goutte" }); });
+  CAT.piecesAjoutables.forEach(function (x) { if (!LISTE.some(function (y) { return y.ref === x.ref; })) LISTE.push({ ref: x.ref, nom: x.nom, categorie: x.categorie }); });
+  var CATEGORIES = [["nourrice","Nourrice"],["reseau","Réseau"],["arroseur","Arroseurs"],["raccord PE","Raccords PE"],["electrovanne","Électrovannes"],["regard","Regards"],["programmateur","Programmateurs"],["raccord goutte-à-goutte","Goutte-à-goutte"],["tube PE","Tubes PE"],["robinetterie","Robinetterie"],["électricité","Électricité"]];
+  var trouver = function (ref) { return LISTE.filter(function (x) { return x.ref === ref; })[0]; };
+  function nomDe(ref, M) {
+    var l = M.filter(function (m) { return m.ref === ref; })[0];
+    if (l) return l.nom;
+    var p = CAT.piece(ref) || CAT.piecesReseau[ref] || CAT.pieceAjoutable(ref);
+    return p ? (p.marque ? p.marque + " " : "") + p.nom : ref;
+  }
+  // Le compte se tient par groupe (« amenee », « r0 », « r1 »…) : la liste se lit
+  // comme on pose, et le message au fournisseur additionne tout.
+  var proposees = {}, compte = {}, groupe = "amenee";
+  function ligneDe(ref, nom, u) { var g = compte[groupe] = compte[groupe] || {}; return g[ref] = g[ref] || { nom: nom, q: 0, u: u }; }
+  function piece(cle, ref, nom, detail) {
+    proposees[cle] = { ref: ref, nom: nom };
+    var retiree = etat.retirees[cle], change = etat.remplacees[cle];
+    if (change) { ref = change.ref; nom = change.nom; detail = change.nom; }
+    var photo = PHOTOS[ref] ? '<span class="photo"><img src="arrosage-photos/' + PHOTOS[ref] + '" alt=""></span>' : '<span class="photo vide">photo à venir</span>';
+    var mention = retiree ? "supprimée" : change ? "changée" : "";
+    return '<button type="button" class="piece' + (retiree ? " retiree" : "") + (change ? " changee" : "") + (cle.indexOf("plus:") === 0 ? " ajoutee" : "") +
+      '" data-cle="' + texte(cle) + '" aria-label="' + texte(nom) + '">' + photo + '<span class="nom">' + texte(detail || nom) + "</span>" + (mention ? '<span class="mention">' + mention + "</span>" : "") + "</button>";
+  }
+  function poser(cle, ref, nom, detail, q, u) {
+    var change = etat.remplacees[cle], r = change ? change.ref : ref, n = change ? change.nom : nom;
+    if (!etat.retirees[cle]) ligneDe(r, n, change ? "u" : (u || "u")).q += change || q === undefined ? 1 : q;
+    return piece(cle, ref, nom, detail);
+  }
+  function tuyere(cle, corps, buse) {
+    var html = poser(cle, corps.ref, corps.nom, corps.nom.replace("Tuyère ", "") + " et " + buse.nom);
+    if (!etat.retirees[cle] && !etat.remplacees[cle]) {
+      ligneDe(buse.ref, "Rain Bird Tuyères " + buse.nom + (buse.colisage ? ", par " + buse.colisage : ""), "u").q += 1;
+    }
+    if (etat.remplacees[cle] || !PHOTOS[buse.ref]) return html;
+    return html.replace("</span>", '<img class="pied" src="arrosage-photos/' + PHOTOS[buse.ref] + '" alt="' + texte(buse.nom) + '"></span>');
+  }
+  function ajoutees(ou) {
+    return etat.ajoutees.filter(function (a) { return a.ou === ou; }).map(function (a) { return poser("plus:" + a.n, a.ref, a.nom, "ajoutée", 1); }).join("");
+  }
+  function couronnes(i, M) {
+    var n = (M.filter(function (m) { return m.ref === "UGGCBL23050"; })[0] || { q: 0 }).q;
+    var j = (M.filter(function (m) { return m.ref === "MID6301"; })[0] || { q: 0 }).q;
+    var html = "";
+    for (var c = 0; c < n; c++) {
+      if (c > 0 && c <= j) html += poser("r" + i + ":jonction" + c, "MID6301", nomDe("MID6301", M), "jonction Palaplast Ø16");
+      html += poser("r" + i + ":couronne" + c, "UGGCBL23050", nomDe("UGGCBL23050", M), "tube Toro, couronne de " + etat.couronne + " m");
+    }
+    return html;
+  }
+  // La zone et la buse d'une tête du dessin : celle du calcul qui la pose à ce point.
+  function zoneDeLaTete(p, t, i) {
+    return p.dessin.filter(function (z) {
+      return z.points && z.points.some(function (q) { return q.reseau === i && Math.abs(q.x - t.x) < 1e-6 && Math.abs(q.y - t.y) < 1e-6; });
+    })[0];
+  }
+
+  function dessinerPieces(p, d, M) {
+    groupe = "amenee";
+    var dia = robinet.departMain || departDeLOutil(p), rac = ROBINET.raccord[dia];
+    var tuyau = dia === 16 ? "PEBD rigide Ø16" : "PEHD Ø" + dia;
+    $("titre-amenee").textContent = robinet.montage === "nez" ? "Au robinet" : "Du robinet à la nourrice";
+    $("amenee").innerHTML =
+      (robinet.double ? poser("am:double", ROBINET.double.ref, ROBINET.double.nom, "Double sortie, proposé") : "") +
+      (robinet.montage === "nez" ? poser("am:prog", ROBINET.prog.ref, ROBINET.prog.nom, "Programmateur nez de robinet, proposé") : "") +
+      poser("am:raccord", rac.ref, rac.nom, rac.nom + ", proposé") +
+      poser("am:pe", "pe25-amenee", tuyau + (robinet.montage === "nez" ? ", du robinet au réseau" : ", du robinet à la nourrice"), tuyau + ", à mesurer", 0, "ml") +
+      ajoutees("amenee");
+    var corpsTuyere = CAT.corps.filter(function (c) { return c.pourType === "tuyere" && M.some(function (m) { return m.ref === c.ref; }); })[0];
+    var sbeBas = CAT.coudes.filter(function (c) { return c.filetage === "3/4"; })[0];
+    var jardin = "";
+    p.secteurs.forEach(function (s, i) {
+      var c = p.couleurs[i], r = d.reseaux.filter(function (x) { return x.numero === i; })[0];
+      groupe = "r" + i;
+      jardin += '<div class="reseau" style="--couleur:' + c + '"><div class="reseau-titre"><span class="pastille"></span><b>Réseau ' + (i + 1) + "</b><span>" + texte(s.nom) + "</span></div>";
+      // Ligne ou boucle : posé AU-DESSUS du réseau qu'il change (sa demande du
+      // 18 octobre 2026), pour qu'on voie les pièces changer juste dessous.
+      if (s.famille === "Goutte-à-goutte") jardin += '<div class="chips" role="group" aria-label="Une ligne ou un circuit fermé">' +
+        '<button type="button" data-sortie="ligne" aria-pressed="' + (etat.sortie === "ligne") + '">Une seule ligne</button>' +
+        '<button type="button" data-sortie="boucle" aria-pressed="' + (etat.sortie === "boucle") + '">Deux, en circuit fermé</button></div>';
+      // La couronne que vend son fournisseur : 50 m ou 100 m (sa demande du 18 octobre 2026).
+      if (s.famille === "Goutte-à-goutte") jardin += '<div class="chips" role="group" aria-label="Couronnes">' +
+        '<button type="button" data-couronne="50" aria-pressed="' + (etat.couronne === 50) + '">Couronnes de 50 m</button>' +
+        '<button type="button" data-couronne="100" aria-pressed="' + (etat.couronne === 100) + '">De 100 m</button></div>';
+      if (s.famille === "Goutte-à-goutte" || !r) {
+        jardin += '<div class="rail"><div class="tete">' + poser("r" + i + ":pe", "pe25", "PEHD Ø25", "PEHD Ø25, " + (r ? r.metresTuyau + " m" : "à mesurer"), r ? r.metresTuyau : 0, "ml") + "</div>";
+        jardin += '<div class="tete">' + poser("r" + i + ":coude", "coude-taraude-25-34", nomDe("coude-taraude-25-34", M), "Coude taraudé") +
+          (etat.sortie === "ligne" ? poser("r" + i + ":coude16", "MID6341", nomDe("MID6341", M), "coude Palaplast Ø16") : poser("r" + i + ":te16", "MID6321", nomDe("MID6321", M), "té Palaplast Ø16")) +
+          couronnes(i, M) + (etat.sortie === "boucle" ? "" : poser("r" + i + ":bouchon", "MID6371", nomDe("MID6371", M), "bouchon Palaplast Ø16")) + "</div>";
+        jardin += ajoutees("r" + i) + "</div>";
+      } else {
+        jardin += planDesPieces(p, d, M, r, i, corpsTuyere, sbeBas);
+      }
+
+      jardin += '<button class="ajouter" type="button" data-ajouter="r' + i + '">Ajouter une pièce au réseau ' + (i + 1) + "</button></div>";
+    });
+    $("jardin").innerHTML = jardin;
+  }
+
+  // LES PIÈCES D'UN RÉSEAU, SUR LE PLAN DU JARDIN. Sa demande du 18 octobre
+  // 2026 : « si le jardin c'est un carré, tu remets le plan avec un carré et les
+  // pièces au bon endroit ». Le plan est recadré sur le réseau ; chaque tête porte
+  // son té ou son coude taraudé (plein ou creux sur le dessin) et son arroseur.
+  // Le té égal se pose SUR le croisement, l'arroseur à gauche du trait et le té
+  // taraudé à droite, juste dessous. Les SBE et le PEBD de chaque tête comptent
+  // dans la liste, et la chaîne d'une tête les montre une fois, sous le plan.
+  function planDesPieces(p, d, M, r, i, corpsTuyere, sbeBas) {
+    var c = p.couleurs[i];
+    var pts = r.tetes.map(function (q) { return { x: q.x, y: q.y }; }).concat(r.jonctions);
+    var x0 = Math.min.apply(null, pts.map(function (q) { return q.x; })) - 1.6, x1 = Math.max.apply(null, pts.map(function (q) { return q.x; })) + 1.6;
+    var y0 = Math.min.apply(null, pts.map(function (q) { return q.y; })) - 1.6, y1 = Math.max.apply(null, pts.map(function (q) { return q.y; })) + 1.6;
+    var W = 100, H = (y1 - y0) / (x1 - x0) * W;
+    var px = function (x) { return (x - x0) / (x1 - x0) * W; }, py = function (y) { return (y - y0) / (x1 - x0) * W; };
+    var pc = function (x, y) { return "left:" + px(x) + "%;top:" + (py(y) / H * 100) + "%"; };
+    var s = '<svg viewBox="0 0 ' + W + " " + H + '" aria-hidden="true">';
+    d.contours.forEach(function (cc) { s += '<polygon points="' + cc.map(function (q) { return px(q.x) + "," + py(q.y); }).join(" ") + '" fill="' + jeton("plein") + '" fill-opacity=".14" stroke="' + jeton("ink") + '" stroke-opacity=".4" stroke-width=".45"/>'; });
+    r.traits.forEach(function (q) { s += '<line x1="' + px(q.de.x) + '" y1="' + py(q.de.y) + '" x2="' + px(q.a.x) + '" y2="' + py(q.a.y) + '" stroke="' + c + '" stroke-width="1.2" stroke-linecap="round"/>'; });
+    r.antennes.forEach(function (q) { s += '<line x1="' + px(q.de.x) + '" y1="' + py(q.de.y) + '" x2="' + px(q.a.x) + '" y2="' + py(q.a.y) + '" stroke="' + c + '" stroke-width=".6"/>'; });
+    s += "</svg>";
+    var poses = "", pris = {}, premiere = null;
+    r.tetes.forEach(function (q, j) {
+      var z = zoneDeLaTete(p, q, i);
+      var buse = z && CAT.buses.filter(function (b) { return b.nom === z.buse; })[0];
+      var corps = q.forme === "carre" ? corpsTuyere : buse && CAT.corpsDeLaBuse(buse);
+      var k = "r" + i + ":t" + j, raccord = q.plein ? "te-taraude-25-34-25" : "coude-taraude-25-34";
+      var sbeHaut = corps && CAT.coudes.filter(function (cc) { return cc.filetage === corps.filetage; })[0];
+      if (!premiere) premiere = { corps: corps, buse: q.forme === "carre" ? buse : null, sbeHaut: sbeHaut };
+      var htmlRaccord = poser(k + ":raccord", raccord, nomDe(raccord, M), q.plein ? "Té taraudé" : "Coude taraudé");
+      // Comptés, montrés une fois dans la chaîne sous le plan.
+      poser(k + ":sbeb", sbeBas.ref, sbeBas.nom + ", " + sbeBas.detail, "SBE 3/4\"");
+      poser(k + ":pebd", "pebd16", nomDe("pebd16", M), "PEBD Ø16, 2 m", 2, "ml");
+      if (sbeHaut) poser(k + ":sbeh", sbeHaut.ref, sbeHaut.nom + ", " + sbeHaut.detail, "SBE " + sbeHaut.filetage + "\"");
+      var htmlCorps = corps ? (q.forme === "carre" ? tuyere(k + ":corps", corps, buse) : poser(k + ":corps", corps.ref, corps.nom, z.buse)) : "";
+      var n = -1;
+      r.jonctions.forEach(function (o, m) { if (!pris[m] && Math.abs(o.x - q.x) + Math.abs(o.y - q.y) < 1.5) n = m; });
+      if (n >= 0) {
+        pris[n] = true;
+        poses += '<div class="pp" style="' + pc(q.x, q.y) + '"><span class="egal">' + poser("r" + i + ":j" + n, "te-25-25-25", nomDe("te-25-25-25", M), "Té égal, la ligne se sépare") + "</span></div>";
+        poses += '<div class="pp" style="' + pc(q.x, q.y) + ';margin-top:36px">' + htmlCorps + htmlRaccord + "</div>";
+      } else {
+        poses += '<div class="pp" style="' + pc(q.x, q.y) + '">' + htmlRaccord + htmlCorps + "</div>";
+      }
+    });
+    r.jonctions.forEach(function (o, m) { if (!pris[m]) poses += '<div class="pp" style="' + pc(o.x, o.y) + '"><span class="egal">' + poser("r" + i + ":j" + m, "te-25-25-25", nomDe("te-25-25-25", M), "Té égal, la ligne se sépare") + "</span></div>"; });
+
+    var ph = function (ref) { return PHOTOS[ref] ? '<img src="arrosage-photos/' + PHOTOS[ref] + '" alt="">' : ""; };
+    var dbl = '<svg class="dbl" width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M1 6H15M1 6l4-4M1 6l4 4M15 6l-4-4M15 6l-4 4" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>';
+    var chaine = premiere ? '<div class="chaine" aria-label="Les pièces d’une tête, dans l’ordre où elles se montent">' +
+      '<div class="m"><span class="v">' + ph("te-taraude-25-34-25") + "</span><small>Té ou coude taraudé</small></div><b class=\"plus\">+</b>" +
+      '<div class="m"><span class="v">' + ph(sbeBas.ref) + "</span><small>SBE 3/4\" vissé sur le té ou le coude</small></div>" + dbl +
+      '<div class="m"><span class="v">' + ph("pebd16") + "</span><small>PEBD Ø16, 2 m, emboîté</small></div>" + dbl +
+      '<div class="m"><span class="v">' + (premiere.sbeHaut ? ph(premiere.sbeHaut.ref) : "") + "</span><small>SBE " + (premiere.sbeHaut ? premiere.sbeHaut.filetage : "") + "\" vissé sous l’arroseur</small></div><b class=\"plus\">+</b>" +
+      '<div class="m"><span class="v">' + (premiere.corps ? ph(premiere.corps.ref) : "") + (premiere.buse && PHOTOS[premiere.buse.ref] ? '<img class="pied" src="arrosage-photos/' + PHOTOS[premiere.buse.ref] + '" alt="">' : "") + "</span><small>" + texte(premiere.corps ? premiere.corps.nom + (premiere.buse ? " et sa buse " + premiere.buse.nom : "") : "") + "</small></div></div>" : "";
+
+    return '<div class="ligne-pe">' + poser("r" + i + ":pe", "pe25", "PEHD Ø25", "PEHD Ø25, " + r.metresTuyau + " m", r.metresTuyau, "ml") + "<span>PEHD Ø25, " + r.metresTuyau + " m</span></div>" +
+      '<div class="plan-pieces"><div class="surface">' + s + poses + "</div>" + chaine +
+      (etat.ajoutees.some(function (a) { return a.ou === "r" + i; }) ? '<div class="rail" style="margin-top:12px"><div class="tete">' + ajoutees("r" + i) + "</div></div>" : "") + "</div>";
+  }
+
+  // ═══ 4. LES MOTS DU PLAN ════════════════════════════════════════════════════
+  // Chaque phrase vient du catalogue Aqua Plus 2026 (page entre crochets dans le
+  // commentaire) ou d'une de ses règles. Un mot qui n'est pas sur le plan ne s'affiche pas.
+  var MOTS = [
+    [/Turbine/, "Turbine", "Un seul jet qui tourne et balaie l’angle réglé. Elle arrose loin et doucement."],                        // ses règles du 21 août
+    [/Tuyère/, "Tuyère", "Un arroseur qui sort du sol et arrose tout son angle d’un coup, plus près et plus vite qu’une turbine."], // ses règles, « environ trois fois plus vite »
+    [/VAN/, "VAN", "Une buse de tuyère dont on règle l’angle. Sa portée en mètres est écrite à côté."], // p. 8 « buse VAN à secteur réglable »
+    [/SAM/, "SAM", "Un clapet anti-vidange : l’eau ne ressort pas par l’arroseur le plus bas quand la vanne se ferme."],         // p. 7 et 13
+    [/PRS/, "PRS", "Un régulateur de pression intégré à la tuyère, réglé à 2,1 bar."], // p. 7, catalogue « SAM-PRS (2,1 bar) »
+    [/\b18(02|04|06|12)\b|Tuyère 1800/, "1802, 1804, 1806, 1812", "La hauteur dont la tuyère sort du sol : 5, 10, 15 ou 30 cm."], // p. 7 « sortie de buse »
+    [/buse \d/, "Buse 0,75, 2,0…", "Le numéro de la buse vissée dans la turbine. Plus il est grand, plus elle arrose loin et plus elle prend d’eau."], // p. 11 tableau 3504
+    [/bridée/, "Bridée", "La portée est réduite à la vis, sur la turbine, pour ne pas arroser au delà de la pelouse."],             // sa règle du 16 octobre
+    [/SBE/, "Coude SBE", "Le petit coude qui relie l’antenne Ø16 : celui du bas se visse sur le té ou le coude de la ligne, celui du haut sous l’arroseur."], // ses règles du 21 août
+    [/PEBD/, "PEBD Ø16 rigide", "L’antenne qui va de la ligne à l’arroseur, 2 m au plus."],                                         // sa règle du 11 septembre
+    [/PEHD/, "PEHD Ø25", "Le tuyau de la ligne, enterré dans la tranchée."],
+    [/taraudé/, "Taraudé", "Fileté à l’intérieur : on y visse une pièce."]
+  ];
+  function dessinerMots() {
+    var tout = document.querySelector(".ecran").textContent;
+    $("mots").innerHTML = MOTS.filter(function (m) { return m[0].test(tout); }).map(function (m) {
+      return "<div><dt>" + texte(m[1]) + "</dt><dd>" + texte(m[2]) + "</dd></div>";
+    }).join("");
+  }
+
+  // ═══ LA LISTE : la nourrice, puis chaque réseau ═══════════════════════════
+  // Sa demande du 18 octobre 2026 : *« en premier la nourrice avec la liste des
+  // pièces, ensuite réseau 1, la liste des pièces, réseau 2… »*. Et pour le
+  // fournisseur, tout additionné : *« lui va devoir se faire chier à compter
+  // trois pour le réseau 1, trois pour le réseau 2 »*.
+  var quantite = function (e) { return e.u === "ml" ? (e.q ? e.q + " m" : "à mesurer") : e.q + "x"; };
+  function lignesDe(g) {
+    return '<div class="liste">' + Object.keys(g).map(function (ref) {
+      var e = g[ref];
+      return '<div class="ligne"><span class="q">' + quantite(e) + '</span><span class="n">' + texte(e.nom) + "</span></div>";
+    }).join("") + "</div>";
+  }
+  // La nourrice se compte sur SA fiche, comme le dessin du regard.
+  function groupeNourrice(p) {
+    var fiche = CAT.ficheNourrice(p.secteurs.length, p.secteurs.filter(function (s) { return s.famille === "Goutte-à-goutte"; }).length), g = {};
+    (fiche ? fiche.pieces : []).forEach(function (x) { (g[x.ref] = g[x.ref] || { nom: nomCatalogue(x.ref), q: 0, u: "u" }).q += x.q; });
+    return { nom: fiche ? fiche.nom : "La nourrice", lignes: g };
+  }
+  function groupesDuPlan(p, d) {
+    var n = groupeNourrice(p), out = [{ titre: robinet.montage === "nez" ? "Au robinet" : "Du robinet à la nourrice", lignes: compte.amenee || {} }];
+    if (robinet.montage !== "nez") out.push({ titre: n.nom, lignes: n.lignes });
+    p.secteurs.forEach(function (s, i) { out.push({ titre: "Réseau " + (i + 1) + ", " + s.nom, couleur: p.couleurs[i], lignes: compte["r" + i] || {} }); });
+    // Le grillage couvre toute la tranchée : il se compte dans la liste de l'outil, pas ici.
+    if (etat.grillage) {
+      var g = {};
+      piecesOutil(p, d).filter(function (x) { return x.ref === "grillage-bleu"; }).forEach(function (x) {
+        g[x.ref] = { nom: x.nom + ", " + x.detail, nomCourt: x.nom, q: x.q, u: x.u };
+      });
+      out.push({ titre: "Pour toute la tranchée", lignes: g });
+    }
+    return out;
+  }
+  function piecesOutil(p, d) {
+    return C.piecesDuPlan(p.materiel, d, { compteur: false, seuil25: p.amenee.longueurMax25, amenee: null, goutte: p.goutteAGoutte, grillage: etat.grillage });
+  }
+  // Le nom pour le comptoir : la marque devant, et la référence quand elle a été
+  // relevée sur ses documents (CATALOGUE.referenceDe, jamais inventée).
+  function nomFournisseur(ref, nom) {
+    // La référence est celle que le calcul a posée sur la ligne : une couronne de
+    // 100 m n'a pas celle de la couronne de 50 m d'Aqua Plus.
+    var ligne = materielCourant.filter(function (l) { return l.ref === ref; })[0];
+    var p = CAT.piece(ref) || CAT.piecesReseau[ref], marque = p && p.marque, ref2 = ligne ? ligne.reference : CAT.referenceDe(ref);
+    return (marque && nom.indexOf(marque) < 0 ? marque + " " : "") + nom + (ref2 ? ", réf. " + ref2 : "");
+  }
+  function message(groupes) {
+    var total = {}, ordre = [];
+    groupes.forEach(function (g) {
+      Object.keys(g.lignes).forEach(function (ref) {
+        var e = g.lignes[ref];
+        if (!total[ref]) { total[ref] = { nom: e.nomCourt || e.nom, q: 0, u: e.u, inconnu: false }; ordre.push(ref); }
+        total[ref].q += e.q;
+        // Une longueur qu'un réseau ne donne pas ne disparaît pas dans la somme.
+        if (e.u === "ml" && !e.q) total[ref].inconnu = true;
+      });
+    });
+    var lignes = ordre.map(function (ref) {
+      var e = total[ref], nom = nomFournisseur(ref, e.nom);
+      return e.u === "ml" ? (e.q ? e.q + " m de " + nom + (e.inconnu ? ", plus une longueur à mesurer" : "") : nom + " : longueur à mesurer") : e.q + "x " + nom;
+    });
+    return ["Bonjour,", "", "Voici ma commande pour un chantier d’arrosage :", ""].concat(lignes, ["", "Merci."]).join("\n");
+  }
+
+  var dernierMessage = "", materielCourant = [];
+  function dessinerListe(p, d) {
+    materielCourant = p.materiel;
+    var groupes = groupesDuPlan(p, d);
+    $("liste").innerHTML = groupes.map(function (g) {
+      return '<p class="groupe"' + (g.couleur ? ' style="--couleur:' + g.couleur + '"' : "") + ">" + (g.couleur ? '<span class="pastille"></span>' : "") + texte(g.titre) + "</p>" + lignesDe(g.lignes);
+    }).join("");
+    dernierMessage = message(groupes);
+
+    // Le schéma comparé à la liste de l'application, sur les totaux hors nourrice.
+    var reference = piecesOutil(p, d);
+    var attendu = {}, pose = {}, noms = {};
+    reference.forEach(function (x) { if (x.ou !== "regard") attendu[x.ref] = (attendu[x.ref] || 0) + (x.q || 0); });
+    groupes.forEach(function (g, i) {
+      if (robinet.montage !== "nez" && i === 1) return;
+      Object.keys(g.lignes).forEach(function (ref) { pose[ref] = (pose[ref] || 0) + g.lignes[ref].q; noms[ref] = g.lignes[ref].nom; });
+    });
+    var ecarts = Object.keys(pose).filter(function (ref) { return attendu[ref] !== undefined && attendu[ref] !== pose[ref] && ref !== "pe25-amenee"; });
+    var touche = Object.keys(etat.retirees).length + Object.keys(etat.remplacees).length + etat.ajoutees.length;
+    $("verdict").className = "verdict" + (ecarts.length && !touche ? " rouge" : "");
+    $("verdict").textContent = touche
+      ? touche + " changement" + (touche > 1 ? "s" : "") + " à la main."
+      : ecarts.length ? "La liste de l’outil compte autrement : " + ecarts.map(function (ref) {
+          return noms[ref] + ", " + pose[ref] + " ici, " + attendu[ref] + " dans l’outil";
+        }).join(" ; ") + "." : "Le schéma et la liste de l’outil comptent les mêmes pièces.";
+    var res = p.manquants.slice();
+    if (robinet.montage === "nez" && p.secteurs.length > ROBINET.prog.voies) res.unshift("Le programmateur en nez de robinet n’a qu’une voie, ce jardin en demande " + p.secteurs.length + ".");
+    res.unshift("Les pièces du robinet sont proposées : elles attendent votre validation.");
+    $("reserves").innerHTML = res.map(function (r) { return "<li>" + texte(r) + "</li>"; }).join("");
+  }
+
+  function dessiner() {
+    var p = plan(), M = p.materiel;
+    direSaisie();
+    document.querySelectorAll("[data-montage]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.montage === robinet.montage)); });
+    $("bloc-nourrice").hidden = robinet.montage === "nez";
+    var auto = departDeLOutil(p), dia = robinet.departMain || auto;
+    $("departs").innerHTML = [16, 25, 32].map(function (n) { return '<button type="button" data-depart="' + n + '" aria-pressed="' + (dia === n) + '">' + (n === 16 ? "Ø16 rigide" : "Ø" + n) + "</button>"; }).join("");
+    $("depart-choisi").textContent = "L’outil choisit le Ø" + auto + (auto === 16 ? " rigide" : "") + "." + (robinet.departMain && robinet.departMain !== auto ? " Changé à la main." : "");
+    couleursPlan = p.couleurs;
+    var res = C.dessinerPlan(p.dessin, NOURRICE, p.couleurs);
+    if (!res.ok) { $("reseaux").textContent = res.raison; return; }
+    compte = {};
+    dessinerNourrice(p.secteurs.length, p.secteurs.filter(function (s) { return s.famille === "Goutte-à-goutte"; }).length);
+    dessinerReseaux(p, res.dessin);
+    dessinerPieces(p, res.dessin, M);
+    dessinerListe(p, res.dessin);
+    dessinerMots();
+  }
+
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (!b) return;
+    if (b.dataset.cle) { menu(b.dataset.cle); return; }
+    if (b.dataset.geste) {
+      var cle = etat.cible;
+      if (b.dataset.geste === "changer") { $("menu").hidden = true; etat.ou = null; etat.recherche = ""; $("recherche").value = ""; etat.categorie = categorieDe(cle); ouvrir(); return; }
+      if (b.dataset.geste === "supprimer") {
+        if (cle.indexOf("plus:") === 0) etat.ajoutees = etat.ajoutees.filter(function (a) { return "plus:" + a.n !== cle; });
+        else etat.retirees[cle] = true;
+      }
+      if (b.dataset.geste === "remettre") delete etat.retirees[cle];
+      if (b.dataset.geste === "revenir") delete etat.remplacees[cle];
+      $("menu").hidden = true; dessiner(); return;
+    }
+    if (b.dataset.montage) { robinet.montage = b.dataset.montage; robinet.departMain = null; dessiner(); return; }
+    if (b.dataset.depart) { robinet.departMain = Number(b.dataset.depart); dessiner(); return; }
+    if (b.dataset.sortie) { etat.sortie = b.dataset.sortie; dessiner(); }
+    else if (b.dataset.couronne) { etat.couronne = Number(b.dataset.couronne); dessiner(); }
+    else if (b.dataset.ajouter) { etat.ou = b.dataset.ajouter; etat.cible = null; ouvrir(); }
+    else if (b.dataset.categorie) { etat.categorie = b.dataset.categorie; etat.recherche = ""; $("recherche").value = ""; ouvrir(); }
+    else if (b.dataset.choisir) {
+      var x = trouver(b.dataset.choisir);
+      if (etat.ou === null && etat.cible) { etat.remplacees[etat.cible] = { ref: x.ref, nom: x.nom }; delete etat.retirees[etat.cible]; }
+      else etat.ajoutees.push({ n: Date.now(), ou: etat.ou, ref: x.ref, nom: x.nom });
+      $("feuille").hidden = true; dessiner();
+    }
+  });
+  $("fermer").onclick = function () { $("feuille").hidden = true; };
+  $("fermer-menu").onclick = function () { $("menu").hidden = true; };
+  $("grillage").onchange = function () { etat.grillage = this.checked; dessiner(); };
+  $("double").onchange = function () { robinet.double = this.checked; dessiner(); };
+  // Le message au fournisseur : il le lit, le copie, ou l'envoie par le partage du téléphone.
+  $("envoyer").onclick = function () {
+    // Ce qu'il a retouché reste, tant que la liste n'a pas changé.
+    if ($("message").dataset.origine !== dernierMessage) { $("message").value = dernierMessage; $("message").dataset.origine = dernierMessage; } $("partager").hidden = !navigator.share; $("copier").textContent = "Copier"; $("fournisseur").hidden = false; };
+  $("fermer-fournisseur").onclick = function () { $("fournisseur").hidden = true; };
+  $("copier").onclick = function () {
+    var b = this;
+    navigator.clipboard.writeText($("message").value).then(function () { b.textContent = "Copié"; }, function () { $("message").select(); b.textContent = "Sélectionné"; });
+  };
+  $("partager").onclick = function () { navigator.share({ text: $("message").value }); };
+  $("recherche").oninput = function () { etat.recherche = this.value; ouvrir(); };
+  function categorieDe(cle) { var p = proposees[cle], x = p && trouver(p.ref); return x ? x.categorie : "reseau"; }
+  function menu(cle) {
+    etat.cible = cle;
+    var p = proposees[cle] || {}, change = etat.remplacees[cle], retiree = etat.retirees[cle];
+    $("menu-titre").textContent = change ? change.nom : p.nom;
+    $("menu-propose").hidden = !change;
+    $("menu-propose").textContent = change ? "Proposée : " + p.nom : "";
+    var g = '<button type="button" data-geste="changer">Changer la pièce</button>';
+    g += retiree ? '<button type="button" data-geste="remettre">Remettre la pièce</button>' : '<button type="button" class="danger" data-geste="supprimer">Supprimer la pièce</button>';
+    if (change) g += '<button type="button" data-geste="revenir">Revenir à la pièce proposée</button>';
+    $("menu-gestes").innerHTML = g;
+    $("menu").hidden = false;
+  }
+  function ouvrir() {
+    $("feuille-titre").textContent = etat.ou === null ? "Changer la pièce" : "Ajouter une pièce";
+    $("categories").innerHTML = CATEGORIES.map(function (c) { return '<button type="button" data-categorie="' + texte(c[0]) + '" aria-pressed="' + (!etat.recherche && etat.categorie === c[0]) + '">' + texte(c[1]) + "</button>"; }).join("");
+    var q = etat.recherche.trim().toLowerCase();
+    var vues = LISTE.filter(function (x) { return q ? (x.nom + " " + x.ref).toLowerCase().indexOf(q) >= 0 : x.categorie === etat.categorie; });
+    $("choix").innerHTML = vues.slice(0, 60).map(function (x) {
+      var v = PHOTOS[x.ref] ? '<span class="vignette pleine"><img src="arrosage-photos/' + PHOTOS[x.ref] + '" alt=""></span>' : '<span class="vignette"></span>';
+      return '<button type="button" class="choix" data-choisir="' + texte(x.ref) + '">' + v + "<span>" + texte(x.nom) + "<small>" + texte(x.ref) + "</small></span></button>";
+    }).join("");
+    $("feuille").hidden = false;
+  }
+
+  var aCharger = Object.keys(HAUT).concat(Object.keys(COLONNE).map(function (k) { return COLONNE[k].src || k; }));
+  Promise.all(aCharger.filter(function (r, i) { return aCharger.indexOf(r) === i; }).map(function (r) {
+    return charger(r).then(function (im) { images[r] = im; });
+  })).then(dessiner);
+})();
+</script>
+</body>
+</html>
