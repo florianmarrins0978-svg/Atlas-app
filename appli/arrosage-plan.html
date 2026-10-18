@@ -121,7 +121,7 @@
   .groupe{margin:16px 0 0;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
   .groupe .pastille{flex:none;width:10px;height:10px;border-radius:3px;background:var(--couleur)}
   .envoyer{margin-top:16px;width:100%;min-height:52px;border:0;border-radius:12px;background:var(--atlas-ink);color:var(--atlas-card);font-size:16px;cursor:pointer}
-  .message{display:block;width:100%;min-height:300px;margin-top:12px;border:0;border-radius:12px;padding:12px;font:14px/1.5 ui-monospace,Menlo,Consolas,monospace;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line);resize:vertical}
+  .message{display:block;width:100%;min-height:300px;margin-top:12px;border:0;border-radius:12px;padding:12px;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line);resize:vertical}
   .gestes-message{display:flex;gap:8px;margin-top:12px}
   .gestes-message button{flex:1;min-height:52px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:15.5px;cursor:pointer}
   .gestes-message button:last-child{background:var(--atlas-ink);border-color:var(--atlas-ink);color:var(--atlas-card)}
@@ -227,8 +227,8 @@
 <div class="feuille" id="fournisseur" hidden>
   <div class="boite" role="dialog" aria-modal="true" aria-labelledby="fournisseur-titre">
     <div class="haut"><h2 id="fournisseur-titre">Au fournisseur</h2><button class="fermer" type="button" id="fermer-fournisseur">Fermer</button></div>
-    <p class="propose">Tout est additionné, sans prix.</p>
-    <textarea class="message" id="message" readonly aria-label="Le message au fournisseur"></textarea>
+    <p class="propose">Tout est additionné, sans prix. Vous pouvez modifier le texte.</p>
+    <textarea class="message" id="message" aria-label="Le message au fournisseur"></textarea>
     <div class="gestes-message"><button type="button" id="copier">Copier</button><button type="button" id="partager">Envoyer</button></div>
   </div>
 </div>
@@ -756,13 +756,15 @@
   $("fermer").onclick = function () { $("feuille").hidden = true; };
   $("fermer-menu").onclick = function () { $("menu").hidden = true; };
   // Le message au fournisseur : il le lit, le copie, ou l'envoie par le partage du téléphone.
-  $("envoyer").onclick = function () { $("message").value = dernierMessage; $("partager").hidden = !navigator.share; $("copier").textContent = "Copier"; $("fournisseur").hidden = false; };
+  $("envoyer").onclick = function () {
+    // Ce qu'il a retouché reste, tant que la liste n'a pas changé.
+    if ($("message").dataset.origine !== dernierMessage) { $("message").value = dernierMessage; $("message").dataset.origine = dernierMessage; } $("partager").hidden = !navigator.share; $("copier").textContent = "Copier"; $("fournisseur").hidden = false; };
   $("fermer-fournisseur").onclick = function () { $("fournisseur").hidden = true; };
   $("copier").onclick = function () {
     var b = this;
-    navigator.clipboard.writeText(dernierMessage).then(function () { b.textContent = "Copié"; }, function () { $("message").select(); b.textContent = "Sélectionné"; });
+    navigator.clipboard.writeText($("message").value).then(function () { b.textContent = "Copié"; }, function () { $("message").select(); b.textContent = "Sélectionné"; });
   };
-  $("partager").onclick = function () { navigator.share({ text: dernierMessage }); };
+  $("partager").onclick = function () { navigator.share({ text: $("message").value }); };
   $("recherche").oninput = function () { etat.recherche = this.value; ouvrir(); };
   function categorieDe(cle) { var p = proposees[cle], x = p && trouver(p.ref); return x ? x.categorie : "reseau"; }
   function menu(cle) {
