@@ -145,8 +145,16 @@
   .formule{display:flex;justify-content:space-between;align-items:center;width:100%;margin-top:10px;
            padding:16px 18px;border-radius:16px;border:1px solid rgba(233,232,222,.18);background:var(--carte);
            color:var(--encre);font:inherit;font-size:16px;text-align:left;cursor:pointer}
+  .formule{flex-direction:column;align-items:flex-start}
   .formule small{display:block;margin-top:2px;font-size:13px;color:var(--doux)}
   .formule:focus-visible,.recommencer:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+  .question{margin:26px 0 0;font-size:15px}
+  .question span{color:var(--gris);font-size:13px}
+  .raisons{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .raison{padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid rgba(233,232,222,.24);
+          background:none;color:var(--encre);font:inherit;font-size:14px;cursor:pointer}
+  .raison[aria-pressed="true"]{background:var(--encre);color:var(--nuit);border-color:var(--encre)}
+  .raison:focus-visible{outline:2px solid var(--or);outline-offset:2px}
   .banc .recommencer{margin-top:8px;padding:8px 12px;min-height:36px;border-radius:6px;font:inherit;font-size:12px;
          border:1px solid rgba(233,232,222,.2);background:var(--carte);color:var(--encre);cursor:pointer}
 </style>
@@ -249,6 +257,12 @@
         <div class="ligne"><span>Remboursé</span><b>354 € TTC</b></div>
       </div>
       <p class="dit">Sur la carte qui a servi à payer. Vos données restent consultables trente jours.</p>
+      <p class="question">Pourquoi partez-vous&nbsp;? <span>Facultatif</span></p>
+      <div class="raisons" data-raisons>
+        <button type="button" class="raison">C'est trop cher</button>
+        <button type="button" class="raison">Je ne m'en sers pas assez</button>
+        <button type="button" class="raison">Il me manque quelque chose</button>
+      </div>
     </div>
     <div class="pied">
       <button type="button" class="principal" data-va="resilie">Résilier et être remboursé</button>
@@ -266,6 +280,60 @@
     <div class="pied">
       <button type="button" class="principal" data-va="mdp">Récupérer mes données</button>
       <button type="button" class="geste refuser" data-va="formules">Reprendre un abonnement</button>
+    </div>
+  </section>
+
+
+  <section class="ecran" data-ecran="abonnement">
+    <div class="corps">
+      <h2 class="serif">Abonnement</h2>
+      <div class="carte">
+        <div class="ligne"><span>Formule</span><b>Entreprise</b></div>
+        <div class="ligne"><span>Prix</span><b>590 € HT par an</b></div>
+        <div class="ligne"><span>Prochain paiement</span><b>18 avril 2027</b></div>
+      </div>
+    </div>
+    <div class="pied">
+      <button type="button" class="principal" data-va="avant-partir">Résilier</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="avant-partir">
+    <div class="corps">
+      <h2 class="serif">Avant de partir</h2>
+      <button type="button" class="formule" data-va="artisan">Passer à Artisan<small>39 € HT par mois, au lieu de 59</small></button>
+      <p class="question">Pourquoi partez-vous&nbsp;? <span>Facultatif</span></p>
+      <div class="raisons" data-raisons>
+        <button type="button" class="raison">C'est trop cher</button>
+        <button type="button" class="raison">Je ne m'en sers pas assez</button>
+        <button type="button" class="raison">Il me manque quelque chose</button>
+      </div>
+    </div>
+    <div class="pied">
+      <button type="button" class="geste refuser" data-va="arret">Résilier quand même</button>
+      <button type="button" class="sortie" data-retour>Annuler</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="artisan">
+    <div class="corps">
+      <p class="ruban">Formule Artisan à partir du 18 avril 2027.</p>
+      <h2 class="serif">Abonnement</h2>
+      <div class="carte">
+        <div class="ligne"><span>Jusqu'au 18 avril 2027</span><b>Entreprise</b></div>
+        <div class="ligne"><span>Ensuite</span><b>Artisan, 39 € HT par mois</b></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="arret">
+    <div class="corps">
+      <p class="ruban">Entreprise, s'arrête le 18 avril 2027.</p>
+      <h2 class="serif">Abonnement</h2>
+      <p class="dit">Vous gardez tout jusqu'à cette date. Ensuite, lecture seule pendant trente jours.</p>
+    </div>
+    <div class="pied">
+      <button type="button" class="geste refuser" data-va="abonnement" data-reprendre-annuel>Ne pas arrêter</button>
     </div>
   </section>
 
@@ -377,6 +445,12 @@
         <div class="ligne"><span>Remboursé</span><b>354 € TTC</b></div>
       </div>
       <p class="dit">Sur la carte qui a servi à payer. Vos données restent consultables trente jours.</p>
+      <p class="question">Pourquoi partez-vous&nbsp;? <span>Facultatif</span></p>
+      <div class="raisons" data-raisons>
+        <button type="button" class="raison">C'est trop cher</button>
+        <button type="button" class="raison">Je ne m'en sers pas assez</button>
+        <button type="button" class="raison">Il me manque quelque chose</button>
+      </div>
     </div>
     <div class="pied">
       <button type="button" class="principal" data-va="resilie">Résilier et être remboursé</button>
@@ -394,6 +468,60 @@
     <div class="pied">
       <button type="button" class="principal" data-va="mdp">Récupérer mes données</button>
       <button type="button" class="geste refuser" data-va="formules">Reprendre un abonnement</button>
+    </div>
+  </section>
+
+
+  <section class="ecran" data-ecran="abonnement">
+    <div class="corps">
+      <h2 class="serif">Abonnement</h2>
+      <div class="carte">
+        <div class="ligne"><span>Formule</span><b>Entreprise</b></div>
+        <div class="ligne"><span>Prix</span><b>590 € HT par an</b></div>
+        <div class="ligne"><span>Prochain paiement</span><b>18 avril 2027</b></div>
+      </div>
+    </div>
+    <div class="pied">
+      <button type="button" class="principal" data-va="avant-partir">Résilier</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="avant-partir">
+    <div class="corps">
+      <h2 class="serif">Avant de partir</h2>
+      <button type="button" class="formule" data-va="artisan">Passer à Artisan<small>39 € HT par mois, au lieu de 59</small></button>
+      <p class="question">Pourquoi partez-vous&nbsp;? <span>Facultatif</span></p>
+      <div class="raisons" data-raisons>
+        <button type="button" class="raison">C'est trop cher</button>
+        <button type="button" class="raison">Je ne m'en sers pas assez</button>
+        <button type="button" class="raison">Il me manque quelque chose</button>
+      </div>
+    </div>
+    <div class="pied">
+      <button type="button" class="geste refuser" data-va="arret">Résilier quand même</button>
+      <button type="button" class="sortie" data-retour>Annuler</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="artisan">
+    <div class="corps">
+      <p class="ruban">Formule Artisan à partir du 18 avril 2027.</p>
+      <h2 class="serif">Abonnement</h2>
+      <div class="carte">
+        <div class="ligne"><span>Jusqu'au 18 avril 2027</span><b>Entreprise</b></div>
+        <div class="ligne"><span>Ensuite</span><b>Artisan, 39 € HT par mois</b></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="arret">
+    <div class="corps">
+      <p class="ruban">Entreprise, s'arrête le 18 avril 2027.</p>
+      <h2 class="serif">Abonnement</h2>
+      <p class="dit">Vous gardez tout jusqu'à cette date. Ensuite, lecture seule pendant trente jours.</p>
+    </div>
+    <div class="pied">
+      <button type="button" class="geste refuser" data-va="abonnement" data-reprendre-annuel>Ne pas arrêter</button>
     </div>
   </section>
 
@@ -505,6 +633,12 @@
         <div class="ligne"><span>Remboursé</span><b>354 € TTC</b></div>
       </div>
       <p class="dit">Sur la carte qui a servi à payer. Vos données restent consultables trente jours.</p>
+      <p class="question">Pourquoi partez-vous&nbsp;? <span>Facultatif</span></p>
+      <div class="raisons" data-raisons>
+        <button type="button" class="raison">C'est trop cher</button>
+        <button type="button" class="raison">Je ne m'en sers pas assez</button>
+        <button type="button" class="raison">Il me manque quelque chose</button>
+      </div>
     </div>
     <div class="pied">
       <button type="button" class="principal" data-va="resilie">Résilier et être remboursé</button>
@@ -522,6 +656,248 @@
     <div class="pied">
       <button type="button" class="principal" data-va="mdp">Récupérer mes données</button>
       <button type="button" class="geste refuser" data-va="formules">Reprendre un abonnement</button>
+    </div>
+  </section>
+
+
+  <section class="ecran" data-ecran="abonnement">
+    <div class="corps">
+      <h2 class="serif">Abonnement</h2>
+      <div class="carte">
+        <div class="ligne"><span>Formule</span><b>Entreprise</b></div>
+        <div class="ligne"><span>Prix</span><b>590 € HT par an</b></div>
+        <div class="ligne"><span>Prochain paiement</span><b>18 avril 2027</b></div>
+      </div>
+    </div>
+    <div class="pied">
+      <button type="button" class="principal" data-va="avant-partir">Résilier</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="avant-partir">
+    <div class="corps">
+      <h2 class="serif">Avant de partir</h2>
+      <button type="button" class="formule" data-va="artisan">Passer à Artisan<small>39 € HT par mois, au lieu de 59</small></button>
+      <p class="question">Pourquoi partez-vous&nbsp;? <span>Facultatif</span></p>
+      <div class="raisons" data-raisons>
+        <button type="button" class="raison">C'est trop cher</button>
+        <button type="button" class="raison">Je ne m'en sers pas assez</button>
+        <button type="button" class="raison">Il me manque quelque chose</button>
+      </div>
+    </div>
+    <div class="pied">
+      <button type="button" class="geste refuser" data-va="arret">Résilier quand même</button>
+      <button type="button" class="sortie" data-retour>Annuler</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="artisan">
+    <div class="corps">
+      <p class="ruban">Formule Artisan à partir du 18 avril 2027.</p>
+      <h2 class="serif">Abonnement</h2>
+      <div class="carte">
+        <div class="ligne"><span>Jusqu'au 18 avril 2027</span><b>Entreprise</b></div>
+        <div class="ligne"><span>Ensuite</span><b>Artisan, 39 € HT par mois</b></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="arret">
+    <div class="corps">
+      <p class="ruban">Entreprise, s'arrête le 18 avril 2027.</p>
+      <h2 class="serif">Abonnement</h2>
+      <p class="dit">Vous gardez tout jusqu'à cette date. Ensuite, lecture seule pendant trente jours.</p>
+    </div>
+    <div class="pied">
+      <button type="button" class="geste refuser" data-va="abonnement" data-reprendre-annuel>Ne pas arrêter</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="formules">
+    <div class="corps">
+      <h2 class="serif">Choisir une formule</h2>
+      <button type="button" class="formule" data-va="accueil" data-reprise>Artisan<small>39 € HT par mois</small></button>
+      <button type="button" class="formule" data-va="accueil" data-reprise>Entreprise<small>59 € HT par mois</small></button>
+      <button type="button" class="formule" data-va="accueil" data-reprise>Illimité<small>159 € HT par mois</small></button>
+      <p class="dit">À l'année, deux mois offerts.</p>
+    </div>
+    <div class="pied"><button type="button" class="sortie" data-retour>Annuler</button></div>
+  </section>
+</div>
+
+<div class="banc deuxieme"><h2>4. Une résiliation normale, depuis Abonnement</h2><button type="button" class="recommencer" data-recommencer="3">Revenir au début</button></div>
+<div class="tel" data-tel="resilier">
+  <div class="defile">
+    <h1 class="serif" data-titre>Avant de commencer</h1>
+    <p class="intro">Vos clients vous confient leurs coordonnées&nbsp;; vous nous les confiez à votre tour. Ces documents stipulent ce que nous en faisons, et ce que nous nous engageons à ne pas en faire.</p>
+    <div class="carte">
+      <p class="engage" data-engage></p>
+      <button type="button" class="rangee" data-doc="cgu">
+        <span class="nom">Conditions générales d'utilisation<span class="version">Version 3</span></span>
+        <i class="chev" aria-hidden="true"></i>
+      </button>
+      <button type="button" class="rangee" data-doc="st">
+        <span class="nom">Contrat de sous-traitance (article 28 RGPD)<span class="version">Version canevas-1</span></span>
+        <i class="chev" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+  <div class="pied">
+    <button type="button" class="principal" data-accepter>Accepter</button>
+    <button type="button" class="sortie" data-va="porte" data-sortie>Se déconnecter</button>
+    <button type="button" class="geste refuser" data-refuser hidden>Refuser</button>
+  </div>
+
+  <section class="feuille" data-feuille="cgu" aria-hidden="true">
+    <header><h2 class="serif">Conditions générales d'utilisation</h2><button type="button" class="fermer" data-fermer>Fermer</button></header>
+    <div class="lu">
+      <h3>Article 1 : Qui édite Atlas</h3>
+      <p>Atlas est édité par :</p>
+      <p>Dénomination sociale : [À COMPLÉTER]<br>Forme juridique : [À COMPLÉTER]<br>Capital social : [À COMPLÉTER]<br>Siège social : [À COMPLÉTER]<br>RCS et numéro SIREN : [À COMPLÉTER]<br>Numéro de TVA intracommunautaire : [À COMPLÉTER]</p>
+    </div>
+  </section>
+  <section class="feuille" data-feuille="st" aria-hidden="true">
+    <header><h2 class="serif">Contrat de sous-traitance (article 28 RGPD)</h2><button type="button" class="fermer" data-fermer>Fermer</button></header>
+    <div class="lu">
+      <p class="note"><b>Canevas non juridique.</b> Ce document doit être rédigé ou relu par un juriste avant toute utilisation avec de vrais artisans.</p>
+      <h3>1. Qui est qui</h3>
+      <p><b>Vous, l'artisan, êtes responsable de traitement</b> des données de vos clients. Vous décidez pourquoi et comment elles sont traitées.</p>
+      <p><b>Nous sommes sous-traitant.</b> Nous traitons ces données uniquement sur vos instructions, pour vous permettre d'utiliser Atlas.</p>
+    </div>
+  </section>
+  <section class="feuille" data-feuille="refus" aria-hidden="true">
+    <header><h2 class="serif">Refuser la nouvelle version</h2><button type="button" class="fermer" data-fermer>Fermer</button></header>
+    <div class="refus">
+      <p>Vos données restent à vous. Récupérez-les, puis résiliez : les mois payés et non utilisés vous sont remboursés.</p>
+      <button type="button" class="geste" data-va="mdp" data-export>Récupérer mes données</button>
+      <button type="button" class="geste" data-va="confirmer">Résilier et être remboursé</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="accueil">
+    <div class="corps">
+      <p class="ruban" data-message-accueil></p>
+      <h2 class="serif">Bonjour</h2>
+      <div class="fantome" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="porte">
+    <div class="corps">
+      <h2 class="serif">Atlas</h2>
+      <p class="dit">Vous êtes déconnecté. Rien n'a été accepté.</p>
+    </div>
+    <div class="pied"><button type="button" class="principal" data-va="debut">Se connecter</button></div>
+  </section>
+
+  <section class="ecran" data-ecran="mdp">
+    <div class="corps">
+      <h2 class="serif">Votre mot de passe</h2>
+      <p class="dit">Le fichier porte les coordonnées de vos clients.</p>
+      <input class="champ" type="password" value="motdepasse" aria-label="Mot de passe" readonly>
+    </div>
+    <div class="pied">
+      <button type="button" class="principal" data-va="fichier">Télécharger mes données</button>
+      <button type="button" class="sortie" data-retour>Annuler</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="fichier">
+    <div class="corps">
+      <h2 class="serif">C'est téléchargé</h2>
+      <div class="fichier"><i aria-hidden="true"></i><span>atlas-votre-entreprise-2026-10-18.zip</span></div>
+      <p class="dit">Vos devis, vos factures, vos clients et vos chantiers. Il s'ouvre sans Atlas.</p>
+    </div>
+    <div class="pied"><button type="button" class="principal" data-retour-apres-export>Retour</button></div>
+  </section>
+
+  <section class="ecran" data-ecran="confirmer">
+    <div class="corps">
+      <h2 class="serif">Résilier maintenant&nbsp;?</h2>
+      <div class="carte">
+        <div class="ligne"><span>Formule</span><b>Entreprise, à l'année</b></div>
+        <div class="ligne"><span>Payé jusqu'au</span><b>18 avril 2027</b></div>
+        <div class="ligne"><span>Mois non utilisés</span><b>6</b></div>
+        <div class="ligne"><span>Remboursé</span><b>354 € TTC</b></div>
+      </div>
+      <p class="dit">Sur la carte qui a servi à payer. Vos données restent consultables trente jours.</p>
+      <p class="question">Pourquoi partez-vous&nbsp;? <span>Facultatif</span></p>
+      <div class="raisons" data-raisons>
+        <button type="button" class="raison">C'est trop cher</button>
+        <button type="button" class="raison">Je ne m'en sers pas assez</button>
+        <button type="button" class="raison">Il me manque quelque chose</button>
+      </div>
+    </div>
+    <div class="pied">
+      <button type="button" class="principal" data-va="resilie">Résilier et être remboursé</button>
+      <button type="button" class="sortie" data-retour>Annuler</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="resilie">
+    <div class="corps">
+      <p class="ruban">Abonnement terminé. Lecture seule.</p>
+      <h2 class="serif">Bonjour</h2>
+      <div class="carte"><p class="engage">Vos données restent consultables jusqu'au 17 novembre, puis elles seront effacées.</p></div>
+      <div class="fantome" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>
+    <div class="pied">
+      <button type="button" class="principal" data-va="mdp">Récupérer mes données</button>
+      <button type="button" class="geste refuser" data-va="formules">Reprendre un abonnement</button>
+    </div>
+  </section>
+
+
+  <section class="ecran" data-ecran="abonnement">
+    <div class="corps">
+      <h2 class="serif">Abonnement</h2>
+      <div class="carte">
+        <div class="ligne"><span>Formule</span><b>Entreprise</b></div>
+        <div class="ligne"><span>Prix</span><b>590 € HT par an</b></div>
+        <div class="ligne"><span>Prochain paiement</span><b>18 avril 2027</b></div>
+      </div>
+    </div>
+    <div class="pied">
+      <button type="button" class="principal" data-va="avant-partir">Résilier</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="avant-partir">
+    <div class="corps">
+      <h2 class="serif">Avant de partir</h2>
+      <button type="button" class="formule" data-va="artisan">Passer à Artisan<small>39 € HT par mois, au lieu de 59</small></button>
+      <p class="question">Pourquoi partez-vous&nbsp;? <span>Facultatif</span></p>
+      <div class="raisons" data-raisons>
+        <button type="button" class="raison">C'est trop cher</button>
+        <button type="button" class="raison">Je ne m'en sers pas assez</button>
+        <button type="button" class="raison">Il me manque quelque chose</button>
+      </div>
+    </div>
+    <div class="pied">
+      <button type="button" class="geste refuser" data-va="arret">Résilier quand même</button>
+      <button type="button" class="sortie" data-retour>Annuler</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="artisan">
+    <div class="corps">
+      <p class="ruban">Formule Artisan à partir du 18 avril 2027.</p>
+      <h2 class="serif">Abonnement</h2>
+      <div class="carte">
+        <div class="ligne"><span>Jusqu'au 18 avril 2027</span><b>Entreprise</b></div>
+        <div class="ligne"><span>Ensuite</span><b>Artisan, 39 € HT par mois</b></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="arret">
+    <div class="corps">
+      <p class="ruban">Entreprise, s'arrête le 18 avril 2027.</p>
+      <h2 class="serif">Abonnement</h2>
+      <p class="dit">Vous gardez tout jusqu'à cette date. Ensuite, lecture seule pendant trente jours.</p>
+    </div>
+    <div class="pied">
+      <button type="button" class="geste refuser" data-va="abonnement" data-reprendre-annuel>Ne pas arrêter</button>
     </div>
   </section>
 
@@ -545,6 +921,8 @@
     <li>À la première fois, « Se déconnecter » reste la seule sortie.</li>
     <li>Quand les conditions changent, un client déjà là peut refuser : il récupère ses données, puis résilie, et les mois payés et non utilisés lui sont remboursés (votre choix du 18 octobre).</li>
     <li>Une résiliation normale garde tout jusqu'à l'échéance, comme aujourd'hui. Après : lecture seule pendant trente jours, puis effacement, prévenu par e-mail.</li>
+    <li>Une résiliation normale propose d'abord une formule moins chère, et demande pourquoi l'on part. La question est facultative : on peut résilier sans y répondre.</li>
+    <li>Au refus de nouvelles conditions, seule la question est posée : changer de formule ne règle pas un désaccord sur les conditions.</li>
     <li>Le remboursement montré est un exemple : formule Entreprise à l'année, 590 € HT, payée le 18 avril, refusée le 18 octobre.</li>
     <li>La preuve ne change pas : une ligne par document, avec la date, l'heure et la version.</li>
   </ul>
@@ -607,7 +985,10 @@ function monter(tel){
     const acc = q("[data-accepter]");
     acc.disabled = false;
     acc.textContent = "Accepter";
-    if(cas === "apres"){ pile.push("resilie"); montrer("resilie"); } else montrer(null);
+    tel.querySelectorAll(".raison").forEach(r => r.setAttribute("aria-pressed", "false"));
+    if(cas === "apres"){ pile.push("resilie"); montrer("resilie"); }
+    else if(cas === "resilier"){ pile.push("abonnement"); montrer("abonnement"); }
+    else montrer(null);
     tel.querySelectorAll(".corps, .defile").forEach(d => d.scrollTop = 0);
   };
 
@@ -635,10 +1016,18 @@ function monter(tel){
     if(id === "debut"){ tel.reset(); return; }
     if(b.hasAttribute("data-reprise")) q("[data-message-accueil]").textContent = BIENVENUE.reprise;
     if(id === "resilie"){ fermerFeuilles(); pile.length = 0; }
+    if(b.hasAttribute("data-reprendre-annuel")) pile.length = 0;
     pile.push(id);
     montrer(id);
   }));
   tel.querySelectorAll("[data-retour]").forEach(b => b.addEventListener("click", retour));
+  /* Une seule raison, et l'on peut n'en donner aucune : retoucher la même la retire. */
+  tel.querySelectorAll("[data-raisons]").forEach(groupe => groupe.querySelectorAll(".raison").forEach(r =>
+    r.addEventListener("click", () => {
+      const deja = r.getAttribute("aria-pressed") === "true";
+      groupe.querySelectorAll(".raison").forEach(x => x.setAttribute("aria-pressed", "false"));
+      r.setAttribute("aria-pressed", String(!deja));
+    })));
   q("[data-retour-apres-export]").addEventListener("click", () => {
     const exp = q("[data-export]");
     exp.classList.add("fait");

@@ -1235,6 +1235,7 @@ inscrit, « Se déconnecter » suffit, il n'a encore rien chez nous.
 |---|---|
 | dessiner puis coder « Refuser » pour un client existant : récupérer ses données, puis résilier avec remboursement | moi |
 | coder la lecture seule après l'échéance, puis l'effacement à trente jours | moi |
+| coder « Avant de partir » pour une résiliation normale : passer à une formule moins chère, et « Pourquoi partez-vous ? » facultatif, dont les réponses se gardent (votre accord du 18 octobre) | moi |
 | vérifier que le blocage attend bien les trente jours de préavis de l'article 15 | moi |
 | confirmer qu'un seul bouton vaut pour le contrat de sous-traitance | le juriste qui relira les textes (point 2) |
 | dire si Atlas doit garder les factures dix ans (article 13) ou seulement les rendre à l'artisan : l'obligation comptable pèse sur lui, et un sous-traitant doit en principe rendre puis effacer (RGPD, article 28.3.g) | le juriste |
