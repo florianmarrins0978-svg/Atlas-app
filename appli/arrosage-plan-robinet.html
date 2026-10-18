@@ -177,6 +177,10 @@
   .pile{margin-top:10px;border-radius:16px;background:#ffffff;padding:14px 12px;box-shadow:inset 0 0 0 1px var(--atlas-line)}
   .etage{display:grid;grid-template-columns:150px 1fr;align-items:center;gap:10px;min-height:20px}
   .etage + .etage{margin-top:8px}
+  button.etage{width:100%;border:0;background:none;padding:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
+  .etage.retiree .ph{opacity:.35;filter:grayscale(1)}
+  .etage.retiree .lib b{color:var(--atlas-alerte);text-decoration:line-through}
+  .etage .vide{position:absolute;left:30px;top:16px;font-size:11px;color:#8a8578}
   /* L'AXE DE VISSAGE : chaque photo dit où tombe son filetage (--axe, en fraction
      de sa largeur, mesuré sur la photo), et ce point se pose sur l'axe commun, à
      60 px. Centrer les photos ne suffisait pas : une photo carrée ou une sortie
@@ -274,7 +278,8 @@
     <div id="options">
       <label class="coche" id="coche-sonde"><input type="checkbox" id="sonde"> Sonde de pluie</label>
       <label class="coche"><input type="checkbox" id="grillage"> Grillage avertisseur</label>
-      <div class="options-pieces"><div class="eclate sonde" id="sonde-piece"></div><div class="piece fixe" id="grillage-piece"></div></div>
+      <label class="coche"><input type="checkbox" id="teflon"> Téflon</label>
+      <div class="options-pieces"><div class="eclate sonde" id="sonde-piece"></div><div class="piece fixe" id="grillage-piece"></div><div class="eclate sonde" id="teflon-piece"></div></div>
       <p class="sous" id="grillage-detail"></p>
     </div>
     </div>
@@ -348,7 +353,7 @@
   var virgule = function (n) { return String(n).replace(".", ","); };
 
   // Les photos qu'il a validées (planche « Photos des pièces »), dans arrosage-photos/.
-  var PHOTOS = {"electrovanne-100dv":"electrovanne-100dv.jpg","electrovanne-100dv-ff":"electrovanne-100dv-ff.png","pebd16":"pebd16.png","pehd":"pehd.jpg","clarinette-2v":"clarinette-2v.jpg","clarinette-3v":"clarinette-3v.jpg","clarinette-4v":"clarinette-4v.jpg","connexion":"connexion.jpg","coude-mf":"coude-mf.jpg","coude-ff":"coude-ff.png","coude-taraude-25-34":"coude-taraude-25-34.jpg","HT1521":"HT1521.jpg","HT1522":"HT1522.jpg","HT1523":"HT1523.jpg","HT1541":"HT1541.jpg","HT1543":"HT1543.jpg","HT1544":"HT1544.jpg","HT1546":"HT1546.png","mamelon":"mamelon.jpg","mamelon-droit-1":"mamelon-droit-1.jpg","OD501":"OD501.jpg","OD502":"OD502.jpg","pile-9v":"pile-9v.jpg","prog-1":"prog-1.jpg","prog-2":"prog-2.jpg","prog-4":"prog-4.jpg","prog-6":"prog-6.jpg","RA2180":"RA2180.jpg","RA2181":"RA2181.jpg","RA3504":"RA3504.jpg","RA3504SAM":"RA3504SAM.jpg","RA5004FC":"RA5004FC.jpg","RA5006PC":"RA5006PC.jpg","raccord-male25":"raccord-male25.jpg","regard-jumbo5":"regard-jumbo5.jpg","regard-jumbo6":"regard-jumbo6.jpg","regard-rect12":"regard-rect12.jpg","regard-rg17106":"regard-rg17106.jpg","regulateur-ff34":"regulateur-ff34.jpg","RP403":"RP403.jpg","RT1802":"RT1802.jpg","RT1804":"RT1804.jpg","RT1806":"RT1806.jpg","RT1822":"RT1822.jpg","RT1824":"RT1824.jpg","RT1826":"RT1826.jpg","RT1832":"RT1832.jpg","RT1834":"RT1834.jpg","RT1836":"RT1836.jpg","TAMINI8-4P":"TAMINI8-4P.png","te-25-25-25":"te-25-25-25.jpg","te-mmf":"te-mmf.jpg","te-taraude-25-34-25":"te-taraude-25-34-25.jpg","UGGCBL23050":"UGGCBL23050.png","union":"union-ff.jpg","VAN":"VAN.jpg","vanne-purge":"vanne-purge.jpg","MID6301":"MID6301.png","MID6321":"MID6321.png","MID6341":"MID6341.png","MID6352":"MID6352.png","MID6371":"MID6371.png","pe25-amenee":"pehd.jpg","pe25":"pehd.jpg","RBT640":"RBT640.jpg","RBT639":"RBT639.jpg","RBT638":"RBT638.jpg","RBT637":"RBT637.jpg","RBT636":"RBT636.jpg","RBT601":"RBT601.jpg","RBT648":"RBT648.jpg","RBT1418":"RBT1418.jpg","RBT1419":"RBT1419.jpg","RBT1428":"RBT1428.jpg","RBT1429":"RBT1429.jpg","RBT1438":"RBT1438.jpg","RBT1439":"RBT1439.jpg","plasson16-raccord-taraude":"plasson16-raccord-taraude.jpg","plasson16-manchon":"plasson16-manchon.png","plasson16-te":"plasson16-te.png","plasson16-te-taraude":"plasson16-te-taraude.png","plasson16-coude":"plasson16-coude.png","plasson16-manchon-filete":"plasson16-manchon-filete.png","MID6362":"MID6362.png"};
+  var PHOTOS = {"electrovanne-100dv":"electrovanne-100dv.jpg","electrovanne-100dv-ff":"electrovanne-100dv-ff.png","pebd16":"pebd16.png","pehd":"pehd.jpg","clarinette-2v":"clarinette-2v.jpg","clarinette-3v":"clarinette-3v.jpg","clarinette-4v":"clarinette-4v.jpg","connexion":"connexion.jpg","coude-mf":"coude-mf.jpg","coude-ff":"coude-ff.png","coude-taraude-25-34":"coude-taraude-25-34.jpg","HT1521":"HT1521.jpg","HT1522":"HT1522.jpg","HT1523":"HT1523.jpg","HT1541":"HT1541.jpg","HT1543":"HT1543.jpg","HT1544":"HT1544.jpg","HT1546":"HT1546.png","mamelon":"mamelon.jpg","mamelon-droit-1":"mamelon-droit-1.jpg","OD501":"OD501.jpg","OD502":"OD502.jpg","pile-9v":"pile-9v.jpg","prog-1":"prog-1.jpg","prog-2":"prog-2.jpg","prog-4":"prog-4.jpg","prog-6":"prog-6.jpg","RA2180":"RA2180.jpg","RA2181":"RA2181.jpg","RA3504":"RA3504.jpg","RA3504SAM":"RA3504SAM.jpg","RA5004FC":"RA5004FC.jpg","RA5006PC":"RA5006PC.jpg","raccord-male25":"raccord-male25.jpg","regard-jumbo5":"regard-jumbo5.jpg","regard-jumbo6":"regard-jumbo6.jpg","regard-rect12":"regard-rect12.jpg","regard-rg17106":"regard-rg17106.jpg","regulateur-ff34":"regulateur-ff34.jpg","RP403":"RP403.jpg","RT1802":"RT1802.jpg","RT1804":"RT1804.jpg","RT1806":"RT1806.jpg","RT1822":"RT1822.jpg","RT1824":"RT1824.jpg","RT1826":"RT1826.jpg","RT1832":"RT1832.jpg","RT1834":"RT1834.jpg","RT1836":"RT1836.jpg","TAMINI8-4P":"TAMINI8-4P.png","te-25-25-25":"te-25-25-25.jpg","te-mmf":"te-mmf.jpg","te-taraude-25-34-25":"te-taraude-25-34-25.jpg","UGGCBL23050":"UGGCBL23050.png","union":"union-ff.jpg","VAN":"VAN.jpg","vanne-purge":"vanne-purge.jpg","MID6301":"MID6301.png","MID6321":"MID6321.png","MID6341":"MID6341.png","MID6352":"MID6352.png","MID6371":"MID6371.png","pe25-amenee":"pehd.jpg","pe25":"pehd.jpg","RBT640":"RBT640.jpg","RBT639":"RBT639.jpg","RBT638":"RBT638.jpg","RBT637":"RBT637.jpg","RBT636":"RBT636.jpg","RBT601":"RBT601.jpg","RBT648":"RBT648.jpg","RBT1418":"RBT1418.jpg","RBT1419":"RBT1419.jpg","RBT1428":"RBT1428.jpg","RBT1429":"RBT1429.jpg","RBT1438":"RBT1438.jpg","RBT1439":"RBT1439.jpg","plasson16-raccord-taraude":"plasson16-raccord-taraude.jpg","plasson16-manchon":"plasson16-manchon.png","plasson16-te":"plasson16-te.png","plasson16-te-taraude":"plasson16-te-taraude.png","plasson16-coude":"plasson16-coude.png","plasson16-manchon-filete":"plasson16-manchon-filete.png","MID6362":"MID6362.png","BDV999":"teflon.jpg"};
   var CHARTES = [["origine","Origine"],["brume","Brume"],["pierre","Pierre"],["beurre","Beurre"],["moka","Moka"],["prune","Prune"],["sylve","Sylve"],["nuit","Nuit"]];
   CHARTES.forEach(function (c) { var o = document.createElement("option"); o.value = c[0]; o.textContent = c[1]; $("charte").appendChild(o); });
   $("charte").onchange = function () { document.body.dataset.charte = this.value; dessiner(); };
@@ -747,7 +752,16 @@
     if (robinet.montage === "nez") etages.push('<div class="etage"><span class="ph" style="--h:90px;--axe:0.38"><img src="arrosage-robinet-photos/SP1151.png" alt=""></span><span class="lib"><b>' + texte(ROBINET.prog.nom) + "</b>Réf. " + ROBINET.prog.ref + "</span></div>");
     etages.push('<div class="etage"><span class="ph" style="--h:70px;--axe:' + (rac.axe || 0.5) + '"><img src="arrosage-robinet-photos/' + rac.photo + '" alt=""></span><span class="lib"><b>' + texte(rac.nom) + "</b>" + (rac.sansReference ? "Réf. du fournisseur" : "Réf. " + rac.ref) + "</span></div>");
     etages.push('<div class="etage"><span class="ph" style="--h:60px"><span class="tube' + (dia === 16 || dia === "16s" ? " seize" : "") + '"></span></span><span class="lib"><b>' + texte(tuyau) + "</b>" + (robinet.montage === "nez" ? "jusqu’au réseau, à mesurer" : "jusqu’à la nourrice, à mesurer") + "</span></div>");
-    $("pile").innerHTML = etages.join("");
+    // CHAQUE PIÈCE DU ROBINET SE TOUCHE, se change ou se supprime, comme toutes les
+    // autres (sa demande du 18 octobre 2026 : « il faut que l'utilisateur puisse
+    // modifier ou supprimer toutes les pièces qu'on lui propose »). Les clés sont
+    // celles que la liste compte (poser, plus bas) : le menu et la liste disent la même chose.
+    var cles = (robinet.double ? ["am:double"] : []).concat(robinet.montage === "nez" ? ["am:prog"] : []).concat(["am:raccord", "am:pe"]);
+    $("pile").innerHTML = etages.map(function (h, j) {
+      var cle = cles[j], change = etat.remplacees[cle], retiree = etat.retirees[cle];
+      if (change) h = '<div class="etage"><span class="ph" style="--h:60px">' + (PHOTOS[change.ref] ? '<img src="arrosage-photos/' + PHOTOS[change.ref] + '" alt="">' : '<span class="vide">photo à venir</span>') + '</span><span class="lib"><b>' + texte(change.nom) + "</b>changée</span></div>";
+      return h.replace(/^<div class="etage"/, '<button type="button" class="etage' + (retiree ? " retiree" : "") + '" data-cle="' + cle + '"').replace(/<\/div>$/, "</button>");
+    }).join("");
     $("amenee").innerHTML =
       (robinet.double ? poser("am:double", ROBINET.double.ref, ROBINET.double.nom, "Double sortie") : "") +
       (robinet.montage === "nez" ? poser("am:prog", ROBINET.prog.ref, ROBINET.prog.nom, "Programmateur nez de robinet") : "") +
@@ -1001,6 +1015,11 @@
     groupe = "sonde";
     var sonde = p.materiel.filter(function (l) { return l.ref === "RP403"; })[0];
     $("sonde-piece").innerHTML = etat.sonde && sonde ? poser("nr:sonde", sonde.ref, sonde.nom, sonde.nom, sonde.q) : "";
+    // Le téflon, coché, entre avec le montage du départ : « téflon 12 mm le
+    // rouleau », Aqua Plus BDV999 p. 34 (sa demande du 18 octobre 2026). Un rouleau,
+    // qu'on change ou supprime comme les autres pièces.
+    groupe = "amenee";
+    $("teflon-piece").innerHTML = etat.teflon ? poser("op:teflon", "BDV999", "téflon 12 mm le rouleau", "téflon 12 mm le rouleau", 1) : "";
     dessinerNourrice(p.secteurs.length, p.secteurs.filter(function (s) { return s.famille === "Goutte-à-goutte"; }).length);
     dessinerReseaux(p, res.dessin);
     dessinerPieces(p, res.dessin, M);
@@ -1044,6 +1063,7 @@
   $("fermer").onclick = function () { $("feuille").hidden = true; };
   $("fermer-menu").onclick = function () { $("menu").hidden = true; };
   $("grillage").onchange = function () { etat.grillage = this.checked; dessiner(); };
+  $("teflon").onchange = function () { etat.teflon = this.checked; dessiner(); };
   $("sonde").onchange = function () { etat.sonde = this.checked; dessiner(); };
   $("double").onchange = function () { robinet.double = this.checked; dessiner(); };
   // Le message au fournisseur : il le lit, le copie, ou l'envoie par le partage du téléphone.
