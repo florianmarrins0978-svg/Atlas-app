@@ -1214,12 +1214,29 @@ inscrit, « Se déconnecter » suffit, il n'a encore rien chez nous.
   Atlas garde déjà qui, quand, quelle version et l'empreinte du texte ; il
   faudra garder aussi la phrase affichée au-dessus du bouton.
 
+### Ce que vous avez tranché le 18 octobre 2026
+
+| Le cas | Ce qui se passe |
+|---|---|
+| il résilie normalement, abonnement annuel compris | il garde tout jusqu'à l'échéance déjà payée. **C'est déjà codé** : Stripe arrête l'abonnement en fin de période, et l'écran dit « s'arrête le … » |
+| il **refuse de nouvelles conditions** en cours de période | **la B** : résiliation immédiate, et **les mois payés et non utilisés lui sont remboursés**. Lui couper l'accès en gardant son argent, parce que c'est nous qui changeons les règles, serait le point le plus attaquable (Code de commerce, article L442‑1) |
+| l'échéance est passée | **lecture seule** : il voit tout et exporte, il ne crée plus rien (le mécanisme de l'essai terminé, étendu) |
+| trente jours après | **effacement**, prévenu par e-mail avant. La durée est déjà décidée dans `src/server/retention.ts` |
+
+### Ce qui n'est pas codé aujourd'hui, vérifié dans le code
+
+- un abonnement **résilié reste ouvert en écriture** : seul l'essai terminé passe en lecture seule (`enLectureSeule`, `src/lib/abonnements.ts`). Un client résilié utilise donc Atlas gratuitement ;
+- **aucun effacement** n'existe : ni fermeture de compte, ni suppression après résiliation ;
+- l'article 13 des CGU promet un délai « [À COMPLÉTER] » puis la suppression : il faudra y écrire trente jours.
+
 ### Ce qui reste, et qui le fait
 
 | | Qui |
 |---|---|
-| dessiner puis coder « Refuser » pour un client existant : récupérer ses données, puis résilier | moi |
+| dessiner puis coder « Refuser » pour un client existant : récupérer ses données, puis résilier avec remboursement | moi |
+| coder la lecture seule après l'échéance, puis l'effacement à trente jours | moi |
 | vérifier que le blocage attend bien les trente jours de préavis de l'article 15 | moi |
 | confirmer qu'un seul bouton vaut pour le contrat de sous-traitance | le juriste qui relira les textes (point 2) |
+| dire si Atlas doit garder les factures dix ans (article 13) ou seulement les rendre à l'artisan : l'obligation comptable pèse sur lui, et un sous-traitant doit en principe rendre puis effacer (RGPD, article 28.3.g) | le juriste |
 
 Planche : `appli/documents-legaux-un-geste.html`.

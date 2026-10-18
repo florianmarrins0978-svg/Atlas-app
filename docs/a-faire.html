@@ -832,13 +832,45 @@
 <li><strong>Accepter en un geste, sans case, est légal entre professionnels</strong> : le contrat de sous-traitance doit être écrit, l'électronique compte (RGPD article 28.9, lignes directrices 07/2020 de l'EDPB) ; la Cour de justice de l'Union a admis des conditions générales entre professionnels sans case à cocher (24 novembre 2022, C‑358/21) ; le Code civil demande que le texte soit montré avant et l'acceptation expresse (articles 1119, 1127‑2, 1127‑3).</li>
 <li><strong>Le vrai risque est la preuve</strong> : le tribunal de Paris a écarté des conditions faute de preuve de leur acceptation (7 mai 2024, n° 23/09970). Atlas garde déjà qui, quand, quelle version et l'empreinte du texte ; il faudra garder aussi la phrase affichée au-dessus du bouton.</li>
 </ul>
+<h3 id="ce-que-vous-avez-tranché-le-18-octobre-2026">Ce que vous avez tranché le 18 octobre 2026</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Le cas</th>
+<th>Ce qui se passe</th>
+</tr></thead><tbody>
+<tr>
+<td>il résilie normalement, abonnement annuel compris</td>
+<td>il garde tout jusqu'à l'échéance déjà payée. <strong>C'est déjà codé</strong> : Stripe arrête l'abonnement en fin de période, et l'écran dit « s'arrête le … »</td>
+</tr>
+<tr>
+<td>il <strong>refuse de nouvelles conditions</strong> en cours de période</td>
+<td><strong>la B</strong> : résiliation immédiate, et <strong>les mois payés et non utilisés lui sont remboursés</strong>. Lui couper l'accès en gardant son argent, parce que c'est nous qui changeons les règles, serait le point le plus attaquable (Code de commerce, article L442‑1)</td>
+</tr>
+<tr>
+<td>l'échéance est passée</td>
+<td><strong>lecture seule</strong> : il voit tout et exporte, il ne crée plus rien (le mécanisme de l'essai terminé, étendu)</td>
+</tr>
+<tr>
+<td>trente jours après</td>
+<td><strong>effacement</strong>, prévenu par e-mail avant. La durée est déjà décidée dans <code>src/server/retention.ts</code></td>
+</tr>
+</tbody></table></div>
+<h3 id="ce-qui-nest-pas-codé-aujourdhui-vérifié-dans-le-code">Ce qui n'est pas codé aujourd'hui, vérifié dans le code</h3>
+<ul>
+<li>un abonnement <strong>résilié reste ouvert en écriture</strong> : seul l'essai terminé passe en lecture seule (<code>enLectureSeule</code>, <code>src/lib/abonnements.ts</code>). Un client résilié utilise donc Atlas gratuitement ;</li>
+<li><strong>aucun effacement</strong> n'existe : ni fermeture de compte, ni suppression après résiliation ;</li>
+<li>l'article 13 des CGU promet un délai « [À COMPLÉTER] » puis la suppression : il faudra y écrire trente jours.</li>
+</ul>
 <h3 id="ce-qui-reste-et-qui-le-fait">Ce qui reste, et qui le fait</h3>
 <div class="tablewrap"><table><thead><tr>
 <th></th>
 <th>Qui</th>
 </tr></thead><tbody>
 <tr>
-<td>dessiner puis coder « Refuser » pour un client existant : récupérer ses données, puis résilier</td>
+<td>dessiner puis coder « Refuser » pour un client existant : récupérer ses données, puis résilier avec remboursement</td>
+<td>moi</td>
+</tr>
+<tr>
+<td>coder la lecture seule après l'échéance, puis l'effacement à trente jours</td>
 <td>moi</td>
 </tr>
 <tr>
@@ -848,6 +880,10 @@
 <tr>
 <td>confirmer qu'un seul bouton vaut pour le contrat de sous-traitance</td>
 <td>le juriste qui relira les textes (point 2)</td>
+</tr>
+<tr>
+<td>dire si Atlas doit garder les factures dix ans (article 13) ou seulement les rendre à l'artisan : l'obligation comptable pèse sur lui, et un sous-traitant doit en principe rendre puis effacer (RGPD, article 28.3.g)</td>
+<td>le juriste</td>
 </tr>
 </tbody></table></div>
 <p>Planche : <code>appli/documents-legaux-un-geste.html</code>.</p>

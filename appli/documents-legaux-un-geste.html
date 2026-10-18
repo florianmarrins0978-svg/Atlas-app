@@ -48,6 +48,11 @@
   .banc h2{margin:0;font-size:11px;font-weight:500;letter-spacing:.26em;
            text-transform:uppercase;color:var(--gris)}
   .banc.deuxieme{margin-top:36px}
+  /* Le ruban de l'essai terminé, repris : la lecture seule a déjà sa forme. */
+  .ruban{margin:0 0 22px;padding:10px 14px;border-radius:12px;background:rgba(185,139,71,.16);
+         color:var(--encre);font-size:14px}
+  .fantome{margin-top:18px;display:grid;gap:10px;opacity:.35}
+  .fantome span{display:block;height:58px;border-radius:16px;background:var(--carte)}
   .boutons{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
   .boutons button{font:inherit;font-size:12px;padding:8px 12px;border-radius:6px;
                   border:1px solid rgba(233,232,222,.2);background:var(--carte);
@@ -172,15 +177,31 @@
   <section class="feuille" data-feuille="refus" aria-hidden="true">
     <header><h2 class="serif">Refuser la nouvelle version</h2><button type="button" class="fermer" data-fermer>Fermer</button></header>
     <div class="refus">
-      <p>Vos données restent à vous. Récupérez-les, puis résiliez sans frais.</p>
+      <p>Vos données restent à vous. Récupérez-les, puis résiliez : les mois payés et non utilisés vous sont remboursés.</p>
       <button type="button" class="geste" data-geste="export">Récupérer mes données</button>
-      <button type="button" class="geste" data-geste="resilier">Résilier sans frais</button>
+      <button type="button" class="geste" data-geste="resilier">Résilier et être remboursé</button>
     </div>
   </section>
 </div>
 
 <div class="banc deuxieme"><h2>2. Un client déjà là, quand les conditions changent</h2></div>
 <div data-place-nouvelle></div>
+
+<div class="banc deuxieme"><h2>3. Après l'échéance d'un abonnement résilié</h2></div>
+<div class="tel apres">
+  <div class="defile">
+    <p class="ruban">Abonnement terminé. Lecture seule.</p>
+    <h1 class="serif">Bonjour</h1>
+    <div class="carte">
+      <p class="engage">Vos données restent consultables jusqu'au 17 novembre, puis elles seront effacées.</p>
+    </div>
+    <div class="fantome" aria-hidden="true"><span></span><span></span><span></span></div>
+  </div>
+  <div class="pied">
+    <button type="button" class="principal" data-demo="export">Récupérer mes données</button>
+    <button type="button" class="geste refuser" data-demo="reprendre">Reprendre un abonnement</button>
+  </div>
+</div>
 
 <div class="notes">
   <h3>Ce qui change</h3>
@@ -189,6 +210,8 @@
     <li>Chaque document s'ouvre en entier, sur tout l'écran, avant d'accepter.</li>
     <li>Un seul bouton, « Accepter », toujours en bas. À la première fois, « Se déconnecter » reste la seule sortie.</li>
     <li>Quand les conditions changent, un client déjà là peut refuser : il récupère ses données, puis résilie sans frais, comme ses conditions le lui promettent (article 15).</li>
+    <li>S'il refuse en cours d'année, les mois payés et non utilisés lui sont remboursés (votre choix du 18 octobre).</li>
+    <li>Une résiliation normale garde tout jusqu'à l'échéance, comme aujourd'hui. Après : lecture seule pendant trente jours, puis effacement, prévenu par e-mail.</li>
     <li>La preuve ne change pas : une ligne par document, avec la date, l'heure et la version.</li>
   </ul>
   <h3>À trancher</h3>
@@ -222,7 +245,7 @@ function monter(tel, nom){
   q("[data-refuser]").addEventListener("click", () => ouvrir("refus"));
   tel.querySelectorAll("[data-geste]").forEach(b => b.addEventListener("click", () => {
     b.classList.add("fait");
-    b.textContent = b.dataset.geste === "export" ? "Données téléchargées" : "Résiliation enregistrée";
+    b.textContent = b.dataset.geste === "export" ? "Données téléchargées" : "Résilié, remboursement en cours";
   }));
   tel.querySelectorAll("[data-fermer]").forEach(b => b.addEventListener("click", () => {
     const f = b.closest(".feuille");
@@ -236,6 +259,10 @@ function monter(tel, nom){
     setTimeout(() => { b.disabled = false; b.textContent = "Accepter"; }, 1600);
   });
 }
+
+document.querySelectorAll("[data-demo]").forEach(b => b.addEventListener("click", () => {
+  b.textContent = b.dataset.demo === "export" ? "Données téléchargées" : "Les formules s'ouvrent";
+}));
 
 const premier = document.querySelector("[data-tel]");
 const second = premier.cloneNode(true);
