@@ -261,6 +261,7 @@
     <div id="reseaux"></div>
     <div class="symboles" id="symboles"></div>
     <label class="coche"><input type="checkbox" id="grillage"> Grillage avertisseur</label>
+    <label class="coche" id="coche-sonde"><input type="checkbox" id="sonde"> Sonde de pluie</label>
   </section>
 
   <section class="bloc">
@@ -271,7 +272,6 @@
 
   <section class="bloc">
     <span class="caps">La liste</span>
-    <h2>Ce que vous emportez</h2>
     <div id="liste"></div>
     <button class="envoyer" type="button" id="envoyer">Envoyer la liste au fournisseur</button>
     <p class="verdict" id="verdict"></p>
@@ -337,7 +337,7 @@
   };
   [ROBINET.double, ROBINET.prog].forEach(function (x) { PHOTOS[x.ref] = "../arrosage-robinet-photos/" + x.photo; });
   PHOTOS.OPL70301620 = "OPL70302520.jpg"; PHOTOS.OPL70302520 = "OPL70302520.jpg"; PHOTOS.OPL70303220 = "OPL70302520.jpg";
-  var etat = { sortie: "boucle", couronne: 50, grillage: false, retirees: {}, remplacees: {}, ajoutees: [], ou: "amenee", categorie: "reseau", cible: null, recherche: "" };
+  var etat = { sortie: "boucle", couronne: 50, grillage: false, sonde: false, retirees: {}, remplacees: {}, ajoutees: [], ou: "amenee", categorie: "reseau", cible: null, recherche: "" };
   function plan() {
     // Le nez de robinet n'a qu'une voie : son jardin d'exemple est une seule
     // pelouse (8 × 8, un réseau). Avec la nourrice, le jardin entier.
@@ -347,7 +347,7 @@
          { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },
          { id: 3, type: "massif", nom: "Massif", x: 14, y: 10, L: 20, l: 2.4, sortieGoutte: etat.sortie },
          { id: 4, type: "gazon", nom: "Couloir", x: 0, y: 14, L: 10, l: 2, materiel: "tuyere" }];
-    return C.calculerPlan({ seau: SAISIE.seau, temps: SAISIE.temps, pression: SAISIE.pression, compteur: SAISIE.compteur, couronne: etat.couronne, zones: zones });
+    return C.calculerPlan({ seau: SAISIE.seau, temps: SAISIE.temps, pression: SAISIE.pression, compteur: SAISIE.compteur, couronne: etat.couronne, sonde: etat.sonde, zones: zones });
   }
   function direSaisie() {
     $("saisie").textContent = "Au seau, 10 L en 18 s. Pression 3 bar. Piquage sur un robinet. Croquis : " +
@@ -814,6 +814,7 @@
   function groupeNourrice(p) {
     var fiche = CAT.ficheNourrice(p.secteurs.length, p.secteurs.filter(function (s) { return s.famille === "Goutte-à-goutte"; }).length), g = {};
     (fiche ? fiche.pieces : []).forEach(function (x) { (g[x.ref] = g[x.ref] || { nom: nomCatalogue(x.ref), q: 0, u: "u" }).q += x.q; });
+    if (etat.sonde) p.materiel.filter(function (l) { return l.ref === "RP403"; }).forEach(function (l) { g[l.ref] = { nom: l.nom, q: l.q, u: "u" }; });
     return { nom: fiche ? fiche.nom : "La nourrice", lignes: g };
   }
   function groupesDuPlan(p, d) {
@@ -896,6 +897,8 @@
     direSaisie();
     document.querySelectorAll("[data-montage]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.montage === robinet.montage)); });
     $("bloc-nourrice").hidden = robinet.montage === "nez";
+    $("coche-sonde").style.display = robinet.montage === "nez" ? "none" : "";
+    if (robinet.montage === "nez") { etat.sonde = false; $("sonde").checked = false; }
     var auto = departDeLOutil(p), dia = robinet.departMain || auto;
     $("departs").innerHTML = [16, 25, 32].map(function (n) { return '<button type="button" data-depart="' + n + '" aria-pressed="' + (dia === n) + '">' + (n === 16 ? "Ø16 rigide" : "Ø" + n) + "</button>"; }).join("");
     $("depart-choisi").textContent = "L’outil choisit le Ø" + auto + (auto === 16 ? " rigide" : "") + "." + (robinet.departMain && robinet.departMain !== auto ? " Changé à la main." : "");
@@ -941,6 +944,7 @@
   $("fermer").onclick = function () { $("feuille").hidden = true; };
   $("fermer-menu").onclick = function () { $("menu").hidden = true; };
   $("grillage").onchange = function () { etat.grillage = this.checked; dessiner(); };
+  $("sonde").onchange = function () { etat.sonde = this.checked; dessiner(); };
   $("double").onchange = function () { robinet.double = this.checked; dessiner(); };
   // Le message au fournisseur : il le lit, le copie, ou l'envoie par le partage du téléphone.
   $("envoyer").onclick = function () {

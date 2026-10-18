@@ -220,6 +220,7 @@
     <div id="reseaux"></div>
     <div class="symboles" id="symboles"></div>
     <label class="coche"><input type="checkbox" id="grillage"> Grillage avertisseur</label>
+    <label class="coche" id="coche-sonde"><input type="checkbox" id="sonde"> Sonde de pluie</label>
   </section>
 
   <section class="bloc">
@@ -232,7 +233,6 @@
 
   <section class="bloc">
     <span class="caps">La liste</span>
-    <h2>Ce que vous emportez</h2>
     <div id="liste"></div>
     <button class="envoyer" type="button" id="envoyer">Envoyer la liste au fournisseur</button>
     <p class="verdict" id="verdict"></p>
@@ -289,9 +289,9 @@
   // ── LA SAISIE : ce que le patron a rempli, et le croquis qu'il a donné.
   var SAISIE = { seau: 10, temps: 18, pression: 3, compteur: "oui" };
   var NOURRICE = { x: 13, y: 6 };
-  var etat = { sortie: "boucle", couronne: 50, grillage: false, retirees: {}, remplacees: {}, ajoutees: [], ou: "amenee", categorie: "reseau", cible: null, recherche: "" };
+  var etat = { sortie: "boucle", couronne: 50, grillage: false, sonde: false, retirees: {}, remplacees: {}, ajoutees: [], ou: "amenee", categorie: "reseau", cible: null, recherche: "" };
   function plan() {
-    return C.calculerPlan({ seau: SAISIE.seau, temps: SAISIE.temps, pression: SAISIE.pression, compteur: SAISIE.compteur, couronne: etat.couronne, zones: [
+    return C.calculerPlan({ seau: SAISIE.seau, temps: SAISIE.temps, pression: SAISIE.pression, compteur: SAISIE.compteur, couronne: etat.couronne, sonde: etat.sonde, zones: [
       { id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
       { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },
       { id: 3, type: "massif", nom: "Massif", x: 14, y: 10, L: 20, l: 2.4, sortieGoutte: etat.sortie },
@@ -740,6 +740,7 @@
   function groupeNourrice(p) {
     var fiche = CAT.ficheNourrice(p.secteurs.length, p.secteurs.filter(function (s) { return s.famille === "Goutte-à-goutte"; }).length), g = {};
     (fiche ? fiche.pieces : []).forEach(function (x) { (g[x.ref] = g[x.ref] || { nom: nomCatalogue(x.ref), q: 0, u: "u" }).q += x.q; });
+    if (etat.sonde) p.materiel.filter(function (l) { return l.ref === "RP403"; }).forEach(function (l) { g[l.ref] = { nom: l.nom, q: l.q, u: "u" }; });
     return { nom: fiche ? fiche.nom : "La nourrice", lignes: g };
   }
   function groupesDuPlan(p, d) {
@@ -855,6 +856,7 @@
   $("fermer").onclick = function () { $("feuille").hidden = true; };
   $("fermer-menu").onclick = function () { $("menu").hidden = true; };
   $("grillage").onchange = function () { etat.grillage = this.checked; dessiner(); };
+  $("sonde").onchange = function () { etat.sonde = this.checked; dessiner(); };
   // Le message au fournisseur : il le lit, le copie, ou l'envoie par le partage du téléphone.
   $("envoyer").onclick = function () {
     // Ce qu'il a retouché reste, tant que la liste n'a pas changé.
