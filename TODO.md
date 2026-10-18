@@ -214,10 +214,12 @@ fermée (coude MF à gauche, coude Dura FF à droite), l'arrivée à gauche
 (mamelon réduit, vanne FF, mamelon réduit, union MF, raccord femelle Plasson
 25 x 3/4", PEHD), et sous chaque voie électrovanne, union MF, raccord femelle,
 PEHD ; les voies numérotées de gauche à droite après l'arrivée. Les tailles 1,
-2, 4, 5, 6 appliquent ce modèle à leur fiche ; **restent des propositions** : la
-place du té MMF (2 et 6 voies) et la nourrice d'une voie (deux coudes vissés).
-**Suite demandée** : la même chose avec une voie de goutte-à-goutte (électrovanne
-FF, régulateur, mamelons).
+2, 4, 5, 6 appliquent ce modèle à leur fiche ; la place du té MMF (2 et 6 voies) et la nourrice d'une voie (deux coudes vissés),
+proposées, **validées par lui le 18 octobre 2026** : « tout ce que tu as fait est
+bon, je valide ». **Le goutte-à-goutte, à valider** : sur une voie de goutte-à-goutte,
+mamelon MM 1", électrovanne FF, mamelon réduit, régulateur FF 3/4", mamelon
+réduit, puis union, raccord femelle, PEHD ; ces voies posées les dernières à
+droite. Ordre et place proposés, rien de sa main.
 
 **Une tuyère avec SA buse au pied** (même jour) : une photo par buse Rain Bird,
 validée par lui, puis chaque couple tuyère et buse COMPOSÉ à l'affichage à partir

@@ -21,10 +21,15 @@
   4. l'arrivée à gauche, puis les voies 1, 2, 3 de gauche à droite.
 
   LES AUTRES TAILLES (1, 2, 4, 5, 6 voies) appliquent ce même modèle à la
-  clarinette de leur fiche du 17 août. Ce qui n'est PAS dit par lui et reste
-  une proposition, écrite sous le regard : la place du té 1" MMF (fiches de 2
-  et 6 voies), et la nourrice d'une voie sans clarinette (les deux coudes
-  vissés l'un dans l'autre).
+  clarinette de leur fiche du 17 août : la place du té 1" MMF (fiches de 2 et
+  6 voies, avant le coude FF) et la nourrice d'une voie (les deux coudes
+  vissés l'un dans l'autre), proposées, validées par lui le 18 octobre 2026 :
+  « tout ce que tu as fait est bon, je valide ».
+
+  LE GOUTTE-À-GOUTTE (même jour, à valider) : sur une voie de goutte-à-goutte,
+  sa fiche met une électrovanne FF, un régulateur FF 3/4", deux mamelons réduits
+  et un mamelon 1" MM. L'ordre et la place des voies (les dernières, à droite)
+  sont une proposition, écrite sous le regard.
 
   LES PIÈCES ET LEURS NOMBRES SONT CEUX DE SA FICHE (CATALOGUE.nourrices[n]),
   lus dans le calcul empaqueté (arrosage-schema-calcul.js) ; les photos sont
@@ -83,6 +88,8 @@
     <button type="button" data-voies="3">3</button><button type="button" data-voies="4">4</button>
     <button type="button" data-voies="5">5</button><button type="button" data-voies="6">6</button>
   </div>
+  <span class="caps" style="margin-top:14px">Dont en goutte-à-goutte</span>
+  <div class="voies" id="goutte" role="group" aria-label="Voies de goutte-à-goutte"></div>
   <h2 id="titre"></h2>
   <p class="sous" id="sous-titre"></p>
   <div class="regard"><canvas id="dessin" width="358" height="420" role="img" aria-label="La nourrice, pièce par pièce"></canvas></div>
@@ -107,7 +114,8 @@
     "vanne-purge": "vanne-purge.jpg", "union": "union.jpg", "raccord-femelle25": "OPL70302520.jpg", "pehd": "pehd.jpg",
     "regard-rect12": "regard-rect12.jpg", "regard-rg17106": "regard-rg17106.jpg", "regard-jumbo5": "regard-jumbo5.jpg",
     "regard-jumbo6": "regard-jumbo6.jpg", "prog-1": "prog-1.jpg", "prog-2": "prog-2.jpg", "prog-4": "prog-4.jpg",
-    "prog-6": "prog-6.jpg", "pile-9v": "pile-9v.jpg", "connexion": "connexion.jpg"
+    "prog-6": "prog-6.jpg", "pile-9v": "pile-9v.jpg", "connexion": "connexion.jpg",
+    "electrovanne-100dv-ff": "electrovanne-100dv-ff.png", "mamelon-droit-1": "mamelon-droit-1.jpg", "regulateur-ff34": "regulateur-ff34.jpg"
   };
   var $ = function (id) { return document.getElementById(id); };
   var texte = function (s) { var e = document.createElement("span"); e.textContent = s; return e.innerHTML; };
@@ -137,7 +145,11 @@
     "union":              { a: [0.06, 0.68], b: [0.96, 0.32], L: 46 },
     "raccord-femelle25":  { a: [0.08, 0.66], b: [0.98, 0.27], L: 40 },
     "pehd":               { a: [0, 0.5], b: [1, 0.5], L: 44 },
-    "electrovanne-100dv": { a: [0.01, 0.88], b: [0.99, 0.88], L: 50 }
+    "electrovanne-100dv": { a: [0.01, 0.88], b: [0.99, 0.88], L: 50 },
+    // La voie de goutte-à-goutte : électrovanne FF, régulateur, mamelons.
+    "electrovanne-100dv-ff": { a: [0.28, 0.80], b: [0.97, 0.52], L: 50 },
+    "mamelon-droit-1":    { a: [0.5, 0.02], b: [0.5, 0.98], L: 26 },
+    "regulateur-ff34":    { a: [0.5, 0.02], b: [0.5, 0.98], L: 44 }
   };
 
   var images = {};
@@ -175,8 +187,10 @@
   function colonne(cle, x, y) { var f = COLONNE[cle]; poses.push({ cle: cle, ref: f.src || cle, x: x, y: y }); pris(f.src || cle); return y + f.L; }
 
   var ECART = 9, W = 358;
-  function dessiner(n) {
-    fiche = CAT.nourrices[n]; reste = {}; poses = []; ordre = [];
+  function dessiner(n, nbGoutte) {
+    // Sa fiche, modifiée par voie de goutte-à-goutte (sa règle du 17 août,
+    // `CATALOGUE.ficheNourrice`) : électrovanne FF, régulateur FF 3/4", mamelons.
+    fiche = CAT.ficheNourrice(n, nbGoutte); reste = {}; poses = []; ordre = [];
     fiche.pieces.forEach(function (x) { reste[x.ref] = (reste[x.ref] || 0) + x.q; });
     var clar = ["clarinette-2v", "clarinette-3v", "clarinette-4v"].filter(function (r) { return reste[r]; })[0];
     var avecTe = Boolean(reste["te-mmf"]);
@@ -208,17 +222,31 @@
     var fin = colonne("pehd", xL, y), etiquettes = [[xL, fin, "Arrivée"]];
     // Les voies, numérotées de gauche à droite après l'arrivée.
     axes.forEach(function (xv, i) {
-      var yv = colonne("electrovanne-100dv", xv, bas) + ECART;
+      // Les voies de goutte-à-goutte sont les dernières, à droite : une PROPOSITION.
+      var goutte = i >= axes.length - nbGoutte, yv = bas;
+      if (goutte) {
+        // L'ordre proposé : mamelon MM 1", électrovanne FF, mamelon réduit (1" en
+        // haut), régulateur FF 3/4", mamelon réduit (3/4" en haut), puis la suite
+        // de toute voie.
+        yv = colonne("mamelon-droit-1", xv, yv) + ECART;
+        yv = colonne("electrovanne-100dv-ff", xv, yv) + ECART;
+        yv = colonne("mamelon-demi", xv, yv) + ECART;
+        yv = colonne("regulateur-ff34", xv, yv) + ECART;
+        yv = colonne("mamelon", xv, yv) + ECART;
+      } else {
+        yv = colonne("electrovanne-100dv", xv, yv) + ECART;
+      }
       yv = colonne("union", xv, yv) + ECART;
       yv = colonne("raccord-femelle25", xv, yv) + ECART;
       yv = colonne("pehd", xv, yv);
       etiquettes.push([xv, yv, "Voie " + (i + 1)]);
+      if (goutte) etiquettes.push([xv, yv + 13, "goutte-à-goutte"]);
       fin = Math.max(fin, yv);
     });
 
     // La largeur : la bobine de la dernière électrovanne déborde à droite de son axe.
     var largeur = Math.max(x + cd.w, axes[axes.length - 1] + 70) + 8;
-    var k = Math.min(1, W / largeur), H = (fin + 32) * k, c = $("dessin"), r = window.devicePixelRatio || 1;
+    var k = Math.min(1, W / largeur), H = (fin + 46) * k, c = $("dessin"), r = window.devicePixelRatio || 1;
     c.width = W * r; c.height = H * r; c.style.height = H + "px";
     var g = c.getContext("2d"); g.setTransform(r, 0, 0, r, 0, 0);
     g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H);
@@ -253,11 +281,11 @@
     $("titre").textContent = fiche.nom;
     $("sous-titre").textContent = n + " voie" + (n > 1 ? "s" : "") + ", l’arrivée à gauche, puis les voies de gauche à droite.";
     var NOMS = { "coude-mf": "Coude MF 1\"", "mamelon": "Mamelon réduit MM 1\" x 3/4\"", "vanne-purge": "Vanne 3/4\" FF",
-      "pehd": "PEHD Ø25", "raccord-femelle25": nom("raccord-femelle25") + " (photo à valider)" };
+      "pehd": "PEHD Ø25", "raccord-femelle25": nom("raccord-femelle25") + " (photo à valider)",
+      "regulateur-ff34": nom("regulateur-ff34") + " (photo à valider)" };
     $("legende").innerHTML = ordre.map(function (ref, i) { return "<li><b>" + (i + 1) + "</b>" + texte(NOMS[ref] || nom(ref)) + "</li>"; }).join("");
     var notes = [];
-    if (avecTe) notes.push("La place du té 1\" MMF, entre " + (clar ? "la clarinette" : "le coude MF") + " et le coude FF, est une proposition.");
-    if (!clar && !avecTe) notes.push("Sans clarinette, les deux coudes se vissent l’un dans l’autre : c’est une proposition.");
+    if (nbGoutte) notes.push("Pour le goutte-à-goutte, la place des voies (les dernières, à droite) et l’ordre des pièces sont une proposition.");
     $("note").innerHTML = notes.length ? notes.map(texte).join(" ") + " <b>À confirmer.</b>" : "";
 
     var bac = "";
@@ -270,6 +298,10 @@
     });
     $("bac").innerHTML = bac;
     document.querySelectorAll("[data-voies]").forEach(function (b) { b.setAttribute("aria-pressed", String(Number(b.dataset.voies) === n)); });
+    // Combien de voies de goutte-à-goutte : de 0 à n.
+    var gg = "";
+    for (var j = 0; j <= n; j++) gg += '<button type="button" data-goutte="' + j + '" aria-pressed="' + (j === nbGoutte) + '">' + (j ? j : "Aucune") + "</button>";
+    $("goutte").innerHTML = gg;
   }
   function badge(g, n, x, y) {
     g.globalCompositeOperation = "source-over";
@@ -278,15 +310,16 @@
     g.fillText(String(n), x, y + 0.5);
   }
 
-  var voies = 3;
+  var voies = 3, nbGoutte = 0;
   document.addEventListener("click", function (e) {
-    var b = e.target.closest("button[data-voies]");
-    if (b) { voies = Number(b.dataset.voies); dessiner(voies); }
+    var b = e.target.closest("button[data-voies]"), bg = e.target.closest("button[data-goutte]");
+    if (b) { voies = Number(b.dataset.voies); nbGoutte = Math.min(nbGoutte, voies); dessiner(voies, nbGoutte); }
+    if (bg) { nbGoutte = Number(bg.dataset.goutte); dessiner(voies, nbGoutte); }
   });
   var aCharger = Object.keys(HAUT).concat(Object.keys(COLONNE).map(function (k) { return COLONNE[k].src || k; }));
   Promise.all(aCharger.filter(function (r, i) { return aCharger.indexOf(r) === i; }).map(function (r) {
     return charger(r).then(function (im) { images[r] = im; });
-  })).then(function () { dessiner(voies); });
+  })).then(function () { dessiner(voies, nbGoutte); });
 })();
 </script>
 </body>
