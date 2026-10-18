@@ -2,387 +2,695 @@
 <html lang="fr">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Plan d’arrosage : le plan dessiné</title>
+<title>Le plan d’arrosage</title>
 <!--
-  MAQUETTE. Rien n'est codé dans l'application tant qu'il n'a pas validé.
-  Aucun JavaScript : les onglets sont des boutons radio et du CSS, donc la page
-  marche hors ligne, sur son téléphone.
+  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Sa demande du 18 octobre 2026,
+  sur l'écran que l'outil rend une fois les mesures remplies et le croquis
+  donné : « tu nous mets en premier la nourrice avec le nombre de voies, avec
+  la vue éclatée. Ensuite, en dessous, les réseaux, réseau 1, 2, 3, avec un
+  schéma, avec les arroseurs que tu utilises. Et puis en dessous, il faut
+  refaire le schéma de la vue éclatée, avec les pièces. Les plans sur lesquels
+  on a travaillé, maintenant, il faut les intégrer dans l'outil. »
+  Et, le même jour : « que tu nous expliques ce que ça veut dire quand il y a
+  marqué tuyère, SAM, PRS, tous les petits trucs à côté ».
 
-  ── SES TROIS CORRECTIONS DU 21 AOÛT, ET CE QU'ELLES ONT APPRIS ──────────────
+  CE QUI EST REPRIS, SANS RIEN RÉINVENTER :
+  1. la nourrice éclatée qu'il a VALIDÉE le 18 octobre
+     (arrosage-nourrice-eclatee.html), même dessin, mêmes formes relevées ;
+  2. le plan de l'application (src/lib/arrosage/plan-dessine.ts, dessiné comme
+     PlanDessine.tsx), un schéma par réseau, les autres réseaux en pâle ;
+  3. la vue éclatée (arrosage-vue-eclatee.html) et ses gestes : changer,
+     supprimer, ajouter une pièce.
 
-  1. « TOUS LES RÉSEAUX DOIVENT PARTIR DE LA NOURRICE — RÈGLE INDISCUTABLE. »
-     La version précédente montrait le compteur et trois traits qui commençaient
-     dans le vide : *« je suppose que le réseau jaune partirait du compteur,
-     mais le bleu et le vert, on ne sait pas d'où »*. La nourrice est maintenant
-     DESSINÉE, avec ses trois vannes, et les trois lignes en partent — un
-     contrôle refuse une ligne dont le premier point n'est pas la nourrice.
+  TOUS LES CHIFFRES SORTENT DU CALCUL : calculerPlan, dessinerPlan,
+  piecesDuPlan et le catalogue de src/lib/arrosage/, empaquetés tels quels le
+  18 octobre 2026 dans arrosage-plan-calcul.js (esbuild, aucune ligne
+  réécrite). Le té ou le coude de chaque tête se LIT sur le dessin du plan
+  (plein : té taraudé, creux : coude taraudé, losange : té égal), comme la
+  liste de l'application (pieces.ts) : une seule règle.
 
-  2. LE COMPTAGE DES RACCORDS ÉTAIT FAUX, ET IL L'A VU AU CHIFFRE PRÈS.
-     L'ancienne version listait un « collier de prise en charge » par arroseur —
-     une pièce qui n'existe pas dans sa règle. Sa planche du 17 août, déjà dans
-     le dépôt (`appli/arrosage-catalogue.js`), dit :
+  LE JARDIN D'EXEMPLE est le sien du 23 août (12 × 12 et 8 × 8), un massif de
+  20 × 2,40 en goutte-à-goutte et un couloir de 10 × 2. LA NOURRICE EST POSÉE
+  PAR NOUS entre les deux pelouses, parce qu'une maquette n'a pas de croquis :
+  dans l'outil, c'est lui qui la place (sa règle du 21 août), jamais le calcul.
 
-       · DÉPART et MILIEU de ligne → Té 90° taraudé 25×3/4"×25
-       · FIN de ligne              → Coude 90° taraudé 25×3/4"
-
-     D'où la règle de contrôle, qu'aucune version ne tenait :
-     **tés + coudes = nombre d'arroseurs**. Sinon des arroseurs ne sont
-     raccordés à rien — c'est exactement ce qu'il a relevé : « il y a quatre
-     arroseurs qui ne sont pas alimentés ».
-
-  3. LE BANDEAU DES MARQUES manquait. Rain Bird par défaut, sa demande du
-     17 août, déjà écrite dans le catalogue et jamais montée à l'écran ici.
-
-  ── CE QUI REND CE PLAN VÉRIFIABLE ──────────────────────────────────────────
-
-  Le SVG travaille EN MÈTRES (viewBox), donc tout est mesurable : le contrôle
-  relit la forme, recalcule la surface, mesure les tracés, et maille la pelouse
-  tous les 50 cm pour vérifier qu'aucun coin ne reste sans eau.
-
-  UNE LIGNE CONTINUE PAR RÉSEAU. C'est ce qui rend le comptage sûr : une ligne
-  a exactement une fin, donc un coude, et tout le reste est un té. Une ligne qui
-  se ramifierait demanderait un té de jonction non taraudé en plus — possible,
-  mais alors le compte ne se vérifie plus d'un coup d'œil.
+  LES MOTS DU PLAN : chaque définition est celle du catalogue Aqua Plus 2026
+  (la page est écrite à côté) ou une de ses règles ; seuls les mots présents
+  sur le plan s'affichent.
 -->
 <style>
-  :root {
-    --creme:#F3F1EA; --carte:#FBFAF7; --encre:#1A1A18; --gris:#6E6A60;
-    --or:#B4894A; --ligne:#E2DED2;
-  }
-  * { box-sizing:border-box; }
-  body {
-    margin:0; background:var(--creme); color:var(--encre);
-    font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    max-width:390px; margin-inline:auto; padding:0 0 40px;
-  }
-  h1 { font:400 30px/1.15 Georgia,"Times New Roman",serif; margin:6px 22px 2px; }
-  .surtitre { margin:22px 22px 0; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--or); }
-  .regle { height:1px; background:var(--ligne); margin:16px 22px 0; }
-  .titre-bloc { margin:26px 22px 0; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--gris); }
-  /* **En gras et au-dessus du croquis**, à sa demande : c'est la seule chose à
-     lire AVANT de photographier. Placé en dessous, on l'aurait lu après avoir
-     envoyé une photo incomplète — donc trop tard. */
-  .impératif { margin:8px 16px 0; background:var(--carte); border-radius:12px;
-               padding:13px 15px; font-size:13.5px; line-height:1.5;
-               color:var(--encre); font-weight:600;
-               box-shadow:inset 3px 0 0 var(--encre); }
-  .impératif b { font-weight:700; }
-  /* **Un plan qui ne respecte pas la règle le DIT, en tête.** Sa remarque du
-     21 août : « il n'est pas valable avec cette nouvelle règle ». Une maquette
-     qui affiche l'interdit puis l'enfreint juste en dessous apprend à ne plus
-     lire l'interdit. */
-  .pas-valable { margin:8px 16px 0; background:#F6EDE6; border-radius:12px;
-                 padding:13px 15px; font-size:13.5px; line-height:1.5;
-                 color:#7A3B22; box-shadow:inset 3px 0 0 #A85A32; }
-  .pas-valable b { font-weight:700; }
-  .bloc { background:var(--carte); border-radius:12px; margin:8px 16px 0; padding:14px; }
+[data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#8a8578;--atlas-rust:#2f3b2f;--atlas-rustDeep:#4f5f4c;--atlas-rustTint:#ece9e1;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#8b6835;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(28,28,26,0.12);--atlas-lineSoft:rgba(28,28,26,0.07);--atlas-chevron:rgba(28,28,26,0.28);--atlas-alerte:#9C3B2E;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#7d9a6d}
+[data-charte="brume"]{--atlas-cream:#f4f7fb;--atlas-card:#ffffff;--atlas-ink:#111823;--atlas-inkSoft:#3a434e;--atlas-muted:#78838f;--atlas-rust:#22456d;--atlas-rustDeep:#5d7795;--atlas-rustTint:#e4e7ec;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#8f6b36;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(17,24,35,0.12);--atlas-lineSoft:rgba(17,24,35,0.07);--atlas-chevron:rgba(17,24,35,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#22456d;--atlas-police-titres:ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;--atlas-onglet-haut:10px;--atlas-onglet-hauteur:100%;--atlas-onglet-rayon:11px;--atlas-onglet-fond:color-mix(in srgb, #B98B47 11%, transparent)}
+[data-charte="pierre"]{--atlas-cream:#e8e8e3;--atlas-card:#f4f4f0;--atlas-ink:#1b1d19;--atlas-inkSoft:#454741;--atlas-muted:#83867c;--atlas-rust:#1b1d19;--atlas-rustDeep:#545652;--atlas-rustTint:#dadad5;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#826231;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(27,29,25,0.12);--atlas-lineSoft:rgba(27,29,25,0.07);--atlas-chevron:rgba(27,29,25,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#1b1d19}
+[data-charte="beurre"]{--atlas-cream:#efe7cf;--atlas-card:#f8f3e4;--atlas-ink:#26221a;--atlas-inkSoft:#4e4939;--atlas-muted:#8b8368;--atlas-rust:#26221a;--atlas-rustDeep:#5e594d;--atlas-rustTint:#e1d9c2;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#826231;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(38,34,26,0.12);--atlas-lineSoft:rgba(38,34,26,0.07);--atlas-chevron:rgba(38,34,26,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#26221a}
+[data-charte="moka"]{--atlas-cream:#e6ded5;--atlas-card:#f2ece5;--atlas-ink:#2b241e;--atlas-inkSoft:#524941;--atlas-muted:#8d8175;--atlas-rust:#2b241e;--atlas-rustDeep:#5f5851;--atlas-rustTint:#d9d1c8;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#7c5d2f;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(43,36,30,0.12);--atlas-lineSoft:rgba(43,36,30,0.07);--atlas-chevron:rgba(43,36,30,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#2b241e}
+[data-charte="prune"]{--atlas-cream:#efe6ea;--atlas-card:#f9f2f5;--atlas-ink:#23131c;--atlas-inkSoft:#4d3a44;--atlas-muted:#8c7481;--atlas-rust:#3d1730;--atlas-rustDeep:#6f5164;--atlas-rustTint:#e1d7dc;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#846332;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(35,19,28,0.12);--atlas-lineSoft:rgba(35,19,28,0.07);--atlas-chevron:rgba(35,19,28,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#3d1730}
+[data-charte="sylve"]{--atlas-cream:#16241c;--atlas-card:#1e3026;--atlas-ink:#e6e6da;--atlas-inkSoft:#c2caba;--atlas-muted:#8ba189;--atlas-rust:#e6e6da;--atlas-rustDeep:#acb0a5;--atlas-rustTint:#253229;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#b98b47;--atlas-orSurEncre:#806031;--atlas-line:rgba(230,230,218,0.12);--atlas-lineSoft:rgba(230,230,218,0.07);--atlas-chevron:rgba(230,230,218,0.28);--atlas-alerte:#d47a6e;--atlas-bordeaux:#c44b63;--atlas-vertPale:#728a69;--atlas-plein:#e6e6da}
+[data-charte="nuit"]{--atlas-cream:#101210;--atlas-card:#1a1d19;--atlas-ink:#e9e8de;--atlas-inkSoft:#c1c2b6;--atlas-muted:#84887b;--atlas-rust:#e9e8de;--atlas-rustDeep:#acaca4;--atlas-rustTint:#1f211e;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#b98b47;--atlas-orSurEncre:#826231;--atlas-line:rgba(233,232,222,0.12);--atlas-lineSoft:rgba(233,232,222,0.07);--atlas-chevron:rgba(233,232,222,0.28);--atlas-alerte:#cd6456;--atlas-bordeaux:#b53b54;--atlas-vertPale:#738b6a;--atlas-plein:#e9e8de}
+  *{box-sizing:border-box}
+  html{background:var(--atlas-rustTint)}
+  body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint)}
+  .entete{max-width:430px;margin:0 auto;padding:18px 16px 6px}
+  .entete h1{margin:0;font:400 24px/1.15 Georgia,"Times New Roman",serif}
+  .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .entete select{margin-top:10px;font-size:16px;padding:8px 10px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink)}
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--atlas-cream);padding:6px 0 80px;min-height:100vh}
+  .caps{display:block;margin:0;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-or)}
+  .bloc{margin:26px 16px 0}
+  .bloc h2{margin:6px 0 0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+  .sous{margin:4px 0 0;font-size:13.5px;color:var(--atlas-muted)}
+  .saisie{margin:14px 16px 0;border-radius:12px;background:var(--atlas-card);padding:10px 14px;font-size:13.5px;color:var(--atlas-inkSoft)}
 
-  label.champ { display:block; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--gris); }
-  select {
-    margin-top:5px; width:100%; min-height:48px; border:0; border-radius:10px;
-    padding:12px; font-size:16px; background:var(--creme); color:var(--encre);
-    box-shadow:inset 0 0 0 1px var(--ligne);
-  }
-  .champ + select + .champ { margin-top:14px; }
+  /* 1. LA NOURRICE : le dessin qu'il a validé, à l'identique. */
+  .regard{position:relative;margin-top:12px;border-radius:16px;background:#ffffff;padding:8px 0;box-shadow:inset 0 0 0 1px var(--atlas-line);overflow:hidden}
+  .regard canvas{display:block;width:358px;max-width:100%;margin:0 auto}
+  .legende{margin:12px 0 0;padding:0;list-style:none;columns:2;column-gap:14px;font-size:12.5px;color:var(--atlas-inkSoft)}
+  .legende li{display:flex;gap:6px;break-inside:avoid;padding:2px 0}
+  .legende b{flex:none;width:17px;height:17px;border-radius:50%;background:var(--atlas-ink);color:var(--atlas-card);font-size:10px;line-height:17px;text-align:center}
+  .bac{margin-top:14px}
+  .bac h3{margin:0;font-size:14px;font-weight:600}
+  .rangee{display:flex;flex-wrap:wrap;gap:12px 8px;margin-top:8px;border-radius:14px;background:var(--atlas-card);padding:14px 10px}
+  .p{display:flex;flex-direction:column;align-items:center;width:72px;min-width:0;text-align:center}
+  .p .ph{display:flex;align-items:center;justify-content:center;width:100%;max-width:64px;aspect-ratio:1}
+  .p .ph img{max-width:100%;max-height:100%;object-fit:contain}
+  .p .n{margin-top:4px;font-size:10.5px;line-height:1.25;color:var(--atlas-inkSoft)}
 
-  .croquis { width:100%; border-radius:8px; display:block; }
-  .lu { margin:10px 0 0; font-size:13px; color:var(--gris); }
-  .lu b { color:var(--encre); font-weight:600; }
+  /* 2. LES RÉSEAUX : un schéma chacun, le sien en couleur, les autres en pâle. */
+  .reseau{margin-top:18px}
+  .reseau-titre{display:flex;align-items:center;gap:10px}
+  .reseau-titre .pastille{flex:none;width:12px;height:12px;border-radius:3px;background:var(--couleur)}
+  .reseau-titre b{font:400 18px/1.2 Georgia,"Times New Roman",serif}
+  .reseau-titre span{font-size:12.5px;color:var(--atlas-muted)}
+  .schema{margin-top:8px;border-radius:12px;background:var(--atlas-card);padding:10px}
+  .schema svg{display:block;width:100%;height:auto}
+  .materiel{margin:8px 0 0;padding:0;list-style:none;font-size:14px}
+  .materiel li{display:flex;gap:10px;padding:3px 0}
+  .materiel .q{flex:none;width:34px;font-weight:600;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
+  .symboles{margin-top:12px;border-radius:12px;background:var(--atlas-card);padding:8px 14px}
+  .symboles p{display:flex;align-items:center;gap:10px;margin:0;padding:4px 0;font-size:13.5px}
+  .symboles svg{flex:none;width:15px;height:15px}
 
-  input[name=vue] { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
-  .choix { display:flex; gap:6px; margin:10px 16px 0; }
-  .choix label {
-    flex:1; min-width:0; text-align:center; padding:11px 4px; border-radius:10px;
-    background:var(--carte); color:var(--gris); font-size:13px; cursor:pointer;
-    border:1px solid var(--ligne); min-height:44px; display:flex; align-items:center; justify-content:center;
-  }
-  #tout:checked ~ .choix label[for=tout],
-  #v1:checked ~ .choix label[for=v1],
-  #v2:checked ~ .choix label[for=v2],
-  #v3:checked ~ .choix label[for=v3] { background:var(--encre); color:#FBFAF7; border-color:var(--encre); }
+  /* 3. LES PIÈCES : la vue éclatée, un rail par réseau, une rangée par tête. */
+  .plateau{position:relative;margin-top:12px;border-radius:16px;background:var(--atlas-card);padding:18px 12px 14px;overflow:hidden}
+  .eclate{position:relative;display:flex;flex-wrap:wrap;gap:16px 12px;justify-content:center}
+  .piece{position:relative;width:88px;border:0;background:none;padding:0;color:inherit;font:inherit;text-align:center;cursor:pointer}
+  .piece .photo{position:relative;display:flex;align-items:center;justify-content:center;width:88px;height:88px;border-radius:12px;background:var(--atlas-card);box-shadow:0 1px 2px var(--atlas-line),0 6px 16px var(--atlas-lineSoft)}
+  .piece .photo img{max-width:78px;max-height:78px;object-fit:contain}
+  .piece .photo.vide{box-shadow:none;border:1.5px dashed var(--atlas-line);font-size:10.5px;line-height:1.25;color:var(--atlas-muted);padding:6px}
+  .piece .photo img.pied{position:absolute;right:-6px;bottom:-6px;width:50%;max-width:50%;height:auto;max-height:50%;border-radius:8px;background:var(--atlas-card);box-shadow:0 1px 3px var(--atlas-line)}
+  .piece .nom{display:block;margin-top:6px;font-size:11.5px;line-height:1.3;color:var(--atlas-inkSoft)}
+  .piece .mention{display:block;font-size:10px;color:var(--atlas-orTexte)}
+  .piece:focus-visible{outline:2px solid var(--atlas-or);outline-offset:4px;border-radius:12px}
+  /* Supprimée par lui : elle RESTE, grisée et barrée (sa demande du 17 octobre 2026). */
+  .piece.retiree .photo{filter:grayscale(1);opacity:.45}
+  .piece.retiree .photo::after{content:"";position:absolute;left:8%;right:8%;top:50%;height:2.5px;border-radius:2px;background:var(--atlas-alerte);transform:rotate(-35deg)}
+  .piece.retiree .nom{color:var(--atlas-muted);text-decoration:line-through;text-decoration-color:var(--atlas-alerte);text-decoration-thickness:2px}
+  .piece.ajoutee .photo,.piece.changee .photo{box-shadow:0 0 0 2px var(--atlas-or),0 6px 16px var(--atlas-lineSoft)}
+  .rail{position:relative;margin-top:10px;border-radius:16px;background:var(--atlas-card);padding:16px 10px 16px 28px}
+  .rail::before{content:"";position:absolute;left:14px;top:18px;bottom:18px;width:5px;border-radius:3px;background:var(--couleur)}
+  .tete{position:relative;display:flex;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-top:14px}
+  .tete:first-child{margin-top:0}
+  .tete::before{content:"";position:absolute;left:-12px;top:26px;width:12px;height:2px;background:var(--couleur)}
+  .tete .piece,.tete .piece .photo{width:54px}
+  .tete .piece .photo{height:54px}
+  .tete .piece .photo img{max-width:48px;max-height:48px}
+  .tete .piece:nth-child(2){margin-left:10px}
+  .tete .piece .nom{font-size:10.5px}
+  .ajouter{margin-top:10px;display:flex;width:100%;min-height:48px;align-items:center;justify-content:center;border-radius:12px;border:1.5px dashed var(--atlas-line);background:none;color:var(--atlas-ink);font-size:14.5px;cursor:pointer}
+  .liste{margin-top:10px;border-radius:12px;padding:2px 14px;background:var(--atlas-card)}
+  .ligne{display:flex;align-items:baseline;gap:12px;padding:9px 0;border-top:1px solid var(--atlas-line);font-size:14px}
+  .ligne:first-child{border-top:0}
+  .ligne .q{flex:none;width:52px;font-weight:600;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
+  .ligne .n{flex:1;min-width:0}
+  .ligne .ecart{flex:none;font-size:12px;color:var(--atlas-alerte)}
+  .verdict{margin:10px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .verdict.rouge{color:var(--atlas-alerte);font-weight:600}
+  .reserves{margin:10px 0 0;padding:0;list-style:none}
+  .reserves li{display:flex;gap:10px;padding:4px 0;font-size:13.5px;line-height:1.45}
+  .reserves li::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--atlas-alerte);margin-top:7px}
 
-  /* Isoler un réseau : les autres s'effacent SANS disparaître — il doit voir
-     ce qui reste à couvrir, pas croire que le jardin s'arrête là. */
-  #v1:checked ~ .plan .r2, #v1:checked ~ .plan .r3,
-  #v2:checked ~ .plan .r1, #v2:checked ~ .plan .r3,
-  #v3:checked ~ .plan .r1, #v3:checked ~ .plan .r2 { opacity:.10; }
-  #v1:checked ~ .reseaux .carte:not(.c1),
-  #v2:checked ~ .reseaux .carte:not(.c2),
-  #v3:checked ~ .reseaux .carte:not(.c3) { opacity:.35; }
+  /* 4. LES MOTS DU PLAN : un mot, une phrase. */
+  .mots{margin:10px 0 0;border-radius:12px;background:var(--atlas-card);padding:4px 14px}
+  .mots div{padding:9px 0;border-top:1px solid var(--atlas-line)}
+  .mots div:first-child{border-top:0}
+  .mots dt{font-weight:600;font-size:14.5px}
+  .mots dd{margin:2px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
 
-  .plan { background:var(--carte); border-radius:12px; margin:10px 16px 0; padding:10px 8px 4px; }
-  .plan svg { width:100%; height:auto; display:block; }
-  .legende { margin:8px 6px 4px; }
-  .leg-titre { margin:12px 0 5px; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--or); }
-  .leg-titre:first-child { margin-top:0; }
-  /* La grille tient le symbole à sa taille : sans largeur imposée, un SVG
-     inline s'étire à toute la colonne — vu à la capture, des ronds de 300 px. */
-  .leg { margin:0 0 6px; font-size:12.5px; line-height:1.45; color:var(--gris);
-         display:grid; grid-template-columns:18px 1fr; gap:9px; align-items:start; }
-  .leg b { color:var(--encre); font-weight:600; }
-  .sym { width:18px; height:18px; flex:none; display:block; }
-
-  ul { list-style:none; margin:8px 16px 0; padding:0; }
-  .carte {
-    background:var(--carte); border-radius:12px; padding:12px 14px; margin-top:8px;
-    display:grid; grid-template-columns:auto 1fr auto; gap:4px 10px; align-items:center;
-  }
-  .pastille { width:12px; height:12px; border-radius:3px; }
-  .nom { font:400 18px/1.2 Georgia,serif; min-width:0; }
-  .debit { font-size:13px; color:var(--gris); white-space:nowrap; }
-  .sous { grid-column:2 / -1; font-size:12px; color:var(--gris); }
-
-  table { width:100%; border-collapse:collapse; font-size:14px; }
-  td { padding:9px 0; border-top:1px solid var(--ligne); vertical-align:top; }
-  tr:first-child td { border-top:0; }
-  .q { width:56px; color:var(--or); font-weight:600; white-space:nowrap; }
-  .ref { text-align:right; color:var(--gris); font-size:11px; white-space:nowrap; }
-  .pourquoi { margin:0 0 10px; font-size:13px; line-height:1.5; color:var(--gris); }
-  .pourquoi:last-child { margin-bottom:0; }
-  .pourquoi b { color:var(--encre); }
-  .compte { margin:10px 0 0; font-size:12px; line-height:1.5; color:var(--gris); }
-  .note { margin:18px 22px 0; font-size:12px; line-height:1.5; color:var(--gris); }
+  .feuille{position:fixed;inset:0;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.35)}
+  .feuille[hidden]{display:none}
+  .feuille .boite{width:100%;max-width:430px;max-height:86vh;overflow:auto;background:var(--atlas-cream);border-radius:18px 18px 0 0;padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+  .feuille .haut{display:flex;align-items:center}
+  .feuille h2{flex:1;margin:0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+  .feuille .fermer{border:0;background:none;font-size:14px;text-decoration:underline;color:var(--atlas-inkSoft);cursor:pointer}
+  .menu .gestes{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+  .menu .gestes button{min-height:52px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:15.5px;cursor:pointer}
+  .menu .gestes button.danger{color:var(--atlas-alerte)}
+  .menu .propose{margin:6px 0 0;font-size:13px;color:var(--atlas-muted)}
+  .recherche{display:block;width:100%;margin-top:12px;border:0;border-radius:10px;padding:12px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .chips button{border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);border-radius:999px;padding:8px 12px;font-size:13.5px;cursor:pointer}
+  .chips button[aria-pressed="true"]{background:var(--atlas-ink);color:var(--atlas-card);border-color:var(--atlas-ink)}
+  .choix{display:flex;align-items:center;gap:12px;width:100%;margin-top:8px;border:0;border-radius:12px;padding:10px 12px;background:var(--atlas-card);color:var(--atlas-ink);text-align:left;font-size:14px;cursor:pointer}
+  .choix .vignette{flex:none;display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:8px;border:1.5px dashed var(--atlas-line)}
+  .choix .vignette img{max-width:44px;max-height:44px}
+  .choix .vignette.pleine{border:0}
+  .choix small{display:block;color:var(--atlas-muted);font-size:12px}
 </style>
-
-<p class="surtitre">Paysage</p>
-<h1>Plan d’arrosage</h1>
-<div class="regle"></div>
-
-<div class="bloc" style="margin-top:18px">
-  <label class="champ" for="piquage">Le piquage se fait…</label>
-  <select id="piquage" name="piquage">
-    <option selected>Juste après le compteur d’eau</option>
-    <option>Robinet de jardin</option>
-  </select>
-
-  <label class="champ" for="marque" style="margin-top:14px">Vos marques, par défaut Rain Bird</label>
-  <select id="marque" name="marque">
-    <option value="rainbird" selected>Rain Bird</option>
-    <option value="toro">Toro</option>
-    <option value="hunter">Hunter</option>
-  </select>
+<body data-charte="origine">
+<div class="entete">
+  <h1>Le plan d’arrosage</h1>
+  <p>Planche, rien n’est codé. Ce que l’outil rend une fois les mesures et le croquis donnés.</p>
+  <select id="charte" aria-label="Charte"></select>
 </div>
+<main class="ecran">
+  <p class="saisie" id="saisie"></p>
 
-<p class="titre-bloc">Le croquis</p>
-<p class="impératif">Votre croquis doit impérativement contenir&nbsp;: les
-   <b>métrés</b>, l’endroit <b>définitif de la nourrice</b>, et l’endroit où se
-   fait le <b>piquage</b>. Sans les trois, aucun plan n’est proposé.</p>
+  <section class="bloc">
+    <span class="caps">La nourrice</span>
+    <h2 id="titre-nourrice"></h2>
+    <p class="sous" id="sous-nourrice"></p>
+    <div class="regard"><canvas id="dessin" width="358" height="420" role="img" aria-label="La nourrice, pièce par pièce"></canvas></div>
+    <ol class="legende" id="legende"></ol>
+    <div class="bac">
+      <h3>Avec la nourrice</h3>
+      <div class="rangee" id="bac"></div>
+    </div>
+  </section>
 
-<p class="pas-valable"><b>Ce plan-ci ne respecte pas cette règle.</b> Votre
-   croquis porte les métrés et le piquage, pas l’endroit de la nourrice&nbsp;:
-   je l’ai placée au piquage pour vous montrer le rendu. <b>Dans l’application,
-   il serait refusé</b> : et il le sera tant que le croquis ne portera pas le
-   regard.</p>
-<div class="bloc">
-  <img class="croquis" alt="Le croquis du jardin, photographié" src="data:image/jpeg;base64,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">
-  <p class="lu"><b>Lu :</b> pelouse en L, 12 × 12 m et 8 × 4 m : <b>176 m²</b>.
-     Piquage au compteur. Pas de goutte-à-goutte.</p>
-</div>
+  <section class="bloc">
+    <span class="caps">Les réseaux</span>
+    <h2 id="titre-reseaux"></h2>
+    <div id="reseaux"></div>
+    <div class="symboles" id="symboles"></div>
+  </section>
 
-<input type="radio" name="vue" id="tout" checked>
-<input type="radio" name="vue" id="v1">
-<input type="radio" name="vue" id="v2">
-<input type="radio" name="vue" id="v3">
+  <section class="bloc">
+    <span class="caps">Les pièces</span>
+    <h2>Du compteur à la nourrice</h2>
+    <div class="plateau"><div class="eclate" id="amenee"></div></div>
+    <button class="ajouter" type="button" data-ajouter="amenee">Ajouter une pièce</button>
+    <div id="jardin"></div>
+  </section>
 
-<div class="choix">
-  <label for="tout">Tout</label>
-  <label for="v1">Réseau 1</label>
-  <label for="v2">Réseau 2</label>
-  <label for="v3">Réseau 3</label>
-</div>
+  <section class="bloc">
+    <span class="caps">La liste</span>
+    <h2>Ce que vous emportez</h2>
+    <div class="liste" id="liste"></div>
+    <p class="verdict" id="verdict"></p>
+    <ul class="reserves" id="reserves"></ul>
+  </section>
 
-<div class="plan">
-  <svg viewBox="-6 -3 30 19.6" role="img" aria-label="Plan de la pelouse : la nourrice et les trois réseaux">
-    <defs><clipPath id="pelouse"><polygon points="0,0 20,0 20,4 12,4 12,12 0,12"/></clipPath></defs>
+  <section class="bloc">
+    <span class="caps">Les mots du plan</span>
+    <dl class="mots" id="mots"></dl>
+  </section>
+</main>
 
-    <polygon points="0,0 20,0 20,4 12,4 12,12 0,12" fill="#E9ECE0" stroke="none"/>
-    <!-- LA TRANCHÉE — ce qu'une équipe creuse, et qu'on ne creuse qu'UNE fois. -->
-    <g>
-      <polyline points="0,4 0,0" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
-      <polyline points="0,0 6,0 12,0 16,0 20,0" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
-      <polyline points="0,4 0,6 0,12" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
-      <polyline points="0,12 6,12 12,12" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
-      <polyline points="12,12 12,6" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
-      <polyline points="6,0 6,6" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
-      <polyline points="20,0 20,4 16,4" fill="none" stroke="#D8B45E" stroke-opacity=".55" stroke-width=".95" stroke-linejoin="round" stroke-linecap="round" data-atlas="tranchee"/>
-    </g>
-    <polygon points="0,0 20,0 20,4 12,4 12,12 0,12" fill="none" stroke="#7C8271" stroke-width=".26"/>
-
-    <g fill="#6E6A60" font-size="1.05" font-family="Georgia,serif" text-anchor="middle">
-      <text x="6" y="-1.1">12 m</text>
-      <text x="16" y="-1.1">8 m</text>
-      <text x="21.9" y="2.3" text-anchor="start">4 m</text>
-      <text x="16" y="5.9">8 m</text>
-      <text x="13.1" y="8.4" text-anchor="start">8 m</text>
-      <text x="6" y="13.6">12 m</text>
-      <text x="-1.6" y="9.4" text-anchor="middle">12 m</text>
-    </g>
-
-    <!-- Le compteur, puis LA NOURRICE : sa règle indiscutable du 21 août —
-         les trois réseaux en partent, et cela doit se VOIR. -->
-    <g>
-      <rect x="-4.3" y="3.3" width="1.4" height="1.4" fill="#FBFAF7" stroke="#1A1A18" stroke-width=".16"/>
-      <text x="-3.6" y="2.5" font-size=".82" font-family="Georgia,serif" fill="#6E6A60" text-anchor="middle">compteur</text>
-      <!-- **LA LIGNE DU COMPTEUR PART VERS LA MAISON, ET ON LA COUPE.** Sa
-           précision du 21 août : « le compteur, c'est une ligne directe qui part
-           vers la maison ; nous, on va devoir la couper et mettre un té égal à
-           cet endroit-là ». Sans ce trait, on ne comprend pas pourquoi une
-           pièce de plus apparaît dès que le piquage se fait au compteur. -->
-      <line x1="-2.9" y1="4" x2="-2.2" y2="4" stroke="#1A1A18" stroke-width=".22" data-atlas="amenee"/>
-      <line x1="-2.2" y1="4" x2="-2.2" y2="7.6" stroke="#1A1A18" stroke-width=".18" stroke-dasharray=".4 .35"/>
-      <text x="-2.2" y="8.5" font-size=".8" font-family="Georgia,serif" fill="#6E6A60" text-anchor="middle">maison</text>
-      <rect x="-2.58" y="3.62" width=".76" height=".76" transform="rotate(45 -2.2 4)" fill="#FBFAF7" stroke="#1A1A18" stroke-width=".24" data-piece="jonction"/>
-      <line x1="-2.2" y1="4" x2="-1.5" y2="4" stroke="#1A1A18" stroke-width=".22" data-atlas="amenee"/>
-      <rect id="nourrice" x="-1.5" y="2.6" width="1.5" height="2.8" rx=".3" fill="#FBFAF7" stroke="#1A1A18" stroke-width=".22"/>
-      <circle cx="-0.75" cy="3.5" r=".3" fill="#2F6FB2"/>
-      <circle cx="-0.75" cy="4.5" r=".3" fill="#2E7D4F"/>
-      <text x="-3.9" y="5.9" font-size=".82" font-family="Georgia,serif" fill="#1A1A18" text-anchor="middle">nourrice</text>
-      <line x1="0" y1="4" x2="0" y2="4" stroke="#1A1A18" stroke-width=".22"/>
-    </g>
-
-      <g class="r r1">
-        <circle cx="0" cy="6" r="5.2" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pelouse)"/>
-        <circle cx="0" cy="12" r="5.2" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pelouse)"/>
-        <circle cx="6" cy="12" r="5.2" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pelouse)"/>
-        <circle cx="12" cy="12" r="5.2" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pelouse)"/>
-        <circle cx="12" cy="6" r="5.2" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pelouse)"/>
-        <circle cx="0" cy="0" r="5.2" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pelouse)"/>
-        <circle cx="6" cy="0" r="5.2" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pelouse)"/>
-        <circle cx="12" cy="0" r="5.2" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pelouse)"/>
-        <circle cx="6" cy="6" r="5.2" fill="#2F6FB2" fill-opacity=".13" clip-path="url(#pelouse)"/>
-        <polyline points="0,4 0,6 0,12 6,12 12,12 12,6" fill="none" stroke="#2F6FB2" stroke-width=".26" stroke-linejoin="round" stroke-linecap="round"/>
-        <polyline points="0,4 0,0 6,0 12,0" fill="none" stroke="#2F6FB2" stroke-width=".26" stroke-linejoin="round" stroke-linecap="round"/>
-        <polyline points="6,0 6,6" fill="none" stroke="#2F6FB2" stroke-width=".26" stroke-linejoin="round" stroke-linecap="round"/>
-        <rect x="-0.38" y="3.62" width=".76" height=".76" transform="rotate(45 0 4)" fill="#FBFAF7" stroke="#2F6FB2" stroke-width=".26" data-piece="jonction"/>
-        <rect x="5.62" y="-0.38" width=".76" height=".76" transform="rotate(45 6 0)" fill="#FBFAF7" stroke="#2F6FB2" stroke-width=".26" data-piece="jonction"/>
-        <circle cx="0" cy="6" r=".5" fill="#2F6FB2" stroke="#2F6FB2" stroke-width="0.2" data-famille="turbine"/>
-        <circle cx="0" cy="12" r=".5" fill="#2F6FB2" stroke="#2F6FB2" stroke-width="0.2" data-famille="turbine"/>
-        <circle cx="6" cy="12" r=".5" fill="#2F6FB2" stroke="#2F6FB2" stroke-width="0.2" data-famille="turbine"/>
-        <circle cx="12" cy="12" r=".5" fill="#2F6FB2" stroke="#2F6FB2" stroke-width="0.2" data-famille="turbine"/>
-        <circle cx="12" cy="6" r=".5" fill="#FBFAF7" stroke="#2F6FB2" stroke-width="0.34" data-famille="turbine"/>
-        <circle cx="0" cy="0" r=".5" fill="#2F6FB2" stroke="#2F6FB2" stroke-width="0.2" data-famille="turbine"/>
-        <circle cx="6" cy="0" r=".5" fill="#2F6FB2" stroke="#2F6FB2" stroke-width="0.2" data-famille="turbine"/>
-        <circle cx="12" cy="0" r=".5" fill="#FBFAF7" stroke="#2F6FB2" stroke-width="0.34" data-famille="turbine"/>
-        <circle cx="6" cy="6" r=".5" fill="#FBFAF7" stroke="#2F6FB2" stroke-width="0.34" data-famille="turbine"/>
-      </g>
-      <g class="r r2">
-        <circle cx="16" cy="0" r="3.6" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pelouse)"/>
-        <circle cx="20" cy="0" r="3.6" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pelouse)"/>
-        <circle cx="20" cy="4" r="3.6" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pelouse)"/>
-        <circle cx="16" cy="4" r="3.6" fill="#2E7D4F" fill-opacity=".13" clip-path="url(#pelouse)"/>
-        <polyline points="0,4 0,0 6,0 12,0 16,0 20,0 20,4 16,4" fill="none" stroke="#2E7D4F" stroke-width=".26" stroke-linejoin="round" stroke-linecap="round"/>
-        <rect x="15.56" y="-0.44" width=".88" height=".88" rx=".12" fill="#2E7D4F" stroke="#2E7D4F" stroke-width="0.2" data-famille="tuyere"/>
-        <rect x="19.56" y="-0.44" width=".88" height=".88" rx=".12" fill="#2E7D4F" stroke="#2E7D4F" stroke-width="0.2" data-famille="tuyere"/>
-        <rect x="19.56" y="3.56" width=".88" height=".88" rx=".12" fill="#2E7D4F" stroke="#2E7D4F" stroke-width="0.2" data-famille="tuyere"/>
-        <rect x="15.56" y="3.56" width=".88" height=".88" rx=".12" fill="#FBFAF7" stroke="#2E7D4F" stroke-width="0.34" data-famille="tuyere"/>
-      </g>
-  </svg>
-  <div class="legende">
-    <p class="leg-titre">Ce que la forme dit</p>
-    <p class="leg"><svg class="sym" viewBox="-1 -1 2 2" aria-hidden="true"><circle r=".72" fill="#2F6FB2"/></svg><span><b>turbine 3504</b> buse 0,75, portée 5,2 m</span></p>
-    <p class="leg"><svg class="sym" viewBox="-1 -1 2 2" aria-hidden="true"><rect x="-.66" y="-.66" width="1.32" height="1.32" rx=".18" fill="#2F6FB2"/></svg><span><b>tuyère 1800</b> buse 12-VAN, portée 3,6 m</span></p>
-
-    <p class="leg-titre">Ce que le remplissage dit : la pièce qui le raccorde</p>
-    <p class="leg"><svg class="sym" viewBox="-1 -1 2 2" aria-hidden="true"><circle r=".72" fill="#2F6FB2"/></svg><span><b>plein</b> : la ligne continue → <b>té taraudé 25×3/4"×25</b></span></p>
-    <p class="leg"><svg class="sym" viewBox="-1 -1 2 2" aria-hidden="true"><circle r=".62" fill="#FBFAF7" stroke="#2F6FB2" stroke-width=".3"/></svg><span><b>creux</b> : la ligne s’arrête là → <b>coude taraudé 25×3/4"</b></span></p>
-    <p class="leg"><svg class="sym" viewBox="-1 -1 2 2" aria-hidden="true"><rect x="-.56" y="-.56" width="1.12" height="1.12" transform="rotate(45)" fill="#FBFAF7" stroke="#2F6FB2" stroke-width=".3"/></svg><span><b>losange</b> : la ligne se sépare en deux → <b>té égal 25×25×25</b>, qui n’arrose rien</span></p>
-    <p class="leg"><svg class="sym" viewBox="-1 -1 2 2" aria-hidden="true"><line x1="-.85" y1="0" x2=".85" y2="0" stroke="#D8B45E" stroke-opacity=".85" stroke-width=".9"/></svg><span>la tranchée</span></p>
+<div class="feuille" id="feuille" hidden>
+  <div class="boite" role="dialog" aria-modal="true" aria-labelledby="feuille-titre">
+    <div class="haut"><h2 id="feuille-titre">Ajouter une pièce</h2><button class="fermer" type="button" id="fermer">Fermer</button></div>
+    <input class="recherche" id="recherche" type="search" placeholder="Chercher une pièce" aria-label="Chercher une pièce">
+    <div class="chips" id="categories"></div>
+    <div id="choix"></div>
   </div>
 </div>
 
-<div class="reseaux">
-  <p class="titre-bloc">2 réseaux, 1,80 m³/h : 64 ml de tranchée</p>
-  <ul>
-        <li class="carte c1">
-          <span class="pastille" style="background:#2F6FB2"></span>
-          <span class="nom">Réseau 1, les turbines, tout le carré</span>
-          <span class="debit">1,44 m³/h</span>
-          <span class="sous">9 turbines : 48 ml : 6 tés + 3 coudes + 2 jonctions</span>
-        </li>
-        <li class="carte c2">
-          <span class="pastille" style="background:#2E7D4F"></span>
-          <span class="nom">Réseau 2, les tuyères, la bande du haut-droite</span>
-          <span class="debit">0,90 m³/h</span>
-          <span class="sous">4 tuyères : 32 ml : 3 tés + 1 coude</span>
-        </li>
-  </ul>
+<div class="feuille menu" id="menu" hidden>
+  <div class="boite" role="dialog" aria-modal="true" aria-labelledby="menu-titre">
+    <div class="haut"><h2 id="menu-titre"></h2><button class="fermer" type="button" id="fermer-menu">Fermer</button></div>
+    <p class="propose" id="menu-propose" hidden></p>
+    <div class="gestes" id="menu-gestes"></div>
+  </div>
 </div>
 
-<p class="titre-bloc">Pourquoi ces arroseurs, à ces endroits</p>
-<div class="bloc">
-  <p class="pourquoi"><b>Turbines 3504, buse 0,75 : portée 5,2 m</b>, sur tout le
-     carré de 12 × 12 m. Espacées de 6 m, elles se recouvrent à <b>87 %</b> : au
-     dessus des 80 % qui suffisent. La 3504 est réglable de 40° à 360° et
-     <b>livrée avec ses six buses</b> : une seule référence pour les neuf.</p>
-  <p class="pourquoi"><b>Tuyères 1800, buse 12-VAN : portée 3,6 m</b>, sur la
-     bande du haut-droite. <b>Elle ne fait que 4 m de large</b> : la plus courte
-     turbine porte à 5,2 m et arroserait au-delà de la limite : chez le voisin,
-     sur le mur ou sur l’allée.</p>
-  <p class="pourquoi"><b>Un réseau par famille, jamais mélangées.</b> Une tuyère
-     verse environ trois fois plus vite qu’une turbine : sur une même voie, le
-     temps qui convient à l’une noie ou assoiffe l’autre. C’est aussi ce qui fait
-     tenir le compte, 1,44 m³/h d’un côté, 0,90 de l’autre, sous les 1,80
-     disponibles.</p>
-  <p class="pourquoi"><b>Le débit d’une turbine ne dépend pas de son arc</b> :
-     un quart de cercle consomme autant qu’un tour entier, le jet est un seul
-     filet qui balaie. Une tuyère, elle, projette plusieurs filets à la fois :
-     son débit se lit par angle (0,15 à 90°, 0,30 à 180°).</p>
-</div>
+<script src="arrosage-plan-calcul.js"></script>
+<script>
+(function () {
+  var C = window.CALCUL, CAT = C.CATALOGUE;
+  var $ = function (id) { return document.getElementById(id); };
+  var texte = function (s) { var e = document.createElement("span"); e.textContent = s == null ? "" : String(s); return e.innerHTML; };
+  var virgule = function (n) { return String(n).replace(".", ","); };
 
-<p class="titre-bloc">Le détail des pièces</p>
-<div class="bloc">
-  <table data-zone="jardin">
-    <tr><td class="q">9x</td><td>Turbine 3504, réglable 40°-360°, livrée avec ses 6 buses (monter la 0,75)</td><td class="ref">RA3504</td></tr>
-    <tr><td class="q">4x</td><td>Tuyère 1800 : escamotable 10 cm</td><td class="ref">RT1804</td></tr>
-    <tr><td class="q">4x</td><td>Buse 12-VAN, portée 3,6 m</td><td class="ref">RBT636</td></tr>
-    <tr><td class="q">9x</td><td>Té 90° taraudé 25×3/4"×25, départ et milieu de ligne</td><td class="ref"></td></tr>
-    <tr><td class="q">4x</td><td>Coude 90° taraudé 25×3/4", fin de ligne</td><td class="ref"></td></tr>
-    <tr><td class="q">2x</td><td>Té égal 25×25×25, la ligne se sépare, sans arroseur</td><td class="ref"></td></tr>
-    <tr><td class="q">13x</td><td>Coude SBE 075, en bas, sur le té ou le coude (toujours 3/4")</td><td class="ref">OD502</td></tr>
-    <tr><td class="q">13x</td><td>Coude SBE 050, en haut, sur le corps (3504 et 1800 sont en 1/2")</td><td class="ref">OD501</td></tr>
-    <tr><td class="q">80 ml</td><td>PE Ø25, lignes, depuis la nourrice</td><td class="ref"></td></tr>
-    <tr><td class="q">26 ml</td><td>PEBD rigide Ø16, reprise vers chaque arroseur</td><td class="ref"></td></tr>
-  </table>
-</div>
+  // Les photos qu'il a validées (planche « Photos des pièces »), dans arrosage-photos/.
+  var PHOTOS = {"electrovanne-100dv":"electrovanne-100dv.jpg","electrovanne-100dv-ff":"electrovanne-100dv-ff.png","pebd16":"pebd16.png","pehd":"pehd.jpg","clarinette-2v":"clarinette-2v.jpg","clarinette-3v":"clarinette-3v.jpg","clarinette-4v":"clarinette-4v.jpg","connexion":"connexion.jpg","coude-mf":"coude-mf.jpg","coude-ff":"coude-ff.png","coude-taraude-25-34":"coude-taraude-25-34.jpg","HT1521":"HT1521.jpg","HT1522":"HT1522.jpg","HT1523":"HT1523.jpg","HT1541":"HT1541.jpg","HT1543":"HT1543.jpg","HT1544":"HT1544.jpg","HT1546":"HT1546.png","mamelon":"mamelon.jpg","mamelon-droit-1":"mamelon-droit-1.jpg","OD501":"OD501.jpg","OD502":"OD502.jpg","pile-9v":"pile-9v.jpg","prog-1":"prog-1.jpg","prog-2":"prog-2.jpg","prog-4":"prog-4.jpg","prog-6":"prog-6.jpg","RA2180":"RA2180.jpg","RA2181":"RA2181.jpg","RA3504":"RA3504.jpg","RA3504SAM":"RA3504SAM.jpg","RA5004FC":"RA5004FC.jpg","RA5006PC":"RA5006PC.jpg","raccord-femelle25":"OPL70302520.jpg","regard-jumbo5":"regard-jumbo5.jpg","regard-jumbo6":"regard-jumbo6.jpg","regard-rect12":"regard-rect12.jpg","regard-rg17106":"regard-rg17106.jpg","regulateur-ff34":"regulateur-ff34.jpg","RP403":"RP403.jpg","RT1802":"RT1802.jpg","RT1804":"RT1804.jpg","RT1806":"RT1806.jpg","RT1822":"RT1822.jpg","RT1824":"RT1824.jpg","RT1826":"RT1826.jpg","RT1832":"RT1832.jpg","RT1834":"RT1834.jpg","RT1836":"RT1836.jpg","TAMINI8-4P":"TAMINI8-4P.png","te-25-25-25":"te-25-25-25.jpg","te-mmf":"te-mmf.jpg","te-taraude-25-34-25":"te-taraude-25-34-25.jpg","UGGCBL23050":"UGGCBL23050.png","union":"union.jpg","VAN":"VAN.jpg","vanne-purge":"vanne-purge.jpg","MID6301":"MID6301.png","MID6321":"MID6321.png","MID6341":"MID6341.png","MID6352":"MID6352.png","MID6371":"MID6371.png","pe25-amenee":"pehd.jpg","pe25":"pehd.jpg","RBT640":"RBT640.jpg","RBT639":"RBT639.jpg","RBT638":"RBT638.jpg","RBT637":"RBT637.jpg","RBT636":"RBT636.jpg","RBT601":"RBT601.jpg","RBT648":"RBT648.jpg","RBT1418":"RBT1418.jpg","RBT1419":"RBT1419.jpg","RBT1428":"RBT1428.jpg","RBT1429":"RBT1429.jpg","RBT1438":"RBT1438.jpg","RBT1439":"RBT1439.jpg"};
+  var CHARTES = [["origine","Origine"],["brume","Brume"],["pierre","Pierre"],["beurre","Beurre"],["moka","Moka"],["prune","Prune"],["sylve","Sylve"],["nuit","Nuit"]];
+  CHARTES.forEach(function (c) { var o = document.createElement("option"); o.value = c[0]; o.textContent = c[1]; $("charte").appendChild(o); });
+  $("charte").onchange = function () { document.body.dataset.charte = this.value; dessiner(); };
+  var jeton = function (nom) { return getComputedStyle(document.body).getPropertyValue("--atlas-" + nom).trim(); };
 
-<p class="titre-bloc">Du compteur à la nourrice</p>
-<div class="bloc">
-  <table data-zone="amenee">
-    <tr><td class="q">1x</td><td>Té égal 25×25×25, on coupe la ligne du compteur pour dériver vers la nourrice</td><td class="ref"></td></tr>
-    <tr><td class="q">2x</td><td>Raccord mâle 25, 1"</td><td class="ref"></td></tr>
-    <tr><td class="q">—</td><td>PE Ø25, du compteur au regard, à mesurer sur place (la distance dépend du terrain)</td><td class="ref"></td></tr>
-  </table>
-  <p class="compte">Le compteur alimente la maison par une ligne directe. Se piquer
-     dessus veut dire la couper et poser un té égal : c'est une pièce
-     obligatoire dès que le piquage se fait au compteur.</p>
-</div>
+  // ── LA SAISIE : ce que le patron a rempli, et le croquis qu'il a donné.
+  var SAISIE = { seau: 10, temps: 18, pression: 3, compteur: "oui" };
+  var NOURRICE = { x: 13, y: 6 };
+  var etat = { sortie: "boucle", retirees: {}, remplacees: {}, ajoutees: [], ou: "amenee", categorie: "reseau", cible: null, recherche: "" };
+  function plan() {
+    return C.calculerPlan({ seau: SAISIE.seau, temps: SAISIE.temps, pression: SAISIE.pression, compteur: SAISIE.compteur, zones: [
+      { id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
+      { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },
+      { id: 3, type: "massif", nom: "Massif", x: 14, y: 10, L: 20, l: 2.4, sortieGoutte: etat.sortie },
+      { id: 4, type: "gazon", nom: "Couloir", x: 0, y: 14, L: 10, l: 2, materiel: "tuyere" }
+    ] });
+  }
+  $("saisie").textContent = "Au seau, 10 L en 18 s. Pression 3 bar. Piquage au compteur. Croquis : pelouse de 12 × 12, pelouse de 8 × 8, massif de 20 × 2,40 en goutte-à-goutte, couloir de 10 × 2.";
 
-<p class="titre-bloc">La nourrice 2 voies, ce qu'il y a dans le regard</p>
-<div class="bloc">
-  <table data-zone="nourrice">
-    <tr><td class="q">1x</td><td>Té taraudé/fileté 1" MMF</td><td class="ref"></td></tr>
-    <tr><td class="q">1x</td><td>Coude 1" FF</td><td class="ref"></td></tr>
-    <tr><td class="q">3x</td><td>Union droite taraudée MF 1"</td><td class="ref"></td></tr>
-    <tr><td class="q">2x</td><td>Électrovanne 100 DV 1" MM 9V, une par réseau</td><td class="ref"></td></tr>
-    <tr><td class="q">3x</td><td>Raccord mâle 25, 1"</td><td class="ref"></td></tr>
-    <tr><td class="q">1x</td><td>Coude 90° taraudé/fileté MF 1"</td><td class="ref"></td></tr>
-    <tr><td class="q">2x</td><td>Mamelon réduit fileté MM 1"-3/4"</td><td class="ref"></td></tr>
-    <tr><td class="q">1x</td><td>Vanne avec vis de purge 3/4"</td><td class="ref"></td></tr>
-    <tr><td class="q">1x</td><td>Regard rectangle 12"</td><td class="ref"></td></tr>
-    <tr><td class="q">1x</td><td>Programmateur BL-IP 2 stations 9V</td><td class="ref"></td></tr>
-    <tr><td class="q">1x</td><td>Pile alcaline 9V</td><td class="ref"></td></tr>
-    <tr><td class="q">6x</td><td>Connexion étanche</td><td class="ref"></td></tr>
-  </table>
-  <p class="compte">Relevé sur votre planche du 17 août : nourrice 2 voies.</p>
-</div>
+  // ═══ 1. LA NOURRICE ÉCLATÉE, validée le 18 octobre 2026 ═══════════════════
+  // Les formes relevées sur ses photos détourées (fraction de la photo), reprises
+  // telles quelles de arrosage-nourrice-eclatee.html.
+  var HAUT = {
+    "coude-mf":      { h: 46, vertical: 0.27, horizontal: 0.22 },
+    "coude-ff":      { h: 52, vertical: 0.65, horizontal: 0.40, miroir: true },
+    "te-mmf":        { h: 44, vertical: 0.52, horizontal: 0.28, demi: true },
+    "clarinette-2v": { w: 150, sorties: [0.307, 0.778], tube: 0.35 },
+    "clarinette-3v": { w: 220, sorties: [0.21, 0.535, 0.85], tube: 0.34 },
+    "clarinette-4v": { w: 296, sorties: [0.16, 0.40, 0.64, 0.88], tube: 0.33 }
+  };
+  var COLONNE = {
+    "mamelon":            { a: [0.5, 0.02], b: [0.5, 0.98], L: 28 },
+    "mamelon-demi":       { a: [0.5, 0.98], b: [0.5, 0.02], L: 28, src: "mamelon" },
+    "vanne-purge":        { a: [0.02, 0.79], b: [0.61, 0.73], L: 40 },
+    "union":              { a: [0.06, 0.68], b: [0.96, 0.32], L: 46 },
+    "raccord-femelle25":  { a: [0.08, 0.66], b: [0.98, 0.27], L: 40 },
+    "pehd":               { a: [0, 0.5], b: [1, 0.5], L: 44 },
+    "electrovanne-100dv": { a: [0.01, 0.88], b: [0.99, 0.88], L: 50 },
+    "electrovanne-100dv-ff": { a: [0.28, 0.80], b: [0.97, 0.52], L: 50 },
+    "mamelon-droit-1":    { a: [0.5, 0.02], b: [0.5, 0.98], L: 26 },
+    "regulateur-ff34":    { a: [0.5, 0.02], b: [0.5, 0.98], L: 44 }
+  };
+  var images = {};
+  function charger(ref) {
+    return new Promise(function (ok) {
+      if (!PHOTOS[ref]) return ok(null);
+      var img = new Image(); img.onload = function () { ok(detourer(img)); }; img.onerror = function () { ok(null); };
+      img.src = "arrosage-photos/" + PHOTOS[ref];
+    });
+  }
+  function detourer(img) {
+    var c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight;
+    var g = c.getContext("2d"); g.drawImage(img, 0, 0);
+    var d = g.getImageData(0, 0, c.width, c.height).data, x0 = c.width, y0 = c.height, x1 = 0, y1 = 0;
+    for (var y = 0; y < c.height; y += 2) for (var x = 0; x < c.width; x += 2) {
+      var i = (y * c.width + x) * 4;
+      if (d[i + 3] > 20 && (d[i] < 225 || d[i + 1] < 225 || d[i + 2] < 225)) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    }
+    var k = document.createElement("canvas"); k.width = x1 - x0 + 1; k.height = y1 - y0 + 1;
+    k.getContext("2d").drawImage(c, x0, y0, k.width, k.height, 0, 0, k.width, k.height);
+    return k;
+  }
+  function taille(ref) {
+    var f = HAUT[ref], im = images[ref];
+    if (!im) return { w: f.w || 40, h: f.h || 40 };
+    if (f.w) return { w: f.w, h: f.w * im.height / im.width };
+    return { w: f.h * im.width / im.height, h: f.h };
+  }
+  function nomCatalogue(ref) { var p = CAT.piece(ref); return p ? (p.marque ? p.marque + " " : "") + p.nom : ref; }
 
-<div class="bloc" style="margin-top:8px">
-  <p class="compte">Deux SBE par arroseur, votre règle du 17 août : celui du
-     bas sur la tuyauterie (toujours 3/4", quel que soit l’arroseur) et celui du
-     haut au diamètre du corps. Soit 13 + 13 = 26 raccords pour 13 arroseurs.<br>9 tés + 4 coudes = 13 raccords pour 13 arroseurs : aucun n’est laissé sans alimentation. La jonction devant le regard ne compte pas, elle n’arrose rien.</p>
-</div>
+  function dessinerNourrice(n, nbGoutte) {
+    var fiche = CAT.ficheNourrice(n, nbGoutte), reste = {}, poses = [], ordre = [];
+    if (!fiche) { $("titre-nourrice").textContent = "Aucune fiche pour " + n + " voies"; return; }
+    fiche.pieces.forEach(function (x) { reste[x.ref] = (reste[x.ref] || 0) + x.q; });
+    var pris = function (ref) { if (reste[ref] > 0) reste[ref]--; };
+    var numero = function (ref) { var i = ordre.indexOf(ref); if (i < 0) { ordre.push(ref); i = ordre.length - 1; } return i + 1; };
+    var haut = function (ref, x, y) { var t = taille(ref); poses.push({ haut: true, ref: ref, x: x, y: y, w: t.w, h: t.h }); pris(ref); return t; };
+    var colonne = function (cle, x, y) { var f = COLONNE[cle]; poses.push({ cle: cle, ref: f.src || cle, x: x, y: y }); pris(f.src || cle); return y + f.L; };
+    var ECART = 9, W = 358;
+    var clar = ["clarinette-2v", "clarinette-3v", "clarinette-4v"].filter(function (r) { return reste[r]; })[0];
+    var avecTe = Boolean(reste["te-mmf"]);
+    var x = 10, yTop = 12, axe = yTop + (clar ? taille(clar).h * HAUT[clar].tube : 22), axes = [];
+    var cg = haut("coude-mf", x, 0); poses[poses.length - 1].y = axe - cg.h * HAUT["coude-mf"].horizontal;
+    var xL = x + cg.w * HAUT["coude-mf"].vertical; x += cg.w + ECART;
+    if (clar) { var cl = haut(clar, x, yTop); HAUT[clar].sorties.forEach(function (s) { axes.push(x + s * cl.w); }); x += cl.w + ECART; }
+    if (avecTe) { var te = haut("te-mmf", x, 0); poses[poses.length - 1].y = axe - te.h * HAUT["te-mmf"].horizontal; axes.push(x + te.w * HAUT["te-mmf"].vertical); x += te.w + ECART; }
+    var cd = haut("coude-ff", x, 0); poses[poses.length - 1].y = axe - cd.h * HAUT["coude-ff"].horizontal;
+    axes.push(x + cd.w * HAUT["coude-ff"].vertical);
+    var bas = 0; poses.forEach(function (p) { bas = Math.max(bas, p.y + p.h); }); bas += ECART;
+    var y = colonne("mamelon-demi", xL, bas) + ECART;
+    y = colonne("vanne-purge", xL, y) + ECART;
+    y = colonne("mamelon", xL, y) + ECART;
+    y = colonne("union", xL, y) + ECART;
+    y = colonne("raccord-femelle25", xL, y) + ECART;
+    var fin = colonne("pehd", xL, y), etiquettes = [[xL, fin, "Arrivée"]];
+    axes.forEach(function (xv, i) {
+      var goutte = i >= axes.length - nbGoutte, yv = bas;
+      if (goutte) {
+        yv = colonne("mamelon-droit-1", xv, yv) + ECART;
+        yv = colonne("electrovanne-100dv-ff", xv, yv) + ECART;
+        yv = colonne("mamelon-demi", xv, yv) + ECART;
+        yv = colonne("regulateur-ff34", xv, yv) + ECART;
+        yv = colonne("mamelon", xv, yv) + ECART;
+      } else {
+        yv = colonne("electrovanne-100dv", xv, yv) + ECART;
+      }
+      yv = colonne("union", xv, yv) + ECART;
+      yv = colonne("raccord-femelle25", xv, yv) + ECART;
+      yv = colonne("pehd", xv, yv);
+      // La voie porte le numéro de son réseau, et sa couleur sur le plan.
+      etiquettes.push([xv, yv, "Réseau " + (i + 1), i]);
+      fin = Math.max(fin, yv);
+    });
+    var largeur = Math.max(x + cd.w, axes[axes.length - 1] + 70) + 8;
+    var k = Math.min(1, W / largeur), H = (fin + 34) * k, c = $("dessin"), r = window.devicePixelRatio || 1;
+    c.width = W * r; c.height = H * r; c.style.height = H + "px";
+    var g = c.getContext("2d"); g.setTransform(r, 0, 0, r, 0, 0);
+    g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H);
+    g.setTransform(r * k, 0, 0, r * k, (W - largeur * k) / 2 * r, 0);
+    poses.forEach(function (p) {
+      var im = images[p.ref];
+      if (p.haut) {
+        var f = HAUT[p.ref];
+        if (im) {
+          g.save(); g.translate(p.x + p.w / 2, p.y + p.h / 2);
+          if (f.demi) g.rotate(Math.PI);
+          if (f.miroir) g.scale(-1, 1);
+          g.globalCompositeOperation = "multiply"; g.drawImage(im, -p.w / 2, -p.h / 2, p.w, p.h); g.restore();
+        }
+        badge(g, numero(p.ref), p.x + p.w + 2, p.y + 5);
+        return;
+      }
+      var fc = COLONNE[p.cle];
+      if (im) {
+        var ax = fc.a[0] * im.width, ay = fc.a[1] * im.height, bx = fc.b[0] * im.width, by = fc.b[1] * im.height;
+        var s = fc.L / Math.hypot(bx - ax, by - ay), angle = Math.PI / 2 - Math.atan2(by - ay, bx - ax);
+        g.save(); g.translate(p.x, p.y); g.rotate(angle); g.scale(s, s);
+        g.globalCompositeOperation = "multiply"; g.drawImage(im, -ax, -ay); g.restore();
+      }
+      badge(g, numero(p.ref), p.x + 24, p.y + fc.L / 2);
+    });
+    g.globalCompositeOperation = "source-over";
+    g.font = "600 10px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "top";
+    etiquettes.forEach(function (e) {
+      g.fillStyle = e[3] === undefined ? "#4a4a44" : couleursPlan[e[3]];
+      // Deux voies voisines sont serrées : les numéros pairs descendent d'une ligne.
+      var dy = e[3] !== undefined && e[3] % 2 === 1 ? 13 : 0;
+      g.fillText(e[3] === undefined ? e[2] : "R" + (e[3] + 1), e[0], e[1] + 6 + dy);
+    });
+    $("titre-nourrice").textContent = fiche.nom;
+    $("sous-nourrice").textContent = "Une voie par réseau, numérotées de gauche à droite après l’arrivée." + (nbGoutte ? " Le goutte-à-goutte est à droite." : "");
+    var NOMS = { "coude-mf": "Coude MF 1\"", "mamelon": "Mamelon réduit MM 1\" x 3/4\"", "vanne-purge": "Vanne 3/4\" FF", "pehd": "PEHD Ø25" };
+    $("legende").innerHTML = ordre.map(function (ref, i) { return "<li><b>" + (i + 1) + "</b>" + texte(NOMS[ref] || nomCatalogue(ref)) + "</li>"; }).join("");
+    var bac = "";
+    Object.keys(reste).forEach(function (ref) {
+      if (!reste[ref]) return;
+      var photo = PHOTOS[ref] ? '<img src="arrosage-photos/' + PHOTOS[ref] + '" alt="">' : "photo à venir";
+      bac += '<div class="p"><span class="ph">' + photo + '</span><span class="n">' + (reste[ref] > 1 ? reste[ref] + "x " : "") + texte(nomCatalogue(ref)) + "</span></div>";
+    });
+    $("bac").innerHTML = bac;
+  }
+  function badge(g, n, x, y) {
+    g.globalCompositeOperation = "source-over";
+    g.fillStyle = "#1c1c1a"; g.beginPath(); g.arc(x, y, 7, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "#ffffff"; g.font = "600 9px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+    g.fillText(String(n), x, y + 0.5);
+  }
 
-<p class="note">Maquette, rien n’est codé dans l’application. Le plan est tracé à
-vos cotes ; les métrés sont mesurés sur le tracé, pas saisis ; les raccords sont
-comptés par position, selon votre planche du 17 août.</p>
+  // ═══ 2. LES RÉSEAUX : le plan de l'application, un réseau à la fois ═══════
+  var couleursPlan = [];
+  var NS = "http://www.w3.org/2000/svg";
+  function svgReseau(d, p, i) {
+    var r = d.reseaux.filter(function (x) { return x.numero === i; })[0];
+    var encre = jeton("ink"), carte = jeton("card"), plein = jeton("plein");
+    var pts = function (c) { return c.map(function (q) { return q.x + "," + q.y; }).join(" "); };
+    var s = '<svg viewBox="' + d.viewBox + '" role="img" aria-label="Réseau ' + (i + 1) + ' sur le plan">';
+    s += '<defs><clipPath id="pelouse-' + i + '">' + d.contours.map(function (c) { return '<polygon points="' + pts(c) + '"/>'; }).join("") + "</clipPath></defs>";
+    s += d.contours.map(function (c) { return '<polygon points="' + pts(c) + '" fill="' + plein + '" fill-opacity="0.16"/>'; }).join("");
+    s += d.tranchee.map(function (t) { return '<line x1="' + t.de.x + '" y1="' + t.de.y + '" x2="' + t.a.x + '" y2="' + t.a.y + '" stroke="' + encre + '" stroke-opacity="0.12" stroke-width="0.95" stroke-linecap="round"/>'; }).join("");
+    s += d.contours.map(function (c) { return '<polygon points="' + pts(c) + '" fill="none" stroke="' + encre + '" stroke-opacity="0.45" stroke-width="0.26"/>'; }).join("");
+    s += d.cotes.map(function (c) { return '<text x="' + c.x + '" y="' + c.y + '" text-anchor="' + c.ancre + '" font-size="0.95" fill="' + jeton("muted") + '">' + texte(c.texte) + "</text>"; }).join("");
+    s += d.liaisons.map(function (t) { return '<line x1="' + t.de.x + '" y1="' + t.de.y + '" x2="' + t.a.x + '" y2="' + t.a.y + '" stroke="' + encre + '" stroke-width="0.2" stroke-dasharray="0.5 0.4"/>'; }).join("");
+    // Les autres réseaux, en pâle : on voit par où ils passent, sans les confondre.
+    d.reseaux.forEach(function (o) {
+      if (o.numero === i) return;
+      s += o.traits.map(function (t) { return '<line x1="' + t.de.x + '" y1="' + t.de.y + '" x2="' + t.a.x + '" y2="' + t.a.y + '" stroke="' + encre + '" stroke-opacity="0.18" stroke-width="0.2"/>'; }).join("");
+      s += o.tetes.map(function (t) { return '<circle cx="' + t.x + '" cy="' + t.y + '" r="0.3" fill="' + encre + '" fill-opacity="0.18"/>'; }).join("");
+    });
+    var zone = p.dessin.filter(function (z) { return z.cle === "gaine" && (p.reseauxDeZone[z.id] || []).indexOf(i) >= 0; })[0];
+    if (zone) {
+      // Le goutte-à-goutte : la zone se borde de sa couleur, le tube n'a pas de tête.
+      s += '<rect x="' + zone.x + '" y="' + zone.y + '" width="' + zone.L + '" height="' + zone.l + '" fill="' + p.couleurs[i] + '" fill-opacity="0.18" stroke="' + p.couleurs[i] + '" stroke-width="0.26" stroke-dasharray="0.6 0.4"/>';
+    }
+    if (r) {
+      s += r.tetes.map(function (t) { return '<circle cx="' + t.x + '" cy="' + t.y + '" r="' + t.portee + '" fill="' + r.couleur + '" fill-opacity="0.13" clip-path="url(#pelouse-' + i + ')"/>'; }).join("");
+      s += r.traits.map(function (t) { return '<line x1="' + t.de.x + '" y1="' + t.de.y + '" x2="' + t.a.x + '" y2="' + t.a.y + '" stroke="' + r.couleur + '" stroke-width="0.26" stroke-linecap="round"/>'; }).join("");
+      s += r.antennes.map(function (a) { return '<line x1="' + a.de.x + '" y1="' + a.de.y + '" x2="' + a.a.x + '" y2="' + a.a.y + '" stroke="' + r.couleur + '" stroke-width="0.13" stroke-linecap="round"/>'; }).join("");
+      s += r.jonctions.map(function (q) { return '<rect x="' + (q.x - 0.38) + '" y="' + (q.y - 0.38) + '" width="0.76" height="0.76" transform="rotate(45 ' + q.x + " " + q.y + ')" fill="' + carte + '" stroke="' + r.couleur + '" stroke-width="0.26"/>'; }).join("");
+      s += r.tetes.map(function (t) {
+        var cx = t.x + t.decalage.x, cy = t.y + t.decalage.y, f = t.plein ? r.couleur : carte, w = t.plein ? 0.2 : 0.34;
+        return t.forme === "rond"
+          ? '<circle cx="' + cx + '" cy="' + cy + '" r="' + (t.plein ? 0.5 : 0.42) + '" fill="' + f + '" stroke="' + r.couleur + '" stroke-width="' + w + '"/>'
+          : '<rect x="' + (cx - 0.44) + '" y="' + (cy - 0.44) + '" width="0.88" height="0.88" rx="0.12" fill="' + f + '" stroke="' + r.couleur + '" stroke-width="' + w + '"/>';
+      }).join("");
+    }
+    s += '<rect x="' + (d.nourrice.x - 0.75) + '" y="' + (d.nourrice.y - 1.4) + '" width="1.5" height="2.8" rx="0.3" fill="' + carte + '" stroke="' + encre + '" stroke-width="0.22"/>';
+    s += '<text x="' + d.etiquetteNourrice.x + '" y="' + d.etiquetteNourrice.y + '" text-anchor="' + d.etiquetteNourrice.ancre + '" font-size="0.95" fill="' + encre + '">nourrice</text>';
+    return s + "</svg>";
+  }
+
+  function dessinerReseaux(p, d) {
+    $("titre-reseaux").textContent = p.secteurs.length + " réseau" + (p.secteurs.length > 1 ? "x" : "") + ", " + virgule(d.metresTranchee) + " m de tranchée";
+    var html = "";
+    p.secteurs.forEach(function (s, i) {
+      var r = d.reseaux.filter(function (x) { return x.numero === i; })[0], c = p.couleurs[i];
+      var lignes = "";
+      if (r) r.materiels.forEach(function (m) {
+        lignes += '<li><span class="q">' + m.nombre + "x</span><span>" + texte(m.libelle) + ", " + (m.bridee ? "bridée à " : "portée ") + virgule(m.portee) + " m</span></li>";
+      });
+      if (s.famille === "Goutte-à-goutte") {
+        var g = CAT.gaines[0];
+        lignes += '<li><span class="q"></span><span>' + texte("Goutte-à-goutte Toro, " + g.detail + ", " + (etat.sortie === "boucle" ? "en boucle" : "une seule ligne")) + "</span></li>";
+      }
+      if (r) lignes += '<li><span class="q">' + r.metresTuyau + ' m</span><span>de PEHD Ø25</span></li>';
+      html += '<div class="reseau" style="--couleur:' + c + '"><div class="reseau-titre"><span class="pastille"></span><b>Réseau ' + (i + 1) + "</b><span>" + texte(s.nom) + ", " + s.minutes + " min</span></div>" +
+        '<div class="schema">' + svgReseau(d, p, i) + '</div><ul class="materiel">' + lignes + "</ul></div>";
+    });
+    $("reseaux").innerHTML = html;
+    var e = "var(--atlas-ink)", k = "var(--atlas-card)";
+    var sym = function (svg, t) { return '<p><svg viewBox="-1 -1 2 2" aria-hidden="true">' + svg + "</svg><span>" + t + "</span></p>"; };
+    $("symboles").innerHTML =
+      sym('<circle r="0.72" fill="' + e + '"/>', "rond : une turbine") +
+      sym('<rect x="-0.66" y="-0.66" width="1.32" height="1.32" rx="0.18" fill="' + e + '"/>', "carré : une tuyère") +
+      sym('<circle r="0.72" fill="' + e + '"/>', "plein : la ligne continue, té taraudé 25×3/4″×25") +
+      sym('<circle r="0.6" fill="' + k + '" stroke="' + e + '" stroke-width="0.3"/>', "creux : la ligne s’arrête là, coude taraudé 25×3/4″") +
+      sym('<rect x="-0.56" y="-0.56" width="1.12" height="1.12" transform="rotate(45)" fill="' + k + '" stroke="' + e + '" stroke-width="0.3"/>', "losange : la ligne se sépare, té égal 25×25×25") +
+      sym('<line x1="-0.85" y1="0" x2="0.85" y2="0" stroke="' + e + '" stroke-width="0.18"/>', "trait fin : l’antenne Ø16 rigide, 2 m au plus");
+  }
+
+  // ═══ 3. LES PIÈCES : la vue éclatée, tête par tête ════════════════════════
+  var LISTE = [];
+  Object.keys(CAT.piecesNourrice).forEach(function (r) { var p = CAT.piecesNourrice[r]; LISTE.push({ ref: r, nom: (p.marque ? p.marque + " " : "") + p.nom, categorie: "nourrice" }); });
+  Object.keys(CAT.piecesReseau).forEach(function (r) { var p = CAT.piecesReseau[r]; LISTE.push({ ref: r, nom: (p.marque ? p.marque + " " : "") + p.nom, categorie: "reseau" }); });
+  CAT.coudes.forEach(function (c) { LISTE.push({ ref: c.ref, nom: c.nom + ", " + c.detail, categorie: "reseau" }); });
+  CAT.corps.forEach(function (c) { LISTE.push({ ref: c.ref, nom: c.nom + (c.detail ? ", " + c.detail : ""), categorie: "arroseur" }); });
+  CAT.gaines.forEach(function (g) { LISTE.push({ ref: g.ref, nom: g.nom, categorie: "raccord goutte-à-goutte" }); });
+  CAT.piecesAjoutables.forEach(function (x) { if (!LISTE.some(function (y) { return y.ref === x.ref; })) LISTE.push({ ref: x.ref, nom: x.nom, categorie: x.categorie }); });
+  var CATEGORIES = [["nourrice","Nourrice"],["reseau","Réseau"],["arroseur","Arroseurs"],["raccord PE","Raccords PE"],["electrovanne","Électrovannes"],["regard","Regards"],["programmateur","Programmateurs"],["raccord goutte-à-goutte","Goutte-à-goutte"],["tube PE","Tubes PE"],["robinetterie","Robinetterie"],["électricité","Électricité"]];
+  var trouver = function (ref) { return LISTE.filter(function (x) { return x.ref === ref; })[0]; };
+  function nomDe(ref, M) {
+    var l = M.filter(function (m) { return m.ref === ref; })[0];
+    if (l) return l.nom;
+    var p = CAT.piece(ref) || CAT.piecesReseau[ref] || CAT.pieceAjoutable(ref);
+    return p ? (p.marque ? p.marque + " " : "") + p.nom : ref;
+  }
+  var proposees = {}, compte = {};
+  function piece(cle, ref, nom, detail) {
+    proposees[cle] = { ref: ref, nom: nom };
+    var retiree = etat.retirees[cle], change = etat.remplacees[cle];
+    if (change) { ref = change.ref; nom = change.nom; detail = change.nom; }
+    var photo = PHOTOS[ref] ? '<span class="photo"><img src="arrosage-photos/' + PHOTOS[ref] + '" alt=""></span>' : '<span class="photo vide">photo à venir</span>';
+    var mention = retiree ? "supprimée" : change ? "changée" : "";
+    return '<button type="button" class="piece' + (retiree ? " retiree" : "") + (change ? " changee" : "") + (cle.indexOf("plus:") === 0 ? " ajoutee" : "") +
+      '" data-cle="' + texte(cle) + '" aria-label="' + texte(nom) + '">' + photo + '<span class="nom">' + texte(detail || nom) + "</span>" + (mention ? '<span class="mention">' + mention + "</span>" : "") + "</button>";
+  }
+  function poser(cle, ref, nom, detail, q, u) {
+    var change = etat.remplacees[cle], r = change ? change.ref : ref, n = change ? change.nom : nom;
+    if (!etat.retirees[cle]) { compte[r] = compte[r] || { nom: n, q: 0, u: change ? "u" : (u || "u") }; compte[r].q += change || q === undefined ? 1 : q; }
+    return piece(cle, ref, nom, detail);
+  }
+  function tuyere(cle, corps, buse) {
+    var html = poser(cle, corps.ref, corps.nom, corps.nom.replace("Tuyère ", "") + " et " + buse.nom);
+    if (!etat.retirees[cle] && !etat.remplacees[cle]) {
+      compte[buse.ref] = compte[buse.ref] || { nom: "Rain Bird Tuyères " + buse.nom + (buse.colisage ? ", par " + buse.colisage : ""), q: 0, u: "u" }; compte[buse.ref].q += 1;
+    }
+    if (etat.remplacees[cle] || !PHOTOS[buse.ref]) return html;
+    return html.replace("</span>", '<img class="pied" src="arrosage-photos/' + PHOTOS[buse.ref] + '" alt="' + texte(buse.nom) + '"></span>');
+  }
+  function ajoutees(ou) {
+    return etat.ajoutees.filter(function (a) { return a.ou === ou; }).map(function (a) { return poser("plus:" + a.n, a.ref, a.nom, "ajoutée", 1); }).join("");
+  }
+  function couronnes(i, M) {
+    var n = (M.filter(function (m) { return m.ref === "UGGCBL23050"; })[0] || { q: 0 }).q;
+    var j = (M.filter(function (m) { return m.ref === "MID6301"; })[0] || { q: 0 }).q;
+    var html = "";
+    for (var c = 0; c < n; c++) {
+      if (c > 0 && c <= j) html += poser("r" + i + ":jonction" + c, "MID6301", nomDe("MID6301", M), "jonction Palaplast Ø16");
+      html += poser("r" + i + ":couronne" + c, "UGGCBL23050", nomDe("UGGCBL23050", M), "tube Toro, couronne de 50 m");
+    }
+    return html;
+  }
+  // La zone et la buse d'une tête du dessin : celle du calcul qui la pose à ce point.
+  function zoneDeLaTete(p, t, i) {
+    return p.dessin.filter(function (z) {
+      return z.points && z.points.some(function (q) { return q.reseau === i && Math.abs(q.x - t.x) < 1e-6 && Math.abs(q.y - t.y) < 1e-6; });
+    })[0];
+  }
+
+  function dessinerPieces(p, d, M) {
+    $("amenee").innerHTML =
+      poser("am:te", "te-25-25-25", nomDe("te-25-25-25", M), "Té égal au compteur", 1) +
+      poser("am:pe", "pe25-amenee", "PEHD Ø25, du compteur à la nourrice", "PEHD Ø25, à mesurer", 0, "ml") +
+      ajoutees("amenee");
+    var corpsTuyere = CAT.corps.filter(function (c) { return c.pourType === "tuyere" && M.some(function (m) { return m.ref === c.ref; }); })[0];
+    var sbeBas = CAT.coudes.filter(function (c) { return c.filetage === "3/4"; })[0];
+    var jardin = '<div class="chips" role="group" aria-label="Massif" style="margin-top:18px">' +
+      '<button type="button" data-sortie="ligne" aria-pressed="' + (etat.sortie === "ligne") + '">Massif : une seule ligne</button>' +
+      '<button type="button" data-sortie="boucle" aria-pressed="' + (etat.sortie === "boucle") + '">Deux, en boucle</button></div>';
+    p.secteurs.forEach(function (s, i) {
+      var c = p.couleurs[i], r = d.reseaux.filter(function (x) { return x.numero === i; })[0];
+      jardin += '<div class="reseau" style="--couleur:' + c + '"><div class="reseau-titre"><span class="pastille"></span><b>Réseau ' + (i + 1) + "</b><span>" + texte(s.nom) + "</span></div>";
+      jardin += '<div class="rail"><div class="tete">' + poser("r" + i + ":pe", "pe25", "PEHD Ø25", "PEHD Ø25, " + (r ? r.metresTuyau + " m" : "à mesurer"), r ? r.metresTuyau : 0, "ml") + "</div>";
+      if (s.famille === "Goutte-à-goutte") {
+        jardin += '<div class="tete">' + poser("r" + i + ":coude", "coude-taraude-25-34", nomDe("coude-taraude-25-34", M), "Coude taraudé") +
+          (etat.sortie === "ligne" ? poser("r" + i + ":coude16", "MID6341", nomDe("MID6341", M), "coude Palaplast Ø16") : poser("r" + i + ":te16", "MID6321", nomDe("MID6321", M), "té Palaplast Ø16")) +
+          couronnes(i, M) + (etat.sortie === "boucle" ? "" : poser("r" + i + ":bouchon", "MID6371", nomDe("MID6371", M), "bouchon Palaplast Ø16")) + "</div>";
+      }
+      if (r) {
+        // Le té égal se pose là où le dessin met un losange : le plan et la liste
+        // lisent le même dessin.
+        r.jonctions.forEach(function (q, j) { jardin += '<div class="tete">' + poser("r" + i + ":j" + j, "te-25-25-25", nomDe("te-25-25-25", M), "Té égal, la ligne se sépare") + "</div>"; });
+        r.tetes.forEach(function (t, j) {
+          var z = zoneDeLaTete(p, t, i);
+          var buse = z && CAT.buses.filter(function (b) { return b.nom === z.buse; })[0];
+          var corps = t.forme === "carre" ? corpsTuyere : buse && CAT.corpsDeLaBuse(buse);
+          var k = "r" + i + ":t" + j, raccord = t.plein ? "te-taraude-25-34-25" : "coude-taraude-25-34";
+          var sbeHaut = corps && CAT.coudes.filter(function (cc) { return cc.filetage === corps.filetage; })[0];
+          jardin += '<div class="tete">' +
+            poser(k + ":raccord", raccord, nomDe(raccord, M), t.plein ? "Té taraudé" : "Coude taraudé") +
+            poser(k + ":sbeb", sbeBas.ref, sbeBas.nom + ", " + sbeBas.detail, "SBE 3/4\"") +
+            poser(k + ":pebd", "pebd16", nomDe("pebd16", M), "PEBD Ø16, 2 m", 2, "ml") +
+            (sbeHaut ? poser(k + ":sbeh", sbeHaut.ref, sbeHaut.nom + ", " + sbeHaut.detail, "SBE " + sbeHaut.filetage + "\"") : "") +
+            (corps ? (t.forme === "carre" ? tuyere(k + ":corps", corps, buse) : poser(k + ":corps", corps.ref, corps.nom, z.buse)) : "") +
+            "</div>";
+        });
+      }
+      jardin += ajoutees("r" + i) + "</div>";
+      jardin += '<button class="ajouter" type="button" data-ajouter="r' + i + '">Ajouter une pièce au réseau ' + (i + 1) + "</button></div>";
+    });
+    $("jardin").innerHTML = jardin;
+  }
+
+  // ═══ 4. LES MOTS DU PLAN ════════════════════════════════════════════════════
+  // Chaque phrase vient du catalogue Aqua Plus 2026 (page entre crochets dans le
+  // commentaire) ou d'une de ses règles. Un mot qui n'est pas sur le plan ne s'affiche pas.
+  var MOTS = [
+    [/Turbine/, "Turbine", "Un seul jet qui tourne et balaie l’angle réglé. Elle arrose loin et doucement."],                        // ses règles du 21 août
+    [/Tuyère/, "Tuyère", "Un arroseur qui sort du sol et arrose tout son angle d’un coup, plus près et plus vite qu’une turbine."], // ses règles, « environ trois fois plus vite »
+    [/VAN/, "VAN", "Une buse de tuyère dont on règle l’angle. Sa portée en mètres est écrite à côté."], // p. 8 « buse VAN à secteur réglable »
+    [/SAM/, "SAM", "Un clapet anti-vidange : l’eau ne ressort pas par l’arroseur le plus bas quand la vanne se ferme."],         // p. 7 et 13
+    [/PRS/, "PRS", "Un régulateur de pression intégré à la tuyère, réglé à 2,1 bar."], // p. 7, catalogue « SAM-PRS (2,1 bar) »
+    [/\b18(02|04|06|12)\b|Tuyère 1800/, "1802, 1804, 1806, 1812", "La hauteur dont la tuyère sort du sol : 5, 10, 15 ou 30 cm."], // p. 7 « sortie de buse »
+    [/buse \d/, "Buse 0,75, 2,0…", "Le numéro de la buse vissée dans la turbine. Plus il est grand, plus elle arrose loin et plus elle prend d’eau."], // p. 11 tableau 3504
+    [/bridée/, "Bridée", "La portée est réduite à la vis, sur la turbine, pour ne pas arroser au delà de la pelouse."],             // sa règle du 16 octobre
+    [/SBE/, "Coude SBE", "Le petit coude qui relie l’antenne Ø16 : celui du bas se visse sur le té ou le coude de la ligne, celui du haut sous l’arroseur."], // ses règles du 21 août
+    [/PEBD/, "PEBD Ø16 rigide", "L’antenne qui va de la ligne à l’arroseur, 2 m au plus."],                                         // sa règle du 11 septembre
+    [/PEHD/, "PEHD Ø25", "Le tuyau de la ligne, enterré dans la tranchée."],
+    [/taraudé/, "Taraudé", "Fileté à l’intérieur : on y visse une pièce."]
+  ];
+  function dessinerMots() {
+    var tout = document.querySelector(".ecran").textContent;
+    $("mots").innerHTML = MOTS.filter(function (m) { return m[0].test(tout); }).map(function (m) {
+      return "<div><dt>" + texte(m[1]) + "</dt><dd>" + texte(m[2]) + "</dd></div>";
+    }).join("");
+  }
+
+  // ═══ LA LISTE : ce qui est posé, comparé à celle de l'application ══════════
+  function dessinerListe(p, d) {
+    var reference = C.piecesDuPlan(p.materiel, d, { compteur: true, seuil25: p.amenee.longueurMax25, amenee: null });
+    var attendu = {};
+    reference.forEach(function (x) { if (x.ou !== "regard") attendu[x.ref] = (attendu[x.ref] || 0) + (x.q || 0); });
+    // Le té de l'amenée et celui des jonctions ont la même référence : l'application les additionne aussi.
+    var lignes = "", ecarts = 0;
+    Object.keys(compte).forEach(function (ref) {
+      var e = compte[ref], q = e.u === "ml" ? (e.q ? e.q + " m" : "à mesurer") : e.q + "x", dit = "";
+      if (attendu[ref] !== undefined && attendu[ref] !== e.q && ref !== "pe25-amenee") { dit = "la liste dit " + attendu[ref]; ecarts++; }
+      lignes += '<div class="ligne"><span class="q">' + q + '</span><span class="n">' + texte(e.nom) + "</span>" + (dit ? '<span class="ecart">' + texte(dit) + "</span>" : "") + "</div>";
+    });
+    $("liste").innerHTML = lignes;
+    var touche = Object.keys(etat.retirees).length + Object.keys(etat.remplacees).length + etat.ajoutees.length;
+    $("verdict").className = "verdict" + (ecarts && !touche ? " rouge" : "");
+    $("verdict").textContent = touche
+      ? touche + " changement" + (touche > 1 ? "s" : "") + " à la main. Les écarts avec la liste sont écrits à droite."
+      : ecarts ? "Le schéma ne compte pas comme la liste de l’outil : " + ecarts + " pièce" + (ecarts > 1 ? "s" : "") + " à revoir." : "Le schéma et la liste de l’outil comptent les mêmes pièces.";
+    $("reserves").innerHTML = p.manquants.map(function (r) { return "<li>" + texte(r) + "</li>"; }).join("");
+  }
+
+  function dessiner() {
+    var p = plan(), M = p.materiel;
+    couleursPlan = p.couleurs;
+    var res = C.dessinerPlan(p.dessin, NOURRICE, p.couleurs);
+    if (!res.ok) { $("reseaux").textContent = res.raison; return; }
+    compte = {};
+    dessinerNourrice(p.secteurs.length, p.secteurs.filter(function (s) { return s.famille === "Goutte-à-goutte"; }).length);
+    dessinerReseaux(p, res.dessin);
+    dessinerPieces(p, res.dessin, M);
+    dessinerListe(p, res.dessin);
+    dessinerMots();
+  }
+
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (!b) return;
+    if (b.dataset.cle) { menu(b.dataset.cle); return; }
+    if (b.dataset.geste) {
+      var cle = etat.cible;
+      if (b.dataset.geste === "changer") { $("menu").hidden = true; etat.ou = null; etat.recherche = ""; $("recherche").value = ""; etat.categorie = categorieDe(cle); ouvrir(); return; }
+      if (b.dataset.geste === "supprimer") {
+        if (cle.indexOf("plus:") === 0) etat.ajoutees = etat.ajoutees.filter(function (a) { return "plus:" + a.n !== cle; });
+        else etat.retirees[cle] = true;
+      }
+      if (b.dataset.geste === "remettre") delete etat.retirees[cle];
+      if (b.dataset.geste === "revenir") delete etat.remplacees[cle];
+      $("menu").hidden = true; dessiner(); return;
+    }
+    if (b.dataset.sortie) { etat.sortie = b.dataset.sortie; dessiner(); }
+    else if (b.dataset.ajouter) { etat.ou = b.dataset.ajouter; etat.cible = null; ouvrir(); }
+    else if (b.dataset.categorie) { etat.categorie = b.dataset.categorie; etat.recherche = ""; $("recherche").value = ""; ouvrir(); }
+    else if (b.dataset.choisir) {
+      var x = trouver(b.dataset.choisir);
+      if (etat.ou === null && etat.cible) { etat.remplacees[etat.cible] = { ref: x.ref, nom: x.nom }; delete etat.retirees[etat.cible]; }
+      else etat.ajoutees.push({ n: Date.now(), ou: etat.ou, ref: x.ref, nom: x.nom });
+      $("feuille").hidden = true; dessiner();
+    }
+  });
+  $("fermer").onclick = function () { $("feuille").hidden = true; };
+  $("fermer-menu").onclick = function () { $("menu").hidden = true; };
+  $("recherche").oninput = function () { etat.recherche = this.value; ouvrir(); };
+  function categorieDe(cle) { var p = proposees[cle], x = p && trouver(p.ref); return x ? x.categorie : "reseau"; }
+  function menu(cle) {
+    etat.cible = cle;
+    var p = proposees[cle] || {}, change = etat.remplacees[cle], retiree = etat.retirees[cle];
+    $("menu-titre").textContent = change ? change.nom : p.nom;
+    $("menu-propose").hidden = !change;
+    $("menu-propose").textContent = change ? "Proposée : " + p.nom : "";
+    var g = '<button type="button" data-geste="changer">Changer la pièce</button>';
+    g += retiree ? '<button type="button" data-geste="remettre">Remettre la pièce</button>' : '<button type="button" class="danger" data-geste="supprimer">Supprimer la pièce</button>';
+    if (change) g += '<button type="button" data-geste="revenir">Revenir à la pièce proposée</button>';
+    $("menu-gestes").innerHTML = g;
+    $("menu").hidden = false;
+  }
+  function ouvrir() {
+    $("feuille-titre").textContent = etat.ou === null ? "Changer la pièce" : "Ajouter une pièce";
+    $("categories").innerHTML = CATEGORIES.map(function (c) { return '<button type="button" data-categorie="' + texte(c[0]) + '" aria-pressed="' + (!etat.recherche && etat.categorie === c[0]) + '">' + texte(c[1]) + "</button>"; }).join("");
+    var q = etat.recherche.trim().toLowerCase();
+    var vues = LISTE.filter(function (x) { return q ? (x.nom + " " + x.ref).toLowerCase().indexOf(q) >= 0 : x.categorie === etat.categorie; });
+    $("choix").innerHTML = vues.slice(0, 60).map(function (x) {
+      var v = PHOTOS[x.ref] ? '<span class="vignette pleine"><img src="arrosage-photos/' + PHOTOS[x.ref] + '" alt=""></span>' : '<span class="vignette"></span>';
+      return '<button type="button" class="choix" data-choisir="' + texte(x.ref) + '">' + v + "<span>" + texte(x.nom) + "<small>" + texte(x.ref) + "</small></span></button>";
+    }).join("");
+    $("feuille").hidden = false;
+  }
+
+  var aCharger = Object.keys(HAUT).concat(Object.keys(COLONNE).map(function (k) { return COLONNE[k].src || k; }));
+  Promise.all(aCharger.filter(function (r, i) { return aCharger.indexOf(r) === i; }).map(function (r) {
+    return charger(r).then(function (im) { images[r] = im; });
+  })).then(dessiner);
+})();
+</script>
+</body>
 </html>

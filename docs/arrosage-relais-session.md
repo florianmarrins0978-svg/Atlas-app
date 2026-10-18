@@ -35,6 +35,7 @@ ajouter `<meta name="claude:viewport-fit-sides" content="cover">` sous le
 | **Photos des pièces** : valider ou refuser chaque photo | sources dans `docs/arrosage-releve-photos/` | https://claude.ai/artifact/66tzBpLozFXinZJnpNxNR3 (base `choix`) | **toutes tranchées** le 18 octobre : 98 « oui », 17 « non » (`choix-du-patron.json`, recopié de la base de la planche). Le mamelon Dura MM 1" retenu est le 08303 (photo 2), confirmé par sa photo du 18 octobre |
 | Ses demandes du 16 octobre (l'écran Plan d'arrosage) | `appli/arrosage-demandes-16-octobre.html` | https://claude.ai/artifact/Aw7JKKNFKZ7ggG9MERVWcj | **attend son avis** ; rien dans `src/app` avant |
 | Le croquis de 350 m de goutte-à-goutte (3 vannes) | (artifact seul) | https://claude.ai/artifact/VukpwXTzLq8mSACriCvhZa | attend son accord sur le découpage |
+| **Le plan d’arrosage** : l’écran rendu une fois mesures et croquis donnés (nourrice éclatée, réseaux sur le plan, pièces tête par tête, les mots du plan) | `appli/arrosage-plan.html` (calcul : `appli/arrosage-plan-calcul.js`, qui ajoute `dessinerPlan`) | https://claude.ai/artifact/5JivFEkQW2X7DpwoLnMzHB | faite le 18 octobre à sa demande, **à lui faire regarder**. C’est la planche de l’écran à coder |
 | La pelouse de 20 × 12 (recouvrement, bridage) | (artifact seul) | https://claude.ai/artifact/L6obDjwoFG3xau3xYPaRXa | **tranchée** le 16 octobre : 80 à 100 %, bridage 40 %, 75 à 105 % si ça fait gagner des sous (`.claude/rules/arrosage.md`) |
 | La tête bridée sur le plan | (artifact seul) | https://claude.ai/artifact/Et9YNGL38cyhJ6bBRRqiW8 | **« la B »** le 16 octobre : « bridée à 6 m » |
 
@@ -129,6 +130,14 @@ tuyères 1800 et la 3504, jamais sur la ligne ; le BL-IP est un Solem ; les
 6. La planche de ses demandes du 16 octobre (l'écran), et le croquis de 350 m.
    **Le croquis de 350 m est dépassé** : il compte des couronnes de 100 m, sa
    règle venue après dit 50 m. Il ne se lui redemande pas tel quel.
+
+## Trouvé en faisant la planche du plan (18 octobre), à lui dire avant de toucher au calcul
+
+| | |
+|---|---|
+| SBE sous la 3504 | sa décision : le SBE-050 (1/2") se visse sous la 3504. `piecesDuPlan` compte encore le haut des turbines en SBE 075 (3/4") : 33 SBE 075 et 7 SBE 050 au lieu de 20 et 20 sur le jardin d’exemple |
+| coude du goutte-à-goutte | sa règle : un coude taraudé 25x3/4" par sortie. `piecesDuPlan` ne le compte pas (6 coudes au lieu de 7) |
+| cote coupée | sur le plan dessiné, la cote d’un massif qui touche le bord droit sort du cadre (« 2,4 r ») |
 
 ## Ce qui reste à faire, dans cet ordre
 
