@@ -1,127 +1,171 @@
-# Arrosage : le relais de la session du 16 et 17 octobre 2026
+# Arrosage : le relais des sessions du 16 au 18 octobre 2026
 
-À lire en entier avant toute chose par la session qui reprend. Tout ce qui suit
-est dans le dépôt ; rien ne repose sur la conversation.
+À lire EN ENTIER, avant toute chose, par la session qui reprend. Tout ce qui
+suit est dans le dépôt ; rien ne repose sur la conversation.
 
 ## Où est le travail
 
 | | |
 |---|---|
-| dossier | `C:/Users/Flori/Desktop/atlas-real-app/atlas-app-aquaplus` (un worktree à part) |
+| dossier | `C:/Users/Flori/Desktop/atlas-real-app/atlas-app-aquaplus` (un worktree à part, chemins complets) |
 | branche | `lot/catalogue-aquaplus-corrections`, **locale, jamais poussée** |
-| base | `origin/main` à `5e850cc1` |
-| aussi dedans | les trois branches de l'autre session, fusionnées en local avec son accord : `claude/tubes-arrosage-v2`, `claude/tuyeres-et-planche`, `claude/legende-bridee` |
-| batterie | **aucune jouée**, à sa demande : *« une seule batterie pour toutes les corrections, à la fin »*. Le lot est de niveau 3 (`npm run niveau`) |
+| base | `origin/main` à `5e850cc1` (vérifier avec `git fetch` qu'il n'a pas bougé) |
+| aussi dedans | les branches de l'autre session arrosage, fusionnées avec son accord : `claude/tubes-arrosage-v2`, `claude/tuyeres-et-planche`, `claude/legende-bridee` |
+| batterie | **aucune jouée**, à sa demande : *« une seule batterie pour toutes les corrections, à la fin »*, et on le prévient avant. Le lot est de niveau 3 (`npm run niveau`) |
 | `main` | **rien n'y part sans son accord** |
 
-Le PDF du fournisseur : `C:/Users/Flori/Desktop/Catalogue-Aquaplus-2026.pdf`.
-Son texte page par page s'extrait avec `pdfjs-dist` (déjà dans `node_modules`) ;
-le rendu en image n'est pas disponible sur ce PC.
+Le PDF du fournisseur : `C:/Users/Flori/Desktop/Catalogue-Aquaplus-2026.pdf`
+(texte page par page avec `pdfjs-dist`, déjà dans `node_modules`).
 
-## Ce qui est fait (un commit chacun, `git log origin/main..HEAD`)
+## LES PLANCHES, une par une (ce qu'il a validé ou doit regarder)
 
-1. **Catalogue confronté à Aqua Plus** (`docs/arrosage-catalogue-aquaplus.md`) :
-   5000 Plus 6,0 Portée+ à 1,36 m³/h ; les 43 buses de turbine livrées avec
-   l'arroseur sans référence ni colisage inventés ; pages des relevés justes ;
-   la 8-VAN confirmée par la fiche Rain Bird.
-2. **Toutes les lignes provisoires retirées** (sauf son « Régulateur de
-   pression FF 3/4" ») ; le plan dit ce qui manque (`manquants`).
-3. **Son tube de goutte-à-goutte** : Toro UGGCBL23050, 2 l/h tous les 33 cm,
-   par 50 (p. 48). Durée calculée sur l'écart des lignes ; une haie n'a pas
-   d'écart, sa durée n'est pas calculée et le plan le dit. Défaut corrigé en
-   chemin : un massif de 2,40 m perdait une ligne (virgule flottante).
-4. **Au compteur sans mesure : 3 bar et 2 m³/h**, et la phrase en rouge
-   `GARANTIE_ABSENTE` (« Nous ne garantissons pas la bonne levée des
-   arroseurs. ») partout où le seau ET le kit buse 5 ne sont pas tous les deux
-   saisis. La ville ne garantit que 0,3 bar et aucun débit (R1321-58).
-5. **Bridage selon la vis Aqua Plus** : 5000 Plus et Mini 8 25 %, 3504 35 %,
-   les autres turbines 0, les tuyères jamais. Son 40 % supprimé.
-6. **Chaque tête doit tenir la pression mini de SA fiche** (`seLeve`, plages
-   d'Aqua Plus sur les corps, fiche Rain Bird pour les VAN). Avant, une
-   5000 Plus se posait à 0,82 bar pour 1,7.
-7. **Plus de plafond de vitesse** (1,53 m³/h en Ø25) : la pression au dernier
-   arroseur décide seule, et le calcul ajoute une vanne quand elle ne tient pas.
-   378 jardins d'essai : 155 plans changent, alertes 50 → 0.
-8. **Les 4, 6 et 8-VAN à 330°**, réservées aux coins et aux bords (`faitLeTour`).
-9. **709 pièces Aqua Plus** dans `CATALOGUE.piecesAjoutables`, pour la touche
-   « ajouter une pièce » : désignation mot pour mot, page, aucun prix.
-10. **Plus de tiret long** dans la liste des pièces (virgule).
-11. **La perte de l'électrovanne** lue sur la fiche Rain Bird de la 100-DV
-    (Valves, p. 89), au débit de la vanne, au lieu du forfait de 0,25 bar.
-12. **La planche de l'écran** `appli/arrosage-demandes-16-octobre.html`, qui
-    embarque le vrai calcul (`appli/arrosage-planche-calcul.js`, esbuild) et
-    recalcule à chaque saisie. Lien privé envoyé :
-    https://claude.ai/artifact/Aw7JKKNFKZ7ggG9MERVWcj
+Les liens sont des pages privées claude.ai (Artifact). Chaque planche a son
+fichier dans `appli/`. Pour republier une planche : retirer `<!doctype>`,
+`<html>`, les deux `<meta>` du haut et `</body></html>`, remplacer
+`<body data-charte="origine">` par `<script>document.body.dataset.charte = "origine";</script>`,
+ajouter `<meta name="claude:viewport-fit-sides" content="cover">` sous le
+`<title>`, puis publier avec ses fichiers (`arrosage-photos/…`,
+`arrosage-schema-calcul.js`) et, depuis une autre conversation, l'`url`.
 
-Ses règles changées sont **barrées puis réécrites** dans
-`scripts/test-regles-du-patron.ts` (27 tenues). Contrôles verts à la fin :
-calcul, règles, catalogue, consignes, tracé, plan dessiné, mesure, mode
-d'emploi, tirets, flèches, pansements, code mort, couches, types, les deux
-essais de la page publiée (78/78, 107/107) et les quatre maquettes d'arrosage.
+| Planche | Fichier | Lien | État |
+|---|---|---|---|
+| **La nourrice éclatée**, 1 à 6 voies, avec ou sans goutte-à-goutte | `appli/arrosage-nourrice-eclatee.html` | https://claude.ai/artifact/JEXjH6tjyFLQJKePMUEBZc (partagée par lien par lui) | **VALIDÉE** le 18 octobre (voir plus bas) |
+| **La vue éclatée** du plan entier (amenée, regard, réseaux tête par tête) | `appli/arrosage-vue-eclatee.html` | https://claude.ai/artifact/LXfjCHKAbZUm78ncXpVqjn | gestes « changer / supprimer » et tuyère avec sa buse au pied **faits à sa demande** ; la nourrice validée doit y ENTRER (pas encore fait) |
+| **Tuyères et buses** : chaque tuyère Rain Bird avec ses 13 buses à côté | `appli/arrosage-tuyeres-buses.html` | https://claude.ai/artifact/C35XhJEHKrXJNLxDQTRNrB | faite à sa demande, **à lui faire regarder** |
+| **Photos des pièces** : valider ou refuser chaque photo | sources dans `docs/arrosage-releve-photos/` | https://claude.ai/artifact/66tzBpLozFXinZJnpNxNR3 (base `choix`) | **en cours** : 85 « oui », 16 « non » (`choix-du-patron.json`) |
+| Ses demandes du 16 octobre (l'écran Plan d'arrosage) | `appli/arrosage-demandes-16-octobre.html` | https://claude.ai/artifact/Aw7JKKNFKZ7ggG9MERVWcj | **attend son avis** ; rien dans `src/app` avant |
+| Le croquis de 350 m de goutte-à-goutte (3 vannes) | (artifact seul) | https://claude.ai/artifact/VukpwXTzLq8mSACriCvhZa | attend son accord sur le découpage |
 
-## Ce qu'il doit encore trancher
+`appli/essais.html` liste la vue éclatée, la nourrice éclatée et les tuyères.
 
-1. **La planche** : la garde-t-il telle quelle ? Rien ne touche `src/app` avant.
-2. **Les 141 buses relevées** (`docs/arrosage-releve-aquaplus/buses-a-trancher.json`,
-   pas encore au catalogue) :
-   - les lettres d'angle Q, T, H, TT, TQ, F (non écrites au catalogue) ;
-   - MP Rotator et série 300 : débit proportionnel au secteur, donc tuyère pour
-     le débit ?
-   - six chiffres douteux : MPR+ 12T 0,60 ; PRECISION 15Q 0,089 et 8F 0,124 ;
-     PSU 17A à 90° 0,41 ; Maxi-Paw 06 à 11,4 m ; Mini 8 buse 2,5 à 0,56.
-3. **Combien de turbines au plus par réseau ?** (17 octobre : *« je vais réfléchir, pour l'instant reste comme c'est »*) Il trouve 8 ou 9 3504 « trop »,
-   le calcul les pose parce qu'elles se lèvent (2,11 bar pour 1,7). Question
-   posée, sans réponse : ne pas inventer de plafond.
-4. ~~**La largeur qu'arrose une ligne de haie**~~ **réglé le 17 octobre 2026** : « 50 cm à gauche, 50 cm à droite », une bande de 1 m par ligne (`LARGEUR_ARROSEE_PAR_LIGNE`). La durée d'une haie se calcule.
-5. **La vue éclatée** (sa demande du 17 octobre 2026) :
-   `appli/arrosage-vue-eclatee.html`, lien privé
-   https://claude.ai/artifact/LXfjCHKAbZUm78ncXpVqjn. Chaque pièce en photo,
-   écartée, par zone (amenée, regard, réseau par réseau, tête par tête) ;
-   retirer et ajouter refont la liste, comparée au calcul. Attend : son avis,
-   **ses photos** des pièces (seules les cinq Palaplast existent), et **l'ordre
-   de montage de la nourrice** (la fiche ne donne que les pièces). Codée pour de
-   vrai, la place de chaque té et coude doit sortir du calcul, pas de l'écran.
+## CE QU'IL A VALIDÉ (ne pas rouvrir)
+
+**La nourrice éclatée, électrovannes MM** — *« parfait, c'est exactement ça ;
+lorsqu'on est sur des électrovannes MM, c'est ce schéma-là »*, sur le montage
+Dura qu'il a envoyé (`mon-irrigation.com/img/cms/Montage-clarinette-dura.png`),
+*« sauf que lui a mis un bouchon à gauche »* :
+
+| | de haut en bas |
+|---|---|
+| le haut | coude MF 1" à gauche, la clarinette (collecteur Dura), le coude **Dura FF 1"** à droite (*« en haut à droite, un coude femelle »*) : la clarinette est FERMÉE |
+| l'arrivée, à gauche | mamelon réduit 1"x3/4" (retourné, le 1" en haut), vanne 3/4" FF, mamelon réduit (le 3/4" en haut), **union Dura MF 1"** (*« c'est MF, pas MM »*), raccord **Plasson femelle 25 x 3/4"** (*« les 8, c'est des 25 taraudés 3/4 »*), PEHD Ø25 |
+| chaque voie | électrovanne 100 DV MM, union MF, raccord femelle Plasson 25 x 3/4", PEHD Ø25 ; **pas** de mamelon ni d'union entre la clarinette et l'électrovanne (*« tu peux les supprimer »*) |
+| la numérotation | l'arrivée à gauche, puis voie 1, 2, 3… de gauche à droite |
+| l'alignement | *« les taraudés en face des taraudés »* : chaque photo est tournée de l'angle exact qui met ses deux bouts de vissage l'un sous l'autre, posée sur l'axe de la sortie, un peu écartée |
+
+**Les autres tailles** — *« tout ce que tu as fait est bon, je valide »* :
+2 voies = té 1" MMF entre le coude MF et le coude FF ; 4 et 5 voies =
+clarinettes 3 et 4 sorties ; 6 voies = clarinette 4 sorties puis le té MMF
+avant le coude FF ; 1 voie = le coude MF vissé dans le coude FF.
+
+**La voie de goutte-à-goutte** — *« c'est exactement ça »* : mamelon MM 1",
+électrovanne 100 DV FF, mamelon réduit (1" en haut), régulateur FF 3/4",
+mamelon réduit (3/4" en haut), puis union MF, raccord femelle, PEHD ; ces voies
+sont les DERNIÈRES, à droite. La photo du régulateur (Rain Bird PSI) sert en
+attendant les siennes (*« je vais essayer de t'en envoyer »*).
+
+**Le catalogue, corrigé sur ses réponses** (les deux copies,
+`src/lib/arrosage/catalogue.js` et `appli/arrosage-catalogue.js`, et les
+maquettes qui les citaient) :
+
+| avant | après |
+|---|---|
+| « Clarinette taraudée 1" pour 2, 3, 4 vannes » | « Collecteur M x F x 2, 3, 4 sorties 1" », Dura (Aqua Plus ODU3010102 à 104) ; la 2 sorties sert 3 voies, la 3 sorties 4, la 4 sorties 5 ou 6 (N sorties = N + 1 voies : *« c'est la fiche qui est bonne »*) |
+| raccords PE en 25 « Dura » | **Plasson** (noirs à bague blanche) |
+| « Programmateur BL-IP » | **Solem** BL-IP (boîtier tout blanc, sans écran) |
+| « Union droite taraudée MM 1" » | « Union droite taraudée **MF** 1" » |
+| « Coude 90° taraudé MM 1" » (clé `coude-mm`) | « Coude 1" FF », Dura (clé `coude-ff`, ODU306010), dans les 6 fiches |
+| « Raccord mâle 25 1" » (clé `raccord-male25`) | « Raccord femelle 25 x 3/4" », Plasson (clé `raccord-femelle25`, OPL70302520), mêmes quantités, dans les 6 fiches |
+
+**Le calcul du goutte-à-goutte** (`sortiesGoutte`, `couronnesDuTube`,
+`calcul.js`, deux copies identiques — `scripts/verifier-arrosage-une-seule-source.mjs`) :
+
+| | sa règle |
+|---|---|
+| sorties | une tous les 100 m au plus, et au moins une par vanne de la zone |
+| raccords Ø25 | par vanne : un coude taraudé 25x3/4" par sortie, un té égal pour chaque sortie après la première |
+| sur le coude | boucle : té Palaplast MID6321, aucun bouchon ; ligne seule : **coude Palaplast MID6341** (*« le coude »*) et un bouchon MID6371 ; té laissé ouvert : MID6321 et deux bouchons |
+| le tube | Toro UGGCBL23050, compté en **couronnes de 50 m** (*« ça sera 50 m par 50 m »*), une **jonction MID6301** à chaque raccord de couronnes ; un bout de couronne finit une autre ligne sans raccord, jamais deux bouts recollés |
+| la haie | une ligne arrose **50 cm de part et d'autre**, une bande de 1 m (`LARGEUR_ARROSEE_PAR_LIGNE`) ; la durée d'une haie se calcule |
+| sans sa réponse « ligne ou boucle » | rien n'est compté, et le plan pose la question |
+
+**Les photos** : seules les photos qu'il a validées entrent dans l'outil,
+copiées dans `appli/arrosage-photos/<clé>.<ext>`. Une photo qu'il envoie
+lui-même passe devant une photo trouvée. Il a envoyé : les deux électrovannes
+(MM, FF), le PEHD Ø25/Ø32 (bandes bleues), le PEBD Ø16 rigide (redressé à
+l'horizontale), le tube goutte-à-goutte (détouré sur fond blanc), le mamelon
+Dura 1"x3/4", l'union MF. La connexion étanche est la **DBM**
+(*« je n'utilise que ça »*). Les droits des photos : *« on s'en fiche »*.
+
+**Les autres décisions de ces jours** : le coude SBE-050 se visse sous les
+tuyères 1800 et la 3504, jamais sur la ligne ; le BL-IP est un Solem ; les
+6 buses VAN et 6 R-VAN Rain Bird ont leur photo (13 buses) ; MP Rotator :
+*« je pense comme les tuyères »* pour le débit (confirmé par la fiche Hunter).
+
+## Ce qu'il doit encore trancher (ne pas inventer de réponse)
+
+1. **MP Rotator** : sur une même vanne, avec les VAN (4 fois plus rapides),
+   avec les turbines (même vitesse, environ 10 mm/h), ou seules ? Rien n'entre au
+   catalogue avant.
+2. **Les 141 buses relevées** (`docs/arrosage-releve-aquaplus/buses-a-trancher.json`) :
+   les lettres d'angle Q, T, H, TT, TQ, F ; six chiffres douteux (MPR+ 12T 0,60 ;
+   PRECISION 15Q 0,089 et 8F 0,124 ; PSU 17A à 90° 0,41 ; Maxi-Paw 06 à 11,4 m ;
+   Mini 8 buse 2,5 à 0,56).
+3. **Combien de turbines au plus par réseau** : *« je vais réfléchir, pour
+   l'instant reste comme c'est »*.
+4. **Le tube Toro** : la fiche (pression mini, diamètre intérieur). Deux tubes
+   Toro de 16 mm à 2 l/h existent (BlueLine Classic non autorégulant, BlueLine
+   PC autorégulant de 0,69 à 4,14 bar), 14 mm de passage tous deux ; Aqua Plus dit
+   « autorégulé ». Sans confirmation, la pression au bout des lignes n'est pas
+   vérifiée et le plan le dit.
+5. **Les photos à valider encore** : le raccord femelle Plasson 25 x 3/4"
+   (photos de gamme, gravées 32 x 3/4) ; la 1812 n'a pas de photo validée ; ses
+   photos du régulateur sont à venir.
+6. La planche de ses demandes du 16 octobre (l'écran), et le croquis de 350 m.
 
 ## Ce qui reste à faire, dans cet ordre
 
-1. **Le goutte-à-goutte dans le calcul**, ses règles du 16 octobre (`TODO.md`) :
-   une sortie par 100 m au plus (ligne ou boucle), un té égal par nouvelle
-   sortie sur le Ø25 ou Ø32, à la sortie un coude taraudé 25×3/4" puis, vissé
-   dessus, le té Palaplast MID6321 (boucle) ou le coude MID6341 / le droit
-   MID6301 avec un bouchon MID6371 au bout (une seule ligne), jamais de filtre,
-   la commande en couronnes de 50 ou 100 m. La question « une ligne ou deux »
-   se pose par zone (écran).
-
-   **Codé le 17 octobre 2026** (`sortiesGoutte`, `calcul.js`, les deux copies) :
-   sorties = max(⌈mètres ÷ 100⌉, vannes de la zone) ; par vanne un coude
-   taraudé par sortie, un té égal de moins ; sur le coude, selon
-   `z.sortieGoutte` : `'boucle'` MID6321, `'deux-bouts'` MID6321 et deux
-   MID6371, `'ligne'` un MID6371 et le coude MID6341. Sans réponse, rien n'est compté et le
-   plan pose la question. **Trois questions lui sont posées** : le raccord d'une
-   ligne seule (MID6341, MID6352 ou MID6301) ; une référence en 100 m
-   (Aqua Plus ne vend l'UGGCBL23050 que par 50, la ligne du tube reste en
-   mètres) ; la fiche Toro du tube (pression mini, diamètre intérieur), sans
-   laquelle la pression au bout d'une ligne n'est pas vérifiée et le plan le
-   dit.
-2. **Les lignes de réseau en Ø32** : aujourd'hui toutes en Ø25 dans le calcul.
+1. **Lui refaire le topo** : lui redonner ces planches pour son contrôle
+   complet (il l'a demandé).
+2. **Faire entrer la nourrice éclatée validée dans la vue éclatée** (la vue
+   éclatée montre encore la nourrice en vrac, dans l'ordre de la fiche).
+3. **Les lignes de réseau en Ø32** : aujourd'hui toutes en Ø25 dans le calcul.
    Sa règle : Ø32 quand le Ø25 ne tient pas la pression, puis une vanne de plus ;
    le choix 25/32 à la fin ; raccords en 32 (OPL71403220, OPL71503220,
-   OPL704032, té réduit OPL73403225) relevés dans `piecesAjoutables`.
-3. **L'écran**, une fois la planche choisie : les deux mesures aussi au
-   compteur, la ligne ou la boucle, le choix 25/32, la case sonde (le calcul
-   sait déjà la compter), ajouter et retirer une pièce. La fiche
-   « arrosage-mesure-robinet » du mode d'emploi suit.
-4. **Les 141 buses**, une fois ses réponses données (le calcul doit apprendre
-   une buse par angle : Q au coin, H au bord, F au milieu).
-5. **La batterie unique** (`npm run verifier:avant-livraison`, le prévenir
-   avant), puis le document final `docs/arrosage-catalogue-aquaplus.md` mis à
-   jour, puis la poussée sur `main` **avec son accord**.
+   OPL704032, té réduit OPL73403225) dans `piecesAjoutables`. **Avant de
+   modifier une règle ou un chiffre du calcul, lui en parler.**
+4. **Importer le devis d'un fournisseur** (sa demande, `TODO.md`) : planche
+   d'abord.
+5. **L'écran** (`src/app`), seulement une fois les planches choisies : les deux
+   mesures au compteur, ligne ou boucle par zone, le choix 25/32, la sonde,
+   ajouter / changer / supprimer une pièce, la vue éclatée. Codé pour de vrai,
+   la place de chaque té et coude doit sortir du CALCUL, pas de l'écran.
+6. **La batterie unique** (`npm run verifier:avant-livraison`, le prévenir
+   avant), le document `docs/arrosage-catalogue-aquaplus.md` mis à jour, puis
+   la poussée sur `main` **avec son accord**.
+
+## Les pièges rencontrés (pour ne pas les repayer)
+
+| | |
+|---|---|
+| fins de ligne | les fichiers sont en CRLF : un remplacement par script lit en LF puis réécrit en CRLF, sinon les deux copies du calcul divergent |
+| le calcul des planches | `appli/arrosage-schema-calcul.js` est un **instantané** : après toute retouche du catalogue ou du calcul, le reconstruire avec esbuild depuis une entrée qui exporte `calculerPlan` (`src/lib/arrosage/calcul.js`), `piecesDuPlan` (`pieces.ts`), `debitRetenu` (`mesure-debit.ts`) et `CATALOGUE` (`catalogue.js`) : `npx esbuild entree.ts --bundle --format=iife --global-name=CALCUL --outfile=appli/arrosage-schema-calcul.js` |
+| les guillemets | dans Bash, un texte entre `"…"` qui contient des accents graves exécute leur contenu : écrire les longs textes avec l'outil d'écriture ou une heredoc `<<'FIN'` |
+| les photos en local | un `<canvas>` refuse de lire une image ouverte en `file://` : lancer Chromium avec `--allow-file-access-from-files` pour regarder une planche |
+| les recherches de photos | un agent en arrière-plan les télécharge dans un dossier temporaire ; les garder dans `docs/arrosage-releve-photos/manifeste.json` (adresse d'origine de chaque photo) |
+| `rm` sur une variable | refusé par la sécurité : écrire `"${VAR:?}/…"` ou le chemin en entier |
+
+Ses règles changées se barrent dans `scripts/test-regles-du-patron.ts`
+(27 tenues), jamais réécrites. Contrôles verts à la fin de la session : calcul,
+règles, catalogue, plan dessiné, une seule source, les quatre maquettes
+d'arrosage, tirets, flèches, pansements, code mort, couches, types.
 
 ## Ce qu'il ne faut pas faire
 
-- Inventer un chiffre, une référence, un prix. Une valeur absente reste absente.
+- Inventer un chiffre, une référence, un prix, un ordre de montage. Une valeur
+  absente reste absente ; une proposition se dit comme telle.
 - Recopier un prix du PDF (ce sont des prix clients).
-- Réécrire une règle de `test-regles-du-patron.ts` : on barre, on ajoute sous
-  le repère, avec sa phrase et sa date.
+- Réécrire une règle de `test-regles-du-patron.ts` : on barre, on ajoute.
 - Lancer une batterie ou pousser sans lui demander.
+- Toucher `src/app` avant qu'il ait choisi la planche.
 - Tuer un processus par son nom : `Stop-Process -Id <pid>` seulement.

@@ -1,0 +1,922 @@
+[
+  {
+    "ref": "clarinette-2v",
+    "fichier": "clarinette-2v-1.jpg",
+    "source": "https://www.duraplastics.com/manifold-system/products-manifold-system/",
+    "image": "https://dura-site-prod.s3.amazonaws.com/uploads/2021/11/REF-9-1024x825.jpg",
+    "site": "duraplastics.com",
+    "doute": "Collecteur Dura multi-port swivel x MIPT x2 ; la page ne précise pas le diamètre (1 pouce supposé)."
+  },
+  {
+    "ref": "clarinette-2v",
+    "fichier": "clarinette-2v-2.jpg",
+    "source": "https://www.sprinklersupplystore.com/products/dura-o-ring-tee",
+    "image": "https://cdn.shopify.com/s/files/1/1987/5531/files/301-010-2-1-1_e507865c-6127-4c1e-8ee9-eadfb37d79d4.jpg?v=1698072946",
+    "site": "sprinklersupplystore.com",
+    "doute": "Dura 301-010-2, nourrice 1 pouce 2 sorties."
+  },
+  {
+    "ref": "clarinette-3v",
+    "fichier": "clarinette-3v-1.jpg",
+    "source": "https://www.duraplastics.com/manifold-system/products-manifold-system/",
+    "image": "https://dura-site-prod.s3.amazonaws.com/uploads/2021/11/REF-10-1024x825.jpg",
+    "site": "duraplastics.com",
+    "doute": "Collecteur Dura multi-port swivel x MIPT x3 ; diamètre non précisé sur la page."
+  },
+  {
+    "ref": "clarinette-3v",
+    "fichier": "clarinette-3v-2.jpg",
+    "source": "https://www.sprinklersupplystore.com/products/dura-o-ring-tee",
+    "image": "https://cdn.shopify.com/s/files/1/1987/5531/files/301-010-3-1-1_b80110c0-4853-49d7-8f5c-a473bf78c827.jpg?v=1698073205",
+    "site": "sprinklersupplystore.com",
+    "doute": "Dura 301-010-3, nourrice 1 pouce 3 sorties."
+  },
+  {
+    "ref": "clarinette-4v",
+    "fichier": "clarinette-4v-1.jpg",
+    "source": "https://www.duraplastics.com/manifold-system/products-manifold-system/",
+    "image": "https://dura-site-prod.s3.amazonaws.com/uploads/2021/11/REF-11-1024x825.jpg",
+    "site": "duraplastics.com",
+    "doute": "Collecteur Dura multi-port swivel x MIPT x4 ; diamètre non précisé sur la page."
+  },
+  {
+    "ref": "clarinette-4v",
+    "fichier": "clarinette-4v-2.jpg",
+    "source": "https://www.sprinklersupplystore.com/products/dura-o-ring-tee",
+    "image": "https://cdn.shopify.com/s/files/1/1987/5531/files/301-010-4-2_756f7608-b5e7-4176-97bb-23b68d6ef26a.jpg?v=1698086110",
+    "site": "sprinklersupplystore.com",
+    "doute": "Dura 301-010-4, nourrice 1 pouce 4 sorties ; fond blanc avec une bande gris clair derrière la pièce, petite image (638 px)."
+  },
+  {
+    "ref": "connexion",
+    "fichier": "connexion-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/con-king-innovation-tools-10241-100ct",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/1/_/1_0_10241-100ct.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": "Connecteur étanche King Innovation (petit modèle, rempli de silicone) ; la photo montre deux exemplaires."
+  },
+  {
+    "ref": "connexion",
+    "fichier": "connexion-2.jpg",
+    "source": "https://laplateformedeleau.com/accessoire-programmateur/42261-connexion-etanche-dbm.html",
+    "image": "https://laplateformedeleau.com/10052/connexion-etanche-dbm.jpg",
+    "site": "laplateformedeleau.com",
+    "doute": "Connexion étanche DBM."
+  },
+  {
+    "ref": "connexion",
+    "fichier": "connexion-3.jpg",
+    "source": "https://laplateformedeleau.com/accessoire-programmateur/42262-connexion-etanche-auto-denudante-15mm.html",
+    "image": "https://laplateformedeleau.com/10054/connexion-etanche-auto-denudante-15mm.jpg",
+    "site": "laplateformedeleau.com",
+    "doute": "Connexion étanche auto-dénudante 1,5 mm², autre type que DBY."
+  },
+  {
+    "ref": "connexion",
+    "fichier": "connexion-4.png",
+    "source": "https://www.arrosage-distribution.fr/products/connexion-dby",
+    "image": "https://www.arrosage-distribution.fr/media/cache/sylius_shop_product_original/1d/3c/b68747e2c88ff93297e036f21c26.png",
+    "site": "arrosage-distribution.fr",
+    "doute": "Connexion DBY Rain Bird : la photo montre le connecteur et son tube de gel séparés (les deux pièces du kit)."
+  },
+  {
+    "ref": "coude-mf",
+    "fichier": "coude-mf-1.jpg",
+    "source": "https://www.duraplastics.com/pvc-schedule-80/fittings-schedule-80-pvc-gray/",
+    "image": "https://dura-site-prod.s3.amazonaws.com/uploads/2021/11/ttpsduraplastics.comuserfilesimageassetslarge812-015.jpg",
+    "site": "duraplastics.com",
+    "doute": "Coude Dura 90° street MIPT x FIPT schedule 80 ; diamètre de la photo non précisé ; fond gris clair de studio, pas blanc pur."
+  },
+  {
+    "ref": "coude-mf",
+    "fichier": "coude-mf-2.jpg",
+    "source": "https://www.sprinklersupplystore.com/products/dura-o-ring-elbow-mxf",
+    "image": "https://cdn.shopify.com/s/files/1/1987/5531/products/1000x1000_563129789.jpg?v=1590074960",
+    "site": "sprinklersupplystore.com",
+    "doute": "Dura 306-009 : coude joint torique 1 pouce MIPT x écrou tournant (système nourrice Dura)."
+  },
+  {
+    "ref": "coude-mf",
+    "fichier": "coude-mf-3.jpg",
+    "source": "https://www.arrosage-distribution.fr/products/coude-union-dura-1-mf",
+    "image": "https://www.arrosage-distribution.fr/media/cache/sylius_shop_product_original/99/16/993796f41d46232c8b80fb4c6fa2.jpg",
+    "site": "arrosage-distribution.fr",
+    "doute": "Coude union Dura 1 pouce MF (arrosage-distribution)."
+  },
+  {
+    "ref": "coude-mf",
+    "fichier": "coude-mf-4.jpg",
+    "source": "https://www.arrosage-distribution.fr/products/coude-union-dura-1-mf",
+    "image": "https://www.arrosage-distribution.fr/media/cache/sylius_shop_product_original/bd/2d/0f91d41c201fff64b60f6c780ba0.jpg",
+    "site": "arrosage-distribution.fr",
+    "doute": "Coude union Dura 1 pouce MF, autre vue."
+  },
+  {
+    "ref": "coude-mm",
+    "fichier": "coude-mm-1.png",
+    "source": "https://www.sprinklersupplystore.com/products/dura-o-ring-elbow",
+    "image": "https://cdn.shopify.com/s/files/1/1987/5531/products/PhotoRoom_20211214_145557.png?v=1639511835",
+    "site": "sprinklersupplystore.com",
+    "doute": "Dura 306-010 : coude 1 pouce écrou tournant x écrou tournant, donc femelle des deux côtés et pas MM ; aucun coude PVC MM 1 pouce trouvé."
+  },
+  {
+    "ref": "coude-taraude-25-34",
+    "fichier": "coude-taraude-25-34-1.jpg",
+    "source": "https://hydralians.fr/coude-a-compression-taraude-7150-plasson-p3000nn",
+    "image": "https://medias.descours-cabaud.com/d180001/derivates/3/003/827/321/P3000NN-2.jpg",
+    "site": "hydralians.fr",
+    "doute": "Coude taraudé Plasson série 7150, photo de gamme ; diamètre et filetage de la pièce photographiée non confirmés."
+  },
+  {
+    "ref": "electrovanne-100dv",
+    "fichier": "electrovanne-100dv-1.jpg",
+    "source": "https://www.bevo.com/en-lv/rain-bird-solenoid-valve-glass-filled-polypropylene-1-male-thread-10bar-9vdc-black-type-100-dv-mm-7021678?fs=1",
+    "image": "https://swfile.azureedge.net/sw6media/media/ae/bf/18/1707846735/c9219a11-7021677M-optimized.jpg",
+    "site": "bevo.com",
+    "doute": "Filetages mâles visibles, mais le solénoïde montré est un 24 V AC, pas le solénoïde à impulsion 9 V."
+  },
+  {
+    "ref": "electrovanne-100dv-ff",
+    "fichier": "electrovanne-100dv-ff-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-dv-inline-valve-1-in-fpt-100-dv-npt",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/_/0/_0000_100-dv-npt.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": "Version US à filetage NPT femelle ; en France le filetage est BSP, et le solénoïde 9V n'est pas celui montré."
+  },
+  {
+    "ref": "HA2210",
+    "fichier": "HA2210-1.jpg",
+    "source": "https://laplateformedeleau.com/arroseur-a-turbine/40611-arroseur-escamotable-hunter-pgp-ultra.html",
+    "image": "https://laplateformedeleau.com/10507/arroseur-escamotable-hunter-pgp-ultra.jpg",
+    "site": "laplateformedeleau.com",
+    "doute": "Hunter PGP Ultra. La photo montre deux exemplaires, un rentré et un sorti."
+  },
+  {
+    "ref": "HA2211",
+    "fichier": "HA2211-1.jpg",
+    "source": "https://laplateformedeleau.com/arroseur-a-turbine/40610-arroseur-escamotable-hunter-pgp-secteur.html",
+    "image": "https://laplateformedeleau.com/10508/arroseur-escamotable-hunter-pgp-secteur.jpg",
+    "site": "laplateformedeleau.com",
+    "doute": "Hunter PGP secteur, supposé être le PGP-ADJ. La photo montre deux exemplaires, un rentré et un sorti."
+  },
+  {
+    "ref": "HA2222",
+    "fichier": "HA2222-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/hunter-i-20-rotor-with-check-valve-4-in-i20-04",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/i/2/i20-04.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": "Hunter I-20-04 standard ; la mention Ultra n'est pas confirmée sur la fiche."
+  },
+  {
+    "ref": "HA2225",
+    "fichier": "HA2225-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/hunter-i-20-stainless-steel-rotor-with-check-valve-4-in-i20-04-ss",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/i/2/i20-04-ss-base-image.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "HA2264",
+    "fichier": "HA2264-1.jpg",
+    "source": "https://laplateformedeleau.com/arroseur-a-turbine/40612-turbine-escamotable-hunter-srm-04-pgm.html",
+    "image": "https://laplateformedeleau.com/10506/turbine-escamotable-hunter-srm-04-pgm.jpg",
+    "site": "laplateformedeleau.com",
+    "doute": "Hunter SRM-04, à vérifier sur l’image (photo de type deux exemplaires possible)."
+  },
+  {
+    "ref": "HA2272",
+    "fichier": "HA2272-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/hunter-pgj-rotor-12-in-pgj-12",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/p/_/p_g_pgj_12.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "HA2274",
+    "fichier": "HA2274-1.jpg",
+    "source": "https://laplateformedeleau.com/arroseur-a-turbine/40609-arroseur-escamotable-hunter-pgj-360.html",
+    "image": "https://laplateformedeleau.com/10509/arroseur-escamotable-hunter-pgj-360.jpg",
+    "site": "laplateformedeleau.com",
+    "doute": "Hunter PGJ ; la hauteur 04 n’est pas confirmée par la fiche. La photo montre deux exemplaires, un rentré et un sorti."
+  },
+  {
+    "ref": "HT1521",
+    "fichier": "HT1521-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/hunter-psu-spray-head-4-in-psu-04",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/p/_/p_s_psu-04.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": "PSU-04. Supposé être la tuyère Hunter PS Ultra (PSU) ; la correspondance avec la réf HT152x n'est pas confirmée."
+  },
+  {
+    "ref": "HT1522",
+    "fichier": "HT1522-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/hunter-psu-spray-head-6-in-psu-06",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/p/_/p_s_psu-06.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": "PSU-06. Supposé être la tuyère Hunter PS Ultra (PSU) ; la correspondance avec la réf HT152x n'est pas confirmée."
+  },
+  {
+    "ref": "HT1541",
+    "fichier": "HT1541-1.jpg",
+    "source": "https://laplateformedeleau.com/arroseur-tuyere/40637-tuyere-hunter-ps-02-12a.html",
+    "image": "https://laplateformedeleau.com/9419/tuyere-hunter-ps-02-12a.jpg",
+    "site": "laplateformedeleau.com",
+    "doute": "Hunter PS 02 (série PS Ultra, buse 12A montée), pas la Pro-Spray 02 ; aspect proche."
+  },
+  {
+    "ref": "HT1541",
+    "fichier": "HT1541-2.jpg",
+    "source": "https://www.sprinklerwarehouse.com/hunter-pro-spray-spray-head-2-in-pros-02",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/p/_/p_r_pros-02.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "HT1543",
+    "fichier": "HT1543-1.jpg",
+    "source": "https://laplateformedeleau.com/arroseur-tuyere/40635-tuyere-hunter-pro-spray-04.html",
+    "image": "https://laplateformedeleau.com/9409/tuyere-hunter-pro-spray-04.jpg",
+    "site": "laplateformedeleau.com",
+    "doute": ""
+  },
+  {
+    "ref": "HT1543",
+    "fichier": "HT1543-2.jpg",
+    "source": "https://laplateformedeleau.com/arroseur-tuyere/40636-tuyere-hunter-pro-spray-04.html",
+    "image": "https://laplateformedeleau.com/9412/tuyere-hunter-pro-spray-04.jpg",
+    "site": "laplateformedeleau.com",
+    "doute": "Version Pro-Spray 04 PRS40 avec clapet (PRS40CV)."
+  },
+  {
+    "ref": "HT1543",
+    "fichier": "HT1543-3.jpg",
+    "source": "https://www.sprinklerwarehouse.com/hunter-pro-spray-spray-head-4-in-pros-04",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/p/_/p_r_pros_04_1_1.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "HT1544",
+    "fichier": "HT1544-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/hunter-pro-spray-spray-head-6-in-pros-06",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/p/_/p_r_pros-06-nsi.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": "Pro-Spray 06 sans entrée latérale."
+  },
+  {
+    "ref": "HT1546",
+    "fichier": "HT1546-1.png",
+    "source": "https://www.sprinklerwarehouse.com/hunter-sprinkler-spray-body-pros-12",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/p/r/pros-12-si.png",
+    "site": "sprinklerwarehouse.com",
+    "doute": "Photo d'une PROS-12-SI (avec entrée latérale)."
+  },
+  {
+    "ref": "mamelon",
+    "fichier": "mamelon-1.png",
+    "source": "https://www.sprinklersupplystore.com/collections/pvc-tbe-nipples/products/8303-131-sch-80-pvc-reducing-nipple-mipt",
+    "image": "https://www.sprinklersupplystore.com/cdn/shop/files/Dura-8303-131-DuraSch80PVCReducingNippleThreadedBothEnds_1200x1200.png",
+    "site": "sprinklersupplystore.com",
+    "doute": "Dura 8303-131 : mamelon réduit schedule 80 MIPT x MIPT ; la page propose plusieurs tailles, vérifier que la photo montre le 1 x 3/4."
+  },
+  {
+    "ref": "mamelon-droit-1",
+    "fichier": "mamelon-droit-1-1.jpg",
+    "source": "https://www.duraplastics.com/nipples-2/schedule-80-pvc-t-b-e-nipples/",
+    "image": "https://dura-site-prod.s3.amazonaws.com/uploads/2021/11/ttpsduraplastics.comuserfilesimageassetslargenipple1-7364.jpg",
+    "site": "duraplastics.com",
+    "doute": "Mamelon Dura 1 pouce MIPT x MIPT schedule 80 (TBE) ; fond gris clair de studio, pas blanc pur."
+  },
+  {
+    "ref": "mamelon-droit-1",
+    "fichier": "mamelon-droit-1-2.jpg",
+    "source": "https://www.sprinklersupplystore.com/products/dura-o-ring-nipple",
+    "image": "https://cdn.shopify.com/s/files/1/1987/5531/products/1000x1000_1886179730.jpg?v=1588436305",
+    "site": "sprinklersupplystore.com",
+    "doute": "Dura 08303 : mamelon 1 pouce à joint torique (système nourrice), pas un mamelon fileté classique."
+  },
+  {
+    "ref": "OD501",
+    "fichier": "OD501-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-acetal-swing-pipe-elbow-1-2-in-mpt-x-barb-sbe-050",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/s/_/s_b_sbe-050.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "OD502",
+    "fichier": "OD502-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-acetal-swing-pipe-elbow-3-4-in-x-1-2-in-mpt-x-barb-sbe-075",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/s/_/s_b_sbe-075.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "pebd16",
+    "fichier": "pebd16-1.webp",
+    "source": "https://www.oeg.net/en/pe-pipe-ld-oe-16-x-1-5-mm-on-100-m-roll-5-bar-824001410",
+    "image": "https://cdn.oeg.net/images/products/824001410/196989/image-thumb__196989__Product_xxl/824001410.68435656.webp",
+    "site": "oeg.net",
+    "doute": "Couronne PE noir générique (OEG) ; le marquage visible sur la photo indique 20 x 2,0, la photo d'illustration n'est donc pas un 16 mm."
+  },
+  {
+    "ref": "pebd16",
+    "fichier": "pebd16-2.jpg",
+    "source": "https://laplateformedeleau.com/tuyau-polyethylene-goutte-a-goutte/41077-couronne-pe-bd-35-bars-16-x-12-cr50-m.html",
+    "image": "https://laplateformedeleau.com/7918/couronne-pe-bd-35-bars-16-x-12-cr50-m.jpg",
+    "site": "laplateformedeleau.com",
+    "doute": "Couronne PE BD 16 x 12 mm (3,5 bars), sans marque ; aucun marquage lisible sur la photo, le 16 est donné par la fiche."
+  },
+  {
+    "ref": "pile-9v",
+    "fichier": "pile-9v-1.jpg",
+    "source": "https://www.catering-appliance.com/duracell-9v-plus-alkaline-battery-pack-of-1",
+    "image": "https://assets.catering-appliance.com/media/inside-sqr-2048/86/b2/duracell-9v_img190198.jpg",
+    "site": "catering-appliance.com",
+    "doute": "Petite image (257 px de côté)."
+  },
+  {
+    "ref": "prog-1",
+    "fichier": "prog-1-1.jpg",
+    "source": "https://www.hydralians.fr/programmateur-a-pile-bl-ip-v2-p3426q0",
+    "image": "https://medias.descours-cabaud.com/d180001/derivates/3/003/827/240/BL-IP%20V2.jpg",
+    "site": "hydralians.fr",
+    "doute": "Photo générique de la gamme BL-IP V2 ; le boîtier porte le logo Solem, pas Rain Bird ; le nombre de stations n'est pas visible. Même photo que prog-4."
+  },
+  {
+    "ref": "prog-1",
+    "fichier": "prog-1-2.jpg",
+    "source": "https://www.hydralians.fr/programmateur-a-pile-bl-ip-v2-p3426q0",
+    "image": "https://medias.descours-cabaud.com/d180001/derivates/3/003/831/329/BL-IP-v2-entre.jpg",
+    "site": "hydralians.fr",
+    "doute": "Autre vue générique BL-IP V2 (logo Solem), avec la boucle de fil de l'entrée sonde. Même photo que prog-4."
+  },
+  {
+    "ref": "prog-2",
+    "fichier": "prog-2-1.jpg",
+    "source": "https://laplateformedeleau.com/programmateur-arrosage-a-pile/40705-programmateur-bl-ip-9v-solem-2-voies.html",
+    "image": "https://laplateformedeleau.com/10470/programmateur-bl-ip-9v-solem-2-voies.jpg",
+    "site": "laplateformedeleau.com",
+    "doute": "Photo de la fiche BL-IP 2 voies, mais le vendeur met la même image sur les fiches 1, 2, 4 et 6 voies (même boîtier) ; aucune photo propre au 2 voies trouvée."
+  },
+  {
+    "ref": "prog-4",
+    "fichier": "prog-4-1.jpg",
+    "source": "https://www.hydralians.fr/programmateur-a-pile-bl-ip-v2-p3426q0",
+    "image": "https://medias.descours-cabaud.com/d180001/derivates/3/003/827/240/BL-IP%20V2.jpg",
+    "site": "hydralians.fr",
+    "doute": "Photo générique de la gamme BL-IP V2 ; le boîtier porte le logo Solem, pas Rain Bird ; le nombre de stations n'est pas visible. Même photo que prog-1, aucune photo propre au 4 stations trouvée."
+  },
+  {
+    "ref": "prog-4",
+    "fichier": "prog-4-2.jpg",
+    "source": "https://www.hydralians.fr/programmateur-a-pile-bl-ip-v2-p3426q0",
+    "image": "https://medias.descours-cabaud.com/d180001/derivates/3/003/831/329/BL-IP-v2-entre.jpg",
+    "site": "hydralians.fr",
+    "doute": "Autre vue générique BL-IP V2 (logo Solem). Même photo que prog-1."
+  },
+  {
+    "ref": "prog-6",
+    "fichier": "prog-6-1.jpg",
+    "source": "https://laplateformedeleau.com/programmateur-arrosage-a-pile/40707-programmateur-bl-ip-9v-solem-6-voies.html",
+    "image": "https://laplateformedeleau.com/10472/programmateur-bl-ip-9v-solem-6-voies.jpg",
+    "site": "laplateformedeleau.com",
+    "doute": "Photo de la fiche BL-IP 6 voies, mais le vendeur met la même image sur les fiches 1, 2, 4 et 6 voies (même boîtier) ; aucune photo propre au 6 voies trouvée."
+  },
+  {
+    "ref": "RA2180",
+    "fichier": "RA2180-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-5000-plus-full-cirlce-stainless-steel-pressure-regulated-rotor-with-check-valve-4-in-5004-plfcs-rss",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/5/_/5_0_5004_plfcs_rss.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": "Version 5004 Plus FC inox avec régulateur et clapet (PLFCS-RSS) ; vérifier la variante exacte."
+  },
+  {
+    "ref": "RA2181",
+    "fichier": "RA2181-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-5000-plus-rotor-4-in-5004-plpc",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/5/_/5_0_5004-plpc.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RA3504",
+    "fichier": "RA3504-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-3500-rotor-4-in-3504-pc",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/3/_/3_5_3504_pc.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RA3504SAM",
+    "fichier": "RA3504SAM-1.jpg",
+    "source": "https://laplateformedeleau.com/arroseur-a-turbine/40614-arroseur-plein-cercle-rain-bird-3500-pc-sam.html",
+    "image": "https://laplateformedeleau.com/10514/arroseur-plein-cercle-rain-bird-3500-pc-sam.jpg",
+    "site": "laplateformedeleau.com",
+    "doute": "Rain Bird 3500 PC SAM. La photo montre deux exemplaires, un rentré et un sorti. On voit aussi la clé ou grappe de buses fournie."
+  },
+  {
+    "ref": "RA5004FC",
+    "fichier": "RA5004FC-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-5000-plus-rotor-4-in-5004-plfc",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/5/_/5_0_5004_plfc.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RA5006PC",
+    "fichier": "RA5006PC-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-5000-plus-rotor-6-in-5006-plpc",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/5/_/5_0_5006-plpc.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RA5006PC",
+    "fichier": "RA5006PC-2.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-5000-rotor-6-in-5006-pc",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/5/_/5_0_5006-pc.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": "Modèle 5006-PC (série 5000 simple), pas forcément la version Plus."
+  },
+  {
+    "ref": "RA5012PCSAM",
+    "fichier": "RA5012PCSAM-1.png",
+    "source": "https://cheapsprinklers.com/products/rain-bird-5012-pcsr-12-in-5000-series-part-circle-pattern-pop-up-rotor-with-prs-pressure-regulation-and-sam-check-valve",
+    "image": "https://cheapsprinklers.com/cdn/shop/files/5012_pcsamr.png",
+    "site": "cheapsprinklers.com",
+    "doute": "Version 5012 Plus PCSAMR (avec régulateur PRS), même corps que la 5012 Plus SAM ; la photo montre aussi la grappe de buses livrée avec."
+  },
+  {
+    "ref": "raccord-male25",
+    "fichier": "raccord-male25-1.jpg",
+    "source": "https://hydralians.fr/raccord-a-compression-filete-7020-plasson-p3000fu",
+    "image": "https://medias.descours-cabaud.com/d180001/derivates/3/003/818/559/P3000FU.jpg",
+    "site": "hydralians.fr",
+    "doute": "Raccord mâle Plasson série 7020, photo de gamme ; le marquage visible indique 32 x 3/4, pas 25 x 1."
+  },
+  {
+    "ref": "regard-jumbo5",
+    "fichier": "regard-jumbo5-1.jpg",
+    "source": "https://laplateformedeleau.com/regard-arrosage-automatique/40760-regard-jumbo-1220-carson.html",
+    "image": "https://laplateformedeleau.com/9561/regard-jumbo-1220-carson.jpg",
+    "site": "laplateformedeleau.com",
+    "doute": "Regard Jumbo Carson 1220 ; le nombre de voies (5) n’est pas indiqué par la fiche."
+  },
+  {
+    "ref": "regard-jumbo6",
+    "fichier": "regard-jumbo6-1.jpg",
+    "source": "https://laplateformedeleau.com/regard-arrosage-automatique/40753-regard-super-jumbo-carson-84x60x45-cm.html",
+    "image": "https://laplateformedeleau.com/9436/regard-super-jumbo-carson-84x60x45-cm.jpg",
+    "site": "laplateformedeleau.com",
+    "doute": "Regard Super Jumbo Carson 84 x 60 x 45 cm ; le nombre de voies (6) n'est pas confirmé par la fiche."
+  },
+  {
+    "ref": "regard-jumbo6",
+    "fichier": "regard-jumbo6-2.png",
+    "source": "https://laplateformedeleau.com/regard-arrosage-automatique/40756-regard-maxi-jumbo-carson-95x62x46-cm.html",
+    "image": "https://laplateformedeleau.com/9137/regard-maxi-jumbo-carson-95x62x46-cm.jpg",
+    "site": "laplateformedeleau.com",
+    "doute": "Regard Maxi Jumbo Carson 95 x 62 x 46 cm, plus grand que le Super Jumbo ; à choisir selon le modèle réellement posé."
+  },
+  {
+    "ref": "regard-rect12",
+    "fichier": "regard-rect12-1.jpg",
+    "source": "https://www.duraplastics.com/valve-boxes/rectangular/",
+    "image": "https://dura-site-prod.s3.amazonaws.com/uploads/2021/11/ttpsduraplastics.comuserfilesimageassetslarge120-61-7010.jpg",
+    "site": "duraplastics.com",
+    "doute": "Regard Dura 12 x 17 pouces, 6 pouces de profondeur ; fond gris clair de studio, pas blanc pur."
+  },
+  {
+    "ref": "regard-rect12",
+    "fichier": "regard-rect12-2.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-vb-series-vbstdh-standard-rectangular-valve-box-with-locking-green-lid",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/v/_/v_b_vbstdh.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": "Regard Rain Bird VB standard rectangulaire (couvercle verrouillable), pas un Dura."
+  },
+  {
+    "ref": "regard-rg17106",
+    "fichier": "regard-rg17106-1.jpg",
+    "source": "https://www.duraplastics.com/valve-boxes/rectangular/",
+    "image": "https://dura-site-prod.s3.amazonaws.com/uploads/2021/11/ttpsduraplastics.comuserfilesimageassetslarge150-61-7022.jpg",
+    "site": "duraplastics.com",
+    "doute": "Regard Dura 15 x 21 pouces (jumbo), 6 pouces de profondeur ; fond gris clair de studio, pas blanc pur ; vérifier que c’est le modèle jumbo commandé."
+  },
+  {
+    "ref": "regard-rg17106",
+    "fichier": "regard-rg17106-2.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-vb-series-vbjmbh-jumbo-rectangular-valve-box-with-locking-green-lid",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/v/_/v_b_vbjmbh.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": "Regard Rain Bird VB jumbo (couvercle verrouillable) ; vérifier que c'est le même modèle que la référence RG17106."
+  },
+  {
+    "ref": "regulateur-ff34",
+    "fichier": "regulateur-ff34-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-m30x-30-psi-inline-pressure-regulator-3-4-in-fpt-psi-m30x-075",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/p/_/p_s_psi-m30x-075.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": "Régulateur Rain Bird PSI-M30X-075 (30 psi, 3/4 FPT, filetage US NPT) ; la marque exacte n'est pas précisée dans la demande."
+  },
+  {
+    "ref": "RP403",
+    "fichier": "RP403-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-rsd-bex-rain-sensor-sprinkler-shut-off",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/r/_/r_s_rsd-bex.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RT1802",
+    "fichier": "RT1802-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-1800-spray-head-2-in-1802",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/1/_/1_8_1802.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RT1804",
+    "fichier": "RT1804-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-1800-spray-head-4-in-1804",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/1/_/1_8_1804.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RT1806",
+    "fichier": "RT1806-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-1800-spray-head-6-in-1806-nsi",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/1/_/1_8_1806-nsi.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RT1812",
+    "fichier": "RT1812-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-1800-30-pressure-regulated-spray-head-12-in-1812-prs",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/1/8/1812.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": "Image principale de la fiche 1812-PRS (version à régulateur), aspect quasi identique à la 1812 simple."
+  },
+  {
+    "ref": "RT1824",
+    "fichier": "RT1824-1.png",
+    "source": "https://laplateformedeleau.com/arroseur-tuyere/40644-tuyere-rain-bird-1804-sam.html",
+    "image": "https://laplateformedeleau.com/9175/tuyere-rain-bird-1804-sam.jpg",
+    "site": "laplateformedeleau.com",
+    "doute": ""
+  },
+  {
+    "ref": "RT1824",
+    "fichier": "RT1824-2.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-1800-spray-head-with-seal-a-matic-4-in-1804-sam",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/1/_/1_8_1804-sam.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RT1826",
+    "fichier": "RT1826-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-1800-spray-head-with-seal-a-matic-6-in-1806-sam",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/1/_/1_8_1806-sam.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RT1834",
+    "fichier": "RT1834-1.png",
+    "source": "https://laplateformedeleau.com/arroseur-tuyere/40645-tuyere-rain-bird-1804-sam-prs.html",
+    "image": "https://laplateformedeleau.com/9184/tuyere-rain-bird-1804-sam-prs.jpg",
+    "site": "laplateformedeleau.com",
+    "doute": ""
+  },
+  {
+    "ref": "RT1834",
+    "fichier": "RT1834-2.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-1800-30-psi-pressure-regulated-spray-head-with-seal-a-matic-4-in-1804-sam-prs",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/1/_/1_8_1804-sam-prs.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RT1836",
+    "fichier": "RT1836-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-1800-30-psi-pressure-regulated-spray-head-with-seal-a-matic-6-in-1806-sam-prs",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/1/_/1_8_1806-sam-prs.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "TAMINI8-4P",
+    "fichier": "TAMINI8-4P-1.png",
+    "source": "https://www.arrosage-distribution.fr/products/arroseur-turbine-mini-8-toro",
+    "image": "https://www.arrosage-distribution.fr/media/cache/sylius_shop_product_original/61/6c/05829ef04099b7c3a844da50f998.png",
+    "site": "arrosage-distribution.fr",
+    "doute": "Toro Mini 8 ; la variante 4P n’est pas confirmée par la photo."
+  },
+  {
+    "ref": "te-25-25-25",
+    "fichier": "te-25-25-25-1.jpg",
+    "source": "https://hydralians.fr/te-a-compression-7040-plassonp3000ga.html",
+    "image": "https://medias.descours-cabaud.com/d180001/derivates/3/003/818/562/P3000GA.jpg",
+    "site": "hydralians.fr",
+    "doute": "Té égal Plasson série 7040, photo de gamme ; diamètre de la pièce photographiée non indiqué."
+  },
+  {
+    "ref": "te-mmf",
+    "fichier": "te-mmf-1.jpg",
+    "source": "https://www.duraplastics.com/pvc-schedule-80/fittings-schedule-80-pvc-gray/",
+    "image": "https://dura-site-prod.s3.amazonaws.com/uploads/2021/11/ttpsduraplastics.comuserfilesimageassetslarge805-020.jpg",
+    "site": "duraplastics.com",
+    "doute": "Té Dura FIPT x FIPT x FIPT (trois taraudés), pas MMF ; fond gris clair de studio, pas blanc pur."
+  },
+  {
+    "ref": "te-mmf",
+    "fichier": "te-mmf-2.jpg",
+    "source": "https://www.sprinklersupplystore.com/products/dura-o-ring-tee",
+    "image": "https://cdn.shopify.com/s/files/1/1987/5531/products/301010-1-1.jpg?v=1633709246",
+    "site": "sprinklersupplystore.com",
+    "doute": "Dura 301-010 : té nourrice 1 pouce écrou tournant x MPT x écrou tournant ; à confirmer que c'est la pièce MMF."
+  },
+  {
+    "ref": "te-taraude-25-34-25",
+    "fichier": "te-taraude-25-34-25-1.jpg",
+    "source": "https://hydralians.fr/te-taraude-a-compression-7140-plasson-p3000go",
+    "image": "https://medias.descours-cabaud.com/d180001/derivates/3/003/818/568/P3000GO.jpg",
+    "site": "hydralians.fr",
+    "doute": "Té taraudé Plasson série 7140, photo de gamme ; le marquage visible indique 1/2 pouce, pas 3/4."
+  },
+  {
+    "ref": "te-taraude-25-34-25",
+    "fichier": "te-taraude-25-34-25-2.jpg",
+    "source": "https://www.castorama.fr/te-femelle-plasson-25-3-4-20x27-en-plastique/3330450054924_CAFR.prd",
+    "image": "https://media.castorama.fr/is/image/Castorama/te-femelle-plasson-25-3-4-20x27-en-plastique~3330450054924_02c?$width=1200&$height=1200",
+    "site": "castorama.fr",
+    "doute": "Plasson 25 x 3/4 exact, mais petite image (270 px) et peu nette."
+  },
+  {
+    "ref": "UGGCBL23050",
+    "fichier": "UGGCBL23050-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/toro-17mm-dripline-12-in-spacing-92-gph-250-ft-pcb-412-025",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/p/c/pcb-412-025-base-image.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": "Goutte-à-goutte Toro 17 mm (3,5 l/h, série US), pas la BlueLine 16 mm 2 l/h ; seul l'aspect de la couronne est comparable."
+  },
+  {
+    "ref": "UGGCBL23050",
+    "fichier": "UGGCBL23050-2.jpg",
+    "source": "https://laplateformedeleau.com/tuyau-goutte-a-goutte-integre/41071-tuyau-goutte-a-goutte-integre-pj-d16-2-l-h-esp-033m-cr50-m.html",
+    "image": "https://laplateformedeleau.com/10603/tuyau-goutte-a-goutte-integre-pj-d16-2-l-h-esp-033m-cr50-m.jpg",
+    "site": "laplateformedeleau.com",
+    "doute": "Goutte-à-goutte intégré PJ 16 mm 2 l/h, marron, sans marque Toro."
+  },
+  {
+    "ref": "union",
+    "fichier": "union-1.jpg",
+    "source": "https://www.duraplastics.com/pvc-schedule-80/unions-schedule-80-pvc-gray/",
+    "image": "https://dura-site-prod.s3.amazonaws.com/uploads/2021/11/ttpsduraplastics.comuserfilesimageassetslarge898-020.jpg",
+    "site": "duraplastics.com",
+    "doute": "Union Dura FIPT x FIPT (taraudée), pas MM ; diamètre de la photo non précisé ; fond gris clair de studio, pas blanc pur."
+  },
+  {
+    "ref": "VAN",
+    "fichier": "VAN-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-van-adjustable-nozzle-12-ft-12van",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/1/_/1_2_12van_2.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "vanne-purge",
+    "fichier": "vanne-purge-1.jpg",
+    "source": "https://www.domomat.com/35502-vanne-a-sphere-a-purge-femellefemelle-o34-poignee-acier-plate-rouge-sferaco-510005.html",
+    "image": "https://www.domomat.com/144119/vanne-a-sphere-a-purge-femellefemelle-o34-poignee-acier-plate-rouge.jpg",
+    "site": "domomat.com",
+    "doute": "Vanne à sphère laiton Sferaco à purge, femelle/femelle 3/4 ; vérifier que c'est le type de vanne utilisé sur la nourrice."
+  },
+  {
+    "ref": "vanne-purge",
+    "fichier": "vanne-purge-2.jpg",
+    "source": "https://www.domomat.com/35762-vanne-a-sphere-laiton-a-purge-malemale-o34-poignee-plate-rouge-sferaco-543005.html",
+    "image": "https://www.domomat.com/75748/vanne-a-sphere-laiton-a-purge-malemale-o34-poignee-plate-rouge.jpg",
+    "site": "domomat.com",
+    "doute": "Vanne à sphère laiton Sferaco à purge, mâle/mâle 3/4 ; le sens des filetages n'est pas précisé dans la demande."
+  },
+  {
+    "ref": "electrovanne-100dv",
+    "fichier": "electrovanne-100dv-2.jpg",
+    "source": "envoyée par le patron le 17 octobre 2026",
+    "image": "https://www.arrosage-distribution.fr/media/cache/sylius_shop_product_original/33/10/65c53ecccb0b7d89557a26e05e30.jpg",
+    "site": "arrosage-distribution.fr, envoyée par vous",
+    "doute": ""
+  },
+  {
+    "ref": "electrovanne-100dv-ff",
+    "fichier": "electrovanne-100dv-ff-2.png",
+    "source": "envoyée par le patron le 17 octobre 2026",
+    "image": "https://laplateformedeleau.com/9066-large_default/electrovanne-rain-bird-9v-lfv-075-3-4-ff.jpg",
+    "site": "laplateformedeleau.com, envoyée par vous",
+    "doute": "La photo est une LFV-075 en 3/4\", même allure que la 100 DV 1\" FF."
+  },
+  {
+    "ref": "pehd",
+    "fichier": "pehd-1.jpg",
+    "source": "envoyée par le patron le 17 octobre 2026",
+    "image": "https://media.adeo.com/mkp/57c992eb8063a5b405d1a4c20848a388/media.jpg",
+    "site": "envoyée par vous",
+    "doute": ""
+  },
+  {
+    "ref": "RT1822",
+    "fichier": "RT1822-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-1800-spray-head-with-seal-a-matic-12-in-1812-sam",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/1/_/1_8_1812-sam.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RT1832",
+    "fichier": "RT1832-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-1800-30-psi-pressure-regulated-spray-head-with-seal-a-matic-12-in-1812-sam-prs",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/1/_/1_8_1812-sam-prs.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "HT1523",
+    "fichier": "HT1523-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/hunter-pro-spray-40-psi-pressure-regulated-spray-head-12-in-pros-12-prs40-cv",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/p/_/p_r_pros-12-prs40-cv.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": "Hunter Pro-Spray PRS40 12 pouces avec clapet (PROS-12-PRS40-CV) ; supposé correspondre à « I-SPRAY-12 régulateur de pression », non confirmé."
+  },
+  {
+    "ref": "pebd16",
+    "fichier": "pebd16-3.png",
+    "source": "envoyée par le patron le 17 octobre 2026, redressée à l'horizontale",
+    "image": "https://www.serresvaldeloire.com/6851-home_default/barre-pe-10-bars---6-m.webp",
+    "site": "serresvaldeloire.com, envoyée par vous",
+    "doute": ""
+  },
+  {
+    "ref": "pebd16",
+    "fichier": "pebd16-4.png",
+    "source": "envoyée par le patron le 17 octobre 2026, redressée à l'horizontale",
+    "image": "https://www.pompes-direct.com/img/p/1101-2903-thickbox.jpg",
+    "site": "pompes-direct.com, envoyée par vous",
+    "doute": ""
+  },
+  {
+    "ref": "UGGCBL23050",
+    "fichier": "UGGCBL23050-3.png",
+    "source": "envoyée par le patron le 17 octobre 2026, le tube seul posé sur fond blanc",
+    "image": "https://rbrealisations.com/wp-content/uploads/2024/12/cdyw8ryotyyjltkvei0x__91704.1654878740.1280.1280.jpg",
+    "site": "rbrealisations.com, envoyée par vous",
+    "doute": ""
+  },
+  {
+    "ref": "RBT640",
+    "fichier": "RBT640-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-van-adjustable-nozzle-4-ft-4van",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/4/_/4_v_4van_2.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RBT639",
+    "fichier": "RBT639-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-van-adjustable-nozzle-6-ft-6van",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/6/_/6_v_6van_2.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RBT638",
+    "fichier": "RBT638-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-van-adjustable-nozzle-8-ft-8van",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/8/_/8_v_8van_2.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RBT637",
+    "fichier": "RBT637-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-van-adjustable-nozzle-10-ft-10van",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/1/_/1_0_10van_2.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RBT601",
+    "fichier": "RBT601-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-van-adjustable-nozzle-15-ft-15van",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/1/_/1_5_15van_2.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RBT648",
+    "fichier": "RBT648-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-van-adjustable-nozzle-18-ft-18van",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/1/_/1_8_18van_2.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RBT636",
+    "fichier": "RBT636-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-van-adjustable-nozzle-12-ft-12van",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/1/_/1_2_12van_2.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": "Même image que VAN-1.jpg."
+  },
+  {
+    "ref": "RBT1418",
+    "fichier": "RBT1418-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-r-van-45-270-degree-adjustable-rotary-nozzle-8-14-ft-r-van14",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/r/_/r_-_r-van14.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RBT1419",
+    "fichier": "RBT1419-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-r-van-360-degree-full-circle-rotary-nozzle-8-14-ft-r-van14-360",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/r/-/r-van14-360-thumbnail_1.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": "La photo porte en haut à droite un pictogramme et le texte « 8’ to 14’ » ; aucune autre photo trouvée pour la R-VAN14-360."
+  },
+  {
+    "ref": "RBT1428",
+    "fichier": "RBT1428-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-r-van-45-270-degree-adjustable-rotary-nozzle-13-18-ft-r-van18",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/r/_/r_-_r-van18_2.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RBT1429",
+    "fichier": "RBT1429-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-r-van-360-degree-full-circle-rotary-nozzle-13-18-ft-r-van18-360",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/r/_/r_-_r-van18-360.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RBT1438",
+    "fichier": "RBT1438-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-r-van-45-270-degree-adjustable-rotary-nozzle-17-24-ft-r-van24",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/r/_/r_v_rvan24_1.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "RBT1439",
+    "fichier": "RBT1439-1.jpg",
+    "source": "https://www.sprinklerwarehouse.com/rain-bird-r-van-360-degree-full-circle-rotary-nozzle-17-24-ft-r-van24-360",
+    "image": "https://www.sprinklerwarehouse.com/media/catalog/product/r/_/r_-_r-van24-360.jpg",
+    "site": "sprinklerwarehouse.com",
+    "doute": ""
+  },
+  {
+    "ref": "mamelon",
+    "fichier": "mamelon-2.jpg",
+    "source": "envoyée par le patron le 17 octobre 2026",
+    "image": "https://laplateformedeleau.com/10038-large_default/mamelon-dura-1x3-4.jpg",
+    "site": "laplateformedeleau.com, envoyée par vous",
+    "doute": ""
+  },
+  {
+    "ref": "OPL70302520",
+    "fichier": "OPL70302520-1.jpg",
+    "source": "https://hydralians.fr/raccord-a-compression-taraude-7030-plasson-p3000g2.html",
+    "image": "https://medias.descours-cabaud.com/d180001/derivates/3/003/818/564/P3000G2.jpg",
+    "site": "hydralians.fr",
+    "doute": "Photo de la gamme Plasson 7030 ; le marquage visible indique 32 x 3/4, pas 25 x 3/4."
+  },
+  {
+    "ref": "OPL70302520",
+    "fichier": "OPL70302520-2.jpg",
+    "source": "https://www.cityplumbing.co.uk/Plasson-Female-Threaded-Pipe-Adaptor-25mm-x-3-4%22---7030D20/p/844600",
+    "image": "https://dam.cityplumbing.co.uk/private/oqw62lo/GPID_1000255247_IMG_00.jpeg?width=1000&height=1000",
+    "site": "cityplumbing.co.uk",
+    "doute": "Image de la fiche City Plumbing 25 x 3/4 (réf. 070300025007), mais c’est une photo de gamme : le marquage visible semble indiquer 1 1/2 pouce. Image un peu floue."
+  },
+  {
+    "ref": "union",
+    "fichier": "union-2.jpg",
+    "source": "https://www.arrosage-distribution.fr/products/mamelon-union-dura-1-mm",
+    "image": "https://www.arrosage-distribution.fr/media/cache/sylius_shop_product_original/ac/d4/6e0a266644e80bef56f0e0257c1c.jpg",
+    "site": "arrosage-distribution.fr",
+    "doute": "Mamelon Dura 1 pouce mâle x mâle (vendu comme « Mamelon DURA 1 mâle mâle ») : les deux bouts sont mâles, mais le milieu est un hexagone fixe, pas un gros écrou tournant."
+  },
+  {
+    "ref": "union",
+    "fichier": "union-3.jpg",
+    "source": "https://www.arrosage-distribution.fr/products/union-droite-dura-1-male-femelle",
+    "image": "https://www.arrosage-distribution.fr/media/cache/sylius_shop_product_original/4e/6d/263f1e3f6e169cbf0856a2d56211.jpg",
+    "site": "arrosage-distribution.fr",
+    "doute": "Union droite Dura 1 pouce : un bout femelle avec écrou tournant, l’autre mâle (MF). Solution de repli, pas MM."
+  }
+]
