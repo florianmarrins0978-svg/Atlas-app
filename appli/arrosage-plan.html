@@ -344,7 +344,7 @@
     y = colonne("mamelon", xL, y) + ECART;
     y = colonne("union", xL, y) + ECART;
     y = colonne("raccord-femelle25", xL, y) + ECART;
-    var fin = colonne("pehd", xL, y), etiquettes = [[xL, fin, "Arrivée"], [xL, fin + 12, "d’eau"]];
+    var fin = colonne("pehd", xL, y), finArrivee = fin, etiquettes = [[xL, fin + 28, "Arrivée"], [xL, fin + 40, "d’eau"]];
     axes.forEach(function (xv, i) {
       var goutte = i >= axes.length - nbGoutte, yv = bas;
       if (goutte) {
@@ -363,6 +363,7 @@
       etiquettes.push([xv, yv, "Réseau " + (i + 1), i, goutte ? i - (axes.length - nbGoutte) : -1]);
       fin = Math.max(fin, yv);
     });
+    fin = Math.max(fin, finArrivee + 40);
     var largeur = Math.max(x + cd.w, axes[axes.length - 1] + 70) + 8;
     var k = Math.min(1, W / largeur), H = (fin + (nbGoutte ? 34 + (nbGoutte > 1 ? 50 : 22) : 34)) * k, c = $("dessin"), r = window.devicePixelRatio || 1;
     c.width = W * r; c.height = H * r; c.style.height = H + "px";
@@ -392,6 +393,13 @@
       badge(g, numero(p.ref), p.x + 24, p.y + fc.L / 2);
     });
     g.globalCompositeOperation = "source-over";
+    g.font = "600 10px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "top";
+    // L'ARRIVÉE D'EAU : le mot en bas, puis une flèche qui monte jusqu'au PEHD
+    // (sa demande du 18 octobre 2026). Une flèche qui montre d'où vient l'eau,
+    // pas un ornement.
+    g.strokeStyle = "#4a4a44"; g.fillStyle = "#4a4a44"; g.lineWidth = 1.6;
+    g.beginPath(); g.moveTo(xL, finArrivee + 30); g.lineTo(xL, finArrivee + 9); g.stroke();
+    g.beginPath(); g.moveTo(xL, finArrivee + 4); g.lineTo(xL - 5, finArrivee + 11); g.lineTo(xL + 5, finArrivee + 11); g.closePath(); g.fill();
     g.font = "600 10px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "top";
     etiquettes.forEach(function (e) {
       g.fillStyle = e[3] === undefined ? "#4a4a44" : couleursPlan[e[3]];

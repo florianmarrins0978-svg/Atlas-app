@@ -220,7 +220,7 @@
     y = colonne("mamelon", xL, y) + ECART;
     y = colonne("union", xL, y) + ECART;
     y = colonne("raccord-femelle25", xL, y) + ECART;
-    var fin = colonne("pehd", xL, y), etiquettes = [[xL, fin, "Arrivée"], [xL, fin + 13, "d’eau"]];
+    var fin = colonne("pehd", xL, y), finArrivee = fin, etiquettes = [[xL, fin + 28, "Arrivée"], [xL, fin + 41, "d’eau"]];
     // Les voies, numérotées de gauche à droite après l'arrivée.
     axes.forEach(function (xv, i) {
       // Les voies de goutte-à-goutte sont les dernières, à droite (validé le 18 octobre 2026).
@@ -244,6 +244,7 @@
       if (goutte) etiquettes.push([xv, yv + 13, "goutte-à-goutte"]);
       fin = Math.max(fin, yv);
     });
+    fin = Math.max(fin, finArrivee + 41);
 
     // La largeur : la bobine de la dernière électrovanne déborde à droite de son axe.
     var largeur = Math.max(x + cd.w, axes[axes.length - 1] + 70) + 8;
@@ -277,6 +278,13 @@
     });
     g.globalCompositeOperation = "source-over";
     g.fillStyle = "#4a4a44"; g.font = "11px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "top";
+    // L'ARRIVÉE D'EAU : le mot en bas, puis une flèche qui monte jusqu'au PEHD
+    // (sa demande du 18 octobre 2026). Une flèche qui montre d'où vient l'eau,
+    // pas un ornement.
+    g.strokeStyle = "#4a4a44"; g.fillStyle = "#4a4a44"; g.lineWidth = 1.6;
+    g.beginPath(); g.moveTo(xL, finArrivee + 30); g.lineTo(xL, finArrivee + 9); g.stroke();
+    g.beginPath(); g.moveTo(xL, finArrivee + 4); g.lineTo(xL - 5, finArrivee + 11); g.lineTo(xL + 5, finArrivee + 11); g.closePath(); g.fill();
+    g.fillStyle = "#4a4a44";
     etiquettes.forEach(function (e) { g.fillText(e[2], e[0], e[1] + 6); });
 
     $("titre").textContent = fiche.nom;
