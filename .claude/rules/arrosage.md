@@ -271,11 +271,14 @@ croix blanche, un petit trait à gauche et le mot « robinet » (jamais le
 rectangle de la nourrice) ; sur le croquis, ce même signe se LIT comme le
 piquage, avec « robinet » pour point d'eau (`lire-croquis.ts`).
 
-**LE Ø16 SE RACCORDE AU ROBINET PAR UN EMBOUT PALAPLAST TARAUDÉ 3/4" — sa règle
-du 18 octobre 2026.** Le Plasson à bague blanche ne prend que le PE 25 ou 32.
-Bague blanche (MID6362) : Ø16 **souple** ; bague noire : Ø16 **rigide**, sans
-référence relevée (*« n'importe quel fournisseur sait de quoi on parle, au pire
-il mettra sa référence »*). Bague en haut, embout en bas.
+**LE Ø16 SE RACCORDE AU ROBINET PAR UN RACCORD TARAUDÉ 3/4" PROPRE À SON TUBE —
+sa règle du 18 octobre 2026.** Le Plasson à bague blanche ne prend que le PE 25
+ou 32. Le Ø16 **souple** : l'embout Palaplast taraudé 16 x 3/4" (MID6362, sa
+photo). Le Ø16 **rigide** : un raccord à compression **Plasson** taraudé 16 x 3/4",
+tout noir (sa photo), d'une gamme à part pour le 16 rigide, avec ses tés et
+ses manchons de réparation. Sans référence relevée : *« n'importe quel
+fournisseur sait de quoi on parle, au pire il mettra sa référence »*. Le
+taraudé en haut, l'embout en bas.
 
 **AUCUNE PÉRIODE NON PLUS — 18 octobre 2026 :** *« on ne donne pas les durées
 d'arrosage ni les périodes à arroser »*. Les besoins par saison, les heures de

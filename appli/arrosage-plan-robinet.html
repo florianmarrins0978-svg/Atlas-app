@@ -341,12 +341,13 @@
     prog: { ref: "SP1151", nom: "Programmateur nez de rob. SOLEM BL - NR - 1 voie", photo: "SP1151.png", voies: 1 },
     // Le Plasson à bague blanche ne prend que le PE 25 ou 32 (sa correction du
     // 18 octobre 2026) : le Ø16 rigide se raccorde par un embout Palaplast, proposé.
-    // Bague noire pour le rigide, bague blanche (MID6362) pour le souple : sa
-    // règle du 18 octobre 2026. Bague en haut, embout en bas.
-    raccord: { 16: { ref: "embout-16-rigide", sansReference: true, nom: "embout Palaplast taraudé 16 x 3/4\", pour 16 rigide", photo: "embout-16-rigide-debout.png" }, 25: { ref: "OPL70302520", nom: "raccord femelle 25 x 3/4\"", photo: "OPL703016.png" }, 32: { ref: "OPL70303220", nom: "raccord femelle 32 x 3/4\"", photo: "OPL703016.png" } }
+    // Le Ø16 rigide part par un raccord à compression Plasson taraudé 3/4" (sa
+    // photo du 18 octobre 2026), le souple par l'embout Palaplast MID6362.
+    // Le taraudé en haut, l'embout en bas.
+    raccord: { 16: { ref: "plasson-16-rigide", sansReference: true, nom: "raccord à compression Plasson taraudé 16 x 3/4\", pour 16 rigide", photo: "plasson-16-rigide-debout.png" }, 25: { ref: "OPL70302520", nom: "raccord femelle 25 x 3/4\"", photo: "OPL703016.png" }, 32: { ref: "OPL70303220", nom: "raccord femelle 32 x 3/4\"", photo: "OPL703016.png" } }
   };
   [ROBINET.double, ROBINET.prog].forEach(function (x) { PHOTOS[x.ref] = "../arrosage-robinet-photos/" + x.photo; });
-  PHOTOS["embout-16-rigide"] = "../arrosage-robinet-photos/embout-16-rigide.png"; PHOTOS.OPL70302520 = "OPL70302520.jpg"; PHOTOS.OPL70303220 = "OPL70302520.jpg";
+  PHOTOS["plasson-16-rigide"] = "../arrosage-robinet-photos/plasson-16-rigide.jpg"; PHOTOS.OPL70302520 = "OPL70302520.jpg"; PHOTOS.OPL70303220 = "OPL70302520.jpg";
   var etat = { sortie: "boucle", couronne: 50, grillage: false, sonde: false, retirees: {}, remplacees: {}, ajoutees: [], ou: "amenee", categorie: "reseau", cible: null, recherche: "" };
   function plan() {
     // Le nez de robinet n'a qu'une voie : son jardin d'exemple est une seule
