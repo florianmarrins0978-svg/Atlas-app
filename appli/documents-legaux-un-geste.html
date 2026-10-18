@@ -47,6 +47,7 @@
   .banc{max-width:390px;margin:0 auto 14px}
   .banc h2{margin:0;font-size:11px;font-weight:500;letter-spacing:.26em;
            text-transform:uppercase;color:var(--gris)}
+  .banc.deuxieme{margin-top:36px}
   .boutons{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
   .boutons button{font:inherit;font-size:12px;padding:8px 12px;border-radius:6px;
                   border:1px solid rgba(233,232,222,.2);background:var(--carte);
@@ -108,6 +109,9 @@
   .geste{display:block;width:100%;min-height:52px;margin-bottom:10px;border-radius:999px;
          border:1px solid rgba(233,232,222,.24);background:none;color:var(--encre);
          font:inherit;font-size:16px;cursor:pointer}
+  /* Refuser se voit autant qu'Accepter se lit : un refus caché ne vaut pas un choix. */
+  .geste.refuser{margin:8px 0 0}
+  .geste[hidden]{display:none}
   .geste.fait{border-color:transparent;background:var(--carte);color:var(--doux)}
   .geste:focus-visible{outline:2px solid var(--or);outline-offset:2px}
 
@@ -120,15 +124,9 @@
 </head>
 <body>
 
-<div class="banc">
-  <h2>Accepter en un geste</h2>
-  <div class="boutons">
-    <button type="button" data-etat="premiere" aria-pressed="true">Première fois</button>
-    <button type="button" data-etat="nouvelle" aria-pressed="false">Nouvelle version</button>
-  </div>
-</div>
+<div class="banc"><h2>1. Un nouvel inscrit</h2></div>
 
-<div class="tel">
+<div class="tel" data-tel>
   <div class="defile">
     <h1 class="serif" data-titre>Avant de commencer</h1>
     <p class="intro">Vos clients vous confient leurs coordonnées&nbsp;; vous nous les confiez à votre tour. Ces documents stipulent ce que nous en faisons, et ce que nous nous engageons à ne pas en faire.</p>
@@ -149,7 +147,7 @@
   <div class="pied">
     <button type="button" class="principal" data-accepter>Accepter</button>
     <button type="button" class="sortie" data-sortie>Se déconnecter</button>
-    <button type="button" class="sortie" data-refuser hidden>Refuser</button>
+    <button type="button" class="geste refuser" data-refuser hidden>Refuser</button>
   </div>
 
   <section class="feuille" data-feuille="cgu" aria-hidden="true">
@@ -181,6 +179,9 @@
   </section>
 </div>
 
+<div class="banc deuxieme"><h2>2. Un client déjà là, quand les conditions changent</h2></div>
+<div data-place-nouvelle></div>
+
 <div class="notes">
   <h3>Ce qui change</h3>
   <ul>
@@ -202,48 +203,45 @@ const PHRASE = {
   nouvelle: "En touchant « Accepter », vous acceptez la nouvelle version du document ci-dessous."
 };
 
-function etat(nom){
-  document.querySelectorAll(".banc [data-etat]").forEach(b =>
-    b.setAttribute("aria-pressed", String(b.dataset.etat === nom)));
-  document.querySelector('.rangee[data-doc="st"]').hidden = nom === "nouvelle";
-  document.querySelector("[data-titre]").textContent =
-    nom === "nouvelle" ? "Les conditions ont changé" : "Avant de commencer";
-  document.querySelector("[data-engage]").textContent = PHRASE[nom];
-  document.querySelector("[data-sortie]").hidden = nom === "nouvelle";
-  document.querySelector("[data-refuser]").hidden = nom !== "nouvelle";
+/* Deux téléphones, un par cas : un état caché derrière un bouton ne se voit pas. */
+function monter(tel, nom){
+  const q = sel => tel.querySelector(sel);
+  q('.rangee[data-doc="st"]').hidden = nom === "nouvelle";
+  q("[data-titre]").textContent = nom === "nouvelle" ? "Les conditions ont changé" : "Avant de commencer";
+  q("[data-engage]").textContent = PHRASE[nom];
+  q("[data-sortie]").hidden = nom === "nouvelle";
+  q("[data-refuser]").hidden = nom !== "nouvelle";
+
+  function ouvrir(cle){
+    const f = q('[data-feuille="' + cle + '"]');
+    f.classList.add("ouverte");
+    f.setAttribute("aria-hidden", "false");
+    f.querySelector("[data-fermer]").focus({ preventScroll: true });
+  }
+  tel.querySelectorAll(".rangee").forEach(r => r.addEventListener("click", () => ouvrir(r.dataset.doc)));
+  q("[data-refuser]").addEventListener("click", () => ouvrir("refus"));
+  tel.querySelectorAll("[data-geste]").forEach(b => b.addEventListener("click", () => {
+    b.classList.add("fait");
+    b.textContent = b.dataset.geste === "export" ? "Données téléchargées" : "Résiliation enregistrée";
+  }));
+  tel.querySelectorAll("[data-fermer]").forEach(b => b.addEventListener("click", () => {
+    const f = b.closest(".feuille");
+    f.classList.remove("ouverte");
+    f.setAttribute("aria-hidden", "true");
+  }));
+  q("[data-accepter]").addEventListener("click", e => {
+    const b = e.currentTarget;
+    b.disabled = true;
+    b.textContent = "Enregistrement…";
+    setTimeout(() => { b.disabled = false; b.textContent = "Accepter"; }, 1600);
+  });
 }
 
-document.querySelectorAll(".rangee").forEach(r => r.addEventListener("click", () => {
-  const f = document.querySelector('[data-feuille="' + r.dataset.doc + '"]');
-  f.classList.add("ouverte");
-  f.setAttribute("aria-hidden", "false");
-  f.querySelector("[data-fermer]").focus({ preventScroll: true });
-}));
-document.querySelector("[data-refuser]").addEventListener("click", () => {
-  const f = document.querySelector('[data-feuille="refus"]');
-  f.classList.add("ouverte");
-  f.setAttribute("aria-hidden", "false");
-  f.querySelector("[data-fermer]").focus({ preventScroll: true });
-});
-document.querySelectorAll("[data-geste]").forEach(b => b.addEventListener("click", () => {
-  b.classList.add("fait");
-  b.textContent = b.dataset.geste === "export" ? "Données téléchargées" : "Résiliation enregistrée";
-}));
-document.querySelectorAll("[data-fermer]").forEach(b => b.addEventListener("click", () => {
-  const f = b.closest(".feuille");
-  f.classList.remove("ouverte");
-  f.setAttribute("aria-hidden", "true");
-}));
-document.querySelector("[data-accepter]").addEventListener("click", e => {
-  const b = e.currentTarget;
-  b.disabled = true;
-  b.textContent = "Enregistrement…";
-  setTimeout(() => { b.disabled = false; b.textContent = "Accepter"; }, 1600);
-});
-document.querySelectorAll(".banc [data-etat]").forEach(b =>
-  b.addEventListener("click", () => etat(b.dataset.etat)));
-
-etat(new URLSearchParams(location.search).get("etat") || "premiere");
+const premier = document.querySelector("[data-tel]");
+const second = premier.cloneNode(true);
+document.querySelector("[data-place-nouvelle]").replaceWith(second);
+monter(premier, "premiere");
+monter(second, "nouvelle");
 </script>
 </body>
 </html>
