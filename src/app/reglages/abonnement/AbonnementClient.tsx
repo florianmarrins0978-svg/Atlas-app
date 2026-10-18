@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors, font, libelleCaps, surPlein, texteSituation } from "@/lib/design-tokens";
 import { FORMULES, lignesDeLaFormule, montantDu, type FormuleCode, type Periodicite } from "@/lib/abonnements";
-import { sabonnerAction, ouvrirLeGuichetAction, changerDeFormuleAction } from "./actions";
+import { sabonnerAction, ouvrirLeGuichetAction, changerDeFormuleAction, nePasArreterAction } from "./actions";
+import AvantDePartir from "./AvantDePartir";
 
 /**
  * LES TROIS FORMULES — d'après sa planche du 9 septembre 2026,
@@ -20,17 +21,30 @@ import { sabonnerAction, ouvrirLeGuichetAction, changerDeFormuleAction } from ".
 export default function AbonnementClient({
   formuleActuelle,
   periodiciteActuelle,
+  annulationDemandee,
   paiementBranche,
 }: {
   /** `null` quand il n'a pas d'abonnement. */
   formuleActuelle: FormuleCode | null;
   periodiciteActuelle: Periodicite | null;
+  /** Une résiliation est demandée : l'abonnement s'arrêtera à l'échéance. */
+  annulationDemandee: boolean;
   /** Faux tant que la clé du prestataire n'est pas posée : on le DIT. */
   paiementBranche: boolean;
 }) {
   const [periodicite, setPeriodicite] = useState<Periodicite>(periodiciteActuelle ?? "mensuelle");
   const [message, setMessage] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
+  const [partir, setPartir] = useState(false);
+
+  function nePasArreter() {
+    setMessage(null);
+    demarrer(async () => {
+      const r = await nePasArreterAction();
+      if (!r.ok) setMessage(r.message);
+      else window.location.reload();
+    });
+  }
 
   function choisir(code: FormuleCode) {
     setMessage(null);
@@ -78,9 +92,32 @@ export default function AbonnementClient({
             Gérer mon abonnement
           </PrimaryButton>
           <p className={`mt-2.5 ${texteSituation}`} style={{ color: colors.inkSoft }}>
-            Changer de carte, vos factures Atlas, résilier.
+            Changer de carte, vos factures Atlas.
           </p>
+          {/* Résilier se fait ICI, et non chez le prestataire : « Avant de
+              partir » propose une formule moins chère et demande pourquoi
+              (planche du 18 octobre 2026). Une résiliation demandée se retire
+              tant que l'échéance n'est pas passée. */}
+          <div className="mt-4">
+            {annulationDemandee ? (
+              <PrimaryButton secondaire onClick={nePasArreter} disabled={enCours || !paiementBranche} repere="ne-pas-arreter">
+                Ne pas arrêter
+              </PrimaryButton>
+            ) : (
+              <PrimaryButton secondaire onClick={() => setPartir(true)} disabled={enCours || !paiementBranche} repere="resilier">
+                Résilier
+              </PrimaryButton>
+            )}
+          </div>
         </div>
+      )}
+
+      {partir && formuleActuelle && periodiciteActuelle && (
+        <AvantDePartir
+          formuleActuelle={formuleActuelle}
+          periodicite={periodiciteActuelle}
+          fermer={() => setPartir(false)}
+        />
       )}
 
       <section className="mx-[26px] mt-[30px] border-t pt-[18px]" style={{ borderColor: colors.line }}>

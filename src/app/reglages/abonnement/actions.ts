@@ -16,10 +16,17 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { exigerProprietaire } from "@/server/autorisation";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { abonnementDeLEntreprise, enregistrerLAbonnement } from "@/server/repositories/abonnements";
-import { ouvrirLePaiement, ouvrirLeGuichet, changerLaFormule } from "@/server/paiement/stripe";
+import {
+  ouvrirLePaiement,
+  ouvrirLeGuichet,
+  changerLaFormule,
+  demanderLaResiliation,
+  retirerLaResiliation,
+} from "@/server/paiement/stripe";
 import { revalidatePath } from "next/cache";
 import { adresseDeRetour, retourConfigure } from "@/server/paiement/retour";
 import { estFormule, estPeriodicite } from "@/lib/abonnements";
+import { estRaisonDepart, texteDeDepart } from "@/lib/resiliation";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { logger } from "@/server/logger";
 
@@ -170,3 +177,58 @@ export async function changerDeFormuleAction(
   revalidatePath("/reglages/abonnement");
   return { ok: true };
 }
+
+/**
+ * RÉSILIER, depuis « Avant de partir » — à l'échéance, avec sa raison et son
+ * texte s'il en a donné (planche du 18 octobre 2026, `docs/A-FAIRE.md` §17).
+ *
+ * **Facile, et c'est voulu** : il a vu la formule moins chère et la question,
+ * il a dit non ; un second barrage le ferait passer par sa banque. Rien n'est
+ * coupé aujourd'hui : il garde tout jusqu'à la date payée.
+ *
+ * La raison et le texte sont REVALIDÉS ici : l'action est appelable
+ * directement, et un texte sans borne partirait tel quel chez le prestataire.
+ */
+export async function resilierAction(raison: string | null, texte: string | null): Promise<ReponsePaiement> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "résilier l’abonnement");
+
+  const limite = await verifierLimite(`ouvrirLePaiement:${ctx.entrepriseId}`, LIMITES.ouvrirLePaiement);
+  if (!limite.autorise) return { ok: false, message: "Patientez un instant, puis réessayez." };
+
+  const abonnement = await abonnementDeLEntreprise(ctx);
+  if (!abonnement?.abonnementPrestataire || abonnement.statut !== "actif") {
+    return { ok: false, message: "Vous n’avez pas d’abonnement en cours." };
+  }
+
+  const r = await demanderLaResiliation({
+    abonnementPrestataire: abonnement.abonnementPrestataire,
+    raison: estRaisonDepart(raison) ? raison : null,
+    texte: texteDeDepart(texte),
+  });
+  if (!r.ok) return { ok: false, message: phrase(r.erreur) };
+
+  logger.info("Résiliation demandée", { entrepriseId: ctx.entrepriseId, raison: estRaisonDepart(raison) ? raison : null });
+  await enregistrerLAbonnement(ctx, r.etat);
+  revalidatePath("/reglages/abonnement");
+  return { ok: true };
+}
+
+/** « Ne pas arrêter » : il change d'avis avant l'échéance, l'abonnement continue. */
+export async function nePasArreterAction(): Promise<ReponsePaiement> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "reprendre l’abonnement");
+
+  const abonnement = await abonnementDeLEntreprise(ctx);
+  if (!abonnement?.abonnementPrestataire || !abonnement.annulationDemandee) {
+    return { ok: false, message: "Aucune résiliation en cours." };
+  }
+
+  const r = await retirerLaResiliation({ abonnementPrestataire: abonnement.abonnementPrestataire });
+  if (!r.ok) return { ok: false, message: phrase(r.erreur) };
+
+  await enregistrerLAbonnement(ctx, r.etat);
+  revalidatePath("/reglages/abonnement");
+  return { ok: true };
+}
+

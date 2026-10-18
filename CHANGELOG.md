@@ -8,6 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-18
 
+- **Résilier se fait dans Atlas, par « Avant de partir ».** Sa crainte : une
+  résiliation trop facile ferait partir les artisans. Pas de barrage (opposition
+  bancaire, réputation) : la formule juste en dessous proposée d'abord, au
+  prorata, puis « Pourquoi partez-vous ? », facultatif, avec trois réponses et
+  une case de texte. La raison et le texte partent chez le prestataire avec la
+  résiliation, où il les lit (`cancellation_details`). La résiliation vaut pour
+  l'échéance ; « Ne pas arrêter » la retire. Joué dans un navigateur contre un
+  faux prestataire local ; `test-paiement-stripe.ts` et `test-resiliation.ts`.
+  **Écart avec la planche, dit** : la formule moins chère change tout de suite,
+  au prorata (le seul changement que le dépôt sait faire), pas à l'échéance.
+- **La fiche du mode d'emploi de l'acceptation décrivait encore les cases.**
+  Corrigée avec le lot du geste unique : l'assistant aurait enseigné un bouton
+  disparu (`test-mode-emploi.ts`).
+
 - **Un abonnement résilié passe en lecture seule, comme l'essai terminé.**
   Trouvé le 18 octobre en préparant la résiliation : à son échéance, un
   abonnement résilié gardait tout ouvert, en écriture. Résilier rendait Atlas

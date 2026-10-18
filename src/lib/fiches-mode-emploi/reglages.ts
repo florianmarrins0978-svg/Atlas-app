@@ -81,11 +81,11 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     intitule: "Accepter les conditions d'utilisation pour entrer",
     motsCles: ["conditions", "accepter", "cgu", "confidentialite", "documents", "legaux", "cocher", "lire"],
     geste:
-      "Touchez « Lire le texte » pour le lire, touchez « J'ai lu et j'accepte » sous chaque document, puis « Continuer ». " +
+      "Touchez un document pour le lire en entier, « Fermer » pour revenir, puis « Accepter ». " +
       "Pour partir sans accepter, « Se déconnecter ».",
-    reserve: "Atlas ne s'ouvre pas tant que chaque document n'est pas coché.",
+    reserve: "Atlas ne s'ouvre pas tant que les documents ne sont pas acceptés.",
     source: "src/app/documents-legaux/formulaire.tsx",
-    preuves: ["Lire le texte", "J&apos;ai lu et j&apos;accepte", '"Continuer"', "Se déconnecter"],
+    preuves: ['"Accepter"', "Fermer", "Se déconnecter"],
     ailleurs: [{ source: "src/app/documents-legaux/page.tsx", preuves: ["Avant de commencer"] }],
   },
   // --- Réglages : l'écran lui-même --------------------------------------------
@@ -709,10 +709,10 @@ export const FICHES_REGLAGES: FicheModeEmploi[] = [
     ou: `${R}, puis Abonnement`,
     intitule: "Changer de carte, voir ses factures Atlas, résilier",
     motsCles: ["abonnement", "carte", "bancaire", "facture", "atlas", "resilier", "arreter", "gerer"],
-    geste: "Ouvrez « Abonnement », puis « Gérer mon abonnement ».",
+    geste: "Ouvrez « Abonnement ». « Gérer mon abonnement » pour la carte et les factures, « Résilier » pour partir.",
     reserve: "Réservé au patron, et seulement une fois abonné. Les factures de vos clients sont dans « Terminés ».",
     source: "src/app/reglages/abonnement/AbonnementClient.tsx",
-    preuves: ["Gérer mon abonnement", "Changer de carte, vos factures Atlas, résilier."],
+    preuves: ["Gérer mon abonnement", "Changer de carte, vos factures Atlas.", "Résilier"],
   },
   {
     id: "reglages-formule",
