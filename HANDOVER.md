@@ -10,6 +10,25 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## L'ÉCRAN DU PLAN D'ARROSAGE, CODÉ : branche `lot/catalogue-aquaplus-corrections`, dossier `atlas-app-aquaplus` (18 octobre 2026)
+
+**Ce qui est fait** : l'écran qu'il a validé (`appli/arrosage-plan.html`) est
+dans l'application : `src/app/paysage/arrosage/LePlanDuJardin.tsx` et ce qu'il
+assemble (`NourriceEclatee`, `PiecesDuReseau`, `ListeDesPieces`, `FeuillePiece`,
+`MotsDuPlan`, `Vignette`), sur des règles pures (`le-plan.ts`, `postes.ts`,
+`retouches.ts`, `nourrice-eclatee.ts`, `photos.ts`). `ARCHITECTURE.md` §470 dit
+les quatre décisions. Tout l'état du lot est dans `docs/arrosage-relais-session.md`.
+
+**Pour le regarder sans serveur** : `npx tsx scripts/capture-plan-arrosage.ts <dossier>`,
+puis `ecran-du-plan.png`. Pour l'éprouver : `npx tsx scripts/test-arrosage-postes.ts`.
+
+**Le piège** : les photos sont servies depuis `public/arrosage-photos/`, copie
+d'`appli/arrosage-photos/` ; une photo validée entre dans les deux dossiers ET
+dans `photos.ts`, sinon « photo à venir ». Et aucune batterie n'a été jouée sur
+ce lot, à sa demande : une seule à la fin, qu'il demande.
+
+**Ce qui reste** : `TODO.md`, « l'écran du plan est codé ».
+
 ## LE DEVIS SANS GLISSEMENT : branche `claude/devis-croix-plus-a-droite` (16 octobre 2026)
 
 **Ce qui est fait** : sur le devis seulement, plus de glissement ; la croix

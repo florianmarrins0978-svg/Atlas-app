@@ -2,14 +2,11 @@
 
 import { useActionState, useRef, useState } from "react";
 import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
-import { lireLeCroquis, type EtatPlan, type EtatDiscussion } from "./actions";
-// Module JavaScript repris tel quel de `appli/` — la même fonction sert à la
-// page publiée : deux façons d'écrire une quantité finiraient par diverger.
-import { quantiteEcrite } from "@/lib/arrosage/calcul.js";
-import { TITRES_DES_ZONES } from "@/lib/arrosage/pieces";
-import PlanDessine from "./PlanDessine";
+import { lireLeCroquis, type EtatPlan } from "./actions";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
+import LePlanDuJardin from "./LePlanDuJardin";
 import DiscuterLePlan from "./DiscuterLePlan";
+import type { ParametresPlan } from "@/lib/arrosage/consignes";
 import { ACCEPT_PHOTOS } from "@/lib/exif";
 
 /**
@@ -348,14 +345,29 @@ export default function ArrosageClient({
 
       {/* **La `key` repart de zéro à chaque croquis lu.** Garder la discussion
           d'un jardin sur le plan d'un autre ferait répondre Atlas à côté. */}
-      {etat.etat === "lu" && <Plan key={etat.zones.map((z) => z.nom ?? z.type).join("|")} etat={etat} />}
+      {/* **L'écran qu'il a validé le 18 octobre 2026** : le piquage, la nourrice
+          éclatée, les réseaux sur le plan, les pièces posées, la liste. La `key`
+          repart de zéro à chaque croquis lu : garder la discussion d'un jardin
+          sur le plan d'un autre ferait répondre Atlas à côté. */}
+      {etat.etat === "lu" && <PlanLu key={etat.zones.map((z) => z.nom ?? z.type).join("|")} etat={etat} />}
     </form>
   );
 }
 
-/** Deux décimales, virgule française — un chiffre à l'anglaise se relit mal. */
-function virgule(x: number, d = 2) {
-  return x.toFixed(d).replace(".", ",");
+/**
+ * Le plan et sa discussion partagent les PARAMÈTRES : la discussion les refait,
+ * les cases du plan les touchent, et le plan se recalcule des deux côtés par la
+ * même fonction. La discussion se pose APRÈS le plan, et seulement avec lui :
+ * sa borne du 21 août, *« la discussion ne doit jamais créer un plan »*.
+ */
+function PlanLu({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
+  const [parametres, setParametres] = useState<ParametresPlan>(etat.parametres);
+  return (
+    <>
+      <LePlanDuJardin etat={etat} parametres={parametres} onParametres={setParametres} />
+      <DiscuterLePlan parametres={parametres} surNouveauPlan={(refait) => setParametres(refait.parametres)} />
+    </>
+  );
 }
 
 /** Une ligne du refus : coché quand c'est lu, barré quand ça manque. */
@@ -385,193 +397,5 @@ function Element({ ok, quoi, lu }: { ok: boolean; quoi: string; lu: string | nul
         )}
       </span>
     </li>
-  );
-}
-
-/** Le plan, une fois le croquis lu : le dessin, ses réserves, les réseaux, puis les pièces. */
-function Plan({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
-  /**
-   * **LE PLAN DE L'ÉCRAN PEUT VENIR DE DEUX ENDROITS** — la lecture du croquis,
-   * ou une modification demandée dans la discussion. Il vit donc ici, et non
-   * dans l'état de l'action : sinon un plan refait ne s'afficherait qu'au
-   * prochain croquis photographié.
-   *
-   * **Et il repart de zéro quand un nouveau croquis arrive** (`key` sur l'appel,
-   * plus haut) : garder la discussion d'un jardin sur le plan d'un autre ferait
-   * répondre Atlas à côté.
-   */
-  const [refait, setRefait] = useState<Extract<EtatDiscussion, { etat: "repondu" }> | null>(null);
-  const plan = refait?.plan ?? etat.plan;
-  const dessin = refait?.dessin ?? etat.dessin;
-  const parametres = refait?.parametres ?? etat.parametres;
-  // Les réserves du croquis ne bougent pas ; celles du calcul suivent le plan.
-  const reserves = [...plan.reserves, ...etat.reserves];
-  const auCompteur = parametres.compteur === "oui";
-
-  return (
-    <div data-atlas="plan-arrosage">
-      {/* **LE DESSIN D'ABORD.** C'est ce qu'il regarde ; la liste de pièces,
-          c'est ce qu'il emporte chez le fournisseur ensuite. */}
-      {dessin && <PlanDessine dessin={dessin} />}
-
-      {/* **CE QUI N'EST PAS CALCULÉ SE DIT SOUS LE PLAN, LÀ OÙ IL LE LIT**
-          (`CLAUDE.md` §4 ter) — et non sous vingt-trois lignes de pièces, où
-          « trop peu de pression » se lisait en dernier, ou jamais. */}
-      {reserves.length > 0 && (
-        <ul className="mx-[22px] mt-3 list-none p-0" data-atlas="reserves">
-          {reserves.map((r, i) => (
-            <li key={i} className="flex gap-2.5 py-1.5 text-[14px] leading-[1.5]" style={{ color: colors.ink }}>
-              <span
-                aria-hidden="true"
-                className="mt-[8px] h-[7px] w-[7px] flex-none rounded-full"
-                style={{ backgroundColor: colors.alert }}
-              />
-              <span className="min-w-0 flex-1">{r}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <p className={`mx-[22px] mt-7 ${libelleCaps}`} style={{ color: colors.muted }}>
-        {plan.secteurs.length} réseau{plan.secteurs.length > 1 ? "x" : ""}
-        {plan.debitDisponible > 0 ? `, ${virgule(plan.debitDisponible)} m³/h${auCompteur ? " au compteur" : ""}` : ""}
-      </p>
-
-      {/* **UNE CARTE PAR RÉSEAU — sa maquette du 11 septembre.** L'écran en
-          montrait deux listes pour les mêmes vannes : l'une nommait la pelouse,
-          l'autre la buse, et il les reliait au carré de couleur. La vanne, la
-          pelouse qu'elle sert, la buse, ce qu'elle consomme, ce qu'elle
-          emporte : tout sur une carte, et les comptes SORTENT du dessin. */}
-      {plan.secteurs.map((s, i) => {
-        const r = dessin?.reseaux.find((x) => x.numero === i) ?? null;
-        return (
-          <div
-            key={`${s.nom}-${i}`}
-            className="mx-[22px] mt-3 rounded-[12px] px-4 py-[14px]"
-            style={{ backgroundColor: colors.card }}
-            data-atlas="carte-reseau"
-          >
-            <p className="flex items-center gap-2.5">
-              <span
-                className="block h-[11px] w-[11px] flex-none rounded-[3px]"
-                style={{ backgroundColor: plan.couleurs[i] ?? colors.rust }}
-              />
-              <span className="min-w-0 flex-1" style={{ fontFamily: font.display, fontSize: 17.5 }}>
-                Réseau {i + 1}
-              </span>
-              <span className="flex-none text-[12.5px] tabular-nums" style={{ color: colors.muted }}>
-                {virgule(s.debit)} m³/h
-              </span>
-            </p>
-            <p className="mt-1.5 text-[15px]">
-              {s.nom}
-              {s.part && (
-                <span className="text-[12.5px]" style={{ color: colors.muted }}>
-                  {" "}
-                  {s.part}
-                </span>
-              )}
-            </p>
-            {/* **CE QU'ON POSE, ET AVEC QUELLE BUSE** — sa demande du 21 août.
-                Une ligne PAR modèle : depuis le 23 août, une vanne peut en
-                porter deux, et n'en nommer qu'un ferait commander de travers. */}
-            {r?.materiels.map((m) => (
-              <p key={m.libelle} className="mt-1 text-[13px]" style={{ color: colors.inkSoft }}>
-                {m.nombre}× {m.libelle}
-                {m.portee > 0 ? `, ${m.bridee ? "bridée à" : "portée"} ${virgule(m.portee)} m` : ""}
-              </p>
-            ))}
-            {r && (
-              <p className="mt-1.5 text-[12.5px]" style={{ color: colors.muted }}>
-                {r.tetes.length} arroseur{r.tetes.length > 1 ? "s" : ""}, {r.tes} té{r.tes > 1 ? "s" : ""},{" "}
-                {r.coudes} coude{r.coudes > 1 ? "s" : ""}
-                {r.tesEgaux > 0 ? `, ${r.tesEgaux} té${r.tesEgaux > 1 ? "s" : ""} égal${r.tesEgaux > 1 ? "aux" : ""}` : ""}
-                , {virgule(r.metresTuyau, 0)} ml Ø25
-                {r.metresAntennes > 0 ? `, ${virgule(r.metresAntennes, 0)} ml Ø16` : ""}
-              </p>
-            )}
-          </div>
-        );
-      })}
-
-      {/* **LE SEUIL DU Ø32 — sa demande du 22 août 2026.** Ses fournisseurs
-          savent lui dire à partir de combien de mètres le Ø25 ne tient plus ;
-          l'outil le dit maintenant aussi, et il le dit AVANT la tranchée.
-          Une ligne, pas un paragraphe (`CLAUDE.md` §3 ter). */}
-      {plan.tuyau.debit > 0 && (plan.tuyau.insuffisantMemeEn32 || plan.tuyau.seuil25 > 0) && (
-        <p
-          className="mx-[22px] mt-3 text-[13px] leading-relaxed"
-          style={{ color: plan.tuyau.insuffisantMemeEn32 ? colors.alert : colors.muted }}
-          data-atlas="seuil-tuyau"
-        >
-          {/* La vitesse ne décide plus (16 octobre 2026) : seule la perte, donc
-              la longueur, fait passer en Ø32. */}
-          {plan.tuyau.insuffisantMemeEn32
-            ? `${virgule(plan.tuyau.debit)} m³/h sur un réseau : même le Ø32 est trop juste.`
-            : `Ø25 jusqu’à ${Math.floor(plan.tuyau.seuil25)} m, Ø32 au-delà.`}
-        </p>
-      )}
-
-      {/* **LA LISTE EN TROIS ZONES, JAMAIS MÉLANGÉES** (`CLAUDE.md` §4 bis) :
-          du compteur à la nourrice, dans le regard, au jardin. Chaque quantité
-          dit d'où elle sort — c'est sa question du 21 août sur les vingt-deux
-          coudes SBE, qui étaient justes et qu'il ne pouvait pas recomposer. */}
-      <p className={`mx-[22px] mt-7 ${libelleCaps}`} style={{ color: colors.muted }}>
-        Le détail des pièces
-      </p>
-      {(["amenee", "regard", "jardin"] as const).map((zone) => {
-        const lignes = plan.pieces.filter((p) => p.ou === zone);
-        if (lignes.length === 0) return null;
-        return (
-          <div key={zone} data-atlas={`pieces-${zone}`}>
-            <h3
-              className="mx-[22px] mt-5"
-              style={{ fontFamily: font.display, fontWeight: 400, fontSize: 19, lineHeight: 1.2 }}
-            >
-              {TITRES_DES_ZONES[zone]}
-            </h3>
-            <div className="mx-[22px] mt-2 rounded-[12px] px-4 py-1" style={{ backgroundColor: colors.card }}>
-              {lignes.map((m, i) => (
-                <p
-                  key={`${m.nom}-${m.detail ?? ""}-${i}`}
-                  className="flex items-baseline gap-3 py-[9px] text-[14.5px]"
-                  style={i === 0 ? undefined : { borderTop: `1px solid ${colors.line}` }}
-                >
-                  {/* **« 13x », pas « 13 u » — sa demande du 23 août 2026.** Et
-                      « à mesurer » quand le croquis ne donne pas la longueur :
-                      un chiffre inventé se croit (`CLAUDE.md` §4). */}
-                  <span
-                    className="w-[64px] flex-none text-[13.5px] font-semibold tabular-nums"
-                    style={{ color: colors.orTexte }}
-                  >
-                    {m.q === null ? "à mesurer" : quantiteEcrite(m.q, m.u)}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    {m.nom}
-                    {m.detail && (
-                      <span className="block text-[12px]" style={{ color: colors.muted }}>
-                        {m.detail}
-                      </span>
-                    )}
-                  </span>
-                  {/* **La référence, quand elle a été RELEVÉE — jamais la clé
-                      interne** (sa consigne du 22 août 2026). */}
-                  {m.reference && (
-                    <span className="flex-none text-[11.5px]" style={{ color: colors.muted }}>
-                      {m.reference}
-                    </span>
-                  )}
-                </p>
-              ))}
-            </div>
-          </div>
-        );
-      })}
-
-      {/* **La discussion se pose APRÈS le plan**, et seulement avec lui : sa
-          borne du 21 août — *« la discussion ne doit jamais créer un plan »*.
-          Sans plan à l'écran, il n'y a rien à modifier. */}
-      <DiscuterLePlan parametres={parametres} surNouveauPlan={setRefait} />
-    </div>
   );
 }

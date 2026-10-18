@@ -971,6 +971,16 @@ Détail : `ARCHITECTURE.md` §336.
 
 ---
 
+## FAIT : L'ÉCRAN DU PLAN D'ARROSAGE EST CELUI DE LA PLANCHE VALIDÉE — 18 octobre 2026
+
+Sur la branche `lot/catalogue-aquaplus-corrections` (pas encore sur `main`,
+aucune batterie jouée, à sa demande). L'écran rend, une fois le croquis lu : le
+piquage, la nourrice éclatée, les réseaux un par un, les pièces posées sur le
+plan, la liste et le message au fournisseur, les mots du plan ; chaque pièce se
+change ou se supprime, au nombre choisi. `ARCHITECTURE.md` §470, `TODO.md` pour
+ce qui reste (le montage au robinet, une suite navigateur avec un plan de
+démonstration), `docs/arrosage-relais-session.md` pour tout l'état.
+
 ## FAIT : LE PLAN D'ARROSAGE REPRIS, ET SES RÈGLES SOUS VERROU — 11 septembre 2026
 
 Sept tuyères en quinconce sur son couloir (sa règle du 18 août, retrouvée), le

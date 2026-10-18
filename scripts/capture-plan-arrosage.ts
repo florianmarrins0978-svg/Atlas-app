@@ -1,10 +1,13 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import React from "react";
-import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { chromium } from "playwright";
+import { compile } from "@tailwindcss/node";
 import { calculerPlan } from "../src/lib/arrosage/calcul.js";
 import { dessinerPlan, type ZoneDessinee } from "../src/lib/arrosage/plan-dessine";
 import PlanDessine from "../src/app/paysage/arrosage/PlanDessine";
+import LePlanDuJardin from "../src/app/paysage/arrosage/LePlanDuJardin";
+import type { ParametresPlan } from "../src/lib/arrosage/consignes";
 
 /**
  * REGARDER LE PLAN — sans serveur, sans base, sans clé d'IA.
@@ -15,10 +18,12 @@ import PlanDessine from "../src/app/paysage/arrosage/PlanDessine";
  * pourtant pas s'atteindre normalement ici : il faut une photo de croquis et un
  * fournisseur de vision, dont cet environnement n'a pas la clé.
  *
- * Ce script court-circuite le parcours et rend le SEUL composant du dessin,
- * avec les données que le calcul produit vraiment. Ce qu'il montre est donc ce
- * que l'écran montrera — à la feuille de style près, remplacée ici par un
- * substitut minimal, puisque Tailwind ne tourne pas hors du serveur.
+ * Ce script court-circuite le parcours et rend les composants du plan avec les
+ * données que le calcul produit vraiment. Ce qu'il montre est donc ce que
+ * l'écran montrera. Depuis le 18 octobre 2026, il rend aussi l'ÉCRAN ENTIER du
+ * plan validé (`LePlanDuJardin`) sur le jardin de la planche, avec la vraie
+ * feuille de style : Tailwind est compilé ici depuis `globals.css`, sur les
+ * classes que le rendu emploie, comme le ferait le serveur.
  *
  * **Ce qu'il a déjà attrapé, le 23 août 2026** — aucun test ne les voyait :
  *   · les cercles de portée débordaient de la pelouse et noyaient le dessin ;
@@ -145,8 +150,47 @@ const CAS: { nom: string; zones: Zone[]; nourrice: { x: number; y: number } }[] 
   },
 ];
 
+/**
+ * L'ÉCRAN ENTIER DU PLAN VALIDÉ, sur le jardin de la planche du 18 octobre 2026 :
+ * deux pelouses, un massif en goutte-à-goutte, un couloir de tuyères, la nourrice
+ * entre les pelouses, 10 L en 18 s à 3 bar, au compteur.
+ */
+const JARDIN_DE_LA_PLANCHE: ParametresPlan = {
+  seau: 10, temps: 18, pression: 3, compteur: "oui", regardVersZone: 0, amenee: 0,
+  zones: [
+    { id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
+    { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },
+    { id: 3, type: "massif", nom: "Massif", x: 14, y: 10, L: 20, l: 2.4, sortieGoutte: "boucle" },
+    { id: 4, type: "gazon", nom: "Couloir", x: 0, y: 14, L: 10, l: 2, materiel: "tuyere" },
+  ],
+  nourrice: { x: 13, y: 6 },
+  couronne: 50,
+};
+
+/** Tailwind compilé depuis la feuille de l'application, sur les classes du rendu : la vraie mise en page, sans serveur. */
+async function feuilleDeStyle(html: string): Promise<string> {
+  const source = readFileSync("src/app/globals.css", "utf8");
+  const compilateur = await compile(source, { base: `${process.cwd()}/src/app`, onDependency: () => undefined });
+  const classes = new Set<string>();
+  for (const m of html.matchAll(/class="([^"]*)"/g)) for (const c of m[1].split(/\s+/)) if (c) classes.add(c);
+  return compilateur.build([...classes]);
+}
+
+async function pageDeLEcran(): Promise<string> {
+  const html = renderToStaticMarkup(
+    React.createElement(LePlanDuJardin, { etat: { reserves: [], sansDessin: null }, parametres: JARDIN_DE_LA_PLANCHE, onParametres: () => undefined })
+  );
+  const css = await feuilleDeStyle(html);
+  // Les photos sont celles que l'application sert : le dossier public, lu en local.
+  const photos = `file://${process.cwd().replace(/\\/g, "/")}/public/arrosage-photos/`;
+  return `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=390">
+<style>${css}
+body{margin:0;background:#f5f3ee;width:390px;color:#1c1c1a;font-family:Helvetica,Arial,sans-serif}</style>
+${html.replaceAll('"/arrosage-photos/', `"${photos}`)}`;
+}
+
 async function capturer() {
-  const navigateur = await chromium.launch({ executablePath: navigateurPreInstalle() });
+  const navigateur = await chromium.launch({ executablePath: navigateurPreInstalle(), args: ["--allow-file-access-from-files"] });
   const contexte = await navigateur.newContext({ viewport: { width: 390, height: 900 }, deviceScaleFactor: 2 });
   const onglet = await contexte.newPage();
 
@@ -158,8 +202,15 @@ async function capturer() {
     await onglet.screenshot({ path: `${dossier}/${cas.nom}.png`, fullPage: true });
   }
 
+  console.log("  · ecran-du-plan");
+  const ecran = `${dossier}/ecran-du-plan.html`;
+  writeFileSync(ecran, await pageDeLEcran());
+  await onglet.goto(`file://${ecran}`);
+  await onglet.waitForTimeout(800);
+  await onglet.screenshot({ path: `${dossier}/ecran-du-plan.png`, fullPage: true });
+
   await navigateur.close();
-  console.log(`\n✅ ${CAS.length} captures dans ${dossier}`);
+  console.log(`\n✅ ${CAS.length + 1} captures dans ${dossier}`);
 }
 
 capturer().catch((e) => {

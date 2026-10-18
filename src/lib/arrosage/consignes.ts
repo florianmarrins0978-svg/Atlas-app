@@ -59,6 +59,8 @@ export type ZoneParametre = {
   materiel?: string;
   /** La référence de buse qu'il a demandée, ou rien — et le calcul choisit. */
   buse?: string;
+  /** Un massif en goutte-à-goutte : une seule ligne, ou deux en circuit fermé. Sans réponse, rien n'est compté. */
+  sortieGoutte?: "ligne" | "boucle";
 };
 
 /** Tout ce qu'il faut pour refaire le plan, sans la photo. */
@@ -74,6 +76,8 @@ export type ParametresPlan = {
   marque?: string;
   corps?: string;
   sonde?: boolean;
+  /** La couronne de tube goutte-à-goutte : 50 m par défaut, 100 m au choix (18 octobre 2026). */
+  couronne?: 50 | 100;
   /**
    * L'endroit du regard, en mètres, sur le repère où les zones sont posées.
    *

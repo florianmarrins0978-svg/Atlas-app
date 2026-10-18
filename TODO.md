@@ -1,5 +1,19 @@
 # Prochaines tâches
 
+## ⏳ ARROSAGE : L'ÉCRAN DU PLAN EST CODÉ (18 octobre 2026), voici ce qui reste
+
+Son oui du 18 octobre : *« le plan d'arrosage est validé, il est fini, tu peux
+le coder, mais ne lance pas de batterie »*. Codé le soir même
+(`src/app/paysage/arrosage/LePlanDuJardin.tsx`, `ARCHITECTURE.md` §470), sans
+batterie : une seule à la fin de tout le lot, et il la demande.
+
+| | qui |
+|---|---|
+| **le montage au robinet** (nez de robinet, double sortie, programmateur, départ Ø16 ou Ø32, `appli/arrosage-plan-robinet.html`) : à coder quand il aura validé la planche. Aujourd'hui, au robinet, l'écran montre la nourrice et « Du robinet à la nourrice » | lui, puis nous |
+| **une suite navigateur de l'écran du plan** : aucune n'ouvre l'écran avec un plan, il faut un croquis lu par l'IA. Il faudrait un plan de démonstration sans photo (le jardin de la planche), posé par un geste réservé aux essais. La suite pure (`test-arrosage-postes.ts`) et la capture (`capture-plan-arrosage.ts`, l'écran entier) tiennent la place | nous |
+| **`public/arrosage-photos/` doit suivre `appli/arrosage-photos/`** pour chaque photo de `photos.ts` ; la suite le vérifie, mais la copie reste un geste (une photo validée entre dans les deux dossiers, et dans `photos.ts`) | nous |
+| **le pointillé calculé quand la distance entre deux zones est connue** (sa règle du 18 octobre, pas codée) : il faut que le calcul sache si les places des zones sont cotées ou estimées | nous |
+
 ## ⏳ ARROSAGE : LE TUBE DE CHAQUE ARTISAN — son oui du 16 octobre 2026, planche à faire
 
 Le calcul tient ses tubes (paroi 3 mm) pour tout le monde, ce qui est le côté

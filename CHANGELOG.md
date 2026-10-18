@@ -6,6 +6,28 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-18
+
+- **L'écran du plan d'arrosage est celui de la planche qu'il a validée.** Une
+  fois le croquis lu : le piquage (du compteur à la nourrice), la nourrice
+  éclatée avec ses numéros, chaque réseau sur le plan, les pièces de chaque
+  réseau posées sur le jardin avec la chaîne d'une tête, la liste par nourrice
+  puis réseau, le message au fournisseur, les mots du plan. Toute pièce se
+  change ou se supprime, et une pièce en plusieurs exemplaires au nombre choisi
+  par un bandeau « Combien » (« la A »). Sonde de pluie, grillage avertisseur,
+  téflon, couronnes de 50 ou 100 m, une ligne ou deux au goutte-à-goutte. Le
+  calcul se rejoue dans le navigateur par la même fonction que le serveur
+  (`le-plan.ts`) ; les pièces se composent en pur (`postes.ts`) et une suite
+  vérifie que l'écran pose ce que la liste compte (`ARCHITECTURE.md` §470). Ce
+  que ça évite : un écran qui montrait une liste à plat quand la planche
+  montrait où va chaque pièce, et un recomptage à la main qui ne tombait pas.
+- **Les buses MP Rotator sont au catalogue**, en tuyères Hunter, avec la page 10
+  d'Aqua Plus et ses trois photos validées ; comme les R-VAN, un secteur par
+  référence, donc jamais choisies seules par le calcul. Les mots SAM, PRS, VAN,
+  R-VAN, MP Rotator s'expliquent sous la planche des tuyères.
+- **Au nez de robinet, le manque de voies se lit sous le programmateur**, et
+  la phrase en rouge ne parle d'un numéro de nourrice que s'il y a une nourrice.
+
 ## 2026-10-16
 
 - **709 pièces d'Aqua Plus au catalogue, pour la touche « ajouter une pièce ».**

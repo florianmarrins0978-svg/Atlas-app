@@ -35091,3 +35091,68 @@ Le choix du tube par artisan attend sa planche (`TODO.md`).
 **Ce que le relevé a mis au jour** : les buses étaient choisies à une pression
 qui n'arrivait pas au dernier arroseur. Corrigé avant ce lot, au §467 ; c'est
 sur ce calcul corrigé que les diamètres relevés s'appliquent.
+
+## §470 : L'écran du plan d'arrosage est le portage de la planche validée, et il se rejoue sans serveur
+
+**Sa validation du 18 octobre 2026 :** *« le plan d'arrosage est validé, il est
+fini, tu peux le coder. Une fois qu'on aura donné le plan, l'endroit où on se
+repique, la pression, c'est ça que j'ai envie que l'outil me sorte. »* La planche
+est `appli/arrosage-plan.html` ; l'écran est `src/app/paysage/arrosage/LePlanDuJardin.tsx`
+et ce qu'il assemble. Quatre décisions tiennent le portage.
+
+**1. Le calcul de l'écran est celui du serveur, dans `src/lib/arrosage/le-plan.ts`.**
+`calculerEtDessiner` (calcul, dessin, pièces, réserves) vivait dans l'action
+serveur ; trois gestes de l'écran refont le plan sans photo (la sonde de pluie,
+la couronne de 50 ou 100 m, une ligne ou deux au goutte-à-goutte). Les recopier
+côté écran aurait fait deux listes de réserves qui divergent (`CLAUDE.md` §3).
+La fonction est descendue dans `lib`, le serveur et le navigateur l'appellent.
+Les paramètres vivent chez l'appelant (`PlanLu`, dans `ArrosageClient.tsx`) :
+la discussion les refait, les cases du plan les touchent, le plan en découle.
+
+**2. Les pièces posées se COMPOSENT, elles ne se comptent pas en dessinant.**
+La planche comptait pendant qu'elle construisait son HTML. `postes.ts` fait la
+même marche et rend une structure : chaque poste (clé, pièce, photo, ce qu'il
+en a fait), le compte par groupe, le plan des pièces d'un réseau (positions en
+pourcentage du cadre), la chaîne d'une tête, la liste par nourrice puis réseau,
+le message au fournisseur. L'écran dessine ; la suite `test-arrosage-postes.ts`
+lit la même structure et vérifie sur son jardin d'exemple que ce que l'écran
+pose est ce que `pieces.ts` compte, réseau par réseau (« tés + coudes =
+arroseurs »). La place d'un té ou d'un coude vient du calcul (`plein`,
+`jonctions` de `plan-dessine.ts`), jamais de l'écran.
+
+**3. Les retouches sont une valeur** (`retouches.ts`) : supprimées, changées,
+ajoutées, lignes de la liste, pièces de nourrice sorties du compte, et les trois
+cases. Chaque geste rend une nouvelle valeur ; le même objet sert au dessin, à
+la liste et au message. « Combien » (le bandeau déroulant, « la A ») n'est qu'un
+nombre passé au geste. Une suite éprouve les gestes sans navigateur.
+
+**4. La nourrice éclatée est un SVG sur des photos mesurées d'avance.** La
+planche détourait chaque photo dans le navigateur (canvas, pixel par pixel) pour
+poser ses axes de vissage sur la pièce et non sur ses marges blanches. L'écran
+ne peut pas dépendre d'un canvas pour être capturé et éprouvé :
+`scripts/mesurer-photos-nourrice.mjs` mesure une fois la boîte de chaque photo
+(`photos-nourrice.ts`), `nourrice-eclatee.ts` compose en pur (positions,
+angles, échelles, numéros), et le composant rend des `<image>` dans des fenêtres
+SVG. Les fractions d'axe (`HAUT`, `COLONNE`) sont celles de la planche validée :
+une photo qui change les invalide, et le script redonne au moins la boîte.
+
+**Les photos sont servies depuis `public/arrosage-photos/`, copie d'`appli/`.**
+Git ne stocke un même contenu qu'une fois ; seul l'arbre de travail double. La
+table `photos.ts` (référence → fichier) est celle de la planche, et la suite
+exige que chaque photo de la table soit dans `public/`, octet pour octet celle
+d'`appli/`. Rien ne s'invente : une pièce sans photo validée dit « photo à venir ».
+
+**Regarder l'écran sans serveur.** `scripts/capture-plan-arrosage.ts` rend
+désormais l'écran entier sur le jardin de la planche, avec Tailwind compilé
+depuis `globals.css` sur les classes du rendu (`@tailwindcss/node`) : la vraie
+mise en page, sans serveur, sans base, sans clé d'IA. C'est ainsi que l'écran a
+été regardé avant d'être livré (`CLAUDE.md` §0.10).
+
+**Ce qui n'est pas porté, et qui ne doit pas être cru porté.** Le montage au
+robinet (nez de robinet, double sortie, programmateur, départ Ø16 ou Ø32 :
+`appli/arrosage-plan-robinet.html`) attend sa validation : au robinet, l'écran
+montre le plan avec la nourrice, le titre « Du robinet à la nourrice » et la
+croix du robinet sur le plan, rien de plus. Et aucune suite navigateur n'ouvre
+l'écran avec un plan : il faut un croquis lu par l'IA. La suite pure et la
+capture tiennent la place, jusqu'à ce qu'un plan de démonstration sans photo
+existe (`TODO.md`).
