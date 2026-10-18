@@ -263,13 +263,15 @@ temps d'arrosage. Ça, il faut pas le faire. »* Le calcul garde ses durées
 les produisent (`SAISONS`) n'ont d'ailleurs aucune source venue de lui.
 L'ancienne page publiée `appli/arrosage.html` en montre encore.
 
-**LE ROBINET SE DESSINE EN CROIX BLANCHE — sa règle du 18 octobre 2026 :** *« une
-croix blanche avec un trait vers la gauche, et tu écris à côté robinet. À chaque
-fois que l'utilisateur mettra sur son plan l'endroit où il se repique avec le
-robinet, tu le comprendras ainsi. »* Sur le plan, le piquage au robinet est une
-croix blanche, un petit trait à gauche et le mot « robinet » (jamais le
-rectangle de la nourrice) ; sur le croquis, ce même signe se LIT comme le
-piquage, avec « robinet » pour point d'eau (`lire-croquis.ts`).
+**LE ROBINET SE DESSINE EN PETITE CROIX BLANCHE — sa règle du 18 octobre 2026 :**
+*« une croix blanche, et tu écris à côté robinet. À chaque fois que l'utilisateur
+mettra sur son plan l'endroit où il se repique avec le robinet, tu le
+comprendras ainsi. »* Le petit trait à gauche, d'abord demandé, est retiré le
+même jour : *« si robinet, tu l'écris dans le plan, enlève le petit trait »*.
+Sur le plan, le piquage au robinet est une petite croix blanche et le mot
+« robinet » (jamais le rectangle de la nourrice), et la légende la porte :
+« croix : le robinet, là où l'on se repique ». Sur le croquis, ce même signe se
+LIT comme le piquage, avec « robinet » pour point d'eau (`lire-croquis.ts`).
 
 **LE Ø16 SE RACCORDE AU ROBINET PAR UN RACCORD TARAUDÉ 3/4" PROPRE À SON TUBE —
 sa règle du 18 octobre 2026.** Le Plasson à bague blanche ne prend que le PE 25

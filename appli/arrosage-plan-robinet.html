@@ -575,14 +575,15 @@
           : '<rect x="' + (cx - 0.44) + '" y="' + (cy - 0.44) + '" width="0.88" height="0.88" rx="0.12" fill="' + f + '" stroke="' + r.couleur + '" stroke-width="' + w + '"/>';
       }).join("");
     }
-    // LE ROBINET : une croix blanche, un petit trait à gauche, et le mot à côté
-    // (sa demande du 18 octobre 2026). C'est aussi ce qu'il dessinera sur son
-    // croquis pour dire où il se repique. La nourrice garde son rectangle.
+    // LE ROBINET : une petite croix blanche et le mot à côté (sa demande du
+    // 18 octobre 2026 ; le trait à gauche, retiré le même jour : le mot suffit).
+    // C'est aussi ce qu'il dessinera sur son croquis pour dire où il se repique.
+    // La nourrice garde son rectangle.
     if (robinet.montage === "nez") {
-      var X = d.nourrice.x, Y = d.nourrice.y;
-      s += '<line x1="' + (X - 1.6) + '" y1="' + Y + '" x2="' + (X - 0.7) + '" y2="' + Y + '" stroke="' + encre + '" stroke-width="0.26" stroke-linecap="round"/>';
-      s += '<path d="M' + (X - 0.7) + " " + Y + "H" + (X + 0.7) + "M" + X + " " + (Y - 0.7) + "V" + (Y + 0.7) + '" stroke="' + encre + '" stroke-width="0.62" stroke-linecap="round"/>';
-      s += '<path d="M' + (X - 0.7) + " " + Y + "H" + (X + 0.7) + "M" + X + " " + (Y - 0.7) + "V" + (Y + 0.7) + '" stroke="#ffffff" stroke-width="0.34" stroke-linecap="round"/>';
+      var X = d.nourrice.x, Y = d.nourrice.y, A = 0.38;
+      var croix = "M" + (X - A) + " " + Y + "H" + (X + A) + "M" + X + " " + (Y - A) + "V" + (Y + A);
+      s += '<path d="' + croix + '" stroke="' + encre + '" stroke-width="0.34" stroke-linecap="round"/>';
+      s += '<path d="' + croix + '" stroke="#ffffff" stroke-width="0.16" stroke-linecap="round"/>';
     } else {
       s += '<rect x="' + (d.nourrice.x - 0.75) + '" y="' + (d.nourrice.y - 1.4) + '" width="1.5" height="2.8" rx="0.3" fill="' + carte + '" stroke="' + encre + '" stroke-width="0.22"/>';
     }
@@ -631,7 +632,8 @@
       sym(rondPlein, "plein : la ligne continue, té taraudé 25×3/4″×25") +
       sym(rondCreux, "creux : la ligne s’arrête là, coude taraudé 25×3/4″") +
       sym('<rect x="-0.56" y="-0.56" width="1.12" height="1.12" transform="rotate(45)" fill="' + k + '" stroke="' + e + '" stroke-width="0.3"/>', "losange : la ligne se sépare, té égal 25×25×25") +
-      sym('<line x1="-0.85" y1="0" x2="0.85" y2="0" stroke="' + e + '" stroke-width="0.18"/>', "trait fin : l’antenne Ø16 rigide, 2 m au plus");
+      sym('<line x1="-0.85" y1="0" x2="0.85" y2="0" stroke="' + e + '" stroke-width="0.18"/>', "trait fin : l’antenne Ø16 rigide, 2 m au plus") +
+      (robinet.montage === "nez" ? sym('<path d="M-0.7 0H0.7M0 -0.7V0.7" stroke="' + e + '" stroke-width="0.5" stroke-linecap="round"/><path d="M-0.7 0H0.7M0 -0.7V0.7" stroke="#ffffff" stroke-width="0.22" stroke-linecap="round"/>', "croix : le robinet, là où l’on se repique") : "");
   }
 
   // ═══ 3. LES PIÈCES : la vue éclatée, tête par tête ════════════════════════
