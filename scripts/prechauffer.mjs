@@ -125,6 +125,8 @@ export const ECRANS_A_PRECHAUFFER = [
   "/reglages/vocabulaire",
   // L'organigramme, ouvert à tous (27 septembre 2026).
   "/reglages/organigramme",
+  // Les véhicules de l'entreprise (15 octobre 2026), oubliés à leur arrivée.
+  "/reglages/vehicules",
   // L'onglet « Paysage » et son premier outil interne (18 août 2026). La fiche
   // de chantier s'ouvre sur un chantier, souvent en 4G : c'est exactement le
   // cas où une compilation à froid ne passe pas.
