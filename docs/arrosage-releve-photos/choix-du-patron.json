@@ -1,4 +1,304 @@
 {
+ "HA2210-1": {
+  "ref": "HA2210",
+  "choix": "oui",
+  "par": null
+ },
+ "HA2211-1": {
+  "ref": "HA2211",
+  "choix": "oui",
+  "par": null
+ },
+ "HA2222-1": {
+  "ref": "HA2222",
+  "choix": "oui",
+  "par": null
+ },
+ "HA2225-1": {
+  "ref": "HA2225",
+  "choix": "oui",
+  "par": null
+ },
+ "HA2264-1": {
+  "ref": "HA2264",
+  "choix": "oui",
+  "par": null
+ },
+ "HA2272-1": {
+  "ref": "HA2272",
+  "choix": "oui",
+  "par": null
+ },
+ "HA2274-1": {
+  "ref": "HA2274",
+  "choix": "oui",
+  "par": null
+ },
+ "HT1521-1": {
+  "ref": "HT1521",
+  "choix": "oui",
+  "par": null
+ },
+ "HT1522-1": {
+  "ref": "HT1522",
+  "choix": "oui",
+  "par": null
+ },
+ "HT1523-1": {
+  "ref": "HT1523",
+  "choix": "oui",
+  "par": null
+ },
+ "HT1541-1": {
+  "ref": "HT1541",
+  "choix": "oui",
+  "par": null
+ },
+ "HT1541-2": {
+  "ref": "HT1541",
+  "choix": "oui",
+  "par": null
+ },
+ "HT1543-1": {
+  "ref": "HT1543",
+  "choix": "oui",
+  "par": null
+ },
+ "HT1543-2": {
+  "ref": "HT1543",
+  "choix": "oui",
+  "par": null
+ },
+ "HT1543-3": {
+  "ref": "HT1543",
+  "choix": "oui",
+  "par": null
+ },
+ "HT1544-1": {
+  "ref": "HT1544",
+  "choix": "oui",
+  "par": null
+ },
+ "HT1546-1": {
+  "ref": "HT1546",
+  "choix": "oui",
+  "par": null
+ },
+ "OD501-1": {
+  "ref": "OD501",
+  "choix": "oui",
+  "par": null
+ },
+ "OD502-1": {
+  "ref": "OD502",
+  "choix": "oui",
+  "par": null
+ },
+ "OPL70302520-1": {
+  "ref": "OPL70302520",
+  "choix": "oui",
+  "par": null
+ },
+ "OPL70302520-2": {
+  "ref": "OPL70302520",
+  "choix": "non",
+  "par": null
+ },
+ "RA2180-1": {
+  "ref": "RA2180",
+  "choix": "oui",
+  "par": null
+ },
+ "RA2181-1": {
+  "ref": "RA2181",
+  "choix": "oui",
+  "par": null
+ },
+ "RA3504-1": {
+  "ref": "RA3504",
+  "choix": "oui",
+  "par": null
+ },
+ "RA3504SAM-1": {
+  "ref": "RA3504SAM",
+  "choix": "oui",
+  "par": null
+ },
+ "RA5004FC-1": {
+  "ref": "RA5004FC",
+  "choix": "oui",
+  "par": null
+ },
+ "RA5006PC-1": {
+  "ref": "RA5006PC",
+  "choix": "oui",
+  "par": null
+ },
+ "RA5006PC-2": {
+  "ref": "RA5006PC",
+  "choix": "oui",
+  "par": null
+ },
+ "RA5012PCSAM-1": {
+  "ref": "RA5012PCSAM",
+  "choix": "oui",
+  "par": null
+ },
+ "RBT1418-1": {
+  "ref": "RBT1418",
+  "choix": "oui",
+  "par": null
+ },
+ "RBT1419-1": {
+  "ref": "RBT1419",
+  "choix": "oui",
+  "par": null
+ },
+ "RBT1428-1": {
+  "ref": "RBT1428",
+  "choix": "oui",
+  "par": null
+ },
+ "RBT1429-1": {
+  "ref": "RBT1429",
+  "choix": "oui",
+  "par": null
+ },
+ "RBT1438-1": {
+  "ref": "RBT1438",
+  "choix": "oui",
+  "par": null
+ },
+ "RBT1439-1": {
+  "ref": "RBT1439",
+  "choix": "oui",
+  "par": null
+ },
+ "RBT601-1": {
+  "ref": "RBT601",
+  "choix": "oui",
+  "par": null
+ },
+ "RBT636-1": {
+  "ref": "RBT636",
+  "choix": "oui",
+  "par": null
+ },
+ "RBT637-1": {
+  "ref": "RBT637",
+  "choix": "oui",
+  "par": null
+ },
+ "RBT638-1": {
+  "ref": "RBT638",
+  "choix": "oui",
+  "par": null
+ },
+ "RBT639-1": {
+  "ref": "RBT639",
+  "choix": "oui",
+  "par": null
+ },
+ "RBT640-1": {
+  "ref": "RBT640",
+  "choix": "oui",
+  "par": null
+ },
+ "RBT648-1": {
+  "ref": "RBT648",
+  "choix": "oui",
+  "par": null
+ },
+ "RP403-1": {
+  "ref": "RP403",
+  "choix": "oui",
+  "par": null
+ },
+ "RT1802-1": {
+  "ref": "RT1802",
+  "choix": "oui",
+  "par": null
+ },
+ "RT1804-1": {
+  "ref": "RT1804",
+  "choix": "oui",
+  "par": null
+ },
+ "RT1806-1": {
+  "ref": "RT1806",
+  "choix": "oui",
+  "par": null
+ },
+ "RT1812-1": {
+  "ref": "RT1812",
+  "choix": "oui",
+  "par": null
+ },
+ "RT1822-1": {
+  "ref": "RT1822",
+  "choix": "oui",
+  "par": null
+ },
+ "RT1824-1": {
+  "ref": "RT1824",
+  "choix": "oui",
+  "par": null
+ },
+ "RT1824-2": {
+  "ref": "RT1824",
+  "choix": "oui",
+  "par": null
+ },
+ "RT1826-1": {
+  "ref": "RT1826",
+  "choix": "oui",
+  "par": null
+ },
+ "RT1832-1": {
+  "ref": "RT1832",
+  "choix": "oui",
+  "par": null
+ },
+ "RT1834-1": {
+  "ref": "RT1834",
+  "choix": "oui",
+  "par": null
+ },
+ "RT1834-2": {
+  "ref": "RT1834",
+  "choix": "oui",
+  "par": null
+ },
+ "RT1836-1": {
+  "ref": "RT1836",
+  "choix": "oui",
+  "par": null
+ },
+ "TAMINI8-4P-1": {
+  "ref": "TAMINI8-4P",
+  "choix": "oui",
+  "par": null
+ },
+ "UGGCBL23050-1": {
+  "ref": "UGGCBL23050",
+  "choix": "non",
+  "par": "remplacée par sa photo"
+ },
+ "UGGCBL23050-2": {
+  "ref": "UGGCBL23050",
+  "choix": "non",
+  "par": "remplacée par sa photo"
+ },
+ "UGGCBL23050-3": {
+  "ref": "UGGCBL23050",
+  "choix": "oui",
+  "par": "envoyée par le patron"
+ },
+ "VAN-1": {
+  "ref": "VAN",
+  "choix": "oui",
+  "par": null
+ },
  "clarinette-2v-1": {
   "ref": "ODU3010102",
   "choix": "oui",
@@ -99,56 +399,6 @@
   "choix": "oui",
   "par": "envoyée par le patron"
  },
- "HT1521-1": {
-  "ref": "HT1521",
-  "choix": "oui",
-  "par": null
- },
- "HT1522-1": {
-  "ref": "HT1522",
-  "choix": "oui",
-  "par": null
- },
- "HT1523-1": {
-  "ref": "HT1523",
-  "choix": "oui",
-  "par": null
- },
- "HT1541-1": {
-  "ref": "HT1541",
-  "choix": "oui",
-  "par": null
- },
- "HT1541-2": {
-  "ref": "HT1541",
-  "choix": "oui",
-  "par": null
- },
- "HT1543-1": {
-  "ref": "HT1543",
-  "choix": "oui",
-  "par": null
- },
- "HT1543-2": {
-  "ref": "HT1543",
-  "choix": "oui",
-  "par": null
- },
- "HT1543-3": {
-  "ref": "HT1543",
-  "choix": "oui",
-  "par": null
- },
- "HT1544-1": {
-  "ref": "HT1544",
-  "choix": "oui",
-  "par": null
- },
- "HT1546-1": {
-  "ref": "HT1546",
-  "choix": "oui",
-  "par": null
- },
  "mamelon-1": {
   "ref": "mamelon",
   "choix": "non",
@@ -159,29 +409,14 @@
   "choix": "oui",
   "par": "envoyée par le patron"
  },
+ "mamelon-droit-1-1": {
+  "ref": "mamelon-droit-1",
+  "choix": "non",
+  "par": "il a envoyé le bon, le Dura 08303 (photo 2)"
+ },
  "mamelon-droit-1-2": {
   "ref": "mamelon-droit-1",
   "choix": "oui",
-  "par": null
- },
- "OD501-1": {
-  "ref": "OD501",
-  "choix": "oui",
-  "par": null
- },
- "OD502-1": {
-  "ref": "OD502",
-  "choix": "oui",
-  "par": null
- },
- "OPL70302520-1": {
-  "ref": "OPL70302520",
-  "choix": "oui",
-  "par": null
- },
- "OPL70302520-2": {
-  "ref": "OPL70302520",
-  "choix": "non",
   "par": null
  },
  "pebd16-1": {
@@ -244,103 +479,8 @@
   "choix": "oui",
   "par": null
  },
- "RA2180-1": {
-  "ref": "RA2180",
-  "choix": "oui",
-  "par": null
- },
- "RA2181-1": {
-  "ref": "RA2181",
-  "choix": "oui",
-  "par": null
- },
- "RA3504-1": {
-  "ref": "RA3504",
-  "choix": "oui",
-  "par": null
- },
- "RA3504SAM-1": {
-  "ref": "RA3504SAM",
-  "choix": "oui",
-  "par": null
- },
- "RA5004FC-1": {
-  "ref": "RA5004FC",
-  "choix": "oui",
-  "par": null
- },
- "RA5006PC-1": {
-  "ref": "RA5006PC",
-  "choix": "oui",
-  "par": null
- },
  "raccord-male25-1": {
   "ref": "raccord-male25",
-  "choix": "oui",
-  "par": null
- },
- "RBT1418-1": {
-  "ref": "RBT1418",
-  "choix": "oui",
-  "par": null
- },
- "RBT1419-1": {
-  "ref": "RBT1419",
-  "choix": "oui",
-  "par": null
- },
- "RBT1428-1": {
-  "ref": "RBT1428",
-  "choix": "oui",
-  "par": null
- },
- "RBT1429-1": {
-  "ref": "RBT1429",
-  "choix": "oui",
-  "par": null
- },
- "RBT1438-1": {
-  "ref": "RBT1438",
-  "choix": "oui",
-  "par": null
- },
- "RBT1439-1": {
-  "ref": "RBT1439",
-  "choix": "oui",
-  "par": null
- },
- "RBT601-1": {
-  "ref": "RBT601",
-  "choix": "oui",
-  "par": null
- },
- "RBT636-1": {
-  "ref": "RBT636",
-  "choix": "oui",
-  "par": null
- },
- "RBT637-1": {
-  "ref": "RBT637",
-  "choix": "oui",
-  "par": null
- },
- "RBT638-1": {
-  "ref": "RBT638",
-  "choix": "oui",
-  "par": null
- },
- "RBT639-1": {
-  "ref": "RBT639",
-  "choix": "oui",
-  "par": null
- },
- "RBT640-1": {
-  "ref": "RBT640",
-  "choix": "oui",
-  "par": null
- },
- "RBT648-1": {
-  "ref": "RBT648",
   "choix": "oui",
   "par": null
  },
@@ -384,61 +524,6 @@
   "choix": "oui",
   "par": "en attendant ses photos (sa réponse du 18 octobre)"
  },
- "RP403-1": {
-  "ref": "RP403",
-  "choix": "oui",
-  "par": null
- },
- "RT1802-1": {
-  "ref": "RT1802",
-  "choix": "oui",
-  "par": null
- },
- "RT1804-1": {
-  "ref": "RT1804",
-  "choix": "oui",
-  "par": null
- },
- "RT1806-1": {
-  "ref": "RT1806",
-  "choix": "oui",
-  "par": null
- },
- "RT1822-1": {
-  "ref": "RT1822",
-  "choix": "oui",
-  "par": null
- },
- "RT1824-2": {
-  "ref": "RT1824",
-  "choix": "oui",
-  "par": null
- },
- "RT1826-1": {
-  "ref": "RT1826",
-  "choix": "oui",
-  "par": null
- },
- "RT1832-1": {
-  "ref": "RT1832",
-  "choix": "oui",
-  "par": null
- },
- "RT1834-2": {
-  "ref": "RT1834",
-  "choix": "oui",
-  "par": null
- },
- "RT1836-1": {
-  "ref": "RT1836",
-  "choix": "oui",
-  "par": null
- },
- "TAMINI8-4P-1": {
-  "ref": "TAMINI8-4P",
-  "choix": "oui",
-  "par": null
- },
  "te-25-25-25-1": {
   "ref": "te-25-25-25",
   "choix": "oui",
@@ -464,35 +549,20 @@
   "choix": "non",
   "par": null
  },
- "UGGCBL23050-1": {
-  "ref": "UGGCBL23050",
-  "choix": "non",
-  "par": "remplacée par sa photo"
- },
- "UGGCBL23050-2": {
-  "ref": "UGGCBL23050",
-  "choix": "non",
-  "par": "remplacée par sa photo"
- },
- "UGGCBL23050-3": {
-  "ref": "UGGCBL23050",
-  "choix": "oui",
-  "par": "envoyée par le patron"
- },
  "union-1": {
   "ref": "union",
   "choix": "non",
   "par": "remplacée par sa photo (union MF)"
  },
+ "union-2": {
+  "ref": "union",
+  "choix": "oui",
+  "par": null
+ },
  "union-3": {
   "ref": "union",
   "choix": "oui",
   "par": "envoyée par le patron"
- },
- "VAN-1": {
-  "ref": "VAN",
-  "choix": "oui",
-  "par": null
  },
  "vanne-purge-1": {
   "ref": "vanne-purge",
