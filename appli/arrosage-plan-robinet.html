@@ -975,8 +975,12 @@
     $("place-options-nez").hidden = robinet.montage !== "nez";
     $("coche-sonde").style.display = robinet.montage === "nez" ? "none" : "";
     if (robinet.montage === "nez") { etat.sonde = false; $("sonde").checked = false; }
+    // Dès qu'il y a des arroseurs, le départ est en Ø25 ou en Ø32 : le Ø16 ne sert
+    // qu'au goutte-à-goutte (sa règle du 18 octobre 2026). Il ne se propose donc pas.
+    var arroseurs = p.secteurs.some(function (s) { return s.famille !== "Goutte-à-goutte"; });
+    if (arroseurs && (robinet.departMain === 16 || robinet.departMain === "16s")) robinet.departMain = null;
     var auto = departDeLOutil(p), dia = robinet.departMain || auto;
-    $("departs").innerHTML = [16, "16s", 25, 32].map(function (n) { return '<button type="button" data-depart="' + n + '" aria-pressed="' + (dia === n) + '">' + (n === 16 ? "Ø16 rigide" : n === "16s" ? "Ø16 souple" : "Ø" + n) + "</button>"; }).join("");
+    $("departs").innerHTML = (arroseurs ? [25, 32] : [16, "16s", 25, 32]).map(function (n) { return '<button type="button" data-depart="' + n + '" aria-pressed="' + (dia === n) + '">' + (n === 16 ? "Ø16 rigide" : n === "16s" ? "Ø16 souple" : "Ø" + n) + "</button>"; }).join("");
     $("depart-choisi").textContent = "L’outil choisit le Ø" + auto + (auto === 16 ? " rigide" : "") + "." + (robinet.departMain && robinet.departMain !== auto ? " Changé à la main." : "");
     couleursPlan = p.couleurs;
     var res = C.dessinerPlan(p.dessin, robinet.montage === "nez" ? ROBINET_POSE : NOURRICE, p.couleurs);
