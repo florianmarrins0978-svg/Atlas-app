@@ -162,6 +162,7 @@
   .ligne-pe .piece .nom{display:none}
   /* La chaîne d'une tête : « + » là où ça se visse, double flèche là où le PEBD
      s'emboîte (« la B », sa réponse du 18 octobre 2026). */
+  .compte-reseau{margin:10px 2px 0;font-size:13.5px;color:var(--atlas-inkSoft)}
   .chaine{margin-top:10px;display:flex;gap:3px;align-items:flex-start}
   .chaine .m{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;text-align:center}
   .chaine .v{position:relative;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:9px;background:var(--atlas-card);box-shadow:0 0 0 1px var(--atlas-line),0 2px 5px var(--atlas-lineSoft)}
@@ -795,6 +796,17 @@
   // Le té égal se pose SUR le croisement, l'arroseur à gauche du trait et le té
   // taraudé à droite, juste dessous. Les SBE et le PEBD de chaque tête comptent
   // dans la liste, et la chaîne d'une tête les montre une fois, sous le plan.
+  // CE QUE LE PLAN MONTRE, COMPTÉ : sa demande du 18 octobre 2026, « une petite
+  // ligne sous chaque plan avec le nombre de pièces du réseau », pour recompter
+  // à l'œil ce qui est posé dessus. La ligne lit les pièces que le plan vient de
+  // poser (le compte du réseau), jamais un second calcul.
+  function compteDuPlan(i) {
+    var g = compte["r" + i] || {}, NOMS = { "te-taraude-25-34-25": "té taraudé", "coude-taraude-25-34": "coude taraudé", "te-25-25-25": "té égal" };
+    var corps = CAT.corps.map(function (c) { return c.ref; });
+    var parts = Object.keys(g).filter(function (ref) { return corps.indexOf(ref) >= 0 && g[ref].q; }).map(function (ref) { return g[ref].q + "x " + g[ref].nom.charAt(0).toLowerCase() + g[ref].nom.slice(1); });
+    Object.keys(NOMS).forEach(function (ref) { if (g[ref] && g[ref].q) parts.push(g[ref].q + "x " + NOMS[ref]); });
+    return parts.length ? '<p class="compte-reseau">Sur ce plan : ' + texte(parts.join(", ")) + ".</p>" : "";
+  }
   function planDesPieces(p, d, M, r, i, corpsTuyere, sbeBas) {
     var c = p.couleurs[i];
     var pts = r.tetes.map(function (q) { return { x: q.x, y: q.y }; }).concat(r.jonctions);
@@ -844,7 +856,7 @@
       '<div class="m"><span class="v">' + (premiere.corps ? ph(premiere.corps.ref) : "") + (premiere.buse && PHOTOS[premiere.buse.ref] ? '<img class="pied" src="arrosage-photos/' + PHOTOS[premiere.buse.ref] + '" alt="">' : "") + "</span><small>" + texte(premiere.corps ? premiere.corps.nom + (premiere.buse ? " et sa buse " + premiere.buse.nom : "") : "") + "</small></div></div>" : "";
 
     return '<div class="ligne-pe">' + poser("r" + i + ":pe", "pe25", "PEHD Ø25", "PEHD Ø25, " + r.metresTuyau + " m", r.metresTuyau, "ml") + "<span>PEHD Ø25, " + r.metresTuyau + " m</span></div>" +
-      '<div class="plan-pieces"><div class="surface">' + s + poses + "</div>" + chaine +
+      '<div class="plan-pieces"><div class="surface">' + s + poses + "</div>" + compteDuPlan(i) + chaine +
       (etat.ajoutees.some(function (a) { return a.ou === "r" + i; }) ? '<div class="rail" style="margin-top:12px"><div class="tete">' + ajoutees("r" + i) + "</div></div>" : "") + "</div>";
   }
 
