@@ -236,6 +236,16 @@
   <!-- En rouge, vers le début : sa demande du 18 octobre 2026. -->
   <p class="toucher">Touchez une pièce pour la changer ou la supprimer.</p>
 
+  <!-- D'ABORD LE PIQUAGE, PUIS LA NOURRICE : son ordre du 18 octobre 2026 (« il
+       faut commencer par mettre les pièces du compteur à la nourrice, ensuite la
+       nourrice 4 voies »). C'est l'ordre de l'eau, et celui de la liste. -->
+  <section class="bloc">
+    <span class="caps">Le piquage, au compteur</span>
+    <h2>Du compteur à la nourrice</h2>
+    <div class="plateau"><div class="eclate" id="amenee"></div></div>
+    <button class="ajouter" type="button" data-ajouter="amenee">Ajouter une pièce</button>
+  </section>
+
   <section class="bloc">
     <span class="caps">La nourrice</span>
     <h2 id="titre-nourrice"></h2>
@@ -267,10 +277,7 @@
   </section>
 
   <section class="bloc">
-    <span class="caps">Les pièces</span>
-    <h2>Du compteur à la nourrice</h2>
-    <div class="plateau"><div class="eclate" id="amenee"></div></div>
-    <button class="ajouter" type="button" data-ajouter="amenee">Ajouter une pièce</button>
+    <span class="caps">Les pièces des réseaux</span>
     <div id="jardin"></div>
   </section>
 
