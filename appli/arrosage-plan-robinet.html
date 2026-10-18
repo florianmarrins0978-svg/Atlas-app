@@ -98,6 +98,12 @@
   .schema{margin-top:8px;border-radius:12px;background:var(--atlas-card);padding:10px}
   .schema svg{display:block;width:100%;height:auto}
   .pointille{margin:8px 0 0;font-size:13px;color:var(--atlas-inkSoft)}
+  /* Les petits tirets noirs du plan, en tête de la phrase (sa demande du 18 octobre 2026). */
+  .pointille .tirets{display:inline-block;width:24px;height:6px;margin-right:6px;vertical-align:middle;color:var(--atlas-ink)}
+  .rouleau{display:flex;align-items:center;gap:12px;margin-top:10px;border-radius:12px;padding:10px 12px;background:var(--atlas-card);font-size:14px}
+  .rouleau img{flex:none;width:56px;height:56px;object-fit:contain;mix-blend-mode:multiply}
+  .rouleau small{display:block;color:var(--atlas-muted);font-size:12.5px}
+  .rouleau:empty{display:none}
   .materiel{margin:8px 0 0;padding:0;list-style:none;font-size:14px}
   .materiel li{display:flex;gap:10px;padding:3px 0}
   .materiel .q{flex:none;width:58px;font-weight:600;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
@@ -268,6 +274,7 @@
     <div id="reseaux"></div>
     <div class="symboles" id="symboles"></div>
     <label class="coche"><input type="checkbox" id="grillage"> Grillage avertisseur</label>
+    <div class="rouleau" id="grillage-piece"></div>
   </section>
 
   <section class="bloc">
@@ -627,7 +634,7 @@
       if (r) lignes += '<li><span class="q">' + r.metresTuyau + ' m</span><span>de PEHD Ø25</span></li>';
       html += '<div class="reseau" style="--couleur:' + c + '"><div class="reseau-titre"><span class="pastille"></span><b>Réseau ' + (i + 1) + "</b><span>" + texte(s.nom) + "</span></div>" +
         '<div class="schema">' + svgReseau(d, p, i) + "</div>" +
-        (liaisonsDuReseau(d, p, i).length ? '<p class="pointille">En pointillé, le passage de la nourrice à « ' + texte(s.nom) + ' » sort de la pelouse. Le croquis ne montre pas par où il passe (allée, terrasse, bordure) : sa longueur se mesure sur place.</p>' : "") +
+        (liaisonsDuReseau(d, p, i).length ? '<p class="pointille"><svg class="tirets" viewBox="0 0 24 6" aria-hidden="true"><line x1="1" y1="3" x2="23" y2="3" stroke="currentColor" stroke-width="1.6" stroke-dasharray="3 2.4"/></svg>Le passage de la nourrice à « ' + texte(s.nom) + ' » sort de la pelouse. Le croquis ne montre pas par où il passe (allée, terrasse, bordure) : sa longueur se mesure sur place.</p>' : "") +
         '<ul class="materiel">' + lignes + "</ul></div>";
     });
     $("reseaux").innerHTML = html;
@@ -745,8 +752,12 @@
         '<button type="button" data-couronne="50" aria-pressed="' + (etat.couronne === 50) + '">Couronnes de 50 m</button>' +
         '<button type="button" data-couronne="100" aria-pressed="' + (etat.couronne === 100) + '">De 100 m</button></div>';
       if (s.famille === "Goutte-à-goutte" || !r) {
-        jardin += '<div class="rail"><div class="tete">' + poser("r" + i + ":pe", "pe25", "PEHD Ø25", "PEHD Ø25, " + (r ? r.metresTuyau + " m" : "à mesurer"), r ? r.metresTuyau : 0, "ml") + "</div>";
-        jardin += '<div class="tete">' + poser("r" + i + ":coude", "coude-taraude-25-34", nomDe("coude-taraude-25-34", M), "Coude taraudé") +
+        // Le PEHD se pose SOUS le titre du réseau, comme pour les autres réseaux, et
+        // pas en travers du rail (sa demande du 18 octobre 2026). Le calcul ne trace
+        // pas la ligne d'un goutte-à-goutte : sa longueur reste « à mesurer ».
+        var metres = r ? r.metresTuyau + " m" : "à mesurer";
+        jardin += '<div class="ligne-pe">' + poser("r" + i + ":pe", "pe25", "PEHD Ø25", "PEHD Ø25, " + metres, r ? r.metresTuyau : 0, "ml") + "<span>PEHD Ø25, " + metres + "</span></div>";
+        jardin += '<div class="rail"><div class="tete">' + poser("r" + i + ":coude", "coude-taraude-25-34", nomDe("coude-taraude-25-34", M), "Coude taraudé") +
           (etat.sortie === "ligne" ? poser("r" + i + ":coude16", "MID6341", nomDe("MID6341", M), "coude Palaplast Ø16") : poser("r" + i + ":te16", "MID6321", nomDe("MID6321", M), "té Palaplast Ø16")) +
           couronnes(i, M) + (etat.sortie === "boucle" ? "" : poser("r" + i + ":bouchon", "MID6371", nomDe("MID6371", M), "bouchon Palaplast Ø16")) + "</div>";
         jardin += ajoutees("r" + i) + "</div>";
@@ -958,6 +969,10 @@
     dessinerReseaux(p, res.dessin);
     dessinerPieces(p, res.dessin, M);
     dessinerListe(p, res.dessin);
+    // Le grillage coché se montre, sa photo et ses rouleaux de 100 m. Il n'existe
+    // qu'en bleu : il ne se change pas (sa remarque du 18 octobre 2026).
+    var grillage = etat.grillage ? piecesOutil(p, res.dessin).filter(function (x) { return x.ref === "grillage-bleu"; })[0] : null;
+    $("grillage-piece").innerHTML = grillage ? '<img src="arrosage-photos/grillage-bleu.jpg" alt=""><span>' + grillage.q + "x " + texte(grillage.nom) + "<small>Rouleau de 100 m. " + texte(grillage.detail.charAt(0).toUpperCase() + grillage.detail.slice(1)) + ".</small></span>" : "";
     dessinerMots();
   }
 

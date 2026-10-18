@@ -39,6 +39,8 @@ barrées ou annotées).
 
 **Et ensuite, le même soir** : (1) le texte du pointillé ne se met que sous le réseau dont le pointillé SE VOIT : un passage caché sous le rectangle de la nourrice (moins de 0,5 m dehors) n'a ni pointillé ni phrase (`liaisonsDuReseau`, plan et robinet) ; sur le jardin d'exemple, seul le Couloir garde sa phrase. (2) La **sonde de pluie** se coche juste au-dessus de la nourrice éclatée ; cochée, sa photo et son nom s'y montrent, et on la change ou la supprime comme une autre pièce (la liste de la nourrice la compte telle qu'elle est posée).
 
+**Puis** : (3) le PEHD du goutte-à-goutte se pose sous le titre du réseau comme pour les autres, pas en travers du rail ; sa longueur reste « à mesurer » (le calcul ne trace pas la ligne d'un goutte-à-goutte). (4) « En pointillé, » est remplacé par de petits tirets noirs dessinés en tête de la phrase. (5) Le **grillage avertisseur** coché se montre avec une photo et ses rouleaux de 100 m, sans pouvoir se changer (il n'existe qu'en bleu). **Sa photo est trouvée par nous** (Bricomarché, grillage bleu eau potable 0,3 x 100 m, FITT : https://assets-big.cdn-mousquetaires.com/medias/domain11440/media4160/624916-8yurd7x654-large.jpg), `appli/arrosage-photos/grillage-bleu.jpg` : **à lui faire valider**.
+
 **ATTENTION : une autre session travaille dans CE MÊME dossier.** Elle a fait la
 planche des photos de raccords PE (https://claude.ai/artifact/R3viQnoxAi7biZ6tD5syYS,
 commits `9e9db77f`, `724d500e`, puis `941952ea` qui donne leurs photos validées aux raccords PE de la liste dans `arrosage-plan.html` et `arrosage-vue-eclatee.html`). Avant de toucher à ces fichiers, `git log` pour voir si elle a bougé, et ne jamais jeter son travail non commité : demander au patron.
