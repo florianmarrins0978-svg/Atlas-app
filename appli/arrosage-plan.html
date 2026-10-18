@@ -693,7 +693,7 @@
     // 100 m n'a pas celle de la couronne de 50 m d'Aqua Plus.
     var ligne = materielCourant.filter(function (l) { return l.ref === ref; })[0];
     var p = CAT.piece(ref) || CAT.piecesReseau[ref], marque = p && p.marque, ref2 = ligne ? ligne.reference : CAT.referenceDe(ref);
-    return (marque && nom.indexOf(marque) < 0 ? marque + " " : "") + nom + (ref2 ? ", réf. Aqua Plus " + ref2 : "");
+    return (marque && nom.indexOf(marque) < 0 ? marque + " " : "") + nom + (ref2 ? ", réf. " + ref2 : "");
   }
   function message(groupes) {
     var total = {}, ordre = [];
