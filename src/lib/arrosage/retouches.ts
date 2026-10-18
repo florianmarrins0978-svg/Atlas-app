@@ -60,6 +60,19 @@ export const RETOUCHES_VIERGES: Retouches = {
   sortie: "boucle",
 };
 
+/**
+ * Les clés des pièces du départ au robinet : changer de montage les rend à la
+ * proposition (une double sortie supprimée dans un montage ne doit pas rester
+ * barrée dans l'autre, où elle n'est pas la même pile).
+ */
+export function oublierLeDepart(r: Retouches): Retouches {
+  const duDepart = (cle: string) => cle.startsWith("am:");
+  const retirees: Record<string, true> = {}, remplacees: Record<string, PieceChoisie> = {};
+  for (const [k, v] of Object.entries(r.retirees)) if (!duDepart(k)) retirees[k] = v;
+  for (const [k, v] of Object.entries(r.remplacees)) if (!duDepart(k)) remplacees[k] = v;
+  return { ...r, retirees, remplacees };
+}
+
 const sans = <T>(table: Record<string, T>, cle: string): Record<string, T> => {
   const copie = { ...table };
   delete copie[cle];

@@ -4,6 +4,7 @@ import { piecesDuPlan, type LigneCalcul } from "./pieces";
 import { photoDe } from "./photos";
 import type { PieceChoisie, Retouches } from "./retouches";
 import type { LePlan } from "./le-plan";
+import { ROBINET, departRetenu, nomDuTuyau, type Depart, type Montage } from "./robinet";
 
 /**
  * LES PIÈCES POSÉES — chaque pièce du plan à sa place, avec sa photo, et ce
@@ -140,16 +141,27 @@ export function nomDe(ref: string, materiel: LigneCalcul[]): string {
   return p ? (("marque" in p && p.marque ? `${p.marque} ` : "") + p.nom) : ref;
 }
 
+/** Sur un robinet : le montage qu'il a choisi, la double sortie, et le tuyau qui part (`null` : celui que l'outil choisit). */
+export type Robinet = { montage: Montage; double: boolean; depart: Depart | null };
+
 export type EntreePostes = {
   plan: LePlan;
   dessin: Dessin | null;
   compteur: boolean;
   /** L'amenée calculée sur le croquis, ou `null` quand elle n'a pas pu l'être. */
   amenee: number | null;
+  /** Le montage au robinet ; `null` au compteur. */
+  robinet?: Robinet | null;
   retouches: Retouches;
 };
 
-export function composerLesPostes({ plan, dessin, compteur, amenee, retouches: r }: EntreePostes): Postes {
+/** Le titre du premier groupe de la liste : d'où part l'eau, et jusqu'où. */
+export function titreDuDepart(compteur: boolean, robinet: Robinet | null | undefined): string {
+  if (compteur) return "Du compteur à la nourrice";
+  return robinet?.montage === "nez" ? "Au robinet" : "Du robinet à la nourrice";
+}
+
+export function composerLesPostes({ plan, dessin, compteur, amenee, robinet = null, retouches: r }: EntreePostes): Postes {
   const M = plan.materiel;
   const compte: Compte = {};
   let groupe = "amenee";
@@ -197,12 +209,30 @@ export function composerLesPostes({ plan, dessin, compteur, amenee, retouches: r
   // ── Du piquage à la nourrice : les lignes que le calcul a déjà écrites ──
   groupe = "amenee";
   const amenees: Poste[] = [];
-  for (const l of plan.pieces.filter((p) => p.ou === "amenee")) {
-    if (l.ref === TE_EGAL) amenees.push(poser("am:te", TE_EGAL, nomDe(TE_EGAL, M), "Té égal au compteur", 1));
-    else if (l.ref === "pe25-amenee") amenees.push(poser("am:pe", "pe25-amenee", l.nom, l.q !== null ? `${l.nom}, ${l.q} m` : `${l.nom}, à mesurer`, l.q ?? 0, "ml"));
+  if (robinet && !compteur) {
+    // **LE MONTAGE AU ROBINET, pièce sous pièce** (sa planche du 18 octobre
+    // 2026) : la double sortie s'il la veut, le programmateur au nez de
+    // robinet, le raccord du tuyau qui part, le tuyau. Ces pièces ne sont pas
+    // au calcul : elles se posent ici, et la liste les compte comme les autres.
+    const nez = robinet.montage === "nez";
+    const depart = departRetenu(plan, robinet.depart);
+    const rac = ROBINET.raccord[depart];
+    const tuyau = nomDuTuyau(depart);
+    if (robinet.double) amenees.push(poser("am:double", ROBINET.double.ref, ROBINET.double.nom, "Double sortie", 1));
+    if (nez) amenees.push(poser("am:prog", ROBINET.programmateur.ref, ROBINET.programmateur.nom, "Programmateur nez de robinet", 1));
+    amenees.push(poser("am:raccord", rac.ref, rac.nom, rac.nom, 1));
+    // Au nez de robinet, le tuyau va jusqu'au réseau et sa longueur n'est pas
+    // comptée ; avec la nourrice, c'est l'amenée calculée sur le croquis.
+    const metres = nez ? null : amenee !== null ? Math.ceil(amenee) : null;
+    amenees.push(poser("am:pe", "pe25-amenee", `${tuyau}, ${nez ? "du robinet au réseau" : "du robinet à la nourrice"}`, metres !== null ? `${tuyau}, ${metres} m` : `${tuyau}, à mesurer`, metres ?? 0, "ml"));
+  } else {
+    for (const l of plan.pieces.filter((p) => p.ou === "amenee")) {
+      if (l.ref === TE_EGAL) amenees.push(poser("am:te", TE_EGAL, nomDe(TE_EGAL, M), "Té égal au compteur", 1));
+      else if (l.ref === "pe25-amenee") amenees.push(poser("am:pe", "pe25-amenee", l.nom, l.q !== null ? `${l.nom}, ${l.q} m` : `${l.nom}, à mesurer`, l.q ?? 0, "ml"));
+    }
+    // Le té égal d'abord, comme on pose : il coupe la ligne avant tout tuyau.
+    amenees.sort((a, b) => (a.cle === "am:te" ? -1 : b.cle === "am:te" ? 1 : 0));
   }
-  // Le té égal d'abord, comme on pose : il coupe la ligne avant tout tuyau.
-  amenees.sort((a, b) => (a.cle === "am:te" ? -1 : b.cle === "am:te" ? 1 : 0));
   // Le téflon entre avec le montage du départ : un rouleau (sa demande du 18 octobre 2026).
   let teflon: Poste | null = null;
   if (r.teflon) {
@@ -374,12 +404,11 @@ export function groupeNourrice(plan: LePlan, postes: Postes, r: Retouches): { no
   return { nom: fiche ? fiche.nom : "La nourrice", lignes: h, nombre };
 }
 
-export function groupesDeLaListe(plan: LePlan, postes: Postes, r: Retouches, compteur: boolean): Groupe[] {
+export function groupesDeLaListe(plan: LePlan, postes: Postes, r: Retouches, compteur: boolean, robinet: Robinet | null = null): Groupe[] {
   const n = groupeNourrice(plan, postes, r);
-  const out: Omit<Groupe, "retirees">[] = [
-    { titre: compteur ? "Du compteur à la nourrice" : "Du robinet à la nourrice", lignes: postes.compte.amenee ?? {} },
-    { titre: n.nom, lignes: n.lignes },
-  ];
+  const out: Omit<Groupe, "retirees">[] = [{ titre: titreDuDepart(compteur, robinet), lignes: postes.compte.amenee ?? {} }];
+  // Au programmateur en nez de robinet, il n'y a pas de nourrice : rien à compter pour elle.
+  if (compteur || robinet?.montage !== "nez") out.push({ titre: n.nom, lignes: n.lignes });
   plan.secteurs.forEach((s, i) => out.push({ titre: `Réseau ${i + 1}, ${s.nom}`, couleur: plan.couleurs[i], lignes: postes.compte[`r${i}`] ?? {} }));
   // Le grillage couvre toute la tranchée : il se compte dans la liste de l'outil, pas réseau par réseau.
   if (postes.grillage) {

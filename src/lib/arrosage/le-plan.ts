@@ -2,6 +2,7 @@ import { calculerPlan } from "./calcul.js";
 import { dessinerPlan, type Dessin, type ZoneDessinee } from "./plan-dessine";
 import { piecesDuPlan, type LigneCalcul, type Piece } from "./pieces";
 import type { ParametresPlan } from "./consignes";
+import type { Montage } from "./robinet";
 
 /**
  * LE PLAN TEL QUE L'ÉCRAN LE REÇOIT — le calcul, son dessin, ses pièces, et ce
@@ -56,6 +57,8 @@ export type LePlan = {
     debit: number;
     /** Même le Ø32 perd trop : Ø40, ou un réseau de plus. */
     insuffisantMemeEn32: boolean;
+    /** Le diamètre que le calcul donne à l'amenée : Ø25 quand il tient, sinon Ø32. Au robinet, c'est le départ que l'outil propose. */
+    diametre: 25 | 32;
   };
   /** Ce qui arrive au pied du DERNIER arroseur, en bar. */
   pressionAuxArroseurs: number;
@@ -73,7 +76,7 @@ type Calcule = {
   dessin: ZoneDessinee[];
   reseauxDeZone: Record<string, number[]>;
   goutteAGoutte: { sorties: number; tesEgaux: number };
-  amenee: { longueurMax25: number; longueurMax32: number; debit: number; insuffisantMemeEn32: boolean };
+  amenee: { longueurMax25: number; longueurMax32: number; debit: number; insuffisantMemeEn32: boolean; diametre: 25 | 32 };
   pressionAuxArroseurs: number;
   pressionTropBasse: boolean;
   pressionRaffinee: boolean;
@@ -96,15 +99,23 @@ export function calculerEtDessiner(parametres: ParametresPlan, sansDessin: strin
   const plan = calculerPlan(parametres as never) as unknown as Calcule;
   let dessin: Dessin | null = null;
   const reservesDuDessin: string[] = [];
+  // **AU NEZ DE ROBINET, LES RÉSEAUX PARTENT DU ROBINET** (son montage 1 du
+  // 18 octobre 2026) : il n'y a pas de nourrice, le départ est le piquage lu
+  // sur le croquis. Le calcul lui-même ne change pas : il garde l'amenée et le
+  // trajet du regard tels que le croquis les a donnés.
+  const nez = montageDuPlan(parametres) === "nez";
+  const depart = nez ? parametres.piquage ?? null : parametres.nourrice;
   if (sansDessin) {
     reservesDuDessin.push(sansDessin);
+  } else if (nez && !depart) {
+    reservesDuDessin.push("Le croquis ne situe pas le robinet : le plan est calculé, mais il n’est pas dessiné.");
   } else {
     const dessine = dessinerPlan(
       plan.dessin,
       // **La nourrice EN MÈTRES**, sur le même repère que les zones. Lui passer
       // la fraction lue dessinerait un jardin d'un mètre de large : le défaut
       // aurait été muet, puisque tout resterait cohérent entre soi.
-      parametres.nourrice,
+      depart,
       plan.couleurs
     );
     // Si le tracé lui-même n'aboutit pas, c'est le dessin qui manque, pas le
@@ -117,6 +128,16 @@ export function calculerEtDessiner(parametres: ParametresPlan, sansDessin: strin
     }
   }
   return { dessin, parametres, plan: lePlan(plan, dessin, parametres, reservesDuDessin) };
+}
+
+/**
+ * Le montage qui vaut pour ce plan : au compteur, toujours la nourrice ; sur un
+ * robinet, celui qu'il a choisi, et le nez de robinet tant qu'il n'a rien dit
+ * (c'est le premier montage de sa planche).
+ */
+export function montageDuPlan(parametres: Pick<ParametresPlan, "compteur" | "robinet">): Montage {
+  if (parametres.compteur === "oui") return "nourrice";
+  return parametres.robinet?.montage ?? "nez";
 }
 
 /** Ce que le calcul rend à l'écran — la même forme, que le plan soit dessiné ou non. */
@@ -181,6 +202,7 @@ function lePlan(plan: Calcule, dessin: Dessin | null, parametres: ParametresPlan
       seuil32: plan.amenee.longueurMax32,
       debit: plan.amenee.debit,
       insuffisantMemeEn32: plan.amenee.insuffisantMemeEn32,
+      diametre: plan.amenee.diametre,
     },
     pressionAuxArroseurs: plan.pressionAuxArroseurs,
     reserves,

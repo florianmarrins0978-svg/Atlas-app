@@ -538,11 +538,18 @@ export const PHOTOS: Record<string, string> = {
   "NA2321": "mp3000.jpg",
   "NA2322": "mp3000.jpg",
   "NA2323": "mp3000.jpg",
+  // La double sortie du robinet : SA photo, validée le 18 octobre 2026 avec le nom et la référence Aqua Plus.
+  "BRO3493": "arrosage-robinet-photos/BRO3493.jpg",
 };
 
-/** L'adresse servie par l'application, ou `null` quand aucune photo n'est validée. */
+/**
+ * L'adresse servie par l'application, ou `null` quand aucune photo n'est validée.
+ * Un fichier qui porte son dossier (`arrosage-robinet-photos/…`) est servi de
+ * là : les photos du robinet vivent à côté, comme dans `appli/`.
+ */
 export function photoDe(ref: string | null | undefined): string | null {
   if (!ref) return null;
   const fichier = PHOTOS[ref];
-  return fichier ? `/arrosage-photos/${fichier}` : null;
+  if (!fichier) return null;
+  return fichier.includes("/") ? `/${fichier}` : `/arrosage-photos/${fichier}`;
 }

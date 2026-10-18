@@ -6,6 +6,7 @@ import { piecesDuPlan } from "../src/lib/arrosage/pieces";
 import { etatDuCroquis } from "../src/lib/arrosage/croquis-complet";
 import { longueurDeLAmenee } from "../src/lib/arrosage/geometrie-croquis";
 import { debitRetenu } from "../src/lib/arrosage/mesure-debit";
+import { ROBINET, departDeLOutil, departsPossibles, voiesManquantes } from "../src/lib/arrosage/robinet";
 
 /**
  * LES RÈGLES DU PATRON, AVEC SES CHIFFRES — et un rouge ici ne se réécrit JAMAIS.
@@ -537,6 +538,26 @@ regle("18 octobre 2026", "« les MP Rotator sont pour les tuyères », et « oui
   // Et rien ne bouge sur ses pelouses : son carré de 12 × 12 garde ses 9 turbines.
   const carre = plan([{ id: 1, type: "gazon", nom: "Pelouse", x: 0, y: 0, L: 12, l: 12 }]);
   exige(carre.dessin[0].points.length === 9, `${carre.dessin[0].points.length} têtes sur son 12 × 12, il en garde 9`);
+});
+
+regle("18 octobre 2026", "« dès qu'il y a des arroseurs, ça sera forcément du 25 ou du 32 » au départ du robinet, et « s'il est en nez de robinet, il le garde et il prévient qu'il manque des voies »", () => {
+  // Son jardin de la planche au robinet : deux pelouses, un massif en goutte-à-goutte, un couloir, 3 bar.
+  const jardin = plan([
+    { id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
+    { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },
+    { id: 3, type: "massif", nom: "Massif", x: 14, y: 10, L: 20, l: 2.4, sortieGoutte: "boucle" } as Zone,
+    { id: 4, type: "gazon", nom: "Couloir", x: 0, y: 14, L: 10, l: 2, materiel: "tuyere" } as Zone,
+  ], 3, "non");
+  const pourLeDepart = { secteurs: jardin.secteurs, tuyau: { diametre: jardin.amenee.diametre as 25 | 32 } };
+  exige(departsPossibles(pourLeDepart).join(",") === "25,32", `avec des arroseurs, les départs proposés sont ${departsPossibles(pourLeDepart).join(", ")} : il veut Ø25 ou Ø32, jamais le Ø16`);
+  exige(departDeLOutil(pourLeDepart) === 25, `l'outil choisit le Ø${departDeLOutil(pourLeDepart)} : son Ø25 tient sur ce jardin`);
+  // Tout en goutte-à-goutte : le Ø16 rigide est proposé, et c'est lui que l'outil choisit.
+  const massifSeul = plan([{ id: 3, type: "massif", nom: "Massif", x: 0, y: 0, L: 20, l: 2.4, sortieGoutte: "boucle" } as Zone], 3, "non");
+  const goutte = { secteurs: massifSeul.secteurs, tuyau: { diametre: massifSeul.amenee.diametre as 25 | 32 } };
+  exige(departDeLOutil(goutte) === 16 && departsPossibles(goutte).length === 4, "tout en goutte-à-goutte : le Ø16 rigide d'office, et les quatre départs au choix");
+  // Quatre réseaux, une voie : on garde le nez de robinet, et la phrase dit le manque.
+  exige(ROBINET.programmateur.voies === 1 && voiesManquantes(pourLeDepart, "nez") === 3, `le Solem BL-NR a ${ROBINET.programmateur.voies} voie, il en manque ${voiesManquantes(pourLeDepart, "nez")} sur 4 réseaux`);
+  exige(voiesManquantes(pourLeDepart, "nourrice") === 0, "avec la nourrice, aucune voie ne manque");
 });
 
 console.log(`\n${failed === 0 ? "✅" : "❌"} Les règles du patron — ${passed} tenue(s), ${failed} rompue(s).`);

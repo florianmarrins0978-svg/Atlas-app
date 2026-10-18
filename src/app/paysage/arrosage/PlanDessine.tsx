@@ -220,12 +220,14 @@ export default function PlanDessine({
         ))}
 
       {/* La nourrice, à l'endroit qu'IL a posé — jamais déplacée d'office. Au
-          robinet : une petite croix blanche et le mot (sa règle du 18 octobre 2026). */}
+          robinet : une petite croix blanche et le mot (sa règle du 18 octobre 2026).
+          Le blanc de la croix est la carte : sur Nuit et Sylve, où l'encre est
+          claire, c'est elle qui reste lisible dessus. */}
       <g data-atlas="nourrice">
         {piquage === "robinet" ? (
           <>
             <path d={croix(dessin.nourrice.x, dessin.nourrice.y)} stroke={colors.ink} strokeWidth={0.34} strokeLinecap="round" fill="none" />
-            <path d={croix(dessin.nourrice.x, dessin.nourrice.y)} stroke="#ffffff" strokeWidth={0.16} strokeLinecap="round" fill="none" />
+            <path d={croix(dessin.nourrice.x, dessin.nourrice.y)} stroke={colors.card} strokeWidth={0.16} strokeLinecap="round" fill="none" />
           </>
         ) : (
           <rect x={dessin.nourrice.x - 0.75} y={dessin.nourrice.y - 1.4} width={1.5} height={2.8} rx={0.3} fill={colors.card} stroke={colors.ink} strokeWidth={0.22} />
@@ -281,7 +283,7 @@ export function LegendeDesSymboles({ robinet = false }: { robinet?: boolean }) {
       <Legende symbole={<line x1={-0.85} y1={0} x2={0.85} y2={0} stroke={TRANCHEE} strokeWidth={0.9} />} texte={<>la tranchée</>} />
       {robinet && (
         <Legende
-          symbole={<><path d="M-0.7 0H0.7M0 -0.7V0.7" stroke={colors.ink} strokeWidth={0.5} strokeLinecap="round" /><path d="M-0.7 0H0.7M0 -0.7V0.7" stroke="#ffffff" strokeWidth={0.22} strokeLinecap="round" /></>}
+          symbole={<><path d="M-0.7 0H0.7M0 -0.7V0.7" stroke={colors.ink} strokeWidth={0.5} strokeLinecap="round" /><path d="M-0.7 0H0.7M0 -0.7V0.7" stroke={colors.card} strokeWidth={0.22} strokeLinecap="round" /></>}
           texte={<><b>croix</b> : le robinet, là où l’on se repique</>}
         />
       )}

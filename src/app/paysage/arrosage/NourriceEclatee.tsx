@@ -109,7 +109,7 @@ export default function NourriceEclatee({
                   >
                     <span className="flex aspect-square w-full max-w-[64px] items-center justify-center" style={{ opacity: etat === "retiree" ? 0.35 : 1, filter: etat === "retiree" ? "grayscale(1)" : undefined }}>
                       {photo ? (
-                        // eslint-disable-next-line @next/next/no-img-element -- une photo de pièce, servie telle quelle
+                        // eslint-disable-next-line @next/next/no-img-element -- pansement assumé : next/image n’a rien à optimiser sur une photo de pièce servie telle quelle depuis public/, une photo de pièce, servie telle quelle
                         <img src={photo} alt="" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
                       ) : (
                         <span style={{ fontSize: 10, color: colors.muted }}>photo à venir</span>

@@ -18,9 +18,13 @@ assemble (`NourriceEclatee`, `PiecesDuReseau`, `ListeDesPieces`, `FeuillePiece`,
 `MotsDuPlan`, `Vignette`), sur des règles pures (`le-plan.ts`, `postes.ts`,
 `retouches.ts`, `nourrice-eclatee.ts`, `photos.ts`). `ARCHITECTURE.md` §470 dit
 les quatre décisions. Tout l'état du lot est dans `docs/arrosage-relais-session.md`.
+**Le montage au robinet aussi** (§471, le soir même) : `robinet.ts` porte ses
+deux montages et les pièces validées, `MontageAuRobinet.tsx` la pile ; le choix
+(`parametres.robinet`) et le piquage en mètres voyagent avec les paramètres.
 
 **Pour le regarder sans serveur** : `npx tsx scripts/capture-plan-arrosage.ts <dossier>`,
-puis `ecran-du-plan.png`. Pour l'éprouver : `npx tsx scripts/test-arrosage-postes.ts`.
+puis `ecran-du-plan.png`, `ecran-du-plan-robinet-nez.png` et
+`ecran-du-plan-robinet-nourrice.png`. Pour l'éprouver : `npx tsx scripts/test-arrosage-postes.ts`.
 
 **Le piège** : les photos sont servies depuis `public/arrosage-photos/`, copie
 d'`appli/arrosage-photos/` ; une photo validée entre dans les deux dossiers ET

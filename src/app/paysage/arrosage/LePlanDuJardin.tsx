@@ -4,16 +4,18 @@ import { useMemo, useState } from "react";
 import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import type { EtatPlan } from "./actions";
 import type { ParametresPlan } from "@/lib/arrosage/consignes";
-import { calculerEtDessiner } from "@/lib/arrosage/le-plan";
-import { composerLesPostes, groupeNourrice, groupesDeLaListe, liaisonsDuReseau, messageAuFournisseur, zoneGoutteDuReseau, type Maillon, type Poste } from "@/lib/arrosage/postes";
+import { calculerEtDessiner, montageDuPlan } from "@/lib/arrosage/le-plan";
+import { composerLesPostes, groupeNourrice, groupesDeLaListe, liaisonsDuReseau, messageAuFournisseur, titreDuDepart, zoneGoutteDuReseau, type Maillon, type Poste, type Robinet } from "@/lib/arrosage/postes";
 import {
   RETOUCHES_VIERGES, ajouter, chaineRemettre, chaineRemplacer, chaineRevenir, chaineSupprimer, clesAChanger, ligneRemettre, ligneSupprimer,
-  nourriceRemettre, nourriceRemplacer, nourriceSupprimer, remettre, remplacer, revenir, supprimer, type PieceChoisie, type Retouches,
+  nourriceRemettre, nourriceRemplacer, nourriceSupprimer, oublierLeDepart, remettre, remplacer, revenir, supprimer, type PieceChoisie, type Retouches,
 } from "@/lib/arrosage/retouches";
 import { categorieDe } from "@/lib/arrosage/choix-de-pieces";
+import { departDeLOutil, departRetenu, departsPossibles, libelleDepart, phraseDuManque, type Depart, type Montage } from "@/lib/arrosage/robinet";
 import PlanDessine, { LegendeDesSymboles } from "./PlanDessine";
 import NourriceEclatee from "./NourriceEclatee";
-import PiecesDuReseau from "./PiecesDuReseau";
+import PiecesDuReseau, { Chips } from "./PiecesDuReseau";
+import MontageAuRobinet from "./MontageAuRobinet";
 import ListeDesPieces from "./ListeDesPieces";
 import MotsDuPlan from "./MotsDuPlan";
 import Vignette from "./Vignette";
@@ -34,6 +36,13 @@ import { ChoisirUnePiece, FeuilleFournisseur, MenuPiece, type Menu } from "./Feu
  * changent (la sonde, la couronne, une ligne ou deux) : `calculerEtDessiner` est
  * la même fonction que celle de l'action serveur. Tout le reste est une
  * RETOUCHE (`retouches.ts`) : changer, supprimer, ajouter, au nombre choisi.
+ *
+ * **Sur un robinet, ses deux montages** (`appli/arrosage-plan-robinet.html`,
+ * validée le 18 octobre 2026 au soir) : le programmateur en nez de robinet,
+ * sans nourrice, les réseaux partant du robinet ; ou la nourrice, le robinet
+ * pour départ. La double sortie proposée, le départ Ø16, Ø25 ou Ø32 choisi
+ * par l'outil et modifiable, la pile du montage sous « Le piquage »
+ * (`MontageAuRobinet`, `robinet.ts`).
  */
 export default function LePlanDuJardin({
   etat,
@@ -59,14 +68,29 @@ export default function LePlanDuJardin({
   const { plan, dessin } = useMemo(() => calculerEtDessiner(parametres, etat.sansDessin), [parametres, etat.sansDessin]);
   const compteur = parametres.compteur === "oui";
   const amenee = parametres.amenee > 0 ? parametres.amenee : null;
-  const postes = useMemo(() => composerLesPostes({ plan, dessin, compteur, amenee, retouches }), [plan, dessin, compteur, amenee, retouches]);
+  // Sur un robinet : le montage qu'il a choisi, la double sortie, le départ. Au compteur : rien de tout cela.
+  const montage = montageDuPlan(parametres);
+  const nez = montage === "nez";
+  const double = parametres.robinet?.double ?? false;
+  const departChoisi = parametres.robinet?.depart ?? null;
+  const robinet = useMemo<Robinet | null>(() => (compteur ? null : { montage, double, depart: departChoisi }), [compteur, montage, double, departChoisi]);
+  const depart: Depart | null = robinet ? departRetenu(plan, departChoisi) : null;
+  const postes = useMemo(() => composerLesPostes({ plan, dessin, compteur, amenee, robinet, retouches }), [plan, dessin, compteur, amenee, robinet, retouches]);
   const nourrice = groupeNourrice(plan, postes, retouches);
-  const groupes = groupesDeLaListe(plan, postes, retouches, compteur);
+  const groupes = groupesDeLaListe(plan, postes, retouches, compteur, robinet);
   const nbGoutte = plan.secteurs.filter((s) => s.famille === "Goutte-à-goutte").length;
   // Les réserves du croquis ne bougent pas ; celles du calcul suivent le plan.
   const reserves = [...plan.reserves, ...etat.reserves];
 
   const r = (f: (r: Retouches) => Retouches) => setRetouches((prev) => f(prev));
+  const poserRobinet = (patch: Partial<Robinet>) => setParametres({ ...parametres, robinet: { montage, double, depart: departChoisi, ...patch } });
+  // Changer de montage change la pile : ses retouches du départ repartent de la
+  // proposition, le départ revient à celui de l'outil, et la sonde n'a pas de
+  // nourrice où se poser au nez de robinet.
+  const changerMontage = (m: Montage) => {
+    setParametres({ ...parametres, sonde: m === "nez" ? false : parametres.sonde, robinet: { montage: m, double, depart: null } });
+    r((s) => ({ ...oublierLeDepart(s), sonde: m === "nez" ? false : s.sonde }));
+  };
   const choisir = (titre: "Changer la pièce" | "Ajouter une pièce", categorie: string, onChoix: (p: PieceChoisie) => void) =>
     setFeuille({ titre, categorie, onChoix: (p) => { onChoix(p); setFeuille(null); } });
 
@@ -145,81 +169,131 @@ export default function LePlanDuJardin({
     // La pièce proposée se relit dans les postes recomposés SANS la retouche : son nom d'origine.
     const sansCetteRetouche = { ...retouches, remplacees: { ...retouches.remplacees } };
     delete sansCetteRetouche.remplacees[p.cle];
-    const origine = composerLesPostes({ plan, dessin, compteur, amenee, retouches: sansCetteRetouche });
+    const origine = composerLesPostes({ plan, dessin, compteur, amenee, robinet, retouches: sansCetteRetouche });
     return trouverPoste(origine, p.cle)?.nom ?? p.nom;
   }
   function nomProposeRef(p: Poste): string {
     const sansCetteRetouche = { ...retouches, remplacees: { ...retouches.remplacees } };
     delete sansCetteRetouche.remplacees[p.cle];
-    const origine = composerLesPostes({ plan, dessin, compteur, amenee, retouches: sansCetteRetouche });
+    const origine = composerLesPostes({ plan, dessin, compteur, amenee, robinet, retouches: sansCetteRetouche });
     return trouverPoste(origine, p.cle)?.ref ?? p.ref;
   }
 
   const texteDesMots = [
     ...plan.secteurs.map((s) => s.nom),
+    ...postes.amenee.map((p) => p.nom),
     ...(dessin?.reseaux.flatMap((x) => x.materiels.map((m) => `${m.libelle}${m.bridee ? " bridée" : ""}`)) ?? []),
     ...postes.reseaux.flatMap((x) => [x.compteDuPlan ?? "", ...(x.chaine?.map((m) => m.libelle) ?? []), ...x.rail.map((p) => p.detail)]),
     ...groupes.flatMap((g) => Object.values(g.lignes).map((l) => l.nom)),
   ].join(" ");
 
-  const piquage = compteur ? "nourrice" : "robinet";
-  const titrePiquage = compteur ? "Du compteur à la nourrice" : "Du robinet à la nourrice";
+  const piquage = nez ? "robinet" : "nourrice";
+  const titrePiquage = titreDuDepart(compteur, robinet);
+
+  // La sonde, le grillage et le téflon : cochés, ils se montrent sur une ligne.
+  // Au compteur, les trois au-dessus de la nourrice ; au robinet, le grillage
+  // et le téflon viennent sous la double sortie, la sonde reste à la nourrice.
+  const cocheSonde = <Coche libelle="Sonde de pluie" cochee={Boolean(parametres.sonde)} onChange={(v) => { setParametres({ ...parametres, sonde: v }); r((s) => ({ ...s, sonde: v })); }} />;
+  const cochesGrillageTeflon = (
+    <>
+      <Coche libelle="Grillage avertisseur" cochee={retouches.grillage} onChange={(v) => r((s) => ({ ...s, grillage: v }))} />
+      <Coche libelle="Téflon" cochee={retouches.teflon} onChange={(v) => r((s) => ({ ...s, teflon: v }))} />
+    </>
+  );
+  const piecesCochees = (quoi: ("sonde" | "grillage" | "teflon")[]) => {
+    const sonde = quoi.includes("sonde") ? postes.sonde : null;
+    const grillage = quoi.includes("grillage") ? postes.grillage : null;
+    const teflon = quoi.includes("teflon") ? postes.teflon : null;
+    if (!sonde && !grillage && !teflon) return null;
+    return (
+      <>
+        <div className="mt-[10px] flex flex-wrap items-start gap-3">
+          {sonde && <Vignette poste={sonde} onClick={() => menuDeLaPiece(sonde)} />}
+          {grillage && (
+            <div className="flex w-[108px] flex-col items-center text-center" data-atlas="grillage">
+              <span className="flex h-[88px] w-[88px] items-center justify-center rounded-[12px]" style={{ backgroundColor: colors.card, boxShadow: `0 1px 2px ${colors.line}` }}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- pansement assumé : next/image n’a rien à optimiser sur une photo de pièce servie telle quelle depuis public/, la photo du grillage, validée */}
+                <img src="/arrosage-photos/grillage-bleu.jpg" alt="" style={{ maxWidth: 78, maxHeight: 78, mixBlendMode: "multiply" }} />
+              </span>
+              <span className="mt-[6px] text-[11.5px] leading-[1.3]" style={{ color: colors.inkSoft }}>
+                {grillage.q}x {grillage.nom}
+              </span>
+            </div>
+          )}
+          {teflon && <Vignette poste={teflon} onClick={() => menuDeLaPiece(teflon)} />}
+        </div>
+        {grillage && (
+          <p className="mt-1 text-[13.5px]" style={{ color: colors.muted }}>
+            Rouleau de 100 m. {grillage.detail}
+          </p>
+        )}
+      </>
+    );
+  };
 
   return (
     <div data-atlas="plan-arrosage">
       {/* En rouge, vers le début : sa demande du 18 octobre 2026. Les pièces de la
-          nourrice se touchent par leur numéro, pas sur le dessin. */}
+          nourrice se touchent par leur numéro, pas sur le dessin. Sans nourrice,
+          pas de numéro à toucher : la phrase ne le dit pas. */}
       <p className="mx-[22px] mt-[10px] text-[14px] font-semibold" style={{ color: colors.alert }}>
-        Touchez une pièce pour la changer ou la supprimer. Pour la nourrice, touchez un numéro.
+        Touchez une pièce pour la changer ou la supprimer.{nez ? "" : " Pour la nourrice, touchez un numéro."}
       </p>
 
       {/* ─── Le piquage, d'abord : son ordre du 18 octobre ───────────────── */}
       <section className="mx-[22px] mt-[26px]" data-atlas="piquage">
         <span className={`block ${libelleCaps}`} style={{ color: colors.or }}>{compteur ? "Le piquage, au compteur" : "Le piquage, sur un robinet"}</span>
-        <h2 className="mt-[6px]" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 21, lineHeight: 1.2 }}>{titrePiquage}</h2>
-        <div className="mt-3 flex flex-wrap justify-center gap-x-3 gap-y-4 rounded-[16px] px-3 pb-[14px] pt-[18px]" style={{ backgroundColor: colors.card }}>
-          {postes.amenee.map((p) => (
-            <Vignette key={p.cle} poste={p} onClick={() => menuDeLaPiece(p)} />
-          ))}
-        </div>
+        {robinet && depart && (
+          <>
+            <Chips valeur={montage} choix={[["nez", "Programmateur en nez de robinet"], ["nourrice", "Avec la nourrice"]]} onChoix={changerMontage} libelle="Le montage" />
+            {/* La double sortie est PROPOSÉE, jamais imposée : une sortie pour l'arrosage, l'autre reste au client. */}
+            <Coche libelle="Double sortie sous le robinet" cochee={double} onChange={(v) => poserRobinet({ double: v })} />
+            <p className="mt-1 text-[13.5px]" style={{ color: colors.muted }}>Une sortie pour l’arrosage, l’autre reste au client.</p>
+            {cochesGrillageTeflon}
+            {piecesCochees(["grillage", "teflon"])}
+            {/* Le départ : l'outil choisit, il peut changer. Le Ø16 ne se propose qu'au goutte-à-goutte seul. */}
+            <Chips valeur={depart} choix={departsPossibles(plan).map((d) => [d, libelleDepart(d)] as [Depart, string])} onChoix={(d) => poserRobinet({ depart: d })} libelle="Le départ" />
+            <p className="mt-1 text-[13.5px]" style={{ color: colors.muted }} data-atlas="depart-choisi">
+              L’outil choisit le {libelleDepart(departDeLOutil(plan))}.{depart !== departDeLOutil(plan) ? " Changé à la main." : ""}
+            </p>
+          </>
+        )}
+        <h2 className="mt-4" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 21, lineHeight: 1.2 }}>{titrePiquage}</h2>
+        {robinet && depart ? (
+          <>
+            <MontageAuRobinet postes={postes.amenee.filter((p) => !p.ajoutee)} depart={depart} nez={nez} manque={phraseDuManque(plan, montage)} onPiece={menuDeLaPiece} />
+            {postes.amenee.some((p) => p.ajoutee) && (
+              <div className="mt-3 flex flex-wrap items-start gap-3">
+                {postes.amenee.filter((p) => p.ajoutee).map((p) => (
+                  <Vignette key={p.cle} poste={p} onClick={() => menuDeLaPiece(p)} />
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="mt-3 flex flex-wrap justify-center gap-x-3 gap-y-4 rounded-[16px] px-3 pb-[14px] pt-[18px]" style={{ backgroundColor: colors.card }}>
+            {postes.amenee.map((p) => (
+              <Vignette key={p.cle} poste={p} onClick={() => menuDeLaPiece(p)} />
+            ))}
+          </div>
+        )}
         <BoutonAjouter libelle="Ajouter une pièce" onClick={() => choisir("Ajouter une pièce", "reseau", (x) => r((s) => ajouter(s, "amenee", x, Date.now())))} />
       </section>
 
-      {/* ─── La nourrice ─────────────────────────────────────────────────── */}
-      <section className="mx-[22px] mt-[26px]" data-atlas="nourrice">
-        <span className={`block ${libelleCaps}`} style={{ color: colors.or }}>La nourrice</span>
-        <h2 className="mt-[6px]" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 21, lineHeight: 1.2 }}>{nourrice.nom}</h2>
-        <p className="mt-1 text-[13.5px]" style={{ color: colors.muted }}>
-          Une voie par réseau, numérotées de gauche à droite après l’arrivée.{nbGoutte ? " Le goutte-à-goutte est à droite." : ""}
-        </p>
-        {/* La sonde, le grillage et le téflon, juste au-dessus de la nourrice ; cochés, ils se montrent sur une ligne. */}
-        <Coche libelle="Sonde de pluie" cochee={Boolean(parametres.sonde)} onChange={(v) => { setParametres({ ...parametres, sonde: v }); r((s) => ({ ...s, sonde: v })); }} />
-        <Coche libelle="Grillage avertisseur" cochee={retouches.grillage} onChange={(v) => r((s) => ({ ...s, grillage: v }))} />
-        <Coche libelle="Téflon" cochee={retouches.teflon} onChange={(v) => r((s) => ({ ...s, teflon: v }))} />
-        {(postes.sonde || postes.grillage || postes.teflon) && (
-          <div className="mt-[10px] flex flex-wrap items-start gap-3">
-            {postes.sonde && <Vignette poste={postes.sonde} onClick={() => menuDeLaPiece(postes.sonde as Poste)} />}
-            {postes.grillage && (
-              <div className="flex w-[108px] flex-col items-center text-center" data-atlas="grillage">
-                <span className="flex h-[88px] w-[88px] items-center justify-center rounded-[12px]" style={{ backgroundColor: colors.card, boxShadow: `0 1px 2px ${colors.line}` }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element -- la photo du grillage, validée */}
-                  <img src="/arrosage-photos/grillage-bleu.jpg" alt="" style={{ maxWidth: 78, maxHeight: 78, mixBlendMode: "multiply" }} />
-                </span>
-                <span className="mt-[6px] text-[11.5px] leading-[1.3]" style={{ color: colors.inkSoft }}>
-                  {postes.grillage.q}x {postes.grillage.nom}
-                </span>
-              </div>
-            )}
-            {postes.teflon && <Vignette poste={postes.teflon} onClick={() => menuDeLaPiece(postes.teflon as Poste)} />}
-          </div>
-        )}
-        {postes.grillage && (
+      {/* ─── La nourrice — pas au nez de robinet ─────────────────────────── */}
+      {!nez && (
+        <section className="mx-[22px] mt-[26px]" data-atlas="nourrice">
+          <span className={`block ${libelleCaps}`} style={{ color: colors.or }}>La nourrice</span>
+          <h2 className="mt-[6px]" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 21, lineHeight: 1.2 }}>{nourrice.nom}</h2>
           <p className="mt-1 text-[13.5px]" style={{ color: colors.muted }}>
-            Rouleau de 100 m. {postes.grillage.detail}
+            Une voie par réseau, numérotées de gauche à droite après l’arrivée.{nbGoutte ? " Le goutte-à-goutte est à droite." : ""}
           </p>
-        )}
-        <NourriceEclatee voies={plan.secteurs.length} nbGoutte={nbGoutte} couleurs={plan.couleurs} retouches={retouches} nombre={nourrice.nombre} onTouche={menuDeLaNourrice} />
-      </section>
+          {cocheSonde}
+          {compteur && cochesGrillageTeflon}
+          {piecesCochees(compteur ? ["sonde", "grillage", "teflon"] : ["sonde"])}
+          <NourriceEclatee voies={plan.secteurs.length} nbGoutte={nbGoutte} couleurs={plan.couleurs} retouches={retouches} nombre={nourrice.nombre} onTouche={menuDeLaNourrice} />
+        </section>
+      )}
 
       {/* ─── Les réseaux, un par un sur le plan ──────────────────────────── */}
       <section className="mx-[22px] mt-[26px]" data-atlas="reseaux">
@@ -244,7 +318,7 @@ export default function LePlanDuJardin({
                   <svg className="mr-1.5 inline-block align-middle" width="24" height="6" viewBox="0 0 24 6" aria-hidden="true">
                     <line x1="1" y1="3" x2="23" y2="3" stroke={colors.ink} strokeWidth="1.6" strokeDasharray="3 2.4" />
                   </svg>
-                  Le passage {compteur ? "de la nourrice" : "du robinet"} à « {s.nom} » sort de la pelouse. Le croquis ne montre pas par où il passe (allée, terrasse, bordure). Sa longueur doit être mesurée.
+                  Le passage {nez ? "du robinet" : "de la nourrice"} à « {s.nom} » sort de la pelouse. Le croquis ne montre pas par où il passe (allée, terrasse, bordure). Sa longueur doit être mesurée.
                 </p>
               )}
               <ul className="mt-2 list-none p-0 text-[14px]">
@@ -274,7 +348,7 @@ export default function LePlanDuJardin({
           );
         })}
         <div className="mt-3">
-          <LegendeDesSymboles robinet={!compteur} />
+          <LegendeDesSymboles robinet={nez} />
         </div>
       </section>
 

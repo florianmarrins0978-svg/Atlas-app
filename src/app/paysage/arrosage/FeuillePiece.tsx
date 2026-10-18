@@ -141,7 +141,7 @@ export function ChoisirUnePiece({
             >
               <span className="flex h-12 w-12 flex-none items-center justify-center rounded-[8px]" style={photo ? undefined : { border: `1.5px dashed ${colors.line}` }}>
                 {photo && (
-                  // eslint-disable-next-line @next/next/no-img-element -- une photo de pièce, servie telle quelle
+                  // eslint-disable-next-line @next/next/no-img-element -- pansement assumé : next/image n’a rien à optimiser sur une photo de pièce servie telle quelle depuis public/, une photo de pièce, servie telle quelle
                   <img src={photo} alt="" style={{ maxWidth: 44, maxHeight: 44, objectFit: "contain" }} />
                 )}
               </span>

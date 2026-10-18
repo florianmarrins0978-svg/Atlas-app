@@ -52,7 +52,7 @@ export default function Vignette({
         }}
       >
         {poste.photo ? (
-          // eslint-disable-next-line @next/next/no-img-element -- une photo de pièce, servie telle quelle ; pas d'optimisation à lui faire payer
+          // eslint-disable-next-line @next/next/no-img-element -- pansement assumé : next/image n’a rien à optimiser sur une photo de pièce servie telle quelle depuis public/, une photo de pièce, servie telle quelle ; pas d'optimisation à lui faire payer
           <img src={poste.photo} alt="" style={{ maxWidth: taille - marge, maxHeight: taille - marge, objectFit: "contain", mixBlendMode: "multiply" }} />
         ) : (
           <span
@@ -63,7 +63,7 @@ export default function Vignette({
           </span>
         )}
         {poste.pied && (
-          // eslint-disable-next-line @next/next/no-img-element -- la buse au pied de sa tuyère
+          // eslint-disable-next-line @next/next/no-img-element -- pansement assumé : next/image n’a rien à optimiser sur une photo de pièce servie telle quelle depuis public/, la buse au pied de sa tuyère
           <img
             src={poste.pied}
             alt=""

@@ -176,17 +176,30 @@ async function feuilleDeStyle(html: string): Promise<string> {
   return compilateur.build([...classes]);
 }
 
-async function pageDeLEcran(): Promise<string> {
+/**
+ * LE MÊME JARDIN, PIQUÉ SUR UN ROBINET (sa planche `arrosage-plan-robinet.html`,
+ * validée le 18 octobre 2026 au soir) : le robinet sur le bord de la pelouse
+ * avant, la double sortie cochée. Au nez de robinet, les réseaux partent du
+ * robinet ; avec la nourrice, du regard.
+ */
+const JARDIN_AU_ROBINET = (montage: "nez" | "nourrice"): ParametresPlan => ({
+  ...JARDIN_DE_LA_PLANCHE,
+  compteur: "non",
+  piquage: { x: 14, y: 6 },
+  robinet: { montage, double: true, depart: null },
+});
+
+async function pageDeLEcran(parametres: ParametresPlan): Promise<string> {
   const html = renderToStaticMarkup(
-    React.createElement(LePlanDuJardin, { etat: { reserves: [], sansDessin: null }, parametres: JARDIN_DE_LA_PLANCHE, onParametres: () => undefined })
+    React.createElement(LePlanDuJardin, { etat: { reserves: [], sansDessin: null }, parametres, onParametres: () => undefined })
   );
   const css = await feuilleDeStyle(html);
   // Les photos sont celles que l'application sert : le dossier public, lu en local.
-  const photos = `file://${process.cwd().replace(/\\/g, "/")}/public/arrosage-photos/`;
+  const racine = `file://${process.cwd().replace(/\\/g, "/")}/public/`;
   return `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=390">
 <style>${css}
 body{margin:0;background:#f5f3ee;width:390px;color:#1c1c1a;font-family:Helvetica,Arial,sans-serif}</style>
-${html.replaceAll('"/arrosage-photos/', `"${photos}`)}`;
+${html.replaceAll('"/arrosage-photos/', `"${racine}arrosage-photos/`).replaceAll('"/arrosage-robinet-photos/', `"${racine}arrosage-robinet-photos/`)}`;
 }
 
 async function capturer() {
@@ -202,15 +215,22 @@ async function capturer() {
     await onglet.screenshot({ path: `${dossier}/${cas.nom}.png`, fullPage: true });
   }
 
-  console.log("  · ecran-du-plan");
-  const ecran = `${dossier}/ecran-du-plan.html`;
-  writeFileSync(ecran, await pageDeLEcran());
-  await onglet.goto(`file://${ecran}`);
-  await onglet.waitForTimeout(800);
-  await onglet.screenshot({ path: `${dossier}/ecran-du-plan.png`, fullPage: true });
+  const ecrans: [string, ParametresPlan][] = [
+    ["ecran-du-plan", JARDIN_DE_LA_PLANCHE],
+    ["ecran-du-plan-robinet-nez", JARDIN_AU_ROBINET("nez")],
+    ["ecran-du-plan-robinet-nourrice", JARDIN_AU_ROBINET("nourrice")],
+  ];
+  for (const [nom, parametres] of ecrans) {
+    console.log(`  · ${nom}`);
+    const ecran = `${dossier}/${nom}.html`;
+    writeFileSync(ecran, await pageDeLEcran(parametres));
+    await onglet.goto(`file://${ecran}`);
+    await onglet.waitForTimeout(800);
+    await onglet.screenshot({ path: `${dossier}/${nom}.png`, fullPage: true });
+  }
 
   await navigateur.close();
-  console.log(`\n✅ ${CAS.length + 1} captures dans ${dossier}`);
+  console.log(`\n✅ ${CAS.length + ecrans.length} captures dans ${dossier}`);
 }
 
 capturer().catch((e) => {

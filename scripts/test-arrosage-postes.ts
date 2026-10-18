@@ -7,6 +7,8 @@ import {
 import { composerNourrice } from "../src/lib/arrosage/nourrice-eclatee";
 import { PHOTOS, photoDe } from "../src/lib/arrosage/photos";
 import { motsPresents } from "../src/lib/arrosage/mots-du-plan";
+import { ROBINET, departDeLOutil, departRetenu, departsPossibles, libelleDepart, phraseDuManque, voiesManquantes, type Depart, type Montage } from "../src/lib/arrosage/robinet";
+import { CATALOGUE } from "../src/lib/arrosage/catalogue.js";
 import type { ParametresPlan } from "../src/lib/arrosage/consignes";
 import { existsSync, readFileSync } from "node:fs";
 
@@ -155,13 +157,77 @@ cas("le pointillé n'est dit que sous le réseau qui l'emprunte", () => {
 });
 
 cas("chaque photo de la table est servie par l'application, la même qu'en appli/, et une référence sans photo rend null", () => {
+  // Un fichier qui porte son dossier (les photos du robinet) se lit à la racine de public/ et d'appli/.
+  const chemin = (f: string) => (f.includes("/") ? f : `arrosage-photos/${f}`);
   const fichiers = [...new Set(Object.values(PHOTOS))];
-  const manquantes = fichiers.filter((f) => !existsSync(`public/arrosage-photos/${f}`));
+  const manquantes = fichiers.filter((f) => !existsSync(`public/${chemin(f)}`));
   exige(manquantes.length === 0, `photos absentes de public/ : ${manquantes.slice(0, 5).join(", ")}`);
   // Deux dossiers, une seule photo : celle de la planche est celle de l'écran.
-  const differentes = fichiers.filter((f) => existsSync(`appli/arrosage-photos/${f}`) && !readFileSync(`appli/arrosage-photos/${f}`).equals(readFileSync(`public/arrosage-photos/${f}`)));
+  const differentes = fichiers.filter((f) => existsSync(`appli/${chemin(f)}`) && !readFileSync(`appli/${chemin(f)}`).equals(readFileSync(`public/${chemin(f)}`)));
   exige(differentes.length === 0, `photos qui diffèrent entre appli/ et public/ : ${differentes.slice(0, 5).join(", ")}`);
   exige(photoDe("RA3504") === "/arrosage-photos/RA3504.jpg" && photoDe("n-existe-pas") === null, "photoDe rend l'adresse ou null");
+});
+
+// ═══ LE MONTAGE AU ROBINET — sa planche validée le 18 octobre 2026 au soir ═══
+
+const AU_ROBINET = (montage: Montage, double = false, depart: Depart | null = null): ParametresPlan => ({
+  ...PARAMETRES, compteur: "non", piquage: { x: 14, y: 6 }, robinet: { montage, double, depart },
+});
+
+cas("au nez de robinet, les réseaux partent du robinet ; avec la nourrice, du regard", () => {
+  const nez = calculerEtDessiner(AU_ROBINET("nez"), null);
+  exige(nez.dessin && nez.dessin.nourrice.x === 14 && nez.dessin.nourrice.y === 6, `au nez de robinet, le départ est ${JSON.stringify(nez.dessin?.nourrice)}, le robinet est en 14, 6`);
+  const avec = calculerEtDessiner(AU_ROBINET("nourrice"), null);
+  exige(avec.dessin && avec.dessin.nourrice.x === 13 && avec.dessin.nourrice.y === 6, "avec la nourrice, le départ est le regard, en 13, 6");
+  // Sans robinet situé, le plan se calcule et n'est pas dessiné : rien n'est supposé.
+  const sans = calculerEtDessiner({ ...AU_ROBINET("nez"), piquage: null }, null);
+  exige(sans.dessin === null && sans.plan.reserves.some((x) => x.includes("ne situe pas le robinet")), "sans robinet situé, pas de dessin, et la réserve le dit");
+  // Le calcul, lui, ne bouge pas d'un montage à l'autre.
+  exige(nez.plan.secteurs.length === avec.plan.secteurs.length && nez.plan.pressionAuxArroseurs === avec.plan.pressionAuxArroseurs, "le calcul est le même dans les deux montages");
+});
+
+cas("la pile au nez de robinet : programmateur, raccord, tuyau ; pas de nourrice dans la liste ; il manque 3 voies", () => {
+  const { plan: p, dessin: dd } = calculerEtDessiner(AU_ROBINET("nez"), null);
+  const robinet = { montage: "nez" as const, double: false, depart: null };
+  const postes = composerLesPostes({ plan: p, dessin: dd, compteur: false, amenee: null, robinet, retouches: RETOUCHES_VIERGES });
+  exige(postes.amenee.map((x) => x.cle).join(",") === "am:prog,am:raccord,am:pe", `la pile : ${postes.amenee.map((x) => x.cle).join(",")}`);
+  exige(postes.amenee[0].ref === "SP1151" && postes.amenee[1].ref === "OPL70302520", "le Solem BL-NR, puis le raccord femelle 25 x 3/4\" : il y a des arroseurs, donc du Ø25");
+  exige(postes.amenee[2].detail === "PEHD Ø25, à mesurer" && postes.amenee[2].q === 0, `le tuyau jusqu'au réseau n'est pas compté : « ${postes.amenee[2].detail} »`);
+  const groupes = groupesDeLaListe(p, postes, RETOUCHES_VIERGES, false, robinet);
+  exige(groupes[0].titre === "Au robinet" && !groupes.some((g) => g.titre.startsWith("Nourrice")), `les groupes : ${groupes.map((g) => g.titre).join(" | ")}`);
+  exige(groupes[0].lignes.SP1151?.q === 1 && groupes[0].lignes.OPL70302520?.q === 1, "le programmateur et le raccord se comptent une fois");
+  exige(voiesManquantes(p, "nez") === 3 && phraseDuManque(p, "nez") === "Il manque 3 voies : il en a 1, ce jardin demande 4 réseaux.", `le manque : ${phraseDuManque(p, "nez")}`);
+  exige(voiesManquantes(p, "nourrice") === 0, "avec la nourrice, aucune voie ne manque");
+});
+
+cas("avec la nourrice au robinet, la double sortie cochée et le Ø32 choisi : double, raccord 32, tuyau Ø32 jusqu'à la nourrice", () => {
+  const { plan: p, dessin: dd } = calculerEtDessiner(AU_ROBINET("nourrice", true, 32), null);
+  const robinet = { montage: "nourrice" as const, double: true, depart: 32 as const };
+  const postes = composerLesPostes({ plan: p, dessin: dd, compteur: false, amenee: 7.4, robinet, retouches: RETOUCHES_VIERGES });
+  exige(postes.amenee.map((x) => x.ref).join(",") === "BRO3493,OPL70303220,pe25-amenee", `la pile : ${postes.amenee.map((x) => x.ref).join(",")}`);
+  exige(postes.amenee[2].detail === "PEHD Ø32, 8 m" && postes.amenee[2].q === 8, `l'amenée calculée sur le croquis, au mètre supérieur : « ${postes.amenee[2].detail} »`);
+  const groupes = groupesDeLaListe(p, postes, RETOUCHES_VIERGES, false, robinet);
+  exige(groupes[0].titre === "Du robinet à la nourrice" && groupes[1].titre === groupeNourrice(p, postes, RETOUCHES_VIERGES).nom, `les groupes : ${groupes.map((g) => g.titre).join(" | ")}`);
+  // Le départ : l'outil choisit le Ø25 (des arroseurs, et le Ø25 tient) ; le Ø16 ne se propose pas.
+  exige(departDeLOutil(p) === 25 && departsPossibles(p).join(",") === "25,32" && departRetenu(p, 16) === 25, "des arroseurs : Ø25 ou Ø32, jamais le Ø16, et un Ø16 choisi avant retombe sur l'outil");
+  // Tout en goutte-à-goutte : le Ø16 rigide, et les quatre départs.
+  const goutte = calculerEtDessiner({ ...AU_ROBINET("nourrice"), zones: [{ id: 3, type: "massif", nom: "Massif", x: 0, y: 0, L: 20, l: 2.4, sortieGoutte: "boucle" }], nourrice: { x: 0, y: 1 }, piquage: { x: 0, y: 1 } }, null).plan;
+  exige(departDeLOutil(goutte) === 16 && departsPossibles(goutte).length === 4, `tout en goutte-à-goutte : ${libelleDepart(departDeLOutil(goutte))}, ${departsPossibles(goutte).length} départs`);
+  const pile16 = composerLesPostes({ plan: goutte, dessin: null, compteur: false, amenee: null, robinet: { montage: "nez", double: false, depart: "16s" }, retouches: RETOUCHES_VIERGES });
+  exige(pile16.amenee[1].ref === "MID6362" && pile16.amenee[2].nom.startsWith("Ø16 souple"), "le Ø16 souple part par l'embout Palaplast MID6362");
+});
+
+cas("les pièces du robinet portent les noms du catalogue, et leurs photos sont servies, les mêmes qu'en appli/", () => {
+  const cat = CATALOGUE as unknown as { pieceAjoutable(ref: string): { nom: string } | null; raccords16Rigide: { ref: string; nom: string }[] };
+  for (const p of [ROBINET.programmateur, ROBINET.raccord[25], ROBINET.raccord[32], ROBINET.raccord["16s"]]) {
+    exige(cat.pieceAjoutable(p.ref)?.nom === p.nom, `${p.ref} : « ${p.nom} » n'est pas le nom du catalogue`);
+  }
+  exige(cat.raccords16Rigide.find((x) => x.ref === ROBINET.raccord[16].ref)?.nom === ROBINET.raccord[16].nom, "le raccord du Ø16 rigide est celui de sa gamme Plasson");
+  for (const p of [ROBINET.double, ROBINET.programmateur, ...Object.values(ROBINET.raccord)]) {
+    exige(existsSync(`public/arrosage-robinet-photos/${p.photo}`), `photo absente de public/ : ${p.photo}`);
+    exige(readFileSync(`public/arrosage-robinet-photos/${p.photo}`).equals(readFileSync(`appli/arrosage-robinet-photos/${p.photo}`)), `photo qui diffère entre appli/ et public/ : ${p.photo}`);
+  }
+  exige(photoDe("BRO3493") === "/arrosage-robinet-photos/BRO3493.jpg", "la double sortie a sa photo, servie depuis son dossier");
 });
 
 cas("les mots du plan : SAM et PRS s'expliquent quand ils sont là, pas sinon", () => {

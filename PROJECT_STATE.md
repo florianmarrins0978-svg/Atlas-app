@@ -978,8 +978,10 @@ aucune batterie jouée, à sa demande). L'écran rend, une fois le croquis lu : 
 piquage, la nourrice éclatée, les réseaux un par un, les pièces posées sur le
 plan, la liste et le message au fournisseur, les mots du plan ; chaque pièce se
 change ou se supprime, au nombre choisi. `ARCHITECTURE.md` §470, `TODO.md` pour
-ce qui reste (le montage au robinet, une suite navigateur avec un plan de
-démonstration), `docs/arrosage-relais-session.md` pour tout l'état.
+ce qui reste (une suite navigateur avec un plan de démonstration),
+`docs/arrosage-relais-session.md` pour tout l'état. **Le montage au robinet a
+suivi le soir même** (§471) : nez de robinet sans nourrice ou nourrice, double
+sortie, départ Ø16, Ø25 ou Ø32, la pile des pièces du robinet.
 
 ## FAIT : LE PLAN D'ARROSAGE REPRIS, ET SES RÈGLES SOUS VERROU — 11 septembre 2026
 

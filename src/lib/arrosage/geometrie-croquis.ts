@@ -398,6 +398,13 @@ export type TerrainPose = {
   /** Le regard, en mètres, sur le même repère. `null` s'il n'est pas dessiné. */
   nourrice: PointCroquis | null;
   /**
+   * Le piquage, en mètres, sur le même repère. `null` s'il n'est pas dessiné.
+   * Au programmateur en nez de robinet, c'est de là que partent les réseaux
+   * (son montage du 18 octobre 2026) : il se place comme la nourrice, à la
+   * même échelle, et compte dans l'origine du repère comme elle.
+   */
+  piquage: PointCroquis | null;
+  /**
    * Ce qu'il faut DIRE du placement, ou `null` quand il n'y a rien à dire.
    *
    * **Une réserve, jamais un refus** — sa correction du 23 août 2026. Les cotes
@@ -410,7 +417,8 @@ export type TerrainPose = {
 
 export function poserSurLeTerrain(
   regard: PointCroquis | null,
-  zones: ZonePositionnee[]
+  zones: ZonePositionnee[],
+  piquage: PointCroquis | null = null
 ): { ok: true; terrain: TerrainPose } | { ok: false; raison: string } {
   // **L'échelle TOLÉRANTE, pas la sévère** — et c'est tout le changement du
   // 23 août. Le trajet du regard garde la sévère : lui entre dans le calcul de
@@ -439,8 +447,9 @@ export function poserSurLeTerrain(
   }
 
   const nourrice = regard ? { x: regard.x * m, y: regard.y * m } : null;
-  const xs = [...vues.map((z) => z.x), ...(nourrice ? [nourrice.x] : [])];
-  const ys = [...vues.map((z) => z.y), ...(nourrice ? [nourrice.y] : [])];
+  const pique = piquage ? { x: piquage.x * m, y: piquage.y * m } : null;
+  const xs = [...vues.map((z) => z.x), ...(nourrice ? [nourrice.x] : []), ...(pique ? [pique.x] : [])];
+  const ys = [...vues.map((z) => z.y), ...(nourrice ? [nourrice.y] : []), ...(pique ? [pique.y] : [])];
   const ox = Math.min(...xs);
   const oy = Math.min(...ys);
   const arrondir = (v: number) => Math.round(v * 100) / 100;
@@ -468,6 +477,7 @@ export function poserSurLeTerrain(
           : { x: arrondir(z.x - ox), y: arrondir(z.y - oy), L: z.L, l: z.l }
       ),
       nourrice: nourrice ? { x: arrondir(nourrice.x - ox), y: arrondir(nourrice.y - oy) } : null,
+      piquage: pique ? { x: arrondir(pique.x - ox), y: arrondir(pique.y - oy) } : null,
     },
   };
 }

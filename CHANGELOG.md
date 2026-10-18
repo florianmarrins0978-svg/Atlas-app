@@ -8,6 +8,17 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-18
 
+- **Le montage au robinet est dans l'écran du plan**, sur sa validation du soir
+  (*« tu peux coder, pas de batterie »*) : ses deux montages, le programmateur
+  en nez de robinet sans nourrice, les réseaux partant du robinet, ou la
+  nourrice avec le robinet pour départ ; la double sortie proposée ; le départ
+  Ø16 rigide ou souple, Ø25 ou Ø32 choisi par l'outil et modifiable, le Ø16
+  seulement quand tout est en goutte-à-goutte ; la pile des pièces, alignées
+  sur l'axe de vissage, chacune se changeant ou se supprimant ; le manque de
+  voies sous le programmateur (`robinet.ts`, `MontageAuRobinet.tsx`,
+  `ARCHITECTURE.md` §471). Le piquage lu sur le croquis voyage désormais en
+  mètres avec les paramètres, comme la nourrice. Ce que ça évite : un écran
+  qui, au robinet, montrait une nourrice que ce montage n'a pas.
 - **L'écran du plan d'arrosage est celui de la planche qu'il a validée.** Une
   fois le croquis lu : le piquage (du compteur à la nourrice), la nourrice
   éclatée avec ses numéros, chaque réseau sur le plan, les pièces de chaque

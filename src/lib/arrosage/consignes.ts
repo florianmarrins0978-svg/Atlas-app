@@ -1,4 +1,5 @@
 import { CATALOGUE } from "./catalogue.js";
+import type { Depart, Montage } from "./robinet";
 
 /**
  * CE QUE LA DISCUSSION A LE DROIT DE CHANGER — et rien d'autre.
@@ -90,6 +91,21 @@ export type ParametresPlan = {
    * que le DESSIN en a besoin à chaque recalcul, pas parce qu'il est réglable.
    */
   nourrice: { x: number; y: number } | null;
+  /**
+   * L'endroit du piquage, en mètres, sur le même repère que la nourrice — lu
+   * sur le croquis comme elle (c'est le troisième élément obligatoire). Au
+   * programmateur en nez de robinet, il n'y a pas de nourrice : les réseaux
+   * partent de là. `null` quand le croquis ne le situe pas.
+   */
+  piquage?: { x: number; y: number } | null;
+  /**
+   * Sur un robinet, ce qu'il a choisi du montage (18 octobre 2026) : le
+   * programmateur en nez de robinet ou la nourrice, la double sortie proposée,
+   * et le tuyau qui part (`null` : celui que l'outil choisit). Rien de tout
+   * cela n'entre dans le calcul ; cela voyage avec les paramètres parce que le
+   * DESSIN en dépend (d'où partent les réseaux), comme la nourrice.
+   */
+  robinet?: { montage: Montage; double: boolean; depart: Depart | null };
 };
 
 export type LectureConsigne =

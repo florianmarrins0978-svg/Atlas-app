@@ -152,11 +152,11 @@ function Chaine({ maillons, onChaine }: { maillons: Maillon[]; onChaine: (m: Mai
               style={{ backgroundColor: colors.card, boxShadow: `0 0 0 1px ${colors.line}, 0 2px 5px ${colors.lineSoft}`, opacity: m.etat === "retiree" ? 0.35 : 1, filter: m.etat === "retiree" ? "grayscale(1)" : undefined }}
             >
               {m.photo && (
-                // eslint-disable-next-line @next/next/no-img-element -- une photo de pièce, servie telle quelle
+                // eslint-disable-next-line @next/next/no-img-element -- pansement assumé : next/image n’a rien à optimiser sur une photo de pièce servie telle quelle depuis public/, une photo de pièce, servie telle quelle
                 <img src={m.photo} alt="" style={{ maxWidth: 40, maxHeight: 40, mixBlendMode: "multiply" }} />
               )}
               {m.pied && (
-                // eslint-disable-next-line @next/next/no-img-element -- la buse au pied de sa tuyère
+                // eslint-disable-next-line @next/next/no-img-element -- pansement assumé : next/image n’a rien à optimiser sur une photo de pièce servie telle quelle depuis public/, la buse au pied de sa tuyère
                 <img src={m.pied} alt="" className="absolute" style={{ right: -5, bottom: -5, width: "55%", borderRadius: 5, backgroundColor: colors.card }} />
               )}
             </span>
@@ -179,7 +179,8 @@ function Chaine({ maillons, onChaine }: { maillons: Maillon[]; onChaine: (m: Mai
   );
 }
 
-function Chips<T extends string | number>({ valeur, choix, onChoix, libelle }: { valeur: T; choix: [T, string][]; onChoix: (v: T) => void; libelle: string }) {
+/** Une rangée de choix, un seul pressé : celle de la planche, pour le goutte-à-goutte comme pour le montage au robinet. */
+export function Chips<T extends string | number>({ valeur, choix, onChoix, libelle }: { valeur: T; choix: [T, string][]; onChoix: (v: T) => void; libelle: string }) {
   return (
     <div className="mt-3 flex flex-wrap gap-1.5" role="group" aria-label={libelle}>
       {choix.map(([v, texte]) => (

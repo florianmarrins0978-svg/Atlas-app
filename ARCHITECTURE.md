@@ -35148,11 +35148,70 @@ depuis `globals.css` sur les classes du rendu (`@tailwindcss/node`) : la vraie
 mise en page, sans serveur, sans base, sans clé d'IA. C'est ainsi que l'écran a
 été regardé avant d'être livré (`CLAUDE.md` §0.10).
 
-**Ce qui n'est pas porté, et qui ne doit pas être cru porté.** Le montage au
-robinet (nez de robinet, double sortie, programmateur, départ Ø16 ou Ø32 :
-`appli/arrosage-plan-robinet.html`) attend sa validation : au robinet, l'écran
-montre le plan avec la nourrice, le titre « Du robinet à la nourrice » et la
-croix du robinet sur le plan, rien de plus. Et aucune suite navigateur n'ouvre
-l'écran avec un plan : il faut un croquis lu par l'IA. La suite pure et la
-capture tiennent la place, jusqu'à ce qu'un plan de démonstration sans photo
-existe (`TODO.md`).
+**Ce qui n'est pas porté, et qui ne doit pas être cru porté.** ~~Le montage au
+robinet attend sa validation~~ (porté le soir même, §471). Aucune suite
+navigateur n'ouvre l'écran avec un plan : il faut un croquis lu par l'IA. La
+suite pure et la capture tiennent la place, jusqu'à ce qu'un plan de
+démonstration sans photo existe (`TODO.md`).
+
+## §471 : Le montage au robinet est dans l'écran, et il ne touche pas au calcul
+
+**Sa validation du 18 octobre 2026 au soir**, devant la planche
+`appli/arrosage-plan-robinet.html` : *« tu peux coder, pas de batterie »*. Ses
+deux montages y sont : **le programmateur en nez de robinet**, et alors pas de
+nourrice, les réseaux partent du robinet ; ou **la nourrice**, le robinet pour
+départ. Sous le robinet, la double sortie **proposée**, jamais imposée ; puis le
+raccord du tuyau qui part, et le tuyau, Ø16 rigide ou souple seulement quand
+tout est en goutte-à-goutte (*« dès qu'il y a des arroseurs, ça sera forcément
+du 25 ou du 32 »*), sinon le diamètre que le calcul donne à l'amenée, l'outil
+choisit et il peut changer.
+
+**Quatre décisions.**
+
+1. **Les pièces du robinet vivent dans `robinet.ts`, hors du calcul.** Elles
+   ne changent ni le débit ni la pression ; elles entrent dans la liste du
+   départ et chacune se change ou se supprime (`postes.ts` les pose sous les
+   clés `am:double`, `am:prog`, `am:raccord`, `am:pe`). Leurs noms sont **lus
+   au catalogue** à la construction du module, jamais recopiés : une
+   référence qui en sortirait ferait tomber le module, pas mentir l'écran. La
+   double sortie BRO3493, qui n'est pas au catalogue, porte le nom et la
+   référence Aqua Plus qu'il a donnés avec sa photo.
+
+2. **Le choix du montage voyage avec les paramètres** (`parametres.robinet`),
+   comme la nourrice et pour la même raison : le DESSIN en dépend. Au nez de
+   robinet, `calculerEtDessiner` fait partir les réseaux du **piquage**, que
+   la lecture du croquis place désormais en mètres à côté de la nourrice
+   (`poserSurLeTerrain`, troisième argument ; `parametres.piquage`). Sans
+   robinet situé, le plan se calcule et n'est pas dessiné, et la réserve le
+   dit : rien n'est supposé. Au compteur, `montageDuPlan` rend toujours
+   « nourrice » : rien ne change pour lui.
+
+3. **Le calcul, lui, n'a pas bougé.** Au nez de robinet, la pression au
+   dernier arroseur se calcule encore avec l'amenée du piquage à la nourrice
+   et le trajet du regard tels que le croquis les a donnés, alors que les
+   réseaux partent du robinet. Sa règle est nette : *« avant de modifier une
+   règle ou un chiffre du calcul, tu viens me le dire »*. C'est donc une
+   question qui lui est posée (`TODO.md`), pas un chiffre changé en silence.
+   Sur un jardin où la nourrice est entre le robinet et les zones, les deux
+   trajets se valent en Manhattan ; ailleurs, l'écart se dira quand il aura
+   tranché.
+
+4. **La pile s'aligne sur l'axe de vissage** (`MontageAuRobinet.tsx`) : chaque
+   photo dit où tombe son filetage (`axe`, mesuré sur la photo), et ce point se
+   pose à 60 px du bord ; centrer les photos ne suffisait pas (*« aligne-moi
+   tous les raccords »*). Les photos de la pile sont celles de la planche,
+   debout, servies depuis `public/arrosage-robinet-photos/`, copie
+   d'`appli/` ; `photos.ts` sait désormais servir un fichier qui porte son
+   dossier. Le manque de voies se lit **sous le programmateur**, là où il
+   regarde, jamais au bas du plan. Changer de montage rend les retouches du
+   départ à la proposition (`oublierLeDepart`), remet le départ à celui de
+   l'outil, et retire la sonde, qui n'a pas de nourrice où se poser.
+
+**Ce qui le tient** : `scripts/test-arrosage-postes.ts` (quatre cas : le départ
+des réseaux selon le montage, la pile au nez de robinet et son manque de
+trois voies, la pile avec la nourrice et le Ø32 choisi, les noms du catalogue
+et les photos servies) ; `scripts/test-regles-du-patron.ts` (Ø25 ou Ø32 dès
+qu'il y a des arroseurs, Ø16 au goutte-à-goutte seul, le nez de robinet gardé
+et prévenu) ; et la capture, `ecran-du-plan-robinet-nez.png` et
+`ecran-du-plan-robinet-nourrice.png`, regardée avant d'être livrée. Aucune
+batterie, à sa demande.
