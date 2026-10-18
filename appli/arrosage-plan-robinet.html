@@ -97,6 +97,7 @@
   .reseau-titre span{font-size:12.5px;color:var(--atlas-muted)}
   .schema{margin-top:8px;border-radius:12px;background:var(--atlas-card);padding:10px}
   .schema svg{display:block;width:100%;height:auto}
+  .pointille{margin:8px 0 0;font-size:13px;color:var(--atlas-inkSoft)}
   .materiel{margin:8px 0 0;padding:0;list-style:none;font-size:14px}
   .materiel li{display:flex;gap:10px;padding:3px 0}
   .materiel .q{flex:none;width:58px;font-weight:600;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
@@ -537,7 +538,7 @@
     s += d.tranchee.map(function (t) { return '<line x1="' + t.de.x + '" y1="' + t.de.y + '" x2="' + t.a.x + '" y2="' + t.a.y + '" stroke="' + encre + '" stroke-opacity="0.12" stroke-width="0.95" stroke-linecap="round"/>'; }).join("");
     s += d.contours.map(function (c) { return '<polygon points="' + pts(c) + '" fill="none" stroke="' + encre + '" stroke-opacity="0.45" stroke-width="0.26"/>'; }).join("");
     s += d.cotes.map(function (c) { return '<text x="' + c.x + '" y="' + c.y + '" text-anchor="' + c.ancre + '" font-size="0.95" fill="' + jeton("muted") + '">' + texte(c.texte) + "</text>"; }).join("");
-    s += d.liaisons.map(function (t) { return '<line x1="' + t.de.x + '" y1="' + t.de.y + '" x2="' + t.a.x + '" y2="' + t.a.y + '" stroke="' + encre + '" stroke-width="0.2" stroke-dasharray="0.5 0.4"/>'; }).join("");
+    s += liaisonsDuReseau(d, p, i).map(function (t) { return '<line x1="' + t.de.x + '" y1="' + t.de.y + '" x2="' + t.a.x + '" y2="' + t.a.y + '" stroke="' + encre + '" stroke-width="0.2" stroke-dasharray="0.5 0.4"/>'; }).join("");
     // Les autres réseaux, en pâle : on voit par où ils passent, sans les confondre.
     d.reseaux.forEach(function (o) {
       if (o.numero === i) return;
@@ -569,6 +570,15 @@
     return s + "</svg>";
   }
 
+  // LE POINTILLÉ NE SE DESSINE QUE SOUS LE RÉSEAU QUI L'EMPRUNTE (sa réponse du
+  // 18 octobre 2026). Une liaison va de la nourrice au bord d'une zone qui n'est
+  // pas d'un seul tenant avec elle : elle appartient aux réseaux de cette zone.
+  function liaisonsDuReseau(d, p, i) {
+    var zones = p.dessin.filter(function (z) { return (p.reseauxDeZone[z.id] || []).indexOf(i) >= 0; });
+    return d.liaisons.filter(function (l) {
+      return zones.some(function (z) { return l.a.x >= z.x - 0.01 && l.a.x <= z.x + z.L + 0.01 && l.a.y >= z.y - 0.01 && l.a.y <= z.y + z.l + 0.01; });
+    });
+  }
   function dessinerReseaux(p, d) {
     $("titre-reseaux").textContent = p.secteurs.length + " réseau" + (p.secteurs.length > 1 ? "x" : "") + ", " + virgule(d.metresTranchee) + " m de tranchée";
     var html = "";
@@ -586,7 +596,9 @@
       // leur donner le temps d'arrosage, ça, il faut pas le faire »).
       if (r) lignes += '<li><span class="q">' + r.metresTuyau + ' m</span><span>de PEHD Ø25</span></li>';
       html += '<div class="reseau" style="--couleur:' + c + '"><div class="reseau-titre"><span class="pastille"></span><b>Réseau ' + (i + 1) + "</b><span>" + texte(s.nom) + "</span></div>" +
-        '<div class="schema">' + svgReseau(d, p, i) + '</div><ul class="materiel">' + lignes + "</ul></div>";
+        '<div class="schema">' + svgReseau(d, p, i) + "</div>" +
+        (liaisonsDuReseau(d, p, i).length ? '<p class="pointille">En pointillé, le passage de la nourrice à « ' + texte(s.nom) + ' » sort de la pelouse. Le croquis ne montre pas par où il passe (allée, terrasse, bordure) : sa longueur se mesure sur place.</p>' : "") +
+        '<ul class="materiel">' + lignes + "</ul></div>";
     });
     $("reseaux").innerHTML = html;
     var e = "var(--atlas-ink)", k = "var(--atlas-card)";
