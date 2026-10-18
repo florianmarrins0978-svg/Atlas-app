@@ -677,13 +677,13 @@ export const CATALOGUE = {
   },
 
   piecesReseau: {
-    'te-taraude-25-34-25': { nom:'Té 90° taraudé 25×3/4"×25', marque:'Plasson' },
-    'coude-taraude-25-34': { nom:'Coude 90° taraudé 25×3/4"', marque:'Plasson' },
+    'te-taraude-25-34-25': { nom:'Té 90° taraudé 25×3/4"×25', marque:'Plasson', aquaplus:'OPL71402520' },
+    'coude-taraude-25-34': { nom:'Coude 90° taraudé 25×3/4"', marque:'Plasson', aquaplus:'OPL71502520' },
     // Le « (jonction, non taraudé) » qui suivait ce nom a été retiré le 18 août
     // sur sa consigne : c'est l'emploi de la pièce, pas sa désignation, et il
     // commande sur la désignation. Le 25×25×25 dit déjà qu'il n'est pas taraudé
     // — un taraudé porte son filetage dans son nom (25×3/4"×25).
-    'te-25-25-25':         { nom:'Té 90° 25×25×25', marque:'Plasson' },
+    'te-25-25-25':         { nom:'Té 90° 25×25×25', marque:'Plasson', aquaplus:'OPL704025' },
     'pebd16':              { nom:'PEBD rigide Ø16 (tube de reprise)', marque:'Dura', unite:'ml' }
   },
 
@@ -1496,30 +1496,30 @@ export const CATALOGUE = {
      fiches. Reçues le 17 août 2026 : « voici toutes les pièces pour la
      nourrice, ce qui se trouve dans le regard d'arrosage. » */
   piecesNourrice: {
-    'coude-mf':      { nom:'Coude 90° taraudé/fileté MF 1"', marque:'Dura' },
+    'coude-mf':      { nom:'Coude 90° taraudé/fileté MF 1"', marque:'Dura', aquaplus:'ODU306009' },
     // Le coude FF et le raccord femelle 25 x 3/4" remplacent, le 18 octobre 2026
     // et sur ses réponses, le « coude MM » et le « raccord mâle 25 1" » de ses
     // fiches du 17 août : ce sont les pièces qu'il pose (Aqua Plus ODU306010, OPL70302520).
-    'coude-ff':      { nom:'Coude 1" FF', marque:'Dura' },
-    'mamelon':       { nom:'Mamelon réduit fileté MM 1"-3/4"', marque:'Dura' },
-    'union':         { nom:'Union droite taraudée MF 1"', marque:'Dura' },
+    'coude-ff':      { nom:'Coude 1" FF', marque:'Dura', aquaplus:'ODU306010' },
+    'mamelon':       { nom:'Mamelon réduit fileté MM 1"-3/4"', marque:'Dura', aquaplus:'ODU8303131' },
+    'union':         { nom:'Union droite taraudée MF 1"', marque:'Dura', aquaplus:'ODU34MF' },
     'vanne-purge':   { nom:'Vanne avec vis de purge 3/4"', marque:'Dura' },
-    'electrovanne-100dv': { nom:'Électrovanne 100 DV 1" MM 9V', marque:'Rain Bird' },
-    'raccord-femelle25':{ nom:'Raccord femelle 25 x 3/4"', marque:'Plasson' },
-    'regard-rect12': { nom:'Regard rectangle 12"', marque:'Dura' },
-    'regard-rg17106':{ nom:'Regard jumbo RG17106', marque:'Dura' },
+    'electrovanne-100dv': { nom:'Électrovanne 100 DV 1" MM 9V', marque:'Rain Bird', aquaplus:'REV100DVM9V' },
+    'raccord-femelle25':{ nom:'Raccord femelle 25 x 3/4"', marque:'Plasson', aquaplus:'OPL70302520' },
+    'regard-rect12': { nom:'Regard rectangle 12"', marque:'Dura', aquaplus:'RG17100' },
+    'regard-rg17106':{ nom:'Regard jumbo RG17106', marque:'Dura', aquaplus:'RG17106' },
     'regard-jumbo5': { nom:'Regard jumbo 5 voies', marque:'Dura' },
     'regard-jumbo6': { nom:'Regard jumbo 6 voies', marque:'Dura' },
     'te-mmf':        { nom:'Té taraudé/fileté 1" MMF', marque:'Dura' },
-    'clarinette-2v': { nom:'Collecteur M x F x 2 sorties 1"', marque:'Dura' },
-    'clarinette-3v': { nom:'Collecteur M x F x 3 sorties 1"', marque:'Dura' },
-    'clarinette-4v': { nom:'Collecteur M x F x 4 sorties 1"', marque:'Dura' },
+    'clarinette-2v': { nom:'Collecteur M x F x 2 sorties 1"', marque:'Dura', aquaplus:'ODU3010102' },
+    'clarinette-3v': { nom:'Collecteur M x F x 3 sorties 1"', marque:'Dura', aquaplus:'ODU3010103' },
+    'clarinette-4v': { nom:'Collecteur M x F x 4 sorties 1"', marque:'Dura', aquaplus:'ODU3010104' },
     'prog-1':        { nom:'Programmateur BL-IP 1 station 9V', marque:'Solem' },
     'prog-2':        { nom:'Programmateur BL-IP 2 stations 9V', marque:'Solem' },
     'prog-4':        { nom:'Programmateur BL-IP 4 stations 9V', marque:'Solem' },
     'prog-6':        { nom:'Programmateur BL-IP 6 stations 9V', marque:'Solem' },
-    'pile-9v':       { nom:'Pile alcaline 9V' },
-    'connexion':     { nom:'Connexion étanche' },
+    'pile-9v':       { nom:'Pile alcaline 9V', aquaplus:'ELD60481' },
+    'connexion':     { nom:'Connexion étanche', aquaplus:'ELD550077' },
 
     /* ── Modification GOUTTE-À-GOUTTE — reçue le 17 août 2026 ───────────────
        « Lorsqu'un réseau est pour du goutte-à-goutte, quelques modifications
@@ -1529,8 +1529,8 @@ export const CATALOGUE = {
        PAR VOIE, à celles qui alimentent une zone goutte-à-goutte. Voir
        `CATALOGUE.ficheNourrice`, plus bas, qui fait ce mélange. */
     'regulateur-ff34':      { nom:'Régulateur de pression FF 3/4"', marque:'Dura' },
-    'electrovanne-100dv-ff':{ nom:'Électrovanne 100 DV 1" FF 9V', marque:'Rain Bird' },
-    'mamelon-droit-1':      { nom:'Mamelon fileté MM 1"', marque:'Dura' }
+    'electrovanne-100dv-ff':{ nom:'Électrovanne 100 DV 1" FF 9V', marque:'Rain Bird', aquaplus:'REV100DV9V' },
+    'mamelon-droit-1':      { nom:'Mamelon fileté MM 1"', marque:'Dura', aquaplus:'ODU8303' }
   },
 
   /* ── Les nourrices, par nombre de voies — reçues le 17 août 2026 ─────────
@@ -1767,6 +1767,11 @@ CATALOGUE.busesDe = function (marqueCle, pourType) {
    une référence inventée fait perdre une matinée. */
 CATALOGUE.referenceDe = function (cle) {
   if (!cle) return null;
+  // **Une pièce de nourrice ou de réseau porte sa référence Aqua Plus** (avec
+  // son accord du 18 octobre 2026) : elle ne compte que si cette référence est
+  // dans le relevé du catalogue Aqua Plus, donc lue sur son document.
+  var piece = CATALOGUE.piecesNourrice[cle] || CATALOGUE.piecesReseau[cle];
+  if (piece) return piece.aquaplus && CATALOGUE.pieceAjoutable(piece.aquaplus) ? piece.aquaplus : null;
   var listes = [CATALOGUE.buses, CATALOGUE.corps, CATALOGUE.coudes,
                 CATALOGUE.gaines, CATALOGUE.materiel, CATALOGUE.piecesAjoutables];
   for (var i = 0; i < listes.length; i++) {

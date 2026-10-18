@@ -70,6 +70,7 @@ type Catalogue = {
   piecesReseau: Record<string, { nom: string; marque?: string }>;
   coudes: { ref: string; nom: string; detail: string; filetage: string }[];
   corps: { ref: string; nom: string; filetage: string }[];
+  referenceDe(cle: string): string | null;
 };
 const CAT = CATALOGUE as unknown as Catalogue;
 
@@ -129,6 +130,7 @@ export function piecesDuPlan(
   if (options.compteur) {
     amenee.push({
       ref: TE_EGAL,
+      reference: CAT.referenceDe(TE_EGAL),
       nom: nomDe(TE_EGAL),
       q: 1,
       u: "u",
@@ -208,9 +210,9 @@ export function piecesDuPlan(
     const etGoutte = (n: number) => (n > 0 ? `, et ${n} pour le goutte-à-goutte` : "");
     const coudes = somme((r) => r.coudes) + sorties;
     const egaux = somme((r) => r.tesEgaux) + egauxGoutte;
-    if (tes > 0) jardin.push({ ref: TE_LIGNE, nom: nomDe(TE_LIGNE), q: tes, u: "u", ou: "jardin", detail: parReseau((r) => r.tes) });
-    if (coudes > 0) jardin.push({ ref: COUDE_LIGNE, nom: nomDe(COUDE_LIGNE), q: coudes, u: "u", ou: "jardin", detail: `${parReseau((r) => r.coudes)}${etGoutte(sorties)}` });
-    if (egaux > 0) jardin.push({ ref: TE_EGAL, nom: nomDe(TE_EGAL), q: egaux, u: "u", ou: "jardin", detail: `${parReseau((r) => r.tesEgaux)}${etGoutte(egauxGoutte)}` });
+    if (tes > 0) jardin.push({ ref: TE_LIGNE, reference: CAT.referenceDe(TE_LIGNE), nom: nomDe(TE_LIGNE), q: tes, u: "u", ou: "jardin", detail: parReseau((r) => r.tes) });
+    if (coudes > 0) jardin.push({ ref: COUDE_LIGNE, reference: CAT.referenceDe(COUDE_LIGNE), nom: nomDe(COUDE_LIGNE), q: coudes, u: "u", ou: "jardin", detail: `${parReseau((r) => r.coudes)}${etGoutte(sorties)}` });
+    if (egaux > 0) jardin.push({ ref: TE_EGAL, reference: CAT.referenceDe(TE_EGAL), nom: nomDe(TE_EGAL), q: egaux, u: "u", ou: "jardin", detail: `${parReseau((r) => r.tesEgaux)}${etGoutte(egauxGoutte)}` });
 
     // **Le tuyau Ø25 des réseaux, mesuré sur le tracé.** Arrondi au mètre
     // supérieur : un tuyau se coupe, il ne s'allonge pas.

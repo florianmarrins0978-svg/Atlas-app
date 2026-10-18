@@ -220,7 +220,7 @@
     y = colonne("mamelon", xL, y) + ECART;
     y = colonne("union", xL, y) + ECART;
     y = colonne("raccord-femelle25", xL, y) + ECART;
-    var fin = colonne("pehd", xL, y), etiquettes = [[xL, fin, "Arrivée"]];
+    var fin = colonne("pehd", xL, y), etiquettes = [[xL, fin, "Arrivée"], [xL, fin + 13, "d’eau"]];
     // Les voies, numérotées de gauche à droite après l'arrivée.
     axes.forEach(function (xv, i) {
       // Les voies de goutte-à-goutte sont les dernières, à droite (validé le 18 octobre 2026).

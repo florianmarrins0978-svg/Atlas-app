@@ -141,6 +141,7 @@ tuyères 1800 et la 3504, jamais sur la ligne ; le BL-IP est un Solem ; les
 | `verifier-maquette-arrosage-plan.mjs` | plante (`getAttribute` sur null), **déjà avant** la correction du 18 octobre : à regarder |
 | clavier de l’iPhone | le pavé numérique n’a pas de touche OK : sur la planche de ses demandes, toucher ailleurs le referme (18 octobre). **L’écran de l’appli (`ArrosageClient.tsx`, `inputMode="decimal"`) aura besoin du même geste quand on le codera**, pas vérifiable ici |
 | besoins en eau par saison | `SAISONS` dans `calcul.js` (gazon 25 mm par semaine en 3 passages en juillet et août, etc.) : posés par nous le 17 août 2026, **aucune source de lui**. Ils donnent les durées (« 83 min par arrosage »). Question posée le 18 octobre |
+| coude taraudé sur le plan | **sa règle du 18 octobre** : un coude taraudé se dessine en ROND CREUX, sous une tuyère comme sous une turbine. Fait sur la planche du plan ; `PlanDessine.tsx` dessine encore un carré creux sous une tuyère, à changer quand on codera l’écran |
 | cote coupée | sur le plan dessiné, la cote d’un massif qui touche le bord droit sort du cadre (« 2,4 r ») |
 
 ## Ce qui reste à faire, dans cet ordre

@@ -85,10 +85,9 @@
   .schema svg{display:block;width:100%;height:auto}
   .materiel{margin:8px 0 0;padding:0;list-style:none;font-size:14px}
   .materiel li{display:flex;gap:10px;padding:3px 0}
-  .materiel .q{flex:none;width:44px;font-weight:600;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
+  .materiel .q{flex:none;width:58px;font-weight:600;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
   .symboles{margin-top:12px;border-radius:12px;background:var(--atlas-card);padding:8px 14px}
   .symboles p{display:flex;align-items:center;gap:10px;margin:0;padding:4px 0;font-size:13.5px}
-  .symboles .s{flex:none;display:flex;gap:6px;width:36px}
   .symboles svg{flex:none;width:15px;height:15px}
 
   /* 3. LES PIÈCES : la vue éclatée, un rail par réseau, une rangée par tête. */
@@ -345,7 +344,7 @@
     y = colonne("mamelon", xL, y) + ECART;
     y = colonne("union", xL, y) + ECART;
     y = colonne("raccord-femelle25", xL, y) + ECART;
-    var fin = colonne("pehd", xL, y), etiquettes = [[xL, fin, "Arrivée"]];
+    var fin = colonne("pehd", xL, y), etiquettes = [[xL, fin, "Arrivée"], [xL, fin + 12, "d’eau"]];
     axes.forEach(function (xv, i) {
       var goutte = i >= axes.length - nbGoutte, yv = bas;
       if (goutte) {
@@ -455,7 +454,10 @@
       s += r.jonctions.map(function (q) { return '<rect x="' + (q.x - 0.38) + '" y="' + (q.y - 0.38) + '" width="0.76" height="0.76" transform="rotate(45 ' + q.x + " " + q.y + ')" fill="' + carte + '" stroke="' + r.couleur + '" stroke-width="0.26"/>'; }).join("");
       s += r.tetes.map(function (t) {
         var cx = t.x + t.decalage.x, cy = t.y + t.decalage.y, f = t.plein ? r.couleur : carte, w = t.plein ? 0.2 : 0.34;
-        return t.forme === "rond"
+        // UN COUDE TARAUDÉ EST UN ROND CREUX, sous une turbine comme sous une
+        // tuyère : sa règle du 18 octobre 2026 (« un coude taraudé se nomme par un
+        // rond creux, que ce soit pour des tuyères ou pour de l'arrosage »).
+        return t.forme === "rond" || !t.plein
           ? '<circle cx="' + cx + '" cy="' + cy + '" r="' + (t.plein ? 0.5 : 0.42) + '" fill="' + f + '" stroke="' + r.couleur + '" stroke-width="' + w + '"/>'
           : '<rect x="' + (cx - 0.44) + '" y="' + (cy - 0.44) + '" width="0.88" height="0.88" rx="0.12" fill="' + f + '" stroke="' + r.couleur + '" stroke-width="' + w + '"/>';
       }).join("");
@@ -487,21 +489,14 @@
     });
     $("reseaux").innerHTML = html;
     var e = "var(--atlas-ink)", k = "var(--atlas-card)";
-    // Plein et creux se dessinent sur les DEUX formes : un coude taraudé en bout
-    // de ligne porte une turbine (rond creux) ou une tuyère (carré creux). Un seul
-    // rond creux laissait croire qu'une tuyère en bout de ligne était autre chose
-    // (sa remarque du 18 octobre 2026 : « il faut être cohérent »).
-    var sym = function (svg, t, svg2) {
-      var un = function (s) { return '<svg viewBox="-1 -1 2 2" aria-hidden="true">' + s + "</svg>"; };
-      return '<p><span class="s">' + un(svg) + (svg2 ? un(svg2) : "") + "</span><span>" + t + "</span></p>";
-    };
+    var sym = function (svg, t) { return '<p><svg viewBox="-1 -1 2 2" aria-hidden="true">' + svg + "</svg><span>" + t + "</span></p>"; };
     var rondPlein = '<circle r="0.72" fill="' + e + '"/>', carrePlein = '<rect x="-0.66" y="-0.66" width="1.32" height="1.32" rx="0.18" fill="' + e + '"/>';
-    var rondCreux = '<circle r="0.6" fill="' + k + '" stroke="' + e + '" stroke-width="0.3"/>', carreCreux = '<rect x="-0.56" y="-0.56" width="1.12" height="1.12" rx="0.16" fill="' + k + '" stroke="' + e + '" stroke-width="0.3"/>';
+    var rondCreux = '<circle r="0.6" fill="' + k + '" stroke="' + e + '" stroke-width="0.3"/>';
     $("symboles").innerHTML =
       sym(rondPlein, "rond : une turbine") +
       sym(carrePlein, "carré : une tuyère") +
-      sym(rondPlein, "plein : la ligne continue, té taraudé 25×3/4″×25", carrePlein) +
-      sym(rondCreux, "creux : la ligne s’arrête là, coude taraudé 25×3/4″", carreCreux) +
+      sym(rondPlein, "plein : la ligne continue, té taraudé 25×3/4″×25") +
+      sym(rondCreux, "creux : la ligne s’arrête là, coude taraudé 25×3/4″") +
       sym('<rect x="-0.56" y="-0.56" width="1.12" height="1.12" transform="rotate(45)" fill="' + k + '" stroke="' + e + '" stroke-width="0.3"/>', "losange : la ligne se sépare, té égal 25×25×25") +
       sym('<line x1="-0.85" y1="0" x2="0.85" y2="0" stroke="' + e + '" stroke-width="0.18"/>', "trait fin : l’antenne Ø16 rigide, 2 m au plus");
   }
