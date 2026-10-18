@@ -43,6 +43,8 @@ barrées ou annotées).
 
 **Encore** : (6) la case du grillage est sous celle de la sonde, au-dessus de la nourrice ; cochés, la sonde (à gauche) et le grillage (à droite) s'affichent sur une ligne. Au nez de robinet, sans nourrice, la case du grillage vient seule à sa place. (7) Le départ au robinet propose aussi **Ø16 souple**, qui prend l'embout Palaplast MID6362.
 
+**Et** : (8) la phrase du grillage est réécrite à la source (`pieces.ts`) : « 83 m de tranchée mesurés sur le plan. Les passages en pointillés et le tuyau d'amenée ne sont pas mesurés : leur longueur s'ajoute sur place. Le dernier rouleau en couvre encore 17 m. » (sans point-virgule, sa remarque). (9) Le robinet en ligne montrait encore l'ancien embout gris pour le Ø16 souple : les planches publiées gardent leurs anciens fichiers tant qu'on ne les renvoie pas. Remplacé par SA photo. **Piège : après avoir changé une photo dans `appli/`, la renvoyer à CHAQUE planche qui l'emploie.**
+
 **SON IDÉE DU 18 OCTOBRE AU SOIR, À FAIRE EN PLANCHE (pas commencée)** : *« au moment de faire la photo du plan, est-ce qu'on pourrait pas mettre un petit outil de création du plan ? Ça ouvrirait une page où il y aurait un carré déjà sélectionné, et l'utilisateur peut dessiner ses différentes zones et inclure ses métrés. Ce serait un plan en plus que tu comprendrais et qui serait facile pour toi. »* Une autre session s'en charge, sur une planche dans `appli/`, rien dans `src/app` avant son choix.
 
 **ATTENTION : une autre session travaille dans CE MÊME dossier.** Elle a fait la

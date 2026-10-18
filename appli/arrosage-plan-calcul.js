@@ -2261,7 +2261,7 @@ var CALCUL = (() => {
       { ref: "ELD40024", nom: "bo\xEEte de d\xE9rivation Plexo \xD8 70mm", categorie: "\xE9lectricit\xE9", colisage: "1/5", source: "patron", releve: "Aqua Plus 2026, p. 58" },
       { ref: "ELDLEG92110", nom: "bo\xEEte de d\xE9rivation Plexo 65x65x40mm", categorie: "\xE9lectricit\xE9", colisage: "1/5", source: "patron", releve: "Aqua Plus 2026, p. 58" },
       { ref: "ELD40050", nom: "bo\xEEte de d\xE9rivation Plexo 105x105x55mm", categorie: "\xE9lectricit\xE9", colisage: "1/5", source: "patron", releve: "Aqua Plus 2026, p. 58" },
-      { ref: "ELD100PAN", nom: "ruban isolant \xE9lectrique (10mx15mm - \xE9p.0,15mm)", categorie: "\xE9lectricit\xE9", colisage: "10", source: "patron", releve: "Aqua Plus 2026, p. 58" },
+      { ref: "ELD100PAN", nom: "ruban isolant \xE9lectrique (10mx15mm - \xE9p.0,15mm)", categorie: "\xE9lectricit\xE9", colisage: "10", source: "patron", releve: "Aqua Plus 2026, p. 58" }
     ],
     /* ── SES RACCORDS À COMPRESSION PLASSON DU Ø16 RIGIDE ────────────────────
        Ses photos du 18 octobre 2026 : « tout ce que je t'envoie, c'est de la même
@@ -3914,7 +3914,11 @@ var CALCUL = (() => {
         const parRouleau = g.metresParRouleau ?? 100;
         const metres = dessin.metresTranchee + (options.amenee ?? 0);
         const rouleaux = Math.max(1, Math.ceil(metres / parRouleau));
-        const detail = options.amenee !== null ? `${Math.ceil(dessin.metresTranchee)} m de tranch\xE9e et ${Math.ceil(options.amenee)} m d\u2019amen\xE9e` : `${Math.ceil(dessin.metresTranchee)} m de tranch\xE9e ; l\u2019amen\xE9e n\u2019est pas mesur\xE9e, il reste ${Math.floor(rouleaux * parRouleau - dessin.metresTranchee)} m dans le dernier rouleau`;
+        const mesure = options.amenee !== null ? `${Math.ceil(dessin.metresTranchee)} m de tranch\xE9e et ${Math.ceil(options.amenee)} m d\u2019amen\xE9e` : `${Math.ceil(dessin.metresTranchee)} m de tranch\xE9e`;
+        const pointilles = dessin.liaisons.length > 0, amenee3 = options.amenee === null;
+        const inconnu = pointilles && amenee3 ? "Les passages en pointill\xE9s et le tuyau d\u2019amen\xE9e ne sont pas mesur\xE9s : leur longueur s\u2019ajoute sur place." : pointilles ? "Les passages en pointill\xE9s ne sont pas mesur\xE9s : leur longueur s\u2019ajoute sur place." : amenee3 ? "Le tuyau d\u2019amen\xE9e n\u2019est pas mesur\xE9 : sa longueur s\u2019ajoute sur place." : "";
+        const reste = Math.floor(rouleaux * parRouleau - metres);
+        const detail = `${mesure} mesur\xE9s sur le plan.` + (inconnu ? ` ${inconnu} Le dernier rouleau en couvre encore ${reste} m.` : "");
         jardin.push({ ref: GRILLAGE, nom: g.nom, q: rouleaux, u: "u", ou: "jardin", detail });
       }
     } else {

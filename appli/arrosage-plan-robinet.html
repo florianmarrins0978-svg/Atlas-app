@@ -987,7 +987,7 @@
     // qu'en bleu : il ne se change pas (sa remarque du 18 octobre 2026).
     var grillage = etat.grillage ? piecesOutil(p, res.dessin).filter(function (x) { return x.ref === "grillage-bleu"; })[0] : null;
     $("grillage-piece").innerHTML = grillage ? '<span class="photo"><img src="arrosage-photos/grillage-bleu.jpg" alt=""></span><span class="nom">' + grillage.q + "x " + texte(grillage.nom) + "</span>" : "";
-    $("grillage-detail").textContent = grillage ? "Grillage en rouleaux de 100 m. " + grillage.detail.charAt(0).toUpperCase() + grillage.detail.slice(1) + "." : "";
+    $("grillage-detail").textContent = grillage ? "Rouleaux de 100 m. " + grillage.detail : "";
     dessinerMots();
   }
 
