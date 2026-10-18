@@ -8,11 +8,18 @@
     B, à l'échelle on tape les cotes d'abord, la zone se pose à sa taille, on
                   la glisse à sa place.
 
-  Ses réponses du 18 octobre, avant les planches : rectangles, la haie en
-  trait ; le terrain a ses métrés ; deux boutons au départ, la photo ou le
-  dessin. Le massif reste une SURFACE (longueur et largeur), parce que c'est
-  ce que le calcul attend (calcul.js, TYPES.massif, forme « nappe ») : seule
-  la haie se mesure en mètres linéaires.
+  Ses réponses du 18 octobre, avant les planches : rectangles ; le terrain a
+  ses métrés ; deux boutons au départ, la photo ou le dessin. Le massif est une
+  SURFACE (longueur et largeur), parce que c'est ce que le calcul attend
+  (calcul.js, TYPES.massif, forme « nappe »).
+
+  SON CHOIX DU 18 OCTOBRE AU SOIR : « la B, parce qu'il faut que ça soit à
+  l'échelle », et « il faut aussi pouvoir mettre la largeur de la haie, pas
+  simplement la longueur ». La haie n'est donc plus un trait : c'est une
+  bande, longueur et largeur, posée à l'échelle comme le reste. Sa longueur
+  part au calcul en mètres linéaires (ml), comme aujourd'hui ; sa largeur
+  part dans un champ NEUF, « largeur », que ni CroquisLu ni le calcul ne
+  connaissent encore. Ce qu'elle y changera est à lui demander.
 
   CE QUE L'OUTIL REND EST CE QUE LA PHOTO REND (CroquisLu de
   src/server/ai/services/lire-croquis.ts) : des zones avec leur centre et leur
@@ -44,7 +51,7 @@
     gazon: { nom: "Pelouse", forme: "surface" },
     potager: { nom: "Potager", forme: "surface" },
     massif: { nom: "Massif", forme: "surface" },
-    haie: { nom: "Haie", forme: "trait" }
+    haie: { nom: "Haie", forme: "surface" }
   };
   var POINTS = {
     nourrice: { nom: "La nourrice", consigne: "Touchez l’endroit de la nourrice." },
@@ -84,7 +91,8 @@
     return { w: etat.terrain.L / s * 100, h: etat.terrain.l / s * 100 };
   }
   function mesuree(z) {
-    return TYPES[z.type].forme === "trait" ? z.ml != null : z.L != null && z.l != null;
+    // La haie entre au calcul par sa longueur seule (ses mètres linéaires).
+    return z.type === "haie" ? z.L != null : z.L != null && z.l != null;
   }
   function nomDe(z) { return z.nom || TYPES[z.type].nom; }
 
@@ -92,13 +100,8 @@
   function tailleSelonCotes(z) {
     var s = cote_du_carre();
     if (!s) return;
-    if (TYPES[z.type].forme === "trait") {
-      var lg = (z.ml || 0) / s * 100;
-      if (z.debout) { z.w = 0; z.h = lg; } else { z.w = lg; z.h = 0; }
-    } else {
-      z.w = (z.L || 0) / s * 100;
-      z.h = (z.l || 0) / s * 100;
-    }
+    z.w = (z.L || 0) / s * 100;
+    z.h = (z.l || 0) / s * 100;
   }
 
   /* ── Le dessin ─────────────────────────────────────────────── */
@@ -128,6 +131,7 @@
 
   function remplissage(type) {
     if (type === "gazon") return "color-mix(in srgb, var(--atlas-vertPale) 75%, var(--atlas-card))";
+    if (type === "haie") return "color-mix(in srgb, var(--atlas-plein) 34%, var(--atlas-card))";
     if (type === "potager") return "color-mix(in srgb, var(--atlas-orClair) 38%, var(--atlas-card))";
     return "color-mix(in srgb, var(--atlas-rustDeep) 24%, var(--atlas-card))";
   }
@@ -136,17 +140,6 @@
     var g = el("g", { "data-id": z.id, style: "cursor:grab" });
     var choisie = etat.choisie === z.id;
     var ok = mesuree(z);
-    if (TYPES[z.type].forme === "trait") {
-      var x2 = z.x + z.w, y2 = z.y + z.h;
-      g.appendChild(el("line", { x1: z.x, y1: z.y, x2: x2, y2: y2, stroke: "transparent", "stroke-width": 9, "stroke-linecap": "round" }));
-      g.appendChild(el("line", { x1: z.x, y1: z.y, x2: x2, y2: y2, stroke: "var(--atlas-plein)", "stroke-width": choisie ? 2.8 : 2.2, "stroke-linecap": "round", "stroke-dasharray": ok ? "none" : "2 1.6" }));
-      var debout = z.w === 0;
-      var cx = z.x + z.w / 2, cy = z.y + z.h / 2;
-      var tx = debout ? cx + 3 : cx, ty = debout ? cy : cy - 2.6;
-      g.appendChild(el("text", { x: tx, y: ty, "text-anchor": debout ? "start" : "middle", "dominant-baseline": debout ? "middle" : "auto", "font-size": 3.1, fill: ok ? "var(--atlas-ink)" : "var(--atlas-alerte)", stroke: "var(--atlas-card)", "stroke-width": 0.7, "paint-order": "stroke", "stroke-linejoin": "round" }, nomDe(z) + ", " + cote(z.ml) + " m"));
-      if (choisie && MODE === "A") g.appendChild(poignee(x2, y2, z.id));
-      return g;
-    }
     g.appendChild(el("rect", { x: z.x, y: z.y, width: Math.max(z.w, 0.5), height: Math.max(z.h, 0.5), rx: 0.8, fill: remplissage(z.type), stroke: ok ? (choisie ? "var(--atlas-ink)" : "var(--atlas-rustDeep)") : "var(--atlas-alerte)", "stroke-width": choisie ? 0.9 : 0.45, "stroke-dasharray": ok ? "none" : "1.6 1.2" }));
     // Le nom, puis « longueur × largeur » : la longueur est le côté couché.
     // Une zone trop basse pour deux lignes les met sur une seule.
@@ -222,21 +215,12 @@
 
   function dessinBrouillon() {
     var b = brouillon;
-    if (b.type === "haie") {
-      var f = finDeHaie(b);
-      return el("line", { x1: b.x0, y1: b.y0, x2: f.x, y2: f.y, stroke: "var(--atlas-plein)", "stroke-width": 2.2, "stroke-linecap": "round", opacity: 0.6 });
-    }
     var r = rectDe(b);
     return el("rect", { x: r.x, y: r.y, width: r.w, height: r.h, rx: 0.8, fill: remplissage(b.type), stroke: "var(--atlas-ink)", "stroke-width": 0.5, "stroke-dasharray": "1.6 1.2" });
   }
   function rectDe(b) {
     return { x: Math.min(b.x0, b.x1), y: Math.min(b.y0, b.y1), w: Math.abs(b.x1 - b.x0), h: Math.abs(b.y1 - b.y0) };
   }
-  /* Une haie suit un bord : elle se trace droite, couchée ou debout. */
-  function finDeHaie(b) {
-    return Math.abs(b.x1 - b.x0) >= Math.abs(b.y1 - b.y0) ? { x: b.x1, y: b.y0 } : { x: b.x0, y: b.y1 };
-  }
-
   function appui(evt) {
     if (evt.button != null && evt.button !== 0) return;
     var svg = $("toile");
@@ -294,13 +278,8 @@
     if (prise.id === "nourrice" || prise.id === "piquage") {
       o.x = borne(a.x + dx, t.w); o.y = borne(a.y + dy, t.h);
     } else if (prise.etire) {
-      if (o.type === "haie") {
-        if (a.h === 0) o.w = Math.max(3, Math.min(t.w - a.x, a.w + dx));
-        else o.h = Math.max(3, Math.min(t.h - a.y, a.h + dy));
-      } else {
-        o.w = Math.max(3, Math.min(t.w - a.x, a.w + dx));
-        o.h = Math.max(3, Math.min(t.h - a.y, a.h + dy));
-      }
+      o.w = Math.max(3, Math.min(t.w - a.x, a.w + dx));
+      o.h = Math.max(3, Math.min(t.h - a.y, a.h + dy));
     } else {
       o.x = borne(a.x + dx, Math.max(0, t.w - o.w));
       o.y = borne(a.y + dy, Math.max(0, t.h - o.h));
@@ -313,21 +292,13 @@
       var b = brouillon;
       brouillon = null;
       var t = terrainU();
-      var z = { id: etat.suivant++, type: b.type, nom: null, L: null, l: null, ml: null };
-      if (b.type === "haie") {
-        var f = finDeHaie(b);
-        var w = f.x - b.x0, h = f.y - b.y0;
-        // Un simple toucher pose une haie couchée : le doigt ne trace pas toujours.
-        if (Math.abs(w) + Math.abs(h) < 4) { w = Math.min(30, t.w - b.x0); h = 0; }
-        z.x = Math.min(b.x0, b.x0 + w); z.y = Math.min(b.y0, b.y0 + h); z.w = Math.abs(w); z.h = Math.abs(h);
-      } else {
-        var r = rectDe(b);
-        if (r.w < 4 || r.h < 4) {
-          r = { w: Math.min(22, t.w), h: Math.min(16, t.h) };
-          r.x = borne(b.x0 - r.w / 2, t.w - r.w); r.y = borne(b.y0 - r.h / 2, t.h - r.h);
-        }
-        z.x = r.x; z.y = r.y; z.w = r.w; z.h = r.h;
+      var z = { id: etat.suivant++, type: b.type, nom: null, L: null, l: null };
+      var r = rectDe(b);
+      if (r.w < 4 || r.h < 4) {
+        r = { w: Math.min(22, t.w), h: Math.min(16, t.h) };
+        r.x = borne(b.x0 - r.w / 2, t.w - r.w); r.y = borne(b.y0 - r.h / 2, t.h - r.h);
       }
+      z.x = r.x; z.y = r.y; z.w = r.w; z.h = r.h;
       etat.zones.push(z);
       etat.choisie = z.id;
       choisirOutil(null);
@@ -361,7 +332,7 @@
 
   function surOutil(o) {
     if (MODE === "B" && TYPES[o]) {
-      var z = { id: null, type: o, nom: null, L: null, l: null, ml: null, x: 0, y: 0, w: 0, h: 0, debout: false };
+      var z = { id: null, type: o, nom: null, L: null, l: null, x: 0, y: 0, w: 0, h: 0 };
       ouvrir(z, true);
       return;
     }
@@ -373,24 +344,20 @@
 
   function ouvrir(z, neuve) {
     enCours = { z: z, neuve: neuve };
-    var trait = TYPES[z.type].forme === "trait";
     $("f-titre").textContent = nomDe(z);
     $("f-nom").value = z.nom || "";
     $("f-nom").placeholder = TYPES[z.type].nom;
-    $("f-surface").hidden = trait;
-    $("f-trait").hidden = !trait;
     $("f-L").value = z.L == null ? "" : ecrit(z.L);
     $("f-l").value = z.l == null ? "" : ecrit(z.l);
-    $("f-ml").value = z.ml == null ? "" : ecrit(z.ml);
     $("f-cotes").hidden = false;
-    ["f-L", "f-l", "f-ml"].forEach(function (i) { $(i).removeAttribute("aria-invalid"); });
+    ["f-L", "f-l"].forEach(function (i) { $(i).removeAttribute("aria-invalid"); });
     var nouvelleB = MODE === "B" && neuve;
     $("f-valider").textContent = nouvelleB ? "Poser" : "Valider";
     $("f-tourner").hidden = MODE !== "B" || nouvelleB;
     $("f-valider").classList.toggle("seul", $("f-tourner").hidden);
     $("f-supprimer").hidden = nouvelleB;
     $("feuille").hidden = false;
-    setTimeout(function () { (trait ? $("f-ml") : $("f-L")).focus(); }, 60);
+    setTimeout(function () { $("f-L").focus(); }, 60);
   }
 
   function ouvrirPoint(id) {
@@ -416,8 +383,8 @@
 
   function lireFeuille(z) {
     z.nom = $("f-nom").value.trim() || null;
-    if (TYPES[z.type].forme === "trait") z.ml = nombre($("f-ml").value);
-    else { z.L = nombre($("f-L").value); z.l = nombre($("f-l").value); }
+    z.L = nombre($("f-L").value);
+    z.l = nombre($("f-l").value);
   }
 
   function valider() {
@@ -428,7 +395,7 @@
       // En B, c'est la cote qui donne la taille : sans elle, rien à poser.
       var essai = copie(z);
       lireFeuille(essai);
-      var vides = TYPES[z.type].forme === "trait" ? [["f-ml", essai.ml]] : [["f-L", essai.L], ["f-l", essai.l]];
+      var vides = [["f-L", essai.L], ["f-l", essai.l]];
       var manque = false;
       vides.forEach(function (v) {
         $(v[0]).setAttribute("aria-invalid", String(v[1] == null));
@@ -463,8 +430,7 @@
     var z = enCours && enCours.z;
     if (!z) return;
     lireFeuille(z);
-    if (TYPES[z.type].forme === "trait") z.debout = !z.debout;
-    else { var L = z.L; z.L = z.l; z.l = L; }
+    var L = z.L; z.L = z.l; z.l = L;
     tailleSelonCotes(z);
     var t = terrainU();
     z.x = borne(z.x, Math.max(0, t.w - z.w));
@@ -522,19 +488,22 @@
   function croquisLu() {
     var reserves = [];
     var zones = etat.zones.map(function (z) {
-      var trait = TYPES[z.type].forme === "trait";
+      var haie = z.type === "haie";
       if (!mesuree(z)) reserves.push("« " + nomDe(z) + " » n’a pas ses métrés");
-      return {
+      var lue = {
         type: z.type,
         nom: z.nom,
-        L: trait ? null : z.L,
-        l: trait ? null : z.l,
-        ml: trait ? z.ml : null,
+        L: haie ? null : z.L,
+        l: haie ? null : z.l,
+        ml: haie ? z.L : null,
         x: arrondi((z.x + z.w / 2) / 100),
         y: arrondi((z.y + z.h / 2) / 100),
         largeurFraction: arrondi(z.w / 100),
         hauteurFraction: arrondi(z.h / 100)
       };
+      // Le champ neuf : la largeur de la haie, qu'il a demandée le 18 octobre.
+      if (haie) lue.largeur = z.l;
+      return lue;
     });
     if (!etat.nourrice) reserves.push("le croquis ne montre pas où la nourrice est posée");
     if (!etat.piquage) reserves.push("le croquis ne montre pas où le piquage se fait");
@@ -600,7 +569,7 @@
     var s = 34;
     etat.zones = Z.map(function (z, i) {
       var k = MODE === "A" ? MAIN[i] : [1, 1];
-      return { id: i + 1, type: z.type, nom: z.nom, L: z.L, l: z.l, ml: null, x: z.x / s * 100, y: z.y / s * 100, w: z.L / s * 100 * k[0], h: z.l / s * 100 * k[1], debout: false };
+      return { id: i + 1, type: z.type, nom: z.nom, L: z.L, l: z.l, x: z.x / s * 100, y: z.y / s * 100, w: z.L / s * 100 * k[0], h: z.l / s * 100 * k[1] };
     });
     etat.suivant = Z.length + 1;
     etat.nourrice = null; etat.piquage = null; etat.choisie = null;
