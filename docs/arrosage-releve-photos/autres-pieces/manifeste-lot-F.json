@@ -1,0 +1,303 @@
+[
+ {
+  "forme": "pe-mil-manchon",
+  "nom": "Manchon Millenium",
+  "refs": [
+   "OPL701075",
+   "OPL701090",
+   "OPL7010110"
+  ],
+  "fichier": "pe-mil-manchon-1.jpg",
+  "montre": "manchon égal 75",
+  "vise": "75",
+  "preuve": "75 mm lu sur le corps noir, 75 sur l'écrou",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/manchon-a-compression-serie-7-0",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1030___.jpg",
+  "site": "plasson.fr",
+  "doute": ""
+ },
+ {
+  "forme": "pe-mil-manchon-reduit",
+  "nom": "Manchon réduit Millenium",
+  "refs": [
+   "OPL71107550",
+   "OPL71107563",
+   "OPL71109063",
+   "OPL71109075",
+   "OPL711011090"
+  ],
+  "fichier": "pe-mil-manchon-reduit-1.jpg",
+  "montre": "manchon réduit 75 x 50",
+  "vise": "75",
+  "preuve": "75 lu sur le gros écrou, 75 x 50 sur le corps noir",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/manchon-reduit-millenium-a-compression",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1026___.jpg",
+  "site": "plasson.fr",
+  "doute": "Le petit côté est un 50 ; les réductions 75 x 63, 90 x 63, 90 x 75 et 110 x 90 ont la même forme."
+ },
+ {
+  "forme": "pe-mil-manchon-reparation",
+  "nom": "Manchon de réparation Millenium",
+  "refs": [
+   "OPL761075",
+   "OPL761090",
+   "OPL7610110"
+  ],
+  "fichier": "pe-mil-manchon-reparation-1.jpg",
+  "montre": "manchon de réparation 75",
+  "vise": "75",
+  "preuve": "75 mm lu sur le corps noir, 75 sur l'écrou",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/manchon-de-reparation-millenium-a",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1024___.jpg",
+  "site": "plasson.fr",
+  "doute": "À l'œil, presque identique au manchon égal ; c'est la page Plasson du manchon de réparation qui porte cette photo."
+ },
+ {
+  "forme": "pe-mil-raccord-male",
+  "nom": "Raccord mâle Millenium",
+  "refs": [
+   "OPL70207550",
+   "OPL70207566",
+   "OPL70207580",
+   "OPL70209050",
+   "OPL70209066",
+   "OPL70209080",
+   "OPL702090102",
+   "OPL702011050",
+   "OPL702011080"
+  ],
+  "fichier": "pe-mil-raccord-male-1.jpg",
+  "montre": "raccord mâle 75 x 2\"",
+  "vise": "75",
+  "preuve": "75 x 2\" lu sur le corps noir",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/raccord-male-millenium-a-compression",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1029___.jpg",
+  "site": "plasson.fr",
+  "doute": ""
+ },
+ {
+  "forme": "pe-mil-bouchon",
+  "nom": "Bouchon Millenium",
+  "refs": [
+   "OPL712075",
+   "OPL712090",
+   "OPL7120110"
+  ],
+  "fichier": "pe-mil-bouchon-1.jpg",
+  "montre": "bouchon 75",
+  "vise": "75",
+  "preuve": "75 mm lu sur le corps noir",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/bouchon-de-fin-de-ligne-millenium-a",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1025___.jpg",
+  "site": "plasson.fr",
+  "doute": ""
+ },
+ {
+  "forme": "pe-mil-raccord-femelle",
+  "nom": "Raccord femelle Millenium",
+  "refs": [
+   "OPL70307550",
+   "OPL70307566",
+   "OPL70309050",
+   "OPL70309080",
+   "OPL703090102",
+   "OPL703011080",
+   "OPL7030110102"
+  ],
+  "fichier": "pe-mil-raccord-femelle-1.jpg",
+  "montre": "raccord femelle 75 x 2\", bague inox",
+  "vise": "75",
+  "preuve": "75 x 2\" lu sur le corps noir",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/raccord-femelle-millenium-a",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1028___.jpg",
+  "site": "plasson.fr",
+  "doute": ""
+ },
+ {
+  "forme": "pe-mil-te-90",
+  "nom": "Té égal 90° Millenium",
+  "refs": [
+   "OPL704090"
+  ],
+  "fichier": "pe-mil-te-90-1.jpg",
+  "montre": "té égal 90",
+  "vise": "75",
+  "preuve": "90 lu sur les trois écrous et sur le corps",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/te-egal-a-90deg-millenium-a",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1021___.jpg",
+  "site": "plasson.fr",
+  "doute": "La photo montre le 90, pas le 75 : elle ne sert donc que la référence en 90."
+ },
+ {
+  "forme": "pe-mil-te-90-75",
+  "nom": "Té égal 90° Millenium, en 75 et 110",
+  "refs": [
+   "OPL704075",
+   "OPL7040110"
+  ],
+  "fichier": null,
+  "montre": "rien",
+  "vise": "75",
+  "preuve": "aucune photo en 75 trouvée",
+  "source": null,
+  "image": null,
+  "site": "plasson.fr",
+  "doute": "Plasson ne montre ce té qu'en 90 ; aucune photo en 75 ni en 110 trouvée ailleurs."
+ },
+ {
+  "forme": "pe-mil-te-taraude",
+  "nom": "Té taraudé Millenium",
+  "refs": [
+   "OPL71407550",
+   "OPL71407566",
+   "OPL71407580",
+   "OPL71409080",
+   "OPL7140110102"
+  ],
+  "fichier": "pe-mil-te-taraude-1.jpg",
+  "montre": "té taraudé 75, bague inox",
+  "vise": "75",
+  "preuve": "75 lu sur l'écrou",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/te-a-90deg-millenium-a-compression",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1115___.jpg",
+  "site": "plasson.fr",
+  "doute": "Le diamètre du taraudage ne se lit pas sur la photo."
+ },
+ {
+  "forme": "pe-mil-te-45",
+  "nom": "Té 45° Millenium",
+  "refs": [
+   "OPL764075",
+   "OPL764090",
+   "OPL7640110"
+  ],
+  "fichier": "pe-mil-te-45-1.jpg",
+  "montre": "té 45° 75",
+  "vise": "75",
+  "preuve": "75 mm lu sur le corps noir",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/te-a-45deg-millenium-a-compression",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1111___.jpg",
+  "site": "plasson.fr",
+  "doute": ""
+ },
+ {
+  "forme": "pe-mil-te-reduit",
+  "nom": "Té réduit Millenium",
+  "refs": [
+   "OPL73407563"
+  ],
+  "fichier": "pe-mil-te-reduit-1.jpg",
+  "montre": "té réduit 75 x 63 x 75",
+  "vise": "75",
+  "preuve": "63 lu sur l'écrou et le corps de la dérivation, 75 sur la ligne",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/te-a-90deg-reduit-millenium-a",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1015___.jpg",
+  "site": "plasson.fr",
+  "doute": ""
+ },
+ {
+  "forme": "pe-mil-coude-90",
+  "nom": "Coude 90° Millenium",
+  "refs": [
+   "OPL705075",
+   "OPL705090",
+   "OPL7050110"
+  ],
+  "fichier": "pe-mil-coude-90-1.jpg",
+  "montre": "coude 90° 75",
+  "vise": "75",
+  "preuve": "75 lu sur les deux écrous",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/coude-a-90deg-a-compression-millenium",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1027___.jpg",
+  "site": "plasson.fr",
+  "doute": ""
+ },
+ {
+  "forme": "pe-mil-coude-filete",
+  "nom": "Coude fileté Millenium",
+  "refs": [
+   "OPL78507560",
+   "OPL78507580",
+   "OPL78509080",
+   "OPL7850110102"
+  ],
+  "fichier": "pe-mil-coude-filete-1.jpg",
+  "montre": "coude fileté 75 x 2\"1/2",
+  "vise": "75",
+  "preuve": "75 lu sur l'écrou et le corps, 2 1/2\" sur la sortie filetée",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/coude-a-90deg-a-compression-serie-7-3",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1017___.jpg",
+  "site": "plasson.fr",
+  "doute": ""
+ },
+ {
+  "forme": "pe-mil-coude-taraude",
+  "nom": "Coude taraudé Millenium",
+  "refs": [
+   "OPL71507550",
+   "OPL71507566",
+   "OPL71507580"
+  ],
+  "fichier": "pe-mil-coude-taraude-1.jpg",
+  "montre": "coude taraudé 75 x 2\", bague inox",
+  "vise": "75",
+  "preuve": "75 lu sur l'écrou et le corps, 2\" sur la sortie",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/coude-a-90deg-a-compression-serie-7-0",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1016___.jpg",
+  "site": "plasson.fr",
+  "doute": ""
+ },
+ {
+  "forme": "pe-mil-coude-45",
+  "nom": "Coude 45° Millenium",
+  "refs": [
+   "OPL746075",
+   "OPL746090",
+   "OPL7460110"
+  ],
+  "fichier": "pe-mil-coude-45-1.jpg",
+  "montre": "coude 45° 75",
+  "vise": "75",
+  "preuve": "75 lu sur l'écrou et sur le corps noir",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/coude-a-45deg-millenium-a-compression",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1022___.jpg",
+  "site": "plasson.fr",
+  "doute": ""
+ },
+ {
+  "forme": "pe-mil-raccord-bride",
+  "nom": "Raccord à bride Millenium",
+  "refs": [
+   "OPL72207565",
+   "OPL72209080",
+   "OPL722090100",
+   "OPL7220110100"
+  ],
+  "fichier": "pe-mil-raccord-bride-1.jpg",
+  "montre": "raccord à bride 75, bride DN 65",
+  "vise": "75",
+  "preuve": "PL-75/90 X 2 1/2 gravé sur la bride, 75 sur l'écrou",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/raccord-a-bride-millenium-serie-7",
+  "image": "https://www.plasson.fr/sites/default/files/pim/visuels/PLA_1118___.jpg",
+  "site": "plasson.fr",
+  "doute": "La bride est marquée 75/90 : elle sert aussi le 90, mais les brides DN 80 et DN 100 sont plus grandes."
+ },
+ {
+  "forme": "pe-mil-adaptateur-bride",
+  "nom": "Adaptateur à bride Millenium",
+  "refs": [
+   "OPL72367560",
+   "OPL72367580",
+   "OPL72369060",
+   "OPL72369080"
+  ],
+  "fichier": null,
+  "montre": "rien",
+  "vise": "75",
+  "preuve": "la seule photo Plasson porte PL-90/110 X 3\" sur la bride",
+  "source": "https://www.plasson.fr/raccords-mecaniques/raccords-et-vannes-a-compression-serie-7/adaptateur-a-bride-millenium-serie-7",
+  "image": null,
+  "site": "plasson.fr",
+  "doute": "Aucune photo en 75. Plasson montre une bride marquée 90/110 x 3\" (image PLA_1219), sans dire si l'embout est en 90 ou en 110 : non retenue."
+ }
+]

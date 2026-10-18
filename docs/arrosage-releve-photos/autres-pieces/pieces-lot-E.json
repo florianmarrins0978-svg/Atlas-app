@@ -1,0 +1,233 @@
+[
+ {
+  "ref": "TEVEZP0354",
+  "nom": "électrovanne EZ FLO+ 1\" FF - 24 V",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEVEZP2254",
+  "nom": "électrovanne EZ FLO+ 1\" MM RMD - 24 V",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEVEZP2354",
+  "nom": "électrovanne EZ FLO+ 1\" FF RMD - 24 V",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEVEZP02649V",
+  "nom": "électrovanne EZ FLO+ 1\" MM solénoïde 9V à impulsion",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEVTPV100MMBSP",
+  "nom": "EV TPV 1\" MM 0,06 à 9,06 m3/h",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEVP2202354",
+  "nom": "EV P220 1\" FF 1,2 à 11,3 m³/h - pré-équipée EZReg",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEVP2202356",
+  "nom": "EV P220 1\"1/2 FF RMD 6,9 à 24,9 m³/h - pré-équipée EZReg",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEVP2202358",
+  "nom": "EV P220 2\" FF RMD 18,2 à 40,8 m³/h - pré-équipée EZReg",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "TEVP2202350",
+  "nom": "EV P220 3\" FF RMD 34,1 à 68,1m³/h - pré-équipée EZReg",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 18"
+ },
+ {
+  "ref": "REV75DV9V",
+  "nom": "électrovanne 75-DV 3/4\" FF 9V à impulsion",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 19"
+ },
+ {
+  "ref": "REVPGA1009V",
+  "nom": "électrovanne 100-PGA 1\" FF 9V 0,5 à 9 m³/h",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 19"
+ },
+ {
+  "ref": "REVPGA1509V",
+  "nom": "électrovanne 150-PGA 1\"1/2 FF 9V 7 à 22 m³/h",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 19"
+ },
+ {
+  "ref": "AEV1205",
+  "nom": "EV RICHDEL 2400 MT 1\" FF-L 9V",
+  "categorie": "electrovanne",
+  "marque": "RICHDEL",
+  "page": "Aqua Plus 2026, p. 20"
+ },
+ {
+  "ref": "HEV1724",
+  "nom": "électrovanne PGV 100 JT FIL 1'' 9V",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 20"
+ },
+ {
+  "ref": "RG17101",
+  "nom": "réhausse regard 12\" VB1419E",
+  "categorie": "regard",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 21"
+ },
+ {
+  "ref": "RPJVP300",
+  "nom": "solénoïde compact 9V à impulsion LU3100",
+  "categorie": "electrovanne",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 25"
+ },
+ {
+  "ref": "UPE240",
+  "nom": "tube P.E.H.D. NF Ø 40mm 10 bars (32,6 x 40)",
+  "categorie": "tube PE",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 47"
+ },
+ {
+  "ref": "UPE250",
+  "nom": "tube P.E.H.D. NF Ø 50mm 10 bars (40,8 x 50)",
+  "categorie": "tube PE",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 47"
+ },
+ {
+  "ref": "UPE263",
+  "nom": "tube P.E.H.D. NF Ø 63mm 10 bars (51,4 x 63)",
+  "categorie": "tube PE",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 47"
+ },
+ {
+  "ref": "UPE275",
+  "nom": "tube P.E.H.D. NF Ø 75mm 10 bars (61,4 x 75)",
+  "categorie": "tube PE",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 47"
+ },
+ {
+  "ref": "UGGMC-206",
+  "nom": "G A G Ø 6MM 0.15M 2L/H 30ML",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "UGGMC-206_N",
+  "nom": "G AG Ø 6MM 0.15M 2L/H 30ML noir",
+  "categorie": "goutte-à-goutte",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 48"
+ },
+ {
+  "ref": "BVA3861",
+  "nom": "vanne 1/4 de tour FF 1/2\"",
+  "categorie": "robinetterie",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 56"
+ },
+ {
+  "ref": "BVA3862",
+  "nom": "vanne 1/4 de tour FF 3/4\"",
+  "categorie": "robinetterie",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 56"
+ },
+ {
+  "ref": "BVA3863",
+  "nom": "vanne 1/4 de tour FF 1\"",
+  "categorie": "robinetterie",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 56"
+ },
+ {
+  "ref": "BVA3864",
+  "nom": "vanne 1/4 de tour FF 1\"1/4",
+  "categorie": "robinetterie",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 56"
+ },
+ {
+  "ref": "BVA3865",
+  "nom": "vanne 1/4 de tour FF 1\"1/2",
+  "categorie": "robinetterie",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 56"
+ },
+ {
+  "ref": "BVA3866",
+  "nom": "vanne 1/4 de tour FF 2\"",
+  "categorie": "robinetterie",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 56"
+ },
+ {
+  "ref": "BVA931",
+  "nom": "vanne 1/4 de tour + purge FF 1/2\"",
+  "categorie": "robinetterie",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 56"
+ },
+ {
+  "ref": "BVA933",
+  "nom": "vanne 1/4 de tour + purge FF 1\"",
+  "categorie": "robinetterie",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 56"
+ },
+ {
+  "ref": "BVA934",
+  "nom": "vanne 1/4 de tour + purge FF 1\"1/4",
+  "categorie": "robinetterie",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 56"
+ },
+ {
+  "ref": "BVA935",
+  "nom": "vanne 1/4 de tour + purge FF 1\"1/2",
+  "categorie": "robinetterie",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 56"
+ },
+ {
+  "ref": "BVA936",
+  "nom": "vanne 1/4 de tour + purge FF 2\"",
+  "categorie": "robinetterie",
+  "marque": null,
+  "page": "Aqua Plus 2026, p. 56"
+ }
+]

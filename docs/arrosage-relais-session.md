@@ -353,3 +353,14 @@ Sa demande : chercher les photos de toutes les pièces de la liste qui n'en ont 
 | écartées par nous | une photo qui montre une autre pièce, un autre modèle ou une autre taille (liste `ECARTEES` et `DESSINS` du générateur) |
 | pas cherchées | la gamme Millenium (raccords PE 75 à 110) |
 | **état** | **tranché le 18 octobre** : 129 « oui », 1 « non » (`choix-autres-pieces.json`). Les photos validées sont dans `PHOTOS` des planches. Sa règle : *« tout ce que je n'ai pas validé, ce sont les pièces que je ne veux pas garder, on peut les supprimer définitivement »*, sauf les vannes, le PEHD NF, la couronne de 16, les électrovannes, la rehausse de regard et le goutte-à-goutte Ø6. **164 lignes retirées** des deux copies du catalogue et des trois instantanés (`retirees.json`) ; il en reste 545. **UPE225 et UPE232, les tubes PEHD irrigation Ø25 et Ø32, restent** : *« tu les supprimes pas, je vais t'envoyer les photos »* (18 octobre). Leur photo est la sienne, donnée le 18 octobre (media.denismateriaux.com, DEN_483, couronne Polybleu NF 25x3), posée sur fond blanc par `detourer-couronne.mjs` : `pehd-couronne.jpg`, *« tu peux utiliser la même photo pour le diamètre 32 »*. Les couronnes PEBD Ø16 (UPE1116, UPE500600) ont aussi la sienne : `pebd-couronne-16.jpg` (media.adeo.com, déjà sur fond blanc), *« diam 16 »* |
+
+## Les dernières photos (18 octobre 2026, au soir)
+
+| | |
+|---|---|
+| la planche | https://claude.ai/artifact/JiSURY7eC7G5fgsM66vfSV (base `choix`), 33 photos : les 33 pièces qu'il a gardées sans photo (lot E) et les 64 raccords Millenium (lot F) |
+| sources | `docs/arrosage-releve-photos/autres-pieces/` : `pieces-lot-E/F.json`, `manifeste-lot-E/F.json`, `engendrer-lots2.mjs` |
+| écartées par nous | trois EZ-Flo dont le vendeur (kipogeorgiki.gr) a retouché l'étiquette : la photo montre une autre version que celle visée |
+| sans photo sûre | Richdel 2400 MT 9 V, Hunter PGV-100 JT MM 9 V, vannes 1/4 de tour FF et avec purge (même image pour toutes les tailles), EZ-Flo FF, MM RMD et MM 9 V, té égal Millenium 75 et 110, adaptateur à bride Millenium |
+| à vérifier au catalogue | OPL702090102 est écrit deux fois, en « mâle 90 x 4" » et en « mâle 110 x 4" » : la seconde est sans doute OPL7020110102 |
+| **état** | **attend ses choix** ; ensuite, comme la planche précédente : photo validée à toutes les références de son `refs` |

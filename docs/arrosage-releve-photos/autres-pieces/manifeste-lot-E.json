@@ -1,0 +1,390 @@
+[
+ {
+  "forme": "ev-toro-ezflo-ff-24v",
+  "nom": "Électrovanne Toro EZ-Flo Plus 1\" FF 24 V",
+  "refs": [
+   "TEVEZP0354"
+  ],
+  "fichier": "ev-toro-ezflo-ff-24v-1.jpg",
+  "montre": "EZ-Flo Plus 1\" femelle femelle, solénoïde 24 V à fils rouges, sans étiquette",
+  "vise": "1\" FF sans réglage de débit, 24 V",
+  "preuve": "Page dédiée à la référence EZP-03-54, image propre à cette page (empreinte différente des autres variantes).",
+  "source": "https://www.kipogeorgiki.gr/en/EZP-03-54-1-Solenoid-Valve-Female-Thread-BSP",
+  "image": "https://www.kipogeorgiki.gr/image/cache/data/POT_Hlektrobanes/TOR-EZ-FLO%20Plus/EZP-03-54-01-Ilektrobana-1-EZP-03-54-Thilyki-BSP-EZ-Flo-Plus-TORO-1500x1500.jpg",
+  "site": "kipogeorgiki.gr",
+  "doute": "C'est la photo de la EZP-23-54 (avec réglage de débit) dont le vendeur a effacé l'étiquette : mêmes fils, même pose. Les deux vannes se ressemblent beaucoup, mais ce n'est pas une preuve. Agrandie à 1500 px, un peu floue."
+ },
+ {
+  "forme": "ev-toro-ezflo-mm-rmd-24v",
+  "nom": "Électrovanne Toro EZ-Flo Plus 1\" MM avec réglage de débit 24 V",
+  "refs": [
+   "TEVEZP2254"
+  ],
+  "fichier": "ev-toro-ezflo-mm-rmd-24v-1.jpg",
+  "montre": "EZ-Flo Plus 1\" mâle mâle, solénoïde 24 V, étiquette « EZP-22-54 »",
+  "vise": "1\" MM avec réglage de débit, 24 V",
+  "preuve": "Étiquette EZP-22-54 lue sur la vanne, page dédiée.",
+  "source": "https://www.kipogeorgiki.gr/en/EZP-03-54-1-Solenoid-Valve-Female-Thread-BSP",
+  "image": "https://www.kipogeorgiki.gr/image/cache/data/POT_Hlektrobanes/TOR-EZ-FLO%20Plus/EZP-22-54-01-Ilektrobana-1-EZP-22-54-Arsenikh-BSP-EZ-Flo-Plus-TORO-1500x1500.jpg",
+  "site": "kipogeorgiki.gr",
+  "doute": "L'étiquette a été retouchée : le code-barres est le même que sur la photo de la EZP-02-54 (sans réglage), et la photo est identique. C'est donc sans doute une MM sans réglage de débit renommée."
+ },
+ {
+  "forme": "ev-toro-ezflo-ff-rmd-24v",
+  "nom": "Électrovanne Toro EZ-Flo Plus 1\" FF avec réglage de débit 24 V",
+  "refs": [
+   "TEVEZP2354"
+  ],
+  "fichier": "ev-toro-ezflo-ff-rmd-24v-1.jpg",
+  "montre": "EZ-Flo Plus 1\" femelle femelle, solénoïde 24 V à fils rouges, étiquette « EZP-23-54 SOLENOID VALVE »",
+  "vise": "1\" FF avec réglage de débit, 24 V",
+  "preuve": "Étiquette d'usine EZP-23-54 lue sur la vanne.",
+  "source": "https://gncgarden.com/fr/electrovannes-24v/electrovanne-d-irrigation-toro-1-24v-ez-flo-plus-a-filetage-femelle.html",
+  "image": "https://gncgarden.com/24768-thickbox_default/electrovanne-d-irrigation-toro-1-24v-ez-flo-plus-a-filetage-femelle.jpg",
+  "site": "gncgarden.com",
+  "doute": "900 px. Le vendeur met cette photo sur sa page de la EZP-03-54, mais l'étiquette dit bien 23-54."
+ },
+ {
+  "forme": "ev-toro-ezflo-ff-rmd-24v",
+  "nom": "Électrovanne Toro EZ-Flo Plus 1\" FF avec réglage de débit 24 V",
+  "refs": [
+   "TEVEZP2354"
+  ],
+  "fichier": "ev-toro-ezflo-ff-rmd-24v-2.jpg",
+  "montre": "même vanne, étiquette « EZP-23-54 » lue",
+  "vise": "1\" FF avec réglage de débit, 24 V",
+  "preuve": "Étiquette EZP-23-54 lue sur la vanne, page dédiée.",
+  "source": "https://www.kipogeorgiki.gr/en/EZP-03-54-1-Solenoid-Valve-Female-Thread-BSP",
+  "image": "https://www.kipogeorgiki.gr/image/cache/data/POT_Hlektrobanes/TOR-EZ-FLO%20Plus/EZP-23-54-01-Ilektrobana-1-EZP-23-54-Thilyki-BSP-EZ-Flo-Plus-TORO-1500x1500.jpg",
+  "site": "kipogeorgiki.gr",
+  "doute": "Même photo d'usine que la 1, agrandie à 1500 px, un peu floue."
+ },
+ {
+  "forme": "ev-toro-ezflo-mm-9v",
+  "nom": "Électrovanne Toro EZ-Flo Plus 1\" MM solénoïde 9 V à impulsion",
+  "refs": [
+   "TEVEZP02649V"
+  ],
+  "fichier": "ev-toro-ezflo-mm-9v-1.jpg",
+  "montre": "EZ-Flo Plus 1\" mâle mâle avec solénoïde à impulsion DCLS-P (fils rouge, noir et blanc enroulés), étiquette « EZP-?2-94 »",
+  "vise": "1\" MM sans réglage de débit, 9 V à impulsion (code Toro EZP-02-94)",
+  "preuve": "Étiquette lue « EZP-?2-94 » : le 94 désigne le solénoïde 9 V DCLS-P. Page dédiée à la EZP-22-94, code-barres différent de celui des vannes 24 V.",
+  "source": "https://www.kipogeorgiki.gr/en/EZP-03-54-1-Solenoid-Valve-Female-Thread-BSP",
+  "image": "https://www.kipogeorgiki.gr/image/cache/data/POT_Hlektrobanes/TOR-EZ-FLO%20Plus/EZP-22-94-01-Ilektrobana-1-EZP-22-94-Arsenikh-BSP-EZ-Flo-Plus-TORO-1500x1500.jpg",
+  "site": "kipogeorgiki.gr",
+  "doute": "Le premier chiffre est masqué par un reflet et la page dit 22-94 : c'est sans doute la version AVEC réglage de débit. Le solénoïde 9 V, lui, est le bon. Agrandie à 1500 px, un peu floue."
+ },
+ {
+  "forme": "ev-toro-tpv-mm",
+  "nom": "Électrovanne Toro TPV 1\" MM",
+  "refs": [
+   "TEVTPV100MMBSP"
+  ],
+  "fichier": "ev-toro-tpv-mm-1.jpg",
+  "montre": "Toro TPV 1\" mâle mâle, solénoïde 24 V",
+  "vise": "1\" MM sans réglage de débit",
+  "preuve": "Page dédiée à la TPV 1\" mâle mâle, image nommée « toro tpv100mmbsp ».",
+  "source": "https://www.hako-irrigation.fr/arrosage-automatique/electrovannes/electrovannes-grands-espaces/electrovane-tpv-1-malemale",
+  "image": "https://www.hako-irrigation.fr/sites/default/files/products/toro%20tpv100mmbsp.jpg",
+  "site": "hako-irrigation.fr",
+  "doute": "532 px, image un peu douce."
+ },
+ {
+  "forme": "ev-toro-tpv-mm",
+  "nom": "Électrovanne Toro TPV 1\" MM",
+  "refs": [
+   "TEVTPV100MMBSP"
+  ],
+  "fichier": "ev-toro-tpv-mm-2.jpg",
+  "montre": "Toro TPV 1\" mâle mâle, solénoïde 24 V, étiquette « TPV Series TPV100MMBSP »",
+  "vise": "1\" MM sans réglage de débit",
+  "preuve": "Étiquette TPV100MMBSP lue sur la vanne.",
+  "source": "https://defidiscount.fr/en/arrosage-et-irrigation/2105-electrovanne-toro.html",
+  "image": "https://defidiscount.fr/2913-large_default/electrovanne-toro.jpg",
+  "site": "defidiscount.fr",
+  "doute": "Vraie photo sur fond vert clair, pas blanc. 500 px."
+ },
+ {
+  "forme": "ev-toro-p220-1po",
+  "nom": "Électrovanne Toro P220 1\" FF pré-équipée EZReg",
+  "refs": [
+   "TEVP2202354"
+  ],
+  "fichier": "ev-toro-p220-1po-1.jpg",
+  "montre": "Toro P220 femelle femelle, petit corps à 4 vis, solénoïde à fils noirs",
+  "vise": "1\" FF",
+  "preuve": "Page dédiée à la P220-23-54 (1\"), image propre à cette page, différente de celles du 1\"1/2, du 2\" et du 3\".",
+  "source": "https://www.kipogeorgiki.gr/index.php?route=product/search&search=P220",
+  "image": "https://www.kipogeorgiki.gr/image/cache/data/POT_Hlektrobanes/TOR-P-220/P220-23-54-1-Solenoid-Valve-1500x1500.jpg",
+  "site": "kipogeorgiki.gr",
+  "doute": "Aucun marquage de taille lisible. Le 1\" et le 1\"1/2 ont le même corps (92 mm de large chez Toro) : seul le marquage les distingue. Le module EZReg n'est pas reconnaissable avec certitude."
+ },
+ {
+  "forme": "ev-toro-p220-1po",
+  "nom": "Électrovanne Toro P220 1\" FF pré-équipée EZReg",
+  "refs": [
+   "TEVP2202354"
+  ],
+  "fichier": "ev-toro-p220-1po-2.png",
+  "montre": "Toro P220 1\" femelle femelle, solénoïde 24 V à fils noirs",
+  "vise": "1\" FF",
+  "preuve": "Page dédiée à la P220-26-04 (1\"), image propre à cette page (celle du 2\" est différente).",
+  "source": "https://cheapsprinklers.com/products/toro-p220-26-04-1-inline-angle-valve-w-flow-control-fpt-x-fpt",
+  "image": "https://cheapsprinklers.com/cdn/shop/files/P220-26-04.png?crop=center&height=1200&v=1766181855&width=1200",
+  "site": "cheapsprinklers.com",
+  "doute": "Version américaine en NPT, avec réglage de débit et sans EZReg. Même corps et même tête."
+ },
+ {
+  "forme": "ev-toro-p220-1po12",
+  "nom": "Électrovanne Toro P220 1\"1/2 FF RMD pré-équipée EZReg",
+  "refs": [
+   "TEVP2202356"
+  ],
+  "fichier": "ev-toro-p220-1po12-1.jpg",
+  "montre": "Toro P220 femelle femelle, marquage « 1.5 » sur l'entrée et « P220 » sur le couvercle, solénoïde 24 V à fils rouges",
+  "vise": "1\"1/2 FF avec réglage de débit",
+  "preuve": "Marquage « 1.5 » lu sur l'entrée, page dédiée à la P220-23-56.",
+  "source": "https://www.kipogeorgiki.gr/index.php?route=product/search&search=P220",
+  "image": "https://www.kipogeorgiki.gr/image/cache/data/POT_Hlektrobanes/TOR-P-220/P220-23-56-1%2C5-Solenoid-Valve-1500x1500.jpg",
+  "site": "kipogeorgiki.gr",
+  "doute": "Photo ancienne agrandie à 1500 px, détourage un peu grossier."
+ },
+ {
+  "forme": "ev-toro-p220-2po",
+  "nom": "Électrovanne Toro P220 2\" FF RMD pré-équipée EZReg",
+  "refs": [
+   "TEVP2202358"
+  ],
+  "fichier": "ev-toro-p220-2po-1.png",
+  "montre": "Toro P220 grand corps à 8 vis laiton, solénoïde à fils noirs",
+  "vise": "2\" FF avec réglage de débit",
+  "preuve": "Page dédiée à la P220-26-08 (2\"), image propre à cette page (celle du 1\" est différente).",
+  "source": "https://cheapsprinklers.com/products/toro-p220-26-08-2-inline-angle-valve-w-flow-control-fpt-x-fpt",
+  "image": "https://cheapsprinklers.com/cdn/shop/files/p220-26-08_5a891749-4373-4cfe-80bd-d9c174177f70.png?crop=center&height=1200&v=1773264779&width=1200",
+  "site": "cheapsprinklers.com",
+  "doute": "Version américaine en NPT, sans EZReg. Aucun marquage lisible. Le 2\" et le 3\" ont le même couvercle (156 mm de large). La photo de la page P220-23-58 de kipogeorgiki a été écartée : elle montre un petit corps à 4 vis, celui du 1\" ou du 1\"1/2."
+ },
+ {
+  "forme": "ev-toro-p220-3po",
+  "nom": "Électrovanne Toro P220 3\" FF RMD pré-équipée EZReg",
+  "refs": [
+   "TEVP2202350"
+  ],
+  "fichier": "ev-toro-p220-3po-1.jpg",
+  "montre": "Toro P220 grand corps à 8 vis, marquage TORO sur le couvercle, solénoïde 24 V à fils rouges",
+  "vise": "3\" FF avec réglage de débit",
+  "preuve": "Page dédiée à la P220-23-50 (3\"), image propre à cette page.",
+  "source": "https://www.kipogeorgiki.gr/index.php?route=product/search&search=P220",
+  "image": "https://www.kipogeorgiki.gr/image/cache/data/POT_Hlektrobanes/TOR-P-220/P220-23-50-3-Solenoid-Valve-1500x1500.jpg",
+  "site": "kipogeorgiki.gr",
+  "doute": "Aucun marquage de taille lisible : ne se distingue du 2\" que par la page. Photo ancienne agrandie à 1500 px."
+ },
+ {
+  "forme": "ev-rb-75dv-ff-9v",
+  "nom": "Électrovanne Rain Bird 75-DV 3/4\" FF 9 V à impulsion",
+  "refs": [
+   "REV75DV9V"
+  ],
+  "fichier": "ev-rb-75dv-ff-9v-1.jpg",
+  "montre": "Rain Bird DV femelle femelle avec solénoïde à impulsion carré (ON, MANUAL 1/4 TURN, OFF), fils rouge et noir",
+  "vise": "3/4\" FF, 9 V à impulsion",
+  "preuve": "Page dédiée à la DV avec bobine 9 V à impulsion ; le solénoïde a la forme de celui marqué DC LATCHING par Rain Bird.",
+  "source": "https://sprinkler-irrigation.co.uk/rain-bird-dv-valve-with-9v-latching-coil.html",
+  "image": "https://cdn11.bigcommerce.com/s-j3145waygk/images/stencil/1280x1280/products/6988/4830/DV_with_9v__79345.1706792725.jpg",
+  "site": "sprinkler-irrigation.co.uk",
+  "doute": "La page vend la 3/4\" et la 1\" avec la même photo : la taille n'est pas prouvée. La 75-DV a la même tête que la 100-DV, un peu plus petite."
+ },
+ {
+  "forme": "ev-rb-pga-9v",
+  "nom": "Électrovanne Rain Bird PGA FF 9 V à impulsion",
+  "refs": [
+   "REVPGA1009V",
+   "REVPGA1509V"
+  ],
+  "fichier": "ev-rb-pga-9v-1.jpg",
+  "montre": "Rain Bird PGA femelle femelle avec solénoïde TBOS à impulsion carré (ON, MANUAL, OFF), fil rouge",
+  "vise": "1\" (100-PGA-9V)",
+  "preuve": "Image de la fiche technique Rain Bird « PGA Series Valves with TBOS Latching Solenoid », qui ne traite que des PGA 9 V. Silhouette haute et étroite de la 100-PGA, comparée aux photos Rain Bird du 100 et du 150.",
+  "source": "https://www.rainbird.com/sites/default/files/media/documents/2022-02/2022-02-16-d42076-pga-series-technical-spec.pdf",
+  "image": "image extraite du PDF de la fiche technique",
+  "site": "rainbird.com",
+  "doute": "Image de 432 x 505 px, sous les 500 px de large. La fiche couvre les trois tailles : le 1\" n'est déduit que de la silhouette. Sert aussi au 1\"1/2, même tête."
+ },
+ {
+  "forme": "ev-richdel-2400mt-ff-9v",
+  "nom": "Électrovanne Richdel 2400 MT 1\" FF 9 V",
+  "refs": [
+   "AEV1205"
+  ],
+  "fichier": null,
+  "montre": "",
+  "vise": "1\" FF, solénoïde 9 V à impulsion",
+  "preuve": "",
+  "source": "",
+  "image": "",
+  "site": "",
+  "doute": "Aucune photo de la 2400 avec solénoïde DC trouvée. Irritrol vend le solénoïde DCL à part ; le seul vendeur d'une 2400 DC complète trouvé (irrigationexpress.co.nz) refuse l'accès. Rien téléchargé."
+ },
+ {
+  "forme": "ev-hunter-pgv100jt-mm-9v",
+  "nom": "Électrovanne Hunter PGV-100 Jar-Top 1\" MM 9 V",
+  "refs": [
+   "HEV1724"
+  ],
+  "fichier": null,
+  "montre": "",
+  "vise": "1\" MM (fileté), solénoïde DC à impulsion",
+  "preuve": "",
+  "source": "",
+  "image": "",
+  "site": "",
+  "doute": "Dans le catalogue Aqua Plus, « fil » veut dire fileté, donc mâle : « embout cannelé x fil 1/2 », « filtre ARKAL fil 1\" ». C'est donc la PGV-100-JT-MM avec solénoïde DC. Hunter ne la vend pas en DC d'usine (le DC existe en PGV-100-MM-DC à couvercle vissé), et aucune photo n'a été trouvée. Rien téléchargé."
+ },
+ {
+  "forme": "rehausse-regard-12-vb1419e",
+  "nom": "Rehausse de regard rectangulaire 12\" Rain Bird",
+  "refs": [
+   "RG17101"
+  ],
+  "fichier": "rehausse-regard-12-vb1419e-1.png",
+  "montre": "Rehausse noire seule, sans couvercle, rectangulaire",
+  "vise": "VB-STD-6EXT-B, rehausse du regard standard 12\"",
+  "preuve": "Page dédiée aux rehausses Rain Bird VB (« réhausse commercialisée sans couvercle »).",
+  "source": "https://www.jardinet.fr/p-5436-rehausse-pour-regard-de-vanne-serie-vb-rain-bird",
+  "image": "https://www.jardinet.fr/public/images/galerie/2024/04/rehausse-regard-vanne-serie-vb-rain-bird1__800x800.png",
+  "site": "jardinet.fr",
+  "doute": "La page vend la standard (VB-STD-6EXT-B) et la Jumbo (VB-JMB-6EXT-B) avec deux photos, sans dire laquelle est laquelle. Je pense que celle-ci est la standard, d'après ses proportions (plus haute par rapport à sa longueur), mais ce n'est pas prouvé."
+ },
+ {
+  "forme": "solenoide-rb-9v-lu3100",
+  "nom": "Solénoïde Rain Bird 9 V à impulsion LU3100",
+  "refs": [
+   "RPJVP300"
+  ],
+  "fichier": "solenoide-rb-9v-lu3100-1.jpg",
+  "montre": "Solénoïde rond noir à nez bleu, fils rouge et noir",
+  "vise": "LU3100, solénoïde TBOS à impulsion 9 V de Rain Bird",
+  "preuve": "Image nommée « rblu3100 » chez un vendeur Rain Bird. LU3100 est la référence européenne du solénoïde TBOS (vendu sous ITBOSPSOLE LU3100 chez plumbersstock).",
+  "source": "https://sprinkler-irrigation.co.uk/rain-bird-dv-valve-with-9v-latching-coil.html",
+  "image": "https://cdn11.bigcommerce.com/s-j3145waygk/images/stencil/1280x1280/products/6988/2186/rblu3100_1__71125.1706792725.jpg",
+  "site": "sprinkler-irrigation.co.uk",
+  "doute": "Photo de 400 px seulement, sur fond gris. Le préfixe RPJ d'Aqua Plus n'est pas expliqué, mais LU3100 est bien du Rain Bird."
+ },
+ {
+  "forme": "solenoide-rb-9v-lu3100",
+  "nom": "Solénoïde Rain Bird 9 V à impulsion LU3100",
+  "refs": [
+   "RPJVP300"
+  ],
+  "fichier": "solenoide-rb-9v-lu3100-2.jpg",
+  "montre": "Solénoïde carré noir Rain Bird, étiquette jaune « DC LATCHING », fils rouge et noir",
+  "vise": "LU3100, solénoïde TBOS à impulsion 9 V de Rain Bird",
+  "preuve": "Marquage DC LATCHING et Rain Bird lus sur la pièce.",
+  "source": "https://sprinkler-irrigation.co.uk/rain-bird-dv-valve-with-9v-latching-coil.html",
+  "image": "https://cdn11.bigcommerce.com/s-j3145waygk/images/stencil/1280x1280/products/6994/2784/rain_bird_9v_latching_coil__06682.1603454925.jpg",
+  "site": "sprinkler-irrigation.co.uk",
+  "doute": "C'est le TBOS-PSOL actuel. Il n'a pas la même forme que la photo 1 : je ne sais pas laquelle des deux Aqua Plus livre aujourd'hui sous LU3100."
+ },
+ {
+  "forme": "tube-pehd-nf",
+  "nom": "Tube PEHD NF eau potable à bandes bleues",
+  "refs": [
+   "UPE240",
+   "UPE250",
+   "UPE263",
+   "UPE275"
+  ],
+  "fichier": "tube-pehd-nf-40-1.jpg",
+  "montre": "Deux couronnes de tube PEHD noir à fines bandes bleues, bouchons jaunes",
+  "vise": "Ø40",
+  "preuve": "Page dédiée au tuyau PEHD Ø40 en couronne de 50 m ; la page du Ø25 du même vendeur a une autre image.",
+  "source": "https://www.materiauxnet.com/tuyau-pehd-diametre-40-mm-couronne-de-50-m.html",
+  "image": "https://www.materiauxnet.com/media/catalog/product/cache/1/image/9df78eab33525d08d6e5fb8d27136e95/f/o/format_600_x_600_2_94_-compressed.jpg",
+  "site": "materiauxnet.com",
+  "doute": "Preuve faible : aucun marquage lisible, et je n'ai comparé qu'avec la page du Ø25. Couronnes coupées au bord de l'image, bandes peu visibles, pas l'aspect Polybleu. La photo Polybleu (domomat) est commune à toutes les tailles : même empreinte pour le 32 et le 40."
+ },
+ {
+  "forme": "gag-6mm",
+  "nom": "Goutte-à-goutte Ø6 mm, goutteurs tous les 15 cm, 2 l/h, 30 m",
+  "refs": [
+   "UGGMC-206"
+  ],
+  "fichier": "gag-6mm-1.png",
+  "montre": "Couronne marron Micro-line, étiquette « 30 m » et « 15 cm », 6 mm",
+  "vise": "Ø6, 15 cm, 2 l/h, 30 m",
+  "preuve": "Étiquette lue « 30 m » et « 15 cm » sur la couronne, page dédiée au 4x6 mm 2 l/h 30 m.",
+  "source": "https://www.arrosage-distribution.fr/products/goutteur-integre-4x6mm",
+  "image": "https://www.arrosage-distribution.fr/media/cache/sylius_shop_product_original/87/99/961559d1d630e600903daced4eee.png",
+  "site": "arrosage-distribution.fr",
+  "doute": "489 px. Marque DIG Micro-line. La couleur du tube Aqua Plus standard n'est pas connue : la variante _N est noire, celle-ci est peut-être marron."
+ },
+ {
+  "forme": "gag-6mm",
+  "nom": "Goutte-à-goutte Ø6 mm, goutteurs tous les 15 cm, 2 l/h, 30 m",
+  "refs": [
+   "UGGMC-206"
+  ],
+  "fichier": "gag-6mm-2.png",
+  "montre": "Couronne marron Micro-line, étiquette « 30 m, 15 cm Dripper Spacing, 6 mm dripline, 4 mm ID, 2 lph at 1 bar »",
+  "vise": "Ø6, 15 cm, 2 l/h, 30 m",
+  "preuve": "Étiquette entièrement lue : 6 mm, 15 cm, 2 l/h à 1 bar, 30 m.",
+  "source": "https://www.mon-irrigation.com/accueil/734-tuyau-goutte-a-goutte-micro-line-avec-goutteurs-integres-46mm.html",
+  "image": "https://www.mon-irrigation.com/1347-product_zoom/tuyau-goutte-a-goutte-micro-line-avec-goutteurs-integres-46mm.jpg",
+  "site": "mon-irrigation.com",
+  "doute": "Filigrane « mon-irrigation.com » sur tout le fond. Même réserve sur la couleur."
+ },
+ {
+  "forme": "gag-6mm-noir",
+  "nom": "Goutte-à-goutte Ø6 mm noir, goutteurs tous les 15 cm, 2 l/h, 30 m",
+  "refs": [
+   "UGGMC-206_N"
+  ],
+  "fichier": "gag-6mm-noir-1.jpg",
+  "montre": "Couronne de tube noir 6 mm à goutteurs",
+  "vise": "noir, Ø6, 15 cm, 2 l/h, 30 m",
+  "preuve": "Page dédiée à la DIG ML-106 (noir, 6 pouces soit 15 cm, 2 l/h, 30 m), image nommée « ml-106 ».",
+  "source": "https://cheapsprinklers.com/products/dig-1-4-black-drip-line-6-emitter-spacing-52-gph-100-ml-106",
+  "image": "https://cdn.shopify.com/s/files/1/0167/3543/6900/products/ml-106.jpg?v=1592940607",
+  "site": "cheapsprinklers.com",
+  "doute": "Aucun marquage lisible : la taille et l'écartement ne reposent que sur la page. 700 px."
+ },
+ {
+  "forme": "vanne-1-4-tour-ff",
+  "nom": "Vanne 1/4 de tour FF",
+  "refs": [
+   "BVA3861",
+   "BVA3862",
+   "BVA3863",
+   "BVA3864",
+   "BVA3865",
+   "BVA3866"
+  ],
+  "fichier": null,
+  "montre": "",
+  "vise": "1\"",
+  "preuve": "",
+  "source": "",
+  "image": "",
+  "site": "",
+  "doute": "Rien de prouvé à 1\". Hydralians et Bricomarché mettent la même image sur toutes les tailles (même empreinte), et la page Brico Dépôt du 26x34 a un marquage illisible sans autre taille à comparer. Rien téléchargé."
+ },
+ {
+  "forme": "vanne-1-4-tour-purge-ff",
+  "nom": "Vanne 1/4 de tour avec purge FF",
+  "refs": [
+   "BVA931",
+   "BVA933",
+   "BVA934",
+   "BVA935",
+   "BVA936"
+  ],
+  "fichier": null,
+  "montre": "",
+  "vise": "1\"",
+  "preuve": "",
+  "source": "",
+  "image": "",
+  "site": "",
+  "doute": "Les pages 26x34 de Brico Dépôt et de Bricomarché montrent une vanne marquée 3/4\" (DN20) : photo fausse, rejetée. Hydralians met la même image sur le 1/2\", le 1\" et le 2\". Guillemarre et Economo : images trop petites ou filigranées, sans marquage. Rien téléchargé."
+ }
+]
