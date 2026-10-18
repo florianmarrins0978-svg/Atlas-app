@@ -2113,6 +2113,11 @@ export function calculerPlan(entree) {
         return Object.assign({}, l, { reference: CATALOGUE.referenceDe(l.ref) });
       }),
       manquants: manquants(d),
+      // **Les sorties du goutte-à-goutte, comptées une fois.** La liste de
+      // l'application lit ses raccords Ø25 sur le plan dessiné, et le massif n'y
+      // a pas de tête : sans ce compte, elle perdait le coude taraudé de chaque
+      // sortie et le té égal des suivantes (18 octobre 2026).
+      goutteAGoutte: (function () { var sg = sortiesGoutte(d); return { sorties: sg.sorties, tesEgaux: sg.tesEgaux }; })(),
       amenee: amenee(d),
       // **L'ESTIMATION DE PORTÉE SE DIT** (`CLAUDE.md` §4). Le débit corrigé
       // est de la physique ; la portée, elle, suit un exposant qui n'est pas

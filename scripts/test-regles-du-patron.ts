@@ -55,7 +55,7 @@ function exige(condition: unknown, message: string) {
 }
 
 type Zone = { id: number; type: string; nom: string; x: number; y: number; L: number; l: number };
-type Plan = ReturnType<typeof calculerPlan> & { dessin: ZoneDessinee[]; couleurs: string[] };
+type Plan = ReturnType<typeof calculerPlan> & { dessin: ZoneDessinee[]; couleurs: string[]; goutteAGoutte: { sorties: number; tesEgaux: number } };
 const plan = (zones: Zone[], pression = 3, compteur = "oui") =>
   calculerPlan({ seau: 10, temps: 20, pression, compteur, zones } as never) as Plan;
 const dessine = (p: Plan, nourrice: { x: number; y: number }) => {
@@ -138,7 +138,7 @@ regle("21 août 2026", "« tés + coudes = arroseurs, pour chaque réseau » —
   const p = plan(DEUX_PELOUSES);
   const d = dessine(p, { x: 13, y: 10 });
   for (const r of d.reseaux) exige(r.tes + r.coudes === r.tetes.length, `réseau ${r.numero + 1} : ${r.tes} + ${r.coudes} ≠ ${r.tetes.length}`);
-  const pieces = piecesDuPlan(p.materiel, d, { compteur: true, seuil25: p.amenee.longueurMax25, amenee: null });
+  const pieces = piecesDuPlan(p.materiel, d, { compteur: true, seuil25: p.amenee.longueurMax25, amenee: null, goutte: p.goutteAGoutte });
   const q = (ref: string, ou: string) => pieces.filter((x) => x.ref === ref && x.ou === ou).reduce((t, x) => t + (x.q ?? 0), 0);
   const somme = (f: (r: (typeof d.reseaux)[number]) => number) => d.reseaux.reduce((t, r) => t + f(r), 0);
   exige(q("te-taraude-25-34-25", "jardin") === somme((r) => r.tes), "les tés de la liste ne sont pas ceux du dessin");
@@ -157,15 +157,15 @@ regle("11 septembre 2026", "« il faut un té égal à côté du premier arroseu
 regle("21 août 2026", "« on va devoir couper la ligne et mettre un té égal » — au compteur, un 25×25×25 dans l'amenée ; au robinet, aucun", () => {
   const p = plan(DEUX_PELOUSES);
   const d = dessine(p, { x: 13, y: 10 });
-  const auCompteur = piecesDuPlan(p.materiel, d, { compteur: true, seuil25: 50, amenee: null }).filter((x) => x.ou === "amenee" && x.ref === "te-25-25-25");
-  const auRobinet = piecesDuPlan(p.materiel, d, { compteur: false, seuil25: 50, amenee: null }).filter((x) => x.ou === "amenee" && x.ref === "te-25-25-25");
+  const auCompteur = piecesDuPlan(p.materiel, d, { compteur: true, seuil25: 50, amenee: null, goutte: p.goutteAGoutte }).filter((x) => x.ou === "amenee" && x.ref === "te-25-25-25");
+  const auRobinet = piecesDuPlan(p.materiel, d, { compteur: false, seuil25: 50, amenee: null, goutte: p.goutteAGoutte }).filter((x) => x.ou === "amenee" && x.ref === "te-25-25-25");
   exige(auCompteur.length === 1 && auCompteur[0].q === 1, "le té du compteur manque dans l'amenée");
   exige(auRobinet.length === 0, "un té du compteur est facturé sur un piquage au robinet");
 });
 
 regle("21 août 2026", "« trois zones, jamais mélangées » — compteur → nourrice, regard, jardin, et rien en dehors", () => {
   const p = plan(DEUX_PELOUSES);
-  const pieces = piecesDuPlan(p.materiel, dessine(p, { x: 13, y: 10 }), { compteur: true, seuil25: 50, amenee: null });
+  const pieces = piecesDuPlan(p.materiel, dessine(p, { x: 13, y: 10 }), { compteur: true, seuil25: 50, amenee: null, goutte: p.goutteAGoutte });
   for (const ou of ["amenee", "regard", "jardin"]) exige(pieces.some((x) => x.ou === ou), `la zone « ${ou} » est vide`);
   exige(pieces.some((x) => x.ou === "regard" && /lectrovanne/i.test(x.nom)), "l'électrovanne n'est pas dans le regard");
   exige(pieces.some((x) => x.ou === "jardin" && /PEBD/.test(x.nom)), "le PEBD Ø16 n'est pas au jardin");
@@ -226,7 +226,7 @@ regle("20 août 2026", "« la pression ne donne pas le débit » — hors compte
 
 regle("23 août 2026", "« là, il y a tous les métrés » — l'agencement n'est pas obligatoire : sans dessin, le plan et ses pièces sortent quand même", () => {
   const p = plan(DEUX_PELOUSES);
-  const pieces = piecesDuPlan(p.materiel, null, { compteur: true, seuil25: 50, amenee: null });
+  const pieces = piecesDuPlan(p.materiel, null, { compteur: true, seuil25: 50, amenee: null, goutte: p.goutteAGoutte });
   exige(pieces.some((x) => x.ou === "jardin" && /Turbine/.test(x.nom)), "sans dessin, plus d'arroseurs dans la liste");
   exige(pieces.some((x) => x.ref === "pe25" && x.q === null), "sans dessin, le tuyau Ø25 doit être « à mesurer », pas chiffré");
 });
@@ -257,8 +257,8 @@ regle("11 septembre 2026", "« l'amenée doit être calculée, ni lue ni suppos�
   exige(!longueurDeLAmenee(null, { x: 0.3, y: 0.5 }, zones).ok, "sans piquage sur le croquis, aucune amenée n'est comptée — et surtout pas 30 m");
   exige(!etatDuCroquis({ zonesMesurees: 3, nourrice: true, piquage: false, branchement: "compteur" }).complet, "sans piquage sur le croquis, pas de plan : c'est le troisième élément obligatoire");
   const p = plan(DEUX_PELOUSES);
-  const avec = piecesDuPlan(p.materiel, null, { compteur: true, seuil25: 50, amenee: 8 }).find((x) => x.ref === "pe25-amenee");
-  const sans = piecesDuPlan(p.materiel, null, { compteur: true, seuil25: 50, amenee: null }).find((x) => x.ref === "pe25-amenee");
+  const avec = piecesDuPlan(p.materiel, null, { compteur: true, seuil25: 50, amenee: 8, goutte: p.goutteAGoutte }).find((x) => x.ref === "pe25-amenee");
+  const sans = piecesDuPlan(p.materiel, null, { compteur: true, seuil25: 50, amenee: null, goutte: p.goutteAGoutte }).find((x) => x.ref === "pe25-amenee");
   exige(avec?.q === 8, "la ligne d'amenée porte les 8 m calculés");
   exige(sans?.q === null, "sans calcul possible, la ligne d'amenée reste « à mesurer » — jamais un chiffre plausible");
 });
@@ -426,13 +426,41 @@ regle("18 octobre 2026", "« sur le plan tu as mis réseau 3 pour le goutte-à-g
     { id: 1, type: "gazon", nom: "Pelouse", x: 0, y: 0, L: 12, l: 12 },
     { id: 2, type: "massif", nom: "Massif", x: 14, y: 0, L: 20, l: 2.4, sortieGoutte: "boucle" } as Zone,
     { id: 3, type: "gazon", nom: "Couloir", x: 0, y: 14, L: 10, l: 2, materiel: "tuyere" } as Zone,
-  ]) as Plan & { secteurs: { famille: string }[]; reseauxDeZone: Record<string, number[]> };
-  const n = p.secteurs.length;
-  const goutte = p.secteurs.map((s, i) => (s.famille === "Goutte-à-goutte" ? i : -1)).filter((i) => i >= 0);
+  ]);
+  const secteurs = p.secteurs as { famille: string }[];
+  const reseauxDeZone = p.reseauxDeZone as Record<string, number[]>;
+  const n = secteurs.length;
+  const goutte = secteurs.map((s, i) => (s.famille === "Goutte-à-goutte" ? i : -1)).filter((i) => i >= 0);
   exige(goutte.length > 0, "le massif doit avoir sa vanne de goutte-à-goutte");
   exige(goutte.every((i, k) => i === n - goutte.length + k), `goutte-à-goutte aux réseaux ${goutte.map((i) => i + 1).join(", ")} sur ${n} : sur la nourrice, ce sont les voies ${goutte.map((_, k) => n - goutte.length + k + 1).join(", ")}`);
   // Le plan colorie le massif avec ces mêmes réseaux.
-  exige((p.reseauxDeZone[2] || []).every((i) => goutte.includes(i)), `le massif est dessiné sur les réseaux ${(p.reseauxDeZone[2] || []).map((i) => i + 1).join(", ")}`);
+  exige((reseauxDeZone[2] || []).every((i) => goutte.includes(i)), `le massif est dessiné sur les réseaux ${(reseauxDeZone[2] || []).map((i) => i + 1).join(", ")}`);
+});
+
+regle("18 octobre 2026", "« le coude SBE-050 se visse sous la 3504 » : le SBE du haut suit le filetage du corps, et la liste compte comme le schéma", () => {
+  // Son carré de 12 × 12 : des 3504, et le SBE du haut en 1/2" (OD501), pas en 3/4".
+  const p = plan([{ id: 1, type: "gazon", nom: "Pelouse", x: 0, y: 0, L: 12, l: 12 }]);
+  const d = dessine(p, { x: 13, y: 6 });
+  const turbines = d.reseaux.flatMap((r) => r.tetes).filter((x) => x.forme === "rond").length;
+  exige(p.materiel.some((l) => l.ref === "RA3504"), "le 12 × 12 doit recevoir des 3504");
+  const pieces = piecesDuPlan(p.materiel, d, { compteur: true, seuil25: p.amenee.longueurMax25, amenee: null, goutte: p.goutteAGoutte });
+  const q = (ref: string) => pieces.filter((x) => x.ref === ref && x.ou === "jardin").reduce((s, x) => s + (x.q ?? 0), 0);
+  exige(q("OD501") === turbines, `${q("OD501")} SBE 050 pour ${turbines} turbines 3504 : il en faut un sous chacune`);
+  exige(q("OD502") === turbines, `${q("OD502")} SBE 075 pour ${turbines} têtes : un seul par tête, en bas, sur la ligne`);
+});
+
+regle("16 octobre 2026", "« un coude taraudé 25x3/4\" par sortie » de goutte-à-goutte, et un té égal par sortie après la première : la liste les compte aussi quand le plan est dessiné", () => {
+  const p = plan([
+    { id: 1, type: "gazon", nom: "Pelouse", x: 0, y: 0, L: 12, l: 12 },
+    { id: 2, type: "massif", nom: "Massif", x: 14, y: 0, L: 20, l: 2.4, sortieGoutte: "boucle" } as Zone,
+  ]);
+  const d = dessine(p, { x: 13, y: 6 });
+  exige(p.goutteAGoutte && p.goutteAGoutte.sorties >= 1, "le calcul doit dire combien de sorties de goutte-à-goutte il compte");
+  const pieces = piecesDuPlan(p.materiel, d, { compteur: true, seuil25: p.amenee.longueurMax25, amenee: null, goutte: p.goutteAGoutte });
+  const q = (ref: string) => pieces.filter((x) => x.ref === ref && x.ou === "jardin").reduce((s, x) => s + (x.q ?? 0), 0);
+  const somme = (f: (r: (typeof d.reseaux)[number]) => number) => d.reseaux.reduce((s, r) => s + f(r), 0);
+  exige(q("coude-taraude-25-34") === somme((r) => r.coudes) + p.goutteAGoutte.sorties, `${q("coude-taraude-25-34")} coudes taraudés : ${somme((r) => r.coudes)} sur le plan, plus ${p.goutteAGoutte.sorties} pour le goutte-à-goutte`);
+  exige(q("te-25-25-25") === somme((r) => r.tesEgaux) + p.goutteAGoutte.tesEgaux, "les tés égaux du goutte-à-goutte manquent à la liste");
 });
 
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────

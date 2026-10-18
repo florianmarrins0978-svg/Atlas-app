@@ -69,6 +69,7 @@ type Catalogue = {
   piece(ref: string): { nom: string; marque?: string } | null;
   piecesReseau: Record<string, { nom: string; marque?: string }>;
   coudes: { ref: string; nom: string; detail: string; filetage: string }[];
+  corps: { ref: string; nom: string; filetage: string }[];
 };
 const CAT = CATALOGUE as unknown as Catalogue;
 
@@ -91,7 +92,19 @@ function nomDe(ref: string): string {
 export function piecesDuPlan(
   materiel: LigneCalcul[],
   dessin: Dessin | null,
-  options: { compteur: boolean; seuil25: number; amenee: number | null }
+  options: {
+    compteur: boolean;
+    seuil25: number;
+    amenee: number | null;
+    /**
+     * Les sorties du goutte-à-goutte, telles que le calcul les compte
+     * (`goutteAGoutte`). Le massif n'a pas de tête sur le plan : sans elles, la
+     * liste perdait le coude taraudé de chaque sortie et le té égal des
+     * suivantes, que sa règle du 16 octobre 2026 exige. Obligatoire, pour
+     * qu'aucun appel ne puisse l'oublier en silence.
+     */
+    goutte: { sorties: number; tesEgaux: number };
+  }
 ): Piece[] {
   const parReseau = (f: (r: Dessin["reseaux"][number]) => number) =>
     dessin ? `par réseau : ${dessin.reseaux.map((r) => f(r)).join(", ")}` : undefined;
@@ -156,10 +169,20 @@ export function piecesDuPlan(
   if (dessin) {
     // **Les SBE, par position** — deux emplois, deux lignes. Celui du bas est
     // toujours en 3/4" (c'est le té de ligne qui l'impose) ; celui du haut suit
-    // le corps : 3/4" pour une turbine, 1/2" pour une tuyère.
+    // le FILETAGE DU CORPS, lu au catalogue : la 3504 se visse en 1/2" sur un
+    // SBE 050, comme les tuyères (sa décision d'octobre 2026). La règle d'avant,
+    // « 3/4" pour une turbine », faisait commander 13 SBE 075 de trop et
+    // manquer autant de SBE 050 sur son jardin d'exemple (18 octobre 2026).
     const tetes = dessin.reseaux.flatMap((r) => r.tetes);
-    const turbines = tetes.filter((t) => t.forme === "rond").length;
-    const tuyeres = tetes.filter((t) => t.forme === "carre").length;
+    const hautParFiletage = new Map<string, { q: number; noms: string[] }>();
+    for (const l of materiel) {
+      const c = CAT.corps.find((x) => x.ref === l.ref);
+      if (!c) continue;
+      const h = hautParFiletage.get(c.filetage) ?? { q: 0, noms: [] };
+      h.q += l.q;
+      h.noms.push(`${l.q} ${c.nom}`);
+      hautParFiletage.set(c.filetage, h);
+    }
     // La référence RELEVÉE vient de la ligne du calcul, jamais de la clé.
     const coudeDe = (filetage: string) => {
       const c = CAT.coudes.find((x) => x.filetage === filetage);
@@ -168,25 +191,26 @@ export function piecesDuPlan(
       return { ...c, reference: ligne?.reference ?? null };
     };
     const bas = coudeDe("3/4");
-    const haut12 = coudeDe("1/2");
     if (bas && tetes.length > 0) {
       jardin.push({ ref: bas.ref, reference: bas.reference, nom: `${bas.nom}, ${bas.detail}`, q: tetes.length, u: "u", ou: "jardin", detail: "en bas de chaque arroseur, sur la ligne" });
-      if (turbines > 0) {
-        jardin.push({ ref: bas.ref, reference: bas.reference, nom: `${bas.nom}, ${bas.detail}`, q: turbines, u: "u", ou: "jardin", detail: `en haut des ${turbines} turbines` });
-      }
     }
-    if (haut12 && tuyeres > 0) {
-      jardin.push({ ref: haut12.ref, reference: haut12.reference, nom: `${haut12.nom}, ${haut12.detail}`, q: tuyeres, u: "u", ou: "jardin", detail: `en haut des ${tuyeres} tuyères` });
+    for (const [filetage, h] of hautParFiletage) {
+      const haut = coudeDe(filetage);
+      if (haut && h.q > 0) jardin.push({ ref: haut.ref, reference: haut.reference, nom: `${haut.nom}, ${haut.detail}`, q: h.q, u: "u", ou: "jardin", detail: `en haut de ${h.noms.join(", ")}` });
     }
 
     // **Les raccords de ligne, lus sur le tracé** — réseau par réseau.
     const somme = (f: (r: Dessin["reseaux"][number]) => number) => dessin.reseaux.reduce((t, r) => t + f(r), 0);
     const tes = somme((r) => r.tes);
-    const coudes = somme((r) => r.coudes);
-    const egaux = somme((r) => r.tesEgaux);
+    // Les sorties du goutte-à-goutte prennent les mêmes pièces Ø25 : un coude
+    // taraudé par sortie, un té égal par sortie après la première de sa vanne.
+    const { sorties, tesEgaux: egauxGoutte } = options.goutte;
+    const etGoutte = (n: number) => (n > 0 ? `, et ${n} pour le goutte-à-goutte` : "");
+    const coudes = somme((r) => r.coudes) + sorties;
+    const egaux = somme((r) => r.tesEgaux) + egauxGoutte;
     if (tes > 0) jardin.push({ ref: TE_LIGNE, nom: nomDe(TE_LIGNE), q: tes, u: "u", ou: "jardin", detail: parReseau((r) => r.tes) });
-    if (coudes > 0) jardin.push({ ref: COUDE_LIGNE, nom: nomDe(COUDE_LIGNE), q: coudes, u: "u", ou: "jardin", detail: parReseau((r) => r.coudes) });
-    if (egaux > 0) jardin.push({ ref: TE_EGAL, nom: nomDe(TE_EGAL), q: egaux, u: "u", ou: "jardin", detail: parReseau((r) => r.tesEgaux) });
+    if (coudes > 0) jardin.push({ ref: COUDE_LIGNE, nom: nomDe(COUDE_LIGNE), q: coudes, u: "u", ou: "jardin", detail: `${parReseau((r) => r.coudes)}${etGoutte(sorties)}` });
+    if (egaux > 0) jardin.push({ ref: TE_EGAL, nom: nomDe(TE_EGAL), q: egaux, u: "u", ou: "jardin", detail: `${parReseau((r) => r.tesEgaux)}${etGoutte(egauxGoutte)}` });
 
     // **Le tuyau Ø25 des réseaux, mesuré sur le tracé.** Arrondi au mètre
     // supérieur : un tuyau se coupe, il ne s'allonge pas.

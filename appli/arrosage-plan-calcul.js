@@ -3907,6 +3907,14 @@ var CALCUL = (() => {
           return Object.assign({}, l, { reference: CATALOGUE.referenceDe(l.ref) });
         }),
         manquants: manquants(d),
+        // **Les sorties du goutte-à-goutte, comptées une fois.** La liste de
+        // l'application lit ses raccords Ø25 sur le plan dessiné, et le massif n'y
+        // a pas de tête : sans ce compte, elle perdait le coude taraudé de chaque
+        // sortie et le té égal des suivantes (18 octobre 2026).
+        goutteAGoutte: (function() {
+          var sg = sortiesGoutte(d);
+          return { sorties: sg.sorties, tesEgaux: sg.tesEgaux };
+        })(),
         amenee: amenee(d),
         // **L'ESTIMATION DE PORTÉE SE DIT** (`CLAUDE.md` §4). Le débit corrigé
         // est de la physique ; la portée, elle, suit un exposant qui n'est pas
@@ -4024,8 +4032,15 @@ var CALCUL = (() => {
     }
     if (dessin) {
       const tetes = dessin.reseaux.flatMap((r) => r.tetes);
-      const turbines = tetes.filter((t) => t.forme === "rond").length;
-      const tuyeres = tetes.filter((t) => t.forme === "carre").length;
+      const hautParFiletage = /* @__PURE__ */ new Map();
+      for (const l of materiel) {
+        const c = CAT.corps.find((x) => x.ref === l.ref);
+        if (!c) continue;
+        const h = hautParFiletage.get(c.filetage) ?? { q: 0, noms: [] };
+        h.q += l.q;
+        h.noms.push(`${l.q} ${c.nom}`);
+        hautParFiletage.set(c.filetage, h);
+      }
       const coudeDe = (filetage) => {
         const c = CAT.coudes.find((x) => x.filetage === filetage);
         if (!c) return void 0;
@@ -4033,23 +4048,22 @@ var CALCUL = (() => {
         return { ...c, reference: ligne?.reference ?? null };
       };
       const bas = coudeDe("3/4");
-      const haut12 = coudeDe("1/2");
       if (bas && tetes.length > 0) {
         jardin.push({ ref: bas.ref, reference: bas.reference, nom: `${bas.nom}, ${bas.detail}`, q: tetes.length, u: "u", ou: "jardin", detail: "en bas de chaque arroseur, sur la ligne" });
-        if (turbines > 0) {
-          jardin.push({ ref: bas.ref, reference: bas.reference, nom: `${bas.nom}, ${bas.detail}`, q: turbines, u: "u", ou: "jardin", detail: `en haut des ${turbines} turbines` });
-        }
       }
-      if (haut12 && tuyeres > 0) {
-        jardin.push({ ref: haut12.ref, reference: haut12.reference, nom: `${haut12.nom}, ${haut12.detail}`, q: tuyeres, u: "u", ou: "jardin", detail: `en haut des ${tuyeres} tuy\xE8res` });
+      for (const [filetage, h] of hautParFiletage) {
+        const haut = coudeDe(filetage);
+        if (haut && h.q > 0) jardin.push({ ref: haut.ref, reference: haut.reference, nom: `${haut.nom}, ${haut.detail}`, q: h.q, u: "u", ou: "jardin", detail: `en haut de ${h.noms.join(", ")}` });
       }
       const somme = (f) => dessin.reseaux.reduce((t, r) => t + f(r), 0);
       const tes = somme((r) => r.tes);
-      const coudes = somme((r) => r.coudes);
-      const egaux = somme((r) => r.tesEgaux);
+      const { sorties, tesEgaux: egauxGoutte } = options.goutte;
+      const etGoutte = (n) => n > 0 ? `, et ${n} pour le goutte-\xE0-goutte` : "";
+      const coudes = somme((r) => r.coudes) + sorties;
+      const egaux = somme((r) => r.tesEgaux) + egauxGoutte;
       if (tes > 0) jardin.push({ ref: TE_LIGNE, nom: nomDe(TE_LIGNE), q: tes, u: "u", ou: "jardin", detail: parReseau((r) => r.tes) });
-      if (coudes > 0) jardin.push({ ref: COUDE_LIGNE, nom: nomDe(COUDE_LIGNE), q: coudes, u: "u", ou: "jardin", detail: parReseau((r) => r.coudes) });
-      if (egaux > 0) jardin.push({ ref: TE_EGAL, nom: nomDe(TE_EGAL), q: egaux, u: "u", ou: "jardin", detail: parReseau((r) => r.tesEgaux) });
+      if (coudes > 0) jardin.push({ ref: COUDE_LIGNE, nom: nomDe(COUDE_LIGNE), q: coudes, u: "u", ou: "jardin", detail: `${parReseau((r) => r.coudes)}${etGoutte(sorties)}` });
+      if (egaux > 0) jardin.push({ ref: TE_EGAL, nom: nomDe(TE_EGAL), q: egaux, u: "u", ou: "jardin", detail: `${parReseau((r) => r.tesEgaux)}${etGoutte(egauxGoutte)}` });
       const ml = somme((r) => r.metresTuyau);
       if (ml > 0) jardin.push({ ref: "pe25", nom: "PEHD \xD825", q: Math.ceil(ml), u: "ml", ou: "jardin", detail: parReseau((r) => r.metresTuyau) });
     } else {

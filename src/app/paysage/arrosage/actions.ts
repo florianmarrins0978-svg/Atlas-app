@@ -388,6 +388,7 @@ function lePlan(
       compteur: parametres.compteur === "oui",
       seuil25: plan.amenee.longueurMax25,
       amenee: parametres.amenee > 0 ? parametres.amenee : null,
+      goutte: plan.goutteAGoutte,
     }),
     tuyau: {
       seuil25: plan.amenee.longueurMax25,

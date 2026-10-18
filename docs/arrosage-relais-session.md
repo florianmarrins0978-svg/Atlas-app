@@ -135,10 +135,11 @@ tuyères 1800 et la 3504, jamais sur la ligne ; le BL-IP est un Solem ; les
 
 | | |
 |---|---|
-| SBE sous la 3504 | sa décision : le SBE-050 (1/2") se visse sous la 3504. `piecesDuPlan` compte encore le haut des turbines en SBE 075 (3/4") : 33 SBE 075 et 7 SBE 050 au lieu de 20 et 20 sur le jardin d’exemple |
-| coude du goutte-à-goutte | sa règle : un coude taraudé 25x3/4" par sortie. `piecesDuPlan` ne le compte pas (6 coudes au lieu de 7) |
+| ~~SBE sous la 3504~~ **corrigé le 18 octobre avec son oui** (`pieces.ts` : le SBE du haut suit le filetage du corps au catalogue) | sa décision : le SBE-050 (1/2") se visse sous la 3504. `piecesDuPlan` compte encore le haut des turbines en SBE 075 (3/4") : 33 SBE 075 et 7 SBE 050 au lieu de 20 et 20 sur le jardin d’exemple |
+| ~~coude du goutte-à-goutte~~ **corrigé le 18 octobre avec son oui** (`calculerPlan` rend `goutteAGoutte`, `piecesDuPlan` l’exige) | sa règle : un coude taraudé 25x3/4" par sortie. `piecesDuPlan` ne le compte pas (6 coudes au lieu de 7) |
 | ~~numéro du goutte-à-goutte~~ | **corrigé le 18 octobre avec son oui** : le calcul numérotait les réseaux dans l’ordre du croquis, la nourrice met le goutte-à-goutte à droite. Le goutte-à-goutte est désormais numéroté en dernier dans `calcul.js` (deux copies), règle tenue dans `test-regles-du-patron.ts` |
 | `verifier-maquette-arrosage-plan.mjs` | plante (`getAttribute` sur null), **déjà avant** la correction du 18 octobre : à regarder |
+| clavier de l’iPhone | le pavé numérique n’a pas de touche OK : sur la planche de ses demandes, toucher ailleurs le referme (18 octobre). **L’écran de l’appli (`ArrosageClient.tsx`, `inputMode="decimal"`) aura besoin du même geste quand on le codera**, pas vérifiable ici |
 | cote coupée | sur le plan dessiné, la cote d’un massif qui touche le bord droit sort du cadre (« 2,4 r ») |
 
 ## Ce qui reste à faire, dans cet ordre
