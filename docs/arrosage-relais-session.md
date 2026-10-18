@@ -43,6 +43,8 @@ barrées ou annotées).
 
 **Encore** : (6) la case du grillage est sous celle de la sonde, au-dessus de la nourrice ; cochés, la sonde (à gauche) et le grillage (à droite) s'affichent sur une ligne. Au nez de robinet, sans nourrice, la case du grillage vient seule à sa place. (7) Le départ au robinet propose aussi **Ø16 souple**, qui prend l'embout Palaplast MID6362.
 
+**SON IDÉE DU 18 OCTOBRE AU SOIR, À FAIRE EN PLANCHE (pas commencée)** : *« au moment de faire la photo du plan, est-ce qu'on pourrait pas mettre un petit outil de création du plan ? Ça ouvrirait une page où il y aurait un carré déjà sélectionné, et l'utilisateur peut dessiner ses différentes zones et inclure ses métrés. Ce serait un plan en plus que tu comprendrais et qui serait facile pour toi. »* Une autre session s'en charge, sur une planche dans `appli/`, rien dans `src/app` avant son choix.
+
 **ATTENTION : une autre session travaille dans CE MÊME dossier.** Elle a fait la
 planche des photos de raccords PE (https://claude.ai/artifact/R3viQnoxAi7biZ6tD5syYS,
 commits `9e9db77f`, `724d500e`, puis `941952ea` qui donne leurs photos validées aux raccords PE de la liste dans `arrosage-plan.html` et `arrosage-vue-eclatee.html`). Avant de toucher à ces fichiers, `git log` pour voir si elle a bougé, et ne jamais jeter son travail non commité : demander au patron.
