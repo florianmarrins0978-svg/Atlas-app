@@ -123,14 +123,14 @@
     <div style="margin-top:16px">
       <p class="caps" style="margin:0">Mesure au seau</p>
       <label class="caps doux" for="secondes" style="margin-top:12px">Un seau de 10 L rempli en… secondes</label>
-      <input id="secondes" class="champ" type="number" inputmode="decimal" placeholder="20">
+      <input id="secondes" class="champ" type="number" inputmode="decimal" enterkeyhint="done" placeholder="20">
       <p class="note">Le seau et le kit, les deux : c’est ce qui garantit le plan.</p>
     </div>
     <div style="margin-top:20px">
       <p class="caps" style="margin:0">Kit débit / pression, buse 5</p>
       <div class="deux">
-        <span><label class="caps doux" for="barStatique">Bar statique</label><input id="barStatique" class="champ" type="number" inputmode="decimal" placeholder="3,5"></span>
-        <span><label class="caps doux" for="barDynamique">Bar dynamique</label><input id="barDynamique" class="champ" type="number" inputmode="decimal" placeholder="3"></span>
+        <span><label class="caps doux" for="barStatique">Bar statique</label><input id="barStatique" class="champ" type="number" inputmode="decimal" enterkeyhint="done" placeholder="3,5"></span>
+        <span><label class="caps doux" for="barDynamique">Bar dynamique</label><input id="barDynamique" class="champ" type="number" inputmode="decimal" enterkeyhint="done" placeholder="3"></span>
       </div>
     </div>
   </div>
@@ -339,6 +339,15 @@
   $("sonde").onchange = function () { etat.sonde = $("sonde").checked; dessiner(); };
   $("diametre").onchange = function () { etat.diametre = $("diametre").value; dessiner(); };
   ["secondes", "barStatique", "barDynamique"].forEach(function (id) { $(id).oninput = dessiner; });
+  // LE PAVÉ NUMÉRIQUE DE L'IPHONE N'A PAS DE TOUCHE « OK ». Sa remarque du
+  // 18 octobre 2026 : « je ne peux pas les valider, l'écran des chiffres
+  // s'affiche constamment ». Toucher ailleurs que dans un champ le referme, et
+  // le bouton « Valider » du clavier texte fait de même.
+  document.addEventListener("pointerdown", function (e) {
+    var actif = document.activeElement;
+    if (actif && /^(INPUT|TEXTAREA|SELECT)$/.test(actif.tagName) && !e.target.closest("input,textarea,select,label")) actif.blur();
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Enter" && document.activeElement && document.activeElement.tagName === "INPUT") document.activeElement.blur(); });
   $("piquage").onchange = dessiner;
   dessiner();
 })();

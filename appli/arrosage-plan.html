@@ -85,9 +85,10 @@
   .schema svg{display:block;width:100%;height:auto}
   .materiel{margin:8px 0 0;padding:0;list-style:none;font-size:14px}
   .materiel li{display:flex;gap:10px;padding:3px 0}
-  .materiel .q{flex:none;width:34px;font-weight:600;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
+  .materiel .q{flex:none;width:44px;font-weight:600;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
   .symboles{margin-top:12px;border-radius:12px;background:var(--atlas-card);padding:8px 14px}
   .symboles p{display:flex;align-items:center;gap:10px;margin:0;padding:4px 0;font-size:13.5px}
+  .symboles .s{flex:none;display:flex;gap:6px;width:36px}
   .symboles svg{flex:none;width:15px;height:15px}
 
   /* 3. LES PIÈCES : la vue éclatée, un rail par réseau, une rangée par tête. */
@@ -117,10 +118,17 @@
   .tete .piece:nth-child(2){margin-left:10px}
   .tete .piece .nom{font-size:10.5px}
   .ajouter{margin-top:10px;display:flex;width:100%;min-height:48px;align-items:center;justify-content:center;border-radius:12px;border:1.5px dashed var(--atlas-line);background:none;color:var(--atlas-ink);font-size:14.5px;cursor:pointer}
-  .liste{margin-top:10px;border-radius:12px;padding:2px 14px;background:var(--atlas-card)}
+  .groupe{margin:16px 0 0;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
+  .groupe .pastille{flex:none;width:10px;height:10px;border-radius:3px;background:var(--couleur)}
+  .envoyer{margin-top:16px;width:100%;min-height:52px;border:0;border-radius:12px;background:var(--atlas-ink);color:var(--atlas-card);font-size:16px;cursor:pointer}
+  .message{display:block;width:100%;min-height:300px;margin-top:12px;border:0;border-radius:12px;padding:12px;font:14px/1.5 ui-monospace,Menlo,Consolas,monospace;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line);resize:vertical}
+  .gestes-message{display:flex;gap:8px;margin-top:12px}
+  .gestes-message button{flex:1;min-height:52px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:15.5px;cursor:pointer}
+  .gestes-message button:last-child{background:var(--atlas-ink);border-color:var(--atlas-ink);color:var(--atlas-card)}
+  .liste{margin-top:8px;border-radius:12px;padding:2px 14px;background:var(--atlas-card)}
   .ligne{display:flex;align-items:baseline;gap:12px;padding:9px 0;border-top:1px solid var(--atlas-line);font-size:14px}
   .ligne:first-child{border-top:0}
-  .ligne .q{flex:none;width:52px;font-weight:600;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
+  .ligne .q{flex:none;width:58px;font-weight:600;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
   .ligne .n{flex:1;min-width:0}
   .ligne .ecart{flex:none;font-size:12px;color:var(--atlas-alerte)}
   .verdict{margin:10px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
@@ -195,7 +203,8 @@
   <section class="bloc">
     <span class="caps">La liste</span>
     <h2>Ce que vous emportez</h2>
-    <div class="liste" id="liste"></div>
+    <div id="liste"></div>
+    <button class="envoyer" type="button" id="envoyer">Envoyer la liste au fournisseur</button>
     <p class="verdict" id="verdict"></p>
     <ul class="reserves" id="reserves"></ul>
   </section>
@@ -212,6 +221,15 @@
     <input class="recherche" id="recherche" type="search" placeholder="Chercher une pièce" aria-label="Chercher une pièce">
     <div class="chips" id="categories"></div>
     <div id="choix"></div>
+  </div>
+</div>
+
+<div class="feuille" id="fournisseur" hidden>
+  <div class="boite" role="dialog" aria-modal="true" aria-labelledby="fournisseur-titre">
+    <div class="haut"><h2 id="fournisseur-titre">Au fournisseur</h2><button class="fermer" type="button" id="fermer-fournisseur">Fermer</button></div>
+    <p class="propose">Tout est additionné, sans prix.</p>
+    <textarea class="message" id="message" readonly aria-label="Le message au fournisseur"></textarea>
+    <div class="gestes-message"><button type="button" id="copier">Copier</button><button type="button" id="partager">Envoyer</button></div>
   </div>
 </div>
 
@@ -466,12 +484,21 @@
     });
     $("reseaux").innerHTML = html;
     var e = "var(--atlas-ink)", k = "var(--atlas-card)";
-    var sym = function (svg, t) { return '<p><svg viewBox="-1 -1 2 2" aria-hidden="true">' + svg + "</svg><span>" + t + "</span></p>"; };
+    // Plein et creux se dessinent sur les DEUX formes : un coude taraudé en bout
+    // de ligne porte une turbine (rond creux) ou une tuyère (carré creux). Un seul
+    // rond creux laissait croire qu'une tuyère en bout de ligne était autre chose
+    // (sa remarque du 18 octobre 2026 : « il faut être cohérent »).
+    var sym = function (svg, t, svg2) {
+      var un = function (s) { return '<svg viewBox="-1 -1 2 2" aria-hidden="true">' + s + "</svg>"; };
+      return '<p><span class="s">' + un(svg) + (svg2 ? un(svg2) : "") + "</span><span>" + t + "</span></p>";
+    };
+    var rondPlein = '<circle r="0.72" fill="' + e + '"/>', carrePlein = '<rect x="-0.66" y="-0.66" width="1.32" height="1.32" rx="0.18" fill="' + e + '"/>';
+    var rondCreux = '<circle r="0.6" fill="' + k + '" stroke="' + e + '" stroke-width="0.3"/>', carreCreux = '<rect x="-0.56" y="-0.56" width="1.12" height="1.12" rx="0.16" fill="' + k + '" stroke="' + e + '" stroke-width="0.3"/>';
     $("symboles").innerHTML =
-      sym('<circle r="0.72" fill="' + e + '"/>', "rond : une turbine") +
-      sym('<rect x="-0.66" y="-0.66" width="1.32" height="1.32" rx="0.18" fill="' + e + '"/>', "carré : une tuyère") +
-      sym('<circle r="0.72" fill="' + e + '"/>', "plein : la ligne continue, té taraudé 25×3/4″×25") +
-      sym('<circle r="0.6" fill="' + k + '" stroke="' + e + '" stroke-width="0.3"/>', "creux : la ligne s’arrête là, coude taraudé 25×3/4″") +
+      sym(rondPlein, "rond : une turbine") +
+      sym(carrePlein, "carré : une tuyère") +
+      sym(rondPlein, "plein : la ligne continue, té taraudé 25×3/4″×25", carrePlein) +
+      sym(rondCreux, "creux : la ligne s’arrête là, coude taraudé 25×3/4″", carreCreux) +
       sym('<rect x="-0.56" y="-0.56" width="1.12" height="1.12" transform="rotate(45)" fill="' + k + '" stroke="' + e + '" stroke-width="0.3"/>', "losange : la ligne se sépare, té égal 25×25×25") +
       sym('<line x1="-0.85" y1="0" x2="0.85" y2="0" stroke="' + e + '" stroke-width="0.18"/>', "trait fin : l’antenne Ø16 rigide, 2 m au plus");
   }
@@ -492,7 +519,10 @@
     var p = CAT.piece(ref) || CAT.piecesReseau[ref] || CAT.pieceAjoutable(ref);
     return p ? (p.marque ? p.marque + " " : "") + p.nom : ref;
   }
-  var proposees = {}, compte = {};
+  // Le compte se tient par groupe (« amenee », « r0 », « r1 »…) : la liste se lit
+  // comme on pose, et le message au fournisseur additionne tout.
+  var proposees = {}, compte = {}, groupe = "amenee";
+  function ligneDe(ref, nom, u) { var g = compte[groupe] = compte[groupe] || {}; return g[ref] = g[ref] || { nom: nom, q: 0, u: u }; }
   function piece(cle, ref, nom, detail) {
     proposees[cle] = { ref: ref, nom: nom };
     var retiree = etat.retirees[cle], change = etat.remplacees[cle];
@@ -504,13 +534,13 @@
   }
   function poser(cle, ref, nom, detail, q, u) {
     var change = etat.remplacees[cle], r = change ? change.ref : ref, n = change ? change.nom : nom;
-    if (!etat.retirees[cle]) { compte[r] = compte[r] || { nom: n, q: 0, u: change ? "u" : (u || "u") }; compte[r].q += change || q === undefined ? 1 : q; }
+    if (!etat.retirees[cle]) ligneDe(r, n, change ? "u" : (u || "u")).q += change || q === undefined ? 1 : q;
     return piece(cle, ref, nom, detail);
   }
   function tuyere(cle, corps, buse) {
     var html = poser(cle, corps.ref, corps.nom, corps.nom.replace("Tuyère ", "") + " et " + buse.nom);
     if (!etat.retirees[cle] && !etat.remplacees[cle]) {
-      compte[buse.ref] = compte[buse.ref] || { nom: "Rain Bird Tuyères " + buse.nom + (buse.colisage ? ", par " + buse.colisage : ""), q: 0, u: "u" }; compte[buse.ref].q += 1;
+      ligneDe(buse.ref, "Rain Bird Tuyères " + buse.nom + (buse.colisage ? ", par " + buse.colisage : ""), "u").q += 1;
     }
     if (etat.remplacees[cle] || !PHOTOS[buse.ref]) return html;
     return html.replace("</span>", '<img class="pied" src="arrosage-photos/' + PHOTOS[buse.ref] + '" alt="' + texte(buse.nom) + '"></span>');
@@ -536,6 +566,7 @@
   }
 
   function dessinerPieces(p, d, M) {
+    groupe = "amenee";
     $("amenee").innerHTML =
       poser("am:te", "te-25-25-25", nomDe("te-25-25-25", M), "Té égal au compteur", 1) +
       poser("am:pe", "pe25-amenee", "PEHD Ø25, du compteur à la nourrice", "PEHD Ø25, à mesurer", 0, "ml") +
@@ -545,6 +576,7 @@
     var jardin = "";
     p.secteurs.forEach(function (s, i) {
       var c = p.couleurs[i], r = d.reseaux.filter(function (x) { return x.numero === i; })[0];
+      groupe = "r" + i;
       jardin += '<div class="reseau" style="--couleur:' + c + '"><div class="reseau-titre"><span class="pastille"></span><b>Réseau ' + (i + 1) + "</b><span>" + texte(s.nom) + "</span></div>";
       // Ligne ou boucle : posé AU-DESSUS du réseau qu'il change (sa demande du
       // 18 octobre 2026), pour qu'on voie les pièces changer juste dessous.
@@ -606,24 +638,77 @@
     }).join("");
   }
 
-  // ═══ LA LISTE : ce qui est posé, comparé à celle de l'application ══════════
-  function dessinerListe(p, d) {
-    var reference = C.piecesDuPlan(p.materiel, d, { compteur: true, seuil25: p.amenee.longueurMax25, amenee: null });
-    var attendu = {};
-    reference.forEach(function (x) { if (x.ou !== "regard") attendu[x.ref] = (attendu[x.ref] || 0) + (x.q || 0); });
-    // Le té de l'amenée et celui des jonctions ont la même référence : l'application les additionne aussi.
-    var lignes = "", ecarts = 0;
-    Object.keys(compte).forEach(function (ref) {
-      var e = compte[ref], q = e.u === "ml" ? (e.q ? e.q + " m" : "à mesurer") : e.q + "x", dit = "";
-      if (attendu[ref] !== undefined && attendu[ref] !== e.q && ref !== "pe25-amenee") { dit = "la liste dit " + attendu[ref]; ecarts++; }
-      lignes += '<div class="ligne"><span class="q">' + q + '</span><span class="n">' + texte(e.nom) + "</span>" + (dit ? '<span class="ecart">' + texte(dit) + "</span>" : "") + "</div>";
+  // ═══ LA LISTE : la nourrice, puis chaque réseau ═══════════════════════════
+  // Sa demande du 18 octobre 2026 : *« en premier la nourrice avec la liste des
+  // pièces, ensuite réseau 1, la liste des pièces, réseau 2… »*. Et pour le
+  // fournisseur, tout additionné : *« lui va devoir se faire chier à compter
+  // trois pour le réseau 1, trois pour le réseau 2 »*.
+  var quantite = function (e) { return e.u === "ml" ? (e.q ? e.q + " m" : "à mesurer") : e.q + "x"; };
+  function lignesDe(g) {
+    return '<div class="liste">' + Object.keys(g).map(function (ref) {
+      var e = g[ref];
+      return '<div class="ligne"><span class="q">' + quantite(e) + '</span><span class="n">' + texte(e.nom) + "</span></div>";
+    }).join("") + "</div>";
+  }
+  // La nourrice se compte sur SA fiche, comme le dessin du regard.
+  function groupeNourrice(p) {
+    var fiche = CAT.ficheNourrice(p.secteurs.length, p.secteurs.filter(function (s) { return s.famille === "Goutte-à-goutte"; }).length), g = {};
+    (fiche ? fiche.pieces : []).forEach(function (x) { (g[x.ref] = g[x.ref] || { nom: nomCatalogue(x.ref), q: 0, u: "u" }).q += x.q; });
+    return { nom: fiche ? fiche.nom : "La nourrice", lignes: g };
+  }
+  function groupesDuPlan(p) {
+    var n = groupeNourrice(p), out = [{ titre: "Du compteur à la nourrice", lignes: compte.amenee || {} }, { titre: n.nom, lignes: n.lignes }];
+    p.secteurs.forEach(function (s, i) { out.push({ titre: "Réseau " + (i + 1) + ", " + s.nom, couleur: p.couleurs[i], lignes: compte["r" + i] || {} }); });
+    return out;
+  }
+  // Le nom pour le comptoir : la marque devant, et la référence quand elle a été
+  // relevée sur ses documents (CATALOGUE.referenceDe, jamais inventée).
+  function nomFournisseur(ref, nom) {
+    var p = CAT.piece(ref) || CAT.piecesReseau[ref], marque = p && p.marque, ref2 = CAT.referenceDe(ref);
+    return (marque && nom.indexOf(marque) < 0 ? marque + " " : "") + nom + (ref2 ? ", réf. " + ref2 : "");
+  }
+  function message(groupes) {
+    var total = {}, ordre = [];
+    groupes.forEach(function (g) {
+      Object.keys(g.lignes).forEach(function (ref) {
+        var e = g.lignes[ref];
+        if (!total[ref]) { total[ref] = { nom: e.nom, q: 0, u: e.u, inconnu: false }; ordre.push(ref); }
+        total[ref].q += e.q;
+        // Une longueur qu'un réseau ne donne pas ne disparaît pas dans la somme.
+        if (e.u === "ml" && !e.q) total[ref].inconnu = true;
+      });
     });
-    $("liste").innerHTML = lignes;
+    var lignes = ordre.map(function (ref) {
+      var e = total[ref], nom = nomFournisseur(ref, e.nom);
+      return e.u === "ml" ? (e.q ? e.q + " m de " + nom + (e.inconnu ? ", plus une longueur à mesurer" : "") : nom + " : longueur à mesurer") : e.q + "x " + nom;
+    });
+    return ["Bonjour,", "", "Voici ma commande pour un chantier d’arrosage :", ""].concat(lignes, ["", "Merci."]).join("\n");
+  }
+
+  var dernierMessage = "";
+  function dessinerListe(p, d) {
+    var groupes = groupesDuPlan(p);
+    $("liste").innerHTML = groupes.map(function (g) {
+      return '<p class="groupe"' + (g.couleur ? ' style="--couleur:' + g.couleur + '"' : "") + ">" + (g.couleur ? '<span class="pastille"></span>' : "") + texte(g.titre) + "</p>" + lignesDe(g.lignes);
+    }).join("");
+    dernierMessage = message(groupes);
+
+    // Le schéma comparé à la liste de l'application, sur les totaux hors nourrice.
+    var reference = C.piecesDuPlan(p.materiel, d, { compteur: true, seuil25: p.amenee.longueurMax25, amenee: null });
+    var attendu = {}, pose = {}, noms = {};
+    reference.forEach(function (x) { if (x.ou !== "regard") attendu[x.ref] = (attendu[x.ref] || 0) + (x.q || 0); });
+    groupes.forEach(function (g, i) {
+      if (i === 1) return;
+      Object.keys(g.lignes).forEach(function (ref) { pose[ref] = (pose[ref] || 0) + g.lignes[ref].q; noms[ref] = g.lignes[ref].nom; });
+    });
+    var ecarts = Object.keys(pose).filter(function (ref) { return attendu[ref] !== undefined && attendu[ref] !== pose[ref] && ref !== "pe25-amenee"; });
     var touche = Object.keys(etat.retirees).length + Object.keys(etat.remplacees).length + etat.ajoutees.length;
-    $("verdict").className = "verdict" + (ecarts && !touche ? " rouge" : "");
+    $("verdict").className = "verdict" + (ecarts.length && !touche ? " rouge" : "");
     $("verdict").textContent = touche
-      ? touche + " changement" + (touche > 1 ? "s" : "") + " à la main. Les écarts avec la liste sont écrits à droite."
-      : ecarts ? "Le schéma ne compte pas comme la liste de l’outil : " + ecarts + " pièce" + (ecarts > 1 ? "s" : "") + " à revoir." : "Le schéma et la liste de l’outil comptent les mêmes pièces.";
+      ? touche + " changement" + (touche > 1 ? "s" : "") + " à la main."
+      : ecarts.length ? "La liste de l’outil compte autrement : " + ecarts.map(function (ref) {
+          return noms[ref] + ", " + pose[ref] + " ici, " + attendu[ref] + " dans l’outil";
+        }).join(" ; ") + "." : "Le schéma et la liste de l’outil comptent les mêmes pièces.";
     $("reserves").innerHTML = p.manquants.map(function (r) { return "<li>" + texte(r) + "</li>"; }).join("");
   }
 
@@ -667,6 +752,14 @@
   });
   $("fermer").onclick = function () { $("feuille").hidden = true; };
   $("fermer-menu").onclick = function () { $("menu").hidden = true; };
+  // Le message au fournisseur : il le lit, le copie, ou l'envoie par le partage du téléphone.
+  $("envoyer").onclick = function () { $("message").value = dernierMessage; $("partager").hidden = !navigator.share; $("copier").textContent = "Copier"; $("fournisseur").hidden = false; };
+  $("fermer-fournisseur").onclick = function () { $("fournisseur").hidden = true; };
+  $("copier").onclick = function () {
+    var b = this;
+    navigator.clipboard.writeText(dernierMessage).then(function () { b.textContent = "Copié"; }, function () { $("message").select(); b.textContent = "Sélectionné"; });
+  };
+  $("partager").onclick = function () { navigator.share({ text: dernierMessage }); };
   $("recherche").oninput = function () { etat.recherche = this.value; ouvrir(); };
   function categorieDe(cle) { var p = proposees[cle], x = p && trouver(p.ref); return x ? x.categorie : "reseau"; }
   function menu(cle) {
