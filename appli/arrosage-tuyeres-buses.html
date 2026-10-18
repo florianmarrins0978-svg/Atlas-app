@@ -85,9 +85,10 @@
     "RBT1418":"RBT1418.jpg","RBT1419":"RBT1419.jpg","RBT1428":"RBT1428.jpg","RBT1429":"RBT1429.jpg","RBT1438":"RBT1438.jpg","RBT1439":"RBT1439.jpg",
     // LES MP ROTATOR : photos trouvées par nous le 18 octobre 2026 (sa demande
     // « va me chercher la photo des buses MP Rotator »), une par modèle, sur
-    // dvs-beregnung.de, recadrées sur la buse. À VALIDER PAR LUI avant d'entrer
-    // dans l'outil. MP1000 bordeaux, MP2000 noire, MP3000 bleue : la couleur de
-    // la bague dit le modèle, le secteur ne change pas la photo.
+    // dvs-beregnung.de, recadrées sur la buse. VALIDÉES PAR LUI le même soir
+    // (« les photos MP Rotator sont validées ») : elles peuvent entrer dans l'outil.
+    // MP1000 bordeaux, MP2000 noire, MP3000 bleue : la couleur de la bague dit
+    // le modèle, le secteur ne change pas la photo.
     "mp1000":"mp1000.jpg","mp2000":"mp2000.jpg","mp3000":"mp3000.jpg"};
   var $ = function (id) { return document.getElementById(id); };
   var texte = function (s) { var e = document.createElement("span"); e.textContent = s; return e.innerHTML; };
@@ -148,7 +149,7 @@
     $("rotator").innerHTML = MP_ROTATOR.map(function (b) {
       var photoMp = PHOTOS[b.photo] ? '<img class="buse" src="arrosage-photos/' + PHOTOS[b.photo] + '" alt="">' : '<span class="vide">photo à venir</span>';
       return '<div class="couple releve"><div class="duo">' + photoCorps + photoMp + "</div>" +
-        "<b>" + texte(nomCorps(c) + " et " + b.nom) + "</b><span>portée " + virgule(b.portee) + " m à 2,8 bar, Hunter, réf. " + b.ref + '</span><span class="mention">Pas encore dans le calcul. Photo à valider.</span></div>';
+        "<b>" + texte(nomCorps(c) + " et " + b.nom) + "</b><span>portée " + virgule(b.portee) + " m à 2,8 bar, Hunter, réf. " + b.ref + '</span><span class="mention">Pas encore dans le calcul.</span></div>';
     }).join("");
     $("rotator-toro").textContent = MP_TORO;
     var tout = document.querySelector(".ecran").textContent;
