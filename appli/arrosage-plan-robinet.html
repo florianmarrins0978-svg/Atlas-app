@@ -201,6 +201,9 @@
   .etage .ph img{mix-blend-mode:multiply}
   .etage .lib{font-size:13px;line-height:1.35;color:#4a4a44}
   .etage .lib b{display:block;font-weight:600;color:#1c1c1a}
+  /* Le manque de voies se lit SOUS le programmateur, là où il regarde (sa
+     remarque du 18 octobre 2026 : « une voie, et en dessous 4 réseaux »). */
+  .etage .lib .manque{display:block;margin-top:4px;font-weight:600;color:var(--atlas-alerte)}
   .etage .tube{width:14px;height:100%;border-radius:3px;background:linear-gradient(90deg,#2b2d31 0 30%,#2f7fd6 30% 42%,#2b2d31 42% 100%)}
   .etage .tube.seize{width:9px;background:#1f1f1f}
   .ajouter{margin-top:10px;display:flex;width:100%;min-height:48px;align-items:center;justify-content:center;border-radius:12px;border:1.5px dashed var(--atlas-line);background:none;color:var(--atlas-ink);font-size:14.5px;cursor:pointer}
@@ -273,7 +276,7 @@
   <!-- Sur le dessin de la nourrice, les pièces ne se touchent pas : c'est le
        numéro de la légende qui ouvre le menu (sa demande du 18 octobre 2026,
        « qu'on comprenne que ça sert à rien de toucher les pièces de la nourrice »). -->
-  <p class="toucher">Touchez une pièce pour la changer ou la supprimer. Pour la nourrice, touchez un numéro.</p>
+  <p class="toucher" id="toucher">Touchez une pièce pour la changer ou la supprimer.</p>
 
   <section class="bloc">
     <span class="caps">Le piquage, sur un robinet</span>
@@ -777,7 +780,13 @@
     // 18 octobre 2026), la sortie du programmateur (38 %), le milieu des raccords.
     var etages = [];
     if (robinet.double) etages.push('<div class="etage"><span class="ph" style="--h:66px;--axe:0.08"><img src="arrosage-robinet-photos/' + ROBINET.double.photo + '" alt=""></span><span class="lib"><b>' + texte(ROBINET.double.nom) + "</b>Réf. " + ROBINET.double.ref + "</span></div>");
-    if (robinet.montage === "nez") etages.push('<div class="etage"><span class="ph" style="--h:90px;--axe:0.38"><img src="arrosage-robinet-photos/SP1151.png" alt=""></span><span class="lib"><b>' + texte(ROBINET.prog.nom) + "</b>Réf. " + ROBINET.prog.ref + "</span></div>");
+    // Plus de réseaux que de voies : on garde le nez de robinet et on prévient
+    // (sa réponse du 18 octobre 2026), SOUS le programmateur, pas au bas du plan.
+    var manque = p.secteurs.length - ROBINET.prog.voies;
+    var manqueTexte = robinet.montage === "nez" && manque > 0
+      ? '<span class="manque">Il manque ' + manque + " voie" + (manque > 1 ? "s" : "") + " : il en a " + ROBINET.prog.voies + ", ce jardin demande " + p.secteurs.length + " réseaux.</span>"
+      : "";
+    if (robinet.montage === "nez") etages.push('<div class="etage"><span class="ph" style="--h:90px;--axe:0.38"><img src="arrosage-robinet-photos/SP1151.png" alt=""></span><span class="lib"><b>' + texte(ROBINET.prog.nom) + "</b>Réf. " + ROBINET.prog.ref + manqueTexte + "</span></div>");
     etages.push('<div class="etage"><span class="ph" style="--h:70px;--axe:' + (rac.axe || 0.5) + '"><img src="arrosage-robinet-photos/' + rac.photo + '" alt=""></span><span class="lib"><b>' + texte(rac.nom) + "</b>" + (rac.sansReference ? "Réf. du fournisseur" : "Réf. " + rac.ref) + "</span></div>");
     etages.push('<div class="etage"><span class="ph" style="--h:60px"><span class="tube' + (dia === 16 || dia === "16s" ? " seize" : "") + '"></span></span><span class="lib"><b>' + texte(tuyau) + "</b>" + (robinet.montage === "nez" ? "jusqu’au réseau, à mesurer" : "jusqu’à la nourrice, à mesurer") + "</span></div>");
     // CHAQUE PIÈCE DU ROBINET SE TOUCHE, se change ou se supprime, comme toutes les
@@ -1068,14 +1077,8 @@
       : ecarts.length ? "La liste de l’outil compte autrement : " + ecarts.map(function (ref) {
           return noms[ref] + ", " + pose[ref] + " ici, " + attendu[ref] + " dans l’outil";
         }).join(" ; ") + "." : "Le schéma et la liste de l’outil comptent les mêmes pièces.";
-    var res = p.manquants.slice();
-    // Plus de réseaux que de voies : on garde le nez de robinet et on prévient
-    // (sa réponse du 18 octobre 2026). Le manque est dit en nombre de voies.
-    if (robinet.montage === "nez" && p.secteurs.length > ROBINET.prog.voies) {
-      var manque = p.secteurs.length - ROBINET.prog.voies;
-      res.unshift("Il manque " + manque + " voie" + (manque > 1 ? "s" : "") + " au programmateur : il en a " + ROBINET.prog.voies + ", ce jardin demande " + p.secteurs.length + " réseaux.");
-    }
-    $("reserves").innerHTML = res.map(function (r) { return "<li>" + texte(r) + "</li>"; }).join("");
+    // Le manque de voies au nez de robinet se dit sous le programmateur (dessinerPieces), pas ici.
+    $("reserves").innerHTML = p.manquants.map(function (r) { return "<li>" + texte(r) + "</li>"; }).join("");
   }
 
   function dessiner() {
@@ -1083,6 +1086,8 @@
     direSaisie();
     document.querySelectorAll("[data-montage]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.montage === robinet.montage)); });
     $("bloc-nourrice").hidden = robinet.montage === "nez";
+    // Sans nourrice, pas de numéro à toucher : la phrase ne le dit pas (sa remarque du 18 octobre 2026).
+    $("toucher").textContent = "Touchez une pièce pour la changer ou la supprimer." + (robinet.montage === "nez" ? "" : " Pour la nourrice, touchez un numéro.");
     $("coche-sonde").style.display = robinet.montage === "nez" ? "none" : "";
     if (robinet.montage === "nez") { etat.sonde = false; $("sonde").checked = false; }
     // Dès qu'il y a des arroseurs, le départ est en Ø25 ou en Ø32 : le Ø16 ne sert
