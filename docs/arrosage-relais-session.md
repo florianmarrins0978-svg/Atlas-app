@@ -147,6 +147,18 @@ tuyères 1800 et la 3504, jamais sur la ligne ; le BL-IP est un Solem ; les
 | coude taraudé sur le plan | **sa règle du 18 octobre** : un coude taraudé se dessine en ROND CREUX, sous une tuyère comme sous une turbine. Fait sur la planche du plan ; `PlanDessine.tsx` dessine encore un carré creux sous une tuyère, à changer quand on codera l’écran |
 | cote coupée | sur le plan dessiné, la cote d’un massif qui touche le bord droit sort du cadre (« 2,4 r ») |
 
+## CORRIGÉ PAR LUI le 18 octobre au soir : les pièces 6 et 7 de la nourrice
+
+*« Je me suis trompé sur le montage. Le 6, c'est le même mais en femelle-femelle, et la pièce en dessous c'est un 25 x 1". »*
+Partout où la nourrice les comptait (arrivée, chaque voie, voie de goutte-à-goutte) :
+
+| | avant (validé le matin, ~~barré~~) | après |
+|---|---|---|
+| 6 | ~~union Dura MF 1" (ODU34MF)~~ | **DURA Manchon union 1" FF**, ODU329010 |
+| 7 | ~~raccord femelle Plasson 25 x 3/4" (OPL70302520)~~ | **raccord mâle Plasson 25 x 1"**, OPL70202526 (clé `raccord-male25`) |
+
+Les photos : le raccord mâle reprend `raccord-male25.jpg` (photo de gamme, validée) ; le manchon union FF n'a qu'une photo découpée du catalogue (p. 20, `appli/arrosage-robinet-photos/ODU329010.png`), **à lui faire valider**. Les tableaux plus haut qui citent l'union MF et le raccord femelle sont à lire avec cette correction.
+
 ## Ses décisions du 18 octobre, l'après-midi (planche du plan)
 
 | | |

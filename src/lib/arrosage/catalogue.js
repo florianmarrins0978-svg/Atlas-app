@@ -1511,10 +1511,14 @@ export const CATALOGUE = {
     // fiches du 17 août : ce sont les pièces qu'il pose (Aqua Plus ODU306010, OPL70302520).
     'coude-ff':      { nom:'Coude 1" FF', marque:'Dura', aquaplus:'ODU306010' },
     'mamelon':       { nom:'Mamelon réduit fileté MM 1"-3/4"', marque:'Dura', aquaplus:'ODU8303131' },
-    'union':         { nom:'Union droite taraudée MF 1"', marque:'Dura', aquaplus:'ODU34MF' },
+    // **Les pièces 6 et 7 de la nourrice, corrigées par lui le 18 octobre 2026** :
+    // *« je me suis trompé sur le montage, le 6 c'est le même mais en femelle-femelle,
+    // et la pièce en dessous c'est un 25 x 1" »*. L'union MF et le raccord femelle
+    // 25 x 3/4" de la veille sont remplacés partout où la fiche les comptait.
+    'union':         { nom:'Manchon union 1" FF', marque:'Dura', aquaplus:'ODU329010' },
     'vanne-purge':   { nom:'Vanne avec vis de purge 3/4"', marque:'Dura', aquaplus:'BVA932' },
     'electrovanne-100dv': { nom:'Électrovanne 100 DV 1" MM 9V', marque:'Rain Bird', aquaplus:'REV100DVM9V' },
-    'raccord-femelle25':{ nom:'Raccord femelle 25 x 3/4"', marque:'Plasson', aquaplus:'OPL70302520' },
+    'raccord-male25':{ nom:'Raccord mâle 25 x 1"', marque:'Plasson', aquaplus:'OPL70202526' },
     'regard-rect12': { nom:'Regard rectangle 12"', marque:'Dura', aquaplus:'RG17100' },
     'regard-rg17106':{ nom:'Regard jumbo RG17106', marque:'Dura', aquaplus:'RG17106' },
     'regard-jumbo5': { nom:'Regard jumbo 5 voies', marque:'Dura', aquaplus:'RG17106' },
@@ -1569,7 +1573,7 @@ export const CATALOGUE = {
         { ref:'coude-mf', q:1 }, { ref:'coude-ff', q:1 },
         { ref:'mamelon', q:2 }, { ref:'union', q:2 },
         { ref:'vanne-purge', q:1 }, { ref:'electrovanne-100dv', q:1 },
-        { ref:'raccord-femelle25', q:2 }, { ref:'regard-rect12', q:1 },
+        { ref:'raccord-male25', q:2 }, { ref:'regard-rect12', q:1 },
         { ref:'prog-1', q:1 }, { ref:'pile-9v', q:1 }, { ref:'connexion', q:2 }
       ]
     },
@@ -1577,7 +1581,7 @@ export const CATALOGUE = {
       nom: 'Nourrice 2 voies', source:'patron', releve:'17 août 2026',
       pieces: [
         { ref:'te-mmf', q:1 }, { ref:'coude-ff', q:1 }, { ref:'union', q:3 },
-        { ref:'electrovanne-100dv', q:2 }, { ref:'raccord-femelle25', q:3 },
+        { ref:'electrovanne-100dv', q:2 }, { ref:'raccord-male25', q:3 },
         { ref:'coude-mf', q:1 }, { ref:'mamelon', q:2 }, { ref:'vanne-purge', q:1 },
         { ref:'regard-rect12', q:1 }, { ref:'prog-2', q:1 },
         { ref:'pile-9v', q:1 }, { ref:'connexion', q:6 }
@@ -1587,7 +1591,7 @@ export const CATALOGUE = {
       nom: 'Nourrice 3 voies', source:'patron', releve:'17 août 2026',
       pieces: [
         { ref:'clarinette-2v', q:1 }, { ref:'union', q:4 },
-        { ref:'electrovanne-100dv', q:3 }, { ref:'raccord-femelle25', q:4 },
+        { ref:'electrovanne-100dv', q:3 }, { ref:'raccord-male25', q:4 },
         { ref:'coude-ff', q:1 }, { ref:'coude-mf', q:1 },
         { ref:'mamelon', q:2 }, { ref:'vanne-purge', q:1 },
         { ref:'regard-rect12', q:1 }, { ref:'prog-4', q:1 },
@@ -1598,7 +1602,7 @@ export const CATALOGUE = {
       nom: 'Nourrice 4 voies', source:'patron', releve:'17 août 2026',
       pieces: [
         { ref:'clarinette-3v', q:1 }, { ref:'union', q:5 },
-        { ref:'electrovanne-100dv', q:4 }, { ref:'raccord-femelle25', q:5 },
+        { ref:'electrovanne-100dv', q:4 }, { ref:'raccord-male25', q:5 },
         { ref:'coude-ff', q:1 }, { ref:'coude-mf', q:1 },
         { ref:'mamelon', q:2 }, { ref:'vanne-purge', q:1 },
         { ref:'regard-rg17106', q:1 }, { ref:'prog-4', q:1 },
@@ -1609,7 +1613,7 @@ export const CATALOGUE = {
       nom: 'Nourrice 5 voies', source:'patron', releve:'17 août 2026',
       pieces: [
         { ref:'clarinette-4v', q:1 }, { ref:'union', q:6 },
-        { ref:'electrovanne-100dv', q:5 }, { ref:'raccord-femelle25', q:6 },
+        { ref:'electrovanne-100dv', q:5 }, { ref:'raccord-male25', q:6 },
         { ref:'coude-ff', q:1 }, { ref:'coude-mf', q:1 },
         { ref:'mamelon', q:2 }, { ref:'vanne-purge', q:1 },
         { ref:'regard-jumbo5', q:1 }, { ref:'prog-6', q:1 },
@@ -1624,7 +1628,7 @@ export const CATALOGUE = {
       nom: 'Nourrice 6 voies', source:'patron', releve:'17 août 2026',
       pieces: [
         { ref:'clarinette-4v', q:1 }, { ref:'union', q:7 },
-        { ref:'electrovanne-100dv', q:6 }, { ref:'raccord-femelle25', q:7 },
+        { ref:'electrovanne-100dv', q:6 }, { ref:'raccord-male25', q:7 },
         { ref:'coude-ff', q:1 }, { ref:'coude-mf', q:1 },
         { ref:'mamelon', q:2 }, { ref:'vanne-purge', q:1 }, { ref:'te-mmf', q:1 },
         { ref:'regard-jumbo6', q:1 }, { ref:'prog-6', q:1 },
