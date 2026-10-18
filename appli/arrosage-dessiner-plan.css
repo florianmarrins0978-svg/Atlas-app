@@ -1,0 +1,76 @@
+[data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#8a8578;--atlas-rust:#2f3b2f;--atlas-rustDeep:#4f5f4c;--atlas-rustTint:#ece9e1;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#8b6835;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(28,28,26,0.12);--atlas-lineSoft:rgba(28,28,26,0.07);--atlas-chevron:rgba(28,28,26,0.28);--atlas-alerte:#9C3B2E;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#7d9a6d}
+[data-charte="brume"]{--atlas-cream:#f4f7fb;--atlas-card:#ffffff;--atlas-ink:#111823;--atlas-inkSoft:#3a434e;--atlas-muted:#78838f;--atlas-rust:#22456d;--atlas-rustDeep:#5d7795;--atlas-rustTint:#e4e7ec;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#8f6b36;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(17,24,35,0.12);--atlas-lineSoft:rgba(17,24,35,0.07);--atlas-chevron:rgba(17,24,35,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#22456d;--atlas-police-titres:ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;--atlas-onglet-haut:10px;--atlas-onglet-hauteur:100%;--atlas-onglet-rayon:11px;--atlas-onglet-fond:color-mix(in srgb, #B98B47 11%, transparent)}
+[data-charte="pierre"]{--atlas-cream:#e8e8e3;--atlas-card:#f4f4f0;--atlas-ink:#1b1d19;--atlas-inkSoft:#454741;--atlas-muted:#83867c;--atlas-rust:#1b1d19;--atlas-rustDeep:#545652;--atlas-rustTint:#dadad5;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#826231;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(27,29,25,0.12);--atlas-lineSoft:rgba(27,29,25,0.07);--atlas-chevron:rgba(27,29,25,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#1b1d19}
+[data-charte="beurre"]{--atlas-cream:#efe7cf;--atlas-card:#f8f3e4;--atlas-ink:#26221a;--atlas-inkSoft:#4e4939;--atlas-muted:#8b8368;--atlas-rust:#26221a;--atlas-rustDeep:#5e594d;--atlas-rustTint:#e1d9c2;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#826231;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(38,34,26,0.12);--atlas-lineSoft:rgba(38,34,26,0.07);--atlas-chevron:rgba(38,34,26,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#26221a}
+[data-charte="moka"]{--atlas-cream:#e6ded5;--atlas-card:#f2ece5;--atlas-ink:#2b241e;--atlas-inkSoft:#524941;--atlas-muted:#8d8175;--atlas-rust:#2b241e;--atlas-rustDeep:#5f5851;--atlas-rustTint:#d9d1c8;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#7c5d2f;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(43,36,30,0.12);--atlas-lineSoft:rgba(43,36,30,0.07);--atlas-chevron:rgba(43,36,30,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#2b241e}
+[data-charte="prune"]{--atlas-cream:#efe6ea;--atlas-card:#f9f2f5;--atlas-ink:#23131c;--atlas-inkSoft:#4d3a44;--atlas-muted:#8c7481;--atlas-rust:#3d1730;--atlas-rustDeep:#6f5164;--atlas-rustTint:#e1d7dc;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#846332;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(35,19,28,0.12);--atlas-lineSoft:rgba(35,19,28,0.07);--atlas-chevron:rgba(35,19,28,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#3d1730}
+[data-charte="sylve"]{--atlas-cream:#16241c;--atlas-card:#1e3026;--atlas-ink:#e6e6da;--atlas-inkSoft:#c2caba;--atlas-muted:#8ba189;--atlas-rust:#e6e6da;--atlas-rustDeep:#acb0a5;--atlas-rustTint:#253229;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#b98b47;--atlas-orSurEncre:#806031;--atlas-line:rgba(230,230,218,0.12);--atlas-lineSoft:rgba(230,230,218,0.07);--atlas-chevron:rgba(230,230,218,0.28);--atlas-alerte:#d47a6e;--atlas-bordeaux:#c44b63;--atlas-vertPale:#728a69;--atlas-plein:#e6e6da}
+[data-charte="nuit"]{--atlas-cream:#101210;--atlas-card:#1a1d19;--atlas-ink:#e9e8de;--atlas-inkSoft:#c1c2b6;--atlas-muted:#84887b;--atlas-rust:#e9e8de;--atlas-rustDeep:#acaca4;--atlas-rustTint:#1f211e;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#b98b47;--atlas-orSurEncre:#826231;--atlas-line:rgba(233,232,222,0.12);--atlas-lineSoft:rgba(233,232,222,0.07);--atlas-chevron:rgba(233,232,222,0.28);--atlas-alerte:#cd6456;--atlas-bordeaux:#b53b54;--atlas-vertPale:#738b6a;--atlas-plein:#e9e8de}
+
+/* Planches « dessiner le plan » (A et B). Les couleurs sont les jetons des
+   chartes (src/lib/chartes.ts), aucune n'est écrite en clair. */
+*{box-sizing:border-box}
+html{background:var(--atlas-rustTint)}
+body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint);-webkit-tap-highlight-color:transparent}
+::selection{background:color-mix(in srgb,var(--atlas-or) 30%,transparent)}
+.entete{max-width:390px;margin:0 auto;padding:18px max(16px,env(safe-area-inset-right,0px)) 6px max(16px,env(safe-area-inset-left,0px))}
+.entete h1{margin:0;font:400 24px/1.15 Georgia,"Times New Roman",serif}
+.entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+.entete .reglages{display:flex;gap:8px;align-items:end;margin-top:12px}
+.entete select,.entete .lien{font-size:15px;padding:8px 10px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);min-height:40px}
+.entete .lien{cursor:pointer}
+.ecran{max-width:390px;margin:10px auto 0;background:var(--atlas-cream);padding:14px 0 40px;min-height:80vh}
+.carte{margin:12px 16px 0;border-radius:14px;padding:18px 17px;background:var(--atlas-card)}
+.caps{display:block;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-or)}
+.caps.doux{color:var(--atlas-muted)}
+.titre{margin:0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+.gras{margin:10px 0 0;font-size:13.5px;font-weight:700;line-height:1.5}
+.champ{margin-top:6px;display:block;width:100%;min-width:0;border:0;border-radius:10px;padding:12px;font-size:16px;background:var(--atlas-cream);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line);font-variant-numeric:tabular-nums}
+.champ::placeholder{color:var(--atlas-muted)}
+.deux{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.deux-boutons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.bouton{display:flex;min-height:56px;align-items:center;justify-content:center;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:1px solid var(--atlas-line);background:var(--atlas-cream);color:var(--atlas-ink);padding:0 12px;text-align:center}
+.bouton.plein{border-color:var(--atlas-plein);background:var(--atlas-plein);color:var(--atlas-card)}
+.bouton.inerte{border-style:dashed;color:var(--atlas-inkSoft)}
+.bouton:disabled{opacity:.45;cursor:default}
+
+/* L'outil */
+.outil{margin:12px 0 0}
+.outil .haut{display:flex;align-items:center;gap:10px;margin:0 16px}
+.outil .haut h2{flex:1;margin:0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+.retour{border:0;background:none;color:var(--atlas-inkSoft);font-size:14px;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:10px 0;min-height:44px}
+.terrain-cotes{margin:10px 16px 0}
+.terrain-cotes .deux{margin-top:4px}
+.toile{margin:12px 16px 0;border-radius:14px;background:var(--atlas-card);padding:10px;position:relative}
+.toile svg{display:block;width:100%;height:auto;touch-action:none;user-select:none;-webkit-user-select:none}
+.consigne{margin:8px 16px 0;min-height:21px;font-size:14px;color:var(--atlas-inkSoft)}
+.outils{display:flex;flex-wrap:wrap;gap:6px;margin:10px 16px 0}
+.outils button{display:flex;align-items:center;gap:8px;min-height:44px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);border-radius:999px;padding:6px 14px 6px 10px;font-size:14.5px;cursor:pointer}
+.outils button[aria-pressed="true"]{background:var(--atlas-ink);color:var(--atlas-card);border-color:var(--atlas-ink)}
+.outils svg{flex:none;width:18px;height:18px}
+.etat{margin:14px 16px 0;padding:0;list-style:none}
+.etat li{display:flex;gap:10px;padding:5px 0;font-size:14.5px;line-height:1.45}
+.etat li::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--atlas-muted);margin-top:8px}
+.etat li.rouge{color:var(--atlas-alerte);font-weight:600}
+.etat li.rouge::before{background:var(--atlas-alerte)}
+.etat li.bon::before{background:var(--atlas-plein)}
+.faire{margin:14px 16px 0}
+.faire .bouton{width:100%}
+.recu{margin:12px 16px 0;font-size:12.5px;color:var(--atlas-inkSoft)}
+.recu summary{cursor:pointer;min-height:36px;padding:8px 0}
+.recu pre{margin:0;padding:12px;border-radius:10px;background:var(--atlas-card);overflow:auto;max-height:320px;font-size:11.5px;line-height:1.4}
+
+/* La feuille qui monte */
+.feuille{position:fixed;inset:0;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.35);z-index:5}
+.feuille[hidden]{display:none}
+.feuille .boite{width:100%;max-width:390px;max-height:86vh;overflow:auto;background:var(--atlas-cream);border-radius:18px 18px 0 0;padding:18px 16px calc(20px + env(safe-area-inset-bottom,0px))}
+.feuille h3{margin:0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+.feuille label.caps{margin-top:14px}
+.feuille .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}
+.feuille .actions .seul{grid-column:1 / -1}
+.feuille .supprimer{border:0;background:none;color:var(--atlas-alerte);font-size:14px;text-decoration:underline;text-underline-offset:3px;cursor:pointer;min-height:44px;margin-top:6px;padding:0}
+
+button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--atlas-or);outline-offset:2px}
+@media (prefers-reduced-motion: no-preference){.feuille .boite{animation:monte .2s cubic-bezier(.16,1,.3,1)}@keyframes monte{from{transform:translateY(28px)}to{transform:none}}}
+.champ[aria-invalid="true"]{box-shadow:inset 0 0 0 2px var(--atlas-alerte)}
+.bouton[hidden],.feuille div[hidden]{display:none}

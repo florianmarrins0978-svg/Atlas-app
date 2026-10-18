@@ -45,7 +45,20 @@ barrées ou annotées).
 
 **Et** : (8) la phrase du grillage est réécrite à la source (`pieces.ts`) : « 83 m de tranchée mesurés sur le plan. Les passages en pointillés et le tuyau d'amenée ne sont pas mesurés : leur longueur s'ajoute sur place. Le dernier rouleau en couvre encore 17 m. » (sans point-virgule, sa remarque). (9) Le robinet en ligne montrait encore l'ancien embout gris pour le Ø16 souple : les planches publiées gardent leurs anciens fichiers tant qu'on ne les renvoie pas. Remplacé par SA photo. **Piège : après avoir changé une photo dans `appli/`, la renvoyer à CHAQUE planche qui l'emploie.**
 
-**SON IDÉE DU 18 OCTOBRE AU SOIR, À FAIRE EN PLANCHE (pas commencée)** : *« au moment de faire la photo du plan, est-ce qu'on pourrait pas mettre un petit outil de création du plan ? Ça ouvrirait une page où il y aurait un carré déjà sélectionné, et l'utilisateur peut dessiner ses différentes zones et inclure ses métrés. Ce serait un plan en plus que tu comprendrais et qui serait facile pour toi. »* Une autre session s'en charge, sur une planche dans `appli/`, rien dans `src/app` avant son choix.
+**SON IDÉE DU 18 OCTOBRE AU SOIR, DEUX PLANCHES FAITES, ATTEND SON CHOIX (détail juste en dessous)** : *« au moment de faire la photo du plan, est-ce qu'on pourrait pas mettre un petit outil de création du plan ? Ça ouvrirait une page où il y aurait un carré déjà sélectionné, et l'utilisateur peut dessiner ses différentes zones et inclure ses métrés. Ce serait un plan en plus que tu comprendrais et qui serait facile pour toi. »* Une autre session s'en charge, sur une planche dans `appli/`, rien dans `src/app` avant son choix.
+
+**Faites le 18 octobre au soir, deux planches à comparer :**
+
+| | lien | fichier |
+|---|---|---|
+| A, au doigt : on trace la zone, puis on tape ses cotes (le dessin ordonne) | https://claude.ai/artifact/SW33SH1u9PgBm2r3hSreuC | `appli/arrosage-dessiner-plan-a.html` |
+| B, à l'échelle : on tape les cotes, la zone se pose à sa taille, on la glisse | https://claude.ai/artifact/49tTsbNf3VGn3J1KagG9mT | `appli/arrosage-dessiner-plan-b.html` |
+
+Le code commun : `appli/arrosage-dessiner-plan.js` et `.css` ; `appli/arrosage-dessin-calcul.js` est l'instantané esbuild de `etatDuCroquis`, `LIBELLES` et `longueurDeLAmenee` (aucune ligne réécrite). Ses réponses avant les planches : **rectangles, la haie en trait ; le terrain a ses métrés ; deux boutons au départ (photo ou dessin)**. L'outil rend exactement un `CroquisLu`, comme la photo, avec des fractions prises sur un carré dont le côté est le plus grand côté du terrain. Ce qui manque se dit avec `LIBELLES` ; l'amenée sort de `longueurDeLAmenee` (en A elle peut être refusée si le dessin n'est pas à l'échelle, en B jamais).
+
+**Trouvé en les faisant, à lui dire avant de toucher au calcul :**
+1. **Le massif** : je lui ai demandé « haie et massif en trait » en lisant `lire-croquis.ts` ; or le calcul (`calcul.js`, `TYPES.massif`, forme « nappe ») mesure le massif en **surface** (L × l), alors que la photo le rend en mètres linéaires (`lire-croquis.ts`, `L: lineaire ? null`, et `actions.ts` ligne 152). Un massif lu sur une photo arrive donc au calcul sans L ni l. Les planches traitent le massif en surface. Non corrigé.
+2. **Une photo qui n'est pas carrée** : `echelleDuCroquis` mêle les estimations prises sur la largeur et sur la hauteur de l'image ; sur une photo en 4:3, une unité de fraction ne vaut pas les mêmes mètres dans les deux sens. Non corrigé, à regarder.
 
 **ATTENTION : une autre session travaille dans CE MÊME dossier.** Elle a fait la
 planche des photos de raccords PE (https://claude.ai/artifact/R3viQnoxAi7biZ6tD5syYS,

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dessiner le plan, A</title>
+<!--
+  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Le détail est en tête de
+  arrosage-dessiner-plan.js, commun aux deux planches A et B.
+-->
+<link rel="stylesheet" href="arrosage-dessiner-plan.css">
+<script>window.MODE_DESSIN = "A";</script>
+<script src="arrosage-dessin-calcul.js"></script>
+<script src="arrosage-dessiner-plan.js"></script>
+
+<body data-charte="origine">
+<div class="entete">
+  <h1>Dessiner le plan, A</h1>
+  <p>Au doigt, comme sur le papier : on trace la zone, puis on tape ses cotes. Rien n’est codé.</p>
+  <div class="reglages">
+    <span><label class="caps doux" for="charte">Charte</label><select id="charte"></select></span>
+    <button id="exemple" class="lien" type="button">Mettre l’exemple</button>
+  </div>
+</div>
+
+<main class="ecran">
+  <section id="depart" class="carte">
+    <h2 class="titre">Le croquis et ses métrés</h2>
+    <p class="gras">Votre croquis doit impérativement contenir les métrés, l’endroit définitif de la nourrice, et l’endroit où le piquage se fait (noter l’emplacement du compteur d’eau ou du robinet de jardin).</p>
+    <div class="deux-boutons">
+      <button class="bouton inerte" type="button">Prendre la photo</button>
+      <button id="dessiner" class="bouton plein" type="button">Dessiner le plan</button>
+    </div>
+  </section>
+
+  <section id="outil" class="outil" hidden>
+    <div class="haut">
+      <h2>Le plan</h2>
+      <button id="retour" class="retour" type="button">Retour</button>
+    </div>
+
+    <div class="terrain-cotes">
+      <span class="caps">Le terrain, en mètres</span>
+      <div class="deux">
+        <span><label class="caps doux" for="t-L">Longueur</label><input id="t-L" class="champ" inputmode="decimal" enterkeyhint="done" autocomplete="off"></span>
+        <span><label class="caps doux" for="t-l">Largeur</label><input id="t-l" class="champ" inputmode="decimal" enterkeyhint="done" autocomplete="off"></span>
+      </div>
+    </div>
+
+    <div class="toile"><svg id="toile" role="img" aria-label="Le terrain et ses zones"></svg></div>
+    <p id="consigne" class="consigne" aria-live="polite"></p>
+
+    <div class="outils" role="toolbar" aria-label="Ajouter">
+      <button type="button" data-outil="gazon" aria-pressed="false"><svg viewBox="0 0 18 18"><rect x="2" y="4" width="14" height="10" rx="1.5" fill="color-mix(in srgb, var(--atlas-vertPale) 75%, var(--atlas-card))" stroke="var(--atlas-rustDeep)"/></svg>Pelouse</button>
+      <button type="button" data-outil="potager" aria-pressed="false"><svg viewBox="0 0 18 18"><rect x="2" y="4" width="14" height="10" rx="1.5" fill="color-mix(in srgb, var(--atlas-orClair) 38%, var(--atlas-card))" stroke="var(--atlas-rustDeep)"/></svg>Potager</button>
+      <button type="button" data-outil="massif" aria-pressed="false"><svg viewBox="0 0 18 18"><rect x="2" y="4" width="14" height="10" rx="1.5" fill="color-mix(in srgb, var(--atlas-rustDeep) 24%, var(--atlas-card))" stroke="var(--atlas-rustDeep)"/></svg>Massif</button>
+      <button type="button" data-outil="haie" aria-pressed="false"><svg viewBox="0 0 18 18"><path d="M2.5 9H15.5" stroke="var(--atlas-plein)" stroke-width="3" stroke-linecap="round"/></svg>Haie</button>
+      <button type="button" data-outil="nourrice" aria-pressed="false"><svg viewBox="0 0 18 18"><rect x="3" y="5.5" width="12" height="7" rx="1" fill="currentColor"/></svg>Nourrice</button>
+      <button type="button" data-outil="compteur" aria-pressed="false"><svg viewBox="0 0 18 18"><circle cx="9" cy="9" r="5" fill="var(--atlas-card)" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/></svg>Compteur</button>
+      <button type="button" data-outil="robinet" aria-pressed="false"><svg viewBox="0 0 18 18"><path d="M4 9H14M9 4V14" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M4 9H14M9 4V14" stroke="#ffffff" stroke-width="1.7" stroke-linecap="round"/></svg>Robinet</button>
+    </div>
+
+    <ul id="etat" class="etat" aria-live="polite"></ul>
+    <div id="faire" class="faire" hidden><button class="bouton plein" type="button">Faire le plan</button></div>
+  </section>
+</main>
+
+<div class="entete">
+  <details id="recu" class="recu">
+    <summary>Ce que le calcul reçoit, le même format que la photo</summary>
+    <pre id="recu-json"></pre>
+  </details>
+</div>
+
+<div id="feuille" class="feuille" hidden>
+  <div class="boite" role="dialog" aria-modal="true" aria-labelledby="f-titre">
+    <h3 id="f-titre"></h3>
+    <div id="f-cotes">
+      <label class="caps doux" for="f-nom">Nom</label>
+      <input id="f-nom" class="champ" autocomplete="off" enterkeyhint="next">
+      <div id="f-surface" class="deux">
+        <span><label class="caps doux" for="f-L">Longueur</label><input id="f-L" class="champ" inputmode="decimal" enterkeyhint="done" autocomplete="off"></span>
+        <span><label class="caps doux" for="f-l">Largeur</label><input id="f-l" class="champ" inputmode="decimal" enterkeyhint="done" autocomplete="off"></span>
+      </div>
+      <div id="f-trait" hidden>
+        <label class="caps doux" for="f-ml">Mètres linéaires</label>
+        <input id="f-ml" class="champ" inputmode="decimal" enterkeyhint="done" autocomplete="off">
+      </div>
+    </div>
+    <div class="actions">
+      <button id="f-tourner" class="bouton" type="button" hidden>Tourner</button>
+      <button id="f-valider" class="bouton plein seul" type="button">Valider</button>
+    </div>
+    <button id="f-supprimer" class="supprimer" type="button">Supprimer</button>
+  </div>
+</div>
+</body>
+</html>
