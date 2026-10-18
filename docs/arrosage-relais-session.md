@@ -108,24 +108,27 @@ tuyères 1800 et la 3504, jamais sur la ligne ; le BL-IP est un Solem ; les
 
 ## Ce qu'il doit encore trancher (ne pas inventer de réponse)
 
-1. **MP Rotator** : sur une même vanne, avec les VAN (4 fois plus rapides),
-   avec les turbines (même vitesse, environ 10 mm/h), ou seules ? Rien n'entre au
-   catalogue avant.
+1. ~~**MP Rotator** : sur une même vanne, avec les VAN, avec les turbines, ou
+   seules ?~~ **Tranché le 18 octobre** : *« les MP Rotator sont pour les
+   tuyères »*. Elles vont avec les tuyères, jamais avec une turbine. Leur entrée
+   au catalogue se fait avec les buses relevées (point 2).
 2. **Les 141 buses relevées** (`docs/arrosage-releve-aquaplus/buses-a-trancher.json`) :
    les lettres d'angle Q, T, H, TT, TQ, F ; six chiffres douteux (MPR+ 12T 0,60 ;
    PRECISION 15Q 0,089 et 8F 0,124 ; PSU 17A à 90° 0,41 ; Maxi-Paw 06 à 11,4 m ;
    Mini 8 buse 2,5 à 0,56).
-3. **Combien de turbines au plus par réseau** : *« je vais réfléchir, pour
-   l'instant reste comme c'est »*.
-4. **Le tube Toro** : la fiche (pression mini, diamètre intérieur). Deux tubes
+3. ~~**Combien de turbines au plus par réseau**~~ : *« oui, reste comme ça »*
+   (18 octobre). On ne touche à rien.
+4. **Le tube Toro** (il envoie la photo, 18 octobre) : la fiche (pression mini, diamètre intérieur). Deux tubes
    Toro de 16 mm à 2 l/h existent (BlueLine Classic non autorégulant, BlueLine
    PC autorégulant de 0,69 à 4,14 bar), 14 mm de passage tous deux ; Aqua Plus dit
    « autorégulé ». Sans confirmation, la pression au bout des lignes n'est pas
    vérifiée et le plan le dit.
-5. **Les photos à valider encore** : le raccord femelle Plasson 25 x 3/4"
+5. **Les photos à valider encore** (il les envoie, 18 octobre) : le raccord femelle Plasson 25 x 3/4"
    (photos de gamme, gravées 32 x 3/4) ; la 1812 n'a pas de photo validée ; ses
    photos du régulateur sont à venir.
 6. La planche de ses demandes du 16 octobre (l'écran), et le croquis de 350 m.
+   **Le croquis de 350 m est dépassé** : il compte des couronnes de 100 m, sa
+   règle venue après dit 50 m. Il ne se lui redemande pas tel quel.
 
 ## Ce qui reste à faire, dans cet ordre
 
