@@ -31,10 +31,31 @@
   et « + », sans plafond. Le calcul, lui, n'en connaît encore que une ou deux
   (lignesHaie, calcul.js) : à changer quand on codera.
 
+  SA DEMANDE SUIVANTE, après la photo d'un vrai plan fait main : « si j'ai la
+  photo du plan, j'ai aucun intérêt à le redessiner ; c'est si jamais j'ai pas
+  le plan ». Trois choses :
+    l'échelle    « un centième, un deux centième, pour être plus précis ».
+                 Sur un téléphone, une échelle est un AGRANDISSEMENT : à 1/100,
+                 un mètre fait un centimètre d'écran, et le plan se fait
+                 glisser au doigt là où il est vide. Les traits et les textes
+                 gardent leur taille (TRAIT).
+    les arbres   « des ronds un peu chiffonnés ; on marquerait arbre et on
+                 mettrait la taille du rond » : un rond festonné, son nom et
+                 son diamètre.
+    les dalles   « on cliquerait un endroit, puis un deuxième endroit, et ça
+                 nous les mettrait sur la distance ; ensuite il y aurait
+                 marqué largeur, longueur ; on clique et ça corrige ». Les
+                 dalles s'alignent entre les deux points, leur largeur dans le
+                 sens de la marche. L'ÉCART entre deux dalles, il ne l'a pas
+                 dit : le champ reste vide (dalles jointives) tant qu'il ne
+                 le tape pas, rien n'est supposé.
+  Ni les arbres ni les dalles n'entrent au calcul : ils partent dans deux
+  champs NEUFS (arbres, dalles), et l'écran le dit.
+
   CE QUE L'OUTIL REND EST CE QUE LA PHOTO REND (CroquisLu de
   src/server/ai/services/lire-croquis.ts) : des zones avec leur centre et leur
   emprise en FRACTION du dessin, leurs cotes, la nourrice, le piquage et le
-  point d'eau. Rien de neuf pour le calcul.
+  point d'eau. Les champs neufs s'y ajoutent sans rien retirer.
 
   Les fractions sont prises sur un CARRÉ dont le côté est le plus grand côté
   du terrain. Sinon un terrain de 34 × 16 donnerait deux échelles, une en
@@ -56,6 +77,8 @@
   var C = window.CROQUIS;
   var NS = "http://www.w3.org/2000/svg";
   var MARGE = 9;
+  // Un centimètre d'écran, en pixels CSS : c'est ce que vaut un mètre à 1/100.
+  var PX_PAR_CM = 96 / 2.54;
 
   var TYPES = {
     gazon: { nom: "Pelouse", forme: "surface" },
@@ -71,7 +94,11 @@
 
   var etat = {
     terrain: { L: null, l: null },
+    echelle: null,
     zones: [],
+    arbres: [],
+    dalles: [],
+    departDalles: null,
     nourrice: null,
     piquage: null,
     outil: null,
@@ -100,6 +127,8 @@
     if (!s) return { w: 100, h: 100 };
     return { w: etat.terrain.L / s * 100, h: etat.terrain.l / s * 100 };
   }
+  function enU(metres) { return metres / cote_du_carre() * 100; }
+  function enMetres(u) { return u / 100 * cote_du_carre(); }
   function mesuree(z) {
     // La haie entre au calcul par sa longueur seule (ses mètres linéaires).
     return z.type === "haie" ? z.L != null : z.L != null && z.l != null;
@@ -133,6 +162,17 @@
   }
   function ecritLignes(n) { return n === 1 ? "une ligne" : n + " lignes"; }
 
+  /* Combien de dalles tiennent entre les deux points, et où commence la
+     première : la rangée est centrée sur la distance, jamais étirée. */
+  function rangeeDeDalles(d) {
+    var dist = Math.hypot(d.b.x - d.a.x, d.b.y - d.a.y);
+    var l = enU(d.l || 0), e = enU(d.e || 0);
+    var n = l > 0 ? Math.max(1, Math.floor((dist + e) / (l + e) + 1e-9)) : 0;
+    var occupe = n * l + Math.max(0, n - 1) * e;
+    return { n: n, dist: dist, l: l, e: e, depart: (dist - occupe) / 2 };
+  }
+  function ecritDalles(n) { return n === 1 ? "une dalle" : n + " dalles"; }
+
   /* En B, la taille d'une zone sort de ses cotes, jamais du doigt. */
   function tailleSelonCotes(z) {
     var s = cote_du_carre();
@@ -142,25 +182,59 @@
   }
 
   /* ── Le dessin ─────────────────────────────────────────────── */
+  /* TRAIT : ce que vaut un trait ou une lettre quand le plan est agrandi. À
+     l'échelle « tout le terrain », 1 ; à 1/100, moins : le plan grossit, les
+     textes et les traits gardent leur taille d'écran. */
+  var TRAIT = 1;
   function el(nom, attrs, texte) {
     var e = document.createElementNS(NS, nom);
-    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    for (var k in attrs) {
+      var v = attrs[k];
+      if ((k === "font-size" || k === "stroke-width") && typeof v === "number") v = v * TRAIT;
+      e.setAttribute(k, v);
+    }
     if (texte != null) e.textContent = texte;
     return e;
+  }
+  /* Un signe (nourrice, compteur, poignée) se dessine autour de l'origine, à
+     taille d'écran : son groupe porte l'agrandissement, une seule fois. */
+  function signe(x, y, attrs, dessin) {
+    var g = el("g", attrs);
+    g.setAttribute("transform", "translate(" + x + " " + y + ") scale(" + TRAIT + ")");
+    var garde = TRAIT;
+    TRAIT = 1;
+    try { dessin(g); } finally { TRAIT = garde; }
+    return g;
   }
 
   function dessiner() {
     var svg = $("toile");
     var t = terrainU();
-    svg.setAttribute("viewBox", [-MARGE, -MARGE, t.w + 2 * MARGE, t.h + 2 * MARGE].join(" "));
+    // Caché (feuille de départ), le cadre ne mesure rien : on attend qu'il s'ouvre.
+    var boite = Math.max(1, svg.parentNode.clientWidth - 20);
+    var auPlusJuste = boite / (t.w + 2 * MARGE);
+    var s = cote_du_carre();
+    var voulu = etat.echelle && s ? (PX_PAR_CM * 100 / etat.echelle) * s / 100 : auPlusJuste;
+    var parU = Math.max(voulu, auPlusJuste);
+    TRAIT = auPlusJuste / parU;
+    var m = MARGE * TRAIT;
+    var vb = [-m, -m, t.w + 2 * m, t.h + 2 * m];
+    svg.setAttribute("viewBox", vb.join(" "));
+    svg.style.width = parU > auPlusJuste + 1e-6 ? Math.round(vb[2] * parU) + "px" : "";
     while (svg.firstChild) svg.removeChild(svg.firstChild);
 
-    svg.appendChild(el("rect", { x: 0, y: 0, width: t.w, height: t.h, rx: 1.2, fill: "var(--atlas-cream)", stroke: "var(--atlas-ink)", "stroke-width": 0.5 }));
-    svg.appendChild(el("text", { x: t.w / 2, y: -3, "text-anchor": "middle", "font-size": 3.4, fill: etat.terrain.L ? "var(--atlas-inkSoft)" : "var(--atlas-alerte)" }, etat.terrain.L ? cote(etat.terrain.L) + " m" : "? m"));
-    svg.appendChild(el("text", { x: -3, y: t.h / 2, "text-anchor": "middle", "font-size": 3.4, fill: etat.terrain.l ? "var(--atlas-inkSoft)" : "var(--atlas-alerte)", transform: "rotate(-90 -3 " + t.h / 2 + ")" }, etat.terrain.l ? cote(etat.terrain.l) + " m" : "? m"));
+    svg.appendChild(el("rect", { x: 0, y: 0, width: t.w, height: t.h, rx: 1.2 * TRAIT, fill: "var(--atlas-cream)", stroke: "var(--atlas-ink)", "stroke-width": 0.5 }));
+    var dy = 3 * TRAIT;
+    svg.appendChild(el("text", { x: t.w / 2, y: -dy, "text-anchor": "middle", "font-size": 3.4, fill: etat.terrain.L ? "var(--atlas-inkSoft)" : "var(--atlas-alerte)" }, etat.terrain.L ? cote(etat.terrain.L) + " m" : "? m"));
+    svg.appendChild(el("text", { x: -dy, y: t.h / 2, "text-anchor": "middle", "font-size": 3.4, fill: etat.terrain.l ? "var(--atlas-inkSoft)" : "var(--atlas-alerte)", transform: "rotate(-90 " + -dy + " " + t.h / 2 + ")" }, etat.terrain.l ? cote(etat.terrain.l) + " m" : "? m"));
 
     etat.zones.forEach(function (z) { svg.appendChild(dessinZone(z)); });
+    etat.dalles.forEach(function (d) { svg.appendChild(dessinDalles(d)); });
+    etat.arbres.forEach(function (a) { svg.appendChild(dessinArbre(a)); });
     if (brouillon) svg.appendChild(dessinBrouillon());
+    if (etat.departDalles) svg.appendChild(signe(etat.departDalles.x, etat.departDalles.y, {}, function (g) {
+      g.appendChild(el("circle", { cx: 0, cy: 0, r: 1.6, fill: "var(--atlas-ink)" }));
+    }));
     if (etat.piquage) svg.appendChild(dessinPiquage(etat.piquage));
     if (etat.nourrice) svg.appendChild(dessinNourrice(etat.nourrice));
     rendreEtat();
@@ -177,17 +251,17 @@
     var g = el("g", { "data-id": z.id, style: "cursor:grab" });
     var choisie = etat.choisie === z.id;
     var ok = mesuree(z) && cotesTropGrandes(z).length === 0;
-    g.appendChild(el("rect", { x: z.x, y: z.y, width: Math.max(z.w, 0.5), height: Math.max(z.h, 0.5), rx: 0.8, fill: remplissage(z.type), stroke: ok ? (choisie ? "var(--atlas-ink)" : "var(--atlas-rustDeep)") : "var(--atlas-alerte)", "stroke-width": choisie ? 0.9 : 0.45, "stroke-dasharray": ok ? "none" : "1.6 1.2" }));
+    g.appendChild(el("rect", { x: z.x, y: z.y, width: Math.max(z.w, 0.5 * TRAIT), height: Math.max(z.h, 0.5 * TRAIT), rx: 0.8 * TRAIT, fill: remplissage(z.type), stroke: ok ? (choisie ? "var(--atlas-ink)" : "var(--atlas-rustDeep)") : "var(--atlas-alerte)", "stroke-width": choisie ? 0.9 : 0.45, "stroke-dasharray": ok ? "none" : (1.6 * TRAIT) + " " + (1.2 * TRAIT) }));
     // Le nom, puis « longueur × largeur » : la longueur est le côté couché.
     // Une zone trop basse pour deux lignes les met sur une seule.
     var cotes = cote(z.L) + " × " + cote(z.l) + (z.type === "haie" && z.lignes ? ", " + ecritLignes(z.lignes) : "");
     var couleur = ok ? "var(--atlas-inkSoft)" : "var(--atlas-alerte)";
     var cx2 = z.x + z.w / 2, cy2 = z.y + z.h / 2;
-    if (z.h >= 9) {
-      g.appendChild(etiquette(cx2, cy2 - 0.6, nomDe(z), 3.2, z.w, "var(--atlas-ink)"));
-      g.appendChild(etiquette(cx2, cy2 + 3.4, cotes, 2.9, z.w, couleur));
+    if (z.h >= 9 * TRAIT) {
+      g.appendChild(etiquette(cx2, cy2 - 0.6 * TRAIT, nomDe(z), 3.2, z.w, "var(--atlas-ink)"));
+      g.appendChild(etiquette(cx2, cy2 + 3.4 * TRAIT, cotes, 2.9, z.w, couleur));
     } else {
-      g.appendChild(etiquette(cx2, cy2 + 1.1, nomDe(z) + ", " + cotes, 3, z.w, couleur));
+      g.appendChild(etiquette(cx2, cy2 + 1.1 * TRAIT, nomDe(z) + ", " + cotes, 3, z.w, couleur));
     }
     if (choisie && MODE === "A") g.appendChild(poignee(z.x + z.w, z.y + z.h, z.id));
     return g;
@@ -196,45 +270,83 @@
   /* Un texte qui tient dans sa zone : il rapetisse plutôt que de déborder,
      et un liseré de la couleur du fond le détache des traits qu’il croise. */
   function etiquette(x, y, texte, taille, largeur, couleur) {
-    var t = Math.min(taille, Math.max(1.9, (largeur - 1.5) / (texte.length * 0.56)));
+    var t = Math.min(taille, Math.max(1.9, (largeur - 1.5 * TRAIT) / (texte.length * 0.56) / TRAIT));
     return el("text", { x: x, y: y, "text-anchor": "middle", "font-size": t, fill: couleur, stroke: "var(--atlas-card)", "stroke-width": 0.7, "paint-order": "stroke", "stroke-linejoin": "round" }, texte);
   }
 
   function poignee(x, y, id) {
-    var g = el("g", { "data-poignee": id, style: "cursor:nwse-resize" });
-    g.appendChild(el("circle", { cx: x, cy: y, r: 6, fill: "transparent" }));
-    g.appendChild(el("circle", { cx: x, cy: y, r: 2.2, fill: "var(--atlas-card)", stroke: "var(--atlas-ink)", "stroke-width": 0.6 }));
+    return signe(x, y, { "data-poignee": id, style: "cursor:nwse-resize" }, function (g) {
+      g.appendChild(el("circle", { cx: 0, cy: 0, r: 6, fill: "transparent" }));
+      g.appendChild(el("circle", { cx: 0, cy: 0, r: 2.2, fill: "var(--atlas-card)", stroke: "var(--atlas-ink)", "stroke-width": 0.6 }));
+    });
+  }
+
+  /* L'arbre, comme sur son plan : un rond aux bords festonnés. */
+  function dessinArbre(a) {
+    var g = el("g", { "data-id": a.id, style: "cursor:grab" });
+    var r = enU(a.d) / 2, lobes = Math.max(7, Math.min(14, Math.round(r / TRAIT * 1.4))), d = "";
+    for (var i = 0; i <= lobes; i++) {
+      var ang = i / lobes * 2 * Math.PI;
+      var px = a.x + Math.cos(ang) * r * 0.9, py = a.y + Math.sin(ang) * r * 0.9;
+      if (i === 0) { d += "M" + px + " " + py; continue; }
+      var mi = (i - 0.5) / lobes * 2 * Math.PI;
+      d += "Q" + (a.x + Math.cos(mi) * r * 1.12) + " " + (a.y + Math.sin(mi) * r * 1.12) + " " + px + " " + py;
+    }
+    g.appendChild(el("path", { d: d + "Z", fill: "color-mix(in srgb, var(--atlas-plein) 52%, var(--atlas-card))", stroke: "var(--atlas-rustDeep)", "stroke-width": 0.45 }));
+    g.appendChild(el("text", { x: a.x, y: a.y + r + 3.6 * TRAIT, "text-anchor": "middle", "font-size": 2.9, fill: "var(--atlas-ink)", stroke: "var(--atlas-card)", "stroke-width": 0.7, "paint-order": "stroke", "stroke-linejoin": "round" }, (a.nom || "Arbre") + ", Ø " + cote(a.d) + " m"));
+    return g;
+  }
+
+  /* Les dalles, posées entre ses deux points : leur largeur dans le sens de
+     la marche, leur longueur en travers, comme les pas de son plan. */
+  function dessinDalles(d) {
+    var g = el("g", { "data-id": d.id, style: "cursor:grab" });
+    var r = rangeeDeDalles(d), L = enU(d.L || 0);
+    var ang = Math.atan2(d.b.y - d.a.y, d.b.x - d.a.x);
+    g.appendChild(el("line", { x1: d.a.x, y1: d.a.y, x2: d.b.x, y2: d.b.y, stroke: "transparent", "stroke-width": Math.max(8, L / TRAIT), "stroke-linecap": "round" }));
+    var rang = el("g", { transform: "translate(" + d.a.x + " " + d.a.y + ") rotate(" + ang * 180 / Math.PI + ")" });
+    for (var i = 0; i < r.n; i++) {
+      rang.appendChild(el("rect", { x: r.depart + i * (r.l + r.e), y: -L / 2, width: r.l, height: L, fill: "color-mix(in srgb, var(--atlas-muted) 60%, var(--atlas-card))", stroke: "var(--atlas-inkSoft)", "stroke-width": 0.3 }));
+    }
+    g.appendChild(rang);
+    // Le nom au-dessus de la rangée (à droite si elle est debout) : en dessous,
+    // il tombait sur le nom du massif qu'elle longeait.
+    var mx = (d.a.x + d.b.x) / 2, my = (d.a.y + d.b.y) / 2, ecart = L / 2 + 3.2 * TRAIT;
+    var nx = -Math.sin(ang), ny = Math.cos(ang);
+    if (ny > 1e-6 || (Math.abs(ny) <= 1e-6 && nx < 0)) { nx = -nx; ny = -ny; }
+    if (Math.abs(ny) <= 1e-6) ecart += 2 * TRAIT;
+    g.appendChild(el("text", { x: mx + nx * ecart, y: my + ny * ecart + 1 * TRAIT, "text-anchor": "middle", "font-size": 2.8, fill: "var(--atlas-ink)", stroke: "var(--atlas-card)", "stroke-width": 0.7, "paint-order": "stroke", "stroke-linejoin": "round" }, (d.nom || "Dalles") + ", " + ecritDalles(r.n)));
     return g;
   }
 
   function dessinNourrice(p) {
-    var g = el("g", { "data-id": "nourrice", style: "cursor:grab" });
-    g.appendChild(el("rect", { x: p.x - 6, y: p.y - 6, width: 12, height: 12, fill: "transparent" }));
-    g.appendChild(el("rect", { x: p.x - 3.6, y: p.y - 2.2, width: 7.2, height: 4.4, rx: 0.6, fill: "var(--atlas-ink)" }));
-    g.appendChild(el("text", { x: p.x, y: p.y + 6, "text-anchor": "middle", "font-size": 3, fill: "var(--atlas-ink)", "font-weight": 600, stroke: "var(--atlas-card)", "stroke-width": 0.8, "paint-order": "stroke", "stroke-linejoin": "round" }, "nourrice"));
-    return g;
+    return signe(p.x, p.y, { "data-id": "nourrice", style: "cursor:grab" }, function (g) {
+      g.appendChild(el("rect", { x: -6, y: -6, width: 12, height: 12, fill: "transparent" }));
+      g.appendChild(el("rect", { x: -3.6, y: -2.2, width: 7.2, height: 4.4, rx: 0.6, fill: "var(--atlas-ink)" }));
+      g.appendChild(el("text", { x: 0, y: 6, "text-anchor": "middle", "font-size": 3, fill: "var(--atlas-ink)", "font-weight": 600, stroke: "var(--atlas-card)", "stroke-width": 0.8, "paint-order": "stroke", "stroke-linejoin": "round" }, "nourrice"));
+    });
   }
 
   function dessinPiquage(p) {
-    var g = el("g", { "data-id": "piquage", style: "cursor:grab" });
-    g.appendChild(el("rect", { x: p.x - 6, y: p.y - 6, width: 12, height: 12, fill: "transparent" }));
-    if (p.sorte === "robinet") {
-      // Sa règle du 18 octobre : une petite croix blanche, et « robinet » à côté.
-      var d = "M" + (p.x - 1.8) + " " + p.y + "H" + (p.x + 1.8) + "M" + p.x + " " + (p.y - 1.8) + "V" + (p.y + 1.8);
-      g.appendChild(el("path", { d: d, stroke: "var(--atlas-ink)", "stroke-width": 1.5, "stroke-linecap": "round" }));
-      g.appendChild(el("path", { d: d, stroke: "#ffffff", "stroke-width": 0.65, "stroke-linecap": "round" }));
-      g.appendChild(el("text", { x: p.x + 3, y: p.y + 1.1, "font-size": 3, fill: "var(--atlas-ink)", "font-weight": 600, stroke: "var(--atlas-card)", "stroke-width": 0.8, "paint-order": "stroke", "stroke-linejoin": "round" }, "robinet"));
-    } else {
-      g.appendChild(el("circle", { cx: p.x, cy: p.y, r: 2, fill: "var(--atlas-card)", stroke: "var(--atlas-ink)", "stroke-width": 0.7 }));
-      g.appendChild(el("circle", { cx: p.x, cy: p.y, r: 0.6, fill: "var(--atlas-ink)" }));
-      g.appendChild(el("text", { x: p.x + 3, y: p.y + 1.1, "font-size": 3, fill: "var(--atlas-ink)", "font-weight": 600, stroke: "var(--atlas-card)", "stroke-width": 0.8, "paint-order": "stroke", "stroke-linejoin": "round" }, "compteur"));
-    }
-    return g;
+    return signe(p.x, p.y, { "data-id": "piquage", style: "cursor:grab" }, function (g) {
+      g.appendChild(el("rect", { x: -6, y: -6, width: 12, height: 12, fill: "transparent" }));
+      if (p.sorte === "robinet") {
+        // Sa règle du 18 octobre : une petite croix blanche, et « robinet » à côté.
+        var d = "M-1.8 0H1.8M0 -1.8V1.8";
+        g.appendChild(el("path", { d: d, stroke: "var(--atlas-ink)", "stroke-width": 1.5, "stroke-linecap": "round" }));
+        g.appendChild(el("path", { d: d, stroke: "#ffffff", "stroke-width": 0.65, "stroke-linecap": "round" }));
+        g.appendChild(el("text", { x: 3, y: 1.1, "font-size": 3, fill: "var(--atlas-ink)", "font-weight": 600, stroke: "var(--atlas-card)", "stroke-width": 0.8, "paint-order": "stroke", "stroke-linejoin": "round" }, "robinet"));
+      } else {
+        g.appendChild(el("circle", { cx: 0, cy: 0, r: 2, fill: "var(--atlas-card)", stroke: "var(--atlas-ink)", "stroke-width": 0.7 }));
+        g.appendChild(el("circle", { cx: 0, cy: 0, r: 0.6, fill: "var(--atlas-ink)" }));
+        g.appendChild(el("text", { x: 3, y: 1.1, "font-size": 3, fill: "var(--atlas-ink)", "font-weight": 600, stroke: "var(--atlas-card)", "stroke-width": 0.8, "paint-order": "stroke", "stroke-linejoin": "round" }, "compteur"));
+      }
+    });
   }
 
   /* ── Le doigt ──────────────────────────────────────────────── */
   var brouillon = null;   // A : la zone en train d'être tracée
-  var prise = null;       // ce qu'on déplace ou étire
+  var prise = null;       // ce qu'on déplace, étire, ou le plan qu'on fait glisser
 
   function point(evt) {
     var svg = $("toile");
@@ -272,6 +384,26 @@
       dessiner();
       return;
     }
+    if (etat.outil === "arbre") {
+      var c = dansLeTerrain(p);
+      choisirOutil(null);
+      ouvrirArbre({ id: null, nom: null, d: null, x: c.x, y: c.y }, true);
+      return;
+    }
+    if (etat.outil === "dalles") {
+      var e = dansLeTerrain(p);
+      if (!etat.departDalles) {
+        etat.departDalles = e;
+        $("consigne").textContent = "Touchez l’arrivée des dalles.";
+        dessiner();
+        return;
+      }
+      var a = etat.departDalles;
+      etat.departDalles = null;
+      choisirOutil(null);
+      ouvrirDalles({ id: null, nom: null, L: null, l: null, e: null, a: a, b: e }, true);
+      return;
+    }
     if (etat.outil && MODE === "A") {
       var d = dansLeTerrain(p);
       brouillon = { type: etat.outil, x0: d.x, y0: d.y, x1: d.x, y1: d.y };
@@ -279,14 +411,30 @@
       dessiner();
       return;
     }
+    var boite = svg.parentNode;
+    var agrandi = boite.scrollWidth > boite.clientWidth + 1 || boite.scrollHeight > boite.clientHeight + 1;
     if (cible) {
       var poig = cible.getAttribute("data-poignee");
       var id = poig || cible.getAttribute("data-id");
-      prise = { id: isNaN(+id) ? id : +id, etire: !!poig, depart: p, bouge: false, avant: copie(objetDe(id)) };
-      if (!isNaN(+id)) etat.choisie = +id;
+      var idv = isNaN(+id) ? id : +id;
+      // Plan agrandi, presque tout l'écran est couvert de zones : le doigt y
+      // fait glisser le plan, et ne déplace que la zone qu'on a choisie en la
+      // touchant. Les petits signes (nourrice, piquage) se prennent toujours.
+      if (agrandi && !poig && sorteDe(idv) !== "point" && etat.choisie !== idv) {
+        prise = { glisse: true, toucher: idv, bouge: false, cx: evt.clientX, cy: evt.clientY, sl: boite.scrollLeft, st: boite.scrollTop };
+        svg.setPointerCapture(evt.pointerId);
+        return;
+      }
+      prise = { id: idv, etire: !!poig, depart: p, bouge: false, avant: copie(objetDe(id)) };
+      etat.choisie = idv;
       svg.setPointerCapture(evt.pointerId);
       dessiner();
       return;
+    }
+    // Le plan agrandi se fait glisser là où il est vide.
+    if (agrandi) {
+      prise = { glisse: true, cx: evt.clientX, cy: evt.clientY, sl: boite.scrollLeft, st: boite.scrollTop };
+      svg.setPointerCapture(evt.pointerId);
     }
     if (etat.choisie !== null) { etat.choisie = null; dessiner(); }
   }
@@ -294,11 +442,26 @@
   function objetDe(id) {
     if (id === "nourrice") return etat.nourrice;
     if (id === "piquage") return etat.piquage;
+    var tous = etat.arbres.concat(etat.dalles);
+    for (var i = 0; i < tous.length; i++) if (tous[i].id === id) return tous[i];
     return etat.zones.filter(function (z) { return z.id === +id; })[0];
+  }
+  function sorteDe(id) {
+    if (id === "nourrice" || id === "piquage") return "point";
+    if (typeof id === "string" && id.charAt(0) === "a") return "arbre";
+    if (typeof id === "string" && id.charAt(0) === "d") return "dalles";
+    return "zone";
   }
   function copie(o) { return JSON.parse(JSON.stringify(o)); }
 
   function glisse(evt) {
+    if (prise && prise.glisse) {
+      var boite = $("toile").parentNode;
+      if (Math.abs(evt.clientX - prise.cx) + Math.abs(evt.clientY - prise.cy) > 6) prise.bouge = true;
+      boite.scrollLeft = prise.sl - (evt.clientX - prise.cx);
+      boite.scrollTop = prise.st - (evt.clientY - prise.cy);
+      return;
+    }
     var p = point(evt);
     var t = terrainU();
     if (brouillon) {
@@ -309,11 +472,18 @@
     }
     if (!prise) return;
     var dx = p.x - prise.depart.x, dy = p.y - prise.depart.y;
-    if (!prise.bouge && Math.abs(dx) + Math.abs(dy) < 1.5) return;
+    if (!prise.bouge && Math.abs(dx) + Math.abs(dy) < 1.5 * TRAIT) return;
     prise.bouge = true;
-    var o = objetDe(prise.id), a = prise.avant;
-    if (prise.id === "nourrice" || prise.id === "piquage") {
+    var o = objetDe(prise.id), a = prise.avant, sorte = sorteDe(prise.id);
+    if (sorte === "point" || sorte === "arbre") {
       o.x = borne(a.x + dx, t.w); o.y = borne(a.y + dy, t.h);
+    } else if (sorte === "dalles") {
+      // Les deux bouts bougent ensemble, et restent dans le terrain.
+      var mx = Math.min(a.a.x, a.b.x), Mx = Math.max(a.a.x, a.b.x);
+      var my = Math.min(a.a.y, a.b.y), My = Math.max(a.a.y, a.b.y);
+      var ddx = Math.max(-mx, Math.min(t.w - Mx, dx)), ddy = Math.max(-my, Math.min(t.h - My, dy));
+      o.a = { x: a.a.x + ddx, y: a.a.y + ddy };
+      o.b = { x: a.b.x + ddx, y: a.b.y + ddy };
     } else if (prise.etire) {
       o.w = Math.max(3, Math.min(t.w - a.x, a.w + dx));
       o.h = Math.max(3, Math.min(t.h - a.y, a.h + dy));
@@ -346,9 +516,14 @@
     if (prise) {
       var pr = prise;
       prise = null;
+      // Un simple toucher sur une zone du plan agrandi la choisit et l'ouvre.
+      if (pr.glisse && (pr.bouge || pr.toucher == null)) return;
+      if (pr.glisse) { pr.id = pr.toucher; etat.choisie = pr.toucher; }
       if (!pr.bouge && !pr.etire) {
-        var o = objetDe(pr.id);
-        if (pr.id === "nourrice" || pr.id === "piquage") ouvrirPoint(pr.id);
+        var o = objetDe(pr.id), sorte = sorteDe(pr.id);
+        if (sorte === "point") ouvrirPoint(pr.id);
+        else if (sorte === "arbre") ouvrirArbre(o, false);
+        else if (sorte === "dalles") ouvrirDalles(o, false);
         else ouvrir(o, false);
       }
       dessiner();
@@ -358,11 +533,14 @@
   /* ── Les outils ────────────────────────────────────────────── */
   function choisirOutil(o) {
     etat.outil = etat.outil === o ? null : o;
+    if (etat.outil !== "dalles") etat.departDalles = null;
     document.querySelectorAll(".outils button").forEach(function (b) {
       b.setAttribute("aria-pressed", String(b.dataset.outil === etat.outil));
     });
     var c = "";
     if (etat.outil && POINTS[etat.outil]) c = POINTS[etat.outil].consigne;
+    else if (etat.outil === "arbre") c = "Touchez le centre de l’arbre.";
+    else if (etat.outil === "dalles") c = "Touchez le départ des dalles.";
     else if (etat.outil && MODE === "A") c = etat.outil === "haie" ? "Tracez la haie au doigt." : "Tracez la zone au doigt.";
     $("consigne").textContent = c;
   }
@@ -379,26 +557,76 @@
   /* ── La feuille des cotes ──────────────────────────────────── */
   var enCours = null;
 
+  /* Une seule feuille sert à tout : on n'y montre que les champs de ce qu'on
+     pose. */
+  function montrerChamps(c) {
+    $("f-cotes").hidden = !c.cotes;
+    $("f-surface").hidden = !c.surface;
+    $("f-diametre").hidden = !c.diametre;
+    $("f-ecart").hidden = !c.ecart;
+    $("f-lignes").hidden = !c.lignes;
+    $("f-note").textContent = "";
+    $("f-erreur").textContent = "";
+    ["f-L", "f-l", "f-d", "f-e"].forEach(function (i) { $(i).removeAttribute("aria-invalid"); });
+  }
+  function boutons(neuf, tourner) {
+    $("f-valider").textContent = neuf ? "Poser" : "Valider";
+    $("f-tourner").hidden = !tourner;
+    $("f-valider").classList.toggle("seul", !tourner);
+    $("f-supprimer").hidden = neuf;
+  }
+
   function ouvrir(z, neuve) {
-    enCours = { z: z, neuve: neuve };
+    enCours = { sorte: "zone", z: z, neuve: neuve };
     $("f-titre").textContent = nomDe(z);
     $("f-nom").value = z.nom || "";
     $("f-nom").placeholder = TYPES[z.type].nom;
     $("f-L").value = z.L == null ? "" : ecrit(z.L);
     $("f-l").value = z.l == null ? "" : ecrit(z.l);
-    $("f-cotes").hidden = false;
-    ["f-L", "f-l"].forEach(function (i) { $(i).removeAttribute("aria-invalid"); });
-    $("f-erreur").textContent = "";
-    $("f-lignes").hidden = z.type !== "haie";
+    montrerChamps({ cotes: true, surface: true, lignes: z.type === "haie" });
     lignesEnCours = { n: z.lignes || lignesProposees(z.l), choisies: !!z.lignesChoisies };
     rendreLignes();
     var nouvelleB = MODE === "B" && neuve;
-    $("f-valider").textContent = nouvelleB ? "Poser" : "Valider";
-    $("f-tourner").hidden = MODE !== "B" || nouvelleB;
-    $("f-valider").classList.toggle("seul", $("f-tourner").hidden);
-    $("f-supprimer").hidden = nouvelleB;
+    boutons(nouvelleB, MODE === "B" && !nouvelleB);
     $("feuille").hidden = false;
     setTimeout(function () { $("f-L").focus(); }, 60);
+  }
+
+  function ouvrirArbre(a, neuf) {
+    enCours = { sorte: "arbre", z: a, neuve: neuf };
+    $("f-titre").textContent = a.nom || "Arbre";
+    $("f-nom").value = a.nom || "";
+    $("f-nom").placeholder = "Arbre";
+    $("f-d").value = a.d == null ? "" : ecrit(a.d);
+    montrerChamps({ cotes: true, diametre: true });
+    boutons(neuf, false);
+    $("feuille").hidden = false;
+    setTimeout(function () { $("f-d").focus(); }, 60);
+  }
+
+  function ouvrirDalles(d, neuves) {
+    enCours = { sorte: "dalles", z: d, neuve: neuves };
+    $("f-titre").textContent = d.nom || "Dalles";
+    $("f-nom").value = d.nom || "";
+    $("f-nom").placeholder = "Dalles";
+    $("f-L").value = d.L == null ? "" : ecrit(d.L);
+    $("f-l").value = d.l == null ? "" : ecrit(d.l);
+    $("f-e").value = d.e == null ? "" : ecrit(d.e);
+    montrerChamps({ cotes: true, surface: true, ecart: true });
+    boutons(neuves, !neuves);
+    rendreNoteDalles();
+    $("feuille").hidden = false;
+    setTimeout(function () { $("f-L").focus(); }, 60);
+  }
+
+  /* Combien de dalles, pendant qu'il tape : le compte suit la saisie. */
+  function rendreNoteDalles() {
+    if (!enCours || enCours.sorte !== "dalles") return;
+    var essai = copie(enCours.z);
+    lireDalles(essai);
+    if (!essai.l) { $("f-note").textContent = ""; return; }
+    var r = rangeeDeDalles(essai);
+    $("f-note").textContent = ecritDalles(r.n) + " sur " + ecrit(enMetres(r.dist)) + " m.";
   }
 
   var lignesEnCours = { n: null, choisies: false };
@@ -410,11 +638,10 @@
   }
 
   function ouvrirPoint(id) {
-    enCours = { point: id };
+    enCours = { sorte: "point", point: id };
     var nom = id === "nourrice" ? "La nourrice" : POINTS[etat.piquage.sorte].nom;
     $("f-titre").textContent = nom;
-    $("f-cotes").hidden = true;
-    $("f-lignes").hidden = true;
+    montrerChamps({});
     $("f-tourner").hidden = true;
     $("f-valider").textContent = "Fermer";
     $("f-valider").classList.add("seul");
@@ -423,9 +650,9 @@
   }
 
   /* Toucher à côté referme la feuille (le pavé de l’iPhone n’a pas de touche OK).
-     Une zone de B pas encore posée s’abandonne : rien n’était dessiné. */
+     Ce qui n’est pas encore posé s’abandonne : rien n’était dessiné. */
   function horsFeuille() {
-    if (enCours && enCours.neuve && MODE === "B") { fermer(); return; }
+    if (enCours && enCours.neuve && (MODE === "B" || enCours.sorte !== "zone")) { fermer(); return; }
     valider();
   }
 
@@ -437,22 +664,61 @@
     z.l = nombre($("f-l").value);
     if (z.type === "haie") { z.lignes = lignesEnCours.n; z.lignesChoisies = lignesEnCours.choisies; }
   }
+  function lireDalles(d) {
+    d.nom = $("f-nom").value.trim() || null;
+    d.L = nombre($("f-L").value);
+    d.l = nombre($("f-l").value);
+    // L'écart vide reste vide : des dalles jointives, rien de supposé.
+    d.e = nombre($("f-e").value);
+  }
+
+  /* Ce qui manque se dit sur le champ lui-même, et rien ne se pose. */
+  function refuseVides(champs) {
+    var manque = false;
+    champs.forEach(function (v) {
+      $(v[0]).setAttribute("aria-invalid", String(v[1] == null));
+      if (v[1] == null) manque = true;
+    });
+    return manque;
+  }
+
+  function validerArbre() {
+    var a = enCours.z;
+    var d = nombre($("f-d").value);
+    if (refuseVides([["f-d", d]])) return;
+    var t = etat.terrain;
+    if (d > Math.max(t.L, t.l) + 1e-9) {
+      $("f-d").setAttribute("aria-invalid", "true");
+      $("f-erreur").textContent = phraseTropGrande();
+      return;
+    }
+    a.d = d;
+    a.nom = $("f-nom").value.trim() || null;
+    if (enCours.neuve) { a.id = "a" + etat.suivant++; etat.arbres.push(a); }
+    fermer();
+  }
+
+  function validerDalles() {
+    var d = enCours.z;
+    var essai = copie(d);
+    lireDalles(essai);
+    if (refuseVides([["f-L", essai.L], ["f-l", essai.l]])) return;
+    lireDalles(d);
+    if (enCours.neuve) { d.id = "d" + etat.suivant++; etat.dalles.push(d); }
+    fermer();
+  }
 
   function valider() {
     if (!enCours) return;
-    if (enCours.point) { fermer(); return; }
+    if (enCours.sorte === "point") { fermer(); return; }
+    if (enCours.sorte === "arbre") { validerArbre(); return; }
+    if (enCours.sorte === "dalles") { validerDalles(); return; }
     var z = enCours.z;
     if (MODE === "B") {
       // En B, c'est la cote qui donne la taille : sans elle, rien à poser.
       var essai = copie(z);
       lireFeuille(essai);
-      var vides = [["f-L", essai.L], ["f-l", essai.l]];
-      var manque = false;
-      vides.forEach(function (v) {
-        $(v[0]).setAttribute("aria-invalid", String(v[1] == null));
-        if (v[1] == null) manque = true;
-      });
-      if (manque) return;
+      if (refuseVides([["f-L", essai.L], ["f-l", essai.l]])) return;
       var trop = cotesTropGrandes(essai);
       if (trop.length) {
         trop.forEach(function (i) { $(i).setAttribute("aria-invalid", "true"); });
@@ -484,8 +750,16 @@
   }
 
   function tourner() {
-    var z = enCours && enCours.z;
-    if (!z) return;
+    if (!enCours) return;
+    if (enCours.sorte === "dalles") {
+      // Une dalle tournée : sa longueur passe dans le sens de la marche.
+      var d = enCours.z;
+      lireDalles(d);
+      var Ld = d.L; d.L = d.l; d.l = Ld;
+      fermer();
+      return;
+    }
+    var z = enCours.z;
     var essai = copie(z);
     lireFeuille(essai);
     var L0 = essai.L; essai.L = essai.l; essai.l = L0;
@@ -504,6 +778,8 @@
     if (!enCours) return;
     if (enCours.point === "nourrice") etat.nourrice = null;
     else if (enCours.point === "piquage") etat.piquage = null;
+    else if (enCours.sorte === "arbre") etat.arbres = etat.arbres.filter(function (a) { return a !== enCours.z; });
+    else if (enCours.sorte === "dalles") etat.dalles = etat.dalles.filter(function (d) { return d !== enCours.z; });
     else {
       var id = enCours.z.id;
       etat.zones = etat.zones.filter(function (z) { return z.id !== id; });
@@ -518,37 +794,45 @@
     etat.terrain.L = nombre($("t-L").value);
     etat.terrain.l = nombre($("t-l").value);
     var apres = terrainU(), sApres = cote_du_carre();
-    etat.zones.forEach(function (z) {
-      if (MODE === "B" && sAvant && sApres) {
-        // En B, une zone garde ses mètres : c'est le carré qui change d'échelle.
-        var k = sAvant / sApres;
-        z.x *= k; z.y *= k;
-        tailleSelonCotes(z);
-        z.x = borne(z.x, Math.max(0, apres.w - z.w));
-        z.y = borne(z.y, Math.max(0, apres.h - z.h));
-      } else {
-        // En A, le dessin suit le cadre : ce qui était au tiers gauche y reste.
-        var kx = apres.w / avant.w, ky = apres.h / avant.h;
-        z.x *= kx; z.w *= kx; z.y *= ky; z.h *= ky;
-      }
-    });
-    [etat.nourrice, etat.piquage].forEach(function (p) {
+    var garde = MODE === "B" && sAvant && sApres;
+    // En B, tout garde ses mètres : c'est le carré qui change d'échelle. En A,
+    // le dessin suit le cadre : ce qui était au tiers gauche y reste.
+    var kx = garde ? sAvant / sApres : apres.w / avant.w;
+    var ky = garde ? sAvant / sApres : apres.h / avant.h;
+    function deplace(p) {
       if (!p) return;
-      if (MODE === "B" && sAvant && sApres) { p.x *= sAvant / sApres; p.y *= sAvant / sApres; }
-      else { p.x *= apres.w / avant.w; p.y *= apres.h / avant.h; }
+      p.x = borne(p.x * kx, apres.w); p.y = borne(p.y * ky, apres.h);
+    }
+    etat.zones.forEach(function (z) {
+      z.x *= kx; z.y *= ky;
+      if (garde) tailleSelonCotes(z);
+      else { z.w *= kx; z.h *= ky; }
+      z.x = borne(z.x, Math.max(0, apres.w - z.w));
+      z.y = borne(z.y, Math.max(0, apres.h - z.h));
     });
+    etat.arbres.forEach(deplace);
+    etat.dalles.forEach(function (d) { deplace(d.a); deplace(d.b); });
+    deplace(etat.nourrice);
+    deplace(etat.piquage);
     rendreOutils();
     dessiner();
   }
 
   function rendreOutils() {
-    var bloque = MODE === "B" && !cote_du_carre();
-    document.querySelectorAll(".outils button").forEach(function (b) { b.disabled = bloque; });
+    var sansEchelle = !cote_du_carre();
+    var bloque = MODE === "B" && sansEchelle;
+    document.querySelectorAll(".outils button").forEach(function (b) {
+      // L'arbre et les dalles ont une taille en mètres : sans terrain coté,
+      // ils n'en ont pas, même en A.
+      b.disabled = bloque || (sansEchelle && (b.dataset.outil === "arbre" || b.dataset.outil === "dalles"));
+    });
+    $("t-echelle").disabled = sansEchelle;
     if (bloque) $("consigne").textContent = "Les métrés du terrain d’abord.";
     else if ($("consigne").textContent === "Les métrés du terrain d’abord.") $("consigne").textContent = "";
   }
 
   /* ── Ce que l'outil comprend ───────────────────────────────── */
+  function fraction(p) { return { x: arrondi(p.x / 100), y: arrondi(p.y / 100) }; }
   function croquisLu() {
     var reserves = [];
     var zones = etat.zones.map(function (z) {
@@ -571,13 +855,26 @@
     });
     if (!etat.nourrice) reserves.push("le croquis ne montre pas où la nourrice est posée");
     if (!etat.piquage) reserves.push("le croquis ne montre pas où le piquage se fait");
-    return {
+    var lu = {
       zones: zones,
       pointDEau: etat.piquage ? etat.piquage.sorte : null,
-      nourrice: etat.nourrice ? { x: arrondi(etat.nourrice.x / 100), y: arrondi(etat.nourrice.y / 100) } : null,
-      piquage: etat.piquage ? { x: arrondi(etat.piquage.x / 100), y: arrondi(etat.piquage.y / 100) } : null,
+      nourrice: etat.nourrice ? fraction(etat.nourrice) : null,
+      piquage: etat.piquage ? fraction(etat.piquage) : null,
       reserves: reserves
     };
+    // Les deux champs neufs : ce que le calcul ne lit pas encore.
+    if (etat.arbres.length) {
+      lu.arbres = etat.arbres.map(function (a) {
+        var f = fraction(a);
+        return { nom: a.nom, diametre: a.d, x: f.x, y: f.y };
+      });
+    }
+    if (etat.dalles.length) {
+      lu.dalles = etat.dalles.map(function (d) {
+        return { nom: d.nom, longueur: d.L, largeur: d.l, ecart: d.e, nombre: rangeeDeDalles(d).n, de: fraction(d.a), a: fraction(d.b) };
+      });
+    }
+    return lu;
   }
   function arrondi(n) { return Math.round(n * 10000) / 10000; }
 
@@ -606,6 +903,9 @@
     debordent.forEach(function (z) {
       ligne("Pas de plan : " + nomDe(z) + " (" + cote(z.L) + " × " + cote(z.l) + " m) ne tient pas dans le terrain de " + cote(etat.terrain.L) + " × " + cote(etat.terrain.l) + " m.", "rouge");
     });
+    if (etat.arbres.length || etat.dalles.length) {
+      ligne("Les arbres et les dalles se dessinent, le calcul ne les lit pas encore.");
+    }
     var faire = $("faire");
     faire.hidden = !e.complet || debordent.length > 0;
     if (lu.nourrice && lu.piquage) {
@@ -640,6 +940,7 @@
       return { id: i + 1, type: z.type, nom: z.nom, L: z.L, l: z.l, x: z.x / s * 100, y: z.y / s * 100, w: z.L / s * 100 * k[0], h: z.l / s * 100 * k[1] };
     });
     etat.suivant = Z.length + 1;
+    etat.arbres = []; etat.dalles = []; etat.departDalles = null;
     etat.nourrice = null; etat.piquage = null; etat.choisie = null;
     choisirOutil(null);
     rendreOutils();
@@ -669,6 +970,12 @@
     $("exemple").addEventListener("click", function () { montrer(true); exemple(); });
     $("t-L").addEventListener("input", surTerrain);
     $("t-l").addEventListener("input", surTerrain);
+    $("t-echelle").addEventListener("change", function () {
+      etat.echelle = +$("t-echelle").value || null;
+      dessiner();
+      if (!etat.outil) $("consigne").textContent = etat.echelle ? "Touchez une zone pour la choisir, puis glissez-la." : "";
+    });
+    window.addEventListener("resize", function () { if (!$("outil").hidden) dessiner(); });
     document.querySelectorAll(".outils button").forEach(function (b) {
       b.addEventListener("click", function () { surOutil(b.dataset.outil); });
     });
@@ -679,8 +986,12 @@
     svg.addEventListener("pointercancel", function () { brouillon = null; prise = null; dessiner(); });
     $("f-valider").addEventListener("click", valider);
     // Un champ signalé vide cesse de l'être dès qu'on y tape.
-    ["f-L", "f-l"].forEach(function (i) {
-      $(i).addEventListener("input", function () { $(i).removeAttribute("aria-invalid"); $("f-erreur").textContent = ""; });
+    ["f-L", "f-l", "f-d", "f-e"].forEach(function (i) {
+      $(i).addEventListener("input", function () {
+        $(i).removeAttribute("aria-invalid");
+        $("f-erreur").textContent = "";
+        rendreNoteDalles();
+      });
     });
     $("f-l").addEventListener("input", function () {
       if (!lignesEnCours.choisies) lignesEnCours.n = lignesProposees(nombre($("f-l").value));

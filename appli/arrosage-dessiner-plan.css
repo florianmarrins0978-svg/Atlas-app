@@ -83,3 +83,7 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 .compteur-lignes .bouton{min-height:52px;font-size:22px;font-weight:500;padding:0}
 .compteur-lignes output{text-align:center;font-size:17px;font-variant-numeric:tabular-nums}
 .erreur{margin:8px 0 0;font-size:14px;font-weight:600;color:var(--atlas-alerte)}.erreur:empty{display:none}
+.toile{overflow:auto;max-height:68vh;overscroll-behavior:contain}
+.echelle-titre{margin-top:10px}
+.feuille #f-diametre,.feuille #f-ecart{margin-top:12px}
+.propose:empty{display:none}
