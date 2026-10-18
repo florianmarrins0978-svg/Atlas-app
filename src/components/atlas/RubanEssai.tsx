@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { colors, font, voile } from "@/lib/design-tokens";
-import { texteDuRuban, type EtatEssai } from "@/lib/abonnements";
+import { texteDuRuban, type EtatAcces } from "@/lib/abonnements";
 
 /**
  * LE RUBAN DE L'ESSAI — en tête de l'accueil, et nulle part ailleurs.
@@ -16,8 +16,10 @@ import { texteDuRuban, type EtatEssai } from "@/lib/abonnements";
  *
  * Les mots viennent de `texteDuRuban` : l'écran n'en décide aucun.
  */
-export default function RubanEssai({ etat }: { etat: EtatEssai }) {
-  const chaud = etat.statut === "termine" || etat.alerte;
+export default function RubanEssai({ etat }: { etat: EtatAcces }) {
+  // Un abonnement résilié porte le même ruban que l'essai terminé : même
+  // lecture seule, même seul geste pour rouvrir (`etatDeLAcces`).
+  const chaud = etat.statut !== "en-cours" || etat.alerte;
   const teinte = chaud ? colors.alert : colors.or;
   return (
     <div

@@ -4,7 +4,7 @@ import { creerSonCompte } from "../src/server/repositories/creation-compte";
 import { creerEntreprise } from "../src/server/repositories/entreprises";
 import { creerChantier, listerChantiers } from "../src/server/repositories/chantiers";
 import { abonnementDeLEntreprise, enregistrerLAbonnement } from "../src/server/repositories/abonnements";
-import { EssaiTermineError, withEntreprise } from "../src/server/db/with-entreprise";
+import { LectureSeuleError, withEntreprise } from "../src/server/db/with-entreprise";
 import { ActionRefuseeError, exigerFonction } from "../src/server/garde-action";
 import { JOURS_ESSAI, FORMULE_DE_LESSAI, enLectureSeule, etatDeLEssai } from "../src/lib/abonnements";
 import { abonnements, users } from "../src/server/db/schema";
@@ -123,7 +123,7 @@ async function main() {
     await assert.rejects(
       () => creerChantier(ctx, { nom: "Un chantier de trop" }),
       (e: unknown) => {
-        assert.ok(e instanceof EssaiTermineError, `erreur reçue : ${(e as Error).name} — ${(e as Error).message}`);
+        assert.ok(e instanceof LectureSeuleError, `erreur reçue : ${(e as Error).name} — ${(e as Error).message}`);
         return true;
       }
     );
@@ -138,7 +138,7 @@ async function main() {
         withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
           await tx.execute(sql`UPDATE entreprises SET nom = 'Renommée' WHERE id = ${ctx.entrepriseId}`);
         }),
-      (e: unknown) => e instanceof EssaiTermineError
+      (e: unknown) => e instanceof LectureSeuleError
     );
   });
 
@@ -231,7 +231,7 @@ async function main() {
     await auJour(JOURS_ESSAI + 1);
     await assert.rejects(
       () => creerChantier(ctxJours, { nom: "Chantier du jour 16" }),
-      (e: unknown) => e instanceof EssaiTermineError
+      (e: unknown) => e instanceof LectureSeuleError
     );
     assert.equal((await listerChantiers(ctxJours)).length, JOURS_ESSAI);
   });
@@ -242,7 +242,7 @@ async function main() {
     await finDansMs(ctxJours, -60_000);
     await assert.rejects(
       () => creerChantier(ctxJours, { nom: "Une minute trop tard" }),
-      (e: unknown) => e instanceof EssaiTermineError
+      (e: unknown) => e instanceof LectureSeuleError
     );
   });
 
@@ -269,7 +269,7 @@ async function main() {
     assert.ok((await listerChantiers(ctxSecond)).length > 0, "le second patron ne relit plus les chantiers");
     await assert.rejects(
       () => creerChantier(ctxSecond, { nom: "Par le second patron" }),
-      (e: unknown) => e instanceof EssaiTermineError
+      (e: unknown) => e instanceof LectureSeuleError
     );
   });
 
@@ -287,10 +287,53 @@ async function main() {
           confirmation: "un mot de passe assez long",
           role: "salarie",
         }),
-      (e: unknown) => e instanceof EssaiTermineError
+      (e: unknown) => e instanceof LectureSeuleError
     );
     const reste = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
     assert.equal(reste.length, 0, "un compte a été créé alors que l'accès était refusé");
+  });
+
+  console.log("\n=== 7. Un abonnement RÉSILIÉ : lecture seule, puis la reprise rouvre (18 octobre 2026) ===\n");
+
+  // Avant ce jour, un abonnement passé à « résilié » gardait tout ouvert, en
+  // écriture : la résiliation rendait Atlas gratuit.
+  let ctxResilie!: Ctx;
+  await essai("un abonné dont l'abonnement est résilié relit tout…", async () => {
+    const e = await creerEntreprise({ nom: "Résiliée SARL" }, { email: "patron@resiliee.fr", nom: "Patron" });
+    ctxResilie = { utilisateurId: e.utilisateurId, entrepriseId: e.entreprise.id };
+    await creerChantier(ctxResilie, { nom: "Chantier d'avant" });
+    await enregistrerLAbonnement(ctxResilie, {
+      formule: "entreprise",
+      periodicite: "annuelle",
+      statut: "resilie",
+      periodeFin: new Date(Date.now() - 86_400_000),
+      annulationDemandee: true,
+      clientPrestataire: "cus_resilie",
+      abonnementPrestataire: "sub_resilie",
+    });
+    assert.equal((await listerChantiers(ctxResilie)).length, 1, "il ne relit plus ses chantiers");
+  });
+
+  await essai("…mais n'écrit plus rien, avec NOTRE erreur", async () => {
+    await assert.rejects(
+      () => creerChantier(ctxResilie, { nom: "Un chantier gratuit" }),
+      (e: unknown) => e instanceof LectureSeuleError
+    );
+    assert.equal((await listerChantiers(ctxResilie)).length, 1, "le chantier a été créé sur un abonnement résilié");
+  });
+
+  await essai("reprendre un abonnement rouvre l'écriture", async () => {
+    await enregistrerLAbonnement(ctxResilie, {
+      formule: "artisan",
+      periodicite: "mensuelle",
+      statut: "actif",
+      periodeFin: new Date(Date.now() + 30 * 86_400_000),
+      annulationDemandee: false,
+      clientPrestataire: "cus_resilie",
+      abonnementPrestataire: "sub_reprise",
+    });
+    await creerChantier(ctxResilie, { nom: "Chantier après la reprise" });
+    assert.equal((await listerChantiers(ctxResilie)).length, 2);
   });
 
   console.log(`\n${echecs === 0 ? "✅" : "❌"} ${echecs} échec(s)\n`);

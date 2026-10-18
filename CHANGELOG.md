@@ -8,6 +8,17 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-18
 
+- **Un abonnement résilié passe en lecture seule, comme l'essai terminé.**
+  Trouvé le 18 octobre en préparant la résiliation : à son échéance, un
+  abonnement résilié gardait tout ouvert, en écriture. Résilier rendait Atlas
+  gratuit. La règle vit au même endroit que l'essai (`etatDeLAcces`,
+  `enLectureSeule`), donc Postgres refuse l'écriture par la même porte ; le
+  ruban dit « Abonnement terminé, lecture seule », et reprendre un abonnement
+  rouvre tout. Une résiliation seulement demandée ne ferme rien : il garde tout
+  jusqu'à la date payée. `test-essai-lecture-seule-db.ts` §7 et
+  `test-abonnements.ts`, vus rouges. `EssaiTermineError` devient
+  `LectureSeuleError`, son nom mentant pour un résilié.
+
 - **Les conditions s'acceptent en un geste, comme chez Apple, et la preuve
   garde la phrase lue.** Sa demande du 17 octobre. Plus de case par document :
   une phrase (« En touchant « Accepter », vous acceptez les deux documents

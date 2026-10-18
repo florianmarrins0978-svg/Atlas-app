@@ -123,6 +123,23 @@ export function etatDeLEssai(abonnement: AbonnementLu, maintenant: Date): EtatEs
 }
 
 /**
+ * CE QUE L'ACCÈS VAUT AUJOURD'HUI : l'essai, ou un abonnement résilié.
+ *
+ * **Le résilié s'ajoute le 18 octobre 2026** (`docs/A-FAIRE.md` §17). Avant,
+ * un abonnement passé à « résilié » à son échéance gardait tout ouvert, en
+ * écriture : résilier rendait Atlas gratuit. Il est traité comme l'essai
+ * terminé, par la même porte. Une résiliation seulement DEMANDÉE ne compte
+ * pas : Stripe garde l'abonnement « actif » jusqu'à la date payée, et il garde
+ * tout jusque-là.
+ */
+export type EtatAcces = EtatEssai | { statut: "resilie" };
+
+export function etatDeLAcces(abonnement: AbonnementLu, maintenant: Date): EtatAcces | null {
+  if (abonnement?.statut === "resilie") return { statut: "resilie" };
+  return etatDeLEssai(abonnement, maintenant);
+}
+
+/**
  * LA LECTURE SEULE — son choix du 10 septembre 2026, au 16ᵉ jour : *« la B,
  * mais il ne doit plus rien pouvoir faire à part enregistrer ses documents,
  * ses clients »*. Tout se lit, rien ne s'écrit ; il emporte une copie.
@@ -131,14 +148,20 @@ export function etatDeLEssai(abonnement: AbonnementLu, maintenant: Date): EtatEs
  * 176 gestes qui écrivent : les fermer un par un finirait par en oublier un.
  */
 export function enLectureSeule(abonnement: AbonnementLu, maintenant: Date): boolean {
-  return etatDeLEssai(abonnement, maintenant)?.statut === "termine";
+  const acces = etatDeLAcces(abonnement, maintenant);
+  return acces?.statut === "termine" || acces?.statut === "resilie";
 }
 
-/** Ce que dit l'écran quand il appuie quand même sur un bouton qui écrit. */
-export const PHRASE_LECTURE_SEULE = "Votre essai est terminé. Choisissez une formule pour créer de nouveau.";
+/** Ce que dit l'écran quand il appuie quand même sur un bouton qui écrit ; `null` quand tout est ouvert. */
+export function phraseLectureSeule(acces: EtatAcces | null): string | null {
+  if (acces?.statut === "termine") return "Votre essai est terminé. Choisissez une formule pour créer de nouveau.";
+  if (acces?.statut === "resilie") return "Votre abonnement est terminé. Choisissez une formule pour créer de nouveau.";
+  return null;
+}
 
 /** Le ruban en tête de l'accueil — le seul écran qu'il ouvre tous les matins. */
-export function texteDuRuban(etat: EtatEssai): string {
+export function texteDuRuban(etat: EtatAcces): string {
+  if (etat.statut === "resilie") return "Abonnement terminé, lecture seule";
   if (etat.statut === "termine") return "Essai terminé, lecture seule";
   return etat.joursRestants > 1
     ? `Essai gratuit, ${etat.joursRestants} jours restants`

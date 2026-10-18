@@ -28,7 +28,7 @@ import { listerVehicules } from "@/server/repositories/vehicules";
 import { rappelsDesVehicules } from "@/lib/vehicules";
 import { receptionsASignaler } from "@/server/repositories/envois-factures";
 import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
-import { PHRASE_LECTURE_SEULE, etatDeLEssai } from "@/lib/abonnements";
+import { etatDeLAcces, phraseLectureSeule } from "@/lib/abonnements";
 import RubanEssai from "@/components/atlas/RubanEssai";
 import AnnonceTransmission from "@/components/atlas/AnnonceTransmission";
 import EcranChantiers from "./EcranChantiers";
@@ -99,7 +99,7 @@ export default async function ChantiersPage() {
 
   // Le ruban et le bouton éteint se décident ICI, sur le même instant que les
   // rappels — la règle vit dans `abonnements.ts`, l'écran n'en recalcule rien.
-  const essai = etatDeLEssai(abonnement, maintenant);
+  const acces = etatDeLAcces(abonnement, maintenant);
 
   // **Cette liste ne montre que ce qui reste à préparer.** Un chantier passé au
   // planning vit au planning ; facturé, terminé, ou dont la date est dépassée,
@@ -201,8 +201,8 @@ export default async function ChantiersPage() {
   return (
     <EcranChantiers
       chantiers={[...brinsDeContrat, ...brinsDeChantier]}
-      ruban={essai ? <RubanEssai etat={essai} /> : null}
-      lectureSeule={essai?.statut === "termine" ? PHRASE_LECTURE_SEULE : null}
+      ruban={acces ? <RubanEssai etat={acces} /> : null}
+      lectureSeule={phraseLectureSeule(acces)}
       bandeaux={
         <>
           {/* **L'accueil se relit tout seul** : une réponse de client arrive
