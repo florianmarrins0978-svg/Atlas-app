@@ -18,9 +18,9 @@ var CALCUL = (() => {
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // entree-plan-tmp.ts
-  var entree_plan_tmp_exports = {};
-  __export(entree_plan_tmp_exports, {
+  // entree-tmp.ts
+  var entree_tmp_exports = {};
+  __export(entree_tmp_exports, {
     CATALOGUE: () => CATALOGUE,
     calculerPlan: () => calculerPlan,
     debitRetenu: () => debitRetenu,
@@ -3542,6 +3542,12 @@ var CALCUL = (() => {
       }
       groupes[clef].forme = TYPES[z.type].forme;
     });
+    var gouttes = function(c) {
+      return groupes[c].m.famille === "Goutte-\xE0-goutte";
+    };
+    ordre = ordre.filter(function(c) {
+      return !gouttes(c);
+    }).concat(ordre.filter(gouttes));
     var secteurs = [], reseauDuPoint = {}, reseauxDeZone = {};
     var noterZone = function(zoneId, i) {
       if (!reseauxDeZone[zoneId]) reseauxDeZone[zoneId] = [];
@@ -4625,5 +4631,5 @@ var CALCUL = (() => {
     }
     return meilleur;
   }
-  return __toCommonJS(entree_plan_tmp_exports);
+  return __toCommonJS(entree_tmp_exports);
 })();

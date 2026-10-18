@@ -419,6 +419,22 @@ regle("16 octobre 2026", "« oui pour les VAN » — les 4, 6 et 8-VAN s'arrête
   }
 });
 
+regle("18 octobre 2026", "« sur le plan tu as mis réseau 3 pour le goutte-à-goutte, sauf que sur la nourrice il est sur le réseau 4 » : le réseau N est la voie N, et le goutte-à-goutte vient en dernier", () => {
+  // Le massif est dessiné AVANT le couloir : c'est l'ordre du croquis qui
+  // numérotait, et la nourrice met le goutte-à-goutte à droite (validée le 18 octobre).
+  const p = plan([
+    { id: 1, type: "gazon", nom: "Pelouse", x: 0, y: 0, L: 12, l: 12 },
+    { id: 2, type: "massif", nom: "Massif", x: 14, y: 0, L: 20, l: 2.4, sortieGoutte: "boucle" } as Zone,
+    { id: 3, type: "gazon", nom: "Couloir", x: 0, y: 14, L: 10, l: 2, materiel: "tuyere" } as Zone,
+  ]) as Plan & { secteurs: { famille: string }[]; reseauxDeZone: Record<string, number[]> };
+  const n = p.secteurs.length;
+  const goutte = p.secteurs.map((s, i) => (s.famille === "Goutte-à-goutte" ? i : -1)).filter((i) => i >= 0);
+  exige(goutte.length > 0, "le massif doit avoir sa vanne de goutte-à-goutte");
+  exige(goutte.every((i, k) => i === n - goutte.length + k), `goutte-à-goutte aux réseaux ${goutte.map((i) => i + 1).join(", ")} sur ${n} : sur la nourrice, ce sont les voies ${goutte.map((_, k) => n - goutte.length + k + 1).join(", ")}`);
+  // Le plan colorie le massif avec ces mêmes réseaux.
+  exige((p.reseauxDeZone[2] || []).every((i) => goutte.includes(i)), `le massif est dessiné sur les réseaux ${(p.reseauxDeZone[2] || []).map((i) => i + 1).join(", ")}`);
+});
+
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────
 
 console.log(`\n${failed === 0 ? "✅" : "❌"} Les règles du patron — ${passed} tenue(s), ${failed} rompue(s).`);

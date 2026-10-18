@@ -1,3 +1,4 @@
+"use strict";
 var CALCUL = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -17,9 +18,9 @@ var CALCUL = (() => {
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // ../../../AppData/Local/Temp/claude/c--Users-Flori-Desktop-atlas-real-app-atlas-app/8911e515-932a-4d10-a7dd-bb3a00691c2a/scratchpad/entree.ts
-  var entree_exports = {};
-  __export(entree_exports, {
+  // entree-tmp.ts
+  var entree_tmp_exports = {};
+  __export(entree_tmp_exports, {
     CATALOGUE: () => CATALOGUE,
     calculerPlan: () => calculerPlan,
     debitRetenu: () => debitRetenu,
@@ -3540,6 +3541,12 @@ var CALCUL = (() => {
       }
       groupes[clef].forme = TYPES[z.type].forme;
     });
+    var gouttes = function(c) {
+      return groupes[c].m.famille === "Goutte-\xE0-goutte";
+    };
+    ordre = ordre.filter(function(c) {
+      return !gouttes(c);
+    }).concat(ordre.filter(gouttes));
     var secteurs = [], reseauDuPoint = {}, reseauxDeZone = {};
     var noterZone = function(zoneId, i) {
       if (!reseauxDeZone[zoneId]) reseauxDeZone[zoneId] = [];
@@ -4107,5 +4114,5 @@ var CALCUL = (() => {
       raison: `Aucune mesure : chronom\xE9trez un seau de ${SEAU_LITRES} L, et relevez la pression dynamique au kit buse 5.`
     };
   }
-  return __toCommonJS(entree_exports);
+  return __toCommonJS(entree_tmp_exports);
 })();

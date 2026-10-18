@@ -542,12 +542,15 @@
       ajoutees("amenee");
     var corpsTuyere = CAT.corps.filter(function (c) { return c.pourType === "tuyere" && M.some(function (m) { return m.ref === c.ref; }); })[0];
     var sbeBas = CAT.coudes.filter(function (c) { return c.filetage === "3/4"; })[0];
-    var jardin = '<div class="chips" role="group" aria-label="Massif" style="margin-top:18px">' +
-      '<button type="button" data-sortie="ligne" aria-pressed="' + (etat.sortie === "ligne") + '">Massif : une seule ligne</button>' +
-      '<button type="button" data-sortie="boucle" aria-pressed="' + (etat.sortie === "boucle") + '">Deux, en boucle</button></div>';
+    var jardin = "";
     p.secteurs.forEach(function (s, i) {
       var c = p.couleurs[i], r = d.reseaux.filter(function (x) { return x.numero === i; })[0];
       jardin += '<div class="reseau" style="--couleur:' + c + '"><div class="reseau-titre"><span class="pastille"></span><b>Réseau ' + (i + 1) + "</b><span>" + texte(s.nom) + "</span></div>";
+      // Ligne ou boucle : posé AU-DESSUS du réseau qu'il change (sa demande du
+      // 18 octobre 2026), pour qu'on voie les pièces changer juste dessous.
+      if (s.famille === "Goutte-à-goutte") jardin += '<div class="chips" role="group" aria-label="Ligne ou boucle">' +
+        '<button type="button" data-sortie="ligne" aria-pressed="' + (etat.sortie === "ligne") + '">Une seule ligne</button>' +
+        '<button type="button" data-sortie="boucle" aria-pressed="' + (etat.sortie === "boucle") + '">Deux, en boucle</button></div>';
       jardin += '<div class="rail"><div class="tete">' + poser("r" + i + ":pe", "pe25", "PEHD Ø25", "PEHD Ø25, " + (r ? r.metresTuyau + " m" : "à mesurer"), r ? r.metresTuyau : 0, "ml") + "</div>";
       if (s.famille === "Goutte-à-goutte") {
         jardin += '<div class="tete">' + poser("r" + i + ":coude", "coude-taraude-25-34", nomDe("coude-taraude-25-34", M), "Coude taraudé") +

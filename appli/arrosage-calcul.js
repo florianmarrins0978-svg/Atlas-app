@@ -1492,6 +1492,14 @@ function decouperUneFois(){
   // pouvait donc pas colorier la bande du goutte-à-goutte, alors que sa vanne
   // occupe bien une voie de la nourrice : on voyait « nourrice 3 voies » avec
   // deux couleurs au dessin, et rien ne disait où passait la troisième.
+  // **LE GOUTTE-À-GOUTTE EST NUMÉROTÉ EN DERNIER — 18 octobre 2026.** Les
+  // réseaux suivaient l'ordre des zones du croquis, alors que la nourrice qu'il
+  // a validée met les voies de goutte-à-goutte à droite : un massif dessiné en
+  // troisième était « réseau 3 » sur le plan et voie 4 dans le regard (*« sur le
+  // plan tu as mis réseau 3 pour le goutte-à-goutte, sauf que pour la nourrice
+  // il est sur le réseau 4 »*). Le réseau N est la voie N, partout.
+  var gouttes = function(c){ return groupes[c].m.famille === 'Goutte-à-goutte'; };
+  ordre = ordre.filter(function(c){ return !gouttes(c); }).concat(ordre.filter(gouttes));
   var secteurs = [], reseauDuPoint = {}, reseauxDeZone = {};
   var noterZone = function(zoneId, i){
     if (!reseauxDeZone[zoneId]) reseauxDeZone[zoneId] = [];
