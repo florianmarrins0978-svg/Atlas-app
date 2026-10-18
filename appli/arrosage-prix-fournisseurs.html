@@ -50,7 +50,11 @@
   .fournisseur .tete{display:flex;align-items:baseline;gap:10px}
   .fournisseur b{flex:1;font-size:16.5px;font-weight:600}
   .fournisseur small{font-size:13px;color:var(--atlas-muted)}
-  .fournisseur button{margin-top:10px;width:100%;min-height:46px;border-radius:10px;border:1.5px dashed var(--atlas-line);background:none;color:var(--atlas-ink);font-size:15px;cursor:pointer}
+  .sources{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+  .source{display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-cream);color:var(--atlas-ink);font-size:15px;cursor:pointer}
+  .source.principale{background:var(--atlas-ink);border-color:var(--atlas-ink);color:var(--atlas-card)}
+  .source input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  .source:focus-within{outline:2px solid var(--atlas-or);outline-offset:3px}
   .nouveau{display:flex;gap:8px;margin-top:10px}
   .nouveau input{flex:1;min-width:0;border:0;border-radius:10px;padding:12px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
   .nouveau button{flex:none;min-height:46px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:15px;padding:0 14px;cursor:pointer}
@@ -141,7 +145,9 @@
     $("fournisseurs").innerHTML = fournisseurs.map(function (f, i) {
       var n = Object.keys(f.prix).length;
       return '<div class="fournisseur"><div class="tete"><b>' + texte(f.nom) + "</b><small>" + (f.date ? n + " prix, devis du " + f.date : "Aucun devis") + "</small></div>" +
-        '<button type="button" data-devis="' + i + '">' + (f.date ? "Mettre à jour avec un devis" : "Ajouter un devis, photo ou PDF") + "</button></div>";
+        // Le devis se prend en photo, ou se choisit (photo ou PDF) : sa demande du 18 octobre 2026.
+        '<div class="sources"><label class="source principale"><input type="file" accept="image/*" capture="environment" data-devis="' + i + '">' + (f.date ? "Nouveau devis en photo" : "Prendre le devis en photo") + "</label>" +
+        '<label class="source"><input type="file" accept="image/*,application/pdf" data-devis="' + i + '">Choisir une photo ou un PDF</label></div></div>';
     }).join("");
     var chips = [["moins", "Le moins cher"]].concat(fournisseurs.map(function (f, i) { return [String(i), f.nom]; }));
     $("choix-fournisseur").innerHTML = chips.map(function (c) { return '<button type="button" data-vue="' + c[0] + '" aria-pressed="' + (vue === c[0]) + '">' + texte(c[1]) + "</button>"; }).join("");
@@ -186,7 +192,6 @@
   document.addEventListener("click", function (e) {
     var b = e.target.closest("button");
     if (!b) return;
-    if (b.dataset.devis) { ouvrirDevis(Number(b.dataset.devis)); return; }
     if (b.dataset.vue) { vue = b.dataset.vue; dessinerFournisseurs(); dessinerPlan(); return; }
     if (b.id === "fermer") { $("feuille").hidden = true; return; }
     if (b.id === "enregistrer") {
@@ -204,6 +209,14 @@
       fournisseurs.push({ nom: nom, date: null, prix: {} }); $("nom-fournisseur").value = "";
       dessinerFournisseurs(); return;
     }
+  });
+
+  // La photo ou le fichier choisi : la planche ne le lit pas ; dans l'outil, l'IA le lit.
+  document.addEventListener("change", function (e) {
+    var i = e.target.dataset && e.target.dataset.devis;
+    if (i === undefined || !e.target.files[0]) return;
+    e.target.value = "";
+    ouvrirDevis(Number(i));
   });
 
   dessinerFournisseurs();

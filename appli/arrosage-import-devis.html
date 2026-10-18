@@ -107,6 +107,20 @@
   .p.absente .n{color:var(--atlas-alerte)}
   .manquent .liste .q{color:var(--atlas-alerte)}
   .ajoutees .q{color:var(--atlas-orTexte)}
+  .sources{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+  .sources[hidden]{display:none}
+  .source{display:flex;align-items:center;justify-content:center;min-height:52px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:16px;cursor:pointer}
+  .source.principale{background:var(--atlas-ink);border-color:var(--atlas-ink);color:var(--atlas-card)}
+  .source input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  .source:focus-within{outline:2px solid var(--atlas-or);outline-offset:3px}
+  .ajouter{margin-top:12px;display:flex;width:100%;min-height:48px;align-items:center;justify-content:center;border-radius:12px;border:1.5px dashed var(--atlas-line);background:none;color:var(--atlas-ink);font-size:15px;cursor:pointer}
+  .principal[hidden]{display:none}
+  .retirer{flex:none;border:0;background:none;padding:0 0 0 6px;font-size:13px;color:var(--atlas-alerte);text-decoration:underline;cursor:pointer}
+  .message{display:block;width:100%;min-height:280px;margin-top:12px;border:0;border-radius:12px;padding:12px;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line);resize:vertical}
+  .gestes-message{display:flex;gap:8px;margin-top:12px}
+  .gestes-message button{flex:1;min-height:52px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:15.5px;cursor:pointer}
+  .gestes-message button:last-child{background:var(--atlas-ink);border-color:var(--atlas-ink);color:var(--atlas-card)}
+  .gestes-message button[hidden]{display:none}
   .feuille{position:fixed;inset:0;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.35)}
   .feuille[hidden]{display:none}
   .feuille .boite{width:100%;max-width:430px;max-height:86vh;overflow:auto;background:var(--atlas-cream);border-radius:18px 18px 0 0;padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px))}
@@ -137,6 +151,12 @@
         <span><b>J’ai déjà un devis fournisseur</b><small>Photo ou PDF</small></span>
       </button>
     </div>
+    <!-- Sa demande du 18 octobre 2026 : « il faut pouvoir le prendre en photo pour l'importer ».
+         L'appareil photo s'ouvre directement (capture), ou l'on choisit une photo ou un PDF déjà là. -->
+    <div class="sources" id="sources" hidden>
+      <label class="source principale"><input type="file" accept="image/*" capture="environment" id="photo-devis">Prendre le devis en photo</label>
+      <label class="source"><input type="file" accept="image/*,application/pdf" id="fichier-devis">Choisir une photo ou un PDF</label>
+    </div>
     <p class="fichier" id="fichier" hidden><span id="fichier-nom"></span><button type="button" id="autre">Un autre</button></p>
     <p class="lecture" id="lecture" hidden aria-live="polite">Lecture du devis…</p>
   </section>
@@ -156,6 +176,9 @@
     <div class="regard" id="dessin"></div>
     <div class="bac"><h3>Avec la nourrice</h3><div class="rangee" id="bac"></div></div>
     <div class="manquent" id="manquent"></div>
+    <div class="manquent" id="extras"></div>
+    <button class="ajouter" type="button" id="ajouter-piece">Ajouter une pièce</button>
+    <button class="principal" type="button" id="au-fournisseur" hidden>Envoyer au fournisseur</button>
   </section>
 
   <section class="bloc" id="bloc-manque" hidden>
@@ -178,6 +201,14 @@
     <div class="haut"><h2 id="feuille-titre">Choisir la pièce</h2><button class="fermer" type="button" id="fermer">Fermer</button></div>
     <input class="recherche" id="recherche" type="search" placeholder="Chercher une pièce" aria-label="Chercher une pièce">
     <div id="choix"></div>
+  </div>
+</div>
+
+<div class="feuille" id="fournisseur" hidden>
+  <div class="boite" role="dialog" aria-modal="true" aria-labelledby="fournisseur-titre">
+    <div class="haut"><h2 id="fournisseur-titre">Au fournisseur</h2><button class="fermer" type="button" id="fermer-fournisseur">Fermer</button></div>
+    <textarea class="message" id="message" aria-label="Le message au fournisseur"></textarea>
+    <div class="gestes-message"><button type="button" id="copier">Copier</button><button type="button" id="partager">Envoyer</button></div>
   </div>
 </div>
 
@@ -243,12 +274,27 @@
       return '<div class="p' + (absente ? " absente" : "") + '"><span class="ph">' + (f ? '<img src="arrosage-photos/' + texte(f) + '" alt="">' : "") + '</span><span class="n">' + texte(nomCourt(r)) + '</span><span class="x">' + n.reste[r] + "x</span></div>";
     }).join("");
     var manque = fiche.pieces.filter(function (x) { return (a[x.ref] || 0) < x.q; }).map(function (x) { return { cle: x.ref, q: x.q - (a[x.ref] || 0) }; });
+    manqueCourant = manque;
+    $("extras").innerHTML = extras.length ? "<h3>Ajoutées à la main</h3>" + '<div class="liste ajoutees">' + extras.map(function (x, i) {
+      return '<div class="ligne">' + vignette(x.ref) + '<span class="n">' + texte(x.nom) + "<small>" + texte(x.ref) + '</small></span><span class="q">' + x.q + 'x</span><button class="retirer" type="button" data-retirer="' + i + '">Retirer</button></div>';
+    }).join("") + "</div>" : "";
+    $("au-fournisseur").hidden = !(manque.length || extras.length);
     $("manquent").innerHTML = manque.length ? "<h3>" + (ajoutees ? "Ajoutées à la liste" : "Manquent sur le devis") + "</h3>" +
       '<div class="liste' + (ajoutees ? " ajoutees" : "") + '">' + manque.map(function (x) {
         return '<div class="ligne">' + vignette(x.cle) + '<span class="n">' + texte(nomCourt(x.cle)) + '</span><span class="q">' + x.q + "x</span></div>";
       }).join("") + "</div>" + (ajoutees ? "" : '<button class="second" type="button" id="ajouter-manque">Ajouter ce qui manque à la liste</button>') : "";
   }
   var nomCourt = function (r) { var p = N.CATALOGUE.piece(r); return p ? p.nom : r; };
+  var manqueCourant = [], extras = [];
+  // Le message au fournisseur : ce qui manque au devis, puis ce qu'il a ajouté,
+  // la marque devant et la référence derrière, comme le message du plan.
+  function message() {
+    var lignes = manqueCourant.map(function (x) {
+      var p = N.CATALOGUE.piece(x.cle), ref = N.CATALOGUE.referenceDe(x.cle);
+      return x.q + "x " + (p && p.marque ? p.marque + " " : "") + nomCourt(x.cle) + (ref ? ", réf. " + ref : "");
+    }).concat(extras.map(function (x) { return x.q + "x " + x.nom + ", réf. " + x.ref; }));
+    return ["Bonjour,", "", "En complément de votre devis, merci de m’ajouter :", ""].concat(lignes, ["", "Merci."]).join("\n");
+  }
 
   // Le dessin : le même SVG que NourriceEclatee.tsx, photo par photo.
   function dessin(n, reste) {
@@ -293,26 +339,46 @@
     $("choix").dataset.q = q;
   }
   $("recherche").oninput = function () { remplirChoix(this.value); };
+  // La photo ou le fichier choisi : la planche ne le lit pas, elle montre le devis
+  // d'exemple ; dans l'outil, c'est l'IA qui le lit (lire-ticket.ts).
+  function recu(f) {
+    if (!f) return;
+    $("fichier-nom").textContent = /^image\//.test(f.type) ? "Photo du devis" : f.name;
+    $("sources").hidden = true; $("fichier").hidden = false;
+    reglees = {}; ajoutees = false; extras = []; lire();
+  }
+  $("photo-devis").onchange = function () { recu(this.files[0]); this.value = ""; };
+  $("fichier-devis").onchange = function () { recu(this.files[0]); this.value = ""; };
   $("fermer").onclick = function () { $("feuille").hidden = true; };
 
   document.addEventListener("click", function (e) {
     var b = e.target.closest("button");
     if (!b) return;
-    if (b.id === "porte-devis" || b.id === "autre") {
-      $("fichier-nom").textContent = "devis-aquaplus.pdf"; $("fichier").hidden = false; reglees = {}; ajoutees = false; lire(); return;
-    }
+    if (b.id === "porte-devis" || b.id === "autre") { $("sources").hidden = false; $("fichier").hidden = true; return; }
     if (b.id === "porte-croquis" || b.id === "croquis") { b.textContent = "Ici, l’appareil photo s’ouvre"; return; }
     if (b.id === "garder") { $("garde").hidden = false; return; }
     if (b.id === "ajouter-manque") { ajoutees = true; montrer(); return; }
-    if (b.dataset.choisir) { ouvrirChoix(Number(b.dataset.choisir)); return; }
+    if (b.dataset.choisir) { $("feuille-titre").textContent = "Choisir la pièce"; ouvrirChoix(Number(b.dataset.choisir)); return; }
     if (b.dataset.laisser) { reglees[b.dataset.laisser] = "Laissée hors liste."; montrer(); return; }
     if (b.dataset.piece) {
       var q = $("choix").dataset.q || "";
       var vus = CATALOGUE_LISTE.filter(function (p) { return !q || (p.nom + " " + p.ref).toLowerCase().indexOf(q) >= 0; }).slice(0, 40);
       var p = vus[Number(b.dataset.piece)];
-      reglees[cible] = "Remplacée par " + p.nom + ".";
+      if (cible === "ajout") {
+        var deja = extras.filter(function (x) { return x.ref === p.ref; })[0];
+        if (deja) deja.q++; else extras.push({ ref: p.ref, nom: p.nom, q: 1 });
+      } else reglees[cible] = "Remplacée par " + p.nom + ".";
       $("feuille").hidden = true; montrer();
     }
+    if (b.id === "ajouter-piece") { $("feuille-titre").textContent = "Ajouter une pièce"; ouvrirChoix("ajout"); return; }
+    if (b.dataset.retirer) { extras.splice(Number(b.dataset.retirer), 1); montrer(); return; }
+    if (b.id === "au-fournisseur") { $("message").value = message(); $("partager").hidden = !navigator.share; $("copier").textContent = "Copier"; $("fournisseur").hidden = false; return; }
+    if (b.id === "fermer-fournisseur") { $("fournisseur").hidden = true; return; }
+    if (b.id === "copier") {
+      navigator.clipboard.writeText($("message").value).then(function () { b.textContent = "Copié"; }, function () { $("message").select(); b.textContent = "Sélectionné"; });
+      return;
+    }
+    if (b.id === "partager") { navigator.share({ text: $("message").value }); return; }
   });
 })();
 </script>
