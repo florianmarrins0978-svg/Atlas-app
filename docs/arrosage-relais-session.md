@@ -157,7 +157,7 @@ Partout où la nourrice les comptait (arrivée, chaque voie, voie de goutte-à-g
 | 6 | ~~union Dura MF 1" (ODU34MF)~~ | **DURA Manchon union 1" FF**, ODU329010 |
 | 7 | ~~raccord femelle Plasson 25 x 3/4" (OPL70302520)~~ | **raccord mâle Plasson 25 x 1"**, OPL70202526 (clé `raccord-male25`) |
 
-Les photos : le raccord mâle reprend `raccord-male25.jpg` (photo de gamme, validée) ; le manchon union FF n'a qu'une photo découpée du catalogue (p. 20, `appli/arrosage-robinet-photos/ODU329010.png`), **à lui faire valider**. Les tableaux plus haut qui citent l'union MF et le raccord femelle sont à lire avec cette correction.
+Les photos : le raccord mâle reprend `raccord-male25.jpg` (photo de gamme, validée) ; le manchon union FF a **sa photo à lui** (envoyée le 18 octobre, `appli/arrosage-photos/union-ff.jpg`), posée sur le même axe que l'ancienne union. Les tableaux plus haut qui citent l'union MF et le raccord femelle sont à lire avec cette correction.
 
 ## Ses décisions du 18 octobre, l'après-midi (planche du plan)
 

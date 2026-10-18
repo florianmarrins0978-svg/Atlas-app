@@ -573,5 +573,10 @@
   "ref": "vanne-purge",
   "choix": "oui",
   "par": null
+ },
+ "union-ff-1": {
+  "ref": "union",
+  "choix": "oui",
+  "par": "envoyée par le patron, le manchon union 1\" FF"
  }
 }
