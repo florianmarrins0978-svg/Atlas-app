@@ -45,6 +45,16 @@
   .duo .vide{display:flex;align-items:center;justify-content:center;width:56px;height:100%;border:1.5px dashed rgba(28,28,26,.2);border-radius:10px;font-size:10px;color:#8a8578}
   .couple b{display:block;margin-top:8px;font-size:13.5px;color:#1c1c1a}
   .couple span{display:block;font-size:12px;color:#5d6458}
+  /* LES MP ROTATOR : relevées page 10 d'Aqua Plus, pas encore dans le calcul
+     (sa remarque du 18 octobre 2026 : « il manque les buses MP Rotator »). */
+  .couple.releve{box-shadow:0 0 0 1.5px var(--atlas-or)}
+  .couple .mention{color:#8b6835}
+  /* LES MOTS : ce que veulent dire SAM, PRS et les autres (sa demande du 18 octobre 2026). */
+  .mots{margin:10px 0 0;border-radius:12px;background:var(--atlas-card);padding:4px 14px}
+  .mots div{padding:9px 0;border-top:1px solid var(--atlas-line)}
+  .mots div:first-child{border-top:0}
+  .mots dt{font-weight:600;font-size:14.5px}
+  .mots dd{margin:2px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
 </style>
 <body data-charte="origine">
 <div class="entete">
@@ -57,6 +67,14 @@
   <h2 id="titre"></h2>
   <p class="sous" id="sous"></p>
   <div class="grille" id="grille"></div>
+
+  <h2>Buses MP Rotator</h2>
+  <p class="sous">Relevées page 10 d’Aqua Plus. Pas encore dans le calcul, aucune photo validée.</p>
+  <div class="grille" id="rotator"></div>
+  <p class="sous" id="rotator-toro"></p>
+
+  <h2>Les mots</h2>
+  <dl class="mots" id="mots"></dl>
 </main>
 <script src="arrosage-schema-calcul.js"></script>
 <script>
@@ -75,6 +93,37 @@
   var nomCorps = function (c) { return MODELE[c.hauteur] + c.nom.replace("Tuyère 1800", ""); };
   var choisi = corps[1] ? corps[1].ref : corps[0].ref;
 
+  // LES MP ROTATOR, recopiées du relevé d'Aqua Plus 2026, page 10
+  // (docs/arrosage-releve-aquaplus/buses-a-trancher.json, série « MP Rotator »),
+  // rien de plus : portée et débits à 2,8 bar, « pour tuyère mâle (Rain Bird,
+  // Hunter, Nelson) ». Elles ne sont PAS au catalogue du calcul : leur entrée se
+  // fait avec les buses à trancher. La version Toro (MP1000T, MP2000T, MP3000T,
+  // tuyère femelle) n'a ni portée ni débit relevés : elle se nomme, sans chiffre.
+  var MP_ROTATOR = [
+    { ref: "NA2302", nom: "MP1000 90 à 210°", portee: 4.1 },
+    { ref: "NA2303", nom: "MP1000 210 à 270°", portee: 4.1 },
+    { ref: "NA2301", nom: "MP1000 360°", portee: 4.1 },
+    { ref: "NA2312", nom: "MP2000 90 à 210°", portee: 5.8 },
+    { ref: "NA2313", nom: "MP2000 210 à 270°", portee: 5.8 },
+    { ref: "NA2311", nom: "MP2000 360°", portee: 5.8 },
+    { ref: "NA2321", nom: "MP3000 90 à 210°", portee: 9.1 },
+    { ref: "NA2322", nom: "MP3000 210 à 270°", portee: 9.1 },
+    { ref: "NA2323", nom: "MP3000 360°", portee: 9.1 }
+  ];
+  var MP_TORO = "Aussi en version Toro, pour tuyère femelle : MP1000T, MP2000T, MP3000T (TBT10760, TBT10563, TBT10662). Portée et débit non relevés.";
+
+  // LES MOTS : chaque phrase vient du catalogue Aqua Plus 2026 (la page est dans
+  // le commentaire) ou du catalogue du dépôt. Un mot absent de la planche ne s'affiche pas.
+  var MOTS = [
+    [/\b18(02|04|06|12)\b/, "1802, 1804, 1806, 1812", "La tuyère Rain Bird de la série 1800. Le chiffre dit de combien elle sort du sol : 5, 10, 15 ou 30 cm."], // p. 7
+    [/escamotable/, "Escamotable", "La tuyère sort du sol quand l’eau arrive, et rentre quand l’eau s’arrête."],
+    [/SAM/, "SAM", "Un clapet anti-vidange dans la tuyère : l’eau ne ressort pas par la tuyère la plus basse quand la vanne se ferme."], // p. 7
+    [/PRS/, "PRS", "Un régulateur de pression dans la tuyère, réglé à 2,1 bar : la buse reçoit toujours la même pression."], // p. 7, « SAM-PRS (2,1 bar) »
+    [/\d-VAN|VAN\b/, "VAN", "Une buse dont on règle l’angle à la main. Le chiffre devant la distingue, sa portée en mètres est écrite à côté."], // p. 8
+    [/R-VAN/, "R-VAN", "Une buse rotative : plusieurs filets qui tournent et arrosent plus lentement. Réglable de 45° à 270°, ou fixe à 360°."], // p. 8
+    [/MP Rotator|MP\d000/, "MP Rotator", "Une buse rotative multijets qui se visse sur un corps de tuyère à la place d’une buse. Secteur réglable à la clé MP ou plein cercle, de 2 à 3,5 bar."] // p. 10
+  ];
+
   function dessiner() {
     $("corps").innerHTML = corps.map(function (c) {
       return '<button type="button" data-corps="' + c.ref + '" aria-pressed="' + (c.ref === choisi) + '">' + texte(nomCorps(c)) + "</button>";
@@ -87,6 +136,17 @@
       var photoBuse = PHOTOS[b.ref] ? '<img class="buse" src="arrosage-photos/' + PHOTOS[b.ref] + '" alt="">' : "";
       return '<div class="couple"><div class="duo">' + photoCorps + photoBuse + "</div>" +
         "<b>" + texte(nomCorps(c) + " et " + b.nom) + "</b><span>portée " + virgule(b.rayon) + " m</span></div>";
+    }).join("");
+    // Une MP Rotator se visse sur le corps choisi comme une buse : même couple,
+    // sans photo de buse tant qu'il n'en a pas validé une.
+    $("rotator").innerHTML = MP_ROTATOR.map(function (b) {
+      return '<div class="couple releve"><div class="duo">' + photoCorps + '<span class="vide">photo à venir</span></div>' +
+        "<b>" + texte(nomCorps(c) + " et " + b.nom) + "</b><span>portée " + virgule(b.portee) + " m à 2,8 bar, Hunter, réf. " + b.ref + '</span><span class="mention">Pas encore dans le calcul.</span></div>';
+    }).join("");
+    $("rotator-toro").textContent = MP_TORO;
+    var tout = document.querySelector(".ecran").textContent;
+    $("mots").innerHTML = MOTS.filter(function (m) { return m[0].test(tout); }).map(function (m) {
+      return "<div><dt>" + texte(m[1]) + "</dt><dd>" + texte(m[2]) + "</dd></div>";
     }).join("");
   }
   document.addEventListener("click", function (e) {

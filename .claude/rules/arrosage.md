@@ -295,6 +295,20 @@ souple**. Et un losange par té égal sur le plan, côte à côte.
 **DÈS QU'IL Y A DES ARROSEURS, LE DÉPART EST EN Ø25 OU EN Ø32** (même jour) : le
 Ø16, rigide ou souple, ne sert qu'au goutte-à-goutte.
 
+**PLUS DE RÉSEAUX QUE DE VOIES AU NEZ DE ROBINET : ON LE GARDE ET ON PRÉVIENT —
+sa réponse du 18 octobre 2026 :** *« si le programmateur est en nez de robinet,
+il le garde et il prévient qu'il manque des voies »*. L'outil ne bascule pas de
+lui-même sur la nourrice : le montage reste celui qu'il a choisi, et la réserve
+dit le manque en nombre de voies (« Il manque 3 voies au programmateur : il en
+a 1, ce jardin demande 4 réseaux »). C'est lui qui décide ensuite.
+
+**UN NOMBRE DE PIÈCES SE CHOISIT, JAMAIS « UNE » OU « TOUTES » — sa correction du
+18 octobre 2026**, devant « Changer une seule pièce / Changer les 4 » : *« il
+faut faire un choix avec le nombre de pièces à modifier. On clique et on choisit
+si on va modifier 1, 2, 3, 4. On ne va pas à chaque fois faire une par une.
+Pareil pour la suppression. »* Une pièce en plusieurs exemplaires offre une
+rangée Changer et une rangée Supprimer, un bouton par nombre.
+
 **UN PASSAGE EN POINTILLÉS QUI SE MESURE SUR LE PLAN NE SE DIT PAS « À MESURER »** — sa
 règle du 18 octobre 2026 : *« si quelqu'un te fait un plan à l'échelle et que tu
 sais que la pelouse fait tant de mètres, que le passage entre la pelouse et

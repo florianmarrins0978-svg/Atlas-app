@@ -3,6 +3,16 @@
 À lire EN ENTIER, avant toute chose, par la session qui reprend. Tout ce qui
 suit est dans le dépôt ; rien ne repose sur la conversation.
 
+## LA TROISIÈME SESSION DU 18 OCTOBRE AU SOIR (20 h 30) : ses réponses, et ce qui reste
+
+| il a dit | ce qui a été fait |
+|---|---|
+| « les deux photos je les valide » (grillage bleu Bricomarché FITT, téflon Wikimedia) | validées : `grillage-bleu.jpg` et `teflon.jpg` restent dans l'outil, rien à changer |
+| « Si le programmateur est en nez de robinet, il le garde et il prévient qu'il manque des voies » | règle écrite dans `.claude/rules/arrosage.md` ; le plan au robinet montre le jardin entier dans les deux montages et dit « Il manque 3 voies au programmateur : il en a 1, ce jardin demande 4 réseaux » (`arrosage-plan-robinet.html`, republié) |
+| devant « Changer une seule pièce / Changer les 4 » : *« il faut faire un choix avec le nombre de pièces à modifier. On clique et on choisit 1, 2, 3, 4. Pareil pour la suppression »* | **fait** sur le plan et le robinet (commit `1a9012af`) : deux rangées, Changer 1 2 3 4 et Supprimer 1 2 3 4 ; `nrEnAttente` porte `{ ref, n }`, la remplaçante entre dans la liste avec `q: n` et `de: ref`, « Remettre les N » ressort aussi les remplaçantes. La chaîne d'une tête garde « Changer les N » (toutes les têtes du réseau) : il n'a rien dit dessus |
+| la planche des tuyères (point 4) : *« c'est validé, juste il faudrait expliquer ce que SAM et PRS veut dire et les autres acronymes. Il manque les buses MP Rotator »* | « Les mots » ajoutés au bas de `arrosage-tuyeres-buses.html` (SAM, PRS, VAN, R-VAN, 1802 à 1812, escamotable, MP Rotator), et les MP Rotator montrées depuis le RELEVÉ (`buses-a-trancher.json`, Aqua Plus p. 10), marquées « pas encore dans le calcul » : le catalogue ne les a pas, leur entrée se fait avec les buses à trancher (point 2 plus bas). Aucune photo validée pour elles |
+| « Problème sur le calcul », capture de l'outil de dessin B, feuille « Dalles » : longueur 7, largeur 1, écart 0,57, « 3 dalles sur 4,49 m » | diagnostic donné : dans `arrosage-dessiner-plan.js` (fichier de l'AUTRE session), Longueur et Largeur sont la taille d'UNE dalle et la rangée va d'un point touché à l'autre (4,49 m) ; le 7 n'entre pas dans le compte, et l'écran ne le dit pas. **Question posée, sans réponse** : la longueur tapée est-elle celle de la rangée, ou la rangée reste entre ses deux points et l'écran doit l'écrire ? Et qui corrige. Ne pas toucher au fichier sans sa réponse |
+
 ## LA DEUXIÈME SESSION DU 18 OCTOBRE AU SOIR S'EST ARRÊTÉE PLEINE — l'état exact
 
 Tout ce qu'elle a fait est écrit plus bas (« SES RÉPONSES… », « Et ensuite… », « Puis… », « Encore… », « Et… », « Et encore… »), commité sur la branche jusqu'à `896216a7`. Les planches en ligne, toutes republiées : le plan https://claude.ai/artifact/5JivFEkQW2X7DpwoLnMzHB, le plan au robinet https://claude.ai/artifact/Bcdsm4bPC3KDZ5CDhYv5tX, la vue éclatée https://claude.ai/artifact/LXfjCHKAbZUm78ncXpVqjn, les pièces du robinet https://claude.ai/artifact/WwTin3f2Zvq42RiobvWErG, le té au départ https://claude.ai/artifact/7XSwo4VmJr8hWK9cpDrxfe.
