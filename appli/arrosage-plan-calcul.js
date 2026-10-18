@@ -2510,7 +2510,9 @@ var CALCUL = (() => {
       "regard-rg17106": { nom: "Regard jumbo RG17106", marque: "Dura", aquaplus: "RG17106" },
       "regard-jumbo5": { nom: "Regard jumbo 5 voies", marque: "Dura", aquaplus: "RG17106" },
       "regard-jumbo6": { nom: "Regard jumbo 6 voies", marque: "Dura", aquaplus: "RG17106" },
-      "te-mmf": { nom: 'T\xE9 taraud\xE9/filet\xE9 1" MMF', marque: "Dura", aquaplus: "ODU301010" },
+      // Le nom d'Aqua Plus, sa demande du 18 octobre 2026 (il l'appelait « té 1" MMF ») : c'est sous ce
+      // nom que le fournisseur le cherche. La clé reste `te-mmf`, elle ne s'affiche nulle part.
+      "te-mmf": { nom: 'T\xE9 1" MFF', marque: "Dura", aquaplus: "ODU301010" },
       "clarinette-2v": { nom: 'Collecteur M x F x 2 sorties 1"', marque: "Dura", aquaplus: "ODU3010102" },
       "clarinette-3v": { nom: 'Collecteur M x F x 3 sorties 1"', marque: "Dura", aquaplus: "ODU3010103" },
       "clarinette-4v": { nom: 'Collecteur M x F x 4 sorties 1"', marque: "Dura", aquaplus: "ODU3010104" },

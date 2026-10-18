@@ -898,7 +898,7 @@ cas("la nourrice est détaillée, pas résumée", () => {
     // voies** : une clarinette à partir de trois, un té MMF à deux (ses fiches
     // du 17 août). Exiger « clarinette » figeait la nourrice 3 voies et faisait
     // rougir un regard 2 voies parfaitement monté (`CLAUDE.md` §5 bis).
-    ["la pièce qui relie les vannes (clarinette ou té MMF)", /clarinette|té .*mmf/i],
+    ["la pièce qui relie les vannes (clarinette ou té 1\" MFF)", /clarinette|té .*m[mf]f/i],
     ["les unions, sans quoi rien ne se démonte", /union/i],
     ["le regard", /regard/i],
     ["le programmateur", /programmateur/i],
