@@ -176,9 +176,14 @@
   .pile{margin-top:10px;border-radius:16px;background:#ffffff;padding:14px 12px;box-shadow:inset 0 0 0 1px var(--atlas-line)}
   .etage{display:grid;grid-template-columns:150px 1fr;align-items:center;gap:10px;min-height:20px}
   .etage + .etage{margin-top:8px}
-  .etage .ph{position:relative;height:var(--h);display:flex;justify-content:flex-start}
-  .etage .ph > *{margin-left:calc(60px - var(--w) / 2)}
-  .etage .ph img{height:100%;mix-blend-mode:multiply}
+  /* L'AXE DE VISSAGE : chaque photo dit où tombe son filetage (--axe, en fraction
+     de sa largeur, mesuré sur la photo), et ce point se pose sur l'axe commun, à
+     60 px. Centrer les photos ne suffisait pas : une photo carrée ou une sortie
+     décalée tombait à côté (sa remarque du 18 octobre 2026, « aligne-moi tous
+     les raccords »). */
+  .etage .ph{position:relative;height:var(--h)}
+  .etage .ph > *{position:absolute;left:60px;top:0;height:100%;transform:translateX(calc(var(--axe, 0.5) * -100%))}
+  .etage .ph img{mix-blend-mode:multiply}
   .etage .lib{font-size:13px;line-height:1.35;color:#4a4a44}
   .etage .lib b{display:block;font-weight:600;color:#1c1c1a}
   .etage .tube{width:14px;height:100%;border-radius:3px;background:linear-gradient(90deg,#2b2d31 0 30%,#2f7fd6 30% 42%,#2b2d31 42% 100%)}
@@ -368,7 +373,7 @@
     // Le taraudé en haut, l'embout en bas.
     // Le Ø16 souple part par l'embout Palaplast taraudé 16 x 3/4" (sa demande du
     // 18 octobre 2026 : « il faut aussi pouvoir mettre 16 souple »).
-    raccord: { "16s": { ref: "MID6362", nom: "embout Palaplast taraudé 16 x 3/4\", pour 16 souple", photo: "MID6362-debout.png" }, 16: { ref: "plasson-16-rigide", sansReference: true, nom: "raccord à compression Plasson taraudé 16 x 3/4\", pour 16 rigide", photo: "plasson-16-rigide-debout.png" }, 25: { ref: "OPL70302520", nom: "raccord femelle 25 x 3/4\"", photo: "OPL703016.png" }, 32: { ref: "OPL70303220", nom: "raccord femelle 32 x 3/4\"", photo: "OPL703016.png" } }
+    raccord: { "16s": { ref: "MID6362", nom: "embout Palaplast taraudé 16 x 3/4\", pour 16 souple", photo: "MID6362-debout.png", axe: 0.5 }, 16: { ref: "plasson-16-rigide", sansReference: true, nom: "raccord à compression Plasson taraudé 16 x 3/4\", pour 16 rigide", photo: "plasson-16-rigide-debout.png", axe: 0.545 }, 25: { ref: "OPL70302520", nom: "raccord femelle 25 x 3/4\"", photo: "OPL703016.png", axe: 0.49 }, 32: { ref: "OPL70303220", nom: "raccord femelle 32 x 3/4\"", photo: "OPL703016.png", axe: 0.49 } }
   };
   [ROBINET.double, ROBINET.prog].forEach(function (x) { PHOTOS[x.ref] = "../arrosage-robinet-photos/" + x.photo; });
   PHOTOS["plasson-16-rigide"] = "../arrosage-robinet-photos/plasson-16-rigide.jpg"; PHOTOS.OPL70302520 = "OPL70302520.jpg"; PHOTOS.OPL70303220 = "OPL70302520.jpg";
@@ -733,13 +738,14 @@
     var dia = robinet.departMain || departDeLOutil(p), rac = ROBINET.raccord[dia];
     var tuyau = dia === 16 ? "PEBD rigide Ø16" : dia === "16s" ? "Ø16 souple" : "PEHD Ø" + dia;
     $("titre-amenee").textContent = robinet.montage === "nez" ? "Au robinet" : "Du robinet à la nourrice";
-    // La double sortie se pose décalée : sa sortie de GAUCHE (10 % de sa photo, la sienne du 18 octobre 2026)
-    // tombe sur l'axe de la pile, à 60 px. Les autres pièces se centrent sur cet axe.
+    // Chaque pièce pose son filetage sur l'axe de la pile (--axe, mesuré sur sa
+    // photo) : la sortie GAUCHE de la double sortie (8 % de sa photo, la sienne du
+    // 18 octobre 2026), la sortie du programmateur (38 %), le milieu des raccords.
     var etages = [];
-    if (robinet.double) etages.push('<div class="etage"><span class="ph" style="--h:66px"><img src="arrosage-robinet-photos/' + ROBINET.double.photo + '" alt="" style="margin-left:' + (60 - 0.10 * 102) + 'px"></span><span class="lib"><b>' + texte(ROBINET.double.nom) + "</b>Réf. " + ROBINET.double.ref + "</span></div>");
-    if (robinet.montage === "nez") etages.push('<div class="etage"><span class="ph" style="--h:90px;--w:62px"><img src="arrosage-robinet-photos/SP1151.png" alt=""></span><span class="lib"><b>' + texte(ROBINET.prog.nom) + "</b>Réf. " + ROBINET.prog.ref + "</span></div>");
-    etages.push('<div class="etage"><span class="ph" style="--h:70px;--w:41px"><img src="arrosage-robinet-photos/' + rac.photo + '" alt=""></span><span class="lib"><b>' + texte(rac.nom) + "</b>" + (rac.sansReference ? "Réf. du fournisseur" : "Réf. " + rac.ref) + "</span></div>");
-    etages.push('<div class="etage"><span class="ph" style="--h:60px;--w:14px"><span class="tube' + (dia === 16 || dia === "16s" ? " seize" : "") + '"></span></span><span class="lib"><b>' + texte(tuyau) + "</b>" + (robinet.montage === "nez" ? "jusqu’au réseau, à mesurer" : "jusqu’à la nourrice, à mesurer") + "</span></div>");
+    if (robinet.double) etages.push('<div class="etage"><span class="ph" style="--h:66px;--axe:0.08"><img src="arrosage-robinet-photos/' + ROBINET.double.photo + '" alt=""></span><span class="lib"><b>' + texte(ROBINET.double.nom) + "</b>Réf. " + ROBINET.double.ref + "</span></div>");
+    if (robinet.montage === "nez") etages.push('<div class="etage"><span class="ph" style="--h:90px;--axe:0.38"><img src="arrosage-robinet-photos/SP1151.png" alt=""></span><span class="lib"><b>' + texte(ROBINET.prog.nom) + "</b>Réf. " + ROBINET.prog.ref + "</span></div>");
+    etages.push('<div class="etage"><span class="ph" style="--h:70px;--axe:' + (rac.axe || 0.5) + '"><img src="arrosage-robinet-photos/' + rac.photo + '" alt=""></span><span class="lib"><b>' + texte(rac.nom) + "</b>" + (rac.sansReference ? "Réf. du fournisseur" : "Réf. " + rac.ref) + "</span></div>");
+    etages.push('<div class="etage"><span class="ph" style="--h:60px"><span class="tube' + (dia === 16 || dia === "16s" ? " seize" : "") + '"></span></span><span class="lib"><b>' + texte(tuyau) + "</b>" + (robinet.montage === "nez" ? "jusqu’au réseau, à mesurer" : "jusqu’à la nourrice, à mesurer") + "</span></div>");
     $("pile").innerHTML = etages.join("");
     $("amenee").innerHTML =
       (robinet.double ? poser("am:double", ROBINET.double.ref, ROBINET.double.nom, "Double sortie") : "") +
