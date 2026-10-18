@@ -35,6 +35,10 @@ ajouter `<meta name="claude:viewport-fit-sides" content="cover">` sous le
 | **Photos des pièces** : valider ou refuser chaque photo | sources dans `docs/arrosage-releve-photos/` | https://claude.ai/artifact/66tzBpLozFXinZJnpNxNR3 (base `choix`) | **en cours** : 85 « oui », 16 « non » (`choix-du-patron.json`) |
 | Ses demandes du 16 octobre (l'écran Plan d'arrosage) | `appli/arrosage-demandes-16-octobre.html` | https://claude.ai/artifact/Aw7JKKNFKZ7ggG9MERVWcj | **attend son avis** ; rien dans `src/app` avant |
 | Le croquis de 350 m de goutte-à-goutte (3 vannes) | (artifact seul) | https://claude.ai/artifact/VukpwXTzLq8mSACriCvhZa | attend son accord sur le découpage |
+| La pelouse de 20 × 12 (recouvrement, bridage) | (artifact seul) | https://claude.ai/artifact/L6obDjwoFG3xau3xYPaRXa | **tranchée** le 16 octobre : 80 à 100 %, bridage 40 %, 75 à 105 % si ça fait gagner des sous (`.claude/rules/arrosage.md`) |
+| La tête bridée sur le plan | (artifact seul) | https://claude.ai/artifact/Et9YNGL38cyhJ6bBRRqiW8 | **« la B »** le 16 octobre : « bridée à 6 m » |
+
+*Ces deux dernières manquaient au relais ; retrouvées le 18 octobre dans la liste des artifacts.*
 
 `appli/essais.html` liste la vue éclatée, la nourrice éclatée et les tuyères.
 
