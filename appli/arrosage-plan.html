@@ -493,9 +493,8 @@
         var g = CAT.gaines[0];
         lignes += '<li><span class="q"></span><span>' + texte("Goutte-à-goutte Toro, " + g.detail + ", " + (etat.sortie === "boucle" ? "deux lignes en circuit fermé" : "une seule ligne")) + "</span></li>";
       }
-      // « 83 min » seul ne se comprenait pas (sa question du 18 octobre 2026) :
-      // c'est la durée d'UN arrosage, à la saison que le calcul retient.
-      if (s.minutes) lignes += '<li><span class="q">' + s.minutes + ' min</span><span>par arrosage, ' + s.passages + " fois par semaine en juillet et août</span></li>";
+      // AUCUNE DURÉE D'ARROSAGE : sa règle du 18 octobre 2026 (« tu es en train de
+      // leur donner le temps d'arrosage, ça, il faut pas le faire »).
       if (r) lignes += '<li><span class="q">' + r.metresTuyau + ' m</span><span>de PEHD Ø25</span></li>';
       html += '<div class="reseau" style="--couleur:' + c + '"><div class="reseau-titre"><span class="pastille"></span><b>Réseau ' + (i + 1) + "</b><span>" + texte(s.nom) + "</span></div>" +
         '<div class="schema">' + svgReseau(d, p, i) + '</div><ul class="materiel">' + lignes + "</ul></div>";

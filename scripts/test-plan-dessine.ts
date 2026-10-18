@@ -238,6 +238,30 @@ dire(
   );
 }
 
+// ── Une cote ne sort jamais du cadre ────────────────────────────────────
+// Vu par lui le 18 octobre 2026 : « c'est quoi 2,4 r tout à droite ? ». La
+// cote « 2,4 m » d'un massif posé au bord droit était coupée par le cadre : le
+// cadre se calculait sur le terrain seul, sans le texte écrit dehors.
+{
+  const p = calculerPlan({ seau: 10, temps: 18, pression: 3, compteur: "oui", zones: [
+    { id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
+    { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },
+    { id: 3, type: "massif", nom: "Massif", x: 14, y: 10, L: 20, l: 2.4, sortieGoutte: "boucle" },
+  ] } as never);
+  const r = dessinerPlan(p.dessin, { x: 13, y: 6 }, p.couleurs);
+  if (!r.ok) dire(false, "le plan du massif au bord droit doit se dessiner");
+  else {
+    const [vx, vy, vw, vh] = r.dessin.viewBox.split(" ").map(Number);
+    // La largeur d'un texte de 0,95 m de haut : un peu plus d'un demi-corps par caractère.
+    const sorties = r.dessin.cotes.filter((c) => {
+      const w = c.texte.length * 0.95 * 0.6;
+      const x0 = c.ancre === "start" ? c.x : c.ancre === "end" ? c.x - w : c.x - w / 2;
+      return x0 < vx || x0 + w > vx + vw || c.y - 0.95 < vy || c.y > vy + vh;
+    });
+    dire(sorties.length === 0, `aucune cote hors du cadre (${sorties.map((c) => c.texte).join(", ") || "aucune"})`);
+  }
+}
+
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Le plan dessiné — ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);
 assert.equal(echecs, 0);

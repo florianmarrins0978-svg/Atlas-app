@@ -4375,6 +4375,12 @@ var CALCUL = (() => {
 
   // src/lib/arrosage/plan-dessine.ts
   var MARGE2 = 3.2;
+  var HAUTEUR_COTE = 0.95;
+  function boiteDuTexte(c) {
+    const w = c.texte.length * HAUTEUR_COTE * 0.6;
+    const x0 = c.ancre === "start" ? c.x : c.ancre === "end" ? c.x - w : c.x - w / 2;
+    return [{ x: x0, y: c.y - HAUTEUR_COTE }, { x: x0 + w, y: c.y }];
+  }
   function dessinerPlan(zones, nourrice, couleurs) {
     if (nourrice === null) {
       return {
@@ -4420,14 +4426,14 @@ var CALCUL = (() => {
           `\xAB ${dedans.map((z) => z.nom).join(" + ")} \xBB n\u2019est pas d\u2019un seul tenant avec la nourrice : le cheminement entre les deux passe hors de la pelouse et reste \xE0 mesurer sur place`
         );
       }
-      const t = tracerReseaux(entree, arroseurs, contour);
-      tranchee.push(...t.tranchee);
-      for (const [numero, chemins] of Object.entries(t.lignes)) {
+      const t2 = tracerReseaux(entree, arroseurs, contour);
+      tranchee.push(...t2.tranchee);
+      for (const [numero, chemins] of Object.entries(t2.lignes)) {
         const n = Number(numero);
         const dejaLa = parReseau.get(n) ?? { lignes: [], antennes: [], tuyau: 0 };
         dejaLa.lignes.push(...chemins);
-        dejaLa.antennes.push(...(t.antennes[n] ?? []).map((a) => ({ de: a.de, a: a.a })));
-        dejaLa.tuyau += t.metresTuyau[n] ?? 0;
+        dejaLa.antennes.push(...(t2.antennes[n] ?? []).map((a) => ({ de: a.de, a: a.a })));
+        dejaLa.tuyau += t2.metresTuyau[n] ?? 0;
         parReseau.set(n, dejaLa);
       }
     }
@@ -4525,7 +4531,7 @@ var CALCUL = (() => {
         couleur: couleurs[numero] ?? "#7C8271",
         traits,
         antennes,
-        metresAntennes: Math.round(antennes.reduce((t, a) => t + distance(a.de, a.a), 0) * 10) / 10,
+        metresAntennes: Math.round(antennes.reduce((t2, a) => t2 + distance(a.de, a.a), 0) * 10) / 10,
         materiels: [...materiels.values()].filter((m) => m.libelle !== ""),
         lignes,
         tetes,
@@ -4537,17 +4543,22 @@ var CALCUL = (() => {
       };
     });
     ecarterLesSymboles(reseaux);
-    const tousLesPoints = [...contours.flat(), nourrice];
-    const c = cadre(tousLesPoints);
-    const metres = tranchee.reduce((t, s) => t + distance(s.de, s.a), 0);
+    const cotes = cotesLisibles(contours);
+    const c = cadre([...contours.flat(), nourrice]);
+    const t = cadre([...contours.flat(), nourrice, ...cotes.flatMap(boiteDuTexte)]);
+    const gauche = Math.min(c.x - MARGE2, t.x - 0.4);
+    const haut = Math.min(c.y - MARGE2, t.y - 0.4);
+    const droite = Math.max(c.x + c.L + MARGE2, t.x + t.L + 0.4);
+    const bas = Math.max(c.y + c.l + MARGE2, t.y + t.l + 0.4);
+    const metres = tranchee.reduce((t2, s) => t2 + distance(s.de, s.a), 0);
     return {
       ok: true,
       reserves,
       dessin: {
-        viewBox: `${c.x - MARGE2} ${c.y - MARGE2} ${c.L + 2 * MARGE2} ${c.l + 2 * MARGE2}`,
+        viewBox: `${gauche} ${haut} ${droite - gauche} ${bas - haut}`,
         contours,
         trous,
-        cotes: cotesLisibles(contours),
+        cotes,
         tranchee,
         metresTranchee: Math.round(metres * 10) / 10,
         nourrice,

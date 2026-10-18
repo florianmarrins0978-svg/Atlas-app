@@ -256,6 +256,13 @@ réponse du 16 octobre 2026** devant la planche des trois écritures (« portée
 6 m », « bridée à 6 m », « portée 6,4 m bridée à 6 m »). Une tête à sa portée
 garde « portée 6,4 m ».
 
+**AUCUNE DURÉE D'ARROSAGE À L'ÉCRAN — sa règle du 18 octobre 2026**, devant
+« 6 min par arrosage » sous un réseau : *« là, tu es en train de leur donner le
+temps d'arrosage. Ça, il faut pas le faire. »* Le calcul garde ses durées
+(`minutes`, `passages`), elles ne s'affichent plus. Les besoins en eau qui
+les produisent (`SAISONS`) n'ont d'ailleurs aucune source venue de lui.
+L'ancienne page publiée `appli/arrosage.html` en montre encore.
+
 **LA TENSION S'ACCORDE, SINON RIEN N'ARROSE.** Sa règle du 21 août :
 
 | Le programmateur | L'électrovanne |

@@ -186,6 +186,17 @@ export type ResultatDessin =
 const MARGE = 3.2;
 
 /**
+ * La place qu'occupe le texte d'une cote, en mètres : il est écrit à 0,95 m de
+ * haut (`PlanDessine.tsx`), et un caractère prend un peu plus d'un demi-corps.
+ */
+const HAUTEUR_COTE = 0.95;
+function boiteDuTexte(c: Cote): Point[] {
+  const w = c.texte.length * HAUTEUR_COTE * 0.6;
+  const x0 = c.ancre === "start" ? c.x : c.ancre === "end" ? c.x - w : c.x - w / 2;
+  return [{ x: x0, y: c.y - HAUTEUR_COTE }, { x: x0 + w, y: c.y }];
+}
+
+/**
  * Dessiner le plan — ou dire pourquoi on ne le dessine pas.
  *
  * `nourrice` est l'endroit que LE PATRON a posé sur son croquis. `null` quand
@@ -426,18 +437,27 @@ export function dessinerPlan(
 
   ecarterLesSymboles(reseaux);
 
-  const tousLesPoints = [...contours.flat(), nourrice];
-  const c = cadre(tousLesPoints);
+  // **Le cadre contient aussi les cotes écrites dehors.** Calculé sur le seul
+  // terrain, il coupait le texte d'un côté posé au bord : « 2,4 r » au lieu de
+  // « 2,4 m », sa question du 18 octobre 2026. Les cotes se calculent donc
+  // AVANT le cadre, et leur texte y entre.
+  const cotes = cotesLisibles(contours);
+  const c = cadre([...contours.flat(), nourrice]);
+  const t = cadre([...contours.flat(), nourrice, ...cotes.flatMap(boiteDuTexte)]);
+  const gauche = Math.min(c.x - MARGE, t.x - 0.4);
+  const haut = Math.min(c.y - MARGE, t.y - 0.4);
+  const droite = Math.max(c.x + c.L + MARGE, t.x + t.L + 0.4);
+  const bas = Math.max(c.y + c.l + MARGE, t.y + t.l + 0.4);
   const metres = tranchee.reduce((t, s) => t + distance(s.de, s.a), 0);
 
   return {
     ok: true,
     reserves,
     dessin: {
-      viewBox: `${c.x - MARGE} ${c.y - MARGE} ${c.L + 2 * MARGE} ${c.l + 2 * MARGE}`,
+      viewBox: `${gauche} ${haut} ${droite - gauche} ${bas - haut}`,
       contours,
       trous,
-      cotes: cotesLisibles(contours),
+      cotes,
       tranchee,
       metresTranchee: Math.round(metres * 10) / 10,
       nourrice,
