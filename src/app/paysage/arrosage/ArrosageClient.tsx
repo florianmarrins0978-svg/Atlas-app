@@ -6,6 +6,7 @@ import { lireLeCroquis, type EtatPlan } from "./actions";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import LePlanDuJardin from "./LePlanDuJardin";
 import DiscuterLePlan from "./DiscuterLePlan";
+import DessinerLePlan from "./DessinerLePlan";
 import type { ParametresPlan } from "@/lib/arrosage/consignes";
 import { ACCEPT_PHOTOS } from "@/lib/exif";
 
@@ -54,6 +55,15 @@ export default function ArrosageClient({
    */
   const [piquage, setPiquage] = useState("compteur");
   const formulaire = useRef<HTMLFormElement>(null);
+  /**
+   * **DESSINER LE PLAN, AU LIEU DE LE PHOTOGRAPHIER** — sa planche B, choisie le
+   * 18 octobre 2026. Le dessin part par le MÊME formulaire que la photo, dans
+   * un champ caché : le serveur le relit et le fait rejoindre la photo juste
+   * après la lecture (`actions.ts`). Un seul envoi, un seul état, un seul plan.
+   */
+  const [dessiner, setDessiner] = useState(false);
+  const [parDessin, setParDessin] = useState(false);
+  const champDessin = useRef<HTMLInputElement>(null);
 
   /**
    * **La photo choisie PART toute seule.**
@@ -69,7 +79,19 @@ export default function ArrosageClient({
    * (`AGENTS.md` — parcourir en entier ce qu'on transmet).
    */
   function photoChoisie(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.files && e.target.files.length > 0) formulaire.current?.requestSubmit();
+    if (e.target.files && e.target.files.length > 0) {
+      // La photo part seule : un dessin laissé dans le champ caché passerait devant.
+      if (champDessin.current) champDessin.current.value = "";
+      setParDessin(false);
+      formulaire.current?.requestSubmit();
+    }
+  }
+
+  function dessinPret(dessin: string) {
+    if (!champDessin.current) return;
+    champDessin.current.value = dessin;
+    setParDessin(true);
+    formulaire.current?.requestSubmit();
   }
 
   return (
@@ -250,7 +272,7 @@ export default function ArrosageClient({
               l'application. Le geste vient de sa proposition C, et il est
               partagé — `PointsQuiSoufflent`, jamais recopié
               (`ARCHITECTURE.md` §66). */}
-          {enCours ? (
+          {enCours && !parDessin ? (
             <>
               Lecture du croquis
               <PointsQuiSoufflent />
@@ -281,7 +303,30 @@ export default function ArrosageClient({
           hidden
           onChange={photoChoisie}
         />
+        {/* **Sous la photo, sans la déplacer** : il reconnaît son écran par la
+            place de ce qu'il lit (`CLAUDE.md` §3). */}
+        <input ref={champDessin} type="hidden" name="dessin" defaultValue="" />
+        {!dessiner && (
+          <button
+            type="button"
+            data-atlas="ouvrir-dessin"
+            onClick={() => setDessiner(true)}
+            className="mt-2 flex min-h-[56px] w-full items-center justify-center rounded-[12px] text-[11px] font-semibold uppercase"
+            style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink, letterSpacing: "0.18em" }}
+          >
+            Dessiner le plan
+          </button>
+        )}
       </div>
+
+      {dessiner && (
+        <DessinerLePlan
+          piquage={piquage}
+          onPiquage={setPiquage}
+          onFaire={dessinPret}
+          enCours={enCours && parDessin}
+        />
+      )}
 
       {/* **L'IA indisponible se DIT, et avant le geste.** Sans lecture, le
           laisser photographier pour rien serait le troisième bouton qui ne

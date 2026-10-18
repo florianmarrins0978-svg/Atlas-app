@@ -508,7 +508,11 @@ async function main() {
       const libelle = await page.locator('[data-atlas="ajouter-croquis"]').innerText();
       assert.doesNotMatch(libelle, /…/, `le « … » immobile est encore là : « ${libelle} »`);
     } finally {
-      await page.unroute(`${BASE}/paysage/arrosage`, retarder);
+      // **On attend la requête encore retardée avant de rendre la main.** Le
+      // retrait simple la laissait se reprendre plus tard sur une page déjà
+      // quittée : « Route is already handled », qui faisait tomber le cas
+      // suivant (vu le 18 octobre 2026, en ajoutant le plan dessiné).
+      await page.unrouteAll({ behavior: "wait" });
     }
   });
 
@@ -542,6 +546,52 @@ async function main() {
       /API_KEY|configur|ne sait pas|n.est pas pos/i.test(texte),
       `l'écran dit que rien ne sera lu, sans dire pourquoi : ${texte}`
     );
+  });
+
+  // ── LE PLAN DESSINÉ AU DOIGT, sa planche B (18 octobre 2026) ──────────────
+  //
+  // Le geste qu'il fait, et rien d'autre : ouvrir le dessin, taper le terrain,
+  // poser une zone, la nourrice, le compteur, faire le plan. **Sans lecture
+  // d'image** : le dessin ne passe pas par l'IA, et ce banc n'en a souvent
+  // pas — c'est justement ce que le cas prouve.
+  await cas("le plan dessiné au doigt se calcule, sans lire de photo", async () => {
+    await page.goto(`${BASE}/paysage/arrosage`, { waitUntil: "networkidle" });
+    await page.click('[data-atlas="ouvrir-dessin"]');
+    await page.fill("#terrain-L", "10");
+    await page.fill("#terrain-l", "10");
+
+    // Sa remarque : « je peux poser un carré de 12 par 12 alors que mon cadre
+    // fait 10 par 10, il faut pouvoir bloquer ça ».
+    await page.getByRole("button", { name: "Pelouse", exact: true }).click();
+    await page.fill("#feuille-L", "12");
+    await page.fill("#feuille-l", "12");
+    await page.click('[data-atlas="feuille-valider"]');
+    const refus = await page.locator('[data-atlas="feuille-dessin"] [role="alert"]').innerText();
+    assert.match(refus, /Ne tient pas dans le terrain/, `une pelouse de 12 × 12 se pose dans 10 × 10 : « ${refus} »`);
+    await page.fill("#feuille-L", "8");
+    await page.fill("#feuille-l", "6");
+    await page.click('[data-atlas="feuille-valider"]');
+
+    // Sans nourrice ni piquage, aucun plan : le bouton n'existe pas encore.
+    assert.equal(await page.locator('[data-atlas="faire-le-plan"]').count(), 0, "un plan se propose sans nourrice ni piquage");
+    const etat = await page.locator('[data-atlas="etat-dessin"]').innerText();
+    assert.match(etat, /il manque la nourrice/, `le manque de la nourrice ne se dit pas : « ${etat} »`);
+
+    const toile = page.locator('[data-atlas="toile"]');
+    const poser = async (bouton: string, fx: number, fy: number) => {
+      await page.getByRole("button", { name: bouton, exact: true }).click();
+      const b = await toile.boundingBox();
+      assert.ok(b && b.width > 0, "la toile du dessin ne mesure rien");
+      await page.mouse.click(b.x + b.width * fx, b.y + b.height * fy);
+    };
+    await poser("Nourrice", 0.9, 0.9);
+    await poser("Compteur", 0.1, 0.92);
+    assert.equal(await page.inputValue("#piquage"), "compteur", "le compteur posé ne règle pas « Le piquage se fait… »");
+
+    await page.click('[data-atlas="faire-le-plan"]');
+    await page.waitForSelector('[data-atlas="plan-arrosage"]', { timeout: 60_000 });
+    const reseaux = await page.locator('[data-atlas="carte-reseau"]').count();
+    assert.ok(reseaux >= 1, "le plan dessiné ne porte aucun réseau");
   });
 
   await contexte.close();

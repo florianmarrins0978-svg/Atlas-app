@@ -73,7 +73,7 @@ export function lignesProposees(largeur: number | null): number | null {
  * bloquer ça »*. Une cote plus grande que le terrain est une cote fausse, l'une
  * ou l'autre ; une zone posée au-delà du bord aussi.
  */
-export function zonesQuiDebordent(d: Pick<DessinDuPlan, "terrain" | "zones">): ZoneDessinee[] {
+export function zonesQuiDebordent<Z extends ZoneDessinee>(d: { terrain: DessinDuPlan["terrain"]; zones: Z[] }): Z[] {
   const e = 1e-6;
   return d.zones.filter(
     (z) => z.x < -e || z.y < -e || z.x + z.L > d.terrain.L + e || z.y + z.l > d.terrain.l + e
