@@ -125,17 +125,39 @@
             text-transform:uppercase;color:var(--gris)}
   .notes ul{margin:0;padding-left:18px}
   .notes li{margin-bottom:7px}
+
+  /* Les écrans qui suivent un geste : ils recouvrent le téléphone, comme une page qui s'ouvre. */
+  .ecran{position:absolute;inset:0;display:none;flex-direction:column;
+         background:radial-gradient(120% 62% at 8% 4%, #3d3523 0%, #1a1d19 40%, #101210 78%);z-index:2}
+  .ecran.vu{display:flex}
+  .ecran .corps{flex:1;min-height:0;overflow-y:auto;padding:34px 22px 12px}
+  .ecran h2{margin:0;font-size:28px;font-weight:400;line-height:1.15}
+  .ecran .dit{margin:14px 0 0;font-size:15px;line-height:1.55;color:var(--doux)}
+  .ligne{display:flex;justify-content:space-between;gap:12px;padding:14px 18px;
+         border-top:1px solid var(--ligne);font-size:15px}
+  .ligne:first-child{border-top:0}
+  .ligne b{font-weight:500}
+  .champ{display:block;width:100%;margin-top:22px;padding:15px 16px;border-radius:14px;
+         border:1px solid rgba(233,232,222,.24);background:var(--carte);color:var(--encre);font:inherit;font-size:16px}
+  .fichier{display:flex;align-items:center;gap:14px;margin-top:22px;padding:16px 18px;border-radius:16px;background:var(--carte)}
+  .fichier i{flex:none;width:34px;height:42px;border-radius:6px;background:rgba(185,139,71,.35)}
+  .fichier span{font-size:14.5px;line-height:1.4;word-break:break-all}
+  .formule{display:flex;justify-content:space-between;align-items:center;width:100%;margin-top:10px;
+           padding:16px 18px;border-radius:16px;border:1px solid rgba(233,232,222,.18);background:var(--carte);
+           color:var(--encre);font:inherit;font-size:16px;text-align:left;cursor:pointer}
+  .formule small{display:block;margin-top:2px;font-size:13px;color:var(--doux)}
+  .formule:focus-visible,.recommencer:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+  .banc .recommencer{margin-top:8px;padding:8px 12px;min-height:36px;border-radius:6px;font:inherit;font-size:12px;
+         border:1px solid rgba(233,232,222,.2);background:var(--carte);color:var(--encre);cursor:pointer}
 </style>
 </head>
 <body>
 
-<div class="banc"><h2>1. Un nouvel inscrit</h2></div>
-
-<div class="tel" data-tel>
+<div class="banc"><h2>1. Un nouvel inscrit</h2><button type="button" class="recommencer" data-recommencer="0">Revenir au début</button></div>
+<div class="tel" data-tel="premiere">
   <div class="defile">
     <h1 class="serif" data-titre>Avant de commencer</h1>
     <p class="intro">Vos clients vous confient leurs coordonnées&nbsp;; vous nous les confiez à votre tour. Ces documents stipulent ce que nous en faisons, et ce que nous nous engageons à ne pas en faire.</p>
-
     <div class="carte">
       <p class="engage" data-engage></p>
       <button type="button" class="rangee" data-doc="cgu">
@@ -148,10 +170,9 @@
       </button>
     </div>
   </div>
-
   <div class="pied">
     <button type="button" class="principal" data-accepter>Accepter</button>
-    <button type="button" class="sortie" data-sortie>Se déconnecter</button>
+    <button type="button" class="sortie" data-va="porte" data-sortie>Se déconnecter</button>
     <button type="button" class="geste refuser" data-refuser hidden>Refuser</button>
   </div>
 
@@ -163,7 +184,6 @@
       <p>Dénomination sociale : [À COMPLÉTER]<br>Forme juridique : [À COMPLÉTER]<br>Capital social : [À COMPLÉTER]<br>Siège social : [À COMPLÉTER]<br>RCS et numéro SIREN : [À COMPLÉTER]<br>Numéro de TVA intracommunautaire : [À COMPLÉTER]</p>
     </div>
   </section>
-
   <section class="feuille" data-feuille="st" aria-hidden="true">
     <header><h2 class="serif">Contrat de sous-traitance (article 28 RGPD)</h2><button type="button" class="fermer" data-fermer>Fermer</button></header>
     <div class="lu">
@@ -173,34 +193,348 @@
       <p><b>Nous sommes sous-traitant.</b> Nous traitons ces données uniquement sur vos instructions, pour vous permettre d'utiliser Atlas.</p>
     </div>
   </section>
-
   <section class="feuille" data-feuille="refus" aria-hidden="true">
     <header><h2 class="serif">Refuser la nouvelle version</h2><button type="button" class="fermer" data-fermer>Fermer</button></header>
     <div class="refus">
       <p>Vos données restent à vous. Récupérez-les, puis résiliez : les mois payés et non utilisés vous sont remboursés.</p>
-      <button type="button" class="geste" data-geste="export">Récupérer mes données</button>
-      <button type="button" class="geste" data-geste="resilier">Résilier et être remboursé</button>
+      <button type="button" class="geste" data-va="mdp" data-export>Récupérer mes données</button>
+      <button type="button" class="geste" data-va="confirmer">Résilier et être remboursé</button>
     </div>
+  </section>
+
+  <section class="ecran" data-ecran="accueil">
+    <div class="corps">
+      <p class="ruban" data-message-accueil></p>
+      <h2 class="serif">Bonjour</h2>
+      <div class="fantome" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="porte">
+    <div class="corps">
+      <h2 class="serif">Atlas</h2>
+      <p class="dit">Vous êtes déconnecté. Rien n'a été accepté.</p>
+    </div>
+    <div class="pied"><button type="button" class="principal" data-va="debut">Se connecter</button></div>
+  </section>
+
+  <section class="ecran" data-ecran="mdp">
+    <div class="corps">
+      <h2 class="serif">Votre mot de passe</h2>
+      <p class="dit">Le fichier porte les coordonnées de vos clients.</p>
+      <input class="champ" type="password" value="motdepasse" aria-label="Mot de passe" readonly>
+    </div>
+    <div class="pied">
+      <button type="button" class="principal" data-va="fichier">Télécharger mes données</button>
+      <button type="button" class="sortie" data-retour>Annuler</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="fichier">
+    <div class="corps">
+      <h2 class="serif">C'est téléchargé</h2>
+      <div class="fichier"><i aria-hidden="true"></i><span>atlas-votre-entreprise-2026-10-18.zip</span></div>
+      <p class="dit">Vos devis, vos factures, vos clients et vos chantiers. Il s'ouvre sans Atlas.</p>
+    </div>
+    <div class="pied"><button type="button" class="principal" data-retour-apres-export>Retour</button></div>
+  </section>
+
+  <section class="ecran" data-ecran="confirmer">
+    <div class="corps">
+      <h2 class="serif">Résilier maintenant&nbsp;?</h2>
+      <div class="carte">
+        <div class="ligne"><span>Formule</span><b>Entreprise, à l'année</b></div>
+        <div class="ligne"><span>Payé jusqu'au</span><b>18 avril 2027</b></div>
+        <div class="ligne"><span>Mois non utilisés</span><b>6</b></div>
+        <div class="ligne"><span>Remboursé</span><b>354 € TTC</b></div>
+      </div>
+      <p class="dit">Sur la carte qui a servi à payer. Vos données restent consultables trente jours.</p>
+    </div>
+    <div class="pied">
+      <button type="button" class="principal" data-va="resilie">Résilier et être remboursé</button>
+      <button type="button" class="sortie" data-retour>Annuler</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="resilie">
+    <div class="corps">
+      <p class="ruban">Abonnement terminé. Lecture seule.</p>
+      <h2 class="serif">Bonjour</h2>
+      <div class="carte"><p class="engage">Vos données restent consultables jusqu'au 17 novembre, puis elles seront effacées.</p></div>
+      <div class="fantome" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>
+    <div class="pied">
+      <button type="button" class="principal" data-va="mdp">Récupérer mes données</button>
+      <button type="button" class="geste refuser" data-va="formules">Reprendre un abonnement</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="formules">
+    <div class="corps">
+      <h2 class="serif">Choisir une formule</h2>
+      <button type="button" class="formule" data-va="accueil" data-reprise>Artisan<small>39 € HT par mois</small></button>
+      <button type="button" class="formule" data-va="accueil" data-reprise>Entreprise<small>59 € HT par mois</small></button>
+      <button type="button" class="formule" data-va="accueil" data-reprise>Illimité<small>159 € HT par mois</small></button>
+      <p class="dit">À l'année, deux mois offerts.</p>
+    </div>
+    <div class="pied"><button type="button" class="sortie" data-retour>Annuler</button></div>
   </section>
 </div>
 
-<div class="banc deuxieme"><h2>2. Un client déjà là, quand les conditions changent</h2></div>
-<div data-place-nouvelle></div>
-
-<div class="banc deuxieme"><h2>3. Après l'échéance d'un abonnement résilié</h2></div>
-<div class="tel apres">
+<div class="banc deuxieme"><h2>2. Un client déjà là, quand les conditions changent</h2><button type="button" class="recommencer" data-recommencer="1">Revenir au début</button></div>
+<div class="tel" data-tel="nouvelle">
   <div class="defile">
-    <p class="ruban">Abonnement terminé. Lecture seule.</p>
-    <h1 class="serif">Bonjour</h1>
+    <h1 class="serif" data-titre>Avant de commencer</h1>
+    <p class="intro">Vos clients vous confient leurs coordonnées&nbsp;; vous nous les confiez à votre tour. Ces documents stipulent ce que nous en faisons, et ce que nous nous engageons à ne pas en faire.</p>
     <div class="carte">
-      <p class="engage">Vos données restent consultables jusqu'au 17 novembre, puis elles seront effacées.</p>
+      <p class="engage" data-engage></p>
+      <button type="button" class="rangee" data-doc="cgu">
+        <span class="nom">Conditions générales d'utilisation<span class="version">Version 3</span></span>
+        <i class="chev" aria-hidden="true"></i>
+      </button>
+      <button type="button" class="rangee" data-doc="st">
+        <span class="nom">Contrat de sous-traitance (article 28 RGPD)<span class="version">Version canevas-1</span></span>
+        <i class="chev" aria-hidden="true"></i>
+      </button>
     </div>
-    <div class="fantome" aria-hidden="true"><span></span><span></span><span></span></div>
   </div>
   <div class="pied">
-    <button type="button" class="principal" data-demo="export">Récupérer mes données</button>
-    <button type="button" class="geste refuser" data-demo="reprendre">Reprendre un abonnement</button>
+    <button type="button" class="principal" data-accepter>Accepter</button>
+    <button type="button" class="sortie" data-va="porte" data-sortie>Se déconnecter</button>
+    <button type="button" class="geste refuser" data-refuser hidden>Refuser</button>
   </div>
+
+  <section class="feuille" data-feuille="cgu" aria-hidden="true">
+    <header><h2 class="serif">Conditions générales d'utilisation</h2><button type="button" class="fermer" data-fermer>Fermer</button></header>
+    <div class="lu">
+      <h3>Article 1 : Qui édite Atlas</h3>
+      <p>Atlas est édité par :</p>
+      <p>Dénomination sociale : [À COMPLÉTER]<br>Forme juridique : [À COMPLÉTER]<br>Capital social : [À COMPLÉTER]<br>Siège social : [À COMPLÉTER]<br>RCS et numéro SIREN : [À COMPLÉTER]<br>Numéro de TVA intracommunautaire : [À COMPLÉTER]</p>
+    </div>
+  </section>
+  <section class="feuille" data-feuille="st" aria-hidden="true">
+    <header><h2 class="serif">Contrat de sous-traitance (article 28 RGPD)</h2><button type="button" class="fermer" data-fermer>Fermer</button></header>
+    <div class="lu">
+      <p class="note"><b>Canevas non juridique.</b> Ce document doit être rédigé ou relu par un juriste avant toute utilisation avec de vrais artisans.</p>
+      <h3>1. Qui est qui</h3>
+      <p><b>Vous, l'artisan, êtes responsable de traitement</b> des données de vos clients. Vous décidez pourquoi et comment elles sont traitées.</p>
+      <p><b>Nous sommes sous-traitant.</b> Nous traitons ces données uniquement sur vos instructions, pour vous permettre d'utiliser Atlas.</p>
+    </div>
+  </section>
+  <section class="feuille" data-feuille="refus" aria-hidden="true">
+    <header><h2 class="serif">Refuser la nouvelle version</h2><button type="button" class="fermer" data-fermer>Fermer</button></header>
+    <div class="refus">
+      <p>Vos données restent à vous. Récupérez-les, puis résiliez : les mois payés et non utilisés vous sont remboursés.</p>
+      <button type="button" class="geste" data-va="mdp" data-export>Récupérer mes données</button>
+      <button type="button" class="geste" data-va="confirmer">Résilier et être remboursé</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="accueil">
+    <div class="corps">
+      <p class="ruban" data-message-accueil></p>
+      <h2 class="serif">Bonjour</h2>
+      <div class="fantome" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="porte">
+    <div class="corps">
+      <h2 class="serif">Atlas</h2>
+      <p class="dit">Vous êtes déconnecté. Rien n'a été accepté.</p>
+    </div>
+    <div class="pied"><button type="button" class="principal" data-va="debut">Se connecter</button></div>
+  </section>
+
+  <section class="ecran" data-ecran="mdp">
+    <div class="corps">
+      <h2 class="serif">Votre mot de passe</h2>
+      <p class="dit">Le fichier porte les coordonnées de vos clients.</p>
+      <input class="champ" type="password" value="motdepasse" aria-label="Mot de passe" readonly>
+    </div>
+    <div class="pied">
+      <button type="button" class="principal" data-va="fichier">Télécharger mes données</button>
+      <button type="button" class="sortie" data-retour>Annuler</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="fichier">
+    <div class="corps">
+      <h2 class="serif">C'est téléchargé</h2>
+      <div class="fichier"><i aria-hidden="true"></i><span>atlas-votre-entreprise-2026-10-18.zip</span></div>
+      <p class="dit">Vos devis, vos factures, vos clients et vos chantiers. Il s'ouvre sans Atlas.</p>
+    </div>
+    <div class="pied"><button type="button" class="principal" data-retour-apres-export>Retour</button></div>
+  </section>
+
+  <section class="ecran" data-ecran="confirmer">
+    <div class="corps">
+      <h2 class="serif">Résilier maintenant&nbsp;?</h2>
+      <div class="carte">
+        <div class="ligne"><span>Formule</span><b>Entreprise, à l'année</b></div>
+        <div class="ligne"><span>Payé jusqu'au</span><b>18 avril 2027</b></div>
+        <div class="ligne"><span>Mois non utilisés</span><b>6</b></div>
+        <div class="ligne"><span>Remboursé</span><b>354 € TTC</b></div>
+      </div>
+      <p class="dit">Sur la carte qui a servi à payer. Vos données restent consultables trente jours.</p>
+    </div>
+    <div class="pied">
+      <button type="button" class="principal" data-va="resilie">Résilier et être remboursé</button>
+      <button type="button" class="sortie" data-retour>Annuler</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="resilie">
+    <div class="corps">
+      <p class="ruban">Abonnement terminé. Lecture seule.</p>
+      <h2 class="serif">Bonjour</h2>
+      <div class="carte"><p class="engage">Vos données restent consultables jusqu'au 17 novembre, puis elles seront effacées.</p></div>
+      <div class="fantome" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>
+    <div class="pied">
+      <button type="button" class="principal" data-va="mdp">Récupérer mes données</button>
+      <button type="button" class="geste refuser" data-va="formules">Reprendre un abonnement</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="formules">
+    <div class="corps">
+      <h2 class="serif">Choisir une formule</h2>
+      <button type="button" class="formule" data-va="accueil" data-reprise>Artisan<small>39 € HT par mois</small></button>
+      <button type="button" class="formule" data-va="accueil" data-reprise>Entreprise<small>59 € HT par mois</small></button>
+      <button type="button" class="formule" data-va="accueil" data-reprise>Illimité<small>159 € HT par mois</small></button>
+      <p class="dit">À l'année, deux mois offerts.</p>
+    </div>
+    <div class="pied"><button type="button" class="sortie" data-retour>Annuler</button></div>
+  </section>
+</div>
+
+<div class="banc deuxieme"><h2>3. Après l'échéance d'un abonnement résilié</h2><button type="button" class="recommencer" data-recommencer="2">Revenir au début</button></div>
+<div class="tel" data-tel="apres">
+  <div class="defile">
+    <h1 class="serif" data-titre>Avant de commencer</h1>
+    <p class="intro">Vos clients vous confient leurs coordonnées&nbsp;; vous nous les confiez à votre tour. Ces documents stipulent ce que nous en faisons, et ce que nous nous engageons à ne pas en faire.</p>
+    <div class="carte">
+      <p class="engage" data-engage></p>
+      <button type="button" class="rangee" data-doc="cgu">
+        <span class="nom">Conditions générales d'utilisation<span class="version">Version 3</span></span>
+        <i class="chev" aria-hidden="true"></i>
+      </button>
+      <button type="button" class="rangee" data-doc="st">
+        <span class="nom">Contrat de sous-traitance (article 28 RGPD)<span class="version">Version canevas-1</span></span>
+        <i class="chev" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+  <div class="pied">
+    <button type="button" class="principal" data-accepter>Accepter</button>
+    <button type="button" class="sortie" data-va="porte" data-sortie>Se déconnecter</button>
+    <button type="button" class="geste refuser" data-refuser hidden>Refuser</button>
+  </div>
+
+  <section class="feuille" data-feuille="cgu" aria-hidden="true">
+    <header><h2 class="serif">Conditions générales d'utilisation</h2><button type="button" class="fermer" data-fermer>Fermer</button></header>
+    <div class="lu">
+      <h3>Article 1 : Qui édite Atlas</h3>
+      <p>Atlas est édité par :</p>
+      <p>Dénomination sociale : [À COMPLÉTER]<br>Forme juridique : [À COMPLÉTER]<br>Capital social : [À COMPLÉTER]<br>Siège social : [À COMPLÉTER]<br>RCS et numéro SIREN : [À COMPLÉTER]<br>Numéro de TVA intracommunautaire : [À COMPLÉTER]</p>
+    </div>
+  </section>
+  <section class="feuille" data-feuille="st" aria-hidden="true">
+    <header><h2 class="serif">Contrat de sous-traitance (article 28 RGPD)</h2><button type="button" class="fermer" data-fermer>Fermer</button></header>
+    <div class="lu">
+      <p class="note"><b>Canevas non juridique.</b> Ce document doit être rédigé ou relu par un juriste avant toute utilisation avec de vrais artisans.</p>
+      <h3>1. Qui est qui</h3>
+      <p><b>Vous, l'artisan, êtes responsable de traitement</b> des données de vos clients. Vous décidez pourquoi et comment elles sont traitées.</p>
+      <p><b>Nous sommes sous-traitant.</b> Nous traitons ces données uniquement sur vos instructions, pour vous permettre d'utiliser Atlas.</p>
+    </div>
+  </section>
+  <section class="feuille" data-feuille="refus" aria-hidden="true">
+    <header><h2 class="serif">Refuser la nouvelle version</h2><button type="button" class="fermer" data-fermer>Fermer</button></header>
+    <div class="refus">
+      <p>Vos données restent à vous. Récupérez-les, puis résiliez : les mois payés et non utilisés vous sont remboursés.</p>
+      <button type="button" class="geste" data-va="mdp" data-export>Récupérer mes données</button>
+      <button type="button" class="geste" data-va="confirmer">Résilier et être remboursé</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="accueil">
+    <div class="corps">
+      <p class="ruban" data-message-accueil></p>
+      <h2 class="serif">Bonjour</h2>
+      <div class="fantome" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="porte">
+    <div class="corps">
+      <h2 class="serif">Atlas</h2>
+      <p class="dit">Vous êtes déconnecté. Rien n'a été accepté.</p>
+    </div>
+    <div class="pied"><button type="button" class="principal" data-va="debut">Se connecter</button></div>
+  </section>
+
+  <section class="ecran" data-ecran="mdp">
+    <div class="corps">
+      <h2 class="serif">Votre mot de passe</h2>
+      <p class="dit">Le fichier porte les coordonnées de vos clients.</p>
+      <input class="champ" type="password" value="motdepasse" aria-label="Mot de passe" readonly>
+    </div>
+    <div class="pied">
+      <button type="button" class="principal" data-va="fichier">Télécharger mes données</button>
+      <button type="button" class="sortie" data-retour>Annuler</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="fichier">
+    <div class="corps">
+      <h2 class="serif">C'est téléchargé</h2>
+      <div class="fichier"><i aria-hidden="true"></i><span>atlas-votre-entreprise-2026-10-18.zip</span></div>
+      <p class="dit">Vos devis, vos factures, vos clients et vos chantiers. Il s'ouvre sans Atlas.</p>
+    </div>
+    <div class="pied"><button type="button" class="principal" data-retour-apres-export>Retour</button></div>
+  </section>
+
+  <section class="ecran" data-ecran="confirmer">
+    <div class="corps">
+      <h2 class="serif">Résilier maintenant&nbsp;?</h2>
+      <div class="carte">
+        <div class="ligne"><span>Formule</span><b>Entreprise, à l'année</b></div>
+        <div class="ligne"><span>Payé jusqu'au</span><b>18 avril 2027</b></div>
+        <div class="ligne"><span>Mois non utilisés</span><b>6</b></div>
+        <div class="ligne"><span>Remboursé</span><b>354 € TTC</b></div>
+      </div>
+      <p class="dit">Sur la carte qui a servi à payer. Vos données restent consultables trente jours.</p>
+    </div>
+    <div class="pied">
+      <button type="button" class="principal" data-va="resilie">Résilier et être remboursé</button>
+      <button type="button" class="sortie" data-retour>Annuler</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="resilie">
+    <div class="corps">
+      <p class="ruban">Abonnement terminé. Lecture seule.</p>
+      <h2 class="serif">Bonjour</h2>
+      <div class="carte"><p class="engage">Vos données restent consultables jusqu'au 17 novembre, puis elles seront effacées.</p></div>
+      <div class="fantome" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>
+    <div class="pied">
+      <button type="button" class="principal" data-va="mdp">Récupérer mes données</button>
+      <button type="button" class="geste refuser" data-va="formules">Reprendre un abonnement</button>
+    </div>
+  </section>
+
+  <section class="ecran" data-ecran="formules">
+    <div class="corps">
+      <h2 class="serif">Choisir une formule</h2>
+      <button type="button" class="formule" data-va="accueil" data-reprise>Artisan<small>39 € HT par mois</small></button>
+      <button type="button" class="formule" data-va="accueil" data-reprise>Entreprise<small>59 € HT par mois</small></button>
+      <button type="button" class="formule" data-va="accueil" data-reprise>Illimité<small>159 € HT par mois</small></button>
+      <p class="dit">À l'année, deux mois offerts.</p>
+    </div>
+    <div class="pied"><button type="button" class="sortie" data-retour>Annuler</button></div>
+  </section>
 </div>
 
 <div class="notes">
@@ -208,10 +542,10 @@
   <ul>
     <li>Plus de case à cocher. Une phrase dit que toucher « Accepter » vaut accord sur les documents listés.</li>
     <li>Chaque document s'ouvre en entier, sur tout l'écran, avant d'accepter.</li>
-    <li>Un seul bouton, « Accepter », toujours en bas. À la première fois, « Se déconnecter » reste la seule sortie.</li>
-    <li>Quand les conditions changent, un client déjà là peut refuser : il récupère ses données, puis résilie sans frais, comme ses conditions le lui promettent (article 15).</li>
-    <li>S'il refuse en cours d'année, les mois payés et non utilisés lui sont remboursés (votre choix du 18 octobre).</li>
+    <li>À la première fois, « Se déconnecter » reste la seule sortie.</li>
+    <li>Quand les conditions changent, un client déjà là peut refuser : il récupère ses données, puis résilie, et les mois payés et non utilisés lui sont remboursés (votre choix du 18 octobre).</li>
     <li>Une résiliation normale garde tout jusqu'à l'échéance, comme aujourd'hui. Après : lecture seule pendant trente jours, puis effacement, prévenu par e-mail.</li>
+    <li>Le remboursement montré est un exemple : formule Entreprise à l'année, 590 € HT, payée le 18 avril, refusée le 18 octobre.</li>
     <li>La preuve ne change pas : une ligne par document, avec la date, l'heure et la version.</li>
   </ul>
   <h2>À trancher</h2>
@@ -225,50 +559,101 @@ const PHRASE = {
   premiere: "En touchant « Accepter », vous acceptez les deux documents ci-dessous.",
   nouvelle: "En touchant « Accepter », vous acceptez la nouvelle version du document ci-dessous."
 };
+const BIENVENUE = {
+  premiere: "C'est enregistré. Bienvenue dans Atlas.",
+  nouvelle: "Nouvelles conditions acceptées.",
+  reprise: "Abonnement repris. Tout est rouvert."
+};
 
-/* Deux téléphones, un par cas : un état caché derrière un bouton ne se voit pas. */
-function monter(tel, nom){
+/* Chaque téléphone tient sa pile d'écrans : un geste ouvre l'écran qui suit,
+   « Annuler » revient au précédent, « Revenir au début » remet tout à zéro. */
+function monter(tel){
+  const cas = tel.dataset.tel;
   const q = sel => tel.querySelector(sel);
-  q('.rangee[data-doc="st"]').hidden = nom === "nouvelle";
-  q("[data-titre]").textContent = nom === "nouvelle" ? "Les conditions ont changé" : "Avant de commencer";
-  q("[data-engage]").textContent = PHRASE[nom];
-  q("[data-sortie]").hidden = nom === "nouvelle";
-  q("[data-refuser]").hidden = nom !== "nouvelle";
+  const pile = [];
 
-  function ouvrir(cle){
+  function cacherTout(){
+    tel.querySelectorAll(".ecran").forEach(e => e.classList.remove("vu"));
+  }
+  function montrer(id){
+    cacherTout();
+    if(id) q('[data-ecran="' + id + '"]').classList.add("vu");
+  }
+  function retour(){
+    pile.pop();
+    montrer(pile.length ? pile[pile.length - 1] : null);
+  }
+  function fermerFeuilles(){
+    tel.querySelectorAll(".feuille").forEach(f => { f.classList.remove("ouverte"); f.setAttribute("aria-hidden", "true"); });
+  }
+  function ouvrirFeuille(cle){
     const f = q('[data-feuille="' + cle + '"]');
     f.classList.add("ouverte");
     f.setAttribute("aria-hidden", "false");
     f.querySelector("[data-fermer]").focus({ preventScroll: true });
   }
-  tel.querySelectorAll(".rangee").forEach(r => r.addEventListener("click", () => ouvrir(r.dataset.doc)));
-  q("[data-refuser]").addEventListener("click", () => ouvrir("refus"));
-  tel.querySelectorAll("[data-geste]").forEach(b => b.addEventListener("click", () => {
-    b.classList.add("fait");
-    b.textContent = b.dataset.geste === "export" ? "Données téléchargées" : "Résilié, remboursement en cours";
-  }));
+
+  tel.reset = function(){
+    pile.length = 0;
+    fermerFeuilles();
+    q('.rangee[data-doc="st"]').hidden = cas !== "premiere";
+    q("[data-titre]").textContent = cas === "premiere" ? "Avant de commencer" : "Les conditions ont changé";
+    q("[data-engage]").textContent = cas === "premiere" ? PHRASE.premiere : PHRASE.nouvelle;
+    q("[data-sortie]").hidden = cas !== "premiere";
+    q("[data-refuser]").hidden = cas === "premiere";
+    const exp = q("[data-export]");
+    exp.classList.remove("fait");
+    exp.textContent = "Récupérer mes données";
+    const acc = q("[data-accepter]");
+    acc.disabled = false;
+    acc.textContent = "Accepter";
+    if(cas === "apres"){ pile.push("resilie"); montrer("resilie"); } else montrer(null);
+    tel.querySelectorAll(".corps, .defile").forEach(d => d.scrollTop = 0);
+  };
+
+  tel.querySelectorAll(".rangee").forEach(r => r.addEventListener("click", () => ouvrirFeuille(r.dataset.doc)));
+  q("[data-refuser]").addEventListener("click", () => ouvrirFeuille("refus"));
   tel.querySelectorAll("[data-fermer]").forEach(b => b.addEventListener("click", () => {
     const f = b.closest(".feuille");
     f.classList.remove("ouverte");
     f.setAttribute("aria-hidden", "true");
   }));
+
   q("[data-accepter]").addEventListener("click", e => {
     const b = e.currentTarget;
     b.disabled = true;
     b.textContent = "Enregistrement…";
-    setTimeout(() => { b.disabled = false; b.textContent = "Accepter"; }, 1600);
+    setTimeout(() => {
+      q("[data-message-accueil]").textContent = BIENVENUE[cas] || BIENVENUE.nouvelle;
+      pile.push("accueil");
+      montrer("accueil");
+    }, 700);
   });
+
+  tel.querySelectorAll("[data-va]").forEach(b => b.addEventListener("click", () => {
+    const id = b.dataset.va;
+    if(id === "debut"){ tel.reset(); return; }
+    if(b.hasAttribute("data-reprise")) q("[data-message-accueil]").textContent = BIENVENUE.reprise;
+    if(id === "resilie"){ fermerFeuilles(); pile.length = 0; }
+    pile.push(id);
+    montrer(id);
+  }));
+  tel.querySelectorAll("[data-retour]").forEach(b => b.addEventListener("click", retour));
+  q("[data-retour-apres-export]").addEventListener("click", () => {
+    const exp = q("[data-export]");
+    exp.classList.add("fait");
+    exp.textContent = "Données récupérées";
+    pile.pop(); pile.pop();
+    montrer(pile.length ? pile[pile.length - 1] : null);
+  });
+
+  tel.reset();
 }
 
-document.querySelectorAll("[data-demo]").forEach(b => b.addEventListener("click", () => {
-  b.textContent = b.dataset.demo === "export" ? "Données téléchargées" : "Les formules s'ouvrent";
-}));
-
-const premier = document.querySelector("[data-tel]");
-const second = premier.cloneNode(true);
-document.querySelector("[data-place-nouvelle]").replaceWith(second);
-monter(premier, "premiere");
-monter(second, "nouvelle");
+const tels = [...document.querySelectorAll("[data-tel]")];
+tels.forEach(monter);
+document.querySelectorAll("[data-recommencer]").forEach(b =>
+  b.addEventListener("click", () => tels[Number(b.dataset.recommencer)].reset()));
 </script>
 </body>
 </html>
