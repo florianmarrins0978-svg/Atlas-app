@@ -26,10 +26,11 @@
   vissés l'un dans l'autre), proposées, validées par lui le 18 octobre 2026 :
   « tout ce que tu as fait est bon, je valide ».
 
-  LE GOUTTE-À-GOUTTE (même jour, à valider) : sur une voie de goutte-à-goutte,
-  sa fiche met une électrovanne FF, un régulateur FF 3/4", deux mamelons réduits
-  et un mamelon 1" MM. L'ordre et la place des voies (les dernières, à droite)
-  sont une proposition, écrite sous le regard.
+  LE GOUTTE-À-GOUTTE, validé par lui le même jour (« c'est exactement ça ») :
+  sur une voie de goutte-à-goutte, mamelon MM 1", électrovanne FF, mamelon
+  réduit (1" en haut), régulateur FF 3/4", mamelon réduit (3/4" en haut), puis
+  union, raccord femelle, PEHD ; ces voies sont les dernières, à droite. La photo
+  du régulateur (Rain Bird PSI 3/4") sert en attendant les siennes.
 
   LES PIÈCES ET LEURS NOMBRES SONT CEUX DE SA FICHE (CATALOGUE.nourrices[n]),
   lus dans le calcul empaqueté (arrosage-schema-calcul.js) ; les photos sont
@@ -222,10 +223,10 @@
     var fin = colonne("pehd", xL, y), etiquettes = [[xL, fin, "Arrivée"]];
     // Les voies, numérotées de gauche à droite après l'arrivée.
     axes.forEach(function (xv, i) {
-      // Les voies de goutte-à-goutte sont les dernières, à droite : une PROPOSITION.
+      // Les voies de goutte-à-goutte sont les dernières, à droite (validé le 18 octobre 2026).
       var goutte = i >= axes.length - nbGoutte, yv = bas;
       if (goutte) {
-        // L'ordre proposé : mamelon MM 1", électrovanne FF, mamelon réduit (1" en
+        // L'ordre qu'il a validé : mamelon MM 1", électrovanne FF, mamelon réduit (1" en
         // haut), régulateur FF 3/4", mamelon réduit (3/4" en haut), puis la suite
         // de toute voie.
         yv = colonne("mamelon-droit-1", xv, yv) + ECART;
@@ -281,11 +282,9 @@
     $("titre").textContent = fiche.nom;
     $("sous-titre").textContent = n + " voie" + (n > 1 ? "s" : "") + ", l’arrivée à gauche, puis les voies de gauche à droite.";
     var NOMS = { "coude-mf": "Coude MF 1\"", "mamelon": "Mamelon réduit MM 1\" x 3/4\"", "vanne-purge": "Vanne 3/4\" FF",
-      "pehd": "PEHD Ø25", "raccord-femelle25": nom("raccord-femelle25") + " (photo à valider)",
-      "regulateur-ff34": nom("regulateur-ff34") + " (photo à valider)" };
+      "pehd": "PEHD Ø25", "raccord-femelle25": nom("raccord-femelle25") + " (photo à valider)" };
     $("legende").innerHTML = ordre.map(function (ref, i) { return "<li><b>" + (i + 1) + "</b>" + texte(NOMS[ref] || nom(ref)) + "</li>"; }).join("");
     var notes = [];
-    if (nbGoutte) notes.push("Pour le goutte-à-goutte, la place des voies (les dernières, à droite) et l’ordre des pièces sont une proposition.");
     $("note").innerHTML = notes.length ? notes.map(texte).join(" ") + " <b>À confirmer.</b>" : "";
 
     var bac = "";
