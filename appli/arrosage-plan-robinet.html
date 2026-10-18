@@ -105,6 +105,8 @@
   .symboles p{display:flex;align-items:center;gap:10px;margin:0;padding:4px 0;font-size:13.5px}
   .coche{margin-top:12px;display:flex;align-items:center;gap:12px;border-radius:12px;padding:14px 16px;background:var(--atlas-card);font-size:15px;cursor:pointer}
   .coche input{width:22px;height:22px;accent-color:var(--atlas-ink)}
+  .eclate.sonde{justify-content:flex-start;margin-top:10px}
+  .eclate.sonde:empty{display:none}
   .symboles svg{flex:none;width:15px;height:15px}
 
   /* 3. LES PIÈCES : la vue éclatée, un rail par réseau, une rangée par tête. */
@@ -248,6 +250,10 @@
     <span class="caps">La nourrice</span>
     <h2 id="titre-nourrice"></h2>
     <p class="sous" id="sous-nourrice"></p>
+    <!-- La sonde de pluie, juste au-dessus de la nourrice (sa demande du 18 octobre
+         2026) ; cochée, elle se montre et se change comme les autres pièces. -->
+    <label class="coche" id="coche-sonde"><input type="checkbox" id="sonde"> Sonde de pluie</label>
+    <div class="eclate sonde" id="sonde-piece"></div>
     <div class="regard"><canvas id="dessin" width="358" height="420" role="img" aria-label="La nourrice, pièce par pièce"></canvas></div>
     <ol class="legende" id="legende"></ol>
     <div class="bac">
@@ -262,7 +268,6 @@
     <div id="reseaux"></div>
     <div class="symboles" id="symboles"></div>
     <label class="coche"><input type="checkbox" id="grillage"> Grillage avertisseur</label>
-    <label class="coche" id="coche-sonde"><input type="checkbox" id="sonde"> Sonde de pluie</label>
   </section>
 
   <section class="bloc">
@@ -597,6 +602,10 @@
   function liaisonsDuReseau(d, p, i) {
     var zones = p.dessin.filter(function (z) { return (p.reseauxDeZone[z.id] || []).indexOf(i) >= 0; });
     return d.liaisons.filter(function (l) {
+      // Un passage caché sous le rectangle de la nourrice (1,5 m de large) ne se
+      // voit pas : ni pointillé, ni phrase (sa remarque du 18 octobre 2026, « mets-le
+      // seulement sous le réseau où il y a le pointillé »).
+      if (Math.hypot(l.a.x - l.de.x, l.a.y - l.de.y) - 0.75 < 0.5) return false;
       return zones.some(function (z) { return l.a.x >= z.x - 0.01 && l.a.x <= z.x + z.L + 0.01 && l.a.y >= z.y - 0.01 && l.a.y <= z.y + z.l + 0.01; });
     });
   }
@@ -850,7 +859,8 @@
   function groupeNourrice(p) {
     var fiche = CAT.ficheNourrice(p.secteurs.length, p.secteurs.filter(function (s) { return s.famille === "Goutte-à-goutte"; }).length), g = {};
     (fiche ? fiche.pieces : []).forEach(function (x) { (g[x.ref] = g[x.ref] || { nom: nomCatalogue(x.ref), q: 0, u: "u" }).q += x.q; });
-    if (etat.sonde) p.materiel.filter(function (l) { return l.ref === "RP403"; }).forEach(function (l) { g[l.ref] = { nom: l.nom, q: l.q, u: "u" }; });
+    // La sonde se compte comme elle est posée au-dessus du regard : changée ou supprimée, la liste suit.
+    Object.keys(compte.sonde || {}).forEach(function (ref) { g[ref] = compte.sonde[ref]; });
     return { nom: fiche ? fiche.nom : "La nourrice", lignes: g };
   }
   function groupesDuPlan(p, d) {
@@ -941,6 +951,9 @@
     var res = C.dessinerPlan(p.dessin, robinet.montage === "nez" ? ROBINET_POSE : NOURRICE, p.couleurs);
     if (!res.ok) { $("reseaux").textContent = res.raison; return; }
     compte = {};
+    groupe = "sonde";
+    var sonde = p.materiel.filter(function (l) { return l.ref === "RP403"; })[0];
+    $("sonde-piece").innerHTML = etat.sonde && sonde ? poser("nr:sonde", sonde.ref, sonde.nom, sonde.nom, sonde.q) : "";
     dessinerNourrice(p.secteurs.length, p.secteurs.filter(function (s) { return s.famille === "Goutte-à-goutte"; }).length);
     dessinerReseaux(p, res.dessin);
     dessinerPieces(p, res.dessin, M);
