@@ -3,6 +3,18 @@
 À lire EN ENTIER, avant toute chose, par la session qui reprend. Tout ce qui
 suit est dans le dépôt ; rien ne repose sur la conversation.
 
+## LA DEUXIÈME SESSION DU 18 OCTOBRE AU SOIR S'EST ARRÊTÉE PLEINE — l'état exact
+
+Tout ce qu'elle a fait est écrit plus bas (« SES RÉPONSES… », « Et ensuite… », « Puis… », « Encore… », « Et… », « Et encore… »), commité sur la branche jusqu'à `896216a7`. Les planches en ligne, toutes republiées : le plan https://claude.ai/artifact/5JivFEkQW2X7DpwoLnMzHB, le plan au robinet https://claude.ai/artifact/Bcdsm4bPC3KDZ5CDhYv5tX, la vue éclatée https://claude.ai/artifact/LXfjCHKAbZUm78ncXpVqjn, les pièces du robinet https://claude.ai/artifact/WwTin3f2Zvq42RiobvWErG, le té au départ https://claude.ai/artifact/7XSwo4VmJr8hWK9cpDrxfe.
+
+**Ce qui l'attend encore (à lui reposer court)** :
+1. valider les photos trouvées par nous : le grillage avertisseur (Bricomarché, FITT) et le téflon (Wikimedia, `PTFE_Rolls.png`) ;
+2. le passage en pointillés calculé quand la distance est connue (sa règle, écrite, pas codée : il faut d'abord savoir si les places des zones sont cotées) ;
+3. l'outil de dessin du plan (une autre session en a reçu le prompt) ;
+4. les questions plus anciennes de ce relais : buses douteuses, fiche du tube Toro, avis général sur la planche du 16 octobre.
+
+**Pour publier une planche** : copier le fichier d'`appli/` dans un dossier du scratchpad avec la transformation décrite plus bas, et envoyer avec lui CHAQUE photo de `PHOTOS` absente de l'artifact (lister ses fichiers d'abord), plus `arrosage-plan-calcul.js` ou `arrosage-schema-calcul.js` reconstruits par esbuild si le calcul a bougé. Une autre session publie aussi sur ces planches : un refus de publication donne sa version, la fusionner dans le fichier d'`appli/` avant de renvoyer.
+
 ## OÙ ON S'EST ARRÊTÉ — 18 octobre 2026 au soir (à lire en premier)
 
 La session du 18 octobre a fini pleine. Ce qui suit est l'état exact ; le
