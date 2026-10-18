@@ -106,6 +106,24 @@
   }
   function nomDe(z) { return z.nom || TYPES[z.type].nom; }
 
+  /* Sa remarque du 18 octobre : « je peux poser un carré de pelouse de 12 par
+     12 alors que mon cadre fait 10 par 10, il faut pouvoir bloquer ça ». En B,
+     la taille vient des cotes : une zone plus grande que le terrain est une
+     cote fausse, l'une ou l'autre. Elle ne se pose pas, et si le terrain
+     rapetisse sous une zone déjà posée, le plan ne se fait pas. La place, elle,
+     est toujours tenue dans le cadre par le doigt (borne). */
+  function cotesTropGrandes(z) {
+    var t = etat.terrain;
+    if (MODE !== "B" || !t.L || !t.l) return [];
+    var trop = [];
+    if (z.L != null && z.L > t.L + 1e-9) trop.push("f-L");
+    if (z.l != null && z.l > t.l + 1e-9) trop.push("f-l");
+    return trop;
+  }
+  function phraseTropGrande() {
+    return "Ne tient pas dans le terrain, qui fait " + cote(etat.terrain.L) + " × " + cote(etat.terrain.l) + " m.";
+  }
+
   /* Une ligne arrose une bande de 1 m (sa règle). Une proposition, jamais une
      décision : la feuille la présélectionne, il la change d'un doigt. */
   var BANDE_PAR_LIGNE = 1;
@@ -158,7 +176,7 @@
   function dessinZone(z) {
     var g = el("g", { "data-id": z.id, style: "cursor:grab" });
     var choisie = etat.choisie === z.id;
-    var ok = mesuree(z);
+    var ok = mesuree(z) && cotesTropGrandes(z).length === 0;
     g.appendChild(el("rect", { x: z.x, y: z.y, width: Math.max(z.w, 0.5), height: Math.max(z.h, 0.5), rx: 0.8, fill: remplissage(z.type), stroke: ok ? (choisie ? "var(--atlas-ink)" : "var(--atlas-rustDeep)") : "var(--atlas-alerte)", "stroke-width": choisie ? 0.9 : 0.45, "stroke-dasharray": ok ? "none" : "1.6 1.2" }));
     // Le nom, puis « longueur × largeur » : la longueur est le côté couché.
     // Une zone trop basse pour deux lignes les met sur une seule.
@@ -370,6 +388,7 @@
     $("f-l").value = z.l == null ? "" : ecrit(z.l);
     $("f-cotes").hidden = false;
     ["f-L", "f-l"].forEach(function (i) { $(i).removeAttribute("aria-invalid"); });
+    $("f-erreur").textContent = "";
     $("f-lignes").hidden = z.type !== "haie";
     lignesEnCours = { n: z.lignes || lignesProposees(z.l), choisies: !!z.lignesChoisies };
     rendreLignes();
@@ -434,6 +453,12 @@
         if (v[1] == null) manque = true;
       });
       if (manque) return;
+      var trop = cotesTropGrandes(essai);
+      if (trop.length) {
+        trop.forEach(function (i) { $(i).setAttribute("aria-invalid", "true"); });
+        $("f-erreur").textContent = phraseTropGrande();
+        return;
+      }
     }
     lireFeuille(z);
     // En A, le dessin ordonne : une longueur tapée pour le côté que le doigt
@@ -461,6 +486,11 @@
   function tourner() {
     var z = enCours && enCours.z;
     if (!z) return;
+    var essai = copie(z);
+    lireFeuille(essai);
+    var L0 = essai.L; essai.L = essai.l; essai.l = L0;
+    // Tournée, elle peut ne plus tenir : on refuse plutôt que de déborder.
+    if (cotesTropGrandes(essai).length) { $("f-erreur").textContent = phraseTropGrande(); return; }
     lireFeuille(z);
     var L = z.L; z.L = z.l; z.l = L;
     tailleSelonCotes(z);
@@ -494,6 +524,8 @@
         var k = sAvant / sApres;
         z.x *= k; z.y *= k;
         tailleSelonCotes(z);
+        z.x = borne(z.x, Math.max(0, apres.w - z.w));
+        z.y = borne(z.y, Math.max(0, apres.h - z.h));
       } else {
         // En A, le dessin suit le cadre : ce qui était au tiers gauche y reste.
         var kx = apres.w / avant.w, ky = apres.h / avant.h;
@@ -570,8 +602,12 @@
     etat.zones.forEach(function (z) {
       if (!mesuree(z)) ligne("Les métrés de " + nomDe(z) + " manquent, cette zone n’entre pas dans le plan.");
     });
+    var debordent = etat.zones.filter(function (z) { return cotesTropGrandes(z).length > 0; });
+    debordent.forEach(function (z) {
+      ligne("Pas de plan : " + nomDe(z) + " (" + cote(z.L) + " × " + cote(z.l) + " m) ne tient pas dans le terrain de " + cote(etat.terrain.L) + " × " + cote(etat.terrain.l) + " m.", "rouge");
+    });
     var faire = $("faire");
-    faire.hidden = !e.complet;
+    faire.hidden = !e.complet || debordent.length > 0;
     if (lu.nourrice && lu.piquage) {
       var places = mesurees.map(function (z) {
         return { position: { x: z.x, y: z.y }, largeurFraction: z.largeurFraction, hauteurFraction: z.hauteurFraction, L: z.L, l: z.l, ml: z.ml };
@@ -644,7 +680,7 @@
     $("f-valider").addEventListener("click", valider);
     // Un champ signalé vide cesse de l'être dès qu'on y tape.
     ["f-L", "f-l"].forEach(function (i) {
-      $(i).addEventListener("input", function () { $(i).removeAttribute("aria-invalid"); });
+      $(i).addEventListener("input", function () { $(i).removeAttribute("aria-invalid"); $("f-erreur").textContent = ""; });
     });
     $("f-l").addEventListener("input", function () {
       if (!lignesEnCours.choisies) lignesEnCours.n = lignesProposees(nombre($("f-l").value));
