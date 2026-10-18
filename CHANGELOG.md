@@ -8,6 +8,24 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-18
 
+- **Le plan se dessine au doigt dans l'écran d'arrosage**, sur son « tu peux
+  coder, lance pas de batterie » (planche B, `appli/arrosage-dessiner-plan-b.html`) :
+  « Dessiner le plan » sous la photo du croquis, sans la déplacer ; le terrain
+  et ses métrés, l'échelle 1/200 ou 1/100, les zones à leur taille, la haie
+  avec sa largeur et ses lignes proposées, les arbres, les dalles entre deux
+  points, la nourrice et le piquage (`DessinerLePlan.tsx`). Le dessin se relit
+  sur le serveur (`lireLeDessin`, `dessin-du-plan.ts`) et rejoint la photo juste
+  après la lecture, sans IA. Les arbres et les dalles ne partent pas au calcul,
+  et l'écran le dit.
+- **Le massif était lu en mètres linéaires, le calcul le mesure en surface** :
+  un massif photographié n'avait aucune cote et ne recevait pas une goutte, sans
+  rien dire. Une seule règle désormais (`zoneMesuree`, `croquis-complet.ts`),
+  la lecture du croquis le lit en longueur × largeur.
+- **Une haie reçoit autant de lignes qu'il en choisit** (jusqu'à vingt), au
+  lieu de deux au plus (`calcul.js`, les deux copies).
+- **La suite d'arrosage ne tombe plus sur une requête retardée** : le cas des
+  points qui soufflent retirait son aiguillage sans attendre (`unrouteAll`).
+  Elle joue désormais le plan dessiné en entier.
 - **Le montage au robinet est dans l'écran du plan**, sur sa validation du soir
   (*« tu peux coder, pas de batterie »*) : ses deux montages, le programmateur
   en nez de robinet sans nourrice, les réseaux partant du robinet, ou la

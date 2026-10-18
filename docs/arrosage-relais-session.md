@@ -117,6 +117,19 @@ Le code commun : `appli/arrosage-dessiner-plan.js` et `.css` ; `appli/arrosage-d
 
 **Sa correction des dalles, même soir** (capture : longueur 1, largeur 6, écart 0,5, « une dalle sur 3,15 m ») : *« on comprend mal ; moi je pensais que c'était la longueur entre la première et la deuxième dalle ; on rajoute la longueur qui est préécrite au moment où on clique, comme ça on sait que c'est sur 6 mètres, et ensuite la longueur et largeur des dalles »*. Fait : la feuille porte d'abord **Distance** (remplie par les deux touches, corrigible : l'arrivée glisse dans la même direction, le départ reste), puis « Longueur d'une dalle », « Largeur d'une dalle », « Espacement entre deux dalles ». Une dalle plus large que la distance est refusée (« Plus large que la distance, qui fait 3 m. »), une distance qui sort du terrain aussi.
 
+**CODÉ le 18 octobre au soir**, sur son *« non, c'est bon ça, tu peux coder, lance pas de batterie »* (commits `65cdf726` et `857f0398`) :
+
+| | où |
+|---|---|
+| l'écran : « Dessiner le plan » sous la photo, sans la déplacer, puis l'outil de la planche B entier | `src/app/paysage/arrosage/DessinerLePlan.tsx`, branché dans `ArrosageClient.tsx` |
+| le dessin part par le formulaire de la photo (champ caché `dessin`), le serveur le relit et le fait rejoindre la photo après la lecture, sans IA | `actions.ts` (`planDuCroquis`), `src/lib/arrosage/dessin-du-plan.ts` (`lireLeDessin`, `croquisDuDessin`, `zonesQuiDebordent`, `lignesProposees`) |
+| « Compteur » ou « Robinet » posé règle « Le piquage se fait… », qui commande le débit | `DessinerLePlan.tsx` |
+| le massif en surface partout (photo, serveur, dessin) : il était lu en mètres linéaires, et ne recevait aucune ligne | `zoneMesuree` (`croquis-complet.ts`), `lire-croquis.ts` |
+| la haie à plus de deux lignes, jusqu'à vingt | `calcul.js` (deux copies), `consignes.ts` (`lignesHaie`) |
+| les preuves | `scripts/test-dessin-du-plan.ts` (vu rouge d'abord : haie à 4 lignes, massif photographié, module absent), `test-arrosage-e2e.ts` « le plan dessiné au doigt se calcule, sans lire de photo » (17 cas verts contre un serveur du port 3004 sur `atlas_test`) |
+
+Les arbres et les dalles ne partent PAS au serveur (le calcul ne les lit pas) ; l'écran le dit. Aucune batterie jouée, à sa demande. Rien sur `main`.
+
 **SA QUESTION SUIVANTE, le même soir** : *« est-ce qu'il y a un endroit pour dire, sur ce carré-là, je veux que ça soit des arroseurs, à cet endroit-là du goutte-à-goutte ? Même lorsque je prends une photo d'un croquis, comment je dis à l'outil… »* **Ce que le code fait aujourd'hui** (`calcul.js`, `materielDe`, `TYPES`) : le TYPE décide. Pelouse = arroseurs (turbines si le petit côté dépasse 4 m, tuyères sinon, ou forcé par la discussion : `consignes.ts`, `materiel` turbine / tuyère / auto) ; massif, potager, haie = goutte-à-goutte, toujours. Aucun moyen de mettre du goutte-à-goutte sur une pelouse ni des arroseurs dans un massif, ni sur la photo (le modèle ne lit que le type). ~~Proposition posée, attend sa réponse : un choix par zone dans l'outil, réglé d'office selon le type ; sur la photo, un mot écrit dans la zone.~~ **TRANCHÉ PAR LUI, refusé** : *« on va pas mettre d'arroseur dans un massif, et on mettra pas de goutte-à-goutte sur une pelouse »*. Le type décide, comme aujourd'hui : pelouse = arroseurs, massif, potager, haie = goutte-à-goutte. Rien à faire, ne pas le reproposer.
 
 **ATTENTION : une autre session travaille dans CE MÊME dossier.** Elle a fait la
