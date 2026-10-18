@@ -365,6 +365,6 @@ Sa demande : chercher les photos de toutes les pièces de la liste qui n'en ont 
 | la planche | https://claude.ai/artifact/JiSURY7eC7G5fgsM66vfSV (base `choix`), 33 photos : les 33 pièces qu'il a gardées sans photo (lot E) et les 64 raccords Millenium (lot F) |
 | sources | `docs/arrosage-releve-photos/autres-pieces/` : `pieces-lot-E/F.json`, `manifeste-lot-E/F.json`, `engendrer-lots2.mjs` |
 | écartées par nous | trois EZ-Flo dont le vendeur (kipogeorgiki.gr) a retouché l'étiquette : la photo montre une autre version que celle visée |
-| sans photo sûre | Richdel 2400 MT 9 V, Hunter PGV-100 JT MM 9 V, vannes 1/4 de tour FF et avec purge (même image pour toutes les tailles), EZ-Flo FF, MM RMD et MM 9 V, té égal Millenium 75 et 110, adaptateur à bride Millenium |
+| sans photo sûre | Richdel 2400 MT 9 V, Hunter PGV-100 JT MM 9 V, vannes 1/4 de tour avec purge (les FF ont SA photo : sorodist.com 4295, `vanne-1-4-tour-ff.jpg`, sur les six tailles BVA3861 à 3866) (même image pour toutes les tailles), EZ-Flo FF, MM RMD et MM 9 V, té égal Millenium 75 et 110, adaptateur à bride Millenium |
 | à vérifier au catalogue | OPL702090102 est écrit deux fois, en « mâle 90 x 4" » et en « mâle 110 x 4" » : la seconde est sans doute OPL7020110102 |
 | **état** | **attend ses choix** ; ensuite, comme la planche précédente : photo validée à toutes les références de son `refs` |
