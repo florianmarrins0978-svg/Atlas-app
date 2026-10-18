@@ -3913,11 +3913,10 @@ var CALCUL = (() => {
         const parRouleau = g.metresParRouleau ?? 100;
         const metres = dessin.metresTranchee + (options.amenee ?? 0);
         const rouleaux = Math.max(1, Math.ceil(metres / parRouleau));
-        const mesure = options.amenee !== null ? `${Math.ceil(dessin.metresTranchee)} m de tranch\xE9e et ${Math.ceil(options.amenee)} m d\u2019amen\xE9e` : `${Math.ceil(dessin.metresTranchee)} m de tranch\xE9e`;
+        const total = options.amenee !== null ? `${Math.ceil(dessin.metresTranchee)} m de tranch\xE9e et ${Math.ceil(options.amenee)} m d\u2019amen\xE9e au total.` : `${Math.ceil(dessin.metresTranchee)} m de tranch\xE9e au total.`;
         const pointilles = dessin.liaisons.length > 0, amenee3 = options.amenee === null;
-        const inconnu = pointilles && amenee3 ? "Les passages en pointill\xE9s et le tuyau d\u2019amen\xE9e ne sont pas mesur\xE9s : leur longueur s\u2019ajoute sur place." : pointilles ? "Les passages en pointill\xE9s ne sont pas mesur\xE9s : leur longueur s\u2019ajoute sur place." : amenee3 ? "Le tuyau d\u2019amen\xE9e n\u2019est pas mesur\xE9 : sa longueur s\u2019ajoute sur place." : "";
-        const reste = Math.floor(rouleaux * parRouleau - metres);
-        const detail = `${mesure} mesur\xE9s sur le plan.` + (inconnu ? ` ${inconnu} Le dernier rouleau en couvre encore ${reste} m.` : "");
+        const inconnu = pointilles && amenee3 ? " Les pointill\xE9s et le tuyau d\u2019amen\xE9e ne sont pas mesur\xE9s." : pointilles ? " Les pointill\xE9s ne sont pas mesur\xE9s." : amenee3 ? " Le tuyau d\u2019amen\xE9e n\u2019est pas mesur\xE9." : "";
+        const detail = total + inconnu;
         jardin.push({ ref: GRILLAGE, nom: g.nom, q: rouleaux, u: "u", ou: "jardin", detail });
       }
     } else {

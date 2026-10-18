@@ -224,27 +224,24 @@ export function piecesDuPlan(
 
     // **Le grillage avertisseur couvre toute la tranchée, amenée comprise** —
     // sa règle du 18 octobre 2026, en rouleaux de 100 m. Une amenée non mesurée
-    // ne s'invente pas : la liste dit ce qu'il reste dans le dernier rouleau.
+    // ne s'invente pas : la phrase dit qu'il manque.
     if (options.grillage) {
       const g = CAT.piecesReseau[GRILLAGE];
       const parRouleau = g.metresParRouleau ?? 100;
       const metres = dessin.metresTranchee + (options.amenee ?? 0);
       const rouleaux = Math.max(1, Math.ceil(metres / parRouleau));
-      // **Ce qui n'est pas mesuré se dit en phrases claires** (sa remarque du
-      // 18 octobre 2026 : « la phrase ne veut pas dire grand-chose ») : les
-      // passages en pointillés et le tuyau d'amenée sont des longueurs à
-      // ajouter sur place, et le dernier rouleau dit combien il en couvre encore.
-      const mesure = options.amenee !== null
-        ? `${Math.ceil(dessin.metresTranchee)} m de tranchée et ${Math.ceil(options.amenee)} m d’amenée`
-        : `${Math.ceil(dessin.metresTranchee)} m de tranchée`;
+      // **Court** — sa correction du 18 octobre 2026 : « beaucoup trop longue ;
+      // tu mets 24 m de tranchée au total, et le tuyau d'amenée n'est pas
+      // mesuré ». Ce qui n'est pas mesuré se nomme, rien de plus.
+      const total = options.amenee !== null
+        ? `${Math.ceil(dessin.metresTranchee)} m de tranchée et ${Math.ceil(options.amenee)} m d’amenée au total.`
+        : `${Math.ceil(dessin.metresTranchee)} m de tranchée au total.`;
       const pointilles = dessin.liaisons.length > 0, amenee = options.amenee === null;
-      const inconnu = pointilles && amenee
-        ? "Les passages en pointillés et le tuyau d’amenée ne sont pas mesurés : leur longueur s’ajoute sur place."
-        : pointilles ? "Les passages en pointillés ne sont pas mesurés : leur longueur s’ajoute sur place."
-        : amenee ? "Le tuyau d’amenée n’est pas mesuré : sa longueur s’ajoute sur place."
+      const inconnu = pointilles && amenee ? " Les pointillés et le tuyau d’amenée ne sont pas mesurés."
+        : pointilles ? " Les pointillés ne sont pas mesurés."
+        : amenee ? " Le tuyau d’amenée n’est pas mesuré."
         : "";
-      const reste = Math.floor(rouleaux * parRouleau - metres);
-      const detail = `${mesure} mesurés sur le plan.` + (inconnu ? ` ${inconnu} Le dernier rouleau en couvre encore ${reste} m.` : "");
+      const detail = total + inconnu;
       jardin.push({ ref: GRILLAGE, nom: g.nom, q: rouleaux, u: "u", ou: "jardin", detail });
     }
   } else {
