@@ -19,7 +19,13 @@
   bande, longueur et largeur, posée à l'échelle comme le reste. Sa longueur
   part au calcul en mètres linéaires (ml), comme aujourd'hui ; sa largeur
   part dans un champ NEUF, « largeur », que ni CroquisLu ni le calcul ne
-  connaissent encore. Ce qu'elle y changera est à lui demander.
+  connaissent encore.
+
+  SA RÉPONSE, LE MÊME SOIR : « la 2 ». La largeur PROPOSE le nombre de lignes
+  de goutte-à-goutte, et c'est lui qui décide. Sa règle (relais, « le calcul
+  du goutte-à-goutte ») : une ligne arrose 50 cm de part et d'autre, une bande
+  de 1 m. Jusqu'à 1 m de large, une ligne ; au delà, deux. Le calcul n'en
+  connaît que une ou deux (lignesHaie) : une haie de plus de 2 m le dit.
 
   CE QUE L'OUTIL REND EST CE QUE LA PHOTO REND (CroquisLu de
   src/server/ai/services/lire-croquis.ts) : des zones avec leur centre et leur
@@ -96,6 +102,14 @@
   }
   function nomDe(z) { return z.nom || TYPES[z.type].nom; }
 
+  /* Une ligne arrose une bande de 1 m (sa règle). Une proposition, jamais une
+     décision : la feuille la présélectionne, il la change d'un doigt. */
+  var BANDE_PAR_LIGNE = 1;
+  function lignesProposees(largeur) {
+    return largeur == null ? null : largeur <= BANDE_PAR_LIGNE ? 1 : 2;
+  }
+  function ecritLignes(n) { return n === 2 ? "deux lignes" : "une ligne"; }
+
   /* En B, la taille d'une zone sort de ses cotes, jamais du doigt. */
   function tailleSelonCotes(z) {
     var s = cote_du_carre();
@@ -143,7 +157,7 @@
     g.appendChild(el("rect", { x: z.x, y: z.y, width: Math.max(z.w, 0.5), height: Math.max(z.h, 0.5), rx: 0.8, fill: remplissage(z.type), stroke: ok ? (choisie ? "var(--atlas-ink)" : "var(--atlas-rustDeep)") : "var(--atlas-alerte)", "stroke-width": choisie ? 0.9 : 0.45, "stroke-dasharray": ok ? "none" : "1.6 1.2" }));
     // Le nom, puis « longueur × largeur » : la longueur est le côté couché.
     // Une zone trop basse pour deux lignes les met sur une seule.
-    var cotes = cote(z.L) + " × " + cote(z.l);
+    var cotes = cote(z.L) + " × " + cote(z.l) + (z.type === "haie" && z.lignes ? ", " + ecritLignes(z.lignes) : "");
     var couleur = ok ? "var(--atlas-inkSoft)" : "var(--atlas-alerte)";
     var cx2 = z.x + z.w / 2, cy2 = z.y + z.h / 2;
     if (z.h >= 9) {
@@ -351,6 +365,9 @@
     $("f-l").value = z.l == null ? "" : ecrit(z.l);
     $("f-cotes").hidden = false;
     ["f-L", "f-l"].forEach(function (i) { $(i).removeAttribute("aria-invalid"); });
+    $("f-lignes").hidden = z.type !== "haie";
+    lignesEnCours = { n: z.lignes || lignesProposees(z.l), choisies: !!z.lignesChoisies };
+    rendreLignes();
     var nouvelleB = MODE === "B" && neuve;
     $("f-valider").textContent = nouvelleB ? "Poser" : "Valider";
     $("f-tourner").hidden = MODE !== "B" || nouvelleB;
@@ -360,11 +377,21 @@
     setTimeout(function () { $("f-L").focus(); }, 60);
   }
 
+  var lignesEnCours = { n: null, choisies: false };
+  function rendreLignes() {
+    document.querySelectorAll("#f-lignes [data-lignes]").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(+b.dataset.lignes === lignesEnCours.n));
+    });
+    var p = lignesProposees(nombre($("f-l").value));
+    $("f-propose").textContent = p ? "Proposé : " + ecritLignes(p) + "." : "";
+  }
+
   function ouvrirPoint(id) {
     enCours = { point: id };
     var nom = id === "nourrice" ? "La nourrice" : POINTS[etat.piquage.sorte].nom;
     $("f-titre").textContent = nom;
     $("f-cotes").hidden = true;
+    $("f-lignes").hidden = true;
     $("f-tourner").hidden = true;
     $("f-valider").textContent = "Fermer";
     $("f-valider").classList.add("seul");
@@ -385,6 +412,7 @@
     z.nom = $("f-nom").value.trim() || null;
     z.L = nombre($("f-L").value);
     z.l = nombre($("f-l").value);
+    if (z.type === "haie") { z.lignes = lignesEnCours.n; z.lignesChoisies = lignesEnCours.choisies; }
   }
 
   function valider() {
@@ -502,7 +530,7 @@
         hauteurFraction: arrondi(z.h / 100)
       };
       // Le champ neuf : la largeur de la haie, qu'il a demandée le 18 octobre.
-      if (haie) lue.largeur = z.l;
+      if (haie) { lue.largeur = z.l; lue.lignesHaie = z.lignes || null; }
       return lue;
     });
     if (!etat.nourrice) reserves.push("le croquis ne montre pas où la nourrice est posée");
@@ -536,6 +564,7 @@
     }
     e.manque.forEach(function (m) { ligne(C.LIBELLES[m].titre, "rouge"); });
     etat.zones.forEach(function (z) {
+      if (z.type === "haie" && z.l > 2 * BANDE_PAR_LIGNE) ligne("Deux lignes arrosent 2 m, " + nomDe(z) + " en fait " + ecrit(z.l) + " m.");
       if (!mesuree(z)) ligne("Les métrés de " + nomDe(z) + " manquent, cette zone n’entre pas dans le plan.");
     });
     var faire = $("faire");
@@ -610,6 +639,17 @@
     svg.addEventListener("pointerup", relache);
     svg.addEventListener("pointercancel", function () { brouillon = null; prise = null; dessiner(); });
     $("f-valider").addEventListener("click", valider);
+    // Un champ signalé vide cesse de l'être dès qu'on y tape.
+    ["f-L", "f-l"].forEach(function (i) {
+      $(i).addEventListener("input", function () { $(i).removeAttribute("aria-invalid"); });
+    });
+    $("f-l").addEventListener("input", function () {
+      if (!lignesEnCours.choisies) lignesEnCours.n = lignesProposees(nombre($("f-l").value));
+      rendreLignes();
+    });
+    document.querySelectorAll("#f-lignes [data-lignes]").forEach(function (b) {
+      b.addEventListener("click", function () { lignesEnCours = { n: +b.dataset.lignes, choisies: true }; rendreLignes(); });
+    });
     $("f-tourner").addEventListener("click", tourner);
     $("f-supprimer").addEventListener("click", supprimer);
     $("feuille").addEventListener("click", function (e) { if (e.target === $("feuille")) horsFeuille(); });

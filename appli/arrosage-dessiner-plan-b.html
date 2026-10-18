@@ -82,6 +82,14 @@
         <span><label class="caps doux" for="f-l">Largeur</label><input id="f-l" class="champ" inputmode="decimal" enterkeyhint="done" autocomplete="off"></span>
       </div>
     </div>
+    <div id="f-lignes" hidden>
+      <span class="caps doux" id="f-lignes-titre">Lignes de goutte-à-goutte</span>
+      <div class="deux" role="group" aria-labelledby="f-lignes-titre">
+        <button class="bouton" type="button" data-lignes="1" aria-pressed="false">Une</button>
+        <button class="bouton" type="button" data-lignes="2" aria-pressed="false">Deux</button>
+      </div>
+      <p id="f-propose" class="propose"></p>
+    </div>
     <div class="actions">
       <button id="f-tourner" class="bouton" type="button" hidden>Tourner</button>
       <button id="f-valider" class="bouton plein seul" type="button">Valider</button>
