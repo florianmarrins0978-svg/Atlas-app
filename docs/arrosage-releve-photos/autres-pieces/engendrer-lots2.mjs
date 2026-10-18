@@ -27,6 +27,9 @@ for (const lot of ['E', 'F']) {
   const man = JSON.parse(readFileSync(d + '/manifeste.json', 'utf8'));
   const rang = {};
   for (const m of man) {
+    // Sa décision du 18 octobre au soir : les électrovannes prennent les photos
+    // trouvées sans passer par la planche, et les deux formes Millenium sont supprimées.
+    if (cat[(m.refs || [])[0]] === 'electrovanne' || /^pe-mil-(te-90-75|adaptateur-bride)$|^vanne-1-4-tour/.test(m.forme)) continue;
     const groupe = cat[(m.refs || [])[0]] || 'autre';
     const n = (m.refs || []).length;
     const servir = n > 1 ? 'Servira à ' + n + ' références.' : 'Une référence : ' + (m.refs || [''])[0] + '.';

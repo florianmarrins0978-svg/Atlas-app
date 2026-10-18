@@ -149,8 +149,9 @@ type Piece = { ref: string; nom: string; categorie: string; releve: string; coli
 const ajoutables = (CATALOGUE as unknown as { piecesAjoutables: Piece[] }).piecesAjoutables;
 // 709 relevées, 164 retirées le 18 octobre 2026 à sa demande : « tout ce que je
 // n'ai pas validé dans la liste, ce sont les pièces que je ne veux pas garder »
-// (liste dans docs/arrosage-releve-photos/autres-pieces/retirees.json).
-dire(ajoutables.length === 545, `${ajoutables.length} pièces gardées, il en a gardé 545`);
+// (liste dans docs/arrosage-releve-photos/autres-pieces/retirees.json). Puis 6 le
+// même soir : le té égal Millenium 75 et 110 et l'adaptateur à bride Millenium.
+dire(ajoutables.length === 539, `${ajoutables.length} pièces gardées, il en a gardé 539`);
 // Un prix se lit « 49,28 » : deux décimales après la virgule, et aucune unité
 // derrière (« 0,06 à 9,06 m3/h » est une plage de débit, « ép.0,15mm » une
 // épaisseur).
