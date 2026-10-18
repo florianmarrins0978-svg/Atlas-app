@@ -861,27 +861,46 @@
 <li>l'article 13 des CGU promet un délai « [À COMPLÉTER] » puis la suppression : il faudra y écrire trente jours.</li>
 </ul>
 <h3 id="ce-qui-est-codé">Ce qui est codé</h3>
-<p><strong>L'acceptation en un geste, le 18 octobre 2026</strong>, avec la phrase gardée dans la preuve. Sur la branche <code>claude/accepter-en-un-geste</code> : pas encore sur <code>main</code>, la batterie n'a pas été jouée, à votre demande.</p>
+<p>Le 18 octobre 2026, sur la branche <code>claude/accepter-en-un-geste</code>, <strong>pas encore sur <code>main</code></strong> : une seule batterie sera jouée pour tout, à votre demande.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>l'acceptation en un geste</td>
+<td>la phrase gardée dans la preuve</td>
+</tr>
+<tr>
+<td>la lecture seule d'un abonnement résilié</td>
+<td>il n'utilise plus Atlas gratuitement</td>
+</tr>
+<tr>
+<td>« Avant de partir »</td>
+<td>formule moins chère, raison et texte envoyés à Stripe, « Ne pas arrêter »</td>
+</tr>
+<tr>
+<td>« Refuser » une nouvelle version</td>
+<td>ses données, puis la résiliation remboursée au prorata</td>
+</tr>
+<tr>
+<td>le préavis de trente jours</td>
+<td>une nouvelle version ne bloque plus le jour même</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui n'a pas pu être essayé ici</strong> : un vrai remboursement Stripe (aucune clé de test sur cette machine ; joué contre un faux Stripe) et le téléchargement depuis la feuille « Refuser » (il demande la preuve d'identité). À jouer sur votre espace avec une clé de test.</p>
+<p><strong>Ce qui n'est pas codé, et pourquoi</strong> : l'effacement trente jours après la fin. Il devait être annoncé par e-mail, impossible avant le nom de domaine (§15, §16) ; le délai de l'article 13 est encore à compléter ; et la garde des factures attend le juriste. Effacer sans prévenir ni savoir ce qui doit rester, non.</p>
 <h3 id="ce-qui-reste-et-qui-le-fait">Ce qui reste, et qui le fait</h3>
 <div class="tablewrap"><table><thead><tr>
 <th></th>
 <th>Qui</th>
 </tr></thead><tbody>
 <tr>
-<td>dessiner puis coder « Refuser » pour un client existant : récupérer ses données, puis résilier avec remboursement</td>
-<td>moi</td>
+<td>l'effacement trente jours après la fin, prévenu par e-mail</td>
+<td>moi, une fois le nom de domaine posé et le délai écrit à l'article 13</td>
 </tr>
 <tr>
-<td>coder la lecture seule après l'échéance, puis l'effacement à trente jours</td>
-<td>moi</td>
-</tr>
-<tr>
-<td>coder « Avant de partir » pour une résiliation normale : passer à une formule moins chère, et « Pourquoi partez-vous ? » facultatif, avec une case de texte libre ; réponse et texte s'enregistrent dans Stripe, sur la résiliation elle-même (<code>cancellation_details</code>), où vous les lisez sans écran de plus (votre accord du 18 octobre)</td>
-<td>moi</td>
-</tr>
-<tr>
-<td>vérifier que le blocage attend bien les trente jours de préavis de l'article 15</td>
-<td>moi</td>
+<td>annoncer une nouvelle version par e-mail au début du préavis (article 15 : « par un moyen durable »)</td>
+<td>moi, même condition</td>
 </tr>
 <tr>
 <td>confirmer qu'un seul bouton vaut pour le contrat de sous-traitance</td>

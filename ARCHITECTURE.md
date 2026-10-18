@@ -35081,3 +35081,24 @@ du document » de la phrase. Elle demande de savoir s'il avait accepté une
 version précédente du même type ; le nombre de documents suffit à rendre la
 phrase juste.
 
+## §470 : Partir — lecture seule, « Avant de partir », refus remboursé, préavis
+
+**18 octobre 2026, la suite de la planche du §469** (`docs/A-FAIRE.md` §17).
+
+| | où | pourquoi |
+|---|---|---|
+| le résilié en lecture seule | `etatDeLAcces` (`src/lib/abonnements.ts`) | à l'échéance, un résilié gardait l'écriture : résilier rendait Atlas gratuit. Même porte que l'essai terminé (`withEntreprise`), et `LectureSeuleError` remplace `EssaiTermineError`, dont le nom mentait |
+| « Avant de partir » | `AvantDePartir.tsx`, `demanderLaResiliation` | ni barrage ni second écran : la formule juste en dessous (au prorata, le seul changement que le dépôt sait faire), puis une question facultative. Raison et texte vont chez le prestataire (`cancellation_details`), où le patron les lit : Atlas n'a aucun écran d'éditeur, chaque entreprise étant isolée |
+| « Refuser » une nouvelle version | `FeuilleRefus.tsx`, `resilierEtRembourser` | un patron déjà client était enfermé dehors avec ses données. L'ordre est lire, résilier, rendre : un second appui tombe sur un abonnement déjà résilié et ne rend rien deux fois ; un montant illisible ne part pas |
+| le préavis | `exigeeMaintenant`, `enVigueurLe` | l'article 15 promet trente jours ; la version publiée bloquait le jour même |
+
+**Ce qui calcule l'argent ne vit qu'à un endroit** : `moisNonUtilisesDeLaPeriode`
+sert l'annonce à l'écran et le remboursement, sur le montant réellement
+encaissé, jamais sur la grille.
+
+**Ce qui n'est pas fait, et pourquoi** : l'effacement trente jours après la
+fin. Annoncé par e-mail, il attend le nom de domaine ; le délai de l'article
+13 et la garde des factures attendent leur rédaction et le juriste. Effacer
+sans prévenir ni savoir ce qui doit rester est exactement ce que
+`CLAUDE.md` §4 septies interdit.
+

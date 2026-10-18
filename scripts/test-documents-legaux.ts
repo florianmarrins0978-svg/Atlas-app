@@ -186,6 +186,45 @@ async function main() {
     assert.strictEqual(enregistrees, 0);
   });
 
+  await test("préavis de l'article 15 : un client qui a accepté la version précédente n'est pas bloqué avant l'entrée en vigueur", async () => {
+    const utilisateurId = await creerUtilisateur(`preavis-${Date.now()}@atlas.test`);
+    const attendus = await documentsAAccepter(utilisateurId);
+    const cguEnVigueur = attendus.find((d) => d.type === "cgu");
+    assert.ok(cguEnVigueur, "aucune CGU attendue");
+    // Il avait accepté la version d'avant, et tout le reste.
+    const precedente = VERSIONS_DOCUMENTS.filter((v) => v.type === "cgu").at(-2);
+    assert.ok(precedente, "il faut au moins deux versions des CGU pour éprouver le préavis");
+    const [idPrecedente] = (
+      await db.execute<{ id: string }>(
+        sql`SELECT id FROM documents_legaux WHERE type = 'cgu' AND version = ${precedente.version}`
+      )
+    ).rows.map((r) => r.id);
+    await enregistrerAcceptations(
+      utilisateurId,
+      [idPrecedente, ...attendus.filter((d) => d.type !== "cgu").map((d) => d.id)],
+      { adresseIp: null, agentUtilisateur: null, formuleAcceptee: null }
+    );
+
+    const declaree = VERSIONS_DOCUMENTS.find((v) => v.type === "cgu" && v.version === cguEnVigueur.version)!;
+    const avant = declaree.enVigueurLe;
+    try {
+      declaree.enVigueurLe = "2999-01-01";
+      assert.deepStrictEqual(await documentsAAccepter(utilisateurId), [], "bloqué pendant le préavis");
+      declaree.enVigueurLe = "2000-01-01";
+      assert.deepStrictEqual((await documentsAAccepter(utilisateurId)).map((d) => d.type), ["cgu"], "pas bloqué après");
+    } finally {
+      declaree.enVigueurLe = avant;
+    }
+    // Un nouvel inscrit, lui, accepte la dernière tout de suite.
+    const neuf = await creerUtilisateur(`preavis-neuf-${Date.now()}@atlas.test`);
+    declaree.enVigueurLe = "2999-01-01";
+    try {
+      assert.ok((await documentsAAccepter(neuf)).some((d) => d.type === "cgu"), "un nouvel inscrit a échappé aux CGU");
+    } finally {
+      declaree.enVigueurLe = avant;
+    }
+  });
+
   await test("un utilisateur ne voit jamais les acceptations d'un autre", async () => {
     const a = await creerUtilisateur(`cloison-a-${Date.now()}@atlas.test`);
     const b = await creerUtilisateur(`cloison-b-${Date.now()}@atlas.test`);

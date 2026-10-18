@@ -1231,16 +1231,26 @@ inscrit, « Se déconnecter » suffit, il n'a encore rien chez nous.
 
 ### Ce qui est codé
 
-**L'acceptation en un geste, le 18 octobre 2026**, avec la phrase gardée dans la preuve. Sur la branche `claude/accepter-en-un-geste` : pas encore sur `main`, la batterie n'a pas été jouée, à votre demande.
+Le 18 octobre 2026, sur la branche `claude/accepter-en-un-geste`, **pas encore sur `main`** : une seule batterie sera jouée pour tout, à votre demande.
+
+| | |
+|---|---|
+| l'acceptation en un geste | la phrase gardée dans la preuve |
+| la lecture seule d'un abonnement résilié | il n'utilise plus Atlas gratuitement |
+| « Avant de partir » | formule moins chère, raison et texte envoyés à Stripe, « Ne pas arrêter » |
+| « Refuser » une nouvelle version | ses données, puis la résiliation remboursée au prorata |
+| le préavis de trente jours | une nouvelle version ne bloque plus le jour même |
+
+**Ce qui n'a pas pu être essayé ici** : un vrai remboursement Stripe (aucune clé de test sur cette machine ; joué contre un faux Stripe) et le téléchargement depuis la feuille « Refuser » (il demande la preuve d'identité). À jouer sur votre espace avec une clé de test.
+
+**Ce qui n'est pas codé, et pourquoi** : l'effacement trente jours après la fin. Il devait être annoncé par e-mail, impossible avant le nom de domaine (§15, §16) ; le délai de l'article 13 est encore à compléter ; et la garde des factures attend le juriste. Effacer sans prévenir ni savoir ce qui doit rester, non.
 
 ### Ce qui reste, et qui le fait
 
 | | Qui |
 |---|---|
-| dessiner puis coder « Refuser » pour un client existant : récupérer ses données, puis résilier avec remboursement | moi |
-| coder la lecture seule après l'échéance, puis l'effacement à trente jours | moi |
-| coder « Avant de partir » pour une résiliation normale : passer à une formule moins chère, et « Pourquoi partez-vous ? » facultatif, avec une case de texte libre ; réponse et texte s'enregistrent dans Stripe, sur la résiliation elle-même (`cancellation_details`), où vous les lisez sans écran de plus (votre accord du 18 octobre) | moi |
-| vérifier que le blocage attend bien les trente jours de préavis de l'article 15 | moi |
+| l'effacement trente jours après la fin, prévenu par e-mail | moi, une fois le nom de domaine posé et le délai écrit à l'article 13 |
+| annoncer une nouvelle version par e-mail au début du préavis (article 15 : « par un moyen durable ») | moi, même condition |
 | confirmer qu'un seul bouton vaut pour le contrat de sous-traitance | le juriste qui relira les textes (point 2) |
 | dire si Atlas doit garder les factures dix ans (article 13) ou seulement les rendre à l'artisan : l'obligation comptable pèse sur lui, et un sous-traitant doit en principe rendre puis effacer (RGPD, article 28.3.g) | le juriste |
 

@@ -8,6 +8,21 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-18
 
+- **Une nouvelle version des conditions ne bloque plus le jour même.**
+  L'article 15 promet trente jours de préavis ; rien ne le tenait, la version
+  publiée fermait l'application aussitôt. Chaque nouvelle version déclare
+  désormais son entrée en vigueur (`enVigueurLe`, `versions.ts`) : d'ici là, un
+  client garde la version qu'il a acceptée, et le jour venu la nouvelle est
+  exigée. Un nouvel inscrit accepte la dernière tout de suite. Une version neuve
+  sans cette date est refusée par `test-acceptation-documents.ts` ;
+  `test-documents-legaux.ts` le prouve contre la base (vu rouge).
+- **L'effacement trente jours après la fin n'est PAS codé, et c'est voulu.**
+  Il devait être annoncé par e-mail, et rien ne peut partir d'Atlas par e-mail
+  avant le nom de domaine (`docs/A-FAIRE.md` §15 et §16) ; le délai de
+  l'article 13 est encore « [À COMPLÉTER] » ; et la garde des factures dix ans
+  attend le juriste. Effacer des données sans prévenir ni savoir ce qui doit
+  rester, c'est le geste que `CLAUDE.md` §4 septies interdit.
+
 - **Un patron déjà client peut refuser de nouvelles conditions sans être
   enfermé dehors.** Avant, refuser ne laissait que « Se déconnecter » : ni ses
   données, ni la résiliation que l'article 15 lui promet. « Refuser », aussi
