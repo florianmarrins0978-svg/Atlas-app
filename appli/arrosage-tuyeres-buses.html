@@ -69,7 +69,7 @@
   <div class="grille" id="grille"></div>
 
   <h2>Buses MP Rotator</h2>
-  <p class="sous">Relevées page 10 d’Aqua Plus. Pas encore dans le calcul, aucune photo validée.</p>
+  <p class="sous">Relevées page 10 d’Aqua Plus. Pas encore dans le calcul. Photos trouvées par nous, à valider.</p>
   <div class="grille" id="rotator"></div>
   <p class="sous" id="rotator-toro"></p>
 
@@ -82,7 +82,13 @@
   var CAT = window.CALCUL.CATALOGUE;
   var PHOTOS = {"RT1802":"RT1802.jpg","RT1804":"RT1804.jpg","RT1806":"RT1806.jpg","RT1822":"RT1822.jpg","RT1824":"RT1824.jpg","RT1826":"RT1826.jpg","RT1832":"RT1832.jpg","RT1834":"RT1834.jpg","RT1836":"RT1836.jpg",
     "RBT640":"RBT640.jpg","RBT639":"RBT639.jpg","RBT638":"RBT638.jpg","RBT637":"RBT637.jpg","RBT636":"RBT636.jpg","RBT601":"RBT601.jpg","RBT648":"RBT648.jpg",
-    "RBT1418":"RBT1418.jpg","RBT1419":"RBT1419.jpg","RBT1428":"RBT1428.jpg","RBT1429":"RBT1429.jpg","RBT1438":"RBT1438.jpg","RBT1439":"RBT1439.jpg"};
+    "RBT1418":"RBT1418.jpg","RBT1419":"RBT1419.jpg","RBT1428":"RBT1428.jpg","RBT1429":"RBT1429.jpg","RBT1438":"RBT1438.jpg","RBT1439":"RBT1439.jpg",
+    // LES MP ROTATOR : photos trouvées par nous le 18 octobre 2026 (sa demande
+    // « va me chercher la photo des buses MP Rotator »), une par modèle, sur
+    // dvs-beregnung.de, recadrées sur la buse. À VALIDER PAR LUI avant d'entrer
+    // dans l'outil. MP1000 bordeaux, MP2000 noire, MP3000 bleue : la couleur de
+    // la bague dit le modèle, le secteur ne change pas la photo.
+    "mp1000":"mp1000.jpg","mp2000":"mp2000.jpg","mp3000":"mp3000.jpg"};
   var $ = function (id) { return document.getElementById(id); };
   var texte = function (s) { var e = document.createElement("span"); e.textContent = s; return e.innerHTML; };
   var virgule = function (x) { return String(x).replace(".", ","); };
@@ -100,15 +106,15 @@
   // fait avec les buses à trancher. La version Toro (MP1000T, MP2000T, MP3000T,
   // tuyère femelle) n'a ni portée ni débit relevés : elle se nomme, sans chiffre.
   var MP_ROTATOR = [
-    { ref: "NA2302", nom: "MP1000 90 à 210°", portee: 4.1 },
-    { ref: "NA2303", nom: "MP1000 210 à 270°", portee: 4.1 },
-    { ref: "NA2301", nom: "MP1000 360°", portee: 4.1 },
-    { ref: "NA2312", nom: "MP2000 90 à 210°", portee: 5.8 },
-    { ref: "NA2313", nom: "MP2000 210 à 270°", portee: 5.8 },
-    { ref: "NA2311", nom: "MP2000 360°", portee: 5.8 },
-    { ref: "NA2321", nom: "MP3000 90 à 210°", portee: 9.1 },
-    { ref: "NA2322", nom: "MP3000 210 à 270°", portee: 9.1 },
-    { ref: "NA2323", nom: "MP3000 360°", portee: 9.1 }
+    { ref: "NA2302", nom: "MP1000 90 à 210°", portee: 4.1, photo: "mp1000" },
+    { ref: "NA2303", nom: "MP1000 210 à 270°", portee: 4.1, photo: "mp1000" },
+    { ref: "NA2301", nom: "MP1000 360°", portee: 4.1, photo: "mp1000" },
+    { ref: "NA2312", nom: "MP2000 90 à 210°", portee: 5.8, photo: "mp2000" },
+    { ref: "NA2313", nom: "MP2000 210 à 270°", portee: 5.8, photo: "mp2000" },
+    { ref: "NA2311", nom: "MP2000 360°", portee: 5.8, photo: "mp2000" },
+    { ref: "NA2321", nom: "MP3000 90 à 210°", portee: 9.1, photo: "mp3000" },
+    { ref: "NA2322", nom: "MP3000 210 à 270°", portee: 9.1, photo: "mp3000" },
+    { ref: "NA2323", nom: "MP3000 360°", portee: 9.1, photo: "mp3000" }
   ];
   var MP_TORO = "Aussi en version Toro, pour tuyère femelle : MP1000T, MP2000T, MP3000T (TBT10760, TBT10563, TBT10662). Portée et débit non relevés.";
 
@@ -140,8 +146,9 @@
     // Une MP Rotator se visse sur le corps choisi comme une buse : même couple,
     // sans photo de buse tant qu'il n'en a pas validé une.
     $("rotator").innerHTML = MP_ROTATOR.map(function (b) {
-      return '<div class="couple releve"><div class="duo">' + photoCorps + '<span class="vide">photo à venir</span></div>' +
-        "<b>" + texte(nomCorps(c) + " et " + b.nom) + "</b><span>portée " + virgule(b.portee) + " m à 2,8 bar, Hunter, réf. " + b.ref + '</span><span class="mention">Pas encore dans le calcul.</span></div>';
+      var photoMp = PHOTOS[b.photo] ? '<img class="buse" src="arrosage-photos/' + PHOTOS[b.photo] + '" alt="">' : '<span class="vide">photo à venir</span>';
+      return '<div class="couple releve"><div class="duo">' + photoCorps + photoMp + "</div>" +
+        "<b>" + texte(nomCorps(c) + " et " + b.nom) + "</b><span>portée " + virgule(b.portee) + " m à 2,8 bar, Hunter, réf. " + b.ref + '</span><span class="mention">Pas encore dans le calcul. Photo à valider.</span></div>';
     }).join("");
     $("rotator-toro").textContent = MP_TORO;
     var tout = document.querySelector(".ecran").textContent;
