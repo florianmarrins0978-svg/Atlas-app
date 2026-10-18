@@ -1,0 +1,145 @@
+<title>Photos des raccords PE</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Un tri, photo par photo : la photo en grand sur son fond blanc, deux gestes dessous. */
+:root{
+  --fond:#eef0ea; --carte:#ffffff; --encre:#1d211b; --doux:#5d6458; --pale:#8b9285;
+  --trait:rgba(29,33,27,.12); --vert:#2f6b3a; --vert-pale:#e1ecdf; --rouge:#9c3b2e; --rouge-pale:#f3e3df; --or:#a77a35;
+  --titres:Georgia,"Times New Roman",serif;
+  --texte:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --fond:#141712; --carte:#1d211b; --encre:#e8eadf; --doux:#b9bfb0; --pale:#8b9285;
+  --trait:rgba(232,234,223,.14); --vert:#8fc79a; --vert-pale:#22352a; --rouge:#e08b7d; --rouge-pale:#3a2421; --or:#c9a15e; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --fond:#141712; --carte:#1d211b; --encre:#e8eadf; --doux:#b9bfb0; --pale:#8b9285;
+  --trait:rgba(232,234,223,.14); --vert:#8fc79a; --vert-pale:#22352a; --rouge:#e08b7d; --rouge-pale:#3a2421; --or:#c9a15e; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fond);color:var(--encre);font:16px/1.45 var(--texte);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 60px}
+.page{max-width:560px;margin:0 auto}
+h1{margin:0;font:400 26px/1.15 var(--titres);text-wrap:balance}
+.chapeau{margin:6px 0 0;font-size:14px;color:var(--doux)}
+.compte{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;display:flex;gap:8px;margin:14px 0 0;padding:10px 0;background:var(--fond)}
+.compte span{flex:1;border-radius:10px;padding:8px 10px;background:var(--carte);font-size:13px;color:var(--doux);font-variant-numeric:tabular-nums}
+.compte b{display:block;font:600 19px/1.1 var(--texte);color:var(--encre)}
+.filtres{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap}
+.filtres button{border:1px solid var(--trait);background:var(--carte);color:var(--encre);border-radius:999px;padding:7px 12px;font-size:13.5px;cursor:pointer}
+.filtres button[aria-pressed="true"]{background:var(--encre);color:var(--carte);border-color:var(--encre)}
+h2{margin:28px 0 0;font-size:11px;font-weight:600;letter-spacing:.26em;text-transform:uppercase;color:var(--or)}
+.piece{margin-top:12px;border-radius:16px;background:var(--carte);overflow:hidden;box-shadow:0 1px 2px var(--trait)}
+.piece.oui{box-shadow:0 0 0 2px var(--vert)}
+.piece.non{box-shadow:0 0 0 2px var(--rouge)}
+.photo{display:flex;align-items:center;justify-content:center;height:230px;background:#ffffff;padding:14px}
+.photo img{max-width:100%;max-height:100%;object-fit:contain}
+.corps{padding:12px 14px 14px}
+.nom{margin:0;font-size:15.5px;font-weight:600}
+.ref{margin:2px 0 0;font-size:12.5px;color:var(--pale);font-variant-numeric:tabular-nums}
+.source{margin:6px 0 0;font-size:12.5px;color:var(--doux);word-break:break-all}
+.doute{margin:6px 0 0;font-size:13px;color:var(--rouge)}
+.gestes{display:flex;gap:8px;margin-top:12px}
+.gestes button{flex:1;min-height:48px;border-radius:12px;border:1.5px solid var(--trait);background:none;color:var(--encre);font-size:15px;font-weight:600;cursor:pointer}
+.gestes button.oui[aria-pressed="true"]{background:var(--vert);border-color:var(--vert);color:var(--carte)}
+.gestes button.non[aria-pressed="true"]{background:var(--rouge);border-color:var(--rouge);color:var(--carte)}
+.gestes button:focus-visible,.filtres button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+.etat{margin:8px 0 0;font-size:13px;color:var(--pale)}
+.alerte{margin:14px 0 0;border-radius:12px;padding:12px 14px;background:var(--rouge-pale);color:var(--rouge);font-size:14px}
+</style>
+
+<div class="page">
+  <h1>Photos des raccords PE</h1>
+  <p class="chapeau">Une photo par forme. Validée, elle sert à tous les diamètres de la forme.</p>
+  <div class="compte" aria-live="polite">
+    <span><b id="n-oui">0</b>validées</span>
+    <span><b id="n-non">0</b>refusées</span>
+    <span><b id="n-reste">0</b>à voir</span>
+    <span><b id="n-manque">0</b>à trouver</span>
+  </div>
+  <div class="filtres" role="group" aria-label="Afficher">
+    <button type="button" data-filtre="reste" aria-pressed="true">À voir</button>
+    <button type="button" data-filtre="tout" aria-pressed="false">Toutes</button>
+    <button type="button" data-filtre="oui" aria-pressed="false">Validées</button>
+    <button type="button" data-filtre="non" aria-pressed="false">Refusées</button>
+  </div>
+  <p class="alerte" id="alerte" hidden></p>
+  <div id="liste"></div>
+</div>
+
+<script>
+var PHOTOS = /*PHOTOS*/[];
+var GROUPES = [["manchon","Manchons et bouchons"],["te","Les tés"],["coude","Les coudes"],["bride","Brides et réductions"]];
+(function () {
+  var choix = {}, filtre = "reste", db = null;
+  var $ = function (id) { return document.getElementById(id); };
+  var texte = function (s) { var e = document.createElement("span"); e.textContent = s == null ? "" : String(s); return e.innerHTML; };
+
+  function dessiner() {
+    var n = { oui: 0, non: 0, reste: 0 };
+    PHOTOS.forEach(function (p) { if (!p.fichier) return; var c = choix[p.cle]; n[c === "oui" || c === "non" ? c : "reste"]++; });
+    $("n-oui").textContent = n.oui; $("n-non").textContent = n.non; $("n-reste").textContent = n.reste; $("n-manque").textContent = PHOTOS.filter(function (p) { return !p.fichier; }).length;
+    var html = "";
+    GROUPES.forEach(function (g) {
+      var vues = PHOTOS.filter(function (p) {
+        var c = choix[p.cle] || "reste";
+        return p.groupe === g[0] && (filtre === "tout" || filtre === c || (!p.fichier && filtre === "reste"));
+      });
+      if (!vues.length) return;
+      html += "<h2>" + texte(g[1]) + "</h2>";
+      vues.forEach(function (p) {
+        var c = choix[p.cle] || "";
+        if (!p.fichier) { html += '<article class="piece"><div class="corps"><p class="nom">' + texte(p.nom) + '</p><p class="ref">' + texte(p.ref) + '</p><p class="etat">Photo à trouver.</p>' + (p.doute ? '<p class="doute">' + texte(p.doute) + '</p>' : '') + '</div></article>'; return; }
+        html += '<article class="piece ' + c + '">' +
+          '<div class="photo"><img src="' + texte(p.fichier) + '" alt="' + texte(p.nom) + '"></div>' +
+          '<div class="corps"><p class="nom">' + texte(p.nom) + '</p><p class="ref">' + texte(p.ref) + (p.rang > 1 ? ", photo " + p.rang : "") + "</p>" +
+          (p.site ? '<p class="source">Trouvée sur ' + texte(p.site) + "</p>" : "") +
+          (p.doute ? '<p class="doute">' + texte(p.doute) + "</p>" : "") +
+          '<div class="gestes"><button type="button" class="oui" data-cle="' + texte(p.cle) + '" data-choix="oui" aria-pressed="' + (c === "oui") + '">Je valide</button>' +
+          '<button type="button" class="non" data-cle="' + texte(p.cle) + '" data-choix="non" aria-pressed="' + (c === "non") + '">Non</button></div>' +
+          "</div></article>";
+      });
+    });
+    $("liste").innerHTML = html || '<p class="etat">Rien à afficher ici.</p>';
+  }
+
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (!b) return;
+    if (b.dataset.filtre) {
+      filtre = b.dataset.filtre;
+      document.querySelectorAll("[data-filtre]").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      dessiner();
+      return;
+    }
+    if (!b.dataset.cle) return;
+    var cle = b.dataset.cle, p = PHOTOS.filter(function (x) { return x.cle === cle; })[0];
+    var avant = choix[cle];
+    var nouveau = avant === b.dataset.choix ? null : b.dataset.choix;
+    if (!db) { montrer("Vos choix ne peuvent pas être enregistrés depuis cette vue. Ouvrez la page connecté à votre compte."); return; }
+    if (nouveau) choix[cle] = nouveau; else delete choix[cle];
+    dessiner();
+    var ref = db.doc("choix/" + cle);
+    (nouveau ? ref.set({ ref: p.ref, fichier: p.fichier, choix: nouveau, le: new Date().toISOString() }) : ref.delete())
+      .catch(function () {
+        if (avant) choix[cle] = avant; else delete choix[cle];
+        dessiner();
+        montrer("Ce choix n’a pas été enregistré. Réessayez dans un instant.");
+      });
+  });
+
+  function montrer(m) { $("alerte").textContent = m; $("alerte").hidden = false; }
+
+  dessiner();
+  if (window.claude && window.claude.use) {
+    window.claude.use("db").then(function (d) {
+      db = d;
+      if (!db) return;
+      db.collection("choix").onSnapshot(function (s) {
+        var c = {};
+        s.docs.forEach(function (d) { var v = d.data(); if (v && (v.choix === "oui" || v.choix === "non")) c[d.id] = v.choix; });
+        choix = c;
+        dessiner();
+      }, function () { montrer("La liste des choix ne se met plus à jour. Rechargez la page."); });
+    });
+  }
+})();
+</script>
