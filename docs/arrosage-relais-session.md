@@ -140,6 +140,7 @@ tuyères 1800 et la 3504, jamais sur la ligne ; le BL-IP est un Solem ; les
 | ~~numéro du goutte-à-goutte~~ | **corrigé le 18 octobre avec son oui** : le calcul numérotait les réseaux dans l’ordre du croquis, la nourrice met le goutte-à-goutte à droite. Le goutte-à-goutte est désormais numéroté en dernier dans `calcul.js` (deux copies), règle tenue dans `test-regles-du-patron.ts` |
 | `verifier-maquette-arrosage-plan.mjs` | plante (`getAttribute` sur null), **déjà avant** la correction du 18 octobre : à regarder |
 | clavier de l’iPhone | le pavé numérique n’a pas de touche OK : sur la planche de ses demandes, toucher ailleurs le referme (18 octobre). **L’écran de l’appli (`ArrosageClient.tsx`, `inputMode="decimal"`) aura besoin du même geste quand on le codera**, pas vérifiable ici |
+| besoins en eau par saison | `SAISONS` dans `calcul.js` (gazon 25 mm par semaine en 3 passages en juillet et août, etc.) : posés par nous le 17 août 2026, **aucune source de lui**. Ils donnent les durées (« 83 min par arrosage »). Question posée le 18 octobre |
 | cote coupée | sur le plan dessiné, la cote d’un massif qui touche le bord droit sort du cadre (« 2,4 r ») |
 
 ## Ce qui reste à faire, dans cet ordre
