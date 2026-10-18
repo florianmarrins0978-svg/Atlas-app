@@ -49,6 +49,14 @@
                  sens de la marche. L'ÉCART entre deux dalles, il ne l'a pas
                  dit : le champ reste vide (dalles jointives) tant qu'il ne
                  le tape pas, rien n'est supposé.
+  SA CORRECTION, LE MÊME SOIR, devant « une dalle sur 3,15 m » : il avait pris
+  la longueur pour l'écart entre deux dalles. « Il faut mettre la longueur
+  des dalles, la largeur des dalles et l'espacement ; on rajoute la longueur
+  qui est préécrite au moment où on clique, comme ça on sait que c'est sur
+  6 mètres. » La feuille porte donc d'abord la DISTANCE, remplie par ses deux
+  touches et corrigible (la rangée suit), puis « Longueur d'une dalle »,
+  « Largeur d'une dalle » et « Espacement entre deux dalles ». Une dalle plus
+  large que la distance se refuse.
   Ni les arbres ni les dalles n'entrent au calcul : ils partent dans deux
   champs NEUFS (arbres, dalles), et l'écran le dit.
 
@@ -172,6 +180,14 @@
     return { n: n, dist: dist, l: l, e: e, depart: (dist - occupe) / 2 };
   }
   function ecritDalles(n) { return n === 1 ? "une dalle" : n + " dalles"; }
+  /* L'arrivée qui met la rangée à la distance tapée, dans la direction de ses
+     deux touches : le départ reste où il l'a touché. */
+  function arriveeA(d, metres) {
+    var dx = d.b.x - d.a.x, dy = d.b.y - d.a.y, n = Math.hypot(dx, dy);
+    if (n < 1e-9) { dx = 1; dy = 0; n = 1; }
+    var u = enU(metres);
+    return { x: d.a.x + dx / n * u, y: d.a.y + dy / n * u };
+  }
 
   /* En B, la taille d'une zone sort de ses cotes, jamais du doigt. */
   function tailleSelonCotes(z) {
@@ -561,13 +577,17 @@
      pose. */
   function montrerChamps(c) {
     $("f-cotes").hidden = !c.cotes;
+    $("f-distance").hidden = !c.distance;
     $("f-surface").hidden = !c.surface;
+    // Pour une dalle, la cote est celle d'UNE dalle : il l'a prise pour l'écart.
+    document.querySelector("label[for=f-L]").textContent = c.dalles ? "Longueur d’une dalle" : "Longueur";
+    document.querySelector("label[for=f-l]").textContent = c.dalles ? "Largeur d’une dalle" : "Largeur";
     $("f-diametre").hidden = !c.diametre;
     $("f-ecart").hidden = !c.ecart;
     $("f-lignes").hidden = !c.lignes;
     $("f-note").textContent = "";
     $("f-erreur").textContent = "";
-    ["f-L", "f-l", "f-d", "f-e"].forEach(function (i) { $(i).removeAttribute("aria-invalid"); });
+    ["f-L", "f-l", "f-d", "f-e", "f-dist"].forEach(function (i) { $(i).removeAttribute("aria-invalid"); });
   }
   function boutons(neuf, tourner) {
     $("f-valider").textContent = neuf ? "Poser" : "Valider";
@@ -612,11 +632,12 @@
     $("f-L").value = d.L == null ? "" : ecrit(d.L);
     $("f-l").value = d.l == null ? "" : ecrit(d.l);
     $("f-e").value = d.e == null ? "" : ecrit(d.e);
-    montrerChamps({ cotes: true, surface: true, ecart: true });
+    $("f-dist").value = ecrit(enMetres(Math.hypot(d.b.x - d.a.x, d.b.y - d.a.y)));
+    montrerChamps({ cotes: true, distance: true, surface: true, ecart: true, dalles: true });
     boutons(neuves, !neuves);
     rendreNoteDalles();
     $("feuille").hidden = false;
-    setTimeout(function () { $("f-L").focus(); }, 60);
+    setTimeout(function () { $("f-dist").focus(); }, 60);
   }
 
   /* Combien de dalles, pendant qu'il tape : le compte suit la saisie. */
@@ -624,7 +645,8 @@
     if (!enCours || enCours.sorte !== "dalles") return;
     var essai = copie(enCours.z);
     lireDalles(essai);
-    if (!essai.l) { $("f-note").textContent = ""; return; }
+    if (!essai.l || !essai.distance) { $("f-note").textContent = ""; return; }
+    essai.b = arriveeA(essai, essai.distance);
     var r = rangeeDeDalles(essai);
     $("f-note").textContent = ecritDalles(r.n) + " sur " + ecrit(enMetres(r.dist)) + " m.";
   }
@@ -670,6 +692,7 @@
     d.l = nombre($("f-l").value);
     // L'écart vide reste vide : des dalles jointives, rien de supposé.
     d.e = nombre($("f-e").value);
+    d.distance = nombre($("f-dist").value);
   }
 
   /* Ce qui manque se dit sur le champ lui-même, et rien ne se pose. */
@@ -702,8 +725,21 @@
     var d = enCours.z;
     var essai = copie(d);
     lireDalles(essai);
-    if (refuseVides([["f-L", essai.L], ["f-l", essai.l]])) return;
+    if (refuseVides([["f-dist", essai.distance], ["f-L", essai.L], ["f-l", essai.l]])) return;
+    var b = arriveeA(essai, essai.distance), t = terrainU(), marge = 1e-6;
+    if (b.x < -marge || b.y < -marge || b.x > t.w + marge || b.y > t.h + marge) {
+      $("f-dist").setAttribute("aria-invalid", "true");
+      $("f-erreur").textContent = phraseTropGrande();
+      return;
+    }
+    if (essai.l > essai.distance + 1e-9) {
+      $("f-l").setAttribute("aria-invalid", "true");
+      $("f-erreur").textContent = "Plus large que la distance, qui fait " + ecrit(essai.distance) + " m.";
+      return;
+    }
     lireDalles(d);
+    d.b = b;
+    delete d.distance;
     if (enCours.neuve) { d.id = "d" + etat.suivant++; etat.dalles.push(d); }
     fermer();
   }
@@ -755,6 +791,8 @@
       // Une dalle tournée : sa longueur passe dans le sens de la marche.
       var d = enCours.z;
       lireDalles(d);
+      if (d.distance) d.b = arriveeA(d, d.distance);
+      delete d.distance;
       var Ld = d.L; d.L = d.l; d.l = Ld;
       fermer();
       return;
@@ -986,7 +1024,7 @@
     svg.addEventListener("pointercancel", function () { brouillon = null; prise = null; dessiner(); });
     $("f-valider").addEventListener("click", valider);
     // Un champ signalé vide cesse de l'être dès qu'on y tape.
-    ["f-L", "f-l", "f-d", "f-e"].forEach(function (i) {
+    ["f-L", "f-l", "f-d", "f-e", "f-dist"].forEach(function (i) {
       $(i).addEventListener("input", function () {
         $(i).removeAttribute("aria-invalid");
         $("f-erreur").textContent = "";

@@ -85,6 +85,10 @@
     <div id="f-cotes">
       <label class="caps doux" for="f-nom">Nom</label>
       <input id="f-nom" class="champ" autocomplete="off" enterkeyhint="next">
+      <div id="f-distance" hidden>
+        <label class="caps doux" for="f-dist">Distance</label>
+        <input id="f-dist" class="champ" inputmode="decimal" enterkeyhint="done" autocomplete="off">
+      </div>
       <div id="f-surface" class="deux">
         <span><label class="caps doux" for="f-L">Longueur</label><input id="f-L" class="champ" inputmode="decimal" enterkeyhint="done" autocomplete="off"></span>
         <span><label class="caps doux" for="f-l">Largeur</label><input id="f-l" class="champ" inputmode="decimal" enterkeyhint="done" autocomplete="off"></span>
@@ -95,7 +99,7 @@
       <input id="f-d" class="champ" inputmode="decimal" enterkeyhint="done" autocomplete="off">
     </div>
     <div id="f-ecart" hidden>
-      <label class="caps doux" for="f-e">Écart entre deux dalles</label>
+      <label class="caps doux" for="f-e">Espacement entre deux dalles</label>
       <input id="f-e" class="champ" inputmode="decimal" enterkeyhint="done" autocomplete="off">
     </div>
     <p id="f-note" class="propose" aria-live="polite"></p>

@@ -87,3 +87,4 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 .echelle-titre{margin-top:10px}
 .feuille #f-diametre,.feuille #f-ecart{margin-top:12px}
 .propose:empty{display:none}
+.feuille #f-distance{margin-top:12px}
