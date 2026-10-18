@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le choix du nombre</title>
+<!--
+  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Sa demande du 18 octobre 2026,
+  devant deux rangées de neuf boutons (Changer 1 à 9, Supprimer 1 à 9) :
+  « Pourquoi tu ne mets pas un bandeau déroulant avec le choix ? On choisit le
+  nombre. Fais-moi une planche pour ça. Et une fois que je valide, tu me le
+  modifies pour tous les endroits où il y a plusieurs pièces. »
+
+  Deux façons, à essayer sur le téléphone : le bandeau déroulant est le
+  sélecteur natif, qui ouvre la roue de l'iPhone. L'exemple est la turbine 3504
+  de son réseau 1, en neuf exemplaires. Rien n'est calculé ici : la planche ne
+  montre que le geste, et dit ce qu'il aurait fait.
+-->
+<style>
+[data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#8a8578;--atlas-or:#B98B47;--atlas-orTexte:#8b6835;--atlas-line:rgba(28,28,26,0.12);--atlas-rustTint:#ece9e1;--atlas-alerte:#9C3B2E}
+  *{box-sizing:border-box}
+  html{background:var(--atlas-rustTint)}
+  body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint)}
+  .entete{max-width:430px;margin:0 auto;padding:18px 16px 6px}
+  .entete h1{margin:0;font:400 24px/1.15 Georgia,"Times New Roman",serif}
+  .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--atlas-cream);padding:6px 16px 80px;min-height:100vh}
+  .caps{display:block;margin:26px 0 0;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-or)}
+  h2{margin:6px 0 0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+  .sous{margin:4px 0 0;font-size:13.5px;color:var(--atlas-muted)}
+  /* La feuille du menu, telle qu'elle monte du bas de l'écran sur le plan. */
+  .boite{margin-top:12px;background:var(--atlas-card);border-radius:18px;padding:18px 16px 20px;box-shadow:0 1px 2px var(--atlas-line),0 10px 30px rgba(0,0,0,.08)}
+  .haut{display:flex;align-items:center}
+  .haut h3{flex:1;margin:0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+  .fermer{border:0;background:none;font-size:14px;text-decoration:underline;color:var(--atlas-inkSoft)}
+  .gestes{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+  .gestes button{min-height:52px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-cream);color:var(--atlas-ink);font-size:15.5px;cursor:pointer}
+  .gestes button.danger{color:var(--atlas-alerte)}
+  /* LE BANDEAU DÉROULANT : le sélecteur du téléphone, grand, avec son chevron. */
+  .combien{display:flex;align-items:center;gap:12px;min-height:52px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-cream);padding:0 14px}
+  .combien span{flex:1;font-size:15.5px}
+  select{appearance:none;-webkit-appearance:none;min-width:96px;min-height:40px;border:0;border-radius:10px;padding:0 34px 0 14px;font:600 17px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%231c1c1a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center;box-shadow:0 0 0 1px var(--atlas-line)}
+  .rang{display:flex;align-items:center;gap:12px;min-height:52px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-cream);padding:0 6px 0 14px}
+  .rang b{flex:1;font-weight:400;font-size:15.5px}
+  .rang.danger b{color:var(--atlas-alerte)}
+  .rang select{min-width:150px}
+  .fait{margin:10px 0 0;min-height:22px;font-size:13.5px;color:var(--atlas-orTexte)}
+  .pour{margin:14px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+</style>
+<body data-charte="origine">
+<div class="entete">
+  <h1>Le choix du nombre</h1>
+  <p>Planche, rien n’est codé. Deux façons de dire combien de pièces on change ou supprime. Touchez le nombre : la roue du téléphone s’ouvre.</p>
+</div>
+<main class="ecran">
+  <span class="caps">A</span>
+  <h2>Un bandeau, puis le geste</h2>
+  <p class="sous">On choisit le nombre, puis on appuie sur Changer ou Supprimer.</p>
+  <div class="boite">
+    <div class="haut"><h3>Turbine 3504</h3><button class="fermer" type="button">Fermer</button></div>
+    <div class="gestes">
+      <label class="combien"><span>Combien</span><select id="a-n" aria-label="Combien de pièces"></select></label>
+      <button type="button" id="a-changer">Changer les 9</button>
+      <button type="button" class="danger" id="a-supprimer">Supprimer les 9</button>
+    </div>
+    <p class="fait" id="a-fait"></p>
+  </div>
+  <p class="pour">Le bandeau part sur les 9 : d’habitude on change tout. Pour une seule, on descend à 1.</p>
+
+  <span class="caps">B</span>
+  <h2>Un bandeau par geste</h2>
+  <p class="sous">Le nombre est dans le geste. Choisir, c’est faire.</p>
+  <div class="boite">
+    <div class="haut"><h3>Turbine 3504</h3><button class="fermer" type="button">Fermer</button></div>
+    <div class="gestes">
+      <label class="rang"><b>Changer</b><select id="b-changer" aria-label="Changer combien de pièces"></select></label>
+      <label class="rang danger"><b>Supprimer</b><select id="b-supprimer" aria-label="Supprimer combien de pièces"></select></label>
+    </div>
+    <p class="fait" id="b-fait"></p>
+  </div>
+  <p class="pour">Un seul appui de moins, mais le geste part dès que la roue se ferme.</p>
+</main>
+<script>
+(function () {
+  var N = 9, $ = function (id) { return document.getElementById(id); };
+  var mot = function (n, geste) { return geste + (n === N ? " les " + N : n === 1 ? " une seule" : " " + n); };
+  // A : le nombre, puis le geste.
+  var a = $("a-n");
+  for (var i = N; i >= 1; i--) a.appendChild(new Option(i === 1 ? "une seule" : i === N ? "toutes les " + N : String(i), String(i)));
+  function majA() { var n = Number(a.value); $("a-changer").textContent = mot(n, "Changer"); $("a-supprimer").textContent = mot(n, "Supprimer"); }
+  a.onchange = majA; majA();
+  $("a-changer").onclick = function () { $("a-fait").textContent = "La liste des pièces s’ouvre pour " + (Number(a.value) === 1 ? "une turbine" : a.value + " turbines") + "."; };
+  $("a-supprimer").onclick = function () { $("a-fait").textContent = (Number(a.value) === 1 ? "Une turbine supprimée" : a.value + " turbines supprimées") + ", les autres restent."; };
+  // B : un bandeau par geste, vide tant qu'on n'a pas choisi.
+  ["b-changer", "b-supprimer"].forEach(function (id) {
+    var s = $(id), geste = id === "b-changer" ? "Changer" : "Supprimer";
+    s.appendChild(new Option("combien ?", ""));
+    for (var i = N; i >= 1; i--) s.appendChild(new Option(mot(i, geste).replace(geste + " ", ""), String(i)));
+    s.onchange = function () {
+      if (!s.value) return;
+      var n = Number(s.value);
+      $("b-fait").textContent = geste === "Changer"
+        ? "La liste des pièces s’ouvre pour " + (n === 1 ? "une turbine" : n + " turbines") + "."
+        : (n === 1 ? "Une turbine supprimée" : n + " turbines supprimées") + ", les autres restent.";
+      s.value = "";
+    };
+  });
+})();
+</script>
+</body>
+</html>

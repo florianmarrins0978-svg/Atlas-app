@@ -514,6 +514,31 @@ regle("18 octobre 2026", "« si on descend du robinet et qu'on a un réseau qui 
 
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────
 
+regle("18 octobre 2026", "« les MP Rotator sont pour les tuyères », et « oui » pour les entrer avec la page 10 d'Aqua Plus : neuf références, des tuyères, le débit lu par angle, aucune choisie seule", () => {
+  type Buse = { ref: string; nom: string; serie?: string; pourType: string; marqueCle: string; rayon: number; pression: number; releve?: string; debit: Record<string, number | undefined> };
+  const cat = CATALOGUE as unknown as { buses: Buse[]; busesDe: (m: string, t: string) => Buse[] };
+  const mp = cat.buses.filter((b) => b.serie === "MP Rotator");
+  exige(mp.length === 9, `${mp.length} MP Rotator au catalogue, la page 10 en donne 9 (trois modèles, trois secteurs)`);
+  for (const b of mp) {
+    exige(b.pourType === "tuyere", `${b.ref} : ${b.pourType}, une MP Rotator est pour les tuyères`);
+    exige(b.marqueCle === "hunter" && b.pression === 2.8 && b.releve === "Aqua Plus 2026, p. 10", `${b.ref} : Hunter, à 2,8 bar, relevée page 10`);
+  }
+  // Ses chiffres, ceux du tableau : portée par modèle, débit du plein cercle.
+  const plein = (ref: string) => mp.find((b) => b.ref === ref);
+  for (const [ref, rayon, d360] of [["NA2301", 4.1, 0.17], ["NA2311", 5.8, 0.33], ["NA2323", 9.1, 0.82]] as const) {
+    const b = plein(ref);
+    exige(b && b.rayon === rayon && b.debit[360] === d360, `${ref} : portée ${b?.rayon} m et ${b?.debit[360]} m³/h à 360°, le tableau dit ${rayon} m et ${d360}`);
+  }
+  // Le débit suit l'angle : à 90° la MP3000 verse moins qu'à 180°, pas la règle des turbines.
+  const m3 = mp.find((b) => b.ref === "NA2321");
+  exige(m3 && m3.debit[90] === 0.2 && m3.debit[180] === 0.41, `MP3000 90-210° : ${m3?.debit[90]} à 90°, ${m3?.debit[180]} à 180°, le tableau dit 0,20 et 0,41`);
+  // Comme les R-VAN : un secteur par référence, aucune ne couvre une pose entière, le calcul n'en choisit aucune seul.
+  exige(!cat.busesDe("hunter", "tuyere").some((b) => b.serie === "MP Rotator"), "une MP Rotator est choisie automatiquement : elle ne porte pas les trois angles d'une pose");
+  // Et rien ne bouge sur ses pelouses : son carré de 12 × 12 garde ses 9 turbines.
+  const carre = plan([{ id: 1, type: "gazon", nom: "Pelouse", x: 0, y: 0, L: 12, l: 12 }]);
+  exige(carre.dessin[0].points.length === 9, `${carre.dessin[0].points.length} têtes sur son 12 × 12, il en garde 9`);
+});
+
 console.log(`\n${failed === 0 ? "✅" : "❌"} Les règles du patron — ${passed} tenue(s), ${failed} rompue(s).`);
 if (failed > 0) {
   console.error(

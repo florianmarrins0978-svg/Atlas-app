@@ -241,6 +241,66 @@ var CATALOGUE = {
       colisage:25, source:'patron', releve:'Aqua Plus 2026, p. 8',
       pairAvec:'RBT1438' },
 
+    /* ── LES BUSES MP ROTATOR (Hunter) — Aqua Plus 2026, page 10, entrées le
+       18 octobre 2026 avec son oui (« oui je pense que c'est le mieux »).
+       La page dit : « turbine multijets à visser sur un corps de tuyère (M&F),
+       faible consommation, débit proportionnel au secteur arrosé, pression
+       d'utilisation 2 à 3,5 bars, performances débit / portée à 2,8 bars ».
+       SA RÈGLE DU 18 OCTOBRE : « les MP Rotator sont pour les tuyères » :
+       pourType 'tuyere', elles vont avec les tuyères sur une vanne, jamais
+       avec une turbine. Et leur débit SUIT L'ANGLE, lu par angle comme une VAN,
+       pas la règle des turbines (débit indépendant de l'arc).
+       COMME LES R-VAN, CHAQUE SECTEUR EST UNE RÉFÉRENCE : 90-210°, 210-270°,
+       360°. Aucune ne porte les trois angles d'une pose : `busesDe` ne les
+       choisit donc pas automatiquement tant que le pavage à deux références
+       n'existe pas. Elles sont au catalogue et dans les listes, et se posent à
+       la main. Les débits sont ceux du tableau, aux angles que la référence
+       couvre ; la colonne 270° de la MP1000 est vide dans le PDF. La portée :
+       le tableau dit 4,1 m pour la MP1000 quand l'en-tête annonce « de 4,9 à
+       9,1 m » : le tableau est recopié, l'écart est noté. La version Toro
+       (MP1000T, MP2000T, MP3000T, tuyère femelle) n'a ni portée ni débit sur
+       la page : elle n'entre pas, rien ne s'invente. Les photos (mp1000,
+       mp2000, mp3000, une par modèle) sont validées par lui le 18 octobre. */
+    { ref:'NA2302', nom:'MP1000 90-210°', marqueCle:'hunter', fournisseur:'Aqua Plus', serie:'MP Rotator',
+      pourType:'tuyere', rayon:4.1, pression:2.8, pressionMin:2, pressionMax:3.5, plageReleve:'Aqua Plus 2026, p. 10',
+      debit:{ 90:0.04, 180:0.09, 210:0.10 },
+      colisage:10, source:'patron', releve:'Aqua Plus 2026, p. 10',
+      aVerifier:'l\'en-tête de la page dit « portée de 4,9 à 9,1 m », le tableau donne 4,1 m' },
+    { ref:'NA2303', nom:'MP1000 210-270°', marqueCle:'hunter', fournisseur:'Aqua Plus', serie:'MP Rotator',
+      pourType:'tuyere', rayon:4.1, pression:2.8, pressionMin:2, pressionMax:3.5, plageReleve:'Aqua Plus 2026, p. 10',
+      debit:{ 210:0.10 },
+      colisage:10, source:'patron', releve:'Aqua Plus 2026, p. 10',
+      aVerifier:'la colonne 270° de la ligne MP1000 est vide dans le PDF ; portée 4,1 m au tableau, « 4,9 à 9,1 m » en en-tête' },
+    { ref:'NA2301', nom:'MP1000 360°', marqueCle:'hunter', fournisseur:'Aqua Plus', serie:'MP Rotator',
+      pourType:'tuyere', rayon:4.1, pression:2.8, pressionMin:2, pressionMax:3.5, plageReleve:'Aqua Plus 2026, p. 10',
+      debit:{ 360:0.17 },
+      colisage:10, source:'patron', releve:'Aqua Plus 2026, p. 10',
+      aVerifier:'0,17 m³/h placé sous la colonne 360° d\'après sa position dans le PDF ; portée 4,1 m au tableau, « 4,9 à 9,1 m » en en-tête' },
+    { ref:'NA2312', nom:'MP2000 90-210°', marqueCle:'hunter', fournisseur:'Aqua Plus', serie:'MP Rotator',
+      pourType:'tuyere', rayon:5.8, pression:2.8, pressionMin:2, pressionMax:3.5, plageReleve:'Aqua Plus 2026, p. 10',
+      debit:{ 90:0.09, 180:0.17, 210:0.20 },
+      colisage:10, source:'patron', releve:'Aqua Plus 2026, p. 10' },
+    { ref:'NA2313', nom:'MP2000 210-270°', marqueCle:'hunter', fournisseur:'Aqua Plus', serie:'MP Rotator',
+      pourType:'tuyere', rayon:5.8, pression:2.8, pressionMin:2, pressionMax:3.5, plageReleve:'Aqua Plus 2026, p. 10',
+      debit:{ 210:0.20, 270:0.25 },
+      colisage:10, source:'patron', releve:'Aqua Plus 2026, p. 10' },
+    { ref:'NA2311', nom:'MP2000 360°', marqueCle:'hunter', fournisseur:'Aqua Plus', serie:'MP Rotator',
+      pourType:'tuyere', rayon:5.8, pression:2.8, pressionMin:2, pressionMax:3.5, plageReleve:'Aqua Plus 2026, p. 10',
+      debit:{ 360:0.33 },
+      colisage:10, source:'patron', releve:'Aqua Plus 2026, p. 10' },
+    { ref:'NA2321', nom:'MP3000 90-210°', marqueCle:'hunter', fournisseur:'Aqua Plus', serie:'MP Rotator',
+      pourType:'tuyere', rayon:9.1, pression:2.8, pressionMin:2, pressionMax:3.5, plageReleve:'Aqua Plus 2026, p. 10',
+      debit:{ 90:0.20, 180:0.41, 210:0.48 },
+      colisage:10, source:'patron', releve:'Aqua Plus 2026, p. 10' },
+    { ref:'NA2322', nom:'MP3000 210-270°', marqueCle:'hunter', fournisseur:'Aqua Plus', serie:'MP Rotator',
+      pourType:'tuyere', rayon:9.1, pression:2.8, pressionMin:2, pressionMax:3.5, plageReleve:'Aqua Plus 2026, p. 10',
+      debit:{ 210:0.48, 270:0.62 },
+      colisage:10, source:'patron', releve:'Aqua Plus 2026, p. 10' },
+    { ref:'NA2323', nom:'MP3000 360°', marqueCle:'hunter', fournisseur:'Aqua Plus', serie:'MP Rotator',
+      pourType:'tuyere', rayon:9.1, pression:2.8, pressionMin:2, pressionMax:3.5, plageReleve:'Aqua Plus 2026, p. 10',
+      debit:{ 360:0.82 },
+      colisage:10, source:'patron', releve:'Aqua Plus 2026, p. 10' },
+
     /* ── LES BUSES DE TURBINE — cinquième page, le 17 août 2026 ─────────────
        Six familles (Hunter PGP-ADJ, PGP Ultra, I 20-04 ; Rain Bird 5000 Plus,
        3504 ; Hunter SRM-04, PGJ ; Toro Mini 8). PARTOUT LE MÊME TROU : une
