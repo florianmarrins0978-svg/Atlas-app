@@ -2426,6 +2426,23 @@ var CALCUL = (() => {
       { ref: "ELD100PAN", nom: "ruban isolant \xE9lectrique (10mx15mm - \xE9p.0,15mm)", categorie: "\xE9lectricit\xE9", colisage: "10", source: "patron", releve: "Aqua Plus 2026, p. 58" },
       { ref: "ELDGEL", nom: "Gel isolant bi-composant 2 x 500 ml", categorie: "\xE9lectricit\xE9", colisage: "1", source: "patron", releve: "Aqua Plus 2026, p. 58" }
     ],
+    /* ── SES RACCORDS À COMPRESSION PLASSON DU Ø16 RIGIDE ────────────────────
+       Ses photos du 18 octobre 2026 : « tout ce que je t'envoie, c'est de la même
+       gamme et c'est pour du 16 rigide ». Le Plasson à bague blanche du relevé
+       Aqua Plus ne prend que le PE 25 ou 32 : ces pièces-ci sont d'une autre
+       gamme. AUCUNE RÉFÉRENCE : il ne sait pas laquelle c'est, et « avec cette
+       photo et le nom, n'importe quel fournisseur sait de quoi on parle ». Sans
+       `releve`, `referenceDe` n'en écrit donc aucune. Les noms sont les siens :
+       « manchon à compression, Plasson, et après 16 par 16 ». Le filetage du té
+       taraudé et du manchon fileté n'est pas donné : il n'est pas écrit. */
+    raccords16Rigide: [
+      { ref: "plasson16-raccord-taraude", nom: 'raccord taraud\xE9 \xE0 compression Plasson 16 x 3/4", pour 16 rigide', categorie: "raccord PE", marque: "Plasson", diametre: "16", filetage: '3/4"', source: "patron", photo: "sa photo du 18 octobre 2026" },
+      { ref: "plasson16-manchon", nom: "manchon \xE0 compression Plasson 16 x 16, pour 16 rigide", categorie: "raccord PE", marque: "Plasson", diametre: "16", source: "patron", photo: "sa photo du 18 octobre 2026" },
+      { ref: "plasson16-te", nom: "t\xE9 \xE0 compression Plasson 16 x 16 x 16, pour 16 rigide", categorie: "raccord PE", marque: "Plasson", diametre: "16", source: "patron", photo: "sa photo du 18 octobre 2026" },
+      { ref: "plasson16-te-taraude", nom: "t\xE9 taraud\xE9 \xE0 compression Plasson 16, pour 16 rigide", categorie: "raccord PE", marque: "Plasson", diametre: "16", source: "patron", photo: "sa photo du 18 octobre 2026" },
+      { ref: "plasson16-coude", nom: "coude \xE0 compression Plasson 16 x 16, pour 16 rigide", categorie: "raccord PE", marque: "Plasson", diametre: "16", source: "patron", photo: "sa photo du 18 octobre 2026" },
+      { ref: "plasson16-manchon-filete", nom: "manchon filet\xE9 \xE0 compression Plasson 16, pour 16 rigide", categorie: "raccord PE", marque: "Plasson", diametre: "16", source: "patron", photo: "sa photo du 18 octobre 2026" }
+    ],
     /* ── Le reste du matériel ───────────────────────────────────────────────
          **Ses lignes provisoires sont RETIRÉES, le 16 octobre 2026** (« supprime
          toutes les lignes provisoires ») : électrovanne et regard génériques,
