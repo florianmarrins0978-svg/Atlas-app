@@ -118,6 +118,34 @@
   .tete .piece .photo img{max-width:48px;max-height:48px}
   .tete .piece:nth-child(2){margin-left:10px}
   .tete .piece .nom{font-size:10.5px}
+  /* LES PIÈCES SUR LE PLAN, validées le 18 octobre 2026 : chaque tête porte son
+     té ou son coude et son arroseur, à sa place sur le jardin. */
+  .plan-pieces{margin-top:10px;border-radius:16px;background:var(--atlas-card);padding:12px}
+  .surface{position:relative}
+  .surface svg{display:block;width:100%;height:auto}
+  .pp{position:absolute;transform:translate(-50%,-50%);display:flex;gap:2px}
+  .pp .piece,.pp .piece .photo{width:32px}
+  .pp .piece .photo{height:32px;border-radius:7px}
+  .pp .piece .photo img{max-width:28px;max-height:28px}
+  .pp .piece .photo img.pied{max-width:60%;width:60%;max-height:60%;right:-5px;bottom:-5px;border-radius:5px}
+  .pp .piece .nom,.pp .piece .mention{display:none}
+  .pp .egal .photo{box-shadow:0 0 0 2px var(--atlas-or),0 2px 5px var(--atlas-lineSoft)}
+  .pp .piece.retiree .photo::after{left:4%;right:4%}
+  .ligne-pe{margin-top:10px;display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .ligne-pe .piece,.ligne-pe .piece .photo{width:44px}
+  .ligne-pe .piece .photo{height:44px}
+  .ligne-pe .piece .photo img{max-width:40px;max-height:40px}
+  .ligne-pe .piece .nom{display:none}
+  /* La chaîne d'une tête : « + » là où ça se visse, double flèche là où le PEBD
+     s'emboîte (« la B », sa réponse du 18 octobre 2026). */
+  .chaine{margin-top:10px;display:flex;gap:3px;align-items:flex-start}
+  .chaine .m{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;text-align:center}
+  .chaine .v{position:relative;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:9px;background:var(--atlas-card);box-shadow:0 0 0 1px var(--atlas-line),0 2px 5px var(--atlas-lineSoft)}
+  .chaine .v img{max-width:40px;max-height:40px;mix-blend-mode:multiply}
+  .chaine .v img.pied{position:absolute;right:-5px;bottom:-5px;width:55%;max-width:55%;height:auto;border-radius:5px;background:var(--atlas-card);mix-blend-mode:normal}
+  .chaine small{margin-top:4px;font-size:10.5px;line-height:1.25;color:var(--atlas-inkSoft)}
+  .chaine .plus{flex:none;margin-top:12px;font-size:17px;font-weight:700;color:var(--atlas-inkSoft)}
+  .chaine .dbl{flex:none;margin-top:17px}
   .ajouter{margin-top:10px;display:flex;width:100%;min-height:48px;align-items:center;justify-content:center;border-radius:12px;border:1.5px dashed var(--atlas-line);background:none;color:var(--atlas-ink);font-size:14.5px;cursor:pointer}
   .groupe{margin:16px 0 0;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
   .groupe .pastille{flex:none;width:10px;height:10px;border-radius:3px;background:var(--couleur)}
@@ -597,35 +625,79 @@
       if (s.famille === "Goutte-à-goutte") jardin += '<div class="chips" role="group" aria-label="Couronnes">' +
         '<button type="button" data-couronne="50" aria-pressed="' + (etat.couronne === 50) + '">Couronnes de 50 m</button>' +
         '<button type="button" data-couronne="100" aria-pressed="' + (etat.couronne === 100) + '">De 100 m</button></div>';
-      jardin += '<div class="rail"><div class="tete">' + poser("r" + i + ":pe", "pe25", "PEHD Ø25", "PEHD Ø25, " + (r ? r.metresTuyau + " m" : "à mesurer"), r ? r.metresTuyau : 0, "ml") + "</div>";
-      if (s.famille === "Goutte-à-goutte") {
+      if (s.famille === "Goutte-à-goutte" || !r) {
+        jardin += '<div class="rail"><div class="tete">' + poser("r" + i + ":pe", "pe25", "PEHD Ø25", "PEHD Ø25, " + (r ? r.metresTuyau + " m" : "à mesurer"), r ? r.metresTuyau : 0, "ml") + "</div>";
         jardin += '<div class="tete">' + poser("r" + i + ":coude", "coude-taraude-25-34", nomDe("coude-taraude-25-34", M), "Coude taraudé") +
           (etat.sortie === "ligne" ? poser("r" + i + ":coude16", "MID6341", nomDe("MID6341", M), "coude Palaplast Ø16") : poser("r" + i + ":te16", "MID6321", nomDe("MID6321", M), "té Palaplast Ø16")) +
           couronnes(i, M) + (etat.sortie === "boucle" ? "" : poser("r" + i + ":bouchon", "MID6371", nomDe("MID6371", M), "bouchon Palaplast Ø16")) + "</div>";
+        jardin += ajoutees("r" + i) + "</div>";
+      } else {
+        jardin += planDesPieces(p, d, M, r, i, corpsTuyere, sbeBas);
       }
-      if (r) {
-        // Le té égal se pose là où le dessin met un losange : le plan et la liste
-        // lisent le même dessin.
-        r.jonctions.forEach(function (q, j) { jardin += '<div class="tete">' + poser("r" + i + ":j" + j, "te-25-25-25", nomDe("te-25-25-25", M), "Té égal, la ligne se sépare") + "</div>"; });
-        r.tetes.forEach(function (t, j) {
-          var z = zoneDeLaTete(p, t, i);
-          var buse = z && CAT.buses.filter(function (b) { return b.nom === z.buse; })[0];
-          var corps = t.forme === "carre" ? corpsTuyere : buse && CAT.corpsDeLaBuse(buse);
-          var k = "r" + i + ":t" + j, raccord = t.plein ? "te-taraude-25-34-25" : "coude-taraude-25-34";
-          var sbeHaut = corps && CAT.coudes.filter(function (cc) { return cc.filetage === corps.filetage; })[0];
-          jardin += '<div class="tete">' +
-            poser(k + ":raccord", raccord, nomDe(raccord, M), t.plein ? "Té taraudé" : "Coude taraudé") +
-            poser(k + ":sbeb", sbeBas.ref, sbeBas.nom + ", " + sbeBas.detail, "SBE 3/4\"") +
-            poser(k + ":pebd", "pebd16", nomDe("pebd16", M), "PEBD Ø16, 2 m", 2, "ml") +
-            (sbeHaut ? poser(k + ":sbeh", sbeHaut.ref, sbeHaut.nom + ", " + sbeHaut.detail, "SBE " + sbeHaut.filetage + "\"") : "") +
-            (corps ? (t.forme === "carre" ? tuyere(k + ":corps", corps, buse) : poser(k + ":corps", corps.ref, corps.nom, z.buse)) : "") +
-            "</div>";
-        });
-      }
-      jardin += ajoutees("r" + i) + "</div>";
+
       jardin += '<button class="ajouter" type="button" data-ajouter="r' + i + '">Ajouter une pièce au réseau ' + (i + 1) + "</button></div>";
     });
     $("jardin").innerHTML = jardin;
+  }
+
+  // LES PIÈCES D'UN RÉSEAU, SUR LE PLAN DU JARDIN — sa demande du 18 octobre
+  // 2026 : « si le jardin c'est un carré, tu remets le plan avec un carré et les
+  // pièces au bon endroit ». Le plan est recadré sur le réseau ; chaque tête porte
+  // son té ou son coude taraudé (plein ou creux sur le dessin) et son arroseur.
+  // Le té égal se pose SUR le croisement, l'arroseur à gauche du trait et le té
+  // taraudé à droite, juste dessous. Les SBE et le PEBD de chaque tête comptent
+  // dans la liste, et la chaîne d'une tête les montre une fois, sous le plan.
+  function planDesPieces(p, d, M, r, i, corpsTuyere, sbeBas) {
+    var c = p.couleurs[i];
+    var pts = r.tetes.map(function (q) { return { x: q.x, y: q.y }; }).concat(r.jonctions);
+    var x0 = Math.min.apply(null, pts.map(function (q) { return q.x; })) - 1.6, x1 = Math.max.apply(null, pts.map(function (q) { return q.x; })) + 1.6;
+    var y0 = Math.min.apply(null, pts.map(function (q) { return q.y; })) - 1.6, y1 = Math.max.apply(null, pts.map(function (q) { return q.y; })) + 1.6;
+    var W = 100, H = (y1 - y0) / (x1 - x0) * W;
+    var px = function (x) { return (x - x0) / (x1 - x0) * W; }, py = function (y) { return (y - y0) / (x1 - x0) * W; };
+    var pc = function (x, y) { return "left:" + px(x) + "%;top:" + (py(y) / H * 100) + "%"; };
+    var s = '<svg viewBox="0 0 ' + W + " " + H + '" aria-hidden="true">';
+    d.contours.forEach(function (cc) { s += '<polygon points="' + cc.map(function (q) { return px(q.x) + "," + py(q.y); }).join(" ") + '" fill="' + jeton("plein") + '" fill-opacity=".14" stroke="' + jeton("ink") + '" stroke-opacity=".4" stroke-width=".45"/>'; });
+    r.traits.forEach(function (q) { s += '<line x1="' + px(q.de.x) + '" y1="' + py(q.de.y) + '" x2="' + px(q.a.x) + '" y2="' + py(q.a.y) + '" stroke="' + c + '" stroke-width="1.2" stroke-linecap="round"/>'; });
+    r.antennes.forEach(function (q) { s += '<line x1="' + px(q.de.x) + '" y1="' + py(q.de.y) + '" x2="' + px(q.a.x) + '" y2="' + py(q.a.y) + '" stroke="' + c + '" stroke-width=".6"/>'; });
+    s += "</svg>";
+    var poses = "", pris = {}, premiere = null;
+    r.tetes.forEach(function (q, j) {
+      var z = zoneDeLaTete(p, q, i);
+      var buse = z && CAT.buses.filter(function (b) { return b.nom === z.buse; })[0];
+      var corps = q.forme === "carre" ? corpsTuyere : buse && CAT.corpsDeLaBuse(buse);
+      var k = "r" + i + ":t" + j, raccord = q.plein ? "te-taraude-25-34-25" : "coude-taraude-25-34";
+      var sbeHaut = corps && CAT.coudes.filter(function (cc) { return cc.filetage === corps.filetage; })[0];
+      if (!premiere) premiere = { corps: corps, buse: q.forme === "carre" ? buse : null, sbeHaut: sbeHaut };
+      var htmlRaccord = poser(k + ":raccord", raccord, nomDe(raccord, M), q.plein ? "Té taraudé" : "Coude taraudé");
+      // Comptés, montrés une fois dans la chaîne sous le plan.
+      poser(k + ":sbeb", sbeBas.ref, sbeBas.nom + ", " + sbeBas.detail, "SBE 3/4\"");
+      poser(k + ":pebd", "pebd16", nomDe("pebd16", M), "PEBD Ø16, 2 m", 2, "ml");
+      if (sbeHaut) poser(k + ":sbeh", sbeHaut.ref, sbeHaut.nom + ", " + sbeHaut.detail, "SBE " + sbeHaut.filetage + "\"");
+      var htmlCorps = corps ? (q.forme === "carre" ? tuyere(k + ":corps", corps, buse) : poser(k + ":corps", corps.ref, corps.nom, z.buse)) : "";
+      var n = -1;
+      r.jonctions.forEach(function (o, m) { if (!pris[m] && Math.abs(o.x - q.x) + Math.abs(o.y - q.y) < 1.5) n = m; });
+      if (n >= 0) {
+        pris[n] = true;
+        poses += '<div class="pp" style="' + pc(q.x, q.y) + '"><span class="egal">' + poser("r" + i + ":j" + n, "te-25-25-25", nomDe("te-25-25-25", M), "Té égal, la ligne se sépare") + "</span></div>";
+        poses += '<div class="pp" style="' + pc(q.x, q.y) + ';margin-top:36px">' + htmlCorps + htmlRaccord + "</div>";
+      } else {
+        poses += '<div class="pp" style="' + pc(q.x, q.y) + '">' + htmlRaccord + htmlCorps + "</div>";
+      }
+    });
+    r.jonctions.forEach(function (o, m) { if (!pris[m]) poses += '<div class="pp" style="' + pc(o.x, o.y) + '"><span class="egal">' + poser("r" + i + ":j" + m, "te-25-25-25", nomDe("te-25-25-25", M), "Té égal, la ligne se sépare") + "</span></div>"; });
+
+    var ph = function (ref) { return PHOTOS[ref] ? '<img src="arrosage-photos/' + PHOTOS[ref] + '" alt="">' : ""; };
+    var dbl = '<svg class="dbl" width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M1 6H15M1 6l4-4M1 6l4 4M15 6l-4-4M15 6l-4 4" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>';
+    var chaine = premiere ? '<div class="chaine" aria-label="Les pièces d’une tête, dans l’ordre où elles se montent">' +
+      '<div class="m"><span class="v">' + ph("te-taraude-25-34-25") + "</span><small>Té ou coude taraudé</small></div><b class=\"plus\">+</b>" +
+      '<div class="m"><span class="v">' + ph(sbeBas.ref) + "</span><small>SBE 3/4\" vissé sur le té ou le coude</small></div>" + dbl +
+      '<div class="m"><span class="v">' + ph("pebd16") + "</span><small>PEBD Ø16, 2 m, emboîté</small></div>" + dbl +
+      '<div class="m"><span class="v">' + (premiere.sbeHaut ? ph(premiere.sbeHaut.ref) : "") + "</span><small>SBE " + (premiere.sbeHaut ? premiere.sbeHaut.filetage : "") + "\" vissé sous l’arroseur</small></div><b class=\"plus\">+</b>" +
+      '<div class="m"><span class="v">' + (premiere.corps ? ph(premiere.corps.ref) : "") + (premiere.buse && PHOTOS[premiere.buse.ref] ? '<img class="pied" src="arrosage-photos/' + PHOTOS[premiere.buse.ref] + '" alt="">' : "") + "</span><small>" + texte(premiere.corps ? premiere.corps.nom + (premiere.buse ? " et sa buse " + premiere.buse.nom : "") : "") + "</small></div></div>" : "";
+
+    return '<div class="ligne-pe">' + poser("r" + i + ":pe", "pe25", "PEHD Ø25", "PEHD Ø25, " + r.metresTuyau + " m", r.metresTuyau, "ml") + "<span>PEHD Ø25, " + r.metresTuyau + " m</span></div>" +
+      '<div class="plan-pieces"><div class="surface">' + s + poses + "</div>" + chaine +
+      (etat.ajoutees.some(function (a) { return a.ou === "r" + i; }) ? '<div class="rail" style="margin-top:12px"><div class="tete">' + ajoutees("r" + i) + "</div></div>" : "") + "</div>";
   }
 
   // ═══ 4. LES MOTS DU PLAN ════════════════════════════════════════════════════
