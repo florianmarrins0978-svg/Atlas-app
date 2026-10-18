@@ -100,10 +100,11 @@
   .pointille{margin:8px 0 0;font-size:13px;color:var(--atlas-inkSoft)}
   /* Les petits tirets noirs du plan, en tête de la phrase (sa demande du 18 octobre 2026). */
   .pointille .tirets{display:inline-block;width:24px;height:6px;margin-right:6px;vertical-align:middle;color:var(--atlas-ink)}
-  .rouleau{display:flex;align-items:center;gap:12px;margin-top:10px;border-radius:12px;padding:10px 12px;background:var(--atlas-card);font-size:14px}
-  .rouleau img{flex:none;width:56px;height:56px;object-fit:contain;mix-blend-mode:multiply}
-  .rouleau small{display:block;color:var(--atlas-muted);font-size:12.5px}
-  .rouleau:empty{display:none}
+  .options-pieces{display:flex;align-items:flex-start;gap:12px;margin-top:10px}
+  .options-pieces .eclate.sonde{margin-top:0}
+  .piece.fixe{cursor:default;width:108px}
+  .piece.fixe:empty{display:none}
+  #grillage-detail:empty{display:none}
   .materiel{margin:8px 0 0;padding:0;list-style:none;font-size:14px}
   .materiel li{display:flex;gap:10px;padding:3px 0}
   .materiel .q{flex:none;width:58px;font-weight:600;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
@@ -252,14 +253,25 @@
     <div class="pile" id="pile" role="img" aria-label="Le montage au robinet, pièce sous pièce"></div>
   </section>
 
+  <!-- Au nez de robinet il n'y a pas de nourrice : la case du grillage vient ici. -->
+  <section class="bloc" id="place-options-nez"></section>
+
   <section class="bloc" id="bloc-nourrice">
     <span class="caps">La nourrice</span>
     <h2 id="titre-nourrice"></h2>
     <p class="sous" id="sous-nourrice"></p>
-    <!-- La sonde de pluie, juste au-dessus de la nourrice (sa demande du 18 octobre
-         2026) ; cochée, elle se montre et se change comme les autres pièces. -->
-    <label class="coche" id="coche-sonde"><input type="checkbox" id="sonde"> Sonde de pluie</label>
-    <div class="eclate sonde" id="sonde-piece"></div>
+    <div id="place-options-nourrice">
+    <!-- La sonde de pluie puis le grillage, juste au-dessus de la nourrice (ses
+         demandes du 18 octobre 2026). Cochés, ils se montrent sur une ligne : la
+         sonde à gauche, qui se change comme les autres pièces, le grillage à sa
+         droite, qui ne se change pas (il n'existe qu'en bleu). -->
+    <div id="options">
+      <label class="coche" id="coche-sonde"><input type="checkbox" id="sonde"> Sonde de pluie</label>
+      <label class="coche"><input type="checkbox" id="grillage"> Grillage avertisseur</label>
+      <div class="options-pieces"><div class="eclate sonde" id="sonde-piece"></div><div class="piece fixe" id="grillage-piece"></div></div>
+      <p class="sous" id="grillage-detail"></p>
+    </div>
+    </div>
     <div class="regard"><canvas id="dessin" width="358" height="420" role="img" aria-label="La nourrice, pièce par pièce"></canvas></div>
     <ol class="legende" id="legende"></ol>
     <div class="bac">
@@ -273,8 +285,6 @@
     <h2 id="titre-reseaux"></h2>
     <div id="reseaux"></div>
     <div class="symboles" id="symboles"></div>
-    <label class="coche"><input type="checkbox" id="grillage"> Grillage avertisseur</label>
-    <div class="rouleau" id="grillage-piece"></div>
   </section>
 
   <section class="bloc">
@@ -356,7 +366,9 @@
     // Le Ø16 rigide part par un raccord à compression Plasson taraudé 3/4" (sa
     // photo du 18 octobre 2026), le souple par l'embout Palaplast MID6362.
     // Le taraudé en haut, l'embout en bas.
-    raccord: { 16: { ref: "plasson-16-rigide", sansReference: true, nom: "raccord à compression Plasson taraudé 16 x 3/4\", pour 16 rigide", photo: "plasson-16-rigide-debout.png" }, 25: { ref: "OPL70302520", nom: "raccord femelle 25 x 3/4\"", photo: "OPL703016.png" }, 32: { ref: "OPL70303220", nom: "raccord femelle 32 x 3/4\"", photo: "OPL703016.png" } }
+    // Le Ø16 souple part par l'embout Palaplast taraudé 16 x 3/4" (sa demande du
+    // 18 octobre 2026 : « il faut aussi pouvoir mettre 16 souple »).
+    raccord: { "16s": { ref: "MID6362", nom: "embout Palaplast taraudé 16 x 3/4\", pour 16 souple", photo: "MID6362-debout.png" }, 16: { ref: "plasson-16-rigide", sansReference: true, nom: "raccord à compression Plasson taraudé 16 x 3/4\", pour 16 rigide", photo: "plasson-16-rigide-debout.png" }, 25: { ref: "OPL70302520", nom: "raccord femelle 25 x 3/4\"", photo: "OPL703016.png" }, 32: { ref: "OPL70303220", nom: "raccord femelle 32 x 3/4\"", photo: "OPL703016.png" } }
   };
   [ROBINET.double, ROBINET.prog].forEach(function (x) { PHOTOS[x.ref] = "../arrosage-robinet-photos/" + x.photo; });
   PHOTOS["plasson-16-rigide"] = "../arrosage-robinet-photos/plasson-16-rigide.jpg"; PHOTOS.OPL70302520 = "OPL70302520.jpg"; PHOTOS.OPL70303220 = "OPL70302520.jpg";
@@ -719,7 +731,7 @@
   function dessinerPieces(p, d, M) {
     groupe = "amenee";
     var dia = robinet.departMain || departDeLOutil(p), rac = ROBINET.raccord[dia];
-    var tuyau = dia === 16 ? "PEBD rigide Ø16" : "PEHD Ø" + dia;
+    var tuyau = dia === 16 ? "PEBD rigide Ø16" : dia === "16s" ? "Ø16 souple" : "PEHD Ø" + dia;
     $("titre-amenee").textContent = robinet.montage === "nez" ? "Au robinet" : "Du robinet à la nourrice";
     // La double sortie se pose décalée : sa sortie de GAUCHE (10 % de sa photo, la sienne du 18 octobre 2026)
     // tombe sur l'axe de la pile, à 60 px. Les autres pièces se centrent sur cet axe.
@@ -727,7 +739,7 @@
     if (robinet.double) etages.push('<div class="etage"><span class="ph" style="--h:66px"><img src="arrosage-robinet-photos/' + ROBINET.double.photo + '" alt="" style="margin-left:' + (60 - 0.10 * 102) + 'px"></span><span class="lib"><b>' + texte(ROBINET.double.nom) + "</b>Réf. " + ROBINET.double.ref + "</span></div>");
     if (robinet.montage === "nez") etages.push('<div class="etage"><span class="ph" style="--h:90px;--w:62px"><img src="arrosage-robinet-photos/SP1151.png" alt=""></span><span class="lib"><b>' + texte(ROBINET.prog.nom) + "</b>Réf. " + ROBINET.prog.ref + "</span></div>");
     etages.push('<div class="etage"><span class="ph" style="--h:70px;--w:41px"><img src="arrosage-robinet-photos/' + rac.photo + '" alt=""></span><span class="lib"><b>' + texte(rac.nom) + "</b>" + (rac.sansReference ? "Réf. du fournisseur" : "Réf. " + rac.ref) + "</span></div>");
-    etages.push('<div class="etage"><span class="ph" style="--h:60px;--w:14px"><span class="tube' + (dia === 16 ? " seize" : "") + '"></span></span><span class="lib"><b>' + texte(tuyau) + "</b>" + (robinet.montage === "nez" ? "jusqu’au réseau, à mesurer" : "jusqu’à la nourrice, à mesurer") + "</span></div>");
+    etages.push('<div class="etage"><span class="ph" style="--h:60px;--w:14px"><span class="tube' + (dia === 16 || dia === "16s" ? " seize" : "") + '"></span></span><span class="lib"><b>' + texte(tuyau) + "</b>" + (robinet.montage === "nez" ? "jusqu’au réseau, à mesurer" : "jusqu’à la nourrice, à mesurer") + "</span></div>");
     $("pile").innerHTML = etages.join("");
     $("amenee").innerHTML =
       (robinet.double ? poser("am:double", ROBINET.double.ref, ROBINET.double.nom, "Double sortie") : "") +
@@ -953,10 +965,12 @@
     direSaisie();
     document.querySelectorAll("[data-montage]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.montage === robinet.montage)); });
     $("bloc-nourrice").hidden = robinet.montage === "nez";
+    (robinet.montage === "nez" ? $("place-options-nez") : $("place-options-nourrice")).appendChild($("options"));
+    $("place-options-nez").hidden = robinet.montage !== "nez";
     $("coche-sonde").style.display = robinet.montage === "nez" ? "none" : "";
     if (robinet.montage === "nez") { etat.sonde = false; $("sonde").checked = false; }
     var auto = departDeLOutil(p), dia = robinet.departMain || auto;
-    $("departs").innerHTML = [16, 25, 32].map(function (n) { return '<button type="button" data-depart="' + n + '" aria-pressed="' + (dia === n) + '">' + (n === 16 ? "Ø16 rigide" : "Ø" + n) + "</button>"; }).join("");
+    $("departs").innerHTML = [16, "16s", 25, 32].map(function (n) { return '<button type="button" data-depart="' + n + '" aria-pressed="' + (dia === n) + '">' + (n === 16 ? "Ø16 rigide" : n === "16s" ? "Ø16 souple" : "Ø" + n) + "</button>"; }).join("");
     $("depart-choisi").textContent = "L’outil choisit le Ø" + auto + (auto === 16 ? " rigide" : "") + "." + (robinet.departMain && robinet.departMain !== auto ? " Changé à la main." : "");
     couleursPlan = p.couleurs;
     var res = C.dessinerPlan(p.dessin, robinet.montage === "nez" ? ROBINET_POSE : NOURRICE, p.couleurs);
@@ -972,7 +986,8 @@
     // Le grillage coché se montre, sa photo et ses rouleaux de 100 m. Il n'existe
     // qu'en bleu : il ne se change pas (sa remarque du 18 octobre 2026).
     var grillage = etat.grillage ? piecesOutil(p, res.dessin).filter(function (x) { return x.ref === "grillage-bleu"; })[0] : null;
-    $("grillage-piece").innerHTML = grillage ? '<img src="arrosage-photos/grillage-bleu.jpg" alt=""><span>' + grillage.q + "x " + texte(grillage.nom) + "<small>Rouleau de 100 m. " + texte(grillage.detail.charAt(0).toUpperCase() + grillage.detail.slice(1)) + ".</small></span>" : "";
+    $("grillage-piece").innerHTML = grillage ? '<span class="photo"><img src="arrosage-photos/grillage-bleu.jpg" alt=""></span><span class="nom">' + grillage.q + "x " + texte(grillage.nom) + "</span>" : "";
+    $("grillage-detail").textContent = grillage ? "Grillage en rouleaux de 100 m. " + grillage.detail.charAt(0).toUpperCase() + grillage.detail.slice(1) + "." : "";
     dessinerMots();
   }
 
@@ -992,7 +1007,7 @@
       $("menu").hidden = true; dessiner(); return;
     }
     if (b.dataset.montage) { robinet.montage = b.dataset.montage; robinet.departMain = null; dessiner(); return; }
-    if (b.dataset.depart) { robinet.departMain = Number(b.dataset.depart); dessiner(); return; }
+    if (b.dataset.depart) { robinet.departMain = b.dataset.depart === "16s" ? "16s" : Number(b.dataset.depart); dessiner(); return; }
     if (b.dataset.sortie) { etat.sortie = b.dataset.sortie; dessiner(); }
     else if (b.dataset.couronne) { etat.couronne = Number(b.dataset.couronne); dessiner(); }
     else if (b.dataset.ajouter) { etat.ou = b.dataset.ajouter; etat.cible = null; ouvrir(); }

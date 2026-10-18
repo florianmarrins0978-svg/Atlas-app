@@ -86,10 +86,11 @@
   .pointille{margin:8px 0 0;font-size:13px;color:var(--atlas-inkSoft)}
   /* Les petits tirets noirs du plan, en tête de la phrase (sa demande du 18 octobre 2026). */
   .pointille .tirets{display:inline-block;width:24px;height:6px;margin-right:6px;vertical-align:middle;color:var(--atlas-ink)}
-  .rouleau{display:flex;align-items:center;gap:12px;margin-top:10px;border-radius:12px;padding:10px 12px;background:var(--atlas-card);font-size:14px}
-  .rouleau img{flex:none;width:56px;height:56px;object-fit:contain;mix-blend-mode:multiply}
-  .rouleau small{display:block;color:var(--atlas-muted);font-size:12.5px}
-  .rouleau:empty{display:none}
+  .options-pieces{display:flex;align-items:flex-start;gap:12px;margin-top:10px}
+  .options-pieces .eclate.sonde{margin-top:0}
+  .piece.fixe{cursor:default;width:108px}
+  .piece.fixe:empty{display:none}
+  #grillage-detail:empty{display:none}
   .materiel{margin:8px 0 0;padding:0;list-style:none;font-size:14px}
   .materiel li{display:flex;gap:10px;padding:3px 0}
   .materiel .q{flex:none;width:58px;font-weight:600;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
@@ -215,10 +216,16 @@
     <span class="caps">La nourrice</span>
     <h2 id="titre-nourrice"></h2>
     <p class="sous" id="sous-nourrice"></p>
-    <!-- La sonde de pluie, juste au-dessus de la nourrice (sa demande du 18 octobre
-         2026) ; cochée, elle se montre et se change comme les autres pièces. -->
-    <label class="coche" id="coche-sonde"><input type="checkbox" id="sonde"> Sonde de pluie</label>
-    <div class="eclate sonde" id="sonde-piece"></div>
+    <!-- La sonde de pluie puis le grillage, juste au-dessus de la nourrice (ses
+         demandes du 18 octobre 2026). Cochés, ils se montrent sur une ligne : la
+         sonde à gauche, qui se change comme les autres pièces, le grillage à sa
+         droite, qui ne se change pas (il n'existe qu'en bleu). -->
+    <div id="options">
+      <label class="coche" id="coche-sonde"><input type="checkbox" id="sonde"> Sonde de pluie</label>
+      <label class="coche"><input type="checkbox" id="grillage"> Grillage avertisseur</label>
+      <div class="options-pieces"><div class="eclate sonde" id="sonde-piece"></div><div class="piece fixe" id="grillage-piece"></div></div>
+      <p class="sous" id="grillage-detail"></p>
+    </div>
     <div class="regard"><canvas id="dessin" width="358" height="420" role="img" aria-label="La nourrice, pièce par pièce"></canvas></div>
     <ol class="legende" id="legende"></ol>
     <div class="bac">
@@ -232,8 +239,6 @@
     <h2 id="titre-reseaux"></h2>
     <div id="reseaux"></div>
     <div class="symboles" id="symboles"></div>
-    <label class="coche"><input type="checkbox" id="grillage"> Grillage avertisseur</label>
-    <div class="rouleau" id="grillage-piece"></div>
   </section>
 
   <section class="bloc">
@@ -865,7 +870,8 @@
     // Le grillage coché se montre, sa photo et ses rouleaux de 100 m. Il n'existe
     // qu'en bleu : il ne se change pas (sa remarque du 18 octobre 2026).
     var grillage = etat.grillage ? piecesOutil(p, res.dessin).filter(function (x) { return x.ref === "grillage-bleu"; })[0] : null;
-    $("grillage-piece").innerHTML = grillage ? '<img src="arrosage-photos/grillage-bleu.jpg" alt=""><span>' + grillage.q + "x " + texte(grillage.nom) + "<small>Rouleau de 100 m. " + texte(grillage.detail.charAt(0).toUpperCase() + grillage.detail.slice(1)) + ".</small></span>" : "";
+    $("grillage-piece").innerHTML = grillage ? '<span class="photo"><img src="arrosage-photos/grillage-bleu.jpg" alt=""></span><span class="nom">' + grillage.q + "x " + texte(grillage.nom) + "</span>" : "";
+    $("grillage-detail").textContent = grillage ? "Grillage en rouleaux de 100 m. " + grillage.detail.charAt(0).toUpperCase() + grillage.detail.slice(1) + "." : "";
     dessinerMots();
   }
 

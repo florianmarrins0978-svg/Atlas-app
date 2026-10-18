@@ -41,6 +41,8 @@ barrées ou annotées).
 
 **Puis** : (3) le PEHD du goutte-à-goutte se pose sous le titre du réseau comme pour les autres, pas en travers du rail ; sa longueur reste « à mesurer » (le calcul ne trace pas la ligne d'un goutte-à-goutte). (4) « En pointillé, » est remplacé par de petits tirets noirs dessinés en tête de la phrase. (5) Le **grillage avertisseur** coché se montre avec une photo et ses rouleaux de 100 m, sans pouvoir se changer (il n'existe qu'en bleu). **Sa photo est trouvée par nous** (Bricomarché, grillage bleu eau potable 0,3 x 100 m, FITT : https://assets-big.cdn-mousquetaires.com/medias/domain11440/media4160/624916-8yurd7x654-large.jpg), `appli/arrosage-photos/grillage-bleu.jpg` : **à lui faire valider**.
 
+**Encore** : (6) la case du grillage est sous celle de la sonde, au-dessus de la nourrice ; cochés, la sonde (à gauche) et le grillage (à droite) s'affichent sur une ligne. Au nez de robinet, sans nourrice, la case du grillage vient seule à sa place. (7) Le départ au robinet propose aussi **Ø16 souple**, qui prend l'embout Palaplast MID6362.
+
 **ATTENTION : une autre session travaille dans CE MÊME dossier.** Elle a fait la
 planche des photos de raccords PE (https://claude.ai/artifact/R3viQnoxAi7biZ6tD5syYS,
 commits `9e9db77f`, `724d500e`, puis `941952ea` qui donne leurs photos validées aux raccords PE de la liste dans `arrosage-plan.html` et `arrosage-vue-eclatee.html`). Avant de toucher à ces fichiers, `git log` pour voir si elle a bougé, et ne jamais jeter son travail non commité : demander au patron.
