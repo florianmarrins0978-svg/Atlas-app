@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Importer un devis</title>
+<!--
+  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Sa demande du 17 octobre 2026 :
+  « une petite case où, si quelqu'un a déjà fait un devis chez un fournisseur,
+  il puisse rentrer le devis, et que l'outil récupère la nomenclature et lui
+  crée le montage ». Son « oui » pour la planche le 18 octobre.
+
+  LE DEVIS D'EXEMPLE N'EST PAS INVENTÉ : c'est la liste que le calcul rend pour
+  le jardin d'exemple de la planche du plan (arrosage-plan.html), reprise par
+  docs/arrosage-releve-photos/engendrer-planche-import-devis.mjs. Seule la
+  ligne de frais de port est écrite à la main : elle montre ce que l'outil fait
+  d'une ligne qui n'est pas une pièce.
+
+  CE QU'UN DEVIS DONNE : les pièces, leurs quantités, le nombre de réseaux (une
+  électrovanne, un réseau), donc la nourrice. CE QU'IL NE DONNE PAS, et qui ne
+  s'invente pas : le jardin. Sans croquis complet (métrés, piquage, nourrice),
+  aucun plan (CLAUDE.md §4 bis) : la planche le dit et s'arrête là.
+
+  Dans l'outil, la lecture se fera comme lire-ticket.ts (photo ou PDF lu par
+  l'IA, pièces reconnues par leur référence) ; ici, le bouton fait semblant.
+-->
+<style>
+[data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#8a8578;--atlas-rustTint:#ece9e1;--atlas-or:#B98B47;--atlas-orTexte:#8b6835;--atlas-line:rgba(28,28,26,0.12);--atlas-lineSoft:rgba(28,28,26,0.07);--atlas-alerte:#9C3B2E}
+[data-charte="brume"]{--atlas-cream:#f4f7fb;--atlas-card:#ffffff;--atlas-ink:#111823;--atlas-inkSoft:#3a434e;--atlas-muted:#78838f;--atlas-rustTint:#e4e7ec;--atlas-or:#B98B47;--atlas-orTexte:#8f6b36;--atlas-line:rgba(17,24,35,0.12);--atlas-lineSoft:rgba(17,24,35,0.07);--atlas-alerte:#9c3b2e}
+[data-charte="pierre"]{--atlas-cream:#e8e8e3;--atlas-card:#f4f4f0;--atlas-ink:#1b1d19;--atlas-inkSoft:#454741;--atlas-muted:#83867c;--atlas-rustTint:#dadad5;--atlas-or:#B98B47;--atlas-orTexte:#826231;--atlas-line:rgba(27,29,25,0.12);--atlas-lineSoft:rgba(27,29,25,0.07);--atlas-alerte:#9c3b2e}
+[data-charte="beurre"]{--atlas-cream:#efe7cf;--atlas-card:#f8f3e4;--atlas-ink:#26221a;--atlas-inkSoft:#4e4939;--atlas-muted:#8b8368;--atlas-rustTint:#e1d9c2;--atlas-or:#B98B47;--atlas-orTexte:#826231;--atlas-line:rgba(38,34,26,0.12);--atlas-lineSoft:rgba(38,34,26,0.07);--atlas-alerte:#9c3b2e}
+[data-charte="moka"]{--atlas-cream:#e6ded5;--atlas-card:#f2ece5;--atlas-ink:#2b241e;--atlas-inkSoft:#524941;--atlas-muted:#8d8175;--atlas-rustTint:#d9d1c8;--atlas-or:#B98B47;--atlas-orTexte:#7c5d2f;--atlas-line:rgba(43,36,30,0.12);--atlas-lineSoft:rgba(43,36,30,0.07);--atlas-alerte:#9c3b2e}
+[data-charte="prune"]{--atlas-cream:#efe6ea;--atlas-card:#f9f2f5;--atlas-ink:#23131c;--atlas-inkSoft:#4d3a44;--atlas-muted:#8c7481;--atlas-rustTint:#e1d7dc;--atlas-or:#B98B47;--atlas-orTexte:#846332;--atlas-line:rgba(35,19,28,0.12);--atlas-lineSoft:rgba(35,19,28,0.07);--atlas-alerte:#9c3b2e}
+[data-charte="sylve"]{--atlas-cream:#16241c;--atlas-card:#1e3026;--atlas-ink:#e6e6da;--atlas-inkSoft:#c2caba;--atlas-muted:#8ba189;--atlas-rustTint:#253229;--atlas-or:#B98B47;--atlas-orTexte:#b98b47;--atlas-line:rgba(230,230,218,0.12);--atlas-lineSoft:rgba(230,230,218,0.07);--atlas-alerte:#d47a6e}
+[data-charte="nuit"]{--atlas-cream:#101210;--atlas-card:#1a1d19;--atlas-ink:#e9e8de;--atlas-inkSoft:#c1c2b6;--atlas-muted:#84887b;--atlas-rustTint:#1f211e;--atlas-or:#B98B47;--atlas-orTexte:#b98b47;--atlas-line:rgba(233,232,222,0.12);--atlas-lineSoft:rgba(233,232,222,0.07);--atlas-alerte:#cd6456}
+  *{box-sizing:border-box}
+  html{background:var(--atlas-rustTint)}
+  body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint)}
+  .entete{max-width:430px;margin:0 auto;padding:18px 16px 6px}
+  .entete h1{margin:0;font:400 24px/1.15 Georgia,"Times New Roman",serif}
+  .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .entete select{margin-top:10px;font-size:16px;padding:8px 10px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink)}
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--atlas-cream);padding:6px 0 80px;min-height:100vh}
+  .caps{display:block;margin:0;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-or)}
+  .bloc{margin:26px 16px 0}
+  .bloc[hidden]{display:none}
+  .bloc h2{margin:6px 0 0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+  .sous{margin:4px 0 0;font-size:13.5px;color:var(--atlas-muted)}
+  /* L'entrée : la case qu'il a demandée, sous le croquis, à côté de lui. */
+  .portes{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+  .porte{display:flex;align-items:center;gap:14px;width:100%;min-height:64px;border-radius:14px;border:1px solid var(--atlas-line);background:var(--atlas-card);padding:12px 16px;color:var(--atlas-ink);font:inherit;text-align:left;cursor:pointer}
+  .porte b{display:block;font-size:16px;font-weight:600}
+  .porte small{display:block;font-size:13px;color:var(--atlas-muted)}
+  .porte svg{flex:none;width:28px;height:28px;color:var(--atlas-inkSoft)}
+  .porte.devis{border:1.5px dashed var(--atlas-line)}
+  .porte:focus-visible{outline:2px solid var(--atlas-or);outline-offset:3px}
+  .lecture{margin-top:12px;border-radius:12px;background:var(--atlas-card);padding:14px 16px;font-size:14.5px;color:var(--atlas-inkSoft)}
+  .lecture[hidden]{display:none}
+  .fichier{display:flex;align-items:center;gap:10px;margin-top:12px;border-radius:12px;background:var(--atlas-card);padding:10px 14px;font-size:14px}
+  .fichier[hidden]{display:none}
+  .fichier span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .fichier button{flex:none;border:0;background:none;padding:0;font:inherit;font-size:13.5px;color:var(--atlas-inkSoft);text-decoration:underline;cursor:pointer}
+  /* Ce que le devis porte, ligne à ligne : la photo validée, le nom du catalogue,
+     la référence, la quantité. Pas de gras dans une liste de pièces (§4 bis). */
+  .compte{margin:10px 0 0;font-size:14.5px}
+  .liste{margin-top:10px;border-radius:12px;padding:2px 12px;background:var(--atlas-card)}
+  .ligne{display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--atlas-line);font-size:14px}
+  .ligne:first-child{border-top:0}
+  .vignette{flex:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:8px;background:#ffffff;box-shadow:0 0 0 1px var(--atlas-lineSoft)}
+  .vignette img{max-width:40px;max-height:40px;object-fit:contain}
+  .vignette.vide{background:none;box-shadow:none;border:1.5px dashed var(--atlas-line)}
+  .ligne .n{flex:1;min-width:0}
+  .ligne .n small{display:block;font-size:12px;color:var(--atlas-muted)}
+  .ligne .q{flex:none;min-width:52px;text-align:right;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
+  .inconnues h3{margin:18px 0 0;font-size:15px;font-weight:600;color:var(--atlas-alerte)}
+  .inconnue{margin-top:8px;border-radius:12px;background:var(--atlas-card);padding:12px 14px;box-shadow:inset 3px 0 0 var(--atlas-alerte)}
+  .inconnue p{margin:0;font-size:14px}
+  .inconnue .lu{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;color:var(--atlas-inkSoft)}
+  .inconnue .gestes{display:flex;gap:8px;margin-top:10px}
+  .inconnue .gestes button{flex:1;min-height:44px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-cream);color:var(--atlas-ink);font-size:14px;cursor:pointer}
+  .inconnue.reglee{box-shadow:inset 3px 0 0 var(--atlas-line)}
+  .inconnue.reglee .gestes{display:none}
+  .inconnue .issue{margin:8px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  /* Le montage : la nourrice que le devis permet, pièce par pièce. */
+  .voies{margin:10px 0 0;font-size:15px}
+  .rangee{display:flex;flex-wrap:wrap;gap:12px 8px;margin-top:10px;border-radius:14px;background:var(--atlas-card);padding:14px 10px}
+  .p{display:flex;flex-direction:column;align-items:center;width:72px;min-width:0;text-align:center}
+  .p .ph{display:flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:10px;background:#ffffff}
+  .p .ph img{max-width:58px;max-height:58px;object-fit:contain}
+  .p .n{margin-top:4px;font-size:10.5px;line-height:1.25;color:var(--atlas-inkSoft)}
+  .p .x{font-size:11px;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
+  /* Ce qui manque : le plan ne se fait pas sans croquis complet. */
+  .manque{margin:10px 0 0;padding:0;list-style:none;border-radius:12px;background:var(--atlas-card);padding:4px 14px}
+  .manque li{display:flex;gap:10px;align-items:baseline;padding:9px 0;border-top:1px solid var(--atlas-line);font-size:14.5px}
+  .manque li:first-child{border-top:0}
+  .manque li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--atlas-alerte);transform:translateY(-1px)}
+  .principal{margin-top:16px;width:100%;min-height:52px;border:0;border-radius:12px;background:var(--atlas-ink);color:var(--atlas-card);font-size:16px;cursor:pointer}
+  .second{margin-top:10px;width:100%;min-height:52px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:16px;cursor:pointer}
+  .principal:focus-visible,.second:focus-visible,.inconnue button:focus-visible{outline:2px solid var(--atlas-or);outline-offset:3px}
+  .note{margin:10px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .feuille{position:fixed;inset:0;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.35)}
+  .feuille[hidden]{display:none}
+  .feuille .boite{width:100%;max-width:430px;max-height:86vh;overflow:auto;background:var(--atlas-cream);border-radius:18px 18px 0 0;padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+  .feuille .haut{display:flex;align-items:center}
+  .feuille h2{flex:1;margin:0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+  .feuille .fermer{border:0;background:none;font-size:14px;text-decoration:underline;color:var(--atlas-inkSoft);cursor:pointer}
+  .recherche{display:block;width:100%;margin-top:12px;border:0;border-radius:10px;padding:12px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
+  .choix{display:flex;align-items:center;gap:12px;width:100%;margin-top:8px;border:0;border-radius:12px;padding:10px 12px;background:var(--atlas-card);color:var(--atlas-ink);text-align:left;font-size:14px;cursor:pointer}
+  .choix small{display:block;color:var(--atlas-muted);font-size:12px}
+</style>
+<body data-charte="origine">
+<div class="entete">
+  <h1>Importer un devis</h1>
+  <p>Planche, rien n’est codé. Le devis d’exemple est la liste que l’outil rend pour le jardin de la planche du plan.</p>
+  <select id="charte" aria-label="Charte"></select>
+</div>
+<main class="ecran">
+  <section class="bloc">
+    <span class="caps">Plan d’arrosage</span>
+    <h2>Par où commencer</h2>
+    <div class="portes">
+      <button class="porte" type="button" id="porte-croquis">
+        <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="4" y="5" width="20" height="18" rx="2"/><path d="M8 18l5-6 4 4 3-3"/></svg>
+        <span><b>Photographier le croquis</b><small>Avec les métrés, le piquage et la nourrice</small></span>
+      </button>
+      <button class="porte devis" type="button" id="porte-devis">
+        <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 4h9l5 5v15H8z"/><path d="M17 4v5h5M11 14h8M11 18h8"/></svg>
+        <span><b>J’ai déjà un devis fournisseur</b><small>Photo ou PDF</small></span>
+      </button>
+    </div>
+    <p class="fichier" id="fichier" hidden><span id="fichier-nom"></span><button type="button" id="autre">Un autre</button></p>
+    <p class="lecture" id="lecture" hidden aria-live="polite">Lecture du devis…</p>
+  </section>
+
+  <section class="bloc" id="bloc-lu" hidden>
+    <span class="caps">Lu sur le devis</span>
+    <h2>Les pièces</h2>
+    <p class="compte" id="compte"></p>
+    <div class="inconnues" id="inconnues"></div>
+    <div class="liste" id="reconnues"></div>
+  </section>
+
+  <section class="bloc" id="bloc-montage" hidden>
+    <span class="caps">Le montage</span>
+    <h2 id="titre-montage"></h2>
+    <p class="voies" id="voies"></p>
+    <div class="rangee" id="nourrice"></div>
+  </section>
+
+  <section class="bloc" id="bloc-manque" hidden>
+    <span class="caps">Pour le plan</span>
+    <h2>Il manque le croquis</h2>
+    <p class="sous">Un devis ne dit pas où passent les réseaux.</p>
+    <ul class="manque">
+      <li>Les métrés du jardin</li>
+      <li>L’endroit du piquage</li>
+      <li>L’endroit définitif de la nourrice</li>
+    </ul>
+    <button class="principal" type="button" id="croquis">Ajouter le croquis</button>
+    <button class="second" type="button" id="garder">Garder la liste sans plan</button>
+    <p class="note" id="garde" hidden>La liste et la nourrice sont gardées. Le plan se fera avec le croquis.</p>
+  </section>
+</main>
+
+<div class="feuille" id="feuille" hidden>
+  <div class="boite" role="dialog" aria-modal="true" aria-labelledby="feuille-titre">
+    <div class="haut"><h2 id="feuille-titre">Choisir la pièce</h2><button class="fermer" type="button" id="fermer">Fermer</button></div>
+    <input class="recherche" id="recherche" type="search" placeholder="Chercher une pièce" aria-label="Chercher une pièce">
+    <div id="choix"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var PHOTOS = /*PHOTOS*/{};
+  var DEVIS = /*DEVIS*/[];
+  var CATALOGUE_LISTE = /*CATALOGUE*/[];
+  var $ = function (id) { return document.getElementById(id); };
+  var texte = function (s) { var e = document.createElement("span"); e.textContent = s == null ? "" : String(s); return e.innerHTML; };
+  var virgule = function (n) { return String(n).replace(".", ","); };
+  var CHARTES = [["origine","Origine"],["brume","Brume"],["pierre","Pierre"],["beurre","Beurre"],["moka","Moka"],["prune","Prune"],["sylve","Sylve"],["nuit","Nuit"]];
+  CHARTES.forEach(function (c) { var o = document.createElement("option"); o.value = c[0]; o.textContent = c[1]; $("charte").appendChild(o); });
+  $("charte").onchange = function () { document.body.dataset.charte = this.value; };
+
+  var reglees = {};
+  var quantite = function (l) { return l.u === "ml" ? virgule(l.q) + " m" : l.q + "x"; };
+  var vignette = function (cle) { var f = PHOTOS[cle]; return f ? '<span class="vignette"><img src="arrosage-photos/' + texte(f) + '" alt=""></span>' : '<span class="vignette vide"></span>'; };
+
+  function lire() {
+    $("lecture").hidden = false;
+    ["bloc-lu", "bloc-montage", "bloc-manque"].forEach(function (b) { $(b).hidden = true; });
+    setTimeout(function () { $("lecture").hidden = true; montrer(); }, 900);
+  }
+  function montrer() {
+    var connues = DEVIS.filter(function (l) { return l.cle; }), autres = DEVIS.filter(function (l) { return !l.cle; });
+    $("compte").textContent = DEVIS.length + " lignes lues, " + connues.length + " reconnues.";
+    $("reconnues").innerHTML = connues.map(function (l) {
+      return '<div class="ligne">' + vignette(l.photo || l.cle) + '<span class="n">' + texte(l.nom) + (l.ref ? "<small>" + texte(l.ref) + "</small>" : "") + '</span><span class="q">' + quantite(l) + "</span></div>";
+    }).join("");
+    $("inconnues").innerHTML = autres.length ? "<h3>Pas dans le catalogue</h3>" + autres.map(function (l, i) {
+      var r = reglees[i];
+      return '<div class="inconnue' + (r ? " reglee" : "") + '"><p class="lu">« ' + texte(l.lu) + " »</p>" +
+        (r ? '<p class="issue">' + texte(r) + "</p>" : "") +
+        '<div class="gestes"><button type="button" data-choisir="' + i + '">Choisir la pièce</button><button type="button" data-laisser="' + i + '">Laisser hors liste</button></div></div>';
+    }).join("") : "";
+    // Une électrovanne, un réseau : la règle de la fiche (TODO.md, 17 octobre 2026).
+    var vannes = connues.filter(function (l) { return /electrovanne/.test(l.cle); }).reduce(function (s, l) { return s + l.q; }, 0);
+    $("titre-montage").textContent = "La nourrice " + vannes + " voies";
+    $("voies").textContent = vannes + " électrovannes sur le devis, donc " + vannes + " réseaux.";
+    $("nourrice").innerHTML = connues.filter(function (l) { return l.nourrice; }).map(function (l) {
+      var f = PHOTOS[l.photo || l.cle];
+      return '<div class="p"><span class="ph">' + (f ? '<img src="arrosage-photos/' + texte(f) + '" alt="">' : "") + '</span><span class="n">' + texte(l.nomCourt || l.nom) + '</span><span class="x">' + l.q + "x</span></div>";
+    }).join("");
+    ["bloc-lu", "bloc-montage", "bloc-manque"].forEach(function (b) { $(b).hidden = false; });
+  }
+
+  var cible = null;
+  function ouvrirChoix(i) {
+    cible = i; $("recherche").value = ""; remplirChoix(""); $("feuille").hidden = false; $("recherche").focus();
+  }
+  function remplirChoix(q) {
+    q = q.toLowerCase();
+    var vus = CATALOGUE_LISTE.filter(function (p) { return !q || (p.nom + " " + p.ref).toLowerCase().indexOf(q) >= 0; }).slice(0, 40);
+    $("choix").innerHTML = vus.map(function (p, k) {
+      return '<button class="choix" type="button" data-piece="' + k + '">' + vignette(p.ref) + "<span>" + texte(p.nom) + "<small>" + texte(p.ref) + "</small></span></button>";
+    }).join("");
+    $("choix").dataset.q = q;
+  }
+  $("recherche").oninput = function () { remplirChoix(this.value); };
+  $("fermer").onclick = function () { $("feuille").hidden = true; };
+
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (!b) return;
+    if (b.id === "porte-devis" || b.id === "autre") {
+      $("fichier-nom").textContent = "devis-aquaplus.pdf"; $("fichier").hidden = false; reglees = {}; lire(); return;
+    }
+    if (b.id === "porte-croquis" || b.id === "croquis") { b.textContent = "Ici, l’appareil photo s’ouvre"; return; }
+    if (b.id === "garder") { $("garde").hidden = false; return; }
+    if (b.dataset.choisir) { ouvrirChoix(Number(b.dataset.choisir)); return; }
+    if (b.dataset.laisser) { reglees[b.dataset.laisser] = "Laissée hors liste."; montrer(); return; }
+    if (b.dataset.piece) {
+      var q = $("choix").dataset.q || "";
+      var vus = CATALOGUE_LISTE.filter(function (p) { return !q || (p.nom + " " + p.ref).toLowerCase().indexOf(q) >= 0; }).slice(0, 40);
+      var p = vus[Number(b.dataset.piece)];
+      reglees[cible] = "Remplacée par " + p.nom + ".";
+      $("feuille").hidden = true; montrer();
+    }
+  });
+})();
+</script>
+</body>
+</html>
