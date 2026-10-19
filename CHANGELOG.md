@@ -8,6 +8,11 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-19
 
+- **Sur le dessin de la nourrice, une pièce supprimée se grise et se barre de
+  rouge, une pièce changée porte un numéro doré**, comme les vignettes des
+  réseaux (sa demande du 19 octobre), sur l'écran et sur les deux planches. Ce
+  que ça évite : un dessin qui montrait entières des pièces que la liste ne
+  comptait plus.
 - **Les boutons de l'écran du plan sont des capsules**, comme partout (sa règle
   du 12 août 2026), sur l'écran et sur ses deux planches ; la ligne du seuil
   Ø25/Ø32 (sa demande du 22 août) revient sous le piquage ; les fiches du mode
