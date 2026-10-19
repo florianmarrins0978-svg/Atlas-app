@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fournisseurs et partenaires</title>
+<!--
+  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Ses demandes du 18 et du 19
+  octobre 2026 :
+  1. « dans Réglages, une catégorie Mes fournisseurs, valable pour l'arrosage,
+     mais aussi pour du matériel ou autre » ;
+  2. « pas que mes fournisseurs, mais aussi mes partenaires : le prix de la
+     main-d'œuvre de nos collègues » ;
+  3. « quand je dicte mon devis, 3 sacs de ciment, il faudrait qu'il aille se
+     référer à la rubrique pour prendre le prix » ; deux marges ; son prix de
+     vente passe TOUJOURS avant (« le A ») ;
+  4. « dans Point P, il doit y avoir écrit mon catalogue, mes prix : mes
+     fournitures avec leur prix à côté » ; « quand je reçois un devis de mes
+     fournisseurs, une petite base où enregistrer les devis » ; « quand
+     j'envoie ma liste de pièces à Aqua Plus, il faut que ma liste
+     s'enregistre dans une catégorie ».
+
+  DONC CHAQUE FOURNISSEUR ET CHAQUE PARTENAIRE A SA FICHE, EN TROIS ONGLETS :
+  « Mes prix » (ses articles, leur prix et la date), « Devis reçus » (chaque
+  devis donné, sa photo, ce qui en a été lu), « Demandes envoyées » (chaque
+  liste partie chez lui, d'un devis ou du plan d'arrosage). Dans l'outil, un
+  devis lu passe ses prix dans « Mes prix » après son accord, comme
+  ImportTarifs.tsx ; ici, la photo est gardée et l'on tape les prix.
+
+  AUCUN PRIX, AUCUN NOM N'EST INVENTÉ : tout est vide, sauf les deux fournisseurs
+  qu'il a nommés. Les boutons sont ceux de l'application (`plein`, en pilule).
+-->
+<style>
+/*CHARTES*/
+  *{box-sizing:border-box}
+  html{background:var(--atlas-rustTint)}
+  body{margin:0;font:16px/1.45 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint)}
+  h1,h2,h3{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;font-weight:400;letter-spacing:-0.01em}
+  .entete{max-width:430px;margin:0 auto;padding:18px 16px 6px}
+  .entete h1{margin:0;font-size:24px;line-height:1.15}
+  .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .entete select{margin-top:10px;font-size:16px;padding:8px 10px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink)}
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--atlas-cream);padding:6px 0 80px;min-height:100vh}
+  .caps{display:block;margin:0;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-or)}
+  .bloc{margin:26px 16px 0}
+  .bloc h2{margin:6px 0 0;font-size:21px;line-height:1.2}
+  .sous{margin:4px 0 0;font-size:13.5px;color:var(--atlas-muted)}
+  .onglets{display:flex;gap:6px;margin-top:12px}
+  .onglets button{flex:1;min-height:44px;border-radius:999px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:14px;padding:0 8px;cursor:pointer}
+  .onglets button[aria-pressed="true"]{background:var(--atlas-plein);border-color:var(--atlas-plein);color:var(--atlas-card)}
+  .societe{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;border:0;border-radius:14px;background:var(--atlas-card);padding:14px 16px;box-shadow:0 0 0 1px var(--atlas-lineSoft);color:var(--atlas-ink);font:inherit;text-align:left;cursor:pointer}
+  .societe b{display:block;font-size:16.5px;font-weight:600}
+  .societe small{display:block;margin-top:2px;font-size:13px;color:var(--atlas-muted)}
+  .societe .chevron{margin-left:auto;font-size:20px;color:var(--atlas-chevron)}
+  .nouveau{display:flex;gap:8px;margin-top:10px}
+  .nouveau input{flex:1;min-width:0;border:0;border-radius:10px;padding:12px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
+  .nouveau button,.second{flex:none;min-height:46px;border-radius:999px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:15px;padding:0 16px;cursor:pointer}
+  .second{width:100%;margin-top:10px}
+  .coef{display:flex;align-items:center;gap:10px;margin-top:10px;border-radius:12px;background:var(--atlas-card);padding:12px 14px;font-size:15px}
+  .coef span{flex:1}
+  .coef small{display:block;margin-top:2px;font-size:13px;color:var(--atlas-muted)}
+  .societe small.marge{color:var(--atlas-orTexte)}
+  .feuille .coef{margin-top:14px;background:var(--atlas-card)}
+  .coef input{width:84px;border:0;border-radius:9px;padding:10px;font-size:16px;text-align:right;background:var(--atlas-cream);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
+  .ligne{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--atlas-line);font-size:14.5px}
+  .ligne:first-child{border-top:0}
+  .ligne .n{flex:1;min-width:0}
+  .ligne .n small{display:block;font-size:12.5px;color:var(--atlas-muted)}
+  .ligne .p{flex:none;font-variant-numeric:tabular-nums}
+  .ligne .lien{flex:none;border:0;background:none;padding:0 0 0 6px;font-size:13px;text-decoration:underline;color:var(--atlas-inkSoft);cursor:pointer}
+  .ligne .lien.danger{color:var(--atlas-alerte)}
+  .ligne img.vu{flex:none;width:44px;height:44px;object-fit:cover;border-radius:8px}
+  .liste{margin-top:10px;border-radius:12px;background:var(--atlas-card);padding:2px 14px}
+  .vide{margin:12px 0 0;font-size:14px;color:var(--atlas-muted)}
+  .saisie{display:grid;grid-template-columns:1fr 96px 80px;gap:6px;margin-top:12px}
+  .saisie input,.saisie select{min-width:0;border:0;border-radius:9px;padding:10px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
+  .saisie input.prix{text-align:right}
+  .principal,.source{display:flex;align-items:center;justify-content:center;width:100%;margin-top:10px;min-height:52px;border:0;border-radius:999px;background:var(--atlas-plein);color:var(--atlas-card);font-size:16px;cursor:pointer}
+  .source.creux{background:var(--atlas-card);color:var(--atlas-ink);border:1px solid var(--atlas-line)}
+  .source input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  .dictee{display:block;width:100%;min-height:84px;margin-top:10px;border:0;border-radius:12px;padding:12px;font:16px/1.45 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line);resize:vertical}
+  .devis{margin-top:12px;border-radius:12px;background:var(--atlas-card);padding:2px 14px}
+  .ld{padding:10px 0;border-top:1px solid var(--atlas-line)}
+  .ld:first-child{border-top:0}
+  .ld .haut{display:flex;gap:10px;align-items:baseline;font-size:15px}
+  .ld .haut span{flex:1}
+  .ld .haut b{font-weight:600;font-variant-numeric:tabular-nums}
+  .ld small{display:block;margin-top:2px;font-size:12.5px;color:var(--atlas-muted)}
+  .ld.a-chiffrer .haut b{color:var(--atlas-alerte);font-weight:500}
+  .feuille{position:fixed;inset:0;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.35)}
+  .feuille .boite{width:100%;max-width:430px;height:90vh;overflow:auto;background:var(--atlas-cream);border-radius:18px 18px 0 0;padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+  .feuille .haut{display:flex;align-items:center}
+  .feuille h2{flex:1;margin:0;font-size:22px;line-height:1.2}
+  .feuille .fermer{border:0;background:none;font-size:14px;text-decoration:underline;color:var(--atlas-inkSoft);cursor:pointer}
+  .apercu{margin-top:12px;border-radius:12px;overflow:hidden;background:var(--atlas-card)}
+  .apercu img{display:block;width:100%;max-height:340px;object-fit:contain;background:#fff}
+  [hidden]{display:none !important}
+  button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.source:focus-within{outline:2px solid var(--atlas-or);outline-offset:2px}
+</style>
+<body data-charte="origine">
+<div class="entete">
+  <h1>Fournisseurs et partenaires</h1>
+  <p>Planche, rien n’est codé. Aucun prix n’est inventé : ouvrez un fournisseur, donnez-lui des prix, puis dictez une ligne.</p>
+  <select id="charte" aria-label="Charte"><option value="origine">Origine</option><option value="brume">Brume</option><option value="pierre">Pierre</option><option value="beurre">Beurre</option><option value="moka">Moka</option><option value="prune">Prune</option><option value="sylve">Sylve</option><option value="nuit">Nuit</option></select>
+</div>
+<main class="ecran">
+  <section class="bloc">
+    <span class="caps">Réglages</span>
+    <h2>Ce que je paie</h2>
+    <p class="sous">Prix d’achat, à part de vos prix de vente.</p>
+    <div class="onglets" role="group" aria-label="Rubrique">
+      <button type="button" data-rubrique="fournisseurs" aria-pressed="true">Mes fournisseurs</button>
+      <button type="button" data-rubrique="partenaires" aria-pressed="false">Mes partenaires</button>
+    </div>
+    <div id="societes"></div>
+    <div class="nouveau"><input id="nom-nouveau" aria-label="Nom"><button type="button" id="ajouter-societe">Ajouter</button></div>
+    <!-- LE COEFFICIENT RESTE (« faut la laisser comme elle est », 19 octobre 2026) ; ce
+         qui manquait, c'est de VOIR à qui il s'applique : « je sais pas si elle
+         s'affilie à Pilou, rien ne me dit quoi que ce soit ». Sous chaque marge, les
+         sociétés qu'elle couvre ; sur chaque carte et chaque fiche, la marge qui vaut. -->
+    <div class="coef"><span>Ma marge sur le matériel<small id="ex-mat"></small></span><input id="coef" inputmode="decimal" aria-label="Marge sur le matériel"></div>
+    <div class="coef"><span>Ma marge sur la main d’œuvre des partenaires<small id="ex-mo"></small></span><input id="coef-mo" inputmode="decimal" aria-label="Marge sur la main d’œuvre"></div>
+  </section>
+
+  <section class="bloc">
+    <span class="caps">Un devis</span>
+    <h2>Je dicte</h2>
+    <textarea class="dictee" id="dictee" aria-label="Ce que je dicte">Il me faut 3 sacs de ciment.</textarea>
+    <button class="principal" type="button" id="preparer">Préparer le devis</button>
+    <div class="devis" id="devis" hidden></div>
+  </section>
+</main>
+
+<!-- La fiche d'un fournisseur ou d'un partenaire : ses prix, ses devis, mes demandes. -->
+<div class="feuille" id="fiche" hidden>
+  <div class="boite" role="dialog" aria-modal="true" aria-labelledby="fiche-titre">
+    <div class="haut"><h2 id="fiche-titre"></h2><button class="fermer" type="button" id="fermer">Fermer</button></div>
+    <div class="onglets" role="group" aria-label="Partie de la fiche">
+      <button type="button" data-partie="prix" aria-pressed="true">Mes prix</button>
+      <button type="button" data-partie="devis" aria-pressed="false">Devis reçus</button>
+      <button type="button" data-partie="demandes" aria-pressed="false">Demandes envoyées</button>
+    </div>
+    <div id="partie"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var texte = function (s) { var e = document.createElement("span"); e.textContent = s == null ? "" : String(s); return e.innerHTML; };
+  var euros = function (n) { return n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; };
+  var nombre = function (s) { var n = Number(String(s).replace(/\s/g, "").replace(",", ".")); return String(s).trim() !== "" && isFinite(n) && n >= 0 ? n : null; };
+  var aujourdhui = function () { return new Date().toLocaleDateString("fr-FR"); };
+  $("charte").onchange = function () { document.body.dataset.charte = this.value; };
+
+  // Une société : ses prix, les devis qu'elle m'a faits, les demandes que je lui ai envoyées.
+  var nouvelle = function (nom) { return { nom: nom, prix: [], devis: [], demandes: [], marge: null }; };
+  var societes = { fournisseurs: [nouvelle("Aqua Plus"), nouvelle("France Bonhomme")], partenaires: [] };
+  var UNITES = { fournisseurs: ["pièce", "sac", "m", "m²", "m³", "kg", "palette"], partenaires: ["heure", "journée", "m", "m²", "forfait"] };
+  var rubrique = "fournisseurs", ouverte = null, partie = "prix";
+
+  var pluriel = function (n, mot) { return n + " " + mot + (n > 1 ? "s" : ""); };
+  function dessinerListe() {
+    document.querySelectorAll("[data-rubrique]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.rubrique === rubrique)); });
+    $("nom-nouveau").placeholder = rubrique === "fournisseurs" ? "Un autre fournisseur" : "Une société partenaire";
+    var l = societes[rubrique];
+    $("societes").innerHTML = l.length ? l.map(function (s, i) {
+      return '<button class="societe" type="button" data-ouvrir="' + i + '"><span><b>' + texte(s.nom) + "</b><small>" +
+        pluriel(s.prix.length, "prix").replace("prixs", "prix") + ", " + pluriel(s.devis.length, "devis").replace("deviss", "devis") + " reçu" + (s.devis.length > 1 ? "s" : "") + ", " + pluriel(s.demandes.length, "demande") +
+        '</small><small class="marge">' + (margeDe(s, rubrique) === null ? "Marge à donner" : "Marge " + fois(margeDe(s, rubrique)) + (s.marge !== null ? ", la sienne" : "")) + '</small></span><span class="chevron" aria-hidden="true">›</span></button>';
+    }).join("") : '<p class="vide">Aucun partenaire. Ajoutez la société avec qui vous travaillez.</p>';
+  }
+
+  function dessinerFiche() {
+    var s = societes[rubrique][ouverte];
+    $("fiche-titre").textContent = s.nom;
+    document.querySelectorAll("[data-partie]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.partie === partie)); });
+    var g = generale(rubrique);
+    // Sa marge, écrite en tête de sa fiche : la générale tant qu'on n'en donne pas d'autre.
+    var h = '<div class="coef"><span>Ma marge chez ' + texte(s.nom) + "<small>" +
+      (s.marge !== null ? "La sienne. Videz la case pour reprendre la marge générale" + (g !== null ? " (" + fois(g) + ")" : "") + "." : g !== null ? "Votre marge générale, " + fois(g) + ". Tapez-en une autre pour lui seul." : "Pas encore donnée.") +
+      '</small></span><input id="marge-societe" inputmode="decimal"  value="' + (s.marge !== null ? String(s.marge).replace(".", ",") : "") + '" aria-label="Marge chez ' + texte(s.nom) + '"></div>';
+    if (partie === "prix") {
+      h += s.prix.length ? '<div class="liste">' + s.prix.map(function (a, k) {
+        return '<div class="ligne"><span class="n">' + texte(a.nom) + "<small>" + texte(a.source) + '</small></span><span class="p">' + euros(a.prix) + " / " + texte(a.unite) + '</span><button class="lien danger" type="button" data-retirer-prix="' + k + '">Retirer</button></div>';
+      }).join("") + "</div>" : '<p class="vide">' + (rubrique === "fournisseurs" ? "Aucune fourniture encore. Ajoutez-en, ou prenez un de ses devis en photo." : "Aucun prix de main d’œuvre encore.") + "</p>";
+      h += '<div class="saisie"><input id="art-nom" placeholder="' + (rubrique === "fournisseurs" ? "Fourniture" : "Prestation") + '" aria-label="Nom"><select id="art-unite" aria-label="Unité">' +
+        UNITES[rubrique].map(function (u) { return "<option>" + u + "</option>"; }).join("") + '</select><input class="prix" id="art-prix" inputmode="decimal" placeholder="Prix HT" aria-label="Prix HT"></div>' +
+        '<button class="second" type="button" id="ajouter-prix">Ajouter ce prix</button>';
+    }
+    if (partie === "devis") {
+      h += '<label class="source"><input type="file" accept="image/*" capture="environment" id="photo-devis">Prendre un devis en photo</label>' +
+        '<label class="source creux"><input type="file" accept="image/*,application/pdf" id="fichier-devis">Choisir une photo ou un PDF</label>';
+      h += s.devis.length ? '<div class="liste">' + s.devis.map(function (d, k) {
+        return '<div class="ligne">' + (d.url ? '<img class="vu" src="' + d.url + '" alt="">' : "") + '<span class="n">Devis du ' + d.date + "<small>" + texte(d.fichier) + "</small></span>" +
+          '<button class="lien" type="button" data-voir-devis="' + k + '">Voir</button></div>';
+      }).join("") + "</div>" : '<p class="vide">Aucun devis reçu de ' + texte(s.nom) + ".</p>";
+      h += '<div id="vu-devis"></div>';
+    }
+    if (partie === "demandes") {
+      h += s.demandes.length ? '<div class="liste">' + s.demandes.map(function (d) {
+        return '<div class="ligne"><span class="n">' + texte(d.titre) + "<small>Envoyée le " + d.date + ", " + pluriel(d.lignes, "ligne") + "</small></span></div>";
+      }).join("") + "</div>" : '<p class="vide">Aucune demande envoyée à ' + texte(s.nom) + ". Les listes que vous lui envoyez depuis un devis ou le plan d’arrosage s’enregistrent ici, avec leur date.</p>";
+    }
+    $("partie").innerHTML = h;
+  }
+
+  // Le devis dicté : son prix de vente d'abord (« le A », 19 octobre 2026), puis un
+  // prix d'achat fois sa marge, puis « à chiffrer ». La planche n'a pas ses prix de
+  // vente : elle montre les deux autres marches.
+  // La marge qui vaut pour une société : la sienne si elle en a une, sinon la marge
+  // générale de sa rubrique. Vide partout : rien n'est ajouté d'office, la ligne reste à chiffrer.
+  var generale = function (r) { return nombre($(r === "partenaires" ? "coef-mo" : "coef").value); };
+  var margeDe = function (s, r) { return s.marge !== null && s.marge !== undefined ? s.marge : generale(r); };
+  var fois = function (c) { return "× " + c.toFixed(2).replace(".", ","); };
+  // Sous chaque marge, les sociétés qu'elle couvre, et celles qui ont la leur.
+  function quiCouvre() {
+    [["fournisseurs", "ex-mat"], ["partenaires", "ex-mo"]].forEach(function (x) {
+      var l = societes[x[0]], g = generale(x[0]);
+      var couvertes = l.filter(function (s) { return s.marge === null || s.marge === undefined; }).map(function (s) { return s.nom; });
+      var propres = l.filter(function (s) { return s.marge !== null && s.marge !== undefined; }).map(function (s) { return s.nom + " " + fois(s.marge); });
+      $(x[1]).textContent = !l.length ? (x[0] === "partenaires" ? "Aucun partenaire encore." : "") :
+        (g === null ? "Pas encore donnée : les prix chez " + couvertes.join(", ") + " restent à chiffrer." : (couvertes.length ? "S’applique à " + couvertes.join(", ") + "." : "Ne s’applique à personne.")) +
+        (propres.length ? " Leur marge à part : " + propres.join(", ") + "." : "");
+    });
+  }
+  $("coef").oninput = $("coef-mo").oninput = function () { quiCouvre(); dessinerListe(); };
+  var MOTS_VIDES = /^(il|me|faut|de|des|du|la|le|les|un|une|et|pour|avec|j'ai|besoin|en|au|aux|sur)$/i;
+  var racine = function (m) { return m.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/s$/, ""); };
+  function preparer() {
+    var tous = [];
+    ["fournisseurs", "partenaires"].forEach(function (r) { societes[r].forEach(function (s) { s.prix.forEach(function (a) { tous.push({ a: a, s: s, r: r }); }); }); });
+    var morceaux = $("dictee").value.split(/[.,;\n]|\bet\b/).map(function (x) { return x.trim(); }).filter(Boolean);
+    $("devis").innerHTML = morceaux.map(function (m) {
+      var q = (m.match(/\d+(?:[.,]\d+)?/) || [null])[0];
+      var qte = q ? Number(q.replace(",", ".")) : (/\bdeux\b/i.test(m) ? 2 : /\btrois\b/i.test(m) ? 3 : 1);
+      var mots = m.split(/\s+/).filter(function (x) { return !MOTS_VIDES.test(x) && !/^\d/.test(x) && x.length > 2; }).map(racine);
+      var mieux = null, score = 0;
+      tous.forEach(function (t) {
+        var sienne = (t.a.nom + " " + t.s.nom).split(/\s+/).map(racine);
+        var n = mots.filter(function (x) { return sienne.indexOf(x) >= 0; }).length;
+        if (n > score || (n === score && n > 0 && t.a.prix < mieux.a.prix)) { score = n; mieux = t; }
+      });
+      if (!score) return '<div class="ld a-chiffrer"><div class="haut"><span>' + texte(m) + "</span><b>à chiffrer</b></div><small>Aucun prix chez vos fournisseurs ni vos partenaires.</small></div>";
+      var a = mieux.a, achat = a.prix * qte, coef = margeDe(mieux.s, mieux.r);
+      var vente = coef !== null ? Math.round(achat * coef * 100) / 100 : null;
+      var aPart = mieux.s.marge !== null && mieux.s.marge !== undefined;
+      return '<div class="ld' + (vente === null ? " a-chiffrer" : "") + '"><div class="haut"><span>' + texte(a.nom) + ", " + String(qte).replace(".", ",") + " " + texte(a.unite) + (qte > 1 && !/s$/.test(a.unite) ? "s" : "") + "</span><b>" + (vente === null ? "à chiffrer" : euros(vente)) + "</b></div>" +
+        "<small>" + (mieux.r === "partenaires" ? "Main d’œuvre de " : "Acheté ") + (mieux.r === "partenaires" ? texte(mieux.s.nom) + " : " + euros(achat) : euros(achat) + " chez " + texte(mieux.s.nom)) + " le " + a.date +
+        (vente === null ? (mieux.r === "partenaires" ? ". Donnez votre marge sur la main d’œuvre." : ". Donnez votre marge sur le matériel.") : ", " + fois(coef) + (aPart ? ", sa marge à part." : ", votre marge " + (mieux.r === "partenaires" ? "sur la main d’œuvre." : "sur le matériel."))) + "</small></div>";
+    }).join("") + '<p class="vide">Proposé, à valider. Votre prix de vente passe toujours en premier. Rien ne part sans vous.</p>';
+    $("devis").hidden = false;
+  }
+
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (!b) return;
+    if (b.dataset.rubrique) { rubrique = b.dataset.rubrique; dessinerListe(); return; }
+    if (b.id === "ajouter-societe") { var n = $("nom-nouveau").value.trim(); if (!n) return; societes[rubrique].push(nouvelle(n)); $("nom-nouveau").value = ""; dessinerListe(); quiCouvre(); return; }
+    if (b.dataset.ouvrir !== undefined) { ouverte = Number(b.dataset.ouvrir); partie = "prix"; dessinerFiche(); $("fiche").hidden = false; return; }
+    if (b.id === "fermer") { $("fiche").hidden = true; dessinerListe(); return; }
+    if (b.dataset.partie) { partie = b.dataset.partie; dessinerFiche(); return; }
+    var s = ouverte === null ? null : societes[rubrique][ouverte];
+    if (b.id === "ajouter-prix") {
+      var nom = $("art-nom").value.trim(), prix = nombre($("art-prix").value);
+      if (!nom || prix === null) { $(nom ? "art-prix" : "art-nom").focus(); return; }
+      s.prix.push({ nom: nom, unite: $("art-unite").value, prix: prix, date: aujourdhui(), source: "Tapé le " + aujourdhui() });
+      dessinerFiche(); return;
+    }
+    if (b.dataset.retirerPrix !== undefined) { s.prix.splice(Number(b.dataset.retirerPrix), 1); dessinerFiche(); return; }
+    if (b.dataset.voirDevis !== undefined) {
+      var d = s.devis[Number(b.dataset.voirDevis)];
+      $("vu-devis").innerHTML = '<div class="apercu">' + (d.url ? '<img src="' + d.url + '" alt="Le devis">' : "") + '</div><p class="vide">Dans l’outil, ses lignes et ses prix sont lus ici, et passent dans « Mes prix » après votre accord.</p>';
+      return;
+    }
+    if (b.id === "preparer") { preparer(); return; }
+  });
+  // Un devis donné : la photo reste dans « Devis reçus », avec sa date. Elle n'est
+  // envoyée nulle part : la planche la montre seulement, depuis le téléphone.
+  // La marge d'une seule société : enregistrée en quittant la case.
+  document.addEventListener("change", function (e) {
+    if (e.target.id !== "marge-societe") return;
+    var s = societes[rubrique][ouverte];
+    s.marge = nombre(e.target.value);
+    dessinerFiche(); quiCouvre();
+  });
+  document.addEventListener("change", function (e) {
+    if (e.target.id !== "photo-devis" && e.target.id !== "fichier-devis") return;
+    var f = e.target.files[0]; if (!f) return;
+    var s = societes[rubrique][ouverte];
+    s.devis.unshift({ date: aujourdhui(), fichier: /^image\//.test(f.type) ? "Photo" : f.name, url: /^image\//.test(f.type) ? URL.createObjectURL(f) : null });
+    e.target.value = "";
+    dessinerFiche();
+  });
+  dessinerListe();
+  quiCouvre();
+})();
+</script>
+</body>
+</html>
