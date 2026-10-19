@@ -46,7 +46,7 @@ export default function ListeDesPieces({
               <button
                 type="button"
                 onClick={() => onAjouter(g.titre)}
-                className="mb-2 mt-1.5 block min-h-[40px] w-full rounded-[10px] bg-transparent text-[14px]"
+                className="mb-2 mt-1.5 block min-h-[40px] w-full rounded-full bg-transparent text-[14px]"
                 style={{ border: `1.5px dashed ${colors.line}`, color: colors.ink }}
               >
                 Ajouter une pièce

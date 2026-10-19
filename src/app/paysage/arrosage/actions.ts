@@ -80,7 +80,6 @@ export type EtatPlan =
 
 // Le plan lui-même, son dessin et ses pièces se composent dans `le-plan.ts`,
 // que l'écran rejoue sans serveur pour ses gestes : une seule règle.
-export type { LePlan };
 
 /** Au-delà, ce n'est plus un dessin de jardin : c'est un envoi qui a dérapé. */
 const DESSIN_MAX_CARACTERES = 100_000;

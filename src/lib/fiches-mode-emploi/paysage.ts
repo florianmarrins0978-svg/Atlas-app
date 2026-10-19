@@ -7,6 +7,8 @@
 import type { FicheModeEmploi } from "../mode-emploi";
 
 const ARROSAGE = "src/app/paysage/arrosage/ArrosageClient.tsx";
+/** L'écran du plan une fois le croquis lu (18 octobre 2026) : le piquage, la nourrice, les réseaux, les pièces, la liste. */
+const PLAN = "src/app/paysage/arrosage/LePlanDuJardin.tsx";
 const DIAG = "src/app/paysage/diagnostic/[id]/page.tsx";
 const SECU = "src/app/paysage/fiches-securite/ListeDesFiches.tsx";
 const FICHE = "src/app/paysage/fiche/[id]/FicheChantierClient.tsx";
@@ -103,24 +105,24 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
   {
     id: "arrosage-reseaux",
     ecran: "Plan d'arrosage",
-    ou: "« Paysage », Plan d'arrosage automatique, sous le plan",
+    ou: "« Paysage », Plan d'arrosage automatique, à « Les réseaux »",
     intitule: "Lire les réseaux : quelle zone, quel arroseur, quelle buse",
     motsCles: ["reseau", "reseaux", "vanne", "vannes", "buse", "arroseurs", "portee", "debit", "zone"],
     geste:
-      "Sous le dessin, une carte par réseau : la zone arrosée, le matériel et sa buse avec sa portée, " +
-      "« bridée à » quand la vis la réduit, puis le compte des arroseurs, tés, coudes et mètres de tuyau.",
-    source: ARROSAGE,
-    preuves: ["Réseau {i + 1}", 'data-atlas="carte-reseau"', '${m.bridee ? "bridée à" : "portée"} ${virgule(m.portee)} m'],
+      "À « Les réseaux », un plan par réseau, les autres en pâle : la zone arrosée, le matériel et sa buse avec sa portée, " +
+      "« bridée à » quand la vis la réduit, et les mètres de tuyau. Plus bas, à « Les pièces des réseaux », chaque pièce à sa place sur le plan.",
+    source: PLAN,
+    preuves: ["Réseau {i + 1}", 'data-atlas="carte-reseau"', '{m.bridee ? "bridée à" : "portée"} {virgule(m.portee)} m'],
     lieu: true,
   },
   {
     id: "arrosage-reserves",
     ecran: "Plan d'arrosage",
-    ou: "« Paysage », Plan d'arrosage automatique, juste sous le dessin",
+    ou: "« Paysage », Plan d'arrosage automatique, sous la liste des pièces",
     intitule: "Savoir ce que le plan n'a pas pu calculer",
     motsCles: ["reserve", "reserves", "avertissement", "calcule", "suppose", "attention", "point", "rouge"],
-    geste: "Lisez les lignes marquées d'un point rouge juste sous le dessin : c'est ce que le calcul n'a pas pu compter ou a dû supposer.",
-    source: ARROSAGE,
+    geste: "Lisez les lignes marquées d'un point rouge sous la liste des pièces : c'est ce que le calcul n'a pas pu compter ou a dû supposer.",
+    source: PLAN,
     preuves: ['data-atlas="reserves"', "backgroundColor: colors.alert"],
     lieu: true,
   },
@@ -148,26 +150,30 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
   {
     id: "arrosage-diametre-tuyau",
     ecran: "Plan d'arrosage",
-    ou: "« Paysage », Plan d'arrosage automatique, sous les réseaux",
+    ou: "« Paysage », Plan d'arrosage automatique, sous le piquage",
     intitule: "Savoir quand passer du tuyau Ø25 au Ø32",
     motsCles: ["diametre", "tuyau", "25", "32", "pehd", "longueur", "metres", "seuil"],
-    geste: "Sous les cartes des réseaux, une ligne dit jusqu'à combien de mètres le Ø25 tient, et le Ø32 au-delà.",
+    geste: "Sous les pièces du piquage, une ligne dit jusqu'à combien de mètres le Ø25 tient, et le Ø32 au-delà.",
     reserve: "Quand même le Ø32 perd trop de pression, elle le dit en rouge.",
-    source: ARROSAGE,
+    source: PLAN,
     preuves: ["Ø32 au-delà.", "même le Ø32 est trop juste.", 'data-atlas="seuil-tuyau"'],
   },
   {
     id: "arrosage-liste-pieces",
     ecran: "Plan d'arrosage",
-    ou: "« Paysage », Plan d'arrosage automatique, sous le plan",
+    ou: "« Paysage », Plan d'arrosage automatique, à « La liste »",
     intitule: "Trouver la liste des pièces à commander",
     motsCles: ["pieces", "liste", "commande", "commander", "fournisseur", "materiel", "raccords", "quantites", "nomenclature"],
     geste:
-      "Sous les réseaux, à « Le détail des pièces » : ce qui va du compteur à la nourrice, ce qui est dans le regard, puis ce qui part au jardin.",
+      "À « La liste » : ce qui va du compteur à la nourrice, la nourrice, puis chaque réseau. " +
+      "« Modifier ma liste » retire ou ajoute une ligne ; « Envoyer la liste au fournisseur » écrit le message, tout additionné, sans prix.",
     reserve: "« à mesurer » : la longueur ne se lit pas sur le croquis, relevez-la sur place.",
-    source: ARROSAGE,
-    preuves: ["Le détail des pièces", '"à mesurer"', "TITRES_DES_ZONES[zone]"],
-    ailleurs: [{ source: "src/lib/arrosage/pieces.ts", preuves: ['"Du compteur à la nourrice"', '"Dans le regard"', '"Au jardin"'] }],
+    source: PLAN,
+    preuves: ["La liste", "Modifier ma liste", "Envoyer la liste au fournisseur"],
+    ailleurs: [
+      { source: "src/lib/arrosage/postes.ts", preuves: ['"Du compteur à la nourrice"', '"à mesurer"'] },
+      { source: "src/app/paysage/arrosage/FeuillePiece.tsx", preuves: ["Tout est additionné, sans prix."] },
+    ],
     lieu: true,
   },
   {

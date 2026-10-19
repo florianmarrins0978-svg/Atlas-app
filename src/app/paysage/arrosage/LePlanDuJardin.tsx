@@ -278,6 +278,15 @@ export default function LePlanDuJardin({
           </div>
         )}
         <BoutonAjouter libelle="Ajouter une pièce" onClick={() => choisir("Ajouter une pièce", "reseau", (x) => r((s) => ajouter(s, "amenee", x, Date.now())))} />
+        {/* **LE SEUIL DU Ø32 — sa demande du 22 août 2026** : l'outil dit à partir de
+            combien de mètres le Ø25 ne tient plus, pas seulement le verdict. Une ligne. */}
+        {plan.tuyau.debit > 0 && (plan.tuyau.insuffisantMemeEn32 || plan.tuyau.seuil25 > 0) && (
+          <p className="mt-3 text-[13px] leading-relaxed" style={{ color: plan.tuyau.insuffisantMemeEn32 ? colors.alert : colors.muted }} data-atlas="seuil-tuyau">
+            {plan.tuyau.insuffisantMemeEn32
+              ? `${virgule(plan.tuyau.debit)} m³/h sur un réseau : même le Ø32 est trop juste.`
+              : `Ø25 jusqu’à ${Math.floor(plan.tuyau.seuil25)} m, Ø32 au-delà.`}
+          </p>
+        )}
       </section>
 
       {/* ─── La nourrice — pas au nez de robinet ─────────────────────────── */}
@@ -388,7 +397,7 @@ export default function LePlanDuJardin({
           type="button"
           onClick={() => setModifier(!modifier)}
           data-atlas="modifier-liste"
-          className="mt-4 min-h-[52px] w-full rounded-[12px] text-[16px]"
+          className="mt-4 min-h-[52px] w-full rounded-full text-[16px]"
           style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.card, color: colors.ink }}
         >
           {modifier ? "Terminer" : "Modifier ma liste"}
@@ -397,7 +406,7 @@ export default function LePlanDuJardin({
           type="button"
           onClick={() => setFournisseur(true)}
           data-atlas="envoyer-fournisseur"
-          className="mt-[10px] min-h-[52px] w-full rounded-[12px] border-0 text-[16px]"
+          className="mt-[10px] min-h-[52px] w-full rounded-full border-0 text-[16px]"
           style={{ backgroundColor: colors.ink, color: colors.card }}
         >
           Envoyer la liste au fournisseur
@@ -455,7 +464,7 @@ function BoutonAjouter({ libelle, onClick }: { libelle: string; onClick: () => v
       type="button"
       onClick={onClick}
       data-atlas="ajouter-piece"
-      className="mt-[10px] flex min-h-[48px] w-full items-center justify-center rounded-[12px] bg-transparent text-[14.5px]"
+      className="mt-[10px] flex min-h-[48px] w-full items-center justify-center rounded-full bg-transparent text-[14.5px]"
       style={{ border: `1.5px dashed ${colors.line}`, color: colors.ink }}
     >
       {libelle}

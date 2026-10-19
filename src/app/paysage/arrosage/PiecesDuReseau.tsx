@@ -123,7 +123,7 @@ export default function PiecesDuReseau({
         type="button"
         onClick={() => onAjouter(`r${r.i}`)}
         data-atlas="ajouter-piece"
-        className="mt-[10px] flex min-h-[48px] w-full items-center justify-center rounded-[12px] bg-transparent text-[14.5px]"
+        className="mt-[10px] flex min-h-[48px] w-full items-center justify-center rounded-full bg-transparent text-[14.5px]"
         style={{ border: `1.5px dashed ${colors.line}`, color: colors.ink }}
       >
         Ajouter une pièce au réseau {r.i + 1}

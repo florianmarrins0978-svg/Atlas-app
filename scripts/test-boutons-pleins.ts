@@ -177,11 +177,6 @@ const APLATS_DECLARES: { fichier: string; motif: RegExp; pourquoi: string }[] = 
     pourquoi: "la coche de « j'ai sauvegardé ailleurs » — une marque, pas un aplat de bouton",
   },
   {
-    fichier: "src/app/paysage/arrosage/ArrosageClient.tsx",
-    motif: /plan\.couleurs\[i\] \?\? colors\.rust/,
-    pourquoi: "la couleur de repli d'un réseau d'arrosage sur le plan",
-  },
-  {
     fichier: "src/app/paysage/fiche/[id]/FicheChantierClient.tsx",
     motif: /l\.faite \? colors\.rust/,
     pourquoi: "la coche d'une prestation faite",

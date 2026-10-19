@@ -72,7 +72,7 @@ export function MenuPiece({ menu, onFermer }: { menu: Menu; onFermer: () => void
             type="button"
             data-atlas="geste"
             onClick={() => { g.agir(n); onFermer(); }}
-            className="min-h-[52px] rounded-[12px] text-[15.5px]"
+            className="min-h-[52px] rounded-full text-[15.5px]"
             style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.card, color: g.danger ? colors.alert : colors.ink }}
           >
             {g.libelle.startsWith("Changer") || g.libelle.startsWith("Supprimer") ? mot(g.libelle.split(" ")[0]) : g.libelle}
@@ -136,7 +136,7 @@ export function ChoisirUnePiece({
               data-atlas="choix-piece"
               data-ref={x.ref}
               onClick={() => onChoix({ ref: x.ref, nom: x.nom })}
-              className="mt-2 flex w-full items-center gap-3 rounded-[12px] border-0 px-3 py-[10px] text-left text-[14px]"
+              className="mt-2 flex w-full items-center gap-3 rounded-full border-0 px-3 py-[10px] text-left text-[14px]"
               style={{ backgroundColor: colors.card, color: colors.ink }}
             >
               <span className="flex h-12 w-12 flex-none items-center justify-center rounded-[8px]" style={photo ? undefined : { border: `1.5px dashed ${colors.line}` }}>
@@ -181,7 +181,7 @@ export function FeuilleFournisseur({ message, onFermer }: { message: string; onF
         <button
           type="button"
           onClick={() => navigator.clipboard.writeText(texte).then(() => setCopie("Copié"), () => setCopie("Sélectionné"))}
-          className="min-h-[52px] flex-1 rounded-[12px] text-[15.5px]"
+          className="min-h-[52px] flex-1 rounded-full text-[15.5px]"
           style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.card, color: colors.ink }}
         >
           {copie}
@@ -190,7 +190,7 @@ export function FeuilleFournisseur({ message, onFermer }: { message: string; onF
           <button
             type="button"
             onClick={() => navigator.share({ text: texte })}
-            className="min-h-[52px] flex-1 rounded-[12px] border-0 text-[15.5px]"
+            className="min-h-[52px] flex-1 rounded-full border-0 text-[15.5px]"
             style={{ backgroundColor: colors.ink, color: colors.card }}
           >
             Envoyer
