@@ -6,6 +6,16 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-19
+
+- **Les boutons de l'écran du plan sont des capsules**, comme partout (sa règle
+  du 12 août 2026), sur l'écran et sur ses deux planches ; la ligne du seuil
+  Ø25/Ø32 (sa demande du 22 août) revient sous le piquage ; les fiches du mode
+  d'emploi suivent le nouvel écran ; un type réexporté dans les actions serveur
+  du plan est retiré. Trouvés par la batterie du lot. Ce que ça évite : un
+  module d'actions qui meurt à son évaluation, et un assistant qui enseigne un
+  écran disparu.
+
 ## 2026-10-18
 
 - **Le plan se dessine au doigt dans l'écran d'arrosage**, sur son « tu peux
