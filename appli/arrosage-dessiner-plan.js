@@ -69,6 +69,15 @@
   refusée. Et l'arbre : « je pense que tu peux pas faire grand-chose, dans
   tous les cas ça arrosera le tronc » : il se dessine, et ne change rien au
   plan.
+  SA DEMANDE DU 19 OCTOBRE, sur une maison de 10 × 10 dans un terrain de
+  20 × 20 : « quand je le colle à gauche, il me fait le calcul automatique de
+  là où je le colle jusqu'au bout ; plus je le décale, plus les mètres
+  descendent, un compteur qui décompte ; et pareil pour tout ce qu'on peut
+  déplacer, une ligne horizontale, verticale, avec les bonnes distances ».
+  L'objet qu'on tient ou qu'on vient de toucher porte donc ses quatre cotes
+  jusqu'aux bords du terrain (dessinCotes), refaites à chaque pas du doigt. Et
+  le doigt avance par PAS (une proposition de nous) : 10 cm sur tout le
+  terrain, 5 cm à 1/200, 1 cm à 1/100, pour que les cotes tombent juste.
   Ni les arbres ni les dalles qu'on arrose n'entrent au calcul : ils partent dans deux
   champs NEUFS (arbres, dalles), et l'écran le dit.
 
@@ -337,6 +346,7 @@
     }));
     if (etat.piquage) svg.appendChild(dessinPiquage(etat.piquage));
     if (etat.nourrice) svg.appendChild(dessinNourrice(etat.nourrice));
+    if (MODE === "B" && etat.cotesDe != null) dessinCotes(svg, etat.cotesDe);
     rendreEtat();
   }
 
@@ -424,6 +434,66 @@
     if (Math.abs(ny) <= 1e-6) ecart += 2 * TRAIT;
     g.appendChild(el("text", { x: mx + nx * ecart, y: my + ny * ecart + 1 * TRAIT, "text-anchor": "middle", "font-size": 2.8, fill: "var(--atlas-ink)", stroke: "var(--atlas-card)", "stroke-width": 0.7, "paint-order": "stroke", "stroke-linejoin": "round" }, (d.nom || "Dalles") + ", " + ecritDalles(r.n)));
     return g;
+  }
+
+  /* Ce qu'occupe un objet sur le terrain : un rectangle, ou un point. */
+  function emprise(id) {
+    var o = objetDe(id);
+    if (!o) return null;
+    var sorte = sorteDe(id);
+    if (sorte === "point" || sorte === "arbre") return { x: o.x, y: o.y, w: 0, h: 0 };
+    if (sorte === "dalles") {
+      var L = enU(o.L || 0), x1 = Math.min(o.a.x, o.b.x), y1 = Math.min(o.a.y, o.b.y);
+      var couchee = Math.abs(o.b.y - o.a.y) <= Math.abs(o.b.x - o.a.x);
+      return couchee
+        ? { x: x1, y: o.a.y - L / 2, w: Math.abs(o.b.x - o.a.x), h: L }
+        : { x: o.a.x - L / 2, y: y1, w: L, h: Math.abs(o.b.y - o.a.y) };
+    }
+    return { x: o.x, y: o.y, w: o.w, h: o.h };
+  }
+
+  /* LES QUATRE COTES de l'objet tenu, jusqu'aux bords du terrain : sa demande
+     du 19 octobre, « une ligne horizontale, verticale, avec les bonnes
+     distances ». Une cote nulle (l'objet est collé au bord) ne se dessine pas. */
+  function dessinCotes(svg, id) {
+    var b = emprise(id);
+    if (!b) return;
+    var t = terrainU(), cx = b.x + b.w / 2, cy = b.y + b.h / 2, tic = 1.2 * TRAIT;
+    var g = el("g", { "pointer-events": "none" });
+    var trait = { stroke: "var(--atlas-orTexte)", "stroke-width": 0.35 };
+    function cote(x1, y1, x2, y2) {
+      var d = Math.hypot(x2 - x1, y2 - y1);
+      if (enMetres(d) < 0.005) return;
+      var couche = Math.abs(y2 - y1) < 1e-9;
+      g.appendChild(el("line", Object.assign({ x1: x1, y1: y1, x2: x2, y2: y2 }, trait)));
+      [[x1, y1], [x2, y2]].forEach(function (p) {
+        g.appendChild(el("line", Object.assign(couche
+          ? { x1: p[0], y1: p[1] - tic, x2: p[0], y2: p[1] + tic }
+          : { x1: p[0] - tic, y1: p[1], x2: p[0] + tic, y2: p[1] }, trait)));
+      });
+      var texte = ecrit(Math.round(enMetres(d) * 100) / 100) + " m";
+      g.appendChild(el("text", {
+        x: couche ? (x1 + x2) / 2 : x1 + 1.6 * TRAIT,
+        y: couche ? y1 - 1.4 * TRAIT : (y1 + y2) / 2 + 1 * TRAIT,
+        "text-anchor": couche ? "middle" : "start",
+        "font-size": 2.9, "font-weight": 600, fill: "var(--atlas-orTexte)",
+        stroke: "var(--atlas-card)", "stroke-width": 0.8, "paint-order": "stroke", "stroke-linejoin": "round"
+      }, texte));
+    }
+    cote(0, cy, b.x, cy);
+    cote(b.x + b.w, cy, t.w, cy);
+    cote(cx, 0, cx, b.y);
+    cote(cx, b.y + b.h, cx, t.h);
+    svg.appendChild(g);
+  }
+
+  /* Le doigt avance par pas, pour que les cotes tombent juste : 10 cm sur tout
+     le terrain, 5 cm à 1/200, 1 cm à 1/100 (une proposition de nous). */
+  function pasDuDoigt() { return etat.echelle === 100 ? 0.01 : etat.echelle === 200 ? 0.05 : 0.1; }
+  function auPas(u) {
+    if (MODE !== "B" || !cote_du_carre()) return u;
+    var pas = pasDuDoigt();
+    return enU(Math.round(enMetres(u) / pas) * pas);
   }
 
   function dessinNourrice(p) {
@@ -533,6 +603,7 @@
         return;
       }
       prise = { id: idv, etire: !!poig, depart: p, bouge: false, avant: copie(objetDe(id)) };
+      etat.cotesDe = idv;
       etat.choisie = idv;
       svg.setPointerCapture(evt.pointerId);
       dessiner();
@@ -543,7 +614,7 @@
       prise = { glisse: true, cx: evt.clientX, cy: evt.clientY, sl: boite.scrollLeft, st: boite.scrollTop };
       svg.setPointerCapture(evt.pointerId);
     }
-    if (etat.choisie !== null) { etat.choisie = null; dessiner(); }
+    if (etat.choisie !== null || etat.cotesDe != null) { etat.choisie = null; etat.cotesDe = null; dessiner(); }
   }
 
   function objetDe(id) {
@@ -583,20 +654,20 @@
     prise.bouge = true;
     var o = objetDe(prise.id), a = prise.avant, sorte = sorteDe(prise.id);
     if (sorte === "point" || sorte === "arbre") {
-      o.x = borne(a.x + dx, t.w); o.y = borne(a.y + dy, t.h);
+      o.x = borne(auPas(a.x + dx), t.w); o.y = borne(auPas(a.y + dy), t.h);
     } else if (sorte === "dalles") {
       // Les deux bouts bougent ensemble, et restent dans le terrain.
       var mx = Math.min(a.a.x, a.b.x), Mx = Math.max(a.a.x, a.b.x);
       var my = Math.min(a.a.y, a.b.y), My = Math.max(a.a.y, a.b.y);
-      var ddx = Math.max(-mx, Math.min(t.w - Mx, dx)), ddy = Math.max(-my, Math.min(t.h - My, dy));
+      var ddx = Math.max(-mx, Math.min(t.w - Mx, auPas(dx))), ddy = Math.max(-my, Math.min(t.h - My, auPas(dy)));
       o.a = { x: a.a.x + ddx, y: a.a.y + ddy };
       o.b = { x: a.b.x + ddx, y: a.b.y + ddy };
     } else if (prise.etire) {
       o.w = Math.max(3, Math.min(t.w - a.x, a.w + dx));
       o.h = Math.max(3, Math.min(t.h - a.y, a.h + dy));
     } else {
-      o.x = borne(a.x + dx, Math.max(0, t.w - o.w));
-      o.y = borne(a.y + dy, Math.max(0, t.h - o.h));
+      o.x = borne(auPas(a.x + dx), Math.max(0, t.w - o.w));
+      o.y = borne(auPas(a.y + dy), Math.max(0, t.h - o.h));
     }
     dessiner();
   }
@@ -888,6 +959,7 @@
         z.id = etat.suivant++;
         etat.zones.push(z);
         etat.choisie = z.id;
+        etat.cotesDe = z.id;
         $("consigne").textContent = "Glissez la zone à sa place.";
       }
     }
@@ -923,6 +995,7 @@
 
   function supprimer() {
     if (!enCours) return;
+    etat.cotesDe = null;
     if (enCours.point === "nourrice") etat.nourrice = null;
     else if (enCours.point === "piquage") etat.piquage = null;
     else if (enCours.sorte === "arbre") etat.arbres = etat.arbres.filter(function (a) { return a !== enCours.z; });
@@ -1090,7 +1163,7 @@
       return { id: i + 1, type: z.type, nom: z.nom, L: z.L, l: z.l, x: z.x / s * 100, y: z.y / s * 100, w: z.L / s * 100 * k[0], h: z.l / s * 100 * k[1] };
     });
     etat.suivant = Z.length + 1;
-    etat.arbres = []; etat.dalles = []; etat.departDalles = null;
+    etat.arbres = []; etat.dalles = []; etat.departDalles = null; etat.cotesDe = null;
     etat.nourrice = null; etat.piquage = null; etat.choisie = null;
     choisirOutil(null);
     rendreOutils();
