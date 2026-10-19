@@ -98,9 +98,14 @@
     <div id="liste"></div>
     <div class="nouveau"><input id="nom-nouveau" aria-label="Nom"><button type="button" id="ajouter-societe">Ajouter</button></div>
 
+    <!-- Deux marges, sa réponse du 19 octobre 2026 : « oui, deux marges ». -->
     <div class="coef">
-      <span>Ma marge sur ces prix, en coefficient</span>
-      <input id="coef" inputmode="decimal" placeholder="1,30" aria-label="Coefficient">
+      <span>Ma marge sur le matériel</span>
+      <input id="coef" inputmode="decimal" placeholder="1,30" aria-label="Coefficient sur le matériel">
+    </div>
+    <div class="coef">
+      <span>Ma marge sur la main d’œuvre des partenaires</span>
+      <input id="coef-mo" inputmode="decimal" placeholder="1,15" aria-label="Coefficient sur la main d’œuvre des partenaires">
     </div>
     <p class="vide-note" id="coef-note"></p>
   </section>
@@ -153,7 +158,7 @@
   var MOTS_VIDES = /^(il|me|faut|de|des|du|la|le|les|un|une|et|pour|avec|j'ai|besoin|en|au|aux|sur)$/i;
   var racine = function (m) { return m.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/s$/, ""); };
   function preparer() {
-    var coef = nombre($("coef").value);
+    var coefMat = nombre($("coef").value), coefMo = nombre($("coef-mo").value);
     var morceaux = $("dictee").value.split(/[.,;\n]|\bet\b/).map(function (s) { return s.trim(); }).filter(Boolean);
     var tous = [];
     ["fournisseurs", "partenaires"].forEach(function (r) { societes[r].forEach(function (s) { s.articles.forEach(function (a) { tous.push({ a: a, s: s, r: r }); }); }); });
@@ -172,9 +177,10 @@
     $("devis").innerHTML = lignes.map(function (l) {
       if (!l.t) return '<div class="ld vide"><div class="haut"><span>' + texte(l.dit) + "</span><b>à chiffrer</b></div><small>Aucun prix dans vos fournisseurs ni vos partenaires.</small></div>";
       var a = l.t.a, achat = a.prix * l.qte;
+      var coef = l.t.r === "partenaires" ? coefMo : coefMat;
       var vente = coef ? Math.round(achat * coef * 100) / 100 : null;
       return '<div class="ld' + (vente === null ? " vide" : "") + '"><div class="haut"><span>' + texte(a.nom) + ", " + String(l.qte).replace(".", ",") + " " + texte(a.unite) + (l.qte > 1 && !/s$/.test(a.unite) ? "s" : "") + "</span><b>" + (vente === null ? "à chiffrer" : euros(vente)) + "</b></div>" +
-        "<small>" + (l.t.r === "partenaires" ? "Main d’œuvre de " : "Prix d’achat ") + texte(l.t.s.nom) + (a.date ? " du " + a.date : "") + " : " + euros(achat) + (vente === null ? ". Donnez votre coefficient pour le prix de vente." : ", fois " + String(coef).replace(".", ",") + ".") + "</small></div>";
+        "<small>" + (l.t.r === "partenaires" ? "Main d’œuvre de " : "Prix d’achat ") + texte(l.t.s.nom) + (a.date ? " du " + a.date : "") + " : " + euros(achat) + (vente === null ? (l.t.r === "partenaires" ? ". Donnez votre marge sur la main d’œuvre." : ". Donnez votre marge sur le matériel.") : ", fois " + String(coef).replace(".", ",") + ".") + "</small></div>";
     }).join("") + '<p class="vide-note">Proposé, à valider. Rien ne part sans vous.</p>';
     $("devis").hidden = false;
   }
@@ -199,7 +205,7 @@
   document.addEventListener("change", function (e) {
     if (e.target.dataset && e.target.dataset.devis !== undefined && e.target.files[0]) { e.target.value = ""; e.target.parentNode.firstChild.nextSibling.textContent = "Lu dans l’outil, vérifié avant d’enregistrer"; }
   });
-  $("coef").oninput = function () { $("coef-note").textContent = nombre(this.value) === null && this.value ? "Un nombre, par exemple 1,30 pour 30 % de marge." : ""; };
+  $("coef").oninput = $("coef-mo").oninput = function () { $("coef-note").textContent = nombre(this.value) === null && this.value ? "Un nombre, par exemple 1,30 pour 30 % de marge." : ""; };
   dessiner();
 })();
 </script>

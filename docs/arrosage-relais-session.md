@@ -418,5 +418,6 @@ Ses demandes : *« dans Réglages une catégorie mes fournisseurs, valable pour 
 | ce qui existe déjà | le devis dicté cherche ses prix dans Réglages > Tarifs (ses PRIX DE VENTE : `rechercher-tarifs-compatibles.ts`, `proposition-prix.ts`) ; sans prix, « à chiffrer », jamais zéro |
 | ce que la planche propose | deux rubriques de PRIX D'ACHAT (fournisseurs : articles ; partenaires : main d'œuvre à l'heure, à la journée, au mètre, au forfait), un coefficient de marge, et l'ordre de recherche du devis : 1) son tarif de vente ; 2) sinon un prix d'achat × son coefficient, la source écrite sous la ligne ; 3) sinon « à chiffrer » |
 | aucune donnée inventée | tout est vide sauf Aqua Plus et France Bonhomme, qu'il a nommés |
-| questions ouvertes | un seul coefficient, ou un pour le matériel et un pour la main d'œuvre des partenaires ? Le tarif de vente passe-t-il avant le prix d'achat × coefficient ? |
+| **deux marges** | *« oui, deux marges »* (19 octobre) : une sur le matériel, une sur la main d'œuvre des partenaires ; faites sur la planche |
+| question ouverte | le tarif de vente passe-t-il avant le prix d'achat × marge ? (« pas compris », un exemple lui est donné le 19 octobre) |
 | ⚠ pas un lot arrosage | la planche vit ici faute de mieux ; codée, elle touche `src/app/reglages` et la proposition de prix (gravité ARGENT : niveau 3) |
