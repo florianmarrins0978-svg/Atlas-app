@@ -406,3 +406,16 @@ Sa demande : chercher les photos de toutes les pièces de la liste qui n'en ont 
 | **tranché** | *« non, c'est juste du matériel qui change »* : seul le matériel entre dans la comparaison |
 | **⚠ CORRIGÉ PAR LUI LE MÊME SOIR** | *« je pense qu'il faut plutôt une vanne de plus que le 32, sinon tu vas tout me passer en 32 à chaque fois ; il faudra nuancer cette règle mais je ne sais pas comment encore »*. Donc **on ne code RIEN du Ø32 pour l'instant** : le calcul garde ce qu'il fait (une vanne de plus en Ø25), et la nuance (quand le 32 vaut mieux qu'une vanne) **reste à lui**. Ne pas la deviner |
 | **pourquoi pas encore codé** | l'autre session code l'écran (`src/app/paysage/arrosage`, `le-plan.ts`, `postes.ts`) dans les mêmes fichiers ; attendre qu'elle ait fini. Et les prix fournisseurs n'existent pas encore |
+
+## Réglages : mes fournisseurs et mes partenaires (18 octobre 2026 au soir)
+
+Ses demandes : *« dans Réglages une catégorie mes fournisseurs, valable pour l'arrosage mais aussi pour du matériel ou autre »* ; *« pas que mes fournisseurs, mais aussi mes partenaires : le prix de la main-d'œuvre de nos collègues »* ; *« quand je dicte mon devis, 3 sacs de ciment, il faudrait qu'il aille se référer à la rubrique pour prendre le prix »*.
+
+| | |
+|---|---|
+| planche | `appli/reglages-fournisseurs-partenaires.html`, https://claude.ai/artifact/HfsXhoFq4iLtS8FMyrvJqt, **à lui faire regarder** |
+| ce qui existe déjà | le devis dicté cherche ses prix dans Réglages > Tarifs (ses PRIX DE VENTE : `rechercher-tarifs-compatibles.ts`, `proposition-prix.ts`) ; sans prix, « à chiffrer », jamais zéro |
+| ce que la planche propose | deux rubriques de PRIX D'ACHAT (fournisseurs : articles ; partenaires : main d'œuvre à l'heure, à la journée, au mètre, au forfait), un coefficient de marge, et l'ordre de recherche du devis : 1) son tarif de vente ; 2) sinon un prix d'achat × son coefficient, la source écrite sous la ligne ; 3) sinon « à chiffrer » |
+| aucune donnée inventée | tout est vide sauf Aqua Plus et France Bonhomme, qu'il a nommés |
+| questions ouvertes | un seul coefficient, ou un pour le matériel et un pour la main d'œuvre des partenaires ? Le tarif de vente passe-t-il avant le prix d'achat × coefficient ? |
+| ⚠ pas un lot arrosage | la planche vit ici faute de mieux ; codée, elle touche `src/app/reglages` et la proposition de prix (gravité ARGENT : niveau 3) |
