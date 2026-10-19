@@ -460,27 +460,36 @@
     var g = c.getContext("2d"); g.setTransform(r, 0, 0, r, 0, 0);
     g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H);
     g.setTransform(r * k, 0, 0, r * k, (W - largeur * k) / 2 * r, 0);
+    // SUR LE DESSIN AUSSI, une pièce supprimée se grise et se barre de rouge, une
+    // pièce changée porte un numéro doré (sa demande du 19 octobre 2026 : « pour
+    // la vue éclatée de la nourrice, je voulais que ça fasse la même chose »).
+    // Les n premières du même numéro, dans l'ordre du dessin, comme pour la chaîne d'une tête.
+    var vuesNr = {};
     poses.forEach(function (p) {
       var im = images[p.ref];
+      var j = vuesNr[p.ref] || 0; vuesNr[p.ref] = j + 1;
+      var st = etatPose(p.ref, j), grise = st === "retiree", teinte = st === "changee" ? jeton("or") : null;
       if (p.haut) {
         var f = HAUT[p.ref];
         if (im) {
-          g.save(); g.translate(p.x + p.w / 2, p.y + p.h / 2);
+          g.save(); if (grise) g.globalAlpha = 0.3; g.translate(p.x + p.w / 2, p.y + p.h / 2);
           if (f.demi) g.rotate(Math.PI);
           if (f.miroir) g.scale(-1, 1);
           g.globalCompositeOperation = "multiply"; g.drawImage(im, -p.w / 2, -p.h / 2, p.w, p.h); g.restore();
         }
-        badge(g, numero(p.ref), p.x + p.w + 2, p.y + 5);
+        if (grise) barre(g, p.x + p.w / 2, p.y + p.h / 2, Math.min(p.w, p.h) * 0.45 + 4);
+        badge(g, numero(p.ref), p.x + p.w + 2, p.y + 5, teinte);
         return;
       }
       var fc = COLONNE[p.cle];
       if (im) {
         var ax = fc.a[0] * im.width, ay = fc.a[1] * im.height, bx = fc.b[0] * im.width, by = fc.b[1] * im.height;
         var s = fc.L / Math.hypot(bx - ax, by - ay), angle = Math.PI / 2 - Math.atan2(by - ay, bx - ax);
-        g.save(); g.translate(p.x, p.y); g.rotate(angle); g.scale(s, s);
+        g.save(); if (grise) g.globalAlpha = 0.3; g.translate(p.x, p.y); g.rotate(angle); g.scale(s, s);
         g.globalCompositeOperation = "multiply"; g.drawImage(im, -ax, -ay); g.restore();
       }
-      badge(g, numero(p.ref), p.x + 24, p.y + fc.L / 2);
+      if (grise) barre(g, p.x, p.y + fc.L / 2, 16);
+      badge(g, numero(p.ref), p.x + 24, p.y + fc.L / 2, teinte);
     });
     g.globalCompositeOperation = "source-over";
     g.font = "600 10px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "top";
@@ -518,9 +527,26 @@
     });
     $("bac").innerHTML = bac;
   }
-  function badge(g, n, x, y) {
+  // Ce qu'il a fait de la j-ième pièce d'un numéro : supprimée, changée, ou rien.
+  // Les sorties (nrUne) sont d'abord les supprimées, puis les changées (celles
+  // dont la remplaçante est entrée dans la liste, « de » ce numéro).
+  function etatPose(ref, j) {
+    if (etat.retirees["nr:" + ref]) return "retiree";
+    if (etat.remplacees["nr:" + ref]) return "changee";
+    var k = etat.nrUne[ref] || 0, c = 0;
+    etat.ajoutees.forEach(function (a) { if (a.de === ref) c += a.q || 1; });
+    var d = Math.max(0, k - c);
+    return j < d ? "retiree" : j < k ? "changee" : "";
+  }
+  // La barre rouge d'une pièce supprimée, la même que sur les vignettes.
+  function barre(g, cx, cy, demi) {
     g.globalCompositeOperation = "source-over";
-    g.fillStyle = "#1c1c1a"; g.beginPath(); g.arc(x, y, 7, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = jeton("alerte"); g.lineWidth = 2.5; g.lineCap = "round";
+    g.beginPath(); g.moveTo(cx - demi, cy + demi * 0.7); g.lineTo(cx + demi, cy - demi * 0.7); g.stroke();
+  }
+  function badge(g, n, x, y, teinte) {
+    g.globalCompositeOperation = "source-over";
+    g.fillStyle = teinte || "#1c1c1a"; g.beginPath(); g.arc(x, y, 7, 0, Math.PI * 2); g.fill();
     g.fillStyle = "#ffffff"; g.font = "600 9px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
     g.fillText(String(n), x, y + 0.5);
   }

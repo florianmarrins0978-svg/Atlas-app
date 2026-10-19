@@ -4,7 +4,7 @@ import { piecesDuPlan } from "../src/lib/arrosage/pieces";
 import {
   RETOUCHES_VIERGES, chaineSupprimer, chaineRemplacer, clesAChanger, ligneSupprimer, nourriceRemettre, nourriceRemplacer, nourriceSupprimer, remplacer, supprimer,
 } from "../src/lib/arrosage/retouches";
-import { composerNourrice } from "../src/lib/arrosage/nourrice-eclatee";
+import { composerNourrice, etatsDesPoses } from "../src/lib/arrosage/nourrice-eclatee";
 import { PHOTOS, photoDe } from "../src/lib/arrosage/photos";
 import { motsPresents } from "../src/lib/arrosage/mots-du-plan";
 import { ROBINET, departDeLOutil, departRetenu, departsPossibles, libelleDepart, phraseDuManque, voiesManquantes, type Depart, type Montage } from "../src/lib/arrosage/robinet";
@@ -96,6 +96,20 @@ cas("la nourrice se compose : douze numéros pour quatre voies dont une de goutt
   exige(Object.values(n!.reste).some((q) => q > 0), "le bac « Avec la nourrice » n'est pas vide");
   const liste = groupeNourrice(plan, composer(), RETOUCHES_VIERGES);
   exige(liste.nombre["mamelon"] === 4, `${liste.nombre["mamelon"]} mamelons réduits, la fiche en compte 4`);
+});
+
+cas("sur le dessin de la nourrice, deux unions en moins se grisent, une changée se dore, dans l'ordre du dessin", () => {
+  const n = composerNourrice(4, 1)!;
+  const unions = n.poses.map((p, i) => [p.ref, i] as const).filter(([ref]) => ref === "union").map(([, i]) => i);
+  exige(unions.length === 5, `${unions.length} unions dessinées pour 4 voies, il en faut 5`);
+  const deuxEnMoins = nourriceSupprimer(RETOUCHES_VIERGES, "union", 2);
+  const e1 = etatsDesPoses(n.poses, deuxEnMoins);
+  exige(e1[unions[0]] === "retiree" && e1[unions[1]] === "retiree" && e1[unions[2]] === "" && e1.filter((x) => x === "retiree").length === 2, `deux en moins : ${unions.map((i) => e1[i] || "·").join(",")}`);
+  const uneChangee = nourriceRemplacer(deuxEnMoins, "union", 1, { ref: "union-ff", nom: "Union FF" }, "Nourrice 4 voies", 7);
+  const e2 = etatsDesPoses(n.poses, uneChangee);
+  exige(e2[unions[0]] === "retiree" && e2[unions[1]] === "retiree" && e2[unions[2]] === "changee" && e2[unions[3]] === "", `deux en moins puis une changée : ${unions.map((i) => e2[i] || "·").join(",")}`);
+  exige(etatsDesPoses(n.poses, nourriceRemettre(uneChangee, "union")).every((x) => x === ""), "tout remis : plus rien de grisé");
+  exige(etatsDesPoses(n.poses, supprimer(RETOUCHES_VIERGES, "nr:union")).filter((x) => x === "retiree").length === 5, "le numéro entier supprimé : les cinq se grisent");
 });
 
 cas("la nourrice : deux mamelons en moins, un changé, puis tout remis", () => {
