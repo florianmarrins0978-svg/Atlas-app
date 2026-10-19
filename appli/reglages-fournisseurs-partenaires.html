@@ -122,18 +122,16 @@
   .societe small{display:block;margin-top:3px;font-size:12.5px;color:var(--atlas-inkSoft)}
   .societe .losange{flex:none;margin-left:auto;width:8px;height:8px;transform:rotate(45deg);border-right:1.5px solid var(--atlas-chevron);border-top:1.5px solid var(--atlas-chevron)}
   .nom-devis{display:block;width:100%;margin-top:12px;border:0;border-radius:10px;padding:12px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
-  .rangee-recherche{display:flex;align-items:center;gap:10px}
-  .rangee-recherche .cherche{flex:1;min-width:0}
-  .filtre{flex:none;display:flex;align-items:center;gap:7px;min-height:44px;padding:0 13px;border:0;border-radius:999px;background:var(--atlas-card);color:var(--atlas-inkSoft);box-shadow:inset 0 0 0 1px var(--atlas-line);font-size:12.5px;cursor:pointer}
-  .filtre.actif{background:var(--atlas-plein);color:var(--atlas-card);box-shadow:none}
-  .boite.courte{height:auto;max-height:86vh}
-  .titre-tri{margin:0 0 8px;text-align:center;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--atlas-muted)}
-  .cle-tri{display:flex;align-items:center;justify-content:center;width:100%;min-height:54px;margin-top:8px;border:0;border-radius:999px;background:var(--atlas-card);box-shadow:inset 0 0 0 1px var(--atlas-line);color:var(--atlas-ink);font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;font-size:19px;cursor:pointer}
-  .cle-tri[aria-pressed="true"]{background:var(--atlas-plein);color:var(--atlas-card);box-shadow:none}
-  .sens{display:flex;gap:8px;margin-top:18px}
-  .sens button{flex:1;min-height:44px;border:0;border-radius:999px;background:none;box-shadow:inset 0 0 0 1px var(--atlas-line);color:var(--atlas-inkSoft);font-size:13.5px;cursor:pointer}
-  .sens button[aria-pressed="true"]{box-shadow:inset 0 0 0 1.5px var(--atlas-or);color:var(--atlas-or);font-weight:600}
-  .fermer-tri{display:block;width:100%;margin-top:12px;padding:12px 0;border:0;background:none;color:var(--atlas-muted);font-size:14px;cursor:pointer}
+  .filtre-date{margin-top:12px}
+  .mois-rangee{display:flex;align-items:center;justify-content:center;gap:2px}
+  .chevron-or{flex:none;display:flex;align-items:center;justify-content:center;width:34px;height:44px;border:0;background:none;color:var(--atlas-or);cursor:pointer}
+  .chevron-or:disabled{color:var(--atlas-line);cursor:default}
+  .mois-titre{position:relative;display:flex;align-items:center;min-height:44px;min-width:0;margin:0 2px;cursor:pointer}
+  .mois-titre span{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;font-size:26px;line-height:1.2;color:var(--atlas-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mois-titre.jour span{font-size:clamp(20px,6.4vw,26px)}
+  .mois-titre input{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;cursor:pointer}
+  .tout-le-mois{display:flex;justify-content:center}
+  .tout-le-mois button{min-height:44px;padding:0 12px;border:0;background:none;color:var(--atlas-or);font-size:14px;cursor:pointer}
   [hidden]{display:none !important}
   button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.source:focus-within{outline:2px solid var(--atlas-or);outline-offset:2px}
 </style>
@@ -153,7 +151,7 @@
       <button type="button" data-rubrique="partenaires" aria-pressed="false">Mes partenaires</button>
     </div>
     <!-- Le champ de recherche de l'application (ChampRecherche.tsx), collé en haut. -->
-    <div class="colle"><div class="rangee-recherche"><div class="cherche"><svg width="21" height="21" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8.2" cy="8.2" r="6.2"/><path d="M12.8 12.8L18 18" stroke-linecap="round"/></svg><input id="chercher-societe" type="text" inputmode="search" autocomplete="off" aria-label="Chercher"><button type="button" id="effacer-societe" aria-label="Effacer la recherche" hidden>✕</button></div><button class="filtre" type="button" data-filtre="liste" aria-label="Trier"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 4h12M4.5 8h7M7 12h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Filtre</button></div></div>
+    <div class="colle"><div class="cherche"><svg width="21" height="21" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8.2" cy="8.2" r="6.2"/><path d="M12.8 12.8L18 18" stroke-linecap="round"/></svg><input id="chercher-societe" type="text" inputmode="search" autocomplete="off" aria-label="Chercher"><button type="button" id="effacer-societe" aria-label="Effacer la recherche" hidden>✕</button></div></div>
     <div id="societes"></div>
     <div class="nouveau"><input id="nom-nouveau" aria-label="Nom"><button type="button" id="ajouter-societe">Ajouter</button></div>
     <!-- LE COEFFICIENT RESTE (« faut la laisser comme elle est », 19 octobre 2026) ; ce
@@ -182,17 +180,17 @@
       <button type="button" data-partie="devis" aria-pressed="false">Devis reçus</button>
       <button type="button" data-partie="demandes" aria-pressed="false">Demandes envoyées</button>
     </div>
-    <div class="rangee-recherche dans-fiche"><div class="cherche"><svg width="21" height="21" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8.2" cy="8.2" r="6.2"/><path d="M12.8 12.8L18 18" stroke-linecap="round"/></svg><input id="chercher-fiche" type="text" inputmode="search" autocomplete="off" aria-label="Chercher dans la fiche"><button type="button" id="effacer-fiche" aria-label="Effacer la recherche" hidden>✕</button></div><button class="filtre" type="button" data-filtre="fiche" aria-label="Trier"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 4h12M4.5 8h7M7 12h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Filtre</button></div>
+    <!-- Le mois se feuillette entre deux chevrons ; le toucher ouvre la roue du téléphone pour un jour. -->
+    <div class="filtre-date" id="filtre-date" hidden>
+      <div class="mois-rangee">
+        <button class="chevron-or" type="button" id="mois-avant" aria-label="Mois précédent"><svg width="10" height="16" viewBox="0 0 10 16" fill="none" aria-hidden="true"><path d="M8 2L2 8l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <label class="mois-titre"><span id="titre-periode"></span><input type="date" id="roue-jour" aria-label="Choisir un jour"></label>
+        <button class="chevron-or" type="button" id="mois-apres" aria-label="Mois suivant"><svg width="10" height="16" viewBox="0 0 10 16" fill="none" aria-hidden="true"><path d="M2 2l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="tout-le-mois"><button type="button" id="tout-le-mois" hidden>Tout le mois</button></div>
+    </div>
+    <div class="cherche dans-fiche"><svg width="21" height="21" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8.2" cy="8.2" r="6.2"/><path d="M12.8 12.8L18 18" stroke-linecap="round"/></svg><input id="chercher-fiche" type="text" inputmode="search" autocomplete="off" aria-label="Chercher dans la fiche"><button type="button" id="effacer-fiche" aria-label="Effacer la recherche" hidden>✕</button></div>
     <div id="partie"></div>
-  </div>
-</div>
-
-<div class="feuille" id="volet-tri" hidden>
-  <div class="boite courte" role="dialog" aria-modal="true" aria-label="Trier par">
-    <p class="titre-tri">Trier par</p>
-    <div id="cles-tri"></div>
-    <div class="sens" id="sens-tri"></div>
-    <button class="fermer-tri" type="button" id="fermer-tri">Fermer</button>
   </div>
 </div>
 
@@ -209,6 +207,14 @@
   var nouvelle = function (nom) { return { nom: nom, prix: [], devis: [], demandes: [], marge: null }; };
   var societes = { fournisseurs: [nouvelle("Aqua Plus"), nouvelle("France Bonhomme")], partenaires: [] };
   var UNITES = { fournisseurs: ["pièce", "sac", "m", "m²", "m³", "kg", "palette"], partenaires: ["heure", "journée", "m", "m²", "forfait"] };
+  var MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+  var JOURS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+  var jourIso = function (d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+  var moisEnCours = function () { return jourIso(new Date()).slice(0, 7); };
+  var moisVoisin = function (p, dec) { var a = p.split("-").map(Number), rang = a[0] * 12 + ((a[1] || 1) - 1) + dec; return Math.floor(rang / 12) + "-" + String((rang % 12) + 1).padStart(2, "0"); };
+  var titrePeriode = function (p) { var a = p.split("-").map(Number); if (a.length === 3) { var j = new Date(a[0], a[1] - 1, a[2]); var t = JOURS[j.getDay()] + " " + a[2] + " " + MOIS[a[1] - 1] + (String(a[0]) === moisEnCours().slice(0, 4) ? "" : " " + a[0]); return t.charAt(0).toUpperCase() + t.slice(1); } var m = MOIS[a[1] - 1] + " " + a[0]; return m.charAt(0).toUpperCase() + m.slice(1); };
+  var enLettres = function (p) { var a = p.split("-").map(Number); return a.length === 3 ? "le " + a[2] + " " + MOIS[a[1] - 1] + " " + a[0] : "en " + MOIS[a[1] - 1] + " " + a[0]; };
+  var periode = moisEnCours();
   var rubrique = "fournisseurs", ouverte = null, partie = "prix", alerteMarge = "";
 
   var pluriel = function (n, mot) { return n + " " + mot + (n > 1 ? "s" : ""); };
@@ -224,8 +230,7 @@
     // Une société se trouve par son nom, mais aussi par ce qu'elle porte : une
     // fourniture, un devis, une demande (« si on a besoin de rechercher les devis
     // ou les listes qu'on envoie », 19 octobre 2026).
-    var plusRecent = function (xs) { return xs.reduce(function (m, x) { return Math.max(m, x.quand || 0); }, 0); };
-    var lignes = l.map(function (s, i) { return { s: s, i: i, nom: s.nom, devis: plusRecent(s.devis), demande: plusRecent(s.demandes) }; })
+    var lignes = l.map(function (s, i) { return { s: s, i: i, nom: s.nom } })
       .filter(function (x) { return trouve(x.s.nom + " " + x.s.prix.map(function (a) { return a.nom; }).join(" ") + " " + x.s.devis.map(function (d) { return d.nom; }).join(" ") + " " + x.s.demandes.map(function (d) { return d.titre; }).join(" "), saisie); });
     $("societes").innerHTML = !l.length ? '<p class="vide">Aucun partenaire. Ajoutez la société avec qui vous travaillez.</p>' :
       !lignes.length ? '<p class="vide">' + (rubrique === "fournisseurs" ? "Aucun fournisseur" : "Aucun partenaire") + " ne s’appelle « " + texte(saisie.trim()) + " ».</p>" :
@@ -234,7 +239,7 @@
         return '<button class="societe" type="button" data-ouvrir="' + x.i + '"><span><b>' + surligner(x.s.nom, saisie) + "</b><small>" +
           (aussi ? aussi : pluriel(x.s.prix.length, "prix").replace("prixs", "prix") + ", " + pluriel(x.s.devis.length, "devis").replace("deviss", "devis") + " reçu" + (x.s.devis.length > 1 ? "s" : "") + ", " + pluriel(x.s.demandes.length, "demande")) +
           '</small><small class="marge">' + (margeDe(x.s, rubrique) === null ? "Marge à donner" : "Marge " + fois(margeDe(x.s, rubrique)) + (x.s.marge !== null ? ", la sienne" : "")) + '</small></span><span class="losange" aria-hidden="true"></span></button>';
-      }, "liste");
+      });
   }
   // Ce qui a fait trouver une société quand ce n'est pas son nom.
   function ce_qui_trouve(s, saisie) {
@@ -265,21 +270,9 @@
     return h + (ouvert ? "</mark>" : "");
   }
   var lettre = function (nom) { var c = plat(nom).charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; };
-  var CLES = {
-    liste: [{ cle: "nom", libelle: "Nom", sens: ["De A à Z", "De Z à A"] }, { cle: "devis", libelle: "Dernier devis reçu", sens: ["Du plus ancien", "Du plus récent"] }, { cle: "demande", libelle: "Dernière demande envoyée", sens: ["Du plus ancien", "Du plus récent"] }],
-    prix: [{ cle: "nom", libelle: "Nom", sens: ["De A à Z", "De Z à A"] }, { cle: "prix", libelle: "Prix", sens: ["Du plus petit", "Du plus grand"] }, { cle: "quand", libelle: "Date", sens: ["Du plus ancien", "Du plus récent"] }],
-    devis: [{ cle: "nom", libelle: "Nom", sens: ["De A à Z", "De Z à A"] }, { cle: "quand", libelle: "Date de réception", sens: ["Du plus ancien", "Du plus récent"] }],
-    demandes: [{ cle: "nom", libelle: "Nom", sens: ["De A à Z", "De Z à A"] }, { cle: "quand", libelle: "Date d’envoi", sens: ["Du plus ancien", "Du plus récent"] }]
-  };
-  var TRI = { liste: { cle: "nom", croissant: true }, prix: { cle: "nom", croissant: true }, devis: { cle: "nom", croissant: true }, demandes: { cle: "nom", croissant: true } };
-  var triOuvert = null;
-  function enBandes(lignes, saisie, ligne, contexte) {
-    var tri = TRI[contexte];
-    var rangees = lignes.slice().sort(function (a, b) {
-      var r = tri.cle === "nom" ? plat(a.nom).localeCompare(plat(b.nom), "fr") : (a[tri.cle] || 0) - (b[tri.cle] || 0);
-      return tri.croissant ? r : -r;
-    });
-    var h = "", avant = null, cherche = !!saisie.trim() || tri.cle !== "nom";
+  function enBandes(lignes, saisie, ligne) {
+    var rangees = lignes.slice().sort(function (a, b) { return plat(a.nom).localeCompare(plat(b.nom), "fr"); });
+    var h = "", avant = null, cherche = !!saisie.trim();
     rangees.forEach(function (x) {
       var b = lettre(x.nom);
       if (!cherche && b !== avant) h += '<p class="bande">' + b + "</p>";
@@ -289,7 +282,19 @@
     return h;
   }
 
+  function dessinerPeriode() {
+    var date = partie === "devis" || partie === "demandes";
+    $("filtre-date").hidden = !date;
+    if (!date) return;
+    var unJour = periode.length === 10;
+    $("titre-periode").textContent = titrePeriode(periode);
+    $("titre-periode").parentNode.classList.toggle("jour", unJour);
+    $("roue-jour").value = unJour ? periode : (jourIso(new Date()).indexOf(periode) === 0 ? jourIso(new Date()) : periode + "-01");
+    $("mois-apres").disabled = moisVoisin(periode, 1) > moisEnCours();
+    $("tout-le-mois").hidden = !unJour;
+  }
   function dessinerFiche() {
+    dessinerPeriode();
     var s = societes[rubrique][ouverte];
     $("fiche-titre").textContent = s.nom;
     document.querySelectorAll("[data-partie]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.partie === partie)); });
@@ -303,12 +308,12 @@
     $("effacer-fiche").hidden = !q;
     var rien = function (quoi) { return '<p class="vide">' + quoi + " ne s’appelle « " + texte(q.trim()) + " ».</p>"; };
     if (partie === "prix") {
-      var prix = s.prix.map(function (a, k) { return { a: a, k: k, nom: a.nom, prix: a.prix, quand: a.quand }; }).filter(function (x) { return trouve(x.nom, q); });
+      var prix = s.prix.map(function (a, k) { return { a: a, k: k, nom: a.nom }; }).filter(function (x) { return trouve(x.nom, q); });
       h += !s.prix.length ? '<p class="vide">' + (rubrique === "fournisseurs" ? "Aucune fourniture encore. Ajoutez-en, ou prenez un de ses devis en photo." : "Aucun prix de main d’œuvre encore.") + "</p>" :
         !prix.length ? rien(rubrique === "fournisseurs" ? "Aucune fourniture" : "Aucune prestation") :
         '<div class="liste">' + enBandes(prix, q, function (x) {
           return '<div class="ligne"><span class="n">' + surligner(x.a.nom, q) + "<small>" + texte(x.a.source) + '</small></span><span class="p">' + euros(x.a.prix) + " / " + texte(x.a.unite) + '</span><button class="lien danger" type="button" data-retirer-prix="' + x.k + '">Retirer</button></div>';
-        }, "prix") + "</div>";
+        }) + "</div>";
       h += '<div class="saisie"><input id="art-nom" placeholder="' + (rubrique === "fournisseurs" ? "Fourniture" : "Prestation") + '" aria-label="Nom"><select id="art-unite" aria-label="Unité">' +
         UNITES[rubrique].map(function (u) { return "<option>" + u + "</option>"; }).join("") + '</select><input class="prix" id="art-prix" inputmode="decimal" placeholder="Prix HT" aria-label="Prix HT"></div>' +
         '<button class="second" type="button" id="ajouter-prix">Ajouter ce prix</button>';
@@ -318,20 +323,20 @@
       h += '<input class="nom-devis" id="nom-devis" placeholder="Nom du devis, chantier ou client" aria-label="Nom du devis">' +
         '<label class="source"><input type="file" accept="image/*" capture="environment" id="photo-devis">Prendre un devis en photo</label>' +
         '<label class="source creux"><input type="file" accept="image/*,application/pdf" id="fichier-devis">Choisir une photo ou un PDF</label>';
-      var devis = s.devis.map(function (d, k) { return { d: d, k: k, nom: d.nom, quand: d.quand }; }).filter(function (x) { return trouve(x.nom + " " + x.d.date, q); });
-      h += !s.devis.length ? '<p class="vide">Aucun devis reçu de ' + texte(s.nom) + ".</p>" : !devis.length ? rien("Aucun devis") :
+      var devis = s.devis.map(function (d, k) { return { d: d, k: k, nom: d.nom }; }).filter(function (x) { return q.trim() ? trouve(x.nom + " " + x.d.date, q) : x.d.iso.indexOf(periode) === 0; });
+      h += !s.devis.length ? '<p class="vide">Aucun devis reçu de ' + texte(s.nom) + ".</p>" : !devis.length ? (q.trim() ? rien("Aucun devis") : '<p class="vide">Aucun devis reçu ' + enLettres(periode) + ".</p>") :
         '<div class="liste">' + enBandes(devis, q, function (x) {
           return '<div class="ligne">' + (x.d.url ? '<img class="vu" src="' + x.d.url + '" alt="">' : "") + '<span class="n">' + surligner(x.d.nom, q) + "<small>Reçu le " + x.d.date + ", " + texte(x.d.fichier) + "</small></span>" +
             '<button class="lien" type="button" data-voir-devis="' + x.k + '">Voir</button></div>';
-        }, "devis") + "</div>";
+        }) + "</div>";
       h += '<div id="vu-devis"></div>';
     }
     if (partie === "demandes") {
-      var dem = s.demandes.map(function (d) { return { d: d, nom: d.titre, quand: d.quand }; }).filter(function (x) { return trouve(x.nom + " " + x.d.date, q); });
-      h += !s.demandes.length ? '<p class="vide">Aucune demande envoyée à ' + texte(s.nom) + ". Les listes que vous lui envoyez depuis un devis ou le plan d’arrosage s’enregistrent ici, avec leur date.</p>" : !dem.length ? rien("Aucune demande") :
+      var dem = s.demandes.map(function (d) { return { d: d, nom: d.titre }; }).filter(function (x) { return q.trim() ? trouve(x.nom + " " + x.d.date, q) : x.d.iso.indexOf(periode) === 0; });
+      h += !s.demandes.length ? '<p class="vide">Aucune demande envoyée à ' + texte(s.nom) + ". Les listes que vous lui envoyez depuis un devis ou le plan d’arrosage s’enregistrent ici, avec leur date.</p>" : !dem.length ? (q.trim() ? rien("Aucune demande") : '<p class="vide">Aucune demande envoyée ' + enLettres(periode) + ".</p>") :
         '<div class="liste">' + enBandes(dem, q, function (x) {
           return '<div class="ligne"><span class="n">' + surligner(x.d.titre, q) + "<small>Envoyée le " + x.d.date + ", " + pluriel(x.d.lignes, "ligne") + "</small></span></div>";
-        }, "demandes") + "</div>";
+        }) + "</div>";
     }
     $("partie").innerHTML = h;
   }
@@ -392,20 +397,19 @@
     if (!b) return;
     if (b.dataset.rubrique) { rubrique = b.dataset.rubrique; dessinerListe(); return; }
     if (b.id === "ajouter-societe") { var n = $("nom-nouveau").value.trim(); if (!n) return; societes[rubrique].push(nouvelle(n)); $("nom-nouveau").value = ""; dessinerListe(); quiCouvre(); return; }
-    if (b.dataset.filtre) { triOuvert = b.dataset.filtre === "liste" ? "liste" : partie === "prix" ? "prix" : partie === "devis" ? "devis" : "demandes"; dessinerTri(); $("volet-tri").hidden = false; return; }
-    if (b.dataset.cleTri) { TRI[triOuvert].cle = b.dataset.cleTri; apresTri(); return; }
-    if (b.dataset.sensTri) { TRI[triOuvert].croissant = b.dataset.sensTri === "1"; apresTri(); return; }
-    if (b.id === "fermer-tri") { $("volet-tri").hidden = true; return; }
+    if (b.id === "mois-avant") { periode = moisVoisin(periode, -1); dessinerFiche(); return; }
+    if (b.id === "mois-apres") { periode = moisVoisin(periode, 1); dessinerFiche(); return; }
+    if (b.id === "tout-le-mois") { periode = periode.slice(0, 7); dessinerFiche(); return; }
     if (b.id === "effacer-societe") { $("chercher-societe").value = ""; dessinerListe(); $("chercher-societe").focus(); return; }
     if (b.id === "effacer-fiche") { $("chercher-fiche").value = ""; dessinerFiche(); $("chercher-fiche").focus(); return; }
     if (b.dataset.ouvrir !== undefined) { ouverte = Number(b.dataset.ouvrir); partie = "prix"; alerteMarge = ""; $("chercher-fiche").value = ""; dessinerFiche(); $("fiche").hidden = false; return; }
     if (b.id === "fermer") { $("fiche").hidden = true; dessinerListe(); return; }
-    if (b.dataset.partie) { partie = b.dataset.partie; $("chercher-fiche").value = ""; dessinerFiche(); marquerFiltres(); return; }
+    if (b.dataset.partie) { partie = b.dataset.partie; $("chercher-fiche").value = ""; dessinerFiche(); return; }
     var s = ouverte === null ? null : societes[rubrique][ouverte];
     if (b.id === "ajouter-prix") {
       var nom = $("art-nom").value.trim(), prix = nombre($("art-prix").value);
       if (!nom || prix === null) { $(nom ? "art-prix" : "art-nom").focus(); return; }
-      s.prix.push({ nom: nom, unite: $("art-unite").value, prix: prix, date: aujourdhui(), quand: Date.now(), source: "Tapé le " + aujourdhui() });
+      s.prix.push({ nom: nom, unite: $("art-unite").value, prix: prix, date: aujourdhui(), source: "Tapé le " + aujourdhui() });
       dessinerFiche(); return;
     }
     if (b.dataset.retirerPrix !== undefined) { s.prix.splice(Number(b.dataset.retirerPrix), 1); dessinerFiche(); return; }
@@ -430,27 +434,11 @@
     var f = e.target.files[0]; if (!f) return;
     var s = societes[rubrique][ouverte];
     var nomDevis = ($("nom-devis") && $("nom-devis").value.trim()) || "Devis du " + aujourdhui();
-    s.devis.unshift({ nom: nomDevis, date: aujourdhui(), quand: Date.now(), fichier: /^image\//.test(f.type) ? "Photo" : f.name, url:/^image\//.test(f.type) ? URL.createObjectURL(f) : null });
+    s.devis.unshift({ nom: nomDevis, date: aujourdhui(), iso: jourIso(new Date()), fichier: /^image\//.test(f.type) ? "Photo" : f.name, url:/^image\//.test(f.type) ? URL.createObjectURL(f) : null });
     e.target.value = "";
     dessinerFiche();
   });
-  // Tout s'applique au toucher, sans « Valider » : la liste bouge derrière le voile.
-  function dessinerTri() {
-    var tri = TRI[triOuvert], cles = CLES[triOuvert], choisie = cles.filter(function (c) { return c.cle === tri.cle; })[0];
-    $("cles-tri").innerHTML = cles.map(function (c) { return '<button class="cle-tri" type="button" data-cle-tri="' + c.cle + '" aria-pressed="' + (c.cle === tri.cle) + '">' + texte(c.libelle) + "</button>"; }).join("");
-    $("sens-tri").innerHTML = [true, false].map(function (cr, i) { return '<button type="button" data-sens-tri="' + (cr ? 1 : 0) + '" aria-pressed="' + (tri.croissant === cr) + '">' + texte(choisie.sens[i]) + "</button>"; }).join("");
-  }
-  function apresTri() {
-    dessinerTri();
-    if (triOuvert === "liste") dessinerListe(); else dessinerFiche();
-    marquerFiltres();
-  }
-  // Le bouton se remplit quand le tri n'est plus celui d'origine (de A à Z), comme dans l'application.
-  function marquerFiltres() {
-    var defaut = function (k) { return TRI[k].cle === "nom" && TRI[k].croissant; };
-    var fk = partie === "prix" ? "prix" : partie === "devis" ? "devis" : "demandes";
-    document.querySelectorAll("[data-filtre]").forEach(function (b) { b.classList.toggle("actif", !defaut(b.dataset.filtre === "liste" ? "liste" : fk)); });
-  }
+  $("roue-jour").onchange = function () { if (this.value) { periode = this.value; dessinerFiche(); } };
   $("chercher-societe").oninput = dessinerListe;
   $("chercher-fiche").oninput = dessinerFiche;
   dessinerListe();
