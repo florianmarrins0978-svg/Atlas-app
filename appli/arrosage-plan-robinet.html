@@ -853,6 +853,8 @@
   // poser (le compte du réseau), jamais un second calcul.
   function compteDuPlan(i) {
     var g = compte["r" + i] || {}, NOMS = { "te-taraude-25-34-25": "té taraudé", "coude-taraude-25-34": "coude taraudé", "te-25-25-25": "té égal" };
+    // Les SBE aussi, sous chaque réseau (sa demande du 18 octobre 2026 au soir) : celui du bas en 3/4", celui du haut au filetage du corps.
+    CAT.coudes.forEach(function (c) { NOMS[c.ref] = "SBE " + c.filetage + "\""; });
     var corps = CAT.corps.map(function (c) { return c.ref; });
     var parts = Object.keys(g).filter(function (ref) { return corps.indexOf(ref) >= 0 && g[ref].q; }).map(function (ref) { return g[ref].q + "x " + g[ref].nom.charAt(0).toLowerCase() + g[ref].nom.slice(1); });
     Object.keys(NOMS).forEach(function (ref) { if (g[ref] && g[ref].q) parts.push(g[ref].q + "x " + NOMS[ref]); });

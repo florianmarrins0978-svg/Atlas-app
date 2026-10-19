@@ -356,6 +356,8 @@ export function composerLesPostes({ plan, dessin, compteur, amenee, robinet = nu
   function compteDuPlan(i: number): string | null {
     const g = compte[`r${i}`] ?? {};
     const NOMS: Record<string, string> = { [TE_LIGNE]: "té taraudé", [COUDE_LIGNE]: "coude taraudé", [TE_EGAL]: "té égal" };
+    // Les SBE aussi, sous chaque réseau (sa demande du 18 octobre 2026 au soir) : celui du bas en 3/4", celui du haut au filetage du corps.
+    for (const c of CAT.coudes) NOMS[c.ref] = `SBE ${c.filetage}"`;
     const corps = new Set(CAT.corps.map((c) => c.ref));
     const parts = Object.keys(g).filter((ref) => corps.has(ref) && g[ref].q).map((ref) => `${g[ref].q}x ${g[ref].nom.charAt(0).toLowerCase()}${g[ref].nom.slice(1)}`);
     for (const ref of Object.keys(NOMS)) if (g[ref]?.q) parts.push(`${g[ref].q}x ${NOMS[ref]}`);

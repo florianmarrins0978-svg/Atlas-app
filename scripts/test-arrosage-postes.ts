@@ -57,6 +57,13 @@ cas("quatre réseaux, le goutte-à-goutte en dernier, et chaque réseau a ses po
   exige(p.reseaux.slice(0, 3).every((r) => r.plan && r.plan.poses.length > 0 && r.chaine), "chaque réseau d'arroseurs a son plan de pièces et sa chaîne");
 });
 
+cas("« Sur ce plan » nomme aussi les SBE, pour chaque réseau : 7 têtes au couloir, 7 SBE 3/4\" et 7 SBE 1/2\"", () => {
+  const p = composer();
+  for (const x of p.reseaux.filter((x) => x.plan)) exige(x.compteDuPlan?.includes('x SBE 3/4"'), `réseau ${x.i + 1} : « ${x.compteDuPlan} » ne nomme pas les SBE`);
+  const couloir = p.reseaux.find((x) => x.nom === "Couloir");
+  exige(couloir?.compteDuPlan?.includes('7x SBE 3/4"') && couloir.compteDuPlan.includes('7x SBE 1/2"'), `le couloir : « ${couloir?.compteDuPlan} »`);
+});
+
 cas("« tés + coudes = arroseurs », pour chaque réseau, sur ce que l'écran pose", () => {
   const p = composer();
   for (const r of d.reseaux) {
