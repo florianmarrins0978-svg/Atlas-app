@@ -275,6 +275,18 @@
   .choix .vignette img{max-width:44px;max-height:44px}
   .choix .vignette.pleine{border:0}
   .choix small{display:block;color:var(--atlas-muted);font-size:12px}
+  /* AUX COULEURS ET AUX FORMES DE L'APPLICATION, sa demande du 19 octobre 2026 :
+     « aux couleurs de l'appli, avec les boutons comme l'appli, vert et les bords
+     arrondis ». Le vert est --atlas-plein, celui de PrimaryButton (colors.plein,
+     texte colors.card), qui suit la charte ; les polices sont celles du téléphone
+     (globals.css) ; tout bouton est une pilule. */
+  body{font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+  h1,h2,.feuille h2,.reseau-titre b,.total .m{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;font-weight:400;letter-spacing:-0.01em}
+  button,.coche,.recherche{border-radius:999px}
+  .envoyer,.gestes-message button:last-child,.chips button[aria-pressed="true"]{background:var(--atlas-plein);border-color:var(--atlas-plein);color:var(--atlas-card)}
+  .coche input{accent-color:var(--atlas-plein)}
+  .envoyer,.gestes-message button:last-child{font-weight:600}
+  .piece,.p,.m,.etage,.leg,.pp .piece{border-radius:12px}
 </style>
 <body data-charte="origine">
 <div class="entete">
