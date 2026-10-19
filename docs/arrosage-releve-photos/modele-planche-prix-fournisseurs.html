@@ -93,6 +93,20 @@
   body{font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
   h1,h2,.feuille h2,.total .m{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;font-weight:400;letter-spacing:-0.01em}
   .principal,.second,.source,.ajouter,.petit,.gestes-message button,.onglets button,.inconnue .gestes button,.nouveau button,.fournisseur .source{border-radius:999px}
+  /* LES BOUTONS PLEINS DE L'APPLICATION, sa demande du 19 octobre 2026 (« les
+     boutons, mets ceux de l'appli ») : l'aplat plein de design-tokens.ts, vert
+     sauge à plat sur Origine (« la D », 3 septembre 2026), l'accent de chaque
+     charte ailleurs (chartes.ts) ; le texte dessus est surPlein, la couleur des cartes. */
+:root{--atlas-plein:#7d9a6d}
+[data-charte="origine"]{--atlas-plein:#7d9a6d}
+[data-charte="brume"]{--atlas-plein:#22456d}
+[data-charte="pierre"]{--atlas-plein:#1b1d19}
+[data-charte="beurre"]{--atlas-plein:#26221a}
+[data-charte="moka"]{--atlas-plein:#2b241e}
+[data-charte="prune"]{--atlas-plein:#3d1730}
+[data-charte="sylve"]{--atlas-plein:#e6e6da}
+[data-charte="nuit"]{--atlas-plein:#e9e8de}
+  .principal,.source.principale,.gestes-message button:last-child,.onglets button[aria-pressed="true"],.chips button[aria-pressed="true"],.total{background:var(--atlas-plein);border-color:var(--atlas-plein);color:var(--atlas-card)}
 </style>
 <body data-charte="origine">
 <div class="entete">
