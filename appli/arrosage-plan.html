@@ -518,7 +518,7 @@
     var NOMS = { "coude-mf": "Coude MF 1\"", "mamelon": "Mamelon réduit MM 1\" x 3/4\"", "vanne-purge": "Vanne 3/4\" FF", "pehd": "PEHD Ø25" };
     // CHAQUE PIÈCE DE LA NOURRICE SE TOUCHE, par sa ligne de légende ou dans le bac
     // (sa demande du 18 octobre 2026) : sur le dessin, elles sont trop serrées.
-    var etatNr = function (ref) { return etat.retirees["nr:" + ref] || (etat.nrUne[ref] || 0) >= (nombreNourrice[ref] || 1) ? " retiree" : etat.remplacees["nr:" + ref] ? " changee" : ""; };
+    var etatNr = function (ref) { return etat.reseauxRetires.nourrice || etat.retirees["nr:" + ref] || (etat.nrUne[ref] || 0) >= (nombreNourrice[ref] || 1) ? " retiree" : etat.remplacees["nr:" + ref] ? " changee" : ""; };
     var nomNr = function (ref) { var c = etat.remplacees["nr:" + ref]; return c ? c.nom : (NOMS[ref] || nomCatalogue(ref)) + (etat.nrUne[ref] ? ", " + etat.nrUne[ref] + " en moins" : ""); };
     $("legende").innerHTML = ordre.map(function (ref, i) { return '<li><button type="button" class="leg' + etatNr(ref) + '" data-nr="' + texte(ref) + '"><b>' + (i + 1) + "</b><span>" + texte(nomNr(ref)) + "</span></button></li>"; }).join("");
     var bac = "";
@@ -534,7 +534,7 @@
   // Les sorties (nrUne) sont d'abord les supprimées, puis les changées (celles
   // dont la remplaçante est entrée dans la liste, « de » ce numéro).
   function etatPose(ref, j) {
-    if (etat.retirees["nr:" + ref]) return "retiree";
+    if (etat.reseauxRetires.nourrice || etat.retirees["nr:" + ref]) return "retiree";
     if (etat.remplacees["nr:" + ref]) return "changee";
     var k = etat.nrUne[ref] || 0, c = 0;
     etat.ajoutees.forEach(function (a) { if (a.de === ref) c += a.q || 1; });
@@ -673,10 +673,10 @@
   // 2026) : compté à part, hors du message au fournisseur.
   function ligneBarree(ref, nom, u) { var g = barrees[groupe] = barrees[groupe] || {}; return g[ref] = g[ref] || { nom: nom, q: 0, u: u }; }
   // Une pièce est ôtée quand il l'a supprimée, ou quand il a supprimé tout son réseau (même jour).
-  function ote(cle) { var m = /^r([0-9]+):/.exec(cle); return Boolean(etat.retirees[cle] || (m && etat.reseauxRetires[m[1]])); }
+  function ote(cle) { var m = /^r([0-9]+):/.exec(cle); return Boolean(etat.retirees[cle] || (m && etat.reseauxRetires[m[1]]) || (cle.indexOf("am:") === 0 && etat.reseauxRetires.amenee)); }
   function piece(cle, ref, nom, detail) {
     proposees[cle] = { ref: ref, nom: nom };
-    var retiree = ote(cle), change = etat.remplacees[cle];
+    var retiree = ote(cle) || (cle.indexOf("nr:") === 0 && Boolean(etat.reseauxRetires.nourrice)), change = etat.remplacees[cle];
     if (change) { ref = change.ref; nom = change.nom; detail = change.nom; }
     var photo = PHOTOS[ref] ? '<span class="photo"><img src="arrosage-photos/' + PHOTOS[ref] + '" alt=""></span>' : '<span class="photo vide">photo à venir</span>';
     var mention = retiree ? "supprimée" : change ? "changée" : "";
@@ -889,7 +889,7 @@
       (edition ? Object.keys(retirees || {}).map(function (ref) { return ligne(ref, retirees[ref], true); }).join("") +
         '<button type="button" class="ajouter-ligne" data-ajouter="liste:' + texte(titre) + '">Ajouter une pièce</button>' +
         // SUPPRIMER UN RÉSEAU COMPLET (sa demande du 19 octobre 2026) : toutes ses pièces se barrent, ici et sur le plan.
-        (reseau !== undefined ? '<button type="button" class="ajouter-ligne' + (oteReseau ? "" : " supprimer-reseau") + '" data-reseau-retire="' + reseau + '">' + (oteReseau ? "Remettre le réseau " : "Supprimer le réseau ") + (reseau + 1) + "</button>" : "") : "") + "</div>";
+        (reseau !== undefined ? '<button type="button" class="ajouter-ligne' + (oteReseau ? "" : " supprimer-reseau") + '" data-reseau-retire="' + reseau + '">' + (oteReseau ? "Remettre " : "Supprimer ") + (reseau === "amenee" ? "le piquage" : reseau === "nourrice" ? "la nourrice" : "le réseau " + (Number(reseau) + 1)) + "</button>" : "") : "") + "</div>";
   }
   // Ce qu'il a changé dans la liste : les lignes supprimées sortent du compte et du
   // message au fournisseur, les pièces ajoutées y entrent, à 1 chacune.
@@ -933,7 +933,7 @@
     return { nom: titreNourrice, lignes: h };
   }
   function groupesDuPlan(p, d) {
-    var n = groupeNourrice(p), out = [{ titre: "Du compteur à la nourrice", lignes: compte.amenee || {}, barrees: barrees.amenee || {} }, { titre: n.nom, lignes: n.lignes }];
+    var n = groupeNourrice(p), out = [{ titre: "Du compteur à la nourrice", lignes: compte.amenee || {}, barrees: barrees.amenee || {}, reseau: "amenee" }, { titre: n.nom, lignes: etat.reseauxRetires.nourrice ? {} : n.lignes, barrees: etat.reseauxRetires.nourrice ? n.lignes : {}, reseau: "nourrice" }];
     p.secteurs.forEach(function (s, i) { out.push({ titre: "Réseau " + (i + 1) + ", " + s.nom, couleur: p.couleurs[i], lignes: compte["r" + i] || {}, barrees: barrees["r" + i] || {}, reseau: i }); });
     // Le grillage couvre toute la tranchée : il se compte dans la liste de l'outil, pas ici.
     if (etat.grillage) {
