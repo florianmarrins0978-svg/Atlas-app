@@ -228,6 +228,15 @@
   .ligne:first-child{border-top:0}
   .ligne .q{flex:none;width:58px;font-weight:600;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
   .ligne .n{flex:1;min-width:0}
+  /* LE PRIX À DROITE DE CHAQUE PIÈCE (19 octobre 2026) : prix d'achat de ses devis fournisseurs, jamais inventé. */
+  .ligne .prix{flex:none;width:76px;text-align:right;font-variant-numeric:tabular-nums}
+  .ligne .prix.sans{color:var(--atlas-muted)}
+  .ligne.barree .prix,.ligne.otee .prix{visibility:hidden}
+  .total{margin-top:14px;border-radius:14px;background:var(--atlas-ink);color:var(--atlas-card);padding:16px}
+  .total small{display:block;font-size:13px;opacity:.8}
+  .total .m{display:block;margin-top:4px;font:400 30px/1.1 Georgia,"Times New Roman",serif;font-variant-numeric:tabular-nums}
+  .manque{margin:10px 0 0;font-size:13.5px;color:var(--atlas-alerte)}
+  .manque:empty{display:none}
   .ligne .ecart{flex:none;font-size:12px;color:var(--atlas-alerte)}
   .verdict{margin:10px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
   .verdict.rouge{color:var(--atlas-alerte);font-weight:600}
@@ -333,6 +342,9 @@
   <section class="bloc">
     <span class="caps">La liste</span>
     <div id="liste"></div>
+    <!-- LE TOTAL, sa demande du 19 octobre 2026 : « à droite le prix, en dessous un total ». -->
+    <div class="total" id="total" aria-live="polite"></div>
+    <p class="manque" id="sans-prix"></p>
     <!-- MODIFIER MA LISTE : sa demande du 18 octobre 2026. Les pièces de la nourrice
          sont trop serrées pour se toucher une à une ; la liste, elle, se modifie
          ligne par ligne : supprimer, remettre, ajouter une pièce dans un groupe. -->
@@ -989,6 +1001,20 @@
   // fournisseur, tout additionné : *« lui va devoir se faire chier à compter
   // trois pour le réseau 1, trois pour le réseau 2 »*.
   var quantite = function (e) { return e.u === "ml" ? (e.q ? e.q + " m" : "à mesurer") : e.q + "x"; };
+  // LES PRIX : ceux de ses devis fournisseurs, lus et validés par lui (planche
+  // arrosage-prix-fournisseurs.html). AUCUN N'EST INVENTÉ : la table est vide ici,
+  // et une pièce sans prix le dit (sa règle, CLAUDE.md §4).
+  var PRIX = {};
+  var euros = function (n) { return n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; };
+  function prixDeLigne(ref, e) { return PRIX[ref] != null && e.q ? PRIX[ref] * e.q : null; }
+  function celluleDePrix(ref, e) { var p = prixDeLigne(ref, e); return p == null ? '<span class="prix sans">sans prix</span>' : '<span class="prix">' + euros(p) + "</span>"; }
+  // Le total : chaque ligne qui part au fournisseur, les barrées n'y sont pas. Affiché même à 0.
+  function dessinerTotal(groupes) {
+    var total = 0, sans = 0, n = 0;
+    groupes.forEach(function (g) { Object.keys(g.lignes).forEach(function (ref) { n++; var p = prixDeLigne(ref, g.lignes[ref]); if (p == null) sans++; else total += p; }); });
+    $("total").innerHTML = "<small>Total indicatif, hors taxes</small>" + '<span class="m">' + euros(total) + "</span>";
+    $("sans-prix").textContent = sans ? sans + " pièce" + (sans > 1 ? "s" : "") + " sans prix sur " + n + ", le total ne les compte pas." : "";
+  }
   function lignesDe(g, titre, retirees, barrees, reseau) {
     var edition = etat.modifierListe;
     var ligne = function (ref, e, ote) {
@@ -996,10 +1022,10 @@
       var remettre = '<button type="button" class="geste-ligne" data-remettre-ligne="' + cle + '">Remettre</button>';
       var supprimer = '<button type="button" class="geste-ligne" data-retirer-ligne="' + cle + '" data-q="' + (e.u === "ml" ? 1 : e.q) + '" data-nom="' + texte(e.nom) + '">Supprimer</button>';
       var geste = edition ? (ote ? remettre : (e.enMoins ? remettre : "") + supprimer) : "";
-      return '<div class="ligne' + (ote ? " otee" : "") + '"><span class="q">' + quantite(e) + '</span><span class="n">' + texte(e.nom) + (e.enMoins ? ", " + e.enMoins + " en moins" : "") + "</span>" + geste + "</div>";
+      return '<div class="ligne' + (ote ? " otee" : "") + '"><span class="q">' + quantite(e) + '</span><span class="n">' + texte(e.nom) + (e.enMoins ? ", " + e.enMoins + " en moins" : "") + "</span>" + celluleDePrix(ref, e) + geste + "</div>";
     };
     // Les pièces qu'il a supprimées sur le plan : barrées, sous les autres, toujours visibles.
-    var barree = function (ref, e) { return '<div class="ligne barree"><span class="q">' + quantite(e) + '</span><span class="n">' + texte(e.nom) + "</span></div>"; };
+    var barree = function (ref, e) { return '<div class="ligne barree"><span class="q">' + quantite(e) + '</span><span class="n">' + texte(e.nom) + "</span>" + celluleDePrix(ref, e) + "</div>"; };
     var oteReseau = reseau !== undefined && etat.reseauxRetires[reseau];
     return '<div class="liste">' + Object.keys(g).map(function (ref) { return ligne(ref, g[ref], false); }).join("") +
       Object.keys(barrees || {}).map(function (ref) { return barree(ref, barrees[ref]); }).join("") +
@@ -1102,6 +1128,7 @@
       return '<p class="groupe' + (g.reseau !== undefined && etat.reseauxRetires[g.reseau] ? " otee" : "") + '"' + (g.couleur ? ' style="--couleur:' + g.couleur + '"' : "") + ">" + (g.couleur ? '<span class="pastille"></span>' : "") + texte(g.titre) + "</p>" + lignesDe(g.lignes, g.titre, g.retirees, g.barrees, g.reseau);
     }).join("");
     dernierMessage = message(groupes);
+    dessinerTotal(groupes);
 
     // Le schéma comparé à la liste de l'application, sur les totaux hors nourrice.
     var reference = piecesOutil(p, d);
