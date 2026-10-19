@@ -26,9 +26,14 @@
   qu'il a nommés. On tape un article et un prix, puis on dicte pour voir.
 -->
 <style>
-:root{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#8a8578;--atlas-rustTint:#ece9e1;--atlas-or:#B98B47;--atlas-orTexte:#8b6835;--atlas-line:rgba(28,28,26,0.12);--atlas-lineSoft:rgba(28,28,26,0.07);--atlas-alerte:#9C3B2E}
-[data-charte="nuit"]{--atlas-cream:#101210;--atlas-card:#1a1d19;--atlas-ink:#e9e8de;--atlas-inkSoft:#c1c2b6;--atlas-muted:#84887b;--atlas-rustTint:#1f211e;--atlas-or:#B98B47;--atlas-orTexte:#b98b47;--atlas-line:rgba(233,232,222,0.12);--atlas-lineSoft:rgba(233,232,222,0.07);--atlas-alerte:#cd6456}
-[data-charte="sylve"]{--atlas-cream:#16241c;--atlas-card:#1e3026;--atlas-ink:#e6e6da;--atlas-inkSoft:#c2caba;--atlas-muted:#8ba189;--atlas-rustTint:#253229;--atlas-or:#B98B47;--atlas-orTexte:#b98b47;--atlas-line:rgba(230,230,218,0.12);--atlas-lineSoft:rgba(230,230,218,0.07);--atlas-alerte:#d47a6e}
+:root,[data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#8a8578;--atlas-rust:#2f3b2f;--atlas-rustDeep:#4f5f4c;--atlas-rustTint:#ece9e1;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#8b6835;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(28,28,26,0.12);--atlas-lineSoft:rgba(28,28,26,0.07);--atlas-chevron:rgba(28,28,26,0.28);--atlas-alerte:#9C3B2E;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#7d9a6d}
+[data-charte="brume"]{--atlas-cream:#f4f7fb;--atlas-card:#ffffff;--atlas-ink:#111823;--atlas-inkSoft:#3a434e;--atlas-muted:#78838f;--atlas-rust:#22456d;--atlas-rustDeep:#5d7795;--atlas-rustTint:#e4e7ec;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#8f6b36;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(17,24,35,0.12);--atlas-lineSoft:rgba(17,24,35,0.07);--atlas-chevron:rgba(17,24,35,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#22456d;--atlas-police-titres:ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;--atlas-onglet-haut:10px;--atlas-onglet-hauteur:100%;--atlas-onglet-rayon:11px;--atlas-onglet-fond:color-mix(in srgb, #B98B47 11%, transparent)}
+[data-charte="pierre"]{--atlas-cream:#e8e8e3;--atlas-card:#f4f4f0;--atlas-ink:#1b1d19;--atlas-inkSoft:#454741;--atlas-muted:#83867c;--atlas-rust:#1b1d19;--atlas-rustDeep:#545652;--atlas-rustTint:#dadad5;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#826231;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(27,29,25,0.12);--atlas-lineSoft:rgba(27,29,25,0.07);--atlas-chevron:rgba(27,29,25,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#1b1d19}
+[data-charte="beurre"]{--atlas-cream:#efe7cf;--atlas-card:#f8f3e4;--atlas-ink:#26221a;--atlas-inkSoft:#4e4939;--atlas-muted:#8b8368;--atlas-rust:#26221a;--atlas-rustDeep:#5e594d;--atlas-rustTint:#e1d9c2;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#826231;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(38,34,26,0.12);--atlas-lineSoft:rgba(38,34,26,0.07);--atlas-chevron:rgba(38,34,26,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#26221a}
+[data-charte="moka"]{--atlas-cream:#e6ded5;--atlas-card:#f2ece5;--atlas-ink:#2b241e;--atlas-inkSoft:#524941;--atlas-muted:#8d8175;--atlas-rust:#2b241e;--atlas-rustDeep:#5f5851;--atlas-rustTint:#d9d1c8;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#7c5d2f;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(43,36,30,0.12);--atlas-lineSoft:rgba(43,36,30,0.07);--atlas-chevron:rgba(43,36,30,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#2b241e}
+[data-charte="prune"]{--atlas-cream:#efe6ea;--atlas-card:#f9f2f5;--atlas-ink:#23131c;--atlas-inkSoft:#4d3a44;--atlas-muted:#8c7481;--atlas-rust:#3d1730;--atlas-rustDeep:#6f5164;--atlas-rustTint:#e1d7dc;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#846332;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(35,19,28,0.12);--atlas-lineSoft:rgba(35,19,28,0.07);--atlas-chevron:rgba(35,19,28,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#3d1730}
+[data-charte="sylve"]{--atlas-cream:#16241c;--atlas-card:#1e3026;--atlas-ink:#e6e6da;--atlas-inkSoft:#c2caba;--atlas-muted:#8ba189;--atlas-rust:#e6e6da;--atlas-rustDeep:#acb0a5;--atlas-rustTint:#253229;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#b98b47;--atlas-orSurEncre:#806031;--atlas-line:rgba(230,230,218,0.12);--atlas-lineSoft:rgba(230,230,218,0.07);--atlas-chevron:rgba(230,230,218,0.28);--atlas-alerte:#d47a6e;--atlas-bordeaux:#c44b63;--atlas-vertPale:#728a69;--atlas-plein:#e6e6da}
+[data-charte="nuit"]{--atlas-cream:#101210;--atlas-card:#1a1d19;--atlas-ink:#e9e8de;--atlas-inkSoft:#c1c2b6;--atlas-muted:#84887b;--atlas-rust:#e9e8de;--atlas-rustDeep:#acaca4;--atlas-rustTint:#1f211e;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#b98b47;--atlas-orSurEncre:#826231;--atlas-line:rgba(233,232,222,0.12);--atlas-lineSoft:rgba(233,232,222,0.07);--atlas-chevron:rgba(233,232,222,0.28);--atlas-alerte:#cd6456;--atlas-bordeaux:#b53b54;--atlas-vertPale:#738b6a;--atlas-plein:#e9e8de}
   *{box-sizing:border-box}
   html{background:var(--atlas-rustTint)}
   body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint)}
@@ -79,12 +84,19 @@
   .vide-note{margin:10px 0 0;font-size:13.5px;color:var(--atlas-muted)}
   [hidden]{display:none !important}
   button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.source:focus-within{outline:2px solid var(--atlas-or);outline-offset:2px}
+  /* AUX COULEURS ET AUX FORMES DE L'APPLICATION, sa demande du 19 octobre 2026 :
+     les polices du téléphone (globals.css, --font-display et --font-body) et les
+     boutons en pilule, relevés sur l'écran du plan rendu avec la vraie feuille
+     de style (scripts/capture-plan-arrosage.ts). */
+  body{font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+  h1,h2,.feuille h2,.total .m{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;font-weight:400;letter-spacing:-0.01em}
+  .principal,.second,.source,.ajouter,.petit,.gestes-message button,.onglets button,.inconnue .gestes button,.nouveau button,.fournisseur .source{border-radius:999px}
 </style>
 <body>
 <div class="entete">
   <h1>Fournisseurs et partenaires</h1>
   <p>Planche, rien n’est codé. Aucun prix n’est inventé : ajoutez un article et son prix, puis dictez une ligne.</p>
-  <select id="charte" aria-label="Charte"><option value="">Origine</option><option value="sylve">Sylve</option><option value="nuit">Nuit</option></select>
+  <select id="charte" aria-label="Charte"><option value="origine">Origine</option><option value="brume">Brume</option><option value="pierre">Pierre</option><option value="beurre">Beurre</option><option value="moka">Moka</option><option value="prune">Prune</option><option value="sylve">Sylve</option><option value="nuit">Nuit</option></select>
 </div>
 <main class="ecran">
   <section class="bloc">
