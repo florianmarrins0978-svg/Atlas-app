@@ -413,10 +413,12 @@
       // rectangles. L'écran le dit (rendreEtat).
       if (d.arrosees !== false || d.courbe) return;
       var b = bandeDesDalles(d);
-      // **L'aimant (une proposition, pas sa règle)** : le doigt ne touche jamais
+      // **L'aimant, validé par lui le 19 octobre** : le doigt ne touche jamais
       // le bord exact d'une pelouse. Un bout de rangée qui s'arrête à moins de
       // 50 cm du bord de la zone va jusqu'au bord, au lieu de laisser une
-      // lanière de gazon que le calcul arroserait à part.
+      // lanière de gazon que le calcul arroserait à part. Sa réponse : « vaut
+      // mieux qu'il y ait 30 cm de dalle qui soit arrosée par des arroseurs
+      // que l'autre problème ».
       if (b.w >= b.h) {
         if (b.x > z.x && b.x - z.x < aimant) { b.w += b.x - z.x; b.x = z.x; }
         var droite = z.x + z.w - (b.x + b.w);
