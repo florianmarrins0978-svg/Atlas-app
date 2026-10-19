@@ -4,10 +4,17 @@
 
 Le calcul tient la pression mesurée pour constante, quel que soit le débit
 que tire un réseau, et se garde 15 % du seau (`MARGE = 0.85`) sans source
-mesurée. Or le seau se remplit robinet à fond, c'est-à-dire presque sans
-pression qui reste ; la perte dans le branchement et le compteur suit le
-carré du débit. Avec 3 bar fermé et 2 m³/h au seau, il ne resterait
-qu'environ 0,8 bar à 85 % du seau (modèle, non mesuré).
+mesurée. La perte dans le branchement et le compteur suit le carré du débit,
+mais **son ampleur ne se connaît que par une pression lue PENDANT que l'eau
+coule**.
+
+**Une erreur écrite ici, corrigée le jour même.** La première version
+supposait qu'il ne restait presque plus de pression robinet à fond, et en
+déduisait 0,8 bar à 85 % du seau. C'est faux : robinet à fond, c'est le
+robinet lui-même qui mange la pression, pas le branchement. Il l'a vu tout de
+suite (*« il y a une couille dans le pâté »* : deux arroseurs par réseau,
+impossible chez lui, où des réseaux d'environ 1,5 m³/h se lèvent). Le seau ne
+dit rien de la pression qui reste ; ne jamais le prendre pour un point à 0 bar.
 
 **À faire** : remplacer la marge par la courbe de la source, tracée sur ses
 mesures (pression fermé, seau à fond, et une mesure au milieu : seau et
