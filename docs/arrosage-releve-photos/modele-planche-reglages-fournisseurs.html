@@ -58,6 +58,8 @@
   .coef{display:flex;align-items:center;gap:10px;margin-top:10px;border-radius:12px;background:var(--atlas-card);padding:12px 14px;font-size:15px}
   .coef span{flex:1}
   .coef small{display:block;margin-top:2px;font-size:13px;color:var(--atlas-muted)}
+  .coef small:empty{display:none}
+  #ex-mat,#ex-mo{color:var(--atlas-alerte)}
   .societe small.marge{color:var(--atlas-orTexte)}
   .feuille .coef{margin-top:14px;background:var(--atlas-card)}
   .coef input{width:84px;border:0;border-radius:9px;padding:10px;font-size:16px;text-align:right;background:var(--atlas-cream);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
@@ -224,14 +226,10 @@
   // Sous chaque marge, les sociétés qu'elle couvre, et celles qui ont la leur.
   function quiCouvre() {
     [["fournisseurs", "ex-mat"], ["partenaires", "ex-mo"]].forEach(function (x) {
-      var l = societes[x[0]], g = generale(x[0]);
-      var couvertes = l.filter(function (s) { return s.marge === null || s.marge === undefined; }).map(function (s) { return s.nom; });
-      var propres = l.filter(function (s) { return s.marge !== null && s.marge !== undefined; }).map(function (s) { return s.nom + " " + fois(s.marge); });
+      // Plus de texte gris sous la marge (« retire le texte grisé », 19 octobre 2026) :
+      // la carte de chaque société dit déjà sa marge. Ne reste que la faute de frappe.
       var faute = trop($(x[0] === "partenaires" ? "coef-mo" : "coef").value);
-      if (faute !== null) { $(x[1]).textContent = conseil(faute); return; }
-      $(x[1]).textContent = !l.length ? (x[0] === "partenaires" ? "Aucun partenaire encore." : "") :
-        (g === null ? "Pas encore donnée : les prix chez " + couvertes.join(", ") + " restent à chiffrer." : (couvertes.length ? "S’applique à " + couvertes.join(", ") + "." : "Ne s’applique à personne.")) +
-        (propres.length ? " Leur marge à part : " + propres.join(", ") + "." : "");
+      $(x[1]).textContent = faute !== null ? conseil(faute) : "";
     });
   }
   $("coef").oninput = $("coef-mo").oninput = function () { quiCouvre(); dessinerListe(); };
