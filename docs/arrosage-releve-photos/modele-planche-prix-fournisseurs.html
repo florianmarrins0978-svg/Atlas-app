@@ -74,9 +74,18 @@
   .ligne .prix small{display:block;font-size:11.5px;color:var(--atlas-muted)}
   .ligne .sans{color:var(--atlas-muted);font-size:12.5px}
   .ligne input{flex:none;width:84px;border:0;border-radius:8px;padding:9px 8px;font-size:16px;text-align:right;background:var(--atlas-cream);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line);font-variant-numeric:tabular-nums}
-  .total{margin-top:14px;border-radius:14px;background:var(--atlas-ink);color:var(--atlas-card);padding:16px}
-  .total .m{display:block;font:400 30px/1.1 Georgia,"Times New Roman",serif;font-variant-numeric:tabular-nums}
-  .total small{display:block;margin-top:6px;font-size:13px;opacity:.8}
+  /* LE TOTAL, « LA C », LE MÊME DANS TOUTE L'APPLICATION (son choix du 19 octobre 2026,
+     planche arrosage-total-de-la-liste.html : « le C pour tout le monde, qu'on ait une
+     continuité ») : le montant en or sur la carte, un liseré d'or clair, le nombre de
+     pièces dans une pastille verte. */
+  .total{margin-top:14px;display:flex;align-items:center;gap:14px;border-radius:16px;padding:16px 18px;background:var(--atlas-card);box-shadow:inset 0 0 0 1.5px var(--atlas-orClair),0 6px 16px var(--atlas-lineSoft)}
+  .total .gauche{flex:1;min-width:0}
+  .total small{display:block;font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--atlas-muted)}
+  .total .m{display:block;margin-top:4px;font:400 32px/1.05 ui-serif,Georgia,"Iowan Old Style",serif;font-variant-numeric:tabular-nums;letter-spacing:-0.01em;color:var(--atlas-orTexte)}
+  .total .date{display:block;margin-top:6px;font-size:12.5px;color:var(--atlas-muted)}
+  .total .pastille{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;width:64px;height:64px;border-radius:999px;background:var(--atlas-plein);color:var(--atlas-card);text-align:center;line-height:1.05}
+  .total .pastille b{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+  .total .pastille span{font-size:10.5px}
   .manque{margin:10px 0 0;font-size:13.5px;color:var(--atlas-alerte)}
   .principal{margin-top:16px;width:100%;min-height:52px;border:0;border-radius:12px;background:var(--atlas-ink);color:var(--atlas-card);font-size:16px;cursor:pointer}
   button:focus-visible,input:focus-visible{outline:2px solid var(--atlas-or);outline-offset:2px}
@@ -106,7 +115,7 @@
 [data-charte="prune"]{--atlas-plein:#3d1730}
 [data-charte="sylve"]{--atlas-plein:#e6e6da}
 [data-charte="nuit"]{--atlas-plein:#e9e8de}
-  .principal,.source.principale,.gestes-message button:last-child,.onglets button[aria-pressed="true"],.chips button[aria-pressed="true"],.total{background:var(--atlas-plein);border-color:var(--atlas-plein);color:var(--atlas-card)}
+  .principal,.source.principale,.gestes-message button:last-child,.onglets button[aria-pressed="true"],.chips button[aria-pressed="true"]{background:var(--atlas-plein);border-color:var(--atlas-plein);color:var(--atlas-card)}
 </style>
 <body data-charte="origine">
 <div class="entete">
@@ -192,8 +201,9 @@
         (x ? '<span class="prix">' + euros(x.p * l.q) + "<small>" + (vue === "moins" ? texte(x.de.nom) : euros(x.p) + (l.u === "ml" ? " le m" : " pièce")) + "</small></span>" : '<span class="prix sans">pas de prix</span>') + "</div>";
     }).join("");
     var chiffrees = LIGNES.length - sans;
-    $("total").innerHTML = "<small>Total indicatif, hors taxes</small>" + '<span class="m">' + euros(total) + "</span>" +
-      "<small>" + (chiffrees ? Object.keys(dates).map(function (n) { return "Prix " + n + " du " + dates[n]; }).join(". ") + ". Ils ont pu changer." : "Aucun prix encore.") + "</small>";
+    $("total").innerHTML = '<div class="gauche"><small>Total indicatif, hors taxes</small><span class="m">' + euros(total) + "</span>" +
+      '<span class="date">' + (chiffrees ? Object.keys(dates).map(function (n) { return "Prix " + n + " du " + dates[n]; }).join(". ") + ". Ils ont pu changer." : "Aucun prix encore.") + "</span></div>" +
+      '<div class="pastille"><b>' + LIGNES.length + "</b><span>pièce" + (LIGNES.length > 1 ? "s" : "") + "</span></div>";
     $("manque").textContent = sans ? sans + " pièce" + (sans > 1 ? "s" : "") + " sans prix sur " + LIGNES.length + ", le total ne les compte pas." : "";
   }
 

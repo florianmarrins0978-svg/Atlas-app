@@ -94,12 +94,25 @@ export default function ListeDesPieces({
         );
       })}
 
-      {/* LE TOTAL, même à zéro : indicatif, hors taxes, sur ses prix d'achat. */}
-      <div className="mt-[14px] rounded-[14px] p-4" style={{ backgroundColor: colors.ink, color: colors.card }} data-atlas="total-de-la-liste" aria-live="polite">
-        <span className="block text-[13px]" style={{ opacity: 0.8 }}>Total indicatif, hors taxes</span>
-        <span className="mt-1 block tabular-nums" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 30, lineHeight: 1.1 }}>
-          {euros(t.total)}
-        </span>
+      {/* LE TOTAL, même à zéro : indicatif, hors taxes, sur ses prix d'achat.
+          « La C », son choix du 19 octobre 2026 (planche arrosage-total-de-la-liste.html) :
+          le montant en or sur la carte, un liseré d'or clair, le nombre de pièces dans une pastille verte. */}
+      <div
+        className="mt-[14px] flex items-center gap-[14px] rounded-[16px] px-[18px] py-4"
+        style={{ backgroundColor: colors.card, boxShadow: `inset 0 0 0 1.5px ${colors.orClair}, 0 6px 16px ${colors.lineSoft}` }}
+        data-atlas="total-de-la-liste"
+        aria-live="polite"
+      >
+        <div className="min-w-0 flex-1">
+          <span className="block text-[11px] font-semibold uppercase" style={{ letterSpacing: "0.22em", color: colors.muted }}>Total indicatif, hors taxes</span>
+          <span className="mt-1 block tabular-nums" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 32, lineHeight: 1.05, color: colors.orTexte }}>
+            {euros(t.total)}
+          </span>
+        </div>
+        <div className="flex h-16 w-16 flex-none flex-col items-center justify-center rounded-full text-center" style={{ backgroundColor: colors.plein, color: colors.card, lineHeight: 1.05 }}>
+          <b className="text-[20px] font-semibold tabular-nums">{t.pieces}</b>
+          <span className="text-[10.5px]">pièce{t.pieces > 1 ? "s" : ""}</span>
+        </div>
       </div>
       {t.sansPrix > 0 && (
         <p className="mt-[10px] text-[13.5px]" style={{ color: colors.alert }} data-atlas="pieces-sans-prix">

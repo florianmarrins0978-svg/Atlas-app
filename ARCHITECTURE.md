@@ -35262,3 +35262,11 @@ dessous un total, même avec 0 »*. Planches `appli/arrosage-plan.html` et
 **Ce qui le tient** : `scripts/test-arrosage-postes.ts` (quatre cas : la pièce
 barrée, le réseau supprimé et la nourrice à 3 voies, le piquage et la nourrice
 supprimés, le prix et le total). Aucune batterie, à sa demande.
+
+**Le total a UNE forme dans toute l'application — « la C »**, son choix du
+19 octobre 2026 sur `appli/arrosage-total-de-la-liste.html`, puis *« le C pour
+tout le monde, qu'on ait une continuité dans l'application »* : le montant en or
+(`orTexte`) sur la carte, un liseré d'or clair, le nombre de pièces dans une
+pastille verte (`plein`). Posé sur l'écran du plan (`ListeDesPieces.tsx`), sur
+les planches du plan, du robinet et des prix fournisseurs (et son modèle dans
+`docs/arrosage-releve-photos/`). Tout total indicatif à venir prend cette forme.
