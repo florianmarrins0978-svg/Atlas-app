@@ -1,5 +1,21 @@
 # Prochaines tâches
 
+## ⏳ ARROSAGE : LA PRESSION DE LA SOURCE BAISSE QUAND LE DÉBIT MONTE — 19 octobre 2026
+
+Le calcul tient la pression mesurée pour constante, quel que soit le débit
+que tire un réseau, et se garde 15 % du seau (`MARGE = 0.85`) sans source
+mesurée. Or le seau se remplit robinet à fond, c'est-à-dire presque sans
+pression qui reste ; la perte dans le branchement et le compteur suit le
+carré du débit. Avec 3 bar fermé et 2 m³/h au seau, il ne resterait
+qu'environ 0,8 bar à 85 % du seau (modèle, non mesuré).
+
+**À faire** : remplacer la marge par la courbe de la source, tracée sur ses
+mesures (pression fermé, seau à fond, et une mesure au milieu : seau et
+pression pendant qu'il coule). **Planche montrée le 19 octobre** :
+https://claude.ai/artifact/8fsAx6qHcawLHXLENRRbx2. **Il fait la mesure chez
+lui**, puis décide. Il manque aussi le débit de la buse n° 5 de l'outil Aqua
+Plus, pour lire sa pression dynamique au bon débit.
+
 ## ⏳ ARROSAGE : L'ÉCRAN DU PLAN EST CODÉ (18 octobre 2026), voici ce qui reste
 
 Son oui du 18 octobre : *« le plan d'arrosage est validé, il est fini, tu peux
