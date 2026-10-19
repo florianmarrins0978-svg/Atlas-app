@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le total de la liste</title>
+<!--
+  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Sa demande du 19 octobre 2026 :
+  « le total indicatif hors taxe, tu peux pas le faire aux couleurs de l'appli,
+  genre un encadré doré avec les prix en doré sur un fond beige, quelque chose
+  de sympa, de joli. Peut-être mettre un peu de vert aussi. Propose. »
+  Quatre propositions, sur les huit chartes de l'application (jetons recopiés de
+  arrosage-plan.html, eux-mêmes ceux de design-tokens.ts). AUCUN PRIX N'EST
+  INVENTÉ : le montant vaut 0,00 €, et la case « Essayer un montant » ne sert
+  qu'à voir le dessin avec un chiffre.
+-->
+<style>
+[data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#8a8578;--atlas-rust:#2f3b2f;--atlas-rustDeep:#4f5f4c;--atlas-rustTint:#ece9e1;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#8b6835;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(28,28,26,0.12);--atlas-lineSoft:rgba(28,28,26,0.07);--atlas-chevron:rgba(28,28,26,0.28);--atlas-alerte:#9C3B2E;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#7d9a6d}
+[data-charte="brume"]{--atlas-cream:#f4f7fb;--atlas-card:#ffffff;--atlas-ink:#111823;--atlas-inkSoft:#3a434e;--atlas-muted:#78838f;--atlas-rust:#22456d;--atlas-rustDeep:#5d7795;--atlas-rustTint:#e4e7ec;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#8f6b36;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(17,24,35,0.12);--atlas-lineSoft:rgba(17,24,35,0.07);--atlas-chevron:rgba(17,24,35,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#22456d;--atlas-police-titres:ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;--atlas-onglet-haut:10px;--atlas-onglet-hauteur:100%;--atlas-onglet-rayon:11px;--atlas-onglet-fond:color-mix(in srgb, #B98B47 11%, transparent)}
+[data-charte="pierre"]{--atlas-cream:#e8e8e3;--atlas-card:#f4f4f0;--atlas-ink:#1b1d19;--atlas-inkSoft:#454741;--atlas-muted:#83867c;--atlas-rust:#1b1d19;--atlas-rustDeep:#545652;--atlas-rustTint:#dadad5;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#826231;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(27,29,25,0.12);--atlas-lineSoft:rgba(27,29,25,0.07);--atlas-chevron:rgba(27,29,25,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#1b1d19}
+[data-charte="beurre"]{--atlas-cream:#efe7cf;--atlas-card:#f8f3e4;--atlas-ink:#26221a;--atlas-inkSoft:#4e4939;--atlas-muted:#8b8368;--atlas-rust:#26221a;--atlas-rustDeep:#5e594d;--atlas-rustTint:#e1d9c2;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#826231;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(38,34,26,0.12);--atlas-lineSoft:rgba(38,34,26,0.07);--atlas-chevron:rgba(38,34,26,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#26221a}
+[data-charte="moka"]{--atlas-cream:#e6ded5;--atlas-card:#f2ece5;--atlas-ink:#2b241e;--atlas-inkSoft:#524941;--atlas-muted:#8d8175;--atlas-rust:#2b241e;--atlas-rustDeep:#5f5851;--atlas-rustTint:#d9d1c8;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#7c5d2f;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(43,36,30,0.12);--atlas-lineSoft:rgba(43,36,30,0.07);--atlas-chevron:rgba(43,36,30,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#2b241e}
+[data-charte="prune"]{--atlas-cream:#efe6ea;--atlas-card:#f9f2f5;--atlas-ink:#23131c;--atlas-inkSoft:#4d3a44;--atlas-muted:#8c7481;--atlas-rust:#3d1730;--atlas-rustDeep:#6f5164;--atlas-rustTint:#e1d7dc;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#846332;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(35,19,28,0.12);--atlas-lineSoft:rgba(35,19,28,0.07);--atlas-chevron:rgba(35,19,28,0.28);--atlas-alerte:#9c3b2e;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#3d1730}
+[data-charte="sylve"]{--atlas-cream:#16241c;--atlas-card:#1e3026;--atlas-ink:#e6e6da;--atlas-inkSoft:#c2caba;--atlas-muted:#8ba189;--atlas-rust:#e6e6da;--atlas-rustDeep:#acb0a5;--atlas-rustTint:#253229;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#b98b47;--atlas-orSurEncre:#806031;--atlas-line:rgba(230,230,218,0.12);--atlas-lineSoft:rgba(230,230,218,0.07);--atlas-chevron:rgba(230,230,218,0.28);--atlas-alerte:#d47a6e;--atlas-bordeaux:#c44b63;--atlas-vertPale:#728a69;--atlas-plein:#e6e6da}
+[data-charte="nuit"]{--atlas-cream:#101210;--atlas-card:#1a1d19;--atlas-ink:#e9e8de;--atlas-inkSoft:#c1c2b6;--atlas-muted:#84887b;--atlas-rust:#e9e8de;--atlas-rustDeep:#acaca4;--atlas-rustTint:#1f211e;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#b98b47;--atlas-orSurEncre:#826231;--atlas-line:rgba(233,232,222,0.12);--atlas-lineSoft:rgba(233,232,222,0.07);--atlas-chevron:rgba(233,232,222,0.28);--atlas-alerte:#cd6456;--atlas-bordeaux:#b53b54;--atlas-vertPale:#738b6a;--atlas-plein:#e9e8de}
+  *{box-sizing:border-box}
+  html{background:var(--atlas-rustTint)}
+  body{margin:0;font:16px/1.45 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint)}
+  .entete{max-width:430px;margin:0 auto;padding:18px 16px 6px}
+  .entete h1{margin:0;font:400 24px/1.15 ui-serif,Georgia,"Iowan Old Style",serif}
+  .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .reglages{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  .reglages select,.reglages input{font-size:16px;padding:9px 12px;border-radius:999px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink)}
+  .reglages input{width:150px;text-align:right;font-variant-numeric:tabular-nums}
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--atlas-cream);padding:6px 16px 60px;min-height:100vh}
+  .choix{margin-top:28px}
+  .choix > b{display:block;font-size:11px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-or)}
+  .choix > small{display:block;margin-top:2px;font-size:13px;color:var(--atlas-muted)}
+  .liste{margin-top:10px;border-radius:12px;padding:2px 14px;background:var(--atlas-card)}
+  .ligne{display:flex;align-items:baseline;gap:12px;padding:9px 0;border-top:1px solid var(--atlas-line);font-size:14px}
+  .ligne:first-child{border-top:0}
+  .ligne .q{flex:none;width:44px;font-weight:600;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
+  .ligne .n{flex:1;min-width:0}
+  .ligne .p{flex:none;color:var(--atlas-muted);font-variant-numeric:tabular-nums}
+  .sans{margin:8px 2px 0;font-size:13px;color:var(--atlas-alerte)}
+  .m{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;font-weight:400;font-variant-numeric:tabular-nums;letter-spacing:-0.01em}
+  .lib{font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase}
+
+  /* A. DORÉ SUR BEIGE : le fond beige des étiquettes, un liseré d'or, le montant en or. */
+  .a{margin-top:12px;border-radius:16px;padding:16px 18px;background:var(--atlas-rustTint);box-shadow:inset 0 0 0 1.5px var(--atlas-or)}
+  .a .lib{color:var(--atlas-orTexte)}
+  .a .m{display:block;margin-top:6px;font-size:34px;line-height:1.05;color:var(--atlas-orTexte)}
+  .a small{display:block;margin-top:6px;font-size:12.5px;color:var(--atlas-muted)}
+
+  /* B. VERT, COMME LES BOUTONS : l'aplat des boutons de l'appli et son cercle d'or clair. */
+  .b{margin-top:12px;border-radius:18px;padding:16px 18px;background:var(--atlas-plein);color:var(--atlas-card);box-shadow:inset 0 0 0 2px var(--atlas-orClair)}
+  .b .lib{opacity:.9}
+  .b .m{display:block;margin-top:6px;font-size:34px;line-height:1.05}
+  .b small{display:block;margin-top:6px;font-size:12.5px;opacity:.85}
+
+  /* C. BEIGE ET OR, UNE PASTILLE VERTE : le montant en or, le nombre de pièces dans une pastille verte. */
+  .c{margin-top:12px;display:flex;align-items:center;gap:14px;border-radius:16px;padding:16px 18px;background:var(--atlas-card);box-shadow:inset 0 0 0 1.5px var(--atlas-orClair),0 6px 16px var(--atlas-lineSoft)}
+  .c .gauche{flex:1;min-width:0}
+  .c .lib{color:var(--atlas-muted)}
+  .c .m{display:block;margin-top:4px;font-size:32px;line-height:1.05;color:var(--atlas-orTexte)}
+  .c .pastille{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;width:64px;height:64px;border-radius:999px;background:var(--atlas-plein);color:var(--atlas-card);text-align:center;line-height:1.05}
+  .c .pastille b{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+  .c .pastille span{font-size:10.5px}
+
+  /* D. LE TICKET : beige, filet d'or en pointillé, un sous-total par bloc, le total en vert. */
+  .d{margin-top:12px;border-radius:16px;padding:14px 18px 16px;background:var(--atlas-rustTint);box-shadow:inset 0 0 0 1px var(--atlas-or)}
+  .d .rang{display:flex;align-items:baseline;gap:10px;padding:5px 0;font-size:14px;color:var(--atlas-inkSoft)}
+  .d .rang span:first-child{flex:1}
+  .d .rang span:last-child{font-variant-numeric:tabular-nums;color:var(--atlas-orTexte)}
+  .d .filet{margin:8px 0 10px;border-top:1.5px dashed var(--atlas-or)}
+  .d .tot{display:flex;align-items:baseline;gap:10px}
+  .d .tot .lib{flex:1;color:var(--atlas-rust)}
+  .d .tot .m{font-size:30px;color:var(--atlas-plein)}
+  [data-charte="sylve"] .d .tot .m,[data-charte="nuit"] .d .tot .m{color:var(--atlas-ink)}
+</style>
+<body data-charte="origine">
+<div class="entete">
+  <h1>Le total de la liste</h1>
+  <p>Planche, rien n’est codé. Quatre façons de montrer le total, sur les chartes de l’application. Aucun prix n’est inventé.</p>
+  <div class="reglages">
+    <select id="charte" aria-label="Charte"></select>
+    <input id="essai" type="text" inputmode="decimal" placeholder="Essayer un montant" aria-label="Essayer un montant">
+  </div>
+</div>
+<main class="ecran">
+  <div class="liste" aria-label="La fin de la liste, pour situer le total">
+    <div class="ligne"><span class="q">1x</span><span class="n">té Palaplast Ø16</span><span class="p">sans prix</span></div>
+    <div class="ligne"><span class="q">2x</span><span class="n">tube Ø16mm 2l/h esp.33cm autorégulé, couronne de 50 m</span><span class="p">sans prix</span></div>
+    <div class="ligne"><span class="q">1x</span><span class="n">jonction Palaplast Ø16</span><span class="p">sans prix</span></div>
+  </div>
+
+  <section class="choix">
+    <b>A. Doré sur beige</b>
+    <small>Le liseré et le montant en or, sur le beige de l’appli.</small>
+    <div class="a"><span class="lib">Total indicatif, hors taxes</span><span class="m" data-montant></span><small data-sous></small></div>
+    <p class="sans" data-sans></p>
+  </section>
+
+  <section class="choix">
+    <b>B. Vert, comme les boutons</b>
+    <small>L’aplat vert des boutons de l’appli, avec son cercle d’or.</small>
+    <div class="b"><span class="lib">Total indicatif, hors taxes</span><span class="m" data-montant></span><small data-sous></small></div>
+    <p class="sans" data-sans></p>
+  </section>
+
+  <section class="choix">
+    <b>C. Or, avec une pastille verte</b>
+    <small>Le montant en or, le nombre de pièces dans une pastille verte.</small>
+    <div class="c"><div class="gauche"><span class="lib">Total indicatif, hors taxes</span><span class="m" data-montant></span></div><div class="pastille"><b>46</b><span>pièces</span></div></div>
+    <p class="sans" data-sans></p>
+  </section>
+
+  <section class="choix">
+    <b>D. Le ticket</b>
+    <small>Un sous-total par bloc, un filet d’or, le total en vert.</small>
+    <div class="d">
+      <div class="rang"><span>Du compteur à la nourrice</span><span data-bloc></span></div>
+      <div class="rang"><span>Nourrice 4 voies</span><span data-bloc></span></div>
+      <div class="rang"><span>Réseaux 1 à 4</span><span data-bloc></span></div>
+      <div class="filet"></div>
+      <div class="tot"><span class="lib">Total HT</span><span class="m" data-montant></span></div>
+    </div>
+    <p class="sans" data-sans></p>
+  </section>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var CHARTES = [["origine","Origine"],["brume","Brume"],["pierre","Pierre"],["beurre","Beurre"],["moka","Moka"],["prune","Prune"],["sylve","Sylve"],["nuit","Nuit"]];
+  CHARTES.forEach(function (c) { var o = document.createElement("option"); o.value = c[0]; o.textContent = c[1]; $("charte").appendChild(o); });
+  $("charte").onchange = function () { document.body.dataset.charte = this.value; };
+  var euros = function (n) { return n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; };
+  function dessiner() {
+    // Le montant tapé ne sert qu'à voir le dessin avec un chiffre : ce n'est pas un prix.
+    var v = parseFloat(String($("essai").value).replace(/\s/g, "").replace(",", ".")), t = isFinite(v) && v > 0 ? v : 0;
+    document.querySelectorAll("[data-montant]").forEach(function (e) { e.textContent = euros(t); });
+    document.querySelectorAll("[data-sous]").forEach(function (e) { e.textContent = "Sur vos prix d’achat. Les pièces barrées ne comptent pas."; });
+    document.querySelectorAll("[data-bloc]").forEach(function (e) { e.textContent = t ? "…" : euros(0); });
+    document.querySelectorAll("[data-sans]").forEach(function (e) { e.textContent = t ? "" : "46 pièces sans prix sur 46, le total ne les compte pas."; });
+  }
+  $("essai").oninput = dessiner;
+  dessiner();
+})();
+</script>
+</body>
+</html>
