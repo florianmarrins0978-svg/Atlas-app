@@ -102,6 +102,13 @@
       <label class="caps doux" for="f-e">Espacement entre deux dalles</label>
       <input id="f-e" class="champ" inputmode="decimal" enterkeyhint="done" autocomplete="off">
     </div>
+    <div id="f-arrosees" hidden>
+      <span class="caps doux" id="f-arrosees-titre">On les arrose ?</span>
+      <div class="deux" role="group" aria-labelledby="f-arrosees-titre">
+        <button class="bouton" type="button" data-arrosees="oui" aria-pressed="false">Oui</button>
+        <button class="bouton" type="button" data-arrosees="non" aria-pressed="false">Non</button>
+      </div>
+    </div>
     <p id="f-note" class="propose" aria-live="polite"></p>
     <p id="f-erreur" class="erreur" role="alert"></p>
     <div id="f-lignes" hidden>

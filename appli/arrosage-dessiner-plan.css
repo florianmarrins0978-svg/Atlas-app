@@ -14,7 +14,7 @@ html{background:var(--atlas-rustTint)}
 body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint);-webkit-tap-highlight-color:transparent}
 ::selection{background:color-mix(in srgb,var(--atlas-or) 30%,transparent)}
 .entete{max-width:390px;margin:0 auto;padding:18px max(16px,env(safe-area-inset-right,0px)) 6px max(16px,env(safe-area-inset-left,0px))}
-.entete h1{margin:0;font:400 24px/1.15 Georgia,"Times New Roman",serif}
+.entete h1{margin:0;font:400 24px/1.15 ui-serif,Georgia,"Times New Roman",serif}
 .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
 .entete .reglages{display:flex;gap:8px;align-items:end;margin-top:12px}
 .entete select,.entete .lien{font-size:15px;padding:8px 10px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);min-height:40px}
@@ -23,13 +23,13 @@ body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
 .carte{margin:12px 16px 0;border-radius:14px;padding:18px 17px;background:var(--atlas-card)}
 .caps{display:block;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-or)}
 .caps.doux{color:var(--atlas-muted)}
-.titre{margin:0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+.titre{margin:0;font:400 21px/1.2 ui-serif,Georgia,"Times New Roman",serif}
 .gras{margin:10px 0 0;font-size:13.5px;font-weight:700;line-height:1.5}
 .champ{margin-top:6px;display:block;width:100%;min-width:0;border:0;border-radius:10px;padding:12px;font-size:16px;background:var(--atlas-cream);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line);font-variant-numeric:tabular-nums}
 .champ::placeholder{color:var(--atlas-muted)}
 .deux{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
 .deux-boutons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
-.bouton{display:flex;min-height:56px;align-items:center;justify-content:center;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:1px solid var(--atlas-line);background:var(--atlas-cream);color:var(--atlas-ink);padding:0 12px;text-align:center}
+.bouton{display:flex;min-height:56px;align-items:center;justify-content:center;border-radius:999px;font-size:15px;font-weight:600;cursor:pointer;border:1px solid var(--atlas-line);background:var(--atlas-cream);color:var(--atlas-ink);padding:0 12px;text-align:center}
 .bouton.plein{border-color:var(--atlas-plein);background:var(--atlas-plein);color:var(--atlas-card)}
 .bouton.inerte{border-style:dashed;color:var(--atlas-inkSoft)}
 .bouton:disabled{opacity:.45;cursor:default}
@@ -37,7 +37,7 @@ body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
 /* L'outil */
 .outil{margin:12px 0 0}
 .outil .haut{display:flex;align-items:center;gap:10px;margin:0 16px}
-.outil .haut h2{flex:1;margin:0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+.outil .haut h2{flex:1;margin:0;font:400 21px/1.2 ui-serif,Georgia,"Times New Roman",serif}
 .retour{border:0;background:none;color:var(--atlas-inkSoft);font-size:14px;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:10px 0;min-height:44px}
 .terrain-cotes{margin:10px 16px 0}
 .terrain-cotes .deux{margin-top:4px}
@@ -46,7 +46,7 @@ body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
 .consigne{margin:8px 16px 0;min-height:21px;font-size:14px;color:var(--atlas-inkSoft)}
 .outils{display:flex;flex-wrap:wrap;gap:6px;margin:10px 16px 0}
 .outils button{display:flex;align-items:center;gap:8px;min-height:44px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);border-radius:999px;padding:6px 14px 6px 10px;font-size:14.5px;cursor:pointer}
-.outils button[aria-pressed="true"]{background:var(--atlas-ink);color:var(--atlas-card);border-color:var(--atlas-ink)}
+.outils button[aria-pressed="true"]{background:var(--atlas-plein);color:var(--atlas-card);border-color:var(--atlas-plein)}
 .outils svg{flex:none;width:18px;height:18px}
 .etat{margin:14px 16px 0;padding:0;list-style:none}
 .etat li{display:flex;gap:10px;padding:5px 0;font-size:14.5px;line-height:1.45}
@@ -64,7 +64,7 @@ body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
 .feuille{position:fixed;inset:0;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.35);z-index:5}
 .feuille[hidden]{display:none}
 .feuille .boite{width:100%;max-width:390px;max-height:86vh;overflow:auto;background:var(--atlas-cream);border-radius:18px 18px 0 0;padding:18px 16px calc(20px + env(safe-area-inset-bottom,0px))}
-.feuille h3{margin:0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+.feuille h3{margin:0;font:400 21px/1.2 ui-serif,Georgia,"Times New Roman",serif}
 .feuille label.caps{margin-top:14px}
 .feuille .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}
 .feuille .actions .seul{grid-column:1 / -1}
@@ -77,7 +77,7 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 #f-lignes{margin-top:14px}
 #f-lignes .deux{margin-top:6px}
 #f-lignes .bouton{min-height:48px;font-weight:500}
-#f-lignes .bouton[aria-pressed="true"]{background:var(--atlas-ink);border-color:var(--atlas-ink);color:var(--atlas-card)}
+#f-lignes .bouton[aria-pressed="true"],#f-arrosees .bouton[aria-pressed="true"]{background:var(--atlas-plein);border-color:var(--atlas-plein);color:var(--atlas-card)}
 .propose{margin:6px 0 0;min-height:19px;font-size:13px;color:var(--atlas-muted)}
 .compteur-lignes{display:grid;grid-template-columns:56px 1fr 56px;gap:8px;align-items:center;margin-top:6px}
 .compteur-lignes .bouton{min-height:52px;font-size:22px;font-weight:500;padding:0}
@@ -88,3 +88,5 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 .feuille #f-diametre,.feuille #f-ecart{margin-top:12px}
 .propose:empty{display:none}
 .feuille #f-distance{margin-top:12px}
+#f-arrosees{margin-top:14px}
+#f-arrosees .deux{margin-top:6px}

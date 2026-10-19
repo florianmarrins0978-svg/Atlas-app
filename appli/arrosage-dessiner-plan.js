@@ -57,7 +57,19 @@
   touches et corrigible (la rangée suit), puis « Longueur d'une dalle »,
   « Largeur d'une dalle » et « Espacement entre deux dalles ». Une dalle plus
   large que la distance se refuse.
-  Ni les arbres ni les dalles n'entrent au calcul : ils partent dans deux
+  SES RÉPONSES DU 19 OCTOBRE : « lorsqu'on pose des dalles, une petite
+  question, est-ce qu'on les arrose ou non ? Si on ne les arrose pas, il faudra
+  sur le plan les utiliser comme si c'était la fin de la délimitation : les
+  arroseurs viendront se poser dans l'angle le long des dalles. » Une rangée
+  qu'on n'arrose pas COUPE donc la zone qu'elle traverse : chaque morceau est
+  une zone à part, et le calcul pose déjà ses arroseurs aux angles et le long
+  des bords d'une zone. Elle doit être droite (couchée ou debout) : un
+  découpage en biais ne donne pas des rectangles, et le calcul n'en connaît pas
+  d'autres. Presque droite, elle se redresse ; vraiment en biais, elle est
+  refusée. Et l'arbre : « je pense que tu peux pas faire grand-chose, dans
+  tous les cas ça arrosera le tronc » : il se dessine, et ne change rien au
+  plan.
+  Ni les arbres ni les dalles qu'on arrose n'entrent au calcul : ils partent dans deux
   champs NEUFS (arbres, dalles), et l'écran le dit.
 
   CE QUE L'OUTIL REND EST CE QUE LA PHOTO REND (CroquisLu de
@@ -180,6 +192,69 @@
     return { n: n, dist: dist, l: l, e: e, depart: (dist - occupe) / 2 };
   }
   function ecritDalles(n) { return n === 1 ? "une dalle" : n + " dalles"; }
+
+  /* La bande qu'occupe une rangée droite : toute la distance qu'il a tapée,
+     d'un point touché à l'autre, sur la longueur des dalles en travers. C'est
+     l'allée entière qui ne s'arrose pas : la borner à la première et à la
+     dernière dalle laissait un bout de gazon de quelques centimètres à chaque
+     extrémité, que le calcul aurait arrosé à part. En unités du dessin. */
+  function bandeDesDalles(d) {
+    var L = enU(d.L || 0);
+    if (Math.abs(d.b.y - d.a.y) <= Math.abs(d.b.x - d.a.x)) {
+      return { x: Math.min(d.a.x, d.b.x), y: d.a.y - L / 2, w: Math.abs(d.b.x - d.a.x), h: L };
+    }
+    return { x: d.a.x - L / 2, y: Math.min(d.a.y, d.b.y), w: L, h: Math.abs(d.b.y - d.a.y) };
+  }
+
+  /* Une rangée qu'on n'arrose pas coupe la zone qu'elle traverse : au-dessus,
+     au-dessous, puis à gauche et à droite de la bande. Les morceaux de moins
+     d'un centimètre ne sont pas des zones. */
+  function morceaux(z) {
+    var parts = [{ x: z.x, y: z.y, w: z.w, h: z.h }];
+    var e = enU(0.01), aimant = enU(AIMANT_M);
+    etat.dalles.forEach(function (d) {
+      if (d.arrosees !== false) return;
+      var b = bandeDesDalles(d), suite = [];
+      // **L'aimant (une proposition, pas sa règle)** : le doigt ne touche jamais
+      // le bord exact d'une pelouse. Un bout de rangée qui s'arrête à moins de
+      // 50 cm du bord de la zone va jusqu'au bord, au lieu de laisser une
+      // lanière de gazon que le calcul arroserait à part.
+      if (b.w >= b.h) {
+        if (b.x > z.x && b.x - z.x < aimant) { b.w += b.x - z.x; b.x = z.x; }
+        var droite = z.x + z.w - (b.x + b.w);
+        if (droite > 0 && droite < aimant) b.w += droite;
+      } else {
+        if (b.y > z.y && b.y - z.y < aimant) { b.h += b.y - z.y; b.y = z.y; }
+        var bas = z.y + z.h - (b.y + b.h);
+        if (bas > 0 && bas < aimant) b.h += bas;
+      }
+      parts.forEach(function (p) {
+        var ix1 = Math.max(p.x, b.x), iy1 = Math.max(p.y, b.y);
+        var ix2 = Math.min(p.x + p.w, b.x + b.w), iy2 = Math.min(p.y + p.h, b.y + b.h);
+        if (ix2 - ix1 <= e || iy2 - iy1 <= e) { suite.push(p); return; }
+        [
+          { x: p.x, y: p.y, w: p.w, h: iy1 - p.y },
+          { x: p.x, y: iy2, w: p.w, h: p.y + p.h - iy2 },
+          { x: p.x, y: iy1, w: ix1 - p.x, h: iy2 - iy1 },
+          { x: ix2, y: iy1, w: p.x + p.w - ix2, h: iy2 - iy1 }
+        ].forEach(function (q) { if (q.w > e && q.h > e) suite.push(q); });
+      });
+      parts = suite;
+    });
+    return parts;
+  }
+
+  /* Presque droite (moins de 10° d'écart), la rangée se redresse en gardant sa
+     distance ; au-delà, elle ne se découpe pas, et on le dit. */
+  var REDRESSE_MAX = Math.tan(10 * Math.PI / 180);
+  /* Ce que vaut l'imprécision du doigt au bord d'une zone (voir morceaux). */
+  var AIMANT_M = 0.5;
+  function redressee(a, b) {
+    var dx = b.x - a.x, dy = b.y - a.y, n = Math.hypot(dx, dy);
+    if (Math.abs(dy) <= REDRESSE_MAX * Math.abs(dx)) return { x: a.x + Math.sign(dx) * n, y: a.y };
+    if (Math.abs(dx) <= REDRESSE_MAX * Math.abs(dy)) return { x: a.x, y: a.y + Math.sign(dy) * n };
+    return null;
+  }
   /* L'arrivée qui met la rangée à la distance tapée, dans la direction de ses
      deux touches : le départ reste où il l'a touché. */
   function arriveeA(d, metres) {
@@ -245,6 +320,15 @@
     svg.appendChild(el("text", { x: -dy, y: t.h / 2, "text-anchor": "middle", "font-size": 3.4, fill: etat.terrain.l ? "var(--atlas-inkSoft)" : "var(--atlas-alerte)", transform: "rotate(-90 " + -dy + " " + t.h / 2 + ")" }, etat.terrain.l ? cote(etat.terrain.l) + " m" : "? m"));
 
     etat.zones.forEach(function (z) { svg.appendChild(dessinZone(z)); });
+    // Les morceaux d'une zone coupée par des dalles, en pointillé : ce sont eux
+    // que le calcul reçoit, et le long d'eux qu'il posera les arroseurs.
+    etat.zones.forEach(function (z) {
+      var p = morceaux(z);
+      if (p.length < 2) return;
+      p.forEach(function (q) {
+        svg.appendChild(el("rect", { x: q.x, y: q.y, width: q.w, height: q.h, fill: "none", stroke: "var(--atlas-plein)", "stroke-width": 0.5, "stroke-dasharray": (1.4 * TRAIT) + " " + (1 * TRAIT), "pointer-events": "none" }));
+      });
+    });
     etat.dalles.forEach(function (d) { svg.appendChild(dessinDalles(d)); });
     etat.arbres.forEach(function (a) { svg.appendChild(dessinArbre(a)); });
     if (brouillon) svg.appendChild(dessinBrouillon());
@@ -270,9 +354,16 @@
     g.appendChild(el("rect", { x: z.x, y: z.y, width: Math.max(z.w, 0.5 * TRAIT), height: Math.max(z.h, 0.5 * TRAIT), rx: 0.8 * TRAIT, fill: remplissage(z.type), stroke: ok ? (choisie ? "var(--atlas-ink)" : "var(--atlas-rustDeep)") : "var(--atlas-alerte)", "stroke-width": choisie ? 0.9 : 0.45, "stroke-dasharray": ok ? "none" : (1.6 * TRAIT) + " " + (1.2 * TRAIT) }));
     // Le nom, puis « longueur × largeur » : la longueur est le côté couché.
     // Une zone trop basse pour deux lignes les met sur une seule.
-    var cotes = cote(z.L) + " × " + cote(z.l) + (z.type === "haie" && z.lignes ? ", " + ecritLignes(z.lignes) : "");
+    var lesParts = morceaux(z), parts = lesParts.length;
+    var cotes = cote(z.L) + " × " + cote(z.l) + (z.type === "haie" && z.lignes ? ", " + ecritLignes(z.lignes) : "") + (parts > 1 ? ", en " + parts + " parts" : "");
     var couleur = ok ? "var(--atlas-inkSoft)" : "var(--atlas-alerte)";
     var cx2 = z.x + z.w / 2, cy2 = z.y + z.h / 2;
+    // Coupée par des dalles, la zone porte son nom dans son plus grand morceau :
+    // au centre, il tombait sous la rangée.
+    if (parts > 1) {
+      var grand = lesParts.reduce(function (m, q) { return q.w * q.h > m.w * m.h ? q : m; });
+      cx2 = grand.x + grand.w / 2; cy2 = grand.y + grand.h / 2;
+    }
     if (z.h >= 9 * TRAIT) {
       g.appendChild(etiquette(cx2, cy2 - 0.6 * TRAIT, nomDe(z), 3.2, z.w, "var(--atlas-ink)"));
       g.appendChild(etiquette(cx2, cy2 + 3.4 * TRAIT, cotes, 2.9, z.w, couleur));
@@ -584,6 +675,7 @@
     document.querySelector("label[for=f-l]").textContent = c.dalles ? "Largeur d’une dalle" : "Largeur";
     $("f-diametre").hidden = !c.diametre;
     $("f-ecart").hidden = !c.ecart;
+    $("f-arrosees").hidden = !c.arrosees;
     $("f-lignes").hidden = !c.lignes;
     $("f-note").textContent = "";
     $("f-erreur").textContent = "";
@@ -633,7 +725,9 @@
     $("f-l").value = d.l == null ? "" : ecrit(d.l);
     $("f-e").value = d.e == null ? "" : ecrit(d.e);
     $("f-dist").value = ecrit(enMetres(Math.hypot(d.b.x - d.a.x, d.b.y - d.a.y)));
-    montrerChamps({ cotes: true, distance: true, surface: true, ecart: true, dalles: true });
+    montrerChamps({ cotes: true, distance: true, surface: true, ecart: true, dalles: true, arrosees: true });
+    arroseesEnCours = d.arrosees === undefined ? null : d.arrosees;
+    rendreArrosees();
     boutons(neuves, !neuves);
     rendreNoteDalles();
     $("feuille").hidden = false;
@@ -649,6 +743,14 @@
     essai.b = arriveeA(essai, essai.distance);
     var r = rangeeDeDalles(essai);
     $("f-note").textContent = ecritDalles(r.n) + " sur " + ecrit(enMetres(r.dist)) + " m.";
+  }
+
+  /* « On les arrose ? » Pas de réponse d'office : il la donne. */
+  var arroseesEnCours = null;
+  function rendreArrosees() {
+    document.querySelectorAll("#f-arrosees [data-arrosees]").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(arroseesEnCours !== null && (b.dataset.arrosees === "oui") === arroseesEnCours));
+    });
   }
 
   var lignesEnCours = { n: null, choisies: false };
@@ -726,7 +828,13 @@
     var essai = copie(d);
     lireDalles(essai);
     if (refuseVides([["f-dist", essai.distance], ["f-L", essai.L], ["f-l", essai.l]])) return;
+    if (arroseesEnCours === null) { $("f-erreur").textContent = "Dites si on les arrose."; return; }
     var b = arriveeA(essai, essai.distance), t = terrainU(), marge = 1e-6;
+    if (arroseesEnCours === false) {
+      var droite = redressee(essai.a, b);
+      if (!droite) { $("f-erreur").textContent = "Pour ne pas les arroser, posez la rangée droite, couchée ou debout."; return; }
+      b = droite;
+    }
     if (b.x < -marge || b.y < -marge || b.x > t.w + marge || b.y > t.h + marge) {
       $("f-dist").setAttribute("aria-invalid", "true");
       $("f-erreur").textContent = phraseTropGrande();
@@ -739,6 +847,7 @@
     }
     lireDalles(d);
     d.b = b;
+    d.arrosees = arroseesEnCours;
     delete d.distance;
     if (enCours.neuve) { d.id = "d" + etat.suivant++; etat.dalles.push(d); }
     fermer();
@@ -873,23 +982,32 @@
   function fraction(p) { return { x: arrondi(p.x / 100), y: arrondi(p.y / 100) }; }
   function croquisLu() {
     var reserves = [];
-    var zones = etat.zones.map(function (z) {
+    // Une zone coupée par des dalles qu'on n'arrose pas part en MORCEAUX :
+    // chacun est une zone, avec ses cotes à lui, et le calcul en pose les
+    // arroseurs aux angles et le long des bords, donc le long des dalles.
+    var zones = [];
+    etat.zones.forEach(function (z) {
       var haie = z.type === "haie";
       if (!mesuree(z)) reserves.push("« " + nomDe(z) + " » n’a pas ses métrés");
-      var lue = {
-        type: z.type,
-        nom: z.nom,
-        L: haie ? null : z.L,
-        l: haie ? null : z.l,
-        ml: haie ? z.L : null,
-        x: arrondi((z.x + z.w / 2) / 100),
-        y: arrondi((z.y + z.h / 2) / 100),
-        largeurFraction: arrondi(z.w / 100),
-        hauteurFraction: arrondi(z.h / 100)
-      };
-      // Le champ neuf : la largeur de la haie, qu'il a demandée le 18 octobre.
-      if (haie) { lue.largeur = z.l; lue.lignesHaie = z.lignes || null; }
-      return lue;
+      var parts = morceaux(z);
+      parts.forEach(function (q, i) {
+        var coupee = parts.length > 1;
+        var L = coupee ? arrondi(enMetres(q.w)) : z.L, l = coupee ? arrondi(enMetres(q.h)) : z.l;
+        var lue = {
+          type: z.type,
+          nom: coupee ? nomDe(z) + " " + (i + 1) : z.nom,
+          L: haie ? null : L,
+          l: haie ? null : l,
+          ml: haie ? L : null,
+          x: arrondi((q.x + q.w / 2) / 100),
+          y: arrondi((q.y + q.h / 2) / 100),
+          largeurFraction: arrondi(q.w / 100),
+          hauteurFraction: arrondi(q.h / 100)
+        };
+        // Le champ neuf : la largeur de la haie, qu'il a demandée le 18 octobre.
+        if (haie) { lue.largeur = l; lue.lignesHaie = z.lignes || null; }
+        zones.push(lue);
+      });
     });
     if (!etat.nourrice) reserves.push("le croquis ne montre pas où la nourrice est posée");
     if (!etat.piquage) reserves.push("le croquis ne montre pas où le piquage se fait");
@@ -900,25 +1018,18 @@
       piquage: etat.piquage ? fraction(etat.piquage) : null,
       reserves: reserves
     };
-    // Les deux champs neufs : ce que le calcul ne lit pas encore.
-    if (etat.arbres.length) {
-      lu.arbres = etat.arbres.map(function (a) {
-        var f = fraction(a);
-        return { nom: a.nom, diametre: a.d, x: f.x, y: f.y };
-      });
-    }
-    if (etat.dalles.length) {
-      lu.dalles = etat.dalles.map(function (d) {
-        return { nom: d.nom, longueur: d.L, largeur: d.l, ecart: d.e, nombre: rangeeDeDalles(d).n, de: fraction(d.a), a: fraction(d.b) };
-      });
-    }
+    // Les arbres et les dalles ne partent pas : l'arbre ne change rien au plan
+    // (sa réponse du 19 octobre), et les dalles qu'on n'arrose pas sont déjà
+    // dans les morceaux des zones.
     return lu;
   }
   function arrondi(n) { return Math.round(n * 10000) / 10000; }
 
   function rendreEtat() {
     var lu = croquisLu();
-    var mesurees = lu.zones.filter(function (z, i) { return mesuree(etat.zones[i]); });
+    // La même règle que le serveur (`zoneMesuree`) : la haie par ses mètres
+    // linéaires, le reste par ses deux cotes.
+    var mesurees = lu.zones.filter(function (z) { return z.type === "haie" ? z.ml != null : z.L != null && z.l != null; });
     var e = C.etatDuCroquis({
       zonesMesurees: mesurees.length,
       nourrice: !!lu.nourrice,
@@ -941,9 +1052,10 @@
     debordent.forEach(function (z) {
       ligne("Pas de plan : " + nomDe(z) + " (" + cote(z.L) + " × " + cote(z.l) + " m) ne tient pas dans le terrain de " + cote(etat.terrain.L) + " × " + cote(etat.terrain.l) + " m.", "rouge");
     });
-    if (etat.arbres.length || etat.dalles.length) {
-      ligne("Les arbres et les dalles se dessinent, le calcul ne les lit pas encore.");
-    }
+    etat.zones.forEach(function (z) {
+      var n = morceaux(z).length;
+      if (n > 1) ligne("Les dalles coupent " + nomDe(z) + " en " + n + " parts.");
+    });
     var faire = $("faire");
     faire.hidden = !e.complet || debordent.length > 0;
     if (lu.nourrice && lu.piquage) {
@@ -1034,6 +1146,13 @@
     $("f-l").addEventListener("input", function () {
       if (!lignesEnCours.choisies) lignesEnCours.n = lignesProposees(nombre($("f-l").value));
       rendreLignes();
+    });
+    document.querySelectorAll("#f-arrosees [data-arrosees]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        arroseesEnCours = b.dataset.arrosees === "oui";
+        $("f-erreur").textContent = "";
+        rendreArrosees();
+      });
     });
     [["f-moins", -1], ["f-plus", 1]].forEach(function (c) {
       $(c[0]).addEventListener("click", function () {
