@@ -551,7 +551,8 @@ async function main() {
   // ── LE PLAN DESSINÉ AU DOIGT, sa planche B (18 octobre 2026) ──────────────
   //
   // Le geste qu'il fait, et rien d'autre : ouvrir le dessin, taper le terrain,
-  // poser une zone, la nourrice, le compteur, faire le plan. **Sans lecture
+  // poser une zone, la nourrice, le compteur, une maison et des dalles qu'on
+  // n'arrose pas, faire le plan : le serveur reçoit les morceaux. **Sans lecture
   // d'image** : le dessin ne passe pas par l'IA, et ce banc n'en a souvent
   // pas — c'est justement ce que le cas prouve.
   await cas("le plan dessiné au doigt se calcule, sans lire de photo", async () => {
@@ -587,6 +588,39 @@ async function main() {
     await poser("Nourrice", 0.9, 0.9);
     await poser("Compteur", 0.1, 0.92);
     assert.equal(await page.inputValue("#piquage"), "compteur", "le compteur posé ne règle pas « Le piquage se fait… »");
+
+    // Ses oui du 19 octobre : la maison ne s'arrose pas et coupe la pelouse ;
+    // les dalles qu'on n'arrose pas aussi. La pelouse de 8 × 6 est posée au
+    // milieu, en (1, 2) ; la maison de 2 × 2 juste après, décalée d'un mètre,
+    // en (5, 5) : elle coupe la pelouse en quatre.
+    await page.getByRole("button", { name: "Maison", exact: true }).click();
+    await page.fill("#feuille-L", "2");
+    await page.fill("#feuille-l", "2");
+    await page.click('[data-atlas="feuille-valider"]');
+    const avecMaison = await page.locator('[data-atlas="etat-dessin"]').innerText();
+    assert.match(avecMaison, /Maison coupe Pelouse en 4 parts\./, `la maison ne coupe pas la pelouse : « ${avecMaison} »`);
+
+    // Une rangée posée un peu de travers, à 30 cm du bord gauche et 20 cm du
+    // bord droit : elle se redresse, et l'aimant la mène aux deux bords.
+    const clicEnMetres = async (x: number, y: number) => {
+      const p = await toile.evaluate((s, q) => {
+        const c = (s as SVGSVGElement).getScreenCTM()!;
+        return { x: c.a * q.x + c.c * q.y + c.e, y: c.b * q.x + c.d * q.y + c.f };
+      }, { x, y });
+      await page.mouse.click(p.x, p.y);
+    };
+    await page.getByRole("button", { name: "Dalles", exact: true }).click();
+    await clicEnMetres(1.3, 3.5);
+    await clicEnMetres(8.8, 3.6);
+    await page.fill("#feuille-L", "0,5");
+    await page.fill("#feuille-l", "0,5");
+    await page.click('[data-atlas="feuille-valider"]');
+    const sansReponse = await page.locator('[data-atlas="feuille-dessin"] [role="alert"]').innerText();
+    assert.match(sansReponse, /Dites si on les arrose/, `les dalles se posent sans dire si on les arrose : « ${sansReponse} »`);
+    await page.getByRole("button", { name: "Non", exact: true }).click();
+    await page.click('[data-atlas="feuille-valider"]');
+    const avecDalles = await page.locator('[data-atlas="etat-dessin"]').innerText();
+    assert.match(avecDalles, /Les dalles et Maison coupent Pelouse en 5 parts\./, `les dalles qu'on n'arrose pas ne coupent pas la pelouse : « ${avecDalles} »`);
 
     await page.click('[data-atlas="faire-le-plan"]');
     await page.waitForSelector('[data-atlas="plan-arrosage"]', { timeout: 60_000 });

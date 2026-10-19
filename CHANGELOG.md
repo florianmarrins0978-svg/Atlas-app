@@ -8,6 +8,26 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-19
 
+- **Le plan dessiné au doigt fait dans l'application tout ce que sa planche B
+  montre** (sans batterie, à sa demande) : « On les arrose ? » sur les dalles,
+  sans réponse d'office ; celles qu'on n'arrose pas, redressées à moins de 10°
+  ou refusées, coupent la zone, avec l'aimant de 50 cm aux bouts ; l'outil
+  Maison, qui ne s'arrose pas et coupe ce qu'il chevauche (« Maison coupe
+  Pelouse en 3 parts. ») ; chaque morceau part au calcul comme une zone. Les
+  cotes de l'objet tenu jusqu'aux quatre bords, le doigt par pas (10, 5, 1 cm) ;
+  l'échelle jusqu'au 5/100 et le pincement à deux doigts ; les côtés courbes,
+  les coins tirés, la rangée en S, « Forme d'origine » : une zone courbe part
+  comme le rectangle qui l'entoure, et l'écran l'explique sans refuser ; une
+  rangée courbe ne coupe pas, et l'écran le dit. Les outils actifs en `plein`.
+  Les règles vivent dans `src/lib/arrosage/` (`dessin-du-plan.ts` :
+  `morceauxDe`, `phrasesDuDessin`, `redressee`, `AIMANT_M` ; `formes-du-dessin.ts`,
+  neuf : `cadreDe` exact, courbes, coins, rangées, pas, cotes) ; le serveur
+  relit maisons, dalles, courbes et coins par `lireLeDessin`, bornes comprises,
+  et l'écran relit son propre envoi par elle avant de proposer le plan.
+  Suites : `test-dessin-du-plan.ts` (vue rouge, module absent, puis verte),
+  `test-arrosage-e2e.ts` (« le plan dessiné » pose une maison et des dalles
+  qu'on n'arrose pas, 16 cas verts contre le port 3004 sur `atlas_test`).
+
 - **Dans la liste du plan, ce qu'il supprime reste, barré de rouge ; un réseau,
   le piquage ou la nourrice se suppriment d'un coup ; un réseau supprimé enlève
   sa voie à la nourrice (4 voies devient 3, collecteur du dessous) ; chaque

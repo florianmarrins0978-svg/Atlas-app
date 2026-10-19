@@ -19,17 +19,32 @@
  *   4. **Une haie reçoit autant de lignes qu'il en faut** : « si le carré il
  *      est plus grand, peut-être qu'il en faudra 4, 5 ». Le calcul plafonnait à
  *      deux.
+ *   5. **La maison et les dalles qu'on n'arrose pas coupent la zone** (ses oui
+ *      du 19 octobre), l'aimant de 50 cm aux bouts, la rangée droite ou refusée.
+ *   6. **Les courbes s'expliquent, elles ne se refusent pas** : une zone courbe
+ *      part comme le rectangle qui l'entoure ; une rangée courbe ne coupe pas.
+ *   7. **Ce qui arrive du téléphone se relit** : maisons, dalles, courbes,
+ *      coins, bornes comprises.
+ *   8. **Le pas du doigt et les cotes jusqu'aux bords.**
  */
 import assert from "node:assert/strict";
 import { calculerPlan } from "../src/lib/arrosage/calcul.js";
 import { lireReponseCroquis } from "../src/server/ai/services/lire-croquis";
 import { zoneMesuree } from "../src/lib/arrosage/croquis-complet";
 import {
+  AIMANT_M,
   croquisDuDessin,
   lireLeDessin,
   lignesProposees,
+  morceauxDe,
+  phrasesDuDessin,
+  redressee,
   zonesQuiDebordent,
+  type DessinDuPlan,
+  type PointMetres,
+  type ZoneDessinee,
 } from "../src/lib/arrosage/dessin-du-plan";
+import { auPas, cadreDe, cotesAuxBords, formeLibre, longueurDeLaRangee, pasDuDoigt } from "../src/lib/arrosage/formes-du-dessin";
 
 let echecs = 0;
 const dire = (bon: boolean, quoi: string) => {
@@ -121,6 +136,116 @@ dire(
 // ── La proposition de lignes, sa règle : une ligne arrose une bande de 1 m ──
 dire(lignesProposees(1) === 1 && lignesProposees(2) === 2 && lignesProposees(2.5) === 3 && lignesProposees(4.5) === 5, "1 m, 2 m, 2,5 m, 4,5 m : 1, 2, 3, 5 lignes");
 dire(lignesProposees(null) === null, "sans largeur, aucune proposition");
+
+// ── 5. La maison et les dalles qu'on n'arrose pas COUPENT la zone ───────────
+// Ses réponses du 19 octobre : « si on ne les arrose pas, il faudra les
+// utiliser comme si c'était la fin de la délimitation », et « la maison, oui ».
+// Son cas : une pelouse de 20 × 20, une maison de 10 × 10 collée au fond.
+const terrain20 = { L: 20, l: 20 };
+const pelouse20: ZoneDessinee = { type: "gazon", nom: null, L: 20, l: 20, x: 0, y: 0 };
+const avecMaison: DessinDuPlan = {
+  terrain: terrain20,
+  zones: [pelouse20],
+  maisons: [{ nom: null, L: 10, l: 10, x: 5.6, y: 0 }],
+  dalles: [],
+  nourrice: { x: 1, y: 19 },
+  piquage: { x: 0, y: 19 },
+};
+const parts = morceauxDe(pelouse20, avecMaison);
+const tailles = parts.parts.map((p) => `${Math.round(p.L * 100) / 100}x${Math.round(p.l * 100) / 100}`).sort();
+dire(tailles.join(" ") === ["20x10", "4.4x10", "5.6x10"].sort().join(" "), `la maison coupe la pelouse en 20 × 10, 5,6 × 10 et 4,4 × 10 (${tailles.join(" ")})`);
+dire(phrasesDuDessin(avecMaison).includes("Maison coupe Pelouse en 3 parts."), `l'écran dit « Maison coupe Pelouse en 3 parts. » (${phrasesDuDessin(avecMaison).join(" | ")})`);
+const croquisMaison = croquisDuDessin(avecMaison, "compteur");
+dire(croquisMaison.zones.length === 3, "chaque morceau part au calcul comme une zone, la maison n'y part pas");
+dire(croquisMaison.zones.map((z) => z.nom).sort().join(",") === "Pelouse 1,Pelouse 2,Pelouse 3", "les morceaux portent le nom de la zone, numérotés");
+const couverte: DessinDuPlan = { ...avecMaison, maisons: [{ nom: null, L: 20, l: 20, x: 0, y: 0 }] };
+dire(croquisDuDessin(couverte, "compteur").zones.length === 0, "une zone couverte par la maison n'entre pas dans le plan");
+dire(phrasesDuDessin(couverte).includes("Maison couvre Pelouse entièrement, cette zone n’entre pas dans le plan."), "et l'écran le dit");
+
+// Une allée de 1 m qu'on n'arrose pas, en travers d'une pelouse de 12 × 12.
+const allee = (a: PointMetres, b: PointMetres): DessinDuPlan => ({
+  terrain: { L: 12, l: 12 },
+  zones: [{ type: "gazon", nom: "Pelouse arrière", L: 12, l: 12, x: 0, y: 0 }],
+  maisons: [],
+  dalles: [{ a, b, l: 1 }],
+  nourrice: null,
+  piquage: null,
+});
+const coupee = morceauxDe(allee({ x: 0, y: 6 }, { x: 12, y: 6 }).zones[0], allee({ x: 0, y: 6 }, { x: 12, y: 6 }));
+dire(coupee.parts.length === 2 && coupee.parts.every((p) => p.L === 12 && Math.abs(p.l - 5.5) < 1e-9), "une allée couchée coupe la pelouse en deux bandes de 12 × 5,5");
+dire(phrasesDuDessin(allee({ x: 0, y: 6 }, { x: 12, y: 6 })).includes("Les dalles coupent Pelouse arrière en 2 parts."), "les dalles coupent, au pluriel");
+
+// **L'aimant, validé le 19 octobre** : le doigt ne touche jamais le bord exact.
+const aimantee = morceauxDe(allee({ x: 0.3, y: 6 }, { x: 11.6, y: 6 }).zones[0], allee({ x: 0.3, y: 6 }, { x: 11.6, y: 6 }));
+dire(aimantee.parts.length === 2, `un bout à 30 et 40 cm du bord va jusqu'au bord, aucune lanière ne devient une zone (${aimantee.parts.length} parts)`);
+const loin = morceauxDe(allee({ x: 0.6, y: 6 }, { x: 12, y: 6 }).zones[0], allee({ x: 0.6, y: 6 }, { x: 12, y: 6 }));
+dire(loin.parts.length === 3, `à 60 cm du bord, l'aimant ne prend pas (${loin.parts.length} parts)`);
+dire(AIMANT_M === 0.5, "l'aimant fait 50 cm");
+
+// Droite ou refusée : à moins de 10° d'un axe, elle se redresse.
+const presque = redressee({ x: 0, y: 0 }, { x: 10, y: 10 * Math.tan((8 * Math.PI) / 180) });
+dire(presque !== null && Math.abs(presque.y) < 1e-9 && Math.abs(presque.x - Math.hypot(10, 10 * Math.tan((8 * Math.PI) / 180))) < 1e-9, "à 8°, la rangée se couche en gardant sa distance");
+const debout = redressee({ x: 3, y: 0 }, { x: 3.5, y: 6 });
+dire(debout !== null && debout.x === 3 && debout.y > 6, "presque debout, elle se met debout");
+dire(redressee({ x: 0, y: 0 }, { x: 10, y: 10 * Math.tan((12 * Math.PI) / 180) }) === null, "à 12°, elle ne se redresse pas");
+
+// ── 6. Les courbes : expliquer, jamais refuser ─────────────────────────────
+// Sa règle : « il faut juste qu'ils l'expliquent, mais qu'ils ne refusent pas ;
+// ils disent que ça sera quand même arrosé ».
+const bombee: ZoneDessinee = { type: "gazon", nom: null, L: 10, l: 8, x: 2, y: 2, courbes: { droite: { u: 0.5, v: 2 } } };
+const cadre = cadreDe(bombee);
+// Une Bézier du second degré passe à mi-chemin de son point de contrôle : 1 m.
+dire(Math.abs(cadre.L - 11) < 1e-9 && Math.abs(cadre.l - 8) < 1e-9 && cadre.x === 2, `le côté bombé de 1 m donne un rectangle de 11 × 8 (${cadre.L} × ${cadre.l})`);
+const dessinBombe: DessinDuPlan = { terrain: { L: 20, l: 20 }, zones: [bombee], maisons: [], dalles: [], nourrice: null, piquage: null };
+const zoneBombee = croquisDuDessin(dessinBombe, "compteur").zones[0];
+dire(zoneBombee.L === 11 && zoneBombee.l === 8, "la zone courbe part au calcul comme le rectangle qui l'entoure");
+dire(phrasesDuDessin(dessinBombe).includes("La forme de Pelouse est arrosée comme le rectangle qui l’entoure, 11 × 8 m. Les arroseurs du bord peuvent mouiller un peu au-delà."), "et l'écran l'explique");
+const massifCoin: ZoneDessinee = { type: "massif", nom: null, L: 8, l: 4, x: 0, y: 0, coins: { hd: { x: 1, y: 0 } } };
+dire(cadreDe(massifCoin).L === 9 && formeLibre(massifCoin), "un coin tiré élargit le rectangle");
+dire(
+  phrasesDuDessin({ ...dessinBombe, zones: [massifCoin] }).includes("Le goutte-à-goutte de Massif est compté sur le rectangle qui l’entoure, 9 × 4 m, un peu plus de tube que la forme."),
+  "le goutte-à-goutte d'un massif courbe se compte sur son rectangle, et l'écran le dit",
+);
+dire(!formeLibre({ ...bombee, courbes: undefined }), "sans courbe ni coin, la zone n'est pas libre");
+
+// Une rangée courbe qu'on n'arrose pas ne coupe pas.
+const enS: DessinDuPlan = { ...allee({ x: 0, y: 6 }, { x: 12, y: 6 }), dalles: [{ a: { x: 0, y: 6 }, b: { x: 12, y: 6 }, l: 1, courbe: [{ u: 1 / 3, v: 0.1 }, { u: 2 / 3, v: -0.1 }] }] };
+dire(morceauxDe(enS.zones[0], enS).parts.length === 1, "une rangée en S qu'on n'arrose pas ne coupe pas la zone");
+dire(phrasesDuDessin(enS).includes("Les dalles en courbe ne coupent pas Pelouse arrière : elles sont arrosées avec cette zone."), "et l'écran le dit");
+const longueurS = longueurDeLaRangee(enS.dalles[0]);
+dire(longueurS > 12 && longueurS < 13, `la distance d'une rangée courbe se mesure le long de la courbe (${longueurS})`);
+
+// ── 7. Ce qui arrive du téléphone se relit, bornes comprises ───────────────
+const brut2 = { ...brut, maisons: [], dalles: [] };
+refuse("une maison hors du terrain est refusée", { ...brut2, maisons: [{ nom: null, L: 10, l: 10, x: 30, y: 0 }] });
+refuse("une maison sans cote est refusée", { ...brut2, maisons: [{ nom: null, L: 0, l: 10, x: 0, y: 0 }] });
+refuse("des dalles non arrosées en biais sont refusées", { ...brut2, dalles: [{ a: { x: 0, y: 0 }, b: { x: 10, y: 5 }, l: 1 }] });
+refuse("une courbe qui n'est pas un nombre est refusée", { ...brut2, zones: [{ ...brut.zones[0], courbes: { haut: { u: "x", v: 1 } } }] });
+refuse("une zone dont la courbe sort du terrain est refusée", { ...brut2, zones: [{ ...brut.zones[0], courbes: { haut: { u: 0.5, v: 40 } } }] });
+refuse("un coin tiré hors du terrain est refusé", { ...brut2, zones: [{ ...brut.zones[0], coins: { hg: { x: -3, y: 0 } } }] });
+refuse("une rangée en S qui sort du terrain est refusée", { ...brut2, dalles: [{ a: { x: 1, y: 10 }, b: { x: 12, y: 10 }, l: 1, courbe: [{ u: 1 / 3, v: -2 }, { u: 2 / 3, v: 0 }] }] });
+refuse("une courbe de rangée absurde est refusée", { ...brut2, dalles: [{ a: { x: 1, y: 10 }, b: { x: 12, y: 10 }, l: 1, courbe: [{ u: 1 / 3, v: 1e9 }, { u: 2 / 3, v: 0 }] }] });
+refuse("cent maisons, ce n'est plus un jardin", { ...brut2, maisons: Array.from({ length: 100 }, () => ({ nom: null, L: 1, l: 1, x: 0, y: 0 })) });
+const relu = lireLeDessin({
+  ...brut2,
+  maisons: [{ nom: "Garage", L: 4, l: 4, x: 2, y: 2 }],
+  dalles: [{ a: { x: 0, y: 6 }, b: { x: 12, y: 6.5 }, l: 1 }],
+  zones: [{ ...brut.zones[0], courbes: { bas: { u: 0.5, v: 1 } }, coins: { hd: { x: -1, y: 1 } } }, brut.zones[1]],
+});
+dire(relu.ok, `un dessin avec maison, dalles et courbes se lit${relu.ok ? "" : ` (${relu.raison})`}`);
+if (relu.ok) {
+  dire(relu.dessin.maisons[0].nom === "Garage" && relu.dessin.dalles.length === 1, "la maison et les dalles arrivent au calcul");
+  dire(relu.dessin.dalles[0].b.y === 6, "le serveur redresse la rangée comme l'écran");
+  dire(relu.dessin.zones[0].courbes?.bas?.v === 1 && relu.dessin.zones[0].coins?.hd?.x === -1, "la courbe et le coin arrivent tels quels");
+  dire(phrasesDuDessin(relu.dessin).some((p) => /^Les dalles et Garage coupent Pelouse arrière en \d+ parts\.$/.test(p)), `les deux coupent ensemble (${phrasesDuDessin(relu.dessin).join(" | ")})`);
+}
+dire(lireLeDessin(brut).ok, "un dessin sans maison ni dalles se lit toujours");
+
+// ── 8. Le doigt avance par pas, et les cotes vont jusqu'aux bords ───────────
+dire(pasDuDoigt(null) === 0.1 && pasDuDoigt(200) === 0.05 && pasDuDoigt(100) === 0.01 && pasDuDoigt(20) === 0.01, "10 cm sur tout le terrain, 5 cm à 1/200, 1 cm à 1/100 et au-delà");
+dire(Math.abs(auPas(5.63, 200) - 5.65) < 1e-9 && Math.abs(auPas(5.63, null) - 5.6) < 1e-9, "le doigt tombe sur le pas");
+const bords = cotesAuxBords({ x: 5.6, y: 0, L: 10, l: 10 }, terrain20);
+dire(Math.abs(bords.gauche - 5.6) < 1e-9 && Math.abs(bords.droite - 4.4) < 1e-9 && bords.haut === 0 && bords.bas === 10, "la maison collée au fond : 5,6 m à gauche, 4,4 m à droite, 10 m devant");
 
 console.log(echecs === 0 ? "\n✅ 0 échec." : `\n❌ ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);
