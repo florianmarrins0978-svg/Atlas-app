@@ -88,13 +88,33 @@
   .ld .haut b{font-weight:600;font-variant-numeric:tabular-nums}
   .ld small{display:block;margin-top:2px;font-size:12.5px;color:var(--atlas-muted)}
   .ld.a-chiffrer .haut b{color:var(--atlas-alerte);font-weight:500}
-  .feuille{position:fixed;inset:0;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.35)}
+  .feuille{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.35)}
   .feuille .boite{width:100%;max-width:430px;height:90vh;overflow:auto;background:var(--atlas-cream);border-radius:18px 18px 0 0;padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px))}
   .feuille .haut{display:flex;align-items:center}
   .feuille h2{flex:1;margin:0;font-size:22px;line-height:1.2}
   .feuille .fermer{border:0;background:none;font-size:14px;text-decoration:underline;color:var(--atlas-inkSoft);cursor:pointer}
   .apercu{margin-top:12px;border-radius:12px;overflow:hidden;background:var(--atlas-card)}
   .apercu img{display:block;width:100%;max-height:340px;object-fit:contain;background:#fff}
+  /* LA LISTE DE L'APPLICATION (ListeClients.tsx, ChampRecherche.tsx), sa demande du
+     19 octobre 2026 : « reprends le filtre qu'on utilise, triés par ordre alphabétique
+     comme pour nos clients ». */
+  .colle{position:sticky;top:0;z-index:5;margin:6px -16px 0;padding:14px 16px 10px;background:var(--atlas-cream)}
+  .cherche{display:flex;align-items:center;gap:12px;border-bottom:1.5px solid var(--atlas-muted);color:var(--atlas-or)}
+  .cherche:focus-within{border-bottom-color:var(--atlas-or)}
+  .cherche svg{flex:none}
+  .cherche input{flex:1;min-width:0;border:0;background:transparent;padding:11px 0;font-size:17px;color:var(--atlas-ink);caret-color:var(--atlas-or);outline:none}
+  .cherche input::placeholder{color:var(--atlas-muted)}
+  .cherche input:focus-visible{outline:none}
+  .cherche button{flex:none;width:40px;height:44px;border:0;background:none;color:var(--atlas-muted);font-size:17px;cursor:pointer}
+  .dans-fiche{margin-top:12px}
+  .bande{margin:24px 0 2px;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-muted)}
+  #societes .bande:first-child,.liste .bande:first-child{margin-top:10px}
+  mark{background:color-mix(in srgb, var(--atlas-or) 24%, transparent);color:inherit;border-radius:2px;padding:0 1px}
+  .societe{display:flex;align-items:center;gap:14px;width:100%;min-height:64px;margin:0;border:0;border-bottom:1px solid var(--atlas-line);border-radius:0;background:none;padding:13px 0;box-shadow:none;color:var(--atlas-ink);font:inherit;text-align:left;cursor:pointer}
+  .societe b{display:block;font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;font-size:17.5px;font-weight:400;line-height:1.25}
+  .societe small{display:block;margin-top:3px;font-size:12.5px;color:var(--atlas-inkSoft)}
+  .societe .losange{flex:none;margin-left:auto;width:8px;height:8px;transform:rotate(45deg);border-right:1.5px solid var(--atlas-chevron);border-top:1.5px solid var(--atlas-chevron)}
+  .nom-devis{display:block;width:100%;margin-top:12px;border:0;border-radius:10px;padding:12px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
   [hidden]{display:none !important}
   button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.source:focus-within{outline:2px solid var(--atlas-or);outline-offset:2px}
 </style>
@@ -113,6 +133,8 @@
       <button type="button" data-rubrique="fournisseurs" aria-pressed="true">Mes fournisseurs</button>
       <button type="button" data-rubrique="partenaires" aria-pressed="false">Mes partenaires</button>
     </div>
+    <!-- Le champ de recherche de l'application (ChampRecherche.tsx), collé en haut. -->
+    <div class="colle"><div class="cherche"><svg width="21" height="21" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8.2" cy="8.2" r="6.2"/><path d="M12.8 12.8L18 18" stroke-linecap="round"/></svg><input id="chercher-societe" type="text" inputmode="search" autocomplete="off" aria-label="Chercher"><button type="button" id="effacer-societe" aria-label="Effacer la recherche" hidden>✕</button></div></div>
     <div id="societes"></div>
     <div class="nouveau"><input id="nom-nouveau" aria-label="Nom"><button type="button" id="ajouter-societe">Ajouter</button></div>
     <!-- LE COEFFICIENT RESTE (« faut la laisser comme elle est », 19 octobre 2026) ; ce
@@ -141,6 +163,7 @@
       <button type="button" data-partie="devis" aria-pressed="false">Devis reçus</button>
       <button type="button" data-partie="demandes" aria-pressed="false">Demandes envoyées</button>
     </div>
+    <div class="cherche dans-fiche"><svg width="21" height="21" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8.2" cy="8.2" r="6.2"/><path d="M12.8 12.8L18 18" stroke-linecap="round"/></svg><input id="chercher-fiche" type="text" inputmode="search" autocomplete="off" aria-label="Chercher dans la fiche"><button type="button" id="effacer-fiche" aria-label="Effacer la recherche" hidden>✕</button></div>
     <div id="partie"></div>
   </div>
 </div>
@@ -167,12 +190,62 @@
     // fournisseurs, la main d'œuvre chez les partenaires, jamais les deux à la fois.
     document.querySelectorAll("[data-pour]").forEach(function (d) { d.hidden = d.dataset.pour !== rubrique; });
     $("nom-nouveau").placeholder = rubrique === "fournisseurs" ? "Un autre fournisseur" : "Une société partenaire";
-    var l = societes[rubrique];
-    $("societes").innerHTML = l.length ? l.map(function (s, i) {
-      return '<button class="societe" type="button" data-ouvrir="' + i + '"><span><b>' + texte(s.nom) + "</b><small>" +
-        pluriel(s.prix.length, "prix").replace("prixs", "prix") + ", " + pluriel(s.devis.length, "devis").replace("deviss", "devis") + " reçu" + (s.devis.length > 1 ? "s" : "") + ", " + pluriel(s.demandes.length, "demande") +
-        '</small><small class="marge">' + (margeDe(s, rubrique) === null ? "Marge à donner" : "Marge " + fois(margeDe(s, rubrique)) + (s.marge !== null ? ", la sienne" : "")) + '</small></span><span class="chevron" aria-hidden="true">›</span></button>';
-    }).join("") : '<p class="vide">Aucun partenaire. Ajoutez la société avec qui vous travaillez.</p>';
+    $("chercher-societe").placeholder = rubrique === "fournisseurs" ? "Chercher un fournisseur" : "Chercher un partenaire";
+    $("effacer-societe").hidden = !$("chercher-societe").value;
+    var saisie = $("chercher-societe").value, l = societes[rubrique];
+    // Une société se trouve par son nom, mais aussi par ce qu'elle porte : une
+    // fourniture, un devis, une demande (« si on a besoin de rechercher les devis
+    // ou les listes qu'on envoie », 19 octobre 2026).
+    var lignes = l.map(function (s, i) { return { s: s, i: i, nom: s.nom } })
+      .filter(function (x) { return trouve(x.s.nom + " " + x.s.prix.map(function (a) { return a.nom; }).join(" ") + " " + x.s.devis.map(function (d) { return d.nom; }).join(" ") + " " + x.s.demandes.map(function (d) { return d.titre; }).join(" "), saisie); });
+    $("societes").innerHTML = !l.length ? '<p class="vide">Aucun partenaire. Ajoutez la société avec qui vous travaillez.</p>' :
+      !lignes.length ? '<p class="vide">' + (rubrique === "fournisseurs" ? "Aucun fournisseur" : "Aucun partenaire") + " ne s’appelle « " + texte(saisie.trim()) + " ».</p>" :
+      enBandes(lignes, saisie, function (x) {
+        var aussi = saisie.trim() && !trouve(x.s.nom, saisie) ? ce_qui_trouve(x.s, saisie) : "";
+        return '<button class="societe" type="button" data-ouvrir="' + x.i + '"><span><b>' + surligner(x.s.nom, saisie) + "</b><small>" +
+          (aussi ? aussi : pluriel(x.s.prix.length, "prix").replace("prixs", "prix") + ", " + pluriel(x.s.devis.length, "devis").replace("deviss", "devis") + " reçu" + (x.s.devis.length > 1 ? "s" : "") + ", " + pluriel(x.s.demandes.length, "demande")) +
+          '</small><small class="marge">' + (margeDe(x.s, rubrique) === null ? "Marge à donner" : "Marge " + fois(margeDe(x.s, rubrique)) + (x.s.marge !== null ? ", la sienne" : "")) + '</small></span><span class="losange" aria-hidden="true"></span></button>';
+      });
+  }
+  // Ce qui a fait trouver une société quand ce n'est pas son nom.
+  function ce_qui_trouve(s, saisie) {
+    var t = s.prix.filter(function (a) { return trouve(a.nom, saisie); }).map(function (a) { return a.nom; })
+      .concat(s.devis.filter(function (d) { return trouve(d.nom, saisie); }).map(function (d) { return d.nom; }))
+      .concat(s.demandes.filter(function (d) { return trouve(d.titre, saisie); }).map(function (d) { return d.titre; }));
+    return t.map(function (x) { return surligner(x, saisie); }).join(", ");
+  }
+
+  // ── LA RECHERCHE ET LE RANGEMENT DE L'APPLICATION (src/lib/recherche-client.ts,
+  // src/lib/bandes-clients.ts) : sans accents ni majuscules, chaque mot tapé doit
+  // se trouver, dans n'importe quel ordre ; de A à Z sous une lettre ; pas de
+  // lettre pendant une recherche ; ce qui est trouvé est surligné.
+  var plat = function (s) { return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim(); };
+  function trouve(nom, saisie) { var mots = plat(saisie).split(" ").filter(Boolean); var n = plat(nom); return mots.every(function (m) { return n.indexOf(m) >= 0; }); }
+  function surligner(nom, saisie) {
+    var mots = plat(saisie).split(" ").filter(Boolean);
+    if (!mots.length) return texte(nom);
+    var base = String(nom).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    var marque = new Array(nom.length).fill(false);
+    mots.forEach(function (m) { var i = base.indexOf(m); while (i >= 0) { for (var k = i; k < i + m.length; k++) marque[k] = true; i = base.indexOf(m, i + 1); } });
+    var h = "", ouvert = false;
+    for (var i = 0; i < nom.length; i++) {
+      if (marque[i] && !ouvert) { h += "<mark>"; ouvert = true; }
+      if (!marque[i] && ouvert) { h += "</mark>"; ouvert = false; }
+      h += texte(nom[i]);
+    }
+    return h + (ouvert ? "</mark>" : "");
+  }
+  var lettre = function (nom) { var c = plat(nom).charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; };
+  function enBandes(lignes, saisie, ligne) {
+    var rangees = lignes.slice().sort(function (a, b) { return plat(a.nom).localeCompare(plat(b.nom), "fr"); });
+    var h = "", avant = null, cherche = !!saisie.trim();
+    rangees.forEach(function (x) {
+      var b = lettre(x.nom);
+      if (!cherche && b !== avant) h += '<p class="bande">' + b + "</p>";
+      avant = b;
+      h += ligne(x);
+    });
+    return h;
   }
 
   function dessinerFiche() {
@@ -184,27 +257,40 @@
     var h = '<div class="coef"><span>Ma marge chez ' + texte(s.nom) + "<small>" + (alerteMarge ? texte(alerteMarge) + " " : "") +
       (s.marge !== null ? "La sienne. Videz la case pour reprendre la marge générale" + (g !== null ? " (" + fois(g) + ")" : "") + "." : g !== null ? "Votre marge générale, " + fois(g) + ". Tapez-en une autre pour lui seul." : "Pas encore donnée.") +
       '</small></span><input id="marge-societe" inputmode="decimal"  value="' + (s.marge !== null ? String(s.marge).replace(".", ",") : "") + '" aria-label="Marge chez ' + texte(s.nom) + '"></div>';
+    var q = $("chercher-fiche").value;
+    $("chercher-fiche").placeholder = partie === "prix" ? (rubrique === "fournisseurs" ? "Chercher une fourniture" : "Chercher une prestation") : partie === "devis" ? "Chercher un devis" : "Chercher une demande";
+    $("effacer-fiche").hidden = !q;
+    var rien = function (quoi) { return '<p class="vide">' + quoi + " ne s’appelle « " + texte(q.trim()) + " ».</p>"; };
     if (partie === "prix") {
-      h += s.prix.length ? '<div class="liste">' + s.prix.map(function (a, k) {
-        return '<div class="ligne"><span class="n">' + texte(a.nom) + "<small>" + texte(a.source) + '</small></span><span class="p">' + euros(a.prix) + " / " + texte(a.unite) + '</span><button class="lien danger" type="button" data-retirer-prix="' + k + '">Retirer</button></div>';
-      }).join("") + "</div>" : '<p class="vide">' + (rubrique === "fournisseurs" ? "Aucune fourniture encore. Ajoutez-en, ou prenez un de ses devis en photo." : "Aucun prix de main d’œuvre encore.") + "</p>";
+      var prix = s.prix.map(function (a, k) { return { a: a, k: k, nom: a.nom }; }).filter(function (x) { return trouve(x.nom, q); });
+      h += !s.prix.length ? '<p class="vide">' + (rubrique === "fournisseurs" ? "Aucune fourniture encore. Ajoutez-en, ou prenez un de ses devis en photo." : "Aucun prix de main d’œuvre encore.") + "</p>" :
+        !prix.length ? rien(rubrique === "fournisseurs" ? "Aucune fourniture" : "Aucune prestation") :
+        '<div class="liste">' + enBandes(prix, q, function (x) {
+          return '<div class="ligne"><span class="n">' + surligner(x.a.nom, q) + "<small>" + texte(x.a.source) + '</small></span><span class="p">' + euros(x.a.prix) + " / " + texte(x.a.unite) + '</span><button class="lien danger" type="button" data-retirer-prix="' + x.k + '">Retirer</button></div>';
+        }) + "</div>";
       h += '<div class="saisie"><input id="art-nom" placeholder="' + (rubrique === "fournisseurs" ? "Fourniture" : "Prestation") + '" aria-label="Nom"><select id="art-unite" aria-label="Unité">' +
         UNITES[rubrique].map(function (u) { return "<option>" + u + "</option>"; }).join("") + '</select><input class="prix" id="art-prix" inputmode="decimal" placeholder="Prix HT" aria-label="Prix HT"></div>' +
         '<button class="second" type="button" id="ajouter-prix">Ajouter ce prix</button>';
     }
     if (partie === "devis") {
-      h += '<label class="source"><input type="file" accept="image/*" capture="environment" id="photo-devis">Prendre un devis en photo</label>' +
+      // Un nom pour le devis : c'est lui qui le range de A à Z et le fait trouver.
+      h += '<input class="nom-devis" id="nom-devis" placeholder="Nom du devis, chantier ou client" aria-label="Nom du devis">' +
+        '<label class="source"><input type="file" accept="image/*" capture="environment" id="photo-devis">Prendre un devis en photo</label>' +
         '<label class="source creux"><input type="file" accept="image/*,application/pdf" id="fichier-devis">Choisir une photo ou un PDF</label>';
-      h += s.devis.length ? '<div class="liste">' + s.devis.map(function (d, k) {
-        return '<div class="ligne">' + (d.url ? '<img class="vu" src="' + d.url + '" alt="">' : "") + '<span class="n">Devis du ' + d.date + "<small>" + texte(d.fichier) + "</small></span>" +
-          '<button class="lien" type="button" data-voir-devis="' + k + '">Voir</button></div>';
-      }).join("") + "</div>" : '<p class="vide">Aucun devis reçu de ' + texte(s.nom) + ".</p>";
+      var devis = s.devis.map(function (d, k) { return { d: d, k: k, nom: d.nom }; }).filter(function (x) { return trouve(x.nom + " " + x.d.date, q); });
+      h += !s.devis.length ? '<p class="vide">Aucun devis reçu de ' + texte(s.nom) + ".</p>" : !devis.length ? rien("Aucun devis") :
+        '<div class="liste">' + enBandes(devis, q, function (x) {
+          return '<div class="ligne">' + (x.d.url ? '<img class="vu" src="' + x.d.url + '" alt="">' : "") + '<span class="n">' + surligner(x.d.nom, q) + "<small>Reçu le " + x.d.date + ", " + texte(x.d.fichier) + "</small></span>" +
+            '<button class="lien" type="button" data-voir-devis="' + x.k + '">Voir</button></div>';
+        }) + "</div>";
       h += '<div id="vu-devis"></div>';
     }
     if (partie === "demandes") {
-      h += s.demandes.length ? '<div class="liste">' + s.demandes.map(function (d) {
-        return '<div class="ligne"><span class="n">' + texte(d.titre) + "<small>Envoyée le " + d.date + ", " + pluriel(d.lignes, "ligne") + "</small></span></div>";
-      }).join("") + "</div>" : '<p class="vide">Aucune demande envoyée à ' + texte(s.nom) + ". Les listes que vous lui envoyez depuis un devis ou le plan d’arrosage s’enregistrent ici, avec leur date.</p>";
+      var dem = s.demandes.map(function (d) { return { d: d, nom: d.titre }; }).filter(function (x) { return trouve(x.nom + " " + x.d.date, q); });
+      h += !s.demandes.length ? '<p class="vide">Aucune demande envoyée à ' + texte(s.nom) + ". Les listes que vous lui envoyez depuis un devis ou le plan d’arrosage s’enregistrent ici, avec leur date.</p>" : !dem.length ? rien("Aucune demande") :
+        '<div class="liste">' + enBandes(dem, q, function (x) {
+          return '<div class="ligne"><span class="n">' + surligner(x.d.titre, q) + "<small>Envoyée le " + x.d.date + ", " + pluriel(x.d.lignes, "ligne") + "</small></span></div>";
+        }) + "</div>";
     }
     $("partie").innerHTML = h;
   }
@@ -265,9 +351,11 @@
     if (!b) return;
     if (b.dataset.rubrique) { rubrique = b.dataset.rubrique; dessinerListe(); return; }
     if (b.id === "ajouter-societe") { var n = $("nom-nouveau").value.trim(); if (!n) return; societes[rubrique].push(nouvelle(n)); $("nom-nouveau").value = ""; dessinerListe(); quiCouvre(); return; }
-    if (b.dataset.ouvrir !== undefined) { ouverte = Number(b.dataset.ouvrir); partie = "prix"; alerteMarge = ""; dessinerFiche(); $("fiche").hidden = false; return; }
+    if (b.id === "effacer-societe") { $("chercher-societe").value = ""; dessinerListe(); $("chercher-societe").focus(); return; }
+    if (b.id === "effacer-fiche") { $("chercher-fiche").value = ""; dessinerFiche(); $("chercher-fiche").focus(); return; }
+    if (b.dataset.ouvrir !== undefined) { ouverte = Number(b.dataset.ouvrir); partie = "prix"; alerteMarge = ""; $("chercher-fiche").value = ""; dessinerFiche(); $("fiche").hidden = false; return; }
     if (b.id === "fermer") { $("fiche").hidden = true; dessinerListe(); return; }
-    if (b.dataset.partie) { partie = b.dataset.partie; dessinerFiche(); return; }
+    if (b.dataset.partie) { partie = b.dataset.partie; $("chercher-fiche").value = ""; dessinerFiche(); return; }
     var s = ouverte === null ? null : societes[rubrique][ouverte];
     if (b.id === "ajouter-prix") {
       var nom = $("art-nom").value.trim(), prix = nombre($("art-prix").value);
@@ -296,10 +384,13 @@
     if (e.target.id !== "photo-devis" && e.target.id !== "fichier-devis") return;
     var f = e.target.files[0]; if (!f) return;
     var s = societes[rubrique][ouverte];
-    s.devis.unshift({ date: aujourdhui(), fichier: /^image\//.test(f.type) ? "Photo" : f.name, url: /^image\//.test(f.type) ? URL.createObjectURL(f) : null });
+    var nomDevis = ($("nom-devis") && $("nom-devis").value.trim()) || "Devis du " + aujourdhui();
+    s.devis.unshift({ nom: nomDevis, date: aujourdhui(), fichier: /^image\//.test(f.type) ? "Photo" : f.name, url:/^image\//.test(f.type) ? URL.createObjectURL(f) : null });
     e.target.value = "";
     dessinerFiche();
   });
+  $("chercher-societe").oninput = dessinerListe;
+  $("chercher-fiche").oninput = dessinerFiche;
   dessinerListe();
   quiCouvre();
 })();
