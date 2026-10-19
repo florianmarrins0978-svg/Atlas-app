@@ -302,6 +302,19 @@ lui-même sur la nourrice : le montage reste celui qu'il a choisi, et la réserv
 dit le manque en nombre de voies (« Il manque 3 voies au programmateur : il en
 a 1, ce jardin demande 4 réseaux »). C'est lui qui décide ensuite.
 
+**AU ROBINET, LE CALCUL DE PRESSION EST CELUI DU COMPTEUR, QUEL QUE SOIT LE
+MONTAGE — sa réponse du 19 octobre 2026 :** *« si c'est un programmateur en nez
+de robinet avec départ en 16, il faut faire le calcul lambda avec la pression et
+le débit, comme on fait pour le compteur. L'utilisateur doit te dire combien il y
+a de pression et combien il y a de débit, et toi tu feras ton calcul de perte de
+charge en fonction de ça. Et si on part du robinet pour aller à la nourrice,
+c'est la même chose. En fait, ça ne change rien. »* Donc : la pression et le
+débit qu'il mesure au robinet sont le point de départ, et les pertes se
+calculent comme au compteur, dans les deux montages, avec le tuyau d'amenée et
+le trajet tels que le croquis les donne. **Ne pas retirer la perte de l'amenée
+au nez de robinet** : la proposition qui le faisait lui a été posée, et il l'a
+écartée. Tenu dans `test-regles-du-patron.ts`.
+
 **UN NOMBRE DE PIÈCES SE CHOISIT, JAMAIS « UNE » OU « TOUTES » — sa correction du
 18 octobre 2026**, devant « Changer une seule pièce / Changer les 4 » : *« il
 faut faire un choix avec le nombre de pièces à modifier. On clique et on choisit

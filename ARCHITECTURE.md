@@ -35191,10 +35191,13 @@ choisit et il peut changer.
    et le trajet du regard tels que le croquis les a donnés, alors que les
    réseaux partent du robinet. Sa règle est nette : *« avant de modifier une
    règle ou un chiffre du calcul, tu viens me le dire »*. C'est donc une
-   question qui lui est posée (`TODO.md`), pas un chiffre changé en silence.
-   Sur un jardin où la nourrice est entre le robinet et les zones, les deux
-   trajets se valent en Manhattan ; ailleurs, l'écart se dira quand il aura
-   tranché.
+   question qui lui a été posée, pas un chiffre changé en silence. **Sa
+   réponse du 19 octobre 2026 : *« ça ne change rien »*** : au nez de robinet
+   comme du robinet à la nourrice, le calcul de perte de charge est celui du
+   compteur, avec la pression et le débit qu'il mesure au robinet. L'amenée et
+   le trajet du croquis restent comptés ; la proposition de retirer l'amenée au
+   nez de robinet est écartée, et `test-regles-du-patron.ts` tient l'égalité
+   des trois calculs.
 
 4. **La pile s'aligne sur l'axe de vissage** (`MontageAuRobinet.tsx`) : chaque
    photo dit où tombe son filetage (`axe`, mesuré sur la photo), et ce point se

@@ -7,6 +7,7 @@ import { etatDuCroquis } from "../src/lib/arrosage/croquis-complet";
 import { longueurDeLAmenee } from "../src/lib/arrosage/geometrie-croquis";
 import { debitRetenu } from "../src/lib/arrosage/mesure-debit";
 import { ROBINET, departDeLOutil, departsPossibles, voiesManquantes } from "../src/lib/arrosage/robinet";
+import { calculerEtDessiner } from "../src/lib/arrosage/le-plan";
 
 /**
  * LES RÈGLES DU PATRON, AVEC SES CHIFFRES — et un rouge ici ne se réécrit JAMAIS.
@@ -558,6 +559,24 @@ regle("18 octobre 2026", "« dès qu'il y a des arroseurs, ça sera forcément d
   // Quatre réseaux, une voie : on garde le nez de robinet, et la phrase dit le manque.
   exige(ROBINET.programmateur.voies === 1 && voiesManquantes(pourLeDepart, "nez") === 3, `le Solem BL-NR a ${ROBINET.programmateur.voies} voie, il en manque ${voiesManquantes(pourLeDepart, "nez")} sur 4 réseaux`);
   exige(voiesManquantes(pourLeDepart, "nourrice") === 0, "avec la nourrice, aucune voie ne manque");
+});
+
+regle("19 octobre 2026", "« au nez de robinet comme du robinet à la nourrice, le calcul de perte de charge se fait comme au compteur, avec la pression et le débit qu'on te donne : ça ne change rien »", () => {
+  // Le même jardin, le même seau et la même pression, le robinet en 14, 6 : la
+  // pression au dernier arroseur est la même dans les deux montages, et c'est
+  // celle d'un piquage au compteur avec la même mesure. L'amenée du croquis
+  // reste comptée au nez de robinet : sa proposition de la retirer, il l'a écartée.
+  const zones = [
+    { id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
+    { id: 2, type: "gazon", nom: "Pelouse avant", x: 14, y: 0, L: 8, l: 8 },
+  ];
+  const base = { seau: 10, temps: 18, pression: 3, regardVersZone: 6, amenee: 9, zones, nourrice: { x: 13, y: 6 }, piquage: { x: 14, y: 6 } };
+  const nez = calculerEtDessiner({ ...base, compteur: "non", robinet: { montage: "nez", double: false, depart: null } }, null).plan;
+  const nourrice = calculerEtDessiner({ ...base, compteur: "non", robinet: { montage: "nourrice", double: false, depart: null } }, null).plan;
+  const compteur = calculerEtDessiner({ ...base, compteur: "oui" }, null).plan;
+  exige(nez.pressionAuxArroseurs === nourrice.pressionAuxArroseurs, `${nez.pressionAuxArroseurs} bar au nez de robinet, ${nourrice.pressionAuxArroseurs} avec la nourrice : il veut le même calcul`);
+  exige(nez.pressionAuxArroseurs === compteur.pressionAuxArroseurs, `${nez.pressionAuxArroseurs} bar au robinet, ${compteur.pressionAuxArroseurs} au compteur, à mesure égale : il veut le calcul du compteur`);
+  exige(nez.debitDisponible === compteur.debitDisponible, "le débit retenu est celui de la mesure, au robinet comme au compteur");
 });
 
 console.log(`\n${failed === 0 ? "✅" : "❌"} Les règles du patron — ${passed} tenue(s), ${failed} rompue(s).`);
