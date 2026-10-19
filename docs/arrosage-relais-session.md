@@ -419,5 +419,5 @@ Ses demandes : *« dans Réglages une catégorie mes fournisseurs, valable pour 
 | ce que la planche propose | deux rubriques de PRIX D'ACHAT (fournisseurs : articles ; partenaires : main d'œuvre à l'heure, à la journée, au mètre, au forfait), un coefficient de marge, et l'ordre de recherche du devis : 1) son tarif de vente ; 2) sinon un prix d'achat × son coefficient, la source écrite sous la ligne ; 3) sinon « à chiffrer » |
 | aucune donnée inventée | tout est vide sauf Aqua Plus et France Bonhomme, qu'il a nommés |
 | **deux marges** | *« oui, deux marges »* (19 octobre) : une sur le matériel, une sur la main d'œuvre des partenaires ; faites sur la planche |
-| question ouverte | le tarif de vente passe-t-il avant le prix d'achat × marge ? (« pas compris », un exemple lui est donné le 19 octobre) |
+| **ordre des prix, tranché** | *« le A »* (19 octobre 2026), sur l'exemple du sac de ciment (vente 12 € ; achat 8 € × 1,30 = 10,40 €) : **son prix de vente (Réglages > Tarifs) passe TOUJOURS en premier** ; le prix d'achat × marge ne sert qu'aux articles sans prix de vente ; sinon « à chiffrer » |
 | ⚠ pas un lot arrosage | la planche vit ici faute de mieux ; codée, elle touche `src/app/reglages` et la proposition de prix (gravité ARGENT : niveau 3) |
