@@ -78,6 +78,11 @@
   jusqu'aux bords du terrain (dessinCotes), refaites à chaque pas du doigt. Et
   le doigt avance par PAS (une proposition de nous) : 10 cm sur tout le
   terrain, 5 cm à 1/200, 1 cm à 1/100, pour que les cotes tombent juste.
+  SES OUI DU 19 OCTOBRE : le pas du doigt (« oui »), et l'échelle à choisir
+  « 2, 3 centièmes, qu'on puisse changer le chiffre 1 » : 1/200, puis 1/100 à
+  5/100 (son plan du Vésinet est au 2/100) ; et la MAISON (« oui, tu peux
+  l'ajouter ») : un rectangle qui ne s'arrose pas, ne part pas au calcul, et
+  coupe la zone qu'il chevauche comme les dalles qu'on n'arrose pas.
   Ni les arbres ni les dalles qu'on arrose n'entrent au calcul : ils partent dans deux
   champs NEUFS (arbres, dalles), et l'écran le dit.
 
@@ -113,7 +118,9 @@
     gazon: { nom: "Pelouse", forme: "surface" },
     potager: { nom: "Potager", forme: "surface" },
     massif: { nom: "Massif", forme: "surface" },
-    haie: { nom: "Haie", forme: "surface" }
+    haie: { nom: "Haie", forme: "surface" },
+    // Elle ne s'arrose pas : elle se place, elle coupe, elle ne part pas au calcul.
+    maison: { nom: "Maison", forme: "obstacle" }
   };
   var POINTS = {
     nourrice: { nom: "La nourrice", consigne: "Touchez l’endroit de la nourrice." },
@@ -218,12 +225,12 @@
   /* Une rangée qu'on n'arrose pas coupe la zone qu'elle traverse : au-dessus,
      au-dessous, puis à gauche et à droite de la bande. Les morceaux de moins
      d'un centimètre ne sont pas des zones. */
-  function morceaux(z) {
-    var parts = [{ x: z.x, y: z.y, w: z.w, h: z.h }];
-    var e = enU(0.01), aimant = enU(AIMANT_M);
+  /* Ce qui coupe une zone : les rangées qu'on n'arrose pas, et les maisons. */
+  function coupeurs(z) {
+    var aimant = enU(AIMANT_M), liste = [];
     etat.dalles.forEach(function (d) {
       if (d.arrosees !== false) return;
-      var b = bandeDesDalles(d), suite = [];
+      var b = bandeDesDalles(d);
       // **L'aimant (une proposition, pas sa règle)** : le doigt ne touche jamais
       // le bord exact d'une pelouse. Un bout de rangée qui s'arrête à moins de
       // 50 cm du bord de la zone va jusqu'au bord, au lieu de laisser une
@@ -237,10 +244,27 @@
         var bas = z.y + z.h - (b.y + b.h);
         if (bas > 0 && bas < aimant) b.h += bas;
       }
+      liste.push({ b: b, nom: "les dalles" });
+    });
+    etat.zones.forEach(function (m) {
+      if (m.type === "maison" && m !== z) liste.push({ b: { x: m.x, y: m.y, w: m.w, h: m.h }, nom: m.nom || "la maison" });
+    });
+    return liste;
+  }
+
+  /* Les morceaux de la zone une fois retirés ses coupeurs ; ceux qui la
+     touchent vraiment sont rendus avec, pour le dire à l'écran. */
+  function morceaux(z) {
+    var parts = [{ x: z.x, y: z.y, w: z.w, h: z.h }];
+    if (z.type === "maison") return parts;
+    var e = enU(0.01), touches = [];
+    coupeurs(z).forEach(function (c) {
+      var b = c.b, suite = [], coupe = false;
       parts.forEach(function (p) {
         var ix1 = Math.max(p.x, b.x), iy1 = Math.max(p.y, b.y);
         var ix2 = Math.min(p.x + p.w, b.x + b.w), iy2 = Math.min(p.y + p.h, b.y + b.h);
         if (ix2 - ix1 <= e || iy2 - iy1 <= e) { suite.push(p); return; }
+        coupe = true;
         [
           { x: p.x, y: p.y, w: p.w, h: iy1 - p.y },
           { x: p.x, y: iy2, w: p.w, h: p.y + p.h - iy2 },
@@ -249,7 +273,9 @@
         ].forEach(function (q) { if (q.w > e && q.h > e) suite.push(q); });
       });
       parts = suite;
+      if (coupe && touches.indexOf(c.nom) < 0) touches.push(c.nom);
     });
+    parts.coupeurs = touches;
     return parts;
   }
 
@@ -328,7 +354,9 @@
     svg.appendChild(el("text", { x: t.w / 2, y: -dy, "text-anchor": "middle", "font-size": 3.4, fill: etat.terrain.L ? "var(--atlas-inkSoft)" : "var(--atlas-alerte)" }, etat.terrain.L ? cote(etat.terrain.L) + " m" : "? m"));
     svg.appendChild(el("text", { x: -dy, y: t.h / 2, "text-anchor": "middle", "font-size": 3.4, fill: etat.terrain.l ? "var(--atlas-inkSoft)" : "var(--atlas-alerte)", transform: "rotate(-90 " + -dy + " " + t.h / 2 + ")" }, etat.terrain.l ? cote(etat.terrain.l) + " m" : "? m"));
 
-    etat.zones.forEach(function (z) { svg.appendChild(dessinZone(z)); });
+    // Les maisons par-dessus les zones qu'elles coupent.
+    etat.zones.forEach(function (z) { if (z.type !== "maison") svg.appendChild(dessinZone(z)); });
+    etat.zones.forEach(function (z) { if (z.type === "maison") svg.appendChild(dessinZone(z)); });
     // Les morceaux d'une zone coupée par des dalles, en pointillé : ce sont eux
     // que le calcul reçoit, et le long d'eux qu'il posera les arroseurs.
     etat.zones.forEach(function (z) {
@@ -351,6 +379,7 @@
   }
 
   function remplissage(type) {
+    if (type === "maison") return "color-mix(in srgb, var(--atlas-muted) 42%, var(--atlas-card))";
     if (type === "gazon") return "color-mix(in srgb, var(--atlas-vertPale) 75%, var(--atlas-card))";
     if (type === "haie") return "color-mix(in srgb, var(--atlas-plein) 34%, var(--atlas-card))";
     if (type === "potager") return "color-mix(in srgb, var(--atlas-orClair) 38%, var(--atlas-card))";
@@ -489,7 +518,7 @@
 
   /* Le doigt avance par pas, pour que les cotes tombent juste : 10 cm sur tout
      le terrain, 5 cm à 1/200, 1 cm à 1/100 (une proposition de nous). */
-  function pasDuDoigt() { return etat.echelle === 100 ? 0.01 : etat.echelle === 200 ? 0.05 : 0.1; }
+  function pasDuDoigt() { return !etat.echelle ? 0.1 : etat.echelle > 100 ? 0.05 : 0.01; }
   function auPas(u) {
     if (MODE !== "B" || !cote_du_carre()) return u;
     var pas = pasDuDoigt();
@@ -1060,6 +1089,7 @@
     // arroseurs aux angles et le long des bords, donc le long des dalles.
     var zones = [];
     etat.zones.forEach(function (z) {
+      if (z.type === "maison") return;
       var haie = z.type === "haie";
       if (!mesuree(z)) reserves.push("« " + nomDe(z) + " » n’a pas ses métrés");
       var parts = morceaux(z);
@@ -1119,7 +1149,7 @@
     }
     e.manque.forEach(function (m) { ligne(C.LIBELLES[m].titre, "rouge"); });
     etat.zones.forEach(function (z) {
-      if (!mesuree(z)) ligne("Les métrés de " + nomDe(z) + " manquent, cette zone n’entre pas dans le plan.");
+      if (z.type !== "maison" && !mesuree(z)) ligne("Les métrés de " + nomDe(z) + " manquent, cette zone n’entre pas dans le plan.");
     });
     var debordent = etat.zones.filter(function (z) { return cotesTropGrandes(z).length > 0; });
     debordent.forEach(function (z) {
@@ -1127,7 +1157,12 @@
     });
     etat.zones.forEach(function (z) {
       var n = morceaux(z).length;
-      if (n > 1) ligne("Les dalles coupent " + nomDe(z) + " en " + n + " parts.");
+      if (z.type === "maison") return;
+      var qui = morceaux(z).coupeurs.join(" et ");
+      var sujet = qui.charAt(0).toUpperCase() + qui.slice(1);
+      var verbe = morceaux(z).coupeurs.length > 1 || qui === "les dalles" ? "coupent" : "coupe";
+      if (n === 0) ligne(sujet + " " + (verbe === "coupe" ? "couvre " : "couvrent ") + nomDe(z) + " entièrement, cette zone n’entre pas dans le plan.");
+      else if (n > 1) ligne(sujet + " " + verbe + " " + nomDe(z) + " en " + n + " parts.");
     });
     var faire = $("faire");
     faire.hidden = !e.complet || debordent.length > 0;
