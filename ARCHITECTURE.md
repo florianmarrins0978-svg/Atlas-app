@@ -35255,3 +35255,27 @@ codée le 19 (migration 0132).
 8. **« Je dicte », sur la planche, n'est pas dans les réglages** : c'était la
    démonstration du devis qui prend ses prix ici. Le devis, c'est celui qu'il
    dicte déjà.
+
+## §473 : Le plan d'arrosage prend les prix d'achat par la référence, et un devis se reconnaît pareil
+
+Ses planches du 18 octobre 2026, codées le 19.
+
+1. **La référence du fournisseur rapproche, jamais le nom.** `prix_achat.reference`
+   (migration 0132) porte ce qui est imprimé sur son devis ; une pièce du plan
+   prend un prix si sa référence (`referenceFournisseur`, la même que le
+   message au fournisseur) est la même, espaces et casse mis à part, ou à défaut
+   si le nom est identique. Deux raccords voisins ne s'échangent pas leur prix.
+2. **Ce sont des prix d'ACHAT, sans marge** : le total dit ce que le matériel
+   coûte, « à titre indicatif », jamais 0 € quand rien n'est chiffré.
+3. **Un devis importé se reconnaît par la même règle** (`reconnaitreLeDevis`) ;
+   une ligne sans pièce ou sans quantité lisible va dans « Pas dans le
+   catalogue », il choisit. La nourrice vient de `composerNourrice` et se
+   dessine par le `Dessin` de `NourriceEclatee`, exporté avec ses poses
+   grisées : un seul dessin. Le départ en PEHD n'est pas une pièce de la fiche,
+   il ne se grise pas.
+4. **Une seule lecture de devis pour les réglages et le plan**
+   (`lireDevisFournisseur`). Sur le plan, rien du fichier n'est gardé.
+5. **Rien ne se demande deux fois** : la somme des groupes et la référence
+   (`sommeDesGroupes`, `referenceFournisseur`) sont sorties de
+   `messageAuFournisseur`, et servent au message, aux prix et à la demande
+   enregistrée.

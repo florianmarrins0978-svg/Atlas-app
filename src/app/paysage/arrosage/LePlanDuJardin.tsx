@@ -5,7 +5,7 @@ import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import type { EtatPlan } from "./actions";
 import type { ParametresPlan } from "@/lib/arrosage/consignes";
 import { calculerEtDessiner, montageDuPlan } from "@/lib/arrosage/le-plan";
-import { composerLesPostes, groupeNourrice, groupesDeLaListe, liaisonsDuReseau, messageAuFournisseur, titreDuDepart, zoneGoutteDuReseau, type Maillon, type Poste, type Robinet } from "@/lib/arrosage/postes";
+import { composerLesPostes, groupeNourrice, groupesDeLaListe, liaisonsDuReseau, messageAuFournisseur, lignesDeLaDemande, titreDuDepart, zoneGoutteDuReseau, type Maillon, type Poste, type Robinet } from "@/lib/arrosage/postes";
 import {
   RETOUCHES_VIERGES, ajouter, chaineRemettre, chaineRemplacer, chaineRevenir, chaineSupprimer, clesAChanger, ligneRemettre, ligneSupprimer,
   nourriceRemettre, nourriceRemplacer, nourriceSupprimer, oublierLeDepart, remettre, remplacer, revenir, supprimer, type PieceChoisie, type Retouches,
@@ -17,6 +17,7 @@ import NourriceEclatee from "./NourriceEclatee";
 import PiecesDuReseau, { Chips } from "./PiecesDuReseau";
 import MontageAuRobinet from "./MontageAuRobinet";
 import ListeDesPieces from "./ListeDesPieces";
+import LeMaterielDuPlan from "./LeMaterielDuPlan";
 import MotsDuPlan from "./MotsDuPlan";
 import Vignette from "./Vignette";
 import { ChoisirUnePiece, FeuilleFournisseur, MenuPiece, type Menu } from "./FeuillePiece";
@@ -424,6 +425,9 @@ export default function LePlanDuJardin({
         )}
       </section>
 
+      {/* Les prix d'achat de ses fournisseurs à côté des pièces, et le total indicatif (sa planche du 18 octobre 2026). */}
+      <LeMaterielDuPlan groupes={groupes} materiel={plan.materiel} />
+
       <section className="mt-[26px]">
         <span className={`mx-[22px] block ${libelleCaps}`} style={{ color: colors.or }}>Les mots du plan</span>
         <MotsDuPlan texte={texteDesMots} />
@@ -431,7 +435,13 @@ export default function LePlanDuJardin({
 
       {menu &&<MenuPiece key={menu.titre + menu.nombre} menu={menu} onFermer={() => setMenu(null)} />}
       {feuille && <ChoisirUnePiece titre={feuille.titre} categorie={feuille.categorie} onChoix={feuille.onChoix} onFermer={() => setFeuille(null)} />}
-      {fournisseur && <FeuilleFournisseur message={messageAuFournisseur(groupes, plan.materiel)} onFermer={() => setFournisseur(false)} />}
+      {fournisseur && (
+        <FeuilleFournisseur
+          message={messageAuFournisseur(groupes, plan.materiel)}
+          onFermer={() => setFournisseur(false)}
+          demande={{ titre: "Plan d’arrosage", lignes: lignesDeLaDemande(groupes, plan.materiel) }}
+        />
+      )}
     </div>
   );
 }

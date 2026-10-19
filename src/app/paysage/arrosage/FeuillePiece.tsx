@@ -5,6 +5,8 @@ import { colors, font } from "@/lib/design-tokens";
 import { CATEGORIES, piecesVisibles, type Choix } from "@/lib/arrosage/choix-de-pieces";
 import { photoDe } from "@/lib/arrosage/photos";
 import type { PieceChoisie } from "@/lib/arrosage/retouches";
+import type { LigneDemandeEnvoyee } from "@/server/db/schema";
+import EnregistrerLaDemande from "./EnregistrerLaDemande";
 
 /**
  * LES DEUX FEUILLES QUI MONTENT DU BAS — le menu d'une pièce, et le choix d'une
@@ -89,7 +91,7 @@ export function ChoisirUnePiece({
   onChoix,
   onFermer,
 }: {
-  titre: "Changer la pièce" | "Ajouter une pièce";
+  titre: "Changer la pièce" | "Ajouter une pièce" | "Choisir la pièce";
   categorie: string;
   onChoix: (piece: PieceChoisie) => void;
   onFermer: () => void;
@@ -160,8 +162,18 @@ export function ChoisirUnePiece({
 }
 
 /** Le message au fournisseur : il le lit, le copie, ou l'envoie par le partage du téléphone. */
-export function FeuilleFournisseur({ message, onFermer }: { message: string; onFermer: () => void }) {
+export function FeuilleFournisseur({
+  message,
+  onFermer,
+  demande,
+}: {
+  message: string;
+  onFermer: () => void;
+  /** Ce qui s'enregistre chez le fournisseur choisi quand la liste part (`EnregistrerLaDemande`). */
+  demande?: { titre: string; lignes: LigneDemandeEnvoyee[] };
+}) {
   const [texte, setTexte] = useState(message);
+  const [parti, setParti] = useState(0);
   const [copie, setCopie] = useState<"Copier" | "Copié" | "Sélectionné">("Copier");
   const peutPartager = typeof navigator !== "undefined" && typeof navigator.share === "function";
   return (
@@ -177,10 +189,14 @@ export function FeuilleFournisseur({ message, onFermer }: { message: string; onF
         className="mt-3 block min-h-[300px] w-full resize-y rounded-[12px] border-0 p-3 text-[16px] leading-[1.5]"
         style={{ backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
       />
+      {demande && <EnregistrerLaDemande titre={demande.titre} lignes={demande.lignes} parti={parti} />}
       <div className="mt-3 flex gap-2">
         <button
           type="button"
-          onClick={() => navigator.clipboard.writeText(texte).then(() => setCopie("Copié"), () => setCopie("Sélectionné"))}
+          onClick={() => {
+            setParti((n) => n + 1);
+            navigator.clipboard.writeText(texte).then(() => setCopie("Copié"), () => setCopie("Sélectionné"));
+          }}
           className="min-h-[52px] flex-1 rounded-full text-[15.5px]"
           style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.card, color: colors.ink }}
         >
@@ -189,7 +205,10 @@ export function FeuilleFournisseur({ message, onFermer }: { message: string; onF
         {peutPartager && (
           <button
             type="button"
-            onClick={() => navigator.share({ text: texte })}
+            onClick={() => {
+              setParti((n) => n + 1);
+              navigator.share({ text: texte });
+            }}
             className="min-h-[52px] flex-1 rounded-full border-0 text-[15.5px]"
             style={{ backgroundColor: colors.ink, color: colors.card }}
           >

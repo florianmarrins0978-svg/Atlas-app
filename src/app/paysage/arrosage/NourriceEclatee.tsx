@@ -136,7 +136,14 @@ function nomCatalogue(ref: string): string {
 }
 
 /** Le dessin lui-même : un SVG en pixels de dessin, mis à l'échelle par sa largeur. */
-function Dessin({ n, couleurs }: { n: NourriceComposee; couleurs: string[] }) {
+/**
+ * Le dessin seul. **`absentes`** grise les poses qu'un devis importé n'apporte
+ * pas (sa planche du 18 octobre 2026, `appli/arrosage-import-devis.html`) :
+ * c'est le même dessin, jamais un second.
+ */
+const GRISEE = { filter: "grayscale(1)", opacity: 0.28 } as const;
+
+export function Dessin({ n, couleurs, absentes }: { n: NourriceComposee; couleurs: string[]; absentes?: ReadonlySet<number> }) {
   const encre = "#4a4a44";
   return (
     <svg
@@ -163,7 +170,7 @@ function Dessin({ n, couleurs }: { n: NourriceComposee; couleurs: string[] }) {
           if (f?.demi) transforms.push("rotate(180)");
           if (f?.miroir) transforms.push("scale(-1 1)");
           return (
-            <g key={i}>
+            <g key={i} style={absentes?.has(i) ? GRISEE : undefined}>
               <g transform={transforms.join(" ")}>
                 <g transform={`translate(${-p.w / 2} ${-p.h / 2})`}>{fenetre(p.w, p.h)}</g>
               </g>
@@ -172,7 +179,7 @@ function Dessin({ n, couleurs }: { n: NourriceComposee; couleurs: string[] }) {
           );
         }
         return (
-          <g key={i}>
+          <g key={i} style={absentes?.has(i) ? GRISEE : undefined}>
             <g transform={`translate(${p.x} ${p.y}) rotate(${p.angle}) scale(${p.echelle}) translate(${-p.ax} ${-p.ay})`}>{fenetre(cw, ch)}</g>
             <Badge n={p.numero} x={p.x + 24} y={p.y + p.L / 2} />
           </g>

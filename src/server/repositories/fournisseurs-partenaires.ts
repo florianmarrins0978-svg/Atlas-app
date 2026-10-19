@@ -183,3 +183,38 @@ export async function prixAchatCandidats(ctx: Ctx): Promise<PrixAchatCandidat[]>
     }));
   });
 }
+
+/**
+ * Ses fournisseurs et tous leurs prix, avec la référence : de quoi chiffrer les
+ * pièces d'un plan d'arrosage (`src/lib/arrosage/prix-du-plan.ts`). Les
+ * partenaires n'y sont pas : ils vendent de la main d'œuvre, pas des pièces.
+ */
+export async function prixDesFournisseursPourLePlan(ctx: Ctx): Promise<{
+  fournisseurs: { id: string; nom: string }[];
+  achats: { societeId: string; societeNom: string; reference: string | null; nom: string; prixHt: string; releveLe: string }[];
+}> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const societes = await tx
+      .select({ id: societesAchat.id, nom: societesAchat.nom })
+      .from(societesAchat)
+      .where(and(eq(societesAchat.rubrique, "fournisseur"), isNull(societesAchat.deletedAt)))
+      .orderBy(asc(societesAchat.nom));
+    if (societes.length === 0) return { fournisseurs: [], achats: [] };
+    const prix = await tx
+      .select()
+      .from(prixAchat)
+      .where(and(inArray(prixAchat.societeId, societes.map((s) => s.id)), isNull(prixAchat.deletedAt)));
+    const nomDe = new Map(societes.map((s) => [s.id, s.nom]));
+    return {
+      fournisseurs: societes,
+      achats: prix.map((p) => ({
+        societeId: p.societeId,
+        societeNom: nomDe.get(p.societeId) ?? "",
+        reference: p.reference,
+        nom: p.nom,
+        prixHt: p.prixHt,
+        releveLe: p.releveLe,
+      })),
+    };
+  });
+}

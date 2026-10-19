@@ -10,6 +10,15 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## ARROSAGE, PRIX ET DEVIS : branche `claude/arrosage-prix-et-devis` (19 octobre 2026)
+
+Elle part du lot fournisseurs, pas de la branche aquaplus de son PC (absente
+de GitHub). **Quand il poussera sa branche locale**, fusionner `main` puis
+celle-ci : les fichiers neufs ne se heurtent à rien ; `ArrosageClient.tsx`,
+`LePlanDuJardin.tsx`, `NourriceEclatee.tsx`, `FeuillePiece.tsx`, `postes.ts`
+et `photos.ts` portent de petits ajouts à reporter si l'autre session les a
+bougés. **Non éprouvé ici** : la lecture d'un vrai devis par l'IA.
+
 ## FOURNISSEURS ET PARTENAIRES : branche `claude/reglages-fournisseurs-partenaires` (19 octobre 2026)
 
 **Ce qui est fait** : sa planche validée est l'écran `/reglages/fournisseurs`

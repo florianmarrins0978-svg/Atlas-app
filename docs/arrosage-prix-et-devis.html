@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Arrosage : les prix des fournisseurs et l'import d'un devis (19 octobre 2026)</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="arrosage--les-prix-des-fournisseurs-et-limport-dun-devis-19-octobre-2026">Arrosage : les prix des fournisseurs et l'import d'un devis (19 octobre 2026)</h1>
+<p>Branche <code>claude/arrosage-prix-et-devis</code>, <strong>pas encore sur <code>main</code></strong>. Elle part du lot « Fournisseurs et partenaires », dont elle lit les prix.</p>
+<h2 id="pourquoi-pas-sur-ta-branche-aquaplus">Pourquoi pas sur ta branche aquaplus</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>lot/catalogue-aquaplus-corrections</code> n'existe que sur ton PC : elle n'est pas sur GitHub, et aucune session de ton PC n'était joignable. J'ai donc parti de <code>main</code> (qui contient ce lot jusqu'au 19 octobre, 9 h) et des planches publiées. Le neuf vit dans des fichiers neufs ; les fichiers de l'autre session ne portent que de petits ajouts (liste dans <code>HANDOVER.md</code>).</p>
+<h2 id="ce-qui-est-codé">Ce qui est codé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Planche</th>
+<th>Ce qui est fait</th>
+<th>Où</th>
+</tr></thead><tbody>
+<tr>
+<td>Les prix sur le plan</td>
+<td>« Le matériel du plan » : le prix d'achat à côté de chaque pièce, « Le moins cher » ou un fournisseur, le total indicatif hors taxes (la C), les pièces sans prix comptées à part</td>
+<td><code>LeMaterielDuPlan.tsx</code>, <code>prix-du-plan.ts</code></td>
+</tr>
+<tr>
+<td>Importer un devis</td>
+<td>« Par où commencer » (croquis, ou devis en photo ou PDF), les pièces reconnues, « Pas dans le catalogue », la nourrice composée au nombre d'électrovannes avec ce qui manque grisé, « Ajouter ce qui manque », « Ajouter une pièce », « Envoyer au fournisseur », « Il manque le croquis »</td>
+<td><code>DepuisUnDevis.tsx</code>, <code>devis-du-plan.ts</code></td>
+</tr>
+<tr>
+<td>Demandes envoyées</td>
+<td>la liste envoyée (plan ou complément de devis) s'enregistre chez le fournisseur choisi</td>
+<td><code>EnregistrerLaDemande.tsx</code></td>
+</tr>
+<tr>
+<td>Photos</td>
+<td>les 42 photos du 18 et 19 octobre copiées dans <code>public/arrosage-photos</code>, 99 références de plus dans <code>photos.ts</code></td>
+<td></td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-a-été-fait-autrement-et-pourquoi">Ce qui a été fait autrement, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>Une pièce prend un prix par sa référence</strong>, pas par son nom : un nom voisin ferait prendre le prix d'un autre raccord.</li>
+<li><strong>Le fournisseur se choisit</strong> dans « Au fournisseur » : la planche écrivait Aqua Plus en dur.</li>
+<li><strong>« Garder la liste sans plan » la garde sur l'écran</strong>, comme le plan, qui ne s'enregistre nulle part encore. À toi de dire où la garder.</li>
+<li><strong>« Par où commencer » se pose sous « Le piquage se fait »</strong>, qui ouvrait déjà l'écran.</li>
+</ul>
+<h2 id="ce-qui-est-éprouvé">Ce qui est éprouvé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Contrôle</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-prix-du-plan</code> (référence, moins cher, total, jamais 0 €)</td>
+<td>5 sur 5</td>
+</tr>
+<tr>
+<td><code>test-devis-du-plan</code> (reconnaissance, nourrice 3 voies, message)</td>
+<td>3 sur 3</td>
+</tr>
+<tr>
+<td>pièces posées, règles du patron (37), cloisonnement, pansements, code mort, couches, tirets, flèches, chartes, boutons</td>
+<td>verts</td>
+</tr>
+<tr>
+<td>types, lint</td>
+<td>verts</td>
+</tr>
+<tr>
+<td>l'écran réel, regardé en Origine et Nuit : « Par où commencer », le plan dessiné au doigt, « Le matériel du plan » (141,70 €, 23 pièces sans prix sur 26), « Au fournisseur » et la demande enregistrée en base</td>
+<td>vu</td>
+</tr>
+<tr>
+<td>le montage d'un devis, rendu à part : apporté en couleur, manquant grisé</td>
+<td>vu</td>
+</tr>
+</tbody></table></div>
+<p><strong>Pas vérifiable ICI</strong> : la lecture d'un vrai devis par l'IA. Ici l'écran dit « Aucun fournisseur de lecture d'image n'est configuré. Le devis ne sera pas lu. » À jouer sur ton espace.</p>
+<h2 id="ce-qui-reste">Ce qui reste</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li>Pousser ta branche aquaplus locale, puis fusionner (voir <code>HANDOVER.md</code>).</li>
+<li>La batterie entière, après le lot A.</li>
+<li>Où garder « la liste sans plan ».</li>
+</ol>
+</main>
+</body>
+</html>

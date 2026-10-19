@@ -7,6 +7,7 @@ import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import LePlanDuJardin from "./LePlanDuJardin";
 import DiscuterLePlan from "./DiscuterLePlan";
 import DessinerLePlan from "./DessinerLePlan";
+import DepuisUnDevis from "./DepuisUnDevis";
 import type { ParametresPlan } from "@/lib/arrosage/consignes";
 import { ACCEPT_PHOTOS } from "@/lib/exif";
 
@@ -227,6 +228,9 @@ export default function ArrosageClient({
           </div>
         )}
       </div>
+
+      {/* ─── Par où commencer : le croquis, ou un devis déjà fait (sa planche du 18 octobre 2026) ─── */}
+      <DepuisUnDevis />
 
       {/* ─── Le croquis ───────────────────────────────────────────────────── */}
       <div className="mx-[22px] mt-5 rounded-[14px] px-[17px] py-[18px]" style={{ backgroundColor: colors.card }}>

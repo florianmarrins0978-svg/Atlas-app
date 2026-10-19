@@ -8,6 +8,22 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-19
 
+- **Le plan d'arrosage porte les prix de ses fournisseurs** (sa planche
+  `appli/arrosage-prix-fournisseurs.html`) : « Le matériel du plan », le prix
+  d'achat à côté de chaque pièce, « Le moins cher » ou un fournisseur, et le
+  total indicatif hors taxes (« la C »). Une pièce prend son prix par la
+  référence du fournisseur, jamais par un nom voisin (`prix-du-plan.ts`).
+- **Partir d'un devis fournisseur** (sa planche `appli/arrosage-import-devis.html`) :
+  « Par où commencer », le devis lu par l'IA, ses pièces reconnues par leur
+  référence, la nourrice validée composée au nombre de ses électrovannes
+  (`composerNourrice`, ce qui manque grisé), ce qui manque à ajouter, le
+  message au fournisseur, et « Il manque le croquis » (`devis-du-plan.ts`).
+- **La liste envoyée s'enregistre chez le fournisseur choisi**, dans Réglages,
+  Demandes envoyées. **Les 42 photos ajoutées le 18 et le 19 octobre** sont
+  servies depuis `public/arrosage-photos`, et 99 références de plus ont leur
+  photo dans l'écran. Sans lecteur d'images, l'écran le dit au lieu de
+  « reprenez la photo ».
+
 - **Réglages, « Fournisseurs et partenaires »** (sa planche validée,
   `appli/reglages-fournisseurs-partenaires.html`) : ce qu'il PAIE, à part de ce
   qu'il vend. Ses fournisseurs et ses partenaires, rangés de A à Z et cherchés

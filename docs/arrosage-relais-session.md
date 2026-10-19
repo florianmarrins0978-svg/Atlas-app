@@ -434,3 +434,13 @@ plus récente que la copie d'`appli/` sur `main`). Détail :
 été touché.** Le lot B (import d'un devis et prix sur le plan) reste à coder ;
 il prendra ses prix dans ces tables (`prixAchatCandidats`, `lireDevisFournisseur`,
 `enregistrerDemande`).
+
+## Le 19 octobre 2026, le lot B est codé : prix des fournisseurs et import d'un devis
+
+Branche `claude/arrosage-prix-et-devis`, partie du lot A (sa branche aquaplus
+locale n'est pas sur GitHub : `HANDOVER.md` dit comment fusionner). Les deux
+planches qui font foi sont les versions publiées le 19
+(https://claude.ai/artifact/C4iQZ5h3E6xgmDZYaKUgnW,
+https://claude.ai/artifact/4perJc9eRHYA3WvVS4bEoQ). Détail :
+`docs/arrosage-prix-et-devis.md`, `ARCHITECTURE.md` §473. **Le Ø32 n'a pas été
+touché.**

@@ -5,6 +5,20 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## ARROSAGE : LES PRIX DES FOURNISSEURS ET L'IMPORT D'UN DEVIS, CODÉS (19 octobre 2026), PAS ENCORE SUR `main`
+
+Branche `claude/arrosage-prix-et-devis`, **partie du lot fournisseurs**
+(`claude/reglages-fournisseurs-partenaires`) dont elle lit les prix d'achat, et
+non de la branche `lot/catalogue-aquaplus-corrections` de son PC, absente de
+GitHub. Écrans : `LeMaterielDuPlan.tsx`, `DepuisUnDevis.tsx`,
+`EnregistrerLaDemande.tsx` ; règles : `prix-du-plan.ts`, `devis-du-plan.ts`.
+Touché chez l'autre session, au plus court : un montage dans
+`ArrosageClient.tsx` et `LePlanDuJardin.tsx`, `Dessin` exporté avec ses poses
+grisées (`NourriceEclatee.tsx`), `FeuilleFournisseur` qui enregistre la
+demande, `sommeDesGroupes` et `referenceFournisseur` sortis de
+`messageAuFournisseur` (`postes.ts`), 99 photos dans `photos.ts`.
+Document de retour : `docs/arrosage-prix-et-devis.md`.
+
 ## FOURNISSEURS ET PARTENAIRES, CODÉ (19 octobre 2026), PAS ENCORE SUR `main`
 
 Branche `claude/reglages-fournisseurs-partenaires`, partie d'`origin/main`
