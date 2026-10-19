@@ -230,6 +230,8 @@
     <div class="haut"><h2 id="fournisseur-titre">Au fournisseur</h2><button class="fermer" type="button" id="fermer-fournisseur">Fermer</button></div>
     <textarea class="message" id="message" aria-label="Le message au fournisseur"></textarea>
     <div class="gestes-message"><button type="button" id="copier">Copier</button><button type="button" id="partager">Envoyer</button></div>
+    <!-- La liste envoyée s'enregistre chez le fournisseur : sa demande du 19 octobre 2026. -->
+    <p class="note" id="enregistree" hidden></p>
   </div>
 </div>
 
@@ -393,8 +395,12 @@
     }
     if (b.id === "ajouter-piece") { $("feuille-titre").textContent = "Ajouter une pièce"; ouvrirChoix("ajout"); return; }
     if (b.dataset.retirer) { extras.splice(Number(b.dataset.retirer), 1); montrer(); return; }
-    if (b.id === "au-fournisseur") { $("message").value = message(); $("partager").hidden = !navigator.share; $("copier").textContent = "Copier"; $("fournisseur").hidden = false; return; }
+    if (b.id === "au-fournisseur") { $("message").value = message(); $("partager").hidden = !navigator.share; $("copier").textContent = "Copier"; $("enregistree").hidden = true; $("fournisseur").hidden = false; return; }
     if (b.id === "fermer-fournisseur") { $("fournisseur").hidden = true; return; }
+    if (b.id === "copier" || b.id === "partager") {
+      $("enregistree").textContent = "Enregistrée chez Aqua Plus, dans Réglages, Demandes envoyées, le " + new Date().toLocaleDateString("fr-FR") + ".";
+      $("enregistree").hidden = false;
+    }
     if (b.id === "copier") {
       navigator.clipboard.writeText($("message").value).then(function () { b.textContent = "Copié"; }, function () { $("message").select(); b.textContent = "Sélectionné"; });
       return;

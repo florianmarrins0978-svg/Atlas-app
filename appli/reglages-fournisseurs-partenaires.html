@@ -4,26 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fournisseurs et partenaires</title>
 <!--
-  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Ses demandes du 18 octobre 2026 :
+  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Ses demandes du 18 et du 19
+  octobre 2026 :
   1. « dans Réglages, une catégorie Mes fournisseurs, valable pour l'arrosage,
      mais aussi pour du matériel ou autre » ;
-  2. « pas que mes fournisseurs, mais aussi mes partenaires : on pourrait rentrer
-     le prix de la main-d'œuvre de nos collègues, et quand on fait le devis, si
-     on doit travailler en collaboration, on connaît déjà leur prix » ;
-  3. « quand je dicte mon devis, je dis que j'ai besoin de 3 sacs de ciment, il
-     faudrait qu'il aille se référer à la rubrique pour prendre le prix ».
+  2. « pas que mes fournisseurs, mais aussi mes partenaires : le prix de la
+     main-d'œuvre de nos collègues » ;
+  3. « quand je dicte mon devis, 3 sacs de ciment, il faudrait qu'il aille se
+     référer à la rubrique pour prendre le prix » ; deux marges ; son prix de
+     vente passe TOUJOURS avant (« le A ») ;
+  4. « dans Point P, il doit y avoir écrit mon catalogue, mes prix : mes
+     fournitures avec leur prix à côté » ; « quand je reçois un devis de mes
+     fournisseurs, une petite base où enregistrer les devis » ; « quand
+     j'envoie ma liste de pièces à Aqua Plus, il faut que ma liste
+     s'enregistre dans une catégorie ».
 
-  CE QUE L'APPLICATION FAIT AUJOURD'HUI, ET CE QUI CHANGE. Un devis dicté va
-  chercher ses prix dans Réglages > Tarifs, ses PRIX DE VENTE
-  (rechercher-tarifs-compatibles.ts, proposition-prix.ts), et une ligne sans
-  prix reste « à chiffrer », jamais à zéro. La planche ajoute deux sources,
-  dans cet ordre : 1) son tarif de vente s'il en a un ; 2) sinon le prix
-  d'achat d'un fournisseur ou d'un partenaire, MULTIPLIÉ PAR SON COEFFICIENT,
-  la source écrite sous la ligne ; 3) sinon « à chiffrer ». Rien ne part sans
-  son geste : l'IA prépare, il valide (PRODUCT.md).
+  DONC CHAQUE FOURNISSEUR ET CHAQUE PARTENAIRE A SA FICHE, EN TROIS ONGLETS :
+  « Mes prix » (ses articles, leur prix et la date), « Devis reçus » (chaque
+  devis donné, sa photo, ce qui en a été lu), « Demandes envoyées » (chaque
+  liste partie chez lui, d'un devis ou du plan d'arrosage). Dans l'outil, un
+  devis lu passe ses prix dans « Mes prix » après son accord, comme
+  ImportTarifs.tsx ; ici, la photo est gardée et l'on tape les prix.
 
   AUCUN PRIX, AUCUN NOM N'EST INVENTÉ : tout est vide, sauf les deux fournisseurs
-  qu'il a nommés. On tape un article et un prix, puis on dicte pour voir.
+  qu'il a nommés. Les boutons sont ceux de l'application (`plein`, en pilule).
 -->
 <style>
 :root,[data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#8a8578;--atlas-rust:#2f3b2f;--atlas-rustDeep:#4f5f4c;--atlas-rustTint:#ece9e1;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#8b6835;--atlas-orSurEncre:#b98b47;--atlas-line:rgba(28,28,26,0.12);--atlas-lineSoft:rgba(28,28,26,0.07);--atlas-chevron:rgba(28,28,26,0.28);--atlas-alerte:#9C3B2E;--atlas-bordeaux:#6E2433;--atlas-vertPale:#b9c6b4;--atlas-plein:#7d9a6d}
@@ -36,43 +40,48 @@
 [data-charte="nuit"]{--atlas-cream:#101210;--atlas-card:#1a1d19;--atlas-ink:#e9e8de;--atlas-inkSoft:#c1c2b6;--atlas-muted:#84887b;--atlas-rust:#e9e8de;--atlas-rustDeep:#acaca4;--atlas-rustTint:#1f211e;--atlas-or:#B98B47;--atlas-orClair:#C9A15E;--atlas-orTexte:#b98b47;--atlas-orSurEncre:#826231;--atlas-line:rgba(233,232,222,0.12);--atlas-lineSoft:rgba(233,232,222,0.07);--atlas-chevron:rgba(233,232,222,0.28);--atlas-alerte:#cd6456;--atlas-bordeaux:#b53b54;--atlas-vertPale:#738b6a;--atlas-plein:#e9e8de}
   *{box-sizing:border-box}
   html{background:var(--atlas-rustTint)}
-  body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint)}
+  body{margin:0;font:16px/1.45 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint)}
+  h1,h2,h3{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;font-weight:400;letter-spacing:-0.01em}
   .entete{max-width:430px;margin:0 auto;padding:18px 16px 6px}
-  .entete h1{margin:0;font:400 24px/1.15 Georgia,"Times New Roman",serif}
+  .entete h1{margin:0;font-size:24px;line-height:1.15}
   .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
   .entete select{margin-top:10px;font-size:16px;padding:8px 10px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink)}
   .ecran{max-width:430px;margin:10px auto 0;background:var(--atlas-cream);padding:6px 0 80px;min-height:100vh}
   .caps{display:block;margin:0;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-or)}
   .bloc{margin:26px 16px 0}
-  .bloc h2{margin:6px 0 0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+  .bloc h2{margin:6px 0 0;font-size:21px;line-height:1.2}
   .sous{margin:4px 0 0;font-size:13.5px;color:var(--atlas-muted)}
   .onglets{display:flex;gap:6px;margin-top:12px}
-  .onglets button{flex:1;min-height:44px;border-radius:999px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:14.5px;cursor:pointer}
-  .onglets button[aria-pressed="true"]{background:var(--atlas-ink);border-color:var(--atlas-ink);color:var(--atlas-card)}
-  .carte{margin-top:10px;border-radius:14px;background:var(--atlas-card);padding:14px 16px;box-shadow:0 0 0 1px var(--atlas-lineSoft)}
-  .carte .tete{display:flex;align-items:baseline;gap:10px}
-  .carte .tete b{flex:1;font-size:16.5px;font-weight:600}
-  .carte .tete small{font-size:13px;color:var(--atlas-muted)}
-  .article{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--atlas-line);font-size:14px}
-  .article:first-of-type{margin-top:8px}
-  .article .n{flex:1;min-width:0}
-  .article .n small{display:block;font-size:12px;color:var(--atlas-muted)}
-  .article .p{flex:none;font-variant-numeric:tabular-nums}
-  .article button{flex:none;border:0;background:none;padding:0 0 0 6px;font-size:13px;color:var(--atlas-alerte);text-decoration:underline;cursor:pointer}
-  .saisie{display:grid;grid-template-columns:1fr 96px 80px;gap:6px;margin-top:10px}
-  .saisie input,.saisie select{min-width:0;border:0;border-radius:9px;padding:10px;font-size:16px;background:var(--atlas-cream);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
-  .saisie input.prix{text-align:right}
-  .petit{margin-top:8px;width:100%;min-height:44px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-cream);color:var(--atlas-ink);font-size:15px;cursor:pointer}
-  .source{display:flex;align-items:center;justify-content:center;margin-top:8px;min-height:46px;border-radius:10px;background:var(--atlas-ink);color:var(--atlas-card);font-size:15px;cursor:pointer}
-  .source input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  .onglets button{flex:1;min-height:44px;border-radius:999px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:14px;padding:0 8px;cursor:pointer}
+  .onglets button[aria-pressed="true"]{background:var(--atlas-plein);border-color:var(--atlas-plein);color:var(--atlas-card)}
+  .societe{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;border:0;border-radius:14px;background:var(--atlas-card);padding:14px 16px;box-shadow:0 0 0 1px var(--atlas-lineSoft);color:var(--atlas-ink);font:inherit;text-align:left;cursor:pointer}
+  .societe b{display:block;font-size:16.5px;font-weight:600}
+  .societe small{display:block;margin-top:2px;font-size:13px;color:var(--atlas-muted)}
+  .societe .chevron{margin-left:auto;font-size:20px;color:var(--atlas-chevron)}
   .nouveau{display:flex;gap:8px;margin-top:10px}
   .nouveau input{flex:1;min-width:0;border:0;border-radius:10px;padding:12px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
-  .nouveau button{flex:none;min-height:46px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:15px;padding:0 14px;cursor:pointer}
+  .nouveau button,.second{flex:none;min-height:46px;border-radius:999px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:15px;padding:0 16px;cursor:pointer}
+  .second{width:100%;margin-top:10px}
   .coef{display:flex;align-items:center;gap:10px;margin-top:10px;border-radius:12px;background:var(--atlas-card);padding:12px 14px;font-size:15px}
   .coef span{flex:1}
   .coef input{width:84px;border:0;border-radius:9px;padding:10px;font-size:16px;text-align:right;background:var(--atlas-cream);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
-  .dictee{display:block;width:100%;min-height:84px;margin-top:10px;border:0;border-radius:12px;padding:12px;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line);resize:vertical}
-  .principal{margin-top:10px;width:100%;min-height:52px;border:0;border-radius:12px;background:var(--atlas-ink);color:var(--atlas-card);font-size:16px;cursor:pointer}
+  .ligne{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--atlas-line);font-size:14.5px}
+  .ligne:first-child{border-top:0}
+  .ligne .n{flex:1;min-width:0}
+  .ligne .n small{display:block;font-size:12.5px;color:var(--atlas-muted)}
+  .ligne .p{flex:none;font-variant-numeric:tabular-nums}
+  .ligne .lien{flex:none;border:0;background:none;padding:0 0 0 6px;font-size:13px;text-decoration:underline;color:var(--atlas-inkSoft);cursor:pointer}
+  .ligne .lien.danger{color:var(--atlas-alerte)}
+  .ligne img.vu{flex:none;width:44px;height:44px;object-fit:cover;border-radius:8px}
+  .liste{margin-top:10px;border-radius:12px;background:var(--atlas-card);padding:2px 14px}
+  .vide{margin:12px 0 0;font-size:14px;color:var(--atlas-muted)}
+  .saisie{display:grid;grid-template-columns:1fr 96px 80px;gap:6px;margin-top:12px}
+  .saisie input,.saisie select{min-width:0;border:0;border-radius:9px;padding:10px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
+  .saisie input.prix{text-align:right}
+  .principal,.source{display:flex;align-items:center;justify-content:center;width:100%;margin-top:10px;min-height:52px;border:0;border-radius:999px;background:var(--atlas-plein);color:var(--atlas-card);font-size:16px;cursor:pointer}
+  .source.creux{background:var(--atlas-card);color:var(--atlas-ink);border:1px solid var(--atlas-line)}
+  .source input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  .dictee{display:block;width:100%;min-height:84px;margin-top:10px;border:0;border-radius:12px;padding:12px;font:16px/1.45 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line);resize:vertical}
   .devis{margin-top:12px;border-radius:12px;background:var(--atlas-card);padding:2px 14px}
   .ld{padding:10px 0;border-top:1px solid var(--atlas-line)}
   .ld:first-child{border-top:0}
@@ -80,36 +89,21 @@
   .ld .haut span{flex:1}
   .ld .haut b{font-weight:600;font-variant-numeric:tabular-nums}
   .ld small{display:block;margin-top:2px;font-size:12.5px;color:var(--atlas-muted)}
-  .ld.vide .haut b{color:var(--atlas-alerte);font-weight:500}
-  .vide-note{margin:10px 0 0;font-size:13.5px;color:var(--atlas-muted)}
+  .ld.a-chiffrer .haut b{color:var(--atlas-alerte);font-weight:500}
+  .feuille{position:fixed;inset:0;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.35)}
+  .feuille .boite{width:100%;max-width:430px;height:90vh;overflow:auto;background:var(--atlas-cream);border-radius:18px 18px 0 0;padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+  .feuille .haut{display:flex;align-items:center}
+  .feuille h2{flex:1;margin:0;font-size:22px;line-height:1.2}
+  .feuille .fermer{border:0;background:none;font-size:14px;text-decoration:underline;color:var(--atlas-inkSoft);cursor:pointer}
+  .apercu{margin-top:12px;border-radius:12px;overflow:hidden;background:var(--atlas-card)}
+  .apercu img{display:block;width:100%;max-height:340px;object-fit:contain;background:#fff}
   [hidden]{display:none !important}
   button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.source:focus-within{outline:2px solid var(--atlas-or);outline-offset:2px}
-  /* AUX COULEURS ET AUX FORMES DE L'APPLICATION, sa demande du 19 octobre 2026 :
-     les polices du téléphone (globals.css, --font-display et --font-body) et les
-     boutons en pilule, relevés sur l'écran du plan rendu avec la vraie feuille
-     de style (scripts/capture-plan-arrosage.ts). */
-  body{font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
-  h1,h2,.feuille h2,.total .m{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;font-weight:400;letter-spacing:-0.01em}
-  .principal,.second,.source,.ajouter,.petit,.gestes-message button,.onglets button,.inconnue .gestes button,.nouveau button,.fournisseur .source{border-radius:999px}
-  /* LES BOUTONS PLEINS DE L'APPLICATION, sa demande du 19 octobre 2026 (« les
-     boutons, mets ceux de l'appli ») : l'aplat plein de design-tokens.ts, vert
-     sauge à plat sur Origine (« la D », 3 septembre 2026), l'accent de chaque
-     charte ailleurs (chartes.ts) ; le texte dessus est surPlein, la couleur des cartes. */
-:root{--atlas-plein:#7d9a6d}
-[data-charte="origine"]{--atlas-plein:#7d9a6d}
-[data-charte="brume"]{--atlas-plein:#22456d}
-[data-charte="pierre"]{--atlas-plein:#1b1d19}
-[data-charte="beurre"]{--atlas-plein:#26221a}
-[data-charte="moka"]{--atlas-plein:#2b241e}
-[data-charte="prune"]{--atlas-plein:#3d1730}
-[data-charte="sylve"]{--atlas-plein:#e6e6da}
-[data-charte="nuit"]{--atlas-plein:#e9e8de}
-  .principal,.source.principale,.gestes-message button:last-child,.onglets button[aria-pressed="true"],.chips button[aria-pressed="true"],.total{background:var(--atlas-plein);border-color:var(--atlas-plein);color:var(--atlas-card)}
 </style>
-<body>
+<body data-charte="origine">
 <div class="entete">
   <h1>Fournisseurs et partenaires</h1>
-  <p>Planche, rien n’est codé. Aucun prix n’est inventé : ajoutez un article et son prix, puis dictez une ligne.</p>
+  <p>Planche, rien n’est codé. Aucun prix n’est inventé : ouvrez un fournisseur, donnez-lui des prix, puis dictez une ligne.</p>
   <select id="charte" aria-label="Charte"><option value="origine">Origine</option><option value="brume">Brume</option><option value="pierre">Pierre</option><option value="beurre">Beurre</option><option value="moka">Moka</option><option value="prune">Prune</option><option value="sylve">Sylve</option><option value="nuit">Nuit</option></select>
 </div>
 <main class="ecran">
@@ -118,22 +112,13 @@
     <h2>Ce que je paie</h2>
     <p class="sous">Prix d’achat, à part de vos prix de vente.</p>
     <div class="onglets" role="group" aria-label="Rubrique">
-      <button type="button" data-onglet="fournisseurs" aria-pressed="true">Mes fournisseurs</button>
-      <button type="button" data-onglet="partenaires" aria-pressed="false">Mes partenaires</button>
+      <button type="button" data-rubrique="fournisseurs" aria-pressed="true">Mes fournisseurs</button>
+      <button type="button" data-rubrique="partenaires" aria-pressed="false">Mes partenaires</button>
     </div>
-    <div id="liste"></div>
+    <div id="societes"></div>
     <div class="nouveau"><input id="nom-nouveau" aria-label="Nom"><button type="button" id="ajouter-societe">Ajouter</button></div>
-
-    <!-- Deux marges, sa réponse du 19 octobre 2026 : « oui, deux marges ». -->
-    <div class="coef">
-      <span>Ma marge sur le matériel</span>
-      <input id="coef" inputmode="decimal" placeholder="1,30" aria-label="Coefficient sur le matériel">
-    </div>
-    <div class="coef">
-      <span>Ma marge sur la main d’œuvre des partenaires</span>
-      <input id="coef-mo" inputmode="decimal" placeholder="1,15" aria-label="Coefficient sur la main d’œuvre des partenaires">
-    </div>
-    <p class="vide-note" id="coef-note"></p>
+    <div class="coef"><span>Ma marge sur le matériel</span><input id="coef" inputmode="decimal" placeholder="1,30" aria-label="Marge sur le matériel"></div>
+    <div class="coef"><span>Ma marge sur la main d’œuvre des partenaires</span><input id="coef-mo" inputmode="decimal" placeholder="1,15" aria-label="Marge sur la main d’œuvre"></div>
   </section>
 
   <section class="bloc">
@@ -145,50 +130,86 @@
   </section>
 </main>
 
+<!-- La fiche d'un fournisseur ou d'un partenaire : ses prix, ses devis, mes demandes. -->
+<div class="feuille" id="fiche" hidden>
+  <div class="boite" role="dialog" aria-modal="true" aria-labelledby="fiche-titre">
+    <div class="haut"><h2 id="fiche-titre"></h2><button class="fermer" type="button" id="fermer">Fermer</button></div>
+    <div class="onglets" role="group" aria-label="Partie de la fiche">
+      <button type="button" data-partie="prix" aria-pressed="true">Mes prix</button>
+      <button type="button" data-partie="devis" aria-pressed="false">Devis reçus</button>
+      <button type="button" data-partie="demandes" aria-pressed="false">Demandes envoyées</button>
+    </div>
+    <div id="partie"></div>
+  </div>
+</div>
+
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var texte = function (s) { var e = document.createElement("span"); e.textContent = s == null ? "" : String(s); return e.innerHTML; };
   var euros = function (n) { return n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; };
   var nombre = function (s) { var n = Number(String(s).replace(/\s/g, "").replace(",", ".")); return String(s).trim() !== "" && isFinite(n) && n >= 0 ? n : null; };
+  var aujourdhui = function () { return new Date().toLocaleDateString("fr-FR"); };
   $("charte").onchange = function () { document.body.dataset.charte = this.value; };
 
-  // Les deux rubriques. Un fournisseur vend des articles, un partenaire de la main d'œuvre.
-  var societes = {
-    fournisseurs: [{ nom: "Aqua Plus", articles: [] }, { nom: "France Bonhomme", articles: [] }],
-    partenaires: []
-  };
+  // Une société : ses prix, les devis qu'elle m'a faits, les demandes que je lui ai envoyées.
+  var nouvelle = function (nom) { return { nom: nom, prix: [], devis: [], demandes: [] }; };
+  var societes = { fournisseurs: [nouvelle("Aqua Plus"), nouvelle("France Bonhomme")], partenaires: [] };
   var UNITES = { fournisseurs: ["pièce", "sac", "m", "m²", "m³", "kg", "palette"], partenaires: ["heure", "journée", "m", "m²", "forfait"] };
-  var onglet = "fournisseurs";
+  var rubrique = "fournisseurs", ouverte = null, partie = "prix";
 
-  function dessiner() {
-    document.querySelectorAll("[data-onglet]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.onglet === onglet)); });
-    $("nom-nouveau").placeholder = onglet === "fournisseurs" ? "Un autre fournisseur" : "Une société partenaire";
-    var l = societes[onglet];
-    $("liste").innerHTML = (l.length ? "" : '<p class="vide-note">Aucun partenaire. Ajoutez la société avec qui vous travaillez, puis ses prix de main d’œuvre.</p>') + l.map(function (s, i) {
-      var arts = s.articles.map(function (a, k) {
-        return '<div class="article"><span class="n">' + texte(a.nom) + "<small>" + (a.date ? "du " + a.date : "") + '</small></span><span class="p">' + euros(a.prix) + " / " + texte(a.unite) + '</span><button type="button" data-supprimer="' + i + ":" + k + '">Retirer</button></div>';
-      }).join("");
-      return '<div class="carte"><div class="tete"><b>' + texte(s.nom) + "</b><small>" + s.articles.length + (onglet === "fournisseurs" ? " article" : " prix") + (s.articles.length > 1 ? "s" : "") + "</small></div>" + arts +
-        '<div class="saisie"><input data-champ="nom" data-i="' + i + '" placeholder="' + (onglet === "fournisseurs" ? "Article" : "Prestation") + '" aria-label="Article">' +
-        '<select data-champ="unite" data-i="' + i + '" aria-label="Unité">' + UNITES[onglet].map(function (u) { return "<option>" + u + "</option>"; }).join("") + "</select>" +
-        '<input class="prix" data-champ="prix" data-i="' + i + '" inputmode="decimal" placeholder="Prix HT" aria-label="Prix HT"></div>' +
-        '<button class="petit" type="button" data-ajouter-article="' + i + '">Ajouter ce prix</button>' +
-        (onglet === "fournisseurs" ? '<label class="source"><input type="file" accept="image/*" capture="environment" data-devis="' + i + '">Prendre son devis en photo</label>' : "") +
-        "</div>";
-    }).join("");
+  var pluriel = function (n, mot) { return n + " " + mot + (n > 1 ? "s" : ""); };
+  function dessinerListe() {
+    document.querySelectorAll("[data-rubrique]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.rubrique === rubrique)); });
+    $("nom-nouveau").placeholder = rubrique === "fournisseurs" ? "Un autre fournisseur" : "Une société partenaire";
+    var l = societes[rubrique];
+    $("societes").innerHTML = l.length ? l.map(function (s, i) {
+      return '<button class="societe" type="button" data-ouvrir="' + i + '"><span><b>' + texte(s.nom) + "</b><small>" +
+        pluriel(s.prix.length, "prix").replace("prixs", "prix") + ", " + pluriel(s.devis.length, "devis").replace("deviss", "devis") + " reçu" + (s.devis.length > 1 ? "s" : "") + ", " + pluriel(s.demandes.length, "demande") + '</small></span><span class="chevron" aria-hidden="true">›</span></button>';
+    }).join("") : '<p class="vide">Aucun partenaire. Ajoutez la société avec qui vous travaillez.</p>';
   }
 
-  // Le devis dicté : chaque morceau de phrase cherche un article, d'abord chez les
-  // fournisseurs, puis chez les partenaires. Le prix proposé = prix d'achat x coefficient.
+  function dessinerFiche() {
+    var s = societes[rubrique][ouverte];
+    $("fiche-titre").textContent = s.nom;
+    document.querySelectorAll("[data-partie]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.partie === partie)); });
+    var h = "";
+    if (partie === "prix") {
+      h += s.prix.length ? '<div class="liste">' + s.prix.map(function (a, k) {
+        return '<div class="ligne"><span class="n">' + texte(a.nom) + "<small>" + texte(a.source) + '</small></span><span class="p">' + euros(a.prix) + " / " + texte(a.unite) + '</span><button class="lien danger" type="button" data-retirer-prix="' + k + '">Retirer</button></div>';
+      }).join("") + "</div>" : '<p class="vide">' + (rubrique === "fournisseurs" ? "Aucune fourniture encore. Ajoutez-en, ou prenez un de ses devis en photo." : "Aucun prix de main d’œuvre encore.") + "</p>";
+      h += '<div class="saisie"><input id="art-nom" placeholder="' + (rubrique === "fournisseurs" ? "Fourniture" : "Prestation") + '" aria-label="Nom"><select id="art-unite" aria-label="Unité">' +
+        UNITES[rubrique].map(function (u) { return "<option>" + u + "</option>"; }).join("") + '</select><input class="prix" id="art-prix" inputmode="decimal" placeholder="Prix HT" aria-label="Prix HT"></div>' +
+        '<button class="second" type="button" id="ajouter-prix">Ajouter ce prix</button>';
+    }
+    if (partie === "devis") {
+      h += '<label class="source"><input type="file" accept="image/*" capture="environment" id="photo-devis">Prendre un devis en photo</label>' +
+        '<label class="source creux"><input type="file" accept="image/*,application/pdf" id="fichier-devis">Choisir une photo ou un PDF</label>';
+      h += s.devis.length ? '<div class="liste">' + s.devis.map(function (d, k) {
+        return '<div class="ligne">' + (d.url ? '<img class="vu" src="' + d.url + '" alt="">' : "") + '<span class="n">Devis du ' + d.date + "<small>" + texte(d.fichier) + "</small></span>" +
+          '<button class="lien" type="button" data-voir-devis="' + k + '">Voir</button></div>';
+      }).join("") + "</div>" : '<p class="vide">Aucun devis reçu de ' + texte(s.nom) + ".</p>";
+      h += '<div id="vu-devis"></div>';
+    }
+    if (partie === "demandes") {
+      h += s.demandes.length ? '<div class="liste">' + s.demandes.map(function (d) {
+        return '<div class="ligne"><span class="n">' + texte(d.titre) + "<small>Envoyée le " + d.date + ", " + pluriel(d.lignes, "ligne") + "</small></span></div>";
+      }).join("") + "</div>" : '<p class="vide">Aucune demande envoyée à ' + texte(s.nom) + ". Les listes que vous lui envoyez depuis un devis ou le plan d’arrosage s’enregistrent ici, avec leur date.</p>";
+    }
+    $("partie").innerHTML = h;
+  }
+
+  // Le devis dicté : son prix de vente d'abord (« le A », 19 octobre 2026), puis un
+  // prix d'achat fois sa marge, puis « à chiffrer ». La planche n'a pas ses prix de
+  // vente : elle montre les deux autres marches.
   var MOTS_VIDES = /^(il|me|faut|de|des|du|la|le|les|un|une|et|pour|avec|j'ai|besoin|en|au|aux|sur)$/i;
   var racine = function (m) { return m.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/s$/, ""); };
   function preparer() {
     var coefMat = nombre($("coef").value), coefMo = nombre($("coef-mo").value);
-    var morceaux = $("dictee").value.split(/[.,;\n]|\bet\b/).map(function (s) { return s.trim(); }).filter(Boolean);
     var tous = [];
-    ["fournisseurs", "partenaires"].forEach(function (r) { societes[r].forEach(function (s) { s.articles.forEach(function (a) { tous.push({ a: a, s: s, r: r }); }); }); });
-    var lignes = morceaux.map(function (m) {
+    ["fournisseurs", "partenaires"].forEach(function (r) { societes[r].forEach(function (s) { s.prix.forEach(function (a) { tous.push({ a: a, s: s, r: r }); }); }); });
+    var morceaux = $("dictee").value.split(/[.,;\n]|\bet\b/).map(function (x) { return x.trim(); }).filter(Boolean);
+    $("devis").innerHTML = morceaux.map(function (m) {
       var q = (m.match(/\d+(?:[.,]\d+)?/) || [null])[0];
       var qte = q ? Number(q.replace(",", ".")) : (/\bdeux\b/i.test(m) ? 2 : /\btrois\b/i.test(m) ? 3 : 1);
       var mots = m.split(/\s+/).filter(function (x) { return !MOTS_VIDES.test(x) && !/^\d/.test(x) && x.length > 2; }).map(racine);
@@ -198,41 +219,49 @@
         var n = mots.filter(function (x) { return sienne.indexOf(x) >= 0; }).length;
         if (n > score || (n === score && n > 0 && t.a.prix < mieux.a.prix)) { score = n; mieux = t; }
       });
-      return { dit: m, qte: qte, t: score > 0 ? mieux : null };
-    });
-    $("devis").innerHTML = lignes.map(function (l) {
-      if (!l.t) return '<div class="ld vide"><div class="haut"><span>' + texte(l.dit) + "</span><b>à chiffrer</b></div><small>Aucun prix dans vos fournisseurs ni vos partenaires.</small></div>";
-      var a = l.t.a, achat = a.prix * l.qte;
-      var coef = l.t.r === "partenaires" ? coefMo : coefMat;
+      if (!score) return '<div class="ld a-chiffrer"><div class="haut"><span>' + texte(m) + "</span><b>à chiffrer</b></div><small>Aucun prix chez vos fournisseurs ni vos partenaires.</small></div>";
+      var a = mieux.a, achat = a.prix * qte, coef = mieux.r === "partenaires" ? coefMo : coefMat;
       var vente = coef ? Math.round(achat * coef * 100) / 100 : null;
-      return '<div class="ld' + (vente === null ? " vide" : "") + '"><div class="haut"><span>' + texte(a.nom) + ", " + String(l.qte).replace(".", ",") + " " + texte(a.unite) + (l.qte > 1 && !/s$/.test(a.unite) ? "s" : "") + "</span><b>" + (vente === null ? "à chiffrer" : euros(vente)) + "</b></div>" +
-        "<small>" + (l.t.r === "partenaires" ? "Main d’œuvre de " : "Prix d’achat ") + texte(l.t.s.nom) + (a.date ? " du " + a.date : "") + " : " + euros(achat) + (vente === null ? (l.t.r === "partenaires" ? ". Donnez votre marge sur la main d’œuvre." : ". Donnez votre marge sur le matériel.") : ", fois " + String(coef).replace(".", ",") + ".") + "</small></div>";
-    }).join("") + '<p class="vide-note">Proposé, à valider. Rien ne part sans vous.</p>';
+      return '<div class="ld' + (vente === null ? " a-chiffrer" : "") + '"><div class="haut"><span>' + texte(a.nom) + ", " + String(qte).replace(".", ",") + " " + texte(a.unite) + (qte > 1 && !/s$/.test(a.unite) ? "s" : "") + "</span><b>" + (vente === null ? "à chiffrer" : euros(vente)) + "</b></div>" +
+        "<small>" + (mieux.r === "partenaires" ? "Main d’œuvre de " : "Prix d’achat ") + texte(mieux.s.nom) + " du " + a.date + " : " + euros(achat) + (vente === null ? (mieux.r === "partenaires" ? ". Donnez votre marge sur la main d’œuvre." : ". Donnez votre marge sur le matériel.") : ", fois " + String(coef).replace(".", ",") + ".") + "</small></div>";
+    }).join("") + '<p class="vide">Proposé, à valider. Votre prix de vente passe toujours en premier. Rien ne part sans vous.</p>';
     $("devis").hidden = false;
   }
 
   document.addEventListener("click", function (e) {
     var b = e.target.closest("button");
     if (!b) return;
-    if (b.dataset.onglet) { onglet = b.dataset.onglet; dessiner(); return; }
-    if (b.id === "ajouter-societe") { var n = $("nom-nouveau").value.trim(); if (!n) return; societes[onglet].push({ nom: n, articles: [] }); $("nom-nouveau").value = ""; dessiner(); return; }
-    if (b.dataset.ajouterArticle !== undefined) {
-      var i = b.dataset.ajouterArticle, champ = function (c) { return document.querySelector('[data-champ="' + c + '"][data-i="' + i + '"]'); };
-      var nom = champ("nom").value.trim(), prix = nombre(champ("prix").value);
-      if (!nom || prix === null) { champ(nom ? "prix" : "nom").focus(); return; }
-      societes[onglet][i].articles.push({ nom: nom, unite: champ("unite").value, prix: prix, date: new Date().toLocaleDateString("fr-FR") });
-      dessiner(); return;
+    if (b.dataset.rubrique) { rubrique = b.dataset.rubrique; dessinerListe(); return; }
+    if (b.id === "ajouter-societe") { var n = $("nom-nouveau").value.trim(); if (!n) return; societes[rubrique].push(nouvelle(n)); $("nom-nouveau").value = ""; dessinerListe(); return; }
+    if (b.dataset.ouvrir !== undefined) { ouverte = Number(b.dataset.ouvrir); partie = "prix"; dessinerFiche(); $("fiche").hidden = false; return; }
+    if (b.id === "fermer") { $("fiche").hidden = true; dessinerListe(); return; }
+    if (b.dataset.partie) { partie = b.dataset.partie; dessinerFiche(); return; }
+    var s = ouverte === null ? null : societes[rubrique][ouverte];
+    if (b.id === "ajouter-prix") {
+      var nom = $("art-nom").value.trim(), prix = nombre($("art-prix").value);
+      if (!nom || prix === null) { $(nom ? "art-prix" : "art-nom").focus(); return; }
+      s.prix.push({ nom: nom, unite: $("art-unite").value, prix: prix, date: aujourdhui(), source: "Tapé le " + aujourdhui() });
+      dessinerFiche(); return;
     }
-    if (b.dataset.supprimer) { var p = b.dataset.supprimer.split(":"); societes[onglet][p[0]].articles.splice(p[1], 1); dessiner(); return; }
+    if (b.dataset.retirerPrix !== undefined) { s.prix.splice(Number(b.dataset.retirerPrix), 1); dessinerFiche(); return; }
+    if (b.dataset.voirDevis !== undefined) {
+      var d = s.devis[Number(b.dataset.voirDevis)];
+      $("vu-devis").innerHTML = '<div class="apercu">' + (d.url ? '<img src="' + d.url + '" alt="Le devis">' : "") + '</div><p class="vide">Dans l’outil, ses lignes et ses prix sont lus ici, et passent dans « Mes prix » après votre accord.</p>';
+      return;
+    }
     if (b.id === "preparer") { preparer(); return; }
   });
-  // Le devis en photo : la planche ne le lit pas ; dans l'outil, l'IA le lit et montre
-  // ce qu'elle a compris avant d'enregistrer (comme ImportTarifs.tsx).
+  // Un devis donné : la photo reste dans « Devis reçus », avec sa date. Elle n'est
+  // envoyée nulle part : la planche la montre seulement, depuis le téléphone.
   document.addEventListener("change", function (e) {
-    if (e.target.dataset && e.target.dataset.devis !== undefined && e.target.files[0]) { e.target.value = ""; e.target.parentNode.firstChild.nextSibling.textContent = "Lu dans l’outil, vérifié avant d’enregistrer"; }
+    if (e.target.id !== "photo-devis" && e.target.id !== "fichier-devis") return;
+    var f = e.target.files[0]; if (!f) return;
+    var s = societes[rubrique][ouverte];
+    s.devis.unshift({ date: aujourdhui(), fichier: /^image\//.test(f.type) ? "Photo" : f.name, url: /^image\//.test(f.type) ? URL.createObjectURL(f) : null });
+    e.target.value = "";
+    dessinerFiche();
   });
-  $("coef").oninput = $("coef-mo").oninput = function () { $("coef-note").textContent = nombre(this.value) === null && this.value ? "Un nombre, par exemple 1,30 pour 30 % de marge." : ""; };
-  dessiner();
+  dessinerListe();
 })();
 </script>
 </body>

@@ -200,8 +200,10 @@
   function ouvrirDevis(i) {
     lecture = i;
     var f = fournisseurs[i];
-    $("feuille-titre").textContent = "Devis " + f.nom;
-    $("feuille-sous").textContent = LIGNES.length + " lignes lues. Rien n’est enregistré avant votre appui.";
+    // Les pièces de CE plan, pas son catalogue : sa remarque du 19 octobre 2026 sur
+    // Point P. Tous ses prix chez ce fournisseur vivent dans Réglages, sur sa fiche.
+    $("feuille-titre").textContent = "Ce plan chez " + f.nom;
+    $("feuille-sous").textContent = "Les " + LIGNES.length + " pièces de ce plan, lues sur son devis. Tous vos prix chez " + f.nom + " sont dans Réglages, sur sa fiche. Rien n’est enregistré avant votre appui.";
     $("lu").innerHTML = LIGNES.map(function (l, k) {
       var v = f.prix[l.cle];
       return '<div class="ligne">' + vignette(l.cle) + '<span class="n">' + texte(l.nom) + (l.ref ? "<small>" + texte(l.ref) + "</small>" : "") + "</span>" +
