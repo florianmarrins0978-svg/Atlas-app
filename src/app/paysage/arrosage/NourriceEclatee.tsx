@@ -30,7 +30,12 @@ export default function NourriceEclatee({
   nombre,
   onTouche,
 }: {
-  voies: number;
+  /**
+   * Les réseaux qui ont leur voie, dans l'ordre du dessin (`voiesVivantes`) : un
+   * réseau supprimé n'a plus la sienne, et la nourrice passe sur la fiche du
+   * dessous (sa réponse du 19 octobre 2026). Chaque voie garde le numéro de son réseau.
+   */
+  voies: number[];
   nbGoutte: number;
   couleurs: string[];
   retouches: Retouches;
@@ -38,16 +43,16 @@ export default function NourriceEclatee({
   nombre: Record<string, number>;
   onTouche: (ref: string, nom: string) => void;
 }) {
-  const n = composerNourrice(voies, nbGoutte);
+  const n = composerNourrice(voies.length, nbGoutte);
   if (!n) {
     return (
       <p className="mt-3 text-[14px]" style={{ color: colors.alert }}>
-        Aucune fiche de nourrice pour {voies} voies.
+        Aucune fiche de nourrice pour {voies.length} voies.
       </p>
     );
   }
   const NOMS: Record<string, string> = { "coude-mf": "Coude MF 1\"", mamelon: "Mamelon réduit MM 1\" x 3/4\"", "vanne-purge": "Vanne 3/4\" FF", pehd: "PEHD Ø25" };
-  const etatDe = (ref: string) => (retouches.retirees[`nr:${ref}`] || (retouches.nrUne[ref] ?? 0) >= (nombre[ref] ?? 1) ? "retiree" : retouches.remplacees[`nr:${ref}`] ? "changee" : "");
+  const etatDe = (ref: string) => (retouches.blocsRetires.nourrice || retouches.retirees[`nr:${ref}`] || (retouches.nrUne[ref] ?? 0) >= (nombre[ref] ?? 1) ? "retiree" : retouches.remplacees[`nr:${ref}`] ? "changee" : "");
   const nomDe = (ref: string) => {
     const c = retouches.remplacees[`nr:${ref}`];
     if (c) return c.nom;
@@ -59,7 +64,7 @@ export default function NourriceEclatee({
   return (
     <div data-atlas="nourrice-eclatee">
       <div className="mt-3 overflow-hidden rounded-[16px] py-2" style={{ backgroundColor: "#ffffff", boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
-        <Dessin n={n} couleurs={couleurs} etats={etatsDesPoses(n.poses, retouches)} />
+        <Dessin n={n} couleurs={couleurs} etats={etatsDesPoses(n.poses, retouches)} reseauDeVoie={voies} />
       </div>
 
       {/* La légende numérotée : c'est elle qu'on touche. */}
@@ -141,7 +146,7 @@ function nomCatalogue(ref: string): string {
  * pièce changée porte un numéro doré (sa demande du 19 octobre 2026) : les mêmes
  * signes que sur les vignettes des réseaux.
  */
-function Dessin({ n, couleurs, etats }: { n: NourriceComposee; couleurs: string[]; etats: EtatPose[] }) {
+function Dessin({ n, couleurs, etats, reseauDeVoie }: { n: NourriceComposee; couleurs: string[]; etats: EtatPose[]; reseauDeVoie: number[] }) {
   const encre = "#4a4a44";
   const grise = (etat: EtatPose) => (etat === "retiree" ? { opacity: 0.35, filter: "grayscale(1)" } : undefined);
   const teinte = (etat: EtatPose) => (etat === "changee" ? colors.or : undefined);
@@ -206,11 +211,13 @@ function Dessin({ n, couleurs, etats }: { n: NourriceComposee; couleurs: string[
         // goutte-à-goutte le dit sous son numéro, et deux voisines s'écartent de deux lignes.
         const goutte = e.goutte >= 0;
         const dy = goutte ? (e.goutte % 2) * 26 : e.reseau % 2 === 1 ? 13 : 0;
-        const couleur = couleurs[e.reseau] ?? encre;
+        // `e.reseau` est le rang de la voie ; le réseau qu'elle alimente est `reseauDeVoie[e.reseau]`.
+        const reseau = reseauDeVoie[e.reseau] ?? e.reseau;
+        const couleur = couleurs[reseau] ?? encre;
         return (
           <g key={i}>
             <text x={e.x} y={e.y + 6 + dy} textAnchor="middle" dominantBaseline="hanging" fontSize={10} fontWeight={600} fontFamily={font.body} fill={couleur}>
-              R{e.reseau + 1}
+              R{reseau + 1}
             </text>
             {goutte && (
               <text x={e.x} y={e.y + 18 + dy} textAnchor="middle" dominantBaseline="hanging" fontSize={10} fontWeight={600} fontFamily={font.body} fill={couleur}>

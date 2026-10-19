@@ -45,6 +45,12 @@ export type Retouches = {
   couronne: 50 | 100;
   /** Une seule ligne, ou deux en circuit fermé, pour le goutte-à-goutte. */
   sortie: "ligne" | "boucle";
+  /**
+   * Ce qu'il a supprimé d'un bloc entier (sa demande du 19 octobre 2026) : un
+   * réseau par son numéro (`"0"`, `"1"`…), le piquage (`"amenee"`), la nourrice
+   * (`"nourrice"`). Ses pièces restent, barrées, et sortent du compte.
+   */
+  blocsRetires: Record<string, true>;
 };
 
 export const RETOUCHES_VIERGES: Retouches = {
@@ -58,7 +64,30 @@ export const RETOUCHES_VIERGES: Retouches = {
   teflon: false,
   couronne: 50,
   sortie: "boucle",
+  blocsRetires: {},
 };
+
+/** Un bloc entier de la liste : un réseau (`"2"`), le piquage (`"amenee"`), ou la nourrice. */
+export type Bloc = string;
+
+export function blocSupprimer(r: Retouches, bloc: Bloc): Retouches {
+  return { ...r, blocsRetires: { ...r.blocsRetires, [bloc]: true } };
+}
+export function blocRemettre(r: Retouches, bloc: Bloc): Retouches {
+  return { ...r, blocsRetires: sans(r.blocsRetires, bloc) };
+}
+
+/**
+ * Une pièce est ôtée quand il l'a supprimée, ou quand il a supprimé tout son bloc :
+ * son réseau (clés `rN:`), le piquage (clés `am:`) ou la nourrice (clés `nr:`).
+ */
+export function estOtee(r: Retouches, cle: string): boolean {
+  if (r.retirees[cle]) return true;
+  const m = /^r(\d+):/.exec(cle);
+  if (m && r.blocsRetires[m[1]]) return true;
+  if (cle.startsWith("am:") && r.blocsRetires.amenee) return true;
+  return cle.startsWith("nr:") && Boolean(r.blocsRetires.nourrice);
+}
 
 /**
  * Les clés des pièces du départ au robinet : changer de montage les rend à la
@@ -161,5 +190,5 @@ export function ligneRemettre(r: Retouches, cle: string): Retouches {
 
 /** Combien de gestes à la main portent sur le plan : ce que la liste n'est plus celle du calcul. */
 export function nombreDeRetouches(r: Retouches): number {
-  return Object.keys(r.retirees).length + Object.keys(r.remplacees).length + r.ajoutees.length + Object.keys(r.listeRetirees).length + Object.keys(r.nrUne).length;
+  return Object.keys(r.retirees).length + Object.keys(r.remplacees).length + r.ajoutees.length + Object.keys(r.listeRetirees).length + Object.keys(r.nrUne).length + Object.keys(r.blocsRetires).length;
 }

@@ -120,7 +120,7 @@ export function etatsDesPoses(poses: Pose[], r: Retouches): EtatPose[] {
   return poses.map((p) => {
     const j = vues[p.ref] ?? 0;
     vues[p.ref] = j + 1;
-    if (r.retirees[`nr:${p.ref}`]) return "retiree";
+    if (r.blocsRetires.nourrice || r.retirees[`nr:${p.ref}`]) return "retiree";
     if (r.remplacees[`nr:${p.ref}`]) return "changee";
     const sorties = r.nrUne[p.ref] ?? 0;
     const changees = r.ajoutees.filter((a) => a.de === p.ref).reduce((s, a) => s + a.q, 0);

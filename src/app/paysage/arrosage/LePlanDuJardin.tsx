@@ -8,8 +8,12 @@ import { calculerEtDessiner, montageDuPlan } from "@/lib/arrosage/le-plan";
 import { composerLesPostes, groupeNourrice, groupesDeLaListe, liaisonsDuReseau, messageAuFournisseur, titreDuDepart, zoneGoutteDuReseau, type Maillon, type Poste, type Robinet } from "@/lib/arrosage/postes";
 import {
   RETOUCHES_VIERGES, ajouter, chaineRemettre, chaineRemplacer, chaineRevenir, chaineSupprimer, clesAChanger, ligneRemettre, ligneSupprimer,
-  nourriceRemettre, nourriceRemplacer, nourriceSupprimer, oublierLeDepart, remettre, remplacer, revenir, supprimer, type PieceChoisie, type Retouches,
+  blocRemettre, blocSupprimer, nourriceRemettre, nourriceRemplacer, nourriceSupprimer, oublierLeDepart, remettre, remplacer, revenir, supprimer, type PieceChoisie, type Retouches,
 } from "@/lib/arrosage/retouches";
+import type { TableDePrix } from "@/lib/arrosage/prix-de-la-liste";
+
+/** Ses devis fournisseurs ne sont pas encore gardés par l'application : aucun prix, jamais un prix inventé. */
+const PAS_ENCORE_DE_PRIX: TableDePrix = {};
 import { categorieDe } from "@/lib/arrosage/choix-de-pieces";
 import { departDeLOutil, departRetenu, departsPossibles, libelleDepart, phraseDuManque, type Depart, type Montage } from "@/lib/arrosage/robinet";
 import PlanDessine, { LegendeDesSymboles } from "./PlanDessine";
@@ -48,6 +52,7 @@ export default function LePlanDuJardin({
   etat,
   parametres,
   onParametres: setParametres,
+  prix = PAS_ENCORE_DE_PRIX,
 }: {
   etat: Pick<Extract<EtatPlan, { etat: "lu" }>, "reserves" | "sansDessin">;
   /**
@@ -58,6 +63,12 @@ export default function LePlanDuJardin({
    */
   parametres: ParametresPlan;
   onParametres: (p: ParametresPlan) => void;
+  /**
+   * Ses prix d'achat, par référence, lus sur ses devis fournisseurs et validés
+   * par lui. L'application ne les garde pas encore : la table est vide, chaque
+   * ligne dit « sans prix » et le total vaut 0 (jamais un prix inventé).
+   */
+  prix?: TableDePrix;
 }) {
   const [retouches, setRetouches] = useState<Retouches>(RETOUCHES_VIERGES);
   const [menu, setMenu] = useState<Menu | null>(null);
@@ -78,7 +89,8 @@ export default function LePlanDuJardin({
   const postes = useMemo(() => composerLesPostes({ plan, dessin, compteur, amenee, robinet, retouches }), [plan, dessin, compteur, amenee, robinet, retouches]);
   const nourrice = groupeNourrice(plan, postes, retouches);
   const groupes = groupesDeLaListe(plan, postes, retouches, compteur, robinet);
-  const nbGoutte = plan.secteurs.filter((s) => s.famille === "Goutte-à-goutte").length;
+  // Les voies vivantes : un réseau supprimé enlève la sienne (19 octobre 2026).
+  const nbGoutte = nourrice.voies.filter((i) => plan.secteurs[i].famille === "Goutte-à-goutte").length;
   // Les réserves du croquis ne bougent pas ; celles du calcul suivent le plan.
   const reserves = [...plan.reserves, ...etat.reserves];
 
@@ -300,7 +312,7 @@ export default function LePlanDuJardin({
           {cocheSonde}
           {compteur && cochesGrillageTeflon}
           {piecesCochees(compteur ? ["sonde", "grillage", "teflon"] : ["sonde"])}
-          <NourriceEclatee voies={plan.secteurs.length} nbGoutte={nbGoutte} couleurs={plan.couleurs} retouches={retouches} nombre={nourrice.nombre} onTouche={menuDeLaNourrice} />
+          <NourriceEclatee voies={nourrice.voies} nbGoutte={nbGoutte} couleurs={plan.couleurs} retouches={retouches} nombre={nourrice.nombre} onTouche={menuDeLaNourrice} />
         </section>
       )}
 
@@ -384,6 +396,9 @@ export default function LePlanDuJardin({
         <ListeDesPieces
           groupes={groupes}
           modifier={modifier}
+          blocsRetires={retouches.blocsRetires}
+          prix={prix}
+          onBloc={(bloc, oter) => r((s) => (oter ? blocSupprimer(s, bloc) : blocRemettre(s, bloc)))}
           onRetirer={(titre, ref, ligne) => {
             const cle = `${titre}|${ref}`;
             const q = ligne.u === "ml" ? 1 : ligne.q;
@@ -406,8 +421,8 @@ export default function LePlanDuJardin({
           type="button"
           onClick={() => setFournisseur(true)}
           data-atlas="envoyer-fournisseur"
-          className="mt-[10px] min-h-[52px] w-full rounded-full border-0 text-[16px]"
-          style={{ backgroundColor: colors.ink, color: colors.card }}
+          className="atlas-plein mt-[10px] min-h-[52px] w-full rounded-full border-0 text-[16px] font-semibold"
+          style={{ backgroundColor: colors.plein, color: colors.card }}
         >
           Envoyer la liste au fournisseur
         </button>
@@ -451,8 +466,8 @@ function virgule(x: number, d = 1) {
 
 function Coche({ libelle, cochee, onChange }: { libelle: string; cochee: boolean; onChange: (v: boolean) => void }) {
   return (
-    <label className="mt-3 flex items-center gap-3 rounded-[12px] px-4 py-[14px] text-[15px]" style={{ backgroundColor: colors.card, cursor: "pointer" }}>
-      <input type="checkbox" checked={cochee} onChange={(e) => onChange(e.target.checked)} className="h-[22px] w-[22px]" style={{ accentColor: colors.ink }} />
+    <label className="mt-3 flex items-center gap-3 rounded-full px-4 py-[14px] text-[15px]" style={{ backgroundColor: colors.card, cursor: "pointer" }}>
+      <input type="checkbox" checked={cochee} onChange={(e) => onChange(e.target.checked)} className="h-[22px] w-[22px]" style={{ accentColor: colors.plein }} />
       {libelle}
     </label>
   );

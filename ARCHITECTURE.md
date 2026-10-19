@@ -35218,3 +35218,47 @@ qu'il y a des arroseurs, Ø16 au goutte-à-goutte seul, le nez de robinet gardé
 et prévenu) ; et la capture, `ecran-du-plan-robinet-nez.png` et
 `ecran-du-plan-robinet-nourrice.png`, regardée avant d'être livrée. Aucune
 batterie, à sa demande.
+
+## §472 : Ce qu'il supprime reste dans la liste, barré, et un bloc entier se supprime d'un coup
+
+**Ses demandes du 19 octobre 2026**, sur la liste en « Modifier ma liste » :
+*« il faut la possibilité de supprimer un réseau complet, et barrer les pièces
+que je supprime sur les réseaux dans la liste des pièces »*, puis *« pourquoi je
+peux pas supprimer direct la nourrice et le compteur ? »*, *« si on était sur une
+nourrice 4 voies, faut passer sur une 3 voies »*, et *« à droite le prix, en
+dessous un total, même avec 0 »*. Planches `appli/arrosage-plan.html` et
+`arrosage-plan-robinet.html`, puis *« tu peux coder, tu lances pas de batterie »*.
+
+**Quatre décisions.**
+
+1. **Une pièce supprimée se compte à part, jamais ne disparaît.** `postes.ts`
+   pose chaque pièce : vivante dans `compte`, ôtée dans `barrees`, par groupe.
+   La liste montre les barrées sous les autres, barrées de rouge, sans prix ; le
+   message au fournisseur ne lit que `lignes`, donc ne les prend pas.
+
+2. **Un bloc entier est UNE retouche** (`Retouches.blocsRetires` : `"0"`, `"1"`…
+   pour un réseau, `"amenee"`, `"nourrice"`), et `estOtee(r, cle)` est la seule
+   question posée partout : pièce ôtée elle-même, ou de son bloc par le préfixe
+   de sa clé (`rN:`, `am:`, `nr:`). Le plan grise les mêmes pièces que la liste
+   barre, parce que les deux lisent la même fonction.
+
+3. **Un réseau supprimé enlève sa voie.** `voiesVivantes(plan, r)` rend les
+   réseaux qui gardent la leur ; `groupeNourrice` prend la fiche de ce nombre de
+   voies (le collecteur de la gamme du dessous, une électrovanne de moins), et
+   le dessin garde à chaque voie le numéro de son réseau (`reseauDeVoie`). Le
+   CALCUL ne bouge pas : seules les pièces suivent, c'est lui qui l'a voulu.
+
+4. **Les prix sont des PRIX D'ACHAT, et aucun n'est inventé.**
+   `prix-de-la-liste.ts` multiplie la quantité par le prix relevé d'une
+   référence ; sans prix, « sans prix », et le total (affiché même à 0,00 €) ne
+   la compte pas et le dit. L'application ne garde pas encore ses devis
+   fournisseurs (planche de l'autre session, `arrosage-prix-fournisseurs.html`) :
+   `LePlanDuJardin` reçoit `prix`, vide par défaut. Le jour où les devis seront
+   gardés, c'est ce seul paramètre qui se remplit.
+
+**Et les boutons pleins sont verts** (`colors.plein`, `atlas-plein`), comme
+`PrimaryButton`, sur l'écran et sur ses planches (*« vert et les bords arrondis »*).
+
+**Ce qui le tient** : `scripts/test-arrosage-postes.ts` (quatre cas : la pièce
+barrée, le réseau supprimé et la nourrice à 3 voies, le piquage et la nourrice
+supprimés, le prix et le total). Aucune batterie, à sa demande.

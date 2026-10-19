@@ -8,6 +8,14 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-19
 
+- **Dans la liste du plan, ce qu'il supprime reste, barré de rouge ; un réseau,
+  le piquage ou la nourrice se suppriment d'un coup ; un réseau supprimé enlève
+  sa voie à la nourrice (4 voies devient 3, collecteur du dessous) ; chaque
+  ligne porte son prix d'achat à droite, et le total s'affiche dessous, même à
+  zéro.** Aucun prix inventé : « sans prix » tant que ses devis fournisseurs ne
+  sont pas gardés. Les boutons pleins sont verts, comme ceux de l'application
+  (`ARCHITECTURE.md` §472). Ce que ça évite : une pièce supprimée qui
+  disparaissait sans trace, et une nourrice commandée pour un réseau retiré.
 - **Sur le dessin de la nourrice, une pièce supprimée se grise et se barre de
   rouge, une pièce changée porte un numéro doré**, comme les vignettes des
   réseaux (sa demande du 19 octobre), sur l'écran et sur les deux planches. Ce
