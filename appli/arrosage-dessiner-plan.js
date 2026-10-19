@@ -83,6 +83,16 @@
   5/100 (son plan du Vésinet est au 2/100) ; et la MAISON (« oui, tu peux
   l'ajouter ») : un rectangle qui ne s'arrose pas, ne part pas au calcul, et
   coupe la zone qu'il chevauche comme les dalles qu'on n'arrose pas.
+  LES COURBES, sa demande du 19 octobre : « si je reste appuyé au milieu d'un
+  carré de pelouse et que je le décale vers l'intérieur ou l'extérieur, que ça
+  crée une courbure ; je peux l'étirer vers la gauche ; pareil pour le dallage,
+  ça peut créer un dallage en S ; les massifs pareil, ils ne sont pas forcément
+  linéaires ». Une zone ou une rangée choisie montre ses points : on tire, le
+  côté se courbe et passe par le doigt. Et sa règle le même soir : « il faut
+  juste qu'ils l'expliquent, mais qu'ils ne refusent pas ; ils disent que ça
+  sera quand même arrosé ». Le calcul ne connaît que des rectangles : une zone
+  courbe part comme le rectangle qui l'entoure, et l'écran le dit ; une rangée
+  courbe qu'on n'arrose pas ne coupe pas la zone, et l'écran le dit aussi.
   Ni les arbres ni les dalles qu'on arrose n'entrent au calcul : ils partent dans deux
   champs NEUFS (arbres, dalles), et l'écran le dit.
 
@@ -204,13 +214,142 @@
      en travers** : sa remarque du 19 octobre, « les dalles se mettent d'office
      à l'envers, on est obligé de les tourner ». C'était l'inverse jusque-là. */
   function rangeeDeDalles(d) {
-    var dist = Math.hypot(d.b.x - d.a.x, d.b.y - d.a.y);
+    var dist = longueurDeLaRangee(d);
     var l = enU(d.L || 0), e = enU(d.e || 0);
     var n = l > 0 ? Math.max(1, Math.floor((dist + e) / (l + e) + 1e-9)) : 0;
     var occupe = n * l + Math.max(0, n - 1) * e;
     return { n: n, dist: dist, l: l, e: e, depart: (dist - occupe) / 2 };
   }
   function ecritDalles(n) { return n === 1 ? "une dalle" : n + " dalles"; }
+
+  /* ── Les courbes ───────────────────────────────────────────────
+     Un côté de zone courbé est une courbe de Bézier du second degré, qui passe
+     par le point qu'il tire ; une rangée courbée, une courbe du troisième
+     degré, deux points, d'où le S. Les points de contrôle se gardent RELATIFS
+     au côté (u le long, v en travers) : la zone bouge ou change de cotes, la
+     courbe suit. */
+  var COTES_ZONE = ["haut", "droite", "bas", "gauche"];
+  function coinsDe(z) {
+    var a = { x: z.x, y: z.y }, b = { x: z.x + z.w, y: z.y }, c = { x: z.x + z.w, y: z.y + z.h }, d = { x: z.x, y: z.y + z.h };
+    return { haut: [a, b], droite: [b, c], bas: [c, d], gauche: [d, a] };
+  }
+  /* La normale vers l'extérieur : les côtés tournent dans le sens des aiguilles. */
+  function normale(p0, p1) {
+    var dx = p1.x - p0.x, dy = p1.y - p0.y, n = Math.hypot(dx, dy) || 1;
+    return { x: dy / n, y: -dx / n };
+  }
+  function courbee(z) {
+    return !!z.courbes && COTES_ZONE.some(function (c) { return z.courbes[c]; });
+  }
+  function controleDe(z, cote) {
+    var k = z.courbes && z.courbes[cote];
+    if (!k) return null;
+    var p = coinsDe(z)[cote], n = normale(p[0], p[1]);
+    return { x: p[0].x + (p[1].x - p[0].x) * k.u + n.x * enU(k.v), y: p[0].y + (p[1].y - p[0].y) * k.u + n.y * enU(k.v) };
+  }
+  function bez2(p0, c, p1, t) {
+    var m = 1 - t;
+    return { x: m * m * p0.x + 2 * m * t * c.x + t * t * p1.x, y: m * m * p0.y + 2 * m * t * c.y + t * t * p1.y };
+  }
+  function bez3(a, c1, c2, b, t) {
+    var m = 1 - t;
+    return {
+      x: m * m * m * a.x + 3 * m * m * t * c1.x + 3 * m * t * t * c2.x + t * t * t * b.x,
+      y: m * m * m * a.y + 3 * m * m * t * c1.y + 3 * m * t * t * c2.y + t * t * t * b.y
+    };
+  }
+  function cheminZone(z) {
+    var p = coinsDe(z), d = "M" + z.x + " " + z.y;
+    COTES_ZONE.forEach(function (c) {
+      var fin = p[c][1], k = controleDe(z, c);
+      d += k ? "Q" + k.x + " " + k.y + " " + fin.x + " " + fin.y : "L" + fin.x + " " + fin.y;
+    });
+    return d + "Z";
+  }
+  /* Le rectangle qui entoure la zone courbée : c'est lui que le calcul reçoit. */
+  function cadreDe(z) {
+    if (!courbee(z)) return { x: z.x, y: z.y, w: z.w, h: z.h };
+    var xs = [z.x, z.x + z.w], ys = [z.y, z.y + z.h], p = coinsDe(z), t = terrainU();
+    COTES_ZONE.forEach(function (c) {
+      var k = controleDe(z, c);
+      if (!k) return;
+      for (var i = 0; i <= 24; i++) { var q = bez2(p[c][0], k, p[c][1], i / 24); xs.push(q.x); ys.push(q.y); }
+    });
+    var x1 = borne(Math.min.apply(null, xs), t.w), x2 = borne(Math.max.apply(null, xs), t.w);
+    var y1 = borne(Math.min.apply(null, ys), t.h), y2 = borne(Math.max.apply(null, ys), t.h);
+    return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
+  }
+  /* Le point qu'il tient : au milieu du côté, sur la courbe. */
+  function pointDuCote(z, c) {
+    var p = coinsDe(z)[c], k = controleDe(z, c);
+    return k ? bez2(p[0], k, p[1], 0.5) : { x: (p[0].x + p[1].x) / 2, y: (p[0].y + p[1].y) / 2 };
+  }
+  /* Tirer le côté : la courbe passe par le doigt, B(1/2) = H. Reposé sur le
+     côté droit (à moins de 5 cm), il redevient droit. */
+  function tirerCote(z, c, h) {
+    var p = coinsDe(z)[c], t = terrainU();
+    var hc = { x: borne(h.x, t.w), y: borne(h.y, t.h) };
+    var k = { x: borne(2 * hc.x - (p[0].x + p[1].x) / 2, t.w), y: borne(2 * hc.y - (p[0].y + p[1].y) / 2, t.h) };
+    var dx = p[1].x - p[0].x, dy = p[1].y - p[0].y, len2 = dx * dx + dy * dy || 1, n = normale(p[0], p[1]);
+    var u = ((k.x - p[0].x) * dx + (k.y - p[0].y) * dy) / len2;
+    var v = enMetres((k.x - p[0].x) * n.x + (k.y - p[0].y) * n.y);
+    z.courbes = z.courbes || {};
+    if (Math.abs(v) < 0.05) delete z.courbes[c];
+    else z.courbes[c] = { u: u, v: v };
+  }
+
+  /* Une rangée : ses deux points de contrôle, relatifs à sa corde (u le long,
+     v en travers, en part de la corde : une distance corrigée l'agrandit
+     tout entière). Droite, ils sont aux tiers. */
+  function controlesDalles(d) {
+    var dx = d.b.x - d.a.x, dy = d.b.y - d.a.y, len = Math.hypot(dx, dy), n = normale(d.a, d.b);
+    var k = d.courbe || [{ u: 1 / 3, v: 0 }, { u: 2 / 3, v: 0 }];
+    return k.map(function (c) { return { x: d.a.x + dx * c.u + n.x * c.v * len, y: d.a.y + dy * c.u + n.y * c.v * len }; });
+  }
+  function echantillonsDalles(d) {
+    var k = controlesDalles(d), pts = [], cum = [0];
+    for (var i = 0; i <= 80; i++) {
+      pts.push(bez3(d.a, k[0], k[1], d.b, i / 80));
+      if (i > 0) cum.push(cum[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y));
+    }
+    return { pts: pts, cum: cum, total: cum[cum.length - 1] };
+  }
+  /* La longueur de la rangée, le long de sa courbe : c'est elle que la
+     feuille appelle « Distance ». */
+  function longueurDeLaRangee(d) {
+    return d.courbe ? echantillonsDalles(d).total : Math.hypot(d.b.x - d.a.x, d.b.y - d.a.y);
+  }
+  function surLaRangee(e, s) {
+    for (var i = 1; i < e.cum.length; i++) {
+      if (e.cum[i] >= s || i === e.cum.length - 1) {
+        var a = e.pts[i - 1], b = e.pts[i], seg = e.cum[i] - e.cum[i - 1] || 1, f = (s - e.cum[i - 1]) / seg;
+        return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f, ang: Math.atan2(b.y - a.y, b.x - a.x) };
+      }
+    }
+  }
+  /* Tirer un des deux points de la rangée : la courbe passe par le doigt au
+     tiers (ou aux deux tiers), l'autre point reste. */
+  function tirerDalles(d, i, h) {
+    var t = i === 0 ? 1 / 3 : 2 / 3, m = 1 - t, k = controlesDalles(d), cible;
+    if (i === 0) cible = {
+      x: (h.x - m * m * m * d.a.x - 3 * m * t * t * k[1].x - t * t * t * d.b.x) / (3 * m * m * t),
+      y: (h.y - m * m * m * d.a.y - 3 * m * t * t * k[1].y - t * t * t * d.b.y) / (3 * m * m * t)
+    };
+    else cible = {
+      x: (h.x - m * m * m * d.a.x - 3 * m * m * t * k[0].x - t * t * t * d.b.x) / (3 * m * t * t),
+      y: (h.y - m * m * m * d.a.y - 3 * m * m * t * k[0].y - t * t * t * d.b.y) / (3 * m * t * t)
+    };
+    k[i] = cible;
+    var dx = d.b.x - d.a.x, dy = d.b.y - d.a.y, len2 = dx * dx + dy * dy || 1, len = Math.sqrt(len2), n = normale(d.a, d.b);
+    d.courbe = k.map(function (c) {
+      return { u: ((c.x - d.a.x) * dx + (c.y - d.a.y) * dy) / len2, v: ((c.x - d.a.x) * n.x + (c.y - d.a.y) * n.y) / len };
+    });
+    if (d.courbe.every(function (c) { return Math.abs(c.v) < 0.01; })) delete d.courbe;
+  }
+  function poigneesDalles(d) {
+    var k = controlesDalles(d);
+    return [bez3(d.a, k[0], k[1], d.b, 1 / 3), bez3(d.a, k[0], k[1], d.b, 2 / 3)];
+  }
 
   /* La bande qu'occupe une rangée droite : toute la distance qu'il a tapée,
      d'un point touché à l'autre, sur la longueur des dalles en travers. C'est
@@ -232,7 +371,9 @@
   function coupeurs(z) {
     var aimant = enU(AIMANT_M), liste = [];
     etat.dalles.forEach(function (d) {
-      if (d.arrosees !== false) return;
+      // Une rangée courbe ne coupe pas : le découpage ne donnerait pas des
+      // rectangles. L'écran le dit (rendreEtat).
+      if (d.arrosees !== false || d.courbe) return;
       var b = bandeDesDalles(d);
       // **L'aimant (une proposition, pas sa règle)** : le doigt ne touche jamais
       // le bord exact d'une pelouse. Un bout de rangée qui s'arrête à moins de
@@ -258,7 +399,7 @@
   /* Les morceaux de la zone une fois retirés ses coupeurs ; ceux qui la
      touchent vraiment sont rendus avec, pour le dire à l'écran. */
   function morceaux(z) {
-    var parts = [{ x: z.x, y: z.y, w: z.w, h: z.h }];
+    var parts = [cadreDe(z)];
     if (z.type === "maison") return parts;
     var e = enU(0.01), touches = [];
     coupeurs(z).forEach(function (c) {
@@ -298,8 +439,10 @@
   function arriveeA(d, metres) {
     var dx = d.b.x - d.a.x, dy = d.b.y - d.a.y, n = Math.hypot(dx, dy);
     if (n < 1e-9) { dx = 1; dy = 0; n = 1; }
-    var u = enU(metres);
-    return { x: d.a.x + dx / n * u, y: d.a.y + dy / n * u };
+    // Courbée, la rangée garde sa forme et s'agrandit : c'est sa longueur le
+    // long de la courbe qui vaut la distance tapée.
+    var k = enU(metres) / (d.courbe ? longueurDeLaRangee(d) : n);
+    return { x: d.a.x + dx * k, y: d.a.y + dy * k };
   }
 
   /* En B, la taille d'une zone sort de ses cotes, jamais du doigt. */
@@ -364,7 +507,7 @@
     // que le calcul reçoit, et le long d'eux qu'il posera les arroseurs.
     etat.zones.forEach(function (z) {
       var p = morceaux(z);
-      if (p.length < 2) return;
+      if (p.length < 2 && !courbee(z)) return;
       p.forEach(function (q) {
         svg.appendChild(el("rect", { x: q.x, y: q.y, width: q.w, height: q.h, fill: "none", stroke: "var(--atlas-plein)", "stroke-width": 0.5, "stroke-dasharray": (1.4 * TRAIT) + " " + (1 * TRAIT), "pointer-events": "none" }));
       });
@@ -393,7 +536,9 @@
     var g = el("g", { "data-id": z.id, style: "cursor:grab" });
     var choisie = etat.choisie === z.id;
     var ok = mesuree(z) && cotesTropGrandes(z).length === 0;
-    g.appendChild(el("rect", { x: z.x, y: z.y, width: Math.max(z.w, 0.5 * TRAIT), height: Math.max(z.h, 0.5 * TRAIT), rx: 0.8 * TRAIT, fill: remplissage(z.type), stroke: ok ? (choisie ? "var(--atlas-ink)" : "var(--atlas-rustDeep)") : "var(--atlas-alerte)", "stroke-width": choisie ? 0.9 : 0.45, "stroke-dasharray": ok ? "none" : (1.6 * TRAIT) + " " + (1.2 * TRAIT) }));
+    var bord = { fill: remplissage(z.type), stroke: ok ? (choisie ? "var(--atlas-ink)" : "var(--atlas-rustDeep)") : "var(--atlas-alerte)", "stroke-width": choisie ? 0.9 : 0.45, "stroke-dasharray": ok ? "none" : (1.6 * TRAIT) + " " + (1.2 * TRAIT) };
+    if (courbee(z)) g.appendChild(el("path", Object.assign({ d: cheminZone(z) }, bord)));
+    else g.appendChild(el("rect", Object.assign({ x: z.x, y: z.y, width: Math.max(z.w, 0.5 * TRAIT), height: Math.max(z.h, 0.5 * TRAIT), rx: 0.8 * TRAIT }, bord)));
     // Le nom, puis « longueur × largeur » : la longueur est le côté couché.
     // Une zone trop basse pour deux lignes les met sur une seule.
     var lesParts = morceaux(z), parts = lesParts.length;
@@ -413,7 +558,19 @@
       g.appendChild(etiquette(cx2, cy2 + 1.1 * TRAIT, nomDe(z) + ", " + cotes, 3, z.w, couleur));
     }
     if (choisie && MODE === "A") g.appendChild(poignee(z.x + z.w, z.y + z.h, z.id));
+    // Les points qui courbent un côté : sur la zone choisie, pas sur la maison.
+    if (choisie && MODE === "B" && z.type !== "maison") {
+      COTES_ZONE.forEach(function (c) { var q = pointDuCote(z, c); g.appendChild(pointATirer(q, z.id + ":" + c)); });
+    }
     return g;
+  }
+
+  /* Un point à tirer : petit à l'œil, large sous le doigt. */
+  function pointATirer(q, cle) {
+    return signe(q.x, q.y, { "data-courbe": cle, style: "cursor:move" }, function (g) {
+      g.appendChild(el("circle", { cx: 0, cy: 0, r: 6, fill: "transparent" }));
+      g.appendChild(el("circle", { cx: 0, cy: 0, r: 2.1, fill: "var(--atlas-card)", stroke: "var(--atlas-plein)", "stroke-width": 0.9 }));
+    });
   }
 
   /* Un texte qui tient dans sa zone : il rapetisse plutôt que de déborder,
@@ -452,12 +609,26 @@
     var g = el("g", { "data-id": d.id, style: "cursor:grab" });
     var r = rangeeDeDalles(d), L = enU(d.l || 0);
     var ang = Math.atan2(d.b.y - d.a.y, d.b.x - d.a.x);
-    g.appendChild(el("line", { x1: d.a.x, y1: d.a.y, x2: d.b.x, y2: d.b.y, stroke: "transparent", "stroke-width": Math.max(8, L / TRAIT), "stroke-linecap": "round" }));
-    var rang = el("g", { transform: "translate(" + d.a.x + " " + d.a.y + ") rotate(" + ang * 180 / Math.PI + ")" });
-    for (var i = 0; i < r.n; i++) {
-      rang.appendChild(el("rect", { x: r.depart + i * (r.l + r.e), y: -L / 2, width: r.l, height: L, fill: "color-mix(in srgb, var(--atlas-muted) 60%, var(--atlas-card))", stroke: "var(--atlas-inkSoft)", "stroke-width": 0.3 }));
+    var teinte = { fill: "color-mix(in srgb, var(--atlas-muted) 60%, var(--atlas-card))", stroke: "var(--atlas-inkSoft)", "stroke-width": 0.3 };
+    if (d.courbe) {
+      // Courbée : chaque dalle se pose sur la courbe, tournée comme elle.
+      var e = echantillonsDalles(d);
+      g.appendChild(el("path", { d: "M" + e.pts.map(function (q) { return q.x + " " + q.y; }).join("L"), fill: "none", stroke: "transparent", "stroke-width": Math.max(8, L / TRAIT), "stroke-linecap": "round" }));
+      for (var j = 0; j < r.n; j++) {
+        var q = surLaRangee(e, r.depart + j * (r.l + r.e) + r.l / 2);
+        g.appendChild(el("rect", Object.assign({ x: -r.l / 2, y: -L / 2, width: r.l, height: L, transform: "translate(" + q.x + " " + q.y + ") rotate(" + q.ang * 180 / Math.PI + ")" }, teinte)));
+      }
+    } else {
+      g.appendChild(el("line", { x1: d.a.x, y1: d.a.y, x2: d.b.x, y2: d.b.y, stroke: "transparent", "stroke-width": Math.max(8, L / TRAIT), "stroke-linecap": "round" }));
+      var rang = el("g", { transform: "translate(" + d.a.x + " " + d.a.y + ") rotate(" + ang * 180 / Math.PI + ")" });
+      for (var i = 0; i < r.n; i++) {
+        rang.appendChild(el("rect", Object.assign({ x: r.depart + i * (r.l + r.e), y: -L / 2, width: r.l, height: L }, teinte)));
+      }
+      g.appendChild(rang);
     }
-    g.appendChild(rang);
+    if (MODE === "B" && etat.choisie === d.id) {
+      poigneesDalles(d).forEach(function (q, k) { g.appendChild(pointATirer(q, d.id + ":" + k)); });
+    }
     // Le nom au-dessus de la rangée (à droite si elle est debout) : en dessous,
     // il tombait sur le nom du massif qu'elle longeait.
     var mx = (d.a.x + d.b.x) / 2, my = (d.a.y + d.b.y) / 2, ecart = L / 2 + 3.2 * TRAIT;
@@ -474,6 +645,12 @@
     if (!o) return null;
     var sorte = sorteDe(id);
     if (sorte === "point" || sorte === "arbre") return { x: o.x, y: o.y, w: 0, h: 0 };
+    if (sorte === "dalles" && o.courbe) {
+      var ep = echantillonsDalles(o).pts, demi = enU(o.l || 0) / 2;
+      var xs = ep.map(function (q) { return q.x; }), ys = ep.map(function (q) { return q.y; });
+      var ex = Math.min.apply(null, xs) - demi, ey = Math.min.apply(null, ys) - demi;
+      return { x: ex, y: ey, w: Math.max.apply(null, xs) + demi - ex, h: Math.max.apply(null, ys) + demi - ey };
+    }
     if (sorte === "dalles") {
       var L = enU(o.l || 0), x1 = Math.min(o.a.x, o.b.x), y1 = Math.min(o.a.y, o.b.y);
       var couchee = Math.abs(o.b.y - o.a.y) <= Math.abs(o.b.x - o.a.x);
@@ -584,6 +761,13 @@
     var svg = $("toile");
     var p = point(evt);
     var cible = evt.target.closest ? evt.target.closest("[data-id],[data-poignee]") : null;
+    var tire = evt.target.closest ? evt.target.closest("[data-courbe]") : null;
+    if (tire && !etat.outil) {
+      var morceauxCle = tire.getAttribute("data-courbe").split(":");
+      prise = { courbe: { id: isNaN(+morceauxCle[0]) ? morceauxCle[0] : +morceauxCle[0], cote: morceauxCle[1] }, bouge: false };
+      svg.setPointerCapture(evt.pointerId);
+      return;
+    }
 
     if (etat.outil && POINTS[etat.outil]) {
       var q = dansLeTerrain(p);
@@ -637,6 +821,9 @@
       prise = { id: idv, etire: !!poig, depart: p, bouge: false, avant: copie(objetDe(id)) };
       etat.cotesDe = idv;
       etat.choisie = idv;
+      // Les points verts ne se devinent pas : une ligne les nomme.
+      var sorteChoisie = sorteDe(idv), objetChoisi = objetDe(idv);
+      if (MODE === "B" && (sorteChoisie === "dalles" || (sorteChoisie === "zone" && objetChoisi.type !== "maison"))) $("consigne").textContent = "Tirez un point vert pour courber.";
       svg.setPointerCapture(evt.pointerId);
       dessiner();
       return;
@@ -674,6 +861,21 @@
     }
     var p = point(evt);
     var t = terrainU();
+    if (prise && prise.courbe) {
+      prise.bouge = true;
+      var objet = objetDe(prise.courbe.id);
+      if (sorteDe(prise.courbe.id) === "dalles") {
+        // La courbe passe par le doigt, mais elle peut sortir du terrain entre
+        // ses points : ce tirage-là ne se prend pas, la rangée reste où elle était.
+        var avant = objet.courbe ? copie(objet.courbe) : null;
+        tirerDalles(objet, +prise.courbe.cote, dansLeTerrain(p));
+        var dehors = echantillonsDalles(objet).pts.some(function (q) { return q.x < 0 || q.y < 0 || q.x > t.w || q.y > t.h; });
+        if (dehors) { if (avant) objet.courbe = avant; else delete objet.courbe; }
+      }
+      else tirerCote(objet, prise.courbe.cote, p);
+      dessiner();
+      return;
+    }
     if (brouillon) {
       var d = dansLeTerrain(p);
       brouillon.x1 = d.x; brouillon.y1 = d.y;
@@ -723,6 +925,7 @@
       ouvrir(z, true);
       return;
     }
+    if (prise && prise.courbe) { prise = null; dessiner(); return; }
     if (prise) {
       var pr = prise;
       prise = null;
@@ -789,6 +992,8 @@
     $("f-tourner").hidden = !tourner;
     $("f-valider").classList.toggle("seul", !tourner);
     $("f-supprimer").hidden = neuf;
+    var o = enCours && enCours.z;
+    $("f-redresser").hidden = neuf || !o || !(o.courbe || (o.courbes && courbee(o)));
   }
 
   function ouvrir(z, neuve) {
@@ -827,7 +1032,7 @@
     $("f-L").value = d.L == null ? "" : ecrit(d.L);
     $("f-l").value = d.l == null ? "" : ecrit(d.l);
     $("f-e").value = d.e == null ? "" : ecrit(d.e);
-    $("f-dist").value = ecrit(enMetres(Math.hypot(d.b.x - d.a.x, d.b.y - d.a.y)));
+    $("f-dist").value = ecrit(enMetres(longueurDeLaRangee(d)));
     montrerChamps({ cotes: true, distance: true, surface: true, ecart: true, dalles: true, arrosees: true });
     arroseesEnCours = d.arrosees === undefined ? null : d.arrosees;
     rendreArrosees();
@@ -933,7 +1138,11 @@
     if (refuseVides([["f-dist", essai.distance], ["f-L", essai.L], ["f-l", essai.l]])) return;
     if (arroseesEnCours === null) { $("f-erreur").textContent = "Dites si on les arrose."; return; }
     var b = arriveeA(essai, essai.distance), t = terrainU(), marge = 1e-6;
-    if (arroseesEnCours === false) {
+    if (essai.courbe) {
+      var essaiB = copie(essai); essaiB.b = b;
+      var horsDuTerrain = echantillonsDalles(essaiB).pts.some(function (q) { return q.x < -marge || q.y < -marge || q.x > t.w + marge || q.y > t.h + marge; });
+      if (horsDuTerrain) { $("f-dist").setAttribute("aria-invalid", "true"); $("f-erreur").textContent = phraseTropGrande(); return; }
+    } else if (arroseesEnCours === false) {
       var droite = redressee(essai.a, b);
       if (!droite) { $("f-erreur").textContent = "Pour ne pas les arroser, posez la rangée droite, couchée ou debout."; return; }
       b = droite;
@@ -1098,7 +1307,10 @@
       var parts = morceaux(z);
       parts.forEach(function (q, i) {
         var coupee = parts.length > 1;
-        var L = coupee ? arrondi(enMetres(q.w)) : z.L, l = coupee ? arrondi(enMetres(q.h)) : z.l;
+        // Courbe ou coupée, la zone part avec les cotes du rectangle qu'elle
+        // donne au calcul ; droite et entière, avec les siennes.
+        var autre = coupee || courbee(z);
+        var L = autre ? arrondi(enMetres(q.w)) : z.L, l = autre ? arrondi(enMetres(q.h)) : z.l;
         var lue = {
           type: z.type,
           nom: coupee ? nomDe(z) + " " + (i + 1) : z.nom,
@@ -1166,6 +1378,25 @@
       var verbe = morceaux(z).coupeurs.length > 1 || qui === "les dalles" ? "coupent" : "coupe";
       if (n === 0) ligne(sujet + " " + (verbe === "coupe" ? "couvre " : "couvrent ") + nomDe(z) + " entièrement, cette zone n’entre pas dans le plan.");
       else if (n > 1) ligne(sujet + " " + verbe + " " + nomDe(z) + " en " + n + " parts.");
+    });
+    // Sa règle du 19 octobre : expliquer, ne pas refuser, et dire que ce sera
+    // arrosé quand même.
+    etat.zones.forEach(function (z) {
+      if (z.type === "maison" || !courbee(z)) return;
+      var c = cadreDe(z), dims = ecrit(Math.round(enMetres(c.w) * 100) / 100) + " × " + ecrit(Math.round(enMetres(c.h) * 100) / 100) + " m";
+      if (z.type === "gazon") ligne("Les côtés courbes de " + nomDe(z) + " sont arrosés comme le rectangle qui l’entoure, " + dims + ". Les arroseurs du bord peuvent mouiller un peu au-delà.");
+      else ligne("Le goutte-à-goutte de " + nomDe(z) + " est compté sur le rectangle qui l’entoure, " + dims + ", un peu plus de tube que la forme.");
+    });
+    etat.dalles.forEach(function (d) {
+      if (d.arrosees !== false || !d.courbe) return;
+      var b = emprise(d.id);
+      etat.zones.forEach(function (z) {
+        if (z.type === "maison") return;
+        var c = cadreDe(z);
+        if (b.x < c.x + c.w && b.x + b.w > c.x && b.y < c.y + c.h && b.y + b.h > c.y) {
+          ligne("Les dalles en courbe ne coupent pas " + nomDe(z) + " : elles sont arrosées avec cette zone.");
+        }
+      });
     });
     var faire = $("faire");
     faire.hidden = !e.complet || debordent.length > 0;
@@ -1274,6 +1505,14 @@
     });
     $("f-tourner").addEventListener("click", tourner);
     $("f-supprimer").addEventListener("click", supprimer);
+    // Redresser : la zone ou la rangée reprend ses côtés droits.
+    $("f-redresser").addEventListener("click", function () {
+      var o = enCours && enCours.z;
+      if (!o) return;
+      delete o.courbes;
+      delete o.courbe;
+      fermer();
+    });
     $("feuille").addEventListener("click", function (e) { if (e.target === $("feuille")) horsFeuille(); });
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && !$("feuille").hidden) horsFeuille();
