@@ -79,7 +79,7 @@ export default function CorpsErreur({
   // Ce repli ne peut PAS produire d'écart d'hydratation, et la raison mérite
   // d'être écrite : un morceau de code manquant est une panne du navigateur,
   // jamais du rendu serveur. Quand cet écran est rendu sur le serveur, la cause
-  // est forcément autre, `estMorceauIntrouvable` répond non, et la valeur de ce
+  // est forcément autre, `estPageVieillie` répond non, et la valeur de ce
   // repli ne change alors strictement rien à ce qui est affiché.
   const [reprise] = useState<Reprise>(() =>
     repriseApresErreur(erreur, {

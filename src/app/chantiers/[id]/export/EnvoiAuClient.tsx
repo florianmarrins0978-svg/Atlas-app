@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { unstable_isUnrecognizedActionError as actionInconnue } from "next/navigation";
 import { colors, font, smallCaps, texteSituation } from "@/lib/design-tokens";
 import { DUREES } from "@/lib/durees-chantier";
 import BottomSheet from "@/components/atlas/BottomSheet";
@@ -36,6 +37,20 @@ import {
 import type { VerdictJour } from "@/server/repositories/preparation-envoi";
 import type { EnvoiDuDevis } from "@/lib/message-client";
 import BandeDuree from "../BandeDuree";
+
+/**
+ * **UNE PAGE OUVERTE AVANT LA MISE À JOUR — sa panne du 17 octobre 2026.**
+ *
+ * *« Je ne peux plus choisir deux dates, ni même envoyer le devis avec une
+ * seule. »* Son espace venait de basculer de version sous sa feuille ouverte :
+ * chaque action portait l'identifiant de l'ancienne, et le serveur neuf les
+ * refusait toutes. L'écran disait « Réessayez » dans la fiche du jour, cachée
+ * sous le pied, puis la phrase anglaise de Next.js à l'envoi ; réessayer ne
+ * répare jamais cela, recharger toujours.
+ *
+ * La phrase est celle du planning, qui a payé la même panne le 11 septembre.
+ */
+const PAGE_VIEILLIE = "Rien n'est parti. Rechargez la page.";
 
 // L'unique arrêt avant l'envoi (docs/AGENT.md §2.2). Le patron vient de valider
 // son devis : on ne lui redemande pas s'il est sûr — un arrêt qui ne peut mener
@@ -288,8 +303,8 @@ function Contenu({
         });
         setEtat({ ...AUCUNE_PROPOSITION, propositions });
       })
-      .catch(() => {
-        if (!annule) setErreur("Impossible de préparer l'envoi pour l'instant.");
+      .catch((e) => {
+        if (!annule) setErreur(actionInconnue(e) ? PAGE_VIEILLIE : "Impossible de préparer l'envoi pour l'instant.");
       });
     return () => {
       annule = true;
@@ -380,12 +395,16 @@ function Contenu({
       // Un jour refusé se REGARDE quand même : la fiche dit pourquoi, la case
       // reste éteinte. C'est ce qui reste du geste en deux temps.
       if (!retirer && rendu.retenable) setEtat((e) => toucherUnJour(e, jour, duree));
-    } catch {
+    } catch (e) {
       if (dernierTouche.current !== jour) return;
+      // Aussi au pied, avec le bouton : la fiche du jour défile sous lui, et
+      // « Réessayez » y promettait un geste qui ne répare rien.
+      const vieillie = actionInconnue(e);
+      if (vieillie) setErreur(PAGE_VIEILLIE);
       setVerdict({
         jour,
         retenable: false,
-        raison: "Impossible de vérifier cette date pour l'instant. Réessayez.",
+        raison: vieillie ? PAGE_VIEILLIE : "Impossible de vérifier cette date pour l'instant. Réessayez.",
         alternative: null,
       });
     } finally {
@@ -435,6 +454,10 @@ function Contenu({
       // raison plutôt que de lancer (`actions.ts`) : arriver ici signifie que
       // la requête elle-même n'a pas abouti — réseau coupé, serveur en train de
       // se recompiler. On le dit, plutôt que d'accuser l'envoi.
+      if (actionInconnue(e)) {
+        setErreur(PAGE_VIEILLIE);
+        return;
+      }
       setErreur(
         e instanceof Error && e.message
           ? `L'envoi n'a pas abouti : ${e.message.slice(0, 160)}`

@@ -44,6 +44,7 @@ qui ne se résoudra pas en codant.
 14. [Demander à votre comptable : ce que vaut l’accusé de réception d’une facture](#14-demander-à-votre-comptable--ce-que-vaut-laccusé-de-réception-dune-facture)
 15. [Créer le compte Brevo, pour que le code de vérification parte](#15-créer-le-compte-brevo-pour-que-le-code-de-vérification-parte)
 16. [Prendre un nom de domaine, pour que le devis parte d’Atlas avec un lien cliquable](#16-prendre-un-nom-de-domaine-pour-que-le-devis-parte-datlas-avec-un-lien-cliquable)
+17. [Laisser un client refuser les nouvelles conditions sans perdre ses données](#17-laisser-un-client-refuser-les-nouvelles-conditions-sans-perdre-ses-données)
 
 ---
 
@@ -1177,3 +1178,66 @@ change. Le SMS ne bouge pas.
 ### En attendant
 
 Par **SMS**, le lien arrive cliquable. Par e-mail, le client copie l’adresse.
+
+---
+
+## 17. Laisser un client refuser les nouvelles conditions sans perdre ses données
+
+*Ajouté le 17 octobre 2026, avec votre accord.*
+
+### Le problème
+
+Quand une nouvelle version des conditions générales sort, l'application se
+ferme tant que l'artisan ne l'a pas acceptée. S'il refuse, il ne peut que se
+déconnecter. Or vos conditions lui promettent deux choses :
+
+| Ce qu'elles promettent | Ce qu'il peut faire aujourd'hui |
+|---|---|
+| article 15 : refuser la nouvelle version et résilier sans frais | rien, aucun écran n'est atteignable |
+| exporter toutes ses données, en permanence (Réglages, puis Mes données) | rien, même chose |
+
+Il est donc enfermé dehors, ses devis et ses factures dedans. C'est ce point
+qui serait attaquable, pas l'absence d'un bouton « Refuser » : pour un nouvel
+inscrit, « Se déconnecter » suffit, il n'a encore rien chez nous.
+
+### Ce qui est vérifié
+
+- **Accepter en un geste, sans case, est légal entre professionnels** : le
+  contrat de sous-traitance doit être écrit, l'électronique compte (RGPD
+  article 28.9, lignes directrices 07/2020 de l'EDPB) ; la Cour de justice
+  de l'Union a admis des conditions générales entre professionnels sans case
+  à cocher (24 novembre 2022, C‑358/21) ; le Code civil demande que le texte
+  soit montré avant et l'acceptation expresse (articles 1119, 1127‑2,
+  1127‑3).
+- **Le vrai risque est la preuve** : le tribunal de Paris a écarté des
+  conditions faute de preuve de leur acceptation (7 mai 2024, n° 23/09970).
+  Atlas garde déjà qui, quand, quelle version et l'empreinte du texte ; il
+  faudra garder aussi la phrase affichée au-dessus du bouton.
+
+### Ce que vous avez tranché le 18 octobre 2026
+
+| Le cas | Ce qui se passe |
+|---|---|
+| il résilie normalement, abonnement annuel compris | il garde tout jusqu'à l'échéance déjà payée. **C'est déjà codé** : Stripe arrête l'abonnement en fin de période, et l'écran dit « s'arrête le … » |
+| il **refuse de nouvelles conditions** en cours de période | **la B** : résiliation immédiate, et **les mois payés et non utilisés lui sont remboursés**. Lui couper l'accès en gardant son argent, parce que c'est nous qui changeons les règles, serait le point le plus attaquable (Code de commerce, article L442‑1) |
+| l'échéance est passée | **lecture seule** : il voit tout et exporte, il ne crée plus rien (le mécanisme de l'essai terminé, étendu) |
+| trente jours après | **effacement**, prévenu par e-mail avant. La durée est déjà décidée dans `src/server/retention.ts` |
+
+### Ce qui n'est pas codé aujourd'hui, vérifié dans le code
+
+- un abonnement **résilié reste ouvert en écriture** : seul l'essai terminé passe en lecture seule (`enLectureSeule`, `src/lib/abonnements.ts`). Un client résilié utilise donc Atlas gratuitement ;
+- **aucun effacement** n'existe : ni fermeture de compte, ni suppression après résiliation ;
+- l'article 13 des CGU promet un délai « [À COMPLÉTER] » puis la suppression : il faudra y écrire trente jours.
+
+### Ce qui reste, et qui le fait
+
+| | Qui |
+|---|---|
+| dessiner puis coder « Refuser » pour un client existant : récupérer ses données, puis résilier avec remboursement | moi |
+| coder la lecture seule après l'échéance, puis l'effacement à trente jours | moi |
+| coder « Avant de partir » pour une résiliation normale : passer à une formule moins chère, et « Pourquoi partez-vous ? » facultatif, avec une case de texte libre ; réponse et texte s'enregistrent dans Stripe, sur la résiliation elle-même (`cancellation_details`), où vous les lisez sans écran de plus (votre accord du 18 octobre) | moi |
+| vérifier que le blocage attend bien les trente jours de préavis de l'article 15 | moi |
+| confirmer qu'un seul bouton vaut pour le contrat de sous-traitance | le juriste qui relira les textes (point 2) |
+| dire si Atlas doit garder les factures dix ans (article 13) ou seulement les rendre à l'artisan : l'obligation comptable pèse sur lui, et un sous-traitant doit en principe rendre puis effacer (RGPD, article 28.3.g) | le juriste |
+
+Planche : `appli/documents-legaux-un-geste.html`.

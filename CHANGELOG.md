@@ -66,6 +66,50 @@ Format : le plus récent en tête.
   R-VAN, MP Rotator s'expliquent sous la planche des tuyères.
 - **Au nez de robinet, le manque de voies se lit sous le programmateur**, et
   la phrase en rouge ne parle d'un numéro de nourrice que s'il y a une nourrice.
+## 2026-10-17
+
+- **Un enregistrement lancé sans attendre sa réponse ne se perd plus sans un
+  mot sur une page vieillie.** Sa demande : *« va regarder s'il n'y a pas
+  d'autres problèmes »*. Trois familles de gestes sur une page ouverte avant
+  une bascule : ceux qui attrapent le refus (ils le disent), ceux qui le
+  jettent à l'écran d'erreur (il recharge seul depuis ce soir), et ceux qui
+  n'attendent rien, comme le titre du devis enregistré en quittant le champ :
+  le refus n'allait nulle part, le titre semblait écrit. `VeilleReponseServeur`
+  reconnaît maintenant la page vieillie et dit de recharger.
+  `scripts/test-geste-muet-page-vieillie-e2e.ts`, vu rouge.
+  **Le découpage du planning (c58cfab) n'y est pour rien** : comparé ligne à
+  ligne, ses 6 573 lignes sont identiques hors imports. La racine commune des
+  pannes du soir est la bascule de version sous une page ouverte.
+
+- **Un client qui accepte depuis une page vieillie n'est plus dans une
+  impasse.** Le soir même, à 23 h 17 : son client choisit sa date et tombe
+  sur « Une erreur, cette page n'a pas pu s'afficher », sans notification ni
+  chantier au planning. La page du client datait d'avant la bascule vers
+  cc9458b ; l'acceptation partait avec une action inconnue, `useActionState`
+  jetait le refus jusqu'à l'écran d'erreur, et « Réessayer » rejouait la même
+  action. `src/lib/reprise-erreur.ts` reconnaissait le morceau de code
+  disparu, pas l'action disparue : `estPageVieillie` (ex
+  `estMorceauIntrouvable`) reconnaît les deux, et la page se recharge seule,
+  une fois. Aucune acceptation n'était partie : rechargée, elle aboutit.
+  Écran reproduit à l'identique ici avant correction.
+  `scripts/test-client-page-vieillie-e2e.ts`, vu rouge.
+
+- **La feuille d'envoi dit « Rien n'est parti. Rechargez la page. » quand sa
+  page date d'avant une mise à jour.** Sa panne du soir : *« je ne peux plus
+  choisir deux dates, ni même envoyer le devis avec une seule »*. Son espace
+  avait basculé de 5fa7ce1 à df3c822 sous sa feuille ouverte (fiche de
+  l'espace : 20 h 59 en construction, 21 h 14 basculé ; capture à 21 h 04).
+  Toutes les actions de la page étaient refusées comme inconnues ; l'écran
+  disait « Réessayez » dans la fiche du jour, cachée sous le pied collé, puis
+  la phrase anglaise de Next.js à l'envoi. Le jour touché, l'envoi et la
+  préparation reconnaissent désormais ce refus
+  (`unstable_isUnrecognizedActionError`) et disent le seul geste qui répare,
+  au pied, à côté du bouton. **Le produit n'avait pas de défaut** : sur la
+  version servie, deux dates se choisissent et partent (suite des deux dates
+  verte, et son cas exact rejoué : 29 octobre, Lafonte sans équipe).
+  `scripts/test-envoi-page-vieillie-e2e.ts`, vue rouge avant la correction.
+  Ce qui reste, et n'est pas corrigé : une page ouverte avant une bascule
+  reste vieillie partout ailleurs que sur ce geste et le planning (`TODO.md`).
 
 ## 2026-10-16
 

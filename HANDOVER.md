@@ -32,6 +32,34 @@ dans `photos.ts`, sinon « photo à venir ». Et aucune batterie n'a été joué
 ce lot, à sa demande : une seule à la fin, qu'il demande.
 
 **Ce qui reste** : `TODO.md`, « l'écran du plan est codé ».
+## UNE ACTION INCONNUE RECHARGE LA PAGE (17 octobre 2026)
+
+**Les trois familles de gestes sur une page vieillie**, et qui les tient :
+le refus attrapé par l'écran (sa propre phrase, à faire dire « Rechargez »
+écran par écran, `TODO.md`) ; le refus jeté au rendu (`error.tsx`, recharge
+seul) ; le refus que personne n'attend (`VeilleReponseServeur`, bandeau).
+
+**Le piège** : chaque bascule de version de son espace laisse les pages
+ouvertes avec des identifiants d'action périmés. Une action lancée par un
+formulaire (`useActionState`) jette le refus jusqu'à l'écran d'erreur ;
+`estPageVieillie` (`src/lib/reprise-erreur.ts`) le reconnaît désormais par le
+nom `UnrecognizedActionError` et par le message, et recharge une fois. Un
+écran qui attrape le refus lui-même doit le dire à sa façon (feuille d'envoi,
+planning). Côté client, rien n'est parti : il refait son choix.
+
+## LA FEUILLE D'ENVOI SUR UNE PAGE VIEILLIE (17 octobre 2026)
+
+**Le piège à ne pas refaire** : sa plainte « je ne peux plus choisir de date,
+ni envoyer » arrivait quatre minutes après une bascule de version de son
+espace (la fiche l'horodate). Rejouée ici sur la version servie, la feuille
+marchait. La cause était sa page, ouverte d'avant. Lire la fiche AVANT de
+chercher dans le produit (`CLAUDE.md` §1 bis, `AGENTS.md`).
+
+**Ce qui est fait** : `EnvoiAuClient.tsx` reconnaît une action inconnue
+(`unstable_isUnrecognizedActionError` de `next/navigation`) et écrit
+`PAGE_VIEILLIE` au pied. **Pour éprouver une page vieillie sans rebâtir** :
+réécrire l'en-tête `next-action` des requêtes avec un identifiant inconnu,
+c'est le vrai serveur qui répond « inconnue » (voir la suite).
 
 ## LE DEVIS SANS GLISSEMENT : branche `claude/devis-croix-plus-a-droite` (16 octobre 2026)
 

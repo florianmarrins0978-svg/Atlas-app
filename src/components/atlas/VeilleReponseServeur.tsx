@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { colors, font } from "@/lib/design-tokens";
 import { estReponseIllisible, PHRASE_REPONSE_ILLISIBLE } from "@/lib/reponse-illisible";
+import { estPageVieillie } from "@/lib/reprise-erreur";
 
 /**
  * Quand la réponse du serveur n'a pas pu être lue, le dire — en français.
@@ -21,26 +22,37 @@ import { estReponseIllisible, PHRASE_REPONSE_ILLISIBLE } from "@/lib/reponse-ill
  * reconnaît cette famille d'échec, et pose une phrase avec le seul geste qui
  * marche : recharger.
  *
+ * **Il reconnaît aussi la page vieillie — 17 octobre 2026.** Un geste lancé
+ * sans attendre sa réponse (le titre du devis, enregistré en quittant le
+ * champ) refusé par un serveur qui a changé de version ne rejetait vers
+ * personne : le titre semblait écrit, il ne l'était pas. La même phrase
+ * dirait à tort que le serveur tarde ; celle-ci dit ce qui s'est passé.
+ *
  * **Ce qu'il ne fait pas, et c'est délibéré.** Il ne masque aucune autre
  * erreur : tout ce qu'il ne reconnaît pas continue son chemin vers le panneau
  * habituel. Habiller en « le serveur se prépare » un défaut du code enverrait
  * chercher au mauvais endroit — la faute que ce dépôt paie le plus cher.
  */
+const PHRASE_PAGE_VIEILLIE =
+  "Atlas a été mis à jour depuis l'ouverture de cette page : ce que vous venez de faire n'est pas parti. Rechargez la page.";
+
 export default function VeilleReponseServeur() {
-  const [visible, setVisible] = useState(false);
+  const [phrase, setPhrase] = useState<string | null>(null);
 
   useEffect(() => {
     function surRejet(e: PromiseRejectionEvent) {
       const raison = e.reason;
       const message =
         raison instanceof Error ? raison.message : typeof raison === "string" ? raison : "";
-      if (estReponseIllisible(message)) setVisible(true);
+      if (estPageVieillie(raison)) setPhrase(PHRASE_PAGE_VIEILLIE);
+      else if (estReponseIllisible(message)) setPhrase(PHRASE_REPONSE_ILLISIBLE);
     }
     // `error` aussi : selon le chemin, l'échec remonte en événement d'erreur
     // plutôt qu'en promesse rejetée, et n'en attraper qu'un laisserait la
     // moitié des cas muets — ce qu'on est précisément en train de corriger.
     function surErreur(e: ErrorEvent) {
-      if (estReponseIllisible(e.message)) setVisible(true);
+      if (estPageVieillie(e.error)) setPhrase(PHRASE_PAGE_VIEILLIE);
+      else if (estReponseIllisible(e.message)) setPhrase(PHRASE_REPONSE_ILLISIBLE);
     }
     window.addEventListener("unhandledrejection", surRejet);
     window.addEventListener("error", surErreur);
@@ -50,7 +62,7 @@ export default function VeilleReponseServeur() {
     };
   }, []);
 
-  if (!visible) return null;
+  if (!phrase) return null;
 
   return (
     <div
@@ -70,7 +82,7 @@ export default function VeilleReponseServeur() {
         }}
       >
         <p className="text-[14px] leading-snug" style={{ color: colors.ink }}>
-          {PHRASE_REPONSE_ILLISIBLE}
+          {phrase}
         </p>
         <div className="mt-3 flex items-center gap-3">
           <button
@@ -83,7 +95,7 @@ export default function VeilleReponseServeur() {
           </button>
           <button
             type="button"
-            onClick={() => setVisible(false)}
+            onClick={() => setPhrase(null)}
             className="text-[13px]"
             style={{ color: colors.muted }}
           >
