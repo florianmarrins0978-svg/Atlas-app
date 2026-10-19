@@ -555,7 +555,7 @@ export default function DessinerLePlan({
           data-atlas="faire-le-plan"
           disabled={enCours}
           onClick={() => onFaire(JSON.stringify(dessin))}
-          className="atlas-plein mx-[22px] mt-[14px] flex min-h-[56px] w-[calc(100%-44px)] items-center justify-center gap-2 rounded-[12px] border-0 text-[15px] font-semibold"
+          className="atlas-plein mx-[22px] mt-[14px] flex min-h-[56px] w-[calc(100%-44px)] items-center justify-center gap-2 rounded-full border-0 text-[15px] font-semibold"
           style={{ backgroundColor: colors.plein, color: surPlein }}
         >
           {enCours ? (
@@ -843,9 +843,9 @@ function FeuilleDuDessin({
           <div className="mt-[14px]">
             <span id="lignes-titre" className={`block ${libelleCaps}`} style={{ color: colors.muted }}>Lignes de goutte-à-goutte</span>
             <div role="group" aria-labelledby="lignes-titre" className="mt-[6px] grid items-center gap-2" style={{ gridTemplateColumns: "56px 1fr 56px" }}>
-              <button type="button" aria-label="Une ligne de moins" disabled={!lignes.n || lignes.n <= 1} onClick={() => setLignes({ n: Math.max(1, (lignes.n ?? 1) - 1), choisies: true })} className="min-h-[52px] rounded-[12px] text-[22px] disabled:opacity-45" style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}>−</button>
+              <button type="button" aria-label="Une ligne de moins" disabled={!lignes.n || lignes.n <= 1} onClick={() => setLignes({ n: Math.max(1, (lignes.n ?? 1) - 1), choisies: true })} className="min-h-[52px] rounded-full text-[22px] disabled:opacity-45" style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}>−</button>
               <output aria-live="polite" className="text-center text-[17px]">{lignes.n ? ecritLignes(lignes.n) : "?"}</output>
-              <button type="button" aria-label="Une ligne de plus" onClick={() => setLignes({ n: (lignes.n ?? propose ?? 1) + 1, choisies: true })} className="min-h-[52px] rounded-[12px] text-[22px]" style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}>+</button>
+              <button type="button" aria-label="Une ligne de plus" onClick={() => setLignes({ n: (lignes.n ?? propose ?? 1) + 1, choisies: true })} className="min-h-[52px] rounded-full text-[22px]" style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}>+</button>
             </div>
             {propose && <p className="mt-[6px] text-[13px]" style={{ color: colors.muted }}>{propose === lignes.n ? "Proposé." : `Proposé : ${ecritLignes(propose)}.`}</p>}
           </div>
@@ -853,7 +853,7 @@ function FeuilleDuDessin({
 
         <div className="mt-[18px] grid grid-cols-2 gap-2">
           {!neuf && feuille.sorte !== "point" && feuille.sorte !== "arbre" && (
-            <button type="button" onClick={tourner} className="min-h-[56px] rounded-[12px] text-[15px] font-semibold" style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}>
+            <button type="button" onClick={tourner} className="min-h-[56px] rounded-full text-[15px] font-semibold" style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}>
               Tourner
             </button>
           )}
@@ -861,7 +861,7 @@ function FeuilleDuDessin({
             type="button"
             data-atlas="feuille-valider"
             onClick={valider}
-            className={`atlas-plein min-h-[56px] rounded-[12px] border-0 text-[15px] font-semibold ${!neuf && feuille.sorte !== "point" && feuille.sorte !== "arbre" ? "" : "col-span-2"}`}
+            className={`atlas-plein min-h-[56px] rounded-full border-0 text-[15px] font-semibold ${!neuf && feuille.sorte !== "point" && feuille.sorte !== "arbre" ? "" : "col-span-2"}`}
             style={{ backgroundColor: colors.plein, color: surPlein }}
           >
             {feuille.sorte === "point" ? "Fermer" : neuf ? "Poser" : "Valider"}

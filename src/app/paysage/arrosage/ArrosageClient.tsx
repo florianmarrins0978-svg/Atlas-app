@@ -311,7 +311,7 @@ export default function ArrosageClient({
             type="button"
             data-atlas="ouvrir-dessin"
             onClick={() => setDessiner(true)}
-            className="mt-2 flex min-h-[56px] w-full items-center justify-center rounded-[12px] text-[11px] font-semibold uppercase"
+            className="mt-2 flex min-h-[56px] w-full items-center justify-center rounded-full text-[11px] font-semibold uppercase"
             style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink, letterSpacing: "0.18em" }}
           >
             Dessiner le plan
