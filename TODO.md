@@ -5,7 +5,7 @@
 - [ ] La batterie entière (niveau 3 : migration et argent), lancée par lui, puis `main` avec son accord.
 - [ ] Sur son espace, lire un vrai devis Aqua Plus en photo et en PDF : la lecture IA n'est pas éprouvable ici.
 - [ ] Le premier appelant de `enregistrerDemande` : le message au fournisseur du plan d'arrosage (lot B), puis la liste d'un devis.
-- [ ] Le matériel dicté ne prend une ligne que si au moins un prix d'achat existe (pour ne rien changer aux devis d'hier) : à lui demander s'il veut la ligne « à chiffrer » même sans prix d'achat.
+- [x] ~~Le matériel dicté sans aucun prix~~ : tranché par lui le 19 octobre 2026, il part au devis « à chiffrer », sans prix. Codé.
 
 ## ⏳ ARROSAGE : L'ÉCRAN DU PLAN EST CODÉ (18 octobre 2026), voici ce qui reste
 

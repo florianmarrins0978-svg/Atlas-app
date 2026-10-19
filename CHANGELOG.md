@@ -20,6 +20,10 @@ Format : le plus récent en tête.
   × marge, puis « à chiffrer » (migration 0132, `src/lib/prix-achat.ts`). Ce que
   ça évite : un sac de ciment dicté qui sortait sans prix alors qu'il sait ce
   qu'il le paie, et une marge « 20 » qui aurait vendu vingt fois le prix.
+- **Le matériel dicté part toujours au devis**, sa réponse du même jour : sans
+  aucun prix, « 3 sacs de ciment » s'écrit avec sa quantité et « à chiffrer »
+  à côté, comme le travail. Ce que ça évite : un matériel dicté qui
+  disparaissait du devis faute de prix.
 - **Trouvé par la suite rouge, corrigé à la racine** : « 3 sacs de ciment » ne
   retrouvait son tarif « Sac de ciment » qu'à la lettre, alors que le prix
   d'achat se retrouvait par les mots ; l'achat passait donc devant sa vente.

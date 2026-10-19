@@ -943,21 +943,21 @@ const MATERIEL_NON_CHIFFRE = "Le matériel n'est pas chiffré : à ajouter en li
  * qu'elle laisse sans prix :
  *
  * - une ligne « à chiffrer » prend un prix d'achat × marge s'il en répond un ;
- * - le matériel dicté (« 3 sacs de ciment ») prend sa ligne : son tarif de
- *   vente s'il en a un seul, sinon un prix d'achat × marge, sinon à chiffrer.
+ * - le matériel dicté (« 3 sacs de ciment ») prend TOUJOURS sa ligne : son
+ *   tarif de vente s'il en a un seul, sinon un prix d'achat × marge, sinon
+ *   « à chiffrer », sans prix, comme le travail (sa réponse du 19 octobre
+ *   2026 : *« il me met les 3 sacs de ciment dans le devis, pas de prix, et à
+ *   côté il me marque à chiffrer comme il fait avec les autres »*).
  *
- * **Sans aucun prix d'achat enregistré, rien ne change** : le devis d'un
- * artisan qui n'a pas ouvert « Fournisseurs et partenaires » reste celui
- * d'hier, au centime et à la ligne près. La règle elle-même est pure
+ * Sans matériel ni prix d'achat, rien ne change. La règle elle-même est pure
  * (`prixDUneLigneDictee`, `src/lib/prix-achat.ts`).
  */
 async function completerParSesAchats(ctx: Ctx, chantierId: string, vente: PropositionPrix): Promise<PropositionPrix> {
-  const achats = await prixAchatCandidats(ctx);
-  if (achats.length === 0) return vente;
-  const [marges, tarifs, materiel, prestations] = await Promise.all([
+  const [achats, materiel] = await Promise.all([prixAchatCandidats(ctx), listerMateriel(ctx, chantierId)]);
+  if (achats.length === 0 && materiel.length === 0) return vente;
+  const [marges, tarifs, prestations] = await Promise.all([
     lireMarges(ctx),
     listerTarifs(ctx),
-    listerMateriel(ctx, chantierId),
     listerPrestations(ctx, chantierId),
   ]);
   const sources = { achats, marges };
@@ -1007,13 +1007,15 @@ async function completerParSesAchats(ctx: Ctx, chantierId: string, vente: Propos
     });
   }
 
+  if (lignes.length === base.length && lignes.every((l, i) => l === base[i])) return vente;
   const chiffrees = lignes.filter((l) => l.montant !== null);
-  if (chiffrees.length === 0) return vente;
-  const total = chiffrees.reduce((s, l) => s.plus(l.montant!), new Decimal(0)).toFixed(2);
+  const total = chiffrees.length > 0 ? chiffrees.reduce((s, l) => s.plus(l.montant!), new Decimal(0)).toFixed(2) : null;
   return {
     ...vente,
-    origine: vente.prixPropose === null ? "achat" : vente.origine,
-    prixPropose: total,
+    origine: vente.prixPropose === null && total !== null ? "achat" : vente.origine,
+    // Rien de chiffré : aucun prix proposé, et surtout pas 0 €. Les lignes
+    // partent quand même au devis, « à chiffrer » (`devis-depuis-dictee.ts`).
+    prixPropose: total ?? vente.prixPropose,
     libelle: lignes.map((l) => l.libelle).join("\n"),
     lignes,
     explication: {

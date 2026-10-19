@@ -24,9 +24,10 @@ Branche `claude/reglages-fournisseurs-partenaires`, **pas encore sur `main`**.
   démonstration du devis. Dans l'application, c'est le devis qu'il dicte déjà.
 - **Aqua Plus et France Bonhomme ne sont pas créés d'office** : l'application
   sert tous les artisans. Il les ajoute en une ligne.
-- **Le matériel dicté ne prend sa ligne que si au moins un prix d'achat
-  existe** : sans cela, les devis de tous les artisans changeaient d'un coup.
-  À trancher par lui (`TODO.md`).
+- **Le matériel dicté part TOUJOURS au devis** (ta réponse du 19 octobre) :
+  « 3 sacs de ciment », sans aucun prix, s'écrit avec sa quantité et
+  « à chiffrer » à côté, comme le travail. Éprouvé par
+  `test-devis-prix-achat-db` et les deux suites navigateur de la dictée.
 
 ## Ce que la suite rouge a corrigé
 

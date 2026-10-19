@@ -35239,9 +35239,11 @@ codée le 19 (migration 0132).
    suivent la même règle de mots** (`lesMieuxNommees`) : la vente cherchée à
    la lettre et l'achat par les mots faisaient passer l'achat devant (trouvé
    par la suite rouge le jour même).
-5. **Le complément du devis dicté ne touche à rien sans prix d'achat**
-   (`completerParSesAchats`) : le devis d'un artisan qui n'a pas ouvert la
-   rubrique reste celui d'hier. Une origine de plus, « achat », ne vit que
+5. **Le matériel dicté part toujours au devis**, « à chiffrer » sans prix
+   (sa réponse du 19 octobre) ; sans matériel ni prix d'achat, le complément
+   (`completerParSesAchats`) ne touche à rien. Quand aucun prix ne sort, ses
+   lignes sont écrites par le repli de `devis-depuis-dictee.ts`, après le
+   travail. Une origine de plus, « achat », ne vit que
    dans `OriginePrix` : l'orchestrateur ne lit pas les prix d'achat.
 6. **Un devis reçu se garde tout de suite, ses prix après son appui**, comme
    `ImportTarifs.tsx` : `deposerDevisRecuAction` range le fichier et rend ce

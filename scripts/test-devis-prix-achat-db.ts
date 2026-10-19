@@ -40,13 +40,23 @@ async function entreprise(n: string) {
 async function main() {
   await nettoyerBase();
 
-  await test("sans aucun prix d'achat, le devis reste celui d'hier", async () => {
+  await test("sans aucun prix, les 3 sacs de ciment partent quand même, « à chiffrer », jamais à zéro", async () => {
     const A = await entreprise("hier");
     const c = await chantiersRepo.creerChantier(A, { nom: "Chantier" });
     await ajouterMateriel(A, c.id, "3 sacs de ciment");
     const p = await preparerPropositionPrix(A, c.id);
+    assert.equal(p?.prixPropose, null, "aucun prix proposé, et surtout pas 0 €");
+    assert.deepEqual(
+      p?.lignes.map((l) => [l.libelle, l.montant, l.quantite]),
+      [["3 sacs de ciment", null, "3"]]
+    );
+  });
+
+  await test("sans matériel ni prix d'achat, le devis reste celui d'hier", async () => {
+    const A = await entreprise("vide");
+    const c = await chantiersRepo.creerChantier(A, { nom: "Chantier vide" });
+    const p = await preparerPropositionPrix(A, c.id);
     assert.equal(p?.origine, "aucun");
-    assert.equal(p?.prixPropose, null);
     assert.deepEqual(p?.lignes, []);
   });
 
