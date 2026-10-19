@@ -124,8 +124,8 @@
          qui manquait, c'est de VOIR à qui il s'applique : « je sais pas si elle
          s'affilie à Pilou, rien ne me dit quoi que ce soit ». Sous chaque marge, les
          sociétés qu'elle couvre ; sur chaque carte et chaque fiche, la marge qui vaut. -->
-    <div class="coef"><span>Ma marge sur le matériel<small id="ex-mat"></small></span><input id="coef" inputmode="decimal" aria-label="Marge sur le matériel"></div>
-    <div class="coef"><span>Ma marge sur la main d’œuvre des partenaires<small id="ex-mo"></small></span><input id="coef-mo" inputmode="decimal" aria-label="Marge sur la main d’œuvre"></div>
+    <div class="coef" data-pour="fournisseurs"><span>Ma marge sur le matériel<small id="ex-mat"></small></span><input id="coef" inputmode="decimal" aria-label="Marge sur le matériel"></div>
+    <div class="coef" data-pour="partenaires" hidden><span>Ma marge sur la main d’œuvre<small id="ex-mo"></small></span><input id="coef-mo" inputmode="decimal" aria-label="Marge sur la main d’œuvre"></div>
   </section>
 
   <section class="bloc">
@@ -163,11 +163,14 @@
   var nouvelle = function (nom) { return { nom: nom, prix: [], devis: [], demandes: [], marge: null }; };
   var societes = { fournisseurs: [nouvelle("Aqua Plus"), nouvelle("France Bonhomme")], partenaires: [] };
   var UNITES = { fournisseurs: ["pièce", "sac", "m", "m²", "m³", "kg", "palette"], partenaires: ["heure", "journée", "m", "m²", "forfait"] };
-  var rubrique = "fournisseurs", ouverte = null, partie = "prix";
+  var rubrique = "fournisseurs", ouverte = null, partie = "prix", alerteMarge = "";
 
   var pluriel = function (n, mot) { return n + " " + mot + (n > 1 ? "s" : ""); };
   function dessinerListe() {
     document.querySelectorAll("[data-rubrique]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.rubrique === rubrique)); });
+    // Une marge par onglet, sa remarque du 19 octobre 2026 : le matériel chez les
+    // fournisseurs, la main d'œuvre chez les partenaires, jamais les deux à la fois.
+    document.querySelectorAll("[data-pour]").forEach(function (d) { d.hidden = d.dataset.pour !== rubrique; });
     $("nom-nouveau").placeholder = rubrique === "fournisseurs" ? "Un autre fournisseur" : "Une société partenaire";
     var l = societes[rubrique];
     $("societes").innerHTML = l.length ? l.map(function (s, i) {
@@ -183,7 +186,7 @@
     document.querySelectorAll("[data-partie]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.partie === partie)); });
     var g = generale(rubrique);
     // Sa marge, écrite en tête de sa fiche : la générale tant qu'on n'en donne pas d'autre.
-    var h = '<div class="coef"><span>Ma marge chez ' + texte(s.nom) + "<small>" +
+    var h = '<div class="coef"><span>Ma marge chez ' + texte(s.nom) + "<small>" + (alerteMarge ? texte(alerteMarge) + " " : "") +
       (s.marge !== null ? "La sienne. Videz la case pour reprendre la marge générale" + (g !== null ? " (" + fois(g) + ")" : "") + "." : g !== null ? "Votre marge générale, " + fois(g) + ". Tapez-en une autre pour lui seul." : "Pas encore donnée.") +
       '</small></span><input id="marge-societe" inputmode="decimal"  value="' + (s.marge !== null ? String(s.marge).replace(".", ",") : "") + '" aria-label="Marge chez ' + texte(s.nom) + '"></div>';
     if (partie === "prix") {
@@ -216,7 +219,13 @@
   // vente : elle montre les deux autres marches.
   // La marge qui vaut pour une société : la sienne si elle en a une, sinon la marge
   // générale de sa rubrique. Vide partout : rien n'est ajouté d'office, la ligne reste à chiffrer.
-  var generale = function (r) { return nombre($(r === "partenaires" ? "coef-mo" : "coef").value); };
+  // Une marge au-dessus de × 3 est une faute de frappe (« 20 » pour 20 %) : elle
+  // ferait payer vingt fois le prix. On la refuse et on dit quoi taper.
+  var MARGE_MAX = 3;
+  var lisible = function (v) { var n = nombre(v); return n !== null && n > 0 && n <= MARGE_MAX ? n : null; };
+  var trop = function (v) { var n = nombre(v); return n !== null && n > MARGE_MAX ? n : null; };
+  var conseil = function (n) { return "« " + String(n).replace(".", ",") + " » ferait × " + String(n).replace(".", ",") + ". Pour " + String(n).replace(".", ",") + " % de marge, tapez " + (1 + n / 100).toFixed(2).replace(".", ",") + "."; };
+  var generale = function (r) { return lisible($(r === "partenaires" ? "coef-mo" : "coef").value); };
   var margeDe = function (s, r) { return s.marge !== null && s.marge !== undefined ? s.marge : generale(r); };
   var fois = function (c) { return "× " + c.toFixed(2).replace(".", ","); };
   // Sous chaque marge, les sociétés qu'elle couvre, et celles qui ont la leur.
@@ -225,6 +234,8 @@
       var l = societes[x[0]], g = generale(x[0]);
       var couvertes = l.filter(function (s) { return s.marge === null || s.marge === undefined; }).map(function (s) { return s.nom; });
       var propres = l.filter(function (s) { return s.marge !== null && s.marge !== undefined; }).map(function (s) { return s.nom + " " + fois(s.marge); });
+      var faute = trop($(x[0] === "partenaires" ? "coef-mo" : "coef").value);
+      if (faute !== null) { $(x[1]).textContent = conseil(faute); return; }
       $(x[1]).textContent = !l.length ? (x[0] === "partenaires" ? "Aucun partenaire encore." : "") :
         (g === null ? "Pas encore donnée : les prix chez " + couvertes.join(", ") + " restent à chiffrer." : (couvertes.length ? "S’applique à " + couvertes.join(", ") + "." : "Ne s’applique à personne.")) +
         (propres.length ? " Leur marge à part : " + propres.join(", ") + "." : "");
@@ -263,7 +274,7 @@
     if (!b) return;
     if (b.dataset.rubrique) { rubrique = b.dataset.rubrique; dessinerListe(); return; }
     if (b.id === "ajouter-societe") { var n = $("nom-nouveau").value.trim(); if (!n) return; societes[rubrique].push(nouvelle(n)); $("nom-nouveau").value = ""; dessinerListe(); quiCouvre(); return; }
-    if (b.dataset.ouvrir !== undefined) { ouverte = Number(b.dataset.ouvrir); partie = "prix"; dessinerFiche(); $("fiche").hidden = false; return; }
+    if (b.dataset.ouvrir !== undefined) { ouverte = Number(b.dataset.ouvrir); partie = "prix"; alerteMarge = ""; dessinerFiche(); $("fiche").hidden = false; return; }
     if (b.id === "fermer") { $("fiche").hidden = true; dessinerListe(); return; }
     if (b.dataset.partie) { partie = b.dataset.partie; dessinerFiche(); return; }
     var s = ouverte === null ? null : societes[rubrique][ouverte];
@@ -287,7 +298,7 @@
   document.addEventListener("change", function (e) {
     if (e.target.id !== "marge-societe") return;
     var s = societes[rubrique][ouverte];
-    s.marge = nombre(e.target.value);
+    if (trop(e.target.value) !== null) { alerteMarge = conseil(trop(e.target.value)); s.marge = null; } else { alerteMarge = ""; s.marge = lisible(e.target.value); }
     dessinerFiche(); quiCouvre();
   });
   document.addEventListener("change", function (e) {
