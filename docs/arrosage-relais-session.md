@@ -423,3 +423,14 @@ Ses demandes : *« dans Réglages une catégorie mes fournisseurs, valable pour 
 | **deux marges** | *« oui, deux marges »* (19 octobre) : une sur le matériel, une sur la main d'œuvre des partenaires ; faites sur la planche |
 | **ordre des prix, tranché** | *« le A »* (19 octobre 2026), sur l'exemple du sac de ciment (vente 12 € ; achat 8 € × 1,30 = 10,40 €) : **son prix de vente (Réglages > Tarifs) passe TOUJOURS en premier** ; le prix d'achat × marge ne sert qu'aux articles sans prix de vente ; sinon « à chiffrer » |
 | ⚠ pas un lot arrosage | la planche vit ici faute de mieux ; codée, elle touche `src/app/reglages` et la proposition de prix (gravité ARGENT : niveau 3) |
+
+## Le 19 octobre 2026, le lot A est codé : Réglages, fournisseurs et partenaires
+
+Codé dans un dossier à part, parti d'`origin/main`, branche
+`claude/reglages-fournisseurs-partenaires` (session cloud ; la planche qui fait
+foi est la version publiée, https://claude.ai/artifact/HfsXhoFq4iLtS8FMyrvJqt,
+plus récente que la copie d'`appli/` sur `main`). Détail :
+`docs/fournisseurs-et-partenaires.md`, `ARCHITECTURE.md` §472. **Le Ø32 n'a pas
+été touché.** Le lot B (import d'un devis et prix sur le plan) reste à coder ;
+il prendra ses prix dans ces tables (`prixAchatCandidats`, `lireDevisFournisseur`,
+`enregistrerDemande`).

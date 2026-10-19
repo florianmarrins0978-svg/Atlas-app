@@ -10,6 +10,23 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## FOURNISSEURS ET PARTENAIRES : branche `claude/reglages-fournisseurs-partenaires` (19 octobre 2026)
+
+**Ce qui est fait** : sa planche validée est l'écran `/reglages/fournisseurs`
+(`FournisseursPartenaires.tsx`). Les règles sont pures dans `src/lib/prix-achat.ts`
+(marges, ordre vente puis achat puis à chiffrer, recherche et rangement des
+clients réemployés) ; le devis dicté les lit dans `completerParSesAchats`
+(`proposition-prix.ts`), **qui ne change rien tant qu'aucun prix d'achat n'est
+enregistré**. `ARCHITECTURE.md` §472 dit les décisions.
+
+**Ce qui n'est pas éprouvé ici** : la lecture IA d'un devis reçu (aucune clé
+sur ce poste). Le dépôt, lui, a été joué au navigateur : la photo est rangée,
+nommée, listée, et l'écran dit « Devis gardé. Atlas n'a pas pu en lire les prix ».
+
+**Pour le lot B (arrosage)** : `enregistrerDemande` (dépôt) attend son premier
+appelant, le message au fournisseur du plan ; `lireDevisFournisseur` sert aussi
+à importer un devis sur le plan.
+
 ## L'ÉCRAN DU PLAN D'ARROSAGE, CODÉ : branche `lot/catalogue-aquaplus-corrections`, dossier `atlas-app-aquaplus` (18 octobre 2026)
 
 **Ce qui est fait** : l'écran qu'il a validé (`appli/arrosage-plan.html`) est

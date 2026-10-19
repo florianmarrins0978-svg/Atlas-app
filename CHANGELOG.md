@@ -8,6 +8,23 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-19
 
+- **Réglages, « Fournisseurs et partenaires »** (sa planche validée,
+  `appli/reglages-fournisseurs-partenaires.html`) : ce qu'il PAIE, à part de ce
+  qu'il vend. Ses fournisseurs et ses partenaires, rangés de A à Z et cherchés
+  comme ses clients ; chaque société a ses prix, ses devis reçus (photo ou PDF,
+  nommés, gardés, lus par l'IA, rien n'entre dans « Mes prix » avant son appui)
+  et ses demandes envoyées, au filtre de date de l'application. Deux marges, le
+  matériel et la main d'œuvre, plus une marge propre par société ; au-dessus de
+  × 3, refusée avec « pour 20 % de marge, tapez 1,20 », à l'écran ET en base.
+  Le devis dicté y prend ses prix dans SON ordre : son prix de vente, puis achat
+  × marge, puis « à chiffrer » (migration 0132, `src/lib/prix-achat.ts`). Ce que
+  ça évite : un sac de ciment dicté qui sortait sans prix alors qu'il sait ce
+  qu'il le paie, et une marge « 20 » qui aurait vendu vingt fois le prix.
+- **Trouvé par la suite rouge, corrigé à la racine** : « 3 sacs de ciment » ne
+  retrouvait son tarif « Sac de ciment » qu'à la lettre, alors que le prix
+  d'achat se retrouvait par les mots ; l'achat passait donc devant sa vente.
+  Les deux se cherchent désormais avec la même règle (`lesMieuxNommees`).
+
 - **Les boutons de l'écran du plan sont des capsules**, comme partout (sa règle
   du 12 août 2026), sur l'écran et sur ses deux planches ; la ligne du seuil
   Ø25/Ø32 (sa demande du 22 août) revient sous le piquage ; les fiches du mode

@@ -185,6 +185,13 @@ const ENTREPRISE: Rubrique[] = [
     icone: "bouclier",
     href: "/reglages/donnees",
   },
+  // **Ce qu'il PAIE, à part de ce qu'il vend** — sa planche du 18 et du
+  // 19 octobre 2026 : ses fournisseurs, ses partenaires, leurs prix d'achat et
+  // ses deux marges. Après ses priorités et ses outils, jamais au milieu d'eux
+  // (`test-rubriques-reglages.ts`). Le devis dicté y prend ses prix après
+  // ses tarifs (`src/lib/prix-achat.ts`). Le patron seul
+  // l'ouvre : la page le vérifie avant de lire quoi que ce soit.
+  { nom: "Fournisseurs et partenaires", icone: "carton", href: "/reglages/fournisseurs" },
   // **La seule rubrique de l'entreprise ouverte à TOUS**, sa règle du
   // 27 septembre 2026 : *« L'organigramme doit être visible par tout le
   // monde ! »*. Le patron seul y change quelque chose ; l'écran le décide, et

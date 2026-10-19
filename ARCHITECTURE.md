@@ -35218,3 +35218,38 @@ qu'il y a des arroseurs, Ø16 au goutte-à-goutte seul, le nez de robinet gardé
 et prévenu) ; et la capture, `ecran-du-plan-robinet-nez.png` et
 `ecran-du-plan-robinet-nourrice.png`, regardée avant d'être livrée. Aucune
 batterie, à sa demande.
+
+## §472 : Ce qu'il paie vit à part de ce qu'il vend, et passe après
+
+Sa planche du 18 et du 19 octobre 2026 (`appli/reglages-fournisseurs-partenaires.html`),
+codée le 19 (migration 0132).
+
+1. **Cinq tables, pas une colonne de plus sur `tarifs`.** Un tarif est un prix
+   de VENTE qui part chez le client ; un prix d'achat ne doit jamais s'y lire.
+   Les mêler aurait fait proposer au client le prix payé chez Point P.
+2. **Les clés étrangères portent le couple (société, entreprise).** Une clé
+   étrangère se vérifie hors RLS : seule, elle laissait une entreprise ranger
+   un prix sous la société d'une autre (`test-fournisseurs-partenaires-rls.ts`).
+3. **La marge est bornée deux fois** : `lireMarge` (l'écran et l'action) et un
+   `CHECK` en base, au plus × 3. Une marge « 20 » tapée pour 20 % vendrait
+   vingt fois le prix ; le refus dit quoi taper.
+4. **L'ordre est le sien, « le A »** : `prixDUneLigneDictee` cherche son tarif,
+   puis un prix d'achat × la marge qui vaut (celle de la société, sinon la
+   générale de sa rubrique), puis rend « à chiffrer ». **Les deux recherches
+   suivent la même règle de mots** (`lesMieuxNommees`) : la vente cherchée à
+   la lettre et l'achat par les mots faisaient passer l'achat devant (trouvé
+   par la suite rouge le jour même).
+5. **Le complément du devis dicté ne touche à rien sans prix d'achat**
+   (`completerParSesAchats`) : le devis d'un artisan qui n'a pas ouvert la
+   rubrique reste celui d'hier. Une origine de plus, « achat », ne vit que
+   dans `OriginePrix` : l'orchestrateur ne lit pas les prix d'achat.
+6. **Un devis reçu se garde tout de suite, ses prix après son appui**, comme
+   `ImportTarifs.tsx` : `deposerDevisRecuAction` range le fichier et rend ce
+   qui a été lu, `accepterLignesDuDevisAction` relit chaque ligne avant
+   d'écrire. La lecture ne fait jamais échouer le dépôt.
+7. **La recherche, le rangement et le filtre de date sont ceux de
+   l'application** (`filtrerClientsParNom`, `rangerParNom`, `grouperEnBandes`,
+   `ChampRecherche`, `FiltreDeDate`), jamais recopiés.
+8. **« Je dicte », sur la planche, n'est pas dans les réglages** : c'était la
+   démonstration du devis qui prend ses prix ici. Le devis, c'est celui qu'il
+   dicte déjà.

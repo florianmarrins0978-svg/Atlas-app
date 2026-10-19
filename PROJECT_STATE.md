@@ -5,6 +5,20 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## FOURNISSEURS ET PARTENAIRES, CODÉ (19 octobre 2026), PAS ENCORE SUR `main`
+
+Branche `claude/reglages-fournisseurs-partenaires`, partie d'`origin/main`
+(70ef3861). Migration `drizzle/0132_fournisseurs_partenaires.sql` (cinq tables
+neuves sous FORCE RLS, rien d'existant touché). Écran `/reglages/fournisseurs`,
+dépôt `fournisseurs-partenaires.ts`, règles `prix-achat.ts` et
+`devis-fournisseur-lu.ts`, lecture IA `lire-devis-fournisseur.ts`, devis dicté
+complété (`proposition-prix.ts`, `completerParSesAchats`) et outil de
+l'assistant (`rechercher-tarifs-compatibles.ts`). Suites :
+`test-fournisseurs-partenaires-rls`, `test-prix-achat`,
+`test-devis-fournisseur-lu`, `test-devis-prix-achat-db`. **Niveau 3** (plancher
+`drizzle/`, gravité argent) : batterie entière avant `main`, à lancer par lui.
+Document de retour : `docs/fournisseurs-et-partenaires.md`.
+
 ## UNE ACTION INCONNUE RECHARGE LA PAGE (17 octobre 2026)
 
 L'écran d'erreur reconnaît une action que le serveur ne connaît plus et
