@@ -477,7 +477,8 @@
       yv = colonne("raccord-male25", xv, yv) + ECART;
       yv = colonne("pehd", xv, yv);
       // La voie porte le numéro de son réseau, et sa couleur sur le plan.
-      etiquettes.push([xv, yv, "Réseau " + (i + 1), i, goutte ? i - (axes.length - nbGoutte) : -1]);
+      // La voie porte le numéro du réseau qu'elle alimente : un réseau supprimé n'a plus la sienne.
+      etiquettes.push([xv, yv, "Réseau " + (voiesVivantes[i] + 1), voiesVivantes[i], goutte ? i - (axes.length - nbGoutte) : -1]);
       fin = Math.max(fin, yv);
     });
     fin = Math.max(fin, finArrivee + 40);
@@ -950,8 +951,16 @@
   }
   // La nourrice se compte sur SA fiche, comme le dessin du regard.
   var nombreNourrice = {}, titreNourrice = "", chaines = {};
+  // UN RÉSEAU SUPPRIMÉ ENLÈVE SA VOIE — sa réponse du 19 octobre 2026 : « si on était
+  // sur une nourrice 4 voies, faut passer sur une 3 voies ». Les voies vivantes, dans
+  // l'ordre des réseaux (le goutte-à-goutte reste à droite).
+  var voiesVivantes = [];
+  function voiesDuPlan(p) {
+    voiesVivantes = p.secteurs.map(function (s, i) { return i; }).filter(function (i) { return !etat.reseauxRetires[i]; });
+    return { voies: voiesVivantes.length, goutte: voiesVivantes.filter(function (i) { return p.secteurs[i].famille === "Goutte-à-goutte"; }).length };
+  }
   function groupeNourrice(p) {
-    var fiche = CAT.ficheNourrice(p.secteurs.length, p.secteurs.filter(function (s) { return s.famille === "Goutte-à-goutte"; }).length), g = {};
+    var v = voiesDuPlan(p), fiche = CAT.ficheNourrice(v.voies, v.goutte), g = {};
     (fiche ? fiche.pieces : []).forEach(function (x) { (g[x.ref] = g[x.ref] || { nom: nomCatalogue(x.ref), q: 0, u: "u" }).q += x.q; });
     // La sonde se compte comme elle est posée au-dessus du regard : changée ou supprimée, la liste suit.
     Object.keys(compte.sonde || {}).forEach(function (ref) { g[ref] = compte.sonde[ref]; });
@@ -1057,7 +1066,7 @@
     // qu'on change ou supprime comme les autres pièces.
     groupe = "amenee";
     $("teflon-piece").innerHTML = etat.teflon ? poser("op:teflon", "BDV999", "téflon 12 mm le rouleau", "téflon 12 mm le rouleau", 1) : "";
-    dessinerNourrice(p.secteurs.length, p.secteurs.filter(function (s) { return s.famille === "Goutte-à-goutte"; }).length);
+    var vv = voiesDuPlan(p); dessinerNourrice(vv.voies, vv.goutte);
     dessinerReseaux(p, res.dessin);
     dessinerPieces(p, res.dessin, M);
     dessinerListe(p, res.dessin);
