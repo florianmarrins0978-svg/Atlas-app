@@ -69,12 +69,18 @@ function borne(v: number, max: number): number {
   return Math.max(0, Math.min(max, v));
 }
 
-/** Combien de dalles tiennent entre les deux points, centrées, jamais étirées. */
+/**
+ * Combien de dalles tiennent entre les deux points, centrées, jamais étirées.
+ *
+ * **La longueur d'une dalle se pose dans le sens de la rangée, sa largeur en
+ * travers** : sa remarque du 19 octobre 2026, « les dalles se mettent d'office
+ * à l'envers, on est obligé de les tourner ». C'était l'inverse jusque-là.
+ */
 function rangee(d: { L: number; l: number; e: number | null; a: PointMetres; b: PointMetres }) {
   const dist = Math.hypot(d.b.x - d.a.x, d.b.y - d.a.y);
   const e = d.e ?? 0;
-  const n = d.l > 0 ? Math.max(1, Math.floor((dist + e) / (d.l + e) + 1e-9)) : 0;
-  const occupe = n * d.l + Math.max(0, n - 1) * e;
+  const n = d.L > 0 ? Math.max(1, Math.floor((dist + e) / (d.L + e) + 1e-9)) : 0;
+  const occupe = n * d.L + Math.max(0, n - 1) * e;
   return { n, dist, depart: (dist - occupe) / 2 };
 }
 /** L'arrivée qui met la rangée à la distance tapée ; le départ ne bouge pas. */
@@ -446,13 +452,13 @@ export default function DessinerLePlan({
             // Le nom au-dessus de la rangée (à droite si elle est debout).
             let nx = -Math.sin(ang), ny = Math.cos(ang);
             if (ny > 1e-6 || (Math.abs(ny) <= 1e-6 && nx < 0)) { nx = -nx; ny = -ny; }
-            const ecart = d.L / 2 + px(Math.abs(ny) <= 1e-6 ? 16 : 10);
+            const ecart = d.l / 2 + px(Math.abs(ny) <= 1e-6 ? 16 : 10);
             return (
               <g key={d.id} data-objet={d.id} style={{ cursor: "grab" }}>
-                <line x1={d.a.x} y1={d.a.y} x2={d.b.x} y2={d.b.y} stroke="transparent" strokeWidth={Math.max(px(26), d.L)} strokeLinecap="round" />
+                <line x1={d.a.x} y1={d.a.y} x2={d.b.x} y2={d.b.y} stroke="transparent" strokeWidth={Math.max(px(26), d.l)} strokeLinecap="round" />
                 <g transform={`translate(${d.a.x} ${d.a.y}) rotate(${(ang * 180) / Math.PI})`}>
                   {Array.from({ length: r.n }, (_, i) => (
-                    <rect key={i} x={r.depart + i * (d.l + (d.e ?? 0))} y={-d.L / 2} width={d.l} height={d.L} fill={voile(colors.muted, 0.6)} stroke={colors.inkSoft} strokeWidth={px(1)} />
+                    <rect key={i} x={r.depart + i * (d.L + (d.e ?? 0))} y={-d.l / 2} width={d.L} height={d.l} fill={voile(colors.muted, 0.6)} stroke={colors.inkSoft} strokeWidth={px(1)} />
                   ))}
                 </g>
                 <text x={(d.a.x + d.b.x) / 2 + nx * ecart} y={(d.a.y + d.b.y) / 2 + ny * ecart + px(3)} textAnchor="middle" fontSize={px(9.5)} fill={colors.ink} {...texteDetache}>
@@ -748,7 +754,7 @@ function FeuilleDuDessin({
       if (refuse([["dist", nDist], ["L", nL], ["l", nl]])) return;
       const b = arriveeA(da.a, da.b, nDist!);
       if (b.x < -1e-6 || b.y < -1e-6 || b.x > cadre.L + 1e-6 || b.y > cadre.l + 1e-6) { setInvalides(["dist"]); setErreur(neTientPas(cadre)); return; }
-      if (nl! > nDist! + 1e-9) { setInvalides(["l"]); setErreur(`Plus large que la distance, qui fait ${ecrit(nDist!)} m.`); return; }
+      if (nL! > nDist! + 1e-9) { setInvalides(["L"]); setErreur(`Plus longue que la distance, qui fait ${ecrit(nDist!)} m.`); return; }
       onDalles({ ...da, nom: leNom, L: nL!, l: nl!, e: nombre(e), b }, neuf);
     }
   }
@@ -762,9 +768,10 @@ function FeuilleDuDessin({
 
   const noteDalles = (() => {
     if (!da) return "";
-    const nDist = nombre(dist), nl = nombre(l);
-    if (nDist === null || nl === null) return "";
-    const r = rangee({ L: nombre(L) ?? 0, l: nl, e: nombre(e), a: da.a, b: arriveeA(da.a, da.b, nDist) });
+    // Le compte suit la longueur d'une dalle : c'est elle qui se pose dans le sens de la rangée.
+    const nDist = nombre(dist), nL = nombre(L);
+    if (nDist === null || nL === null) return "";
+    const r = rangee({ L: nL, l: nombre(l) ?? 0, e: nombre(e), a: da.a, b: arriveeA(da.a, da.b, nDist) });
     return `${ecritDalles(r.n)} sur ${ecrit(r.dist)} m.`;
   })();
 

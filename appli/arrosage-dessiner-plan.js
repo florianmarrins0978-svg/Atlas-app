@@ -200,9 +200,12 @@
 
   /* Combien de dalles tiennent entre les deux points, et où commence la
      première : la rangée est centrée sur la distance, jamais étirée. */
+  /* **La longueur d'une dalle se pose dans le sens de la rangée, sa largeur
+     en travers** : sa remarque du 19 octobre, « les dalles se mettent d'office
+     à l'envers, on est obligé de les tourner ». C'était l'inverse jusque-là. */
   function rangeeDeDalles(d) {
     var dist = Math.hypot(d.b.x - d.a.x, d.b.y - d.a.y);
-    var l = enU(d.l || 0), e = enU(d.e || 0);
+    var l = enU(d.L || 0), e = enU(d.e || 0);
     var n = l > 0 ? Math.max(1, Math.floor((dist + e) / (l + e) + 1e-9)) : 0;
     var occupe = n * l + Math.max(0, n - 1) * e;
     return { n: n, dist: dist, l: l, e: e, depart: (dist - occupe) / 2 };
@@ -215,7 +218,7 @@
      dernière dalle laissait un bout de gazon de quelques centimètres à chaque
      extrémité, que le calcul aurait arrosé à part. En unités du dessin. */
   function bandeDesDalles(d) {
-    var L = enU(d.L || 0);
+    var L = enU(d.l || 0);
     if (Math.abs(d.b.y - d.a.y) <= Math.abs(d.b.x - d.a.x)) {
       return { x: Math.min(d.a.x, d.b.x), y: d.a.y - L / 2, w: Math.abs(d.b.x - d.a.x), h: L };
     }
@@ -443,11 +446,11 @@
     return g;
   }
 
-  /* Les dalles, posées entre ses deux points : leur largeur dans le sens de
-     la marche, leur longueur en travers, comme les pas de son plan. */
+  /* Les dalles, posées entre ses deux points : leur longueur dans le sens de
+     la rangée, leur largeur en travers (voir rangeeDeDalles). */
   function dessinDalles(d) {
     var g = el("g", { "data-id": d.id, style: "cursor:grab" });
-    var r = rangeeDeDalles(d), L = enU(d.L || 0);
+    var r = rangeeDeDalles(d), L = enU(d.l || 0);
     var ang = Math.atan2(d.b.y - d.a.y, d.b.x - d.a.x);
     g.appendChild(el("line", { x1: d.a.x, y1: d.a.y, x2: d.b.x, y2: d.b.y, stroke: "transparent", "stroke-width": Math.max(8, L / TRAIT), "stroke-linecap": "round" }));
     var rang = el("g", { transform: "translate(" + d.a.x + " " + d.a.y + ") rotate(" + ang * 180 / Math.PI + ")" });
@@ -472,7 +475,7 @@
     var sorte = sorteDe(id);
     if (sorte === "point" || sorte === "arbre") return { x: o.x, y: o.y, w: 0, h: 0 };
     if (sorte === "dalles") {
-      var L = enU(o.L || 0), x1 = Math.min(o.a.x, o.b.x), y1 = Math.min(o.a.y, o.b.y);
+      var L = enU(o.l || 0), x1 = Math.min(o.a.x, o.b.x), y1 = Math.min(o.a.y, o.b.y);
       var couchee = Math.abs(o.b.y - o.a.y) <= Math.abs(o.b.x - o.a.x);
       return couchee
         ? { x: x1, y: o.a.y - L / 2, w: Math.abs(o.b.x - o.a.x), h: L }
@@ -839,7 +842,7 @@
     if (!enCours || enCours.sorte !== "dalles") return;
     var essai = copie(enCours.z);
     lireDalles(essai);
-    if (!essai.l || !essai.distance) { $("f-note").textContent = ""; return; }
+    if (!essai.L || !essai.distance) { $("f-note").textContent = ""; return; }
     essai.b = arriveeA(essai, essai.distance);
     var r = rangeeDeDalles(essai);
     $("f-note").textContent = ecritDalles(r.n) + " sur " + ecrit(enMetres(r.dist)) + " m.";
@@ -940,9 +943,9 @@
       $("f-erreur").textContent = phraseTropGrande();
       return;
     }
-    if (essai.l > essai.distance + 1e-9) {
-      $("f-l").setAttribute("aria-invalid", "true");
-      $("f-erreur").textContent = "Plus large que la distance, qui fait " + ecrit(essai.distance) + " m.";
+    if (essai.L > essai.distance + 1e-9) {
+      $("f-L").setAttribute("aria-invalid", "true");
+      $("f-erreur").textContent = "Plus longue que la distance, qui fait " + ecrit(essai.distance) + " m.";
       return;
     }
     lireDalles(d);
