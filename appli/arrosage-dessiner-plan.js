@@ -93,6 +93,14 @@
   sera quand même arrosé ». Le calcul ne connaît que des rectangles : une zone
   courbe part comme le rectangle qui l'entoure, et l'écran le dit ; une rangée
   courbe qu'on n'arrose pas ne coupe pas la zone, et l'écran le dit aussi.
+  SA SUITE, le même soir, sur une capture : « le bout en pointe de la pelouse,
+  si je veux le rabattre, je ne peux pas » ; « avoir une touche pour remettre
+  sa forme originale » ; « zoomer à n'importe quel endroit avec mes deux
+  doigts, et après avec le slide je me déplace ». Chaque coin a donc son point
+  carré à tirer (z.coins, en mètres depuis le coin du rectangle) ; « Forme
+  d'origine » sous le plan dès que l'objet touché est déformé ; et deux doigts
+  agrandissent le plan là où ils sont posés (etat.loupe), un doigt le fait
+  glisser.
   Ni les arbres ni les dalles qu'on arrose n'entrent au calcul : ils partent dans deux
   champs NEUFS (arbres, dalles), et l'écran le dit.
 
@@ -141,6 +149,8 @@
   var etat = {
     terrain: { L: null, l: null },
     echelle: null,
+    // Ce que les deux doigts ajoutent à l'échelle choisie : 1, rien.
+    loupe: 1,
     zones: [],
     arbres: [],
     dalles: [],
@@ -229,9 +239,36 @@
      au côté (u le long, v en travers) : la zone bouge ou change de cotes, la
      courbe suit. */
   var COTES_ZONE = ["haut", "droite", "bas", "gauche"];
+  var COINS_ZONE = ["hg", "hd", "bd", "bg"];
+  /* Les quatre coins, là où il les a tirés (en mètres depuis le coin du
+     rectangle) : c'est ce qui rabat une pointe. */
+  function sommetsDe(z) {
+    var base = { hg: { x: z.x, y: z.y }, hd: { x: z.x + z.w, y: z.y }, bd: { x: z.x + z.w, y: z.y + z.h }, bg: { x: z.x, y: z.y + z.h } };
+    COINS_ZONE.forEach(function (c) {
+      var o = z.coins && z.coins[c];
+      if (o) base[c] = { x: base[c].x + enU(o.x), y: base[c].y + enU(o.y) };
+    });
+    return base;
+  }
   function coinsDe(z) {
-    var a = { x: z.x, y: z.y }, b = { x: z.x + z.w, y: z.y }, c = { x: z.x + z.w, y: z.y + z.h }, d = { x: z.x, y: z.y + z.h };
-    return { haut: [a, b], droite: [b, c], bas: [c, d], gauche: [d, a] };
+    var s = sommetsDe(z);
+    return { haut: [s.hg, s.hd], droite: [s.hd, s.bd], bas: [s.bd, s.bg], gauche: [s.bg, s.hg] };
+  }
+  /* Tirer un coin : il suit le doigt, dans le terrain. Reposé à sa place (à
+     moins de 5 cm), il y reste. */
+  function tirerCoin(z, c, h) {
+    var t = terrainU(), base = { hg: [z.x, z.y], hd: [z.x + z.w, z.y], bd: [z.x + z.w, z.y + z.h], bg: [z.x, z.y + z.h] }[c];
+    var dx = enMetres(borne(h.x, t.w) - base[0]), dy = enMetres(borne(h.y, t.h) - base[1]);
+    z.coins = z.coins || {};
+    if (Math.hypot(dx, dy) < 0.05) delete z.coins[c];
+    else z.coins[c] = { x: dx, y: dy };
+  }
+  /* Une forme qui n'est plus le rectangle tapé : un côté courbe, ou un coin tiré. */
+  function formeLibre(z) {
+    return courbee(z) || (!!z.coins && COINS_ZONE.some(function (c) { return z.coins[c]; }));
+  }
+  function deformee(o) {
+    return !!o && (o.courbe ? true : !!o.type && formeLibre(o));
   }
   /* La normale vers l'extérieur : les côtés tournent dans le sens des aiguilles. */
   function normale(p0, p1) {
@@ -259,7 +296,7 @@
     };
   }
   function cheminZone(z) {
-    var p = coinsDe(z), d = "M" + z.x + " " + z.y;
+    var p = coinsDe(z), d = "M" + p.haut[0].x + " " + p.haut[0].y;
     COTES_ZONE.forEach(function (c) {
       var fin = p[c][1], k = controleDe(z, c);
       d += k ? "Q" + k.x + " " + k.y + " " + fin.x + " " + fin.y : "L" + fin.x + " " + fin.y;
@@ -268,8 +305,9 @@
   }
   /* Le rectangle qui entoure la zone courbée : c'est lui que le calcul reçoit. */
   function cadreDe(z) {
-    if (!courbee(z)) return { x: z.x, y: z.y, w: z.w, h: z.h };
-    var xs = [z.x, z.x + z.w], ys = [z.y, z.y + z.h], p = coinsDe(z), t = terrainU();
+    if (!formeLibre(z)) return { x: z.x, y: z.y, w: z.w, h: z.h };
+    var p = coinsDe(z), t = terrainU(), so = sommetsDe(z);
+    var xs = COINS_ZONE.map(function (c) { return so[c].x; }), ys = COINS_ZONE.map(function (c) { return so[c].y; });
     COTES_ZONE.forEach(function (c) {
       var k = controleDe(z, c);
       if (!k) return;
@@ -487,7 +525,7 @@
     var auPlusJuste = boite / (t.w + 2 * MARGE);
     var s = cote_du_carre();
     var voulu = etat.echelle && s ? (PX_PAR_CM * 100 / etat.echelle) * s / 100 : auPlusJuste;
-    var parU = Math.max(voulu, auPlusJuste);
+    var parU = Math.max(voulu, auPlusJuste) * etat.loupe;
     TRAIT = auPlusJuste / parU;
     var m = MARGE * TRAIT;
     var vb = [-m, -m, t.w + 2 * m, t.h + 2 * m];
@@ -507,7 +545,7 @@
     // que le calcul reçoit, et le long d'eux qu'il posera les arroseurs.
     etat.zones.forEach(function (z) {
       var p = morceaux(z);
-      if (p.length < 2 && !courbee(z)) return;
+      if (p.length < 2 && !formeLibre(z)) return;
       p.forEach(function (q) {
         svg.appendChild(el("rect", { x: q.x, y: q.y, width: q.w, height: q.h, fill: "none", stroke: "var(--atlas-plein)", "stroke-width": 0.5, "stroke-dasharray": (1.4 * TRAIT) + " " + (1 * TRAIT), "pointer-events": "none" }));
       });
@@ -521,6 +559,7 @@
     if (etat.piquage) svg.appendChild(dessinPiquage(etat.piquage));
     if (etat.nourrice) svg.appendChild(dessinNourrice(etat.nourrice));
     if (MODE === "B" && etat.cotesDe != null) dessinCotes(svg, etat.cotesDe);
+    $("forme-origine").hidden = !(MODE === "B" && etat.choisie != null && deformee(objetDe(etat.choisie)));
     rendreEtat();
   }
 
@@ -537,7 +576,7 @@
     var choisie = etat.choisie === z.id;
     var ok = mesuree(z) && cotesTropGrandes(z).length === 0;
     var bord = { fill: remplissage(z.type), stroke: ok ? (choisie ? "var(--atlas-ink)" : "var(--atlas-rustDeep)") : "var(--atlas-alerte)", "stroke-width": choisie ? 0.9 : 0.45, "stroke-dasharray": ok ? "none" : (1.6 * TRAIT) + " " + (1.2 * TRAIT) };
-    if (courbee(z)) g.appendChild(el("path", Object.assign({ d: cheminZone(z) }, bord)));
+    if (formeLibre(z)) g.appendChild(el("path", Object.assign({ d: cheminZone(z) }, bord)));
     else g.appendChild(el("rect", Object.assign({ x: z.x, y: z.y, width: Math.max(z.w, 0.5 * TRAIT), height: Math.max(z.h, 0.5 * TRAIT), rx: 0.8 * TRAIT }, bord)));
     // Le nom, puis « longueur × largeur » : la longueur est le côté couché.
     // Une zone trop basse pour deux lignes les met sur une seule.
@@ -561,8 +600,18 @@
     // Les points qui courbent un côté : sur la zone choisie, pas sur la maison.
     if (choisie && MODE === "B" && z.type !== "maison") {
       COTES_ZONE.forEach(function (c) { var q = pointDuCote(z, c); g.appendChild(pointATirer(q, z.id + ":" + c)); });
+      var so = sommetsDe(z);
+      COINS_ZONE.forEach(function (c) { g.appendChild(coinATirer(so[c], z.id + ":" + c)); });
     }
     return g;
+  }
+
+  /* Un coin à tirer : carré, pour ne pas le confondre avec le milieu d'un côté. */
+  function coinATirer(q, cle) {
+    return signe(q.x, q.y, { "data-coin": cle, style: "cursor:move" }, function (g) {
+      g.appendChild(el("rect", { x: -6, y: -6, width: 12, height: 12, fill: "transparent" }));
+      g.appendChild(el("rect", { x: -1.9, y: -1.9, width: 3.8, height: 3.8, rx: 0.5, fill: "var(--atlas-card)", stroke: "var(--atlas-plein)", "stroke-width": 0.9 }));
+    });
   }
 
   /* Un point à tirer : petit à l'œil, large sous le doigt. */
@@ -761,10 +810,10 @@
     var svg = $("toile");
     var p = point(evt);
     var cible = evt.target.closest ? evt.target.closest("[data-id],[data-poignee]") : null;
-    var tire = evt.target.closest ? evt.target.closest("[data-courbe]") : null;
+    var tire = evt.target.closest ? evt.target.closest("[data-courbe],[data-coin]") : null;
     if (tire && !etat.outil) {
-      var morceauxCle = tire.getAttribute("data-courbe").split(":");
-      prise = { courbe: { id: isNaN(+morceauxCle[0]) ? morceauxCle[0] : +morceauxCle[0], cote: morceauxCle[1] }, bouge: false };
+      var morceauxCle = (tire.getAttribute("data-courbe") || tire.getAttribute("data-coin")).split(":");
+      prise = { courbe: { id: isNaN(+morceauxCle[0]) ? morceauxCle[0] : +morceauxCle[0], cote: morceauxCle[1], coin: tire.hasAttribute("data-coin") }, bouge: false };
       svg.setPointerCapture(evt.pointerId);
       return;
     }
@@ -872,6 +921,7 @@
         var dehors = echantillonsDalles(objet).pts.some(function (q) { return q.x < 0 || q.y < 0 || q.x > t.w || q.y > t.h; });
         if (dehors) { if (avant) objet.courbe = avant; else delete objet.courbe; }
       }
+      else if (prise.courbe.coin) tirerCoin(objet, prise.courbe.cote, p);
       else tirerCote(objet, prise.courbe.cote, p);
       dessiner();
       return;
@@ -993,7 +1043,7 @@
     $("f-valider").classList.toggle("seul", !tourner);
     $("f-supprimer").hidden = neuf;
     var o = enCours && enCours.z;
-    $("f-redresser").hidden = neuf || !o || !(o.courbe || (o.courbes && courbee(o)));
+    $("f-redresser").hidden = neuf || !deformee(o);
   }
 
   function ouvrir(z, neuve) {
@@ -1309,7 +1359,7 @@
         var coupee = parts.length > 1;
         // Courbe ou coupée, la zone part avec les cotes du rectangle qu'elle
         // donne au calcul ; droite et entière, avec les siennes.
-        var autre = coupee || courbee(z);
+        var autre = coupee || formeLibre(z);
         var L = autre ? arrondi(enMetres(q.w)) : z.L, l = autre ? arrondi(enMetres(q.h)) : z.l;
         var lue = {
           type: z.type,
@@ -1382,9 +1432,9 @@
     // Sa règle du 19 octobre : expliquer, ne pas refuser, et dire que ce sera
     // arrosé quand même.
     etat.zones.forEach(function (z) {
-      if (z.type === "maison" || !courbee(z)) return;
+      if (z.type === "maison" || !formeLibre(z)) return;
       var c = cadreDe(z), dims = ecrit(Math.round(enMetres(c.w) * 100) / 100) + " × " + ecrit(Math.round(enMetres(c.h) * 100) / 100) + " m";
-      if (z.type === "gazon") ligne("Les côtés courbes de " + nomDe(z) + " sont arrosés comme le rectangle qui l’entoure, " + dims + ". Les arroseurs du bord peuvent mouiller un peu au-delà.");
+      if (z.type === "gazon") ligne("La forme de " + nomDe(z) + " est arrosée comme le rectangle qui l’entoure, " + dims + ". Les arroseurs du bord peuvent mouiller un peu au-delà.");
       else ligne("Le goutte-à-goutte de " + nomDe(z) + " est compté sur le rectangle qui l’entoure, " + dims + ", un peu plus de tube que la forme.");
     });
     etat.dalles.forEach(function (d) {
@@ -1447,6 +1497,44 @@
     if (outil) dessiner();
   }
 
+  /* « Forme d'origine » : les côtés droits, les coins à leur place. */
+  function formeDOrigine(o) {
+    if (!o) return;
+    delete o.courbes;
+    delete o.coins;
+    delete o.courbe;
+  }
+
+  /* ── Deux doigts : la loupe ─────────────────────────────────────
+     Sa demande du 19 octobre : « zoomer à n'importe quel endroit de la carte
+     avec mes deux doigts, et après avec le slide je me déplace ». L'écart des
+     doigts règle la loupe, et le point du plan qui était entre eux y reste. */
+  var doigts = {}, pince = null;
+  function lesDeux() {
+    var k = Object.keys(doigts);
+    return [doigts[k[0]], doigts[k[1]]];
+  }
+  function commencerPince() {
+    // Le premier doigt tenait peut-être un objet : il le lâche là où il était.
+    if (prise && prise.id != null && prise.avant) Object.assign(objetDe(prise.id), prise.avant);
+    prise = null; brouillon = null;
+    var d = lesDeux(), svg = $("toile");
+    var milieu = { x: (d[0].x + d[1].x) / 2, y: (d[0].y + d[1].y) / 2 };
+    var m = svg.getScreenCTM().inverse(), q = svg.createSVGPoint();
+    q.x = milieu.x; q.y = milieu.y;
+    pince = { ecart: Math.hypot(d[0].x - d[1].x, d[0].y - d[1].y) || 1, loupe: etat.loupe, cible: q.matrixTransform(m) };
+  }
+  function suivrePince() {
+    var d = lesDeux(), svg = $("toile"), boite = svg.parentNode;
+    var ecart = Math.hypot(d[0].x - d[1].x, d[0].y - d[1].y) || 1;
+    etat.loupe = Math.max(1, Math.min(40, pince.loupe * ecart / pince.ecart));
+    dessiner();
+    var c = svg.getScreenCTM(), cible = pince.cible;
+    var sx = c.a * cible.x + c.c * cible.y + c.e, sy = c.b * cible.x + c.d * cible.y + c.f;
+    boite.scrollLeft += sx - (d[0].x + d[1].x) / 2;
+    boite.scrollTop += sy - (d[0].y + d[1].y) / 2;
+  }
+
   function lancer() {
     var ch = $("charte");
     ["origine", "brume", "pierre", "beurre", "moka", "prune", "sylve", "nuit"].forEach(function (n) {
@@ -1464,6 +1552,7 @@
     $("t-l").addEventListener("input", surTerrain);
     $("t-echelle").addEventListener("change", function () {
       etat.echelle = +$("t-echelle").value || null;
+      etat.loupe = 1;
       dessiner();
       if (!etat.outil) $("consigne").textContent = etat.echelle ? "Touchez une zone pour la choisir, puis glissez-la." : "";
     });
@@ -1472,10 +1561,23 @@
       b.addEventListener("click", function () { surOutil(b.dataset.outil); });
     });
     var svg = $("toile");
-    svg.addEventListener("pointerdown", appui);
-    svg.addEventListener("pointermove", glisse);
-    svg.addEventListener("pointerup", relache);
-    svg.addEventListener("pointercancel", function () { brouillon = null; prise = null; dessiner(); });
+    svg.addEventListener("pointerdown", function (e) {
+      doigts[e.pointerId] = { x: e.clientX, y: e.clientY };
+      if (Object.keys(doigts).length === 2) { commencerPince(); return; }
+      if (!pince) appui(e);
+    });
+    svg.addEventListener("pointermove", function (e) {
+      if (doigts[e.pointerId]) doigts[e.pointerId] = { x: e.clientX, y: e.clientY };
+      if (pince) { suivrePince(); return; }
+      glisse(e);
+    });
+    function finDuDoigt(e) {
+      delete doigts[e.pointerId];
+      if (pince) { if (Object.keys(doigts).length < 2) pince = null; return; }
+      relache(e);
+    }
+    svg.addEventListener("pointerup", finDuDoigt);
+    svg.addEventListener("pointercancel", function (e) { delete doigts[e.pointerId]; pince = null; brouillon = null; prise = null; dessiner(); });
     $("f-valider").addEventListener("click", valider);
     // Un champ signalé vide cesse de l'être dès qu'on y tape.
     ["f-L", "f-l", "f-d", "f-e", "f-dist"].forEach(function (i) {
@@ -1505,13 +1607,16 @@
     });
     $("f-tourner").addEventListener("click", tourner);
     $("f-supprimer").addEventListener("click", supprimer);
-    // Redresser : la zone ou la rangée reprend ses côtés droits.
+    // « Forme d'origine » : la zone ou la rangée reprend ses côtés droits et ses
+    // coins, depuis la feuille ou depuis le bouton sous le plan.
     $("f-redresser").addEventListener("click", function () {
-      var o = enCours && enCours.z;
-      if (!o) return;
-      delete o.courbes;
-      delete o.courbe;
+      if (!enCours || !enCours.z) return;
+      formeDOrigine(enCours.z);
       fermer();
+    });
+    $("forme-origine").addEventListener("click", function () {
+      formeDOrigine(objetDe(etat.choisie));
+      dessiner();
     });
     $("feuille").addEventListener("click", function (e) { if (e.target === $("feuille")) horsFeuille(); });
     document.addEventListener("keydown", function (e) {
