@@ -3999,6 +3999,7 @@ export const prixAchat = pgTable("prix_achat", {
     .references(() => entreprises.id, { onDelete: "cascade" }),
   societeId: uuid("societe_id").notNull(),
   nom: text("nom").notNull(),
+  reference: text("reference"),
   unite: text("unite").notNull(),
   prixHt: numeric("prix_ht", { precision: 12, scale: 2 }).notNull(),
   releveLe: date("releve_le").notNull().defaultNow(),

@@ -63,6 +63,7 @@ async function main() {
   });
   const prix = await ajouterPrixAchat(A, aqua.id, {
     nom: "Sac de ciment",
+    reference: "CIM35",
     unite: "sac",
     prixHt: "8.00",
     source: "Tapé le 19/10/2026",
@@ -79,6 +80,7 @@ async function main() {
     const [s] = await listerSocietes(A, "fournisseur");
     assert.equal(s.nom, "Aqua Plus");
     assert.equal(s.prix[0].prixHt, "8.00");
+    assert.equal(s.prix[0].reference, "CIM35");
     assert.equal(s.devis[0].nom, "Haie Durand");
     assert.equal(s.demandes[0].lignes[0].reference, "RA3504");
     assert.deepEqual(await listerSocietes(A, "partenaire"), []);

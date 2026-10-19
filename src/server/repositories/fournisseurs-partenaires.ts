@@ -100,7 +100,7 @@ export async function reglerMarge(ctx: Ctx, laquelle: keyof MargesGenerales, mar
 export async function ajouterPrixAchat(
   ctx: Ctx,
   societeId: string,
-  ligne: { nom: string; unite: string; prixHt: string; source: string; releveLe?: string; devisRecuId?: string | null }
+  ligne: { nom: string; reference?: string | null; unite: string; prixHt: string; source: string; releveLe?: string; devisRecuId?: string | null }
 ): Promise<PrixAchatEnBase> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [p] = await tx

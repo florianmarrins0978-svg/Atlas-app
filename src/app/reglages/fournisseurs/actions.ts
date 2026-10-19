@@ -222,7 +222,7 @@ export async function deposerDevisRecuAction(
  */
 export async function accepterLignesDuDevisAction(
   devisId: string,
-  lignes: { designation: string; unite: string; prixHt: string }[]
+  lignes: { designation: string; reference?: string | null; unite: string; prixHt: string }[]
 ): Promise<{ ok: true; ajoutes: number; refuses: number } | Refus> {
   const garde = await patron("prendre les prix d'un devis reçu");
   if (!garde.ok) return garde;
@@ -242,6 +242,7 @@ export async function accepterLignesDuDevisAction(
       }
       await ajouterPrixAchat(garde.ctx, societe.id, {
         nom,
+        reference: typeof l.reference === "string" && l.reference.trim() ? l.reference.trim().slice(0, 60) : null,
         unite: l.unite,
         prixHt,
         releveLe: devis.recuLe,

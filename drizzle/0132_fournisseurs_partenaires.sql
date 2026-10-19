@@ -58,6 +58,9 @@ CREATE TABLE IF NOT EXISTS "prix_achat" (
   "entreprise_id" uuid NOT NULL REFERENCES "entreprises"("id") ON DELETE CASCADE,
   "societe_id" uuid NOT NULL,
   "nom" text NOT NULL CHECK (length(btrim("nom")) > 0),
+  -- La référence du fournisseur quand elle est imprimée (« RA3504 ») : c'est
+  -- elle qui rapproche ce prix d'une pièce du plan d'arrosage, jamais le nom.
+  "reference" text,
   "unite" text NOT NULL,
   "prix_ht" numeric(12, 2) NOT NULL CHECK ("prix_ht" >= 0),
   "releve_le" date NOT NULL DEFAULT CURRENT_DATE,
