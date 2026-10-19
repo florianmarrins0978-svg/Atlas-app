@@ -214,6 +214,9 @@
   .geste-ligne{flex:none;border:0;background:none;padding:0 0 0 6px;font-size:13px;color:var(--atlas-alerte);text-decoration:underline;cursor:pointer}
   .ligne.otee .n,.ligne.otee .q{color:var(--atlas-muted);text-decoration:line-through}
   .ligne.otee .geste-ligne{color:var(--atlas-ink)}
+  .ligne.barree .n,.ligne.barree .q{color:var(--atlas-muted);text-decoration:line-through;text-decoration-color:var(--atlas-alerte);text-decoration-thickness:2px}
+  .groupe.otee{color:var(--atlas-muted);text-decoration:line-through;text-decoration-color:var(--atlas-alerte);text-decoration-thickness:2px}
+  .ajouter-ligne.supprimer-reseau{color:var(--atlas-alerte)}
   .ajouter-ligne{display:block;width:100%;margin:6px 0 8px;min-height:40px;border-radius:999px;border:1.5px dashed var(--atlas-line);background:none;color:var(--atlas-ink);font-size:14px;cursor:pointer}
   .envoyer{margin-top:16px;width:100%;min-height:52px;border:0;border-radius:999px;background:var(--atlas-ink);color:var(--atlas-card);font-size:16px;cursor:pointer}
   .message{display:block;width:100%;min-height:300px;margin-top:12px;border:0;border-radius:12px;padding:12px;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line);resize:vertical}
@@ -410,7 +413,7 @@
   };
   [ROBINET.double, ROBINET.prog].forEach(function (x) { PHOTOS[x.ref] = "../arrosage-robinet-photos/" + x.photo; });
   PHOTOS["plasson-16-rigide"] = "../arrosage-robinet-photos/plasson-16-rigide.jpg"; PHOTOS.OPL70302520 = "OPL70302520.jpg"; PHOTOS.OPL70303220 = "OPL70302520.jpg";
-  var etat = { sortie: "boucle", couronne: 50, grillage: false, sonde: false, retirees: {}, remplacees: {}, ajoutees: [], listeRetirees: {}, nrUne: {}, modifierListe: false, ou: "amenee", categorie: "reseau", cible: null, recherche: "" };
+  var etat = { sortie: "boucle", couronne: 50, grillage: false, sonde: false, retirees: {}, remplacees: {}, ajoutees: [], listeRetirees: {}, nrUne: {}, reseauxRetires: {}, modifierListe: false, ou: "amenee", categorie: "reseau", cible: null, recherche: "" };
   function plan() {
     // Le même jardin pour les deux montages. Le nez de robinet n'a qu'une voie et
     // le jardin demande quatre réseaux : l'outil le GARDE et prévient qu'il manque
@@ -752,11 +755,16 @@
   }
   // Le compte se tient par groupe (« amenee », « r0 », « r1 »…) : la liste se lit
   // comme on pose, et le message au fournisseur additionne tout.
-  var proposees = {}, compte = {}, groupe = "amenee";
+  var proposees = {}, compte = {}, barrees = {}, groupe = "amenee";
   function ligneDe(ref, nom, u) { var g = compte[groupe] = compte[groupe] || {}; return g[ref] = g[ref] || { nom: nom, q: 0, u: u }; }
+  // CE QU'IL SUPPRIME SUR LE PLAN RESTE DANS LA LISTE, BARRÉ (sa demande du 19 octobre
+  // 2026) : compté à part, hors du message au fournisseur.
+  function ligneBarree(ref, nom, u) { var g = barrees[groupe] = barrees[groupe] || {}; return g[ref] = g[ref] || { nom: nom, q: 0, u: u }; }
+  // Une pièce est ôtée quand il l'a supprimée, ou quand il a supprimé tout son réseau (même jour).
+  function ote(cle) { var m = /^r([0-9]+):/.exec(cle); return Boolean(etat.retirees[cle] || (m && etat.reseauxRetires[m[1]])); }
   function piece(cle, ref, nom, detail) {
     proposees[cle] = { ref: ref, nom: nom };
-    var retiree = etat.retirees[cle], change = etat.remplacees[cle];
+    var retiree = ote(cle), change = etat.remplacees[cle];
     if (change) { ref = change.ref; nom = change.nom; detail = change.nom; }
     var photo = PHOTOS[ref] ? '<span class="photo"><img src="arrosage-photos/' + PHOTOS[ref] + '" alt=""></span>' : '<span class="photo vide">photo à venir</span>';
     var mention = retiree ? "supprimée" : change ? "changée" : "";
@@ -765,13 +773,13 @@
   }
   function poser(cle, ref, nom, detail, q, u) {
     var change = etat.remplacees[cle], r = change ? change.ref : ref, n = change ? change.nom : nom;
-    if (!etat.retirees[cle]) ligneDe(r, n, change ? "u" : (u || "u")).q += change || q === undefined ? 1 : q;
+    (ote(cle) ? ligneBarree : ligneDe)(r, n, change ? "u" : (u || "u")).q += change || q === undefined ? 1 : q;
     return piece(cle, ref, nom, detail);
   }
   function tuyere(cle, corps, buse) {
     var html = poser(cle, corps.ref, corps.nom, corps.nom.replace("Tuyère ", "") + " et " + buse.nom);
-    if (!etat.retirees[cle] && !etat.remplacees[cle]) {
-      ligneDe(buse.ref, "Rain Bird Tuyères " + buse.nom + (buse.colisage ? ", par " + buse.colisage : ""), "u").q += 1;
+    if (!etat.remplacees[cle]) {
+      (ote(cle) ? ligneBarree : ligneDe)(buse.ref, "Rain Bird Tuyères " + buse.nom + (buse.colisage ? ", par " + buse.colisage : ""), "u").q += 1;
     }
     if (etat.remplacees[cle] || !PHOTOS[buse.ref]) return html;
     return html.replace("</span>", '<img class="pied" src="arrosage-photos/' + PHOTOS[buse.ref] + '" alt="' + texte(buse.nom) + '"></span>');
@@ -936,7 +944,7 @@
     var montre = function (t, ref) { var c = cles[t] || []; return c.length && etat.remplacees[c[0]] ? etat.remplacees[c[0]].ref : ref; };
     var enBouton = function (html) {
       var types = ["raccord", "sbeb", "pebd", "sbeh", "corps"], j = 0;
-      return html.replace(/<div class="m">/g, function () { var t = types[j++], c = cles[t] || []; var etatCh = c.length && c.every(function (x) { return etat.retirees[x]; }) ? " retiree" : c.length && etat.remplacees[c[0]] ? " changee" : ""; return '<button type="button" class="m' + etatCh + '" data-chaine="r' + i + "|" + t + '">'; })
+      return html.replace(/<div class="m">/g, function () { var t = types[j++], c = cles[t] || []; var etatCh = c.length && c.every(function (x) { return ote(x); }) ? " retiree" : c.length && etat.remplacees[c[0]] ? " changee" : ""; return '<button type="button" class="m' + etatCh + '" data-chaine="r' + i + "|" + t + '">'; })
         .replace(/<\/small><\/div>/g, "</small></button>");
     };
     var chaine = premiere ? '<div class="chaine" aria-label="Les pièces d’une tête, dans l’ordre où elles se montent">' +
@@ -981,7 +989,7 @@
   // fournisseur, tout additionné : *« lui va devoir se faire chier à compter
   // trois pour le réseau 1, trois pour le réseau 2 »*.
   var quantite = function (e) { return e.u === "ml" ? (e.q ? e.q + " m" : "à mesurer") : e.q + "x"; };
-  function lignesDe(g, titre, retirees) {
+  function lignesDe(g, titre, retirees, barrees, reseau) {
     var edition = etat.modifierListe;
     var ligne = function (ref, e, ote) {
       var cle = texte(titre + "|" + ref);
@@ -990,9 +998,15 @@
       var geste = edition ? (ote ? remettre : (e.enMoins ? remettre : "") + supprimer) : "";
       return '<div class="ligne' + (ote ? " otee" : "") + '"><span class="q">' + quantite(e) + '</span><span class="n">' + texte(e.nom) + (e.enMoins ? ", " + e.enMoins + " en moins" : "") + "</span>" + geste + "</div>";
     };
+    // Les pièces qu'il a supprimées sur le plan : barrées, sous les autres, toujours visibles.
+    var barree = function (ref, e) { return '<div class="ligne barree"><span class="q">' + quantite(e) + '</span><span class="n">' + texte(e.nom) + "</span></div>"; };
+    var oteReseau = reseau !== undefined && etat.reseauxRetires[reseau];
     return '<div class="liste">' + Object.keys(g).map(function (ref) { return ligne(ref, g[ref], false); }).join("") +
+      Object.keys(barrees || {}).map(function (ref) { return barree(ref, barrees[ref]); }).join("") +
       (edition ? Object.keys(retirees || {}).map(function (ref) { return ligne(ref, retirees[ref], true); }).join("") +
-        '<button type="button" class="ajouter-ligne" data-ajouter="liste:' + texte(titre) + '">Ajouter une pièce</button>' : "") + "</div>";
+        '<button type="button" class="ajouter-ligne" data-ajouter="liste:' + texte(titre) + '">Ajouter une pièce</button>' +
+        // SUPPRIMER UN RÉSEAU COMPLET (sa demande du 19 octobre 2026) : toutes ses pièces se barrent, ici et sur le plan.
+        (reseau !== undefined ? '<button type="button" class="ajouter-ligne' + (oteReseau ? "" : " supprimer-reseau") + '" data-reseau-retire="' + reseau + '">' + (oteReseau ? "Remettre le réseau " : "Supprimer le réseau ") + (reseau + 1) + "</button>" : "") : "") + "</div>";
   }
   // Ce qu'il a changé dans la liste : les lignes supprimées sortent du compte et du
   // message au fournisseur, les pièces ajoutées y entrent, à 1 chacune.
@@ -1010,7 +1024,7 @@
       etat.ajoutees.filter(function (a) { return a.ou === "liste:" + g.titre; }).forEach(function (a) {
         var e = lignes[a.ref] = lignes[a.ref] || { nom: a.nom, q: 0, u: "u" }; e.q += a.q || 1;
       });
-      return { titre: g.titre, couleur: g.couleur, lignes: lignes, retirees: retirees };
+      return { titre: g.titre, couleur: g.couleur, lignes: lignes, retirees: retirees, barrees: g.barrees, reseau: g.reseau };
     });
   }
   // La nourrice se compte sur SA fiche, comme le dessin du regard.
@@ -1036,9 +1050,9 @@
     return { nom: titreNourrice, lignes: h };
   }
   function groupesDuPlan(p, d) {
-    var n = groupeNourrice(p), out = [{ titre: robinet.montage === "nez" ? "Au robinet" : "Du robinet à la nourrice", lignes: compte.amenee || {} }];
+    var n = groupeNourrice(p), out = [{ titre: robinet.montage === "nez" ? "Au robinet" : "Du robinet à la nourrice", lignes: compte.amenee || {}, barrees: barrees.amenee || {} }];
     if (robinet.montage !== "nez") out.push({ titre: n.nom, lignes: n.lignes });
-    p.secteurs.forEach(function (s, i) { out.push({ titre: "Réseau " + (i + 1) + ", " + s.nom, couleur: p.couleurs[i], lignes: compte["r" + i] || {} }); });
+    p.secteurs.forEach(function (s, i) { out.push({ titre: "Réseau " + (i + 1) + ", " + s.nom, couleur: p.couleurs[i], lignes: compte["r" + i] || {}, barrees: barrees["r" + i] || {}, reseau: i }); });
     // Le grillage couvre toute la tranchée : il se compte dans la liste de l'outil, pas ici.
     if (etat.grillage) {
       var g = {};
@@ -1085,7 +1099,7 @@
     var groupes = modifierLaListe(groupesDuPlan(p, d));
     $("modifier-liste").textContent = etat.modifierListe ? "Terminer" : "Modifier ma liste";
     $("liste").innerHTML = groupes.map(function (g) {
-      return '<p class="groupe"' + (g.couleur ? ' style="--couleur:' + g.couleur + '"' : "") + ">" + (g.couleur ? '<span class="pastille"></span>' : "") + texte(g.titre) + "</p>" + lignesDe(g.lignes, g.titre, g.retirees);
+      return '<p class="groupe' + (g.reseau !== undefined && etat.reseauxRetires[g.reseau] ? " otee" : "") + '"' + (g.couleur ? ' style="--couleur:' + g.couleur + '"' : "") + ">" + (g.couleur ? '<span class="pastille"></span>' : "") + texte(g.titre) + "</p>" + lignesDe(g.lignes, g.titre, g.retirees, g.barrees, g.reseau);
     }).join("");
     dernierMessage = message(groupes);
 
@@ -1098,7 +1112,7 @@
       Object.keys(g.lignes).forEach(function (ref) { pose[ref] = (pose[ref] || 0) + g.lignes[ref].q; noms[ref] = g.lignes[ref].nom; });
     });
     var ecarts = Object.keys(pose).filter(function (ref) { return attendu[ref] !== undefined && attendu[ref] !== pose[ref] && ref !== "pe25-amenee"; });
-    var touche = Object.keys(etat.retirees).length + Object.keys(etat.remplacees).length + etat.ajoutees.length + Object.keys(etat.listeRetirees).length;
+    var touche = Object.keys(etat.retirees).length + Object.keys(etat.remplacees).length + etat.ajoutees.length + Object.keys(etat.listeRetirees).length + Object.keys(etat.reseauxRetires).length;
     $("verdict").className = "verdict" + (ecarts.length && !touche ? " rouge" : "");
     $("verdict").textContent = touche
       ? touche + " changement" + (touche > 1 ? "s" : "") + " à la main."
@@ -1128,7 +1142,7 @@
     couleursPlan = p.couleurs;
     var res = C.dessinerPlan(p.dessin, robinet.montage === "nez" ? ROBINET_POSE : NOURRICE, p.couleurs);
     if (!res.ok) { $("reseaux").textContent = res.raison; return; }
-    compte = {};
+    compte = {}; barrees = {};
     groupe = "sonde";
     var sonde = p.materiel.filter(function (l) { return l.ref === "RP403"; })[0];
     $("sonde-piece").innerHTML = etat.sonde && sonde ? poser("nr:sonde", sonde.ref, sonde.nom, sonde.nom, sonde.q) : "";
@@ -1193,6 +1207,7 @@
       $("menu-gestes").innerHTML = menuNombre(qL, null, "supprimer-ligne-n");
       $("menu").hidden = false; return;
     }
+    if (b.dataset.reseauRetire !== undefined) { var kr = b.dataset.reseauRetire; if (etat.reseauxRetires[kr]) delete etat.reseauxRetires[kr]; else etat.reseauxRetires[kr] = true; dessiner(); return; }
     if (b.dataset.remettreLigne) { delete etat.listeRetirees[b.dataset.remettreLigne]; dessiner(); return; }
     if (b.dataset.geste) {
       var cle = etat.cible;
