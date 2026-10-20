@@ -60,7 +60,11 @@
   /* C : deux petites cases 25 et 32, à droite du nom du réseau. */
   .bascule{display:inline-flex;border-radius:999px;box-shadow:0 0 0 1px var(--atlas-line);background:var(--atlas-card);padding:2px}
   .bascule button{min-width:40px;min-height:32px;border:0;border-radius:999px;background:none;font-size:14px;color:var(--atlas-muted);cursor:pointer}
-  .bascule button[aria-pressed="true"]{background:var(--atlas-ink);color:#faf9f5}
+  /* Sa réponse du 20 octobre : « la façon du C, mais devant le bouton, le rond
+     barré synonyme du diamètre, en doré, la couleur de l'appli ». Le chiffre
+     choisi se pose sur le doré en encre : en crème, il ne se lirait pas. */
+  .bascule button[aria-pressed="true"]{background:var(--atlas-or);color:var(--atlas-ink);font-weight:600}
+  .sigle{margin-right:6px;font:400 22px/1 Georgia,"Times New Roman",serif;color:var(--atlas-or)}
   .resume{margin-top:26px;padding:14px 16px;border-radius:14px;background:var(--atlas-card);font-size:15.5px}
 </style>
 <body data-charte="origine">
@@ -114,20 +118,21 @@
   <p class="resume" id="b-resume"></p>
 
   <span class="lettre">C</span>
+  <p><b style="font-weight:600;color:var(--atlas-orTexte)">Choisie le 20 octobre.</b></p>
   <p>Deux petites cases à droite du nom. Le chiffre qui change s’écrit dessous.</p>
   <span class="caps">Le piquage, au compteur</span>
-  <div class="reseau"><b style="font-size:24px">Du compteur à la nourrice</b><span class="zone"></span><span class="bascule" data-c="amenee"><button type="button" data-d="25">25</button><button type="button" data-d="32">32</button></span></div>
+  <div class="reseau"><b style="font-size:24px">Du compteur à la nourrice</b><span class="zone"></span><span class="sigle" aria-hidden="true">Ø</span><span class="bascule" data-c="amenee"><button type="button" data-d="25">25</button><button type="button" data-d="32">32</button></span></div>
   <p class="change" id="c-amenee-dit"></p>
 
-  <div class="reseau"><span class="pastille" style="background:#2F6FB5"></span><b>Réseau 1</b><span class="zone">Arroseurs</span><span class="bascule" data-c="r1"><button type="button" data-d="25">25</button><button type="button" data-d="32">32</button></span></div>
+  <div class="reseau"><span class="pastille" style="background:#2F6FB5"></span><b>Réseau 1</b><span class="zone">Arroseurs</span><span class="sigle" aria-hidden="true">Ø</span><span class="bascule" data-c="r1"><button type="button" data-d="25">25</button><button type="button" data-d="32">32</button></span></div>
   <p class="change" id="c-r1-dit"></p>
   <div class="carte">le plan du réseau 1</div>
 
-  <div class="reseau"><span class="pastille" style="background:#3E8F4E"></span><b>Réseau 2</b><span class="zone">Arroseurs</span><span class="bascule" data-c="r2"><button type="button" data-d="25">25</button><button type="button" data-d="32">32</button></span></div>
+  <div class="reseau"><span class="pastille" style="background:#3E8F4E"></span><b>Réseau 2</b><span class="zone">Arroseurs</span><span class="sigle" aria-hidden="true">Ø</span><span class="bascule" data-c="r2"><button type="button" data-d="25">25</button><button type="button" data-d="32">32</button></span></div>
   <p class="change" id="c-r2-dit"></p>
   <div class="carte">le plan du réseau 2</div>
 
-  <div id="c-r3"><div class="reseau"><span class="pastille" style="background:#D9A520"></span><b>Réseau 3</b><span class="zone">Arroseurs</span><span class="bascule"><button type="button" aria-pressed="true">25</button><button type="button">32</button></span></div>
+  <div id="c-r3"><div class="reseau"><span class="pastille" style="background:#D9A520"></span><b>Réseau 3</b><span class="zone">Arroseurs</span><span class="sigle" aria-hidden="true">Ø</span><span class="bascule"><button type="button" aria-pressed="true">25</button><button type="button">32</button></span></div>
   <div class="carte">le plan du réseau 3, 1 arroseur</div></div>
   <p class="resume" id="c-resume"></p>
 </main>
