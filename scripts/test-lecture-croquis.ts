@@ -213,6 +213,48 @@ dire(
   "et la réserve le nomme — poser des turbines sur des fruitiers se voit trop tard",
 );
 
+// ── 7 bis. CE QU'IL ÉCRIT DANS LA ZONE COMMANDE SON ARROSAGE ────────────────
+//
+// Son croquis du 20 octobre 2026 : « Arroseur » écrit au milieu de la grande
+// partie, « GAG » sur la bande du haut, « Goutte à goutte » sur la bande de
+// gauche. Le plan est sorti tout en goutte-à-goutte, sur une seule voie : rien
+// ne disait au modèle que le mot écrit est un ordre, et le choix du type était
+// laissé à son jugement. Le calcul ne pose des arroseurs que sur un gazon.
+{
+  const sonCroquis = lireReponseCroquis(
+    JSON.stringify({
+      zones: [
+        { type: "massif", nom: "Arroseur", longueur_m: 12, largeur_m: 10 },
+        { type: "gazon", nom: "GAG", longueur_m: 12, largeur_m: 1 },
+        { type: "haie", nom: "Goutte à goutte H 0,30 m", metres_lineaires: 6 },
+        { type: "potager", nom: "Tuyères", longueur_m: 4, largeur_m: 3 },
+        { type: "gazon", nom: "Arrosage goutte-à-goutte", longueur_m: 5, largeur_m: 2 },
+        { type: "gazon", nom: "Pelouse", longueur_m: 8, largeur_m: 6 },
+      ],
+      point_d_eau: "compteur",
+      nourrice: { x: 0.1, y: 0.9 },
+      piquage: { x: 0.05, y: 0.95 },
+    })
+  );
+  const types = sonCroquis.ok ? sonCroquis.croquis.zones.map((z) => z.type) : [];
+  dire(types[0] === "gazon", `« Arroseur » écrit dans la zone en fait une pelouse à arroseurs (lu : ${types[0]})`);
+  dire(
+    types[1] === "massif" && sonCroquis.ok && sonCroquis.croquis.zones[1].L === 12,
+    `« GAG » ne reçoit jamais d'arroseurs : surface en goutte-à-goutte, cotes gardées (lu : ${types[1]})`,
+  );
+  dire(types[2] === "haie", "une haie marquée goutte à goutte reste une haie");
+  dire(types[3] === "gazon", "« Tuyères » en fait une zone à arroseurs");
+  dire(types[4] === "massif", "« Arrosage goutte-à-goutte » est du goutte-à-goutte, pas des arroseurs");
+  dire(types[5] === "gazon", "une zone sans mot d'arrosage garde le type lu");
+  const typeEcrit = lireReponseCroquis(
+    JSON.stringify({ zones: [{ type: "arroseurs", nom: null, longueur_m: 12, largeur_m: 10 }], point_d_eau: "compteur" })
+  );
+  dire(
+    typeEcrit.ok && typeEcrit.croquis.zones[0].type === "gazon",
+    "« arroseurs » rendu comme type n'est pas écarté : c'est une zone à arroseurs",
+  );
+}
+
 // ── 8. Ce qui doit être refusé net ──────────────────────────────────────────
 dire(!lireReponseCroquis("Je ne vois pas de croquis sur cette photo.").ok, "une réponse sans objet est refusée");
 dire(!lireReponseCroquis("{ zones: [").ok, "un objet mal formé est refusé");
