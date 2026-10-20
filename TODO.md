@@ -19,6 +19,25 @@ batterie : une seule à la fin de tout le lot, et il la demande.
 | **le mot écrit dans une zone du croquis** (« Arroseur », « GAG ») commande son arrosage depuis le 20 octobre (`arrosageEcrit`) : à revérifier sur SA photo du 20 octobre, sur son espace, aucune clé ici. Et sur ce même écran, « Ø25 jusqu'à 6780 m » : le seuil du Ø25 s'affiche tel quel quand le débit est minuscule (goutte-à-goutte seul) ; un chiffre pareil ne se compare à aucun mètre ruban, à plafonner ou taire | lui (la photo), puis nous |
 | **le pointillé calculé quand la distance entre deux zones est connue** (sa règle du 18 octobre, pas codée) : il faut que le calcul sache si les places des zones sont cotées ou estimées | nous |
 
+## ⏳ UNE PLANCHE À REGARDER : LES PAIEMENTS OUBLIÉS (20 octobre 2026)
+
+Sa demande : *« voir tout de suite si j'ai oublié un paiement à marquer reçu
+sur les mois précédents : dans le filtre, un petit chiffre à côté des mois »*.
+Planche `appli/tva-paiements-oublies.html` (A : le calendrier seul ; B : plus
+le total sur le bouton de l'année ; C : plus le chiffre dans la frise).
+
+Ce que le chiffre compte : les factures ÉMISES dans une période passée et
+toujours en attente (`facturesEnAttente`, déjà lue par `page.tsx`, aucune
+requête de plus). L'application ne distingue pas « oublié de marquer » de
+« pas encore payé par le client ». Rien aux débits. Le mois en cours n'a pas de
+chiffre. À coder dans `CalendrierPeriodes.tsx` par une fonction pure de
+`src/lib/` (compte par période), une fois la planche choisie.
+
+| | qui |
+|---|---|
+| choisir A, B ou C | lui |
+| coder (niveau à calculer : écran TVA, gravité « argent » probable, donc 3) | nous |
+
 ## ⏳ ARROSAGE : LE TUBE DE CHAQUE ARTISAN — son oui du 16 octobre 2026, planche à faire
 
 Le calcul tient ses tubes (paroi 3 mm) pour tout le monde, ce qui est le côté
