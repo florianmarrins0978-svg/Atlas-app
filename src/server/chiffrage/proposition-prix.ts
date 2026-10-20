@@ -34,11 +34,18 @@ import { prixConnusDe } from "../repositories/grille-prix";
 import { lireGrilles } from "../repositories/grilles-reglables";
 import { tarifsCorrespondants, type TarifCandidat } from "../../lib/tarifs-correspondants";
 import { listerPrecisions } from "../repositories/precisions-chantier";
+import { lireMarges, prixAchatCandidats } from "../repositories/fournisseurs-partenaires";
+import { prixDUneLigneDictee, quantiteDictee } from "../../lib/prix-achat";
 
 // Origine du prix — même taxonomie que l'orchestrateur (SourcePrix), volontairement
 // réutilisée plutôt que redéfinie : les deux chemins doivent raconter la même
 // chose au patron, qu'il passe par l'assistant ou par l'écran Prix.
-export type OriginePrix = SourcePrix;
+//
+// **Une seule origine en plus, et elle ne vit qu'ici : « achat »** (19 octobre
+// 2026). L'orchestrateur ne lit pas ses prix d'achat ; l'écran Prix et le devis
+// dicté, si : aucun de ses tarifs ne répond, et le montant vient de ses prix
+// d'achat × sa marge. Le dire « calculé depuis vos paramètres » serait faux.
+export type OriginePrix = SourcePrix | "achat";
 
 /** Une ligne telle qu'elle sera écrite au détail — et lue par le client. */
 export type LigneProposee = {
@@ -111,6 +118,12 @@ export type PropositionPrix = {
 //   aucun tarif + calcul possible   -> "chiffrage"
 //   aucun tarif + calcul impossible -> "aucun"
 export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Promise<PropositionPrix | null> {
+  const vente = await propositionDeVente(ctx, chantierId);
+  if (!vente || vente.origine === "tarifs_ambigus") return vente;
+  return completerParSesAchats(ctx, chantierId, vente);
+}
+
+async function propositionDeVente(ctx: Ctx, chantierId: string): Promise<PropositionPrix | null> {
   const chantier = await getChantier(ctx, chantierId);
   if (!chantier) return null;
 
@@ -344,7 +357,7 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
         donneesManquantes: [
           ...donneesManquantes,
           ...decoupe.donneesManquantes,
-          "Le matériel n'est pas chiffré : à ajouter en ligne si le chantier en demande.",
+          MATERIEL_NON_CHIFFRE,
         ],
         ambiguites,
       },
@@ -915,3 +928,104 @@ async function prixDepuisCase(
 //
 // Elle a été supprimée en découpant les lignes du devis, plutôt que mise à jour
 // une seconde fois pour rien.
+
+// =========================================================================
+// Ses prix d'ACHAT, après ses prix de vente — sa planche du 19 octobre 2026
+// =========================================================================
+
+/** La phrase que la proposition portait quand le matériel n'avait aucun prix. */
+const MATERIEL_NON_CHIFFRE = "Le matériel n'est pas chiffré : à ajouter en ligne si le chantier en demande.";
+
+/**
+ * **Son ordre, « le A » (19 octobre 2026) : son prix de vente, puis prix
+ * d'achat × marge, puis « à chiffrer ».** La proposition de vente ci-dessus
+ * reste entière et passe la première ; ce complément ne touche qu'à ce
+ * qu'elle laisse sans prix :
+ *
+ * - une ligne « à chiffrer » prend un prix d'achat × marge s'il en répond un ;
+ * - le matériel dicté (« 3 sacs de ciment ») prend TOUJOURS sa ligne : son
+ *   tarif de vente s'il en a un seul, sinon un prix d'achat × marge, sinon
+ *   « à chiffrer », sans prix, comme le travail (sa réponse du 19 octobre
+ *   2026 : *« il me met les 3 sacs de ciment dans le devis, pas de prix, et à
+ *   côté il me marque à chiffrer comme il fait avec les autres »*).
+ *
+ * Sans matériel ni prix d'achat, rien ne change. La règle elle-même est pure
+ * (`prixDUneLigneDictee`, `src/lib/prix-achat.ts`).
+ */
+async function completerParSesAchats(ctx: Ctx, chantierId: string, vente: PropositionPrix): Promise<PropositionPrix> {
+  const [achats, materiel] = await Promise.all([prixAchatCandidats(ctx), listerMateriel(ctx, chantierId)]);
+  if (achats.length === 0 && materiel.length === 0) return vente;
+  const [marges, tarifs, prestations] = await Promise.all([
+    lireMarges(ctx),
+    listerTarifs(ctx),
+    listerPrestations(ctx, chantierId),
+  ]);
+  const sources = { achats, marges };
+  const deVente = tarifs.map((t) => ({ tarifId: t.id, intitule: t.intitule, prix: t.prix, unite: t.unite }));
+  const calcul: LigneExplication[] = [];
+
+  // Sans proposition de vente, le travail dicté sort quand même en lignes, du
+  // même découpage que le reste (`lignesVendables`), pour que l'achat puisse
+  // les chiffrer.
+  const base: LigneProposee[] =
+    vente.lignes.length > 0
+      ? vente.lignes
+      : lignesVendables(prestations).lignes.map((l) => {
+          const q = quantiteCommerciale(l.prestations);
+          return {
+            libelle: l.libelle,
+            montant: null,
+            quantite: q.quantite,
+            unite: q.unite,
+            prixUnitaire: "0",
+            prestationIds: l.prestations.map((p) => p.id).filter((id): id is string => !!id),
+          };
+        });
+
+  const lignes = base.map((l) => {
+    if (l.montant !== null) return l;
+    const q = parseNombreFrancais(l.quantite) ?? quantiteDictee(l.libelle);
+    const p = prixDUneLigneDictee(membresDuLibelle(l.libelle)[0] ?? l.libelle, q, { ...sources, tarifs: deVente });
+    if (p.montant === null) return l;
+    calcul.push({ libelle: p.origine === "vente" ? "Tarif appliqué" : "Prix d'achat", detail: p.detail });
+    return { ...l, montant: p.montant, quantite: p.quantite, unite: p.unite, prixUnitaire: p.prixUnitaire };
+  });
+
+  const dejaLa = new Set(lignes.map((l) => l.libelle.trim().toLowerCase()));
+  for (const m of materiel) {
+    const libelle = m.libelle.trim();
+    if (!libelle || dejaLa.has(libelle.toLowerCase())) continue;
+    const p = prixDUneLigneDictee(libelle, quantiteDictee(libelle), { ...sources, tarifs: deVente });
+    calcul.push({ libelle: p.origine === "vente" ? "Tarif appliqué" : p.origine === "achat" ? "Prix d'achat" : "À chiffrer", detail: p.detail });
+    lignes.push({
+      libelle,
+      montant: p.montant,
+      quantite: p.quantite,
+      unite: p.unite,
+      prixUnitaire: p.prixUnitaire,
+      prestationIds: [],
+    });
+  }
+
+  if (lignes.length === base.length && lignes.every((l, i) => l === base[i])) return vente;
+  const chiffrees = lignes.filter((l) => l.montant !== null);
+  const total = chiffrees.length > 0 ? chiffrees.reduce((s, l) => s.plus(l.montant!), new Decimal(0)).toFixed(2) : null;
+  return {
+    ...vente,
+    origine: vente.prixPropose === null && total !== null ? "achat" : vente.origine,
+    // Rien de chiffré : aucun prix proposé, et surtout pas 0 €. Les lignes
+    // partent quand même au devis, « à chiffrer » (`devis-depuis-dictee.ts`).
+    prixPropose: total ?? vente.prixPropose,
+    libelle: lignes.map((l) => l.libelle).join("\n"),
+    lignes,
+    explication: {
+      ...vente.explication,
+      origine:
+        vente.prixPropose === null
+          ? "Aucun de vos prix de vente ne répond : ces montants viennent de vos prix d'achat, multipliés par votre marge. Ils restent à vérifier."
+          : vente.explication.origine,
+      calcul: [...vente.explication.calcul, ...calcul],
+      donneesManquantes: vente.explication.donneesManquantes.filter((d) => d !== MATERIEL_NON_CHIFFRE),
+    },
+  };
+}

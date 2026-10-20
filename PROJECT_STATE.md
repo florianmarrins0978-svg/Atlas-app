@@ -5,6 +5,38 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## ARROSAGE : LES PRIX DES FOURNISSEURS ET L'IMPORT D'UN DEVIS, CODÉS (19 octobre 2026), PAS ENCORE SUR `main`
+
+Branche `claude/arrosage-prix-et-devis`, **partie du lot fournisseurs**
+(`claude/reglages-fournisseurs-partenaires`) dont elle lit les prix d'achat, et
+non de la branche `lot/catalogue-aquaplus-corrections` de son PC, absente de
+GitHub. Écrans : la liste de `main` reçoit les prix (`sesPrix`), `DepuisUnDevis.tsx`,
+`EnregistrerLaDemande.tsx` ; règles : `prix-du-plan.ts`, `devis-du-plan.ts`.
+Touché chez l'autre session, au plus court : un montage dans
+`ArrosageClient.tsx` et `LePlanDuJardin.tsx`, `Dessin` exporté avec ses poses
+grisées (`NourriceEclatee.tsx`), `FeuilleFournisseur` qui enregistre la
+demande, `sommeDesGroupes` et `referenceFournisseur` sortis de
+`messageAuFournisseur` (`postes.ts`), 99 photos dans `photos.ts`.
+Document de retour : `docs/arrosage-prix-et-devis.md`.
+Le 20 octobre : sa planche des prix par fournisseur codée (une pastille par
+fournisseur, le mail ouvert avec son adresse, son message gardé).
+
+## FOURNISSEURS ET PARTENAIRES, CODÉ (19 octobre 2026), PAS ENCORE SUR `main`
+
+Branche `claude/reglages-fournisseurs-partenaires`, partie d'`origin/main`
+(70ef3861). Migration `drizzle/0132_fournisseurs_partenaires.sql` (cinq tables
+neuves sous FORCE RLS, rien d'existant touché). Écran `/reglages/fournisseurs`,
+dépôt `fournisseurs-partenaires.ts`, règles `prix-achat.ts` et
+`devis-fournisseur-lu.ts`, lecture IA `lire-devis-fournisseur.ts`, devis dicté
+complété (`proposition-prix.ts`, `completerParSesAchats`) et outil de
+l'assistant (`rechercher-tarifs-compatibles.ts`). Suites :
+`test-fournisseurs-partenaires-rls`, `test-prix-achat`,
+`test-devis-fournisseur-lu`, `test-devis-prix-achat-db`. **Niveau 3** (plancher
+`drizzle/`, gravité argent) : batterie entière avant `main`, à lancer par lui.
+Document de retour : `docs/fournisseurs-et-partenaires.md`.
+Le 20 octobre : migration `0133` (l'adresse mail, le début et la fin du message
+de chaque fournisseur), champ « Adresse mail » sur sa fiche.
+
 ## UNE ACTION INCONNUE RECHARGE LA PAGE (17 octobre 2026)
 
 L'écran d'erreur reconnaît une action que le serveur ne connaît plus et

@@ -66,6 +66,11 @@ import {
   tarifs,
   motsCatalogue,
   vehicules,
+  societesAchat,
+  prixAchat,
+  devisRecus,
+  demandesEnvoyees,
+  margesAchat,
 } from "../db/schema";
 import type { Ctx } from "./context";
 import { rangerLesFichiers, type FichierARanger } from "@/lib/rangement-sauvegarde";
@@ -199,6 +204,11 @@ export async function exporterEntreprise(
       sesPhotosDeFiche,
       saMemoireDesFiches,
       sesVehicules,
+      sesSocietesAchat,
+      sesDevisRecus,
+      sesPrixAchat,
+      sesDemandes,
+      sesMarges,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -404,6 +414,13 @@ export async function exporterEntreprise(
       // Les véhicules (migration 0131) : leurs papiers et les dates de leurs
       // contrôles. Un véhicule retiré part aussi : la ligne garde ses papiers.
       tx.select().from(vehicules).where(eq(vehicules.entrepriseId, e)),
+      // Ses fournisseurs et ses partenaires (migration 0132) : ce qu'il paie,
+      // les devis reçus et leur fichier, les listes envoyées, ses deux marges.
+      tx.select().from(societesAchat).where(eq(societesAchat.entrepriseId, e)),
+      tx.select().from(devisRecus).where(eq(devisRecus.entrepriseId, e)),
+      tx.select().from(prixAchat).where(eq(prixAchat.entrepriseId, e)),
+      tx.select().from(demandesEnvoyees).where(eq(demandesEnvoyees.entrepriseId, e)),
+      tx.select().from(margesAchat).where(eq(margesAchat.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -503,6 +520,12 @@ export async function exporterEntreprise(
       fiches_securite_photos: sesPhotosDeFiche,
       fiches_securite_memoire: saMemoireDesFiches,
       vehicules: sesVehicules,
+      // Parent avant enfants : la société, ses devis, puis les prix qui en sont lus.
+      societes_achat: sesSocietesAchat,
+      devis_recus: sesDevisRecus,
+      prix_achat: sesPrixAchat,
+      demandes_envoyees: sesDemandes,
+      marges_achat: sesMarges,
     };
 
     const compte: Record<string, number> = {};
@@ -574,6 +597,11 @@ export async function exporterEntreprise(
       ajouter(v.carteGriseCle, "vehicule", null, `${v.nom} carte grise`, jourDe(v.carteGriseLe));
       ajouter(v.assuranceCle, "vehicule", null, `${v.nom} assurance`, jourDe(v.assuranceLe));
       ajouter(v.controleCle, "vehicule", null, `${v.nom} contrôle technique`, jourDe(v.controleLe));
+    }
+    // Les devis reçus de ses fournisseurs, rangés au nom de la société et du devis.
+    const nomDeLaSociete = new Map(sesSocietesAchat.map((x) => [x.id, x.nom]));
+    for (const d of sesDevisRecus) {
+      ajouter(d.fichierCle, "devis-recu", null, `${nomDeLaSociete.get(d.societeId) ?? ""} ${d.nom}`, d.recuLe);
     }
 
     // Rangés sous le nom du client et du chantier, jamais sous leur

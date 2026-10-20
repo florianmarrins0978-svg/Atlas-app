@@ -161,6 +161,16 @@ const HORS_CHARTE: Array<{
     seulement: /data-atlas="carte-composer-ma-fiche"/,
   },
   {
+    // **LES DEUX PORTES DE « PAR OÙ COMMENCER »**, sa planche du 18 octobre 2026
+    // (`appli/arrosage-import-devis.html`) : deux cartes de deux lignes, une
+    // icône, un titre, une précision, à 14 px comme sur la planche validée. En
+    // capsule, une carte de deux lignes devient un galet. La porte du croquis
+    // est un `<label>` ; celle du devis, un bouton, d'où l'exception.
+    motif: /^src[/\\]app[/\\]paysage[/\\]arrosage[/\\]DepuisUnDevis\.tsx$/,
+    pourquoi: "carte de deux lignes de sa planche, et non geste en capsule",
+    seulement: /data-atlas="porte-devis"/,
+  },
+  {
     // **UNE VIGNETTE PHOTO, PAS UN BOUTON D'ACTION.** Arrivée le 8 septembre
     // 2026 avec « repartir d'un client » : un carré de 62 px qui montre une
     // photo de l'ancien chantier, et qu'on touche pour la reprendre. La charte

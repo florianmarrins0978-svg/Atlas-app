@@ -3958,3 +3958,83 @@ export const vehicules = pgTable("vehicules", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
+
+// --- Mes fournisseurs et mes partenaires (migration 0132, 19 octobre 2026) ---
+// Ce qu'il PAIE, tenu à part de ce qu'il VEND (`tarifs`). La règle des marges
+// et l'ordre des prix vivent dans `src/lib/prix-achat.ts`.
+export const societesAchat = pgTable("societes_achat", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  rubrique: text("rubrique", { enum: ["fournisseur", "partenaire"] }).notNull(),
+  nom: text("nom").notNull(),
+  marge: numeric("marge", { precision: 5, scale: 2 }),
+  /** Migration 0133 : l'adresse où part sa liste, et le début et la fin de SON message. */
+  email: text("email"),
+  debutMail: text("debut_mail"),
+  finMail: text("fin_mail"),
+  createdBy: uuid("created_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+});
+
+export const devisRecus = pgTable("devis_recus", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  societeId: uuid("societe_id").notNull(),
+  nom: text("nom").notNull(),
+  fichierCle: text("fichier_cle").notNull(),
+  fichierNom: text("fichier_nom"),
+  nature: text("nature", { enum: ["photo", "pdf"] }).notNull(),
+  recuLe: date("recu_le").notNull().defaultNow(),
+  createdBy: uuid("created_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+});
+
+export const prixAchat = pgTable("prix_achat", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  societeId: uuid("societe_id").notNull(),
+  nom: text("nom").notNull(),
+  reference: text("reference"),
+  unite: text("unite").notNull(),
+  prixHt: numeric("prix_ht", { precision: 12, scale: 2 }).notNull(),
+  releveLe: date("releve_le").notNull().defaultNow(),
+  source: text("source").notNull(),
+  devisRecuId: uuid("devis_recu_id"),
+  createdBy: uuid("created_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+});
+
+export type LigneDemandeEnvoyee = { designation: string; reference: string | null; quantite: string };
+
+export const demandesEnvoyees = pgTable("demandes_envoyees", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  societeId: uuid("societe_id").notNull(),
+  titre: text("titre").notNull(),
+  origine: text("origine", { enum: ["devis", "arrosage"] }).notNull(),
+  lignes: jsonb("lignes").$type<LigneDemandeEnvoyee[]>().notNull().default([]),
+  envoyeeLe: timestamp("envoyee_le", { withTimezone: true }).notNull().defaultNow(),
+  createdBy: uuid("created_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const margesAchat = pgTable("marges_achat", {
+  entrepriseId: uuid("entreprise_id")
+    .primaryKey()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  materiel: numeric("materiel", { precision: 5, scale: 2 }),
+  mainOeuvre: numeric("main_oeuvre", { precision: 5, scale: 2 }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});

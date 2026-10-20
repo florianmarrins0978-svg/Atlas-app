@@ -5,15 +5,19 @@ import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import type { EtatPlan } from "./actions";
 import type { ParametresPlan } from "@/lib/arrosage/consignes";
 import { calculerEtDessiner, montageDuPlan } from "@/lib/arrosage/le-plan";
-import { composerLesPostes, groupeNourrice, groupesDeLaListe, liaisonsDuReseau, messageAuFournisseur, titreDuDepart, zoneGoutteDuReseau, type Maillon, type Poste, type Robinet } from "@/lib/arrosage/postes";
+import { composerLesPostes, groupeNourrice, groupesDeLaListe, liaisonsDuReseau, listeAuFournisseur, messageAuFournisseur, lignesDeLaDemande, referenceFournisseur, sommeDesGroupes, titreDuDepart, zoneGoutteDuReseau, type Maillon, type Poste, type Robinet } from "@/lib/arrosage/postes";
 import {
   RETOUCHES_VIERGES, ajouter, chaineRemettre, chaineRemplacer, chaineRevenir, chaineSupprimer, clesAChanger, ligneRemettre, ligneSupprimer,
   blocRemettre, blocSupprimer, nourriceRemettre, nourriceRemplacer, nourriceSupprimer, oublierLeDepart, remettre, remplacer, revenir, supprimer, type PieceChoisie, type Retouches,
 } from "@/lib/arrosage/retouches";
-import type { TableDePrix } from "@/lib/arrosage/prix-de-la-liste";
+import { lesPrixDe, prixDesFournisseurs, type PrixAchatDuFournisseur } from "@/lib/arrosage/prix-du-plan";
 
-/** Ses devis fournisseurs ne sont pas encore gardés par l'application : aucun prix, jamais un prix inventé. */
-const PAS_ENCORE_DE_PRIX: TableDePrix = {};
+/** Sans ses prix d'achat (un autre rôle, ou une capture), aucun prix : jamais un prix inventé. */
+const SANS_PRIX: SesPrix = { fournisseurs: [], achats: [] };
+
+/** Un fournisseur, son adresse, et le début et la fin de SON message (null : ceux d'office). */
+export type SonFournisseur = { id: string; nom: string; email: string | null; debut: string | null; fin: string | null };
+export type SesPrix = { fournisseurs: SonFournisseur[]; achats: PrixAchatDuFournisseur[] };
 import { categorieDe } from "@/lib/arrosage/choix-de-pieces";
 import { departDeLOutil, departRetenu, departsPossibles, libelleDepart, phraseDuManque, type Depart, type Montage } from "@/lib/arrosage/robinet";
 import PlanDessine, { LegendeDesSymboles } from "./PlanDessine";
@@ -52,7 +56,8 @@ export default function LePlanDuJardin({
   etat,
   parametres,
   onParametres: setParametres,
-  prix = PAS_ENCORE_DE_PRIX,
+  sesPrix = SANS_PRIX,
+  surMessageGarde,
 }: {
   etat: Pick<Extract<EtatPlan, { etat: "lu" }>, "reserves" | "sansDessin">;
   /**
@@ -64,16 +69,21 @@ export default function LePlanDuJardin({
   parametres: ParametresPlan;
   onParametres: (p: ParametresPlan) => void;
   /**
-   * Ses prix d'achat, par référence, lus sur ses devis fournisseurs et validés
-   * par lui. L'application ne les garde pas encore : la table est vide, chaque
-   * ligne dit « sans prix » et le total vaut 0 (jamais un prix inventé).
+   * Ses fournisseurs et leurs prix d'achat (Réglages, Fournisseurs et
+   * partenaires), passés par l'appelant : ce composant ne parle à aucun
+   * serveur. La liste prend les prix du fournisseur de la pastille, par la
+   * référence de chaque pièce (`prix-du-plan.ts`), jamais le moins cher.
    */
-  prix?: TableDePrix;
+  sesPrix?: SesPrix;
+  /** Son début ou sa fin de message, gardés : l'appelant les retient pour la prochaine ouverture. */
+  surMessageGarde?: (id: string, champs: { debut: string | null; fin: string | null }) => void;
 }) {
   const [retouches, setRetouches] = useState<Retouches>(RETOUCHES_VIERGES);
   const [menu, setMenu] = useState<Menu | null>(null);
   const [feuille, setFeuille] = useState<{ titre: "Changer la pièce" | "Ajouter une pièce"; categorie: string; onChoix: (p: PieceChoisie) => void } | null>(null);
   const [fournisseur, setFournisseur] = useState(false);
+  // La pastille : un fournisseur à la fois, le premier d'office (sa règle du 20 octobre 2026).
+  const [vue, setVue] = useState<string | null>(null);
   const [modifier, setModifier] = useState(false);
 
   const { plan, dessin } = useMemo(() => calculerEtDessiner(parametres, etat.sansDessin), [parametres, etat.sansDessin]);
@@ -89,6 +99,15 @@ export default function LePlanDuJardin({
   const postes = useMemo(() => composerLesPostes({ plan, dessin, compteur, amenee, robinet, retouches }), [plan, dessin, compteur, amenee, robinet, retouches]);
   const nourrice = groupeNourrice(plan, postes, retouches);
   const groupes = groupesDeLaListe(plan, postes, retouches, compteur, robinet);
+  // Le prix de chaque pièce de la liste : chez le fournisseur de la pastille, par sa référence.
+  const chezEux = prixDesFournisseurs(
+    sommeDesGroupes(groupes).map((l) => ({ ref: l.ref, nom: l.nom, q: l.q, u: l.u, reference: referenceFournisseur(l.ref, plan.materiel) })),
+    sesPrix.achats,
+    sesPrix.fournisseurs
+  );
+  const chez = chezEux.find((f) => f.id === vue) ?? chezEux[0];
+  const prix = chez ? lesPrixDe(chez) : {};
+  const destinataire = chez ? sesPrix.fournisseurs.find((f) => f.id === chez.id) : undefined;
   // Les voies vivantes : un réseau supprimé enlève la sienne (19 octobre 2026).
   const nbGoutte = nourrice.voies.filter((i) => plan.secteurs[i].famille === "Goutte-à-goutte").length;
   // Les réserves du croquis ne bougent pas ; celles du calcul suivent le plan.
@@ -393,11 +412,15 @@ export default function LePlanDuJardin({
       {/* ─── La liste, et le message au fournisseur ───────────────────────── */}
       <section className="mx-[22px] mt-[26px]" data-atlas="liste">
         <span className={`block ${libelleCaps}`} style={{ color: colors.or }}>La liste</span>
+        {chez && chezEux.length > 0 && (
+          <Chips valeur={chez.id} choix={chezEux.map((f) => [f.id, f.nom])} onChoix={setVue} libelle="Prix de" />
+        )}
         <ListeDesPieces
           groupes={groupes}
           modifier={modifier}
           blocsRetires={retouches.blocsRetires}
           prix={prix}
+          chez={chez}
           onBloc={(bloc, oter) => r((s) => (oter ? blocSupprimer(s, bloc) : blocRemettre(s, bloc)))}
           onRetirer={(titre, ref, ligne) => {
             const cle = `${titre}|${ref}`;
@@ -446,7 +469,16 @@ export default function LePlanDuJardin({
 
       {menu &&<MenuPiece key={menu.titre + menu.nombre} menu={menu} onFermer={() => setMenu(null)} />}
       {feuille && <ChoisirUnePiece titre={feuille.titre} categorie={feuille.categorie} onChoix={feuille.onChoix} onFermer={() => setFeuille(null)} />}
-      {fournisseur && <FeuilleFournisseur message={messageAuFournisseur(groupes, plan.materiel)} onFermer={() => setFournisseur(false)} />}
+      {fournisseur && (
+        <FeuilleFournisseur
+          message={messageAuFournisseur(groupes, plan.materiel)}
+          liste={listeAuFournisseur(groupes, plan.materiel)}
+          onFermer={() => setFournisseur(false)}
+          destinataire={destinataire}
+          demande={{ titre: "Plan d’arrosage", lignes: lignesDeLaDemande(groupes, plan.materiel) }}
+          surMessageGarde={surMessageGarde}
+        />
+      )}
     </div>
   );
 }

@@ -10,6 +10,42 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## ARROSAGE, PRIX ET DEVIS : branche `claude/arrosage-prix-et-devis` (19 octobre 2026)
+
+Elle part du lot fournisseurs, pas de la branche aquaplus de son PC (absente
+de GitHub). **Quand il poussera sa branche locale**, fusionner `main` puis
+celle-ci : les fichiers neufs ne se heurtent à rien ; `ArrosageClient.tsx`,
+`LePlanDuJardin.tsx`, `NourriceEclatee.tsx`, `FeuillePiece.tsx`, `postes.ts`
+et `photos.ts` portent de petits ajouts à reporter si l'autre session les a
+bougés. **Non éprouvé ici** : la lecture d'un vrai devis par l'IA.
+
+**Le 20 octobre** : la liste prend les prix du fournisseur de la pastille
+(`lesPrixDe`), plus jamais le moins cher ; « Au fournisseur » ouvre un
+`mailto:` quand un fournisseur existe (`MailAuFournisseur`, `FeuillePiece.tsx`),
+sinon garde « Copier » (`SansFournisseur`), et c'est le seul chemin, avec le
+complément d'un devis, où `EnregistrerLaDemande` sert encore.
+
+## FOURNISSEURS ET PARTENAIRES : branche `claude/reglages-fournisseurs-partenaires` (19 octobre 2026)
+
+**Ce qui est fait** : sa planche validée est l'écran `/reglages/fournisseurs`
+(`FournisseursPartenaires.tsx`). Les règles sont pures dans `src/lib/prix-achat.ts`
+(marges, ordre vente puis achat puis à chiffrer, recherche et rangement des
+clients réemployés) ; le devis dicté les lit dans `completerParSesAchats`
+(`proposition-prix.ts`), **qui ne change rien tant qu'aucun prix d'achat n'est
+enregistré**. `ARCHITECTURE.md` §473 dit les décisions.
+
+**Ce qui n'est pas éprouvé ici** : la lecture IA d'un devis reçu (aucune clé
+sur ce poste). Le dépôt, lui, a été joué au navigateur : la photo est rangée,
+nommée, listée, et l'écran dit « Devis gardé. Atlas n'a pas pu en lire les prix ».
+
+**Le 20 octobre** : `0133` ajoute `email`, `debut_mail`, `fin_mail` à
+`societes_achat`. L'adresse se règle sur la fiche (Réglages) ; le début et la
+fin, depuis le plan d'arrosage (lot B), tous deux par `reglerContactAction`.
+
+**Pour le lot B (arrosage)** : `enregistrerDemande` (dépôt) attend son premier
+appelant, le message au fournisseur du plan ; `lireDevisFournisseur` sert aussi
+à importer un devis sur le plan.
+
 ## L'ÉCRAN DU PLAN D'ARROSAGE, CODÉ : branche `lot/catalogue-aquaplus-corrections`, dossier `atlas-app-aquaplus` (18 octobre 2026)
 
 **Ce qui est fait** : l'écran qu'il a validé (`appli/arrosage-plan.html`) est

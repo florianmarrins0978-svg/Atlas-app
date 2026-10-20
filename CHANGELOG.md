@@ -31,12 +31,32 @@ Format : le plus récent en tête.
   et les mêmes dans `appli/arrosage-nourrice-eclatee.html`,
   `appli/arrosage-plan.html` et le paquet `appli/arrosage-nourrice-calcul.js`)
   sont remesurés sur le rendu à 3x, le centre des deux bouts de chaque pièce à
-  moins de 1 px de l'axe de sa colonne (`ARCHITECTURE.md` §473). Ce que ça
+  moins de 1 px de l'axe de sa colonne (`ARCHITECTURE.md` §475). Ce que ça
   évite : l'électrovanne à 10° de biais et le coude FF à côté de sa colonne
   qu'il a vus le 18 octobre, et un écran qui ne suivait pas la planche
   `arrosage-plan-robinet.html`, déjà redressée depuis le 19. Ce qui reste de
   biais vient de photos prises de trois quarts, qu'il refait de face
   (`TODO.md`). Sans batterie, à sa demande : une seule pour plusieurs sessions.
+- **La liste du plan prend les prix d'UN fournisseur, celui de la pastille**,
+  jamais le moins cher de plusieurs (sa planche du 20 octobre,
+  `appli/arrosage-prix-par-fournisseur.html`). Chaque prix dit de qui il vient
+  et la date de son devis, une pièce qu'il ne vend pas dit « pas de prix chez
+  … », le total la date de ses prix. Ce que ça évite : un total mêlé de deux
+  fournisseurs, qui ne correspond à aucune commande. « Écrire à » ouvre le
+  mail, son adresse déjà écrite, la liste sans prix entre SON début et SA fin,
+  gardés pour la fois suivante, et range la liste dans ses Demandes envoyées.
+  `lesPrixDe`, `sousLePrix`, `datesDesPrix` (`prix-du-plan.ts`),
+  `listeAuFournisseur`, `lienDuMail` (`postes.ts`) ; `lesMoinsChers` supprimée.
+
+- **L'adresse mail et le message de chaque fournisseur se gardent sur sa
+  fiche** (migration `0133_adresse_et_message_du_fournisseur.sql`, trois
+  colonnes vides d'office sur `societes_achat`, expand seul). L'adresse se tape
+  dans Réglages, sur la fiche ; le début et la fin du message se tapent sous la
+  liste du plan d'arrosage, une fois par fournisseur (sa planche du 20 octobre,
+  `appli/arrosage-prix-par-fournisseur.html`). La base refuse une adresse qui
+  n'en est pas une. Règles `lireAdresseMail`, `lireMorceauDeMessage`
+  (`prix-achat.ts`), geste `reglerContactAction`. Suites :
+  `test-prix-achat` (15), `test-fournisseurs-partenaires-rls` (10).
 
 ## 2026-10-19
 
@@ -73,6 +93,45 @@ Format : le plus récent en tête.
   réseaux (sa demande du 19 octobre), sur l'écran et sur les deux planches. Ce
   que ça évite : un dessin qui montrait entières des pièces que la liste ne
   comptait plus.
+- **La liste du plan d'arrosage porte les prix de ses fournisseurs** : la
+  colonne et le total que `main` avait posés vides se remplissent avec le
+  moins cher de ses fournisseurs, pièce par pièce. Une pièce prend son prix
+  par la référence du fournisseur, jamais par un nom voisin, et un prix au
+  mètre ne vaut que pour une longueur (`prix-du-plan.ts`). La section à part
+  « Le matériel du plan », codée d'abord, est retirée : elle faisait un second
+  total sur le même écran.
+- **Partir d'un devis fournisseur** (sa planche `appli/arrosage-import-devis.html`) :
+  « Par où commencer », le devis lu par l'IA, ses pièces reconnues par leur
+  référence, la nourrice validée composée au nombre de ses électrovannes
+  (`composerNourrice`, ce qui manque grisé), ce qui manque à ajouter, le
+  message au fournisseur, et « Il manque le croquis » (`devis-du-plan.ts`).
+- **La liste envoyée s'enregistre chez le fournisseur choisi**, dans Réglages,
+  Demandes envoyées. **Les 42 photos ajoutées le 18 et le 19 octobre** sont
+  servies depuis `public/arrosage-photos`, et 99 références de plus ont leur
+  photo dans l'écran. Sans lecteur d'images, l'écran le dit au lieu de
+  « reprenez la photo ».
+
+- **Réglages, « Fournisseurs et partenaires »** (sa planche validée,
+  `appli/reglages-fournisseurs-partenaires.html`) : ce qu'il PAIE, à part de ce
+  qu'il vend. Ses fournisseurs et ses partenaires, rangés de A à Z et cherchés
+  comme ses clients ; chaque société a ses prix, ses devis reçus (photo ou PDF,
+  nommés, gardés, lus par l'IA, rien n'entre dans « Mes prix » avant son appui)
+  et ses demandes envoyées, au filtre de date de l'application. Deux marges, le
+  matériel et la main d'œuvre, plus une marge propre par société ; au-dessus de
+  × 3, refusée avec « pour 20 % de marge, tapez 1,20 », à l'écran ET en base.
+  Le devis dicté y prend ses prix dans SON ordre : son prix de vente, puis achat
+  × marge, puis « à chiffrer » (migration 0132, `src/lib/prix-achat.ts`). Ce que
+  ça évite : un sac de ciment dicté qui sortait sans prix alors qu'il sait ce
+  qu'il le paie, et une marge « 20 » qui aurait vendu vingt fois le prix.
+- **Le matériel dicté part toujours au devis**, sa réponse du même jour : sans
+  aucun prix, « 3 sacs de ciment » s'écrit avec sa quantité et « à chiffrer »
+  à côté, comme le travail. Ce que ça évite : un matériel dicté qui
+  disparaissait du devis faute de prix.
+- **Trouvé par la suite rouge, corrigé à la racine** : « 3 sacs de ciment » ne
+  retrouvait son tarif « Sac de ciment » qu'à la lettre, alors que le prix
+  d'achat se retrouvait par les mots ; l'achat passait donc devant sa vente.
+  Les deux se cherchent désormais avec la même règle (`lesMieuxNommees`).
+
 - **Les boutons de l'écran du plan sont des capsules**, comme partout (sa règle
   du 12 août 2026), sur l'écran et sur ses deux planches ; la ligne du seuil
   Ø25/Ø32 (sa demande du 22 août) revient sous le piquage ; les fiches du mode
