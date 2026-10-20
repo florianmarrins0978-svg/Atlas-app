@@ -6,6 +6,17 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-20
+
+- **« Réinitialiser » vide enfin une date de véhicule sur iPhone.** Lu dans
+  WebKit (`WKDateTimeInputControl.mm`) : ouvrir une case de date vide y écrit
+  la date du jour, puis « Réinitialiser » la vide, deux écritures sans
+  attendre. La fiche comparait le vide à la valeur d'avant l'ouverture, vide
+  aussi : il ne partait jamais, et la date du jour restait en base. Elle
+  compare désormais à la dernière valeur envoyée (`FicheVehicule.tsx`).
+  `scripts/test-vehicule-date-reinitialisee-e2e.ts`, rouge avant
+  (« elle vaut 2026-10-20 »).
+
 ## 2026-10-19
 
 - **Le plan dessiné au doigt fait dans l'application tout ce que sa planche B

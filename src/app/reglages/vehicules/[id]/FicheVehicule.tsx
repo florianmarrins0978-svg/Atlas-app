@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { colors, font, libelleCaps, surPlein, texteSituation, voile } from "@/lib/design-tokens";
@@ -59,16 +59,26 @@ export default function FicheVehicule({
   const [retrait, setRetrait] = useState(false);
   const [refusRetrait, setRefusRetrait] = useState<string | null>(null);
   const [, demarrer] = useTransition();
+  // La dernière valeur ENVOYÉE de chaque case, tant que la page ne s'est pas
+  // rafraîchie. Le sélecteur de date d'iPhone écrit deux fois de suite sans
+  // attendre : la date du jour à l'ouverture d'une case vide, puis « » sur
+  // « Réinitialiser ». Comparé à `valeurs`, encore vide, ce « » ne partait
+  // jamais, et la date du jour restait (20 octobre 2026).
+  const envoyees = useRef<Partial<Record<ChampVehicule, string | number | null>>>({});
 
   const enregistrer = (champ: ChampVehicule, brut: string) => {
     // On compare la valeur NETTOYÉE, pas le texte : sortir de « 3 500 kg » sans
     // y toucher ne doit pas renvoyer 3500, ni effacer « d'après la carte grise ».
     const lu = valeurDuChamp(champ, brut);
-    if (lu.ok && lu.valeur === valeurs[champ]) return;
+    const connue = champ in envoyees.current ? envoyees.current[champ] : valeurs[champ];
+    if (lu.ok && lu.valeur === connue) return;
+    if (lu.ok) envoyees.current[champ] = lu.valeur;
     demarrer(async () => {
       const r = await modifierChampVehiculeAction(id, champ, brut);
       setRefusDuChamp((p) => ({ ...p, [champ]: r.ok ? undefined : r.raison }));
       if (r.ok) router.refresh();
+      // Refusée, la valeur n'est pas en base : c'est de nouveau `valeurs` qui dit vrai.
+      else delete envoyees.current[champ];
     });
   };
 
