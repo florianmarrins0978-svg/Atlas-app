@@ -50,6 +50,7 @@
   .ligne .nom span{font-size:13px;color:var(--atlas-muted)}
   .fait{margin:10px 0 0;min-height:22px;font-size:13.5px;color:var(--atlas-orTexte)}
   .pour{margin:14px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .boite.plate{background:none;box-shadow:none;border-radius:0;padding:12px 0 0;border-top:1px solid var(--atlas-line)}
   .ajouter{margin-top:14px;width:100%;min-height:54px;border-radius:12px;border:1.5px dashed var(--atlas-line);background:transparent;font-size:15.5px;color:var(--atlas-ink);cursor:pointer}
   .champ{margin-top:12px}
   .champ label{display:block;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--atlas-muted)}
@@ -122,7 +123,7 @@
       </div>
     </div>
     <button class="ajouter" type="button" data-ouvrir="b-nouvelle">Ajouter une zone</button>
-    <div class="boite" id="b-nouvelle" hidden>
+    <div class="boite plate" id="b-nouvelle" hidden>
     <div class="haut"><h3>Nouvelle zone</h3><button class="fermer" type="button" data-fermer="b-nouvelle">Fermer</button></div>
     <div class="champ"><label for="b-nom">Nom</label><input id="b-nom" type="text" value="Goutte à goutte"></div>
     <div class="champ"><label for="b-type">Arrosage</label><select id="b-type"><option>Goutte-à-goutte</option><option>Arroseurs</option></select></div>
