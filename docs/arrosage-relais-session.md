@@ -511,3 +511,11 @@ planches qui font foi sont les versions publiées le 19
 https://claude.ai/artifact/4perJc9eRHYA3WvVS4bEoQ). Détail :
 `docs/arrosage-prix-et-devis.md`, `ARCHITECTURE.md` §474. **Le Ø32 n'a pas été
 touché.**
+
+## Le 20 octobre 2026 : la planche « Prix par fournisseur », à lui faire valider
+
+`appli/arrosage-prix-par-fournisseur.html` compare **sur main** (la liste prend
+toujours le moins cher de ses fournisseurs) et **la modification** (les
+pastilles « Le moins cher », « Aqua Plus », « France Bonhomme » au-dessus de la
+liste, et sous chaque prix d'où il vient). Sa demande : *« montre-moi ça avec
+une planche et je te le valide ou non »*. **Rien de la modification n'est codé.**
