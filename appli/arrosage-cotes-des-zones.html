@@ -15,7 +15,9 @@
   Rien n'est calculé ici : la planche montre le geste, et dit ce qu'il ferait.
   Ajouter une zone que l'IA n'a pas lue : sa demande du même soir, « si il
   n'arrive pas à lire une zone, faut pouvoir la rajouter manuellement aussi ».
-  Supprimer une zone lue à tort reste une question à lui poser.
+  Puis le même soir : « la A, c'est la mieux, mais il faut également pouvoir
+  rajouter l'option pour supprimer une zone, qui a été lue à tort ou qu'on ne
+  voudrait plus ». La B reste montrée, écartée.
 -->
 <style>
 [data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#8a8578;--atlas-or:#B98B47;--atlas-orTexte:#8b6835;--atlas-line:rgba(28,28,26,0.12);--atlas-rustTint:#ece9e1;--atlas-alerte:#9C3B2E}
@@ -53,6 +55,7 @@
   .terrain{display:block;width:100%;margin-top:12px;border-radius:12px;background:var(--atlas-cream);box-shadow:inset 0 0 0 1px var(--atlas-line);touch-action:none}
   .terrain text{font:0.55px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;fill:var(--atlas-inkSoft)}
   .boite.plate{background:none;box-shadow:none;border-radius:0;padding:12px 0 0;border-top:1px solid var(--atlas-line)}
+  .supprimer{margin-top:8px;width:100%;min-height:50px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-cream);font-size:15.5px;color:var(--atlas-alerte);cursor:pointer}
   .ajouter{margin-top:14px;width:100%;min-height:54px;border-radius:12px;border:1.5px dashed var(--atlas-line);background:transparent;font-size:15.5px;color:var(--atlas-ink);cursor:pointer}
   .champ{margin-top:12px}
   .champ label{display:block;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--atlas-muted)}
@@ -68,7 +71,7 @@
   <h2>À droite du nom de la zone</h2>
   <p class="sous">Sur chaque réseau, là où le nom est écrit.</p>
 
-  <div class="reseau"><span class="pastille" style="background:#2F6FB5"></span><b>Réseau 1</b><span class="zone">Arroseurs</span><button class="lien" type="button" data-zone="a1">Modifier</button></div>
+  <div class="reseau" id="a1-titre"><span class="pastille" style="background:#2F6FB5"></span><b>Réseau 1</b><span class="zone">Arroseurs</span><button class="lien" type="button" data-zone="a1">Modifier</button></div>
   <div class="boite" id="a1" hidden>
     <div class="haut"><h3>Arroseurs</h3><button class="fermer" type="button" data-fermer="a1">Fermer</button></div>
     <div class="cotes">
@@ -76,11 +79,12 @@
       <span><label for="a1-l">Largeur, m</label><input id="a1-l" type="number" inputmode="decimal" value="10"></span>
     </div>
     <button class="plein" type="button" data-refaire="a1">Refaire le plan</button>
+    <button class="supprimer" type="button" data-supprimer="a1">Supprimer la zone</button>
     <p class="fait" id="a1-fait"></p>
   </div>
-  <div class="carte">le plan du réseau 1</div>
+  <div class="carte" id="a1-carte">le plan du réseau 1</div>
 
-  <div class="reseau"><span class="pastille" style="background:#3E8F4E"></span><b>Réseau 2</b><span class="zone">Parking</span><button class="lien" type="button" data-zone="a2">Modifier</button></div>
+  <div class="reseau" id="a2-titre"><span class="pastille" style="background:#3E8F4E"></span><b>Réseau 2</b><span class="zone">Parking</span><button class="lien" type="button" data-zone="a2">Modifier</button></div>
   <div class="boite" id="a2" hidden>
     <div class="haut"><h3>Parking</h3><button class="fermer" type="button" data-fermer="a2">Fermer</button></div>
     <div class="cotes">
@@ -88,9 +92,11 @@
       <span><label for="a2-l">Largeur, m</label><input id="a2-l" type="number" inputmode="decimal" value="2.6"></span>
     </div>
     <button class="plein" type="button" data-refaire="a2">Refaire le plan</button>
+    <button class="supprimer" type="button" data-supprimer="a2">Supprimer la zone</button>
     <p class="fait" id="a2-fait"></p>
   </div>
-  <div class="carte">le plan du réseau 2</div>
+  <div class="carte" id="a2-carte">le plan du réseau 2</div>
+  <p class="fait" id="a-supprime"></p>
   <button class="ajouter" type="button" data-ouvrir="a-nouvelle">Ajouter une zone</button>
   <div class="boite" id="a-nouvelle" hidden>
     <div class="haut"><h3>Nouvelle zone</h3><button class="fermer" type="button" data-fermer="a-nouvelle">Fermer</button></div>
@@ -107,7 +113,7 @@
   <p class="pour">On corrige une zone là où on la voit mal. Celle qui manque s’ajoute sous les réseaux.</p>
 
   <span class="caps">B</span>
-  <h2>Toutes les zones, au-dessus du plan</h2>
+  <h2>Toutes les zones, au-dessus du plan. Écartée le 20 octobre</h2>
   <p class="sous">Ce que l’IA a lu, d’un coup d’œil, avant les réseaux.</p>
   <div class="boite">
     <div class="haut"><h3>Les zones lues</h3></div>
@@ -158,6 +164,16 @@
     b.onclick = function () {
       var z = b.dataset.refaire;
       $(z + "-fait").textContent = "Le plan se refait sur " + v(z + "-L") + " m sur " + v(z + "-l") + " m.";
+    };
+  });
+  // Supprimer se touche deux fois : une zone partie emporte son réseau.
+  document.querySelectorAll("[data-supprimer]").forEach(function (b) {
+    b.onclick = function () {
+      var z = b.dataset.supprimer, nom = $(z).querySelector("h3").textContent;
+      if (!b.dataset.arme) { b.dataset.arme = "1"; b.textContent = "Supprimer « " + nom + " » ?"; return; }
+      // Le titre est en flex : `hidden` ne l'emporterait pas sur sa règle.
+      [z, z + "-titre", z + "-carte"].forEach(function (id) { $(id).style.display = "none"; });
+      $("a-supprime").textContent = "« " + nom + " » est supprimée. Le plan se refait sans elle.";
     };
   });
   document.querySelectorAll("[data-ouvrir]").forEach(function (b) {

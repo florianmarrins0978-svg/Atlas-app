@@ -286,6 +286,14 @@ le dit (« 2 zones de goutte-à-goutte sont écrites sur le croquis… »). Et l
 photo : *« parking est sous le carré et pas à droite »* (même jour, photo prise
 feuille couchée). Le modèle dit de combien tourner, le calcul tourne.
 
+**CE QUE L'IA A MAL LU SE CORRIGE À LA MAIN — « la A », sa réponse du
+20 octobre 2026** devant `appli/arrosage-cotes-des-zones.html` : « Modifier »
+à droite du nom de chaque zone (longueur, largeur, et Supprimer la zone, *« lue
+à tort ou qu'on ne voudrait plus »*), et « Ajouter une zone » que l'IA n'a pas
+lue, glissée au doigt sur le plan avec l'aimant de 50 cm. Pour une photo comme
+pour un plan dessiné : la photo devient un plan en mètres, et c'est sur lui
+qu'on pose la zone, jamais sur la photo, qui n'est pas à l'échelle.
+
 **LE Ø16 SE RACCORDE AU ROBINET PAR UN RACCORD TARAUDÉ 3/4" PROPRE À SON TUBE —
 sa règle du 18 octobre 2026.** Le Plasson à bague blanche ne prend que le PE 25
 ou 32. Le Ø16 **souple** : l'embout Palaplast taraudé 16 x 3/4" (MID6362, sa
