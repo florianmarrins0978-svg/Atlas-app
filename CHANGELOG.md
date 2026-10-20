@@ -19,6 +19,15 @@ Format : le plus récent en tête.
   `lesPrixDe`, `sousLePrix`, `datesDesPrix` (`prix-du-plan.ts`),
   `listeAuFournisseur`, `lienDuMail` (`postes.ts`) ; `lesMoinsChers` supprimée.
 
+- **Les cases des fournisseurs enregistrent ce qui est tapé, pas l'état du
+  dernier rendu** : la marge générale, la marge d'une société et l'adresse
+  mail lisent la case au moment où il la quitte (`e.currentTarget.value`).
+  Trouvé par la batterie commune du 20 octobre ; `/reglages/fournisseurs`
+  entre aussi dans le préchauffage (`scripts/prechauffer.mjs`). Même défaut,
+  même remède, sur le début et la fin du mail au fournisseur (`FeuillePiece.tsx`),
+  et la lecture d'un devis sur le plan est gardée au patron
+  (`lireLeDevisDuPlanAction`).
+
 - **L'adresse mail et le message de chaque fournisseur se gardent sur sa
   fiche** (migration `0133_adresse_et_message_du_fournisseur.sql`, trois
   colonnes vides d'office sur `societes_achat`, expand seul). L'adresse se tape

@@ -155,10 +155,10 @@ export default function FournisseursPartenaires({
   // La faute de frappe se dit pendant qu'il tape, avant même de quitter la case.
   const lueGenerale = lireMarge(margeTapee[laquelle]);
 
-  const enregistrerGenerale = () => {
-    if (!lueGenerale.ok) return;
+  const enregistrerGenerale = (valeur: string) => {
+    if (!lireMarge(valeur).ok) return;
     demarrer(async () => {
-      const r = await reglerMargeGeneraleAction(laquelle, margeTapee[laquelle]);
+      const r = await reglerMargeGeneraleAction(laquelle, valeur);
       if (!r.ok) setRefus(r.raison);
       else {
         setRefus(null);
@@ -312,7 +312,7 @@ export default function FournisseursPartenaires({
           inputMode="decimal"
           value={margeTapee[laquelle]}
           onChange={(e) => setMargeTapee({ ...margeTapee, [laquelle]: e.target.value })}
-          onBlur={enregistrerGenerale}
+          onBlur={(e) => enregistrerGenerale(e.currentTarget.value)}
           aria-label={rubrique === "fournisseur" ? "Marge sur le matériel" : "Marge sur la main d’œuvre"}
           data-atlas="marge-generale"
           className="w-[84px] rounded-[9px] border-0 p-[10px] text-right text-[16px]"
@@ -380,22 +380,22 @@ function Fiche({
     }
   };
 
-  const enregistrerMarge = () => {
-    const l = lireMarge(margeTapee);
+  const enregistrerMarge = (valeur: string) => {
+    const l = lireMarge(valeur);
     if (!l.ok) {
       setAlerteMarge(l.raison);
       return;
     }
     setAlerteMarge(null);
     demarrer(async () => {
-      const r = await reglerMargeSocieteAction(societe.id, margeTapee);
+      const r = await reglerMargeSocieteAction(societe.id, valeur);
       if (!r.ok) setAlerteMarge(r.raison);
       else router.refresh();
     });
   };
 
-  const enregistrerAdresse = () => {
-    const l = lireAdresseMail(adresse);
+  const enregistrerAdresse = (valeur: string) => {
+    const l = lireAdresseMail(valeur);
     if (!l.ok) {
       setAlerteAdresse(l.raison);
       return;
@@ -403,7 +403,7 @@ function Fiche({
     setAlerteAdresse(null);
     if (l.email === societe.email) return;
     demarrer(async () => {
-      const r = await reglerContactAction(societe.id, { email: adresse });
+      const r = await reglerContactAction(societe.id, { email: valeur });
       if (!r.ok) setAlerteAdresse(r.raison);
       else router.refresh();
     });
@@ -539,7 +539,7 @@ function Fiche({
             inputMode="decimal"
             value={margeTapee}
             onChange={(e) => setMargeTapee(e.target.value)}
-            onBlur={enregistrerMarge}
+            onBlur={(e) => enregistrerMarge(e.currentTarget.value)}
             aria-label={`Marge chez ${societe.nom}`}
             data-atlas="marge-propre"
             className="w-[84px] rounded-[9px] border-0 p-[10px] text-right text-[16px]"
@@ -564,7 +564,7 @@ function Fiche({
               autoComplete="off"
               value={adresse}
               onChange={(e) => setAdresse(e.target.value)}
-              onBlur={enregistrerAdresse}
+              onBlur={(e) => enregistrerAdresse(e.currentTarget.value)}
               placeholder="commande@…"
               aria-label={`Adresse mail de ${societe.nom}`}
               data-atlas="adresse-mail"
