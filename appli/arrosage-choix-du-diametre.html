@@ -61,10 +61,11 @@
   .bascule{display:inline-flex;border-radius:999px;box-shadow:0 0 0 1px var(--atlas-line);background:var(--atlas-card);padding:2px}
   .bascule button{min-width:40px;min-height:32px;border:0;border-radius:999px;background:none;font-size:14px;color:var(--atlas-muted);cursor:pointer}
   /* Sa réponse du 20 octobre : « la façon du C, mais devant le bouton, le rond
-     barré synonyme du diamètre, en doré, la couleur de l'appli ». Le chiffre
-     choisi se pose sur le doré en encre : en crème, il ne se lirait pas. */
-  .bascule button[aria-pressed="true"]{background:var(--atlas-or);color:var(--atlas-ink);font-weight:600}
-  .sigle{margin-right:6px;font:400 22px/1 Georgia,"Times New Roman",serif;color:var(--atlas-or)}
+     barré synonyme du diamètre, en doré ». Puis : « remets le bouton 25-32 en
+     noir, ne mets que le signe diamètre en doré, le doré de l'appli ». Le doré
+     des chiffres de son plan (« 9x », « 44 m ») est `orTexte` : c'est lui. */
+  .bascule button[aria-pressed="true"]{background:var(--atlas-ink);color:#faf9f5}
+  .sigle{margin-right:6px;font:600 22px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-orTexte)}
   .resume{margin-top:26px;padding:14px 16px;border-radius:14px;background:var(--atlas-card);font-size:15.5px}
 </style>
 <body data-charte="origine">
