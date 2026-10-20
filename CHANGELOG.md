@@ -8,6 +8,14 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-20
 
+- **Les mois qui gardent une facture en attente portent un chiffre** dans le
+  calendrier de Ma TVA, et le total se lit sur le bouton de l'année sans rien
+  ouvrir (sa planche `appli/tva-paiements-oublies.html`, la B). Seulement les
+  périodes passées, rien aux débits ; la flèche de l'année d'avant porte ce qui
+  attend derrière elle. Évite qu'une facture d'avril jamais marquée reçue
+  dorme hors de sa vue, donc une TVA jamais déclarée (`enAttenteParPeriode`,
+  `src/server/periode-tva.ts`, éprouvée dans `test-periode-tva.ts`).
+
 - **Ce qu'il écrit dans une zone du croquis commande son arrosage.** Son croquis
   portait « Arroseur » sur la grande partie, « GAG » et « Goutte à goutte » sur
   deux bandes : le plan est sorti tout en goutte-à-goutte, sur une seule voie.

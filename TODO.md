@@ -19,7 +19,7 @@ batterie : une seule à la fin de tout le lot, et il la demande.
 | **le mot écrit dans une zone du croquis** (« Arroseur », « GAG ») commande son arrosage depuis le 20 octobre (`arrosageEcrit`) : à revérifier sur SA photo du 20 octobre, sur son espace, aucune clé ici. Et sur ce même écran, « Ø25 jusqu'à 6780 m » : le seuil du Ø25 s'affiche tel quel quand le débit est minuscule (goutte-à-goutte seul) ; un chiffre pareil ne se compare à aucun mètre ruban, à plafonner ou taire | lui (la photo), puis nous |
 | **le pointillé calculé quand la distance entre deux zones est connue** (sa règle du 18 octobre, pas codée) : il faut que le calcul sache si les places des zones sont cotées ou estimées | nous |
 
-## ⏳ UNE PLANCHE À REGARDER : LES PAIEMENTS OUBLIÉS (20 octobre 2026)
+## ✅ LES PAIEMENTS OUBLIÉS : SA RÉPONSE « B », CODÉE LE 20 OCTOBRE 2026
 
 Sa demande : *« voir tout de suite si j'ai oublié un paiement à marquer reçu
 sur les mois précédents : dans le filtre, un petit chiffre à côté des mois »*.
@@ -35,8 +35,9 @@ chiffre. À coder dans `CalendrierPeriodes.tsx` par une fonction pure de
 
 | | qui |
 |---|---|
-| choisir A, B ou C | lui |
-| coder (niveau à calculer : écran TVA, gravité « argent » probable, donc 3) | nous |
+| ~~choisir A, B ou C~~ **B**, le 20 octobre | fait |
+| ~~coder~~ **codé** (`CalendrierPeriodes.tsx`, `enAttenteParPeriode`) ; niveau 3 (gravité « argent ») : la batterie et la poussée sur `main` attendent son accord | lui |
+| `npm run voir` ne franchit pas l'écran `/bienvenue` sur une base fraîche : il ne sait cliquer que « continuer », « j'accepte », « commencer », pas « Se connecter » ; trouvé en regardant cet écran le 20 octobre | nous |
 
 ## ⏳ ARROSAGE : LE TUBE DE CHAQUE ARTISAN — son oui du 16 octobre 2026, planche à faire
 
