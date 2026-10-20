@@ -191,7 +191,7 @@ export async function prixAchatCandidats(ctx: Ctx): Promise<PrixAchatCandidat[]>
  */
 export async function prixDesFournisseursPourLePlan(ctx: Ctx): Promise<{
   fournisseurs: { id: string; nom: string }[];
-  achats: { societeId: string; societeNom: string; reference: string | null; nom: string; prixHt: string; releveLe: string }[];
+  achats: { societeId: string; societeNom: string; reference: string | null; nom: string; prixHt: string; unite: string; releveLe: string }[];
 }> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const societes = await tx
@@ -213,6 +213,7 @@ export async function prixDesFournisseursPourLePlan(ctx: Ctx): Promise<{
         reference: p.reference,
         nom: p.nom,
         prixHt: p.prixHt,
+        unite: p.unite,
         releveLe: p.releveLe,
       })),
     };

@@ -5,15 +5,17 @@ import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import type { EtatPlan } from "./actions";
 import type { ParametresPlan } from "@/lib/arrosage/consignes";
 import { calculerEtDessiner, montageDuPlan } from "@/lib/arrosage/le-plan";
-import { composerLesPostes, groupeNourrice, groupesDeLaListe, liaisonsDuReseau, messageAuFournisseur, lignesDeLaDemande, titreDuDepart, zoneGoutteDuReseau, type Maillon, type Poste, type Robinet } from "@/lib/arrosage/postes";
+import { composerLesPostes, groupeNourrice, groupesDeLaListe, liaisonsDuReseau, messageAuFournisseur, lignesDeLaDemande, referenceFournisseur, sommeDesGroupes, titreDuDepart, zoneGoutteDuReseau, type Maillon, type Poste, type Robinet } from "@/lib/arrosage/postes";
 import {
   RETOUCHES_VIERGES, ajouter, chaineRemettre, chaineRemplacer, chaineRevenir, chaineSupprimer, clesAChanger, ligneRemettre, ligneSupprimer,
   blocRemettre, blocSupprimer, nourriceRemettre, nourriceRemplacer, nourriceSupprimer, oublierLeDepart, remettre, remplacer, revenir, supprimer, type PieceChoisie, type Retouches,
 } from "@/lib/arrosage/retouches";
-import type { TableDePrix } from "@/lib/arrosage/prix-de-la-liste";
+import { lesMoinsChers, prixDesFournisseurs, type PrixAchatDuFournisseur } from "@/lib/arrosage/prix-du-plan";
 
-/** Ses devis fournisseurs ne sont pas encore gardés par l'application : aucun prix, jamais un prix inventé. */
-const PAS_ENCORE_DE_PRIX: TableDePrix = {};
+/** Sans ses prix d'achat (un autre rôle, ou une capture), aucun prix : jamais un prix inventé. */
+const SANS_PRIX: SesPrix = { fournisseurs: [], achats: [] };
+
+export type SesPrix = { fournisseurs: { id: string; nom: string }[]; achats: PrixAchatDuFournisseur[] };
 import { categorieDe } from "@/lib/arrosage/choix-de-pieces";
 import { departDeLOutil, departRetenu, departsPossibles, libelleDepart, phraseDuManque, type Depart, type Montage } from "@/lib/arrosage/robinet";
 import PlanDessine, { LegendeDesSymboles } from "./PlanDessine";
@@ -21,7 +23,6 @@ import NourriceEclatee from "./NourriceEclatee";
 import PiecesDuReseau, { Chips } from "./PiecesDuReseau";
 import MontageAuRobinet from "./MontageAuRobinet";
 import ListeDesPieces from "./ListeDesPieces";
-import LeMaterielDuPlan from "./LeMaterielDuPlan";
 import MotsDuPlan from "./MotsDuPlan";
 import Vignette from "./Vignette";
 import { ChoisirUnePiece, FeuilleFournisseur, MenuPiece, type Menu } from "./FeuillePiece";
@@ -53,7 +54,7 @@ export default function LePlanDuJardin({
   etat,
   parametres,
   onParametres: setParametres,
-  prix = PAS_ENCORE_DE_PRIX,
+  sesPrix = SANS_PRIX,
 }: {
   etat: Pick<Extract<EtatPlan, { etat: "lu" }>, "reserves" | "sansDessin">;
   /**
@@ -65,11 +66,12 @@ export default function LePlanDuJardin({
   parametres: ParametresPlan;
   onParametres: (p: ParametresPlan) => void;
   /**
-   * Ses prix d'achat, par référence, lus sur ses devis fournisseurs et validés
-   * par lui. L'application ne les garde pas encore : la table est vide, chaque
-   * ligne dit « sans prix » et le total vaut 0 (jamais un prix inventé).
+   * Ses fournisseurs et leurs prix d'achat (Réglages, Fournisseurs et
+   * partenaires), passés par l'appelant : ce composant ne parle à aucun
+   * serveur. Chaque pièce prend le moins cher, par sa référence
+   * (`prix-du-plan.ts`) ; sans prix, la ligne dit « sans prix ».
    */
-  prix?: TableDePrix;
+  sesPrix?: SesPrix;
 }) {
   const [retouches, setRetouches] = useState<Retouches>(RETOUCHES_VIERGES);
   const [menu, setMenu] = useState<Menu | null>(null);
@@ -90,6 +92,14 @@ export default function LePlanDuJardin({
   const postes = useMemo(() => composerLesPostes({ plan, dessin, compteur, amenee, robinet, retouches }), [plan, dessin, compteur, amenee, robinet, retouches]);
   const nourrice = groupeNourrice(plan, postes, retouches);
   const groupes = groupesDeLaListe(plan, postes, retouches, compteur, robinet);
+  // Le prix de chaque pièce de la liste : le moins cher de ses fournisseurs, par sa référence.
+  const prix = lesMoinsChers(
+    prixDesFournisseurs(
+      sommeDesGroupes(groupes).map((l) => ({ ref: l.ref, nom: l.nom, q: l.q, u: l.u, reference: referenceFournisseur(l.ref, plan.materiel) })),
+      sesPrix.achats,
+      sesPrix.fournisseurs
+    )
+  );
   // Les voies vivantes : un réseau supprimé enlève la sienne (19 octobre 2026).
   const nbGoutte = nourrice.voies.filter((i) => plan.secteurs[i].famille === "Goutte-à-goutte").length;
   // Les réserves du croquis ne bougent pas ; celles du calcul suivent le plan.
@@ -439,9 +449,6 @@ export default function LePlanDuJardin({
           </ul>
         )}
       </section>
-
-      {/* Les prix d'achat de ses fournisseurs à côté des pièces, et le total indicatif (sa planche du 18 octobre 2026). */}
-      <LeMaterielDuPlan groupes={groupes} materiel={plan.materiel} />
 
       <section className="mt-[26px]">
         <span className={`mx-[22px] block ${libelleCaps}`} style={{ color: colors.or }}>Les mots du plan</span>

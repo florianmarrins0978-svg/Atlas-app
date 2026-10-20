@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
-import { phraseDesDates, phraseDuManque, prixDesFournisseurs, totalDuPlan, type PieceDuPlan } from "../src/lib/arrosage/prix-du-plan";
+import { lesMoinsChers, prixDesFournisseurs, type PieceDuPlan } from "../src/lib/arrosage/prix-du-plan";
+import { prixDeLigne, totalDeLaListe } from "../src/lib/arrosage/prix-de-la-liste";
 
-// Les prix d'achat de ses fournisseurs sur le plan (`src/lib/arrosage/prix-du-plan.ts`) :
-// par référence, jamais par un nom voisin ; le moins cher pièce par pièce ;
-// un total indicatif qui ne compte jamais une pièce sans prix.
+// Quel prix d'achat va à quelle pièce de la liste du plan (`prix-du-plan.ts`) :
+// par la référence, jamais par un nom voisin ; l'unité concorde ; le moins cher
+// de ses fournisseurs. La colonne et le total sont ceux de la liste
+// (`prix-de-la-liste.ts`), éprouvés ici sur ce qu'on leur donne.
 
 let passed = 0;
 let failed = 0;
@@ -27,12 +29,15 @@ const fournisseurs = [
   { id: "a", nom: "Aqua Plus" },
   { id: "f", nom: "France Bonhomme" },
 ];
+const achat = (societeId: string, nom: string, reference: string | null, prixHt: string, unite = "pièce") => ({
+  societeId, societeNom: societeId, reference, nom, prixHt, unite, releveLe: "2026-10-19",
+});
 const achats = [
-  { societeId: "a", societeNom: "Aqua Plus", reference: "RA 3504", nom: "Turbine Rain Bird", prixHt: "12.40", releveLe: "2026-10-19" },
-  { societeId: "f", societeNom: "France Bonhomme", reference: "RA3504", nom: "3504", prixHt: "11.90", releveLe: "2026-10-12" },
-  { societeId: "a", societeNom: "Aqua Plus", reference: null, nom: "pehd ø25", prixHt: "0.80", releveLe: "2026-10-19" },
+  achat("a", "Turbine Rain Bird", "RA 3504", "12.40"),
+  achat("f", "3504", "RA3504", "11.90"),
+  achat("a", "pehd ø25", null, "0.80", "m"),
   // Un nom voisin, sans référence : il ne doit PAS prendre le prix du té taraudé.
-  { societeId: "a", societeNom: "Aqua Plus", reference: null, nom: "Plasson Té 90° 25×25×25", prixHt: "2.10", releveLe: "2026-10-19" },
+  achat("a", "Plasson Té 90° 25×25×25", null, "2.10"),
 ];
 
 test("par référence (espaces et casse mis à part), sinon par nom identique, jamais par un nom voisin", () => {
@@ -40,33 +45,28 @@ test("par référence (espaces et casse mis à part), sinon par nom identique, j
   assert.deepEqual(Object.keys(a.prix).sort(), ["RA3504", "pe25"]);
 });
 
-test("le moins cher pièce par pièce, et le total indicatif ne compte que les pièces chiffrées", () => {
-  const t = totalDuPlan(pieces, prixDesFournisseurs(pieces, achats, fournisseurs), "moins");
-  assert.equal(t.lignes[0].prix?.de, "France Bonhomme");
-  assert.equal(t.lignes[0].prix?.montant, "154.70");
-  assert.equal(t.lignes[2].prix?.montant, "66.40");
-  assert.equal(t.total, "221.10");
+test("le moins cher de ses fournisseurs, pièce par pièce", () => {
+  assert.deepEqual(lesMoinsChers(prixDesFournisseurs(pieces, achats, fournisseurs)), { RA3504: 11.9, pe25: 0.8 });
+});
+
+test("un prix au mètre ne vaut que pour une longueur, et une couronne n'est pas un mètre", () => {
+  const couronne = [achat("a", "PEHD Ø25", null, "45.00", "pièce")];
+  assert.deepEqual(lesMoinsChers(prixDesFournisseurs(pieces, couronne, fournisseurs)), {});
+  const auMetre = [achat("a", "Turbine 3504", "RA3504", "12.00", "m")];
+  assert.deepEqual(lesMoinsChers(prixDesFournisseurs(pieces, auMetre, fournisseurs)), {});
+});
+
+test("la liste le compte : 13 × 11,90 + 83 × 0,80, la pièce sans prix à part", () => {
+  const table = lesMoinsChers(prixDesFournisseurs(pieces, achats, fournisseurs));
+  const groupes = [{ titre: "Réseau 1", lignes: Object.fromEntries(pieces.map((p) => [p.ref, { nom: p.nom, q: p.q, u: p.u }])), retirees: {}, barrees: {} }];
+  const t = totalDeLaListe(groupes, table);
+  assert.equal(t.total, 221.1);
   assert.equal(t.sansPrix, 1);
-  assert.equal(phraseDuManque(t), "1 pièce sans prix sur 3, le total ne les compte pas.");
-  assert.equal(phraseDesDates(t), "Prix France Bonhomme du 12/10/2026. Prix Aqua Plus du 19/10/2026. Ils ont pu changer.");
+  assert.equal(prixDeLigne("RA3504", groupes[0].lignes.RA3504, table), 154.7);
 });
 
-test("chez un seul fournisseur, ses prix à lui", () => {
-  const t = totalDuPlan(pieces, prixDesFournisseurs(pieces, achats, fournisseurs), "a");
-  assert.equal(t.lignes[0].prix?.montant, "161.20");
-  assert.equal(t.total, "227.60");
-});
-
-test("aucun prix : aucun total, jamais 0 €", () => {
-  const t = totalDuPlan(pieces, prixDesFournisseurs(pieces, [], fournisseurs), "moins");
-  assert.equal(t.total, null);
-  assert.equal(phraseDesDates(t), "Aucun prix encore.");
-  assert.equal(phraseDuManque(t), "3 pièces sans prix sur 3, le total ne les compte pas.");
-});
-
-test("une longueur à mesurer ne se chiffre pas", () => {
-  const t = totalDuPlan([{ ...pieces[2], q: 0 }], prixDesFournisseurs(pieces, achats, fournisseurs), "moins");
-  assert.equal(t.total, null);
+test("sans aucun prix d'achat, aucun prix : jamais un prix inventé", () => {
+  assert.deepEqual(lesMoinsChers(prixDesFournisseurs(pieces, [], fournisseurs)), {});
 });
 
 console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

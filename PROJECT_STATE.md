@@ -10,7 +10,7 @@
 Branche `claude/arrosage-prix-et-devis`, **partie du lot fournisseurs**
 (`claude/reglages-fournisseurs-partenaires`) dont elle lit les prix d'achat, et
 non de la branche `lot/catalogue-aquaplus-corrections` de son PC, absente de
-GitHub. Écrans : `LeMaterielDuPlan.tsx`, `DepuisUnDevis.tsx`,
+GitHub. Écrans : la liste de `main` reçoit les prix (`sesPrix`), `DepuisUnDevis.tsx`,
 `EnregistrerLaDemande.tsx` ; règles : `prix-du-plan.ts`, `devis-du-plan.ts`.
 Touché chez l'autre session, au plus court : un montage dans
 `ArrosageClient.tsx` et `LePlanDuJardin.tsx`, `Dessin` exporté avec ses poses

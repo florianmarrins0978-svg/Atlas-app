@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import { lireLeCroquis, type EtatPlan } from "./actions";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
-import LePlanDuJardin from "./LePlanDuJardin";
+import LePlanDuJardin, { type SesPrix } from "./LePlanDuJardin";
+import { prixDesFournisseursAction } from "./actions-fournisseurs";
 import DiscuterLePlan from "./DiscuterLePlan";
 import DessinerLePlan from "./DessinerLePlan";
 import DepuisUnDevis from "./DepuisUnDevis";
@@ -411,9 +412,22 @@ export default function ArrosageClient({
  */
 function PlanLu({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
   const [parametres, setParametres] = useState<ParametresPlan>(etat.parametres);
+  // Ses prix d'achat (Réglages, Fournisseurs et partenaires), pour la colonne
+  // et le total de la liste. Le patron seul les reçoit ; sinon, aucun prix.
+  const [sesPrix, setSesPrix] = useState<SesPrix | undefined>(undefined);
+  useEffect(() => {
+    let vivant = true;
+    prixDesFournisseursAction().then(
+      (d) => vivant && d && setSesPrix(d),
+      () => undefined
+    );
+    return () => {
+      vivant = false;
+    };
+  }, []);
   return (
     <>
-      <LePlanDuJardin etat={etat} parametres={parametres} onParametres={setParametres} />
+      <LePlanDuJardin etat={etat} parametres={parametres} onParametres={setParametres} sesPrix={sesPrix} />
       <DiscuterLePlan parametres={parametres} surNouveauPlan={(refait) => setParametres(refait.parametres)} />
     </>
   );

@@ -10,10 +10,22 @@ import { refusDuDocumentVehicule } from "@/lib/vehicules";
 import { CATALOGUE } from "@/lib/arrosage/catalogue.js";
 import { Dessin } from "./NourriceEclatee";
 import { ChoisirUnePiece, FeuilleFournisseur } from "./FeuillePiece";
-import { VignetteDeLigne } from "./LeMaterielDuPlan";
 import { lireLeDevisDuPlanAction } from "./actions-fournisseurs";
 
 const CAT = CATALOGUE as unknown as { referenceDe(ref: string): string | null };
+
+/** La photo d'une pièce dans son petit cadre blanc, ou un cadre en pointillé quand elle n'en a pas. */
+function VignetteDeLigne({ cle }: { cle: string }) {
+  const photo = photoDe(cle);
+  return (
+    <span
+      className="flex h-10 w-10 flex-none items-center justify-center rounded-[8px]"
+      style={photo ? { backgroundColor: "#ffffff", boxShadow: `0 0 0 1px ${colors.lineSoft}` } : { border: `1.5px dashed ${colors.line}` }}
+    >
+      {photo && <Image src={photo} alt="" width={36} height={36} unoptimized className="max-h-9 max-w-9 object-contain" style={{ mixBlendMode: "multiply" }} />}
+    </span>
+  );
+}
 
 type Lu = { connues: PieceDuDevis[]; inconnues: { lu: string }[] };
 

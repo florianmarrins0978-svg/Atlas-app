@@ -1,11 +1,14 @@
-import Decimal from "decimal.js";
 import { normaliserPourRecherche } from "../recherche-client";
+import type { TableDePrix } from "./prix-de-la-liste";
 
 /**
  * LES PRIX DES FOURNISSEURS SUR LE PLAN — sa planche du 18 octobre 2026
  * (`appli/arrosage-prix-fournisseurs.html`, validée) : *« il me met à chaque
  * fois les prix à côté des pièces. Le jour où je fais mon plan, il me fait un
- * montant total, à titre indicatif parce que les prix peuvent changer »*.
+ * montant total, à titre indicatif parce que les prix peuvent changer »*, puis
+ * le 19 au soir : *« à droite, il y ait le prix, et en dessous un total »*.
+ * La colonne et le total sont ceux de la liste (`prix-de-la-liste.ts`) ; ici
+ * se décide seulement quel prix va à quelle pièce.
  *
  * **Ce sont des PRIX D'ACHAT**, ceux de Réglages, Fournisseurs et partenaires,
  * sans marge : le total dit ce que le matériel lui coûtera, pas ce qu'il le
@@ -24,6 +27,8 @@ export type PrixAchatDuFournisseur = {
   reference: string | null;
   nom: string;
   prixHt: string;
+  /** « m » : un prix au mètre, qui ne vaut que pour une longueur. */
+  unite: string;
   /** AAAA-MM-JJ. */
   releveLe: string;
 };
@@ -51,8 +56,12 @@ export function prixDesFournisseurs(
     for (const p of pieces) {
       const parRef = refPropre(p.reference);
       const nom = normaliserPourRecherche(p.nom);
-      const trouves = siens.filter((a) =>
-        parRef && refPropre(a.reference) ? refPropre(a.reference) === parRef : normaliserPourRecherche(a.nom) === nom
+      // Un prix au mètre ne vaut que pour une longueur, et un prix à la pièce
+      // jamais pour des mètres : une couronne n'est pas un mètre de tube.
+      const trouves = siens.filter(
+        (a) =>
+          (a.unite === "m") === (p.u === "ml") &&
+          (parRef && refPropre(a.reference) ? refPropre(a.reference) === parRef : normaliserPourRecherche(a.nom) === nom)
       );
       const recent = trouves.reduce<PrixAchatDuFournisseur | null>((m, a) => (m === null || a.releveLe > m.releveLe ? a : m), null);
       if (recent) prix[p.ref] = { prixHt: recent.prixHt, releveLe: recent.releveLe };
@@ -61,59 +70,18 @@ export function prixDesFournisseurs(
   });
 }
 
-/** « moins » : le moins cher des fournisseurs, pièce par pièce ; sinon l'identifiant d'un fournisseur. */
-export type VueDesPrix = "moins" | string;
-
-export type LignePrixee = PieceDuPlan & { prix: { montant: string; unitaire: string; de: string } | null };
-
-export type TotalDuPlan = {
-  lignes: LignePrixee[];
-  /** `null` : aucune pièce n'a de prix. Jamais 0 €. */
-  total: string | null;
-  sansPrix: number;
-  /** « Prix Aqua Plus du 19/10/2026. » par fournisseur dont un prix sert. */
-  dates: { nom: string; le: string }[];
-};
-
-const jourFrancais = (iso: string) => iso.split("-").reverse().join("/");
-
-export function totalDuPlan(pieces: readonly PieceDuPlan[], fournisseurs: readonly FournisseurDuPlan[], vue: VueDesPrix): TotalDuPlan {
-  const servis = new Map<string, string>();
-  let total = new Decimal(0);
-  let sansPrix = 0;
-  const lignes = pieces.map((p) => {
-    const candidats = (vue === "moins" ? fournisseurs : fournisseurs.filter((f) => f.id === vue))
-      .filter((f) => p.ref in f.prix)
-      .map((f) => ({ f, x: f.prix[p.ref] }));
-    const mieux = candidats.reduce<(typeof candidats)[number] | null>((m, c) => (m === null || new Decimal(c.x.prixHt).lt(m.x.prixHt) ? c : m), null);
-    // Une longueur à mesurer n'a pas de quantité : son prix ne se compte pas.
-    if (!mieux || !p.q) {
-      sansPrix++;
-      return { ...p, prix: null };
+/**
+ * La table que la liste du plan lit (`prix-de-la-liste.ts`, sa colonne et son
+ * total) : pour chaque pièce, **le moins cher de ses fournisseurs**. Une pièce
+ * qu'aucun ne vend n'y est pas, et la liste dit « sans prix ».
+ */
+export function lesMoinsChers(fournisseurs: readonly FournisseurDuPlan[]): TableDePrix {
+  const table: TableDePrix = {};
+  for (const f of fournisseurs) {
+    for (const [ref, x] of Object.entries(f.prix)) {
+      const p = Number(x.prixHt);
+      if (Number.isFinite(p) && (table[ref] === undefined || p < table[ref])) table[ref] = p;
     }
-    const montant = new Decimal(mieux.x.prixHt).times(p.q);
-    total = total.plus(montant);
-    const avant = servis.get(mieux.f.nom);
-    if (!avant || mieux.x.releveLe > avant) servis.set(mieux.f.nom, mieux.x.releveLe);
-    return { ...p, prix: { montant: montant.toFixed(2), unitaire: new Decimal(mieux.x.prixHt).toFixed(2), de: mieux.f.nom } };
-  });
-  return {
-    lignes,
-    total: sansPrix === pieces.length ? null : total.toFixed(2),
-    sansPrix,
-    dates: [...servis.entries()].map(([nom, le]) => ({ nom, le: jourFrancais(le) })),
-  };
-}
-
-/** « Prix Aqua Plus du 19/10/2026. Ils ont pu changer. » */
-export function phraseDesDates(t: TotalDuPlan): string {
-  if (t.total === null) return "Aucun prix encore.";
-  return `${t.dates.map((d) => `Prix ${d.nom} du ${d.le}`).join(". ")}. Ils ont pu changer.`;
-}
-
-/** « 3 pièces sans prix sur 28, le total ne les compte pas. » */
-export function phraseDuManque(t: TotalDuPlan): string {
-  const n = t.lignes.length;
-  if (!t.sansPrix) return "";
-  return `${t.sansPrix} pièce${t.sansPrix > 1 ? "s" : ""} sans prix sur ${n}, le total ne les compte pas.`;
+  }
+  return table;
 }

@@ -41,11 +41,13 @@ Format : le plus récent en tête.
   réseaux (sa demande du 19 octobre), sur l'écran et sur les deux planches. Ce
   que ça évite : un dessin qui montrait entières des pièces que la liste ne
   comptait plus.
-- **Le plan d'arrosage porte les prix de ses fournisseurs** (sa planche
-  `appli/arrosage-prix-fournisseurs.html`) : « Le matériel du plan », le prix
-  d'achat à côté de chaque pièce, « Le moins cher » ou un fournisseur, et le
-  total indicatif hors taxes (« la C »). Une pièce prend son prix par la
-  référence du fournisseur, jamais par un nom voisin (`prix-du-plan.ts`).
+- **La liste du plan d'arrosage porte les prix de ses fournisseurs** : la
+  colonne et le total que `main` avait posés vides se remplissent avec le
+  moins cher de ses fournisseurs, pièce par pièce. Une pièce prend son prix
+  par la référence du fournisseur, jamais par un nom voisin, et un prix au
+  mètre ne vaut que pour une longueur (`prix-du-plan.ts`). La section à part
+  « Le matériel du plan », codée d'abord, est retirée : elle faisait un second
+  total sur le même écran.
 - **Partir d'un devis fournisseur** (sa planche `appli/arrosage-import-devis.html`) :
   « Par où commencer », le devis lu par l'IA, ses pièces reconnues par leur
   référence, la nourrice validée composée au nombre de ses électrovannes

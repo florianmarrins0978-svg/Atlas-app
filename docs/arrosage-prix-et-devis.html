@@ -71,8 +71,8 @@
 </tr></thead><tbody>
 <tr>
 <td>Les prix sur le plan</td>
-<td>« Le matériel du plan » : le prix d'achat à côté de chaque pièce, « Le moins cher » ou un fournisseur, le total indicatif hors taxes (la C), les pièces sans prix comptées à part</td>
-<td><code>LeMaterielDuPlan.tsx</code>, <code>prix-du-plan.ts</code></td>
+<td>le prix d'achat à droite de chaque pièce de LA liste, le moins cher de tes fournisseurs, et le total en dessous (la colonne et le total que <code>main</code> avait posés vides)</td>
+<td><code>prix-du-plan.ts</code>, <code>ListeDesPieces.tsx</code></td>
 </tr>
 <tr>
 <td>Importer un devis</td>
@@ -94,6 +94,7 @@
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ul>
 <li><strong>Une pièce prend un prix par sa référence</strong>, pas par son nom : un nom voisin ferait prendre le prix d'un autre raccord.</li>
+<li><strong>Corrigé après la fusion de <code>main</code> (20 octobre)</strong> : j'avais d'abord posé une section « Le matériel du plan » à côté de la liste, avec son propre total. <code>main</code> avait déjà la colonne et le total dans la liste, comme tu l'as demandé le 19 au soir : deux totaux sur un écran, c'est un de trop. La section est retirée, et les prix vont dans la liste. Les pastilles « Le moins cher » ou un fournisseur de la planche ne sont donc pas à l'écran : c'est toujours le moins cher. Dis-moi si tu les veux au-dessus de la liste.</li>
 <li><strong>Le fournisseur se choisit</strong> dans « Au fournisseur » : la planche écrivait Aqua Plus en dur.</li>
 <li><strong>« Garder la liste sans plan » la garde sur l'écran</strong>, comme le plan, qui ne s'enregistre nulle part encore. À toi de dire où la garder.</li>
 <li><strong>« Par où commencer » se pose sous « Le piquage se fait »</strong>, qui ouvrait déjà l'écran.</li>
@@ -105,7 +106,7 @@
 <th>Résultat</th>
 </tr></thead><tbody>
 <tr>
-<td><code>test-prix-du-plan</code> (référence, moins cher, total, jamais 0 €)</td>
+<td><code>test-prix-du-plan</code> (référence, unité, moins cher, le total de la liste)</td>
 <td>5 sur 5</td>
 </tr>
 <tr>
@@ -121,7 +122,11 @@
 <td>verts</td>
 </tr>
 <tr>
-<td>l'écran réel, regardé en Origine et Nuit : « Par où commencer », le plan dessiné au doigt, « Le matériel du plan » (141,70 €, 23 pièces sans prix sur 26), « Au fournisseur » et la demande enregistrée en base</td>
+<td>l'écran réel, regardé en Origine et Nuit : « Par où commencer », le plan dessiné au doigt, « Au fournisseur » et la demande enregistrée en base</td>
+<td>vu</td>
+</tr>
+<tr>
+<td>après la fusion de <code>main</code> : la liste avec ses prix (turbine 9 × 11,90 € = 107,10 €, total 141,70 €, 25 pièces sans prix sur 28)</td>
 <td>vu</td>
 </tr>
 <tr>

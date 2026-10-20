@@ -35316,8 +35316,13 @@ Ses planches du 18 octobre 2026, codées le 19.
    prend un prix si sa référence (`referenceFournisseur`, la même que le
    message au fournisseur) est la même, espaces et casse mis à part, ou à défaut
    si le nom est identique. Deux raccords voisins ne s'échangent pas leur prix.
-2. **Ce sont des prix d'ACHAT, sans marge** : le total dit ce que le matériel
-   coûte, « à titre indicatif », jamais 0 € quand rien n'est chiffré.
+2. **Ce sont des prix d'ACHAT, sans marge**, versés dans la colonne et le
+   total de la liste (`prix-de-la-liste.ts`, §472) : le moins cher de ses
+   fournisseurs (`lesMoinsChers`), et l'unité doit concorder (une couronne
+   n'est pas un mètre de tube). **Une seule liste, un seul total** : une
+   première version posait une section « Le matériel du plan » à côté, avec son
+   propre total ; retirée à la fusion de `main`. `LePlanDuJardin` reçoit
+   `sesPrix` de son appelant et ne parle toujours à aucun serveur.
 3. **Un devis importé se reconnaît par la même règle** (`reconnaitreLeDevis`) ;
    une ligne sans pièce ou sans quantité lisible va dans « Pas dans le
    catalogue », il choisit. La nourrice vient de `composerNourrice` et se
