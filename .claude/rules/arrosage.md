@@ -282,7 +282,9 @@ arroseur sur la grande partie ; il a compris que le goutte à goutte »*.
 Le mot écrit passe avant le type que le modèle rend (`arrosageEcrit`,
 `lire-croquis.ts`). Un parking, une allée, une terrasse ne sont pas des zones ; et
 quand le croquis porte plus de mots d'arrosage que de zones lues, la réserve
-le dit (« 2 zones de goutte-à-goutte sont écrites sur le croquis… »).
+le dit (« 2 zones de goutte-à-goutte sont écrites sur le croquis… »). Et la feuille se lit dans le sens de son ÉCRITURE, pas de la
+photo : *« parking est sous le carré et pas à droite »* (même jour, photo prise
+feuille couchée). Le modèle dit de combien tourner, le calcul tourne.
 
 **LE Ø16 SE RACCORDE AU ROBINET PAR UN RACCORD TARAUDÉ 3/4" PROPRE À SON TUBE —
 sa règle du 18 octobre 2026.** Le Plasson à bague blanche ne prend que le PE 25

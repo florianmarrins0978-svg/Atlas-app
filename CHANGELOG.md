@@ -8,6 +8,15 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-20
 
+- **Une feuille photographiée couchée se lit dans le sens de son écriture.**
+  Sa photo se lisait d'un quart de tour : le plan posait le parking à droite,
+  alors qu'il est sous la pelouse, et les bandes de goutte-à-goutte au mauvais
+  bord. Le modèle dit de combien tourner la photo (`rotation_lecture`) ; le
+  quart de tour des places, des cotes et de la nourrice se calcule dans
+  `lireReponseCroquis`, éprouvé par `test-lecture-croquis.ts`. Une rotation qui
+  n'est pas un quart de tour ne s'applique pas, et la réserve le dit. **Non
+  vérifié sur sa photo ici** (aucune clé).
+
 - **Un parking n'est plus une zone, et une zone écrite qui manque se dit.**
   Seconde photo du même croquis : les arroseurs sont lus, mais « Parking » est
   sorti en zone de goutte-à-goutte à la place de ses deux bandes (« GAG »,
