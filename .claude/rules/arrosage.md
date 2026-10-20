@@ -273,6 +273,15 @@ Sur le plan, le piquage au robinet est une petite croix blanche et le mot
 « croix : le robinet, là où l'on se repique ». Sur le croquis, ce même signe se
 LIT comme le piquage, avec « robinet » pour point d'eau (`lire-croquis.ts`).
 
+**CE QU'IL ÉCRIT DANS UNE ZONE COMMANDE SON ARROSAGE — 20 octobre 2026**, sur
+son croquis : *« j'ai marqué que je voulais du goutte à goutte à deux endroits
+différents, un écrit GAG pour goutte à goutte et l'autre en toutes lettres, et
+arroseur sur la grande partie ; il a compris que le goutte à goutte »*.
+« Arroseur », « turbines », « tuyères » : une zone à arroseurs, donc un gazon.
+« Goutte à goutte », « GAG », « gaine » : du goutte-à-goutte, jamais un gazon.
+Le mot écrit passe avant le type que le modèle rend (`arrosageEcrit`,
+`lire-croquis.ts`).
+
 **LE Ø16 SE RACCORDE AU ROBINET PAR UN RACCORD TARAUDÉ 3/4" PROPRE À SON TUBE —
 sa règle du 18 octobre 2026.** Le Plasson à bague blanche ne prend que le PE 25
 ou 32. Le Ø16 **souple** : l'embout Palaplast taraudé 16 x 3/4" (MID6362, sa

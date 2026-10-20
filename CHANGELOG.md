@@ -8,6 +8,17 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-20
 
+- **Ce qu'il écrit dans une zone du croquis commande son arrosage.** Son croquis
+  portait « Arroseur » sur la grande partie, « GAG » et « Goutte à goutte » sur
+  deux bandes : le plan est sorti tout en goutte-à-goutte, sur une seule voie.
+  Le type de zone était laissé au jugement du modèle, qui ne voyait « pelouse »
+  écrit nulle part, et le calcul ne pose des arroseurs que sur un gazon. Le mot
+  écrit (« arroseur », « turbines », « tuyères » ; « goutte à goutte »,
+  « GAG », « gaine ») passe désormais avant le type rendu, dans une règle pure
+  (`arrosageEcrit`, `lire-croquis.ts`) que `test-lecture-croquis.ts` tient, et
+  la consigne du modèle le dit. **Non vérifié sur une vraie photo ici** (aucune
+  clé) : `npm run verifier:croquis` sur son espace, ou sa photo rejouée.
+
 - **Le verso d'une carte grise ne se refuse plus comme « autre véhicule », et
   ses dates de contrôle se prennent.** Sa carte grise d'Amarok (EH-467-GL) :
   le verso imprime le numéro de formule « 2025EJ72653 » juste au-dessus de
