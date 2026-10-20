@@ -68,6 +68,8 @@ export async function enregistrerLaDemandeAction(
  */
 export async function lireLeDevisDuPlanAction(formData: FormData): Promise<{ ok: true; lignes: LigneDevisLue[]; ecartees: number } | { ok: false; raison: string }> {
   const ctx = await getCurrentCtx();
+  // Le devis porte ses prix d'achat : le patron seul, comme leur lecture sur le plan.
+  if (!(await estProprietaire(ctx))) return { ok: false, raison: "Seul le patron lit un devis fournisseur." };
   // Sans lecteur d'images, le dire tel quel : « reprenez la photo » enverrait
   // chercher au mauvais endroit (la même règle que l'écran, `etatVision`).
   const vision = etatVision(getConfigIA());

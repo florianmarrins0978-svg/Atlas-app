@@ -317,7 +317,7 @@ function MailAuFournisseur({
       </label>
       <p className={choix} style={{ color: colors.inkSoft }}>La liste, faite par l’outil, sans prix</p>
       <pre
-        className="mt-[10px] max-h-[220px] overflow-auto whitespace-pre-wrap rounded-[12px] p-3 text-[13.5px] leading-[1.5]"
+        className="mt-[10px] max-h-[220px] overflow-auto whitespace-pre-wrap break-words rounded-[12px] p-3 text-[13.5px] leading-[1.5]"
         style={{ backgroundColor: colors.card, color: colors.inkSoft, fontFamily: "inherit" }}
         data-atlas="liste-du-message"
       >

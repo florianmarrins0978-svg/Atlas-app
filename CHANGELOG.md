@@ -8,6 +8,13 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-20
 
+- **Quatre défauts du lot des fournisseurs, attrapés par la batterie commune** :
+  `lireLeDevisDuPlanAction` n'avait aucune garde de rôle (le devis porte ses
+  prix d'achat : le patron seul, comme leur lecture sur le plan) ; trois cases
+  des Réglages des fournisseurs rangeaient l'état du dernier rendu au lieu de
+  la valeur quittée (`test-valeur-du-champ.ts`) ; la liste du message au
+  fournisseur pouvait déborder sur un mot long ; `/reglages/fournisseurs`
+  manquait au préchauffage.
 - **Une feuille photographiée couchée se lit dans le sens de son écriture.**
   Sa photo se lisait d'un quart de tour : le plan posait le parking à droite,
   alors qu'il est sous la pelouse, et les bandes de goutte-à-goutte au mauvais
