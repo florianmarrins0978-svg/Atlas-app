@@ -50,6 +50,8 @@
   .ligne .nom span{font-size:13px;color:var(--atlas-muted)}
   .fait{margin:10px 0 0;min-height:22px;font-size:13.5px;color:var(--atlas-orTexte)}
   .pour{margin:14px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .terrain{display:block;width:100%;margin-top:12px;border-radius:12px;background:var(--atlas-cream);box-shadow:inset 0 0 0 1px var(--atlas-line);touch-action:none}
+  .terrain text{font:0.55px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;fill:var(--atlas-inkSoft)}
   .boite.plate{background:none;box-shadow:none;border-radius:0;padding:12px 0 0;border-top:1px solid var(--atlas-line)}
   .ajouter{margin-top:14px;width:100%;min-height:54px;border-radius:12px;border:1.5px dashed var(--atlas-line);background:transparent;font-size:15.5px;color:var(--atlas-ink);cursor:pointer}
   .champ{margin-top:12px}
@@ -100,6 +102,7 @@
     </div>
     <button class="plein" type="button" data-ajouter="a">Ajouter au plan</button>
     <p class="fait" id="a-nfait"></p>
+    <svg class="terrain" id="a-terrain" viewBox="0 0 18 15" hidden></svg>
   </div>
   <p class="pour">On corrige une zone là où on la voit mal. Celle qui manque s’ajoute sous les réseaux.</p>
 
@@ -133,6 +136,7 @@
     </div>
     <button class="plein" type="button" data-ajouter="b">Ajouter au plan</button>
     <p class="fait" id="b-nfait"></p>
+    <svg class="terrain" id="b-terrain" viewBox="0 0 18 15" hidden></svg>
   </div>
     <button class="plein" type="button" id="b-refaire">Refaire le plan</button>
     <p class="fait" id="b-fait"></p>
@@ -162,9 +166,53 @@
   document.querySelectorAll("[data-ajouter]").forEach(function (b) {
     b.onclick = function () {
       var k = b.dataset.ajouter;
-      $(k + "-nfait").textContent = "« " + $(k + "-nom").value + " » s’ajoute au plan en " + $(k + "-type").value.toLowerCase() + ", " + v(k + "-nL") + " m sur " + v(k + "-nl") + " m. On la glisse ensuite à sa place.";
+      $(k + "-nfait").textContent = "Touchez « " + $(k + "-nom").value + " », puis glissez-la à sa place.";
+      terrain(k);
     };
   });
+  /* LE GESTE DE « DESSINER LE PLAN », recopié : la zone neuve se pose à sa
+     taille, à côté de la pelouse ; un doigt la glisse ; à moins de 50 cm d'un
+     bord de la pelouse, elle s'y colle. Les mètres sont ceux du dessin. */
+  var NS = "http://www.w3.org/2000/svg", AIMANT = 0.5;
+  var PELOUSE = { x: 3, y: 1.5, L: 12, l: 10 };
+  function el(nom, attrs) { var e = document.createElementNS(NS, nom); for (var a in attrs) e.setAttribute(a, attrs[a]); return e; }
+  function terrain(k) {
+    var svg = $(k + "-terrain"); svg.hidden = false; svg.innerHTML = "";
+    var L = Math.max(0.2, Number($(k + "-nL").value) || 1), l = Math.max(0.2, Number($(k + "-nl").value) || 1);
+    svg.appendChild(el("rect", { x: PELOUSE.x, y: PELOUSE.y, width: PELOUSE.L, height: PELOUSE.l, fill: "rgba(47,111,181,.18)", stroke: "#2F6FB5", "stroke-width": 0.08 }));
+    var t = el("text", { x: PELOUSE.x + 0.3, y: PELOUSE.y + 0.8 }); t.textContent = "Arroseurs, 12 m sur 10 m"; svg.appendChild(t);
+    var z = { x: 0.4, y: 12.5 };
+    var r = el("rect", { width: L, height: l, fill: "rgba(62,143,78,.35)", stroke: "#3E8F4E", "stroke-width": 0.08, rx: 0.1 });
+    svg.appendChild(r);
+    // Une bande de 30 cm ne s'attrape pas au doigt : la prise déborde d'un demi-mètre.
+    var main = el("rect", { width: L + 1, height: l + 1, fill: "transparent" });
+    main.style.cursor = "grab";
+    var nom = el("text", {}); nom.textContent = $(k + "-nom").value; svg.appendChild(nom);
+    svg.appendChild(main);
+    function poser() { r.setAttribute("x", z.x); r.setAttribute("y", z.y); main.setAttribute("x", z.x - 0.5); main.setAttribute("y", z.y - 0.5); nom.setAttribute("x", z.x); nom.setAttribute("y", z.y - 0.2); }
+    function coller(v, cibles, taille) {
+      for (var i = 0; i < cibles.length; i++) {
+        if (Math.abs(v - cibles[i]) < AIMANT) return cibles[i];
+        if (Math.abs(v + taille - cibles[i]) < AIMANT) return cibles[i] - taille;
+      }
+      return v;
+    }
+    function metres(e) { var p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); }
+    var prise = null;
+    main.addEventListener("pointerdown", function (e) { var m = metres(e); prise = { dx: m.x - z.x, dy: m.y - z.y }; main.setPointerCapture(e.pointerId); r.setAttribute("stroke-width", 0.16); });
+    main.addEventListener("pointermove", function (e) {
+      if (!prise) return;
+      var m = metres(e);
+      z.x = coller(m.x - prise.dx, [PELOUSE.x, PELOUSE.x + PELOUSE.L], L);
+      z.y = coller(m.y - prise.dy, [PELOUSE.y, PELOUSE.y + PELOUSE.l], l);
+      poser();
+    });
+    main.addEventListener("pointerup", function () {
+      prise = null; r.setAttribute("stroke-width", 0.08);
+      $(k + "-nfait").textContent = "« " + $(k + "-nom").value + " » est posée. Le plan se refait avec elle.";
+    });
+    poser();
+  }
   $("b-refaire").onclick = function () {
     $("b-fait").textContent = "Le plan se refait : Arroseurs " + v("b1-L") + " m sur " + v("b1-l") + " m, Parking " + v("b2-L") + " m sur " + v("b2-l") + " m.";
   };
