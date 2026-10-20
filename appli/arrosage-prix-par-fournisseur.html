@@ -11,6 +11,10 @@
   seulement), à lui de choisir. Sa réponse : « retire ce que la liste porte,
   il faut que ça soit sans les prix d'office » et « la liste ne doit pas
   pouvoir afficher le moins cher » : un fournisseur à la fois, message sans prix.
+  Puis : « ce qu'il faudrait, c'est qu'il nous ouvre le mail avec l'adresse du
+  fournisseur déjà écrite » : l'adresse se tape sur sa fiche (Réglages), et le
+  bouton ouvre le mail vers le fournisseur de la pastille, liste sans prix
+  dedans. Le choix « Chez qui part la liste » est retiré.
 
   LA QUESTION : la liste du plan prend toujours le prix LE MOINS CHER de ses
   fournisseurs (version sur main, branche claude/arrosage-prix-et-devis). La
@@ -78,7 +82,12 @@
   .p.pas{color:var(--atlas-alerte);font-size:12.5px}
   .total .date{display:block;margin-top:6px;font-size:12.5px;color:var(--atlas-muted)}
   .message{display:block;width:100%;min-height:260px;margin-top:10px;border:0;border-radius:12px;padding:12px;font:15px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line);resize:vertical}
-  .choix{font-size:13.5px;color:var(--atlas-inkSoft);margin:14px 0 0}
+  .choix{font-size:13.5px;color:var(--atlas-inkSoft);margin:14px 0 0;overflow-wrap:anywhere}
+  .ecrire{display:flex;align-items:center;justify-content:center;margin-top:10px;min-height:52px;border-radius:999px;background:var(--atlas-plein);color:var(--atlas-card);font-size:16px;text-decoration:none}
+  .alerte-adresse{margin:10px 0 0;font-size:13.5px;color:var(--atlas-alerte)}
+  .adresse{display:flex;flex-direction:column;gap:4px;padding:10px 0;border-top:1px solid var(--atlas-line);font-size:14px}
+  .adresse:first-child{border-top:0}
+  .adresse input{width:100%;border:0;border-radius:8px;padding:9px 10px;font-size:16px;background:var(--atlas-cream);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
   .dit{margin:10px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
   button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--atlas-or);outline-offset:2px}
 </style>
@@ -92,6 +101,9 @@
   </div>
 
   <div class="ecran">
+    <span class="caps">Dans Réglages, sur la fiche du fournisseur</span>
+    <div class="essai" id="adresses"></div>
+
     <span class="caps">Prix d’essai, à taper</span>
     <div class="essai"><table id="essai"></table></div>
 
@@ -103,8 +115,10 @@
 
     <div id="bloc-message">
       <span class="caps">Au fournisseur</span>
-      <p class="choix">Chez qui part la liste</p>
-      <div class="chips" id="chez" role="group" aria-label="Chez"></div>
+      <p class="choix" id="destinataire"></p>
+      <a class="ecrire" id="ecrire" href="#">Écrire</a>
+      <p class="alerte-adresse" id="sans-adresse" hidden></p>
+      <p class="choix" id="enregistree" hidden></p>
       <textarea class="message" id="message" aria-label="Le message au fournisseur"></textarea>
     </div>
   </div>
@@ -122,7 +136,9 @@
   var prix = { aqua: {}, fb: {} };
   // Aucun « moins cher » : sa règle du 20 octobre 2026, la liste montre les prix
   // d'UN fournisseur, celui de la pastille.
-  var vue = "aqua", chez = "aqua";
+  var vue = "aqua";
+  // L'adresse mail de chaque fournisseur, tapée dans Réglages : vide d'office, rien ne s'invente.
+  var adresses = { aqua: "", fb: "" };
   // La date du devis d'où vient chaque prix : sur la planche, le jour où on le tape.
   var aujourdhui = new Date().toLocaleDateString("fr-FR");
   var $ = function (id) { return document.getElementById(id); };
@@ -131,6 +147,9 @@
   var lire = function (s) { var t = String(s).replace(/\s/g, "").replace(",", "."); var n = Number(t); return t !== "" && isFinite(n) && n >= 0 ? n : null; };
   $("charte").onchange = function () { document.body.dataset.charte = this.value; };
 
+  $("adresses").innerHTML = FOURNISSEURS.map(function (f) {
+    return '<label class="adresse">Adresse mail de ' + texte(f.nom) + '<input type="email" inputmode="email" autocomplete="off" id="mail-' + f.id + '" data-mail="' + f.id + '" placeholder="commande@…"></label>';
+  }).join("");
   $("essai").innerHTML = "<tr><th>Pièce</th>" + FOURNISSEURS.map(function (f) { return "<th>" + texte(f.nom) + "</th>"; }).join("") + "</tr>" +
     ESSAI.map(function (e) {
       return "<tr><td>" + texte(e.nom) + "<small>prix HT, " + texte(e.u) + "</small></td>" + FOURNISSEURS.map(function (f) {
@@ -169,7 +188,13 @@
     $("manque").textContent = sans ? sans + " pièce" + (sans > 1 ? "s" : "") + " sans prix" + (seul ? " chez " + seul.nom : "") + " sur " + n + ", le total ne les compte pas." : "";
     var noms = Object.keys(servis);
     $("dates").textContent = noms.length ? noms.map(function (nm) { return "Prix " + nm + " du " + servis[nm]; }).join(". ") + ". Ils ont pu changer." : "Aucun prix encore.";
-    $("chez").innerHTML = FOURNISSEURS.map(function (f) { return '<button type="button" data-chez="' + f.id + '" aria-pressed="' + (chez === f.id) + '">' + texte(f.nom) + "</button>"; }).join("");
+    // Un seul choix : la liste part chez le fournisseur de la pastille.
+    var adresse = adresses[seul.id].trim();
+    $("destinataire").textContent = "À : " + (adresse || "adresse à ajouter");
+    $("ecrire").textContent = "Écrire à " + seul.nom;
+    $("ecrire").href = "mailto:" + encodeURIComponent(adresse).replace(/%40/g, "@") + "?subject=" + encodeURIComponent("Commande arrosage") + "&body=" + encodeURIComponent(message());
+    $("sans-adresse").hidden = !!adresse;
+    $("sans-adresse").textContent = "Ajoutez l’adresse de " + seul.nom + " dans Réglages, sur sa fiche : le mail s’ouvrira sans destinataire.";
     $("message").value = message();
   }
 
@@ -188,15 +213,25 @@
   }
 
   document.addEventListener("input", function (e) {
-    var t = e.target; if (!t.dataset || !t.dataset.f) return;
+    var t = e.target;
+    if (t.dataset && t.dataset.mail) { adresses[t.dataset.mail] = t.value; dessiner(); return; }
+    if (!t.dataset || !t.dataset.f) return;
     var p = lire(t.value);
     if (p === null) delete prix[t.dataset.f][t.dataset.r]; else prix[t.dataset.f][t.dataset.r] = p;
     dessiner();
   });
+  // Ouvrir le mail range aussi la liste chez lui, dans « Demandes envoyées ».
+  $("ecrire").addEventListener("click", function () {
+    var f = FOURNISSEURS.filter(function (x) { return x.id === vue; })[0];
+    // Le mail reprend le texte tel qu'il l'a retouché dans la case, pas celui d'origine.
+    this.href = "mailto:" + encodeURIComponent(adresses[f.id].trim()).replace(/%40/g, "@") + "?subject=" + encodeURIComponent("Commande arrosage") + "&body=" + encodeURIComponent($("message").value);
+    $("enregistree").textContent = "Enregistrée chez " + f.nom + ", dans Réglages, Demandes envoyées, le " + aujourdhui + ".";
+    $("enregistree").hidden = false;
+  });
   document.addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
     if (b.dataset.vue) { vue = b.dataset.vue; dessiner(); return; }
-    if (b.dataset.chez) { chez = b.dataset.chez; dessiner(); }
+
   });
   dessiner();
 })();

@@ -537,3 +537,15 @@ fournisseur à la fois, celui de la pastille, sans « Le moins cher ». Planche
 republiée. **L'écran n'est pas encore aligné** : il prend aujourd'hui le moins
 cher (`lesMoinsChers`, branche `claude/arrosage-prix-et-devis`) ; à coder sur
 son accord de la planche.
+
+**Puis** : *« ce qu'il faudrait, c'est qu'il nous ouvre le mail avec l'adresse
+du fournisseur déjà écrite »*. Sur la planche : une case « Adresse mail » sur
+la fiche du fournisseur (Réglages), et un seul bouton « Écrire à Aqua Plus »
+(le fournisseur de la pastille) qui ouvre le mail, objet « Commande
+arrosage », la liste sans prix dans le corps, telle qu'il l'a retouchée ; la
+liste s'enregistre dans ses Demandes envoyées. « Chez qui part la liste » est
+retiré. Sans adresse : le mail s'ouvre sans destinataire, et l'écran dit de
+l'ajouter. **Pas encore codé**, ni la colonne d'adresse en base. À noter : un
+mail ouvert ainsi porte la liste dans son adresse (2 256 caractères pour ce
+jardin) ; certains logiciels de bureau la coupent au-delà de 2 000, l'iPhone
+non. À éprouver sur son téléphone.
