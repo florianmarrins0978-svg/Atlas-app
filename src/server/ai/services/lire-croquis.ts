@@ -117,6 +117,7 @@ Règles :
 - « Tu ne devines jamais » NE S'APPLIQUE PAS AUX PLACES. Une cote se LIT (illisible = null) ; une place se MESURE SUR L'IMAGE, et tu la vois toujours dès que la zone est dessinée. Rends donc x, y, largeur_fraction et hauteur_fraction pour CHAQUE zone visible, même approximativement : le croquis est fait à main levée et n'est pas à l'échelle, personne n'attend d'exactitude. Ne les laisse à null que si la zone est citée par écrit sans être dessinée.
 - La nourrice est le regard d'où partent les réseaux (souvent un rectangle marqué « nourrice », « regard » ou « vannes »). Si elle n'est pas dessinée, rends x et y à null, et ne la place pas au point d'eau pour dépanner.
 - Le piquage est l'endroit où l'arrosage se branche sur l'eau (le compteur, le robinet, souvent marqué « compteur », « piquage », « arrivée d'eau », ou un rond avec un robinet). Une croix avec le mot « robinet » à côté est un piquage sur un robinet : rends sa place, et « robinet » pour point_d_eau. Rends sa place en fraction du dessin, comme la nourrice ; s'il n'est pas dessiné, x et y à null, et ne le place pas à la nourrice pour dépanner.
+- CE QUE LE PAYSAGISTE ÉCRIT DANS UNE ZONE COMMANDE SON TYPE, avant ce que le dessin suggère. « Arroseur », « arroseurs », « turbines », « tuyères » : la zone reçoit des arroseurs, rends "gazon". « Goutte à goutte », « goutte-à-goutte », « GAG », « gaine » : la zone reçoit du goutte-à-goutte, jamais "gazon" ; rends "haie" si elle n'a qu'une longueur, "massif" si elle a une longueur et une largeur. Recopie le mot écrit dans « nom ».
 - Les pelouses, massifs et potagers se mesurent en longueur x largeur. Les haies se mesurent en mètres linéaires.
 - Les mesures sont en MÈTRES, en nombre décimal à point. Un « 1200 » à côté d'une haie est probablement 12,00 m : rends 12.
 - N'invente aucune zone qui ne figure pas sur le dessin.
@@ -126,6 +127,27 @@ const CONSIGNE = "Lis ce croquis de jardin et rends l'objet JSON demandé.";
 
 /** Les types que le calcul connaît — tout autre mot est refusé plutôt que traduit au jugé. */
 const TYPES = ["gazon", "massif", "haie", "potager"] as const;
+
+/**
+ * L'arrosage que le paysagiste a ÉCRIT dans la zone, ou rien.
+ *
+ * **Son croquis du 20 octobre 2026** portait « Arroseur » sur la grande partie,
+ * « GAG » et « Goutte à goutte » sur deux bandes : le plan est sorti tout en
+ * goutte-à-goutte. Le type était laissé au jugement du modèle, qui ne voyait
+ * écrit nulle part « pelouse ». Or le calcul ne pose des arroseurs que sur un
+ * gazon : le mot écrit est un ordre, et il se lit ici, dans une règle qui
+ * s'éprouve, pas dans la consigne seule.
+ *
+ * Le goutte-à-goutte se cherche d'abord : « arrosage goutte à goutte » n'est
+ * pas une zone à arroseurs. « Arrosage » seul ne dit rien du matériel.
+ */
+function arrosageEcrit(texte: string | null): "arroseurs" | "goutte" | null {
+  if (!texte) return null;
+  const t = texte.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  if (/goutte|\bg\.?a\.?g\b|\bgaines?\b/.test(t)) return "goutte";
+  if (/\barroseurs?\b|\bturbines?\b|\btuyeres?\b|\basperseurs?\b/.test(t)) return "arroseurs";
+  return null;
+}
 
 /**
  * Ce que le modèle a répondu, transformé en zones — ou refusé.
@@ -214,7 +236,20 @@ export function lireReponseCroquis(texte: string): ResultatCroquis {
   for (const z of brutZones) {
     if (typeof z !== "object" || z === null) continue;
     const o = z as Record<string, unknown>;
-    const typeBrut = (chaine(o.type) ?? "").toLowerCase();
+    const typeLu = (chaine(o.type) ?? "").toLowerCase();
+    const nom = chaine(o.nom);
+    // **Le mot écrit dans la zone passe avant le type rendu** : une zone à
+    // arroseurs est un gazon, une zone en goutte-à-goutte n'en est jamais un.
+    // Une haie reste une haie, elle se mesure en longueur.
+    const ecrit = arrosageEcrit(nom) ?? arrosageEcrit(typeLu);
+    const typeBrut =
+      ecrit === "arroseurs"
+        ? "gazon"
+        : ecrit === "goutte" && typeLu !== "haie" && typeLu !== "massif" && typeLu !== "potager"
+          ? nombre(o.longueur_m) === null && nombre(o.metres_lineaires) !== null
+            ? "haie"
+            : "massif"
+          : typeLu;
     if (!(TYPES as readonly string[]).includes(typeBrut)) {
       // **Un type inconnu ne se traduit pas au jugé.** « verger » rangé en
       // « gazon » lui poserait des turbines sur des arbres fruitiers.
@@ -222,7 +257,6 @@ export function lireReponseCroquis(texte: string): ResultatCroquis {
       continue;
     }
     const type = typeBrut as ZoneLue["type"];
-    const nom = chaine(o.nom);
     // **Le massif est une surface** : le calcul y couche des lignes parallèles
     // sur sa longueur et sa largeur. Lu en mètres linéaires, il n'en avait
     // aucune, et ne recevait pas une goutte (18 octobre 2026).

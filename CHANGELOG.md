@@ -8,6 +8,17 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-20
 
+- **Ce qu'il écrit dans une zone du croquis commande son arrosage.** Son croquis
+  portait « Arroseur » sur la grande partie, « GAG » et « Goutte à goutte » sur
+  deux bandes : le plan est sorti tout en goutte-à-goutte, sur une seule voie.
+  Le type de zone était laissé au jugement du modèle, qui ne voyait « pelouse »
+  écrit nulle part, et le calcul ne pose des arroseurs que sur un gazon. Le mot
+  écrit (« arroseur », « turbines », « tuyères » ; « goutte à goutte »,
+  « GAG », « gaine ») passe désormais avant le type rendu, dans une règle pure
+  (`arrosageEcrit`, `lire-croquis.ts`) que `test-lecture-croquis.ts` tient, et
+  la consigne du modèle le dit. **Non vérifié sur une vraie photo ici** (aucune
+  clé) : `npm run verifier:croquis` sur son espace, ou sa photo rejouée.
+
 - **« Réinitialiser » vide enfin une date de véhicule sur iPhone.** Lu dans
   WebKit (`WKDateTimeInputControl.mm`) : ouvrir une case de date vide y écrit
   la date du jour, puis « Réinitialiser » la vide, deux écritures sans
