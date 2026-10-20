@@ -17,6 +17,12 @@
   le geste et la ligne qui dit ce que ça change ; les vrais chiffres sortiront
   du calcul une fois écrit. Les pièces en 32 sont celles du catalogue, mot pour
   mot (Aqua Plus 2026).
+
+  Le même soir : « c'est pas mal dans le principe, j'aime bien. Est-ce que tu
+  peux garder ça d'un côté et me proposer une manière un peu plus sympa, un peu
+  plus discrète de passer du 25 au 32 ? » La A reste telle quelle ; B et C sont
+  les deux façons discrètes. Dans les deux, l'outil ne parle du Ø32 que là où il
+  fait gagner quelque chose.
 -->
 <style>
 [data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#8a8578;--atlas-or:#B98B47;--atlas-orTexte:#8b6835;--atlas-line:rgba(28,28,26,0.12);--atlas-rustTint:#ece9e1;--atlas-alerte:#9C3B2E}
@@ -43,6 +49,18 @@
   .liste{margin:8px 0 0;padding:0;list-style:none}
   .liste li{display:flex;gap:14px;padding:6px 0;font-size:15.5px}
   .liste li b{min-width:44px;font-weight:400;color:var(--atlas-orTexte)}
+  .lettre{display:block;margin:34px 0 0;font:400 30px/1 Georgia,"Times New Roman",serif;color:var(--atlas-or)}
+  .lettre + p{margin:4px 0 0;font-size:13.5px;color:var(--atlas-muted)}
+  /* B : le diamètre se touche dans la ligne du tuyau, comme un mot souligné. */
+  .ligne-tuyau{display:flex;gap:14px;padding:8px 0;font-size:15.5px}
+  .ligne-tuyau b{min-width:44px;font-weight:400;color:var(--atlas-orTexte)}
+  .diam{border:0;padding:0 2px;background:none;font:inherit;color:var(--atlas-ink);text-decoration:underline dotted;text-underline-offset:3px;cursor:pointer}
+  .souffle{margin:0 0 0 58px;font-size:13.5px;color:var(--atlas-muted)}
+  .souffle button{border:0;padding:0;background:none;font:inherit;color:var(--atlas-orTexte);text-decoration:underline;cursor:pointer}
+  /* C : deux petites cases 25 et 32, à droite du nom du réseau. */
+  .bascule{display:inline-flex;border-radius:999px;box-shadow:0 0 0 1px var(--atlas-line);background:var(--atlas-card);padding:2px}
+  .bascule button{min-width:40px;min-height:32px;border:0;border-radius:999px;background:none;font-size:14px;color:var(--atlas-muted);cursor:pointer}
+  .bascule button[aria-pressed="true"]{background:var(--atlas-ink);color:#faf9f5}
   .resume{margin-top:26px;padding:14px 16px;border-radius:14px;background:var(--atlas-card);font-size:15.5px}
 </style>
 <body data-charte="origine">
@@ -51,6 +69,8 @@
   <p>Planche, rien n’est codé. Les chiffres sont un exemple. Changez le tuyau : la ligne en dessous dit ce que ça change.</p>
 </div>
 <main class="ecran">
+  <span class="lettre">A</span>
+  <p>Un bandeau sous chaque réseau.</p>
   <span class="caps">Le piquage, au compteur</span>
   <h2>Du compteur à la nourrice</h2>
   <label class="tuyau"><span>Tuyau</span><select id="amenee" aria-label="Tuyau du compteur à la nourrice"><option value="32">Ø32</option><option value="25">Ø25</option></select></label>
@@ -72,6 +92,44 @@
   <div class="carte">le plan du réseau 3, 1 arroseur</div></div>
 
   <p class="resume" id="resume"></p>
+
+  <span class="lettre">B</span>
+  <p>Le diamètre se touche dans la ligne du tuyau. L’outil ne souffle le Ø32 que là où il fait gagner.</p>
+  <span class="caps">Le piquage, au compteur</span>
+  <h2>Du compteur à la nourrice</h2>
+  <div class="ligne-tuyau"><b>26 m</b><span>de PEHD <button class="diam" type="button" id="b-amenee">Ø32</button></span></div>
+  <p class="souffle" id="b-amenee-dit">Le Ø25 tient jusqu’à 18 m.</p>
+
+  <div class="reseau"><span class="pastille" style="background:#2F6FB5"></span><b>Réseau 1</b><span class="zone">Arroseurs</span></div>
+  <div class="carte">le plan du réseau 1</div>
+  <div class="ligne-tuyau"><b>34 m</b><span>de PEHD <button class="diam" type="button" id="b-r1">Ø25</button></span></div>
+  <p class="souffle" id="b-r1-dit">En Ø32, un réseau de moins. <button type="button" id="b-r1-essayer">Essayer</button></p>
+
+  <div class="reseau"><span class="pastille" style="background:#3E8F4E"></span><b>Réseau 2</b><span class="zone">Arroseurs</span></div>
+  <div class="carte">le plan du réseau 2</div>
+  <div class="ligne-tuyau"><b>30 m</b><span>de PEHD <button class="diam" type="button" id="b-r2">Ø25</button></span></div>
+
+  <div id="b-r3"><div class="reseau"><span class="pastille" style="background:#D9A520"></span><b>Réseau 3</b><span class="zone">Arroseurs</span></div>
+  <div class="carte">le plan du réseau 3, 1 arroseur</div></div>
+  <p class="resume" id="b-resume"></p>
+
+  <span class="lettre">C</span>
+  <p>Deux petites cases à droite du nom. Le chiffre qui change s’écrit dessous.</p>
+  <span class="caps">Le piquage, au compteur</span>
+  <div class="reseau"><b style="font-size:24px">Du compteur à la nourrice</b><span class="zone"></span><span class="bascule" data-c="amenee"><button type="button" data-d="25">25</button><button type="button" data-d="32">32</button></span></div>
+  <p class="change" id="c-amenee-dit"></p>
+
+  <div class="reseau"><span class="pastille" style="background:#2F6FB5"></span><b>Réseau 1</b><span class="zone">Arroseurs</span><span class="bascule" data-c="r1"><button type="button" data-d="25">25</button><button type="button" data-d="32">32</button></span></div>
+  <p class="change" id="c-r1-dit"></p>
+  <div class="carte">le plan du réseau 1</div>
+
+  <div class="reseau"><span class="pastille" style="background:#3E8F4E"></span><b>Réseau 2</b><span class="zone">Arroseurs</span><span class="bascule" data-c="r2"><button type="button" data-d="25">25</button><button type="button" data-d="32">32</button></span></div>
+  <p class="change" id="c-r2-dit"></p>
+  <div class="carte">le plan du réseau 2</div>
+
+  <div id="c-r3"><div class="reseau"><span class="pastille" style="background:#D9A520"></span><b>Réseau 3</b><span class="zone">Arroseurs</span><span class="bascule"><button type="button" aria-pressed="true">25</button><button type="button">32</button></span></div>
+  <div class="carte">le plan du réseau 3, 1 arroseur</div></div>
+  <p class="resume" id="c-resume"></p>
 </main>
 <script>
 (function () {
@@ -98,6 +156,47 @@
   }
   ["amenee", "r1", "r2"].forEach(function (id) { $(id).onchange = maj; });
   maj();
+})();
+</script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  // Le même exemple que la A : 9 turbines sur 3 réseaux en Ø25 (4, 4 et 1).
+  function resume(etat, id, r3) {
+    var n = (etat.r1 === "32" || etat.r2 === "32" ? 2 : 3) + (etat.amenee === "25" ? 1 : 0);
+    $(r3).style.display = etat.r1 === "32" || etat.r2 === "32" ? "none" : "";
+    $(id).textContent = "Ce jardin demande " + n + " réseaux, donc une nourrice " + n + " voies.";
+  }
+  // ── B
+  var b = { amenee: "32", r1: "25", r2: "25" };
+  function majB() {
+    $("b-amenee").textContent = "Ø" + b.amenee;
+    $("b-r1").textContent = "Ø" + b.r1;
+    $("b-r2").textContent = "Ø" + b.r2;
+    $("b-amenee-dit").textContent = b.amenee === "32" ? "Le Ø25 tient jusqu’à 18 m." : "En Ø25, un réseau de plus.";
+    $("b-r1-dit").style.display = b.r1 === "25" && b.r2 === "25" ? "" : "none";
+    resume(b, "b-resume", "b-r3");
+  }
+  ["amenee", "r1", "r2"].forEach(function (k) {
+    $("b-" + k).onclick = function () { b[k] = b[k] === "25" ? "32" : "25"; majB(); };
+  });
+  $("b-r1-essayer").onclick = function () { b.r1 = "32"; majB(); };
+  majB();
+  // ── C
+  var c = { amenee: "32", r1: "25", r2: "25" };
+  function majC() {
+    document.querySelectorAll("[data-c]").forEach(function (g) {
+      g.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(x.dataset.d === c[g.dataset.c])); });
+    });
+    $("c-amenee-dit").textContent = c.amenee === "25" ? "En Ø25 : un réseau de plus." : "";
+    $("c-r1-dit").textContent = c.r1 === "32" ? "En Ø32 : 5 arroseurs, un réseau de moins." : "";
+    $("c-r2-dit").textContent = c.r2 === "32" && c.r1 !== "32" ? "En Ø32 : 5 arroseurs, un réseau de moins." : "";
+    resume(c, "c-resume", "c-r3");
+  }
+  document.querySelectorAll("[data-c]").forEach(function (g) {
+    g.querySelectorAll("button").forEach(function (x) { x.onclick = function () { c[g.dataset.c] = x.dataset.d; majC(); }; });
+  });
+  majC();
 })();
 </script>
 </body>
