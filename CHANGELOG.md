@@ -6,6 +6,20 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-20
+
+- **Les raccords de la nourrice éclatée sont droits dans l'outil** : les
+  16 chiffres de `HAUT` et `COLONNE` (`src/lib/arrosage/nourrice-eclatee.ts`,
+  et les mêmes dans `appli/arrosage-nourrice-eclatee.html`,
+  `appli/arrosage-plan.html` et le paquet `appli/arrosage-nourrice-calcul.js`)
+  sont remesurés sur le rendu à 3x, le centre des deux bouts de chaque pièce à
+  moins de 1 px de l'axe de sa colonne (`ARCHITECTURE.md` §473). Ce que ça
+  évite : l'électrovanne à 10° de biais et le coude FF à côté de sa colonne
+  qu'il a vus le 18 octobre, et un écran qui ne suivait pas la planche
+  `arrosage-plan-robinet.html`, déjà redressée depuis le 19. Ce qui reste de
+  biais vient de photos prises de trois quarts, qu'il refait de face
+  (`TODO.md`). Sans batterie, à sa demande : une seule pour plusieurs sessions.
+
 ## 2026-10-19
 
 - **Le plan dessiné au doigt fait dans l'application tout ce que sa planche B

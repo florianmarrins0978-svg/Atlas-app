@@ -35270,3 +35270,45 @@ tout le monde, qu'on ait une continuité dans l'application »* : le montant en 
 pastille verte (`plein`). Posé sur l'écran du plan (`ListeDesPieces.tsx`), sur
 les planches du plan, du robinet et des prix fournisseurs (et son modèle dans
 `docs/arrosage-releve-photos/`). Tout total indicatif à venir prend cette forme.
+
+## §473 : Les raccords de la nourrice éclatée sont droits parce qu'ils sont MESURÉS, pas réglés à l'œil
+
+**Sa demande du 18 octobre 2026**, devant les électrovannes de biais et la
+vanne 3/4" penchée : *« tous les raccords parfaitement alignés : chaque colonne
+sur UNE seule verticale, l'axe d'écoulement de chaque pièce strictement
+vertical, le collecteur et les coudes strictement horizontaux »*. Les fractions
+de `HAUT` et `COLONNE` (`src/lib/arrosage/nourrice-eclatee.ts`) avaient été
+relevées à l'œil sur les photos : l'électrovanne 100 DV posait son axe à
+0,88 de la hauteur de la photo, soit le bord du filetage et non son centre,
+et le dessin la tournait de 10°.
+
+**La règle : on mesure sur le RENDU, pas sur la photo.** Ce qu'il voit, c'est
+la pièce tournée et posée dans sa colonne. Le dessin se rend à 3x (le canvas de
+la planche, ou le SVG de l'écran), et pour chaque pièce de colonne on lit la
+silhouette (tout pixel non blanc, la règle du détourage) dans une bande de 2 à
+12 % de sa longueur à chaque bout : le milieu entre le bord gauche et le bord
+droit, ligne par ligne, donne le centre du bout. L'écart de ce centre à l'axe
+de la colonne doit être **inférieur à 1 px à 3x aux deux bouts** ; les deux
+centres, ramenés en fraction de la photo par la transformation inverse
+(translation, rotation, échelle), donnent le nouvel axe, et les anciens a et b
+s'y projettent pour garder leur position le long de la pièce. Deux passes
+suffisent. Le haut se mesure de même : l'axe du tube de la clarinette entre deux
+sorties (la pente doit être nulle), le bras de chaque coude sur cet axe, la
+branche de chaque coude sur l'axe de sa colonne.
+
+**Ce que la mesure a rendu**, sur les six tailles de nourrice, avec et sans
+goutte-à-goutte : électrovanne 9 de 15 px à 0,6 px ; coude FF de 13,5 px
+au-dessus du tube et 10,5 px à côté de sa colonne à 0,1 px ; vanne de 8 px à
+0,8 px ; union de 4 px à 0,2 px ; `tube` des trois clarinettes 0,338, 0,336 et
+0,345 au lieu de 0,35, 0,34 et 0,33.
+
+**Ce qu'aucune mesure ne redresse : une photo prise de trois quarts.** On ne
+déforme jamais une image (ni biais, ni étirement, ni modèle 3D fabriqué : il
+l'a interdit). L'électrovanne FF, le té 1" MMF, la vanne, l'union, le raccord
+Plasson et l'électrovanne MM gardent donc un corps vu de côté même quand leurs
+bouts sont sur l'axe ; il refait ces photos de face (`TODO.md`). Les mêmes
+chiffres vivent dans l'outil, dans `appli/arrosage-nourrice-eclatee.html`,
+`appli/arrosage-plan.html`, `appli/arrosage-plan-robinet.html` et le paquet
+`appli/arrosage-nourrice-calcul.js` : à mêmes photos, même dessin, partout
+(§470), et le paquet se corrige avec la source qu'il empaquette.
+
