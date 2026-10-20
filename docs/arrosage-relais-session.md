@@ -528,3 +528,12 @@ planche : « pas de prix chez Aqua Plus » sur la ligne et dans le compte, sous
 chaque prix son fournisseur et la date de son devis, et le message au
 fournisseur en **A** (sans prix) ou **B** (SES prix seulement, « prix à me
 donner » ailleurs, jamais ceux d'un autre). **À lui de choisir A ou B.**
+
+**Sa réponse, le 20 octobre 2026** : *« retire ce que la liste porte, il faut
+que ça soit sans les prix d'office »* et *« la liste ne doit pas pouvoir
+afficher le moins cher »*. **Tranché** : le message au fournisseur part
+toujours sans prix (le choix A ou B est retiré) ; la liste montre les prix d'UN
+fournisseur à la fois, celui de la pastille, sans « Le moins cher ». Planche
+republiée. **L'écran n'est pas encore aligné** : il prend aujourd'hui le moins
+cher (`lesMoinsChers`, branche `claude/arrosage-prix-et-devis`) ; à coder sur
+son accord de la planche.

@@ -8,7 +8,9 @@
   « s'il n'a pas de prix pour certaines pièces, il faut qu'il me l'indique » ;
   « savoir de qui viennent les prix, que je ne me fasse pas avoir ». Le
   message au fournisseur se montre en A (sans prix) et B (ses prix à lui
-  seulement), à lui de choisir.
+  seulement), à lui de choisir. Sa réponse : « retire ce que la liste porte,
+  il faut que ça soit sans les prix d'office » et « la liste ne doit pas
+  pouvoir afficher le moins cher » : un fournisseur à la fois, message sans prix.
 
   LA QUESTION : la liste du plan prend toujours le prix LE MOINS CHER de ses
   fournisseurs (version sur main, branche claude/arrosage-prix-et-devis). La
@@ -84,13 +86,9 @@
 <div class="colonne">
   <div class="entete">
     <h1>Prix par fournisseur</h1>
-    <p>Planche. Tapez quelques prix d’essai, puis passez d’une version à l’autre.</p>
+    <p>Planche. Tapez quelques prix d’essai, puis changez de fournisseur.</p>
     <select id="charte" aria-label="Charte"><option value="origine">Origine</option><option value="brume">Brume</option><option value="pierre">Pierre</option><option value="beurre">Beurre</option><option value="moka">Moka</option><option value="prune">Prune</option><option value="sylve">Sylve</option><option value="nuit">Nuit</option></select>
-    <div class="versions" role="group" aria-label="Version">
-      <button type="button" id="v-main" aria-pressed="true">Sur main</button>
-      <button type="button" id="v-modif" aria-pressed="false">La modification</button>
-    </div>
-    <p class="dit" id="ce-qui-change"></p>
+    <p class="dit">Les prix d’un fournisseur à la fois, celui de la pastille. Sous chaque prix, de qui il vient et la date de son devis. Une pièce qu’il ne vend pas le dit.</p>
   </div>
 
   <div class="ecran">
@@ -98,20 +96,15 @@
     <div class="essai"><table id="essai"></table></div>
 
     <span class="caps">La liste</span>
-    <div class="chips" id="chips" role="group" aria-label="Prix de" hidden></div>
+    <div class="chips" id="chips" role="group" aria-label="Prix de"></div>
     <div id="liste"></div>
     <div class="total" aria-live="polite"><div class="g"><small>Total indicatif, hors taxes</small><span class="m" id="total"></span><span class="date" id="dates"></span></div><div class="pastille"><b id="nb"></b><span id="nb-mot"></span></div></div>
     <p class="manque" id="manque"></p>
 
-    <div id="bloc-message" hidden>
+    <div id="bloc-message">
       <span class="caps">Au fournisseur</span>
       <p class="choix">Chez qui part la liste</p>
       <div class="chips" id="chez" role="group" aria-label="Chez"></div>
-      <p class="choix">Ce que la liste porte</p>
-      <div class="chips" id="forme" role="group" aria-label="Forme du message">
-        <button type="button" data-forme="A" aria-pressed="true">A, sans prix</button>
-        <button type="button" data-forme="B" aria-pressed="false">B, avec ses prix</button>
-      </div>
       <textarea class="message" id="message" aria-label="Le message au fournisseur"></textarea>
     </div>
   </div>
@@ -127,7 +120,9 @@
     { ref: "pe25", nom: "PEHD Ø25", u: "le m" }
   ];
   var prix = { aqua: {}, fb: {} };
-  var version = "main", vue = "moins", chez = "aqua", forme = "A";
+  // Aucun « moins cher » : sa règle du 20 octobre 2026, la liste montre les prix
+  // d'UN fournisseur, celui de la pastille.
+  var vue = "aqua", chez = "aqua";
   // La date du devis d'où vient chaque prix : sur la planche, le jour où on le tape.
   var aujourdhui = new Date().toLocaleDateString("fr-FR");
   var $ = function (id) { return document.getElementById(id); };
@@ -143,35 +138,27 @@
       }).join("") + "</tr>";
     }).join("");
 
-  // Le prix d'une pièce : sur main, toujours le moins cher ; dans la modification, celui de la pastille.
+  // Le prix d'une pièce chez le fournisseur de la pastille, ou rien.
   function prixDe(ref) {
-    var choix = version === "main" || vue === "moins" ? FOURNISSEURS : FOURNISSEURS.filter(function (f) { return f.id === vue; });
-    var mieux = null;
-    choix.forEach(function (f) { var p = prix[f.id][ref]; if (p != null && (!mieux || p < mieux.p)) mieux = { p: p, de: f.nom, le: aujourdhui }; });
-    return mieux;
+    var f = FOURNISSEURS.filter(function (x) { return x.id === vue; })[0];
+    var p = prix[f.id][ref];
+    return p != null ? { p: p, de: f.nom, le: aujourdhui } : null;
   }
 
   function dessiner() {
-    $("v-main").setAttribute("aria-pressed", String(version === "main"));
-    $("v-modif").setAttribute("aria-pressed", String(version !== "main"));
-    $("ce-qui-change").textContent = version === "main"
-      ? "Chaque pièce prend toujours le prix le moins cher de vos fournisseurs."
-      : "Trois pastilles au-dessus de la liste : le moins cher, ou les prix d’un seul fournisseur. Sous chaque prix, de qui il vient et la date de son devis. Une pièce qu’il ne vend pas le dit.";
-    $("bloc-message").hidden = version === "main";
-    $("chips").hidden = version === "main";
-    $("chips").innerHTML = [["moins", "Le moins cher"]].concat(FOURNISSEURS.map(function (f) { return [f.id, f.nom]; })).map(function (c) {
+    $("chips").innerHTML = FOURNISSEURS.map(function (f) { return [f.id, f.nom]; }).map(function (c) {
       return '<button type="button" data-vue="' + c[0] + '" aria-pressed="' + (vue === c[0]) + '">' + texte(c[1]) + "</button>";
     }).join("");
     var total = 0, sans = 0, n = 0, servis = {};
-    var seul = version !== "main" && vue !== "moins" ? FOURNISSEURS.filter(function (f) { return f.id === vue; })[0] : null;
+    var seul = FOURNISSEURS.filter(function (f) { return f.id === vue; })[0];
     $("liste").innerHTML = LISTE.map(function (g) {
       return '<p class="groupe">' + (g.couleur ? '<i style="background:' + g.couleur + '"></i>' : "") + texte(g.titre) + '</p><div class="bloc">' + g.lignes.map(function (l) {
         n++;
         var x = prixDe(l.ref), q = l.u === "ml" ? l.q + " m" : l.q + "x";
         var montant = x && l.q ? Math.round(x.p * l.q * 100) / 100 : null;
         if (montant === null) sans++; else { total += montant; servis[x.de] = x.le; }
-        var sous = version === "main" || montant === null ? "" : '<small class="nouveau">' + texte(x.de) + ", " + euros(x.p) + (l.u === "ml" ? " le m" : " pièce") + ", devis du " + x.le + "</small>";
-        var vide = seul && l.q ? '<span class="p pas">pas de prix chez ' + texte(seul.nom) + "</span>" : '<span class="p sans">sans prix</span>';
+        var sous = montant === null ? "" : '<small class="nouveau">' + texte(x.de) + ", " + euros(x.p) + (l.u === "ml" ? " le m" : " pièce") + ", devis du " + x.le + "</small>";
+        var vide = l.q ? '<span class="p pas">pas de prix chez ' + texte(seul.nom) + "</span>" : '<span class="p sans">sans prix</span>';
         return '<div class="ligne"><span class="q">' + q + '</span><span class="n">' + texte(l.nom) + "</span>" +
           (montant === null ? vide : '<span class="p">' + euros(montant) + sous + "</span>") + "</div>";
       }).join("") + "</div>";
@@ -181,26 +168,21 @@
     $("nb-mot").textContent = n > 1 ? "pièces" : "pièce";
     $("manque").textContent = sans ? sans + " pièce" + (sans > 1 ? "s" : "") + " sans prix" + (seul ? " chez " + seul.nom : "") + " sur " + n + ", le total ne les compte pas." : "";
     var noms = Object.keys(servis);
-    $("dates").textContent = version === "main" ? "" : noms.length ? noms.map(function (nm) { return "Prix " + nm + " du " + servis[nm]; }).join(". ") + ". Ils ont pu changer." : "Aucun prix encore.";
+    $("dates").textContent = noms.length ? noms.map(function (nm) { return "Prix " + nm + " du " + servis[nm]; }).join(". ") + ". Ils ont pu changer." : "Aucun prix encore.";
     $("chez").innerHTML = FOURNISSEURS.map(function (f) { return '<button type="button" data-chez="' + f.id + '" aria-pressed="' + (chez === f.id) + '">' + texte(f.nom) + "</button>"; }).join("");
-    document.querySelectorAll("[data-forme]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.forme === forme)); });
     $("message").value = message();
   }
 
-  // Le message, tout additionné. En B, seulement les prix de CELUI qui le reçoit,
-  // jamais ceux d'un autre fournisseur ; une pièce qu'il n'a pas chiffrée le dit.
+  // Le message, tout additionné, TOUJOURS sans prix : sa règle du 20 octobre 2026.
   function message() {
-    var f = FOURNISSEURS.filter(function (x) { return x.id === chez; })[0];
     var somme = {}, ordre = [];
     LISTE.forEach(function (g) { g.lignes.forEach(function (l) {
       if (!somme[l.ref]) { somme[l.ref] = { nom: l.nom, reference: l.reference, q: 0, u: l.u }; ordre.push(l.ref); }
       somme[l.ref].q += l.q;
     }); });
     var lignes = ordre.map(function (r) {
-      var e = somme[r], debut = (e.u === "ml" ? e.q + " m de " : e.q + "x ") + e.nom + (e.reference ? ", réf. " + e.reference : "");
-      if (forme === "A") return debut;
-      var p = prix[f.id][r];
-      return debut + (p != null ? ", à " + euros(p) + " HT" + (e.u === "ml" ? " le m" : "") + " (votre devis du " + aujourdhui + ")" : ", prix à me donner");
+      var e = somme[r];
+      return (e.u === "ml" ? e.q + " m de " : e.q + "x ") + e.nom + (e.reference ? ", réf. " + e.reference : "");
     });
     return ["Bonjour,", "", "Voici ma commande pour un chantier d’arrosage :", ""].concat(lignes, ["", "Merci."]).join("\n");
   }
@@ -213,11 +195,8 @@
   });
   document.addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
-    if (b.id === "v-main") { version = "main"; dessiner(); return; }
-    if (b.id === "v-modif") { version = "modif"; dessiner(); return; }
     if (b.dataset.vue) { vue = b.dataset.vue; dessiner(); return; }
-    if (b.dataset.chez) { chez = b.dataset.chez; dessiner(); return; }
-    if (b.dataset.forme) { forme = b.dataset.forme; dessiner(); }
+    if (b.dataset.chez) { chez = b.dataset.chez; dessiner(); }
   });
   dessiner();
 })();
