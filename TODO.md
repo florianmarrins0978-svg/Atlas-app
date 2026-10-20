@@ -187,7 +187,8 @@ corps) ; quand rien ne tient, `decouper` ajoute une vanne et recommence. Sur
 **Reste, et c'est le lot de l'écran** : les lignes de RÉSEAU sont toujours
 calculées en Ø25 ; le Ø32 n'est proposé que pour l'amenée. Sa demande (le
 bandeau « diam 25 ou diam 32 » à la fin, les raccords en 32, les tés 32×25×32)
-attend la planche et les références des pièces en 32.
+attend la planche ; les références des pièces en 32 sont au catalogue (voir
+plus bas, corrigé le 20 octobre 2026).
 
 ## ⏳ ARROSAGE : LE Ø32 QUAND LE Ø25 NE PASSE PAS — sa règle du 16 octobre 2026
 
@@ -207,8 +208,23 @@ fin : *« un bandeau déroulant, diam 25 ou diam 32 »*, et les pièces suivent.
 | un réseau en Ø32 | **ses raccords passent en 32** : té taraudé 32×3/4"×32, coude taraudé 32×3/4", té 32×32×32 |
 | passer de l'un à l'autre | des tés de réduction ; *« des tés en 32 25 32 »* quand la ligne principale est en 32 et la sortie en 25, et l'inverse |
 
-Les références de ces pièces en 32 ne sont pas au catalogue : à relever (Aqua
-Plus, pages des raccords PE), ou à lui demander, jamais à déduire des 25.
+~~Les références de ces pièces en 32 ne sont pas au catalogue~~ **FAUX, corrigé
+le 20 octobre 2026** (c'est lui qui l'a vu : *« tu ne les as pas ? t'es sûr ?
+je me souviens les avoir validées »*) : elles sont dans
+`src/lib/arrosage/catalogue.js`, `piecesAjoutables`, relevées dans Aqua Plus
+2026 p. 28 à 34 : té taraudé 32 x 3/4" x 32 (OPL71403220), coude taraudé
+32 x 3/4" (OPL71503220), té 32 x 32 x 32 (OPL704032), té réduit 32 x 25 x 32
+(OPL73403225), manchon réduit 32 x 25 (OPL71103225).
+
+**SA RÈGLE A CHANGÉ LE 20 OCTOBRE 2026, et elle remplace l'ordre ci-dessus.**
+*« Il fait le calcul en diamètre 25 ; si le 25 ne passe pas, il rajoute un
+réseau. »* Le Ø32 n'est plus essayé d'office sur les réseaux : il devient SON
+choix. *« Ce que tu demandes : sur chaque réseau et sur la longueur du compteur
+à la nourrice, pouvoir choisir Ø25 ou Ø32 et voir tout de suite ce que ça
+change, et l'inverse : refuser le Ø32 proposé. Voilà c'est ça que je veux. »*
+L'amenée garde sa bascule automatique en Ø32 quand la longueur l'impose, et il
+peut la refuser. Planche à faire, puis le calcul des lignes de réseau en Ø32
+(aujourd'hui toujours en Ø25).
 
 ## ⏳ ARROSAGE : 141 BUSES RELEVÉES DANS AQUA PLUS, À TRANCHER AVANT D'ENTRER (16 octobre 2026)
 

@@ -292,7 +292,16 @@ feuille couchée). Le modèle dit de combien tourner, le calcul tourne.
 à tort ou qu'on ne voudrait plus »*), et « Ajouter une zone » que l'IA n'a pas
 lue, glissée au doigt sur le plan avec l'aimant de 50 cm. Pour une photo comme
 pour un plan dessiné : la photo devient un plan en mètres, et c'est sur lui
-qu'on pose la zone, jamais sur la photo, qui n'est pas à l'échelle.
+qu'on pose la zone, jamais sur la photo, qui n'est pas à l'échelle. Le glissement
+est FACULTATIF : non glissée, la zone est comptée (réseaux, arroseurs,
+pièces), et la réserve dit que sa distance à la nourrice ne l'est pas.
+
+**LE Ø25 D'ABORD, UN RÉSEAU DE PLUS ENSUITE, LE Ø32 SUR SON CHOIX — sa règle
+du 20 octobre 2026**, qui remplace l'ordre du 16 octobre (Ø25, puis Ø32, puis
+un réseau de plus) : *« il fait le calcul en diamètre 25 ; si le 25 ne passe
+pas, il rajoute un réseau »*. Sur chaque réseau et sur l'amenée, il choisit
+Ø25 ou Ø32 et voit ce que ça change (un arroseur de plus par réseau, un réseau
+de moins) ; et un Ø32 que l'outil propose sur l'amenée, il peut le refuser.
 
 **LE Ø16 SE RACCORDE AU ROBINET PAR UN RACCORD TARAUDÉ 3/4" PROPRE À SON TUBE —
 sa règle du 18 octobre 2026.** Le Plasson à bague blanche ne prend que le PE 25
