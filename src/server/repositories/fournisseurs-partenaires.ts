@@ -206,12 +206,12 @@ export async function prixAchatCandidats(ctx: Ctx): Promise<PrixAchatCandidat[]>
  * partenaires n'y sont pas : ils vendent de la main d'œuvre, pas des pièces.
  */
 export async function prixDesFournisseursPourLePlan(ctx: Ctx): Promise<{
-  fournisseurs: { id: string; nom: string }[];
+  fournisseurs: { id: string; nom: string; email: string | null; debut: string | null; fin: string | null }[];
   achats: { societeId: string; societeNom: string; reference: string | null; nom: string; prixHt: string; unite: string; releveLe: string }[];
 }> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const societes = await tx
-      .select({ id: societesAchat.id, nom: societesAchat.nom })
+      .select({ id: societesAchat.id, nom: societesAchat.nom, email: societesAchat.email, debut: societesAchat.debutMail, fin: societesAchat.finMail })
       .from(societesAchat)
       .where(and(eq(societesAchat.rubrique, "fournisseur"), isNull(societesAchat.deletedAt)))
       .orderBy(asc(societesAchat.nom));

@@ -427,7 +427,15 @@ function PlanLu({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
   }, []);
   return (
     <>
-      <LePlanDuJardin etat={etat} parametres={parametres} onParametres={setParametres} sesPrix={sesPrix} />
+      <LePlanDuJardin
+        etat={etat}
+        parametres={parametres}
+        onParametres={setParametres}
+        sesPrix={sesPrix}
+        surMessageGarde={(id, champs) =>
+          setSesPrix((d) => d && { ...d, fournisseurs: d.fournisseurs.map((f) => (f.id === id ? { ...f, ...champs } : f)) })
+        }
+      />
       <DiscuterLePlan parametres={parametres} surNouveauPlan={(refait) => setParametres(refait.parametres)} />
     </>
   );

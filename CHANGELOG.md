@@ -8,6 +8,17 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-20
 
+- **La liste du plan prend les prix d'UN fournisseur, celui de la pastille**,
+  jamais le moins cher de plusieurs (sa planche du 20 octobre,
+  `appli/arrosage-prix-par-fournisseur.html`). Chaque prix dit de qui il vient
+  et la date de son devis, une pièce qu'il ne vend pas dit « pas de prix chez
+  … », le total la date de ses prix. Ce que ça évite : un total mêlé de deux
+  fournisseurs, qui ne correspond à aucune commande. « Écrire à » ouvre le
+  mail, son adresse déjà écrite, la liste sans prix entre SON début et SA fin,
+  gardés pour la fois suivante, et range la liste dans ses Demandes envoyées.
+  `lesPrixDe`, `sousLePrix`, `datesDesPrix` (`prix-du-plan.ts`),
+  `listeAuFournisseur`, `lienDuMail` (`postes.ts`) ; `lesMoinsChers` supprimée.
+
 - **L'adresse mail et le message de chaque fournisseur se gardent sur sa
   fiche** (migration `0133_adresse_et_message_du_fournisseur.sql`, trois
   colonnes vides d'office sur `societes_achat`, expand seul). L'adresse se tape

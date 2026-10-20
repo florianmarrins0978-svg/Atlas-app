@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
-import { lesMoinsChers, prixDesFournisseurs, type PieceDuPlan } from "../src/lib/arrosage/prix-du-plan";
+import { datesDesPrix, lesPrixDe, prixDesFournisseurs, sousLePrix, type PieceDuPlan } from "../src/lib/arrosage/prix-du-plan";
 import { prixDeLigne, totalDeLaListe } from "../src/lib/arrosage/prix-de-la-liste";
 
 // Quel prix d'achat va à quelle pièce de la liste du plan (`prix-du-plan.ts`) :
-// par la référence, jamais par un nom voisin ; l'unité concorde ; le moins cher
-// de ses fournisseurs. La colonne et le total sont ceux de la liste
+// par la référence, jamais par un nom voisin ; l'unité concorde ; les prix d'UN
+// fournisseur, celui de la pastille, jamais « le moins cher » (sa règle du
+// 20 octobre 2026). La colonne et le total sont ceux de la liste
 // (`prix-de-la-liste.ts`), éprouvés ici sur ce qu'on leur donne.
 
 let passed = 0;
@@ -45,28 +46,43 @@ test("par référence (espaces et casse mis à part), sinon par nom identique, j
   assert.deepEqual(Object.keys(a.prix).sort(), ["RA3504", "pe25"]);
 });
 
-test("le moins cher de ses fournisseurs, pièce par pièce", () => {
-  assert.deepEqual(lesMoinsChers(prixDesFournisseurs(pieces, achats, fournisseurs)), { RA3504: 11.9, pe25: 0.8 });
+test("les prix d'UN fournisseur, jamais le moins cher des deux", () => {
+  const [a, f] = prixDesFournisseurs(pieces, achats, fournisseurs);
+  assert.deepEqual(lesPrixDe(a), { RA3504: 12.4, pe25: 0.8 });
+  // France Bonhomme vend la turbine moins cher, mais pas le tube : la pastille Aqua Plus garde 12,40.
+  assert.deepEqual(lesPrixDe(f), { RA3504: 11.9 });
+});
+
+test("sous chaque prix, de qui il vient et la date de son devis", () => {
+  assert.equal(sousLePrix("Aqua Plus", "12.40", "u", "2026-10-12"), "Aqua Plus, 12,40 € pièce, devis du 12/10/2026");
+  assert.equal(sousLePrix("Aqua Plus", "0.80", "ml", "2026-10-12"), "Aqua Plus, 0,80 € le m, devis du 12/10/2026");
+});
+
+test("sous le total, la date de ses prix, la plus ancienne, et qu'ils ont pu changer", () => {
+  const vieux = [achat("a", "Turbine", "RA3504", "12.40"), { ...achat("a", "pehd ø25", null, "0.80", "m"), releveLe: "2026-09-02" }];
+  const [a, f] = prixDesFournisseurs(pieces, vieux, fournisseurs);
+  assert.equal(datesDesPrix(a), "Prix Aqua Plus du 02/09/2026. Ils ont pu changer.");
+  assert.equal(datesDesPrix(f), "Aucun prix encore.");
 });
 
 test("un prix au mètre ne vaut que pour une longueur, et une couronne n'est pas un mètre", () => {
   const couronne = [achat("a", "PEHD Ø25", null, "45.00", "pièce")];
-  assert.deepEqual(lesMoinsChers(prixDesFournisseurs(pieces, couronne, fournisseurs)), {});
+  assert.deepEqual(lesPrixDe(prixDesFournisseurs(pieces, couronne, fournisseurs)[0]), {});
   const auMetre = [achat("a", "Turbine 3504", "RA3504", "12.00", "m")];
-  assert.deepEqual(lesMoinsChers(prixDesFournisseurs(pieces, auMetre, fournisseurs)), {});
+  assert.deepEqual(lesPrixDe(prixDesFournisseurs(pieces, auMetre, fournisseurs)[0]), {});
 });
 
-test("la liste le compte : 13 × 11,90 + 83 × 0,80, la pièce sans prix à part", () => {
-  const table = lesMoinsChers(prixDesFournisseurs(pieces, achats, fournisseurs));
+test("la liste le compte : 13 × 12,40 + 83 × 0,80 chez Aqua Plus, la pièce sans prix à part", () => {
+  const table = lesPrixDe(prixDesFournisseurs(pieces, achats, fournisseurs)[0]);
   const groupes = [{ titre: "Réseau 1", lignes: Object.fromEntries(pieces.map((p) => [p.ref, { nom: p.nom, q: p.q, u: p.u }])), retirees: {}, barrees: {} }];
   const t = totalDeLaListe(groupes, table);
-  assert.equal(t.total, 221.1);
+  assert.equal(t.total, 227.6);
   assert.equal(t.sansPrix, 1);
-  assert.equal(prixDeLigne("RA3504", groupes[0].lignes.RA3504, table), 154.7);
+  assert.equal(prixDeLigne("RA3504", groupes[0].lignes.RA3504, table), 161.2);
 });
 
 test("sans aucun prix d'achat, aucun prix : jamais un prix inventé", () => {
-  assert.deepEqual(lesMoinsChers(prixDesFournisseurs(pieces, [], fournisseurs)), {});
+  assert.deepEqual(prixDesFournisseurs(pieces, [], fournisseurs).map(lesPrixDe), [{}, {}]);
 });
 
 console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

@@ -5,6 +5,7 @@
 - [ ] Sur son espace : un devis Aqua Plus en photo dans « J'ai déjà un devis fournisseur » (l'IA n'est pas éprouvable ici).
 - [ ] « Garder la liste sans plan » la garde sur l'écran seulement : le plan d'arrosage ne s'enregistre nulle part encore. Où la garder (un chantier, un client) : à lui.
 - [ ] Fusionner sa branche locale `lot/catalogue-aquaplus-corrections` quand elle sera sur GitHub, puis celle-ci (`HANDOVER.md`).
+- [ ] Sur son téléphone : « Écrire à Aqua Plus » ouvre-t-il le mail avec toute la liste ? (environ 2 100 caractères dans le lien, `ARCHITECTURE.md` §474.)
 
 ## ⏳ FOURNISSEURS ET PARTENAIRES : CODÉ, À ÉPROUVER ET À LIVRER (19 octobre 2026)
 

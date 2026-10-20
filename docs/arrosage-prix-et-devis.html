@@ -71,8 +71,13 @@
 </tr></thead><tbody>
 <tr>
 <td>Les prix sur le plan</td>
-<td>le prix d'achat à droite de chaque pièce de LA liste, le moins cher de tes fournisseurs, et le total en dessous (la colonne et le total que <code>main</code> avait posés vides)</td>
+<td>le prix d'achat à droite de chaque pièce de LA liste, <strong>chez le fournisseur de la pastille</strong>, sa source et sa date dessous, « pas de prix chez … » quand il ne la vend pas, et le total avec la date de ses prix</td>
 <td><code>prix-du-plan.ts</code>, <code>ListeDesPieces.tsx</code></td>
+</tr>
+<tr>
+<td>Prix par fournisseur (planche du 20 octobre)</td>
+<td>une pastille par fournisseur au-dessus de la liste, jamais « le moins cher » ; « Écrire à Aqua Plus » ouvre le mail, son adresse déjà écrite, la liste sans prix, et l'enregistre dans ses Demandes envoyées ; son début et sa fin de message gardés pour la fois suivante ; l'adresse sur sa fiche, dans Réglages</td>
+<td><code>LePlanDuJardin.tsx</code>, <code>FeuillePiece.tsx</code>, <code>FournisseursPartenaires.tsx</code>, migration <code>0133</code></td>
 </tr>
 <tr>
 <td>Importer un devis</td>
@@ -81,8 +86,8 @@
 </tr>
 <tr>
 <td>Demandes envoyées</td>
-<td>la liste envoyée (plan ou complément de devis) s'enregistre chez le fournisseur choisi</td>
-<td><code>EnregistrerLaDemande.tsx</code></td>
+<td>la liste envoyée s'enregistre chez le fournisseur : celui de la pastille pour le plan, celui qu'il choisit pour le complément d'un devis</td>
+<td><code>FeuillePiece.tsx</code>, <code>EnregistrerLaDemande.tsx</code></td>
 </tr>
 <tr>
 <td>Photos</td>
@@ -94,8 +99,9 @@
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ul>
 <li><strong>Une pièce prend un prix par sa référence</strong>, pas par son nom : un nom voisin ferait prendre le prix d'un autre raccord.</li>
-<li><strong>Corrigé après la fusion de <code>main</code> (20 octobre)</strong> : j'avais d'abord posé une section « Le matériel du plan » à côté de la liste, avec son propre total. <code>main</code> avait déjà la colonne et le total dans la liste, comme tu l'as demandé le 19 au soir : deux totaux sur un écran, c'est un de trop. La section est retirée, et les prix vont dans la liste. Les pastilles « Le moins cher » ou un fournisseur de la planche ne sont donc pas à l'écran : c'est toujours le moins cher. Dis-moi si tu les veux au-dessus de la liste.</li>
-<li><strong>Le fournisseur se choisit</strong> dans « Au fournisseur » : la planche écrivait Aqua Plus en dur.</li>
+<li><strong>Corrigé après la fusion de <code>main</code> (20 octobre)</strong> : j'avais d'abord posé une section « Le matériel du plan » à côté de la liste, avec son propre total. <code>main</code> avait déjà la colonne et le total dans la liste, comme tu l'as demandé le 19 au soir : deux totaux sur un écran, c'est un de trop. La section est retirée, et les prix vont dans la liste.</li>
+<li><strong>Corrigé le 20 octobre, sur ta planche</strong> : la liste prenait le moins cher de tes fournisseurs. Elle prend maintenant ceux d'un seul, celui de la pastille, et chaque prix dit de qui il vient. Le choix « Chez qui » dans « Au fournisseur » est retiré pour le plan : c'est la pastille qui décide.</li>
+<li><strong>Le complément d'un devis importé n'a pas changé</strong> (« Copier », « Envoyer », le choix du fournisseur) : ta planche du 20 octobre ne le touchait pas.</li>
 <li><strong>« Garder la liste sans plan » la garde sur l'écran</strong>, comme le plan, qui ne s'enregistre nulle part encore. À toi de dire où la garder.</li>
 <li><strong>« Par où commencer » se pose sous « Le piquage se fait »</strong>, qui ouvrait déjà l'écran.</li>
 </ul>
@@ -106,8 +112,20 @@
 <th>Résultat</th>
 </tr></thead><tbody>
 <tr>
-<td><code>test-prix-du-plan</code> (référence, unité, moins cher, le total de la liste)</td>
-<td>5 sur 5</td>
+<td><code>test-prix-du-plan</code> (référence, unité, un seul fournisseur, source et date, le total de la liste)</td>
+<td>7 sur 7</td>
+</tr>
+<tr>
+<td>pièces posées (le message : son début, la liste, sa fin ; le lien du mail)</td>
+<td>24 sur 24</td>
+</tr>
+<tr>
+<td><code>test-fournisseurs-partenaires-rls</code> (son adresse et son message, jamais ceux d'une autre entreprise)</td>
+<td>11 sur 11</td>
+</tr>
+<tr>
+<td>le 20 octobre, l'écran réel : pastilles Aqua Plus 146,20 € (« Prix Aqua Plus du 12/10/2026. Ils ont pu changer. ») et France Bonhomme 107,10 € (27 « pas de prix chez France Bonhomme »), le mail sans adresse et son alerte, « Bonjour Julien » retrouvé, « Merci, Florian » gardé en base, la demande enregistrée (26 lignes), l'adresse sur la fiche et « aqua plus » refusée</td>
+<td>vu</td>
 </tr>
 <tr>
 <td><code>test-devis-du-plan</code> (reconnaissance, nourrice 3 voies, message)</td>

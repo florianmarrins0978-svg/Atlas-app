@@ -18,6 +18,8 @@ grisées (`NourriceEclatee.tsx`), `FeuilleFournisseur` qui enregistre la
 demande, `sommeDesGroupes` et `referenceFournisseur` sortis de
 `messageAuFournisseur` (`postes.ts`), 99 photos dans `photos.ts`.
 Document de retour : `docs/arrosage-prix-et-devis.md`.
+Le 20 octobre : sa planche des prix par fournisseur codée (une pastille par
+fournisseur, le mail ouvert avec son adresse, son message gardé).
 
 ## FOURNISSEURS ET PARTENAIRES, CODÉ (19 octobre 2026), PAS ENCORE SUR `main`
 

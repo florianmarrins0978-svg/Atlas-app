@@ -35317,13 +35317,28 @@ Ses planches du 18 octobre 2026, codées le 19.
    message au fournisseur) est la même, espaces et casse mis à part, ou à défaut
    si le nom est identique. Deux raccords voisins ne s'échangent pas leur prix.
 2. **Ce sont des prix d'ACHAT, sans marge**, versés dans la colonne et le
-   total de la liste (`prix-de-la-liste.ts`, §472) : le moins cher de ses
-   fournisseurs (`lesMoinsChers`), et l'unité doit concorder (une couronne
+   total de la liste (`prix-de-la-liste.ts`, §472) : **les prix d'UN
+   fournisseur, celui de la pastille** (`lesPrixDe`), jamais le moins cher de
+   plusieurs. Corrigé le 20 octobre 2026 contre la première version, qui
+   prenait le moins cher : *« savoir de qui viennent les prix, que je ne me
+   fasse pas avoir »*. Un total mêlant deux fournisseurs ne correspond à
+   aucune commande qu'il puisse passer. Chaque prix dit sa source et sa date
+   (`sousLePrix`), le total la plus ancienne (`datesDesPrix`). L'unité doit concorder (une couronne
    n'est pas un mètre de tube). **Une seule liste, un seul total** : une
    première version posait une section « Le matériel du plan » à côté, avec son
    propre total ; retirée à la fusion de `main`. `LePlanDuJardin` reçoit
    `sesPrix` de son appelant et ne parle toujours à aucun serveur.
-3. **Un devis importé se reconnaît par la même règle** (`reconnaitreLeDevis`) ;
+3. **Le mail au fournisseur de la pastille** (20 octobre 2026) : « Écrire à »
+   ouvre un `mailto:` (`lienDuMail`), son adresse déjà écrite, et range la
+   liste dans ses Demandes envoyées. Le début et la fin du message sont les
+   siens, gardés sur sa fiche (`societes_achat.debut_mail`, `fin_mail`,
+   migration 0133) ; la liste du milieu ne se garde JAMAIS, pour qu'un mot
+   gardé ne fige pas une commande périmée. La liste passe dans l'adresse du
+   lien : environ 2 100 caractères pour un jardin moyen, que l'iPhone ouvre ;
+   certains logiciels de bureau coupent au delà de 2 000. Le complément d'un
+   devis importé garde « Copier » et le choix du fournisseur : la planche ne
+   l'a pas touché.
+4. **Un devis importé se reconnaît par la même règle** (`reconnaitreLeDevis`) ;
    une ligne sans pièce ou sans quantité lisible va dans « Pas dans le
    catalogue », il choisit. La nourrice vient de `composerNourrice` et se
    dessine par le `Dessin` de `NourriceEclatee`, exporté avec ses poses

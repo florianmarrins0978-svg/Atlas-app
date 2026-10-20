@@ -72,16 +72,34 @@ export function prixDesFournisseurs(
 
 /**
  * La table que la liste du plan lit (`prix-de-la-liste.ts`, sa colonne et son
- * total) : pour chaque pièce, **le moins cher de ses fournisseurs**. Une pièce
- * qu'aucun ne vend n'y est pas, et la liste dit « sans prix ».
+ * total) : **les prix d'UN fournisseur, celui de la pastille**. Jamais « le
+ * moins cher » de plusieurs : sa règle du 20 octobre 2026, *« savoir de qui
+ * viennent les prix, que je ne me fasse pas avoir »*. Une pièce qu'il ne vend
+ * pas n'y est pas, et la liste dit « pas de prix chez » lui.
  */
-export function lesMoinsChers(fournisseurs: readonly FournisseurDuPlan[]): TableDePrix {
+export function lesPrixDe(f: FournisseurDuPlan): TableDePrix {
   const table: TableDePrix = {};
-  for (const f of fournisseurs) {
-    for (const [ref, x] of Object.entries(f.prix)) {
-      const p = Number(x.prixHt);
-      if (Number.isFinite(p) && (table[ref] === undefined || p < table[ref])) table[ref] = p;
-    }
+  for (const [ref, x] of Object.entries(f.prix)) {
+    const p = Number(x.prixHt);
+    if (Number.isFinite(p)) table[ref] = p;
   }
   return table;
+}
+
+const jour = (iso: string) => iso.split("-").reverse().join("/");
+const unitaire = (prixHt: string) =>
+  `${Number(prixHt).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+
+/** « Aqua Plus, 12,40 € pièce, devis du 12/10/2026 » : sous le prix d'une ligne. */
+export function sousLePrix(fournisseur: string, prixHt: string, u: string, releveLe: string): string {
+  return `${fournisseur}, ${unitaire(prixHt)} ${u === "ml" ? "le m" : "pièce"}, devis du ${jour(releveLe)}`;
+}
+
+/**
+ * Sous le total : la date de ses prix. **La plus ancienne** quand ils viennent
+ * de plusieurs devis, puisque c'est elle qui a pu changer le plus.
+ */
+export function datesDesPrix(f: FournisseurDuPlan): string {
+  const dates = Object.values(f.prix).map((x) => x.releveLe).sort();
+  return dates.length ? `Prix ${f.nom} du ${jour(dates[0])}. Ils ont pu changer.` : "Aucun prix encore.";
 }

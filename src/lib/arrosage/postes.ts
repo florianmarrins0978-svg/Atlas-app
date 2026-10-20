@@ -510,13 +510,36 @@ export function lignesDeLaDemande(groupes: Groupe[], materiel: LigneCalcul[]): {
   return sommeDesGroupes(groupes).map((e) => ({ designation: e.nom, reference: referenceFournisseur(e.ref, materiel), quantite: quantiteDeLigne(e) }));
 }
 
-/** Le message au fournisseur : tout additionné, sans prix. */
-export function messageAuFournisseur(groupes: Groupe[], materiel: LigneCalcul[]): string {
-  const lignes = sommeDesGroupes(groupes).map((e) => {
-    const nom = nomFournisseur(e.ref, e.nom, materiel);
-    return e.u === "ml" ? (e.q ? `${e.q} m de ${nom}${e.inconnu ? ", plus une longueur à mesurer" : ""}` : `${nom} : longueur à mesurer`) : `${e.q}x ${nom}`;
-  });
-  return ["Bonjour,", "", "Voici ma commande pour un chantier d’arrosage :", "", ...lignes, "", "Merci."].join("\n");
+/** La liste du message : tout additionné, sans prix. Refaite à chaque plan, elle ne se garde jamais. */
+export function listeAuFournisseur(groupes: Groupe[], materiel: LigneCalcul[]): string {
+  return sommeDesGroupes(groupes)
+    .map((e) => {
+      const nom = nomFournisseur(e.ref, e.nom, materiel);
+      return e.u === "ml" ? (e.q ? `${e.q} m de ${nom}${e.inconnu ? ", plus une longueur à mesurer" : ""}` : `${nom} : longueur à mesurer`) : `${e.q}x ${nom}`;
+    })
+    .join("\n");
+}
+
+/** Le début et la fin d'office, tant qu'il n'a pas écrit les siens pour ce fournisseur. */
+export const DEBUT_DU_MESSAGE = "Bonjour,\n\nVoici ma commande pour un chantier d’arrosage :";
+export const FIN_DU_MESSAGE = "Merci.";
+
+/**
+ * Le message au fournisseur : SON début, la liste, SA fin (sa planche du
+ * 20 octobre 2026, *« si je note son nom, que ça le garde en mémoire »*).
+ */
+export function messageAuFournisseur(groupes: Groupe[], materiel: LigneCalcul[], debut = DEBUT_DU_MESSAGE, fin = FIN_DU_MESSAGE): string {
+  return [debut, "", listeAuFournisseur(groupes, materiel), "", fin].join("\n");
+}
+
+/**
+ * Le mail qui s'ouvre, l'adresse du fournisseur déjà écrite (sa demande du
+ * 20 octobre 2026). Sans adresse, il s'ouvre sans destinataire. L'arobase
+ * reste lisible : certains téléphones n'en reconnaissent pas d'autre.
+ */
+export function lienDuMail(adresse: string | null, corps: string): string {
+  const a = encodeURIComponent((adresse ?? "").trim()).replace(/%40/g, "@");
+  return `mailto:${a}?subject=${encodeURIComponent("Commande arrosage")}&body=${encodeURIComponent(corps)}`;
 }
 
 /**

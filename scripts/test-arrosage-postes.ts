@@ -1,5 +1,5 @@
 import { calculerEtDessiner } from "../src/lib/arrosage/le-plan";
-import { composerLesPostes, groupeNourrice, groupesDeLaListe, messageAuFournisseur, liaisonsDuReseau } from "../src/lib/arrosage/postes";
+import { composerLesPostes, groupeNourrice, groupesDeLaListe, lienDuMail, listeAuFournisseur, messageAuFournisseur, liaisonsDuReseau } from "../src/lib/arrosage/postes";
 import { piecesDuPlan } from "../src/lib/arrosage/pieces";
 import {
   RETOUCHES_VIERGES, blocSupprimer, chaineSupprimer, chaineRemplacer, clesAChanger, ligneSupprimer, nourriceRemettre, nourriceRemplacer, nourriceSupprimer, remplacer, supprimer,
@@ -171,6 +171,20 @@ cas("le message au fournisseur additionne tout, sans prix", () => {
   exige(m.startsWith("Bonjour,") && m.endsWith("Merci."), "le message commence par Bonjour et finit par Merci");
   exige(/Turbine 3504/.test(m) && /PEHD Ø25/.test(m), "il nomme les turbines et le tuyau");
   exige(!/€|prix/i.test(m), "aucun prix");
+});
+
+cas("SON début et SA fin entourent la liste, qui reste celle de l'outil", () => {
+  const g = groupesDeLaListe(plan, composer(), RETOUCHES_VIERGES, true);
+  const liste = listeAuFournisseur(g, plan.materiel);
+  const m = messageAuFournisseur(g, plan.materiel, "Bonjour Julien,", "Merci, Florian");
+  exige(m === `Bonjour Julien,\n\n${liste}\n\nMerci, Florian`, `le message : ${m.slice(0, 120)}`);
+  exige(!/Bonjour|Merci/.test(liste) && /Turbine 3504/.test(liste), "la liste ne porte que les pièces");
+});
+
+cas("le mail s'ouvre avec son adresse, l'objet et tout le message", () => {
+  const l = lienDuMail(" commande@aquaplus.fr ", "Bonjour Julien,\n\n3x Té & coude");
+  exige(l === "mailto:commande@aquaplus.fr?subject=Commande%20arrosage&body=Bonjour%20Julien%2C%0A%0A3x%20T%C3%A9%20%26%20coude", l);
+  exige(lienDuMail(null, "x").startsWith("mailto:?subject="), "sans adresse, sans destinataire");
 });
 
 cas("le pointillé n'est dit que sous le réseau qui l'emprunte", () => {

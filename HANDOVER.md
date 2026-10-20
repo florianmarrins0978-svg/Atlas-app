@@ -19,6 +19,12 @@ celle-ci : les fichiers neufs ne se heurtent à rien ; `ArrosageClient.tsx`,
 et `photos.ts` portent de petits ajouts à reporter si l'autre session les a
 bougés. **Non éprouvé ici** : la lecture d'un vrai devis par l'IA.
 
+**Le 20 octobre** : la liste prend les prix du fournisseur de la pastille
+(`lesPrixDe`), plus jamais le moins cher ; « Au fournisseur » ouvre un
+`mailto:` quand un fournisseur existe (`MailAuFournisseur`, `FeuillePiece.tsx`),
+sinon garde « Copier » (`SansFournisseur`), et c'est le seul chemin, avec le
+complément d'un devis, où `EnregistrerLaDemande` sert encore.
+
 ## FOURNISSEURS ET PARTENAIRES : branche `claude/reglages-fournisseurs-partenaires` (19 octobre 2026)
 
 **Ce qui est fait** : sa planche validée est l'écran `/reglages/fournisseurs`

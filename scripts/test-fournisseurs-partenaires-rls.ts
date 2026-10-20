@@ -11,6 +11,7 @@ import {
   lireMarges,
   listerSocietes,
   prixAchatCandidats,
+  prixDesFournisseursPourLePlan,
   reglerContactSociete,
   reglerMarge,
   reglerMargeSociete,
@@ -126,6 +127,12 @@ async function main() {
     // Un champ absent ne bouge pas : changer la fin garde l'adresse.
     assert.equal((await reglerContactSociete(A, aqua.id, { finMail: "Merci." }))?.email, "commande@aquaplus.fr");
     await assert.rejects(reglerContactSociete(A, aqua.id, { email: "pas une adresse" }), "la base laisse passer une adresse avec des espaces");
+  });
+
+  await test("le plan d'arrosage reçoit son adresse et son message, jamais ceux d'une autre entreprise", async () => {
+    const [f] = (await prixDesFournisseursPourLePlan(A)).fournisseurs;
+    assert.deepEqual([f.nom, f.email, f.debut, f.fin], ["Aqua Plus", "commande@aquaplus.fr", "Bonjour Julien,", "Merci."]);
+    assert.deepEqual(await prixDesFournisseursPourLePlan(B), { fournisseurs: [], achats: [] });
   });
 
   await test("ses prix sortent pour le devis dicté, avec la marge propre de la société", async () => {

@@ -558,3 +558,8 @@ fois par fournisseur et se gardent sur sa fiche ; la liste au milieu est
 refaite par l'outil à chaque plan, toujours sans prix, et ne se garde pas.
 **Pas encore codé** : il faut deux colonnes de texte sur `societes_achat`
 (expand seul, nullable).
+
+**Validée le 20 octobre 2026, et codée le jour même** (sans batterie) : les
+pastilles, la source et la date sous chaque prix, « pas de prix chez … »,
+« Écrire à … » et son mail, l'adresse sur la fiche, son début et sa fin gardés
+(migration 0133). Vu à l'écran ici. Reste : l'essai du mail sur son téléphone.
