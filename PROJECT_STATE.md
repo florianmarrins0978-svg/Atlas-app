@@ -5,6 +5,11 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## LE CHANTIER NEUF EN TÊTE DU FIL DE L'ACCUEIL (20 octobre 2026), PAS ENCORE SUR `main`
+
+Contrats d'entretien et chantiers forment un seul fil, rangé par la date
+affichée : le chantier du jour n'est plus repoussé sous les contrats.
+
 ## UNE ACTION INCONNUE RECHARGE LA PAGE (17 octobre 2026)
 
 L'écran d'erreur reconnaît une action que le serveur ne connaît plus et

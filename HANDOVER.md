@@ -10,6 +10,14 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LE CHANTIER NEUF EN TÊTE DU FIL : branche `claude/chantier-neuf-en-tete` (20 octobre 2026), PAS ENCORE SUR `main`
+
+Sa plainte : un chantier créé puis « retour » n'apparaît pas dans les chantiers
+en cours. Il existait, sous tous les contrats d'entretien. Le fil de l'accueil
+est maintenant UNE liste rangée par la date affichée (`dansLOrdreDuFil`,
+`ARCHITECTURE.md` §473). Suite : `test-accueil-chantier-neuf-en-tete-e2e`.
+Reste : `npm run verifier:avant-fusion` (niveau 2), puis son accord pour `main`.
+
 ## L'ÉCRAN DU PLAN D'ARROSAGE, CODÉ : branche `lot/catalogue-aquaplus-corrections`, dossier `atlas-app-aquaplus` (18 octobre 2026)
 
 **Ce qui est fait** : l'écran qu'il a validé (`appli/arrosage-plan.html`) est

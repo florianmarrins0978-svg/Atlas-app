@@ -8,6 +8,7 @@ import {
 } from "@/lib/chantier-etat";
 import { ongletDuChantier } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
+import { dansLOrdreDuFil } from "@/lib/ordre-du-fil";
 import { lieuDuChantier, lieuEstManquant } from "@/lib/nom-chantier";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getRole } from "@/server/autorisation";
@@ -115,7 +116,7 @@ export default async function ChantiersPage() {
   // ne figurait nulle part), puis sa règle du même jour : *« tout ce qui est
   // devis, contrat d'entretien, dernier devis ou autre doivent arriver là »*.
   // Accepté, ses passages vivent au planning (`ligneDuContratEnCours`).
-  const brinsDeContrat: BrinChantier[] = contrats.flatMap((c) => {
+  const brinsDeContrat: { majAt: Date; brin: BrinChantier }[] = contrats.flatMap((c) => {
     const ligne = ligneDuContratEnCours(
       {
         statut: c.statut,
@@ -132,23 +133,26 @@ export default async function ChantiersPage() {
     const client = avecCivilite(c.clientNom, c.clientCivilite ?? undefined);
     return [
       {
-        id: c.id,
-        retrait: "contrat" as const,
-        nom: "Contrat d'entretien",
-        quoi: `le contrat d'entretien ${deOuD(client)}`,
-        jour,
-        mois,
-        lieu: client,
-        etat: ligne.etat,
-        precision: ligne.precision,
-        attend: true,
-        reprise: `/clients/${c.clientId}/contrat`,
-        enCours: true,
+        majAt: c.majAt,
+        brin: {
+          id: c.id,
+          retrait: "contrat" as const,
+          nom: "Contrat d'entretien",
+          quoi: `le contrat d'entretien ${deOuD(client)}`,
+          jour,
+          mois,
+          lieu: client,
+          etat: ligne.etat,
+          precision: ligne.precision,
+          attend: true,
+          reprise: `/clients/${c.clientId}/contrat`,
+          enCours: true,
+        },
       },
     ];
   });
 
-  const brinsDeChantier: BrinChantier[] = avecStatut.map((c) => {
+  const brinsDeChantier: { majAt: Date; brin: BrinChantier }[] = avecStatut.map((c) => {
     const { jour, mois } = jourEtMois(c.majAt);
     // **La date d'ENVOI, pas celle de la dernière modification.** Celle de
     // gauche est `majAt` — le chantier a pu bouger depuis pour une photo. Ce
@@ -161,46 +165,52 @@ export default async function ChantiersPage() {
       envoyeLe: envoiLe ? jourIso(new Date(envoiLe)) : null,
     });
     return {
-      id: c.id,
-      retrait: seRetireSansEffacer(c.statut) ? "retirer" : "supprimer",
-      nom: c.nom,
-      quoi: `le chantier ${c.nom}`,
-      jour,
-      mois,
-      lieu,
-      // **La question se tranche ICI, au serveur, et une seule fois.** L'écran
-      // qui comparerait le texte de son côté referait la règle une seconde
-      // fois : le jour où le repli change de mots, la ligne cesserait
-      // silencieusement d'être cliquable (`CLAUDE.md` §3).
-      lieuManquant: lieuEstManquant(lieu),
-      // L'état, et la ligne en clair sous lui quand il y a une date d'envoi à
-      // dire. La règle vit dans `chantier-etat.ts` : l'écran n'a rien à décider.
-      etat: ligne.etat,
-      precision: ligne.precision,
-      attend: ligne.enOr,
-      // **Toucher un chantier, c'est REPRENDRE — pas recommencer.** Sa demande
-      // du 13 août 2026, après s'être retrouvé à refaire toutes les étapes alors
-      // qu'il ne lui restait qu'à envoyer son devis. Ce que la ligne DIT et où
-      // elle MÈNE sont deux questions distinctes : la refonte du libellé et la
-      // reprise cohabitent sans se marcher dessus.
-      reprise: lienDeReprise(c.id, c),
-      // Le décompte doit suivre un retrait sans redemander la page : l'écran
-      // ne peut le faire que s'il sait, ligne par ligne, laquelle compte.
-      enCours: chantierEnCours(c.statut),
-      // Un chantier facturé ne devrait pas être ici — il vit sous « Terminés ».
-      // Le refus voyage quand même avec la donnée : c'est le serveur qui le
-      // prononce (`SuppressionChantierRefusee`), et l'écran doit pouvoir le
-      // dire AVANT le geste plutôt que de laisser la ligne partir puis revenir.
-      refusRetrait:
-        c.statut === "facture"
-          ? "Ce chantier est facturé : sa facture figure au relevé de TVA."
-          : undefined,
+      majAt: c.majAt,
+      brin: {
+        id: c.id,
+        retrait: seRetireSansEffacer(c.statut) ? "retirer" : "supprimer",
+        nom: c.nom,
+        quoi: `le chantier ${c.nom}`,
+        jour,
+        mois,
+        lieu,
+        // **La question se tranche ICI, au serveur, et une seule fois.** L'écran
+        // qui comparerait le texte de son côté referait la règle une seconde
+        // fois : le jour où le repli change de mots, la ligne cesserait
+        // silencieusement d'être cliquable (`CLAUDE.md` §3).
+        lieuManquant: lieuEstManquant(lieu),
+        // L'état, et la ligne en clair sous lui quand il y a une date d'envoi à
+        // dire. La règle vit dans `chantier-etat.ts` : l'écran n'a rien à décider.
+        etat: ligne.etat,
+        precision: ligne.precision,
+        attend: ligne.enOr,
+        // **Toucher un chantier, c'est REPRENDRE — pas recommencer.** Sa demande
+        // du 13 août 2026, après s'être retrouvé à refaire toutes les étapes alors
+        // qu'il ne lui restait qu'à envoyer son devis. Ce que la ligne DIT et où
+        // elle MÈNE sont deux questions distinctes : la refonte du libellé et la
+        // reprise cohabitent sans se marcher dessus.
+        reprise: lienDeReprise(c.id, c),
+        // Le décompte doit suivre un retrait sans redemander la page : l'écran
+        // ne peut le faire que s'il sait, ligne par ligne, laquelle compte.
+        enCours: chantierEnCours(c.statut),
+        // Un chantier facturé ne devrait pas être ici — il vit sous « Terminés ».
+        // Le refus voyage quand même avec la donnée : c'est le serveur qui le
+        // prononce (`SuppressionChantierRefusee`), et l'écran doit pouvoir le
+        // dire AVANT le geste plutôt que de laisser la ligne partir puis revenir.
+        refusRetrait:
+          c.statut === "facture"
+            ? "Ce chantier est facturé : sa facture figure au relevé de TVA."
+            : undefined,
+      },
     };
   });
 
   return (
     <EcranChantiers
-      chantiers={[...brinsDeContrat, ...brinsDeChantier]}
+      // **Un seul fil, dans l'ordre des dates qu'il montre** : les contrats
+      // posés en tête repoussaient le chantier du jour sous le pli, et il l'a
+      // cru perdu (20 octobre 2026, `dansLOrdreDuFil`).
+      chantiers={dansLOrdreDuFil([...brinsDeContrat, ...brinsDeChantier]).map((l) => l.brin)}
       ruban={essai ? <RubanEssai etat={essai} /> : null}
       lectureSeule={essai?.statut === "termine" ? PHRASE_LECTURE_SEULE : null}
       bandeaux={
