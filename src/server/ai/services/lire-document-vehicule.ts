@@ -18,16 +18,16 @@ const SYSTEME = `Tu lis un document déposé par un artisan paysagiste pour un v
 Tu réponds UNIQUEMENT par un objet JSON, sans phrase avant ni après, sans balises de code.
 Champs attendus :
 - nature : "carte_grise" (certificat d'immatriculation), "assurance" (mémo véhicule assuré, attestation ou contrat d'assurance auto), "controle_technique" (procès-verbal de contrôle technique ou de contre-visite), ou null si ce n'est aucun des trois.
-- plaque (string|null) : le numéro d'immatriculation, case A sur une carte grise.
+- plaque (string|null) : le numéro d'immatriculation, case A sur une carte grise. Une plaque s'écrit "AB-123-CD", ou "123 ABC 75" avant 2009. Au verso d'une carte grise, le grand numéro comme "2025EJ72653" est le numéro de formule, PAS la plaque : la plaque s'y lit seulement sur les vignettes de contrôle technique ; sinon null.
 - marque_modele (string|null) : la marque (case D.1) suivie de la dénomination commerciale (case D.3), par exemple "Renault Master".
 - ptac_kg (number|null) : le poids total autorisé en charge en kilos, case F.2.
 - genre (string|null) : le genre national, case J.1, tel qu'il est écrit (par exemple "CTTE").
 - assureur (string|null) : le nom de la compagnie d'assurance.
 - numero_contrat (string|null) : le numéro de contrat ou de police.
 - telephone_assistance (string|null) : le numéro d'assistance ou de dépannage écrit sur le document.
-- controle_technique_avant (string|null au format AAAA-MM-JJ) : la date limite du prochain contrôle technique imprimée sur le procès-verbal.
-- controle_pollution_avant (string|null au format AAAA-MM-JJ) : la date limite du prochain contrôle complémentaire pollution, si elle est imprimée.
-- contre_visite_avant (string|null au format AAAA-MM-JJ) : la date limite de contre-visite, seulement si le procès-verbal en exige une.
+- controle_technique_avant (string|null au format AAAA-MM-JJ) : la date limite du prochain contrôle technique. Sur un procès-verbal : celle qu'il imprime. Sur une carte grise : la date de la vignette de contrôle la plus récente qui n'est pas barrée, celle marquée "A :" (case X.1 au verso) ; à défaut de vignette, la date "VISITE AVANT LE" de la case X.1 au recto.
+- controle_pollution_avant (string|null au format AAAA-MM-JJ) : la date limite du prochain contrôle complémentaire pollution, si elle est imprimée. Sur une carte grise : la date "POLLU :" de la vignette la plus récente qui n'est pas barrée.
+- contre_visite_avant (string|null au format AAAA-MM-JJ) : la date limite de contre-visite, seulement si un procès-verbal en exige une. Toujours null sur une carte grise.
 Règles :
 - Tu ne DEVINES jamais. Un champ illisible ou absent vaut null.
 - Tu ne CALCULES jamais une date : tu recopies seulement celle qui est imprimée.

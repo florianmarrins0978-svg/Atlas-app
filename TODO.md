@@ -13,6 +13,17 @@
 - [ ] Sur son espace, lire un vrai devis Aqua Plus en photo et en PDF : la lecture IA n'est pas éprouvable ici.
 - [x] ~~Le premier appelant de `enregistrerDemande`~~ : le message au fournisseur du plan d'arrosage, et le complément d'un devis importé (19 octobre 2026).
 - [x] ~~Le matériel dicté sans aucun prix~~ : tranché par lui le 19 octobre 2026, il part au devis « à chiffrer », sans prix. Codé.
+## ⏳ `test-travaux-a-faire-e2e` est tombée UNE fois, sans cause connue (20 octobre 2026)
+
+Pendant la batterie du lot de la carte grise, deux cas ont rougi : « le
+lendemain, 2 retours envoyés ne rouvre plus rien » (délai dépassé) et « envoyé
+aujourd'hui, il se rouvre depuis une autre journée » (« depuis le 2026-10-19,
+le retour d'aujourd'hui ne se rouvre pas »). Rejouée seule ensuite : verte trois
+fois. Le lot ne touche ni au planning ni aux retours. Le témoin de `main` n'a
+rien pu lire (« illisible » des deux côtés), donc rien ne dit qu'elle était déjà
+fragile. **Ce n'est pas un caprice tant que la cause n'est pas trouvée** : ces
+deux cas jouent sur « le lendemain », à chercher du côté du jour compté pendant
+une longue batterie, ou d'un état laissé par une suite voisine. | nous |
 
 ## ⏳ ARROSAGE : L'ÉCRAN DU PLAN EST CODÉ (18 octobre 2026), voici ce qui reste
 

@@ -130,6 +130,18 @@ export function normaliserPlaque(brute: string): string {
   return brute.toUpperCase().replace(/\s+/g, " ").trim();
 }
 
+/**
+ * Une plaque française, en SIV (« EH-467-GL ») ou d'avant 2009
+ * (« 123 ABC 75 », « 4521 AB 2A », « 12 ABC 974 »). Le verso d'une carte
+ * grise imprime son numéro de formule (« 2025EJ72653 ») juste au-dessus de
+ * « (A) Numéro d'immatriculation » : pris pour une plaque, il faisait refuser
+ * le papier comme celui d'un autre véhicule (20 octobre 2026).
+ */
+export function aLaFormeDUnePlaque(brute: string): boolean {
+  const serree = brute.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  return /^[A-Z]{2}\d{3}[A-Z]{2}$/.test(serree) || /^\d{1,4}[A-Z]{1,3}(\d{2}|2A|2B|97\d)$/.test(serree);
+}
+
 /** Deux écritures de la même plaque se reconnaissent : tirets et espaces ne comptent pas. */
 export function memePlaque(a: string, b: string): boolean {
   const serre = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -204,7 +216,10 @@ export type LectureDocumentVehicule = {
 };
 
 const CHAMPS_DE_LA_NATURE: Record<NatureDocumentVehicule, readonly ChampVehicule[]> = {
-  carte_grise: ["plaque", "modele", "ptacKg", "genre"],
+  // Les dates : case X.1 du recto, et vignettes du verso. Jamais la
+  // contre-visite : une vignette barrée ne se distingue pas sûrement d'une
+  // vignette en cours, et c'est le procès-verbal qui la porte.
+  carte_grise: ["plaque", "modele", "ptacKg", "genre", "controleTechniqueAvant", "pollutionAvant"],
   assurance: ["assureur", "numeroContrat", "assistance"],
   controle_technique: ["controleTechniqueAvant", "pollutionAvant", "contreVisiteAvant"],
 };
@@ -232,9 +247,15 @@ export type RangementDeLecture =
  * garde ce qu'elle avait. Une exception, et elle est voulue : un procès-verbal
  * sans contre-visite EFFACE la contre-visite d'avant — c'est qu'elle a été
  * passée, et son rappel ne doit pas survivre au papier qui la clôt.
+ *
+ * **Une carte grise ne recule jamais une échéance** déjà plus tardive.
  */
-export function rangerLecture(plaqueDuVehicule: string | null, lue: LectureDocumentVehicule | null): RangementDeLecture {
+export function rangerLecture(
+  connu: Pick<ValeursVehicule, "plaque" | "controleTechniqueAvant" | "pollutionAvant"> | null,
+  lue: LectureDocumentVehicule | null
+): RangementDeLecture {
   if (!lue || !lue.nature) return { statut: "inconnu" };
+  const plaqueDuVehicule = connu?.plaque ?? null;
   if (plaqueDuVehicule && lue.plaque && !memePlaque(plaqueDuVehicule, lue.plaque)) {
     return { statut: "autre-vehicule", plaqueLue: normaliserPlaque(lue.plaque) };
   }
@@ -247,6 +268,17 @@ export function rangerLecture(plaqueDuVehicule: string | null, lue: LectureDocum
     champs.contreVisiteAvant = null;
   }
   if (lue.nature === "carte_grise" && !plaqueDuVehicule && lue.plaque) champs.plaque = normaliserPlaque(lue.plaque);
+  // Une carte grise mêle des dates de plusieurs âges : le recto imprime celle
+  // de son édition, les vignettes collées depuis la repoussent. Une échéance
+  // de contrôle ne fait qu'avancer avec le temps : la plus tardive est la
+  // plus récente, quel que soit l'ordre des photos.
+  if (lue.nature === "carte_grise" && connu) {
+    for (const champ of ["controleTechniqueAvant", "pollutionAvant"] as const) {
+      const avant = connu[champ];
+      const lu = champs[champ];
+      if (avant && typeof lu === "string" && lu <= avant) delete champs[champ];
+    }
+  }
   return { statut: "range", nature: lue.nature, champs };
 }
 
