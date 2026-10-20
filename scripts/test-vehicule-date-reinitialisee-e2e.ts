@@ -18,6 +18,8 @@ import { ADRESSE } from "./_adresse";
  */
 
 const BASE = ADRESSE;
+// En clair : c'est ainsi que le calcul du niveau sait quelle suite ouvre cet écran.
+const FICHE = "/reglages/vehicules/";
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function main() {
@@ -38,7 +40,7 @@ async function main() {
     await page.click('button[type="submit"]');
     await page.waitForURL(`${BASE}/`, { timeout: 10000 });
 
-    await page.goto(`${BASE}/reglages/vehicules/${id}`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}${FICHE}${id}`, { waitUntil: "networkidle" });
     const caseDate = page.locator('[data-atlas="champ-controleTechniqueAvant"] input');
     await caseDate.waitFor();
     assert.equal(await caseDate.inputValue(), "", "la case doit partir vide");
