@@ -116,12 +116,14 @@ cas("tirets et espaces ne font pas deux plaques", () => {
 
 console.log("— Ce qu'un papier lu remplit —");
 
+const camion = (plaque: string) => ({ plaque, controleTechniqueAvant: null, pollutionAvant: null });
+
 cas("un papier qu'Atlas ne reconnaît pas se DEMANDE, il ne se range pas", () => {
-  assert.deepEqual(rangerLecture("GH-412-PK", null), { statut: "inconnu" });
-  assert.deepEqual(rangerLecture("GH-412-PK", vide), { statut: "inconnu" });
+  assert.deepEqual(rangerLecture(camion("GH-412-PK"), null), { statut: "inconnu" });
+  assert.deepEqual(rangerLecture(camion("GH-412-PK"), vide), { statut: "inconnu" });
 });
 cas("l'assurance d'un AUTRE camion ne range rien", () => {
-  const r = rangerLecture("GH-412-PK", { ...vide, nature: "assurance", plaque: "BR551XA", assureur: "Mutuelle" });
+  const r = rangerLecture(camion("GH-412-PK"), { ...vide, nature: "assurance", plaque: "BR551XA", assureur: "Mutuelle" });
   assert.deepEqual(r, { statut: "autre-vehicule", plaqueLue: "BR-551-XA" });
 });
 cas("la carte grise d'un véhicule neuf donne sa plaque", () => {
@@ -138,23 +140,54 @@ cas("la carte grise d'un véhicule neuf donne sa plaque", () => {
   assert.deepEqual(r.champs, { plaque: "EK-238-RV", modele: "Renault Master", ptacKg: 3500, genre: "CTTE" });
 });
 cas("seul ce qui est lu s'écrit : l'assurance ne touche pas aux dates", () => {
-  const r = rangerLecture("GH-412-PK", { ...vide, nature: "assurance", assureur: "Mutuelle de l’Ouest", controleTechniqueAvant: "2027-01-01" });
+  const r = rangerLecture(camion("GH-412-PK"), { ...vide, nature: "assurance", assureur: "Mutuelle de l’Ouest", controleTechniqueAvant: "2027-01-01" });
   assert.equal(r.statut, "range");
   if (r.statut !== "range") return;
   assert.deepEqual(r.champs, { assureur: "Mutuelle de l’Ouest" });
 });
 cas("un procès-verbal sans contre-visite EFFACE celle d'avant", () => {
-  const r = rangerLecture("GH-412-PK", { ...vide, nature: "controle_technique", controleTechniqueAvant: "2028-10-14", pollutionAvant: "2027-10-14" });
+  const r = rangerLecture(camion("GH-412-PK"), { ...vide, nature: "controle_technique", controleTechniqueAvant: "2028-10-14", pollutionAvant: "2027-10-14" });
   assert.equal(r.statut, "range");
   if (r.statut !== "range") return;
   assert.equal(r.champs.contreVisiteAvant, null);
   assert.equal(r.champs.controleTechniqueAvant, "2028-10-14");
 });
 cas("un procès-verbal de contre-visite la pose", () => {
-  const r = rangerLecture("GH-412-PK", { ...vide, nature: "controle_technique", contreVisiteAvant: "2026-12-14" });
+  const r = rangerLecture(camion("GH-412-PK"), { ...vide, nature: "controle_technique", contreVisiteAvant: "2026-12-14" });
   assert.equal(r.statut, "range");
   if (r.statut !== "range") return;
   assert.deepEqual(r.champs, { contreVisiteAvant: "2026-12-14" });
+});
+// Sa carte grise du 20 octobre 2026 (Amarok EH-467-GL) : le VERSO se
+// refusait comme « autre véhicule », et aucune date de contrôle n'était prise.
+cas("le verso d'une carte grise porte les dates des vignettes de contrôle", () => {
+  const r = rangerLecture(camion("EH-467-GL"), {
+    ...vide,
+    nature: "carte_grise",
+    plaque: "EH-467-GL",
+    controleTechniqueAvant: "2028-09-20",
+    pollutionAvant: "2027-09-20",
+  });
+  assert.equal(r.statut, "range");
+  if (r.statut !== "range") return;
+  assert.deepEqual(r.champs, { plaque: "EH-467-GL", controleTechniqueAvant: "2028-09-20", pollutionAvant: "2027-09-20" });
+});
+cas("une carte grise ne recule jamais une date de contrôle déjà plus tardive", () => {
+  // Le recto imprime « VISITE AVANT LE 18/09/2027 » à son édition ; la vignette
+  // collée depuis, au verso, dit 2028. L'ordre des photos ne doit rien changer.
+  const r = rangerLecture(
+    { plaque: "EH-467-GL", controleTechniqueAvant: "2028-09-20", pollutionAvant: "2027-09-20" },
+    { ...vide, nature: "carte_grise", plaque: "EH-467-GL", modele: "Volkswagen Amarok", controleTechniqueAvant: "2027-09-18" }
+  );
+  assert.equal(r.statut, "range");
+  if (r.statut !== "range") return;
+  assert.deepEqual(r.champs, { plaque: "EH-467-GL", modele: "Volkswagen Amarok" });
+});
+cas("une carte grise ne pose jamais de contre-visite : une vignette barrée ne se lit pas sûrement", () => {
+  const r = rangerLecture(camion("EH-467-GL"), { ...vide, nature: "carte_grise", contreVisiteAvant: "2026-11-20" });
+  assert.equal(r.statut, "range");
+  if (r.statut !== "range") return;
+  assert.deepEqual(r.champs, {});
 });
 cas("la phrase dit combien de cases ont été remplies", () => {
   assert.equal(phraseDeLecture("carte_grise", 4), "Carte grise lue. 4 informations remplies, en doré. Une erreur ? Touchez la case.");
@@ -181,6 +214,15 @@ cas("une nature inventée vaut « inconnu »", () => {
 cas("une date qui n'existe pas ne passe pas", () => {
   const lue = lireReponseDocumentVehicule('{"nature":"controle_technique","controle_technique_avant":"2026-02-31"}');
   assert.equal(lue?.controleTechniqueAvant, null);
+});
+cas("le numéro de formule du verso n'est pas une plaque", () => {
+  // « 2025EJ72653 » est imprimé juste au-dessus de « (A) Numéro
+  // d'immatriculation » : lu comme plaque, il faisait refuser le verso.
+  assert.equal(lireReponseDocumentVehicule('{"nature":"carte_grise","plaque":"2025EJ72653"}')?.plaque, null);
+  assert.equal(lireReponseDocumentVehicule('{"nature":"carte_grise","plaque":"S078T183"}')?.plaque, null);
+  assert.equal(lireReponseDocumentVehicule('{"nature":"carte_grise","plaque":"EH-467-GL"}')?.plaque, "EH-467-GL");
+  assert.equal(lireReponseDocumentVehicule('{"nature":"carte_grise","plaque":"123 ABC 75"}')?.plaque, "123 ABC 75");
+  assert.equal(lireReponseDocumentVehicule('{"nature":"carte_grise","plaque":"4521 AB 2A"}')?.plaque, "4521 AB 2A");
 });
 cas("« null » écrit en toutes lettres vaut null", () => {
   assert.equal(lireReponseDocumentVehicule('{"nature":"assurance","assureur":"null"}')?.assureur, null);

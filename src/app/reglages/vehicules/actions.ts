@@ -137,7 +137,7 @@ export async function ajouterDocumentVehiculeAction(
         erreur: err instanceof Error ? err.message : String(err),
       });
     }
-    const rangement = rangerLecture(vehicule?.plaque ?? null, lue);
+    const rangement = rangerLecture(vehicule ?? null, lue);
     if (rangement.statut === "autre-vehicule") {
       return {
         ok: false,
