@@ -36,7 +36,7 @@ chiffre. À coder dans `CalendrierPeriodes.tsx` par une fonction pure de
 | | qui |
 |---|---|
 | ~~choisir A, B ou C~~ **B**, le 20 octobre | fait |
-| ~~coder~~ **codé** (`CalendrierPeriodes.tsx`, `enAttenteParPeriode`) ; niveau 3 (gravité « argent ») : la batterie et la poussée sur `main` attendent son accord | lui |
+| ~~coder~~ **codé** (`CalendrierPeriodes.tsx`, `enAttenteParPeriode`) ; niveau 3 (gravité « argent ») : **il a dit « ne lance pas de batterie » le 20 octobre**. Le lot attend sur `claude/tva-paiements-oublies` ; sans batterie verte, `garde-fusion-main` refuse `main`. À lui demander quand la lancer | lui |
 | `npm run voir` ne franchit pas l'écran `/bienvenue` sur une base fraîche : il ne sait cliquer que « continuer », « j'accepte », « commencer », pas « Se connecter » ; trouvé en regardant cet écran le 20 octobre | nous |
 
 ## ⏳ ARROSAGE : LE TUBE DE CHAQUE ARTISAN — son oui du 16 octobre 2026, planche à faire
