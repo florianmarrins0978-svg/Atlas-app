@@ -20,6 +20,7 @@ import {
   type FicheEnregistree,
 } from "@/server/repositories/fiches-securite";
 import { listerPhotos, recevoirPhotoDeChantier, supprimerPhoto } from "@/server/repositories/photos";
+import { situerLeChantier } from "@/server/planning/appariement";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import type { Ctx } from "@/server/repositories/context";
 import {
@@ -100,8 +101,12 @@ export type FicheOuverte = {
 /** Le formulaire : la fiche (créée si besoin, à partir de ce qui est gardé), et ce qu'Atlas sait du chantier. */
 export async function ouvrirLaFicheAction(chantierId: string): Promise<FicheOuverte | Refus> {
   const ctx = await garder(chantierId, "ouvrir la fiche de sécurité");
-  const contexte = await contexteDuChantier(ctx, chantierId);
+  let contexte = await contexteDuChantier(ctx, chantierId);
   if (!contexte) return { ok: false, raison: "Chantier introuvable." };
+  // Sans position, la carte du point GPS n'a rien sur quoi s'ouvrir.
+  if (!contexte.position && contexte.adresse?.trim() && (await situerLeChantier(ctx, chantierId, contexte.adresse))) {
+    contexte = (await contexteDuChantier(ctx, chantierId)) ?? contexte;
+  }
   const [fiche, photos] = await Promise.all([ouvrirLaFiche(ctx, chantierId), listerPhotos(ctx, chantierId)]);
   return { fiche, contexte, photos: photos.map((p) => ({ id: p.id, storageKey: p.storageKey })) };
 }

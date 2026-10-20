@@ -190,39 +190,56 @@ export async function situerQuelquesChantiers(ctx: Ctx, limite = MAX_SITUATION_P
 
   for (let i = 0; i < aFaire.length; i += PAQUET) {
     const paquet = aFaire.slice(i, i + PAQUET);
-    await Promise.all(
-      paquet.map(async (c) => {
-        try {
-          const r = await chercherAdresses(c.adresseChantier);
-          const premiere = r.ok
-            ? r.suggestions.find((s) => s.latitude !== null && s.longitude !== null)
-            : undefined;
-
-          // **Une panne du service ne s'écrit PAS en base.** Marquer
-          // `adresseSituee` alors que le réseau était coupé condamnerait
-          // l'adresse à ne plus jamais être retentée : le chantier resterait
-          // « non situé » pour toujours, sans que rien ne l'explique.
-          if (!r.ok && r.raison !== "trop-court") return;
-
-          if (premiere && premiere.latitude !== null && premiere.longitude !== null) {
-            await enregistrerCoordonneesChantier(
-              ctx,
-              c.id,
-              { latitude: premiere.latitude, longitude: premiere.longitude },
-              c.adresseChantier
-            );
-            situes++;
-          } else {
-            // Adresse trop courte, ou que le service ne reconnaît pas
-            // (« derrière l'église ») : on garde la trace de l'essai, sinon la
-            // même adresse repartirait à chaque ouverture du planning.
-            await enregistrerCoordonneesChantier(ctx, c.id, null, c.adresseChantier);
-          }
-        } catch {
-          // Une adresse qui casse ne doit pas emporter les sept autres.
-        }
-      })
-    );
+    const trouves = await Promise.all(paquet.map((c) => situer(ctx, c)));
+    situes += trouves.filter(Boolean).length;
   }
   return situes;
+}
+
+/**
+ * Pose les coordonnées d'UN chantier, à l'ouverture de sa fiche de sécurité,
+ * quand la fiche n'a pas de position valable. Sa capture du 20 octobre 2026 :
+ * l'adresse du chantier en haut de la fiche, et aucune carte dessous, parce
+ * que seul l'appariement situait les chantiers.
+ *
+ * Une adresse que la base ne connaît pas se réessaie à chaque ouverture de la
+ * fiche : un appel de plus, contre une condition recopiée de `chantiersASituer`.
+ */
+export async function situerLeChantier(ctx: Ctx, chantierId: string, adresseChantier: string): Promise<boolean> {
+  return situer(ctx, { id: chantierId, adresseChantier });
+}
+
+/** Vrai quand des coordonnées ont été trouvées et rangées. Ne lève jamais. */
+async function situer(ctx: Ctx, c: { id: string; adresseChantier: string }): Promise<boolean> {
+  try {
+    const r = await chercherAdresses(c.adresseChantier);
+    const premiere = r.ok
+      ? r.suggestions.find((s) => s.latitude !== null && s.longitude !== null)
+      : undefined;
+
+    // **Une panne du service ne s'écrit PAS en base.** Marquer
+    // `adresseSituee` alors que le réseau était coupé condamnerait
+    // l'adresse à ne plus jamais être retentée : le chantier resterait
+    // « non situé » pour toujours, sans que rien ne l'explique.
+    if (!r.ok && r.raison !== "trop-court") return false;
+
+    if (premiere && premiere.latitude !== null && premiere.longitude !== null) {
+      await enregistrerCoordonneesChantier(
+        ctx,
+        c.id,
+        { latitude: premiere.latitude, longitude: premiere.longitude },
+        c.adresseChantier
+      );
+      return true;
+    } else {
+      // Adresse trop courte, ou que le service ne reconnaît pas
+      // (« derrière l'église ») : on garde la trace de l'essai, sinon la
+      // même adresse repartirait à chaque ouverture du planning.
+      await enregistrerCoordonneesChantier(ctx, c.id, null, c.adresseChantier);
+      return false;
+    }
+  } catch {
+    // Une adresse qui casse ne doit pas emporter les sept autres.
+    return false;
+  }
 }

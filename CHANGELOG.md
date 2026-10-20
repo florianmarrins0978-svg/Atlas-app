@@ -18,6 +18,14 @@ Format : le plus récent en tête.
   (`arrosageEcrit`, `lire-croquis.ts`) que `test-lecture-croquis.ts` tient, et
   la consigne du modèle le dit. **Non vérifié sur une vraie photo ici** (aucune
   clé) : `npm run verifier:croquis` sur son espace, ou sa photo rejouée.
+- **La fiche de sécurité situe son chantier en s'ouvrant** : sa capture du
+  20 octobre, l'adresse écrite en haut de la fiche et aucune carte dessous.
+  Seul l'appariement des demi-journées situait les chantiers ; un chantier
+  jamais proposé restait sans position, et la carte du point GPS n'avait rien
+  sur quoi s'ouvrir. `ouvrirLaFicheAction` appelle `situerLeChantier` quand la fiche
+  n'a pas de position valable (un appel à la Base Adresse Nationale), qui partage
+  avec la passe de l'appariement la même règle (`situer`, `appariement.ts`).
+  Suite : `test-appariement-chantiers.ts`, vue rouge puis verte.
 
 ## 2026-10-19
 
