@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 import { Pool } from "pg";
 import { ADRESSE } from "./_adresse";
+import { jourIso } from "../src/lib/jour";
 
 /**
  * « Réinitialiser » du sélecteur de date d'iPhone doit VIDER la case — sa
@@ -45,7 +46,7 @@ async function main() {
     await caseDate.waitFor();
     assert.equal(await caseDate.inputValue(), "", "la case doit partir vide");
 
-    const aujourdhui = new Date().toISOString().slice(0, 10);
+    const aujourdhui = jourIso(new Date());
     // Comme WebKit : la valeur est posée par le moteur, sans passer par le
     // setter que React surveille, puis `input` et `change` partent.
     const poser = (valeur: string) =>
