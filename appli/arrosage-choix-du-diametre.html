@@ -122,11 +122,16 @@
 
   <span class="lettre">C</span>
   <p><b style="font-weight:600;color:var(--atlas-orTexte)">Choisie le 20 octobre.</b></p>
-  <label class="tuyau"><span>Le piquage se fait</span><select id="c-piquage" aria-label="Le piquage se fait"><option value="compteur">au compteur</option><option value="robinet">au robinet</option></select></label>
   <p>Deux petites cases à droite du nom. Le chiffre qui change s’écrit dessous.</p>
-  <span class="caps" id="c-surtitre">Le piquage, au compteur</span>
-  <div class="reseau"><b style="font-size:24px" id="c-titre">Du compteur à la nourrice</b><span class="zone"></span><span class="sigle" aria-hidden="true">Ø</span><span class="bascule" data-c="amenee"><button type="button" data-d="25">25</button><button type="button" data-d="32">32</button></span></div>
+  <span class="caps">Le piquage, au compteur</span>
+  <div class="reseau"><b style="font-size:24px">Du compteur à la nourrice</b><span class="zone"></span><span class="sigle" aria-hidden="true">Ø</span><span class="bascule" data-c="amenee"><button type="button" data-d="25">25</button><button type="button" data-d="32">32</button></span></div>
   <p class="change" id="c-amenee-dit"></p>
+  <!-- Le piquage se choisit au début, avant le croquis, comme dans l'écran :
+       la planche montre ce que devient cette ligne quand la réponse a été
+       « robinet de jardin ». -->
+  <p class="propose">Si le piquage choisi au début est le robinet :</p>
+  <span class="caps">Le piquage, au robinet</span>
+  <div class="reseau"><b style="font-size:24px">Du robinet à la nourrice</b><span class="zone"></span><span class="sigle" aria-hidden="true">Ø</span><span class="bascule" data-c="amenee"><button type="button" data-d="25">25</button><button type="button" data-d="32">32</button></span></div>
 
   <div class="reseau"><span class="pastille" style="background:#2F6FB5"></span><b>Réseau 1</b><span class="zone">Arroseurs</span><span class="sigle" aria-hidden="true">Ø</span><span class="bascule" data-c="r1"><button type="button" data-d="25">25</button><button type="button" data-d="32">32</button></span></div>
   <p class="change" id="c-r1-dit"></p>
@@ -203,12 +208,8 @@
     resume(c, "c-resume", "c-r3");
   }
   // Sa demande du 20 octobre : « le bouton du 25 au 32, il le faut aussi à
-  // partir du compteur ou du robinet ». Le même interrupteur, l'autre départ.
-  $("c-piquage").onchange = function () {
-    var r = $("c-piquage").value === "robinet";
-    $("c-surtitre").textContent = r ? "Le piquage, au robinet" : "Le piquage, au compteur";
-    $("c-titre").textContent = r ? "Du robinet à la nourrice" : "Du compteur à la nourrice";
-  };
+  // partir du compteur ou du robinet ». Le piquage se choisit au début, avant
+  // le croquis : les deux lignes partagent ici le même choix.
   document.querySelectorAll("[data-c]").forEach(function (g) {
     g.querySelectorAll("button").forEach(function (x) { x.onclick = function () { c[g.dataset.c] = x.dataset.d; majC(); }; });
   });
