@@ -305,7 +305,9 @@ de moins) ; et un Ø32 que l'outil propose sur l'amenée, il peut le refuser. **
 (même soir, `appli/arrosage-choix-du-diametre.html`) : deux petites cases 25 et
 32 à droite du nom du réseau et de l'amenée, au compteur comme au robinet
 (*« il le faut aussi à partir du compteur ou du robinet »*), un Ø doré devant (le doré du surtitre « Le
-piquage, au compteur », `or` ; *« celui que tu m'as mis est trop foncé »*), la case choisie en noir, ce que ça change écrit dessous.
+piquage, au compteur », `or` ; *« celui que tu m'as mis est trop foncé »*), la case choisie en noir, ce que ça change écrit dessous. **Codées toutes
+les deux le 20 octobre au soir** (`ARCHITECTURE.md` §473). Le goutte-à-goutte n'a
+pas d'interrupteur : le calcul ne lui compte pas de perte de ligne.
 
 **LE Ø16 SE RACCORDE AU ROBINET PAR UN RACCORD TARAUDÉ 3/4" PROPRE À SON TUBE —
 sa règle du 18 octobre 2026.** Le Plasson à bague blanche ne prend que le PE 25

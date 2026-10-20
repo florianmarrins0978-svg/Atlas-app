@@ -599,9 +599,20 @@ var MAJORATION_RACCORDS = 0.15;  // +15 % du linéaire — règle de l'art, non 
 var METRES_ANTENNE = 2;          // PEBD Ø16 par tête — sa nomenclature du 17 août
 var DIAMETRE_INT_PEBD16 = 12.4;  // mm, Ø16 PN6 — le plus étroit, donc le plus prudent
 
-function perteDuReseau(secteur){
+/* **LE TUYAU D'UN RÉSEAU : Ø25, SAUF S'IL A CHOISI LE Ø32** — sa règle du
+   20 octobre 2026 : *« il fait le calcul en diamètre 25 ; si le 25 ne passe
+   pas, il rajoute un réseau »*, et le Ø32 se choisit réseau par réseau, sur
+   l'écran, pour voir ce qu'il fait gagner. Le choix vise le réseau par son
+   NUMÉRO : quand le plan se refait avec un réseau de moins, le choix reste au
+   même rang, et c'est ce que l'écran montre. */
+function tuyauDuReseau(i){
+  var choix = etat.diametres && etat.diametres.reseaux;
+  return choix && choix[i] === 32 ? CATALOGUE.tuyaux.pe32 : CATALOGUE.tuyaux.pe25;
+}
+
+function perteDuReseau(secteur, i){
   var pts = secteur && secteur.points;
-  var t25 = CATALOGUE.tuyaux.pe25;
+  var t25 = tuyauDuReseau(i);
   // **Sans les têtes, on ne conclut pas.** Un goutte-à-goutte n'a pas de ligne
   // d'arroseurs : rendre zéro serait dire « aucune perte », ce qui est faux.
   // On rend `null`, et l'appelant sait qu'il n'y a rien à dire.
@@ -661,8 +672,8 @@ function perteDuReseau(secteur){
    jamais une tête de plus sur une vanne déjà chargée. */
 function pirePerteDeReseau(d){
   var pire = 0;
-  (d.secteurs || []).forEach(function(s){
-    var p = perteDuReseau(s);
+  (d.secteurs || []).forEach(function(s, i){
+    var p = perteDuReseau(s, i);
     if (p && p.total > pire) pire = p.total;
   });
   return pire;
@@ -691,18 +702,27 @@ function amenee(d){
   var tropLoin = longueur > 0 && pire > 0 && exigee > 0 && (source - perte25 < exigee);
   var suffit = !tropLoin;
   var motif = tropLoin ? 'longueur' : null;
+  // **L'outil PROPOSE, il peut refuser** — sa règle du 20 octobre 2026 : le
+  // Ø32 que l'outil propose sur l'amenée, il peut le remettre en Ø25 (et
+  // l'inverse). La perte comptée est celle du tuyau RETENU : un plan posé en
+  // Ø32 et calculé en Ø25 mettrait un réseau de trop, et l'inverse un réseau
+  // de moins qui ne se lève pas.
+  var choix = etat.diametres && etat.diametres.amenee;
+  var diametre = choix === 25 || choix === 32 ? choix : (suffit ? 25 : 32);
 
   return { longueur:longueur, debit:pire, exigee:exigee, source:source,
            perte25:perte25, perte32:perte32, suffit:suffit, motif:motif,
-           auRegard: source - (suffit ? perte25 : perte32),
-           diametre: suffit ? 25 : 32,
+           auRegard: source - (diametre === 25 ? perte25 : perte32),
+           perte: diametre === 25 ? perte25 : perte32,
+           diametre: diametre,
+           propose: suffit ? 25 : 32,
            longueurMax25: longueurMaxEn(budget, pire, t25.dInterieur),
            longueurMax32: longueurMaxEn(budget, pire, t32.dInterieur),
            // Au-delà, même le Ø32 perd trop : c'est le Ø40 ou un secteur de
            // plus, et cela se DIT plutôt que de sortir un plan qui ne tiendra pas.
            insuffisantMemeEn32: longueur > 0 && pire > 0 && exigee > 0 && (source - perte32 < exigee),
            budget: budget,
-           provisoire: (suffit ? t25 : t32).source === 'provisoire' };
+           provisoire: (diametre === 25 ? t25 : t32).source === 'provisoire' };
 }
 
 /* ══ TUYÈRE OU TURBINE : SA RÈGLE DU 17 AOÛT, ET ELLE CORRIGE UN SEUIL FAUX ══
@@ -1243,7 +1263,7 @@ function chercherUnPlan(source){
   var evaluer = function(p){
     pressionDeCalcul = p;
     var essai = decouperUneFois();
-    var arrive = source - amenee(essai).perte25 - pirePerteDeReseau(essai);
+    var arrive = source - amenee(essai).perte - pirePerteDeReseau(essai);
     var signature = essai.secteurs.length + '|' + essai.poses.map(function(x){ return x.buse ? x.buse.ref : ''; }).join(',');
     // Les portées ont été prises à `p` : à la pression qui arrive, chacune doit
     // porter au moins autant. Au-dessus de sa pression de référence, une
@@ -1336,7 +1356,7 @@ function finirLePlan(d, source, tient){
      d'amenée différentes dans le même écran, et c'est le pire des cas : on
      relit sans méfiance, on ne retombe pas sur ses pieds, et c'est toute la
      liste dont on doute. */
-  d.perteAmenee = amenee(d).perte25;
+  d.perteAmenee = amenee(d).perte;
   d.perteReseau = pirePerteDeReseau(d);
   d.pressionAuxArroseurs = source > 0 ? source - d.perteAmenee - d.perteReseau : 0;
   // **Le raffinement a-t-il eu lieu ?** L'écran doit pouvoir le dire : un plan

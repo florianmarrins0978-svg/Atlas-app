@@ -8,6 +8,16 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-20
 
+- **Le Ø25 ou le Ø32 se choisit sur le plan, et les zones lues se corrigent
+  à la main** (« la C » et « la A », ses réponses du soir ; sans batterie, à sa
+  demande). Deux cases 25 et 32, un Ø doré devant, à droite de l'amenée et de
+  chaque réseau d'arroseurs ; la phrase dessous dit ce que ça change. Sous
+  chaque réseau, « Modifier » à droite du nom de la zone : longueur, largeur,
+  place au doigt, Supprimer (deux appuis) ; « Ajouter une zone » sous les
+  réseaux. **Changement pour tous les plans** : la perte de l'amenée est
+  désormais celle du tuyau retenu, plus toujours celle du Ø25
+  (`ARCHITECTURE.md` §473).
+
 - **Une feuille photographiée couchée se lit dans le sens de son écriture.**
   Sa photo se lisait d'un quart de tour : le plan posait le parking à droite,
   alors qu'il est sous la pelouse, et les bandes de goutte-à-goutte au mauvais

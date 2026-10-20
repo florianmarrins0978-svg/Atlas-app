@@ -15,7 +15,11 @@ import type { TableDePrix } from "@/lib/arrosage/prix-de-la-liste";
 /** Ses devis fournisseurs ne sont pas encore gardés par l'application : aucun prix, jamais un prix inventé. */
 const PAS_ENCORE_DE_PRIX: TableDePrix = {};
 import { categorieDe } from "@/lib/arrosage/choix-de-pieces";
-import { departDeLOutil, departRetenu, departsPossibles, libelleDepart, phraseDuManque, type Depart, type Montage } from "@/lib/arrosage/robinet";
+import { departDeLOutil, departRetenu, departsPossibles, libelleDepart, phraseDuManque, toutEnGoutteAGoutte, type Depart, type Montage } from "@/lib/arrosage/robinet";
+import { ceQueLeTuyauChange, poserLeTuyau, type OuLeTuyau, type Releve } from "@/lib/arrosage/diametre-choisi";
+import ChoixDuTuyau from "./ChoixDuTuyau";
+import { AjouterUneZone, ModifierLaZone, cotesEcrites } from "./ZonesDuPlan";
+import { nomDeLaZone } from "@/lib/arrosage/zones-du-plan";
 import PlanDessine, { LegendeDesSymboles } from "./PlanDessine";
 import NourriceEclatee from "./NourriceEclatee";
 import PiecesDuReseau, { Chips } from "./PiecesDuReseau";
@@ -75,6 +79,10 @@ export default function LePlanDuJardin({
   const [feuille, setFeuille] = useState<{ titre: "Changer la pièce" | "Ajouter une pièce"; categorie: string; onChoix: (p: PieceChoisie) => void } | null>(null);
   const [fournisseur, setFournisseur] = useState(false);
   const [modifier, setModifier] = useState(false);
+  // Le tuyau qu'il vient de changer, et le plan d'avant : la phrase compare les deux.
+  // La zone dont il corrige les cotes, la place, ou qu'il supprime (« la A », 20 octobre 2026).
+  const [zoneOuverte, setZoneOuverte] = useState<number | null>(null);
+  const [tuyauChange, setTuyauChange] = useState<{ ou: OuLeTuyau; diametre: 25 | 32; avant: Releve } | null>(null);
 
   const { plan, dessin } = useMemo(() => calculerEtDessiner(parametres, etat.sansDessin), [parametres, etat.sansDessin]);
   const compteur = parametres.compteur === "oui";
@@ -95,6 +103,16 @@ export default function LePlanDuJardin({
   const reserves = [...plan.reserves, ...etat.reserves];
 
   const r = (f: (r: Retouches) => Retouches) => setRetouches((prev) => f(prev));
+  // **LE Ø25 OU LE Ø32, « la C »** (20 octobre 2026) : le calcul refait le plan
+  // avec le tuyau choisi, et la phrase dit ce que le jardin y a gagné.
+  const choisirLeTuyau = (ou: OuLeTuyau, d: 25 | 32) => {
+    setTuyauChange({ ou, diametre: d, avant: { reseaux: plan.secteurs.length, tetes: plan.tetes } });
+    setParametres(poserLeTuyau(parametres, ou, d));
+  };
+  const phraseDuTuyau = (ou: OuLeTuyau) =>
+    tuyauChange && tuyauChange.ou === ou ? ceQueLeTuyauChange(tuyauChange.avant, { reseaux: plan.secteurs.length, tetes: plan.tetes }, ou, tuyauChange.diametre) : null;
+  // Le goutte-à-goutte seul garde ses départs en Ø16 : là, le choix reste celui des départs.
+  const goutteSeule = toutEnGoutteAGoutte(plan);
   const poserRobinet = (patch: Partial<Robinet>) => setParametres({ ...parametres, robinet: { montage, double, depart: departChoisi, ...patch } });
   // Changer de montage change la pile : ses retouches du départ repartent de la
   // proposition, le départ revient à celui de l'outil, et la sonde n'a pas de
@@ -263,14 +281,25 @@ export default function LePlanDuJardin({
             <p className="mt-1 text-[13.5px]" style={{ color: colors.muted }}>Une sortie pour l’arrosage, l’autre reste au client.</p>
             {cochesGrillageTeflon}
             {piecesCochees(["grillage", "teflon"])}
-            {/* Le départ : l'outil choisit, il peut changer. Le Ø16 ne se propose qu'au goutte-à-goutte seul. */}
-            <Chips valeur={depart} choix={departsPossibles(plan).map((d) => [d, libelleDepart(d)] as [Depart, string])} onChoix={(d) => poserRobinet({ depart: d })} libelle="Le départ" />
-            <p className="mt-1 text-[13.5px]" style={{ color: colors.muted }} data-atlas="depart-choisi">
-              L’outil choisit le {libelleDepart(departDeLOutil(plan))}.{depart !== departDeLOutil(plan) ? " Changé à la main." : ""}
-            </p>
+            {/* Le départ : l'outil choisit, il peut changer. Le Ø16 ne se propose qu'au goutte-à-goutte seul ;
+                dès qu'il y a des arroseurs, c'est le Ø25 ou le Ø32 de « la C », à droite du titre. */}
+            {goutteSeule && (
+              <>
+                <Chips valeur={depart} choix={departsPossibles(plan).map((d) => [d, libelleDepart(d)] as [Depart, string])} onChoix={(d) => poserRobinet({ depart: d })} libelle="Le départ" />
+                <p className="mt-1 text-[13.5px]" style={{ color: colors.muted }} data-atlas="depart-choisi">
+                  L’outil choisit le {libelleDepart(departDeLOutil(plan))}.{depart !== departDeLOutil(plan) ? " Changé à la main." : ""}
+                </p>
+              </>
+            )}
           </>
         )}
-        <h2 className="mt-4" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 21, lineHeight: 1.2 }}>{titrePiquage}</h2>
+        <div className="mt-4 flex items-center gap-3">
+          <h2 className="min-w-0 flex-1" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 21, lineHeight: 1.2 }}>{titrePiquage}</h2>
+          {!goutteSeule && <ChoixDuTuyau valeur={plan.tuyau.diametre} onChoix={(d) => choisirLeTuyau("amenee", d)} libelle={`Tuyau, ${titrePiquage.toLowerCase()}`} />}
+        </div>
+        {phraseDuTuyau("amenee") && (
+          <p className="mt-1 text-[14px]" style={{ color: colors.orTexte }} data-atlas="ce-que-le-tuyau-change">{phraseDuTuyau("amenee")}</p>
+        )}
         {robinet && depart ? (
           <>
             <MontageAuRobinet postes={postes.amenee.filter((p) => !p.ajoutee)} depart={depart} nez={nez} manque={phraseDuManque(plan, montage)} onPiece={menuDeLaPiece} />
@@ -331,8 +360,30 @@ export default function LePlanDuJardin({
               <p className="flex items-center gap-2.5">
                 <span className="block h-[12px] w-[12px] flex-none rounded-[3px]" style={{ backgroundColor: plan.couleurs[i] }} />
                 <b style={{ fontFamily: font.display, fontWeight: 400, fontSize: 18, lineHeight: 1.2 }}>Réseau {i + 1}</b>
-                <span className="text-[12.5px]" style={{ color: colors.muted }}>{s.nom}</span>
+                <span className="min-w-0 flex-1 text-[12.5px]" style={{ color: colors.muted }}>{s.nom}</span>
+                {/* Le goutte-à-goutte n'a pas de perte de ligne au calcul : le Ø32 n'y changerait rien. */}
+                {s.famille !== "Goutte-à-goutte" && (
+                  <ChoixDuTuyau valeur={plan.diametres[i] ?? 25} onChoix={(d) => choisirLeTuyau(i, d)} libelle={`Tuyau du réseau ${i + 1}`} />
+                )}
               </p>
+              {phraseDuTuyau(i) && (
+                <p className="mt-1 text-[14px]" style={{ color: colors.orTexte }} data-atlas="ce-que-le-tuyau-change">{phraseDuTuyau(i)}</p>
+              )}
+              {/* **« Modifier » à droite du nom de chaque zone** — « la A ». Une zone sur
+                  deux réseaux s'ouvre sous le premier : deux boîtes pour une zone se contrediraient. */}
+              {parametres.zones.filter((z) => (plan.reseauxDeZone[String(z.id)] ?? []).includes(i)).map((z) => (
+                <div key={z.id} data-atlas="zone-du-reseau">
+                  <p className="mt-1 flex items-center gap-3 text-[14px]">
+                    <span className="min-w-0 flex-1" style={{ color: colors.inkSoft }}>{nomDeLaZone(z)}, {cotesEcrites(z)}</span>
+                    <button type="button" onClick={() => setZoneOuverte(zoneOuverte === z.id ? null : z.id)} className="min-h-[40px] bg-transparent text-[14.5px] underline" style={{ color: colors.orTexte }} data-atlas="modifier-zone">
+                      Modifier
+                    </button>
+                  </p>
+                  {zoneOuverte === z.id && (plan.reseauxDeZone[String(z.id)] ?? [])[0] === i && (
+                    <ModifierLaZone key={`${z.id}-${z.L}-${z.l}-${z.ml}`} zone={z} parametres={parametres} onParametres={setParametres} onFermer={() => setZoneOuverte(null)} />
+                  )}
+                </div>
+              ))}
               {dessin && <PlanDessine dessin={dessin} reseau={i} liaisons={pointilles} zoneGoutte={zoneGoutteDuReseau(plan, i)} piquage={piquage} />}
               {pointilles.length > 0 && (
                 <p className="mt-2 text-[13px]" style={{ color: colors.inkSoft }}>
@@ -361,13 +412,15 @@ export default function LePlanDuJardin({
                 {rd && (
                   <li className="flex gap-2.5 py-[3px]">
                     <span className="w-[58px] flex-none font-semibold tabular-nums" style={{ color: colors.orTexte }}>{virgule(rd.metresTuyau, 0)} m</span>
-                    <span>de PEHD Ø25</span>
+                    <span>de PEHD Ø{plan.diametres[i] ?? 25}</span>
                   </li>
                 )}
               </ul>
             </div>
           );
         })}
+        {/* Une zone que l'IA n'a pas lue s'ajoute ici, puis s'ouvre pour être glissée à sa place. */}
+        <AjouterUneZone parametres={parametres} onAjoutee={(p, id) => { setParametres(p); setZoneOuverte(id); }} />
         <div className="mt-3">
           <LegendeDesSymboles robinet={nez} />
         </div>

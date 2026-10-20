@@ -1,6 +1,6 @@
 import { CATALOGUE } from "./catalogue.js";
 import type { Dessin, ReseauDessine, Tete, ZoneDessinee } from "./plan-dessine";
-import { piecesDuPlan, type LigneCalcul } from "./pieces";
+import { piecesDuPlan, raccordsEn, type LigneCalcul } from "./pieces";
 import { photoDe } from "./photos";
 import { estOtee, type PieceChoisie, type Retouches } from "./retouches";
 import type { LePlan } from "./le-plan";
@@ -126,7 +126,6 @@ type Cat = {
 };
 const CAT = CATALOGUE as unknown as Cat;
 
-const TE_LIGNE = "te-taraude-25-34-25";
 const COUDE_LIGNE = "coude-taraude-25-34";
 const TE_EGAL = "te-25-25-25";
 const PEBD16 = "pebd16";
@@ -275,7 +274,9 @@ export function composerLesPostes({ plan, dessin, compteur, amenee, robinet = nu
       const tube = goutte ? CAT.gaines[0]?.detail ?? null : null;
       return { i, nom: s.nom, couleur: plan.couleurs[i], goutte: true, pe, metres, plan: null, compteDuPlan: null, chaine: null, rail, tube, ajoutees: ajoutees(`r${i}`) };
     }
-    const pe = poser(`r${i}:pe`, "pe25", "PEHD Ø25", `PEHD Ø25, ${rd.metresTuyau} m`, rd.metresTuyau, "ml");
+    // Son tuyau et ses raccords : en 32 quand il a passé ce réseau en Ø32.
+    const k = raccordsEn(plan.diametres[i] ?? 25);
+    const pe = poser(`r${i}:pe`, k.pe, k.nomPe, `${k.nomPe}, ${rd.metresTuyau} m`, rd.metresTuyau, "ml");
     const { plan: planPieces, chaine } = planDesPieces(rd, i);
     return { i, nom: s.nom, couleur: plan.couleurs[i], goutte: false, pe, metres: `${rd.metresTuyau} m`, plan: planPieces, compteDuPlan: compteDuPlan(i), chaine, rail: [], tube: null, ajoutees: ajoutees(`r${i}`) };
   });
@@ -286,6 +287,7 @@ export function composerLesPostes({ plan, dessin, compteur, amenee, robinet = nu
   }
 
   function planDesPieces(rd: ReseauDessine, i: number): { plan: PlanDesPieces; chaine: Maillon[] | null } {
+    const { te: TE_LIGNE, coude: COUDE_LIGNE, egal: TE_EGAL } = raccordsEn(plan.diametres[i] ?? 25);
     const pts = [...rd.tetes.map((q) => ({ x: q.x, y: q.y })), ...rd.jonctions];
     const x0 = Math.min(...pts.map((q) => q.x)) - 1.6, x1 = Math.max(...pts.map((q) => q.x)) + 1.6;
     const y0 = Math.min(...pts.map((q) => q.y)) - 1.6, y1 = Math.max(...pts.map((q) => q.y)) + 1.6;
@@ -364,7 +366,8 @@ export function composerLesPostes({ plan, dessin, compteur, amenee, robinet = nu
   /** « Sur ce plan : … » lit le compte du réseau, jamais un second calcul. */
   function compteDuPlan(i: number): string | null {
     const g = compte[`r${i}`] ?? {};
-    const NOMS: Record<string, string> = { [TE_LIGNE]: "té taraudé", [COUDE_LIGNE]: "coude taraudé", [TE_EGAL]: "té égal" };
+    const k = raccordsEn(plan.diametres[i] ?? 25);
+    const NOMS: Record<string, string> = { [k.te]: "té taraudé", [k.coude]: "coude taraudé", [k.egal]: "té égal" };
     // Les SBE aussi, sous chaque réseau (sa demande du 18 octobre 2026 au soir) : celui du bas en 3/4", celui du haut au filetage du corps.
     for (const c of CAT.coudes) NOMS[c.ref] = `SBE ${c.filetage}"`;
     const corps = new Set(CAT.corps.map((c) => c.ref));

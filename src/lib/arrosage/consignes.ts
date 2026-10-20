@@ -64,6 +64,8 @@ export type ZoneParametre = {
   lignesHaie?: number;
   /** Un massif en goutte-à-goutte : une seule ligne, ou deux en circuit fermé. Sans réponse, rien n'est compté. */
   sortieGoutte?: "ligne" | "boucle";
+  /** Ajoutée à la main et pas encore glissée à sa place : posée sous les autres, et le plan le dit (20 octobre 2026). */
+  aPlacer?: boolean;
 };
 
 /** Tout ce qu'il faut pour refaire le plan, sans la photo. */
@@ -106,6 +108,12 @@ export type ParametresPlan = {
    * DESSIN en dépend (d'où partent les réseaux), comme la nourrice.
    */
   robinet?: { montage: Montage; double: boolean; depart: Depart | null };
+  /**
+   * Le tuyau qu'il a choisi, sur l'amenée et réseau par réseau (son numéro,
+   * à partir de 0). Sans choix : l'amenée prend ce que l'outil propose, les
+   * réseaux le Ø25 (sa règle du 20 octobre 2026, « la C »).
+   */
+  diametres?: { amenee?: 25 | 32; reseaux?: Record<number, 25 | 32> };
 };
 
 export type LectureConsigne =
@@ -290,6 +298,22 @@ export function cotesDuPlanTiennentDebout(
           ok: false,
           raison: `${quoi} de « ${nom} » sort de ce que cet outil sait calculer (${plafond} maximum).`,
         };
+      }
+    }
+  }
+  // **Le tuyau choisi n'est que 25 ou 32**, et il vise un réseau qui peut
+  // exister : le reste viendrait d'un navigateur qui ne joue pas le jeu.
+  const d = parametres.diametres;
+  if (d !== undefined) {
+    const diametre = (x: unknown) => x === 25 || x === 32;
+    const reseaux = d?.reseaux ?? {};
+    if (typeof d !== "object" || d === null || (d.amenee !== undefined && !diametre(d.amenee)) || typeof reseaux !== "object" || reseaux === null) {
+      return { ok: false, raison: "Le tuyau choisi n’est ni du Ø25, ni du Ø32." };
+    }
+    for (const [cle, valeur] of Object.entries(reseaux)) {
+      const n = Number(cle);
+      if (!Number.isInteger(n) || n < 0 || n >= ZONES_MAX * 4 || !diametre(valeur)) {
+        return { ok: false, raison: "Le tuyau choisi n’est ni du Ø25, ni du Ø32." };
       }
     }
   }

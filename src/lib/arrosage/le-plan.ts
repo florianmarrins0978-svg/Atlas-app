@@ -3,6 +3,7 @@ import { dessinerPlan, type Dessin, type ZoneDessinee } from "./plan-dessine";
 import { piecesDuPlan, type LigneCalcul, type Piece } from "./pieces";
 import type { ParametresPlan } from "./consignes";
 import type { Montage } from "./robinet";
+import { nomDeLaZone } from "./zones-du-plan";
 
 /**
  * LE PLAN TEL QUE L'ÉCRAN LE REÇOIT — le calcul, son dessin, ses pièces, et ce
@@ -57,9 +58,19 @@ export type LePlan = {
     debit: number;
     /** Même le Ø32 perd trop : Ø40, ou un réseau de plus. */
     insuffisantMemeEn32: boolean;
-    /** Le diamètre que le calcul donne à l'amenée : Ø25 quand il tient, sinon Ø32. Au robinet, c'est le départ que l'outil propose. */
+    /** Le diamètre RETENU pour l'amenée : le sien s'il l'a choisi, sinon celui que l'outil propose. Au robinet, c'est le départ. */
     diametre: 25 | 32;
+    /** Ce que l'outil propose pour l'amenée : Ø25 quand il tient, sinon Ø32. */
+    propose: 25 | 32;
   };
+  /**
+   * Le tuyau de chaque réseau, par son numéro : Ø25, ou Ø32 quand il l'a choisi
+   * (sa règle du 20 octobre 2026). Un goutte-à-goutte reste en Ø25 : le calcul
+   * ne lui compte aucune perte de ligne, le Ø32 n'y changerait rien.
+   */
+  diametres: (25 | 32)[];
+  /** Le nombre de têtes de chaque réseau, pour dire ce qu'un changement de tuyau a changé. */
+  tetes: number[];
   /** Ce qui arrive au pied du DERNIER arroseur, en bar. */
   pressionAuxArroseurs: number;
   /** Ce que le calcul dit de lui-même : la pression, la portée, l'amenée calculée. */
@@ -76,7 +87,7 @@ type Calcule = {
   dessin: ZoneDessinee[];
   reseauxDeZone: Record<string, number[]>;
   goutteAGoutte: { sorties: number; tesEgaux: number };
-  amenee: { longueurMax25: number; longueurMax32: number; debit: number; insuffisantMemeEn32: boolean; diametre: 25 | 32 };
+  amenee: { longueurMax25: number; longueurMax32: number; debit: number; insuffisantMemeEn32: boolean; diametre: 25 | 32; propose: 25 | 32 };
   pressionAuxArroseurs: number;
   pressionTropBasse: boolean;
   pressionRaffinee: boolean;
@@ -178,6 +189,20 @@ function lePlan(plan: Calcule, dessin: Dessin | null, parametres: ParametresPlan
     );
   }
   reserves.push(...reservesDuDessin);
+  // **Ce que le Ø32 laisse au jugement** : les pièces du réseau passent en 32,
+  // mais la sortie de la vanne et le té du compteur restent celles de la
+  // nourrice et du piquage, en 25. Le passage de l'un à l'autre n'est pas
+  // relevé : il se dit, il ne s'invente pas (`CLAUDE.md` §4).
+  // **Une zone ajoutée à la main et pas encore glissée** est posée sous les
+  // autres : elle compte dans les réseaux et les arroseurs, mais son tuyau et
+  // sa tranchée sont mesurés à une place qui n'est pas la sienne.
+  for (const z of parametres.zones.filter((x) => x.aPlacer)) {
+    reserves.push(`« ${nomDeLaZone(z)} » est posée sous les autres en attendant : glissez-la à sa place, son tuyau et sa tranchée en dépendent.`);
+  }
+  const diametres = diametresDesReseaux(plan, parametres);
+  if (diametres.includes(32) || plan.amenee.diametre === 32) {
+    reserves.push("Tuyau en Ø32 : le passage du Ø25 au Ø32, à la vanne ou au piquage, n’est pas compté dans la liste.");
+  }
   // **Ce qui manque au catalogue se dit, jamais ne se comble** (16 octobre
   // 2026) : une zone sans matériel de la marque, une nourrice sans fiche.
   reserves.push(...plan.manquants);
@@ -192,6 +217,8 @@ function lePlan(plan: Calcule, dessin: Dessin | null, parametres: ParametresPlan
       seuil25: plan.amenee.longueurMax25,
       amenee: parametres.amenee > 0 ? parametres.amenee : null,
       goutte: plan.goutteAGoutte,
+      diametres,
+      diametreAmenee: plan.amenee.diametre,
     }),
     materiel: plan.materiel,
     dessinDuCalcul: plan.dessin,
@@ -203,8 +230,17 @@ function lePlan(plan: Calcule, dessin: Dessin | null, parametres: ParametresPlan
       debit: plan.amenee.debit,
       insuffisantMemeEn32: plan.amenee.insuffisantMemeEn32,
       diametre: plan.amenee.diametre,
+      propose: plan.amenee.propose,
     },
+    diametres,
+    tetes: plan.secteurs.map((s) => (s as { points?: unknown[] }).points?.length ?? 0),
     pressionAuxArroseurs: plan.pressionAuxArroseurs,
     reserves,
   };
+}
+
+/** Le tuyau de chaque réseau : le Ø32 seulement là où il l'a choisi, et sur un réseau qui a des têtes. */
+function diametresDesReseaux(plan: Calcule, parametres: ParametresPlan): (25 | 32)[] {
+  const choix = parametres.diametres?.reseaux ?? {};
+  return plan.secteurs.map((s, i) => (choix[i] === 32 && s.famille !== "Goutte-à-goutte" ? 32 : 25));
 }

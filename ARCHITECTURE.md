@@ -35270,3 +35270,46 @@ tout le monde, qu'on ait une continuité dans l'application »* : le montant en 
 pastille verte (`plein`). Posé sur l'écran du plan (`ListeDesPieces.tsx`), sur
 les planches du plan, du robinet et des prix fournisseurs (et son modèle dans
 `docs/arrosage-releve-photos/`). Tout total indicatif à venir prend cette forme.
+
+## §473 : Le Ø25 ou le Ø32 se choisit, et les zones lues se corrigent, par les paramètres
+
+**Ses réponses du 20 octobre 2026**, devant deux planches : « la C »
+(`appli/arrosage-choix-du-diametre.html`) et « la A »
+(`appli/arrosage-cotes-des-zones.html`). Codées le soir même, sans batterie à
+sa demande.
+
+**Le tuyau choisi voyage dans les paramètres** (`diametres`, `consignes.ts`),
+comme toute consigne : le calcul refait le plan, l'écran ne retouche rien.
+`calcul.js` (et sa copie publiée) compte la perte de chaque réseau avec SON
+tuyau (`tuyauDuReseau`, par numéro), et celle de l'amenée avec le tuyau
+RETENU, le sien ou celui que l'outil propose.
+
+**Ce que cela change pour tous les plans, et ce n'est pas un détail.** Avant
+ce lot, le calcul proposait le Ø32 sur une amenée trop longue mais comptait sa
+perte en Ø25 : la liste disait Ø32, la pression était celle d'un Ø25. Le plan
+était plus prudent que ce qu'il annonçait, d'un réseau parfois. Désormais la
+perte comptée est celle du tuyau retenu, et refuser le Ø32 proposé remet la
+perte du Ø25 (un réseau de plus sur son exemple de 60 m).
+`test-diametre-choisi.ts` le tient.
+
+**Le goutte-à-goutte n'a pas d'interrupteur** : le calcul ne lui compte aucune
+perte de ligne, le Ø32 n'y changerait rien. Les pièces en 32
+(`raccordsEn`, `pieces.ts`) servent la liste et l'écran par la même table ;
+`test-arrosage-postes.ts` vérifie qu'elles se comptent pareil des deux côtés.
+Le passage du Ø25 au Ø32 à la vanne ou au piquage n'est pas relevé : la
+réserve le dit, rien n'est inventé.
+
+**La phrase « En Ø32 : … » compare le plan d'avant au plan d'après**
+(`ceQueLeTuyauChange`, `diametre-choisi.ts`) : aucun second calcul, elle lit
+ce que le même calcul a rendu. Elle dit aussi le jardin entier quand le tuyau
+a fait changer de buse (20 × 12 à 3 bar : 12 têtes sur deux réseaux en Ø25,
+6 têtes plus puissantes sur un seul en Ø32).
+
+**Les zones se corrigent par quatre règles pures** (`zones-du-plan.ts`) :
+modifier, supprimer (jamais la dernière), ajouter, glisser avec l'aimant de
+50 cm du dessin du plan (`AIMANT_M`). Chacune repasse par
+`cotesDuPlanTiennentDebout`. Une zone ajoutée se pose SOUS les autres, marquée
+`aPlacer`, et le plan le dit tant qu'il ne l'a pas glissée : une place
+devinée en silence ferait commander un tuyau mesuré sur un terrain qui
+n'existe pas.
+

@@ -744,6 +744,12 @@ var CATALOGUE = {
     // commande sur la désignation. Le 25×25×25 dit déjà qu'il n'est pas taraudé
     // — un taraudé porte son filetage dans son nom (25×3/4"×25).
     'te-25-25-25':         { nom:'Té 90° 25×25×25', marque:'Plasson', aquaplus:'OPL704025' },
+    // **Les mêmes en 32, pour un réseau qu'il passe en Ø32** (sa règle du
+    // 20 octobre 2026). Références lues dans Aqua Plus 2026, p. 30 à 33, et
+    // déjà au relevé (`piecesAjoutables`) : *« je me souviens les avoir validées »*.
+    'te-taraude-32-34-32': { nom:'Té 90° taraudé 32×3/4"×32', marque:'Plasson', aquaplus:'OPL71403220' },
+    'coude-taraude-32-34': { nom:'Coude 90° taraudé 32×3/4"', marque:'Plasson', aquaplus:'OPL71503220' },
+    'te-32-32-32':         { nom:'Té 90° 32×32×32', marque:'Plasson', aquaplus:'OPL704032' },
     'pebd16':              { nom:'PEBD rigide Ø16 (tube de reprise)', marque:'Dura', unite:'ml' },
     // **Le grillage avertisseur bleu**, au-dessus des tuyaux enterrés : sa demande
     // du 18 octobre 2026, une case à cocher. Le nom et le rouleau de 100 m sont

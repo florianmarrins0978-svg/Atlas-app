@@ -192,6 +192,13 @@ console.log("\n=== Ce que la discussion peut changer ===\n");
     !cotesDuPlanTiennentDebout({ ...socle } as unknown as ParametresPlan).ok,
     "un plan sans zones est refusé, pas parcouru"
   );
+  // **Le tuyau choisi (20 octobre 2026) vient du navigateur, comme les cotes.**
+  const avec = (diametres: unknown) => ({ ...plan([{ id: 1, type: "gazon", L: 16, l: 13 }]), diametres }) as unknown as ParametresPlan;
+  dire(cotesDuPlanTiennentDebout(avec({ amenee: 32, reseaux: { 0: 32, 1: 25 } })).ok, "un Ø32 choisi sur l'amenée et un réseau passe");
+  dire(!cotesDuPlanTiennentDebout(avec({ amenee: 40 })).ok, "un Ø40 sur l'amenée est refusé : il n'est pas au choix");
+  dire(!cotesDuPlanTiennentDebout(avec({ reseaux: { 0: "32" } })).ok, "un diamètre en texte est refusé");
+  dire(!cotesDuPlanTiennentDebout(avec({ reseaux: { "-1": 32 } })).ok, "un réseau de numéro négatif est refusé");
+  dire(!cotesDuPlanTiennentDebout(avec({ reseaux: { 1000000: 32 } })).ok, "un réseau d'un numéro démesuré est refusé");
 }
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Les consignes de la discussion — ${echecs} échec(s).`);
