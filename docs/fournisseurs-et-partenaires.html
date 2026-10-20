@@ -116,6 +116,11 @@
 <td>fait, et l'outil de l'assistant aussi</td>
 <td><code>proposition-prix.ts</code>, <code>rechercher-tarifs-compatibles.ts</code></td>
 </tr>
+<tr>
+<td>L'adresse mail du fournisseur sur sa fiche, son début et sa fin de message gardés (20 octobre)</td>
+<td>fait, l'adresse refusée en base si elle n'en est pas une</td>
+<td><code>drizzle/0133_adresse_et_message_du_fournisseur.sql</code>, <code>reglerContactAction</code></td>
+</tr>
 </tbody></table></div>
 <h2 id="ce-qui-a-été-fait-autrement-et-pourquoi">Ce qui a été fait autrement, et pourquoi</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -134,12 +139,12 @@
 <th>Résultat</th>
 </tr></thead><tbody>
 <tr>
-<td><code>test-fournisseurs-partenaires-rls</code> (isolation, clé croisée refusée, × 3 refusé en base, sauvegarde)</td>
-<td>9 sur 9</td>
+<td><code>test-fournisseurs-partenaires-rls</code> (isolation, clé croisée refusée, × 3 refusé en base, adresse et message gardés chez lui seul, sauvegarde)</td>
+<td>10 sur 10</td>
 </tr>
 <tr>
-<td><code>test-prix-achat</code> (ses chiffres : 8 € × 3 × 1,30 = 31,20 €, vente 12 € d'abord)</td>
-<td>13 sur 13</td>
+<td><code>test-prix-achat</code> (ses chiffres : 8 € × 3 × 1,30 = 31,20 €, vente 12 € d'abord, adresse et message lus)</td>
+<td>15 sur 15</td>
 </tr>
 <tr>
 <td><code>test-devis-fournisseur-lu</code></td>

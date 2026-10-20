@@ -23,6 +23,10 @@ enregistré**. `ARCHITECTURE.md` §473 dit les décisions.
 sur ce poste). Le dépôt, lui, a été joué au navigateur : la photo est rangée,
 nommée, listée, et l'écran dit « Devis gardé. Atlas n'a pas pu en lire les prix ».
 
+**Le 20 octobre** : `0133` ajoute `email`, `debut_mail`, `fin_mail` à
+`societes_achat`. L'adresse se règle sur la fiche (Réglages) ; le début et la
+fin, depuis le plan d'arrosage (lot B), tous deux par `reglerContactAction`.
+
 **Pour le lot B (arrosage)** : `enregistrerDemande` (dépôt) attend son premier
 appelant, le message au fournisseur du plan ; `lireDevisFournisseur` sert aussi
 à importer un devis sur le plan.

@@ -54,6 +54,26 @@ export function lireMarge(brut: string): { ok: true; marge: string | null } | { 
   return { ok: true, marge: new Decimal(n).toFixed(2) };
 }
 
+/**
+ * L'adresse mail d'un fournisseur, tapée sur sa fiche. Vide : pas d'adresse, et
+ * le mail s'ouvrira sans destinataire. La base refuse la même chose (0133).
+ */
+export function lireAdresseMail(brut: string): { ok: true; email: string | null } | { ok: false; raison: string } {
+  const email = brut.trim();
+  if (email === "") return { ok: true, email: null };
+  if (email.length > 200 || /\s/.test(email) || !/^[^@]+@[^@]+$/.test(email)) return { ok: false, raison: "Tapez une adresse comme commande@fournisseur.fr." };
+  return { ok: true, email };
+}
+
+/** Le plus long début ou fin de message gardé (0133). */
+export const MORCEAU_DE_MESSAGE_MAX = 2000;
+
+/** Le début ou la fin de SON message à un fournisseur. Vide : celui d'office reprend. */
+export function lireMorceauDeMessage(brut: string): string | null {
+  const t = brut.replace(/\r\n?/g, "\n").trim().slice(0, MORCEAU_DE_MESSAGE_MAX);
+  return t === "" ? null : t;
+}
+
 /** Un prix hors taxes tapé, ou `null` s'il ne se lit pas. */
 export function lirePrixHt(brut: string): string | null {
   const n = nombreLu(brut);

@@ -6,6 +6,18 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-20
+
+- **L'adresse mail et le message de chaque fournisseur se gardent sur sa
+  fiche** (migration `0133_adresse_et_message_du_fournisseur.sql`, trois
+  colonnes vides d'office sur `societes_achat`, expand seul). L'adresse se tape
+  dans Réglages, sur la fiche ; le début et la fin du message se tapent sous la
+  liste du plan d'arrosage, une fois par fournisseur (sa planche du 20 octobre,
+  `appli/arrosage-prix-par-fournisseur.html`). La base refuse une adresse qui
+  n'en est pas une. Règles `lireAdresseMail`, `lireMorceauDeMessage`
+  (`prix-achat.ts`), geste `reglerContactAction`. Suites :
+  `test-prix-achat` (15), `test-fournisseurs-partenaires-rls` (10).
+
 ## 2026-10-19
 
 - **Le plan dessiné au doigt fait dans l'application tout ce que sa planche B

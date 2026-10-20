@@ -17,6 +17,7 @@ import {
   dateesAMontrer,
   ligneDeMarge,
   lignesAMontrer,
+  lireAdresseMail,
   lireMarge,
   phraseDeLaMargePropre,
   resumeDeLaSociete,
@@ -30,6 +31,7 @@ import {
   creerSocieteAction,
   deposerDevisRecuAction,
   reglerMargeGeneraleAction,
+  reglerContactAction,
   reglerMargeSocieteAction,
   retirerPrixAction,
 } from "./actions";
@@ -38,6 +40,7 @@ export type SocieteVue = {
   id: string;
   nom: string;
   marge: string | null;
+  email: string | null;
   prix: { id: string; nom: string; unite: string; prixHt: string; source: string }[];
   devis: { id: string; nom: string; jour: string; recuLe: string; nature: "photo" | "pdf"; fichierNom: string | null }[];
   demandes: { id: string; nom: string; jour: string; envoyeeLe: string; lignes: number }[];
@@ -358,6 +361,8 @@ function Fiche({
   const [periode, setPeriode] = useState(mois);
   const [margeTapee, setMargeTapee] = useState(virgule(societe.marge));
   const [alerteMarge, setAlerteMarge] = useState<string | null>(null);
+  const [adresse, setAdresse] = useState(societe.email ?? "");
+  const [alerteAdresse, setAlerteAdresse] = useState<string | null>(null);
   const [refus, setRefus] = useState<string | null>(null);
   const [article, setArticle] = useState({ nom: "", unite: UNITES_ACHAT[rubrique][0], prix: "" });
   const [nomDevis, setNomDevis] = useState("");
@@ -385,6 +390,21 @@ function Fiche({
     demarrer(async () => {
       const r = await reglerMargeSocieteAction(societe.id, margeTapee);
       if (!r.ok) setAlerteMarge(r.raison);
+      else router.refresh();
+    });
+  };
+
+  const enregistrerAdresse = () => {
+    const l = lireAdresseMail(adresse);
+    if (!l.ok) {
+      setAlerteAdresse(l.raison);
+      return;
+    }
+    setAlerteAdresse(null);
+    if (l.email === societe.email) return;
+    demarrer(async () => {
+      const r = await reglerContactAction(societe.id, { email: adresse });
+      if (!r.ok) setAlerteAdresse(r.raison);
       else router.refresh();
     });
   };
@@ -526,6 +546,33 @@ function Fiche({
             style={{ backgroundColor: colors.cream, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
           />
         </label>
+
+        {/* Où part sa liste du plan d'arrosage : sa planche du 20 octobre 2026. */}
+        {rubrique === "fournisseur" && (
+          <label className="mt-[8px] flex flex-col gap-[6px] rounded-[12px] px-[14px] py-[12px] text-[15px]" style={{ backgroundColor: colors.card }}>
+            <span>
+              Adresse mail
+              {alerteAdresse && (
+                <small className="mt-[2px] block text-[13px]" style={{ color: colors.alert }} data-atlas="refus-adresse">
+                  {alerteAdresse}
+                </small>
+              )}
+            </span>
+            <input
+              type="email"
+              inputMode="email"
+              autoComplete="off"
+              value={adresse}
+              onChange={(e) => setAdresse(e.target.value)}
+              onBlur={enregistrerAdresse}
+              placeholder="commande@…"
+              aria-label={`Adresse mail de ${societe.nom}`}
+              data-atlas="adresse-mail"
+              className="w-full rounded-[9px] border-0 p-[10px] text-[16px]"
+              style={{ backgroundColor: colors.cream, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+            />
+          </label>
+        )}
 
         {partie === "prix" && (
           <>
