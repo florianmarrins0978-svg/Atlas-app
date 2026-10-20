@@ -5,7 +5,8 @@ import { pool } from "../src/server/db/client";
 import { withEntreprise } from "../src/server/db/with-entreprise";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import * as chantiersRepo from "../src/server/repositories/chantiers";
-import { propositionsPourDemiJournee, situerQuelquesChantiers } from "../src/server/planning/appariement";
+import { propositionsPourDemiJournee, situerLeChantier, situerQuelquesChantiers } from "../src/server/planning/appariement";
+import { contexteDuChantier } from "../src/server/repositories/fiches-securite";
 import { nettoyerBase } from "./_test-db";
 
 // **L'appariement de deux demi-journées, éprouvé sur la vraie base.**
@@ -334,6 +335,23 @@ async function main() {
     await situerQuelquesChantiers(A);
     const c = await chantiersRepo.lireChantierSitue(A, neuf.id);
     assert.ok(c && c.latitude !== null, "Le chantier n'a pas été rattrapé une fois le réseau revenu.");
+  });
+
+  await test("la fiche de sécurité situe SON chantier, même s'il n'est jamais passé par l'appariement", async () => {
+    // **Sa capture du 20 octobre 2026 :** l'adresse du chantier écrite en
+    // haut de la fiche, et aucune carte dessous. Seul l'appariement situait
+    // les chantiers ; un chantier jamais proposé pour une demi-journée
+    // restait sans position, et la carte n'avait rien sur quoi s'ouvrir.
+    const seul = await chantiersRepo.creerChantier(A, {
+      nom: "Fiche sans carte",
+      adresseChantier: "Place de la Mairie, 69510 Soucieu-en-Jarrest",
+    });
+    assert.equal((await contexteDuChantier(A, seul.id))?.position, null);
+    await situerLeChantier(B, seul.id, "Place de la Mairie, 69630 Chaponost");
+    assert.equal((await contexteDuChantier(A, seul.id))?.position, null, "B a posé des coordonnées sur le chantier de A");
+    assert.equal(await situerLeChantier(A, seul.id, "Place de la Mairie, 69510 Soucieu-en-Jarrest"), true);
+    const position = (await contexteDuChantier(A, seul.id))?.position;
+    assert.ok(position && Math.abs(position.lat - 45.6667) < 0.001, `position à l'ouverture de la fiche : ${JSON.stringify(position)}`);
   });
 
   await test("un chantier de départ sans adresse situable le DIT, avec de quoi corriger", async () => {

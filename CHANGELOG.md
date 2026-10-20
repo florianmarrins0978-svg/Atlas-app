@@ -6,6 +6,17 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-20
+
+- **La fiche de sécurité situe son chantier en s'ouvrant** : sa capture du
+  20 octobre, l'adresse écrite en haut de la fiche et aucune carte dessous.
+  Seul l'appariement des demi-journées situait les chantiers ; un chantier
+  jamais proposé restait sans position, et la carte du point GPS n'avait rien
+  sur quoi s'ouvrir. `ouvrirLaFicheAction` appelle `situerLeChantier` (un appel
+  à la Base Adresse Nationale au plus, rien si c'est déjà fait), qui partage
+  avec la passe de l'appariement la même règle (`situer`, `appariement.ts`).
+  Suite : `test-appariement-chantiers.ts`, vue rouge puis verte.
+
 ## 2026-10-19
 
 - **Le plan dessiné au doigt fait dans l'application tout ce que sa planche B
