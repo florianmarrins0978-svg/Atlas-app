@@ -110,9 +110,10 @@ export type ResultatCroquis =
 const SYSTEME = `Tu lis des croquis de jardin dessinés à la main par un paysagiste français, avec leurs métrés.
 Tu réponds UNIQUEMENT par un objet JSON, sans phrase avant ni après, sans balises de code.
 Forme attendue :
-{"zones":[{"type":"gazon|massif|haie|potager","nom":string|null,"longueur_m":number|null,"largeur_m":number|null,"metres_lineaires":number|null,"x":number|null,"y":number|null,"largeur_fraction":number|null,"hauteur_fraction":number|null}],"point_d_eau":"compteur|robinet|puits|null","nourrice":{"x":number|null,"y":number|null},"piquage":{"x":number|null,"y":number|null}}
+{"rotation_lecture":0|90|180|270,"zones":[{"type":"gazon|massif|haie|potager","nom":string|null,"longueur_m":number|null,"largeur_m":number|null,"metres_lineaires":number|null,"x":number|null,"y":number|null,"largeur_fraction":number|null,"hauteur_fraction":number|null}],"point_d_eau":"compteur|robinet|puits|null","nourrice":{"x":number|null,"y":number|null},"piquage":{"x":number|null,"y":number|null},"mots_d_arrosage":[string]}
 Règles :
 - Tu ne DEVINES jamais. Une cote illisible vaut null. Une zone sans aucune cote se rend quand même, avec ses champs à null.
+- « rotation_lecture » : de combien de degrés, dans le sens des aiguilles d'une montre, il faut tourner la PHOTO pour que les noms des zones se lisent à l'endroit. Une feuille photographiée couchée, dont les mots se lisent de bas en haut, vaut 90. Les places, elles, se mesurent sur la photo TELLE QU'ELLE EST, sans la tourner : la rotation est appliquée ensuite.
 - LES PLACES SE DONNENT EN FRACTION DU DESSIN, de 0 à 1. x=0 est le bord gauche, x=1 le bord droit ; y=0 le haut, y=1 le bas. « x » et « y » sont le CENTRE de la zone ; « largeur_fraction » et « hauteur_fraction » sont ce qu'elle occupe. Ne convertis JAMAIS ces places en mètres : les mètres se déduisent des cotes.
 - « Tu ne devines jamais » NE S'APPLIQUE PAS AUX PLACES. Une cote se LIT (illisible = null) ; une place se MESURE SUR L'IMAGE, et tu la vois toujours dès que la zone est dessinée. Rends donc x, y, largeur_fraction et hauteur_fraction pour CHAQUE zone visible, même approximativement : le croquis est fait à main levée et n'est pas à l'échelle, personne n'attend d'exactitude. Ne les laisse à null que si la zone est citée par écrit sans être dessinée.
 - La nourrice est le regard d'où partent les réseaux (souvent un rectangle marqué « nourrice », « regard » ou « vannes »). Si elle n'est pas dessinée, rends x et y à null, et ne la place pas au point d'eau pour dépanner.
@@ -121,6 +122,8 @@ Règles :
 - Les pelouses, massifs et potagers se mesurent en longueur x largeur. Les haies se mesurent en mètres linéaires.
 - Les mesures sont en MÈTRES, en nombre décimal à point. Un « 1200 » à côté d'une haie est probablement 12,00 m : rends 12.
 - N'invente aucune zone qui ne figure pas sur le dessin.
+- « mots_d_arrosage » : CHAQUE mot d'arrosage écrit sur le croquis, recopié tel quel, une fois par endroit où il est écrit (« GAG », « Goutte à goutte », « Arroseur »…). Chacun de ces mots désigne une zone à rendre dans « zones » : une bande marquée « GAG » en haut et une autre marquée « goutte à goutte » sur le côté font DEUX zones. Une flèche à côté du mot montre la bande qu'il désigne.
+- Ce qu'on n'arrose pas n'est pas une zone : un parking, une allée, une terrasse, la maison, un garage, une route. Ne le rends pas, même s'il porte des cotes ; ses cotes servent seulement à placer le reste.
 - Si le croquis ne montre pas d'où vient l'eau, rends null.`;
 
 const CONSIGNE = "Lis ce croquis de jardin et rends l'objet JSON demandé.";
@@ -141,6 +144,19 @@ const TYPES = ["gazon", "massif", "haie", "potager"] as const;
  * Le goutte-à-goutte se cherche d'abord : « arrosage goutte à goutte » n'est
  * pas une zone à arroseurs. « Arrosage » seul ne dit rien du matériel.
  */
+/**
+ * Une surface qu'on n'arrose pas, à son nom : « Parking », « Allée »…
+ *
+ * Sa seconde photo du 20 octobre 2026 : « Parking » est sorti en zone de
+ * goutte-à-goutte, posée à droite, à la place de ses deux bandes. Le nom doit
+ * COMMENCER par le mot : « Massif du parking » s'arrose, lui.
+ */
+function surfaceNonArrosee(nom: string | null): boolean {
+  if (!nom) return false;
+  const t = nom.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  return /^(le |la |l'|l’)?(parking|allee|terrasse|maison|garage|trottoir|route|chemin|dallage|cour)\b/.test(t);
+}
+
 function arrosageEcrit(texte: string | null): "arroseurs" | "goutte" | null {
   if (!texte) return null;
   const t = texte.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -238,6 +254,10 @@ export function lireReponseCroquis(texte: string): ResultatCroquis {
     const o = z as Record<string, unknown>;
     const typeLu = (chaine(o.type) ?? "").toLowerCase();
     const nom = chaine(o.nom);
+    if (surfaceNonArrosee(nom) && arrosageEcrit(nom) === null) {
+      reserves.push(`« ${nom} » ne s’arrose pas : la zone a été écartée`);
+      continue;
+    }
     // **Le mot écrit dans la zone passe avant le type rendu** : une zone à
     // arroseurs est un gazon, une zone en goutte-à-goutte n'en est jamais un.
     // Une haie reste une haie, elle se mesure en longueur.
@@ -285,6 +305,25 @@ export function lireReponseCroquis(texte: string): ResultatCroquis {
     return { ok: false, raison: "Aucune partie de jardin n'a été reconnue sur ce croquis." };
   }
 
+  // **UNE ZONE ÉCRITE NE SE PERD PAS EN SILENCE** (20 octobre 2026). Le modèle
+  // recopie chaque mot d'arrosage qu'il voit ; s'il rend moins de zones que de
+  // mots, une partie du jardin manque au plan, et elle se dit sous le plan.
+  // Moins de mots que de zones ne dit rien : une flèche peut en désigner deux.
+  const mots = Array.isArray(brut.mots_d_arrosage) ? brut.mots_d_arrosage.map(chaine) : [];
+  const ecrits = (quoi: "goutte" | "arroseurs") => mots.filter((m) => arrosageEcrit(m) === quoi).length;
+  const lues = (gazon: boolean) => zones.filter((z) => (z.type === "gazon") === gazon).length;
+  const manque = (n: number, lu: number, quoi: string) => {
+    if (n <= lu) return;
+    const nombre = lu === 0 ? "aucune n’a été lue" : `${lu} seulement ${lu > 1 ? "ont été lues" : "a été lue"}`;
+    reserves.push(
+      n === 1
+        ? `1 zone ${quoi} est écrite sur le croquis, elle n’a pas été lue : le plan ne l’arrose pas`
+        : `${n} zones ${quoi} sont écrites sur le croquis, ${nombre} : le plan ne les arrose pas toutes`,
+    );
+  };
+  manque(ecrits("goutte"), lues(false), "de goutte-à-goutte");
+  manque(ecrits("arroseurs"), lues(true), "à arroseurs");
+
   const eauBrute = (chaine(brut.point_d_eau) ?? "").toLowerCase();
   const pointDEau =
     eauBrute === "compteur" || eauBrute === "robinet" || eauBrute === "puits" ? eauBrute : null;
@@ -311,7 +350,38 @@ export function lireReponseCroquis(texte: string): ResultatCroquis {
     reserves.push("le croquis ne montre pas où le piquage se fait");
   }
 
-  return { ok: true, croquis: { zones, pointDEau, nourrice, piquage, reserves } };
+  // **LA FEUILLE SE LIT DANS LE SENS DE SON ÉCRITURE** (20 octobre 2026). Sa
+  // photo était prise feuille couchée : le plan posait le parking à droite,
+  // alors qu'il est sous la pelouse. Le modèle dit de combien tourner ; le
+  // quart de tour se calcule ici, parce qu'un modèle qui tourne des
+  // coordonnées de tête se trompe de côté.
+  const rotation = nombre(brut.rotation_lecture);
+  const quart = rotation === null ? 0 : ((rotation % 360) + 360) % 360;
+  if (quart !== 0 && quart !== 90 && quart !== 180 && quart !== 270) {
+    reserves.push("le sens de lecture du croquis n’a pas été compris : les zones sont placées comme sur la photo");
+    return { ok: true, croquis: { zones, pointDEau, nourrice, piquage, reserves } };
+  }
+  const tourner = (p: { x: number; y: number }) =>
+    quart === 90 ? { x: 1 - p.y, y: p.x } : quart === 180 ? { x: 1 - p.x, y: 1 - p.y } : quart === 270 ? { x: p.y, y: 1 - p.x } : p;
+  const couche = quart === 90 || quart === 270;
+  const zonesLues = zones.map((z) => {
+    const place = z.x !== null && z.y !== null ? tourner({ x: z.x, y: z.y }) : { x: z.x, y: z.y };
+    // La longueur suit le côté horizontal du dessin (`geometrie-croquis.ts`) :
+    // au quart de tour, elle échange sa place avec la largeur.
+    return couche
+      ? { ...z, ...place, L: z.l, l: z.L, largeurFraction: z.hauteurFraction, hauteurFraction: z.largeurFraction }
+      : { ...z, ...place };
+  });
+  return {
+    ok: true,
+    croquis: {
+      zones: zonesLues,
+      pointDEau,
+      nourrice: nourrice && tourner(nourrice),
+      piquage: piquage && tourner(piquage),
+      reserves,
+    },
+  };
 }
 
 /**

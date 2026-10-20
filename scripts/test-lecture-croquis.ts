@@ -255,6 +255,99 @@ dire(
   );
 }
 
+// ── 7 ter. CE QUI NE S'ARROSE PAS N'EST PAS UNE ZONE, ET UNE ZONE ÉCRITE NE ─
+// SE PERD PAS EN SILENCE
+//
+// Sa seconde photo du même croquis, le 20 octobre 2026 : les arroseurs sont
+// lus, mais une seule zone de goutte-à-goutte, nommée « Parking », posée à
+// droite. Ses deux bandes (« GAG » en haut, « Goutte à goutte » à gauche) ont
+// disparu, et rien ne l'a dit.
+{
+  const relu = lireReponseCroquis(
+    JSON.stringify({
+      zones: [
+        { type: "gazon", nom: "Arroseurs", longueur_m: 12, largeur_m: 10 },
+        { type: "massif", nom: "Parking", longueur_m: 8, largeur_m: 2.6 },
+      ],
+      mots_d_arrosage: ["GAG", "Goutte à goutte", "Arroseur"],
+      point_d_eau: "compteur",
+      nourrice: { x: 0.1, y: 0.9 },
+      piquage: { x: 0.05, y: 0.95 },
+    })
+  );
+  dire(
+    relu.ok && relu.croquis.zones.every((z) => z.nom !== "Parking"),
+    "une zone « Parking » ne reçoit pas d'arrosage : elle est écartée",
+  );
+  dire(
+    relu.ok && relu.croquis.reserves.some((x) => /Parking/.test(x)),
+    "et la réserve dit qu'elle a été écartée",
+  );
+  dire(
+    relu.ok && relu.croquis.reserves.some((x) => /2 zones de goutte-à-goutte/.test(x) && /aucune/.test(x)),
+    `deux goutte-à-goutte écrits et aucun lu : la réserve le dit (${relu.ok ? relu.croquis.reserves.join(" | ") : ""})`,
+  );
+  const complet = lireReponseCroquis(
+    JSON.stringify({
+      zones: [
+        { type: "gazon", nom: "Arroseur", longueur_m: 12, largeur_m: 10 },
+        { type: "massif", nom: "GAG", longueur_m: 12, largeur_m: 1 },
+        { type: "haie", nom: "Goutte à goutte", metres_lineaires: 6 },
+      ],
+      mots_d_arrosage: ["GAG", "Goutte à goutte", "Arroseur"],
+      point_d_eau: "compteur",
+      nourrice: { x: 0.1, y: 0.9 },
+      piquage: { x: 0.05, y: 0.95 },
+    })
+  );
+  dire(
+    complet.ok && !complet.croquis.reserves.some((x) => /écrites? sur le croquis/.test(x)),
+    "quand chaque mot écrit a sa zone, aucune réserve ne parle à tort",
+  );
+}
+
+// ── 7 quater. LA FEUILLE SE LIT DANS LE SENS DE SON ÉCRITURE ────────────────
+//
+// Sa photo du 20 octobre 2026 est prise feuille couchée : ses mots se lisent
+// de bas en haut. « Parking est sous le carré et pas à droite, et les massifs
+// sont à droite le long et en haut. » Le modèle dit de combien tourner la
+// photo pour lire ; la rotation des places se fait ici, par un calcul, jamais
+// de tête par le modèle.
+{
+  const couche = lireReponseCroquis(
+    JSON.stringify({
+      rotation_lecture: 90,
+      zones: [
+        { type: "gazon", nom: "Arroseur", longueur_m: 12, largeur_m: 10, x: 0.5, y: 0.6, largeur_fraction: 0.4, hauteur_fraction: 0.6 },
+        { type: "haie", nom: "Goutte à goutte", metres_lineaires: 6, x: 0.1, y: 0.5, largeur_fraction: 0.05, hauteur_fraction: 0.6 },
+        { type: "massif", nom: "GAG", longueur_m: 12, largeur_m: 1, x: 0.5, y: 0.1, largeur_fraction: 0.5, hauteur_fraction: 0.05 },
+      ],
+      point_d_eau: "compteur",
+      nourrice: { x: 0.9, y: 0.1 },
+      piquage: { x: 0.9, y: 0.1 },
+    })
+  );
+  const [arroseur, goutte, gag] = couche.ok ? couche.croquis.zones : [];
+  dire(goutte !== undefined && goutte.y !== null && goutte.y < 0.2, `la bande de gauche sur la photo passe en haut (y lu : ${goutte?.y})`);
+  dire(gag !== undefined && gag.x !== null && gag.x > 0.8, `la bande du haut sur la photo passe à droite (x lu : ${gag?.x})`);
+  dire(
+    arroseur !== undefined && arroseur.largeurFraction === 0.6 && arroseur.hauteurFraction === 0.4,
+    "la largeur et la hauteur dessinées s'échangent avec le quart de tour",
+  );
+  dire(arroseur !== undefined && arroseur.L === 10 && arroseur.l === 12, "et les cotes les suivent : la longueur reste le côté horizontal");
+  dire(
+    couche.ok && couche.croquis.nourrice !== null && Math.abs(couche.croquis.nourrice.x - 0.9) < 1e-9 && Math.abs(couche.croquis.nourrice.y - 0.9) < 1e-9,
+    "la nourrice tourne avec le reste",
+  );
+  const droit = lireReponseCroquis(JSON.stringify({ ...JSON.parse(JUSTE), rotation_lecture: 0 }));
+  dire(droit.ok && droit.croquis.zones[0].x === 0.35 && droit.croquis.zones[0].L === 16, "une feuille droite ne bouge pas");
+  const inconnue = lireReponseCroquis(JSON.stringify({ ...JSON.parse(JUSTE), rotation_lecture: 45 }));
+  dire(
+    inconnue.ok && inconnue.croquis.zones[0].x === 0.35 && inconnue.croquis.reserves.some((x) => /sens/.test(x)),
+    "une rotation qui n'est pas un quart de tour ne s'applique pas, et la réserve le dit",
+  );
+}
+
 // ── 8. Ce qui doit être refusé net ──────────────────────────────────────────
 dire(!lireReponseCroquis("Je ne vois pas de croquis sur cette photo.").ok, "une réponse sans objet est refusée");
 dire(!lireReponseCroquis("{ zones: [").ok, "un objet mal formé est refusé");
