@@ -303,8 +303,8 @@ pas, il rajoute un réseau »*. Sur chaque réseau et sur l'amenée, il choisit
 Ø25 ou Ø32 et voit ce que ça change (un arroseur de plus par réseau, un réseau
 de moins) ; et un Ø32 que l'outil propose sur l'amenée, il peut le refuser. **La forme, « la C »**
 (même soir, `appli/arrosage-choix-du-diametre.html`) : deux petites cases 25 et
-32 à droite du nom du réseau, un Ø doré devant (le doré des chiffres du plan,
-`orTexte`), la case choisie en noir, ce que ça change écrit dessous.
+32 à droite du nom du réseau, un Ø doré devant (le doré du surtitre « Le
+piquage, au compteur », `or` ; *« celui que tu m'as mis est trop foncé »*), la case choisie en noir, ce que ça change écrit dessous.
 
 **LE Ø16 SE RACCORDE AU ROBINET PAR UN RACCORD TARAUDÉ 3/4" PROPRE À SON TUBE —
 sa règle du 18 octobre 2026.** Le Plasson à bague blanche ne prend que le PE 25
