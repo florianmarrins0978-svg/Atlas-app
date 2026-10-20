@@ -14,7 +14,10 @@
   Puis : « ce qu'il faudrait, c'est qu'il nous ouvre le mail avec l'adresse du
   fournisseur déjà écrite » : l'adresse se tape sur sa fiche (Réglages), et le
   bouton ouvre le mail vers le fournisseur de la pastille, liste sans prix
-  dedans. Le choix « Chez qui part la liste » est retiré.
+  dedans. Le choix « Chez qui part la liste » est retiré. Puis : « un message
+  personnalisé en fonction des fournisseurs, si je note son nom, que ça le
+  garde en mémoire » : le début et la fin se tapent une fois par fournisseur,
+  la liste au milieu se refait à chaque plan.
 
   LA QUESTION : la liste du plan prend toujours le prix LE MOINS CHER de ses
   fournisseurs (version sur main, branche claude/arrosage-prix-et-devis). La
@@ -84,6 +87,8 @@
   .message{display:block;width:100%;min-height:260px;margin-top:10px;border:0;border-radius:12px;padding:12px;font:15px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line);resize:vertical}
   .choix{font-size:13.5px;color:var(--atlas-inkSoft);margin:14px 0 0;overflow-wrap:anywhere}
   .ecrire{display:flex;align-items:center;justify-content:center;margin-top:10px;min-height:52px;border-radius:999px;background:var(--atlas-plein);color:var(--atlas-card);font-size:16px;text-decoration:none}
+  .message.court{min-height:84px}
+  .liste-mail{margin:10px 0 0;padding:12px;border-radius:12px;background:color-mix(in srgb,var(--atlas-card) 60%,var(--atlas-cream));color:var(--atlas-inkSoft);font:13.5px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;white-space:pre-wrap;max-height:220px;overflow:auto}
   .alerte-adresse{margin:10px 0 0;font-size:13.5px;color:var(--atlas-alerte)}
   .adresse{display:flex;flex-direction:column;gap:4px;padding:10px 0;border-top:1px solid var(--atlas-line);font-size:14px}
   .adresse:first-child{border-top:0}
@@ -119,7 +124,13 @@
       <a class="ecrire" id="ecrire" href="#">Écrire</a>
       <p class="alerte-adresse" id="sans-adresse" hidden></p>
       <p class="choix" id="enregistree" hidden></p>
-      <textarea class="message" id="message" aria-label="Le message au fournisseur"></textarea>
+      <label class="choix" for="debut">Le début, gardé pour <span class="nom-f"></span></label>
+      <textarea class="message court" id="debut" aria-label="Le début du message"></textarea>
+      <p class="choix">La liste, faite par l’outil, sans prix</p>
+      <pre class="liste-mail" id="liste-mail"></pre>
+      <label class="choix" for="fin">La fin, gardée pour <span class="nom-f"></span></label>
+      <textarea class="message court" id="fin" aria-label="La fin du message"></textarea>
+      <p class="choix" id="garde" hidden></p>
     </div>
   </div>
 </div>
@@ -139,6 +150,10 @@
   var vue = "aqua";
   // L'adresse mail de chaque fournisseur, tapée dans Réglages : vide d'office, rien ne s'invente.
   var adresses = { aqua: "", fb: "" };
+  // Le début et la fin de SON message, gardés par fournisseur (dans l'outil, sur
+  // sa fiche, en base) : « si je note son nom, que ça le garde en mémoire ».
+  var DEBUT = "Bonjour,\n\nVoici ma commande pour un chantier d’arrosage :", FIN = "Merci.";
+  var debuts = { aqua: DEBUT, fb: DEBUT }, fins = { aqua: FIN, fb: FIN };
   // La date du devis d'où vient chaque prix : sur la planche, le jour où on le tape.
   var aujourdhui = new Date().toLocaleDateString("fr-FR");
   var $ = function (id) { return document.getElementById(id); };
@@ -195,11 +210,19 @@
     $("ecrire").href = "mailto:" + encodeURIComponent(adresse).replace(/%40/g, "@") + "?subject=" + encodeURIComponent("Commande arrosage") + "&body=" + encodeURIComponent(message());
     $("sans-adresse").hidden = !!adresse;
     $("sans-adresse").textContent = "Ajoutez l’adresse de " + seul.nom + " dans Réglages, sur sa fiche : le mail s’ouvrira sans destinataire.";
-    $("message").value = message();
+    document.querySelectorAll(".nom-f").forEach(function (e) { e.textContent = seul.nom; });
+    if (document.activeElement !== $("debut")) $("debut").value = debuts[seul.id];
+    if (document.activeElement !== $("fin")) $("fin").value = fins[seul.id];
+    $("liste-mail").textContent = laListe();
   }
 
-  // Le message, tout additionné, TOUJOURS sans prix : sa règle du 20 octobre 2026.
+  // Le message : SON début, la liste, SA fin. La liste est TOUJOURS sans prix.
   function message() {
+    return debuts[vue] + "\n\n" + laListe() + "\n\n" + fins[vue];
+  }
+
+  // La liste, tout additionnée, sans prix : sa règle du 20 octobre 2026.
+  function laListe() {
     var somme = {}, ordre = [];
     LISTE.forEach(function (g) { g.lignes.forEach(function (l) {
       if (!somme[l.ref]) { somme[l.ref] = { nom: l.nom, reference: l.reference, q: 0, u: l.u }; ordre.push(l.ref); }
@@ -209,12 +232,20 @@
       var e = somme[r];
       return (e.u === "ml" ? e.q + " m de " : e.q + "x ") + e.nom + (e.reference ? ", réf. " + e.reference : "");
     });
-    return ["Bonjour,", "", "Voici ma commande pour un chantier d’arrosage :", ""].concat(lignes, ["", "Merci."]).join("\n");
+    return lignes.join("\n");
   }
 
   document.addEventListener("input", function (e) {
     var t = e.target;
     if (t.dataset && t.dataset.mail) { adresses[t.dataset.mail] = t.value; dessiner(); return; }
+    if (t.id === "debut" || t.id === "fin") {
+      (t.id === "debut" ? debuts : fins)[vue] = t.value;
+      var nom = FOURNISSEURS.filter(function (x) { return x.id === vue; })[0].nom;
+      $("garde").textContent = "Gardé pour " + nom + ", pour les prochaines fois.";
+      $("garde").hidden = false;
+      dessiner();
+      return;
+    }
     if (!t.dataset || !t.dataset.f) return;
     var p = lire(t.value);
     if (p === null) delete prix[t.dataset.f][t.dataset.r]; else prix[t.dataset.f][t.dataset.r] = p;
@@ -224,7 +255,7 @@
   $("ecrire").addEventListener("click", function () {
     var f = FOURNISSEURS.filter(function (x) { return x.id === vue; })[0];
     // Le mail reprend le texte tel qu'il l'a retouché dans la case, pas celui d'origine.
-    this.href = "mailto:" + encodeURIComponent(adresses[f.id].trim()).replace(/%40/g, "@") + "?subject=" + encodeURIComponent("Commande arrosage") + "&body=" + encodeURIComponent($("message").value);
+    this.href = "mailto:" + encodeURIComponent(adresses[f.id].trim()).replace(/%40/g, "@") + "?subject=" + encodeURIComponent("Commande arrosage") + "&body=" + encodeURIComponent(message());
     $("enregistree").textContent = "Enregistrée chez " + f.nom + ", dans Réglages, Demandes envoyées, le " + aujourdhui + ".";
     $("enregistree").hidden = false;
   });

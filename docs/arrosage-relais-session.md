@@ -549,3 +549,12 @@ l'ajouter. **Pas encore codé**, ni la colonne d'adresse en base. À noter : un
 mail ouvert ainsi porte la liste dans son adresse (2 256 caractères pour ce
 jardin) ; certains logiciels de bureau la coupent au-delà de 2 000, l'iPhone
 non. À éprouver sur son téléphone.
+
+**Puis** : *« on peut faire un message personnalisé en fonction des
+fournisseurs, si je note son nom, que ça le garde en mémoire pour les
+prochaines fois »*. Sur la planche : le mail se compose en trois morceaux.
+Le début (« Bonjour Julien, ») et la fin (« Merci, Florian ») se tapent une
+fois par fournisseur et se gardent sur sa fiche ; la liste au milieu est
+refaite par l'outil à chaque plan, toujours sans prix, et ne se garde pas.
+**Pas encore codé** : il faut deux colonnes de texte sur `societes_achat`
+(expand seul, nullable).
