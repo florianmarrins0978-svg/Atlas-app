@@ -1,7 +1,7 @@
 "use client";
 
 import { colors, font } from "@/lib/design-tokens";
-import { composerNourrice, HAUT, type NourriceComposee } from "@/lib/arrosage/nourrice-eclatee";
+import { composerNourrice, etatsDesPoses, HAUT, type EtatPose, type NourriceComposee } from "@/lib/arrosage/nourrice-eclatee";
 import { PHOTOS_NOURRICE } from "@/lib/arrosage/photos-nourrice";
 import { photoDe } from "@/lib/arrosage/photos";
 import type { Retouches } from "@/lib/arrosage/retouches";
@@ -30,7 +30,12 @@ export default function NourriceEclatee({
   nombre,
   onTouche,
 }: {
-  voies: number;
+  /**
+   * Les réseaux qui ont leur voie, dans l'ordre du dessin (`voiesVivantes`) : un
+   * réseau supprimé n'a plus la sienne, et la nourrice passe sur la fiche du
+   * dessous (sa réponse du 19 octobre 2026). Chaque voie garde le numéro de son réseau.
+   */
+  voies: number[];
   nbGoutte: number;
   couleurs: string[];
   retouches: Retouches;
@@ -38,16 +43,16 @@ export default function NourriceEclatee({
   nombre: Record<string, number>;
   onTouche: (ref: string, nom: string) => void;
 }) {
-  const n = composerNourrice(voies, nbGoutte);
+  const n = composerNourrice(voies.length, nbGoutte);
   if (!n) {
     return (
       <p className="mt-3 text-[14px]" style={{ color: colors.alert }}>
-        Aucune fiche de nourrice pour {voies} voies.
+        Aucune fiche de nourrice pour {voies.length} voies.
       </p>
     );
   }
   const NOMS: Record<string, string> = { "coude-mf": "Coude MF 1\"", mamelon: "Mamelon réduit MM 1\" x 3/4\"", "vanne-purge": "Vanne 3/4\" FF", pehd: "PEHD Ø25" };
-  const etatDe = (ref: string) => (retouches.retirees[`nr:${ref}`] || (retouches.nrUne[ref] ?? 0) >= (nombre[ref] ?? 1) ? "retiree" : retouches.remplacees[`nr:${ref}`] ? "changee" : "");
+  const etatDe = (ref: string) => (retouches.blocsRetires.nourrice || retouches.retirees[`nr:${ref}`] || (retouches.nrUne[ref] ?? 0) >= (nombre[ref] ?? 1) ? "retiree" : retouches.remplacees[`nr:${ref}`] ? "changee" : "");
   const nomDe = (ref: string) => {
     const c = retouches.remplacees[`nr:${ref}`];
     if (c) return c.nom;
@@ -59,7 +64,7 @@ export default function NourriceEclatee({
   return (
     <div data-atlas="nourrice-eclatee">
       <div className="mt-3 overflow-hidden rounded-[16px] py-2" style={{ backgroundColor: "#ffffff", boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
-        <Dessin n={n} couleurs={couleurs} />
+        <Dessin n={n} couleurs={couleurs} etats={etatsDesPoses(n.poses, retouches)} reseauDeVoie={voies} />
       </div>
 
       {/* La légende numérotée : c'est elle qu'on touche. */}
@@ -135,9 +140,20 @@ function nomCatalogue(ref: string): string {
   return p ? (p.marque ? `${p.marque} ` : "") + p.nom : ref;
 }
 
-/** Le dessin lui-même : un SVG en pixels de dessin, mis à l'échelle par sa largeur. */
-function Dessin({ n, couleurs }: { n: NourriceComposee; couleurs: string[] }) {
+/**
+ * Le dessin lui-même : un SVG en pixels de dessin, mis à l'échelle par sa largeur.
+ * **Sur le dessin aussi**, une pièce supprimée se grise et se barre de rouge, une
+ * pièce changée porte un numéro doré (sa demande du 19 octobre 2026) : les mêmes
+ * signes que sur les vignettes des réseaux.
+ */
+function Dessin({ n, couleurs, etats, reseauDeVoie }: { n: NourriceComposee; couleurs: string[]; etats: EtatPose[]; reseauDeVoie: number[] }) {
   const encre = "#4a4a44";
+  const grise = (etat: EtatPose) => (etat === "retiree" ? { opacity: 0.35, filter: "grayscale(1)" } : undefined);
+  const teinte = (etat: EtatPose) => (etat === "changee" ? colors.or : undefined);
+  /** La barre rouge d'une pièce supprimée, celle des vignettes : au centre de la pièce. */
+  const barre = (cx: number, cy: number, demi: number) => (
+    <line x1={cx - demi} y1={cy + demi * 0.7} x2={cx + demi} y2={cy - demi * 0.7} stroke={colors.alert} strokeWidth={2.5} strokeLinecap="round" data-atlas="piece-barree" />
+  );
   return (
     <svg
       viewBox={`0 0 ${n.largeur} ${n.hauteur}`}
@@ -163,18 +179,20 @@ function Dessin({ n, couleurs }: { n: NourriceComposee; couleurs: string[] }) {
           if (f?.demi) transforms.push("rotate(180)");
           if (f?.miroir) transforms.push("scale(-1 1)");
           return (
-            <g key={i}>
-              <g transform={transforms.join(" ")}>
+            <g key={i} data-etat={etats[i] || "proposee"}>
+              <g transform={transforms.join(" ")} style={grise(etats[i])}>
                 <g transform={`translate(${-p.w / 2} ${-p.h / 2})`}>{fenetre(p.w, p.h)}</g>
               </g>
-              <Badge n={p.numero} x={p.x + p.w + 2} y={p.y + 5} />
+              {etats[i] === "retiree" && barre(p.x + p.w / 2, p.y + p.h / 2, Math.min(p.w, p.h) * 0.45 + 4)}
+              <Badge n={p.numero} x={p.x + p.w + 2} y={p.y + 5} teinte={teinte(etats[i])} />
             </g>
           );
         }
         return (
-          <g key={i}>
-            <g transform={`translate(${p.x} ${p.y}) rotate(${p.angle}) scale(${p.echelle}) translate(${-p.ax} ${-p.ay})`}>{fenetre(cw, ch)}</g>
-            <Badge n={p.numero} x={p.x + 24} y={p.y + p.L / 2} />
+          <g key={i} data-etat={etats[i] || "proposee"}>
+            <g transform={`translate(${p.x} ${p.y}) rotate(${p.angle}) scale(${p.echelle}) translate(${-p.ax} ${-p.ay})`} style={grise(etats[i])}>{fenetre(cw, ch)}</g>
+            {etats[i] === "retiree" && barre(p.x, p.y + p.L / 2, 16)}
+            <Badge n={p.numero} x={p.x + 24} y={p.y + p.L / 2} teinte={teinte(etats[i])} />
           </g>
         );
       })}
@@ -193,11 +211,13 @@ function Dessin({ n, couleurs }: { n: NourriceComposee; couleurs: string[] }) {
         // goutte-à-goutte le dit sous son numéro, et deux voisines s'écartent de deux lignes.
         const goutte = e.goutte >= 0;
         const dy = goutte ? (e.goutte % 2) * 26 : e.reseau % 2 === 1 ? 13 : 0;
-        const couleur = couleurs[e.reseau] ?? encre;
+        // `e.reseau` est le rang de la voie ; le réseau qu'elle alimente est `reseauDeVoie[e.reseau]`.
+        const reseau = reseauDeVoie[e.reseau] ?? e.reseau;
+        const couleur = couleurs[reseau] ?? encre;
         return (
           <g key={i}>
             <text x={e.x} y={e.y + 6 + dy} textAnchor="middle" dominantBaseline="hanging" fontSize={10} fontWeight={600} fontFamily={font.body} fill={couleur}>
-              R{e.reseau + 1}
+              R{reseau + 1}
             </text>
             {goutte && (
               <text x={e.x} y={e.y + 18 + dy} textAnchor="middle" dominantBaseline="hanging" fontSize={10} fontWeight={600} fontFamily={font.body} fill={couleur}>
@@ -211,10 +231,10 @@ function Dessin({ n, couleurs }: { n: NourriceComposee; couleurs: string[] }) {
   );
 }
 
-function Badge({ n, x, y }: { n: number; x: number; y: number }) {
+function Badge({ n, x, y, teinte }: { n: number; x: number; y: number; teinte?: string }) {
   return (
     <g>
-      <circle cx={x} cy={y} r={7} fill="#1c1c1a" />
+      <circle cx={x} cy={y} r={7} fill={teinte ?? "#1c1c1a"} />
       <text x={x} y={y + 0.5} textAnchor="middle" dominantBaseline="middle" fontSize={9} fontWeight={600} fontFamily={font.body} fill="#ffffff">
         {n}
       </text>

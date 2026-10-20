@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fournisseurs et partenaires</title>
+<!--
+  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Ses demandes du 18 et du 19
+  octobre 2026 :
+  1. « dans Réglages, une catégorie Mes fournisseurs, valable pour l'arrosage,
+     mais aussi pour du matériel ou autre » ;
+  2. « pas que mes fournisseurs, mais aussi mes partenaires : le prix de la
+     main-d'œuvre de nos collègues » ;
+  3. « quand je dicte mon devis, 3 sacs de ciment, il faudrait qu'il aille se
+     référer à la rubrique pour prendre le prix » ; deux marges ; son prix de
+     vente passe TOUJOURS avant (« le A ») ;
+  4. « dans Point P, il doit y avoir écrit mon catalogue, mes prix : mes
+     fournitures avec leur prix à côté » ; « quand je reçois un devis de mes
+     fournisseurs, une petite base où enregistrer les devis » ; « quand
+     j'envoie ma liste de pièces à Aqua Plus, il faut que ma liste
+     s'enregistre dans une catégorie ».
+
+  DONC CHAQUE FOURNISSEUR ET CHAQUE PARTENAIRE A SA FICHE, EN TROIS ONGLETS :
+  « Mes prix » (ses articles, leur prix et la date), « Devis reçus » (chaque
+  devis donné, sa photo, ce qui en a été lu), « Demandes envoyées » (chaque
+  liste partie chez lui, d'un devis ou du plan d'arrosage). Dans l'outil, un
+  devis lu passe ses prix dans « Mes prix » après son accord, comme
+  ImportTarifs.tsx ; ici, la photo est gardée et l'on tape les prix.
+
+  AUCUN PRIX, AUCUN NOM N'EST INVENTÉ : tout est vide, sauf les deux fournisseurs
+  qu'il a nommés. Les boutons sont ceux de l'application (`plein`, en pilule).
+-->
+<style>
+/*CHARTES*/
+  *{box-sizing:border-box}
+  html{background:var(--atlas-rustTint)}
+  body{margin:0;font:16px/1.45 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint)}
+  h1,h2,h3{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;font-weight:400;letter-spacing:-0.01em}
+  .entete{max-width:430px;margin:0 auto;padding:18px 16px 6px}
+  .entete h1{margin:0;font-size:24px;line-height:1.15}
+  .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .entete select{margin-top:10px;font-size:16px;padding:8px 10px;border-radius:10px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink)}
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--atlas-cream);padding:6px 0 80px;min-height:100vh}
+  .caps{display:block;margin:0;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-or)}
+  .bloc{margin:26px 16px 0}
+  .bloc h2{margin:6px 0 0;font-size:21px;line-height:1.2}
+  .sous{margin:4px 0 0;font-size:13.5px;color:var(--atlas-muted)}
+  .onglets{display:flex;gap:6px;margin-top:12px}
+  .onglets button{flex:1;min-height:44px;border-radius:999px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:14px;padding:0 8px;cursor:pointer}
+  .onglets button[aria-pressed="true"]{background:var(--atlas-plein);border-color:var(--atlas-plein);color:var(--atlas-card)}
+  .societe{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;border:0;border-radius:14px;background:var(--atlas-card);padding:14px 16px;box-shadow:0 0 0 1px var(--atlas-lineSoft);color:var(--atlas-ink);font:inherit;text-align:left;cursor:pointer}
+  .societe b{display:block;font-size:16.5px;font-weight:600}
+  .societe small{display:block;margin-top:2px;font-size:13px;color:var(--atlas-muted)}
+  .societe .chevron{margin-left:auto;font-size:20px;color:var(--atlas-chevron)}
+  .nouveau{display:flex;gap:8px;margin-top:10px}
+  .nouveau input{flex:1;min-width:0;border:0;border-radius:10px;padding:12px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
+  .nouveau button,.second{flex:none;min-height:46px;border-radius:999px;border:1px solid var(--atlas-line);background:var(--atlas-card);color:var(--atlas-ink);font-size:15px;padding:0 16px;cursor:pointer}
+  .second{width:100%;margin-top:10px}
+  .coef{display:flex;align-items:center;gap:10px;margin-top:10px;border-radius:12px;background:var(--atlas-card);padding:12px 14px;font-size:15px}
+  .coef span{flex:1}
+  .coef small{display:block;margin-top:2px;font-size:13px;color:var(--atlas-muted)}
+  .coef small:empty{display:none}
+  #ex-mat,#ex-mo{color:var(--atlas-alerte)}
+  .societe small.marge{color:var(--atlas-orTexte)}
+  .feuille .coef{margin-top:14px;background:var(--atlas-card)}
+  .coef input{width:84px;border:0;border-radius:9px;padding:10px;font-size:16px;text-align:right;background:var(--atlas-cream);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
+  .ligne{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--atlas-line);font-size:14.5px}
+  .ligne:first-child{border-top:0}
+  .ligne .n{flex:1;min-width:0}
+  .ligne .n small{display:block;font-size:12.5px;color:var(--atlas-muted)}
+  .ligne .p{flex:none;font-variant-numeric:tabular-nums}
+  .ligne .lien{flex:none;border:0;background:none;padding:0 0 0 6px;font-size:13px;text-decoration:underline;color:var(--atlas-inkSoft);cursor:pointer}
+  .ligne .lien.danger{color:var(--atlas-alerte)}
+  .ligne img.vu{flex:none;width:44px;height:44px;object-fit:cover;border-radius:8px}
+  .liste{margin-top:10px;border-radius:12px;background:var(--atlas-card);padding:2px 14px}
+  .vide{margin:12px 0 0;font-size:14px;color:var(--atlas-muted)}
+  .saisie{display:grid;grid-template-columns:1fr 96px 80px;gap:6px;margin-top:12px}
+  .saisie input,.saisie select{min-width:0;border:0;border-radius:9px;padding:10px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
+  .saisie input.prix{text-align:right}
+  .principal,.source{display:flex;align-items:center;justify-content:center;width:100%;margin-top:10px;min-height:52px;border:0;border-radius:999px;background:var(--atlas-plein);color:var(--atlas-card);font-size:16px;cursor:pointer}
+  .source.creux{background:var(--atlas-card);color:var(--atlas-ink);border:1px solid var(--atlas-line)}
+  .source input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  .dictee{display:block;width:100%;min-height:84px;margin-top:10px;border:0;border-radius:12px;padding:12px;font:16px/1.45 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line);resize:vertical}
+  .devis{margin-top:12px;border-radius:12px;background:var(--atlas-card);padding:2px 14px}
+  .ld{padding:10px 0;border-top:1px solid var(--atlas-line)}
+  .ld:first-child{border-top:0}
+  .ld .haut{display:flex;gap:10px;align-items:baseline;font-size:15px}
+  .ld .haut span{flex:1}
+  .ld .haut b{font-weight:600;font-variant-numeric:tabular-nums}
+  .ld small{display:block;margin-top:2px;font-size:12.5px;color:var(--atlas-muted)}
+  .ld.a-chiffrer .haut b{color:var(--atlas-alerte);font-weight:500}
+  .feuille{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.35)}
+  .feuille .boite{width:100%;max-width:430px;height:90vh;overflow:auto;background:var(--atlas-cream);border-radius:18px 18px 0 0;padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+  .feuille .haut{display:flex;align-items:center}
+  .feuille h2{flex:1;margin:0;font-size:22px;line-height:1.2}
+  .feuille .fermer{border:0;background:none;font-size:14px;text-decoration:underline;color:var(--atlas-inkSoft);cursor:pointer}
+  .apercu{margin-top:12px;border-radius:12px;overflow:hidden;background:var(--atlas-card)}
+  .apercu img{display:block;width:100%;max-height:340px;object-fit:contain;background:#fff}
+  /* LA LISTE DE L'APPLICATION (ListeClients.tsx, ChampRecherche.tsx), sa demande du
+     19 octobre 2026 : « reprends le filtre qu'on utilise, triés par ordre alphabétique
+     comme pour nos clients ». */
+  .colle{position:sticky;top:0;z-index:5;margin:6px -16px 0;padding:14px 16px 10px;background:var(--atlas-cream)}
+  .cherche{display:flex;align-items:center;gap:12px;border-bottom:1.5px solid var(--atlas-muted);color:var(--atlas-or)}
+  .cherche:focus-within{border-bottom-color:var(--atlas-or)}
+  .cherche svg{flex:none}
+  .cherche input{flex:1;min-width:0;border:0;background:transparent;padding:11px 0;font-size:17px;color:var(--atlas-ink);caret-color:var(--atlas-or);outline:none}
+  .cherche input::placeholder{color:var(--atlas-muted)}
+  .cherche input:focus-visible{outline:none}
+  .cherche button{flex:none;width:40px;height:44px;border:0;background:none;color:var(--atlas-muted);font-size:17px;cursor:pointer}
+  .dans-fiche{margin-top:12px}
+  .bande{margin:24px 0 2px;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-muted)}
+  #societes .bande:first-child,.liste .bande:first-child{margin-top:10px}
+  mark{background:color-mix(in srgb, var(--atlas-or) 24%, transparent);color:inherit;border-radius:2px;padding:0 1px}
+  .societe{display:flex;align-items:center;gap:14px;width:100%;min-height:64px;margin:0;border:0;border-bottom:1px solid var(--atlas-line);border-radius:0;background:none;padding:13px 0;box-shadow:none;color:var(--atlas-ink);font:inherit;text-align:left;cursor:pointer}
+  .societe b{display:block;font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;font-size:17.5px;font-weight:400;line-height:1.25}
+  .societe small{display:block;margin-top:3px;font-size:12.5px;color:var(--atlas-inkSoft)}
+  .societe .losange{flex:none;margin-left:auto;width:8px;height:8px;transform:rotate(45deg);border-right:1.5px solid var(--atlas-chevron);border-top:1.5px solid var(--atlas-chevron)}
+  .nom-devis{display:block;width:100%;margin-top:12px;border:0;border-radius:10px;padding:12px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
+  .filtre-date{margin-top:12px}
+  .mois-rangee{display:flex;align-items:center;justify-content:center;gap:2px}
+  .chevron-or{flex:none;display:flex;align-items:center;justify-content:center;width:34px;height:44px;border:0;background:none;color:var(--atlas-or);cursor:pointer}
+  .chevron-or:disabled{color:var(--atlas-line);cursor:default}
+  .mois-titre{position:relative;display:flex;align-items:center;min-height:44px;min-width:0;margin:0 2px;cursor:pointer}
+  .mois-titre span{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;font-size:26px;line-height:1.2;color:var(--atlas-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mois-titre.jour span{font-size:clamp(20px,6.4vw,26px)}
+  .mois-titre input{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;cursor:pointer}
+  .tout-le-mois{display:flex;justify-content:center}
+  .tout-le-mois button{min-height:44px;padding:0 12px;border:0;background:none;color:var(--atlas-or);font-size:14px;cursor:pointer}
+  [hidden]{display:none !important}
+  button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.source:focus-within{outline:2px solid var(--atlas-or);outline-offset:2px}
+</style>
+<body data-charte="origine">
+<div class="entete">
+  <h1>Fournisseurs et partenaires</h1>
+  <p>Planche, rien n’est codé. Aucun prix n’est inventé : ouvrez un fournisseur, donnez-lui des prix, puis dictez une ligne.</p>
+  <select id="charte" aria-label="Charte"><option value="origine">Origine</option><option value="brume">Brume</option><option value="pierre">Pierre</option><option value="beurre">Beurre</option><option value="moka">Moka</option><option value="prune">Prune</option><option value="sylve">Sylve</option><option value="nuit">Nuit</option></select>
+</div>
+<main class="ecran">
+  <section class="bloc">
+    <span class="caps">Réglages</span>
+    <h2>Ce que je paie</h2>
+    <p class="sous">Prix d’achat, à part de vos prix de vente.</p>
+    <div class="onglets" role="group" aria-label="Rubrique">
+      <button type="button" data-rubrique="fournisseurs" aria-pressed="true">Mes fournisseurs</button>
+      <button type="button" data-rubrique="partenaires" aria-pressed="false">Mes partenaires</button>
+    </div>
+    <!-- Le champ de recherche de l'application (ChampRecherche.tsx), collé en haut. -->
+    <div class="colle"><div class="cherche"><svg width="21" height="21" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8.2" cy="8.2" r="6.2"/><path d="M12.8 12.8L18 18" stroke-linecap="round"/></svg><input id="chercher-societe" type="text" inputmode="search" autocomplete="off" aria-label="Chercher"><button type="button" id="effacer-societe" aria-label="Effacer la recherche" hidden>✕</button></div></div>
+    <div id="societes"></div>
+    <div class="nouveau"><input id="nom-nouveau" aria-label="Nom"><button type="button" id="ajouter-societe">Ajouter</button></div>
+    <!-- LE COEFFICIENT RESTE (« faut la laisser comme elle est », 19 octobre 2026) ; ce
+         qui manquait, c'est de VOIR à qui il s'applique : « je sais pas si elle
+         s'affilie à Pilou, rien ne me dit quoi que ce soit ». Sous chaque marge, les
+         sociétés qu'elle couvre ; sur chaque carte et chaque fiche, la marge qui vaut. -->
+    <div class="coef" data-pour="fournisseurs"><span>Ma marge sur le matériel<small id="ex-mat"></small></span><input id="coef" inputmode="decimal" aria-label="Marge sur le matériel"></div>
+    <div class="coef" data-pour="partenaires" hidden><span>Ma marge sur la main d’œuvre<small id="ex-mo"></small></span><input id="coef-mo" inputmode="decimal" aria-label="Marge sur la main d’œuvre"></div>
+  </section>
+
+  <section class="bloc">
+    <span class="caps">Un devis</span>
+    <h2>Je dicte</h2>
+    <textarea class="dictee" id="dictee" aria-label="Ce que je dicte">Il me faut 3 sacs de ciment.</textarea>
+    <button class="principal" type="button" id="preparer">Préparer le devis</button>
+    <div class="devis" id="devis" hidden></div>
+  </section>
+</main>
+
+<!-- La fiche d'un fournisseur ou d'un partenaire : ses prix, ses devis, mes demandes. -->
+<div class="feuille" id="fiche" hidden>
+  <div class="boite" role="dialog" aria-modal="true" aria-labelledby="fiche-titre">
+    <div class="haut"><h2 id="fiche-titre"></h2><button class="fermer" type="button" id="fermer">Fermer</button></div>
+    <div class="onglets" role="group" aria-label="Partie de la fiche">
+      <button type="button" data-partie="prix" aria-pressed="true">Mes prix</button>
+      <button type="button" data-partie="devis" aria-pressed="false">Devis reçus</button>
+      <button type="button" data-partie="demandes" aria-pressed="false">Demandes envoyées</button>
+    </div>
+    <!-- Le mois se feuillette entre deux chevrons ; le toucher ouvre la roue du téléphone pour un jour. -->
+    <div class="filtre-date" id="filtre-date" hidden>
+      <div class="mois-rangee">
+        <button class="chevron-or" type="button" id="mois-avant" aria-label="Mois précédent"><svg width="10" height="16" viewBox="0 0 10 16" fill="none" aria-hidden="true"><path d="M8 2L2 8l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <label class="mois-titre"><span id="titre-periode"></span><input type="date" id="roue-jour" aria-label="Choisir un jour"></label>
+        <button class="chevron-or" type="button" id="mois-apres" aria-label="Mois suivant"><svg width="10" height="16" viewBox="0 0 10 16" fill="none" aria-hidden="true"><path d="M2 2l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="tout-le-mois"><button type="button" id="tout-le-mois" hidden>Tout le mois</button></div>
+    </div>
+    <div class="cherche dans-fiche"><svg width="21" height="21" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8.2" cy="8.2" r="6.2"/><path d="M12.8 12.8L18 18" stroke-linecap="round"/></svg><input id="chercher-fiche" type="text" inputmode="search" autocomplete="off" aria-label="Chercher dans la fiche"><button type="button" id="effacer-fiche" aria-label="Effacer la recherche" hidden>✕</button></div>
+    <div id="partie"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var texte = function (s) { var e = document.createElement("span"); e.textContent = s == null ? "" : String(s); return e.innerHTML; };
+  var euros = function (n) { return n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; };
+  var nombre = function (s) { var n = Number(String(s).replace(/\s/g, "").replace(",", ".")); return String(s).trim() !== "" && isFinite(n) && n >= 0 ? n : null; };
+  var aujourdhui = function () { return new Date().toLocaleDateString("fr-FR"); };
+  $("charte").onchange = function () { document.body.dataset.charte = this.value; };
+
+  // Une société : ses prix, les devis qu'elle m'a faits, les demandes que je lui ai envoyées.
+  var nouvelle = function (nom) { return { nom: nom, prix: [], devis: [], demandes: [], marge: null }; };
+  var societes = { fournisseurs: [nouvelle("Aqua Plus"), nouvelle("France Bonhomme")], partenaires: [] };
+  var UNITES = { fournisseurs: ["pièce", "sac", "m", "m²", "m³", "kg", "palette"], partenaires: ["heure", "journée", "m", "m²", "forfait"] };
+  var MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+  var JOURS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+  var jourIso = function (d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+  var moisEnCours = function () { return jourIso(new Date()).slice(0, 7); };
+  var moisVoisin = function (p, dec) { var a = p.split("-").map(Number), rang = a[0] * 12 + ((a[1] || 1) - 1) + dec; return Math.floor(rang / 12) + "-" + String((rang % 12) + 1).padStart(2, "0"); };
+  var titrePeriode = function (p) { var a = p.split("-").map(Number); if (a.length === 3) { var j = new Date(a[0], a[1] - 1, a[2]); var t = JOURS[j.getDay()] + " " + a[2] + " " + MOIS[a[1] - 1] + (String(a[0]) === moisEnCours().slice(0, 4) ? "" : " " + a[0]); return t.charAt(0).toUpperCase() + t.slice(1); } var m = MOIS[a[1] - 1] + " " + a[0]; return m.charAt(0).toUpperCase() + m.slice(1); };
+  var enLettres = function (p) { var a = p.split("-").map(Number); return a.length === 3 ? "le " + a[2] + " " + MOIS[a[1] - 1] + " " + a[0] : "en " + MOIS[a[1] - 1] + " " + a[0]; };
+  var periode = moisEnCours();
+  var rubrique = "fournisseurs", ouverte = null, partie = "prix", alerteMarge = "";
+
+  var pluriel = function (n, mot) { return n + " " + mot + (n > 1 ? "s" : ""); };
+  function dessinerListe() {
+    document.querySelectorAll("[data-rubrique]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.rubrique === rubrique)); });
+    // Une marge par onglet, sa remarque du 19 octobre 2026 : le matériel chez les
+    // fournisseurs, la main d'œuvre chez les partenaires, jamais les deux à la fois.
+    document.querySelectorAll("[data-pour]").forEach(function (d) { d.hidden = d.dataset.pour !== rubrique; });
+    $("nom-nouveau").placeholder = rubrique === "fournisseurs" ? "Un autre fournisseur" : "Une société partenaire";
+    $("chercher-societe").placeholder = rubrique === "fournisseurs" ? "Chercher un fournisseur" : "Chercher un partenaire";
+    $("effacer-societe").hidden = !$("chercher-societe").value;
+    var saisie = $("chercher-societe").value, l = societes[rubrique];
+    // Une société se trouve par son nom, mais aussi par ce qu'elle porte : une
+    // fourniture, un devis, une demande (« si on a besoin de rechercher les devis
+    // ou les listes qu'on envoie », 19 octobre 2026).
+    var lignes = l.map(function (s, i) { return { s: s, i: i, nom: s.nom } })
+      .filter(function (x) { return trouve(x.s.nom + " " + x.s.prix.map(function (a) { return a.nom; }).join(" ") + " " + x.s.devis.map(function (d) { return d.nom; }).join(" ") + " " + x.s.demandes.map(function (d) { return d.titre; }).join(" "), saisie); });
+    $("societes").innerHTML = !l.length ? '<p class="vide">Aucun partenaire. Ajoutez la société avec qui vous travaillez.</p>' :
+      !lignes.length ? '<p class="vide">' + (rubrique === "fournisseurs" ? "Aucun fournisseur" : "Aucun partenaire") + " ne s’appelle « " + texte(saisie.trim()) + " ».</p>" :
+      enBandes(lignes, saisie, function (x) {
+        var aussi = saisie.trim() && !trouve(x.s.nom, saisie) ? ce_qui_trouve(x.s, saisie) : "";
+        return '<button class="societe" type="button" data-ouvrir="' + x.i + '"><span><b>' + surligner(x.s.nom, saisie) + "</b><small>" +
+          (aussi ? aussi : pluriel(x.s.prix.length, "prix").replace("prixs", "prix") + ", " + pluriel(x.s.devis.length, "devis").replace("deviss", "devis") + " reçu" + (x.s.devis.length > 1 ? "s" : "") + ", " + pluriel(x.s.demandes.length, "demande")) +
+          '</small><small class="marge">' + (margeDe(x.s, rubrique) === null ? "Marge à donner" : "Marge " + fois(margeDe(x.s, rubrique)) + (x.s.marge !== null ? ", la sienne" : "")) + '</small></span><span class="losange" aria-hidden="true"></span></button>';
+      });
+  }
+  // Ce qui a fait trouver une société quand ce n'est pas son nom.
+  function ce_qui_trouve(s, saisie) {
+    var t = s.prix.filter(function (a) { return trouve(a.nom, saisie); }).map(function (a) { return a.nom; })
+      .concat(s.devis.filter(function (d) { return trouve(d.nom, saisie); }).map(function (d) { return d.nom; }))
+      .concat(s.demandes.filter(function (d) { return trouve(d.titre, saisie); }).map(function (d) { return d.titre; }));
+    return t.map(function (x) { return surligner(x, saisie); }).join(", ");
+  }
+
+  // ── LA RECHERCHE ET LE RANGEMENT DE L'APPLICATION (src/lib/recherche-client.ts,
+  // src/lib/bandes-clients.ts) : sans accents ni majuscules, chaque mot tapé doit
+  // se trouver, dans n'importe quel ordre ; de A à Z sous une lettre ; pas de
+  // lettre pendant une recherche ; ce qui est trouvé est surligné.
+  var plat = function (s) { return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim(); };
+  function trouve(nom, saisie) { var mots = plat(saisie).split(" ").filter(Boolean); var n = plat(nom); return mots.every(function (m) { return n.indexOf(m) >= 0; }); }
+  function surligner(nom, saisie) {
+    var mots = plat(saisie).split(" ").filter(Boolean);
+    if (!mots.length) return texte(nom);
+    var base = String(nom).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    var marque = new Array(nom.length).fill(false);
+    mots.forEach(function (m) { var i = base.indexOf(m); while (i >= 0) { for (var k = i; k < i + m.length; k++) marque[k] = true; i = base.indexOf(m, i + 1); } });
+    var h = "", ouvert = false;
+    for (var i = 0; i < nom.length; i++) {
+      if (marque[i] && !ouvert) { h += "<mark>"; ouvert = true; }
+      if (!marque[i] && ouvert) { h += "</mark>"; ouvert = false; }
+      h += texte(nom[i]);
+    }
+    return h + (ouvert ? "</mark>" : "");
+  }
+  var lettre = function (nom) { var c = plat(nom).charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; };
+  function enBandes(lignes, saisie, ligne) {
+    var rangees = lignes.slice().sort(function (a, b) { return plat(a.nom).localeCompare(plat(b.nom), "fr"); });
+    var h = "", avant = null, cherche = !!saisie.trim();
+    rangees.forEach(function (x) {
+      var b = lettre(x.nom);
+      if (!cherche && b !== avant) h += '<p class="bande">' + b + "</p>";
+      avant = b;
+      h += ligne(x);
+    });
+    return h;
+  }
+
+  function dessinerPeriode() {
+    var date = partie === "devis" || partie === "demandes";
+    $("filtre-date").hidden = !date;
+    if (!date) return;
+    var unJour = periode.length === 10;
+    $("titre-periode").textContent = titrePeriode(periode);
+    $("titre-periode").parentNode.classList.toggle("jour", unJour);
+    $("roue-jour").value = unJour ? periode : (jourIso(new Date()).indexOf(periode) === 0 ? jourIso(new Date()) : periode + "-01");
+    $("mois-apres").disabled = moisVoisin(periode, 1) > moisEnCours();
+    $("tout-le-mois").hidden = !unJour;
+  }
+  function dessinerFiche() {
+    dessinerPeriode();
+    var s = societes[rubrique][ouverte];
+    $("fiche-titre").textContent = s.nom;
+    document.querySelectorAll("[data-partie]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.partie === partie)); });
+    var g = generale(rubrique);
+    // Sa marge, écrite en tête de sa fiche : la générale tant qu'on n'en donne pas d'autre.
+    var h = '<div class="coef"><span>Ma marge chez ' + texte(s.nom) + "<small>" + (alerteMarge ? texte(alerteMarge) + " " : "") +
+      (s.marge !== null ? "La sienne. Videz la case pour reprendre la marge générale" + (g !== null ? " (" + fois(g) + ")" : "") + "." : g !== null ? "Votre marge générale, " + fois(g) + ". Tapez-en une autre pour lui seul." : "Pas encore donnée.") +
+      '</small></span><input id="marge-societe" inputmode="decimal"  value="' + (s.marge !== null ? String(s.marge).replace(".", ",") : "") + '" aria-label="Marge chez ' + texte(s.nom) + '"></div>';
+    var q = $("chercher-fiche").value;
+    $("chercher-fiche").placeholder = partie === "prix" ? (rubrique === "fournisseurs" ? "Chercher une fourniture" : "Chercher une prestation") : partie === "devis" ? "Chercher un devis" : "Chercher une demande";
+    $("effacer-fiche").hidden = !q;
+    var rien = function (quoi) { return '<p class="vide">' + quoi + " ne s’appelle « " + texte(q.trim()) + " ».</p>"; };
+    if (partie === "prix") {
+      var prix = s.prix.map(function (a, k) { return { a: a, k: k, nom: a.nom }; }).filter(function (x) { return trouve(x.nom, q); });
+      h += !s.prix.length ? '<p class="vide">' + (rubrique === "fournisseurs" ? "Aucune fourniture encore. Ajoutez-en, ou prenez un de ses devis en photo." : "Aucun prix de main d’œuvre encore.") + "</p>" :
+        !prix.length ? rien(rubrique === "fournisseurs" ? "Aucune fourniture" : "Aucune prestation") :
+        '<div class="liste">' + enBandes(prix, q, function (x) {
+          return '<div class="ligne"><span class="n">' + surligner(x.a.nom, q) + "<small>" + texte(x.a.source) + '</small></span><span class="p">' + euros(x.a.prix) + " / " + texte(x.a.unite) + '</span><button class="lien danger" type="button" data-retirer-prix="' + x.k + '">Retirer</button></div>';
+        }) + "</div>";
+      h += '<div class="saisie"><input id="art-nom" placeholder="' + (rubrique === "fournisseurs" ? "Fourniture" : "Prestation") + '" aria-label="Nom"><select id="art-unite" aria-label="Unité">' +
+        UNITES[rubrique].map(function (u) { return "<option>" + u + "</option>"; }).join("") + '</select><input class="prix" id="art-prix" inputmode="decimal" placeholder="Prix HT" aria-label="Prix HT"></div>' +
+        '<button class="second" type="button" id="ajouter-prix">Ajouter ce prix</button>';
+    }
+    if (partie === "devis") {
+      // Un nom pour le devis : c'est lui qui le range de A à Z et le fait trouver.
+      h += '<input class="nom-devis" id="nom-devis" placeholder="Nom du devis, chantier ou client" aria-label="Nom du devis">' +
+        '<label class="source"><input type="file" accept="image/*" capture="environment" id="photo-devis">Prendre un devis en photo</label>' +
+        '<label class="source creux"><input type="file" accept="image/*,application/pdf" id="fichier-devis">Choisir une photo ou un PDF</label>';
+      var devis = s.devis.map(function (d, k) { return { d: d, k: k, nom: d.nom }; }).filter(function (x) { return q.trim() ? trouve(x.nom + " " + x.d.date, q) : x.d.iso.indexOf(periode) === 0; });
+      h += !s.devis.length ? '<p class="vide">Aucun devis reçu de ' + texte(s.nom) + ".</p>" : !devis.length ? (q.trim() ? rien("Aucun devis") : '<p class="vide">Aucun devis reçu ' + enLettres(periode) + ".</p>") :
+        '<div class="liste">' + enBandes(devis, q, function (x) {
+          return '<div class="ligne">' + (x.d.url ? '<img class="vu" src="' + x.d.url + '" alt="">' : "") + '<span class="n">' + surligner(x.d.nom, q) + "<small>Reçu le " + x.d.date + ", " + texte(x.d.fichier) + "</small></span>" +
+            '<button class="lien" type="button" data-voir-devis="' + x.k + '">Voir</button></div>';
+        }) + "</div>";
+      h += '<div id="vu-devis"></div>';
+    }
+    if (partie === "demandes") {
+      var dem = s.demandes.map(function (d) { return { d: d, nom: d.titre }; }).filter(function (x) { return q.trim() ? trouve(x.nom + " " + x.d.date, q) : x.d.iso.indexOf(periode) === 0; });
+      h += !s.demandes.length ? '<p class="vide">Aucune demande envoyée à ' + texte(s.nom) + ". Les listes que vous lui envoyez depuis un devis ou le plan d’arrosage s’enregistrent ici, avec leur date.</p>" : !dem.length ? (q.trim() ? rien("Aucune demande") : '<p class="vide">Aucune demande envoyée ' + enLettres(periode) + ".</p>") :
+        '<div class="liste">' + enBandes(dem, q, function (x) {
+          return '<div class="ligne"><span class="n">' + surligner(x.d.titre, q) + "<small>Envoyée le " + x.d.date + ", " + pluriel(x.d.lignes, "ligne") + "</small></span></div>";
+        }) + "</div>";
+    }
+    $("partie").innerHTML = h;
+  }
+
+  // Le devis dicté : son prix de vente d'abord (« le A », 19 octobre 2026), puis un
+  // prix d'achat fois sa marge, puis « à chiffrer ». La planche n'a pas ses prix de
+  // vente : elle montre les deux autres marches.
+  // La marge qui vaut pour une société : la sienne si elle en a une, sinon la marge
+  // générale de sa rubrique. Vide partout : rien n'est ajouté d'office, la ligne reste à chiffrer.
+  // Une marge au-dessus de × 3 est une faute de frappe (« 20 » pour 20 %) : elle
+  // ferait payer vingt fois le prix. On la refuse et on dit quoi taper.
+  var MARGE_MAX = 3;
+  var lisible = function (v) { var n = nombre(v); return n !== null && n > 0 && n <= MARGE_MAX ? n : null; };
+  var trop = function (v) { var n = nombre(v); return n !== null && n > MARGE_MAX ? n : null; };
+  var conseil = function (n) { return "« " + String(n).replace(".", ",") + " » ferait × " + String(n).replace(".", ",") + ". Pour " + String(n).replace(".", ",") + " % de marge, tapez " + (1 + n / 100).toFixed(2).replace(".", ",") + "."; };
+  var generale = function (r) { return lisible($(r === "partenaires" ? "coef-mo" : "coef").value); };
+  var margeDe = function (s, r) { return s.marge !== null && s.marge !== undefined ? s.marge : generale(r); };
+  var fois = function (c) { return "× " + c.toFixed(2).replace(".", ","); };
+  // Sous chaque marge, les sociétés qu'elle couvre, et celles qui ont la leur.
+  function quiCouvre() {
+    [["fournisseurs", "ex-mat"], ["partenaires", "ex-mo"]].forEach(function (x) {
+      // Plus de texte gris sous la marge (« retire le texte grisé », 19 octobre 2026) :
+      // la carte de chaque société dit déjà sa marge. Ne reste que la faute de frappe.
+      var faute = trop($(x[0] === "partenaires" ? "coef-mo" : "coef").value);
+      $(x[1]).textContent = faute !== null ? conseil(faute) : "";
+    });
+  }
+  $("coef").oninput = $("coef-mo").oninput = function () { quiCouvre(); dessinerListe(); };
+  var MOTS_VIDES = /^(il|me|faut|de|des|du|la|le|les|un|une|et|pour|avec|j'ai|besoin|en|au|aux|sur)$/i;
+  var racine = function (m) { return m.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/s$/, ""); };
+  function preparer() {
+    var tous = [];
+    ["fournisseurs", "partenaires"].forEach(function (r) { societes[r].forEach(function (s) { s.prix.forEach(function (a) { tous.push({ a: a, s: s, r: r }); }); }); });
+    var morceaux = $("dictee").value.split(/[.,;\n]|\bet\b/).map(function (x) { return x.trim(); }).filter(Boolean);
+    $("devis").innerHTML = morceaux.map(function (m) {
+      var q = (m.match(/\d+(?:[.,]\d+)?/) || [null])[0];
+      var qte = q ? Number(q.replace(",", ".")) : (/\bdeux\b/i.test(m) ? 2 : /\btrois\b/i.test(m) ? 3 : 1);
+      var mots = m.split(/\s+/).filter(function (x) { return !MOTS_VIDES.test(x) && !/^\d/.test(x) && x.length > 2; }).map(racine);
+      var mieux = null, score = 0;
+      tous.forEach(function (t) {
+        var sienne = (t.a.nom + " " + t.s.nom).split(/\s+/).map(racine);
+        var n = mots.filter(function (x) { return sienne.indexOf(x) >= 0; }).length;
+        if (n > score || (n === score && n > 0 && t.a.prix < mieux.a.prix)) { score = n; mieux = t; }
+      });
+      if (!score) return '<div class="ld a-chiffrer"><div class="haut"><span>' + texte(m) + "</span><b>à chiffrer</b></div><small>Aucun prix chez vos fournisseurs ni vos partenaires.</small></div>";
+      var a = mieux.a, achat = a.prix * qte, coef = margeDe(mieux.s, mieux.r);
+      var vente = coef !== null ? Math.round(achat * coef * 100) / 100 : null;
+      var aPart = mieux.s.marge !== null && mieux.s.marge !== undefined;
+      return '<div class="ld' + (vente === null ? " a-chiffrer" : "") + '"><div class="haut"><span>' + texte(a.nom) + ", " + String(qte).replace(".", ",") + " " + texte(a.unite) + (qte > 1 && !/s$/.test(a.unite) ? "s" : "") + "</span><b>" + (vente === null ? "à chiffrer" : euros(vente)) + "</b></div>" +
+        "<small>" + (mieux.r === "partenaires" ? "Main d’œuvre de " : "Acheté ") + (mieux.r === "partenaires" ? texte(mieux.s.nom) + " : " + euros(achat) : euros(achat) + " chez " + texte(mieux.s.nom)) + " le " + a.date +
+        (vente === null ? (mieux.r === "partenaires" ? ". Donnez votre marge sur la main d’œuvre." : ". Donnez votre marge sur le matériel.") : ", " + fois(coef) + (aPart ? ", sa marge à part." : ", votre marge " + (mieux.r === "partenaires" ? "sur la main d’œuvre." : "sur le matériel."))) + "</small></div>";
+    }).join("") + '<p class="vide">Proposé, à valider. Votre prix de vente passe toujours en premier. Rien ne part sans vous.</p>';
+    $("devis").hidden = false;
+  }
+
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (!b) return;
+    if (b.dataset.rubrique) { rubrique = b.dataset.rubrique; dessinerListe(); return; }
+    if (b.id === "ajouter-societe") { var n = $("nom-nouveau").value.trim(); if (!n) return; societes[rubrique].push(nouvelle(n)); $("nom-nouveau").value = ""; dessinerListe(); quiCouvre(); return; }
+    if (b.id === "mois-avant") { periode = moisVoisin(periode, -1); dessinerFiche(); return; }
+    if (b.id === "mois-apres") { periode = moisVoisin(periode, 1); dessinerFiche(); return; }
+    if (b.id === "tout-le-mois") { periode = periode.slice(0, 7); dessinerFiche(); return; }
+    if (b.id === "effacer-societe") { $("chercher-societe").value = ""; dessinerListe(); $("chercher-societe").focus(); return; }
+    if (b.id === "effacer-fiche") { $("chercher-fiche").value = ""; dessinerFiche(); $("chercher-fiche").focus(); return; }
+    if (b.dataset.ouvrir !== undefined) { ouverte = Number(b.dataset.ouvrir); partie = "prix"; alerteMarge = ""; $("chercher-fiche").value = ""; dessinerFiche(); $("fiche").hidden = false; return; }
+    if (b.id === "fermer") { $("fiche").hidden = true; dessinerListe(); return; }
+    if (b.dataset.partie) { partie = b.dataset.partie; $("chercher-fiche").value = ""; dessinerFiche(); return; }
+    var s = ouverte === null ? null : societes[rubrique][ouverte];
+    if (b.id === "ajouter-prix") {
+      var nom = $("art-nom").value.trim(), prix = nombre($("art-prix").value);
+      if (!nom || prix === null) { $(nom ? "art-prix" : "art-nom").focus(); return; }
+      s.prix.push({ nom: nom, unite: $("art-unite").value, prix: prix, date: aujourdhui(), source: "Tapé le " + aujourdhui() });
+      dessinerFiche(); return;
+    }
+    if (b.dataset.retirerPrix !== undefined) { s.prix.splice(Number(b.dataset.retirerPrix), 1); dessinerFiche(); return; }
+    if (b.dataset.voirDevis !== undefined) {
+      var d = s.devis[Number(b.dataset.voirDevis)];
+      $("vu-devis").innerHTML = '<div class="apercu">' + (d.url ? '<img src="' + d.url + '" alt="Le devis">' : "") + '</div><p class="vide">Dans l’outil, ses lignes et ses prix sont lus ici, et passent dans « Mes prix » après votre accord.</p>';
+      return;
+    }
+    if (b.id === "preparer") { preparer(); return; }
+  });
+  // Un devis donné : la photo reste dans « Devis reçus », avec sa date. Elle n'est
+  // envoyée nulle part : la planche la montre seulement, depuis le téléphone.
+  // La marge d'une seule société : enregistrée en quittant la case.
+  document.addEventListener("change", function (e) {
+    if (e.target.id !== "marge-societe") return;
+    var s = societes[rubrique][ouverte];
+    if (trop(e.target.value) !== null) { alerteMarge = conseil(trop(e.target.value)); s.marge = null; } else { alerteMarge = ""; s.marge = lisible(e.target.value); }
+    dessinerFiche(); quiCouvre();
+  });
+  document.addEventListener("change", function (e) {
+    if (e.target.id !== "photo-devis" && e.target.id !== "fichier-devis") return;
+    var f = e.target.files[0]; if (!f) return;
+    var s = societes[rubrique][ouverte];
+    var nomDevis = ($("nom-devis") && $("nom-devis").value.trim()) || "Devis du " + aujourdhui();
+    s.devis.unshift({ nom: nomDevis, date: aujourdhui(), iso: jourIso(new Date()), fichier: /^image\//.test(f.type) ? "Photo" : f.name, url:/^image\//.test(f.type) ? URL.createObjectURL(f) : null });
+    e.target.value = "";
+    dessinerFiche();
+  });
+  $("roue-jour").onchange = function () { if (this.value) { periode = this.value; dessinerFiche(); } };
+  $("chercher-societe").oninput = dessinerListe;
+  $("chercher-fiche").oninput = dessinerFiche;
+  dessinerListe();
+  quiCouvre();
+})();
+</script>
+</body>
+</html>

@@ -332,6 +332,12 @@ têtes d'un réseau), les lignes de la liste : toute pièce comptée à plus d'u
 se change ou se supprime au nombre choisi, sur toutes les planches, et dans
 l'écran quand on le codera.
 
+**TOUTE MODIFICATION DU PLAN VAUT AUSSI POUR LE PLAN AU ROBINET — sa règle du
+19 octobre 2026 :** *« ça va de soi que les modifications que je te demande, il
+faut également que tu me les fasses sur le plan du robinet »*. Une demande faite
+sur `arrosage-plan.html` se porte sur `arrosage-plan-robinet.html` dans le même
+geste, dans ses deux montages, sans qu'il le redise.
+
 **LA FORME, « LA A » (même soir, planche `appli/arrosage-choix-du-nombre.html`) :**
 *« Pourquoi tu ne mets pas un bandeau déroulant avec le choix ? On choisit le
 nombre. »*, puis *« mets-moi la A partout où il y a des choix multiples, dans

@@ -2,11 +2,12 @@ import { calculerEtDessiner } from "../src/lib/arrosage/le-plan";
 import { composerLesPostes, groupeNourrice, groupesDeLaListe, messageAuFournisseur, liaisonsDuReseau } from "../src/lib/arrosage/postes";
 import { piecesDuPlan } from "../src/lib/arrosage/pieces";
 import {
-  RETOUCHES_VIERGES, chaineSupprimer, chaineRemplacer, clesAChanger, ligneSupprimer, nourriceRemettre, nourriceRemplacer, nourriceSupprimer, remplacer, supprimer,
+  RETOUCHES_VIERGES, blocSupprimer, chaineSupprimer, chaineRemplacer, clesAChanger, ligneSupprimer, nourriceRemettre, nourriceRemplacer, nourriceSupprimer, remplacer, supprimer,
 } from "../src/lib/arrosage/retouches";
-import { composerNourrice } from "../src/lib/arrosage/nourrice-eclatee";
+import { composerNourrice, etatsDesPoses } from "../src/lib/arrosage/nourrice-eclatee";
 import { PHOTOS, photoDe } from "../src/lib/arrosage/photos";
 import { motsPresents } from "../src/lib/arrosage/mots-du-plan";
+import { euros, prixDeLigne, totalDeLaListe } from "../src/lib/arrosage/prix-de-la-liste";
 import { ROBINET, departDeLOutil, departRetenu, departsPossibles, libelleDepart, phraseDuManque, voiesManquantes, type Depart, type Montage } from "../src/lib/arrosage/robinet";
 import { CATALOGUE } from "../src/lib/arrosage/catalogue.js";
 import type { ParametresPlan } from "../src/lib/arrosage/consignes";
@@ -96,6 +97,20 @@ cas("la nourrice se compose : douze numéros pour quatre voies dont une de goutt
   exige(Object.values(n!.reste).some((q) => q > 0), "le bac « Avec la nourrice » n'est pas vide");
   const liste = groupeNourrice(plan, composer(), RETOUCHES_VIERGES);
   exige(liste.nombre["mamelon"] === 4, `${liste.nombre["mamelon"]} mamelons réduits, la fiche en compte 4`);
+});
+
+cas("sur le dessin de la nourrice, deux unions en moins se grisent, une changée se dore, dans l'ordre du dessin", () => {
+  const n = composerNourrice(4, 1)!;
+  const unions = n.poses.map((p, i) => [p.ref, i] as const).filter(([ref]) => ref === "union").map(([, i]) => i);
+  exige(unions.length === 5, `${unions.length} unions dessinées pour 4 voies, il en faut 5`);
+  const deuxEnMoins = nourriceSupprimer(RETOUCHES_VIERGES, "union", 2);
+  const e1 = etatsDesPoses(n.poses, deuxEnMoins);
+  exige(e1[unions[0]] === "retiree" && e1[unions[1]] === "retiree" && e1[unions[2]] === "" && e1.filter((x) => x === "retiree").length === 2, `deux en moins : ${unions.map((i) => e1[i] || "·").join(",")}`);
+  const uneChangee = nourriceRemplacer(deuxEnMoins, "union", 1, { ref: "union-ff", nom: "Union FF" }, "Nourrice 4 voies", 7);
+  const e2 = etatsDesPoses(n.poses, uneChangee);
+  exige(e2[unions[0]] === "retiree" && e2[unions[1]] === "retiree" && e2[unions[2]] === "changee" && e2[unions[3]] === "", `deux en moins puis une changée : ${unions.map((i) => e2[i] || "·").join(",")}`);
+  exige(etatsDesPoses(n.poses, nourriceRemettre(uneChangee, "union")).every((x) => x === ""), "tout remis : plus rien de grisé");
+  exige(etatsDesPoses(n.poses, supprimer(RETOUCHES_VIERGES, "nr:union")).filter((x) => x === "retiree").length === 5, "le numéro entier supprimé : les cinq se grisent");
 });
 
 cas("la nourrice : deux mamelons en moins, un changé, puis tout remis", () => {
@@ -235,6 +250,62 @@ cas("les pièces du robinet portent les noms du catalogue, et leurs photos sont 
     exige(readFileSync(`public/arrosage-robinet-photos/${p.photo}`).equals(readFileSync(`appli/arrosage-robinet-photos/${p.photo}`)), `photo qui diffère entre appli/ et public/ : ${p.photo}`);
   }
   exige(photoDe("BRO3493") === "/arrosage-robinet-photos/BRO3493.jpg", "la double sortie a sa photo, servie depuis son dossier");
+});
+
+// ═══ SES DEMANDES DU 19 OCTOBRE 2026 : barrer, supprimer un bloc, une voie de moins, les prix ═══
+
+cas("une pièce supprimée sur le plan reste dans la liste, barrée, et sort du message", () => {
+  const r = supprimer(RETOUCHES_VIERGES, "r0:t0:corps");
+  const p = composer(r);
+  const g = groupesDeLaListe(plan, p, r, true);
+  const r1 = g.find((x) => x.bloc === "0")!;
+  exige(Object.values(r1.barrees).some((l) => l.q === 1 && /3504/.test(l.nom)), `réseau 1 barré : ${JSON.stringify(r1.barrees)}`);
+  const avant = groupesDeLaListe(plan, composer(), RETOUCHES_VIERGES, true).find((x) => x.bloc === "0")!;
+  const turbines = (gr: typeof r1) => Object.values(gr.lignes).find((l) => /3504/.test(l.nom))?.q ?? 0;
+  exige(turbines(r1) === turbines(avant) - 1, `turbines comptées : ${turbines(r1)} au lieu de ${turbines(avant) - 1}`);
+});
+
+cas("un réseau supprimé : ses pièces barrées, la liste vide, la nourrice passe de 4 à 3 voies avec le collecteur du dessous", () => {
+  const r = blocSupprimer(RETOUCHES_VIERGES, "1");
+  const p = composer(r);
+  const g = groupesDeLaListe(plan, p, r, true);
+  const r2 = g.find((x) => x.bloc === "1")!;
+  exige(Object.keys(r2.lignes).length === 0 && Object.keys(r2.barrees).length > 3, `réseau 2 : ${Object.keys(r2.lignes).length} lignes vivantes, ${Object.keys(r2.barrees).length} barrées`);
+  exige(p.reseaux[1].plan!.poses.every((x) => x.pieces.every((q) => q.retiree)), "sur le plan, ses pièces sont grisées");
+  const n4 = groupeNourrice(plan, composer(), RETOUCHES_VIERGES), n3 = groupeNourrice(plan, p, r);
+  exige(/4 voies/.test(n4.nom) && /3 voies/.test(n3.nom), `nourrice : ${n4.nom} puis ${n3.nom}`);
+  exige(n3.voies.join(",") === "0,2,3", `les voies gardent leur réseau : ${n3.voies.join(",")}`);
+  const ev = (n: typeof n4) => Object.values(n.lignes).filter((l) => /Électrovanne/.test(l.nom)).reduce((s, l) => s + l.q, 0);
+  exige(ev(n3) === ev(n4) - 1, `électrovannes : ${ev(n4)} puis ${ev(n3)}`);
+  exige(composerNourrice(n3.voies.length, 1)!.etiquettes.filter((e) => "reseau" in e).length === 3, "trois voies dessinées");
+});
+
+cas("le piquage et la nourrice se suppriment d'un bloc, et tout sort du message", () => {
+  const r = blocSupprimer(blocSupprimer(RETOUCHES_VIERGES, "amenee"), "nourrice");
+  const p = composer(r);
+  const g = groupesDeLaListe(plan, p, r, true);
+  const am = g.find((x) => x.bloc === "amenee")!, nr = g.find((x) => x.bloc === "nourrice")!;
+  exige(Object.keys(am.lignes).length === 0 && Object.keys(am.barrees).length > 0, "le piquage est barré");
+  exige(Object.keys(nr.lignes).length === 0 && Object.keys(nr.barrees).length > 10, `la nourrice est barrée : ${Object.keys(nr.barrees).length} lignes`);
+  const msg = messageAuFournisseur(g, plan.materiel);
+  // Ni la nourrice (collecteur, électrovannes), ni le té qui coupe la ligne au compteur (le té égal des réseaux, lui, reste).
+  const teEgaux = (gr: typeof g) => gr.filter((x) => x.bloc !== "amenee").reduce((s, x) => s + (x.lignes["te-25-25-25"]?.q ?? 0), 0);
+  exige(!/Collecteur|Électrovanne/.test(msg), `le message garde la nourrice : ${msg.slice(0, 200)}`);
+  exige((msg.match(/(\d+)x Plasson Té 90° 25×25×25/)?.[1] ?? "0") === String(teEgaux(g)), "le té du compteur sort du message");
+  const n = composerNourrice(4, 1)!;
+  exige(etatsDesPoses(n.poses, r).every((x) => x === "retiree"), "sur le dessin, chaque pièce de la nourrice est grisée");
+});
+
+cas("le prix à droite et le total : sans prix relevé, 0 € et le compte des pièces sans prix ; avec, la somme exacte", () => {
+  const g = groupesDeLaListe(plan, composer(), RETOUCHES_VIERGES, true);
+  const vide = totalDeLaListe(g, {});
+  exige(vide.total === 0 && vide.sansPrix === vide.pieces && vide.pieces > 30, `sans prix : ${JSON.stringify(vide)}`);
+  const turbines = g.flatMap((x) => Object.entries(x.lignes)).filter(([, l]) => /3504/.test(l.nom)).reduce((s, [, l]) => s + l.q, 0);
+  const ref3504 = g.flatMap((x) => Object.entries(x.lignes)).find(([, l]) => /3504/.test(l.nom))![0];
+  const t = totalDeLaListe(g, { [ref3504]: 12.5 });
+  exige(t.total === Math.round(turbines * 12.5 * 100) / 100 && t.sansPrix === vide.pieces - g.filter((x) => x.lignes[ref3504]).length, `avec un prix : ${JSON.stringify(t)}, ${turbines} turbines`);
+  exige(euros(1234.5) === "1 234,50 €" || euros(1234.5) === "1 234,50 €", `euros : ${euros(1234.5)}`);
+  exige(prixDeLigne("pe25", { nom: "PEHD", q: 0, u: "ml" }, { pe25: 1 }) === null, "une longueur à mesurer n'a pas de prix");
 });
 
 cas("les mots du plan : SAM et PRS s'expliquent quand ils sont là, pas sinon", () => {

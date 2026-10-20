@@ -2,7 +2,7 @@ import { CATALOGUE } from "./catalogue.js";
 import type { Dessin, ReseauDessine, Tete, ZoneDessinee } from "./plan-dessine";
 import { piecesDuPlan, type LigneCalcul } from "./pieces";
 import { photoDe } from "./photos";
-import type { PieceChoisie, Retouches } from "./retouches";
+import { estOtee, type PieceChoisie, type Retouches } from "./retouches";
 import type { LePlan } from "./le-plan";
 import { ROBINET, departRetenu, nomDuTuyau, type Depart, type Montage } from "./robinet";
 
@@ -104,6 +104,11 @@ export type Postes = {
   grillage: { q: number; nom: string; detail: string } | null;
   reseaux: ReseauPostes[];
   compte: Compte;
+  /**
+   * Ce qu'il a supprimé sur le plan, compté à part, groupe par groupe : la liste
+   * le montre barré, le message au fournisseur ne le prend pas (19 octobre 2026).
+   */
+  barrees: Compte;
 };
 
 type Cat = {
@@ -164,34 +169,38 @@ export function titreDuDepart(compteur: boolean, robinet: Robinet | null | undef
 export function composerLesPostes({ plan, dessin, compteur, amenee, robinet = null, retouches: r }: EntreePostes): Postes {
   const M = plan.materiel;
   const compte: Compte = {};
+  const barrees: Compte = {};
   let groupe = "amenee";
   const ligneDe = (ref: string, nom: string, u: string): Ligne => {
     const g = (compte[groupe] = compte[groupe] ?? {});
     return (g[ref] = g[ref] ?? { nom, q: 0, u });
   };
+  const ligneBarree = (ref: string, nom: string, u: string): Ligne => {
+    const g = (barrees[groupe] = barrees[groupe] ?? {});
+    return (g[ref] = g[ref] ?? { nom, q: 0, u });
+  };
+  const ote = (cle: string) => estOtee(r, cle);
   const piece = (cle: string, ref: string, nom: string, detail: string): Poste => {
     const changee = r.remplacees[cle] ?? null;
     const montree = changee ? changee.ref : ref;
     return {
       cle, ref: montree, nom: changee ? changee.nom : nom, detail: changee ? changee.nom : detail,
       q: 1, u: "u", photo: photoDe(montree), pied: null,
-      retiree: Boolean(r.retirees[cle]), changee, ajoutee: cle.startsWith("plus:"),
+      retiree: ote(cle), changee, ajoutee: cle.startsWith("plus:"),
     };
   };
-  /** Poser compte la pièce dans le groupe courant, sauf supprimée ; une remplaçante compte pour une. */
+  /** Poser compte la pièce dans le groupe courant ; supprimée, elle se compte à part, barrée ; une remplaçante compte pour une. */
   const poser = (cle: string, ref: string, nom: string, detail: string, q?: number, u: "u" | "ml" = "u"): Poste => {
     const changee = r.remplacees[cle];
-    if (!r.retirees[cle]) {
-      const l = ligneDe(changee ? changee.ref : ref, changee ? changee.nom : nom, changee ? "u" : u);
-      l.q += changee || q === undefined ? 1 : q;
-    }
+    const l = (ote(cle) ? ligneBarree : ligneDe)(changee ? changee.ref : ref, changee ? changee.nom : nom, changee ? "u" : u);
+    l.q += changee || q === undefined ? 1 : q;
     const p = piece(cle, ref, nom, detail);
     return { ...p, q: q ?? 1, u };
   };
   const tuyere = (cle: string, corps: { ref: string; nom: string }, buse: { ref: string; nom: string; colisage?: number }): Poste => {
     const p = poser(cle, corps.ref, corps.nom, `${corps.nom.replace("Tuyère ", "")} et ${buse.nom}`);
-    if (!r.retirees[cle] && !r.remplacees[cle]) {
-      ligneDe(buse.ref, `Rain Bird Tuyères ${buse.nom}${buse.colisage ? `, par ${buse.colisage}` : ""}`, "u").q += 1;
+    if (!r.remplacees[cle]) {
+      (ote(cle) ? ligneBarree : ligneDe)(buse.ref, `Rain Bird Tuyères ${buse.nom}${buse.colisage ? `, par ${buse.colisage}` : ""}`, "u").q += 1;
     }
     return r.remplacees[cle] ? p : { ...p, pied: photoDe(buse.ref) };
   };
@@ -332,7 +341,7 @@ export function composerLesPostes({ plan, dessin, compteur, amenee, robinet = nu
     };
     const etatDe = (t: Maillon["type"]): Maillon["etat"] => {
       const c = cles[t];
-      if (c.length && c.every((x) => r.retirees[x])) return "retiree";
+      if (c.length && c.every((x) => ote(x))) return "retiree";
       if (c.length && r.remplacees[c[0]]) return "changee";
       return "";
     };
@@ -371,7 +380,7 @@ export function composerLesPostes({ plan, dessin, compteur, amenee, robinet = nu
     if (g) grillage = { q: g.q ?? 1, nom: g.nom, detail: g.detail ?? "" };
   }
 
-  return { amenee: amenees, sonde, teflon, grillage, reseaux, compte };
+  return { amenee: amenees, sonde, teflon, grillage, reseaux, compte, barrees };
 }
 
 // ═══ LA LISTE : la nourrice, puis chaque réseau ═══════════════════════════════
@@ -381,16 +390,43 @@ export function composerLesPostes({ plan, dessin, compteur, amenee, robinet = nu
 // tout additionné : *« lui va devoir se faire chier à compter trois pour le
 // réseau 1, trois pour le réseau 2 »*.
 
-export type Groupe = { titre: string; couleur?: string; lignes: Record<string, Ligne>; retirees: Record<string, Ligne> };
+export type Groupe = {
+  titre: string;
+  couleur?: string;
+  lignes: Record<string, Ligne>;
+  retirees: Record<string, Ligne>;
+  /** Ce qu'il a supprimé sur le plan : barré dans la liste, hors du message. */
+  barrees: Record<string, Ligne>;
+  /** Le bloc qu'on supprime d'un coup : un réseau (`"2"`), `"amenee"`, `"nourrice"`. */
+  bloc?: string;
+};
+
+/**
+ * LES VOIES DE LA NOURRICE, une par réseau vivant. Sa réponse du 19 octobre 2026 :
+ * *« si on était sur une nourrice 4 voies, faut passer sur une 3 voies »*. Les
+ * numéros des réseaux qui gardent leur voie, dans l'ordre (le goutte-à-goutte
+ * reste à droite) : la voie `i` du dessin alimente le réseau `voies[i]`.
+ */
+export function voiesVivantes(plan: Pick<LePlan, "secteurs">, r: Retouches): number[] {
+  return plan.secteurs.map((_, i) => i).filter((i) => !r.blocsRetires[String(i)]);
+}
 
 /** La nourrice se compte sur SA fiche, comme le dessin du regard. */
-export function groupeNourrice(plan: LePlan, postes: Postes, r: Retouches): { nom: string; lignes: Record<string, Ligne>; nombre: Record<string, number> } {
-  const nbGoutte = plan.secteurs.filter((s) => s.famille === "Goutte-à-goutte").length;
-  const fiche = CAT.ficheNourrice(plan.secteurs.length, nbGoutte);
+export function groupeNourrice(plan: LePlan, postes: Postes, r: Retouches): { nom: string; lignes: Record<string, Ligne>; barrees: Record<string, Ligne>; nombre: Record<string, number>; voies: number[] } {
+  const voies = voiesVivantes(plan, r);
+  const nbGoutte = voies.filter((i) => plan.secteurs[i].famille === "Goutte-à-goutte").length;
+  // La fiche des voies vivantes : un réseau de moins, c'est le collecteur de la gamme du dessous et une électrovanne de moins.
+  const fiche = CAT.ficheNourrice(voies.length, nbGoutte);
   const g: Record<string, Ligne> = {};
   for (const x of fiche?.pieces ?? []) (g[x.ref] = g[x.ref] ?? { nom: nomDe(x.ref, []), q: 0, u: "u" }).q += x.q;
   // La sonde se compte comme elle est posée au-dessus du regard : changée ou supprimée, la liste suit.
   for (const [ref, l] of Object.entries(postes.compte.sonde ?? {})) g[ref] = l;
+  const nombre: Record<string, number> = {};
+  for (const ref of Object.keys(g)) nombre[ref] = g[ref].q;
+  // Toute la nourrice supprimée : chaque ligne reste, barrée, sonde comprise.
+  if (r.blocsRetires.nourrice) {
+    return { nom: fiche ? fiche.nom : "La nourrice", lignes: {}, barrees: { ...g, ...(postes.barrees.sonde ?? {}) }, nombre, voies };
+  }
   const h: Record<string, Ligne> = {};
   for (const ref of Object.keys(g)) {
     if (r.retirees[`nr:${ref}`]) continue;
@@ -401,20 +437,18 @@ export function groupeNourrice(plan: LePlan, postes: Postes, r: Retouches): { no
     const q = g[ref].q - (r.nrUne[ref] ?? 0);
     if (q > 0) h[ref] = { nom: g[ref].nom, q, u: g[ref].u };
   }
-  const nombre: Record<string, number> = {};
-  for (const ref of Object.keys(g)) nombre[ref] = g[ref].q;
-  return { nom: fiche ? fiche.nom : "La nourrice", lignes: h, nombre };
+  return { nom: fiche ? fiche.nom : "La nourrice", lignes: h, barrees: postes.barrees.sonde ?? {}, nombre, voies };
 }
 
 export function groupesDeLaListe(plan: LePlan, postes: Postes, r: Retouches, compteur: boolean, robinet: Robinet | null = null): Groupe[] {
   const n = groupeNourrice(plan, postes, r);
-  const out: Omit<Groupe, "retirees">[] = [{ titre: titreDuDepart(compteur, robinet), lignes: postes.compte.amenee ?? {} }];
+  const out: Omit<Groupe, "retirees">[] = [{ titre: titreDuDepart(compteur, robinet), lignes: postes.compte.amenee ?? {}, barrees: postes.barrees.amenee ?? {}, bloc: "amenee" }];
   // Au programmateur en nez de robinet, il n'y a pas de nourrice : rien à compter pour elle.
-  if (compteur || robinet?.montage !== "nez") out.push({ titre: n.nom, lignes: n.lignes });
-  plan.secteurs.forEach((s, i) => out.push({ titre: `Réseau ${i + 1}, ${s.nom}`, couleur: plan.couleurs[i], lignes: postes.compte[`r${i}`] ?? {} }));
+  if (compteur || robinet?.montage !== "nez") out.push({ titre: n.nom, lignes: n.lignes, barrees: n.barrees, bloc: "nourrice" });
+  plan.secteurs.forEach((s, i) => out.push({ titre: `Réseau ${i + 1}, ${s.nom}`, couleur: plan.couleurs[i], lignes: postes.compte[`r${i}`] ?? {}, barrees: postes.barrees[`r${i}`] ?? {}, bloc: String(i) }));
   // Le grillage couvre toute la tranchée : il se compte dans la liste de l'outil, pas réseau par réseau.
   if (postes.grillage) {
-    out.push({ titre: "Pour toute la tranchée", lignes: { [GRILLAGE]: { nom: `${postes.grillage.nom}, ${postes.grillage.detail}`, nomCourt: postes.grillage.nom, q: postes.grillage.q, u: "u" } } });
+    out.push({ titre: "Pour toute la tranchée", barrees: {}, lignes: { [GRILLAGE]: { nom: `${postes.grillage.nom}, ${postes.grillage.detail}`, nomCourt: postes.grillage.nom, q: postes.grillage.q, u: "u" } } });
   }
   // Ce qu'il a changé dans la liste : k pièces en moins sur une ligne de q, la
   // ligne reste avec q − k et le dit ; toutes en moins, elle passe aux retirées ;
@@ -430,7 +464,7 @@ export function groupesDeLaListe(plan: LePlan, postes: Postes, r: Retouches, com
     for (const a of r.ajoutees.filter((a) => a.ou === `liste:${g.titre}`)) {
       (lignes[a.ref] = lignes[a.ref] ?? { nom: a.nom, q: 0, u: "u" }).q += a.q;
     }
-    return { titre: g.titre, couleur: g.couleur, lignes, retirees };
+    return { titre: g.titre, couleur: g.couleur, lignes, retirees, barrees: g.barrees, bloc: g.bloc };
   });
 }
 
