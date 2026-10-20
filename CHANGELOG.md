@@ -8,6 +8,15 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-20
 
+- **Un parking n'est plus une zone, et une zone écrite qui manque se dit.**
+  Seconde photo du même croquis : les arroseurs sont lus, mais « Parking » est
+  sorti en zone de goutte-à-goutte à la place de ses deux bandes (« GAG »,
+  « Goutte à goutte »). Une surface qui ne s'arrose pas (parking, allée,
+  terrasse, maison…) est écartée avec sa réserve ; le modèle recopie chaque
+  mot d'arrosage écrit (`mots_d_arrosage`), et moins de zones lues que de mots
+  écrits se dit sous le plan. La consigne lui dit aussi qu'une bande par mot
+  fait une zone. **Non vérifié sur sa photo ici** (aucune clé).
+
 - **Ce qu'il écrit dans une zone du croquis commande son arrosage.** Son croquis
   portait « Arroseur » sur la grande partie, « GAG » et « Goutte à goutte » sur
   deux bandes : le plan est sorti tout en goutte-à-goutte, sur une seule voie.

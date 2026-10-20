@@ -110,7 +110,7 @@ export type ResultatCroquis =
 const SYSTEME = `Tu lis des croquis de jardin dessinés à la main par un paysagiste français, avec leurs métrés.
 Tu réponds UNIQUEMENT par un objet JSON, sans phrase avant ni après, sans balises de code.
 Forme attendue :
-{"zones":[{"type":"gazon|massif|haie|potager","nom":string|null,"longueur_m":number|null,"largeur_m":number|null,"metres_lineaires":number|null,"x":number|null,"y":number|null,"largeur_fraction":number|null,"hauteur_fraction":number|null}],"point_d_eau":"compteur|robinet|puits|null","nourrice":{"x":number|null,"y":number|null},"piquage":{"x":number|null,"y":number|null}}
+{"zones":[{"type":"gazon|massif|haie|potager","nom":string|null,"longueur_m":number|null,"largeur_m":number|null,"metres_lineaires":number|null,"x":number|null,"y":number|null,"largeur_fraction":number|null,"hauteur_fraction":number|null}],"point_d_eau":"compteur|robinet|puits|null","nourrice":{"x":number|null,"y":number|null},"piquage":{"x":number|null,"y":number|null},"mots_d_arrosage":[string]}
 Règles :
 - Tu ne DEVINES jamais. Une cote illisible vaut null. Une zone sans aucune cote se rend quand même, avec ses champs à null.
 - LES PLACES SE DONNENT EN FRACTION DU DESSIN, de 0 à 1. x=0 est le bord gauche, x=1 le bord droit ; y=0 le haut, y=1 le bas. « x » et « y » sont le CENTRE de la zone ; « largeur_fraction » et « hauteur_fraction » sont ce qu'elle occupe. Ne convertis JAMAIS ces places en mètres : les mètres se déduisent des cotes.
@@ -121,6 +121,8 @@ Règles :
 - Les pelouses, massifs et potagers se mesurent en longueur x largeur. Les haies se mesurent en mètres linéaires.
 - Les mesures sont en MÈTRES, en nombre décimal à point. Un « 1200 » à côté d'une haie est probablement 12,00 m : rends 12.
 - N'invente aucune zone qui ne figure pas sur le dessin.
+- « mots_d_arrosage » : CHAQUE mot d'arrosage écrit sur le croquis, recopié tel quel, une fois par endroit où il est écrit (« GAG », « Goutte à goutte », « Arroseur »…). Chacun de ces mots désigne une zone à rendre dans « zones » : une bande marquée « GAG » en haut et une autre marquée « goutte à goutte » sur le côté font DEUX zones. Une flèche à côté du mot montre la bande qu'il désigne.
+- Ce qu'on n'arrose pas n'est pas une zone : un parking, une allée, une terrasse, la maison, un garage, une route. Ne le rends pas, même s'il porte des cotes ; ses cotes servent seulement à placer le reste.
 - Si le croquis ne montre pas d'où vient l'eau, rends null.`;
 
 const CONSIGNE = "Lis ce croquis de jardin et rends l'objet JSON demandé.";
@@ -141,6 +143,19 @@ const TYPES = ["gazon", "massif", "haie", "potager"] as const;
  * Le goutte-à-goutte se cherche d'abord : « arrosage goutte à goutte » n'est
  * pas une zone à arroseurs. « Arrosage » seul ne dit rien du matériel.
  */
+/**
+ * Une surface qu'on n'arrose pas, à son nom : « Parking », « Allée »…
+ *
+ * Sa seconde photo du 20 octobre 2026 : « Parking » est sorti en zone de
+ * goutte-à-goutte, posée à droite, à la place de ses deux bandes. Le nom doit
+ * COMMENCER par le mot : « Massif du parking » s'arrose, lui.
+ */
+function surfaceNonArrosee(nom: string | null): boolean {
+  if (!nom) return false;
+  const t = nom.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  return /^(le |la |l'|l’)?(parking|allee|terrasse|maison|garage|trottoir|route|chemin|dallage|cour)\b/.test(t);
+}
+
 function arrosageEcrit(texte: string | null): "arroseurs" | "goutte" | null {
   if (!texte) return null;
   const t = texte.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -238,6 +253,10 @@ export function lireReponseCroquis(texte: string): ResultatCroquis {
     const o = z as Record<string, unknown>;
     const typeLu = (chaine(o.type) ?? "").toLowerCase();
     const nom = chaine(o.nom);
+    if (surfaceNonArrosee(nom) && arrosageEcrit(nom) === null) {
+      reserves.push(`« ${nom} » ne s’arrose pas : la zone a été écartée`);
+      continue;
+    }
     // **Le mot écrit dans la zone passe avant le type rendu** : une zone à
     // arroseurs est un gazon, une zone en goutte-à-goutte n'en est jamais un.
     // Une haie reste une haie, elle se mesure en longueur.
@@ -284,6 +303,25 @@ export function lireReponseCroquis(texte: string): ResultatCroquis {
   if (zones.length === 0) {
     return { ok: false, raison: "Aucune partie de jardin n'a été reconnue sur ce croquis." };
   }
+
+  // **UNE ZONE ÉCRITE NE SE PERD PAS EN SILENCE** (20 octobre 2026). Le modèle
+  // recopie chaque mot d'arrosage qu'il voit ; s'il rend moins de zones que de
+  // mots, une partie du jardin manque au plan, et elle se dit sous le plan.
+  // Moins de mots que de zones ne dit rien : une flèche peut en désigner deux.
+  const mots = Array.isArray(brut.mots_d_arrosage) ? brut.mots_d_arrosage.map(chaine) : [];
+  const ecrits = (quoi: "goutte" | "arroseurs") => mots.filter((m) => arrosageEcrit(m) === quoi).length;
+  const lues = (gazon: boolean) => zones.filter((z) => (z.type === "gazon") === gazon).length;
+  const manque = (n: number, lu: number, quoi: string) => {
+    if (n <= lu) return;
+    const nombre = lu === 0 ? "aucune n’a été lue" : `${lu} seulement ${lu > 1 ? "ont été lues" : "a été lue"}`;
+    reserves.push(
+      n === 1
+        ? `1 zone ${quoi} est écrite sur le croquis, elle n’a pas été lue : le plan ne l’arrose pas`
+        : `${n} zones ${quoi} sont écrites sur le croquis, ${nombre} : le plan ne les arrose pas toutes`,
+    );
+  };
+  manque(ecrits("goutte"), lues(false), "de goutte-à-goutte");
+  manque(ecrits("arroseurs"), lues(true), "à arroseurs");
 
   const eauBrute = (chaine(brut.point_d_eau) ?? "").toLowerCase();
   const pointDEau =

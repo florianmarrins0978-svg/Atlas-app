@@ -255,6 +255,57 @@ dire(
   );
 }
 
+// ── 7 ter. CE QUI NE S'ARROSE PAS N'EST PAS UNE ZONE, ET UNE ZONE ÉCRITE NE ─
+// SE PERD PAS EN SILENCE
+//
+// Sa seconde photo du même croquis, le 20 octobre 2026 : les arroseurs sont
+// lus, mais une seule zone de goutte-à-goutte, nommée « Parking », posée à
+// droite. Ses deux bandes (« GAG » en haut, « Goutte à goutte » à gauche) ont
+// disparu, et rien ne l'a dit.
+{
+  const relu = lireReponseCroquis(
+    JSON.stringify({
+      zones: [
+        { type: "gazon", nom: "Arroseurs", longueur_m: 12, largeur_m: 10 },
+        { type: "massif", nom: "Parking", longueur_m: 8, largeur_m: 2.6 },
+      ],
+      mots_d_arrosage: ["GAG", "Goutte à goutte", "Arroseur"],
+      point_d_eau: "compteur",
+      nourrice: { x: 0.1, y: 0.9 },
+      piquage: { x: 0.05, y: 0.95 },
+    })
+  );
+  dire(
+    relu.ok && relu.croquis.zones.every((z) => z.nom !== "Parking"),
+    "une zone « Parking » ne reçoit pas d'arrosage : elle est écartée",
+  );
+  dire(
+    relu.ok && relu.croquis.reserves.some((x) => /Parking/.test(x)),
+    "et la réserve dit qu'elle a été écartée",
+  );
+  dire(
+    relu.ok && relu.croquis.reserves.some((x) => /2 zones de goutte-à-goutte/.test(x) && /aucune/.test(x)),
+    `deux goutte-à-goutte écrits et aucun lu : la réserve le dit (${relu.ok ? relu.croquis.reserves.join(" | ") : ""})`,
+  );
+  const complet = lireReponseCroquis(
+    JSON.stringify({
+      zones: [
+        { type: "gazon", nom: "Arroseur", longueur_m: 12, largeur_m: 10 },
+        { type: "massif", nom: "GAG", longueur_m: 12, largeur_m: 1 },
+        { type: "haie", nom: "Goutte à goutte", metres_lineaires: 6 },
+      ],
+      mots_d_arrosage: ["GAG", "Goutte à goutte", "Arroseur"],
+      point_d_eau: "compteur",
+      nourrice: { x: 0.1, y: 0.9 },
+      piquage: { x: 0.05, y: 0.95 },
+    })
+  );
+  dire(
+    complet.ok && !complet.croquis.reserves.some((x) => /écrites? sur le croquis/.test(x)),
+    "quand chaque mot écrit a sa zone, aucune réserve ne parle à tort",
+  );
+}
+
 // ── 8. Ce qui doit être refusé net ──────────────────────────────────────────
 dire(!lireReponseCroquis("Je ne vois pas de croquis sur cette photo.").ok, "une réponse sans objet est refusée");
 dire(!lireReponseCroquis("{ zones: [").ok, "un objet mal formé est refusé");
