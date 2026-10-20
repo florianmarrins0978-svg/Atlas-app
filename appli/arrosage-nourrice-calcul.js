@@ -2875,25 +2875,25 @@ var NOURRICE = (() => {
 
   // src/lib/arrosage/nourrice-eclatee.ts
   var HAUT = {
-    "coude-mf": { h: 46, vertical: 0.27, horizontal: 0.22 },
-    "coude-ff": { h: 52, vertical: 0.65, horizontal: 0.4, miroir: true },
-    "te-mmf": { h: 44, vertical: 0.52, horizontal: 0.28, demi: true },
-    "clarinette-2v": { w: 150, sorties: [0.307, 0.778], tube: 0.35 },
-    "clarinette-3v": { w: 220, sorties: [0.21, 0.535, 0.85], tube: 0.34 },
-    "clarinette-4v": { w: 296, sorties: [0.16, 0.4, 0.64, 0.88], tube: 0.33 }
+    "coude-mf": { h: 46, vertical: 0.259, horizontal: 0.226 },
+    "coude-ff": { h: 52, vertical: 0.732, horizontal: 0.295, miroir: true },
+    "te-mmf": { h: 44, vertical: 0.52, horizontal: 0.225, demi: true },
+    "clarinette-2v": { w: 150, sorties: [0.307, 0.778], tube: 0.338 },
+    "clarinette-3v": { w: 220, sorties: [0.21, 0.535, 0.85], tube: 0.336 },
+    "clarinette-4v": { w: 296, sorties: [0.16, 0.4, 0.64, 0.88], tube: 0.345 }
   };
   var COLONNE = {
-    mamelon: { a: [0.5, 0.02], b: [0.5, 0.98], L: 28 },
-    "mamelon-demi": { a: [0.5, 0.98], b: [0.5, 0.02], L: 28, src: "mamelon" },
+    mamelon: { a: [0.491, 0.02], b: [0.504, 0.98], L: 28 },
+    "mamelon-demi": { a: [0.504, 0.98], b: [0.491, 0.02], L: 28, src: "mamelon" },
     // Retournée, sa demande du 18 octobre 2026 : la vis de purge en haut, la poignée rouge à gauche.
-    "vanne-purge": { a: [0.61, 0.73], b: [0.02, 0.79], L: 40 },
-    union: { a: [0.08, 0.67], b: [0.95, 0.31], L: 46 },
-    "raccord-male25": { a: [0.08, 0.6], b: [0.93, 0.32], L: 40 },
-    pehd: { a: [0, 0.5], b: [1, 0.5], L: 44 },
-    "electrovanne-100dv": { a: [0.01, 0.88], b: [0.99, 0.88], L: 50 },
-    "electrovanne-100dv-ff": { a: [0.28, 0.8], b: [0.97, 0.52], L: 50 },
-    "mamelon-droit-1": { a: [0.5, 0.02], b: [0.5, 0.98], L: 26 },
-    "regulateur-ff34": { a: [0.5, 0.02], b: [0.5, 0.98], L: 44 }
+    "vanne-purge": { a: [0.606, 0.714], b: [0.033, 0.857], L: 40 },
+    union: { a: [0.092, 0.717], b: [0.935, 0.253], L: 46 },
+    "raccord-male25": { a: [0.092, 0.66], b: [0.931, 0.326], L: 40 },
+    pehd: { a: [0, 0.509], b: [1, 0.509], L: 44 },
+    "electrovanne-100dv": { a: [0.037, 0.776], b: [0.982, 0.912], L: 50 },
+    "electrovanne-100dv-ff": { a: [0.26, 0.733], b: [0.983, 0.564], L: 50 },
+    "mamelon-droit-1": { a: [0.478, 0.02], b: [0.51, 0.98], L: 26 },
+    "regulateur-ff34": { a: [0.493, 0.02], b: [0.484, 0.98], L: 44 }
   };
   var ECART = 9;
   function boite(ref) {
