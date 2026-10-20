@@ -175,6 +175,9 @@
   .geste-ligne{flex:none;border:0;background:none;padding:0 0 0 6px;font-size:13px;color:var(--atlas-alerte);text-decoration:underline;cursor:pointer}
   .ligne.otee .n,.ligne.otee .q{color:var(--atlas-muted);text-decoration:line-through}
   .ligne.otee .geste-ligne{color:var(--atlas-ink)}
+  .ligne.barree .n,.ligne.barree .q{color:var(--atlas-muted);text-decoration:line-through;text-decoration-color:var(--atlas-alerte);text-decoration-thickness:2px}
+  .groupe.otee{color:var(--atlas-muted);text-decoration:line-through;text-decoration-color:var(--atlas-alerte);text-decoration-thickness:2px}
+  .ajouter-ligne.supprimer-reseau{color:var(--atlas-alerte)}
   .ajouter-ligne{display:block;width:100%;margin:6px 0 8px;min-height:40px;border-radius:999px;border:1.5px dashed var(--atlas-line);background:none;color:var(--atlas-ink);font-size:14px;cursor:pointer}
   .envoyer{margin-top:16px;width:100%;min-height:52px;border:0;border-radius:999px;background:var(--atlas-ink);color:var(--atlas-card);font-size:16px;cursor:pointer}
   .message{display:block;width:100%;min-height:300px;margin-top:12px;border:0;border-radius:12px;padding:12px;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line);resize:vertical}
@@ -186,6 +189,21 @@
   .ligne:first-child{border-top:0}
   .ligne .q{flex:none;width:58px;font-weight:600;color:var(--atlas-orTexte);font-variant-numeric:tabular-nums}
   .ligne .n{flex:1;min-width:0}
+  /* LE PRIX À DROITE DE CHAQUE PIÈCE (19 octobre 2026) : prix d'achat de ses devis fournisseurs, jamais inventé. */
+  .ligne .prix{flex:none;width:76px;text-align:right;font-variant-numeric:tabular-nums}
+  .ligne .prix.sans{color:var(--atlas-muted)}
+  .ligne.barree .prix,.ligne.otee .prix{visibility:hidden}
+  /* LE TOTAL, « LA C » (son choix du 19 octobre 2026, planche arrosage-total-de-la-liste.html) :
+     le montant en or sur la carte, un liseré d'or clair, le nombre de pièces dans une pastille verte. */
+  .total{margin-top:14px;display:flex;align-items:center;gap:14px;border-radius:16px;padding:16px 18px;background:var(--atlas-card);box-shadow:inset 0 0 0 1.5px var(--atlas-orClair),0 6px 16px var(--atlas-lineSoft)}
+  .total .gauche{flex:1;min-width:0}
+  .total small{display:block;font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--atlas-muted)}
+  .total .m{display:block;margin-top:4px;font:400 32px/1.05 ui-serif,Georgia,"Iowan Old Style",serif;font-variant-numeric:tabular-nums;letter-spacing:-0.01em;color:var(--atlas-orTexte)}
+  .total .pastille{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;width:64px;height:64px;border-radius:999px;background:var(--atlas-plein);color:var(--atlas-card);text-align:center;line-height:1.05}
+  .total .pastille b{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+  .total .pastille span{font-size:10.5px}
+  .manque{margin:10px 0 0;font-size:13.5px;color:var(--atlas-alerte)}
+  .manque:empty{display:none}
   .ligne .ecart{flex:none;font-size:12px;color:var(--atlas-alerte)}
   .verdict{margin:10px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
   .verdict.rouge{color:var(--atlas-alerte);font-weight:600}
@@ -224,6 +242,18 @@
   .choix .vignette img{max-width:44px;max-height:44px}
   .choix .vignette.pleine{border:0}
   .choix small{display:block;color:var(--atlas-muted);font-size:12px}
+  /* AUX COULEURS ET AUX FORMES DE L'APPLICATION, sa demande du 19 octobre 2026 :
+     « aux couleurs de l'appli, avec les boutons comme l'appli, vert et les bords
+     arrondis ». Le vert est --atlas-plein, celui de PrimaryButton (colors.plein,
+     texte colors.card), qui suit la charte ; les polices sont celles du téléphone
+     (globals.css) ; tout bouton est une pilule. */
+  body{font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+  h1,h2,.feuille h2,.reseau-titre b,.total .m{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;font-weight:400;letter-spacing:-0.01em}
+  button,.coche,.recherche{border-radius:999px}
+  .envoyer,.gestes-message button:last-child,.chips button[aria-pressed="true"]{background:var(--atlas-plein);border-color:var(--atlas-plein);color:var(--atlas-card)}
+  .coche input{accent-color:var(--atlas-plein)}
+  .envoyer,.gestes-message button:last-child{font-weight:600}
+  .piece,.p,.m,.etage,.leg,.pp .piece{border-radius:12px}
 </style>
 <body data-charte="origine">
 <div class="entete">
@@ -287,6 +317,9 @@
   <section class="bloc">
     <span class="caps">La liste</span>
     <div id="liste"></div>
+    <!-- LE TOTAL, sa demande du 19 octobre 2026 : « à droite le prix, en dessous un total ». -->
+    <div class="total" id="total" aria-live="polite"></div>
+    <p class="manque" id="sans-prix"></p>
     <!-- MODIFIER MA LISTE : sa demande du 18 octobre 2026. Les pièces de la nourrice
          sont trop serrées pour se toucher une à une ; la liste, elle, se modifie
          ligne par ligne : supprimer, remettre, ajouter une pièce dans un groupe. -->
@@ -346,7 +379,7 @@
   // ── LA SAISIE : ce que le patron a rempli, et le croquis qu'il a donné.
   var SAISIE = { seau: 10, temps: 18, pression: 3, compteur: "oui" };
   var NOURRICE = { x: 13, y: 6 };
-  var etat = { sortie: "boucle", couronne: 50, grillage: false, sonde: false, retirees: {}, remplacees: {}, ajoutees: [], listeRetirees: {}, nrUne: {}, modifierListe: false, ou: "amenee", categorie: "reseau", cible: null, recherche: "" };
+  var etat = { sortie: "boucle", couronne: 50, grillage: false, sonde: false, retirees: {}, remplacees: {}, ajoutees: [], listeRetirees: {}, nrUne: {}, reseauxRetires: {}, modifierListe: false, ou: "amenee", categorie: "reseau", cible: null, recherche: "" };
   function plan() {
     return C.calculerPlan({ seau: SAISIE.seau, temps: SAISIE.temps, pression: SAISIE.pression, compteur: SAISIE.compteur, couronne: etat.couronne, sonde: etat.sonde, zones: [
       { id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 12, l: 12 },
@@ -450,7 +483,8 @@
       yv = colonne("raccord-male25", xv, yv) + ECART;
       yv = colonne("pehd", xv, yv);
       // La voie porte le numéro de son réseau, et sa couleur sur le plan.
-      etiquettes.push([xv, yv, "Réseau " + (i + 1), i, goutte ? i - (axes.length - nbGoutte) : -1]);
+      // La voie porte le numéro du réseau qu'elle alimente : un réseau supprimé n'a plus la sienne.
+      etiquettes.push([xv, yv, "Réseau " + (voiesVivantes[i] + 1), voiesVivantes[i], goutte ? i - (axes.length - nbGoutte) : -1]);
       fin = Math.max(fin, yv);
     });
     fin = Math.max(fin, finArrivee + 40);
@@ -460,27 +494,36 @@
     var g = c.getContext("2d"); g.setTransform(r, 0, 0, r, 0, 0);
     g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H);
     g.setTransform(r * k, 0, 0, r * k, (W - largeur * k) / 2 * r, 0);
+    // SUR LE DESSIN AUSSI, une pièce supprimée se grise et se barre de rouge, une
+    // pièce changée porte un numéro doré (sa demande du 19 octobre 2026 : « pour
+    // la vue éclatée de la nourrice, je voulais que ça fasse la même chose »).
+    // Les n premières du même numéro, dans l'ordre du dessin, comme pour la chaîne d'une tête.
+    var vuesNr = {};
     poses.forEach(function (p) {
       var im = images[p.ref];
+      var j = vuesNr[p.ref] || 0; vuesNr[p.ref] = j + 1;
+      var st = etatPose(p.ref, j), grise = st === "retiree", teinte = st === "changee" ? jeton("or") : null;
       if (p.haut) {
         var f = HAUT[p.ref];
         if (im) {
-          g.save(); g.translate(p.x + p.w / 2, p.y + p.h / 2);
+          g.save(); if (grise) g.globalAlpha = 0.3; g.translate(p.x + p.w / 2, p.y + p.h / 2);
           if (f.demi) g.rotate(Math.PI);
           if (f.miroir) g.scale(-1, 1);
           g.globalCompositeOperation = "multiply"; g.drawImage(im, -p.w / 2, -p.h / 2, p.w, p.h); g.restore();
         }
-        badge(g, numero(p.ref), p.x + p.w + 2, p.y + 5);
+        if (grise) barre(g, p.x + p.w / 2, p.y + p.h / 2, Math.min(p.w, p.h) * 0.45 + 4);
+        badge(g, numero(p.ref), p.x + p.w + 2, p.y + 5, teinte);
         return;
       }
       var fc = COLONNE[p.cle];
       if (im) {
         var ax = fc.a[0] * im.width, ay = fc.a[1] * im.height, bx = fc.b[0] * im.width, by = fc.b[1] * im.height;
         var s = fc.L / Math.hypot(bx - ax, by - ay), angle = Math.PI / 2 - Math.atan2(by - ay, bx - ax);
-        g.save(); g.translate(p.x, p.y); g.rotate(angle); g.scale(s, s);
+        g.save(); if (grise) g.globalAlpha = 0.3; g.translate(p.x, p.y); g.rotate(angle); g.scale(s, s);
         g.globalCompositeOperation = "multiply"; g.drawImage(im, -ax, -ay); g.restore();
       }
-      badge(g, numero(p.ref), p.x + 24, p.y + fc.L / 2);
+      if (grise) barre(g, p.x, p.y + fc.L / 2, 16);
+      badge(g, numero(p.ref), p.x + 24, p.y + fc.L / 2, teinte);
     });
     g.globalCompositeOperation = "source-over";
     g.font = "600 10px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "top";
@@ -506,7 +549,7 @@
     var NOMS = { "coude-mf": "Coude MF 1\"", "mamelon": "Mamelon réduit MM 1\" x 3/4\"", "vanne-purge": "Vanne 3/4\" FF", "pehd": "PEHD Ø25" };
     // CHAQUE PIÈCE DE LA NOURRICE SE TOUCHE, par sa ligne de légende ou dans le bac
     // (sa demande du 18 octobre 2026) : sur le dessin, elles sont trop serrées.
-    var etatNr = function (ref) { return etat.retirees["nr:" + ref] || (etat.nrUne[ref] || 0) >= (nombreNourrice[ref] || 1) ? " retiree" : etat.remplacees["nr:" + ref] ? " changee" : ""; };
+    var etatNr = function (ref) { return etat.reseauxRetires.nourrice || etat.retirees["nr:" + ref] || (etat.nrUne[ref] || 0) >= (nombreNourrice[ref] || 1) ? " retiree" : etat.remplacees["nr:" + ref] ? " changee" : ""; };
     var nomNr = function (ref) { var c = etat.remplacees["nr:" + ref]; return c ? c.nom : (NOMS[ref] || nomCatalogue(ref)) + (etat.nrUne[ref] ? ", " + etat.nrUne[ref] + " en moins" : ""); };
     $("legende").innerHTML = ordre.map(function (ref, i) { return '<li><button type="button" class="leg' + etatNr(ref) + '" data-nr="' + texte(ref) + '"><b>' + (i + 1) + "</b><span>" + texte(nomNr(ref)) + "</span></button></li>"; }).join("");
     var bac = "";
@@ -518,9 +561,26 @@
     });
     $("bac").innerHTML = bac;
   }
-  function badge(g, n, x, y) {
+  // Ce qu'il a fait de la j-ième pièce d'un numéro : supprimée, changée, ou rien.
+  // Les sorties (nrUne) sont d'abord les supprimées, puis les changées (celles
+  // dont la remplaçante est entrée dans la liste, « de » ce numéro).
+  function etatPose(ref, j) {
+    if (etat.reseauxRetires.nourrice || etat.retirees["nr:" + ref]) return "retiree";
+    if (etat.remplacees["nr:" + ref]) return "changee";
+    var k = etat.nrUne[ref] || 0, c = 0;
+    etat.ajoutees.forEach(function (a) { if (a.de === ref) c += a.q || 1; });
+    var d = Math.max(0, k - c);
+    return j < d ? "retiree" : j < k ? "changee" : "";
+  }
+  // La barre rouge d'une pièce supprimée, la même que sur les vignettes.
+  function barre(g, cx, cy, demi) {
     g.globalCompositeOperation = "source-over";
-    g.fillStyle = "#1c1c1a"; g.beginPath(); g.arc(x, y, 7, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = jeton("alerte"); g.lineWidth = 2.5; g.lineCap = "round";
+    g.beginPath(); g.moveTo(cx - demi, cy + demi * 0.7); g.lineTo(cx + demi, cy - demi * 0.7); g.stroke();
+  }
+  function badge(g, n, x, y, teinte) {
+    g.globalCompositeOperation = "source-over";
+    g.fillStyle = teinte || "#1c1c1a"; g.beginPath(); g.arc(x, y, 7, 0, Math.PI * 2); g.fill();
     g.fillStyle = "#ffffff"; g.font = "600 9px -apple-system, Segoe UI, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
     g.fillText(String(n), x, y + 0.5);
   }
@@ -638,11 +698,16 @@
   }
   // Le compte se tient par groupe (« amenee », « r0 », « r1 »…) : la liste se lit
   // comme on pose, et le message au fournisseur additionne tout.
-  var proposees = {}, compte = {}, groupe = "amenee";
+  var proposees = {}, compte = {}, barrees = {}, groupe = "amenee";
   function ligneDe(ref, nom, u) { var g = compte[groupe] = compte[groupe] || {}; return g[ref] = g[ref] || { nom: nom, q: 0, u: u }; }
+  // CE QU'IL SUPPRIME SUR LE PLAN RESTE DANS LA LISTE, BARRÉ (sa demande du 19 octobre
+  // 2026) : compté à part, hors du message au fournisseur.
+  function ligneBarree(ref, nom, u) { var g = barrees[groupe] = barrees[groupe] || {}; return g[ref] = g[ref] || { nom: nom, q: 0, u: u }; }
+  // Une pièce est ôtée quand il l'a supprimée, ou quand il a supprimé tout son réseau (même jour).
+  function ote(cle) { var m = /^r([0-9]+):/.exec(cle); return Boolean(etat.retirees[cle] || (m && etat.reseauxRetires[m[1]]) || (cle.indexOf("am:") === 0 && etat.reseauxRetires.amenee)); }
   function piece(cle, ref, nom, detail) {
     proposees[cle] = { ref: ref, nom: nom };
-    var retiree = etat.retirees[cle], change = etat.remplacees[cle];
+    var retiree = ote(cle) || (cle.indexOf("nr:") === 0 && Boolean(etat.reseauxRetires.nourrice)), change = etat.remplacees[cle];
     if (change) { ref = change.ref; nom = change.nom; detail = change.nom; }
     var photo = PHOTOS[ref] ? '<span class="photo"><img src="arrosage-photos/' + PHOTOS[ref] + '" alt=""></span>' : '<span class="photo vide">photo à venir</span>';
     var mention = retiree ? "supprimée" : change ? "changée" : "";
@@ -651,13 +716,13 @@
   }
   function poser(cle, ref, nom, detail, q, u) {
     var change = etat.remplacees[cle], r = change ? change.ref : ref, n = change ? change.nom : nom;
-    if (!etat.retirees[cle]) ligneDe(r, n, change ? "u" : (u || "u")).q += change || q === undefined ? 1 : q;
+    (ote(cle) ? ligneBarree : ligneDe)(r, n, change ? "u" : (u || "u")).q += change || q === undefined ? 1 : q;
     return piece(cle, ref, nom, detail);
   }
   function tuyere(cle, corps, buse) {
     var html = poser(cle, corps.ref, corps.nom, corps.nom.replace("Tuyère ", "") + " et " + buse.nom);
-    if (!etat.retirees[cle] && !etat.remplacees[cle]) {
-      ligneDe(buse.ref, "Rain Bird Tuyères " + buse.nom + (buse.colisage ? ", par " + buse.colisage : ""), "u").q += 1;
+    if (!etat.remplacees[cle]) {
+      (ote(cle) ? ligneBarree : ligneDe)(buse.ref, "Rain Bird Tuyères " + buse.nom + (buse.colisage ? ", par " + buse.colisage : ""), "u").q += 1;
     }
     if (etat.remplacees[cle] || !PHOTOS[buse.ref]) return html;
     return html.replace("</span>", '<img class="pied" src="arrosage-photos/' + PHOTOS[buse.ref] + '" alt="' + texte(buse.nom) + '"></span>');
@@ -793,7 +858,7 @@
     var montre = function (t, ref) { var c = cles[t] || []; return c.length && etat.remplacees[c[0]] ? etat.remplacees[c[0]].ref : ref; };
     var enBouton = function (html) {
       var types = ["raccord", "sbeb", "pebd", "sbeh", "corps"], j = 0;
-      return html.replace(/<div class="m">/g, function () { var t = types[j++], c = cles[t] || []; var etatCh = c.length && c.every(function (x) { return etat.retirees[x]; }) ? " retiree" : c.length && etat.remplacees[c[0]] ? " changee" : ""; return '<button type="button" class="m' + etatCh + '" data-chaine="r' + i + "|" + t + '">'; })
+      return html.replace(/<div class="m">/g, function () { var t = types[j++], c = cles[t] || []; var etatCh = c.length && c.every(function (x) { return ote(x); }) ? " retiree" : c.length && etat.remplacees[c[0]] ? " changee" : ""; return '<button type="button" class="m' + etatCh + '" data-chaine="r' + i + "|" + t + '">'; })
         .replace(/<\/small><\/div>/g, "</small></button>");
     };
     var chaine = premiere ? '<div class="chaine" aria-label="Les pièces d’une tête, dans l’ordre où elles se montent">' +
@@ -838,18 +903,39 @@
   // fournisseur, tout additionné : *« lui va devoir se faire chier à compter
   // trois pour le réseau 1, trois pour le réseau 2 »*.
   var quantite = function (e) { return e.u === "ml" ? (e.q ? e.q + " m" : "à mesurer") : e.q + "x"; };
-  function lignesDe(g, titre, retirees) {
+  // LES PRIX : ceux de ses devis fournisseurs, lus et validés par lui (planche
+  // arrosage-prix-fournisseurs.html). AUCUN N'EST INVENTÉ : la table est vide ici,
+  // et une pièce sans prix le dit (sa règle, CLAUDE.md §4).
+  var PRIX = {};
+  var euros = function (n) { return n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; };
+  function prixDeLigne(ref, e) { return PRIX[ref] != null && e.q ? PRIX[ref] * e.q : null; }
+  function celluleDePrix(ref, e) { var p = prixDeLigne(ref, e); return p == null ? '<span class="prix sans">sans prix</span>' : '<span class="prix">' + euros(p) + "</span>"; }
+  // Le total : chaque ligne qui part au fournisseur, les barrées n'y sont pas. Affiché même à 0.
+  function dessinerTotal(groupes) {
+    var total = 0, sans = 0, n = 0;
+    groupes.forEach(function (g) { Object.keys(g.lignes).forEach(function (ref) { n++; var p = prixDeLigne(ref, g.lignes[ref]); if (p == null) sans++; else total += p; }); });
+    $("total").innerHTML = '<div class="gauche"><small>Total indicatif, hors taxes</small><span class="m">' + euros(total) + "</span></div>" +
+      '<div class="pastille"><b>' + n + "</b><span>pièce" + (n > 1 ? "s" : "") + "</span></div>";
+    $("sans-prix").textContent = sans ? sans + " pièce" + (sans > 1 ? "s" : "") + " sans prix sur " + n + ", le total ne les compte pas." : "";
+  }
+  function lignesDe(g, titre, retirees, barrees, reseau) {
     var edition = etat.modifierListe;
     var ligne = function (ref, e, ote) {
       var cle = texte(titre + "|" + ref);
       var remettre = '<button type="button" class="geste-ligne" data-remettre-ligne="' + cle + '">Remettre</button>';
       var supprimer = '<button type="button" class="geste-ligne" data-retirer-ligne="' + cle + '" data-q="' + (e.u === "ml" ? 1 : e.q) + '" data-nom="' + texte(e.nom) + '">Supprimer</button>';
       var geste = edition ? (ote ? remettre : (e.enMoins ? remettre : "") + supprimer) : "";
-      return '<div class="ligne' + (ote ? " otee" : "") + '"><span class="q">' + quantite(e) + '</span><span class="n">' + texte(e.nom) + (e.enMoins ? ", " + e.enMoins + " en moins" : "") + "</span>" + geste + "</div>";
+      return '<div class="ligne' + (ote ? " otee" : "") + '"><span class="q">' + quantite(e) + '</span><span class="n">' + texte(e.nom) + (e.enMoins ? ", " + e.enMoins + " en moins" : "") + "</span>" + celluleDePrix(ref, e) + geste + "</div>";
     };
+    // Les pièces qu'il a supprimées sur le plan : barrées, sous les autres, toujours visibles.
+    var barree = function (ref, e) { return '<div class="ligne barree"><span class="q">' + quantite(e) + '</span><span class="n">' + texte(e.nom) + "</span>" + celluleDePrix(ref, e) + "</div>"; };
+    var oteReseau = reseau !== undefined && etat.reseauxRetires[reseau];
     return '<div class="liste">' + Object.keys(g).map(function (ref) { return ligne(ref, g[ref], false); }).join("") +
+      Object.keys(barrees || {}).map(function (ref) { return barree(ref, barrees[ref]); }).join("") +
       (edition ? Object.keys(retirees || {}).map(function (ref) { return ligne(ref, retirees[ref], true); }).join("") +
-        '<button type="button" class="ajouter-ligne" data-ajouter="liste:' + texte(titre) + '">Ajouter une pièce</button>' : "") + "</div>";
+        '<button type="button" class="ajouter-ligne" data-ajouter="liste:' + texte(titre) + '">Ajouter une pièce</button>' +
+        // SUPPRIMER UN RÉSEAU COMPLET (sa demande du 19 octobre 2026) : toutes ses pièces se barrent, ici et sur le plan.
+        (reseau !== undefined ? '<button type="button" class="ajouter-ligne' + (oteReseau ? "" : " supprimer-reseau") + '" data-reseau-retire="' + reseau + '">' + (oteReseau ? "Remettre " : "Supprimer ") + (reseau === "amenee" ? "le piquage" : reseau === "nourrice" ? "la nourrice" : "le réseau " + (Number(reseau) + 1)) + "</button>" : "") : "") + "</div>";
   }
   // Ce qu'il a changé dans la liste : les lignes supprimées sortent du compte et du
   // message au fournisseur, les pièces ajoutées y entrent, à 1 chacune.
@@ -867,13 +953,21 @@
       etat.ajoutees.filter(function (a) { return a.ou === "liste:" + g.titre; }).forEach(function (a) {
         var e = lignes[a.ref] = lignes[a.ref] || { nom: a.nom, q: 0, u: "u" }; e.q += a.q || 1;
       });
-      return { titre: g.titre, couleur: g.couleur, lignes: lignes, retirees: retirees };
+      return { titre: g.titre, couleur: g.couleur, lignes: lignes, retirees: retirees, barrees: g.barrees, reseau: g.reseau };
     });
   }
   // La nourrice se compte sur SA fiche, comme le dessin du regard.
   var nombreNourrice = {}, titreNourrice = "", chaines = {};
+  // UN RÉSEAU SUPPRIMÉ ENLÈVE SA VOIE, sa réponse du 19 octobre 2026 : « si on était
+  // sur une nourrice 4 voies, faut passer sur une 3 voies ». Les voies vivantes, dans
+  // l'ordre des réseaux (le goutte-à-goutte reste à droite).
+  var voiesVivantes = [];
+  function voiesDuPlan(p) {
+    voiesVivantes = p.secteurs.map(function (s, i) { return i; }).filter(function (i) { return !etat.reseauxRetires[i]; });
+    return { voies: voiesVivantes.length, goutte: voiesVivantes.filter(function (i) { return p.secteurs[i].famille === "Goutte-à-goutte"; }).length };
+  }
   function groupeNourrice(p) {
-    var fiche = CAT.ficheNourrice(p.secteurs.length, p.secteurs.filter(function (s) { return s.famille === "Goutte-à-goutte"; }).length), g = {};
+    var v = voiesDuPlan(p), fiche = CAT.ficheNourrice(v.voies, v.goutte), g = {};
     (fiche ? fiche.pieces : []).forEach(function (x) { (g[x.ref] = g[x.ref] || { nom: nomCatalogue(x.ref), q: 0, u: "u" }).q += x.q; });
     // La sonde se compte comme elle est posée au-dessus du regard : changée ou supprimée, la liste suit.
     Object.keys(compte.sonde || {}).forEach(function (ref) { g[ref] = compte.sonde[ref]; });
@@ -893,8 +987,8 @@
     return { nom: titreNourrice, lignes: h };
   }
   function groupesDuPlan(p, d) {
-    var n = groupeNourrice(p), out = [{ titre: "Du compteur à la nourrice", lignes: compte.amenee || {} }, { titre: n.nom, lignes: n.lignes }];
-    p.secteurs.forEach(function (s, i) { out.push({ titre: "Réseau " + (i + 1) + ", " + s.nom, couleur: p.couleurs[i], lignes: compte["r" + i] || {} }); });
+    var n = groupeNourrice(p), out = [{ titre: "Du compteur à la nourrice", lignes: compte.amenee || {}, barrees: barrees.amenee || {}, reseau: "amenee" }, { titre: n.nom, lignes: etat.reseauxRetires.nourrice ? {} : n.lignes, barrees: etat.reseauxRetires.nourrice ? n.lignes : {}, reseau: "nourrice" }];
+    p.secteurs.forEach(function (s, i) { out.push({ titre: "Réseau " + (i + 1) + ", " + s.nom, couleur: p.couleurs[i], lignes: compte["r" + i] || {}, barrees: barrees["r" + i] || {}, reseau: i }); });
     // Le grillage couvre toute la tranchée : il se compte dans la liste de l'outil, pas ici.
     if (etat.grillage) {
       var g = {};
@@ -941,9 +1035,10 @@
     var groupes = modifierLaListe(groupesDuPlan(p, d));
     $("modifier-liste").textContent = etat.modifierListe ? "Terminer" : "Modifier ma liste";
     $("liste").innerHTML = groupes.map(function (g) {
-      return '<p class="groupe"' + (g.couleur ? ' style="--couleur:' + g.couleur + '"' : "") + ">" + (g.couleur ? '<span class="pastille"></span>' : "") + texte(g.titre) + "</p>" + lignesDe(g.lignes, g.titre, g.retirees);
+      return '<p class="groupe' + (g.reseau !== undefined && etat.reseauxRetires[g.reseau] ? " otee" : "") + '"' + (g.couleur ? ' style="--couleur:' + g.couleur + '"' : "") + ">" + (g.couleur ? '<span class="pastille"></span>' : "") + texte(g.titre) + "</p>" + lignesDe(g.lignes, g.titre, g.retirees, g.barrees, g.reseau);
     }).join("");
     dernierMessage = message(groupes);
+    dessinerTotal(groupes);
 
     // Le schéma comparé à la liste de l'application, sur les totaux hors nourrice.
     var reference = piecesOutil(p, d);
@@ -954,7 +1049,7 @@
       Object.keys(g.lignes).forEach(function (ref) { pose[ref] = (pose[ref] || 0) + g.lignes[ref].q; noms[ref] = g.lignes[ref].nom; });
     });
     var ecarts = Object.keys(pose).filter(function (ref) { return attendu[ref] !== undefined && attendu[ref] !== pose[ref] && ref !== "pe25-amenee"; });
-    var touche = Object.keys(etat.retirees).length + Object.keys(etat.remplacees).length + etat.ajoutees.length + Object.keys(etat.listeRetirees).length;
+    var touche = Object.keys(etat.retirees).length + Object.keys(etat.remplacees).length + etat.ajoutees.length + Object.keys(etat.listeRetirees).length + Object.keys(etat.reseauxRetires).length;
     $("verdict").className = "verdict" + (ecarts.length && !touche ? " rouge" : "");
     $("verdict").textContent = touche
       ? touche + " changement" + (touche > 1 ? "s" : "") + " à la main."
@@ -969,7 +1064,7 @@
     couleursPlan = p.couleurs;
     var res = C.dessinerPlan(p.dessin, NOURRICE, p.couleurs);
     if (!res.ok) { $("reseaux").textContent = res.raison; return; }
-    compte = {};
+    compte = {}; barrees = {};
     groupe = "sonde";
     var sonde = p.materiel.filter(function (l) { return l.ref === "RP403"; })[0];
     $("sonde-piece").innerHTML = etat.sonde && sonde ? poser("nr:sonde", sonde.ref, sonde.nom, sonde.nom, sonde.q) : "";
@@ -978,7 +1073,7 @@
     // qu'on change ou supprime comme les autres pièces.
     groupe = "amenee";
     $("teflon-piece").innerHTML = etat.teflon ? poser("op:teflon", "BDV999", "téflon 12 mm le rouleau", "téflon 12 mm le rouleau", 1) : "";
-    dessinerNourrice(p.secteurs.length, p.secteurs.filter(function (s) { return s.famille === "Goutte-à-goutte"; }).length);
+    var vv = voiesDuPlan(p); dessinerNourrice(vv.voies, vv.goutte);
     dessinerReseaux(p, res.dessin);
     dessinerPieces(p, res.dessin, M);
     dessinerListe(p, res.dessin);
@@ -1034,6 +1129,7 @@
       $("menu-gestes").innerHTML = menuNombre(qL, null, "supprimer-ligne-n");
       $("menu").hidden = false; return;
     }
+    if (b.dataset.reseauRetire !== undefined) { var kr = b.dataset.reseauRetire; if (etat.reseauxRetires[kr]) delete etat.reseauxRetires[kr]; else etat.reseauxRetires[kr] = true; dessiner(); return; }
     if (b.dataset.remettreLigne) { delete etat.listeRetirees[b.dataset.remettreLigne]; dessiner(); return; }
     if (b.dataset.geste) {
       var cle = etat.cible;

@@ -26,7 +26,7 @@ bougés. **Non éprouvé ici** : la lecture d'un vrai devis par l'IA.
 (marges, ordre vente puis achat puis à chiffrer, recherche et rangement des
 clients réemployés) ; le devis dicté les lit dans `completerParSesAchats`
 (`proposition-prix.ts`), **qui ne change rien tant qu'aucun prix d'achat n'est
-enregistré**. `ARCHITECTURE.md` §472 dit les décisions.
+enregistré**. `ARCHITECTURE.md` §473 dit les décisions.
 
 **Ce qui n'est pas éprouvé ici** : la lecture IA d'un devis reçu (aucune clé
 sur ce poste). Le dépôt, lui, a été joué au navigateur : la photo est rangée,

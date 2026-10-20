@@ -1,16 +1,49 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { colors, font, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
 import { etatDuCroquis, LIBELLES, zoneMesuree } from "@/lib/arrosage/croquis-complet";
 import { longueurDeLAmenee } from "@/lib/arrosage/geometrie-croquis";
 import {
   croquisDuDessin,
+  empriseDesDalles,
   lignesProposees,
+  lireLeDessin,
+  morceauxDe,
+  NOMS_DES_ZONES,
+  phrasesDuDessin,
+  PHRASE_RANGEE_DROITE,
+  redressee,
   zonesQuiDebordent,
+  type DessinDuPlan,
   type PointMetres,
   type ZoneDessinee,
 } from "@/lib/arrosage/dessin-du-plan";
+import {
+  arriveeA,
+  auPas,
+  cadreDe,
+  cheminDe,
+  COINS,
+  COTES,
+  cotesAuxBords,
+  dallesDeLaRangee,
+  echantillonsRangee,
+  formeLibre,
+  longueurDeLaRangee,
+  pointDuCote,
+  poigneesRangee,
+  rangeeDansLeTerrain,
+  sommetsDe,
+  surLaRangee,
+  tirerCoin,
+  tirerCote,
+  tirerRangee,
+  type Coin,
+  type Cote,
+  type Rangee,
+  type Rectangle,
+} from "@/lib/arrosage/formes-du-dessin";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 
 /**
@@ -19,38 +52,41 @@ import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
  *
  * **À l'échelle** : il tape les métrés du terrain, puis ceux de chaque zone ;
  * la zone se pose à sa taille, il la glisse à sa place. Tout ce que la planche
- * a reçu de lui le même soir est là :
+ * a reçu de lui est là :
  *
  * | | sa demande |
  * |---|---|
  * | la haie | « la largeur de la haie, pas simplement la longueur » ; ses lignes proposées par la largeur, réglables par − et +, sans plafond |
  * | le cadre | « je peux poser un carré de 12 par 12 alors que mon cadre fait 10 par 10, il faut pouvoir bloquer ça » |
- * | l'échelle | « un centième, un deux centième, pour être plus précis » : à 1/100, un mètre fait un centimètre d'écran |
- * | les arbres | « des ronds un peu chiffonnés ; on marquerait arbre et la taille du rond » |
- * | les dalles | « on cliquerait un endroit, puis un deuxième » ; la distance préécrite, puis la longueur et la largeur d'une dalle, et l'espacement |
- *
- * **Les arbres et les dalles se dessinent, le calcul ne les lit pas** : ils ne
- * partent pas au serveur, et l'écran le dit.
+ * | l'échelle | « un centième, un deux centième », puis « 2, 3 centièmes » : jusqu'au 5/100 ; deux doigts agrandissent là où ils sont posés, un doigt fait glisser |
+ * | les arbres | « des ronds un peu chiffonnés » ; ils se dessinent et ne changent rien au plan |
+ * | les dalles | deux touches, la distance préécrite, puis une dalle ; « On les arrose ? » : celles qu'on n'arrose pas coupent la zone |
+ * | la maison | « oui, tu peux l'ajouter » : elle ne s'arrose pas, et coupe ce qu'elle chevauche |
+ * | les cotes | « un compteur qui décompte » : l'objet tenu porte ses quatre distances aux bords, le doigt avance par pas |
+ * | les courbes | « que ça crée une courbure », « un dallage en S », les coins qu'on rabat, et « Forme d'origine » |
  *
  * **Le piquage ne se contredit pas** : « Compteur » ou « Robinet » posé ici
  * règle aussi « Le piquage se fait… » au-dessus, qui commande le débit.
  *
- * Les règles (ce qui tient dans le terrain, la proposition de lignes, ce qui
- * manque, l'amenée) sont celles du serveur, prises dans `src/lib/arrosage/` :
- * l'écran ne décide de rien qu'il ne refasse là-bas.
+ * Les règles (ce qui tient dans le terrain, le découpage, l'aimant, les
+ * courbes, ce qui manque, l'amenée) sont celles du serveur, prises dans
+ * `src/lib/arrosage/` : l'écran ne décide de rien qu'il ne refasse là-bas, et
+ * il relit son propre envoi par `lireLeDessin` avant de proposer le plan.
  */
 
-type Sorte = "gazon" | "potager" | "massif" | "haie";
+type Sorte = ZoneDessinee["type"] | "maison";
 type Outil = "arbre" | "dalles" | "nourrice" | "compteur" | "robinet";
-type Zone = ZoneDessinee & { id: string; lignesChoisies?: boolean };
+type Zone = Omit<ZoneDessinee, "type"> & { type: Sorte; id: string; lignesChoisies?: boolean };
 type Arbre = { id: string; nom: string | null; d: number; x: number; y: number };
-type Dalles = { id: string; nom: string | null; L: number; l: number; e: number | null; a: PointMetres; b: PointMetres };
+type Dalles = Rangee & { id: string; nom: string | null; L: number; l: number; e: number | null; arrosees?: boolean };
 
-const NOMS: Record<Sorte, string> = { gazon: "Pelouse", potager: "Potager", massif: "Massif", haie: "Haie" };
+const SORTES: Sorte[] = ["gazon", "potager", "massif", "haie", "maison"];
 /** Un centimètre d'écran, en pixels CSS : ce que vaut un mètre à 1/100. */
 const PX_PAR_CM = 96 / 2.54;
 /** Ce qui entoure le terrain, en pixels d'écran : la place de ses cotes. */
 const MARGE_PX = 30;
+/** Son plan du Vésinet est au 2/100 : « qu'on puisse changer le chiffre 1 ». */
+const ECHELLES: [string, string][] = [["200", "1/200"], ["100", "1/100"], ["50", "2/100"], ["33.333333", "3/100"], ["25", "4/100"], ["20", "5/100"]];
 
 function nombre(v: string): number | null {
   const n = parseFloat(v.replace(",", ".").replace(/\s/g, ""));
@@ -68,21 +104,12 @@ function ecritDalles(n: number): string {
 function borne(v: number, max: number): number {
   return Math.max(0, Math.min(max, v));
 }
-
-/** Combien de dalles tiennent entre les deux points, centrées, jamais étirées. */
-function rangee(d: { L: number; l: number; e: number | null; a: PointMetres; b: PointMetres }) {
-  const dist = Math.hypot(d.b.x - d.a.x, d.b.y - d.a.y);
-  const e = d.e ?? 0;
-  const n = d.l > 0 ? Math.max(1, Math.floor((dist + e) / (d.l + e) + 1e-9)) : 0;
-  const occupe = n * d.l + Math.max(0, n - 1) * e;
-  return { n, dist, depart: (dist - occupe) / 2 };
+function nomDe(z: Zone): string {
+  return z.nom ?? NOMS_DES_ZONES[z.type];
 }
-/** L'arrivée qui met la rangée à la distance tapée ; le départ ne bouge pas. */
-function arriveeA(a: PointMetres, b: PointMetres, metres: number): PointMetres {
-  let dx = b.x - a.x, dy = b.y - a.y;
-  let n = Math.hypot(dx, dy);
-  if (n < 1e-9) { dx = 1; dy = 0; n = 1; }
-  return { x: a.x + (dx / n) * metres, y: a.y + (dy / n) * metres };
+function deformee(o: Zone | Dalles | undefined): boolean {
+  if (!o) return false;
+  return "a" in o ? !!o.courbe : o.type !== "maison" && formeLibre(o);
 }
 
 /** La feuille qui s'ouvre : ce qu'on pose, ou ce qu'on corrige. */
@@ -94,7 +121,8 @@ type Feuille =
 
 type Prise =
   | { quoi: "objet"; id: string; depart: PointMetres; bouge: boolean; avant: Zone | Arbre | Dalles | PointMetres }
-  | { quoi: "plan"; toucher: string | null; bouge: boolean; cx: number; cy: number; sl: number; st: number };
+  | { quoi: "plan"; toucher: string | null; bouge: boolean; cx: number; cy: number; sl: number; st: number }
+  | { quoi: "forme"; id: string; genre: "cote" | "coin" | "rangee"; cle: string };
 
 export default function DessinerLePlan({
   piquage,
@@ -113,6 +141,8 @@ export default function DessinerLePlan({
   const T = { L: nombre(terrainSaisi.L), l: nombre(terrainSaisi.l) };
   const cadre = T.L !== null && T.l !== null ? { L: T.L, l: T.l } : null;
   const [echelle, setEchelle] = useState<number | null>(null);
+  /** Ce que les deux doigts ajoutent à l'échelle choisie : 1, rien. */
+  const [loupe, setLoupe] = useState(1);
   const [zones, setZones] = useState<Zone[]>([]);
   const [arbres, setArbres] = useState<Arbre[]>([]);
   const [dalles, setDalles] = useState<Dalles[]>([]);
@@ -121,9 +151,14 @@ export default function DessinerLePlan({
   const [outil, setOutil] = useState<Outil | null>(null);
   const [departDalles, setDepartDalles] = useState<PointMetres | null>(null);
   const [choisie, setChoisie] = useState<string | null>(null);
+  /** L'objet tenu ou touché, dont les cotes vont jusqu'aux bords. */
+  const [cotesDe, setCotesDe] = useState<string | null>(null);
   const [feuille, setFeuille] = useState<Feuille | null>(null);
   const suivant = useRef(1);
   const prise = useRef<Prise | null>(null);
+  const doigts = useRef(new Map<number, { x: number; y: number }>());
+  const pince = useRef<{ ecart: number; loupe: number; cible: PointMetres } | null>(null);
+  const ancre = useRef<{ cible: PointMetres; x: number; y: number } | null>(null);
   const svg = useRef<SVGSVGElement>(null);
   const boite = useRef<HTMLDivElement>(null);
   const [largeur, setLargeur] = useState(320);
@@ -144,11 +179,23 @@ export default function DessinerLePlan({
   const vue = cadre ?? { L: 10, l: 10 };
   const ajuste = (largeur - 2 * MARGE_PX) / vue.L;
   const voulu = echelle && cadre ? (PX_PAR_CM * 100) / echelle : ajuste;
-  const parM = Math.max(ajuste, voulu);
+  const parM = Math.max(ajuste, voulu) * loupe;
   const agrandi = parM > ajuste + 1e-6;
   /** Une taille d'écran (en pixels), dite en mètres : les traits et les lettres gardent leur taille. */
   const px = (n: number) => n / parM;
   const m = px(MARGE_PX);
+
+  // Deux doigts : le point du plan pincé reste sous les doigts. Le défilement se
+  // règle une fois le plan redessiné à sa nouvelle taille.
+  useLayoutEffect(() => {
+    const a = ancre.current, s = svg.current, b = boite.current;
+    if (!a || !s || !b) return;
+    ancre.current = null;
+    const c = s.getScreenCTM();
+    if (!c) return;
+    b.scrollLeft += c.a * a.cible.x + c.c * a.cible.y + c.e - a.x;
+    b.scrollTop += c.b * a.cible.x + c.d * a.cible.y + c.f - a.y;
+  }, [loupe]);
 
   const sortePiquage = piquage === "compteur" ? "compteur" : "robinet";
   const ids = (prefixe: string) => `${prefixe}${suivant.current++}`;
@@ -168,11 +215,13 @@ export default function DessinerLePlan({
   }
 
   // ── Le doigt ──────────────────────────────────────────────────────────────
-  function enMetres(e: React.PointerEvent): PointMetres {
-    const s = svg.current!;
-    const ctm = s.getScreenCTM()!.inverse();
-    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm);
+  function versLePlan(x: number, y: number): PointMetres {
+    const ctm = svg.current!.getScreenCTM()!.inverse();
+    const p = new DOMPoint(x, y).matrixTransform(ctm);
     return { x: p.x, y: p.y };
+  }
+  function enMetres(e: React.PointerEvent): PointMetres {
+    return versLePlan(e.clientX, e.clientY);
   }
   function dansLeTerrain(p: PointMetres): PointMetres {
     return cadre ? { x: borne(p.x, cadre.L), y: borne(p.y, cadre.l) } : p;
@@ -182,10 +231,26 @@ export default function DessinerLePlan({
     if (id === "piquage") return piquagePlace;
     return zones.find((z) => z.id === id) ?? arbres.find((a) => a.id === id) ?? dalles.find((d) => d.id === id) ?? null;
   }
+  /** Remet un objet tel qu'il était : ce que le premier doigt tenait, quand le second arrive. */
+  function remettre(id: string, o: Zone | Arbre | Dalles | PointMetres) {
+    if (id === "nourrice") setNourrice(o as PointMetres);
+    else if (id === "piquage") setPiquagePlace(o as PointMetres);
+    else if (id.startsWith("z")) setZones((zs) => zs.map((x) => (x.id === id ? (o as Zone) : x)));
+    else if (id.startsWith("a")) setArbres((as) => as.map((x) => (x.id === id ? (o as Arbre) : x)));
+    else setDalles((ds) => ds.map((x) => (x.id === id ? (o as Dalles) : x)));
+  }
 
   function appui(e: React.PointerEvent<SVGSVGElement>) {
     if (!cadre || (e.button !== undefined && e.button !== 0)) return;
     const p = dansLeTerrain(enMetres(e));
+    const tire = (e.target as Element).closest("[data-courbe],[data-coin],[data-rangee]");
+    if (tire && !outil) {
+      const genre = tire.hasAttribute("data-coin") ? "coin" : tire.hasAttribute("data-rangee") ? "rangee" : "cote";
+      const [id, cle] = (tire.getAttribute(`data-${genre === "cote" ? "courbe" : genre}`) ?? "").split(":");
+      prise.current = { quoi: "forme", id, genre, cle };
+      e.currentTarget.setPointerCapture(e.pointerId);
+      return;
+    }
     if (outil === "nourrice" || outil === "compteur" || outil === "robinet") {
       if (outil === "nourrice") setNourrice(p);
       else {
@@ -218,12 +283,15 @@ export default function DessinerLePlan({
       if (!avant) return;
       prise.current = { quoi: "objet", id, depart: p, bouge: false, avant: structuredClone(avant) };
       if (id !== "nourrice" && id !== "piquage") setChoisie(id);
+      setCotesDe(id);
     } else if (agrandi) {
       prise.current = { quoi: "plan", toucher: id, bouge: false, cx: e.clientX, cy: e.clientY, sl: b.scrollLeft, st: b.scrollTop };
     } else {
       setChoisie(null);
+      setCotesDe(null);
       return;
     }
+    if (!id) { setChoisie(null); setCotesDe(null); }
     e.currentTarget.setPointerCapture(e.pointerId);
   }
 
@@ -237,23 +305,43 @@ export default function DessinerLePlan({
       return;
     }
     const p = enMetres(e);
+    if (pr.quoi === "forme") {
+      if (pr.genre === "rangee") {
+        // La courbe passe par le doigt, mais elle peut sortir du terrain entre
+        // ses points : ce tirage-là ne se prend pas.
+        setDalles((ds) => ds.map((d) => {
+          if (d.id !== pr.id) return d;
+          const courbe = tirerRangee(d, pr.cle === "1" ? 1 : 0, dansLeTerrain(p));
+          return rangeeDansLeTerrain({ ...d, courbe }, cadre) ? { ...d, courbe } : d;
+        }));
+      } else {
+        setZones((zs) => zs.map((z) => {
+          if (z.id !== pr.id) return z;
+          return pr.genre === "coin" ? { ...z, coins: tirerCoin(z, pr.cle as Coin, p, cadre) } : { ...z, courbes: tirerCote(z, pr.cle as Cote, p, cadre) };
+        }));
+      }
+      return;
+    }
     const dx = p.x - pr.depart.x, dy = p.y - pr.depart.y;
     if (!pr.bouge && Math.abs(dx) + Math.abs(dy) < px(6)) return;
     pr.bouge = true;
     const a = pr.avant;
-    if (pr.id === "nourrice") setNourrice(dansLeTerrain({ x: (a as PointMetres).x + dx, y: (a as PointMetres).y + dy }));
-    else if (pr.id === "piquage") setPiquagePlace(dansLeTerrain({ x: (a as PointMetres).x + dx, y: (a as PointMetres).y + dy }));
+    // Le doigt avance par pas, pour que les cotes tombent juste.
+    const pas = (v: number) => auPas(v, echelle);
+    const point = (q: PointMetres) => ({ x: borne(pas(q.x + dx), cadre.L), y: borne(pas(q.y + dy), cadre.l) });
+    if (pr.id === "nourrice") setNourrice(point(a as PointMetres));
+    else if (pr.id === "piquage") setPiquagePlace(point(a as PointMetres));
     else if (pr.id.startsWith("z")) {
       const z = a as Zone;
-      setZones((zs) => zs.map((x) => (x.id === pr.id ? { ...x, x: borne(z.x + dx, Math.max(0, cadre.L - z.L)), y: borne(z.y + dy, Math.max(0, cadre.l - z.l)) } : x)));
+      setZones((zs) => zs.map((x) => (x.id === pr.id ? { ...x, x: borne(pas(z.x + dx), Math.max(0, cadre.L - z.L)), y: borne(pas(z.y + dy), Math.max(0, cadre.l - z.l)) } : x)));
     } else if (pr.id.startsWith("a")) {
       const ar = a as Arbre;
-      setArbres((as) => as.map((x) => (x.id === pr.id ? { ...x, ...dansLeTerrain({ x: ar.x + dx, y: ar.y + dy }) } : x)));
+      setArbres((as) => as.map((x) => (x.id === pr.id ? { ...x, ...point(ar) } : x)));
     } else {
       // Les deux bouts d'une rangée bougent ensemble, et restent dans le terrain.
       const d = a as Dalles;
       const mx = Math.min(d.a.x, d.b.x), Mx = Math.max(d.a.x, d.b.x), my = Math.min(d.a.y, d.b.y), My = Math.max(d.a.y, d.b.y);
-      const ddx = Math.max(-mx, Math.min(cadre.L - Mx, dx)), ddy = Math.max(-my, Math.min(cadre.l - My, dy));
+      const ddx = Math.max(-mx, Math.min(cadre.L - Mx, pas(dx))), ddy = Math.max(-my, Math.min(cadre.l - My, pas(dy)));
       setDalles((ds) => ds.map((x) => (x.id === pr.id ? { ...x, a: { x: d.a.x + ddx, y: d.a.y + ddy }, b: { x: d.b.x + ddx, y: d.b.y + ddy } } : x)));
     }
   }
@@ -261,18 +349,57 @@ export default function DessinerLePlan({
   function relache() {
     const pr = prise.current;
     prise.current = null;
-    if (!pr || pr.bouge) return;
+    if (!pr || pr.quoi === "forme" || pr.bouge) return;
     const id = pr.quoi === "plan" ? pr.toucher : pr.id;
     if (!id) return;
     // Un simple toucher ouvre ce qu'on a touché.
     if (id === "nourrice" || id === "piquage") { setFeuille({ sorte: "point", quoi: id }); return; }
     setChoisie(id);
+    setCotesDe(id);
     const z = zones.find((x) => x.id === id);
     if (z) { setFeuille({ sorte: "zone", zone: z, neuve: false }); return; }
     const ar = arbres.find((x) => x.id === id);
     if (ar) { setFeuille({ sorte: "arbre", arbre: ar, neuf: false }); return; }
     const d = dalles.find((x) => x.id === id);
     if (d) setFeuille({ sorte: "dalles", dalles: d, neuves: false });
+  }
+
+  // ── Deux doigts : la loupe ────────────────────────────────────────────────
+  // Sa demande du 19 octobre : « zoomer à n'importe quel endroit de la carte
+  // avec mes deux doigts, et après avec le slide je me déplace ».
+  function lesDeux() {
+    const [a, b] = [...doigts.current.values()];
+    return { ecart: Math.hypot(a.x - b.x, a.y - b.y) || 1, x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  }
+  function doigtPose(e: React.PointerEvent<SVGSVGElement>) {
+    doigts.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (doigts.current.size === 2) {
+      // Le premier doigt tenait peut-être un objet : il le lâche là où il était.
+      const pr = prise.current;
+      if (pr?.quoi === "objet") remettre(pr.id, pr.avant);
+      prise.current = null;
+      const d = lesDeux();
+      pince.current = { ecart: d.ecart, loupe, cible: versLePlan(d.x, d.y) };
+      return;
+    }
+    if (!pince.current) appui(e);
+  }
+  function doigtGlisse(e: React.PointerEvent<SVGSVGElement>) {
+    if (doigts.current.has(e.pointerId)) doigts.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const pi = pince.current;
+    if (pi) {
+      if (doigts.current.size < 2) return;
+      const d = lesDeux();
+      ancre.current = { cible: pi.cible, x: d.x, y: d.y };
+      setLoupe(Math.max(1, Math.min(40, (pi.loupe * d.ecart) / pi.ecart)));
+      return;
+    }
+    glisse(e);
+  }
+  function doigtLeve(e: React.PointerEvent<SVGSVGElement>) {
+    doigts.current.delete(e.pointerId);
+    if (pince.current) { if (doigts.current.size < 2) pince.current = null; return; }
+    relache();
   }
 
   function poserZone(z: Zone, neuve: boolean) {
@@ -284,26 +411,41 @@ export default function DessinerLePlan({
       const posee = { ...z, id: ids("z"), x: borne(cadre.L / 2 - z.L / 2 + decale, Math.max(0, cadre.L - z.L)), y: borne(cadre.l / 2 - z.l / 2 + decale, Math.max(0, cadre.l - z.l)) };
       setZones((zs) => [...zs, posee]);
       setChoisie(posee.id);
+      setCotesDe(posee.id);
     } else {
       setZones((zs) => zs.map((x) => (x.id === z.id ? { ...z, x: borne(z.x, Math.max(0, cadre.L - z.L)), y: borne(z.y, Math.max(0, cadre.l - z.l)) } : x)));
     }
     setFeuille(null);
   }
 
+  /** « Forme d'origine » : les côtés droits, les coins à leur place. */
+  function formeDOrigine(id: string) {
+    setZones((zs) => zs.map((z) => (z.id === id ? { ...z, courbes: undefined, coins: undefined } : z)));
+    setDalles((ds) => ds.map((d) => (d.id === id ? { ...d, courbe: undefined } : d)));
+  }
+
   // ── Ce que l'outil comprend : la règle du serveur, rejouée ici ────────────
-  const dessin = cadre
+  const dessin: DessinDuPlan | null = cadre
     ? {
         terrain: cadre,
         // Ce qui part au serveur : la zone, sans ce qui ne sert qu'à l'écran.
-        zones: zones.map((z): ZoneDessinee => ({
-          type: z.type, nom: z.nom, L: z.L, l: z.l, x: z.x, y: z.y,
-          ...(z.lignesHaie !== undefined ? { lignesHaie: z.lignesHaie } : {}),
-        })),
+        zones: zones
+          .filter((z) => z.type !== "maison")
+          .map((z): ZoneDessinee => ({
+            type: z.type as ZoneDessinee["type"], nom: z.nom, L: z.L, l: z.l, x: z.x, y: z.y,
+            ...(z.lignesHaie !== undefined ? { lignesHaie: z.lignesHaie } : {}),
+            ...(z.courbes ? { courbes: z.courbes } : {}),
+            ...(z.coins ? { coins: z.coins } : {}),
+          })),
+        maisons: zones.filter((z) => z.type === "maison").map((z) => ({ nom: z.nom, L: z.L, l: z.l, x: z.x, y: z.y })),
+        // Les dalles qu'on arrose ne changent rien au plan : elles ne partent pas.
+        dalles: dalles.filter((d) => d.arrosees === false).map((d) => ({ a: d.a, b: d.b, l: d.l, ...(d.courbe ? { courbe: d.courbe } : {}) })),
         nourrice,
         piquage: piquagePlace,
       }
     : null;
   const debordent = cadre ? zonesQuiDebordent({ terrain: cadre, zones }) : [];
+  const relu = dessin ? lireLeDessin(dessin) : null;
   const croquis = dessin ? croquisDuDessin(dessin, sortePiquage) : null;
   const etat = etatDuCroquis({
     zonesMesurees: croquis ? croquis.zones.filter(zoneMesuree).length : 0,
@@ -326,7 +468,11 @@ export default function DessinerLePlan({
           }))
         )
       : null;
-  const pret = etat.complet && debordent.length === 0;
+  const pret = etat.complet && debordent.length === 0 && relu?.ok === true;
+  const morceaux = (z: Zone) => (dessin && z.type !== "maison" ? morceauxDe(z as ZoneDessinee, dessin) : { parts: [cadreDe(z)], coupeurs: [] });
+
+  const objetChoisi = choisie ? zones.find((z) => z.id === choisie) ?? dalles.find((d) => d.id === choisie) : undefined;
+  const courbable = !!objetChoisi && ("a" in objetChoisi || objetChoisi.type !== "maison");
 
   const consigne = !cadre
     ? "Les métrés du terrain d’abord."
@@ -335,12 +481,156 @@ export default function DessinerLePlan({
     : outil === "robinet" ? "Touchez l’endroit du robinet."
     : outil === "arbre" ? "Touchez le centre de l’arbre."
     : outil === "dalles" ? (departDalles ? "Touchez l’arrivée des dalles." : "Touchez le départ des dalles.")
+    : courbable ? "Tirez un point vert pour courber."
     : agrandi ? "Touchez une zone pour la choisir, puis glissez-la."
     : "";
+
+  /** Ce qu'occupe l'objet dont on montre les cotes : un rectangle, ou un point. */
+  function emprise(id: string): Rectangle | null {
+    const o = objet(id);
+    if (!o) return null;
+    if ("a" in o) return empriseDesDalles(o);
+    if ("L" in o) return { x: o.x, y: o.y, L: o.L, l: o.l };
+    return { x: o.x, y: o.y, L: 0, l: 0 };
+  }
 
   const champ = "mt-[5px] block w-full min-w-0 rounded-[10px] border-0 px-[12px] py-3 text-[16px]";
   const styleChamp = { backgroundColor: colors.cream, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` };
   const texteDetache = { stroke: colors.card, strokeWidth: px(2.6), paintOrder: "stroke" as const, strokeLinejoin: "round" as const };
+
+  /** Un point à tirer : petit à l'œil, large sous le doigt. Rond au milieu d'un côté, carré au coin. */
+  const aTirer = (q: PointMetres, attr: Record<string, string>, carre = false) => (
+    <g key={Object.values(attr)[0]} {...attr} transform={`translate(${q.x} ${q.y}) scale(${px(1)})`} style={{ cursor: "move" }}>
+      <circle r={20} fill="transparent" />
+      {carre ? (
+        <rect x={-6.5} y={-6.5} width={13} height={13} rx={1.8} fill={colors.card} stroke={colors.plein} strokeWidth={3} />
+      ) : (
+        <circle r={7} fill={colors.card} stroke={colors.plein} strokeWidth={3} />
+      )}
+    </g>
+  );
+
+  function dessinZone(z: Zone) {
+    const hors = debordent.includes(z);
+    const est = choisie === z.id;
+    const { parts } = morceaux(z);
+    const cotes = `${ecrit(z.L)} × ${ecrit(z.l)}${z.type === "haie" && z.lignesHaie ? `, ${ecritLignes(z.lignesHaie)}` : ""}${parts.length > 1 ? `, en ${parts.length} parts` : ""}`;
+    const deuxLignes = z.l >= px(30);
+    const tient = (t: string, taille: number) => Math.min(px(taille), Math.max(px(6), (z.L - px(5)) / (t.length * 0.56)));
+    // Coupée, la zone porte son nom dans son plus grand morceau : au centre, il
+    // tombait sous la rangée ou la maison.
+    const grand = parts.length > 1 ? parts.reduce((g, q) => (q.L * q.l > g.L * g.l ? q : g)) : { x: z.x, y: z.y, L: z.L, l: z.l };
+    const cx = grand.x + grand.L / 2, cy = grand.y + grand.l / 2;
+    const bord = {
+      fill: remplissage(z.type),
+      stroke: hors ? colors.alert : est ? colors.ink : colors.rustDeep,
+      strokeWidth: px(est ? 3 : 1.5),
+      strokeDasharray: hors ? `${px(5)} ${px(4)}` : undefined,
+    };
+    const nom = nomDe(z);
+    return (
+      <g key={z.id} data-objet={z.id} style={{ cursor: "grab" }}>
+        {formeLibre(z) ? <path d={cheminDe(z)} {...bord} /> : <rect x={z.x} y={z.y} width={z.L} height={z.l} rx={px(2.5)} {...bord} />}
+        {deuxLignes ? (
+          <>
+            <text x={cx} y={cy - px(2)} textAnchor="middle" fontSize={tient(nom, 11)} fill={colors.ink} {...texteDetache}>{nom}</text>
+            <text x={cx} y={cy + px(11)} textAnchor="middle" fontSize={tient(cotes, 10)} fill={hors ? colors.alert : colors.inkSoft} {...texteDetache}>{cotes}</text>
+          </>
+        ) : (
+          <text x={cx} y={cy + px(3.5)} textAnchor="middle" fontSize={tient(`${nom}, ${cotes}`, 10)} fill={hors ? colors.alert : colors.inkSoft} {...texteDetache}>
+            {`${nom}, ${cotes}`}
+          </text>
+        )}
+        {est && z.type !== "maison" && (
+          <>
+            {COTES.map((c) => aTirer(pointDuCote(z, c), { "data-courbe": `${z.id}:${c}` }))}
+            {COINS.map((c) => aTirer(sommetsDe(z)[c], { "data-coin": `${z.id}:${c}` }, true))}
+          </>
+        )}
+      </g>
+    );
+  }
+
+  function dessinDalles(d: Dalles) {
+    const r = dallesDeLaRangee(d);
+    const ang = Math.atan2(d.b.y - d.a.y, d.b.x - d.a.x);
+    // Le nom au-dessus de la rangée (à droite si elle est debout).
+    let nx = -Math.sin(ang), ny = Math.cos(ang);
+    if (ny > 1e-6 || (Math.abs(ny) <= 1e-6 && nx < 0)) { nx = -nx; ny = -ny; }
+    const ecart = d.l / 2 + px(Math.abs(ny) <= 1e-6 ? 16 : 10);
+    const teinte = { fill: voile(colors.muted, 0.6), stroke: colors.inkSoft, strokeWidth: px(1) };
+    const e = d.courbe ? echantillonsRangee(d) : null;
+    return (
+      <g key={d.id} data-objet={d.id} style={{ cursor: "grab" }}>
+        {e ? (
+          <>
+            <path d={`M${e.pts.map((q) => `${q.x} ${q.y}`).join("L")}`} fill="none" stroke="transparent" strokeWidth={Math.max(px(26), d.l)} strokeLinecap="round" />
+            {/* Courbée : chaque dalle se pose sur la courbe, tournée comme elle. */}
+            {Array.from({ length: r.n }, (_, i) => {
+              const q = surLaRangee(e, r.depart + i * (d.L + (d.e ?? 0)) + d.L / 2);
+              return <rect key={i} x={-d.L / 2} y={-d.l / 2} width={d.L} height={d.l} transform={`translate(${q.x} ${q.y}) rotate(${(q.angle * 180) / Math.PI})`} {...teinte} />;
+            })}
+          </>
+        ) : (
+          <>
+            <line x1={d.a.x} y1={d.a.y} x2={d.b.x} y2={d.b.y} stroke="transparent" strokeWidth={Math.max(px(26), d.l)} strokeLinecap="round" />
+            <g transform={`translate(${d.a.x} ${d.a.y}) rotate(${(ang * 180) / Math.PI})`}>
+              {Array.from({ length: r.n }, (_, i) => (
+                <rect key={i} x={r.depart + i * (d.L + (d.e ?? 0))} y={-d.l / 2} width={d.L} height={d.l} {...teinte} />
+              ))}
+            </g>
+          </>
+        )}
+        <text x={(d.a.x + d.b.x) / 2 + nx * ecart} y={(d.a.y + d.b.y) / 2 + ny * ecart + px(3)} textAnchor="middle" fontSize={px(9.5)} fill={colors.ink} {...texteDetache}>
+          {`${d.nom ?? "Dalles"}, ${ecritDalles(r.n)}`}
+        </text>
+        {choisie === d.id && poigneesRangee(d).map((q, i) => aTirer(q, { "data-rangee": `${d.id}:${i}` }))}
+      </g>
+    );
+  }
+
+  /** LES QUATRE COTES de l'objet tenu, jusqu'aux bords du terrain : « une ligne
+   *  horizontale, verticale, avec les bonnes distances ». Une cote nulle (collé
+   *  au bord) ne se dessine pas. */
+  function dessinCotes(id: string) {
+    const b = emprise(id);
+    if (!b || !cadre) return null;
+    const d = cotesAuxBords(b, cadre);
+    const cx = b.x + b.L / 2, cy = b.y + b.l / 2, tic = px(4);
+    const traits: [number, number, number, number, number][] = [
+      [0, cy, b.x, cy, d.gauche],
+      [b.x + b.L, cy, cadre.L, cy, d.droite],
+      [cx, 0, cx, b.y, d.haut],
+      [cx, b.y + b.l, cx, cadre.l, d.bas],
+    ];
+    const trait = { stroke: colors.orTexte, strokeWidth: px(1.2) };
+    return (
+      <g data-atlas="cotes-aux-bords" pointerEvents="none">
+        {traits.filter((t) => t[4] >= 0.005).map(([x1, y1, x2, y2, v], i) => {
+          const couche = Math.abs(y2 - y1) < 1e-9;
+          return (
+            <g key={i}>
+              <line x1={x1} y1={y1} x2={x2} y2={y2} {...trait} />
+              {[[x1, y1], [x2, y2]].map(([x, y], k) => (
+                <line key={k} {...(couche ? { x1: x, y1: y - tic, x2: x, y2: y + tic } : { x1: x - tic, y1: y, x2: x + tic, y2: y })} {...trait} />
+              ))}
+              <text
+                x={couche ? (x1 + x2) / 2 : x1 + px(5)}
+                y={couche ? y1 - px(5) : (y1 + y2) / 2 + px(3.5)}
+                textAnchor={couche ? "middle" : "start"}
+                fontSize={px(10)}
+                fontWeight={600}
+                fill={colors.orTexte}
+                {...texteDetache}
+              >
+                {`${ecrit(v)} m`}
+              </text>
+            </g>
+          );
+        })}
+      </g>
+    );
+  }
 
   return (
     <div data-atlas="dessiner-le-plan" className="mt-5">
@@ -371,14 +661,16 @@ export default function DessinerLePlan({
         <select
           id="echelle"
           disabled={!cadre}
-          value={echelle ?? ""}
-          onChange={(e) => setEchelle(e.target.value ? Number(e.target.value) : null)}
+          value={echelle === null ? "" : String(echelle)}
+          onChange={(e) => {
+            setEchelle(e.target.value ? Number(e.target.value) : null);
+            setLoupe(1);
+          }}
           className={`${champ} appearance-none`}
           style={{ ...styleChamp, minHeight: 50 }}
         >
           <option value="">Tout le terrain</option>
-          <option value="200">1/200</option>
-          <option value="100">1/100</option>
+          {ECHELLES.map(([v, nom]) => <option key={v} value={v}>{nom}</option>)}
         </select>
       </div>
 
@@ -390,10 +682,10 @@ export default function DessinerLePlan({
           aria-label="Le terrain et ses zones"
           viewBox={`${-m} ${-m} ${vue.L + 2 * m} ${vue.l + 2 * m}`}
           style={{ display: "block", width: agrandi ? Math.round((vue.L + 2 * m) * parM) : "100%", height: "auto", touchAction: "none", userSelect: "none" }}
-          onPointerDown={appui}
-          onPointerMove={glisse}
-          onPointerUp={relache}
-          onPointerCancel={() => { prise.current = null; }}
+          onPointerDown={doigtPose}
+          onPointerMove={doigtGlisse}
+          onPointerUp={doigtLeve}
+          onPointerCancel={(e) => { doigts.current.delete(e.pointerId); pince.current = null; prise.current = null; }}
         >
           <rect x={0} y={0} width={vue.L} height={vue.l} rx={px(4)} fill={colors.cream} stroke={colors.ink} strokeWidth={px(1.6)} />
           <text x={vue.L / 2} y={-px(9)} textAnchor="middle" fontSize={px(11)} fill={cadre ? colors.inkSoft : colors.alert}>
@@ -403,64 +695,20 @@ export default function DessinerLePlan({
             {T.l !== null ? `${ecrit(T.l)} m` : "? m"}
           </text>
 
-          {zones.map((z) => {
-            const hors = debordent.includes(z);
-            const est = choisie === z.id;
-            const cotes = `${ecrit(z.L)} × ${ecrit(z.l)}${z.type === "haie" && z.lignesHaie ? `, ${ecritLignes(z.lignesHaie)}` : ""}`;
-            const deuxLignes = z.l >= px(30);
-            const tient = (t: string, taille: number) => Math.min(px(taille), Math.max(px(6), (z.L - px(5)) / (t.length * 0.56)));
-            return (
-              <g key={z.id} data-objet={z.id} style={{ cursor: "grab" }}>
-                <rect
-                  x={z.x}
-                  y={z.y}
-                  width={z.L}
-                  height={z.l}
-                  rx={px(2.5)}
-                  fill={remplissage(z.type)}
-                  stroke={hors ? colors.alert : est ? colors.ink : colors.rustDeep}
-                  strokeWidth={px(est ? 3 : 1.5)}
-                  strokeDasharray={hors ? `${px(5)} ${px(4)}` : undefined}
-                />
-                {deuxLignes ? (
-                  <>
-                    <text x={z.x + z.L / 2} y={z.y + z.l / 2 - px(2)} textAnchor="middle" fontSize={tient(z.nom ?? NOMS[z.type], 11)} fill={colors.ink} {...texteDetache}>
-                      {z.nom ?? NOMS[z.type]}
-                    </text>
-                    <text x={z.x + z.L / 2} y={z.y + z.l / 2 + px(11)} textAnchor="middle" fontSize={tient(cotes, 10)} fill={hors ? colors.alert : colors.inkSoft} {...texteDetache}>
-                      {cotes}
-                    </text>
-                  </>
-                ) : (
-                  <text x={z.x + z.L / 2} y={z.y + z.l / 2 + px(3.5)} textAnchor="middle" fontSize={tient(`${z.nom ?? NOMS[z.type]}, ${cotes}`, 10)} fill={hors ? colors.alert : colors.inkSoft} {...texteDetache}>
-                    {`${z.nom ?? NOMS[z.type]}, ${cotes}`}
-                  </text>
-                )}
-              </g>
-            );
+          {/* Les maisons par-dessus les zones qu'elles coupent. */}
+          {zones.filter((z) => z.type !== "maison").map(dessinZone)}
+          {zones.filter((z) => z.type === "maison").map(dessinZone)}
+          {/* Les morceaux d'une zone coupée ou courbe, en pointillé : ce sont eux
+              que le calcul reçoit, et le long d'eux qu'il pose les arroseurs. */}
+          {zones.filter((z) => z.type !== "maison").flatMap((z) => {
+            const { parts } = morceaux(z);
+            if (parts.length < 2 && !formeLibre(z)) return [];
+            return parts.map((q, i) => (
+              <rect key={`${z.id}-${i}`} data-atlas="morceau" x={q.x} y={q.y} width={q.L} height={q.l} fill="none" stroke={colors.plein} strokeWidth={px(1.6)} strokeDasharray={`${px(5)} ${px(3.5)}`} pointerEvents="none" />
+            ));
           })}
 
-          {dalles.map((d) => {
-            const r = rangee(d);
-            const ang = Math.atan2(d.b.y - d.a.y, d.b.x - d.a.x);
-            // Le nom au-dessus de la rangée (à droite si elle est debout).
-            let nx = -Math.sin(ang), ny = Math.cos(ang);
-            if (ny > 1e-6 || (Math.abs(ny) <= 1e-6 && nx < 0)) { nx = -nx; ny = -ny; }
-            const ecart = d.L / 2 + px(Math.abs(ny) <= 1e-6 ? 16 : 10);
-            return (
-              <g key={d.id} data-objet={d.id} style={{ cursor: "grab" }}>
-                <line x1={d.a.x} y1={d.a.y} x2={d.b.x} y2={d.b.y} stroke="transparent" strokeWidth={Math.max(px(26), d.L)} strokeLinecap="round" />
-                <g transform={`translate(${d.a.x} ${d.a.y}) rotate(${(ang * 180) / Math.PI})`}>
-                  {Array.from({ length: r.n }, (_, i) => (
-                    <rect key={i} x={r.depart + i * (d.l + (d.e ?? 0))} y={-d.L / 2} width={d.l} height={d.L} fill={voile(colors.muted, 0.6)} stroke={colors.inkSoft} strokeWidth={px(1)} />
-                  ))}
-                </g>
-                <text x={(d.a.x + d.b.x) / 2 + nx * ecart} y={(d.a.y + d.b.y) / 2 + ny * ecart + px(3)} textAnchor="middle" fontSize={px(9.5)} fill={colors.ink} {...texteDetache}>
-                  {`${d.nom ?? "Dalles"}, ${ecritDalles(r.n)}`}
-                </text>
-              </g>
-            );
-          })}
+          {dalles.map(dessinDalles)}
 
           {arbres.map((a) => (
             <g key={a.id} data-objet={a.id} style={{ cursor: "grab" }}>
@@ -502,20 +750,36 @@ export default function DessinerLePlan({
               </text>
             </g>
           )}
+          {cotesDe && dessinCotes(cotesDe)}
         </svg>
       </div>
 
       <p data-atlas="consigne-dessin" aria-live="polite" className="mx-[22px] mt-2 min-h-[21px] text-[14px]" style={{ color: colors.inkSoft }}>
         {consigne}
       </p>
+      {choisie && deformee(objetChoisi) && (
+        <button
+          type="button"
+          data-atlas="forme-d-origine"
+          onClick={() => formeDOrigine(choisie)}
+          className="mx-[22px] mt-[6px] min-h-[44px] rounded-full px-[18px] text-[14px] font-medium"
+          style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}
+        >
+          Forme d’origine
+        </button>
+      )}
 
       <div role="toolbar" aria-label="Ajouter" className="mx-[22px] mt-2 flex flex-wrap gap-[6px]">
-        {(Object.keys(NOMS) as Sorte[]).map((s) => (
+        {SORTES.map((s) => (
           <Bouton key={s} actif={false} desactive={!cadre} onClick={() => setFeuille({ sorte: "zone", zone: { id: "", type: s, nom: null, L: 0, l: 0, x: 0, y: 0 }, neuve: true })}>
             <svg viewBox="0 0 18 18" width={18} height={18} aria-hidden="true">
-              <rect x={2} y={s === "haie" ? 7 : 4} width={14} height={s === "haie" ? 4 : 10} rx={1.5} fill={remplissage(s)} stroke={colors.rustDeep} />
+              {s === "maison" ? (
+                <path d="M3 8.5L9 3.5L15 8.5V15H3Z" fill={remplissage(s)} stroke={colors.ink} strokeLinejoin="round" />
+              ) : (
+                <rect x={2} y={s === "haie" ? 7 : 4} width={14} height={s === "haie" ? 4 : 10} rx={1.5} fill={remplissage(s)} stroke={colors.rustDeep} />
+              )}
             </svg>
-            {NOMS[s]}
+            {NOMS_DES_ZONES[s]}
           </Bouton>
         ))}
         {(
@@ -538,10 +802,11 @@ export default function DessinerLePlan({
         {cadre && etat.manque.map((q) => <Ligne key={q} rouge>{LIBELLES[q].titre}</Ligne>)}
         {debordent.map((z) => (
           <Ligne key={z.id} rouge>
-            {`Pas de plan : ${z.nom ?? NOMS[z.type]} (${ecrit(z.L)} × ${ecrit(z.l)} m) ne tient pas dans le terrain de ${ecrit(cadre!.L)} × ${ecrit(cadre!.l)} m.`}
+            {`Pas de plan : ${nomDe(z)} (${ecrit(z.L)} × ${ecrit(z.l)} m) ne tient pas dans le terrain de ${ecrit(cadre!.L)} × ${ecrit(cadre!.l)} m.`}
           </Ligne>
         ))}
-        {(arbres.length > 0 || dalles.length > 0) && <Ligne>Les arbres et les dalles se dessinent, le calcul ne les lit pas encore.</Ligne>}
+        {debordent.length === 0 && relu && !relu.ok && <Ligne rouge>{relu.raison}</Ligne>}
+        {dessin && phrasesDuDessin(dessin).map((p) => <Ligne key={p}>{p}</Ligne>)}
         {amenee && (amenee.ok ? (
           <Ligne bon>{`${sortePiquage === "robinet" ? "Du robinet" : "Du compteur"} à la nourrice : ${ecrit(amenee.metres)} m.`}</Ligne>
         ) : (
@@ -583,6 +848,10 @@ export default function DessinerLePlan({
             setDalles((ds) => (neuves ? [...ds, { ...d, id: ids("d") }] : ds.map((x) => (x.id === d.id ? d : x))));
             setFeuille(null);
           }}
+          onFormeDOrigine={(id) => {
+            formeDOrigine(id);
+            setFeuille(null);
+          }}
           onSupprimer={() => {
             const f = feuille;
             if (f.sorte === "point") (f.quoi === "nourrice" ? setNourrice : setPiquagePlace)(null);
@@ -590,6 +859,7 @@ export default function DessinerLePlan({
             else if (f.sorte === "arbre") setArbres((as) => as.filter((a) => a.id !== f.arbre.id));
             else setDalles((ds) => ds.filter((d) => d.id !== f.dalles.id));
             setChoisie(null);
+            setCotesDe(null);
             setFeuille(null);
           }}
           sortePiquage={sortePiquage}
@@ -600,6 +870,7 @@ export default function DessinerLePlan({
 }
 
 function remplissage(type: Sorte): string {
+  if (type === "maison") return voile(colors.muted, 0.42);
   if (type === "gazon") return voile(colors.vertPale, 0.75);
   if (type === "haie") return voile(colors.plein, 0.34);
   if (type === "potager") return voile(colors.orClair, 0.38);
@@ -620,6 +891,8 @@ function festons(cx: number, cy: number, r: number, px: (n: number) => number): 
   return `${d}Z`;
 }
 
+/** Un outil actif est en `plein`, comme tous les boutons pleins de l'application
+ *  (sa règle du 19 octobre 2026), jamais en noir. */
 function Bouton({ actif, desactive, onClick, children }: { actif: boolean; desactive: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
@@ -628,7 +901,7 @@ function Bouton({ actif, desactive, onClick, children }: { actif: boolean; desac
       disabled={desactive}
       onClick={onClick}
       className="flex min-h-[44px] items-center gap-2 rounded-full py-[6px] pl-[10px] pr-[14px] text-[14.5px] disabled:opacity-45"
-      style={actif ? { backgroundColor: colors.ink, color: colors.card, border: `1px solid ${colors.ink}` } : { backgroundColor: colors.card, color: colors.ink, border: `1px solid ${colors.line}` }}
+      style={actif ? { backgroundColor: colors.plein, color: surPlein, border: `1px solid ${colors.plein}` } : { backgroundColor: colors.card, color: colors.ink, border: `1px solid ${colors.line}` }}
     >
       {children}
     </button>
@@ -679,6 +952,7 @@ function FeuilleDuDessin({
   onZone,
   onArbre,
   onDalles,
+  onFormeDOrigine,
   onSupprimer,
   sortePiquage,
 }: {
@@ -688,6 +962,7 @@ function FeuilleDuDessin({
   onZone: (z: Zone, neuve: boolean) => void;
   onArbre: (a: Arbre, neuf: boolean) => void;
   onDalles: (d: Dalles, neuves: boolean) => void;
+  onFormeDOrigine: (id: string) => void;
   onSupprimer: () => void;
   sortePiquage: string;
 }) {
@@ -702,7 +977,9 @@ function FeuilleDuDessin({
   const [l, setl] = useState(montre(z?.l ?? da?.l));
   const [d, setD] = useState(montre(ar?.d));
   const [e, setE] = useState(montre(da?.e));
-  const [dist, setDist] = useState(da ? ecrit(Math.hypot(da.b.x - da.a.x, da.b.y - da.a.y)) : "");
+  const [dist, setDist] = useState(da ? ecrit(longueurDeLaRangee(da)) : "");
+  /** « On les arrose ? » Pas de réponse d'office : il la donne. */
+  const [arrosees, setArrosees] = useState<boolean | null>(da?.arrosees ?? null);
   const [lignes, setLignes] = useState<{ n: number | null; choisies: boolean }>({
     n: z?.lignesHaie ?? lignesProposees(z ? z.l || null : null),
     choisies: !!z?.lignesChoisies,
@@ -712,7 +989,7 @@ function FeuilleDuDessin({
 
   const titre =
     feuille.sorte === "point" ? (feuille.quoi === "nourrice" ? "La nourrice" : sortePiquage === "robinet" ? "Le robinet" : "Le compteur")
-    : z ? (z.nom || NOMS[z.type as Sorte])
+    : z ? nomDe(z)
     : ar ? (ar.nom || "Arbre")
     : (da?.nom || "Dalles");
 
@@ -746,10 +1023,20 @@ function FeuilleDuDessin({
     } else if (da) {
       const nDist = nombre(dist), nL = nombre(L), nl = nombre(l);
       if (refuse([["dist", nDist], ["L", nL], ["l", nl]])) return;
-      const b = arriveeA(da.a, da.b, nDist!);
+      if (arrosees === null) { setErreur("Dites si on les arrose."); return; }
+      let b = arriveeA(da, nDist!);
+      if (da.courbe) {
+        if (!rangeeDansLeTerrain({ ...da, b }, cadre)) { setInvalides(["dist"]); setErreur(neTientPas(cadre)); return; }
+      } else if (!arrosees) {
+        // Celles qu'on n'arrose pas coupent la zone : le calcul ne connaît que
+        // des rectangles, la rangée est donc droite, ou refusée.
+        const droite = redressee(da.a, b);
+        if (!droite) { setErreur(PHRASE_RANGEE_DROITE); return; }
+        b = droite;
+      }
       if (b.x < -1e-6 || b.y < -1e-6 || b.x > cadre.L + 1e-6 || b.y > cadre.l + 1e-6) { setInvalides(["dist"]); setErreur(neTientPas(cadre)); return; }
-      if (nl! > nDist! + 1e-9) { setInvalides(["l"]); setErreur(`Plus large que la distance, qui fait ${ecrit(nDist!)} m.`); return; }
-      onDalles({ ...da, nom: leNom, L: nL!, l: nl!, e: nombre(e), b }, neuf);
+      if (nL! > nDist! + 1e-9) { setInvalides(["L"]); setErreur(`Plus longue que la distance, qui fait ${ecrit(nDist!)} m.`); return; }
+      onDalles({ ...da, nom: leNom, L: nL!, l: nl!, e: nombre(e), b, arrosees }, neuf);
     }
   }
 
@@ -762,9 +1049,10 @@ function FeuilleDuDessin({
 
   const noteDalles = (() => {
     if (!da) return "";
-    const nDist = nombre(dist), nl = nombre(l);
-    if (nDist === null || nl === null) return "";
-    const r = rangee({ L: nombre(L) ?? 0, l: nl, e: nombre(e), a: da.a, b: arriveeA(da.a, da.b, nDist) });
+    // Le compte suit la longueur d'une dalle : c'est elle qui se pose dans le sens de la rangée.
+    const nDist = nombre(dist), nL = nombre(L);
+    if (nDist === null || nL === null) return "";
+    const r = dallesDeLaRangee({ ...da, L: nL, e: nombre(e), b: arriveeA(da, nDist) });
     return `${ecritDalles(r.n)} sur ${ecrit(r.dist)} m.`;
   })();
 
@@ -783,6 +1071,10 @@ function FeuilleDuDessin({
     <input id={id} inputMode="decimal" enterKeyHint="done" autoComplete="off" autoFocus={auto} value={valeur} onChange={(ev) => changer(ev.target.value)} className={champ} style={style(id.replace("feuille-", ""))} />
   );
   const fermer = () => (neuf ? onFermer() : valider());
+  const choix = (presse: boolean) => (presse
+    ? { border: `1px solid ${colors.plein}`, backgroundColor: colors.plein, color: surPlein }
+    : { border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink });
+  const aDeformer = !neuf && (z ? deformee(z) : da ? deformee(da) : false);
 
   return (
     <div className="fixed inset-0 z-40 flex items-end justify-center" style={{ backgroundColor: "rgba(0,0,0,.35)" }} onClick={fermer} data-atlas="feuille-dessin">
@@ -800,7 +1092,7 @@ function FeuilleDuDessin({
         {feuille.sorte !== "point" && (
           <>
             {libelle("feuille-nom", "Nom", 14)}
-            <input id="feuille-nom" autoComplete="off" value={nom} placeholder={z ? NOMS[z.type as Sorte] : ar ? "Arbre" : "Dalles"} onChange={(ev) => setNom(ev.target.value)} className={champ} style={style("nom")} />
+            <input id="feuille-nom" autoComplete="off" value={nom} placeholder={z ? NOMS_DES_ZONES[z.type] : ar ? "Arbre" : "Dalles"} onChange={(ev) => setNom(ev.target.value)} className={champ} style={style("nom")} />
           </>
         )}
         {da && (
@@ -834,6 +1126,21 @@ function FeuilleDuDessin({
           <>
             {libelle("feuille-e", "Espacement entre deux dalles")}
             {nombreChamp("feuille-e", e, touche("e", setE))}
+            <span id="arrosees-titre" className={`block ${libelleCaps}`} style={{ color: colors.muted, marginTop: 12 }}>On les arrose ?</span>
+            <div role="group" aria-labelledby="arrosees-titre" className="mt-[6px] grid grid-cols-2 gap-2">
+              {([[true, "Oui"], [false, "Non"]] as const).map(([v, mot]) => (
+                <button
+                  key={mot}
+                  type="button"
+                  aria-pressed={arrosees === v}
+                  onClick={() => { setArrosees(v); setErreur(""); }}
+                  className="min-h-[48px] rounded-full text-[15px] font-semibold"
+                  style={choix(arrosees === v)}
+                >
+                  {mot}
+                </button>
+              ))}
+            </div>
           </>
         )}
         {noteDalles && <p className="mt-[6px] text-[13px]" style={{ color: colors.muted }}>{noteDalles}</p>}
@@ -867,6 +1174,11 @@ function FeuilleDuDessin({
             {feuille.sorte === "point" ? "Fermer" : neuf ? "Poser" : "Valider"}
           </button>
         </div>
+        {aDeformer && (
+          <button type="button" onClick={() => onFormeDOrigine((z ?? da)!.id)} className="mr-[18px] mt-[6px] min-h-[44px] border-0 bg-transparent p-0 text-[14px] underline" style={{ color: colors.inkSoft }}>
+            Forme d’origine
+          </button>
+        )}
         {!neuf && (
           <button type="button" onClick={onSupprimer} className="mt-[6px] min-h-[44px] border-0 bg-transparent p-0 text-[14px] underline" style={{ color: colors.alert }}>
             Supprimer

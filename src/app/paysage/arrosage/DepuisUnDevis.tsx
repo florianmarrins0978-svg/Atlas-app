@@ -249,7 +249,12 @@ export default function DepuisUnDevis() {
             {m.nourrice && (
               <>
                 <div className="mt-3 overflow-hidden rounded-[16px] py-2" style={{ backgroundColor: "#ffffff", boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
-                  <Dessin n={m.nourrice} couleurs={[]} absentes={m.absentes} />
+                  <Dessin
+                    n={m.nourrice}
+                    couleurs={[]}
+                    etats={m.nourrice.poses.map((_, i) => (m.absentes.has(i) ? "absente" : ""))}
+                    reseauDeVoie={Array.from({ length: m.voies }, (_, i) => i)}
+                  />
                 </div>
                 <h3 className="mt-4 text-[14px] font-semibold">Avec la nourrice</h3>
                 <div className="mt-[10px] flex flex-wrap gap-x-2 gap-y-3 rounded-[14px] px-[10px] py-[14px]" style={{ backgroundColor: colors.card }}>

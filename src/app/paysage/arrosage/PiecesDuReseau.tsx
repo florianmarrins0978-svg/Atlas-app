@@ -190,7 +190,7 @@ export function Chips<T extends string | number>({ valeur, choix, onChoix, libel
           aria-pressed={valeur === v}
           onClick={() => onChoix(v)}
           className="rounded-full px-3 py-2 text-[13.5px]"
-          style={{ border: `1px solid ${valeur === v ? colors.ink : colors.line}`, backgroundColor: valeur === v ? colors.ink : colors.card, color: valeur === v ? colors.card : colors.ink }}
+          style={{ border: `1px solid ${valeur === v ? colors.plein : colors.line}`, backgroundColor: valeur === v ? colors.plein : colors.card, color: valeur === v ? colors.card : colors.ink }}
         >
           {texte}
         </button>

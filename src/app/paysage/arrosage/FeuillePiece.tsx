@@ -209,8 +209,8 @@ export function FeuilleFournisseur({
               setParti((n) => n + 1);
               navigator.share({ text: texte });
             }}
-            className="min-h-[52px] flex-1 rounded-full border-0 text-[15.5px]"
-            style={{ backgroundColor: colors.ink, color: colors.card }}
+            className="atlas-plein min-h-[52px] flex-1 rounded-full border-0 text-[15.5px] font-semibold"
+            style={{ backgroundColor: colors.plein, color: colors.card }}
           >
             Envoyer
           </button>

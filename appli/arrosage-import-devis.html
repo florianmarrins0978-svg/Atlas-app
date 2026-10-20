@@ -130,6 +130,27 @@
   .recherche{display:block;width:100%;margin-top:12px;border:0;border-radius:10px;padding:12px;font-size:16px;background:var(--atlas-card);color:var(--atlas-ink);box-shadow:inset 0 0 0 1px var(--atlas-line)}
   .choix{display:flex;align-items:center;gap:12px;width:100%;margin-top:8px;border:0;border-radius:12px;padding:10px 12px;background:var(--atlas-card);color:var(--atlas-ink);text-align:left;font-size:14px;cursor:pointer}
   .choix small{display:block;color:var(--atlas-muted);font-size:12px}
+  /* AUX COULEURS ET AUX FORMES DE L'APPLICATION, sa demande du 19 octobre 2026 :
+     les polices du téléphone (globals.css, --font-display et --font-body) et les
+     boutons en pilule, relevés sur l'écran du plan rendu avec la vraie feuille
+     de style (scripts/capture-plan-arrosage.ts). */
+  body{font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+  h1,h2,.feuille h2,.total .m{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;font-weight:400;letter-spacing:-0.01em}
+  .principal,.second,.source,.ajouter,.petit,.gestes-message button,.onglets button,.inconnue .gestes button,.nouveau button,.fournisseur .source{border-radius:999px}
+  /* LES BOUTONS PLEINS DE L'APPLICATION, sa demande du 19 octobre 2026 (« les
+     boutons, mets ceux de l'appli ») : l'aplat plein de design-tokens.ts, vert
+     sauge à plat sur Origine (« la D », 3 septembre 2026), l'accent de chaque
+     charte ailleurs (chartes.ts) ; le texte dessus est surPlein, la couleur des cartes. */
+:root{--atlas-plein:#7d9a6d}
+[data-charte="origine"]{--atlas-plein:#7d9a6d}
+[data-charte="brume"]{--atlas-plein:#22456d}
+[data-charte="pierre"]{--atlas-plein:#1b1d19}
+[data-charte="beurre"]{--atlas-plein:#26221a}
+[data-charte="moka"]{--atlas-plein:#2b241e}
+[data-charte="prune"]{--atlas-plein:#3d1730}
+[data-charte="sylve"]{--atlas-plein:#e6e6da}
+[data-charte="nuit"]{--atlas-plein:#e9e8de}
+  .principal,.source.principale,.gestes-message button:last-child,.onglets button[aria-pressed="true"],.chips button[aria-pressed="true"],.total{background:var(--atlas-plein);border-color:var(--atlas-plein);color:var(--atlas-card)}
 </style>
 <body data-charte="origine">
 <div class="entete">
@@ -209,6 +230,8 @@
     <div class="haut"><h2 id="fournisseur-titre">Au fournisseur</h2><button class="fermer" type="button" id="fermer-fournisseur">Fermer</button></div>
     <textarea class="message" id="message" aria-label="Le message au fournisseur"></textarea>
     <div class="gestes-message"><button type="button" id="copier">Copier</button><button type="button" id="partager">Envoyer</button></div>
+    <!-- La liste envoyée s'enregistre chez le fournisseur : sa demande du 19 octobre 2026. -->
+    <p class="note" id="enregistree" hidden></p>
   </div>
 </div>
 
@@ -372,8 +395,12 @@
     }
     if (b.id === "ajouter-piece") { $("feuille-titre").textContent = "Ajouter une pièce"; ouvrirChoix("ajout"); return; }
     if (b.dataset.retirer) { extras.splice(Number(b.dataset.retirer), 1); montrer(); return; }
-    if (b.id === "au-fournisseur") { $("message").value = message(); $("partager").hidden = !navigator.share; $("copier").textContent = "Copier"; $("fournisseur").hidden = false; return; }
+    if (b.id === "au-fournisseur") { $("message").value = message(); $("partager").hidden = !navigator.share; $("copier").textContent = "Copier"; $("enregistree").hidden = true; $("fournisseur").hidden = false; return; }
     if (b.id === "fermer-fournisseur") { $("fournisseur").hidden = true; return; }
+    if (b.id === "copier" || b.id === "partager") {
+      $("enregistree").textContent = "Enregistrée chez Aqua Plus, dans Réglages, Demandes envoyées, le " + new Date().toLocaleDateString("fr-FR") + ".";
+      $("enregistree").hidden = false;
+    }
     if (b.id === "copier") {
       navigator.clipboard.writeText($("message").value).then(function () { b.textContent = "Copié"; }, function () { $("message").select(); b.textContent = "Sélectionné"; });
       return;

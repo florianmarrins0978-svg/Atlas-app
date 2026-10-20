@@ -1,5 +1,6 @@
 import { CATALOGUE } from "./catalogue.js";
 import { PHOTOS_NOURRICE, type PhotoMesuree } from "./photos-nourrice";
+import type { Retouches } from "./retouches";
 
 /**
  * LA NOURRICE ÉCLATÉE — le dessin qu'il a validé le 18 octobre 2026
@@ -100,6 +101,38 @@ export type PoseColonne = {
   ay: number;
 };
 export type Pose = PoseHaut | PoseColonne;
+
+/**
+ * `absente` : une pièce qu'un devis importé n'apporte pas (sa planche du
+ * 18 octobre 2026, `appli/arrosage-import-devis.html`) ; grisée comme une
+ * pièce supprimée, mais sans la barre rouge : il ne l'a pas retirée.
+ */
+export type EtatPose = "" | "retiree" | "changee" | "absente";
+
+/**
+ * CE QU'IL A FAIT DE CHAQUE PIÈCE DESSINÉE — sa demande du 19 octobre 2026 :
+ * *« quand je modifie une pièce sur les réseaux ou que je la supprime, elle se
+ * met en grisé et barré rouge ; pour la vue éclatée de la nourrice, je voulais
+ * que ça fasse la même chose »*.
+ *
+ * Un numéro entier supprimé ou changé : toutes ses pièces. Sinon, les `nrUne`
+ * sorties d'un numéro sont les premières dans l'ordre du dessin, comme pour la
+ * chaîne d'une tête : d'abord les supprimées, puis les changées (celles dont la
+ * remplaçante est entrée dans la liste, `de` ce numéro).
+ */
+export function etatsDesPoses(poses: Pose[], r: Retouches): EtatPose[] {
+  const vues: Record<string, number> = {};
+  return poses.map((p) => {
+    const j = vues[p.ref] ?? 0;
+    vues[p.ref] = j + 1;
+    if (r.blocsRetires.nourrice || r.retirees[`nr:${p.ref}`]) return "retiree";
+    if (r.remplacees[`nr:${p.ref}`]) return "changee";
+    const sorties = r.nrUne[p.ref] ?? 0;
+    const changees = r.ajoutees.filter((a) => a.de === p.ref).reduce((s, a) => s + a.q, 0);
+    const supprimees = Math.max(0, sorties - changees);
+    return j < supprimees ? "retiree" : j < sorties ? "changee" : "";
+  });
+}
 
 export type Etiquette =
   | { x: number; y: number; texte: string }
