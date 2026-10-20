@@ -224,7 +224,7 @@ choix. *« Ce que tu demandes : sur chaque réseau et sur la longueur du compteu
 change, et l'inverse : refuser le Ø32 proposé. Voilà c'est ça que je veux. »*
 L'amenée garde sa bascule automatique en Ø32 quand la longueur l'impose, et il
 peut la refuser. Planche à faire, puis le calcul des lignes de réseau en Ø32
-(aujourd'hui toujours en Ø25).
+(aujourd'hui toujours en Ø25). **Planche faite le 20 octobre** : `appli/arrosage-choix-du-diametre.html` (le bandeau Ø25 ou Ø32 sous chaque réseau et sous l'amenée, la ligne de ce que ça change, les pièces en 32 du catalogue). Chiffres d'exemple : le calcul des lignes en Ø32 reste à écrire.
 
 ## ⏳ ARROSAGE : 141 BUSES RELEVÉES DANS AQUA PLUS, À TRANCHER AVANT D'ENTRER (16 octobre 2026)
 

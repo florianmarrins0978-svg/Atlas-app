@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ø25 ou Ø32</title>
+<!--
+  MAQUETTE, RIEN N'EST CODÉ (CLAUDE.md §3 bis). Sa règle du 20 octobre 2026 :
+  « il fait le calcul en diamètre 25 ; si le 25 ne passe pas, il rajoute un
+  réseau », puis, sur ma reformulation : « sur chaque réseau et sur la longueur
+  du compteur à la nourrice, pouvoir choisir Ø25 ou Ø32 et voir tout de suite ce
+  que ça change, et l'inverse : refuser le Ø32 proposé. Voilà c'est ça que je
+  veux. »
+
+  Le choix est un bandeau déroulant, sa forme « la A » du 18 octobre pour tout
+  choix. LES CHIFFRES SONT UN EXEMPLE : le calcul des lignes de réseau en Ø32
+  n'existe pas encore (elles sont toujours calculées en Ø25). La planche montre
+  le geste et la ligne qui dit ce que ça change ; les vrais chiffres sortiront
+  du calcul une fois écrit. Les pièces en 32 sont celles du catalogue, mot pour
+  mot (Aqua Plus 2026).
+-->
+<style>
+[data-charte="origine"]{--atlas-cream:#f5f3ee;--atlas-card:#faf9f5;--atlas-ink:#1c1c1a;--atlas-inkSoft:#4a4a44;--atlas-muted:#8a8578;--atlas-or:#B98B47;--atlas-orTexte:#8b6835;--atlas-line:rgba(28,28,26,0.12);--atlas-rustTint:#ece9e1;--atlas-alerte:#9C3B2E}
+  *{box-sizing:border-box}
+  html{background:var(--atlas-rustTint)}
+  body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-rustTint)}
+  .entete{max-width:430px;margin:0 auto;padding:18px 16px 6px}
+  .entete h1{margin:0;font:400 24px/1.15 Georgia,"Times New Roman",serif}
+  .entete p{margin:6px 0 0;font-size:13.5px;color:var(--atlas-inkSoft)}
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--atlas-cream);padding:6px 16px 80px;min-height:100vh}
+  .caps{display:block;margin:26px 0 0;font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--atlas-or)}
+  h2{margin:6px 0 0;font:400 24px/1.2 Georgia,"Times New Roman",serif}
+  .reseau{display:flex;align-items:center;gap:12px;margin-top:22px}
+  .pastille{width:22px;height:22px;border-radius:5px;flex:none}
+  .reseau b{font:400 26px/1.1 Georgia,"Times New Roman",serif}
+  .reseau .zone{flex:1;font-size:16px;color:var(--atlas-muted)}
+  .carte{margin-top:10px;background:var(--atlas-card);border-radius:14px;height:110px;display:flex;align-items:center;justify-content:center;font-size:13.5px;color:var(--atlas-muted)}
+  /* LE BANDEAU DÉROULANT : le sélecteur du téléphone, comme pour « Combien ». */
+  .tuyau{display:flex;align-items:center;gap:12px;min-height:52px;margin-top:10px;border-radius:12px;border:1px solid var(--atlas-line);background:var(--atlas-card);padding:0 6px 0 14px}
+  .tuyau span{flex:1;font-size:15.5px}
+  select{appearance:none;-webkit-appearance:none;min-width:110px;min-height:40px;border:0;border-radius:10px;padding:0 34px 0 14px;font:600 17px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--atlas-ink);background:var(--atlas-cream) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%231c1c1a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center;box-shadow:0 0 0 1px var(--atlas-line)}
+  .change{margin:8px 0 0;min-height:22px;font-size:14.5px;color:var(--atlas-orTexte)}
+  .propose{margin:8px 0 0;font-size:14.5px;color:var(--atlas-inkSoft)}
+  .liste{margin:8px 0 0;padding:0;list-style:none}
+  .liste li{display:flex;gap:14px;padding:6px 0;font-size:15.5px}
+  .liste li b{min-width:44px;font-weight:400;color:var(--atlas-orTexte)}
+  .resume{margin-top:26px;padding:14px 16px;border-radius:14px;background:var(--atlas-card);font-size:15.5px}
+</style>
+<body data-charte="origine">
+<div class="entete">
+  <h1>Ø25 ou Ø32</h1>
+  <p>Planche, rien n’est codé. Les chiffres sont un exemple. Changez le tuyau : la ligne en dessous dit ce que ça change.</p>
+</div>
+<main class="ecran">
+  <span class="caps">Le piquage, au compteur</span>
+  <h2>Du compteur à la nourrice</h2>
+  <label class="tuyau"><span>Tuyau</span><select id="amenee" aria-label="Tuyau du compteur à la nourrice"><option value="32">Ø32</option><option value="25">Ø25</option></select></label>
+  <p class="propose" id="amenee-propose">L’outil propose le Ø32 : le Ø25 tient jusqu’à 18 m, il en faut 26.</p>
+  <p class="change" id="amenee-change"></p>
+
+  <div class="reseau"><span class="pastille" style="background:#2F6FB5"></span><b>Réseau 1</b><span class="zone">Arroseurs</span></div>
+  <div class="carte">le plan du réseau 1</div>
+  <label class="tuyau"><span>Tuyau</span><select id="r1" aria-label="Tuyau du réseau 1"><option value="25">Ø25</option><option value="32">Ø32</option></select></label>
+  <p class="change" id="r1-change"></p>
+  <ul class="liste" id="r1-liste"></ul>
+
+  <div class="reseau"><span class="pastille" style="background:#3E8F4E"></span><b>Réseau 2</b><span class="zone">Arroseurs</span></div>
+  <div class="carte">le plan du réseau 2</div>
+  <label class="tuyau"><span>Tuyau</span><select id="r2" aria-label="Tuyau du réseau 2"><option value="25">Ø25</option><option value="32">Ø32</option></select></label>
+  <p class="change" id="r2-change"></p>
+
+  <div id="r3"><div class="reseau"><span class="pastille" style="background:#D9A520"></span><b>Réseau 3</b><span class="zone">Arroseurs</span></div>
+  <div class="carte">le plan du réseau 3, 1 arroseur</div></div>
+
+  <p class="resume" id="resume"></p>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  // L'exemple : 9 turbines, en Ø25 sur 3 réseaux (4, 4 et 1). Le Ø32 ne pose
+  // pas une tête de plus dans le jardin : il en met plus sur un réseau, et le
+  // réseau 3 n'a plus lieu d'être.
+  function un32() { return $("r1").value === "32" || $("r2").value === "32"; }
+  function reseaux() { return (un32() ? 2 : 3) + ($("amenee").value === "25" ? 1 : 0); }
+  function maj() {
+    var a25 = $("amenee").value === "25";
+    $("amenee-propose").hidden = a25;
+    $("amenee-change").textContent = a25 ? "En Ø25 : 1 réseau de plus, la pression à la nourrice ne suffit plus pour 5 têtes." : "";
+    var gagne = " L’arroseur du réseau 3 passe sur celui-ci : un réseau de moins.";
+    $("r1-change").textContent = $("r1").value === "32" ? "En Ø32 : 5 arroseurs sur ce réseau au lieu de 4." + gagne : "";
+    $("r2-change").textContent = $("r2").value === "32" && $("r1").value !== "32" ? "En Ø32 : 5 arroseurs sur ce réseau au lieu de 4." + gagne : "";
+    // Le titre est en flex : `hidden` ne l'emporterait pas sur sa règle.
+    $("r3").style.display = un32() ? "none" : "";
+    $("r1-liste").innerHTML = $("r1").value === "32"
+      ? "<li><b>4x</b>té 90° taraudé 32 x 3/4\" x 32</li><li><b>1x</b>coude taraudé 32 x 3/4\"</li><li><b>1x</b>té 90° réduit 32 x 25 x 32</li><li><b>38 m</b>de PEHD Ø32</li>"
+      : "<li><b>3x</b>té 90° taraudé 25 x 3/4\" x 25</li><li><b>1x</b>coude taraudé 25 x 3/4\"</li><li><b>34 m</b>de PEHD Ø25</li>";
+    var n = reseaux();
+    $("resume").textContent = "Ce jardin demande " + n + " réseaux, donc une nourrice " + n + " voies.";
+  }
+  ["amenee", "r1", "r2"].forEach(function (id) { $(id).onchange = maj; });
+  maj();
+})();
+</script>
+</body>
+</html>
