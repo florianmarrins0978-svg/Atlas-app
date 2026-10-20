@@ -37,6 +37,30 @@ Format : le plus récent en tête.
   la consigne du modèle le dit. **Non vérifié sur une vraie photo ici** (aucune
   clé) : `npm run verifier:croquis` sur son espace, ou sa photo rejouée.
 
+- **« Réinitialiser » vide enfin une date de véhicule sur iPhone.** Lu dans
+  WebKit (`WKDateTimeInputControl.mm`) : ouvrir une case de date vide y écrit
+  la date du jour, puis « Réinitialiser » la vide, deux écritures sans
+  attendre. La fiche comparait le vide à la valeur d'avant l'ouverture, vide
+  aussi : il ne partait jamais, et la date du jour restait en base. Elle
+  compare désormais à la dernière valeur envoyée (`FicheVehicule.tsx`).
+  `scripts/test-vehicule-date-reinitialisee-e2e.ts`, rouge avant
+  (« elle vaut 2026-10-20 »).
+
+- **Le verso d'une carte grise ne se refuse plus comme « autre véhicule », et
+  ses dates de contrôle se prennent.** Sa carte grise d'Amarok (EH-467-GL) :
+  le verso imprime le numéro de formule « 2025EJ72653 » juste au-dessus de
+  « (A) Numéro d'immatriculation », le modèle le rendait comme plaque, et la
+  comparaison refusait le papier (cause la plus probable : la réponse du
+  modèle n'est journalisée nulle part, l'appel n'est pas jouable ici sans
+  clé). Racine : une « plaque » lue qui n'a pas la forme d'une plaque vaut
+  `null` (`aLaFormeDUnePlaque`, `document-vehicule-lu.ts`), et la consigne le
+  dit au modèle. La carte grise remplit désormais le contrôle technique (case
+  X.1 au recto, vignette « A : » au verso) et la pollution (« POLLU : »), sans
+  jamais reculer une échéance déjà plus tardive (le recto imprime la date de
+  son édition, les vignettes la repoussent) ; jamais la contre-visite, qu'une
+  vignette barrée rendrait fausse. `rangerLecture` reçoit le véhicule connu
+  au lieu de sa seule plaque. `scripts/test-vehicules.ts`, rouge avant.
+
 ## 2026-10-19
 
 - **Le plan dessiné au doigt fait dans l'application tout ce que sa planche B

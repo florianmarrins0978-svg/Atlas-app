@@ -13,7 +13,7 @@
  * n'existe pas ne passe pas : elle poserait un rappel sur un jour faux.
  */
 
-import { estJourReel, type LectureDocumentVehicule, type NatureDocumentVehicule } from "./vehicules";
+import { aLaFormeDUnePlaque, estJourReel, type LectureDocumentVehicule, type NatureDocumentVehicule } from "./vehicules";
 
 const NATURES: Record<string, NatureDocumentVehicule> = {
   carte_grise: "carte_grise",
@@ -51,10 +51,16 @@ export function lireReponseDocumentVehicule(texte: string): LectureDocumentVehic
     const n = typeof v === "number" ? v : typeof v === "string" ? Number(v.replace(/[^\d]/g, "")) : NaN;
     return Number.isInteger(n) && n >= 500 && n <= 44000 ? n : null;
   };
+  // Ce qui n'a pas la forme d'une plaque n'en est pas une : comparé à la vraie,
+  // il ferait refuser le papier comme celui d'un autre véhicule.
+  const plaque = (v: unknown): string | null => {
+    const p = chaine(v);
+    return p !== null && aLaFormeDUnePlaque(p) ? p : null;
+  };
   const nature = typeof brut.nature === "string" ? NATURES[brut.nature] ?? null : null;
   return {
     nature,
-    plaque: chaine(brut.plaque),
+    plaque: plaque(brut.plaque),
     modele: chaine(brut.marque_modele),
     ptacKg: poids(brut.ptac_kg),
     genre: chaine(brut.genre),
