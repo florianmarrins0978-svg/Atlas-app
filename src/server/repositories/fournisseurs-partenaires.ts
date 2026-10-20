@@ -77,6 +77,22 @@ export async function reglerMargeSociete(ctx: Ctx, id: string, marge: string | n
   });
 }
 
+/** L'adresse mail, ou le début et la fin de son message : `undefined` si la société n'existe plus. */
+export async function reglerContactSociete(
+  ctx: Ctx,
+  id: string,
+  champs: { email?: string | null; debutMail?: string | null; finMail?: string | null }
+): Promise<SocieteEnBase | undefined> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [s] = await tx
+      .update(societesAchat)
+      .set({ ...champs, updatedAt: new Date() })
+      .where(and(eq(societesAchat.id, id), isNull(societesAchat.deletedAt)))
+      .returning();
+    return s;
+  });
+}
+
 export type MargesGenerales = { materiel: string | null; mainOeuvre: string | null };
 
 export async function lireMarges(ctx: Ctx): Promise<MargesGenerales> {

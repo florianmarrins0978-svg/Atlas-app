@@ -32,6 +32,8 @@ l'assistant (`rechercher-tarifs-compatibles.ts`). Suites :
 `test-devis-fournisseur-lu`, `test-devis-prix-achat-db`. **Niveau 3** (plancher
 `drizzle/`, gravité argent) : batterie entière avant `main`, à lancer par lui.
 Document de retour : `docs/fournisseurs-et-partenaires.md`.
+Le 20 octobre : migration `0133` (l'adresse mail, le début et la fin du message
+de chaque fournisseur), champ « Adresse mail » sur sa fiche.
 
 ## UNE ACTION INCONNUE RECHARGE LA PAGE (17 octobre 2026)
 

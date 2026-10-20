@@ -4,7 +4,9 @@ import {
   conseilDeMarge,
   dateesAMontrer,
   ligneDeMarge,
+  lireAdresseMail,
   lireMarge,
+  lireMorceauDeMessage,
   phraseDeLaMargePropre,
   prixAchatCorrespondant,
   prixDepuisAchat,
@@ -151,6 +153,20 @@ test("deux de ses tarifs qui répondent ne laissent pas passer un prix d'achat d
   const p = prixDUneLigneDictee("ciment", 1, { tarifs: [t("Ciment"), t("Ciment colle")], achats: [ciment], marges: { materiel: "1.30", mainOeuvre: null } });
   assert.equal(p.origine, "a_chiffrer");
   assert.equal(p.montant, null);
+});
+
+test("l'adresse d'un fournisseur : vide ou juste, jamais une phrase", () => {
+  assert.deepEqual(lireAdresseMail("  "), { ok: true, email: null });
+  assert.deepEqual(lireAdresseMail(" commande@aquaplus.fr "), { ok: true, email: "commande@aquaplus.fr" });
+  assert.equal(lireAdresseMail("aqua plus").ok, false);
+  assert.equal(lireAdresseMail("commande@aqua plus.fr").ok, false);
+  assert.equal(lireAdresseMail("a@b@c").ok, false);
+});
+
+test("le début et la fin de son message : vides, celui d'office reprend", () => {
+  assert.equal(lireMorceauDeMessage("  \n "), null);
+  assert.equal(lireMorceauDeMessage("Bonjour Julien,\r\n\r\nVoici ma commande :"), "Bonjour Julien,\n\nVoici ma commande :");
+  assert.equal(lireMorceauDeMessage("x".repeat(3000))?.length, 2000);
 });
 
 console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

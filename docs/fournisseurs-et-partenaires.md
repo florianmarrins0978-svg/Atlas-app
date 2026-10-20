@@ -17,6 +17,7 @@ Branche `claude/reglages-fournisseurs-partenaires`, **pas encore sur `main`**.
 | Un devis reçu se prend en photo ou en PDF, se nomme, se garde | fait, et éprouvé au navigateur | `deposerDevisRecuAction` |
 | Rien n'est enregistré d'un devis lu avant son accord | fait : les lignes lues se cochent, « Mettre N prix dans « Mes prix » » | `accepterLignesDuDevisAction` |
 | Le devis dicté prend ses prix là | fait, et l'outil de l'assistant aussi | `proposition-prix.ts`, `rechercher-tarifs-compatibles.ts` |
+| L'adresse mail du fournisseur sur sa fiche, son début et sa fin de message gardés (20 octobre) | fait, l'adresse refusée en base si elle n'en est pas une | `drizzle/0133_adresse_et_message_du_fournisseur.sql`, `reglerContactAction` |
 
 ## Ce qui a été fait autrement, et pourquoi
 
@@ -39,8 +40,8 @@ vente**, à l'envers de sa règle. Les deux suivent désormais la même règle.
 
 | Contrôle | Résultat |
 |---|---|
-| `test-fournisseurs-partenaires-rls` (isolation, clé croisée refusée, × 3 refusé en base, sauvegarde) | 9 sur 9 |
-| `test-prix-achat` (ses chiffres : 8 € × 3 × 1,30 = 31,20 €, vente 12 € d'abord) | 13 sur 13 |
+| `test-fournisseurs-partenaires-rls` (isolation, clé croisée refusée, × 3 refusé en base, adresse et message gardés chez lui seul, sauvegarde) | 10 sur 10 |
+| `test-prix-achat` (ses chiffres : 8 € × 3 × 1,30 = 31,20 €, vente 12 € d'abord, adresse et message lus) | 15 sur 15 |
 | `test-devis-fournisseur-lu` | 5 sur 5 |
 | `test-devis-prix-achat-db` (le devis dicté, sous `atlas_app`) | 6 sur 6 |
 | proposition, grilles, cloisonnement, sauvegarde, rubriques, rôles, pansements, code mort, couches, tirets, flèches, chartes, boutons | verts |

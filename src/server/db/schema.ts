@@ -3970,6 +3970,10 @@ export const societesAchat = pgTable("societes_achat", {
   rubrique: text("rubrique", { enum: ["fournisseur", "partenaire"] }).notNull(),
   nom: text("nom").notNull(),
   marge: numeric("marge", { precision: 5, scale: 2 }),
+  /** Migration 0133 : l'adresse où part sa liste, et le début et la fin de SON message. */
+  email: text("email"),
+  debutMail: text("debut_mail"),
+  finMail: text("fin_mail"),
   createdBy: uuid("created_by").references(() => users.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

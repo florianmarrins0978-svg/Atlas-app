@@ -11,6 +11,7 @@ import {
   lireMarges,
   listerSocietes,
   prixAchatCandidats,
+  reglerContactSociete,
   reglerMarge,
   reglerMargeSociete,
   retirerPrixAchat,
@@ -116,6 +117,15 @@ async function main() {
     await assert.rejects(reglerMargeSociete(A, aqua.id, "20.00"));
     await assert.rejects(reglerMarge(A, "materiel", "4.00"));
     assert.equal((await reglerMargeSociete(A, aqua.id, "1.50"))?.marge, "1.50");
+  });
+
+  await test("son adresse et son message se gardent chez lui, et nulle part ailleurs", async () => {
+    assert.equal(await reglerContactSociete(B, aqua.id, { email: "vol@exemple.fr" }), undefined);
+    const s = await reglerContactSociete(A, aqua.id, { email: "commande@aquaplus.fr", debutMail: "Bonjour Julien,", finMail: "Merci, Florian" });
+    assert.deepEqual([s?.email, s?.debutMail, s?.finMail], ["commande@aquaplus.fr", "Bonjour Julien,", "Merci, Florian"]);
+    // Un champ absent ne bouge pas : changer la fin garde l'adresse.
+    assert.equal((await reglerContactSociete(A, aqua.id, { finMail: "Merci." }))?.email, "commande@aquaplus.fr");
+    await assert.rejects(reglerContactSociete(A, aqua.id, { email: "pas une adresse" }), "la base laisse passer une adresse avec des espaces");
   });
 
   await test("ses prix sortent pour le devis dicté, avec la marge propre de la société", async () => {

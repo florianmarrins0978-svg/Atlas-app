@@ -17,6 +17,7 @@ function vue(s: SocieteComplete): SocieteVue {
     id: s.id,
     nom: s.nom,
     marge: s.marge,
+    email: s.email,
     prix: s.prix.map((p) => ({ id: p.id, nom: p.nom, unite: p.unite, prixHt: p.prixHt, source: p.source })),
     devis: s.devis.map((d) => ({
       id: d.id,

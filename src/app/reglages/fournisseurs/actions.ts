@@ -16,10 +16,11 @@ import {
   getDevisRecu,
   getSociete,
   reglerMarge,
+  reglerContactSociete,
   reglerMargeSociete,
   retirerPrixAchat,
 } from "@/server/repositories/fournisseurs-partenaires";
-import { lireMarge, lirePrixHt, UNITES_ACHAT, type RubriqueAchat } from "@/lib/prix-achat";
+import { lireAdresseMail, lireMarge, lireMorceauDeMessage, lirePrixHt, UNITES_ACHAT, type RubriqueAchat } from "@/lib/prix-achat";
 import { sourceDuDevisLu, type LigneDevisLue } from "@/lib/devis-fournisseur-lu";
 // Les mêmes bornes qu'un papier de véhicule : un PDF ou une photo de moins de
 // 8 Mo. Une seconde liste de formats finirait par diverger de la première.
@@ -101,6 +102,39 @@ export async function reglerMargeSocieteAction(id: string, brut: string): Promis
   } catch (err) {
     journaliser("Réglage de la marge d'une société impossible", err);
     return { ok: false, raison: "La marge n’a pas pu être enregistrée. Réessayez." };
+  }
+}
+
+/**
+ * L'adresse mail d'un fournisseur, et le début et la fin de SON message — sa
+ * planche du 20 octobre 2026 (`appli/arrosage-prix-par-fournisseur.html`).
+ * L'adresse se tape sur sa fiche, le message sous la liste du plan ; tous deux
+ * se gardent pour les prochaines fois. Un champ absent ne bouge pas.
+ */
+export async function reglerContactAction(
+  id: string,
+  champs: { email?: string; debut?: string; fin?: string }
+): Promise<{ ok: true; email: string | null; debut: string | null; fin: string | null } | Refus> {
+  const garde = await patron("régler l'adresse ou le message d'un fournisseur");
+  if (!garde.ok) return garde;
+  const aRegler: { email?: string | null; debutMail?: string | null; finMail?: string | null } = {};
+  if (typeof champs.email === "string") {
+    const lu = lireAdresseMail(champs.email);
+    if (!lu.ok) return lu;
+    aRegler.email = lu.email;
+  }
+  if (typeof champs.debut === "string") aRegler.debutMail = lireMorceauDeMessage(champs.debut);
+  if (typeof champs.fin === "string") aRegler.finMail = lireMorceauDeMessage(champs.fin);
+  try {
+    const avant = await getSociete(garde.ctx, id);
+    if (!avant || avant.rubrique !== "fournisseur") return { ok: false, raison: "Ce fournisseur n’existe plus." };
+    const s = await reglerContactSociete(garde.ctx, avant.id, aRegler);
+    if (!s) return { ok: false, raison: "Ce fournisseur n’existe plus." };
+    rafraichir();
+    return { ok: true, email: s.email, debut: s.debutMail, fin: s.finMail };
+  } catch (err) {
+    journaliser("Réglage du contact d'un fournisseur impossible", err);
+    return { ok: false, raison: "Ce n’a pas pu être enregistré. Réessayez." };
   }
 }
 
