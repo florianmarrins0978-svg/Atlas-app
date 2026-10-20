@@ -519,3 +519,12 @@ toujours le moins cher de ses fournisseurs) et **la modification** (les
 pastilles « Le moins cher », « Aqua Plus », « France Bonhomme » au-dessus de la
 liste, et sous chaque prix d'où il vient). Sa demande : *« montre-moi ça avec
 une planche et je te le valide ou non »*. **Rien de la modification n'est codé.**
+
+**Puis, le même jour, ses précisions** : *« je choisis toutes les pièces d'Aqua
+Plus ou toutes celles de France Bonhomme »* ; *« si pour certaines pièces je
+n'ai pas de prix, il faudrait qu'il me l'indique »* ; *« s'il y a des prix, je
+dois savoir de qui viennent les prix, que je ne me fasse pas avoir »*. Sur la
+planche : « pas de prix chez Aqua Plus » sur la ligne et dans le compte, sous
+chaque prix son fournisseur et la date de son devis, et le message au
+fournisseur en **A** (sans prix) ou **B** (SES prix seulement, « prix à me
+donner » ailleurs, jamais ceux d'un autre). **À lui de choisir A ou B.**
