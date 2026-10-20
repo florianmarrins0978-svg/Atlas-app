@@ -8,6 +8,24 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-20
 
+- **Une feuille photographiée couchée se lit dans le sens de son écriture.**
+  Sa photo se lisait d'un quart de tour : le plan posait le parking à droite,
+  alors qu'il est sous la pelouse, et les bandes de goutte-à-goutte au mauvais
+  bord. Le modèle dit de combien tourner la photo (`rotation_lecture`) ; le
+  quart de tour des places, des cotes et de la nourrice se calcule dans
+  `lireReponseCroquis`, éprouvé par `test-lecture-croquis.ts`. Une rotation qui
+  n'est pas un quart de tour ne s'applique pas, et la réserve le dit. **Non
+  vérifié sur sa photo ici** (aucune clé).
+
+- **Un parking n'est plus une zone, et une zone écrite qui manque se dit.**
+  Seconde photo du même croquis : les arroseurs sont lus, mais « Parking » est
+  sorti en zone de goutte-à-goutte à la place de ses deux bandes (« GAG »,
+  « Goutte à goutte »). Une surface qui ne s'arrose pas (parking, allée,
+  terrasse, maison…) est écartée avec sa réserve ; le modèle recopie chaque
+  mot d'arrosage écrit (`mots_d_arrosage`), et moins de zones lues que de mots
+  écrits se dit sous le plan. La consigne lui dit aussi qu'une bande par mot
+  fait une zone. **Non vérifié sur sa photo ici** (aucune clé).
+
 - **Ce qu'il écrit dans une zone du croquis commande son arrosage.** Son croquis
   portait « Arroseur » sur la grande partie, « GAG » et « Goutte à goutte » sur
   deux bandes : le plan est sorti tout en goutte-à-goutte, sur une seule voie.
@@ -18,6 +36,15 @@ Format : le plus récent en tête.
   (`arrosageEcrit`, `lire-croquis.ts`) que `test-lecture-croquis.ts` tient, et
   la consigne du modèle le dit. **Non vérifié sur une vraie photo ici** (aucune
   clé) : `npm run verifier:croquis` sur son espace, ou sa photo rejouée.
+
+- **« Réinitialiser » vide enfin une date de véhicule sur iPhone.** Lu dans
+  WebKit (`WKDateTimeInputControl.mm`) : ouvrir une case de date vide y écrit
+  la date du jour, puis « Réinitialiser » la vide, deux écritures sans
+  attendre. La fiche comparait le vide à la valeur d'avant l'ouverture, vide
+  aussi : il ne partait jamais, et la date du jour restait en base. Elle
+  compare désormais à la dernière valeur envoyée (`FicheVehicule.tsx`).
+  `scripts/test-vehicule-date-reinitialisee-e2e.ts`, rouge avant
+  (« elle vaut 2026-10-20 »).
 
 - **Le verso d'une carte grise ne se refuse plus comme « autre véhicule », et
   ses dates de contrôle se prennent.** Sa carte grise d'Amarok (EH-467-GL) :
