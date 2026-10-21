@@ -313,7 +313,7 @@ function MailAuFournisseur({
       )}
       <label className={`${choix} block`} style={{ color: colors.inkSoft }}>
         Le début, gardé pour {f.nom}
-        <textarea value={debut} onChange={(e) => setDebut(e.target.value)} onBlur={() => garder("debut", debut)} aria-label="Le début du message" data-atlas="debut-du-message" className={case_} style={styleCase} />
+        <textarea value={debut} onChange={(e) => setDebut(e.target.value)} onBlur={(e) => garder("debut", e.currentTarget.value)} aria-label="Le début du message" data-atlas="debut-du-message" className={case_} style={styleCase} />
       </label>
       <p className={choix} style={{ color: colors.inkSoft }}>La liste, faite par l’outil, sans prix</p>
       <pre
@@ -325,7 +325,7 @@ function MailAuFournisseur({
       </pre>
       <label className={`${choix} block`} style={{ color: colors.inkSoft }}>
         La fin, gardée pour {f.nom}
-        <textarea value={fin} onChange={(e) => setFin(e.target.value)} onBlur={() => garder("fin", fin)} aria-label="La fin du message" data-atlas="fin-du-message" className={case_} style={styleCase} />
+        <textarea value={fin} onChange={(e) => setFin(e.target.value)} onBlur={(e) => garder("fin", e.currentTarget.value)} aria-label="La fin du message" data-atlas="fin-du-message" className={case_} style={styleCase} />
       </label>
       {garde && (
         <p className={choix} style={{ color: colors.inkSoft }} data-atlas="message-garde">

@@ -6,6 +6,17 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-21
+
+- **« Par où commencer » est retiré de l'écran d'arrosage** (sa décision du
+  21 octobre) : il doublait le croquis et coupait l'ordre de l'écran, le
+  piquage puis le croquis. L'import d'un devis fournisseur garde une ligne,
+  « J'ai déjà un devis fournisseur », sous le bloc du croquis
+  (`DepuisUnDevis.tsx`, monté après le croquis dans `ArrosageClient.tsx`).
+  L'exception de `test-boutons-arrondis.ts` qui couvrait ses deux cartes part
+  avec elles. `test-arrosage-e2e` : 16 sur 16, dont « l'écran tient en peu de
+  mots ».
+
 ## 2026-10-20
 
 - **Quatre défauts du lot des fournisseurs, attrapés par la batterie commune** :
@@ -72,6 +83,15 @@ Format : le plus récent en tête.
   gardés pour la fois suivante, et range la liste dans ses Demandes envoyées.
   `lesPrixDe`, `sousLePrix`, `datesDesPrix` (`prix-du-plan.ts`),
   `listeAuFournisseur`, `lienDuMail` (`postes.ts`) ; `lesMoinsChers` supprimée.
+
+- **Les cases des fournisseurs enregistrent ce qui est tapé, pas l'état du
+  dernier rendu** : la marge générale, la marge d'une société et l'adresse
+  mail lisent la case au moment où il la quitte (`e.currentTarget.value`).
+  Trouvé par la batterie commune du 20 octobre ; `/reglages/fournisseurs`
+  entre aussi dans le préchauffage (`scripts/prechauffer.mjs`). Même défaut,
+  même remède, sur le début et la fin du mail au fournisseur (`FeuillePiece.tsx`),
+  et la lecture d'un devis sur le plan est gardée au patron
+  (`lireLeDevisDuPlanAction`).
 
 - **L'adresse mail et le message de chaque fournisseur se gardent sur sa
   fiche** (migration `0133_adresse_et_message_du_fournisseur.sql`, trois

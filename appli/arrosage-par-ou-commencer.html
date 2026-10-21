@@ -1,0 +1,85 @@
+<title>Par où commencer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+  /* Deux téléphones côte à côte : l'écran d'aujourd'hui, puis la proposition.
+     Les couleurs sont celles de la charte Origine de l'application. */
+  :root {
+    --fond: #ece9e1; --ecran: #f5f3ee; --carte: #faf9f5; --encre: #1c1c1a;
+    --doux: #4a4a44; --pale: #8a8578; --or: #B98B47; --ligne: rgba(28,28,26,0.12);
+    --alerte: #9C3B2E; --plein: #7d9a6d;
+    --titres: ui-serif, Georgia, "Iowan Old Style", serif;
+    --texte: ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color-scheme: light;
+  }
+  body { background: var(--fond); color: var(--encre); font: 16px/1.45 var(--texte);
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 18px 40px; }
+  .entete { max-width: 880px; margin: 0 auto; }
+  h1 { margin: 0; font: 400 24px/1.15 var(--titres); text-wrap: balance; }
+  .entete p { margin: 6px 0 0; font-size: 14px; color: var(--doux); max-width: 60ch; }
+  .duo { max-width: 880px; margin: 18px auto 0; display: flex; flex-wrap: wrap; gap: 20px; }
+  .colonne { flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .etiquette { font-size: 12px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--or); }
+  .compte { font-size: 14px; color: var(--doux); }
+  .compte b { font-variant-numeric: tabular-nums; }
+  .compte.rouge b { color: var(--alerte); }
+  .compte.vert b { color: var(--plein); }
+  .telephone { background: var(--ecran); border-radius: 26px; padding: 22px 22px 26px; box-shadow: 0 0 0 1px var(--ligne), 0 10px 28px rgba(28,28,26,0.08); }
+  .caps { display: block; font-size: 11px; font-weight: 500; letter-spacing: .28em; text-transform: uppercase; color: var(--or); }
+  h2 { margin: 6px 0 0; font: 400 21px/1.2 var(--titres); }
+  .portes { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .porte { display: flex; align-items: center; gap: 14px; min-height: 64px; border-radius: 14px; padding: 12px 16px; background: var(--carte); border: 1px solid var(--ligne); }
+  .porte.tirets { border: 1.5px dashed var(--ligne); }
+  .porte svg { flex: none; color: var(--doux); }
+  .porte b { display: block; font-size: 16px; font-weight: 600; }
+  .porte small { display: block; font-size: 13px; color: var(--pale); }
+  /* Ce qui partirait : barré de rouge, toujours lisible. */
+  .part, .porte small.part { color: var(--alerte); text-decoration: line-through; text-decoration-thickness: 2px; }
+  .note { max-width: 880px; margin: 22px auto 0; font-size: 14px; color: var(--doux); }
+</style>
+
+<div class="entete">
+  <h1>Par où commencer</h1>
+  <p>Le haut de l’écran d’arrosage. Le contrôle accepte 30 mots sur tout l’écran, il en compte 46. Ce qui est barré en rouge partirait.</p>
+</div>
+
+<div class="duo">
+  <div class="colonne">
+    <span class="etiquette">Aujourd’hui</span>
+    <span class="compte rouge"><b>46</b> mots sur l’écran</span>
+    <div class="telephone">
+      <span class="caps">Plan d’arrosage</span>
+      <h2>Par où commencer</h2>
+      <div class="portes">
+        <div class="porte">
+          <svg viewBox="0 0 28 28" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="4" y="5" width="20" height="18" rx="2"/><path d="M8 18l5-6 4 4 3-3"/></svg>
+          <span><b>Photographier le croquis</b><small>Avec les métrés, le piquage et la nourrice</small></span>
+        </div>
+        <div class="porte tirets">
+          <svg viewBox="0 0 28 28" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 4h9l5 5v15H8z"/><path d="M17 4v5h5M11 14h8M11 18h8"/></svg>
+          <span><b>J’ai déjà un devis fournisseur</b><small>Photo ou PDF</small></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="colonne">
+    <span class="etiquette">Ma proposition</span>
+    <span class="compte vert"><b>33</b> mots, 13 de moins</span>
+    <div class="telephone">
+      <span class="caps">Plan d’arrosage</span>
+      <h2 class="part">Par où commencer</h2>
+      <div class="portes">
+        <div class="porte">
+          <svg viewBox="0 0 28 28" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="4" y="5" width="20" height="18" rx="2"/><path d="M8 18l5-6 4 4 3-3"/></svg>
+          <span><b>Photographier le croquis</b><small class="part">Avec les métrés, le piquage et la nourrice</small></span>
+        </div>
+        <div class="porte tirets">
+          <svg viewBox="0 0 28 28" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 4h9l5 5v15H8z"/><path d="M17 4v5h5M11 14h8M11 18h8"/></svg>
+          <span><b>J’ai déjà un devis fournisseur</b><small class="part">Photo ou PDF</small></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="note">Même en retirant tout le rouge, l’écran reste à 33 mots pour 30. Il faut donc soit retirer encore 3 mots ailleurs sur l’écran, soit monter le plafond à 35 pour garder ce bloc. Dis-moi ce que tu préfères.</p>

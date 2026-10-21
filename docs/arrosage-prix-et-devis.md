@@ -38,8 +38,9 @@ portent que de petits ajouts (liste dans `HANDOVER.md`).
   le choix du fournisseur) : ta planche du 20 octobre ne le touchait pas.
 - **« Garder la liste sans plan » la garde sur l'écran**, comme le plan, qui ne
   s'enregistre nulle part encore. À toi de dire où la garder.
-- **« Par où commencer » se pose sous « Le piquage se fait »**, qui ouvrait
-  déjà l'écran.
+- **« Par où commencer » est retiré le 21 octobre, sur ta décision** : il
+  doublait le croquis. Il reste une ligne, « J'ai déjà un devis fournisseur »,
+  sous le bloc du croquis.
 
 ## Ce qui est éprouvé
 
