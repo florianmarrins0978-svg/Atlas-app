@@ -1687,11 +1687,16 @@ function sortiesGoutte(d){
   etat.zones.forEach(function(z){
     var p = poser(z);
     if (!p.m || p.m.type !== 'gaine' || !p.nombre) return;
-    var vannes = ((d.reseauxDeZone || {})[z.id] || []).length || 1;
+    var deLaZone = (d.reseauxDeZone || {})[z.id] || [];
+    var vannes = deLaZone.length || 1;
     // Le millionième retiré : 200 m font deux sorties, pas trois.
     var n = Math.max(Math.ceil(p.nombre / METRES_PAR_SORTIE - 1e-9), vannes);
     var reponse = SORTIES_GOUTTE.indexOf(z.sortieGoutte) >= 0 ? z.sortieGoutte : null;
-    zones.push({ nom: z.nom || TYPES[z.type].nom, sorties: n, reponse: reponse });
+    // **La vanne de chaque sortie**, pour que le plan trace le Ø25 jusqu'à elle
+    // (21 octobre 2026) : les sorties d'une zone se répartissent sur ses vannes.
+    var reseaux = [];
+    for (var k = 0; k < n; k++) reseaux.push(deLaZone.length ? deLaZone[k % deLaZone.length] : undefined);
+    zones.push({ id: z.id, nom: z.nom || TYPES[z.type].nom, sorties: n, reponse: reponse, reseaux: reseaux });
     sorties += n;
     // Chaque sortie porte sa part du tube de la zone : c'est une ligne, ou une
     // boucle, d'un seul tenant.
@@ -2137,7 +2142,9 @@ export function calculerPlan(entree) {
  * faux est pire qu'un plan absent (`CLAUDE.md` §4 bis).
  */
 function dessinDesZones(d){
+  var sg = sortiesGoutte(d);
   return etat.zones.map(function(z){
+    var zg = sg.zones.find(function(x){ return x.id === z.id; });
     var p = poser(z);
     var ox = Number(z.x) || 0, oy = Number(z.y) || 0;
     return {
@@ -2153,6 +2160,10 @@ function dessinDesZones(d){
       // vis. C'est le chiffre que le poseur règle sur le terrain.
       portee: p.m ? (Number(p.porteeReglee || p.m.portee) || 0) : 0,
       bridee: Boolean(p.m && p.porteeReglee && p.porteeReglee < p.m.portee - 0.01),
+      // **Les sorties du goutte-à-goutte, une par vanne qui l'alimente au moins**
+      // (`sortiesGoutte`) : le réseau de chacune. Le plan trace le Ø25 jusqu'à
+      // elles ; sans cela, aucun tuyau n'allait vers un massif (21 octobre 2026).
+      sorties: zg ? zg.reseaux : [],
       points: (p.points || []).map(function(pt){
         return {
           x: ox + pt.x, y: oy + pt.y,

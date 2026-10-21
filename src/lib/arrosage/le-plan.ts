@@ -212,7 +212,6 @@ function lePlan(plan: Calcule, dessin: Dessin | null, parametres: ParametresPlan
       compteur: parametres.compteur === "oui",
       seuil25: plan.amenee.longueurMax25,
       amenee: parametres.amenee > 0 ? parametres.amenee : null,
-      goutte: plan.goutteAGoutte,
       diametres,
       diametreAmenee: plan.amenee.diametre,
     }),

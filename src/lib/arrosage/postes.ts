@@ -258,19 +258,35 @@ export function composerLesPostes({ plan, dessin, compteur, amenee, robinet = nu
     const goutte = s.famille === "Goutte-à-goutte";
     if (goutte || !rd) {
       // Le calcul ne trace pas la ligne d'un goutte-à-goutte : sa longueur reste « à mesurer ».
-      const metres = rd ? `${rd.metresTuyau} m` : "à mesurer";
+      // Zéro mètre tracé n'est pas zéro mètre posé : le passage reste à mesurer.
+      const metres = rd && rd.metresTuyau > 0 ? `${rd.metresTuyau} m` : "à mesurer";
       const pe = poser(`r${i}:pe`, "pe25", "PEHD Ø25", `PEHD Ø25, ${metres}`, rd ? rd.metresTuyau : 0, "ml");
-      const rail: Poste[] = [poser(`r${i}:coude`, COUDE_LIGNE, nomDe(COUDE_LIGNE, M), "Coude taraudé")];
-      rail.push(r.sortie === "ligne"
-        ? poser(`r${i}:coude16`, COUDE_PALAPLAST, nomDe(COUDE_PALAPLAST, M), "coude Palaplast Ø16")
-        : poser(`r${i}:te16`, TE_PALAPLAST, nomDe(TE_PALAPLAST, M), "té Palaplast Ø16"));
+      // **Une sortie, ses pièces ; deux sorties, deux fois** — sa capture du
+      // 21 octobre 2026, deux massifs sur une vanne : le rail n'en posait
+      // qu'une. Chaque sortie a son coude taraudé et ce qui s'y visse ; celles
+      // d'après la première partent d'un té égal (`sortiesGoutte`, calcul).
+      // Les clés de la première restent celles d'avant : une retouche déjà
+      // faite vise toujours la même pièce.
+      const sorties = Math.max(1, plan.dessinDuCalcul.reduce((t, z) => t + (z.sorties ?? []).filter((x) => x === i).length, 0));
+      const rail: Poste[] = [];
+      for (let k = 0; k < sorties; k++) {
+        const n = k === 0 ? "" : String(k + 1);
+        if (k > 0) rail.push(poser(`r${i}:egal${n}`, TE_EGAL, nomDe(TE_EGAL, M), "Té égal"));
+        rail.push(poser(`r${i}:coude${n}`, COUDE_LIGNE, nomDe(COUDE_LIGNE, M), "Coude taraudé"));
+        rail.push(r.sortie === "ligne"
+          ? poser(`r${i}:coude16${n}`, COUDE_PALAPLAST, nomDe(COUDE_PALAPLAST, M), "coude Palaplast Ø16")
+          : poser(`r${i}:te16${n}`, TE_PALAPLAST, nomDe(TE_PALAPLAST, M), "té Palaplast Ø16"));
+      }
       const n = M.find((m) => m.ref === TUBE_TORO)?.q ?? 0;
       const j = M.find((m) => m.ref === JONCTION_16)?.q ?? 0;
       for (let c = 0; c < n; c++) {
         if (c > 0 && c <= j) rail.push(poser(`r${i}:jonction${c}`, JONCTION_16, nomDe(JONCTION_16, M), "jonction Palaplast Ø16"));
         rail.push(poser(`r${i}:couronne${c}`, TUBE_TORO, nomDe(TUBE_TORO, M), `tube Toro, couronne de ${r.couronne} m`));
       }
-      if (r.sortie === "ligne") rail.push(poser(`r${i}:bouchon`, BOUCHON_PALAPLAST, nomDe(BOUCHON_PALAPLAST, M), "bouchon Palaplast Ø16"));
+      // Le bouchon ferme chaque ligne seule, au bout : après le tube.
+      if (r.sortie === "ligne") {
+        for (let k = 0; k < sorties; k++) rail.push(poser(`r${i}:bouchon${k === 0 ? "" : String(k + 1)}`, BOUCHON_PALAPLAST, nomDe(BOUCHON_PALAPLAST, M), "bouchon Palaplast Ø16"));
+      }
       const tube = goutte ? CAT.gaines[0]?.detail ?? null : null;
       return { i, nom: s.nom, couleur: plan.couleurs[i], goutte: true, pe, metres, plan: null, compteDuPlan: null, chaine: null, rail, tube, ajoutees: ajoutees(`r${i}`) };
     }
@@ -379,7 +395,7 @@ export function composerLesPostes({ plan, dessin, compteur, amenee, robinet = nu
   // ── Le grillage avertisseur : toute la tranchée, amenée comprise ────────
   let grillage: Postes["grillage"] = null;
   if (r.grillage && dessin) {
-    const g = piecesDuPlan(M, dessin, { compteur, seuil25: plan.tuyau.seuil25, amenee, goutte: plan.goutteAGoutte, grillage: true }).find((x) => x.ref === GRILLAGE);
+    const g = piecesDuPlan(M, dessin, { compteur, seuil25: plan.tuyau.seuil25, amenee, grillage: true }).find((x) => x.ref === GRILLAGE);
     if (g) grillage = { q: g.q ?? 1, nom: g.nom, detail: g.detail ?? "" };
   }
 
@@ -572,9 +588,13 @@ export function liaisonsDuReseau(dessin: Dessin, plan: Pick<LePlan, "dessinDuCal
   });
 }
 
-/** La zone de goutte-à-goutte qu'un réseau arrose, pour la border de sa couleur sur le plan. */
-export function zoneGoutteDuReseau(plan: Pick<LePlan, "dessinDuCalcul" | "reseauxDeZone">, i: number): ZoneDessinee | null {
-  return plan.dessinDuCalcul.find((z) => z.cle === "gaine" && (plan.reseauxDeZone[String(z.id)] ?? []).includes(i)) ?? null;
+/**
+ * TOUTES les zones de goutte-à-goutte qu'un réseau arrose, pour les border de sa
+ * couleur sur le plan. La première seule était bordée : sur sa capture du
+ * 21 octobre 2026, le second massif de la vanne ne se voyait pas arrosé.
+ */
+export function zonesGoutteDuReseau(plan: Pick<LePlan, "dessinDuCalcul" | "reseauxDeZone">, i: number): ZoneDessinee[] {
+  return plan.dessinDuCalcul.filter((z) => z.cle === "gaine" && (plan.reseauxDeZone[String(z.id)] ?? []).includes(i));
 }
 
 /** « 13x », « 48 m », « à mesurer » : la quantité telle qu'elle s'écrit sur une ligne. */

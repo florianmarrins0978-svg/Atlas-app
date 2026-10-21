@@ -189,6 +189,23 @@ const JARDIN_AU_ROBINET = (montage: "nez" | "nourrice"): ParametresPlan => ({
   robinet: { montage, double: true, depart: null },
 });
 
+/**
+ * SON JARDIN DU 21 OCTOBRE 2026 : une pelouse et deux massifs de goutte-à-goutte
+ * sur la même vanne. Sa capture montrait les deux massifs sans un trait de Ø25
+ * vers eux, et une seule sortie à l'écran.
+ */
+const JARDIN_DEUX_MASSIFS: ParametresPlan = {
+  seau: 10, temps: 20, pression: 3, compteur: "oui", regardVersZone: 3, amenee: 5,
+  zones: [
+    { id: 1, type: "gazon", nom: "Pelouse", x: 0, y: 3, L: 10, l: 12 },
+    { id: 2, type: "massif", nom: "Massif du haut", x: 0, y: 0, L: 10, l: 3, sortieGoutte: "boucle" },
+    { id: 3, type: "massif", nom: "Massif du côté", x: 11, y: 3, L: 2, l: 10, sortieGoutte: "boucle" },
+  ],
+  nourrice: { x: 2, y: 1.5 },
+  piquage: { x: 0, y: 0 },
+  couronne: 50,
+};
+
 async function pageDeLEcran(parametres: ParametresPlan): Promise<string> {
   const html = renderToStaticMarkup(
     React.createElement(LePlanDuJardin, { etat: { reserves: [], sansDessin: null }, parametres, onParametres: () => undefined })
@@ -219,6 +236,7 @@ async function capturer() {
     ["ecran-du-plan", JARDIN_DE_LA_PLANCHE],
     ["ecran-du-plan-robinet-nez", JARDIN_AU_ROBINET("nez")],
     ["ecran-du-plan-robinet-nourrice", JARDIN_AU_ROBINET("nourrice")],
+    ["ecran-du-plan-deux-massifs", JARDIN_DEUX_MASSIFS],
   ];
   for (const [nom, parametres] of ecrans) {
     console.log(`  · ${nom}`);

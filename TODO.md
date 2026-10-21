@@ -31,6 +31,22 @@ fragile. **Ce n'est pas un caprice tant que la cause n'est pas trouvée** : ces
 deux cas jouent sur « le lendemain », à chercher du côté du jour compté pendant
 une longue batterie, ou d'un état laissé par une suite voisine. | nous |
 
+## ⏳ ARROSAGE : CE QUE LE LOT DES SORTIES DU GOUTTE-À-GOUTTE LAISSE OUVERT (21 octobre 2026)
+
+- **Pansement assumé** dans `pieces.ts` : l'option `goutte` de `piecesDuPlan`
+  n'est plus lue (les sorties se comptent sur le tracé), mais
+  `test-regles-du-patron.ts` la passe encore et seul lui réécrit cette suite.
+  À lui demander : retirer `goutte: p.goutteAGoutte` de ses appels, puis l'option.
+- **Une haie en goutte-à-goutte ne se dessine pas** : sans largeur au croquis,
+  elle n'a pas de rectangle ; sa sortie est posée à sa place et le passage se
+  dit « à mesurer », mais la bande elle-même n'apparaît pas sur le plan. Une
+  planche à lui montrer avant de la dessiner.
+- **Deux cotes se chevauchent** quand un massif colle à la pelouse (« 2 m 3 m »),
+  vu à la capture du 21 octobre, et déjà sur la sienne. Défaut d'avant ce lot.
+- **Deux vannes de goutte-à-goutte** : le rail de chacune montre toutes les
+  couronnes du jardin (`postes.ts`), donc la liste les compterait deux fois.
+  Cas rare, non vu chez lui ; à corriger quand il se présente à l'essai.
+
 ## ⏳ ARROSAGE : LA LECTURE QUI DÉDUIT LES COTES, À ÉPROUVER SUR SA PHOTO (21 octobre 2026)
 
 Codé le 21 octobre (`lire-croquis.ts`) : chiffres lus dans tous les sens, cotes

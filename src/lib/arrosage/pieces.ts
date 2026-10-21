@@ -111,14 +111,9 @@ export function piecesDuPlan(
     compteur: boolean;
     seuil25: number;
     amenee: number | null;
-    /**
-     * Les sorties du goutte-à-goutte, telles que le calcul les compte
-     * (`goutteAGoutte`). Le massif n'a pas de tête sur le plan : sans elles, la
-     * liste perdait le coude taraudé de chaque sortie et le té égal des
-     * suivantes, que sa règle du 16 octobre 2026 exige. Obligatoire, pour
-     * qu'aucun appel ne puisse l'oublier en silence.
-     */
-    goutte: { sorties: number; tesEgaux: number };
+    // pansement assumé : test-regles-du-patron.ts passe encore les sorties du calcul, et seul le patron réécrit cette suite.
+    /** Plus lu depuis le 21 octobre 2026 : les sorties se comptent sur le tracé. */
+    goutte?: { sorties: number; tesEgaux: number };
     /** Il a coché « Grillage avertisseur » (sa demande du 18 octobre 2026). Absent : pas coché. */
     grillage?: boolean;
     /** Le tuyau de chaque réseau, par son numéro : Ø25 quand rien n'est dit. */
@@ -228,11 +223,11 @@ export function piecesDuPlan(
     // **Les raccords de ligne, lus sur le tracé** — réseau par réseau, et par
     // diamètre : un réseau qu'il a passé en Ø32 prend les pièces en 32.
     const diametreDe = (r: Dessin["reseaux"][number]) => options.diametres?.[r.numero] ?? 25;
-    // Les sorties du goutte-à-goutte prennent les mêmes pièces Ø25 : un coude
-    // taraudé par sortie, un té égal par sortie après la première de sa vanne.
-    // Le goutte-à-goutte n'a pas de perte de ligne au calcul : il reste en Ø25.
-    const { sorties, tesEgaux: egauxGoutte } = options.goutte;
-    const etGoutte = (n: number) => (n > 0 ? `, et ${n} pour le goutte-à-goutte` : "");
+    // **Les sorties du goutte-à-goutte se lisent sur le tracé, elles aussi**,
+    // depuis le 21 octobre 2026 : le Ø25 va jusqu'à chacune (`plan-dessine.ts`),
+    // et son coude taraudé, ses tés égaux et ses mètres comptent dans son
+    // réseau. Elles s'ajoutaient ici à part, faute de tracé, et ni le tuyau ni
+    // la tranchée qui les alimentent n'étaient comptés.
     for (const d of [25, 32] as const) {
       const ceux = dessin.reseaux.filter((r) => diametreDe(r) === d);
       if (ceux.length === 0 && d === 32) continue;
@@ -240,14 +235,12 @@ export function piecesDuPlan(
       const somme = (f: (r: Dessin["reseaux"][number]) => number) => ceux.reduce((t, r) => t + f(r), 0);
       const par = (f: (r: Dessin["reseaux"][number]) => number) =>
         d === 25 && ceux.length === dessin.reseaux.length ? parReseau(f) : `réseau${ceux.length > 1 ? "x" : ""} ${ceux.map((r) => r.numero + 1).join(", ")} : ${ceux.map(f).join(", ")}`;
-      const g = d === 25 ? sorties : 0, eg = d === 25 ? egauxGoutte : 0;
       const tes = somme((r) => r.tes);
-      const coudes = somme((r) => r.coudes) + g;
-      const egaux = somme((r) => r.tesEgaux) + eg;
-      const sansReseau = ceux.length === 0;
+      const coudes = somme((r) => r.coudes + r.coudesDesSorties);
+      const egaux = somme((r) => r.tesEgaux + r.egauxDesSorties);
       if (tes > 0) jardin.push({ ref: k.te, reference: CAT.referenceDe(k.te), nom: nomDe(k.te), q: tes, u: "u", ou: "jardin", detail: par((r) => r.tes) });
-      if (coudes > 0) jardin.push({ ref: k.coude, reference: CAT.referenceDe(k.coude), nom: nomDe(k.coude), q: coudes, u: "u", ou: "jardin", detail: sansReseau ? `${g} pour le goutte-à-goutte` : `${par((r) => r.coudes)}${etGoutte(g)}` });
-      if (egaux > 0) jardin.push({ ref: k.egal, reference: CAT.referenceDe(k.egal), nom: nomDe(k.egal), q: egaux, u: "u", ou: "jardin", detail: sansReseau ? `${eg} pour le goutte-à-goutte` : `${par((r) => r.tesEgaux)}${etGoutte(eg)}` });
+      if (coudes > 0) jardin.push({ ref: k.coude, reference: CAT.referenceDe(k.coude), nom: nomDe(k.coude), q: coudes, u: "u", ou: "jardin", detail: par((r) => r.coudes + r.coudesDesSorties) });
+      if (egaux > 0) jardin.push({ ref: k.egal, reference: CAT.referenceDe(k.egal), nom: nomDe(k.egal), q: egaux, u: "u", ou: "jardin", detail: par((r) => r.tesEgaux + r.egauxDesSorties) });
 
       // **Le tuyau des réseaux, mesuré sur le tracé.** Arrondi au mètre
       // supérieur : un tuyau se coupe, il ne s'allonge pas.

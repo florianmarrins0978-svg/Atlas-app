@@ -5,7 +5,7 @@ import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import type { EtatPlan } from "./actions";
 import type { ParametresPlan } from "@/lib/arrosage/consignes";
 import { calculerEtDessiner, montageDuPlan } from "@/lib/arrosage/le-plan";
-import { composerLesPostes, groupeNourrice, groupesDeLaListe, liaisonsDuReseau, listeAuFournisseur, messageAuFournisseur, lignesDeLaDemande, referenceFournisseur, sommeDesGroupes, titreDuDepart, zoneGoutteDuReseau, type Maillon, type Poste, type Robinet } from "@/lib/arrosage/postes";
+import { composerLesPostes, groupeNourrice, groupesDeLaListe, liaisonsDuReseau, listeAuFournisseur, messageAuFournisseur, lignesDeLaDemande, referenceFournisseur, sommeDesGroupes, titreDuDepart, zonesGoutteDuReseau, type Maillon, type Poste, type Robinet } from "@/lib/arrosage/postes";
 import {
   RETOUCHES_VIERGES, ajouter, chaineRemettre, chaineRemplacer, chaineRevenir, chaineSupprimer, clesAChanger, ligneRemettre, ligneSupprimer,
   blocRemettre, blocSupprimer, nourriceRemettre, nourriceRemplacer, nourriceSupprimer, oublierLeDepart, remettre, remplacer, revenir, supprimer, type PieceChoisie, type Retouches,
@@ -403,7 +403,7 @@ export default function LePlanDuJardin({
                   )}
                 </div>
               ))}
-              {dessin && <PlanDessine dessin={dessin} reseau={i} liaisons={pointilles} zoneGoutte={zoneGoutteDuReseau(plan, i)} piquage={piquage} />}
+              {dessin && <PlanDessine dessin={dessin} reseau={i} liaisons={pointilles} zonesGoutte={zonesGoutteDuReseau(plan, i)} piquage={piquage} />}
               {pointilles.length > 0 && (
                 <p className="mt-2 text-[13px]" style={{ color: colors.inkSoft }}>
                   <svg className="mr-1.5 inline-block align-middle" width="24" height="6" viewBox="0 0 24 6" aria-hidden="true">

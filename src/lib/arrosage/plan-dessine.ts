@@ -83,6 +83,12 @@ export type ZoneDessinee = {
    */
   bridee: boolean;
   points: { x: number; y: number; reseau: number | undefined }[];
+  /**
+   * Le réseau de chaque sortie du goutte-à-goutte de cette zone (`sortiesGoutte`
+   * dans le calcul). Une sortie n'arrose rien : c'est là que le Ø25 s'arrête
+   * sur un coude taraudé, où se visse le té Palaplast. Absent : aucune.
+   */
+  sorties?: (number | undefined)[];
 };
 
 export type Tete = {
@@ -150,6 +156,14 @@ export type ReseauDessine = {
   coudes: number;
   /** Les tés égaux 25×25×25 : un par branche au-delà de deux, en chaque point. */
   tesEgaux: number;
+  /**
+   * Les pièces des sorties du goutte-à-goutte, À PART des raccords d'arroseurs :
+   * un coude taraudé par sortie, et les tés égaux qui les séparent. Rangées
+   * ailleurs, elles casseraient `tés + coudes = arroseurs`, sa règle réseau par
+   * réseau, qui ne parle que des têtes.
+   */
+  coudesDesSorties: number;
+  egauxDesSorties: number;
 };
 
 export type Cote = { x: number; y: number; texte: string; ancre: "start" | "middle" | "end" };
@@ -246,6 +260,24 @@ export function dessinerPlan(
   const tranchee: Segment[] = [];
   const parReseau = new Map<number, { lignes: Point[][]; antennes: Segment[]; tuyau: number; entrees: Set<string> }>();
 
+  // ── Les sorties du goutte-à-goutte, posées comme des pieds sans tête ──────
+  //
+  // **Sa capture du 21 octobre 2026** : deux massifs sur une vanne, et aucun
+  // Ø25 dessiné vers l'un ou l'autre ; le tuyau, la tranchée et les raccords
+  // de ces sorties manquaient. Une sortie entre donc au tracé comme le pied
+  // d'un arroseur, sans antenne : la ligne vient jusqu'à elle, et le degré du
+  // point dit la pièce, comme pour les têtes.
+  const sorties = zones.flatMap((z) => {
+    const reseauxDesSorties = (z.sorties ?? []).filter((r): r is number => r !== undefined);
+    return pointsDeSortie(z, nourrice, reseauxDesSorties.length).map((point, k) => ({ zone: z, point, reseau: reseauxDesSorties[k] }));
+  });
+  const sortiesAuPied = new Map<string, number>();
+  for (const so of sorties) {
+    const k = `${cle(so.point)}|${so.reseau}`;
+    sortiesAuPied.set(k, (sortiesAuPied.get(k) ?? 0) + 1);
+  }
+  const sortiesTracees = new Set<(typeof sorties)[number]>();
+
   // ── Chaque morceau de terrain se trace pour lui-même ──────────────────────
   //
   // **Une pelouse devant et une derrière, c'est le cas le plus courant** — et
@@ -254,18 +286,22 @@ export function dessinerPlan(
   // point le plus proche du regard, et la liaison entre les deux se DIT au lieu
   // d'être mesurée sur un chemin que le croquis ne montre pas.
   for (const contour of contours) {
-    const dedans = zones.filter((z) =>
-      z.points.some((pt) => surLeBord(pt, contour) || estDedans(pt, contour))
-    );
-    const arroseurs: ArroseurPose[] = dedans.flatMap((z) =>
-      z.points
-        .filter((pt) => pt.reseau !== undefined)
-        .map((pt) => ({
-          point: { x: pt.x, y: pt.y },
-          pied: piedDeLaTete(z, { x: pt.x, y: pt.y }),
-          reseau: pt.reseau as number,
-        }))
-    );
+    const ici = (pt: Point) => surLeBord(pt, contour) || estDedans(pt, contour);
+    const sortiesIci = sorties.filter((so) => ici(so.point));
+    const dedans = zones.filter((z) => z.points.some(ici) || sortiesIci.some((so) => so.zone === z));
+    const arroseurs: ArroseurPose[] = [
+      ...dedans.flatMap((z) =>
+        z.points
+          .filter((pt) => pt.reseau !== undefined)
+          .map((pt) => ({
+            point: { x: pt.x, y: pt.y },
+            pied: piedDeLaTete(z, { x: pt.x, y: pt.y }),
+            reseau: pt.reseau as number,
+          }))
+      ),
+      ...sortiesIci.map((so) => ({ point: so.point, pied: so.point, reseau: so.reseau })),
+    ];
+    sortiesIci.forEach((so) => sortiesTracees.add(so));
     if (arroseurs.length === 0) continue;
 
     const porte = surLeBord(nourrice, contour) || estDedans(nourrice, contour);
@@ -289,6 +325,20 @@ export function dessinerPlan(
       dejaLa.tuyau += t.metresTuyau[n] ?? 0;
       parReseau.set(n, dejaLa);
     }
+  }
+
+  // **Une sortie hors du terrain dessiné** (une haie, qui n'a pas de largeur au
+  // croquis) : le Ø25 y va par un passage que le croquis ne montre pas. Il se
+  // dessine en pointillés et se dit, comme un morceau de terrain à part ; sa
+  // sortie compte son coude, et un té égal à la vanne quand celle-ci alimente
+  // déjà autre chose.
+  const horsTerrain = new Map<number, number>();
+  for (const so of sorties) {
+    if (sortiesTracees.has(so)) continue;
+    liaisons.push({ de: nourrice, a: so.point });
+    reserves.push(`le passage de la nourrice à « ${so.zone.nom} » n’est pas sur le croquis : sa longueur doit être mesurée`);
+    horsTerrain.set(so.reseau, (horsTerrain.get(so.reseau) ?? 0) + 1);
+    if (!parReseau.has(so.reseau)) parReseau.set(so.reseau, { lignes: [], antennes: [], tuyau: 0, entrees: new Set<string>() });
   }
 
   if (parReseau.size === 0) {
@@ -380,6 +430,7 @@ export function dessinerPlan(
       let tes = 0;
       let coudes = 0;
       let tesEgaux = 0;
+      let coudesDesSorties = 0;
       const materiels = new Map<string, { libelle: string; portee: number; bridee: boolean; nombre: number }>();
       const vus = new Set<string>();
       for (const ligne of lignes) {
@@ -393,7 +444,11 @@ export function dessinerPlan(
           // demande donc un té égal (sa règle du 18 octobre 2026, « si on descend
           // du robinet et qu'on a un réseau qui va à droite, à gauche, il nous faut
           // un té égal »). Sans elle, ce té manquait à tous les plans.
-          const degre = (voisins.get(k)?.size ?? 0) + (entrees.has(k) ? 1 : 0);
+          // Une sortie du goutte-à-goutte est une branche qui s'arrête là, sur
+          // son coude taraudé : elle compte dans le degré, et son coude se compte.
+          const auPied = sortiesAuPied.get(`${k}|${numero}`) ?? 0;
+          coudesDesSorties += auPied;
+          const degre = (voisins.get(k)?.size ?? 0) + (entrees.has(k) ? 1 : 0) + auPied;
           const portees = tetesAuPied.get(`${k}|${numero}`) ?? [];
           // Deux têtes sur un même pied se montent en série : un seul coude
           // possible, au bout — les autres sont des tés.
@@ -420,10 +475,23 @@ export function dessinerPlan(
             const branches = [...(voisins.get(k) ?? [])].reverse();
             for (let j = 0; j < degre - 2; j++) {
               const libre = portees.length === 0 && j === 0;
-              jonctions.push(libre ? p : versLaBranche(p, branches[(portees.length === 0 ? j - 1 : j) % branches.length]));
+              // Sans branche dessinée (des sorties posées à l'entrée même), le losange reste sur le pied.
+              jonctions.push(libre || branches.length === 0 ? p : versLaBranche(p, branches[(portees.length === 0 ? j - 1 : j) % branches.length]));
             }
           }
         }
+      }
+
+      // Un réseau sans tête est un goutte-à-goutte : ses tés égaux séparent ses
+      // sorties. Il en faut un de plus à la vanne pour chaque tuyau qui part en
+      // plus du premier, vers un autre morceau de terrain ou hors du croquis :
+      // une sortie de moins que de sorties, comme le calcul le compte.
+      const dehors = horsTerrain.get(numero) ?? 0;
+      coudesDesSorties += dehors;
+      let egauxDesSorties = 0;
+      if (tetes.length === 0) {
+        egauxDesSorties = tesEgaux + Math.max(0, entrees.size + dehors - 1);
+        tesEgaux = 0;
       }
 
       const traits: Segment[] = [];
@@ -447,6 +515,8 @@ export function dessinerPlan(
         tes,
         coudes,
         tesEgaux,
+        coudesDesSorties,
+        egauxDesSorties,
       };
     });
 
@@ -484,6 +554,27 @@ export function dessinerPlan(
 }
 
 const cle = (p: { x: number; y: number }) => `${p.x.toFixed(3)},${p.y.toFixed(3)}`;
+
+/**
+ * Où le Ø25 rejoint une zone de goutte-à-goutte : son point le plus proche de
+ * la nourrice, et, quand elle en demande plusieurs (une par tranche de 100 m de
+ * tube, une par vanne), réparties sur le même côté. Une zone sans largeur au
+ * croquis (une haie) n'a que sa place : la sortie s'y pose.
+ */
+function pointsDeSortie(z: ZoneDessinee, nourrice: Point, n: number): Point[] {
+  if (n === 0) return [];
+  const arrondir = (v: number) => Math.round(v * 1000) / 1000;
+  if (!(z.L > 0 && z.l > 0)) return Array.from({ length: n }, () => ({ x: z.x, y: z.y }));
+  const borne = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);
+  const premier = { x: arrondir(borne(nourrice.x, z.x, z.x + z.L)), y: arrondir(borne(nourrice.y, z.y, z.y + z.l)) };
+  if (n === 1) return [premier];
+  const surUnBordHorizontal = premier.y === arrondir(z.y) || premier.y === arrondir(z.y + z.l);
+  return Array.from({ length: n }, (_, k) =>
+    surUnBordHorizontal
+      ? { x: arrondir(z.x + (z.L * (k + 0.5)) / n), y: premier.y }
+      : { x: premier.x, y: arrondir(z.y + (z.l * (k + 0.5)) / n) }
+  );
+}
 const cleSegment = (a: Point, b: Point) => [cle(a), cle(b)].sort().join("|");
 
 /**
