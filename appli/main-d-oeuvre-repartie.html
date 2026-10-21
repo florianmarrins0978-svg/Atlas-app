@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Main d'œuvre dictée</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+  /* Planche : la carte « Avant de chiffrer » de la fiche client, juste après
+     l'envoi de la note vocale. Couleurs et formes de l'application (charte
+     Origine, boutons pleins vert sauge en pilule, polices du téléphone). */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --teinte:#ece9e1; --or:#9a7136; --or-trait:#B98B47;
+    --plein:#7d9a6d; --sur-plein:#faf9f5; --trait:rgba(28,28,26,.12);
+    --serif:ui-serif,"New York",Georgia,serif;
+    --sans:-apple-system,ui-sans-serif,"Segoe UI",Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+    --fond:#16181c; --plage:#1f2227; --encre:#ecebe6; --encre-douce:#c9c7bf; --gris:#9a978d;
+    --pin:#cfd8c6; --teinte:#262a30; --or:#d6ac6a; --or-trait:#C9A15E;
+    --plein:#a9c39a; --sur-plein:#16181c; --trait:rgba(236,235,230,.14); color-scheme:dark } }
+  :root[data-theme="dark"]{
+    --fond:#16181c; --plage:#1f2227; --encre:#ecebe6; --encre-douce:#c9c7bf; --gris:#9a978d;
+    --pin:#cfd8c6; --teinte:#262a30; --or:#d6ac6a; --or-trait:#C9A15E;
+    --plein:#a9c39a; --sur-plein:#16181c; --trait:rgba(236,235,230,.14); color-scheme:dark }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{background:var(--fond);color:var(--encre);font:15px/1.5 var(--sans);
+    padding-block:28px 64px;
+    padding-left:max(16px,env(safe-area-inset-left,0px));
+    padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .page{max-width:430px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+  h1{font:600 26px/1.15 var(--serif);margin:0;text-wrap:balance}
+  .cap{font:600 11px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--or)}
+  .reglage{display:flex;flex-direction:column;gap:8px}
+  .pastilles{display:flex;flex-wrap:wrap;gap:7px}
+  .pastilles button{border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+    border-radius:999px;padding:9px 14px;font:500 13.5px/1.2 var(--sans);cursor:pointer}
+  .pastilles button[aria-pressed="true"]{background:var(--plein);color:var(--sur-plein);border-color:var(--plein)}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--or-trait);outline-offset:2px}
+
+  /* Le téléphone */
+  .tel{border:1px solid var(--trait);border-radius:24px;overflow:hidden;background:var(--fond);
+    box-shadow:0 16px 40px rgba(28,28,26,.14)}
+  .ecran{padding:18px 18px 26px;display:flex;flex-direction:column;gap:16px}
+  .ligne-dictee{background:var(--plage);border-radius:4px;padding:15px 18px;font-size:14px}
+  .carte{background:var(--teinte);border-radius:4px;padding:16px}
+  .carte-titre{font:500 13px/1.3 var(--sans);color:var(--pin);margin:0}
+  .q{margin-top:16px}
+  .q-quoi{font-size:12px;color:var(--gris);margin:0}
+  .q-question{font:500 15px/1.35 var(--sans);margin:2px 0 0}
+  .options{margin-top:9px;display:flex;flex-direction:column;gap:8px}
+  .options button{border:0;border-radius:999px;padding:11px 16px;text-align:left;
+    font:500 14px/1.3 var(--sans);background:var(--plage);color:var(--encre);cursor:pointer}
+  .options button[aria-pressed="true"]{background:var(--plein);color:var(--sur-plein)}
+  .retenu{margin-top:14px;background:var(--plage);border-radius:4px;padding:12px 14px;
+    display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px}
+  .retenu button{border:0;background:none;color:var(--pin);font:500 13px var(--sans);cursor:pointer;padding:6px 0}
+
+  .curseurs{margin-top:14px;display:flex;flex-direction:column;gap:14px}
+  .travail{display:flex;flex-direction:column;gap:6px}
+  .travail-tete{display:flex;justify-content:space-between;gap:10px;font-size:14px}
+  .travail-tete span:first-child{min-width:0}
+  .montant{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+  .pct{color:var(--gris);font-weight:400;margin-left:6px}
+  input[type=range]{width:100%;accent-color:var(--plein);height:28px}
+  .total{display:flex;justify-content:space-between;font-size:13px;color:var(--gris);
+    border-top:1px solid var(--trait);padding-top:10px;font-variant-numeric:tabular-nums}
+
+  .principal{margin-top:18px;width:100%;border:0;border-radius:999px;padding:13px;
+    background:var(--plein);color:var(--sur-plein);font:500 15px var(--sans);cursor:pointer}
+  .retour{margin-top:6px;width:100%;border:0;background:none;color:var(--gris);font:13px var(--sans);padding:8px}
+
+  /* Ce que le devis portera */
+  .devis{background:var(--plage);border-radius:4px;padding:14px 16px;display:flex;flex-direction:column;gap:9px}
+  .devis-ligne{display:flex;justify-content:space-between;gap:12px;font-size:14px}
+  .devis-ligne span:first-child{min-width:0}
+  .devis-ligne span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+  .devis-total{border-top:1px solid var(--trait);padding-top:9px;font-weight:600}
+  .note{font-size:13px;color:var(--encre-douce);margin:0}
+  @media (prefers-reduced-motion:no-preference){ .options button,.pastilles button{transition:background .2s,color .2s} }
+  .tete-droite{display:flex;align-items:center;gap:6px}
+  .sortir{border:0;background:none;color:var(--gris);width:32px;height:32px;display:grid;place-items:center;cursor:pointer;border-radius:999px;margin:-6px -8px -6px 0}
+  .remettre{border:0;background:none;color:var(--pin);font:500 13px var(--sans);cursor:pointer;padding:4px 0}
+  .sorti .travail-tete span:first-child{color:var(--gris);text-decoration:line-through}
+  .phrase-grille{margin:0;font-size:13px;color:var(--pin)}
+  input[type=range]:disabled{opacity:.5}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div>
+    <div class="cap">Planche</div>
+    <h1>La main d'œuvre que vous dictez</h1>
+  </div>
+
+  <div class="reglage">
+    <div class="cap">Moment</div>
+    <div class="pastilles" id="moment">
+      <button type="button" id="m1" aria-pressed="true" data-v="premiere">Les premières fois</button>
+      <button type="button" id="m2" aria-pressed="false" data-v="retenu">Après 3 fois le même choix</button>
+    </div>
+  </div>
+
+  <div class="tel" aria-label="Fiche client, après la note vocale">
+    <div class="ecran">
+      <div class="ligne-dictee">Votre dictée</div>
+
+      <div class="carte">
+        <p class="carte-titre">Avant de chiffrer</p>
+
+        <div id="laQuestion" class="q">
+          <p class="q-quoi">2 hommes pendant 2 jours, 400 € le jour par homme</p>
+          <p class="q-question">Où mettre les 1 600 € de main d'œuvre ?</p>
+          <div class="options" id="choix">
+            <button type="button" id="o1" aria-pressed="false" data-v="ligne">Sur une ligne Main d'œuvre</button>
+            <button type="button" id="o2" aria-pressed="true" data-v="reparti">Répartis sur les travaux</button>
+          </div>
+        </div>
+
+        <div id="leRetenu" class="retenu" hidden>
+          <span id="texteRetenu">Répartis sur les travaux, comme vos 3 derniers devis.</span>
+          <button type="button" id="changer">Changer</button>
+        </div>
+
+        <div id="curseurs" class="curseurs"></div>
+
+        <button type="button" class="principal">Continuer vers le devis</button>
+        <button type="button" class="retour">Revenir en arrière</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="reglage">
+    <div class="cap">Sur le devis</div>
+    <div class="devis" id="devis"></div>
+  </div>
+
+  <p class="note">Les curseurs bougent ensemble et le total de la main d’œuvre reste à 1 600 €, arrondi à la dizaine. La croix sort un travail que votre grille sait chiffrer ; « Remettre » le fait revenir. Après trois fois le même choix, la question ne se pose plus.</p>
+</div>
+
+<script>
+  const TOTAL = 1600;
+  // `grille` : ce que sa grille sait chiffrer seule, et comment. Sans grille, le travail ne peut pas sortir.
+  const travaux = [
+    { nom: "Démontage d'un chêne", part: 50, grille: null },
+    { nom: "Dessouchage", part: 20, grille: { detail: "souche de 35 cm, votre case 30 à 40 cm", prix: 1000 } },
+    { nom: "Taille de haie de laurier", part: 30, grille: { detail: "20 ml × 15 €", prix: 300 } },
+  ];
+  let choix = "reparti";
+  let moment = "premiere";
+  let ouvert = false;
+
+  const euros = (n) => n.toLocaleString("fr-FR") + " €";
+  const dedans = () => travaux.map((t, i) => i).filter((i) => !travaux[i].retire);
+
+  // Les montants à la dizaine, et le dernier prend le reste pour que la somme tombe juste.
+  function montants() {
+    const ids = dedans();
+    const somme = ids.reduce((s, i) => s + travaux[i].part, 0) || 1;
+    const m = {};
+    ids.forEach((i) => { m[i] = Math.round((TOTAL * travaux[i].part) / somme / 10) * 10; });
+    if (ids.length) m[ids[ids.length - 1]] += TOTAL - ids.reduce((s, i) => s + m[i], 0);
+    return m;
+  }
+  const pct = (i) => Math.round((travaux[i].part / (dedans().reduce((s, j) => s + travaux[j].part, 0) || 1)) * 100);
+
+  // Bouger un curseur : les autres se partagent le reste, au prorata de ce qu'ils avaient.
+  function deplacer(i, valeur) {
+    const ids = dedans();
+    const somme = ids.reduce((s, j) => s + travaux[j].part, 0);
+    ids.forEach((j) => { travaux[j].part = (travaux[j].part / somme) * 100; });
+    valeur = Math.max(0, Math.min(100, valeur));
+    const autres = ids.filter((j) => j !== i);
+    const avant = autres.reduce((s, j) => s + travaux[j].part, 0);
+    travaux[i].part = valeur;
+    autres.forEach((j) => { travaux[j].part = avant > 0 ? (travaux[j].part / avant) * (100 - valeur) : (100 - valeur) / autres.length; });
+    // On ne rebâtit pas les curseurs pendant qu'on en tire un : on change leurs chiffres.
+    const m = montants();
+    ids.forEach((j) => {
+      if (j !== i) document.getElementById("curseur-" + j).value = String(pct(j));
+      document.getElementById("montant-" + j).innerHTML = `${euros(m[j])}<span class="pct">${pct(j)} %</span>`;
+    });
+    peindreDevis();
+  }
+
+  function peindreDevis() {
+    const m = montants();
+    const ids = dedans();
+    const parGrille = travaux.filter((t) => t.retire).map((t) => [t.nom + ", " + t.grille.detail, t.grille.prix]);
+    const lignes = choix === "reparti"
+      ? [...ids.map((i) => [travaux[i].nom, m[i]]), ...parGrille]
+      : [["Main d'œuvre : " + ids.map((i) => travaux[i].nom.toLowerCase()).join(", ") + ", 2 hommes pendant 2 jours", TOTAL], ...parGrille];
+    const total = lignes.reduce((s, [, v]) => s + v, 0);
+    document.getElementById("devis").innerHTML =
+      lignes.map(([n, v]) => `<div class="devis-ligne"><span>${n}</span><span>${euros(v)}</span></div>`).join("") +
+      `<div class="devis-ligne devis-total"><span>Total HT</span><span>${euros(total)}</span></div>`;
+  }
+
+  const CROIX = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+  function peindre() {
+    const retenuVisible = moment === "retenu" && !ouvert;
+    document.getElementById("laQuestion").hidden = retenuVisible;
+    document.getElementById("leRetenu").hidden = !retenuVisible;
+    document.getElementById("texteRetenu").textContent = choix === "ligne"
+      ? "Sur une ligne Main d'œuvre, comme vos 3 derniers devis."
+      : "Répartis sur les travaux, comme vos 3 derniers devis.";
+    for (const b of document.querySelectorAll("#choix button")) b.setAttribute("aria-pressed", String(b.dataset.v === choix));
+    for (const b of document.querySelectorAll("#moment button")) b.setAttribute("aria-pressed", String(b.dataset.v === moment));
+
+    const m = montants();
+    const seul = dedans().length === 1;
+    const zone = document.getElementById("curseurs");
+    zone.innerHTML = travaux.map((t, i) => {
+      if (t.retire) {
+        return `<div class="travail sorti">
+          <div class="travail-tete"><span>${t.nom}</span><button type="button" class="remettre" data-i="${i}">Remettre</button></div>
+          <p class="phrase-grille">Atlas va se référer à votre grille tarifaire : ${t.grille.detail}, ${euros(t.grille.prix)}.</p>
+        </div>`;
+      }
+      const croix = t.grille && !seul
+        ? `<button type="button" class="sortir" data-i="${i}" aria-label="Retirer ${t.nom} de la main d'œuvre">${CROIX}</button>` : "";
+      if (choix !== "reparti") {
+        return `<div class="travail"><div class="travail-tete"><span>${t.nom}</span><span class="tete-droite"><span class="pct">dans la main d'œuvre</span>${croix}</span></div></div>`;
+      }
+      return `<div class="travail">
+          <div class="travail-tete"><span>${t.nom}</span><span class="tete-droite"><span class="montant" id="montant-${i}">${euros(m[i])}<span class="pct">${pct(i)} %</span></span>${croix}</span></div>
+          <input type="range" id="curseur-${i}" min="0" max="100" step="1" value="${pct(i)}" aria-label="Part de ${t.nom}"${seul ? " disabled" : ""}>
+        </div>`;
+    }).join("") + `<div class="total"><span>Total main d'œuvre</span><span>${euros(TOTAL)}</span></div>`;
+    if (choix === "reparti") dedans().forEach((i) => {
+      document.getElementById("curseur-" + i).addEventListener("input", (e) => deplacer(i, Number(e.target.value)));
+    });
+    peindreDevis();
+  }
+
+  document.getElementById("curseurs").addEventListener("click", (e) => {
+    const s = e.target.closest(".sortir"); const r = e.target.closest(".remettre");
+    if (s) { travaux[Number(s.dataset.i)].retire = true; peindre(); }
+    if (r) { travaux[Number(r.dataset.i)].retire = false; peindre(); }
+  });
+  document.getElementById("choix").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return; choix = b.dataset.v; peindre();
+  });
+  document.getElementById("moment").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return; moment = b.dataset.v; ouvert = false; peindre();
+  });
+  document.getElementById("changer").addEventListener("click", () => { ouvert = true; peindre(); });
+  peindre();
+</script>
+</body>
+</html>

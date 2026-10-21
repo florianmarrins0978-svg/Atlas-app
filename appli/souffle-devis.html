@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le souffle du devis</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+  /* Planche : où mettre les trois points qui soufflent pendant qu'Atlas
+     prépare le devis, sur la fiche client. Le geste et ses mesures sont ceux
+     de l'application (`.atlas-souffle`, globals.css), recopiés tels quels. */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --champ:#ece9e1; --encre:#1c1c1a; --gris:#8a8578;
+    --or:#B98B47; --or-texte:#9a7136; --plein:#7d9a6d; --sur-plein:#faf9f5; --trait:rgba(28,28,26,.12);
+    --serif:ui-serif,"New York",Georgia,serif;
+    --sans:-apple-system,ui-sans-serif,"Segoe UI",Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+    --fond:#16181c; --plage:#1f2227; --champ:#262a30; --encre:#ecebe6; --gris:#9a978d;
+    --or:#C9A15E; --or-texte:#d6ac6a; --plein:#a9c39a; --sur-plein:#16181c; --trait:rgba(236,235,230,.14); color-scheme:dark } }
+  :root[data-theme="dark"]{
+    --fond:#16181c; --plage:#1f2227; --champ:#262a30; --encre:#ecebe6; --gris:#9a978d;
+    --or:#C9A15E; --or-texte:#d6ac6a; --plein:#a9c39a; --sur-plein:#16181c; --trait:rgba(236,235,230,.14); color-scheme:dark }
+
+  *{box-sizing:border-box}
+  body{background:var(--fond);color:var(--encre);font:15px/1.5 var(--sans);
+    padding-block:28px 64px;
+    padding-left:max(16px,env(safe-area-inset-left,0px));
+    padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .page{max-width:430px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+  h1{font:600 26px/1.15 var(--serif);margin:0;text-wrap:balance}
+  .cap{font:600 11px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--or-texte)}
+  .pastilles{display:flex;flex-wrap:wrap;gap:7px}
+  .pastilles button{border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+    border-radius:999px;padding:9px 14px;font:500 13.5px/1.2 var(--sans);cursor:pointer}
+  .pastilles button[aria-pressed="true"]{background:var(--plein);color:var(--sur-plein);border-color:var(--plein)}
+  button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+  .tel{border:1px solid var(--trait);border-radius:24px;overflow:hidden;background:var(--fond);
+    box-shadow:0 16px 40px rgba(28,28,26,.14)}
+  .ecran{padding:22px 18px 30px;display:flex;flex-direction:column;gap:18px}
+  .photos{display:flex;flex-direction:column;gap:10px}
+  .ajout{width:62px;height:62px;border:1.5px dashed var(--or);border-radius:6px;display:grid;place-items:center;color:var(--or);font-size:22px}
+  .voix{display:flex;flex-direction:column;align-items:center;gap:14px;padding-top:6px}
+  .voix .cap{color:var(--gris)}
+  .rond{width:86px;height:86px;border-radius:999px;background:var(--plein);border:2px solid var(--or);
+    display:grid;place-items:center;color:var(--sur-plein)}
+  .rond svg{width:30px;height:30px}
+  .dictee{background:var(--plage);border-radius:4px;padding:16px 22px;font-size:15px}
+  .phrase{display:flex;justify-content:center;align-items:center;gap:10px;font-size:15px;color:var(--encre);min-height:24px}
+
+  /* Le geste de l'application, au pixel. */
+  .souffle{display:inline-flex;align-items:center;justify-content:center;gap:4px}
+  .souffle i{width:5px;height:5px;border-radius:9999px;background:currentColor;transform:scale(.72);opacity:.34;
+    animation:souffle 1.25s ease-in-out infinite}
+  .souffle i:nth-child(2){animation-delay:.16s}
+  .souffle i:nth-child(3){animation-delay:.32s}
+  .rond .souffle{gap:6px}
+  .rond .souffle i{width:7px;height:7px}
+  @keyframes souffle{0%,66%,100%{transform:scale(.72);opacity:.34}30%{transform:scale(1.5);opacity:1}}
+  @media (prefers-reduced-motion:reduce){
+    .souffle i{animation-name:souffle-calme}
+    @keyframes souffle-calme{0%,66%,100%{opacity:.34}30%{opacity:1}}
+  }
+  .note{font-size:13px;color:var(--gris);margin:0}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div>
+    <div class="cap">Planche</div>
+    <h1>Atlas prépare votre devis</h1>
+  </div>
+
+  <div class="pastilles" id="choix" role="group" aria-label="Proposition">
+    <button type="button" id="pA" data-v="A" aria-pressed="true">A. Dans le rond</button>
+    <button type="button" id="pB" data-v="B" aria-pressed="false">B. Au bout de la phrase</button>
+    <button type="button" id="pC" data-v="C" aria-pressed="false">C. Les deux</button>
+  </div>
+
+  <div class="tel" aria-label="Fiche client pendant la préparation du devis">
+    <div class="ecran">
+      <div class="photos"><div class="cap" style="color:var(--gris)">Photos</div><div class="ajout">+</div></div>
+      <div class="voix">
+        <div class="cap">Devis à la voix</div>
+        <div class="rond" id="rond"></div>
+      </div>
+      <div class="dictee">Votre dictée</div>
+      <div class="phrase" id="phrase"></div>
+    </div>
+  </div>
+
+  <p class="note">Ce sont les trois points du micro de la fiche client, avec le même rythme. Aujourd'hui l'écran affiche seulement « Atlas prépare votre devis… », sans rien qui bouge.</p>
+</div>
+
+<script>
+  const MICRO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0" stroke-linecap="round"/><path d="M12 18v3" stroke-linecap="round"/></svg>';
+  const POINTS = '<span class="souffle" aria-hidden="true"><i></i><i></i><i></i></span>';
+  function peindre(v) {
+    document.getElementById("rond").innerHTML = v === "A" || v === "C" ? POINTS : MICRO;
+    document.getElementById("phrase").innerHTML = v === "B" || v === "C"
+      ? "<span>Atlas prépare votre devis</span>" + POINTS
+      : "<span>Atlas prépare votre devis…</span>";
+    for (const b of document.querySelectorAll("#choix button")) b.setAttribute("aria-pressed", String(b.dataset.v === v));
+  }
+  document.getElementById("choix").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (b) peindre(b.dataset.v);
+  });
+  peindre("A");
+</script>
+</body>
+</html>

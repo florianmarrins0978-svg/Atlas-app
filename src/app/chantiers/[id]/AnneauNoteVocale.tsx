@@ -152,6 +152,7 @@ export default function AnneauNoteVocale({
   onDictee,
   preparationEnCours = false,
   refusAvantDeDicter = null,
+  atlasTravaille = false,
 }: {
   /**
    * Le chantier, s'il existe déjà. **`null` sur la fiche client** : il n'est
@@ -203,6 +204,12 @@ export default function AnneauNoteVocale({
    * une note refusée à l'arrivée serait une note perdue.
    */
   refusAvantDeDicter?: string | null;
+  /**
+   * Atlas écrit le devis à partir de la dictée : le micro laisse sa place aux
+   * points qui soufflent, et ne se presse plus. Sa planche du 21 octobre
+   * 2026, réponse C : le même souffle que le micro des coordonnées.
+   */
+  atlasTravaille?: boolean;
 }) {
 
   // **Rien à écouter : l'anneau devient un micro.** Le même objet, jamais un
@@ -393,7 +400,7 @@ export default function AnneauNoteVocale({
             <button
               type="button"
               onClick={commencerLaDictee}
-              disabled={envoi}
+              disabled={envoi || atlasTravaille}
               // Le seul texte de tout l'objet, et il ne s'affiche pas. Il ne
               // parle plus que de commencer : la pause a été retirée le 31 août
               // 2026, et l'objet lui-même s'efface dès qu'on parle.
@@ -407,7 +414,7 @@ export default function AnneauNoteVocale({
               // pour un bouton à texte, et l'appui du micro vit avec lui.
               className="atlas-micro"
             >
-              <IconeMicro />
+              {atlasTravaille ? <PointsQuiSoufflent /> : <IconeMicro />}
             </button>
           </span>
         )}

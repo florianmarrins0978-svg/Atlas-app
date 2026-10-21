@@ -8,6 +8,12 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-21
 
+- **Pendant qu'Atlas prépare le devis, ça souffle** (sa planche du 21 octobre,
+  réponse C, `appli/souffle-devis.html`) : sur la fiche client, les trois
+  points du micro des coordonnées prennent la place du micro dans le rond, et
+  celle des points de suspension au bout de « Atlas prépare votre devis ».
+  Un écran qui disait « … » sans bouger se lisait comme figé.
+
 - **Une ligne dictée dans le devis prend ses prix à lui.** Depuis le micro du
   devis, « on évacue le gros bois, 15 tonnes » arrivait « Aucun prix dicté, à
   vous de la chiffrer » alors que « Évacuation » est dans ses tarifs : ce

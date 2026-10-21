@@ -496,6 +496,8 @@ export default function FormulaireNouveauChantier({
    */
   const [chantierCree, setChantierCree] = useState<string | null>(null);
   const [dicteeFaite, setDicteeFaite] = useState(false);
+  /** Atlas écrit le devis : le rond du micro souffle (21 octobre 2026). */
+  const [atlasTravaille, setAtlasTravaille] = useState(false);
 
   /**
    * LA DICTÉE SE JETTE DEPUIS CET ÉCRAN — sa décision du 13 septembre 2026.
@@ -1538,6 +1540,7 @@ export default function FormulaireNouveauChantier({
               // pas : il reste appuyable, et une seconde dictée remplace la
               // première, en le disant (`DevisDepuisDictee`, cas « conflit »).
               preparationEnCours={noteAretirer}
+              atlasTravaille={atlasTravaille && !noteRetiree}
             />
 
             {/* ─── RETIRER LA DICTÉE, ICI — sa décision du 13 septembre 2026 ──
@@ -1618,6 +1621,7 @@ export default function FormulaireNouveauChantier({
                 transcriptionDisponible
                 auto
                 surLeDevis={false}
+                onTravail={setAtlasTravaille}
               />
             </div>
           )}
