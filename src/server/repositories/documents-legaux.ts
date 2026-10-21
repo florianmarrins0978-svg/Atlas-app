@@ -1,7 +1,8 @@
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { db } from "../db/client";
 import { acceptationsDocuments, documentsLegaux, users } from "../db/schema";
 import { VERSIONS_DOCUMENTS } from "../documents-legaux/versions";
+import { exigeeMaintenant } from "@/lib/acceptation-documents";
 
 // Accès aux documents légaux et à la preuve de leur acceptation
 // (voir docs/RGPD.md §8).
@@ -25,6 +26,8 @@ export type DocumentAAccepter = {
 export type PreuveAcceptation = {
   adresseIp: string | null;
   agentUtilisateur: string | null;
+  /** La phrase qu'il avait sous les yeux en touchant « Accepter » ; NULL hors écran. */
+  formuleAcceptee: string | null;
 };
 
 // La PUBLICATION d'une version n'a délibérément pas sa place ici : elle exige
@@ -85,24 +88,27 @@ export async function documentsAAccepter(utilisateurId: string): Promise<Documen
   const requis = enVigueur.filter((d) => d.acceptationRequise);
   if (requis.length === 0) return [];
 
+  // Toutes ses acceptations, avec leur type : il faut savoir s'il a déjà
+  // accepté une version PRÉCÉDENTE du même document (le préavis de l'article
+  // 15 ne vaut que pour lui).
   const dejaAcceptes = await db.transaction(async (tx) => {
     await tx.execute(sql`SELECT set_config('app.utilisateur_id', ${utilisateurId}, true)`);
     return tx
-      .select({ documentId: acceptationsDocuments.documentId })
+      .select({ documentId: acceptationsDocuments.documentId, type: documentsLegaux.type })
       .from(acceptationsDocuments)
-      .where(
-        and(
-          eq(acceptationsDocuments.utilisateurId, utilisateurId),
-          inArray(
-            acceptationsDocuments.documentId,
-            requis.map((d) => d.id)
-          )
-        )
-      );
+      .innerJoin(documentsLegaux, eq(documentsLegaux.id, acceptationsDocuments.documentId))
+      .where(eq(acceptationsDocuments.utilisateurId, utilisateurId));
   });
 
   const acceptes = new Set(dejaAcceptes.map((a) => a.documentId));
-  return requis.filter((d) => !acceptes.has(d.id));
+  const typesDejaAcceptes = new Set<string>(dejaAcceptes.map((a) => a.type));
+  const maintenant = new Date();
+  return requis.filter((d) => {
+    if (acceptes.has(d.id)) return false;
+    const declaree = VERSIONS_DOCUMENTS.find((v) => v.type === d.type && v.version === d.version);
+    const enVigueurLe = declaree?.enVigueurLe ? new Date(`${declaree.enVigueurLe}T00:00:00Z`) : null;
+    return exigeeMaintenant(enVigueurLe, typesDejaAcceptes.has(d.type), maintenant);
+  });
 }
 
 /**
@@ -133,6 +139,7 @@ export async function enregistrerAcceptations(
           documentId,
           adresseIp: preuve.adresseIp,
           agentUtilisateur: preuve.agentUtilisateur,
+          formuleAcceptee: preuve.formuleAcceptee,
         }))
       )
       .onConflictDoNothing({
@@ -154,6 +161,7 @@ export async function acceptationsDe(utilisateurId: string) {
         accepteAt: acceptationsDocuments.accepteAt,
         adresseIp: acceptationsDocuments.adresseIp,
         agentUtilisateur: acceptationsDocuments.agentUtilisateur,
+        formuleAcceptee: acceptationsDocuments.formuleAcceptee,
         type: documentsLegaux.type,
         version: documentsLegaux.version,
         empreinte: documentsLegaux.empreinte,

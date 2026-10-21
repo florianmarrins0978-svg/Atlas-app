@@ -8,6 +8,8 @@ import {
   JOURS_ESSAI,
   centimes,
   enLectureSeule,
+  etatDeLAcces,
+  phraseLectureSeule,
   etatAffiche,
   etatDeLEssai,
   finDeLEssai,
@@ -293,6 +295,29 @@ cas("un abonnement payé n'est jamais en lecture seule, même périmé — c'est
   assert.equal(etatDeLEssai(actif, apres(0)), null);
   assert.equal(enLectureSeule(actif, apres(0)), false);
   assert.equal(enLectureSeule({ ...actif, statut: "impaye" }, apres(0)), false);
+});
+
+cas("RÉSILIÉ : lecture seule, comme l'essai terminé — sinon Atlas devient gratuit (18 octobre 2026)", () => {
+  const resilie = { statut: "resilie" as const, periodeFin: apres(-1) };
+  assert.equal(enLectureSeule(resilie, apres(0)), true);
+  const acces = etatDeLAcces(resilie, apres(0));
+  assert.ok(acces && acces.statut === "resilie");
+  assert.equal(texteDuRuban(acces), "Abonnement terminé, lecture seule");
+  assert.equal(phraseLectureSeule(acces), "Votre abonnement est terminé. Choisissez une formule pour créer de nouveau.");
+});
+
+cas("résiliation DEMANDÉE mais période payée en cours : tout reste ouvert jusqu'à l'échéance", () => {
+  // Stripe garde l'abonnement « actif » jusqu'à la date ; il ne passe à
+  // « resilie » qu'à l'échéance. Il a payé l'année : il garde tout.
+  const enCours = { statut: "actif" as const, periodeFin: apres(200) };
+  assert.equal(enLectureSeule(enCours, apres(0)), false);
+  assert.equal(etatDeLAcces(enCours, apres(0)), null);
+});
+
+cas("l'essai terminé garde sa phrase, et rien n'est dit quand tout est ouvert", () => {
+  assert.equal(phraseLectureSeule(etatDeLAcces(ESSAI, FIN)), "Votre essai est terminé. Choisissez une formule pour créer de nouveau.");
+  assert.equal(phraseLectureSeule(etatDeLAcces(ESSAI, new Date(FIN.getTime() - 1))), null);
+  assert.equal(phraseLectureSeule(null), null);
 });
 
 cas("un essai sans date de fin ne referme rien — on ne devine pas une date", () => {

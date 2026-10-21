@@ -38,6 +38,7 @@
 import { getEnv } from "../env";
 import { logger } from "../logger";
 import { FORMULES, formule, centimes, type FormuleCode, type Periodicite } from "@/lib/abonnements";
+import { remboursementAuProrata, type RaisonDepart } from "@/lib/resiliation";
 import type { EtatVenuDuPrestataire } from "../repositories/abonnements";
 
 /**
@@ -71,7 +72,7 @@ function corpsFormulaire(champs: Record<string, string | number | undefined>): s
 
 async function appeler(
   chemin: string,
-  methode: "GET" | "POST",
+  methode: "GET" | "POST" | "DELETE",
   corps?: string
 ): Promise<{ ok: true; donnees: Record<string, unknown> } | Echec> {
   const cle = getEnv().paiementCleSecrete;
@@ -433,3 +434,162 @@ export async function changerLaFormule(params: {
   if (!etat) return { ok: false, erreur: "prestataire_refuse" };
   return { ok: true, etat };
 }
+
+/**
+ * LES RAISONS DE DÉPART, dans les mots du prestataire. Il les range sur la
+ * résiliation, où le patron les lit dans son tableau de bord et son
+ * application (sa question du 18 octobre 2026 : « moi, où je le vois ? »).
+ */
+const RETOUR_DU_PRESTATAIRE: Record<RaisonDepart, string> = {
+  trop_cher: "too_expensive",
+  peu_servi: "unused",
+  manque: "missing_features",
+};
+
+function champsDuDepart(raison: RaisonDepart | null, texte: string | null) {
+  return {
+    "cancellation_details[feedback]": raison ? RETOUR_DU_PRESTATAIRE[raison] : undefined,
+    "cancellation_details[comment]": texte ?? undefined,
+  };
+}
+
+/**
+ * RÉSILIER À L'ÉCHÉANCE — il garde tout jusqu'à la date payée.
+ *
+ * C'est la résiliation ordinaire, celle de l'écran « Avant de partir ». Rien
+ * n'est rendu, rien n'est coupé : l'abonnement s'arrête de lui-même à la fin
+ * de la période, et la lecture seule prend le relais (`etatDeLAcces`).
+ */
+export async function demanderLaResiliation(params: {
+  abonnementPrestataire: string;
+  raison: RaisonDepart | null;
+  texte: string | null;
+}): Promise<{ ok: true; etat: EtatVenuDuPrestataire } | Echec> {
+  const r = await appeler(
+    `/v1/subscriptions/${encodeURIComponent(params.abonnementPrestataire)}`,
+    "POST",
+    corpsFormulaire({ cancel_at_period_end: "true", ...champsDuDepart(params.raison, params.texte) })
+  );
+  if (!r.ok) return r;
+  const etat = lireUnAbonnement(r.donnees);
+  if (!etat) return { ok: false, erreur: "prestataire_refuse" };
+  return { ok: true, etat };
+}
+
+/** « Ne pas arrêter » : la résiliation demandée est retirée, l'abonnement continue. */
+export async function retirerLaResiliation(params: {
+  abonnementPrestataire: string;
+}): Promise<{ ok: true; etat: EtatVenuDuPrestataire } | Echec> {
+  const r = await appeler(
+    `/v1/subscriptions/${encodeURIComponent(params.abonnementPrestataire)}`,
+    "POST",
+    corpsFormulaire({ cancel_at_period_end: "false" })
+  );
+  if (!r.ok) return r;
+  const etat = lireUnAbonnement(r.donnees);
+  if (!etat) return { ok: false, erreur: "prestataire_refuse" };
+  return { ok: true, etat };
+}
+
+/**
+ * LE PAIEMENT DE LA PÉRIODE EN COURS : combien, et sur quoi le rendre.
+ *
+ * Lu sur la dernière facture de l'abonnement. Deux formes documentées selon la
+ * version d'API du compte (comme `finDePeriode`) : `payment_intent` sur la
+ * facture, ou la liste `payments`. Aucune ne répond : `null`, et rien ne part.
+ */
+function paiementDeLaPeriode(abonnement: Record<string, unknown>): { payeCentimes: number; paiement: string } | null {
+  const facture = abonnement.latest_invoice;
+  if (!estObjet(facture) || typeof facture.amount_paid !== "number") return null;
+  const direct = facture.payment_intent;
+  if (typeof direct === "string") return { payeCentimes: facture.amount_paid, paiement: direct };
+  if (estObjet(direct) && typeof direct.id === "string") return { payeCentimes: facture.amount_paid, paiement: direct.id };
+  const liste = estObjet(facture.payments) ? facture.payments.data : null;
+  if (Array.isArray(liste) && liste.length > 0 && estObjet(liste[0]) && estObjet(liste[0].payment)) {
+    const pi = liste[0].payment.payment_intent;
+    if (typeof pi === "string") return { payeCentimes: facture.amount_paid, paiement: pi };
+  }
+  return null;
+}
+
+/**
+ * REFUSER DE NOUVELLES CONDITIONS — résilier tout de suite, et rendre les mois
+ * payés et non utilisés. Son choix du 18 octobre 2026 (la B,
+ * `docs/A-FAIRE.md` §17) : c'est nous qui changeons les règles, il ne perd pas
+ * ce qu'il a payé.
+ *
+ * **L'ordre compte.** Le montant se calcule AVANT la résiliation (après, la
+ * période n'existe plus) ; la résiliation part ensuite ; le remboursement en
+ * dernier. Si le remboursement échoue, la résiliation reste faite et l'échec
+ * est journalisé avec le montant dû : on le rend à la main, jamais deux fois.
+ */
+export async function resilierEtRembourser(params: {
+  abonnementPrestataire: string;
+  raison: RaisonDepart | null;
+  texte: string | null;
+  maintenant: Date;
+}): Promise<
+  | { ok: true; etat: EtatVenuDuPrestataire; rembourseCentimes: number; moisNonUtilises: number; remboursementEchoue: boolean }
+  | Echec
+> {
+  const id = encodeURIComponent(params.abonnementPrestataire);
+  const lu = await appeler(
+    `/v1/subscriptions/${id}?expand[]=latest_invoice&expand[]=latest_invoice.payments`,
+    "GET"
+  );
+  if (!lu.ok) return lu;
+  const avant = lireUnAbonnement(lu.donnees);
+  if (!avant) return { ok: false, erreur: "prestataire_refuse" };
+
+  const paye = paiementDeLaPeriode(lu.donnees);
+  const du = paye
+    ? remboursementAuProrata({
+        payeCentimes: paye.payeCentimes,
+        periodicite: avant.periodicite,
+        finDePeriode: avant.periodeFin,
+        maintenant: params.maintenant,
+      })
+    : null;
+
+  // Les paramètres d'une suppression passent dans l'adresse, pas dans un corps.
+  // Un second appui tombe ici sur un abonnement déjà résilié, que le
+  // prestataire refuse : le remboursement plus bas ne part donc qu'une fois.
+  const parametres = corpsFormulaire(champsDuDepart(params.raison, params.texte));
+  const fin = await appeler(`/v1/subscriptions/${id}${parametres ? `?${parametres}` : ""}`, "DELETE");
+  if (!fin.ok) return fin;
+  const etat = lireUnAbonnement(fin.donnees);
+  if (!etat) return { ok: false, erreur: "prestataire_refuse" };
+
+  if (!du || !paye) {
+    // On ne sait pas combien rendre : on ne devine pas. Le journal le dit, et
+    // le patron le rend à la main.
+    logger.error("Refus des conditions : remboursement à faire à la main, paiement illisible", {
+      abonnement: params.abonnementPrestataire,
+    });
+    return { ok: true, etat, rembourseCentimes: 0, moisNonUtilises: du?.moisNonUtilises ?? 0, remboursementEchoue: true };
+  }
+  if (du.centimes === 0) {
+    return { ok: true, etat, rembourseCentimes: 0, moisNonUtilises: du.moisNonUtilises, remboursementEchoue: false };
+  }
+
+  const rendu = await appeler(
+    "/v1/refunds",
+    "POST",
+    corpsFormulaire({
+      payment_intent: paye.paiement,
+      amount: du.centimes,
+      reason: "requested_by_customer",
+      "metadata[motif]": "refus_nouvelles_conditions",
+      "metadata[mois_non_utilises]": du.moisNonUtilises,
+    })
+  );
+  if (!rendu.ok) {
+    logger.error("Refus des conditions : le remboursement a échoué, à rendre à la main", {
+      abonnement: params.abonnementPrestataire,
+      centimes: du.centimes,
+    });
+    return { ok: true, etat, rembourseCentimes: 0, moisNonUtilises: du.moisNonUtilises, remboursementEchoue: true };
+  }
+  return { ok: true, etat, rembourseCentimes: du.centimes, moisNonUtilises: du.moisNonUtilises, remboursementEchoue: false };
+}
+

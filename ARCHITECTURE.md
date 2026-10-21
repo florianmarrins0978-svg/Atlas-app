@@ -35466,3 +35466,45 @@ contredisait.
 `scripts/test-accueil-chantier-neuf-en-tete-e2e.ts` rejoue son geste : un
 contrat d'il y a cinq jours, la feuille « Créer un devis », un nom, la flèche.
 
+## §478 : Une phrase engage, et la preuve la garde
+
+**18 octobre 2026, sa planche « accepter en un geste »**
+(`appli/documents-legaux-un-geste.html`).
+
+Les cases à cocher sont parties : une phrase au-dessus de « Accepter » dit ce
+que le geste engage, et chaque document s'ouvre en entier avant. Le droit le
+permet entre professionnels (`docs/A-FAIRE.md` §17, sources comprises) ; ce
+qui devient alors décisif est la **preuve de ce qu'il avait sous les yeux**.
+
+| | |
+|---|---|
+| la phrase | `phraseDAcceptation` (`src/lib/acceptation-documents.ts`), seule source : l'écran l'affiche, l'action la recalcule depuis la liste du serveur et l'enregistre (`formule_acceptee`, migration 0134) |
+| ce qu'il a lu | le formulaire renvoie les identifiants affichés ; `memesDocuments` refuse si la liste du serveur a changé entre-temps, et l'écran se recharge. On n'accepte ni la liste du navigateur ni une version qu'il n'a pas vue |
+| les acceptations d'avant | `formule_acceptee` NULL, ce qui est vrai : elles ont été données par des cases |
+
+**Ce qui n'a pas été fait, et pourquoi** : une variante « la nouvelle version
+du document » de la phrase. Elle demande de savoir s'il avait accepté une
+version précédente du même type ; le nombre de documents suffit à rendre la
+phrase juste.
+
+## §479 : Partir — lecture seule, « Avant de partir », refus remboursé, préavis
+
+**18 octobre 2026, la suite de la planche du §478** (`docs/A-FAIRE.md` §17).
+
+| | où | pourquoi |
+|---|---|---|
+| le résilié en lecture seule | `etatDeLAcces` (`src/lib/abonnements.ts`) | à l'échéance, un résilié gardait l'écriture : résilier rendait Atlas gratuit. Même porte que l'essai terminé (`withEntreprise`), et `LectureSeuleError` remplace `EssaiTermineError`, dont le nom mentait |
+| « Avant de partir » | `AvantDePartir.tsx`, `demanderLaResiliation` | ni barrage ni second écran : la formule juste en dessous (au prorata, le seul changement que le dépôt sait faire), puis une question facultative. Raison et texte vont chez le prestataire (`cancellation_details`), où le patron les lit : Atlas n'a aucun écran d'éditeur, chaque entreprise étant isolée |
+| « Refuser » une nouvelle version | `FeuilleRefus.tsx`, `resilierEtRembourser` | un patron déjà client était enfermé dehors avec ses données. L'ordre est lire, résilier, rendre : un second appui tombe sur un abonnement déjà résilié et ne rend rien deux fois ; un montant illisible ne part pas |
+| le préavis | `exigeeMaintenant`, `enVigueurLe` | l'article 15 promet trente jours ; la version publiée bloquait le jour même |
+
+**Ce qui calcule l'argent ne vit qu'à un endroit** : `moisNonUtilisesDeLaPeriode`
+sert l'annonce à l'écran et le remboursement, sur le montant réellement
+encaissé, jamais sur la grille.
+
+**Ce qui n'est pas fait, et pourquoi** : l'effacement trente jours après la
+fin. Annoncé par e-mail, il attend le nom de domaine ; le délai de l'article
+13 et la garde des factures attendent leur rédaction et le juriste. Effacer
+sans prévenir ni savoir ce qui doit rester est exactement ce que
+`CLAUDE.md` §4 septies interdit.
+

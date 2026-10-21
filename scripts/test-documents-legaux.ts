@@ -10,6 +10,7 @@ import {
 } from "../src/server/repositories/documents-legaux";
 import { VERSIONS_DOCUMENTS, empreinteContenu } from "../src/server/documents-legaux/versions";
 import { nettoyerBase } from "./_test-db";
+import { phraseDAcceptation } from "../src/lib/acceptation-documents";
 
 let passed = 0;
 let failed = 0;
@@ -117,19 +118,23 @@ async function main() {
     await enregistrerAcceptations(
       utilisateurId,
       attendus.map((d) => d.id),
-      { adresseIp: "203.0.113.7", agentUtilisateur: "Test/1.0" }
+      { adresseIp: "203.0.113.7", agentUtilisateur: "Test/1.0", formuleAcceptee: null }
     );
     assert.deepStrictEqual(await documentsAAccepter(utilisateurId), []);
   });
 
-  await test("la preuve conserve adresse, horodatage, version et empreinte", async () => {
+  await test("la preuve conserve adresse, horodatage, version, empreinte et la phrase lue", async () => {
     const utilisateurId = await creerUtilisateur(`preuve-${Date.now()}@atlas.test`);
     const attendus = await documentsAAccepter(utilisateurId);
     const avant = new Date();
     await enregistrerAcceptations(
       utilisateurId,
       attendus.map((d) => d.id),
-      { adresseIp: "198.51.100.42", agentUtilisateur: "Mozilla/5.0 (Test)" }
+      {
+        adresseIp: "198.51.100.42",
+        agentUtilisateur: "Mozilla/5.0 (Test)",
+        formuleAcceptee: phraseDAcceptation(attendus.length),
+      }
     );
 
     const preuves = await acceptationsDe(utilisateurId);
@@ -137,6 +142,8 @@ async function main() {
     for (const p of preuves) {
       assert.strictEqual(p.adresseIp, "198.51.100.42");
       assert.strictEqual(p.agentUtilisateur, "Mozilla/5.0 (Test)");
+      // Sans la phrase, on prouve un toucher de bouton, pas ce qu'il engageait.
+      assert.strictEqual(p.formuleAcceptee, phraseDAcceptation(attendus.length));
       assert.ok(p.version, "version manquante");
       assert.match(p.empreinte, /^[0-9a-f]{64}$/, "empreinte absente ou malformée");
       assert.ok(p.accepteAt >= new Date(avant.getTime() - 5000), "horodatage incohérent");
@@ -151,12 +158,14 @@ async function main() {
     await enregistrerAcceptations(utilisateurId, ids, {
       adresseIp: "192.0.2.1",
       agentUtilisateur: "Premier",
+      formuleAcceptee: null,
     });
     const premiere = await acceptationsDe(utilisateurId);
 
     const { enregistrees } = await enregistrerAcceptations(utilisateurId, ids, {
       adresseIp: "192.0.2.99",
       agentUtilisateur: "Second",
+      formuleAcceptee: null,
     });
 
     assert.strictEqual(enregistrees, 0, "une réacceptation ne doit rien insérer");
@@ -172,8 +181,48 @@ async function main() {
     const { enregistrees } = await enregistrerAcceptations(utilisateurId, [], {
       adresseIp: null,
       agentUtilisateur: null,
+      formuleAcceptee: null,
     });
     assert.strictEqual(enregistrees, 0);
+  });
+
+  await test("préavis de l'article 15 : un client qui a accepté la version précédente n'est pas bloqué avant l'entrée en vigueur", async () => {
+    const utilisateurId = await creerUtilisateur(`preavis-${Date.now()}@atlas.test`);
+    const attendus = await documentsAAccepter(utilisateurId);
+    const cguEnVigueur = attendus.find((d) => d.type === "cgu");
+    assert.ok(cguEnVigueur, "aucune CGU attendue");
+    // Il avait accepté la version d'avant, et tout le reste.
+    const precedente = VERSIONS_DOCUMENTS.filter((v) => v.type === "cgu").at(-2);
+    assert.ok(precedente, "il faut au moins deux versions des CGU pour éprouver le préavis");
+    const [idPrecedente] = (
+      await db.execute<{ id: string }>(
+        sql`SELECT id FROM documents_legaux WHERE type = 'cgu' AND version = ${precedente.version}`
+      )
+    ).rows.map((r) => r.id);
+    await enregistrerAcceptations(
+      utilisateurId,
+      [idPrecedente, ...attendus.filter((d) => d.type !== "cgu").map((d) => d.id)],
+      { adresseIp: null, agentUtilisateur: null, formuleAcceptee: null }
+    );
+
+    const declaree = VERSIONS_DOCUMENTS.find((v) => v.type === "cgu" && v.version === cguEnVigueur.version)!;
+    const avant = declaree.enVigueurLe;
+    try {
+      declaree.enVigueurLe = "2999-01-01";
+      assert.deepStrictEqual(await documentsAAccepter(utilisateurId), [], "bloqué pendant le préavis");
+      declaree.enVigueurLe = "2000-01-01";
+      assert.deepStrictEqual((await documentsAAccepter(utilisateurId)).map((d) => d.type), ["cgu"], "pas bloqué après");
+    } finally {
+      declaree.enVigueurLe = avant;
+    }
+    // Un nouvel inscrit, lui, accepte la dernière tout de suite.
+    const neuf = await creerUtilisateur(`preavis-neuf-${Date.now()}@atlas.test`);
+    declaree.enVigueurLe = "2999-01-01";
+    try {
+      assert.ok((await documentsAAccepter(neuf)).some((d) => d.type === "cgu"), "un nouvel inscrit a échappé aux CGU");
+    } finally {
+      declaree.enVigueurLe = avant;
+    }
   });
 
   await test("un utilisateur ne voit jamais les acceptations d'un autre", async () => {
@@ -184,7 +233,7 @@ async function main() {
     await enregistrerAcceptations(
       a,
       attendusA.map((d) => d.id),
-      { adresseIp: "203.0.113.1", agentUtilisateur: "A" }
+      { adresseIp: "203.0.113.1", agentUtilisateur: "A", formuleAcceptee: null }
     );
 
     // B n'a rien accepté : il ne doit voir aucune preuve, et rester bloqué.
@@ -198,7 +247,7 @@ async function main() {
     await enregistrerAcceptations(
       utilisateurId,
       attendus.map((d) => d.id),
-      { adresseIp: "203.0.113.5", agentUtilisateur: "RLS" }
+      { adresseIp: "203.0.113.5", agentUtilisateur: "RLS", formuleAcceptee: null }
     );
 
     // Sans app.utilisateur_id positionné, la politique RLS ne doit laisser

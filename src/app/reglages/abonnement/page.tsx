@@ -110,6 +110,7 @@ export default async function AbonnementPage({
       <AbonnementClient
         formuleActuelle={formuleChoisie(abonnement)}
         periodiciteActuelle={formuleChoisie(abonnement) ? abonnement!.periodicite : null}
+        annulationDemandee={abonnement?.annulationDemandee ?? false}
         paiementBranche={paiementConfigure() && retourConfigure()}
       />
 

@@ -324,9 +324,11 @@ async function main() {
     await page.getByRole("link", { name: "Entrer dans Atlas" }).click();
     await page.waitForURL(/\/documents-legaux(?:\?|$)/, { timeout: 30_000 });
     await page.getByRole("heading", { name: "Avant de commencer" }).waitFor({ timeout: 30_000 });
+    // Plus de cases depuis le 17 octobre 2026 : la phrase dit combien de
+    // documents « Accepter » engage. Un compte neuf en a deux en attente.
     assert.ok(
-      (await page.getByRole("checkbox").count()) > 0,
-      "la page des documents ne propose rien à accepter : un compte neuf devrait avoir les deux textes en attente"
+      await page.getByText("vous acceptez les deux documents ci-dessous").isVisible(),
+      "la page des documents ne propose pas les deux textes : un compte neuf devrait les avoir en attente"
     );
   });
 

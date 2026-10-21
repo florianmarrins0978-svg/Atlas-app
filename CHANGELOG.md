@@ -252,6 +252,72 @@ Format : le plus récent en tête.
 
 ## 2026-10-18
 
+- **Une nouvelle version des conditions ne bloque plus le jour même.**
+  L'article 15 promet trente jours de préavis ; rien ne le tenait, la version
+  publiée fermait l'application aussitôt. Chaque nouvelle version déclare
+  désormais son entrée en vigueur (`enVigueurLe`, `versions.ts`) : d'ici là, un
+  client garde la version qu'il a acceptée, et le jour venu la nouvelle est
+  exigée. Un nouvel inscrit accepte la dernière tout de suite. Une version neuve
+  sans cette date est refusée par `test-acceptation-documents.ts` ;
+  `test-documents-legaux.ts` le prouve contre la base (vu rouge).
+- **L'effacement trente jours après la fin n'est PAS codé, et c'est voulu.**
+  Il devait être annoncé par e-mail, et rien ne peut partir d'Atlas par e-mail
+  avant le nom de domaine (`docs/A-FAIRE.md` §15 et §16) ; le délai de
+  l'article 13 est encore « [À COMPLÉTER] » ; et la garde des factures dix ans
+  attend le juriste. Effacer des données sans prévenir ni savoir ce qui doit
+  rester, c'est le geste que `CLAUDE.md` §4 septies interdit.
+
+- **Un patron déjà client peut refuser de nouvelles conditions sans être
+  enfermé dehors.** Avant, refuser ne laissait que « Se déconnecter » : ni ses
+  données, ni la résiliation que l'article 15 lui promet. « Refuser », aussi
+  visible qu'« Accepter », ouvre une feuille : ses données à télécharger, puis
+  « Résilier et être remboursé », qui annonce les mois non utilisés, résilie
+  tout de suite et rend ces mois sur le paiement réellement encaissé (son choix
+  du 18 octobre, la B). Le montant ne vient jamais de l'écran ; s'il ne se lit
+  pas, rien ne part et le journal le dit. Le titre devient « Les conditions ont
+  changé ». Un nouvel inscrit et un salarié gardent « Se déconnecter ». Joué
+  dans un navigateur contre un faux prestataire : 5 mois, 295 € TTC sur 708 €.
+  **Non éprouvé ici** : le téléchargement depuis la feuille (il demande la
+  preuve d'identité récente) et un vrai remboursement Stripe, à jouer sur son
+  espace avec une clé de test.
+
+- **Résilier se fait dans Atlas, par « Avant de partir ».** Sa crainte : une
+  résiliation trop facile ferait partir les artisans. Pas de barrage (opposition
+  bancaire, réputation) : la formule juste en dessous proposée d'abord, au
+  prorata, puis « Pourquoi partez-vous ? », facultatif, avec trois réponses et
+  une case de texte. La raison et le texte partent chez le prestataire avec la
+  résiliation, où il les lit (`cancellation_details`). La résiliation vaut pour
+  l'échéance ; « Ne pas arrêter » la retire. Joué dans un navigateur contre un
+  faux prestataire local ; `test-paiement-stripe.ts` et `test-resiliation.ts`.
+  **Écart avec la planche, dit** : la formule moins chère change tout de suite,
+  au prorata (le seul changement que le dépôt sait faire), pas à l'échéance.
+- **La fiche du mode d'emploi de l'acceptation décrivait encore les cases.**
+  Corrigée avec le lot du geste unique : l'assistant aurait enseigné un bouton
+  disparu (`test-mode-emploi.ts`).
+
+- **Un abonnement résilié passe en lecture seule, comme l'essai terminé.**
+  Trouvé le 18 octobre en préparant la résiliation : à son échéance, un
+  abonnement résilié gardait tout ouvert, en écriture. Résilier rendait Atlas
+  gratuit. La règle vit au même endroit que l'essai (`etatDeLAcces`,
+  `enLectureSeule`), donc Postgres refuse l'écriture par la même porte ; le
+  ruban dit « Abonnement terminé, lecture seule », et reprendre un abonnement
+  rouvre tout. Une résiliation seulement demandée ne ferme rien : il garde tout
+  jusqu'à la date payée. `test-essai-lecture-seule-db.ts` §7 et
+  `test-abonnements.ts`, vus rouges. `EssaiTermineError` devient
+  `LectureSeuleError`, son nom mentant pour un résilié.
+
+- **Les conditions s'acceptent en un geste, comme chez Apple, et la preuve
+  garde la phrase lue.** Sa demande du 17 octobre. Plus de case par document :
+  une phrase (« En touchant « Accepter », vous acceptez les deux documents
+  ci-dessous. »), chaque texte qui s'ouvre en entier avant, un seul bouton. La
+  phrase est enregistrée avec chaque acceptation (migration 0134, expand seul) :
+  sans elle, on prouve un toucher de bouton, pas ce qu'il engageait. Une version
+  publiée entre l'affichage et le geste est refusée et la liste se recharge,
+  plutôt que d'être acceptée à son insu. Sources juridiques vérifiées dans
+  `docs/A-FAIRE.md` §17. `scripts/test-documents-legaux.ts` (vu rouge sans la
+  phrase), `scripts/test-acceptation-documents.ts`. **Pas encore sur `main`** :
+  le lot est de niveau 3 et la batterie n'a pas été jouée, à sa demande.
+
 - **Le plan se dessine au doigt dans l'écran d'arrosage**, sur son « tu peux
   coder, lance pas de batterie » (planche B, `appli/arrosage-dessiner-plan-b.html`) :
   « Dessiner le plan » sous la photo du croquis, sans la déplacer ; le terrain
@@ -300,6 +366,7 @@ Format : le plus récent en tête.
   R-VAN, MP Rotator s'expliquent sous la planche des tuyères.
 - **Au nez de robinet, le manque de voies se lit sous le programmateur**, et
   la phrase en rouge ne parle d'un numéro de nourrice que s'il y a une nourrice.
+
 ## 2026-10-17
 
 - **Un enregistrement lancé sans attendre sa réponse ne se perd plus sans un

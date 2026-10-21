@@ -411,6 +411,159 @@ async function main() {
     serveur.close();
   }
 
+  console.log("\n=== Partir : à l'échéance, avec sa raison et son texte (18 octobre 2026) ===\n");
+
+  {
+    const { serveur, recues } = fauxPrestataire(() => ({
+      statut: 200,
+      corps: abonnementRendu({ cancel_at_period_end: true }),
+    }));
+    const port = await surUnPort(serveur);
+    process.env.ATLAS_PAIEMENT_BASE_URL = `http://127.0.0.1:${port}`;
+    const stripe = await moduleFrais();
+
+    const r = await stripe.demanderLaResiliation({
+      abonnementPrestataire: "sub_123",
+      raison: "manque",
+      texte: "la facturation en anglais",
+    });
+
+    await cas("la résiliation part pour l'échéance, jamais tout de suite", async () => {
+      assert.equal(recues[0].methode, "POST");
+      assert.equal(recues[0].chemin, "/v1/subscriptions/sub_123");
+      assert.equal(champs(recues[0].corps).get("cancel_at_period_end"), "true");
+      assert.equal(r.ok, true);
+      if (r.ok) assert.equal(r.etat.annulationDemandee, true);
+    });
+
+    await cas("sa raison et son texte partent avec, là où le patron les lit", async () => {
+      const c = champs(recues[0].corps);
+      assert.equal(c.get("cancellation_details[feedback]"), "missing_features");
+      assert.equal(c.get("cancellation_details[comment]"), "la facturation en anglais");
+    });
+
+    await cas("sans raison ni texte, rien n'est inventé", async () => {
+      await stripe.demanderLaResiliation({ abonnementPrestataire: "sub_123", raison: null, texte: null });
+      const c = champs(recues[1].corps);
+      assert.equal(c.has("cancellation_details[feedback]"), false);
+      assert.equal(c.has("cancellation_details[comment]"), false);
+    });
+
+    await cas("« Ne pas arrêter » retire la résiliation demandée", async () => {
+      await stripe.retirerLaResiliation({ abonnementPrestataire: "sub_123" });
+      assert.equal(champs(recues[2].corps).get("cancel_at_period_end"), "false");
+    });
+
+    serveur.close();
+  }
+
+  console.log("\n=== Refuser de nouvelles conditions : résilier, et rendre les mois non utilisés ===\n");
+
+  {
+    // Payé le 18 avril pour un an, refusé le 18 octobre : six mois rendus.
+    const finAvril = Math.floor(Date.UTC(2027, 3, 18, 10) / 1000);
+    const { serveur, recues } = fauxPrestataire((r) => {
+      if (r.methode === "GET") {
+        return {
+          statut: 200,
+          corps: abonnementRendu({
+            current_period_end: finAvril,
+            metadata: { formule: "entreprise", periodicite: "annuelle" },
+            latest_invoice: { amount_paid: 70800, payment_intent: "pi_annee" },
+          }),
+        };
+      }
+      if (r.methode === "DELETE") return { statut: 200, corps: abonnementRendu({ status: "canceled" }) };
+      return { statut: 200, corps: { id: "re_1" } };
+    });
+    const port = await surUnPort(serveur);
+    process.env.ATLAS_PAIEMENT_BASE_URL = `http://127.0.0.1:${port}`;
+    const stripe = await moduleFrais();
+
+    const r = await stripe.resilierEtRembourser({
+      abonnementPrestataire: "sub_123",
+      raison: null,
+      texte: "je ne suis pas d'accord avec l'article 7",
+      maintenant: new Date(Date.UTC(2026, 9, 18, 10)),
+    });
+
+    await cas("l'ordre : lire, résilier, rendre", async () => {
+      assert.deepEqual(
+        recues.map((x) => x.methode),
+        ["GET", "DELETE", "POST"]
+      );
+      assert.equal(recues[2].chemin, "/v1/refunds");
+    });
+
+    await cas("354 € TTC rendus sur le paiement de l'année, pour six mois", async () => {
+      const c = champs(recues[2].corps);
+      assert.equal(c.get("payment_intent"), "pi_annee");
+      assert.equal(c.get("amount"), "35400");
+      assert.equal(r.ok, true);
+      if (r.ok) {
+        assert.equal(r.rembourseCentimes, 35400);
+        assert.equal(r.moisNonUtilises, 6);
+        assert.equal(r.remboursementEchoue, false);
+        assert.equal(r.etat.statut, "resilie");
+      }
+    });
+
+    await cas("son texte part avec la résiliation, dans l'adresse", async () => {
+      assert.ok(recues[1].chemin.startsWith("/v1/subscriptions/sub_123?"));
+      const c = new URLSearchParams(recues[1].chemin.split("?")[1]);
+      assert.equal(c.get("cancellation_details[comment]"), "je ne suis pas d'accord avec l'article 7");
+    });
+
+    serveur.close();
+  }
+
+  await cas("paiement illisible : résilié quand même, RIEN n'est rendu au hasard, et c'est dit", async () => {
+    const { serveur, recues } = fauxPrestataire((r) =>
+      r.methode === "GET"
+        ? { statut: 200, corps: abonnementRendu({ latest_invoice: { amount_paid: 70800 } }) }
+        : { statut: 200, corps: abonnementRendu({ status: "canceled" }) }
+    );
+    const port = await surUnPort(serveur);
+    process.env.ATLAS_PAIEMENT_BASE_URL = `http://127.0.0.1:${port}`;
+    const stripe = await moduleFrais();
+    const r = await stripe.resilierEtRembourser({
+      abonnementPrestataire: "sub_123",
+      raison: null,
+      texte: null,
+      maintenant: new Date(),
+    });
+    assert.equal(recues.some((x) => x.chemin === "/v1/refunds"), false, "un remboursement est parti sans paiement lu");
+    assert.equal(r.ok, true);
+    if (r.ok) assert.equal(r.remboursementEchoue, true);
+    serveur.close();
+  });
+
+  await cas("la résiliation refusée : rien n'est rendu", async () => {
+    const { serveur, recues } = fauxPrestataire((r) =>
+      r.methode === "GET"
+        ? {
+            statut: 200,
+            corps: abonnementRendu({
+              metadata: { formule: "entreprise", periodicite: "annuelle" },
+              latest_invoice: { amount_paid: 70800, payment_intent: "pi_annee" },
+            }),
+          }
+        : { statut: 400, corps: { error: { message: "already canceled" } } }
+    );
+    const port = await surUnPort(serveur);
+    process.env.ATLAS_PAIEMENT_BASE_URL = `http://127.0.0.1:${port}`;
+    const stripe = await moduleFrais();
+    const r = await stripe.resilierEtRembourser({
+      abonnementPrestataire: "sub_123",
+      raison: null,
+      texte: null,
+      maintenant: new Date(),
+    });
+    assert.equal(r.ok, false);
+    assert.equal(recues.some((x) => x.chemin === "/v1/refunds"), false, "rendu deux fois : la résiliation avait déjà eu lieu");
+    serveur.close();
+  });
+
   console.log("\n=== Les trois refus, et chacun dit lequel c'est ===\n");
 
   await cas("SANS CLÉ : « non configuré », et aucun appel n'est tenté", async () => {

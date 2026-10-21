@@ -77,6 +77,23 @@ chiffre. À coder dans `CalendrierPeriodes.tsx` par une fonction pure de
 Le calcul tient ses tubes (paroi 3 mm) pour tout le monde, ce qui est le côté
 sûr. Un réglage doit laisser chaque artisan dire son tube (« 25×2.0 », lu sur le
 tube). Maquette d'abord (`CLAUDE.md` §3 bis), puis code.
+
+## 🔜 LES CONDITIONS, LE REFUS ET LA RÉSILIATION — 18 octobre 2026
+
+Planche `appli/documents-legaux-un-geste.html`, choisie le 18 octobre ; tout
+est détaillé dans `docs/A-FAIRE.md` §17. **Codé, sur la branche
+`claude/accepter-en-un-geste`, pas encore sur `main`** : il a demandé UNE
+batterie pour l'ensemble, à lancer avec son accord. Cinq commits : le geste
+unique (migration 0134), la lecture seule du résilié, « Avant de partir »,
+« Refuser » avec remboursement, le préavis de trente jours.
+
+**À jouer sur son espace avec une clé Stripe de test**, faute de clé ici : un
+vrai remboursement, et la raison et le texte visibles sur la résiliation
+dans le tableau de bord. **À éprouver** : le téléchargement depuis la
+feuille « Refuser » (preuve d'identité récente). **Reste** : l'effacement à
+trente jours et l'annonce par e-mail d'une nouvelle version, tous deux
+suspendus au nom de domaine (§16) et au délai de l'article 13.
+
 ## 🔜 UNE PAGE OUVERTE AVANT UNE BASCULE RESTE VIEILLIE — 17 octobre 2026
 
 Une action inconnue qui tombe jusqu'à l'écran d'erreur recharge maintenant

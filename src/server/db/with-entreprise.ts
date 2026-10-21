@@ -47,17 +47,18 @@ export class AccesRefuseError extends Error {
 }
 
 /**
- * Levée quand un geste tente d'écrire alors que l'essai est terminé.
+ * Levée quand un geste tente d'écrire en lecture seule : essai terminé, ou
+ * abonnement résilié depuis le 18 octobre 2026.
  *
  * Le message ne parvient jamais à l'écran tel quel (Next.js le remplace en
  * production, `AGENTS.md` piège 0 ter) : c'est le ruban de l'accueil et la
  * phrase sous le bouton éteint qui le disent. Cette classe sert à qui lit le
  * journal — et aux suites, qui vérifient que c'est bien CE refus-là.
  */
-export class EssaiTermineError extends Error {
+export class LectureSeuleError extends Error {
   constructor(entrepriseId: string) {
-    super(`L'essai de l'entreprise ${entrepriseId} est terminé : lecture seule.`);
-    this.name = "EssaiTermineError";
+    super(`L'entreprise ${entrepriseId} est en lecture seule : essai terminé ou abonnement résilié.`);
+    this.name = "LectureSeuleError";
   }
 }
 
@@ -73,9 +74,9 @@ function estUnRefusDeLectureSeule(e: unknown): boolean {
 
 export type OptionsEntreprise = {
   /**
-   * Autorise l'écriture MÊME si l'essai est terminé. Réservé à l'enregistrement
-   * de l'abonnement : c'est le geste qui met fin à la lecture seule, et il doit
-   * pouvoir s'écrire depuis elle.
+   * Autorise l'écriture MÊME en lecture seule (essai terminé, abonnement
+   * résilié). Réservé à l'enregistrement de l'abonnement : c'est le geste qui
+   * y met fin, et il doit pouvoir s'écrire depuis elle.
    */
   pourSortirDeLEssai?: true;
 };
@@ -128,8 +129,8 @@ export async function withEntreprise<T>(
       if (!estUnRefusDeLectureSeule(e)) throw e;
       // Rendre le refus bavard AVANT de le lever : sans cette ligne, un « ça ne
       // marche pas » chez lui n'aurait aucune trace à lire (`AGENTS.md`).
-      logger.warn("Écriture refusée : essai terminé, lecture seule", { entrepriseId });
-      throw new EssaiTermineError(entrepriseId);
+      logger.warn("Écriture refusée : lecture seule (essai terminé ou abonnement résilié)", { entrepriseId });
+      throw new LectureSeuleError(entrepriseId);
     }
   });
 }

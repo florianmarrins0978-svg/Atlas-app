@@ -36,6 +36,14 @@ export type VersionDocument = {
   resume: string;
   acceptationRequise: boolean;
   contenu: string;
+  /**
+   * Pour une version qui en remplace une autre : le jour (`AAAA-MM-JJ`) où elle
+   * s'impose à ceux qui avaient accepté la précédente, **au moins trente jours
+   * après sa notification** (article 15, `exigeeMaintenant`). Une version neuve
+   * sans cette date est refusée par `test-acceptation-documents.ts` : elle
+   * bloquerait tout le monde le jour de sa publication.
+   */
+  enVigueurLe?: string;
 };
 
 export const VERSIONS_DOCUMENTS: VersionDocument[] = [
