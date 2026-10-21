@@ -65,7 +65,7 @@ export default function AvantDePartir({
             onClick={() => agir(() => changerDeFormuleAction(moinsChere.code, periodicite))}
             disabled={enCours}
             data-atlas="passer-a-moins-chere"
-            className="mt-6 flex w-full flex-col items-start rounded-[16px] px-[18px] py-4 text-left disabled:opacity-60"
+            className="mt-6 flex w-full flex-col items-start rounded-full px-6 py-3.5 text-left disabled:opacity-60"
             style={{ backgroundColor: colors.card, border: `1px solid ${colors.line}` }}
           >
             <span className="text-[16px]">Passer à {moinsChere.nom}</span>
