@@ -422,6 +422,17 @@ export function groupeNourrice(plan: LePlan, postes: Postes, r: Retouches): { no
   const fiche = CAT.ficheNourrice(voies.length, nbGoutte);
   const g: Record<string, Ligne> = {};
   for (const x of fiche?.pieces ?? []) (g[x.ref] = g[x.ref] ?? { nom: nomDe(x.ref, []), q: 0, u: "u" }).q += x.q;
+  // **Un tuyau en Ø32 se visse par un raccord mâle 32 x 1"**, à la place du
+  // 25 x 1" de la fiche (sa réponse du 20 octobre 2026) : un par voie vivante
+  // en Ø32, et l'entrée quand l'amenée est en Ø32.
+  const en32 = voies.filter((i) => plan.diametres[i] === 32).length + (plan.tuyau.diametre === 32 ? 1 : 0);
+  const q25 = g["raccord-male25"]?.q ?? 0;
+  if (en32 > 0 && q25 > 0) {
+    const n = Math.min(en32, q25);
+    g["raccord-male25"].q -= n;
+    if (g["raccord-male25"].q === 0) delete g["raccord-male25"];
+    g["raccord-male32"] = { nom: nomDe("raccord-male32", []), q: n, u: "u" };
+  }
   // La sonde se compte comme elle est posée au-dessus du regard : changée ou supprimée, la liste suit.
   for (const [ref, l] of Object.entries(postes.compte.sonde ?? {})) g[ref] = l;
   const nombre: Record<string, number> = {};

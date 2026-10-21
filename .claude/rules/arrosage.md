@@ -310,7 +310,11 @@ les deux le 20 octobre au soir** (`ARCHITECTURE.md` §473). Le goutte-à-goutte 
 pas d'interrupteur : le calcul ne lui compte pas de perte de ligne. **Au compteur, une
 amenée en Ø32 prend un té réduit 25 x 32 x 25** à la place du té égal : sa réponse
 du même soir, *« il faut un 25 x 32 x 25 »*. Absent du relevé Aqua Plus, il
-part sans référence.
+part sans référence. **À la nourrice, un tuyau en Ø32 se visse par un raccord
+mâle 32 x 1"** (OPL70203226) à la place du 25 x 1" de la fiche, sur la vanne
+d'un réseau en Ø32 et à l'entrée d'une amenée en Ø32 (proposé, et son « oui »).
+Son idée d'un té taraudé 25 et d'un raccord 32 x 3/4" marchait, mais faisait
+repasser l'eau par du 25 et du 3/4" à la sortie de la vanne.
 
 **LE Ø16 SE RACCORDE AU ROBINET PAR UN RACCORD TARAUDÉ 3/4" PROPRE À SON TUBE —
 sa règle du 18 octobre 2026.** Le Plasson à bague blanche ne prend que le PE 25

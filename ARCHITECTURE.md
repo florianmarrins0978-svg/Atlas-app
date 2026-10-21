@@ -35296,8 +35296,10 @@ perte du Ø25 (un réseau de plus sur son exemple de 60 m).
 perte de ligne, le Ø32 n'y changerait rien. Les pièces en 32
 (`raccordsEn`, `pieces.ts`) servent la liste et l'écran par la même table ;
 `test-arrosage-postes.ts` vérifie qu'elles se comptent pareil des deux côtés.
-Le passage du Ø25 au Ø32 à la vanne ou au piquage n'est pas relevé : la
-réserve le dit, rien n'est inventé.
+Aux deux bouts, ses réponses : au compteur, le té réduit 25 x 32 x 25 (sans
+référence, absent du relevé) ; à la nourrice, le raccord mâle 32 x 1" à la
+place du 25 x 1" de la fiche (`groupeNourrice`). Le dessin éclaté de la
+nourrice garde la photo du 25 x 1" : c'est la même pièce, un cran au-dessus.
 
 **La phrase « En Ø32 : … » compare le plan d'avant au plan d'après**
 (`ceQueLeTuyauChange`, `diametre-choisi.ts`) : aucun second calcul, elle lit

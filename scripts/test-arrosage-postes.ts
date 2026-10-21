@@ -106,7 +106,6 @@ cas("un réseau passé en Ø32 prend les pièces en 32, et la liste compte comme
     const outil = liste.find((x) => x.ref === ref)?.q ?? 0;
     exige((pose[ref] ?? 0) === outil, `${ref} : ${pose[ref] ?? 0} posés à l'écran, ${outil} dans la liste`);
   }
-  exige(avec32.plan.reserves.some((x) => /raccord du Ø32 à la nourrice/.test(x)), "la réserve du raccord 32 à la nourrice n'est pas dite");
   const tout25 = calculerEtDessiner(PARAMETRES, null);
   exige(!tout25.plan.reserves.some((x) => /raccord du Ø32/.test(x)), "tout en Ø25, la réserve du raccord parle à tort");
 });
@@ -120,6 +119,20 @@ cas("amenée en Ø32 au compteur : le té 25 x 32 x 25 coupe la ligne, à la pla
   exige(liste.includes("te-25-32-25") && !liste.includes("te-25-25-25"), `la liste du compteur : ${liste.join(", ")}`);
   const en25 = calculerEtDessiner({ ...PARAMETRES, amenee: 20, diametres: { amenee: 25 } }, null);
   exige(en25.plan.pieces.some((x) => x.ou === "amenee" && x.ref === "te-25-25-25"), "en Ø25, le té égal reste");
+});
+
+cas("à la nourrice, un tuyau en Ø32 se visse par un raccord mâle 32 x 1\" à la place du 25 x 1\" (sa réponse du 20 octobre 2026)", () => {
+  const base = groupeNourrice(plan, composer(), RETOUCHES_VIERGES).lignes;
+  const q25 = base["raccord-male25"]?.q ?? 0;
+  exige(q25 > 0 && !base["raccord-male32"], `tout en Ø25 : ${q25} raccords 25 x 1", aucun 32`);
+  const en32 = calculerEtDessiner({ ...PARAMETRES, amenee: 20, diametres: { amenee: 32, reseaux: { 0: 32 } } }, null);
+  const p = composerLesPostes({ plan: en32.plan, dessin: en32.dessin, compteur: true, amenee: 20, retouches: RETOUCHES_VIERGES });
+  const n = groupeNourrice(en32.plan, p, RETOUCHES_VIERGES).lignes;
+  const voies = en32.plan.secteurs.length;
+  exige(n["raccord-male32"]?.q === 2, `un pour le réseau 1, un pour l'amenée : ${n["raccord-male32"]?.q ?? 0}`);
+  exige((n["raccord-male25"]?.q ?? 0) + (n["raccord-male32"]?.q ?? 0) === voies + 1, `${voies} voies et l'entrée : ${n["raccord-male25"]?.q} + ${n["raccord-male32"]?.q}`);
+  exige(n["raccord-male32"]?.nom.includes('Raccord mâle 32 x 1"'), `le nom : ${n["raccord-male32"]?.nom}`);
+  exige(!en32.plan.reserves.some((x) => /raccord du Ø32/.test(x)), "le raccord est compté : la réserve doit se taire");
 });
 
 cas("la nourrice se compose : douze numéros pour quatre voies dont une de goutte-à-goutte, et un bac", () => {

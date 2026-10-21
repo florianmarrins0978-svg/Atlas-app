@@ -49,6 +49,7 @@ export const PHOTOS: Record<string, string> = {
   "RA5004FC": "RA5004FC.jpg",
   "RA5006PC": "RA5006PC.jpg",
   "raccord-male25": "raccord-male25.jpg",
+  "raccord-male32": "raccord-male25.jpg",
   "regard-jumbo5": "regard-jumbo5.jpg",
   "regard-jumbo6": "regard-jumbo6.jpg",
   "regard-rect12": "regard-rect12.jpg",

@@ -195,15 +195,10 @@ function lePlan(plan: Calcule, dessin: Dessin | null, parametres: ParametresPlan
   for (const z of parametres.zones.filter((x) => x.aPlacer)) {
     reserves.push(`« ${nomDeLaZone(z)} » est posée sous les autres en attendant : glissez-la à sa place, son tuyau et sa tranchée en dépendent.`);
   }
-  // **Ce que le Ø32 laisse au jugement** : les pièces du réseau passent en 32,
-  // et au compteur le té 25 x 32 x 25 coupe la ligne (sa réponse du
-  // 20 octobre 2026). Le raccord entre un tuyau en 32 et la nourrice, en 25,
-  // n'est pas encore relevé : il se dit, il ne s'invente pas (`CLAUDE.md` §4).
-  // Au nez de robinet, il n'y a pas de nourrice : l'amenée seule n'y touche pas.
+  // Le Ø32 est compté en entier (sa réponse du 20 octobre 2026) : les pièces
+  // du réseau en 32, le té 25 x 32 x 25 au compteur, et le raccord mâle 32 x 1"
+  // à la nourrice (`groupeNourrice`). Plus rien à en dire sous le plan.
   const diametres = diametresDesReseaux(plan, parametres);
-  if (diametres.includes(32) || (plan.amenee.diametre === 32 && montageDuPlan(parametres) !== "nez")) {
-    reserves.push("Tuyau en Ø32 : le raccord du Ø32 à la nourrice, en Ø25, n’est pas compté dans la liste.");
-  }
   // **Ce qui manque au catalogue se dit, jamais ne se comble** (16 octobre
   // 2026) : une zone sans matériel de la marque, une nourrice sans fiche.
   reserves.push(...plan.manquants);
