@@ -750,6 +750,11 @@ var CATALOGUE = {
     'te-taraude-32-34-32': { nom:'Té 90° taraudé 32×3/4"×32', marque:'Plasson', aquaplus:'OPL71403220' },
     'coude-taraude-32-34': { nom:'Coude 90° taraudé 32×3/4"', marque:'Plasson', aquaplus:'OPL71503220' },
     'te-32-32-32':         { nom:'Té 90° 32×32×32', marque:'Plasson', aquaplus:'OPL704032' },
+    // **Au compteur, quand l'amenée part en Ø32** : sa réponse du 20 octobre
+    // 2026, « il faut un 25 x 32 x 25 ». La ligne de la maison reste en 25, la
+    // sortie part en 32. Absent du relevé Aqua Plus : sans référence, à sa
+    // règle (« n'importe quel fournisseur sait de quoi on parle »).
+    'te-25-32-25':         { nom:'Té 90° réduit 25×32×25', marque:'Plasson' },
     'pebd16':              { nom:'PEBD rigide Ø16 (tube de reprise)', marque:'Dura', unite:'ml' },
     // **Le grillage avertisseur bleu**, au-dessus des tuyaux enterrés : sa demande
     // du 18 octobre 2026, une case à cocher. Le nom et le rouleau de 100 m sont

@@ -106,9 +106,20 @@ cas("un réseau passé en Ø32 prend les pièces en 32, et la liste compte comme
     const outil = liste.find((x) => x.ref === ref)?.q ?? 0;
     exige((pose[ref] ?? 0) === outil, `${ref} : ${pose[ref] ?? 0} posés à l'écran, ${outil} dans la liste`);
   }
-  exige(avec32.plan.reserves.some((x) => /Ø25 au Ø32/.test(x)), "la réserve du passage 25 à 32 n'est pas dite");
+  exige(avec32.plan.reserves.some((x) => /raccord du Ø32 à la nourrice/.test(x)), "la réserve du raccord 32 à la nourrice n'est pas dite");
   const tout25 = calculerEtDessiner(PARAMETRES, null);
-  exige(!tout25.plan.reserves.some((x) => /Ø25 au Ø32/.test(x)), "tout en Ø25, la réserve du passage parle à tort");
+  exige(!tout25.plan.reserves.some((x) => /raccord du Ø32/.test(x)), "tout en Ø25, la réserve du raccord parle à tort");
+});
+
+cas("amenée en Ø32 au compteur : le té 25 x 32 x 25 coupe la ligne, à la place du té égal (sa réponse du 20 octobre 2026)", () => {
+  const en32 = calculerEtDessiner({ ...PARAMETRES, amenee: 20, diametres: { amenee: 32 } }, null);
+  const p = composerLesPostes({ plan: en32.plan, dessin: en32.dessin, compteur: true, amenee: 20, retouches: RETOUCHES_VIERGES });
+  exige(p.amenee.some((x) => x.ref === "te-25-32-25"), `au compteur : ${p.amenee.map((x) => x.ref).join(", ")}`);
+  exige(!p.amenee.some((x) => x.ref === "te-25-25-25"), "le té égal 25 x 25 x 25 reste au compteur alors que l'amenée est en Ø32");
+  const liste = en32.plan.pieces.filter((x) => x.ou === "amenee").map((x) => x.ref);
+  exige(liste.includes("te-25-32-25") && !liste.includes("te-25-25-25"), `la liste du compteur : ${liste.join(", ")}`);
+  const en25 = calculerEtDessiner({ ...PARAMETRES, amenee: 20, diametres: { amenee: 25 } }, null);
+  exige(en25.plan.pieces.some((x) => x.ou === "amenee" && x.ref === "te-25-25-25"), "en Ø25, le té égal reste");
 });
 
 cas("la nourrice se compose : douze numéros pour quatre voies dont une de goutte-à-goutte, et un bac", () => {

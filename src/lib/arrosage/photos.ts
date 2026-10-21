@@ -67,6 +67,7 @@ export const PHOTOS: Record<string, string> = {
   "TAMINI8-4P": "TAMINI8-4P.png",
   "te-25-25-25": "te-25-25-25.jpg",
   "te-32-32-32": "te-25-25-25.jpg",
+  "te-25-32-25": "te-25-25-25.jpg",
   "te-mmf": "te-mmf.jpg",
   "te-taraude-25-34-25": "te-taraude-25-34-25.jpg",
   "te-taraude-32-34-32": "te-taraude-25-34-25.jpg",

@@ -1,6 +1,6 @@
 import { CATALOGUE } from "./catalogue.js";
 import type { Dessin, ReseauDessine, Tete, ZoneDessinee } from "./plan-dessine";
-import { piecesDuPlan, raccordsEn, type LigneCalcul } from "./pieces";
+import { TE_COMPTEUR_32, piecesDuPlan, raccordsEn, type LigneCalcul } from "./pieces";
 import { photoDe } from "./photos";
 import { estOtee, type PieceChoisie, type Retouches } from "./retouches";
 import type { LePlan } from "./le-plan";
@@ -235,7 +235,7 @@ export function composerLesPostes({ plan, dessin, compteur, amenee, robinet = nu
     amenees.push(poser("am:pe", "pe25-amenee", `${tuyau}, ${nez ? "du robinet au réseau" : "du robinet à la nourrice"}`, metres !== null ? `${tuyau}, ${metres} m` : `${tuyau}, à mesurer`, metres ?? 0, "ml"));
   } else {
     for (const l of plan.pieces.filter((p) => p.ou === "amenee")) {
-      if (l.ref === TE_EGAL) amenees.push(poser("am:te", TE_EGAL, nomDe(TE_EGAL, M), "Té égal au compteur", 1));
+      if (l.ref === TE_EGAL || l.ref === TE_COMPTEUR_32) amenees.push(poser("am:te", l.ref, nomDe(l.ref, M), l.ref === TE_EGAL ? "Té égal au compteur" : "Té réduit au compteur", 1));
       else if (l.ref === "pe25-amenee") amenees.push(poser("am:pe", "pe25-amenee", l.nom, l.q !== null ? `${l.nom}, ${l.q} m` : `${l.nom}, à mesurer`, l.q ?? 0, "ml"));
     }
     // Le té égal d'abord, comme on pose : il coupe la ligne avant tout tuyau.

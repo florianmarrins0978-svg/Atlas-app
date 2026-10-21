@@ -77,6 +77,8 @@ const CAT = CATALOGUE as unknown as Catalogue;
 const TE_LIGNE = "te-taraude-25-34-25";
 const COUDE_LIGNE = "coude-taraude-25-34";
 const TE_EGAL = "te-25-25-25";
+/** Le té qui coupe la ligne au compteur quand l'amenée part en Ø32. */
+export const TE_COMPTEUR_32 = "te-25-32-25";
 
 /**
  * Les raccords et le tuyau d'un réseau, selon son diamètre. Le Ø25 par défaut ;
@@ -148,10 +150,12 @@ export function piecesDuPlan(
     },
   ];
   if (options.compteur) {
+    // Amenée en Ø32 : le té 25 x 32 x 25, la maison reste en 25 (20 octobre 2026).
+    const te = options.diametreAmenee === 32 ? TE_COMPTEUR_32 : TE_EGAL;
     amenee.push({
-      ref: TE_EGAL,
-      reference: CAT.referenceDe(TE_EGAL),
-      nom: nomDe(TE_EGAL),
+      ref: te,
+      reference: CAT.referenceDe(te),
+      nom: nomDe(te),
       q: 1,
       u: "u",
       ou: "amenee",

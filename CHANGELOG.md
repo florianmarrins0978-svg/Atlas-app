@@ -16,7 +16,8 @@ Format : le plus récent en tête.
   place au doigt, Supprimer (deux appuis) ; « Ajouter une zone » sous les
   réseaux. **Changement pour tous les plans** : la perte de l'amenée est
   désormais celle du tuyau retenu, plus toujours celle du Ø25
-  (`ARCHITECTURE.md` §473).
+  (`ARCHITECTURE.md` §473). Au compteur, une amenée en Ø32 prend le té réduit
+  25 x 32 x 25 (sa réponse du même soir), sans référence.
 
 - **Une feuille photographiée couchée se lit dans le sens de son écriture.**
   Sa photo se lisait d'un quart de tour : le plan posait le parking à droite,
