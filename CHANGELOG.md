@@ -8,6 +8,14 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-21
 
+- **Le croquis n'est plus coupé au milieu de sa lecture.** Sa photo du soir,
+  nourrice ajoutée, rendait « La lecture n'a rien rendu d'exploitable. » : le
+  croquis passait par `lireImage`, plafonné à 512 jetons pour un ticket de
+  caisse, et six zones avec leurs cotes déduites n'y tenaient pas. Le JSON était
+  coupé, et l'écran accusait la photo. Plafond de 4096 (`lireImages`, comme le
+  devis fournisseur), et une réponse coupée se dit coupée. **Défaut aggravé par
+  le lot d'avant**, qui allongeait chaque zone. Non vérifié sur le vrai modèle.
+
 - **Le croquis à main levée se lit comme un paysagiste le relirait.** Sa photo
   du 21 octobre portait ses métrés, et l'écran répondait « il manque les
   métrés » : cotes écrites couchées ou la tête en bas, posées le long des bords,

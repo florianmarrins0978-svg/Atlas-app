@@ -1,4 +1,5 @@
 import { getFournisseurVision } from "../providers/llm/fabrique";
+import type { FinDeReponse } from "../providers/llm/interface";
 import { zoneMesuree } from "@/lib/arrosage/croquis-complet";
 
 /**
@@ -186,7 +187,13 @@ function arrosageEcrit(texte: string | null): "arroseurs" | "goutte" | null {
  *  4. *Il invente pour faire plaisir* — une zone sans aucune cote est gardée
  *     mais **vide**, avec sa réserve. C'est au patron de la compléter.
  */
-export function lireReponseCroquis(texte: string): ResultatCroquis {
+export function lireReponseCroquis(texte: string, arret?: FinDeReponse): ResultatCroquis {
+  // **Une réponse coupée ne se relit pas**, même quand ce qui reste paraît
+  // entier : la coupure a pu emporter une zone entière, et le plan l'oublierait
+  // en silence. Elle se dit coupée, sans accuser la photo (21 octobre 2026).
+  if (arret === "tronque") {
+    return { ok: false, raison: "La lecture du croquis a été coupée avant la fin." };
+  }
   const debut = texte.indexOf("{");
   const fin = texte.lastIndexOf("}");
   if (debut === -1 || fin <= debut) {
@@ -425,14 +432,18 @@ export async function lireCroquis(base64: string, mimeType: string): Promise<Res
   // croquis appelait pourtant le second. Une installation qui pose
   // `VISION_PROVIDER` envoyait donc ses croquis au mauvais endroit, en silence.
   const fournisseur = getFournisseurVision();
-  if (!fournisseur.lireImage) {
+  if (!fournisseur.lireImages) {
     return { ok: false, raison: "La lecture automatique n’est pas disponible ici." };
   }
-  const r = await fournisseur.lireImage(SYSTEME, CONSIGNE, { base64, mimeType });
+  // **Le plafond d'un croquis, pas celui d'un ticket** (21 octobre 2026).
+  // `lireImage` borne à 512 jetons, ce qu'il faut pour cinq champs de caisse ;
+  // un croquis rend chaque zone avec sa place, ses cotes et ses déductions, et
+  // sa photo du jour, six zones, y était coupée au milieu du JSON.
+  const r = await fournisseur.lireImages(SYSTEME, CONSIGNE, [{ base64, mimeType }], { maxTokens: 4096 });
   if (!r.succes) {
     // Le message du fournisseur est repris tel quel : « clé refusée » et
     // « quota dépassé » ne se réparent pas de la même façon.
     return { ok: false, raison: r.erreur.message };
   }
-  return lireReponseCroquis(r.texte);
+  return lireReponseCroquis(r.texte, r.fin);
 }
