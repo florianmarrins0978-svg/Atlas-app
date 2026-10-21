@@ -416,8 +416,7 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   // ── LA SAISON : le calcul survit à la disparition de son écran ────────────
   // La section « découpage en secteurs » a été retirée le 17 août sur sa
   // demande, et le sélecteur de saison est parti avec elle. Le CALCUL, lui,
-  // reste : c'est lui qui donne les durées, et elles décident du cycle de
-  // nuit. On l'éprouve donc par l'état plutôt que par des boutons — un
+  // reste. On l'éprouve donc par l'état plutôt que par des boutons — un
   // contrôle garde une règle, pas un écran.
   const saisons = await page.evaluate(() => {
     const lire = () => { const d = decouper();
@@ -429,11 +428,12 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
     return { juillet, avril };
   });
   await page.waitForTimeout(120);
-  cas('des durées à comparer', saisons.juillet.min > 0, JSON.stringify(saisons));
+  // **Les durées ne se comparent plus** : sa règle du 18 octobre 2026, *« on
+  // ne donne pas les durées d'arrosage ni les périodes à arroser »*. Les
+  // besoins par saison qui les produisaient sont retirés du calcul ; il reste
+  // à tenir que la saison ne recâble rien.
   cas('changer de saison ne recâble pas',
       saisons.avril.n === saisons.juillet.n, JSON.stringify(saisons));
-  cas('mais les durées baissent en avril',
-      saisons.avril.min < saisons.juillet.min, JSON.stringify(saisons));
 
   // Ajouter une zone : le geste central.
   const avant = await page.locator('.zone').count();
@@ -626,8 +626,14 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
     // réseau part du regard, donc c'est par zone que se compte le « − 1 ».
     let arroseurs = 0, reseaux = 0;
     etat.zones.forEach(z => { const p = poser(z); if (p.nombre && p.ny){ arroseurs += p.nombre; reseaux++; } });
-    return { tes: q('te-taraude-25-34-25'), jonctions: q('te-25-25-25'),
-             coudes: q('coude-taraude-25-34'), arroseurs, reseaux };
+    // **Les sorties du goutte-à-goutte prennent les mêmes pièces** (sa règle
+    // du 16 octobre 2026) : un coude taraudé par sortie, un té égal entre deux
+    // sorties d'une vanne. Elles n'arrosent pas par têtes : on les retire pour
+    // garder sa règle des arroseurs. Oubliées, elles faisaient rougir cette
+    // suite depuis le 16 octobre, et la publication avec elle.
+    const sg = sortiesGoutte(d);
+    return { tes: q('te-taraude-25-34-25'), jonctions: q('te-25-25-25') - sg.tesEgaux,
+             coudes: q('coude-taraude-25-34') - sg.sorties, arroseurs, reseaux, sortiesGoutte: sg.sorties };
   });
   cas('le réseau latéral est bien compté (des tés, pas zéro)',
       reseau.tes > 0 && reseau.arroseurs > 0, JSON.stringify(reseau));
