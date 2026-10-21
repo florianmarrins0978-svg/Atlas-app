@@ -78,12 +78,12 @@ Le calcul tient ses tubes (paroi 3 mm) pour tout le monde, ce qui est le côté
 sûr. Un réglage doit laisser chaque artisan dire son tube (« 25×2.0 », lu sur le
 tube). Maquette d'abord (`CLAUDE.md` §3 bis), puis code.
 
-## 🔜 LES CONDITIONS, LE REFUS ET LA RÉSILIATION — 18 octobre 2026
+## ✅ LES CONDITIONS, LE REFUS ET LA RÉSILIATION : SUR `main` LE 21 OCTOBRE 2026
 
 Planche `appli/documents-legaux-un-geste.html`, choisie le 18 octobre ; tout
-est détaillé dans `docs/A-FAIRE.md` §17. **Codé, sur la branche
-`claude/accepter-en-un-geste`, pas encore sur `main`** : il a demandé UNE
-batterie pour l'ensemble, à lancer avec son accord. Cinq commits : le geste
+est détaillé dans `docs/A-FAIRE.md` §17. **Sur `main` le 21 octobre 2026**,
+avec le lot du fil de l'accueil, après une seule batterie commune au vert
+(la seconde : la première avait un rouge, un bouton carré). Cinq commits : le geste
 unique (migration 0134), la lecture seule du résilié, « Avant de partir »,
 « Refuser » avec remboursement, le préavis de trente jours.
 

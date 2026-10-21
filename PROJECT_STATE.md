@@ -37,7 +37,7 @@ Document de retour : `docs/fournisseurs-et-partenaires.md`.
 Le 20 octobre : migration `0133` (l'adresse mail, le début et la fin du message
 de chaque fournisseur), champ « Adresse mail » sur sa fiche.
 
-## LE CHANTIER NEUF EN TÊTE DU FIL DE L'ACCUEIL (20 octobre 2026), PAS ENCORE SUR `main`
+## LE CHANTIER NEUF EN TÊTE DU FIL DE L'ACCUEIL (20 octobre 2026), SUR `main` LE 21 OCTOBRE 2026
 
 Contrats d'entretien et chantiers forment un seul fil, rangé par la date
 affichée : le chantier du jour n'est plus repoussé sous les contrats.

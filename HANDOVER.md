@@ -46,13 +46,13 @@ fin, depuis le plan d'arrosage (lot B), tous deux par `reglerContactAction`.
 appelant, le message au fournisseur du plan ; `lireDevisFournisseur` sert aussi
 à importer un devis sur le plan.
 
-## LE CHANTIER NEUF EN TÊTE DU FIL : branche `claude/chantier-neuf-en-tete` (20 octobre 2026), PAS ENCORE SUR `main`
+## LE CHANTIER NEUF EN TÊTE DU FIL (20 octobre 2026), SUR `main` LE 21 OCTOBRE 2026
 
 Sa plainte : un chantier créé puis « retour » n'apparaît pas dans les chantiers
 en cours. Il existait, sous tous les contrats d'entretien. Le fil de l'accueil
 est maintenant UNE liste rangée par la date affichée (`dansLOrdreDuFil`,
 `ARCHITECTURE.md` §477). Suite : `test-accueil-chantier-neuf-en-tete-e2e`.
-Reste : `npm run verifier:avant-fusion` (niveau 2), puis son accord pour `main`.
+Livré avec le lot des conditions, après une batterie commune au vert.
 
 ## L'ÉCRAN DU PLAN D'ARROSAGE, CODÉ : branche `lot/catalogue-aquaplus-corrections`, dossier `atlas-app-aquaplus` (18 octobre 2026)
 

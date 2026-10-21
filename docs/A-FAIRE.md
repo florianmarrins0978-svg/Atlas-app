@@ -1231,7 +1231,7 @@ inscrit, « Se déconnecter » suffit, il n'a encore rien chez nous.
 
 ### Ce qui est codé
 
-Le 18 octobre 2026, sur la branche `claude/accepter-en-un-geste`, **pas encore sur `main`** : une seule batterie sera jouée pour tout, à votre demande.
+Codé le 18 octobre 2026, **sur `main` le 21 octobre 2026** après une batterie au vert.
 
 | | |
 |---|---|

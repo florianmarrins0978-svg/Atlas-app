@@ -315,8 +315,9 @@ Format : le plus récent en tête.
   publiée entre l'affichage et le geste est refusée et la liste se recharge,
   plutôt que d'être acceptée à son insu. Sources juridiques vérifiées dans
   `docs/A-FAIRE.md` §17. `scripts/test-documents-legaux.ts` (vu rouge sans la
-  phrase), `scripts/test-acceptation-documents.ts`. **Pas encore sur `main`** :
-  le lot est de niveau 3 et la batterie n'a pas été jouée, à sa demande.
+  phrase), `scripts/test-acceptation-documents.ts`. **Sur `main` le 21 octobre**,
+  avec les quatre lots qui suivent et celui du fil de l'accueil, après une
+  batterie commune au vert.
 
 - **Le plan se dessine au doigt dans l'écran d'arrosage**, sur son « tu peux
   coder, lance pas de batterie » (planche B, `appli/arrosage-dessiner-plan-b.html`) :
