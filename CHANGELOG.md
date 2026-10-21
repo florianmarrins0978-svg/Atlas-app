@@ -8,6 +8,17 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-21
 
+- **Le croquis à main levée se lit comme un paysagiste le relirait.** Sa photo
+  du 21 octobre portait ses métrés, et l'écran répondait « il manque les
+  métrés » : cotes écrites couchées ou la tête en bas, posées le long des bords,
+  une bande de goutte-à-goutte non cotée qui longe toute la pelouse cotée 10 m.
+  La consigne de lecture demande désormais de retourner chaque chiffre, d'additionner
+  les cotes bout à bout et de DÉDUIRE une cote d'une cote écrite (bord commun,
+  côté opposé, somme), jamais des proportions du dessin. Chaque cote déduite se
+  déclare avec sa source ; sans source elle est refusée, avec elle une réserve
+  la montre sous le plan (`lire-croquis.ts`, `test-lecture-croquis.ts`). **Non
+  vérifié sur le vrai modèle** : aucune clé ici.
+
 - **Sur Nuit et Sylve, ce qui s'écrit sur le rouge d'alerte se lit autant
   qu'en Origine.** L'alerte des chartes sombres était détachée du fond à 4,5
   tout juste ; or elle sert aussi de fond (la pastille des factures en attente

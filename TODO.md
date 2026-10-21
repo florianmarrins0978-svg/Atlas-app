@@ -31,6 +31,15 @@ fragile. **Ce n'est pas un caprice tant que la cause n'est pas trouvée** : ces
 deux cas jouent sur « le lendemain », à chercher du côté du jour compté pendant
 une longue batterie, ou d'un état laissé par une suite voisine. | nous |
 
+## ⏳ ARROSAGE : LA LECTURE QUI DÉDUIT LES COTES, À ÉPROUVER SUR SA PHOTO (21 octobre 2026)
+
+Codé le 21 octobre (`lire-croquis.ts`) : chiffres lus dans tous les sens, cotes
+additionnées, cotes déduites d'une cote écrite et déclarées avec leur source.
+**Jamais joué sur le vrai modèle** (aucune clé ici). À rejouer sur son espace
+avec sa photo du 21 octobre, nourrice ajoutée : la grande zone doit sortir en
+12 × 10 et les deux bandes de goutte-à-goutte mesurées, avec une réserve par
+cote déduite. Propriétaire : lui (la photo), puis nous.
+
 ## ⏳ ARROSAGE : L'ÉCRAN DU PLAN EST CODÉ (18 octobre 2026), voici ce qui reste
 
 Son oui du 18 octobre : *« le plan d'arrosage est validé, il est fini, tu peux

@@ -110,15 +110,19 @@ export type ResultatCroquis =
 const SYSTEME = `Tu lis des croquis de jardin dessinés à la main par un paysagiste français, avec leurs métrés.
 Tu réponds UNIQUEMENT par un objet JSON, sans phrase avant ni après, sans balises de code.
 Forme attendue :
-{"rotation_lecture":0|90|180|270,"zones":[{"type":"gazon|massif|haie|potager","nom":string|null,"longueur_m":number|null,"largeur_m":number|null,"metres_lineaires":number|null,"x":number|null,"y":number|null,"largeur_fraction":number|null,"hauteur_fraction":number|null}],"point_d_eau":"compteur|robinet|puits|null","nourrice":{"x":number|null,"y":number|null},"piquage":{"x":number|null,"y":number|null},"mots_d_arrosage":[string]}
+{"rotation_lecture":0|90|180|270,"zones":[{"type":"gazon|massif|haie|potager","nom":string|null,"longueur_m":number|null,"largeur_m":number|null,"metres_lineaires":number|null,"x":number|null,"y":number|null,"largeur_fraction":number|null,"hauteur_fraction":number|null,"cotes_deduites":[{"champ":"longueur_m|largeur_m|metres_lineaires","depuis":string}]}],"point_d_eau":"compteur|robinet|puits|null","nourrice":{"x":number|null,"y":number|null},"piquage":{"x":number|null,"y":number|null},"mots_d_arrosage":[string]}
 Règles :
-- Tu ne DEVINES jamais. Une cote illisible vaut null. Une zone sans aucune cote se rend quand même, avec ses champs à null.
+- Tu ne DEVINES jamais, mais tu DÉDUIS. Deviner, c'est écrire un nombre que rien sur le croquis ne donne : c'est interdit. Déduire, c'est tirer une cote d'une autre cote ÉCRITE, par la géométrie du dessin : c'est ce qu'on attend de toi, comme un paysagiste qui relit le croquis d'un collègue. Une cote qui ne se lit pas et ne se déduit pas vaut null. Une zone sans aucune cote se rend quand même, avec ses champs à null.
+- LES CHIFFRES S'ÉCRIVENT DANS TOUS LES SENS. Un croquis fait à main levée porte ses cotes le long des bords, chacune dans son propre sens : couchée, de bas en haut, ou la tête en bas, indépendamment des mots et des autres cotes. Tourne CHAQUE nombre jusqu'à ce qu'il se lise comme une mesure en mètres. Une lecture qui ne donne pas une mesure plausible (des lettres mêlées aux chiffres, une virgule au mauvais endroit, un nombre absurde) veut dire que tu le lis dans le mauvais sens : retourne-le avant de conclure qu'il est illisible. La virgule est décimale : « 4,50 » vaut 4.5.
+- UNE COTE MESURE LE BORD LE LONG DUQUEL ELLE EST ÉCRITE, souvent entre deux flèches ou deux petits traits. Plusieurs cotes écrites bout à bout sur un même bord s'additionnent : « 7,50 » puis « 4,50 » sur le même côté font 12 m. Une cote suivie de « M » ou « m » est en mètres ; « H » devant une cote donne une hauteur, jamais une longueur au sol.
+- CE QUE TU DOIS DÉDUIRE, et seulement cela : (1) un bord non coté qui longe d'un bout à l'autre un bord coté d'une autre zone a la même longueur, par exemple une bande de goutte-à-goutte dessinée sur toute la hauteur d'une pelouse cotée 10 m mesure 10 m ; (2) le côté opposé d'une zone rectangulaire a la même longueur que le côté coté ; (3) la somme ou la différence de cotes écrites sur une même ligne. Tu ne déduis JAMAIS une cote des proportions du dessin : il n'est pas à l'échelle.
+- CHAQUE COTE DÉDUITE SE DÉCLARE dans « cotes_deduites » de sa zone : « champ » nomme le champ rempli, « depuis » dit en quelques mots de quelle cote écrite elle vient (« le bord de la zone Arroseur, coté 10 m »). Une cote lue telle quelle sur le croquis n'y figure pas. Sans « depuis », la cote déduite est refusée.
 - « rotation_lecture » : de combien de degrés, dans le sens des aiguilles d'une montre, il faut tourner la PHOTO pour que les noms des zones se lisent à l'endroit. Une feuille photographiée couchée, dont les mots se lisent de bas en haut, vaut 90. Les places, elles, se mesurent sur la photo TELLE QU'ELLE EST, sans la tourner : la rotation est appliquée ensuite.
 - LES PLACES SE DONNENT EN FRACTION DU DESSIN, de 0 à 1. x=0 est le bord gauche, x=1 le bord droit ; y=0 le haut, y=1 le bas. « x » et « y » sont le CENTRE de la zone ; « largeur_fraction » et « hauteur_fraction » sont ce qu'elle occupe. Ne convertis JAMAIS ces places en mètres : les mètres se déduisent des cotes.
 - « Tu ne devines jamais » NE S'APPLIQUE PAS AUX PLACES. Une cote se LIT (illisible = null) ; une place se MESURE SUR L'IMAGE, et tu la vois toujours dès que la zone est dessinée. Rends donc x, y, largeur_fraction et hauteur_fraction pour CHAQUE zone visible, même approximativement : le croquis est fait à main levée et n'est pas à l'échelle, personne n'attend d'exactitude. Ne les laisse à null que si la zone est citée par écrit sans être dessinée.
 - La nourrice est le regard d'où partent les réseaux (souvent un rectangle marqué « nourrice », « regard » ou « vannes »). Si elle n'est pas dessinée, rends x et y à null, et ne la place pas au point d'eau pour dépanner.
 - Le piquage est l'endroit où l'arrosage se branche sur l'eau (le compteur, le robinet, souvent marqué « compteur », « piquage », « arrivée d'eau », ou un rond avec un robinet). Une croix avec le mot « robinet » à côté est un piquage sur un robinet : rends sa place, et « robinet » pour point_d_eau. Rends sa place en fraction du dessin, comme la nourrice ; s'il n'est pas dessiné, x et y à null, et ne le place pas à la nourrice pour dépanner.
-- CE QUE LE PAYSAGISTE ÉCRIT DANS UNE ZONE COMMANDE SON TYPE, avant ce que le dessin suggère. « Arroseur », « arroseurs », « turbines », « tuyères » : la zone reçoit des arroseurs, rends "gazon". « Goutte à goutte », « goutte-à-goutte », « GAG », « gaine » : la zone reçoit du goutte-à-goutte, jamais "gazon" ; rends "haie" si elle n'a qu'une longueur, "massif" si elle a une longueur et une largeur. Recopie le mot écrit dans « nom ».
+- CE QUE LE PAYSAGISTE ÉCRIT DANS UNE ZONE COMMANDE SON TYPE, avant ce que le dessin suggère. « Arroseur », « arroseurs », « turbines », « tuyères » : la zone reçoit des arroseurs, rends "gazon". « Goutte à goutte », « goutte-à-goutte », « GAG », « gaine » : la zone reçoit du goutte-à-goutte, jamais "gazon" ; rends "haie" si elle n'a qu'une longueur (une bande étroite le long d'un mur ou d'une zone se mesure par sa seule longueur), "massif" si elle a une longueur et une largeur. Recopie le mot écrit dans « nom ».
 - Les pelouses, massifs et potagers se mesurent en longueur x largeur. Les haies se mesurent en mètres linéaires.
 - Les mesures sont en MÈTRES, en nombre décimal à point. Un « 1200 » à côté d'une haie est probablement 12,00 m : rends 12.
 - N'invente aucune zone qui ne figure pas sur le dessin.
@@ -281,12 +285,36 @@ export function lireReponseCroquis(texte: string): ResultatCroquis {
     // sur sa longueur et sa largeur. Lu en mètres linéaires, il n'en avait
     // aucune, et ne recevait pas une goutte (18 octobre 2026).
     const lineaire = type === "haie";
+    // **UNE COTE DÉDUITE SE GARDE SI ELLE DIT D'OÙ ELLE VIENT** — sa demande du
+    // 21 octobre 2026 : *« si le jardin fait 10 mètres, que la bande de goutte à
+    // goutte fait la même taille que le jardin, forcément la bande fait 10
+    // mètres »*. Déduire d'une cote écrite n'est pas deviner (`arrosage.md`,
+    // règle 1) ; une déduction sans source, si. La réserve la montre sous le
+    // plan, là où « Modifier » la corrige. Elle nomme la VALEUR et non le côté :
+    // au quart de tour, la longueur et la largeur s'échangent plus bas.
+    const deduites = new Map<string, string>();
+    for (const d of Array.isArray(o.cotes_deduites) ? o.cotes_deduites : []) {
+      if (typeof d !== "object" || d === null) continue;
+      const champ = chaine((d as Record<string, unknown>).champ);
+      if (champ) deduites.set(champ, chaine((d as Record<string, unknown>).depuis) ?? "");
+    }
+    const coteDe = (champ: "longueur_m" | "largeur_m" | "metres_lineaires", maxi: number) => {
+      const depuis = deduites.get(champ);
+      if (depuis === "") return null;
+      const valeur = cote(o[champ], maxi, nom ?? type);
+      if (valeur !== null && depuis !== undefined) {
+        reserves.push(
+          `la cote de ${String(valeur).replace(".", ",")} m de « ${nom ?? type} » n’est pas écrite, elle est déduite de ${depuis} : vérifiez-la`,
+        );
+      }
+      return valeur;
+    };
     const zone: ZoneLue = {
       type,
       nom,
-      L: lineaire ? null : cote(o.longueur_m, 100, nom ?? type),
-      l: lineaire ? null : cote(o.largeur_m, 100, nom ?? type),
-      ml: lineaire ? cote(o.metres_lineaires, 200, nom ?? type) : null,
+      L: lineaire ? null : coteDe("longueur_m", 100),
+      l: lineaire ? null : coteDe("largeur_m", 100),
+      ml: lineaire ? coteDe("metres_lineaires", 200) : null,
       x: fraction(o.x),
       y: fraction(o.y),
       largeurFraction: fraction(o.largeur_fraction),

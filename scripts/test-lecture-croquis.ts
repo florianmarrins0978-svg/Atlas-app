@@ -366,6 +366,76 @@ dire(
   "le point d'eau non lu est signalé — c'est ce qui décide de tout le reste",
 );
 
+// ── 10. Une cote DÉDUITE se garde, et se dit ────────────────────────────────
+// Sa demande du 21 octobre 2026 : *« si dans le carré goutte à goutte j'ai pas
+// mis vraiment la cote, par contre il fait la même taille que le jardin, et le
+// jardin j'ai mis la cote, forcément la bande fait 10 mètres »*. Le modèle
+// déduit ; la relecture garde la cote SI elle dit d'où elle vient, et la
+// réserve la montre sous le plan, là où il la corrige.
+const AVEC_DEDUITE = JSON.stringify({
+  ...JSON.parse(JUSTE),
+  zones: [
+    { type: "gazon", nom: "Arroseur", longueur_m: 12, largeur_m: 10, x: 0.5, y: 0.5, largeur_fraction: 0.6, hauteur_fraction: 0.6 },
+    {
+      type: "haie", nom: "Goutte à goutte", metres_lineaires: 10, x: 0.1, y: 0.5, largeur_fraction: 0.1, hauteur_fraction: 0.6,
+      cotes_deduites: [{ champ: "metres_lineaires", depuis: "le bord de la zone Arroseur, coté 10 m" }],
+    },
+  ],
+});
+const deduite = lireReponseCroquis(AVEC_DEDUITE);
+const bande = deduite.ok ? deduite.croquis.zones.find((z) => z.nom === "Goutte à goutte") : undefined;
+dire(bande !== undefined && bande.ml === 10, `la bande garde sa cote déduite (ml lu : ${bande?.ml})`);
+dire(
+  deduite.ok && deduite.croquis.reserves.some((x) => /déduite/.test(x) && /10 m/.test(x) && /Arroseur, coté 10 m/.test(x)),
+  "la réserve dit la cote déduite, sa valeur et d'où elle vient",
+);
+dire(
+  deduite.ok && !deduite.croquis.reserves.some((x) => /Arroseur/.test(x) && /n’a pas|n’ont pas/.test(x)),
+  "la zone dont les cotes sont écrites ne reçoit aucune réserve",
+);
+dire(
+  deduite.ok && deduite.croquis.reserves.filter((x) => /déduite/.test(x)).length === 1,
+  "une seule réserve de déduction : les cotes écrites n'en portent pas",
+);
+
+const sansSource = lireReponseCroquis(
+  JSON.stringify({
+    ...JSON.parse(AVEC_DEDUITE),
+    zones: [
+      JSON.parse(AVEC_DEDUITE).zones[0],
+      { ...JSON.parse(AVEC_DEDUITE).zones[1], cotes_deduites: [{ champ: "metres_lineaires", depuis: "" }] },
+    ],
+  }),
+);
+const bandeSansSource = sansSource.ok ? sansSource.croquis.zones.find((z) => z.nom === "Goutte à goutte") : undefined;
+dire(
+  bandeSansSource !== undefined && bandeSansSource.ml === null,
+  "une cote déclarée déduite sans dire d'où elle vient est refusée : c'est une cote devinée",
+);
+dire(
+  sansSource.ok && sansSource.croquis.reserves.some((x) => /Goutte à goutte/.test(x) && /n’ont pas pu être lues/.test(x)),
+  "et la zone se signale comme non mesurée",
+);
+
+const deduiteCouchee = lireReponseCroquis(
+  JSON.stringify({
+    ...JSON.parse(JUSTE),
+    rotation_lecture: 90,
+    zones: [
+      {
+        type: "gazon", nom: "Arroseur", longueur_m: 12, largeur_m: 10, x: 0.5, y: 0.5, largeur_fraction: 0.6, hauteur_fraction: 0.6,
+        cotes_deduites: [{ champ: "longueur_m", depuis: "la somme des cotes du haut, 7,50 et 4,50" }],
+      },
+    ],
+  }),
+);
+dire(
+  deduiteCouchee.ok &&
+    deduiteCouchee.croquis.zones[0].l === 12 &&
+    deduiteCouchee.croquis.reserves.some((x) => /déduite/.test(x) && /12 m/.test(x)),
+  "feuille couchée : la cote déduite tourne avec la zone, et la réserve nomme la bonne valeur",
+);
+
 console.log(echecs === 0 ? "\n✅ 0 échec." : `\n❌ ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);
 assert.equal(echecs, 0);

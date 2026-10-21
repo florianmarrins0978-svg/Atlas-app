@@ -150,6 +150,18 @@ La sévérité reste sur le **trajet du regard** — lui entre dans le calcul de
 pression, et un chiffre faux y coûte un plan faux. Une pelouse placée de travers
 se voit à l'œil ; une pression fausse ne se voit qu'en juillet.
 
+**DÉDUIRE UNE COTE N'EST PAS LA DEVINER — sa demande du 21 octobre 2026 :**
+*« si le jardin fait 10 mètres, que la bande de goutte à goutte fait la même
+taille que le jardin, bah forcément, la bande de goutte à goutte fait 10
+mètres. L'idée d'avoir mis l'IA dans l'application, c'est qu'elle soit en
+mesure de comprendre ça. »* Et : *« si j'écris à l'envers, elle doit être en
+mesure de comprendre »*. La lecture retourne chaque chiffre, additionne les
+cotes écrites bout à bout, et déduit d'une cote ÉCRITE (bord commun, côté
+opposé, somme ou différence). Jamais des proportions du dessin. Une cote
+déduite dit d'où elle vient, sinon elle est refusée ; elle se montre en
+réserve sous le plan, où « Modifier » la corrige. La règle 1 (« aucune valeur
+ne se devine ») tient : une déduction a une source, une devinette n'en a pas.
+
 **Et l'agencement n'est pas l'un des trois éléments obligatoires.** Métrés,
 piquage, nourrice : ceux-là retirent le plan. Un agencement illisible ne retire
 que le DESSIN — le plan sort, et l'on dit pourquoi il n'est pas dessiné.
