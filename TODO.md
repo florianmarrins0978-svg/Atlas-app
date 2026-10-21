@@ -1,5 +1,17 @@
 # Prochaines tâches
 
+
+## ⏳ ARROSAGE : DEUX PLANCHES À REGARDER (21 octobre 2026)
+
+- `appli/arrosage-plan-lu-a-verifier.html` : la photo ouvre le plan lu dans
+  « Dessiner le plan », on corrige, puis « Faire le plan ». Bâtie sur la vraie
+  page figée (sa consigne : « base-toi sur les pages exactes de l'application »).
+- `appli/arrosage-ecart-des-lignes.html` : l'écart proposé (haie 50 cm, massif
+  60 cm) demandé dans la feuille ; il tranche A (à la lettre) ou B (centrée).
+- **Rouge préexistant, pas de ce lot** : `test-reste-equipes-e2e` tombe sur
+  `main` comme sur le lot du 21 octobre (« 1 date(s) retenues au lieu de
+  deux »). Comparé par `verifier-rouge-prealable.ts`. À diagnostiquer : il
+  dépend peut-être de la date du jour.
 ## ~~`test-mode-sombre-lisible-e2e` est tombée UNE fois, sans cause connue (20 octobre 2026)~~ trouvé le 21 octobre 2026
 
 La cause : le rouge d'alerte de Nuit était détaché du fond à 4,5 tout juste, et le texte posé DESSUS (`surPlein`) tenait donc 4,50 contre 6,47 en Origine. Elle est retombée pour de bon sur la pastille de la TVA ; les charte sombres détachent désormais leur alerte autant que l'Origine (`chartes.ts`). | fait |

@@ -1283,6 +1283,13 @@ C'est la même faute que la planche 56, dans l'autre sens : celle-là décrivait
 - Messages de commit **en français**, à l'impératif, expliquant **pourquoi** le
   changement existe et ce qu'il évite. Le diff dit déjà quoi.
 - Ne jamais pousser sur une autre branche sans accord explicite.
+- **SA PERMISSION DU 21 OCTOBRE 2026 : batterie verte, on pousse sur `main`
+  sans lui redemander.** Ses mots : *« si ta batterie est verte, tu peux
+  pousser, pas besoin de mon accord »*. Vert veut dire le contrôle que le
+  niveau du lot exige, au vert, et `garde-fusion-main.mjs` d'accord. Un rouge,
+  même venu d'ailleurs, que le garde-fou ne laisse pas passer : on ne pousse
+  pas, et on le lui dit. Ouvrir une *pull request*, pousser une autre branche,
+  effacer des données : toujours avec lui.
 - Ne jamais ouvrir de *pull request* sans demande explicite.
 
 ### UNE TÂCHE FONCTIONNELLE = UN LOT ISOLÉ — sa règle du 17 septembre 2026
