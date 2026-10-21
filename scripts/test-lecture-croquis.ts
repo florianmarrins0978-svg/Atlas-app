@@ -436,6 +436,17 @@ dire(
   "feuille couchée : la cote déduite tourne avec la zone, et la réserve nomme la bonne valeur",
 );
 
+// ── 11. Une réponse COUPÉE le dit ───────────────────────────────────────────
+// Sa photo du 21 octobre 2026, nourrice ajoutée : « La lecture n'a rien rendu
+// d'exploitable. » Le croquis passait par le plafond de 512 jetons d'un ticket
+// de caisse ; six zones et leurs cotes déduites n'y tiennent pas, le JSON était
+// coupé au milieu, et l'écran accusait la photo.
+const coupee = lireReponseCroquis(JUSTE.slice(0, 200), "tronque");
+dire(!coupee.ok && /coupée/.test(coupee.raison), "une réponse coupée par le plafond se dit coupée, pas « rien d'exploitable »");
+const coupeeMaisEntiere = lireReponseCroquis(JUSTE, "tronque");
+dire(!coupeeMaisEntiere.ok, "même un objet qui paraît entier est refusé quand le fournisseur dit l'avoir coupé");
+dire(lireReponseCroquis(JUSTE, "complet").ok, "une réponse complète passe");
+
 console.log(echecs === 0 ? "\n✅ 0 échec." : `\n❌ ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);
 assert.equal(echecs, 0);

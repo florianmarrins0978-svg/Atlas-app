@@ -1,5 +1,5 @@
 import { calculerEtDessiner } from "../src/lib/arrosage/le-plan";
-import { composerLesPostes, groupeNourrice, groupesDeLaListe, lienDuMail, listeAuFournisseur, messageAuFournisseur, liaisonsDuReseau } from "../src/lib/arrosage/postes";
+import { composerLesPostes, metresDeTubeDuReseau, zonesGoutteDuReseau, groupeNourrice, groupesDeLaListe, lienDuMail, listeAuFournisseur, messageAuFournisseur, liaisonsDuReseau } from "../src/lib/arrosage/postes";
 import { piecesDuPlan } from "../src/lib/arrosage/pieces";
 import {
   RETOUCHES_VIERGES, blocSupprimer, chaineSupprimer, chaineRemplacer, clesAChanger, ligneSupprimer, nourriceRemettre, nourriceRemplacer, nourriceSupprimer, remplacer, supprimer,
@@ -70,8 +70,11 @@ cas("« tés + coudes = arroseurs », pour chaque réseau, sur ce que l'écran p
   for (const r of d.reseaux) {
     const g = p.compte[`r${r.numero}`];
     const tes = g["te-taraude-25-34-25"]?.q ?? 0, coudes = g["coude-taraude-25-34"]?.q ?? 0;
-    exige(tes + coudes === r.tetes.length, `réseau ${r.numero + 1} : ${tes} tés + ${coudes} coudes pour ${r.tetes.length} têtes`);
-    exige((g["te-25-25-25"]?.q ?? 0) === r.tesEgaux, `réseau ${r.numero + 1} : ${g["te-25-25-25"]?.q ?? 0} tés égaux posés, le dessin en compte ${r.tesEgaux}`);
+    // Une sortie du goutte-à-goutte finit sur un coude taraudé, comme une fin
+    // de ligne (sa règle du 16 octobre 2026) : le plan les compte à part.
+    exige(tes + coudes === r.tetes.length + r.coudesDesSorties, `réseau ${r.numero + 1} : ${tes} tés + ${coudes} coudes pour ${r.tetes.length} têtes et ${r.coudesDesSorties} sortie(s)`);
+    exige(r.tes + r.coudes === r.tetes.length, `réseau ${r.numero + 1} : sur le plan, ${r.tes} tés + ${r.coudes} coudes pour ${r.tetes.length} têtes`);
+    exige((g["te-25-25-25"]?.q ?? 0) === r.tesEgaux + r.egauxDesSorties, `réseau ${r.numero + 1} : ${g["te-25-25-25"]?.q ?? 0} tés égaux posés, le dessin en compte ${r.tesEgaux}`);
   }
 });
 
@@ -79,7 +82,7 @@ cas("ce que l'écran pose est ce que la liste de l'outil compte, hors nourrice",
   const p = composer();
   const groupes = groupesDeLaListe(plan, p, RETOUCHES_VIERGES, true);
   const attendu: Record<string, number> = {}, pose: Record<string, number> = {};
-  for (const x of piecesDuPlan(plan.materiel, d, { compteur: true, seuil25: plan.tuyau.seuil25, amenee: null, goutte: plan.goutteAGoutte })) {
+  for (const x of piecesDuPlan(plan.materiel, d, { compteur: true, seuil25: plan.tuyau.seuil25, amenee: null })) {
     if (x.ou !== "regard" && x.ref) attendu[x.ref] = (attendu[x.ref] ?? 0) + (x.q ?? 0);
   }
   groupes.forEach((g, i) => { if (i === 1) return; for (const [ref, l] of Object.entries(g.lignes)) pose[ref] = (pose[ref] ?? 0) + l.q; });
@@ -99,7 +102,7 @@ cas("un réseau passé en Ø32 prend les pièces en 32, et la liste compte comme
   exige(g["pe32"]?.q === r0.metresTuyau && !g["pe25"], `réseau 1 : le tuyau n'est pas du PEHD Ø32`);
   exige(p.reseaux[0].pe.nom === "PEHD Ø32", `l'écran écrit ${p.reseaux[0].pe.nom}`);
   exige(p.compte["r1"]?.["pe25"] !== undefined || avec32.dessin!.reseaux.length === 1, "les autres réseaux restent en Ø25");
-  const liste = piecesDuPlan(avec32.plan.materiel, avec32.dessin, { compteur: true, seuil25: avec32.plan.tuyau.seuil25, amenee: null, goutte: avec32.plan.goutteAGoutte, diametres: avec32.plan.diametres });
+  const liste = piecesDuPlan(avec32.plan.materiel, avec32.dessin, { compteur: true, seuil25: avec32.plan.tuyau.seuil25, amenee: null, diametres: avec32.plan.diametres });
   const pose: Record<string, number> = {};
   for (const [nom, gr] of Object.entries(p.compte)) if (nom.startsWith("r")) for (const [ref, l] of Object.entries(gr)) pose[ref] = (pose[ref] ?? 0) + l.q;
   for (const ref of ["te-taraude-32-34-32", "coude-taraude-32-34", "te-32-32-32", "pe32", "te-taraude-25-34-25"]) {
@@ -373,6 +376,52 @@ cas("le prix à droite et le total : sans prix relevé, 0 € et le compte des p
 cas("les mots du plan : SAM et PRS s'expliquent quand ils sont là, pas sinon", () => {
   exige(motsPresents("Tuyère 1800 SAM-PRS").some((m) => m.mot === "SAM") && motsPresents("Tuyère 1800 SAM-PRS").some((m) => m.mot === "PRS"), "SAM et PRS");
   exige(!motsPresents("Turbine 3504 buse 0,75").some((m) => m.mot === "SAM"), "pas de SAM sans SAM");
+});
+
+// ── DEUX MASSIFS SUR UNE VANNE : DEUX SORTIES, ET UN TUYAU JUSQU'À CHACUNE ──
+// Sa capture du 21 octobre 2026 : *« il y a deux endroits, deux massifs pour le
+// goutte à goutte. Sur le plan, il n'en a compté qu'un. Et pour les pièces, il
+// n'en a compté qu'un aussi. Il n'a pas compté qu'il fallait faire deux sorties
+// pour aller alimenter les deux zones. »* Le calcul comptait bien deux sorties ;
+// le dessin ne traçait aucun Ø25 vers le goutte-à-goutte, et l'écran ne posait
+// qu'un coude et qu'un té Palaplast par vanne.
+cas("deux massifs sur une vanne : le Ø25 va jusqu'à chacun, et chaque sortie a ses pièces (21 octobre 2026)", () => {
+  const deux = calculerEtDessiner({
+    seau: 10, temps: 20, pression: 3, compteur: "oui", regardVersZone: 3, amenee: 5,
+    zones: [
+      { id: 1, type: "gazon", nom: "Pelouse", x: 0, y: 3, L: 10, l: 12 },
+      { id: 2, type: "massif", nom: "Massif du haut", x: 0, y: 0, L: 10, l: 3, sortieGoutte: "boucle" },
+      { id: 3, type: "massif", nom: "Massif du côté", x: 10, y: 3, L: 2, l: 10, sortieGoutte: "boucle" },
+    ],
+    nourrice: { x: 2, y: 1.5 }, piquage: { x: 0, y: 0 },
+  }, null);
+  exige(deux.dessin, "le jardin doit se dessiner");
+  const i = deux.plan.secteurs.findIndex((s) => s.famille === "Goutte-à-goutte");
+  exige(i >= 0 && deux.plan.reseauxDeZone["2"]?.[0] === i && deux.plan.reseauxDeZone["3"]?.[0] === i, "les deux massifs partagent la vanne du goutte-à-goutte");
+  const rd = deux.dessin!.reseaux.find((r) => r.numero === i);
+  exige(rd, "le réseau du goutte-à-goutte est dessiné");
+  exige(rd!.metresTuyau > 0 && rd!.lignes.length > 0, `aucun Ø25 ne part vers le goutte-à-goutte (${rd?.metresTuyau} m)`);
+  exige(rd!.coudesDesSorties === 2 && rd!.egauxDesSorties === 1, `sur le plan : ${rd!.coudesDesSorties} coude(s) taraudé(s), ${rd!.egauxDesSorties} té(s) égal(aux) ; il en faut 2 et 1`);
+  exige(rd!.tetes.length === 0, "une sortie n'est pas un arroseur : aucune tête, donc aucun SBE ni PEBD");
+  exige(zonesGoutteDuReseau(deux.plan, i).length === 2, "sur le plan du réseau, les DEUX massifs se bordent de sa couleur");
+  // Sa question du même soir : *« il me met pas le nombre de mètres linéaires
+  // dont j'ai besoin, donc je sais pas si une couronne de 50 m suffit »*.
+  const metres = metresDeTubeDuReseau(deux.plan, i);
+  const couronnes = deux.plan.materiel.filter((l) => l.ref === "UGGCBL23050").reduce((t, l) => t + l.q, 0);
+  exige(metres > 50 && metres <= couronnes * 50, `${metres} m de tube annoncés pour ${couronnes} couronne(s) de 50 m`);
+  exige(metresDeTubeDuReseau(deux.plan, 0) === 0, "le réseau des turbines n'a pas de tube de goutte-à-goutte");
+  const p = composerLesPostes({ plan: deux.plan, dessin: deux.dessin, compteur: true, amenee: 5, retouches: RETOUCHES_VIERGES });
+  const g = p.compte[`r${i}`] ?? {};
+  exige(g["coude-taraude-25-34"]?.q === 2, `l'écran pose ${g["coude-taraude-25-34"]?.q ?? 0} coude(s) taraudé(s) au goutte-à-goutte`);
+  exige(g["MID6321"]?.q === 2, `l'écran pose ${g["MID6321"]?.q ?? 0} té(s) Palaplast`);
+  exige(g["te-25-25-25"]?.q === 1, `l'écran pose ${g["te-25-25-25"]?.q ?? 0} té(s) égal(aux) au goutte-à-goutte`);
+  exige(g["pe25"]?.q === rd!.metresTuyau, `l'écran compte ${g["pe25"]?.q} m de Ø25 au goutte-à-goutte, le plan en trace ${rd!.metresTuyau}`);
+  const liste = piecesDuPlan(deux.plan.materiel, deux.dessin, { compteur: true, seuil25: deux.plan.tuyau.seuil25, amenee: 5 });
+  const total = (ref: string) => liste.filter((x) => x.ref === ref && x.ou === "jardin").reduce((t, x) => t + (x.q ?? 0), 0);
+  const pose = (ref: string) => Object.entries(p.compte).filter(([k]) => k.startsWith("r")).reduce((t, [, gr]) => t + (gr[ref]?.q ?? 0), 0);
+  for (const ref of ["coude-taraude-25-34", "te-25-25-25", "te-taraude-25-34-25", "MID6321"]) {
+    exige(total(ref) === pose(ref), `${ref} : ${pose(ref)} posé(s) à l'écran, ${total(ref)} dans la liste de l'outil`);
+  }
 });
 
 console.log(`\n${failed === 0 ? "✅" : "❌"} Les pièces posées — ${passed} vert(s), ${failed} rouge(s).`);

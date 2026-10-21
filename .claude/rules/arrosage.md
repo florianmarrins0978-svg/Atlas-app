@@ -328,6 +328,16 @@ d'un réseau en Ø32 et à l'entrée d'une amenée en Ø32 (proposé, et son « 
 Son idée d'un té taraudé 25 et d'un raccord 32 x 3/4" marchait, mais faisait
 repasser l'eau par du 25 et du 3/4" à la sortie de la vanne.
 
+**LE Ø25 VA JUSQU'À CHAQUE SORTIE DU GOUTTE-À-GOUTTE — sa capture du
+21 octobre 2026 :** *« il y a deux endroits, deux massifs pour le goutte à
+goutte ; sur le plan, il n'en a compté qu'un, et pour les pièces aussi ; il n'a
+pas compté qu'il fallait faire deux sorties pour aller alimenter les deux
+zones »*. Chaque sortie se trace comme le pied d'un arroseur sans tête : le
+tuyau, la tranchée, le coude taraudé et le té égal se lisent sur le plan, et
+chaque zone de la vanne se borde de sa couleur. Les pièces des sorties restent
+À PART des raccords d'arroseurs, pour que `tés + coudes = arroseurs` tienne
+réseau par réseau (`coudesDesSorties`, `egauxDesSorties`, `plan-dessine.ts`).
+
 **LE Ø16 SE RACCORDE AU ROBINET PAR UN RACCORD TARAUDÉ 3/4" PROPRE À SON TUBE —
 sa règle du 18 octobre 2026.** Le Plasson à bague blanche ne prend que le PE 25
 ou 32. Le Ø16 **souple** : l'embout Palaplast taraudé 16 x 3/4" (MID6362, sa

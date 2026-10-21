@@ -51,7 +51,7 @@ export default function PlanDessine({
   dessin,
   reseau,
   liaisons,
-  zoneGoutte,
+  zonesGoutte,
   piquage = "nourrice",
 }: {
   dessin: Dessin;
@@ -59,8 +59,8 @@ export default function PlanDessine({
   reseau?: number;
   /** Les pointillés à dessiner quand un seul réseau est montré : ceux qu'il emprunte. */
   liaisons?: Segment[];
-  /** La zone de goutte-à-goutte de ce réseau, bordée de sa couleur : le tube n'a pas de tête. */
-  zoneGoutte?: { x: number; y: number; L: number; l: number } | null;
+  /** Les zones de goutte-à-goutte de ce réseau, bordées de sa couleur : le tube n'a pas de tête. */
+  zonesGoutte?: { x: number; y: number; L: number; l: number }[];
   /** Au robinet, une petite croix blanche et le mot ; à la nourrice, son rectangle (sa règle du 18 octobre 2026). */
   piquage?: "nourrice" | "robinet";
 }) {
@@ -139,8 +139,9 @@ export default function PlanDessine({
           ))}
 
       {/* Le goutte-à-goutte : la zone se borde de sa couleur, le tube n'a pas de tête. */}
-      {unSeul && zoneGoutte && (
+      {unSeul && zonesGoutte?.map((zoneGoutte, k) => (
         <rect
+          key={`goutte${k}`}
           x={zoneGoutte.x}
           y={zoneGoutte.y}
           width={zoneGoutte.L}
@@ -151,7 +152,7 @@ export default function PlanDessine({
           strokeWidth={0.26}
           strokeDasharray="0.6 0.4"
         />
-      )}
+      ))}
 
       {/* Les portées, en aplat très pâle : c'est ce qui montre qu'il ne
           reste pas de coin sec, sans avoir à le faire croire sur parole. */}

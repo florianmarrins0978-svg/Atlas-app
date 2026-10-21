@@ -8,6 +8,32 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-21
 
+- **Les mètres de tube du goutte-à-goutte s'écrivent.** Sa question du soir :
+  *« il me met pas le nombre de mètres linéaires dont j'ai besoin, donc je sais
+  pas si une couronne de 50 m suffit »*. La ligne « Goutte-à-goutte Toro… » de
+  chaque réseau finit par « 66 m de tube » (`metresDeTubeDuReseau`), sur la
+  même ligne qu'avant, sans rien déplacer.
+
+- **Deux massifs sur une vanne : deux sorties, et un Ø25 jusqu'à chacune.** Sa
+  capture du 21 octobre : *« deux massifs pour le goutte à goutte ; sur le
+  plan, il n'en a compté qu'un, et pour les pièces aussi »*. Le calcul comptait
+  bien deux sorties, mais le plan ne traçait aucun tuyau vers le goutte-à-goutte
+  (ni mètres de Ø25, ni tranchée), ne bordait que la première zone de la vanne,
+  et l'écran posait un seul coude taraudé et un seul té Palaplast par vanne.
+  Les sorties entrent désormais au tracé comme des pieds sans tête
+  (`plan-dessine.ts`), leurs pièces se lisent sur le plan, à part des raccords
+  d'arroseurs pour que *tés + coudes = arroseurs* reste vrai réseau par
+  réseau ; la liste ne les ajoute plus à part (`pieces.ts`), et l'écran pose les
+  pièces de chaque sortie (`postes.ts`).
+
+- **Le croquis n'est plus coupé au milieu de sa lecture.** Sa photo du soir,
+  nourrice ajoutée, rendait « La lecture n'a rien rendu d'exploitable. » : le
+  croquis passait par `lireImage`, plafonné à 512 jetons pour un ticket de
+  caisse, et six zones avec leurs cotes déduites n'y tenaient pas. Le JSON était
+  coupé, et l'écran accusait la photo. Plafond de 4096 (`lireImages`, comme le
+  devis fournisseur), et une réponse coupée se dit coupée. **Défaut aggravé par
+  le lot d'avant**, qui allongeait chaque zone. Non vérifié sur le vrai modèle.
+
 - **Le croquis à main levée se lit comme un paysagiste le relirait.** Sa photo
   du 21 octobre portait ses métrés, et l'écran répondait « il manque les
   métrés » : cotes écrites couchées ou la tête en bas, posées le long des bords,
