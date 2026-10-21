@@ -30,12 +30,10 @@ function VignetteDeLigne({ cle }: { cle: string }) {
 type Lu = { connues: PieceDuDevis[]; inconnues: { lu: string }[] };
 
 /**
- * « PAR OÙ COMMENCER » ET L'IMPORT D'UN DEVIS FOURNISSEUR — sa planche du
- * 18 octobre 2026, au mot et à la place près (`appli/arrosage-import-devis.html`).
- *
- * Deux portes : photographier le croquis (le champ du croquis, juste en
- * dessous, celui de toujours), ou partir d'un devis déjà fait chez un
- * fournisseur. Le devis est lu par l'IA, ses pièces reconnues par leur
+ * L'IMPORT D'UN DEVIS FOURNISSEUR — sa planche du 18 octobre 2026
+ * (`appli/arrosage-import-devis.html`). Le 21 octobre, il a retiré « Par où
+ * commencer », qui doublait le croquis : il reste une ligne, « J'ai déjà un
+ * devis fournisseur », sous le bloc du croquis. Le devis est lu par l'IA, ses pièces reconnues par leur
  * référence (`devis-du-plan.ts`), la nourrice composée au nombre de ses
  * électrovannes (`composerNourrice`, le dessin de `NourriceEclatee`).
  *
@@ -114,50 +112,20 @@ export default function DepuisUnDevis() {
 
   return (
     <div data-atlas="depuis-un-devis">
-      <section className="mx-[22px] mt-5">
-        <span className={`block ${libelleCaps}`} style={{ color: colors.or }}>
-          Plan d’arrosage
-        </span>
-        <h2 className={h2} style={{ fontFamily: font.display, fontWeight: 400 }}>
-          Par où commencer
-        </h2>
-        <div className="mt-3 flex flex-col gap-[10px]">
-          <label
-            htmlFor="croquis"
-            data-atlas="porte-croquis"
-            className="flex min-h-[64px] w-full cursor-pointer items-center gap-[14px] rounded-[14px] px-4 py-3"
-            style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.card, color: colors.ink }}
-          >
-            <svg viewBox="0 0 28 28" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true" style={{ color: colors.inkSoft, flex: "none" }}>
-              <rect x="4" y="5" width="20" height="18" rx="2" />
-              <path d="M8 18l5-6 4 4 3-3" />
-            </svg>
-            <span>
-              <b className="block text-[16px] font-semibold">Photographier le croquis</b>
-              <small className="block text-[13px]" style={{ color: colors.muted }}>
-                Avec les métrés, le piquage et la nourrice
-              </small>
-            </span>
-          </label>
-          <button
-            type="button"
-            onClick={() => setOuvert(true)}
-            data-atlas="porte-devis"
-            className="flex min-h-[64px] w-full items-center gap-[14px] rounded-[14px] px-4 py-3 text-left"
-            style={{ border: `1.5px dashed ${colors.line}`, backgroundColor: colors.card, color: colors.ink }}
-          >
-            <svg viewBox="0 0 28 28" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true" style={{ color: colors.inkSoft, flex: "none" }}>
-              <path d="M8 4h9l5 5v15H8z" />
-              <path d="M17 4v5h5M11 14h8M11 18h8" />
-            </svg>
-            <span>
-              <b className="block text-[16px] font-semibold">J’ai déjà un devis fournisseur</b>
-              <small className="block text-[13px]" style={{ color: colors.muted }}>
-                Photo ou PDF
-              </small>
-            </span>
-          </button>
-        </div>
+      {/* Sous le croquis, une seule ligne : sa décision du 21 octobre 2026. Le
+          bloc « Par où commencer » de la planche du 18 doublait le croquis
+          juste au-dessus, et coupait l'ordre de l'écran (le piquage, puis le
+          croquis). */}
+      <section className="mx-[22px] mt-4">
+        <button
+          type="button"
+          onClick={() => setOuvert(true)}
+          data-atlas="porte-devis"
+          className="rounded-full border-0 bg-transparent p-0 text-left text-[14.5px] underline"
+          style={{ color: colors.ink }}
+        >
+          J’ai déjà un devis fournisseur
+        </button>
         {champ(photo, "image/jpeg,image/png", "environment")}
         {champ(autre, "application/pdf,image/jpeg,image/png")}
         {ouvert && !fichier && (

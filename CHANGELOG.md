@@ -6,6 +6,17 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-21
+
+- **« Par où commencer » est retiré de l'écran d'arrosage** (sa décision du
+  21 octobre) : il doublait le croquis et coupait l'ordre de l'écran, le
+  piquage puis le croquis. L'import d'un devis fournisseur garde une ligne,
+  « J'ai déjà un devis fournisseur », sous le bloc du croquis
+  (`DepuisUnDevis.tsx`, monté après le croquis dans `ArrosageClient.tsx`).
+  L'exception de `test-boutons-arrondis.ts` qui couvrait ses deux cartes part
+  avec elles. `test-arrosage-e2e` : 16 sur 16, dont « l'écran tient en peu de
+  mots ».
+
 ## 2026-10-20
 
 - **La liste du plan prend les prix d'UN fournisseur, celui de la pastille**,

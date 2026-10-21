@@ -230,9 +230,6 @@ export default function ArrosageClient({
         )}
       </div>
 
-      {/* ─── Par où commencer : le croquis, ou un devis déjà fait (sa planche du 18 octobre 2026) ─── */}
-      <DepuisUnDevis />
-
       {/* ─── Le croquis ───────────────────────────────────────────────────── */}
       <div className="mx-[22px] mt-5 rounded-[14px] px-[17px] py-[18px]" style={{ backgroundColor: colors.card }}>
         <h2 style={{ fontFamily: font.display, fontWeight: 400, fontSize: 21, lineHeight: 1.2 }}>
@@ -351,6 +348,9 @@ export default function ArrosageClient({
           {motifIA} Le croquis ne sera pas lu.
         </p>
       )}
+
+      {/* ─── Un devis déjà fait, sous le croquis (sa décision du 21 octobre 2026) ─── */}
+      <DepuisUnDevis />
 
       {etat.etat === "refus" && etat.croquis ? (
         /* **LE REFUS COMPTE AUTANT QUE LE PLAN** — sa consigne du 11 septembre

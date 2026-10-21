@@ -5,7 +5,7 @@
 - [ ] Sur son espace : un devis Aqua Plus en photo dans « J'ai déjà un devis fournisseur » (l'IA n'est pas éprouvable ici).
 - [ ] « Garder la liste sans plan » la garde sur l'écran seulement : le plan d'arrosage ne s'enregistre nulle part encore. Où la garder (un chantier, un client) : à lui.
 - [ ] Fusionner sa branche locale `lot/catalogue-aquaplus-corrections` quand elle sera sur GitHub, puis celle-ci (`HANDOVER.md`).
-- [ ] **Un rouge de la batterie commune du 20 octobre (661/662)** : `test-arrosage-e2e`, « l'écran tient en peu de mots », 46 mots pour un plafond de 30 ; les 16 en trop viennent de « Par où commencer » (`DepuisUnDevis.tsx`, texte de la planche `arrosage-import-devis.html`). À lui de choisir les mots à retirer, puis on ajuste l'écran.
+- [x] ~~**Un rouge de la batterie commune du 20 octobre (661/662)**~~ réglé le 21 octobre : sur sa décision, « Par où commencer » est retiré (il doublait le croquis), il reste une ligne « J’ai déjà un devis fournisseur » sous le croquis ; `test-arrosage-e2e` 16 sur 16. Avant : : `test-arrosage-e2e`, « l'écran tient en peu de mots », 46 mots pour un plafond de 30 ; les 16 en trop viennent de « Par où commencer » (`DepuisUnDevis.tsx`, texte de la planche `arrosage-import-devis.html`). À lui de choisir les mots à retirer, puis on ajuste l'écran.
 - [ ] À la prochaine fusion de `main` : la nourrice y arrive avec son `ARCHITECTURE.md` §473, donc nos §473 et §474 deviennent §474 et §475, renvois relus un par un.
 - [ ] Sur son téléphone : « Écrire à Aqua Plus » ouvre-t-il le mail avec toute la liste ? (environ 2 100 caractères dans le lien, `ARCHITECTURE.md` §474.)
 
