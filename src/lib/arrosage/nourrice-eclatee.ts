@@ -102,7 +102,12 @@ export type PoseColonne = {
 };
 export type Pose = PoseHaut | PoseColonne;
 
-export type EtatPose = "" | "retiree" | "changee";
+/**
+ * `absente` : une pièce qu'un devis importé n'apporte pas (sa planche du
+ * 18 octobre 2026, `appli/arrosage-import-devis.html`) ; grisée comme une
+ * pièce supprimée, mais sans la barre rouge : il ne l'a pas retirée.
+ */
+export type EtatPose = "" | "retiree" | "changee" | "absente";
 
 /**
  * CE QU'IL A FAIT DE CHAQUE PIÈCE DESSINÉE — sa demande du 19 octobre 2026 :

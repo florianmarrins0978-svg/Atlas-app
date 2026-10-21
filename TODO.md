@@ -8,6 +8,19 @@ Origine (rgb(205, 100, 86)). Rejouée seule ensuite : verte deux fois. Le lot ne
 touche pas aux couleurs. Piste : une couleur mesurée pendant une transition
 (survol, ouverture de la journée). | nous |
 
+## ⏳ ARROSAGE : PRIX DES FOURNISSEURS ET IMPORT D'UN DEVIS, CODÉS (19 octobre 2026)
+
+- [ ] Sur son espace : un devis Aqua Plus en photo dans « J'ai déjà un devis fournisseur » (l'IA n'est pas éprouvable ici).
+- [ ] « Garder la liste sans plan » la garde sur l'écran seulement : le plan d'arrosage ne s'enregistre nulle part encore. Où la garder (un chantier, un client) : à lui.
+- [ ] Fusionner sa branche locale `lot/catalogue-aquaplus-corrections` quand elle sera sur GitHub, puis celle-ci (`HANDOVER.md`).
+- [ ] Sur son téléphone : « Écrire à Aqua Plus » ouvre-t-il le mail avec toute la liste ? (environ 2 100 caractères dans le lien, `ARCHITECTURE.md` §474.)
+
+## ⏳ FOURNISSEURS ET PARTENAIRES : CODÉ, À ÉPROUVER ET À LIVRER (19 octobre 2026)
+
+- [ ] La batterie entière (niveau 3 : migration et argent), lancée par lui, puis `main` avec son accord.
+- [ ] Sur son espace, lire un vrai devis Aqua Plus en photo et en PDF : la lecture IA n'est pas éprouvable ici.
+- [x] ~~Le premier appelant de `enregistrerDemande`~~ : le message au fournisseur du plan d'arrosage, et le complément d'un devis importé (19 octobre 2026).
+- [x] ~~Le matériel dicté sans aucun prix~~ : tranché par lui le 19 octobre 2026, il part au devis « à chiffrer », sans prix. Codé.
 ## ⏳ `test-travaux-a-faire-e2e` est tombée UNE fois, sans cause connue (20 octobre 2026)
 
 Pendant la batterie du lot de la carte grise, deux cas ont rougi : « le
@@ -29,8 +42,8 @@ batterie : une seule à la fin de tout le lot, et il la demande.
 
 | | qui |
 |---|---|
-| **les prix d'achat de ses devis fournisseurs dans la liste du plan** : la colonne et le total sont codés (`ARCHITECTURE.md` §472), la table est vide ; elle se remplit quand l'application gardera ses devis fournisseurs (planches `arrosage-prix-fournisseurs.html`, `reglages-fournisseurs-partenaires.html`, session des fournisseurs), par le paramètre `prix` de `LePlanDuJardin` | lui (valider la planche des fournisseurs), puis nous |
-| **six photos de face à refaire pour la nourrice éclatée** (électrovanne MM 9, électrovanne FF 11, vanne 3/4" 5, union 6, raccord Plasson 7, té 1" MMF) : prises de trois quarts, elles restent de biais quel que soit l'angle, et on ne déforme jamais une image (`ARCHITECTURE.md` §473). Consignes données le 18 octobre : pièce à plat sur une feuille blanche, axe d'écoulement horizontal, appareil à hauteur de la pièce, à 1 m avec le zoom, aucun filetage vu de l'intérieur, rien d'autre dans le cadre. À la réception : remesurer les deux bouts sur le rendu 3x, planche de comparaison ancienne/nouvelle AVANT tout remplacement | lui pour les photos, puis une session |
+| ~~**les prix d'achat de ses devis fournisseurs dans la liste du plan**~~ **remplis le 20 octobre 2026** sur la branche `claude/arrosage-prix-et-devis` (`ARCHITECTURE.md` §474), pas encore sur `main`. Avant : la colonne et le total sont codés (`ARCHITECTURE.md` §472), la table est vide ; elle se remplit quand l'application gardera ses devis fournisseurs (planches `arrosage-prix-fournisseurs.html`, `reglages-fournisseurs-partenaires.html`, session des fournisseurs), par le paramètre `prix` de `LePlanDuJardin` | lui (valider la planche des fournisseurs), puis nous |
+| **six photos de face à refaire pour la nourrice éclatée** (électrovanne MM 9, électrovanne FF 11, vanne 3/4" 5, union 6, raccord Plasson 7, té 1" MMF) : prises de trois quarts, elles restent de biais quel que soit l'angle, et on ne déforme jamais une image (`ARCHITECTURE.md` §475). Consignes données le 18 octobre : pièce à plat sur une feuille blanche, axe d'écoulement horizontal, appareil à hauteur de la pièce, à 1 m avec le zoom, aucun filetage vu de l'intérieur, rien d'autre dans le cadre. À la réception : remesurer les deux bouts sur le rendu 3x, planche de comparaison ancienne/nouvelle AVANT tout remplacement | lui pour les photos, puis une session |
 | **pousser sur `main`** le grisé de la nourrice, les blocs supprimés, les prix : son « oui » est donné, mais il faut le contrôle de niveau 2 (`verifier:avant-fusion`) et il a dit « aucune batterie » ; à lui demander quand le lancer | lui |
 | ~~**le montage au robinet** : à coder quand il aura validé la planche~~ **CODÉ le 18 octobre au soir** sur son « tu peux coder, pas de batterie » (`ARCHITECTURE.md` §471) : ses deux montages, la double sortie, le départ, la pile des pièces. ~~Reste à lui demander : au nez de robinet, la pression se calcule encore avec l'amenée et le trajet du croquis~~ **tranché le 19 octobre** : *« ça ne change rien »*, le calcul de perte de charge au robinet est celui du compteur, avec la pression et le débit mesurés, dans les deux montages (`.claude/rules/arrosage.md`, `test-regles-du-patron.ts`) | fait |
 | **la photo de pièce en `<img>`, pas en `next/image`** : sept `pansement assumé` dans les écrans du plan (`Vignette`, `FeuillePiece`, `PiecesDuReseau`, `NourriceEclatee`, `MontageAuRobinet`, `LePlanDuJardin`). `next/image` n'a rien à optimiser sur une photo servie telle quelle depuis `public/`, et il exige des dimensions que la pile du robinet (hauteur fixe, largeur libre) n'a pas. À trancher un jour : `next/image` avec `unoptimized`, ou la règle éteinte pour ce dossier dans la configuration du lint | nous |

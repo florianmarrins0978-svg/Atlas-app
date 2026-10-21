@@ -1,12 +1,14 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import { lireLeCroquis, type EtatPlan } from "./actions";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
-import LePlanDuJardin from "./LePlanDuJardin";
+import LePlanDuJardin, { type SesPrix } from "./LePlanDuJardin";
+import { prixDesFournisseursAction } from "./actions-fournisseurs";
 import DiscuterLePlan from "./DiscuterLePlan";
 import DessinerLePlan from "./DessinerLePlan";
+import DepuisUnDevis from "./DepuisUnDevis";
 import type { ParametresPlan } from "@/lib/arrosage/consignes";
 import { ACCEPT_PHOTOS } from "@/lib/exif";
 
@@ -228,6 +230,9 @@ export default function ArrosageClient({
         )}
       </div>
 
+      {/* ─── Par où commencer : le croquis, ou un devis déjà fait (sa planche du 18 octobre 2026) ─── */}
+      <DepuisUnDevis />
+
       {/* ─── Le croquis ───────────────────────────────────────────────────── */}
       <div className="mx-[22px] mt-5 rounded-[14px] px-[17px] py-[18px]" style={{ backgroundColor: colors.card }}>
         <h2 style={{ fontFamily: font.display, fontWeight: 400, fontSize: 21, lineHeight: 1.2 }}>
@@ -407,9 +412,30 @@ export default function ArrosageClient({
  */
 function PlanLu({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
   const [parametres, setParametres] = useState<ParametresPlan>(etat.parametres);
+  // Ses prix d'achat (Réglages, Fournisseurs et partenaires), pour la colonne
+  // et le total de la liste. Le patron seul les reçoit ; sinon, aucun prix.
+  const [sesPrix, setSesPrix] = useState<SesPrix | undefined>(undefined);
+  useEffect(() => {
+    let vivant = true;
+    prixDesFournisseursAction().then(
+      (d) => vivant && d && setSesPrix(d),
+      () => undefined
+    );
+    return () => {
+      vivant = false;
+    };
+  }, []);
   return (
     <>
-      <LePlanDuJardin etat={etat} parametres={parametres} onParametres={setParametres} />
+      <LePlanDuJardin
+        etat={etat}
+        parametres={parametres}
+        onParametres={setParametres}
+        sesPrix={sesPrix}
+        surMessageGarde={(id, champs) =>
+          setSesPrix((d) => d && { ...d, fournisseurs: d.fournisseurs.map((f) => (f.id === id ? { ...f, ...champs } : f)) })
+        }
+      />
       <DiscuterLePlan parametres={parametres} surNouveauPlan={(refait) => setParametres(refait.parametres)} />
     </>
   );

@@ -450,6 +450,19 @@ async function chiffrerEtPreparer(
         // Jamais bloquant — un devis vaut mieux qu'un lien.
       }
     }
+    // **Le matériel dicté part aussi, « à chiffrer »** — sa réponse du
+    // 19 octobre 2026 : *« il me met les 3 sacs de ciment dans le devis, pas de
+    // prix, et à côté il me marque à chiffrer comme il fait avec les autres »*.
+    // Ses lignes viennent de la proposition (`completerParSesAchats`) : elles
+    // ne vendent aucune prestation, et leur quantité dictée y est déjà.
+    for (const m of proposition?.lignes.filter((l) => l.prestationIds.length === 0 && l.montant === null) ?? []) {
+      await ajouterLignePrix(ctx, chantierId, m.libelle, "0", {
+        quantite: m.quantite,
+        unite: m.unite,
+        prixUnitaire: "0",
+        aChiffrer: true,
+      });
+    }
     // **Ce qui vient d'être écrit ne s'annonce plus en une phrase.** Elle disait
     // « En attendant, vos 2 prestations sont inscrites sur le devis : il ne
     // reste qu'à poser les prix » — et sous elle, un bouton disait déjà

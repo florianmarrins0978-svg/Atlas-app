@@ -5,6 +5,12 @@ import { colors, font } from "@/lib/design-tokens";
 import { CATEGORIES, piecesVisibles, type Choix } from "@/lib/arrosage/choix-de-pieces";
 import { photoDe } from "@/lib/arrosage/photos";
 import type { PieceChoisie } from "@/lib/arrosage/retouches";
+import { DEBUT_DU_MESSAGE, FIN_DU_MESSAGE, lienDuMail } from "@/lib/arrosage/postes";
+import type { LigneDemandeEnvoyee } from "@/server/db/schema";
+import { enregistrerLaDemandeAction } from "./actions-fournisseurs";
+import { reglerContactAction } from "@/app/reglages/fournisseurs/actions";
+import type { SonFournisseur } from "./LePlanDuJardin";
+import EnregistrerLaDemande from "./EnregistrerLaDemande";
 
 /**
  * LES DEUX FEUILLES QUI MONTENT DU BAS — le menu d'une pièce, et le choix d'une
@@ -89,7 +95,7 @@ export function ChoisirUnePiece({
   onChoix,
   onFermer,
 }: {
-  titre: "Changer la pièce" | "Ajouter une pièce";
+  titre: "Changer la pièce" | "Ajouter une pièce" | "Choisir la pièce";
   categorie: string;
   onChoix: (piece: PieceChoisie) => void;
   onFermer: () => void;
@@ -159,9 +165,40 @@ export function ChoisirUnePiece({
   );
 }
 
-/** Le message au fournisseur : il le lit, le copie, ou l'envoie par le partage du téléphone. */
-export function FeuilleFournisseur({ message, onFermer }: { message: string; onFermer: () => void }) {
+/**
+ * Le message au fournisseur. **Chez le fournisseur de la pastille** (sa planche
+ * du 20 octobre 2026, `appli/arrosage-prix-par-fournisseur.html`) : « Écrire à »
+ * lui ouvre le mail, son adresse déjà écrite, et range la liste dans ses
+ * Demandes envoyées ; le début et la fin sont les siens, gardés pour les
+ * prochaines fois, la liste au milieu est celle de l'outil, sans prix.
+ * **Sans fournisseur de pastille** (le complément d'un devis, ou aucun
+ * fournisseur) : il lit, copie, ou envoie par le partage du téléphone, et
+ * choisit chez qui la liste s'enregistre.
+ */
+export function FeuilleFournisseur({
+  message,
+  liste,
+  onFermer,
+  destinataire,
+  demande,
+  surMessageGarde,
+}: {
+  message: string;
+  /** La liste seule, entre son début et sa fin ; sans elle, pas de mail au fournisseur. */
+  liste?: string;
+  onFermer: () => void;
+  destinataire?: SonFournisseur;
+  /** Ce qui s'enregistre chez lui quand le mail s'ouvre. */
+  demande: { titre: string; lignes: LigneDemandeEnvoyee[] };
+  surMessageGarde?: (id: string, champs: { debut: string | null; fin: string | null }) => void;
+}) {
+  if (destinataire && liste !== undefined) return <MailAuFournisseur f={destinataire} liste={liste} demande={demande} onFermer={onFermer} surMessageGarde={surMessageGarde} />;
+  return <SansFournisseur message={message} demande={demande} onFermer={onFermer} />;
+}
+
+function SansFournisseur({ message, demande, onFermer }: { message: string; demande: { titre: string; lignes: LigneDemandeEnvoyee[] }; onFermer: () => void }) {
   const [texte, setTexte] = useState(message);
+  const [parti, setParti] = useState(0);
   const [copie, setCopie] = useState<"Copier" | "Copié" | "Sélectionné">("Copier");
   const peutPartager = typeof navigator !== "undefined" && typeof navigator.share === "function";
   return (
@@ -177,10 +214,14 @@ export function FeuilleFournisseur({ message, onFermer }: { message: string; onF
         className="mt-3 block min-h-[300px] w-full resize-y rounded-[12px] border-0 p-3 text-[16px] leading-[1.5]"
         style={{ backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
       />
+      <EnregistrerLaDemande titre={demande.titre} lignes={demande.lignes} parti={parti} />
       <div className="mt-3 flex gap-2">
         <button
           type="button"
-          onClick={() => navigator.clipboard.writeText(texte).then(() => setCopie("Copié"), () => setCopie("Sélectionné"))}
+          onClick={() => {
+            setParti((n) => n + 1);
+            navigator.clipboard.writeText(texte).then(() => setCopie("Copié"), () => setCopie("Sélectionné"));
+          }}
           className="min-h-[52px] flex-1 rounded-full text-[15.5px]"
           style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.card, color: colors.ink }}
         >
@@ -189,7 +230,10 @@ export function FeuilleFournisseur({ message, onFermer }: { message: string; onF
         {peutPartager && (
           <button
             type="button"
-            onClick={() => navigator.share({ text: texte })}
+            onClick={() => {
+              setParti((n) => n + 1);
+              navigator.share({ text: texte });
+            }}
             className="atlas-plein min-h-[52px] flex-1 rounded-full border-0 text-[15.5px] font-semibold"
             style={{ backgroundColor: colors.plein, color: colors.card }}
           >
@@ -197,6 +241,97 @@ export function FeuilleFournisseur({ message, onFermer }: { message: string; onF
           </button>
         )}
       </div>
+    </Feuille>
+  );
+}
+
+function MailAuFournisseur({
+  f,
+  liste,
+  demande,
+  onFermer,
+  surMessageGarde,
+}: {
+  f: SonFournisseur;
+  liste: string;
+  demande: { titre: string; lignes: LigneDemandeEnvoyee[] };
+  onFermer: () => void;
+  surMessageGarde?: (id: string, champs: { debut: string | null; fin: string | null }) => void;
+}) {
+  const [debut, setDebut] = useState(f.debut ?? DEBUT_DU_MESSAGE);
+  const [fin, setFin] = useState(f.fin ?? FIN_DU_MESSAGE);
+  const [garde, setGarde] = useState<string | null>(null);
+  const [enregistree, setEnregistree] = useState<string | null>(null);
+  const adresse = f.email?.trim() || null;
+  const corps = [debut, "", liste, "", fin].join("\n");
+
+  // Gardé dès qu'il quitte la case : la prochaine fois, son « Bonjour Julien » est là.
+  const garder = (quoi: "debut" | "fin", valeur: string) => {
+    const avant = quoi === "debut" ? (f.debut ?? DEBUT_DU_MESSAGE) : (f.fin ?? FIN_DU_MESSAGE);
+    if (valeur === avant) return;
+    reglerContactAction(f.id, { [quoi]: valeur }).then(
+      (r) => {
+        if (!r.ok) return setGarde(r.raison);
+        setGarde(`Gardé pour ${f.nom}, pour les prochaines fois.`);
+        surMessageGarde?.(f.id, { debut: r.debut, fin: r.fin });
+      },
+      () => setGarde("Ce n’a pas pu être gardé. Réessayez.")
+    );
+  };
+
+  const case_ = "mt-[10px] block min-h-[84px] w-full resize-y rounded-[12px] border-0 p-3 text-[15px] leading-[1.5]";
+  const styleCase = { backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` };
+  const choix = "mt-[14px] text-[13.5px]";
+  return (
+    <Feuille titre="Au fournisseur" onFermer={onFermer} repere="fournisseur">
+      <p className={choix} style={{ color: colors.inkSoft, overflowWrap: "anywhere" }} data-atlas="destinataire">
+        À : {adresse ?? "adresse à ajouter"}
+      </p>
+      <a
+        href={lienDuMail(adresse, corps)}
+        onClick={() => {
+          enregistrerLaDemandeAction(f.id, demande.titre, demande.lignes).then(
+            (r) => setEnregistree(r.ok ? `Enregistrée chez ${r.nom}, dans Réglages, Demandes envoyées, le ${new Date().toLocaleDateString("fr-FR")}.` : r.raison),
+            () => setEnregistree("La liste n’a pas pu être enregistrée. Réessayez.")
+          );
+        }}
+        data-atlas="ecrire-au-fournisseur"
+        className="atlas-plein mt-[10px] flex min-h-[52px] items-center justify-center rounded-full text-[16px] no-underline"
+        style={{ backgroundColor: colors.plein, color: colors.card }}
+      >
+        Écrire à {f.nom}
+      </a>
+      {!adresse && (
+        <p className="mt-[10px] text-[13.5px]" style={{ color: colors.alert }} data-atlas="sans-adresse">
+          Ajoutez l’adresse de {f.nom} dans Réglages, sur sa fiche : le mail s’ouvrira sans destinataire.
+        </p>
+      )}
+      {enregistree && (
+        <p className={choix} style={{ color: colors.inkSoft }} data-atlas="demande-enregistree">
+          {enregistree}
+        </p>
+      )}
+      <label className={`${choix} block`} style={{ color: colors.inkSoft }}>
+        Le début, gardé pour {f.nom}
+        <textarea value={debut} onChange={(e) => setDebut(e.target.value)} onBlur={() => garder("debut", debut)} aria-label="Le début du message" data-atlas="debut-du-message" className={case_} style={styleCase} />
+      </label>
+      <p className={choix} style={{ color: colors.inkSoft }}>La liste, faite par l’outil, sans prix</p>
+      <pre
+        className="mt-[10px] max-h-[220px] overflow-auto whitespace-pre-wrap break-words rounded-[12px] p-3 text-[13.5px] leading-[1.5]"
+        style={{ backgroundColor: colors.card, color: colors.inkSoft, fontFamily: "inherit" }}
+        data-atlas="liste-du-message"
+      >
+        {liste}
+      </pre>
+      <label className={`${choix} block`} style={{ color: colors.inkSoft }}>
+        La fin, gardée pour {f.nom}
+        <textarea value={fin} onChange={(e) => setFin(e.target.value)} onBlur={() => garder("fin", fin)} aria-label="La fin du message" data-atlas="fin-du-message" className={case_} style={styleCase} />
+      </label>
+      {garde && (
+        <p className={choix} style={{ color: colors.inkSoft }} data-atlas="message-garde">
+          {garde}
+        </p>
+      )}
     </Feuille>
   );
 }

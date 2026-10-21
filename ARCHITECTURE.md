@@ -35270,8 +35270,89 @@ tout le monde, qu'on ait une continuité dans l'application »* : le montant en 
 pastille verte (`plein`). Posé sur l'écran du plan (`ListeDesPieces.tsx`), sur
 les planches du plan, du robinet et des prix fournisseurs (et son modèle dans
 `docs/arrosage-releve-photos/`). Tout total indicatif à venir prend cette forme.
+## §473 : Ce qu'il paie vit à part de ce qu'il vend, et passe après
 
-## §473 : Les raccords de la nourrice éclatée sont droits parce qu'ils sont MESURÉS, pas réglés à l'œil
+Sa planche du 18 et du 19 octobre 2026 (`appli/reglages-fournisseurs-partenaires.html`),
+codée le 19 (migration 0132).
+
+1. **Cinq tables, pas une colonne de plus sur `tarifs`.** Un tarif est un prix
+   de VENTE qui part chez le client ; un prix d'achat ne doit jamais s'y lire.
+   Les mêler aurait fait proposer au client le prix payé chez Point P.
+2. **Les clés étrangères portent le couple (société, entreprise).** Une clé
+   étrangère se vérifie hors RLS : seule, elle laissait une entreprise ranger
+   un prix sous la société d'une autre (`test-fournisseurs-partenaires-rls.ts`).
+3. **La marge est bornée deux fois** : `lireMarge` (l'écran et l'action) et un
+   `CHECK` en base, au plus × 3. Une marge « 20 » tapée pour 20 % vendrait
+   vingt fois le prix ; le refus dit quoi taper.
+4. **L'ordre est le sien, « le A »** : `prixDUneLigneDictee` cherche son tarif,
+   puis un prix d'achat × la marge qui vaut (celle de la société, sinon la
+   générale de sa rubrique), puis rend « à chiffrer ». **Les deux recherches
+   suivent la même règle de mots** (`lesMieuxNommees`) : la vente cherchée à
+   la lettre et l'achat par les mots faisaient passer l'achat devant (trouvé
+   par la suite rouge le jour même).
+5. **Le matériel dicté part toujours au devis**, « à chiffrer » sans prix
+   (sa réponse du 19 octobre) ; sans matériel ni prix d'achat, le complément
+   (`completerParSesAchats`) ne touche à rien. Quand aucun prix ne sort, ses
+   lignes sont écrites par le repli de `devis-depuis-dictee.ts`, après le
+   travail. Une origine de plus, « achat », ne vit que
+   dans `OriginePrix` : l'orchestrateur ne lit pas les prix d'achat.
+6. **Un devis reçu se garde tout de suite, ses prix après son appui**, comme
+   `ImportTarifs.tsx` : `deposerDevisRecuAction` range le fichier et rend ce
+   qui a été lu, `accepterLignesDuDevisAction` relit chaque ligne avant
+   d'écrire. La lecture ne fait jamais échouer le dépôt.
+7. **La recherche, le rangement et le filtre de date sont ceux de
+   l'application** (`filtrerClientsParNom`, `rangerParNom`, `grouperEnBandes`,
+   `ChampRecherche`, `FiltreDeDate`), jamais recopiés.
+8. **« Je dicte », sur la planche, n'est pas dans les réglages** : c'était la
+   démonstration du devis qui prend ses prix ici. Le devis, c'est celui qu'il
+   dicte déjà.
+
+## §474 : Le plan d'arrosage prend les prix d'achat par la référence, et un devis se reconnaît pareil
+
+Ses planches du 18 octobre 2026, codées le 19.
+
+1. **La référence du fournisseur rapproche, jamais le nom.** `prix_achat.reference`
+   (migration 0132) porte ce qui est imprimé sur son devis ; une pièce du plan
+   prend un prix si sa référence (`referenceFournisseur`, la même que le
+   message au fournisseur) est la même, espaces et casse mis à part, ou à défaut
+   si le nom est identique. Deux raccords voisins ne s'échangent pas leur prix.
+2. **Ce sont des prix d'ACHAT, sans marge**, versés dans la colonne et le
+   total de la liste (`prix-de-la-liste.ts`, §472) : **les prix d'UN
+   fournisseur, celui de la pastille** (`lesPrixDe`), jamais le moins cher de
+   plusieurs. Corrigé le 20 octobre 2026 contre la première version, qui
+   prenait le moins cher : *« savoir de qui viennent les prix, que je ne me
+   fasse pas avoir »*. Un total mêlant deux fournisseurs ne correspond à
+   aucune commande qu'il puisse passer. Chaque prix dit sa source et sa date
+   (`sousLePrix`), le total la plus ancienne (`datesDesPrix`). L'unité doit concorder (une couronne
+   n'est pas un mètre de tube). **Une seule liste, un seul total** : une
+   première version posait une section « Le matériel du plan » à côté, avec son
+   propre total ; retirée à la fusion de `main`. `LePlanDuJardin` reçoit
+   `sesPrix` de son appelant et ne parle toujours à aucun serveur.
+3. **Le mail au fournisseur de la pastille** (20 octobre 2026) : « Écrire à »
+   ouvre un `mailto:` (`lienDuMail`), son adresse déjà écrite, et range la
+   liste dans ses Demandes envoyées. Le début et la fin du message sont les
+   siens, gardés sur sa fiche (`societes_achat.debut_mail`, `fin_mail`,
+   migration 0133) ; la liste du milieu ne se garde JAMAIS, pour qu'un mot
+   gardé ne fige pas une commande périmée. La liste passe dans l'adresse du
+   lien : environ 2 100 caractères pour un jardin moyen, que l'iPhone ouvre ;
+   certains logiciels de bureau coupent au delà de 2 000. Le complément d'un
+   devis importé garde « Copier » et le choix du fournisseur : la planche ne
+   l'a pas touché.
+4. **Un devis importé se reconnaît par la même règle** (`reconnaitreLeDevis`) ;
+   une ligne sans pièce ou sans quantité lisible va dans « Pas dans le
+   catalogue », il choisit. La nourrice vient de `composerNourrice` et se
+   dessine par le `Dessin` de `NourriceEclatee`, exporté avec ses poses
+   grisées : un seul dessin. Le départ en PEHD n'est pas une pièce de la fiche,
+   il ne se grise pas.
+4. **Une seule lecture de devis pour les réglages et le plan**
+   (`lireDevisFournisseur`). Sur le plan, rien du fichier n'est gardé.
+5. **Rien ne se demande deux fois** : la somme des groupes et la référence
+   (`sommeDesGroupes`, `referenceFournisseur`) sont sorties de
+   `messageAuFournisseur`, et servent au message, aux prix et à la demande
+   enregistrée.
+
+
+## §475 : Les raccords de la nourrice éclatée sont droits parce qu'ils sont MESURÉS, pas réglés à l'œil
 
 **Sa demande du 18 octobre 2026**, devant les électrovannes de biais et la
 vanne 3/4" penchée : *« tous les raccords parfaitement alignés : chaque colonne

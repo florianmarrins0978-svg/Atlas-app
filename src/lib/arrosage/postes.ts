@@ -472,30 +472,74 @@ export function groupesDeLaListe(plan: LePlan, postes: Postes, r: Retouches, com
 function nomFournisseur(ref: string, nom: string, materiel: LigneCalcul[]): string {
   // La référence est celle que le calcul a posée sur la ligne : une couronne de
   // 100 m n'a pas celle de la couronne de 50 m d'Aqua Plus.
-  const ligne = materiel.find((l) => l.ref === ref);
   const p = CAT.piece(ref) ?? CAT.piecesReseau[ref];
   const marque = p?.marque;
-  const reference = ligne ? ligne.reference : CAT.referenceDe(ref);
+  const reference = referenceFournisseur(ref, materiel);
   return (marque && !nom.includes(marque) ? `${marque} ` : "") + nom + (reference ? `, réf. ${reference}` : "");
 }
 
-/** Le message au fournisseur : tout additionné, sans prix. */
-export function messageAuFournisseur(groupes: Groupe[], materiel: LigneCalcul[]): string {
-  const total: Record<string, { nom: string; q: number; u: string; inconnu: boolean }> = {};
+/**
+ * La référence du fournisseur d'une pièce, quand elle a été relevée (jamais
+ * inventée). Elle sert au message ET au rapprochement des prix d'achat
+ * (`prix-du-plan.ts`) : une seule règle pour les deux.
+ */
+export function referenceFournisseur(ref: string, materiel: LigneCalcul[]): string | null {
+  const ligne = materiel.find((l) => l.ref === ref);
+  return (ligne ? ligne.reference : CAT.referenceDe(ref)) ?? null;
+}
+
+export type LigneSommee = { ref: string; nom: string; q: number; u: string; inconnu: boolean };
+
+/** Toutes les pièces de la liste, additionnées d'un groupe à l'autre, dans leur ordre. */
+export function sommeDesGroupes(groupes: Groupe[]): LigneSommee[] {
+  const total: Record<string, LigneSommee> = {};
   const ordre: string[] = [];
   for (const g of groupes) {
     for (const [ref, e] of Object.entries(g.lignes)) {
-      if (!total[ref]) { total[ref] = { nom: e.nomCourt ?? e.nom, q: 0, u: e.u, inconnu: false }; ordre.push(ref); }
+      if (!total[ref]) { total[ref] = { ref, nom: e.nomCourt ?? e.nom, q: 0, u: e.u, inconnu: false }; ordre.push(ref); }
       total[ref].q += e.q;
       // Une longueur qu'un réseau ne donne pas ne disparaît pas dans la somme.
       if (e.u === "ml" && !e.q) total[ref].inconnu = true;
     }
   }
-  const lignes = ordre.map((ref) => {
-    const e = total[ref], nom = nomFournisseur(ref, e.nom, materiel);
-    return e.u === "ml" ? (e.q ? `${e.q} m de ${nom}${e.inconnu ? ", plus une longueur à mesurer" : ""}` : `${nom} : longueur à mesurer`) : `${e.q}x ${nom}`;
-  });
-  return ["Bonjour,", "", "Voici ma commande pour un chantier d’arrosage :", "", ...lignes, "", "Merci."].join("\n");
+  return ordre.map((ref) => total[ref]);
+}
+
+/** Ce qui part chez le fournisseur, ligne par ligne, pour « Demandes envoyées ». */
+export function lignesDeLaDemande(groupes: Groupe[], materiel: LigneCalcul[]): { designation: string; reference: string | null; quantite: string }[] {
+  return sommeDesGroupes(groupes).map((e) => ({ designation: e.nom, reference: referenceFournisseur(e.ref, materiel), quantite: quantiteDeLigne(e) }));
+}
+
+/** La liste du message : tout additionné, sans prix. Refaite à chaque plan, elle ne se garde jamais. */
+export function listeAuFournisseur(groupes: Groupe[], materiel: LigneCalcul[]): string {
+  return sommeDesGroupes(groupes)
+    .map((e) => {
+      const nom = nomFournisseur(e.ref, e.nom, materiel);
+      return e.u === "ml" ? (e.q ? `${e.q} m de ${nom}${e.inconnu ? ", plus une longueur à mesurer" : ""}` : `${nom} : longueur à mesurer`) : `${e.q}x ${nom}`;
+    })
+    .join("\n");
+}
+
+/** Le début et la fin d'office, tant qu'il n'a pas écrit les siens pour ce fournisseur. */
+export const DEBUT_DU_MESSAGE = "Bonjour,\n\nVoici ma commande pour un chantier d’arrosage :";
+export const FIN_DU_MESSAGE = "Merci.";
+
+/**
+ * Le message au fournisseur : SON début, la liste, SA fin (sa planche du
+ * 20 octobre 2026, *« si je note son nom, que ça le garde en mémoire »*).
+ */
+export function messageAuFournisseur(groupes: Groupe[], materiel: LigneCalcul[], debut = DEBUT_DU_MESSAGE, fin = FIN_DU_MESSAGE): string {
+  return [debut, "", listeAuFournisseur(groupes, materiel), "", fin].join("\n");
+}
+
+/**
+ * Le mail qui s'ouvre, l'adresse du fournisseur déjà écrite (sa demande du
+ * 20 octobre 2026). Sans adresse, il s'ouvre sans destinataire. L'arobase
+ * reste lisible : certains téléphones n'en reconnaissent pas d'autre.
+ */
+export function lienDuMail(adresse: string | null, corps: string): string {
+  const a = encodeURIComponent((adresse ?? "").trim()).replace(/%40/g, "@");
+  return `mailto:${a}?subject=${encodeURIComponent("Commande arrosage")}&body=${encodeURIComponent(corps)}`;
 }
 
 /**

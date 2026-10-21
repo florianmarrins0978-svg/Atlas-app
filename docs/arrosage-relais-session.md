@@ -491,3 +491,75 @@ Ses demandes : *« dans Réglages une catégorie mes fournisseurs, valable pour 
 **La recherche et le rangement des clients, repris (19 octobre 2026)** : *« reprends le filtre qu'on utilise dans l'application, si on a besoin de rechercher les devis ou les listes qu'on envoie, et triés par ordre alphabétique comme pour nos clients »*. Sur la planche : le champ de `ChampRecherche.tsx` (souligné, loupe dorée, ✕, collé en haut), la règle de `recherche-client.ts` (sans accents, chaque mot dans n'importe quel ordre, surligné), les lettres de `bandes-clients.ts` (A à Z, aucune pendant une recherche), et « Aucun fournisseur ne s'appelle « … » ». Partout : la liste des sociétés (trouvées aussi par une fourniture, un devis ou une demande), et dans chaque fiche Mes prix, Devis reçus, Demandes envoyées. Un devis reçu prend un NOM (chantier ou client), sinon « Devis du jj/mm/aaaa ». Dans le code : réemployer ces fonctions, jamais les recopier (`CLAUDE.md` §3).
 
 **Le filtre de DATE, pas un bouton (19 octobre 2026)** : un bouton « Filtre » et un volet « Trier par » avaient d'abord été posés ; sa correction : *« il n'y a pas un filtre dans l'application où on peut trier par date, par jour, par mois, par année ? c'était celui-là que je voulais »*. Et sa consigne du 21 septembre 2026, écrite dans `FiltreDeDate.tsx` : *« enlève tous tes filtres boutons et garde que celui-là »*. Le bouton est RETIRÉ ; Devis reçus et Demandes envoyées portent `FiltreDeDate` à l'identique (le mois entre deux chevrons d'or, éteint au mois en cours ; le toucher ouvre la roue pour un jour ; « Tout le mois » y revient) et la règle de `fichesAMontrer` (une recherche tapée cherche dans TOUS les mois ; sinon la période choisie ; « Aucun devis reçu en septembre 2026 »). L'ANNÉE d'un bloc n'a pas de geste : c'est son choix A du 11 octobre, il le savait ; à lui redemander s'il la veut ici.
+## Le 19 octobre 2026, le lot A est codé : Réglages, fournisseurs et partenaires
+
+Codé dans un dossier à part, parti d'`origin/main`, branche
+`claude/reglages-fournisseurs-partenaires` (session cloud ; la planche qui fait
+foi est la version publiée, https://claude.ai/artifact/HfsXhoFq4iLtS8FMyrvJqt,
+plus récente que la copie d'`appli/` sur `main`). Détail :
+`docs/fournisseurs-et-partenaires.md`, `ARCHITECTURE.md` §473. **Le Ø32 n'a pas
+été touché.** Le lot B (import d'un devis et prix sur le plan) reste à coder ;
+il prendra ses prix dans ces tables (`prixAchatCandidats`, `lireDevisFournisseur`,
+`enregistrerDemande`).
+
+## Le 19 octobre 2026, le lot B est codé : prix des fournisseurs et import d'un devis
+
+Branche `claude/arrosage-prix-et-devis`, partie du lot A (sa branche aquaplus
+locale n'est pas sur GitHub : `HANDOVER.md` dit comment fusionner). Les deux
+planches qui font foi sont les versions publiées le 19
+(https://claude.ai/artifact/C4iQZ5h3E6xgmDZYaKUgnW,
+https://claude.ai/artifact/4perJc9eRHYA3WvVS4bEoQ). Détail :
+`docs/arrosage-prix-et-devis.md`, `ARCHITECTURE.md` §474. **Le Ø32 n'a pas été
+touché.**
+
+## Le 20 octobre 2026 : la planche « Prix par fournisseur », à lui faire valider
+
+`appli/arrosage-prix-par-fournisseur.html` compare **sur main** (la liste prend
+toujours le moins cher de ses fournisseurs) et **la modification** (les
+pastilles « Le moins cher », « Aqua Plus », « France Bonhomme » au-dessus de la
+liste, et sous chaque prix d'où il vient). Sa demande : *« montre-moi ça avec
+une planche et je te le valide ou non »*. **Rien de la modification n'est codé.**
+
+**Puis, le même jour, ses précisions** : *« je choisis toutes les pièces d'Aqua
+Plus ou toutes celles de France Bonhomme »* ; *« si pour certaines pièces je
+n'ai pas de prix, il faudrait qu'il me l'indique »* ; *« s'il y a des prix, je
+dois savoir de qui viennent les prix, que je ne me fasse pas avoir »*. Sur la
+planche : « pas de prix chez Aqua Plus » sur la ligne et dans le compte, sous
+chaque prix son fournisseur et la date de son devis, et le message au
+fournisseur en **A** (sans prix) ou **B** (SES prix seulement, « prix à me
+donner » ailleurs, jamais ceux d'un autre). **À lui de choisir A ou B.**
+
+**Sa réponse, le 20 octobre 2026** : *« retire ce que la liste porte, il faut
+que ça soit sans les prix d'office »* et *« la liste ne doit pas pouvoir
+afficher le moins cher »*. **Tranché** : le message au fournisseur part
+toujours sans prix (le choix A ou B est retiré) ; la liste montre les prix d'UN
+fournisseur à la fois, celui de la pastille, sans « Le moins cher ». Planche
+republiée. **L'écran n'est pas encore aligné** : il prend aujourd'hui le moins
+cher (`lesMoinsChers`, branche `claude/arrosage-prix-et-devis`) ; à coder sur
+son accord de la planche.
+
+**Puis** : *« ce qu'il faudrait, c'est qu'il nous ouvre le mail avec l'adresse
+du fournisseur déjà écrite »*. Sur la planche : une case « Adresse mail » sur
+la fiche du fournisseur (Réglages), et un seul bouton « Écrire à Aqua Plus »
+(le fournisseur de la pastille) qui ouvre le mail, objet « Commande
+arrosage », la liste sans prix dans le corps, telle qu'il l'a retouchée ; la
+liste s'enregistre dans ses Demandes envoyées. « Chez qui part la liste » est
+retiré. Sans adresse : le mail s'ouvre sans destinataire, et l'écran dit de
+l'ajouter. **Pas encore codé**, ni la colonne d'adresse en base. À noter : un
+mail ouvert ainsi porte la liste dans son adresse (2 256 caractères pour ce
+jardin) ; certains logiciels de bureau la coupent au-delà de 2 000, l'iPhone
+non. À éprouver sur son téléphone.
+
+**Puis** : *« on peut faire un message personnalisé en fonction des
+fournisseurs, si je note son nom, que ça le garde en mémoire pour les
+prochaines fois »*. Sur la planche : le mail se compose en trois morceaux.
+Le début (« Bonjour Julien, ») et la fin (« Merci, Florian ») se tapent une
+fois par fournisseur et se gardent sur sa fiche ; la liste au milieu est
+refaite par l'outil à chaque plan, toujours sans prix, et ne se garde pas.
+**Pas encore codé** : il faut deux colonnes de texte sur `societes_achat`
+(expand seul, nullable).
+
+**Validée le 20 octobre 2026, et codée le jour même** (sans batterie) : les
+pastilles, la source et la date sous chaque prix, « pas de prix chez … »,
+« Écrire à … » et son mail, l'adresse sur la fiche, son début et sa fin gardés
+(migration 0133). Vu à l'écran ici. Reste : l'essai du mail sur son téléphone.

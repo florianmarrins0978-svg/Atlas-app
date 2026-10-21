@@ -191,6 +191,14 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
     absenceNormale: true,
     raisonAbsence: "même raison que la carte grise",
   },
+  // Le fichier d'un devis reçu d'un fournisseur (migration 0132, 19 octobre 2026).
+  {
+    table: "devis_recus",
+    colonne: "fichier_cle",
+    quoi: "le devis reçu d'un fournisseur ou d'un partenaire",
+    // Un devis reçu naît avec son fichier (NOT NULL) : son absence est une perte.
+    absenceNormale: false,
+  },
   {
     table: "images_phyto",
     colonne: "storage_key",

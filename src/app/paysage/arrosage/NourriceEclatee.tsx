@@ -146,9 +146,9 @@ function nomCatalogue(ref: string): string {
  * pièce changée porte un numéro doré (sa demande du 19 octobre 2026) : les mêmes
  * signes que sur les vignettes des réseaux.
  */
-function Dessin({ n, couleurs, etats, reseauDeVoie }: { n: NourriceComposee; couleurs: string[]; etats: EtatPose[]; reseauDeVoie: number[] }) {
+export function Dessin({ n, couleurs, etats, reseauDeVoie }: { n: NourriceComposee; couleurs: string[]; etats: EtatPose[]; reseauDeVoie: number[] }) {
   const encre = "#4a4a44";
-  const grise = (etat: EtatPose) => (etat === "retiree" ? { opacity: 0.35, filter: "grayscale(1)" } : undefined);
+  const grise = (etat: EtatPose) => (etat === "retiree" || etat === "absente" ? { opacity: 0.35, filter: "grayscale(1)" } : undefined);
   const teinte = (etat: EtatPose) => (etat === "changee" ? colors.or : undefined);
   /** La barre rouge d'une pièce supprimée, celle des vignettes : au centre de la pièce. */
   const barre = (cx: number, cy: number, demi: number) => (

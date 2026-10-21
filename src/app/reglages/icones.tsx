@@ -48,9 +48,17 @@ export type NomIcone =
   /** La double vérification, 7 octobre 2026 : le téléphone qui donne le code. */
   | "telephone"
   /** Les véhicules, 14 octobre 2026 : un camion de profil. */
-  | "camion";
+  | "camion"
+  /** Fournisseurs et partenaires, 19 octobre 2026 : le carton qu'on achète. */
+  | "carton";
 
 const TRACES: Record<NomIcone, React.ReactNode> = {
+  carton: (
+    <>
+      <path d="M3.5 8 12 4l8.5 4v8.5L12 20.5 3.5 16.5z" />
+      <path d="M3.5 8 12 12l8.5-4M12 12v8.5" />
+    </>
+  ),
   camion: (
     <>
       <path d="M2.5 6.5h11v9.5h-11z" />
