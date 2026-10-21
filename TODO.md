@@ -1,12 +1,8 @@
 # Prochaines tâches
 
-## ⏳ `test-mode-sombre-lisible-e2e` est tombée UNE fois, sans cause connue (20 octobre 2026)
+## ~~`test-mode-sombre-lisible-e2e` est tombée UNE fois, sans cause connue (20 octobre 2026)~~ trouvé le 21 octobre 2026
 
-Pendant le contrôle de la livraison fiche de sécurité et nourrice : « le
-planning, une journée ouverte », « Supprimer » lu à 4,5 en Nuit contre 6,47 en
-Origine (rgb(205, 100, 86)). Rejouée seule ensuite : verte deux fois. Le lot ne
-touche pas aux couleurs. Piste : une couleur mesurée pendant une transition
-(survol, ouverture de la journée). | nous |
+La cause : le rouge d'alerte de Nuit était détaché du fond à 4,5 tout juste, et le texte posé DESSUS (`surPlein`) tenait donc 4,50 contre 6,47 en Origine. Elle est retombée pour de bon sur la pastille de la TVA ; les charte sombres détachent désormais leur alerte autant que l'Origine (`chartes.ts`). | fait |
 
 ## ⏳ ARROSAGE : PRIX DES FOURNISSEURS ET IMPORT D'UN DEVIS, CODÉS (19 octobre 2026)
 

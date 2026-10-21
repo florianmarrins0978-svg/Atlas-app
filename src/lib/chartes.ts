@@ -295,8 +295,14 @@ function depuisPlanche(p: {
     line: voile(p.encre, "0.12"),
     lineSoft: voile(p.encre, "0.07"),
     chevron: voile(p.encre, "0.28"),
-    // Du texte : 4,5 contre les deux fonds sur lesquels il se pose.
-    alerte: detacher(ALERTE_ORIGINE, [p.fond, p.plage], 4.5, sens),
+    // Du texte : 4,5 contre les deux fonds sur lesquels il se pose. **Sur une
+    // charte sombre, il est aussi un FOND** : la pastille et le bouton
+    // « Supprimer » y posent `surPlein`, c'est-à-dire la plage. À 4,5 tout
+    // juste, ce texte-là tenait 4,50 en Nuit contre 6,47 en Origine, et
+    // `test-mode-sombre-lisible-e2e` le refusait (la pastille de la TVA le
+    // 21 octobre 2026, « Supprimer » du planning le 20). Le sombre se détache
+    // donc autant que l'Origine ; les claires gardent sa valeur intacte.
+    alerte: detacher(ALERTE_ORIGINE, [p.fond, p.plage], sombre ? SURPLEIN_SUR_ALERTE_ORIGINE : 4.5, sens),
     // Des aplats de six pixels, pas du texte : 3 suffit — mais il leur faut
     // AUSSI se détacher de l'accent plein, qui est l'état « complet » juste à
     // côté dans le calendrier. Sans cela, sur une charte sombre, « incomplet »
@@ -317,6 +323,8 @@ function depuisPlanche(p: {
 // TEINTE est la sienne et ne bouge pas, leur CLARTÉ s'accorde au fond, sans
 // quoi elles disparaissent sur Nuit et sur Sylve.
 const ALERTE_ORIGINE = "#9C3B2E";
+/** Ce que tient la plage d'Origine posée sur son alerte : 6,47. */
+const SURPLEIN_SUR_ALERTE_ORIGINE = contraste("#faf9f5", ALERTE_ORIGINE);
 
 /**
  * ─── L'OR EST LE MÊME PARTOUT — sa consigne du 31 août 2026 ─────────────────

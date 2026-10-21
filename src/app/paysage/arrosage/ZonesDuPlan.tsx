@@ -75,7 +75,7 @@ export function ModifierLaZone({
       <button
         type="button"
         onClick={() => poser(modifierLaZone(parametres, zone.id, haie ? { ml: nombre(L) } : { L: nombre(L), l: nombre(l) }))}
-        className="atlas-plein mt-3 min-h-[52px] w-full rounded-[12px] border-0 text-[15.5px] font-semibold"
+        className="atlas-plein mt-3 min-h-[52px] w-full rounded-full border-0 text-[15.5px] font-semibold"
         style={{ backgroundColor: colors.plein, color: surPlein }}
         data-atlas="refaire-le-plan"
       >
@@ -84,7 +84,7 @@ export function ModifierLaZone({
       <button
         type="button"
         onClick={() => (arme ? poser(supprimerLaZone(parametres, zone.id), onFermer) : setArme(true))}
-        className="mt-2 min-h-[50px] w-full rounded-[12px] text-[15.5px]"
+        className="mt-2 min-h-[50px] w-full rounded-full text-[15.5px]"
         style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.alert }}
         data-atlas="supprimer-la-zone"
       >
@@ -174,7 +174,7 @@ export function AjouterUneZone({ parametres, onAjoutee }: { parametres: Parametr
       <button
         type="button"
         onClick={() => setOuvert(true)}
-        className="mt-4 flex min-h-[52px] w-full items-center justify-center rounded-[12px] bg-transparent text-[15.5px]"
+        className="mt-4 flex min-h-[52px] w-full items-center justify-center rounded-full bg-transparent text-[15.5px]"
         style={{ border: `1.5px dashed ${colors.line}`, color: colors.ink }}
         data-atlas="ajouter-une-zone"
       >
@@ -224,7 +224,7 @@ export function AjouterUneZone({ parametres, onAjoutee }: { parametres: Parametr
           setNom(""); setL(""); setLl("");
           onAjoutee(g.parametres, g.parametres.zones[g.parametres.zones.length - 1].id);
         }}
-        className="atlas-plein mt-3 min-h-[52px] w-full rounded-[12px] border-0 text-[15.5px] font-semibold"
+        className="atlas-plein mt-3 min-h-[52px] w-full rounded-full border-0 text-[15.5px] font-semibold"
         style={{ backgroundColor: colors.plein, color: surPlein }}
         data-atlas="nouvelle-zone-valider"
       >

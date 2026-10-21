@@ -390,7 +390,7 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     ailleurs: [
       {
         source: "src/app/termines/tva/CalendrierPeriodes.tsx",
-        preuves: ['aria-label="Choisir une période"', 'aria-label="Année précédente"', "Revenir à la période en cours"],
+        preuves: ['"Choisir une période"', 'aria-label="Année précédente"', "Revenir à la période en cours"],
       },
     ],
   },

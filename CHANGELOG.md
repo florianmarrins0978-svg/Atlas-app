@@ -8,6 +8,17 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-21
 
+- **Sur Nuit et Sylve, ce qui s'écrit sur le rouge d'alerte se lit autant
+  qu'en Origine.** L'alerte des chartes sombres était détachée du fond à 4,5
+  tout juste ; or elle sert aussi de fond (la pastille des factures en attente
+  de la TVA, « Supprimer » du planning), et le texte posé dessus tenait 4,50
+  contre 6,47 en Origine. `chartes.ts` la détache désormais autant que
+  l'Origine sur les chartes sombres (Nuit #da8c81, Sylve #e1a299) ; les six
+  claires ne bougent pas. Trouvé par la batterie commune du 21 octobre
+  (`test-mode-sombre-lisible-e2e`), avec deux autres rouges des lots : quatre
+  boutons carrés dans `ZonesDuPlan.tsx`, et la fiche du mode d'emploi de la
+  période de TVA, dont la preuve visait un `aria-label` devenu variable.
+
 - **« Par où commencer » est retiré de l'écran d'arrosage** (sa décision du
   21 octobre) : il doublait le croquis et coupait l'ordre de l'écran, le
   piquage puis le croquis. L'import d'un devis fournisseur garde une ligne,
