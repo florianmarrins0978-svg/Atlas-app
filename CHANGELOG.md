@@ -8,6 +8,16 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-21
 
+- **Le prix qu'il dicte arrive sur le devis.** « Taille d'une haie de laurier,
+  j'estime le prix à 500 € » donnait une ligne « à chiffrer » : la lecture de
+  la dictée n'avait aucune case pour un prix, et sa consigne lui interdisait
+  d'en rendre un. Elle recopie désormais le montant qu'il PRONONCE
+  (`prix`, `extraction.ts`), lu par la même fonction que ses retouches de
+  devis (`montantDicte`), gardé sur la prestation (migration 0135, colonne
+  `prix_dicte`, expand seul), et il passe avant ses tarifs et sa grille
+  (origine « dictee », `proposition-prix.ts`). Un prix flou (« environ 500 »)
+  reste écarté. `scripts/test-prix-dicte-db.ts`, vu rouge avant la correction.
+
 - **Sur Nuit et Sylve, ce qui s'écrit sur le rouge d'alerte se lit autant
   qu'en Origine.** L'alerte des chartes sombres était détachée du fond à 4,5
   tout juste ; or elle sert aussi de fond (la pastille des factures en attente

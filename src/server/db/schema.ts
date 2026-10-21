@@ -1060,6 +1060,12 @@ export const prestations = pgTable(
     caracteristiques: jsonb("caracteristiques").$type<Record<string, number | string>>(),
     aConfirmer: boolean("a_confirmer"),
     /**
+     * Le prix HT qu'il a DICTÉ pour ce travail (migration 0135). Sa parole pour
+     * ce chantier : il passe avant ses grilles et ses tarifs. NULL s'il n'en a
+     * prononcé aucun.
+     */
+    prixDicte: numeric("prix_dicte", { precision: 12, scale: 2 }),
+    /**
      * L'artisan a posé lui-même ces valeurs (migration 0070).
      *
      * **Le dépôt n'avait aucune provenance**, et il en fallait une : sans elle,

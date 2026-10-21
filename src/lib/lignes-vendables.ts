@@ -72,7 +72,24 @@ export type PrestationAGrouper = {
   methode?: string | null;
   caracteristiques?: unknown;
   corrigeParHumain?: boolean | null;
+  /** Le prix HT qu'il a dicté pour ce travail (migration 0135). */
+  prixDicte?: string | null;
 };
+
+/**
+ * Le prix qu'il a DICTÉ pour une ligne du devis, ou `null`.
+ *
+ * Une ligne réunit parfois plusieurs travaux (abattage, broyage, évacuation) :
+ * ce qu'il a dicté pour chacun s'additionne, parce que c'est ce qu'il a dit
+ * vendre. Un travail réuni sans prix dicté n'en ajoute aucun : la ligne vaut
+ * ce qu'il a prononcé, jamais plus.
+ */
+export function prixDicteDeLaLigne(prestations: readonly PrestationAGrouper[]): string | null {
+  const dictes = prestations.map((p) => p.prixDicte).filter((m): m is string => m !== null && m !== undefined);
+  if (dictes.length === 0) return null;
+  // En centimes : une somme de flottants rendrait 0,30000000000000004 €.
+  return (dictes.reduce((s, m) => s + Math.round(Number(m) * 100), 0) / 100).toFixed(2);
+}
 
 export type LigneVendable = {
   /**

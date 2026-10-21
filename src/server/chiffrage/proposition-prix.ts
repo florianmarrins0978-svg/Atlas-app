@@ -14,6 +14,7 @@ import { chiffrerMainOeuvre } from "../../lib/tarif-main-oeuvre";
 import {
   lignesVendables,
   membresDuLibelle,
+  prixDicteDeLaLigne,
   repartir,
   type LigneVendable,
   type PrestationAGrouper,
@@ -45,7 +46,10 @@ import { prixDUneLigneDictee, quantiteDictee } from "../../lib/prix-achat";
 // 2026). L'orchestrateur ne lit pas ses prix d'achat ; l'écran Prix et le devis
 // dicté, si : aucun de ses tarifs ne répond, et le montant vient de ses prix
 // d'achat × sa marge. Le dire « calculé depuis vos paramètres » serait faux.
-export type OriginePrix = SourcePrix | "achat";
+//
+// **Et « dictee »** (21 octobre 2026) : le prix est celui qu'il a prononcé dans
+// sa note. Ni tarif, ni calcul : sa parole, et c'est ce que l'écran doit dire.
+export type OriginePrix = SourcePrix | "achat" | "dictee";
 
 /** Une ligne telle qu'elle sera écrite au détail — et lue par le client. */
 export type LigneProposee = {
@@ -209,6 +213,33 @@ async function propositionDeVente(ctx: Ctx, chantierId: string): Promise<Proposi
     donneesManquantes.push(
       "Aucune information confirmée depuis la dictée : quantités, déchets et contraintes d'accès inconnus."
     );
+  }
+
+  // --- Le prix qu'il a DICTÉ, avant tout le reste --------------------------
+  //
+  // **Son signalement du 21 octobre 2026** : « j'estime le prix à 500 € », et
+  // le devis lui demandait de remplir le prix. Ce qu'il prononce pour CE
+  // chantier passe avant ses tarifs, sa grille et le calcul au temps : ce sont
+  // des prix d'habitude, celui-là est sa décision. Le devis se fait alors poste
+  // par poste ; une ligne dont il n'a pas dit le prix prend sa grille, ou reste
+  // à chiffrer.
+  if (prestations.some((p) => p.prixDicte !== null)) {
+    const decoupe = await decouperEnLignes(ctx, chantierId, prestations, textesDictee, "0");
+    return {
+      origine: "dictee",
+      prixPropose: decoupe.total,
+      libelle: decoupe.libelle,
+      lignes: decoupe.lignes,
+      tarifId: null,
+      tarifsCandidats: [],
+      explication: {
+        origine: "Ce prix est celui que vous avez dicté. Il n'a pas été calculé.",
+        elementsPrisEnCompte,
+        calcul: decoupe.calcul,
+        donneesManquantes: [...donneesManquantes, ...decoupe.donneesManquantes, MATERIEL_NON_CHIFFRE],
+        ambiguites,
+      },
+    };
   }
 
   // --- Rapprochement tarifaire --------------------------------------------
@@ -586,14 +617,19 @@ async function decouperEnLignes(
   // abattage 600 €, fendage 300 €. Dès que la ligne PRINCIPALE a un prix dans sa
   // grille — parce qu'il a posé ses prix d'abattage —, le tarif au temps ne sert
   // plus : le total est la somme des postes, et on le dit.
-  if (principaleIndex >= 0 && chiffrees[principaleIndex].prix) {
+  //
+  // **Un prix qu'il a dicté fait aussi le devis poste par poste** : il a dit ce
+  // que vaut ce travail-là, aucun total au temps ne vient le répartir.
+  const unPrixDicte = vendables.some((l) => prixDicteDeLaLigne(l.prestations) !== null);
+  if (unPrixDicte || (principaleIndex >= 0 && chiffrees[principaleIndex].prix)) {
     const lignes = vendables.map((l, i) => ecrire(l, chiffrees[i]));
     const total = totalDe(lignes);
     calcul.push({
       libelle: "Chiffré poste par poste",
-      detail:
-        `${total} €, la somme de vos prix de grille, et non le tarif à la journée. ` +
-        "C'est votre grille qui décide dès qu'elle connaît le travail principal.",
+      detail: unPrixDicte
+        ? `${total} €, la somme des prix que vous avez dictés et de vos prix de grille.`
+        : `${total} €, la somme de vos prix de grille, et non le tarif à la journée. ` +
+          "C'est votre grille qui décide dès qu'elle connaît le travail principal.",
     });
     direCeQuiResteAChiffrer(lignes);
     return { lignes, total, libelle, calcul, donneesManquantes };
@@ -672,6 +708,18 @@ async function prixDeLaLigne(
   textesChantier: string[],
   ligne: LigneVendable
 ): Promise<PrixLigne> {
+  // **Le prix qu'il a dicté pour ce travail passe avant sa grille.** Une case
+  // de grille est son prix d'habitude ; celui-là est sa décision pour ce
+  // chantier (21 octobre 2026).
+  const dicte = prixDicteDeLaLigne(ligne.prestations);
+  if (dicte !== null) {
+    return {
+      prix: dicte,
+      calcul: [{ libelle: "Prix dicté", detail: `${membresDuLibelle(ligne.libelle)[0]} : ${dicte} €, le prix que vous avez dicté.` }],
+      donneesManquantes: [],
+    };
+  }
+
   // Ses réponses d'abord, la dictée ensuite : il a pu corriger à l'arrêt ce que
   // la transcription avait mal entendu.
   const precisions = await listerPrecisions(ctx, chantierId);

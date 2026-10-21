@@ -16,6 +16,7 @@
 import type { LigneExtraite } from "../server/ai/schemas/extraction";
 import { diametreLu, futLu, hauteurLue } from "./mesures-arbre";
 import { nature } from "./natures-prestation";
+import { montantDicte } from "./retouches-devis";
 
 export type PrestationStructuree = {
   /** En chiffres, prête pour une colonne numérique. `null` s'il n'a rien dit. */
@@ -48,7 +49,26 @@ export type PrestationStructuree = {
   caracteristiques: Record<string, number> | null;
   /** Le doute signalé par le modèle. Jamais `null` ici : le modèle a répondu. */
   aConfirmer: boolean;
+  /**
+   * Le prix HT qu'il a prononcé pour ce travail, en chiffres (migration 0135).
+   * `null` s'il n'en a dit aucun, ou un qui ne se lit pas comme un nombre.
+   */
+  prixDicte: string | null;
 };
+
+/**
+ * Le prix qu'il a dicté, ou rien.
+ *
+ * **La même lecture que ses retouches de devis** (`montantDicte`) : un prix
+ * dicté dans la note et un prix dicté dans le devis ne doivent pas se lire de
+ * deux façons. Zéro et les négatifs en plus : ce ne sont pas des prix qu'on
+ * prononce pour un travail, et un zéro se lirait « gratuit » sur le devis.
+ */
+export function prixLu(brut: string | null | undefined): string | null {
+  const montant = montantDicte(brut);
+  if (montant === null || Number(montant) <= 0) return null;
+  return Number(montant).toFixed(2);
+}
 
 /**
  * Un nombre écrit par un modèle, ou rien.
@@ -108,6 +128,7 @@ export function structureDeLaPrestation(ligne: LigneExtraite): PrestationStructu
     espece: ligne.espece?.trim() || null,
     caracteristiques: mesuresDeLaDictee(ligne),
     aConfirmer: ligne.aConfirmer,
+    prixDicte: prixLu(ligne.prix),
   };
 }
 

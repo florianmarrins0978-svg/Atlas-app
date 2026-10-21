@@ -26,6 +26,8 @@ export type StructurePrestation = {
   methode?: string | null;
   caracteristiques?: Record<string, number | string> | null;
   aConfirmer?: boolean | null;
+  /** Le prix HT qu'il a dicté pour ce travail (migration 0135). */
+  prixDicte?: string | null;
 };
 
 export async function ajouterPrestation(

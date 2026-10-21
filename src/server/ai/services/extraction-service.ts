@@ -26,7 +26,7 @@ export const SYSTEME = `${METIER_ATLAS}
 Tu extrais des informations de chantier depuis un texte qu'il a dicté.
 Réponds UNIQUEMENT avec un objet JSON valide, sans aucun texte avant ou après, au format exact suivant :
 {
-  "prestations": { "libelle": string, "description": string | null, "quantite": string | null, "unite": string | null, "nature": string | null, "espece": string | null, "aConfirmer": boolean }[],
+  "prestations": { "libelle": string, "description": string | null, "quantite": string | null, "unite": string | null, "nature": string | null, "espece": string | null, "prix": string | null, "aConfirmer": boolean }[],
   "materiel": { "libelle": string, "description": string | null, "quantite": string | null, "unite": string | null, "aConfirmer": boolean }[],
   "dureePrevue": string | null,
   "tailleEquipe": string | null,
@@ -65,7 +65,13 @@ Règles absolues :
   un vide par une supposition.
 - Si une caractéristique est ambiguë (ex. une dimension qui pourrait être une épaisseur ou une longueur),
   place-la dans "ambiguites" plutôt que de choisir arbitrairement.
-- Ne propose jamais de prix : le chiffrage n'est pas de ton ressort.
+- Ne propose jamais de prix : le chiffrage n'est pas de ton ressort. Mais quand l'ARTISAN prononce
+  lui-même le prix d'un travail, recopie-le dans "prix" de cette prestation : le montant HT de la
+  ligne entière, en chiffres, sans symbole ni espace.
+    « taille d'une haie de laurier, j'estime le prix à 500 € »  -> "prix": "500"
+    « l'abattage je le fais à mille deux cents »                 -> "prix": "1200"
+  Un prix approximatif ou hésitant (« environ », « entre 400 et 500 », « à voir ») n'est pas un prix :
+  "prix" reste null. Sans montant prononcé pour ce travail, "prix" vaut null.
 - **Les DIMENSIONS d'un arbre, d'une souche ou d'une haie ne se perdent jamais.** Diamètre, diamètre au
   pied, hauteur, hauteur de fût, longueur : recopie-les dans "description", avec leur nombre et le mot
   de l'artisan (« 10 m de fût » reste « 10 m de fût », jamais une hauteur d'arbre).

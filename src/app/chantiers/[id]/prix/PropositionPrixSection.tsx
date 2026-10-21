@@ -17,6 +17,7 @@ const LIBELLE_ORIGINE: Record<OriginePrix, string> = {
   tarifs_ambigus: "Plusieurs tarifs possibles",
   aucun: "Aucun prix proposable",
   achat: "Vos prix d’achat, avec votre marge",
+  dictee: "Le prix que vous avez dicté",
 };
 
 export default function PropositionPrixSection({
@@ -100,7 +101,11 @@ export default function PropositionPrixSection({
         : null;
 
   const peutAppliquer =
-    origine === "tarif" || origine === "chiffrage" || origine === "achat" || (origine === "tarifs_ambigus" && tarifChoisi !== null);
+    origine === "tarif" ||
+    origine === "chiffrage" ||
+    origine === "achat" ||
+    origine === "dictee" ||
+    (origine === "tarifs_ambigus" && tarifChoisi !== null);
 
   return (
     <div
