@@ -8,6 +8,7 @@ import { estProprietaire } from "@/server/autorisation";
 import { releveTvaCollectee } from "@/server/repositories/factures";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import {
+  enAttenteParPeriode,
   libellePeriode,
   lirePeriode,
   periodeCourante,
@@ -131,6 +132,14 @@ export default async function ReleveTvaPage({
     facturesAvecAncienIban(ctx),
   ]);
   const collectee = Number(releve.totalTva);
+  // **Le chiffre des mois oubliés** (planche `appli/tva-paiements-oublies.html`,
+  // la B). Aux débits, rien n'attend : tout est déclaré à l'émission, et la
+  // liste d'attente n'y est pas montrée — un chiffre pointerait vers le vide.
+  const oublies = enAttenteParPeriode(
+    periodicite,
+    releve.regime === "encaissements" ? enAttente.map((f) => f.dateEmission) : [],
+    courante
+  );
   const reste = tvaDue(collectee, deductible);
 
   // **Ce que les clients ont fait des factures qui attendent** — sa demande du
@@ -171,6 +180,7 @@ export default async function ReleveTvaPage({
           numero={periode.numero}
           anneeCourante={courante.annee}
           numeroCourant={courante.numero}
+          oublies={oublies}
         />
 
         {/* **Le rythme, sous les mois, en un mot qui s'appuie** — et rien

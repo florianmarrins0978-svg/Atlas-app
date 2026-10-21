@@ -29,6 +29,15 @@
         ],
         "createdAt": "2026-10-16T06:03:38.097Z",
         "reason": "Gris #8a8578 = jeton muted de l'application, reproduit tel quel"
+      },
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "files": [
+          "appli/tva-paiements-oublies.html"
+        ],
+        "createdAt": "2026-10-20T11:29:30.815Z",
+        "reason": "Inter est la police de l'application (design-tokens), la maquette la reproduit"
       }
     ]
   }

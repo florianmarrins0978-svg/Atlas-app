@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import {
   dansLaPeriode,
+  enAttenteAvant,
+  enAttenteParPeriode,
   periodeContenant,
   libelleCourt,
   libellePeriode,
@@ -212,6 +214,35 @@ cas("appartenir à une période, bornes incluses", () => {
   assert.equal(dansLaPeriode(aout, "2026-08-31"), true);
   assert.equal(dansLaPeriode(aout, "2026-07-31"), false, "le ticket du patron était ICI");
   assert.equal(dansLaPeriode(aout, "2026-09-01"), false);
+});
+
+// **Le chiffre des factures oubliées** — sa demande du 20 octobre 2026. Ce qui
+// casserait sans bruit : compter le mois en cours (le chiffre monterait à
+// chaque envoi), ou ranger le 31 mars dans le 2e trimestre.
+cas("compter les factures en attente par période passée, jamais la courante", () => {
+  const octobre = periodeTva("mensuelle", 2026, 10);
+  const dates = ["2025-12-12", "2026-03-18", "2026-06-04", "2026-06-27", "2026-09-30", "2026-10-01", "2026-10-14"];
+  assert.deepEqual(enAttenteParPeriode("mensuelle", dates, octobre), {
+    "2025-12": 1,
+    "2026-3": 1,
+    "2026-6": 2,
+    "2026-9": 1,
+  });
+  const t4 = periodeTva("trimestrielle", 2026, 4);
+  assert.deepEqual(enAttenteParPeriode("trimestrielle", [...dates, "2026-03-31"], t4), {
+    "2025-4": 1,
+    "2026-1": 2,
+    "2026-2": 2,
+    "2026-3": 1,
+  });
+  assert.deepEqual(enAttenteParPeriode("mensuelle", ["n'importe quoi"], octobre), {});
+});
+
+cas("la flèche de l'année d'avant porte ce qui attend derrière elle", () => {
+  const comptes = { "2024-11": 2, "2025-12": 1, "2026-6": 2 };
+  assert.equal(enAttenteAvant(comptes, 2026), 3);
+  assert.equal(enAttenteAvant(comptes, 2025), 2);
+  assert.equal(enAttenteAvant(comptes, 2024), 0);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Périodes de TVA — ${echecs} échec(s).`);

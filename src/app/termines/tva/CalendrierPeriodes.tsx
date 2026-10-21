@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { colors, font, voile } from "@/lib/design-tokens";
+import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import {
+  enAttenteAvant,
   libelleCourt,
   moisDuNumero,
   nombreDePeriodes,
@@ -36,6 +37,7 @@ export default function CalendrierPeriodes({
   numero,
   anneeCourante,
   numeroCourant,
+  oublies,
 }: {
   periodicite: PeriodiciteTva;
   /** L'année regardée. */
@@ -45,12 +47,21 @@ export default function CalendrierPeriodes({
   /** Celle d'aujourd'hui, pour le point doré. */
   anneeCourante: number;
   numeroCourant: number;
+  /**
+   * Les factures en attente par période passée, clé `annee-numero` — sa planche
+   * du 20 octobre 2026 (`appli/tva-paiements-oublies.html`, la B).
+   */
+  oublies: Record<string, number>;
 }) {
   const router = useRouter();
   const [ouvert, setOuvert] = useState(false);
   const [anneeVue, setAnneeVue] = useState(annee);
 
   const combien = nombreDePeriodes(periodicite);
+  // **Le total sur l'année, années d'avant comprises** : c'est ce qui se voit
+  // sans ouvrir le calendrier, le « tout de suite » de sa demande. Une facture
+  // de décembre ne doit pas disparaître parce qu'on regarde janvier.
+  const total = Object.values(oublies).reduce((a, n) => a + n, 0);
   const numeros = Array.from({ length: combien }, (_, i) => i + 1);
 
   function aller(n: number) {
@@ -68,7 +79,7 @@ export default function CalendrierPeriodes({
           c'est le geste qui compte, pas le millésime. */}
       <button
         type="button"
-        aria-label="Choisir une période"
+        aria-label={total > 0 ? `Choisir une période, ${total} en attente` : "Choisir une période"}
         aria-expanded={ouvert}
         onClick={() => {
           setAnneeVue(annee);
@@ -84,6 +95,7 @@ export default function CalendrierPeriodes({
         <span className="text-[14px] tabular-nums" style={{ fontFamily: font.display, color: colors.inkSoft }}>
           {annee}
         </span>
+        {total > 0 && <Compte n={total} />}
       </button>
 
       {/* **La feuille part sous `<body>`, pas là où vit le bouton.** Le bouton
@@ -99,10 +111,13 @@ export default function CalendrierPeriodes({
             type="button"
             aria-label="Année précédente"
             onClick={() => setAnneeVue((a) => a - 1)}
-            className="h-11 w-11 text-[20px]"
+            className="relative h-11 w-11 text-[20px]"
             style={{ color: colors.rust }}
           >
             ‹
+            {enAttenteAvant(oublies, anneeVue) > 0 && (
+              <Compte n={enAttenteAvant(oublies, anneeVue)} className="absolute right-0 top-0.5" />
+            )}
           </button>
           <span className="text-[24px] tabular-nums" style={{ fontFamily: font.display }}>
             {anneeVue}
@@ -159,6 +174,11 @@ export default function CalendrierPeriodes({
                     {mois}
                   </span>
                 )}
+                {/* Le mois en cours n'a jamais de chiffre : le point doré
+                    et la pastille ne se rencontrent pas. */}
+                {(oublies[`${anneeVue}-${n}`] ?? 0) > 0 && (
+                  <Compte n={oublies[`${anneeVue}-${n}`]} className="absolute -right-[3px] -top-[6px]" />
+                )}
                 {aujourdHui && (
                   <span
                     aria-hidden="true"
@@ -194,5 +214,21 @@ export default function CalendrierPeriodes({
       document.body,
       )}
     </>
+  );
+}
+
+/**
+ * La pastille du nombre de factures en attente. Le rouge d'alerte, et ce qui
+ * s'écrit dessus suit la charte (`surPlein`) : un crème en clair serait
+ * illisible sur Nuit et Sylve.
+ */
+function Compte({ n, className = "" }: { n: number; className?: string }) {
+  return (
+    <span
+      className={`inline-block h-[18px] min-w-[18px] rounded-full px-[5px] text-center text-[11px] font-semibold leading-[18px] tabular-nums ${className}`}
+      style={{ backgroundColor: colors.alert, color: surPlein, fontFamily: font.body }}
+    >
+      {n}
+    </span>
   );
 }

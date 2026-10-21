@@ -178,3 +178,45 @@ export function periodeContenant(periodicite: PeriodiciteTva, jourIso: string): 
 export function dansLaPeriode(p: PeriodeTva, jourIso: string): boolean {
   return jourIso >= p.debut && jourIso <= p.fin;
 }
+
+/**
+ * Les factures toujours en attente, comptées par période d'ÉMISSION — sa
+ * demande du 20 octobre 2026 : *« voir tout de suite si j'ai oublié un paiement
+ * à marquer reçu sur les mois précédents »*. Planche
+ * `appli/tva-paiements-oublies.html`, « la B ».
+ *
+ * **Seulement les périodes passées.** Une facture partie cette semaine n'est
+ * pas un oubli ; la compter ferait monter le chiffre à chaque envoi, et il
+ * apprendrait à ne plus le lire.
+ *
+ * **Ce que le chiffre ne sait pas** : distinguer « oublié de marquer » de « le
+ * client n'a pas encore payé ». L'application n'a que la facture en attente,
+ * et elle ne prétend pas en savoir plus.
+ *
+ * La clé est `annee-numero` : un objet simple, qui passe du serveur à l'écran
+ * tel quel.
+ */
+export function enAttenteParPeriode(
+  periodicite: PeriodiciteTva,
+  datesEmission: string[],
+  courante: PeriodeTva
+): Record<string, number> {
+  const comptes: Record<string, number> = {};
+  for (const jour of datesEmission) {
+    if (jour >= courante.debut) continue;
+    const p = periodeContenant(periodicite, jour);
+    if (!p) continue;
+    const cle = `${p.annee}-${p.numero}`;
+    comptes[cle] = (comptes[cle] ?? 0) + 1;
+  }
+  return comptes;
+}
+
+/** Ce qui attend dans les années d'avant celle-ci : le chiffre de la flèche « ‹ ». */
+export function enAttenteAvant(comptes: Record<string, number>, annee: number): number {
+  let total = 0;
+  for (const [cle, n] of Object.entries(comptes)) {
+    if (Number(cle.split("-")[0]) < annee) total += n;
+  }
+  return total;
+}

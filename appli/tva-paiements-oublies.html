@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Les paiements oubliés : Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  LES PAIEMENTS OUBLIÉS — la planche, 20 octobre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  CE QU'IL A DIT, capture du calendrier de « Ma TVA » à l'appui :
+
+    « Ça serait bien de pouvoir voir tout de suite si j'ai oublié un paiement
+      à marquer reçu sur les mois précédents : dans le filtre, un petit
+      chiffre à côté des mois indiquant le nombre oublié. »
+
+  CE QUE LE CHIFFRE COMPTE, et ce qu'il ne peut pas savoir.
+
+    L'application ne sait pas distinguer « oublié de marquer » de « le client
+    n'a pas encore payé » : elle n'a que la facture, toujours en attente. Le
+    chiffre compte donc les factures ÉMISES ce mois-là et toujours en attente
+    (`facturesEnAttente`, déjà lue par la page, aucune requête de plus).
+    Seulement les mois PASSÉS : une facture partie ce mois-ci n'est pas un
+    oubli. Rien aux débits : tout y est déclaré à l'émission, et la liste
+    d'attente n'y existe pas (`EnAttenteDePaiement.tsx`).
+
+  CE QUE TOUCHER UN MOIS FAIT : rien de neuf. Il ouvre le mois, comme
+  aujourd'hui ; la liste « Factures en attente » est déjà sous le relevé, quel
+  que soit le mois regardé (`page.tsx`, « l'attente n'est pas bornée »).
+
+  LES TROIS PLANCHES :
+    A. le chiffre dans le calendrier, et nulle part ailleurs : sa demande au
+       mot près ;
+    B. A, plus le total sur l'année de la frise : se voit SANS ouvrir le
+       calendrier, ce qui est le « tout de suite » de sa phrase ;
+    C. A, plus le chiffre sur chaque mois de la frise.
+
+  Le point doré (aujourd'hui) et le chiffre ne se rencontrent jamais : le mois
+  en cours n'a pas de chiffre. Couleurs : `src/lib/design-tokens.ts`.
+*/
+:root{
+  --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --plein:#7d9a6d; --pin:#2f3b2f; --or:#B98B47;
+  --alerte:#9C3B2E; --sur-alerte:#faf9f5;
+  --trait:rgba(28,28,26,.12); --creme:#f0eee7; --scene:#e6e3dc;
+  --serif:"Playfair Display",ui-serif,Georgia,serif;
+  --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+body.nuit{
+  --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --plein:#8fae86; --pin:#8fae86; --or:#c6a15b;
+  --alerte:#d98b7e; --sur-alerte:#101210;
+  --trait:rgba(233,232,222,.12); --creme:#20241f; --scene:#070908;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) body{
+  --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --plein:#8fae86; --pin:#8fae86; --or:#c6a15b;
+  --alerte:#d98b7e; --sur-alerte:#101210;
+  --trait:rgba(233,232,222,.12); --creme:#20241f; --scene:#070908;
+}}
+:root[data-theme="dark"] body{
+  --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --plein:#8fae86; --pin:#8fae86; --or:#c6a15b;
+  --alerte:#d98b7e; --sur-alerte:#101210;
+  --trait:rgba(233,232,222,.12); --creme:#20241f; --scene:#070908;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--scene);font-family:var(--sans);color:var(--encre);min-height:100vh}
+.choix{max-width:430px;margin:0 auto;padding:14px 16px 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.choix button{border:1px solid var(--trait);background:var(--carte);color:var(--encre);border-radius:999px;padding:9px 16px;font:500 14px var(--sans)}
+.choix button.actif{background:var(--plein);border-color:var(--plein);color:var(--carte)}
+.choix .sep{flex:1}
+.quoi{max-width:430px;margin:0 auto;padding:4px 18px 12px;font-size:13px;color:var(--encre-douce);line-height:1.45}
+.tel{max-width:430px;margin:0 auto 30px;background:var(--fond);border-radius:28px;overflow:hidden;position:relative;min-height:760px}
+.ecran{padding:22px 20px 20px}
+.haut{display:flex;justify-content:space-between}
+.rond{width:44px;height:44px;border-radius:50%;background:var(--creme);display:grid;place-items:center;color:var(--encre-douce);font-size:20px}
+.rond.ia{background:var(--pin);color:var(--carte)}
+h1{font:400 38px var(--serif);margin-top:22px}
+.surtitre{font-size:11px;letter-spacing:.3em;color:var(--or);margin-top:6px}
+.frise{display:flex;align-items:center;gap:18px;margin-top:24px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;padding-bottom:4px}
+.annee{display:flex;align-items:center;gap:6px;font:400 15px var(--serif);color:var(--encre-douce);padding-right:12px;border-right:1px solid var(--trait);position:relative;border:0;background:none}
+.annee{border-right:1px solid var(--trait)}
+.mois{font-size:12px;letter-spacing:.18em;color:var(--gris);position:relative;padding:8px 0}
+.mois.vu{color:var(--encre);border-bottom:2px solid var(--or)}
+.mois .n{display:block;letter-spacing:0;font-size:11px;color:var(--alerte);text-align:center;margin-top:2px;font-weight:600}
+.compte{min-width:18px;height:18px;border-radius:9px;padding:0 5px;background:var(--alerte);color:var(--sur-alerte);font:600 11px/18px var(--sans);text-align:center}
+.annee .compte{margin-left:2px}
+.decl{margin-top:22px;font-size:14px;color:var(--gris)}
+.decl b{font-weight:400;color:var(--encre);border-bottom:2px solid var(--or)}
+.attente{margin-top:26px}
+.attente h2{font:400 20px var(--serif);margin-bottom:10px}
+.ligne{display:flex;justify-content:space-between;padding:11px 0;border-top:1px solid var(--trait);font-size:14px}
+.ligne span:last-child{color:var(--encre-douce)}
+.voile{position:absolute;inset:0;background:rgba(28,28,26,.35);display:none}
+.feuille{position:absolute;left:0;right:0;bottom:0;background:var(--fond);border-radius:26px 26px 0 0;padding:14px 20px 18px;display:none}
+.ouvert .voile,.ouvert .feuille{display:block}
+.poignee{width:44px;height:4px;border-radius:2px;background:var(--trait);margin:0 auto 18px}
+.nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.nav button{position:relative;width:44px;height:44px;border:0;background:none;color:var(--pin);font-size:22px}
+.nav span{font:400 26px var(--serif)}
+.grille{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.grille.t{grid-template-columns:repeat(2,1fr)}
+.pave{position:relative;border:1px solid var(--trait);background:var(--carte);border-radius:999px;padding:14px 6px;text-align:center;font:400 16px var(--serif);color:var(--encre)}
+.pave.vu{background:var(--plein);border-color:var(--plein);color:var(--carte)}
+.pave .jour{position:absolute;right:9px;top:7px;width:5px;height:5px;border-radius:50%;background:var(--or)}
+.nav .compte{position:absolute;right:-2px;top:2px;display:block;font:600 11px/18px var(--sans)}
+.pave .compte{position:absolute;right:-3px;top:-6px}
+.pave small{display:block;font:400 11px var(--sans);color:var(--gris);margin-top:2px}
+.lien{display:block;width:100%;border:0;background:none;padding:12px;font:400 14px var(--sans);color:var(--pin);margin-top:10px}
+.lien.gris{color:var(--gris);font-size:15px;margin-top:0}
+</style>
+</head>
+<body>
+
+<div class="choix">
+  <button data-p="A" class="actif">A</button>
+  <button data-p="B">B</button>
+  <button data-p="C">C</button>
+  <span class="sep"></span>
+  <button id="rythme">Trimestres</button>
+  <button id="nuit">Nuit</button>
+</div>
+<p class="quoi" id="quoi"></p>
+
+<div class="tel" id="tel">
+  <div class="ecran">
+    <div class="haut"><div class="rond">‹</div><div class="rond ia">◯</div></div>
+    <h1 id="titre">Juin 2026</h1>
+    <div class="surtitre">MA TVA</div>
+    <div class="frise" id="frise"></div>
+    <div class="decl">Déclaration <b id="rythme-mot">mensuelle</b></div>
+    <div class="attente">
+      <h2>Factures en attente</h2>
+      <div id="liste"></div>
+    </div>
+  </div>
+  <div class="voile" id="voile"></div>
+  <div class="feuille">
+    <div class="poignee"></div>
+    <div class="nav"><button id="moins" aria-label="Année précédente">‹</button><span id="an">2026</span><button id="plus" aria-label="Année suivante">›</button></div>
+    <div class="grille" id="grille"></div>
+    <button class="lien" id="revenir">Revenir à la période en cours</button>
+    <button class="lien gris" id="annuler">Annuler</button>
+  </div>
+</div>
+
+<script>
+// Aujourd'hui : 20 octobre 2026. Les factures toujours en attente, par date
+// d'émission. Celle d'octobre n'est PAS comptée : le mois n'est pas fini.
+var AUJ = { annee: 2026, mois: 10 };
+var FACTURES = [
+  { a: 2025, m: 12, d: "12/12/2025", nom: "Mme Roussel", ttc: "1 840,00 €" },
+  { a: 2026, m: 3,  d: "18/03/2026", nom: "M. Garnier", ttc: "620,00 €" },
+  { a: 2026, m: 6,  d: "04/06/2026", nom: "Amélie Fabre", ttc: "1 392,00 €" },
+  { a: 2026, m: 6,  d: "27/06/2026", nom: "SCI Les Tilleuls", ttc: "3 120,00 €" },
+  { a: 2026, m: 8,  d: "21/08/2026", nom: "M. Lopez", ttc: "480,00 €" },
+  { a: 2026, m: 9,  d: "02/09/2026", nom: "Mme Benoît", ttc: "960,00 €" },
+  { a: 2026, m: 9,  d: "15/09/2026", nom: "M. Perrin", ttc: "2 210,00 €" },
+  { a: 2026, m: 9,  d: "29/09/2026", nom: "Mme Carré", ttc: "540,00 €" },
+  { a: 2026, m: 10, d: "14/10/2026", nom: "M. Vidal", ttc: "1 150,00 €" }
+];
+var MOIS = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+var QUOI = {
+  A: "Le chiffre dans le calendrier seulement : les factures émises ce mois-là et toujours en attente. Rien sur le mois en cours. La flèche de l’année d’avant porte ce qui attend derrière elle.",
+  B: "Comme A, et le total sur le bouton de l’année, années d’avant comprises : il se voit sans ouvrir le calendrier.",
+  C: "Comme A, et le chiffre sous chaque mois de la frise."
+};
+var etat = { p: "A", trim: false, vuA: 2026, vuN: 6, an: 2026 };
+
+function periodeDe(m){ return etat.trim ? Math.ceil(m/3) : m; }
+function courante(){ return periodeDe(AUJ.mois); }
+function nb(){ return etat.trim ? 4 : 12; }
+function libelle(n){ return etat.trim ? (n===1?"1er trimestre":n+"e trimestre") : MOIS[n-1]; }
+function court(n){ return etat.trim ? "T"+n : MOIS[n-1]; }
+// La règle : émise dans une période PASSÉE, et toujours en attente.
+function compte(a, n){
+  if (a > AUJ.annee || (a === AUJ.annee && n >= courante())) return 0;
+  return FACTURES.filter(function(f){ return f.a === a && periodeDe(f.m) === n; }).length;
+}
+function totalAnnee(a){ var t=0; for (var n=1;n<=nb();n++) t+=compte(a,n); return t; }
+// Tout ce qui attend, toutes années confondues : une facture de décembre 2025
+// ne doit pas disparaître parce qu'on regarde 2026.
+function totalAvant(a){ var t=0; FACTURES.forEach(function(f){ if (f.a < a) t++; }); return t; }
+function totalTout(){ var t=0; for (var a=2024;a<=AUJ.annee;a++) t+=totalAnnee(a); return t; }
+function badge(c){ return c ? '<span class="compte">'+c+'</span>' : ""; }
+
+function dessiner(){
+  document.getElementById("titre").textContent = libelle(etat.vuN)+" "+etat.vuA;
+  document.getElementById("rythme-mot").textContent = etat.trim ? "trimestrielle" : "mensuelle";
+  var f = '<button class="annee" id="ouvrir"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="1.6"><rect x="3.2" y="5" width="17.6" height="15.4" rx="2.4"/><path d="M3.2 9.6h17.6"/><path d="M8 3.4v3.2M16 3.4v3.2" stroke-linecap="round"/></svg>'+etat.vuA+(etat.p==="B"?badge(totalTout()):"")+'</button>';
+  for (var n=1;n<=nb();n++){
+    var c = compte(etat.vuA,n);
+    f += '<span data-m="'+n+'" class="mois'+(n===etat.vuN?" vu":"")+'">'+court(n).toUpperCase()+(etat.p==="C"&&c?'<span class="n">'+c+'</span>':"")+'</span>';
+  }
+  document.getElementById("frise").innerHTML = f;
+  Array.prototype.forEach.call(document.querySelectorAll("[data-m]"), function(m){ m.onclick = function(){ etat.vuN = +m.dataset.m; dessiner(); }; });
+  document.getElementById("ouvrir").onclick = function(){ etat.an = etat.vuA; document.getElementById("tel").classList.add("ouvert"); grille(); };
+
+  document.getElementById("liste").innerHTML = FACTURES.map(function(x){
+    return '<div class="ligne"><span>'+x.nom+', le '+x.d+'</span><span>'+x.ttc+'</span></div>';
+  }).join("");
+  document.getElementById("quoi").textContent = QUOI[etat.p];
+}
+
+function grille(){
+  document.getElementById("an").textContent = etat.an;
+  // La flèche de l'année d'avant porte ce qui attend derrière elle.
+  document.getElementById("moins").innerHTML = "‹"+badge(totalAvant(etat.an));
+  var g = document.getElementById("grille");
+  g.className = "grille"+(etat.trim?" t":"");
+  var h = "";
+  for (var n=1;n<=nb();n++){
+    var vu = etat.an===etat.vuA && n===etat.vuN;
+    var jour = etat.an===AUJ.annee && n===courante();
+    h += '<button class="pave'+(vu?" vu":"")+'" data-n="'+n+'">'+court(n)
+      + (etat.trim?'<small>'+MOIS[(n-1)*3]+' à '+MOIS[(n-1)*3+2].toLowerCase()+'</small>':"")
+      + (jour?'<span class="jour"></span>':"")
+      + badge(compte(etat.an,n))+'</button>';
+  }
+  g.innerHTML = h;
+  Array.prototype.forEach.call(g.querySelectorAll(".pave"), function(b){
+    b.onclick = function(){ etat.vuA = etat.an; etat.vuN = +b.dataset.n; fermer(); dessiner(); };
+  });
+}
+function fermer(){ document.getElementById("tel").classList.remove("ouvert"); }
+
+document.getElementById("moins").onclick = function(){ etat.an--; grille(); };
+document.getElementById("plus").onclick = function(){ etat.an++; grille(); };
+document.getElementById("annuler").onclick = fermer;
+document.getElementById("voile").onclick = fermer;
+document.getElementById("revenir").onclick = function(){ etat.vuA = AUJ.annee; etat.vuN = courante(); fermer(); dessiner(); };
+Array.prototype.forEach.call(document.querySelectorAll("[data-p]"), function(b){
+  b.onclick = function(){
+    etat.p = b.dataset.p;
+    document.querySelectorAll("[data-p]").forEach(function(x){ x.classList.toggle("actif", x===b); });
+    dessiner(); if (document.getElementById("tel").classList.contains("ouvert")) grille();
+  };
+});
+document.getElementById("rythme").onclick = function(){
+  etat.trim = !etat.trim; this.classList.toggle("actif", etat.trim);
+  etat.vuN = etat.trim ? 2 : 6; dessiner(); if (document.getElementById("tel").classList.contains("ouvert")) grille();
+};
+document.getElementById("nuit").onclick = function(){ document.body.classList.toggle("nuit"); this.classList.toggle("actif"); };
+
+dessiner();
+document.getElementById("tel").classList.add("ouvert"); grille();
+</script>
+</body>
+</html>

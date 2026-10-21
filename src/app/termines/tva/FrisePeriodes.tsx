@@ -40,12 +40,15 @@ export default function FrisePeriodes({
   numero,
   anneeCourante,
   numeroCourant,
+  oublies,
 }: {
   periodicite: PeriodiciteTva;
   annee: number;
   numero: number;
   anneeCourante: number;
   numeroCourant: number;
+  /** Les factures en attente par période passée (`enAttenteParPeriode`). */
+  oublies: Record<string, number>;
 }) {
   const rail = useRef<HTMLDivElement>(null);
 
@@ -102,6 +105,7 @@ export default function FrisePeriodes({
             numero={numero}
             anneeCourante={anneeCourante}
             numeroCourant={numeroCourant}
+            oublies={oublies}
           />
         </span>
 

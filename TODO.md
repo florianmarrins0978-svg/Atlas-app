@@ -56,6 +56,26 @@ batterie : une seule à la fin de tout le lot, et il la demande.
 | **corriger les cotes d'une zone lue sur le croquis** (sa demande du 20 octobre) : planche `appli/arrosage-cotes-des-zones.html`, A (à droite du nom de la zone, sur chaque réseau) ou B (toutes les zones au-dessus du plan). Ajouter une zone non lue : sa demande du même soir, dans la planche. Rien n'est codé ; reste à lui demander s'il veut aussi supprimer une zone lue à tort | lui, puis nous |
 | **le pointillé calculé quand la distance entre deux zones est connue** (sa règle du 18 octobre, pas codée) : il faut que le calcul sache si les places des zones sont cotées ou estimées | nous |
 
+## ✅ LES PAIEMENTS OUBLIÉS : SA RÉPONSE « B », CODÉE LE 20 OCTOBRE 2026
+
+Sa demande : *« voir tout de suite si j'ai oublié un paiement à marquer reçu
+sur les mois précédents : dans le filtre, un petit chiffre à côté des mois »*.
+Planche `appli/tva-paiements-oublies.html` (A : le calendrier seul ; B : plus
+le total sur le bouton de l'année ; C : plus le chiffre dans la frise).
+
+Ce que le chiffre compte : les factures ÉMISES dans une période passée et
+toujours en attente (`facturesEnAttente`, déjà lue par `page.tsx`, aucune
+requête de plus). L'application ne distingue pas « oublié de marquer » de
+« pas encore payé par le client ». Rien aux débits. Le mois en cours n'a pas de
+chiffre. À coder dans `CalendrierPeriodes.tsx` par une fonction pure de
+`src/lib/` (compte par période), une fois la planche choisie.
+
+| | qui |
+|---|---|
+| ~~choisir A, B ou C~~ **B**, le 20 octobre | fait |
+| ~~coder~~ **codé** (`CalendrierPeriodes.tsx`, `enAttenteParPeriode`) ; niveau 3 (gravité « argent ») : **il a dit « ne lance pas de batterie » le 20 octobre**. Le lot attend sur `claude/tva-paiements-oublies` ; sans batterie verte, `garde-fusion-main` refuse `main`. À lui demander quand la lancer | lui |
+| `npm run voir` ne franchit pas l'écran `/bienvenue` sur une base fraîche : il ne sait cliquer que « continuer », « j'accepte », « commencer », pas « Se connecter » ; trouvé en regardant cet écran le 20 octobre | nous |
+
 ## ⏳ ARROSAGE : LE TUBE DE CHAQUE ARTISAN — son oui du 16 octobre 2026, planche à faire
 
 Le calcul tient ses tubes (paroi 3 mm) pour tout le monde, ce qui est le côté
