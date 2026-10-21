@@ -38,6 +38,15 @@
         ],
         "createdAt": "2026-10-20T11:29:30.815Z",
         "reason": "Inter est la police de l'application (design-tokens), la maquette la reproduit"
+        },
+        {
+        "rule": "kicker-above-heading",
+        "value": "*",
+        "files": [
+          "appli/arrosage-choix-du-diametre.html"
+        ],
+        "createdAt": "2026-10-20T16:11:57.490Z",
+        "reason": "Claude: la planche recopie l'écran réel de l'application, qui porte « LE PIQUAGE, AU COMPTEUR » au-dessus de « Du compteur à la nourrice » (capture du patron du 20 octobre)"
       }
     ]
   }

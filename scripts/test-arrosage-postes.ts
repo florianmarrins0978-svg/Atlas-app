@@ -87,6 +87,54 @@ cas("ce que l'écran pose est ce que la liste de l'outil compte, hors nourrice",
   exige(ecarts.length === 0, `la liste compte autrement : ${ecarts.map((r) => `${r} ${pose[r]} ici, ${attendu[r]} dans l'outil`).join(" ; ")}`);
 });
 
+cas("un réseau passé en Ø32 prend les pièces en 32, et la liste compte comme l'écran pose (20 octobre 2026)", () => {
+  const avec32 = calculerEtDessiner({ ...PARAMETRES, diametres: { reseaux: { 0: 32 } } }, null);
+  exige(avec32.dessin, "le jardin en Ø32 doit se dessiner");
+  exige(avec32.plan.diametres[0] === 32 && avec32.plan.diametres.slice(1).every((x) => x === 25), `diamètres lus : ${avec32.plan.diametres.join(", ")}`);
+  const p = composerLesPostes({ plan: avec32.plan, dessin: avec32.dessin, compteur: true, amenee: null, retouches: RETOUCHES_VIERGES });
+  const r0 = avec32.dessin!.reseaux.find((r) => r.numero === 0)!;
+  const g = p.compte["r0"];
+  exige((g["te-taraude-32-34-32"]?.q ?? 0) + (g["coude-taraude-32-34"]?.q ?? 0) === r0.tetes.length, `réseau 1 : les raccords en 32 ne font pas ses ${r0.tetes.length} têtes`);
+  exige(!g["te-taraude-25-34-25"] && !g["coude-taraude-25-34"], "réseau 1 en Ø32 : il reste des raccords en 25");
+  exige(g["pe32"]?.q === r0.metresTuyau && !g["pe25"], `réseau 1 : le tuyau n'est pas du PEHD Ø32`);
+  exige(p.reseaux[0].pe.nom === "PEHD Ø32", `l'écran écrit ${p.reseaux[0].pe.nom}`);
+  exige(p.compte["r1"]?.["pe25"] !== undefined || avec32.dessin!.reseaux.length === 1, "les autres réseaux restent en Ø25");
+  const liste = piecesDuPlan(avec32.plan.materiel, avec32.dessin, { compteur: true, seuil25: avec32.plan.tuyau.seuil25, amenee: null, goutte: avec32.plan.goutteAGoutte, diametres: avec32.plan.diametres });
+  const pose: Record<string, number> = {};
+  for (const [nom, gr] of Object.entries(p.compte)) if (nom.startsWith("r")) for (const [ref, l] of Object.entries(gr)) pose[ref] = (pose[ref] ?? 0) + l.q;
+  for (const ref of ["te-taraude-32-34-32", "coude-taraude-32-34", "te-32-32-32", "pe32", "te-taraude-25-34-25"]) {
+    const outil = liste.find((x) => x.ref === ref)?.q ?? 0;
+    exige((pose[ref] ?? 0) === outil, `${ref} : ${pose[ref] ?? 0} posés à l'écran, ${outil} dans la liste`);
+  }
+  const tout25 = calculerEtDessiner(PARAMETRES, null);
+  exige(!tout25.plan.reserves.some((x) => /raccord du Ø32/.test(x)), "tout en Ø25, la réserve du raccord parle à tort");
+});
+
+cas("amenée en Ø32 au compteur : le té 25 x 32 x 25 coupe la ligne, à la place du té égal (sa réponse du 20 octobre 2026)", () => {
+  const en32 = calculerEtDessiner({ ...PARAMETRES, amenee: 20, diametres: { amenee: 32 } }, null);
+  const p = composerLesPostes({ plan: en32.plan, dessin: en32.dessin, compteur: true, amenee: 20, retouches: RETOUCHES_VIERGES });
+  exige(p.amenee.some((x) => x.ref === "te-25-32-25"), `au compteur : ${p.amenee.map((x) => x.ref).join(", ")}`);
+  exige(!p.amenee.some((x) => x.ref === "te-25-25-25"), "le té égal 25 x 25 x 25 reste au compteur alors que l'amenée est en Ø32");
+  const liste = en32.plan.pieces.filter((x) => x.ou === "amenee").map((x) => x.ref);
+  exige(liste.includes("te-25-32-25") && !liste.includes("te-25-25-25"), `la liste du compteur : ${liste.join(", ")}`);
+  const en25 = calculerEtDessiner({ ...PARAMETRES, amenee: 20, diametres: { amenee: 25 } }, null);
+  exige(en25.plan.pieces.some((x) => x.ou === "amenee" && x.ref === "te-25-25-25"), "en Ø25, le té égal reste");
+});
+
+cas("à la nourrice, un tuyau en Ø32 se visse par un raccord mâle 32 x 1\" à la place du 25 x 1\" (sa réponse du 20 octobre 2026)", () => {
+  const base = groupeNourrice(plan, composer(), RETOUCHES_VIERGES).lignes;
+  const q25 = base["raccord-male25"]?.q ?? 0;
+  exige(q25 > 0 && !base["raccord-male32"], `tout en Ø25 : ${q25} raccords 25 x 1", aucun 32`);
+  const en32 = calculerEtDessiner({ ...PARAMETRES, amenee: 20, diametres: { amenee: 32, reseaux: { 0: 32 } } }, null);
+  const p = composerLesPostes({ plan: en32.plan, dessin: en32.dessin, compteur: true, amenee: 20, retouches: RETOUCHES_VIERGES });
+  const n = groupeNourrice(en32.plan, p, RETOUCHES_VIERGES).lignes;
+  const voies = en32.plan.secteurs.length;
+  exige(n["raccord-male32"]?.q === 2, `un pour le réseau 1, un pour l'amenée : ${n["raccord-male32"]?.q ?? 0}`);
+  exige((n["raccord-male25"]?.q ?? 0) + (n["raccord-male32"]?.q ?? 0) === voies + 1, `${voies} voies et l'entrée : ${n["raccord-male25"]?.q} + ${n["raccord-male32"]?.q}`);
+  exige(n["raccord-male32"]?.nom.includes('Raccord mâle 32 x 1"'), `le nom : ${n["raccord-male32"]?.nom}`);
+  exige(!en32.plan.reserves.some((x) => /raccord du Ø32/.test(x)), "le raccord est compté : la réserve doit se taire");
+});
+
 cas("la nourrice se compose : douze numéros pour quatre voies dont une de goutte-à-goutte, et un bac", () => {
   const n = composerNourrice(4, 1);
   exige(n, "aucune fiche pour 4 voies");

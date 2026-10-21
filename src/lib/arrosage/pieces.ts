@@ -77,6 +77,19 @@ const CAT = CATALOGUE as unknown as Catalogue;
 const TE_LIGNE = "te-taraude-25-34-25";
 const COUDE_LIGNE = "coude-taraude-25-34";
 const TE_EGAL = "te-25-25-25";
+/** Le té qui coupe la ligne au compteur quand l'amenée part en Ø32. */
+export const TE_COMPTEUR_32 = "te-25-32-25";
+
+/**
+ * Les raccords et le tuyau d'un réseau, selon son diamètre. Le Ø25 par défaut ;
+ * le Ø32 quand il l'a choisi pour ce réseau (sa règle du 20 octobre 2026, « la
+ * C »). Une seule table, pour la liste comme pour l'écran (`postes.ts`).
+ */
+export function raccordsEn(diametre: 25 | 32) {
+  return diametre === 32
+    ? { te: "te-taraude-32-34-32", coude: "coude-taraude-32-34", egal: "te-32-32-32", pe: "pe32", nomPe: "PEHD Ø32" }
+    : { te: TE_LIGNE, coude: COUDE_LIGNE, egal: TE_EGAL, pe: "pe25", nomPe: "PEHD Ø25" };
+}
 const PEBD16 = "pebd16";
 const GRILLAGE = "grillage-bleu";
 
@@ -108,6 +121,10 @@ export function piecesDuPlan(
     goutte: { sorties: number; tesEgaux: number };
     /** Il a coché « Grillage avertisseur » (sa demande du 18 octobre 2026). Absent : pas coché. */
     grillage?: boolean;
+    /** Le tuyau de chaque réseau, par son numéro : Ø25 quand rien n'est dit. */
+    diametres?: (25 | 32)[];
+    /** Le tuyau retenu pour l'amenée, choisi par lui ou proposé par l'outil. Absent : la règle du seuil. */
+    diametreAmenee?: 25 | 32;
   }
 ): Piece[] {
   const parReseau = (f: (r: Dessin["reseaux"][number]) => number) =>
@@ -123,7 +140,9 @@ export function piecesDuPlan(
   const amenee: Piece[] = [
     {
       ref: "pe25-amenee",
-      nom: options.amenee !== null && options.seuil25 > 0 && options.amenee > options.seuil25 ? "PEHD Ø32" : "PEHD Ø25",
+      nom: options.diametreAmenee
+        ? `PEHD Ø${options.diametreAmenee}`
+        : options.amenee !== null && options.seuil25 > 0 && options.amenee > options.seuil25 ? "PEHD Ø32" : "PEHD Ø25",
       q: options.amenee !== null ? Math.ceil(options.amenee) : null,
       u: "ml",
       ou: "amenee",
@@ -131,10 +150,12 @@ export function piecesDuPlan(
     },
   ];
   if (options.compteur) {
+    // Amenée en Ø32 : le té 25 x 32 x 25, la maison reste en 25 (20 octobre 2026).
+    const te = options.diametreAmenee === 32 ? TE_COMPTEUR_32 : TE_EGAL;
     amenee.push({
-      ref: TE_EGAL,
-      reference: CAT.referenceDe(TE_EGAL),
-      nom: nomDe(TE_EGAL),
+      ref: te,
+      reference: CAT.referenceDe(te),
+      nom: nomDe(te),
       q: 1,
       u: "u",
       ou: "amenee",
@@ -154,7 +175,7 @@ export function piecesDuPlan(
   // ── Au jardin ─────────────────────────────────────────────────────────────
   const jardin: Piece[] = [];
   const sbe = new Set(CAT.coudes.map((c) => c.ref));
-  const surLeTrace = new Set([TE_LIGNE, COUDE_LIGNE, TE_EGAL]);
+  const surLeTrace = new Set([TE_LIGNE, COUDE_LIGNE, TE_EGAL, ...Object.values(raccordsEn(32))]);
   for (const l of materiel) {
     if (auRegard(l)) continue;
     if (dessin && surLeTrace.has(l.ref ?? "")) continue; // lus sur le dessin, plus bas
@@ -204,23 +225,35 @@ export function piecesDuPlan(
       if (haut && h.q > 0) jardin.push({ ref: haut.ref, reference: haut.reference, nom: `${haut.nom}, ${haut.detail}`, q: h.q, u: "u", ou: "jardin", detail: `en haut de ${h.noms.join(", ")}` });
     }
 
-    // **Les raccords de ligne, lus sur le tracé** — réseau par réseau.
-    const somme = (f: (r: Dessin["reseaux"][number]) => number) => dessin.reseaux.reduce((t, r) => t + f(r), 0);
-    const tes = somme((r) => r.tes);
+    // **Les raccords de ligne, lus sur le tracé** — réseau par réseau, et par
+    // diamètre : un réseau qu'il a passé en Ø32 prend les pièces en 32.
+    const diametreDe = (r: Dessin["reseaux"][number]) => options.diametres?.[r.numero] ?? 25;
     // Les sorties du goutte-à-goutte prennent les mêmes pièces Ø25 : un coude
     // taraudé par sortie, un té égal par sortie après la première de sa vanne.
+    // Le goutte-à-goutte n'a pas de perte de ligne au calcul : il reste en Ø25.
     const { sorties, tesEgaux: egauxGoutte } = options.goutte;
     const etGoutte = (n: number) => (n > 0 ? `, et ${n} pour le goutte-à-goutte` : "");
-    const coudes = somme((r) => r.coudes) + sorties;
-    const egaux = somme((r) => r.tesEgaux) + egauxGoutte;
-    if (tes > 0) jardin.push({ ref: TE_LIGNE, reference: CAT.referenceDe(TE_LIGNE), nom: nomDe(TE_LIGNE), q: tes, u: "u", ou: "jardin", detail: parReseau((r) => r.tes) });
-    if (coudes > 0) jardin.push({ ref: COUDE_LIGNE, reference: CAT.referenceDe(COUDE_LIGNE), nom: nomDe(COUDE_LIGNE), q: coudes, u: "u", ou: "jardin", detail: `${parReseau((r) => r.coudes)}${etGoutte(sorties)}` });
-    if (egaux > 0) jardin.push({ ref: TE_EGAL, reference: CAT.referenceDe(TE_EGAL), nom: nomDe(TE_EGAL), q: egaux, u: "u", ou: "jardin", detail: `${parReseau((r) => r.tesEgaux)}${etGoutte(egauxGoutte)}` });
+    for (const d of [25, 32] as const) {
+      const ceux = dessin.reseaux.filter((r) => diametreDe(r) === d);
+      if (ceux.length === 0 && d === 32) continue;
+      const k = raccordsEn(d);
+      const somme = (f: (r: Dessin["reseaux"][number]) => number) => ceux.reduce((t, r) => t + f(r), 0);
+      const par = (f: (r: Dessin["reseaux"][number]) => number) =>
+        d === 25 && ceux.length === dessin.reseaux.length ? parReseau(f) : `réseau${ceux.length > 1 ? "x" : ""} ${ceux.map((r) => r.numero + 1).join(", ")} : ${ceux.map(f).join(", ")}`;
+      const g = d === 25 ? sorties : 0, eg = d === 25 ? egauxGoutte : 0;
+      const tes = somme((r) => r.tes);
+      const coudes = somme((r) => r.coudes) + g;
+      const egaux = somme((r) => r.tesEgaux) + eg;
+      const sansReseau = ceux.length === 0;
+      if (tes > 0) jardin.push({ ref: k.te, reference: CAT.referenceDe(k.te), nom: nomDe(k.te), q: tes, u: "u", ou: "jardin", detail: par((r) => r.tes) });
+      if (coudes > 0) jardin.push({ ref: k.coude, reference: CAT.referenceDe(k.coude), nom: nomDe(k.coude), q: coudes, u: "u", ou: "jardin", detail: sansReseau ? `${g} pour le goutte-à-goutte` : `${par((r) => r.coudes)}${etGoutte(g)}` });
+      if (egaux > 0) jardin.push({ ref: k.egal, reference: CAT.referenceDe(k.egal), nom: nomDe(k.egal), q: egaux, u: "u", ou: "jardin", detail: sansReseau ? `${eg} pour le goutte-à-goutte` : `${par((r) => r.tesEgaux)}${etGoutte(eg)}` });
 
-    // **Le tuyau Ø25 des réseaux, mesuré sur le tracé.** Arrondi au mètre
-    // supérieur : un tuyau se coupe, il ne s'allonge pas.
-    const ml = somme((r) => r.metresTuyau);
-    if (ml > 0) jardin.push({ ref: "pe25", nom: "PEHD Ø25", q: Math.ceil(ml), u: "ml", ou: "jardin", detail: parReseau((r) => r.metresTuyau) });
+      // **Le tuyau des réseaux, mesuré sur le tracé.** Arrondi au mètre
+      // supérieur : un tuyau se coupe, il ne s'allonge pas.
+      const ml = somme((r) => r.metresTuyau);
+      if (ml > 0) jardin.push({ ref: k.pe, nom: k.nomPe, q: Math.ceil(ml), u: "ml", ou: "jardin", detail: par((r) => r.metresTuyau) });
+    }
 
     // **Le grillage avertisseur couvre toute la tranchée, amenée comprise** —
     // sa règle du 18 octobre 2026, en rouleaux de 100 m. Une amenée non mesurée

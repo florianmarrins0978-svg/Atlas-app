@@ -53,7 +53,7 @@ batterie : une seule à la fin de tout le lot, et il la demande.
 | **le plan dessiné, ce qu'il reste** : ~~les arbres et les dalles (à lui demander)~~ **tranché et codé le 19 octobre** : l'arbre ne change rien, les dalles qu'on n'arrose pas et la maison coupent la zone ; ~~les formes courbes ne se dessinent pas~~ **codé le 19 octobre** : elles se dessinent et partent comme le rectangle qui les entoure. **Reste** : le calcul des pelouses en forme libre (têtes le long de la courbe, couverture vérifiée), à lui proposer quand il le voudra ; une photo de croquis se lit toujours en rectangles ; ~~**pousser sur `main`** le dessin codé le 19 octobre~~ **livré le 20 octobre** (`3ae91cb3`) ; les instantanés des planches (`arrosage-plan-calcul.js`, `arrosage-schema-calcul.js`) ne sont pas reconstruits pour la haie à plus de deux lignes | lui, puis nous |
 | **`public/arrosage-photos/` doit suivre `appli/arrosage-photos/`** pour chaque photo de `photos.ts` ; la suite le vérifie, mais la copie reste un geste (une photo validée entre dans les deux dossiers, et dans `photos.ts`) | nous |
 | **le mot écrit dans une zone du croquis** (« Arroseur », « GAG ») commande son arrosage depuis le 20 octobre (`arrosageEcrit`) : à revérifier sur SA photo du 20 octobre, sur son espace, aucune clé ici. Et sur ce même écran, « Ø25 jusqu'à 6780 m » : le seuil du Ø25 s'affiche tel quel quand le débit est minuscule (goutte-à-goutte seul) ; un chiffre pareil ne se compare à aucun mètre ruban, à plafonner ou taire | lui (la photo), puis nous |
-| **corriger les cotes d'une zone lue sur le croquis** (sa demande du 20 octobre) : planche `appli/arrosage-cotes-des-zones.html`, A (à droite du nom de la zone, sur chaque réseau) ou B (toutes les zones au-dessus du plan). Ajouter une zone non lue : sa demande du même soir, dans la planche. Rien n'est codé ; reste à lui demander s'il veut aussi supprimer une zone lue à tort | lui, puis nous |
+| **corriger les cotes d'une zone lue sur le croquis** (sa demande du 20 octobre) : planche `appli/arrosage-cotes-des-zones.html`. **« La A, c'est la mieux »** (20 octobre) : « Modifier » à droite du nom de la zone, sur chaque réseau, avec la longueur, la largeur, et **Supprimer la zone** (sa demande du même soir : « lue à tort ou qu'on ne voudrait plus », touchée deux fois). **Ajouter une zone** non lue, sous les réseaux, glissée au doigt sur le plan, aimant de 50 cm (le geste de Dessiner le plan, pour la photo comme pour le dessin). La B est écartée. **CODÉ le 20 octobre au soir**, sans batterie (`ZonesDuPlan.tsx`, `zones-du-plan.ts`, `ARCHITECTURE.md` §476) ; reste la batterie, et l'essai sur son espace avec sa photo | lui, puis nous |
 | **le pointillé calculé quand la distance entre deux zones est connue** (sa règle du 18 octobre, pas codée) : il faut que le calcul sache si les places des zones sont cotées ou estimées | nous |
 
 ## ✅ LES PAIEMENTS OUBLIÉS : SA RÉPONSE « B », CODÉE LE 20 OCTOBRE 2026
@@ -243,7 +243,8 @@ corps) ; quand rien ne tient, `decouper` ajoute une vanne et recommence. Sur
 **Reste, et c'est le lot de l'écran** : les lignes de RÉSEAU sont toujours
 calculées en Ø25 ; le Ø32 n'est proposé que pour l'amenée. Sa demande (le
 bandeau « diam 25 ou diam 32 » à la fin, les raccords en 32, les tés 32×25×32)
-attend la planche et les références des pièces en 32.
+attend la planche ; les références des pièces en 32 sont au catalogue (voir
+plus bas, corrigé le 20 octobre 2026).
 
 ## ⏳ ARROSAGE : LE Ø32 QUAND LE Ø25 NE PASSE PAS — sa règle du 16 octobre 2026
 
@@ -263,8 +264,23 @@ fin : *« un bandeau déroulant, diam 25 ou diam 32 »*, et les pièces suivent.
 | un réseau en Ø32 | **ses raccords passent en 32** : té taraudé 32×3/4"×32, coude taraudé 32×3/4", té 32×32×32 |
 | passer de l'un à l'autre | des tés de réduction ; *« des tés en 32 25 32 »* quand la ligne principale est en 32 et la sortie en 25, et l'inverse |
 
-Les références de ces pièces en 32 ne sont pas au catalogue : à relever (Aqua
-Plus, pages des raccords PE), ou à lui demander, jamais à déduire des 25.
+~~Les références de ces pièces en 32 ne sont pas au catalogue~~ **FAUX, corrigé
+le 20 octobre 2026** (c'est lui qui l'a vu : *« tu ne les as pas ? t'es sûr ?
+je me souviens les avoir validées »*) : elles sont dans
+`src/lib/arrosage/catalogue.js`, `piecesAjoutables`, relevées dans Aqua Plus
+2026 p. 28 à 34 : té taraudé 32 x 3/4" x 32 (OPL71403220), coude taraudé
+32 x 3/4" (OPL71503220), té 32 x 32 x 32 (OPL704032), té réduit 32 x 25 x 32
+(OPL73403225), manchon réduit 32 x 25 (OPL71103225).
+
+**SA RÈGLE A CHANGÉ LE 20 OCTOBRE 2026, et elle remplace l'ordre ci-dessus.**
+*« Il fait le calcul en diamètre 25 ; si le 25 ne passe pas, il rajoute un
+réseau. »* Le Ø32 n'est plus essayé d'office sur les réseaux : il devient SON
+choix. *« Ce que tu demandes : sur chaque réseau et sur la longueur du compteur
+à la nourrice, pouvoir choisir Ø25 ou Ø32 et voir tout de suite ce que ça
+change, et l'inverse : refuser le Ø32 proposé. Voilà c'est ça que je veux. »*
+L'amenée garde sa bascule automatique en Ø32 quand la longueur l'impose, et il
+peut la refuser. Planche à faire, puis le calcul des lignes de réseau en Ø32
+(aujourd'hui toujours en Ø25). **Planche faite le 20 octobre** : `appli/arrosage-choix-du-diametre.html` (le bandeau Ø25 ou Ø32 sous chaque réseau et sous l'amenée, la ligne de ce que ça change, les pièces en 32 du catalogue). Chiffres d'exemple : le calcul des lignes en Ø32 reste à écrire. *« C'est pas mal dans le principe, j'aime bien »* pour la A ; B et C, plus discrètes, ajoutées le même soir à sa demande. **Il a choisi la C** : *« la façon du C, mais devant le bouton on-off 25-32, le rond barré synonyme du diamètre, en doré, la couleur de l'appli »*. Les deux cases 25 et 32 à droite du nom du réseau (et de « Du compteur à la nourrice », ou « Du robinet à la nourrice » quand le piquage se fait au robinet, sa demande du même soir), un Ø doré devant (le doré du surtitre « Le piquage, au compteur », `or`), la case choisie en noir, ce que ça change écrit dessous. **CODÉ le 20 octobre au soir**, avec le calcul des lignes en Ø32, sans batterie (`ChoixDuTuyau.tsx`, `diametre-choisi.ts`, `ARCHITECTURE.md` §476). Reste : la batterie ; au compteur, sa réponse du 20 octobre (*« il faut un 25 x 32 x 25 »*) est codée : le té réduit 25 x 32 x 25, sans référence (absent du relevé Aqua Plus), remplace le té égal quand l'amenée est en Ø32 ; à la nourrice, sa réponse du lendemain matin est codée aussi : le raccord mâle 32 x 1" (OPL70203226) remplace le 25 x 1" de la fiche, par voie en Ø32 et à l'entrée quand l'amenée est en Ø32
 
 ## ⏳ ARROSAGE : 141 BUSES RELEVÉES DANS AQUA PLUS, À TRANCHER AVANT D'ENTRER (16 octobre 2026)
 

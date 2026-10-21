@@ -286,6 +286,36 @@ le dit (« 2 zones de goutte-à-goutte sont écrites sur le croquis… »). Et l
 photo : *« parking est sous le carré et pas à droite »* (même jour, photo prise
 feuille couchée). Le modèle dit de combien tourner, le calcul tourne.
 
+**CE QUE L'IA A MAL LU SE CORRIGE À LA MAIN — « la A », sa réponse du
+20 octobre 2026** devant `appli/arrosage-cotes-des-zones.html` : « Modifier »
+à droite du nom de chaque zone (longueur, largeur, et Supprimer la zone, *« lue
+à tort ou qu'on ne voudrait plus »*), et « Ajouter une zone » que l'IA n'a pas
+lue, glissée au doigt sur le plan avec l'aimant de 50 cm. Pour une photo comme
+pour un plan dessiné : la photo devient un plan en mètres, et c'est sur lui
+qu'on pose la zone, jamais sur la photo, qui n'est pas à l'échelle. Le glissement
+est FACULTATIF : non glissée, la zone est comptée (réseaux, arroseurs,
+pièces), et la réserve dit que sa distance à la nourrice ne l'est pas.
+
+**LE Ø25 D'ABORD, UN RÉSEAU DE PLUS ENSUITE, LE Ø32 SUR SON CHOIX — sa règle
+du 20 octobre 2026**, qui remplace l'ordre du 16 octobre (Ø25, puis Ø32, puis
+un réseau de plus) : *« il fait le calcul en diamètre 25 ; si le 25 ne passe
+pas, il rajoute un réseau »*. Sur chaque réseau et sur l'amenée, il choisit
+Ø25 ou Ø32 et voit ce que ça change (un arroseur de plus par réseau, un réseau
+de moins) ; et un Ø32 que l'outil propose sur l'amenée, il peut le refuser. **La forme, « la C »**
+(même soir, `appli/arrosage-choix-du-diametre.html`) : deux petites cases 25 et
+32 à droite du nom du réseau et de l'amenée, au compteur comme au robinet
+(*« il le faut aussi à partir du compteur ou du robinet »*), un Ø doré devant (le doré du surtitre « Le
+piquage, au compteur », `or` ; *« celui que tu m'as mis est trop foncé »*), la case choisie en noir, ce que ça change écrit dessous. **Codées toutes
+les deux le 20 octobre au soir** (`ARCHITECTURE.md` §476). Le goutte-à-goutte n'a
+pas d'interrupteur : le calcul ne lui compte pas de perte de ligne. **Au compteur, une
+amenée en Ø32 prend un té réduit 25 x 32 x 25** à la place du té égal : sa réponse
+du même soir, *« il faut un 25 x 32 x 25 »*. Absent du relevé Aqua Plus, il
+part sans référence. **À la nourrice, un tuyau en Ø32 se visse par un raccord
+mâle 32 x 1"** (OPL70203226) à la place du 25 x 1" de la fiche, sur la vanne
+d'un réseau en Ø32 et à l'entrée d'une amenée en Ø32 (proposé, et son « oui »).
+Son idée d'un té taraudé 25 et d'un raccord 32 x 3/4" marchait, mais faisait
+repasser l'eau par du 25 et du 3/4" à la sortie de la vanne.
+
 **LE Ø16 SE RACCORDE AU ROBINET PAR UN RACCORD TARAUDÉ 3/4" PROPRE À SON TUBE —
 sa règle du 18 octobre 2026.** Le Plasson à bague blanche ne prend que le PE 25
 ou 32. Le Ø16 **souple** : l'embout Palaplast taraudé 16 x 3/4" (MID6362, sa

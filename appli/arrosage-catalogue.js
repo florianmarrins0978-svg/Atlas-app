@@ -744,6 +744,17 @@ var CATALOGUE = {
     // commande sur la désignation. Le 25×25×25 dit déjà qu'il n'est pas taraudé
     // — un taraudé porte son filetage dans son nom (25×3/4"×25).
     'te-25-25-25':         { nom:'Té 90° 25×25×25', marque:'Plasson', aquaplus:'OPL704025' },
+    // **Les mêmes en 32, pour un réseau qu'il passe en Ø32** (sa règle du
+    // 20 octobre 2026). Références lues dans Aqua Plus 2026, p. 30 à 33, et
+    // déjà au relevé (`piecesAjoutables`) : *« je me souviens les avoir validées »*.
+    'te-taraude-32-34-32': { nom:'Té 90° taraudé 32×3/4"×32', marque:'Plasson', aquaplus:'OPL71403220' },
+    'coude-taraude-32-34': { nom:'Coude 90° taraudé 32×3/4"', marque:'Plasson', aquaplus:'OPL71503220' },
+    'te-32-32-32':         { nom:'Té 90° 32×32×32', marque:'Plasson', aquaplus:'OPL704032' },
+    // **Au compteur, quand l'amenée part en Ø32** : sa réponse du 20 octobre
+    // 2026, « il faut un 25 x 32 x 25 ». La ligne de la maison reste en 25, la
+    // sortie part en 32. Absent du relevé Aqua Plus : sans référence, à sa
+    // règle (« n'importe quel fournisseur sait de quoi on parle »).
+    'te-25-32-25':         { nom:'Té 90° réduit 25×32×25', marque:'Plasson' },
     'pebd16':              { nom:'PEBD rigide Ø16 (tube de reprise)', marque:'Dura', unite:'ml' },
     // **Le grillage avertisseur bleu**, au-dessus des tuyaux enterrés : sa demande
     // du 18 octobre 2026, une case à cocher. Le nom et le rouleau de 100 m sont
@@ -1427,6 +1438,10 @@ var CATALOGUE = {
     'vanne-purge':   { nom:'Vanne avec vis de purge 3/4"', marque:'Dura', aquaplus:'BVA932' },
     'electrovanne-100dv': { nom:'Électrovanne 100 DV 1" MM 9V', marque:'Rain Bird', aquaplus:'REV100DVM9V' },
     'raccord-male25':{ nom:'Raccord mâle 25 x 1"', marque:'Plasson', aquaplus:'OPL70202526' },
+    // **Un tuyau en Ø32 se visse par le même raccord en 32** (sa réponse du
+    // 20 octobre 2026, « oui ») : sur la sortie 1" de la vanne d'un réseau en
+    // Ø32, et à l'entrée quand l'amenée est en Ø32. Aqua Plus 2026, p. 29.
+    'raccord-male32':{ nom:'Raccord mâle 32 x 1"', marque:'Plasson', aquaplus:'OPL70203226' },
     'regard-rect12': { nom:'Regard rectangle 12"', marque:'Dura', aquaplus:'RG17100' },
     'regard-rg17106':{ nom:'Regard jumbo RG17106', marque:'Dura', aquaplus:'RG17106' },
     'regard-jumbo5': { nom:'Regard jumbo 5 voies', marque:'Dura', aquaplus:'RG17106' },
