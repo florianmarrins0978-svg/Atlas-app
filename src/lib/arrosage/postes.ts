@@ -597,6 +597,21 @@ export function zonesGoutteDuReseau(plan: Pick<LePlan, "dessinDuCalcul" | "resea
   return plan.dessinDuCalcul.filter((z) => z.cle === "gaine" && (plan.reseauxDeZone[String(z.id)] ?? []).includes(i));
 }
 
+/**
+ * Combien de mètres de tube le goutte-à-goutte d'un réseau demande, arrondis au
+ * mètre supérieur : ce qui dit si une couronne de 50 m suffit (sa question du
+ * 21 octobre 2026). Une zone alimentée par plusieurs vannes partage son tube au
+ * prorata de ses sorties, comme le calcul le coupe (`sortiesGoutte`).
+ */
+export function metresDeTubeDuReseau(plan: Pick<LePlan, "dessinDuCalcul">, i: number): number {
+  const m = plan.dessinDuCalcul.reduce((t, z) => {
+    const sorties = z.sorties ?? [];
+    const ici = sorties.filter((x) => x === i).length;
+    return ici > 0 ? t + ((z.metresDeTube ?? 0) * ici) / sorties.length : t;
+  }, 0);
+  return Math.ceil(m - 1e-9);
+}
+
 /** « 13x », « 48 m », « à mesurer » : la quantité telle qu'elle s'écrit sur une ligne. */
 export function quantiteDeLigne(e: { q: number; u: string }): string {
   return e.u === "ml" ? (e.q ? `${e.q} m` : "à mesurer") : `${e.q}x`;

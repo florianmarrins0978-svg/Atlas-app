@@ -8,6 +8,12 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-21
 
+- **Les mètres de tube du goutte-à-goutte s'écrivent.** Sa question du soir :
+  *« il me met pas le nombre de mètres linéaires dont j'ai besoin, donc je sais
+  pas si une couronne de 50 m suffit »*. La ligne « Goutte-à-goutte Toro… » de
+  chaque réseau finit par « 66 m de tube » (`metresDeTubeDuReseau`), sur la
+  même ligne qu'avant, sans rien déplacer.
+
 - **Deux massifs sur une vanne : deux sorties, et un Ø25 jusqu'à chacune.** Sa
   capture du 21 octobre : *« deux massifs pour le goutte à goutte ; sur le
   plan, il n'en a compté qu'un, et pour les pièces aussi »*. Le calcul comptait

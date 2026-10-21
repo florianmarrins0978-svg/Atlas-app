@@ -89,6 +89,8 @@ export type ZoneDessinee = {
    * sur un coude taraudé, où se visse le té Palaplast. Absent : aucune.
    */
   sorties?: (number | undefined)[];
+  /** Les mètres de tube de goutte-à-goutte que la zone demande ; zéro pour des têtes. */
+  metresDeTube?: number;
 };
 
 export type Tete = {

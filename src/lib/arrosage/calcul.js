@@ -2164,6 +2164,9 @@ function dessinDesZones(d){
       // (`sortiesGoutte`) : le réseau de chacune. Le plan trace le Ø25 jusqu'à
       // elles ; sans cela, aucun tuyau n'allait vers un massif (21 octobre 2026).
       sorties: zg ? zg.reseaux : [],
+      // Les mètres de tube de la zone : sans eux, l'écran ne disait pas si une
+      // couronne de 50 m suffit (sa question du 21 octobre 2026).
+      metresDeTube: p.m && p.m.type === 'gaine' ? (p.nombre || 0) : 0,
       points: (p.points || []).map(function(pt){
         return {
           x: ox + pt.x, y: oy + pt.y,

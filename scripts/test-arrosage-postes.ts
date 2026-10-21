@@ -1,5 +1,5 @@
 import { calculerEtDessiner } from "../src/lib/arrosage/le-plan";
-import { composerLesPostes, zonesGoutteDuReseau, groupeNourrice, groupesDeLaListe, lienDuMail, listeAuFournisseur, messageAuFournisseur, liaisonsDuReseau } from "../src/lib/arrosage/postes";
+import { composerLesPostes, metresDeTubeDuReseau, zonesGoutteDuReseau, groupeNourrice, groupesDeLaListe, lienDuMail, listeAuFournisseur, messageAuFournisseur, liaisonsDuReseau } from "../src/lib/arrosage/postes";
 import { piecesDuPlan } from "../src/lib/arrosage/pieces";
 import {
   RETOUCHES_VIERGES, blocSupprimer, chaineSupprimer, chaineRemplacer, clesAChanger, ligneSupprimer, nourriceRemettre, nourriceRemplacer, nourriceSupprimer, remplacer, supprimer,
@@ -404,6 +404,12 @@ cas("deux massifs sur une vanne : le Ø25 va jusqu'à chacun, et chaque sortie a
   exige(rd!.coudesDesSorties === 2 && rd!.egauxDesSorties === 1, `sur le plan : ${rd!.coudesDesSorties} coude(s) taraudé(s), ${rd!.egauxDesSorties} té(s) égal(aux) ; il en faut 2 et 1`);
   exige(rd!.tetes.length === 0, "une sortie n'est pas un arroseur : aucune tête, donc aucun SBE ni PEBD");
   exige(zonesGoutteDuReseau(deux.plan, i).length === 2, "sur le plan du réseau, les DEUX massifs se bordent de sa couleur");
+  // Sa question du même soir : *« il me met pas le nombre de mètres linéaires
+  // dont j'ai besoin, donc je sais pas si une couronne de 50 m suffit »*.
+  const metres = metresDeTubeDuReseau(deux.plan, i);
+  const couronnes = deux.plan.materiel.filter((l) => l.ref === "UGGCBL23050").reduce((t, l) => t + l.q, 0);
+  exige(metres > 50 && metres <= couronnes * 50, `${metres} m de tube annoncés pour ${couronnes} couronne(s) de 50 m`);
+  exige(metresDeTubeDuReseau(deux.plan, 0) === 0, "le réseau des turbines n'a pas de tube de goutte-à-goutte");
   const p = composerLesPostes({ plan: deux.plan, dessin: deux.dessin, compteur: true, amenee: 5, retouches: RETOUCHES_VIERGES });
   const g = p.compte[`r${i}`] ?? {};
   exige(g["coude-taraude-25-34"]?.q === 2, `l'écran pose ${g["coude-taraude-25-34"]?.q ?? 0} coude(s) taraudé(s) au goutte-à-goutte`);
