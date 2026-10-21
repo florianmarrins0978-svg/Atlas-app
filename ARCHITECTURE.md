@@ -35437,3 +35437,32 @@ modifier, supprimer (jamais la dernière), ajouter, glisser avec l'aimant de
 devinée en silence ferait commander un tuyau mesuré sur un terrain qui
 n'existe pas.
 
+
+## §477 : Le fil de l'accueil a un seul ordre, la date qu'il affiche
+
+**Sa plainte du 20 octobre 2026 :** un chantier créé depuis la fiche client
+« n'apparaît pas » au retour. Il existait. L'accueil recollait deux listes :
+les contrats d'entretien (triés par mise à jour) puis les chantiers (triés par
+création, mais affichés avec leur date de mise à jour). Dès qu'un contrat
+attendait, le chantier du jour se retrouvait sous des lignes plus anciennes,
+hors de l'écran ; c'est la même phrase que sa plainte du 22 septembre, pour une
+autre cause (celle-là, la flèche qui jetait la saisie, est toujours corrigée).
+
+**La règle :** `dansLOrdreDuFil` (`src/lib/ordre-du-fil.ts`) range le fil
+entier sur `majAt`, la clé même du quantième affiché. Trier sur une autre date
+que celle qu'on montre referait le défaut à la première ligne retouchée.
+
+**Ce qui n'a pas été touché, et pourquoi :** l'ordre propre des dépôts
+(`listerChantiersPourAffichage` par création, `contratsEnCours` par mise à
+jour). L'assistant lit le premier ; le second n'est plus qu'un ordre d'arrivée
+que le fil réordonne. Les retirer aurait fait passer le lot au niveau 3 (rayon
+de 18 points d'entrée) pour un tri sans effet visible.
+
+**Ce que la règle change, voulu :** un chantier retouché (une photo, une
+coordonnée) remonte en tête, puisque sa date affichée devient celle du jour.
+Avant, il gardait sa place de création en affichant une date qui la
+contredisait.
+
+`scripts/test-accueil-chantier-neuf-en-tete-e2e.ts` rejoue son geste : un
+contrat d'il y a cinq jours, la feuille « Créer un devis », un nom, la flèche.
+

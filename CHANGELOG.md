@@ -49,6 +49,17 @@ Format : le plus récent en tête.
   25 x 32 x 25 (sa réponse du même soir), sans référence ; à la nourrice, le
   raccord mâle 32 x 1" remplace le 25 x 1" pour un tuyau en Ø32.
 
+- **Le chantier qu'il vient de créer ouvre le fil de l'accueil, même quand des
+  contrats d'entretien attendent.** Sa plainte : *« j'ai créé un chantier Simon
+  Bandera, j'ai fait retour et le chantier n'apparaît pas dans les chantiers en
+  cours »*. Le chantier existait : l'accueil posait tous les contrats en tête
+  puis les chantiers, et celui du jour passait sous le pli, sous des lignes
+  datées du 13 puis du 3 octobre. Le fil se range désormais en une seule liste,
+  par la date qu'il affiche (`src/lib/ordre-du-fil.ts`). Conséquence voulue :
+  un chantier retouché remonte, puisque sa date affichée change. Tenu par
+  `test-accueil-chantier-neuf-en-tete-e2e` (rouge avant, avec la ligne exacte de
+  sa capture, « CONTRAT À COMPLÉTER »). `ARCHITECTURE.md` §477.
+
 - **Une feuille photographiée couchée se lit dans le sens de son écriture.**
   Sa photo se lisait d'un quart de tour : le plan posait le parking à droite,
   alors qu'il est sous la pelouse, et les bandes de goutte-à-goutte au mauvais
