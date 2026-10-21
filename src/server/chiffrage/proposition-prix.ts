@@ -490,7 +490,7 @@ type Decoupe = {
 };
 
 /** Le prix d'une ligne, et la façon dont son montant se décompose. */
-type PrixLigne = {
+export type PrixLigne = {
   /** `null` quand aucun prix n'a pu être déterminé — jamais « 0 » en guise de « je ne sais pas ». */
   prix: string | null;
   /** Renseignés quand le prix vient d'un TAUX unitaire : 800 ml × 17,50 €. */
@@ -702,7 +702,7 @@ async function decouperEnLignes(
  * pouvait hériter du diamètre de l'érable. Depuis que la ligne connaît les
  * prestations qu'elle vend (migration 0069), elle lit d'abord les siennes.
  */
-async function prixDeLaLigne(
+export async function prixDeLaLigne(
   ctx: Ctx,
   chantierId: string,
   textesChantier: string[],

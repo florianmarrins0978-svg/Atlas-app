@@ -75,6 +75,12 @@ export type Retouche =
       quantite: string | null;
       unite: string | null;
       prixUnitaire: string | null;
+      /**
+       * D'où vient le prix quand il ne l'a pas dicté : « votre tarif
+       * « Évacuation » », « votre grille de prix ». Absent quand le prix est
+       * le sien, ou qu'aucun de ses prix ne répond (21 octobre 2026).
+       */
+      source?: string | null;
     }
   /**
    * Le prix accordé au client — « fais cinq pour cent sur le montant du devis ».
@@ -460,7 +466,7 @@ export function direRetouche(r: RetoucheResolue): { verbe: string; quoi: string;
           ? mesure
             ? `${mesure}, aucun prix dicté, à vous de la chiffrer`
             : "Aucun prix dicté, la ligne arrive vide et c'est à vous de la chiffrer"
-          : `${t.prixUnitaire} €${mesure ? ` × ${mesure}` : ""}`,
+          : `${t.prixUnitaire} €${mesure ? ` × ${mesure}` : ""}${t.source ? `, ${t.source}` : ""}`,
     };
   }
 

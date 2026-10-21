@@ -308,7 +308,17 @@ export function prixDUneLigneDictee(
     tarifs: readonly TarifDeVente[];
     achats: readonly PrixAchatCandidat[];
     marges: { materiel: string | null; mainOeuvre: string | null };
-  }
+  },
+  /**
+   * L'unité qu'il a PRONONCÉE avec la quantité, quand il en a dit une.
+   *
+   * **Son tarif ne se multiplie que par SA propre unité** (21 octobre 2026) :
+   * « 15 tonnes » d'évacuation sur un tarif « Évacuation » au forfait donnait
+   * 15 × 150 €. Des tonnes ne comptent pas des forfaits. Une unité qui diffère
+   * de celle du tarif rend le tarif tel quel, une fois. Sans unité dite (« 3
+   * sacs de ciment », compté), rien ne change.
+   */
+  uniteDite: string | null = null
 ): PrixDUneLigne {
   const q = new Decimal(quantite);
   // À la lettre d'abord (`tarifsCorrespondants`), par les mots ensuite : jamais
@@ -317,11 +327,13 @@ export function prixDUneLigneDictee(
   const tarifs = litteraux.length > 0 ? litteraux : lesMieuxNommees(texte, sources.tarifs, (t) => t.intitule);
   if (tarifs.length === 1) {
     const t = tarifs[0];
-    const montant = t.unite ? new Decimal(t.prix).times(q) : new Decimal(t.prix);
+    const parSonUnite =
+      !!t.unite && (uniteDite === null || normaliserPourRecherche(uniteDite) === normaliserPourRecherche(t.unite));
+    const montant = parSonUnite ? new Decimal(t.prix).times(q) : new Decimal(t.prix);
     return {
       origine: "vente",
       montant: montant.toFixed(2),
-      quantite: t.unite ? q.toString() : "1",
+      quantite: parSonUnite ? q.toString() : "1",
       unite: t.unite,
       prixUnitaire: t.unite ? new Decimal(t.prix).toFixed(2) : montant.toFixed(2),
       detail: `Votre prix de vente « ${t.intitule} » : ${virgule(new Decimal(t.prix).toFixed(2))} €${t.unite ? ` / ${t.unite}` : ""}.`,

@@ -8,6 +8,16 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-21
 
+- **Une ligne dictée dans le devis prend ses prix à lui.** Depuis le micro du
+  devis, « on évacue le gros bois, 15 tonnes » arrivait « Aucun prix dicté, à
+  vous de la chiffrer » alors que « Évacuation » est dans ses tarifs : ce
+  chemin ne lisait que le prix prononcé. `chiffrerLesAjouts`
+  (`ajouts-dictes.ts`) suit désormais l'ordre de la dictée du chantier, sa
+  grille, puis ses tarifs, puis ses achats, et l'écran dit d'où vient le
+  prix. Un tarif ne se multiplie plus que par SA propre unité : 15 tonnes sur
+  un forfait donnaient 15 × 150 € (`prixDUneLigneDictee`, `uniteDite`).
+  `scripts/test-ajouts-dictes-db.ts`, vu rouge avant la correction.
+
 - **Le prix qu'il dicte arrive sur le devis.** « Taille d'une haie de laurier,
   j'estime le prix à 500 € » donnait une ligne « à chiffrer » : la lecture de
   la dictée n'avait aucune case pour un prix, et sa consigne lui interdisait

@@ -31,6 +31,7 @@ import { LIBELLE_LIGNE_MAIN_DOEUVRE } from "@/lib/main-doeuvre-devis";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerAudioEntrant } from "@/server/audio-entrant";
 import { lireRetouchesDictees } from "@/server/ai/services/retouches-devis-service";
+import { chiffrerLesAjouts } from "@/server/chiffrage/ajouts-dictes";
 import type { Changement } from "@/lib/retouches-devis";
 import type { CiviliteClient } from "@/lib/civilite";
 import { tauxTvaValide } from "@/lib/reduction-devis";
@@ -278,12 +279,15 @@ export async function dicterRetouchesDevisAction(chantierId: string, formData: F
   // donc AVANT le fournisseur d'IA, jamais après.
   const audio = await preparerAudioEntrant(fichier);
   if (!audio.ok) throw new Error(audio.message);
-  return lireRetouchesDictees(
+  const lu = await lireRetouchesDictees(
     audio.octets,
     audio.mime,
     lignes.map((l) => ({ id: l.id, libelle: l.libelle, quantite: l.quantite, prixUnitaire: l.prixUnitaire })),
     devisEnCours?.reductionPourcent ?? null
   );
+  // Une ligne ajoutée sans prix dicté va chercher sa grille et ses tarifs
+  // AVANT de lui être montrée (21 octobre 2026) : il coche ce qu'il voit.
+  return lu.ok ? { ...lu, retouches: await chiffrerLesAjouts(ctx, chantierId, lu.retouches) } : lu;
 }
 
 /**
