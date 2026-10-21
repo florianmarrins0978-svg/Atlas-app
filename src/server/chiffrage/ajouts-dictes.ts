@@ -46,7 +46,7 @@ export async function chiffrerLesAjouts(
               ...(auTaux
                 ? { quantite: c.quantite!, unite: c.unite ?? null, prixUnitaire: c.prixUnitaire! }
                 : { ...unSeulPrix(t), prixUnitaire: c.prix }),
-              source: "votre grille de prix",
+              source: sourceDe(c.calcul),
             },
           };
         }
@@ -65,11 +65,20 @@ export async function chiffrerLesAjouts(
           quantite: p.quantite,
           unite: p.unite,
           prixUnitaire: p.prixUnitaire,
-          source: p.origine === "vente" ? p.detail.replace(/ :.*$/, "").replace(/^Votre prix de vente/, "votre tarif") : "vos prix d'achat",
+          source: p.origine === "vente" ? sourceDe([{ libelle: "Tarif appliqué", detail: p.detail }]) : "vos prix d'achat",
         },
       };
     })
   );
+}
+
+/**
+ * D'où vient le prix de la ligne, dit en quelques mots sous elle : son tarif
+ * nommé (« votre tarif « Évacuation » »), sinon sa grille.
+ */
+function sourceDe(calcul: readonly { libelle: string; detail: string }[]): string {
+  const tarif = calcul.find((c) => c.libelle === "Tarif appliqué")?.detail.match(/« (.+?) »/)?.[1];
+  return tarif ? `votre tarif « ${tarif} »` : "votre grille de prix";
 }
 
 /**

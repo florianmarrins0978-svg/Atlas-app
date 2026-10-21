@@ -126,8 +126,10 @@ async function main() {
     const p = await preparerPropositionPrix(A, chantierTarif.id);
     assert.equal(p!.origine, "tarif");
     assert.equal(p!.prixPropose, "450.00");
-    assert.equal(p!.libelle, "Élagage");
-    assert.match(p!.explication.origine, /tarif que vous avez déjà enregistré/i);
+    // La ligne porte le travail DICTÉ, chiffré au tarif qui lui répond (21 octobre
+    // 2026) : avant, le devis prenait le nom du tarif et jetait les autres travaux.
+    assert.equal(p!.libelle, "Élagage du sapin");
+    assert.match(p!.explication.origine, /vos tarifs/i);
     assert.notEqual(
       p!.prixPropose,
       PRIX_CHIFFRAGE_ATTENDU,

@@ -116,13 +116,13 @@ async function main() {
         prestations: [
           { libelle: "Haie (tout genre)", description: null, quantite: "800", unite: "ml", aConfirmer: false },
         ],
-        dureePrevue: "1 jour",
-        tailleEquipe: "2 hommes",
       },
       "dictée"
     );
     await brouillonsRepo.marquerConfirme(A, chantier.id);
-    await chantiersRepo.mettreAJourDureeEquipe(A, chantier.id, { dureePrevue: "1 jour", tailleEquipe: "2 hommes" });
+    // **Sans jours ni hommes dictés** : sa règle du 21 octobre 2026, ses grilles
+    // l'emportent alors. Avec eux, c'est la main d'œuvre qui fait le prix
+    // (`scripts/test-main-oeuvre-dictee-db.ts`) et la mesure ne la multiplie pas.
 
     await appliquerPropositionPrix(A, chantier.id);
     const [ligne] = await listerLignesPrix(A, chantier.id);

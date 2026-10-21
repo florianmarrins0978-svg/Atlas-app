@@ -138,7 +138,7 @@
     <div class="devis" id="devis"></div>
   </div>
 
-  <p class="note">Les curseurs bougent ensemble et le total de la main d’œuvre reste à 1 600 €, arrondi à la dizaine. La croix sort un travail que votre grille sait chiffrer ; « Remettre » le fait revenir. Après trois fois le même choix, la question ne se pose plus.</p>
+  <p class="note">Les curseurs bougent ensemble et le total de la main d’œuvre reste à 1 600 €, arrondi à la dizaine. La croix sort un travail de la main d’œuvre : votre grille le chiffre, sinon il reste à chiffrer ; « Remettre » le fait revenir. Après trois fois le même choix, la question ne se pose plus.</p>
 </div>
 
 <script>
@@ -189,13 +189,13 @@
   function peindreDevis() {
     const m = montants();
     const ids = dedans();
-    const parGrille = travaux.filter((t) => t.retire).map((t) => [t.nom + ", " + t.grille.detail, t.grille.prix]);
+    const parGrille = travaux.filter((t) => t.retire).map((t) => t.grille ? [t.nom + ", " + t.grille.detail, t.grille.prix] : [t.nom, null]);
     const lignes = choix === "reparti"
       ? [...ids.map((i) => [travaux[i].nom, m[i]]), ...parGrille]
       : [["Main d'œuvre : " + ids.map((i) => travaux[i].nom.toLowerCase()).join(", ") + ", 2 hommes pendant 2 jours", TOTAL], ...parGrille];
-    const total = lignes.reduce((s, [, v]) => s + v, 0);
+    const total = lignes.reduce((s, [, v]) => s + (v ?? 0), 0);
     document.getElementById("devis").innerHTML =
-      lignes.map(([n, v]) => `<div class="devis-ligne"><span>${n}</span><span>${euros(v)}</span></div>`).join("") +
+      lignes.map(([n, v]) => `<div class="devis-ligne"><span>${n}</span><span>${v === null ? "à chiffrer" : euros(v)}</span></div>`).join("") +
       `<div class="devis-ligne devis-total"><span>Total HT</span><span>${euros(total)}</span></div>`;
   }
 
@@ -218,10 +218,10 @@
       if (t.retire) {
         return `<div class="travail sorti">
           <div class="travail-tete"><span>${t.nom}</span><button type="button" class="remettre" data-i="${i}">Remettre</button></div>
-          <p class="phrase-grille">Atlas va se référer à votre grille tarifaire : ${t.grille.detail}, ${euros(t.grille.prix)}.</p>
+          <p class="phrase-grille">${t.grille ? `Atlas va se référer à votre grille tarifaire : ${t.grille.detail}, ${euros(t.grille.prix)}.` : "Pas de prix dans votre grille, cette ligne sera à chiffrer."}</p>
         </div>`;
       }
-      const croix = t.grille && !seul
+      const croix = !seul
         ? `<button type="button" class="sortir" data-i="${i}" aria-label="Retirer ${t.nom} de la main d'œuvre">${CROIX}</button>` : "";
       if (choix !== "reparti") {
         return `<div class="travail"><div class="travail-tete"><span>${t.nom}</span><span class="tete-droite"><span class="pct">dans la main d'œuvre</span>${croix}</span></div></div>`;

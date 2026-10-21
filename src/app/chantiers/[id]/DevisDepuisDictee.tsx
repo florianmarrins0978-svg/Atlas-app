@@ -7,6 +7,7 @@ import { preparerDevisDepuisDicteeAction, repondreQuestionsChiffrageAction } fro
 import { precisionLisible, type QuestionChiffrage } from "@/lib/questions-chiffrage";
 import { attendreLeDevis } from "@/lib/attente-devis";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
+import RepartirLaMainOeuvre, { choixDeDepart } from "./RepartirLaMainOeuvre";
 
 // Le geste unique : de la dictée au devis.
 //
@@ -431,7 +432,11 @@ function QuestionsChiffrage({
   onEchec: (texte: string) => void;
   onPrepare: () => void;
 }) {
-  const [reponses, setReponses] = useState<Record<string, string>>({});
+  // La main d'œuvre part avec la répartition qu'il voit : ses parts de grille,
+  // déjà posées. Continuer sans y toucher, c'est la retenir telle quelle.
+  const [reponses, setReponses] = useState<Record<string, string>>(() =>
+    Object.fromEntries(questions.filter((q) => q.mainOeuvre).map((q) => [q.id, choixDeDepart(q.mainOeuvre!)]))
+  );
   const [envoi, setEnvoi] = useState(false);
 
   const toutesRepondues = questions.every((q) => (reponses[q.id] ?? "").trim() !== "");
@@ -495,7 +500,15 @@ function QuestionsChiffrage({
               {q.question}
             </p>
 
-            {q.options ? (
+            {q.mainOeuvre ? (
+              <div className="mt-2">
+                <RepartirLaMainOeuvre
+                  question={q.mainOeuvre}
+                  valeur={reponses[q.id] ?? ""}
+                  onChange={(v) => setReponses((r) => ({ ...r, [q.id]: v }))}
+                />
+              </div>
+            ) : q.options ? (
               <div className="mt-2 flex flex-col gap-2">
                 {q.options.map((o) => {
                   const choisie = reponses[q.id] === o.valeur;

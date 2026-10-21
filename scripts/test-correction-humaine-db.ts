@@ -48,10 +48,9 @@ async function chantierDeLaHaie(ctx: Ctx, nom: string) {
     quantite: "800.00",
     unite: "ml",
   });
-  await chantiersRepo.mettreAJourDureeEquipe(ctx, chantier.id, {
-    dureePrevue: "1 jour",
-    tailleEquipe: "2 hommes",
-  });
+  // **Sans jours ni hommes dictés** : sa règle du 21 octobre 2026, ses grilles
+  // l'emportent alors. Avec eux, c'est la main d'œuvre qui fait le prix
+  // (`scripts/test-main-oeuvre-dictee-db.ts`) et la mesure ne la multiplie pas.
   return { chantier, prestation };
 }
 

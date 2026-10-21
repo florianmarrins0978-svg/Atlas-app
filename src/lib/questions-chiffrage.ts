@@ -27,6 +27,7 @@
 import { diametreLu, futLu } from "./mesures-arbre";
 import { TECHNIQUES_PAR_DEFAUT, type Technique } from "./grille-prix";
 import { lireCaracteristiques } from "./prestation-structuree";
+import { choixLisible, lireChoix, type QuestionMainOeuvre } from "./main-oeuvre-dictee";
 
 /** Une réponse proposée, quand la question se referme sur un choix connu. */
 export type OptionReponse = {
@@ -50,6 +51,12 @@ export type QuestionChiffrage = {
   options: OptionReponse[] | null;
   /** Unité attendue quand la réponse est un nombre (`null` pour un choix). */
   unite: string | null;
+  /**
+   * La question de la main d'œuvre dictée (sa planche du 21 octobre 2026) :
+   * ligne à part ou répartie, curseurs, croix. Sa réponse est un choix entier
+   * (`ecrireChoix`), pas une option.
+   */
+  mainOeuvre?: QuestionMainOeuvre;
 };
 
 // --- Le métier, tel qu'il l'a dicté --------------------------------------
@@ -422,6 +429,10 @@ export function questionsAvantChiffrage(
  * précision obtenue puis rangée dans un coin de la base n'aurait servi à rien.
  */
 export function precisionLisible(question: QuestionChiffrage, valeur: string): string {
+  if (question.mainOeuvre) {
+    const choix = lireChoix(valeur);
+    return choix ? choixLisible(choix) : "";
+  }
   return precisionLisibleParId(question.id, question.options, question.unite, valeur);
 }
 

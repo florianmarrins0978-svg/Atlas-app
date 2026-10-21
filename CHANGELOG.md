@@ -8,6 +8,19 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-21
 
+- **Des jours et des hommes dictés : la main d'œuvre fait le prix, et il dit
+  comment la répartir** (sa règle du 21 octobre, planche
+  `appli/main-d-oeuvre-repartie.html`, `ARCHITECTURE.md` §233). Son devis 067
+  avait perdu l'abattage, le démontage et la main d'œuvre parce qu'un seul
+  tarif (« Évacuation ») construisait le devis entier ; la mini pelle restait à
+  chiffrer entre deux tarifs ; sa haie au mètre restait à chiffrer sans jours
+  dictés. La carte « Avant de chiffrer » pose la question (ligne à part ou
+  curseurs, croix vers la grille), s'en souvient après trois fois, et l'engin
+  avec son homme se paie à la journée. Rejoué sur ses tarifs :
+  `scripts/test-main-oeuvre-dictee-db.ts`. Quatre contrôles qui exigeaient la
+  grille AVEC des jours dictés ont été recentrés sur le cas sans jours, celui
+  que sa règle leur laisse.
+
 - **Pendant qu'Atlas prépare le devis, ça souffle** (sa planche du 21 octobre,
   réponse C, `appli/souffle-devis.html`) : sur la fiche client, les trois
   points du micro des coordonnées prennent la place du micro dans le rond, et

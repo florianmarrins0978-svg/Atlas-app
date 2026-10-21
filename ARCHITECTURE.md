@@ -35508,3 +35508,39 @@ fin. Annoncé par e-mail, il attend le nom de domaine ; le délai de l'article
 sans prévenir ni savoir ce qui doit rester est exactement ce que
 `CLAUDE.md` §4 septies interdit.
 
+## 233. Des jours et des hommes dictés : la main d'œuvre fait le prix
+
+**Sa règle du 21 octobre 2026**, après un devis où l'abattage, le démontage et
+la main d'œuvre avaient disparu : *« à partir du moment où l'utilisateur dicte
+deux jours à trois, il compte de la main d'œuvre : il faut lui demander comment
+il veut la répartir. S'il ne parle pas de jours et d'hommes, ce sont les prix
+des grilles qui l'emportent. »*
+
+| Ce qu'il dicte | Ce qui fait le prix |
+|---|---|
+| des jours **et** des hommes, avec un tarif au jour par homme | la main d'œuvre (`propositionAvecMainOeuvre`), répartie comme il l'a dit à l'arrêt |
+| ni l'un ni l'autre | sa grille, puis son tarif nommé, ligne par ligne (`prixDeLaLigne`) |
+
+**Ce qui était faux, et a disparu.** Un seul tarif reconnu dans la dictée
+(« Évacuation ») construisait le devis ENTIER avec lui et jetait les autres
+travaux ; une grille qui connaissait le travail principal faisait le devis
+poste par poste sans la main d'œuvre ; et sans total, la grille n'était jamais
+lue. Chaque travail prend désormais son prix sur SA ligne.
+
+**La répartition** (`src/lib/main-oeuvre-dictee.ts`, sa planche
+`appli/main-d-oeuvre-repartie.html`) : une ligne « Main d'œuvre » qui nomme
+les travaux, ou des parts au curseur ; la croix sort un travail vers sa grille,
+sinon « à chiffrer ». Les curseurs partent de sa règle du 7 août (« 850 + 250 ») :
+le prix de grille pour ce qu'elle connaît, le reste au principal. Après trois
+réponses identiques (`modeRetenu`), la question ne se pose plus. Ces jours-là,
+les questions de grille (technique, diamètre) se taisent : elles ne font plus
+le prix.
+
+**Un engin avec son homme** (« Mains d'œuvre plus mini pelle ») : son
+conducteur est l'un des hommes dictés et il se paie à la journée — « deux
+hommes et une mini pelle, c'est 400 plus 500 par jour ». Avec des hommes
+dictés, c'est ce tarif qui répond à « mini pelle » ; sans, la mini pelle seule
+(`prixDUneLigneDictee`, `hommesDictes`).
+
+**Un tarif ne se multiplie que par SA propre unité** : 15 tonnes sur un
+forfait ne font pas 15 forfaits.
