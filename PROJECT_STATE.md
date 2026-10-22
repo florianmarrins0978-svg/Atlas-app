@@ -5,6 +5,10 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## TOUT TÉLÉCHARGER D'UN CLIENT (22 octobre 2026)
+
+Un appui sous « Modifier ses coordonnées » rend un zip des devis, factures, fiches d'entretien (désormais en PDF) et avoirs du client, filtré par rôle. Planche retenue : A. Ouvert : devis accepté 5 ou 10 ans, à trancher par lui. `ARCHITECTURE.md` §480, `docs/telecharger-un-client.md`.
+
 ## ARROSAGE : LES PRIX DES FOURNISSEURS ET L'IMPORT D'UN DEVIS, CODÉS (19 octobre 2026), PAS ENCORE SUR `main`
 
 Branche `claude/arrosage-prix-et-devis`, **partie du lot fournisseurs**

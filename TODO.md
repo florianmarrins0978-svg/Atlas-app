@@ -15986,4 +15986,4 @@ et c'est déjà arrivé.
   Corriger demande de toucher le composeur, donc les documents du patron :
   à faire dans un lot qui les regarde, pas en passant. *(24 août 2026)*
 
-- **⏳ UNE PLANCHE À REGARDER : tout télécharger d'un client** (`appli/telecharger-un-client.html`, 22 octobre 2026). Attend : la place (A, B, C), les fiches en PDF ou non, salariés ou non. Avant de la lui redemander, chercher `telecharger-client` dans `src/`. Et à trancher avec lui : devis accepté gardé 5 ou 10 ans (`src/server/retention.ts`, décennale), lot à part de niveau 3. Détail : `docs/telecharger-un-client.md`.
+- ~~**UNE PLANCHE À REGARDER : tout télécharger d'un client**~~ CODÉ LE 22 OCTOBRE 2026 : sa réponse « la A, et tout en PDF » (`api/clients/[id]/dossier`, §480). **Reste à trancher avec lui** : devis accepté gardé 5 ou 10 ans (`src/server/retention.ts`, décennale), après avis de son expert‑comptable ; lot à part, niveau 3. Détail : `docs/telecharger-un-client.md`.

@@ -7,6 +7,8 @@ import { chargerFicheClient } from "@/server/repositories/fiche-client";
 import { retourFicheClient } from "@/lib/retour-fiche-client";
 import { jourCourt } from "@/lib/documents-du-client";
 import { numeroLisible } from "@/lib/numero-lisible";
+import { nomDuDossierClient } from "@/lib/dossier-du-client";
+import { jourIso } from "@/lib/jour";
 import RegistresDuDossier from "./RegistresDuDossier";
 import RepartirDeCeClient from "./RepartirDeCeClient";
 import SupprimerCeClient from "./SupprimerCeClient";
@@ -155,6 +157,27 @@ export default async function FicheClientPage({
         >
           Modifier ses coordonnées
         </Link>
+        {/* ─── TOUT TÉLÉCHARGER — sa réponse « la A », 22 octobre 2026 ──────
+            Planche `appli/telecharger-un-client.html` : sous la porte des
+            coordonnées, dans sa voix, les deux gestes sur le client lui-même
+            l'un sous l'autre. Un lien et non une action serveur : la route
+            rend le fichier, le navigateur le range. */}
+        {/* Sans aucune pièce, il n'y a rien à emporter : un fichier vide
+            ferait croire à un dossier perdu. */}
+        {devis.length + factures.length + fiches.length + avoirs.length > 0 && (
+        <a
+          href={`/api/clients/${fiche.client.id}/dossier`}
+          // Le NOM porté par le lien, et le même que la route : sans lui,
+          // Safari range le fichier sous le nom de la page, sans extension
+          // (leçon de « Télécharger mes données »).
+          download={nomDuDossierClient(fiche.client.nom, jourIso(new Date()))}
+          data-atlas="tout-telecharger"
+          className={`flex min-h-[44px] items-center ${libelleCaps}`}
+          style={{ color: colors.orTexte }}
+        >
+          Tout télécharger
+        </a>
+        )}
       </div>
 
       {/* ─── La dernière prestation ─────────────────────────────────────────

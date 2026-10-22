@@ -35508,3 +35508,22 @@ fin. Annoncé par e-mail, il attend le nom de domaine ; le délai de l'article
 sans prévenir ni savoir ce qui doit rester est exactement ce que
 `CLAUDE.md` §4 septies interdit.
 
+
+## §480 : Tout télécharger d'un client, une porte qui ne donne rien de plus
+
+**Sa demande du 22 octobre 2026**, planche `appli/telecharger-un-client.html`,
+réponse « la A, et tout en PDF » : un appui sur la fiche d'un client, un zip
+de ses devis, factures, fiches et avoirs.
+
+| Décision | Où | Pourquoi |
+|---|---|---|
+| la liste des pièces est celle des onglets | `chargerFicheClient`, puis `piecesOuvertes` | une seconde liste aurait fini par emporter autre chose que ce qu'il voit (`CLAUDE.md` §3) |
+| chaque pièce passe la porte de son adresse | `piecesOuvertes` lit `cheminAutorise(role, adresse)` | un commercial ne lit pas les factures : un zip qui les lui remettrait serait une porte dérobée. La même règle décide pour la pièce seule et pour le dossier |
+| ni preuve récente, ni réservé au patron | `api/clients/[id]/dossier` | le fichier ne donne rien qu'on n'ouvre déjà une à une ; l'export complet, lui, emporte toute l'entreprise |
+| le PDF figé, jamais refait | `sourcesDuDossier` | c'est le fichier que le client a reçu. Un fichier absent est NOMMÉ dans « A lire.txt », pas recomposé avec des coordonnées qui ont pu changer |
+| le compte rendu d'entretien en PDF, régénéré | `rapport-entretien-pdf.ts`, depuis `RapportPublic` | il n'existait qu'en page. Partir de ce que lit le client, par son jeton, évite une seconde lecture qui divergerait ; un rapport parti ne change plus, donc le PDF refait dit ce que la page dit |
+| `/api/clients` ouvert à la facturation | `acces-roles.ts` | elle voit la fiche, donc le bouton ; le contenu reste filtré pièce par pièce |
+
+**Ce que le lot ne fait pas** : il ne garantit pas la survie des PDF dix ans.
+Celle-ci dépend du stockage de production et de sa seconde copie
+(`docs/lot-sauvegarde-cloture.md`), pas du code (`docs/telecharger-un-client.md`).

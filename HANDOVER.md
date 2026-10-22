@@ -10,6 +10,10 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## TOUT TÉLÉCHARGER D'UN CLIENT (22 octobre 2026)
+
+`src/app/api/clients/[id]/dossier/route.ts` assemble le zip ; la liste vient de `chargerFicheClient`, le filtre par rôle de `src/lib/dossier-du-client.ts`, les sources de `src/server/repositories/dossier-client.ts`, le compte rendu en PDF de `src/server/pdf/rapport-entretien-pdf.ts`. Un PDF archivé absent n'est jamais refait : il est nommé dans « A lire.txt ». §480.
+
 ## ARROSAGE, PRIX ET DEVIS : branche `claude/arrosage-prix-et-devis` (19 octobre 2026)
 
 Elle part du lot fournisseurs, pas de la branche aquaplus de son PC (absente
