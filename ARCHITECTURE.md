@@ -35508,7 +35508,7 @@ fin. Annoncé par e-mail, il attend le nom de domaine ; le délai de l'article
 sans prévenir ni savoir ce qui doit rester est exactement ce que
 `CLAUDE.md` §4 septies interdit.
 
-## §480 : Importer devis et factures, une archive à part
+## §482 : Importer devis et factures, une archive à part
 
 **22 octobre 2026**, sa demande : qu'un artisan venu d'un autre logiciel verse
 ses anciens devis et factures, d'un coup, et que les clients se créent seuls.
@@ -35516,7 +35516,7 @@ Détail et chiffres : `docs/importer-devis-factures.md`.
 
 | | où | pourquoi |
 |---|---|---|
-| une table à part, `pieces_importees` | `drizzle/0135_pieces_importees.sql` | une pièce d'un autre logiciel n'a ni lignes, ni TVA calculée, ni place dans la numérotation. La mêler aux `factures` aurait fait mentir le chiffre d'affaires et la suite des numéros |
+| une table à part, `pieces_importees` | `drizzle/0136_pieces_importees.sql` | une pièce d'un autre logiciel n'a ni lignes, ni TVA calculée, ni place dans la numérotation. La mêler aux `factures` aurait fait mentir le chiffre d'affaires et la suite des numéros |
 | le zip s'ouvre dans le navigateur | `src/lib/lire-zip.ts` | 1 Go ne passe pas en un envoi (15 Mo par requête) ; on ne lit que la table des matières, puis chaque entrée par `Blob.slice` |
 | empreinte SHA-256 unique par entreprise | index `(entreprise_id, empreinte)` | réenvoyer le même zip ne double rien ; c'est aussi ce qui fait la reprise après une coupure |
 | lecture après la réponse | `after()` + `traiter-pieces.ts`, file prise par `FOR UPDATE SKIP LOCKED`, reprise d'une lecture abandonnée au bout de dix minutes | aucun planificateur en production ; l'ouverture de l'écran relance ce qui reste |

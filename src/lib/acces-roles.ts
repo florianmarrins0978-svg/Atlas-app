@@ -140,7 +140,7 @@ const FACTURE_DU_CHANTIER = [
   /^\/api\/factures\/[^/]+(\/.*)?$/,
   // L'avoir est une pièce de la facture : même porte, même fermeture (§413).
   /^\/api\/avoirs\/[^/]+(\/.*)?$/,
-  // Une facture importée reste une facture (migration 0135) : même fermeture.
+  // Une facture importée reste une facture (migration 0136) : même fermeture.
   /^\/api\/pieces-importees\/facture\/[^/]+(\/.*)?$/,
 ];
 

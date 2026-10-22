@@ -425,7 +425,7 @@ export async function exporterEntreprise(
       tx.select().from(prixAchat).where(eq(prixAchat.entrepriseId, e)),
       tx.select().from(demandesEnvoyees).where(eq(demandesEnvoyees.entrepriseId, e)),
       tx.select().from(margesAchat).where(eq(margesAchat.entrepriseId, e)),
-      // Les devis et factures importés (migration 0135), et leurs envois.
+      // Les devis et factures importés (migration 0136), et leurs envois.
       tx.select().from(envoisPieces).where(eq(envoisPieces.entrepriseId, e)),
       tx.select().from(piecesImportees).where(eq(piecesImportees.entrepriseId, e)),
     ]);

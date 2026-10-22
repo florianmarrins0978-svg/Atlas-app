@@ -167,7 +167,7 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
       }))
     );
 
-    // ─── Les devis et factures IMPORTÉS (migration 0135) ────────────────────
+    // ─── Les devis et factures IMPORTÉS (migration 0136) ────────────────────
     //
     // Sa règle du 22 octobre 2026 : « une fois que le devis est ajouté, il n'y a
     // pas besoin de marquer ancienne appli ». Ils se rangent dans les mêmes

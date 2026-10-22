@@ -4042,11 +4042,11 @@ export const margesAchat = pgTable("marges_achat", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-// ─── Devis et factures importés (migration 0135, 22 octobre 2026) ───────────
+// ─── Devis et factures importés (migration 0136, 22 octobre 2026) ───────────
 //
 // Une pièce importée vit ici, jamais dans `devis` ni dans `factures` : c'est ce
 // qui la tient hors du relevé de TVA, hors de la numérotation et hors de toute
-// modification (`drizzle/0135_pieces_importees.sql`).
+// modification (`drizzle/0136_pieces_importees.sql`).
 
 export const envoisPieces = pgTable("envois_pieces", {
   id: uuid("id").primaryKey().defaultRandom(),

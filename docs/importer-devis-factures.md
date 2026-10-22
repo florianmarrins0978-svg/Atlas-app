@@ -17,7 +17,7 @@
 | Porte sur l'écran Clients, patron seul | fait | `src/app/clients/page.tsx`, `ListeClients.tsx` (`sousLaRecherche`) |
 | Formats | PDF, JPG, PNG, zip ; le reste est nommé et ne part pas | `formatDuFichier`, `src/lib/import-pieces.ts` |
 | Zip ouvert sur le téléphone, pièce par pièce | fait | `src/lib/lire-zip.ts` |
-| Doublons ignorés | fait, par empreinte du fichier, recalculée au serveur | `drizzle/0135_pieces_importees.sql`, route `/api/pieces-importees` |
+| Doublons ignorés | fait, par empreinte du fichier, recalculée au serveur | `drizzle/0136_pieces_importees.sql`, route `/api/pieces-importees` |
 | Lecture en arrière-plan, sans l'appli | fait : elle part après chaque envoi (`after`) et reprend à l'ouverture si le serveur a redémarré | `src/server/import/traiter-pieces.ts` |
 | Rien d'inventé | fait : sans civilité ni réponse sûre de l'IA, le nom reste vide et la pièce va « à vérifier » | `lireChampsDuTexte`, `relireReponseIA` |
 | Client retrouvé ou créé | fait, par le même chemin que le reste de l'appli | `trouverOuCreerClient` |
