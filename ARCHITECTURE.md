@@ -35509,7 +35509,7 @@ sans prévenir ni savoir ce qui doit rester est exactement ce que
 `CLAUDE.md` §4 septies interdit.
 
 
-## §480 : La photo du croquis donne un plan à vérifier, jamais un plan
+## §484 : La photo du croquis donne un plan à vérifier, jamais un plan
 
 *Sa planche du 21 octobre 2026* (`appli/arrosage-plan-lu-a-verifier.html`),
 « code ça » le 22. Jusque-là, la photo lue partait droit au calcul : une cote
@@ -35535,7 +35535,7 @@ la nourrice et le piquage ne se posent pas au jugé.
 la tape à chaque fois. C'est voulu : ses lignes de goutte-à-goutte en
 dépendent (§ des écarts, `.claude/rules/arrosage.md`).
 
-## §481 : « Dessiner le plan » revu, et la feuille des lignes
+## §485 : « Dessiner le plan » revu, et la feuille des lignes
 
 *Ses planches du 22 octobre 2026* (`appli/arrosage-dessiner-le-plan-revu.html`,
 `appli/arrosage-feuille-des-lignes.html`), passées au skill impeccable, puis
