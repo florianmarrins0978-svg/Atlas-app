@@ -372,9 +372,9 @@
   ].map(p => `<div class="col"><p class="nom">${p.nom}</p><p class="idee">${p.idee}</p>${p.ecran}</div>`).join("");
 
   document.getElementById("q2").innerHTML = [
-    { nom:"Code service sur la fiche, engagement sur la facture", idee:"Le code service se tape une fois pour la mairie. Le numéro d’engagement, à chaque facture.",
+    { nom:"Code service sur la fiche, engagement sur la facture", idee:"Le code service se tape une fois sur la fiche, et revient tout seul sur chaque facture, où il se change si un autre service a commandé. Le numéro d’engagement, à chaque facture.",
       ecrans: [coordonnees({ civ:[["Mr"],["Mme"],["Entreprise"],["Public",1]], serre:1, nom:"Mairie de Rezé", tva:false, codeService:1 }),
-               facture({ engagement:1, envoi:"chorus" })] },
+               facture({ engagement:1, codeService:1, envoi:"chorus" })] },
     { nom:"Si le numéro d’engagement reste vide", idee:"La facture part quand même. Une ligne grise le rappelle, sans rien bloquer.",
       ecrans: [facture({ engagement:1, vide:1, envoi:"chorus" })] },
   ].map(p => `<div class="col"><p class="nom">${p.nom}</p><p class="idee">${p.idee}</p>${p.ecrans.join('<div style="height:18px"></div>')}</div>`).join("");
