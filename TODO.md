@@ -15989,7 +15989,7 @@ et c'est déjà arrivé.
 - **⏳ UNE PLANCHE À REGARDER : tout télécharger d'un client** (`appli/telecharger-un-client.html`, 22 octobre 2026). Attend : la place (A, B, C), les fiches en PDF ou non, salariés ou non. Avant de la lui redemander, chercher `telecharger-client` dans `src/`. Et à trancher avec lui : devis accepté gardé 5 ou 10 ans (`src/server/retention.ts`, décennale), lot à part de niveau 3. Détail : `docs/telecharger-un-client.md`.
 
 - ~~**UNE PLANCHE À REGARDER : importer son ancienne appli**~~ **CODÉ LE 22 OCTOBRE 2026**, branche `claude/importer-devis-factures`, pas sur `main` : batterie à jouer avec les autres lots, à son signal. Décidé sans lui, et dit dans `docs/importer-devis-factures.md` : les anciennes factures impayées sont seulement rangées, la numérotation d'Atlas ne change pas. Restent :
-  - **supprimer un client laisse ses pièces importées**, sans lien (`effacerClient`, `donnees-client.ts`). Les effacer, ou les garder dix ans comme une facture : à lui de dire, puis à coder ;
+  - ~~supprimer un client laisse ses pièces importées~~ réglé le 22 octobre, sur sa décision : elles partent avec lui, après le même message ;
   - **« Tout télécharger » d'un client** (branche `claude/tout-telecharger-client`) ne porte pas les pièces importées : à brancher à la réunion des deux lots ;
   - **non éprouvé ici** : un zip de 1 Go sur un iPhone, la lecture par l'IA d'un scan ou d'un PDF sans civilité (aucune clé sur ce poste).
 

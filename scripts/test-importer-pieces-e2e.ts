@@ -20,7 +20,9 @@ import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
 //      une adresse qui ne finit pas par `/pdf` y serait refusée, et « Ouvrir »
 //      ne peindrait rien (`visionneuse-pdf.ts`) ;
 //   5. **« Annuler » défait le rangement**, la fiche créée s'en va, et l'import
-//      reprend la relecture pour ranger à nouveau.
+//      reprend la relecture pour ranger à nouveau ;
+//   6. **supprimer ce client** pose la question de la sauvegarde, puis
+//      emporte ses pièces importées.
 
 const BASE = ADRESSE;
 // Des lettres seules : le lecteur arrête un nom au premier chiffre (un
@@ -144,6 +146,25 @@ async function main() {
     await page.waitForURL(`${BASE}/clients`, { timeout: 60_000 });
     await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
     assert.equal(await page.getByText(NOM, { exact: true }).count(), 1, "la fiche n'est pas revenue");
+  });
+
+  await cas("supprimer le client demande la sauvegarde, et emporte ses pièces", async () => {
+    // Sa décision du 22 octobre 2026 : les pièces importées partent avec le
+    // client, *« avec le même message »* : la case « J'ai sauvegardé ces
+    // documents ailleurs » doit donc se poser pour un client qui n'a QUE des
+    // pièces importées.
+    await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
+    await page.getByText(NOM, { exact: true }).first().click();
+    await page.locator('[data-atlas="registre"]').first().waitFor({ state: "visible", timeout: 20_000 });
+    await page.click('[data-atlas="supprimer-client"]');
+    const sauvegarde = page.locator('[data-atlas="sauvegarde-ailleurs"]');
+    await sauvegarde.waitFor({ state: "visible", timeout: 15_000 });
+    assert.ok(await page.locator('[data-atlas="confirmer-suppression"]').isDisabled(), "la suppression passe sans la question de la sauvegarde");
+    await sauvegarde.click();
+    await page.click('[data-atlas="confirmer-suppression"]');
+    await page.waitForURL(`${BASE}/clients`, { timeout: 30_000 });
+    await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
+    assert.equal(await page.getByText(NOM, { exact: true }).count(), 0, "le client est resté");
   });
 
   await navigateur.close();

@@ -15,6 +15,7 @@ import {
   prestations,
   propositionsIa,
   messagesAssistant,
+  piecesImportees,
 } from "../db/schema";
 import type { Ctx } from "./context";
 import { CONSERVATION_LEGALE, echeanceConservation, motifConservation } from "../retention";
@@ -255,7 +256,13 @@ export async function apercuSuppressionClient(
         .then((lignes) => [{ n: lignes.length }]);
       documents = n;
     }
-    return { nom: client.nom, pieces, documents: documents + pieces.length };
+    // Ses pièces importées comptent comme ses devis : elles partent avec lui
+    // (`effacerClient`), donc la question de la sauvegarde doit se poser.
+    const importees = await tx
+      .select({ id: piecesImportees.id })
+      .from(piecesImportees)
+      .where(and(eq(piecesImportees.clientId, clientId), eq(piecesImportees.entrepriseId, ctx.entrepriseId)));
+    return { nom: client.nom, pieces, documents: documents + importees.length + pieces.length };
   });
 }
 
@@ -340,6 +347,20 @@ export async function effacerClient(
       chantierIds,
       maintenant
     );
+
+    // **Ses pièces importées partent avec lui** — sa décision du 22 octobre
+    // 2026, *« avec le même message »*. Ce sont les archives d'un autre
+    // logiciel : rien ne les cloue ici, et la question de la sauvegarde a été
+    // posée avant (`apercuSuppressionClient`). Laissées, elles gardaient son
+    // nom sans plus aucun lien vers lui.
+    const importees = await tx
+      .delete(piecesImportees)
+      .where(and(eq(piecesImportees.clientId, clientId), eq(piecesImportees.entrepriseId, ctx.entrepriseId)))
+      .returning({ cle: piecesImportees.fichierCle });
+    for (const { cle } of importees) {
+      await tx.insert(fichiersAPurger).values({ storageKey: cle });
+    }
+    detail.piecesImportees = importees.length;
 
     if (chantierIds.length > 0) {
       // Fichiers : mis en file de purge plutôt que détruits sur place — une

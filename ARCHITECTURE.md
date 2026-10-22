@@ -35526,6 +35526,10 @@ Détail et chiffres : `docs/importer-devis-factures.md`.
 | l'adresse du fichier finit par `/pdf` | `/api/pieces-importees/<genre>/<id>/pdf` | la visionneuse n'accepte que ces adresses (`visionneuse-pdf.ts`) ; le genre dans l'adresse sert aussi `acces-roles.ts` (une facture importée s'ouvre comme une facture) |
 | annuler | `annulerRangement` | ne retire que les fiches que CE rangement a créées (`clients_crees`) et que rien d'autre n'emploie, chacune dans son point de sauvegarde |
 
-**Ce qui n'est pas fait** : `effacerClient` ignore les pièces importées (le lien
-tombe à `NULL`, la pièce reste), et « Tout télécharger » ne les porte pas
-encore. Voir `TODO.md`.
+**Supprimer un client emporte ses pièces importées** (sa décision du même
+jour) : `apercuSuppressionClient` les compte, donc la question de la sauvegarde
+se pose ; `effacerClient` les efface et met leurs fichiers en file de purge.
+La clé étrangère reste en `SET NULL` : elle ne sert plus qu'à ne pas bloquer.
+
+**Ce qui n'est pas fait** : « Tout télécharger » ne les porte pas encore. Voir
+`TODO.md`.

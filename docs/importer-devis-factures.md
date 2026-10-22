@@ -24,6 +24,7 @@
 | « Annuler » après rangement | fait : les pièces redeviennent à ranger, seules les fiches créées par ce rangement (et restées vides) s'en vont ; l'import reprend alors la relecture | `annulerRangement` |
 | Cloisonnement entre entreprises | fait, sous FORCE RLS, éprouvé sous `atlas_app` | `test-pieces-importees-db.ts` |
 | Export des données de l'entreprise | les pièces importées et leurs fichiers y sont | `export-entreprise.ts` |
+| Supprimer un client | **ses pièces importées partent avec lui**, après le même message et la même case « J’ai sauvegardé ces documents ailleurs » (sa décision du 22 octobre) ; leurs fichiers vont en file de purge | `effacerClient`, `apercuSuppressionClient` (`donnees-client.ts`) |
 
 ## Ce qui a été fait autrement que prévu, et pourquoi
 
@@ -60,7 +61,7 @@ Chacun a son contrôle, vu rouge avant d'être vert.
 |---|---|
 | Lire le texte d'un PDF, sans IA | 77 ms en moyenne |
 | Ouvrir un zip de 4 840 PDF dans le navigateur | 17,5 s, 10 Mo de mémoire au plus (Chromium) |
-| Contrôles joués ici | types, lint, `test-import-pieces` (règles), `test-pieces-importees-db` (base, sous `atlas_app`), `test-importer-pieces-e2e` (le parcours dans un navigateur, 5 sur 5), cloisonnement des tables, export, fiche client, rôles, garde-fous (tirets, flèches, pansements, couches, code mort) : **tous verts** |
+| Contrôles joués ici | types, lint, `test-import-pieces` (règles), `test-pieces-importees-db` (base, sous `atlas_app`), `test-importer-pieces-e2e` (le parcours dans un navigateur, suppression du client comprise, 6 sur 6), cloisonnement des tables, export, fiche client, rôles, garde-fous (tirets, flèches, pansements, couches, code mort) : **tous verts** |
 | Batterie complète | **non jouée**, sur sa consigne |
 
 ## Ce qui reste ouvert
@@ -70,5 +71,4 @@ Chacun a son contrôle, vu rouge avant d'être vert.
 | La batterie complète, avec les autres lots en attente, puis `main` | à son signal (« lance ») |
 | Un vrai zip de 1 Go sur un iPhone | à mesurer sur son téléphone : aucun moteur Apple ici |
 | La lecture par l'IA d'un scan et d'un PDF sans civilité | à éprouver sur son espace, qui a les clés ; ici la suite remplace l'IA par une fausse |
-| Supprimer un client ne touche pas ses pièces importées : elles restent, sans lien. Les effacer ou les garder dix ans comme une facture ? | le patron, puis une session (avant `main` de préférence) |
 | « Tout télécharger » d'un client ne contient pas encore ses pièces importées | à brancher quand les deux lots seront réunis |

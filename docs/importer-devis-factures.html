@@ -125,6 +125,11 @@
 <td>les pièces importées et leurs fichiers y sont</td>
 <td><code>export-entreprise.ts</code></td>
 </tr>
+<tr>
+<td>Supprimer un client</td>
+<td><strong>ses pièces importées partent avec lui</strong>, après le même message et la même case « J’ai sauvegardé ces documents ailleurs » (sa décision du 22 octobre) ; leurs fichiers vont en file de purge</td>
+<td><code>effacerClient</code>, <code>apercuSuppressionClient</code> (<code>donnees-client.ts</code>)</td>
+</tr>
 </tbody></table></div>
 <h2 id="ce-qui-a-été-fait-autrement-que-prévu-et-pourquoi">Ce qui a été fait autrement que prévu, et pourquoi</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -213,7 +218,7 @@
 </tr>
 <tr>
 <td>Contrôles joués ici</td>
-<td>types, lint, <code>test-import-pieces</code> (règles), <code>test-pieces-importees-db</code> (base, sous <code>atlas_app</code>), <code>test-importer-pieces-e2e</code> (le parcours dans un navigateur, 5 sur 5), cloisonnement des tables, export, fiche client, rôles, garde-fous (tirets, flèches, pansements, couches, code mort) : <strong>tous verts</strong></td>
+<td>types, lint, <code>test-import-pieces</code> (règles), <code>test-pieces-importees-db</code> (base, sous <code>atlas_app</code>), <code>test-importer-pieces-e2e</code> (le parcours dans un navigateur, suppression du client comprise, 6 sur 6), cloisonnement des tables, export, fiche client, rôles, garde-fous (tirets, flèches, pansements, couches, code mort) : <strong>tous verts</strong></td>
 </tr>
 <tr>
 <td>Batterie complète</td>
@@ -237,10 +242,6 @@
 <tr>
 <td>La lecture par l'IA d'un scan et d'un PDF sans civilité</td>
 <td>à éprouver sur son espace, qui a les clés ; ici la suite remplace l'IA par une fausse</td>
-</tr>
-<tr>
-<td>Supprimer un client ne touche pas ses pièces importées : elles restent, sans lien. Les effacer ou les garder dix ans comme une facture ?</td>
-<td>le patron, puis une session (avant <code>main</code> de préférence)</td>
 </tr>
 <tr>
 <td>« Tout télécharger » d'un client ne contient pas encore ses pièces importées</td>

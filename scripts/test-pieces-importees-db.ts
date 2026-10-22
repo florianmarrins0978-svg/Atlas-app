@@ -22,7 +22,9 @@ import { enregistrerObjet } from "../src/server/storage";
 import { _reinitialiserFabriqueLLM } from "../src/server/ai/providers/llm/fabrique";
 import type { FournisseurLLM } from "../src/server/ai/providers/llm/interface";
 import { withEntreprise } from "../src/server/db/with-entreprise";
-import { clients } from "../src/server/db/schema";
+import { clients, fichiersAPurger, piecesImportees } from "../src/server/db/schema";
+import { apercuSuppressionClient, effacerClient } from "../src/server/repositories/donnees-client";
+import { eq, inArray } from "drizzle-orm";
 
 // IMPORTER DEVIS ET FACTURES, en base et sous `atlas_app` — 22 octobre 2026.
 //
@@ -185,6 +187,36 @@ async function main() {
     assert.deepEqual(noms, ["M. Martins"], "l'annulation a laissé une fiche créée, ou retiré une fiche connue");
     const etat = await envoiEnCours(ctx);
     assert.equal(etat?.pretes, 2, "les pièces ne sont pas redevenues prêtes");
+  });
+
+  await essai("supprimer un client emporte ses pièces importées, après la même prévention", async () => {
+    // Sa décision du 22 octobre 2026 : *« quand on supprime un client, il faut
+    // que ces pièces importées se suppriment aussi, avec le même message »*.
+    // Avant, le lien tombait à NULL et la pièce restait, nom compris.
+    await nettoyerBase();
+    _reinitialiserFabriqueLLM(iaDeSuite("{}"));
+    const ctx = await monter("Essai suppression");
+    const envoi = await creerEnvoi(ctx, "lot.zip", 1);
+    await deposer(ctx, envoi.id, await pdfAvecTexte(DEVIS_LENOIR));
+    await traiterPiecesEnAttente(ctx);
+    await rangerEnvoi(ctx, envoi.id);
+    const lenoir = (await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => tx.select().from(clients))).find((c) => c.nom === "Mme Lenoir");
+    assert.ok(lenoir, "Mme Lenoir n'a pas été créée");
+
+    const apercu = await apercuSuppressionClient(ctx, lenoir.id);
+    assert.equal(apercu?.documents, 1, "la prévention ne compte pas la pièce importée : la suppression passerait sans « J'ai sauvegardé ces documents ailleurs »");
+
+    const [avant] = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>
+      tx.select({ cle: piecesImportees.fichierCle }).from(piecesImportees).where(eq(piecesImportees.clientId, lenoir.id))
+    );
+    const rapport = await effacerClient(ctx, lenoir.id);
+    assert.equal(rapport?.disparu, true, "le client n'a pas disparu");
+    const restantes = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => tx.select().from(piecesImportees));
+    assert.deepEqual(restantes, [], "la pièce importée a survécu à son client");
+    const enFile = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>
+      tx.select().from(fichiersAPurger).where(inArray(fichiersAPurger.storageKey, [avant.cle]))
+    );
+    assert.equal(enFile.length, 1, "le fichier de la pièce n'est pas mis en file de purge");
   });
 
   await essai("une AUTRE entreprise ne voit ni ne lit les pièces", async () => {
