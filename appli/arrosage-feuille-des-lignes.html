@@ -5975,6 +5975,18 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   var lire = function (i) { var v = Number(String(i.value).replace(",", ".").replace(/\s/g, "")); return isFinite(v) && v > 0 ? v : null; };
 
   var f = $('[role="dialog"]');
+  // Ce que le navigateur dessine seul porte aussi la charte : le contour du
+  // focus, le curseur, la sélection, les chiffres qui ne dansent pas.
+  var feuilleStyle = document.createElement("style");
+  feuilleStyle.textContent =
+    '[role="dialog"] input{caret-color:var(--atlas-plein,#7d9a6d);font-variant-numeric:tabular-nums}' +
+    '[role="dialog"] input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--atlas-ink,#1c1c1a)!important}' +
+    '[role="dialog"] button:focus-visible{outline:2px solid var(--atlas-ink,#1c1c1a);outline-offset:3px}' +
+    '[role="dialog"] ::selection{background:color-mix(in srgb,var(--atlas-plein,#7d9a6d) 35%,transparent)}' +
+    '[role="dialog"] button{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s cubic-bezier(.22,.61,.36,1)}' +
+    '[role="dialog"] button:active:not(:disabled){transform:scale(.96)}' +
+    '[role="dialog"] button:disabled{cursor:default}';
+  document.head.appendChild(feuilleStyle);
   var libelle = 'display:block;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.28em;color:' + C.muted;
   var champ = 'display:block;width:100%;min-width:0;box-sizing:border-box;border:0;border-radius:12px;padding:13px 44px 13px 14px;font-size:17px;background:' + C.card + ';color:' + C.ink + ';box-shadow:inset 0 0 0 1px ' + C.line;
   var unite = 'position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:14px;color:' + C.muted + ';pointer-events:none';
@@ -5982,23 +5994,27 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
     return '<label style="display:block;min-width:0"><span style="' + libelle + '">' + lib + '</span>' +
       '<span style="position:relative;display:block;margin-top:6px"><input id="' + id + '" inputmode="decimal" enterkeyhint="done" autocomplete="off" style="' + champ + '"><span style="' + unite + '">' + u + '</span></span></label>';
   };
-  var rond = 'width:52px;height:52px;flex:none;border-radius:999px;border:1px solid ' + C.line + ';background:' + C.card + ';color:' + C.ink + ';font-size:24px;line-height:1';
+  var rond = 'width:56px;height:56px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:999px;border:1px solid ' + C.line + ';background:' + C.card + ';color:' + C.ink;
+  // Les signes se dessinent, d'un même trait : un caractère « + » change de
+  // graisse et de place d'une police à l'autre.
+  var signe = function (plus) { return '<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12' + (plus ? 'M10 4v12' : '') + '" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>'; };
   f.innerHTML =
     '<div aria-hidden="true" style="width:38px;height:4px;border-radius:2px;margin:0 auto 14px;background:' + C.line + '"></div>' +
     '<h2 id="titre" style="margin:0;font-family:' + C.display + ';font-weight:400;font-size:24px;line-height:1.15"></h2>' +
-    '<input id="nom" autocomplete="off" aria-label="Nom" style="margin-top:4px;display:block;width:100%;box-sizing:border-box;border:0;padding:4px 0;font-size:15px;background:transparent;color:' + C.inkSoft + ';border-bottom:1px dashed ' + C.line + '">' +
-    '<div style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:10px">' + avecUnite("L", "Longueur", "m") + avecUnite("l", "Largeur", "m") + '</div>' +
-    '<section style="margin-top:18px;border-radius:16px;padding:16px;background:' + C.card + ';box-shadow:inset 0 0 0 1px ' + C.line + '">' +
-      '<span style="' + libelle + '">Goutte-à-goutte</span>' +
-      '<svg id="coupe" aria-hidden="true" style="display:block;width:100%;height:auto;margin-top:12px"></svg>' +
-      '<div role="group" aria-label="Nombre de lignes" style="margin-top:14px;display:flex;align-items:center;gap:12px">' +
-        '<button type="button" id="moins" aria-label="Une ligne de moins" style="' + rond + '">−</button>' +
-        '<output id="n" aria-live="polite" style="flex:1;text-align:center"><span id="nChiffre" style="display:block;font-family:' + C.display + ';font-size:34px;line-height:1"></span><span id="nMot" style="display:block;margin-top:4px;font-size:13px;color:' + C.muted + '"></span></output>' +
-        '<button type="button" id="plus" aria-label="Une ligne de plus" style="' + rond + '">+</button>' +
+    '<label style="display:block;margin-top:16px"><span style="' + libelle + '">Nom</span><input id="nom" autocomplete="off" style="' + champ.replace("44px", "14px") + ';margin-top:6px"></label>' +
+    '<div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">' + avecUnite("L", "Longueur", "m") + avecUnite("l", "Largeur", "m") + '</div>' +
+    '<section aria-labelledby="gag" style="margin-top:22px;border-radius:16px;padding:18px 16px 16px;background:' + C.card + ';box-shadow:inset 0 0 0 1px ' + C.line + '">' +
+      '<h3 id="gag" style="margin:0;font-family:' + C.display + ';font-weight:400;font-size:19px;line-height:1.2">Goutte-à-goutte</h3>' +
+      '<svg id="coupe" aria-hidden="true" style="display:block;width:100%;height:auto;margin-top:6px"></svg>' +
+      '<div role="group" aria-label="Nombre de lignes" style="margin-top:18px;display:flex;align-items:center;gap:12px">' +
+        '<button type="button" id="moins" aria-label="Une ligne de moins" style="' + rond + '">' + signe(false) + '</button>' +
+        '<output id="n" aria-live="polite" style="flex:1;text-align:center"><span id="nChiffre" style="display:block;font-family:' + C.display + ';font-size:38px;line-height:1;font-variant-numeric:tabular-nums"></span><span id="nMot" style="display:block;margin-top:4px;font-size:13px;color:' + C.muted + '"></span></output>' +
+        '<button type="button" id="plus" aria-label="Une ligne de plus" style="' + rond + '">' + signe(true) + '</button>' +
       '</div>' +
       '<div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px">' + avecUnite("bord", "Du bord", "cm") + avecUnite("entre", "Entre deux", "cm") + '</div>' +
       '<p id="alerte" role="alert" style="margin:8px 0 0;font-size:14px;font-weight:600;color:' + C.alerte + '"></p>' +
-      '<p id="propose" style="margin:10px 0 0;font-size:13px;color:' + C.muted + '"></p>' +
+      '<div style="margin-top:10px;display:flex;align-items:center;gap:10px;min-height:44px"><p id="propose" style="margin:0;flex:1;font-size:13.5px;line-height:1.4;color:' + C.muted + '"></p>' +
+      '<button type="button" id="remettre" hidden style="flex:none;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid ' + C.line + ';background:' + C.cream + ';color:' + C.ink + ';font-size:14px;font-weight:600">Remettre</button></div>' +
       '<div style="margin-top:14px;padding-top:12px;border-top:1px solid ' + C.line + ';display:flex;align-items:baseline;gap:6px"><span id="tube" style="font-family:' + C.display + ';font-size:26px;line-height:1"></span><span style="font-size:14px;color:' + C.inkSoft + '">m de tube</span></div>' +
     '</section>' +
     '<button type="button" id="valider" style="margin-top:18px;display:block;width:100%;min-height:56px;border:0;border-radius:999px;font-size:15px;font-weight:600;background:' + C.plein + ';color:' + C.card + '">Poser</button>';
@@ -6017,14 +6033,14 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
 
   function rendre() {
     var d = dims(), al = $("#alerte", f);
-    al.textContent = "";
+    al.textContent = ""; al.hidden = true;
     bord.style.boxShadow = entre.style.boxShadow = "inset 0 0 0 1px " + C.line;
-    if (!d) { $("#nChiffre", f).textContent = "?"; $("#nMot", f).textContent = ""; $("#tube", f).textContent = "?"; $("#propose", f).textContent = ""; $("#coupe", f).innerHTML = ""; return; }
+    if (!d) { $("#nChiffre", f).textContent = "?"; $("#nMot", f).textContent = ""; $("#tube", f).textContent = "?"; $("#propose", f).textContent = ""; $("#remettre", f).hidden = true; $("#coupe", f).innerHTML = ""; return; }
     var n, e;
     if (etat.garde === "n") { n = etat.n; e = n > 1 ? (d.travers - etat.bord) / (n - 1) : 0; }
     else { e = etat.entre; n = lignesPour(d.travers, etat.bord, e); }
     if (etat.bord >= d.travers) {
-      al.textContent = "Le bord dépasse la largeur.";
+      al.textContent = "Le bord dépasse la largeur."; al.hidden = false;
       bord.style.boxShadow = "inset 0 0 0 1.5px " + C.alerte;
       n = 0;
     }
@@ -6033,10 +6049,11 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
     $("#nChiffre", f).textContent = n || "?";
     $("#nMot", f).textContent = n === 1 ? "ligne" : "lignes";
     $("#moins", f).disabled = n <= 1; $("#moins", f).style.opacity = n <= 1 ? "0.4" : "1";
+    $("#plus", f).disabled = !n; $("#plus", f).style.opacity = n ? "1" : "0.4";
     var prop = lignesPour(d.travers, d.E, d.E);
     var estPropose = n === prop && Math.abs(etat.bord - d.E) < 0.005 && (n <= 1 || Math.abs(e - d.E) < 0.005);
-    $("#propose", f).innerHTML = estPropose ? "Proposé." :
-      "Proposé : " + prop + " lignes, tous les " + cm(d.E) + ' cm. <button type="button" id="remettre" style="border:0;background:transparent;padding:0;font-size:13px;text-decoration:underline;color:' + C.ink + '">Remettre</button>';
+    $("#propose", f).textContent = estPropose ? "Proposé." : "Proposé : " + prop + (prop === 1 ? " ligne" : " lignes") + ", tous les " + cm(d.E) + " cm.";
+    $("#remettre", f).hidden = estPropose;
     $("#tube", f).textContent = n ? Math.ceil(n * d.long - 1e-9) : "?";
     dessiner(d, n, e);
   }
@@ -6045,7 +6062,6 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   // tuyaux en points, l'écart du bord coté en or, l'écart entre deux en encre.
   function dessiner(d, n, e) {
     var s = $("#coupe", f), W = 10, k = W / d.travers, sol = 2.1;
-    s.setAttribute("viewBox", "-0.4 -0.75 " + (W + 0.8) + " 4.15");
     s.innerHTML = "";
     var el = function (t, a) { var x = document.createElementNS(NS, t); for (var q in a) x.setAttribute(q, a[q]); s.appendChild(x); return x; };
     var txt = function (x, y, t, a) { var e2 = el("text", Object.assign({ x: x, y: y, "font-size": 0.42, "text-anchor": "middle", fill: C.inkSoft, stroke: C.card, "stroke-width": 0.12, "paint-order": "stroke" }, a || {})); e2.textContent = t; };
@@ -6057,17 +6073,22 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
       el("circle", { cx: x, cy: sol + 0.12, r: 0.17, fill: C.ink });
     });
     var milieu = function (x1, x2) { return Math.max(0.7, Math.min(W - 0.7, (x1 + x2) / 2)); };
+    // Deux écarts serrés : le second monte d'un étage, les chiffres ne se
+    // couvrent plus. L'étage ne se réserve que s'il sert.
+    var monte = n >= 2 && Math.abs(milieu(xs[0], xs[1]) - milieu(0, xs[0])) < 1.9 ? 0.85 : 0;
+    s.setAttribute("viewBox", "-0.4 " + (0.1 - monte) + " " + (W + 0.8) + " " + (3.4 + monte));
     var cote = function (x1, x2, coul, t, haut) {
       if (x2 - x1 < 1e-6) return;
       var y = 1.1 - haut;
       el("line", { x1: x1, y1: y, x2: x2, y2: y, stroke: coul, "stroke-width": 0.035 });
-      el("line", { x1: x1, y1: y - 0.15, x2: x1, y2: 1.25, stroke: coul, "stroke-width": 0.035 });
-      el("line", { x1: x2, y1: y - 0.15, x2: x2, y2: 1.25, stroke: coul, "stroke-width": 0.035 });
+      // Une cote montée garde des pattes courtes : elles traversaient le chiffre d'en dessous.
+      var bas = haut ? y + 0.15 : 1.25;
+      el("line", { x1: x1, y1: y - 0.15, x2: x1, y2: bas, stroke: coul, "stroke-width": 0.035 });
+      el("line", { x1: x2, y1: y - 0.15, x2: x2, y2: bas, stroke: coul, "stroke-width": 0.035 });
       txt(milieu(x1, x2), y - 0.38, t, { fill: coul, "font-weight": 600 });
     };
     if (n >= 1) cote(0, xs[0], C.or, cm(etat.bord) + " cm", 0);
-    // Deux écarts serrés : le second monte d'un étage, les chiffres ne se couvrent plus.
-    if (n >= 2) cote(xs[0], xs[1], C.ink, cm(e) + " cm", Math.abs(milieu(xs[0], xs[1]) - milieu(0, xs[0])) < 1.9 ? 0.85 : 0);
+    if (n >= 2) cote(xs[0], xs[1], C.ink, cm(e) + " cm", monte);
     txt(W / 2, sol + 1.25, virgule(d.travers) + " m de large", {});
   }
 
@@ -6080,9 +6101,7 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   // Une largeur changée garde les écarts, mais un nombre de lignes n'avait de
   // sens que pour l'ancienne largeur.
   [L, l].forEach(function (i) { i.addEventListener("input", function () { if (etat.garde === "n") { etat.garde = "e"; } rendre(); }); });
-  f.addEventListener("click", function (ev) {
-    if (ev.target && ev.target.id === "remettre") { var E = CAS[cas].E; etat = { garde: "e", n: 0, bord: E, entre: E }; rendre(); }
-  });
+  $("#remettre", f).onclick = function () { var E = CAS[cas].E; etat = { garde: "e", n: 0, bord: E, entre: E }; rendre(); };
   $("#valider", f).onclick = function () { var x = this; x.textContent = "Posé"; setTimeout(function () { x.textContent = "Poser"; }, 1200); };
 
   function charger() {
