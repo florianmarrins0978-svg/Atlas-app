@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f5f3ee">
-<title>Importer son ancienne appli</title>
+<title>Importer devis et factures</title>
 <!--
   IMPORTER SON ANCIENNE APPLI, la maquette À ESSAYER.
 
@@ -32,8 +32,12 @@
   lecture document par document, la relecture, le rangement, puis la fiche du
   client avec la pièce importée. Rien ne part nulle part : tout est simulé.
 
-  DÉCIDÉ, et visible sur la fiche : une pièce importée reste une ARCHIVE,
-  marquée « Ancienne appli ». Ni TVA, ni numérotation, ni modification.
+  DÉCIDÉ : une pièce importée reste une ARCHIVE (ni TVA, ni numérotation, ni
+  modification). Rien ne le dit à l'écran : sa réponse du 22 octobre, « une
+  fois que le devis il est ajouté, il n'y a pas besoin de marquer ancienne
+  appli, on s'en fout où il est rangé ». La porte s'appelle « Importer devis /
+  facture » pour la même raison : un artisan qui débute sans ancienne appli
+  importe aussi ses PDF.
 
   Rien ne s'invente (docs/AGENT.md §3) : un nom illisible ne crée pas de
   client. La ligne attend qu'on le tape, et le bouton compte ce qui partira.
@@ -107,7 +111,6 @@
   .client .trace{display:block;font-size:12.5px;color:var(--doux);margin-top:4px}
   .client .chev{width:14px;height:14px;color:#b9b4aa;flex:none}
   .client.neuf{animation:arrivee 1.6s var(--sortie) both}
-  .client.neuf .trace{color:var(--orTexte)}
   @keyframes arrivee{0%{background:rgba(185,139,71,.20);box-shadow:-26px 0 0 rgba(185,139,71,.20),26px 0 0 rgba(185,139,71,.20)}100%{background:transparent;box-shadow:-26px 0 0 transparent,26px 0 0 transparent}}
 
   /* Importer */
@@ -156,7 +159,6 @@
   .onglet[aria-selected="true"]{color:var(--encre);box-shadow:inset 0 -1.5px 0 var(--or)}
   .piece{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:62px;border-bottom:1px solid var(--trait);padding:10px 0}
   .piece .num{font:400 17.5px/1.25 var(--serif);font-variant-numeric:lining-nums}
-  .piece .origine{display:block;font-size:12px;color:var(--orTexte);margin-top:4px}
   .piece .quand{display:flex;align-items:center;gap:12px;font-size:12.5px;color:var(--gris);white-space:nowrap}
   .piece .quand svg{width:14px;height:14px;color:#b9b4aa}
   .rien{font-size:14.5px;color:var(--gris);margin:22px 0 0}
@@ -206,7 +208,7 @@
         <span class="assistant" aria-hidden="true"><svg><use href="#i-bulle"/></svg></span>
       </div>
       <div class="recherche"><svg><use href="#i-loupe"/></svg><span>Chercher un client</span></div>
-      <button class="porte caps" style="margin-top:14px" data-va="e-importer"><svg><use href="#i-importer"/></svg>Importer mon ancienne appli</button>
+      <button class="porte caps" style="margin-top:14px" data-va="e-importer"><svg><use href="#i-importer"/></svg>Importer devis / facture</button>
       <div id="liste"></div>
     </section>
 
@@ -215,7 +217,7 @@
       <div class="haut"><button class="retour" data-va="e-clients" aria-label="Retour"><svg><use href="#i-retour"/></svg></button></div>
       <div class="ligne-titre"><div><h1>Importer</h1><div class="caps surtitre" style="margin:12px 0 0">Vos clients</div></div>
         <span class="assistant" aria-hidden="true"><svg><use href="#i-bulle"/></svg></span></div>
-      <div class="caps rubrique">Vos anciens devis et factures</div>
+      <div class="caps rubrique">Vos devis et factures</div>
       <button class="plein" id="choisir"><svg><use href="#i-pdf"/></svg>Choisir mes PDF</button>
       <p class="aide">Un seul, plusieurs, ou un dossier .zip.</p>
     </section>
@@ -315,7 +317,7 @@
       const l = cle(c.nom)[0].toUpperCase();
       if (l !== lettre) { lettre = l; html += `<div class="lettre">${l}</div>`; }
       const neuf = neufs.includes(c.nom);
-      const trace = neuf ? "Importé de l’ancienne appli" : (c.trace ?? "");
+      const trace = c.trace ?? "";
       html += `<button class="client${neuf ? " neuf" : ""}" data-client="${c.nom}">
         <span><span class="nom">${c.nom}</span>${trace ? `<span class="trace">${trace}</span>` : ""}</span>
         <svg class="chev"><use href="#i-chevron"/></svg></button>`;
@@ -344,7 +346,7 @@
     const liste = clientOuvert.pieces[o];
     const vide = { devis: "Aucun devis parti", factures: "Aucune facture émise", fiches: "Aucune fiche envoyée" }[o];
     $("pieces").innerHTML = liste.length
-      ? liste.map(([num, quand, ancien]) => `<div class="piece"><div><span class="num">${num}</span>${ancien ? '<span class="origine">Ancienne appli</span>' : ""}</div>
+      ? liste.map(([num, quand]) => `<div class="piece"><span class="num">${num}</span>
           <span class="quand">${quand}<svg><use href="#i-chevron"/></svg></span></div>`).join("")
       : `<p class="rien">${vide}</p>`;
   }
@@ -422,7 +424,7 @@
         clients.push(c);
         neufs.push(c.nom);
       }
-      c.pieces[d.genre].push([d.num, d.jour, true]);
+      c.pieces[d.genre].push([d.num, d.jour]);
     }
     dessinerListe(neufs);
     aller("e-clients");
