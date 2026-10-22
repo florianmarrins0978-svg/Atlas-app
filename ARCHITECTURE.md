@@ -35532,9 +35532,16 @@ lue. Chaque travail prend désormais son prix sur SA ligne.
 les travaux, ou des parts au curseur ; la croix sort un travail vers sa grille,
 sinon « à chiffrer ». Les curseurs partent de sa règle du 7 août (« 850 + 250 ») :
 le prix de grille pour ce qu'elle connaît, le reste au principal. Après trois
-réponses identiques (`modeRetenu`), la question ne se pose plus. Ces jours-là,
-les questions de grille (technique, diamètre) se taisent : elles ne font plus
-le prix.
+réponses identiques (`modeRetenu`), la question ne se pose plus.
+
+**La carte S'AJOUTE aux questions de grille, elle ne les remplace pas.** Le
+premier jet les taisait dès que des jours étaient dictés ; c'était faux, et
+la batterie commune du 22 octobre 2026 l'a attrapé (`test-questions-chiffrage-e2e`) :
+la technique et le diamètre posent la part de départ des curseurs et
+s'écrivent sur le devis, et sa décision du 6 août tient. Le même rejeu a montré
+un défaut plus ancien : rejouer la dictée sur un devis déjà écrit rendait
+« figure déjà au détail » comme un prix IMPOSSIBLE, et l'écran s'arrêtait au
+lieu de mener au devis (`dejaAuDetail`, `appliquer-proposition.ts`).
 
 **Un engin avec son homme** (« Mains d'œuvre plus mini pelle ») : son
 conducteur est l'un des hommes dictés et il se paie à la journée — « deux

@@ -8,6 +8,13 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-22
 
+- **Rejouer la dictée mène au devis, et la carte main d’œuvre ne fait plus
+  taire les questions de grille** (batterie commune du 22 octobre, deux rouges
+  du lot main d’œuvre). Le premier jet taisait la technique et le
+  diamètre dès que des jours étaient dictés : c’était faux, sa décision du
+  6 août tient. Et au second appui, « figure déjà au détail » était rendu comme
+  un prix impossible : l’écran s’arrêtait au lieu d’aller au devis. Deux
+  contrôles restent dans `test-main-oeuvre-dictee-db.ts`.
 - **Importer devis et factures, codé** (branche `claude/importer-devis-factures`, pas sur `main`, batterie non jouée sur sa consigne). Porte « Importer devis / facture » sur l'écran Clients, envoi pièce par pièce depuis un zip ouvert sur le téléphone, lecture en arrière-plan sans IA quand le PDF porte son texte, relecture de ce qui manque, rangement sur la fiche du client (créée si besoin), « Annuler ». Évite : six factures d'Atlas sur six refusées comme protégées par mot de passe, des clients en double « M. Martins Total », et un « Ouvrir » qui n'aurait rien peint (adresse sans `/pdf`). Supprimer un client emporte ses pièces importées, après la même question de la sauvegarde. `ARCHITECTURE.md` §482, `docs/importer-devis-factures.md`.
 
 - **Le Filtre sur les listes de clients, codé** (branche `lot/filtre-clients`, posée sur `lot/facture-mairie-code`, pas encore sur `main`) : le bouton « Filtre » de Terminés (sorti dans `BoutonFiltre.tsx`) sur vos clients, vos entreprises et vos services publics ; « Date du devis » ou « Date de facturation » ouvre le calendrier, la liste montre les clients qui ont une pièce ce mois-là. Règle : `src/lib/tri-clients.ts`. Détail : `docs/filtre-clients.md`.

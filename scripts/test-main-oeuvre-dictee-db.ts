@@ -11,6 +11,8 @@ import { confirmerBrouillon } from "../src/server/ai/services/brouillon-service"
 import { preparerPropositionPrix, questionMainOeuvre } from "../src/server/chiffrage/proposition-prix";
 import { brouillonVide, type PropositionExtraction } from "../src/server/ai/schemas/extraction";
 import { ecrireChoix, SUJET_MAIN_OEUVRE, type ChoixMainOeuvre } from "../src/lib/main-oeuvre-dictee";
+import { appliquerPropositionPrix } from "../src/server/chiffrage/appliquer-proposition";
+import { questionsRestantes } from "../src/server/services/devis-depuis-dictee";
 import { fermerLimiteur } from "../src/server/rate-limit";
 import { nettoyerBase } from "./_test-db";
 
@@ -215,6 +217,36 @@ async function main() {
     assert.equal(dictee, true);
     assert.equal(question, null, "la question ne revient pas");
     assert.deepEqual(await lignes(A, c.id), [["Main d'œuvre : tonte du fond", 400]]);
+  });
+
+  await test("la carte main d'œuvre S'AJOUTE aux questions de grille, elle ne les fait pas taire", async () => {
+    // Rouge de la batterie commune du 22 octobre 2026 (test-questions-chiffrage-e2e) :
+    // le premier jet taisait la technique dès que des jours étaient dictés,
+    // contre sa décision du 6 août (« il demande si ça change le prix »).
+    const A = await sonEntreprise("questions");
+    const c = await chantierDicte(A, {
+      prestations: [{ ...base, libelle: "Abattage d'un chêne mort", nature: "abattage" }],
+      dureePrevue: "1 jour",
+      tailleEquipe: "2 hommes",
+    });
+    const ids = (await questionsRestantes(A, c.id, [])).map((q) => q.id.split("#")[0]);
+    assert.ok(ids.includes("abattage.technique"), `la technique n'est plus demandée : ${ids.join(", ")}`);
+    assert.ok(ids.includes(SUJET_MAIN_OEUVRE), `la carte main d'œuvre manque : ${ids.join(", ")}`);
+  });
+
+  await test("rejouer la dictée sur un devis déjà écrit n'est pas un prix impossible", async () => {
+    // Le second appui de test-devis-depuis-dictee-e2e : « figure déjà au détail »
+    // arrêtait l'écran sur un prix « impossible » au lieu de mener au devis.
+    const A = await sonEntreprise("rejeu");
+    const c = await chantierDicte(A, {
+      prestations: [{ ...base, libelle: "Terrassement d'une allée" }],
+      dureePrevue: "1 jour",
+      tailleEquipe: "1 homme",
+    });
+    assert.ok((await appliquerPropositionPrix(A, c.id)).succes);
+    const second = await appliquerPropositionPrix(A, c.id);
+    assert.equal(second.succes, false, "rien n'est écrit deux fois");
+    assert.ok(!second.succes && second.dejaAuDetail, "le second appui se sait déjà au devis");
   });
 
   console.log(`\n${passed} réussi(s), ${failed} échoué(s)`);

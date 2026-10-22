@@ -241,13 +241,16 @@ export async function questionsRestantes(
   const enBase = await listerPrestations(ctx, chantierId);
   const surQuoi = enBase.length > 0 ? enBase : prestations;
 
-  // **Des jours et des hommes dictés : c'est la main d'œuvre qui fait le prix**
-  // (sa règle du 21 octobre 2026), et la seule question qui vaille est de
-  // savoir comment la répartir. Les questions de grille se taisent alors.
+  // **Des jours et des hommes dictés : la carte de la main d'œuvre s'ajoute**
+  // (sa règle du 21 octobre 2026). Elle ne remplace pas les questions de
+  // grille : la technique et le diamètre posent la part de départ des
+  // curseurs et s'écrivent sur le devis, et sa décision du 6 août tient
+  // (« il demande si ça change le prix »).
   const mo = await questionMainOeuvre(ctx, chantierId);
-  if (mo.dictee) return mo.question ? [mo.question] : [];
-
-  return questionsAvantChiffrage(surQuoi, new Set(deja.map((p) => p.sujet)), axes.techniques);
+  return [
+    ...questionsAvantChiffrage(surQuoi, new Set(deja.map((p) => p.sujet)), axes.techniques),
+    ...(mo.question ? [mo.question] : []),
+  ];
 }
 
 /**
@@ -400,9 +403,18 @@ async function chiffrerEtPreparer(
         libelle: application.lignes.map((l) => l.libelle).join("\n"),
         montant: total.toFixed(2),
       };
+    } else if (application.dejaAuDetail) {
+      // **Le cas courant : il rejoue l'enchaînement, et le devis est déjà là.**
+      // Ce n'est pas un échec du prix : le dire « impossible » arrêtait l'écran
+      // au lieu de l'emmener sur son devis (22 octobre 2026). Le rapport
+      // annonce ce qui y est.
+      const deja = await listerLignesPrix(ctx, chantierId);
+      prix = {
+        origine: proposition.origine,
+        libelle: deja.map((l) => l.libelle).join("\n"),
+        montant: deja.reduce((s, l) => s + Number(l.montant), 0).toFixed(2),
+      };
     } else {
-      // Le cas courant : la ligne y était déjà (le patron rejoue l'enchaînement).
-      // Ce n'est pas un échec du devis, seulement une ligne non ajoutée.
       prixImpossible = application.erreur;
     }
   }

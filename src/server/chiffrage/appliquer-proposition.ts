@@ -19,7 +19,16 @@ export type ResultatApplicationPrix =
       /** Toutes les lignes écrites : le chantier peut en compter plusieurs. */
       lignes: LigneEcrite[];
     }
-  | { succes: false; erreur: string };
+  | {
+      succes: false;
+      erreur: string;
+      /**
+       * La proposition est DÉJÀ au détail : rien n'a échoué, le devis existe.
+       * C'est le second appui sur la dictée, et il doit mener au devis, pas
+       * s'arrêter sur un écran qui annonce un prix impossible (22 octobre 2026).
+       */
+      dejaAuDetail?: true;
+    };
 
 /**
  * Porte la proposition de prix au détail du chantier.
@@ -55,6 +64,7 @@ export async function appliquerPropositionPrix(
       ? {
           succes: false as const,
           erreur: `« ${deja.libelle} » figure déjà au détail (${deja.montant} €). Modifiez cette ligne plutôt que d'en ajouter une seconde.`,
+          dejaAuDetail: true as const,
         }
       : null;
   }
@@ -139,6 +149,10 @@ export async function appliquerPropositionPrix(
   }
 
   if (ecrites.length === 0) {
+    // Tout était déjà au détail : la proposition y est, rien n'a échoué.
+    if (refusees.length > 0 && refusees.length === proposition.lignes.length) {
+      return { succes: false, erreur: refusees[0], dejaAuDetail: true };
+    }
     return { succes: false, erreur: refusees[0] ?? "Aucun prix ne peut être proposé en l'état." };
   }
 
