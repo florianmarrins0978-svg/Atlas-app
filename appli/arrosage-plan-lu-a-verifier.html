@@ -6144,12 +6144,31 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
       grille.after(p);
     }
     if (!(z.l > 0)) { l.style.boxShadow = "inset 0 0 0 1.5px " + C.alerte; l.placeholder = "?"; }
+    // Ses règles du 22 octobre 2026 : une ligne tous les 50 cm d'office pour
+    // une haie (60 cm pour un massif), la première à un écart du bord, et
+    // l'écart qui suit les boutons quand il change le nombre de lignes.
+    var ECART = { haie: 0.5, massif: 0.6 }[z.type];
+    var choisi = null;
+    var pE = document.createElement("p"); pE.className = "mt-[8px] text-[15px]";
+    var prop = $("p", bloc); prop.before(pE);
+    var moins = bloc.querySelectorAll("button")[0], plus = bloc.querySelectorAll("button")[1];
+    var cm = function (m) { return Math.round(m * 100) + " cm"; };
     function lignes() {
       var large = Number(String(l.value).replace(",", ".")) || 0;
-      var n = Math.max(1, Math.ceil(large - 1e-9));
-      $("output", bloc).textContent = !(large > 0) ? "?" : n === 1 ? "une ligne" : n + " lignes";
+      if (!(large > 0)) { $("output", bloc).textContent = "?"; pE.textContent = ""; prop.textContent = ""; return; }
+      var propose = Math.max(1, Math.floor(large / ECART + 1e-9));
+      var n = choisi || propose;
+      $("output", bloc).textContent = n === 1 ? "une ligne" : n + " lignes";
+      pE.textContent = "Tous les " + cm(large / n) + ", la première à " + cm(large / n) + " du bord.";
+      prop.textContent = n === propose ? "Proposé." : "Proposé : " + propose + " lignes, tous les " + cm(ECART) + ".";
+      moins.style.opacity = n <= 1 ? "0.45" : "1";
     }
-    if (z.type === "haie") { lignes(); l.addEventListener("input", lignes); } else bloc.remove();
+    if (ECART) {
+      moins.onclick = function () { var large = Number(String(l.value).replace(",", ".")) || 0; var n = choisi || Math.max(1, Math.floor(large / ECART + 1e-9)); if (n > 1) { choisi = n - 1; lignes(); } };
+      plus.onclick = function () { var large = Number(String(l.value).replace(",", ".")) || 0; if (!(large > 0)) return; choisi = (choisi || Math.max(1, Math.floor(large / ECART + 1e-9))) + 1; lignes(); };
+      l.addEventListener("input", function () { choisi = null; lignes(); });
+      lignes();
+    } else bloc.remove();
     var valider = $('[data-atlas="feuille-valider"]', f);
     valider.textContent = neuve ? "Poser" : "Valider";
     if (!neuve) {
