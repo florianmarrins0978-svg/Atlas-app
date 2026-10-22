@@ -1,52 +1,74 @@
-# Importer devis et factures : ce qui a été mesuré et décidé
+# Importer devis et factures : ce qui est codé, mesuré et décidé
 
-*22 octobre 2026. Rien n'est codé dans `src/` : la maquette `appli/importer-ancienne-appli.html` attend son accord.*
+*22 octobre 2026. Codé sur la branche `claude/importer-devis-factures`, d'après la maquette `appli/importer-ancienne-appli.html`. **Pas sur `main`, aucune batterie jouée** : sa consigne, « tu peux coder, mais ne lance surtout pas de batterie ». Elle se jouera avec les autres lots en attente, à son signal.*
 
 ## En cinq lignes
 
-1. **Possible**, y compris dix ans de pièces, mais **en plusieurs envois** : 2 000 documents ou 1 Go au plus par envoi, une année à la fois.
-2. **L'envoi demande l'appli ouverte, la lecture non.** C'est la seule contrainte qu'aucun code ne lève : un navigateur fermé n'envoie plus rien.
-3. **La lecture se fait sans IA** pour les PDF qui portent leur texte (77 ms par document, mesuré) ; l'IA ne sert qu'aux scans et aux photos.
-4. **Le téléphone ne peut pas recevoir de notification aujourd'hui** : Atlas n'a pas de service worker. Le résultat se voit à la prochaine ouverture, dans la liste des clients.
-5. **Une pièce importée reste une archive** (ni TVA, ni numérotation, ni modifiable), sans que l'écran le dise : sa décision du 22 octobre.
+1. **Codé de bout en bout** : la porte « Importer devis / facture » sous la recherche de ses clients, l'envoi, la lecture en arrière-plan, la relecture de ce qui manque, le rangement sur la fiche du client (créée si besoin), et « Annuler ».
+2. **Dix ans de pièces passent, en plusieurs envois** : 2 000 documents ou 1 Go au plus par envoi. Au-delà, l'écran refuse et dit quoi faire (« une année par envoi »).
+3. **L'envoi demande l'appli ouverte, la lecture non.** Si l'appli se ferme pendant l'envoi, il suffit de rechoisir le même fichier : ce qui est déjà parti est reconnu et sauté.
+4. **La lecture se fait sans IA** quand le PDF porte son texte. L'IA ne sert qu'à compléter un nom manquant ou à lire un scan, et **n'invente jamais un client** : ce qu'elle ne sait pas va « à vérifier ».
+5. **Une pièce importée reste une archive** : ni TVA, ni numérotation, ni modifiable. Elle apparaît dans les onglets Devis et Factures de la fiche, et s'ouvre dans la visionneuse comme les autres.
 
-## Ce qui a été mesuré ici
+## Point par point
 
-| Mesure | Résultat | Comment |
+| Point | Verdict | Où |
 |---|---|---|
-| Lire le texte d'un PDF, sans IA | **77 ms** en moyenne, texte trouvé dans **23 PDF sur 23** (numéro, client, date) | `pdfjs-dist` (déjà installé), en Node, sur les devis et factures réels produits par Atlas |
-| Ouvrir un zip de **4 840 PDF** dans le navigateur | **17,5 s**, **10 Mo** de mémoire au plus | lecture par morceaux (`File.slice`, répertoire central, `DecompressionStream`), Chromium |
-| Le même lot sur un iPhone | **non mesuré ici** | aucun moteur Apple sur ce poste. `DecompressionStream` existe depuis Safari 16.4 ; à éprouver sur un vrai téléphone avant de promettre |
+| Porte sur l'écran Clients, patron seul | fait | `src/app/clients/page.tsx`, `ListeClients.tsx` (`sousLaRecherche`) |
+| Formats | PDF, JPG, PNG, zip ; le reste est nommé et ne part pas | `formatDuFichier`, `src/lib/import-pieces.ts` |
+| Zip ouvert sur le téléphone, pièce par pièce | fait | `src/lib/lire-zip.ts` |
+| Doublons ignorés | fait, par empreinte du fichier, recalculée au serveur | `drizzle/0136_pieces_importees.sql`, route `/api/pieces-importees` |
+| Lecture en arrière-plan, sans l'appli | fait : elle part après chaque envoi (`after`) et reprend à l'ouverture si le serveur a redémarré | `src/server/import/traiter-pieces.ts` |
+| Rien d'inventé | fait : sans civilité ni réponse sûre de l'IA, le nom reste vide et la pièce va « à vérifier » | `lireChampsDuTexte`, `relireReponseIA` |
+| Client retrouvé ou créé | fait, par le même chemin que le reste de l'appli | `trouverOuCreerClient` |
+| « Annuler » après rangement | fait : les pièces redeviennent à ranger, seules les fiches créées par ce rangement (et restées vides) s'en vont ; l'import reprend alors la relecture | `annulerRangement` |
+| Cloisonnement entre entreprises | fait, sous FORCE RLS, éprouvé sous `atlas_app` | `test-pieces-importees-db.ts` |
+| Export des données de l'entreprise | les pièces importées et leurs fichiers y sont | `export-entreprise.ts` |
+| Supprimer un client | **ses pièces importées partent avec lui**, après le même message et la même case « J’ai sauvegardé ces documents ailleurs » (sa décision du 22 octobre) ; leurs fichiers vont en file de purge | `effacerClient`, `apercuSuppressionClient` (`donnees-client.ts`) |
 
-**Ce que les PDF d'Atlas ne disent pas** : ceux d'autres logiciels sont plus lourds (100 à 300 Ko, contre 15 ici) et rangent leurs mots autrement. La lecture du texte marchera ; savoir QUEL mot est le nom du client demandera, pour un logiciel inconnu, un appel d'IA sur le texte seul (bien moins cher que sur l'image).
+## Ce qui a été fait autrement que prévu, et pourquoi
 
-## Ce que le dépôt a déjà, et ce qui manque
+| Prévu | Fait | Pourquoi |
+|---|---|---|
+| photos HEIC acceptées | **refusées, en le disant** | le serveur ne sait pas les convertir en PDF. L'iPhone convertit de lui-même en JPEG quand on choisit une photo depuis la galerie ; seul un fichier HEIC brut, rare, est refusé |
+| étendre `lire-classeur.ts` | **nouveau lecteur `lire-zip.ts`, sur le téléphone** | l'ancien lit le zip entier en mémoire au serveur : impossible pour 1 Go |
+| une file de travail planifiée | **lecture lancée après chaque envoi**, reprise à l'ouverture | aucun planificateur n'est posé en production ; ainsi rien n'attend un cron qui n'existe pas |
+| ouvrir une pièce à l'adresse `/api/pieces-importees/<genre>/<id>` | adresse finie par **`/pdf`** | la visionneuse refuse toute adresse qui ne finit pas par `/pdf` : « Ouvrir » n'aurait rien peint. Trouvé en éprouvant ; la suite navigateur rougit avec l'ancienne adresse |
 
-| | |
+**Corrigé noir sur blanc**, contre la version précédente de ce document : elle annonçait « PDF, photos (JPG, PNG, HEIC) » et « un lecteur de zip qui existe, à étendre ». Les deux étaient faux pour ce lot, voir le tableau.
+
+## Défauts trouvés en le faisant, et corrigés
+
+| Défaut | Ce qu'il aurait fait |
 |---|---|
-| lecteur de zip protégé contre les bombes | **existe** (`src/server/import/lire-classeur.ts`), à étendre à plusieurs entrées |
-| plafond d'un envoi | **15 Mo** par fichier (`src/server/upload-limits.ts`, `next.config` `bodySizeLimit`) : d'où l'envoi pièce par pièce, jamais le zip entier |
-| lecture d'un document par l'IA | **existe** (`lire-devis-fournisseur.ts`, même patron) |
-| reconnaître un client connu | **existe** (`trouverOuCreerClient`) |
-| file de travail en arrière-plan | **n'existe pas.** Le seul travail planifié est la purge, et aucun planificateur n'est posé en production (`docs/DEPLOIEMENT-PURGE.md`) |
-| notification sur le téléphone | **n'existe pas** (aucun service worker) |
+| les factures d'Atlas, protégées contre la modification, étaient prises pour des PDF à mot de passe | **six sur six refusées** au premier essai |
+| « M. Martins Total » lu comme nom | un client en double, « M. Martins Total », à côté du vrai |
+| « M. Bernard DÉSIGNATION » | idem, sur les devis d'Atlas |
+| la lecture de deux PDF à la fois plantait | des pièces « illisibles » au hasard |
 
-## Les décisions, et pourquoi
+Chacun a son contrôle, vu rouge avant d'être vert.
 
-| Décision | Pourquoi |
+## Les décisions prises sans lui (il peut les changer)
+
+| Question | Choisi | Pourquoi |
+|---|---|---|
+| Une ancienne facture impayée : la suivre dans les impayés ? | **non, seulement rangée** | suivre un impayé demande de savoir ce qui a été payé depuis, que le PDF ne dit pas. Ajouter le suivi plus tard ne casse rien |
+| La première facture Atlas : continuer après l'ancien numéro ? | **numérotation d'Atlas inchangée** | une pièce importée n'entre pas dans la numérotation |
+
+## Les chiffres
+
+| Mesure | Résultat |
 |---|---|
-| **2 000 documents ou 1 Go par envoi** | 1 Go en 4G, c'est 15 à 30 minutes l'appli ouverte : au-delà, l'envoi n'est plus tenable sur un chantier. Le zip simple s'arrête de toute façon à 4 Go et 65 535 fichiers |
-| le zip s'ouvre **sur le téléphone**, les PDF partent **un par un** | le serveur ne reçoit jamais 1 Go d'un coup, chaque morceau tient sous les 15 Mo, et un envoi coupé reprend où il en était |
-| texte d'abord, IA ensuite | la plupart des PDF de logiciel portent leur texte : gratuit et rapide. L'IA (avec sa clé) ne lit que ce qui est scanné |
-| on ne montre que **ce qui est à vérifier** | relire 1 450 lignes est impossible ; « 1 447 rangés, 3 à vérifier » se fait en une minute |
-| un document déjà importé est ignoré | empreinte du fichier : importer deux fois le même zip ne double rien |
-| formats acceptés | PDF, photos (JPG, PNG, HEIC), zip. Le reste est refusé avec son nom. Sa consigne : « prévoir tous les formats possibles » ; un tableau Excel ou CSV de clients, s'il est fourni, sera préféré aux noms lus dans les PDF |
+| Lire le texte d'un PDF, sans IA | 77 ms en moyenne |
+| Ouvrir un zip de 4 840 PDF dans le navigateur | 17,5 s, 10 Mo de mémoire au plus (Chromium) |
+| Contrôles joués ici | types, lint, `test-import-pieces` (règles), `test-pieces-importees-db` (base, sous `atlas_app`), `test-importer-pieces-e2e` (le parcours dans un navigateur, suppression du client comprise, 6 sur 6), cloisonnement des tables, export, fiche client, rôles, garde-fous (tirets, flèches, pansements, couches, code mort) : **tous verts** |
+| Batterie complète | **non jouée**, sur sa consigne |
 
 ## Ce qui reste ouvert
 
 | Question | Qui |
 |---|---|
-| Une ancienne facture impayée : la suivre dans les impayés, ou seulement la ranger ? | le patron |
-| Première facture Atlas : continuer après le dernier numéro, ou repartir de 1 ? | le patron |
-| Le comportement sur un vrai iPhone (zip de 1 Go) | à mesurer sur son téléphone, avant toute promesse |
-| Une file de travail en arrière-plan en production | à construire avec le lot, et à poser chez l'hébergeur comme la purge |
+| La batterie complète, avec les autres lots en attente, puis `main` | à son signal (« lance ») |
+| Un vrai zip de 1 Go sur un iPhone | à mesurer sur son téléphone : aucun moteur Apple ici |
+| La lecture par l'IA d'un scan et d'un PDF sans civilité | à éprouver sur son espace, qui a les clés ; ici la suite remplace l'IA par une fausse |
+| « Tout télécharger » d'un client ne contient pas encore ses pièces importées | à brancher quand les deux lots seront réunis |

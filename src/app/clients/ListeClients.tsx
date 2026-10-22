@@ -154,7 +154,14 @@ export function CompteClients({ entreprises = false }: { entreprises?: boolean }
   );
 }
 
-export default function ListeClients({ entreprises = false }: { entreprises?: boolean }) {
+export default function ListeClients({
+  entreprises = false,
+  sousLaRecherche = null,
+}: {
+  entreprises?: boolean;
+  /** Ce qui se pose sous la recherche, et ne colle pas avec elle : la porte de l'import. */
+  sousLaRecherche?: React.ReactNode;
+}) {
   const { saisie, poser, visibles, aujourdHui } = useRecherche();
   const cherche = saisie.trim().length > 0;
 
@@ -210,6 +217,7 @@ export default function ListeClients({ entreprises = false }: { entreprises?: bo
           dataAtlas="chercher-client"
         />
       </div>
+      {sousLaRecherche}
 
       {visibles.length === 0 ? (
         <p

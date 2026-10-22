@@ -145,6 +145,8 @@ const FACTURE_DU_CHANTIER = [
   /^\/api\/factures\/[^/]+(\/.*)?$/,
   // L'avoir est une pièce de la facture : même porte, même fermeture (§413).
   /^\/api\/avoirs\/[^/]+(\/.*)?$/,
+  // Une facture importée reste une facture (migration 0136) : même fermeture.
+  /^\/api\/pieces-importees\/facture\/[^/]+(\/.*)?$/,
 ];
 
 /**
@@ -284,6 +286,10 @@ const OUVERT_A_LA_FACTURATION = [
   "/api/chantiers",
   "/api/devis",
   "/api/factures",
+  // **Les devis et factures importés** (22 octobre 2026) : elle les ouvre sur
+  // la fiche du client, comme ceux d'Atlas. Envoyer et ranger reste au patron
+  // (`import/garde.ts`).
+  "/api/pieces-importees",
   // **Le rapport d'entretien, relu depuis le dossier d'un client** — elle
   // l'ouvrait déjà là, sur la page publique ; il se relit dans l'application
   // depuis le 24 septembre 2026 (`rapport-dans-l-appli.ts`). Aucun montant.

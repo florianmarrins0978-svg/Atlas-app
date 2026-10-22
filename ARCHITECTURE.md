@@ -35560,3 +35560,29 @@ forfait ne font pas 15 forfaits.
 **La proposition se tait plutôt que de deviner.** Montant au centime près sur le reste dû ; plusieurs factures au même montant, le nom tranche ou il choisit ; un montant plus petit n'est proposé comme acompte que si le nom désigne une seule facture ; une facture émise après le virement n'est jamais proposée ; les mots de moins de trois lettres ne font pas concorder un nom.
 
 **180 jours, pas 90.** L'accord donné à un prestataire se renouvelle tous les 180 jours depuis le règlement délégué UE 2022/2360 (25 juillet 2023). L'essai en demande 90, ce que toutes les banques acceptent.
+
+## §482 : Importer devis et factures, une archive à part
+
+**22 octobre 2026**, sa demande : qu'un artisan venu d'un autre logiciel verse
+ses anciens devis et factures, d'un coup, et que les clients se créent seuls.
+Détail et chiffres : `docs/importer-devis-factures.md`.
+
+| | où | pourquoi |
+|---|---|---|
+| une table à part, `pieces_importees` | `drizzle/0136_pieces_importees.sql` | une pièce d'un autre logiciel n'a ni lignes, ni TVA calculée, ni place dans la numérotation. La mêler aux `factures` aurait fait mentir le chiffre d'affaires et la suite des numéros |
+| le zip s'ouvre dans le navigateur | `src/lib/lire-zip.ts` | 1 Go ne passe pas en un envoi (15 Mo par requête) ; on ne lit que la table des matières, puis chaque entrée par `Blob.slice` |
+| empreinte SHA-256 unique par entreprise | index `(entreprise_id, empreinte)` | réenvoyer le même zip ne double rien ; c'est aussi ce qui fait la reprise après une coupure |
+| lecture après la réponse | `after()` + `traiter-pieces.ts`, file prise par `FOR UPDATE SKIP LOCKED`, reprise d'une lecture abandonnée au bout de dix minutes | aucun planificateur en production ; l'ouverture de l'écran relance ce qui reste |
+| texte d'abord, IA ensuite | `lirePiece` (`src/server/import/lire-piece.ts`) | gratuit et sûr quand le PDF porte son texte ; l'IA complète, n'écrase rien, et ce qu'elle ne sait pas va « à vérifier » |
+| pdfjs à la file, un PDF à la fois | `unAUn` | deux lectures simultanées faisaient échouer pdfjs (« Invalid page request ») |
+| `serverExternalPackages: ["pdfjs-dist"]` | `next.config.ts` | empaqueté, pdfjs cherche son worker à une adresse qui n'existe plus |
+| l'adresse du fichier finit par `/pdf` | `/api/pieces-importees/<genre>/<id>/pdf` | la visionneuse n'accepte que ces adresses (`visionneuse-pdf.ts`) ; le genre dans l'adresse sert aussi `acces-roles.ts` (une facture importée s'ouvre comme une facture) |
+| annuler | `annulerRangement` | ne retire que les fiches que CE rangement a créées (`clients_crees`) et que rien d'autre n'emploie, chacune dans son point de sauvegarde |
+
+**Supprimer un client emporte ses pièces importées** (sa décision du même
+jour) : `apercuSuppressionClient` les compte, donc la question de la sauvegarde
+se pose ; `effacerClient` les efface et met leurs fichiers en file de purge.
+La clé étrangère reste en `SET NULL` : elle ne sert plus qu'à ne pas bloquer.
+
+**Ce qui n'est pas fait** : « Tout télécharger » ne les porte pas encore. Voir
+`TODO.md`.

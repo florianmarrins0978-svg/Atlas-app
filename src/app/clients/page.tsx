@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerFichesClients } from "@/server/repositories/fiche-client";
 import { jourIso } from "@/lib/jour";
 import ListeClients, { CompteClients, FournisseurClients } from "./ListeClients";
+import BandeImport from "./BandeImport";
+import { estProprietaire } from "@/server/autorisation";
 
 // **La liste de ses clients — sa remarque du 17 août 2026 au soir.**
 //
@@ -72,6 +74,9 @@ export default async function ClientsPage({
   const titre = entreprises ? "Vos entreprises" : "Vos clients";
   // Des entreprises, il y en a peut-être : la porte s'offre dès qu'il y en a une.
   const porte = !entreprises && tous.some((c) => c.entreprise);
+  // **« Importer devis / facture » est un geste du patron** (`import/garde.ts`) :
+  // les autres rôles ne voient ni la porte ni la bande.
+  const importe = !entreprises && (await estProprietaire(ctx));
   const retour = entreprises
     ? { href: "/clients", libelle: "Retour à vos clients" }
     : { href: "/", libelle: "Retour à la liste des chantiers" };
@@ -83,6 +88,10 @@ export default async function ClientsPage({
           <>
             <EnTeteEcran retour={retour} titre={titre} />
             {porte && <PorteEntreprises />}
+            {/* **L'écran vide est celui qui importe le plus** : un artisan qui
+                arrive sur Atlas n'a encore aucun client. */}
+            {importe && <PorteImport />}
+            {importe && <BandeImport />}
             {/* **Deux phrases, plus trois.** La troisième — « le premier que
                 vous créerez apparaîtra ici » — redisait la deuxième avec
                 d'autres mots. Ce qui reste enseigne ce qui ne se devine pas :
@@ -110,10 +119,44 @@ export default async function ClientsPage({
           >
             <EnTeteEcran retour={retour} titre={titre} precision={<CompteClients entreprises={entreprises} />} />
             {porte && <PorteEntreprises />}
-            <ListeClients entreprises={entreprises} />
+            <ListeClients
+              entreprises={entreprises}
+              sousLaRecherche={
+                importe ? (
+                  <>
+                    <PorteImport />
+                    <BandeImport />
+                  </>
+                ) : null
+              }
+            />
           </FournisseurClients>
         )}
       </div>
+    </div>
+  );
+}
+
+/**
+ * « IMPORTER DEVIS / FACTURE » — sa demande du 22 octobre 2026, à la place que
+ * la maquette lui a montrée : sous la recherche, dans la voix de « Modifier ses
+ * coordonnées » (l'or, en capitales espacées). Le nom est le sien : « pas
+ * importer de l'ancienne appli, importer devis facture ».
+ */
+function PorteImport() {
+  return (
+    <div className="px-[26px]">
+      <Link
+        href="/clients/importer"
+        data-atlas="porte-import"
+        className={`inline-flex min-h-[44px] items-center gap-[10px] ${libelleCaps}`}
+        style={{ color: colors.orTexte }}
+      >
+        <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 15V4m-4.5 4.5L12 4l4.5 4.5M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14" />
+        </svg>
+        Importer devis / facture
+      </Link>
     </div>
   );
 }

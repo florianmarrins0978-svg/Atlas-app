@@ -114,6 +114,12 @@ export const LIMITES = {
   assistant: { max: 20, fenetreMs: 60 * 1000 }, // 20 requêtes IA / minute / entreprise
   confirmationProposition: { max: 30, fenetreMs: 60 * 1000 },
   televersementFichier: { max: 20, fenetreMs: 60 * 1000 },
+  // L'import de devis et factures (22 octobre 2026) : 2 000 pièces par envoi,
+  // parties une à une. Au seuil ordinaire de vingt par minute, un envoi
+  // prendrait plus d'une heure et demie l'appli ouverte. Six cents par minute
+  // laisse passer ce qu'un réseau de chantier envoie vraiment (quelques pièces
+  // par seconde), et borne encore ce qu'une session volée pourrait déverser.
+  importPiece: { max: 600, fenetreMs: 60 * 1000 },
   // Le diagnostic végétal : un appel de vision par photo, et une photo pèse.
   // Plus serré que le téléversement ordinaire parce que ce seuil-là ne protège
   // pas seulement le service — **il borne une facture**. Reste très au-dessus

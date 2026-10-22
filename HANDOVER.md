@@ -14,6 +14,15 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 
 Pour reprendre : `docs/banque-essai.md` dit ses trois gestes, `ARCHITECTURE.md` (dernier §) le pourquoi. Le piège à connaître : **l'écran ne peut pas s'éprouver ici**, il faut sa clé Enable Banking et sa connexion au Crédit Mutuel. Sans le fichier `.pem`, l'écran affiche « Pas encore branché » et l'adresse de retour à déclarer ; c'est ce qu'on a regardé. Il se connecte deux fois à sa banque pendant l'essai (chez Enable Banking, puis depuis Atlas) : c'est leur règle, pas un défaut.
 
+## IMPORTER DEVIS ET FACTURES : branche `claude/importer-devis-factures` (22 octobre 2026)
+
+Codée, éprouvée par ses suites (`test-import-pieces`, `test-pieces-importees-db`,
+`test-importer-pieces-e2e`), **batterie non jouée** sur sa consigne : elle part
+avec les autres lots en attente (dont `claude/tout-telecharger-client`), à son
+signal. Migration `0136_pieces_importees.sql` ; touche `next.config.ts`
+(plancher, donc niveau 3). Ce qui reste : `TODO.md`, entrée « importer son
+ancienne appli ». Document de retour : `docs/importer-devis-factures.md`.
+
 ## ARROSAGE, PRIX ET DEVIS : branche `claude/arrosage-prix-et-devis` (19 octobre 2026)
 
 Elle part du lot fournisseurs, pas de la branche aquaplus de son PC (absente

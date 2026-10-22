@@ -9,6 +9,14 @@
 
 Codé : `/reglages/banque` (patron seul, hors du sommaire), retour `/api/banque/retour`, client Enable Banking `src/server/banque/enable-banking.ts`, règle pure `src/lib/rapprochement-bancaire.ts`. Lecture seule. À jouer sur son espace avec sa clé : `docs/banque-essai.md`. Le reste de la planche `appli/banque-qui-previent.html` n'est pas codé.
 
+## IMPORTER DEVIS ET FACTURES, CODÉ (22 octobre 2026), PAS ENCORE SUR `main`
+
+Branche `claude/importer-devis-factures`. Migration `drizzle/0136_pieces_importees.sql`
+(deux tables neuves sous FORCE RLS). Écrans `/clients/importer` et la porte de
+`/clients` ; routes `/api/pieces-importees/*` ; règles `import-pieces.ts`,
+`lire-zip.ts` ; lecture `src/server/import/`. Batterie à jouer, à son signal.
+`ARCHITECTURE.md` §482.
+
 ## ARROSAGE : LES PRIX DES FOURNISSEURS ET L'IMPORT D'UN DEVIS, CODÉS (19 octobre 2026), PAS ENCORE SUR `main`
 
 Branche `claude/arrosage-prix-et-devis`, **partie du lot fournisseurs**

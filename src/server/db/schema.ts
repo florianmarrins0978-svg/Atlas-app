@@ -4047,3 +4047,45 @@ export const margesAchat = pgTable("marges_achat", {
   mainOeuvre: numeric("main_oeuvre", { precision: 5, scale: 2 }),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// ─── Devis et factures importés (migration 0136, 22 octobre 2026) ───────────
+//
+// Une pièce importée vit ici, jamais dans `devis` ni dans `factures` : c'est ce
+// qui la tient hors du relevé de TVA, hors de la numérotation et hors de toute
+// modification (`drizzle/0136_pieces_importees.sql`).
+
+export const envoisPieces = pgTable("envois_pieces", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  nom: text("nom").notNull(),
+  attendues: integer("attendues").notNull(),
+  clientsCrees: uuid("clients_crees").array().notNull().default(sql`'{}'::uuid[]`),
+  rangeLe: timestamp("range_le", { withTimezone: true }),
+  createdBy: uuid("created_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const STATUTS_PIECE_IMPORTEE = ["a_lire", "en_lecture", "lue", "a_verifier", "rangee"] as const;
+
+export const piecesImportees = pgTable("pieces_importees", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  envoiId: uuid("envoi_id").notNull(),
+  empreinte: text("empreinte").notNull(),
+  fichierCle: text("fichier_cle").notNull(),
+  fichierNom: text("fichier_nom"),
+  statut: text("statut", { enum: STATUTS_PIECE_IMPORTEE }).notNull().default("a_lire"),
+  lectureCommenceeLe: timestamp("lecture_commencee_le", { withTimezone: true }),
+  genre: text("genre", { enum: ["devis", "facture"] }),
+  numero: text("numero"),
+  jour: date("jour"),
+  montantTtc: numeric("montant_ttc", { precision: 12, scale: 2 }),
+  nomLu: text("nom_lu"),
+  clientId: uuid("client_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
