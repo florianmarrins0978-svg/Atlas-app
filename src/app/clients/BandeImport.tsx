@@ -76,7 +76,9 @@ export default function BandeImport() {
         <button
           type="button"
           className="min-h-[44px] px-1 font-semibold"
-          style={{ color: colors.or }}
+          // L'or posé sur l'ENCRE du bandeau : sur Nuit et Sylve l'encre est
+          // claire, et `or` y tombait à 2,49 (batterie commune du 22 octobre).
+          style={{ color: colors.orSurEncre }}
           onClick={async () => {
             const r = await annulerRangementAction(etat.id);
             if (r.ok) {

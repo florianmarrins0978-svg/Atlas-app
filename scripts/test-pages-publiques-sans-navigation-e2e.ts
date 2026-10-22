@@ -260,7 +260,12 @@ async function main() {
   await pool.end();
 
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Pages publiques — ${echecs} échec(s).`);
-  process.exit(echecs === 0 ? 0 : 1);
+  // **Le code de sortie se POSE, le processus finit seul** (batterie commune du
+  // 22 octobre 2026). `process.exit()` coupait Node pendant que le navigateur et
+  // la base finissaient de se fermer : sous Windows, libuv s'arrêtait alors sur
+  // « Assertion failed: !(handle->flags & UV_HANDLE_CLOSING) », code
+  // 3221226505, APRÈS « 0 échec(s) ». Une suite verte rendue rouge.
+  process.exitCode = echecs === 0 ? 0 : 1;
 }
 
 main().catch((e) => {
