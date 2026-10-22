@@ -181,6 +181,10 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     // **L'avoir et la mise en demeure (24 septembre 2026)** sont des pièces de
     // la facture : ils héritent de sa fermeture, et c'est voulu.
     "/api/avoirs/xxxx/pdf",
+    // **Le compte bancaire (essai du 22 octobre 2026)** : ses virements sont
+    // des paiements de clients, donc de la facturation. Le retour de la banque
+    // se ferme avec l'écran.
+    "/api/banque/retour",
     // **La facture d'exemple (26 septembre 2026)** hérite du refus des
     // factures : ses deux portes, « Devis & factures » et « Mon entreprise »,
     // sont déjà fermées au commercial (plus bas). Une porte ouverte au bout
@@ -205,6 +209,7 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     // ne devait pas l'hériter.
     "/chantiers/xxxx/facture/travaux-supplementaires",
     "/reglages/abonnement",
+    "/reglages/banque",
     "/reglages/documents",
     // **Les quatre écrans du découpage du 7 septembre 2026**, et leur présence
     // ici est une bonne nouvelle : `cheminAutorise` les a refusés d'elle-même,

@@ -8,6 +8,8 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-22
 
+- **Ma banque, l'essai sur SA banque** (`/reglages/banque`, hors du sommaire). Sa question : *« est-ce qu'on peut faire un test déjà avec ma banque à moi ? »*. Enable Banking laisse gratuitement le propriétaire d'une application relier ses propres comptes. L'écran choisit la banque, envoie se connecter chez elle, revient, et liste les virements reçus des 30 derniers jours avec la facture en attente qu'Atlas proposerait (`src/lib/rapprochement-bancaire.ts`, 9 contrôles). **Il lit, il n'écrit rien** : aucun paiement noté, rien au relevé de TVA. La clé est un fichier `.pem` déposé dans `cles-banque/` de son espace, jamais versionné. Évite : coder la carte de l'accueil et le « Oui » avant de savoir si le Crédit Mutuel répond. Mode d'emploi : `docs/banque-essai.md`.
+- **La banque coupe l'accès tous les 180 jours, pas 90.** La planche du 14 août disait 90 : c'était la règle d'avant le 25 juillet 2023 (règlement délégué UE 2022/2360).
 - **Planche « Tout télécharger d'un client »** (`appli/telecharger-un-client.html`) et lecture de la conservation dix ans (`docs/telecharger-un-client.md`). Rien dans `src/` : trois places à choisir, les fiches d'entretien n'ont pas de PDF, et la notification d'échéance est déconseillée tant que la première tombe en 2036. Constat : la base tient la conservation (factures, avoirs, devis envoyés immuables) ; les fichiers PDF, eux, dépendent des sauvegardes de production, pas encore en place.
 
 ## 2026-10-21

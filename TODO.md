@@ -1,6 +1,12 @@
 # Prochaines tâches
 
 
+## ⏳ MA BANQUE : L'ESSAI EST CODÉ, À JOUER PAR LUI (22 octobre 2026)
+
+`/reglages/banque` lit ses virements reçus par Enable Banking et propose une facture pour chacun. **Ce qui reste, et c'est lui** : créer l'application chez Enable Banking, y relier son Crédit Mutuel, déposer le `.pem` dans `cles-banque/` (`docs/banque-essai.md`). **On ne sait pas encore si le Crédit Mutuel est couvert** : la liste ne se lit qu'avec un compte.
+
+**Ce qui vient après, seulement si l'essai répond** : la carte sur l'accueil, le « Oui » qui note le paiement par `noterPaiement`, l'alerte avant la coupure (planche `appli/banque-qui-previent.html`), une table des liaisons sous RLS au lieu du témoin du navigateur, et le contrat pour ses clients (`docs/A-FAIRE.md` §13).
+
 ## ⏳ ARROSAGE : DEUX PLANCHES À REGARDER (21 octobre 2026)
 
 - `appli/arrosage-plan-lu-a-verifier.html` : la photo ouvre le plan lu dans

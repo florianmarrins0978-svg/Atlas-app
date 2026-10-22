@@ -102,6 +102,11 @@ const FERME_AU_COMMERCIAL = [
   "/reglages/equipe",
   "/reglages/abonnement",
   "/reglages/donnees",
+  // **Le compte bancaire de l'entreprise** (essai du 22 octobre 2026) : ses
+  // virements reçus portent les paiements de chaque client, c'est-à-dire la
+  // facturation qu'il ne doit pas voir. L'écran et son retour se ferment ensemble.
+  "/reglages/banque",
+  "/api/banque",
   // ───────────────────────────────────────────────────────────────────────
   // **LA FACTURATION, ET C'EST SA RÈGLE DU 13 AOÛT — pas une nouveauté.**
   //
