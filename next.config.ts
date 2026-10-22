@@ -66,6 +66,11 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // **pdfjs-dist reste hors du paquet du serveur** (22 octobre 2026, import de
+  // devis et factures). Empaqueté, il cherche son « worker » à côté du morceau
+  // bâti, où il n'est pas : « Setting up fake worker failed: Cannot find module
+  // …/chunks/pdf.worker.mjs ». Chargé depuis node_modules, il le trouve.
+  serverExternalPackages: ["pdfjs-dist"],
   experimental: {
     serverActions: {
       // Remédiation : limite explicite, jamais la valeur par défaut de

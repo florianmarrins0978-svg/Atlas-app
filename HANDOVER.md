@@ -10,6 +10,15 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## IMPORTER DEVIS ET FACTURES : branche `claude/importer-devis-factures` (22 octobre 2026)
+
+Codée, éprouvée par ses suites (`test-import-pieces`, `test-pieces-importees-db`,
+`test-importer-pieces-e2e`), **batterie non jouée** sur sa consigne : elle part
+avec les autres lots en attente (dont `claude/tout-telecharger-client`), à son
+signal. Migration `0135_pieces_importees.sql` ; touche `next.config.ts`
+(plancher, donc niveau 3). Ce qui reste : `TODO.md`, entrée « importer son
+ancienne appli ». Document de retour : `docs/importer-devis-factures.md`.
+
 ## ARROSAGE, PRIX ET DEVIS : branche `claude/arrosage-prix-et-devis` (19 octobre 2026)
 
 Elle part du lot fournisseurs, pas de la branche aquaplus de son PC (absente

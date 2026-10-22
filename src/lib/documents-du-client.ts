@@ -178,11 +178,12 @@ export function jourCourt(iso: string): string {
  * fier à un mot que la prochaine demande peut changer.
  */
 export function natureDeLaPiece(href: string): "facture" | "avoir" | "devis" | "fiche-chantier" {
-  if (href.includes("/api/factures/")) return "facture";
+  // Une pièce importée porte son genre dans l'adresse (migration 0135).
+  if (href.includes("/api/factures/") || href.includes("/api/pieces-importees/facture/")) return "facture";
   // Sans cette ligne, un avoir se rangerait en « Fiche de chantier » : c'est la
   // valeur par défaut de la fonction (planche `appli/avoir.html`, §413).
   if (href.includes("/api/avoirs/")) return "avoir";
-  return href.includes("/api/devis/") ? "devis" : "fiche-chantier";
+  return href.includes("/api/devis/") || href.includes("/api/pieces-importees/devis/") ? "devis" : "fiche-chantier";
 }
 
 /**

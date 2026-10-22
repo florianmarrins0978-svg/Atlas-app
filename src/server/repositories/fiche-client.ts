@@ -12,6 +12,7 @@ import {
   passagesEntretien,
   prestations,
   avoirs,
+  piecesImportees,
 } from "../db/schema";
 import type { Ctx } from "./context";
 import { composerFicheClient, type FicheClient } from "@/lib/fiche-client";
@@ -166,6 +167,33 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
       }))
     );
 
+    // ─── Les devis et factures IMPORTÉS (migration 0135) ────────────────────
+    //
+    // Sa règle du 22 octobre 2026 : « une fois que le devis est ajouté, il n'y a
+    // pas besoin de marquer ancienne appli ». Ils se rangent dans les mêmes
+    // onglets, au même ordre, sans mention. Lus ICI, avant le cas « aucun
+    // chantier » : un client créé par l'import n'en a aucun, et ses pièces
+    // disparaîtraient de sa fiche.
+    const importees = await tx
+      .select({
+        id: piecesImportees.id,
+        genre: piecesImportees.genre,
+        numero: piecesImportees.numero,
+        jour: piecesImportees.jour,
+      })
+      .from(piecesImportees)
+      .where(and(eq(piecesImportees.clientId, clientId), eq(piecesImportees.statut, "rangee")));
+    const enPiece = (p: (typeof importees)[number]): PieceDuClient => ({
+      id: p.id,
+      // Un numéro qu'on n'a pas lu ne s'invente pas : la pièce porte alors son jour.
+      titre: p.numero ? `n° ${p.numero}` : p.jour ? jourCourt(p.jour) : "Sans numéro",
+      precision: p.jour ? jourCourt(p.jour) : null,
+      jour: p.jour,
+      href: `/api/pieces-importees/${p.genre}/${p.id}/pdf`,
+    });
+    const devisImportes = importees.filter((p) => p.genre === "devis").map(enPiece);
+    const facturesImportees = importees.filter((p) => p.genre === "facture").map(enPiece);
+
     if (sesChantiers.length === 0) {
       return {
         ...composerFicheClient([], []),
@@ -183,7 +211,12 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
         // La fiche s'ouvre depuis Paysage, se nomme, s'envoie — sans qu'aucun
         // chantier n'existe. Rendre `AUCUNE_PIECE` ici l'aurait fait
         // disparaître de son dossier.
-        pieces: { ...AUCUNE_PIECE, fiches: piecesFiches },
+        pieces: {
+          ...AUCUNE_PIECE,
+          devis: rangerDuPlusRecent(devisImportes),
+          factures: rangerDuPlusRecent(facturesImportees),
+          fiches: piecesFiches,
+        },
       };
     }
 
@@ -338,8 +371,9 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
       if (!connu || d.version > connu.version) dernierParNumero.set(d.numero, d);
     }
 
-    const piecesDevis = rangerDuPlusRecent(
-      [...dernierParNumero.values()].map((d) => ({
+    const piecesDevis = rangerDuPlusRecent([
+      ...devisImportes,
+      ...[...dernierParNumero.values()].map((d) => ({
         id: d.id,
         titre: `n° ${d.numero}`,
         // **La date, et non le nom du chantier.** Sur 97 px de colonne, un
@@ -350,8 +384,8 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
         precision: jourCourt(d.jour),
         jour: d.jour,
         href: `/api/devis/${d.id}/pdf`,
-      }))
-    );
+      })),
+    ]);
 
     /**
      * **Le chantier du DERNIER DEVIS — ce qui allume « Dernier devis ».**
@@ -368,12 +402,14 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
      * finiraient par désigner deux devis différents (`CLAUDE.md` §3).
      */
     const chantierParDevis = new Map(sesDevis.map((d) => [d.id, d.chantierId]));
-    const chantierDuDernierDevis = piecesDevis[0]
-      ? (chantierParDevis.get(piecesDevis[0].id) ?? null)
-      : null;
+    // Le premier devis D'ATLAS de la liste : un devis importé n'a pas de
+    // chantier à rouvrir, et ne doit pas éteindre « Dernier devis ».
+    const dernierDevisAtlas = piecesDevis.find((p) => chantierParDevis.has(p.id));
+    const chantierDuDernierDevis = dernierDevisAtlas ? (chantierParDevis.get(dernierDevisAtlas.id) ?? null) : null;
 
-    const piecesFactures = rangerDuPlusRecent(
-      sesFactures.map((f) => ({
+    const piecesFactures = rangerDuPlusRecent([
+      ...facturesImportees,
+      ...sesFactures.map((f) => ({
         id: f.id,
         titre: `n° ${f.numeroCommercial}`,
         precision: jourCourt(f.dateEmission),
@@ -383,8 +419,8 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
         // rien à ouvrir, et « pas encore ouverte » accuserait le client d’un
         // envoi qui n’a pas eu lieu.
         reception: receptionParFacture.get(f.id),
-      }))
-    );
+      })),
+    ]);
 
     // **Ses avoirs, dans leur onglet à eux** — sa demande du 24 septembre 2026 :
     // *« le jour où j'envoie un avoir, il faut pouvoir le retrouver dans une

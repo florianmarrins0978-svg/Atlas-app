@@ -71,6 +71,8 @@ import {
   devisRecus,
   demandesEnvoyees,
   margesAchat,
+  envoisPieces,
+  piecesImportees,
 } from "../db/schema";
 import type { Ctx } from "./context";
 import { rangerLesFichiers, type FichierARanger } from "@/lib/rangement-sauvegarde";
@@ -209,6 +211,8 @@ export async function exporterEntreprise(
       sesPrixAchat,
       sesDemandes,
       sesMarges,
+      sesEnvoisDePieces,
+      sesPiecesImportees,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -421,6 +425,9 @@ export async function exporterEntreprise(
       tx.select().from(prixAchat).where(eq(prixAchat.entrepriseId, e)),
       tx.select().from(demandesEnvoyees).where(eq(demandesEnvoyees.entrepriseId, e)),
       tx.select().from(margesAchat).where(eq(margesAchat.entrepriseId, e)),
+      // Les devis et factures importés (migration 0135), et leurs envois.
+      tx.select().from(envoisPieces).where(eq(envoisPieces.entrepriseId, e)),
+      tx.select().from(piecesImportees).where(eq(piecesImportees.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -526,6 +533,9 @@ export async function exporterEntreprise(
       prix_achat: sesPrixAchat,
       demandes_envoyees: sesDemandes,
       marges_achat: sesMarges,
+      // Parent avant enfants : l'envoi, puis ses pièces.
+      envois_pieces: sesEnvoisDePieces,
+      pieces_importees: sesPiecesImportees,
     };
 
     const compte: Record<string, number> = {};
@@ -607,6 +617,12 @@ export async function exporterEntreprise(
     // Rangés sous le nom du client et du chantier, jamais sous leur
     // identifiant : c'est ce qu'il voit en ouvrant l'archive sur son téléphone.
     const nomDuClient = new Map(lesClients.map((c) => [c.id, c.nom]));
+    // Les devis et factures importés : ils n'ont pas de chantier, ils portent
+    // le nom de leur client et leur numéro.
+    for (const p of sesPiecesImportees) {
+      const client = p.clientId ? (nomDuClient.get(p.clientId) ?? p.nomLu) : p.nomLu;
+      ajouter(p.fichierCle, p.genre === "facture" ? "facture-pdf" : "devis-pdf", null, [client, p.numero].filter(Boolean).join(" "), p.jour);
+    }
     const chantiersDeRangement = new Map(
       lesChantiers.map((c) => [c.id, { nom: c.nom, client: c.clientId ? nomDuClient.get(c.clientId) ?? null : null }])
     );

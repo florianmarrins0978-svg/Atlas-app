@@ -5,6 +5,14 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## IMPORTER DEVIS ET FACTURES, CODÉ (22 octobre 2026), PAS ENCORE SUR `main`
+
+Branche `claude/importer-devis-factures`. Migration `drizzle/0135_pieces_importees.sql`
+(deux tables neuves sous FORCE RLS). Écrans `/clients/importer` et la porte de
+`/clients` ; routes `/api/pieces-importees/*` ; règles `import-pieces.ts`,
+`lire-zip.ts` ; lecture `src/server/import/`. Batterie à jouer, à son signal.
+`ARCHITECTURE.md` §480.
+
 ## ARROSAGE : LES PRIX DES FOURNISSEURS ET L'IMPORT D'UN DEVIS, CODÉS (19 octobre 2026), PAS ENCORE SUR `main`
 
 Branche `claude/arrosage-prix-et-devis`, **partie du lot fournisseurs**
