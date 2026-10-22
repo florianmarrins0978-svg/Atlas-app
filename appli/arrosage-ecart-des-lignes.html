@@ -5969,7 +5969,7 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
     haie: { titre: "Haie", nom: "GAG", L: 12, l: 2, ecart: 0.5 },
     massif: { titre: "Massif", nom: "Goutte à goutte", L: 6, l: 3, ecart: 0.6 }
   };
-  var etat = { cas: "haie", n: null };
+  var etat = { cas: "haie", n: null, ecart: null };
   var nombre = function (i) { return Number(String(i.value).replace(",", ".")) || 0; };
   var cm = function (m) { return Math.round(m * 100) + " cm"; };
   /* Combien de lignes à l'écart d'office : la première à un écart du bord,
@@ -5980,8 +5980,21 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   var bloc = $("#lignes-titre", f).parentNode;
   var moins = bloc.querySelectorAll("button")[0], plus = bloc.querySelectorAll("button")[1], sortie = $("output", bloc);
   var propose = bloc.querySelector("p");
-  var pE = document.createElement("p"); pE.id = "ecart"; pE.className = "mt-[8px] text-[15px]";
-  propose.before(pE);
+  // Sa demande du 22 octobre 2026 : « pouvoir modifier l'espacement en cm, une
+  // donnée à écrire, pour haie et massif ». Le champ et les boutons se
+  // tiennent : taper l'écart refait le nombre de lignes, et un bouton refait
+  // l'écart. Le champ prend l'allure des cotes de la même feuille.
+  var champ = document.createElement("div");
+  champ.className = "mt-[10px] grid grid-cols-2 items-end gap-2";
+  champ.innerHTML = '<span class="min-w-0"><label class="block text-[11px] font-medium uppercase tracking-[0.28em]" for="feuille-ecart" style="color:' + C.muted + '">Écart, cm</label>' +
+    '<input id="feuille-ecart" inputmode="decimal" enterkeyhint="done" autocomplete="off" class="mt-[5px] block w-full min-w-0 rounded-[10px] border-0 px-[12px] py-3 text-[16px]" style="background-color:var(--atlas-cream, #f5f3ee);color:' + C.ink + ';box-shadow:inset 0 0 0 1px var(--atlas-line, rgba(28,28,26,0.12))"></span>' +
+    '<p id="ecart" class="pb-3 text-[14px]" style="color:' + C.inkSoft + '"></p>';
+  propose.before(champ);
+  var saisie = champ.querySelector("input");
+  saisie.addEventListener("input", function () {
+    var v = Number(String(saisie.value).replace(",", "."));
+    if (v > 0) { etat.ecart = v / 100; etat.n = null; rendre(); }
+  });
   var coupe = document.createElementNS(NS, "svg"); coupe.id = "coupe"; coupe.setAttribute("style", "display:block;width:100%;height:auto;margin-top:10px");
   propose.after(coupe);
   var pC = document.createElement("p"); pC.id = "compte"; pC.className = "mt-2 text-[15px]"; pC.style.color = C.inkSoft;
@@ -5991,13 +6004,19 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   function rendre() {
     var c = CAS[etat.cas], larg = nombre(l), long = nombre(L);
     var prop = larg > 0 ? proposees(larg, c.ecart) : null;
-    var n = etat.n || prop;
-    if (!n) { sortie.textContent = "?"; $("#ecart").textContent = ""; $("#compte").textContent = ""; $("#coupe").innerHTML = ""; return; }
-    var e = larg / n;
+    if (!prop) { sortie.textContent = "?"; $("#ecart").textContent = ""; $("#compte").textContent = ""; $("#coupe").innerHTML = ""; return; }
+    // Trois sources, une seule à la fois : le nombre choisi aux boutons, l'écart
+    // tapé, ou la proposition. Un écart tapé qui ne tombe pas juste laisse moins
+    // d'un écart au dernier bord : c'est ce qu'il a tapé, rien ne l'arrondit.
+    var n, e;
+    if (etat.n) { n = etat.n; e = larg / n; }
+    else if (etat.ecart) { e = etat.ecart; n = Math.max(1, Math.floor(larg / e + 1e-9)); }
+    else { e = c.ecart; n = prop; }
+    if (document.activeElement !== saisie) saisie.value = String(Math.round(e * 100));
     sortie.textContent = n === 1 ? "une ligne" : n + " lignes";
     moins.disabled = n <= 1; moins.style.opacity = n <= 1 ? "0.45" : "1";
-    $("#ecart").textContent = "Tous les " + cm(e) + ", la première à " + cm(e) + " du bord.";
-    propose.textContent = n === prop ? "Proposé." : "Proposé : " + prop + " lignes, tous les " + cm(c.ecart) + ".";
+    $("#ecart").textContent = "La première à " + cm(e) + " du bord.";
+    propose.textContent = n === prop && Math.abs(e - c.ecart) < 0.005 ? "Proposé." : "Proposé : " + prop + " lignes, tous les " + cm(c.ecart) + ".";
     $("#compte").textContent = Math.ceil(n * long - 1e-9) + " m de tube.";
 
     // La zone vue de dessus, ses lignes et leur écart coté.
@@ -6006,20 +6025,25 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
     s.innerHTML = "";
     var el = function (t, a) { var x = document.createElementNS(NS, t); for (var q in a) x.setAttribute(q, a[q]); s.appendChild(x); return x; };
     el("rect", { x: 0, y: 0, width: W, height: H, rx: 0.08, fill: "color-mix(in srgb, var(--atlas-plein, #7d9a6d) 34%, transparent)", stroke: C.rustDeep, "stroke-width": 0.05 });
-    for (var i = 1; i <= n; i++) el("line", { x1: 0.15, y1: i * e * k, x2: W - 0.15, y2: i * e * k, stroke: C.ink, "stroke-width": 0.07 });
+    for (var i = 1; i <= n; i++) el("line", { x1: 0.15, y1: Math.min(larg, i * e) * k, x2: W - 0.15, y2: Math.min(larg, i * e) * k, stroke: C.ink, "stroke-width": 0.07 });
     el("line", { x1: -0.5, y1: 0, x2: -0.5, y2: e * k, stroke: C.or, "stroke-width": 0.04 });
     el("line", { x1: -0.65, y1: 0, x2: -0.35, y2: 0, stroke: C.or, "stroke-width": 0.04 });
     el("line", { x1: -0.65, y1: e * k, x2: -0.35, y2: e * k, stroke: C.or, "stroke-width": 0.04 });
     var t = el("text", { x: -0.62, y: e * k / 2 + 0.14, "text-anchor": "end", "font-size": 0.42, "font-weight": 600, fill: C.or }); t.textContent = cm(e);
     var b = el("text", { x: W / 2, y: H + 0.6, "text-anchor": "middle", "font-size": 0.42, fill: C.inkSoft }); b.textContent = String(long).replace(".", ",") + " m";
   }
-  moins.onclick = function () { var c = CAS[etat.cas]; var n = etat.n || proposees(nombre(l), c.ecart); if (n > 1) { etat.n = n - 1; rendre(); } };
-  plus.onclick = function () { var c = CAS[etat.cas]; etat.n = (etat.n || proposees(nombre(l), c.ecart)) + 1; rendre(); };
-  // Une largeur changée repart de la proposition : l'ancien nombre n'avait de sens que pour l'ancienne largeur.
+  function lignesMontrees() {
+    var c = CAS[etat.cas], larg = nombre(l);
+    return etat.n || (etat.ecart ? Math.max(1, Math.floor(larg / etat.ecart + 1e-9)) : proposees(larg, c.ecart));
+  }
+  moins.onclick = function () { var n = lignesMontrees(); if (n > 1) { etat.n = n - 1; etat.ecart = null; rendre(); } };
+  plus.onclick = function () { etat.n = lignesMontrees() + 1; etat.ecart = null; rendre(); };
+  // Une largeur changée garde l'écart tapé, mais repart de la proposition sinon :
+  // un nombre de lignes n'avait de sens que pour l'ancienne largeur.
   l.addEventListener("input", function () { etat.n = null; rendre(); });
   L.addEventListener("input", rendre);
   function charger() {
-    var c = CAS[etat.cas]; etat.n = null;
+    var c = CAS[etat.cas]; etat.n = null; etat.ecart = null;
     $("h2", f).textContent = c.titre; f.setAttribute("aria-label", c.titre);
     nom.value = c.nom; nom.placeholder = c.titre; L.value = String(c.L); l.value = String(c.l);
     rendre();

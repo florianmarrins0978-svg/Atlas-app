@@ -6148,25 +6148,45 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
     // une haie (60 cm pour un massif), la première à un écart du bord, et
     // l'écart qui suit les boutons quand il change le nombre de lignes.
     var ECART = { haie: 0.5, massif: 0.6 }[z.type];
-    var choisi = null;
-    var pE = document.createElement("p"); pE.className = "mt-[8px] text-[15px]";
-    var prop = $("p", bloc); prop.before(pE);
+    var choisi = null, tape = null;
+    var prop = $("p", bloc);
     var moins = bloc.querySelectorAll("button")[0], plus = bloc.querySelectorAll("button")[1];
     var cm = function (m) { return Math.round(m * 100) + " cm"; };
+    // Les lignes courent sur la longueur : on les compte sur le PETIT côté,
+    // quel que soit l'ordre dans lequel les deux cotes ont été lues.
+    var largeur = function () {
+      var a = Number(String(L.value).replace(",", ".")) || 0, b = Number(String(l.value).replace(",", ".")) || 0;
+      return a > 0 && b > 0 ? Math.min(a, b) : b;
+    };
+    // Sa demande du 22 octobre 2026 : l'écart se TAPE aussi, en cm, pour une
+    // haie comme pour un massif. Le champ et les boutons se tiennent.
+    var champ = document.createElement("div");
+    champ.className = "mt-[10px] grid grid-cols-2 items-end gap-2";
+    champ.innerHTML = '<span class="min-w-0"><label class="block text-[11px] font-medium uppercase tracking-[0.28em]" style="color:' + C.muted + '">Écart, cm</label>' +
+      '<input inputmode="decimal" enterkeyhint="done" autocomplete="off" class="mt-[5px] block w-full min-w-0 rounded-[10px] border-0 px-[12px] py-3 text-[16px]" style="background-color:' + C.cream + ';color:' + C.ink + ';box-shadow:inset 0 0 0 1px ' + C.line + '"></span>' +
+      '<p class="pb-3 text-[14px]" style="color:' + C.inkSoft + '"></p>';
+    prop.before(champ);
+    var saisie = $("input", champ), premiere = $("p", champ);
+    function etatDesLignes() {
+      var large = largeur(), propose = Math.max(1, Math.floor(large / ECART + 1e-9));
+      if (choisi) return { n: choisi, e: large / choisi, propose: propose };
+      if (tape) return { n: Math.max(1, Math.floor(large / tape + 1e-9)), e: tape, propose: propose };
+      return { n: propose, e: ECART, propose: propose };
+    }
     function lignes() {
-      var large = Number(String(l.value).replace(",", ".")) || 0;
-      if (!(large > 0)) { $("output", bloc).textContent = "?"; pE.textContent = ""; prop.textContent = ""; return; }
-      var propose = Math.max(1, Math.floor(large / ECART + 1e-9));
-      var n = choisi || propose;
-      $("output", bloc).textContent = n === 1 ? "une ligne" : n + " lignes";
-      pE.textContent = "Tous les " + cm(large / n) + ", la première à " + cm(large / n) + " du bord.";
-      prop.textContent = n === propose ? "Proposé." : "Proposé : " + propose + " lignes, tous les " + cm(ECART) + ".";
-      moins.style.opacity = n <= 1 ? "0.45" : "1";
+      if (!(largeur() > 0)) { $("output", bloc).textContent = "?"; premiere.textContent = ""; prop.textContent = ""; return; }
+      var t = etatDesLignes();
+      $("output", bloc).textContent = t.n === 1 ? "une ligne" : t.n + " lignes";
+      if (document.activeElement !== saisie) saisie.value = String(Math.round(t.e * 100));
+      premiere.textContent = "La première à " + cm(t.e) + " du bord.";
+      prop.textContent = t.n === t.propose && Math.abs(t.e - ECART) < 0.005 ? "Proposé." : "Proposé : " + t.propose + " lignes, tous les " + cm(ECART) + ".";
+      moins.style.opacity = t.n <= 1 ? "0.45" : "1";
     }
     if (ECART) {
-      moins.onclick = function () { var large = Number(String(l.value).replace(",", ".")) || 0; var n = choisi || Math.max(1, Math.floor(large / ECART + 1e-9)); if (n > 1) { choisi = n - 1; lignes(); } };
-      plus.onclick = function () { var large = Number(String(l.value).replace(",", ".")) || 0; if (!(large > 0)) return; choisi = (choisi || Math.max(1, Math.floor(large / ECART + 1e-9))) + 1; lignes(); };
-      l.addEventListener("input", function () { choisi = null; lignes(); });
+      moins.onclick = function () { if (!(largeur() > 0)) return; var n = etatDesLignes().n; if (n > 1) { choisi = n - 1; tape = null; lignes(); } };
+      plus.onclick = function () { if (!(largeur() > 0)) return; choisi = etatDesLignes().n + 1; tape = null; lignes(); };
+      saisie.addEventListener("input", function () { var v = Number(String(saisie.value).replace(",", ".")); if (v > 0) { tape = v / 100; choisi = null; lignes(); } });
+      [L, l].forEach(function (i) { i.addEventListener("input", function () { choisi = null; lignes(); }); });
       lignes();
     } else bloc.remove();
     var valider = $('[data-atlas="feuille-valider"]', f);
