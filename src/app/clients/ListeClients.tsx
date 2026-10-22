@@ -7,6 +7,7 @@ import { enEuros } from "@/lib/euros";
 import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 import { grouperEnBandes } from "@/lib/bandes-clients";
 import { jourDeLaLigne, type TraceDuClient } from "@/lib/documents-du-client";
+import { MOTS_DE_LA_CATEGORIE, type CategorieClient } from "@/lib/civilite";
 import {
   filtrerClientsParNom,
   aucunClientTrouve,
@@ -137,15 +138,15 @@ export function FournisseurClients({
  * ligne se vidait, disparaissait, et le champ de saisie remontait de vingt-
  * quatre pixels sous le doigt. À chaque frappe qui ne trouve pas.
  */
-export function CompteClients({ entreprises = false }: { entreprises?: boolean }) {
+export function CompteClients({ categorie = "particulier" }: { categorie?: CategorieClient }) {
   const { saisie, total, visibles } = useRecherche();
   const cherche = saisie.trim().length > 0;
   const n = cherche ? visibles.length : total;
-  const nom = entreprises ? "entreprise" : "client";
-  const mot = n === 1 ? `1 ${nom}` : `${n} ${nom}s`;
+  const mots = MOTS_DE_LA_CATEGORIE[categorie];
+  const mot = n === 1 ? `1 ${mots.un}` : `${n} ${mots.des}`;
   // Rien trouvé : la phrase juste en dessous le dit déjà, en citant sa frappe.
   // Le redire ici en capitales serait la redite qu'il nous reproche.
-  const accord = entreprises ? "trouvée" : "trouvé";
+  const accord = mots.trouve;
   const texte = cherche && n === 0 ? "" : cherche ? `${mot} ${accord}${n > 1 ? "s" : ""}` : mot;
   return (
     <span className="block min-h-[14px]" data-atlas="compte-clients">
@@ -154,7 +155,7 @@ export function CompteClients({ entreprises = false }: { entreprises?: boolean }
   );
 }
 
-export default function ListeClients({ entreprises = false }: { entreprises?: boolean }) {
+export default function ListeClients({ categorie = "particulier" }: { categorie?: CategorieClient }) {
   const { saisie, poser, visibles, aujourdHui } = useRecherche();
   const cherche = saisie.trim().length > 0;
 
@@ -205,7 +206,7 @@ export default function ListeClients({ entreprises = false }: { entreprises?: bo
         <ChampRecherche
           valeur={saisie}
           onChange={poser}
-          placeholder={entreprises ? "Chercher une entreprise" : "Chercher un client"}
+          placeholder={MOTS_DE_LA_CATEGORIE[categorie].chercher}
           ariaLabel="Chercher un client"
           dataAtlas="chercher-client"
         />

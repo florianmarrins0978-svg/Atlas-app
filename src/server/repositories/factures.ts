@@ -59,7 +59,8 @@ import {
 import { uniteAdmise } from "../../lib/unite-de-ligne";
 import { dateDesTravauxProposee } from "../../lib/creneaux-chantier";
 import { manquesDeLaFacture, type Manque } from "../../lib/mentions-manquantes";
-import { estUneEntreprise } from "../../lib/civilite";
+import { estUneEntreprise, estUnClientPublic } from "../../lib/civilite";
+import { delaiDePaiement, echeanceMaxJours, referenceChorusLue } from "../../lib/facture-publique";
 import type { Creneau } from "../../lib/disponibilites";
 import {
   numeroTvaLu,
@@ -88,9 +89,13 @@ import {
 /** Délai de paiement porté sur la facture, à défaut d'accord particulier. */
 const DELAI_PAIEMENT_JOURS = 30;
 
-/** Son délai quand il en a posé un (0 = comptant), 30 jours à défaut. */
-function echeanceDuDelai(depuis: Date, delaiPaiementJours: number | null): Date {
-  return echeanceFacture(depuis, delaiPaiementJours ?? DELAI_PAIEMENT_JOURS);
+/**
+ * Son délai quand il en a posé un (0 = comptant), 30 jours à défaut ; et
+ * jamais plus de 30 jours pour un client public, qui paie dans ce délai
+ * (`delaiDePaiement`, 22 octobre 2026).
+ */
+function echeanceDuDelai(depuis: Date, delaiPaiementJours: number | null, clientPublic: boolean): Date {
+  return echeanceFacture(depuis, delaiDePaiement(delaiPaiementJours ?? DELAI_PAIEMENT_JOURS, clientPublic));
 }
 
 /**
@@ -670,10 +675,25 @@ async function poserLaFactureBrouillon(
     jourIso(maintenant)
   );
 
+  const clientPublic = estUnClientPublic(instantane.clientNom, instantane.clientCivilite);
   const echeance = echeanceDuDelai(
     maintenant,
-    delaiDuDevis ? delaiDuDevis.delaiPaiementJours : (entrepriseCourante?.delaiPaiementJours ?? null)
+    delaiDuDevis ? delaiDuDevis.delaiPaiementJours : (entrepriseCourante?.delaiPaiementJours ?? null),
+    clientPublic
   );
+
+  // **Le code service vient de la FICHE**, quelle que soit la porte : le devis
+  // ne le porte pas (le bon de commande arrive après lui). Repris ici, il se
+  // change ensuite sur la facture pour elle seule (sa réponse du 22 octobre
+  // 2026 : une mairie a parfois plusieurs services qui commandent).
+  const [fiche] = clientPublic
+    ? await tx
+        .select({ codeService: clients.codeService })
+        .from(clients)
+        .innerJoin(chantiers, eq(chantiers.clientId, clients.id))
+        .where(eq(chantiers.id, chantierId))
+        .limit(1)
+    : [];
 
   const [facture] = await tx
     .insert(factures)
@@ -689,6 +709,7 @@ async function poserLaFactureBrouillon(
       dateEmission: jourIso(maintenant),
       dateEcheance: jourIso(echeance),
       dateTravaux,
+      clientCodeService: fiche?.codeService ?? null,
       createdBy: ctx.utilisateurId,
     })
     .returning();
@@ -981,7 +1002,7 @@ export async function reprendreLeDevisSurLaFacture(
         ...identiteDeLEmetteur(entrepriseCourante),
         tauxAvantAutoliquidation: null,
         // Le délai du devis repris, compté depuis la date de la facture.
-        dateEcheance: jourIso(echeanceDuDelai(new Date(`${f.dateEmission}T00:00:00Z`), d.delaiPaiementJours)),
+        dateEcheance: jourIso(echeanceDuDelai(new Date(`${f.dateEmission}T00:00:00Z`), d.delaiPaiementJours, estUnClientPublic(d.clientNom, d.clientCivilite))),
       })
       .where(eq(factures.id, f.id));
 
@@ -1291,7 +1312,12 @@ export async function majEcheanceFacture(
 ): Promise<{ ok: true; dateEcheance: string } | { ok: false; raison: string }> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [f] = await tx
-      .select({ dateEmission: factures.dateEmission, statut: factures.statut })
+      .select({
+        dateEmission: factures.dateEmission,
+        statut: factures.statut,
+        clientNom: factures.clientNom,
+        clientCivilite: factures.clientCivilite,
+      })
       .from(factures)
       .where(eq(factures.id, factureId))
       .limit(1);
@@ -1301,7 +1327,13 @@ export async function majEcheanceFacture(
     if (f.statut !== "brouillon") {
       return { ok: false, raison: "La facture est déjà arrêtée : son échéance ne change plus." };
     }
-    const v = validerEcheance(f.dateEmission, dateEcheanceIso);
+    // **30 jours au plus pour un client public**, revérifié ici : l'écran borne
+    // le calendrier, mais une saisie peut arriver d'ailleurs.
+    const v = validerEcheance(
+      f.dateEmission,
+      dateEcheanceIso,
+      echeanceMaxJours(estUnClientPublic(f.clientNom, f.clientCivilite))
+    );
     if (!v.ok) return v;
     await tx.update(factures).set({ dateEcheance: v.iso }).where(eq(factures.id, factureId));
     return { ok: true, dateEcheance: v.iso };
@@ -1412,6 +1444,34 @@ export async function majTitreDeFacture(
     const propre = titre?.trim() || null;
     await tx.update(factures).set({ titre: propre }).where(eq(factures.id, factureId));
     return { ok: true, titre: propre };
+  });
+}
+
+/**
+ * LES DEUX NUMÉROS DE CHORUS PRO, sur une facture encore en brouillon — ses
+ * choix du 22 octobre 2026 (`appli/facture-mairie-chorus.html`).
+ *
+ * Le numéro d'engagement est celui de SON bon de commande ; le code service,
+ * repris de la fiche, se change ici pour elle seule. **Vide est permis** :
+ * certaines mairies n'en donnent pas, et bloquer la facture la laisserait
+ * impayée pour un champ qu'elles n'exigent pas. Une facture arrêtée ne change
+ * plus : ce qu'elle porte est parti.
+ */
+export async function majReferencesChorusFacture(
+  ctx: Ctx,
+  factureId: string,
+  saisie: { numeroEngagement: string; codeService: string }
+): Promise<{ ok: true; numeroEngagement: string | null; codeService: string | null } | Refus> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const garde = await factureEncoreEnBrouillon(tx, factureId);
+    if (!garde.ok) return garde;
+    const numeroEngagement = referenceChorusLue(saisie.numeroEngagement) || null;
+    const codeService = referenceChorusLue(saisie.codeService) || null;
+    await tx
+      .update(factures)
+      .set({ clientNumeroEngagement: numeroEngagement, clientCodeService: codeService })
+      .where(eq(factures.id, factureId));
+    return { ok: true, numeroEngagement, codeService };
   });
 }
 
@@ -1790,6 +1850,7 @@ export type FactureAImprimer = Pick<
   | "entrepriseAssureurDecennale" | "entrepriseAdresseAssureurDecennale" | "entrepriseContratDecennale" | "entrepriseCouvertureDecennale"
   | "entrepriseMediateurNom" | "entrepriseMediateurCoordonnees" | "entrepriseMentionsLegalesPosition"
   | "entrepriseNumeroTva" | "dateTravaux" | "autoliquidation" | "clientNumeroTva" | "clientSiret"
+  | "clientNumeroEngagement" | "clientCodeService"
   | "clientNom" | "clientCivilite" | "clientAdresse" | "clientTelephone" | "adresseChantier"
   | "conditionsPaiement" | "devise" | "tauxTva" | "reductionPourcent"
 >;
@@ -1851,6 +1912,8 @@ export function donneesFacture(
     clientNom: f.clientNom,
     clientCivilite: f.clientCivilite,
     clientSiret: f.clientSiret,
+    clientNumeroEngagement: f.clientNumeroEngagement,
+    clientCodeService: f.clientCodeService,
     clientAdresse: f.clientAdresse,
     clientTelephone: f.clientTelephone,
     // Seulement en sous-traitance : ailleurs, il n'a rien à faire sur la pièce.
@@ -1967,6 +2030,8 @@ export async function genererPdfFactureExemple(ctx: Ctx, maintenant: Date = new 
       autoliquidation: false,
       clientNumeroTva: null,
       clientSiret: null,
+      clientNumeroEngagement: null,
+      clientCodeService: null,
       mainDoeuvreHt: null,
       titre: null,
       conditionsPaiement: null,

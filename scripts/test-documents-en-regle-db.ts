@@ -247,12 +247,15 @@ async function main() {
   await test("la liste range l'entreprise derrière sa porte, et SARL y entre sans choix", async () => {
     await clientsRepo.creerClient(ctx, { nom: "Vert Bocage SARL" });
     await clientsRepo.creerClient(ctx, { nom: "Bernard" });
+    // Une mairie a sa porte à elle depuis le 22 octobre 2026 : « Services publics ».
+    await clientsRepo.creerClient(ctx, { nom: "Mairie de Rezé" });
     const liste = await listerFichesClients(ctx);
-    const de = (nom: string) => liste.find((c) => c.nom === nom)?.entreprise;
-    assert.equal(de("Vert Bocage SARL"), true);
-    assert.equal(de("Bernard"), false);
+    const de = (nom: string) => liste.find((c) => c.nom === nom)?.categorie;
+    assert.equal(de("Vert Bocage SARL"), "entreprise");
+    assert.equal(de("Bernard"), "particulier");
+    assert.equal(de("Mairie de Rezé"), "public");
     // « Jardins Ribault » n'a aucun mot de société : seul son choix Entreprise le range à part.
-    assert.ok(liste.some((c) => c.nom === "Jardins Ribault" && c.entreprise));
+    assert.ok(liste.some((c) => c.nom === "Jardins Ribault" && c.categorie === "entreprise"));
   });
 
   // ── 4 OCTOBRE : LE DEVIS EN SOUS-TRAITANCE (B, décoché d'office) ────────

@@ -160,6 +160,8 @@ export default async function FacturePage({
                   autoliquidation: existante.facture.autoliquidation,
                   clientNumeroTva: existante.facture.clientNumeroTva,
                   clientSiret: existante.facture.clientSiret,
+                  clientNumeroEngagement: existante.facture.clientNumeroEngagement,
+                  clientCodeService: existante.facture.clientCodeService,
                   tauxTva: existante.facture.tauxTva,
                   // **Le prix accordé au client voyage jusqu'à l'écran.** Sans
                   // lui, la somme des lignes affichées ne faisait pas le Total

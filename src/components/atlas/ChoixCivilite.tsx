@@ -109,7 +109,12 @@ export default function ChoixCivilite({
               // 30 août 2026. Ils remplacent 13/30, hérités de la planche du
               // 22 août — le même écran, resserré par lui pour tenir dans une
               // page.
-              className="rounded-full px-[28px] py-[7px] text-[16px] disabled:opacity-50"
+              // **Quatre pastilles depuis « Public »** (22 octobre 2026, sa
+              // planche `appli/facture-mairie-chorus.html`) : à 28 px de retrait
+              // elles débordaient d'un téléphone. Elles se partagent la ligne,
+              // 10 px de retrait au moins : la largeur d'écran ne dit rien ici,
+              // l'application garde celle d'un téléphone sur un ordinateur.
+              className="flex-auto rounded-full px-[10px] py-[7px] text-[16px] disabled:opacity-50"
               style={{
                 backgroundColor: actif ? colors.rustTint : colors.card,
                 color: colors.ink,

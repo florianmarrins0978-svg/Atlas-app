@@ -230,6 +230,27 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     preuves: ["Envoyer la facture", 'libelle="E-mail"', 'libelle="SMS"', "Aucune coordonnée pour ce canal.", "Une correction passerait par un avoir."],
   },
   {
+    // Ses choix du 22 octobre 2026 (`appli/facture-mairie-chorus.html`).
+    id: "facture-mairie-chorus",
+    ecran: "Facture",
+    ou: "« Terminés » dans la barre du bas, la ligne du chantier, puis le bas de l'écran Facture",
+    intitule: "Facturer une mairie, un département : Chorus Pro, numéro d'engagement, code service",
+    motsCles: ["mairie", "commune", "collectivite", "public", "chorus", "engagement", "bon", "commande", "service", "departement", "deposer"],
+    geste:
+      "Sur la fiche du client, touchez « Public » et notez son code service. Sur la facture, tapez le n° d'engagement de son bon de commande, " +
+      "puis « Télécharger pour Chorus Pro », et déposez le PDF sur chorus-pro.gouv.fr.",
+    reserve:
+      "Une mairie ne paie qu'une facture déposée sur Chorus Pro : ni SMS ni e-mail pour elle. Le code service se change sur la facture si un autre service a commandé. " +
+      "Le numéro peut rester vide si la mairie n'en donne pas. L'échéance ne dépasse pas 30 jours.",
+    source: F,
+    preuves: ["Télécharger pour Chorus Pro", "Puis déposez-la sur chorus-pro.gouv.fr", "N° d’engagement", "Vide : Chorus Pro peut la refuser."],
+    ailleurs: [
+      { source: "src/lib/civilite.ts", preuves: ['public: "Public"'] },
+      { source: "src/app/clients/[id]/coordonnees/SesCoordonnees.tsx", preuves: ['libelle="Code service"'] },
+      { source: "src/lib/facture-publique.ts", preuves: ["DELAI_MAX_PUBLIC_JOURS = 30"] },
+    ],
+  },
+  {
     id: "facture-renvoyer",
     ecran: "Facture",
     ou: "« Terminés » dans la barre du bas, puis la ligne du chantier déjà facturé",

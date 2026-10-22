@@ -20,7 +20,7 @@ import { jourDeRangement, rangerParNom } from "@/lib/bandes-clients";
 import { jourIso } from "@/lib/jour";
 import { avoirsDesFactures } from "./avoirs";
 import { receptionEnMots, type ReceptionLisible } from "@/lib/reception-facture";
-import { estUneEntreprise } from "../../lib/civilite";
+import { categorieDuClient, type CategorieClient } from "../../lib/civilite";
 import {
   dernierePrestation,
   derniereTraceDuClient,
@@ -458,8 +458,11 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
 export type ClientEnListe = {
   id: string;
   nom: string;
-  /** Une entreprise cliente : elle vit derrière la porte « Vos entreprises ». */
-  entreprise: boolean;
+  /**
+   * Sa liste : les particuliers d’office, les entreprises et les services
+   * publics derrière leur porte (4 et 22 octobre 2026).
+   */
+  categorie: CategorieClient;
   /**
    * Là où il habite — **ce qui distingue quatre clients du même nom**.
    *
@@ -660,9 +663,9 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
         id: client.id,
         nom: client.nom,
         adresse: client.adresse,
-        // La porte « Vos entreprises » (4 octobre 2026) : la même règle que
-        // le « Mr. » retiré et la sous-traitance du devis.
-        entreprise: estUneEntreprise(client.nom, client.civilite),
+        // Ses deux portes (4 et 22 octobre 2026) : la même règle que le
+        // « Mr. » retiré, la sous-traitance et la facture pour Chorus Pro.
+        categorie: categorieDuClient(client.nom, client.civilite),
         derniere,
         facture: fiche.facture,
         du: fiche.du,

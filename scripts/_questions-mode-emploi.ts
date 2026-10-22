@@ -164,6 +164,7 @@ export const QUESTIONS_PAR_ZONE: Record<string, [string, string][]> = {
     ["comment je mets facture acquittée", "facture-acquittee"],
     ["comment télécharger la facture sur mon téléphone", "facture-telecharger"],
     ["comment j'envoie la facture au client par sms", "facture-envoyer"],
+    ["comment je facture une mairie sur chorus", "facture-mairie-chorus"],
     ["comment je renvoie une facture déjà envoyée par mail", "facture-renvoyer"],
     ["le client n'a pas de numéro, comment je lui envoie la facture", "facture-coordonnee-manquante"],
     ["comment je corrige une facture", "facture-modifier"],

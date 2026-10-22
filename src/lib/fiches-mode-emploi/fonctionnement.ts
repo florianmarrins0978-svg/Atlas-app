@@ -225,7 +225,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     geste:
       "Atlas ne sait pas encore importer une liste de clients : un client naît avec son chantier. " +
       "Seuls les tarifs s'importent, dans Réglages.",
-    source: "src/app/clients/page.tsx",
+    source: "src/lib/civilite.ts",
     preuves: ["Ils naissent avec vos chantiers."],
     absences: ["importerClients", "ImporterClients"],
   },

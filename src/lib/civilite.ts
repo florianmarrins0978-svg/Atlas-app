@@ -56,17 +56,48 @@ export type Civilite = keyof typeof CIVILITES;
  * `Civilite` reste celle d'une PERSONNE (le compte de l'artisan) : une
  * entreprise n'y a pas de sens.
  */
-export type CiviliteClient = Civilite | "entreprise";
+export type CiviliteClient = Civilite | "entreprise" | "public";
 
-/** Le mot de chaque pastille de la fiche, sans point (« Mr », comme il l'écrit). */
+/**
+ * Le mot de chaque pastille de la fiche, sans point (« Mr », comme il l'écrit).
+ * « Public », son choix du 22 octobre 2026 : une mairie, un département, une
+ * communauté de communes.
+ */
 export const PASTILLES_CIVILITE: Record<CiviliteClient, string> = {
   mr: "Mr",
   mme: "Mme",
   entreprise: "Entreprise",
+  public: "Public",
 };
 
 /** Ce qu'il a choisi, ou `null` s'il n'a rien choisi. */
 export type CiviliteChoisie = CiviliteClient | null | undefined;
+
+/**
+ * Le choix porte-t-il un « Mr. » ou un « Mme » à écrire devant le nom ? Une
+ * entreprise et un client public n'en portent pas : une seule question, pour
+ * que la cinquième pastille, s'il y en a une, ne s'oublie nulle part.
+ */
+export function estUnePersonne(civilite: CiviliteChoisie): civilite is Civilite {
+  return civilite === "mr" || civilite === "mme";
+}
+
+/**
+ * Les cases de plus qu'une pastille ouvre, sous le nom du client — la fiche,
+ * la création du chantier et l'enregistrement posent la même question.
+ *
+ * | | SIRET | N° TVA | Code service |
+ * |---|---|---|---|
+ * | Entreprise | oui | oui | non |
+ * | Public | oui | non : la sous-traitance ne vaut pas pour lui | oui, pour Chorus Pro |
+ */
+export function casesDuClient(civilite: CiviliteChoisie): { siret: boolean; numeroTva: boolean; codeService: boolean } {
+  return {
+    siret: civilite === "entreprise" || civilite === "public",
+    numeroTva: civilite === "entreprise",
+    codeService: civilite === "public",
+  };
+}
 
 /**
  * Le mot posé devant un nom nu **quand il n'a rien choisi**. Un seul endroit
@@ -232,8 +263,109 @@ export function porteDejaSonAppellation(nom: string): boolean {
 export function estUneEntreprise(nom: string | null | undefined, civilite?: CiviliteChoisie): boolean {
   if (civilite === "entreprise") return true;
   if (civilite) return false;
+  // **Une collectivité n'est pas une entreprise** (22 octobre 2026) : « Mairie »
+  // retire le Mr. comme « SARL », mais la mairie a sa porte à elle, et on ne
+  // sous-traite pas pour elle. Avant, le bouton « Sous-traitance, sans TVA »
+  // s'offrait sur la facture d'une « Mairie de… ».
+  if (estUnClientPublic(nom, civilite)) return false;
   const mots = aplati((nom ?? "").trim()).split(/[^0-9a-z]+/).filter(Boolean);
   return mots.some((mot) => MARQUEURS_SOCIETE.includes(mot));
+}
+
+/**
+ * Les mots d'une collectivité, quand il n'a rien choisi.
+ *
+ * **Séparée de `MARQUEURS_SOCIETE`, et c'est voulu.** Celle-là décide aussi du
+ * « Mr. », et elle est confrontée mot pour mot à la migration 0036
+ * (`scripts/test-civilite.ts`) : y ajouter « département » changerait le nom
+ * imprimé de clients déjà facturés. Celle-ci ne décide que de la catégorie.
+ */
+const MARQUEURS_PUBLICS = [
+  "mairie",
+  "commune",
+  "communes",
+  "communaute",
+  "ville",
+  "departement",
+  "region",
+  "metropole",
+  "agglomeration",
+  "sivom",
+  "sivu",
+  "ccas",
+  "prefecture",
+];
+
+/**
+ * LES TROIS LISTES DE SES CLIENTS — sa demande du 22 octobre 2026 : les
+ * particuliers d'office, puis une porte « Vos entreprises » et une porte
+ * « Services publics », toujours visibles, même vides.
+ */
+export type CategorieClient = "particulier" | "entreprise" | "public";
+
+export function categorieDuClient(nom: string | null | undefined, civilite?: CiviliteChoisie): CategorieClient {
+  if (estUnClientPublic(nom, civilite)) return "public";
+  if (estUneEntreprise(nom, civilite)) return "entreprise";
+  return "particulier";
+}
+
+/** Les mots de chaque liste : une table, pour que les trois écrans parlent pareil. */
+export const MOTS_DE_LA_CATEGORIE: Record<
+  CategorieClient,
+  { titre: string; un: string; des: string; trouve: string; chercher: string; aucun: string }
+> = {
+  particulier: {
+    titre: "Vos clients",
+    un: "client",
+    des: "clients",
+    trouve: "trouvé",
+    chercher: "Chercher un client",
+    aucun: "Aucun client pour l'instant. Ils naissent avec vos chantiers.",
+  },
+  entreprise: {
+    titre: "Vos entreprises",
+    un: "entreprise",
+    des: "entreprises",
+    trouve: "trouvée",
+    chercher: "Chercher une entreprise",
+    aucun: "Aucune entreprise pour l'instant.",
+  },
+  public: {
+    titre: "Services publics",
+    un: "service public",
+    des: "services publics",
+    trouve: "trouvé",
+    chercher: "Chercher un service public",
+    aucun: "Aucun service public pour l'instant.",
+  },
+};
+
+/**
+ * ACHÈTE-T-IL POUR SON ACTIVITÉ ? — une entreprise, ou un client public.
+ *
+ * C'est la question des 40 € de frais de recouvrement, que l'on ne réclame
+ * pas à un particulier. Elle était posée par `estUneEntreprise` tant que les
+ * mairies y étaient rangées : sans celle-ci, les sortir des entreprises le
+ * 22 octobre 2026 aurait retiré les 40 € de leurs devis.
+ */
+export function estUnClientProfessionnel(nom: string | null | undefined, civilite?: CiviliteChoisie): boolean {
+  return estUneEntreprise(nom, civilite) || estUnClientPublic(nom, civilite);
+}
+
+/**
+ * CE CLIENT EST-IL PUBLIC ? — mairie, département, communauté de communes :
+ * celui qui paie par Chorus Pro. Son choix du 22 octobre 2026
+ * (`appli/facture-mairie-chorus.html`) : une quatrième pastille, « Public ».
+ *
+ * **Son choix d'abord**, comme pour l'entreprise ; **sans choix**, le nom
+ * tranche, pour que la « Mairie de… » d'avant la pastille trouve sa porte
+ * toute seule.
+ */
+export function estUnClientPublic(nom: string | null | undefined, civilite?: CiviliteChoisie): boolean {
+  if (civilite === "public") return true;
+  if (civilite) return false;
+  const mots = aplati((nom ?? "").trim()).split(/[^0-9a-z]+/).filter(Boolean);
+  return mots.some((mot) => MARQUEURS_PUBLICS.includes(mot));
 }
 
 /**
@@ -261,9 +393,9 @@ export function avecCivilite(nom: string | null | undefined, civilite?: Civilite
   const propre = nom?.trim() ?? "";
   if (propre === "") return "";
   if (aDejaUneCivilite(propre)) return propre;
-  // Une entreprise ne reçoit ni Mr ni Mme : c'est tout le sens du choix.
-  if (civilite === "entreprise") return propre;
-  if (civilite) return `${CIVILITES[civilite]} ${propre}`;
+  if (estUnePersonne(civilite)) return `${CIVILITES[civilite]} ${propre}`;
+  // Une entreprise ou une mairie ne reçoit ni Mr ni Mme : c'est tout le sens du choix.
+  if (civilite) return propre;
   if (porteDejaSonAppellation(propre)) return propre;
   return `${CIVILITE_PAR_DEFAUT} ${propre}`;
 }

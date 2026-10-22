@@ -324,6 +324,8 @@ export async function mettreAJourClient(
     /** Une entreprise cliente (migration 0119) ; déjà lus par `siretLu` et `numeroTvaLu`. */
     siret?: string | null;
     numeroTva?: string | null;
+    /** Un client public (migration 0135) ; déjà lu par `referenceChorusLue`. */
+    codeService?: string | null;
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {

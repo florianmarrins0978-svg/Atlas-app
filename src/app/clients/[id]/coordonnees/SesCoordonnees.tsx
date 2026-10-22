@@ -8,7 +8,7 @@ import ChampAdresse from "@/components/atlas/ChampAdresse";
 import AvisNumeroTva from "@/components/atlas/AvisNumeroTva";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors, smallCaps } from "@/lib/design-tokens";
-import type { CiviliteClient } from "@/lib/civilite";
+import { casesDuClient, type CiviliteClient } from "@/lib/civilite";
 import { DEBUT_NUMERO_TVA } from "@/lib/autoliquidation";
 import { enregistrerSesCoordonneesAction } from "./actions";
 
@@ -43,6 +43,7 @@ export default function SesCoordonnees({
     adresse: string;
     siret: string;
     numeroTva: string;
+    codeService: string;
   };
   retour: { href: string; libelle: string };
 }) {
@@ -54,6 +55,8 @@ export default function SesCoordonnees({
   const [adresse, setAdresse] = useState(depart.adresse);
   const [siret, setSiret] = useState(depart.siret);
   const [numeroTva, setNumeroTva] = useState(depart.numeroTva || DEBUT_NUMERO_TVA);
+  const [codeService, setCodeService] = useState(depart.codeService);
+  const cases = casesDuClient(civilite);
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
 
@@ -68,6 +71,7 @@ export default function SesCoordonnees({
         adresse,
         siret,
         numeroTva,
+        codeService,
       });
       if (!r.ok) {
         setRefus(r.raison);
@@ -99,9 +103,14 @@ export default function SesCoordonnees({
             Elles s'impriment sous le nom du client, sur le devis et la facture.
             Repassé sur Mr ou Mme, elles se cachent sans rien effacer : un appui
             de travers ne perd pas un numéro. */}
-        {civilite === "entreprise" && (
+        {/* **Public : le SIRET et le code service** (22 octobre 2026), les
+            deux numéros que Chorus Pro vérifie. Pas de n° de TVA : la
+            sous-traitance ne vaut pas pour une mairie (`casesDuClient`). */}
+        {cases.siret && (
+          <Case libelle="SIRET" valeur={siret} onChange={setSiret} placeholder="812 345 678 00021" repere="siret-client" />
+        )}
+        {cases.numeroTva && (
           <>
-            <Case libelle="SIRET" valeur={siret} onChange={setSiret} placeholder="812 345 678 00021" repere="siret-client" />
             <Case
               libelle="N° TVA intracommunautaire"
               valeur={numeroTva}
@@ -111,6 +120,9 @@ export default function SesCoordonnees({
             />
             <AvisNumeroTva siret={siret} numeroTva={numeroTva} onMettre={setNumeroTva} />
           </>
+        )}
+        {cases.codeService && (
+          <Case libelle="Code service" valeur={codeService} onChange={setCodeService} placeholder="Sur son bon de commande" repere="code-service-client" />
         )}
         <Case
           libelle="Téléphone"

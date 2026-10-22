@@ -43,6 +43,7 @@ export default async function SesCoordonneesPage({
         adresse: client.adresse ?? "",
         siret: client.siret ?? "",
         numeroTva: client.numeroTva ?? "",
+        codeService: client.codeService ?? "",
       }}
       retour={{ href: `/clients/${client.id}`, libelle: "Retour à sa fiche" }}
     />

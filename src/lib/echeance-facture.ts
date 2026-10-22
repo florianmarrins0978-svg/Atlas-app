@@ -30,7 +30,13 @@ export type ResultatEcheance =
  *
  * Le « comptant » (échéance = émission) est permis : c'est le délai zéro.
  */
-export function validerEcheance(dateEmissionIso: string, saisieIso: string): ResultatEcheance {
+export function validerEcheance(
+  dateEmissionIso: string,
+  saisieIso: string,
+  // **30 pour un client public** (`echeanceMaxJours`, `facture-publique.ts`) :
+  // un acheteur public paie à 30 jours au plus.
+  maxJours: number = ECHEANCE_MAX_JOURS
+): ResultatEcheance {
   // Le format vient d'un `<input type="date">` (AAAA-MM-JJ). On ne fait pas
   // confiance au navigateur : la saisie repasse ici, côté serveur.
   if (!/^\d{4}-\d{2}-\d{2}$/.test(saisieIso)) {
@@ -44,8 +50,14 @@ export function validerEcheance(dateEmissionIso: string, saisieIso: string): Res
   if (saisie < emission) {
     return { ok: false, raison: "L'échéance ne peut pas précéder la date de la facture." };
   }
-  if (saisie > emission + ECHEANCE_MAX_JOURS * 86_400_000) {
-    return { ok: false, raison: "L'échéance ne peut pas dépasser un an après la facture." };
+  if (saisie > emission + maxJours * 86_400_000) {
+    return {
+      ok: false,
+      raison:
+        maxJours === ECHEANCE_MAX_JOURS
+          ? "L'échéance ne peut pas dépasser un an après la facture."
+          : `Un client public paie à ${maxJours} jours au plus.`,
+    };
   }
   return { ok: true, iso: saisieIso };
 }

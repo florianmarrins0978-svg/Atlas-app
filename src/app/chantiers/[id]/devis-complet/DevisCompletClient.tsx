@@ -32,7 +32,7 @@ import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
-import { CIVILITES, estUneEntreprise, type CiviliteClient } from "@/lib/civilite";
+import { CIVILITES, estUnClientProfessionnel, estUnePersonne, type CiviliteClient } from "@/lib/civilite";
 import type { Changement } from "@/lib/retouches-devis";
 import {
   LIBELLE_REDUCTION,
@@ -580,7 +580,7 @@ export default function DevisCompletClient(props: Props) {
     lireConditions(props.conditionsReglees),
     totalHt + totalTva,
     phrasesAcomptesDuDevis(props.statut, acomptes, (totalHt + totalTva).toFixed(2)),
-    estUneEntreprise(props.client.nom, props.client.civilite)
+    estUnClientProfessionnel(props.client.nom, props.client.civilite)
   );
 
   // ─── Les catégories de TVA (migration 0073) ──────────────────────────────
@@ -1156,7 +1156,7 @@ export default function DevisCompletClient(props: Props) {
                 fige={fige}
                 placeholder="Nom complet"
                 aria="Nom du client"
-                prefixe={client.civilite && client.civilite !== "entreprise" ? CIVILITES[client.civilite] : ""}
+                prefixe={estUnePersonne(client.civilite) ? CIVILITES[client.civilite] : ""}
                 onChange={(v) => setClient({ ...client, nom: v })}
                 onFini={(duChamp) => majClientDuDevisAction(props.clientId!, { nom: duChamp })} />
               {/* **L'ordre est celui d'une lettre, et le patron l'a demandé

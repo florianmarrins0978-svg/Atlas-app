@@ -1,7 +1,7 @@
 import { numeroDuDevisSurLePapier } from "@/lib/numero-documents";
 import { MENTION_FRANCHISE, sousFranchise } from "@/lib/franchise-tva";
 import { MENTION_AUTOLIQUIDATION } from "@/lib/autoliquidation";
-import { estUneEntreprise } from "@/lib/civilite";
+import { estUnClientProfessionnel } from "@/lib/civilite";
 import { DEBUT_DES_TRAVAUX, TITRE_FORMULAIRE, paragraphesFormulaire } from "@/lib/retractation";
 import { nomAvecForme } from "@/lib/formes-juridiques";
 import {
@@ -195,7 +195,7 @@ function blocNotes(data: DevisPdfData, sansPrix: boolean): { sien: string | null
     lireConditions(data.conditionsReglees),
     Number(data.totalTtc),
     phrasesAcomptesDuDevis(data.statut, data.acomptes ?? [], data.totalTtc),
-    estUneEntreprise(data.clientNom, data.clientCivilite)
+    estUnClientProfessionnel(data.clientNom, data.clientCivilite)
   );
   return { sien, reglees };
 }

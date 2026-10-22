@@ -35508,3 +35508,39 @@ fin. Annoncé par e-mail, il attend le nom de domaine ; le délai de l'article
 sans prévenir ni savoir ce qui doit rester est exactement ce que
 `CLAUDE.md` §4 septies interdit.
 
+## §480 : Une mairie est une catégorie, pas une entreprise
+
+**Ses choix du 22 octobre 2026** (`appli/facture-mairie-chorus.html`) : une
+quatrième pastille, « Public », et trois listes de clients. Avant, une « Mairie
+de… » était rangée avec les entreprises par son nom (`estUneEntreprise`), et
+cela lui offrait « Sous-traitance, sans TVA », qu'aucune mairie ne peut
+recevoir.
+
+| La question | La règle, une seule |
+|---|---|
+| sa liste, ses cases, son bouton | `categorieDuClient`, `casesDuClient`, `estUnClientPublic` |
+| la sous-traitance | `estUneEntreprise`, qui dit **non** à un client public |
+| les 40 € de frais de recouvrement | `estUnClientProfessionnel` : entreprise OU public |
+
+**La troisième ligne est celle qu'on aurait oubliée.** Les 40 € se décidaient
+par « entreprise ou non » : sortir les mairies des entreprises les aurait
+retirés de leurs devis, sans qu'aucun écran ne le montre.
+
+**`MARQUEURS_PUBLICS` est une liste à part de `MARQUEURS_SOCIETE`.** Celle-ci
+décide aussi du « Mr. » et se confronte mot pour mot à la migration 0036 :
+y ajouter « département » changerait le nom imprimé de clients déjà facturés.
+
+**Le code service vient de la fiche, quelle que soit la porte de la facture**
+(`poserLaFactureBrouillon`) : le devis ne le porte pas, le bon de commande
+arrive après lui. Il se recopie sur la facture et s'y change pour elle seule,
+figé comme le SIRET. Le numéro d'engagement ne vit que sur la facture.
+
+**« Télécharger pour Chorus Pro » arrête la facture AVANT de la télécharger**
+(`BoutonTelechargerDocument`, sa prop `avant`) : le PDF déposé doit porter
+son numéro définitif. Il ne dépend d'aucune coordonnée, là où l'envoi restait
+grisé sans téléphone ni e-mail, et laissait la facture d'une mairie impossible
+à arrêter.
+
+**Ce qui n'est pas tenu par un texte lu** : la phrase des retards
+(`MENTION_RETARD_PUBLIC`, BCE + 8 points et 40 €) vient de sources
+concordantes, pas de l'article R2192-31 lui-même. À faire confirmer.

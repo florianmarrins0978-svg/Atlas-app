@@ -10,6 +10,18 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## FACTURER UNE MAIRIE : branche `lot/facture-mairie-code` (22 octobre 2026)
+
+Branche `lot/facture-mairie-code`, dossier `atlas-app-chorus`, migration
+`0135_client_public_et_chorus.sql` (expand seul). Niveau 3 : **la batterie n'a
+pas été lancée, à sa demande** ; elle se lance avec son accord, puis le lot part
+sur `main`. Les règles vivent dans `src/lib/civilite.ts` (client public,
+catégorie, cases de la fiche, mots des trois listes) et
+`src/lib/facture-publique.ts` (délai, échéance, phrase des retards, lignes du
+PDF). Suites neuves : `test-client-public.ts`, `test-facture-mairie-db.ts`.
+Le Filtre avec son calendrier sur les listes de clients est le lot suivant, pas
+codé. Tout le détail : `docs/facture-mairie-chorus.md`.
+
 ## ARROSAGE, PRIX ET DEVIS : branche `claude/arrosage-prix-et-devis` (19 octobre 2026)
 
 Elle part du lot fournisseurs, pas de la branche aquaplus de son PC (absente
