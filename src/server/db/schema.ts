@@ -786,7 +786,7 @@ export const clients = pgTable(
     /** Le SIRET d'une entreprise cliente (migration 0119), recopié sous son nom. */
     siret: text("siret"),
     /**
-     * Le code service d'un client public (migration 0135), celui que Chorus Pro
+     * Le code service d'un client public (migration 0137), celui que Chorus Pro
      * vérifie à la lettre près. Recopié sur chaque facture, où il se change
      * pour elle seule.
      */
@@ -2398,7 +2398,7 @@ export const factures = pgTable(
     /** Le SIRET d'une entreprise cliente, figé comme son nom (migration 0119). */
     clientSiret: text("client_siret"),
     /**
-     * Pour Chorus Pro (migration 0135) : le code service, repris de la fiche et
+     * Pour Chorus Pro (migration 0137) : le code service, repris de la fiche et
      * modifiable pour cette facture, et le numéro d'engagement de SON bon de
      * commande. Figés comme le SIRET ; nuls hors client public.
      */

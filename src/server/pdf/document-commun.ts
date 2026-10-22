@@ -535,7 +535,7 @@ export type DonneesDocument = {
   clientNumeroTva?: string | null;
   /** Le SIRET d'une entreprise cliente (migration 0119). */
   clientSiret?: string | null;
-  /** Pour Chorus Pro, sous le SIRET d'un client public (migration 0135). */
+  /** Pour Chorus Pro, sous le SIRET d'un client public (migration 0137). */
   clientNumeroEngagement?: string | null;
   clientCodeService?: string | null;
   adresseChantier?: string | null;

@@ -15,7 +15,7 @@ sur `main`.
 | La fiche porte Mr, Mme, Entreprise, et le SIRET d'une entreprise | **juste** | `clients.civilite`, migration 0119 |
 | La facture fige le SIRET et l'imprime sous le nom | **juste** | `factures.client_siret`, `document-commun.ts` |
 | `civilite.ts` reconnaît « mairie » dans un nom | **juste, et c'était un défaut** | `estUneEntreprise` rangeait la mairie avec les entreprises : le bouton « Sous-traitance, sans TVA » s'offrait sur son devis et sa facture |
-| Il manque le n° d'engagement, le code service, la distinction publique | **juste** | aucune colonne avant la migration 0135 |
+| Il manque le n° d'engagement, le code service, la distinction publique | **juste** | aucune colonne avant la migration 0137 |
 | L'envoi par SMS ou mail est proposé à une mairie | **juste, et c'était pire** | « Envoyer la facture » sert aussi à ARRÊTER la facture. Sans téléphone ni e-mail, il restait grisé : la facture d'une mairie sans coordonnée ne pouvait pas s'arrêter du tout |
 | Préremplir le n° d'engagement depuis le devis | **refusé** | le devis n'en porte pas, et ne peut pas en porter : la mairie donne son bon de commande APRÈS avoir accepté le devis |
 | Changer l'enum de `civilite` en deux temps | **inutile ici** | la contrainte s'élargit seulement (comme 0119) : l'ancien code accepte tout ce que la base accepte |
@@ -54,7 +54,7 @@ pénalités du devis se choisissait selon « entreprise ou non ». Une règle
 
 | | Fichier |
 |---|---|
-| Migration expand : `public` dans les trois contraintes, `clients.code_service`, `factures.client_code_service`, `factures.client_numero_engagement`. Aucune ligne réécrite | `drizzle/0135_client_public_et_chorus.sql` |
+| Migration expand : `public` dans les trois contraintes, `clients.code_service`, `factures.client_code_service`, `factures.client_numero_engagement`. Aucune ligne réécrite | `drizzle/0137_client_public_et_chorus.sql` |
 | Les règles : client public, catégorie, cases de la fiche, mots des trois listes | `src/lib/civilite.ts` |
 | Les règles de la facture : délai, échéance, phrase des retards, lignes du PDF | `src/lib/facture-publique.ts` |
 | La fiche : SIRET et code service pour « Public », pas de n° TVA | `SesCoordonnees.tsx` |

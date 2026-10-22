@@ -17,7 +17,7 @@ Détail : `docs/filtre-clients.md`.
 ## FACTURER UNE MAIRIE, CODÉ (22 octobre 2026), PAS ENCORE SUR `main`
 
 Branche `lot/facture-mairie-code`, dossier `atlas-app-chorus`, migration
-`0135_client_public_et_chorus.sql` (expand seul). Niveau 3 : **la batterie n'a
+`0137_client_public_et_chorus.sql` (expand seul). Niveau 3 : **la batterie n'a
 pas été lancée, à sa demande** ; elle se lance avec son accord, puis le lot part
 sur `main`. Les règles vivent dans `src/lib/civilite.ts` (client public,
 catégorie, cases de la fiche, mots des trois listes) et

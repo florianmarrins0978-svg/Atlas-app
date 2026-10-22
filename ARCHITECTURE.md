@@ -35508,7 +35508,7 @@ fin. Annoncé par e-mail, il attend le nom de domaine ; le délai de l'article
 sans prévenir ni savoir ce qui doit rester est exactement ce que
 `CLAUDE.md` §4 septies interdit.
 
-## §480 : Une mairie est une catégorie, pas une entreprise
+## §486 : Une mairie est une catégorie, pas une entreprise
 
 **Ses choix du 22 octobre 2026** (`appli/facture-mairie-chorus.html`) : une
 quatrième pastille, « Public », et trois listes de clients. Avant, une « Mairie
@@ -35545,7 +35545,7 @@ grisé sans téléphone ni e-mail, et laissait la facture d'une mairie impossibl
 (`MENTION_RETARD_PUBLIC`, BCE + 8 points et 40 €) vient de sources
 concordantes, pas de l'article R2192-31 lui-même. À faire confirmer.
 
-## §481 : Le Filtre des clients cherche un MOIS, et montre la pièce de ce mois
+## §487 : Le Filtre des clients cherche un MOIS, et montre la pièce de ce mois
 
 **Sa demande du 22 octobre 2026** : retrouver un devis de 2017 dans dix ans de
 dossiers, avec le bouton « Filtre » de Terminés, et un calendrier qui s'ouvre

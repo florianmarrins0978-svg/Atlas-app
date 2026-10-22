@@ -77,7 +77,7 @@ export type FacturePourEcran = {
   clientNumeroTva: string | null;
   /** Recopié du devis : l'avis sur la clé du n° TVA le compare au SIREN. */
   clientSiret: string | null;
-  /** Pour Chorus Pro, sur la facture d'un client public (migration 0135). */
+  /** Pour Chorus Pro, sur la facture d'un client public (migration 0137). */
   clientNumeroEngagement: string | null;
   clientCodeService: string | null;
   /** Le devis dont ces lignes viennent — le PDF le nomme, l'écran doit le nommer aussi. */
