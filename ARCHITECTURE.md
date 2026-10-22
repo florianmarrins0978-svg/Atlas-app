@@ -35508,7 +35508,7 @@ fin. Annoncé par e-mail, il attend le nom de domaine ; le délai de l'article
 sans prévenir ni savoir ce qui doit rester est exactement ce que
 `CLAUDE.md` §4 septies interdit.
 
-## 233. Des jours et des hommes dictés : la main d'œuvre fait le prix
+## §480 : Des jours et des hommes dictés : la main d'œuvre fait le prix
 
 **Sa règle du 21 octobre 2026**, après un devis où l'abattage, le démontage et
 la main d'œuvre avaient disparu : *« à partir du moment où l'utilisateur dicte
@@ -35544,3 +35544,19 @@ dictés, c'est ce tarif qui répond à « mini pelle » ; sans, la mini pelle se
 
 **Un tarif ne se multiplie que par SA propre unité** : 15 tonnes sur un
 forfait ne font pas 15 forfaits.
+
+## §481 : La banque se lit par un prestataire agréé, et l'essai ne garde rien en base
+
+*22 octobre 2026, son essai sur sa propre banque.*
+
+**Enable Banking, pour l'essai seulement.** Sans contrat, il laisse le propriétaire d'une application relier ses propres comptes, en production réelle (« Activate by linking accounts »). C'est exactement ce dont l'essai a besoin. GoCardless ne prend plus de nouveaux comptes depuis juillet 2025, Bridge n'offre qu'une banque de démonstration sans contrat. Le choix du prestataire pour ses clients reste à lui (`docs/A-FAIRE.md` §13) : tout ce qui parle à Enable Banking tient dans `src/server/banque/enable-banking.ts`, et la règle qui propose une facture (`src/lib/rapprochement-bancaire.ts`) ne connaît aucun prestataire.
+
+**La clé est un FICHIER, `cles-banque/<identifiant>.pem`.** Enable Banking la fait télécharger sous ce nom ; l'identifiant de l'application se lit donc dans le nom, et il n'y a rien à recopier. Une clé RSA de vingt-huit lignes collée dans `.env.local` se casse au premier retour à la ligne perdu. Deux fichiers `.pem` sont un refus, pas un choix. `*.pem` est déjà ignoré par git.
+
+**Rien en base pendant l'essai.** La session ouverte chez Enable Banking vit dans un témoin `httpOnly` (`atlas_banque_liaison`) : sans la clé, qui ne quitte pas l'espace, elle ne permet aucun appel. Une table des liaisons, sous RLS, viendra avec la carte de l'accueil, qui doit lire les virements sans que le patron ouvre l'écran.
+
+**Le retour de la banque est gardé comme celui de Google** (`api/agenda/google/retour`) : patron, témoin anti-rejeu effacé dans tous les cas, puis seulement l'échange du code. Sans l'anti-rejeu, un tiers ferait lire à Atlas les virements de SON compte en les présentant comme ceux du patron. L'adresse de retour vient d'`ATLAS_URL_PUBLIQUE`, jamais de l'en-tête `Host` (`paiement/retour.ts`).
+
+**La proposition se tait plutôt que de deviner.** Montant au centime près sur le reste dû ; plusieurs factures au même montant, le nom tranche ou il choisit ; un montant plus petit n'est proposé comme acompte que si le nom désigne une seule facture ; une facture émise après le virement n'est jamais proposée ; les mots de moins de trois lettres ne font pas concorder un nom.
+
+**180 jours, pas 90.** L'accord donné à un prestataire se renouvelle tous les 180 jours depuis le règlement délégué UE 2022/2360 (25 juillet 2023). L'essai en demande 90, ce que toutes les banques acceptent.

@@ -10,6 +10,9 @@ Format : le plus récent en tête.
 
 - **Planche « Facturer une mairie »** (`appli/facture-mairie-chorus.html`) : n° d'engagement et code service pour Chorus Pro, client public, bouton d'envoi. Retenu par lui le jour même : pastille « Public » et porte « Services publics » dans ses clients ; demandé aussi : le bouton « Filtre » de Terminés sur les trois listes de clients, puis le mois et le calendrier pour retrouver un devis de 2017. Retenus : code service sur la fiche et n° d'engagement sur la facture, « Télécharger pour Chorus Pro ». Ajoutés : échéance à 30 jours au plus et phrase des retards de la commande publique, à faire confirmer par son comptable. Rien dans `src/`. Constat : `estUneEntreprise` devine « mairie » dans le nom, donc « Sous-traitance, sans TVA » s'offre aujourd'hui sur le devis et la facture d'une « Mairie de… » ; et « Envoyer la facture », qui arrête la facture, reste éteint sans téléphone ni e-mail.
 - **Planche « Importer son ancienne appli »** (`appli/importer-ancienne-appli.html`) : déposer ses anciens PDF, Atlas lit, retrouve ou crée le client (`trouverOuCreerClient`), range la pièce. Rien dans `src/`.
+
+- **Ma banque, l'essai sur SA banque** (`/reglages/banque`, hors du sommaire). Sa question : *« est-ce qu'on peut faire un test déjà avec ma banque à moi ? »*. Enable Banking laisse gratuitement le propriétaire d'une application relier ses propres comptes. L'écran choisit la banque, envoie se connecter chez elle, revient, et liste les virements reçus des 30 derniers jours avec la facture en attente qu'Atlas proposerait (`src/lib/rapprochement-bancaire.ts`, 9 contrôles). **Il lit, il n'écrit rien** : aucun paiement noté, rien au relevé de TVA. La clé est un fichier `.pem` déposé dans `cles-banque/` de son espace, jamais versionné. Évite : coder la carte de l'accueil et le « Oui » avant de savoir si le Crédit Mutuel répond. Mode d'emploi : `docs/banque-essai.md`.
+- **La banque coupe l'accès tous les 180 jours, pas 90.** La planche du 14 août disait 90 : c'était la règle d'avant le 25 juillet 2023 (règlement délégué UE 2022/2360).
 - **Planche « Tout télécharger d'un client »** (`appli/telecharger-un-client.html`) et lecture de la conservation dix ans (`docs/telecharger-un-client.md`). Rien dans `src/` : trois places à choisir, les fiches d'entretien n'ont pas de PDF, et la notification d'échéance est déconseillée tant que la première tombe en 2036. Constat : la base tient la conservation (factures, avoirs, devis envoyés immuables) ; les fichiers PDF, eux, dépendent des sauvegardes de production, pas encore en place.
 
 ## 2026-10-21
@@ -60,7 +63,7 @@ Format : le plus récent en tête.
 
 - **Des jours et des hommes dictés : la main d'œuvre fait le prix, et il dit
   comment la répartir** (sa règle du 21 octobre, planche
-  `appli/main-d-oeuvre-repartie.html`, `ARCHITECTURE.md` §233). Son devis 067
+  `appli/main-d-oeuvre-repartie.html`, `ARCHITECTURE.md` §480). Son devis 067
   avait perdu l'abattage, le démontage et la main d'œuvre parce qu'un seul
   tarif (« Évacuation ») construisait le devis entier ; la mini pelle restait à
   chiffrer entre deux tarifs ; sa haie au mètre restait à chiffrer sans jours
