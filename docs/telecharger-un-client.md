@@ -1,11 +1,11 @@
 # Tout télécharger d'un client, et la conservation dix ans
 
-*Lecture du 22 octobre 2026. Rien n'est codé dans `src/` : la planche attend ses choix.*
+*Lecture du 22 octobre 2026, puis codé le même jour sur sa réponse : « la A, et tout en PDF ».*
 
 ## En cinq lignes
 
-1. **Le bouton se fait** en reprenant ce qui existe déjà : l'archive zip de « Télécharger mes données » et son rangement par dossier. Planche : `appli/telecharger-un-client.html`.
-2. **Les fiches ne sont pas des PDF** aujourd'hui (ce sont des pages web). Les mettre dans le fichier demande de fabriquer leur PDF.
+1. **Le bouton est codé**, place A (sous « Modifier ses coordonnées »). Il reprend l'archive zip de « Télécharger mes données ». Planche : `appli/telecharger-un-client.html`.
+2. **Les fiches d'entretien ont désormais leur PDF**, fabriqué depuis ce que le client a lu sur son lien.
 3. **Dans la base, la conservation est tenue** : une facture émise, un avoir, un devis envoyé ne peuvent être ni modifiés ni supprimés, même par erreur de code. C'est la base elle-même qui refuse.
 4. **Ce qui ne la garantit pas encore, c'est l'hébergement** : Atlas n'est hébergé nulle part, et dix ans de conservation dépendent des sauvegardes du stockage, pas du code.
 5. **La notification à l'échéance : je la déconseille maintenant.** La première échéance d'une facture tombe en 2036 ; ce qu'il faut protéger aujourd'hui, c'est la perte, pas la date de fin.
@@ -22,7 +22,18 @@
 
 **Ce que coûte le travail :** une route par client, qui filtre l'export existant sur ce client (niveau 2, l'accès aux pièces étant déjà ouvert à qui voit la fiche). Les fiches en PDF sont un second morceau, plus long, parce qu'il faut un composeur de plus.
 
-**Une question de sécurité, posée sur la planche :** les salariés. Chacun peut déjà ouvrir chaque PDF un par un ; le fichier entier n'élargit donc rien pour eux. Mais « Télécharger mes données » est réservé au patron et demande une preuve récente. Pour un seul client, je recommande : ouvert à qui voit la fiche, sans preuve supplémentaire.
+**Qui peut tout télécharger : tranché, et ma lecture de la planche était FAUSSE.** J'avais écrit que les salariés ouvrent déjà chaque PDF un par un. Vérifié dans `src/lib/acces-roles.ts` : **un salarié n'ouvre pas du tout les fiches clients**. La règle codée est donc plus simple et plus sûre que ma recommandation : chacun emporte exactement ce qu'il ouvre déjà une pièce à la fois, par la même règle (`piecesOuvertes`).
+
+| Rôle | Ce qu'il emporte |
+|---|---|
+| patron | tout |
+| facturation | devis, factures, fiches (les avoirs ne lui sont pas ouverts aujourd'hui) |
+| commercial | devis et fiches, aucune facture |
+| salarié | rien : il n'a pas la fiche client |
+
+**Ce qui a été fait autrement que sur la planche** : les fichiers gardent le nom qu'ils ont quand on les télécharge un par un (`facture-2026-0009.pdf`) plutôt que « Facture F2026‑0009.pdf » : un même document sous deux noms ne se retrouve plus. Et le bouton disparaît chez un client sans aucune pièce, plutôt que de donner un fichier vide.
+
+**Éprouvé** : `scripts/test-dossier-du-client.ts` (rôles, chemins, PDF du compte rendu, vu rouge sans le filtre), `scripts/test-dossier-client-db.ts` (sous la RLS réelle : une autre entreprise ne tire rien, un brouillon ne part pas), `scripts/test-tout-telecharger-client-e2e.ts` (le geste, jusqu'au zip ouvert par `unzip`).
 
 ## 2. La conservation dix ans : ce qui est tenu, ce qui ne l'est pas
 
@@ -39,7 +50,7 @@
 
 ### Un point que je corrigerais : le devis accepté à 5 ans
 
-`src/server/retention.ts` garde un devis accepté **5 ans**. Pour un paysagiste qui construit un ouvrage (muret, terrasse, arrosage enterré), la garantie décennale court **10 ans** à compter de la réception, et le devis signé est ce qui prouve ce qui était commandé. Je recommande de l'aligner sur 10 ans. Confiance moyenne : c'est une lecture juridique, à faire confirmer par son expert‑comptable ou un juriste ; ce qui la ferait changer, c'est un avis contraire de leur part. Le coût de se tromper dans ce sens est faible (on garde un peu plus).
+`src/server/retention.ts` garde un devis accepté **5 ans**. Pour un paysagiste qui construit un ouvrage (muret, terrasse, arrosage enterré), la garantie décennale court **10 ans** à compter de la réception, et le devis signé est ce qui prouve ce qui était commandé. Je recommande de l'aligner sur 10 ans. **Tranché le 22 octobre 2026 : 10 ans, codé.** Confiance moyenne : c'est une lecture juridique, à faire confirmer par son expert‑comptable ou un juriste ; ce qui la ferait changer, c'est un avis contraire de leur part. Le coût de se tromper dans ce sens est faible (on garde un peu plus).
 
 Ce changement touche l'effacement d'un client : lot à part, niveau 3.
 
@@ -57,8 +68,9 @@ Ce changement touche l'effacement d'un client : lot à part, niveau 3.
 
 | Question | Qui |
 |---|---|
-| A, B ou C pour la place du bouton | le patron |
-| Fiches en PDF dans le fichier, ou devis, factures et avoirs d'abord | le patron |
-| Salariés autorisés ou non | le patron |
-| Devis accepté : 5 ou 10 ans | le patron, après avis de son expert‑comptable |
+| ~~A, B ou C pour la place du bouton~~ | **A**, codé le 22 octobre 2026 |
+| ~~Fiches en PDF dans le fichier~~ | **oui**, codé le 22 octobre 2026 |
+| ~~Salariés autorisés ou non~~ | tranché par la règle des portes, voir §1 |
+| ~~Devis accepté : 5 ou 10 ans~~ | **10 ans**, sa décision du 22 octobre 2026, codé |
+| Batterie entière avant `main` | le patron : il a demandé de ne pas la lancer le 22 octobre |
 | Seconde copie du stockage de production | le patron (`docs/lot-sauvegarde-cloture.md` §13) |

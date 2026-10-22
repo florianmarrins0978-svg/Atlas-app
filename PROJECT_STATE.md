@@ -17,6 +17,10 @@ Branche `claude/importer-devis-factures`. Migration `drizzle/0136_pieces_importe
 `lire-zip.ts` ; lecture `src/server/import/`. Batterie à jouer, à son signal.
 `ARCHITECTURE.md` §482.
 
+## TOUT TÉLÉCHARGER D'UN CLIENT (22 octobre 2026)
+
+Un appui sous « Modifier ses coordonnées » rend un zip des devis, factures, fiches d'entretien (désormais en PDF) et avoirs du client, filtré par rôle. Planche retenue : A. Devis accepté gardé 10 ans (sa décision, lot séparé). Aucun des deux lots n'est sur `main` : la batterie entière n'a pas été jouée, à sa demande. `ARCHITECTURE.md` §483, `docs/telecharger-un-client.md`.
+
 ## ARROSAGE : LES PRIX DES FOURNISSEURS ET L'IMPORT D'UN DEVIS, CODÉS (19 octobre 2026), PAS ENCORE SUR `main`
 
 Branche `claude/arrosage-prix-et-devis`, **partie du lot fournisseurs**

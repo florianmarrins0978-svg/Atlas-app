@@ -58,12 +58,12 @@
 <body>
 <main>
 <h1 id="tout-télécharger-dun-client-et-la-conservation-dix-ans">Tout télécharger d'un client, et la conservation dix ans</h1>
-<p><em>Lecture du 22 octobre 2026. Rien n'est codé dans <code>src/</code> : la planche attend ses choix.</em></p>
+<p><em>Lecture du 22 octobre 2026, puis codé le même jour sur sa réponse : « la A, et tout en PDF ».</em></p>
 <h2 id="en-cinq-lignes">En cinq lignes</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ol>
-<li><strong>Le bouton se fait</strong> en reprenant ce qui existe déjà : l'archive zip de « Télécharger mes données » et son rangement par dossier. Planche : <code>appli/telecharger-un-client.html</code>.</li>
-<li><strong>Les fiches ne sont pas des PDF</strong> aujourd'hui (ce sont des pages web). Les mettre dans le fichier demande de fabriquer leur PDF.</li>
+<li><strong>Le bouton est codé</strong>, place A (sous « Modifier ses coordonnées »). Il reprend l'archive zip de « Télécharger mes données ». Planche : <code>appli/telecharger-un-client.html</code>.</li>
+<li><strong>Les fiches d'entretien ont désormais leur PDF</strong>, fabriqué depuis ce que le client a lu sur son lien.</li>
 <li><strong>Dans la base, la conservation est tenue</strong> : une facture émise, un avoir, un devis envoyé ne peuvent être ni modifiés ni supprimés, même par erreur de code. C'est la base elle-même qui refuse.</li>
 <li><strong>Ce qui ne la garantit pas encore, c'est l'hébergement</strong> : Atlas n'est hébergé nulle part, et dix ans de conservation dépendent des sauvegardes du stockage, pas du code.</li>
 <li><strong>La notification à l'échéance : je la déconseille maintenant.</strong> La première échéance d'une facture tombe en 2036 ; ce qu'il faut protéger aujourd'hui, c'est la perte, pas la date de fin.</li>
@@ -102,7 +102,30 @@
 </tr>
 </tbody></table></div>
 <p><strong>Ce que coûte le travail :</strong> une route par client, qui filtre l'export existant sur ce client (niveau 2, l'accès aux pièces étant déjà ouvert à qui voit la fiche). Les fiches en PDF sont un second morceau, plus long, parce qu'il faut un composeur de plus.</p>
-<p><strong>Une question de sécurité, posée sur la planche :</strong> les salariés. Chacun peut déjà ouvrir chaque PDF un par un ; le fichier entier n'élargit donc rien pour eux. Mais « Télécharger mes données » est réservé au patron et demande une preuve récente. Pour un seul client, je recommande : ouvert à qui voit la fiche, sans preuve supplémentaire.</p>
+<p><strong>Qui peut tout télécharger : tranché, et ma lecture de la planche était FAUSSE.</strong> J'avais écrit que les salariés ouvrent déjà chaque PDF un par un. Vérifié dans <code>src/lib/acces-roles.ts</code> : <strong>un salarié n'ouvre pas du tout les fiches clients</strong>. La règle codée est donc plus simple et plus sûre que ma recommandation : chacun emporte exactement ce qu'il ouvre déjà une pièce à la fois, par la même règle (<code>piecesOuvertes</code>).</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Rôle</th>
+<th>Ce qu'il emporte</th>
+</tr></thead><tbody>
+<tr>
+<td>patron</td>
+<td>tout</td>
+</tr>
+<tr>
+<td>facturation</td>
+<td>devis, factures, fiches (les avoirs ne lui sont pas ouverts aujourd'hui)</td>
+</tr>
+<tr>
+<td>commercial</td>
+<td>devis et fiches, aucune facture</td>
+</tr>
+<tr>
+<td>salarié</td>
+<td>rien : il n'a pas la fiche client</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui a été fait autrement que sur la planche</strong> : les fichiers gardent le nom qu'ils ont quand on les télécharge un par un (<code>facture-2026-0009.pdf</code>) plutôt que « Facture F2026‑0009.pdf » : un même document sous deux noms ne se retrouve plus. Et le bouton disparaît chez un client sans aucune pièce, plutôt que de donner un fichier vide.</p>
+<p><strong>Éprouvé</strong> : <code>scripts/test-dossier-du-client.ts</code> (rôles, chemins, PDF du compte rendu, vu rouge sans le filtre), <code>scripts/test-dossier-client-db.ts</code> (sous la RLS réelle : une autre entreprise ne tire rien, un brouillon ne part pas), <code>scripts/test-tout-telecharger-client-e2e.ts</code> (le geste, jusqu'au zip ouvert par <code>unzip</code>).</p>
 <h2 id="2-la-conservation-dix-ans--ce-qui-est-tenu-ce-qui-ne-lest-pas">2. La conservation dix ans : ce qui est tenu, ce qui ne l'est pas</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
@@ -150,7 +173,7 @@
 </tbody></table></div>
 <p><strong>Le vrai risque n'est pas un effacement par l'application, c'est une perte de disque.</strong> Le fichier « fichiers-absents.txt » de la sauvegarde le dit déjà : sur son banc, un espace recréé a gardé la base et perdu les fichiers. Tant que le stockage de production n'a pas sa seconde copie, « conservé dix ans » est vrai de la base et pas des PDF.</p>
 <h3 id="un-point-que-je-corrigerais--le-devis-accepté-à-5-ans">Un point que je corrigerais : le devis accepté à 5 ans</h3>
-<p><code>src/server/retention.ts</code> garde un devis accepté <strong>5 ans</strong>. Pour un paysagiste qui construit un ouvrage (muret, terrasse, arrosage enterré), la garantie décennale court <strong>10 ans</strong> à compter de la réception, et le devis signé est ce qui prouve ce qui était commandé. Je recommande de l'aligner sur 10 ans. Confiance moyenne : c'est une lecture juridique, à faire confirmer par son expert‑comptable ou un juriste ; ce qui la ferait changer, c'est un avis contraire de leur part. Le coût de se tromper dans ce sens est faible (on garde un peu plus).</p>
+<p><code>src/server/retention.ts</code> garde un devis accepté <strong>5 ans</strong>. Pour un paysagiste qui construit un ouvrage (muret, terrasse, arrosage enterré), la garantie décennale court <strong>10 ans</strong> à compter de la réception, et le devis signé est ce qui prouve ce qui était commandé. Je recommande de l'aligner sur 10 ans. <strong>Tranché le 22 octobre 2026 : 10 ans, codé.</strong> Confiance moyenne : c'est une lecture juridique, à faire confirmer par son expert‑comptable ou un juriste ; ce qui la ferait changer, c'est un avis contraire de leur part. Le coût de se tromper dans ce sens est faible (on garde un peu plus).</p>
 <p>Ce changement touche l'effacement d'un client : lot à part, niveau 3.</p>
 <h2 id="3-la-notification-à-léchéance">3. La notification à l'échéance</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -168,20 +191,24 @@
 <th>Qui</th>
 </tr></thead><tbody>
 <tr>
-<td>A, B ou C pour la place du bouton</td>
-<td>le patron</td>
+<td>~~A, B ou C pour la place du bouton~~</td>
+<td><strong>A</strong>, codé le 22 octobre 2026</td>
 </tr>
 <tr>
-<td>Fiches en PDF dans le fichier, ou devis, factures et avoirs d'abord</td>
-<td>le patron</td>
+<td>~~Fiches en PDF dans le fichier~~</td>
+<td><strong>oui</strong>, codé le 22 octobre 2026</td>
 </tr>
 <tr>
-<td>Salariés autorisés ou non</td>
-<td>le patron</td>
+<td>~~Salariés autorisés ou non~~</td>
+<td>tranché par la règle des portes, voir §1</td>
 </tr>
 <tr>
-<td>Devis accepté : 5 ou 10 ans</td>
-<td>le patron, après avis de son expert‑comptable</td>
+<td>~~Devis accepté : 5 ou 10 ans~~</td>
+<td><strong>10 ans</strong>, sa décision du 22 octobre 2026, codé</td>
+</tr>
+<tr>
+<td>Batterie entière avant <code>main</code></td>
+<td>le patron : il a demandé de ne pas la lancer le 22 octobre</td>
 </tr>
 <tr>
 <td>Seconde copie du stockage de production</td>

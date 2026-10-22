@@ -290,6 +290,11 @@ const OUVERT_A_LA_FACTURATION = [
   // la fiche du client, comme ceux d'Atlas. Envoyer et ranger reste au patron
   // (`import/garde.ts`).
   "/api/pieces-importees",
+
+  // **Tout télécharger d'un client** (22 octobre 2026) : elle ouvre sa fiche,
+  // donc le bouton. Le fichier ne porte que les pièces que ce rôle ouvre déjà
+  // une à une (`piecesOuvertes`) : la porte ne donne rien de plus.
+  "/api/clients",
   // **Le rapport d'entretien, relu depuis le dossier d'un client** — elle
   // l'ouvrait déjà là, sur la page publique ; il se relit dans l'application
   // depuis le 24 septembre 2026 (`rapport-dans-l-appli.ts`). Aucun montant.

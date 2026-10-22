@@ -23,6 +23,10 @@ signal. Migration `0136_pieces_importees.sql` ; touche `next.config.ts`
 (plancher, donc niveau 3). Ce qui reste : `TODO.md`, entrée « importer son
 ancienne appli ». Document de retour : `docs/importer-devis-factures.md`.
 
+## TOUT TÉLÉCHARGER D'UN CLIENT (22 octobre 2026)
+
+`src/app/api/clients/[id]/dossier/route.ts` assemble le zip ; la liste vient de `chargerFicheClient`, le filtre par rôle de `src/lib/dossier-du-client.ts`, les sources de `src/server/repositories/dossier-client.ts`, le compte rendu en PDF de `src/server/pdf/rapport-entretien-pdf.ts`. Un PDF archivé absent n'est jamais refait : il est nommé dans « A lire.txt ». §483.
+
 ## ARROSAGE, PRIX ET DEVIS : branche `claude/arrosage-prix-et-devis` (19 octobre 2026)
 
 Elle part du lot fournisseurs, pas de la branche aquaplus de son PC (absente

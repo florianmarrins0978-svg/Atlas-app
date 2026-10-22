@@ -265,6 +265,15 @@ async function main() {
     // conservé » — une phrase qu'on ne peut pas retrouver dans un classeur.
     assert.ok(rapport.pieces[0].numero && rapport.pieces[0].numero !== "?", "la pièce conservée n'est pas nommée");
     assert.ok(rapport.pieces[0].jusquAu, "l'échéance doit être annoncée");
+    // **Dix ans, sa décision du 22 octobre 2026** : la garantie décennale court
+    // dix ans, et le devis signé est ce qui prouve ce qui était commandé.
+    const dansDixAns = new Date(MAINTENANT.getTime());
+    dansDixAns.setUTCFullYear(dansDixAns.getUTCFullYear() + 10);
+    assert.strictEqual(
+      rapport.pieces[0].jusquAu,
+      dansDixAns.toISOString().slice(0, 10),
+      "le devis accepté n'est pas gardé dix ans"
+    );
     assert.strictEqual(rapport.disparu, false, "une pièce le retient : il ne peut pas avoir disparu");
     assert.match(rapport.motif ?? "", /obligation comptable/);
 
