@@ -113,6 +113,8 @@ export default async function ClientsPage({
               nom: c.nom,
               adresse: c.adresse,
               derniere: c.derniere,
+              joursDevis: c.joursDevis,
+              joursFactures: c.joursFactures,
               // Les montants voyagent tels que le dépôt les rend : leur mise en
               // forme vit dans `enEuros`, appelée une seule fois, à l'écran.
               facture: c.facture ?? null,

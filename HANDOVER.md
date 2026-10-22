@@ -10,6 +10,15 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LE FILTRE DES LISTES DE CLIENTS : branche `lot/filtre-clients` (22 octobre 2026)
+
+Branche `lot/filtre-clients`, dossier `atlas-app-filtre`, **posée sur
+`lot/facture-mairie-code`** : la liste « Services publics » n'existe que là.
+Les deux lots partent sur `main` ensemble, après la batterie (pas lancée, à sa
+demande). Règle pure : `src/lib/tri-clients.ts` ; bouton commun avec Terminés :
+`src/components/atlas/BoutonFiltre.tsx`. Suite neuve : `test-tri-clients.ts`.
+Détail : `docs/filtre-clients.md`.
+
 ## FACTURER UNE MAIRIE : branche `lot/facture-mairie-code` (22 octobre 2026)
 
 Branche `lot/facture-mairie-code`, dossier `atlas-app-chorus`, migration

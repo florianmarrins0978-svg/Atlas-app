@@ -35544,3 +35544,24 @@ grisé sans téléphone ni e-mail, et laissait la facture d'une mairie impossibl
 **Ce qui n'est pas tenu par un texte lu** : la phrase des retards
 (`MENTION_RETARD_PUBLIC`, BCE + 8 points et 40 €) vient de sources
 concordantes, pas de l'article R2192-31 lui-même. À faire confirmer.
+
+## §481 : Le Filtre des clients cherche un MOIS, et montre la pièce de ce mois
+
+**Sa demande du 22 octobre 2026** : retrouver un devis de 2017 dans dix ans de
+dossiers, avec le bouton « Filtre » de Terminés, et un calendrier qui s'ouvre
+au toucher d'une date.
+
+**Le bouton est le même composant** (`BoutonFiltre`), sorti de Terminés :
+deux dessins du même geste auraient divergé. Le volet, lui, est propre aux
+clients : ses dates ouvrent un calendrier, celles de Terminés trient.
+
+**Une date touchée ouvre le calendrier parce que le doigt touche la case de date
+elle-même**, invisible et posée sur la clé, comme le mois de `FiltreDeDate`.
+Ouvrir le calendrier « à distance » depuis un bouton peut être refusé par iOS
+sans un mot.
+
+**Le jour choisi désigne son MOIS** (`clientsDuMois`) : un jour exact rendrait
+le plus souvent une liste vide. Et **la ligne montre la pièce de ce mois**, pas
+la plus récente : un client revu en 2024 apparaît en juin 2017 avec son devis
+de juin 2017. La liste reçoit donc TOUTES les dates des devis envoyés et des
+factures émises (`joursDevis`, `joursFactures`), pas seulement la dernière.

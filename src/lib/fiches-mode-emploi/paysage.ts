@@ -509,11 +509,27 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     reserve:
       "La recherche porte sur le nom du client. Une entreprise se cherche dans « Vos entreprises », une mairie dans « Services publics ».",
     source: "src/app/clients/ListeClients.tsx",
-    preuves: ["MOTS_DE_LA_CATEGORIE[categorie].chercher", "filtrerClientsParNom(clients, saisie)"],
+    preuves: ["MOTS_DE_LA_CATEGORIE[categorie].chercher", "filtrerClientsParNom(dansLeTri, saisie)"],
     ailleurs: [
       { source: "src/app/EcranChantiers.tsx", preuves: ['href="/clients"', "Vos clients"] },
       { source: "src/lib/civilite.ts", preuves: ['"Chercher un client"', '"Chercher une entreprise"', '"Chercher un service public"'] },
     ],
+  },
+  {
+    // Sa demande du 22 octobre 2026 : retrouver un devis de 2017 dans dix ans de dossiers.
+    id: "clients-filtre-date",
+    ecran: "Vos clients",
+    ou: "« Chantiers » dans la barre du bas, puis « Vos clients », « Vos entreprises » ou « Services publics »",
+    intitule: "Retrouver un client par la date de son devis ou de sa facture",
+    motsCles: ["date", "ancien", "annee", "mois", "calendrier", "filtre", "trier", "2017"],
+    geste:
+      "Touchez « Filtre » sous la recherche, puis « Date du devis » ou « Date de facturation » : le calendrier s'ouvre. " +
+      "Choisissez un jour, la liste montre les clients qui ont une pièce ce mois-là.",
+    reserve:
+      "Touchez le titre du mois pour rouvrir le calendrier. « Nom du client » remet la liste de A à Z.",
+    source: "src/app/clients/ListeClients.tsx",
+    preuves: ["<BoutonFiltre", "<VoletTriClients", 'type="date"', 'dataAtlas="periode-du-filtre"'],
+    ailleurs: [{ source: "src/lib/tri-clients.ts", preuves: ['"Nom du client"', '"Date du devis"', '"Date de facturation"'] }],
   },
   {
     id: "clients-creer",

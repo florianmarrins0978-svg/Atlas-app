@@ -488,6 +488,13 @@ export type ClientEnListe = {
    * décide pas (`CLAUDE.md` §4 sexies).
    */
   derniere: TraceDuClient | null;
+  /**
+   * Les jours de TOUS ses devis envoyés et de toutes ses factures émises :
+   * le Filtre de la liste (22 octobre 2026) cherche un devis de 2017 chez un
+   * client revu depuis (`clientsDuMois`, `src/lib/tri-clients.ts`).
+   */
+  joursDevis: string[];
+  joursFactures: string[];
   /** `null` : rien n'a encore été facturé — ce n'est pas « zéro euro ». */
   facture: string | null;
   /** Ce qui reste dû. `null` quand rien n'est facturé. */
@@ -611,6 +618,17 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
     for (const f of sesFactures) retenir(`facture:${clientDuChantier.get(f.chantierId) ?? ""}`, f.dateEmission);
     for (const f of sesFiches) retenir(`fiche:${f.clientId ?? ""}`, f.jour);
 
+    // Toutes les dates, pas seulement la plus récente : le Filtre en a besoin.
+    const tousLesJours = new Map<string, string[]>();
+    const noter = (cle: string, jour: string | null) => {
+      if (!jour) return;
+      const liste = tousLesJours.get(cle) ?? [];
+      liste.push(jour);
+      tousLesJours.set(cle, liste);
+    };
+    for (const d of sesDevis) noter(`devis:${clientDuChantier.get(d.chantierId) ?? ""}`, d.jour);
+    for (const f of sesFactures) noter(`facture:${clientDuChantier.get(f.chantierId) ?? ""}`, f.dateEmission);
+
     const parFacture = new Map<string, { date: string; montant: string }[]>();
     for (const p of paiements) {
       const liste = parFacture.get(p.factureId) ?? [];
@@ -667,6 +685,8 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
         // « Mr. » retiré, la sous-traitance et la facture pour Chorus Pro.
         categorie: categorieDuClient(client.nom, client.civilite),
         derniere,
+        joursDevis: tousLesJours.get(`devis:${client.id}`) ?? [],
+        joursFactures: tousLesJours.get(`facture:${client.id}`) ?? [],
         facture: fiche.facture,
         du: fiche.du,
         dernierJour: jourDeRangement(

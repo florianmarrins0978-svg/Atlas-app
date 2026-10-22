@@ -264,6 +264,7 @@ export const QUESTIONS_PAR_ZONE: Record<string, [string, string][]> = {
     ["enlever une prestation de ma fiche", "composer-retirer-prestation"],
     ["supprimer toute une famille", "composer-retirer-famille"],
     ["chercher un client", "clients-chercher"],
+    ["retrouver un devis de 2017 par la date", "clients-filtre-date"],
     ["comment je cree un client", "clients-creer"],
     ["changer le numero de telephone d'un client", "clients-modifier"],
     ["refaire le meme devis que l'an dernier", "clients-dernier-devis"],

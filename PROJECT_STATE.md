@@ -5,6 +5,15 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## LE FILTRE SUR LES LISTES DE CLIENTS, CODÉ (22 octobre 2026), PAS ENCORE SUR `main`
+
+Branche `lot/filtre-clients`, dossier `atlas-app-filtre`, **posée sur
+`lot/facture-mairie-code`** : la liste « Services publics » n'existe que là.
+Les deux lots partent sur `main` ensemble, après la batterie (pas lancée, à sa
+demande). Règle pure : `src/lib/tri-clients.ts` ; bouton commun avec Terminés :
+`src/components/atlas/BoutonFiltre.tsx`. Suite neuve : `test-tri-clients.ts`.
+Détail : `docs/filtre-clients.md`.
+
 ## FACTURER UNE MAIRIE, CODÉ (22 octobre 2026), PAS ENCORE SUR `main`
 
 Branche `lot/facture-mairie-code`, dossier `atlas-app-chorus`, migration
