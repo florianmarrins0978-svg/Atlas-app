@@ -101,11 +101,16 @@
   .sens span{flex:1;min-height:44px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:13.5px;
     color:var(--doux);box-shadow:inset 0 0 0 1px var(--trait)}
   .sens .pris{color:var(--plein);font-weight:600;box-shadow:inset 0 0 0 1.5px var(--plein)}
+  .periode{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;margin:12px 0 4px;color:var(--encre)}
+  .periode .nm{font:400 24px/1.2 var(--serif)}
+  .periode .ic,.cle .ic{display:inline-flex;color:var(--plein)}
+  .cle .ic{margin-left:10px}
+  .cle.pris .ic{color:var(--surplein)}
   .mois{display:flex;align-items:center;justify-content:center;gap:2px;margin:12px 0 4px}
   .mois .chv{width:34px;height:44px;display:flex;align-items:center;justify-content:center;color:var(--plein)}
   .mois .nm{font:400 26px/1.2 var(--serif);padding:0 4px}
   .voile{position:absolute;inset:0;background:rgba(10,10,8,.38)}
-  .cal{position:absolute;left:14px;right:14px;top:150px;background:var(--plage);border-radius:16px;padding:16px 16px 12px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+  .cal{position:absolute;left:14px;right:14px;top:250px;background:var(--plage);border-radius:16px;padding:16px 16px 12px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
   .cal .ent{display:flex;justify-content:space-between;align-items:center;font:600 16px/1 var(--sans)}
   .cal .ent .an{color:var(--plein)}
   .cal .ent .fl{display:flex;gap:22px;color:var(--plein);font-size:20px}
@@ -188,7 +193,7 @@
   <div class="rangee" id="q1"></div>
 
   <h2>Le Filtre, puis voyager dans le temps</h2>
-  <p class="dit">Pour retrouver un devis de 2017 dans dix ans de dossiers, sur vos clients, vos entreprises et vos services publics. Trié par date, le mois s’affiche entre deux flèches ; toucher le mois ouvre le calendrier.</p>
+  <p class="dit">Pour retrouver un devis de 2017 dans dix ans de dossiers, sur vos clients, vos entreprises et vos services publics. Toucher une date dans le Filtre ouvre le calendrier, et l’on voyage dans le temps.</p>
   <div class="rangee" id="q1b"></div>
 
   <h2>2. Les deux numéros <span class="etiq">retenu A</span></h2>
@@ -204,7 +209,7 @@
   <div class="rangee" id="q4"></div>
 
   <div class="note"><span class="t">Une chose à me dire</span>
-    Le Filtre et le calendrier : c’est bien ce que vous vouliez ?<br>
+    Le calendrier qui s’ouvre au toucher d’une date : c’est bien ça ?<br>
     Le reste est retenu. À faire confirmer par votre comptable avant de coder : la phrase des retards (taux de la BCE plus 8 points, et 40 €).
   </div>
 </div>
@@ -225,7 +230,10 @@
   function appliquer(i){
     const j = CHARTES[i][1], r = document.documentElement.style;
     for (const k of ["fond","plage","encre","gris","plein"]) r.setProperty("--"+k, j[k]);
-    r.setProperty("--orTexte", j.sombre ? "#b98b47" : "#8b6835");
+    // Sa demande du 22 octobre : tout ce qui était doré passe au plein, l'accent
+    // de la charte, comme les boutons.
+    r.setProperty("--or", j.plein);
+    r.setProperty("--orTexte", j.plein);
     [...zone.children].forEach((b,n)=>b.setAttribute("aria-pressed", String(n===i)));
   }
   zone.innerHTML = CHARTES.map(([n])=>`<button type="button">${n}</button>`).join("");
@@ -311,9 +319,9 @@
       haut = `${tete("Services publics")}<div class="compte">4 clients</div>`;
       cherche = "Chercher un service public";
       if (tri === "date") {
-        // Le mois qu'on feuillette, au dessin de FiltreDeDate : deux chevrons,
-        // le mois en serif 26 px, et le mois ouvre le calendrier du téléphone.
-        liste = '<div class="mois neuf"><span class="chv"><svg width="10" height="16" viewBox="0 0 10 16" fill="none"><path d="M8 2L2 8l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="nm">Juin 2017</span><span class="chv"><svg width="10" height="16" viewBox="0 0 10 16" fill="none"><path d="M2 2l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>'
+        // Le jour choisi au calendrier : la liste montre les devis de son mois,
+        // et toucher la période rouvre le calendrier pour voyager ailleurs.
+        liste = '<div class="periode neuf"><span class="nm">Devis de juin 2017</span><span class="ic"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4.5" width="14" height="12.5" rx="2"/><path d="M3 8.5h14M7 2.5v4M13 2.5v4" stroke-linecap="round"/></svg></span></div>'
           + ligne("Mairie de Rezé", "Devis 28 juin 2017") + ligne("SIVOM de la Loire", "Devis 12 juin 2017");
       } else {
         liste = lettre("C") + ligne(PUBLICS[0][0], PUBLICS[0][1]) + lettre("D") + ligne(PUBLICS[1][0], PUBLICS[1][1])
@@ -338,12 +346,11 @@
 
   // Le volet « Trier par » de Terminés (VoletTri), avec ses libellés à lui.
   function volet() {
-    const cle = (t, pris) => `<div class="cle${pris ? " pris" : ""}">${t}</div>`;
+    const cle = (t, pris) => `<div class="cle${pris ? " pris" : ""}">${t}${t.startsWith("Date") ? '<span class="ic"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4.5" width="14" height="12.5" rx="2"/><path d="M3 8.5h14M7 2.5v4M13 2.5v4" stroke-linecap="round"/></svg></span>' : ""}</div>`;
     return `<div class="tel"><div class="corps" style="opacity:.35;pointer-events:none">${tete("Services publics")}<div class="compte">4 clients</div></div>
       <div class="feuille">
         <p class="caps" style="text-align:center;margin:0 0 6px">Trier par</p>
         ${cle("Nom du client")}${cle("Date du devis", 1)}${cle("Date de facturation")}
-        <div class="sens"><span class="pris">Du plus ancien</span><span>Du plus récent</span></div>
         <p style="text-align:center;color:var(--gris);font-size:14px;margin:14px 0 0">Fermer</p>
       </div></div>`;
   }
@@ -352,16 +359,16 @@
     const jours = ["L","M","M","J","V","S","D"].map(j => '<span class="j">' + j + '</span>').join("");
     let cases = "<span></span><span></span><span></span>";
     for (let d = 1; d <= 30; d++) cases += '<span class="' + (d === 12 ? "sel" : "") + '">' + d + '</span>';
-    return '<div class="tel" style="position:relative">' + clients("publics", "date").replace('<div class="tel">', "<div>")
-      + '<div class="voile"></div><div class="cal"><div class="ent"><span class="an">juin 2017 ›</span><span class="fl"><span>‹</span><span>›</span></span></div>'
+    return '<div class="tel" style="position:relative;min-height:720px">' + volet().replace('<div class="tel">', "<div>")
+      + '<div class="voile"></div><div class="cal"><div class="ent"><span class="an">juin 2017</span><span class="fl"><span>‹</span><span>›</span></span></div>'
       + '<div class="grille">' + jours + cases + '</div></div></div>';
   }
 
   document.getElementById("q1b").innerHTML = [
     { nom:"Le bouton Filtre", idee:"Le même que dans Terminés, sous la recherche, à droite.", ecran: clients("publics", "az") },
-    { nom:"Trier par", idee:"Les mots de Terminés. Tout s’applique au toucher, sans bouton Valider.", ecran: volet() },
-    { nom:"Trié par date : le mois", idee:"Les flèches passent d’un mois à l’autre. On ne voit que les devis de ce mois. Le bouton Filtre se remplit.", ecran: clients("publics", "date") },
-    { nom:"Toucher le mois : le calendrier", idee:"Le calendrier du téléphone. Toucher « juin 2017 » fait défiler les années : on remonte dix ans en deux gestes.", ecran: calendrier() },
+    { nom:"Trier par", idee:"Nom du client, de A à Z. Les deux dates portent le signe du calendrier.", ecran: volet() },
+    { nom:"Toucher « Date du devis » : le calendrier", idee:"Il s’ouvre tout de suite. On voyage dans le temps : les flèches changent de mois, toucher « juin 2017 » change d’année.", ecran: calendrier() },
+    { nom:"Le jour touché : ses devis", idee:"La liste montre les devis de ce mois. Toucher « Devis de juin 2017 » rouvre le calendrier. Le bouton Filtre reste rempli.", ecran: clients("publics", "date") },
   ].map(p => `<div class="col"><p class="nom">${p.nom}</p><p class="idee">${p.idee}</p>${p.ecran}</div>`).join("");
 
   document.getElementById("q2").innerHTML = [
