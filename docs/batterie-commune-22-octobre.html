@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La batterie commune du 22 octobre 2026</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="la-batterie-commune-du-22-octobre-2026">La batterie commune du 22 octobre 2026</h1>
+<p>Sept lots qui attendaient leur batterie, réunis dans un seul dossier (<code>atlas-app-commune-22</code>) et passés sur <code>main</code> le 23 octobre 2026 (<code>4c0b55cb..6ccd832e</code>), à la demande du patron : <em>« fusionne les six ensemble et ne joue qu'une seule batterie pour vous toutes »</em>.</p>
+<h2 id="1-les-sept-lots">1. Les sept lots</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Lot</th>
+<th>Venu de</th>
+<th>Migration</th>
+<th>Architecture</th>
+</tr></thead><tbody>
+<tr>
+<td>Prix dicté et main d'œuvre</td>
+<td>session 3f</td>
+<td>0135</td>
+<td>§480</td>
+</tr>
+<tr>
+<td>Ma banque, l'essai</td>
+<td>session 8a</td>
+<td>aucune</td>
+<td>§481</td>
+</tr>
+<tr>
+<td>Importer devis et factures</td>
+<td>session du cloud</td>
+<td>0136</td>
+<td>§482</td>
+</tr>
+<tr>
+<td>Tout télécharger d'un client</td>
+<td>session du cloud</td>
+<td>aucune</td>
+<td>§483</td>
+</tr>
+<tr>
+<td>Lignes de goutte-à-goutte, « Dessiner le plan » revu</td>
+<td>session du cloud</td>
+<td>aucune</td>
+<td>§484, §485</td>
+</tr>
+<tr>
+<td>Facturer une mairie</td>
+<td>cette session</td>
+<td>0137</td>
+<td>§486</td>
+</tr>
+<tr>
+<td>Le Filtre des listes de clients</td>
+<td>cette session</td>
+<td>aucune</td>
+<td>§487</td>
+</tr>
+</tbody></table></div>
+<p><strong>Renumérotés à la réunion</strong> : trois lots portaient une migration 0135 et cinq un §480. Chacun a pris le numéro suivant, dans l'ordre d'entrée, avec ses renvois, fichier par fichier du seul lot concerné. Le §233 du prix dicté (déjà pris par la note vocale) est devenu §480.</p>
+<h2 id="2-ce-que-la-batterie-a-trouvé-entre-les-lots-et-ce-qui-a-été-fait">2. Ce que la batterie a trouvé entre les lots, et ce qui a été fait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Rouge</th>
+<th>Venu de</th>
+<th>Correction</th>
+</tr></thead><tbody>
+<tr>
+<td>Deux tuiles et une carte aux coins carrés</td>
+<td>Import, Lignes</td>
+<td>ce sont une carte et des tuiles, pas des boutons : exemptées ligne par ligne, comme les cases du calendrier</td>
+</tr>
+<tr>
+<td>Cinq routes sans garde de chemin</td>
+<td>Banque, Import</td>
+<td>gardées par le patron seul, plus strict : inscrites aux exemptions, comme « mes-donnees »</td>
+</tr>
+<tr>
+<td>La route de dépôt de l'import prise pour une route qui sert un PDF</td>
+<td>Import</td>
+<td>le contrôle reconnaît désormais une route qui SERT : elle construit une réponse</td>
+</tr>
+<tr>
+<td>Colonne de fichier non déclarée</td>
+<td>Import</td>
+<td><code>pieces_importees.fichier_cle</code> ajoutée aux objets stockés</td>
+</tr>
+<tr>
+<td>Trois actions sans garde reconnue</td>
+<td>Import</td>
+<td><code>patronQuiImporte</code> entre dans la liste des gardes reconnues</td>
+</tr>
+<tr>
+<td>« Annuler » illisible en mode nuit (2,49)</td>
+<td>Import</td>
+<td><code>orSurEncre</code>, le jeton fait pour l'or posé sur l'encre</td>
+</tr>
+<tr>
+<td>La technique et le diamètre ne se demandaient plus</td>
+<td>Prix dicté</td>
+<td>corrigé par la session 3f : la carte main d'œuvre s'ajoute aux questions</td>
+</tr>
+<tr>
+<td>Le second appui sur la dictée n'allait plus au devis</td>
+<td>Prix dicté</td>
+<td>corrigé par la session 3f, défaut ancien qu'il démasquait</td>
+</tr>
+<tr>
+<td>Cinq questions au lieu de quatre au plus</td>
+<td>Prix dicté</td>
+<td>la carte main d'œuvre porte sa sorte ; la limite ne compte que la grille</td>
+</tr>
+<tr>
+<td>Le zip relu sous Windows (« Devis\ »)</td>
+<td>Tout télécharger</td>
+<td>le test ramène les chemins à « / »</td>
+</tr>
+<tr>
+<td>Pages publiques : Node planté après « 0 échec »</td>
+<td>outillage</td>
+<td>la suite pose son code de sortie au lieu de couper Node</td>
+</tr>
+<tr>
+<td>La session survit à la déconnexion</td>
+<td>voir §3</td>
+<td>la suite suit la séquence du patron ; le défaut est noté</td>
+</tr>
+</tbody></table></div>
+<h2 id="3-le-défaut-de-sécurité-trouvé-en-chemin">3. Le défaut de sécurité trouvé en chemin</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Une requête partie avant la déconnexion, revenue après, peut ressusciter la session.</strong> Chaque réponse prolonge la session en reposant son cookie. Ouvrir la feuille « Se déconnecter » fait précharger quatre pages des Réglages ; si l'une revient après la réponse de la déconnexion, elle repose le cookie que la sortie venait d'effacer.</p>
+<ul>
+<li><strong>Hors de portée d'un doigt</strong> : il faut confirmer moins de deux secondes après avoir ouvert la feuille. Le patron ouvre, lit, confirme.</li>
+<li><strong>Pas propre aux lots</strong> : le mécanisme existe sur <code>main</code>. La charge des sept lots ne faisait que rapprocher les temps de réponse.</li>
+<li><strong>Inscrit dans <code>TODO.md</code></strong>, à corriger dans un lot d'authentification (niveau 3) : une session fermée doit être révoquée côté serveur, pas seulement son cookie effacé. Le jeton porte déjà une identité de session stable (<code>sessionId</code>).</li>
+</ul>
+<h2 id="4-les-chiffres">4. Les chiffres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Première batterie</th>
+<th>Seconde batterie</th>
+<th>Après corrections</th>
+</tr></thead><tbody>
+<tr>
+<td>Suites base</td>
+<td>rouges</td>
+<td>480 / 491</td>
+<td>3 rouges, les mêmes sur <code>main</code></td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td>182 / 191</td>
+<td>187 / 191</td>
+<td>rencontre 13 / 13</td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td>verte</td>
+<td>verte</td>
+<td></td>
+</tr>
+</tbody></table></div>
+<p><strong>Les trois rouges qui restent existent sur <code>main</code>, à l'identique</strong> (<code>verifier-rouge-prealable.ts</code>) : <code>test-banc-lent-se-dit</code>, <code>test-garde-fusion-main</code> et <code>test-rappel-arrosage</code>. Ils tiennent à Windows (fins de ligne, ports d'essai) et ne viennent d'aucun lot.</p>
+<p>Chaque correction de suite a été rejouée au moins deux fois seule. La déconnexion a été rejouée huit fois, et cherchée par dichotomie sur les états intermédiaires de la réunion.</p>
+<h2 id="5-ce-qui-reste-ouvert">5. Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>Révoquer côté serveur une session fermée</td>
+<td>un lot d'authentification à part</td>
+</tr>
+<tr>
+<td>Confirmer la phrase des retards d'un client public (BCE + 8 points, 40 €)</td>
+<td>son comptable</td>
+</tr>
+<tr>
+<td>Mettre à jour la question 31 de <code>docs/QUESTIONS.md</code> (la mairie est désormais distinguée)</td>
+<td>avec l'accord du patron</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>
