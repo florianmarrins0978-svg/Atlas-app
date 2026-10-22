@@ -58,7 +58,7 @@
   .civ{display:flex;gap:8px;flex-wrap:nowrap}
   .civ span{border-radius:999px;padding:7px 28px;font-size:16px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);white-space:nowrap}
   .civ.serre span{padding:7px 13px}
-  .civ span.pris{background:var(--tuile);box-shadow:inset 0 0 0 1px var(--or)}
+  .civ span.pris{background:var(--plein);color:var(--surplein);box-shadow:none}
   .inter{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:15px}
   .inter small{display:block;font-size:12.5px;color:var(--gris)}
   .bascule{position:relative;width:46px;height:28px;border-radius:999px;background:var(--trait);flex:none}
@@ -76,7 +76,7 @@
   .envoi{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--trait);margin:16px 0 0;padding:10px 0 0}
   .envoi .canaux{display:flex;gap:4px;font-size:14px}
   .envoi .canaux span{padding:6px 10px}
-  .envoi .canaux .pris{box-shadow:inset 0 -1.5px 0 var(--or)}
+  .envoi .canaux .pris{box-shadow:inset 0 -1.5px 0 var(--plein)}
   .petit{text-align:center;font-size:12.5px;color:var(--gris);margin:6px 0 0}
   .rappel{font-size:12.5px;color:var(--gris);margin:-2px 0 0}
   .lien{font-size:13px;color:var(--encre);text-decoration:underline;text-underline-offset:4px}
@@ -92,15 +92,27 @@
   .tri{display:flex;gap:4px;justify-content:flex-end;margin-top:10px;font-size:14px}
   .filtre{display:inline-flex;align-items:center;gap:7px;min-height:44px;border-radius:999px;padding:0 13px;font-size:12.5px;
     background:var(--plage);color:var(--doux);box-shadow:inset 0 0 0 1px var(--trait)}
-  .filtre.actif{background:var(--encre);color:var(--fond);box-shadow:none}
+  .filtre.actif{background:var(--plein);color:var(--surplein);box-shadow:none}
   .feuille{background:var(--plage);border-radius:22px 22px 0 0;padding:22px 20px 18px;box-shadow:0 -6px 24px rgba(20,18,14,.12);margin-top:40px}
   .cle{margin-top:8px;min-height:54px;border-radius:999px;display:flex;align-items:center;justify-content:center;
     font:400 19px/1 var(--serif);box-shadow:inset 0 0 0 1px var(--trait);background:var(--plage)}
-  .cle.pris{background:var(--encre);color:var(--fond);box-shadow:none}
+  .cle.pris{background:var(--plein);color:var(--surplein);box-shadow:none}
   .sens{display:flex;gap:8px;margin-top:18px}
   .sens span{flex:1;min-height:44px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:13.5px;
     color:var(--doux);box-shadow:inset 0 0 0 1px var(--trait)}
-  .sens .pris{color:var(--orTexte);font-weight:600;box-shadow:inset 0 0 0 1.5px var(--or)}
+  .sens .pris{color:var(--plein);font-weight:600;box-shadow:inset 0 0 0 1.5px var(--plein)}
+  .mois{display:flex;align-items:center;justify-content:center;gap:2px;margin:12px 0 4px}
+  .mois .chv{width:34px;height:44px;display:flex;align-items:center;justify-content:center;color:var(--plein)}
+  .mois .nm{font:400 26px/1.2 var(--serif);padding:0 4px}
+  .voile{position:absolute;inset:0;background:rgba(10,10,8,.38)}
+  .cal{position:absolute;left:14px;right:14px;top:150px;background:var(--plage);border-radius:16px;padding:16px 16px 12px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+  .cal .ent{display:flex;justify-content:space-between;align-items:center;font:600 16px/1 var(--sans)}
+  .cal .ent .an{color:var(--plein)}
+  .cal .ent .fl{display:flex;gap:22px;color:var(--plein);font-size:20px}
+  .cal .grille{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:14px;text-align:center;font-size:15px}
+  .cal .grille .j{font:600 11px/1 var(--sans);color:var(--gris);padding-bottom:6px}
+  .cal .grille span{height:34px;display:flex;align-items:center;justify-content:center;border-radius:999px}
+  .cal .grille .sel{background:var(--plein);color:var(--surplein);font-weight:600}
   .client .chev{color:var(--gris);font-size:20px;font-family:var(--sans)}
   .barre{display:flex;justify-content:space-between;padding:14px 20px;font:600 8.5px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gris);box-shadow:inset 0 1px 0 var(--trait)}
   .barre b{color:var(--encre)}
@@ -175,27 +187,25 @@
   <p class="dit">Votre choix du 22 octobre. Une mairie, un département, une communauté de communes : « Public ». Pour Mr, Mme et Entreprise, rien ne change sur la facture.</p>
   <div class="rangee" id="q1"></div>
 
-  <h2>Le Filtre de Terminés, sur les trois listes</h2>
-  <p class="dit">Pour retrouver un devis de 2017 dans dix ans de dossiers. Le même bouton, le même volet, pour vos clients, vos entreprises et vos services publics. Un client revu depuis se range à sa dernière pièce : son devis de 2017 reste sur sa fiche.</p>
+  <h2>Le Filtre, puis voyager dans le temps</h2>
+  <p class="dit">Pour retrouver un devis de 2017 dans dix ans de dossiers, sur vos clients, vos entreprises et vos services publics. Trié par date, le mois s’affiche entre deux flèches ; toucher le mois ouvre le calendrier.</p>
   <div class="rangee" id="q1b"></div>
 
-  <h2>2. Où se tapent les deux numéros</h2>
-  <p class="dit">Le code service ne change pas d’une commande à l’autre. Le numéro d’engagement change à chaque bon de commande. Aucun des deux n’est obligatoire : certaines mairies n’en donnent pas.</p>
+  <h2>2. Les deux numéros <span class="etiq">retenu A</span></h2>
+  <p class="dit">Le code service sur la fiche, une fois pour la mairie. Le numéro d’engagement sur la facture, à chaque bon de commande. Aucun des deux ne bloque : certaines mairies n’en donnent pas.</p>
   <div class="rangee" id="q2"></div>
 
-  <h2>3. Le bouton en bas de la facture</h2>
-  <p class="dit">Un SMS ou un e-mail ne vaut pas facture pour une mairie. Et ce bouton arrête aussi la facture : il ne doit pas rester éteint faute de téléphone.</p>
+  <h2>3. Le bas de la facture <span class="etiq">retenu A</span></h2>
+  <p class="dit">« Télécharger pour Chorus Pro » à la place de l’envoi. Et une mairie paie à 30 jours au plus : l’échéance ne va pas au-delà.</p>
   <div class="rangee" id="q3"></div>
 
   <h2>4. Le PDF</h2>
-  <p class="dit">Les numéros s’impriment sous le nom de la mairie, là où le SIRET s’imprime déjà. Une ligne vide ne s’imprime pas.</p>
+  <p class="dit">Les numéros s’impriment sous le nom de la mairie, là où le SIRET s’imprime déjà. Une ligne vide ne s’imprime pas. La phrase des retards de paiement devient celle de la commande publique.</p>
   <div class="rangee" id="q4"></div>
 
-  <div class="note"><span class="t">Trois choses à me dire</span>
-    <b>1.</b> Le Filtre sur les trois listes : ça vous va ?<br>
-    <b>2.</b> A ou B pour les deux numéros.<br>
-    <b>3.</b> A ou B pour le bouton.<br>
-    Le PDF et le retrait de « Sous-traitance, sans TVA » pour une mairie ne sont pas à choisir : ils suivent.
+  <div class="note"><span class="t">Une chose à me dire</span>
+    Le Filtre et le calendrier : c’est bien ce que vous vouliez ?<br>
+    Le reste est retenu. À faire confirmer par votre comptable avant de coder : la phrase des retards (taux de la BCE plus 8 points, et 40 €).
   </div>
 </div>
 <script>
@@ -242,7 +252,7 @@
     </div>${barre}</div>`;
   }
 
-  function facture({ engagement, codeService, envoi, vide }) {
+  function facture({ engagement, codeService, envoi, vide, echeance }) {
     const eng = engagement ? `<div class="neuf" style="margin-top:12px">${champ("N° d’engagement", vide ? "Sur son bon de commande" : "BC2026/0318", false, vide)}
         ${vide ? `<p class="rappel" style="margin-top:6px">Vide : Chorus Pro peut la refuser.</p>` : ""}</div>` : "";
     const cs = codeService ? `<div class="neuf" style="margin-top:16px">${champ("Code service", "SERV-TECH")}</div>` : "";
@@ -264,6 +274,7 @@
       <div class="carte"><span class="caps">Facture</span>
         <p style="margin:6px 0 0;font-size:15px">F2026-000041, Mairie de Rezé</p>
         <p style="margin:6px 0 0;font-size:13px;color:var(--gris)">À régler avant le 21 novembre 2026</p>
+        ${echeance ? '<p class="rappel neuf" style="margin:8px -8px 0">Une mairie paie à 30 jours au plus.</p>' : ""}
         ${eng}${cs}
       </div>
       <div class="carte">
@@ -300,10 +311,10 @@
       haut = `${tete("Services publics")}<div class="compte">4 clients</div>`;
       cherche = "Chercher un service public";
       if (tri === "date") {
-        // « Date du devis, du plus ancien » : rangée par année, 2017 en tête.
-        liste = lettre("2017") + ligne("SIVOM de la Loire", "Devis 12 juin 2017")
-          + lettre("2019") + ligne("Département de Loire-Atlantique", "Devis 4 mars 2019")
-          + lettre("2026") + ligne("Communauté de communes Sud Estuaire", "Devis 14 oct.") + ligne("Mairie de Rezé", "Devis 20 oct.");
+        // Le mois qu'on feuillette, au dessin de FiltreDeDate : deux chevrons,
+        // le mois en serif 26 px, et le mois ouvre le calendrier du téléphone.
+        liste = '<div class="mois neuf"><span class="chv"><svg width="10" height="16" viewBox="0 0 10 16" fill="none"><path d="M8 2L2 8l6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="nm">Juin 2017</span><span class="chv"><svg width="10" height="16" viewBox="0 0 10 16" fill="none"><path d="M2 2l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>'
+          + ligne("Mairie de Rezé", "Devis 28 juin 2017") + ligne("SIVOM de la Loire", "Devis 12 juin 2017");
       } else {
         liste = lettre("C") + ligne(PUBLICS[0][0], PUBLICS[0][1]) + lettre("D") + ligne(PUBLICS[1][0], PUBLICS[1][1])
           + lettre("M") + ligne(PUBLICS[2][0], PUBLICS[2][1]) + lettre("S") + ligne(PUBLICS[3][0], PUBLICS[3][1]);
@@ -337,31 +348,37 @@
       </div></div>`;
   }
 
+  function calendrier() {
+    const jours = ["L","M","M","J","V","S","D"].map(j => '<span class="j">' + j + '</span>').join("");
+    let cases = "<span></span><span></span><span></span>";
+    for (let d = 1; d <= 30; d++) cases += '<span class="' + (d === 12 ? "sel" : "") + '">' + d + '</span>';
+    return '<div class="tel" style="position:relative">' + clients("publics", "date").replace('<div class="tel">', "<div>")
+      + '<div class="voile"></div><div class="cal"><div class="ent"><span class="an">juin 2017 ›</span><span class="fl"><span>‹</span><span>›</span></span></div>'
+      + '<div class="grille">' + jours + cases + '</div></div></div>';
+  }
+
   document.getElementById("q1b").innerHTML = [
     { nom:"Le bouton Filtre", idee:"Le même que dans Terminés, sous la recherche, à droite.", ecran: clients("publics", "az") },
     { nom:"Trier par", idee:"Les mots de Terminés. Tout s’applique au toucher, sans bouton Valider.", ecran: volet() },
-    { nom:"Date du devis, du plus ancien", idee:"Rangée par année : le devis de 2017 est en haut. Le bouton se remplit, pour qu’on sache que l’ordre a changé.", ecran: clients("publics", "date") },
+    { nom:"Trié par date : le mois", idee:"Les flèches passent d’un mois à l’autre. On ne voit que les devis de ce mois. Le bouton Filtre se remplit.", ecran: clients("publics", "date") },
+    { nom:"Toucher le mois : le calendrier", idee:"Le calendrier du téléphone. Toucher « juin 2017 » fait défiler les années : on remonte dix ans en deux gestes.", ecran: calendrier() },
   ].map(p => `<div class="col"><p class="nom">${p.nom}</p><p class="idee">${p.idee}</p>${p.ecran}</div>`).join("");
 
   document.getElementById("q2").innerHTML = [
-    { nom:"A : code service sur la fiche, engagement sur la facture", idee:"Le code service se tape une fois pour la mairie. Le numéro d’engagement, à chaque facture.",
+    { nom:"Code service sur la fiche, engagement sur la facture", idee:"Le code service se tape une fois pour la mairie. Le numéro d’engagement, à chaque facture.",
       ecrans: [coordonnees({ civ:[["Mr"],["Mme"],["Entreprise"],["Public",1]], serre:1, nom:"Mairie de Rezé", tva:false, codeService:1 }),
                facture({ engagement:1, envoi:"chorus" })] },
-    { nom:"B : tout sur la facture", idee:"Rien sur la fiche. Les deux numéros se tapent à chaque facture, au même endroit.",
-      ecrans: [facture({ engagement:1, codeService:1, envoi:"chorus" })] },
     { nom:"Si le numéro d’engagement reste vide", idee:"La facture part quand même. Une ligne grise le rappelle, sans rien bloquer.",
       ecrans: [facture({ engagement:1, vide:1, envoi:"chorus" })] },
   ].map(p => `<div class="col"><p class="nom">${p.nom}</p><p class="idee">${p.idee}</p>${p.ecrans.join('<div style="height:18px"></div>')}</div>`).join("");
 
   document.getElementById("q3").innerHTML = [
-    { nom:'A : « Télécharger pour Chorus Pro » <span class="etiq">recommandé</span>', idee:"Le choix SMS ou e-mail disparaît pour une mairie. Le bouton arrête la facture et donne le PDF à déposer.",
-      ecran: facture({ engagement:1, envoi:"chorus" }) },
-    { nom:"B : l’envoi reste, une ligne en plus", idee:"Le SMS part comme pour un particulier, et une ligne rappelle Chorus Pro. Sans téléphone ni e-mail, le bouton reste éteint.",
-      ecran: facture({ engagement:1, envoi:"sms" }) },
+    { nom:"« Télécharger pour Chorus Pro »", idee:"Le choix SMS ou e-mail disparaît pour une mairie. Le bouton arrête la facture et donne le PDF à déposer. L’échéance s’arrête à 30 jours.",
+      ecran: facture({ engagement:1, envoi:"chorus", echeance:1 }) },
   ].map(p => `<div class="col"><p class="nom">${p.nom}</p><p class="idee">${p.idee}</p>${p.ecran}</div>`).join("");
 
   document.getElementById("q4").innerHTML = `
-    <div class="col"><p class="nom">Le haut de la facture</p><p class="idee">Le même PDF que pour un particulier. Seules les deux lignes surlignées sont nouvelles.</p>
+    <div class="col"><p class="nom">Le haut de la facture</p><p class="idee">Le même PDF que pour un particulier. Seul ce qui est surligné est nouveau.</p>
       <div class="papier">
         <div class="ent"><div><b>Jardins Ribault</b><br>14 rue du Moulin, 44400 Rezé</div><div style="text-align:right">SIRET 812 345 678 00021</div></div>
         <div class="dest"><b>Mairie de Rezé</b><br>Place Jean-Baptiste Daviais<br>44400 Rezé<br>
@@ -372,6 +389,8 @@
         <div class="gris">Émise le 22 octobre 2026</div>
         <div class="trait"></div>
         <div class="gris">Les lignes et les totaux, inchangés.</div>
+        <div class="trait"></div>
+        <div style="font-size:11px"><span class="ajout">En cas de retard de paiement, intérêts moratoires au taux de la BCE majoré de 8 points, et indemnité forfaitaire pour frais de recouvrement de 40 €.</span> Pas d’escompte pour paiement anticipé.</div>
       </div></div>
     <div class="col"><p class="nom">Ce qui disparaît pour une mairie</p><p class="idee">« Sous-traitance, sans TVA » ne s’affiche plus sur son devis ni sur sa facture. Aujourd’hui, il apparaît pour une « Mairie de… » : on ne sous-traite pas pour une mairie, la TVA est due.</p></div>`;
 </script>
