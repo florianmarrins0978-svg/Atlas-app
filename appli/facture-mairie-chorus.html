@@ -92,7 +92,7 @@
   .tri{display:flex;gap:4px;justify-content:flex-end;margin-top:10px;font-size:14px}
   .filtre{display:inline-flex;align-items:center;gap:7px;min-height:44px;border-radius:999px;padding:0 13px;font-size:12.5px;
     background:var(--plage);color:var(--doux);box-shadow:inset 0 0 0 1px var(--trait)}
-  .filtre.actif{background:var(--plein);color:var(--surplein);box-shadow:none}
+  .filtre.actif{background:var(--plage);color:var(--doux);box-shadow:inset 0 0 0 1px var(--trait)}
   .feuille{background:var(--plage);border-radius:22px 22px 0 0;padding:22px 20px 18px;box-shadow:0 -6px 24px rgba(20,18,14,.12);margin-top:40px}
   .cle{margin-top:8px;min-height:54px;border-radius:999px;display:flex;align-items:center;justify-content:center;
     font:400 19px/1 var(--serif);box-shadow:inset 0 0 0 1px var(--trait);background:var(--plage)}
@@ -365,7 +365,7 @@
     { nom:"Le bouton Filtre", idee:"Le même que dans Terminés, sous la recherche, à droite.", ecran: clients("publics", "az") },
     { nom:"Trier par", idee:"Nom du client, de A à Z. Les deux dates portent le signe du calendrier.", ecran: volet() },
     { nom:"Toucher « Date du devis » : le calendrier", idee:"Il s’ouvre tout de suite. On voyage dans le temps : les flèches changent de mois, toucher « juin 2017 » change d’année.", ecran: calendrier() },
-    { nom:"Le jour touché : ses devis", idee:"La liste montre les devis de ce mois. Toucher « Devis de juin 2017 » rouvre le calendrier. Le bouton Filtre reste rempli.", ecran: clients("publics", "date") },
+    { nom:"Le jour touché : ses devis", idee:"La liste montre les devis de ce mois. Toucher « Devis de juin 2017 » rouvre le calendrier.", ecran: clients("publics", "date") },
   ].map(p => `<div class="col"><p class="nom">${p.nom}</p><p class="idee">${p.idee}</p>${p.ecran}</div>`).join("");
 
   document.getElementById("q2").innerHTML = [
