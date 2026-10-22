@@ -50,7 +50,7 @@
 
 ### Un point que je corrigerais : le devis accepté à 5 ans
 
-`src/server/retention.ts` garde un devis accepté **5 ans**. Pour un paysagiste qui construit un ouvrage (muret, terrasse, arrosage enterré), la garantie décennale court **10 ans** à compter de la réception, et le devis signé est ce qui prouve ce qui était commandé. Je recommande de l'aligner sur 10 ans. Confiance moyenne : c'est une lecture juridique, à faire confirmer par son expert‑comptable ou un juriste ; ce qui la ferait changer, c'est un avis contraire de leur part. Le coût de se tromper dans ce sens est faible (on garde un peu plus).
+`src/server/retention.ts` garde un devis accepté **5 ans**. Pour un paysagiste qui construit un ouvrage (muret, terrasse, arrosage enterré), la garantie décennale court **10 ans** à compter de la réception, et le devis signé est ce qui prouve ce qui était commandé. Je recommande de l'aligner sur 10 ans. **Tranché le 22 octobre 2026 : 10 ans, codé.** Confiance moyenne : c'est une lecture juridique, à faire confirmer par son expert‑comptable ou un juriste ; ce qui la ferait changer, c'est un avis contraire de leur part. Le coût de se tromper dans ce sens est faible (on garde un peu plus).
 
 Ce changement touche l'effacement d'un client : lot à part, niveau 3.
 
@@ -71,5 +71,6 @@ Ce changement touche l'effacement d'un client : lot à part, niveau 3.
 | ~~A, B ou C pour la place du bouton~~ | **A**, codé le 22 octobre 2026 |
 | ~~Fiches en PDF dans le fichier~~ | **oui**, codé le 22 octobre 2026 |
 | ~~Salariés autorisés ou non~~ | tranché par la règle des portes, voir §1 |
-| Devis accepté : 5 ou 10 ans | le patron, après avis de son expert‑comptable |
+| ~~Devis accepté : 5 ou 10 ans~~ | **10 ans**, sa décision du 22 octobre 2026, codé |
+| Batterie entière avant `main` | le patron : il a demandé de ne pas la lancer le 22 octobre |
 | Seconde copie du stockage de production | le patron (`docs/lot-sauvegarde-cloture.md` §13) |

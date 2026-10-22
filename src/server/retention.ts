@@ -128,8 +128,16 @@ export function seuilPurgeAudio(maintenant: Date = new Date()): Date {
 export const CONSERVATION_LEGALE = {
   /** Pièces comptables — Code de commerce L123-22. */
   facturesAns: 10,
-  /** Devis accepté : preuve de l'engagement, jusqu'à prescription. */
-  devisAccepteAns: 5,
+  /**
+   * Devis accepté : preuve de ce qui était commandé.
+   *
+   * **Dix ans, sa décision du 22 octobre 2026**, et non plus cinq. La garantie
+   * décennale (Code civil, art. 1792) court dix ans à compter de la réception
+   * d'un ouvrage (muret, terrasse, arrosage enterré) : un devis effacé à cinq
+   * ans laissait l'artisan sans preuve de l'étendue de sa commande pendant les
+   * cinq années où on peut encore le mettre en cause.
+   */
+  devisAccepteAns: 10,
 } as const;
 
 export function echeanceConservation(

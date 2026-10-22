@@ -173,7 +173,7 @@
 </tbody></table></div>
 <p><strong>Le vrai risque n'est pas un effacement par l'application, c'est une perte de disque.</strong> Le fichier « fichiers-absents.txt » de la sauvegarde le dit déjà : sur son banc, un espace recréé a gardé la base et perdu les fichiers. Tant que le stockage de production n'a pas sa seconde copie, « conservé dix ans » est vrai de la base et pas des PDF.</p>
 <h3 id="un-point-que-je-corrigerais--le-devis-accepté-à-5-ans">Un point que je corrigerais : le devis accepté à 5 ans</h3>
-<p><code>src/server/retention.ts</code> garde un devis accepté <strong>5 ans</strong>. Pour un paysagiste qui construit un ouvrage (muret, terrasse, arrosage enterré), la garantie décennale court <strong>10 ans</strong> à compter de la réception, et le devis signé est ce qui prouve ce qui était commandé. Je recommande de l'aligner sur 10 ans. Confiance moyenne : c'est une lecture juridique, à faire confirmer par son expert‑comptable ou un juriste ; ce qui la ferait changer, c'est un avis contraire de leur part. Le coût de se tromper dans ce sens est faible (on garde un peu plus).</p>
+<p><code>src/server/retention.ts</code> garde un devis accepté <strong>5 ans</strong>. Pour un paysagiste qui construit un ouvrage (muret, terrasse, arrosage enterré), la garantie décennale court <strong>10 ans</strong> à compter de la réception, et le devis signé est ce qui prouve ce qui était commandé. Je recommande de l'aligner sur 10 ans. <strong>Tranché le 22 octobre 2026 : 10 ans, codé.</strong> Confiance moyenne : c'est une lecture juridique, à faire confirmer par son expert‑comptable ou un juriste ; ce qui la ferait changer, c'est un avis contraire de leur part. Le coût de se tromper dans ce sens est faible (on garde un peu plus).</p>
 <p>Ce changement touche l'effacement d'un client : lot à part, niveau 3.</p>
 <h2 id="3-la-notification-à-léchéance">3. La notification à l'échéance</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -203,8 +203,12 @@
 <td>tranché par la règle des portes, voir §1</td>
 </tr>
 <tr>
-<td>Devis accepté : 5 ou 10 ans</td>
-<td>le patron, après avis de son expert‑comptable</td>
+<td>~~Devis accepté : 5 ou 10 ans~~</td>
+<td><strong>10 ans</strong>, sa décision du 22 octobre 2026, codé</td>
+</tr>
+<tr>
+<td>Batterie entière avant <code>main</code></td>
+<td>le patron : il a demandé de ne pas la lancer le 22 octobre</td>
 </tr>
 <tr>
 <td>Seconde copie du stockage de production</td>

@@ -7,7 +7,7 @@
 ---
 ## TOUT TÉLÉCHARGER D'UN CLIENT (22 octobre 2026)
 
-Un appui sous « Modifier ses coordonnées » rend un zip des devis, factures, fiches d'entretien (désormais en PDF) et avoirs du client, filtré par rôle. Planche retenue : A. Ouvert : devis accepté 5 ou 10 ans, à trancher par lui. `ARCHITECTURE.md` §480, `docs/telecharger-un-client.md`.
+Un appui sous « Modifier ses coordonnées » rend un zip des devis, factures, fiches d'entretien (désormais en PDF) et avoirs du client, filtré par rôle. Planche retenue : A. Devis accepté gardé 10 ans (sa décision, lot séparé). Aucun des deux lots n'est sur `main` : la batterie entière n'a pas été jouée, à sa demande. `ARCHITECTURE.md` §480, `docs/telecharger-un-client.md`.
 
 ## ARROSAGE : LES PRIX DES FOURNISSEURS ET L'IMPORT D'UN DEVIS, CODÉS (19 octobre 2026), PAS ENCORE SUR `main`
 

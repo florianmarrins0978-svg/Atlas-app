@@ -255,7 +255,7 @@ emporter, et aucune purge automatique ne doit jamais les atteindre.
 | Donnée | Durée | Fondement | État |
 |---|---|---|---|
 | Factures et pièces comptables | **10 ans** | Code de commerce, L123-22 | ✅ appliquée — l'effacement d'un client les conserve et le dit |
-| Devis **accepté** | **5 ans** | Engagement contractuel | ✅ appliquée — un devis non accepté, lui, s'efface |
+| Devis **accepté** | **10 ans** | Engagement contractuel, garantie décennale (C. civ. 1792), décision du 22 octobre 2026 | ✅ appliquée — un devis non accepté, lui, s'efface |
 
 > **L'écart qui reste, et il est d'infrastructure, pas de code.** Tout ce qui est
 > marqué ⏳ tourne dès qu'un planificateur appelle la route — c'est un

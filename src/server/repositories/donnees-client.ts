@@ -177,7 +177,7 @@ async function cequiDoitRester(
     });
   }
 
-  // ─── Les devis ACCEPTÉS — cinq ans, ils valent engagement ─────────────────
+  // ─── Les devis ACCEPTÉS — dix ans, ils valent engagement ──────────────────
   const acceptes = await tx
     .select({ devisId: envoisDevis.devisId, chantierId: envoisDevis.chantierId, responduAt: envoisDevis.responduAt })
     .from(envoisDevis)
@@ -204,7 +204,7 @@ async function cequiDoitRester(
     pieces.push({
       quoi: "devis-accepte",
       numero: numeros.get(a.devisId) ?? "?",
-      pourquoi: "Un devis accepté vaut engagement : il se conserve cinq ans.",
+      pourquoi: `Un devis accepté vaut engagement : il se conserve ${CONSERVATION_LEGALE.devisAccepteAns} ans.`,
       jusquAu: echeanceConservation(a.responduAt ?? maintenant, CONSERVATION_LEGALE.devisAccepteAns)
         .toISOString()
         .slice(0, 10),
@@ -296,7 +296,7 @@ export type RapportEffacement = {
  *
  *   · une **facture émise** — dix ans, Code de commerce L123-22, et la clé
  *     étrangère est en RESTRICT : la base refuserait de toute façon ;
- *   · un **devis accepté** — cinq ans, il vaut engagement.
+ *   · un **devis accepté** — dix ans, il vaut engagement (garantie décennale).
  *
  * Dans ces deux cas le client ne disparaît pas : son nom reste sur la pièce,
  * tout le reste part, et le rapport DIT ce qui a été gardé, avec son numéro.

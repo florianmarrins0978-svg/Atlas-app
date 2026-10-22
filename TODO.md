@@ -15986,4 +15986,4 @@ et c'est déjà arrivé.
   Corriger demande de toucher le composeur, donc les documents du patron :
   à faire dans un lot qui les regarde, pas en passant. *(24 août 2026)*
 
-- ~~**UNE PLANCHE À REGARDER : tout télécharger d'un client**~~ CODÉ LE 22 OCTOBRE 2026 : sa réponse « la A, et tout en PDF » (`api/clients/[id]/dossier`, §480). **Reste à trancher avec lui** : devis accepté gardé 5 ou 10 ans (`src/server/retention.ts`, décennale), après avis de son expert‑comptable ; lot à part, niveau 3. Détail : `docs/telecharger-un-client.md`.
+- ~~**UNE PLANCHE À REGARDER : tout télécharger d'un client**~~ CODÉ LE 22 OCTOBRE 2026 : sa réponse « la A, et tout en PDF » (`api/clients/[id]/dossier`, §480). ~~Devis accepté 5 ou 10 ans~~ : **10 ans**, sa décision du 22 octobre 2026, codé dans un lot à part. **Les deux lots attendent la batterie entière** (niveau 3) avant `main` : il a demandé de ne pas la lancer ce jour-là. Détail : `docs/telecharger-un-client.md`.
