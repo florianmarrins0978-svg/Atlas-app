@@ -352,9 +352,15 @@ réduit. »*
 | haie | **50 cm** | largeur ÷ écart, arrondi au-dessous : 2 m font 4 lignes, à 0,50, 1, 1,50 et 2 m |
 | massif | **60 cm** (le calcul disait 80 cm) | idem : 3 m font 5 lignes |
 
-La première ligne est à un écart du bord, jamais à 0. Le nombre est une
+La première ligne est à un écart du bord, jamais à 0. **La dernière peut
+tomber sur l'autre bord** : 2 m à 50 cm, c'est 4 lignes et la quatrième à 2 m
+(question posée le 22 octobre, sa réponse : *« oui »*). Le nombre est une
 PROPOSITION : les boutons − et + le changent, et l'écart affiché devient
-largeur ÷ nombre (2 m sur 3 lignes : tous les 67 cm). **Pas encore codé** :
+largeur ÷ nombre (2 m sur 3 lignes : tous les 67 cm). **Et l'écart se TAPE
+aussi**, en cm, pour une haie comme pour un massif (*« faut aussi pouvoir
+modifier l'espacement en cm, une donnée à écrire »*, même jour) : taper
+45 cm sur 2 m donne 4 lignes, la dernière à 20 cm du bord. Les lignes se
+comptent sur le PETIT côté de la zone. **Pas encore codé** :
 planche `appli/arrosage-ecart-des-lignes.html`. Aujourd'hui le calcul pose une
 ligne par mètre de haie et une tous les 80 cm sur un massif, dès le bord.
 
