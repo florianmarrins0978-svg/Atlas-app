@@ -81,6 +81,18 @@
   .rappel{font-size:12.5px;color:var(--gris);margin:-2px 0 0}
   .lien{font-size:13px;color:var(--encre);text-decoration:underline;text-underline-offset:4px}
   .etiquette{display:inline-block;margin:10px 0 0;font-size:13px;color:var(--orTexte)}
+  .compte{font:500 11px/1 var(--sans);letter-spacing:.28em;text-transform:uppercase;color:var(--gris);margin:12px 0 0}
+  .porte{display:inline-flex;align-items:center;min-height:30px;font:500 11px/1 var(--sans);letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+  .porte b{margin-left:5px;font-size:19px;letter-spacing:0;position:relative;top:-1px}
+  .cherche{margin:22px 0 0;padding:10px 0;border-bottom:1px solid var(--gris);color:var(--gris);font-size:17px}
+  .lettre{margin:18px 0 0;font-size:13px;color:var(--gris)}
+  .client{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0 14px;border-bottom:1px solid var(--trait);font:400 20px/1.25 var(--serif)}
+  .client>span:first-child{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .client small{display:block;font:400 13px/1.3 var(--sans);color:var(--gris);margin-top:3px}
+  .tri{display:flex;gap:4px;justify-content:flex-end;margin-top:10px;font-size:14px}
+  .tri span{padding:6px 10px}
+  .tri .pris{box-shadow:inset 0 -1.5px 0 var(--or)}
+  .client .chev{color:var(--gris);font-size:20px;font-family:var(--sans)}
   .barre{display:flex;justify-content:space-between;padding:14px 20px;font:600 8.5px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gris);box-shadow:inset 0 1px 0 var(--trait)}
   .barre b{color:var(--encre)}
 
@@ -127,8 +139,17 @@
     mairie donne son bon de commande APRÈS avoir accepté le devis. Le
     préremplissage « depuis le devis » du brief n'est donc pas dessiné.
 
-  Les écrans recopient les places et les formes de SesCoordonnees.tsx et
-  FactureClient.tsx ; seules les parties entourées d'or sont neuves.
+  Les écrans recopient les places et les formes de SesCoordonnees.tsx,
+  FactureClient.tsx et clients/page.tsx ; seules les parties entourées d'or
+  sont neuves.
+
+  SON CHOIX DU 22 OCTOBRE 2026, sur la première version de cette planche :
+  « Public » sur la fiche client (l'ancienne question 1, A), et une porte
+  « Services publics » dans ses clients, à côté de « Vos entreprises » (sa
+  consigne du 4 octobre : les particuliers d'office, une porte par catégorie).
+  « La porte d'entrée, ça devrait être ici […] ça fait que des boutons qui
+  apparaissent si jamais je suis sur public. » B (interrupteur) et C (deviné)
+  ont été retirés de la planche.
 -->
 <div class="page">
   <p class="surtitre">À choisir</p>
@@ -141,9 +162,13 @@
 
   <div class="chartes" id="chartes" role="group" aria-label="Charte"></div>
 
-  <h2>1. Comment Atlas sait que c’est une mairie</h2>
-  <p class="dit">Sur l’écran « Ses coordonnées ». Une mairie, un département, une communauté de communes : même règle.</p>
+  <h2>1. « Public » sur la fiche, et sa porte dans vos clients <span class="etiq">retenu</span></h2>
+  <p class="dit">Votre choix du 22 octobre. Une mairie, un département, une communauté de communes : « Public ». Pour Mr, Mme et Entreprise, rien ne change sur la facture.</p>
   <div class="rangee" id="q1"></div>
+
+  <h2>Le tri par date, sur les trois listes</h2>
+  <p class="dit">Il n’existe pas aujourd’hui : vos clients se rangent de A à Z, et la recherche trouve un nom. Proposé ici, sous la recherche, pour vos clients, vos entreprises et vos services publics.</p>
+  <div class="rangee" id="q1b"></div>
 
   <h2>2. Où se tapent les deux numéros</h2>
   <p class="dit">Le code service ne change pas d’une commande à l’autre. Le numéro d’engagement change à chaque bon de commande. Aucun des deux n’est obligatoire : certaines mairies n’en donnent pas.</p>
@@ -158,7 +183,7 @@
   <div class="rangee" id="q4"></div>
 
   <div class="note"><span class="t">Trois choses à me dire</span>
-    <b>1.</b> A, B ou C pour reconnaître une mairie.<br>
+    <b>1.</b> Le tri par date : oui ou non.<br>
     <b>2.</b> A ou B pour les deux numéros.<br>
     <b>3.</b> A ou B pour le bouton.<br>
     Le PDF et le retrait de « Sous-traitance, sans TVA » pour une mairie ne sont pas à choisir : ils suivent.
@@ -193,15 +218,13 @@
   const champ = (lib, val, neuf, vide) =>
     `<label class="lab${neuf ? " neuf" : ""}"><span class="caps">${lib}</span><span class="case${vide ? " vide" : ""}">${val}</span></label>`;
 
-  function coordonnees({ civ, serre, neufCiv, nom, siret = true, tva = true, interPublic, codeService, devine }) {
+  function coordonnees({ civ, serre, neufCiv, nom, siret = true, tva = true, codeService }) {
     const pastilles = civ.map(([t, pris]) => `<span class="${pris ? "pris" : ""}">${t}</span>`).join("");
     return `<div class="tel"><div class="corps">${tete("Ses coordonnées")}
       <div class="champs">
         <div class="${neufCiv ? "neuf" : ""}"><div class="civ${serre ? " serre" : ""}">${pastilles}</div></div>
         ${champ("Nom du client", nom)}
-        ${devine ? `<p class="etiquette neuf">Reconnue comme mairie. <span class="lien">Ce n’en est pas une</span></p>` : ""}
         ${siret ? champ("SIRET", "214 401 432 00017") : ""}
-        ${interPublic ? `<div class="inter neuf"><span>Client public<small>Mairie, département, État</small></span><span class="bascule on"></span></div>` : ""}
         ${tva ? champ("N° TVA intracommunautaire", "FR suivi de 11 chiffres", false, true) : ""}
         ${codeService ? champ("Code service", "SERV-TECH", true) : ""}
         ${champ("Téléphone", "02 40 84 43 00")}
@@ -243,15 +266,56 @@
     </div>${barre}</div>`;
   }
 
-  const CIV3 = (pris) => [["Mr"],["Mme"],["Entreprise", pris]];
+  // L'écran Clients, aux places de src/app/clients/page.tsx : le compte sous le
+  // titre, puis la porte. Chaque porte ne s'affiche que s'il y a au moins un
+  // client derrière, comme « Vos entreprises » aujourd'hui.
+  // Chaque ligne : le nom, puis sa dernière pièce et son jour, comme
+  // LigneClient (jourDeLaLigne). « tri » n'existe pas aujourd'hui : il est
+  // proposé, et vaudrait pour les trois listes.
+  const PUBLICS = [
+    ["Communauté de communes Sud Estuaire", "Devis 14 oct.", 3],
+    ["Département de Loire-Atlantique", "Facture 2 sept.", 1],
+    ["Mairie de Rezé", "Facture 21 oct.", 4],
+    ["SIVOM de la Loire", "Devis 12 juin", 0],
+  ];
+  function clients(vue, tri) {
+    const porte = (t, neuf) => `<div class="${neuf ? "neuf" : ""}" style="${neuf ? "margin-top:6px" : "margin-top:16px"}"><span class="porte">${t}<b>›</b></span></div>`;
+    const ligne = (n, q) => `<div class="client"><span>${n}${q ? `<small>${q}</small>` : ""}</span><span class="chev">›</span></div>`;
+    const lettre = (l) => `<div class="lettre">${l}</div>`;
+    const tris = tri ? `<div class="tri neuf"><span class="${tri === "az" ? "pris" : ""}">A à Z</span><span class="${tri === "date" ? "pris" : ""}">Par date</span></div>` : "";
+    let haut, liste, cherche = "Chercher un client";
+    if (vue === "publics") {
+      haut = `${tete("Services publics")}<div class="compte">4 clients</div>`;
+      cherche = "Chercher un service public";
+      if (tri === "date") {
+        const parDate = [...PUBLICS].sort((a, b) => b[2] - a[2]);
+        liste = lettre("Octobre") + parDate.slice(0, 2).map(c => ligne(c[0], c[1])).join("")
+          + lettre("Septembre") + ligne(parDate[2][0], parDate[2][1])
+          + lettre("Juin") + ligne(parDate[3][0], parDate[3][1]);
+      } else {
+        liste = lettre("C") + ligne(PUBLICS[0][0], PUBLICS[0][1]) + lettre("D") + ligne(PUBLICS[1][0], PUBLICS[1][1])
+          + lettre("M") + ligne(PUBLICS[2][0], PUBLICS[2][1]) + lettre("S") + ligne(PUBLICS[3][0], PUBLICS[3][1]);
+      }
+    } else {
+      haut = `${tete("Vos clients")}<div class="compte">3 clients</div>${porte("Vos entreprises")}${porte("Services publics", 1)}`;
+      liste = lettre("A") + ligne("Mme Aubry", "Devis 18 oct.") + lettre("B") + ligne("M. Bernard", "Facture 9 oct.") + lettre("C") + ligne("Mme Costa", "Devis 30 sept.");
+    }
+    return `<div class="tel"><div class="corps">${haut}
+      <div class="cherche">${cherche}</div>${tris}${liste}</div>${barre}</div>`;
+  }
 
   document.getElementById("q1").innerHTML = [
-    { nom:"A : une quatrième pastille", idee:"« Public » à côté de Mr, Mme, Entreprise. Un appui, et c’est dit. Les quatre pastilles se resserrent un peu pour tenir sur le téléphone.",
+    { nom:"Sur la fiche : une quatrième pastille", idee:"Un appui sur « Public ». Les quatre pastilles se resserrent un peu pour tenir sur le téléphone.",
       ecran: coordonnees({ civ:[["Mr"],["Mme"],["Entreprise"],["Public",1]], serre:1, neufCiv:1, nom:"Mairie de Rezé", tva:false }) },
-    { nom:"B : un interrupteur sous le SIRET", idee:"On coche Entreprise, puis « Client public ». Un geste de plus, et les pastilles ne bougent pas.",
-      ecran: coordonnees({ civ:CIV3(1), nom:"Mairie de Rezé", interPublic:1, tva:false }) },
-    { nom:'C : deviné sur le nom <span class="etiq non">pas recommandé</span>', idee:"Atlas lit « Mairie de… ». Mais il ne reconnaîtrait pas « Communauté de communes Sud Estuaire », « SIVOM de la Loire », ni « Département de Loire-Atlantique ».",
-      ecran: coordonnees({ civ:CIV3(1), nom:"Mairie de Rezé", devine:1, tva:false }) },
+    { nom:"Vos clients : deux portes", idee:"Les particuliers d’office, comme aujourd’hui. « Vos entreprises » existe déjà ; « Services publics » vient dessous. Une porte vide ne s’affiche pas.",
+      ecran: clients("tous") },
+    { nom:"Derrière la porte : de A à Z", idee:"La même liste que vos clients : de A à Z, la même recherche, la dernière pièce et son jour sous chaque nom. Pareil derrière « Vos entreprises ».",
+      ecran: clients("publics") },
+  ].map(p => `<div class="col"><p class="nom">${p.nom}</p><p class="idee">${p.idee}</p>${p.ecran}</div>`).join("");
+
+  document.getElementById("q1b").innerHTML = [
+    { nom:"A à Z", idee:"Comme aujourd’hui.", ecran: clients("publics", "az") },
+    { nom:"Par date", idee:"La pièce la plus récente en haut, rangée par mois.", ecran: clients("publics", "date") },
   ].map(p => `<div class="col"><p class="nom">${p.nom}</p><p class="idee">${p.idee}</p>${p.ecran}</div>`).join("");
 
   document.getElementById("q2").innerHTML = [
