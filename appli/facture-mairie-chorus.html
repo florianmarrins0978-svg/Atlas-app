@@ -267,8 +267,8 @@
   }
 
   // L'écran Clients, aux places de src/app/clients/page.tsx : le compte sous le
-  // titre, puis la porte. Chaque porte ne s'affiche que s'il y a au moins un
-  // client derrière, comme « Vos entreprises » aujourd'hui.
+  // titre, puis les portes. TOUJOURS visibles, même vides : sa décision du
+  // 22 octobre 2026 ; aujourd'hui « Vos entreprises » se cache sans entreprise.
   // Chaque ligne : le nom, puis sa dernière pièce et son jour, comme
   // LigneClient (jourDeLaLigne). « tri » n'existe pas aujourd'hui : il est
   // proposé, et vaudrait pour les trois listes.
@@ -307,7 +307,7 @@
   document.getElementById("q1").innerHTML = [
     { nom:"Sur la fiche : une quatrième pastille", idee:"Un appui sur « Public ». Les quatre pastilles se resserrent un peu pour tenir sur le téléphone.",
       ecran: coordonnees({ civ:[["Mr"],["Mme"],["Entreprise"],["Public",1]], serre:1, neufCiv:1, nom:"Mairie de Rezé", tva:false }) },
-    { nom:"Vos clients : deux portes", idee:"Les particuliers d’office, comme aujourd’hui. « Vos entreprises » existe déjà ; « Services publics » vient dessous. Une porte vide ne s’affiche pas.",
+    { nom:"Vos clients : deux portes", idee:"Les particuliers d’office, comme aujourd’hui. « Vos entreprises » existe déjà ; « Services publics » vient dessous. Les deux restent visibles, même vides.",
       ecran: clients("tous") },
     { nom:"Derrière la porte : de A à Z", idee:"La même liste que vos clients : de A à Z, la même recherche, la dernière pièce et son jour sous chaque nom. Pareil derrière « Vos entreprises ».",
       ecran: clients("publics") },
