@@ -15985,3 +15985,5 @@ et c'est déjà arrivé.
   non déterministe — un même devis renvoyé n'est jamais identique au précédent.
   Corriger demande de toucher le composeur, donc les documents du patron :
   à faire dans un lot qui les regarde, pas en passant. *(24 août 2026)*
+
+- **⏳ UNE PLANCHE À REGARDER : tout télécharger d'un client** (`appli/telecharger-un-client.html`, 22 octobre 2026). Attend : la place (A, B, C), les fiches en PDF ou non, salariés ou non. Avant de la lui redemander, chercher `telecharger-client` dans `src/`. Et à trancher avec lui : devis accepté gardé 5 ou 10 ans (`src/server/retention.ts`, décennale), lot à part de niveau 3. Détail : `docs/telecharger-un-client.md`.
