@@ -179,8 +179,8 @@ async function main() {
 
     assert.equal(p!.lignes[1].montant, "250.00", "la fente n'a pas pris le prix de la grille");
     assert.equal(
-      p!.lignes[0].montant,
-      "850",
+      Number(p!.lignes[0].montant),
+      850,
       "sa règle : 850 + 250, pas 1 000 + 100 — la ligne détachable porte son propre déplacement"
     );
     assert.equal(p!.prixPropose, "1100", "le total a bougé : ce n'est pas une répartition, c'est un autre prix");
@@ -405,7 +405,12 @@ async function main() {
     for (const p of contenu.prestations) await prestationsRepo.ajouterPrestation(ctx, chantier.id, p.libelle);
     await brouillonsRepo.enregistrerGeneration(ctx, chantier.id, contenu, "dictée");
     await brouillonsRepo.marquerConfirme(ctx, chantier.id);
-    await chantiersRepo.mettreAJourDureeEquipe(ctx, chantier.id, { dureePrevue: "1 jour", tailleEquipe: "2 hommes" });
+    // **Sans jours ni hommes dictés** : sa règle du 21 octobre 2026, *« s'il ne
+    // parle pas de jours et d'hommes, ce sont les prix des grilles qui
+    // l'emportent »*. Avec eux, c'est la main d'œuvre qui fait le prix, et la
+    // grille ne donne plus que la position de départ des curseurs
+    // (`scripts/test-main-oeuvre-dictee-db.ts`). Ce contrôle dictait « 1 jour,
+    // 2 hommes » et exigeait la grille : c'est la question qu'il a tranchée.
     await enregistrerPrecisions(ctx, chantier.id, [
       { sujet: "abattage.technique#1", libellePrestation: "Abattage d'un chêne mort", valeur: "au_pied", lisible: "abattage au pied" },
       { sujet: "abattage.diametre#1", libellePrestation: "Abattage d'un chêne mort", valeur: "65", lisible: "⌀ 65 cm" },

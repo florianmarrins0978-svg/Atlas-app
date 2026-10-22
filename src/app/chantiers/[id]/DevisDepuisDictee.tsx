@@ -6,6 +6,8 @@ import { colors, libelleCaps } from "@/lib/design-tokens";
 import { preparerDevisDepuisDicteeAction, repondreQuestionsChiffrageAction } from "./informations/actions";
 import { precisionLisible, type QuestionChiffrage } from "@/lib/questions-chiffrage";
 import { attendreLeDevis } from "@/lib/attente-devis";
+import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
+import RepartirLaMainOeuvre, { choixDeDepart } from "./RepartirLaMainOeuvre";
 
 // Le geste unique : de la dictée au devis.
 //
@@ -70,6 +72,12 @@ type Props = {
    * Par défaut il vaut `auto`, pour que les appels d'avant ne changent pas.
    */
   surLeDevis?: boolean;
+  /**
+   * Signale qu'Atlas travaille, pour que l'écran qui nous héberge le montre
+   * aussi : sur la fiche client, le rond du micro souffle pendant ce temps
+   * (sa planche du 21 octobre 2026, réponse C).
+   */
+  onTravail?: (enCours: boolean) => void;
 };
 
 type Etat =
@@ -114,9 +122,14 @@ export default function DevisDepuisDictee({
   variante = "principal",
   auto = false,
   surLeDevis = auto,
+  onTravail,
 }: Props) {
   const router = useRouter();
   const [etat, setEtat] = useState<Etat>({ type: "repos" });
+  const travaille = etat.type === "encours" || etat.type === "attente";
+  useEffect(() => {
+    onTravail?.(travaille);
+  }, [travaille, onTravail]);
 
   async function lancer(remplacer = false) {
     setEtat({ type: "encours" });
@@ -238,11 +251,17 @@ export default function DevisDepuisDictee({
           role="status"
           aria-live="polite"
           data-atlas="preparation-automatique"
-          className="text-center text-[15px]"
+          className="flex items-center justify-center gap-2 text-center text-[15px]"
           style={{ color: colors.rust }}
         >
-          {libelleEnCours(etat)?.replace("le devis", "votre devis") ??
-            (etat.type === "repos" ? "Atlas reprend votre dictée et écrit le devis…" : "")}
+          {/* **Les points soufflent au bout de la phrase** (sa planche du
+              21 octobre 2026, réponse C) : ils prennent la place des points
+              de suspension, qui ne disaient pas que ça travaille. */}
+          {(
+            libelleEnCours(etat)?.replace("le devis", "votre devis") ??
+            (etat.type === "repos" ? "Atlas reprend votre dictée et écrit le devis…" : "")
+          ).replace(/…$/, "")}
+          {(travaille || etat.type === "repos") && <PointsQuiSoufflent />}
         </p>
       ) : variante === "anneau" ? (
         /* **L'écriture nue, et rien autour.** Choisie par le patron le 11 août
@@ -413,7 +432,11 @@ function QuestionsChiffrage({
   onEchec: (texte: string) => void;
   onPrepare: () => void;
 }) {
-  const [reponses, setReponses] = useState<Record<string, string>>({});
+  // La main d'œuvre part avec la répartition qu'il voit : ses parts de grille,
+  // déjà posées. Continuer sans y toucher, c'est la retenir telle quelle.
+  const [reponses, setReponses] = useState<Record<string, string>>(() =>
+    Object.fromEntries(questions.filter((q) => q.mainOeuvre).map((q) => [q.id, choixDeDepart(q.mainOeuvre!)]))
+  );
   const [envoi, setEnvoi] = useState(false);
 
   const toutesRepondues = questions.every((q) => (reponses[q.id] ?? "").trim() !== "");
@@ -477,7 +500,15 @@ function QuestionsChiffrage({
               {q.question}
             </p>
 
-            {q.options ? (
+            {q.mainOeuvre ? (
+              <div className="mt-2">
+                <RepartirLaMainOeuvre
+                  question={q.mainOeuvre}
+                  valeur={reponses[q.id] ?? ""}
+                  onChange={(v) => setReponses((r) => ({ ...r, [q.id]: v }))}
+                />
+              </div>
+            ) : q.options ? (
               <div className="mt-2 flex flex-col gap-2">
                 {q.options.map((o) => {
                   const choisie = reponses[q.id] === o.valeur;

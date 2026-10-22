@@ -12,7 +12,7 @@ import {
 import { noterPropositionDictee } from "../repositories/termes-metier";
 import { getNoteVocale } from "../repositories/notes-vocales";
 import { getOuCreerDevisBrouillon } from "../repositories/devis";
-import { preparerPropositionPrix, type OriginePrix } from "../chiffrage/proposition-prix";
+import { preparerPropositionPrix, questionMainOeuvre, type OriginePrix } from "../chiffrage/proposition-prix";
 import { appliquerPropositionPrix } from "../chiffrage/appliquer-proposition";
 import { peutPreparerLaPiece } from "../../lib/preparation-devis";
 import { listerPrecisions, enregistrerPrecisions, type Precision } from "../repositories/precisions-chantier";
@@ -240,6 +240,12 @@ export async function questionsRestantes(
   // brouillon reste le repli, pour l'instant qui précède la confirmation.
   const enBase = await listerPrestations(ctx, chantierId);
   const surQuoi = enBase.length > 0 ? enBase : prestations;
+
+  // **Des jours et des hommes dictés : c'est la main d'œuvre qui fait le prix**
+  // (sa règle du 21 octobre 2026), et la seule question qui vaille est de
+  // savoir comment la répartir. Les questions de grille se taisent alors.
+  const mo = await questionMainOeuvre(ctx, chantierId);
+  if (mo.dictee) return mo.question ? [mo.question] : [];
 
   return questionsAvantChiffrage(surQuoi, new Set(deja.map((p) => p.sujet)), axes.techniques);
 }

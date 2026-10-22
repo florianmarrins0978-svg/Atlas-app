@@ -1,0 +1,12 @@
+-- LE PRIX QU'IL DICTE, GARDÉ SUR LA PRESTATION — son signalement du 21 octobre
+-- 2026 : « j'ai dit taille d'une haie de laurier, j'estime le prix à 500 €, et
+-- il m'a dit qu'il fallait remplir le prix alors que je lui ai dicté ».
+--
+-- La prestation n'avait aucun endroit où poser un montant prononcé : il se
+-- perdait entre la dictée et le devis. Ce prix-là est sa parole pour CE
+-- chantier, et il passe avant ses grilles et ses tarifs.
+--
+-- Expand seul : une colonne vide, aucune ligne touchée. Les prestations d'avant
+-- restent NULL, ce qui est vrai : aucun prix n'y avait été retenu. Le code
+-- d'avant l'ignore ; rien n'est à contracter.
+ALTER TABLE "prestations" ADD COLUMN IF NOT EXISTS "prix_dicte" numeric(12, 2);

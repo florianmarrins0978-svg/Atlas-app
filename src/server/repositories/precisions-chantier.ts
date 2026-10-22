@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { precisionsChantier } from "../db/schema";
 import type { Ctx } from "./context";
@@ -36,6 +36,24 @@ export async function listerPrecisions(ctx: Ctx, chantierId: string): Promise<Pr
       )
       .orderBy(precisionsChantier.responduAt)
   );
+}
+
+/**
+ * Ses dernières réponses à une même question, tous chantiers confondus, de la
+ * plus récente à la plus ancienne. C'est ce qui permet de ne plus lui poser
+ * la question de la main d'œuvre quand il a répondu trois fois pareil
+ * (`modeRetenu`, sa planche du 21 octobre 2026).
+ */
+export async function dernieresReponses(ctx: Ctx, sujet: string, combien: number): Promise<string[]> {
+  const lignes = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>
+    tx
+      .select({ valeur: precisionsChantier.valeur })
+      .from(precisionsChantier)
+      .where(and(eq(precisionsChantier.sujet, sujet), eq(precisionsChantier.entrepriseId, ctx.entrepriseId)))
+      .orderBy(desc(precisionsChantier.responduAt))
+      .limit(combien)
+  );
+  return lignes.map((l) => l.valeur);
 }
 
 /**

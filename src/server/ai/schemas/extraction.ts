@@ -31,6 +31,18 @@ export const LigneExtraiteSchema = z.object({
    * pareil, et se tromper d'espèce fait rappeler un prix qui n'a rien à voir.
    */
   espece: z.string().nullable().optional(),
+  /**
+   * Le prix HT qu'il a PRONONCÉ pour ce travail : « j'estime le prix à
+   * 500 € ». Jamais proposé par le modèle, c'est sa parole, recopiée.
+   *
+   * La case n'existait pas avant le 21 octobre 2026, et la consigne interdisait
+   * tout prix : le montant qu'il venait de dicter se perdait ici, et le devis
+   * lui redemandait de le remplir. Ce qui n'est pas un nombre est écarté plus
+   * loin (`montantDicte`) : un prix flou ne devient jamais un montant.
+   *
+   * `.optional()` pour les brouillons enregistrés avant cette date.
+   */
+  prix: z.string().nullable().optional(),
   aConfirmer: z.boolean().default(false),
 });
 

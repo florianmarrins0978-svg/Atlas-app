@@ -2,6 +2,7 @@ import Decimal from "decimal.js";
 import { filtrerClientsParNom, normaliserPourRecherche } from "./recherche-client";
 import { rangerParNom } from "./bandes-clients";
 import { tarifsCorrespondants } from "./tarifs-correspondants";
+import { tarifAvecSonHomme } from "./main-oeuvre-dictee";
 
 /**
  * CE QU'IL PAIE, ET LA MARGE QU'IL Y MET — sa planche du 18 et du 19 octobre
@@ -292,6 +293,8 @@ export type PrixDUneLigne = {
   prixUnitaire: string;
   /** Ce que l'explication du devis écrit sous la ligne. */
   detail: string;
+  /** Le tarif de vente retenu, quand c'en est un : il dit si l'engin part avec son homme. */
+  tarif?: TarifDeVente;
 };
 
 /**
@@ -308,23 +311,52 @@ export function prixDUneLigneDictee(
     tarifs: readonly TarifDeVente[];
     achats: readonly PrixAchatCandidat[];
     marges: { materiel: string | null; mainOeuvre: string | null };
-  }
+  },
+  /**
+   * L'unité qu'il a PRONONCÉE avec la quantité, quand il en a dit une.
+   *
+   * **Son tarif ne se multiplie que par SA propre unité** (21 octobre 2026) :
+   * « 15 tonnes » d'évacuation sur un tarif « Évacuation » au forfait donnait
+   * 15 × 150 €. Des tonnes ne comptent pas des forfaits. Une unité qui diffère
+   * de celle du tarif rend le tarif tel quel, une fois. Sans unité dite (« 3
+   * sacs de ciment », compté), rien ne change.
+   */
+  uniteDite: string | null = null,
+  /**
+   * A-t-il dicté des hommes sur ce chantier ? `null` : on ne sait pas.
+   *
+   * **Ce qui départage « Mini pelle » et « Mains d'œuvre plus mini pelle »**
+   * (sa règle du 21 octobre 2026) : *« une mini pelle seule, c'est 400 € si on
+   * la loue ; la mini pelle plus un bonhomme, c'est 500 € »*. Avec des hommes
+   * dictés, l'engin part avec son conducteur ; sans, il part seul. C'est SA
+   * règle qui choisit, pas une préférence : sans elle, les deux tarifs se
+   * valent et la ligne reste à chiffrer, comme avant.
+   */
+  hommesDictes: boolean | null = null
 ): PrixDUneLigne {
   const q = new Decimal(quantite);
   // À la lettre d'abord (`tarifsCorrespondants`), par les mots ensuite : jamais
   // moins tolérant pour sa vente que pour son achat.
   const litteraux = tarifsCorrespondants(sources.tarifs.map((t) => ({ ...t, id: t.tarifId })), [texte]);
-  const tarifs = litteraux.length > 0 ? litteraux : lesMieuxNommees(texte, sources.tarifs, (t) => t.intitule);
+  const repondent = litteraux.length > 0 ? litteraux : lesMieuxNommees(texte, sources.tarifs, (t) => t.intitule);
+  const selonLesHommes =
+    repondent.length > 1 && hommesDictes !== null
+      ? repondent.filter((t) => tarifAvecSonHomme(t.intitule) === hommesDictes)
+      : [];
+  const tarifs = selonLesHommes.length === 1 ? selonLesHommes : repondent;
   if (tarifs.length === 1) {
     const t = tarifs[0];
-    const montant = t.unite ? new Decimal(t.prix).times(q) : new Decimal(t.prix);
+    const parSonUnite =
+      !!t.unite && (uniteDite === null || normaliserPourRecherche(uniteDite) === normaliserPourRecherche(t.unite));
+    const montant = parSonUnite ? new Decimal(t.prix).times(q) : new Decimal(t.prix);
     return {
       origine: "vente",
       montant: montant.toFixed(2),
-      quantite: t.unite ? q.toString() : "1",
+      quantite: parSonUnite ? q.toString() : "1",
       unite: t.unite,
       prixUnitaire: t.unite ? new Decimal(t.prix).toFixed(2) : montant.toFixed(2),
       detail: `Votre prix de vente « ${t.intitule} » : ${virgule(new Decimal(t.prix).toFixed(2))} €${t.unite ? ` / ${t.unite}` : ""}.`,
+      tarif: t,
     };
   }
   if (tarifs.length > 1) {

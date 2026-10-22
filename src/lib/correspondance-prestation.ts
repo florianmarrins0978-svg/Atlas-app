@@ -49,6 +49,8 @@ export type PrestationExistante = {
   /** Les mesures déjà en colonne, s'il y en a. */
   caracteristiques?: unknown;
   aConfirmer?: boolean | null;
+  /** Le prix qu'il a dicté (migration 0135). */
+  prixDicte?: string | null;
   /** L'artisan a posé ces valeurs lui-même (migration 0070). */
   corrigeParHumain?: boolean | null;
 };
@@ -88,6 +90,7 @@ export type Enrichissement = {
     espece?: string;
     caracteristiques?: Record<string, number>;
     aConfirmer?: boolean;
+    prixDicte?: string;
   };
   /** Ce que la nouvelle lecture dit et qui contredit ce qui est déjà là. */
   contradictions: string[];
@@ -118,6 +121,7 @@ export function enrichissementPossible(
     espece?: string | null;
     caracteristiques?: Record<string, number> | null;
     aConfirmer: boolean;
+    prixDicte?: string | null;
   }
 ): Enrichissement {
   const aPoser: Enrichissement["aPoser"] = {};
@@ -200,6 +204,17 @@ export function enrichissementPossible(
 
   if (existante.aConfirmer === null || existante.aConfirmer === undefined) {
     aPoser.aConfirmer = nouvelle.aConfirmer;
+  }
+
+  // Son prix dicté suit la même règle : posé quand il manque, jamais remplacé
+  // en silence par une nouvelle lecture.
+  if (nouvelle.prixDicte) {
+    if (existante.prixDicte === null || existante.prixDicte === undefined) aPoser.prixDicte = nouvelle.prixDicte;
+    else if (Number(existante.prixDicte) !== Number(nouvelle.prixDicte)) {
+      contradictions.push(
+        `« ${existante.libelle} » porte déjà le prix dicté de ${existante.prixDicte} € et la dictée dit ${nouvelle.prixDicte} €. Rien n'a été modifié.`
+      );
+    }
   }
 
   return { aPoser, contradictions };

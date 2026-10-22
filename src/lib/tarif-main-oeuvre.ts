@@ -70,6 +70,25 @@ function reconnaitre(unite: string | null): { parHomme: boolean; parJour: boolea
 }
 
 /**
+ * Son tarif au jour et par homme, s'il en a un : c'est lui qui chiffre la main
+ * d'œuvre qu'il dicte (« 2 hommes, 2 jours »), conducteurs d'engin retirés
+ * (`main-oeuvre-dictee.ts`).
+ */
+export function tarifJourHomme(tarifs: readonly TarifSimple[]): TarifSimple | null {
+  return (
+    tarifs.find((t) => {
+      const r = reconnaitre(t.unite);
+      if (!r?.parHomme || !r.parJour) return false;
+      try {
+        return new Decimal(t.prix).greaterThan(0);
+      } catch {
+        return false;
+      }
+    }) ?? null
+  );
+}
+
+/**
  * Chiffre la main d'œuvre depuis la grille, si la grille sait le faire.
  *
  * Rend `null` — jamais un montant approché — dès qu'il manque quoi que ce soit :

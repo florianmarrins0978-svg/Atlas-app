@@ -51,6 +51,52 @@ Format : le plus récent en tête.
   la montre sous le plan (`lire-croquis.ts`, `test-lecture-croquis.ts`). **Non
   vérifié sur le vrai modèle** : aucune clé ici.
 
+- **« Le gros bois » compté en tonnes, ce sont des grumes** (sa correction du
+  22 octobre : *« une grume, c'est un gros bois »*). « Évacuation du gros
+  bois, 15 tonnes » prenait le forfait « Évacuation » au lieu de son prix à la
+  tonne de grumes. Sans tonnage, elle reste l'évacuation de l'abattage, sur
+  sa ligne (sa règle du 7 août, que `test-lignes-vendables.ts` tient) : c'est
+  le tonnage qui les sépare (`natureDuLibelle`, et la consigne du modèle).
+
+- **Des jours et des hommes dictés : la main d'œuvre fait le prix, et il dit
+  comment la répartir** (sa règle du 21 octobre, planche
+  `appli/main-d-oeuvre-repartie.html`, `ARCHITECTURE.md` §233). Son devis 067
+  avait perdu l'abattage, le démontage et la main d'œuvre parce qu'un seul
+  tarif (« Évacuation ») construisait le devis entier ; la mini pelle restait à
+  chiffrer entre deux tarifs ; sa haie au mètre restait à chiffrer sans jours
+  dictés. La carte « Avant de chiffrer » pose la question (ligne à part ou
+  curseurs, croix vers la grille), s'en souvient après trois fois, et l'engin
+  avec son homme se paie à la journée. Rejoué sur ses tarifs :
+  `scripts/test-main-oeuvre-dictee-db.ts`. Quatre contrôles qui exigeaient la
+  grille AVEC des jours dictés ont été recentrés sur le cas sans jours, celui
+  que sa règle leur laisse.
+
+- **Pendant qu'Atlas prépare le devis, ça souffle** (sa planche du 21 octobre,
+  réponse C, `appli/souffle-devis.html`) : sur la fiche client, les trois
+  points du micro des coordonnées prennent la place du micro dans le rond, et
+  celle des points de suspension au bout de « Atlas prépare votre devis ».
+  Un écran qui disait « … » sans bouger se lisait comme figé.
+
+- **Une ligne dictée dans le devis prend ses prix à lui.** Depuis le micro du
+  devis, « on évacue le gros bois, 15 tonnes » arrivait « Aucun prix dicté, à
+  vous de la chiffrer » alors que « Évacuation » est dans ses tarifs : ce
+  chemin ne lisait que le prix prononcé. `chiffrerLesAjouts`
+  (`ajouts-dictes.ts`) suit désormais l'ordre de la dictée du chantier, sa
+  grille, puis ses tarifs, puis ses achats, et l'écran dit d'où vient le
+  prix. Un tarif ne se multiplie plus que par SA propre unité : 15 tonnes sur
+  un forfait donnaient 15 × 150 € (`prixDUneLigneDictee`, `uniteDite`).
+  `scripts/test-ajouts-dictes-db.ts`, vu rouge avant la correction.
+
+- **Le prix qu'il dicte arrive sur le devis.** « Taille d'une haie de laurier,
+  j'estime le prix à 500 € » donnait une ligne « à chiffrer » : la lecture de
+  la dictée n'avait aucune case pour un prix, et sa consigne lui interdisait
+  d'en rendre un. Elle recopie désormais le montant qu'il PRONONCE
+  (`prix`, `extraction.ts`), lu par la même fonction que ses retouches de
+  devis (`montantDicte`), gardé sur la prestation (migration 0135, colonne
+  `prix_dicte`, expand seul), et il passe avant ses tarifs et sa grille
+  (origine « dictee », `proposition-prix.ts`). Un prix flou (« environ 500 »)
+  reste écarté. `scripts/test-prix-dicte-db.ts`, vu rouge avant la correction.
+
 - **Sur Nuit et Sylve, ce qui s'écrit sur le rouge d'alerte se lit autant
   qu'en Origine.** L'alerte des chartes sombres était détachée du fond à 4,5
   tout juste ; or elle sert aussi de fond (la pastille des factures en attente
