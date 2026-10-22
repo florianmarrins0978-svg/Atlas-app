@@ -266,7 +266,9 @@ cas("Entreprise écrit le nom seul ; Mr et Mme restent ce qu'ils étaient", () =
 cas("une entreprise : son choix d'abord, sinon un mot de société dans le nom", () => {
   assert.equal(estUneEntreprise("Jardins Ribault", "entreprise"), true);
   assert.equal(estUneEntreprise("Vert Bocage SARL", null), true);
-  assert.equal(estUneEntreprise("Mairie de Rezé", undefined), true);
+  // Une mairie a sa porte à elle depuis le 22 octobre 2026 (« Public ») : elle
+  // n'est plus rangée avec les entreprises (`scripts/test-client-public.ts`).
+  assert.equal(estUneEntreprise("Mairie de Rezé", undefined), false);
   assert.equal(estUneEntreprise("SARL Untel", "mr"), false, "son choix « Mr » doit primer");
   assert.equal(estUneEntreprise("Bernard", null), false);
   assert.equal(estUneEntreprise("Mme Roux", null), false, "une civilité n'est pas une société");

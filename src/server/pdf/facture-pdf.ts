@@ -1,6 +1,7 @@
 import { MENTION_FRANCHISE, sousFranchise } from "@/lib/franchise-tva";
 import { MENTION_AUTOLIQUIDATION } from "@/lib/autoliquidation";
-import { estUneEntreprise } from "@/lib/civilite";
+import { estUneEntreprise, estUnClientPublic } from "@/lib/civilite";
+import { MENTION_RETARD_PUBLIC } from "@/lib/facture-publique";
 import {
   composerDocument,
   type DonneesDocument,
@@ -78,7 +79,12 @@ function mentionLegaleFacture(data: FacturePdfData): string {
   // **Les 40 € ne se réclament qu'à un professionnel** (C. com. L441-10,
   // D441-5) : sur la facture d'un particulier, ils lui demandaient ce qu'il ne
   // doit pas (`docs/check-up-legal-documents.md`, point 5).
-  const base = estUneEntreprise(data.clientNom, data.clientCivilite)
+  //
+  // **Un acheteur public a son propre taux** (22 octobre 2026) : celui de la
+  // commande publique, dû de plein droit (`MENTION_RETARD_PUBLIC`).
+  const base = estUnClientPublic(data.clientNom, data.clientCivilite)
+    ? MENTION_RETARD_PUBLIC
+    : estUneEntreprise(data.clientNom, data.clientCivilite)
     ? "En cas de retard de paiement, une pénalité au taux de trois fois le taux d'intérêt légal " +
       "est exigible, ainsi qu'une indemnité forfaitaire pour frais de recouvrement de 40 €. " +
       "Pas d'escompte pour paiement anticipé."

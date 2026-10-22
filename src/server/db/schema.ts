@@ -772,7 +772,7 @@ export const clients = pgTable(
     // ni « Mr » ni « Mme », et un client saisi à la volée n'a pas toujours eu
     // droit à un appui de plus. Ce que NULL vaut à l'écran est décidé dans
     // `src/lib/civilite.ts`, jamais ici (migration 0038).
-    civilite: text("civilite", { enum: ["mr", "mme", "entreprise"] }),
+    civilite: text("civilite", { enum: ["mr", "mme", "entreprise", "public"] }),
     telephone: text("telephone"),
     adresse: text("adresse"),
     email: text("email"),
@@ -785,6 +785,12 @@ export const clients = pgTable(
     numeroTva: text("numero_tva"),
     /** Le SIRET d'une entreprise cliente (migration 0119), recopié sous son nom. */
     siret: text("siret"),
+    /**
+     * Le code service d'un client public (migration 0137), celui que Chorus Pro
+     * vérifie à la lettre près. Recopié sur chaque facture, où il se change
+     * pour elle seule.
+     */
+    codeService: text("code_service"),
     // Canal convenu avec le client pour l'envoi du devis (docs/AGENT.md §2.1).
     // Sans lui, l'envoi est impossible : mieux vaut bloquer qu'envoyer dans le vide.
     canalCommunication: text("canal_communication", { enum: ["sms", "email"] }),
@@ -1435,7 +1441,7 @@ export const devis = pgTable(
     // Recopiée comme le nom : un document dit comment on s'adressait à son
     // destinataire LE JOUR OÙ il a été établi. Corriger une fiche client ne
     // doit pas réécrire un devis déjà parti (migration 0038).
-    clientCivilite: text("client_civilite", { enum: ["mr", "mme", "entreprise"] }),
+    clientCivilite: text("client_civilite", { enum: ["mr", "mme", "entreprise", "public"] }),
     /** Le SIRET d'une entreprise cliente, figé comme son nom (migration 0119). */
     clientSiret: text("client_siret"),
     /**
@@ -2394,9 +2400,16 @@ export const factures = pgTable(
     // Recopiée comme le nom : un document dit comment on s'adressait à son
     // destinataire LE JOUR OÙ il a été établi. Corriger une fiche client ne
     // doit pas réécrire un devis déjà parti (migration 0038).
-    clientCivilite: text("client_civilite", { enum: ["mr", "mme", "entreprise"] }),
+    clientCivilite: text("client_civilite", { enum: ["mr", "mme", "entreprise", "public"] }),
     /** Le SIRET d'une entreprise cliente, figé comme son nom (migration 0119). */
     clientSiret: text("client_siret"),
+    /**
+     * Pour Chorus Pro (migration 0137) : le code service, repris de la fiche et
+     * modifiable pour cette facture, et le numéro d'engagement de SON bon de
+     * commande. Figés comme le SIRET ; nuls hors client public.
+     */
+    clientCodeService: text("client_code_service"),
+    clientNumeroEngagement: text("client_numero_engagement"),
     clientAdresse: text("client_adresse"),
     clientTelephone: text("client_telephone"),
     clientEmail: text("client_email"),

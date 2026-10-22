@@ -506,10 +506,30 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     motsCles: ["chercher", "rechercher", "client", "nom", "trouver", "retrouver", "filtrer"],
     geste: "En haut de « Vos clients », tapez une partie de son nom dans « Chercher un client ».",
     // Ses entreprises vivent derrière leur porte depuis le 4 octobre 2026.
-    reserve: "La recherche porte sur le nom du client. Une entreprise se cherche dans « Vos entreprises ».",
+    reserve:
+      "La recherche porte sur le nom du client. Une entreprise se cherche dans « Vos entreprises », une mairie dans « Services publics ».",
     source: "src/app/clients/ListeClients.tsx",
-    preuves: ['"Chercher un client"', '"Chercher une entreprise"', "filtrerClientsParNom(clients, saisie)"],
-    ailleurs: [{ source: "src/app/EcranChantiers.tsx", preuves: ['href="/clients"', "Vos clients"] }],
+    preuves: ["MOTS_DE_LA_CATEGORIE[categorie].chercher", "filtrerClientsParNom(dansLeTri, saisie)"],
+    ailleurs: [
+      { source: "src/app/EcranChantiers.tsx", preuves: ['href="/clients"', "Vos clients"] },
+      { source: "src/lib/civilite.ts", preuves: ['"Chercher un client"', '"Chercher une entreprise"', '"Chercher un service public"'] },
+    ],
+  },
+  {
+    // Sa demande du 22 octobre 2026 : retrouver un devis de 2017 dans dix ans de dossiers.
+    id: "clients-filtre-date",
+    ecran: "Vos clients",
+    ou: "« Chantiers » dans la barre du bas, puis « Vos clients », « Vos entreprises » ou « Services publics »",
+    intitule: "Retrouver un client par la date de son devis ou de sa facture",
+    motsCles: ["date", "ancien", "annee", "mois", "calendrier", "filtre", "trier", "2017"],
+    geste:
+      "Touchez « Filtre » sous la recherche, puis « Date du devis » ou « Date de facturation » : le calendrier s'ouvre. " +
+      "Choisissez un jour, la liste montre les clients qui ont une pièce ce mois-là.",
+    reserve:
+      "Touchez le titre du mois pour rouvrir le calendrier. « Nom du client » remet la liste de A à Z.",
+    source: "src/app/clients/ListeClients.tsx",
+    preuves: ["<BoutonFiltre", "<VoletTriClients", 'type="date"', 'dataAtlas="periode-du-filtre"'],
+    ailleurs: [{ source: "src/lib/tri-clients.ts", preuves: ['"Nom du client"', '"Date du devis"', '"Date de facturation"'] }],
   },
   {
     id: "clients-creer",
@@ -518,7 +538,7 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     intitule: "Créer un nouveau client",
     motsCles: ["creer", "nouveau", "ajouter", "client", "enregistrer", "fiche", "carnet"],
     geste: "Un client ne se crée pas à part : il naît avec son chantier, puis apparaît dans « Vos clients ».",
-    source: "src/app/clients/page.tsx",
+    source: "src/lib/civilite.ts",
     preuves: ["Ils naissent avec vos chantiers."],
   },
   {

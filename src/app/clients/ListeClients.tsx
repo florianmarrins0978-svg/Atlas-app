@@ -2,11 +2,23 @@
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { colors, font, libelleCaps, voile } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
 import { ChampRecherche } from "@/components/atlas/ChampRecherche";
+import BoutonFiltre from "@/components/atlas/BoutonFiltre";
+import BottomSheet from "@/components/atlas/BottomSheet";
 import { grouperEnBandes } from "@/lib/bandes-clients";
 import { jourDeLaLigne, type TraceDuClient } from "@/lib/documents-du-client";
+import { MOTS_DE_LA_CATEGORIE, type CategorieClient } from "@/lib/civilite";
+import {
+  CLES_TRI_CLIENTS,
+  aucunePieceDuMois,
+  clientsDuMois,
+  moisDuJour,
+  titreDuTri,
+  type DateDeTri,
+  type TriClients,
+} from "@/lib/tri-clients";
 import {
   filtrerClientsParNom,
   aucunClientTrouve,
@@ -67,6 +79,9 @@ export type FicheClientListee = {
    * Le pourquoi est dans `derniereTraceDuClient`.
    */
   derniere: TraceDuClient | null;
+  /** Ses devis envoyés et ses factures émises, pour le Filtre (`tri-clients.ts`). */
+  joursDevis: string[];
+  joursFactures: string[];
   facture: string | number | null;
   du: string | number | null;
 };
@@ -90,6 +105,9 @@ type EtatRecherche = {
   total: number;
   visibles: FicheClientListee[];
   aujourdHui: string;
+  /** Le Filtre (22 octobre 2026) : de A à Z, ou les pièces d'un mois. */
+  tri: TriClients;
+  trier: (tri: TriClients) => void;
 };
 
 const Contexte = createContext<EtatRecherche | null>(null);
@@ -121,10 +139,21 @@ export function FournisseurClients({
   children: React.ReactNode;
 }) {
   const [saisie, poser] = useState("");
-  const visibles = useMemo(() => filtrerClientsParNom(clients, saisie), [clients, saisie]);
+  const [tri, trier] = useState<TriClients>({ cle: "nom" });
+  // **Trié par date, la ligne montre la pièce DU MOIS** (`clientsDuMois`),
+  // pas sa plus récente : un titre qui dit juin 2017 au-dessus d'une ligne qui
+  // dit 2024 se lirait comme une erreur.
+  const dansLeTri = useMemo(
+    () =>
+      tri.cle === "nom"
+        ? clients
+        : clientsDuMois(clients, tri.cle, tri.mois).map((c) => ({ ...c, derniere: c.piece })),
+    [clients, tri]
+  );
+  const visibles = useMemo(() => filtrerClientsParNom(dansLeTri, saisie), [dansLeTri, saisie]);
   const valeur = useMemo(
-    () => ({ saisie, poser, total: clients.length, visibles, aujourdHui }),
-    [saisie, clients.length, visibles, aujourdHui]
+    () => ({ saisie, poser, total: dansLeTri.length, visibles, aujourdHui, tri, trier }),
+    [saisie, dansLeTri.length, visibles, aujourdHui, tri]
   );
   return <Contexte.Provider value={valeur}>{children}</Contexte.Provider>;
 }
@@ -137,15 +166,15 @@ export function FournisseurClients({
  * ligne se vidait, disparaissait, et le champ de saisie remontait de vingt-
  * quatre pixels sous le doigt. À chaque frappe qui ne trouve pas.
  */
-export function CompteClients({ entreprises = false }: { entreprises?: boolean }) {
+export function CompteClients({ categorie = "particulier" }: { categorie?: CategorieClient }) {
   const { saisie, total, visibles } = useRecherche();
   const cherche = saisie.trim().length > 0;
   const n = cherche ? visibles.length : total;
-  const nom = entreprises ? "entreprise" : "client";
-  const mot = n === 1 ? `1 ${nom}` : `${n} ${nom}s`;
+  const mots = MOTS_DE_LA_CATEGORIE[categorie];
+  const mot = n === 1 ? `1 ${mots.un}` : `${n} ${mots.des}`;
   // Rien trouvé : la phrase juste en dessous le dit déjà, en citant sa frappe.
   // Le redire ici en capitales serait la redite qu'il nous reproche.
-  const accord = entreprises ? "trouvée" : "trouvé";
+  const accord = mots.trouve;
   const texte = cherche && n === 0 ? "" : cherche ? `${mot} ${accord}${n > 1 ? "s" : ""}` : mot;
   return (
     <span className="block min-h-[14px]" data-atlas="compte-clients">
@@ -155,15 +184,17 @@ export function CompteClients({ entreprises = false }: { entreprises?: boolean }
 }
 
 export default function ListeClients({
-  entreprises = false,
+  categorie = "particulier",
   sousLaRecherche = null,
 }: {
-  entreprises?: boolean;
+  categorie?: CategorieClient;
   /** Ce qui se pose sous la recherche, et ne colle pas avec elle : la porte de l'import. */
   sousLaRecherche?: React.ReactNode;
 }) {
-  const { saisie, poser, visibles, aujourdHui } = useRecherche();
+  const { saisie, poser, visibles, aujourdHui, tri, trier } = useRecherche();
   const cherche = saisie.trim().length > 0;
+  const [volet, setVolet] = useState(false);
+  const titre = titreDuTri(tri);
 
   // **Le filet sous la barre collante n'apparaît qu'une fois qu'elle colle.**
   // Un repère posé en permanence serait un trait de plus sur un écran qui n'en
@@ -212,12 +243,47 @@ export default function ListeClients({
         <ChampRecherche
           valeur={saisie}
           onChange={poser}
-          placeholder={entreprises ? "Chercher une entreprise" : "Chercher un client"}
+          placeholder={MOTS_DE_LA_CATEGORIE[categorie].chercher}
           ariaLabel="Chercher un client"
           dataAtlas="chercher-client"
         />
+        {/* **LE FILTRE DE TERMINÉS, sa demande du 22 octobre 2026**
+            (`appli/facture-mairie-chorus.html`) : retrouver un devis de 2017
+            dans dix ans de dossiers. Sous la recherche, à droite, comme sur
+            Terminés ; ses couleurs ne changent pas quand il agit (*« pas
+            vert »*) : c'est le titre du mois qui le dit. */}
+        <div className="mt-[10px] flex justify-end">
+          <BoutonFiltre onClick={() => setVolet(true)} />
+        </div>
+        {tri.cle !== "nom" && titre && (
+          <OuvrirLeCalendrier
+            jour={`${tri.mois}-01`}
+            choisir={(jour) => {
+              const mois = moisDuJour(jour);
+              if (mois) trier({ cle: tri.cle, mois });
+            }}
+            dataAtlas="periode-du-filtre"
+            className="mt-[8px] flex min-h-11 w-full items-center justify-center gap-2"
+          >
+            <span className="text-[22px] leading-[1.2]" style={{ fontFamily: font.display, color: colors.ink }}>
+              {titre}
+            </span>
+            <SigneCalendrier />
+          </OuvrirLeCalendrier>
+        )}
       </div>
       {sousLaRecherche}
+
+      <VoletTriClients
+        ouvert={volet}
+        tri={tri}
+        aujourdHui={aujourdHui}
+        fermer={() => setVolet(false)}
+        trier={(t) => {
+          trier(t);
+          setVolet(false);
+        }}
+      />
 
       {visibles.length === 0 ? (
         <p
@@ -228,8 +294,17 @@ export default function ListeClients({
           // l'écran, et elle doit se lire.
           style={{ color: colors.inkSoft }}
         >
-          {aucunClientTrouve(saisie)}
+          {cherche || tri.cle === "nom" ? aucunClientTrouve(saisie) : aucunePieceDuMois(tri)}
         </p>
+      ) : tri.cle !== "nom" ? (
+        // Trié par date, aucune bande de lettre : la liste suit les jours.
+        <ul className="mx-[26px] mt-[6px] flex flex-col">
+          {visibles.map((c, i) => (
+            <li key={c.id}>
+              <LigneClient client={c} saisie={saisie} aujourdHui={aujourdHui} dernier={i === visibles.length - 1} />
+            </li>
+          ))}
+        </ul>
       ) : (
         <div className="mt-[6px]">
           {bandes.map((groupe, iBande) => (
@@ -401,5 +476,133 @@ function LigneClient({
         }}
       />
     </Link>
+  );
+}
+
+/**
+ * Le volet « Trier par », aux mots de Terminés. Une date n'a pas de sens à
+ * choisir : la toucher OUVRE le calendrier, tout de suite (sa correction du
+ * 22 octobre 2026 : *« quand c'est marqué par date, que je puisse cliquer et
+ * que le calendrier s'ouvre et que je puisse voyager dans le temps »*).
+ *
+ * La clé choisie se remplit du plein de la charte, pas d'encre : ses boutons
+ * ne sont jamais noirs (sa planche du 22 octobre).
+ */
+function VoletTriClients({
+  ouvert,
+  tri,
+  aujourdHui,
+  fermer,
+  trier,
+}: {
+  ouvert: boolean;
+  tri: TriClients;
+  aujourdHui: string;
+  fermer: () => void;
+  trier: (tri: TriClients) => void;
+}) {
+  const dessin = (pris: boolean): React.CSSProperties => ({
+    fontFamily: font.display,
+    fontSize: 19,
+    color: pris ? surPlein : colors.ink,
+    backgroundColor: pris ? colors.plein : colors.card,
+    boxShadow: pris ? "none" : `inset 0 0 0 1px ${colors.line}`,
+  });
+  const forme = "mt-2 flex min-h-[54px] w-full items-center justify-center gap-[10px] rounded-full";
+  return (
+    <BottomSheet open={ouvert} onBackdropClick={fermer}>
+      <div data-atlas="volet-tri-clients">
+        <p className={`mb-2 text-center ${libelleCaps}`} style={{ color: colors.muted }}>
+          Trier par
+        </p>
+        {CLES_TRI_CLIENTS.map(({ cle, libelle }) => {
+          const pris = tri.cle === cle;
+          if (cle === "nom") {
+            return (
+              <button
+                key={cle}
+                type="button"
+                aria-pressed={pris}
+                data-atlas="tri-clients-nom"
+                onClick={() => trier({ cle: "nom" })}
+                className={forme}
+                style={dessin(pris)}
+              >
+                {libelle}
+              </button>
+            );
+          }
+          const date = cle as DateDeTri;
+          return (
+            <OuvrirLeCalendrier
+              key={cle}
+              jour={tri.cle === date ? `${tri.mois}-01` : aujourdHui}
+              choisir={(jour) => {
+                const mois = moisDuJour(jour);
+                if (mois) trier({ cle: date, mois });
+              }}
+              dataAtlas={`tri-clients-${cle}`}
+              className={forme}
+              style={dessin(pris)}
+            >
+              {libelle}
+              <SigneCalendrier couleur={pris ? surPlein : colors.plein} />
+            </OuvrirLeCalendrier>
+          );
+        })}
+        <button type="button" onClick={fermer} className="mt-3 w-full py-3 text-[14px]" style={{ color: colors.muted }}>
+          Fermer
+        </button>
+      </div>
+    </BottomSheet>
+  );
+}
+
+/**
+ * Ce qui ouvre le calendrier du téléphone : la case de date elle-même, rendue
+ * invisible et posée sur ce qu'on touche. Le doigt la touche donc directement,
+ * et iOS ouvre son calendrier : un bouton qui l'ouvrirait « à distance » peut
+ * être refusé sans un mot. Le même geste que le mois de `FiltreDeDate`.
+ */
+function OuvrirLeCalendrier({
+  jour,
+  choisir,
+  dataAtlas,
+  className,
+  style,
+  children,
+}: {
+  jour: string;
+  choisir: (jour: string) => void;
+  dataAtlas: string;
+  className: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className={`relative cursor-pointer ${className}`} style={style} data-atlas={dataAtlas}>
+      {children}
+      {/* `fontSize: 16` : en dessous, iOS agrandit la page à l'ouverture. */}
+      <input
+        type="date"
+        aria-label="Choisir un jour"
+        value={jour}
+        onChange={(e) => {
+          if (e.target.value) choisir(e.target.value);
+        }}
+        className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+        style={{ fontSize: 16 }}
+      />
+    </label>
+  );
+}
+
+/** Le signe du calendrier, à côté d'une date qui l'ouvre. */
+function SigneCalendrier({ couleur = colors.plein }: { couleur?: string }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke={couleur} strokeWidth="1.6" aria-hidden="true">
+      <rect x="3" y="4.5" width="14" height="12.5" rx="2" />
+      <path d="M3 8.5h14M7 2.5v4M13 2.5v4" strokeLinecap="round" />
+    </svg>
   );
 }

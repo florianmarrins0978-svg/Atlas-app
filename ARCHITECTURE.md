@@ -35661,3 +35661,61 @@ toujours 4 lignes, et les plans d'avant ne bougent pas.
 **Ce qui ne s'est pas fait, et pourquoi.** Les noms sous les arbres, retirés de
 la planche parce qu'ils chevauchaient le bord du terrain, restent dans
 l'application : ils portent le diamètre, que la planche ne montrait pas.
+
+## §486 : Une mairie est une catégorie, pas une entreprise
+
+**Ses choix du 22 octobre 2026** (`appli/facture-mairie-chorus.html`) : une
+quatrième pastille, « Public », et trois listes de clients. Avant, une « Mairie
+de… » était rangée avec les entreprises par son nom (`estUneEntreprise`), et
+cela lui offrait « Sous-traitance, sans TVA », qu'aucune mairie ne peut
+recevoir.
+
+| La question | La règle, une seule |
+|---|---|
+| sa liste, ses cases, son bouton | `categorieDuClient`, `casesDuClient`, `estUnClientPublic` |
+| la sous-traitance | `estUneEntreprise`, qui dit **non** à un client public |
+| les 40 € de frais de recouvrement | `estUnClientProfessionnel` : entreprise OU public |
+
+**La troisième ligne est celle qu'on aurait oubliée.** Les 40 € se décidaient
+par « entreprise ou non » : sortir les mairies des entreprises les aurait
+retirés de leurs devis, sans qu'aucun écran ne le montre.
+
+**`MARQUEURS_PUBLICS` est une liste à part de `MARQUEURS_SOCIETE`.** Celle-ci
+décide aussi du « Mr. » et se confronte mot pour mot à la migration 0036 :
+y ajouter « département » changerait le nom imprimé de clients déjà facturés.
+
+**Le code service vient de la fiche, quelle que soit la porte de la facture**
+(`poserLaFactureBrouillon`) : le devis ne le porte pas, le bon de commande
+arrive après lui. Il se recopie sur la facture et s'y change pour elle seule,
+figé comme le SIRET. Le numéro d'engagement ne vit que sur la facture.
+
+**« Télécharger pour Chorus Pro » arrête la facture AVANT de la télécharger**
+(`BoutonTelechargerDocument`, sa prop `avant`) : le PDF déposé doit porter
+son numéro définitif. Il ne dépend d'aucune coordonnée, là où l'envoi restait
+grisé sans téléphone ni e-mail, et laissait la facture d'une mairie impossible
+à arrêter.
+
+**Ce qui n'est pas tenu par un texte lu** : la phrase des retards
+(`MENTION_RETARD_PUBLIC`, BCE + 8 points et 40 €) vient de sources
+concordantes, pas de l'article R2192-31 lui-même. À faire confirmer.
+
+## §487 : Le Filtre des clients cherche un MOIS, et montre la pièce de ce mois
+
+**Sa demande du 22 octobre 2026** : retrouver un devis de 2017 dans dix ans de
+dossiers, avec le bouton « Filtre » de Terminés, et un calendrier qui s'ouvre
+au toucher d'une date.
+
+**Le bouton est le même composant** (`BoutonFiltre`), sorti de Terminés :
+deux dessins du même geste auraient divergé. Le volet, lui, est propre aux
+clients : ses dates ouvrent un calendrier, celles de Terminés trient.
+
+**Une date touchée ouvre le calendrier parce que le doigt touche la case de date
+elle-même**, invisible et posée sur la clé, comme le mois de `FiltreDeDate`.
+Ouvrir le calendrier « à distance » depuis un bouton peut être refusé par iOS
+sans un mot.
+
+**Le jour choisi désigne son MOIS** (`clientsDuMois`) : un jour exact rendrait
+le plus souvent une liste vide. Et **la ligne montre la pièce de ce mois**, pas
+la plus récente : un client revu en 2024 apparaît en juin 2017 avec son devis
+de juin 2017. La liste reçoit donc TOUTES les dates des devis envoyés et des
+factures émises (`joursDevis`, `joursFactures`), pas seulement la dernière.

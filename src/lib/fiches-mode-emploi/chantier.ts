@@ -207,13 +207,15 @@ export const FICHES_CHANTIER: FicheModeEmploi[] = [
     id: "chantier-civilite",
     ecran: "Fiche client",
     ou: OU_FICHE_CLIENT,
-    intitule: "Choisir Monsieur, Madame ou Entreprise pour le client",
-    motsCles: ["civilite", "monsieur", "madame", "mme", "titre", "genre", "homme", "femme", "entreprise", "societe"],
-    // **Les trois libellés vivent dans `civilite.ts` depuis le 4 octobre 2026**
+    intitule: "Choisir Monsieur, Madame, Entreprise ou Public pour le client",
+    motsCles: ["civilite", "monsieur", "madame", "mme", "titre", "genre", "homme", "femme", "entreprise", "societe", "public", "mairie"],
+    // **Les libellés vivent dans `civilite.ts` depuis le 4 octobre 2026**
     // (`PASTILLES_CIVILITE`) : le composant les lit, il ne les écrit plus.
-    geste: "Touchez « Mr », « Mme » ou « Entreprise », au-dessus du nom du client.",
+    // « Public » depuis le 22 octobre 2026.
+    geste: "Touchez « Mr », « Mme », « Entreprise » ou « Public », au-dessus du nom du client.",
+    reserve: "« Public » : une mairie, un département. Sa facture se dépose sur Chorus Pro.",
     source: "src/lib/civilite.ts",
-    preuves: ['mr: "Mr"', 'mme: "Mme"', 'entreprise: "Entreprise"'],
+    preuves: ['mr: "Mr"', 'mme: "Mme"', 'entreprise: "Entreprise"', 'public: "Public"'],
     ailleurs: [
       { source: "src/components/atlas/ChoixCivilite.tsx", preuves: ["PASTILLES_CIVILITE"] },
       { source: FICHE, preuves: ["<ChoixCivilite"] },

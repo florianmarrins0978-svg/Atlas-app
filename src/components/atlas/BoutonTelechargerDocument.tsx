@@ -58,6 +58,8 @@ export default function BoutonTelechargerDocument({
   style,
   dataAtlas,
   onFini,
+  avant,
+  disabled = false,
 }: {
   /** L'adresse du document, sans `?telecharger=1` — il est posé ici. */
   fichier: string;
@@ -75,6 +77,14 @@ export default function BoutonTelechargerDocument({
   dataAtlas?: string;
   /** Appelé quand le document est parti — pour refermer une feuille, par exemple. */
   onFini?: () => void;
+  /**
+   * Ce qui doit réussir AVANT de récupérer le document, dans le même appui :
+   * arrêter la facture d'une mairie, puis remettre son PDF à déposer sur
+   * Chorus Pro (22 octobre 2026). `false` : rien ne se télécharge, et
+   * l'appelant a déjà dit pourquoi à l'écran.
+   */
+  avant?: () => Promise<boolean>;
+  disabled?: boolean;
 }) {
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -84,6 +94,7 @@ export default function BoutonTelechargerDocument({
     setErreur(null);
     setEnCours(true);
     try {
+      if (avant && !(await avant())) return;
       const reponse = await fetch(adresseDeTelechargement(fichier));
       if (!reponse.ok) {
         setErreur(messageDeTelechargementRate(reponse.status));
@@ -106,7 +117,7 @@ export default function BoutonTelechargerDocument({
 
   return (
     <>
-      <button type="button" onClick={auClic} data-atlas={dataAtlas} className={className} style={style}>
+      <button type="button" onClick={auClic} disabled={disabled} data-atlas={dataAtlas} className={className} style={style}>
         {enCours ? "Un instant…" : children}
       </button>
       {erreur && (

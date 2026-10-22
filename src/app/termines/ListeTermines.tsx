@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { colors, font, surPlein } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
+import BoutonFiltre from "@/components/atlas/BoutonFiltre";
 import {
   aFacturerPartout,
   bornesDuFeuilletage,
@@ -584,30 +585,6 @@ function retenirTri(tri: Tri): void {
   // Refusé ou non, la mémoire tient l'écran ouvert : on prévient quand même.
   rangerSurLeTelephone(triEnMemoire);
   for (const prevenir of abonnesAuTri) prevenir();
-}
-
-/** « Filtre », et son signe à côté — sa demande du 27 septembre 2026. */
-function BoutonFiltre({ actif, onClick }: { actif: boolean; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      data-atlas="bouton-filtre"
-      data-actif={actif ? "" : undefined}
-      className="flex min-h-11 items-center gap-[7px] whitespace-nowrap rounded-full px-[13px] text-[12.5px]"
-      style={{
-        backgroundColor: actif ? colors.ink : colors.card,
-        color: actif ? colors.cream : colors.inkSoft,
-        boxShadow: actif ? "none" : `inset 0 0 0 1px ${colors.line}`,
-        WebkitTapHighlightColor: "transparent",
-      }}
-    >
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path d="M2 4h12M4.5 8h7M7 12h2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      </svg>
-      Filtre
-    </button>
-  );
 }
 
 /**

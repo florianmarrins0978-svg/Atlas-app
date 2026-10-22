@@ -8,6 +8,7 @@ import { siretLu } from "@/lib/siren";
 import { numeroTvaLu, numeroTvaVide } from "@/lib/autoliquidation";
 import { telephoneLu } from "@/lib/numero-telephone";
 import type { CiviliteClient } from "@/lib/civilite";
+import { referenceChorusLue } from "@/lib/facture-publique";
 
 /**
  * ─── MODIFIER UN CLIENT DEPUIS SA PROPRE FICHE ──────────────────────────────
@@ -42,6 +43,8 @@ export type SesCoordonnees = {
   /** Pour une entreprise cliente (son choix du 4 octobre 2026). */
   siret: string;
   numeroTva: string;
+  /** Pour un client public, ce que Chorus Pro vérifie (22 octobre 2026). */
+  codeService: string;
 };
 
 export type ResultatCoordonnees = { ok: true } | { ok: false; raison: string };
@@ -88,6 +91,7 @@ export async function enregistrerSesCoordonneesAction(
     adresse: data.adresse.trim() || null,
     siret: siret || null,
     numeroTva: numeroTva || null,
+    codeService: referenceChorusLue(data.codeService) || null,
   });
 
   // **`mettreAJourClient` rend `null` quand rien n'a été touché**, et ce n'est

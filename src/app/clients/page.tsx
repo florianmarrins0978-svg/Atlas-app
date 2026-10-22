@@ -4,6 +4,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerFichesClients } from "@/server/repositories/fiche-client";
 import { jourIso } from "@/lib/jour";
+import { MOTS_DE_LA_CATEGORIE, type CategorieClient } from "@/lib/civilite";
 import ListeClients, { CompteClients, FournisseurClients } from "./ListeClients";
 import BandeImport from "./BandeImport";
 import { estProprietaire } from "@/server/autorisation";
@@ -53,14 +54,22 @@ import { estProprietaire } from "@/server/autorisation";
 // *« mets pas particulier et entreprise, on est d'office sur les particuliers,
 // rajoute juste une porte pour aller sur l'entreprise »*
 // (`appli/entreprises-clientes.html`). Une entreprise est un client dont la
-// fiche porte « Entreprise », ou dont le nom porte SARL, Mairie…
-// (`estUneEntreprise`). La porte reprend celle de « Vos clients › » sur
-// l'écran Chantiers ; derrière, la même liste, la même recherche.
+// fiche porte « Entreprise », ou dont le nom porte SARL… (`estUneEntreprise`).
+// La porte reprend celle de « Vos clients › » sur l'écran Chantiers ;
+// derrière, la même liste, la même recherche.
+//
+// **SES SERVICES PUBLICS, UNE SECONDE PORTE — 22 octobre 2026**
+// (`appli/facture-mairie-chorus.html`) : une mairie, un département, une
+// communauté de communes. Sa demande : *« trois catégories, et l'utilisateur
+// s'y retrouve facilement »*, puis *« les deux portes, laisse-les visibles
+// constamment, même s'il n'y en a pas encore »*. Une porte qui n'apparaît
+// qu'au premier client caché ne se trouve pas le jour où l'on cherche où le
+// ranger.
 
 export const dynamic = "force-dynamic";
 
-/** L'adresse de la liste des entreprises : un paramètre, pas un second écran à tenir. */
-const VUE_ENTREPRISES = "entreprises";
+/** L'adresse de chaque liste : un paramètre, pas un second écran à tenir. */
+const VUES: Record<string, CategorieClient> = { entreprises: "entreprise", publics: "public" };
 
 export default async function ClientsPage({
   searchParams,
@@ -68,26 +77,28 @@ export default async function ClientsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const ctx = await getCurrentCtx();
-  const entreprises = (await searchParams).vue === VUE_ENTREPRISES;
+  const vue = (await searchParams).vue;
+  const categorie: CategorieClient = (typeof vue === "string" && VUES[vue]) || "particulier";
+  const mots = MOTS_DE_LA_CATEGORIE[categorie];
   const tous = await listerFichesClients(ctx);
-  const clients = tous.filter((c) => c.entreprise === entreprises);
-  const titre = entreprises ? "Vos entreprises" : "Vos clients";
-  // Des entreprises, il y en a peut-être : la porte s'offre dès qu'il y en a une.
-  const porte = !entreprises && tous.some((c) => c.entreprise);
+  const clients = tous.filter((c) => c.categorie === categorie);
+  // Les portes ne se montrent que sur la liste d'office, celle des particuliers.
+  const portes = categorie === "particulier";
   // **« Importer devis / facture » est un geste du patron** (`import/garde.ts`) :
   // les autres rôles ne voient ni la porte ni la bande.
-  const importe = !entreprises && (await estProprietaire(ctx));
-  const retour = entreprises
-    ? { href: "/clients", libelle: "Retour à vos clients" }
-    : { href: "/", libelle: "Retour à la liste des chantiers" };
+  const importe = categorie === "particulier" && (await estProprietaire(ctx));
+  const retour =
+    categorie === "particulier"
+      ? { href: "/", libelle: "Retour à la liste des chantiers" }
+      : { href: "/clients", libelle: "Retour à vos clients" };
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-[86px]">
         {clients.length === 0 ? (
           <>
-            <EnTeteEcran retour={retour} titre={titre} />
-            {porte && <PorteEntreprises />}
+            <EnTeteEcran retour={retour} titre={mots.titre} />
+            {portes && <Portes />}
             {/* **L'écran vide est celui qui importe le plus** : un artisan qui
                 arrive sur Atlas n'a encore aucun client. */}
             {importe && <PorteImport />}
@@ -100,7 +111,7 @@ export default async function ClientsPage({
               className="mx-[26px] mt-[26px] max-w-[31ch] text-[13px] leading-[1.6]"
               style={{ color: colors.inkSoft }}
             >
-              {entreprises ? "Aucune entreprise pour l'instant." : "Aucun client pour l'instant. Ils naissent avec vos chantiers."}
+              {mots.aucun}
             </p>
           </>
         ) : (
@@ -111,16 +122,18 @@ export default async function ClientsPage({
               nom: c.nom,
               adresse: c.adresse,
               derniere: c.derniere,
+              joursDevis: c.joursDevis,
+              joursFactures: c.joursFactures,
               // Les montants voyagent tels que le dépôt les rend : leur mise en
               // forme vit dans `enEuros`, appelée une seule fois, à l'écran.
               facture: c.facture ?? null,
               du: c.du ?? null,
             }))}
           >
-            <EnTeteEcran retour={retour} titre={titre} precision={<CompteClients entreprises={entreprises} />} />
-            {porte && <PorteEntreprises />}
+            <EnTeteEcran retour={retour} titre={mots.titre} precision={<CompteClients categorie={categorie} />} />
+            {portes && <Portes />}
             <ListeClients
-              entreprises={entreprises}
+              categorie={categorie}
               sousLaRecherche={
                 importe ? (
                   <>
@@ -134,6 +147,20 @@ export default async function ClientsPage({
         )}
       </div>
     </div>
+  );
+}
+
+/** Les deux portes, l'une sous l'autre, toujours là (22 octobre 2026). */
+function Portes() {
+  return (
+    <>
+      <Porte href="/clients?vue=entreprises" repere="porte-entreprises">
+        Vos entreprises
+      </Porte>
+      <Porte href="/clients?vue=publics" repere="porte-services-publics">
+        Services publics
+      </Porte>
+    </>
   );
 }
 
@@ -162,20 +189,20 @@ function PorteImport() {
 }
 
 /**
- * « VOS ENTREPRISES › » — la porte de « Vos clients › » sur l'écran Chantiers,
+ * « VOS ENTREPRISES › », « SERVICES PUBLICS › » — la porte de « Vos clients › » sur l'écran Chantiers,
  * trait pour trait : le mot doré en capitales espacées, le chevron qui dit
  * qu'il mène ailleurs, 44 px de cible pour un pouce ganté.
  */
-function PorteEntreprises() {
+function Porte({ href, repere, children }: { href: string; repere: string; children: React.ReactNode }) {
   return (
     <div className="px-[26px]">
       <Link
-        href={`/clients?vue=${VUE_ENTREPRISES}`}
-        data-atlas="porte-entreprises"
+        href={href}
+        data-atlas={repere}
         className="inline-flex min-h-[44px] items-center text-[11px] font-medium uppercase"
         style={{ color: colors.or, letterSpacing: "0.28em" }}
       >
-        Vos entreprises
+        {children}
         <span
           aria-hidden="true"
           className="ml-[5px] text-[19px] font-bold leading-none"

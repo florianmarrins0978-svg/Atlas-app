@@ -21,6 +21,27 @@ Branche `claude/importer-devis-factures`. Migration `drizzle/0136_pieces_importe
 
 Un appui sous « Modifier ses coordonnées » rend un zip des devis, factures, fiches d'entretien (désormais en PDF) et avoirs du client, filtré par rôle. Planche retenue : A. Devis accepté gardé 10 ans (sa décision, lot séparé). Aucun des deux lots n'est sur `main` : la batterie entière n'a pas été jouée, à sa demande. `ARCHITECTURE.md` §483, `docs/telecharger-un-client.md`.
 
+## LE FILTRE SUR LES LISTES DE CLIENTS, CODÉ (22 octobre 2026), PAS ENCORE SUR `main`
+
+Branche `lot/filtre-clients`, dossier `atlas-app-filtre`, **posée sur
+`lot/facture-mairie-code`** : la liste « Services publics » n'existe que là.
+Les deux lots partent sur `main` ensemble, après la batterie (pas lancée, à sa
+demande). Règle pure : `src/lib/tri-clients.ts` ; bouton commun avec Terminés :
+`src/components/atlas/BoutonFiltre.tsx`. Suite neuve : `test-tri-clients.ts`.
+Détail : `docs/filtre-clients.md`.
+
+## FACTURER UNE MAIRIE, CODÉ (22 octobre 2026), PAS ENCORE SUR `main`
+
+Branche `lot/facture-mairie-code`, dossier `atlas-app-chorus`, migration
+`0137_client_public_et_chorus.sql` (expand seul). Niveau 3 : **la batterie n'a
+pas été lancée, à sa demande** ; elle se lance avec son accord, puis le lot part
+sur `main`. Les règles vivent dans `src/lib/civilite.ts` (client public,
+catégorie, cases de la fiche, mots des trois listes) et
+`src/lib/facture-publique.ts` (délai, échéance, phrase des retards, lignes du
+PDF). Suites neuves : `test-client-public.ts`, `test-facture-mairie-db.ts`.
+Le Filtre avec son calendrier sur les listes de clients est le lot suivant, pas
+codé. Tout le détail : `docs/facture-mairie-chorus.md`.
+
 ## ARROSAGE : LES PRIX DES FOURNISSEURS ET L'IMPORT D'UN DEVIS, CODÉS (19 octobre 2026), PAS ENCORE SUR `main`
 
 Branche `claude/arrosage-prix-et-devis`, **partie du lot fournisseurs**

@@ -27,6 +27,27 @@ ancienne appli ». Document de retour : `docs/importer-devis-factures.md`.
 
 `src/app/api/clients/[id]/dossier/route.ts` assemble le zip ; la liste vient de `chargerFicheClient`, le filtre par rôle de `src/lib/dossier-du-client.ts`, les sources de `src/server/repositories/dossier-client.ts`, le compte rendu en PDF de `src/server/pdf/rapport-entretien-pdf.ts`. Un PDF archivé absent n'est jamais refait : il est nommé dans « A lire.txt ». §483.
 
+## LE FILTRE DES LISTES DE CLIENTS : branche `lot/filtre-clients` (22 octobre 2026)
+
+Branche `lot/filtre-clients`, dossier `atlas-app-filtre`, **posée sur
+`lot/facture-mairie-code`** : la liste « Services publics » n'existe que là.
+Les deux lots partent sur `main` ensemble, après la batterie (pas lancée, à sa
+demande). Règle pure : `src/lib/tri-clients.ts` ; bouton commun avec Terminés :
+`src/components/atlas/BoutonFiltre.tsx`. Suite neuve : `test-tri-clients.ts`.
+Détail : `docs/filtre-clients.md`.
+
+## FACTURER UNE MAIRIE : branche `lot/facture-mairie-code` (22 octobre 2026)
+
+Branche `lot/facture-mairie-code`, dossier `atlas-app-chorus`, migration
+`0137_client_public_et_chorus.sql` (expand seul). Niveau 3 : **la batterie n'a
+pas été lancée, à sa demande** ; elle se lance avec son accord, puis le lot part
+sur `main`. Les règles vivent dans `src/lib/civilite.ts` (client public,
+catégorie, cases de la fiche, mots des trois listes) et
+`src/lib/facture-publique.ts` (délai, échéance, phrase des retards, lignes du
+PDF). Suites neuves : `test-client-public.ts`, `test-facture-mairie-db.ts`.
+Le Filtre avec son calendrier sur les listes de clients est le lot suivant, pas
+codé. Tout le détail : `docs/facture-mairie-chorus.md`.
+
 ## ARROSAGE, PRIX ET DEVIS : branche `claude/arrosage-prix-et-devis` (19 octobre 2026)
 
 Elle part du lot fournisseurs, pas de la branche aquaplus de son PC (absente

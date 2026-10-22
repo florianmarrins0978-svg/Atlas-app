@@ -17,6 +17,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { logger } from "@/server/logger";
 import { avecCivilite, type CiviliteClient } from "@/lib/civilite";
+import { lignesChorus } from "@/lib/facture-publique";
 import {
   libelleReduction,
   recoitLaRemise,
@@ -534,6 +535,9 @@ export type DonneesDocument = {
   clientNumeroTva?: string | null;
   /** Le SIRET d'une entreprise cliente (migration 0119). */
   clientSiret?: string | null;
+  /** Pour Chorus Pro, sous le SIRET d'un client public (migration 0137). */
+  clientNumeroEngagement?: string | null;
+  clientCodeService?: string | null;
   adresseChantier?: string | null;
   conditionsPaiement?: string | null;
   devise: string;
@@ -1005,6 +1009,9 @@ export async function composerDocument(
     adresses.adresseClient,
     data.clientTelephone,
     data.clientSiret ? `SIRET ${data.clientSiret}` : null,
+    // Là où le SIRET s'imprime déjà (22 octobre 2026) : Chorus Pro les lit
+    // ensemble, et une ligne vide ne s'imprime pas (`lignesChorus`).
+    ...lignesChorus({ numeroEngagement: data.clientNumeroEngagement ?? null, codeService: data.clientCodeService ?? null }),
     data.clientNumeroTva ? `TVA intracommunautaire ${data.clientNumeroTva}` : null,
   ]
     .filter((l): l is string => !!l)

@@ -32,12 +32,13 @@ import {
   majDateTravauxFactureAction,
   majAutoliquidationFactureAction,
   majTvaClientFactureAction,
+  majReferencesChorusFactureAction,
 } from "./actions";
 import ListeDesManques from "@/components/atlas/ListeDesManques";
 import type { Manque } from "@/lib/mentions-manquantes";
-import { avecCivilite, estUneEntreprise, type CiviliteClient } from "@/lib/civilite";
+import { avecCivilite, estUneEntreprise, estUnClientPublic, type CiviliteClient } from "@/lib/civilite";
 import { peutPreparerLaPiece } from "@/lib/preparation-devis";
-import { ECHEANCE_MAX_JOURS } from "@/lib/echeance-facture";
+import { echeanceMaxJours, lignesChorus, referenceChorusLue } from "@/lib/facture-publique";
 import { jourIso } from "@/lib/jour";
 import {
   libelleReduction,
@@ -76,6 +77,9 @@ export type FacturePourEcran = {
   clientNumeroTva: string | null;
   /** Recopié du devis : l'avis sur la clé du n° TVA le compare au SIREN. */
   clientSiret: string | null;
+  /** Pour Chorus Pro, sur la facture d'un client public (migration 0137). */
+  clientNumeroEngagement: string | null;
+  clientCodeService: string | null;
   /** Le devis dont ces lignes viennent — le PDF le nomme, l'écran doit le nommer aussi. */
   numeroDevis: string | null;
   versionDevis: number | null;
@@ -279,6 +283,20 @@ export default function FactureClient({
     else setRefusSousTraitance(r.erreur);
   }
 
+  // Une mairie, un département : sa facture se dépose sur Chorus Pro (ses
+  // choix du 22 octobre 2026). La même règle que le dépôt (`civilite.ts`).
+  const clientPublic = estUnClientPublic(initialFacture?.clientNom, initialFacture?.clientCivilite);
+  const [numeroEngagement, setNumeroEngagement] = useState(initialFacture?.clientNumeroEngagement ?? "");
+  const [codeService, setCodeService] = useState(initialFacture?.clientCodeService ?? "");
+  const [refusChorus, setRefusChorus] = useState<string | null>(null);
+
+  async function enregistrerChorus() {
+    if (!initialFacture) return;
+    setRefusChorus(null);
+    const r = await majReferencesChorusFactureAction(initialFacture.id, { numeroEngagement, codeService });
+    if (!r.succes) setRefusChorus(r.erreur);
+  }
+
   async function changerEcheance(valeur: string) {
     if (!initialFacture) return;
     setEcheanceEnCours(true);
@@ -382,6 +400,39 @@ export default function FactureClient({
    * proposition A taisait** : le mot « envoyer » ne dit pas l'arrêt. D'où les
    * deux lignes sous le bouton, qui le disent.
    */
+  /**
+   * Arrête la facture d'une mairie avant d'en remettre le PDF : celui qu'on
+   * dépose sur Chorus Pro doit porter son numéro définitif, jamais
+   * « brouillon ». Les refus sont ceux de l'envoi, dits aux mêmes endroits.
+   */
+  async function arreterPourChorus(): Promise<boolean> {
+    if (!initialFacture) return false;
+    setEnCours(true);
+    setErreur(null);
+    setManques([]);
+    try {
+      // Ce qu'il vient de taper part avec elle, même s'il n'a pas quitté la case.
+      await enregistrerChorus();
+      const emission = await emettreFactureAction(initialFacture.id);
+      if (!emission.succes) {
+        if (emission.manques?.length) {
+          setManques(emission.manques);
+          setErreur("Il manque une mention obligatoire.");
+        } else {
+          setErreur(emission.erreur);
+        }
+        return false;
+      }
+      setEmise(true);
+      return true;
+    } catch {
+      setErreur("La facture n'a pas pu être arrêtée.");
+      return false;
+    } finally {
+      setEnCours(false);
+    }
+  }
+
   async function envoyerLaFacture() {
     if (!initialFacture) return;
     setEnCours(true);
@@ -514,7 +565,7 @@ export default function FactureClient({
   // La borne haute du sélecteur : un an après la facture (au-delà, c'est
   // l'année mal tapée). La borne basse est la date de la facture elle-même.
   const maxEcheance = jourIso(
-    new Date(Date.parse(`${initialFacture.dateEmission}T00:00:00Z`) + ECHEANCE_MAX_JOURS * 86_400_000)
+    new Date(Date.parse(`${initialFacture.dateEmission}T00:00:00Z`) + echeanceMaxJours(clientPublic) * 86_400_000)
   );
 
   return (
@@ -621,6 +672,61 @@ export default function FactureClient({
             )}
           </div>
         )}
+        {/* ─── POUR CHORUS PRO — ses choix du 22 octobre 2026
+            (`appli/facture-mairie-chorus.html`). Le numéro d'engagement est
+            celui de SON bon de commande ; le code service vient de la fiche et
+            se change ici pour elle seule. Vide est permis : certaines mairies
+            n'en donnent pas, et une ligne grise le rappelle sans rien bloquer. */}
+        {clientPublic &&
+          (emise ? (
+            lignesChorus({ numeroEngagement, codeService }).map((l) => (
+              <p key={l} className="mt-1.5 text-[13px]" style={{ color: colors.muted }}>
+                {l}
+              </p>
+            ))
+          ) : (
+            <div className="mt-3 flex flex-col gap-3">
+              <label className="flex flex-col gap-1.5">
+                <span className={smallCaps} style={{ color: colors.muted }}>
+                  N° d’engagement
+                </span>
+                <input
+                  type="text"
+                  data-atlas="numero-engagement"
+                  className="atlas-case"
+                  placeholder="Sur son bon de commande"
+                  value={numeroEngagement}
+                  onChange={(e) => setNumeroEngagement(e.target.value)}
+                  onBlur={() => void enregistrerChorus()}
+                  style={{ color: colors.ink }}
+                />
+                {referenceChorusLue(numeroEngagement) === "" && (
+                  <span className="text-[12.5px]" style={{ color: colors.muted }}>
+                    Vide : Chorus Pro peut la refuser.
+                  </span>
+                )}
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className={smallCaps} style={{ color: colors.muted }}>
+                  Code service
+                </span>
+                <input
+                  type="text"
+                  data-atlas="code-service-facture"
+                  className="atlas-case"
+                  value={codeService}
+                  onChange={(e) => setCodeService(e.target.value)}
+                  onBlur={() => void enregistrerChorus()}
+                  style={{ color: colors.ink }}
+                />
+              </label>
+              {refusChorus && (
+                <p role="alert" className="text-[12px]" style={{ color: colors.alert }}>
+                  {refusChorus}
+                </p>
+              )}
+            </div>
+          ))}
       </div>
 
       {/* ── LA FACTURE NE SUIT PLUS LE DEVIS ────────────────────────────────
@@ -967,6 +1073,25 @@ export default function FactureClient({
               seul départ réel : Atlas prépare le message, le patron l'expédie
               depuis sa propre messagerie (`docs/A-FAIRE.md` §5). */}
           <div className="mt-5" style={{ borderTop: `1px solid ${colors.lineSoft}`, paddingTop: 16 }}>
+            {/* **Une mairie : le PDF à déposer, pas un message** (22 octobre
+                2026). C'est ce qui reste quand la feuille de partage n'a pas
+                suivi l'appui qui l'a arrêtée. */}
+            {clientPublic ? (
+              <div className="flex flex-col items-center">
+                <BoutonTelechargerDocument
+                  fichier={`/api/factures/${initialFacture.id}/pdf`}
+                  nom={nomDuFichier(initialFacture, true)}
+                  dataAtlas="telecharger-pour-chorus"
+                  className="atlas-plein inline-flex items-center justify-center gap-2 px-9 py-[13px] text-[17px]"
+                  style={{ borderRadius: 9999, fontFamily: font.display, backgroundColor: colors.plein, color: colors.card }}
+                >
+                  Télécharger pour Chorus Pro
+                </BoutonTelechargerDocument>
+                <p className="mt-1.5 text-center text-[12.5px]" style={{ color: colors.muted }}>
+                  Puis déposez-la sur chorus-pro.gouv.fr
+                </p>
+              </div>
+            ) : (
             <TransmettreLaFacture
               factureId={initialFacture.id}
               clientId={clientId}
@@ -982,6 +1107,7 @@ export default function FactureClient({
               email={clientEmail ?? ""}
               origine={origine}
             />
+            )}
           </div>
         </div>
       ) : (
@@ -1070,6 +1196,10 @@ export default function FactureClient({
               sa facture ? » était une phrase qui expliquait le bouton d'à côté
               (§3, « le moins de mots possible ») ; « Envoi » suffit, et c'est
               le mot qu'il lit déjà sur l'autre écran. */}
+          {/* **Pour une mairie, ni SMS ni e-mail** (22 octobre 2026) : ils ne
+              valent pas facture pour elle, seul le dépôt sur Chorus Pro compte. */}
+          {!clientPublic && (
+          <>
           <fieldset
             aria-label="Comment lui envoyer sa facture ?"
             data-atlas="envoi-canal"
@@ -1101,6 +1231,8 @@ export default function FactureClient({
               ? `${canalEnvoi === "sms" ? "Au" : "À"} ${destinataire}`
               : "Aucune coordonnée pour ce canal."}
           </p>
+          </>
+          )}
 
           {/* ─── UNE FACTURE VIDE NE PART PAS — 11 septembre 2026 ────────────
               **Le trou qu'ouvrait la facture sans devis.** Une facture née d'un
@@ -1134,6 +1266,29 @@ export default function FactureClient({
 
           {/* **Sans flèche**, et le mot dit l'envoi : *« arrêter la facture, tu
               mets envoyer la facture sans la flèche »*. */}
+          {clientPublic ? (
+            // **Un seul appui, comme l'envoi** : il arrête la facture, puis
+            // remet son PDF définitif à déposer sur chorus-pro.gouv.fr. Il ne
+            // dépend d'aucun téléphone : une mairie sans coordonnée laissait
+            // le bouton d'envoi éteint, et la facture ne s'arrêtait jamais.
+            <div className="flex flex-col items-center">
+              <BoutonTelechargerDocument
+                fichier={`/api/factures/${initialFacture.id}/pdf`}
+                nom={nomDuFichier(initialFacture, true)}
+                dataAtlas="telecharger-pour-chorus"
+                disabled={enCours || !verdictEnvoi.possible}
+                avant={arreterPourChorus}
+                onFini={() => router.refresh()}
+                className="atlas-plein inline-flex items-center justify-center gap-2 px-9 py-[13px] text-[17px] disabled:opacity-50"
+                style={{ borderRadius: 9999, fontFamily: font.display, backgroundColor: colors.plein, color: colors.card }}
+              >
+                Télécharger pour Chorus Pro
+              </BoutonTelechargerDocument>
+              <p className="mt-1.5 text-center text-[12.5px]" style={{ color: colors.muted }}>
+                Puis déposez-la sur chorus-pro.gouv.fr
+              </p>
+            </div>
+          ) : (
           <PrimaryButton
             disabled={enCours || !destinataire || !verdictEnvoi.possible}
             onClick={envoyerLaFacture}
@@ -1145,6 +1300,7 @@ export default function FactureClient({
           >
             {enCours ? "Envoi…" : "Envoyer la facture"}
           </PrimaryButton>
+          )}
 
           {/* **CE QUE LE BOUTON ENGAGE, dit sous lui — proposition B.**
 
@@ -1155,7 +1311,7 @@ export default function FactureClient({
               il se demandera pourquoi sa facture ne se modifie plus. */}
           <div className="py-1 pl-[13px]" style={{ borderLeft: `1px solid ${colors.or}` }}>
             <p className="text-[13px] leading-[1.4]" style={{ color: colors.ink }}>
-              En l&apos;envoyant, vous l&apos;arrêtez :{" "}
+              {clientPublic ? "En la téléchargeant" : "En l'envoyant"}, vous l&apos;arrêtez :{" "}
               {regimeTva === "encaissements"
                 ? "elle ne se modifie plus, et entrera au relevé de TVA le jour où votre client vous paiera."
                 : "elle entre dans votre TVA et ne se modifie plus."}

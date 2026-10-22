@@ -12,6 +12,7 @@ import {
   majReductionDeFacture,
   retirerLignesDeFacture,
   majTitreDeFacture,
+  majReferencesChorusFacture,
   majMainDoeuvreDeFacture,
   majDateTravauxFacture,
   majAutoliquidationFacture,
@@ -335,6 +336,24 @@ export async function majTitreFactureAction(
   } catch (err) {
     logger.error("Titre de la facture non enregistré", { erreur: err instanceof Error ? err.message : String(err) });
     return { succes: false, erreur: "Le titre n'a pas pu être enregistré. Réessayez." };
+  }
+}
+
+/** Le numéro d'engagement et le code service d'une facture à une mairie (22 octobre 2026). */
+export async function majReferencesChorusFactureAction(
+  factureId: string,
+  saisie: { numeroEngagement: string; codeService: string }
+): Promise<ResultatTravaux & { numeroEngagement?: string | null; codeService?: string | null }> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "noter le numéro d'engagement de la facture");
+  try {
+    const r = await majReferencesChorusFacture(ctx, factureId, saisie);
+    return r.ok
+      ? { succes: true, numeroEngagement: r.numeroEngagement, codeService: r.codeService }
+      : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Numéros Chorus Pro non enregistrés", { erreur: err instanceof Error ? err.message : String(err) });
+    return { succes: false, erreur: "Ces numéros n'ont pas pu être enregistrés. Réessayez." };
   }
 }
 
