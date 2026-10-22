@@ -35509,7 +35509,7 @@ sans prévenir ni savoir ce qui doit rester est exactement ce que
 `CLAUDE.md` §4 septies interdit.
 
 
-## §480 : Tout télécharger d'un client, une porte qui ne donne rien de plus
+## §483 : Tout télécharger d'un client, une porte qui ne donne rien de plus
 
 **Sa demande du 22 octobre 2026**, planche `appli/telecharger-un-client.html`,
 réponse « la A, et tout en PDF » : un appui sur la fiche d'un client, un zip
