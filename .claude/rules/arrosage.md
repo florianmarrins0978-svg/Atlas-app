@@ -338,6 +338,26 @@ chaque zone de la vanne se borde de sa couleur. Les pièces des sorties restent
 À PART des raccords d'arroseurs, pour que `tés + coudes = arroseurs` tienne
 réseau par réseau (`coudesDesSorties`, `egauxDesSorties`, `plan-dessine.ts`).
 
+**LES LIGNES DE GOUTTE-À-GOUTTE : UN ÉCART D'OFFICE, JAMAIS AU BORD, ET
+L'ÉCART SE VOIT — ses réponses des 21 et 22 octobre 2026.** *« Massif, tu peux
+faire tous les 60 cm d'office, mais pareil avec une proposition »* ; *« il ne
+faut pas commencer à 0 la première ligne »* ; puis, sur la planche : *« mets
+l'espacement aussi tous les 50 cm d'office en partant de 0,50 et pas de 0, donc
+pour 2 m ça fait 4 lignes. Et lorsque l'utilisateur augmente ou réduit le
+nombre de lignes de goutte à goutte, il voit l'espacement qui augmente ou qui
+réduit. »*
+
+| | l'écart d'office | combien de lignes |
+|---|---|---|
+| haie | **50 cm** | largeur ÷ écart, arrondi au-dessous : 2 m font 4 lignes, à 0,50, 1, 1,50 et 2 m |
+| massif | **60 cm** (le calcul disait 80 cm) | idem : 3 m font 5 lignes |
+
+La première ligne est à un écart du bord, jamais à 0. Le nombre est une
+PROPOSITION : les boutons − et + le changent, et l'écart affiché devient
+largeur ÷ nombre (2 m sur 3 lignes : tous les 67 cm). **Pas encore codé** :
+planche `appli/arrosage-ecart-des-lignes.html`. Aujourd'hui le calcul pose une
+ligne par mètre de haie et une tous les 80 cm sur un massif, dès le bord.
+
 **LE Ø16 SE RACCORDE AU ROBINET PAR UN RACCORD TARAUDÉ 3/4" PROPRE À SON TUBE —
 sa règle du 18 octobre 2026.** Le Plasson à bague blanche ne prend que le PE 25
 ou 32. Le Ø16 **souple** : l'embout Palaplast taraudé 16 x 3/4" (MID6362, sa

@@ -6,8 +6,11 @@
 - `appli/arrosage-plan-lu-a-verifier.html` : la photo ouvre le plan lu dans
   « Dessiner le plan », on corrige, puis « Faire le plan ». Bâtie sur la vraie
   page figée (sa consigne : « base-toi sur les pages exactes de l'application »).
-- `appli/arrosage-ecart-des-lignes.html` : l'écart proposé (haie 50 cm, massif
-  60 cm) demandé dans la feuille ; il tranche A (à la lettre) ou B (centrée).
+- `appli/arrosage-ecart-des-lignes.html` : ~~il tranche A ou B~~ **tranché le
+  22 octobre** : une ligne tous les 50 cm pour une haie, 60 cm pour un massif,
+  la première à un écart du bord, l'écart affiché qui suit les boutons
+  (`.claude/rules/arrosage.md`). **Reste à coder** dans `calcul.js` (les deux
+  copies) et la feuille de « Dessiner le plan ».
 - **Rouge préexistant, pas de ce lot** : `test-reste-equipes-e2e` tombe sur
   `main` comme sur le lot du 21 octobre (« 1 date(s) retenues au lieu de
   deux »). Comparé par `verifier-rouge-prealable.ts`. À diagnostiquer : il
