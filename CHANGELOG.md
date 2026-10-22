@@ -8,6 +8,8 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-22
 
+- **Depuis le téléphone, le skill impeccable se charge d'office** (`CLAUDE.md` §3 quater). Une session ouverte depuis l'appli du téléphone (`CLAUDE_CODE_ENTRYPOINT=remote_mobile`) reçoit à chaque message l'ordre de l'invoquer s'il n'est pas déjà chargé ; celles du PC n'en reçoivent rien. Évite qu'il doive taper `/impeccable` sur le téléphone, et qu'un skill chargé au début disparaisse sans retour après un résumé de conversation (`scripts/rappel-impeccable.mjs`, `scripts/test-rappel-impeccable.ts`).
+
 - **Planche « Importer son ancienne appli »** (`appli/importer-ancienne-appli.html`) : déposer ses anciens PDF, Atlas lit, retrouve ou crée le client (`trouverOuCreerClient`), range la pièce. Rien dans `src/`.
 - **Planche « Tout télécharger d'un client »** (`appli/telecharger-un-client.html`) et lecture de la conservation dix ans (`docs/telecharger-un-client.md`). Rien dans `src/` : trois places à choisir, les fiches d'entretien n'ont pas de PDF, et la notification d'échéance est déconseillée tant que la première tombe en 2036. Constat : la base tient la conservation (factures, avoirs, devis envoyés immuables) ; les fichiers PDF, eux, dépendent des sauvegardes de production, pas encore en place.
 

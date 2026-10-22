@@ -68,6 +68,11 @@
             "type": "command",
             "command": "node \"${CLAUDE_PROJECT_DIR:-.}/scripts/rappel-arrosage.mjs\"",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR:-.}/scripts/rappel-impeccable.mjs\"",
+            "timeout": 10
           }
         ]
       }

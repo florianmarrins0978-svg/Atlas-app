@@ -582,6 +582,24 @@ Ce n'est pas de l'incompétence de sa part : c'est un artisan qui veut une
 application qui marche. Lui expliquer un verrou de compilation, c'est lui faire
 payer une seconde fois une panne qu'il subit déjà.
 
+## 3 quater. Depuis son téléphone, le skill impeccable d'office
+
+**Sa demande du 22 octobre 2026 :** *« toutes les sessions que j'ouvre sur mon
+téléphone et que je n'ouvre pas sur mon PC avec le slash impeccable, qu'elles
+utilisent d'office, tout le temps, peu importe le prompt, le skill
+impeccable »*.
+
+Une session ouverte depuis l'appli du téléphone porte
+`CLAUDE_CODE_ENTRYPOINT=remote_mobile`. Là, et seulement là,
+`scripts/rappel-impeccable.mjs` (branché sur chaque message) fait invoquer
+`impeccable:impeccable` s'il n'est pas déjà chargé, quel que soit le message.
+Sur son PC il tape `/impeccable` lui-même, et le rappel s'y tait.
+
+Le skill ne change pas le périmètre : rien n'est retouché qui n'a pas été
+demandé (§0, point 5), et une apparence passe par la maquette d'abord (§3 bis).
+`scripts/test-rappel-impeccable.ts` tient les deux bouts : il parle sur le
+téléphone, il se tait ailleurs.
+
 ## 3 bis. La maquette d'abord, le code ensuite
 
 **Règle posée par le patron le 11 août 2026**, après qu'une demande de geste
