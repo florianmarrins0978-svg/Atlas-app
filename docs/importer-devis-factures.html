@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Importer devis et factures : ce qui a été mesuré et décidé</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="importer-devis-et-factures--ce-qui-a-été-mesuré-et-décidé">Importer devis et factures : ce qui a été mesuré et décidé</h1>
+<p><em>22 octobre 2026. Rien n'est codé dans <code>src/</code> : la maquette <code>appli/importer-ancienne-appli.html</code> attend son accord.</em></p>
+<h2 id="en-cinq-lignes">En cinq lignes</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>Possible</strong>, y compris dix ans de pièces, mais <strong>en plusieurs envois</strong> : 2 000 documents ou 1 Go au plus par envoi, une année à la fois.</li>
+<li><strong>L'envoi demande l'appli ouverte, la lecture non.</strong> C'est la seule contrainte qu'aucun code ne lève : un navigateur fermé n'envoie plus rien.</li>
+<li><strong>La lecture se fait sans IA</strong> pour les PDF qui portent leur texte (77 ms par document, mesuré) ; l'IA ne sert qu'aux scans et aux photos.</li>
+<li><strong>Le téléphone ne peut pas recevoir de notification aujourd'hui</strong> : Atlas n'a pas de service worker. Le résultat se voit à la prochaine ouverture, dans la liste des clients.</li>
+<li><strong>Une pièce importée reste une archive</strong> (ni TVA, ni numérotation, ni modifiable), sans que l'écran le dise : sa décision du 22 octobre.</li>
+</ol>
+<h2 id="ce-qui-a-été-mesuré-ici">Ce qui a été mesuré ici</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Mesure</th>
+<th>Résultat</th>
+<th>Comment</th>
+</tr></thead><tbody>
+<tr>
+<td>Lire le texte d'un PDF, sans IA</td>
+<td><strong>77 ms</strong> en moyenne, texte trouvé dans <strong>23 PDF sur 23</strong> (numéro, client, date)</td>
+<td><code>pdfjs-dist</code> (déjà installé), en Node, sur les devis et factures réels produits par Atlas</td>
+</tr>
+<tr>
+<td>Ouvrir un zip de <strong>4 840 PDF</strong> dans le navigateur</td>
+<td><strong>17,5 s</strong>, <strong>10 Mo</strong> de mémoire au plus</td>
+<td>lecture par morceaux (<code>File.slice</code>, répertoire central, <code>DecompressionStream</code>), Chromium</td>
+</tr>
+<tr>
+<td>Le même lot sur un iPhone</td>
+<td><strong>non mesuré ici</strong></td>
+<td>aucun moteur Apple sur ce poste. <code>DecompressionStream</code> existe depuis Safari 16.4 ; à éprouver sur un vrai téléphone avant de promettre</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce que les PDF d'Atlas ne disent pas</strong> : ceux d'autres logiciels sont plus lourds (100 à 300 Ko, contre 15 ici) et rangent leurs mots autrement. La lecture du texte marchera ; savoir QUEL mot est le nom du client demandera, pour un logiciel inconnu, un appel d'IA sur le texte seul (bien moins cher que sur l'image).</p>
+<h2 id="ce-que-le-dépôt-a-déjà-et-ce-qui-manque">Ce que le dépôt a déjà, et ce qui manque</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>lecteur de zip protégé contre les bombes</td>
+<td><strong>existe</strong> (<code>src/server/import/lire-classeur.ts</code>), à étendre à plusieurs entrées</td>
+</tr>
+<tr>
+<td>plafond d'un envoi</td>
+<td><strong>15 Mo</strong> par fichier (<code>src/server/upload-limits.ts</code>, <code>next.config</code> <code>bodySizeLimit</code>) : d'où l'envoi pièce par pièce, jamais le zip entier</td>
+</tr>
+<tr>
+<td>lecture d'un document par l'IA</td>
+<td><strong>existe</strong> (<code>lire-devis-fournisseur.ts</code>, même patron)</td>
+</tr>
+<tr>
+<td>reconnaître un client connu</td>
+<td><strong>existe</strong> (<code>trouverOuCreerClient</code>)</td>
+</tr>
+<tr>
+<td>file de travail en arrière-plan</td>
+<td><strong>n'existe pas.</strong> Le seul travail planifié est la purge, et aucun planificateur n'est posé en production (<code>docs/DEPLOIEMENT-PURGE.md</code>)</td>
+</tr>
+<tr>
+<td>notification sur le téléphone</td>
+<td><strong>n'existe pas</strong> (aucun service worker)</td>
+</tr>
+</tbody></table></div>
+<h2 id="les-décisions-et-pourquoi">Les décisions, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Décision</th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>2 000 documents ou 1 Go par envoi</strong></td>
+<td>1 Go en 4G, c'est 15 à 30 minutes l'appli ouverte : au-delà, l'envoi n'est plus tenable sur un chantier. Le zip simple s'arrête de toute façon à 4 Go et 65 535 fichiers</td>
+</tr>
+<tr>
+<td>le zip s'ouvre <strong>sur le téléphone</strong>, les PDF partent <strong>un par un</strong></td>
+<td>le serveur ne reçoit jamais 1 Go d'un coup, chaque morceau tient sous les 15 Mo, et un envoi coupé reprend où il en était</td>
+</tr>
+<tr>
+<td>texte d'abord, IA ensuite</td>
+<td>la plupart des PDF de logiciel portent leur texte : gratuit et rapide. L'IA (avec sa clé) ne lit que ce qui est scanné</td>
+</tr>
+<tr>
+<td>on ne montre que <strong>ce qui est à vérifier</strong></td>
+<td>relire 1 450 lignes est impossible ; « 1 447 rangés, 3 à vérifier » se fait en une minute</td>
+</tr>
+<tr>
+<td>un document déjà importé est ignoré</td>
+<td>empreinte du fichier : importer deux fois le même zip ne double rien</td>
+</tr>
+<tr>
+<td>formats acceptés</td>
+<td>PDF, photos (JPG, PNG, HEIC), zip. Le reste est refusé avec son nom. Sa consigne : « prévoir tous les formats possibles » ; un tableau Excel ou CSV de clients, s'il est fourni, sera préféré aux noms lus dans les PDF</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Question</th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>Une ancienne facture impayée : la suivre dans les impayés, ou seulement la ranger ?</td>
+<td>le patron</td>
+</tr>
+<tr>
+<td>Première facture Atlas : continuer après le dernier numéro, ou repartir de 1 ?</td>
+<td>le patron</td>
+</tr>
+<tr>
+<td>Le comportement sur un vrai iPhone (zip de 1 Go)</td>
+<td>à mesurer sur son téléphone, avant toute promesse</td>
+</tr>
+<tr>
+<td>Une file de travail en arrière-plan en production</td>
+<td>à construire avec le lot, et à poser chez l'hébergeur comme la purge</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

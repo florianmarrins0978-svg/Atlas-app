@@ -39,6 +39,11 @@
   facture » pour la même raison : un artisan qui débute sans ancienne appli
   importe aussi ses PDF.
 
+  UN GROS DOSSIER (sa demande du même soir : dix ans de pièces). Jusqu'à
+  2 000 documents ou 1 Go par envoi, au-delà on le refuse en le disant.
+  L'envoi demande l'appli ouverte, la lecture non, et l'écran le dit aux deux
+  moments. Mesures et raisons : docs/importer-devis-factures.md.
+
   Rien ne s'invente (docs/AGENT.md §3) : un nom illisible ne crée pas de
   client. La ligne attend qu'on le tape, et le bouton compte ce qui partira.
 -->
@@ -177,8 +182,40 @@
   .bandeau[hidden]{display:flex;opacity:0;transform:translateY(16px);pointer-events:none}
   .bandeau button{color:#d9b27a;font-weight:600;min-height:44px;padding:0 4px}
 
+  /* La jauge : l'envoi, puis la lecture */
+  .jauge{height:6px;border-radius:999px;background:var(--tuile);overflow:hidden;margin-top:28px}
+  .jauge i{display:block;height:100%;width:0;border-radius:999px;background:var(--sauge);transition:width .35s var(--sortie)}
+  .chiffre{font:400 30px/1.1 var(--serif);margin-top:16px;font-variant-numeric:tabular-nums lining-nums}
+  .chiffre small{font:400 15px var(--sans);color:var(--gris)}
+  .consigne{font-size:16px;line-height:1.5;color:var(--encre);margin:26px 0 0}
+  .consigne.douce{font-size:14px;color:var(--gris);margin-top:8px}
+
+  /* La bande « en cours » dans la liste des clients : on la touche pour relire */
+  .encours{display:block;width:100%;text-align:left;margin-top:16px;padding:16px 18px;border-radius:16px;background:var(--carte);
+           box-shadow:inset 0 0 0 1px var(--trait)}
+  .encours .t{font-size:15px;color:var(--encre)}
+  .encours .s{font-size:13px;color:var(--gris);margin-top:4px}
+  .encours .jauge{margin-top:12px;height:4px}
+  .encours.fini .s{color:var(--alerte)}
+
+  /* Le choix des fichiers : la feuille du téléphone, simulée */
+  .voile{position:absolute;inset:0;background:rgba(20,18,14,.32);transition:opacity .35s var(--sortie)}
+  .voile[hidden]{display:block;opacity:0;pointer-events:none}
+  .feuille{position:absolute;left:0;right:0;bottom:0;padding:10px 20px 28px;border-radius:22px 22px 0 0;background:var(--carte);
+           box-shadow:0 -12px 30px -16px rgba(20,18,14,.35);transition:transform .42s var(--sortie)}
+  .feuille[hidden]{display:block;transform:translateY(105%);pointer-events:none}
+  .poignee{width:38px;height:5px;border-radius:999px;background:var(--tuile);margin:0 auto 14px}
+  .feuille h2{font:400 22px/1.2 var(--serif);margin:0 0 8px}
+  .fichier{display:flex;align-items:center;gap:14px;width:100%;text-align:left;min-height:64px;padding:10px 0;border-bottom:1px solid var(--trait)}
+  .fichier:last-child{border-bottom:0}
+  .fichier svg{width:26px;height:26px;color:var(--orTexte);flex:none}
+  .fichier .t,.fichier .s{display:block}
+  .fichier .t{font-size:15.5px;color:var(--encre)}
+  .fichier .s{font-size:12.5px;color:var(--gris);margin-top:2px}
+  .refus p{font-size:15px;line-height:1.55;color:var(--doux);margin:0 0 18px}
+
   @media (prefers-reduced-motion:reduce){
-    .ecran,.bandeau,.onglet,.plein{transition:none}
+    .ecran,.bandeau,.onglet,.plein,.feuille,.voile,.jauge i{transition:none}
     .doc,.client.neuf{animation:none}
     .lit::after{animation:none;width:100%}
   }
@@ -209,6 +246,7 @@
       </div>
       <div class="recherche"><svg><use href="#i-loupe"/></svg><span>Chercher un client</span></div>
       <button class="porte caps" style="margin-top:14px" data-va="e-importer"><svg><use href="#i-importer"/></svg>Importer devis / facture</button>
+      <button class="encours" id="encours" hidden></button>
       <div id="liste"></div>
     </section>
 
@@ -218,8 +256,8 @@
       <div class="ligne-titre"><div><h1>Importer</h1><div class="caps surtitre" style="margin:12px 0 0">Vos clients</div></div>
         <span class="assistant" aria-hidden="true"><svg><use href="#i-bulle"/></svg></span></div>
       <div class="caps rubrique">Vos devis et factures</div>
-      <button class="plein" id="choisir"><svg><use href="#i-pdf"/></svg>Choisir mes PDF</button>
-      <p class="aide">Un seul, plusieurs, ou un dossier .zip.</p>
+      <button class="plein" id="choisir"><svg><use href="#i-pdf"/></svg>Choisir mes fichiers</button>
+      <p class="aide">PDF, photos ou dossier .zip.<br>Jusqu’à 2 000 documents par envoi.</p>
     </section>
 
     <!-- 3. Lecture, puis relecture -->
@@ -228,6 +266,17 @@
       <div class="ligne-titre"><div><h1 id="titre-lecture">Lecture</h1><div class="caps compte" id="bilan">&nbsp;</div></div></div>
       <ul class="docs" id="docs"></ul>
       <div class="pied" id="pied" hidden><button class="plein large" id="ranger" disabled>Ranger</button></div>
+    </section>
+
+    <!-- 3 bis. Un gros dossier : l'envoi, puis la lecture en arrière-plan -->
+    <section class="ecran" id="e-envoi" hidden aria-label="Envoi">
+      <div class="haut"><span></span></div>
+      <div class="ligne-titre"><div><h1 id="envoi-titre">Envoi</h1><div class="caps compte" id="envoi-fichier">&nbsp;</div></div></div>
+      <div class="jauge"><i id="envoi-jauge"></i></div>
+      <div class="chiffre" id="envoi-chiffre"></div>
+      <p class="consigne" id="envoi-consigne"></p>
+      <p class="consigne douce" id="envoi-douce"></p>
+      <div class="pied" id="envoi-pied" hidden style="position:static;margin:28px 0 0;padding:0;background:none"><button class="plein large" id="fermer">Fermer</button></div>
     </section>
 
     <!-- 4. La fiche d'un client -->
@@ -255,6 +304,22 @@
 
     <nav class="barre" aria-hidden="true"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></nav>
 
+    <div class="voile" id="voile" hidden></div>
+    <div class="feuille" id="feuille" hidden role="dialog" aria-label="Vos fichiers">
+      <div class="poignee"></div>
+      <div id="feuille-choix">
+        <h2>Vos fichiers</h2>
+        <button class="fichier" data-lot="petit"><svg><use href="#i-pdf"/></svg><span><span class="t">6 PDF</span><span class="s">Factures et devis récents, 1,4 Mo</span></span></button>
+        <button class="fichier" data-lot="gros"><svg><use href="#i-pdf"/></svg><span><span class="t">Années 2022 à 2024.zip</span><span class="s">1 450 documents, 410 Mo</span></span></button>
+        <button class="fichier" data-lot="trop"><svg><use href="#i-pdf"/></svg><span><span class="t">Tout 2016 à 2025.zip</span><span class="s">4 800 documents, 1,3 Go</span></span></button>
+      </div>
+      <div id="feuille-refus" class="refus" hidden>
+        <h2>Trop de documents d’un coup</h2>
+        <p>Ce dossier en contient 4 800. Envoyez-en 2 000 au plus à la fois, par exemple une année par envoi.</p>
+        <button class="plein large" id="autre">Choisir un autre fichier</button>
+      </div>
+    </div>
+
     <div class="bandeau" id="bandeau" hidden role="status"><span id="bandeau-texte"></span><button id="annuler">Annuler</button></div>
   </div>
   <div class="sous"><span>Maquette : rien n’est enregistré.</span><button id="recommencer">Recommencer</button></div>
@@ -279,7 +344,7 @@
     { genre: "factures", num: "n° F2025‑0122", jour: "6 janv. 2025", montant: "195,00 €", lu: "M. Bernard" },
   ];
 
-  let clients, avant, nomsTapes, clientOuvert, ongletOuvert;
+  let clients, avant, nomsTapes, clientOuvert, ongletOuvert, grosDossier, lot = PDF;
   const $ = (id) => document.getElementById(id);
   const cle = (n) => n.replace(/^(M\.|Mme)\s+/, "");
 
@@ -287,12 +352,16 @@
     clients = structuredClone(DEPART);
     nomsTapes = {};
     $("bandeau").hidden = true;
+    fermerFeuille();
+    clearInterval(window.lecture);
+    $("encours").hidden = true;
+    grosDossier = null;
     dessinerListe();
     aller("e-clients", true);
   }
 
   // ── Naviguer : un écran à la fois, qui glisse ──
-  const ORDRE = ["e-clients", "e-importer", "e-lecture", "e-fiche"];
+  const ORDRE = ["e-clients", "e-importer", "e-lecture", "e-envoi", "e-fiche"];
   let courant = "e-clients";
   function aller(id, sansRetour) {
     const avance = ORDRE.indexOf(id) >= ORDRE.indexOf(courant);
@@ -357,7 +426,30 @@
 
   // ── Importer : choisir, lire un par un, relire ──
   const attendre = (ms) => new Promise((r) => setTimeout(r, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : ms));
-  $("choisir").addEventListener("click", async () => {
+  function ouvrirFeuille() {
+    $("feuille-choix").hidden = false;
+    $("feuille-refus").hidden = true;
+    $("voile").hidden = false;
+    $("feuille").hidden = false;
+  }
+  function fermerFeuille() {
+    $("voile").hidden = true;
+    $("feuille").hidden = true;
+  }
+  $("choisir").addEventListener("click", ouvrirFeuille);
+  $("voile").addEventListener("click", fermerFeuille);
+  $("autre").addEventListener("click", () => { $("feuille-refus").hidden = true; $("feuille-choix").hidden = false; });
+  $("feuille").addEventListener("click", (ev) => {
+    const b = ev.target.closest("[data-lot]");
+    if (!b) return;
+    if (b.dataset.lot === "trop") { $("feuille-choix").hidden = true; $("feuille-refus").hidden = false; return; }
+    fermerFeuille();
+    if (b.dataset.lot === "petit") lirePetit();
+    else envoyerGros();
+  });
+
+  async function lirePetit() {
+    lot = PDF;
     nomsTapes = {};
     $("docs").innerHTML = "";
     $("pied").hidden = true;
@@ -375,7 +467,7 @@
     $("titre-lecture").textContent = `${PDF.length} documents lus`;
     majBilan();
     $("pied").hidden = false;
-  });
+  }
 
   function etatDe(d) {
     if (!d.lu) return null;
@@ -400,15 +492,15 @@
   });
 
   function aRanger() {
-    return PDF.map((d, i) => ({ ...d, client: d.lu ?? nomsTapes[i] })).filter((d) => d.client);
+    return lot.map((d, i) => ({ ...d, client: d.lu ?? nomsTapes[i] })).filter((d) => d.client);
   }
   function majBilan() {
     const docs = aRanger();
     const nouveaux = new Set(docs.filter((d) => !clients.some((c) => c.nom === d.client)).map((d) => d.client));
-    const reste = PDF.length - docs.length;
-    $("bilan").textContent = reste
-      ? `${nouveaux.size} nouveaux clients, ${reste} à vérifier`
-      : `${nouveaux.size} nouveaux clients`;
+    const reste = lot.length - docs.length;
+    $("bilan").textContent = lot === VERIFIER
+      ? (reste ? `${reste} sans nom` : "Tout est nommé")
+      : reste ? `${nouveaux.size} nouveaux clients, ${reste} à vérifier` : `${nouveaux.size} nouveaux clients`;
     $("ranger").disabled = docs.length === 0;
     $("ranger").textContent = reste ? `Ranger ${docs.length} documents` : "Tout ranger";
   }
@@ -426,6 +518,7 @@
       }
       c.pieces[d.genre].push([d.num, d.jour]);
     }
+    if (lot === VERIFIER) $("encours").hidden = true;
     dessinerListe(neufs);
     aller("e-clients");
     // Les nouveaux se rangent à leur lettre : on descend jusqu'au premier, sinon il ne se voit pas.
@@ -435,6 +528,69 @@
     $("bandeau").hidden = false;
     clearTimeout(window.minuterie);
     window.minuterie = setTimeout(() => ($("bandeau").hidden = true), 7000);
+  });
+
+  // ── Un gros dossier : l'envoi demande l'appli ouverte, la lecture non ──
+  const GROS = 1450;
+  const VERIFIER = [
+    { genre: "factures", num: "n° F2022‑0031", jour: "14 févr. 2022", montant: "520,00 €", lu: null },
+    { genre: "devis", num: "n° D2022‑0118", jour: "2 mai 2022", montant: "3 180,00 €", lu: null },
+    { genre: "factures", num: "n° F2023‑0077", jour: "21 mars 2023", montant: "260,00 €", lu: null },
+  ];
+  const NEUFS_GROS = ["Mme Le Goff", "M. Rivière", "Mme Tessier", "M. Hamon"];
+  async function envoyerGros() {
+    $("envoi-titre").textContent = "Envoi";
+    $("envoi-fichier").textContent = "Années 2022 à 2024.zip";
+    $("envoi-consigne").textContent = "Gardez l’appli ouverte pendant l’envoi.";
+    $("envoi-douce").textContent = "Si elle se ferme, l’envoi reprend à la prochaine ouverture.";
+    $("envoi-pied").hidden = true;
+    aller("e-envoi");
+    for (let n = 0; n <= GROS; n += 29) {
+      $("envoi-jauge").style.width = `${(n / GROS) * 100}%`;
+      $("envoi-chiffre").innerHTML = `${n.toLocaleString("fr-FR")} <small>sur ${GROS.toLocaleString("fr-FR")}</small>`;
+      await attendre(90);
+    }
+    // L'envoi fini, la lecture se fait sur le serveur : on peut partir.
+    grosDossier = { lus: 0 };
+    $("envoi-titre").textContent = "Lecture";
+    $("envoi-consigne").textContent = "Vous pouvez fermer l’appli. La lecture continue sans vous.";
+    $("envoi-douce").textContent = "Vos clients apparaîtront au fil de la lecture.";
+    $("envoi-pied").hidden = false;
+    clearInterval(window.lecture);
+    window.lecture = setInterval(avancerLecture, 120);
+  }
+  function avancerLecture() {
+    grosDossier.lus = Math.min(GROS, grosDossier.lus + 13);
+    const pct = `${(grosDossier.lus / GROS) * 100}%`;
+    if (courant === "e-envoi") {
+      $("envoi-jauge").style.width = pct;
+      $("envoi-chiffre").innerHTML = `${grosDossier.lus.toLocaleString("fr-FR")} <small>sur ${GROS.toLocaleString("fr-FR")}</small>`;
+    }
+    const e = $("encours");
+    e.hidden = false;
+    e.classList.remove("fini");
+    e.innerHTML = `<div class="t">Lecture de vos documents</div><div class="s">${grosDossier.lus.toLocaleString("fr-FR")} sur ${GROS.toLocaleString("fr-FR")}</div><div class="jauge"><i style="width:${pct}"></i></div>`;
+    if (grosDossier.lus >= GROS) {
+      clearInterval(window.lecture);
+      const neufs = NEUFS_GROS.filter((n) => !clients.some((c) => c.nom === n));
+      for (const n of neufs) clients.push({ nom: n, coord: "", pieces: { devis: [["n° D2023‑0" + (40 + neufs.indexOf(n)), "6 juin 2023"]], factures: [["n° F2023‑0" + (52 + neufs.indexOf(n)), "30 juin 2023"]], fiches: [] } });
+      dessinerListe(courant === "e-clients" ? neufs : []);
+      e.classList.add("fini");
+      e.innerHTML = `<div class="t">${(GROS - VERIFIER.length).toLocaleString("fr-FR")} documents rangés</div><div class="s">${VERIFIER.length} à vérifier</div>`;
+      if (courant === "e-envoi") aller("e-clients");
+    }
+  }
+  $("fermer").addEventListener("click", () => aller("e-clients"));
+  // Une fois fini, la bande mène aux seuls documents à vérifier.
+  $("encours").addEventListener("click", () => {
+    if (!grosDossier || grosDossier.lus < GROS) return;
+    lot = VERIFIER;
+    nomsTapes = {};
+    $("docs").innerHTML = VERIFIER.map((d, i) => ligneLue(d, i)).join("");
+    $("titre-lecture").textContent = `${VERIFIER.length} à vérifier`;
+    majBilan();
+    $("pied").hidden = false;
+    aller("e-lecture");
   });
 
   // La réversibilité après, plutôt que la confirmation avant.
