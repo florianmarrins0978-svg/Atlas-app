@@ -7,210 +7,280 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
-    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
-    --etabli-or:#8b6835;
-    --serif:"Playfair Display",ui-serif,Georgia,serif;
-    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
-    --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578; --doux:#4a4a44;
-    --tuile:#ece9e1; --plein:#7d9a6d; --surplein:#faf9f5; --orTexte:#8b6835;
-    --trait:rgba(28,28,26,.12); --or:#B98B47; --alerte:#8f3a2e;
-  }
-  body.nuit{
-    --etabli:#0a0b0a; --etabli-carte:#1a1d19; --etabli-trait:rgba(233,232,222,.14);
-    --etabli-encre:#e9e8de; --etabli-doux:#c1c2b6; --etabli-gris:#84887b;
-    --etabli-or:#b98b47;
-    --plage:#1a1d19; --encre:#e9e8de; --gris:#84887b; --doux:#c1c2b6;
-    --tuile:#1f211e; --plein:#e9e8de; --surplein:#1a1d19; --orTexte:#b98b47;
-    --trait:rgba(233,232,222,.12); --alerte:#d98b7d;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;background:var(--etabli)}
-  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased}
-  .page{max-width:1000px;margin:0 auto;padding:30px 20px 90px}
-  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;
-            color:var(--etabli-or);margin:0 0 10px}
-  h1{font:600 30px/1.15 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
-  .chapeau{max-width:640px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0 0 4px}
-  h2{font:600 22px/1.25 var(--serif);margin:44px 0 4px}
-  .dit{color:var(--etabli-gris);font-size:13.5px;line-height:1.6;margin:0 0 18px;max-width:640px}
-
-  .bascule{appearance:none;border:0;cursor:pointer;font:600 12.5px/1 var(--sans);
-           letter-spacing:.02em;padding:11px 17px;border-radius:999px;margin:18px 0 26px;
-           background:var(--etabli-carte);color:var(--etabli-doux);
-           box-shadow:inset 0 0 0 1px var(--etabli-trait)}
-  .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
-  .col{flex:0 0 auto;max-width:100%}
-  .nom{font:600 15px/1.3 var(--sans);margin:0 0 3px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-  .etiq{font:700 9.5px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;
-        padding:4px 7px;border-radius:999px;background:var(--etabli-or);color:var(--etabli-carte)}
-  .idee{color:var(--etabli-gris);font-size:13px;line-height:1.55;margin:0 0 12px;max-width:360px;min-height:54px}
-
-  /* L'écran, à sa largeur : 390 px. Les mots et les places sont ceux de l'appli. */
-  .tel{width:390px;max-width:100%;border-radius:22px;overflow:hidden;background:var(--plage);
-       box-shadow:0 2px 16px rgba(20,18,14,.13),inset 0 0 0 1px var(--etabli-trait);
-       display:flex;flex-direction:column;min-height:560px}
-  .corps{flex:1;padding:18px 26px 0}
-  .fleche{width:40px;height:40px;border-radius:999px;display:flex;align-items:center;
-          justify-content:center;box-shadow:inset 0 0 0 1px var(--trait);color:var(--doux);font-size:17px}
-  .caps{font:600 11px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--orTexte)}
-  .titrecli{font:500 38px/1.05 var(--serif);margin:14px 0 0;letter-spacing:-.02em;color:var(--encre)}
-  .coord{color:var(--doux);font-size:14.5px;line-height:1.5;margin:10px 0 0}
-  .capsule{display:block;text-align:center;border-radius:999px;padding:15px;margin:18px 0 0;
-           box-shadow:inset 0 0 0 1px var(--orTexte);color:var(--orTexte);font-size:16px}
-  .onglets{display:flex;gap:26px;margin:26px 0 0;font:600 11px/1 var(--sans);
-           letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
-  .onglets b{color:var(--encre);padding-bottom:9px;box-shadow:0 1px 0 var(--orTexte)}
-  .vide{color:var(--gris);font-size:14.5px;margin:22px 0 0}
-  .retirer{font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;
-           color:var(--alerte);margin:34px 0 0}
-  .barre{display:flex;justify-content:space-between;padding:14px 20px;margin-top:22px;
-         font:600 9.5px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;
-         color:var(--gris);box-shadow:inset 0 1px 0 var(--trait)}
-  .barre b{color:var(--encre)}
-
-  /* La porte proposée — c'est ELLE qu'on regarde, donc elle se voit. */
-  .porte{color:var(--orTexte);cursor:pointer}
-  .neuf{position:relative;background:rgba(185,139,71,.14);border-radius:8px;
-        padding:7px 9px;margin-left:-9px;margin-right:-9px}
-  .neuf::after{content:"NOUVEAU";position:absolute;top:-9px;right:6px;
-               font:700 8.5px/1 var(--sans);letter-spacing:.12em;
-               background:var(--orTexte);color:var(--plage);padding:3px 6px;border-radius:999px}
-  .crayon.neuf{margin:0;padding:0;width:40px;height:40px;background:rgba(185,139,71,.18)}
-  .ligneporte{display:flex;align-items:center;justify-content:space-between;
-              font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;
-              color:var(--orTexte);margin:16px 0 0}
-  .crayon{width:40px;height:40px;border-radius:999px;display:flex;align-items:center;
-          justify-content:center;box-shadow:inset 0 0 0 1px var(--orTexte);color:var(--orTexte);font-size:15px}
-  .hautligne{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-
-  /* L'écran que la porte ouvre */
-  .champ{margin:14px 0 0}
-  .etiqchamp{font:600 10.5px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gris)}
-  .case{margin:7px 0 0;border-radius:12px;background:var(--tuile);padding:14px 15px;color:var(--encre);font-size:15.5px}
-  .civ{display:flex;gap:11px;margin:4px 0 0}
-  .civ span{border-radius:999px;padding:11px 26px;font-size:15px;box-shadow:inset 0 0 0 1px var(--trait);color:var(--encre)}
-  .civ span.pris{background:var(--plage);box-shadow:0 1px 4px rgba(20,18,14,.12)}
-  .plein{display:block;text-align:center;border-radius:999px;padding:15px;margin:24px 0 0;
-         background:var(--plein);color:var(--surplein);font:500 17px/1 var(--serif)}
-  .note{margin:34px 0 0;padding:15px 17px;border-radius:4px;background:var(--etabli-carte);
-        box-shadow:inset 0 0 0 1px var(--etabli-trait);max-width:640px;
-        font-size:13.5px;line-height:1.65;color:var(--etabli-doux)}
-  .note .t{display:block;font:700 10px/1 var(--sans);letter-spacing:.1em;
-           text-transform:uppercase;color:var(--etabli-or);margin:0 0 7px}
-
-  .ligne{display:flex;justify-content:space-between;gap:10px;padding:12px 0;box-shadow:inset 0 -1px 0 var(--trait)}
-  .ligne .q{font-size:15px;color:var(--encre)}
-  .ligne .s{font-size:12.5px;color:var(--gris);margin-top:3px}
-  .ligne .m{font-size:14px;color:var(--encre);white-space:nowrap}
-  .etat{display:inline-block;font:600 9.5px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;padding:4px 7px;border-radius:999px;margin-top:6px}
-  .etat.nv{background:rgba(125,154,109,.18);color:var(--encre)}
-  .etat.ex{background:var(--tuile);color:var(--doux)}
-  .etat.dt{background:rgba(143,58,46,.12);color:var(--alerte)}
-  .depot{margin:22px 0 0;border-radius:16px;padding:34px 18px;text-align:center;box-shadow:inset 0 0 0 1.5px var(--trait);color:var(--doux);font-size:15px}
-  .titreecran{font:500 26px/1.15 var(--serif);color:var(--encre);margin:16px 0 0}
-  .compte{color:var(--gris);font-size:14px;margin:8px 0 0}
-  .marque{font-size:12px;color:var(--orTexte)}
-</style>
-</head>
-<body>
 <!--
   IMPORTER SON ANCIENNE APPLI, sa demande du 22 octobre 2026 :
     « quelqu'un qui était sur une autre appli avant nous, qu'il puisse intégrer
       tous ces devis et factures dans l'appli d'un coup ou un par un, que ça
       crée les clients tout seul et que ça se range dans la catégorie client ».
 
+  Refaite le même jour à sa demande (« utilise le skill impeccable pour refaire
+  la planche »). Le contenu ne bouge pas : deux places pour la porte, trois
+  écrans de parcours, trois questions. Ce qui change est la facture :
+    - les téléphones reprennent les cotes de l'application (EnTeteEcran
+      « ample » : capitales 9,5 px, nom en serif, marge de 24 à 26 px) ;
+    - les icônes sont dessinées (SVG, un seul trait de 1,6) au lieu de
+      caractères ;
+    - la ligne illisible se corrige SUR PLACE, dans un champ, au lieu d'une
+      phrase qui expliquait qu'il fallait taper le nom (CLAUDE.md §3, « un
+      écran ne s'explique pas, il se montre ») ;
+    - plus de surtitre « À choisir » au-dessus du titre de la planche.
+
   Ce qui existe déjà et que le code reprendrait : la lecture d'un document par
   l'IA (src/server/ai/services/lire-devis-fournisseur.ts, même patron), et le
   rapprochement automatique d'un client connu (trouverOuCreerClient, sa règle
-  du 17 août : « non justement, il ne faut pas » de liste de correspondances).
+  du 17 août : pas de liste de correspondances à valider).
 
-  DÉCIDÉ, et dit sur la planche plutôt que caché : une pièce importée reste
-  une ARCHIVE. Elle ne devient jamais une facture Atlas : ni dans le relevé de
-  TVA (déjà déclarée par l'ancienne appli), ni dans la numérotation (une suite
-  qui reprendrait des numéros d'un autre logiciel se casserait), ni
-  modifiable. Elle se range sur la fiche, se télécharge, et c'est tout.
+  DÉCIDÉ, et dit sur la planche : une pièce importée reste une ARCHIVE. Elle
+  ne devient jamais une facture Atlas : ni dans le relevé de TVA (déjà
+  déclarée par l'ancienne appli), ni dans la numérotation (une suite qui
+  reprendrait les numéros d'un autre logiciel se casserait), ni modifiable.
 
   Rien ne s'invente (docs/AGENT.md §3) : un nom illisible ne crée pas de
-  client, la ligne passe en « à vérifier ».
+  client, la ligne attend qu'on le tape.
 -->
-<div class="page">
-  <p class="surtitre">À choisir</p>
-  <h1>Importer son ancienne appli</h1>
-  <p class="chapeau">Il dépose ses PDF d’un coup ou un par un. Atlas lit chaque document, retrouve ou crée le client, et range la pièce sur sa fiche.</p>
-  <button class="bascule" id="jourNuit" aria-pressed="false">Voir en mode nuit</button>
+<style>
+  :root{
+    --etabli:#ebe8e1; --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#6f6a61;
+    --etabli-or:#8b6835; --etabli-trait:rgba(28,28,26,.11); --etabli-carte:#f7f5f0;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    /* L'application, charte Arborea */
+    --plage:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44; --gris:#7d786d;
+    --sauge:#7d9a6d; --surplein:#faf9f5; --orTexte:#8b6835; --or:#B98B47;
+    --trait:rgba(28,28,26,.12); --alerte:#8f3a2e; --alerte-fond:rgba(143,58,46,.07);
+    --ombre-tel:0 1px 2px rgba(20,18,14,.06),0 22px 44px -22px rgba(20,18,14,.32);
+  }
+  body.nuit{
+    --etabli:#0b0c0b; --etabli-encre:#e9e8de; --etabli-doux:#c1c2b6; --etabli-gris:#9a9d90;
+    --etabli-or:#c79a57; --etabli-trait:rgba(233,232,222,.13); --etabli-carte:#151714;
+    --plage:#141613; --carte:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6; --gris:#959a8c;
+    --sauge:#e9e8de; --surplein:#141613; --orTexte:#c79a57; --or:#b98b47;
+    --trait:rgba(233,232,222,.12); --alerte:#e0907f; --alerte-fond:rgba(224,144,127,.10);
+    --ombre-tel:0 1px 2px rgba(0,0,0,.4),0 22px 44px -22px rgba(0,0,0,.75);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--etabli)}
+  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased;
+       transition:background-color .4s cubic-bezier(.16,1,.3,1),color .4s cubic-bezier(.16,1,.3,1)}
+  ::selection{background:rgba(185,139,71,.28);color:inherit}
+  :focus-visible{outline:2px solid var(--etabli-or);outline-offset:3px;border-radius:8px}
+  svg{display:block}
 
-  <h2>Où poser la porte</h2>
+  /* ── La planche ── */
+  .page{max-width:1240px;margin:0 auto;padding:56px 24px 96px}
+  .tete{display:flex;align-items:flex-end;justify-content:space-between;gap:20px 24px;flex-wrap:wrap;
+        padding-bottom:30px;border-bottom:1px solid var(--etabli-trait)}
+  h1{font:500 clamp(32px,4.4vw,48px)/1.05 var(--serif);letter-spacing:-.022em;margin:0;max-width:15ch;text-wrap:balance}
+  .chapeau{margin:16px 0 0;max-width:50ch;color:var(--etabli-doux);font-size:16px;line-height:1.6}
+  .bascule{appearance:none;border:0;cursor:pointer;display:inline-flex;align-items:center;gap:9px;min-height:44px;
+           font:500 13px/1 var(--sans);padding:0 18px;border-radius:999px;
+           background:var(--etabli-carte);color:var(--etabli-doux);
+           box-shadow:inset 0 0 0 1px var(--etabli-trait);transition:color .2s}
+  .bascule:hover{color:var(--etabli-encre)}
+  .bascule svg{width:16px;height:16px}
+
+  h2{font:500 27px/1.2 var(--serif);letter-spacing:-.012em;margin:72px 0 28px}
+
+  .rangee{display:flex;gap:44px 32px;flex-wrap:wrap;align-items:flex-start}
+  .col{flex:0 1 360px;min-width:0}
+  .legende{display:flex;gap:12px;align-items:baseline;margin:0 0 6px}
+  .legende .lettre{font:500 30px/1 var(--serif);color:var(--etabli-or);min-width:20px}
+  .legende .nom{font:600 15px/1.35 var(--sans)}
+  .idee{color:var(--etabli-gris);font-size:13.5px;line-height:1.55;margin:0 0 20px 32px;max-width:36ch;min-height:42px}
+
+  /* ── Le téléphone, aux cotes de l'appli ── */
+  .tel{width:360px;max-width:100%;border-radius:28px;overflow:hidden;background:var(--plage);
+       box-shadow:var(--ombre-tel),inset 0 0 0 1px var(--etabli-trait);
+       display:flex;flex-direction:column;min-height:620px;color:var(--encre)}
+  .corps{flex:1;padding:24px 24px 28px}
+  .rond{width:40px;height:40px;border-radius:999px;display:flex;align-items:center;justify-content:center;
+        box-shadow:inset 0 0 0 1px var(--trait);color:var(--doux)}
+  .rond svg{width:18px;height:18px}
+  .caps{font:500 9.5px/1 var(--sans);letter-spacing:.28em;text-transform:uppercase;color:var(--orTexte)}
+  .titre{font:400 36px/1.04 var(--serif);letter-spacing:-.018em;margin:13px 0 0;font-variant-numeric:lining-nums}
+  .precision{margin:12px 0 0;font-size:13px;line-height:1.6;color:var(--doux)}
+  .porte{display:flex;align-items:center;justify-content:space-between;min-height:44px;margin:14px 0 0;
+         font:500 9.5px/1 var(--sans);letter-spacing:.28em;text-transform:uppercase;color:var(--orTexte)}
+  .porte.neuf{margin-left:-10px;margin-right:-10px;padding:0 10px;border-radius:10px;background:rgba(185,139,71,.13)}
+  .porte.neuf::after{content:"nouveau";font:600 8.5px/1 var(--sans);letter-spacing:.14em;opacity:.75}
+  .rangs{margin:18px 0 0;padding:0;list-style:none}
+  .rangs li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:15px 0;
+            border-bottom:1px solid var(--trait)}
+  .rangs .q{font-size:15.5px;color:var(--encre)}
+  .rangs .s{font-size:12.5px;color:var(--gris);margin-top:3px;white-space:nowrap}
+  .rangs .m{font-size:14.5px;color:var(--encre);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .barre{display:flex;justify-content:space-between;padding:15px 18px 17px;
+         font:500 8.5px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gris);
+         border-top:1px solid var(--trait);background:var(--plage)}
+  .barre b{color:var(--encre);font-weight:600}
+
+  /* Le dépôt : toute la zone s'appuie, une cible de la taille d'une paume. */
+  .depot{display:block;margin:34px 0 0;border-radius:20px;padding:46px 22px;text-align:center;cursor:pointer;
+         border:1.5px dashed color-mix(in srgb,var(--orTexte) 45%,transparent);background:var(--carte);
+         transition:border-color .25s,background-color .25s}
+  .depot:hover{border-color:var(--orTexte)}
+  .depot svg{width:40px;height:40px;margin:0 auto;color:var(--orTexte)}
+  .depot .q{font:500 21px/1.25 var(--serif);margin:16px 0 0}
+  .depot .s{font-size:13.5px;color:var(--gris);margin:8px 0 0}
+
+  /* La relecture */
+  .bilan{margin:10px 0 0;font-size:14px;color:var(--doux)}
+  .etat{display:inline-flex;align-items:center;gap:6px;margin-top:7px;font-size:12px;color:var(--doux)}
+  .etat::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--gris)}
+  .etat.nv::before{background:var(--sauge)}
+  .etat.dt{color:var(--alerte)} .etat.dt::before{background:var(--alerte)}
+  .rangs li.a-verifier{flex-wrap:wrap;background:var(--alerte-fond);margin:6px -12px 0;padding:15px 12px;border-radius:14px;border-bottom:0}
+  .champ{display:block;width:100%;margin-top:10px;padding:12px;border-radius:10px;
+         background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);font-size:14.5px;color:var(--gris)}
+  .plein{display:flex;align-items:center;justify-content:center;min-height:54px;margin:24px 0 0;border-radius:999px;
+         background:var(--sauge);color:var(--surplein);font:500 18px/1 var(--serif)}
+
+  /* La fiche */
+  .onglets{display:flex;gap:26px;margin:30px 0 0;font:500 9.5px/1 var(--sans);letter-spacing:.28em;
+           text-transform:uppercase;color:var(--gris);border-bottom:1px solid var(--trait)}
+  .onglets span,.onglets b{padding-bottom:12px}
+  .onglets b{color:var(--encre);font-weight:500;box-shadow:inset 0 -1.5px 0 var(--or)}
+  .num{font:400 20px/1.2 var(--serif);font-variant-numeric:lining-nums}
+  .origine{display:inline-block;margin-top:5px;font-size:11.5px;color:var(--orTexte)}
+
+  /* ── Ce qui est tranché, et ce qui reste à dire ── */
+  .bas{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin-top:80px;align-items:start}
+  .bloc{background:var(--etabli-carte);border-radius:20px;padding:28px 28px 30px;
+        box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .bloc h3{font:500 22px/1.2 var(--serif);margin:0 0 14px}
+  .bloc p{margin:0;color:var(--etabli-doux);font-size:15px;line-height:1.65;max-width:58ch}
+  .questions{margin:0;padding:0;list-style:none;counter-reset:q}
+  .questions li{counter-increment:q;display:grid;grid-template-columns:24px 1fr;gap:4px 12px;padding:16px 0;
+                border-top:1px solid var(--etabli-trait)}
+  .questions li:first-child{border-top:0;padding-top:2px}
+  .questions li::before{content:counter(q);font:500 20px/1.25 var(--serif);color:var(--etabli-or)}
+  .questions .q{font-size:15px;line-height:1.5;color:var(--etabli-encre)}
+  .choix{grid-column:2;display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .choix span{font-size:13px;padding:8px 13px;border-radius:999px;color:var(--etabli-doux);
+              box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+
+  @media (max-width:520px){
+    .page{padding:36px 16px 72px}
+    h2{margin-top:52px}
+    .idee{margin-left:0;min-height:0}
+    .tel{min-height:0}
+    .corps{padding:22px 20px 26px}
+    .bloc{padding:24px 20px 26px}
+  }
+  @media (prefers-reduced-motion:reduce){body,.depot{transition:none}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-retour" viewBox="0 0 24 24"><path d="M14.5 6 8.5 12l6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-depot" viewBox="0 0 40 40"><path d="M11 5h13l7 7v23H11z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M24 5v7h7M21 29V18m-4.5 4.5L21 18l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-lune" viewBox="0 0 24 24"><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+  <symbol id="i-soleil" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4M5.6 18.4 7 17m10-10 1.4-1.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+</svg>
+
+<div class="page">
+  <header class="tete">
+    <div>
+      <h1>Importer son ancienne appli</h1>
+      <p class="chapeau">Il dépose ses anciens PDF. Atlas lit chaque document, retrouve ou crée le client, et range la pièce sur sa fiche.</p>
+    </div>
+    <button class="bascule" id="jourNuit" aria-pressed="false"><svg><use href="#i-lune"/></svg><span>Mode nuit</span></button>
+  </header>
+
+  <h2>La porte</h2>
   <div class="rangee" id="places"></div>
 
   <h2>Le parcours</h2>
   <div class="rangee" id="parcours"></div>
 
-  <div class="note"><span class="t">Ce que j’ai décidé</span>
-    Une pièce importée reste une <b>archive</b> : elle se range et se télécharge, mais n’entre ni dans votre TVA (déjà déclarée), ni dans la suite de vos numéros, et ne se modifie pas.
-  </div>
-  <div class="note"><span class="t">Trois choses à me dire</span>
-    <b>1.</b> A ou B pour la porte.<br>
-    <b>2.</b> Une ancienne facture <b>pas encore payée</b> : la suivre dans « En attente de paiement », ou seulement la ranger ?<br>
-    <b>3.</b> Votre première facture Atlas : continuer après le dernier numéro de l’ancienne appli (par exemple 0149), ou repartir de 1 ?
+  <div class="bas">
+    <section class="bloc">
+      <h3>Ce que j’ai décidé</h3>
+      <p>Une pièce importée reste une archive. Elle se range et se télécharge, mais n’entre ni dans votre TVA, déjà déclarée, ni dans la suite de vos numéros, et ne se modifie pas.</p>
+    </section>
+    <section class="bloc">
+      <h3>Trois choses à me dire</h3>
+      <ol class="questions">
+        <li><span class="q">Où poser la porte ?</span><span class="choix"><span>A, liste des clients</span><span>B, Mes données</span></span></li>
+        <li><span class="q">Une ancienne facture pas encore payée ?</span><span class="choix"><span>La suivre dans les impayés</span><span>Seulement la ranger</span></span></li>
+        <li><span class="q">Votre première facture Atlas ?</span><span class="choix"><span>Continuer après la dernière</span><span>Repartir de 1</span></span></li>
+      </ol>
+    </section>
   </div>
 </div>
-<script>
-  document.getElementById("jourNuit").addEventListener("click", (e) => {
-    const on = document.body.classList.toggle("nuit");
-    e.currentTarget.setAttribute("aria-pressed", String(on));
-    e.currentTarget.textContent = on ? "Voir en plein jour" : "Voir en mode nuit";
-  });
-  const barre = '<div class="barre"><b>Chantiers</b><span>Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></div>';
-  const tel = (contenu) => `<div class="tel"><div class="corps">${contenu}</div>${barre}</div>`;
 
-  const clients = tel(`
-    <div class="caps">Vos clients</div>
-    <div class="titreecran">Clients</div>
-    <div class="ligneporte neuf" style="margin-top:18px"><span>Importer mon ancienne appli</span></div>
-    <div class="ligne"><div><div class="q">M. Bernard</div><div class="s">Nantes</div></div></div>
-    <div class="ligne"><div><div class="q">Mme Costa</div><div class="s">Rezé</div></div></div>
-    <div class="ligne"><div><div class="q">M. Martins</div><div class="s">Vertou</div></div></div>`);
-  const reglages = tel(`
-    <div class="fleche">‹</div>
-    <div class="titreecran">Mes données</div>
-    <div class="ligne"><div class="q">Télécharger mes données</div></div>
-    <div class="ligneporte neuf" style="margin-top:16px"><span>Importer mon ancienne appli</span></div>`);
+<script>
+  const bouton = document.getElementById("jourNuit");
+  bouton.addEventListener("click", () => {
+    const on = document.body.classList.toggle("nuit");
+    bouton.setAttribute("aria-pressed", String(on));
+    bouton.innerHTML = on
+      ? '<svg><use href="#i-soleil"/></svg><span>Plein jour</span>'
+      : '<svg><use href="#i-lune"/></svg><span>Mode nuit</span>';
+  });
+
+  const barre = (actif) => `<div class="barre">${["Chantiers", "Planning", "Terminés", "Paysage", "Réglages"]
+    .map((n) => (n === actif ? `<b>${n}</b>` : `<span>${n}</span>`)).join("")}</div>`;
+  const tel = (contenu, actif = "Chantiers") => `<div class="tel"><div class="corps">${contenu}</div>${barre(actif)}</div>`;
+  const retour = '<div class="rond"><svg><use href="#i-retour"/></svg></div>';
+
+  const listeClients = tel(`
+    <div class="titre" style="margin-top:0">Vos clients</div>
+    <p class="precision">47 clients</p>
+    <div class="porte neuf"><span>Importer mon ancienne appli</span></div>
+    <ul class="rangs">
+      <li><div><div class="q">M. Bernard</div><div class="s">Nantes</div></div></li>
+      <li><div><div class="q">Mme Costa</div><div class="s">Rezé</div></div></li>
+      <li><div><div class="q">M. Martins</div><div class="s">Vertou</div></div></li>
+    </ul>`);
+  const mesDonnees = tel(`
+    ${retour}
+    <div class="caps" style="margin-top:24px">Réglages</div>
+    <div class="titre">Mes données</div>
+    <div class="porte" style="margin-top:22px"><span>Télécharger mes données</span></div>
+    <div class="porte neuf"><span>Importer mon ancienne appli</span></div>`, "Réglages");
+
+  const legende = (lettre, nom, idee) =>
+    `<div class="legende"><span class="lettre">${lettre}</span><span class="nom">${nom}</span></div><p class="idee">${idee}</p>`;
 
   document.getElementById("places").innerHTML = `
-    <div class="col"><p class="nom">A : en tête de la liste des clients</p>
-      <p class="idee">Là où il cherche ses clients, et là où ils vont apparaître.</p>${clients}</div>
-    <div class="col"><p class="nom">B : dans Réglages, Mes données</p>
-      <p class="idee">À côté de « Télécharger mes données ». Un geste qu’on fait une fois, rangé avec ce qui ne sert pas tous les jours.</p>${reglages}</div>`;
+    <div class="col">${legende("A", "En tête de la liste des clients", "Là où il cherche ses clients, et là où ils vont apparaître.")}${listeClients}</div>
+    <div class="col">${legende("B", "Réglages, Mes données", "À côté de « Télécharger mes données ». Un geste qu’on fait une fois.")}${mesDonnees}</div>`;
 
   const depot = tel(`
-    <div class="fleche">‹</div>
-    <div class="titreecran">Importer</div>
-    <div class="depot">Choisir des PDF<br><span style="font-size:13px;color:var(--gris)">un seul, plusieurs, ou un fichier .zip</span></div>`);
+    ${retour}
+    <div class="titre" style="margin-top:22px">Importer</div>
+    <div class="depot" role="button" tabindex="0">
+      <svg><use href="#i-depot"/></svg>
+      <div class="q">Vos anciens PDF</div>
+      <div class="s">Un seul, plusieurs, ou un .zip</div>
+    </div>`);
 
   const relu = tel(`
-    <div class="titreecran">12 documents lus</div>
-    <p class="compte">3 nouveaux clients, 1 à vérifier</p>
-    <div class="ligne"><div><div class="q">Facture F2025‑0148</div><div class="s">M. Martins, 12 mars 2025</div><span class="etat ex">déjà client</span></div><div class="m">480,00 €</div></div>
-    <div class="ligne"><div><div class="q">Devis D2025‑0201</div><div class="s">Mme Lenoir, 3 avril 2025</div><span class="etat nv">nouveau client</span></div><div class="m">1 250,00 €</div></div>
-    <div class="ligne"><div><div class="q">Facture F2024‑0097</div><div class="s">Nom illisible</div><span class="etat dt">à vérifier</span></div><div class="m">310,00 €</div></div>
-    <div class="plein">Tout ranger (11)</div>
-    <p class="vide" style="font-size:13px;text-align:center">Celui à vérifier attend que vous tapiez le nom.</p>`);
+    <div class="titre" style="margin-top:0">12 documents lus</div>
+    <p class="bilan">3 nouveaux clients, 1 à vérifier.</p>
+    <ul class="rangs">
+      <li><div><div class="q">Facture F2025‑0148</div><div class="s">M. Martins, 12 mars 2025</div><span class="etat">Déjà client</span></div><div class="m">480,00 €</div></li>
+      <li><div><div class="q">Devis D2025‑0201</div><div class="s">Mme Lenoir, 3 avril 2025</div><span class="etat nv">Nouveau client</span></div><div class="m">1 250,00 €</div></li>
+      <li class="a-verifier"><div><div class="q">Facture F2024‑0097</div><span class="etat dt">Nom illisible</span></div><div class="m">310,00 €</div><span class="champ">Nom du client</span></li>
+    </ul>
+    <div class="plein">Tout ranger</div>`);
 
   const fiche = tel(`
-    <div class="fleche">‹</div>
-    <div style="margin-top:14px"><div class="caps">Client</div><div class="titrecli">M. Martins</div></div>
-    <p class="coord">8 rue du Port, Vertou</p>
+    ${retour}
+    <div class="caps" style="margin-top:24px">Client</div>
+    <div class="titre">M. Martins</div>
+    <p class="precision">8 rue du Port, Vertou</p>
     <div class="onglets"><span>Devis</span><b>Factures</b><span>Fiches</span></div>
-    <div class="ligne"><div><div class="q">n° 2026‑0012</div></div><div class="s">4 sept. 2026</div></div>
-    <div class="ligne"><div><div class="q">n° F2025‑0148</div><div class="marque">Ancienne appli</div></div><div class="s">12 mars 2025</div></div>`);
+    <ul class="rangs" style="margin-top:4px">
+      <li><div class="num">n° 2026‑0012</div><div class="s">4 sept. 2026</div></li>
+      <li><div><div class="num">n° F2025‑0148</div><span class="origine">Ancienne appli</span></div><div class="s">12 mars 2025</div></li>
+    </ul>`);
 
   document.getElementById("parcours").innerHTML = `
-    <div class="col"><p class="nom">1. Il dépose</p><p class="idee">Depuis le téléphone ou l’ordinateur. Pas de limite de nombre.</p>${depot}</div>
-    <div class="col"><p class="nom">2. Atlas a lu</p><p class="idee">Un client connu est retrouvé tout seul. Rien ne se range avant son appui.</p>${relu}</div>
-    <div class="col"><p class="nom">3. C’est rangé</p><p class="idee">Dans l’onglet de sa fiche, avec les pièces Atlas, marquée d’où elle vient.</p>${fiche}</div>`;
+    <div class="col">${legende("1", "Il dépose", "Du téléphone ou de l’ordinateur, sans limite de nombre.")}${depot}</div>
+    <div class="col">${legende("2", "Il relit", "Un client connu est retrouvé seul. Rien ne se range avant son appui.")}${relu}</div>
+    <div class="col">${legende("3", "C’est rangé", "Dans l’onglet de sa fiche, marqué d’où il vient.")}${fiche}</div>`;
 </script>
 </body>
 </html>
