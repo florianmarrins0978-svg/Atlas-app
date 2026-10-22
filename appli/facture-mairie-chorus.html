@@ -58,7 +58,7 @@
   .civ{display:flex;gap:8px;flex-wrap:nowrap}
   .civ span{border-radius:999px;padding:7px 28px;font-size:16px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);white-space:nowrap}
   .civ.serre span{padding:7px 13px}
-  .civ span.pris{background:var(--plein);color:var(--surplein);box-shadow:none}
+  .civ span.pris{background:var(--tuile);box-shadow:inset 0 0 0 1px var(--or)}
   .inter{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:15px}
   .inter small{display:block;font-size:12.5px;color:var(--gris)}
   .bascule{position:relative;width:46px;height:28px;border-radius:999px;background:var(--trait);flex:none}
@@ -230,10 +230,7 @@
   function appliquer(i){
     const j = CHARTES[i][1], r = document.documentElement.style;
     for (const k of ["fond","plage","encre","gris","plein"]) r.setProperty("--"+k, j[k]);
-    // Sa demande du 22 octobre : tout ce qui était doré passe au plein, l'accent
-    // de la charte, comme les boutons.
-    r.setProperty("--or", j.plein);
-    r.setProperty("--orTexte", j.plein);
+    r.setProperty("--orTexte", j.sombre ? "#b98b47" : "#8b6835");
     [...zone.children].forEach((b,n)=>b.setAttribute("aria-pressed", String(n===i)));
   }
   zone.innerHTML = CHARTES.map(([n])=>`<button type="button">${n}</button>`).join("");
@@ -256,7 +253,7 @@
         ${codeService ? champ("Code service", "SERV-TECH", true) : ""}
         ${champ("Téléphone", "02 40 84 43 00")}
       </div>
-      <span class="plein">Enregistrer</span>
+      <span class="plein" style="width:auto;text-align:center;padding:15px">Enregistrer</span>
     </div>${barre}</div>`;
   }
 
