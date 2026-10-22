@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-22
 
+- **La photo du croquis ouvre le plan lu, à vérifier** (`ARCHITECTURE.md` §480) : ce que l'IA a lu s'ouvre dans « Dessiner le plan », à l'échelle ; une cote absente se marque « ? » et bloque le plan jusqu'à ce qu'il la tape, une cote déduite se montre avec sa source, puis « Faire le plan » part par le chemin du dessin. Le libellé du compteur passe à gauche dans la moitié droite du terrain (il sortait du dessin). Évite un plan calculé sur une lecture qu'il n'a pas vue. Sur branche, sans batterie.
 - **L'écart des lignes de goutte-à-goutte** : haie 50 cm, massif 60 cm d'office, la première ligne à un écart du bord (2 m font 4 lignes), comptées sur le petit côté du massif. La feuille de « Dessiner le plan » propose, les boutons changent le nombre et l'écart affiché suit, l'écart se tape aussi en cm ; le tube se compte et la coupe se dessine. `lignesHaie` devient `lignes` et `ecartLignes`. Évite un massif arrosé dès le bord et un nombre de lignes qu'il ne pouvait pas régler. Sur branche, sans batterie.
 - **Planche « Tout télécharger d'un client »** (`appli/telecharger-un-client.html`) et lecture de la conservation dix ans (`docs/telecharger-un-client.md`). Rien dans `src/` : trois places à choisir, les fiches d'entretien n'ont pas de PDF, et la notification d'échéance est déconseillée tant que la première tombe en 2036. Constat : la base tient la conservation (factures, avoirs, devis envoyés immuables) ; les fichiers PDF, eux, dépendent des sauvegardes de production, pas encore en place.
 

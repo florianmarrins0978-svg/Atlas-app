@@ -4,8 +4,10 @@
 ## ⏳ ARROSAGE : DEUX PLANCHES À REGARDER (21 octobre 2026)
 
 - `appli/arrosage-plan-lu-a-verifier.html` : la photo ouvre le plan lu dans
-  « Dessiner le plan », on corrige, puis « Faire le plan ». Bâtie sur la vraie
-  page figée (sa consigne : « base-toi sur les pages exactes de l'application »).
+  « Dessiner le plan », on corrige, puis « Faire le plan ». **Codé le
+  22 octobre** sur `claude/lignes-goutte` (`ARCHITECTURE.md` §480), sans
+  batterie : **pas encore sur `main`**. La lecture réelle d'une photo n'est
+  pas vérifiable ICI (pas de clé de vision) : à jouer sur son espace.
 - `appli/arrosage-ecart-des-lignes.html` : ~~il tranche A ou B~~ **tranché le
   22 octobre** : une ligne tous les 50 cm pour une haie, 60 cm pour un massif,
   la première à un écart du bord, l'écart affiché qui suit les boutons

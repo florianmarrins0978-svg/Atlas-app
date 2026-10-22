@@ -35508,3 +35508,29 @@ fin. Annoncé par e-mail, il attend le nom de domaine ; le délai de l'article
 sans prévenir ni savoir ce qui doit rester est exactement ce que
 `CLAUDE.md` §4 septies interdit.
 
+
+## §480 : La photo du croquis donne un plan à vérifier, jamais un plan
+
+*Sa planche du 21 octobre 2026* (`appli/arrosage-plan-lu-a-verifier.html`),
+« code ça » le 22. Jusque-là, la photo lue partait droit au calcul : une cote
+mal lue, une haie sans largeur, une nourrice placée de travers donnaient un
+plan faux qu'il ne pouvait corriger qu'en reprenant la photo.
+
+**Ce qui est décidé.** `lireLeCroquis` rend désormais `{ etat: "a-verifier" }`
+pour une photo : `planLuDuCroquis` (`src/lib/arrosage/plan-lu.ts`, pure) pose
+la lecture à l'échelle par `poserSurLeTerrain`, la règle qui posait déjà le
+plan de la photo, et « Dessiner le plan » s'ouvre avec elle. « Faire le plan »
+repart par le chemin du dessin. **Un seul chemin mène au calcul**, celui du
+dessin : la photo n'y entre plus sans être passée sous ses yeux.
+
+**Ce qui ne s'invente pas.** Une cote absente du croquis se dessine à la
+taille où elle est tracée sur la photo, marquée manquante (« ? », trait
+rouge), et la feuille s'ouvre vide sur elle : la taille dessinée n'est pas une
+cote. Tant qu'il ne l'a pas tapée, le plan ne se fait pas. Une cote déduite
+(`deduites`, relevée par la lecture avec sa source) se montre en or, et la
+feuille dit d'où elle vient. Une zone sans place se pose en bas ; sans échelle,
+la nourrice et le piquage ne se posent pas au jugé.
+
+**Ce que cela coûte.** Une haie lue sur une photo n'a jamais de largeur : il
+la tape à chaque fois. C'est voulu : ses lignes de goutte-à-goutte en
+dépendent (§ des écarts, `.claude/rules/arrosage.md`).

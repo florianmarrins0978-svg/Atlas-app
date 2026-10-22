@@ -10,6 +10,7 @@ import DiscuterLePlan from "./DiscuterLePlan";
 import DessinerLePlan from "./DessinerLePlan";
 import DepuisUnDevis from "./DepuisUnDevis";
 import type { ParametresPlan } from "@/lib/arrosage/consignes";
+import type { PlanLu as LePlanLu } from "@/lib/arrosage/plan-lu";
 import { ACCEPT_PHOTOS } from "@/lib/exif";
 
 /**
@@ -66,6 +67,29 @@ export default function ArrosageClient({
   const [dessiner, setDessiner] = useState(false);
   const [parDessin, setParDessin] = useState(false);
   const champDessin = useRef<HTMLInputElement>(null);
+  /**
+   * **LE PLAN LU S'OUVRE DANS LE DESSIN** — sa planche du 21 octobre 2026. La
+   * photo lue ne donne plus le plan d'un coup : il le vérifie, le corrige, puis
+   * « Faire le plan ». Chaque lecture rouvre un dessin neuf (`lecture`).
+   */
+  const [planLu, setPlanLu] = useState<LePlanLu | null>(null);
+  const [lecture, setLecture] = useState(0);
+  const [apercu, setApercu] = useState<string | null>(null);
+  // Une lecture neuve se reçoit pendant le rendu, comme React le recommande
+  // pour un état qui suit une valeur reçue : un effet la rendrait en deux temps.
+  const [etatVu, setEtatVu] = useState(etat);
+  if (etat !== etatVu) {
+    setEtatVu(etat);
+    if (etat.etat === "a-verifier") {
+      setPlanLu(etat.plan);
+      setLecture((n) => n + 1);
+      setDessiner(true);
+      // Le croquis dit d'où vient l'eau : le dessin pose le bon repère.
+      if (etat.plan.pointDEau === "compteur") setPiquage("compteur");
+      else if (etat.plan.pointDEau === "robinet") setPiquage("ailleurs");
+    }
+  }
+  useEffect(() => () => { if (apercu) URL.revokeObjectURL(apercu); }, [apercu]);
 
   /**
    * **La photo choisie PART toute seule.**
@@ -85,6 +109,7 @@ export default function ArrosageClient({
       // La photo part seule : un dessin laissé dans le champ caché passerait devant.
       if (champDessin.current) champDessin.current.value = "";
       setParDessin(false);
+      setApercu(URL.createObjectURL(e.target.files[0]));
       formulaire.current?.requestSubmit();
     }
   }
@@ -257,32 +282,44 @@ export default function ArrosageClient({
         </p>
 
         {/* 64 px de haut : c'est un bouton qu'il touche dehors, avec des gants. */}
-        <label
-          htmlFor="croquis"
-          data-atlas="ajouter-croquis"
-          className="mt-[14px] flex min-h-[64px] cursor-pointer items-center justify-center gap-2.5 rounded-[12px] text-[11px] font-semibold uppercase"
-          style={{ border: `1.5px dashed ${colors.line}`, backgroundColor: colors.cream, color: colors.inkSoft, letterSpacing: "0.18em" }}
-        >
-          {/* **L'ATTENTE SOUFFLE ICI COMME PARTOUT AILLEURS** — sa demande du
-              23 août 2026 : *« lors de la lecture du croquis, mets les trois
-              petits points qui bougent »*.
+        {planLu && !enCours ? (
+          <div data-atlas="croquis-lu" className="mt-[14px] flex items-center gap-3">
+            {apercu ? (
+              <span aria-hidden="true" className="h-[52px] w-[52px] flex-none rounded-[10px] bg-cover bg-center" style={{ backgroundImage: `url(${apercu})`, boxShadow: `inset 0 0 0 1px ${colors.line}` }} />
+            ) : null}
+            <span className="flex-1 text-[15px]">Croquis lu. Vérifiez le plan.</span>
+            <label htmlFor="croquis" className="cursor-pointer text-[14.5px] underline" style={{ color: colors.ink }}>
+              Reprendre
+            </label>
+          </div>
+        ) : (
+          <label
+            htmlFor="croquis"
+            data-atlas="ajouter-croquis"
+            className="mt-[14px] flex min-h-[64px] cursor-pointer items-center justify-center gap-2.5 rounded-[12px] text-[11px] font-semibold uppercase"
+            style={{ border: `1.5px dashed ${colors.line}`, backgroundColor: colors.cream, color: colors.inkSoft, letterSpacing: "0.18em" }}
+          >
+            {/* **L'ATTENTE SOUFFLE ICI COMME PARTOUT AILLEURS** — sa demande du
+                23 août 2026 : *« lors de la lecture du croquis, mets les trois
+                petits points qui bougent »*.
 
-              Trois points de suspension IMMOBILES sont exactement le défaut
-              qu'il avait signalé le 13 août sur la dictée : ils disent « rien
-              ne se passe » alors que le travail est en cours, et la lecture
-              d'un croquis par l'IA est la plus longue attente de
-              l'application. Le geste vient de sa proposition C, et il est
-              partagé — `PointsQuiSoufflent`, jamais recopié
-              (`ARCHITECTURE.md` §66). */}
-          {enCours && !parDessin ? (
-            <>
-              Lecture du croquis
-              <PointsQuiSoufflent />
-            </>
-          ) : (
-            "Ajouter la photo du croquis"
-          )}
-        </label>
+                Trois points de suspension IMMOBILES sont exactement le défaut
+                qu'il avait signalé le 13 août sur la dictée : ils disent « rien
+                ne se passe » alors que le travail est en cours, et la lecture
+                d'un croquis par l'IA est la plus longue attente de
+                l'application. Le geste vient de sa proposition C, et il est
+                partagé — `PointsQuiSoufflent`, jamais recopié
+                (`ARCHITECTURE.md` §66). */}
+            {enCours && !parDessin ? (
+              <>
+                Lecture du croquis
+                <PointsQuiSoufflent />
+              </>
+            ) : (
+              "Ajouter la photo du croquis"
+            )}
+          </label>
+        )}
         {/* `capture` ouvre l'appareil photo du téléphone plutôt que la pellicule :
             le croquis est sous ses yeux, il le photographie. */}
         <input
@@ -323,6 +360,8 @@ export default function ArrosageClient({
 
       {dessiner && (
         <DessinerLePlan
+          key={lecture}
+          depart={planLu ?? undefined}
           piquage={piquage}
           onPiquage={setPiquage}
           onFaire={dessinPret}

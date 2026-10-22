@@ -66,6 +66,12 @@ export type ZoneLue = {
   /** Un massif : l'écart de ses lignes, en mètres, quand il l'a donné sur le dessin. */
   ecartLignes?: number;
   /**
+   * Les cotes que le croquis n'écrit pas et que la lecture a DÉDUITES, avec ce
+   * dont elles viennent : le plan lu à vérifier les montre, pour qu'il les
+   * confirme (sa planche du 21 octobre 2026).
+   */
+  deduites?: { champ: "L" | "l" | "ml"; depuis: string }[];
+  /**
    * Où la zone se trouve SUR LE DESSIN, en fraction (0 à 1) — pas en mètres.
    *
    * **Sa demande du 22 août 2026 : « oui fais-le lire les proportions ».** Le
@@ -307,6 +313,8 @@ export function lireReponseCroquis(texte: string, arret?: FinDeReponse): Resulta
       const champ = chaine((d as Record<string, unknown>).champ);
       if (champ) deduites.set(champ, chaine((d as Record<string, unknown>).depuis) ?? "");
     }
+    const sesDeduites: NonNullable<ZoneLue["deduites"]> = [];
+    const CHAMPS = { longueur_m: "L", largeur_m: "l", metres_lineaires: "ml" } as const;
     const coteDe = (champ: "longueur_m" | "largeur_m" | "metres_lineaires", maxi: number) => {
       const depuis = deduites.get(champ);
       if (depuis === "") return null;
@@ -315,6 +323,7 @@ export function lireReponseCroquis(texte: string, arret?: FinDeReponse): Resulta
         reserves.push(
           `la cote de ${String(valeur).replace(".", ",")} m de « ${nom ?? type} » n’est pas écrite, elle est déduite de ${depuis} : vérifiez-la`,
         );
+        sesDeduites.push({ champ: CHAMPS[champ], depuis });
       }
       return valeur;
     };
@@ -328,6 +337,7 @@ export function lireReponseCroquis(texte: string, arret?: FinDeReponse): Resulta
       y: fraction(o.y),
       largeurFraction: fraction(o.largeur_fraction),
       hauteurFraction: fraction(o.hauteur_fraction),
+      ...(sesDeduites.length ? { deduites: sesDeduites } : {}),
     };
     // Une zone dont aucune cote n'a été lue reste dans la liste — le patron sait
     // qu'elle existe et la complète. La faire disparaître lui ferait croire que
@@ -406,7 +416,10 @@ export function lireReponseCroquis(texte: string, arret?: FinDeReponse): Resulta
     // La longueur suit le côté horizontal du dessin (`geometrie-croquis.ts`) :
     // au quart de tour, elle échange sa place avec la largeur.
     return couche
-      ? { ...z, ...place, L: z.l, l: z.L, largeurFraction: z.hauteurFraction, hauteurFraction: z.largeurFraction }
+      ? {
+          ...z, ...place, L: z.l, l: z.L, largeurFraction: z.hauteurFraction, hauteurFraction: z.largeurFraction,
+          ...(z.deduites ? { deduites: z.deduites.map((d) => ({ ...d, champ: d.champ === "L" ? ("l" as const) : d.champ === "l" ? ("L" as const) : d.champ })) } : {}),
+        }
       : { ...z, ...place };
   });
   return {

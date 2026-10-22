@@ -45,6 +45,7 @@ import {
   type Rectangle,
 } from "@/lib/arrosage/formes-du-dessin";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
+import { phraseDuManque, type AVerifier, type PlanLu } from "@/lib/arrosage/plan-lu";
 
 /**
  * DESSINER LE PLAN — sa planche B, choisie le 18 octobre 2026 (*« la B, parce
@@ -76,7 +77,7 @@ import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 
 type Sorte = ZoneDessinee["type"] | "maison";
 type Outil = "arbre" | "dalles" | "nourrice" | "compteur" | "robinet";
-type Zone = Omit<ZoneDessinee, "type"> & { type: Sorte; id: string };
+type Zone = Omit<ZoneDessinee, "type"> & { type: Sorte; id: string; aVerifier?: AVerifier };
 type Arbre = { id: string; nom: string | null; d: number; x: number; y: number };
 type Dalles = Rangee & { id: string; nom: string | null; L: number; l: number; e: number | null; arrosees?: boolean };
 
@@ -129,6 +130,7 @@ export default function DessinerLePlan({
   onPiquage,
   onFaire,
   enCours,
+  depart,
 }: {
   /** La valeur de « Le piquage se fait… » : `compteur` ou `ailleurs` (le robinet). */
   piquage: string;
@@ -136,18 +138,20 @@ export default function DessinerLePlan({
   /** Le dessin, prêt à partir au serveur. */
   onFaire: (dessin: string) => void;
   enCours: boolean;
+  /** Le plan lu sur la photo, à vérifier : le dessin s'ouvre avec lui (planche du 21 octobre 2026). */
+  depart?: PlanLu;
 }) {
-  const [terrainSaisi, setTerrainSaisi] = useState({ L: "", l: "" });
+  const [terrainSaisi, setTerrainSaisi] = useState(depart ? { L: ecrit(depart.dessin.terrain.L), l: ecrit(depart.dessin.terrain.l) } : { L: "", l: "" });
   const T = { L: nombre(terrainSaisi.L), l: nombre(terrainSaisi.l) };
   const cadre = T.L !== null && T.l !== null ? { L: T.L, l: T.l } : null;
   const [echelle, setEchelle] = useState<number | null>(null);
   /** Ce que les deux doigts ajoutent à l'échelle choisie : 1, rien. */
   const [loupe, setLoupe] = useState(1);
-  const [zones, setZones] = useState<Zone[]>([]);
+  const [zones, setZones] = useState<Zone[]>(() => (depart ? depart.dessin.zones.map((z, i) => ({ ...z, id: `lu${i + 1}` })) : []));
   const [arbres, setArbres] = useState<Arbre[]>([]);
   const [dalles, setDalles] = useState<Dalles[]>([]);
-  const [nourrice, setNourrice] = useState<PointMetres | null>(null);
-  const [piquagePlace, setPiquagePlace] = useState<PointMetres | null>(null);
+  const [nourrice, setNourrice] = useState<PointMetres | null>(depart?.dessin.nourrice ?? null);
+  const [piquagePlace, setPiquagePlace] = useState<PointMetres | null>(depart?.dessin.piquage ?? null);
   const [outil, setOutil] = useState<Outil | null>(null);
   const [departDalles, setDepartDalles] = useState<PointMetres | null>(null);
   const [choisie, setChoisie] = useState<string | null>(null);
@@ -469,7 +473,9 @@ export default function DessinerLePlan({
           }))
         )
       : null;
-  const pret = etat.complet && debordent.length === 0 && relu?.ok === true;
+  // Une cote que le croquis ne porte pas ne part jamais : il la tape d'abord.
+  const manquantes = zones.flatMap((z) => (z.aVerifier?.manque ?? []).map((c) => phraseDuManque({ type: z.type as ZoneDessinee["type"], nom: z.nom }, c)));
+  const pret = etat.complet && debordent.length === 0 && relu?.ok === true && manquantes.length === 0;
   const morceaux = (z: Zone) => (dessin && z.type !== "maison" ? morceauxDe(z as ZoneDessinee, dessin) : { parts: [cadreDe(z)], coupeurs: [] });
 
   const objetChoisi = choisie ? zones.find((z) => z.id === choisie) ?? dalles.find((d) => d.id === choisie) : undefined;
@@ -483,6 +489,7 @@ export default function DessinerLePlan({
     : outil === "arbre" ? "Touchez le centre de l’arbre."
     : outil === "dalles" ? (departDalles ? "Touchez l’arrivée des dalles." : "Touchez le départ des dalles.")
     : courbable ? "Tirez un point vert pour courber."
+    : depart ? "Touchez une zone pour la corriger, glissez-la pour la placer."
     : agrandi ? "Touchez une zone pour la choisir, puis glissez-la."
     : "";
 
@@ -516,7 +523,11 @@ export default function DessinerLePlan({
     const est = choisie === z.id;
     const { parts } = morceaux(z);
     const lz = z.type === "haie" || z.type === "massif" ? lignesDeLaZone(z.type, z.L, z.l, z) : null;
-    const cotes = `${ecrit(z.L)} × ${ecrit(z.l)}${lz ? `, ${ecritLignes(lz.lignes)}` : ""}${parts.length > 1 ? `, en ${parts.length} parts` : ""}`;
+    // Une cote absente du croquis se dit « ? » ; ses lignes en dépendent.
+    const manque = z.aVerifier?.manque ?? [];
+    const cotes = `${manque.includes("L") ? "?" : ecrit(z.L)} × ${manque.includes("l") ? "?" : ecrit(z.l)}${lz && !manque.length ? `, ${ecritLignes(lz.lignes)}` : ""}${parts.length > 1 ? `, en ${parts.length} parts` : ""}`;
+    const aRevoir = hors || manque.length > 0;
+    const teinteCotes = aRevoir ? colors.alert : z.aVerifier?.deduites.length ? colors.orTexte : colors.inkSoft;
     const deuxLignes = z.l >= px(30);
     const tient = (t: string, taille: number) => Math.min(px(taille), Math.max(px(6), (z.L - px(5)) / (t.length * 0.56)));
     // Coupée, la zone porte son nom dans son plus grand morceau : au centre, il
@@ -525,9 +536,9 @@ export default function DessinerLePlan({
     const cx = grand.x + grand.L / 2, cy = grand.y + grand.l / 2;
     const bord = {
       fill: remplissage(z.type),
-      stroke: hors ? colors.alert : est ? colors.ink : colors.rustDeep,
+      stroke: aRevoir ? colors.alert : est ? colors.ink : colors.rustDeep,
       strokeWidth: px(est ? 3 : 1.5),
-      strokeDasharray: hors ? `${px(5)} ${px(4)}` : undefined,
+      strokeDasharray: aRevoir ? `${px(5)} ${px(4)}` : undefined,
     };
     const nom = nomDe(z);
     return (
@@ -536,10 +547,10 @@ export default function DessinerLePlan({
         {deuxLignes ? (
           <>
             <text x={cx} y={cy - px(2)} textAnchor="middle" fontSize={tient(nom, 11)} fill={colors.ink} {...texteDetache}>{nom}</text>
-            <text x={cx} y={cy + px(11)} textAnchor="middle" fontSize={tient(cotes, 10)} fill={hors ? colors.alert : colors.inkSoft} {...texteDetache}>{cotes}</text>
+            <text x={cx} y={cy + px(11)} textAnchor="middle" fontSize={tient(cotes, 10)} fill={teinteCotes} {...texteDetache}>{cotes}</text>
           </>
         ) : (
-          <text x={cx} y={cy + px(3.5)} textAnchor="middle" fontSize={tient(`${nom}, ${cotes}`, 10)} fill={hors ? colors.alert : colors.inkSoft} {...texteDetache}>
+          <text x={cx} y={cy + px(3.5)} textAnchor="middle" fontSize={tient(`${nom}, ${cotes}`, 10)} fill={teinteCotes} {...texteDetache}>
             {`${nom}, ${cotes}`}
           </text>
         )}
@@ -738,7 +749,8 @@ export default function DessinerLePlan({
                   <circle r={2} fill={colors.ink} />
                 </>
               )}
-              <text x={10} y={4} fontSize={10} fontWeight={600} fill={colors.ink} stroke={colors.card} strokeWidth={2.6} paintOrder="stroke" strokeLinejoin="round">
+              {/* Dans la moitié droite, le mot passe à gauche : au bord, il sortait du dessin. */}
+              <text x={cadre && piquagePlace.x > cadre.L / 2 ? -10 : 10} y={4} textAnchor={cadre && piquagePlace.x > cadre.L / 2 ? "end" : "start"} fontSize={10} fontWeight={600} fill={colors.ink} stroke={colors.card} strokeWidth={2.6} paintOrder="stroke" strokeLinejoin="round">
                 {sortePiquage}
               </text>
             </g>
@@ -801,6 +813,7 @@ export default function DessinerLePlan({
       </div>
 
       <ul data-atlas="etat-dessin" aria-live="polite" className="mx-[22px] mt-[14px] list-none p-0">
+        {manquantes.map((p) => <Ligne key={p} rouge>{p}</Ligne>)}
         {cadre && etat.manque.map((q) => <Ligne key={q} rouge>{LIBELLES[q].titre}</Ligne>)}
         {debordent.map((z) => (
           <Ligne key={z.id} rouge>
@@ -808,6 +821,7 @@ export default function DessinerLePlan({
           </Ligne>
         ))}
         {debordent.length === 0 && relu && !relu.ok && <Ligne rouge>{relu.raison}</Ligne>}
+        {depart?.reserves.map((r) => <Ligne key={r}>{r}</Ligne>)}
         {dessin && phrasesDuDessin(dessin).map((p) => <Ligne key={p}>{p}</Ligne>)}
         {amenee && (amenee.ok ? (
           <Ligne bon>{`${sortePiquage === "robinet" ? "Du robinet" : "Du compteur"} à la nourrice : ${ecrit(amenee.metres)} m.`}</Ligne>
@@ -998,8 +1012,11 @@ function FeuilleDuDessin({
   const montre = (n: number | null | undefined) => (n ? ecrit(n) : "");
 
   const [nom, setNom] = useState(z?.nom ?? ar?.nom ?? da?.nom ?? "");
-  const [L, setL] = useState(montre(z?.L ?? da?.L));
-  const [l, setl] = useState(montre(z?.l ?? da?.l));
+  // Une cote que le croquis ne porte pas s'ouvre VIDE : la taille dessinée
+  // n'est pas une cote, et la laisser là la ferait valider sans la lire.
+  const manque = z?.aVerifier?.manque ?? [];
+  const [L, setL] = useState(manque.includes("L") ? "" : montre(z?.L ?? da?.L));
+  const [l, setl] = useState(manque.includes("l") ? "" : montre(z?.l ?? da?.l));
   const [d, setD] = useState(montre(ar?.d));
   const [e, setE] = useState(montre(da?.e));
   const [dist, setDist] = useState(da ? ecrit(longueurDeLaRangee(da)) : "");
@@ -1041,7 +1058,8 @@ function FeuilleDuDessin({
       if (refuse([["L", nL], ["l", nl]])) return;
       const trop = [nL! > cadre.L + 1e-9 ? "L" : null, nl! > cadre.l + 1e-9 ? "l" : null].filter((x): x is string => x !== null);
       if (trop.length) { setInvalides(trop); setErreur(neTientPas(cadre)); return; }
-      onZone({ ...z, nom: leNom, L: nL!, l: nl!, lignes: goutte ? reglage.lignes : undefined, ecartLignes: goutte ? reglage.ecartLignes : undefined }, neuf);
+      // Validée, la zone est vérifiée : ses cotes sont les siennes.
+      onZone({ ...z, aVerifier: undefined, nom: leNom, L: nL!, l: nl!, lignes: goutte ? reglage.lignes : undefined, ecartLignes: goutte ? reglage.ecartLignes : undefined }, neuf);
     } else if (ar) {
       const nd = nombre(d);
       if (refuse([["d", nd]])) return;
@@ -1149,6 +1167,11 @@ function FeuilleDuDessin({
             </span>
           </div>
         )}
+        {z?.aVerifier?.deduites.map((d) => (
+          <p key={d.champ} className="mt-[6px] text-[13px]" style={{ color: colors.orTexte }}>
+            {`${d.champ === "L" ? "Longueur" : "Largeur"} pas écrite sur le croquis : ${d.depuis}.`}
+          </p>
+        ))}
         {ar && (
           <>
             {libelle("feuille-d", "Diamètre")}
