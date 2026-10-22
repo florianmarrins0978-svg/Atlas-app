@@ -573,15 +573,29 @@ async function main() {
     await page.fill("#feuille-l", "6");
     await page.click('[data-atlas="feuille-valider"]');
 
-    // Sans nourrice ni piquage, aucun plan : le bouton n'existe pas encore.
-    assert.equal(await page.locator('[data-atlas="faire-le-plan"]').count(), 0, "un plan se propose sans nourrice ni piquage");
-    const etat = await page.locator('[data-atlas="etat-dessin"]').innerText();
-    assert.match(etat, /il manque la nourrice/, `le manque de la nourrice ne se dit pas : « ${etat} »`);
+    // Sans nourrice ni piquage, aucun plan : le bouton est là, et il ne part
+    // pas ; « Avant le plan » coche ce qui est posé (planche du 22 octobre 2026).
+    assert.ok(await page.locator('[data-atlas="faire-le-plan"]').isDisabled(), "un plan se propose sans nourrice ni piquage");
+    const etapes = page.locator('[data-atlas="etapes-du-plan"]');
+    assert.equal(await etapes.locator('[data-etape="nourrice"]').getAttribute("data-fait"), "false", "la nourrice manquante est cochée");
+    assert.equal(await etapes.locator('[data-etape="zone"]').getAttribute("data-fait"), "true", "la pelouse posée n'est pas cochée");
 
     const toile = page.locator('[data-atlas="toile"]');
+    // Choisir un outil fait défiler jusqu'au dessin : on attend qu'il soit
+    // posé, sans quoi le toucher tomberait là où la toile était.
+    const toileArretee = async () => {
+      let b = await toile.boundingBox();
+      for (let i = 0; i < 40; i++) {
+        await page.waitForTimeout(50);
+        const apres = await toile.boundingBox();
+        if (b && apres && Math.abs(apres.y - b.y) < 0.5) return apres;
+        b = apres;
+      }
+      return b;
+    };
     const poser = async (bouton: string, fx: number, fy: number) => {
       await page.getByRole("button", { name: bouton, exact: true }).click();
-      const b = await toile.boundingBox();
+      const b = await toileArretee();
       assert.ok(b && b.width > 0, "la toile du dessin ne mesure rien");
       await page.mouse.click(b.x + b.width * fx, b.y + b.height * fy);
     };
@@ -610,6 +624,7 @@ async function main() {
       await page.mouse.click(p.x, p.y);
     };
     await page.getByRole("button", { name: "Dalles", exact: true }).click();
+    await toileArretee();
     await clicEnMetres(1.3, 3.5);
     await clicEnMetres(8.8, 3.6);
     await page.fill("#feuille-L", "0,5");

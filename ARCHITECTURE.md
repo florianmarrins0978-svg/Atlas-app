@@ -35605,3 +35605,59 @@ de ses devis, factures, fiches et avoirs.
 **Ce que le lot ne fait pas** : il ne garantit pas la survie des PDF dix ans.
 Celle-ci dépend du stockage de production et de sa seconde copie
 (`docs/lot-sauvegarde-cloture.md`), pas du code (`docs/telecharger-un-client.md`).
+
+## §484 : La photo du croquis donne un plan à vérifier, jamais un plan
+
+*Sa planche du 21 octobre 2026* (`appli/arrosage-plan-lu-a-verifier.html`),
+« code ça » le 22. Jusque-là, la photo lue partait droit au calcul : une cote
+mal lue, une haie sans largeur, une nourrice placée de travers donnaient un
+plan faux qu'il ne pouvait corriger qu'en reprenant la photo.
+
+**Ce qui est décidé.** `lireLeCroquis` rend désormais `{ etat: "a-verifier" }`
+pour une photo : `planLuDuCroquis` (`src/lib/arrosage/plan-lu.ts`, pure) pose
+la lecture à l'échelle par `poserSurLeTerrain`, la règle qui posait déjà le
+plan de la photo, et « Dessiner le plan » s'ouvre avec elle. « Faire le plan »
+repart par le chemin du dessin. **Un seul chemin mène au calcul**, celui du
+dessin : la photo n'y entre plus sans être passée sous ses yeux.
+
+**Ce qui ne s'invente pas.** Une cote absente du croquis se dessine à la
+taille où elle est tracée sur la photo, marquée manquante (« ? », trait
+rouge), et la feuille s'ouvre vide sur elle : la taille dessinée n'est pas une
+cote. Tant qu'il ne l'a pas tapée, le plan ne se fait pas. Une cote déduite
+(`deduites`, relevée par la lecture avec sa source) se montre en or, et la
+feuille dit d'où elle vient. Une zone sans place se pose en bas ; sans échelle,
+la nourrice et le piquage ne se posent pas au jugé.
+
+**Ce que cela coûte.** Une haie lue sur une photo n'a jamais de largeur : il
+la tape à chaque fois. C'est voulu : ses lignes de goutte-à-goutte en
+dépendent (§ des écarts, `.claude/rules/arrosage.md`).
+
+## §485 : « Dessiner le plan » revu, et la feuille des lignes
+
+*Ses planches du 22 octobre 2026* (`appli/arrosage-dessiner-le-plan-revu.html`,
+`appli/arrosage-feuille-des-lignes.html`), passées au skill impeccable, puis
+« code ça ».
+
+**Ce qui change à l'écran.** Les dix boutons en vrac deviennent trois familles
+(« À arroser », « À contourner », « L'eau ») en cases de 72 px ; au compteur
+ou au robinet, une seule case, celle que « Le piquage se fait… » a choisie.
+L'échelle en centièmes disparaît : un zoom − et + sous le dessin agit sur la
+même loupe que les deux doigts, et le pas du doigt suit le zoom (`pasDuDoigt`,
+10 cm, puis 5 cm à deux fois plus près, 1 cm à quatre fois), là où il suivait
+l'échelle depuis son « oui » du 19 octobre. Les lignes rouges « il manque »
+deviennent « Avant le plan » : quatre étapes cochées, chacune avec le bouton
+qui la pose, et « Faire le plan » reste visible, grisé tant qu'il manque
+quelque chose. Choisir un outil qui se pose au doigt fait défiler jusqu'au
+dessin. L'arbuste rejoint l'arbre, chiffonné comme lui, en blanc ; ni l'un ni
+l'autre ne change le plan.
+
+**La feuille des lignes** porte le sens et deux écarts, et la règle vit dans
+le calcul (`lignesPourEcart(largeur, entre, bord)`, `sensDesLignes`) : la
+feuille et le calcul comptent avec la même fonction. Un massif part au calcul
+avec son sens et ses deux écarts ; coupé en morceaux, chacun refait ses lignes
+sur sa largeur. Sans bord donné, le bord vaut l'écart : 2 m à 50 cm font
+toujours 4 lignes, et les plans d'avant ne bougent pas.
+
+**Ce qui ne s'est pas fait, et pourquoi.** Les noms sous les arbres, retirés de
+la planche parce qu'ils chevauchaient le bord du terrain, restent dans
+l'application : ils portent le diamètre, que la planche ne montrait pas.

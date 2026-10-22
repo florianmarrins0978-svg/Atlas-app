@@ -10,13 +10,22 @@
 ## ⏳ ARROSAGE : DEUX PLANCHES À REGARDER (21 octobre 2026)
 
 - `appli/arrosage-plan-lu-a-verifier.html` : la photo ouvre le plan lu dans
-  « Dessiner le plan », on corrige, puis « Faire le plan ». Bâtie sur la vraie
-  page figée (sa consigne : « base-toi sur les pages exactes de l'application »).
+  « Dessiner le plan », on corrige, puis « Faire le plan ». **Codé le
+  22 octobre** sur `claude/lignes-goutte` (`ARCHITECTURE.md` §484), sans
+  batterie : **pas encore sur `main`**. La lecture réelle d'une photo n'est
+  pas vérifiable ICI (pas de clé de vision) : à jouer sur son espace.
+- **Codé le 22 octobre sur `claude/lignes-goutte`, sans batterie (sa
+  consigne), pas encore sur `main`** : `appli/arrosage-feuille-des-lignes.html`
+  (le sens, l'écart du bord, l'écart entre deux) et
+  `appli/arrosage-dessiner-le-plan-revu.html` (les familles d'outils, le zoom,
+  « Avant le plan », l'arbuste), `ARCHITECTURE.md` §485. Le lot touche le
+  calcul partagé : niveau 3, la batterie entière avant `main`.
 - `appli/arrosage-ecart-des-lignes.html` : ~~il tranche A ou B~~ **tranché le
   22 octobre** : une ligne tous les 50 cm pour une haie, 60 cm pour un massif,
   la première à un écart du bord, l'écart affiché qui suit les boutons
-  (`.claude/rules/arrosage.md`). **Reste à coder** dans `calcul.js` (les deux
-  copies) et la feuille de « Dessiner le plan ».
+  (`.claude/rules/arrosage.md`). **Codé le 22 octobre** sur la branche
+  `claude/lignes-goutte`, sans batterie (sa consigne) : **pas encore sur
+  `main`**, il faut la batterie de niveau 3 (calcul partagé) avant.
 - **Rouge préexistant, pas de ce lot** : `test-reste-equipes-e2e` tombe sur
   `main` comme sur le lot du 21 octobre (« 1 date(s) retenues au lieu de
   deux »). Comparé par `verifier-rouge-prealable.ts`. À diagnostiquer : il

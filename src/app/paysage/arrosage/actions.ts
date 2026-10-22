@@ -11,6 +11,7 @@ import type { Dessin } from "@/lib/arrosage/plan-dessine";
 import { calculerEtDessiner, type LePlan } from "@/lib/arrosage/le-plan";
 import { etatDuCroquis, LIBELLES, zoneMesuree, type EtatDuCroquis } from "@/lib/arrosage/croquis-complet";
 import { croquisDuDessin, lireLeDessin } from "@/lib/arrosage/dessin-du-plan";
+import { planLuDuCroquis, type PlanLu } from "@/lib/arrosage/plan-lu";
 import { appliquer, cotesDuPlanTiennentDebout, type ParametresPlan } from "@/lib/arrosage/consignes";
 import { discuterLePlan, etatDuPlanEnClair, type Tour } from "@/server/ai/services/discuter-plan";
 import { preparerPhotoEntrante } from "@/server/photo-entrante";
@@ -34,6 +35,12 @@ import { verifierLimite, LIMITES } from "@/server/rate-limit";
 
 export type EtatPlan =
   | { etat: "vide" }
+  /**
+   * **LA PHOTO DONNE UN PLAN À VÉRIFIER, PAS UN PLAN** — sa planche du
+   * 21 octobre 2026. Ce que l'IA a lu s'ouvre dans « Dessiner le plan » ; il
+   * corrige, puis « Faire le plan » repart par le chemin du dessin.
+   */
+  | { etat: "a-verifier"; plan: PlanLu }
   | {
       etat: "refus";
       raison: string;
@@ -138,12 +145,13 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
 
   const lu = await lireCroquis(prete.photo.octets.toString("base64"), prete.photo.mimeType);
   if (!lu.ok) return { etat: "refus", raison: lu.raison };
-  return planDuCroquis(lu.croquis, formulaire);
+  return { etat: "a-verifier", plan: planLuDuCroquis(lu.croquis) };
 }
 
 /**
- * Du croquis lu au plan — **le même chemin pour la photo et pour le dessin**.
- * Deux chemins finiraient par poser la même pelouse à deux endroits
+ * Du croquis lu au plan. **Le dessin seul y arrive** depuis le 22 octobre
+ * 2026 : la photo passe d'abord par le plan lu à vérifier, qui repart en
+ * dessin. Un seul chemin, donc une seule façon de poser une pelouse
  * (`CLAUDE.md` §3).
  */
 function planDuCroquis(lu: CroquisLu, formulaire: FormData): EtatPlan {
@@ -265,7 +273,10 @@ function planDuCroquis(lu: CroquisLu, formulaire: FormData): EtatPlan {
       l: z.l ?? undefined,
       ml: z.ml ?? undefined,
       // Le nombre de lignes d'une haie, quand le dessin le donne.
-      lignesHaie: z.lignesHaie,
+      lignes: z.lignes,
+      ecartLignes: z.ecartLignes,
+      ecartBord: z.ecartBord,
+      sensLignes: z.sensLignes,
       // **Où la zone se trouve, EN MÈTRES** — sans quoi le plan se compte mais
       // ne se dessine pas. Ce n'est pas la fraction lue : c'est elle passée à
       // l'échelle du croquis. `undefined` traverse jusqu'au dessin, qui refuse

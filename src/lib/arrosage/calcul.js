@@ -360,10 +360,41 @@ function corpsCourant(){
    revient à lui faire faire le calcul qu'on lui promettait. */
 var TYPES = {
   gazon:   { nom:'Pelouse',  forme:'surface',  famille:'gazon',    materiels:['turbine','tuyere'] },
-  massif:  { nom:'Massif',   forme:'nappe',    famille:'arbustes', ecartLignes:0.80 },
+  massif:  { nom:'Massif',   forme:'nappe',    famille:'arbustes' },
   haie:    { nom:'Haie',     forme:'lineaire', famille:'arbustes' },
   potager: { nom:'Potager',  forme:'nappe',    famille:'potager',  ecartLignes:0.70 }
 };
+
+/* LES LIGNES DE GOUTTE-À-GOUTTE D'UNE HAIE ET D'UN MASSIF — ses règles des 21
+   et 22 octobre 2026 : *« mets l'espacement aussi tous les 50 cm d'office en
+   partant de 0,50 et pas de 0, donc pour 2 m ça fait 4 lignes »*, *« massif,
+   tu peux faire tous les 60 cm d'office »*, et l'écart se tape ou le nombre se
+   choisit. La première ligne est à un écart du bord, la dernière peut toucher
+   l'autre (sa réponse « oui »). D'où une ligne par écart entier, arrondi
+   au-dessous, et jamais moins d'une.
+
+   **Le potager garde sa règle**, bords compris à 70 cm : il n'en a pas parlé.
+   L'écran de dessin lit ces deux nombres ICI, et nulle part ailleurs : deux
+   façons de compter les lignes finiraient par commander deux longueurs de
+   tube. */
+var ECARTS_GOUTTE = { haie: 0.50, massif: 0.60 };
+/* Sa demande du 22 octobre 2026, sur la planche : « il faut aussi qu'on puisse
+   renseigner l'écart entre deux lignes ». Deux écarts donc : du BORD à la
+   première ligne, et ENTRE deux lignes ; sans bord donné, le bord vaut l'écart
+   (2 m à 50 cm font toujours 4 lignes). La dernière peut toucher l'autre bord. */
+function lignesPourEcart(largeur, ecart, bord){
+  var b = bord > 0 ? bord : ecart;
+  // Le millionième ajouté n'est pas une marge : 2 ÷ 0,5 doit rester 4.
+  return largeur > 0 && ecart > 0 && largeur >= b - 1e-9 ? Math.max(1, Math.floor((largeur - b) / ecart + 1e-9) + 1) : 1;
+}
+/* Le côté sur lequel les lignes se comptent. Sa demande du 22 octobre 2026 :
+   « demander s'il veut le poser dans la longueur ou dans la largeur, parce que
+   c'est pas la même chose ». Posées dans la longueur, elles se comptent sur la
+   largeur ; sans choix, elles courent sur le grand côté. */
+function sensDesLignes(L, l, sens){
+  var s = sens === 'longueur' || sens === 'largeur' ? sens : (L >= l ? 'longueur' : 'largeur');
+  return s === 'longueur' ? { sens:s, long:L, travers:l } : { sens:s, long:l, travers:L };
+}
 
 var MARGE = 0.85;         // on ne charge jamais un secteur jusqu'au robinet
 
@@ -467,7 +498,7 @@ var DEFAUTS = {
     // à lui : « un long couloir qui fait dix mètres sur deux mètres de large ».
     { id:6, nom:'Couloir latéral', type:'gazon',   L:10, l:2,  materiel:'auto' },
     { id:3, nom:'Massifs',         type:'massif',  L:15, l:2.4, materiel:'gaine' },
-    { id:4, nom:'Haie',            type:'haie',    ml:60, lignesHaie:1, materiel:'gaine' },
+    { id:4, nom:'Haie',            type:'haie',    ml:60, lignes:1, materiel:'gaine' },
     { id:5, nom:'Potager',         type:'potager', L:8,  l:3,   materiel:'gaine' }
   ]
 };
@@ -1141,6 +1172,22 @@ function poser(z, refImposee, tolerant){
     // première et la dernière longent les bords : d'où le « + 1 ».
     var L2 = Number(z.L)||0, l2 = Number(z.l)||0;
     if (L2 <= 0 || l2 <= 0) return Object.assign(r, { nombre:0, debit:0 });
+    if (z.type === 'massif'){
+      // Les lignes courent dans le sens qu'il a choisi, sur le grand côté
+      // sans choix : un massif de 3 × 6 et un de 6 × 3 prennent alors le même
+      // tube. Ce qu'il a donné passe avant l'office : le nombre de lignes, ou
+      // les deux écarts (ce sont eux qui voyagent quand le massif est coupé en
+      // morceaux, chacun ayant sa largeur).
+      var cote = sensDesLignes(L2, l2, z.sensLignes), travers = cote.travers, long = cote.long;
+      var choisies = Math.floor(Number(z.lignes)) || 0, ecartDonne = Number(z.ecartLignes) || 0, bordDonne = Number(z.ecartBord) || 0;
+      var nm = choisies >= 1 ? choisies
+        : lignesPourEcart(travers, ecartDonne > 0 ? ecartDonne : ECARTS_GOUTTE.massif, bordDonne > 0 ? bordDonne : ECARTS_GOUTTE.massif);
+      nm = Math.min(LIGNES_MASSIF_MAX, nm);
+      r.lignes = nm; r.ecartLignes = travers / nm;
+      r.nombre = Math.round(nm * long);
+      r.debit = r.nombre * m.debitMetre;
+      return r;
+    }
     var e = TYPES[z.type].ecartLignes;
     // **Le millionième ajouté n'est pas une marge** : 2,4 ÷ 0,80 vaut
     // 2,9999999999999996 en virgule flottante, et l'arrondi par le bas
@@ -1150,14 +1197,15 @@ function poser(z, refImposee, tolerant){
     r.nombre = Math.round(lignes * L2);
     r.debit = r.nombre * m.debitMetre;
   } else {
-    // Une haie : une ou deux lignes, c'est LUI qui décide — sa consigne du
-    // 17 août, et l'écran pose la question au lieu de trancher.
+    // Une haie : combien de lignes, c'est LUI qui décide — sa consigne du
+    // 17 août ; l'écran de dessin les propose à 50 cm (`lignesPourEcart`).
+    // Une haie lue sur une photo n'a pas de largeur : une ligne.
     var ml = Number(z.ml)||0;
     // **Autant de lignes qu'il en faut** — sa correction du 18 octobre 2026 :
     // « si le carré il est plus grand, peut-être qu'il en faudra 4, 5 ». Le
     // nombre vient de lui (la largeur le propose, il décide) ; plafonné à 20,
     // au-delà ce n'est plus une haie. Sans nombre lisible, une ligne.
-    var n2 = Math.max(1, Math.min(20, Math.floor(Number(z.lignesHaie)) || 1));
+    var n2 = Math.max(1, Math.min(20, Math.floor(Number(z.lignes)) || 1));
     r.lignes = n2;
     r.nombre = Math.round(ml * n2);
     r.debit = r.nombre * m.debitMetre;
@@ -1680,6 +1728,8 @@ function couleurReseau(i){ return COULEURS_RESEAU[i % COULEURS_RESEAU.length]; }
    jonction manquerait (`couronnesDuTube`). */
 var METRES_PAR_SORTIE = 100;
 var RACCORD_LIGNE_SEULE = 'MID6341';
+// Un massif de 100 m de large à 40 cm : 250 lignes. Au-delà, ce n'est plus un massif qu'on saisit.
+var LIGNES_MASSIF_MAX = 250;
 var SORTIES_GOUTTE = ['boucle', 'deux-bouts', 'ligne'];
 
 function sortiesGoutte(d){
@@ -2179,7 +2229,7 @@ function dessinDesZones(d){
   });
 }
 
-export { quantiteEcrite };
+export { quantiteEcrite, ECARTS_GOUTTE, lignesPourEcart, sensDesLignes };
 
 /** Les marques et les corps proposés — pour les menus de l'écran. */
 export function optionsCatalogue() {

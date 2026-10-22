@@ -326,9 +326,9 @@ function dessinerZones(){
           : '') + '</div>'
       : '<div class="ligne"><div><label>Longueur de haie (m)</label>' +
         '<input type="number" inputmode="decimal" min="0" step="1" data-champ="ml" value="' + (z.ml||'') + '"></div>' +
-        '<div><label>Lignes de goutte-à-goutte</label><select data-champ="lignesHaie">' +
-          '<option value="1"' + (Number(z.lignesHaie)!==2?' selected':'') + '>Une ligne</option>' +
-          '<option value="2"' + (Number(z.lignesHaie)===2?' selected':'') + '>Deux lignes</option>' +
+        '<div><label>Lignes de goutte-à-goutte</label><select data-champ="lignes">' +
+          '<option value="1"' + (Number(z.lignes)!==2?' selected':'') + '>Une ligne</option>' +
+          '<option value="2"' + (Number(z.lignes)===2?' selected':'') + '>Deux lignes</option>' +
         '</select></div></div>';
 
     var resume = p.debit > 0
@@ -852,7 +852,7 @@ document.querySelectorAll('[data-ajout]').forEach(function(b){
     var z = { id: prochainId++, nom: TYPES[type].nom, type: type, materiel: type === 'gazon' ? 'auto' : 'gaine' };
     if (TYPES[type].forme === 'surface') { z.L = 10; z.l = 8; }
     else if (TYPES[type].forme === 'nappe') { z.L = 10; z.l = 2; }
-    else { z.ml = 20; z.lignesHaie = 1; }
+    else { z.ml = 20; z.lignes = 1; }
     etat.zones.push(z);
     recalculer(true);
   });
