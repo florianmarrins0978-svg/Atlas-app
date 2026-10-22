@@ -90,8 +90,17 @@
   .client>span:first-child{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .client small{display:block;font:400 13px/1.3 var(--sans);color:var(--gris);margin-top:3px}
   .tri{display:flex;gap:4px;justify-content:flex-end;margin-top:10px;font-size:14px}
-  .tri span{padding:6px 10px}
-  .tri .pris{box-shadow:inset 0 -1.5px 0 var(--or)}
+  .filtre{display:inline-flex;align-items:center;gap:7px;min-height:44px;border-radius:999px;padding:0 13px;font-size:12.5px;
+    background:var(--plage);color:var(--doux);box-shadow:inset 0 0 0 1px var(--trait)}
+  .filtre.actif{background:var(--encre);color:var(--fond);box-shadow:none}
+  .feuille{background:var(--plage);border-radius:22px 22px 0 0;padding:22px 20px 18px;box-shadow:0 -6px 24px rgba(20,18,14,.12);margin-top:40px}
+  .cle{margin-top:8px;min-height:54px;border-radius:999px;display:flex;align-items:center;justify-content:center;
+    font:400 19px/1 var(--serif);box-shadow:inset 0 0 0 1px var(--trait);background:var(--plage)}
+  .cle.pris{background:var(--encre);color:var(--fond);box-shadow:none}
+  .sens{display:flex;gap:8px;margin-top:18px}
+  .sens span{flex:1;min-height:44px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:13.5px;
+    color:var(--doux);box-shadow:inset 0 0 0 1px var(--trait)}
+  .sens .pris{color:var(--orTexte);font-weight:600;box-shadow:inset 0 0 0 1.5px var(--or)}
   .client .chev{color:var(--gris);font-size:20px;font-family:var(--sans)}
   .barre{display:flex;justify-content:space-between;padding:14px 20px;font:600 8.5px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gris);box-shadow:inset 0 1px 0 var(--trait)}
   .barre b{color:var(--encre)}
@@ -166,8 +175,8 @@
   <p class="dit">Votre choix du 22 octobre. Une mairie, un département, une communauté de communes : « Public ». Pour Mr, Mme et Entreprise, rien ne change sur la facture.</p>
   <div class="rangee" id="q1"></div>
 
-  <h2>Le tri par date, sur les trois listes</h2>
-  <p class="dit">Il n’existe pas aujourd’hui : vos clients se rangent de A à Z, et la recherche trouve un nom. Proposé ici, sous la recherche, pour vos clients, vos entreprises et vos services publics.</p>
+  <h2>Le Filtre de Terminés, sur les trois listes</h2>
+  <p class="dit">Pour retrouver un devis de 2017 dans dix ans de dossiers. Le même bouton, le même volet, pour vos clients, vos entreprises et vos services publics. Un client revu depuis se range à sa dernière pièce : son devis de 2017 reste sur sa fiche.</p>
   <div class="rangee" id="q1b"></div>
 
   <h2>2. Où se tapent les deux numéros</h2>
@@ -183,7 +192,7 @@
   <div class="rangee" id="q4"></div>
 
   <div class="note"><span class="t">Trois choses à me dire</span>
-    <b>1.</b> Le tri par date : oui ou non.<br>
+    <b>1.</b> Le Filtre sur les trois listes : ça vous va ?<br>
     <b>2.</b> A ou B pour les deux numéros.<br>
     <b>3.</b> A ou B pour le bouton.<br>
     Le PDF et le retrait de « Sous-traitance, sans TVA » pour une mairie ne sont pas à choisir : ils suivent.
@@ -282,16 +291,19 @@
     const porte = (t, neuf) => `<div class="${neuf ? "neuf" : ""}" style="${neuf ? "margin-top:6px" : "margin-top:16px"}"><span class="porte">${t}<b>›</b></span></div>`;
     const ligne = (n, q) => `<div class="client"><span>${n}${q ? `<small>${q}</small>` : ""}</span><span class="chev">›</span></div>`;
     const lettre = (l) => `<div class="lettre">${l}</div>`;
-    const tris = tri ? `<div class="tri neuf"><span class="${tri === "az" ? "pris" : ""}">A à Z</span><span class="${tri === "date" ? "pris" : ""}">Par date</span></div>` : "";
+    // Le bouton « Filtre » de Terminés (BoutonFiltre, ListeTermines.tsx), son
+    // signe à trois traits, rempli d'encre quand l'ordre n'est plus A à Z.
+    const signe = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 4h12M4.5 8h7M7 12h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+    const tris = tri ? `<div class="tri neuf"><span class="filtre${tri === "date" ? " actif" : ""}">${signe}Filtre</span></div>` : "";
     let haut, liste, cherche = "Chercher un client";
     if (vue === "publics") {
       haut = `${tete("Services publics")}<div class="compte">4 clients</div>`;
       cherche = "Chercher un service public";
       if (tri === "date") {
-        const parDate = [...PUBLICS].sort((a, b) => b[2] - a[2]);
-        liste = lettre("Octobre") + parDate.slice(0, 2).map(c => ligne(c[0], c[1])).join("")
-          + lettre("Septembre") + ligne(parDate[2][0], parDate[2][1])
-          + lettre("Juin") + ligne(parDate[3][0], parDate[3][1]);
+        // « Date du devis, du plus ancien » : rangée par année, 2017 en tête.
+        liste = lettre("2017") + ligne("SIVOM de la Loire", "Devis 12 juin 2017")
+          + lettre("2019") + ligne("Département de Loire-Atlantique", "Devis 4 mars 2019")
+          + lettre("2026") + ligne("Communauté de communes Sud Estuaire", "Devis 14 oct.") + ligne("Mairie de Rezé", "Devis 20 oct.");
       } else {
         liste = lettre("C") + ligne(PUBLICS[0][0], PUBLICS[0][1]) + lettre("D") + ligne(PUBLICS[1][0], PUBLICS[1][1])
           + lettre("M") + ligne(PUBLICS[2][0], PUBLICS[2][1]) + lettre("S") + ligne(PUBLICS[3][0], PUBLICS[3][1]);
@@ -313,9 +325,22 @@
       ecran: clients("publics") },
   ].map(p => `<div class="col"><p class="nom">${p.nom}</p><p class="idee">${p.idee}</p>${p.ecran}</div>`).join("");
 
+  // Le volet « Trier par » de Terminés (VoletTri), avec ses libellés à lui.
+  function volet() {
+    const cle = (t, pris) => `<div class="cle${pris ? " pris" : ""}">${t}</div>`;
+    return `<div class="tel"><div class="corps" style="opacity:.35;pointer-events:none">${tete("Services publics")}<div class="compte">4 clients</div></div>
+      <div class="feuille">
+        <p class="caps" style="text-align:center;margin:0 0 6px">Trier par</p>
+        ${cle("Nom du client")}${cle("Date du devis", 1)}${cle("Date de facturation")}
+        <div class="sens"><span class="pris">Du plus ancien</span><span>Du plus récent</span></div>
+        <p style="text-align:center;color:var(--gris);font-size:14px;margin:14px 0 0">Fermer</p>
+      </div></div>`;
+  }
+
   document.getElementById("q1b").innerHTML = [
-    { nom:"A à Z", idee:"Comme aujourd’hui.", ecran: clients("publics", "az") },
-    { nom:"Par date", idee:"La pièce la plus récente en haut, rangée par mois.", ecran: clients("publics", "date") },
+    { nom:"Le bouton Filtre", idee:"Le même que dans Terminés, sous la recherche, à droite.", ecran: clients("publics", "az") },
+    { nom:"Trier par", idee:"Les mots de Terminés. Tout s’applique au toucher, sans bouton Valider.", ecran: volet() },
+    { nom:"Date du devis, du plus ancien", idee:"Rangée par année : le devis de 2017 est en haut. Le bouton se remplit, pour qu’on sache que l’ordre a changé.", ecran: clients("publics", "date") },
   ].map(p => `<div class="col"><p class="nom">${p.nom}</p><p class="idee">${p.idee}</p>${p.ecran}</div>`).join("");
 
   document.getElementById("q2").innerHTML = [
