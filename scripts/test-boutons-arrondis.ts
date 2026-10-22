@@ -342,6 +342,24 @@ const HORS_CHARTE: Array<{
     seulement: /rounded-\[2px\]/,
     pourquoi: "l'envoi en réglage : un mot souligné d'or, ni fond ni contour",
   },
+  {
+    // **UNE CARTE QUI SUIT L'IMPORT, PAS UN BOUTON** (22 octobre 2026, lot
+    // « Importer devis et factures »). Trois lignes et une jauge de lecture,
+    // au rayon de 16 px de sa planche (`.bandeau`, `appli/importer-ancienne-appli.html`) :
+    // en capsule, la jauge et le texte se rogneraient aux deux bouts.
+    motif: /^src[/\\]app[/\\]clients[/\\]BandeImport\.tsx$/,
+    seulement: /data-atlas="bande-import"/,
+    pourquoi: "carte de suivi de l'import : trois lignes et une jauge, une capsule les rognerait",
+  },
+  {
+    // **LES TUILES D'OUTILS DE « DESSINER LE PLAN »** (22 octobre 2026, lot des
+    // lignes de goutte-à-goutte, planche `appli/arrosage-dessiner-le-plan-revu.html`) :
+    // une icône sur un mot, 72 px de haut, rangées en grille comme les cases du
+    // calendrier. En capsule, la grille deviendrait un chapelet de galets.
+    motif: /^src[/\\]app[/\\]paysage[/\\]arrosage[/\\]DessinerLePlan\.tsx$/,
+    seulement: /data-outil=/,
+    pourquoi: "tuile d'outil du dessin : une icône sur un mot, rangée en grille",
+  },
 ];
 
 /**

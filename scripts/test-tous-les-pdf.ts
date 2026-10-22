@@ -212,13 +212,22 @@ cas("les deux portes existent, et sont bien celles qu'on croit", () => {
  * fiche de sécurité, écrite la veille. Une liste qui abaisse le contrôle se
  * trompe toujours dans le même sens : le jour où elle oublie un fichier, rien
  * ne le dit (`.claude/rules/testing.md`).
+ *
+ * **SERVIR, c'est construire une réponse** (22 octobre 2026). Le dépôt des
+ * pièces importées (`api/pieces-importees`) nomme aussi « application/pdf » :
+ * il REÇOIT un PDF et le range sous ce type, il n'en renvoie aucun. Le nom du
+ * type seul le prenait pour une route qui sert, et exigeait des en-têtes de
+ * remise sur une réponse JSON.
  */
 function routesQuiServentUnPdf(racine: string): string[] {
   const trouvees: string[] = [];
   for (const entree of readdirSync(racine)) {
     const complet = path.join(racine, entree);
     if (statSync(complet).isDirectory()) trouvees.push(...routesQuiServentUnPdf(complet));
-    else if (entree === "route.ts" && readFileSync(complet, "utf8").includes("application/pdf")) trouvees.push(complet);
+    else if (entree === "route.ts") {
+      const source = readFileSync(complet, "utf8");
+      if (source.includes("application/pdf") && /new (?:Next)?Response\(/.test(source)) trouvees.push(complet);
+    }
   }
   return trouvees;
 }

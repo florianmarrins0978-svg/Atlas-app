@@ -144,6 +144,11 @@ const GARDES = [
   // L'éditeur d'Atlas, qui n'est pas un rôle d'entreprise : plus étroit que
   // « patron », puisqu'aucun artisan ne l'est.
   "exigerEditeur(",
+  // L'import des devis et factures (22 octobre 2026) : `patronQuiImporte`
+  // (src/server/import/garde.ts) rend `null` à qui n'est pas patron, par
+  // `estProprietaire`. Une seule garde pour les actions ET les routes de
+  // l'import, plutôt que la même règle recopiée dans chacune.
+  "patronQuiImporte(",
 ];
 
 /**

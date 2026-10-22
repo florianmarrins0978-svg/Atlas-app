@@ -59,6 +59,15 @@ const EXEMPTEES: Record<string, string> = {
     "LE devis sans un seul montant : c'est le document du salarié, ouvert à tous les rôles.",
   "agenda/google/retour":
     "Retour d'autorisation Google, reconnu par un témoin posé à l'aller — il n'y a pas encore de chemin à garder.",
+  "banque/retour":
+    "Retour d'autorisation de la banque, gardé comme celui de Google : témoin posé à l'aller, " +
+    "puis `exigerProprietaire` — plus strict que la garde de chemin (22 octobre 2026).",
+  "pieces-importees":
+    "Le dépôt d'un document importé : `patronQuiImporte` (src/server/import/garde.ts) ne laisse " +
+    "passer que le patron — plus strict que la garde de chemin (22 octobre 2026).",
+  "pieces-importees/connues": "Import, réservé au patron par `patronQuiImporte` — plus strict que la garde de chemin.",
+  "pieces-importees/envois": "Import, réservé au patron par `patronQuiImporte` — plus strict que la garde de chemin.",
+  "pieces-importees/etat": "Import, réservé au patron par `patronQuiImporte` — plus strict que la garde de chemin.",
   paiement:
     "Le crochet du prestataire de paiement : il frappe depuis l'extérieur, donc sans " +
     "session ni rôle — c'est la nature d'un crochet. Sa garde est la SIGNATURE de " +

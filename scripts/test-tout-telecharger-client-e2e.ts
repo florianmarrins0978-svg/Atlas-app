@@ -97,8 +97,10 @@ async function main() {
     assert.match(controle, /No errors detected/, `unzip refuse l'archive :\n${controle}`);
     execFileSync("unzip", ["-q", archive, "-d", path.join(dossier, "sortie")]);
 
+    // **Le séparateur du système**, ramené à « / » : sous Windows, readdirSync
+    // rend « Devis\x.pdf » pour une archive qui porte « Devis/x.pdf ».
     const chemins = readdirSync(path.join(dossier, "sortie"), { recursive: true })
-      .map(String)
+      .map((c) => String(c).split(path.sep).join("/"))
       .filter((c) => c.endsWith(".pdf"))
       .sort();
     for (const onglet of ["Devis/", "Factures/", "Fiches/"]) {

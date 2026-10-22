@@ -199,6 +199,15 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
     // Un devis reçu naît avec son fichier (NOT NULL) : son absence est une perte.
     absenceNormale: false,
   },
+  // Le PDF d'un devis ou d'une facture importés d'un autre logiciel
+  // (migration 0136, 22 octobre 2026).
+  {
+    table: "pieces_importees",
+    colonne: "fichier_cle",
+    quoi: "un devis ou une facture importés d'un autre logiciel",
+    // Une pièce importée naît avec son fichier (NOT NULL) : son absence est une perte.
+    absenceNormale: false,
+  },
   {
     table: "images_phyto",
     colonne: "storage_key",
