@@ -8,6 +8,13 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-21
 
+- **« Le gros bois » compté en tonnes, ce sont des grumes** (sa correction du
+  22 octobre : *« une grume, c'est un gros bois »*). « Évacuation du gros
+  bois, 15 tonnes » prenait le forfait « Évacuation » au lieu de son prix à la
+  tonne de grumes. Sans tonnage, elle reste l'évacuation de l'abattage, sur
+  sa ligne (sa règle du 7 août, que `test-lignes-vendables.ts` tient) : c'est
+  le tonnage qui les sépare (`natureDuLibelle`, et la consigne du modèle).
+
 - **Des jours et des hommes dictés : la main d'œuvre fait le prix, et il dit
   comment la répartir** (sa règle du 21 octobre, planche
   `appli/main-d-oeuvre-repartie.html`, `ARCHITECTURE.md` §233). Son devis 067

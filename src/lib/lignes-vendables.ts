@@ -144,7 +144,7 @@ function normaliser(entree: string | PrestationAGrouper): PrestationAGrouper | n
   if (!libelle) return null;
   // La colonne d'abord, le libellé ensuite : une prestation d'avant le lot B
   // n'a pas de colonne, et doit continuer à se regrouper comme avant.
-  const cle = brut.nature?.trim() || natureDuLibelle(libelle);
+  const cle = brut.nature?.trim() || natureDuLibelle(libelle, brut.unite ?? null);
   return { ...brut, libelle, nature: cle };
 }
 

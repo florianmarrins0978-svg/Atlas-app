@@ -55,6 +55,8 @@ Règles absolues :
     ${NATURES.map((n) => n.cle).join(", ")}
   Si le travail décrit n'en fait manifestement partie d'aucune, "nature" vaut null. N'invente
   JAMAIS un nom de nature : un travail sans nature reste un travail à part entière.
+  « Le gros bois » COMPTÉ EN TONNES, ce sont des grumes : « on évacue le gros bois, 15 tonnes »
+  a la nature "grumes". Sans tonnage, « évacuation du gros bois » reste "evacuation".
 - "espece" n'est renseignée que si l'espèce est PRONONCÉE, « un érable », « de la haie de
   laurier ». Recopie le mot au singulier, sans article : "érable", "laurier". Jamais déduite
   d'un contexte : sinon null.

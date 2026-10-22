@@ -281,9 +281,24 @@ export function nature(cle: string | null | undefined): Nature | null {
  * Rend `null` plutôt qu'une nature de repli : un travail qu'on ne sait pas
  * nommer reste un travail à part, jamais un abattage par défaut.
  */
-export function natureDuLibelle(libelle: string): string | null {
+export function natureDuLibelle(
+  libelle: string,
+  /**
+   * L'unité de sa quantité, quand elle est connue.
+   *
+   * **« Le gros bois » compté en tonnes, ce sont des grumes** : sa correction
+   * du 22 octobre 2026, *« 15 tonnes d'évacuation du gros bois, c'est les
+   * grumes ; une grume, c'est un gros bois »*. Sans tonnage, « évacuation du
+   * gros bois » reste l'évacuation de l'abattage, sur sa ligne : c'est sa
+   * règle du 7 août (« l'abattage, le broyage et l'évacuation, c'est sur une
+   * ligne »). Le tonnage est ce qui les sépare, et c'est lui qui fait le prix
+   * à la tonne.
+   */
+  unite: string | null = null
+): string | null {
   const texte = libelle.trim();
   if (!texte) return null;
+  if (/\bgros\s+bois\b/i.test(texte) && /^(tonnes?|t)$/i.test(unite?.trim() ?? "")) return "grumes";
   return NATURES.find((n) => n.motif.test(texte))?.cle ?? null;
 }
 

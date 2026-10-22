@@ -5,7 +5,7 @@ import * as chantiersRepo from "../src/server/repositories/chantiers";
 import * as tarifsRepo from "../src/server/repositories/tarifs";
 import { poserPrixGrille } from "../src/server/repositories/grille-prix";
 import { lireGrilles } from "../src/server/repositories/grilles-reglables";
-import { celluleFendage } from "../src/lib/grille-prix";
+import { CELLULE_GRUMES, celluleFendage } from "../src/lib/grille-prix";
 import { chiffrerLesAjouts } from "../src/server/chiffrage/ajouts-dictes";
 import { direRetouche, resoudreRetouches, type Retouche } from "../src/lib/retouches-devis";
 import { fermerLimiteur } from "../src/server/rate-limit";
@@ -90,6 +90,18 @@ async function main() {
     );
     assert.ok(r.retouche.type === "ajouter");
     assert.equal(Number(r.retouche.prixUnitaire), 900);
+  });
+
+  await test("« le gros bois, 15 tonnes », ce sont des GRUMES : son prix à la tonne de grumes × 15", async () => {
+    // Sa correction du 22 octobre 2026 : *« 15 tonnes d'évacuation du gros
+    // bois, c'est les grumes ; une grume, c'est un gros bois. Il aurait dû
+    // prendre le forfait des grumes. »*
+    const { A, c } = await sonEntreprise("grumes");
+    await poserPrixGrille(A, "grumes", CELLULE_GRUMES, "80");
+    const [r] = await chiffrerLesAjouts(A, c.id, resoudreRetouches([], [ajout("Évacuation du gros bois", "15", "tonne")]));
+    assert.ok(r.retouche.type === "ajouter");
+    assert.equal(Number(r.retouche.prixUnitaire) * Number(r.retouche.quantite), 1200, JSON.stringify(r.retouche));
+    assert.match(direRetouche(r).detail, /grille/, "l'écran dit que le prix vient de sa grille");
   });
 
   await test("un prix qu'il a dicté n'est jamais remplacé par un tarif", async () => {
