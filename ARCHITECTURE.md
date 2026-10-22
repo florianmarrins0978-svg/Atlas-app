@@ -35555,7 +35555,7 @@ forfait ne font pas 15 forfaits.
 
 **Rien en base pendant l'essai.** La session ouverte chez Enable Banking vit dans un témoin `httpOnly` (`atlas_banque_liaison`) : sans la clé, qui ne quitte pas l'espace, elle ne permet aucun appel. Une table des liaisons, sous RLS, viendra avec la carte de l'accueil, qui doit lire les virements sans que le patron ouvre l'écran.
 
-**Le retour de la banque est gardé comme celui de Google** (`api/agenda/google/retour`) : patron, témoin anti-rejeu effacé dans tous les cas, puis seulement l'échange du code. Sans l'anti-rejeu, un tiers ferait lire à Atlas les virements de SON compte en les présentant comme ceux du patron. L'adresse de retour vient d'`ATLAS_URL_PUBLIQUE`, jamais de l'en-tête `Host` (`paiement/retour.ts`).
+**Le retour de la banque est gardé comme celui de Google** (`api/agenda/google/retour`) : patron, témoin anti-rejeu effacé dans tous les cas, puis seulement l'échange du code. Sans l'anti-rejeu, un tiers ferait lire à Atlas les virements de SON compte en les présentant comme ceux du patron. L'adresse de retour vient d'`ATLAS_URL_PUBLIQUE`, jamais de l'en-tête `Host` (`src/server/paiement/retour.ts`).
 
 **La proposition se tait plutôt que de deviner.** Montant au centime près sur le reste dû ; plusieurs factures au même montant, le nom tranche ou il choisit ; un montant plus petit n'est proposé comme acompte que si le nom désigne une seule facture ; une facture émise après le virement n'est jamais proposée ; les mots de moins de trois lettres ne font pas concorder un nom.
 
