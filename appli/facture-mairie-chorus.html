@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Facturer une mairie</title>
+<style>
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a; --etabli-or:#8b6835;
+    --serif:ui-serif,Georgia,"Times New Roman",serif;
+    --sans:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    /* La charte de l'écran : remplie par le sélecteur, depuis src/lib/chartes.ts */
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578; --plein:#7d9a6d;
+    --orTexte:#8b6835; --or:#B98B47;
+    --doux:color-mix(in srgb,var(--encre) 60%,var(--gris));
+    --tuile:color-mix(in srgb,var(--fond) 93%,var(--encre));
+    --trait:color-mix(in srgb,var(--encre) 12%,transparent);
+    --surplein:var(--plage);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--etabli)}
+  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased}
+  .page{max-width:1290px;margin:0 auto;padding:30px 16px 90px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 30px/1.15 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+  .chapeau{max-width:660px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0}
+  h2{font:600 22px/1.25 var(--serif);margin:46px 0 4px}
+  .dit{color:var(--etabli-gris);font-size:13.5px;line-height:1.6;margin:0 0 18px;max-width:660px}
+  .chartes{display:flex;flex-wrap:wrap;gap:6px;margin:20px 0 0}
+  .chartes button{appearance:none;border:0;cursor:pointer;font:600 12.5px/1 var(--sans);padding:10px 14px;border-radius:999px;
+    background:var(--etabli-carte);color:var(--etabli-doux);box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .chartes button[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--etabli-or);color:var(--etabli-encre)}
+  .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+  .col{flex:0 1 390px;max-width:100%}
+  .nom{font:600 15px/1.3 var(--sans);margin:0 0 3px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .etiq{font:700 9.5px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;padding:4px 7px;border-radius:999px;background:var(--etabli-or);color:var(--etabli-carte)}
+  .etiq.non{background:#8f3a2e}
+  .idee{color:var(--etabli-gris);font-size:13px;line-height:1.55;margin:0 0 12px;min-height:60px}
+  .deja{margin:22px 0 0;padding:14px 17px;border-radius:4px;background:var(--etabli-carte);box-shadow:inset 0 0 0 1px var(--etabli-trait);
+    max-width:660px;font-size:13.5px;line-height:1.65;color:var(--etabli-doux)}
+  .deja .t,.note .t{display:block;font:700 10px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--etabli-or);margin:0 0 7px}
+  .note{margin:40px 0 0;padding:16px 18px;border-radius:4px;background:var(--etabli-carte);box-shadow:inset 0 0 0 2px var(--etabli-or);
+    max-width:660px;font-size:14px;line-height:1.75;color:var(--etabli-encre)}
+
+  /* L'écran, à sa largeur : 390 px. Mots, places et formes de l'appli. */
+  .tel{width:390px;max-width:100%;border-radius:22px;overflow:hidden;background:var(--fond);color:var(--encre);
+       box-shadow:0 2px 16px rgba(20,18,14,.13),inset 0 0 0 1px var(--etabli-trait);display:flex;flex-direction:column}
+  .corps{flex:1;padding:22px 24px 26px}
+  .rond{width:40px;height:40px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:var(--tuile);color:var(--encre);font-size:19px}
+  .titre{font:400 34px/1.05 var(--serif);margin:16px 0 0;letter-spacing:-.018em}
+  .sous{font:500 9.5px/1 var(--sans);letter-spacing:.28em;text-transform:uppercase;color:var(--or);margin:12px 0 0}
+  .champs{display:flex;flex-direction:column;gap:10px;margin:18px 0 0}
+  .caps{font:600 11px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--gris)}
+  .lab{display:flex;flex-direction:column;gap:6px}
+  .case{min-height:44px;border-radius:12px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);padding:11px 14px;font-size:16px;color:var(--encre)}
+  .case.vide{color:var(--gris)}
+  .civ{display:flex;gap:8px;flex-wrap:nowrap}
+  .civ span{border-radius:999px;padding:7px 28px;font-size:16px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);white-space:nowrap}
+  .civ.serre span{padding:7px 13px}
+  .civ span.pris{background:var(--tuile);box-shadow:inset 0 0 0 1px var(--or)}
+  .inter{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:15px}
+  .inter small{display:block;font-size:12.5px;color:var(--gris)}
+  .bascule{position:relative;width:46px;height:28px;border-radius:999px;background:var(--trait);flex:none}
+  .bascule::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:999px;background:var(--plage)}
+  .bascule.on{background:var(--plein)}
+  .bascule.on::after{left:21px}
+  .carte{border-radius:4px;background:var(--plage);padding:18px 20px;margin:14px 0 0}
+  .ligne{display:flex;justify-content:space-between;gap:12px;font-size:15px;margin:3px 0}
+  .ligne span:first-child{color:var(--gris)}
+  .total{text-align:center;border-top:1px solid var(--trait);margin:12px 0 0;padding:12px 0 0}
+  .total b{display:block;font:600 30px/1 var(--serif);color:var(--or);margin:6px 0 0}
+  .plein{display:block;width:max-content;margin:16px auto 0;border-radius:999px;padding:13px 34px;background:var(--plein);color:var(--surplein);font:400 17px/1 var(--serif)}
+  .avert{border-left:1px solid var(--or);padding:3px 0 3px 13px;margin:14px 0 0;font-size:13px;line-height:1.4}
+  .avert small{display:block;font-size:12px;color:var(--gris);margin:3px 0 0}
+  .envoi{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--trait);margin:16px 0 0;padding:10px 0 0}
+  .envoi .canaux{display:flex;gap:4px;font-size:14px}
+  .envoi .canaux span{padding:6px 10px}
+  .envoi .canaux .pris{box-shadow:inset 0 -1.5px 0 var(--or)}
+  .petit{text-align:center;font-size:12.5px;color:var(--gris);margin:6px 0 0}
+  .rappel{font-size:12.5px;color:var(--gris);margin:-2px 0 0}
+  .lien{font-size:13px;color:var(--encre);text-decoration:underline;text-underline-offset:4px}
+  .etiquette{display:inline-block;margin:10px 0 0;font-size:13px;color:var(--orTexte)}
+  .barre{display:flex;justify-content:space-between;padding:14px 20px;font:600 8.5px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gris);box-shadow:inset 0 1px 0 var(--trait)}
+  .barre b{color:var(--encre)}
+
+  /* Ce qui est proposé : c'est ça qu'on regarde. */
+  .neuf{position:relative;border-radius:10px;box-shadow:0 0 0 2px var(--or);padding:8px;margin:0 -8px}
+  .neuf::after{content:"NOUVEAU";position:absolute;top:-9px;right:8px;font:700 8.5px/1 var(--sans);letter-spacing:.12em;
+    background:var(--or);color:var(--plage);padding:3px 6px;border-radius:999px}
+  .neuf.inline{display:inline-block;margin:0;padding:0 2px}
+  .neuf.inline::after{display:none}
+
+  /* Le PDF : du papier, toujours blanc, quelle que soit la charte. */
+  .papier{width:390px;max-width:100%;background:#fff;color:#1c1c1a;border-radius:3px;padding:26px 26px 30px;
+    box-shadow:0 2px 16px rgba(20,18,14,.13);font:13px/1.5 Georgia,serif}
+  .papier .ent{display:flex;justify-content:space-between;gap:12px;font-size:11px;color:#55534d}
+  .papier .ent b{font-size:15px;color:#1c1c1a}
+  .papier .dest{margin:26px 0 0 auto;width:62%}
+  .papier .dest b{font-size:14px}
+  .papier .ajout{background:rgba(185,139,71,.16);border-radius:3px;padding:0 3px;margin:0 -3px}
+  .papier .num{margin:26px 0 0;font:600 16px/1.2 Georgia,serif}
+  .papier .trait{height:1px;background:#ddd;margin:14px 0}
+  .papier .gris{color:#8a8578}
+  .barre-tete{display:flex;justify-content:space-between;align-items:center}
+  @media (max-width:440px){ .idee{min-height:0} h1{font-size:26px} .corps{padding:20px 16px 24px} .civ span{padding:7px 22px} }
+</style>
+</head>
+<body>
+<!--
+  FACTURER UNE MAIRIE, POUR CHORUS PRO — planche du 22 octobre 2026.
+
+  Elle repart de appli/tva-entreprise-et-mairie.html (28 septembre) : il y a vu
+  le champ « N° d'engagement » et la note Chorus Pro, et n'a retenu le 2 octobre
+  que le bouton « Sous-traitance, sans TVA ». La planche le dit en tête, pour ne
+  pas lui présenter comme neuf ce qu'il a déjà vu.
+
+  Vérifié dans le code (origin/main 116a404e) avant de dessiner :
+  - la fiche porte Mr, Mme, Entreprise (clients.civilite, 0119), le SIRET et le
+    n° de TVA d'une entreprise, et la facture fige client_siret ;
+  - estUneEntreprise() (src/lib/civilite.ts) devine « mairie », « commune »,
+    « ville » dans le nom : la carte « Sous-traitance, sans TVA » s'affiche donc
+    AUJOURD'HUI sur la facture sans devis d'une « Mairie de… » ;
+  - « Envoyer la facture » ARRÊTE la facture, et il est éteint sans téléphone ni
+    e-mail : une mairie sans coordonnée ne peut pas voir sa facture arrêtée ;
+  - le devis ne porte aucun numéro de commande, et ne peut pas en porter : la
+    mairie donne son bon de commande APRÈS avoir accepté le devis. Le
+    préremplissage « depuis le devis » du brief n'est donc pas dessiné.
+
+  Les écrans recopient les places et les formes de SesCoordonnees.tsx et
+  FactureClient.tsx ; seules les parties entourées d'or sont neuves.
+-->
+<div class="page">
+  <p class="surtitre">À choisir</p>
+  <h1>Facturer une mairie</h1>
+  <p class="chapeau">Une mairie ne paie qu’une facture déposée sur Chorus Pro. Le PDF d’Atlas se dépose tel quel sur chorus-pro.gouv.fr, à condition de porter trois numéros.</p>
+
+  <div class="deja"><span class="t">Déjà vu le 28 septembre</span>
+    Le champ « N° d’engagement » et la note Chorus Pro étaient sur la planche TVA. Vous n’aviez gardé que « Sous-traitance, sans TVA ». Ce qui est nouveau ici : le code service, la façon de reconnaître une mairie, et ce que devient l’envoi.
+  </div>
+
+  <div class="chartes" id="chartes" role="group" aria-label="Charte"></div>
+
+  <h2>1. Comment Atlas sait que c’est une mairie</h2>
+  <p class="dit">Sur l’écran « Ses coordonnées ». Une mairie, un département, une communauté de communes : même règle.</p>
+  <div class="rangee" id="q1"></div>
+
+  <h2>2. Où se tapent les deux numéros</h2>
+  <p class="dit">Le code service ne change pas d’une commande à l’autre. Le numéro d’engagement change à chaque bon de commande. Aucun des deux n’est obligatoire : certaines mairies n’en donnent pas.</p>
+  <div class="rangee" id="q2"></div>
+
+  <h2>3. Le bouton en bas de la facture</h2>
+  <p class="dit">Un SMS ou un e-mail ne vaut pas facture pour une mairie. Et ce bouton arrête aussi la facture : il ne doit pas rester éteint faute de téléphone.</p>
+  <div class="rangee" id="q3"></div>
+
+  <h2>4. Le PDF</h2>
+  <p class="dit">Les numéros s’impriment sous le nom de la mairie, là où le SIRET s’imprime déjà. Une ligne vide ne s’imprime pas.</p>
+  <div class="rangee" id="q4"></div>
+
+  <div class="note"><span class="t">Trois choses à me dire</span>
+    <b>1.</b> A, B ou C pour reconnaître une mairie.<br>
+    <b>2.</b> A ou B pour les deux numéros.<br>
+    <b>3.</b> A ou B pour le bouton.<br>
+    Le PDF et le retrait de « Sous-traitance, sans TVA » pour une mairie ne sont pas à choisir : ils suivent.
+  </div>
+</div>
+<script>
+  // Les huit chartes, recopiées de src/lib/chartes.ts. « plein » d'Origine est
+  // --atlas-plein (vert sauge), celui des boutons pleins.
+  const CHARTES = [
+    ["Origine",{fond:"#f5f3ee",plage:"#faf9f5",encre:"#1c1c1a",gris:"#8a8578",plein:"#7d9a6d"}],
+    ["Brume",{fond:"#f4f7fb",plage:"#ffffff",encre:"#111823",gris:"#78838f",plein:"#22456d"}],
+    ["Pierre",{fond:"#e8e8e3",plage:"#f4f4f0",encre:"#1b1d19",gris:"#83867c",plein:"#1b1d19"}],
+    ["Beurre",{fond:"#efe7cf",plage:"#f8f3e4",encre:"#26221a",gris:"#8b8368",plein:"#26221a"}],
+    ["Moka",{fond:"#e6ded5",plage:"#f2ece5",encre:"#2b241e",gris:"#8d8175",plein:"#2b241e"}],
+    ["Prune",{fond:"#efe6ea",plage:"#f9f2f5",encre:"#23131c",gris:"#8c7481",plein:"#3d1730"}],
+    ["Sylve",{fond:"#16241c",plage:"#1e3026",encre:"#e6e6da",gris:"#8ba189",plein:"#e6e6da",sombre:1}],
+    ["Nuit",{fond:"#101210",plage:"#1a1d19",encre:"#e9e8de",gris:"#84887b",plein:"#e9e8de",sombre:1}],
+  ];
+  const zone = document.getElementById("chartes");
+  function appliquer(i){
+    const j = CHARTES[i][1], r = document.documentElement.style;
+    for (const k of ["fond","plage","encre","gris","plein"]) r.setProperty("--"+k, j[k]);
+    r.setProperty("--orTexte", j.sombre ? "#b98b47" : "#8b6835");
+    [...zone.children].forEach((b,n)=>b.setAttribute("aria-pressed", String(n===i)));
+  }
+  zone.innerHTML = CHARTES.map(([n])=>`<button type="button">${n}</button>`).join("");
+  [...zone.children].forEach((b,i)=>b.addEventListener("click",()=>appliquer(i)));
+  appliquer(0);
+
+  const barre = '<div class="barre"><b>Chantiers</b><span>Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></div>';
+  const tete = (titre, sous) => `<div class="rond">‹</div><div class="titre">${titre}</div>${sous ? `<div class="sous">${sous}</div>` : ""}`;
+  const champ = (lib, val, neuf, vide) =>
+    `<label class="lab${neuf ? " neuf" : ""}"><span class="caps">${lib}</span><span class="case${vide ? " vide" : ""}">${val}</span></label>`;
+
+  function coordonnees({ civ, serre, neufCiv, nom, siret = true, tva = true, interPublic, codeService, devine }) {
+    const pastilles = civ.map(([t, pris]) => `<span class="${pris ? "pris" : ""}">${t}</span>`).join("");
+    return `<div class="tel"><div class="corps">${tete("Ses coordonnées")}
+      <div class="champs">
+        <div class="${neufCiv ? "neuf" : ""}"><div class="civ${serre ? " serre" : ""}">${pastilles}</div></div>
+        ${champ("Nom du client", nom)}
+        ${devine ? `<p class="etiquette neuf">Reconnue comme mairie. <span class="lien">Ce n’en est pas une</span></p>` : ""}
+        ${siret ? champ("SIRET", "214 401 432 00017") : ""}
+        ${interPublic ? `<div class="inter neuf"><span>Client public<small>Mairie, département, État</small></span><span class="bascule on"></span></div>` : ""}
+        ${tva ? champ("N° TVA intracommunautaire", "FR suivi de 11 chiffres", false, true) : ""}
+        ${codeService ? champ("Code service", "SERV-TECH", true) : ""}
+        ${champ("Téléphone", "02 40 84 43 00")}
+      </div>
+      <span class="plein">Enregistrer</span>
+    </div>${barre}</div>`;
+  }
+
+  function facture({ engagement, codeService, envoi, vide }) {
+    const eng = engagement ? `<div class="neuf" style="margin-top:12px">${champ("N° d’engagement", vide ? "Sur son bon de commande" : "BC2026/0318", false, vide)}
+        ${vide ? `<p class="rappel" style="margin-top:6px">Vide : Chorus Pro peut la refuser.</p>` : ""}</div>` : "";
+    const cs = codeService ? `<div class="neuf" style="margin-top:16px">${champ("Code service", "SERV-TECH")}</div>` : "";
+    let bas;
+    if (envoi === "chorus") {
+      bas = `<div class="neuf" style="margin-top:18px;padding-bottom:12px">
+          <span class="plein" style="margin-top:4px">Télécharger pour Chorus Pro</span>
+          <p class="petit">Puis déposez-la sur chorus-pro.gouv.fr</p>
+        </div>
+        <div class="avert">En la téléchargeant, vous l’arrêtez : elle ne se modifie plus, et entrera au relevé de TVA le jour où la mairie vous paiera.<small>Une correction passerait par un avoir.</small></div>`;
+    } else {
+      bas = `<div class="envoi"><span class="caps">Envoi</span><span class="canaux"><span class="pris">SMS</span><span>E-mail</span></span></div>
+        <p class="petit">Au 02 40 84 43 00</p>
+        <span class="plein">Envoyer la facture</span>
+        <p class="petit neuf" style="margin:14px 0 0">Ne vaut pas facture : déposez aussi le PDF sur chorus-pro.gouv.fr</p>
+        <div class="avert">En l’envoyant, vous l’arrêtez : elle ne se modifie plus, et entrera au relevé de TVA le jour où la mairie vous paiera.<small>Une correction passerait par un avoir.</small></div>`;
+    }
+    return `<div class="tel"><div class="corps">${tete("Facture", "Mairie de Rezé")}
+      <div class="carte"><span class="caps">Facture</span>
+        <p style="margin:6px 0 0;font-size:15px">F2026-000041, Mairie de Rezé</p>
+        <p style="margin:6px 0 0;font-size:13px;color:var(--gris)">À régler avant le 21 novembre 2026</p>
+        ${eng}${cs}
+      </div>
+      <div class="carte">
+        <div class="ligne"><span>Total HT</span><span>2 400,00 €</span></div>
+        <div class="ligne"><span>TVA 20 %</span><span>480,00 €</span></div>
+        <div class="total"><span class="caps" style="color:var(--encre)">Total TTC</span><b>2 880,00 €</b></div>
+      </div>
+      ${bas}
+    </div>${barre}</div>`;
+  }
+
+  const CIV3 = (pris) => [["Mr"],["Mme"],["Entreprise", pris]];
+
+  document.getElementById("q1").innerHTML = [
+    { nom:"A : une quatrième pastille", idee:"« Public » à côté de Mr, Mme, Entreprise. Un appui, et c’est dit. Les quatre pastilles se resserrent un peu pour tenir sur le téléphone.",
+      ecran: coordonnees({ civ:[["Mr"],["Mme"],["Entreprise"],["Public",1]], serre:1, neufCiv:1, nom:"Mairie de Rezé", tva:false }) },
+    { nom:"B : un interrupteur sous le SIRET", idee:"On coche Entreprise, puis « Client public ». Un geste de plus, et les pastilles ne bougent pas.",
+      ecran: coordonnees({ civ:CIV3(1), nom:"Mairie de Rezé", interPublic:1, tva:false }) },
+    { nom:'C : deviné sur le nom <span class="etiq non">pas recommandé</span>', idee:"Atlas lit « Mairie de… ». Mais il ne reconnaîtrait pas « Communauté de communes Sud Estuaire », « SIVOM de la Loire », ni « Département de Loire-Atlantique ».",
+      ecran: coordonnees({ civ:CIV3(1), nom:"Mairie de Rezé", devine:1, tva:false }) },
+  ].map(p => `<div class="col"><p class="nom">${p.nom}</p><p class="idee">${p.idee}</p>${p.ecran}</div>`).join("");
+
+  document.getElementById("q2").innerHTML = [
+    { nom:"A : code service sur la fiche, engagement sur la facture", idee:"Le code service se tape une fois pour la mairie. Le numéro d’engagement, à chaque facture.",
+      ecrans: [coordonnees({ civ:[["Mr"],["Mme"],["Entreprise"],["Public",1]], serre:1, nom:"Mairie de Rezé", tva:false, codeService:1 }),
+               facture({ engagement:1, envoi:"chorus" })] },
+    { nom:"B : tout sur la facture", idee:"Rien sur la fiche. Les deux numéros se tapent à chaque facture, au même endroit.",
+      ecrans: [facture({ engagement:1, codeService:1, envoi:"chorus" })] },
+    { nom:"Si le numéro d’engagement reste vide", idee:"La facture part quand même. Une ligne grise le rappelle, sans rien bloquer.",
+      ecrans: [facture({ engagement:1, vide:1, envoi:"chorus" })] },
+  ].map(p => `<div class="col"><p class="nom">${p.nom}</p><p class="idee">${p.idee}</p>${p.ecrans.join('<div style="height:18px"></div>')}</div>`).join("");
+
+  document.getElementById("q3").innerHTML = [
+    { nom:'A : « Télécharger pour Chorus Pro » <span class="etiq">recommandé</span>', idee:"Le choix SMS ou e-mail disparaît pour une mairie. Le bouton arrête la facture et donne le PDF à déposer.",
+      ecran: facture({ engagement:1, envoi:"chorus" }) },
+    { nom:"B : l’envoi reste, une ligne en plus", idee:"Le SMS part comme pour un particulier, et une ligne rappelle Chorus Pro. Sans téléphone ni e-mail, le bouton reste éteint.",
+      ecran: facture({ engagement:1, envoi:"sms" }) },
+  ].map(p => `<div class="col"><p class="nom">${p.nom}</p><p class="idee">${p.idee}</p>${p.ecran}</div>`).join("");
+
+  document.getElementById("q4").innerHTML = `
+    <div class="col"><p class="nom">Le haut de la facture</p><p class="idee">Le même PDF que pour un particulier. Seules les deux lignes surlignées sont nouvelles.</p>
+      <div class="papier">
+        <div class="ent"><div><b>Jardins Ribault</b><br>14 rue du Moulin, 44400 Rezé</div><div style="text-align:right">SIRET 812 345 678 00021</div></div>
+        <div class="dest"><b>Mairie de Rezé</b><br>Place Jean-Baptiste Daviais<br>44400 Rezé<br>
+          SIRET 214 401 432 00017<br>
+          <span class="ajout">N° d’engagement BC2026/0318</span><br>
+          <span class="ajout">Code service SERV-TECH</span></div>
+        <div class="num">Facture F2026-000041</div>
+        <div class="gris">Émise le 22 octobre 2026</div>
+        <div class="trait"></div>
+        <div class="gris">Les lignes et les totaux, inchangés.</div>
+      </div></div>
+    <div class="col"><p class="nom">Ce qui disparaît pour une mairie</p><p class="idee">« Sous-traitance, sans TVA » ne s’affiche plus sur son devis ni sur sa facture. Aujourd’hui, il apparaît pour une « Mairie de… » : on ne sous-traite pas pour une mairie, la TVA est due.</p></div>`;
+</script>
+</body>
+</html>
