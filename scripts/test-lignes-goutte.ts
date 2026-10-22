@@ -43,6 +43,12 @@ const [haie] = tube([{ id: 1, type: "haie", nom: "GAG", x: 0, y: 0, ml: 12, lign
 dire(haie === 48, `haie de 12 m à 4 lignes : 48 m de tube (${haie})`);
 const [haieSeule] = tube([{ id: 1, type: "haie", nom: "GAG", x: 0, y: 0, ml: 12, sortieGoutte: "boucle" }]);
 dire(haieSeule === 12, `haie sans nombre (lue sur une photo, sans largeur) : une ligne (${haieSeule})`);
+// Sa planche du 22 octobre 2026 : le sens, et l'écart du bord à part de l'écart entre deux.
+const [mLong] = tube([{ id: 1, type: "massif", nom: "Massif", x: 0, y: 0, L: 6, l: 2.5, sortieGoutte: "boucle" }]);
+const [mLarge] = tube([{ id: 1, type: "massif", nom: "Massif", x: 0, y: 0, L: 6, l: 2.5, sensLignes: "largeur", sortieGoutte: "boucle" }]);
+dire(mLong === 24 && mLarge === 25, `massif 6 × 2,50 : 4 lignes de 6 m (24 m), ou dans la largeur 10 lignes de 2,50 m (25 m) (${mLong}, ${mLarge})`);
+const [mBord] = tube([{ id: 1, type: "massif", nom: "Massif", x: 0, y: 0, L: 6, l: 3, ecartBord: 0.2, ecartLignes: 0.4, sortieGoutte: "boucle" }]);
+dire(mBord === 48, `massif 6 × 3, 20 cm du bord et 40 cm entre deux : 8 lignes, 48 m de tube (${mBord})`);
 // Le potager n'a pas changé de règle : il n'en a pas parlé.
 const [potager] = tube([{ id: 1, type: "potager", nom: "Potager", x: 0, y: 0, L: 5, l: 2.1, sortieGoutte: "boucle" }]);
 dire(potager === 20, `potager 5 × 2,10 à 70 cm, bords compris, inchangé : 4 lignes, 20 m (${potager})`);

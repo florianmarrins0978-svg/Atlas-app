@@ -343,9 +343,22 @@ var TYPES = {
    façons de compter les lignes finiraient par commander deux longueurs de
    tube. */
 var ECARTS_GOUTTE = { haie: 0.50, massif: 0.60 };
-function lignesPourEcart(largeur, ecart){
+/* Sa demande du 22 octobre 2026, sur la planche : « il faut aussi qu'on puisse
+   renseigner l'écart entre deux lignes ». Deux écarts donc : du BORD à la
+   première ligne, et ENTRE deux lignes ; sans bord donné, le bord vaut l'écart
+   (2 m à 50 cm font toujours 4 lignes). La dernière peut toucher l'autre bord. */
+function lignesPourEcart(largeur, ecart, bord){
+  var b = bord > 0 ? bord : ecart;
   // Le millionième ajouté n'est pas une marge : 2 ÷ 0,5 doit rester 4.
-  return largeur > 0 && ecart > 0 ? Math.max(1, Math.floor(largeur / ecart + 1e-9)) : 1;
+  return largeur > 0 && ecart > 0 && largeur >= b - 1e-9 ? Math.max(1, Math.floor((largeur - b) / ecart + 1e-9) + 1) : 1;
+}
+/* Le côté sur lequel les lignes se comptent. Sa demande du 22 octobre 2026 :
+   « demander s'il veut le poser dans la longueur ou dans la largeur, parce que
+   c'est pas la même chose ». Posées dans la longueur, elles se comptent sur la
+   largeur ; sans choix, elles courent sur le grand côté. */
+function sensDesLignes(L, l, sens){
+  var s = sens === 'longueur' || sens === 'largeur' ? sens : (L >= l ? 'longueur' : 'largeur');
+  return s === 'longueur' ? { sens:s, long:L, travers:l } : { sens:s, long:l, travers:L };
 }
 
 var MARGE = 0.85;         // on ne charge jamais un secteur jusqu'au robinet
@@ -1125,15 +1138,15 @@ function poser(z, refImposee, tolerant){
     var L2 = Number(z.L)||0, l2 = Number(z.l)||0;
     if (L2 <= 0 || l2 <= 0) return Object.assign(r, { nombre:0, debit:0 });
     if (z.type === 'massif'){
-      // Les lignes courent sur la longueur et se comptent sur le PETIT côté,
-      // quel que soit l'ordre des cotes : un massif de 3 × 6 et un de 6 × 3
-      // prennent le même tube. Ce qu'il a donné passe avant l'office : le
-      // nombre de lignes, ou l'écart (c'est l'écart qui voyage quand le massif
-      // est coupé en morceaux, chacun ayant sa largeur).
-      var travers = Math.min(L2, l2), long = Math.max(L2, l2);
-      var choisies = Math.floor(Number(z.lignes)) || 0, ecartDonne = Number(z.ecartLignes) || 0;
+      // Les lignes courent dans le sens qu'il a choisi, sur le grand côté
+      // sans choix : un massif de 3 × 6 et un de 6 × 3 prennent alors le même
+      // tube. Ce qu'il a donné passe avant l'office : le nombre de lignes, ou
+      // les deux écarts (ce sont eux qui voyagent quand le massif est coupé en
+      // morceaux, chacun ayant sa largeur).
+      var cote = sensDesLignes(L2, l2, z.sensLignes), travers = cote.travers, long = cote.long;
+      var choisies = Math.floor(Number(z.lignes)) || 0, ecartDonne = Number(z.ecartLignes) || 0, bordDonne = Number(z.ecartBord) || 0;
       var nm = choisies >= 1 ? choisies
-        : lignesPourEcart(travers, ecartDonne > 0 ? ecartDonne : ECARTS_GOUTTE.massif);
+        : lignesPourEcart(travers, ecartDonne > 0 ? ecartDonne : ECARTS_GOUTTE.massif, bordDonne > 0 ? bordDonne : ECARTS_GOUTTE.massif);
       nm = Math.min(LIGNES_MASSIF_MAX, nm);
       r.lignes = nm; r.ecartLignes = travers / nm;
       r.nombre = Math.round(nm * long);

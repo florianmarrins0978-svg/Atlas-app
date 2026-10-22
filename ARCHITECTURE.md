@@ -35534,3 +35534,33 @@ la nourrice et le piquage ne se posent pas au jugé.
 **Ce que cela coûte.** Une haie lue sur une photo n'a jamais de largeur : il
 la tape à chaque fois. C'est voulu : ses lignes de goutte-à-goutte en
 dépendent (§ des écarts, `.claude/rules/arrosage.md`).
+
+## §481 : « Dessiner le plan » revu, et la feuille des lignes
+
+*Ses planches du 22 octobre 2026* (`appli/arrosage-dessiner-le-plan-revu.html`,
+`appli/arrosage-feuille-des-lignes.html`), passées au skill impeccable, puis
+« code ça ».
+
+**Ce qui change à l'écran.** Les dix boutons en vrac deviennent trois familles
+(« À arroser », « À contourner », « L'eau ») en cases de 72 px ; au compteur
+ou au robinet, une seule case, celle que « Le piquage se fait… » a choisie.
+L'échelle en centièmes disparaît : un zoom − et + sous le dessin agit sur la
+même loupe que les deux doigts, et le pas du doigt suit le zoom (`pasDuDoigt`,
+10 cm, puis 5 cm à deux fois plus près, 1 cm à quatre fois), là où il suivait
+l'échelle depuis son « oui » du 19 octobre. Les lignes rouges « il manque »
+deviennent « Avant le plan » : quatre étapes cochées, chacune avec le bouton
+qui la pose, et « Faire le plan » reste visible, grisé tant qu'il manque
+quelque chose. Choisir un outil qui se pose au doigt fait défiler jusqu'au
+dessin. L'arbuste rejoint l'arbre, chiffonné comme lui, en blanc ; ni l'un ni
+l'autre ne change le plan.
+
+**La feuille des lignes** porte le sens et deux écarts, et la règle vit dans
+le calcul (`lignesPourEcart(largeur, entre, bord)`, `sensDesLignes`) : la
+feuille et le calcul comptent avec la même fonction. Un massif part au calcul
+avec son sens et ses deux écarts ; coupé en morceaux, chacun refait ses lignes
+sur sa largeur. Sans bord donné, le bord vaut l'écart : 2 m à 50 cm font
+toujours 4 lignes, et les plans d'avant ne bougent pas.
+
+**Ce qui ne s'est pas fait, et pourquoi.** Les noms sous les arbres, retirés de
+la planche parce qu'ils chevauchaient le bord du terrain, restent dans
+l'application : ils portent le diamètre, que la planche ne montrait pas.

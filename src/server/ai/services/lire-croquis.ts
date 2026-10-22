@@ -63,8 +63,12 @@ export type ZoneLue = {
    * photo, non, et le calcul en pose alors une.
    */
   lignes?: number;
-  /** Un massif : l'écart de ses lignes, en mètres, quand il l'a donné sur le dessin. */
+  /** Un massif : l'écart entre ses lignes, en mètres, quand il l'a donné sur le dessin. */
   ecartLignes?: number;
+  /** Un massif : du bord à sa première ligne, en mètres. */
+  ecartBord?: number;
+  /** Un massif : ses lignes dans la longueur ou dans la largeur. */
+  sensLignes?: "longueur" | "largeur";
   /**
    * Les cotes que le croquis n'écrit pas et que la lecture a DÉDUITES, avec ce
    * dont elles viennent : le plan lu à vérifier les montre, pour qu'il les

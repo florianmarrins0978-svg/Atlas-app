@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { colors, font, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
-import { etatDuCroquis, LIBELLES, zoneMesuree } from "@/lib/arrosage/croquis-complet";
+import { etatDuCroquis, zoneMesuree } from "@/lib/arrosage/croquis-complet";
 import { longueurDeLAmenee } from "@/lib/arrosage/geometrie-croquis";
 import {
   croquisDuDessin,
@@ -17,6 +17,7 @@ import {
   zonesQuiDebordent,
   type DessinDuPlan,
   type PointMetres,
+  type SensDesLignes,
   type ZoneDessinee,
 } from "@/lib/arrosage/dessin-du-plan";
 import {
@@ -59,7 +60,7 @@ import { phraseDuManque, type AVerifier, type PlanLu } from "@/lib/arrosage/plan
  * |---|---|
  * | la haie | « la largeur de la haie, pas simplement la longueur » ; ses lignes proposées par la largeur, réglables par − et +, sans plafond |
  * | le cadre | « je peux poser un carré de 12 par 12 alors que mon cadre fait 10 par 10, il faut pouvoir bloquer ça » |
- * | l'échelle | « un centième, un deux centième », puis « 2, 3 centièmes » : jusqu'au 5/100 ; deux doigts agrandissent là où ils sont posés, un doigt fait glisser |
+ * | le zoom | d'abord une échelle en centièmes (« un centième, un deux centième ») ; remplacée le 22 octobre 2026 par − et + sous le dessin, sa planche revue avec impeccable. Deux doigts agrandissent là où ils sont posés, un doigt fait glisser |
  * | les arbres | « des ronds un peu chiffonnés » ; ils se dessinent et ne changent rien au plan |
  * | les dalles | deux touches, la distance préécrite, puis une dalle ; « On les arrose ? » : celles qu'on n'arrose pas coupent la zone |
  * | la maison | « oui, tu peux l'ajouter » : elle ne s'arrose pas, et coupe ce qu'elle chevauche |
@@ -76,18 +77,20 @@ import { phraseDuManque, type AVerifier, type PlanLu } from "@/lib/arrosage/plan
  */
 
 type Sorte = ZoneDessinee["type"] | "maison";
-type Outil = "arbre" | "dalles" | "nourrice" | "compteur" | "robinet";
+type Outil = "arbre" | "arbuste" | "dalles" | "nourrice" | "compteur" | "robinet";
 type Zone = Omit<ZoneDessinee, "type"> & { type: Sorte; id: string; aVerifier?: AVerifier };
-type Arbre = { id: string; nom: string | null; d: number; x: number; y: number };
+/** Un arbre ou un arbuste : un rond chiffonné ; l'arbuste en blanc, pour les
+ *  différencier (sa demande du 22 octobre 2026). Ni l'un ni l'autre ne change le plan. */
+type Arbre = { id: string; sorte: "arbre" | "arbuste"; nom: string | null; d: number; x: number; y: number };
+const NOM_DU_ROND = { arbre: "Arbre", arbuste: "Arbuste" } as const;
 type Dalles = Rangee & { id: string; nom: string | null; L: number; l: number; e: number | null; arrosees?: boolean };
 
 const SORTES: Sorte[] = ["gazon", "potager", "massif", "haie", "maison"];
-/** Un centimètre d'écran, en pixels CSS : ce que vaut un mètre à 1/100. */
-const PX_PAR_CM = 96 / 2.54;
 /** Ce qui entoure le terrain, en pixels d'écran : la place de ses cotes. */
 const MARGE_PX = 30;
-/** Son plan du Vésinet est au 2/100 : « qu'on puisse changer le chiffre 1 ». */
-const ECHELLES: [string, string][] = [["200", "1/200"], ["100", "1/100"], ["50", "2/100"], ["33.333333", "3/100"], ["25", "4/100"], ["20", "5/100"]];
+/** Le zoom : un appui sur + rapproche d'autant, et les deux doigts vont jusqu'à 40. */
+const PAS_DU_ZOOM = 1.5;
+const ZOOM_MAX = 40;
 
 function nombre(v: string): number | null {
   const n = parseFloat(v.replace(",", ".").replace(/\s/g, ""));
@@ -101,6 +104,12 @@ function ecritLignes(n: number): string {
 }
 function ecritDalles(n: number): string {
   return n === 1 ? "une dalle" : `${n} dalles`;
+}
+/** L'objet sans les clés nommées : un réglage qui en remplace un autre. */
+function sans<T extends object>(o: T, ...cles: (keyof T)[]): T {
+  const c = { ...o };
+  for (const k of cles) delete c[k];
+  return c;
 }
 function borne(v: number, max: number): number {
   return Math.max(0, Math.min(max, v));
@@ -144,7 +153,6 @@ export default function DessinerLePlan({
   const [terrainSaisi, setTerrainSaisi] = useState(depart ? { L: ecrit(depart.dessin.terrain.L), l: ecrit(depart.dessin.terrain.l) } : { L: "", l: "" });
   const T = { L: nombre(terrainSaisi.L), l: nombre(terrainSaisi.l) };
   const cadre = T.L !== null && T.l !== null ? { L: T.L, l: T.l } : null;
-  const [echelle, setEchelle] = useState<number | null>(null);
   /** Ce que les deux doigts ajoutent à l'échelle choisie : 1, rien. */
   const [loupe, setLoupe] = useState(1);
   const [zones, setZones] = useState<Zone[]>(() => (depart ? depart.dessin.zones.map((z, i) => ({ ...z, id: `lu${i + 1}` })) : []));
@@ -182,8 +190,9 @@ export default function DessinerLePlan({
   // ── L'échelle : combien de pixels pour un mètre ───────────────────────────
   const vue = cadre ?? { L: 10, l: 10 };
   const ajuste = (largeur - 2 * MARGE_PX) / vue.L;
-  const voulu = echelle && cadre ? (PX_PAR_CM * 100) / echelle : ajuste;
-  const parM = Math.max(ajuste, voulu) * loupe;
+  // Le zoom − et + remplace l'échelle en centièmes (planche du 22 octobre
+  // 2026) : « 1/200 » ne se lit pas sur un chantier, « voir plus près » si.
+  const parM = ajuste * loupe;
   const agrandi = parM > ajuste + 1e-6;
   /** Une taille d'écran (en pixels), dite en mètres : les traits et les lettres gardent leur taille. */
   const px = (n: number) => n / parM;
@@ -264,9 +273,9 @@ export default function DessinerLePlan({
       setOutil(null);
       return;
     }
-    if (outil === "arbre") {
+    if (outil === "arbre" || outil === "arbuste") {
       setOutil(null);
-      setFeuille({ sorte: "arbre", arbre: { id: "", nom: null, d: 0, x: p.x, y: p.y }, neuf: true });
+      setFeuille({ sorte: "arbre", arbre: { id: "", sorte: outil, nom: null, d: 0, x: p.x, y: p.y }, neuf: true });
       return;
     }
     if (outil === "dalles") {
@@ -331,7 +340,7 @@ export default function DessinerLePlan({
     pr.bouge = true;
     const a = pr.avant;
     // Le doigt avance par pas, pour que les cotes tombent juste.
-    const pas = (v: number) => auPas(v, echelle);
+    const pas = (v: number) => auPas(v, loupe);
     const point = (q: PointMetres) => ({ x: borne(pas(q.x + dx), cadre.L), y: borne(pas(q.y + dy), cadre.l) });
     if (pr.id === "nourrice") setNourrice(point(a as PointMetres));
     else if (pr.id === "piquage") setPiquagePlace(point(a as PointMetres));
@@ -395,7 +404,7 @@ export default function DessinerLePlan({
       if (doigts.current.size < 2) return;
       const d = lesDeux();
       ancre.current = { cible: pi.cible, x: d.x, y: d.y };
-      setLoupe(Math.max(1, Math.min(40, (pi.loupe * d.ecart) / pi.ecart)));
+      setLoupe(Math.max(1, Math.min(ZOOM_MAX, (pi.loupe * d.ecart) / pi.ecart)));
       return;
     }
     glisse(e);
@@ -487,6 +496,7 @@ export default function DessinerLePlan({
     : outil === "compteur" ? "Touchez l’endroit du compteur."
     : outil === "robinet" ? "Touchez l’endroit du robinet."
     : outil === "arbre" ? "Touchez le centre de l’arbre."
+    : outil === "arbuste" ? "Touchez le centre de l’arbuste."
     : outil === "dalles" ? (departDalles ? "Touchez l’arrivée des dalles." : "Touchez le départ des dalles.")
     : courbable ? "Tirez un point vert pour courber."
     : depart ? "Touchez une zone pour la corriger, glissez-la pour la placer."
@@ -648,43 +658,29 @@ export default function DessinerLePlan({
   return (
     <div data-atlas="dessiner-le-plan" className="mt-5">
       <div className="mx-[22px]">
-        <span className={`block ${libelleCaps}`} style={{ color: colors.or }}>Le terrain, en mètres</span>
-        <div className="mt-1 grid grid-cols-2 gap-2">
+        <h2 className="m-0" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 21, lineHeight: 1.2 }}>Le terrain</h2>
+        <div className="mt-3 grid grid-cols-2 gap-[10px]">
           {(["L", "l"] as const).map((c) => (
             <span key={c} className="min-w-0">
               <label className={`block ${libelleCaps}`} style={{ color: colors.muted }} htmlFor={`terrain-${c}`}>
                 {c === "L" ? "Longueur" : "Largeur"}
               </label>
-              <input
-                id={`terrain-${c}`}
-                inputMode="decimal"
-                enterKeyHint="done"
-                autoComplete="off"
-                value={terrainSaisi[c]}
-                onChange={(e) => surTerrain(c, e.target.value)}
-                className={champ}
-                style={styleChamp}
-              />
+              <span className="relative block">
+                <input
+                  id={`terrain-${c}`}
+                  inputMode="decimal"
+                  enterKeyHint="done"
+                  autoComplete="off"
+                  value={terrainSaisi[c]}
+                  onChange={(e) => surTerrain(c, e.target.value)}
+                  className={champ}
+                  style={{ ...styleChamp, paddingRight: 40 }}
+                />
+                <span aria-hidden="true" className="pointer-events-none absolute right-[14px] top-1/2 mt-[2px] -translate-y-1/2 text-[14px]" style={{ color: colors.muted }}>m</span>
+              </span>
             </span>
           ))}
         </div>
-        <label className={`mt-[10px] block ${libelleCaps}`} style={{ color: colors.muted }} htmlFor="echelle">
-          Échelle
-        </label>
-        <select
-          id="echelle"
-          disabled={!cadre}
-          value={echelle === null ? "" : String(echelle)}
-          onChange={(e) => {
-            setEchelle(e.target.value ? Number(e.target.value) : null);
-            setLoupe(1);
-          }}
-          className={`${champ} appearance-none`}
-          style={{ ...styleChamp, minHeight: 50 }}
-        >
-          <option value="">Tout le terrain</option>
-          {ECHELLES.map(([v, nom]) => <option key={v} value={v}>{nom}</option>)}
-        </select>
       </div>
 
       <div ref={boite} className="mx-[22px] mt-3 overflow-auto rounded-[14px] p-[10px]" style={{ backgroundColor: colors.card, maxHeight: "68vh", overscrollBehavior: "contain" }}>
@@ -723,11 +719,12 @@ export default function DessinerLePlan({
 
           {dalles.map(dessinDalles)}
 
-          {arbres.map((a) => (
+          {/* Les petits par-dessus les grands : un arbuste sous un arbre resterait inattrapable. */}
+          {[...arbres].sort((a, b) => b.d - a.d).map((a) => (
             <g key={a.id} data-objet={a.id} style={{ cursor: "grab" }}>
-              <path d={festons(a.x, a.y, a.d / 2, px)} fill={voile(colors.plein, 0.52)} stroke={colors.rustDeep} strokeWidth={px(1.5)} />
+              <path d={festons(a.x, a.y, a.d / 2, px)} fill={a.sorte === "arbuste" ? colors.card : voile(colors.plein, 0.52)} stroke={colors.rustDeep} strokeWidth={px(1.5)} strokeLinejoin="round" />
               <text x={a.x} y={a.y + a.d / 2 + px(12)} textAnchor="middle" fontSize={px(9.5)} fill={colors.ink} {...texteDetache}>
-                {`${a.nom ?? "Arbre"}, Ø ${ecrit(a.d)} m`}
+                {`${a.nom ?? NOM_DU_ROND[a.sorte]}, Ø ${ecrit(a.d)} m`}
               </text>
             </g>
           ))}
@@ -768,9 +765,29 @@ export default function DessinerLePlan({
         </svg>
       </div>
 
-      <p data-atlas="consigne-dessin" aria-live="polite" className="mx-[22px] mt-2 min-h-[21px] text-[14px]" style={{ color: colors.inkSoft }}>
-        {consigne}
-      </p>
+      {/* Le zoom vit sous le dessin, à côté de la consigne : posé dessus, il
+          cachait ce qui est dans le coin, la nourrice la première. */}
+      <div className="mx-[22px] mt-[10px] flex items-center gap-3">
+        <p data-atlas="consigne-dessin" aria-live="polite" className="m-0 min-h-[21px] flex-1 text-[14.5px] leading-[1.4]" style={{ color: colors.inkSoft }}>
+          {consigne}
+        </p>
+        <div role="group" aria-label="Zoom" className="flex flex-none gap-2">
+          {([["Voir plus loin", false], ["Voir plus près", true]] as const).map(([nom, plus]) => (
+            <button
+              key={nom}
+              type="button"
+              aria-label={nom}
+              data-atlas={plus ? "zoom-plus" : "zoom-moins"}
+              disabled={!cadre || (plus ? loupe >= ZOOM_MAX : loupe <= 1)}
+              onClick={() => setLoupe((z) => (plus ? Math.min(ZOOM_MAX, z * PAS_DU_ZOOM) : Math.max(1, z / PAS_DU_ZOOM)))}
+              className="flex h-11 w-11 items-center justify-center rounded-full disabled:opacity-40"
+              style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.card, color: colors.ink, boxShadow: "0 1px 3px rgba(28,28,26,.12)" }}
+            >
+              <SigneMoinsPlus plus={plus} />
+            </button>
+          ))}
+        </div>
+      </div>
       {choisie && deformee(objetChoisi) && (
         <button
           type="button"
@@ -783,38 +800,56 @@ export default function DessinerLePlan({
         </button>
       )}
 
-      <div role="toolbar" aria-label="Ajouter" className="mx-[22px] mt-2 flex flex-wrap gap-[6px]">
-        {SORTES.map((s) => (
-          <Bouton key={s} actif={false} desactive={!cadre} onClick={() => setFeuille({ sorte: "zone", zone: { id: "", type: s, nom: null, L: 0, l: 0, x: 0, y: 0 }, neuve: true })}>
-            <svg viewBox="0 0 18 18" width={18} height={18} aria-hidden="true">
-              {s === "maison" ? (
-                <path d="M3 8.5L9 3.5L15 8.5V15H3Z" fill={remplissage(s)} stroke={colors.ink} strokeLinejoin="round" />
-              ) : (
-                <rect x={2} y={s === "haie" ? 7 : 4} width={14} height={s === "haie" ? 4 : 10} rx={1.5} fill={remplissage(s)} stroke={colors.rustDeep} />
-              )}
-            </svg>
-            {NOMS_DES_ZONES[s]}
-          </Bouton>
-        ))}
+      {/* **TROIS FAMILLES AU LIEU DE DIX BOUTONS EN VRAC** — sa planche du
+          22 octobre 2026 revue avec impeccable : ce qui s'arrose, ce qu'on
+          contourne, et l'eau. Au compteur ou au robinet, un seul bouton, celui
+          que « Le piquage se fait… » a choisi. */}
+      <div className="mx-[22px] mt-1">
         {(
           [
-            ["arbre", "Arbre"],
-            ["dalles", "Dalles"],
-            ["nourrice", "Nourrice"],
-            ["compteur", "Compteur"],
-            ["robinet", "Robinet"],
+            ["À arroser", (["gazon", "potager", "massif", "haie"] as const).map((s) => ({ cle: s, nom: NOMS_DES_ZONES[s] }))],
+            ["À contourner", [{ cle: "maison", nom: NOMS_DES_ZONES.maison }, { cle: "arbre", nom: "Arbre" }, { cle: "arbuste", nom: "Arbuste" }, { cle: "dalles", nom: "Dalles" }]],
+            ["L’eau", [{ cle: sortePiquage, nom: sortePiquage === "robinet" ? "Robinet" : "Compteur" }, { cle: "nourrice", nom: "Nourrice" }]],
           ] as const
-        ).map(([o, nom]) => (
-          <Bouton key={o} actif={outil === o} desactive={!cadre} onClick={() => { setDepartDalles(null); setOutil(outil === o ? null : o); }}>
-            <SigneOutil outil={o} />
-            {nom}
-          </Bouton>
+        ).map(([titre, outils]) => (
+          <div key={titre} className="mt-[14px]">
+            <span className={`block ${libelleCaps}`} style={{ color: colors.muted }}>{titre}</span>
+            <div role="toolbar" aria-label={titre} className="mt-2 grid grid-cols-4 gap-2">
+              {outils.map(({ cle, nom }) => {
+                const estZone = (SORTES as readonly string[]).includes(cle);
+                const actif = !estZone && outil === cle;
+                return (
+                  <button
+                    key={cle}
+                    type="button"
+                    data-outil={cle}
+                    aria-pressed={actif}
+                    disabled={!cadre}
+                    onClick={() => {
+                      if (estZone) { setFeuille({ sorte: "zone", zone: { id: "", type: cle as Sorte, nom: null, L: 0, l: 0, x: 0, y: 0 }, neuve: true }); return; }
+                      setDepartDalles(null);
+                      const o = cle as Outil;
+                      setOutil(outil === o ? null : o);
+                      // Les outils sont sous le dessin : il faut le voir pour toucher l'endroit.
+                      if (outil !== o) boite.current?.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+                    }}
+                    className="flex min-h-[72px] flex-col items-center justify-center gap-[6px] rounded-[14px] border-0 px-1 py-2 text-[13.5px] disabled:opacity-45"
+                    style={actif
+                      ? { backgroundColor: colors.plein, color: surPlein, boxShadow: "0 2px 6px rgba(28,28,26,.18)" }
+                      : { backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+                  >
+                    <span className="block h-[18px] scale-[1.35]">{estZone ? <SigneZone sorte={cle as Sorte} /> : <SigneOutil outil={cle as Outil} />}</span>
+                    <span>{nom}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         ))}
       </div>
 
       <ul data-atlas="etat-dessin" aria-live="polite" className="mx-[22px] mt-[14px] list-none p-0">
         {manquantes.map((p) => <Ligne key={p} rouge>{p}</Ligne>)}
-        {cadre && etat.manque.map((q) => <Ligne key={q} rouge>{LIBELLES[q].titre}</Ligne>)}
         {debordent.map((z) => (
           <Ligne key={z.id} rouge>
             {`Pas de plan : ${nomDe(z)} (${ecrit(z.L)} × ${ecrit(z.l)} m) ne tient pas dans le terrain de ${ecrit(cadre!.L)} × ${ecrit(cadre!.l)} m.`}
@@ -830,14 +865,54 @@ export default function DessinerLePlan({
         ))}
       </ul>
 
-      {pret && dessin && (
+      {/* **AVANT LE PLAN : QUATRE ÉTAPES COCHÉES** (planche du 22 octobre
+          2026). Les lignes rouges « il manque » deviennent une liste qui se
+          coche au fil du dessin, et ce qui manque se pose d'ici. « Faire le
+          plan » reste visible, grisé tant que tout n'est pas là. */}
+      <section aria-labelledby="avant-le-plan" className="mx-[22px] mt-[22px] rounded-[16px] p-4" style={{ backgroundColor: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+        <h3 id="avant-le-plan" className="m-0" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 19 }}>Avant le plan</h3>
+        <ol data-atlas="etapes-du-plan" className="m-0 mt-[10px] list-none p-0">
+          {(
+            [
+              ["terrain", "Le terrain", !!cadre],
+              ["zone", "Une zone à arroser", !etat.manque.includes("metres")],
+              [sortePiquage, sortePiquage === "robinet" ? "Le robinet" : "Le compteur", piquagePlace !== null],
+              ["nourrice", "La nourrice", nourrice !== null],
+            ] as const
+          ).map(([cle, nom, fait]) => (
+            <li key={cle} data-etape={cle} data-fait={fait} className="flex items-center gap-3 py-[9px] text-[15.5px]" style={{ borderTop: `1px solid ${colors.line}`, color: fait ? colors.ink : colors.inkSoft }}>
+              <span aria-hidden="true" className="flex h-6 w-6 flex-none items-center justify-center rounded-full" style={fait ? { backgroundColor: colors.plein } : { boxShadow: `inset 0 0 0 1.5px ${colors.line}` }}>
+                {fait && (
+                  <svg width={12} height={12} viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3L9.5 3.6" fill="none" stroke={surPlein} strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" /></svg>
+                )}
+              </span>
+              <span>{nom}</span>
+              {!fait && (
+                <button
+                  type="button"
+                  className="ml-auto min-h-[40px] rounded-full px-4 text-[14px] font-semibold"
+                  style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}
+                  onClick={() => {
+                    if (cle === "terrain") { document.getElementById("terrain-L")?.focus(); return; }
+                    if (cle === "zone") { setFeuille({ sorte: "zone", zone: { id: "", type: "gazon", nom: null, L: 0, l: 0, x: 0, y: 0 }, neuve: true }); return; }
+                    setDepartDalles(null);
+                    setOutil(cle);
+                    boite.current?.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+                  }}
+                >
+                  {cle === "terrain" ? "Écrire" : "Poser"}
+                </button>
+              )}
+            </li>
+          ))}
+        </ol>
         <button
           type="button"
           data-atlas="faire-le-plan"
-          disabled={enCours}
-          onClick={() => onFaire(JSON.stringify(dessin))}
-          className="atlas-plein mx-[22px] mt-[14px] flex min-h-[56px] w-[calc(100%-44px)] items-center justify-center gap-2 rounded-full border-0 text-[15px] font-semibold"
-          style={{ backgroundColor: colors.plein, color: surPlein }}
+          disabled={!pret || !dessin || enCours}
+          onClick={() => dessin && onFaire(JSON.stringify(dessin))}
+          className="atlas-plein mt-[14px] flex min-h-[56px] w-full items-center justify-center gap-2 rounded-full border-0 text-[15px] font-semibold"
+          style={pret ? { backgroundColor: colors.plein, color: surPlein } : { backgroundColor: colors.rustTint, color: colors.muted }}
         >
           {enCours ? (
             <>
@@ -848,7 +923,7 @@ export default function DessinerLePlan({
             "Faire le plan"
           )}
         </button>
-      )}
+      </section>
 
       {feuille && cadre && (
         <FeuilleDuDessin
@@ -885,26 +960,52 @@ export default function DessinerLePlan({
   );
 }
 
-/** La zone vue de dessus, ses lignes et leur écart coté, puis le tube qu'elles
- *  demandent : ce que la planche du 22 octobre 2026 lui a montré. */
-function CoupeDesLignes({ lignes, ecart, long, travers }: { lignes: number; ecart: number; long: number; travers: number }) {
-  const W = 10, H = Math.max(1.6, Math.min(5, (W * travers) / Math.max(long, 0.1))), k = H / travers;
+/** La zone vue EN TRAVERS, comme on la creuse : sa largeur à plat, les tuyaux
+ *  en points, l'écart du bord coté en or, l'écart entre deux en encre. Sa
+ *  planche du 22 octobre 2026. */
+function CoupeDesLignes({ lignes, bord, entre, long, travers }: { lignes: number; bord: number; entre: number; long: number; travers: number }) {
+  const W = 10, k = W / travers, sol = 2.1;
+  const xs = Array.from({ length: lignes }, (_, i) => Math.min(travers, bord + i * entre) * k);
+  const milieu = (a: number, b: number) => Math.max(0.7, Math.min(W - 0.7, (a + b) / 2));
+  // Deux écarts serrés : le second monte d'un étage, les chiffres ne se
+  // couvrent plus. L'étage ne se réserve que s'il sert.
+  const monte = lignes >= 2 && Math.abs(milieu(xs[0], xs[1]) - milieu(0, xs[0])) < 1.9 ? 0.85 : 0;
+  const halo = { stroke: colors.card, strokeWidth: 0.12, paintOrder: "stroke" as const };
+  const cote = (x1: number, x2: number, couleur: string, t: string, haut: number) => {
+    if (x2 - x1 < 1e-6) return null;
+    const y = 1.1 - haut, bas = haut ? y + 0.15 : 1.25;
+    return (
+      <g>
+        <line x1={x1} y1={y} x2={x2} y2={y} stroke={couleur} strokeWidth={0.035} />
+        <line x1={x1} y1={y - 0.15} x2={x1} y2={bas} stroke={couleur} strokeWidth={0.035} />
+        <line x1={x2} y1={y - 0.15} x2={x2} y2={bas} stroke={couleur} strokeWidth={0.035} />
+        <text x={milieu(x1, x2)} y={y - 0.38} textAnchor="middle" fontSize={0.42} fontWeight={600} fill={couleur} {...halo}>{t}</text>
+      </g>
+    );
+  };
   return (
-    <>
-      <svg viewBox={`-2.8 -0.6 ${W + 5.6} ${H + 1.4}`} style={{ display: "block", width: "100%", height: "auto", marginTop: 10 }} aria-hidden="true">
-        <rect x={0} y={0} width={W} height={H} rx={0.08} fill={voile(colors.plein, 0.34)} stroke={colors.rustDeep} strokeWidth={0.05} />
-        {Array.from({ length: lignes }, (_, i) => {
-          const y = Math.min(travers, (i + 1) * ecart) * k;
-          return <line key={i} x1={0.15} y1={y} x2={W - 0.15} y2={y} stroke={colors.ink} strokeWidth={0.07} />;
-        })}
-        <line x1={-0.5} y1={0} x2={-0.5} y2={ecart * k} stroke={colors.orTexte} strokeWidth={0.04} />
-        <line x1={-0.65} y1={0} x2={-0.35} y2={0} stroke={colors.orTexte} strokeWidth={0.04} />
-        <line x1={-0.65} y1={ecart * k} x2={-0.35} y2={ecart * k} stroke={colors.orTexte} strokeWidth={0.04} />
-        <text x={-0.62} y={(ecart * k) / 2 + 0.14} textAnchor="end" fontSize={0.42} fontWeight={600} fill={colors.orTexte}>{Math.round(ecart * 100)} cm</text>
-        <text x={W / 2} y={H + 0.6} textAnchor="middle" fontSize={0.42} fill={colors.inkSoft}>{ecrit(long)} m</text>
-      </svg>
-      <p className="mt-2 text-[15px]" style={{ color: colors.inkSoft }}>{Math.ceil(lignes * long - 1e-9)} m de tube.</p>
-    </>
+    <svg viewBox={`-0.4 ${0.1 - monte} ${W + 0.8} ${3.4 + monte}`} style={{ display: "block", width: "100%", height: "auto", marginTop: 6 }} aria-hidden="true">
+      <rect x={0} y={sol} width={W} height={0.7} rx={0.08} fill={voile(colors.plein, 0.3)} stroke={colors.rustDeep} strokeWidth={0.03} />
+      {xs.map((x, i) => (
+        <g key={i}>
+          <line x1={x} y1={1.15} x2={x} y2={sol} stroke={colors.line} strokeWidth={0.03} strokeDasharray="0.08 0.08" />
+          <circle cx={x} cy={sol + 0.12} r={0.17} fill={colors.ink} />
+        </g>
+      ))}
+      {lignes >= 1 && cote(0, xs[0], colors.orTexte, `${Math.round(bord * 100)} cm`, 0)}
+      {lignes >= 2 && cote(xs[0], xs[1], colors.ink, `${Math.round(entre * 100)} cm`, monte)}
+      <text x={W / 2} y={sol + 1.25} textAnchor="middle" fontSize={0.42} fill={colors.inkSoft} {...halo}>{`${ecrit(travers)} m en travers, lignes de ${ecrit(long)} m`}</text>
+    </svg>
+  );
+}
+
+/** Le − et le + se dessinent, d'un même trait : un caractère change de graisse
+ *  et de place d'une police à l'autre. */
+function SigneMoinsPlus({ plus }: { plus: boolean }) {
+  return (
+    <svg width={20} height={20} viewBox="0 0 20 20" aria-hidden="true">
+      <path d={`M4 10h12${plus ? "M10 4v12" : ""}`} stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" />
+    </svg>
   );
 }
 
@@ -930,20 +1031,16 @@ function festons(cx: number, cy: number, r: number, px: (n: number) => number): 
   return `${d}Z`;
 }
 
-/** Un outil actif est en `plein`, comme tous les boutons pleins de l'application
- *  (sa règle du 19 octobre 2026), jamais en noir. */
-function Bouton({ actif, desactive, onClick, children }: { actif: boolean; desactive: boolean; onClick: () => void; children: React.ReactNode }) {
+
+function SigneZone({ sorte }: { sorte: Sorte }) {
   return (
-    <button
-      type="button"
-      aria-pressed={actif}
-      disabled={desactive}
-      onClick={onClick}
-      className="flex min-h-[44px] items-center gap-2 rounded-full py-[6px] pl-[10px] pr-[14px] text-[14.5px] disabled:opacity-45"
-      style={actif ? { backgroundColor: colors.plein, color: surPlein, border: `1px solid ${colors.plein}` } : { backgroundColor: colors.card, color: colors.ink, border: `1px solid ${colors.line}` }}
-    >
-      {children}
-    </button>
+    <svg viewBox="0 0 18 18" width={18} height={18} aria-hidden="true">
+      {sorte === "maison" ? (
+        <path d="M3 8.5L9 3.5L15 8.5V15H3Z" fill={remplissage(sorte)} stroke={colors.ink} strokeLinejoin="round" />
+      ) : (
+        <rect x={2} y={sorte === "haie" ? 7 : 4} width={14} height={sorte === "haie" ? 4 : 10} rx={1.5} fill={remplissage(sorte)} stroke={colors.rustDeep} />
+      )}
+    </svg>
   );
 }
 
@@ -952,6 +1049,7 @@ function SigneOutil({ outil }: { outil: Outil }) {
   return (
     <svg viewBox="0 0 18 18" width={18} height={18} aria-hidden="true">
       {outil === "arbre" && <path d={festons(9, 9, 6.5, () => 0.4)} fill={voile(colors.plein, 0.52)} stroke={colors.rustDeep} />}
+      {outil === "arbuste" && <path d={festons(9, 9, 4.5, () => 0.3)} fill={colors.card} stroke={colors.rustDeep} />}
       {outil === "dalles" && [1.5, 7.2, 12.9].map((x) => <rect key={x} x={x} y={5} width={3.6} height={8} rx={0.6} fill={fond} stroke="currentColor" strokeWidth={0.8} />)}
       {outil === "nourrice" && <rect x={3} y={5.5} width={12} height={7} rx={1} fill="currentColor" />}
       {outil === "compteur" && (
@@ -1022,19 +1120,23 @@ function FeuilleDuDessin({
   const [dist, setDist] = useState(da ? ecrit(longueurDeLaRangee(da)) : "");
   /** « On les arrose ? » Pas de réponse d'office : il la donne. */
   const [arrosees, setArrosees] = useState<boolean | null>(da?.arrosees ?? null);
-  /** Une seule source à la fois : le nombre choisi aux boutons, ou l'écart
-   *  tapé ; ni l'un ni l'autre, c'est la proposition de la règle. */
-  const [reglage, setReglage] = useState<{ lignes?: number; ecartLignes?: number }>(
-    z?.lignes ? { lignes: z.lignes } : z?.ecartLignes ? { ecartLignes: z.ecartLignes } : {}
-  );
-  const [ecartTape, setEcartTape] = useState(z?.ecartLignes ? String(Math.round(z.ecartLignes * 100)) : "");
+  /** Pour le nombre, une seule source à la fois : les boutons, ou l'écart
+   *  entre deux lignes tapé ; ni l'un ni l'autre, c'est la proposition. Le bord
+   *  et le sens se gardent toujours (planche du 22 octobre 2026). */
+  const [reglage, setReglage] = useState<{ lignes?: number; ecartLignes?: number; ecartBord?: number; sensLignes?: SensDesLignes }>({
+    ...(z?.lignes ? { lignes: z.lignes } : z?.ecartLignes ? { ecartLignes: z.ecartLignes } : {}),
+    ...(z?.ecartBord ? { ecartBord: z.ecartBord } : {}),
+    ...(z?.sensLignes ? { sensLignes: z.sensLignes } : {}),
+  });
+  const [entreTape, setEntreTape] = useState("");
+  const [bordTape, setBordTape] = useState("");
   const [invalides, setInvalides] = useState<string[]>([]);
   const [erreur, setErreur] = useState("");
 
   const titre =
     feuille.sorte === "point" ? (feuille.quoi === "nourrice" ? "La nourrice" : sortePiquage === "robinet" ? "Le robinet" : "Le compteur")
     : z ? nomDe(z)
-    : ar ? (ar.nom || "Arbre")
+    : ar ? (ar.nom || NOM_DU_ROND[ar.sorte])
     : (da?.nom || "Dalles");
 
   const touche = (champ: string, setter: (v: string) => void) => (v: string) => {
@@ -1043,6 +1145,7 @@ function FeuilleDuDessin({
     setErreur("");
   };
   const goutte = z?.type === "haie" || z?.type === "massif" ? lignesDeLaZone(z.type, nombre(L), nombre(l), reglage) : null;
+  const bordTrop = !!goutte && goutte.bord >= goutte.travers - 1e-9;
 
   function refuse(champs: [string, number | null][]): boolean {
     const vides = champs.filter(([, v]) => v === null).map(([c]) => c);
@@ -1059,7 +1162,14 @@ function FeuilleDuDessin({
       const trop = [nL! > cadre.L + 1e-9 ? "L" : null, nl! > cadre.l + 1e-9 ? "l" : null].filter((x): x is string => x !== null);
       if (trop.length) { setInvalides(trop); setErreur(neTientPas(cadre)); return; }
       // Validée, la zone est vérifiée : ses cotes sont les siennes.
-      onZone({ ...z, aVerifier: undefined, nom: leNom, L: nL!, l: nl!, lignes: goutte ? reglage.lignes : undefined, ecartLignes: goutte ? reglage.ecartLignes : undefined }, neuf);
+      if (bordTrop) { setInvalides(["bord"]); setErreur("Le bord dépasse la largeur."); return; }
+      onZone({
+        ...z, aVerifier: undefined, nom: leNom, L: nL!, l: nl!,
+        lignes: goutte ? reglage.lignes : undefined,
+        ecartLignes: goutte ? reglage.ecartLignes : undefined,
+        ecartBord: goutte ? reglage.ecartBord : undefined,
+        sensLignes: goutte ? reglage.sensLignes : undefined,
+      }, neuf);
     } else if (ar) {
       const nd = nombre(d);
       if (refuse([["d", nd]])) return;
@@ -1112,8 +1222,13 @@ function FeuilleDuDessin({
       {texte}
     </label>
   );
-  const nombreChamp = (id: string, valeur: string, changer: (v: string) => void, auto = false) => (
-    <input id={id} inputMode="decimal" enterKeyHint="done" autoComplete="off" autoFocus={auto} value={valeur} onChange={(ev) => changer(ev.target.value)} className={champ} style={style(id.replace("feuille-", ""))} />
+  // L'unité se lit dans la case (planche du 22 octobre 2026) : « 12 m » se
+  // vérifie d'un regard, « 12 » laisse deviner si ce sont des mètres.
+  const nombreChamp = (id: string, valeur: string, changer: (v: string) => void, auto = false, unite = "m") => (
+    <span className="relative block">
+      <input id={id} inputMode="decimal" enterKeyHint="done" autoComplete="off" autoFocus={auto} value={valeur} onChange={(ev) => changer(ev.target.value)} className={champ} style={{ ...style(id.replace("feuille-", "")), paddingRight: 40 }} />
+      <span aria-hidden="true" className="pointer-events-none absolute right-[14px] top-1/2 mt-[2px] -translate-y-1/2 text-[14px]" style={{ color: colors.muted }}>{unite}</span>
+    </span>
   );
   const fermer = () => (neuf ? onFermer() : valider());
   const choix = (presse: boolean) => (presse
@@ -1137,7 +1252,7 @@ function FeuilleDuDessin({
         {feuille.sorte !== "point" && (
           <>
             {libelle("feuille-nom", "Nom", 14)}
-            <input id="feuille-nom" autoComplete="off" value={nom} placeholder={z ? NOMS_DES_ZONES[z.type] : ar ? "Arbre" : "Dalles"} onChange={(ev) => setNom(ev.target.value)} className={champ} style={style("nom")} />
+            <input id="feuille-nom" autoComplete="off" value={nom} placeholder={z ? NOMS_DES_ZONES[z.type] : ar ? NOM_DU_ROND[ar.sorte] : "Dalles"} onChange={(ev) => setNom(ev.target.value)} className={champ} style={style("nom")} />
           </>
         )}
         {da && (
@@ -1152,17 +1267,17 @@ function FeuilleDuDessin({
               {libelle("feuille-L", da ? "Longueur d’une dalle" : "Longueur", 0)}
               {nombreChamp("feuille-L", L, (v) => {
                 touche("L", setL)(v);
-                // Le massif se compte sur son petit côté : la longueur peut l'être.
-                if (z?.type === "massif" && reglage.lignes) setReglage({});
+                // Un nombre de lignes n'avait de sens que pour l'ancienne cote.
+                if (reglage.lignes) setReglage((r) => sans(r, "lignes"));
               }, !da)}
             </span>
             <span className="min-w-0">
               {libelle("feuille-l", da ? "Largeur d’une dalle" : "Largeur", 0)}
               {nombreChamp("feuille-l", l, (v) => {
                 touche("l", setl)(v);
-                // Une largeur changée garde l'écart tapé, mais un nombre de
+                // Une largeur changée garde les écarts, mais un nombre de
                 // lignes n'avait de sens que pour l'ancienne largeur.
-                if (reglage.lignes) setReglage({});
+                if (reglage.lignes) setReglage((r) => sans(r, "lignes"));
               })}
             </span>
           </div>
@@ -1202,39 +1317,92 @@ function FeuilleDuDessin({
         {noteDalles && <p className="mt-[6px] text-[13px]" style={{ color: colors.muted }}>{noteDalles}</p>}
         {erreur && <p role="alert" className="mt-2 text-[14px] font-semibold" style={{ color: colors.alert }}>{erreur}</p>}
 
+        {/* **LE GOUTTE-À-GOUTTE, SA PLANCHE DU 22 OCTOBRE 2026**
+            (`appli/arrosage-feuille-des-lignes.html`, « code ça ») : le sens,
+            dans la longueur ou dans la largeur (« c'est pas la même chose »),
+            la coupe, le nombre de lignes, et deux écarts à taper, du bord et
+            entre deux lignes. */}
         {z && (z.type === "haie" || z.type === "massif") && (
-          <div className="mt-[14px]">
-            <span id="lignes-titre" className={`block ${libelleCaps}`} style={{ color: colors.muted }}>Lignes de goutte-à-goutte</span>
-            <div role="group" aria-labelledby="lignes-titre" className="mt-[6px] grid items-center gap-2" style={{ gridTemplateColumns: "56px 1fr 56px" }}>
-              <button type="button" aria-label="Une ligne de moins" disabled={!goutte || goutte.lignes <= 1} onClick={() => { if (goutte) { setReglage({ lignes: goutte.lignes - 1 }); setEcartTape(""); } }} className="min-h-[52px] rounded-full text-[22px] disabled:opacity-45" style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}>−</button>
-              <output aria-live="polite" className="text-center text-[17px]">{goutte ? ecritLignes(goutte.lignes) : "?"}</output>
-              <button type="button" aria-label="Une ligne de plus" disabled={!goutte} onClick={() => { if (goutte) { setReglage({ lignes: goutte.lignes + 1 }); setEcartTape(""); } }} className="min-h-[52px] rounded-full text-[22px] disabled:opacity-45" style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}>+</button>
+          <section aria-labelledby="gag-titre" className="mt-[18px] rounded-[16px] px-4 pb-4 pt-[18px]" style={{ backgroundColor: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+            <h3 id="gag-titre" className="m-0" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 19, lineHeight: 1.2 }}>Goutte-à-goutte</h3>
+            <div role="radiogroup" aria-label="Sens des lignes" className="mt-3 grid grid-cols-2 rounded-full p-1" style={{ backgroundColor: colors.cream, boxShadow: `inset 0 0 0 1px ${colors.line}` }}>
+              {(["longueur", "largeur"] as const).map((sens) => {
+                const oui = goutte?.sens === sens;
+                return (
+                  <button
+                    key={sens}
+                    type="button"
+                    role="radio"
+                    aria-checked={oui}
+                    data-sens={sens}
+                    disabled={!goutte}
+                    onClick={() => setReglage((r) => ({ ...sans(r, "lignes"), sensLignes: sens }))}
+                    className="min-h-[44px] rounded-full border-0 text-[14.5px] font-semibold"
+                    style={{ backgroundColor: oui ? colors.plein : "transparent", color: oui ? surPlein : colors.inkSoft }}
+                  >
+                    {sens === "longueur" ? "Dans la longueur" : "Dans la largeur"}
+                  </button>
+                );
+              })}
             </div>
-            {/* Sa demande du 22 octobre 2026 : l'écart s'écrit aussi, en cm. Le
-                champ et les boutons se tiennent : taper l'écart refait le nombre
-                de lignes, un bouton refait l'écart. */}
-            <div className="mt-[10px] grid grid-cols-2 items-end gap-2">
+            {goutte && !bordTrop && <CoupeDesLignes lignes={goutte.lignes} bord={goutte.bord} entre={goutte.entre} long={goutte.long} travers={goutte.travers} />}
+            <div role="group" aria-label="Nombre de lignes" className="mt-[18px] flex items-center gap-3">
+              <button type="button" aria-label="Une ligne de moins" disabled={!goutte || bordTrop || goutte.lignes <= 1} onClick={() => { if (goutte) { setReglage((r) => ({ ...sans(r, "ecartLignes"), lignes: goutte.lignes - 1 })); setEntreTape(""); } }} className="flex h-14 w-14 flex-none items-center justify-center rounded-full disabled:opacity-40" style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.card, color: colors.ink }}>
+                <SigneMoinsPlus plus={false} />
+              </button>
+              <output aria-live="polite" className="flex-1 text-center">
+                <span className="block" style={{ fontFamily: font.display, fontSize: 38, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{goutte && !bordTrop ? goutte.lignes : "?"}</span>
+                <span className="mt-1 block text-[13px]" style={{ color: colors.muted }}>{goutte?.lignes === 1 ? "ligne" : "lignes"}</span>
+              </output>
+              <button type="button" aria-label="Une ligne de plus" disabled={!goutte || bordTrop} onClick={() => { if (goutte) { setReglage((r) => ({ ...sans(r, "ecartLignes"), lignes: goutte.lignes + 1 })); setEntreTape(""); } }} className="flex h-14 w-14 flex-none items-center justify-center rounded-full disabled:opacity-40" style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.card, color: colors.ink }}>
+                <SigneMoinsPlus plus />
+              </button>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-2">
               <span className="min-w-0">
-                {libelle("feuille-ecart", "Écart, cm", 0)}
-                {nombreChamp("feuille-ecart", ecartTape !== "" || !goutte ? ecartTape : String(Math.round(goutte.ecart * 100)), (v) => {
-                  setEcartTape(v);
+                {libelle("feuille-bord", "Du bord", 0)}
+                {nombreChamp("feuille-bord", bordTape !== "" || !goutte ? bordTape : String(Math.round(goutte.bord * 100)), (v) => {
+                  setBordTape(v);
+                  setInvalides((xs) => xs.filter((x) => x !== "bord"));
+                  setErreur("");
                   // Sous 5 cm, l'écart ne se pose pas : la vérification du serveur
-                  // le refuserait, et la proposition reste.
+                  // le refuserait, et l'office reste.
                   const n = nombre(v);
-                  setReglage(n && n >= 5 ? { ecartLignes: n / 100 } : {});
-                })}
+                  setReglage((r) => (n && n >= 5 ? { ...r, ecartBord: n / 100 } : sans(r, "ecartBord")));
+                }, false, "cm")}
               </span>
-              {goutte && <p className="pb-3 text-[14px]" style={{ color: colors.inkSoft }}>La première à {Math.round(goutte.ecart * 100)} cm du bord.</p>}
+              <span className="min-w-0">
+                {libelle("feuille-entre", "Entre deux", 0)}
+                {nombreChamp("feuille-entre", entreTape !== "" || !goutte ? entreTape : goutte.lignes > 1 ? String(Math.round(goutte.entre * 100)) : "", (v) => {
+                  setEntreTape(v);
+                  const n = nombre(v);
+                  setReglage((r) => (n && n >= 5 ? { ...sans(r, "lignes"), ecartLignes: n / 100 } : sans(r, "ecartLignes")));
+                }, false, "cm")}
+              </span>
             </div>
-            {goutte && (
-              <p className="mt-[6px] text-[13px]" style={{ color: colors.muted }}>
-                {goutte.lignes === goutte.propose && Math.abs(goutte.ecart - goutte.ecartOffice) < 0.005
-                  ? "Proposé."
-                  : `Proposé : ${ecritLignes(goutte.propose)}, tous les ${Math.round(goutte.ecartOffice * 100)} cm.`}
+            {bordTrop && <p role="alert" className="mt-2 text-[14px] font-semibold" style={{ color: colors.alert }}>Le bord dépasse la largeur.</p>}
+            {goutte && (() => {
+              const estPropose = goutte.lignes === goutte.propose && Math.abs(goutte.bord - goutte.ecartOffice) < 0.005 && (goutte.lignes <= 1 || Math.abs(goutte.entre - goutte.ecartOffice) < 0.005);
+              return (
+                <div className="mt-[10px] flex min-h-[44px] items-center gap-[10px]">
+                  <p className="m-0 flex-1 text-[13.5px] leading-[1.4]" style={{ color: colors.muted }}>
+                    {estPropose ? "Proposé." : `Proposé : ${ecritLignes(goutte.propose)}, tous les ${Math.round(goutte.ecartOffice * 100)} cm.`}
+                  </p>
+                  {!estPropose && (
+                    <button type="button" data-atlas="remettre-lignes" onClick={() => { setReglage(({ sensLignes }) => (sensLignes ? { sensLignes } : {})); setEntreTape(""); setBordTape(""); setInvalides((xs) => xs.filter((x) => x !== "bord")); }} className="min-h-[44px] flex-none rounded-full px-4 text-[14px] font-semibold" style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}>
+                      Remettre
+                    </button>
+                  )}
+                </div>
+              );
+            })()}
+            {goutte && !bordTrop && (
+              <p className="m-0 mt-[14px] flex items-baseline gap-[6px] pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
+                <span style={{ fontFamily: font.display, fontSize: 26, lineHeight: 1 }}>{Math.ceil(goutte.lignes * goutte.long - 1e-9)}</span>
+                <span className="text-[14px]" style={{ color: colors.inkSoft }}>m de tube</span>
               </p>
             )}
-            {goutte && nombre(L) && nombre(l) && <CoupeDesLignes lignes={goutte.lignes} ecart={goutte.ecart} long={z.type === "haie" ? nombre(L)! : Math.max(nombre(L)!, nombre(l)!)} travers={z.type === "haie" ? nombre(l)! : Math.min(nombre(L)!, nombre(l)!)} />}
-          </div>
+          </section>
         )}
 
         <div className="mt-[18px] grid grid-cols-2 gap-2">

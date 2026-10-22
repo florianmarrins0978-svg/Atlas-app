@@ -355,15 +355,27 @@ réduit. »*
 La première ligne est à un écart du bord, jamais à 0. **La dernière peut
 tomber sur l'autre bord** : 2 m à 50 cm, c'est 4 lignes et la quatrième à 2 m
 (question posée le 22 octobre, sa réponse : *« oui »*). Le nombre est une
-PROPOSITION : les boutons − et + le changent, et l'écart affiché devient
-largeur ÷ nombre (2 m sur 3 lignes : tous les 67 cm). **Et l'écart se TAPE
+PROPOSITION : les boutons − et + le changent, et l'écart affiché suit (le
+bord gardé, la dernière sur l'autre bord : 2 m sur 3 lignes, à 0,50, 1,25 et
+2 m, tous les 75 cm ; la règle disait « largeur ÷ nombre », 67 cm, avant les
+deux écarts). **Et l'écart se TAPE
 aussi**, en cm, pour une haie comme pour un massif (*« faut aussi pouvoir
 modifier l'espacement en cm, une donnée à écrire »*, même jour) : taper
 45 cm sur 2 m donne 4 lignes, la dernière à 20 cm du bord. Les lignes se
-comptent sur le PETIT côté de la zone. **Codé le 22 octobre 2026** :
+comptent sur le côté que le SENS désigne. **Puis, sur la planche
+`appli/arrosage-feuille-des-lignes.html`, le même jour :** *« il faut aussi
+qu'on puisse renseigner l'écart entre deux lignes »*, et *« demander s'il veut
+le poser dans la longueur ou dans la largeur, parce que c'est pas la même
+chose »*. Deux écarts donc, l'un **du bord** à la première ligne, l'autre
+**entre deux** lignes (tous deux 50 ou 60 cm d'office) : n lignes valent
+`(largeur − bord) ÷ entre + 1`, arrondi au-dessous, et les boutons gardent le
+bord et refont l'écart entre deux. Et le **sens** : dans la longueur, les
+lignes se comptent sur la largeur ; dans la largeur, sur la longueur ; sans
+choix, elles courent sur le grand côté. **Codé le 22 octobre 2026** :
 `ECARTS_GOUTTE` et `lignesPourEcart` dans `calcul.js` (les deux copies),
-`lignesDeLaZone` dans `dessin-du-plan.ts` pour la feuille de « Dessiner le
-plan » ; éprouvé par `scripts/test-lignes-goutte.ts` et `test-dessin-du-plan.ts`.
+`sensDesLignes` dans `calcul.js`, `lignesDeLaZone` dans `dessin-du-plan.ts`
+pour la feuille de « Dessiner le plan » ; éprouvé par
+`scripts/test-lignes-goutte.ts` et `test-dessin-du-plan.ts`.
 
 **LE Ø16 SE RACCORDE AU ROBINET PAR UN RACCORD TARAUDÉ 3/4" PROPRE À SON TUBE —
 sa règle du 18 octobre 2026.** Le Plasson à bague blanche ne prend que le PE 25

@@ -283,14 +283,15 @@ export function dallesDeLaRangee(r: Rangee & { L: number; e: number | null }): {
 
 /**
  * Le doigt avance par pas, pour que les cotes tombent juste : 10 cm sur tout le
- * terrain, 5 cm à 1/200, 1 cm à 1/100 et au-delà (son « oui » du 19 octobre).
- * `echelle` est le dénominateur : 200, 100, 50 pour 2/100…
+ * terrain, plus fin quand on regarde de plus près (son « oui » du 19 octobre,
+ * donné pour l'échelle en centièmes). L'échelle a laissé la place au zoom le
+ * 22 octobre 2026 : 5 cm à partir de deux fois plus près, 1 cm à quatre fois.
  */
-export function pasDuDoigt(echelle: number | null): number {
-  return !echelle ? 0.1 : echelle > 100 ? 0.05 : 0.01;
+export function pasDuDoigt(zoom: number): number {
+  return zoom >= 4 ? 0.01 : zoom >= 2 ? 0.05 : 0.1;
 }
-export function auPas(metres: number, echelle: number | null): number {
-  const pas = pasDuDoigt(echelle);
+export function auPas(metres: number, zoom: number): number {
+  const pas = pasDuDoigt(zoom);
   return Math.round(Math.round(metres / pas) * pas * 1e6) / 1e6;
 }
 

@@ -64,6 +64,10 @@ export type ZoneParametre = {
   lignes?: number;
   /** Un massif : l'écart entre deux lignes, en mètres, qu'il a tapé ou que ses lignes donnent. Sans lui, 60 cm d'office. */
   ecartLignes?: number;
+  /** Un massif : du bord à la première ligne, en mètres. Sans lui, l'écart d'office. */
+  ecartBord?: number;
+  /** Un massif : ses lignes dans la longueur ou dans la largeur. Sans lui, sur le grand côté. */
+  sensLignes?: "longueur" | "largeur";
   /** Un massif en goutte-à-goutte : une seule ligne, ou deux en circuit fermé. Sans réponse, rien n'est compté. */
   sortieGoutte?: "ligne" | "boucle";
   /** Ajoutée à la main et pas encore glissée à sa place : posée sous les autres, et le plan le dit (20 octobre 2026). */
@@ -296,6 +300,7 @@ export function cotesDuPlanTiennentDebout(
       [z?.ml, LINEAIRE_MAX_ML, "Le métrage"],
       [z?.lignes, LIGNES_MAX, "Le nombre de lignes"],
       [z?.ecartLignes, ECART_MAX_M, "L'écart des lignes"],
+      [z?.ecartBord, ECART_MAX_M, "L'écart du bord"],
     ] as const) {
       if (valeur === undefined || valeur === null) continue;
       if (!Number.isFinite(valeur) || valeur < 0 || valeur > plafond) {
@@ -304,6 +309,11 @@ export function cotesDuPlanTiennentDebout(
           raison: `${quoi} de « ${nom} » sort de ce que cet outil sait calculer (${plafond} maximum).`,
         };
       }
+    }
+  }
+  for (const z of parametres.zones) {
+    if (z?.sensLignes !== undefined && z.sensLignes !== "longueur" && z.sensLignes !== "largeur") {
+      return { ok: false, raison: `Le sens des lignes de « ${z?.nom || z?.type || "une zone"} » n’est pas lisible.` };
     }
   }
   // **Le tuyau choisi n'est que 25 ou 32**, et il vise un réseau qui peut
