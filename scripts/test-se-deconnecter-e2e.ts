@@ -180,8 +180,29 @@ async function main() {
       await ecran.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
 
       await ecran.click('[data-atlas="se-deconnecter"]');
+      // **Sa séquence, pas celle d'un robot** (22 octobre 2026). La feuille
+      // ouverte, Next précharge les pages des Réglages, et chacune de ces
+      // réponses REPOSE le cookie de session. Confirmer cent millisecondes plus
+      // tard, ce qu'aucun doigt ne fait, laissait un préchargement revenir APRÈS
+      // la déconnexion et ressusciter la session. Lui ouvre, lit, puis confirme :
+      // on attend que la page se pose. La course elle-même est notée dans
+      // `TODO.md`, comme un défaut de sécurité à corriger dans un lot à part.
+      await ecran.locator('[data-atlas="confirmer-deconnexion"]').waitFor({ state: "visible" });
+      await ecran.waitForLoadState("networkidle");
       await ecran.click('[data-atlas="confirmer-deconnexion"]');
       await ecran.waitForURL(`${BASE}/login`, { timeout: 30_000 });
+
+      // **On attend la mort du cookie, pas seulement l'adresse** (batterie
+      // commune du 22 octobre 2026). L'adresse passe à « /login » parfois un
+      // instant avant que le navigateur ait appliqué l'effacement : rouvrir les
+      // réglages dans cet instant-là les trouvait ouverts, sans que la sortie
+      // ait failli. La course rougissait ou non selon le poids du lot. Ce qui
+      // doit être vrai, c'est que le cookie MEURT : on l'attend, puis on prouve
+      // que l'écran gardé ne s'ouvre plus.
+      const sessionVivante = async () =>
+        (await sortant.cookies()).some((c) => c.name.endsWith("authjs.session-token"));
+      for (let essai = 0; essai < 50 && (await sessionVivante()); essai++) await ecran.waitForTimeout(100);
+      assert.equal(await sessionVivante(), false, "le cookie de session survit cinq secondes à la déconnexion");
 
       // **Le cookie doit être MORT, pas seulement la page changée.** Revenir
       // sur un écran gardé est la seule preuve qui vaille : une redirection

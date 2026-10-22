@@ -488,7 +488,11 @@ function QuestionsChiffrage({
 
       <div className="mt-4 flex flex-col gap-5">
         {questions.map((q, i) => (
-          <div key={q.id} data-atlas="question-chiffrage">
+          // `question-chiffrage` dit que l'arrêt est ouvert ; `data-sorte` dit
+          // ce que la carte demande. La répartition de la main d'œuvre (sa
+          // règle du 21 octobre 2026) n'est pas une question de la grille :
+          // la limite de quatre questions ne la compte pas.
+          <div key={q.id} data-atlas="question-chiffrage" data-sorte={q.mainOeuvre ? "main-oeuvre" : "grille"}>
             {/* La prestation ne se répète pas d'une question à l'autre : deux
                 questions sur le même arbre l'écrivaient deux fois de suite. */}
             {q.libellePrestation !== questions[i - 1]?.libellePrestation && (

@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-22
 
+- **Batterie commune des sept lots du 22 octobre** : les rouges trouvés entre les lots sont corrigés (boutons, routes et actions gardées, PDF, objets stockés, zip relu sous Windows, questions de chiffrage comptées par sorte, déconnexion jouée à sa vitesse). Trouvé et noté dans `TODO.md` : une requête en vol peut ressusciter une session fermée.
 - **Rejouer la dictée mène au devis, et la carte main d’œuvre ne fait plus
   taire les questions de grille** (batterie commune du 22 octobre, deux rouges
   du lot main d’œuvre). Le premier jet taisait la technique et le

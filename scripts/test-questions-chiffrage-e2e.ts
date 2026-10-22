@@ -124,7 +124,12 @@ async function main() {
     // 2026 avec le reste des phrases qui expliquent. Compter un libellé, c'était
     // de toute façon rendre l'écran impossible à alléger (`CLAUDE.md` §5 bis) :
     // `data-atlas` survit au prochain remaniement de texte.
-    const combien = await page.locator('[data-atlas="question-chiffrage"]').count();
+    // **Les questions de la GRILLE seules** (22 octobre 2026) : la carte qui
+    // répartit la main d'œuvre dictée s'affiche dans le même arrêt, voulue par
+    // lui le 21 octobre (`appli/main-d-oeuvre-repartie.html`). Elle ne pose pas
+    // une question de plus sur la technique ou le bois : la compter ici ferait
+    // rougir sa propre décision.
+    const combien = await page.locator('[data-atlas="question-chiffrage"][data-sorte="grille"]').count();
     assert.ok(combien >= 1, "aucune question à l'écran : l'arrêt n'a rien demandé.");
     // **Quatre au plus depuis le 29 septembre 2026**, et pour une seule raison :
     // la hauteur de fût, qu'il a demandée (*« pour la fente, il faudrait qu'il
