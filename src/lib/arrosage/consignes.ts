@@ -60,8 +60,10 @@ export type ZoneParametre = {
   materiel?: string;
   /** La référence de buse qu'il a demandée, ou rien — et le calcul choisit. */
   buse?: string;
-  /** Une haie : combien de lignes de goutte-à-goutte, choisi par lui sur le dessin. */
-  lignesHaie?: number;
+  /** Une haie ou un massif : combien de lignes de goutte-à-goutte, choisi par lui sur le dessin. */
+  lignes?: number;
+  /** Un massif : l'écart entre deux lignes, en mètres, qu'il a tapé ou que ses lignes donnent. Sans lui, 60 cm d'office. */
+  ecartLignes?: number;
   /** Un massif en goutte-à-goutte : une seule ligne, ou deux en circuit fermé. Sans réponse, rien n'est compté. */
   sortieGoutte?: "ligne" | "boucle";
   /** Ajoutée à la main et pas encore glissée à sa place : posée sous les autres, et le plan le dit (20 octobre 2026). */
@@ -270,8 +272,10 @@ export function cotesDuPlanTiennentDebout(
   const LINEAIRE_MAX_ML = 200;
   /** Au-delà, ce n'est plus un jardin : c'est une saisie qui a dérapé. */
   const ZONES_MAX = 40;
-  /** Le plafond du calcul (`calcul.js`, haie) : au-delà, ce n'est plus une haie. */
-  const LIGNES_HAIE_MAX = 20;
+  /** Le plafond du calcul (`calcul.js`, massif) : 100 m de large à 40 cm. */
+  const LIGNES_MAX = 250;
+  /** Un écart de lignes, en mètres : ni moins de 5 cm, ni plus de 5 m. */
+  const ECART_MAX_M = 5;
 
   if (!Array.isArray(parametres?.zones)) {
     return { ok: false, raison: "Ce plan n'est pas lisible." };
@@ -290,7 +294,8 @@ export function cotesDuPlanTiennentDebout(
       [z?.L, COTE_MAX_M, "La longueur"],
       [z?.l, COTE_MAX_M, "La largeur"],
       [z?.ml, LINEAIRE_MAX_ML, "Le métrage"],
-      [z?.lignesHaie, LIGNES_HAIE_MAX, "Le nombre de lignes"],
+      [z?.lignes, LIGNES_MAX, "Le nombre de lignes"],
+      [z?.ecartLignes, ECART_MAX_M, "L'écart des lignes"],
     ] as const) {
       if (valeur === undefined || valeur === null) continue;
       if (!Number.isFinite(valeur) || valeur < 0 || valeur > plafond) {

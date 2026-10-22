@@ -265,7 +265,8 @@ function planDuCroquis(lu: CroquisLu, formulaire: FormData): EtatPlan {
       l: z.l ?? undefined,
       ml: z.ml ?? undefined,
       // Le nombre de lignes d'une haie, quand le dessin le donne.
-      lignesHaie: z.lignesHaie,
+      lignes: z.lignes,
+      ecartLignes: z.ecartLignes,
       // **Où la zone se trouve, EN MÈTRES** — sans quoi le plan se compte mais
       // ne se dessine pas. Ce n'est pas la fraction lue : c'est elle passée à
       // l'échelle du croquis. `undefined` traverse jusqu'au dessin, qui refuse

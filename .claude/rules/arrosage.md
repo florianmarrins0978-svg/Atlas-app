@@ -360,9 +360,10 @@ largeur ÷ nombre (2 m sur 3 lignes : tous les 67 cm). **Et l'écart se TAPE
 aussi**, en cm, pour une haie comme pour un massif (*« faut aussi pouvoir
 modifier l'espacement en cm, une donnée à écrire »*, même jour) : taper
 45 cm sur 2 m donne 4 lignes, la dernière à 20 cm du bord. Les lignes se
-comptent sur le PETIT côté de la zone. **Pas encore codé** :
-planche `appli/arrosage-ecart-des-lignes.html`. Aujourd'hui le calcul pose une
-ligne par mètre de haie et une tous les 80 cm sur un massif, dès le bord.
+comptent sur le PETIT côté de la zone. **Codé le 22 octobre 2026** :
+`ECARTS_GOUTTE` et `lignesPourEcart` dans `calcul.js` (les deux copies),
+`lignesDeLaZone` dans `dessin-du-plan.ts` pour la feuille de « Dessiner le
+plan » ; éprouvé par `scripts/test-lignes-goutte.ts` et `test-dessin-du-plan.ts`.
 
 **LE Ø16 SE RACCORDE AU ROBINET PAR UN RACCORD TARAUDÉ 3/4" PROPRE À SON TUBE —
 sa règle du 18 octobre 2026.** Le Plasson à bague blanche ne prend que le PE 25

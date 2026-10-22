@@ -32,6 +32,8 @@ import {
   type Rectangle,
 } from "@/lib/arrosage/formes-du-dessin";
 
+import { ECARTS_GOUTTE, lignesPourEcart } from "@/lib/arrosage/calcul.js";
+
 export type { PointMetres } from "@/lib/arrosage/formes-du-dessin";
 
 /** Les mêmes plafonds que la lecture du croquis et les paramètres du plan. */
@@ -41,7 +43,8 @@ export const COTE_MAX_M = 100;
 const ZONES_MAX = 40;
 const MAISONS_MAX = 20;
 const DALLES_MAX = 40;
-const LIGNES_HAIE_MAX = 20;
+const LIGNES_MAX = 250;
+const ECART_MAX_M = 5;
 const NOM_MAX = 80;
 const TYPES: readonly ZoneLue["type"][] = ["gazon", "massif", "haie", "potager"];
 
@@ -64,8 +67,10 @@ export const NOMS_DES_ZONES: Record<ZoneLue["type"] | "maison", string> = {
 export type ZoneDessinee = Forme & {
   type: ZoneLue["type"];
   nom: string | null;
-  /** Une haie : combien de lignes de goutte-à-goutte. Il le choisit. */
-  lignesHaie?: number;
+  /** Une haie ou un massif : le nombre de lignes qu'il a CHOISI aux boutons. Absent : la proposition. */
+  lignes?: number;
+  /** L'écart qu'il a TAPÉ, en mètres. Absent : l'écart d'office. */
+  ecartLignes?: number;
 };
 
 /** *« La maison, oui, tu peux l'ajouter »* (19 octobre 2026) : un rectangle
@@ -86,19 +91,39 @@ export type DessinDuPlan = {
   piquage: PointMetres | null;
 };
 
+export type LignesDeLaZone = {
+  lignes: number;
+  /** L'écart entre deux lignes, en mètres : la première est à un écart du bord. */
+  ecart: number;
+  /** Ce que l'outil propose d'office, pour le dire quand il s'en écarte. */
+  propose: number;
+  ecartOffice: number;
+};
+
 /**
- * Combien de lignes de goutte-à-goutte PROPOSER pour une haie de cette largeur.
+ * Les lignes de goutte-à-goutte d'une haie ou d'un massif, telles que la feuille
+ * les montre — ses règles des 21 et 22 octobre 2026 (`.claude/rules/arrosage.md`).
  *
- * **Sa règle** (relais d'arrosage, « le calcul du goutte-à-goutte ») : une ligne
- * arrose 50 cm de part et d'autre, une bande de 1 m. Donc une ligne par mètre de
- * large, arrondi au-dessus. Une proposition, jamais une décision : l'écran la
- * présélectionne, il la change d'un doigt (sa réponse « la 2 »).
+ * **La règle vit dans le calcul** (`lignesPourEcart`, `ECARTS_GOUTTE`) : la
+ * feuille ne fait que choisir laquelle de ses trois sources compte. Le nombre
+ * choisi aux boutons donne l'écart (largeur ÷ nombre) ; l'écart tapé donne le
+ * nombre ; sinon, l'écart d'office. Une haie se mesure en travers par sa
+ * largeur ; un massif, par son petit côté.
  */
-export const BANDE_PAR_LIGNE_M = 1;
-export function lignesProposees(largeur: number | null): number | null {
-  if (largeur === null || !(largeur > 0)) return null;
-  // Le millionième retiré : 2 ÷ 1 doit rester 2, pas devenir 3 par l'arrondi.
-  return Math.max(1, Math.ceil(largeur / BANDE_PAR_LIGNE_M - 1e-9));
+export function lignesDeLaZone(
+  type: ZoneLue["type"],
+  L: number | null,
+  l: number | null,
+  donne: { lignes?: number; ecartLignes?: number }
+): LignesDeLaZone | null {
+  if (type !== "haie" && type !== "massif") return null;
+  const travers = type === "haie" ? l : L !== null && l !== null ? Math.min(L, l) : null;
+  if (travers === null || !(travers > 0)) return null;
+  const ecartOffice = ECARTS_GOUTTE[type];
+  const propose = lignesPourEcart(travers, ecartOffice);
+  if (donne.lignes && donne.lignes >= 1) return { lignes: donne.lignes, ecart: travers / donne.lignes, propose, ecartOffice };
+  if (donne.ecartLignes && donne.ecartLignes > 0) return { lignes: lignesPourEcart(travers, donne.ecartLignes), ecart: donne.ecartLignes, propose, ecartOffice };
+  return { lignes: propose, ecart: ecartOffice, propose, ecartOffice };
 }
 
 /**
@@ -321,12 +346,19 @@ export function lireLeDessin(brut: unknown): { ok: true; dessin: DessinDuPlan } 
     }
     if (x === null || y === null) return illisible;
     const zone: ZoneDessinee = { type, nom, L, l, x, y };
-    if (type === "haie" && z.lignesHaie !== undefined && z.lignesHaie !== null) {
-      const n = z.lignesHaie;
-      if (typeof n !== "number" || !Number.isInteger(n) || n < 1 || n > LIGNES_HAIE_MAX) {
-        return { ok: false, raison: `Le nombre de lignes de « ${appel} » va de 1 à ${LIGNES_HAIE_MAX}.` };
+    if ((type === "haie" || type === "massif") && z.lignes !== undefined && z.lignes !== null) {
+      const n = z.lignes;
+      if (typeof n !== "number" || !Number.isInteger(n) || n < 1 || n > LIGNES_MAX) {
+        return { ok: false, raison: `Le nombre de lignes de « ${appel} » va de 1 à ${LIGNES_MAX}.` };
       }
-      zone.lignesHaie = n;
+      zone.lignes = n;
+    }
+    if ((type === "haie" || type === "massif") && z.ecartLignes !== undefined && z.ecartLignes !== null) {
+      const e = z.ecartLignes;
+      if (typeof e !== "number" || !Number.isFinite(e) || e < 0.05 || e > ECART_MAX_M) {
+        return { ok: false, raison: `L’écart des lignes de « ${appel} » va de 5 cm à ${ECART_MAX_M} m.` };
+      }
+      zone.ecartLignes = e;
     }
     const courbes = lireTable(z.courbes, COTES, courbure);
     const coins = lireTable(z.coins, COINS, decalage);
@@ -478,7 +510,12 @@ export function croquisDuDessin(d: DessinDuPlan, pointDEau: "compteur" | "robine
         largeurFraction: f(q.L),
         hauteurFraction: f(q.l),
       };
-      if (haie && z.lignesHaie !== undefined) lue.lignesHaie = z.lignesHaie;
+      // **Une haie part avec son nombre de lignes** : le calcul ne connaît que
+      // sa longueur. **Un massif part avec son écart**, quand il l'a donné :
+      // coupé en morceaux, chacun refait ses lignes sur sa propre largeur.
+      const lignes = lignesDeLaZone(z.type, z.L, z.l, z);
+      if (haie && lignes) lue.lignes = lignes.lignes;
+      if (z.type === "massif" && lignes && (z.lignes || z.ecartLignes)) lue.ecartLignes = lignes.ecart;
       return lue;
     });
   });

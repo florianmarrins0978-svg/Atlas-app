@@ -7,7 +7,7 @@ import { longueurDeLAmenee } from "@/lib/arrosage/geometrie-croquis";
 import {
   croquisDuDessin,
   empriseDesDalles,
-  lignesProposees,
+  lignesDeLaZone,
   lireLeDessin,
   morceauxDe,
   NOMS_DES_ZONES,
@@ -76,7 +76,7 @@ import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 
 type Sorte = ZoneDessinee["type"] | "maison";
 type Outil = "arbre" | "dalles" | "nourrice" | "compteur" | "robinet";
-type Zone = Omit<ZoneDessinee, "type"> & { type: Sorte; id: string; lignesChoisies?: boolean };
+type Zone = Omit<ZoneDessinee, "type"> & { type: Sorte; id: string };
 type Arbre = { id: string; nom: string | null; d: number; x: number; y: number };
 type Dalles = Rangee & { id: string; nom: string | null; L: number; l: number; e: number | null; arrosees?: boolean };
 
@@ -433,7 +433,8 @@ export default function DessinerLePlan({
           .filter((z) => z.type !== "maison")
           .map((z): ZoneDessinee => ({
             type: z.type as ZoneDessinee["type"], nom: z.nom, L: z.L, l: z.l, x: z.x, y: z.y,
-            ...(z.lignesHaie !== undefined ? { lignesHaie: z.lignesHaie } : {}),
+            ...(z.lignes !== undefined ? { lignes: z.lignes } : {}),
+            ...(z.ecartLignes !== undefined ? { ecartLignes: z.ecartLignes } : {}),
             ...(z.courbes ? { courbes: z.courbes } : {}),
             ...(z.coins ? { coins: z.coins } : {}),
           })),
@@ -514,7 +515,8 @@ export default function DessinerLePlan({
     const hors = debordent.includes(z);
     const est = choisie === z.id;
     const { parts } = morceaux(z);
-    const cotes = `${ecrit(z.L)} × ${ecrit(z.l)}${z.type === "haie" && z.lignesHaie ? `, ${ecritLignes(z.lignesHaie)}` : ""}${parts.length > 1 ? `, en ${parts.length} parts` : ""}`;
+    const lz = z.type === "haie" || z.type === "massif" ? lignesDeLaZone(z.type, z.L, z.l, z) : null;
+    const cotes = `${ecrit(z.L)} × ${ecrit(z.l)}${lz ? `, ${ecritLignes(lz.lignes)}` : ""}${parts.length > 1 ? `, en ${parts.length} parts` : ""}`;
     const deuxLignes = z.l >= px(30);
     const tient = (t: string, taille: number) => Math.min(px(taille), Math.max(px(6), (z.L - px(5)) / (t.length * 0.56)));
     // Coupée, la zone porte son nom dans son plus grand morceau : au centre, il
@@ -869,6 +871,29 @@ export default function DessinerLePlan({
   );
 }
 
+/** La zone vue de dessus, ses lignes et leur écart coté, puis le tube qu'elles
+ *  demandent : ce que la planche du 22 octobre 2026 lui a montré. */
+function CoupeDesLignes({ lignes, ecart, long, travers }: { lignes: number; ecart: number; long: number; travers: number }) {
+  const W = 10, H = Math.max(1.6, Math.min(5, (W * travers) / Math.max(long, 0.1))), k = H / travers;
+  return (
+    <>
+      <svg viewBox={`-2.8 -0.6 ${W + 5.6} ${H + 1.4}`} style={{ display: "block", width: "100%", height: "auto", marginTop: 10 }} aria-hidden="true">
+        <rect x={0} y={0} width={W} height={H} rx={0.08} fill={voile(colors.plein, 0.34)} stroke={colors.rustDeep} strokeWidth={0.05} />
+        {Array.from({ length: lignes }, (_, i) => {
+          const y = Math.min(travers, (i + 1) * ecart) * k;
+          return <line key={i} x1={0.15} y1={y} x2={W - 0.15} y2={y} stroke={colors.ink} strokeWidth={0.07} />;
+        })}
+        <line x1={-0.5} y1={0} x2={-0.5} y2={ecart * k} stroke={colors.orTexte} strokeWidth={0.04} />
+        <line x1={-0.65} y1={0} x2={-0.35} y2={0} stroke={colors.orTexte} strokeWidth={0.04} />
+        <line x1={-0.65} y1={ecart * k} x2={-0.35} y2={ecart * k} stroke={colors.orTexte} strokeWidth={0.04} />
+        <text x={-0.62} y={(ecart * k) / 2 + 0.14} textAnchor="end" fontSize={0.42} fontWeight={600} fill={colors.orTexte}>{Math.round(ecart * 100)} cm</text>
+        <text x={W / 2} y={H + 0.6} textAnchor="middle" fontSize={0.42} fill={colors.inkSoft}>{ecrit(long)} m</text>
+      </svg>
+      <p className="mt-2 text-[15px]" style={{ color: colors.inkSoft }}>{Math.ceil(lignes * long - 1e-9)} m de tube.</p>
+    </>
+  );
+}
+
 function remplissage(type: Sorte): string {
   if (type === "maison") return voile(colors.muted, 0.42);
   if (type === "gazon") return voile(colors.vertPale, 0.75);
@@ -980,10 +1005,12 @@ function FeuilleDuDessin({
   const [dist, setDist] = useState(da ? ecrit(longueurDeLaRangee(da)) : "");
   /** « On les arrose ? » Pas de réponse d'office : il la donne. */
   const [arrosees, setArrosees] = useState<boolean | null>(da?.arrosees ?? null);
-  const [lignes, setLignes] = useState<{ n: number | null; choisies: boolean }>({
-    n: z?.lignesHaie ?? lignesProposees(z ? z.l || null : null),
-    choisies: !!z?.lignesChoisies,
-  });
+  /** Une seule source à la fois : le nombre choisi aux boutons, ou l'écart
+   *  tapé ; ni l'un ni l'autre, c'est la proposition de la règle. */
+  const [reglage, setReglage] = useState<{ lignes?: number; ecartLignes?: number }>(
+    z?.lignes ? { lignes: z.lignes } : z?.ecartLignes ? { ecartLignes: z.ecartLignes } : {}
+  );
+  const [ecartTape, setEcartTape] = useState(z?.ecartLignes ? String(Math.round(z.ecartLignes * 100)) : "");
   const [invalides, setInvalides] = useState<string[]>([]);
   const [erreur, setErreur] = useState("");
 
@@ -998,7 +1025,7 @@ function FeuilleDuDessin({
     setInvalides((xs) => xs.filter((x) => x !== champ));
     setErreur("");
   };
-  const propose = z?.type === "haie" ? lignesProposees(nombre(l)) : null;
+  const goutte = z?.type === "haie" || z?.type === "massif" ? lignesDeLaZone(z.type, nombre(L), nombre(l), reglage) : null;
 
   function refuse(champs: [string, number | null][]): boolean {
     const vides = champs.filter(([, v]) => v === null).map(([c]) => c);
@@ -1014,7 +1041,7 @@ function FeuilleDuDessin({
       if (refuse([["L", nL], ["l", nl]])) return;
       const trop = [nL! > cadre.L + 1e-9 ? "L" : null, nl! > cadre.l + 1e-9 ? "l" : null].filter((x): x is string => x !== null);
       if (trop.length) { setInvalides(trop); setErreur(neTientPas(cadre)); return; }
-      onZone({ ...z, nom: leNom, L: nL!, l: nl!, ...(z.type === "haie" ? { lignesHaie: lignes.n ?? propose ?? 1, lignesChoisies: lignes.choisies } : {}) }, neuf);
+      onZone({ ...z, nom: leNom, L: nL!, l: nl!, lignes: goutte ? reglage.lignes : undefined, ecartLignes: goutte ? reglage.ecartLignes : undefined }, neuf);
     } else if (ar) {
       const nd = nombre(d);
       if (refuse([["d", nd]])) return;
@@ -1105,13 +1132,19 @@ function FeuilleDuDessin({
           <div className="mt-3 grid grid-cols-2 gap-2">
             <span className="min-w-0">
               {libelle("feuille-L", da ? "Longueur d’une dalle" : "Longueur", 0)}
-              {nombreChamp("feuille-L", L, touche("L", setL), !da)}
+              {nombreChamp("feuille-L", L, (v) => {
+                touche("L", setL)(v);
+                // Le massif se compte sur son petit côté : la longueur peut l'être.
+                if (z?.type === "massif" && reglage.lignes) setReglage({});
+              }, !da)}
             </span>
             <span className="min-w-0">
               {libelle("feuille-l", da ? "Largeur d’une dalle" : "Largeur", 0)}
               {nombreChamp("feuille-l", l, (v) => {
                 touche("l", setl)(v);
-                if (z?.type === "haie" && !lignes.choisies) setLignes({ n: lignesProposees(nombre(v)), choisies: false });
+                // Une largeur changée garde l'écart tapé, mais un nombre de
+                // lignes n'avait de sens que pour l'ancienne largeur.
+                if (reglage.lignes) setReglage({});
               })}
             </span>
           </div>
@@ -1146,15 +1179,38 @@ function FeuilleDuDessin({
         {noteDalles && <p className="mt-[6px] text-[13px]" style={{ color: colors.muted }}>{noteDalles}</p>}
         {erreur && <p role="alert" className="mt-2 text-[14px] font-semibold" style={{ color: colors.alert }}>{erreur}</p>}
 
-        {z?.type === "haie" && (
+        {z && (z.type === "haie" || z.type === "massif") && (
           <div className="mt-[14px]">
             <span id="lignes-titre" className={`block ${libelleCaps}`} style={{ color: colors.muted }}>Lignes de goutte-à-goutte</span>
             <div role="group" aria-labelledby="lignes-titre" className="mt-[6px] grid items-center gap-2" style={{ gridTemplateColumns: "56px 1fr 56px" }}>
-              <button type="button" aria-label="Une ligne de moins" disabled={!lignes.n || lignes.n <= 1} onClick={() => setLignes({ n: Math.max(1, (lignes.n ?? 1) - 1), choisies: true })} className="min-h-[52px] rounded-full text-[22px] disabled:opacity-45" style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}>−</button>
-              <output aria-live="polite" className="text-center text-[17px]">{lignes.n ? ecritLignes(lignes.n) : "?"}</output>
-              <button type="button" aria-label="Une ligne de plus" onClick={() => setLignes({ n: (lignes.n ?? propose ?? 1) + 1, choisies: true })} className="min-h-[52px] rounded-full text-[22px]" style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}>+</button>
+              <button type="button" aria-label="Une ligne de moins" disabled={!goutte || goutte.lignes <= 1} onClick={() => { if (goutte) { setReglage({ lignes: goutte.lignes - 1 }); setEcartTape(""); } }} className="min-h-[52px] rounded-full text-[22px] disabled:opacity-45" style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}>−</button>
+              <output aria-live="polite" className="text-center text-[17px]">{goutte ? ecritLignes(goutte.lignes) : "?"}</output>
+              <button type="button" aria-label="Une ligne de plus" disabled={!goutte} onClick={() => { if (goutte) { setReglage({ lignes: goutte.lignes + 1 }); setEcartTape(""); } }} className="min-h-[52px] rounded-full text-[22px] disabled:opacity-45" style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.cream, color: colors.ink }}>+</button>
             </div>
-            {propose && <p className="mt-[6px] text-[13px]" style={{ color: colors.muted }}>{propose === lignes.n ? "Proposé." : `Proposé : ${ecritLignes(propose)}.`}</p>}
+            {/* Sa demande du 22 octobre 2026 : l'écart s'écrit aussi, en cm. Le
+                champ et les boutons se tiennent : taper l'écart refait le nombre
+                de lignes, un bouton refait l'écart. */}
+            <div className="mt-[10px] grid grid-cols-2 items-end gap-2">
+              <span className="min-w-0">
+                {libelle("feuille-ecart", "Écart, cm", 0)}
+                {nombreChamp("feuille-ecart", ecartTape !== "" || !goutte ? ecartTape : String(Math.round(goutte.ecart * 100)), (v) => {
+                  setEcartTape(v);
+                  // Sous 5 cm, l'écart ne se pose pas : la vérification du serveur
+                  // le refuserait, et la proposition reste.
+                  const n = nombre(v);
+                  setReglage(n && n >= 5 ? { ecartLignes: n / 100 } : {});
+                })}
+              </span>
+              {goutte && <p className="pb-3 text-[14px]" style={{ color: colors.inkSoft }}>La première à {Math.round(goutte.ecart * 100)} cm du bord.</p>}
+            </div>
+            {goutte && (
+              <p className="mt-[6px] text-[13px]" style={{ color: colors.muted }}>
+                {goutte.lignes === goutte.propose && Math.abs(goutte.ecart - goutte.ecartOffice) < 0.005
+                  ? "Proposé."
+                  : `Proposé : ${ecritLignes(goutte.propose)}, tous les ${Math.round(goutte.ecartOffice * 100)} cm.`}
+              </p>
+            )}
+            {goutte && nombre(L) && nombre(l) && <CoupeDesLignes lignes={goutte.lignes} ecart={goutte.ecart} long={z.type === "haie" ? nombre(L)! : Math.max(nombre(L)!, nombre(l)!)} travers={z.type === "haie" ? nombre(l)! : Math.min(nombre(L)!, nombre(l)!)} />}
           </div>
         )}
 

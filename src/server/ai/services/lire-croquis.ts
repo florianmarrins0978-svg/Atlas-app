@@ -62,7 +62,9 @@ export type ZoneLue = {
    * donne (sa demande du 18 octobre 2026 : la largeur PROPOSE, il décide) ; la
    * photo, non, et le calcul en pose alors une.
    */
-  lignesHaie?: number;
+  lignes?: number;
+  /** Un massif : l'écart de ses lignes, en mètres, quand il l'a donné sur le dessin. */
+  ecartLignes?: number;
   /**
    * Où la zone se trouve SUR LE DESSIN, en fraction (0 à 1) — pas en mètres.
    *

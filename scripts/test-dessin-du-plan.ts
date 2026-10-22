@@ -35,7 +35,7 @@ import {
   AIMANT_M,
   croquisDuDessin,
   lireLeDessin,
-  lignesProposees,
+  lignesDeLaZone,
   morceauxDe,
   phrasesDuDessin,
   redressee,
@@ -56,7 +56,7 @@ const dire = (bon: boolean, quoi: string) => {
 const debitHaie = (lignes: number) => {
   const p = calculerPlan({
     seau: 10, temps: 20, pression: 3, compteur: "oui",
-    zones: [{ id: 1, type: "haie", nom: "Haie", ml: 10, lignesHaie: lignes, sortieGoutte: "ligne" }],
+    zones: [{ id: 1, type: "haie", nom: "Haie", ml: 10, lignes, sortieGoutte: "ligne" }],
   } as never) as { secteurs: { debit: number }[] };
   return p.secteurs.reduce((s, x) => s + x.debit, 0);
 };
@@ -84,7 +84,7 @@ const brut = {
   terrain: { L: 34, l: 16 },
   zones: [
     { type: "gazon", nom: "Pelouse arrière", L: 12, l: 12, x: 0, y: 0 },
-    { type: "haie", nom: "Haie du fond", L: 15, l: 2.5, x: 14, y: 13, lignesHaie: 3 },
+    { type: "haie", nom: "Haie du fond", L: 15, l: 2.5, x: 14, y: 13, lignes: 3 },
   ],
   nourrice: { x: 13, y: 6 },
   piquage: { x: 1, y: 1 },
@@ -100,7 +100,7 @@ if (dessin.ok) {
   dire(Math.abs((p.largeurFraction ?? 0) - 12 / 34) < 1e-4 && Math.abs((p.hauteurFraction ?? 0) - 12 / 34) < 1e-4, "son emprise aussi");
   const h = c.zones[1];
   dire(h.ml === 15 && h.L === null && h.l === null, "la haie part en mètres linéaires");
-  dire(h.lignesHaie === 3, "avec le nombre de lignes qu'il a choisi");
+  dire(h.lignes === 3, "avec le nombre de lignes qu'il a choisi");
   dire(c.pointDEau === "compteur", "le point d'eau suit son choix du piquage");
   dire(c.nourrice !== null && Math.abs(c.nourrice.x - 13 / 34) < 1e-4, "la nourrice est où il l'a posée");
   dire(c.reserves.length === 0, "rien n'est dit manquant quand rien ne manque");
@@ -126,16 +126,30 @@ refuse("12 × 12 dans un terrain de 10 × 10 est refusé", { ...brut, terrain: {
 refuse("une zone posée hors du terrain est refusée", { ...brut, zones: [{ ...brut.zones[0], x: 30 }] });
 refuse("une nourrice hors du terrain est refusée", { ...brut, nourrice: { x: 50, y: 2 } });
 refuse("cent zones, ce n'est plus un jardin", { ...brut, zones: Array.from({ length: 100 }, () => brut.zones[0]) });
-refuse("un nombre de lignes absurde est refusé", { ...brut, zones: [{ ...brut.zones[1], lignesHaie: 1e6 }] });
+refuse("un nombre de lignes absurde est refusé", { ...brut, zones: [{ ...brut.zones[1], lignes: 1e6 }] });
+refuse("un écart de 1 cm est refusé", { ...brut, zones: [{ ...brut.zones[1], ecartLignes: 0.01 }] });
 
 dire(
   zonesQuiDebordent({ terrain: { L: 10, l: 10 }, zones: [{ type: "gazon", nom: null, L: 12, l: 12, x: 0, y: 0 }] }).length === 1,
   "la même règle que l'écran dit quelle zone ne tient pas",
 );
 
-// ── La proposition de lignes, sa règle : une ligne arrose une bande de 1 m ──
-dire(lignesProposees(1) === 1 && lignesProposees(2) === 2 && lignesProposees(2.5) === 3 && lignesProposees(4.5) === 5, "1 m, 2 m, 2,5 m, 4,5 m : 1, 2, 3, 5 lignes");
-dire(lignesProposees(null) === null, "sans largeur, aucune proposition");
+// ── La proposition de lignes : un écart du bord, puis un écart entre chaque ──
+// Ses règles du 21 et du 22 octobre 2026 : haie 50 cm, massif 60 cm d'office,
+// la première à un écart du bord, jamais à 0 ; 2 m de haie font 4 lignes.
+{
+  const haie = (l: number, donne = {}) => lignesDeLaZone("haie", 12, l, donne);
+  dire(haie(2)?.lignes === 4 && haie(2)?.ecart === 0.5, "une haie de 2 m : 4 lignes tous les 50 cm");
+  dire(haie(2.5)?.lignes === 5, "une haie de 2,5 m : 5 lignes");
+  dire(haie(0.3)?.lignes === 1, "une haie plus étroite que l'écart garde une ligne");
+  const choisi = haie(2, { lignes: 3 });
+  dire(choisi?.lignes === 3 && Math.abs((choisi?.ecart ?? 0) - 2 / 3) < 1e-9 && choisi?.propose === 4, "3 lignes choisies sur 2 m : l'écart se recalcule, la proposition reste dite");
+  const tape = haie(2, { ecartLignes: 0.4 });
+  dire(tape?.lignes === 5 && tape?.ecart === 0.4, "un écart tapé de 40 cm sur 2 m : 5 lignes");
+  dire(lignesDeLaZone("massif", 6, 3, {})?.lignes === 5 && lignesDeLaZone("massif", 3, 6, {})?.lignes === 5, "un massif se compte sur son petit côté, tous les 60 cm");
+  dire(lignesDeLaZone("gazon", 6, 3, {}) === null, "une pelouse n'a pas de lignes");
+  dire(lignesDeLaZone("haie", 12, null, {}) === null, "sans largeur, aucune proposition");
+}
 
 // ── 5. La maison et les dalles qu'on n'arrose pas COUPENT la zone ───────────
 // Ses réponses du 19 octobre : « si on ne les arrose pas, il faudra les
