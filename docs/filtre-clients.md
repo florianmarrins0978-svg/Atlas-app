@@ -4,10 +4,9 @@ Lot du 22 octobre 2026. Branche `lot/filtre-clients`, dossier
 `atlas-app-filtre`. Planche : `appli/facture-mairie-chorus.html`, section
 « Le Filtre, puis voyager dans le temps ».
 
-**État : codé et vérifié à l'écran, PAS encore sur `main`.** Il part de la
-branche du lot « Facturer une mairie » (`lot/facture-mairie-code`), parce que
-la liste « Services publics » n'existe que là. Les deux lots partent sur `main`
-ensemble, après la batterie, que le patron a demandé de ne pas lancer.
+**État : sur `main` le 23 octobre 2026**, avec le lot « Facturer une mairie »
+et cinq autres, après une batterie commune. Son paragraphe d'architecture est
+devenu le **§487**.
 
 ## 1. Ce que le patron a demandé
 

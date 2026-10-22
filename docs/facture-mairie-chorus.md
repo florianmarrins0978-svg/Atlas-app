@@ -3,10 +3,9 @@
 Lot du 22 octobre 2026. Branche `lot/facture-mairie-code`, dossier
 `atlas-app-chorus`. Planche : `appli/facture-mairie-chorus.html`.
 
-**État : codé et vérifié écran par écran, PAS encore sur `main`.** C'est un lot
-de niveau 3 (une migration, et de l'argent). La batterie complète n'a pas été
-lancée, à la demande du patron. Elle se lance avec son accord, puis le lot part
-sur `main`.
+**État : sur `main` le 23 octobre 2026**, avec six autres lots, après une
+batterie commune. Sa migration a pris le numéro **0137** et son paragraphe
+d'architecture le **§486** (trois lots portaient un 0135, cinq un §480).
 
 ## 1. Ce que le brief disait, confronté au code
 

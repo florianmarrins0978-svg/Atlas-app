@@ -9,7 +9,7 @@
 
 Codé : `/reglages/banque` (patron seul, hors du sommaire), retour `/api/banque/retour`, client Enable Banking `src/server/banque/enable-banking.ts`, règle pure `src/lib/rapprochement-bancaire.ts`. Lecture seule. À jouer sur son espace avec sa clé : `docs/banque-essai.md`. Le reste de la planche `appli/banque-qui-previent.html` n'est pas codé.
 
-## IMPORTER DEVIS ET FACTURES, CODÉ (22 octobre 2026), PAS ENCORE SUR `main`
+## IMPORTER DEVIS ET FACTURES, CODÉ (22 octobre 2026), SUR `main` LE 23 OCTOBRE 2026 (batterie commune)
 
 Branche `claude/importer-devis-factures`. Migration `drizzle/0136_pieces_importees.sql`
 (deux tables neuves sous FORCE RLS). Écrans `/clients/importer` et la porte de
@@ -21,7 +21,7 @@ Branche `claude/importer-devis-factures`. Migration `drizzle/0136_pieces_importe
 
 Un appui sous « Modifier ses coordonnées » rend un zip des devis, factures, fiches d'entretien (désormais en PDF) et avoirs du client, filtré par rôle. Planche retenue : A. Devis accepté gardé 10 ans (sa décision, lot séparé). Aucun des deux lots n'est sur `main` : la batterie entière n'a pas été jouée, à sa demande. `ARCHITECTURE.md` §483, `docs/telecharger-un-client.md`.
 
-## LE FILTRE SUR LES LISTES DE CLIENTS, CODÉ (22 octobre 2026), PAS ENCORE SUR `main`
+## LE FILTRE SUR LES LISTES DE CLIENTS, CODÉ (22 octobre 2026), SUR `main` LE 23 OCTOBRE 2026 (batterie commune)
 
 Branche `lot/filtre-clients`, dossier `atlas-app-filtre`, **posée sur
 `lot/facture-mairie-code`** : la liste « Services publics » n'existe que là.
@@ -30,7 +30,7 @@ demande). Règle pure : `src/lib/tri-clients.ts` ; bouton commun avec Terminés 
 `src/components/atlas/BoutonFiltre.tsx`. Suite neuve : `test-tri-clients.ts`.
 Détail : `docs/filtre-clients.md`.
 
-## FACTURER UNE MAIRIE, CODÉ (22 octobre 2026), PAS ENCORE SUR `main`
+## FACTURER UNE MAIRIE, CODÉ (22 octobre 2026), SUR `main` LE 23 OCTOBRE 2026 (batterie commune)
 
 Branche `lot/facture-mairie-code`, dossier `atlas-app-chorus`, migration
 `0137_client_public_et_chorus.sql` (expand seul). Niveau 3 : **la batterie n'a
