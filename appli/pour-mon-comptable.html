@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pour mon comptable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  POUR MON COMPTABLE — 23 octobre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  CE QU'IL A DIT :
+
+    « L'utilisateur chaque année va voir son comptable pour qu'il vérifie si
+      toutes ses sorties d'argent sont bien justifiées. Il lui amène un relevé
+      de banque mois par mois, et tous ses tickets de caisse, essence,
+      nourriture etc. » Connexion à sa banque, sinon une feuille du mois ; un
+      code couleur par catégorie ; les photos des tickets enregistrées ; les
+      virements inclus et justifiés ; un bouton Check up qui vérifie chaque
+      nouvelle ligne, prévient quand un montant n'a pas de ticket, et laisse
+      valider avec la mention « ticket perdu ».
+
+  CE QUI EXISTE DÉJÀ, ET QUE CETTE PLANCHE RÉEMPLOIE (rien n'est refait) :
+
+    · les tickets photographiés : table achats_tva, photo_cle, avec leur NATURE
+      (carburant, matériel, repas, hôtel, transport, autre), src/lib/achat-tva.ts.
+      Ce sont les tickets de la TVA DÉDUCTIBLE (ses achats), pas de la collectée.
+    · la banque : Réglages, Ma banque, en essai par Enable Banking
+      (docs/banque-essai.md). Elle lit déjà les virements REÇUS ; les débits
+      viennent du même relevé. Pour ses futurs clients, il faut un contrat
+      (docs/A-FAIRE.md §13).
+    · les virements reçus : la règle qui propose la facture existe
+      (src/lib/rapprochement-bancaire.ts).
+
+  CE QUE LA PLANCHE DÉCIDE, ET QUI EST À SON CHOIX :
+
+    · la place : une carte sous « Ma TVA à déclarer », dans Terminés, de même
+      forme. Pas un sixième onglet : la barre en a cinq.
+    · le Check up relie TOUT SEUL un ticket quand un seul tombe juste (même
+      montant au centime, ticket daté du jour du débit ou des cinq jours
+      d'avant : une carte bancaire passe souvent deux ou trois jours après).
+      Le lien se défait d'un appui. Deux tickets possibles : il demande. Aucun :
+      il prévient. Relier ne change aucun montant de TVA : c'est un classement.
+    · « Ticket perdu » : la dépense reste justifiée par sa mention, mais sa TVA
+      n'est pas déduite. Sans facture, la TVA ne se récupère pas (CGI art. 271).
+      L'écran le dit AVANT qu'il valide.
+    · ajouté, et pas demandé : « Préparer le dossier ». Un PDF par année, mois
+      par mois, chaque ligne de la banque suivie de son ticket. C'est ce qu'il
+      porte au comptable aujourd'hui en papier.
+
+  LES COULEURS DES CATÉGORIES sont une proposition : elles n'existent pas dans
+  src/lib/design-tokens.ts. Codées, elles y entreront comme jetons, avec leur
+  valeur pour les chartes sombres (bouton Nuit ci-dessous).
+
+  AUCUNE LIGNE DE L'APPLICATION N'A BOUGÉ (CLAUDE.md §3 bis). Les noms,
+  montants et dates sont des exemples.
+*/
+:root{
+  --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --plein:#7d9a6d;
+  --or:#B98B47; --trait:rgba(28,28,26,.12); --filet:rgba(28,28,26,.07);
+  --scene:#e6e3dc; --alerte:#a8552f; --rust:#9C3B2E;
+  /* les catégories */
+  --c-carburant:#3d6e9e; --c-repas:#4f8a3c; --c-materiel:#b9732a;
+  --c-hotel:#7a5aa6; --c-transport:#2b8586; --c-autre:#8a8578;
+  --c-virement:#a3506b; --c-recu:#2f3b2f;
+  --serif:"Playfair Display",ui-serif,Georgia,serif;
+  --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+body.nuit{
+  --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --pin:#8fae86; --papier:#20241f; --plein:#8fae86;
+  --or:#c6a15b; --trait:rgba(233,232,222,.12); --filet:rgba(233,232,222,.08);
+  --scene:#070908; --alerte:#d38a63; --rust:#d38a63;
+  --c-carburant:#82aee0; --c-repas:#93c47a; --c-materiel:#e3a866;
+  --c-hotel:#b9a0de; --c-transport:#6fc6c4; --c-autre:#a3a597;
+  --c-virement:#e092ab; --c-recu:#8fae86;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 64px}
+button{font-family:inherit;-webkit-tap-highlight-color:transparent;cursor:pointer;color:inherit}
+:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+[hidden]{display:none!important}
+
+.bandeau{background:var(--encre);color:var(--fond);padding:18px 20px;font-size:14px;line-height:1.6}
+body.nuit .bandeau{background:#000;color:var(--encre)}
+.bandeau b{color:#fff}
+body.nuit .bandeau b{color:var(--encre)}
+.bandeau .dedans{max-width:1240px;margin:0 auto}
+.bandeau p{margin:0}
+.bandeau p + p{margin-top:8px}
+
+.etats{position:sticky;top:0;z-index:20;background:var(--scene);
+       border-bottom:1px solid var(--trait);padding:12px 16px 13px}
+.etats .groupe{max-width:1240px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.etats .groupe + .groupe{margin-top:8px}
+.etats .quoi{font:600 10px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--gris);margin-right:4px}
+.etats button{border:1px solid var(--trait);background:var(--carte);color:var(--encre-douce);
+              border-radius:999px;padding:10px 14px;font:400 13px/1 var(--sans);min-height:44px}
+.etats button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+body.nuit .etats button[aria-pressed="true"]{color:#101210}
+
+.planches{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;max-width:1320px;margin:30px auto 0;padding:0 16px}
+.planche{width:390px;max-width:100%}
+.planche .nom{margin:0 0 4px;font:500 19px/1.2 var(--serif)}
+.planche .idee{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:var(--encre-douce)}
+.tel{width:390px;max-width:100%;border-radius:26px;overflow:hidden;box-shadow:0 16px 44px rgba(20,18,14,.22);
+     background:var(--fond);min-height:760px;padding-bottom:28px}
+
+.caps{font:600 11px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase}
+.entete{padding:30px 24px 0}
+.entete h1{margin:0;font:400 34px/1.1 var(--serif);letter-spacing:-.01em}
+.entete .sous{display:block;margin-top:10px;color:var(--or)}
+.retour{border:0;background:none;padding:18px 18px 0;font-size:15px;color:var(--encre-douce);min-height:44px}
+
+.plein{border:0;border-radius:999px;background:var(--plein);color:var(--carte);padding:12px 22px;font:500 15px/1 var(--sans);min-height:46px}
+body.nuit .plein{color:#101210}
+.leger{border:0;background:none;color:var(--encre-douce);padding:10px 8px;font:500 14px/1 var(--sans);min-height:44px}
+.contour{border:1px solid var(--trait);background:var(--carte);border-radius:999px;padding:11px 18px;font:500 14px/1 var(--sans);min-height:44px;color:var(--encre)}
+.gestes{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px}
+
+/* ── Terminés : les deux cartes d'outil ── */
+.carte-outil{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 26px;padding:20px 18px;
+             border-radius:4px;background:var(--carte);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--or) 55%,transparent);text-decoration:none;color:var(--encre)}
+.carte-outil + .carte-outil{margin-top:12px}
+.carte-outil .t{display:block;color:var(--or);font-weight:700}
+.carte-outil .p{display:block;margin-top:5px;font:400 17px/1.2 var(--serif)}
+.carte-outil .v{font:400 21px/1 var(--serif);color:var(--rust);font-variant-numeric:tabular-nums;white-space:nowrap}
+.carte-outil .v.ok{color:var(--pin);font-size:16px}
+.carte-outil.neuve{outline:2px dashed color-mix(in srgb,var(--plein) 70%,transparent);outline-offset:5px}
+.liste-t{margin:28px 26px 0;padding:0;list-style:none}
+.liste-t li{padding:14px 0;border-top:1px solid var(--filet);font-size:15px}
+.liste-t li span{display:block;font-size:12.5px;color:var(--gris);margin-top:2px}
+
+/* ── Les couleurs, en pastilles ── */
+.pastille{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none;vertical-align:middle}
+.legende{display:flex;flex-wrap:wrap;gap:6px 12px;margin:18px 24px 0;font-size:12.5px;color:var(--encre-douce)}
+.legende span{display:inline-flex;align-items:center;gap:6px}
+
+/* ── L'année ── */
+.source{margin:16px 24px 0;display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--encre-douce)}
+.source .lien{border:0;background:none;color:var(--pin);font:500 13.5px/1 var(--sans);padding:8px 0;min-height:36px;margin-left:auto}
+.checkup{margin:20px 24px 0;display:flex;align-items:center;gap:12px}
+.checkup .plein{flex:1}
+.checkup small{display:block;font-size:12px;color:var(--gris);text-align:center;margin-top:8px}
+.mois{list-style:none;margin:22px 24px 0;padding:0}
+.mois li{border-top:1px solid var(--filet)}
+.mois button{display:block;width:100%;border:0;background:none;text-align:left;padding:14px 0 13px}
+.mois .haut{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.mois .nom-m{font:400 18px/1.2 var(--serif)}
+.mois .etat{font-size:13px;color:var(--pin)}
+.mois .etat.manque{color:var(--alerte);font-weight:500}
+.mois .etat.vide{color:var(--gris)}
+.barre{display:flex;height:6px;border-radius:3px;overflow:hidden;margin-top:9px;background:var(--filet)}
+.barre i{display:block;height:100%}
+.dossier{margin:22px 24px 0}
+.dossier .contour{width:100%}
+
+/* ── Le mois ── */
+.resume{margin:14px 24px 0;display:flex;gap:18px;font-size:13px;color:var(--encre-douce)}
+.resume b{display:block;font:400 19px/1.2 var(--serif);color:var(--encre);font-variant-numeric:tabular-nums}
+.filtres{display:flex;gap:6px;overflow-x:auto;margin:16px 0 0;padding:0 24px 4px;scrollbar-width:none}
+.filtres button{flex:none;border:1px solid var(--trait);background:var(--carte);border-radius:999px;padding:8px 12px;font-size:13px;min-height:40px;display:inline-flex;align-items:center;gap:6px;color:var(--encre-douce)}
+.filtres button[aria-pressed="true"]{border-color:var(--encre);color:var(--encre)}
+.jour{margin:18px 24px 0;font:600 10.5px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
+.lignes{list-style:none;margin:6px 24px 0;padding:0}
+.ligne{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--filet);align-items:flex-start}
+.ligne:first-child{border-top:0}
+.ligne .trait{width:4px;align-self:stretch;border-radius:2px;flex:none}
+.ligne .milieu{flex:1;min-width:0}
+.ligne .lib{font-size:15px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ligne .cat{font-size:12.5px;margin-top:2px}
+.ligne .preuve{display:flex;align-items:center;gap:7px;margin-top:6px;font-size:12.5px;color:var(--encre-douce)}
+.ligne .preuve.manque{color:var(--alerte);font-weight:500}
+.ligne .preuve.perdu{color:var(--gris);font-style:italic}
+.vignette{width:22px;height:28px;border-radius:3px;background:linear-gradient(180deg,#fff 0 30%,#e8e4da 30% 34%,#fff 34% 52%,#e8e4da 52% 56%,#fff 56%);
+          box-shadow:0 0 0 1px var(--trait);flex:none}
+body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 34%,#d9d6cc 34% 52%,#aaa69a 52% 56%,#d9d6cc 56%)}
+.ligne .m{font:400 16px/1.3 var(--serif);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ligne .m.plus{color:var(--pin)}
+
+/* ── Le Check up ── */
+.bilan{margin:20px 24px 0;padding:16px 18px;border-radius:18px;background:var(--papier)}
+.bilan .caps{color:var(--pin);margin:0 0 8px}
+.bilan p{margin:0;font:400 17px/1.35 var(--serif)}
+.bilan p + p{margin-top:4px}
+.bilan p.caps{font:600 11px/1 var(--sans);letter-spacing:.18em}
+.bilan .manque{color:var(--alerte)}
+.cartes{display:flex;flex-direction:column;gap:12px;margin:14px 24px 0}
+.carte{border-radius:18px;padding:16px 18px;background:var(--carte);border-left:0}
+.carte .tete{display:flex;align-items:center;gap:8px;font-size:12.5px}
+.carte .qui{margin:8px 0 0;font:400 17px/1.3 var(--serif)}
+.carte .montant{margin:2px 0 0;font:400 20px/1.2 var(--serif);font-variant-numeric:tabular-nums}
+.carte .texte{margin:6px 0 0;font-size:13.5px;line-height:1.45;color:var(--encre-douce)}
+.carte .texte.alerte{color:var(--alerte)}
+.carte .fait{margin:10px 0 0;font-size:13.5px;color:var(--pin)}
+.carte .fait.gris{color:var(--gris);font-style:italic}
+.choix{display:flex;flex-direction:column;gap:1px;margin-top:12px;border-radius:12px;overflow:hidden;background:var(--filet)}
+.choix button{display:flex;justify-content:space-between;align-items:center;gap:12px;border:0;background:var(--fond);padding:12px 14px;min-height:52px;text-align:left;font-size:14.5px}
+.choix .n{display:block;font-size:12px;color:var(--gris);margin-top:2px}
+.natures{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.natures button{border:1px solid var(--trait);background:var(--fond);border-radius:999px;padding:9px 13px;font-size:13.5px;min-height:42px}
+
+/* ── La feuille à la main ── */
+.depot{margin:20px 24px 0;padding:18px;border-radius:18px;border:1.5px dashed var(--trait);text-align:center}
+.depot p{margin:0 0 12px;font-size:14px;color:var(--encre-douce)}
+.ou{margin:18px 24px 0;text-align:center;font-size:12.5px;color:var(--gris)}
+.saisie{margin:12px 24px 0;padding:16px 18px;border-radius:18px;background:var(--carte)}
+.saisie .rang{display:flex;gap:10px}
+.saisie label{display:block;flex:1;font-size:12px;color:var(--gris)}
+.saisie label + label{margin-top:0}
+.saisie .champ{margin-top:5px;border:1px solid var(--trait);border-radius:10px;padding:11px 12px;font-size:15px;color:var(--encre);background:var(--fond);min-height:44px}
+.saisie .champ.vide{color:var(--gris)}
+.saisie .rang + .rang, .saisie .rang + label, .saisie label + .rang{margin-top:12px}
+.saisie > label + label{margin-top:12px}
+.sens{display:flex;gap:6px;margin-top:5px}
+.sens span{flex:1;text-align:center;border:1px solid var(--trait);border-radius:999px;padding:10px;font-size:14px}
+.sens span.oui{background:var(--papier);border-color:var(--encre-douce)}
+
+.note{max-width:1240px;margin:44px auto 0;padding:0 16px}
+.note h2{font:500 21px/1.2 var(--serif);margin:0 0 10px}
+.note table{border-collapse:collapse;width:100%;font-size:14px;background:var(--carte);border-radius:12px;overflow:hidden}
+.note td{padding:11px 14px;border-top:1px solid var(--filet);vertical-align:top}
+.note tr:first-child td{border-top:0}
+.note td:first-child{width:34%;font-weight:500}
+@media (max-width:440px){.planches{gap:28px}.tel{border-radius:0;box-shadow:none}}
+</style>
+</head>
+<body>
+
+<div class="bandeau"><div class="dedans">
+  <p><b>Votre demande du 23 octobre</b> : un endroit qui prépare la visite au comptable. Chaque ligne de la banque, avec son ticket ou sa facture, une couleur par catégorie, et un bouton Check up.</p>
+  <p>Les tickets que vous photographiez déjà dans Ma TVA servent tels quels : rien à refaire. Touchez les boutons dans les écrans, ils répondent.</p>
+</div></div>
+
+<div class="etats">
+  <div class="groupe">
+    <span class="quoi">La banque</span>
+    <button data-source="reliee" aria-pressed="true">Reliée</button>
+    <button data-source="main" aria-pressed="false">À la main</button>
+  </div>
+  <div class="groupe">
+    <span class="quoi">Charte</span>
+    <button data-charte="jour" aria-pressed="true">Origine</button>
+    <button data-charte="nuit" aria-pressed="false">Nuit</button>
+  </div>
+</div>
+
+<div class="planches">
+
+  <!-- 1. Terminés -->
+  <section class="planche">
+    <h2 class="nom">1. Où il se trouve</h2>
+    <p class="idee">Dans Terminés, sous Ma TVA à déclarer, avec la même forme. La barre du bas garde ses cinq onglets.</p>
+    <div class="tel">
+      <header class="entete"><h1>Terminés</h1></header>
+      <div style="height:24px"></div>
+      <a class="carte-outil" href="#">
+        <span><span class="caps t">Ma TVA à déclarer</span><span class="p">Octobre 2026</span></span>
+        <span class="v">1 284 €</span>
+      </a>
+      <a class="carte-outil neuve" href="#" data-aller="annee">
+        <span><span class="caps t">Pour mon comptable</span><span class="p">Année 2026</span></span>
+        <span class="v" data-reste-carte>3 sans ticket</span>
+      </a>
+      <ul class="liste-t">
+        <li>Lala<span>Taille de haies, facture du 20 octobre</span></li>
+        <li>Martins<span>Création de massif, facture du 8 octobre</span></li>
+        <li>Durand<span>Tonte, facture du 2 octobre</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 2. L'année -->
+  <section class="planche">
+    <h2 class="nom">2. L'année, mois par mois</h2>
+    <p class="idee">Chaque mois montre ses couleurs : la barre dit où est parti l'argent, la phrase dit ce qui manque. Le Check up est le seul bouton plein.</p>
+    <div class="tel">
+      <button class="retour" type="button">Terminés</button>
+      <header class="entete" style="padding-top:8px"><h1>Pour mon comptable</h1><span class="caps sous">Année 2026</span></header>
+
+      <div class="source" data-si="reliee"><span class="pastille" style="background:var(--plein)"></span>Crédit Mutuel relié, lu ce matin<button class="lien" type="button">Ma banque</button></div>
+      <div class="source" data-si="main" hidden><span class="pastille" style="background:var(--gris)"></span>Relevé tenu à la main<button class="lien" type="button">Relier ma banque</button></div>
+
+      <div class="checkup"><button class="plein" type="button" data-checkup>Check up</button></div>
+      <p style="margin:8px 24px 0;font-size:12.5px;color:var(--gris);text-align:center" data-dernier>Dernier Check up le 16 octobre</p>
+
+      <div class="legende">
+        <span><i class="pastille" style="background:var(--c-carburant)"></i>Carburant</span>
+        <span><i class="pastille" style="background:var(--c-repas)"></i>Repas</span>
+        <span><i class="pastille" style="background:var(--c-materiel)"></i>Matériel</span>
+        <span><i class="pastille" style="background:var(--c-hotel)"></i>Hôtel</span>
+        <span><i class="pastille" style="background:var(--c-transport)"></i>Train, taxi</span>
+        <span><i class="pastille" style="background:var(--c-virement)"></i>Virement</span>
+        <span><i class="pastille" style="background:var(--c-autre)"></i>Autre</span>
+      </div>
+
+      <ul class="mois">
+        <li><button type="button" data-aller="mois">
+          <span class="haut"><span class="nom-m">Octobre</span><span class="etat manque" data-reste-mois>3 sans ticket</span></span>
+          <span class="barre"><i style="width:24%;background:var(--c-carburant)"></i><i style="width:9%;background:var(--c-repas)"></i><i style="width:31%;background:var(--c-materiel)"></i><i style="width:36%;background:var(--c-virement)"></i></span>
+        </button></li>
+        <li><button type="button">
+          <span class="haut"><span class="nom-m">Septembre</span><span class="etat">Tout est justifié</span></span>
+          <span class="barre"><i style="width:30%;background:var(--c-carburant)"></i><i style="width:12%;background:var(--c-repas)"></i><i style="width:18%;background:var(--c-materiel)"></i><i style="width:6%;background:var(--c-hotel)"></i><i style="width:34%;background:var(--c-virement)"></i></span>
+        </button></li>
+        <li><button type="button">
+          <span class="haut"><span class="nom-m">Août</span><span class="etat">Tout est justifié, 1 ticket perdu</span></span>
+          <span class="barre"><i style="width:41%;background:var(--c-carburant)"></i><i style="width:15%;background:var(--c-repas)"></i><i style="width:8%;background:var(--c-transport)"></i><i style="width:36%;background:var(--c-virement)"></i></span>
+        </button></li>
+        <li><button type="button">
+          <span class="haut"><span class="nom-m">Juillet</span><span class="etat">Tout est justifié</span></span>
+          <span class="barre"><i style="width:35%;background:var(--c-carburant)"></i><i style="width:10%;background:var(--c-repas)"></i><i style="width:25%;background:var(--c-materiel)"></i><i style="width:30%;background:var(--c-virement)"></i></span>
+        </button></li>
+      </ul>
+
+      <div class="dossier"><button class="contour" type="button">Préparer le dossier 2026</button></div>
+    </div>
+  </section>
+
+  <!-- 3. Le mois -->
+  <section class="planche">
+    <h2 class="nom">3. Le relevé d'octobre</h2>
+    <p class="idee">Chaque ligne de la banque, sa couleur à gauche, sa preuve dessous. Les virements reçus montrent leur facture Atlas. Touchez une couleur pour ne voir qu'elle.</p>
+    <div class="tel">
+      <button class="retour" type="button">Année 2026</button>
+      <header class="entete" style="padding-top:8px"><h1>Octobre</h1></header>
+      <div class="resume">
+        <span>Sorties<b>4 862,30 €</b></span>
+        <span>Entrées<b>6 120,00 €</b></span>
+        <span>Sans ticket<b style="color:var(--alerte)" data-reste-chiffre>3</b></span>
+      </div>
+      <div class="filtres" role="group" aria-label="Catégories">
+        <button type="button" aria-pressed="true" data-filtre="tout">Tout</button>
+        <button type="button" aria-pressed="false" data-filtre="manque"><i class="pastille" style="background:var(--alerte)"></i>Sans ticket</button>
+        <button type="button" aria-pressed="false" data-filtre="carburant"><i class="pastille" style="background:var(--c-carburant)"></i>Carburant</button>
+        <button type="button" aria-pressed="false" data-filtre="repas"><i class="pastille" style="background:var(--c-repas)"></i>Repas</button>
+        <button type="button" aria-pressed="false" data-filtre="materiel"><i class="pastille" style="background:var(--c-materiel)"></i>Matériel</button>
+        <button type="button" aria-pressed="false" data-filtre="virement"><i class="pastille" style="background:var(--c-virement)"></i>Virement</button>
+      </div>
+      <div data-releve></div>
+    </div>
+  </section>
+
+  <!-- 4. Check up -->
+  <section class="planche">
+    <h2 class="nom">4. Le Check up</h2>
+    <p class="idee">Il passe chaque nouvelle ligne. Un seul ticket tombe juste : il le relie seul. Deux : il demande. Aucun : il prévient, et vous choisissez.</p>
+    <div class="tel">
+      <button class="retour" type="button">Année 2026</button>
+      <header class="entete" style="padding-top:8px"><h1>Check up</h1><span class="caps sous">Depuis le 16 octobre</span></header>
+      <div class="bilan">
+        <p class="caps">11 nouvelles lignes</p>
+        <p>8 ont trouvé leur ticket.</p>
+        <p class="manque" data-bilan-reste>3 attendent votre réponse.</p>
+      </div>
+      <div class="cartes" data-cartes></div>
+    </div>
+  </section>
+
+  <!-- 5. Sans banque -->
+  <section class="planche">
+    <h2 class="nom">5. Sans banque reliée</h2>
+    <p class="idee">La feuille du mois. Le plus court : déposer le relevé que la banque envoie, Atlas en lit les lignes. Sinon, une ligne à la fois.</p>
+    <div class="tel">
+      <button class="retour" type="button">Année 2026</button>
+      <header class="entete" style="padding-top:8px"><h1>Octobre</h1><span class="caps sous">Mon relevé</span></header>
+      <div class="depot">
+        <p>Le relevé PDF de votre banque</p>
+        <button class="plein" type="button">Déposer le relevé</button>
+      </div>
+      <p class="ou">ou</p>
+      <div class="saisie">
+        <div class="rang">
+          <label>Date<div class="champ">14/10/2026</div></label>
+          <label>Montant<div class="champ">62,40 €</div></label>
+        </div>
+        <label style="margin-top:12px">Ce qu'écrit la banque<div class="champ">CB TOTALENERGIES ST JEAN</div></label>
+        <label style="margin-top:12px">Sens<div class="sens"><span class="oui">Sortie</span><span>Entrée</span></div></label>
+        <div class="gestes"><button class="plein" type="button">Ajouter la ligne</button></div>
+      </div>
+      <p class="jour" style="margin-top:22px">Déjà sur la feuille</p>
+      <ul class="lignes">
+        <li class="ligne"><span class="trait" style="background:var(--c-materiel)"></span><span class="milieu"><div class="lib">CB POINT P AUBAGNE</div><div class="preuve"><span class="vignette"></span>Ticket du 12 octobre</div></span><span class="m">−318,90 €</span></li>
+        <li class="ligne"><span class="trait" style="background:var(--c-repas)"></span><span class="milieu"><div class="lib">CB LE RELAIS DES PINS</div><div class="preuve"><span class="vignette"></span>Ticket du 9 octobre</div></span><span class="m">−24,50 €</span></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<div class="note">
+  <h2>Ce qu'il faut savoir avant de choisir</h2>
+  <table>
+    <tr><td>Les tickets</td><td>Ce sont ceux que vous photographiez déjà dans Ma TVA, avec leur nature (carburant, repas…). Ils restent rangés là ; cet écran les montre à côté de la ligne de banque. Ce sont des tickets de TVA déductible, celle de vos achats.</td></tr>
+    <tr><td>La banque</td><td>L'essai avec votre Crédit Mutuel lit déjà vos virements reçus ; les sorties viennent du même relevé. Pour vos futurs clients, il faut toujours le contrat (document à faire, point 13).</td></tr>
+    <tr><td>Ticket perdu</td><td>La ligne est validée avec la mention, et votre comptable la voit. Mais sans ticket, la TVA de cette dépense ne se récupère pas : l'écran le dit avant que vous validiez.</td></tr>
+    <tr><td>Les couleurs</td><td>Une proposition. Dites celle qui ne vous va pas, et elle change. Il y a aussi une version Nuit, en haut.</td></tr>
+    <tr><td>Ajouté, pas demandé</td><td>« Préparer le dossier 2026 » : un PDF mois par mois, chaque ligne de banque suivie de la photo de son ticket. C'est ce que vous apportez aujourd'hui en papier.</td></tr>
+  </table>
+</div>
+
+<script>
+const LIGNES = [
+  { j:"24 octobre", lib:"VIR SEPA PEPINIERES DURAND", cat:"virement", m:-1740.00, preuve:"manque-virement", id:"durand" },
+  { j:"21 octobre", lib:"VIR LALA FACTURE F2026-28", cat:"recu", m:+1200.00, preuve:"facture", texte:"Facture F2026-000028, Lala" },
+  { j:"18 octobre", lib:"CB INTERMARCHE LA CIOTAT", cat:"repas", m:-23.80, preuve:"choix", id:"inter" },
+  { j:"16 octobre", lib:"CB KILOUTOU MARSEILLE", cat:"materiel", m:-1194.00, preuve:"ticket", texte:"Ticket du 15 octobre, relié par Atlas" },
+  { j:"14 octobre", lib:"CB TOTALENERGIES ST JEAN", cat:"carburant", m:-62.40, preuve:"manque", id:"total" },
+  { j:"14 octobre", lib:"CB TOTALENERGIES ST JEAN", cat:"carburant", m:-81.15, preuve:"ticket", texte:"Ticket du 13 octobre" },
+  { j:"12 octobre", lib:"CB POINT P AUBAGNE", cat:"materiel", m:-318.90, preuve:"ticket", texte:"Ticket du 12 octobre" },
+  { j:"9 octobre", lib:"CB LE RELAIS DES PINS", cat:"repas", m:-24.50, preuve:"ticket", texte:"Ticket du 9 octobre, repas d’affaires" },
+  { j:"6 octobre", lib:"VIR MARTINS ACOMPTE", cat:"recu", m:+4920.00, preuve:"facture", texte:"Acompte, facture F2026-000025, Martins" },
+];
+const NOMS = { carburant:"Carburant", repas:"Repas", materiel:"Matériel", hotel:"Hôtel", transport:"Train, taxi", virement:"Virement envoyé", recu:"Virement reçu", autre:"Autre" };
+const etat = { total:"ouvert", inter:"ouvert", durand:"ouvert", filtre:"tout" };
+const eur = v => (v<0?"−":"+") + Math.abs(v).toLocaleString("fr-FR",{minimumFractionDigits:2}).replace(/ | /g," ") + " €";
+
+function preuveDe(l){
+  const s = l.id ? etat[l.id] : null;
+  if (s === "perdu") return `<div class="preuve perdu">Ticket perdu, validé le 23 octobre</div>`;
+  if (s === "ticket") return `<div class="preuve"><span class="vignette"></span>Ticket ajouté le 23 octobre</div>`;
+  if (s === "inter") return `<div class="preuve"><span class="vignette"></span>Ticket du 17 octobre</div>`;
+  if (s === "facture") return `<div class="preuve"><span class="vignette"></span>Facture Pépinières Durand</div>`;
+  if (s === "fournisseur") return `<div class="preuve">Fournisseur, facture à joindre</div>`;
+  if (l.preuve === "manque" || l.preuve === "manque-virement") return `<div class="preuve manque">Sans ticket</div>`;
+  if (l.preuve === "choix") return `<div class="preuve manque">Deux tickets possibles</div>`;
+  return `<div class="preuve">${l.preuve==="ticket"?'<span class="vignette"></span>':""}${l.texte}</div>`;
+}
+const enAttente = l => l.id && etat[l.id] === "ouvert";
+
+function rendreReleve(){
+  const f = etat.filtre;
+  const vis = LIGNES.filter(l => f==="tout" || (f==="manque" ? enAttente(l) : l.cat===f));
+  let html = "", jour = "";
+  vis.forEach(l => {
+    if (l.j !== jour){ if (jour) html += "</ul>"; html += `<p class="jour">${l.j}</p><ul class="lignes">`; jour = l.j; }
+    html += `<li class="ligne"><span class="trait" style="background:var(--c-${l.cat})"></span><span class="milieu"><div class="lib">${l.lib}</div><div class="cat" style="color:var(--c-${l.cat})">${NOMS[l.cat]}</div>${preuveDe(l)}</span><span class="m${l.m>0?" plus":""}">${eur(l.m)}</span></li>`;
+  });
+  if (jour) html += "</ul>";
+  if (!vis.length) html = `<p style="margin:26px 24px;color:var(--pin);font-size:15px">Rien ne manque.</p>`;
+  document.querySelector("[data-releve]").innerHTML = html;
+}
+
+function carte(id){
+  const s = etat[id];
+  if (id === "total"){
+    const tete = `<div class="tete"><i class="pastille" style="background:var(--c-carburant)"></i><span style="color:var(--c-carburant)">Carburant</span></div><p class="qui">TotalEnergies, le 14 octobre</p><p class="montant">62,40 €</p>`;
+    if (s === "ouvert") return tete + `<p class="texte alerte">Aucun ticket ne correspond.</p><div class="gestes"><button class="plein" data-g="total:ticket">Photographier le ticket</button><button class="leger" data-g="total:demande">Ticket perdu</button></div>`;
+    if (s === "demande") return tete + `<p class="texte">Validée sans ticket, la ligne porte la mention « ticket perdu ». Sa TVA ne sera pas déduite.</p><div class="gestes"><button class="plein" data-g="total:perdu">Valider</button><button class="leger" data-g="total:ouvert">Annuler</button></div>`;
+    if (s === "perdu") return tete + `<p class="fait gris">Ticket perdu, validé.</p><div class="gestes" style="margin-top:4px"><button class="leger" data-g="total:ouvert">Défaire</button></div>`;
+    return tete + `<p class="fait">Ticket ajouté.</p>`;
+  }
+  if (id === "inter"){
+    const tete = `<div class="tete"><i class="pastille" style="background:var(--c-repas)"></i><span style="color:var(--c-repas)">Repas</span></div><p class="qui">Intermarché, le 18 octobre</p><p class="montant">23,80 €</p>`;
+    if (s === "ouvert") return tete + `<p class="texte">Deux tickets du même montant. Lequel ?</p><div class="choix"><button data-g="inter:inter"><span>Intermarché<span class="n">Ticket du 17 octobre</span></span><span class="vignette"></span></button><button data-g="inter:inter"><span>Intermarché<span class="n">Ticket du 11 octobre, déjà sur une autre ligne ?</span></span><span class="vignette"></span></button></div><div class="gestes"><button class="leger" data-g="inter:demande">Aucun des deux</button></div>`;
+    if (s === "demande") return tete + `<div class="gestes"><button class="plein" data-g="inter:ticket">Photographier le ticket</button><button class="leger" data-g="inter:perdu">Ticket perdu</button></div>`;
+    if (s === "perdu") return tete + `<p class="fait gris">Ticket perdu, validé.</p>`;
+    return tete + `<p class="fait">Ticket relié.</p>`;
+  }
+  const tete = `<div class="tete"><i class="pastille" style="background:var(--c-virement)"></i><span style="color:var(--c-virement)">Virement envoyé</span></div><p class="qui">Pépinières Durand, le 24 octobre</p><p class="montant">1 740,00 €</p>`;
+  if (s === "ouvert") return tete + `<p class="texte alerte">Aucune facture jointe.</p><div class="gestes"><button class="plein" data-g="durand:facture">Joindre la facture</button><button class="leger" data-g="durand:demande">C'est autre chose</button></div>`;
+  if (s === "demande") return tete + `<p class="texte">C'est :</p><div class="natures"><button data-g="durand:fournisseur">Un fournisseur</button><button data-g="durand:fournisseur">Un salaire</button><button data-g="durand:fournisseur">Un loyer</button><button data-g="durand:fournisseur">Impôts, cotisations</button><button data-g="durand:fournisseur">Un prêt</button><button data-g="durand:fournisseur">Pour moi</button></div><div class="gestes"><button class="leger" data-g="durand:ouvert">Annuler</button></div>`;
+  if (s === "fournisseur") return tete + `<p class="fait">Noté. Vous pourrez joindre la pièce plus tard.</p>`;
+  return tete + `<p class="fait">Facture jointe.</p>`;
+}
+
+function rendreCartes(){
+  document.querySelector("[data-cartes]").innerHTML = ["total","inter","durand"].map(id => `<article class="carte">${carte(id)}</article>`).join("");
+  const reste = ["total","inter","durand"].filter(id => ["ouvert","demande"].includes(etat[id])).length;
+  const b = document.querySelector("[data-bilan-reste]");
+  b.textContent = reste ? `${reste} ${reste>1?"attendent":"attend"} votre réponse.` : "Tout est justifié.";
+  b.className = reste ? "manque" : "";
+  b.style.color = reste ? "" : "var(--pin)";
+  const txt = reste ? `${reste} sans ticket` : "Tout est justifié";
+  document.querySelectorAll("[data-reste-carte],[data-reste-mois]").forEach(e => { e.textContent = txt; e.classList.toggle("ok", !reste); e.classList.toggle("manque", !!reste && e.hasAttribute("data-reste-mois")); });
+  document.querySelector("[data-reste-chiffre]").textContent = reste;
+  rendreReleve();
+}
+
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-g]");
+  if (g){ const [id, s] = g.dataset.g.split(":"); etat[id] = s; rendreCartes(); return; }
+  const f = e.target.closest("[data-filtre]");
+  if (f){ etat.filtre = f.dataset.filtre; document.querySelectorAll("[data-filtre]").forEach(x => x.setAttribute("aria-pressed", x===f)); rendreReleve(); return; }
+  const c = e.target.closest("[data-charte]");
+  if (c){ document.body.classList.toggle("nuit", c.dataset.charte==="nuit"); document.querySelectorAll("[data-charte]").forEach(x => x.setAttribute("aria-pressed", x===c)); return; }
+  const s = e.target.closest("[data-source]");
+  if (s){ document.querySelectorAll("[data-source]").forEach(x => x.setAttribute("aria-pressed", x===s)); document.querySelectorAll("[data-si]").forEach(x => x.hidden = x.dataset.si !== s.dataset.source); return; }
+  const k = e.target.closest("[data-checkup]");
+  if (k){ k.textContent = "Vérifié, 3 à regarder"; document.querySelector("[data-dernier]").textContent = "Dernier Check up à l’instant"; return; }
+  if (e.target.closest("a[href='#']")) e.preventDefault();
+});
+rendreCartes();
+</script>
+</body>
+</html>
