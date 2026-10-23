@@ -20,7 +20,7 @@ d'exemple : `appli/dossier-justifie-exemple.pdf`, imprimé par
 | 2 | Les couleurs des catégories | gardées (carburant bleu, repas vert, matériel orange, hôtel violet, train et taxi turquoise, virement prune, autre gris) |
 | 3 | La place | une carte « Pour mon comptable » dans Terminés, sous Ma TVA |
 | 4 | Le Check up relie seul un ticket quand un seul correspond | oui, et cela se défait (depuis la photo ou la liste « ce qu'Atlas a relié ») |
-| 5 | La page du comptable | oui : lien privé, justificatif cliquable, un bouton vert et un rouge par ligne ; un rouge demande pourquoi et revient au patron |
+| 5 | La page du comptable | oui : lien privé, justificatif cliquable, **Valider** (vert) et **Rejeter** (rouge) par ligne, avec **Suivant**, trois boutons de même largeur ; un rejet demande pourquoi et revient au patron. La pièce ouverte montre d’abord le ticket **reconstitué**, puis la **photo** en glissant, deux points dessous (24 octobre) |
 | 6 | Les tickets | le ticket réécrit dans le format du dossier, **complet, ligne par ligne comme imprimé** (rien de regroupé : sa remarque devant un essai qui fusionnait les doublons), avec la vignette de la vraie photo, qui reste la preuve |
 | 7 | Quand valider l’année | **quand il veut**, par une touche qui arrête le dossier au jour choisi : son exercice peut tomber à n’importe quelle date. Pas de règle du 1ᵉʳ janvier |
 | — | Entrées et sorties | **B** : deux colonnes, sorties en rouge, entrées en vert, total du mois et soldes de la banque en bas |

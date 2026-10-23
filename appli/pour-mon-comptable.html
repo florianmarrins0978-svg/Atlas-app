@@ -605,9 +605,25 @@ body.nuit .c-note{color:#e58a74}
 .c-facture .r{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px solid #eee}
 .c-facture .tot{font-weight:700;border:0;margin-top:4px;background:#ebf0f4;padding:4px 6px;margin-left:-6px;margin-right:-6px;border-radius:3px}
 .c-perdu{margin:18px 0 0;padding:16px;border-radius:12px;border:1.5px dashed var(--trait);font-size:14px;color:var(--encre-douce)}
-.c-gestes{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
-.c-gestes .bon{border:0;border-radius:999px;background:#3f8a4a;color:#fff;padding:12px 20px;font:500 14.5px/1 var(--sans);min-height:46px}
-.c-gestes .pasbon{border:0;border-radius:999px;background:#b8432f;color:#fff;padding:12px 20px;font:500 14.5px/1 var(--sans);min-height:46px}
+/* Trois boutons de la même largeur, sa demande du 24 octobre. */
+.c-gestes{display:flex;gap:8px;margin-top:18px}
+.c-gestes > button{flex:1 1 0;min-width:0;box-sizing:border-box;justify-content:center;text-align:center;padding-left:8px!important;padding-right:8px!important}
+/* La pièce reconstituée d abord, la vraie photo en glissant : deux points dessous. */
+.carrousel{margin-top:14px}
+.pistes{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.pistes::-webkit-scrollbar{display:none}
+.diapo{flex:0 0 100%;scroll-snap-align:center;display:flex;flex-direction:column;align-items:center}
+.diapo .quoi{font:600 10px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--gris);margin:4px 0 10px}
+.diapo .c-piece{margin-top:0}
+.photo-sim{background:#ddd9d0;padding:18px 0;width:100%;display:flex;justify-content:center}
+.photo-sim .c-piece{transform:rotate(-1.6deg);filter:grayscale(1) contrast(1.08)}
+.photo-sim .papier-ticket .t,.photo-sim .c-facture .tot{background:none}
+.points{display:flex;justify-content:center;gap:10px;margin-top:12px}
+.points button{width:22px;height:22px;border:0;background:none;padding:0;display:inline-flex;align-items:center;justify-content:center}
+.points button::after{content:"";width:9px;height:9px;border-radius:50%;border:1.5px solid var(--encre-douce)}
+.points button[aria-current="true"]::after{background:var(--encre-douce)}
+.c-gestes .bon{border:1px solid transparent;border-radius:999px;background:#3f8a4a;color:#fff;padding:12px 20px;font:500 14.5px/1 var(--sans);min-height:46px}
+.c-gestes .pasbon{border:1px solid transparent;border-radius:999px;background:#b8432f;color:#fff;padding:12px 20px;font:500 14.5px/1 var(--sans);min-height:46px}
 body.nuit .c-gestes .bon{background:#7cc488;color:#101210}
 body.nuit .c-gestes .pasbon{background:#e58a74;color:#101210}
 .c-gestes .suiv{border:1px solid var(--trait);background:var(--carte);border-radius:999px;padding:12px 18px;font:500 14px/1 var(--sans);min-height:46px;color:var(--encre)}
@@ -620,7 +636,7 @@ body.nuit .c-gestes .pasbon{background:#e58a74;color:#101210}
 
 <section class="compta-zone">
   <h2 class="nom">7. Le comptable vérifie</h2>
-  <p class="idee">Vous lui envoyez un lien. Il voit le montant à gauche ; il touche le justificatif, la pièce s'ouvre à droite, il appuie sur vert ou rouge, puis Suivant. Un rouge demande pourquoi, et vous arrive dans Atlas. Sur téléphone, la pièce s'ouvre en plein écran. Seul janvier est rempli dans cet essai.</p>
+  <p class="idee">Vous lui envoyez un lien. Il voit le montant à gauche ; il touche le justificatif, la pièce s'ouvre à droite, il touche Valider ou Rejeter, puis Suivant. Un rejet demande pourquoi, et vous arrive dans Atlas. Sur téléphone, la pièce s'ouvre en plein écran. Seul janvier est rempli dans cet essai.</p>
   <div class="format" role="group" aria-label="Format">
     <button type="button" data-format="pc" aria-pressed="true">Ordinateur</button>
     <button type="button" data-format="tel-c" aria-pressed="false">Téléphone</button>
@@ -668,10 +684,10 @@ function rendre(){
   const ec = document.querySelector("[data-ecran-c]");
   ec.classList.toggle("ouvert", ouvert >= 0);
   document.querySelector("[data-c-lignes]").innerHTML = JANV.map((l, i) => { const s = etatC[i];
-    return `<tr class="${i === ouvert ? "actif" : ""}"><td class="coul" style="background:var(--c-${l.cat})"></td><td class="t-date">${d2(l.j)}/01</td><td class="t-lib"><div class="lib">${l.lib}</div>${s.verdict === "rouge" && s.note ? `<span class="c-note">${s.note}</span>` : ""}</td><td class="t-cat cat" style="color:var(--c-${l.cat})">${NOMC[l.cat]}</td><td class="d${l.m > 0 ? " plus" : ""}">${sg(l.m)}</td><td class="t-piece"><button type="button" class="piece-btn${l.perdu ? " perdu" : ""}" data-c-ouvrir="${i}">${etiquette(l)}</button></td><td class="t-v"><div class="verdict"><button type="button" class="vert" aria-label="Bon" aria-pressed="${s.verdict === "vert"}" data-c-v="${i}:vert">✓</button><button type="button" class="rouge" aria-label="Pas bon" aria-pressed="${s.verdict === "rouge"}" data-c-v="${i}:rouge">✕</button></div></td></tr>`; }).join("");
+    return `<tr class="${i === ouvert ? "actif" : ""}"><td class="coul" style="background:var(--c-${l.cat})"></td><td class="t-date">${d2(l.j)}/01</td><td class="t-lib"><div class="lib">${l.lib}</div>${s.verdict === "rouge" && s.note ? `<span class="c-note">${s.note}</span>` : ""}</td><td class="t-cat cat" style="color:var(--c-${l.cat})">${NOMC[l.cat]}</td><td class="d${l.m > 0 ? " plus" : ""}">${sg(l.m)}</td><td class="t-piece"><button type="button" class="piece-btn${l.perdu ? " perdu" : ""}" data-c-ouvrir="${i}">${etiquette(l)}</button></td><td class="t-v"><div class="verdict"><button type="button" class="vert" aria-label="Valider" aria-pressed="${s.verdict === "vert"}" data-c-v="${i}:vert">✓</button><button type="button" class="rouge" aria-label="Rejeter" aria-pressed="${s.verdict === "rouge"}" data-c-v="${i}:rouge">✕</button></div></td></tr>`; }).join("");
   const nv = etatC.filter(s => s.verdict === "vert").length, nr = etatC.filter(s => s.verdict === "rouge").length;
   document.querySelector("[data-c-compte]").innerHTML = `<b>${nv + nr} sur ${JANV.length}</b> lignes vérifiées en janvier`;
-  document.querySelector("[data-c-rouges]").innerHTML = nr ? `<span style="color:${ROUGE}">${nr} pas bonne${nr > 1 ? "s" : ""}</span>` : "";
+  document.querySelector("[data-c-rouges]").innerHTML = nr ? `<span style="color:${ROUGE}">${nr} rejetée${nr > 1 ? "s" : ""}</span>` : "";
   document.querySelector("[data-c-vert]").style.width = `${nv / JANV.length * 100}%`;
   document.querySelector("[data-c-rouge]").style.width = `${nr / JANV.length * 100}%`;
   const dr = document.querySelector("[data-c-droite]");
@@ -680,17 +696,21 @@ function rendre(){
   const suivant = etatC.findIndex((x, k) => k > ouvert && !x.verdict);
   dr.innerHTML = `<button class="fermer-c" type="button" data-c-fermer>Fermer</button>
     <div class="rappel"><div class="l">${l.lib}</div><div class="m${l.m > 0 ? " plus" : ""}">${sg(l.m)}</div><div class="s">${d2(l.j)}/01/2025 à la banque, ${NOMC[l.cat].toLowerCase()}</div></div>
-    ${piece(l)}
-    ${s.verdict === "vert" ? `<p class="accord oui">Vous l’avez marquée bonne.</p>` : s.verdict === "rouge" && !demandeRouge ? `<p class="accord non">Pas bonne : ${s.note || "sans raison écrite"}</p>` : ""}
-    ${demandeRouge ? `<div class="c-pourquoi"><label for="c-pq">Pourquoi ? Le patron le lira.</label><textarea id="c-pq" data-c-pq>${s.note}</textarea></div><div class="c-gestes"><button class="pasbon" type="button" data-c-confirmer-rouge>Marquer pas bonne</button><button class="suiv" type="button" data-c-annuler-rouge>Annuler</button></div>`
-      : `<div class="c-gestes"><button class="bon" type="button" data-c-v="${ouvert}:vert">Bon</button><button class="pasbon" type="button" data-c-v="${ouvert}:rouge">Pas bon</button>${suivant >= 0 ? `<button class="suiv" type="button" data-c-ouvrir="${suivant}">Suivant</button>` : ""}</div>`}
-    ${etatC.every(x => x.verdict) ? `<div class="c-fini"><b>Janvier est vérifié.</b> ${etatC.filter(x => x.verdict === "rouge").length ? "Le patron reçoit vos rouges dans Atlas." : "Tout est bon."}</div>` : ""}`;
+    ${l.tk || l.fa ? `<div class="carrousel"><div class="pistes" data-pistes><div class="diapo"><span class="quoi">Reconstitué par Atlas</span>${piece(l)}</div><div class="diapo"><span class="quoi">Photo d’origine</span><div class="photo-sim">${piece(l)}</div></div></div><div class="points"><button type="button" aria-label="Reconstitué" aria-current="true" data-point="0"></button><button type="button" aria-label="Photo" aria-current="false" data-point="1"></button></div></div>` : piece(l)}
+    ${s.verdict === "vert" ? `<p class="accord oui">Validée.</p>` : s.verdict === "rouge" && !demandeRouge ? `<p class="accord non">Rejetée : ${s.note || "sans raison écrite"}</p>` : ""}
+    ${demandeRouge ? `<div class="c-pourquoi"><label for="c-pq">Pourquoi ? Le patron le lira.</label><textarea id="c-pq" data-c-pq>${s.note}</textarea></div><div class="c-gestes"><button class="pasbon" type="button" data-c-confirmer-rouge>Rejeter</button><button class="suiv" type="button" data-c-annuler-rouge>Annuler</button></div>`
+      : `<div class="c-gestes"><button class="bon" type="button" data-c-v="${ouvert}:vert">Valider</button><button class="pasbon" type="button" data-c-v="${ouvert}:rouge">Rejeter</button>${suivant >= 0 ? `<button class="suiv" type="button" data-c-ouvrir="${suivant}">Suivant</button>` : ""}</div>`}
+    ${etatC.every(x => x.verdict) ? `<div class="c-fini"><b>Janvier est vérifié.</b> ${etatC.filter(x => x.verdict === "rouge").length ? "Le patron reçoit vos rejets dans Atlas." : "Tout est validé."}</div>` : ""}`;
   if (demandeRouge) dr.querySelector("[data-c-pq]").focus();
+  const pi = dr.querySelector("[data-pistes]");
+  if (pi) pi.addEventListener("scroll", () => { const k = Math.round(pi.scrollLeft / pi.clientWidth); dr.querySelectorAll("[data-point]").forEach(b => b.setAttribute("aria-current", String(Number(b.dataset.point) === k))); });
 }
 
 document.addEventListener("click", ev => {
   const f = ev.target.closest("[data-format]");
   if (f){ document.querySelectorAll("[data-format]").forEach(x => x.setAttribute("aria-pressed", x === f)); const ec = document.querySelector("[data-ecran-c]"); ec.classList.remove("pc", "tel-c"); ec.classList.add(f.dataset.format); return; }
+  const pt = ev.target.closest("[data-point]");
+  if (pt){ const pi = pt.closest(".carrousel").querySelector("[data-pistes]"); pi.scrollTo({ left: pi.clientWidth * Number(pt.dataset.point), behavior: "smooth" }); return; }
   const o = ev.target.closest("[data-c-ouvrir]");
   if (o){ ouvert = Number(o.dataset.cOuvrir); demandeRouge = false; rendre(); return; }
   if (ev.target.closest("[data-c-fermer]")){ ouvert = -1; demandeRouge = false; rendre(); return; }
