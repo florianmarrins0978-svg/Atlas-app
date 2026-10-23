@@ -28,6 +28,7 @@
 /** La seule valeur qui désigne une session ouverte depuis l'appli du téléphone. */
 export const DEPUIS_LE_TELEPHONE = "remote_mobile";
 
+/** @param {Record<string, string | undefined>} [env] */
 export function sessionDuTelephone(env = process.env) {
   return env.CLAUDE_CODE_ENTRYPOINT === DEPUIS_LE_TELEPHONE;
 }
