@@ -97,10 +97,16 @@
   .loupe::after{content:"";position:absolute;right:-5px;bottom:-3px;width:7px;
                 height:1.6px;background:var(--muted);transform:rotate(45deg)}
   .sous{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
-  /* « Tout cocher » n'existe que pendant le choix : sur la liste normale, la
+  /* « Tout » n'existe que pendant le choix : sur la liste normale, la
      place reste vide et « Filtre » ne bouge pas. */
-  #tout{visibility:hidden}
-  .tel.choisir #tout{visibility:visible}
+  /* Le rond de « Tout » est celui des clients, posé dans la même colonne :
+     il se lit comme une ligne de plus, celle qui les coche toutes. */
+  .tout{display:flex;align-items:center;gap:14px;min-height:44px;padding:0;border:0;
+        background:none;font-size:15px;color:var(--ink);cursor:pointer;visibility:hidden}
+  .tel.choisir .tout{visibility:visible}
+  .tout .case{display:flex}
+  .tout[aria-pressed="true"] .case{background:var(--rust);border-color:var(--rust)}
+  .tout[aria-pressed="true"] .case svg{opacity:1}
   .pastille{display:flex;align-items:center;gap:7px;min-height:44px;padding:0 13px;
             border:0;border-radius:999px;background:var(--card);color:var(--inkSoft);
             box-shadow:inset 0 0 0 1px var(--line);font-size:12.5px;cursor:pointer;white-space:nowrap}
@@ -234,12 +240,13 @@
     <div class="cherche-zone">
       <div class="cherche"><span class="loupe" aria-hidden="true"></span>Chercher un client</div>
       <div class="sous">
-        <button type="button" class="pastille" id="tout">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M5.4 8.2l1.8 1.8 3.5-3.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span id="tout-mot">Tout cocher</span>
+        <button type="button" class="tout" id="tout" aria-pressed="false">
+          <span class="case">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--surPlein)" stroke-width="3">
+              <path d="M4 12l6 6L20 6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          Tout
         </button>
         <button type="button" class="pastille" id="filtre">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -298,7 +305,7 @@
     <li><b>Restez appuyé une demi-seconde sur un client</b> : il se coche, une case apparaît devant tous les autres, et le bouton rouge en bas.</li>
     <li>Ensuite, toucher une ligne la coche ou la décoche. Elle n’ouvre plus la fiche.</li>
     <li><b>« Annuler »</b>, sous le bouton rouge, ressort sans rien supprimer.</li>
-    <li><b>« Tout cocher »</b> apparaît en haut, à gauche de « Filtre », seulement une fois le choix ouvert. Il coche tous les clients de la liste, puis devient « Tout décocher ».</li>
+    <li><b>« Tout »</b>, avec le même rond que les clients, apparaît en haut à gauche de « Filtre », seulement une fois le choix ouvert. On le touche : tout se coche. On le retouche : tout se décoche.</li>
     <li>Sur la liste normale, rien de plus : « Filtre » reste seul à sa place.</li>
   </ul>
   <h3>La mention de sécurité</h3>
@@ -356,7 +363,7 @@ function dessiner(){
   $c.classList.toggle("choix", choisir && coches.size > 0);
 
   const tous = clients.length > 0 && clients.every((c) => coches.has(c.id));
-  $("tout-mot").textContent = tous ? "Tout décocher" : "Tout cocher";
+  $("tout").setAttribute("aria-pressed", String(tous));
 
   const n = coches.size;
   const $s = $("supprimer");
