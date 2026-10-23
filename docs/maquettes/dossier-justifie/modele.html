@@ -28,6 +28,9 @@
   --pin:#2f3b2f; --or:#B98B47; --alerte:#a8552f;
   --c-carburant:#3d6e9e; --c-repas:#4f8a3c; --c-materiel:#b9732a; --c-hotel:#7a5aa6;
   --c-transport:#2b8586; --c-autre:#8a8578; --c-virement:#a3506b; --c-recu:#2f3b2f;
+  /* Ses choix du 24 octobre : B, sorties en rouge et entrées en vert ; le
+     total de chaque pièce surligné en bleu gris, qui ne dit ni entrée ni sortie. */
+  --sortie:#b3392b; --entree:#1f7a45; --sortie-fond:#f8e7e3; --entree-fond:#e6f2ea; --surligne:#ebf0f4;
 }
 *{box-sizing:border-box}
 html,body{margin:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -102,12 +105,21 @@ h3{font-size:12.5pt;margin:6mm 0 1mm}
 .ticket .g{font-weight:700;font-size:8pt}
 .ticket hr{border:0;border-top:.6pt dashed #aaa69a;margin:1.6mm 0}
 .ticket .r{display:flex;justify-content:space-between;gap:2mm}
-.ticket .t{font-weight:700;font-size:8pt}
+.ticket .t{font-weight:700;font-size:8pt;background:var(--surligne);padding:.6mm 1.2mm;margin:0 -1.2mm;border-radius:.6mm}
 .facture{background:#fff;border:.6pt solid #d8d4c9;padding:4mm;height:49mm;font-size:6.6pt;line-height:1.4;color:#2a2a26;overflow:hidden}
 .facture .g{font:700 8.5pt/1.2 Georgia,serif}
 .facture .r{display:flex;justify-content:space-between;gap:2mm}
 .facture table td{padding:1mm 0;font-size:6.4pt;border-bottom:.4pt solid #eee}
-.facture .tot{margin-top:2mm;font-weight:700}
+.facture .tot{margin-top:2mm;font-weight:700;background:var(--surligne);padding:.8mm 1.2mm;margin-left:-1.2mm;margin-right:-1.2mm;border-radius:.6mm}
+.chiffres .sortie{background:var(--sortie-fond)}.chiffres .sortie .caps,.chiffres .sortie b{color:var(--sortie)}
+.chiffres .entree{background:var(--entree-fond)}.chiffres .entree .caps,.chiffres .entree b{color:var(--entree)}
+.s{color:var(--sortie)}.e{color:var(--entree)}
+th.s{color:var(--sortie)}th.e{color:var(--entree)}
+.releve tfoot td{border-bottom:0;font-weight:600;padding-top:2.4mm}
+.releve tfoot tr.premier td{border-top:1pt solid var(--encre)}
+.releve tfoot .lib-t{text-align:right;font-weight:500;color:var(--doux)}
+.releve tfoot .verif td{font-weight:500;color:var(--pin);padding-top:1.4mm}
+.resume-mois .s b{color:var(--sortie)}.resume-mois .e b{color:var(--entree)}
 
 /* ── Côte à côte ── */
 .rang-c{display:flex;gap:6mm;border-bottom:.6pt solid var(--filet);height:11mm;align-items:center;break-inside:avoid}
@@ -125,7 +137,8 @@ h3{font-size:12.5pt;margin:6mm 0 1mm}
 .rang-c .just-c{font-size:8pt;color:var(--doux)}
 .rang-c .mt{font:400 15pt/1.2 "Playfair Display",Georgia,serif;white-space:nowrap}
 .rang-c:not(.haut-c) .mt{font-size:11pt}
-.rang-c .mt.plus{color:var(--pin)}
+.rang-c .mt.plus{color:var(--entree)}
+.rang-c .mt.moins{color:var(--sortie)}
 .rang-c .cd{width:72mm;flex:none}
 .rang-c .cd .ticket,.rang-c .cd .facture{height:58mm}
 
@@ -206,6 +219,10 @@ for (let m = 0; m < 12; m++) {
 // ── Les totaux de l'année ──
 const sum = (t, f) => t.reduce((s, x) => s + f(x), 0);
 const toutes = tout.flat();
+// Le solde que la banque annonce au début et à la fin de chaque mois : il
+// permet au comptable de vérifier le compte sans additionner (choix B).
+const soldes = []; { let s = 8412.37; tout.forEach(L => { const d = s; s = Math.round((s + L.reduce((a, l) => a + l.montant, 0)) * 100) / 100; soldes.push([d, s]); }); }
+const resumeMois = (L, m) => `<div class="resume-mois"><span>Solde au 1ᵉʳ ${MOIS[m]}<b class="num">${eur(soldes[m][0])}</b></span><span class="s">Sorties<b class="num">−${eur(-sum(L.filter(l => l.montant < 0), l => l.montant))}</b></span><span class="e">Entrées<b class="num">+${eur(sum(L.filter(l => l.montant > 0), l => l.montant))}</b></span><span>Solde au ${JOURS_MOIS[m]} ${MOIS[m]}<b class="num">${eur(soldes[m][1])}</b></span></div>`;
 const sorties = -sum(toutes.filter(l => l.montant < 0), l => l.montant);
 const entrees = sum(toutes.filter(l => l.montant > 0), l => l.montant);
 const parCat = {};
@@ -268,8 +285,8 @@ h += `<section class="page couv">
 h += `<section class="page">
   <div class="titre-page"><h2>L’année en un coup d’œil</h2><span class="caps">2025</span></div>
   <div class="chiffres">
-    <div><span class="caps">Sorties</span><b class="num">${eur(sorties)}</b></div>
-    <div><span class="caps">Entrées</span><b class="num">${eur(entrees)}</b></div>
+    <div class="sortie"><span class="caps">Sorties</span><b class="num">−${eur(sorties)}</b></div>
+    <div class="entree"><span class="caps">Entrées</span><b class="num">+${eur(entrees)}</b></div>
     <div><span class="caps">Lignes de banque</span><b class="num">${toutes.length}</b></div>
     <div><span class="caps">Tickets perdus</span><b class="num" style="color:var(--alerte)">${perdus.length}</b></div>
   </div>
@@ -280,8 +297,8 @@ h += `<section class="page">
   <tr class="total"><td>Total des sorties</td><td class="d num">${toutes.filter(l => l.montant < 0).length}</td><td></td><td class="d num">${eur(sorties)}</td><td class="d">100 %</td></tr>
   </tbody></table>
   <h3>Mois par mois</h3>
-  <table class="serre"><thead><tr><th>Mois</th><th class="d">Sorties</th><th class="d">Entrées</th><th class="d">Lignes</th><th>Justification</th><th class="d">Page</th></tr></thead><tbody>
-  ${tout.map((L, m) => { const p = L.filter(l => l.perdu).length; return `<tr><td>${MOIS_M[m]}</td><td class="d num">${eur(-sum(L.filter(l => l.montant < 0), l => l.montant))}</td><td class="d num">${eur(sum(L.filter(l => l.montant > 0), l => l.montant))}</td><td class="d num">${L.length}</td><td>${p ? `<span style="color:var(--alerte)">Justifié, ${p} ticket perdu</span>` : "Justifié"}</td><td class="d num">${pagesMois[m].releve}</td></tr>`; }).join("")}
+  <table class="serre"><thead><tr><th>Mois</th><th class="d s">Sorties</th><th class="d e">Entrées</th><th class="d">Lignes</th><th>Justification</th><th class="d">Page</th></tr></thead><tbody>
+  ${tout.map((L, m) => { const p = L.filter(l => l.perdu).length; return `<tr><td>${MOIS_M[m]}</td><td class="d num s">−${eur(-sum(L.filter(l => l.montant < 0), l => l.montant))}</td><td class="d num e">+${eur(sum(L.filter(l => l.montant > 0), l => l.montant))}</td><td class="d num">${L.length}</td><td>${p ? `<span style="color:var(--alerte)">Justifié, ${p} ticket perdu</span>` : "Justifié"}</td><td class="d num">${pagesMois[m].releve}</td></tr>`; }).join("")}
   </tbody></table>
   <p class="note">Les tickets perdus sont listés page ${pagePerdusFinal}. Leur TVA n’a pas été déduite.</p>
 </section>`;
@@ -290,9 +307,9 @@ h += `<section class="page">
 if (MISE === "cote") decoupe.forEach((pages, m) => { const L = tout[m];
   pages.forEach((lignes, ip) => {
     h += `<section class="page"><div class="titre-page"><h2>${MOIS_M[m]} 2025</h2><span class="caps">Relevé et justificatifs${pages.length > 1 ? `, ${ip + 1} sur ${pages.length}` : ""}</span></div>`;
-    if (ip === 0) h += `<div class="resume-mois"><span>Sorties<b class="num">${eur(-sum(L.filter(l => l.montant < 0), l => l.montant))}</b></span><span>Entrées<b class="num">${eur(sum(L.filter(l => l.montant > 0), l => l.montant))}</b></span><span>Lignes<b>${L.length}</b></span></div>`;
+    if (ip === 0) h += `${resumeMois(L, m)}`;
     lignes.forEach(l => {
-      const gauche = `<div class="cg"><span class="coul-c" style="background:${COUL[l.cat]}"></span><div><div class="dt num">${deux(l.jour)}/${deux(m + 1)}/2025</div><div class="lib">${l.lib}</div><div class="cat" style="color:${COUL[l.cat]}">${NOM[l.cat]}</div>${l.ref ? `<div class="refc">${l.ref}</div>` : ""}${l.perdu ? `<div class="perdu">Ticket perdu, mention validée</div>` : ""}${l.numF ? `<div class="just-c">Facture ${l.numF}, ${l.client}</div>` : ""}</div><div class="mt num${l.montant > 0 ? " plus" : ""}">${l.montant > 0 ? "+" : "−"}${eur(l.montant)}</div></div>`;
+      const gauche = `<div class="cg"><span class="coul-c" style="background:${COUL[l.cat]}"></span><div><div class="dt num">${deux(l.jour)}/${deux(m + 1)}/2025</div><div class="lib">${l.lib}</div><div class="cat" style="color:${COUL[l.cat]}">${NOM[l.cat]}</div>${l.ref ? `<div class="refc">${l.ref}</div>` : ""}${l.perdu ? `<div class="perdu">Ticket perdu, mention validée</div>` : ""}${l.numF ? `<div class="just-c">Facture ${l.numF}, ${l.client}</div>` : ""}</div><div class="mt num${l.montant > 0 ? " plus" : " moins"}">${l.montant > 0 ? "+" : "−"}${eur(l.montant)}</div></div>`;
       h += l.ref ? `<div class="rang-c haut-c">${gauche}<div class="cd">${pieceDe(l, m)}</div></div>` : `<div class="rang-c">${gauche}</div>`;
     });
     h += `</section>`;
@@ -303,14 +320,14 @@ if (MISE === "cote") decoupe.forEach((pages, m) => { const L = tout[m];
 if (MISE === "renvoi") tout.forEach((L, m) => {
   h += `<section class="page">
     <div class="titre-page"><h2>${MOIS_M[m]} 2025</h2><span class="caps">Relevé de banque</span></div>
-    <div class="resume-mois"><span>Sorties<b class="num">${eur(-sum(L.filter(l => l.montant < 0), l => l.montant))}</b></span><span>Entrées<b class="num">${eur(sum(L.filter(l => l.montant > 0), l => l.montant))}</b></span><span>Lignes<b>${L.length}</b></span></div>
-    <table class="releve"><thead><tr><th></th><th>Date</th><th>Ce qu’écrit la banque</th><th>Catégorie</th><th class="d">Montant</th><th>Justificatif</th></tr></thead><tbody>
-    ${L.map(l => `<tr><td class="coul" style="background:${COUL[l.cat]}"></td><td class="num">${l.ref ? `<span id="ligne-${l.ref}">` : ""}${deux(l.jour)}/${deux(m + 1)}${l.ref ? "</span>" : ""}</td><td class="lib">${l.lib}</td><td class="cat">${NOM[l.cat]}</td><td class="d num${l.montant > 0 ? " plus" : ""}">${l.montant > 0 ? "+" : "−"}${eur(l.montant)}</td><td class="just">${
+    ${resumeMois(L, m)}
+    <table class="releve"><thead><tr><th></th><th>Date</th><th>Ce qu’écrit la banque</th><th>Catégorie</th><th class="d s">Sorties</th><th class="d e">Entrées</th><th>Justificatif</th></tr></thead><tbody>
+    ${L.map(l => `<tr><td class="coul" style="background:${COUL[l.cat]}"></td><td class="num">${l.ref ? `<span id="ligne-${l.ref}">` : ""}${deux(l.jour)}/${deux(m + 1)}${l.ref ? "</span>" : ""}</td><td class="lib">${l.lib}</td><td class="cat">${NOM[l.cat]}</td><td class="d num s">${l.montant < 0 ? eur(l.montant) : ""}</td><td class="d num e">${l.montant > 0 ? eur(l.montant) : ""}</td><td class="just">${
       l.perdu ? `<span class="perdu">Ticket perdu, mention validée</span>`
       : l.ticket ? `<a class="vers" href="#piece-${l.ref}"><span class="ref">${l.ref}</span> Ticket du ${deux(l.ticket.jour)}/${deux(m + 1)} <span class="p">p. ${ouEst(m, l.ref)}</span></a>`
       : l.facture ? `<a class="vers" href="#piece-${l.ref}"><span class="ref">${l.ref}</span> Facture ${l.facture.f} <span class="p">p. ${ouEst(m, l.ref)}</span></a>`
       : `<a class="vers" href="#piece-${l.ref}"><span class="ref">${l.ref}</span> Facture ${l.numF}, ${l.client} <span class="p">p. ${ouEst(m, l.ref)}</span></a>`}</td></tr>`).join("")}
-    </tbody></table>
+    </tbody><tfoot><tr class="premier"><td></td><td colspan="3" class="lib-t">Total de ${MOIS[m]}</td><td class="d num s">${eur(-sum(L.filter(l => l.montant < 0), l => l.montant))}</td><td class="d num e">${eur(sum(L.filter(l => l.montant > 0), l => l.montant))}</td><td></td></tr><tr class="verif"><td></td><td colspan="6">${eur(soldes[m][0])} au 1ᵉʳ ${MOIS[m]}, + entrées − sorties = ${eur(soldes[m][1])} au ${JOURS_MOIS[m]} ${MOIS[m]}, comme la banque.</td></tr></tfoot></table>
   </section>`;
   const pieces = L.filter(l => l.ref);
   for (let p = 0; p < pieces.length; p += PIECES_PAR_PAGE) {

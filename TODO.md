@@ -22,6 +22,8 @@ d'exemple : `appli/dossier-justifie-exemple.pdf`, imprimé par
 | 6 | Les tickets | le ticket réécrit dans le format du dossier, **complet, ligne par ligne comme imprimé** (rien de regroupé : sa remarque devant un essai qui fusionnait les doublons), avec la vignette de la vraie photo, qui reste la preuve |
 | 7 | Quand valider l’année | **quand il veut**, par une touche qui arrête le dossier au jour choisi : son exercice peut tomber à n’importe quelle date. Pas de règle du 1ᵉʳ janvier |
 | — | Entrées et sorties | **B** : deux colonnes, sorties en rouge, entrées en vert, total du mois et soldes de la banque en bas |
+| — | Le total d’un ticket ou d’une facture | **surligné en bleu gris** (`#ebf0f4`) sur la pièce RÉÉCRITE seulement, jamais sur la photo. Le vert et le rouge disent entrée et sortie ; le jaune lui piquait les yeux |
+| — | Les virements reçus | leur facture émise par Atlas entre parmi les pièces (`R-mois-n`), avec le même aller et retour |
 
 **Ce que ses deux vrais tickets ont appris (Intermarché, Uber Eats) :** un
 ticket payé en espèces n'a pas de ligne de banque, le Check up ne la cherche
