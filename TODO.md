@@ -1,13 +1,39 @@
 # Prochaines tâches
 
 
+## ⏳ UNE PLANCHE À REGARDER : LA TVA D'UNE VOITURE, A OU B (23 octobre 2026)
+
+`appli/tva-voiture-80.html`. À coder dans `TableauCalculette` (page TVA déductible) avec `tvaTicket`, déjà en base, dès qu'il a choisi.
+
+## ⏳ UNE PLANCHE À REGARDER : RENVOYER LA FACTURE ACQUITTÉE (23 octobre 2026)
+
+Sa demande : l'assurance d'un client veut une facture acquittée ; la même, même
+numéro, avec la mention en plus. Planche `appli/facture-acquittee.html`, rien
+de codé.
+
+**Ce que le code fait déjà, vérifié le 23 octobre :** le tampon « Acquittée le
+… » existe (`tamponAcquittee`, `document-commun.ts`) et s'imprime dès que les
+règlements couvrent le total. Mais seul le PDF du patron se recompose
+(`genererPdfFacturePourApercu`) : **le lien du client sert le fichier archivé à
+l'émission** (`pdfFactureParJeton`), donc renvoyer par SMS lui redonne la
+facture SANS la mention. Et sur une facture arrêtée, l'interrupteur « Facture
+acquittée » est fermé (`acquittement={!emise}`) : le solde ne se note que
+depuis Terminés.
+
+**Ce que la planche propose (à coder seulement après son oui) :** l'interrupteur
+revient sur la facture arrêtée et passe par `noterPaiement` (il demande le
+moyen, il n'en invente pas) ; l'envoi devient « Envoyer la facture acquittée » ;
+un second PDF archivé, à part, l'original restant intouché. Niveau 3 (argent,
+probablement une migration pour ranger le second fichier).
+
+
 ## ⏳ MA BANQUE : L'ESSAI EST CODÉ, À JOUER PAR LUI (22 octobre 2026)
 
 `/reglages/banque` lit ses virements reçus par Enable Banking et propose une facture pour chacun. **Ce qui reste, et c'est lui** : créer l'application chez Enable Banking, y relier son Crédit Mutuel, déposer le `.pem` dans `cles-banque/` (`docs/banque-essai.md`). **On ne sait pas encore si le Crédit Mutuel est couvert** : la liste ne se lit qu'avec un compte.
 
 **Ce qui vient après, seulement si l'essai répond** : la carte sur l'accueil, le « Oui » qui note le paiement par `noterPaiement`, l'alerte avant la coupure (planche `appli/banque-qui-previent.html`), une table des liaisons sous RLS au lieu du témoin du navigateur, et le contrat pour ses clients (`docs/A-FAIRE.md` §13).
 
-## ⏳ ARROSAGE : DEUX PLANCHES À REGARDER (21 octobre 2026)
+## ARROSAGE : LES PLANCHES DES 21 ET 22 OCTOBRE, CODÉES ET SUR `main`
 
 - `appli/arrosage-plan-lu-a-verifier.html` : la photo ouvre le plan lu dans
   « Dessiner le plan », on corrige, puis « Faire le plan ». **Codé le
@@ -18,14 +44,12 @@
   consigne), sur `main` le 23 octobre 2026 (batterie commune)** : `appli/arrosage-feuille-des-lignes.html`
   (le sens, l'écart du bord, l'écart entre deux) et
   `appli/arrosage-dessiner-le-plan-revu.html` (les familles d'outils, le zoom,
-  « Avant le plan », l'arbuste), `ARCHITECTURE.md` §485. Le lot touche le
-  calcul partagé : niveau 3, la batterie entière avant `main`.
+  « Avant le plan », l'arbuste), `ARCHITECTURE.md` §485.
 - `appli/arrosage-ecart-des-lignes.html` : ~~il tranche A ou B~~ **tranché le
   22 octobre** : une ligne tous les 50 cm pour une haie, 60 cm pour un massif,
   la première à un écart du bord, l'écart affiché qui suit les boutons
-  (`.claude/rules/arrosage.md`). **Codé le 22 octobre** sur la branche
-  `claude/lignes-goutte`, sans batterie (sa consigne) : **pas encore sur
-  `main`**, il faut la batterie de niveau 3 (calcul partagé) avant.
+  (`.claude/rules/arrosage.md`). **Codé le 22 octobre**, sur `main` le
+  23 octobre 2026 (batterie commune, `docs/batterie-commune-22-octobre.md`).
 - **Rouge préexistant, pas de ce lot** : `test-reste-equipes-e2e` tombe sur
   `main` comme sur le lot du 21 octobre (« 1 date(s) retenues au lieu de
   deux »). Comparé par `verifier-rouge-prealable.ts`. À diagnostiquer : il
