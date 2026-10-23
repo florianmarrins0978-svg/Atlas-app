@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, getTableColumns } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import {
   absencesEquipe,
@@ -73,9 +73,14 @@ import {
   margesAchat,
   envoisPieces,
   piecesImportees,
+  liaisonsBancaires,
+  virementsRecus,
 } from "../db/schema";
 import type { Ctx } from "./context";
 import { rangerLesFichiers, type FichierARanger } from "@/lib/rangement-sauvegarde";
+
+// La banque reliée, moins ce qui en ouvre la lecture (voir la requête).
+const liaisonSansSession = Object.fromEntries(Object.entries(getTableColumns(liaisonsBancaires)).filter(([nom]) => nom !== "sessionId"));
 
 // Emporter ses données, sans demander la permission à personne.
 //
@@ -213,6 +218,8 @@ export async function exporterEntreprise(
       sesMarges,
       sesEnvoisDePieces,
       sesPiecesImportees,
+      saBanqueReliee,
+      sesVirementsRecus,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -428,6 +435,12 @@ export async function exporterEntreprise(
       // Les devis et factures importés (migration 0136), et leurs envois.
       tx.select().from(envoisPieces).where(eq(envoisPieces.entrepriseId, e)),
       tx.select().from(piecesImportees).where(eq(piecesImportees.entrepriseId, e)),
+      // Sa banque reliée et les virements qu'Atlas y a lus (migration 0140).
+      // **Sans la session du prestataire** : elle ouvre la lecture de son
+      // compte, et une archive téléchargée voyage ; la sauvegarde dit quelle
+      // banque est reliée et jusqu'à quand, jamais de quoi la relire.
+      tx.select(liaisonSansSession).from(liaisonsBancaires).where(eq(liaisonsBancaires.entrepriseId, e)),
+      tx.select().from(virementsRecus).where(eq(virementsRecus.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -536,6 +549,8 @@ export async function exporterEntreprise(
       // Parent avant enfants : l'envoi, puis ses pièces.
       envois_pieces: sesEnvoisDePieces,
       pieces_importees: sesPiecesImportees,
+      liaisons_bancaires: saBanqueReliee,
+      virements_recus: sesVirementsRecus,
     };
 
     const compte: Record<string, number> = {};

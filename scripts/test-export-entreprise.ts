@@ -75,6 +75,11 @@ async function garnir(entrepriseId: string, marqueur: string) {
       [entrepriseId, chantierId, `Taille de haie ${marqueur}`]
     );
     await client.query(
+      `INSERT INTO liaisons_bancaires (entreprise_id, session_id, comptes, banque, accord_jusqu_au)
+       VALUES ($1,$2,ARRAY['compte-1'],'Banque ' || $3, now() + interval '90 days')`,
+      [entrepriseId, `session-secrete-${marqueur}`, marqueur]
+    );
+    await client.query(
       `INSERT INTO photos (entreprise_id, chantier_id, storage_key, mime_type, taille_octets, checksum)
        VALUES ($1,$2,$3,'image/jpeg',1024,'abc')`,
       [entrepriseId, chantierId, `photos/${marqueur}-1.jpg`]
@@ -234,6 +239,13 @@ async function main() {
     exportees.delete("clients");
     const oubliees = enBase.filter((t) => !exportees.has(t));
     assert.deepEqual(oubliees, ["clients"], "le contrôle n'a pas vu la table retirée");
+  });
+
+  await test("sa banque reliée part dans la sauvegarde, jamais la session qui la relit", async () => {
+    const e = await exporterEntreprise(A);
+    const [liaison] = (e.tables.liaisons_bancaires ?? []) as Record<string, unknown>[];
+    assert.equal(liaison?.banque, "Banque A");
+    assert.ok(!("sessionId" in liaison) && !JSON.stringify(e).includes("session-secrete"), "la session du prestataire voyage dans l'archive");
   });
 
   await test("les tables partagées restent hors de l'export", async () => {
