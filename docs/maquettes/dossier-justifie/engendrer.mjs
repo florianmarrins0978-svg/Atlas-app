@@ -54,6 +54,8 @@ const { PDFName, PDFArray } = createRequire(path.join(process.cwd(), "x.js"))("p
 const { writeFileSync } = await import("node:fs");
 const doc = await PDFDocument.load(readFileSync(sortie));
 const nommees = doc.catalog.lookup(PDFName.of("Dests"));
+// Le côte à côte n.a aucun lien, par construction : il n.y a rien à réécrire.
+if (cote) process.exit(0);
 if (!nommees) { console.error("Aucune destination nommée : les liens internes ont disparu."); process.exit(1); }
 const cible = new Map();
 for (const [nom, val] of nommees.entries()) cible.set(nom.toString(), val instanceof PDFArray ? val : val.lookup(PDFName.of("D")));
