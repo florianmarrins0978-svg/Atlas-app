@@ -715,7 +715,7 @@ rendre();
     <tr><td>Ticket perdu</td><td>La ligne est validée avec la mention, et votre comptable la voit. Mais sans ticket, la TVA de cette dépense ne se récupère pas : l'écran le dit avant que vous validiez.</td></tr>
     <tr><td>Les couleurs</td><td>Une proposition. Dites celle qui ne vous va pas, et elle change. Il y a aussi une version Nuit, en haut.</td></tr>
     <tr><td>Mes dossiers justifiés</td><td>Quand l’année est justifiée, vous la validez : un PDF mois par mois, chaque ligne de banque suivie de la photo de son ticket. Gardé dix ans, comme la loi le demande pour les pièces comptables, et un dossier validé ne s’efface pas.</td></tr>
-    <tr><td>Le PDF</td><td>« Ouvrir » sur le dossier 2025 montre un vrai dossier fini, en exemple : 35 pages, l’année entière. Dans l’appli, il se range ici tout seul quand vous validez l’année ; « Enregistrer » en garde une copie dans vos fichiers.</td></tr>
+    <tr><td>Le PDF</td><td>« Ouvrir » sur le dossier 2025 montre un vrai dossier fini, en exemple : 35 pages, l’année entière. Dans l’appli, il se range ici tout seul quand vous validez l’année ; « Télécharger » en garde une copie sur le téléphone.</td></tr>
     <tr><td>Le comptable</td><td>Il ne coche rien dans le PDF : un PDF ne garde pas un bouton qu’on touche, et le dossier gardé dix ans ne doit plus changer. Il reçoit un lien privé vers la page de l’écran 7. Ses rouges vous arrivent dans Atlas, avec sa raison.</td></tr>
     <tr><td>Ce qui marche derrière</td><td>Rien pour l’instant : c’est un dessin. Une fois choisi, il se code dans l’appli, et « Photographier » ouvre l’appareil photo du téléphone, comme le scan des tickets dans Ma TVA.</td></tr>
   </table>
@@ -804,7 +804,7 @@ function rendreDossiers(reste){
   const ans = [...new Set(tous.map(d => d.an))];
   if (filtreAn === null || !ans.includes(filtreAn)) filtreAn = ans[0];
   document.querySelector("[data-filtre-an]").innerHTML = ans.map(a => `<option value="${a}"${a === filtreAn ? " selected" : ""}>${a}</option>`).join("");
-  document.querySelector("[data-dossiers]").innerHTML = tous.filter(d => d.an === filtreAn).map(d => `<li class="ligne"><span class="pdf">PDF</span><span class="milieu"><div class="lib">Du ${d.du} au ${d.au}</div><div class="cat" style="color:var(--gris)">Rangé le ${d.v}, gardé jusqu’en ${d.g}, ${d.t}</div><div class="gestes"><a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" target="_blank" rel="noopener">Ouvrir</a><a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" download="Dossier justifié ${d.an}.pdf">Enregistrer</a><button class="lien" type="button">Envoyer au comptable</button></div></span></li>`).join("");
+  document.querySelector("[data-dossiers]").innerHTML = tous.filter(d => d.an === filtreAn).map(d => `<li class="ligne"><span class="pdf">PDF</span><span class="milieu"><div class="lib">Du ${d.du} au ${d.au}</div><div class="cat" style="color:var(--gris)">Rangé le ${d.v}, gardé jusqu’en ${d.g}, ${d.t}</div><div class="gestes"><a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" target="_blank" rel="noopener">Ouvrir</a><a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" download="Dossier justifié ${d.an}.pdf">Télécharger</a><button class="lien" type="button">Envoyer au comptable</button></div></span></li>`).join("");
 }
 
 function rendreRelies(){
