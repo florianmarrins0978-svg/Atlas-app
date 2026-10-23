@@ -68,13 +68,13 @@ Planche `appli/facture-acquittee.html`, son « code ça » du 23 octobre. Branch
 entière** (niveau 3, argent et migration 0141), puis `main`. `ARCHITECTURE.md`
 §490, `docs/facture-acquittee.md`.
 
-## ⏳ MA BANQUE : L'ESSAI A RÉPONDU SUR SA BANQUE (23 octobre 2026)
+## ⏳ MA BANQUE : LA SUITE EST CODÉE, PAS ENCORE SUR `main` (23 octobre 2026)
 
 `/reglages/banque` lit ses virements reçus par Enable Banking et propose une facture pour chacun. **Joué par lui le 23 octobre 2026, de bout en bout** : application « Atlas » active en production restreinte, Crédit Mutuel relié, « Votre banque est reliée », deux virements reçus listés. **Le Crédit Mutuel est couvert.**
 
 Ce que l'essai a appris, et qui servira au parcours de ses clients :
 
-- **Son identifiant passe par la porte « Vie personnelle » (`psu_type: personal`)**, pas « Affaires » : la porte « Affaires » mène à l'entrée des grandes entreprises du Crédit Mutuel (page anglaise, module SConnect de carte à puce) qui refuse son identifiant. L'écran coche « Compte pro » par défaut : à revoir avant de l'ouvrir à d'autres artisans, qui auront le même cas.
+- **Son identifiant passe par la porte « Vie personnelle » (`psu_type: personal`)**, pas « Affaires » : la porte « Affaires » mène à l'entrée des grandes entreprises du Crédit Mutuel (page anglaise, module SConnect de carte à puce) qui refuse son identifiant. **Corrigé dans la suite** : la porte « particulier » par défaut, l'accès entreprise derrière un lien discret.
 - **L'identifiant Crédit Mutuel est un numéro, pas l'e-mail** que le navigateur propose de lui-même : c'est ce qui a fait échouer ses premiers essais.
 - **Le compte relié semble être son compte personnel** (salaire, MSA) : aucune facture ne pouvait correspondre. Sur quel compte ses clients le paient : à lui demander.
 - Sa clé `.pem` a été montrée en partie sur une capture : lui proposer d'en refaire une neuve chez Enable Banking après l'essai.
@@ -84,9 +84,11 @@ Ce que l'essai a appris, et qui servira au parcours de ses clients :
 - `appli/banque-a-essayer.html` : le parcours entier, plus de case pro ou perso (la porte « particulier » par défaut, l'accès entreprise en lien discret), le nom du payeur au lieu du libellé brut.
 - `appli/banque-numero-et-termines.html` : **le numéro de facture lu dans le libellé passe avant le montant et le nom** (`F2026-000028`, `F2026000028`, `2026-000028`, jamais un nombre court seul), à ajouter à `src/lib/rapprochement-bancaire.ts`. Dans Terminés, Ma TVA : **variante A**, « Oui / Non » à la place des deux boutons de la ligne ; une réponse sur l'accueil ou dans Terminés vaut pour les deux.
 - `appli/banque-virement-en-couleur.html` : **variante A**, le fond vert pâle (voile de `plein`).
-- `appli/accueil-codes-couleur.html` : cinq couleurs pour toutes les cartes de l'accueil, par ce qu'il a à faire ; **« Autre date proposée » en bleu, sa demande du 23 octobre** (le bleu n'est dans aucune charte : un jeton à créer). En attente de son accord sur le reste.
+- `appli/accueil-codes-couleur.html` : cinq couleurs pour toutes les cartes de l'accueil, par ce qu'il a à faire ; **« Autre date proposée » en bleu, sa demande du 23 octobre** **Codé le 23 octobre 2026** (`ARCHITECTURE.md` §491), branche `lot/accueil-cinq-couleurs`. Batterie pas jouée, à sa demande : pas sur `main`.
 
-**Ce qui vient après, seulement s'il le décide** : la carte sur l'accueil, le « Oui » qui note le paiement par `noterPaiement`, l'alerte avant la coupure (planche `appli/banque-qui-previent.html`), une table des liaisons sous RLS au lieu du témoin du navigateur, et le contrat pour ses clients (`docs/A-FAIRE.md` §13).
+**CODÉ LE 23 OCTOBRE 2026, branche `lot/banque-suite`** (posée sur `lot/accueil-cinq-couleurs`, migration 0140, `ARCHITECTURE.md` §492) : le numéro lu dans le virement, la carte verte « Virement reçu » sur l'accueil avec Oui ou Non, la même question sur la ligne de la facture dans Ma TVA, l'accord qui finit prévenu sept jours avant, la liaison en base sous RLS, le libellé brut remplacé par le payeur. **Batterie pas jouée, à sa demande** : les deux lots attendent leur batterie pour partir sur `main`, le second après le premier.
+
+**Ce qui reste, et qui n'est pas du code** : le contrat pour ses clients (`docs/A-FAIRE.md` §13) ; sans lui, Enable Banking ne relie que les comptes du propriétaire de l'application. **Ce que la suite ne fait pas** : une vraie notification poussée quand Atlas est fermé (la banque se lit quand quelqu'un ouvre l'accueil, Ma TVA ou Ma banque, une fois par demi-heure au plus) ; un virement qui paie deux factures se note à la main (aucune proposition) ; un paiement retiré depuis Ma TVA laisse son virement « confirmé ».
 
 ## ARROSAGE : LES PLANCHES DES 21 ET 22 OCTOBRE, CODÉES ET SUR `main`
 

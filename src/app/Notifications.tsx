@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { ordonnerLesCartes } from "@/lib/ordre-notifications";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
 import { jourLisible, joursEnToutesLettres } from "@/lib/jour";
 import { suiteDeLaReponse, type SuiteDeLaReponse } from "@/lib/suite-de-la-reponse";
 import {
@@ -15,6 +15,10 @@ import {
   marquerRappelVuAction,
 } from "./actions";
 import type { GenreRappel, GenreVu } from "@/lib/rappels";
+import { couleursDuTon, type TonCarte } from "@/lib/ton-des-cartes";
+import TitreDeCarte from "@/components/atlas/TitreDeCarte";
+import type { QuestionDeVirement } from "@/lib/virement-en-mots";
+import ReponseVirement from "./ReponseVirement";
 import type { NotificationPatron, EnvoiCaduc } from "@/server/repositories/envois-devis";
 
 /** Un rappel, déjà mis en mots par le serveur — voir `src/lib/rappels.ts`. */
@@ -113,8 +117,11 @@ type Carte = {
    * Il ne s'affiche nulle part : le délai reste mis en mots au serveur.
    */
   quand: number;
-  /** Réclame l'attention (fond teinté) plutôt que d'informer. */
-  urgent: boolean;
+  /**
+   * Sa famille, donc sa couleur : ce qu'il a à faire, lu d'un coup d'œil
+   * (`src/lib/ton-des-cartes.ts`, sa planche du 23 octobre 2026).
+   */
+  ton: TonCarte;
   titre: string;
   texte: string;
   /**
@@ -203,9 +210,10 @@ function versCarte(n: NotificationPatron): Carte {
     // l'enverrait derrière « N autres devis à regarder », c'est-à-dire nulle
     // part : une réponse de client ne se perd pas pour une date absente.
     quand: n.responduAt ? n.responduAt.getTime() : Number.MAX_SAFE_INTEGER,
-    // Une correction attend un geste autant qu'un refus — davantage, même :
-    // le chantier est presque acquis, il ne tient qu'à une reprise.
-    urgent: refus || correction,
+    // Une correction attend SA réponse : le chantier est presque acquis, il ne
+    // tient qu'à une reprise. Un refus, lui, est un chantier qui part. Une
+    // autre date bouge le planning (« en bleu », sa demande du 23 octobre).
+    ton: correction ? "ambre" : refus ? "rouge" : n.dateContreProposee ? "bleu" : "vert",
     titre,
     texte,
     messageClient: n.precisionClient,
@@ -237,10 +245,10 @@ function receptionVersCarte(r: ReceptionAffichee): Carte {
     // L'instant de la CONFIRMATION, pas celui de l'envoi : c'est elle qui est
     // la nouvelle, et c'est elle qui doit remonter en tête.
     quand: r.accuseLe.getTime(),
-    // **Pas urgente, et c'est une bonne nouvelle.** Le fond teinté est réservé
-    // à ce qui réclame un geste ; ici il n'y en a aucun à faire. Une bonne
-    // nouvelle peinte comme une alerte apprend à ignorer les alertes.
-    urgent: false,
+    // **Une bonne nouvelle, et elle se peint comme telle** : en vert, jamais
+    // comme une alerte. Une bonne nouvelle peinte en alerte apprend à ignorer
+    // les alertes.
+    ton: "vert",
     titre: "Facture reçue",
     texte: `${r.clientNom ?? "Votre client"} a confirmé avoir reçu la facture ${r.numeroCommercial}.`,
     reception: true,
@@ -265,7 +273,8 @@ function caducVersCarte(e: EnvoiCaduc): Carte {
     // qui est la nouvelle. Trier sur l'envoi mettrait en tête un devis parti
     // hier dont le lien court encore.
     quand: e.expireAt.getTime(),
-    urgent: true,
+    // Un chantier qui part sans un mot : ça peut coûter.
+    ton: "rouge",
     titre: "Devis caduc",
     texte:
       "Le lien a expiré sans réponse. Le client n'a rien dit, ni oui, ni non. " +
@@ -293,10 +302,9 @@ function rappelVersCarte(r: RappelAffiche): Carte {
       chantierId: r.chantierId,
       chantierNom: r.chantierNom,
       quand: r.quand,
-      // **Il ne crie pas.** Le fond teinté reste au devis jamais parti, seul
-      // cas où RIEN n'est encore parti au client. Une facture impayée décrit un
-      // travail fait qui attend son règlement — comme les deux autres.
-      urgent: false,
+      // **Rouge depuis le 23 octobre 2026** : c'est de l'argent qui ne rentre
+      // pas, la famille « ça peut coûter » de sa planche.
+      ton: "rouge",
       rappel: true,
       titre: "Facture impayée",
       texte: `Échéance dépassée ${r.depuisTexte}.`,
@@ -329,7 +337,7 @@ function rappelVersCarte(r: RappelAffiche): Carte {
       chantierId: r.chantierId,
       chantierNom: r.chantierNom,
       quand: r.quand,
-      urgent: false,
+      ton: "blanc",
       rappel: true,
       vu: { genre: r.genre, chantierId: r.chantierId },
       titre: "Retour pas reçu",
@@ -363,7 +371,9 @@ function rappelVersCarte(r: RappelAffiche): Carte {
     // doit pas se rater. Et il est le seul des trois où RIEN n'est encore
     // parti au client : les deux autres décrivent un travail déjà fait qui
     // attend, celui-ci un travail pas commencé.
-    urgent: sansDevis,
+    // Le devis jamais parti est à LUI de faire : ambre. Les deux autres sont
+    // pour mémoire.
+    ton: sansDevis ? "ambre" : "blanc",
     rappel: true,
     titre: sansDevis
       // **Le compte des jours DANS l'étiquette**, avant le nom — l'autre moitié
@@ -401,11 +411,32 @@ function rappelVersCarte(r: RappelAffiche): Carte {
   };
 }
 
+/**
+ * La fin de l'accord donné à la banque, quand elle approche (sept jours).
+ *
+ * Mise en mots au serveur, comme les délais des rappels : l'écran n'en
+ * recalcule rien.
+ */
+export type AccordBancaireAffiche = {
+  /** « Votre accord se termine dans 7 jours », ou « … est terminé ». */
+  titre: string;
+  texte: string;
+  quand: number;
+};
+
+/** Ce que l'accueil range : une carte, une question de virement, ou l'accord bancaire. */
+type Element =
+  | { sorte: "carte"; carte: Carte; quand: number }
+  | { sorte: "virement"; question: QuestionDeVirement; quand: number }
+  | { sorte: "accord"; accord: AccordBancaireAffiche; quand: number };
+
 export default function Notifications({
   initiales,
   caducs,
   rappels = [],
   receptions = [],
+  virements = [],
+  accord = null,
 }: {
   initiales: NotificationPatron[];
   caducs: EnvoiCaduc[];
@@ -413,6 +444,10 @@ export default function Notifications({
   rappels?: RappelAffiche[];
   /** Les clients qui viennent de confirmer avoir reçu leur facture. */
   receptions?: ReceptionAffichee[];
+  /** Les virements reçus qui attendent sa réponse (sa planche du 23 octobre 2026). */
+  virements?: QuestionDeVirement[];
+  /** La fin de l'accord bancaire, quand elle approche. */
+  accord?: AccordBancaireAffiche | null;
 }) {
   // Retirée à l'écran dès l'appui, sans attendre le serveur : le patron a fait
   // son geste, lui laisser la carte sous les yeux le ferait douter.
@@ -462,7 +497,16 @@ export default function Notifications({
     ...caducs.map(caducVersCarte),
     ...receptions.map(receptionVersCarte),
   ].filter((n) => !masquees.includes(n.envoiId));
-  const restantes = ordonnerLesCartes(lesRappels, lesReponses);
+  // **Les virements et l'accord bancaire se rangent avec les autres, à leur
+  // date** : le fil n'a qu'un ordre (`ARCHITECTURE.md` §477). C'est leur
+  // couleur, verte ou ambre, qui les fait voir, pas une place réservée.
+  const enElement = (carte: Carte): Element => ({ sorte: "carte", carte, quand: carte.quand });
+  const restantes = ordonnerLesCartes<Element>(
+    lesRappels.map(enElement),
+    lesReponses.map(enElement),
+    virements.map((question) => ({ sorte: "virement" as const, question, quand: question.quand })),
+    accord ? [{ sorte: "accord" as const, accord, quand: accord.quand }] : []
+  );
   if (restantes.length === 0) return null;
 
   const visibles = toutVoir ? restantes : restantes.slice(0, VISIBLES_PAR_DEFAUT);
@@ -561,7 +605,11 @@ export default function Notifications({
 
   return (
     <div className="mt-7 flex flex-col gap-3 px-6">
-      {visibles.map((n) => {
+      {visibles.map((e) => {
+        if (e.sorte === "virement") return <CarteVirement key={`virement-${e.question.virementId}`} question={e.question} />;
+        if (e.sorte === "accord") return <CarteAccord key="accord-bancaire" accord={e.accord} />;
+        const n = e.carte;
+        const couleurs = couleursDuTon(n.ton);
         return (
           <div
             key={n.envoiId}
@@ -570,21 +618,19 @@ export default function Notifications({
             // nom attrape la ligne de la liste et croit lire la carte. Vécu le
             // 12 août 2026, sur le contrôle de ce lien même.
             data-atlas="carte-reponse"
-            // Le TON, lisible de l'extérieur : sa proposition B ne se prouve
-            // qu'à la couleur RENDUE, et un booléen dans le code n'en dit rien
+            // Le TON, lisible de l'extérieur : une famille ne se prouve qu'à la
+            // couleur RENDUE, et un champ dans le code n'en dit rien
             // (`test-devis-qui-tarde-e2e`).
-            data-atlas-ton={n.urgent ? "teinte" : "nu"}
+            data-atlas-ton={n.ton}
             data-chantier={n.chantierId}
             className="rounded-[18px] px-5 py-4"
-            style={{ backgroundColor: n.urgent ? colors.rustTint : colors.card }}
+            style={{ backgroundColor: couleurs.fond }}
           >
-            <p className={smallCaps} style={{ color: n.urgent ? colors.rust : colors.muted, marginBottom: 6 }}>
-              {n.titre}
-            </p>
+            <TitreDeCarte ton={n.ton}>{n.titre}</TitreDeCarte>
             <p className="text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
               {n.chantierNom}
             </p>
-            <p className="mt-1 text-[13px]" style={{ color: colors.muted }}>
+            <p className="mt-1 text-[13px]" style={{ color: couleurs.texte }}>
               {n.texte}
             </p>
 
@@ -734,6 +780,53 @@ export default function Notifications({
           </button>
         )
       )}
+    </div>
+  );
+}
+
+/**
+ * « Virement reçu » — sa planche du 23 octobre 2026, en vert (variante A).
+ *
+ * Le montant se lit avant le reste, puis ce que la banque écrit, puis POURQUOI
+ * cette facture : le numéro lu, le nom, ou le seul montant. La réponse est la
+ * même que dans Ma TVA (`ReponseVirement`).
+ */
+function CarteVirement({ question }: { question: QuestionDeVirement }) {
+  const couleurs = couleursDuTon("vert");
+  return (
+    <div data-atlas="carte-virement" data-atlas-ton="vert" className="rounded-[18px] px-5 py-4" style={{ backgroundColor: couleurs.fond }}>
+      <TitreDeCarte ton="vert">Virement reçu</TitreDeCarte>
+      <p className="text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
+        {question.qui}
+      </p>
+      <p className="mt-2 tabular-nums" style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2, color: colors.ink }}>
+        {question.montant}
+      </p>
+      <p className="mt-1 text-[13px] leading-[1.5]" style={{ color: couleurs.texte }}>
+        {question.quandEtLibelle} {question.raison}
+      </p>
+      <ReponseVirement virementId={question.virementId} question={question.question} oui={question.oui} choix={question.choix} />
+    </div>
+  );
+}
+
+/** La fin de l'accord bancaire : à lui de le renouveler, donc ambre. */
+function CarteAccord({ accord }: { accord: AccordBancaireAffiche }) {
+  const couleurs = couleursDuTon("ambre");
+  return (
+    <div data-atlas="carte-accord-bancaire" data-atlas-ton="ambre" className="rounded-[18px] px-5 py-4" style={{ backgroundColor: couleurs.fond }}>
+      <TitreDeCarte ton="ambre">Votre banque</TitreDeCarte>
+      <p className="text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
+        {accord.titre}
+      </p>
+      <p className="mt-1 text-[13px] leading-[1.5]" style={{ color: couleurs.texte }}>
+        {accord.texte}
+      </p>
+      <div className="-mx-2 mt-2 flex items-center gap-2">
+        <Link href="/reglages/banque" className="inline-flex min-h-[44px] items-center px-2 text-[14px] font-medium" style={{ color: colors.rust }}>
+          Renouveler
+        </Link>
+      </div>
     </div>
   );
 }

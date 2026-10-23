@@ -107,6 +107,27 @@ export type JetonsCharte = {
   alerte: string;
   bordeaux: string;
   vertPale: string;
+  /**
+   * ─── LES CINQ COULEURS DE L'ACCUEIL — sa planche du 23 octobre 2026 ──────
+   *
+   * *« Fais-moi une planche avec différents codes couleurs en fonction des
+   * différentes notifications. Comme ça, l'utilisateur, en un coup d'œil, il
+   * saura ce qui est arrivé »* (`appli/accueil-codes-couleur.html`). Quatre
+   * familles teintées, la cinquième, « pour mémoire », reste sur la plage.
+   *
+   * **Une teinte FIXE par famille, comme l'alerte** : le vert d'une bonne
+   * nouvelle doit rester vert sur Brume, où l'accent des boutons est bleu
+   * marine. Seule la clarté du TEXTE s'accorde à la charte (`detacher`) ; le
+   * fond est la plage, à peine teintée de la famille.
+   */
+  carteVertFond: string;
+  carteVertTexte: string;
+  carteAmbreFond: string;
+  carteAmbreTexte: string;
+  carteBleuFond: string;
+  carteBleuTexte: string;
+  carteRougeFond: string;
+  carteRougeTexte: string;
 };
 
 export type NomCharte =
@@ -308,6 +329,7 @@ function depuisPlanche(p: {
     // côté dans le calendrier. Sans cela, sur une charte sombre, « incomplet »
     // et « complet » deviennent deux blancs, et le mois cesse de se lire d'un
     // coup d'œil — sa seule raison d'être.
+    ...famillesDesCartes(p.plage, sens),
     bordeaux: detacher(BORDEAUX_ORIGINE, [p.fond, p.plage, p.plein], 3, sens),
     // Elle descend là où les autres montent : sur un écran sombre, plus la
     // demi-journée est pleine, plus la barre est claire. C'est l'inverse exact
@@ -366,6 +388,49 @@ const OR_ORIGINE = "#B98B47";
 const OR_CLAIR_ORIGINE = "#C9A15E";
 const BORDEAUX_ORIGINE = "#6E2433";
 const VERT_PALE_ORIGINE = "#b9c6b4";
+
+/**
+ * Les teintes des familles de l'accueil (23 octobre 2026).
+ *
+ * **Le vert n'est pas celui des boutons**, même s'il en est proche : le bouton
+ * a été choisi pour lui-même (`VERT_DES_BOUTONS`), et une bonne nouvelle ne
+ * doit pas changer de couleur le jour où il en changera. **Le bleu est
+ * nouveau** : aucune charte n'en portait, et c'est sa demande — « autre date
+ * proposée, mais en bleu ». L'ambre est l'or, le rouge est l'alerte : ce sont
+ * déjà leurs sens dans l'application.
+ */
+const VERT_BONNE_NOUVELLE = "#6f9a5e";
+const BLEU_DATE_QUI_BOUGE = "#3d6fa3";
+
+/**
+ * Le fond et le titre de chaque famille, pour une plage donnée.
+ *
+ * **Le fond se mêle à la PLAGE**, la couleur des cartes : une famille est une
+ * carte un peu teintée, pas un aplat. 18 % se voit en faisant défiler sans
+ * crier ; le bleu en prend 24, parce qu'à 18 il se confondait avec le gris
+ * (vu sur la planche, le 23 octobre). **Le titre se détache de CE fond-là**,
+ * pas de la page : c'est sur lui qu'il se lit.
+ */
+function famillesDesCartes(plage: string, sens: 1 | -1) {
+  const famille = (teinte: string, part: number) => {
+    const fond = meler(plage, teinte, part);
+    return { fond, texte: detacher(teinte, [fond], 4.5, sens) };
+  };
+  const vert = famille(VERT_BONNE_NOUVELLE, 0.18);
+  const ambre = famille(OR_ORIGINE, 0.2);
+  const bleu = famille(BLEU_DATE_QUI_BOUGE, 0.24);
+  const rouge = famille(ALERTE_ORIGINE, 0.14);
+  return {
+    carteVertFond: vert.fond,
+    carteVertTexte: vert.texte,
+    carteAmbreFond: ambre.fond,
+    carteAmbreTexte: ambre.texte,
+    carteBleuFond: bleu.fond,
+    carteBleuTexte: bleu.texte,
+    carteRougeFond: rouge.fond,
+    carteRougeTexte: rouge.texte,
+  };
+}
 
 /**
  * ─── CE QU'UNE CHARTE PEUT CHANGER EN PLUS DE LA COULEUR ────────────────────
@@ -451,6 +516,9 @@ export const CHARTES: Charte[] = [
       alerte: ALERTE_ORIGINE,
       bordeaux: BORDEAUX_ORIGINE,
       vertPale: VERT_PALE_ORIGINE,
+      // Dérivées, comme `orTexte` : elles n'existaient pas avant, il n'y a
+      // rien à recopier, et les poser à la main ferait un second calcul.
+      ...famillesDesCartes("#faf9f5", -1),
     },
   },
   {

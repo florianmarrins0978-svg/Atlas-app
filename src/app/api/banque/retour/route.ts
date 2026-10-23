@@ -2,9 +2,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { exigerProprietaire } from "@/server/autorisation";
-import { liaisonEnTemoin, ouvrirSession } from "@/server/banque/enable-banking";
+import { ouvrirSession } from "@/server/banque/enable-banking";
+import { enregistrerLiaison } from "@/server/repositories/banque";
+import { lireLaBanque } from "@/server/banque/lecture";
 import { adressePublique } from "@/server/agenda/adresse-publique";
-import { TEMOIN_ETAT_BANQUE, TEMOIN_LIAISON_BANQUE } from "@/app/reglages/banque/temoin";
+import { DUREE_DE_L_ACCORD_JOURS, TEMOIN_ETAT_BANQUE } from "@/app/reglages/banque/temoin";
 
 /**
  * Le retour du site de la banque, une fois que le patron a dit oui.
@@ -42,12 +44,19 @@ export async function GET(requete: NextRequest) {
   const r = await ouvrirSession(code);
   if (!r.ok) return versBanque("refus", r.raison);
 
-  boite.set(TEMOIN_LIAISON_BANQUE, liaisonEnTemoin({ session: r.session, comptes: r.comptes, banque: r.banque }), {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 90 * 24 * 3600, // La durée de l'accord demandé à la banque.
+  // **En base, et non plus dans un témoin du navigateur** : l'accueil et Ma
+  // TVA doivent pouvoir lire la banque sans que l'écran Ma banque soit ouvert,
+  // et depuis n'importe lequel de ses appareils.
+  const maintenant = new Date();
+  await enregistrerLiaison(ctx, {
+    session: r.session,
+    comptes: r.comptes,
+    banque: r.banque,
+    accordJusquAu: new Date(maintenant.getTime() + DUREE_DE_L_ACCORD_JOURS * 24 * 3600 * 1000),
   });
+  // Le patron est devant son écran : c'est le moment où la banque permet de
+  // lire sans compter. Les virements des trente derniers jours arrivent donc
+  // tout de suite ; une panne ici n'empêche pas la liaison d'être faite.
+  await lireLaBanque(ctx, { maintenant, forcer: true });
   return versBanque("relie");
 }

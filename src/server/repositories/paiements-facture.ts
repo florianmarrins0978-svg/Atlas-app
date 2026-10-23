@@ -204,71 +204,88 @@ export async function noterPaiement(
     note?: string;
   }
 ): Promise<ResultatPaiement> {
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const [facture] = await tx
-      .select({
-        id: factures.id,
-        dateEmission: factures.dateEmission,
-        totalHt: factures.totalHt,
-        totalTva: factures.totalTva,
-        totalTtc: factures.totalTtc,
-        statut: factures.statut,
-      })
-      .from(factures)
-      .where(eq(factures.id, factureId));
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) => noterPaiementDans(tx, ctx, factureId, demande));
+}
 
-    // Une facture qu'on ne voit pas — celle d'une autre entreprise, ou un
-    // identifiant inventé — ne rend rien : la RLS a déjà fait son travail.
-    if (!facture) return { ok: false as const, raison: "Cette facture est introuvable." };
-    if (facture.statut !== "emise") {
-      return { ok: false as const, raison: "Cette facture n'est pas encore émise." };
-    }
+/**
+ * Le cœur de `noterPaiement`, dans une transaction DÉJÀ ouverte.
+ *
+ * **Il existe pour le « oui » d'un virement** (`repositories/banque.ts`) : le
+ * règlement et la réponse doivent s'écrire ensemble ou pas du tout. Deux
+ * transactions laisseraient, au premier refus, un virement « confirmé » sans
+ * paiement — ou un paiement noté que la carte propose encore. Il rend
+ * l'identifiant du règlement, qui sert à l'annuler.
+ */
+export async function noterPaiementDans(
+  tx: DbOrTx,
+  ctx: Ctx,
+  factureId: string,
+  demande: Parameters<typeof noterPaiement>[2]
+): Promise<ResultatPaiement & { paiementId?: string }> {
+  const [facture] = await tx
+    .select({
+      id: factures.id,
+      dateEmission: factures.dateEmission,
+      totalHt: factures.totalHt,
+      totalTva: factures.totalTva,
+      totalTtc: factures.totalTtc,
+      statut: factures.statut,
+    })
+    .from(factures)
+    .where(eq(factures.id, factureId));
 
-    const dejaRegles = (
-      await tx.select().from(paiementsFacture).where(eq(paiementsFacture.factureId, factureId))
-    ).map((p) => ({ date: p.datePaiement, montant: p.montant }));
+  // Une facture qu'on ne voit pas — celle d'une autre entreprise, ou un
+  // identifiant inventé — ne rend rien : la RLS a déjà fait son travail.
+  if (!facture) return { ok: false as const, raison: "Cette facture est introuvable." };
+  if (facture.statut !== "emise") {
+    return { ok: false as const, raison: "Cette facture n'est pas encore émise." };
+  }
 
-    const montant = String(demande.montant ?? "")
-      .replace(/[\s  ]/g, "")
-      .replace("€", "")
-      .replace(",", ".");
-    const pourTva: FacturePourTva = {
-      ...facture,
-      avoirs: (await avoirsDesFactures(tx, [factureId])).get(factureId) ?? [],
-    };
-    const refus = refusDuPaiement(pourTva, dejaRegles, { date: demande.date, montant });
-    if (refus) return { ok: false as const, raison: refus };
-    if (demande.moyen != null && !estUnMoyenDePaiement(demande.moyen)) {
-      return { ok: false as const, raison: "Ce moyen de paiement n'existe pas." };
-    }
+  const dejaRegles = (
+    await tx.select().from(paiementsFacture).where(eq(paiementsFacture.factureId, factureId))
+  ).map((p) => ({ date: p.datePaiement, montant: p.montant }));
 
-    // **Le versement qui ne laisse plus rien à payer EST le solde** — sa demande
-    // du 9 octobre 2026. Le décider ICI, d'après le reste dû, couvre les deux
-    // portes de Terminés (« J'ai reçu le paiement » passe par cette fonction),
-    // et le reste tapé à la main dans « J'ai reçu une partie ».
-    const tous = [...dejaRegles, { date: demande.date, montant }];
-    const etat = etatPaiement(pourTva, tous);
+  const montant = String(demande.montant ?? "")
+    .replace(/[\s  ]/g, "")
+    .replace("€", "")
+    .replace(",", ".");
+  const pourTva: FacturePourTva = {
+    ...facture,
+    avoirs: (await avoirsDesFactures(tx, [factureId])).get(factureId) ?? [],
+  };
+  const refus = refusDuPaiement(pourTva, dejaRegles, { date: demande.date, montant });
+  if (refus) return { ok: false as const, raison: refus };
+  if (demande.moyen != null && !estUnMoyenDePaiement(demande.moyen)) {
+    return { ok: false as const, raison: "Ce moyen de paiement n'existe pas." };
+  }
 
-    await tx.insert(paiementsFacture).values({
-      entrepriseId: ctx.entrepriseId,
-      factureId,
-      datePaiement: demande.date,
-      montant: Number(montant).toFixed(2),
-      moyen: demande.moyen ?? null,
-      // Comme sur la facture en cours (`poserReglementRecu`) : seul un chèque a
-      // un numéro, et un numéro vide n'en est pas un.
-      numero: demande.moyen === "cheque" ? demande.numero?.trim() || null : null,
-      note: demande.note?.trim() || null,
-      origine: "saisi",
-      solde: etat === "soldee",
-    });
+  // **Le versement qui ne laisse plus rien à payer EST le solde** — sa demande
+  // du 9 octobre 2026. Le décider ICI, d'après le reste dû, couvre les deux
+  // portes de Terminés (« J'ai reçu le paiement » passe par cette fonction),
+  // et le reste tapé à la main dans « J'ai reçu une partie ».
+  const tous = [...dejaRegles, { date: demande.date, montant }];
+  const etat = etatPaiement(pourTva, tous);
 
-    return {
-      ok: true as const,
-      reste: resteDu(pourTva, tous),
-      etat,
-    };
-  });
+  const [note] = await tx.insert(paiementsFacture).values({
+    entrepriseId: ctx.entrepriseId,
+    factureId,
+    datePaiement: demande.date,
+    montant: Number(montant).toFixed(2),
+    moyen: demande.moyen ?? null,
+    // Comme sur la facture en cours (`poserReglementRecu`) : seul un chèque a
+    // un numéro, et un numéro vide n'en est pas un.
+    numero: demande.moyen === "cheque" ? demande.numero?.trim() || null : null,
+    note: demande.note?.trim() || null,
+    origine: "saisi",
+    solde: etat === "soldee",
+  }).returning({ id: paiementsFacture.id });
+
+  return {
+    ok: true as const,
+    reste: resteDu(pourTva, tous),
+    etat,
+    paiementId: note.id,
+  };
 }
 
 /**
@@ -312,13 +329,16 @@ export async function soldera(
  * qu'aucun calcul ait à le filtrer.
  */
 export async function retirerPaiement(ctx: Ctx, paiementId: string): Promise<void> {
-  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const [p] = await tx.select().from(paiementsFacture).where(eq(paiementsFacture.id, paiementId));
-    // Celui d'une autre entreprise est invisible ici : la RLS a déjà répondu.
-    if (!p) return;
-    await tx.insert(reglementsRetires).values({ ...p, retirePar: ctx.utilisateurId });
-    await tx.delete(paiementsFacture).where(eq(paiementsFacture.id, paiementId));
-  });
+  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) => retirerPaiementDans(tx, ctx, paiementId));
+}
+
+/** Le cœur de `retirerPaiement`, dans une transaction déjà ouverte — l'annulation d'un « oui ». */
+export async function retirerPaiementDans(tx: DbOrTx, ctx: Ctx, paiementId: string): Promise<void> {
+  const [p] = await tx.select().from(paiementsFacture).where(eq(paiementsFacture.id, paiementId));
+  // Celui d'une autre entreprise est invisible ici : la RLS a déjà répondu.
+  if (!p) return;
+  await tx.insert(reglementsRetires).values({ ...p, retirePar: ctx.utilisateurId });
+  await tx.delete(paiementsFacture).where(eq(paiementsFacture.id, paiementId));
 }
 
 /**

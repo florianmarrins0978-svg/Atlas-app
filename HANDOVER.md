@@ -28,6 +28,10 @@ Codé sans batterie, sur sa consigne. **Avant `main` : la batterie entière** (n
 
 ## MA BANQUE, L'ESSAI (22 octobre 2026)
 
+## MA BANQUE, L'ESSAI (22 octobre 2026), ET LA SUITE (23 octobre 2026)
+
+**La suite** : `ARCHITECTURE.md` §492. Le cœur est `src/lib/rapprochement-bancaire.ts` (la proposition, pure) et `src/lib/virement-en-mots.ts` (les phrases, communes à l'accueil, Ma TVA et Ma banque) ; `src/server/repositories/banque.ts` écrit le oui et le paiement dans une seule transaction, le virement verrouillé. `scripts/test-banque-db.ts` le prouve, dont le seul cas où le verrou est la seule protection (un acompte confirmé deux fois). Aucune tâche de fond : la banque se lit à l'ouverture des écrans (`after`), une fois par demi-heure.
+
 Pour reprendre : `docs/banque-essai.md` dit ses trois gestes, `ARCHITECTURE.md` (dernier §) le pourquoi. Le piège à connaître : **l'écran ne peut pas s'éprouver ici**, il faut sa clé Enable Banking et sa connexion au Crédit Mutuel. Sans le fichier `.pem`, l'écran affiche « Pas encore branché » et l'adresse de retour à déclarer ; c'est ce qu'on a regardé. Il se connecte deux fois à sa banque pendant l'essai (chez Enable Banking, puis depuis Atlas) : c'est leur règle, pas un défaut.
 
 ## IMPORTER DEVIS ET FACTURES : branche `claude/importer-devis-factures` (22 octobre 2026)

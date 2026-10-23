@@ -35850,3 +35850,33 @@ ferait sinon partir « chèque » sur un virement.
 relevé de TVA, avec le moyen qu'il TOUCHE (rien n'est supposé), et s'éteint en
 gardant sa trace. La règle du 22 septembre, « sur un brouillon seulement », est
 retirée, et `test-papier-facture-db.ts` avec elle.
+
+## §491 : L'accueil a cinq couleurs, par ce qu'il y a à faire, et elles ne suivent pas l'accent
+
+*23 octobre 2026, sa planche `appli/accueil-codes-couleur.html`.*
+
+**Rangées par geste, pas par sujet** (`src/lib/ton-des-cartes.ts`, la seule table) : vert bonne nouvelle, ambre à vous de répondre, bleu une date qui bouge, rouge ça peut coûter, blanc pour mémoire. Cinq, parce qu'au delà on ne retient plus laquelle veut dire quoi.
+
+**Une teinte FIXE par famille, comme l'alerte** (`chartes.ts`, `famillesDesCartes`). Le vert d'une bonne nouvelle n'est pas `colors.plein` : sur Brume, l'accent des boutons est bleu marine, et le vert serait devenu bleu. Le fond est la plage à peine teintée (18 %, 24 % pour le bleu qui se confondait avec le gris à 18), le titre se détache de CE fond à 4,5 sur les huit chartes. La phrase d'une carte teintée passe en `inkSoft` : `muted` tombait à 2,4 sur le bleu. `test-chartes-lisibles.ts` le mesure, charte par charte.
+
+**Le point ne remplace pas le titre** (`TitreDeCarte`, partagé par les notifications et les rappels de véhicules) : la couleur fait voir, le mot fait comprendre, et c'est lui que lit qui ne distingue pas les couleurs.
+
+**Ce qui a disparu** : `urgent: boolean` et le fond `rustTint` des cartes. Il disait « regardez » sans dire si c'était à répondre ou à rattraper. `data-atlas-ton` porte désormais la famille.
+
+## §492 : Un virement reçu devient une question, posée à deux endroits, avec une seule réponse
+
+*23 octobre 2026, ses choix sur trois planches : `appli/banque-a-essayer.html`, `banque-numero-et-termines.html` (A), `banque-virement-en-couleur.html` (A).*
+
+**La proposition n'est pas stockée** (migration 0140, `virements_recus`) : elle se recalcule à chaque lecture contre les factures en attente du moment (`proposerFacture`). Stockée, elle désignerait encore une facture soldée à la main entre-temps. La table ne garde que le virement et la RÉPONSE (`nouveau`, `confirme`, `ecarte`), et c'est ce qui fait qu'un « oui » sur l'accueil fait disparaître la question de Ma TVA sans rien synchroniser.
+
+**Le numéro passe avant tout.** La facture demande au client d'écrire son numéro dans le libellé depuis le 8 septembre (`consigneDuLibelle`). Il se lit en forme compacte, avec ou sans la lettre de tête, jamais sous huit chiffres ni collé à d'autres chiffres. Les numéros de deux factures dans un même virement ne proposent rien : en désigner une mettrait l'autre en impayée.
+
+**Le « oui » est revalidé au serveur** (`confirmerVirementAction`) avec la même règle que l'écran, puis écrit en une transaction : le virement verrouillé (`FOR UPDATE`), le règlement noté par `noterPaiementDans` (découpé de `noterPaiement` pour cela), la réponse marquée. Jamais plus que le reste dû : le surplus d'un virement trop payé reste à régler avec le client, et l'écran le dit. « Annuler » retire le règlement avec sa trace (`retirerPaiementDans`).
+
+**La liaison quitte le témoin du navigateur pour la base** (`liaisons_bancaires`, une par entreprise, sous FORCE RLS) : l'accueil et Ma TVA doivent lire la banque sans que Ma banque soit ouvert, et depuis n'importe quel appareil.
+
+**Aucune tâche de fond.** Son espace n'en a pas : la banque se lit APRÈS l'affichage de l'accueil et de Ma TVA (`after`), et à l'ouverture de Ma banque, une fois par demi-heure au plus (`LIRE_AU_PLUS_TOUS_LES_MS`). Les banques limitent les lectures faites sans le titulaire devant ; l'accueil se relisant toutes les trente secondes, sans ce plafond la journée s'épuiserait en deux minutes. La lecture est marquée faite même quand la banque refuse, pour ne pas brûler les lectures sur une panne.
+
+**Les écrans de la réponse** : `ReponseVirement` (dans `src/app`, parce qu'il appelle des actions serveur et qu'un composant n'importe pas un écran, `test-couches`). L'accueil garde la phrase « La facture est payée » et « Annuler » sous les yeux ; Ma TVA se relit pour que la facture quitte l'attente. Les actions ne font pas de `revalidatePath`, qui aurait effacé la carte avant qu'il ait lu.
+
+**Ce que l'essai du 23 octobre a corrigé** : la porte « particulier » (`psu_type: personal`) par défaut, la porte « Affaires » du Crédit Mutuel menant à l'entrée des grandes entreprises qui refusait son identifiant ; le nom du payeur avant le libellé brut, qui débordait.

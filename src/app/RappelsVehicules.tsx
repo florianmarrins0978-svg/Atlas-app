@@ -1,13 +1,21 @@
 import Link from "next/link";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
+import TitreDeCarte from "@/components/atlas/TitreDeCarte";
 import { NOM_CONTROLE, phraseDeLEcheance, type Echeance, type RappelVehicule } from "@/lib/vehicules";
+import { couleursDuTon, type TonCarte } from "@/lib/ton-des-cartes";
 
-const TEINTE: Record<Echeance["ton"], string> = { calme: colors.muted, proche: colors.or, depasse: colors.alert };
+/**
+ * L'échéance dans les familles de l'accueil (sa planche du 23 octobre 2026).
+ * Dépassé coûte une amende et un camion immobilisé : rouge. À quinze jours,
+ * c'est à lui d'agir : ambre, l'or qu'il avait déjà pour ce moment-là. Deux
+ * mois avant, pour mémoire.
+ */
+const FAMILLE: Record<Echeance["ton"], TonCarte> = { calme: "blanc", proche: "ambre", depasse: "rouge" };
 
 /**
  * Les rappels des contrôles des véhicules, sur l'accueil du patron — sa
  * demande du 14 octobre 2026 : *« les rappels au bon moment pour les choses
- * importantes »*. Deux mois avant, doré à quinze jours, rouge une fois dépassé
+ * importantes »*. Deux mois avant, ambre à quinze jours, rouge une fois dépassé
  * (`echeance`, `src/lib/vehicules.ts`).
  *
  * **Pas de « J'ai vu »**, et c'est voulu : un contrôle technique oublié se découvre au
@@ -23,24 +31,23 @@ export default function RappelsVehicules({ rappels }: { rappels: RappelVehicule[
   return (
     <div className="mt-3 flex flex-col gap-3 px-6">
       {rappels.map((r) => {
-        const urgent = r.echeance.ton !== "calme";
+        const ton = FAMILLE[r.echeance.ton];
+        const couleurs = couleursDuTon(ton);
         return (
           <div
             key={`${r.vehiculeId}-${r.controle}`}
             data-atlas="rappel-vehicule"
-            data-atlas-ton={r.echeance.ton}
+            data-atlas-ton={ton}
             className="rounded-[18px] px-5 py-4"
-            style={{ backgroundColor: urgent ? colors.rustTint : colors.card }}
+            style={{ backgroundColor: couleurs.fond }}
           >
-            <p className={smallCaps} style={{ color: urgent ? colors.rust : colors.muted, marginBottom: 6 }}>
-              {NOM_CONTROLE[r.controle]}
-            </p>
+            <TitreDeCarte ton={ton}>{NOM_CONTROLE[r.controle]}</TitreDeCarte>
             <p className="text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
               {r.vehiculeNom}
             </p>
             <p
               className="mt-1 text-[13px]"
-              style={{ color: TEINTE[r.echeance.ton], fontWeight: r.echeance.ton === "depasse" ? 600 : 400 }}
+              style={{ color: couleurs.texte, fontWeight: r.echeance.ton === "depasse" ? 600 : 400 }}
             >
               {phraseDeLEcheance(r)}
             </p>

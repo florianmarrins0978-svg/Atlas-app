@@ -106,6 +106,19 @@ export const colors = {
   // bordeaux du dépassement disparaissait dans le fond noir (1,76). Ce qui les
   // gardait fixes est exactement ce qui exige qu'elles bougent.
   vertPale: "var(--atlas-vertPale, #b9c6b4)",
+  // ─── Les cinq couleurs de l'accueil, sa planche du 23 octobre 2026 ────────
+  //
+  // Une famille par ce qu'il a à faire (`src/lib/ton-des-cartes.ts`) : vert
+  // bonne nouvelle, ambre à vous de répondre, bleu une date qui bouge, rouge ça
+  // peut coûter. Dérivées dans `chartes.ts` ; le repli est la valeur d'Origine.
+  carteVertFond: "var(--atlas-carteVertFond, #e1e8da)",
+  carteVertTexte: "var(--atlas-carteVertTexte, #506f44)",
+  carteAmbreFond: "var(--atlas-carteAmbreFond, #ede3d2)",
+  carteAmbreTexte: "var(--atlas-carteAmbreTexte, #806031)",
+  carteBleuFond: "var(--atlas-carteBleuFond, #cdd8e1)",
+  carteBleuTexte: "var(--atlas-carteBleuTexte, #35608d)",
+  carteRougeFond: "var(--atlas-carteRougeFond, #edded9)",
+  carteRougeTexte: "var(--atlas-carteRougeTexte, #9c3b2e)",
   // `bordeaux` : le dépassement — plus de chantiers que d'équipes. **Son choix
   // du 21 août, après l'or puis l'ardoise**, tous deux écartés par lui. L'or
   // sert partout ailleurs à ce qu'on LIT, il ne signalait donc plus rien ; et
