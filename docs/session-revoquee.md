@@ -5,8 +5,8 @@ au défaut trouvé par la batterie commune du 22 octobre
 (`docs/batterie-commune-22-octobre.md` §3). Chaque affirmation porte le fichier
 qui la fonde.
 
-**État :** codé et éprouvé sur la branche `claude/session-revocation-security-b8ulo7`.
-Batterie : voir §6.
+**État :** codé, éprouvé, batterie jouée (§6). Branche
+`claude/session-revocation-security-b8ulo7`.
 
 ---
 
@@ -69,7 +69,28 @@ porte soit fermée.
 
 ## 6. Les chiffres
 
-*(à compléter après la batterie)*
+| | |
+|---|---|
+| **test rouge d'abord** | cas 6 de `test-se-deconnecter-e2e` rouge sur le code d'avant : « la réponse en retard a rouvert la session » |
+| **`test-se-deconnecter-e2e`, seule** | verte 4 fois sur 4 après le correctif |
+| **dans la batterie** | verte, 5 cas sur 5 |
+| **suites base** | 490 sur 491 |
+| **suites navigateur** | 190 sur 191 |
+| **connexion derrière un proxy** (`verifier:connexion`) | verte |
+| **types, lint, mémoire, construction** | verts |
+
+**Les deux rouges ne viennent pas de ce lot**, et c'est mesuré, pas supposé :
+
+- `test-prechauffage` est **rouge de la même façon sur `main`** : il ne connaît
+  pas l'écran `/reglages/banque`, que le lot banque a ajouté ;
+- `test-le-client-s-est-trompe-e2e` (la page publique du devis, qui ne lit
+  aucune session) est tombé une fois dans la batterie, puis a été rejoué
+  **vert** seul et par `verifier-ce-qui-a-bouge`. Son refus dans la batterie
+  (« C'est noté » jamais affiché) n'a pas pu être reproduit ici.
+
+**Une première batterie n'a rien mesuré** : le conteneur de travail avait
+redémarré entre deux messages, et PostgreSQL avec lui. Base remontée, batterie
+rejouée en entier ; ce sont ses chiffres ci-dessus.
 
 ## 7. Ce qui reste ouvert
 
@@ -84,7 +105,12 @@ mener, il n'y a rien à trancher pour le patron.
 
 **Avant de livrer sur `main`** : la migration 0138 doit passer chez lui. Elle
 ne peut pas échouer sur sa base (une table neuve, sans données), mais le code
-qui la lit est sur chaque écran : si une migration PLUS ANCIENNE restait
-bloquée chez lui, 0138 ne passerait pas, et tous les écrans tomberaient. Sa
-fiche d'espace dit si sa base est à jour ; c'est elle qu'on lit avant de
-pousser.
+qui la lit est sur CHAQUE écran : si une migration plus ancienne restait
+bloquée chez lui, 0138 ne passerait pas, et tous les écrans tomberaient.
+
+Sa fiche d'espace (lue le 23 octobre) date du 22 octobre à 06 h 38 : l'espace
+est arrêté depuis. Sa base était alors à jour **jusqu'à 0134**. Au prochain
+allumage, il appliquera 0135, 0136 et 0137 (les lots d'autres sessions) avant
+0138. **L'ordre sûr** : qu'il rallume son espace AVANT que ce lot arrive sur
+`main`, que la fiche dise « Base : à jour » sur 0137, puis pousser. Rallumer
+ne détruit rien.
