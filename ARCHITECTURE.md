@@ -35809,7 +35809,7 @@ moitié base (une session fermée seule, Face ID gardé, rien d'effaçable par
 
 *23 octobre 2026, ses choix sur trois planches : `appli/banque-a-essayer.html`, `banque-numero-et-termines.html` (A), `banque-virement-en-couleur.html` (A).*
 
-**La proposition n'est pas stockée** (migration 0139, `virements_recus`) : elle se recalcule à chaque lecture contre les factures en attente du moment (`proposerFacture`). Stockée, elle désignerait encore une facture soldée à la main entre-temps. La table ne garde que le virement et la RÉPONSE (`nouveau`, `confirme`, `ecarte`), et c'est ce qui fait qu'un « oui » sur l'accueil fait disparaître la question de Ma TVA sans rien synchroniser.
+**La proposition n'est pas stockée** (migration 0140, `virements_recus`) : elle se recalcule à chaque lecture contre les factures en attente du moment (`proposerFacture`). Stockée, elle désignerait encore une facture soldée à la main entre-temps. La table ne garde que le virement et la RÉPONSE (`nouveau`, `confirme`, `ecarte`), et c'est ce qui fait qu'un « oui » sur l'accueil fait disparaître la question de Ma TVA sans rien synchroniser.
 
 **Le numéro passe avant tout.** La facture demande au client d'écrire son numéro dans le libellé depuis le 8 septembre (`consigneDuLibelle`). Il se lit en forme compacte, avec ou sans la lettre de tête, jamais sous huit chiffres ni collé à d'autres chiffres. Les numéros de deux factures dans un même virement ne proposent rien : en désigner une mettrait l'autre en impayée.
 

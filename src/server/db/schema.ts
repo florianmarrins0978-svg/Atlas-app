@@ -4118,7 +4118,7 @@ export const piecesImportees = pgTable("pieces_importees", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-// ─── Ma banque — migration 0139, ses choix du 23 octobre 2026 ────────────────
+// ─── Ma banque — migration 0140, ses choix du 23 octobre 2026 ────────────────
 
 /**
  * La banque reliée à l'entreprise, et la date où l'accord finit.

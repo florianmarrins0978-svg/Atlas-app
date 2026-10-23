@@ -15,7 +15,7 @@ Codé, branche `claude/session-revocation-security-b8ulo7`. Migration `drizzle/0
 
 ## MA BANQUE, L'ESSAI (22 octobre 2026), ET LA SUITE (23 octobre 2026)
 
-**La suite est codée, branche `lot/banque-suite`, pas encore sur `main`** : numéro lu, carte verte de l'accueil, question dans Ma TVA, accord prévenu, liaison en base (migration 0139). `ARCHITECTURE.md` §490.
+**La suite est codée, branche `lot/banque-suite`, pas encore sur `main`** : numéro lu, carte verte de l'accueil, question dans Ma TVA, accord prévenu, liaison en base (migration 0140). `ARCHITECTURE.md` §490.
 
 Codé : `/reglages/banque` (patron seul, hors du sommaire), retour `/api/banque/retour`, client Enable Banking `src/server/banque/enable-banking.ts`, règle pure `src/lib/rapprochement-bancaire.ts`. Lecture seule. À jouer sur son espace avec sa clé : `docs/banque-essai.md`. Le reste de la planche `appli/banque-qui-previent.html` n'est pas codé.
 

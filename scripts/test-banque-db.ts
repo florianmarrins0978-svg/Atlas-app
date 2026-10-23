@@ -23,7 +23,7 @@ import { fermerLimiteur } from "../src/server/rate-limit";
 import { nettoyerBase } from "./_test-db";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// MA BANQUE, LA SUITE — ses choix du 23 octobre 2026 (migration 0139)
+// MA BANQUE, LA SUITE — ses choix du 23 octobre 2026 (migration 0140)
 // ═══════════════════════════════════════════════════════════════════════════
 //
 // **Une suite BASE, sous `atlas_app`**, comme en production : un défaut

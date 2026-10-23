@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
  * MA BANQUE — sa planche du 23 octobre 2026 (`appli/banque-a-essayer.html`).
  *
  * Né le 22 octobre comme un essai sur sa propre banque, cet écran porte
- * désormais la liaison (en base, migration 0139) et la liste des virements
+ * désormais la liaison (en base, migration 0140) et la liste des virements
  * reçus, chacun avec sa question. **La même question vit sur l'accueil et dans
  * Ma TVA** : une réponse donnée ici vaut pour les deux autres.
  *

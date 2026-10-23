@@ -5,7 +5,7 @@ import type { Ctx } from "./context";
 import { noterPaiementDans, retirerPaiementDans } from "./paiements-facture";
 
 /**
- * MA BANQUE — la liaison et les virements reçus (migration 0139).
+ * MA BANQUE — la liaison et les virements reçus (migration 0140).
  *
  * Ses choix du 23 octobre 2026 : un virement devient une carte sur l'accueil
  * ET une question dans Ma TVA, et **une réponse donnée à un endroit vaut pour
