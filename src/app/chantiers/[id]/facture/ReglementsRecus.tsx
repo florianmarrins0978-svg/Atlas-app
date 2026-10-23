@@ -104,6 +104,8 @@ export default function ReglementsRecus({
 
   const net = netAPayer(ttcApresAvoirs(totalTtc, avoirs), reglements);
   const acquittee = estAcquittee(totalTtc, reglements);
+  /** L'interrupteur se montre allumé dès l'appui, pendant qu'il choisit le moyen. */
+  const allume = acquittee || choixDuMoyen;
   /** Le mot du papier, mot pour mot : « Acquittée le 21/09/2026 ». */
   const tampon = tamponAcquittee(totalTtc, reglements);
 
@@ -377,7 +379,7 @@ export default function ReglementsRecus({
         <button
           type="button"
           role="switch"
-          aria-checked={acquittee || choixDuMoyen}
+          aria-checked={allume}
           aria-label="Facture acquittée"
           data-atlas="facture-acquittee"
           disabled={enCours}
@@ -386,11 +388,11 @@ export default function ReglementsRecus({
             else void appliquer(basculerAcquitteeAction(factureId, !acquittee));
           }}
           className="relative h-7 w-[46px] flex-none rounded-full"
-          style={{ backgroundColor: acquittee || choixDuMoyen ? colors.rust : colors.line }}
+          style={{ backgroundColor: allume ? colors.rust : colors.line }}
         >
           <span
             className="absolute top-[3px] h-[22px] w-[22px] rounded-full transition-[left]"
-            style={{ left: acquittee || choixDuMoyen ? 21 : 3, backgroundColor: colors.card }}
+            style={{ left: allume ? 21 : 3, backgroundColor: colors.card }}
           />
         </button>
       </div>

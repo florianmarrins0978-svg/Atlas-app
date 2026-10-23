@@ -193,15 +193,16 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
     ecran: "Facture",
     ou: OU_FACTURE,
     intitule: "Marquer la facture acquittée, tout est déjà payé",
-    motsCles: ["acquittee", "acquitte", "acquitter", "solde", "paye", "regle", "tout", "interrupteur"],
+    motsCles: ["acquittee", "acquitte", "acquitter", "solde", "paye", "regle", "tout", "interrupteur", "assurance", "renvoyer"],
     geste:
       "Sous « Net à payer », allumez « Facture acquittée » : le reste est compté reçu à la date du jour, et la facture porte « Acquittée le » avec la date.",
     reserve:
-      "Il s'allume tout seul quand les règlements couvrent tout. Seulement avant l'envoi : après, le paiement se note dans « Ma TVA à déclarer ».",
+      "Il s'allume tout seul quand les règlements couvrent tout. Après l'envoi aussi : il demande alors comment le client a payé, puis « Envoyer la facture acquittée » lui renvoie la même facture avec la mention.",
     source: R,
-    preuves: ['aria-label="Facture acquittée"', "Net à payer", "basculerAcquitteeAction"],
+    preuves: ['aria-label="Facture acquittée"', "Net à payer", "basculerAcquitteeAction", 'data-atlas="moyen-du-solde"'],
     ailleurs: [
-      { source: F, preuves: ["acquittement={!emise}"] },
+      { source: F, preuves: ["emise={emise}"] },
+      { source: "src/app/chantiers/[id]/facture/TransmettreLaFacture.tsx", preuves: ["Envoyer la facture acquittée"] },
       { source: "src/lib/acomptes-facture.ts", preuves: ["`Acquittée le "] },
     ],
   },
