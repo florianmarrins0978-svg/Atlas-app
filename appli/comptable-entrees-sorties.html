@@ -92,7 +92,7 @@ button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparen
 .v-entree .resume-mois .e b,.v-entree .resume-mois .e{color:var(--entree)}
 .v-entree .resume-mois .s b,.v-entree .resume-mois .s{color:var(--sortie)}
 .tableau{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.releve{width:100%;border-collapse:collapse;font-size:12.5px;min-width:640px}
+.releve{width:100%;border-collapse:collapse;font-size:12.5px}
 .releve th{text-align:left;font:600 9px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gris);padding:9px 6px;border-bottom:1px solid var(--encre)}
 .releve td{padding:7px 6px;border-bottom:1px solid var(--filet);vertical-align:middle}
 .releve td.coul{width:4px;padding:0}
@@ -128,6 +128,31 @@ button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparen
   .feuille{padding:22px 16px 26px;margin-left:0;margin-right:0}
   .chiffres{grid-template-columns:1fr 1fr}
   .titre-page h2{font-size:21px}
+  /* Sa remarque du 23 octobre : « je suis obligé de slider ». Sur téléphone,
+     une ligne passe sur deux étages au lieu de déborder : le libellé, la date
+     et la pièce à gauche, les montants à droite. */
+  .mois-t{font-size:11.5px}
+  .mois-t th{font-size:8px;letter-spacing:.08em;padding:7px 3px}
+  .mois-t td{padding:5px 3px}
+  .releve thead{display:none}
+  .releve tr{display:grid;grid-template-columns:4px auto 1fr 76px 76px;grid-template-areas:"c lib lib s e" "c date cat s e" "c just just s e";column-gap:8px;row-gap:2px;padding:9px 0;border-bottom:1px solid var(--filet)}
+  .cols-une .releve tr{grid-template-columns:4px auto 1fr 96px;grid-template-areas:"c lib lib m" "c date cat m" "c just just m"}
+  .releve td{border:0;padding:0}
+  .releve td.coul{grid-area:c;width:4px;border-radius:2px}
+  .releve td.lib{grid-area:lib;font-size:11px;word-break:break-word}
+  .releve td.t-date{grid-area:date;font-size:11.5px;color:var(--doux)}
+  .releve td.cat{grid-area:cat;font-size:11px}
+  .releve td.just{grid-area:just;font-size:11px}
+  .releve td.col-s{grid-area:s;align-self:center}
+  .releve td.col-e{grid-area:e;align-self:center}
+  .releve td.col-m{grid-area:m;align-self:center}
+  .releve tfoot tr{grid-template-areas:"c lib lib s e";border:0;padding:6px 0}
+  .cols-une .releve tfoot tr{grid-template-areas:"c lib lib m"}
+  .releve tfoot tr.premier{border-top:1.5px solid var(--encre)}
+  .releve tfoot tr.premier td{border:0}
+  .releve tfoot td:empty{display:none}
+  .releve tfoot .lib-t{grid-area:lib;text-align:left}
+  .releve tfoot .verif td{grid-column:1 / -1;font-size:12px}
 }
 </style>
 </head>
@@ -197,7 +222,7 @@ function rendre(){
   document.querySelector("[data-mois]").innerHTML = MOIS.map(([n,s,en]) => `<tr><td>${n}</td><td class="d num s">−${e(s)}</td><td class="d num e">+${e(en)}</td><td class="d num">${sg(en - s)}</td></tr>`).join("")
     + `<tr><td style="font-weight:600;border-top:1.5px solid var(--encre)">Année</td><td class="d num s" style="font-weight:600;border-top:1.5px solid var(--encre)">−29 379,71 €</td><td class="d num e" style="font-weight:600;border-top:1.5px solid var(--encre)">+79 979,00 €</td><td class="d num" style="font-weight:600;border-top:1.5px solid var(--encre)">+50 599,29 €</td></tr>`;
   document.querySelector("[data-lignes]").innerHTML = LIGNES.map(l => { const k = l.m > 0 ? "e" : "s";
-    return `<tr class="${k}"><td class="coul" style="background:var(--c-${l.cat})"></td><td class="num">${String(l.j).padStart(2,"0")}/01</td><td class="lib">${l.lib}</td><td class="cat">${NOM[l.cat]}</td><td class="d num m col-m ${k}">${sg(l.m)}</td><td class="d num col-s">${l.m < 0 ? e(l.m) : ""}</td><td class="d num col-e">${l.m > 0 ? e(l.m) : ""}</td><td class="just">${l.just}</td></tr>`; }).join("");
+    return `<tr class="${k}"><td class="coul" style="background:var(--c-${l.cat})"></td><td class="num t-date">${String(l.j).padStart(2,"0")}/01</td><td class="lib">${l.lib}</td><td class="cat">${NOM[l.cat]}</td><td class="d num m col-m ${k}">${sg(l.m)}</td><td class="d num col-s">${l.m < 0 ? e(l.m) : ""}</td><td class="d num col-e">${l.m > 0 ? e(l.m) : ""}</td><td class="just">${l.just}</td></tr>`; }).join("");
   const S = LIGNES.filter(l => l.m < 0).reduce((a,l) => a - l.m, 0), E = LIGNES.filter(l => l.m > 0).reduce((a,l) => a + l.m, 0);
   const deux = document.body.classList.contains("cols-deux");
   document.querySelector("[data-pied]").innerHTML = deux
