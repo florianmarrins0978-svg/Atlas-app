@@ -528,17 +528,19 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
 .compta-zone .format button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
 body.nuit .compta-zone .format button[aria-pressed="true"]{color:#101210}
 
-.ecran-c{background:var(--fond);border-radius:14px;box-shadow:0 16px 44px rgba(20,18,14,.22);overflow:hidden;position:relative;margin:0 auto}
-.ecran-c.pc{width:100%;height:680px}
-.ecran-c.tel-c{width:390px;max-width:100%;height:760px;border-radius:26px}
+.ecran-c{background:var(--fond);border-radius:14px;box-shadow:0 16px 44px rgba(20,18,14,.22);overflow:clip;position:relative;margin:0 auto}
+/* Sa demande du 24 octobre : tout voir d un coup, sans défiler DANS l écran. */
+.ecran-c.pc{width:100%}
+.ecran-c.tel-c{width:390px;max-width:100%;border-radius:26px}
 .ecran-c .barre-nav{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--papier);border-bottom:1px solid var(--trait);font-size:12px;color:var(--gris)}
 .ecran-c .barre-nav i{width:9px;height:9px;border-radius:50%;background:var(--trait);display:inline-block}
 .ecran-c .barre-nav span{margin-left:10px;background:var(--carte);border-radius:999px;padding:4px 12px;flex:1;max-width:420px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.c-corps{display:flex;height:calc(100% - 37px)}
-.c-gauche{flex:1;min-width:0;overflow:auto;padding:22px 24px 30px}
-.c-droite{width:400px;flex:none;border-left:1px solid var(--trait);background:var(--carte);overflow:auto;padding:20px 22px 28px;display:none}
+.c-corps{display:flex;align-items:flex-start}
+.c-gauche{flex:1;min-width:0;padding:22px 24px 30px}
+.c-droite{width:400px;flex:none;border-left:1px solid var(--trait);background:var(--carte);padding:20px 22px 28px;display:none;position:sticky;top:96px;max-height:calc(100vh - 110px);overflow:auto}
 .ecran-c.pc.ouvert .c-droite{display:block}
-.ecran-c.tel-c .c-droite{position:absolute;inset:37px 0 0 0;width:auto;border:0;z-index:4;background:var(--fond)}
+/* Sur téléphone, la pièce prend vraiment tout l écran. */
+.ecran-c.tel-c .c-droite{position:fixed;inset:0;width:auto;max-height:none;border:0;z-index:50;background:var(--fond);padding-top:max(20px,env(safe-area-inset-top))}
 .ecran-c.tel-c.ouvert .c-droite{display:block}
 .c-titre{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px 16px}
 .c-titre h3{margin:0;font:400 26px/1.15 var(--serif)}
@@ -703,6 +705,8 @@ document.addEventListener("click", ev => {
   if (ev.target.closest("[data-c-confirmer-rouge]")){ const s = etatC[ouvert]; s.verdict = "rouge"; s.note = document.querySelector("[data-c-pq]").value.trim(); demandeRouge = false; rendre(); return; }
   if (ev.target.closest("[data-c-annuler-rouge]")){ demandeRouge = false; rendre(); return; }
 });
+// Sur un écran étroit, on part du format téléphone : celui d un ordinateur n y tiendrait pas.
+if (window.innerWidth < 760) document.querySelector("[data-format=tel-c]").click();
 rendre();
 })();
 </script>
