@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Entrées et sorties en couleur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*
+  ENTRÉES ET SORTIES EN COULEUR — 23 octobre 2026
+
+  SA DEMANDE : « est-ce qu'on ne ferait pas aussi un code couleur pour là où
+  c'est marqué sortie entrée sur le bilan qu'on envoie au comptable ? Et du
+  coup, les lignes avec les plus et moins de la banque, le même code couleur.
+  Comme ça, en un coup d'œil, il peut voir. Parce que je suppose qu'il va
+  devoir additionner les lignes. »
+
+  LA PLANCHE : le haut du résumé de l'année et le relevé de janvier 2025 du
+  PDF d'exemple (docs/maquettes/dossier-justifie/modele.html), mêmes lignes,
+  mêmes montants, en trois façons. Seul le PDF change : l'écran de l'appli
+  n'est pas touché.
+
+  LE PIÈGE DES COULEURS : la catégorie Repas est déjà verte et Virement est
+  déjà rouge prune. Le vert des entrées et le rouge des sorties restent donc
+  sur les MONTANTS, la couleur de catégorie sur le trait de gauche : deux
+  places, deux sens. Les teintes sont plus franches que celles des catégories.
+
+  CE QUI AIDE L'ADDITION, plus que la couleur : le total du mois en bas du
+  relevé, et le solde de la banque au début et à la fin. Le comptable vérifie
+  alors « solde du début + entrées − sorties = solde de fin » sans rien
+  additionner lui-même. Les soldes viennent du relevé de la banque ; ceux-ci
+  sont inventés comme le reste.
+*/
+:root{
+  --fond:#e6e3dc; --papier:#fff; --encre:#1c1c1a; --doux:#4a4a44; --gris:#8a8578; --filet:#e4e0d6; --creme:#f3f1eb;
+  --or:#B98B47; --pin:#2f3b2f; --alerte:#a8552f;
+  --entree:#1f7a45; --entree-fond:#e6f2ea; --sortie:#b3392b; --sortie-fond:#f8e7e3;
+  --c-carburant:#3d6e9e; --c-repas:#4f8a3c; --c-materiel:#b9732a; --c-hotel:#7a5aa6;
+  --c-transport:#2b8586; --c-autre:#8a8578; --c-virement:#a3506b; --c-recu:#2f3b2f;
+  --serif:"Playfair Display",ui-serif,Georgia,serif;
+  --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--fond)}
+body{font:15px/1.5 var(--sans);color:var(--encre);padding:0 0 60px;-webkit-text-size-adjust:100%}
+button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.bandeau{background:var(--encre);color:#f5f3ee;padding:18px 20px;font-size:14px;line-height:1.6}
+.bandeau .dedans{max-width:900px;margin:0 auto}
+.bandeau p{margin:0}.bandeau p+p{margin-top:8px}
+.bandeau b{color:#fff}
+.etats{position:sticky;top:0;z-index:5;background:var(--fond);border-bottom:1px solid rgba(28,28,26,.12);padding:12px 16px}
+.etats .groupe{max-width:900px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.etats .quoi{font:600 10px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--gris);margin-right:4px}
+.etats button{border:1px solid rgba(28,28,26,.12);background:#faf9f5;color:var(--doux);border-radius:999px;padding:10px 14px;font:400 13px/1 var(--sans);min-height:44px}
+.etats button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+.idee{max-width:900px;margin:18px auto 0;padding:0 16px;font-size:14px;color:var(--doux)}
+.idee b{color:var(--encre);font-weight:600}
+
+.feuille{max-width:820px;margin:16px auto 0;background:var(--papier);box-shadow:0 14px 40px rgba(20,18,14,.18);padding:34px 36px 40px}
+.feuille + .feuille{margin-top:22px}
+.etiquette{max-width:820px;margin:30px auto 0;padding:0 16px;font:500 17px/1.2 var(--serif)}
+.caps{font:600 9.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase}
+.titre-page{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--filet);padding-bottom:10px;margin-bottom:18px}
+.titre-page h2{margin:0;font:400 26px/1.15 var(--serif)}
+.titre-page .caps{color:var(--or)}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* ── Les cases du résumé ── */
+.chiffres{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.chiffres div{background:var(--creme);border-radius:8px;padding:12px 14px}
+.chiffres .caps{color:var(--gris);font-size:8.5px}
+.chiffres b{display:block;font:400 20px/1.2 var(--serif);margin-top:6px}
+.v-entree .chiffres .entree{background:var(--entree-fond)}
+.v-entree .chiffres .entree .caps,.v-entree .chiffres .entree b{color:var(--entree)}
+.v-entree .chiffres .sortie{background:var(--sortie-fond)}
+.v-entree .chiffres .sortie .caps,.v-entree .chiffres .sortie b{color:var(--sortie)}
+.mois-t{width:100%;border-collapse:collapse;margin-top:18px;font-size:13px}
+.mois-t th{text-align:left;font:600 9px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gris);padding:8px 6px;border-bottom:1px solid var(--encre)}
+.mois-t td{padding:6px;border-bottom:1px solid var(--filet)}
+.mois-t .d{text-align:right}
+.v-entree .mois-t .s{color:var(--sortie)}
+.v-entree .mois-t .e{color:var(--entree)}
+.v-entree .mois-t th.s{color:var(--sortie)}
+.v-entree .mois-t th.e{color:var(--entree)}
+
+/* ── Le relevé ── */
+.resume-mois{display:flex;flex-wrap:wrap;gap:12px 26px;margin:-4px 0 16px;font-size:12.5px;color:var(--doux)}
+.resume-mois b{display:block;font:400 17px/1.2 var(--serif);color:var(--encre)}
+.v-entree .resume-mois .e b,.v-entree .resume-mois .e{color:var(--entree)}
+.v-entree .resume-mois .s b,.v-entree .resume-mois .s{color:var(--sortie)}
+.tableau{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.releve{width:100%;border-collapse:collapse;font-size:12.5px;min-width:640px}
+.releve th{text-align:left;font:600 9px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gris);padding:9px 6px;border-bottom:1px solid var(--encre)}
+.releve td{padding:7px 6px;border-bottom:1px solid var(--filet);vertical-align:middle}
+.releve td.coul{width:4px;padding:0}
+.releve .lib{font:11.5px/1.3 var(--mono)}
+.releve .cat{font-size:11.5px;color:var(--doux);white-space:nowrap}
+.releve .d{text-align:right}
+.releve .just{font-size:11.5px;color:var(--doux)}
+.releve .just b{color:var(--encre);font-weight:600}
+.releve tfoot td{border-bottom:0;padding-top:9px;font-weight:600}
+.releve tfoot tr.premier td{border-top:1.5px solid var(--encre)}
+.releve tfoot .lib-t{text-align:right;font-weight:500;color:var(--doux)}
+.releve tfoot .solde td{font-weight:400;color:var(--doux);padding-top:4px}
+.releve tfoot .verif td{font-weight:500;color:var(--pin);padding-top:10px}
+/* les variantes */
+.v-entree .releve .m.e,.v-entree .releve .col-e{color:var(--entree)}
+.v-entree .releve .m.s,.v-entree .releve .col-s{color:var(--sortie)}
+.v-entree .releve th.col-e{color:var(--entree)}
+.v-entree .releve th.col-s{color:var(--sortie)}
+.teinte .releve tr.e td:not(.coul){background:color-mix(in srgb,var(--entree-fond) 70%,transparent)}
+.teinte .releve tr.s td:not(.coul){background:transparent}
+.cols-une .col-e,.cols-une .col-s{display:none}
+.cols-deux .col-m{display:none}
+/* Des chiffres droits et alignés : en colonne, ils s.additionnent à l.œil. */
+.m,.col-e,.col-s{font:500 13px/1.2 var(--sans);font-variant-numeric:tabular-nums lining-nums}
+
+.note{max-width:900px;margin:34px auto 0;padding:0 16px}
+.note h2{font:500 20px/1.2 var(--serif);margin:0 0 10px}
+.note table{border-collapse:collapse;width:100%;font-size:14px;background:#faf9f5;border-radius:12px;overflow:hidden}
+.note td{padding:11px 14px;border-top:1px solid var(--filet);vertical-align:top}
+.note tr:first-child td{border-top:0}
+.note td:first-child{width:30%;font-weight:500}
+@media (max-width:600px){
+  .feuille{padding:22px 16px 26px;margin-left:0;margin-right:0}
+  .chiffres{grid-template-columns:1fr 1fr}
+  .titre-page h2{font-size:21px}
+}
+</style>
+</head>
+<body class="v-entree cols-deux">
+
+<div class="bandeau"><div class="dedans">
+  <p><b>Votre demande du 23 octobre</b> : les entrées et les sorties du dossier en couleur, pour que le comptable les voie d'un coup d'œil.</p>
+  <p>Vert pour l'argent qui entre, rouge pour celui qui sort. Trois façons de le poser sur le relevé, à comparer avec les boutons.</p>
+</div></div>
+
+<div class="etats"><div class="groupe">
+  <span class="quoi">Le relevé</span>
+  <button type="button" data-v="a" aria-pressed="false">A. Le montant en couleur</button>
+  <button type="button" data-v="b" aria-pressed="true">B. Deux colonnes</button>
+  <button type="button" data-v="c" aria-pressed="false">C. Deux colonnes et entrées surlignées</button>
+  <button type="button" data-v="sans" aria-pressed="false">Sans couleur, comme avant</button>
+</div></div>
+
+<p class="idee" data-idee></p>
+
+<p class="etiquette">Le résumé de l'année, page 2</p>
+<div class="feuille">
+  <div class="titre-page"><h2>L’année en un coup d’œil</h2><span class="caps">2025</span></div>
+  <div class="chiffres">
+    <div class="sortie"><span class="caps">Sorties</span><b class="num">29 379,71 €</b></div>
+    <div class="entree"><span class="caps">Entrées</span><b class="num">79 979,00 €</b></div>
+    <div><span class="caps">Lignes de banque</span><b class="num">171</b></div>
+    <div><span class="caps">Tickets perdus</span><b class="num" style="color:var(--alerte)">3</b></div>
+  </div>
+  <div class="tableau"><table class="mois-t"><thead><tr><th>Mois</th><th class="d s">Sorties</th><th class="d e">Entrées</th><th class="d">Différence</th></tr></thead><tbody data-mois></tbody></table></div>
+</div>
+
+<p class="etiquette">Le relevé de janvier, page 3</p>
+<div class="feuille">
+  <div class="titre-page"><h2>Janvier 2025</h2><span class="caps">Relevé de banque</span></div>
+  <div class="resume-mois">
+    <span>Solde au 1ᵉʳ janvier<b class="num">8 412,37 €</b></span>
+    <span class="s">Sorties<b class="num">−3 896,94 €</b></span>
+    <span class="e">Entrées<b class="num">+6 653,00 €</b></span>
+    <span>Solde au 31 janvier<b class="num">11 168,43 €</b></span>
+  </div>
+  <div class="tableau"><table class="releve">
+    <thead><tr><th></th><th>Date</th><th>Ce qu’écrit la banque</th><th>Catégorie</th><th class="d col-m">Montant</th><th class="d col-s">Sorties</th><th class="d col-e">Entrées</th><th>Justificatif</th></tr></thead>
+    <tbody data-lignes></tbody>
+    <tfoot data-pied></tfoot>
+  </table></div>
+</div>
+
+<div class="note">
+  <h2>Ce que j'en pense</h2>
+  <table>
+    <tr><td>Ma préférence : B</td><td>Deux colonnes, comme sur un relevé de banque papier. Le comptable additionne une colonne sans trier les plus et les moins, et la couleur confirme ce que la place dit déjà. C'est aussi lisible imprimé en noir et blanc, ce que A ne garantit pas.</td></tr>
+    <tr><td>Le total en bas</td><td>Ce qui lui fait gagner le plus de temps : le total des sorties et des entrées du mois, et le solde de la banque au début et à la fin. Il vérifie que le compte tombe juste sans rien additionner lui-même.</td></tr>
+    <tr><td>Les couleurs</td><td>Vert et rouge vont sur les montants seulement. Le trait de gauche garde la couleur de la catégorie (Repas est déjà vert, Virement déjà rouge prune) : deux places, deux sens, pas de confusion.</td></tr>
+    <tr><td>Ce qui change</td><td>Seulement le PDF du comptable, sur la page de l'année et sur le relevé de chaque mois. Les écrans de l'appli ne bougent pas.</td></tr>
+  </table>
+</div>
+
+<script>
+const MOIS = [["Janvier",3896.94,6653],["Février",2047.5,4687],["Mars",1873.24,6879],["Avril",2850.24,8811],["Mai",1890.66,9067],["Juin",2117.35,5646],["Juillet",3224.10,7119],["Août",2182.93,4414],["Septembre",2164.19,6450],["Octobre",2808.59,6011],["Novembre",1762.32,8320],["Décembre",2561.65,5922]];
+const NOM = { carburant:"Carburant", repas:"Repas", materiel:"Matériel", hotel:"Hôtel", transport:"Train, taxi", autre:"Autre", virement:"Virement envoyé", recu:"Virement reçu" };
+const e = v => Math.abs(v).toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2}).replace(/ | /g," ") + " €";
+const sg = v => (v > 0 ? "+" : "−") + e(v);
+let LIGNES = [];
+
+function rendre(){
+  document.querySelector("[data-mois]").innerHTML = MOIS.map(([n,s,en]) => `<tr><td>${n}</td><td class="d num s">−${e(s)}</td><td class="d num e">+${e(en)}</td><td class="d num">${sg(en - s)}</td></tr>`).join("")
+    + `<tr><td style="font-weight:600;border-top:1.5px solid var(--encre)">Année</td><td class="d num s" style="font-weight:600;border-top:1.5px solid var(--encre)">−29 379,71 €</td><td class="d num e" style="font-weight:600;border-top:1.5px solid var(--encre)">+79 979,00 €</td><td class="d num" style="font-weight:600;border-top:1.5px solid var(--encre)">+50 599,29 €</td></tr>`;
+  document.querySelector("[data-lignes]").innerHTML = LIGNES.map(l => { const k = l.m > 0 ? "e" : "s";
+    return `<tr class="${k}"><td class="coul" style="background:var(--c-${l.cat})"></td><td class="num">${String(l.j).padStart(2,"0")}/01</td><td class="lib">${l.lib}</td><td class="cat">${NOM[l.cat]}</td><td class="d num m col-m ${k}">${sg(l.m)}</td><td class="d num col-s">${l.m < 0 ? e(l.m) : ""}</td><td class="d num col-e">${l.m > 0 ? e(l.m) : ""}</td><td class="just">${l.just}</td></tr>`; }).join("");
+  const S = LIGNES.filter(l => l.m < 0).reduce((a,l) => a - l.m, 0), E = LIGNES.filter(l => l.m > 0).reduce((a,l) => a + l.m, 0);
+  const deux = document.body.classList.contains("cols-deux");
+  document.querySelector("[data-pied]").innerHTML = deux
+    ? `<tr class="premier"><td></td><td colspan="3" class="lib-t">Total de janvier</td><td class="d num col-s">${e(S)}</td><td class="d num col-e">${e(E)}</td><td></td></tr>
+       <tr class="verif"><td></td><td colspan="7">8 412,37 € au 1ᵉʳ janvier, + ${e(E)} − ${e(S)} = 11 168,43 € au 31 janvier, comme la banque.</td></tr>`
+    : `<tr class="premier"><td></td><td colspan="3" class="lib-t">Sorties de janvier</td><td class="d num m s">−${e(S)}</td><td></td></tr>
+       <tr><td></td><td colspan="3" class="lib-t">Entrées de janvier</td><td class="d num m e">+${e(E)}</td><td></td></tr>
+       <tr class="verif"><td></td><td colspan="5">8 412,37 € au 1ᵉʳ janvier, + ${e(E)} − ${e(S)} = 11 168,43 € au 31 janvier, comme la banque.</td></tr>`;
+}
+
+const IDEES = {
+  a: "<b>A.</b> Une seule colonne, le montant en vert ou en rouge. Le plus compact, mais imprimé en noir et blanc, seul le signe reste.",
+  b: "<b>B.</b> Deux colonnes, sorties et entrées, comme un relevé papier. Chaque colonne s'additionne seule, et son total est en bas.",
+  c: "<b>C.</b> Comme B, et les lignes d'entrée légèrement surlignées en vert : les rentrées d'argent sautent aux yeux en faisant défiler.",
+  sans: "Comme dans le PDF d'aujourd'hui, pour comparer. Le total et les soldes du bas sont quand même ajoutés.",
+};
+document.addEventListener("click", ev => { const b = ev.target.closest("[data-v]"); if (!b) return;
+  document.querySelectorAll("[data-v]").forEach(x => x.setAttribute("aria-pressed", x === b));
+  const v = b.dataset.v, cl = document.body.classList;
+  cl.toggle("v-entree", v !== "sans"); cl.toggle("cols-deux", v === "b" || v === "c"); cl.toggle("cols-une", v === "a" || v === "sans"); cl.toggle("teinte", v === "c");
+  document.querySelector("[data-idee]").innerHTML = IDEES[v]; rendre(); });
+
+LIGNES = [{"j":2,"cat":"recu","lib":"VIR ROUX FACTURE F2025-07","m":563,"just":"Facture F2025-000007, Roux"},{"j":2,"cat":"recu","lib":"VIR DURAND FACTURE F2025-03","m":2501,"just":"Facture F2025-000003, Durand"},{"j":5,"cat":"recu","lib":"VIR MARTINS FACTURE F2025-06","m":757,"just":"Facture F2025-000006, Martins"},{"j":7,"cat":"autre","lib":"CB LA POSTE AUBAGNE","m":-12.55,"just":"<b>T-01-01</b> Ticket du 06/01"},{"j":9,"cat":"carburant","lib":"CB ITM STATION LA CIOTAT","m":-48.11,"just":"<b>T-01-02</b> Ticket du 09/01"},{"j":11,"cat":"repas","lib":"CB CHEZ PAULETTE","m":-18.82,"just":"<b>T-01-03</b> Ticket du 10/01"},{"j":13,"cat":"virement","lib":"VIR SEPA PEPINIERES DU SUD","m":-1605.6,"just":"<b>F-01-01</b> Facture Pépinières du Sud"},{"j":18,"cat":"repas","lib":"CB BOUL MAURIN CASSIS","m":-17.13,"just":"<b>T-01-04</b> Ticket du 17/01"},{"j":21,"cat":"materiel","lib":"CB KILOUTOU MARSEILLE","m":-389.65,"just":"<b>T-01-05</b> Ticket du 19/01"},{"j":21,"cat":"recu","lib":"VIR PETIT FACTURE F2025-04","m":1582,"just":"Facture F2025-000004, Petit"},{"j":22,"cat":"carburant","lib":"CB ESSO AUBAGNE","m":-85.16,"just":"<b>T-01-06</b> Ticket du 21/01"},{"j":23,"cat":"repas","lib":"CB LE RELAIS DES PINS","m":-22.11,"just":"<b>T-01-07</b> Ticket du 22/01"},{"j":24,"cat":"recu","lib":"VIR BERNARD FACTURE F2025-05","m":1250,"just":"Facture F2025-000005, Bernard"},{"j":25,"cat":"virement","lib":"VIR SEPA PEPINIERES DU SUD","m":-1615.2,"just":"<b>F-01-02</b> Facture Pépinières du Sud"},{"j":25,"cat":"repas","lib":"CB CHEZ PAULETTE","m":-18.55,"just":"<b>T-01-08</b> Ticket du 24/01"},{"j":28,"cat":"carburant","lib":"CB ITM STATION LA CIOTAT","m":-64.06,"just":"<b>T-01-09</b> Ticket du 26/01"}];
+document.body.classList.add("cols-deux");
+document.querySelector("[data-idee]").innerHTML = IDEES.b;
+rendre();
+</script>
+</body>
+</html>
