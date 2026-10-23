@@ -1,4 +1,4 @@
-import { createSign } from "node:crypto";
+import { createHash, createSign } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { logger } from "../logger";
@@ -154,26 +154,8 @@ export async function demanderAccord(demande: {
   return { ok: true, adresse: r.donnees.url };
 }
 
+/** Ce qu'il faut pour relire la banque : la session ouverte, et ses comptes. */
 export type Liaison = { session: string; comptes: string[]; banque: string };
-
-/** La liaison, rangée dans un témoin du navigateur. */
-export function liaisonEnTemoin(liaison: Liaison): string {
-  return base64url(JSON.stringify(liaison));
-}
-
-/** Un témoin abîmé ou forgé ne rend rien : l'écran repropose de relier. */
-export function liaisonDuTemoin(valeur: string | undefined): Liaison | null {
-  if (!valeur) return null;
-  try {
-    const l = JSON.parse(Buffer.from(valeur, "base64url").toString("utf8")) as Partial<Liaison>;
-    if (typeof l.session !== "string" || !Array.isArray(l.comptes) || !l.comptes.every((c) => typeof c === "string")) {
-      return null;
-    }
-    return { session: l.session, comptes: l.comptes, banque: typeof l.banque === "string" ? l.banque : "" };
-  } catch {
-    return null;
-  }
-}
 
 /** Échange le code rendu par la banque contre l'accès aux comptes cochés. */
 export async function ouvrirSession(code: string): Promise<({ ok: true } & Liaison) | Refus> {
@@ -195,6 +177,8 @@ export async function ouvrirSession(code: string): Promise<({ ok: true } & Liais
 }
 
 type Transaction = {
+  entry_reference?: string | null;
+  transaction_id?: string | null;
   transaction_amount?: { amount?: string; currency?: string };
   credit_debit_indicator?: string;
   status?: string;
@@ -211,8 +195,23 @@ type Transaction = {
  * paiement de client, et une opération en attente peut encore disparaître.
  * Seulement l'euro : une facture d'Atlas n'existe pas dans une autre monnaie.
  */
-export async function virementsRecus(liaison: Liaison, depuis: string): Promise<({ ok: true; virements: VirementRecu[] }) | Refus> {
-  const virements: VirementRecu[] = [];
+/**
+ * Un virement lu, et ce qui le reconnaîtra à la lecture suivante.
+ *
+ * **La référence de la banque d'abord** ; à défaut, une empreinte de ce
+ * qu'elle montre, compte compris. Sans clé stable, chaque lecture doublerait
+ * les cartes de l'accueil.
+ */
+export type VirementLu = VirementRecu & { cle: string };
+
+function cleDuVirement(compte: string, t: Transaction, v: VirementRecu): string {
+  const reference = t.entry_reference?.trim() || t.transaction_id?.trim();
+  if (reference) return `${compte}:${reference}`;
+  return createHash("sha256").update([compte, v.date, v.montant, v.payeur ?? "", v.libelle].join("|")).digest("hex");
+}
+
+export async function virementsRecus(liaison: Liaison, depuis: string): Promise<({ ok: true; virements: VirementLu[] }) | Refus> {
+  const virements: VirementLu[] = [];
   for (const compte of liaison.comptes) {
     let suite: string | undefined;
     // Dix pages au plus : une banque qui renverrait toujours une suite ne doit
@@ -231,12 +230,13 @@ export async function virementsRecus(liaison: Liaison, depuis: string): Promise<
         const montant = t.transaction_amount?.amount;
         const date = t.booking_date ?? t.value_date;
         if (!montant || !date) continue;
-        virements.push({
+        const lu: VirementRecu = {
           date,
           montant,
           payeur: t.debtor?.name?.trim() || null,
           libelle: (t.remittance_information ?? []).join(" ").trim(),
-        });
+        };
+        virements.push({ ...lu, cle: cleDuVirement(compte, t, lu) });
       }
       suite = r.donnees.continuation_key ?? undefined;
       if (!suite) break;

@@ -4117,3 +4117,51 @@ export const piecesImportees = pgTable("pieces_importees", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// ─── Ma banque — migration 0139, ses choix du 23 octobre 2026 ────────────────
+
+/**
+ * La banque reliée à l'entreprise, et la date où l'accord finit.
+ *
+ * Une par entreprise : relier à nouveau remplace. La session ne vaut rien sans
+ * la clé de l'application, qui ne quitte pas le serveur (`server/banque`).
+ */
+export const liaisonsBancaires = pgTable("liaisons_bancaires", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  prestataire: text("prestataire", { enum: ["enable_banking"] }).notNull().default("enable_banking"),
+  sessionId: text("session_id").notNull(),
+  comptes: text("comptes").array().notNull(),
+  banque: text("banque"),
+  accordJusquAu: timestamp("accord_jusqu_au", { withTimezone: true }).notNull(),
+  luLe: timestamp("lu_le", { withTimezone: true }),
+  createdBy: uuid("created_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * Un virement reçu sur le compte relié, et la réponse du patron.
+ *
+ * **La facture proposée n'est pas ici** : elle se recalcule à chaque lecture
+ * contre les factures en attente du moment (`lib/rapprochement-bancaire.ts`).
+ * `factureId` est celle à laquelle il a dit OUI, `paiementId` le règlement que
+ * ce oui a noté — de quoi annuler.
+ */
+export const virementsRecus = pgTable("virements_recus", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  cle: text("cle").notNull(),
+  jour: date("jour").notNull(),
+  montant: numeric("montant", { precision: 12, scale: 2 }).notNull(),
+  payeur: text("payeur"),
+  libelle: text("libelle").notNull().default(""),
+  etat: text("etat", { enum: ["nouveau", "confirme", "ecarte"] }).notNull().default("nouveau"),
+  factureId: uuid("facture_id"),
+  paiementId: uuid("paiement_id").references(() => paiementsFacture.id, { onDelete: "set null" }),
+  reponduAt: timestamp("repondu_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});

@@ -18,7 +18,9 @@ La feuille de suppression d'un client et celle de plusieurs clients sont **une s
 
 Pour reprendre : `ARCHITECTURE.md` §488. Le piège à connaître : **un JWT d'Atlas ne meurt jamais de vieillesse** tant qu'on le présente, parce que chaque réponse le réémet ; c'est pourquoi `sessions_fermees` n'a pas de purge, et pourquoi `atlas_app` n'y a ni `DELETE` ni `UPDATE`. Ce qui n'est pas tenu : les huit lectures directes d’`auth()` hors `getCurrentCtx`, dans sept fichiers (gardes du gabarit, documents légaux, vérification de l'adresse, charte) ne consultent ni la coupure ni la fermeture ; inscrit dans `TODO.md`.
 
-## MA BANQUE, L'ESSAI (22 octobre 2026)
+## MA BANQUE, L'ESSAI (22 octobre 2026), ET LA SUITE (23 octobre 2026)
+
+**La suite** : `ARCHITECTURE.md` §490. Le cœur est `src/lib/rapprochement-bancaire.ts` (la proposition, pure) et `src/lib/virement-en-mots.ts` (les phrases, communes à l'accueil, Ma TVA et Ma banque) ; `src/server/repositories/banque.ts` écrit le oui et le paiement dans une seule transaction, le virement verrouillé. `scripts/test-banque-db.ts` le prouve, dont le seul cas où le verrou est la seule protection (un acompte confirmé deux fois). Aucune tâche de fond : la banque se lit à l'ouverture des écrans (`after`), une fois par demi-heure.
 
 Pour reprendre : `docs/banque-essai.md` dit ses trois gestes, `ARCHITECTURE.md` (dernier §) le pourquoi. Le piège à connaître : **l'écran ne peut pas s'éprouver ici**, il faut sa clé Enable Banking et sa connexion au Crédit Mutuel. Sans le fichier `.pem`, l'écran affiche « Pas encore branché » et l'adresse de retour à déclarer ; c'est ce qu'on a regardé. Il se connecte deux fois à sa banque pendant l'essai (chez Enable Banking, puis depuis Atlas) : c'est leur règle, pas un défaut.
 

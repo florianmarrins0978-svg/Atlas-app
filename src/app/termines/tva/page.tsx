@@ -22,6 +22,10 @@ import LigneMontant from "./LigneMontant";
 import RythmeTva from "./RythmeTva";
 import AchatsTva from "./AchatsTva";
 import EnAttenteDePaiement from "./EnAttenteDePaiement";
+import { after } from "next/server";
+import { questionsParFacture } from "@/lib/virement-en-mots";
+import { lireLaBanque } from "@/server/banque/lecture";
+import { questionsEnAttente } from "@/server/banque/questions";
 import { receptionsDesFactures } from "@/server/repositories/envois-factures";
 import { receptionEnMots } from "@/lib/reception-facture";
 import { facturesEnAttente } from "@/server/repositories/paiements-facture";
@@ -122,7 +126,8 @@ export default async function ReleveTvaPage({
   // **L'attente n'est pas bornée à la période affichée**, et c'est délibéré :
   // une facture d'avril qu'on n'a jamais encaissée doit se voir en août, sinon
   // elle se perd — et une TVA jamais déclarée finit par se remarquer ailleurs.
-  const [releve, deductible, achats, enAttente, aPrevenir] = await Promise.all([
+  const maintenant = new Date();
+  const [releve, deductible, achats, enAttente, aPrevenir, virements] = await Promise.all([
     releveTvaCollectee(ctx, periode.debut, periode.fin),
     totalTvaDeductible(ctx, periode.debut, periode.fin),
     listerAchatsTva(ctx, periode.debut, periode.fin),
@@ -130,7 +135,13 @@ export default async function ReleveTvaPage({
     // Ce qui reste à signaler après un changement d'IBAN. Vide presque
     // toujours — et rien ne s'affiche alors.
     facturesAvecAncienIban(ctx),
+    // **La même question que l'accueil, sur la ligne de la facture** — ses
+    // choix du 23 octobre 2026 (variante A).
+    questionsEnAttente(ctx, maintenant),
   ]);
+  // Comme l'accueil : la banque se lit après l'affichage, une fois par
+  // demi-heure au plus (`lireLaBanque`). Sans banque reliée, rien ne se passe.
+  after(() => lireLaBanque(ctx, { maintenant }).then(() => undefined));
   const collectee = Number(releve.totalTva);
   // **Le chiffre des mois oubliés** (planche `appli/tva-paiements-oublies.html`,
   // la B). Aux débits, rien n'attend : tout est déclaré à l'émission, et la
@@ -246,6 +257,7 @@ export default async function ReleveTvaPage({
             relevé. Placé AVANT les deux preuves : c'est ce qui reste à faire,
             et ça se lit avant ce qui est fait. */}
         <EnAttenteDePaiement
+          virements={questionsParFacture(virements)}
           aPrevenir={aPrevenir}
           receptions={receptions}
           regime={releve.regime}

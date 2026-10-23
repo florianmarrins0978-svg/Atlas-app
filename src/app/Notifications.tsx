@@ -17,6 +17,8 @@ import {
 import type { GenreRappel, GenreVu } from "@/lib/rappels";
 import { couleursDuTon, type TonCarte } from "@/lib/ton-des-cartes";
 import TitreDeCarte from "@/components/atlas/TitreDeCarte";
+import type { QuestionDeVirement } from "@/lib/virement-en-mots";
+import ReponseVirement from "./ReponseVirement";
 import type { NotificationPatron, EnvoiCaduc } from "@/server/repositories/envois-devis";
 
 /** Un rappel, déjà mis en mots par le serveur — voir `src/lib/rappels.ts`. */
@@ -409,11 +411,32 @@ function rappelVersCarte(r: RappelAffiche): Carte {
   };
 }
 
+/**
+ * La fin de l'accord donné à la banque, quand elle approche (sept jours).
+ *
+ * Mise en mots au serveur, comme les délais des rappels : l'écran n'en
+ * recalcule rien.
+ */
+export type AccordBancaireAffiche = {
+  /** « Votre accord se termine dans 7 jours », ou « … est terminé ». */
+  titre: string;
+  texte: string;
+  quand: number;
+};
+
+/** Ce que l'accueil range : une carte, une question de virement, ou l'accord bancaire. */
+type Element =
+  | { sorte: "carte"; carte: Carte; quand: number }
+  | { sorte: "virement"; question: QuestionDeVirement; quand: number }
+  | { sorte: "accord"; accord: AccordBancaireAffiche; quand: number };
+
 export default function Notifications({
   initiales,
   caducs,
   rappels = [],
   receptions = [],
+  virements = [],
+  accord = null,
 }: {
   initiales: NotificationPatron[];
   caducs: EnvoiCaduc[];
@@ -421,6 +444,10 @@ export default function Notifications({
   rappels?: RappelAffiche[];
   /** Les clients qui viennent de confirmer avoir reçu leur facture. */
   receptions?: ReceptionAffichee[];
+  /** Les virements reçus qui attendent sa réponse (sa planche du 23 octobre 2026). */
+  virements?: QuestionDeVirement[];
+  /** La fin de l'accord bancaire, quand elle approche. */
+  accord?: AccordBancaireAffiche | null;
 }) {
   // Retirée à l'écran dès l'appui, sans attendre le serveur : le patron a fait
   // son geste, lui laisser la carte sous les yeux le ferait douter.
@@ -470,7 +497,16 @@ export default function Notifications({
     ...caducs.map(caducVersCarte),
     ...receptions.map(receptionVersCarte),
   ].filter((n) => !masquees.includes(n.envoiId));
-  const restantes = ordonnerLesCartes(lesRappels, lesReponses);
+  // **Les virements et l'accord bancaire se rangent avec les autres, à leur
+  // date** : le fil n'a qu'un ordre (`ARCHITECTURE.md` §477). C'est leur
+  // couleur, verte ou ambre, qui les fait voir, pas une place réservée.
+  const enElement = (carte: Carte): Element => ({ sorte: "carte", carte, quand: carte.quand });
+  const restantes = ordonnerLesCartes<Element>(
+    lesRappels.map(enElement),
+    lesReponses.map(enElement),
+    virements.map((question) => ({ sorte: "virement" as const, question, quand: question.quand })),
+    accord ? [{ sorte: "accord" as const, accord, quand: accord.quand }] : []
+  );
   if (restantes.length === 0) return null;
 
   const visibles = toutVoir ? restantes : restantes.slice(0, VISIBLES_PAR_DEFAUT);
@@ -569,7 +605,10 @@ export default function Notifications({
 
   return (
     <div className="mt-7 flex flex-col gap-3 px-6">
-      {visibles.map((n) => {
+      {visibles.map((e) => {
+        if (e.sorte === "virement") return <CarteVirement key={`virement-${e.question.virementId}`} question={e.question} />;
+        if (e.sorte === "accord") return <CarteAccord key="accord-bancaire" accord={e.accord} />;
+        const n = e.carte;
         const couleurs = couleursDuTon(n.ton);
         return (
           <div
@@ -741,6 +780,53 @@ export default function Notifications({
           </button>
         )
       )}
+    </div>
+  );
+}
+
+/**
+ * « Virement reçu » — sa planche du 23 octobre 2026, en vert (variante A).
+ *
+ * Le montant se lit avant le reste, puis ce que la banque écrit, puis POURQUOI
+ * cette facture : le numéro lu, le nom, ou le seul montant. La réponse est la
+ * même que dans Ma TVA (`ReponseVirement`).
+ */
+function CarteVirement({ question }: { question: QuestionDeVirement }) {
+  const couleurs = couleursDuTon("vert");
+  return (
+    <div data-atlas="carte-virement" data-atlas-ton="vert" className="rounded-[18px] px-5 py-4" style={{ backgroundColor: couleurs.fond }}>
+      <TitreDeCarte ton="vert">Virement reçu</TitreDeCarte>
+      <p className="text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
+        {question.qui}
+      </p>
+      <p className="mt-2 tabular-nums" style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2, color: colors.ink }}>
+        {question.montant}
+      </p>
+      <p className="mt-1 text-[13px] leading-[1.5]" style={{ color: couleurs.texte }}>
+        {question.quandEtLibelle} {question.raison}
+      </p>
+      <ReponseVirement virementId={question.virementId} question={question.question} oui={question.oui} choix={question.choix} />
+    </div>
+  );
+}
+
+/** La fin de l'accord bancaire : à lui de le renouveler, donc ambre. */
+function CarteAccord({ accord }: { accord: AccordBancaireAffiche }) {
+  const couleurs = couleursDuTon("ambre");
+  return (
+    <div data-atlas="carte-accord-bancaire" data-atlas-ton="ambre" className="rounded-[18px] px-5 py-4" style={{ backgroundColor: couleurs.fond }}>
+      <TitreDeCarte ton="ambre">Votre banque</TitreDeCarte>
+      <p className="text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
+        {accord.titre}
+      </p>
+      <p className="mt-1 text-[13px] leading-[1.5]" style={{ color: couleurs.texte }}>
+        {accord.texte}
+      </p>
+      <div className="-mx-2 mt-2 flex items-center gap-2">
+        <Link href="/reglages/banque" className="inline-flex min-h-[44px] items-center px-2 text-[14px] font-medium" style={{ color: colors.rust }}>
+          Renouveler
+        </Link>
+      </div>
     </div>
   );
 }

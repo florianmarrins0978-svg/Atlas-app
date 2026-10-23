@@ -24,6 +24,11 @@ import { jourLisibleCourt } from "@/lib/mois";
 import { depuisCombien, joursEcoules } from "@/lib/rappels";
 import { enEuros } from "@/lib/euros";
 import Notifications from "./Notifications";
+import { after } from "next/server";
+import { accordEnMots, PREVENIR_JOURS_AVANT } from "@/lib/accord-bancaire";
+import { lireLaBanque } from "@/server/banque/lecture";
+import { questionsEnAttente } from "@/server/banque/questions";
+import { liaisonDeLEntreprise } from "@/server/repositories/banque";
 import RappelsVehicules from "./RappelsVehicules";
 import { listerVehicules } from "@/server/repositories/vehicules";
 import { rappelsDesVehicules } from "@/lib/vehicules";
@@ -76,7 +81,7 @@ export default async function ChantiersPage() {
   // siens lui-même ; ces trois-là se lisent ici, sur la même règle.
   const role = await getRole(ctx);
   const recoit = (domaine: DomaineDesRappels) => role !== null && recoitLesRappels(role, domaine);
-  const [chantiers, contrats, notifications, caducs, rappels, receptions, abonnement, retoursManques, vehicules] = await Promise.all([
+  const [chantiers, contrats, notifications, caducs, rappels, receptions, abonnement, retoursManques, vehicules, virements, liaison] = await Promise.all([
     listerChantiersPourAffichage(ctx),
     // Qui ne rédige pas de contrat n'en voit pas : il ne pourrait ni les
     // reprendre, ni les retirer.
@@ -96,7 +101,19 @@ export default async function ChantiersPage() {
     // Les contrôles des véhicules, sa planche du 14 octobre 2026 : c'est le
     // patron qui les fait passer, lui seul en reçoit le rappel.
     role === "proprietaire" ? listerVehicules(ctx) : [],
+    // **Les virements reçus qui attendent sa réponse** — ses choix du
+    // 23 octobre 2026. Ceux qui reçoivent les cartes de facture, et eux seuls :
+    // un « oui » note un paiement.
+    recoit("facture") ? questionsEnAttente(ctx, maintenant) : [],
+    recoit("facture") ? liaisonDeLEntreprise(ctx) : null,
   ]);
+
+  // **La banque se lit APRÈS l'affichage** : l'accueil ne doit pas attendre
+  // une banque lente. Un virement nouveau apparaît à la relecture suivante,
+  // trente secondes plus tard (`VeilleDesNouvelles`). La lecture elle-même
+  // ne se fait qu'une fois par demi-heure (`lireLaBanque`).
+  if (liaison) after(() => lireLaBanque(ctx, { maintenant }).then(() => undefined));
+  const accord = liaison ? accordEnMots(liaison.accordJusquAu, maintenant) : null;
 
   // Le ruban et le bouton éteint se décident ICI, sur le même instant que les
   // rappels — la règle vit dans `abonnements.ts`, l'écran n'en recalcule rien.
@@ -229,6 +246,17 @@ export default async function ChantiersPage() {
             initiales={notifications}
             caducs={caducs}
             receptions={receptions}
+            virements={virements}
+            accord={
+              accord?.bientot && liaison
+                ? {
+                    titre: accord.titre,
+                    texte: accord.consequence,
+                    // Rangée au jour où elle devient vraie : sept jours avant.
+                    quand: liaison.accordJusquAu.getTime() - PREVENIR_JOURS_AVANT * 24 * 3600 * 1000,
+                  }
+                : null
+            }
             // Le délai est mis en mots ICI, au serveur : l'écran n'a pas à
             // recalculer une durée et à en donner une seconde version.
             rappels={rappels.map((r) => ({

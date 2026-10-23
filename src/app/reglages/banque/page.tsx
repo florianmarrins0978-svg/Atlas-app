@@ -1,41 +1,39 @@
-import { cookies } from "next/headers";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
 import { jourEtMois, jourIso } from "@/lib/jour";
-import { proposerFacture, type FactureARapprocher, type Proposition } from "@/lib/rapprochement-bancaire";
+import { questionsDesVirements } from "@/lib/virement-en-mots";
+import { accordEnMots } from "@/lib/accord-bancaire";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
-import { facturesEnAttente } from "@/server/repositories/paiements-facture";
-import {
-  banquesFrancaises,
-  cleDeposee,
-  liaisonDuTemoin,
-  virementsRecus,
-} from "@/server/banque/enable-banking";
+import { banquesFrancaises, cleDeposee } from "@/server/banque/enable-banking";
+import { lireLaBanque } from "@/server/banque/lecture";
+import { facturesARapprocher } from "@/server/banque/questions";
+import { liaisonDeLEntreprise, virementsDepuis, type VirementLuEnBase } from "@/server/repositories/banque";
 import { adresseDeRetour, retourConfigure } from "@/server/paiement/retour";
 import RubriqueReservee from "../RubriqueReservee";
+import ReponseVirement from "../../ReponseVirement";
 import { delierBanqueAction, relierBanqueAction } from "./actions";
-import { TEMOIN_LIAISON_BANQUE } from "./temoin";
 
 export const dynamic = "force-dynamic";
 
 /**
- * MA BANQUE — l'essai du 22 octobre 2026, sur sa propre banque.
+ * MA BANQUE — sa planche du 23 octobre 2026 (`appli/banque-a-essayer.html`).
  *
- * Sa planche du 21 octobre (`appli/banque-qui-previent.html`), écran 3, et sa
- * question du lendemain : *« est-ce qu'on peut faire un test déjà avec ma
- * banque à moi pour que je voie comment ça fonctionne ? »*.
+ * Né le 22 octobre comme un essai sur sa propre banque, cet écran porte
+ * désormais la liaison (en base, migration 0139) et la liste des virements
+ * reçus, chacun avec sa question. **La même question vit sur l'accueil et dans
+ * Ma TVA** : une réponse donnée ici vaut pour les deux autres.
  *
- * **CET ÉCRAN LIT, IL N'ÉCRIT RIEN.** Il montre les virements reçus et la
- * facture qu'Atlas proposerait pour chacun ; rien n'entre au relevé de TVA.
- * La carte de l'accueil et le « Oui » viendront quand le prestataire sera
- * choisi (`docs/A-FAIRE.md` §13) : ce qui se code d'ici là doit pouvoir
- * changer de prestataire sans rien défaire chez lui.
+ * **Ce que l'essai du 23 octobre a changé** : plus de case « compte pro » ou
+ * « compte perso » ; la porte « particulier » est la bonne pour un artisan,
+ * l'accès entreprise à carte reste derrière un lien discret. Le nom du payeur
+ * passe avant le libellé brut de la banque, qui débordait de l'écran.
  *
  * **Hors du sommaire des réglages, délibérément** : sans contrat, Enable
- * Banking ne relie que les comptes du propriétaire de l'application. Une
- * rubrique visible de tous ouvrirait chez chacun une porte qui refuse.
+ * Banking ne relie que les comptes du propriétaire de l'application
+ * (`docs/A-FAIRE.md` §13). Une rubrique visible de tous ouvrirait chez chacun
+ * une porte qui refuse.
  */
 
 const ISSUES: Record<string, { ton: "bien" | "mal"; texte: string }> = {
@@ -64,7 +62,11 @@ export default async function BanquePage({
   const params = await searchParams;
   const issue = params.issue ? ISSUES[params.issue] ?? null : null;
   const cle = cleDeposee();
-  const liaison = liaisonDuTemoin((await cookies()).get(TEMOIN_LIAISON_BANQUE)?.value);
+  const maintenant = new Date();
+  // Il est devant l'écran : la banque se relit si la dernière lecture date
+  // de plus d'une demi-heure (`lireLaBanque`).
+  const lecture = cle.ok ? await lireLaBanque(ctx, { maintenant }) : null;
+  const liaison = cle.ok ? await liaisonDeLEntreprise(ctx) : null;
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -87,12 +89,18 @@ export default async function BanquePage({
           {!cle.ok ? (
             <PasEncoreBranche raison={cle.raison} />
           ) : liaison ? (
-            <CompteRelie banque={liaison.banque} />
+            <CompteRelie banque={liaison.banque} fin={liaison.accordJusquAu} maintenant={maintenant} />
           ) : (
             <ChoisirSaBanque />
           )}
 
-          {cle.ok && liaison && <VirementsRecus liaison={liaison} ctxFactures={await facturesEnAttente(ctx)} />}
+          {lecture && !lecture.ok && (
+            <p role="alert" className="text-[13.5px] leading-[1.5]" style={{ color: colors.alert }}>
+              {lecture.raison}
+            </p>
+          )}
+
+          {liaison && <VirementsRecus maintenant={maintenant} />}
 
           <ul className="flex flex-col" style={{ color: colors.inkSoft }}>
             {[
@@ -140,6 +148,23 @@ function PasEncoreBranche({ raison }: { raison: string }) {
   );
 }
 
+/** Le bouton qui part chez la banque : le même pour relier et pour renouveler. */
+function BoutonRelier({ banque, libelle }: { banque: string; libelle: string }) {
+  return (
+    <form action={relierBanqueAction}>
+      <input type="hidden" name="banque" value={banque} />
+      <button
+        type="submit"
+        data-atlas="relier-banque"
+        className="atlas-plein min-h-[44px] rounded-full px-5 py-2.5 text-[14px] font-medium"
+        style={{ backgroundColor: colors.plein, color: colors.card }}
+      >
+        {libelle}
+      </button>
+    </form>
+  );
+}
+
 async function ChoisirSaBanque() {
   const r = await banquesFrancaises();
   if (!r.ok) {
@@ -151,7 +176,7 @@ async function ChoisirSaBanque() {
       </Bloc>
     );
   }
-  // Le Crédit Mutuel d'abord, s'il est là : c'est sa banque, et l'essai est le sien.
+  // Le Crédit Mutuel d'abord, s'il est là : c'est sa banque.
   const parDefaut = r.banques.find((b) => b.nom === "Crédit Mutuel")?.nom ?? "";
   return (
     <Bloc>
@@ -177,16 +202,6 @@ async function ChoisirSaBanque() {
             ))}
           </select>
         </label>
-        <fieldset className="flex gap-5 text-[14px]">
-          <label className="flex min-h-[44px] items-center gap-2">
-            <input type="radio" name="compte" value="business" defaultChecked style={{ accentColor: colors.plein }} />
-            Compte pro
-          </label>
-          <label className="flex min-h-[44px] items-center gap-2">
-            <input type="radio" name="compte" value="personal" style={{ accentColor: colors.plein }} />
-            Compte perso
-          </label>
-        </fieldset>
         <button
           type="submit"
           data-atlas="relier-banque"
@@ -195,12 +210,26 @@ async function ChoisirSaBanque() {
         >
           Relier ma banque
         </button>
+        {/* **Discret, et c'est voulu** : la porte entreprise à carte refusait son
+            identifiant le 23 octobre. Elle ne sert qu'à qui a reçu une carte ou
+            un certificat de sa banque. */}
+        <details className="text-[13px]" style={{ color: colors.muted }}>
+          <summary className="min-h-[44px] cursor-pointer py-2.5 underline underline-offset-[3px]">
+            Votre banque vous a donné un accès entreprise à carte ?
+          </summary>
+          <label className="flex min-h-[44px] items-center gap-2" style={{ color: colors.inkSoft }}>
+            <input type="checkbox" name="entreprise" value="oui" style={{ accentColor: colors.plein }} />
+            Utiliser l&apos;accès entreprise
+          </label>
+        </details>
       </form>
     </Bloc>
   );
 }
 
-function CompteRelie({ banque }: { banque: string }) {
+function CompteRelie({ banque, fin, maintenant }: { banque: string; fin: Date; maintenant: Date }) {
+  // La même règle que la carte de l'accueil : sept jours avant, les mêmes mots.
+  const accord = accordEnMots(fin, maintenant);
   return (
     <Bloc>
       <p className={smallCaps} style={{ color: colors.muted }}>
@@ -209,49 +238,38 @@ function CompteRelie({ banque }: { banque: string }) {
       <p className="mt-2 text-[18px]" style={{ fontFamily: font.display }}>
         {banque || "Votre banque"}
       </p>
-      <form action={delierBanqueAction}>
-        <button type="submit" className="-mx-2 mt-2 min-h-[44px] px-2 text-[14px] font-medium" style={{ color: colors.inkSoft }}>
-          Délier
-        </button>
-      </form>
+      <p className="mt-1 text-[13px] leading-[1.5]" style={{ color: accord.bientot ? colors.alert : colors.muted }}>
+        {accord.echeance}
+      </p>
+      <div className="-mx-2 mt-2 flex flex-wrap items-center gap-2">
+        {accord.bientot && (
+          <span className="px-2">
+            <BoutonRelier banque={banque} libelle="Renouveler l'accord" />
+          </span>
+        )}
+        <form action={delierBanqueAction}>
+          <button type="submit" className="min-h-[44px] px-2 text-[14px] font-medium" style={{ color: colors.inkSoft }}>
+            Délier
+          </button>
+        </form>
+      </div>
     </Bloc>
   );
 }
 
-function enMots(p: Proposition): string {
-  const de = (f: FactureARapprocher) => `la facture ${f.numero}${f.clientNom ? ` de ${f.clientNom}` : ""}`;
-  switch (p.genre) {
-    case "juste":
-      return p.nomConcorde
-        ? `C'est sans doute ${de(p.facture)}.`
-        : `Peut-être ${de(p.facture)}. Le nom ne figure pas sur le virement.`;
-    case "plusieurs":
-      return `${p.factures.length} factures font ce montant : ${p.factures.map((f) => f.numero).join(", ")}. Vous choisirez.`;
-    case "partie":
-      return `Peut-être une partie de ${de(p.facture)}, qui attend encore ${enEuros(p.facture.reste)}.`;
-    case "aucune":
-      return "Aucune facture en attente ne correspond.";
-  }
+function ligneDEtat(v: VirementLuEnBase): string {
+  if (v.etat === "confirme") return "Noté sur une facture.";
+  if (v.etat === "ecarte") return "Noté comme sans facture.";
+  return "Aucune facture en attente ne correspond.";
 }
 
-async function VirementsRecus({
-  liaison,
-  ctxFactures,
-}: {
-  liaison: NonNullable<ReturnType<typeof liaisonDuTemoin>>;
-  ctxFactures: Awaited<ReturnType<typeof facturesEnAttente>>;
-}) {
-  const debut = new Date();
-  debut.setDate(debut.getDate() - FENETRE_JOURS);
-  const depuis = jourIso(debut);
-  const r = await virementsRecus(liaison, depuis);
-  const factures: FactureARapprocher[] = ctxFactures.map((f) => ({
-    id: f.id,
-    numero: f.numeroCommercial,
-    clientNom: f.clientNom,
-    reste: f.reste,
-    dateEmission: f.dateEmission,
-  }));
+async function VirementsRecus({ maintenant }: { maintenant: Date }) {
+  const ctx = await getCurrentCtx();
+  const depuis = jourIso(new Date(maintenant.getTime() - FENETRE_JOURS * 24 * 3600 * 1000));
+  const [virements, factures] = await Promise.all([virementsDepuis(ctx, depuis), facturesARapprocher(ctx)]);
+  // **La même mise en mots que l'accueil et Ma TVA** : une question écrite ici
+  // autrement finirait par dire autre chose du même virement.
+  const questions = new Map(questionsDesVirements(virements, factures).map((q) => [q.virementId, q]));
 
   return (
     <section>
@@ -263,42 +281,45 @@ async function VirementsRecus({
           {FENETRE_JOURS} derniers jours
         </span>
       </div>
-      <p className="mt-1 text-[12px]" style={{ color: colors.muted }}>
-        Essai : rien n&apos;est noté au relevé de TVA.
-      </p>
 
-      {!r.ok ? (
-        <p role="alert" className="mt-3 text-[13.5px] leading-[1.5]" style={{ color: colors.alert }}>
-          {r.raison}
-        </p>
-      ) : r.virements.length === 0 ? (
+      {virements.length === 0 ? (
         <p className="mt-4 text-[13.5px]" style={{ color: colors.inkSoft }}>
           Aucun virement reçu depuis le {jourEtMois(depuis)}.
         </p>
       ) : (
         <ul data-atlas="virements-recus" className="mt-1 flex flex-col">
-          {r.virements.map((v, i) => (
-            <li key={`${v.date}-${v.montant}-${i}`} className="py-3.5" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
-              <div className="flex items-baseline justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="truncate text-[14.5px]">{v.payeur ?? (v.libelle || "Sans nom")}</p>
-                  <p className="text-[11.5px] leading-[1.45]" style={{ color: colors.muted }}>
-                    Le {jourEtMois(v.date)}
-                    {v.payeur && v.libelle ? `, ${v.libelle}` : ""}
-                  </p>
+          {virements.map((v) => {
+            const q = questions.get(v.id);
+            return (
+              <li key={v.id} className="py-3.5" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
+                <div className="flex items-baseline justify-between gap-3">
+                  {/* Le nom du payeur d'abord, propre ; le libellé brut de la
+                      banque sur une ligne coupée — il débordait de l'écran le
+                      23 octobre. */}
+                  <p className="min-w-0 truncate text-[14.5px]">{v.payeur ?? (v.libelle || "Sans nom")}</p>
+                  <span className="flex-shrink-0 text-[15.5px] tabular-nums" style={{ fontFamily: font.display }}>
+                    {enEuros(Number(v.montant))}
+                  </span>
                 </div>
-                <span
-                  className="flex-shrink-0 text-[15.5px]"
-                  style={{ fontFamily: font.display, fontVariantNumeric: "tabular-nums" }}
-                >
-                  {enEuros(v.montant)}
-                </span>
-              </div>
-              <p className="mt-1.5 text-[12px] leading-[1.45]" style={{ color: colors.or }}>
-                {enMots(proposerFacture(v, factures))}
-              </p>
-            </li>
-          ))}
+                <p className="truncate text-[11.5px] leading-[1.45]" style={{ color: colors.muted }}>
+                  Le {jourEtMois(v.date)}
+                  {v.libelle && v.payeur ? `, ${v.libelle}` : ""}
+                </p>
+                {q ? (
+                  <>
+                    <p className="mt-1.5 text-[12px] leading-[1.45]" style={{ color: colors.carteVertTexte }}>
+                      {q.raison}
+                    </p>
+                    <ReponseVirement virementId={q.virementId} question={q.question} oui={q.oui} choix={q.choix} relire />
+                  </>
+                ) : (
+                  <p className="mt-1.5 text-[12px] leading-[1.45]" style={{ color: colors.muted }}>
+                    {ligneDEtat(v)}
+                  </p>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>

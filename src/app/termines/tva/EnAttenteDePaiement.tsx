@@ -12,6 +12,8 @@ import { noterPaiementAction, remettrePaiementAction, retirerPaiementAction, sol
 import { MarqueAncienIban } from "@/components/atlas/AlerteAncienIban";
 import { prevenirAction } from "@/app/prevenir-du-nouvel-iban";
 import type { FactureAPrevenir } from "@/server/repositories/factures";
+import ReponseVirement from "../../ReponseVirement";
+import type { QuestionSurLaFacture } from "@/lib/virement-en-mots";
 import type { ReceptionLisible } from "@/lib/reception-facture";
 
 export type FactureAttendue = {
@@ -69,8 +71,16 @@ export default function EnAttenteDePaiement({
   receptions,
   aujourdHui,
   regime,
+  virements = {},
 }: {
   factures: FactureAttendue[];
+  /**
+   * **Le virement que la banque a vu pour cette facture** — ses choix du
+   * 23 octobre 2026 (`appli/banque-numero-et-termines.html`, variante A) : la
+   * même question que sur l'accueil, à la place des deux boutons, et une
+   * réponse donnée ici vaut pour l'accueil.
+   */
+  virements?: Record<string, QuestionSurLaFacture | undefined>;
   /**
    * **Ce que le client a fait de chaque facture** — sa demande du 9 septembre
    * 2026, et la réponse à sa question sur le litige.
@@ -264,6 +274,14 @@ export default function EnAttenteDePaiement({
                   la facture, pas sur son règlement. */}
               <CeQueLeClientEnAFait reception={receptions[f.id]} facture={visionneuseDeLaFacture(f)} />
 
+              {/* **La banque a vu un virement pour cette facture : la question
+                  prend la place des deux boutons, sans rien déplacer d'autre**
+                  (variante A, sa règle du texte et non de la place). « Non »
+                  les rend, à la relecture. */}
+              {virements[f.id] ? (
+                <VirementSurLaFacture q={virements[f.id]} />
+              ) : (
+              <>
               <PayePar moyen={moyenDe(f.id)} choisir={(m) => setMoyens((t) => ({ ...t, [f.id]: m }))} />
 
               <div className="mt-2.5 flex flex-wrap items-center gap-2">
@@ -302,6 +320,8 @@ export default function EnAttenteDePaiement({
                     router.refresh();
                   }}
                 />
+              )}
+              </>
               )}
 
               {(f.paiements.length > 0 || f.retires.length > 0) && (
@@ -644,5 +664,18 @@ function PayePar({ moyen, choisir }: { moyen: MoyenDePaiement; choisir: (m: Moye
         </select>
       </span>
     </label>
+  );
+}
+
+/** Ce que la banque a vu pour cette facture, et la même question que l'accueil. */
+function VirementSurLaFacture({ q }: { q: QuestionSurLaFacture | undefined }) {
+  if (!q) return null;
+  return (
+    <div data-atlas="virement-sur-la-facture">
+      <p className="mt-2 text-[12px] leading-[1.45]" style={{ color: colors.orTexte }}>
+        {q.vu} {q.raison}
+      </p>
+      <ReponseVirement virementId={q.virementId} question={q.question} oui={q.oui} choix={[q.choix]} relire />
+    </div>
   );
 }
