@@ -43,6 +43,13 @@ Ce que l'essai a appris, et qui servira au parcours de ses clients :
 - **Le compte relié semble être son compte personnel** (salaire, MSA) : aucune facture ne pouvait correspondre. Sur quel compte ses clients le paient : à lui demander.
 - Sa clé `.pem` a été montrée en partie sur une capture : lui proposer d'en refaire une neuve chez Enable Banking après l'essai.
 
+**SES CHOIX DU 23 OCTOBRE 2026, à coder avec la suite :**
+
+- `appli/banque-a-essayer.html` : le parcours entier, plus de case pro ou perso (la porte « particulier » par défaut, l'accès entreprise en lien discret), le nom du payeur au lieu du libellé brut.
+- `appli/banque-numero-et-termines.html` : **le numéro de facture lu dans le libellé passe avant le montant et le nom** (`F2026-000028`, `F2026000028`, `2026-000028`, jamais un nombre court seul), à ajouter à `src/lib/rapprochement-bancaire.ts`. Dans Terminés, Ma TVA : **variante A**, « Oui / Non » à la place des deux boutons de la ligne ; une réponse sur l'accueil ou dans Terminés vaut pour les deux.
+- `appli/banque-virement-en-couleur.html` : **variante A**, le fond vert pâle (voile de `plein`).
+- `appli/accueil-codes-couleur.html` : quatre couleurs pour toutes les cartes de l'accueil, par ce qu'il a à faire. **En attente de sa réponse.**
+
 **Ce qui vient après, seulement s'il le décide** : la carte sur l'accueil, le « Oui » qui note le paiement par `noterPaiement`, l'alerte avant la coupure (planche `appli/banque-qui-previent.html`), une table des liaisons sous RLS au lieu du témoin du navigateur, et le contrat pour ses clients (`docs/A-FAIRE.md` §13).
 
 ## ARROSAGE : LES PLANCHES DES 21 ET 22 OCTOBRE, CODÉES ET SUR `main`

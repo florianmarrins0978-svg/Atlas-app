@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Les couleurs de l'accueil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  LES COULEURS DE L'ACCUEIL — 23 octobre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  SA DEMANDE, après avoir choisi le vert pour le virement :
+    « fais-moi une planche avec différents codes couleurs en fonction des
+      différentes notifications. Comme ça, l'utilisateur, en un coup d'œil,
+      il saura qu'est-ce qui est arrivé, qu'est-ce qui se passe »
+
+  SES CHOIX DU MÊME SOIR : A pour Terminés (Oui ou Non sur la ligne de la
+  facture), A pour la couleur du virement (le fond vert pâle).
+
+  LES TREIZE CARTES, RANGÉES PAR CE QU'IL DOIT FAIRE, PAS PAR SUJET
+  (titres relevés dans src/app/Notifications.tsx, rappels dans
+  src/lib/rappels.ts) :
+    vert   bonne nouvelle : virement reçu, devis accepté, facture reçue ;
+    ambre  à vous de répondre : autre date proposée, correction demandée,
+           chantier sans devis ;
+    rouge  ça peut coûter : devis retourné, devis caduc, facture impayée ;
+    blanc  pour mémoire : devis sans réponse, chantier non facturé, retour
+           pas reçu, contrôle technique.
+  Quatre familles et pas treize couleurs : au delà de quatre, on ne retient
+  plus laquelle veut dire quoi, et l'œil ne trie plus rien.
+
+  LA COULEUR N'EST JAMAIS SEULE : le titre de la carte reste, et un point de
+  la même couleur le précède. Un daltonien lit le titre ; les autres voient
+  la couleur avant.
+
+  JAMAIS UNE COULEUR EN CLAIR (CLAUDE.md §3) : chaque famille est un voile
+  d'un jeton de la charte (plein, or, alerte). Sur Nuit, ils s'inversent avec
+  elle.
+
+  AUCUNE LIGNE DE L'APPLICATION N'A BOUGÉ (CLAUDE.md §3 bis). Noms d'exemple.
+*/
+:root{
+  --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --plein:#7d9a6d;
+  --or:#B98B47; --alerte:#9C3B2E; --trait:rgba(28,28,26,.12); --filet:rgba(28,28,26,.07);
+  --scene:#e6e3dc;
+  --serif:"Playfair Display",ui-serif,Georgia,serif;
+  --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+body.nuit{
+  --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --pin:#8fae86; --papier:#20241f; --plein:#8fae86;
+  --or:#c6a15b; --alerte:#d9826b; --trait:rgba(233,232,222,.12); --filet:rgba(233,232,222,.08);
+  --scene:#070908;
+}
+/* Les quatre familles : un voile du jeton, et le jeton mêlé à l'encre pour le titre. */
+:root,body.nuit{
+  --vert-fond:color-mix(in srgb,var(--plein) 18%,var(--carte));  --vert:color-mix(in srgb,var(--plein) 72%,var(--encre));
+  --ambre-fond:color-mix(in srgb,var(--or) 20%,var(--carte));    --ambre:color-mix(in srgb,var(--or) 75%,var(--encre));
+  --rouge-fond:color-mix(in srgb,var(--alerte) 14%,var(--carte));--rouge:color-mix(in srgb,var(--alerte) 85%,var(--encre));
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+.bandeau{background:var(--encre);color:var(--fond);padding:16px 20px;font-size:14px;line-height:1.6}
+body.nuit .bandeau{background:#000;color:var(--encre)}
+.bandeau b{color:#fff}
+body.nuit .bandeau b{color:var(--encre)}
+.bandeau .dedans{max-width:1100px;margin:0 auto}
+.etats{position:sticky;top:0;z-index:20;background:var(--scene);border-bottom:1px solid var(--trait);padding:12px 16px}
+.etats .groupe{max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.etats .quoi{font:600 10px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--gris);margin-right:4px}
+.etats button{border:1px solid var(--trait);background:var(--carte);color:var(--encre-douce);border-radius:999px;padding:10px 14px;font-size:13px;min-height:44px}
+.etats button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+body.nuit .etats button[aria-pressed="true"]{color:#101210}
+
+.scene{display:flex;flex-wrap:wrap;gap:36px;justify-content:center;align-items:flex-start;max-width:1100px;margin:28px auto 0;padding:0 16px}
+.tel{width:390px;max-width:100%;border-radius:28px;overflow:hidden;box-shadow:0 16px 44px rgba(20,18,14,.22);background:var(--fond)}
+.entete{padding:28px 22px 0}
+.entete h1{margin:0;font:400 34px/1.1 var(--serif);letter-spacing:-.01em}
+.fil{margin-top:22px;display:flex;flex-direction:column;gap:12px;padding:0 22px 26px}
+.caps{font:600 11px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase}
+
+.carte{border-radius:18px;padding:16px 20px;background:var(--carte);transition:background-color .35s cubic-bezier(.16,1,.3,1)}
+.carte .caps{color:var(--gris);margin:0 0 6px;display:flex;align-items:center;gap:7px}
+.carte .qui{margin:0;font:400 16px/1.3 var(--serif)}
+.carte .texte{margin:4px 0 0;font-size:13px;line-height:1.5;color:var(--gris)}
+.carte .montant{margin:6px 0 0;font:400 19px/1.2 var(--serif);font-variant-numeric:tabular-nums}
+.gestes{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0 0 -8px}
+.lien{border:0;background:none;color:var(--pin);padding:10px 8px;font:500 14px/1 var(--sans);min-height:44px}
+.leger{border:0;background:none;color:var(--encre-douce);padding:10px 8px;font:500 14px/1 var(--sans);min-height:44px}
+.plein{border:0;border-radius:999px;background:var(--plein);color:var(--carte);padding:10px 20px;font:500 14px/1 var(--sans);min-height:44px;margin-left:8px}
+body.nuit .plein{color:#101210}
+.pt{display:none;width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+
+/* Aujourd'hui : beige pour ce qui est urgent, blanc pour le reste. */
+.ajd .carte.urgent{background:var(--papier)}
+.ajd .carte.urgent .caps{color:var(--pin)}
+
+/* Avec les couleurs. */
+.coul .carte .pt{display:inline-block}
+.coul .vert{background:var(--vert-fond)}   .coul .vert .caps{color:var(--vert)}   .coul .vert .pt{background:var(--plein)}
+.coul .ambre{background:var(--ambre-fond)} .coul .ambre .caps{color:var(--ambre)} .coul .ambre .pt{background:var(--or)}
+.coul .rouge{background:var(--rouge-fond)} .coul .rouge .caps{color:var(--rouge)} .coul .rouge .pt{background:var(--alerte)}
+.coul .blanc .pt{background:var(--trait)}
+
+.barre{display:flex;justify-content:space-between;border-top:1px solid var(--trait);padding:14px 16px 20px}
+.barre span{font:500 9.5px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gris);position:relative}
+.barre span.ici{color:var(--encre)}
+.barre span.ici::after{content:"";position:absolute;left:-5px;right:-5px;bottom:-10px;height:2px;background:var(--or)}
+
+.legende{width:420px;max-width:100%}
+.legende h2{margin:0 0 6px;font:500 20px/1.25 var(--serif)}
+.legende .chapo{margin:0 0 18px;font-size:13.5px;line-height:1.55;color:var(--encre-douce)}
+.famille{border-radius:16px;padding:14px 16px;margin-bottom:12px;background:var(--carte)}
+.famille.vert{background:var(--vert-fond)} .famille.ambre{background:var(--ambre-fond)} .famille.rouge{background:var(--rouge-fond)}
+.famille .tete{display:flex;align-items:center;gap:9px;font:500 16px/1.3 var(--serif)}
+.famille .tete .pt{display:inline-block;width:10px;height:10px}
+.famille.vert .pt{background:var(--plein)} .famille.ambre .pt{background:var(--or)} .famille.rouge .pt{background:var(--alerte)} .famille.blanc .pt{background:var(--trait)}
+.famille .sens{margin:3px 0 8px;font-size:13px;color:var(--encre-douce)}
+.famille ul{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.famille li{font-size:12.5px;border-radius:999px;padding:5px 10px;background:color-mix(in srgb,var(--carte) 70%,transparent);color:var(--encre)}
+.legende .note{margin-top:18px;font-size:13px;line-height:1.6;color:var(--encre-douce)}
+.legende .note b{color:var(--encre)}
+</style>
+</head>
+<body>
+
+<div class="bandeau"><div class="dedans">
+  <b>Les couleurs de l'accueil.</b> Votre demande du 23 octobre : savoir d'un coup
+  d'œil ce qui est arrivé. Quatre couleurs, selon <b>ce que vous avez à faire</b>.
+  Touchez <b>« Aujourd'hui »</b> pour comparer avec l'accueil actuel, et
+  <b>« Nuit »</b> pour le fond noir. <b>Rien n'est codé.</b>
+</div></div>
+
+<div class="etats"><div class="groupe">
+  <span class="quoi">Accueil</span>
+  <button data-vue="coul" aria-pressed="true">Avec les couleurs</button>
+  <button data-vue="ajd" aria-pressed="false">Aujourd'hui</button>
+  <span class="quoi" style="margin-left:10px">Charte</span>
+  <button data-charte="jour" aria-pressed="true">Origine</button>
+  <button data-charte="nuit" aria-pressed="false">Nuit</button>
+</div></div>
+
+<div class="scene">
+  <div class="tel coul" id="tel">
+    <div class="entete"><h1>Chantiers</h1></div>
+    <div class="fil">
+      <div class="carte vert"><p class="caps"><i class="pt"></i>Virement reçu</p><p class="qui">M. Lala</p><p class="montant">120,00 €</p>
+        <p class="texte">Le numéro de la facture est écrit sur le virement. C'est la facture F2026-000028 ?</p>
+        <div class="gestes"><button class="plein">Oui</button><button class="leger">Non</button></div></div>
+      <div class="carte rouge urgent"><p class="caps"><i class="pt"></i>Facture impayée</p><p class="qui">Élagage du chêne</p>
+        <p class="texte">Échéance dépassée depuis 9 jours.</p><p class="montant">850,00 €</p>
+        <div class="gestes"><button class="lien">Relancer</button><button class="leger">J'ai vu</button></div></div>
+      <div class="carte ambre urgent"><p class="caps"><i class="pt"></i>Correction demandée</p><p class="qui">Clôture du jardin</p>
+        <p class="texte">Le client veut ce devis corrigé avant de l'accepter.</p>
+        <div class="gestes"><button class="lien">Corriger le devis</button><button class="leger">J'ai vu</button></div></div>
+      <div class="carte vert"><p class="caps"><i class="pt"></i>Devis accepté</p><p class="qui">Massif devant la maison</p>
+        <p class="texte">Le client a accepté, et retenu le mardi 4 novembre.</p>
+        <div class="gestes"><button class="lien">Voir le devis</button><button class="leger">J'ai vu</button></div></div>
+      <div class="carte blanc"><p class="caps"><i class="pt"></i>Devis sans réponse</p><p class="qui">Taille de la haie</p>
+        <p class="texte">Envoyé à M. Martins depuis 12 jours.</p>
+        <div class="gestes"><button class="lien">Relancer</button><button class="leger">J'ai vu</button></div></div>
+      <div class="carte ambre"><p class="caps"><i class="pt"></i>Autre date proposée</p><p class="qui">Tonte de printemps</p>
+        <p class="texte">Le client a accepté sur une date qu'il a proposée lui-même.</p>
+        <div class="gestes"><button class="lien">Voir sa date</button><button class="leger">J'ai vu</button></div></div>
+      <div class="carte rouge urgent"><p class="caps"><i class="pt"></i>Devis caduc</p><p class="qui">Abattage du pin</p>
+        <p class="texte">Le lien a expiré sans réponse du client.</p>
+        <div class="gestes"><button class="lien">Renvoyer</button><button class="leger">J'ai vu</button></div></div>
+      <div class="carte blanc"><p class="caps"><i class="pt"></i>Contrôle technique</p><p class="qui">Le camion benne</p>
+        <p class="texte">À passer avant le 15 décembre.</p>
+        <div class="gestes"><button class="lien">Ouvrir</button><button class="leger">J'ai vu</button></div></div>
+    </div>
+    <nav class="barre" aria-hidden="true"><span class="ici">Chantiers</span><span>Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></nav>
+  </div>
+
+  <aside class="legende">
+    <h2>Quatre couleurs, quatre gestes</h2>
+    <p class="chapo">Rangées par ce que vous avez à faire, pas par sujet. Cette légende est pour vous : l'écran, lui, ne l'affiche pas, la couleur et le titre suffisent.</p>
+    <div class="famille vert"><div class="tete"><i class="pt"></i>Vert, bonne nouvelle</div><p class="sens">De l'argent ou un chantier qui arrive. À confirmer, rien à craindre.</p>
+      <ul><li>Virement reçu</li><li>Devis accepté</li><li>Facture reçue</li></ul></div>
+    <div class="famille ambre"><div class="tete"><i class="pt"></i>Ambre, à vous de répondre</div><p class="sens">Quelqu'un attend votre réponse pour avancer.</p>
+      <ul><li>Autre date proposée</li><li>Correction demandée</li><li>Chantier sans devis</li></ul></div>
+    <div class="famille rouge"><div class="tete"><i class="pt"></i>Rouge, ça peut coûter</div><p class="sens">De l'argent ou un chantier en train de partir.</p>
+      <ul><li>Facture impayée</li><li>Devis retourné</li><li>Devis caduc</li></ul></div>
+    <div class="famille blanc"><div class="tete"><i class="pt"></i>Blanc, pour mémoire</div><p class="sens">Un rappel, rien ne presse aujourd'hui.</p>
+      <ul><li>Devis sans réponse</li><li>Chantier non facturé</li><li>Retour pas reçu</li><li>Contrôle technique</li></ul></div>
+    <p class="note"><b>Pourquoi quatre et pas treize.</b> Au delà de quatre, on ne retient plus quelle couleur veut dire quoi, et l'œil ne trie plus rien.
+    <b>Et le titre reste</b> sur chaque carte, avec un point de la même couleur : la couleur fait voir, le titre fait comprendre.
+    <b>Le beige d'aujourd'hui disparaît</b> : il disait « urgent » sans dire si c'était à répondre ou à rattraper.</p>
+  </aside>
+</div>
+
+<script>
+document.addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  if (b.dataset.vue) {
+    const tel = document.getElementById("tel");
+    tel.classList.toggle("coul", b.dataset.vue === "coul");
+    tel.classList.toggle("ajd", b.dataset.vue === "ajd");
+    document.querySelectorAll("[data-vue]").forEach(x => x.setAttribute("aria-pressed", x === b));
+  }
+  if (b.dataset.charte) {
+    document.body.classList.toggle("nuit", b.dataset.charte === "nuit");
+    document.querySelectorAll("[data-charte]").forEach(x => x.setAttribute("aria-pressed", x === b));
+  }
+});
+</script>
+</body>
+</html>
