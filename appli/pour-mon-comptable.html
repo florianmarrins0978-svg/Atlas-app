@@ -251,7 +251,7 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
 .pdf{width:30px;height:38px;border-radius:4px;flex:none;background:var(--carte);box-shadow:0 0 0 1px var(--trait);
      display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;font:700 8.5px/1 var(--sans);color:var(--rust);letter-spacing:.04em}
 .lignes .gestes{margin-top:6px}
-.lignes .gestes .lien{border:0;background:none;color:var(--pin);font:500 13.5px/1 var(--sans);padding:8px 10px 8px 0;min-height:40px}
+.lignes .gestes .lien{border:0;background:none;color:var(--pin);font:500 13.5px/1 var(--sans);padding:8px 10px 8px 0;min-height:40px;text-decoration:none;display:inline-flex;align-items:center}
 .lecture{display:flex;flex-direction:column;gap:6px;margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--fond);font-size:13.5px}
 .lecture .r{display:flex;justify-content:space-between;gap:10px}
 .lecture .r span:last-child{font-variant-numeric:tabular-nums}
@@ -517,6 +517,7 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
     <tr><td>Ticket perdu</td><td>La ligne est validée avec la mention, et votre comptable la voit. Mais sans ticket, la TVA de cette dépense ne se récupère pas : l'écran le dit avant que vous validiez.</td></tr>
     <tr><td>Les couleurs</td><td>Une proposition. Dites celle qui ne vous va pas, et elle change. Il y a aussi une version Nuit, en haut.</td></tr>
     <tr><td>Mes dossiers justifiés</td><td>Quand l’année est justifiée, vous la validez : un PDF mois par mois, chaque ligne de banque suivie de la photo de son ticket. Gardé dix ans, comme la loi le demande pour les pièces comptables, et un dossier validé ne s’efface pas.</td></tr>
+    <tr><td>Le PDF</td><td>« Ouvrir » sur le dossier 2025 montre un vrai dossier fini, en exemple : 35 pages, l’année entière. Dans l’appli, il se range ici tout seul quand vous validez l’année ; « Enregistrer sur le téléphone » en garde une copie dans vos fichiers.</td></tr>
     <tr><td>Ce qui marche derrière</td><td>Rien pour l’instant : c’est un dessin. Une fois choisi, il se code dans l’appli, et « Photographier » ouvre l’appareil photo du téléphone, comme le scan des tickets dans Ma TVA.</td></tr>
   </table>
 </div>
@@ -585,11 +586,11 @@ function rendreVisionneuse(){
 let dossier2026 = false;
 function rendreDossiers(reste){
   const enc = document.querySelector("[data-dossier-encours]");
-  if (dossier2026) enc.innerHTML = `<p class="qui" style="margin:0">Dossier 2026 validé.</p><p class="texte">Il est rangé ci-dessous, et votre comptable peut le recevoir.</p>`;
+  if (dossier2026) enc.innerHTML = `<p class="qui" style="margin:0">Dossier 2026 validé.</p><p class="texte">Rangé ci-dessous, tout seul.</p>`;
   else if (reste) enc.innerHTML = `<p class="qui" style="margin:0">Dossier 2026</p><p class="texte alerte">${reste} ${reste>1?"lignes attendent":"ligne attend"} encore un justificatif. Il se valide quand tout est justifié.</p>`;
   else enc.innerHTML = `<p class="qui" style="margin:0">Dossier 2026</p><p class="texte" style="color:var(--pin)">Tout est justifié.</p><div class="gestes"><button class="plein" type="button" data-valider-dossier>Valider le dossier 2026</button></div>`;
   const ans = (dossier2026 ? [["2026","23 octobre 2026","2036","4,1 Mo"]] : []).concat([["2025","12 février 2026","2035","5,8 Mo"],["2024","3 mars 2025","2034","5,2 Mo"],["2023","20 février 2024","2033","4,7 Mo"]]);
-  document.querySelector("[data-dossiers]").innerHTML = ans.map(([a,v,g,t]) => `<li class="ligne"><span class="pdf">PDF</span><span class="milieu"><div class="lib">Dossier justifié ${a}</div><div class="cat" style="color:var(--gris)">Validé le ${v}, gardé jusqu’en ${g}, ${t}</div><div class="gestes"><button class="lien" type="button">Ouvrir</button><button class="lien" type="button">Envoyer au comptable</button></div></span></li>`).join("");
+  document.querySelector("[data-dossiers]").innerHTML = ans.map(([a,v,g,t]) => `<li class="ligne"><span class="pdf">PDF</span><span class="milieu"><div class="lib">Dossier justifié ${a}</div><div class="cat" style="color:var(--gris)">Validé le ${v}, gardé jusqu’en ${g}, ${t}</div><div class="gestes"><a class="lien" href="dossier-justifie-exemple.pdf" target="_blank" rel="noopener">Ouvrir</a><a class="lien" href="dossier-justifie-exemple.pdf" download="Dossier justifié ${a}.pdf">Enregistrer sur le téléphone</a><button class="lien" type="button">Envoyer au comptable</button></div></span></li>`).join("");
 }
 
 function rendreRelies(){
