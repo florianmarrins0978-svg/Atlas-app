@@ -31,6 +31,8 @@ import {
   changerMotDePasse,
   deconnecterPartout,
   coupureDesJetons,
+  fermerLaSession,
+  sessionFermee,
 } from "../src/server/repositories/compte";
 import { ajouterCle, cleParIdentifiant, listerCles } from "../src/server/repositories/cles-appareil";
 
@@ -303,6 +305,59 @@ async function main() {
       await cleParIdentifiant("cle-du-voisin"),
       "le voisin a perdu son Face ID parce que quelqu'un d'autre s'est déconnecté"
     );
+  });
+
+  console.log("");
+
+  // **SE DÉCONNECTER RÉVOQUE LA SESSION — 23 octobre 2026.** Effacer le cookie
+  // ne suffisait pas : une réponse revenue après la sortie le reposait. Ce qui
+  // suit tient la moitié base ; `test-se-deconnecter-e2e` joue la course.
+  await essai("fermer une session la refuse, elle seule", async () => {
+    const { ctxA } = await monter();
+    await fermerLaSession(ctxA.utilisateurId, "session-du-bureau");
+    assert.equal(await sessionFermee(ctxA.utilisateurId, "session-du-bureau"), true);
+    assert.equal(
+      await sessionFermee(ctxA.utilisateurId, "session-du-telephone"),
+      false,
+      "sortir du bureau a fermé le téléphone"
+    );
+    assert.equal(await coupureDesJetons(ctxA.utilisateurId), null, "se déconnecter a coupé tout le compte");
+  });
+
+  await essai("et elle laisse Face ID posé", async () => {
+    const { ctxA } = await monter();
+    await ajouterCle({
+      utilisateurId: ctxA.utilisateurId,
+      identifiantCle: "cle-anne",
+      clePublique: "publique-anne",
+      compteur: 0,
+      nomAppareil: "iPhone d'Anne",
+    });
+    await fermerLaSession(ctxA.utilisateurId, "session-du-bureau");
+    assert.equal((await listerCles(ctxA.utilisateurId)).length, 1, "se déconnecter a retiré Face ID");
+  });
+
+  await essai("se déconnecter deux fois ne lève rien", async () => {
+    const { ctxA } = await monter();
+    await fermerLaSession(ctxA.utilisateurId, "session-du-bureau");
+    await fermerLaSession(ctxA.utilisateurId, "session-du-bureau");
+    assert.equal(await sessionFermee(ctxA.utilisateurId, "session-du-bureau"), true);
+  });
+
+  await essai("un identifiant de session ne ferme que son propriétaire", async () => {
+    const { ctxA, ctxB } = await monter();
+    await fermerLaSession(ctxA.utilisateurId, "meme-identifiant");
+    assert.equal(await sessionFermee(ctxB.utilisateurId, "meme-identifiant"), false);
+  });
+
+  // **Le rôle applicatif ne rouvre pas une session fermée.** Effacer la ligne
+  // ressusciterait le cookie : une injection SQL ne doit pas pouvoir le faire.
+  await essai("atlas_app ne peut ni effacer ni modifier une session fermée", async () => {
+    const { ctxA } = await monter();
+    await fermerLaSession(ctxA.utilisateurId, "session-du-bureau");
+    await assert.rejects(pool.query("DELETE FROM sessions_fermees"), /permission denied/);
+    await assert.rejects(pool.query("UPDATE sessions_fermees SET session_id = 'autre'"), /permission denied/);
+    assert.equal(await sessionFermee(ctxA.utilisateurId, "session-du-bureau"), true);
   });
 
   console.log("");

@@ -4,7 +4,7 @@ import { auth } from "../auth";
 import { db } from "./db/client";
 import { membresEntreprise, users } from "./db/schema";
 import type { Ctx } from "./repositories/context";
-import { coupureDesJetons } from "./repositories/compte";
+import { coupureDesJetons, sessionFermee } from "./repositories/compte";
 import { instantDAuthentification, sessionCoupee } from "../lib/identite-session";
 import { enrichirContexteRequete } from "./request-context";
 import { doubleVerificationObligatoire } from "../lib/double-verification";
@@ -99,7 +99,26 @@ async function resoudreCtx(exigerDoubleVerification: boolean): Promise<Ctx> {
    * d'avant cette version n'en portent pas, et refuser par défaut aurait
    * déconnecté tout le monde au déploiement — un geste que personne n'a demandé.
    */
-  const coupure = await coupureDesJetons(utilisateurId);
+  const sessionId = session.user.sessionId;
+  const [coupure, fermee] = await Promise.all([
+    coupureDesJetons(utilisateurId),
+    /**
+     * **ET LA SESSION FERMÉE PAR « SE DÉCONNECTER » — 23 octobre 2026.**
+     *
+     * Le cookie effacé à la sortie revenait : chaque réponse du middleware le
+     * repose, et une réponse partie avant la sortie le reposait après. Il est
+     * signé, rien ne le distinguait d'une session vivante. Ce qui le distingue
+     * est la ligne que la sortie pose (`fermerLaSession`), et c'est ICI qu'elle
+     * se lit, pour la même raison que la coupure : le middleware tourne en
+     * Edge et ne lit pas la base.
+     *
+     * **Un jeton sans `sessionId` ne peut pas être fermé seul** : il date
+     * d'avant le 25 août 2026, et sa sortie n'efface que son cookie, comme
+     * avant. Le refuser d'office mettrait dehors des gens qu'aucune sortie n'a
+     * visés ; il prend un identifiant à la connexion suivante.
+     */
+    sessionId ? sessionFermee(utilisateurId, sessionId) : false,
+  ]);
   /**
    * **ON COMPARE L'INSTANT DE LA CONNEXION, PLUS CELUI DE LA SIGNATURE.**
    *
@@ -118,7 +137,7 @@ async function resoudreCtx(exigerDoubleVerification: boolean): Promise<Ctx> {
    * de lui-même quand les anciens jetons expirent.
    */
   const instantSession = instantDAuthentification(session.user);
-  if (sessionCoupee(instantSession, coupure)) {
+  if (fermee || sessionCoupee(instantSession, coupure)) {
     // La même sortie que pour un compte disparu : la route efface les cookies
     // puis renvoie à la connexion. Lever ici afficherait un écran d'erreur, en
     // laissant le cookie mort dans le navigateur — c'est le piège du 10 août
@@ -152,7 +171,7 @@ async function resoudreCtx(exigerDoubleVerification: boolean): Promise<Ctx> {
     utilisateurId,
     // Recopié du jeton signé : c'est ce à quoi une preuve de ré-authentification
     // s'accroche, pour qu'une autre session du même utilisateur n'en profite pas.
-    sessionId: session.user.sessionId,
+    sessionId,
   };
 }
 

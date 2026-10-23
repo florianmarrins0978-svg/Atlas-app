@@ -1,7 +1,7 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { hash } from "bcryptjs";
 import { db } from "../db/client";
-import { users } from "../db/schema";
+import { sessionsFermees, users } from "../db/schema";
 import { verifierNouveauMotDePasse, type RefusMotDePasse } from "../../lib/mot-de-passe";
 import { oublierAppareils } from "./double-verification";
 import type { Ctx } from "./context";
@@ -224,4 +224,39 @@ export async function coupureDesJetons(utilisateurId: string): Promise<Date | nu
     .where(eq(users.id, utilisateurId))
     .limit(1);
   return ligne?.depuis ?? null;
+}
+
+/**
+ * Se déconnecter : fermer CETTE session, et elle seule.
+ *
+ * **Effacer le cookie ne suffisait pas — 22 octobre 2026.** Chaque réponse qui
+ * passe par le middleware repose le cookie pour prolonger la session : une
+ * réponse partie avant la sortie et revenue après le reposait, et la session
+ * revivait. Le cookie est signé, rien ne le distinguait d'un vivant. La ligne
+ * posée ici est ce qui le distingue désormais, et `getCurrentCtx` la lit.
+ *
+ * **Ce que ce geste ne fait PAS, à la différence de `fermerToutesLesSessions`** :
+ * ni coupure du compte, ni clés Face ID retirées, ni appareils de confiance
+ * oubliés. Le patron sort de l'ordinateur du bureau ; son téléphone reste
+ * connecté et Face ID l'ouvre encore.
+ *
+ * Refaire est sans effet : la sortie se rejoue sans erreur si la première
+ * réponse s'est perdue.
+ */
+export async function fermerLaSession(utilisateurId: string, sessionId: string): Promise<void> {
+  await db.insert(sessionsFermees).values({ sessionId, utilisateurId }).onConflictDoNothing();
+}
+
+/**
+ * Cette session a-t-elle été fermée ? Lu à chaque requête, à côté de la
+ * coupure. Borné par l'utilisateur aussi : un identifiant de session ne ferme
+ * jamais que les sessions de son propriétaire.
+ */
+export async function sessionFermee(utilisateurId: string, sessionId: string): Promise<boolean> {
+  const [ligne] = await db
+    .select({ id: sessionsFermees.sessionId })
+    .from(sessionsFermees)
+    .where(and(eq(sessionsFermees.sessionId, sessionId), eq(sessionsFermees.utilisateurId, utilisateurId)))
+    .limit(1);
+  return Boolean(ligne);
 }

@@ -24,6 +24,7 @@ import { ADRESSE } from "./_adresse";
 // | 3 | « Annuler » referme sans rien casser |
 // | 4 | confirmer mène dehors, et le cookie est bien mort |
 // | 5 | **Face ID reste posé** — c'est ce qui sépare ce geste de « partout » |
+// | 6 | une session fermée est RÉVOQUÉE : un cookie revenu après la sortie n'ouvre rien, et l'autre appareil reste ouvert |
 //
 // ─── LE CAS 5 POSE SON PROPRE TÉMOIN, ET CE N'EST PAS DU ZÈLE ───────────────
 //
@@ -180,29 +181,16 @@ async function main() {
       await ecran.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
 
       await ecran.click('[data-atlas="se-deconnecter"]');
-      // **Sa séquence, pas celle d'un robot** (22 octobre 2026). La feuille
-      // ouverte, Next précharge les pages des Réglages, et chacune de ces
-      // réponses REPOSE le cookie de session. Confirmer cent millisecondes plus
-      // tard, ce qu'aucun doigt ne fait, laissait un préchargement revenir APRÈS
-      // la déconnexion et ressusciter la session. Lui ouvre, lit, puis confirme :
-      // on attend que la page se pose. La course elle-même est notée dans
-      // `TODO.md`, comme un défaut de sécurité à corriger dans un lot à part.
+      // **On confirme aussitôt la feuille ouverte, et c'est délibéré** (23 octobre
+      // 2026). La feuille fait précharger les pages des Réglages, et une de ces
+      // réponses revenue après la sortie repose le cookie. Le 22 octobre, la
+      // suite attendait que la page se pose et laissait cinq secondes au cookie
+      // pour mourir : elle esquivait la course au lieu de la gagner. La session
+      // est désormais RÉVOQUÉE à la sortie (`fermerLaSession`), donc un cookie
+      // revenu n'ouvre plus rien : c'est cela qu'on prouve, au pire moment.
       await ecran.locator('[data-atlas="confirmer-deconnexion"]').waitFor({ state: "visible" });
-      await ecran.waitForLoadState("networkidle");
       await ecran.click('[data-atlas="confirmer-deconnexion"]');
       await ecran.waitForURL(`${BASE}/login`, { timeout: 30_000 });
-
-      // **On attend la mort du cookie, pas seulement l'adresse** (batterie
-      // commune du 22 octobre 2026). L'adresse passe à « /login » parfois un
-      // instant avant que le navigateur ait appliqué l'effacement : rouvrir les
-      // réglages dans cet instant-là les trouvait ouverts, sans que la sortie
-      // ait failli. La course rougissait ou non selon le poids du lot. Ce qui
-      // doit être vrai, c'est que le cookie MEURT : on l'attend, puis on prouve
-      // que l'écran gardé ne s'ouvre plus.
-      const sessionVivante = async () =>
-        (await sortant.cookies()).some((c) => c.name.endsWith("authjs.session-token"));
-      for (let essai = 0; essai < 50 && (await sessionVivante()); essai++) await ecran.waitForTimeout(100);
-      assert.equal(await sessionVivante(), false, "le cookie de session survit cinq secondes à la déconnexion");
 
       // **Le cookie doit être MORT, pas seulement la page changée.** Revenir
       // sur un écran gardé est la seule preuve qui vaille : une redirection
@@ -225,6 +213,10 @@ async function main() {
         "/reglages",
         "la session survit : l'écran des réglages s'ouvre encore après la déconnexion"
       );
+      // Et le cookie, même revenu, est parti au premier écran gardé : un cookie
+      // mort laissé dans le navigateur referait la soirée du 10 août 2026.
+      const sessionVivante = (await sortant.cookies()).some((c) => c.name.endsWith("authjs.session-token"));
+      assert.equal(sessionVivante, false, "le cookie d'une session fermée reste dans le navigateur");
 
       const { rows } = await pool.query<{ n: string }>(
         "SELECT count(*)::text AS n FROM cles_appareil WHERE identifiant_cle = $1",
@@ -239,6 +231,95 @@ async function main() {
     } finally {
       await pool.query("DELETE FROM cles_appareil WHERE identifiant_cle = $1", [identifiant]);
     }
+  });
+
+  // ── 6 · Une session fermée ne se rouvre plus ─────────────────────────────
+  //
+  // **La course du 22 octobre 2026, rendue certaine.** Chaque réponse qui passe
+  // par le middleware repose le cookie de session pour la prolonger. Une
+  // réponse partie AVANT la sortie et revenue APRÈS reposait donc le cookie que
+  // la sortie venait d'effacer, et la session revivait. La batterie ne la
+  // voyait qu'une fois sur plusieurs, sous charge : une course ne se prouve pas
+  // en espérant la perdre.
+  //
+  // Deux façons de la jouer à coup sûr, et toutes deux visent la RÈGLE (une
+  // session fermée est morte côté serveur), pas le chemin du cookie :
+  //
+  // | a | une requête tenue en suspens par la suite, relâchée après la sortie |
+  // | b | le cookie relevé avant la sortie, reposé à la main après — c'est ce   |
+  // |   | que fait la réponse en retard, et ce que ferait un cookie volé        |
+  //
+  // **Un second appareil est connecté en même temps**, et il doit le rester :
+  // révoquer UNE session ne doit pas devenir « me déconnecter partout ». Il
+  // partage ce cas plutôt que d'en ouvrir un autre, parce que le limiteur
+  // refuse la sixième connexion d'un même visiteur en quinze minutes.
+  await test("Une requête revenue après la sortie ne rouvre pas la session, et l'autre appareil reste ouvert", async () => {
+    const telephone = await navigateur.newContext({ ...ECRAN_DU_PATRON });
+    const pageTel = await telephone.newPage();
+    await connecter(pageTel);
+
+    const sortant = await navigateur.newContext({ ...ECRAN_DU_PATRON });
+    const ecran = await sortant.newPage();
+    await connecter(ecran);
+    await ecran.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
+
+    const jetonAvant = (await sortant.cookies()).find((c) => c.name.endsWith("authjs.session-token"));
+    assert.ok(jetonAvant, "aucun cookie de session après la connexion : le cas ne mesurerait rien");
+
+    // La réponse est obtenue tout de suite, mais rendue au navigateur seulement
+    // après la sortie : exactement le préchargement resté en vol.
+    let relacher!: () => void;
+    const sortieFaite = new Promise<void>((r) => (relacher = r));
+    let partie!: () => void;
+    const enVol = new Promise<void>((r) => (partie = r));
+    await ecran.route(`${BASE}/reglages/compte`, async (route) => {
+      const reponse = await route.fetch();
+      partie();
+      await sortieFaite;
+      await route.fulfill({ response: reponse });
+    });
+    const retardataire = ecran.evaluate(() => fetch("/reglages/compte").then((r) => r.status));
+    await enVol;
+
+    await ecran.click('[data-atlas="se-deconnecter"]');
+    await ecran.locator('[data-atlas="confirmer-deconnexion"]').waitFor({ state: "visible" });
+    await ecran.click('[data-atlas="confirmer-deconnexion"]');
+    await ecran.waitForURL(`${BASE}/login`, { timeout: 30_000 });
+    relacher();
+    await retardataire.catch(() => undefined);
+    await ecran.unroute(`${BASE}/reglages/compte`);
+
+    await ecran.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
+    assert.notEqual(
+      new URL(ecran.url()).pathname,
+      "/reglages",
+      "a · la réponse en retard a rouvert la session : les réglages s'ouvrent après la déconnexion"
+    );
+
+    // b · Le cookie d'avant la sortie, reposé tel quel dans un navigateur neuf.
+    const rejeu = await navigateur.newContext({ ...ECRAN_DU_PATRON });
+    await rejeu.addCookies([jetonAvant]);
+    const page2 = await rejeu.newPage();
+    await page2.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
+    assert.notEqual(
+      new URL(page2.url()).pathname,
+      "/reglages",
+      "b · le cookie d'avant la sortie ouvre encore les réglages : la session n'a pas été révoquée"
+    );
+    // Et la sortie le nettoie : un cookie mort qu'on laisserait dans le
+    // navigateur referait la soirée du 10 août 2026.
+    const reste = (await rejeu.cookies()).some((c) => c.name.endsWith("authjs.session-token"));
+    assert.equal(reste, false, "b · le cookie d'une session révoquée reste dans le navigateur");
+    await rejeu.close();
+    await sortant.close();
+
+    await pageTel.goto(`${BASE}/reglages/compte`, { waitUntil: "networkidle" });
+    assert.equal(
+      new URL(pageTel.url()).pathname,
+      "/reglages/compte",
+      "sortir d'un appareil a fermé l'autre : la révocation vise le compte, pas la session"
+    );
+    await telephone.close();
   });
 
   await navigateur.close();

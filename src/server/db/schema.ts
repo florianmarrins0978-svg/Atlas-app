@@ -3648,6 +3648,21 @@ export const preuvesAuthentification = pgTable(
 );
 
 /**
+ * LES SESSIONS FERMÉES — une sortie révoque la session, pas seulement son
+ * cookie. Une réponse revenue après la déconnexion repose le cookie ; c'est
+ * cette ligne qui le rend inerte (`drizzle/0138_sessions_fermees.sql`).
+ * `atlas_app` lit et ajoute, jamais n'efface : effacer rouvrirait la session.
+ */
+export const sessionsFermees = pgTable("sessions_fermees", {
+  /** L'identité de la session, telle que le jeton la porte. */
+  sessionId: text("session_id").primaryKey(),
+  utilisateurId: uuid("utilisateur_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  fermeeLe: timestamp("fermee_le", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
  * LE JOURNAL DES PURGES — une ligne par exécution RÉUSSIE.
  *
  * **Pourquoi elle existe** (audit final, 29 août 2026) : une purge qui ne

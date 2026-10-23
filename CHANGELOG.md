@@ -6,6 +6,22 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-23
+
+- **Se déconnecter RÉVOQUE la session, la course du 22 octobre est fermée.**
+  Une réponse partie avant la sortie et revenue après (un préchargement des
+  Réglages) reposait le cookie que la sortie venait d'effacer : la session
+  revivait, et un cookie relevé avant la sortie restait valable après. La
+  sortie pose désormais l'identité de la session dans `sessions_fermees`
+  (`drizzle/0138_sessions_fermees.sql`, expand seul) et `getCurrentCtx` refuse
+  ce jeton comme une session coupée : effacement du cookie, retour à la
+  connexion. Les autres appareils du compte restent ouverts, Face ID reste
+  posé. `atlas_app` ne peut ni effacer ni modifier une ligne : la migration
+  retire les droits que les privilèges par défaut lui donnaient
+  (`test-compte-db` l'a vu). `test-se-deconnecter-e2e` joue la course à coup
+  sûr (réponse tenue en vol, cookie rejoué) et n'attend plus que la page se
+  pose. `ARCHITECTURE.md` §488, `docs/session-revoquee.md`.
+
 ## 2026-10-22
 
 - **Batterie commune des sept lots du 22 octobre** : les rouges trouvés entre les lots sont corrigés (boutons, routes et actions gardées, PDF, objets stockés, zip relu sous Windows, questions de chiffrage comptées par sorte, déconnexion jouée à sa vitesse). Trouvé et noté dans `TODO.md` : une requête en vol peut ressusciter une session fermée.

@@ -5,6 +5,10 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## SE DÉCONNECTER RÉVOQUE LA SESSION (23 octobre 2026)
+
+Codé, branche `claude/session-revocation-security-b8ulo7`. Migration `drizzle/0138_sessions_fermees.sql` (table neuve, expand seul). `deconnexionAction` ferme la session (`fermerLaSession`, `src/server/repositories/compte.ts`) avant d'effacer le cookie ; `getCurrentCtx` refuse une session fermée. Suites : `test-se-deconnecter-e2e` (cas 6), `test-compte-db`. Détail : `docs/session-revoquee.md`.
+
 ## MA BANQUE, L'ESSAI (22 octobre 2026)
 
 Codé : `/reglages/banque` (patron seul, hors du sommaire), retour `/api/banque/retour`, client Enable Banking `src/server/banque/enable-banking.ts`, règle pure `src/lib/rapprochement-bancaire.ts`. Lecture seule. À jouer sur son espace avec sa clé : `docs/banque-essai.md`. Le reste de la planche `appli/banque-qui-previent.html` n'est pas codé.

@@ -10,6 +10,10 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## SE DÉCONNECTER RÉVOQUE LA SESSION (23 octobre 2026)
+
+Pour reprendre : `ARCHITECTURE.md` §488. Le piège à connaître : **un JWT d'Atlas ne meurt jamais de vieillesse** tant qu'on le présente, parce que chaque réponse le réémet ; c'est pourquoi `sessions_fermees` n'a pas de purge, et pourquoi `atlas_app` n'y a ni `DELETE` ni `UPDATE`. Ce qui n'est pas tenu : les huit lectures directes d’`auth()` hors `getCurrentCtx`, dans sept fichiers (gardes du gabarit, documents légaux, vérification de l'adresse, charte) ne consultent ni la coupure ni la fermeture ; inscrit dans `TODO.md`.
+
 ## MA BANQUE, L'ESSAI (22 octobre 2026)
 
 Pour reprendre : `docs/banque-essai.md` dit ses trois gestes, `ARCHITECTURE.md` (dernier §) le pourquoi. Le piège à connaître : **l'écran ne peut pas s'éprouver ici**, il faut sa clé Enable Banking et sa connexion au Crédit Mutuel. Sans le fichier `.pem`, l'écran affiche « Pas encore branché » et l'adresse de retour à déclarer ; c'est ce qu'on a regardé. Il se connecte deux fois à sa banque pendant l'essai (chez Enable Banking, puis depuis Atlas) : c'est leur règle, pas un défaut.

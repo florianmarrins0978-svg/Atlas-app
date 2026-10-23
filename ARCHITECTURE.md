@@ -35726,3 +35726,69 @@ le plus souvent une liste vide. Et **la ligne montre la pièce de ce mois**, pas
 la plus récente : un client revu en 2024 apparaît en juin 2017 avec son devis
 de juin 2017. La liste reçoit donc TOUTES les dates des devis envoyés et des
 factures émises (`joursDevis`, `joursFactures`), pas seulement la dernière.
+
+## §488 : Se déconnecter RÉVOQUE la session, et ne se contente plus d'effacer un cookie
+
+**Le défaut, trouvé par la batterie commune du 22 octobre 2026.** La session
+d'Atlas est un JWT sans table, réémis à chaque réponse qui passe par le
+middleware (la session est prolongée par le cookie qu'il repose). Se
+déconnecter effaçait ce cookie, et c'était tout. Une réponse partie AVANT la
+sortie et revenue APRÈS (les quatre préchargements que la feuille « Se
+déconnecter » déclenche, le bandeau du banc) reposait donc le cookie effacé :
+la session revivait. Le même trou laissait un cookie relevé avant la sortie
+valable après, jusqu'à ce qu'on cesse de le présenter.
+
+**Ce qui la ferme : une liste des sessions fermées, lue où l'on lit déjà la
+coupure.** `deconnexionAction` écrit le `sessionId` du jeton dans
+`sessions_fermees` (`fermerLaSession`) AVANT d'effacer le cookie ;
+`getCurrentCtx` lit cette ligne en même temps que `jetons_valides_depuis` et
+traite une session fermée comme une session coupée : `/api/session-perimee`
+efface le cookie et renvoie à la connexion. Un cookie revenu existe encore,
+mais il est inerte et part au premier écran gardé.
+
+| | « Se déconnecter » | « Me déconnecter partout » |
+|---|---|---|
+| ce qui est refusé | CETTE session (`sessionId`) | tout jeton né avant la coupure |
+| les autres appareils | restent ouverts | fermés |
+| Face ID, appareils de confiance | restent posés | retirés |
+
+**Pourquoi le `sessionId`, et rien d'autre.** `iat` et `jti` changent à chaque
+réémission (`src/lib/identite-session.ts`) ; `sessionId` est tiré à la vraie
+connexion, chiffré dans le jeton, recopié aux réémissions. Un jeton signé avant
+le 25 août 2026 n'en porte pas : sa sortie n'efface que son cookie, comme
+avant, et il en reçoit un à la connexion suivante. Le refuser d'office aurait
+mis dehors des gens qu'aucune sortie ne visait.
+
+**Pourquoi pas de purge, et pourquoi `atlas_app` n'efface rien.** Un jeton
+présenté régulièrement est réémis sans fin : il ne meurt pas de vieillesse, et
+sa révocation doit lui survivre. Effacer une ligne rouvrirait une session
+fermée ; `atlas_app` n'a donc que `SELECT` et `INSERT`. **Le `GRANT` seul ne le
+garantissait pas** : les privilèges par défaut du schéma donnent les quatre
+droits à `atlas_app` sur toute table neuve, et `test-compte-db` a pu effacer une
+ligne avant que la migration ne les retire (`REVOKE ALL` puis `GRANT`).
+
+**Pourquoi pas dans le middleware.** Il tourne en Edge et ne lit pas la base,
+la même raison qui a placé la coupure dans `getCurrentCtx`.
+
+**La piste écartée : qu'un préchargement ne prolonge jamais la session.**
+Elle aurait tari la source mesurée le 22 octobre et rien d'autre : une action
+serveur, une navigation ou le sondage du bandeau, partis avant la sortie,
+reposent le cookie de la même façon. Il aurait fallu, dans le middleware, une
+seconde lecture de la session qui ne réémet pas (`getToken`), à côté de celle
+d'Auth.js : deux règles pour une question, dans un fichier de plancher. La
+révocation rend TOUT cookie revenu inerte, quel que soit le chemin ; la piste
+n'ajoutait rien qu'elle ne tienne déjà.
+
+**Ce qui n'est pas tenu** (`TODO.md`) : huit lectures directes d'`auth()` hors
+`getCurrentCtx` ne consultent ni la coupure ni la fermeture. Aucune ne touche
+aux données de l'entreprise.
+
+**Ce qui l'éprouve.** `test-se-deconnecter-e2e`, cas 6 : une réponse tenue en
+vol par la suite et relâchée après la sortie, puis le cookie d'avant la sortie
+reposé dans un navigateur neuf ; les deux doivent trouver la porte fermée, et
+un second appareil connecté doit rester ouvert. Rouge sur le code d'avant
+(« la réponse en retard a rouvert la session »), vert après. Le cas 4 confirme
+désormais dès que la feuille s'ouvre : l'attente « que la page se pose » du
+22 octobre esquivait la course, elle a été retirée. `test-compte-db` tient la
+moitié base (une session fermée seule, Face ID gardé, rien d'effaçable par
+`atlas_app`).
