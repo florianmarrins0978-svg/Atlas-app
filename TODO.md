@@ -7,12 +7,14 @@ Sa demande : cocher plusieurs clients et les supprimer d'un coup, avec la même
 mention de sécurité qu'un client seul. Planche
 `appli/supprimer-plusieurs-clients.html`, rien de codé.
 
-**À coder seulement après son oui :** « Choisir » à gauche de `BoutonFiltre`
-dans `ListeClients.tsx` (Patron et Facturation seulement, comme
-`exigerMontants`) ; la feuille reprend `SupprimerCeClient.tsx` mot pour mot,
+**Sa correction du 23 octobre : pas de bouton « Choisir » visible, l'appui
+long sur une ligne ouvre le choix.** À coder seulement après son oui : l'appui
+long (480 ms, annulé si le doigt glisse) sur `LigneClient` dans
+`ListeClients.tsx`, « Annuler » sous le bouton rouge (Patron et Facturation
+seulement, comme `exigerMontants`) ; la feuille reprend `SupprimerCeClient.tsx` mot pour mot,
 au pluriel, en une pièce partagée plutôt qu'une copie (`CLAUDE.md` §3) ; le
 serveur rejoue `effacerClient` client par client et nomme ceux qui restent.
-Refusés sur la planche, et dit : « Tout cocher » et l'appui long. Niveau 3
+Refusé sur la planche, et dit : « Tout cocher ». Niveau 3
 (suppression de données, gravité).
 
 ## ⏳ UNE PLANCHE À REGARDER : LA TVA D'UNE VOITURE, A OU B (23 octobre 2026)

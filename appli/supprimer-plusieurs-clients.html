@@ -75,7 +75,7 @@
        height:700px;position:relative;overflow:hidden;
        border:1px solid rgba(28,28,26,.14);border-radius:14px}
   body[data-charte="nuit"] .tel{border-color:rgba(233,232,222,.14)}
-  .defile{height:100%;overflow-y:auto;overscroll-behavior:contain;padding-bottom:170px;
+  .defile{height:100%;overflow-y:auto;overscroll-behavior:contain;padding-bottom:210px;
           scrollbar-width:thin;scrollbar-color:var(--chevron) transparent}
   .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;
          font-weight:400;letter-spacing:-.01em}
@@ -96,19 +96,25 @@
          border:1.6px solid var(--muted);border-radius:50%}
   .loupe::after{content:"";position:absolute;right:-5px;bottom:-3px;width:7px;
                 height:1.6px;background:var(--muted);transform:rotate(45deg)}
-  .sous{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+  .sous{display:flex;justify-content:flex-end;align-items:center;margin-top:10px}
   .pastille{display:flex;align-items:center;gap:7px;min-height:44px;padding:0 13px;
             border:0;border-radius:999px;background:var(--card);color:var(--inkSoft);
             box-shadow:inset 0 0 0 1px var(--line);font-size:12.5px;cursor:pointer;white-space:nowrap}
-  .pastille[aria-pressed="true"]{background:var(--plein);color:var(--surPlein);box-shadow:none}
-  .pastille.vide{visibility:hidden}
 
   .bande{margin:24px 26px 2px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
          text-transform:uppercase;color:var(--muted)}
   .liste .bande:first-child{margin-top:14px}
   .ligne{display:flex;align-items:center;gap:14px;margin:0 26px;padding:13px 0;min-height:64px;
          border-bottom:1px solid var(--line);width:calc(100% - 52px);background:none;border-left:0;
-         border-right:0;border-top:0;text-align:left;cursor:pointer}
+         border-right:0;border-top:0;text-align:left;cursor:pointer;position:relative;
+         -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  /* L'appui long se VOIT pendant qu'il dure : un voile monte sous le doigt en
+     une demi-seconde. Sans lui, on ne sait pas s'il faut tenir encore, et l'on
+     lâche trop tôt. */
+  .ligne::before{content:"";position:absolute;inset:0 -26px;background:var(--rustTint);
+                 transform:scaleX(0);transform-origin:left;pointer-events:none;z-index:-1}
+  .ligne.appui::before{transform:scaleX(1);transition:transform 480ms linear}
+  .liste{position:relative;z-index:0}
   .ligne.dernier{border-bottom:0}
   /* La case : la même que « J'ai sauvegardé ces documents ailleurs », pour
      que cocher se lise partout de la même façon. */
@@ -141,6 +147,8 @@
                     font-size:15px;font-weight:600;cursor:pointer;
                     background:var(--alerte);color:var(--surPlein)}
   .geste .supprimer:disabled{background:var(--line);color:var(--muted);cursor:default}
+  .geste .sortir{display:block;width:100%;height:40px;margin-top:2px;border:0;background:transparent;
+                 color:var(--muted);font-size:14px;cursor:pointer}
 
   .barre{position:absolute;left:0;right:0;bottom:0;z-index:7;background:var(--cream);
          border-top:1px solid var(--line);padding:18px 14px 10px}
@@ -222,13 +230,6 @@
     <div class="cherche-zone">
       <div class="cherche"><span class="loupe" aria-hidden="true"></span>Chercher un client</div>
       <div class="sous">
-        <button type="button" class="pastille" id="choisir" aria-pressed="false">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M5.4 8.2l1.8 1.8 3.5-3.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span id="choisir-mot">Choisir</span>
-        </button>
         <button type="button" class="pastille" id="filtre">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M2 4h12M4.5 8h7M7 12h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
@@ -243,6 +244,7 @@
 
   <div class="geste">
     <button type="button" class="supprimer" id="supprimer" disabled>Supprimer</button>
+    <button type="button" class="sortir" id="sortir">Annuler</button>
   </div>
 
   <nav class="barre" aria-hidden="true">
@@ -282,9 +284,10 @@
 <div class="notes">
   <h3>Le geste</h3>
   <ul>
-    <li><b>« Choisir »</b> se pose à gauche de « Filtre », sur la même ligne. Rien d’autre ne bouge.</li>
-    <li>Touché : une case devant chaque client, et le bouton rouge en bas. Toucher une ligne la coche, elle n’ouvre plus la fiche.</li>
-    <li>« Choisir » devient <b>« Fini »</b> pour sortir sans rien supprimer.</li>
+    <li><b>Restez appuyé une demi-seconde sur un client</b> : il se coche, une case apparaît devant tous les autres, et le bouton rouge en bas.</li>
+    <li>Ensuite, toucher une ligne la coche ou la décoche. Elle n’ouvre plus la fiche.</li>
+    <li><b>« Annuler »</b>, sous le bouton rouge, ressort sans rien supprimer.</li>
+    <li>Aucun bouton de plus sur l’écran : « Filtre » reste seul à sa place.</li>
   </ul>
   <h3>La mention de sécurité</h3>
   <ul>
@@ -295,12 +298,12 @@
   <h3>Ce que j’ai refusé, et pourquoi</h3>
   <ul>
     <li><b>« Tout cocher »</b> : un doigt pour vider votre liste entière. Il faut toucher chaque client.</li>
-    <li><b>L’appui long sur une ligne</b> pour entrer dans le choix : invisible, vous le chercheriez.</li>
   </ul>
   <h3>Bon à savoir</h3>
   <ul>
     <li>Si un client ne peut pas partir, les autres partent quand même, et l’écran nomme celui qui reste.</li>
-    <li>« Choisir » n’existe que pour le Patron et la Facturation, comme « Supprimer ce client » aujourd’hui.</li>
+    <li>L’appui long ne marche que pour le Patron et la Facturation, comme « Supprimer ce client » aujourd’hui.</li>
+    <li><b>Ce que ça coûte</b> : rien ne l’annonce à l’écran. Un artisan qui ne le sait pas ne le trouvera pas seul ; il garde le bouton en bas de chaque fiche.</li>
     <li><b>Rien n’est codé</b> : dites oui, ou ce qui ne va pas.</li>
   </ul>
 </div>
@@ -336,13 +339,11 @@ function pluriel(n, un, des){ return n === 1 ? `1 ${un}` : `${n} ${des}`; }
 
 function dessiner(){
   $tel.classList.toggle("choisir", choisir);
-  $("choisir").setAttribute("aria-pressed", String(choisir));
-  $("choisir-mot").textContent = choisir ? "Fini" : "Choisir";
   // Pendant le choix, le compte dit ce qui est coché : c'est la seule chose
   // qu'on a besoin de lire en haut.
   const $c = $("compte");
   $c.textContent = choisir
-    ? (coches.size ? `${pluriel(coches.size, "choisi", "choisis")}` : "Touchez les clients")
+    ? (coches.size ? `${pluriel(coches.size, "choisi", "choisis")}` : "Aucun choisi")
     : pluriel(clients.length, "client", "clients");
   $c.classList.toggle("choix", choisir && coches.size > 0);
 
@@ -364,7 +365,42 @@ function dessiner(){
   $liste.innerHTML = html;
 }
 
+/* ── L'appui long : la seule porte du choix ───────────────────────────────
+   480 ms, le délai d'un appui long sur iPhone. Le doigt qui glisse de plus de
+   10 px fait défiler la liste : l'appui s'annule, sinon chaque défilement
+   lent cocherait un client. Le clic qui suit l'appui est avalé, sans quoi il
+   décocherait aussitôt le client qu'on vient de cocher. */
+let minuterie = null, depart = null, avaler = false;
+function lacher(){
+  clearTimeout(minuterie); minuterie = null;
+  for (const l of $liste.querySelectorAll(".appui")) l.classList.remove("appui");
+}
+$liste.addEventListener("pointerdown", (e) => {
+  // La liste est redessinée pendant l'appui : son clic peut ne jamais venir.
+  // Un nouvel appui remet donc le compteur à zéro.
+  avaler = false;
+  const l = e.target.closest(".ligne");
+  if (!l || choisir) return;
+  depart = { x: e.clientX, y: e.clientY };
+  l.classList.add("appui");
+  minuterie = setTimeout(() => {
+    lacher();
+    avaler = true;
+    choisir = true;
+    coches.add(l.dataset.id);
+    if (navigator.vibrate) navigator.vibrate(12);
+    $("apres").hidden = true;
+    dessiner();
+  }, 480);
+});
+$liste.addEventListener("pointermove", (e) => {
+  if (minuterie && depart && Math.hypot(e.clientX - depart.x, e.clientY - depart.y) > 10) lacher();
+});
+for (const ev of ["pointerup", "pointercancel", "pointerleave"]) $liste.addEventListener(ev, lacher);
+$liste.addEventListener("contextmenu", (e) => e.preventDefault());
+
 $liste.addEventListener("click", (e) => {
+  if (avaler){ avaler = false; return; }
   const l = e.target.closest(".ligne");
   if (!l) return;
   // Hors du choix, la ligne ouvrirait la fiche : la planche ne la simule pas.
@@ -374,10 +410,9 @@ $liste.addEventListener("click", (e) => {
   dessiner();
 });
 
-$("choisir").addEventListener("click", () => {
-  choisir = !choisir;
-  if (!choisir) coches.clear();
-  $("apres").hidden = true;
+$("sortir").addEventListener("click", () => {
+  choisir = false;
+  coches.clear();
   dessiner();
 });
 
