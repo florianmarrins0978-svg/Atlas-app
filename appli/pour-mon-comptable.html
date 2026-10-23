@@ -332,7 +332,7 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
     <p class="idee">Par mois ou par trimestre, d’un appui. La barre dit où est parti l’argent, la phrase dit ce qui manque.</p>
     <div class="tel">
       <button class="retour" type="button">Terminés</button>
-      <header class="entete" style="padding-top:8px"><h1>Pour mon comptable</h1><span class="caps sous">Année 2026</span></header>
+      <header class="entete" style="padding-top:8px"><h1>Pour mon comptable</h1><span class="caps sous">Dossier en cours</span></header>
 
       <div class="source" data-si="reliee"><span class="pastille" style="background:var(--plein)"></span>Crédit Mutuel relié, lu ce matin<button class="lien" type="button">Ma banque</button></div>
       <div class="source" data-si="main" hidden><span class="pastille" style="background:var(--gris)"></span>Relevé tenu à la main<button class="lien" type="button">Relier ma banque</button></div>
@@ -467,14 +467,14 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
   <!-- 6. Les dossiers gardés -->
   <section class="planche">
     <h2 class="nom" id="ecran-dossiers">5. Mes dossiers justifiés</h2>
-    <p class="idee">Quand tout est justifié, vous validez l'année : Atlas en fait un PDF, mois par mois, chaque ligne de banque suivie de sa photo. Il est gardé dix ans, et un dossier validé ne s'efface pas.</p>
+    <p class="idee">Vous arrêtez le dossier quand vous voulez, à la date de votre exercice. Atlas en fait le PDF côte à côte et le range ici, gardé dix ans, sans pouvoir l'effacer. Le menu Année retrouve un dossier.</p>
     <div class="tel">
       <button class="retour" type="button">Année 2026</button>
       <header class="entete" style="padding-top:8px"><h1>Mes dossiers justifiés</h1><span class="caps sous">Gardés dix ans</span></header>
       <div class="cartes" style="margin-top:20px">
         <article class="carte" data-dossier-encours></article>
       </div>
-      <p class="jour" style="margin-top:24px">Validés</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin:24px 24px 0"><p class="jour" style="margin:0">Rangés</p><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--encre-douce)">Année<select data-filtre-an style="border:1px solid var(--trait);border-radius:999px;background:var(--carte);color:var(--encre);padding:8px 14px;font:500 14px var(--sans);min-height:40px"></select></label></div>
       <ul class="lignes" data-dossiers></ul>
     </div>
   </section>
@@ -782,19 +782,29 @@ function rendreVisionneuse(){
     <div class="gestes"><button class="contour" type="button" data-detacher="${l.id}">Ce n’est pas le bon ticket</button></div>`;
 }
 
-let dossier2026 = false;
+// Le dossier s arrête quand IL le décide (24 octobre 2026) : son exercice peut
+// tomber à n importe quelle date. Le suivant commence le lendemain, tout seul.
+let arret = null, arrete = false, dateArret = "2026-10-24", filtreAn = null;
+const MOIS_N = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const enMots = iso => { const [a, m, j] = iso.split("-").map(Number); return `${j === 1 ? "1ᵉʳ" : j} ${MOIS_N[m - 1]} ${a}`; };
+const lendemain = iso => { const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10); };
+function carteArret(reste, ou){
+  if (arrete) return `<p class="qui" style="margin:0">Dossier rangé, du 1ᵉʳ janvier au ${enMots(dateArret)}.</p><p class="texte">Le suivant a commencé le ${enMots(lendemain(dateArret))}.</p>`;
+  if (arret === "choix") return `<p class="qui" style="margin:0">Arrêter le dossier</p>
+    <label class="texte" style="display:block;margin-top:10px">Au<input type="date" value="${dateArret}" min="2026-01-01" data-date-arret style="display:block;margin-top:6px;width:100%;border:1px solid var(--trait);border-radius:10px;padding:10px 12px;font:15px var(--sans);background:var(--fond);color:var(--encre);min-height:44px"></label>
+    ${reste ? `<p class="texte alerte">${reste} ${reste > 1 ? "lignes attendent" : "ligne attend"} encore un justificatif avant cette date. Réglez-les d’abord au Check up.</p><div class="gestes"><button class="leger" type="button" data-arret-annuler>Annuler</button></div>`
+      : `<p class="texte">Le dossier ira du 1ᵉʳ janvier au ${enMots(dateArret)}.</p><div class="gestes"><button class="plein" type="button" data-arret-confirmer>Arrêter et ranger</button><button class="leger" type="button" data-arret-annuler>Annuler</button></div>`}`;
+  return `<p class="qui" style="margin:0">Dossier en cours, depuis le 1ᵉʳ janvier 2026</p>${ou === "dossiers" && reste ? `<p class="texte alerte">${reste} ${reste > 1 ? "lignes attendent" : "ligne attend"} encore un justificatif.</p>` : ""}<div class="gestes"><button class="contour" type="button" data-arreter>Arrêter mon dossier ici</button></div>`;
+}
 function rendreDossiers(reste){
-  const enc = document.querySelector("[data-dossier-encours]");
-  if (dossier2026) enc.innerHTML = `<p class="qui" style="margin:0">Dossier 2026 validé.</p><p class="texte">Rangé ci-dessous, tout seul.</p>`;
-  else if (reste) enc.innerHTML = `<p class="qui" style="margin:0">Dossier 2026</p><p class="texte alerte">${reste} ${reste>1?"lignes attendent":"ligne attend"} encore un justificatif. Il se valide quand tout est justifié.</p>`;
-  else enc.innerHTML = `<p class="qui" style="margin:0">Dossier 2026</p><p class="texte" style="color:var(--pin)">Tout est justifié.</p><div class="gestes"><button class="plein" type="button" data-valider-dossier>Valider le dossier 2026</button></div>`;
-  const ans = (dossier2026 ? [["2026","23 octobre 2026","2036","4,1 Mo"]] : []).concat([["2025","12 février 2026","2035","5,8 Mo"],["2024","3 mars 2025","2034","5,2 Mo"],["2023","20 février 2024","2033","4,7 Mo"]]);
-  document.querySelector("[data-dossiers]").innerHTML = ans.map(([a,v,g,t]) => `<li class="ligne"><span class="pdf">PDF</span><span class="milieu"><div class="lib">Dossier justifié ${a}</div><div class="cat" style="color:var(--gris)">Validé le ${v}, gardé jusqu’en ${g}, ${t}</div><div class="gestes"><a class="lien" href="dossier-justifie-exemple.pdf" target="_blank" rel="noopener">Ouvrir</a>${a === "2025" ? `<a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" target="_blank" rel="noopener">Ouvrir côte à côte</a>` : ""}<a class="lien" href="dossier-justifie-exemple.pdf" download="Dossier justifié ${a}.pdf">Enregistrer sur le téléphone</a><button class="lien" type="button">Envoyer au comptable</button></div></span></li>`).join("");
-  // Sur l'écran de l'année aussi : c'est là qu'il voit que tout est justifié,
-  // et c'est là qu'il cherchait le bouton (sa question du 23 octobre).
-  const va = document.querySelector("[data-valider-annee]");
-  va.innerHTML = dossier2026 ? `<article class="carte" style="margin:16px 24px 0"><p class="qui" style="margin:0">Dossier 2026 validé.</p><p class="texte">Il est dans Mes dossiers justifiés.</p></article>`
-    : reste ? "" : `<article class="carte" style="margin:16px 24px 0"><p class="qui" style="margin:0">Toute l’année 2026 est justifiée.</p><div class="gestes"><button class="plein" type="button" data-valider-dossier>Valider le dossier 2026</button></div></article>`;
+  document.querySelector("[data-dossier-encours]").innerHTML = carteArret(reste, "dossiers");
+  document.querySelector("[data-valider-annee]").innerHTML = `<article class="carte" style="margin:16px 24px 0">${carteArret(reste, "annee")}</article>`;
+  const tous = (arrete ? [{ du:"1ᵉʳ janvier", au:enMots(dateArret), an:Number(dateArret.slice(0,4)), v:"24 octobre 2026", g:Number(dateArret.slice(0,4)) + 10, t:"4,1 Mo" }] : [])
+    .concat([{ du:"1ᵉʳ janvier", au:"31 décembre 2025", an:2025, v:"12 février 2026", g:2035, t:"5,8 Mo" }, { du:"1ᵉʳ janvier", au:"31 décembre 2024", an:2024, v:"3 mars 2025", g:2034, t:"5,2 Mo" }, { du:"1ᵉʳ janvier", au:"31 décembre 2023", an:2023, v:"20 février 2024", g:2033, t:"4,7 Mo" }]);
+  const ans = [...new Set(tous.map(d => d.an))];
+  if (filtreAn === null || !ans.includes(filtreAn)) filtreAn = ans[0];
+  document.querySelector("[data-filtre-an]").innerHTML = ans.map(a => `<option value="${a}"${a === filtreAn ? " selected" : ""}>${a}</option>`).join("");
+  document.querySelector("[data-dossiers]").innerHTML = tous.filter(d => d.an === filtreAn).map(d => `<li class="ligne"><span class="pdf">PDF</span><span class="milieu"><div class="lib">Du ${d.du} au ${d.au}</div><div class="cat" style="color:var(--gris)">Rangé le ${d.v}, gardé jusqu’en ${d.g}, ${d.t}</div><div class="gestes"><a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" target="_blank" rel="noopener">Ouvrir</a><a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" download="Dossier justifié ${d.an}.pdf">Enregistrer sur le téléphone</a><button class="lien" type="button">Envoyer au comptable</button></div></span></li>`).join("");
 }
 
 function rendreRelies(){
@@ -861,7 +871,9 @@ function rendreCartes(){
 document.addEventListener("click", e => {
   const g = e.target.closest("[data-g]");
   if (g){ const [id, s] = g.dataset.g.split(":"); etat[id] = s; rendreCartes(); return; }
-  if (e.target.closest("[data-valider-dossier]")){ dossier2026 = true; rendreCartes(); return; }
+  if (e.target.closest("[data-arreter]")){ arret = "choix"; rendreCartes(); return; }
+  if (e.target.closest("[data-arret-annuler]")){ arret = null; rendreCartes(); return; }
+  if (e.target.closest("[data-arret-confirmer]")){ arrete = true; arret = null; filtreAn = Number(dateArret.slice(0,4)); rendreCartes(); return; }
   if (e.target.closest("[data-aller-dossiers]")){ document.getElementById("ecran-dossiers").scrollIntoView({ behavior:"smooth", block:"start" }); return; }
   const vo = e.target.closest("[data-voir]");
   if (vo){ vu = vo.dataset.voir; rendreVisionneuse(); vo.closest(".tel").scrollIntoView({ behavior:"smooth", block:"start" }); return; }
@@ -883,6 +895,10 @@ document.addEventListener("click", e => {
   const k = e.target.closest("[data-checkup]");
   if (k){ k.textContent = "Vérifié, 3 à regarder"; document.querySelector("[data-dernier]").textContent = "Dernier Check up à l’instant"; return; }
   if (e.target.closest("a[href='#']")) e.preventDefault();
+});
+document.addEventListener("change", e => {
+  if (e.target.matches("[data-filtre-an]")){ filtreAn = Number(e.target.value); rendreCartes(); }
+  if (e.target.matches("[data-date-arret]") && e.target.value){ dateArret = e.target.value; rendreCartes(); }
 });
 rendreCartes();
 </script>
