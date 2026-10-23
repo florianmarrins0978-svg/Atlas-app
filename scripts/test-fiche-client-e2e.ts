@@ -985,6 +985,94 @@ async function main() {
     });
   });
 
+  // ─── SUPPRIMER PLUSIEURS CLIENTS — sa demande du 23 octobre 2026 ──────────
+  //
+  // *« Supprimer plusieurs clients à la fois en cochant, avec la même mention
+  // de sécurité que pour un client »* ; la porte est l'APPUI LONG sur une
+  // ligne (sa correction), et « Tout » n'apparaît qu'ensuite
+  // (`appli/supprimer-plusieurs-clients.html`).
+  //
+  // **On entre par SA porte** : le doigt qui reste appuyé, jamais un état posé
+  // à la main (`CLAUDE.md` §5 quater).
+  async function appuyerLongtemps(nom: string) {
+    const ligne = page.getByRole("link", { name: new RegExp(nom.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) });
+    const boite = await ligne.boundingBox();
+    assert.ok(boite && boite.height > 0, `la ligne de « ${nom} » n'a pas de boîte : rien à appuyer`);
+    await page.mouse.move(boite.x + boite.width / 2, boite.y + boite.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(800);
+    await page.mouse.up();
+  }
+
+  await cas("plusieurs clients cochés : un client qui a des documents verrouille la feuille", async () => {
+    await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
+    await page.locator('[data-atlas="chercher-client"]').fill(nomClient);
+    await page.waitForTimeout(300);
+    assert.strictEqual(await page.locator('[data-atlas="tout-cocher"]').count(), 0, "« Tout » est là avant le choix");
+
+    await appuyerLongtemps(nomClient);
+    assert.match(await page.locator('[data-atlas="compte-clients"]').innerText(), /1 choisi/i, "l'appui long n'a coché personne");
+    assert.ok(page.url().endsWith("/clients"), `l'appui long a ouvert une fiche : ${page.url()}`);
+
+    await page.locator('[data-atlas="supprimer-les-clients"]').click();
+    const confirmer = page.locator('[data-atlas="confirmer-suppression"]');
+    await confirmer.waitFor({ state: "visible", timeout: 15_000 });
+    assert.ok(await page.locator('[data-atlas="prevention"]').isVisible(), "aucune prévention sur un client qui a des documents");
+    assert.strictEqual(await confirmer.isDisabled(), true, "« Supprimer » est actif avant la réponse sur la sauvegarde");
+    await page.locator('[data-atlas="sauvegarde-ailleurs"]').click();
+    await page.waitForTimeout(200);
+    assert.strictEqual(await confirmer.isDisabled(), false, "« J'ai sauvegardé » ne déverrouille rien");
+
+    // On referme sans rien supprimer : ce client sert encore.
+    await page.getByRole("button", { name: "Annuler" }).first().click();
+    await page.waitForTimeout(300);
+    await page.locator('[data-atlas="sortir-du-choix"]').click();
+    await page.waitForTimeout(200);
+    assert.strictEqual(await page.locator('[data-atlas="barre-du-choix"]').count(), 0, "« Annuler » ne sort pas du choix");
+  });
+
+  await cas("« Tout » puis supprimer : les clients disparaissent pour de bon", async () => {
+    const marque = `Lotsuppr${Date.now()}`;
+    const ids: string[] = [];
+    for (const nom of [`M. ${marque} Un`, `Mme ${marque} Deux`]) {
+      const { rows } = await pool.query(
+        `INSERT INTO clients (entreprise_id, nom, telephone)
+         SELECT entreprise_id, $2, $3 FROM chantiers WHERE id = $1
+         RETURNING id`,
+        [chantierId, nom, "06 00 00 00 07"]
+      );
+      assert.equal(rows.length, 1, "le client d'essai n'a pas été créé : il n'y a rien à mesurer");
+      ids.push(rows[0].id as string);
+    }
+
+    await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
+    await page.locator('[data-atlas="chercher-client"]').fill(marque);
+    await page.waitForTimeout(300);
+    await appuyerLongtemps(`${marque} Un`);
+    await page.locator('[data-atlas="tout-cocher"]').click();
+    assert.match(await page.locator('[data-atlas="compte-clients"]').innerText(), /2 choisis/i, "« Tout » n'a pas coché les deux");
+    // On coche, on décoche : le même rond, dans les deux sens.
+    await page.locator('[data-atlas="tout-cocher"]').click();
+    assert.match(await page.locator('[data-atlas="compte-clients"]').innerText(), /aucun choisi/i, "« Tout » ne décoche pas");
+    await page.locator('[data-atlas="tout-cocher"]').click();
+    assert.match(await page.locator('[data-atlas="compte-clients"]').innerText(), /2 choisis/i, "« Tout » ne recoche pas");
+
+    await page.locator('[data-atlas="supprimer-les-clients"]').click();
+    const confirmer = page.locator('[data-atlas="confirmer-suppression"]');
+    await confirmer.waitFor({ state: "visible", timeout: 15_000 });
+    const noms = await page.locator('[data-atlas="noms-supprimes"]').innerText();
+    assert.ok(noms.includes(`${marque} Un`) && noms.includes(`${marque} Deux`), `la feuille ne nomme pas qui part : ${noms}`);
+    assert.strictEqual(await page.locator('[data-atlas="prevention"]').count(), 0, "on l'alarme pour des clients vides");
+
+    await confirmer.click();
+    // **On mesure la BASE, pas l'écran** : une ligne disparue peut n'être que
+    // masquée ; ce qu'il a choisi, c'est qu'elle n'existe plus.
+    await attendre("les deux fiches ont disparu de la base", async () => {
+      const { rows: reste } = await pool.query(`SELECT id FROM clients WHERE id = ANY($1::uuid[])`, [ids]);
+      return reste.length === 0;
+    });
+  });
+
   await contexte.close();
   await navigateur.close();
   await pool.end();

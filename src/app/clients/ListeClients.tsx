@@ -1,12 +1,17 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { colors, font, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
 import { ChampRecherche } from "@/components/atlas/ChampRecherche";
 import BoutonFiltre from "@/components/atlas/BoutonFiltre";
 import BottomSheet from "@/components/atlas/BottomSheet";
+import FeuilleSuppressionClients, { CaseCochee, type PieceGardee } from "@/components/atlas/FeuilleSuppressionClients";
+import { oublierCetEcran } from "@/components/atlas/journal-navigateur";
+import { supprimerClientAction } from "./[id]/actions";
+import { apercuSuppressionClientsAction } from "./actions";
 import { grouperEnBandes } from "@/lib/bandes-clients";
 import { jourDeLaLigne, type TraceDuClient } from "@/lib/documents-du-client";
 import { MOTS_DE_LA_CATEGORIE, type CategorieClient } from "@/lib/civilite";
@@ -108,6 +113,12 @@ type EtatRecherche = {
   /** Le Filtre (22 octobre 2026) : de A à Z, ou les pièces d'un mois. */
   tri: TriClients;
   trier: (tri: TriClients) => void;
+  /**
+   * Les clients cochés pour être supprimés ensemble (23 octobre 2026).
+   * `null` : la liste n'est pas en train de choisir, une ligne ouvre sa fiche.
+   */
+  choix: Set<string> | null;
+  choisir: (choix: Set<string> | null) => void;
 };
 
 const Contexte = createContext<EtatRecherche | null>(null);
@@ -140,6 +151,7 @@ export function FournisseurClients({
 }) {
   const [saisie, poser] = useState("");
   const [tri, trier] = useState<TriClients>({ cle: "nom" });
+  const [choix, choisir] = useState<Set<string> | null>(null);
   // **Trié par date, la ligne montre la pièce DU MOIS** (`clientsDuMois`),
   // pas sa plus récente : un titre qui dit juin 2017 au-dessus d'une ligne qui
   // dit 2024 se lirait comme une erreur.
@@ -152,8 +164,8 @@ export function FournisseurClients({
   );
   const visibles = useMemo(() => filtrerClientsParNom(dansLeTri, saisie), [dansLeTri, saisie]);
   const valeur = useMemo(
-    () => ({ saisie, poser, total: dansLeTri.length, visibles, aujourdHui, tri, trier }),
-    [saisie, dansLeTri.length, visibles, aujourdHui, tri]
+    () => ({ saisie, poser, total: dansLeTri.length, visibles, aujourdHui, tri, trier, choix, choisir }),
+    [saisie, dansLeTri.length, visibles, aujourdHui, tri, choix]
   );
   return <Contexte.Provider value={valeur}>{children}</Contexte.Provider>;
 }
@@ -167,8 +179,17 @@ export function FournisseurClients({
  * quatre pixels sous le doigt. À chaque frappe qui ne trouve pas.
  */
 export function CompteClients({ categorie = "particulier" }: { categorie?: CategorieClient }) {
-  const { saisie, total, visibles } = useRecherche();
+  const { saisie, total, visibles, choix } = useRecherche();
   const cherche = saisie.trim().length > 0;
+  // Pendant le choix, le compte dit ce qui est coché : c'est la seule chose
+  // qu'on a besoin de lire en haut, avant d'appuyer sur le rouge.
+  if (choix) {
+    return (
+      <span className="block min-h-[14px]" data-atlas="compte-clients" style={{ color: colors.ink }}>
+        {choix.size === 0 ? "Aucun choisi" : choix.size === 1 ? "1 choisi" : `${choix.size} choisis`}
+      </span>
+    );
+  }
   const n = cherche ? visibles.length : total;
   const mots = MOTS_DE_LA_CATEGORIE[categorie];
   const mot = n === 1 ? `1 ${mots.un}` : `${n} ${mots.des}`;
@@ -191,9 +212,12 @@ export default function ListeClients({
   /** Ce qui se pose sous la recherche, et ne colle pas avec elle : la porte de l'import. */
   sousLaRecherche?: React.ReactNode;
 }) {
-  const { saisie, poser, visibles, aujourdHui, tri, trier } = useRecherche();
+  const { saisie, poser, visibles, aujourdHui, tri, trier, choix, choisir, total } = useRecherche();
   const cherche = saisie.trim().length > 0;
   const [volet, setVolet] = useState(false);
+  // « Tout » ne coche que ce qui est À L'ÉCRAN : une recherche ou un
+  // mois filtré bornent le geste à ce qu'il voit, jamais à des noms cachés.
+  const toutCoche = choix !== null && visibles.length > 0 && visibles.every((c) => choix.has(c.id));
   const titre = titreDuTri(tri);
 
   // **Le filet sous la barre collante n'apparaît qu'une fois qu'elle colle.**
@@ -252,7 +276,27 @@ export default function ListeClients({
             dans dix ans de dossiers. Sous la recherche, à droite, comme sur
             Terminés ; ses couleurs ne changent pas quand il agit (*« pas
             vert »*) : c'est le titre du mois qui le dit. */}
-        <div className="mt-[10px] flex justify-end">
+        {/* **« Tout » n'existe que pendant le choix** — sa demande du
+            23 octobre 2026. Sur la liste normale, rien ne permet de tout cocher
+            d'un doigt : il faut d'abord rester appuyé sur un client. */}
+        <div className={`mt-[10px] flex ${choix ? "justify-between" : "justify-end"}`}>
+          {choix && (
+            <button
+              type="button"
+              data-atlas="tout-cocher"
+              aria-pressed={toutCoche}
+              onClick={() => choisir(toutCoche ? new Set() : new Set(visibles.map((c) => c.id)))}
+              // **Le rond des clients, dans leur colonne** — sa correction du
+              // 23 octobre 2026 : *« juste tout avec le rond comme pour les
+              // clients ; on coche, décoche »*. Il se lit comme une ligne de
+              // plus, celle qui les coche toutes.
+              className="flex min-h-11 items-center gap-[14px] text-[15px]"
+              style={{ background: "transparent", color: colors.ink, WebkitTapHighlightColor: "transparent" }}
+            >
+              <CaseCochee cochee={toutCoche} />
+              Tout
+            </button>
+          )}
           <BoutonFiltre onClick={() => setVolet(true)} />
         </div>
         {tri.cle !== "nom" && titre && (
@@ -341,6 +385,152 @@ export default function ListeClients({
           ))}
         </div>
       )}
+
+      {choix && <BarreDuChoix choix={choix} choisir={choisir} total={total} />}
+    </>
+  );
+}
+
+/**
+ * Le bouton rouge et sa sortie, au-dessus des onglets, le temps du choix.
+ *
+ * **La suppression se rejoue client par client**, par la même action que la
+ * fiche (`supprimerClientAction`) : un refus pour l'un n'empêche pas les
+ * autres, et il se nomme dans la feuille au lieu de tout annuler en silence.
+ */
+function BarreDuChoix({
+  choix,
+  choisir,
+  total,
+}: {
+  choix: Set<string>;
+  choisir: (choix: Set<string> | null) => void;
+  /** Combien de clients la liste porte : tous cochés, la feuille le dit en titre. */
+  total: number;
+}) {
+  const router = useRouter();
+  const [vises, setVises] = useState<{ id: string; nom: string; documents: number; conserve: PieceGardee[] }[] | null>(
+    null
+  );
+  const [sauvegarde, setSauvegarde] = useState(false);
+  const [refus, setRefus] = useState<string | null>(null);
+  const [prepare, preparer] = useTransition();
+  const [enCours, demarrer] = useTransition();
+  const n = choix.size;
+
+  function ouvrir() {
+    setRefus(null);
+    setSauvegarde(false);
+    preparer(async () => {
+      const apercu = await apercuSuppressionClientsAction([...choix]);
+      if (!apercu.ok) {
+        setRefus(apercu.message);
+        setVises([]);
+        return;
+      }
+      setVises(
+        apercu.clients.map((c) => ({ ...c, conserve: c.conserve.map((p) => ({ ...p, nom: c.nom })) }))
+      );
+    });
+  }
+
+  function fermer() {
+    setVises(null);
+    setSauvegarde(false);
+    setRefus(null);
+  }
+
+  function supprimer() {
+    if (!vises) return;
+    setRefus(null);
+    demarrer(async () => {
+      const restent: { id: string; nom: string; message: string }[] = [];
+      for (const c of vises) {
+        const issue = await supprimerClientAction(c.id);
+        if (!issue.ok) {
+          restent.push({ id: c.id, nom: c.nom, message: issue.message });
+          continue;
+        }
+        // **Sa fiche disparaît DU JOURNAL** : la flèche de retour ramène à la
+        // page d'où l'on vient, et une fiche effacée y serait une destination
+        // promise qui ne mène plus à rien (`SupprimerCeClient`).
+        oublierCetEcran(`/clients/${c.id}`);
+      }
+      router.refresh();
+      if (restent.length === 0) {
+        fermer();
+        choisir(null);
+        return;
+      }
+      // Ceux qui sont partis quittent la feuille ; ceux qui restent y sont
+      // nommés, avec la raison que le serveur a donnée.
+      setVises(vises.filter((c) => restent.some((r) => r.id === c.id)));
+      choisir(new Set(restent.map((r) => r.id)));
+      setRefus(restent.map((r) => `${r.nom} : ${r.message}`).join(" "));
+    });
+  }
+
+  const documents = (vises ?? []).reduce((total, c) => total + c.documents, 0);
+  const tous = vises !== null && vises.length > 1;
+
+  return (
+    <>
+      {/* La place que la barre prend en bas : sans elle, les derniers clients
+          resteraient cachés dessous, impossibles à cocher. */}
+      <div aria-hidden="true" className="h-[124px]" />
+      <div
+        data-atlas="barre-du-choix"
+        className="atlas-colonne-fixe z-10 border-t px-[26px] pb-2 pt-3"
+        style={{ bottom: "var(--atlas-barre)", backgroundColor: colors.cream, borderColor: colors.line }}
+      >
+        <button
+          type="button"
+          data-atlas="supprimer-les-clients"
+          disabled={n === 0 || prepare}
+          onClick={ouvrir}
+          className="h-[52px] w-full rounded-full text-[15px] font-semibold"
+          style={{
+            background: n === 0 ? colors.line : colors.alert,
+            color: n === 0 ? colors.muted : surPlein,
+            cursor: n === 0 ? "default" : "pointer",
+            WebkitTapHighlightColor: "transparent",
+          }}
+        >
+          {prepare ? "Un instant…" : n === 0 ? "Supprimer" : n === 1 ? "Supprimer 1 client" : `Supprimer ${n} clients`}
+        </button>
+        <button
+          type="button"
+          data-atlas="sortir-du-choix"
+          onClick={() => choisir(null)}
+          className="mt-0.5 h-[40px] w-full cursor-pointer text-[14px]"
+          style={{ background: "transparent", color: colors.muted }}
+        >
+          Annuler
+        </button>
+      </div>
+
+      <FeuilleSuppressionClients
+        ouverte={vises !== null}
+        titre={
+          vises === null || vises.length === 0
+            ? "Aucun client"
+            : vises.length === 1
+              ? vises[0].nom
+              : vises.length === total
+                ? `Tous vos clients (${total})`
+                : `${vises.length} clients`
+        }
+        noms={tous ? vises.map((c) => c.nom) : null}
+        documents={documents}
+        conserve={(vises ?? []).flatMap((c) => c.conserve)}
+        sauvegarde={sauvegarde}
+        basculerSauvegarde={() => setSauvegarde((v) => !v)}
+        refus={refus}
+        enCours={enCours}
+        libelleConfirmer={tous ? `Supprimer les ${vises.length}` : "Supprimer"}
+        confirmer={supprimer}
+        fermer={fermer}
+      />
     </>
   );
 }
@@ -357,6 +547,8 @@ function LigneClient({
   aujourdHui: string;
   dernier: boolean;
 }) {
+  const { choix, choisir } = useRecherche();
+  const appui = useAppuiLong(() => choisir(new Set([client.id])));
   const morceaux = morceauxSurlignes(client.nom, saisie);
   // **Le compte de chantiers a quitté cette ligne le 9 septembre 2026.** Il
   // était juste — tous les chantiers ouverts — et c'est ce qui le rendait
@@ -374,12 +566,21 @@ function LigneClient({
     : null;
   const du = client.du !== null && Number(client.du) > 0 ? client.du : null;
 
-  return (
-    <Link
-      href={`/clients/${client.id}`}
-      className="flex min-h-[64px] w-full items-center gap-[14px] py-[13px]"
-      style={{ borderBottom: dernier ? undefined : `1px solid ${colors.line}` }}
-    >
+  const contenu = (
+    <>
+      {/* **L'appui long se VOIT pendant qu'il dure** : un voile monte sous le
+          doigt en une demi-seconde. Sans lui, on ne sait pas s'il faut tenir
+          encore, et l'on lâche trop tôt. */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 -left-[26px] -right-[26px] -z-10 origin-left"
+        style={{
+          backgroundColor: colors.rustTint,
+          transform: appui.tenu ? "scaleX(1)" : "scaleX(0)",
+          transition: appui.tenu ? `transform ${DUREE_APPUI_LONG}ms linear` : "none",
+        }}
+      />
+      {choix && <CaseCochee cochee={choix.has(client.id)} />}
       <span className="min-w-0 flex-1">
         <span
           className="block truncate text-[17.5px] leading-[1.25]"
@@ -466,17 +667,127 @@ function LigneClient({
         </span>
       )}
 
-      <span
-        aria-hidden="true"
-        className="h-2 w-2 rotate-45"
-        style={{
-          flex: "none",
-          borderRight: `1.5px solid ${colors.chevron}`,
-          borderTop: `1.5px solid ${colors.chevron}`,
+      {/* Pendant le choix, la ligne ne mène plus nulle part : le chevron
+          qui promet une fiche s'efface. */}
+      {!choix && (
+        <span
+          aria-hidden="true"
+          className="h-2 w-2 rotate-45"
+          style={{
+            flex: "none",
+            borderRight: `1.5px solid ${colors.chevron}`,
+            borderTop: `1.5px solid ${colors.chevron}`,
+          }}
+        />
+      )}
+    </>
+  );
+  const forme = "relative isolate flex min-h-[64px] w-full items-center gap-[14px] py-[13px] text-left";
+  const trait = { borderBottom: dernier ? undefined : `1px solid ${colors.line}` };
+
+  // **Pendant le choix, toucher une ligne la coche.** Elle devient un bouton :
+  // un lien qui ne mènerait nulle part tromperait le lecteur d'écran.
+  if (choix) {
+    const coche = choix.has(client.id);
+    return (
+      <button
+        type="button"
+        aria-pressed={coche}
+        data-atlas="cocher-client"
+        onClick={() => {
+          const suivant = new Set(choix);
+          if (coche) suivant.delete(client.id);
+          else suivant.add(client.id);
+          choisir(suivant);
         }}
-      />
+        className={forme}
+        style={{ ...trait, WebkitTapHighlightColor: "transparent" }}
+      >
+        {contenu}
+      </button>
+    );
+  }
+
+  return (
+    <Link href={`/clients/${client.id}`} className={forme} style={{ ...trait, ...APPUI_SANS_MENU }} {...appui.gestes}>
+      {contenu}
     </Link>
   );
+}
+
+/**
+ * 480 ms : le délai d'un appui long sur iPhone, celui que son pouce connaît.
+ */
+const DUREE_APPUI_LONG = 480;
+
+/**
+ * Sans cela, iOS ouvre son propre menu sur un lien tenu (aperçu, copier,
+ * partager) et sélectionne le nom : le choix ne s'ouvrirait jamais.
+ */
+const APPUI_SANS_MENU: React.CSSProperties = {
+  WebkitTouchCallout: "none",
+  WebkitUserSelect: "none",
+  userSelect: "none",
+};
+
+/**
+ * L'APPUI LONG SUR UN CLIENT OUVRE LE CHOIX — sa correction du 23 octobre
+ * 2026 : *« on peut rester appuyé sur un client et ça met la même fonction »*,
+ * plutôt qu'un bouton « Choisir » de plus à l'écran.
+ *
+ * **Un doigt qui glisse de plus de 10 px fait défiler la liste** : l'appui
+ * s'annule, sinon chaque défilement lent cocherait un client. **Le clic qui
+ * suit l'appui est avalé**, sans quoi le lien ouvrirait la fiche du client
+ * qu'on vient de cocher.
+ */
+function useAppuiLong(declencher: () => void) {
+  const [tenu, setTenu] = useState(false);
+  const minuterie = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const depart = useRef<{ x: number; y: number } | null>(null);
+  const avaler = useRef(false);
+
+  function lacher() {
+    if (minuterie.current) clearTimeout(minuterie.current);
+    minuterie.current = null;
+    setTenu(false);
+  }
+
+  useEffect(() => lacher, []);
+
+  return {
+    tenu,
+    gestes: {
+      onPointerDown: (e: React.PointerEvent) => {
+        // Un nouvel appui remet le compteur à zéro : le clic d'un appui long
+        // peut ne jamais venir si la liste se redessine sous le doigt.
+        avaler.current = false;
+        if (e.button !== 0) return;
+        depart.current = { x: e.clientX, y: e.clientY };
+        setTenu(true);
+        minuterie.current = setTimeout(() => {
+          minuterie.current = null;
+          setTenu(false);
+          avaler.current = true;
+          if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(12);
+          declencher();
+        }, DUREE_APPUI_LONG);
+      },
+      onPointerMove: (e: React.PointerEvent) => {
+        const d = depart.current;
+        if (minuterie.current && d && Math.hypot(e.clientX - d.x, e.clientY - d.y) > 10) lacher();
+      },
+      onPointerUp: lacher,
+      onPointerCancel: lacher,
+      onPointerLeave: lacher,
+      onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
+      onClick: (e: React.MouseEvent) => {
+        if (avaler.current) {
+          avaler.current = false;
+          e.preventDefault();
+        }
+      },
+    },
+  };
 }
 
 /**

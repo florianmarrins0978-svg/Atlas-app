@@ -10,6 +10,10 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## SUPPRIMER PLUSIEURS CLIENTS (23 octobre 2026)
+
+La feuille de suppression d'un client et celle de plusieurs clients sont **une seule pièce** (`FeuilleSuppressionClients.tsx`) : une phrase de prévention changée là change les deux, c'est voulu. La liste ne lit ce que la loi garde qu'à l'ouverture de la feuille (`apercuSuppressionClientsAction`), pas à chaque affichage. Le piège : iOS ouvre son propre menu sur un lien tenu ; `APPUI_SANS_MENU` le coupe, et le clic qui suit l'appui long est avalé, sans quoi la fiche s'ouvrirait.
+
 ## MA BANQUE, L'ESSAI (22 octobre 2026)
 
 Pour reprendre : `docs/banque-essai.md` dit ses trois gestes, `ARCHITECTURE.md` (dernier §) le pourquoi. Le piège à connaître : **l'écran ne peut pas s'éprouver ici**, il faut sa clé Enable Banking et sa connexion au Crédit Mutuel. Sans le fichier `.pem`, l'écran affiche « Pas encore branché » et l'adresse de retour à déclarer ; c'est ce qu'on a regardé. Il se connecte deux fois à sa banque pendant l'essai (chez Enable Banking, puis depuis Atlas) : c'est leur règle, pas un défaut.

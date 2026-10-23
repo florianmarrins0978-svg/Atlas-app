@@ -1,21 +1,10 @@
 # Prochaines tâches
 
 
-## ⏳ UNE PLANCHE À REGARDER : SUPPRIMER PLUSIEURS CLIENTS (23 octobre 2026)
+## ✅ SUPPRIMER PLUSIEURS CLIENTS : CODÉ LE 23 OCTOBRE 2026
 
-Sa demande : cocher plusieurs clients et les supprimer d'un coup, avec la même
-mention de sécurité qu'un client seul. Planche
-`appli/supprimer-plusieurs-clients.html`, rien de codé.
-
-**Sa correction du 23 octobre : pas de bouton « Choisir » visible, l'appui
-long sur une ligne ouvre le choix.** À coder seulement après son oui : l'appui
-long (480 ms, annulé si le doigt glisse) sur `LigneClient` dans
-`ListeClients.tsx`, « Annuler » sous le bouton rouge (Patron et Facturation
-seulement, comme `exigerMontants`) ; la feuille reprend `SupprimerCeClient.tsx` mot pour mot,
-au pluriel, en une pièce partagée plutôt qu'une copie (`CLAUDE.md` §3) ; le
-serveur rejoue `effacerClient` client par client et nomme ceux qui restent.
-« Tout » (le même rond que les clients) ajouté à sa demande, visible seulement pendant le choix. Niveau 3
-(suppression de données, gravité).
+Planche `appli/supprimer-plusieurs-clients.html`, retenue (« Super code ça »).
+Reste : éprouver l'appui long sur son téléphone, ce poste n'a qu'un navigateur.
 
 ## ⏳ UNE PLANCHE À REGARDER : LA TVA D'UNE VOITURE, A OU B (23 octobre 2026)
 
