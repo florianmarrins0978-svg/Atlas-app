@@ -6,6 +6,10 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-23
+
+- **Les zones lues sur la photo se glissent au doigt, et la feuille d'une zone a sa poignée** (« Dessiner le plan », sa capture du jour). Le dessin devinait la sorte d'un objet tenu d'après la première lettre de son identifiant : les zones lues, nommées `lu1`, passaient pour des dalles et ne bougeaient pas ; il la cherche désormais dans ses listes. La poignée en haut de la feuille la referme sans valider, touchée ou tirée : le fond valide, et sur une zone sans cotes il refusait, la feuille restait coincée. Évite aussi qu'un appui long sur le nom d'une zone sélectionne le texte sous Safari. Tenu par `scripts/test-dessin-glisser-zone-lue.ts`, qui monte le composant avec un plan lu (la suite navigateur ne peut pas lire une photo ici).
+
 ## 2026-10-22
 
 - **Batterie commune des sept lots du 22 octobre** : les rouges trouvés entre les lots sont corrigés (boutons, routes et actions gardées, PDF, objets stockés, zip relu sous Windows, questions de chiffrage comptées par sorte, déconnexion jouée à sa vitesse). Trouvé et noté dans `TODO.md` : une requête en vol peut ressusciter une session fermée.
