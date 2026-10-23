@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La facture acquittée, renvoyée après l'envoi</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="la-facture-acquittée-renvoyée-après-lenvoi">La facture acquittée, renvoyée après l'envoi</h1>
+<p>Votre demande du 23 octobre 2026 : l'assurance d'un client veut une facture acquittée. La même facture, même numéro, avec la mention en plus. Planche : <code>appli/facture-acquittee.html</code>. Vous avez dit « code ça », sans batterie.</p>
+<h2 id="ce-qui-est-fait">Ce qui est fait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Verdict</th>
+<th>Fichier</th>
+</tr></thead><tbody>
+<tr>
+<td>L'interrupteur « Facture acquittée » sur la facture déjà envoyée</td>
+<td><strong>Fait</strong></td>
+<td><code>ReglementsRecus.tsx</code></td>
+</tr>
+<tr>
+<td>Il demande comment le client a payé</td>
+<td><strong>Fait</strong></td>
+<td><code>ReglementsRecus.tsx</code></td>
+</tr>
+<tr>
+<td>Le paiement entre dans Ma TVA, comme depuis Terminés</td>
+<td><strong>Fait</strong></td>
+<td><code>paiements-facture.ts</code> (<code>basculerAcquittee</code>)</td>
+</tr>
+<tr>
+<td>Le bouton devient « Envoyer la facture acquittée »</td>
+<td><strong>Fait</strong></td>
+<td><code>TransmettreLaFacture.tsx</code></td>
+</tr>
+<tr>
+<td>Le message dit « votre facture F2026-… acquittée », sans échéance</td>
+<td><strong>Fait</strong></td>
+<td><code>message-client.ts</code></td>
+</tr>
+<tr>
+<td>Le client reçoit la même facture, le tampon en plus</td>
+<td><strong>Fait</strong></td>
+<td><code>factures.ts</code> (<code>pdfExemplaireAcquitte</code>)</td>
+</tr>
+<tr>
+<td>La facture envoyée la première fois reste intacte</td>
+<td><strong>Fait</strong></td>
+<td><code>envois-factures.ts</code>, migration <code>0141</code></td>
+</tr>
+<tr>
+<td>La page du client dit « Acquittée le … » et ne demande plus de payer</td>
+<td><strong>Fait</strong> (ajouté, voir plus bas)</td>
+<td><code>src/app/factures/[jeton]/page.tsx</code></td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-a-été-fait-autrement-que-sur-la-planche">Ce qui a été fait autrement que sur la planche</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>Le moyen n'est pas choisi d'avance.</strong> La planche montrait « Virement » déjà pris. Ce paiement entre dans Ma TVA : un virement posé d'office sur un chèque serait un chiffre inventé. Les quatre choix s'affichent, rien n'est pris, et le premier appui enregistre.</li>
+<li><strong>L'interrupteur garde son cadre doré</strong> de la page actuelle, au lieu du dessin simplifié de la planche. Sur une facture déjà envoyée, la petite phrase « Tout est réglé avant l'envoi » ne s'affiche plus.</li>
+</ul>
+<h2 id="ce-qui-a-été-ajouté-sans-être-demandé">Ce qui a été ajouté sans être demandé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>La page que le client ouvre.</strong> Sans ce changement, le lien de la facture acquittée aurait affiché « À régler avant le … » avec l'IBAN, c'est-à-dire une demande de payer une facture déjà payée. Elle affiche maintenant « ACQUITTÉE LE 23/10/2026 », le bouton de téléchargement et l'accusé de réception, et rien d'autre.</p>
+<h2 id="ce-qui-peut-différer-de-loriginal-et-pourquoi">Ce qui peut différer de l'original, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>L'exemplaire acquitté se refait à partir de ce que la facture a gardé : lignes, montants, dates, coordonnées, couleurs. Deux choses peuvent pourtant changer :</p>
+<ul>
+<li><strong>le logo</strong> : s'il a été changé depuis, le nouveau apparaît ;</li>
+<li><strong>une facture créée sans devis</strong> : ses conditions de paiement sont relues dans les Réglages d'aujourd'hui.</li>
+</ul>
+<p>Les montants, le numéro et les lignes ne changent jamais.</p>
+<h2 id="les-vérifications">Les vérifications</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Contrôle</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>Types, lint, règles du dépôt (tirets, flèches, couleurs, code mort, couches)</td>
+<td>vert</td>
+</tr>
+<tr>
+<td><code>test-facture-acquittee-db.ts</code> (nouveau, 10 épreuves)</td>
+<td>vert, <strong>et rouge sans la correction</strong></td>
+</tr>
+<tr>
+<td>Suites base (<code>npm test</code>)</td>
+<td>491/494, puis 2 des 3 rouges corrigés</td>
+</tr>
+<tr>
+<td>Écran regardé : facture envoyée, appui, choix « Chèque », tampon</td>
+<td>vu</td>
+</tr>
+<tr>
+<td>Écran regardé : page du client avec le lien acquitté</td>
+<td>vu</td>
+</tr>
+<tr>
+<td><strong>Batterie entière</strong></td>
+<td><strong>non jouée, sur votre consigne</strong></td>
+</tr>
+</tbody></table></div>
+<p>Les trois rouges des suites base :</p>
+<ol>
+<li><code>test-boutons-pleins</code> : l'interrupteur devait être déclaré sous son nouveau nom. <strong>Corrigé.</strong></li>
+<li><code>test-mode-emploi</code> : la fiche de l'assistant disait encore « seulement avant l'envoi ». <strong>Corrigée</strong> : elle explique maintenant le renvoi à l'assurance.</li>
+<li><code>test-prechauffage</code> : l'écran <code>/reglages/banque</code> n'est pas préchauffé. <strong>Pas de ce lot</strong> : il vient du lot banque, déjà sur <code>main</code>.</li>
+</ol>
+<p>Une suite défendait l'ancienne règle « l'interrupteur seulement sur un brouillon ». Elle a été adaptée, parce que cette règle est retirée à votre demande.</p>
+<h2 id="ce-qui-reste">Ce qui reste</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Quoi</th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>La batterie entière (paiements et migration 0141 : niveau 3)</td>
+<td>une session, quand vous le direz</td>
+</tr>
+<tr>
+<td>Puis la mise sur <code>main</code></td>
+<td>la même session, si la batterie est verte</td>
+</tr>
+<tr>
+<td>Le bouton « Envoyer la facture acquittée » à l'écran</td>
+<td><strong>pas vérifiable ICI</strong> (le serveur d'ici refuse d'envoyer depuis une adresse locale) ; à regarder sur votre espace</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

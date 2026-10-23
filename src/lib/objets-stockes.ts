@@ -155,6 +155,15 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
     raisonAbsence: "une facture en brouillon n'a pas encore de PDF",
   },
   {
+    table: "envois_factures",
+    colonne: "pdf_storage_key",
+    quoi: "l'exemplaire acquitté d'une facture partie",
+    // Rangé AVANT la ligne qui le désigne, dans la même transaction (0141) :
+    // une clé posée sans son fichier est une perte, jamais un état normal.
+    // Nulle, la colonne veut dire « le lien sert la facture d'origine ».
+    absenceNormale: false,
+  },
+  {
     table: "avoirs",
     colonne: "pdf_storage_key",
     quoi: "le PDF d'un avoir",

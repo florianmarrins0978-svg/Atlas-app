@@ -101,8 +101,8 @@ const connus = [
 
 test("une ligne de facture retrouve son prix par la référence d'abord", () => {
   const r = rapprocherDuPrix({ designation: "Sable lavé 0-4 (autre libellé)", reference: "sab 04", unite: "sac", prixHt: "41.20" }, connus);
+  assert.equal(r.etat === "nouveau" ? null : r.ancien.id, "1");
   assert.equal(r.etat, "plus cher");
-  assert.equal(r.etat !== "nouveau" && r.ancien.id, "1");
   assert.equal(detailDeLaLigneLue("SAB04", r, "fournisseur"), "réf. SAB04, plus cher");
 });
 

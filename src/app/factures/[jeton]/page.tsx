@@ -1,5 +1,6 @@
 import { factureParJeton } from "@/server/repositories/envois-factures";
 import { jourLisible } from "@/lib/jour";
+import { motDuTampon } from "@/lib/acomptes-facture";
 import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
@@ -136,10 +137,18 @@ export default async function PageFactureClient({ params }: { params: Promise<{ 
           {facture.entrepriseNom}
         </p>
 
-        {facture.echeanceLe && (
-          <p className="mt-3.5 text-[14.5px]" style={{ color: colors.inkSoft }}>
-            À régler avant le {jourLisible(facture.echeanceLe)}
+        {/* L'exemplaire acquitté dit son tampon, en or comme sur le papier,
+            à la place de l'échéance (sa demande du 23 octobre 2026). */}
+        {facture.acquitteeLe ? (
+          <p className={`mt-3.5 ${libelleCaps}`} style={{ color: colors.or }} data-atlas="facture-acquittee">
+            {motDuTampon(facture.acquitteeLe)}
           </p>
+        ) : (
+          facture.echeanceLe && (
+            <p className="mt-3.5 text-[14.5px]" style={{ color: colors.inkSoft }}>
+              À régler avant le {jourLisible(facture.echeanceLe)}
+            </p>
+          )
         )}
 
         <BoutonTelechargerDocument
@@ -170,6 +179,7 @@ export default async function PageFactureClient({ params }: { params: Promise<{ 
         {/* **« Pour régler » est séparé par un FILET, jamais par une seconde
             carte.** Deux cadres emboîtés font lire deux documents là où il n'y
             en a qu'un — vu sur la planche avant de coder. */}
+        {!facture.acquitteeLe && (
         <div className="mt-5 border-t pt-4 text-left" style={{ borderColor: colors.line }}>
           <p className={`mb-3 ${libelleCaps}`} style={{ color: colors.muted }}>
             Pour régler
@@ -210,6 +220,7 @@ export default async function PageFactureClient({ params }: { params: Promise<{ 
             </p>
           </div>
         </div>
+        )}
 
         {/* **La dernière chose de la page, et c'est voulu** — sa demande du
             9 septembre 2026. Sous « Télécharger ma facture », une case se

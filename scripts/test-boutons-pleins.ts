@@ -158,7 +158,7 @@ const APLATS_DECLARES: { fichier: string; motif: RegExp; pourquoi: string }[] = 
   },
   {
     fichier: "src/app/chantiers/[id]/facture/ReglementsRecus.tsx",
-    motif: /acquittee \? colors\.rust/,
+    motif: /allume \? colors\.rust/,
     pourquoi: "l'interrupteur « Facture acquittée » (sa planche du 14 septembre 2026) : un état, pas un bouton",
   },
   {

@@ -31,7 +31,7 @@ import { jourIso } from "../../lib/jour";
 import { factureDExemple } from "../../lib/facture-d-exemple";
 import { echeanceFacture } from "../../lib/rappels";
 import { datesDeLaFactureQuiPart, validerEcheance } from "../../lib/echeance-facture";
-import { ALLURE_PAR_DEFAUT } from "../../lib/allure-documents";
+import { ALLURE_PAR_DEFAUT, allureDepuisColonnes } from "../../lib/allure-documents";
 import { repriseDuDevis } from "../../lib/facture-face-au-devis";
 import { factureNeeSansDevis } from "../../lib/lignes-corrigeables";
 import { pourcentValide, totauxAvecReduction, type LigneRemisable } from "../../lib/reduction-devis";
@@ -1989,6 +1989,39 @@ export async function genererPdfFacturePourApercu(ctx: Ctx, factureId: string): 
         : f;
     const habillage = await habillageDeLaFacture(tx, ctx.entrepriseId, papier);
     return genererPdfFacture(donneesFacture(papier, lignes, await complementsDeLaFacture(tx, ctx.entrepriseId, f)), habillage);
+  });
+}
+
+/**
+ * ─── L'EXEMPLAIRE ACQUITTÉ — sa demande du 23 octobre 2026 ─────────────────
+ *
+ * *« La même facture avec la mention acquittée, même numéro, tout pareil »*,
+ * pour l'assurance du client (`appli/facture-acquittee.html`).
+ *
+ * La pièce émise ne se réécrit pas : son PDF archivé reste celui du premier
+ * envoi. Celui-ci se compose depuis ce que la ligne a FIGÉ (émetteur,
+ * adresses, dates, lignes, allure), et les règlements d'aujourd'hui y
+ * ajoutent leurs lignes, « Montants versés » et le tampon, par les mêmes
+ * fonctions que le papier d'origine.
+ *
+ * **L'allure est celle figée à l'émission** (migration 0074), pas celle des
+ * Réglages : un accent changé depuis rendrait une facture qui ne ressemble
+ * plus à celle que le client a déjà. Une facture antérieure à 0074 n'en a pas
+ * gardé ; elle prend l'allure du jour, faute de mieux. Le logo, lui, n'a
+ * jamais été figé.
+ */
+export async function pdfExemplaireAcquitte(
+  tx: DbOrTx,
+  entrepriseId: string,
+  f: typeof factures.$inferSelect
+): Promise<Uint8Array> {
+  const lignes = await tx.select().from(lignesFacture).where(eq(lignesFacture.factureId, f.id));
+  const complements = await complementsDeLaFacture(tx, entrepriseId, f);
+  const habillage = await habillageDeLaFacture(tx, entrepriseId, f);
+  const allure = allureDepuisColonnes({ typographie: f.docTypographie, fond: f.docFond, accent: f.docAccent });
+  return genererPdfFacture(donneesFacture({ ...f, statut: "emise" }, lignes, complements), {
+    ...habillage,
+    allure: allure ?? habillage.allure,
   });
 }
 

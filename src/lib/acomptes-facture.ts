@@ -153,8 +153,28 @@ export function phraseMontantsVerses(reglements: readonly ReglementRecu[]): stri
  */
 export function tamponAcquittee(totalTtc: string | number, reglements: readonly ReglementRecu[]): string | null {
   if (!estAcquittee(totalTtc, reglements)) return null;
-  const derniere = reglements.map((g) => g.date).sort().at(-1)!;
-  return `Acquittée le ${jourNumerique(derniere)}`;
+  return motDuTampon(reglements.map((g) => g.date).sort().at(-1)!);
+}
+
+/** « Acquittée le 21/09/2026 » : le mot du tampon, pour le papier, l'écran et la page du client. */
+export function motDuTampon(date: string): string {
+  return `Acquittée le ${jourNumerique(date)}`;
+}
+
+/**
+ * Ce que l'exemplaire acquitté imprime des règlements, réduit à une chaîne
+ * (sa demande du 23 octobre 2026, `appli/facture-acquittee.html`).
+ *
+ * Un lien d'exemplaire acquitté ne resert que si cette chaîne n'a pas bougé :
+ * un règlement corrigé depuis ferait mentir le fichier archivé sur les
+ * montants versés. Tout ce que le papier écrit d'un règlement y entre, et
+ * l'ordre ne dépend pas de celui de la lecture.
+ */
+export function empreinteDesReglements(reglements: readonly ReglementRecu[]): string {
+  return reglements
+    .map((g) => [g.date, new Decimal(g.montant).toFixed(2), g.moyen ?? "", g.numero ?? "", g.libelle ?? ""].join("|"))
+    .sort()
+    .join(";");
 }
 
 /**

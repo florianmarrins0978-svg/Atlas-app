@@ -57,7 +57,8 @@ export default function ReglementsRecus({
   initiaux,
   fige,
   carte = true,
-  acquittement = !fige,
+  emise = false,
+  auChangement,
   avoirs,
 }: {
   factureId: string;
@@ -83,27 +84,28 @@ export default function ReglementsRecus({
    */
   carte?: boolean;
   /**
-   * L'interrupteur « Facture acquittée » s'offre-t-il ?
+   * **La facture est partie** : « Facture acquittée » note alors le solde au
+   * relevé de TVA, avec le moyen qu'il touche (sa demande du 23 octobre 2026,
+   * `appli/facture-acquittee.html`).
    *
-   * **Sa correction du 22 septembre 2026 :** *« depuis terminé, à facturer
-   * […] il doit y avoir sous net à payer un bouton on off facture acquitté.
-   * J'ai essayé de cliquer dessus depuis la facture mais impossible. »* Il
-   * avait quitté la page de la facture la veille, avec les deux « + » ; or
-   * c'est là que « À facturer » le mène, et c'est là qu'il l'a cherché.
-   *
-   * Il ne suit donc plus `fige` : sur la facture, on ne SAISIT plus de
-   * règlement — un geste de composition —, mais on solde d'un doigt. Ce qui
-   * le ferme, c'est la facture ARRÊTÉE : ses règlements se notent depuis
-   * Terminés, et le dépôt refuse déjà (`basculerAcquittee`).
+   * L'interrupteur était fermé sur une facture arrêtée depuis le 22 septembre ;
+   * l'assurance d'un client qui réclame la facture acquittée l'a rouvert, et
+   * l'interrupteur s'offre désormais partout où la pièce se montre.
    */
-  acquittement?: boolean;
+  emise?: boolean;
+  /** Prévient l'écran quand les règlements changent : l'envoi en dépend. */
+  auChangement?: (reglements: ReglementEnregistre[]) => void;
 }) {
   const [reglements, setReglements] = useState(initiaux);
   const [erreur, setErreur] = useState<string | null>(null);
   const [enCours, setEnCours] = useState(false);
+  /** Sur une facture partie, l'appui demande d'abord comment le client a payé. */
+  const [choixDuMoyen, setChoixDuMoyen] = useState(false);
 
   const net = netAPayer(ttcApresAvoirs(totalTtc, avoirs), reglements);
   const acquittee = estAcquittee(totalTtc, reglements);
+  /** L'interrupteur se montre allumé dès l'appui, pendant qu'il choisit le moyen. */
+  const allume = acquittee || choixDuMoyen;
   /** Le mot du papier, mot pour mot : « Acquittée le 21/09/2026 ». */
   const tampon = tamponAcquittee(totalTtc, reglements);
 
@@ -112,8 +114,10 @@ export default function ReglementsRecus({
     setErreur(null);
     const r = await promesse;
     setEnCours(false);
-    if (r.succes) setReglements(r.reglements);
-    else setErreur(r.erreur);
+    if (r.succes) {
+      setReglements(r.reglements);
+      auChangement?.(r.reglements);
+    } else setErreur(r.erreur);
   }
 
   function ajouter() {
@@ -356,37 +360,62 @@ export default function ReglementsRecus({
           net est le chiffre qu'il regarde ; l'acquittement est ce qui le met
           à zéro, et sa place est juste en dessous, là où la réponse se lit
           dans le même mouvement. */}
-      {acquittement && (
-        // **Dans un cadre doré** — sa demande du 3 octobre 2026 : *« une
-        // bordure dorée autour de facture acquittée comme pour sous-traitance »*.
-        // Les deux interrupteurs qui changent ce que la pièce dit se repèrent
-        // pareil.
-        <div
-          className="-mx-2 mt-4 flex items-center justify-between gap-3 px-3 py-3.5 text-[15px]"
-          style={{ boxShadow: `0 0 0 2px ${colors.or}`, borderRadius: 14, color: colors.ink }}
-        >
-          <span>
-            Facture acquittée
+      {/* **Dans un cadre doré** — sa demande du 3 octobre 2026 : *« une
+          bordure dorée autour de facture acquittée comme pour sous-traitance »*.
+          Les deux interrupteurs qui changent ce que la pièce dit se repèrent
+          pareil. */}
+      <div
+        className="-mx-2 mt-4 flex items-center justify-between gap-3 px-3 py-3.5 text-[15px]"
+        style={{ boxShadow: `0 0 0 2px ${colors.or}`, borderRadius: 14, color: colors.ink }}
+      >
+        <span>
+          Facture acquittée
+          {!emise && (
             <small className="block text-[12.5px]" style={{ color: colors.muted }}>
               Tout est réglé avant l’envoi
             </small>
-          </span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={acquittee}
-            aria-label="Facture acquittée"
-            data-atlas="facture-acquittee"
-            disabled={enCours}
-            onClick={() => void appliquer(basculerAcquitteeAction(factureId, !acquittee))}
-            className="relative h-7 w-[46px] flex-none rounded-full"
-            style={{ backgroundColor: acquittee ? colors.rust : colors.line }}
-          >
-            <span
-              className="absolute top-[3px] h-[22px] w-[22px] rounded-full transition-[left]"
-              style={{ left: acquittee ? 21 : 3, backgroundColor: colors.card }}
-            />
-          </button>
+          )}
+        </span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={allume}
+          aria-label="Facture acquittée"
+          data-atlas="facture-acquittee"
+          disabled={enCours}
+          onClick={() => {
+            if (emise && !acquittee) setChoixDuMoyen(!choixDuMoyen);
+            else void appliquer(basculerAcquitteeAction(factureId, !acquittee));
+          }}
+          className="relative h-7 w-[46px] flex-none rounded-full"
+          style={{ backgroundColor: allume ? colors.rust : colors.line }}
+        >
+          <span
+            className="absolute top-[3px] h-[22px] w-[22px] rounded-full transition-[left]"
+            style={{ left: allume ? 21 : 3, backgroundColor: colors.card }}
+          />
+        </button>
+      </div>
+      {/* **Le moyen se touche, il ne se suppose pas.** Le relevé de TVA lit ce
+          règlement : un « virement » posé d'office sur un chèque serait une
+          donnée inventée (`CLAUDE.md` §4). Le solde part au premier appui. */}
+      {emise && choixDuMoyen && !acquittee && (
+        <div className="mt-3 flex flex-wrap gap-2" data-atlas="moyen-du-solde">
+          {MOYENS_PROPOSES.map((m) => (
+            <button
+              key={m}
+              type="button"
+              disabled={enCours}
+              onClick={() => {
+                setChoixDuMoyen(false);
+                void appliquer(basculerAcquitteeAction(factureId, true, m));
+              }}
+              className="rounded-full px-4 py-2 text-[15px]"
+              style={{ backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+            >
+              {LIBELLES_MOYEN[m].charAt(0).toUpperCase() + LIBELLES_MOYEN[m].slice(1)}
+            </button>
+          ))}
         </div>
       )}
       {/* ─── « ACQUITTÉE LE 21/09/2026 », EN OR ET DANS UN CADRE ─────────────
