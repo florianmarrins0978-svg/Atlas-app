@@ -15,9 +15,15 @@ export type PieceCalculette = {
   cle: string;
   nom: string;
   sous: string[];
+  /** Pourquoi la ligne compte moins que son ticket : une phrase qui peut
+   *  passer à la ligne, contrairement à la date. */
+  raison?: string;
   /** La facture s'ouvre depuis le nom, comme sur la preuve de Ma TVA. */
   href?: string;
-  parts: { taux: string | null; montant: string | null; tva: string }[];
+  /** `sur` : la TVA du ticket quand la ligne en compte moins (planche B du
+   *  23 octobre 2026, `appli/tva-voiture-80.html`). Le comptable retrouve
+   *  ainsi le chiffre de son papier sous celui du relevé. */
+  parts: { taux: string | null; montant: string | null; tva: string; sur?: string }[];
 };
 
 /**
@@ -52,7 +58,7 @@ export default function TableauCalculette({
     .toFixed(2);
   const recap = recapParTaux(parts.map((p) => ({ taux: p.taux, tva: p.tva, ttc: p.montant })));
 
-  const chiffre = (valeur: string | null, tva = false) =>
+  const chiffre = (valeur: string | null, tva = false, sur?: string) =>
     valeur === null ? (
       <td className="px-1 py-[11px] text-center align-top text-[12px] italic" style={{ color: colors.muted }}>
         non noté
@@ -63,6 +69,15 @@ export default function TableauCalculette({
         style={{ color: tva ? colors.or : colors.ink, fontFamily: font.display, fontVariantNumeric: "tabular-nums" }}
       >
         {enEuros(valeur)}
+        {sur !== undefined && (
+          <span
+            className="mt-0.5 block text-[11px] leading-[1.3]"
+            style={{ color: colors.inkSoft, fontFamily: font.body }}
+            data-atlas="tva-sur-le-ticket"
+          >
+            sur {enEuros(sur)}
+          </span>
+        )}
       </td>
     );
   const taux = (t: string | null) =>
@@ -118,6 +133,9 @@ export default function TableauCalculette({
                         {p.sous.map((s) => (
                           <p key={s} className="mt-0.5 whitespace-nowrap text-[11px] leading-[1.3]" style={{ color: colors.muted }}>{s}</p>
                         ))}
+                        {p.raison && (
+                          <p className="mt-0.5 text-[11px] leading-[1.3]" style={{ color: colors.inkSoft }} data-atlas="raison-calculette">{p.raison}</p>
+                        )}
                       </>
                     );
                     return p.href ? <Link href={p.href} data-atlas="ouvrir-la-facture" className="block">{qui}</Link> : qui;
@@ -125,7 +143,7 @@ export default function TableauCalculette({
               </td>
               {chiffre(x.montant)}
               {taux(x.taux)}
-              {chiffre(x.tva, true)}
+              {chiffre(x.tva, true, x.sur)}
             </tr>
           ))
         )}

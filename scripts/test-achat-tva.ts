@@ -4,6 +4,7 @@ import {
   factureRepasExigee,
   montantSaisi,
   natureEnMots,
+  pourquoiMoinsQueLeTicket,
   recuperation,
   tvaDepuisTtc,
   tvaDue,
@@ -220,6 +221,33 @@ cas("la liste dit ce qu'est l'achat, en phrase, et n'invente rien aux anciens", 
 cas("la part se calcule sur la TVA du ticket, arrondie au centime", () => {
   const r = recuperation({ ...base, nature: "carburant", vehicule: "voiture", tvaTicket: 13.33 });
   assert.equal(r.tvaRecuperee, 10.66);
+});
+
+// **Sa remarque du 23 octobre 2026** : le comptable lit 8,33 € de TVA sur le
+// ticket et 6,66 € au relevé, et rien ne dit pourquoi. Toute ligne qui compte
+// MOINS que son ticket le dit ; une ligne qui compte tout se tait.
+cas("une ligne qui compte moins que son ticket dit pourquoi, et sur combien", () => {
+  const base = { vehicule: null, repas: null, tvaTicket: "8.33", tvaDeductible: "0" } as const;
+  const attendu: [Parameters<typeof pourquoiMoinsQueLeTicket>[0], string][] = [
+    [{ ...base, nature: "carburant", vehicule: "voiture", tvaDeductible: "6.66" }, "Voiture, 80 %"],
+    [{ ...base, nature: "hotel" }, "Hôtel, non récupérable"],
+    [{ ...base, nature: "transport" }, "Train, taxi, non récupérable"],
+    [{ ...base, nature: "repas", repas: "perso" }, "Repas perso, non récupérable"],
+    [{ ...base, nature: "repas", repas: "affaires" }, "Repas d’affaires, preuves à compléter"],
+    [{ ...base, nature: "carburant" }, "Véhicule à choisir"],
+    [{ ...base, nature: "repas" }, "Repas, affaires ou perso à choisir"],
+  ];
+  for (const [achat, mot] of attendu) {
+    assert.deepEqual(pourquoiMoinsQueLeTicket(achat), { mot, tvaTicket: "8.33" }, mot);
+  }
+});
+
+cas("une ligne qui compte toute sa TVA, ou un achat d'avant les natures, se tait", () => {
+  const plein = { vehicule: "utilitaire", repas: null, tvaTicket: "8.33", tvaDeductible: "8.33" } as const;
+  assert.equal(pourquoiMoinsQueLeTicket({ ...plein, nature: "carburant" }), null);
+  assert.equal(pourquoiMoinsQueLeTicket({ ...plein, nature: "materiel" }), null);
+  assert.equal(pourquoiMoinsQueLeTicket({ ...plein, nature: null, tvaDeductible: "0" }), null);
+  assert.equal(pourquoiMoinsQueLeTicket({ ...plein, nature: "hotel", tvaTicket: null, tvaDeductible: "0" }), null);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} TVA d'un achat — ${echecs} échec(s).`);
