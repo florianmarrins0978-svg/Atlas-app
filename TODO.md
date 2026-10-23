@@ -1,6 +1,10 @@
 # Prochaines tâches
 
 
+## ⏳ UNE PLANCHE À REGARDER : LA TVA D'UNE VOITURE, A OU B (23 octobre 2026)
+
+`appli/tva-voiture-80.html`. À coder dans `TableauCalculette` (page TVA déductible) avec `tvaTicket`, déjà en base, dès qu'il a choisi.
+
 ## ⏳ UNE PLANCHE À REGARDER : RENVOYER LA FACTURE ACQUITTÉE (23 octobre 2026)
 
 Sa demande : l'assurance d'un client veut une facture acquittée ; la même, même
