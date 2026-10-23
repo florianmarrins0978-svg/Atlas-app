@@ -339,6 +339,7 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
 
       <div class="checkup"><button class="plein" type="button" data-checkup>Check up</button></div>
       <p style="margin:8px 24px 0;font-size:12.5px;color:var(--gris);text-align:center" data-dernier>Dernier Check up le 16 octobre</p>
+      <div data-valider-annee></div>
 
       <div class="legende">
         <span><i class="pastille" style="background:var(--c-carburant)"></i>Carburant</span>
@@ -416,7 +417,7 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
         </button></li>
       </ul>
 
-      <div class="dossier"><button class="contour" type="button">Mes dossiers justifiés</button></div>
+      <div class="dossier"><button class="contour" type="button" data-aller-dossiers>Mes dossiers justifiés</button></div>
     </div>
   </section>
 
@@ -465,7 +466,7 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
 
   <!-- 6. Les dossiers gardés -->
   <section class="planche">
-    <h2 class="nom">5. Mes dossiers justifiés</h2>
+    <h2 class="nom" id="ecran-dossiers">5. Mes dossiers justifiés</h2>
     <p class="idee">Quand tout est justifié, vous validez l'année : Atlas en fait un PDF, mois par mois, chaque ligne de banque suivie de sa photo. Il est gardé dix ans, et un dossier validé ne s'efface pas.</p>
     <div class="tel">
       <button class="retour" type="button">Année 2026</button>
@@ -788,7 +789,12 @@ function rendreDossiers(reste){
   else if (reste) enc.innerHTML = `<p class="qui" style="margin:0">Dossier 2026</p><p class="texte alerte">${reste} ${reste>1?"lignes attendent":"ligne attend"} encore un justificatif. Il se valide quand tout est justifié.</p>`;
   else enc.innerHTML = `<p class="qui" style="margin:0">Dossier 2026</p><p class="texte" style="color:var(--pin)">Tout est justifié.</p><div class="gestes"><button class="plein" type="button" data-valider-dossier>Valider le dossier 2026</button></div>`;
   const ans = (dossier2026 ? [["2026","23 octobre 2026","2036","4,1 Mo"]] : []).concat([["2025","12 février 2026","2035","5,8 Mo"],["2024","3 mars 2025","2034","5,2 Mo"],["2023","20 février 2024","2033","4,7 Mo"]]);
-  document.querySelector("[data-dossiers]").innerHTML = ans.map(([a,v,g,t]) => `<li class="ligne"><span class="pdf">PDF</span><span class="milieu"><div class="lib">Dossier justifié ${a}</div><div class="cat" style="color:var(--gris)">Validé le ${v}, gardé jusqu’en ${g}, ${t}</div><div class="gestes"><a class="lien" href="dossier-justifie-exemple.pdf" target="_blank" rel="noopener">Ouvrir</a><a class="lien" href="dossier-justifie-exemple.pdf" download="Dossier justifié ${a}.pdf">Enregistrer sur le téléphone</a><button class="lien" type="button">Envoyer au comptable</button></div></span></li>`).join("");
+  document.querySelector("[data-dossiers]").innerHTML = ans.map(([a,v,g,t]) => `<li class="ligne"><span class="pdf">PDF</span><span class="milieu"><div class="lib">Dossier justifié ${a}</div><div class="cat" style="color:var(--gris)">Validé le ${v}, gardé jusqu’en ${g}, ${t}</div><div class="gestes"><a class="lien" href="dossier-justifie-exemple.pdf" target="_blank" rel="noopener">Ouvrir</a>${a === "2025" ? `<a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" target="_blank" rel="noopener">Ouvrir côte à côte</a>` : ""}<a class="lien" href="dossier-justifie-exemple.pdf" download="Dossier justifié ${a}.pdf">Enregistrer sur le téléphone</a><button class="lien" type="button">Envoyer au comptable</button></div></span></li>`).join("");
+  // Sur l'écran de l'année aussi : c'est là qu'il voit que tout est justifié,
+  // et c'est là qu'il cherchait le bouton (sa question du 23 octobre).
+  const va = document.querySelector("[data-valider-annee]");
+  va.innerHTML = dossier2026 ? `<article class="carte" style="margin:16px 24px 0"><p class="qui" style="margin:0">Dossier 2026 validé.</p><p class="texte">Il est dans Mes dossiers justifiés.</p></article>`
+    : reste ? "" : `<article class="carte" style="margin:16px 24px 0"><p class="qui" style="margin:0">Toute l’année 2026 est justifiée.</p><div class="gestes"><button class="plein" type="button" data-valider-dossier>Valider le dossier 2026</button></div></article>`;
 }
 
 function rendreRelies(){
@@ -856,6 +862,7 @@ document.addEventListener("click", e => {
   const g = e.target.closest("[data-g]");
   if (g){ const [id, s] = g.dataset.g.split(":"); etat[id] = s; rendreCartes(); return; }
   if (e.target.closest("[data-valider-dossier]")){ dossier2026 = true; rendreCartes(); return; }
+  if (e.target.closest("[data-aller-dossiers]")){ document.getElementById("ecran-dossiers").scrollIntoView({ behavior:"smooth", block:"start" }); return; }
   const vo = e.target.closest("[data-voir]");
   if (vo){ vu = vo.dataset.voir; rendreVisionneuse(); vo.closest(".tel").scrollIntoView({ behavior:"smooth", block:"start" }); return; }
   if (e.target.closest("[data-fermer]")){ vu = null; rendreVisionneuse(); return; }

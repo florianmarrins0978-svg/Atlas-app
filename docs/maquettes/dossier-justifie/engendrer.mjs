@@ -1,7 +1,8 @@
 // Imprime `modele.html` en `appli/dossier-justifie-exemple.pdf`, l'exemple que
 // la planche `appli/pour-mon-comptable.html` ouvre.
 //
-//   node docs/maquettes/dossier-justifie/engendrer.mjs
+//   node docs/maquettes/dossier-justifie/engendrer.mjs          (renvois)
+//   node docs/maquettes/dossier-justifie/engendrer.mjs cote     (côte à côte)
 //
 // Playwright se prend dans le node_modules du dossier d'où l'on lance : une
 // copie de travail sans dépendances peut l'emprunter au dossier principal.
@@ -11,11 +12,13 @@ import path from "node:path";
 
 const ici = path.dirname(fileURLToPath(import.meta.url));
 const { chromium } = createRequire(path.join(process.cwd(), "x.js"))("playwright");
-const sortie = path.resolve(ici, "../../../appli/dossier-justifie-exemple.pdf");
+// « cote » imprime la seconde mise en page, chaque pièce à droite de sa ligne.
+const cote = process.argv[2] === "cote";
+const sortie = path.resolve(ici, `../../../appli/dossier-justifie-exemple${cote ? "-cote-a-cote" : ""}.pdf`);
 
 const navigateur = await chromium.launch();
 const page = await navigateur.newPage();
-await page.goto(pathToFileURL(path.join(ici, "modele.html")).href, { waitUntil: "networkidle" });
+await page.goto(pathToFileURL(path.join(ici, "modele.html")).href + (cote ? "?mise=cote" : ""), { waitUntil: "networkidle" });
 await page.evaluate(() => document.fonts.ready);
 // Le sommaire et les « p. 4 » du relevé sont comptés par le modèle : si une
 // page déborde à l.impression, ils mentent. On refuse plutôt que d.imprimer faux.

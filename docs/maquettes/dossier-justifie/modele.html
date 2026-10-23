@@ -107,6 +107,26 @@ h3{font-size:12.5pt;margin:6mm 0 1mm}
 .facture table td{padding:1mm 0;font-size:6.4pt;border-bottom:.4pt solid #eee}
 .facture .tot{margin-top:2mm;font-weight:700}
 
+/* ── Côte à côte ── */
+.rang-c{display:flex;gap:6mm;border-bottom:.6pt solid var(--filet);height:11mm;align-items:center;break-inside:avoid}
+.rang-c.haut-c{height:64mm;align-items:center}
+.rang-c .cg{flex:1;min-width:0;display:flex;gap:3mm;align-items:flex-start}
+.rang-c.haut-c .cg{align-self:center}
+.rang-c .coul-c{width:1.4mm;align-self:stretch;border-radius:.7mm;flex:none}
+.rang-c .cg > div:nth-child(2){flex:1;min-width:0}
+.rang-c:not(.haut-c) .cg > div:nth-child(2){display:flex;gap:4mm;align-items:baseline;flex-wrap:nowrap}
+.rang-c .dt{font-size:8.5pt;color:var(--doux)}
+.rang-c .lib{font:8.4pt/1.3 Consolas,"SF Mono",Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rang-c .cat{font-size:8pt}
+.rang-c .refc{margin-top:2mm;font-weight:600;font-size:8.5pt}
+.rang-c .perdu{color:var(--alerte);font-style:italic;font-size:8.5pt}
+.rang-c .just-c{font-size:8pt;color:var(--doux)}
+.rang-c .mt{font:400 15pt/1.2 "Playfair Display",Georgia,serif;white-space:nowrap}
+.rang-c:not(.haut-c) .mt{font-size:11pt}
+.rang-c .mt.plus{color:var(--pin)}
+.rang-c .cd{width:72mm;flex:none}
+.rang-c .cd .ticket,.rang-c .cd .facture{height:58mm}
+
 /* ── Tickets perdus ── */
 .perdus td{font-size:8.8pt}
 .encadre{background:var(--papier);border-radius:2.5mm;padding:5mm 6mm;margin-top:6mm;font-size:9pt}
@@ -199,6 +219,30 @@ const pagesMois = tout.map(lignes => { const p = page; const np = Math.ceil(lign
 const pagePerdus = page;
 const ouEst = (m, ref) => { const i = tout[m].filter(l => l.ref).findIndex(l => l.ref === ref); return pagesMois[m].pieces + Math.floor(i / PIECES_PAR_PAGE); };
 
+// ── La seconde mise en page, « côte à côte » (?mise=cote) ──
+// Sa demande du 23 octobre : comparer avec un dossier où chaque pièce est à
+// droite de sa ligne, sans rien à toucher. Les pages se coupent ICI, à la
+// main, sur des hauteurs fixes : c'est ce qui permet au sommaire de connaître
+// la page de chaque mois avant l'impression.
+const MISE = new URLSearchParams(location.search).get("mise") === "cote" ? "cote" : "renvoi";
+const H_PIECE = 64, H_COURTE = 11, H_PREMIERE = 222, H_SUIVANTE = 238;
+let decoupe = [];
+if (MISE === "cote") {
+  page = 3;
+  decoupe = tout.map(L => { const pages = [[]]; let reste = H_PREMIERE;
+    L.forEach(l => { const hl = l.ref ? H_PIECE : H_COURTE; if (hl > reste) { pages.push([]); reste = H_SUIVANTE; } pages[pages.length - 1].push(l); reste -= hl; });
+    return pages; });
+  decoupe.forEach((pages, m) => { pagesMois[m] = { releve: page, pieces: page, np: 0 }; page += pages.length; });
+}
+const pagePerdusFinal = MISE === "cote" ? page : pagePerdus;
+
+function pieceDe(l, m) {
+  if (l.ticket) { const t = l.ticket, tva = t.total - t.total / (1 + t.taux / 100);
+    return `<div class="ticket"><div class="c g">${t.nom}</div><div class="c">${t.adr}</div><div class="c">${deux(t.jour)}/${deux(m + 1)}/2025 ${t.heure}</div><hr>${t.art.map(([a, v]) => `<div class="r"><span>${a}</span><span>${eur(v).replace(" €", "")}</span></div>`).join("")}<hr><div class="r t"><span>TOTAL TTC</span><span>${eur(t.total)}</span></div><div class="r"><span>dont TVA ${t.taux} %</span><span>${eur(tva).replace(" €", "")}</span></div><hr><div class="c">CARTE BANCAIRE</div><div class="c">**** **** **** 4821</div><div class="c">MERCI DE VOTRE VISITE</div></div>`; }
+  const f = l.facture;
+  return `<div class="facture"><div class="r"><span class="g">${f.f}</span><span>Facture n° ${f.num}</span></div><div style="margin-top:2mm">Zone d’activité des Paluds, 13400 Aubagne</div><div style="margin:3mm 0 2mm">Client : Jardins Exemple</div><table><tr><td>${f.quoi}</td><td style="text-align:right">${eur(f.ht)}</td></tr><tr><td>TVA 20 %</td><td style="text-align:right">${eur(f.ht * .2)}</td></tr></table><div class="r tot"><span>Total TTC</span><span>${eur(f.ht * 1.2)}</span></div><div style="margin-top:3mm;color:#777">Réglée par virement</div></div>`;
+}
+
 let h = "";
 // Page 1
 h += `<section class="page couv">
@@ -232,11 +276,24 @@ h += `<section class="page">
   <table class="serre"><thead><tr><th>Mois</th><th class="d">Sorties</th><th class="d">Entrées</th><th class="d">Lignes</th><th>Justification</th><th class="d">Page</th></tr></thead><tbody>
   ${tout.map((L, m) => { const p = L.filter(l => l.perdu).length; return `<tr><td>${MOIS_M[m]}</td><td class="d num">${eur(-sum(L.filter(l => l.montant < 0), l => l.montant))}</td><td class="d num">${eur(sum(L.filter(l => l.montant > 0), l => l.montant))}</td><td class="d num">${L.length}</td><td>${p ? `<span style="color:var(--alerte)">Justifié, ${p} ticket perdu</span>` : "Justifié"}</td><td class="d num">${pagesMois[m].releve}</td></tr>`; }).join("")}
   </tbody></table>
-  <p class="note">Les tickets perdus sont listés page ${pagePerdus}. Leur TVA n’a pas été déduite.</p>
+  <p class="note">Les tickets perdus sont listés page ${pagePerdusFinal}. Leur TVA n’a pas été déduite.</p>
 </section>`;
 
-// Les mois
-tout.forEach((L, m) => {
+// Les mois, côte à côte
+if (MISE === "cote") decoupe.forEach((pages, m) => { const L = tout[m];
+  pages.forEach((lignes, ip) => {
+    h += `<section class="page"><div class="titre-page"><h2>${MOIS_M[m]} 2025</h2><span class="caps">Relevé et justificatifs${pages.length > 1 ? `, ${ip + 1} sur ${pages.length}` : ""}</span></div>`;
+    if (ip === 0) h += `<div class="resume-mois"><span>Sorties<b class="num">${eur(-sum(L.filter(l => l.montant < 0), l => l.montant))}</b></span><span>Entrées<b class="num">${eur(sum(L.filter(l => l.montant > 0), l => l.montant))}</b></span><span>Lignes<b>${L.length}</b></span></div>`;
+    lignes.forEach(l => {
+      const gauche = `<div class="cg"><span class="coul-c" style="background:${COUL[l.cat]}"></span><div><div class="dt num">${deux(l.jour)}/${deux(m + 1)}/2025</div><div class="lib">${l.lib}</div><div class="cat" style="color:${COUL[l.cat]}">${NOM[l.cat]}</div>${l.ref ? `<div class="refc">${l.ref}</div>` : ""}${l.perdu ? `<div class="perdu">Ticket perdu, mention validée</div>` : ""}${l.numF ? `<div class="just-c">Facture ${l.numF}, ${l.client}</div>` : ""}</div><div class="mt num${l.montant > 0 ? " plus" : ""}">${l.montant > 0 ? "+" : "−"}${eur(l.montant)}</div></div>`;
+      h += l.ref ? `<div class="rang-c haut-c">${gauche}<div class="cd">${pieceDe(l, m)}</div></div>` : `<div class="rang-c">${gauche}</div>`;
+    });
+    h += `</section>`;
+  });
+});
+
+// Les mois, avec renvois
+if (MISE === "renvoi") tout.forEach((L, m) => {
   h += `<section class="page">
     <div class="titre-page"><h2>${MOIS_M[m]} 2025</h2><span class="caps">Relevé de banque</span></div>
     <div class="resume-mois"><span>Sorties<b class="num">${eur(-sum(L.filter(l => l.montant < 0), l => l.montant))}</b></span><span>Entrées<b class="num">${eur(sum(L.filter(l => l.montant > 0), l => l.montant))}</b></span><span>Lignes<b>${L.length}</b></span></div>
@@ -274,7 +331,7 @@ h += `<section class="page">
 
 document.getElementById("doc").innerHTML = h;
 document.title = "Dossier justifié 2025";
-document.body.dataset.pages = pagePerdus;
+document.body.dataset.pages = pagePerdusFinal;
 </script>
 </body>
 </html>
