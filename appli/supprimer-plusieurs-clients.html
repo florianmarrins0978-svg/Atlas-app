@@ -96,7 +96,11 @@
          border:1.6px solid var(--muted);border-radius:50%}
   .loupe::after{content:"";position:absolute;right:-5px;bottom:-3px;width:7px;
                 height:1.6px;background:var(--muted);transform:rotate(45deg)}
-  .sous{display:flex;justify-content:flex-end;align-items:center;margin-top:10px}
+  .sous{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+  /* « Tout cocher » n'existe que pendant le choix : sur la liste normale, la
+     place reste vide et « Filtre » ne bouge pas. */
+  #tout{visibility:hidden}
+  .tel.choisir #tout{visibility:visible}
   .pastille{display:flex;align-items:center;gap:7px;min-height:44px;padding:0 13px;
             border:0;border-radius:999px;background:var(--card);color:var(--inkSoft);
             box-shadow:inset 0 0 0 1px var(--line);font-size:12.5px;cursor:pointer;white-space:nowrap}
@@ -230,6 +234,13 @@
     <div class="cherche-zone">
       <div class="cherche"><span class="loupe" aria-hidden="true"></span>Chercher un client</div>
       <div class="sous">
+        <button type="button" class="pastille" id="tout">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M5.4 8.2l1.8 1.8 3.5-3.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span id="tout-mot">Tout cocher</span>
+        </button>
         <button type="button" class="pastille" id="filtre">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M2 4h12M4.5 8h7M7 12h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
@@ -287,17 +298,14 @@
     <li><b>Restez appuyé une demi-seconde sur un client</b> : il se coche, une case apparaît devant tous les autres, et le bouton rouge en bas.</li>
     <li>Ensuite, toucher une ligne la coche ou la décoche. Elle n’ouvre plus la fiche.</li>
     <li><b>« Annuler »</b>, sous le bouton rouge, ressort sans rien supprimer.</li>
-    <li>Aucun bouton de plus sur l’écran : « Filtre » reste seul à sa place.</li>
+    <li><b>« Tout cocher »</b> apparaît en haut, à gauche de « Filtre », seulement une fois le choix ouvert. Il coche tous les clients de la liste, puis devient « Tout décocher ».</li>
+    <li>Sur la liste normale, rien de plus : « Filtre » reste seul à sa place.</li>
   </ul>
   <h3>La mention de sécurité</h3>
   <ul>
     <li><b>La même feuille qu’un client seul</b>, mot pour mot : « Suppression définitive », les factures gardées avec leur numéro, la phrase de prévention, et la case à cocher qui déverrouille.</li>
     <li>La phrase et la case n’apparaissent <b>que si un des clients a des documents</b>. Essayez « deux clients sans document ».</li>
     <li>Les noms cochés sont tous écrits dans la feuille : on relit qui part avant d’appuyer.</li>
-  </ul>
-  <h3>Ce que j’ai refusé, et pourquoi</h3>
-  <ul>
-    <li><b>« Tout cocher »</b> : un doigt pour vider votre liste entière. Il faut toucher chaque client.</li>
   </ul>
   <h3>Bon à savoir</h3>
   <ul>
@@ -346,6 +354,9 @@ function dessiner(){
     ? (coches.size ? `${pluriel(coches.size, "choisi", "choisis")}` : "Aucun choisi")
     : pluriel(clients.length, "client", "clients");
   $c.classList.toggle("choix", choisir && coches.size > 0);
+
+  const tous = clients.length > 0 && clients.every((c) => coches.has(c.id));
+  $("tout-mot").textContent = tous ? "Tout décocher" : "Tout cocher";
 
   const n = coches.size;
   const $s = $("supprimer");
@@ -410,6 +421,12 @@ $liste.addEventListener("click", (e) => {
   dessiner();
 });
 
+$("tout").addEventListener("click", () => {
+  const tous = clients.every((c) => coches.has(c.id));
+  coches = tous ? new Set() : new Set(clients.map((c) => c.id));
+  dessiner();
+});
+
 $("sortir").addEventListener("click", () => {
   choisir = false;
   coches.clear();
@@ -422,7 +439,8 @@ function ouvrir(){
   const docs = vises.reduce((s, c) => s + c.docs, 0);
   sauvegarde = false;
 
-  $("f-titre").textContent = pluriel(vises.length, "client", "clients");
+  const tousLes = vises.length > 1 && vises.length === clients.length;
+  $("f-titre").textContent = tousLes ? `Tous vos clients (${vises.length})` : pluriel(vises.length, "client", "clients");
   $("f-noms").textContent = vises.map((c) => c.nom).join(", ") + ".";
 
   // Ce que la loi garde, avec son numéro et à qui il appartient : sur trois
