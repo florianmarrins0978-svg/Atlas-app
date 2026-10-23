@@ -105,13 +105,16 @@ async function main() {
     if (!ecran.includes(CLIENT)) throw new Error("la carte ne nomme pas le chantier concerné");
   });
 
-  await cas("elle est TEINTÉE — sa proposition B, et elle seule l'est", async () => {
+  // **Ambre depuis le 23 octobre 2026** : sa planche des couleurs range le
+  // devis jamais parti dans « à vous de répondre ». La teinte de la proposition
+  // B est restée ; elle a pris le nom de sa famille.
+  await cas("elle est TEINTÉE, en ambre — à lui de faire le devis", async () => {
     // **Mesuré à l'écran, pas déduit du code.** Un `urgent` posé dans l'objet
     // ne prouve rien : c'est la couleur rendue qui décide de ce qu'il voit.
     const carte = page.locator(`[data-atlas="carte-reponse"][data-chantier="${chantierId}"]`);
     if ((await carte.count()) === 0) throw new Error("aucune carte pour ce chantier à l'écran");
-    if ((await carte.getAttribute("data-atlas-ton")) !== "teinte") {
-      throw new Error("la carte n'est pas déclarée teintée : la proposition B n'est pas appliquée");
+    if ((await carte.getAttribute("data-atlas-ton")) !== "ambre") {
+      throw new Error("la carte n'est pas déclarée ambre : la famille « à vous de répondre » n'est pas appliquée");
     }
     // **Et la couleur RENDUE, pas seulement l'intention.** Un attribut posé ne
     // prouve rien : c'est ce que l'œil reçoit qui décide.

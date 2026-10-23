@@ -35792,3 +35792,15 @@ désormais dès que la feuille s'ouvre : l'attente « que la page se pose » du
 22 octobre esquivait la course, elle a été retirée. `test-compte-db` tient la
 moitié base (une session fermée seule, Face ID gardé, rien d'effaçable par
 `atlas_app`).
+
+## §489 : L'accueil a cinq couleurs, par ce qu'il y a à faire, et elles ne suivent pas l'accent
+
+*23 octobre 2026, sa planche `appli/accueil-codes-couleur.html`.*
+
+**Rangées par geste, pas par sujet** (`src/lib/ton-des-cartes.ts`, la seule table) : vert bonne nouvelle, ambre à vous de répondre, bleu une date qui bouge, rouge ça peut coûter, blanc pour mémoire. Cinq, parce qu'au delà on ne retient plus laquelle veut dire quoi.
+
+**Une teinte FIXE par famille, comme l'alerte** (`chartes.ts`, `famillesDesCartes`). Le vert d'une bonne nouvelle n'est pas `colors.plein` : sur Brume, l'accent des boutons est bleu marine, et le vert serait devenu bleu. Le fond est la plage à peine teintée (18 %, 24 % pour le bleu qui se confondait avec le gris à 18), le titre se détache de CE fond à 4,5 sur les huit chartes. La phrase d'une carte teintée passe en `inkSoft` : `muted` tombait à 2,4 sur le bleu. `test-chartes-lisibles.ts` le mesure, charte par charte.
+
+**Le point ne remplace pas le titre** (`TitreDeCarte`, partagé par les notifications et les rappels de véhicules) : la couleur fait voir, le mot fait comprendre, et c'est lui que lit qui ne distingue pas les couleurs.
+
+**Ce qui a disparu** : `urgent: boolean` et le fond `rustTint` des cartes. Il disait « regardez » sans dire si c'était à répondre ou à rattraper. `data-atlas-ton` porte désormais la famille.

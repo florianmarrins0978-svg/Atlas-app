@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { ordonnerLesCartes } from "@/lib/ordre-notifications";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
 import { jourLisible, joursEnToutesLettres } from "@/lib/jour";
 import { suiteDeLaReponse, type SuiteDeLaReponse } from "@/lib/suite-de-la-reponse";
 import {
@@ -15,6 +15,8 @@ import {
   marquerRappelVuAction,
 } from "./actions";
 import type { GenreRappel, GenreVu } from "@/lib/rappels";
+import { couleursDuTon, type TonCarte } from "@/lib/ton-des-cartes";
+import TitreDeCarte from "@/components/atlas/TitreDeCarte";
 import type { NotificationPatron, EnvoiCaduc } from "@/server/repositories/envois-devis";
 
 /** Un rappel, déjà mis en mots par le serveur — voir `src/lib/rappels.ts`. */
@@ -113,8 +115,11 @@ type Carte = {
    * Il ne s'affiche nulle part : le délai reste mis en mots au serveur.
    */
   quand: number;
-  /** Réclame l'attention (fond teinté) plutôt que d'informer. */
-  urgent: boolean;
+  /**
+   * Sa famille, donc sa couleur : ce qu'il a à faire, lu d'un coup d'œil
+   * (`src/lib/ton-des-cartes.ts`, sa planche du 23 octobre 2026).
+   */
+  ton: TonCarte;
   titre: string;
   texte: string;
   /**
@@ -203,9 +208,10 @@ function versCarte(n: NotificationPatron): Carte {
     // l'enverrait derrière « N autres devis à regarder », c'est-à-dire nulle
     // part : une réponse de client ne se perd pas pour une date absente.
     quand: n.responduAt ? n.responduAt.getTime() : Number.MAX_SAFE_INTEGER,
-    // Une correction attend un geste autant qu'un refus — davantage, même :
-    // le chantier est presque acquis, il ne tient qu'à une reprise.
-    urgent: refus || correction,
+    // Une correction attend SA réponse : le chantier est presque acquis, il ne
+    // tient qu'à une reprise. Un refus, lui, est un chantier qui part. Une
+    // autre date bouge le planning (« en bleu », sa demande du 23 octobre).
+    ton: correction ? "ambre" : refus ? "rouge" : n.dateContreProposee ? "bleu" : "vert",
     titre,
     texte,
     messageClient: n.precisionClient,
@@ -237,10 +243,10 @@ function receptionVersCarte(r: ReceptionAffichee): Carte {
     // L'instant de la CONFIRMATION, pas celui de l'envoi : c'est elle qui est
     // la nouvelle, et c'est elle qui doit remonter en tête.
     quand: r.accuseLe.getTime(),
-    // **Pas urgente, et c'est une bonne nouvelle.** Le fond teinté est réservé
-    // à ce qui réclame un geste ; ici il n'y en a aucun à faire. Une bonne
-    // nouvelle peinte comme une alerte apprend à ignorer les alertes.
-    urgent: false,
+    // **Une bonne nouvelle, et elle se peint comme telle** : en vert, jamais
+    // comme une alerte. Une bonne nouvelle peinte en alerte apprend à ignorer
+    // les alertes.
+    ton: "vert",
     titre: "Facture reçue",
     texte: `${r.clientNom ?? "Votre client"} a confirmé avoir reçu la facture ${r.numeroCommercial}.`,
     reception: true,
@@ -265,7 +271,8 @@ function caducVersCarte(e: EnvoiCaduc): Carte {
     // qui est la nouvelle. Trier sur l'envoi mettrait en tête un devis parti
     // hier dont le lien court encore.
     quand: e.expireAt.getTime(),
-    urgent: true,
+    // Un chantier qui part sans un mot : ça peut coûter.
+    ton: "rouge",
     titre: "Devis caduc",
     texte:
       "Le lien a expiré sans réponse. Le client n'a rien dit, ni oui, ni non. " +
@@ -293,10 +300,9 @@ function rappelVersCarte(r: RappelAffiche): Carte {
       chantierId: r.chantierId,
       chantierNom: r.chantierNom,
       quand: r.quand,
-      // **Il ne crie pas.** Le fond teinté reste au devis jamais parti, seul
-      // cas où RIEN n'est encore parti au client. Une facture impayée décrit un
-      // travail fait qui attend son règlement — comme les deux autres.
-      urgent: false,
+      // **Rouge depuis le 23 octobre 2026** : c'est de l'argent qui ne rentre
+      // pas, la famille « ça peut coûter » de sa planche.
+      ton: "rouge",
       rappel: true,
       titre: "Facture impayée",
       texte: `Échéance dépassée ${r.depuisTexte}.`,
@@ -329,7 +335,7 @@ function rappelVersCarte(r: RappelAffiche): Carte {
       chantierId: r.chantierId,
       chantierNom: r.chantierNom,
       quand: r.quand,
-      urgent: false,
+      ton: "blanc",
       rappel: true,
       vu: { genre: r.genre, chantierId: r.chantierId },
       titre: "Retour pas reçu",
@@ -363,7 +369,9 @@ function rappelVersCarte(r: RappelAffiche): Carte {
     // doit pas se rater. Et il est le seul des trois où RIEN n'est encore
     // parti au client : les deux autres décrivent un travail déjà fait qui
     // attend, celui-ci un travail pas commencé.
-    urgent: sansDevis,
+    // Le devis jamais parti est à LUI de faire : ambre. Les deux autres sont
+    // pour mémoire.
+    ton: sansDevis ? "ambre" : "blanc",
     rappel: true,
     titre: sansDevis
       // **Le compte des jours DANS l'étiquette**, avant le nom — l'autre moitié
@@ -562,6 +570,7 @@ export default function Notifications({
   return (
     <div className="mt-7 flex flex-col gap-3 px-6">
       {visibles.map((n) => {
+        const couleurs = couleursDuTon(n.ton);
         return (
           <div
             key={n.envoiId}
@@ -570,21 +579,19 @@ export default function Notifications({
             // nom attrape la ligne de la liste et croit lire la carte. Vécu le
             // 12 août 2026, sur le contrôle de ce lien même.
             data-atlas="carte-reponse"
-            // Le TON, lisible de l'extérieur : sa proposition B ne se prouve
-            // qu'à la couleur RENDUE, et un booléen dans le code n'en dit rien
+            // Le TON, lisible de l'extérieur : une famille ne se prouve qu'à la
+            // couleur RENDUE, et un champ dans le code n'en dit rien
             // (`test-devis-qui-tarde-e2e`).
-            data-atlas-ton={n.urgent ? "teinte" : "nu"}
+            data-atlas-ton={n.ton}
             data-chantier={n.chantierId}
             className="rounded-[18px] px-5 py-4"
-            style={{ backgroundColor: n.urgent ? colors.rustTint : colors.card }}
+            style={{ backgroundColor: couleurs.fond }}
           >
-            <p className={smallCaps} style={{ color: n.urgent ? colors.rust : colors.muted, marginBottom: 6 }}>
-              {n.titre}
-            </p>
+            <TitreDeCarte ton={n.ton}>{n.titre}</TitreDeCarte>
             <p className="text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
               {n.chantierNom}
             </p>
-            <p className="mt-1 text-[13px]" style={{ color: colors.muted }}>
+            <p className="mt-1 text-[13px]" style={{ color: couleurs.texte }}>
               {n.texte}
             </p>
 

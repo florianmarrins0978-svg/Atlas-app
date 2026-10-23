@@ -1,4 +1,5 @@
 import assert from "node:assert";
+import { readFileSync } from "node:fs";
 import { CHARTES, contraste, estSombre, type Charte } from "../src/lib/chartes";
 
 /**
@@ -233,6 +234,53 @@ test("Origine reste Origine — les treize jetons d'avant, intacts", () => {
   };
   for (const [cle, valeur] of Object.entries(attendu) as [keyof typeof j, string][]) {
     assert.equal(j[cle], valeur, `origine.${cle} a bougé`);
+  }
+});
+
+// ─── LES CINQ COULEURS DE L'ACCUEIL — sa planche du 23 octobre 2026 ─────────
+//
+// Le titre d'une carte teintée se lit sur SON fond, et la phrase en gris foncé
+// aussi (`ton-des-cartes.ts`). Sur les huit chartes, sombres comprises.
+const FAMILLES = ["Vert", "Ambre", "Bleu", "Rouge"] as const;
+test("Chaque famille de l'accueil se lit, sur chaque charte", () => {
+  for (const c of CHARTES) {
+    const j = c.jetons as unknown as Record<string, string>;
+    for (const f of FAMILLES) {
+      const fond = j[`carte${f}Fond`];
+      const titre = contraste(fond, j[`carte${f}Texte`]);
+      const phrase = contraste(fond, j.inkSoft);
+      assert.ok(titre >= TEXTE, `${c.libelle}, ${f} : le titre tient ${titre.toFixed(2)} sur son fond`);
+      assert.ok(phrase >= TEXTE, `${c.libelle}, ${f} : la phrase tient ${phrase.toFixed(2)} sur son fond`);
+    }
+  }
+});
+
+// **Une famille qu'on ne distingue pas de la carte blanche n'existe pas.** Le
+// fond doit se voir à côté de la plage, et deux familles ne doivent pas se
+// confondre : c'est tout ce que la couleur est censée faire.
+test("Les familles se distinguent de la carte blanche, et entre elles", () => {
+  for (const c of CHARTES) {
+    const j = c.jetons as unknown as Record<string, string>;
+    const fonds = FAMILLES.map((f) => j[`carte${f}Fond`]);
+    for (const [i, fond] of fonds.entries()) {
+      assert.notEqual(fond.toLowerCase(), j.card.toLowerCase(), `${c.libelle}, ${FAMILLES[i]} : le fond est la carte blanche`);
+    }
+    assert.equal(new Set(fonds.map((x) => x.toLowerCase())).size, fonds.length, `${c.libelle} : deux familles ont le même fond`);
+  }
+});
+
+// Le repli de `design-tokens.ts` est la valeur d'Origine : un écran rendu hors
+// du gabarit ne doit pas changer de couleur.
+test("Le repli des cinq couleurs est la valeur d'Origine", () => {
+  const source = readFileSync("src/lib/design-tokens.ts", "utf8");
+  const o = CHARTES[0].jetons as unknown as Record<string, string>;
+  for (const f of FAMILLES) {
+    for (const cote of ["Fond", "Texte"]) {
+      const cle = `carte${f}${cote}`;
+      const trouve = source.match(new RegExp(`\\b${cle}:\\s*"var\\(--atlas-${cle},\\s*([^)]+)\\)"`));
+      assert.ok(trouve, `${cle} manque à design-tokens.ts, ou ne passe pas par sa variable`);
+      assert.equal(trouve[1].trim().toLowerCase(), o[cle].toLowerCase(), `repli de ${cle}`);
+    }
   }
 });
 
