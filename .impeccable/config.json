@@ -74,6 +74,12 @@
         ],
         "createdAt": "2026-10-23T06:05:32.790Z",
         "reason": "Charte de l'application recopiée : fond #f5f3ee, capitales 9,5 px (libelleCaps) et gris muted viennent de src/lib/design-tokens.ts et des écrans codés ListeClients/SupprimerCeClient"
+      },
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-10-23T21:13:59.378Z",
+        "reason": "police de l'application elle-même (src/lib/design-tokens.ts, font.body = Inter) : la maquette reproduit l'écran existant"
       }
     ]
   }
