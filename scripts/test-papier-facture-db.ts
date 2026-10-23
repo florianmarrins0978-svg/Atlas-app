@@ -212,10 +212,18 @@ async function main() {
     const [g] = await reglementsRecus(ctx, factureId);
     const retrait = await retirerReglementRecu(ctx, g.id);
     assert.ok(!retrait.ok, "un acompte s'est retiré d'une facture émise");
-    // L'interrupteur revenu sur la page de la facture le 22 septembre 2026 ne
-    // s'offre que sur un BROUILLON ; le dépôt le tient, quel que soit l'écran.
+    // **Sur une facture émise, l'interrupteur passe par la porte de Terminés**
+    // depuis le 23 octobre 2026 (sa demande de l'exemplaire acquitté) : la
+    // règle d'avant, « il ne s'offre que sur un brouillon », est retirée. Ce
+    // que le dépôt tient encore : pas de solde sans le moyen qu'il a touché,
+    // et le solde éteint repart en gardant sa trace (`retirerPaiement`),
+    // jamais supprimé comme sur un brouillon. Le détail :
+    // `test-facture-acquittee-db.ts`.
+    const sansMoyen = await basculerAcquittee(ctx, factureId, true, "2026-09-22");
+    assert.ok(!sansMoyen.ok, "un solde s'est posé sur une facture émise sans son moyen");
     const bascule = await basculerAcquittee(ctx, factureId, false, "2026-09-22");
-    assert.ok(!bascule.ok, "une facture émise s'est désacquittée");
+    assert.ok(bascule.ok, "le solde d'une facture émise ne s'éteint pas");
+    assert.equal(bascule.reglements.filter((r) => r.solde).length, 0, "le solde est resté sur la facture");
   });
 
   // ═══ LA FACTURE DIRECTE — sa panne du 22 septembre 2026 ══════════════════

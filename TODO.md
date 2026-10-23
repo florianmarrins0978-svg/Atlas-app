@@ -21,27 +21,12 @@ Refusé sur la planche, et dit : « Tout cocher ». Niveau 3
 
 `appli/tva-voiture-80.html`. À coder dans `TableauCalculette` (page TVA déductible) avec `tvaTicket`, déjà en base, dès qu'il a choisi.
 
-## ⏳ UNE PLANCHE À REGARDER : RENVOYER LA FACTURE ACQUITTÉE (23 octobre 2026)
+## LA FACTURE ACQUITTÉE APRÈS L'ENVOI : CODÉE LE 23 OCTOBRE 2026, PAS SUR `main`
 
-Sa demande : l'assurance d'un client veut une facture acquittée ; la même, même
-numéro, avec la mention en plus. Planche `appli/facture-acquittee.html`, rien
-de codé.
-
-**Ce que le code fait déjà, vérifié le 23 octobre :** le tampon « Acquittée le
-… » existe (`tamponAcquittee`, `document-commun.ts`) et s'imprime dès que les
-règlements couvrent le total. Mais seul le PDF du patron se recompose
-(`genererPdfFacturePourApercu`) : **le lien du client sert le fichier archivé à
-l'émission** (`pdfFactureParJeton`), donc renvoyer par SMS lui redonne la
-facture SANS la mention. Et sur une facture arrêtée, l'interrupteur « Facture
-acquittée » est fermé (`acquittement={!emise}`) : le solde ne se note que
-depuis Terminés.
-
-**Ce que la planche propose (à coder seulement après son oui) :** l'interrupteur
-revient sur la facture arrêtée et passe par `noterPaiement` (il demande le
-moyen, il n'en invente pas) ; l'envoi devient « Envoyer la facture acquittée » ;
-un second PDF archivé, à part, l'original restant intouché. Niveau 3 (argent,
-probablement une migration pour ranger le second fichier).
-
+Planche `appli/facture-acquittee.html`, son « code ça » du 23 octobre. Branche
+`claude/facture-acquittee`, sans batterie (sa consigne). **Reste : la batterie
+entière** (niveau 3, argent et migration 0138), puis `main`. `ARCHITECTURE.md`
+§488, `docs/facture-acquittee.md`.
 
 ## ⏳ MA BANQUE : L'ESSAI EST CODÉ, À JOUER PAR LUI (22 octobre 2026)
 

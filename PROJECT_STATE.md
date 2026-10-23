@@ -5,6 +5,10 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## LA FACTURE ACQUITTÉE APRÈS L'ENVOI, CODÉE (23 octobre 2026), PAS ENCORE SUR `main`
+
+L'interrupteur « Facture acquittée » s'offre sur la facture partie (moyen touché, solde noté par la porte de Terminés), et l'envoi devient « Envoyer la facture acquittée » : un second PDF archivé, même numéro, le tampon en plus, sur un lien à lui (migration 0138). L'original n'est jamais réécrit. `ARCHITECTURE.md` §488.
+
 ## MA BANQUE, L'ESSAI (22 octobre 2026)
 
 Codé : `/reglages/banque` (patron seul, hors du sommaire), retour `/api/banque/retour`, client Enable Banking `src/server/banque/enable-banking.ts`, règle pure `src/lib/rapprochement-bancaire.ts`. Lecture seule. À jouer sur son espace avec sa clé : `docs/banque-essai.md`. Le reste de la planche `appli/banque-qui-previent.html` n'est pas codé.

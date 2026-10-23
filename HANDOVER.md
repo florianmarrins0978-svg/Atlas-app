@@ -10,6 +10,10 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LA FACTURE ACQUITTÉE APRÈS L'ENVOI : branche `claude/facture-acquittee` (23 octobre 2026)
+
+Codé sans batterie, sur sa consigne. **Avant `main` : la batterie entière** (niveau 3 : argent, migration 0138). Vert ici : types, lint, `test-facture-acquittee-db.ts` (vu rouge sans la correction), les suites voisines. `test-papier-facture-db.ts` a été adapté : il défendait la règle « sur un brouillon seulement », retirée à sa demande. `ARCHITECTURE.md` §488, `docs/facture-acquittee.md`.
+
 ## MA BANQUE, L'ESSAI (22 octobre 2026)
 
 Pour reprendre : `docs/banque-essai.md` dit ses trois gestes, `ARCHITECTURE.md` (dernier §) le pourquoi. Le piège à connaître : **l'écran ne peut pas s'éprouver ici**, il faut sa clé Enable Banking et sa connexion au Crédit Mutuel. Sans le fichier `.pem`, l'écran affiche « Pas encore branché » et l'adresse de retour à déclarer ; c'est ce qu'on a regardé. Il se connecte deux fois à sa banque pendant l'essai (chez Enable Banking, puis depuis Atlas) : c'est leur règle, pas un défaut.

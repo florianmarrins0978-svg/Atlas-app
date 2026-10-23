@@ -2753,6 +2753,17 @@ export const envoisFactures = pgTable(
      * avec l'alerte qui l'annonçait ne prouve rien.
      */
     vuParPatronAt: timestamp("vu_par_patron_at", { withTimezone: true }),
+    /**
+     * **L'exemplaire acquitté que CE lien sert** (migration 0138). Nul : le
+     * lien sert le PDF archivé de la facture, celui du premier envoi. La
+     * facture émise ne se réécrit jamais ; l'exemplaire acquitté est un second
+     * fichier, avec le même numéro et le tampon en plus.
+     */
+    pdfStorageKey: text("pdf_storage_key"),
+    /** La date du tampon, « Acquittée le … », que la page du client montre. */
+    acquitteeLe: date("acquittee_le"),
+    /** Les règlements imprimés sur l'exemplaire (`empreinteDesReglements`). */
+    empreinteReglements: text("empreinte_reglements"),
   },
   (t) => [
     unique("envois_factures_jeton_uk").on(t.jeton),

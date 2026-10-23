@@ -488,7 +488,8 @@ async function factureEnBrouillon(tx: DbOrTx, factureId: string) {
   return { ok: true as const, facture: { id: f.id, statut: f.statut, totalTtc: totaux.totalTtc } };
 }
 
-async function lireReglements(tx: DbOrTx, factureId: string): Promise<ReglementEnregistre[]> {
+/** Les règlements d'une facture, dans l'ordre où ils sont tombés : la seule lecture, pour l'écran, le papier et l'exemplaire acquitté. */
+export async function lireReglements(tx: DbOrTx, factureId: string): Promise<ReglementEnregistre[]> {
   const rows = await tx
     .select()
     .from(paiementsFacture)
@@ -607,13 +608,26 @@ export async function retirerReglementRecu(
  * « Facture acquittée » : allumé, le solde est compté reçu à la date du jour ;
  * éteint, ce solde-là repart. Les acomptes saisis à la main ne bougent pas.
  * Un solde n'est posé que s'il reste quelque chose à recevoir.
+ *
+ * **Sur une facture déjà partie aussi** — sa demande du 23 octobre 2026
+ * (`appli/facture-acquittee.html`) : l'assurance du client veut la facture
+ * acquittée, et c'est sur la facture qu'il la cherche. Elle est alors au
+ * relevé de TVA : le solde passe par `soldera`, la même porte que Terminés,
+ * avec le moyen qu'il a TOUCHÉ (rien n'est supposé, le relevé le lit), et
+ * l'éteindre retire ce solde en gardant sa trace (`retirerPaiement`).
  */
 export async function basculerAcquittee(
   ctx: Ctx,
   factureId: string,
   allumee: boolean,
-  aujourdHui: string
+  aujourdHui: string,
+  moyen?: MoyenDePaiement
 ): Promise<{ ok: true; reglements: ReglementEnregistre[] } | { ok: false; raison: string }> {
+  const statut = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [f] = await tx.select({ statut: factures.statut }).from(factures).where(eq(factures.id, factureId)).limit(1);
+    return f?.statut ?? null;
+  });
+  if (statut === "emise") return basculerAcquitteeEmise(ctx, factureId, allumee, aujourdHui, moyen);
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const garde = await factureEnBrouillon(tx, factureId);
     if (!garde.ok) return garde;
@@ -638,4 +652,22 @@ export async function basculerAcquittee(
     }
     return { ok: true as const, reglements: await lireReglements(tx, factureId) };
   });
+}
+
+async function basculerAcquitteeEmise(
+  ctx: Ctx,
+  factureId: string,
+  allumee: boolean,
+  aujourdHui: string,
+  moyen: MoyenDePaiement | undefined
+): Promise<{ ok: true; reglements: ReglementEnregistre[] } | { ok: false; raison: string }> {
+  const relire = () => withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) => lireReglements(tx, factureId));
+  if (allumee) {
+    if (!moyen || !estUnMoyenDePaiement(moyen)) return { ok: false, raison: "Choisissez comment le client a payé." };
+    const r = await soldera(ctx, factureId, aujourdHui, moyen);
+    if (!r.ok) return r;
+    return { ok: true, reglements: await relire() };
+  }
+  for (const g of await relire()) if (g.solde) await retirerPaiement(ctx, g.id);
+  return { ok: true, reglements: await relire() };
 }

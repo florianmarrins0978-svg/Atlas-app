@@ -9,7 +9,7 @@ import { ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-clien
 import { useAdressePourLeClient } from "@/lib/use-adresse-client";
 import { marquerDepartMessagerie, useRetourDeMessagerie } from "@/lib/depart-messagerie";
 import { enregistrerCoordonneeClientAction } from "../export/actions";
-import { preparerLienFactureAction } from "./actions";
+import { preparerLienAcquitteAction, preparerLienFactureAction } from "./actions";
 
 // **« On ne propose que le SMS. »**
 //
@@ -74,6 +74,8 @@ export default function TransmettreLaFacture({
   email,
   origine,
   avoir = null,
+  acquittee = false,
+  jetonAcquitteInitial = null,
 }: {
   factureId: string;
   clientId: string | null;
@@ -104,6 +106,15 @@ export default function TransmettreLaFacture({
    * finirait par diverger de celui-ci (`CLAUDE.md` §3).
    */
   avoir?: { numero: string } | null;
+  /**
+   * **La facture est entièrement réglée : c'est l'exemplaire acquitté qui
+   * part** (sa demande du 23 octobre 2026, `appli/facture-acquittee.html`).
+   * Même numéro, même papier, le tampon en plus, sur un lien à lui : le lien
+   * d'origine continue de servir la facture telle que le client l'a reçue.
+   */
+  acquittee?: boolean;
+  /** Le lien d'exemplaire acquitté qui vaut encore (`jetonAcquitteVivant`). */
+  jetonAcquitteInitial?: string | null;
 }) {
   // **Qui marque le départ monte le retour.** Il vivait seulement dans
   // `FactureClient` : l'écran « C'est fait » de l'avoir, qui porte ce composant
@@ -123,7 +134,10 @@ export default function TransmettreLaFacture({
   // valeur qui arrive ensuite : l'écran redemandait donc de préparer un lien
   // déjà prêt. On dérive, pour que la prop rafraîchie soit lue.
   const [jetonLocal, setJeton] = useState<string | null>(null);
-  const jeton = jetonLocal ?? jetonInitial;
+  const [jetonAcquitteLocal, setJetonAcquitte] = useState<string | null>(null);
+  const jeton = acquittee ? (jetonAcquitteLocal ?? jetonAcquitteInitial) : (jetonLocal ?? jetonInitial);
+  // Un seul geste pour les deux liens : seule la porte change.
+  const preparer = acquittee ? preparerLienAcquitteAction : preparerLienFactureAction;
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -139,7 +153,7 @@ export default function TransmettreLaFacture({
   function message(lien: string) {
     return avoir
       ? composerMessageAvoir({ clientCivilite, clientNom, entrepriseNom, numeroAvoir: avoir.numero, numeroFacture, lien })
-      : composerMessageFacture({ clientCivilite, clientNom, entrepriseNom, modele: modeleMessage, numeroFacture, echeanceLisible, lien });
+      : composerMessageFacture({ clientCivilite, clientNom, entrepriseNom, modele: modeleMessage, numeroFacture, echeanceLisible, lien, acquittee });
   }
 
   /**
@@ -160,12 +174,13 @@ export default function TransmettreLaFacture({
 
   /** Prépare le lien, ou retrouve celui qui existe déjà. Rend le jeton, ou rien. */
   async function preparerLien(canalVoulu: CanalClient): Promise<string | null> {
-    const r = await preparerLienFactureAction(factureId, canalVoulu);
+    const r = await preparer(factureId, canalVoulu);
     if (!r.succes) {
       setErreur(r.erreur);
       return null;
     }
-    setJeton(r.jeton);
+    if (acquittee) setJetonAcquitte(r.jeton);
+    else setJeton(r.jeton);
     return r.jeton;
   }
 
@@ -173,7 +188,16 @@ export default function TransmettreLaFacture({
     setEnCours(true);
     setErreur(null);
     try {
-      await preparerLien(canalChoisi);
+      const pret = await preparerLien(canalChoisi);
+      // **L'exemplaire acquitté part dans le même appui** : sa planche n'a
+      // qu'un bouton, « Envoyer la facture acquittée ». Préparer puis
+      // redemander d'appuyer serait un geste de trop pour un seul envoi.
+      if (pret && acquittee && destinataire) {
+        marquerDepartMessagerie(quoi, clientNom);
+        window.location.assign(
+          lienTransmission({ canal: canalChoisi, destinataire, message: message(`${adresseSite}/factures/${pret}`) })
+        );
+      }
     } catch {
       setErreur("Le lien de la facture n'a pas pu être préparé.");
     } finally {
@@ -190,7 +214,7 @@ export default function TransmettreLaFacture({
     // resterait inscrite « SMS » pour toujours.
     if (jeton) {
       try {
-        await preparerLienFactureAction(factureId, autre);
+        await preparer(factureId, autre);
       } catch {
         // Le patron n'a rien à faire de cet échec : son message part quand même,
         // et le canal enregistré n'est qu'une trace. Le taire vaut mieux que
@@ -266,7 +290,7 @@ export default function TransmettreLaFacture({
             onClick={() => marquerDepartMessagerie(quoi, clientNom)}
             repere={`transmission-${canalChoisi}`}
           >
-            {LIBELLE[canalChoisi].bouton}
+            {acquittee ? "Envoyer la facture acquittée" : LIBELLE[canalChoisi].bouton}
           </PrimaryButton>
           {/* **Le destinataire et le lien qui vivaient ici sont RETIRÉS** — sa
               demande du 24 août 2026 : *« pareil sous ouvrir le SMS tout prêt »*,
@@ -287,13 +311,19 @@ export default function TransmettreLaFacture({
         </p>
       ) : (
         <>
-          {!avoir && (
+          {!avoir && !acquittee && (
             <p className="mb-3 text-center text-[13px]" style={{ color: colors.muted }}>
               Votre client ne l&apos;a pas encore reçue.
             </p>
           )}
           <PrimaryButton disabled={enCours} onClick={envoyer}>
-            {enCours ? "Préparation…" : avoir ? "Envoyer l'avoir au client" : "Envoyer la facture au client"}
+            {enCours
+              ? "Préparation…"
+              : avoir
+                ? "Envoyer l'avoir au client"
+                : acquittee
+                  ? "Envoyer la facture acquittée"
+                  : "Envoyer la facture au client"}
           </PrimaryButton>
         </>
       )}
@@ -336,7 +366,7 @@ export default function TransmettreLaFacture({
             marquerDepartMessagerie(quoi, clientNom);
             // Le registre doit dire par où la facture est REELLEMENT partie.
             // L'échec ne le concerne pas : son message part quand même.
-            void preparerLienFactureAction(factureId, autre).catch(() => undefined);
+            void preparer(factureId, autre).catch(() => undefined);
           }}
           data-bascule-canal={autre}
           className="mt-2 block w-full text-center text-[15px] font-bold"

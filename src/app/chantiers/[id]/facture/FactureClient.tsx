@@ -21,7 +21,7 @@ import ReglementsRecus from "./ReglementsRecus";
 import { majTitreFactureAction } from "./actions";
 import LigneMainDoeuvre from "../devis-complet/LigneMainDoeuvre";
 import { sansZerosInutiles } from "../devis-complet/ChampsDuDevis";
-import type { PromesseDuDevis } from "@/lib/acomptes-facture";
+import { empreinteDesReglements, estAcquittee, type PromesseDuDevis } from "@/lib/acomptes-facture";
 import type { ReglementEnregistre } from "@/server/repositories/paiements-facture";
 import {
   terminerChantierAction,
@@ -163,6 +163,7 @@ export default function FactureClient({
   clientEmail,
   canalClient,
   jetonDejaPrepare = null,
+  jetonAcquittePrepare = null,
   regimeTva,
   enFranchise,
   reprise,
@@ -202,6 +203,8 @@ export default function FactureClient({
    * le préparer — un second appui pour refaire ce qui vient d'être fait.
    */
   jetonDejaPrepare?: string | null;
+  /** Le lien d'exemplaire acquitté qui vaut encore, s'il y en a un (`jetonAcquitteVivant`). */
+  jetonAcquittePrepare?: string | null;
   /**
    * Quand la TVA devient exigible chez cette entreprise (migration 0045).
    *
@@ -218,6 +221,12 @@ export default function FactureClient({
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [emise, setEmise] = useState(initialFacture?.statut === "emise");
+  // **Les règlements vivent ICI, pas seulement dans leur bloc** : l'envoi en
+  // dépend. Une facture soldée part en exemplaire acquitté (23 octobre 2026),
+  // et le lien préparé pour d'autres règlements ne vaut plus dès qu'ils
+  // bougent : il imprimerait une autre date, un autre moyen.
+  const [reglements, setReglements] = useState(initialFacture?.reglements ?? []);
+  const [jetonAcquitte, setJetonAcquitte] = useState(jetonAcquittePrepare);
 
   // Le titre qu'il donne, comme sur le devis (sa planche du 14 septembre 2026).
   //
@@ -1028,9 +1037,13 @@ export default function FactureClient({
           composition, solder est un CONSTAT — celui qu'il fait sur l'écran où
           « À facturer » le mène, juste avant d'envoyer.
 
-          **Sur un brouillon seulement.** Une facture arrêtée est au relevé de
-          TVA : ses règlements se notent depuis Terminés, et le dépôt refuse
-          déjà (`basculerAcquittee`). L'écran ne l'offre donc pas. */}
+          **ET SUR LA FACTURE PARTIE AUSSI — 23 octobre 2026.** *« Lorsque
+          j'ai déjà envoyé la facture au client et que son assurance veut une
+          facture acquittée, il faut pouvoir lui renvoyer la même facture avec
+          la mention acquittée. »* Arrêtée, elle est au relevé de TVA : le solde
+          passe alors par la porte de Terminés, avec le moyen qu'il touche
+          (`basculerAcquittee`), et l'envoi devient « Envoyer la facture
+          acquittée » (`appli/facture-acquittee.html`). */}
       <ReglementsRecus
         factureId={initialFacture.id}
         avoirs={avoirs}
@@ -1038,7 +1051,11 @@ export default function FactureClient({
         promesseDuDevis={initialFacture.promesseDuDevis}
         initiaux={initialFacture.reglements}
         fige
-        acquittement={!emise}
+        emise={emise}
+        auChangement={(r) => {
+          setReglements(r);
+          setJetonAcquitte(null);
+        }}
       />
 
       {erreur && (
@@ -1106,6 +1123,11 @@ export default function FactureClient({
               telephone={clientTelephone ?? ""}
               email={clientEmail ?? ""}
               origine={origine}
+              acquittee={estAcquittee(totaux.totalTtc, reglements)}
+              jetonAcquitteInitial={jetonAcquitte}
+              // Un exemplaire préparé pour d'autres règlements ne doit pas
+              // survivre dans l'état du composant : la clé le fait repartir.
+              key={estAcquittee(totaux.totalTtc, reglements) ? empreinteDesReglements(reglements) : "origine"}
             />
             )}
           </div>

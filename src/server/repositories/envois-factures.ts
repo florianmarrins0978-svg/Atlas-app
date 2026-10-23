@@ -1,10 +1,13 @@
 import { nomAvecForme } from "@/lib/formes-juridiques";
 import { randomBytes } from "node:crypto";
-import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
-import { db } from "../db/client";
+import { and, desc, eq, gt, inArray, isNotNull, isNull, sql } from "drizzle-orm";
+import { db, type DbOrTx } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { avoirs, envoisFactures, factures, chantiers } from "../db/schema";
-import { lireObjet } from "../storage";
+import { enregistrerObjet, lireObjet } from "../storage";
+import { empreinteDesReglements, tamponAcquittee } from "@/lib/acomptes-facture";
+import { pdfExemplaireAcquitte } from "./factures";
+import { lireReglements } from "./paiements-facture";
 import { modalitesDeLaFacture, type ModalitesPaiement } from "@/lib/modalites-paiement";
 import type { Ctx } from "./context";
 
@@ -114,10 +117,20 @@ export async function corrigerCanalEnvoiFacture(
   });
 }
 
-/** Le dernier lien émis pour cette facture, pour le retrouver sans en créer un second. */
+/**
+ * Le dernier lien émis pour cette facture, pour le retrouver sans en créer un
+ * second.
+ *
+ * **Seulement les liens de la facture d'origine.** Un lien d'exemplaire
+ * acquitté (migration 0138) sert un autre fichier : le reprendre ici ferait
+ * partir la mention « acquittée » sur une facture qui ne l'est peut-être plus.
+ */
 export async function dernierEnvoiFacture(ctx: Ctx, factureId: string): Promise<EnvoiFacture | null> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const lignes = await tx.select().from(envoisFactures).where(eq(envoisFactures.factureId, factureId));
+    const lignes = await tx
+      .select()
+      .from(envoisFactures)
+      .where(and(eq(envoisFactures.factureId, factureId), isNull(envoisFactures.pdfStorageKey)));
     if (lignes.length === 0) return null;
     const dernier = lignes.sort((a, b) => b.envoyeAt.getTime() - a.envoyeAt.getTime())[0];
     return {
@@ -127,6 +140,105 @@ export async function dernierEnvoiFacture(ctx: Ctx, factureId: string): Promise<
       expireAt: dernier.expireAt,
       envoyeAt: dernier.envoyeAt,
     };
+  });
+}
+
+// ─── L'EXEMPLAIRE ACQUITTÉ — sa demande du 23 octobre 2026 ──────────────────
+//
+// *« Lorsque j'ai déjà envoyé la facture au client et que son assurance veut
+// une facture acquittée, il faut pouvoir lui renvoyer la même facture avec la
+// mention acquittée. Même numéro, tout pareil. »* (`appli/facture-acquittee.html`)
+//
+// Le lien d'origine sert le PDF archivé à l'émission, et c'est juste : le
+// client garde ce qu'il a reçu. L'exemplaire acquitté part donc sur un lien à
+// lui, qui porte son propre fichier archivé (`pdf_storage_key`).
+
+export type RefusEnvoiAcquitte = { ok: false; raison: string };
+
+/**
+ * Le lien d'exemplaire acquitté qui vaut encore : pas expiré, et préparé sur
+ * les MÊMES règlements. Un règlement corrigé ou retiré depuis ferait mentir le
+ * fichier archivé sur les montants versés.
+ */
+async function envoiAcquitteQuiVaut(tx: DbOrTx, factureId: string, empreinte: string, maintenant: Date) {
+  const [envoi] = await tx
+    .select()
+    .from(envoisFactures)
+    .where(
+      and(
+        eq(envoisFactures.factureId, factureId),
+        isNotNull(envoisFactures.pdfStorageKey),
+        eq(envoisFactures.empreinteReglements, empreinte),
+        gt(envoisFactures.expireAt, maintenant)
+      )
+    )
+    .orderBy(desc(envoisFactures.envoyeAt))
+    .limit(1);
+  return envoi ?? null;
+}
+
+/** Le jeton du lien d'exemplaire acquitté qui vaut encore, ou rien. */
+export async function jetonAcquitteVivant(
+  ctx: Ctx,
+  factureId: string,
+  maintenant: Date = new Date()
+): Promise<string | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const empreinte = empreinteDesReglements(await lireReglements(tx, factureId));
+    return (await envoiAcquitteQuiVaut(tx, factureId, empreinte, maintenant))?.jeton ?? null;
+  });
+}
+
+/**
+ * Prépare le lien de l'exemplaire acquitté, ou reprend celui qui vaut encore.
+ *
+ * **Refuse une facture qui n'est pas entièrement réglée** : le tampon ne
+ * s'imprime que si plus rien n'est dû (`tamponAcquittee`), et un exemplaire
+ * sans tampon serait la facture d'origine sous un autre lien.
+ */
+export async function preparerEnvoiAcquitte(
+  ctx: Ctx,
+  factureId: string,
+  canal: "sms" | "email",
+  maintenant: Date = new Date()
+): Promise<{ ok: true; jeton: string } | RefusEnvoiAcquitte> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [f] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
+    if (!f) return { ok: false as const, raison: "Cette facture est introuvable." };
+    if (f.statut !== "emise") {
+      return { ok: false as const, raison: "Cette facture n'est pas encore arrêtée." };
+    }
+    const reglements = await lireReglements(tx, factureId);
+    const tampon = tamponAcquittee(f.totalTtc, reglements);
+    if (!tampon) return { ok: false as const, raison: "Cette facture n'est pas entièrement réglée." };
+    const empreinte = empreinteDesReglements(reglements);
+
+    const existant = await envoiAcquitteQuiVaut(tx, factureId, empreinte, maintenant);
+    if (existant) {
+      // Le canal suit ce qui part vraiment, comme pour le lien d'origine.
+      if (existant.canal !== canal) {
+        await tx.update(envoisFactures).set({ canal }).where(eq(envoisFactures.id, existant.id));
+      }
+      return { ok: true as const, jeton: existant.jeton };
+    }
+
+    const octets = await pdfExemplaireAcquitte(tx, ctx.entrepriseId, f);
+    const objet = await enregistrerObjet(`chantiers/${f.chantierId}/factures`, Buffer.from(octets), ".pdf");
+    const acquitteeLe = reglements.map((g) => g.date).sort().at(-1)!;
+    const [envoi] = await tx
+      .insert(envoisFactures)
+      .values({
+        entrepriseId: ctx.entrepriseId,
+        factureId,
+        jeton: nouveauJeton(),
+        canal,
+        expireAt: new Date(maintenant.getTime() + VALIDITE_LIEN_JOURS * 86400_000),
+        pdfStorageKey: objet.storageKey,
+        acquitteeLe,
+        empreinteReglements: empreinte,
+      })
+      .returning({ jeton: envoisFactures.jeton });
+    return { ok: true as const, jeton: envoi.jeton };
   });
 }
 
@@ -166,8 +278,12 @@ export async function pdfFactureParJeton(
     await tx.execute(sql`SELECT set_config('app.entreprise_id', ${envoi.entrepriseId}, true)`);
 
     const [f] = await tx.select().from(factures).where(eq(factures.id, envoi.factureId)).limit(1);
-    if (!f?.pdfStorageKey) return null;
-    return { storageKey: f.pdfStorageKey, numero: f.numeroCommercial };
+    if (!f) return null;
+    // Un lien d'exemplaire acquitté sert SON fichier (migration 0138), archivé
+    // le jour où il a été préparé ; les autres, celui de l'émission.
+    const storageKey = envoi.pdfStorageKey ?? f.pdfStorageKey;
+    if (!storageKey) return null;
+    return { storageKey, numero: f.numeroCommercial };
   });
 
   if (!cle) return null;
@@ -237,6 +353,13 @@ export type FacturePourClient = {
    * ancien au plus récent, dans l'ordre de leurs numéros.
    */
   avoirs: { id: string; numero: string; dateEmission: string }[];
+  /**
+   * **La date du tampon, quand ce lien porte l'exemplaire acquitté**
+   * (migration 0138). La page le dit à la place de l'échéance et ne montre
+   * plus « Pour régler » : demander de payer une facture payée ferait douter
+   * le client, et son assureur avec lui.
+   */
+  acquitteeLe: string | null;
 };
 
 export async function factureParJeton(
@@ -291,6 +414,7 @@ export async function factureParJeton(
       // (`src/lib/modalites-paiement.ts`).
       modalites: modalitesDeLaFacture(f),
       avoirs: sesAvoirs,
+      acquitteeLe: envoi.acquitteeLe,
     };
   });
 }

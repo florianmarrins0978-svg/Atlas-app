@@ -41,6 +41,7 @@ import {
   creerEnvoiFacture,
   dernierEnvoiFacture,
   corrigerCanalEnvoiFacture,
+  preparerEnvoiAcquitte,
 } from "@/server/repositories/envois-factures";
 
 // Arrêt 3 du parcours (docs/AGENT.md §2.3) : le patron confirme le départ de
@@ -192,6 +193,23 @@ export async function preparerLienFactureAction(
     return { succes: true, jeton: envoi.jeton };
   } catch (e) {
     return { succes: false, erreur: e instanceof Error ? e.message : "Le lien n'a pas pu être préparé." };
+  }
+}
+
+/**
+ * Le lien de l'exemplaire acquitté (sa demande du 23 octobre 2026). Le refus
+ * revient en valeur, avec ses mots : une exception deviendrait un identifiant
+ * opaque chez lui (`AGENTS.md`).
+ */
+export async function preparerLienAcquitteAction(factureId: string, canal: "sms" | "email"): Promise<ResultatLienFacture> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "envoyer la facture acquittée");
+  try {
+    const r = await preparerEnvoiAcquitte(ctx, factureId, canal);
+    return r.ok ? { succes: true, jeton: r.jeton } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Exemplaire acquitté non préparé", { erreur: err instanceof Error ? err.message : String(err) });
+    return { succes: false, erreur: "La facture acquittée n'a pas pu être préparée. Réessayez." };
   }
 }
 
@@ -407,10 +425,14 @@ export async function retirerReglementRecuAction(reglementId: string): Promise<R
   return enReglements("Acompte retiré", () => retirerReglementRecu(ctx, reglementId));
 }
 
-export async function basculerAcquitteeAction(factureId: string, allumee: boolean): Promise<ResultatReglements> {
+export async function basculerAcquitteeAction(
+  factureId: string,
+  allumee: boolean,
+  moyen?: MoyenDePaiement
+): Promise<ResultatReglements> {
   const ctx = await getCurrentCtx();
   await exigerFacturation(ctx, "marquer la facture acquittée");
-  return enReglements("Facture acquittée", () => basculerAcquittee(ctx, factureId, allumee, jourIso(new Date())));
+  return enReglements("Facture acquittée", () => basculerAcquittee(ctx, factureId, allumee, jourIso(new Date()), moyen));
 }
 
 // ─── L'avoir, « Il ne me paiera pas », le paiement qui arrive quand même ─────

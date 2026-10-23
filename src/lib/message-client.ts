@@ -436,19 +436,26 @@ export function composerMessageFacture(params: {
   echeanceLisible?: string | null;
   lien: string;
   modele?: string | null;
+  /**
+   * L'exemplaire acquitté (sa demande du 23 octobre 2026) : « Voici votre
+   * facture F2026-000028 acquittée. » Le mot suit le numéro, dans son modèle
+   * comme dans celui d'Atlas, et l'échéance se tait : rien n'est plus à régler.
+   */
+  acquittee?: boolean;
 }): MessageClient {
-  const { clientNom, clientCivilite, entrepriseNom, numeroFacture, echeanceLisible, lien, modele } =
+  const { clientNom, clientCivilite, entrepriseNom, numeroFacture, echeanceLisible, lien, modele, acquittee } =
     params;
+  const numero = acquittee ? `${numeroFacture} acquittée` : numeroFacture;
   return {
-    objet: `Votre facture ${numeroFacture} — ${entrepriseNom}`,
+    objet: `Votre facture ${numero} — ${entrepriseNom}`,
     corps: rendreMessage(modele?.trim() || MESSAGES_PAR_DEFAUT.facture, {
       client: nommer(clientNom, clientCivilite),
       document: motDuDocument("facture"),
-      numero: numeroFacture,
+      numero,
       // **L'échéance entre dans la phrase, avant le lien**, et elle emporte ses
       // mots : sans échéance, la clause disparaît en entier plutôt que de
       // laisser « à régler avant le . » chez le client.
-      echeance: clauseEcheance(echeanceLisible),
+      echeance: clauseEcheance(acquittee ? null : echeanceLisible),
       lien,
       entreprise: entrepriseNom,
     }),

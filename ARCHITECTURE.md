@@ -35726,3 +35726,40 @@ le plus souvent une liste vide. Et **la ligne montre la pièce de ce mois**, pas
 la plus récente : un client revu en 2024 apparaît en juin 2017 avec son devis
 de juin 2017. La liste reçoit donc TOUTES les dates des devis envoyés et des
 factures émises (`joursDevis`, `joursFactures`), pas seulement la dernière.
+
+## §488 : L'exemplaire acquitté d'une facture partie est un second fichier
+
+**Sa demande du 23 octobre 2026** : *« lorsque j'ai déjà envoyé la facture au
+client et que son assurance veut une facture acquittée, il faut pouvoir lui
+renvoyer la même facture avec la mention acquittée. Même numéro, tout
+pareil. »* Planche `appli/facture-acquittee.html`.
+
+**Ce qui manquait.** Le tampon « Acquittée le … » existait
+(`tamponAcquittee`), et le PDF du patron se recompose : il le portait. Mais le
+lien du client sert le fichier archivé à l'émission (`pdfFactureParJeton`), et
+c'est juste : le client garde ce qu'il a reçu. Renvoyer le SMS lui redonnait
+donc la facture sans la mention.
+
+**L'original ne se réécrit pas** (trigger d'immuabilité, et la loi).
+L'exemplaire acquitté est un SECOND fichier, rangé sur le lien qui le transmet :
+`envois_factures.pdf_storage_key`, `acquittee_le`, `empreinte_reglements`
+(migration 0138, trois colonnes nulles). Un lien sans fichier sert la facture
+d'origine, comme avant ; `dernierEnvoiFacture` ne rend que ceux-là, pour qu'un
+envoi ordinaire ne reparte jamais avec une mention qui n'est plus vraie.
+
+**Il se compose depuis ce que la facture a figé** (`pdfExemplaireAcquitte`) :
+émetteur, adresses, dates, lignes, et l'allure gardée à l'émission (0074), pas
+celle des Réglages. Deux écarts possibles avec l'original, dits ici faute de
+mieux : le logo n'a jamais été figé, et une facture née sans devis relit ses
+conditions dans les Réglages du jour (`complementsDeLaFacture`), comme
+l'aperçu.
+
+**Un lien d'exemplaire ne resert que sur les mêmes règlements**
+(`empreinteDesReglements`) : un solde éteint puis rallumé avec un autre moyen
+ferait sinon partir « chèque » sur un virement.
+
+**Sur une facture arrêtée, l'interrupteur passe par la porte de Terminés**
+(`basculerAcquittee` → `soldera`, `retirerPaiement`) : le règlement entre au
+relevé de TVA, avec le moyen qu'il TOUCHE (rien n'est supposé), et s'éteint en
+gardant sa trace. La règle du 22 septembre, « sur un brouillon seulement », est
+retirée, et `test-papier-facture-db.ts` avec elle.
