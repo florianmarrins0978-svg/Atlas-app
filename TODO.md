@@ -20,7 +20,7 @@ d'exemple : `appli/dossier-justifie-exemple.pdf`, imprimé par
 | 4 | Le Check up relie seul un ticket quand un seul correspond | oui, et cela se défait (depuis la photo ou la liste « ce qu'Atlas a relié ») |
 | 5 | La page du comptable | oui : lien privé, justificatif cliquable, un bouton vert et un rouge par ligne ; un rouge demande pourquoi et revient au patron |
 | 6 | Les tickets | le ticket réécrit dans le format du dossier, **complet, ligne par ligne comme imprimé** (rien de regroupé : sa remarque devant un essai qui fusionnait les doublons), avec la vignette de la vraie photo, qui reste la preuve |
-| 7 | Quand valider l'année | **quand il veut** : il cale ses dates sur l'exercice décidé avec son expert-comptable. Pas de règle du 1ᵉʳ janvier |
+| 7 | Quand valider l’année | **quand il veut**, par une touche qui arrête le dossier au jour choisi : son exercice peut tomber à n’importe quelle date. Pas de règle du 1ᵉʳ janvier |
 | — | Entrées et sorties | **B** : deux colonnes, sorties en rouge, entrées en vert, total du mois et soldes de la banque en bas |
 
 **Ce que ses deux vrais tickets ont appris (Intermarché, Uber Eats) :** un
@@ -30,9 +30,17 @@ Eats ; une date sans année se fait confirmer. Le redressement de la photo
 (coins, perspective, ombre) a tenu sur les deux, dont un ticket froissé à
 moitié dans l'ombre.
 
-**À trancher en codant, avec lui :** l'exercice qui ne tombe pas sur l'année
-civile. S'il valide « quand il veut », le dossier doit couvrir SES dates
-(du… au…), pas forcément janvier à décembre.
+**Les dates du dossier, tranché le même soir :** son exercice peut tomber à
+n'importe quelle date, donc **une touche « Arrêter mon dossier ici »**. Le
+dossier va du jour qui suit le précédent arrêt jusqu'au jour choisi
+(aujourd'hui par défaut) ; le suivant commence le lendemain, tout seul. Pour
+le tout premier, la date de début se demande. Le dossier se nomme par ses
+dates (« du 1ᵉʳ juillet 2025 au 30 juin 2026 »), pas par une année.
+Aucun réglage d'exercice à saisir.
+
+**Le ticket réécrit recopie TOUT ce qui est imprimé, dans l'ordre**, y compris
+numéros de caisse, horaires, conditions et code-barre. Il a demandé « il faut
+toutes les infos non ? » : Atlas ne trie pas à sa place ce qui compte.
 
 **Ce qui reste un contrat, pas du code :** la banque pour ses futurs clients
 (`docs/A-FAIRE.md` §13). Pour lui, l'essai Enable Banking suffit.
