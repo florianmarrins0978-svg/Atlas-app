@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atlas : les factures du fournisseur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Playfair+Display:wght@400&display=swap" rel="stylesheet">
+<style>
+  /*
+    L'ONGLET « FACTURES » DE LA FICHE D'UN FOURNISSEUR — sa demande du
+    23 octobre 2026 : « que les factures s'enregistrent ici, en photo, en PDF
+    ou en CSV », et son choix du même soir : « un onglet séparé ».
+
+    Ce qui existe déjà et que la maquette reprend tel quel : la feuille de la
+    fiche, ses pastilles, la lecture d'un devis en photo ou en PDF et la liste
+    à cocher avant d'écrire (`FournisseursPartenaires.tsx`, `LuSurLeDevis`).
+
+    Ce qui est neuf : l'onglet, le fichier Excel ou CSV, et l'ancien prix
+    montré à côté du nouveau quand une facture change un prix déjà connu (le
+    même principe que `ImportTarifs.tsx` : rien n'est écrasé sans être vu).
+
+    Deux façons de loger quatre pastilles sur un téléphone : A garde les
+    libellés et passe sur deux rangs ; B garde un rang et raccourcit.
+
+    Rien n'est codé. Les fournitures et les prix sont des exemples.
+  */
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --plein:#7d9a6d; --sur-plein:#faf9f5; --line:rgba(28,28,26,.12);
+    --alerte:#a3472e;
+  }
+  *{box-sizing:border-box}
+  ::selection{background:#d9e2d2}
+  html,body{margin:0;background:#5c5a54}
+  body{font-family:Inter,system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+  .choix{display:flex;gap:6px;justify-content:center;padding:14px 16px 10px}
+  .choix button{font:inherit;font-size:13px;border-radius:999px;border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;padding:7px 14px;min-height:36px}
+  .choix button[aria-pressed=true]{background:#fff;color:var(--ink)}
+  .feuille{max-width:440px;margin:0 auto;background:var(--bone);border-radius:28px 28px 0 0;padding:12px 22px 40px;min-height:calc(100svh - 60px)}
+  .poignee{width:42px;height:4px;border-radius:2px;background:rgba(28,28,26,.18);margin:0 auto 22px}
+  .tete{display:flex;align-items:center}
+  h2{flex:1;margin:0;font:400 22px/1.2 "Playfair Display",Georgia,serif}
+  .lien{font:inherit;font-size:14px;color:var(--ink-soft);background:none;border:0;text-decoration:underline;text-underline-offset:3px;padding:0}
+  .parties{margin-top:12px;display:grid;gap:6px;grid-template-columns:repeat(4,1fr)}
+  .parties.a{grid-template-columns:1fr 1fr}
+  .parties button{font:inherit;font-size:14px;min-height:44px;border-radius:999px;border:1px solid var(--line);background:var(--cream);color:var(--ink);padding:0 6px;line-height:1.15}
+  .parties button[aria-pressed=true]{background:var(--plein);border-color:var(--plein);color:var(--sur-plein)}
+  .chercher{margin-top:12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--muted);padding:10px 0}
+  .chercher svg{flex:none}
+  .chercher input{flex:1;border:0;background:none;font:inherit;font-size:16px;color:var(--ink);outline:none}
+  .chercher input::placeholder{color:var(--muted)}
+  .bloc{margin-top:12px;background:var(--cream);border-radius:12px;padding:2px 14px}
+  .ligne{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding:10px 0;font-size:14.5px}
+  .ligne:first-child{border-top:0}
+  .ligne .nom{flex:1;min-width:0}
+  .ligne small{display:block;font-size:12.5px;color:var(--muted);margin-top:1px}
+  .ligne .prix{flex:none;text-align:right}
+  .ligne .prix small{text-decoration:line-through}
+  .ligne .prix .monte{color:var(--alerte)}
+  .vignette{width:44px;height:44px;border-radius:8px;flex:none;background:#fff;box-shadow:inset 0 0 0 1px var(--line);display:grid;place-items:center;color:var(--muted);font-size:10px;letter-spacing:.04em}
+  .vignette.photo{background:linear-gradient(160deg,#fff 0 60%,#ece9e1 60%)}
+  input[type=checkbox]{width:20px;height:20px;flex:none;accent-color:var(--plein)}
+  .champ{margin-top:12px;width:100%;font:inherit;font-size:16px;border:0;border-radius:12px;padding:14px;background:var(--cream);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);outline:none}
+  .champ:focus,.chercher input:focus-visible{box-shadow:inset 0 0 0 2px var(--plein)}
+  .plein,.creux{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;border-radius:999px;font:inherit;font-size:16px;margin-top:10px}
+  .plein{background:var(--plein);color:var(--sur-plein);border:0}
+  .plein:disabled{opacity:.5}
+  .creux{background:var(--cream);color:var(--ink);border:1px solid var(--line)}
+  button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  .note{margin:12px 0 0;font-size:14px;color:var(--muted);line-height:1.45}
+  .lit{margin:12px 0 0;font-size:14px;color:var(--ink-soft)}
+  .lit::after{content:"";display:inline-block;width:1.2em;text-align:left;animation:points 1.2s steps(4) infinite}
+  @keyframes points{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+  .total{display:flex;justify-content:space-between;padding:10px 0 4px;font-size:14px;color:var(--ink-soft)}
+  .laisser{display:block;width:100%;padding:12px 0;background:none;border:0;font:inherit;font-size:15px;color:var(--ink-soft)}
+  .fait{margin-top:12px;font-size:14px;color:var(--ink-soft)}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="choix" role="group" aria-label="Variante">
+  <button type="button" data-v="a" aria-pressed="true">A : deux rangs</button>
+  <button type="button" data-v="b" aria-pressed="false">B : un rang</button>
+</div>
+
+<div class="feuille">
+  <div class="poignee"></div>
+  <div class="tete">
+    <h2>Point P</h2>
+    <button type="button" class="lien">Fermer</button>
+  </div>
+
+  <div class="parties a" role="group" aria-label="Partie de la fiche" id="parties"></div>
+
+  <div class="chercher">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B98B47" stroke-width="1.8" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></svg>
+    <input id="chercher" placeholder="Chercher une facture" aria-label="Chercher dans la fiche">
+  </div>
+
+  <!-- MES PRIX -->
+  <section data-p="prix" hidden>
+    <div class="bloc" id="liste-prix"></div>
+  </section>
+
+  <!-- DEVIS REÇUS -->
+  <section data-p="devis" hidden>
+    <button type="button" class="plein">Prendre un devis en photo</button>
+    <button type="button" class="creux">PDF, photo ou Excel</button>
+    <div class="bloc">
+      <div class="ligne"><span class="vignette photo"></span><span class="nom">Chantier Morel<small>Reçu le 2 octobre, Photo</small></span><button type="button" class="lien" style="font-size:13px">Voir</button></div>
+    </div>
+  </section>
+
+  <!-- FACTURES -->
+  <section data-p="factures">
+    <input class="champ" id="nom-facture" placeholder="Nom de la facture, chantier ou client" aria-label="Nom de la facture">
+    <button type="button" class="plein" id="photo">Prendre une facture en photo</button>
+    <button type="button" class="creux" id="fichier">PDF, photo ou Excel</button>
+
+    <p class="lit" id="lit" hidden>Atlas lit la facture</p>
+
+    <div class="bloc" id="lu" hidden>
+      <div id="lignes-lues"></div>
+      <div class="total"><span>Total de la facture</span><span>486,22 € HT, 583,46 € TTC</span></div>
+      <button type="button" class="plein" id="prendre">Mettre 4 prix dans « Mes prix »</button>
+      <button type="button" class="laisser" id="laisser">Garder la facture sans les prix</button>
+    </div>
+
+    <p class="fait" id="fait" hidden></p>
+
+    <div class="bloc" id="liste-factures"></div>
+  </section>
+
+  <!-- DEMANDES ENVOYÉES -->
+  <section data-p="demandes" hidden>
+    <div class="bloc">
+      <div class="ligne"><span class="nom">Arrosage Lefèvre<small>Envoyée le 14 octobre, 12 lignes</small></span></div>
+    </div>
+  </section>
+</div>
+
+<script>
+  const PARTIES = {
+    a: [["prix","Mes prix"],["devis","Devis reçus"],["factures","Factures"],["demandes","Demandes envoyées"]],
+    b: [["prix","Prix"],["devis","Devis"],["factures","Factures"],["demandes","Demandes"]],
+  };
+  const RECHERCHE = {prix:"Chercher une fourniture",devis:"Chercher un devis",factures:"Chercher une facture",demandes:"Chercher une demande"};
+
+  let variante = "a", partie = "factures";
+
+  const prix = [
+    {nom:"Sable 0/4 lavé", ref:"SAB04", unite:"t", prix:38.50, source:"Devis Chantier Morel, 2 octobre"},
+    {nom:"Bordure P1 grise 100 cm", ref:"BP1G", unite:"pièce", prix:4.20, source:"Devis Chantier Morel, 2 octobre"},
+    {nom:"Géotextile 100 g", ref:"GEO100", unite:"m²", prix:0.95, source:"Tapé à la main, 12 septembre"},
+  ];
+  const factures = [
+    {nom:"Facture 2026 09 0412", recue:"18 septembre", nature:"PDF", ttc:"1 240,50 €"},
+  ];
+  const lues = [
+    {nom:"Sable 0/4 lavé", ref:"SAB04", unite:"t", prix:41.20, garde:true},
+    {nom:"Bordure P1 grise 100 cm", ref:"BP1G", unite:"pièce", prix:4.20, garde:true},
+    {nom:"Gravier 6/10 roulé", ref:"GRA610", unite:"t", prix:52.00, garde:true},
+    {nom:"Ciment CEM II 35 kg", ref:"CEM35", unite:"sac", prix:9.85, garde:true},
+  ];
+
+  const euros = n => n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2}) + " €";
+  const $ = id => document.getElementById(id);
+
+  function dessinerParties(){
+    const g = $("parties");
+    g.className = "parties " + variante;
+    g.innerHTML = "";
+    for (const [p, nom] of PARTIES[variante]) {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = nom;
+      b.setAttribute("aria-pressed", p === partie);
+      b.onclick = () => { partie = p; tout(); };
+      g.appendChild(b);
+    }
+  }
+
+  function dessinerPrix(){
+    $("liste-prix").innerHTML = prix.map(p =>
+      `<div class="ligne"><span class="nom">${p.nom}<small>${p.source}</small></span>
+       <span class="prix">${euros(p.prix)} / ${p.unite}${p.ancien!=null?`<small>${euros(p.ancien)}</small>`:""}</span></div>`).join("");
+  }
+
+  function dessinerFactures(){
+    $("liste-factures").innerHTML = factures.map(f =>
+      `<div class="ligne"><span class="vignette${f.nature==="Photo"?" photo":""}">${f.nature==="Photo"?"":f.nature}</span>
+       <span class="nom">${f.nom}<small>Reçue le ${f.recue}, ${f.ttc} TTC</small></span>
+       <button type="button" class="lien" style="font-size:13px">Voir</button></div>`).join("");
+  }
+
+  function dessinerLues(){
+    $("lignes-lues").innerHTML = lues.map((l,i) => {
+      const connu = prix.find(p => p.ref === l.ref);
+      let detail = `réf. ${l.ref}`;
+      let ancien = "";
+      if (connu && connu.prix !== l.prix) {
+        detail = `réf. ${l.ref}, ${l.prix > connu.prix ? "plus cher" : "moins cher"}`;
+        ancien = `<small>${euros(connu.prix)}</small>`;
+      } else if (connu) detail = `réf. ${l.ref}, prix inchangé`;
+      else detail = `réf. ${l.ref}, nouvelle fourniture`;
+      return `<label class="ligne"><input type="checkbox" data-i="${i}" ${l.garde?"checked":""}>
+        <span class="nom">${l.nom}<small>${detail}</small></span>
+        <span class="prix"><span class="${connu && l.prix>connu.prix?"monte":""}">${euros(l.prix)} / ${l.unite}</span>${ancien}</span></label>`;
+    }).join("");
+    $("lignes-lues").querySelectorAll("input").forEach(c => c.onchange = () => { lues[+c.dataset.i].garde = c.checked; compter(); });
+    compter();
+  }
+
+  function compter(){
+    const n = lues.filter(l => l.garde).length;
+    $("prendre").textContent = `Mettre ${n} prix dans « Mes prix »`;
+    $("prendre").disabled = n === 0;
+  }
+
+  function lire(nature){
+    $("fait").hidden = true; $("lu").hidden = true; $("lit").hidden = false;
+    setTimeout(() => {
+      $("lit").hidden = true; $("lu").hidden = false; dessinerLues();
+      factures.unshift({nom: $("nom-facture").value.trim() || "Facture 2026 10 0587", recue:"23 octobre", nature, ttc:"583,46 €"});
+      dessinerFactures();
+    }, 1400);
+  }
+  $("photo").onclick = () => lire("Photo");
+  $("fichier").onclick = () => lire("PDF");
+
+  $("prendre").onclick = () => {
+    let n = 0;
+    for (const l of lues.filter(l => l.garde)) {
+      const connu = prix.find(p => p.ref === l.ref);
+      const source = "Facture du 23 octobre";
+      if (connu) { if (connu.prix !== l.prix) connu.ancien = connu.prix; connu.prix = l.prix; connu.source = source; }
+      else prix.unshift({nom:l.nom, ref:l.ref, unite:l.unite, prix:l.prix, source});
+      n++;
+    }
+    $("lu").hidden = true; $("nom-facture").value = "";
+    $("fait").hidden = false;
+    $("fait").textContent = `${n} prix mis dans « Mes prix ».`;
+    dessinerPrix();
+  };
+  $("laisser").onclick = () => { $("lu").hidden = true; $("fait").hidden = false; $("fait").textContent = "Facture gardée, aucun prix changé."; };
+
+  document.querySelectorAll(".choix button").forEach(b => b.onclick = () => {
+    variante = b.dataset.v;
+    document.querySelectorAll(".choix button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    dessinerParties();
+  });
+
+  function tout(){
+    dessinerParties();
+    document.querySelectorAll("section[data-p]").forEach(s => s.hidden = s.dataset.p !== partie);
+    $("chercher").placeholder = RECHERCHE[partie];
+  }
+
+  tout(); dessinerPrix(); dessinerFactures();
+</script>
+</body>
+</html>
