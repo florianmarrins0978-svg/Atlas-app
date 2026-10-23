@@ -242,3 +242,39 @@ export function recuperation(a: AchatARecuperer): { tvaRecuperee: number; manque
 
   return { tvaRecuperee: Math.round(a.tvaTicket * part * 100) / 100, manques };
 }
+
+/**
+ * Pourquoi une ligne compte MOINS que la TVA de son ticket, et sur combien.
+ *
+ * *Sa remarque du 23 octobre 2026 : « le comptable va lire le ticket TVA 8,33
+ * et voir TVA enregistrée 6 et quelque, et ne va pas comprendre pourquoi ».*
+ * Il a retenu la planche B (`appli/tva-voiture-80.html`) : la raison sous le
+ * nom, « sur 8,33 € » sous la TVA. Ce qui compte toute sa TVA se tait, et un
+ * achat d'avant les natures n'a pas de raison qu'on lui inventerait.
+ *
+ * La raison se lit dans ce que `recuperation` a décidé, jamais recalculée à
+ * côté : la TVA comptée vient de la base.
+ */
+export function pourquoiMoinsQueLeTicket(a: {
+  nature: NatureAchat | null;
+  vehicule: VehiculeAchat | null;
+  repas: RepasAchat | null;
+  tvaTicket: string | null;
+  tvaDeductible: string;
+}): { mot: string; tvaTicket: string } | null {
+  if (a.nature === null || a.tvaTicket === null) return null;
+  if (Math.round(Number(a.tvaDeductible) * 100) >= Math.round(Number(a.tvaTicket) * 100)) return null;
+  const mot = (() => {
+    switch (a.nature) {
+      case "carburant":
+        return a.vehicule === "voiture" ? "Voiture, 80 %" : "Véhicule à choisir";
+      case "repas":
+        if (a.repas === "affaires") return "Repas d’affaires, preuves à compléter";
+        if (a.repas === "perso") return "Repas perso, non récupérable";
+        return "Repas, affaires ou perso à choisir";
+      default:
+        return `${LIBELLE_NATURE[a.nature]}, non récupérable`;
+    }
+  })();
+  return { mot, tvaTicket: a.tvaTicket };
+}

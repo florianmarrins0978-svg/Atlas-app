@@ -63,6 +63,8 @@ Reste : éprouver l'appui long sur son téléphone, ce poste n'a qu'un navigateu
 
 ## LA FACTURE ACQUITTÉE APRÈS L'ENVOI : CODÉE LE 23 OCTOBRE 2026, PAS SUR `main`
 
+## ⏳ UNE PLANCHE À REGARDER : RENVOYER LA FACTURE ACQUITTÉE (23 octobre 2026)
+
 Planche `appli/facture-acquittee.html`, son « code ça » du 23 octobre. Branche
 `claude/facture-acquittee`, sans batterie (sa consigne). **Reste : la batterie
 entière** (niveau 3, argent et migration 0141), puis `main`. `ARCHITECTURE.md`

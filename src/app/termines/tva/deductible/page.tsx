@@ -6,6 +6,7 @@ import { getEntreprise } from "@/server/repositories/entreprises";
 import { listerAchatsTva, totalTvaDeductible } from "@/server/repositories/achats-tva";
 import { lirePeriode, periodeCourante, libellePeriode, PERIODICITE_TVA_PAR_DEFAUT } from "@/server/periode-tva";
 import { jourCourt, jourIso } from "@/lib/jour";
+import { pourquoiMoinsQueLeTicket } from "@/lib/achat-tva";
 import TableauCalculette from "../TableauCalculette";
 
 export const dynamic = "force-dynamic";
@@ -58,12 +59,16 @@ export default async function TvaDeductiblePage({
               qui="Fournisseur"
               montant="Payé"
               totalTva={String(deductible)}
-              pieces={achats.map((a) => ({
-                cle: a.id,
-                nom: a.fournisseur,
-                sous: [`le ${jourCourt(a.dateAchat, aujourdHui)}`],
-                parts: [{ taux: a.tauxTva, montant: a.totalTtc, tva: a.tvaDeductible }],
-              }))}
+              pieces={achats.map((a) => {
+                const moins = pourquoiMoinsQueLeTicket(a);
+                return {
+                  cle: a.id,
+                  nom: a.fournisseur,
+                  sous: [`le ${jourCourt(a.dateAchat, aujourdHui)}`],
+                  raison: moins?.mot,
+                  parts: [{ taux: a.tauxTva, montant: a.totalTtc, tva: a.tvaDeductible, sur: moins?.tvaTicket }],
+                };
+              })}
             />
           )}
         </section>
