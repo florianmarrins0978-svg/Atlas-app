@@ -341,7 +341,7 @@ if (MISE === "renvoi") tout.forEach((L, m) => {
   h += `<section class="page">
     <div class="titre-page"><h2>${MOIS_M[m]} 2025</h2><span class="caps">Relevé de banque</span></div>
     ${resumeMois(L, m)}
-    <table class="releve"><thead><tr><th></th><th>Date</th><th>Ce qu’écrit la banque</th><th>Catégorie</th><th class="d s">Sorties</th><th class="d e">Entrées</th><th>Justificatif</th></tr></thead><tbody>
+    <table class="releve"><thead><tr><th></th><th>Date</th><th>Libellé</th><th>Catégorie</th><th class="d s">Sorties</th><th class="d e">Entrées</th><th>Justificatif</th></tr></thead><tbody>
     ${L.map(l => `<tr><td class="coul" style="background:${COUL[l.cat]}"></td><td class="num">${l.ref ? `<span id="ligne-${l.ref}">` : ""}${deux(l.jour)}/${deux(m + 1)}${l.ref ? "</span>" : ""}</td><td class="lib">${l.lib}</td><td class="cat">${NOM[l.cat]}</td><td class="d num s">${l.montant < 0 ? eur(l.montant) : ""}</td><td class="d num e">${l.montant > 0 ? eur(l.montant) : ""}</td><td class="just">${
       l.perdu ? `<span class="perdu">Ticket perdu, mention validée</span>`
       : l.ticket ? `<a class="vers" href="#piece-${l.ref}"><span class="ref">${l.ref}</span> Ticket du ${deux(l.ticket.jour)}/${deux(m + 1)} <span class="p">p. ${ouEst(m, l.ref)}</span></a>`
@@ -364,7 +364,7 @@ if (MISE === "renvoi") tout.forEach((L, m) => {
 // Les tickets perdus
 h += `<section class="page">
   <div class="titre-page"><h2>Les tickets perdus</h2><span class="caps">2025</span></div>
-  <table class="perdus"><thead><tr><th>Date</th><th>Ce qu’écrit la banque</th><th>Catégorie</th><th class="d">Montant</th><th>Mention</th></tr></thead><tbody>
+  <table class="perdus"><thead><tr><th>Date</th><th>Libellé</th><th>Catégorie</th><th class="d">Montant</th><th>Mention</th></tr></thead><tbody>
   ${tout.flatMap((L, m) => L.filter(l => l.perdu).map(l => `<tr><td class="num">${deux(l.jour)}/${deux(m + 1)}/2025</td><td style="font-family:Consolas,monospace;font-size:8pt">${l.lib}</td><td><span class="pastille" style="background:${COUL[l.cat]}"></span>${NOM[l.cat]}</td><td class="d num">${eur(l.montant)}</td><td>Ticket perdu, validé au Check up</td></tr>`)).join("")}
   </tbody></table>
   <div class="encadre">Ces ${perdus.length} dépenses restent dans le relevé, avec leur mention. Leur TVA n’a pas été déduite, soit <b class="num">${eur(tvaPerdue)}</b> au total, faute de ticket.</div>
