@@ -35792,3 +35792,24 @@ désormais dès que la feuille s'ouvre : l'attente « que la page se pose » du
 22 octobre esquivait la course, elle a été retirée. `test-compte-db` tient la
 moitié base (une session fermée seule, Face ID gardé, rien d'effaçable par
 `atlas_app`).
+
+## §489 : Une facture reçue est un devis reçu d'un autre genre
+
+**Décision du 23 octobre 2026**, à sa demande d'un onglet Factures sur la fiche
+d'un fournisseur (`appli/fournisseur-factures.html`, B).
+
+Une facture se garde, se lit, s'ouvre et s'exporte exactement comme un devis
+reçu. Une seconde table aurait recopié le dépôt, la lecture, la porte de
+téléchargement et l'export, et les deux copies auraient divergé (§3 de
+`CLAUDE.md`). La migration 0139 ajoute donc `genre` à `devis_recus`, en expand
+seul : le code d'avant écrit `devis` par défaut sans le savoir.
+
+**Ce qui les sépare vraiment tient en une règle** : une facture dit ce qu'il a
+PAYÉ, donc elle remplace le prix qu'elle confirme ou corrige (l'ancien gardé
+dans `prix_avant`, montré barré) ; un devis est une offre, il ajoute.
+`rapprocherDuPrix` décide de l'appariement (référence, sinon même nom dans la
+même unité) pour l'écran ET pour le serveur.
+
+**Écarté :** remplacer aussi les prix sur un devis. Ce serait changer un
+comportement qu'il n'a pas demandé, et une offre non retenue écraserait un prix
+payé.

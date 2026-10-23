@@ -10,6 +10,10 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LES FACTURES DES FOURNISSEURS (23 octobre 2026)
+
+Une facture reçue est une ligne de `devis_recus` avec `genre = 'facture'` : même fichier gardé, même porte (`/reglages/fournisseurs/devis/[id]`, un tableur s'y télécharge), même lecture IA (le modèle rend aussi `total_ht` et `total_ttc`). Un Excel ou un CSV passe par la règle des tarifs (`lireFichierTarifs`, puis `lignesDuTableau`) : il est lu AVANT d'être gardé, et refusé s'il ne s'ouvre pas. **Le piège :** une facture REMPLACE le prix qu'elle confirme, un devis AJOUTE ; le rapprochement se refait au serveur avec la règle qui a dessiné l'écran, jamais sur ce que le navigateur renvoie. Un prix inchangé remplacé perd son ancien barré : la facture le confirme.
+
 ## SUPPRIMER PLUSIEURS CLIENTS (23 octobre 2026)
 
 La feuille de suppression d'un client et celle de plusieurs clients sont **une seule pièce** (`FeuilleSuppressionClients.tsx`) : une phrase de prévention changée là change les deux, c'est voulu. La liste ne lit ce que la loi garde qu'à l'ouverture de la feuille (`apercuSuppressionClientsAction`), pas à chaque affichage. Le piège : iOS ouvre son propre menu sur un lien tenu ; `APPUI_SANS_MENU` le coupe, et le clic qui suit l'appui long est avalé, sans quoi la fiche s'ouvrirait.

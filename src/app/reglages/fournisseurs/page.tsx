@@ -12,21 +12,25 @@ export const dynamic = "force-dynamic";
 const jourFrancais = (iso: string) => iso.split("-").reverse().join("/");
 const jourDe = (d: Date) => d.toLocaleDateString("sv-SE", { timeZone: "Europe/Paris" });
 
+const recu = (d: SocieteComplete["devis"][number]): SocieteVue["devis"][number] => ({
+  id: d.id,
+  nom: d.nom,
+  jour: d.recuLe,
+  recuLe: jourFrancais(d.recuLe),
+  nature: d.nature,
+  fichierNom: d.fichierNom,
+  totalTtc: d.totalTtc,
+});
+
 function vue(s: SocieteComplete): SocieteVue {
   return {
     id: s.id,
     nom: s.nom,
     marge: s.marge,
     email: s.email,
-    prix: s.prix.map((p) => ({ id: p.id, nom: p.nom, unite: p.unite, prixHt: p.prixHt, source: p.source })),
-    devis: s.devis.map((d) => ({
-      id: d.id,
-      nom: d.nom,
-      jour: d.recuLe,
-      recuLe: jourFrancais(d.recuLe),
-      nature: d.nature,
-      fichierNom: d.fichierNom,
-    })),
+    prix: s.prix.map((p) => ({ id: p.id, nom: p.nom, reference: p.reference, unite: p.unite, prixHt: p.prixHt, prixAvant: p.prixAvant, source: p.source })),
+    devis: s.devis.filter((d) => d.genre === "devis").map(recu),
+    factures: s.devis.filter((d) => d.genre === "facture").map(recu),
     demandes: s.demandes.map((d) => ({
       id: d.id,
       nom: d.titre,
@@ -43,7 +47,7 @@ function vue(s: SocieteComplete): SocieteVue {
  *
  * Ce qu'il PAIE, à part de ce qu'il vend : ses fournisseurs et leurs prix, ses
  * partenaires et le prix de leur main d'œuvre, les devis reçus et les listes
- * envoyées, ses deux marges. Le devis dicté y prend ses prix après ses tarifs
+ * envoyées, les factures reçues (23 octobre 2026), ses deux marges. Le devis dicté y prend ses prix après ses tarifs
  * (`src/lib/prix-achat.ts`).
  *
  * **La rubrique refuse un non-propriétaire avant de lire quoi que ce soit**,

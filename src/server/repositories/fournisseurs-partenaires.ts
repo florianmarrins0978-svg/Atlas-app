@@ -141,7 +141,7 @@ export async function retirerPrixAchat(ctx: Ctx, id: string): Promise<boolean> {
 export async function ajouterDevisRecu(
   ctx: Ctx,
   societeId: string,
-  devis: { nom: string; fichierCle: string; fichierNom: string | null; nature: "photo" | "pdf" }
+  devis: { nom: string; fichierCle: string; fichierNom: string | null; nature: "photo" | "pdf" | "tableur"; genre: "devis" | "facture" }
 ): Promise<DevisRecuEnBase> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [d] = await tx
@@ -159,6 +159,55 @@ export async function getDevisRecu(ctx: Ctx, id: string): Promise<DevisRecuEnBas
       .from(devisRecus)
       .where(and(eq(devisRecus.id, id), isNull(devisRecus.deletedAt)));
     return d;
+  });
+}
+
+/** Les totaux qu'Atlas a lus sur une facture, posés après la lecture. */
+export async function poserTotauxDuDevisRecu(ctx: Ctx, id: string, totaux: { totalHt: string | null; totalTtc: string | null }): Promise<void> {
+  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    await tx.update(devisRecus).set(totaux).where(and(eq(devisRecus.id, id), isNull(devisRecus.deletedAt)));
+  });
+}
+
+/** Les prix d'une seule société, du plus récent au plus ancien. */
+export async function prixDeLaSociete(ctx: Ctx, societeId: string): Promise<PrixAchatEnBase[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>
+    tx
+      .select()
+      .from(prixAchat)
+      .where(and(eq(prixAchat.societeId, societeId), isNull(prixAchat.deletedAt)))
+      .orderBy(desc(prixAchat.createdAt))
+  );
+}
+
+/**
+ * Un prix qu'une facture remplace : l'ancien se retire et le nouveau garde sa
+ * trace (`prixAvant`), **dans la même transaction**. Les deux à part laisseraient,
+ * sur une coupure, deux prix pour la même pièce, ou plus aucun.
+ */
+export async function remplacerPrixAchat(
+  ctx: Ctx,
+  ancienId: string,
+  ligne: { nom: string; reference?: string | null; unite: string; prixHt: string; source: string; releveLe?: string; devisRecuId?: string | null }
+): Promise<PrixAchatEnBase | undefined> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [ancien] = await tx
+      .update(prixAchat)
+      .set({ deletedAt: new Date() })
+      .where(and(eq(prixAchat.id, ancienId), isNull(prixAchat.deletedAt)))
+      .returning();
+    if (!ancien) return undefined;
+    const [p] = await tx
+      .insert(prixAchat)
+      .values({
+        entrepriseId: ctx.entrepriseId,
+        societeId: ancien.societeId,
+        createdBy: ctx.utilisateurId,
+        ...ligne,
+        prixAvant: ancien.prixHt === ligne.prixHt ? null : ancien.prixHt,
+      })
+      .returning();
+    return p;
   });
 }
 

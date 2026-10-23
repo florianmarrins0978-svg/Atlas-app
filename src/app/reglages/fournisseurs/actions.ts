@@ -9,22 +9,37 @@ import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerPhotoEntrante } from "@/server/photo-entrante";
 import { logger } from "@/server/logger";
 import { lireDevisFournisseur } from "@/server/ai/services/lire-devis-fournisseur";
+import { lireFichierTarifs } from "@/server/import/lire-fichier-tarifs";
 import {
   ajouterDevisRecu,
   ajouterPrixAchat,
   creerSociete,
   getDevisRecu,
   getSociete,
+  poserTotauxDuDevisRecu,
+  prixDeLaSociete,
+  remplacerPrixAchat,
   reglerMarge,
   reglerContactSociete,
   reglerMargeSociete,
   retirerPrixAchat,
 } from "@/server/repositories/fournisseurs-partenaires";
 import { lireAdresseMail, lireMarge, lireMorceauDeMessage, lirePrixHt, UNITES_ACHAT, type RubriqueAchat } from "@/lib/prix-achat";
-import { sourceDuDevisLu, type LigneDevisLue } from "@/lib/devis-fournisseur-lu";
+import {
+  lignesDuTableau,
+  rapprocherDuPrix,
+  sourceDeLaFactureLue,
+  sourceDuDevisLu,
+  typeDuFichierRecu,
+  type DevisLu,
+  type PrixConnu,
+} from "@/lib/devis-fournisseur-lu";
 // Les mêmes bornes qu'un papier de véhicule : un PDF ou une photo de moins de
 // 8 Mo. Une seconde liste de formats finirait par diverger de la première.
-import { refusDuDocumentVehicule, typeDuDocument } from "@/lib/vehicules";
+import { refusDuDocumentVehicule } from "@/lib/vehicules";
+
+// La borne de l'import des tarifs : un tableur plus lourd n'est plus une liste de prix.
+const TABLEUR_MAX_OCTETS = 5_000_000;
 
 /**
  * LES GESTES DE « FOURNISSEURS ET PARTENAIRES » — sa planche du 18 et du
@@ -177,82 +192,122 @@ export async function retirerPrixAction(id: string): Promise<{ ok: true } | Refu
 }
 
 /**
- * GARDER UN DEVIS REÇU — une photo ou un PDF, nommé. Le fichier est rangé tout
- * de suite (« se garde ») ; ce qu'Atlas y LIT est seulement rendu à l'écran.
+ * GARDER UN DEVIS OU UNE FACTURE REÇUS — une photo, un PDF, ou un fichier Excel
+ * ou CSV (sa demande du 23 octobre 2026), nommé. Le fichier est rangé tout de
+ * suite (« se garde ») ; ce qu'Atlas y LIT est seulement rendu à l'écran.
  * **Aucun prix n'est écrit avant son accord** (`accepterLignesDuDevisAction`),
  * comme `ImportTarifs.tsx`.
  *
- * La lecture ne fait jamais échouer le dépôt : sans elle, le devis est gardé et
- * les prix se tapent à la main.
+ * La lecture ne fait jamais échouer le dépôt : sans elle, le document est gardé
+ * et les prix se tapent à la main. Un tableur, lui, se lit AVANT d'être gardé :
+ * celui que la règle des tarifs ne sait pas ouvrir est refusé avec sa raison,
+ * plutôt que rangé illisible.
  */
 export async function deposerDevisRecuAction(
   formData: FormData
-): Promise<{ ok: true; devisId: string; lu: { lignes: LigneDevisLue[]; ecartees: number } | null } | Refus> {
-  const garde = await patron("garder un devis reçu");
+): Promise<{ ok: true; devisId: string; lu: DevisLu | null } | Refus> {
+  const garde = await patron("garder un devis ou une facture reçus");
   if (!garde.ok) return garde;
   const { ctx } = garde;
   try {
     const fichier = formData.get("fichier");
     const societeId = formData.get("societeId");
     const nomDonne = formData.get("nom");
+    const genre = formData.get("genre") === "facture" ? "facture" : "devis";
     if (!(fichier instanceof File)) return { ok: false, raison: "Aucun fichier reçu." };
     if (typeof societeId !== "string") return { ok: false, raison: "Cette société n’existe plus." };
     const societe = await getSociete(ctx, societeId);
     if (!societe) return { ok: false, raison: "Cette société n’existe plus." };
 
     const mime = fichier.type.split(";")[0].trim().toLowerCase();
-    const refus = refusDuDocumentVehicule(mime, fichier.size);
-    if (refus) return { ok: false, raison: refus };
+    // Un CSV n'a pas de type sûr (« text/csv », « application/vnd.ms-excel »,
+    // ou rien du tout depuis un iPhone) : tout ce qui n'est ni un PDF ni une
+    // image va à la règle des tarifs, qui reconnaît le fichier à son CONTENU.
+    const estTableur = mime !== "application/pdf" && !mime.startsWith("image/");
+    if (estTableur) {
+      if (fichier.size === 0) return { ok: false, raison: "Ce fichier est vide." };
+      if (fichier.size > TABLEUR_MAX_OCTETS) return { ok: false, raison: "Ce fichier dépasse 5 Mo. Prenez-en un plus léger." };
+    } else {
+      const refus = refusDuDocumentVehicule(mime, fichier.size);
+      if (refus) return { ok: false, raison: refus };
+    }
     const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
     if (!limite.autorise) return { ok: false, raison: limite.message };
 
     let octets: Buffer;
     let extension: string;
     let mimeRange: string;
-    if (mime === "application/pdf") {
+    let nature: "photo" | "pdf" | "tableur";
+    let lu: DevisLu | null = null;
+    if (estTableur) {
+      const brut = new Uint8Array(await fichier.arrayBuffer());
+      const lecture = lireFichierTarifs(fichier.name, brut);
+      if (lecture.statut === "refuse") return { ok: false, raison: lecture.raison };
+      lu = lignesDuTableau(lecture.lecture, societe.rubrique);
+      octets = Buffer.from(brut);
+      extension = lecture.format === "excel" ? ".xlsx" : ".csv";
+      mimeRange = typeDuFichierRecu(`f${extension}`)?.type ?? "application/octet-stream";
+      nature = "tableur";
+    } else if (mime === "application/pdf") {
       const brut = new Uint8Array(await fichier.arrayBuffer());
       const refusPdf = await refusDuPdfDepose(brut);
       if (refusPdf) return { ok: false, raison: refusPdf };
       octets = Buffer.from(brut);
       extension = ".pdf";
       mimeRange = mime;
+      nature = "pdf";
     } else {
       // La porte commune des photos : signature vérifiée, position GPS retirée.
-      const prete = await preparerPhotoEntrante(fichier, "devis reçu");
+      const prete = await preparerPhotoEntrante(fichier, genre === "facture" ? "facture reçue" : "devis reçu");
       if (!prete.ok) return { ok: false, raison: prete.raison };
       octets = Buffer.from(prete.photo.octets);
       extension = prete.photo.extension;
       mimeRange = prete.photo.mimeType;
+      nature = "photo";
     }
-    if (!typeDuDocument(`devis${extension}`)) return { ok: false, raison: "Ce format ne se lit pas. Choisissez un PDF, ou une photo." };
+    if (!typeDuFichierRecu(`f${extension}`)) return { ok: false, raison: "Ce format ne se lit pas. Choisissez un PDF, une photo ou un fichier Excel." };
 
     const objet = await enregistrerObjet(`entreprises/${ctx.entrepriseId}/devis-recus`, octets, extension, mimeRange);
-    const nom = (typeof nomDonne === "string" ? nomDonne.replace(/\s+/g, " ").trim().slice(0, 120) : "") || `Devis du ${aujourdhui()}`;
+    const nom =
+      (typeof nomDonne === "string" ? nomDonne.replace(/\s+/g, " ").trim().slice(0, 120) : "") ||
+      `${genre === "facture" ? "Facture" : "Devis"} du ${aujourdhui()}`;
     const devis = await ajouterDevisRecu(ctx, societe.id, {
       nom,
       fichierCle: objet.storageKey,
-      fichierNom: mime === "application/pdf" ? fichier.name.slice(0, 160) : null,
-      nature: mime === "application/pdf" ? "pdf" : "photo",
+      fichierNom: nature === "photo" ? null : fichier.name.slice(0, 160),
+      nature,
+      genre,
     });
 
-    let lu: { lignes: LigneDevisLue[]; ecartees: number } | null = null;
-    try {
-      lu = await lireDevisFournisseur(octets.toString("base64"), mimeRange, societe.rubrique);
-    } catch (err) {
-      journaliser("Lecture d'un devis reçu impossible", err);
+    if (!estTableur) {
+      try {
+        lu = await lireDevisFournisseur(octets.toString("base64"), mimeRange, societe.rubrique);
+      } catch (err) {
+        journaliser("Lecture d'un devis reçu impossible", err);
+      }
+    }
+    // Les totaux se gardent sur la facture même s'il ne prend aucun prix : ils
+    // disent ce qu'il a payé, à côté du fichier.
+    if (genre === "facture" && lu && (lu.totalHt !== null || lu.totalTtc !== null)) {
+      await poserTotauxDuDevisRecu(ctx, devis.id, { totalHt: lu.totalHt, totalTtc: lu.totalTtc });
     }
     rafraichir();
     return { ok: true, devisId: devis.id, lu };
   } catch (err) {
     journaliser("Dépôt d'un devis reçu impossible", err);
-    return { ok: false, raison: "Le devis n’a pas pu être gardé. Réessayez." };
+    return { ok: false, raison: "Le document n’a pas pu être gardé. Réessayez." };
   }
 }
 
 /**
- * Ce qu'il a accepté d'un devis lu passe dans « Mes prix ». **Rien n'est repris
- * du navigateur sans être relu** : nom, unité et prix se revalident ici, et la
- * société est celle du devis, jamais une autre.
+ * Ce qu'il a accepté d'un devis ou d'une facture lus passe dans « Mes prix ».
+ * **Rien n'est repris du navigateur sans être relu** : nom, unité et prix se
+ * revalident ici, et la société est celle du document, jamais une autre.
+ *
+ * **Une facture REMPLACE le prix qu'elle confirme ou corrige** : c'est ce qu'il
+ * a vraiment payé. Le rapprochement se refait ici, sur les prix en base, avec
+ * la règle qui a dessiné l'écran (`rapprocherDuPrix`). Un devis, lui, ajoute
+ * comme avant : c'est une offre, pas un prix payé.
  */
 export async function accepterLignesDuDevisAction(
   devisId: string,
@@ -262,9 +317,11 @@ export async function accepterLignesDuDevisAction(
   if (!garde.ok) return garde;
   try {
     const devis = await getDevisRecu(garde.ctx, devisId);
-    if (!devis) return { ok: false, raison: "Ce devis n’existe plus." };
+    if (!devis) return { ok: false, raison: "Ce document n’existe plus." };
     const societe = await getSociete(garde.ctx, devis.societeId);
     if (!societe) return { ok: false, raison: "Cette société n’existe plus." };
+    const facture = devis.genre === "facture";
+    let connus: PrixConnu[] = facture ? await prixDeLaSociete(garde.ctx, societe.id) : [];
     let ajoutes = 0;
     let refuses = 0;
     for (const l of lignes.slice(0, 200)) {
@@ -274,15 +331,25 @@ export async function accepterLignesDuDevisAction(
         refuses++;
         continue;
       }
-      await ajouterPrixAchat(garde.ctx, societe.id, {
+      const ligne = {
         nom,
         reference: typeof l.reference === "string" && l.reference.trim() ? l.reference.trim().slice(0, 60) : null,
         unite: l.unite,
         prixHt,
         releveLe: devis.recuLe,
-        source: sourceDuDevisLu(devis.nom, devis.recuLe),
+        source: facture ? sourceDeLaFactureLue(devis.nom, devis.recuLe) : sourceDuDevisLu(devis.nom, devis.recuLe),
         devisRecuId: devis.id,
-      });
+      };
+      const r = facture ? rapprocherDuPrix({ designation: nom, reference: ligne.reference, unite: l.unite, prixHt }, connus) : null;
+      const ancienId = r && r.etat !== "nouveau" ? r.ancien.id : null;
+      const pose = ancienId ? await remplacerPrixAchat(garde.ctx, ancienId, ligne) : await ajouterPrixAchat(garde.ctx, societe.id, ligne);
+      if (!pose) {
+        refuses++;
+        continue;
+      }
+      // Deux lignes de la même facture pour la même pièce : la seconde
+      // remplace la première, jamais un prix déjà retiré.
+      if (facture) connus = [pose, ...connus.filter((p) => p.id !== ancienId)];
       ajoutes++;
     }
     rafraichir();

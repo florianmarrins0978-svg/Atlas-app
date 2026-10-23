@@ -9,6 +9,9 @@ import {
   getDevisRecu,
   getSociete,
   lireMarges,
+  poserTotauxDuDevisRecu,
+  prixDeLaSociete,
+  remplacerPrixAchat,
   listerSocietes,
   prixAchatCandidats,
   prixDesFournisseursPourLePlan,
@@ -62,6 +65,7 @@ async function main() {
     fichierCle: `entreprises/${A.entrepriseId}/devis-recus/d.pdf`,
     fichierNom: "devis.pdf",
     nature: "pdf",
+    genre: "devis",
   });
   const prix = await ajouterPrixAchat(A, aqua.id, {
     nom: "Sac de ciment",
@@ -149,14 +153,63 @@ async function main() {
     assert.deepEqual(await prixAchatCandidats(A), []);
   });
 
-  await test("tout part dans la sauvegarde, et le devis reçu sous « Devis reçus »", async () => {
+  // ── Les factures reçues, migration 0139 ────────────────────────────────────
+  const facture = await ajouterDevisRecu(A, aqua.id, {
+    nom: "Point P octobre",
+    fichierCle: `entreprises/${A.entrepriseId}/devis-recus/f.xlsx`,
+    fichierNom: "facture.xlsx",
+    nature: "tableur",
+    genre: "facture",
+  });
+
+  await test("une facture se range à part des devis, et garde ses totaux", async () => {
+    await poserTotauxDuDevisRecu(A, facture.id, { totalHt: "486.22", totalTtc: "583.46" });
+    const [s] = await listerSocietes(A, "fournisseur");
+    const f = s.devis.find((d) => d.id === facture.id);
+    assert.deepEqual([f?.genre, f?.nature, f?.totalHt, f?.totalTtc], ["facture", "tableur", "486.22", "583.46"]);
+    assert.equal(s.devis.find((d) => d.id === devis.id)?.genre, "devis", "un devis d'avant 0139 n'est plus un devis");
+  });
+
+  await test("une autre entreprise ne peut ni voir sa facture, ni en changer les totaux", async () => {
+    assert.equal(await getDevisRecu(B, facture.id), undefined);
+    await poserTotauxDuDevisRecu(B, facture.id, { totalHt: "0.00", totalTtc: "0.00" });
+    assert.equal((await getDevisRecu(A, facture.id))?.totalTtc, "583.46", "les totaux ont été touchés depuis l'autre entreprise");
+  });
+
+  await test("une facture remplace le prix qu'elle corrige, et garde l'ancien", async () => {
+    const sable = await ajouterPrixAchat(A, aqua.id, { nom: "Sable 0/4", reference: "SAB04", unite: "sac", prixHt: "38.50", source: "Tapé" });
+    const nouveau = await remplacerPrixAchat(A, sable.id, { nom: "Sable 0/4", reference: "SAB04", unite: "sac", prixHt: "41.20", source: "Lu sur la facture", devisRecuId: facture.id });
+    assert.deepEqual([nouveau?.prixHt, nouveau?.prixAvant, nouveau?.societeId], ["41.20", "38.50", aqua.id]);
+    const restants = (await prixDeLaSociete(A, aqua.id)).filter((p) => p.reference === "SAB04");
+    assert.deepEqual(restants.map((p) => p.prixHt), ["41.20"], "l'ancien prix est resté à côté du nouveau");
+    // Un prix inchangé n'affiche rien de barré.
+    const meme = await remplacerPrixAchat(A, nouveau!.id, { nom: "Sable 0/4", reference: "SAB04", unite: "sac", prixHt: "41.20", source: "Lu sur la facture" });
+    assert.equal(meme?.prixAvant, null);
+    await retirerPrixAchat(A, meme!.id);
+  });
+
+  await test("une autre entreprise ne peut pas remplacer son prix", async () => {
+    const ciment = await ajouterPrixAchat(A, aqua.id, { nom: "Ciment", unite: "sac", prixHt: "9.85", source: "Tapé" });
+    assert.equal(await remplacerPrixAchat(B, ciment.id, { nom: "Ciment", unite: "sac", prixHt: "0.01", source: "x" }), undefined);
+    assert.equal((await prixDeLaSociete(A, aqua.id)).find((p) => p.id === ciment.id)?.prixHt, "9.85", "le prix a été remplacé depuis l'autre entreprise");
+    assert.deepEqual(await prixDeLaSociete(B, aqua.id), []);
+    await retirerPrixAchat(A, ciment.id);
+  });
+
+  await test("la base refuse une nature ou un genre inconnus", async () => {
+    await assert.rejects(ajouterDevisRecu(A, aqua.id, { nom: "x", fichierCle: "k.zip", fichierNom: null, nature: "zip" as "pdf", genre: "devis" }));
+    await assert.rejects(ajouterDevisRecu(A, aqua.id, { nom: "x", fichierCle: "k.pdf", fichierNom: null, nature: "pdf", genre: "avoir" as "devis" }));
+  });
+
+  await test("tout part dans la sauvegarde, le devis sous « Devis reçus », la facture sous « Factures reçues »", async () => {
     const e = await exporterEntreprise(A);
     assert.equal(e.tables.societes_achat?.length, 1);
-    assert.equal(e.tables.devis_recus?.length, 1);
-    assert.equal(e.tables.prix_achat?.length, 1, "un prix retiré reste dans la sauvegarde");
+    assert.equal(e.tables.devis_recus?.length, 2);
+    assert.equal(e.tables.prix_achat?.length, 5, "un prix retiré reste dans la sauvegarde");
     assert.equal(e.tables.demandes_envoyees?.length, 1);
     assert.equal(e.tables.marges_achat?.length, 1);
     assert.ok(e.fichiers.some((f) => f.storageKey.endsWith("/devis-recus/d.pdf") && f.chemin.startsWith("fichiers/Devis reçus/")));
+    assert.ok(e.fichiers.some((f) => f.storageKey.endsWith("/devis-recus/f.xlsx") && f.chemin.startsWith("fichiers/Factures reçues/")));
     const eB = await exporterEntreprise(B);
     assert.equal(eB.tables.societes_achat?.length, 0, "la société de A est dans l'export de B");
   });

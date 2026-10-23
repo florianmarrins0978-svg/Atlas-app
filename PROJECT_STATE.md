@@ -5,6 +5,10 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
+## LES FACTURES DES FOURNISSEURS, CODÉ (23 octobre 2026), PAS ENCORE SUR `main`
+
+Codé : onglet Factures de la fiche (`FournisseursPartenaires.tsx`), dépôt photo, PDF, Excel ou CSV (`deposerDevisRecuAction`), remplacement d'un prix par une facture (`accepterLignesDuDevisAction`, `remplacerPrixAchat`), règle pure `rapprocherDuPrix` (`src/lib/devis-fournisseur-lu.ts`), migration `0139_factures_recues.sql`. Reste : la batterie de livraison (niveau 3, migration), puis `main`.
+
 ## SUPPRIMER PLUSIEURS CLIENTS (23 octobre 2026)
 
 Codé : appui long sur une ligne de `ListeClients.tsx`, « Tout », barre rouge au-dessus des onglets, feuille partagée `src/components/atlas/FeuilleSuppressionClients.tsx` (aussi montée par `SupprimerCeClient`), aperçu `src/app/clients/actions.ts`. Contrôle : `test-fiche-client-e2e.ts`, deux cas.

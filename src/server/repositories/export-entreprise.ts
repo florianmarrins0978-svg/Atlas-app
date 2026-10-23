@@ -608,10 +608,11 @@ export async function exporterEntreprise(
       ajouter(v.assuranceCle, "vehicule", null, `${v.nom} assurance`, jourDe(v.assuranceLe));
       ajouter(v.controleCle, "vehicule", null, `${v.nom} contrôle technique`, jourDe(v.controleLe));
     }
-    // Les devis reçus de ses fournisseurs, rangés au nom de la société et du devis.
+    // Les devis et les factures reçus de ses fournisseurs, rangés au nom de la
+    // société et du document, chacun dans son dossier.
     const nomDeLaSociete = new Map(sesSocietesAchat.map((x) => [x.id, x.nom]));
     for (const d of sesDevisRecus) {
-      ajouter(d.fichierCle, "devis-recu", null, `${nomDeLaSociete.get(d.societeId) ?? ""} ${d.nom}`, d.recuLe);
+      ajouter(d.fichierCle, d.genre === "facture" ? "facture-recue" : "devis-recu", null, `${nomDeLaSociete.get(d.societeId) ?? ""} ${d.nom}`, d.recuLe);
     }
 
     // Rangés sous le nom du client et du chantier, jamais sous leur

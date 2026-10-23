@@ -24,7 +24,7 @@ import {
   societesAMontrer,
   type RubriqueAchat,
 } from "@/lib/prix-achat";
-import type { LigneDevisLue } from "@/lib/devis-fournisseur-lu";
+import { detailDeLaLigneLue, rapprocherDuPrix, type LigneDevisLue, type PrixConnu } from "@/lib/devis-fournisseur-lu";
 import {
   accepterLignesDuDevisAction,
   ajouterPrixAction,
@@ -41,13 +41,25 @@ export type SocieteVue = {
   nom: string;
   marge: string | null;
   email: string | null;
-  prix: { id: string; nom: string; unite: string; prixHt: string; source: string }[];
-  devis: { id: string; nom: string; jour: string; recuLe: string; nature: "photo" | "pdf"; fichierNom: string | null }[];
+  prix: { id: string; nom: string; reference: string | null; unite: string; prixHt: string; prixAvant: string | null; source: string }[];
+  devis: Recu[];
+  /** Les factures reçues, sa planche du 23 octobre 2026 (`appli/fournisseur-factures.html`, B). */
+  factures: Recu[];
   demandes: { id: string; nom: string; jour: string; envoyeeLe: string; lignes: number }[];
 };
 
+type Recu = {
+  id: string;
+  nom: string;
+  jour: string;
+  recuLe: string;
+  nature: "photo" | "pdf" | "tableur";
+  fichierNom: string | null;
+  totalTtc: string | null;
+};
+
 type Marges = { materiel: string | null; mainOeuvre: string | null };
-type Partie = "prix" | "devis" | "demandes";
+type Partie = "prix" | "devis" | "factures" | "demandes";
 
 const virgule = (m: string | null) => (m === null ? "" : m.replace(".", ","));
 
@@ -145,7 +157,7 @@ export default function FournisseursPartenaires({
     () =>
       societes.map((s) => ({
         ...s,
-        contenu: [...s.prix.map((p) => p.nom), ...s.devis.map((d) => d.nom), ...s.demandes.map((d) => d.nom)],
+        contenu: [...s.prix.map((p) => p.nom), ...s.devis.map((d) => d.nom), ...s.factures.map((d) => d.nom), ...s.demandes.map((d) => d.nom)],
       })),
     [societes]
   );
@@ -340,7 +352,7 @@ export default function FournisseursPartenaires({
   );
 }
 
-/** La fiche d'un fournisseur ou d'un partenaire : ses prix, ses devis, mes demandes. */
+/** La fiche d'un fournisseur ou d'un partenaire : ses prix, ses devis, ses factures, mes demandes. */
 function Fiche({
   societe,
   rubrique,
@@ -367,7 +379,14 @@ function Fiche({
   const [article, setArticle] = useState({ nom: "", unite: UNITES_ACHAT[rubrique][0], prix: "" });
   const [nomDevis, setNomDevis] = useState("");
   const [vu, setVu] = useState<string | null>(null);
-  const [lu, setLu] = useState<{ devisId: string; lignes: LigneDevisLue[]; ecartees: number; gardees: boolean[] } | null>(null);
+  const [lu, setLu] = useState<{
+    devisId: string;
+    lignes: LigneDevisLue[];
+    ecartees: number;
+    totalHt: string | null;
+    totalTtc: string | null;
+    gardees: boolean[];
+  } | null>(null);
   const [luRien, setLuRien] = useState(false);
   const appareil = useRef<HTMLInputElement>(null);
   const fichiers = useRef<HTMLInputElement>(null);
@@ -415,6 +434,7 @@ function Fiche({
     donnees.set("fichier", f);
     donnees.set("societeId", societe.id);
     donnees.set("nom", nomDevis);
+    donnees.set("genre", partie === "factures" ? "facture" : "devis");
     setLuRien(false);
     demarrer(async () => {
       const r = await deposerDevisRecuAction(donnees);
@@ -456,7 +476,9 @@ function Fiche({
   const ligne = "flex items-center gap-2 border-t py-[10px] text-[14.5px] first:border-t-0";
 
   const prix = lignesAMontrer(societe.prix, saisie);
-  const devis = dateesAMontrer(societe.devis, { saisie, periode });
+  const facture = partie === "factures";
+  const tousRecus = facture ? societe.factures : societe.devis;
+  const recus = dateesAMontrer(tousRecus, { saisie, periode });
   const demandes = dateesAMontrer(societe.demandes, { saisie, periode });
 
   return (
@@ -474,9 +496,10 @@ function Fiche({
         <div className="mt-3 flex gap-[6px]" role="group" aria-label="Partie de la fiche">
           {(
             [
-              ["prix", "Mes prix"],
-              ["devis", "Devis reçus"],
-              ["demandes", "Demandes envoyées"],
+              ["prix", "Prix"],
+              ["devis", "Devis"],
+              ["factures", "Factures"],
+              ["demandes", "Demandes"],
             ] as const
           ).map(([p, nom]) => {
             const appuye = p === partie;
@@ -489,8 +512,12 @@ function Fiche({
                 onClick={() => {
                   setPartie(p);
                   setSaisie("");
+                  // Ce qui a été lu sur un devis ne s'affiche pas sous les factures.
+                  setLu(null);
+                  setLuRien(false);
+                  setVu(null);
                 }}
-                className={`min-h-[44px] flex-1 rounded-full border px-2 text-[14px] ${appuye ? "atlas-plein" : ""}`}
+                className={`min-h-[44px] flex-1 rounded-full border px-1 text-[14px] ${appuye ? "atlas-plein" : ""}`}
                 style={
                   appuye
                     ? { backgroundColor: colors.plein, borderColor: colors.plein, color: surPlein }
@@ -519,7 +546,9 @@ function Fiche({
                 : "Chercher une prestation"
               : partie === "devis"
                 ? "Chercher un devis"
-                : "Chercher une demande"
+                : partie === "factures"
+                  ? "Chercher une facture"
+                  : "Chercher une demande"
           }
           ariaLabel="Chercher dans la fiche"
           dataAtlas="chercher-fiche"
@@ -597,8 +626,13 @@ function Fiche({
                           {p.source}
                         </small>
                       </span>
-                      <span className="flex-none tabular-nums">
+                      <span className="flex-none text-right tabular-nums">
                         {enEuros(p.prixHt)} / {p.unite}
+                        {p.prixAvant && (
+                          <small className="block text-[12.5px] line-through" style={{ color: colors.muted }} data-atlas="prix-avant">
+                            {enEuros(p.prixAvant)}
+                          </small>
+                        )}
                       </span>
                       <button
                         type="button"
@@ -665,17 +699,17 @@ function Fiche({
           </>
         )}
 
-        {partie === "devis" && (
+        {(partie === "devis" || facture) && (
           <>
             {champ(appareil, "image/jpeg,image/png", "environment")}
-            {champ(fichiers, "application/pdf,image/jpeg,image/png")}
-            {/* Un nom pour le devis : c'est lui qui le range de A à Z et le fait trouver. */}
+            {champ(fichiers, "application/pdf,image/jpeg,image/png,.csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
+            {/* Un nom pour le document : c'est lui qui le range de A à Z et le fait trouver. */}
             <input
               value={nomDevis}
               onChange={(e) => setNomDevis(e.target.value)}
-              placeholder="Nom du devis, chantier ou client"
-              aria-label="Nom du devis"
-              data-atlas="nom-devis"
+              placeholder={facture ? "Nom de la facture, chantier ou client" : "Nom du devis, chantier ou client"}
+              aria-label={facture ? "Nom de la facture" : "Nom du devis"}
+              data-atlas={facture ? "nom-facture" : "nom-devis"}
               className={`mt-3 block w-full ${casePleine}`}
               style={{ backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
             />
@@ -683,36 +717,37 @@ function Fiche({
               type="button"
               disabled={enCours}
               onClick={() => appareil.current?.click()}
-              data-atlas="photo-devis"
+              data-atlas={facture ? "photo-facture" : "photo-devis"}
               className="atlas-plein mt-[10px] flex min-h-[52px] w-full items-center justify-center rounded-full text-[16px]"
               style={{ backgroundColor: colors.plein, color: surPlein }}
             >
-              Prendre un devis en photo
+              {facture ? "Prendre une facture en photo" : "Prendre un devis en photo"}
             </button>
             <button
               type="button"
               disabled={enCours}
               onClick={() => fichiers.current?.click()}
-              data-atlas="fichier-devis"
+              data-atlas={facture ? "fichier-facture" : "fichier-devis"}
               className="mt-[10px] flex min-h-[52px] w-full items-center justify-center rounded-full border text-[16px]"
               style={{ backgroundColor: colors.card, borderColor: colors.line, color: colors.ink }}
             >
-              Choisir une photo ou un PDF
+              PDF, photo ou Excel
             </button>
 
             {enCours && (
               <p className="mt-3 text-[14px]" style={{ color: colors.inkSoft }} data-atlas="lecture-devis">
-                Atlas lit le devis
+                {facture ? "Atlas lit la facture" : "Atlas lit le devis"}
               </p>
             )}
             {luRien && (
               <p className="mt-3 text-[14px]" style={{ color: colors.muted }}>
-                Devis gardé. Atlas n’a pas pu en lire les prix : tapez-les dans « Mes prix ».
+                {facture ? "Facture gardée." : "Devis gardé."} Atlas n’a pas pu en lire les prix : tapez-les dans « Mes prix ».
               </p>
             )}
             {lu && (
               <LuSurLeDevis
                 lu={lu}
+                facture={facture ? { connus: societe.prix, rubrique } : null}
                 enCours={enCours}
                 cocher={(i) => setLu({ ...lu, gardees: lu.gardees.map((g, k) => (k === i ? !g : g)) })}
                 prendre={() =>
@@ -729,32 +764,34 @@ function Fiche({
               />
             )}
 
-            {societe.devis.length === 0 ? (
+            {tousRecus.length === 0 ? (
               <p className="mt-3 text-[14px]" style={{ color: colors.muted }}>
-                Aucun devis reçu de {societe.nom}.
+                {facture ? "Aucune facture reçue" : "Aucun devis reçu"} de {societe.nom}.
               </p>
-            ) : devis.length === 0 ? (
+            ) : recus.length === 0 ? (
               saisie.trim() ? (
-                vide("Aucun devis")
+                vide(facture ? "Aucune facture" : "Aucun devis")
               ) : (
                 <p className="mt-3 text-[14px]" style={{ color: colors.muted }}>
-                  Aucun devis reçu {enLettres(periode)}.
+                  {facture ? "Aucune facture reçue" : "Aucun devis reçu"} {enLettres(periode)}.
                 </p>
               )
             ) : (
               <div className={liste} style={{ backgroundColor: colors.card }}>
                 <EnBandes
-                  lignes={devis}
+                  lignes={recus}
                   saisie={saisie}
                   ligne={(d) => (
-                    <div className={ligne} style={{ borderColor: colors.line }} data-atlas="devis-recu">
+                    <div className={ligne} style={{ borderColor: colors.line }} data-atlas={facture ? "facture-recue" : "devis-recu"}>
                       {d.nature === "photo" && (
                         <Image src={`/reglages/fournisseurs/devis/${d.id}`} alt="" width={44} height={44} unoptimized className="h-11 w-11 flex-none rounded-[8px] object-cover" />
                       )}
                       <span className="min-w-0 flex-1">
                         <Surligne texte={d.nom} saisie={saisie} />
                         <small className="block text-[12.5px]" style={{ color: colors.muted }}>
-                          Reçu le {d.recuLe}, {d.nature === "photo" ? "Photo" : d.fichierNom ?? "PDF"}
+                          {facture
+                            ? `Reçue le ${d.recuLe}${d.totalTtc ? `, ${enEuros(d.totalTtc)} TTC` : ""}`
+                            : `Reçu le ${d.recuLe}, ${d.nature === "photo" ? "Photo" : d.fichierNom ?? "PDF"}`}
                         </small>
                       </span>
                       {d.nature === "photo" ? (
@@ -773,7 +810,7 @@ function Fiche({
             )}
             {vu && (
               <div className="mt-3 overflow-hidden rounded-[12px]" style={{ backgroundColor: colors.card }}>
-                <Image src={`/reglages/fournisseurs/devis/${vu}`} alt="Le devis" width={860} height={680} unoptimized className="block h-auto max-h-[340px] w-full bg-white object-contain" />
+                <Image src={`/reglages/fournisseurs/devis/${vu}`} alt={facture ? "La facture" : "Le devis"} width={860} height={680} unoptimized className="block h-auto max-h-[340px] w-full bg-white object-contain" />
               </div>
             )}
           </>
@@ -827,12 +864,15 @@ function Fiche({
  */
 function LuSurLeDevis({
   lu,
+  facture,
   enCours,
   cocher,
   prendre,
   laisser,
 }: {
-  lu: { lignes: LigneDevisLue[]; ecartees: number; gardees: boolean[] };
+  lu: { lignes: LigneDevisLue[]; ecartees: number; totalHt: string | null; totalTtc: string | null; gardees: boolean[] };
+  /** Une facture se confronte à ses prix : l'ancien montré barré, la hausse en couleur. */
+  facture: { connus: PrixConnu[]; rubrique: RubriqueAchat } | null;
   enCours: boolean;
   cocher: (i: number) => void;
   prendre: () => void;
@@ -841,25 +881,44 @@ function LuSurLeDevis({
   const n = lu.gardees.filter(Boolean).length;
   return (
     <div className="mt-3 rounded-[12px] px-[14px] py-[8px]" style={{ backgroundColor: colors.card }} data-atlas="lu-sur-le-devis">
-      {lu.lignes.map((l, i) => (
-        <label key={i} className="flex items-center gap-2 border-t py-[10px] text-[14.5px] first:border-t-0" style={{ borderColor: colors.line }}>
-          <input type="checkbox" checked={lu.gardees[i]} onChange={() => cocher(i)} className="h-5 w-5 flex-none" />
-          <span className="min-w-0 flex-1">
-            {l.designation}
-            {l.reference && (
-              <small className="block text-[12.5px]" style={{ color: colors.muted }}>
-                réf. {l.reference}
-              </small>
-            )}
-          </span>
-          <span className="flex-none tabular-nums">
-            {enEuros(l.prixHt)} / {l.unite}
-          </span>
-        </label>
-      ))}
+      {lu.lignes.map((l, i) => {
+        const r = facture ? rapprocherDuPrix(l, facture.connus) : null;
+        const detail = facture && r ? detailDeLaLigneLue(l.reference, r, facture.rubrique) : l.reference ? `réf. ${l.reference}` : null;
+        return (
+          <label key={i} className="flex items-center gap-2 border-t py-[10px] text-[14.5px] first:border-t-0" style={{ borderColor: colors.line }}>
+            <input type="checkbox" checked={lu.gardees[i]} onChange={() => cocher(i)} className="h-5 w-5 flex-none" />
+            <span className="min-w-0 flex-1">
+              {l.designation}
+              {detail && (
+                <small className="block text-[12.5px]" style={{ color: colors.muted }}>
+                  {detail}
+                </small>
+              )}
+            </span>
+            <span className="flex-none text-right tabular-nums">
+              <span style={r?.etat === "plus cher" ? { color: colors.alert } : undefined}>
+                {enEuros(l.prixHt)} / {l.unite}
+              </span>
+              {r && (r.etat === "plus cher" || r.etat === "moins cher") && (
+                <small className="block text-[12.5px] line-through" style={{ color: colors.muted }}>
+                  {enEuros(r.ancien.prixHt)}
+                </small>
+              )}
+            </span>
+          </label>
+        );
+      })}
       {lu.ecartees > 0 && (
         <p className="py-[6px] text-[13px]" style={{ color: colors.muted }}>
           {lu.ecartees} ligne{lu.ecartees > 1 ? "s" : ""} sans prix lisible, à taper.
+        </p>
+      )}
+      {facture && (lu.totalHt || lu.totalTtc) && (
+        <p className="flex justify-between gap-3 py-[6px] text-[14px] tabular-nums" style={{ color: colors.inkSoft }} data-atlas="total-facture">
+          <span>Total de la facture</span>
+          <span className="text-right">
+            {[lu.totalHt && `${enEuros(lu.totalHt)} HT`, lu.totalTtc && `${enEuros(lu.totalTtc)} TTC`].filter(Boolean).join(", ")}
+          </span>
         </p>
       )}
       <button
@@ -873,7 +932,7 @@ function LuSurLeDevis({
         Mettre {n} prix dans « Mes prix »
       </button>
       <button type="button" onClick={laisser} className="block w-full py-3 text-center text-[15px]" style={{ color: colors.inkSoft }}>
-        Laisser
+        {facture ? "Garder la facture sans les prix" : "Laisser"}
       </button>
     </div>
   );

@@ -4026,7 +4026,11 @@ export const devisRecus = pgTable("devis_recus", {
   nom: text("nom").notNull(),
   fichierCle: text("fichier_cle").notNull(),
   fichierNom: text("fichier_nom"),
-  nature: text("nature", { enum: ["photo", "pdf"] }).notNull(),
+  nature: text("nature", { enum: ["photo", "pdf", "tableur"] }).notNull(),
+  /** Migration 0139 : un devis ou une facture, rangés au même endroit. */
+  genre: text("genre", { enum: ["devis", "facture"] }).notNull().default("devis"),
+  totalHt: numeric("total_ht", { precision: 12, scale: 2 }),
+  totalTtc: numeric("total_ttc", { precision: 12, scale: 2 }),
   recuLe: date("recu_le").notNull().defaultNow(),
   createdBy: uuid("created_by").references(() => users.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -4046,6 +4050,8 @@ export const prixAchat = pgTable("prix_achat", {
   releveLe: date("releve_le").notNull().defaultNow(),
   source: text("source").notNull(),
   devisRecuId: uuid("devis_recu_id"),
+  /** Migration 0139 : le prix qu'une facture a remplacé, montré barré. */
+  prixAvant: numeric("prix_avant", { precision: 12, scale: 2 }),
   createdBy: uuid("created_by").references(() => users.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
