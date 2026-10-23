@@ -43,3 +43,33 @@ if (reelles !== attendues) {
   process.exit(1);
 }
 console.log(`${reelles} pages, comme le sommaire.`);
+
+// Les liens internes, réécrits vers une PAGE au lieu d'un NOM.
+//
+// Chromium écrit « va à la destination piece-T-01-04 », un nom rangé dans le
+// catalogue. Sa remarque du 23 octobre : « j'ai pas pu l'essayer, ça marche
+// pas ». Les lecteurs de téléphone suivent mal ces noms ; une destination
+// écrite en clair (cette page, à cette hauteur) est la forme que tous lisent.
+const { PDFName, PDFArray } = createRequire(path.join(process.cwd(), "x.js"))("pdf-lib");
+const { writeFileSync } = await import("node:fs");
+const doc = await PDFDocument.load(readFileSync(sortie));
+const nommees = doc.catalog.lookup(PDFName.of("Dests"));
+if (!nommees) { console.error("Aucune destination nommée : les liens internes ont disparu."); process.exit(1); }
+const cible = new Map();
+for (const [nom, val] of nommees.entries()) cible.set(nom.toString(), val instanceof PDFArray ? val : val.lookup(PDFName.of("D")));
+let reecrits = 0, orphelins = 0;
+for (const p of doc.getPages()) {
+  const annots = p.node.lookup(PDFName.of("Annots"));
+  if (!annots) continue;
+  for (let i = 0; i < annots.size(); i++) {
+    const a = annots.lookup(i), dest = a.get(PDFName.of("Dest"));
+    if (!dest || dest instanceof PDFArray) continue;
+    const d = cible.get(dest.toString());
+    if (!d) { orphelins++; continue; }
+    a.set(PDFName.of("Dest"), d);
+    reecrits++;
+  }
+}
+if (orphelins) { console.error(`${orphelins} liens visent une pièce introuvable.`); process.exit(1); }
+writeFileSync(sortie, await doc.save());
+console.log(`${reecrits} liens internes, tous vers une page.`);

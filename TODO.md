@@ -1,6 +1,47 @@
 # Prochaines tâches
 
 
+## POUR MON COMPTABLE : SES CHOIX SONT DONNÉS, À CODER (23 octobre 2026)
+
+**Sa demande :** préparer la visite annuelle au comptable. Chaque sortie de la
+banque avec son ticket ou sa facture, une couleur par catégorie, un Check up qui
+dit ce qui manque, la mention « ticket perdu ». Planches :
+`appli/pour-mon-comptable.html`, `appli/comptable-entrees-sorties.html` ; PDF
+d'exemple : `appli/dossier-justifie-exemple.pdf`, imprimé par
+`docs/maquettes/dossier-justifie/engendrer.mjs`.
+
+**Ce qu'il a tranché, le 23 octobre au soir. Ne pas le lui redemander :**
+
+| # | Question | Sa réponse |
+|---|---|---|
+| 1 | Le PDF du comptable | **avec renvois** : le justificatif mène au ticket, le ticket ramène à SA ligne du relevé. Pas le côte à côte |
+| 2 | Les couleurs des catégories | gardées (carburant bleu, repas vert, matériel orange, hôtel violet, train et taxi turquoise, virement prune, autre gris) |
+| 3 | La place | une carte « Pour mon comptable » dans Terminés, sous Ma TVA |
+| 4 | Le Check up relie seul un ticket quand un seul correspond | oui, et cela se défait (depuis la photo ou la liste « ce qu'Atlas a relié ») |
+| 5 | La page du comptable | oui : lien privé, justificatif cliquable, un bouton vert et un rouge par ligne ; un rouge demande pourquoi et revient au patron |
+| 6 | Les tickets | le ticket réécrit dans le format du dossier, **complet, ligne par ligne comme imprimé** (rien de regroupé : sa remarque devant un essai qui fusionnait les doublons), avec la vignette de la vraie photo, qui reste la preuve |
+| 7 | Quand valider l'année | **quand il veut** : il cale ses dates sur l'exercice décidé avec son expert-comptable. Pas de règle du 1ᵉʳ janvier |
+| — | Entrées et sorties | **B** : deux colonnes, sorties en rouge, entrées en vert, total du mois et soldes de la banque en bas |
+
+**Ce que ses deux vrais tickets ont appris (Intermarché, Uber Eats) :** un
+ticket payé en espèces n'a pas de ligne de banque, le Check up ne la cherche
+pas ; un bon Uber Eats ne porte aucune TVA, la facture est dans l'appli Uber
+Eats ; une date sans année se fait confirmer. Le redressement de la photo
+(coins, perspective, ombre) a tenu sur les deux, dont un ticket froissé à
+moitié dans l'ombre.
+
+**À trancher en codant, avec lui :** l'exercice qui ne tombe pas sur l'année
+civile. S'il valide « quand il veut », le dossier doit couvrir SES dates
+(du… au…), pas forcément janvier à décembre.
+
+**Ce qui reste un contrat, pas du code :** la banque pour ses futurs clients
+(`docs/A-FAIRE.md` §13). Pour lui, l'essai Enable Banking suffit.
+
+**Pas vérifiable ICI :** que les liens du PDF s'ouvrent dans le lecteur de son
+iPhone. Ils sont écrits vers une page en clair depuis le 23 octobre au soir,
+après son « ça marche pas » ; c'est à lui de le confirmer.
+
+
 ## ✅ SUPPRIMER PLUSIEURS CLIENTS : CODÉ LE 23 OCTOBRE 2026
 
 Planche `appli/supprimer-plusieurs-clients.html`, retenue (« Super code ça »).

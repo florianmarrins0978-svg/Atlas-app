@@ -81,7 +81,9 @@ h3{font-size:12.5pt;margin:6mm 0 1mm}
 .releve .just{font-size:8pt}
 .releve .just .ref{font-weight:600}
 .releve .just .p{color:var(--gris);text-decoration:underline}
-.releve a.vers{color:inherit;text-decoration:none}
+/* Toute la case se touche, pas trois mots de dix points de haut : sur un
+   téléphone, un lien plus petit que le doigt ne s.ouvre pas. */
+.releve a.vers{color:inherit;text-decoration:none;display:block;padding:1.6mm 0;margin:-1.6mm 0}
 .piece a.retour{display:block;margin-top:2mm;padding:1.6mm 0;font-size:7.8pt;font-weight:600;color:var(--pin);text-decoration:none;border:.6pt solid var(--filet);border-radius:4mm;text-align:center}
 .releve .perdu{color:var(--alerte);font-style:italic}
 .releve .plus{color:var(--pin)}
