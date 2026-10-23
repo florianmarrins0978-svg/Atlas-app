@@ -597,10 +597,10 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     intitule: "Ouvrir, enregistrer ou partager un devis, une facture ou une fiche d'un client",
     motsCles: ["ouvrir", "partager", "enregistrer", "telecharger", "whatsapp", "document", "pdf", "copie"],
     geste:
-      "Sur sa fiche, choisissez l'onglet « Devis », « Factures » ou « Fiches », touchez le document, puis « Ouvrir », « Enregistrer » ou « Partager ».",
-    reserve: "« Enregistrer » n'apparaît pas quand le document est une page plutôt qu'un PDF.",
+      "Sur sa fiche, choisissez l'onglet « Devis », « Factures » ou « Fiches », touchez le document, puis « Ouvrir », « Télécharger » ou « Partager ».",
+    reserve: "« Télécharger » n'apparaît pas quand le document est une page plutôt qu'un PDF.",
     source: "src/app/clients/[id]/PieceDuDossier.tsx",
-    preuves: ["que faire de ce document ?", "Ouvrir", "Partager", "Enregistrer", "estUnFichier && ("],
+    preuves: ["que faire de ce document ?", "Ouvrir", "Partager", "Télécharger", "estUnFichier && ("],
     ailleurs: [{ source: DOSSIER, preuves: ['libelle: "Devis"', 'libelle: "Factures"', 'libelle: "Fiches"'] }],
   },
   {

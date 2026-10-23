@@ -74,7 +74,7 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
         if (e instanceof Error && e.name === "AbortError") return;
         setErreur(
           estUnFichier
-            ? "Le partage n'a pas abouti. « Enregistrer » reste possible ci-dessus."
+            ? "Le partage n'a pas abouti. « Télécharger » reste possible ci-dessus."
             : "Le partage n'a pas abouti. « Ouvrir » reste possible ci-dessus."
         );
       }
@@ -82,7 +82,7 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
     }
     setErreur(
       estUnFichier
-        ? "Le partage n'est pas disponible sur cet appareil. « Enregistrer » reste possible ci-dessus."
+        ? "Le partage n'est pas disponible sur cet appareil. « Télécharger » reste possible ci-dessus."
         : "Le partage n'est pas disponible sur cet appareil. « Ouvrir » reste possible ci-dessus."
     );
   }
@@ -183,7 +183,9 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
           {piece.precision ? ` ${piece.precision}` : ""}
         </p>
 
-        {/* **« Enregistrer » en tête, et c'est le geste qu'il est venu chercher.**
+        {/* **« Télécharger » en tête, et c'est le geste qu'il est venu chercher.**
+            Le mot était « Enregistrer » ; il a demandé « Télécharger » le
+            23 octobre 2026, capture à l'appui.
             La feuille de l'application ne se referme qu'une fois le document
             parti : refermée à l'appui, elle emportait le message d'un refus.
 
@@ -199,7 +201,7 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
             className="atlas-plein mt-4 block w-full rounded-full py-4 text-center text-[16px] font-medium"
             style={{ backgroundColor: colors.plein, color: colors.cream }}
           >
-            Enregistrer
+            Télécharger
           </BoutonTelechargerDocument>
         )}
 
