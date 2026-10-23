@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TVA d'une voiture : Atlas</title>
+<style>
+/*
+  LA TVA D'UNE VOITURE, DITE AU COMPTABLE, 23 octobre 2026
+
+  Sa capture de « TVA déductible, Octobre 2026 » : TotalEnergies, payé 50 €,
+  taux 20 %, TVA 6,66 €. Ses mots : « il met bien 80 % de la TVA à 20 % sauf
+  qu'il ne le précise pas, donc le comptable va lire le ticket TVA 8,33 et
+  voir TVA enregistrée 6 et quelque, et ne va pas comprendre pourquoi ».
+
+  Il a raison : la règle (`recuperation`, src/lib/achat-tva.ts) compte 80 %
+  pour le carburant d'une voiture, et le tableau à la calculette
+  (TableauCalculette.tsx) ne montre que le résultat. 50 € à 20 % font 8,33 €
+  à la calculette ; la ligne dit 6,66 €, sans un mot.
+
+  A : sous le nom, après la date, une ligne « Voiture, 80 % de 8,33 € ». Rien
+      ne bouge dans les colonnes.
+  B : dans la colonne TVA, sous 6,66 €, « sur 8,33 € » ; sous le nom,
+      « Voiture, 80 % ».
+
+  La TVA du ticket existe déjà en base (`achatsTva.tvaTicket`) : rien à
+  ajouter au schéma. Seule une ligne réduite porte la mention ; un utilitaire
+  à 100 % reste comme aujourd'hui.
+
+  RIEN N'EST CODÉ.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+  --scene:#e6e3dc; --plein:#7f9a6f; --surPlein:#fff; --papier:#ece9e1;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);padding:0 0 40px}
+.commandes{position:sticky;top:0;z-index:5;background:var(--scene);padding:8px 10px;
+  border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13px;padding:8px 14px;margin:2px;border:1px solid var(--trait);
+  background:var(--plage);color:var(--encre);border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);border-color:var(--encre)}
+.tete{max-width:620px;margin:0 auto;padding:18px 20px 0}
+.tete h1{font-size:24px;line-height:1.15;margin:0 0 8px;font-family:ui-serif,Georgia,serif;font-weight:400}
+.tete p{margin:0 0 6px;font-size:14px;color:var(--encre-douce)}
+.scene{display:flex;justify-content:center;padding:14px 12px}
+.tel{width:390px;max-width:100%;height:664px;background:var(--fond);border:1px solid var(--trait);
+  border-radius:10px;overflow:hidden;position:relative}
+.ecran{position:absolute;inset:0;overflow-y:auto}
+.px{padding-left:24px;padding-right:24px}
+.barre{display:flex;justify-content:space-between;align-items:center;padding-top:14px}
+.rond{width:44px;height:44px;border-radius:999px;border:0;background:var(--papier);color:var(--encre);font-size:22px}
+.rond.vert{background:var(--plein);color:var(--surPlein);font-size:18px}
+h2.titre{font-weight:400;font-size:32px;line-height:1.1;margin:16px 0 0;font-family:ui-serif,Georgia,serif}
+.caps{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--or);margin:8px 0 0}
+table{width:100%;border-collapse:collapse;margin-top:18px;table-layout:fixed}
+th{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gris);
+  text-align:center;padding:0 4px 8px;vertical-align:bottom}
+th:first-child{text-align:left;padding-left:0}
+th.tva{color:var(--or)}
+td{padding:11px 4px;border-top:1px solid var(--trait-doux);vertical-align:top}
+td:first-child{padding-left:0}
+td .nom{font-size:15px;margin:0;line-height:1.25}
+td .petit{font-size:11px;color:var(--gris);margin:2px 0 0;line-height:1.3}
+td .neuf{color:var(--encre-douce)}
+.chiffre{font-family:ui-serif,Georgia,serif;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:center;font-size:15.5px}
+td.tva{color:var(--or)}
+td.taux{font-family:ui-serif,Georgia,serif;font-size:15px;color:var(--encre-douce);text-align:center}
+.sur{display:block;font-family:ui-sans-serif,-apple-system,sans-serif;font-size:11px;color:var(--encre-douce);margin-top:2px}
+tr.somme td{border-top:1.5px solid var(--encre);padding-top:12px}
+.mot{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+tr.somme td.chiffre{font-size:17px;font-weight:700}
+tr.titre-recap td{border-top:0;padding:30px 0 6px;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gris)}
+.onglets{position:sticky;bottom:0;background:var(--fond);border-top:1px solid var(--trait);display:flex;
+  justify-content:space-around;font-size:10.5px;letter-spacing:.14em;color:var(--gris);padding:16px 4px;margin-top:40px}
+.onglets b{color:var(--encre);font-weight:600}
+</style>
+</head>
+<body>
+<div class="commandes">
+  <button type="button" data-v="A" aria-pressed="true">A : sous le nom</button>
+  <button type="button" data-v="B" aria-pressed="false">B : sous la TVA</button>
+</div>
+<div class="tete">
+  <h1>La TVA d'une voiture, dite au comptable</h1>
+  <p>Votre ticket porte 8,33 € de TVA, le relevé en compte 6,66 €. La ligne dit maintenant pourquoi.</p>
+</div>
+<div class="scene">
+  <div class="tel"><div class="ecran">
+    <div class="px">
+      <div class="barre"><span class="rond" style="display:grid;place-items:center">‹</span><span class="rond vert" style="display:grid;place-items:center">○</span></div>
+      <h2 class="titre">Octobre 2026</h2>
+      <p class="caps">TVA déductible</p>
+      <table>
+        <colgroup><col style="width:33%"><col style="width:26%"><col style="width:15%"><col style="width:26%"></colgroup>
+        <thead><tr><th>Fournisseur</th><th>Payé</th><th>Taux</th><th class="tva">TVA</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><p class="nom">TotalEnergies</p><p class="petit">le 26/10</p>
+              <p class="petit neuf" data-v="A">Voiture, 80 % de 8,33 €</p>
+              <p class="petit neuf" data-v="B" hidden>Voiture, 80 %</p></td>
+            <td class="chiffre">50,00 €</td>
+            <td class="taux">20 %</td>
+            <td class="chiffre tva">6,66 €<span class="sur" data-v="B" hidden>sur 8,33 €</span></td>
+          </tr>
+          <tr>
+            <td><p class="nom">Point P</p><p class="petit">le 14/10</p></td>
+            <td class="chiffre">120,00 €</td>
+            <td class="taux">20 %</td>
+            <td class="chiffre tva">20,00 €</td>
+          </tr>
+          <tr class="somme">
+            <td class="mot">Total</td>
+            <td class="chiffre">170,00 €</td><td></td>
+            <td class="chiffre tva">26,66 €</td>
+          </tr>
+          <tr class="titre-recap"><td colspan="4">Par taux</td></tr>
+          <tr>
+            <td class="mot">À 20 %</td>
+            <td class="chiffre">170,00 €</td>
+            <td class="taux">20 %</td>
+            <td class="chiffre tva">26,66 €</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="onglets"><span>CHANTIERS</span><span>PLANNING</span><b>TERMINÉS</b><span>PAYSAGE</span><span>RÉGLAGES</span></div>
+  </div></div>
+</div>
+<script>
+document.querySelectorAll(".commandes button").forEach((b) => {
+  b.addEventListener("click", () => {
+    const v = b.dataset.v;
+    document.querySelectorAll(".commandes button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    document.querySelectorAll(".ecran [data-v]").forEach((e) => { e.hidden = e.dataset.v !== v; });
+  });
+});
+</script>
+</body>
+</html>

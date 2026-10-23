@@ -1,6 +1,32 @@
 # Prochaines tâches
 
 
+## ⏳ UNE PLANCHE À REGARDER : LA TVA D'UNE VOITURE, A OU B (23 octobre 2026)
+
+`appli/tva-voiture-80.html`. À coder dans `TableauCalculette` (page TVA déductible) avec `tvaTicket`, déjà en base, dès qu'il a choisi.
+
+## ⏳ UNE PLANCHE À REGARDER : RENVOYER LA FACTURE ACQUITTÉE (23 octobre 2026)
+
+Sa demande : l'assurance d'un client veut une facture acquittée ; la même, même
+numéro, avec la mention en plus. Planche `appli/facture-acquittee.html`, rien
+de codé.
+
+**Ce que le code fait déjà, vérifié le 23 octobre :** le tampon « Acquittée le
+… » existe (`tamponAcquittee`, `document-commun.ts`) et s'imprime dès que les
+règlements couvrent le total. Mais seul le PDF du patron se recompose
+(`genererPdfFacturePourApercu`) : **le lien du client sert le fichier archivé à
+l'émission** (`pdfFactureParJeton`), donc renvoyer par SMS lui redonne la
+facture SANS la mention. Et sur une facture arrêtée, l'interrupteur « Facture
+acquittée » est fermé (`acquittement={!emise}`) : le solde ne se note que
+depuis Terminés.
+
+**Ce que la planche propose (à coder seulement après son oui) :** l'interrupteur
+revient sur la facture arrêtée et passe par `noterPaiement` (il demande le
+moyen, il n'en invente pas) ; l'envoi devient « Envoyer la facture acquittée » ;
+un second PDF archivé, à part, l'original restant intouché. Niveau 3 (argent,
+probablement une migration pour ranger le second fichier).
+
+
 ## ⏳ MA BANQUE : L'ESSAI EST CODÉ, À JOUER PAR LUI (22 octobre 2026)
 
 `/reglages/banque` lit ses virements reçus par Enable Banking et propose une facture pour chacun. **Ce qui reste, et c'est lui** : créer l'application chez Enable Banking, y relier son Crédit Mutuel, déposer le `.pem` dans `cles-banque/` (`docs/banque-essai.md`). **On ne sait pas encore si le Crédit Mutuel est couvert** : la liste ne se lit qu'avec un compte.
