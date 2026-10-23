@@ -80,7 +80,8 @@ h3{font-size:12.5pt;margin:6mm 0 1mm}
 .releve .cat{font-size:7.8pt;color:var(--doux);white-space:nowrap}
 .releve .just{font-size:8pt}
 .releve .just .ref{font-weight:600}
-.releve .just .p{color:var(--gris)}
+.releve .just .p{color:var(--gris);text-decoration:underline}
+.releve a.vers{color:inherit;text-decoration:none}
 .releve .perdu{color:var(--alerte);font-style:italic}
 .releve .plus{color:var(--pin)}
 .releve td.coul{width:1.4mm;padding:0}
@@ -241,8 +242,8 @@ tout.forEach((L, m) => {
     <table class="releve"><thead><tr><th></th><th>Date</th><th>Ce qu’écrit la banque</th><th>Catégorie</th><th class="d">Montant</th><th>Justificatif</th></tr></thead><tbody>
     ${L.map(l => `<tr><td class="coul" style="background:${COUL[l.cat]}"></td><td class="num">${deux(l.jour)}/${deux(m + 1)}</td><td class="lib">${l.lib}</td><td class="cat">${NOM[l.cat]}</td><td class="d num${l.montant > 0 ? " plus" : ""}">${l.montant > 0 ? "+" : "−"}${eur(l.montant)}</td><td class="just">${
       l.perdu ? `<span class="perdu">Ticket perdu, mention validée</span>`
-      : l.ticket ? `<span class="ref">${l.ref}</span> Ticket du ${deux(l.ticket.jour)}/${deux(m + 1)} <span class="p">p. ${ouEst(m, l.ref)}</span>`
-      : l.facture ? `<span class="ref">${l.ref}</span> Facture ${l.facture.f} <span class="p">p. ${ouEst(m, l.ref)}</span>`
+      : l.ticket ? `<a class="vers" href="#piece-${l.ref}"><span class="ref">${l.ref}</span> Ticket du ${deux(l.ticket.jour)}/${deux(m + 1)} <span class="p">p. ${ouEst(m, l.ref)}</span></a>`
+      : l.facture ? `<a class="vers" href="#piece-${l.ref}"><span class="ref">${l.ref}</span> Facture ${l.facture.f} <span class="p">p. ${ouEst(m, l.ref)}</span></a>`
       : `Facture ${l.numF}, ${l.client}`}</td></tr>`).join("")}
     </tbody></table>
   </section>`;
@@ -250,7 +251,7 @@ tout.forEach((L, m) => {
   for (let p = 0; p < pieces.length; p += PIECES_PAR_PAGE) {
     h += `<section class="page"><div class="titre-page"><h2>${MOIS_M[m]} 2025</h2><span class="caps">Justificatifs${pieces.length > PIECES_PAR_PAGE ? `, ${p / PIECES_PAR_PAGE + 1} sur ${Math.ceil(pieces.length / PIECES_PAR_PAGE)}` : ""}</span></div><div class="pieces">`;
     pieces.slice(p, p + PIECES_PAR_PAGE).forEach(l => {
-      h += `<div class="piece"><div class="ent"><span class="ref">${l.ref}</span><span class="num">${eur(l.montant)}</span></div><div class="sous"><span class="pastille" style="background:${COUL[l.cat]}"></span>${deux(l.jour)}/${deux(m + 1)} à la banque, ${NOM[l.cat].toLowerCase()}</div>`;
+      h += `<div class="piece" id="piece-${l.ref}"><div class="ent"><span class="ref">${l.ref}</span><span class="num">${eur(l.montant)}</span></div><div class="sous"><span class="pastille" style="background:${COUL[l.cat]}"></span>${deux(l.jour)}/${deux(m + 1)} à la banque, ${NOM[l.cat].toLowerCase()}</div>`;
       if (l.ticket) { const t = l.ticket, tva = t.total - t.total / (1 + t.taux / 100);
         h += `<div class="ticket"><div class="c g">${t.nom}</div><div class="c">${t.adr}</div><div class="c">${deux(t.jour)}/${deux(m + 1)}/2025 ${t.heure}</div><hr>${t.art.map(([a, v]) => `<div class="r"><span>${a}</span><span>${eur(v).replace(" €", "")}</span></div>`).join("")}<hr><div class="r t"><span>TOTAL TTC</span><span>${eur(t.total)}</span></div><div class="r"><span>dont TVA ${t.taux} %</span><span>${eur(tva).replace(" €", "")}</span></div><hr><div class="c">CARTE BANCAIRE</div><div class="c">**** **** **** 4821</div><div class="c">MERCI DE VOTRE VISITE</div></div>`;
       } else { const f = l.facture;
