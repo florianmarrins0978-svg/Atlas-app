@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Facture acquittée</title>
+<style>
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a; --etabli-or:#8b6835;
+    --serif:ui-serif,Georgia,"Times New Roman",serif;
+    --sans:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578; --plein:#7d9a6d;
+    --or:#B98B47; --trait:color-mix(in srgb,var(--encre) 12%,transparent);
+    --tuile:color-mix(in srgb,var(--fond) 93%,var(--encre));
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--etabli);overflow-x:hidden}
+  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased}
+  .page{max-width:1290px;margin:0 auto;padding:30px 16px 90px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 clamp(24px,7vw,30px)/1.15 var(--serif);margin:0 0 10px;overflow-wrap:anywhere}
+  .chapeau{max-width:660px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0 0 26px}
+  .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+  .col{flex:1 1 300px;max-width:390px;min-width:0}
+  .nom{font:600 15px/1.3 var(--sans);margin:0 0 3px}
+  .idee{color:var(--etabli-gris);font-size:13px;line-height:1.55;margin:0 0 12px;min-height:40px}
+  .note{margin:40px 0 0;padding:16px 18px;border-radius:4px;background:var(--etabli-carte);box-shadow:inset 0 0 0 2px var(--etabli-or);
+    max-width:660px;font-size:14px;line-height:1.75}
+  .note .t{display:block;font:700 10px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--etabli-or);margin:0 0 7px}
+
+  .tel{width:100%;border-radius:22px;overflow:hidden;background:var(--fond);color:var(--encre);
+       box-shadow:0 2px 16px rgba(20,18,14,.13),inset 0 0 0 1px var(--etabli-trait)}
+  .corps{padding:18px 20px 24px}
+  .carte{border-radius:4px;background:var(--plage);padding:18px 20px;margin:0 0 14px}
+  .caps{font:600 11px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--gris);margin:0 0 12px}
+  .ligne{display:flex;justify-content:space-between;gap:12px;font-size:15px;margin:4px 0}
+  .ligne span:first-child{color:var(--gris)}
+  .net{display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid var(--encre);margin:12px 0 0;padding:14px 0 0}
+  .net span{font:600 17px/1 var(--sans)}
+  .net b{font:600 24px/1 var(--serif)}
+  .reg{display:grid;grid-template-columns:1fr 1fr 70px;gap:4px;text-align:center;font-size:14px;padding:8px 0;border-bottom:1px solid var(--trait)}
+  .reg.tete{font-size:11px;color:var(--gris);border:0;padding:0}
+  .inter{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:15px;margin:16px 0 0}
+  .bascule{position:relative;width:46px;height:28px;border-radius:999px;background:var(--trait);flex:none;cursor:pointer;border:0}
+  .bascule::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:999px;background:var(--plage);transition:left .18s}
+  .bascule.on{background:var(--plein)}
+  .bascule.on::after{left:21px}
+  .moyens{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 0}
+  .moyens button{appearance:none;border:0;cursor:pointer;font:15px var(--sans);padding:8px 14px;border-radius:999px;background:var(--plage);color:var(--encre);box-shadow:inset 0 0 0 1px var(--trait)}
+  .moyens button[aria-pressed="true"]{background:var(--tuile);box-shadow:inset 0 0 0 1px var(--or)}
+  .tampon{display:block;width:max-content;margin:14px auto 0;padding:7px 14px;border:1.5px solid var(--or);color:var(--or);font:600 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase}
+  .plein{display:block;width:max-content;margin:16px auto 0;border-radius:999px;padding:14px 30px;background:var(--plein);color:var(--plage);font:400 18px/1 var(--serif);border:0}
+  .centre{text-align:center;font-size:15px;margin:0}
+  .cache{display:none}
+
+  .papier{width:100%;background:#fff;color:#1c1c1a;padding:26px 24px;box-shadow:0 2px 16px rgba(20,18,14,.13);font-size:12px;line-height:1.5}
+  .papier h3{font:600 18px/1.2 var(--serif);margin:0 0 2px}
+  .papier .gris{color:#77726a}
+  .papier .lp{display:flex;justify-content:space-between;margin:3px 0}
+  .papier .tot{border-top:1px solid #ddd;margin:10px 0 0;padding:8px 0 0}
+  .papier .tampon{font-size:11px}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="surtitre">Planche à choisir</p>
+  <h1>Renvoyer la facture acquittée</h1>
+  <p class="chapeau">Votre demande du 23 octobre : la même facture, même numéro, avec la mention acquittée en plus, pour l’assurance du client. Touchez l’interrupteur du premier écran : les deux autres suivent.</p>
+
+  <div class="rangee">
+    <div class="col">
+      <p class="nom">1. Sur la facture déjà envoyée</p>
+      <p class="idee">L’interrupteur « Facture acquittée » revient sous le net à payer, même après l’envoi. Il demande comment le client a payé, rien d’autre.</p>
+      <div class="tel"><div class="corps">
+        <div class="carte">
+          <p class="caps">Facture</p>
+          <p style="margin:0;font-size:16px">F2026-000028, Mr. Lala</p>
+        </div>
+        <div class="carte">
+          <p class="caps">Règlements reçus</p>
+          <div id="regs" class="cache">
+            <div class="reg tete"><span>Moyen</span><span>Date</span><span>Montant</span></div>
+            <div class="reg"><span id="moyenLu">Virement</span><span>23/10/2026</span><span>120,00</span></div>
+          </div>
+          <div class="net"><span>Net à payer</span><b id="net">120,00 €</b></div>
+          <div class="inter"><span>Facture acquittée</span><button id="bascule" class="bascule" aria-label="Facture acquittée"></button></div>
+          <div id="moyens" class="moyens cache">
+            <button aria-pressed="false">Chèque</button><button aria-pressed="true">Virement</button><button aria-pressed="false">Espèces</button><button aria-pressed="false">Carte</button>
+          </div>
+          <span id="tamponEcran" class="tampon cache">Acquittée le 23/10/2026</span>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="col">
+      <p class="nom">2. Le même bouton d’envoi</p>
+      <p class="idee">Une fois acquittée, le bouton le dit. Le client reçoit son lien comme la première fois.</p>
+      <div class="tel"><div class="corps">
+        <div class="carte">
+          <p class="centre">Facture F2026-000028 arrêtée.</p>
+          <button class="plein" id="bouton">Envoyer par SMS</button>
+        </div>
+        <div class="carte">
+          <p class="caps">Le message</p>
+          <p style="margin:0;font-size:14.5px;line-height:1.5" id="message">Bonjour Mr. Lala, voici votre facture F2026-000028.</p>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="col">
+      <p class="nom">3. Ce que le client ouvre</p>
+      <p class="idee">Le même papier, mot pour mot. Seuls s’ajoutent le tampon et la ligne des montants versés.</p>
+      <div class="papier">
+        <h3>Facture F2026-000028</h3>
+        <p class="gris" style="margin:0 0 12px">À régler avant le 19/11/2026. Travaux réalisés le 14/10/2026.</p>
+        <div class="lp"><span>Taille de platanes</span><span>100,00 €</span></div>
+        <div class="tot">
+          <div class="lp"><span>Total HT</span><span>100,00 €</span></div>
+          <div class="lp"><span>TVA 20 %</span><span>20,00 €</span></div>
+          <div class="lp"><b>Total TTC</b><b>120,00 €</b></div>
+          <div class="lp"><b>Net à payer</b><b id="netPapier">120,00 €</b></div>
+        </div>
+        <span id="tamponPapier" class="tampon cache">Acquittée le 23/10/2026</span>
+        <p id="verses" class="gris cache" style="margin:12px 0 0">Montants versés : <span id="moyenPapier">virement</span> du 23/10/2026, 120,00 €.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="t">Ce qui ne bouge pas</span>
+    La facture partie la première fois reste gardée telle quelle : la loi interdit de la modifier. L’exemplaire acquitté est un second fichier, gardé à part, avec le même numéro. Éteindre l’interrupteur retire le règlement, comme dans Terminés.
+  </div>
+</div>
+<script>
+  const b = document.getElementById("bascule");
+  const moyens = [...document.querySelectorAll("#moyens button")];
+  const voir = (id, oui) => document.getElementById(id).classList.toggle("cache", !oui);
+  function rendre() {
+    const on = b.classList.contains("on");
+    const m = moyens.find((x) => x.getAttribute("aria-pressed") === "true").textContent;
+    ["regs", "moyens", "tamponEcran", "tamponPapier", "verses"].forEach((id) => voir(id, on));
+    document.getElementById("net").textContent = on ? "0,00 €" : "120,00 €";
+    document.getElementById("netPapier").textContent = on ? "0,00 €" : "120,00 €";
+    document.getElementById("moyenLu").textContent = m;
+    document.getElementById("moyenPapier").textContent = m.toLowerCase();
+    document.getElementById("bouton").textContent = on ? "Envoyer la facture acquittée" : "Envoyer par SMS";
+    document.getElementById("message").textContent = on
+      ? "Bonjour Mr. Lala, voici votre facture F2026-000028 acquittée."
+      : "Bonjour Mr. Lala, voici votre facture F2026-000028.";
+  }
+  b.addEventListener("click", () => { b.classList.toggle("on"); rendre(); });
+  moyens.forEach((x) => x.addEventListener("click", () => {
+    moyens.forEach((y) => y.setAttribute("aria-pressed", String(y === x))); rendre();
+  }));
+</script>
+</body>
+</html>
