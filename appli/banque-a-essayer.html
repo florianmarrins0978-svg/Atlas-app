@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La banque, à essayer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  LA BANQUE, À ESSAYER — 23 octobre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  SA DEMANDE, après l'essai réel sur son Crédit Mutuel :
+    « je veux bien qu'on continue la suite en me faisant une maquette
+      réaliste que l'on puisse essayer »
+
+  UN SEUL TÉLÉPHONE, QU'ON MANIPULE. Le parcours entier d'un artisan :
+  Réglages, Ma banque, choisir sa banque, l'accord chez le prestataire, la
+  page de sa banque (simulée), le retour, puis la carte sur l'accueil et le
+  « Oui » qui fait entrer la facture au relevé de TVA.
+
+  CE QUE L'ESSAI DU 23 OCTOBRE A APPRIS, ET QUE LA PLANCHE APPLIQUE :
+    · la porte « particulier » est la bonne pour un artisan : plus de choix
+      pro ou perso à cocher ; un lien discret pour l'accès entreprise à carte
+      à puce, qui refusait son identifiant ;
+    · l'identifiant de la banque est un numéro, pas l'e-mail : la page de
+      retour le rappelle quand la banque refuse ;
+    · le libellé brut de la banque (« VIR MUTUALITE SOCIALE AGRICO VIR
+      NORMES… ») débordait de l'écran : on montre le nom du payeur, propre,
+      et le libellé sur une ligne coupée.
+
+  LA PAGE DE LA BANQUE EST SIMULÉE, SANS LE NOM NI LES COULEURS D'AUCUNE
+  BANQUE : c'est la sienne qui s'affichera, avec sa vraie connexion.
+
+  AUCUNE LIGNE DE L'APPLICATION N'A BOUGÉ (CLAUDE.md §3 bis). Couleurs de
+  src/lib/design-tokens.ts, carte de src/app/Notifications.tsx, liste de
+  src/app/termines/tva/EnAttenteDePaiement.tsx. Noms et montants d'exemple.
+*/
+:root{
+  --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --plein:#7d9a6d;
+  --or:#B98B47; --trait:rgba(28,28,26,.12); --filet:rgba(28,28,26,.07);
+  --scene:#e6e3dc; --alerte:#a8552f;
+  --serif:"Playfair Display",ui-serif,Georgia,serif;
+  --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+body.nuit{
+  --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --pin:#8fae86; --papier:#20241f; --plein:#8fae86;
+  --or:#c6a15b; --trait:rgba(233,232,222,.12); --filet:rgba(233,232,222,.08);
+  --scene:#070908; --alerte:#d38a63;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+button,input{font-family:inherit;-webkit-tap-highlight-color:transparent}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+::selection{background:var(--plein);color:var(--carte)}
+[hidden]{display:none!important}
+
+.bandeau{background:var(--encre);color:var(--fond);padding:16px 20px;font-size:14px;line-height:1.6}
+body.nuit .bandeau{background:#000;color:var(--encre)}
+.bandeau b{color:#fff}
+body.nuit .bandeau b{color:var(--encre)}
+.bandeau .dedans{max-width:980px;margin:0 auto}
+
+.etats{position:sticky;top:0;z-index:20;background:var(--scene);border-bottom:1px solid var(--trait);padding:12px 16px}
+.etats .groupe{max-width:980px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.etats .groupe + .groupe{margin-top:8px}
+.etats .quoi{font:600 10px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--gris);margin-right:4px}
+.etats button{border:1px solid var(--trait);background:var(--carte);color:var(--encre-douce);border-radius:999px;padding:10px 14px;font-size:13px;min-height:44px}
+.etats button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+body.nuit .etats button[aria-pressed="true"]{color:#101210}
+
+.scene{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;align-items:flex-start;max-width:980px;margin:26px auto 0;padding:0 16px}
+.tel{width:390px;max-width:100%;height:780px;border-radius:30px;overflow:hidden;box-shadow:0 18px 48px rgba(20,18,14,.24);
+     background:var(--fond);display:flex;flex-direction:column;position:relative}
+.ecran{flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain}
+.guide{width:340px;max-width:100%;font-size:14px;line-height:1.6;color:var(--encre-douce)}
+.guide .t{font:500 19px/1.25 var(--serif);color:var(--encre);margin:0 0 8px}
+.guide ol{margin:0;padding-left:20px}
+.guide li{margin:6px 0}
+.guide li.ici{color:var(--encre);font-weight:500}
+.guide .note{margin-top:18px;padding-top:14px;border-top:1px solid var(--trait);font-size:13px}
+
+/* ── Pièces communes ── */
+.entete{padding:26px 24px 0}
+.retour{width:40px;height:40px;border-radius:50%;border:0;background:var(--papier);color:var(--encre);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.retour svg{width:16px;height:16px}
+.entete h1{margin:0;font:400 34px/1.1 var(--serif);letter-spacing:-.01em}
+.caps{font:600 11px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase}
+.entete .caps{display:block;margin-top:10px;color:var(--or)}
+.corps{padding:20px 24px 28px;display:flex;flex-direction:column;gap:18px}
+.bloc{border-radius:14px;background:var(--carte);padding:16px 18px}
+.bloc .caps{color:var(--gris);font-size:10.5px}
+.bloc .grand{margin:8px 0 0;font:400 18px/1.3 var(--serif)}
+.bloc .petit{margin:4px 0 0;font-size:13px;line-height:1.5;color:var(--gris)}
+.bloc .petit.alerte{color:var(--alerte)}
+.plein{border:0;border-radius:999px;background:var(--plein);color:var(--carte);padding:11px 20px;font:500 14px/1 var(--sans);min-height:44px}
+body.nuit .plein{color:#101210}
+.leger{border:0;background:none;color:var(--encre-douce);padding:11px 8px;font:500 14px/1 var(--sans);min-height:44px}
+.gestes{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px}
+.message{border-radius:12px;padding:12px 16px;font-size:14px;line-height:1.5;background:var(--papier)}
+.message.mal{color:var(--alerte)}
+.promesse{list-style:none;margin:0;padding:0}
+.promesse li{padding:10px 0;border-top:1px solid var(--filet);font-size:13.5px;line-height:1.45;color:var(--encre-douce)}
+.titre2{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.titre2 h2{margin:0;font:400 17px/1.2 var(--serif)}
+.titre2 span{font-size:12px;color:var(--gris);font-variant-numeric:tabular-nums}
+.liste{list-style:none;margin:4px 0 0;padding:0}
+.ligne{padding:13px 0;border-top:1px solid var(--filet)}
+.ligne .h{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.ligne .qui{margin:0;font-size:14.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ligne .sous{margin:1px 0 0;font-size:11.5px;color:var(--gris);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ligne .m{flex:0 0 auto;font:400 15.5px/1.2 var(--serif);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ligne .prop{margin:6px 0 0;font-size:12px;line-height:1.45;color:var(--or)}
+.ligne .prop.calme{color:var(--gris)}
+
+/* ── Choix de la banque ── */
+.cherche{display:flex;align-items:center;gap:10px;border-radius:12px;background:var(--carte);padding:0 14px;min-height:48px}
+.cherche svg{width:16px;height:16px;color:var(--gris);flex:0 0 auto}
+.cherche input{flex:1;border:0;background:none;outline:none;color:var(--encre);font-size:16px;min-width:0}
+.banques{list-style:none;margin:0;padding:0;border-radius:14px;overflow:hidden;background:var(--filet);display:flex;flex-direction:column;gap:1px}
+.banques button{width:100%;text-align:left;border:0;background:var(--carte);color:var(--encre);padding:15px 16px;font-size:15px;min-height:52px}
+.lien{border:0;background:none;color:var(--gris);font-size:13px;text-decoration:underline;text-underline-offset:3px;padding:8px 0;text-align:left}
+
+/* ── Les pages du dehors : prestataire, puis banque ── */
+.dehors{background:#f2f2f2;color:#222;min-height:100%;display:flex;flex-direction:column}
+body.nuit .dehors{background:#f2f2f2;color:#222}
+.dehors .adresse{font:12px/1 var(--sans);color:#666;background:#e4e4e4;padding:10px 16px;display:flex;gap:8px;align-items:center}
+.dehors .adresse svg{width:12px;height:12px}
+.dehors .dedans{padding:28px 26px;display:flex;flex-direction:column;gap:14px;font-size:14px;line-height:1.6}
+.dehors .bouton-noir{border:0;border-radius:6px;background:#2a2d31;color:#fff;padding:13px 18px;font-size:14px;min-height:46px}
+.dehors .annuler{border:0;background:none;color:#444;font-size:14px;padding:8px}
+.dehors .etiquette{align-self:flex-start;font:600 10px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:#777;border:1px dashed #aaa;border-radius:999px;padding:6px 10px}
+.dehors label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#555}
+.dehors input{border:1px solid #c8c8c8;border-radius:6px;padding:12px;font-size:16px;background:#fff;color:#222}
+.dehors .aide{font-size:12.5px;color:#666}
+
+/* ── Accueil ── */
+.carte{border-radius:18px;padding:16px 20px;background:var(--carte)}
+.carte.teinte{background:var(--papier)}
+.carte .caps{color:var(--gris);margin:0 0 6px}
+.carte.teinte .caps{color:var(--pin)}
+.carte .qui{margin:0;font:400 16px/1.3 var(--serif)}
+.carte .montant{margin:8px 0 0;font:400 19px/1.2 var(--serif);font-variant-numeric:tabular-nums}
+.carte .texte{margin:4px 0 0;font-size:13px;line-height:1.5;color:var(--gris)}
+.carte .question{margin:12px 0 0;font-size:14.5px;line-height:1.45}
+.carte .fait{margin:10px 0 0;font-size:13.5px;line-height:1.5;color:var(--pin)}
+.choix-facture{display:flex;flex-direction:column;gap:1px;margin-top:12px;border-radius:12px;overflow:hidden;background:var(--filet)}
+.choix-facture button{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border:0;background:var(--fond);color:var(--encre);padding:13px 14px;min-height:50px;text-align:left;font-size:14.5px}
+.choix-facture .n{display:block;font-size:11.5px;color:var(--gris);margin-top:2px}
+.choix-facture .m{font:400 15.5px/1.2 var(--serif);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* ── Ma TVA ── */
+.tva .l{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0}
+.tva .l .caps{color:var(--gris);font-weight:500;font-size:10.5px;letter-spacing:.24em}
+.tva .l .v{font:400 22px/1.1 var(--serif);font-variant-numeric:tabular-nums}
+.tva .total{border-top:1px solid var(--trait);margin-top:4px;padding-top:16px}
+.tva .total .caps{color:var(--or)}
+.tva .total .v{font-size:32px;transition:color .5s cubic-bezier(.16,1,.3,1)}
+.tva .total .v.bouge{color:var(--pin)}
+.rentree{margin:8px 0 0;font-size:12px;line-height:1.5;color:var(--gris)}
+.rentree b{font-weight:400;color:var(--encre-douce)}
+.vu{margin:7px 0 0;font-size:12px;line-height:1.45;color:var(--or)}
+
+/* ── Barre du bas ── */
+.barre{flex:0 0 auto;display:flex;justify-content:space-between;border-top:1px solid var(--trait);padding:12px 14px 20px;background:var(--fond)}
+.barre button{border:0;background:none;font:500 9.5px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gris);padding:10px 4px;position:relative;min-height:40px}
+.barre button[aria-current="page"]{color:var(--encre)}
+.barre button[aria-current="page"]::after{content:"";position:absolute;left:0;right:0;bottom:2px;height:2px;background:var(--or)}
+.barre button[disabled]{cursor:default}
+.point{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--alerte);vertical-align:3px;margin-left:4px}
+
+.arrive{animation:arrive .45s cubic-bezier(.16,1,.3,1)}
+@keyframes arrive{from{opacity:.25;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.arrive{animation:none}}
+
+@media (max-width:420px){.tel{height:auto;min-height:700px;border-radius:22px}.scene{padding:0 10px}}
+</style>
+</head>
+<body>
+
+<div class="bandeau"><div class="dedans">
+  <b>La banque, à essayer.</b> Un artisan relie sa banque, puis Atlas le prévient
+  quand un client le paie. <b>Touchez tout</b> : les boutons, la barre du bas, la
+  carte de l'accueil. La page de la banque est simulée. <b>Rien n'est codé</b>
+  au delà de l'essai de ce soir.
+</div></div>
+
+<div class="etats">
+  <div class="groupe" role="group" aria-label="Ce que la banque voit">
+    <span class="quoi">Le virement</span>
+    <button data-cas="juste" aria-pressed="true">Le bon montant</button>
+    <button data-cas="partie" aria-pressed="false">Un acompte</button>
+    <button data-cas="deux" aria-pressed="false">Deux factures pareilles</button>
+    <button data-cas="coupure" aria-pressed="false">Accord bientôt fini</button>
+  </div>
+  <div class="groupe">
+    <span class="quoi">Charte</span>
+    <button data-charte="jour" aria-pressed="true">Origine</button>
+    <button data-charte="nuit" aria-pressed="false">Nuit</button>
+    <button id="recommencer">Recommencer</button>
+  </div>
+</div>
+
+<div class="scene">
+  <div class="tel">
+    <div class="ecran" id="ecran"></div>
+    <nav class="barre" id="barre"></nav>
+  </div>
+  <aside class="guide">
+    <p class="t">Le parcours</p>
+    <ol id="etapes">
+      <li data-e="1">Réglages, Ma banque : « Relier ma banque ».</li>
+      <li data-e="2">Il choisit sa banque dans la liste.</li>
+      <li data-e="3">Il donne son accord chez le prestataire agréé.</li>
+      <li data-e="4">Il se connecte sur la page de SA banque.</li>
+      <li data-e="5">Retour dans Atlas : ses virements reçus.</li>
+      <li data-e="6">Un client paie : une carte sur l'accueil, il dit oui.</li>
+      <li data-e="7">Ma TVA : la facture quitte l'attente.</li>
+    </ol>
+    <p class="note"><b>Ce que l'essai du 23 octobre a changé :</b> plus de case pro ou perso,
+    la porte « particulier » est la bonne pour un artisan. Le nom du payeur
+    remplace le libellé brut de la banque, qui débordait.</p>
+  </aside>
+</div>
+
+<script>
+const ico = {
+  retour:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3L5 8l5 5"/></svg>',
+  loupe:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>',
+  cadenas:'<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="5.5" width="8" height="5.5" rx="1"/><path d="M4 5.5V4a2 2 0 014 0v1.5"/></svg>',
+};
+const BANQUES = ["BNP Paribas","Banque Populaire","Caisse d'Épargne","CIC","Crédit Agricole","Crédit Mutuel","La Banque Postale","LCL","Qonto","Shine","Société Générale"];
+
+const FACTURES = [
+  { id:"lala", nom:"Lala", num:"F2026-000028, émise le 20/10", m:120 },
+  { id:"martins", nom:"Martins", num:"F2026-000025, émise le 08/10", m:120 },
+  { id:"fred", nom:"Frédéric Durand", num:"F2026-000020, émise le 27/09", m:780 },
+];
+const CAS = {
+  juste:   { v:{ qui:"M. Lala", lib:"VIR M LALA", m:120, date:"21 octobre" }, prop:{ genre:"juste", f:"lala" } },
+  partie:  { v:{ qui:"Frédéric Durand", lib:"VIR FREDERIC DURAND ACOMPTE", m:400, date:"21 octobre" }, prop:{ genre:"partie", f:"fred" } },
+  deux:    { v:{ qui:"Sans nom", lib:"VIREMENT SEPA RECU", m:120, date:"21 octobre" }, prop:{ genre:"deux" } },
+  coupure: { v:{ qui:"M. Lala", lib:"VIR M LALA", m:120, date:"21 octobre" }, prop:{ genre:"juste", f:"lala" }, coupure:true },
+};
+const AUTRES = [ { qui:"Mutualité sociale agricole", lib:"VIR MUTUALITE SOCIALE AGRICO VIR NORMES DU 06/10/2026", m:230, date:"8 octobre" } ];
+
+const eur = n => n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2}).replace(/ /g," ")+" €";
+const tvaDe = ttc => Math.round(ttc/6*100)/100; // 20 % de TVA dans un TTC
+
+let s; // l'état du téléphone
+function neuf(){ s = { cas: s ? s.cas : "juste", page:"banque", relie:false, entreprise:false, filtre:"", banque:null, refus:false, reponse:null, choisie:null, renouvele:false }; }
+neuf();
+
+const ecran = document.getElementById("ecran");
+const barre = document.getElementById("barre");
+
+function aller(page){ s.page = page; rendre(true); ecran.scrollTop = 0; }
+
+function etape(){
+  return { banque: s.relie ? 5 : 1, choix:2, accord:3, connexion:4, accueil:6, tva:7 }[s.page] || 1;
+}
+
+function entete(titre, sur, retour){
+  return `<div class="entete">${retour ? `<button class="retour" data-aller="${retour}" aria-label="Retour">${ico.retour}</button>` : ""}<h1>${titre}</h1><span class="caps">${sur}</span></div>`;
+}
+
+function pageBanque(){
+  const c = CAS[s.cas];
+  let h = entete("Ma banque","Réglages","");
+  h += `<div class="corps">`;
+  if (s.reponse === "relie") h += `<p class="message arrive">Votre banque est reliée.</p>`;
+  if (!s.relie) {
+    h += `<div class="bloc"><span class="caps">Aucune banque reliée</span>
+      <p class="petit">Atlas vous prévient quand un client vous paie.</p>
+      <div class="gestes"><button class="plein" data-aller="choix">Relier ma banque</button></div></div>`;
+  } else {
+    const fin = s.renouvele ? "21 avril" : (c.coupure ? "30 octobre, dans 7 jours" : "21 avril");
+    h += `<div class="bloc"><span class="caps">Compte relié</span>
+      <p class="grand">${s.banque || "Crédit Mutuel"}</p>
+      <p class="petit${c.coupure && !s.renouvele ? " alerte" : ""}">Votre banque redemandera votre accord le ${fin}.</p>
+      <div class="gestes">${c.coupure && !s.renouvele ? `<button class="plein" data-aller="accord">Renouveler l'accord</button>` : ""}<button class="leger" data-geste="delier" style="padding-left:0">Délier</button></div></div>`;
+    h += `<section><div class="titre2"><h2>Virements reçus</h2><span>30 derniers jours</span></div><ul class="liste">`;
+    for (const v of [c.v, ...AUTRES]) h += ligneVirement(v, v === c.v ? c.prop : null);
+    h += `</ul></section>`;
+  }
+  h += `<ul class="promesse"><li>Atlas lit les virements reçus sur ce compte.</li><li>Il ne peut ni payer, ni déplacer de l'argent.</li><li>Il ne met rien au relevé de TVA sans votre oui.</li></ul></div>`;
+  return h;
+}
+
+function ligneVirement(v, prop){
+  let p = `<p class="prop calme">Aucune facture en attente ne correspond.</p>`;
+  if (prop && s.choisie) p = `<p class="prop calme">Noté sur la facture ${FACTURES.find(f=>f.id===s.choisie).num.split(",")[0]}.</p>`;
+  else if (prop && s.choisie === false) p = `<p class="prop calme">Noté comme sans facture.</p>`;
+  else if (prop) p = `<p class="prop">${phrase(prop)}</p>`;
+  return `<li class="ligne"><div class="h"><p class="qui">${v.qui}</p><span class="m">${eur(v.m)}</span></div>
+    <p class="sous">Le ${v.date}, ${v.lib}</p>${p}</li>`;
+}
+
+function phrase(prop){
+  const f = FACTURES.find(x => x.id === prop.f);
+  if (prop.genre === "juste") return `C'est sans doute la facture ${f.num.split(",")[0]} de ${f.nom}.`;
+  if (prop.genre === "partie") return `Peut-être une partie de la facture ${f.num.split(",")[0]} de ${f.nom}.`;
+  return `Deux factures font ce montant. Vous choisirez sur l'accueil.`;
+}
+
+function pageChoix(){
+  let h = entete("Votre banque","Ma banque","banque");
+  const liste = BANQUES.filter(b => b.toLowerCase().includes(s.filtre.toLowerCase()));
+  h += `<div class="corps">
+    <label class="cherche">${ico.loupe}<input id="filtre" type="search" placeholder="Chercher votre banque" value="${s.filtre}" autocomplete="off"></label>
+    <ul class="banques">${liste.map(b => `<li><button data-banque="${b}">${b}</button></li>`).join("") || `<li><button disabled>Aucune banque à ce nom.</button></li>`}</ul>
+    <button class="lien" data-geste="entreprise">${s.entreprise ? "Revenir à l'accès habituel" : "Votre banque vous a donné un accès entreprise à carte ?"}</button>
+    ${s.entreprise ? `<p class="petit" style="margin:0;font-size:13px;color:var(--gris)">Accès entreprise choisi. Seulement si votre banque vous a remis une carte ou un certificat.</p>` : ""}
+  </div>`;
+  return h;
+}
+
+function pageAccord(){
+  return `<div class="dehors"><div class="adresse">${ico.cadenas}Page du prestataire agréé</div><div class="dedans">
+    <span class="etiquette">Simulation</span>
+    <p style="margin:0">L'authentification est demandée par <b>Atlas</b>. Une fois terminée, la liste de vos comptes, leurs soldes et leurs opérations seront partagés avec Atlas.</p>
+    <p style="margin:0;color:#666;font-size:13px">Atlas lit les virements reçus pour préparer le relevé de TVA. Il ne fait aucun paiement.</p>
+    <button class="bouton-noir" data-aller="connexion">Continuer l'authentification</button>
+    <button class="annuler" data-geste="annuler">Annuler</button>
+  </div></div>`;
+}
+
+function pageConnexion(){
+  return `<div class="dehors"><div class="adresse">${ico.cadenas}Page de ${s.banque || "votre banque"}</div><div class="dedans">
+    <span class="etiquette">Simulation de la page de votre banque</span>
+    ${s.refus ? `<p style="margin:0;color:#a33">Identifiant inconnu.</p><p class="aide" style="margin:0">Votre identifiant est le numéro donné par la banque, pas votre adresse e-mail.</p>` : ""}
+    <label>Identifiant<input id="ident" inputmode="numeric" placeholder="Le numéro de votre banque" autocomplete="off"></label>
+    <label>Mot de passe<input type="password" placeholder="Votre mot de passe" autocomplete="off"></label>
+    <button class="bouton-noir" data-geste="valider">Valider</button>
+    <p class="aide" style="margin:0">Puis vous validez dans l'appli de votre banque, sur le téléphone, comme pour un paiement.</p>
+    <p class="aide" style="margin:0">Essayez une adresse e-mail dans Identifiant pour voir le refus.</p>
+  </div></div>`;
+}
+
+function carteAccueil(){
+  const c = CAS[s.cas];
+  if (!s.relie) return `<div class="carte"><p class="caps">Votre banque</p><p class="qui">Pas encore reliée</p>
+    <p class="texte">Reliez-la pour qu'Atlas vous prévienne quand un client vous paie.</p>
+    <div class="gestes" style="margin-left:-8px"><button class="leger" style="color:var(--pin)" data-aller="banque">Relier ma banque</button></div></div>`;
+  let h = "";
+  if (c.coupure && !s.renouvele) h += `<div class="carte teinte arrive"><p class="caps">Votre banque</p><p class="qui">Votre accord se termine dans 7 jours</p>
+    <p class="texte">Le 30 octobre. Après, les paiements se noteront à la main.</p>
+    <div class="gestes"><button class="plein" data-aller="accord">Renouveler</button><button class="leger">Plus tard</button></div></div>`;
+  const v = c.v, p = c.prop;
+  h += `<div class="carte arrive"><p class="caps">Virement reçu</p><p class="qui">${v.qui}</p><p class="montant">${eur(v.m)}</p>
+    <p class="texte">Le ${v.date}, sur votre compte ${s.banque || "Crédit Mutuel"}.</p>`;
+  if (s.choisie) {
+    const f = FACTURES.find(x => x.id === s.choisie);
+    const part = p.genre === "partie";
+    h += `<p class="fait">${part ? `${eur(v.m)} notés sur la facture ${f.num.split(",")[0]}. Il reste ${eur(f.m - v.m)} à recevoir.` : `La facture ${f.num.split(",")[0]} est payée.`} ${eur(tvaDe(v.m))} de TVA entrent au relevé d'octobre.</p>
+      <div class="gestes" style="margin-top:4px;margin-left:-8px"><button class="leger" data-geste="defaire">Annuler</button><button class="leger" style="color:var(--pin)" data-aller="tva">Voir Ma TVA</button></div>`;
+  } else if (s.choisie === false) {
+    h += `<p class="fait">Noté comme sans facture. Rien n'entre au relevé.</p><div class="gestes" style="margin-top:4px;margin-left:-8px"><button class="leger" data-geste="defaire">Annuler</button></div>`;
+  } else if (p.genre === "deux") {
+    h += `<p class="question">Deux factures font ${eur(v.m)}. Laquelle ?</p><div class="choix-facture">
+      ${FACTURES.filter(f=>f.m===v.m).map(f=>`<button data-choisir="${f.id}"><span>${f.nom}<span class="n">${f.num}</span></span><span class="m">${eur(f.m)}</span></button>`).join("")}
+      </div><div class="gestes"><button class="leger" data-geste="non">Aucune des deux</button></div>`;
+  } else {
+    const f = FACTURES.find(x => x.id === p.f);
+    h += `<p class="question">${p.genre === "partie" ? `Une partie de la facture ${f.num.split(",")[0]}, qui fait ${eur(f.m)} ?` : `C'est la facture ${f.num.split(",")[0]} ?`}</p>
+      <div class="gestes"><button class="plein" data-choisir="${f.id}">${p.genre === "partie" ? "Oui, une partie" : "Oui"}</button><button class="leger" data-geste="non">Non</button></div>`;
+  }
+  return h + `</div>`;
+}
+
+function pageAccueil(){
+  return `${entete("Chantiers","Accueil","")}<div class="corps">${carteAccueil()}
+    <section><div class="titre2"><h2>En cours</h2></div><ul class="liste">
+      <li class="ligne"><p class="qui">Massif devant la maison</p><p class="sous">Durand</p></li>
+      <li class="ligne"><p class="qui">Taille de la haie</p><p class="sous">Martins</p></li></ul></section></div>`;
+}
+
+function pageTva(){
+  const c = CAS[s.cas];
+  const ok = !!s.choisie;
+  const plus = ok ? tvaDe(c.v.m) : 0;
+  const base = 4009.99;
+  const f = ok ? FACTURES.find(x => x.id === s.choisie) : null;
+  const partie = ok && c.prop.genre === "partie";
+  const restantes = FACTURES.filter(x => !(ok && !partie && x.id === s.choisie));
+  let h = `${entete("Octobre 2026","Ma TVA","")}<div class="corps tva">
+    <div><div class="l"><span class="caps">TVA collectée</span><span class="v">${eur(base+plus)}</span></div>
+    <div class="l"><span class="caps">TVA déductible</span><span class="v">− 0,00 €</span></div>
+    <div class="l total"><span class="caps">TVA à payer</span><span class="v${ok ? " bouge" : ""}">${eur(base+plus)}</span></div></div>
+    <section><div class="titre2"><h2>Factures en attente</h2><span>${restantes.length} factures</span></div>
+    ${ok ? `<p class="rentree arrive"><b>${f.nom}, ${eur(c.v.m)}</b> ${partie ? `sur ${eur(f.m)} est rentré` : "est rentrée"} au relevé d'octobre.</p>` : ""}
+    <ul class="liste">`;
+  for (const x of restantes) {
+    const vu = s.relie && !ok && s.choisie !== false && (c.prop.f === x.id || (c.prop.genre === "deux" && x.m === c.v.m));
+    const reste = partie && x.id === s.choisie;
+    h += `<li class="ligne"><div class="h"><div style="min-width:0"><p class="qui">${x.nom}</p><p class="sous">${x.num}</p></div>
+      <span class="m">${reste ? eur(x.m - c.v.m) : eur(x.m)}</span></div>
+      ${reste ? `<p class="sous">restant sur ${eur(x.m)}</p>` : ""}
+      ${vu ? `<p class="vu">Vu sur votre banque le 21/10 : ${eur(c.v.m)}${c.v.qui === "Sans nom" ? ", sans nom" : `, ${c.v.qui}`}.</p>` : ""}
+      <div class="gestes" style="margin-top:9px"><button class="plein" style="min-height:40px;padding:9px 18px">J'ai reçu le paiement</button><button class="leger" style="color:var(--gris);font-weight:400">J'ai reçu une partie</button></div></li>`;
+  }
+  return h + `</ul></section></div>`;
+}
+
+function rendre(anime){
+  const pages = { banque:pageBanque, choix:pageChoix, accord:pageAccord, connexion:pageConnexion, accueil:pageAccueil, tva:pageTva };
+  ecran.innerHTML = `<div class="${anime ? "arrive" : ""}">${pages[s.page]()}</div>`;
+  const dehors = s.page === "accord" || s.page === "connexion";
+  barre.hidden = dehors;
+  const attend = s.relie && s.choisie == null;
+  const onglet = { accueil:"accueil", tva:"tva", banque:"banque", choix:"banque" }[s.page];
+  barre.innerHTML = [["accueil","Chantiers"],[null,"Planning"],["tva","Terminés"],[null,"Paysage"],["banque","Réglages"]]
+    .map(([p,l]) => `<button ${p ? `data-aller="${p}"` : "disabled"} ${onglet===p ? 'aria-current="page"' : ""}>${l}${p==="accueil" && attend && s.page!=="accueil" ? '<i class="point"></i>' : ""}</button>`).join("");
+  const e = etape();
+  document.querySelectorAll("#etapes li").forEach(li => li.classList.toggle("ici", Number(li.dataset.e) === e));
+  const champ = document.getElementById("filtre");
+  if (champ) champ.addEventListener("input", ev => { s.filtre = ev.target.value; const pos = ev.target.selectionStart; rendre(false); const n = document.getElementById("filtre"); n.focus(); n.setSelectionRange(pos,pos); });
+}
+
+document.addEventListener("click", ev => {
+  const b = ev.target.closest("button");
+  if (!b) return;
+  if (b.dataset.cas) {
+    s.cas = b.dataset.cas; s.choisie = null; s.renouvele = false;
+    document.querySelectorAll("[data-cas]").forEach(x => x.setAttribute("aria-pressed", x === b));
+    if (s.relie) aller("accueil"); else rendre(true);
+    return;
+  }
+  if (b.dataset.charte) {
+    document.body.classList.toggle("nuit", b.dataset.charte === "nuit");
+    document.querySelectorAll("[data-charte]").forEach(x => x.setAttribute("aria-pressed", x === b));
+    return;
+  }
+  if (b.id === "recommencer") { neuf(); rendre(true); return; }
+  if (b.dataset.aller) { s.reponse = null; aller(b.dataset.aller); return; }
+  if (b.dataset.banque) { s.banque = b.dataset.banque; aller("accord"); return; }
+  if (b.dataset.choisir) { s.choisie = b.dataset.choisir; rendre(true); return; }
+  const g = b.dataset.geste;
+  if (g === "entreprise") { s.entreprise = !s.entreprise; rendre(false); }
+  else if (g === "annuler") { s.reponse = null; aller("banque"); }
+  else if (g === "valider") {
+    const id = (document.getElementById("ident").value || "").trim();
+    if (id.includes("@")) { s.refus = true; rendre(true); return; }
+    // Le renouvellement ne vaut que pour une banque DÉJÀ reliée : relier une
+    // première fois dans le cas « accord bientôt fini » doit montrer l'alerte.
+    if (CAS[s.cas].coupure && s.relie) s.renouvele = true;
+    s.refus = false; s.relie = true; s.reponse = "relie";
+    aller("banque");
+  }
+  else if (g === "delier") { s.relie = false; s.choisie = null; s.renouvele = false; rendre(true); }
+  else if (g === "non") { s.choisie = false; rendre(true); }
+  else if (g === "defaire") { s.choisie = null; rendre(true); }
+});
+
+rendre(false);
+</script>
+</body>
+</html>

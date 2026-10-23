@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Dossier justifié 2025</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:wght@400&display=swap" rel="stylesheet">
+<!--
+  LE DOSSIER JUSTIFIÉ, EN EXEMPLE — 23 octobre 2026
+
+  Sa demande : « je veux pouvoir ouvrir un PDF de mes fichiers justifiés pour
+  voir à quoi ils vont ressembler, fais-moi le vrai fichier fini avec un
+  exemple ».
+
+  Ce fichier est le MODÈLE ; `engendrer.mjs` l'imprime en
+  `appli/dossier-justifie-exemple.pdf`, que la planche
+  `appli/pour-mon-comptable.html` ouvre. Une fois choisi, le vrai dossier sera
+  écrit par l'application (pdf-lib, comme ses devis et factures) : ce modèle
+  fixe ce qu'il porte et dans quel ordre, pas la façon de l'imprimer.
+
+  L'entreprise, les clients, les montants et les tickets sont INVENTÉS, tirés
+  d'un générateur à graine fixe : le fichier ressort identique à chaque fois.
+  Les tickets sont dessinés, à la place des photos qu'il aura prises.
+-->
+<style>
+@page{size:A4;margin:16mm 15mm 18mm}
+:root{
+  --encre:#1c1c1a; --doux:#4a4a44; --gris:#8a8578; --filet:#e4e0d6; --papier:#f3f1eb;
+  --pin:#2f3b2f; --or:#B98B47; --alerte:#a8552f;
+  --c-carburant:#3d6e9e; --c-repas:#4f8a3c; --c-materiel:#b9732a; --c-hotel:#7a5aa6;
+  --c-transport:#2b8586; --c-autre:#8a8578; --c-virement:#a3506b; --c-recu:#2f3b2f;
+}
+*{box-sizing:border-box}
+html,body{margin:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{font:9.5pt/1.45 "Inter","Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--encre)}
+.serif{font-family:"Playfair Display",Georgia,"Times New Roman",serif}
+.page{page-break-after:always;break-after:page}
+.page:last-child{page-break-after:auto;break-after:auto}
+h1,h2,h3{font-family:"Playfair Display",Georgia,serif;font-weight:400;margin:0}
+.caps{font:600 7.5pt/1 "Inter",sans-serif;letter-spacing:.18em;text-transform:uppercase}
+.pastille{display:inline-block;width:7pt;height:7pt;border-radius:50%;vertical-align:-0.5pt;margin-right:4pt}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* ── Couverture ── */
+.couv{height:257mm;display:flex;flex-direction:column}
+.couv .haut{border-bottom:1.5pt solid var(--or);padding-bottom:10mm}
+.couv .haut .caps{color:var(--or)}
+.couv h1{font-size:40pt;line-height:1.05;margin-top:6mm}
+.couv .annee{font:400 22pt/1 "Playfair Display",Georgia,serif;color:var(--doux);margin-top:3mm}
+.couv .bloc{margin-top:12mm;display:grid;grid-template-columns:1fr 1fr;gap:8mm 12mm}
+.couv .bloc .caps{color:var(--gris);display:block;margin-bottom:2.5mm}
+.couv .bloc p{margin:0;font-size:11pt;line-height:1.5}
+.couv .sceau{margin-top:auto;border:1pt solid var(--filet);border-radius:3mm;padding:7mm 8mm;display:flex;gap:8mm;align-items:center;background:var(--papier)}
+.couv .sceau .ok{width:13mm;height:13mm;border-radius:50%;background:var(--pin);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16pt;flex:none}
+.couv .sceau p{margin:0;font-size:10.5pt}
+.couv .sceau small{display:block;color:var(--gris);font-size:8.5pt;margin-top:1mm}
+.exemple{margin-top:6mm;font-size:8.5pt;color:var(--alerte)}
+
+/* ── L'année en un coup d'œil ── */
+.titre-page{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1pt solid var(--filet);padding-bottom:3mm;margin-bottom:6mm}
+.titre-page h2{font-size:20pt}
+.titre-page .caps{color:var(--or)}
+.chiffres{display:grid;grid-template-columns:repeat(4,1fr);gap:4mm;margin-bottom:7mm}
+.chiffres div{background:var(--papier);border-radius:2.5mm;padding:4mm}
+.chiffres .caps{color:var(--gris);font-size:6.5pt}
+.chiffres b{display:block;font:400 15pt/1.2 "Playfair Display",Georgia,serif;margin-top:2mm}
+.barre{display:flex;height:4mm;border-radius:2mm;overflow:hidden;margin:2mm 0 5mm}
+.barre i{display:block;height:100%}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font:600 6.8pt/1 "Inter",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--gris);padding:2.5mm 2mm;border-bottom:1pt solid var(--encre)}
+td{padding:2.2mm 2mm;border-bottom:.6pt solid var(--filet);vertical-align:top}
+td.d,th.d{text-align:right}
+tr.total td{border-top:1pt solid var(--encre);border-bottom:0;font-weight:600}
+h3{font-size:12.5pt;margin:6mm 0 1mm}
+.serre td{padding:1.5mm 2mm}
+.note{color:var(--gris);font-size:8pt;margin-top:2mm}
+
+/* ── Le relevé d'un mois ── */
+.releve td{font-size:8.6pt}
+.releve .lib{font-family:"Consolas","SF Mono",Menlo,monospace;font-size:8pt;letter-spacing:-.01em}
+.releve .cat{font-size:7.8pt;color:var(--doux);white-space:nowrap}
+.releve .just{font-size:8pt}
+.releve .just .ref{font-weight:600}
+.releve .just .p{color:var(--gris);text-decoration:underline}
+.releve a.vers{color:inherit;text-decoration:none}
+.piece a.retour{display:block;margin-top:2mm;padding:1.6mm 0;font-size:7.8pt;font-weight:600;color:var(--pin);text-decoration:none;border:.6pt solid var(--filet);border-radius:4mm;text-align:center}
+.releve .perdu{color:var(--alerte);font-style:italic}
+.releve .plus{color:var(--pin)}
+.releve td.coul{width:1.4mm;padding:0}
+.resume-mois{display:flex;gap:9mm;margin:-2mm 0 5mm;font-size:8.5pt;color:var(--doux)}
+.resume-mois b{font:400 12pt/1.2 "Playfair Display",Georgia,serif;color:var(--encre);display:block}
+
+/* ── Les pièces ── */
+.pieces{display:grid;grid-template-columns:repeat(3,1fr);gap:7mm 6mm}
+.piece{break-inside:avoid}
+.piece .ent{display:flex;justify-content:space-between;align-items:baseline;font-size:8pt;margin-bottom:2mm;border-top:1.5pt solid var(--gris);padding-top:1.5mm}
+.piece .ent .ref{font-weight:600}
+.piece .sous{font-size:7.4pt;color:var(--doux);margin-bottom:2mm}
+.ticket{background:#fff;border:.6pt solid #d8d4c9;padding:3.5mm 3mm 4mm;font:7pt/1.45 "Consolas","SF Mono",Menlo,monospace;color:#2a2a26;height:49mm;overflow:hidden;box-shadow:0 .6mm 1.6mm rgba(0,0,0,.12)}
+.ticket .c{text-align:center}
+.ticket .g{font-weight:700;font-size:8pt}
+.ticket hr{border:0;border-top:.6pt dashed #aaa69a;margin:1.6mm 0}
+.ticket .r{display:flex;justify-content:space-between;gap:2mm}
+.ticket .t{font-weight:700;font-size:8pt}
+.facture{background:#fff;border:.6pt solid #d8d4c9;padding:4mm;height:49mm;font-size:6.6pt;line-height:1.4;color:#2a2a26;overflow:hidden;box-shadow:0 .6mm 1.6mm rgba(0,0,0,.12)}
+.facture .g{font:700 8.5pt/1.2 Georgia,serif}
+.facture .r{display:flex;justify-content:space-between;gap:2mm}
+.facture table td{padding:1mm 0;font-size:6.4pt;border-bottom:.4pt solid #eee}
+.facture .tot{margin-top:2mm;font-weight:700}
+
+/* ── Côte à côte ── */
+.rang-c{display:flex;gap:6mm;border-bottom:.6pt solid var(--filet);height:11mm;align-items:center;break-inside:avoid}
+.rang-c.haut-c{height:64mm;align-items:center}
+.rang-c .cg{flex:1;min-width:0;display:flex;gap:3mm;align-items:flex-start}
+.rang-c.haut-c .cg{align-self:center}
+.rang-c .coul-c{width:1.4mm;align-self:stretch;border-radius:.7mm;flex:none}
+.rang-c .cg > div:nth-child(2){flex:1;min-width:0}
+.rang-c:not(.haut-c) .cg > div:nth-child(2){display:flex;gap:4mm;align-items:baseline;flex-wrap:nowrap}
+.rang-c .dt{font-size:8.5pt;color:var(--doux)}
+.rang-c .lib{font:8.4pt/1.3 Consolas,"SF Mono",Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rang-c .cat{font-size:8pt}
+.rang-c .refc{margin-top:2mm;font-weight:600;font-size:8.5pt}
+.rang-c .perdu{color:var(--alerte);font-style:italic;font-size:8.5pt}
+.rang-c .just-c{font-size:8pt;color:var(--doux)}
+.rang-c .mt{font:400 15pt/1.2 "Playfair Display",Georgia,serif;white-space:nowrap}
+.rang-c:not(.haut-c) .mt{font-size:11pt}
+.rang-c .mt.plus{color:var(--pin)}
+.rang-c .cd{width:72mm;flex:none}
+.rang-c .cd .ticket,.rang-c .cd .facture{height:58mm}
+
+/* ── Tickets perdus ── */
+.perdus td{font-size:8.8pt}
+.encadre{background:var(--papier);border-radius:2.5mm;padding:5mm 6mm;margin-top:6mm;font-size:9pt}
+</style>
+</head>
+<body>
+<div id="doc"></div>
+<script>
+// ── Le générateur, à graine fixe : le même fichier à chaque impression ──
+let graine = 20251231;
+const hasard = () => { graine = (graine * 1103515245 + 12345) % 2147483648; return graine / 2147483648; };
+const entre = (a, b) => a + hasard() * (b - a);
+const parmi = t => t[Math.floor(hasard() * t.length)];
+const deux = n => String(n).padStart(2, "0");
+const eur = v => Math.abs(v).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/ | /g, " ") + " €";
+const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const MOIS_M = MOIS.map(m => m[0].toUpperCase() + m.slice(1));
+const JOURS_MOIS = [31,28,31,30,31,30,31,31,30,31,30,31];
+const COUL = { carburant:"var(--c-carburant)", repas:"var(--c-repas)", materiel:"var(--c-materiel)", hotel:"var(--c-hotel)", transport:"var(--c-transport)", autre:"var(--c-autre)", virement:"var(--c-virement)", recu:"var(--c-recu)" };
+const NOM = { carburant:"Carburant", repas:"Repas", materiel:"Matériel", hotel:"Hôtel", transport:"Train, taxi", autre:"Autre", virement:"Virement envoyé", recu:"Virement reçu" };
+
+const MAGASINS = {
+  carburant: [["TOTALENERGIES","Relais Saint Jean","CB TOTALENERGIES ST JEAN"],["ESSO","Aubagne Est","CB ESSO AUBAGNE"],["INTERMARCHE","Station La Ciotat","CB ITM STATION LA CIOTAT"]],
+  repas: [["LE RELAIS DES PINS","Gémenos","CB LE RELAIS DES PINS"],["BOULANGERIE MAURIN","Cassis","CB BOUL MAURIN CASSIS"],["INTERMARCHE","La Ciotat","CB INTERMARCHE LA CIOTAT"],["CHEZ PAULETTE","Roquefort","CB CHEZ PAULETTE"]],
+  materiel: [["POINT P","Aubagne","CB POINT P AUBAGNE"],["KILOUTOU","Marseille 11e","CB KILOUTOU MARSEILLE"],["GAMM VERT","Aubagne","CB GAMM VERT AUBAGNE"],["LEROY MERLIN","La Valentine","CB LEROY MERLIN VALENTINE"]],
+  autre: [["LA POSTE","Aubagne","CB LA POSTE AUBAGNE"],["BUREAU VALLEE","Aubagne","CB BUREAU VALLEE"]],
+  hotel: [["HOTEL DU PORT","Sète","CB HOTEL DU PORT SETE"]],
+  transport: [["SNCF","Marseille St Charles","CB SNCF INTERNET"]],
+};
+const ARTICLES = {
+  carburant: () => { const l = entre(24, 52); const p = entre(1.69, 1.86); return [[`Gazole ${l.toFixed(2).replace(".", ",")} L`, l * p]]; },
+  repas: () => [["Menu du jour", entre(14, 19)], ["Boisson", entre(2.5, 4.5)]],
+  // Un magasin vend ce qu'il vend : l'ordre suit celui de MAGASINS.materiel.
+  materiel: i => [[["Bordures béton x12", entre(150, 200)], ["Sable 0/4, 1 t", entre(60, 90)]], [["Mini-pelle 2,5 t, 1 j", entre(280, 340)], ["Transport A/R", 50]], [["Terreau 70 L x6", entre(55, 75)], ["Engrais gazon 20 kg", entre(38, 52)]], [["Géotextile 2 x 25 m", entre(60, 80)], ["Agrafes x100", entre(12, 18)]]][i],
+  autre: () => [["Lettre recommandée AR", entre(6, 8)], ["Enveloppes x50", entre(5, 9)]],
+  hotel: () => [["Chambre 1 nuit", entre(78, 95)], ["Petit déjeuner", 12]],
+  transport: () => [["Marseille Montpellier A/R", entre(48, 72)]],
+};
+const TAUX = { carburant:20, repas:10, materiel:20, autre:20, hotel:10, transport:10 };
+const CLIENTS = ["Lala","Martins","Durand","Bernard","Petit","Moreau","Garcia","Roux","Fontaine","Blanc"];
+const FOURN = [["Pépinières du Sud","VIR SEPA PEPINIERES DU SUD","Végétaux pour chantier"],["Arrosage Distribution","VIR SEPA ARROSAGE DISTRIB","Matériel d’arrosage"],["Terres et Granulats","VIR SEPA TERRES GRANULATS","Terre végétale, 8 m³"]];
+
+// Les tickets perdus de l'année : la planche annonce 1 en carburant et 2 en repas.
+const PERDUS = new Set(["3:repas:1", "5:carburant:2", "8:repas:0"]);
+
+let numFacture = 3, tout = [];
+for (let m = 0; m < 12; m++) {
+  const lignes = [];
+  const ajouter = (cat, n) => { for (let i = 0; i < n; i++) {
+    const im = Math.floor(hasard() * MAGASINS[cat].length);
+    const [nom, adr, lib] = MAGASINS[cat][im];
+    const art = ARTICLES[cat](im).map(([a, v]) => [a, Math.round(v * 100) / 100]);
+    const total = Math.round(art.reduce((s, [, v]) => s + v, 0) * 100) / 100;
+    const jt = Math.floor(entre(1, JOURS_MOIS[m] - 2));
+    const decal = cat === "repas" ? 1 : Math.floor(entre(0, 3));
+    const perdu = PERDUS.has(`${m}:${cat}:${i}`);
+    lignes.push({ jour: Math.min(JOURS_MOIS[m], jt + decal), cat, lib, montant: -total, ticket: perdu ? null : { nom, adr, jour: jt, heure: `${deux(Math.floor(entre(7, 19)))}:${deux(Math.floor(entre(0, 59)))}`, art, total, taux: TAUX[cat] }, perdu });
+  } };
+  ajouter("carburant", 3 + Math.floor(entre(0, 3)));
+  ajouter("repas", 2 + Math.floor(entre(0, 3)));
+  ajouter("materiel", 1 + Math.floor(entre(0, 2)));
+  if (hasard() < .45) ajouter("autre", 1);
+  if (m === 4 || m === 9) ajouter("hotel", 1);
+  if (m === 4 || m === 9) ajouter("transport", 1);
+  const nv = m % 3 === 0 ? 2 : 1;
+  for (let i = 0; i < nv; i++) { const [f, lib, quoi] = parmi(FOURN); const ht = Math.round(entre(380, 1500)); lignes.push({ jour: Math.floor(entre(3, 27)), cat:"virement", lib, montant: -(ht * 1.2), facture: { f, quoi, ht, num: `${2025}-${100 + m * 17 + i}` } }); }
+  const nr = 3 + Math.floor(entre(0, 3));
+  for (let i = 0; i < nr; i++) { const c = parmi(CLIENTS); const v = Math.round(entre(420, 2800)) * 1.0; lignes.push({ jour: Math.floor(entre(2, 28)), cat:"recu", lib:`VIR ${c.toUpperCase()} FACTURE F2025-${deux(numFacture)}`, montant: v, client: c, numF: `F2025-0000${deux(numFacture++)}` }); }
+  lignes.sort((a, b) => a.jour - b.jour || a.montant - b.montant);
+  let nt = 0, nf = 0;
+  lignes.forEach(l => { if (l.ticket) l.ref = `T-${deux(m + 1)}-${deux(++nt)}`; if (l.facture) l.ref = `F-${deux(m + 1)}-${deux(++nf)}`; });
+  tout.push(lignes);
+}
+
+// ── Les totaux de l'année ──
+const sum = (t, f) => t.reduce((s, x) => s + f(x), 0);
+const toutes = tout.flat();
+const sorties = -sum(toutes.filter(l => l.montant < 0), l => l.montant);
+const entrees = sum(toutes.filter(l => l.montant > 0), l => l.montant);
+const parCat = {};
+toutes.filter(l => l.montant < 0).forEach(l => { const k = l.cat; parCat[k] ??= { n: 0, v: 0, perdus: 0 }; parCat[k].n++; parCat[k].v -= l.montant; if (l.perdu) parCat[k].perdus++; });
+const ordre = ["carburant","repas","materiel","hotel","transport","autre","virement"];
+const nTickets = toutes.filter(l => l.ticket).length, nFact = toutes.filter(l => l.facture).length, nRecus = toutes.filter(l => l.cat === "recu").length, perdus = toutes.filter(l => l.perdu);
+const tvaPerdue = sum(perdus, l => -l.montant - (-l.montant) / (1 + TAUX[l.cat] / 100));
+
+// ── La mise en page : on compte les pages pour le sommaire ──
+const PIECES_PAR_PAGE = 9;
+let page = 3;
+const pagesMois = tout.map(lignes => { const p = page; const np = Math.ceil(lignes.filter(l => l.ref).length / PIECES_PAR_PAGE); page += 1 + np; return { releve: p, pieces: p + 1, np }; });
+const pagePerdus = page;
+const ouEst = (m, ref) => { const i = tout[m].filter(l => l.ref).findIndex(l => l.ref === ref); return pagesMois[m].pieces + Math.floor(i / PIECES_PAR_PAGE); };
+
+// ── La seconde mise en page, « côte à côte » (?mise=cote) ──
+// Sa demande du 23 octobre : comparer avec un dossier où chaque pièce est à
+// droite de sa ligne, sans rien à toucher. Les pages se coupent ICI, à la
+// main, sur des hauteurs fixes : c'est ce qui permet au sommaire de connaître
+// la page de chaque mois avant l'impression.
+const MISE = new URLSearchParams(location.search).get("mise") === "cote" ? "cote" : "renvoi";
+const H_PIECE = 64, H_COURTE = 11, H_PREMIERE = 222, H_SUIVANTE = 238;
+let decoupe = [];
+if (MISE === "cote") {
+  page = 3;
+  decoupe = tout.map(L => { const pages = [[]]; let reste = H_PREMIERE;
+    L.forEach(l => { const hl = l.ref ? H_PIECE : H_COURTE; if (hl > reste) { pages.push([]); reste = H_SUIVANTE; } pages[pages.length - 1].push(l); reste -= hl; });
+    return pages; });
+  decoupe.forEach((pages, m) => { pagesMois[m] = { releve: page, pieces: page, np: 0 }; page += pages.length; });
+}
+const pagePerdusFinal = MISE === "cote" ? page : pagePerdus;
+
+function pieceDe(l, m) {
+  if (l.ticket) { const t = l.ticket, tva = t.total - t.total / (1 + t.taux / 100);
+    return `<div class="ticket"><div class="c g">${t.nom}</div><div class="c">${t.adr}</div><div class="c">${deux(t.jour)}/${deux(m + 1)}/2025 ${t.heure}</div><hr>${t.art.map(([a, v]) => `<div class="r"><span>${a}</span><span>${eur(v).replace(" €", "")}</span></div>`).join("")}<hr><div class="r t"><span>TOTAL TTC</span><span>${eur(t.total)}</span></div><div class="r"><span>dont TVA ${t.taux} %</span><span>${eur(tva).replace(" €", "")}</span></div><hr><div class="c">CARTE BANCAIRE</div><div class="c">**** **** **** 4821</div><div class="c">MERCI DE VOTRE VISITE</div></div>`; }
+  const f = l.facture;
+  return `<div class="facture"><div class="r"><span class="g">${f.f}</span><span>Facture n° ${f.num}</span></div><div style="margin-top:2mm">Zone d’activité des Paluds, 13400 Aubagne</div><div style="margin:3mm 0 2mm">Client : Jardins Exemple</div><table><tr><td>${f.quoi}</td><td style="text-align:right">${eur(f.ht)}</td></tr><tr><td>TVA 20 %</td><td style="text-align:right">${eur(f.ht * .2)}</td></tr></table><div class="r tot"><span>Total TTC</span><span>${eur(f.ht * 1.2)}</span></div><div style="margin-top:3mm;color:#777">Réglée par virement</div></div>`;
+}
+
+let h = "";
+// Page 1
+h += `<section class="page couv">
+  <div class="haut"><span class="caps">Pour mon comptable</span><h1>Dossier justifié</h1><div class="annee">Année 2025, du 1ᵉʳ janvier au 31 décembre</div></div>
+  <div class="bloc">
+    <div><span class="caps">Entreprise</span><p>Jardins Exemple<br>Paysagiste<br>12 chemin des Oliviers, 13400 Aubagne<br>SIRET 000 000 000 00000</p></div>
+    <div><span class="caps">Compte bancaire</span><p>Crédit Mutuel<br>Compte professionnel<br>FR76 **** **** **** **** **** 482</p></div>
+    <div><span class="caps">Ce que contient ce dossier</span><p>${toutes.length} lignes de banque<br>${nTickets} tickets, ${nFact} factures de fournisseur<br>${nRecus} virements reçus et leur facture<br>${perdus.length} tickets perdus, déclarés</p></div>
+    <div><span class="caps">Relevé lu</span><p>Directement à la banque,<br>par Enable Banking</p></div>
+  </div>
+  <div class="sceau"><div class="ok">✓</div><div><p>Chaque ligne de la banque a son justificatif, ou sa mention de ticket perdu.</p><small>Validé le 12 février 2026. Gardé jusqu’au 31 décembre 2035.</small></div></div>
+  <p class="exemple">Exemple : l’entreprise, les clients, les montants et les tickets sont inventés. Les tickets sont dessinés à la place des photos.</p>
+</section>`;
+
+// Page 2
+h += `<section class="page">
+  <div class="titre-page"><h2>L’année en un coup d’œil</h2><span class="caps">2025</span></div>
+  <div class="chiffres">
+    <div><span class="caps">Sorties</span><b class="num">${eur(sorties)}</b></div>
+    <div><span class="caps">Entrées</span><b class="num">${eur(entrees)}</b></div>
+    <div><span class="caps">Lignes de banque</span><b class="num">${toutes.length}</b></div>
+    <div><span class="caps">Tickets perdus</span><b class="num" style="color:var(--alerte)">${perdus.length}</b></div>
+  </div>
+  <span class="caps" style="color:var(--gris)">Où est parti l’argent</span>
+  <div class="barre">${ordre.filter(k => parCat[k]).map(k => `<i style="width:${parCat[k].v / sorties * 100}%;background:${COUL[k]}"></i>`).join("")}</div>
+  <table class="serre"><thead><tr><th>Catégorie</th><th class="d">Lignes</th><th class="d">Justifiées</th><th class="d">Montant</th><th class="d">Part</th></tr></thead><tbody>
+  ${ordre.filter(k => parCat[k]).map(k => `<tr><td><span class="pastille" style="background:${COUL[k]}"></span>${k === "virement" ? "Virements envoyés" : NOM[k]}</td><td class="d num">${parCat[k].n}</td><td class="d">${parCat[k].perdus ? `${parCat[k].n - parCat[k].perdus}, et ${parCat[k].perdus} perdu${parCat[k].perdus > 1 ? "s" : ""}` : "toutes"}</td><td class="d num">${eur(parCat[k].v)}</td><td class="d num">${parCat[k].v / sorties < .01 ? "moins de 1 %" : Math.round(parCat[k].v / sorties * 100) + " %"}</td></tr>`).join("")}
+  <tr class="total"><td>Total des sorties</td><td class="d num">${toutes.filter(l => l.montant < 0).length}</td><td></td><td class="d num">${eur(sorties)}</td><td class="d">100 %</td></tr>
+  </tbody></table>
+  <h3>Mois par mois</h3>
+  <table class="serre"><thead><tr><th>Mois</th><th class="d">Sorties</th><th class="d">Entrées</th><th class="d">Lignes</th><th>Justification</th><th class="d">Page</th></tr></thead><tbody>
+  ${tout.map((L, m) => { const p = L.filter(l => l.perdu).length; return `<tr><td>${MOIS_M[m]}</td><td class="d num">${eur(-sum(L.filter(l => l.montant < 0), l => l.montant))}</td><td class="d num">${eur(sum(L.filter(l => l.montant > 0), l => l.montant))}</td><td class="d num">${L.length}</td><td>${p ? `<span style="color:var(--alerte)">Justifié, ${p} ticket perdu</span>` : "Justifié"}</td><td class="d num">${pagesMois[m].releve}</td></tr>`; }).join("")}
+  </tbody></table>
+  <p class="note">Les tickets perdus sont listés page ${pagePerdusFinal}. Leur TVA n’a pas été déduite.</p>
+</section>`;
+
+// Les mois, côte à côte
+if (MISE === "cote") decoupe.forEach((pages, m) => { const L = tout[m];
+  pages.forEach((lignes, ip) => {
+    h += `<section class="page"><div class="titre-page"><h2>${MOIS_M[m]} 2025</h2><span class="caps">Relevé et justificatifs${pages.length > 1 ? `, ${ip + 1} sur ${pages.length}` : ""}</span></div>`;
+    if (ip === 0) h += `<div class="resume-mois"><span>Sorties<b class="num">${eur(-sum(L.filter(l => l.montant < 0), l => l.montant))}</b></span><span>Entrées<b class="num">${eur(sum(L.filter(l => l.montant > 0), l => l.montant))}</b></span><span>Lignes<b>${L.length}</b></span></div>`;
+    lignes.forEach(l => {
+      const gauche = `<div class="cg"><span class="coul-c" style="background:${COUL[l.cat]}"></span><div><div class="dt num">${deux(l.jour)}/${deux(m + 1)}/2025</div><div class="lib">${l.lib}</div><div class="cat" style="color:${COUL[l.cat]}">${NOM[l.cat]}</div>${l.ref ? `<div class="refc">${l.ref}</div>` : ""}${l.perdu ? `<div class="perdu">Ticket perdu, mention validée</div>` : ""}${l.numF ? `<div class="just-c">Facture ${l.numF}, ${l.client}</div>` : ""}</div><div class="mt num${l.montant > 0 ? " plus" : ""}">${l.montant > 0 ? "+" : "−"}${eur(l.montant)}</div></div>`;
+      h += l.ref ? `<div class="rang-c haut-c">${gauche}<div class="cd">${pieceDe(l, m)}</div></div>` : `<div class="rang-c">${gauche}</div>`;
+    });
+    h += `</section>`;
+  });
+});
+
+// Les mois, avec renvois
+if (MISE === "renvoi") tout.forEach((L, m) => {
+  h += `<section class="page">
+    <div class="titre-page"><h2>${MOIS_M[m]} 2025</h2><span class="caps">Relevé de banque</span></div>
+    <div class="resume-mois"><span>Sorties<b class="num">${eur(-sum(L.filter(l => l.montant < 0), l => l.montant))}</b></span><span>Entrées<b class="num">${eur(sum(L.filter(l => l.montant > 0), l => l.montant))}</b></span><span>Lignes<b>${L.length}</b></span></div>
+    <table class="releve"><thead><tr><th></th><th>Date</th><th>Ce qu’écrit la banque</th><th>Catégorie</th><th class="d">Montant</th><th>Justificatif</th></tr></thead><tbody>
+    ${L.map(l => `<tr><td class="coul" style="background:${COUL[l.cat]}"></td><td class="num">${l.ref ? `<span id="ligne-${l.ref}">` : ""}${deux(l.jour)}/${deux(m + 1)}${l.ref ? "</span>" : ""}</td><td class="lib">${l.lib}</td><td class="cat">${NOM[l.cat]}</td><td class="d num${l.montant > 0 ? " plus" : ""}">${l.montant > 0 ? "+" : "−"}${eur(l.montant)}</td><td class="just">${
+      l.perdu ? `<span class="perdu">Ticket perdu, mention validée</span>`
+      : l.ticket ? `<a class="vers" href="#piece-${l.ref}"><span class="ref">${l.ref}</span> Ticket du ${deux(l.ticket.jour)}/${deux(m + 1)} <span class="p">p. ${ouEst(m, l.ref)}</span></a>`
+      : l.facture ? `<a class="vers" href="#piece-${l.ref}"><span class="ref">${l.ref}</span> Facture ${l.facture.f} <span class="p">p. ${ouEst(m, l.ref)}</span></a>`
+      : `Facture ${l.numF}, ${l.client}`}</td></tr>`).join("")}
+    </tbody></table>
+  </section>`;
+  const pieces = L.filter(l => l.ref);
+  for (let p = 0; p < pieces.length; p += PIECES_PAR_PAGE) {
+    h += `<section class="page"><div class="titre-page"><h2>${MOIS_M[m]} 2025</h2><span class="caps">Justificatifs${pieces.length > PIECES_PAR_PAGE ? `, ${p / PIECES_PAR_PAGE + 1} sur ${Math.ceil(pieces.length / PIECES_PAR_PAGE)}` : ""}</span></div><div class="pieces">`;
+    pieces.slice(p, p + PIECES_PAR_PAGE).forEach(l => {
+      h += `<div class="piece" id="piece-${l.ref}"><div class="ent"><span class="ref">${l.ref}</span><span class="num">${eur(l.montant)}</span></div><div class="sous"><span class="pastille" style="background:${COUL[l.cat]}"></span>${deux(l.jour)}/${deux(m + 1)} à la banque, ${NOM[l.cat].toLowerCase()}</div>`;
+      if (l.ticket) { const t = l.ticket, tva = t.total - t.total / (1 + t.taux / 100);
+        h += `<div class="ticket"><div class="c g">${t.nom}</div><div class="c">${t.adr}</div><div class="c">${deux(t.jour)}/${deux(m + 1)}/2025 ${t.heure}</div><hr>${t.art.map(([a, v]) => `<div class="r"><span>${a}</span><span>${eur(v).replace(" €", "")}</span></div>`).join("")}<hr><div class="r t"><span>TOTAL TTC</span><span>${eur(t.total)}</span></div><div class="r"><span>dont TVA ${t.taux} %</span><span>${eur(tva).replace(" €", "")}</span></div><hr><div class="c">CARTE BANCAIRE</div><div class="c">**** **** **** 4821</div><div class="c">MERCI DE VOTRE VISITE</div></div>`;
+      } else { const f = l.facture;
+        h += `<div class="facture"><div class="r"><span class="g">${f.f}</span><span>Facture n° ${f.num}</span></div><div style="margin-top:2mm">Zone d’activité des Paluds, 13400 Aubagne</div><div style="margin:3mm 0 2mm">Client : Jardins Exemple</div><table><tr><td>${f.quoi}</td><td style="text-align:right">${eur(f.ht)}</td></tr><tr><td>TVA 20 %</td><td style="text-align:right">${eur(f.ht * .2)}</td></tr></table><div class="r tot"><span>Total TTC</span><span>${eur(f.ht * 1.2)}</span></div><div style="margin-top:3mm;color:#777">Réglée par virement</div></div>`; }
+      h += `<a class="retour" href="#ligne-${l.ref}">Retour au relevé, ligne du ${deux(l.jour)}/${deux(m + 1)}</a></div>`;
+    });
+    h += `</div></section>`;
+  }
+});
+
+// Les tickets perdus
+h += `<section class="page">
+  <div class="titre-page"><h2>Les tickets perdus</h2><span class="caps">2025</span></div>
+  <table class="perdus"><thead><tr><th>Date</th><th>Ce qu’écrit la banque</th><th>Catégorie</th><th class="d">Montant</th><th>Mention</th></tr></thead><tbody>
+  ${tout.flatMap((L, m) => L.filter(l => l.perdu).map(l => `<tr><td class="num">${deux(l.jour)}/${deux(m + 1)}/2025</td><td style="font-family:Consolas,monospace;font-size:8pt">${l.lib}</td><td><span class="pastille" style="background:${COUL[l.cat]}"></span>${NOM[l.cat]}</td><td class="d num">${eur(l.montant)}</td><td>Ticket perdu, validé au Check up</td></tr>`)).join("")}
+  </tbody></table>
+  <div class="encadre">Ces ${perdus.length} dépenses restent dans le relevé, avec leur mention. Leur TVA n’a pas été déduite, soit <b class="num">${eur(tvaPerdue)}</b> au total, faute de ticket.</div>
+</section>`;
+
+document.getElementById("doc").innerHTML = h;
+document.title = "Dossier justifié 2025";
+document.body.dataset.pages = pagePerdusFinal;
+</script>
+</body>
+</html>

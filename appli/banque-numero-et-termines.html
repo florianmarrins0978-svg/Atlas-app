@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le numéro dans le virement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  LE NUMÉRO DANS LE VIREMENT, ET LE MÊME MESSAGE DANS TERMINÉS — 23 oct. 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  SES DEUX DEMANDES :
+    « quand on envoie la facture au client, on lui demande qu'il nous mette
+      dans le libellé le numéro de la facture. […] en plus de lire le montant,
+      il peut aussi, s'il y a le libellé de la facture, faire le
+      rapprochement »
+    « admettons que le patron ne les voit pas dans les notifications et qu'il
+      aille dans la page Terminés. Est-ce qu'on peut avoir le même message ? »
+
+  LA CONSIGNE EXISTE DÉJÀ sur la facture, depuis le 8 septembre 2026
+  (src/lib/modalites-paiement.ts, consigneDuLibelle) : « Par virement,
+  indiquez F2026-000028 dans le libellé. Sans ce numéro, votre règlement ne
+  peut pas être rattaché à cette facture. »
+
+  LA RÈGLE PROPOSÉE : le numéro lu dans le libellé passe AVANT le montant et
+  le nom. Il se lit écrit de plusieurs façons, parce que le client le tape à
+  la main dans son appli : « F2026-000028 », « F2026000028 », « 2026-000028 ».
+  Pas « 28 » tout seul : un nombre court se trouve dans n'importe quel
+  libellé. Le numéro trouvé, le montant dit le reste : tout payé, une partie,
+  ou plus que dû. Le oui reste à lui, toujours.
+
+  LE MÊME MESSAGE À DEUX ENDROITS, UNE SEULE RÉPONSE : un oui donné sur
+  l'accueil fait disparaître la question de Terminés, et l'inverse. Dans
+  Terminés, la ligne de la facture garde SA place (CLAUDE.md §3, « le texte,
+  jamais la place ») : A change le texte des deux boutons, B les garde.
+
+  AUCUNE LIGNE DE L'APPLICATION N'A BOUGÉ (CLAUDE.md §3 bis). Noms et
+  montants d'exemple.
+*/
+:root{
+  --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --plein:#7d9a6d;
+  --or:#B98B47; --trait:rgba(28,28,26,.12); --filet:rgba(28,28,26,.07);
+  --scene:#e6e3dc; --alerte:#a8552f; --surligne:rgba(185,139,71,.2);
+  --serif:"Playfair Display",ui-serif,Georgia,serif;
+  --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+body.nuit{
+  --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --pin:#8fae86; --papier:#20241f; --plein:#8fae86;
+  --or:#c6a15b; --trait:rgba(233,232,222,.12); --filet:rgba(233,232,222,.08);
+  --scene:#070908; --alerte:#d38a63; --surligne:rgba(198,161,91,.22);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+[hidden]{display:none!important}
+
+.bandeau{background:var(--encre);color:var(--fond);padding:16px 20px;font-size:14px;line-height:1.6}
+body.nuit .bandeau{background:#000;color:var(--encre)}
+.bandeau b{color:#fff}
+body.nuit .bandeau b{color:var(--encre)}
+.bandeau .dedans{max-width:1240px;margin:0 auto}
+
+.etats{position:sticky;top:0;z-index:20;background:var(--scene);border-bottom:1px solid var(--trait);padding:12px 16px}
+.etats .groupe{max-width:1240px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.etats .groupe + .groupe{margin-top:8px}
+.etats .quoi{font:600 10px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--gris);margin-right:4px}
+.etats button{border:1px solid var(--trait);background:var(--carte);color:var(--encre-douce);border-radius:999px;padding:10px 14px;font-size:13px;min-height:44px}
+.etats button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+body.nuit .etats button[aria-pressed="true"]{color:#101210}
+
+.planches{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;max-width:1280px;margin:28px auto 0;padding:0 16px}
+.planche{width:390px;max-width:100%}
+.planche .nom{margin:0 0 4px;font:500 19px/1.2 var(--serif)}
+.planche .idee{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:var(--encre-douce)}
+.tel{width:390px;max-width:100%;min-height:700px;border-radius:28px;overflow:hidden;box-shadow:0 16px 44px rgba(20,18,14,.22);background:var(--fond);display:flex;flex-direction:column}
+.tel .ecran{flex:1}
+
+.entete{padding:28px 24px 0}
+.entete h1{margin:0;font:400 34px/1.1 var(--serif);letter-spacing:-.01em}
+.caps{font:600 11px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase}
+.entete .caps{display:block;margin-top:10px;color:var(--or)}
+.corps{padding:20px 24px 26px;display:flex;flex-direction:column;gap:16px}
+.plein{border:0;border-radius:999px;background:var(--plein);color:var(--carte);padding:10px 20px;font:500 14px/1 var(--sans);min-height:44px}
+body.nuit .plein{color:#101210}
+.leger{border:0;background:none;color:var(--encre-douce);padding:10px 8px;font:500 14px/1 var(--sans);min-height:44px}
+.gestes{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px}
+
+.carte{border-radius:18px;padding:16px 20px;background:var(--carte)}
+.carte .caps{color:var(--gris);margin:0 0 6px}
+.carte .qui{margin:0;font:400 16px/1.3 var(--serif)}
+.carte .montant{margin:8px 0 0;font:400 19px/1.2 var(--serif);font-variant-numeric:tabular-nums}
+.carte .texte{margin:4px 0 0;font-size:13px;line-height:1.5;color:var(--gris)}
+.libelle{font-variant-numeric:tabular-nums}
+.libelle mark{background:var(--surligne);color:var(--encre);border-radius:3px;padding:0 2px}
+.carte .question{margin:12px 0 0;font-size:14.5px;line-height:1.45}
+.carte .fait{margin:10px 0 0;font-size:13.5px;line-height:1.5;color:var(--pin)}
+.choix-facture{display:flex;flex-direction:column;gap:1px;margin-top:12px;border-radius:12px;overflow:hidden;background:var(--filet)}
+.choix-facture button{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border:0;background:var(--fond);color:var(--encre);padding:13px 14px;min-height:50px;text-align:left;font-size:14.5px}
+.choix-facture .n{display:block;font-size:11.5px;color:var(--gris);margin-top:2px}
+.choix-facture .m{font:400 15.5px/1.2 var(--serif);font-variant-numeric:tabular-nums}
+
+.titre2{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.titre2 h2{margin:0;font:400 17px/1.2 var(--serif)}
+.titre2 span{font-size:12px;color:var(--gris);font-variant-numeric:tabular-nums}
+.liste{list-style:none;margin:4px 0 0;padding:0}
+.ligne{padding:14px 0;border-top:1px solid var(--filet)}
+.ligne .h{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.ligne .qui{margin:0;font-size:14.5px}
+.ligne .sous{margin:1px 0 0;font-size:11.5px;color:var(--gris)}
+.ligne .m{flex:0 0 auto;font:400 15.5px/1.2 var(--serif);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ligne .vu{margin:8px 0 0;font-size:12.5px;line-height:1.5;color:var(--or)}
+.ligne .vu .libelle{color:var(--encre-douce)}
+.ligne .plein{min-height:40px;padding:9px 18px}
+.ligne .leger.gris{color:var(--gris);font-weight:400}
+.ligne.arrive,.carte.arrive,.rentree.arrive{animation:arrive .45s cubic-bezier(.16,1,.3,1)}
+@keyframes arrive{from{opacity:.3;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.arrive{animation:none!important}}
+.rentree{margin:8px 0 0;font-size:12px;line-height:1.5;color:var(--gris)}
+.rentree b{font-weight:400;color:var(--encre-douce)}
+.tva .l{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:9px 0}
+.tva .l .caps{color:var(--gris);font-weight:500;font-size:10.5px;letter-spacing:.24em}
+.tva .l .v{font:400 22px/1.1 var(--serif);font-variant-numeric:tabular-nums}
+.tva .total{border-top:1px solid var(--trait);margin-top:4px;padding-top:14px}
+.tva .total .caps{color:var(--or)}
+.tva .total .v{font-size:30px}
+
+.barre{display:flex;justify-content:space-between;border-top:1px solid var(--trait);padding:14px 16px 20px}
+.barre span{font:500 9.5px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gris);position:relative}
+.barre span.ici{color:var(--encre)}
+.barre span.ici::after{content:"";position:absolute;left:-5px;right:-5px;bottom:-10px;height:2px;background:var(--or)}
+.point{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--alerte);vertical-align:3px;margin-left:4px}
+
+.note{max-width:860px;margin:36px auto 0;padding:0 20px;font-size:13.5px;line-height:1.6;color:var(--encre-douce)}
+.note .t{display:block;font:500 15px/1.3 var(--serif);color:var(--encre);margin-bottom:6px}
+.note b{color:var(--encre)}
+.note + .note{margin-top:22px}
+.note table{border-collapse:collapse;width:100%;margin-top:8px;font-size:13px}
+.note td{padding:8px 10px 8px 0;border-top:1px solid var(--trait);vertical-align:top}
+</style>
+</head>
+<body>
+
+<div class="bandeau"><div class="dedans">
+  <b>Le numéro dans le virement, et le même message dans Terminés.</b> Vos deux
+  demandes du 23 octobre. Touchez les cas en haut, et répondez sur l'un des deux
+  téléphones : <b>l'autre suit</b>. Pour Terminés, deux façons de poser la
+  question, <b>A</b> et <b>B</b>. <b>Rien n'est codé.</b>
+</div></div>
+
+<div class="etats">
+  <div class="groupe" role="group" aria-label="Le virement">
+    <span class="quoi">Le virement</span>
+    <button data-cas="numero" aria-pressed="true">Numéro et bon montant</button>
+    <button data-cas="numpartie" aria-pressed="false">Numéro, une partie</button>
+    <button data-cas="numtrop" aria-pressed="false">Numéro, trop payé</button>
+    <button data-cas="nom" aria-pressed="false">Sans numéro, le nom</button>
+    <button data-cas="rien" aria-pressed="false">Sans numéro ni nom</button>
+  </div>
+  <div class="groupe">
+    <span class="quoi">Terminés</span>
+    <button data-var="A" aria-pressed="true">A : Oui ou Non</button>
+    <button data-var="B" aria-pressed="false">B : les deux boutons d'aujourd'hui</button>
+    <span class="quoi" style="margin-left:10px">Charte</span>
+    <button data-charte="jour" aria-pressed="true">Origine</button>
+    <button data-charte="nuit" aria-pressed="false">Nuit</button>
+  </div>
+</div>
+
+<div class="planches">
+  <section class="planche">
+    <p class="nom">1. L'accueil</p>
+    <p class="idee">Le numéro lu sur le virement est surligné : on voit pourquoi Atlas propose cette facture.</p>
+    <div class="tel"><div class="ecran" id="accueil"></div>
+      <nav class="barre" aria-hidden="true"><span class="ici">Chantiers<i class="point" id="p1"></i></span><span>Planning</span><span>Terminés<i class="point" id="p2"></i></span><span>Paysage</span><span>Réglages</span></nav></div>
+  </section>
+  <section class="planche">
+    <p class="nom">2. Terminés, Ma TVA</p>
+    <p class="idee">La même question, sur la ligne de la facture, à sa place. Une réponse ici vaut pour l'accueil.</p>
+    <div class="tel"><div class="ecran" id="tva"></div>
+      <nav class="barre" aria-hidden="true"><span>Chantiers</span><span>Planning</span><span class="ici">Terminés</span><span>Paysage</span><span>Réglages</span></nav></div>
+  </section>
+</div>
+
+<div class="note">
+  <span class="t">Comment Atlas lit le numéro</span>
+  Votre client le tape à la main dans son appli, donc de plusieurs façons. Atlas
+  reconnaît <b>F2026-000028</b>, <b>F2026000028</b>, <b>f 2026 000028</b> ou
+  <b>2026-000028</b>. Il ne prend pas « 28 » tout seul : un petit nombre se
+  trouve dans n'importe quel libellé, et ferait proposer la mauvaise facture.
+  <table>
+    <tr><td><b>Le numéro est là</b></td><td>il passe avant le montant et le nom. Le montant dit ensuite si c'est tout, une partie, ou trop.</td></tr>
+    <tr><td><b>Pas de numéro</b></td><td>comme ce soir : le montant, puis le nom.</td></tr>
+    <tr><td><b>Dans tous les cas</b></td><td>vous dites oui. Rien n'entre au relevé de TVA sans vous.</td></tr>
+  </table>
+</div>
+<div class="note">
+  <span class="t">A ou B, dans Terminés</span>
+  <b>A</b> pose la même question que l'accueil : « Oui » ou « Non », à la place
+  des deux boutons. « Non » remet les boutons d'aujourd'hui. <b>B</b> garde
+  « J'ai reçu le paiement » et « J'ai reçu une partie », déjà remplis avec la
+  date et le montant de la banque. <b>Ce que je défends : A</b>, parce que c'est
+  la même question au même mot que l'accueil, et qu'il n'y a rien à relire.
+</div>
+
+<script>
+const FACTURES = [
+  { id:"lala", nom:"Lala", num:"F2026-000028", date:"20/10", m:120 },
+  { id:"martins", nom:"Martins", num:"F2026-000025", date:"08/10", m:120 },
+  { id:"fred", nom:"Frédéric Durand", num:"F2026-000020", date:"27/09", m:780 },
+];
+// Chaque cas : le virement, la facture désignée, comment, et la phrase de la question.
+const CAS = {
+  numero:    { qui:"M. Lala", lib:["VIR M LALA ", "F2026-000028"], m:120, f:"lala", genre:"tout", par:"numero" },
+  numpartie: { qui:"Sans nom", lib:["VIREMENT SEPA ", "F2026000020", " ACOMPTE"], m:400, f:"fred", genre:"partie", par:"numero" },
+  numtrop:   { qui:"M. Lala", lib:["VIR ", "2026-000028"], m:150, f:"lala", genre:"trop", par:"numero" },
+  nom:       { qui:"M. Lala", lib:["VIR M LALA"], m:120, f:"lala", genre:"tout", par:"nom" },
+  rien:      { qui:"Sans nom", lib:["VIREMENT SEPA RECU"], m:120, genre:"deux", par:"rien" },
+};
+let cas = "numero", variante = "A", reponse = null; // null | id de facture | "non"
+
+const eur = n => n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2}).replace(/ /g," ")+" €";
+const tvaDe = ttc => Math.round(ttc/6*100)/100;
+const fac = id => FACTURES.find(f => f.id === id);
+const libelle = c => `<span class="libelle">${c.lib.map((p,i) => (c.par==="numero" && i===1) ? `<mark>${p}</mark>` : p).join("")}</span>`;
+
+function raison(c){
+  if (c.par === "numero") return "Le numéro de la facture est écrit sur le virement.";
+  if (c.par === "nom") return "Pas de numéro sur le virement, mais le montant et le nom correspondent.";
+  return "Ni numéro ni nom sur le virement.";
+}
+function question(c){
+  const f = fac(c.f);
+  if (c.genre === "tout") return `C'est la facture ${f.num} ?`;
+  if (c.genre === "partie") return `Une partie de la facture ${f.num}, qui fait ${eur(f.m)} ?`;
+  if (c.genre === "trop") return `C'est la facture ${f.num} ? Elle fait ${eur(f.m)}, le virement ${eur(c.m)}.`;
+  return `Deux factures font ${eur(c.m)}. Laquelle ?`;
+}
+function fait(c){
+  if (reponse === "non") return "Noté comme sans facture. Rien n'entre au relevé.";
+  const f = fac(reponse);
+  if (c.genre === "partie") return `${eur(c.m)} notés sur la facture ${f.num}. Il reste ${eur(f.m - c.m)} à recevoir.`;
+  if (c.genre === "trop") return `La facture ${f.num} est payée. Les ${eur(c.m - f.m)} en trop restent à régler avec ${f.nom}.`;
+  return `La facture ${f.num} est payée. ${eur(tvaDe(Math.min(c.m, f.m)))} de TVA entrent au relevé d'octobre.`;
+}
+function boutonsOui(c, ou){
+  if (c.genre === "deux") return `<div class="choix-facture">${FACTURES.filter(f=>f.m===c.m).map(f=>`<button data-oui="${f.id}"><span>${f.nom}<span class="n">${f.num}, émise le ${f.date}</span></span><span class="m">${eur(f.m)}</span></button>`).join("")}</div>
+    <div class="gestes"><button class="leger" data-non>Aucune des deux</button></div>`;
+  return `<div class="gestes"><button class="plein" data-oui="${c.f}">${c.genre === "partie" ? "Oui, une partie" : "Oui"}</button><button class="leger" data-non>Non</button></div>`;
+}
+
+function accueil(anime){
+  const c = CAS[cas];
+  let h = `<div class="entete"><h1>Chantiers</h1><span class="caps">Accueil</span></div><div class="corps">
+    <div class="carte${anime ? " arrive" : ""}"><p class="caps">Virement reçu</p><p class="qui">${c.qui}</p><p class="montant">${eur(c.m)}</p>
+    <p class="texte">Le 21 octobre, ${libelle(c)}</p><p class="texte">${raison(c)}</p>`;
+  if (reponse) h += `<p class="fait">${fait(c)}</p><div class="gestes" style="margin-top:4px;margin-left:-8px"><button class="leger" data-defaire>Annuler</button></div>`;
+  else h += `<p class="question">${question(c)}</p>${boutonsOui(c)}`;
+  h += `</div><section><div class="titre2"><h2>En cours</h2></div><ul class="liste">
+    <li class="ligne"><p class="qui">Massif devant la maison</p><p class="sous">Durand</p></li>
+    <li class="ligne"><p class="qui">Taille de la haie</p><p class="sous">Martins</p></li></ul></section></div>`;
+  return h;
+}
+
+function tva(anime){
+  const c = CAS[cas];
+  const ok = reponse && reponse !== "non";
+  const partie = ok && c.genre === "partie";
+  const plus = ok ? tvaDe(Math.min(c.m, fac(reponse).m)) : 0;
+  const restantes = FACTURES.filter(f => !(ok && !partie && f.id === reponse));
+  let h = `<div class="entete"><h1>Octobre 2026</h1><span class="caps">Ma TVA</span></div><div class="corps tva">
+    <div><div class="l"><span class="caps">TVA collectée</span><span class="v">${eur(4009.99+plus)}</span></div>
+    <div class="l total"><span class="caps">TVA à payer</span><span class="v">${eur(4009.99+plus)}</span></div></div>
+    <section><div class="titre2"><h2>Factures en attente</h2><span>${restantes.length} factures</span></div>
+    ${ok ? `<p class="rentree arrive"><b>${fac(reponse).nom}, ${eur(Math.min(c.m, fac(reponse).m))}</b> ${partie ? `sur ${eur(fac(reponse).m)} est rentré` : "est rentrée"} au relevé d'octobre.</p>` : ""}
+    <ul class="liste">`;
+  for (const f of restantes) {
+    const concernee = !reponse && (c.genre === "deux" ? f.m === c.m : f.id === c.f);
+    const reste = partie && f.id === reponse;
+    h += `<li class="ligne${concernee && anime ? " arrive" : ""}"><div class="h"><div><p class="qui">${f.nom}</p><p class="sous">${f.num}, émise le ${f.date}</p></div>
+      <span class="m">${reste ? eur(f.m - c.m) : eur(f.m)}</span></div>
+      ${reste ? `<p class="sous">restant sur ${eur(f.m)}</p>` : ""}`;
+    if (concernee) {
+      h += `<p class="vu">Vu sur votre banque le 21/10 : ${eur(c.m)}, ${libelle(c)}. ${c.par === "numero" ? "Le numéro de cette facture y est écrit." : ""}</p>`;
+      if (variante === "A") {
+        const q = c.genre === "deux" ? "Ce virement paie-t-il cette facture ?" : c.genre === "partie" ? "Une partie de cette facture ?" : c.genre === "trop" ? `Cette facture ? Le virement fait ${eur(c.m - f.m)} de plus.` : "Ce virement paie-t-il cette facture ?";
+        h += `<p class="vu" style="color:var(--encre);margin-top:4px">${q}</p>
+          <div class="gestes" style="margin-top:8px"><button class="plein" data-oui="${f.id}">${c.genre === "partie" ? "Oui, une partie" : "Oui"}</button><button class="leger gris" data-non>Non</button></div>`;
+      } else {
+        h += `<div class="gestes" style="margin-top:9px"><button class="plein" data-oui="${f.id}" ${c.genre === "partie" ? "disabled style=\"opacity:.45\"" : ""}>J'ai reçu le paiement</button><button class="leger gris" data-oui="${f.id}">J'ai reçu une partie</button></div>
+          <p class="sous" style="margin-top:2px">Date et montant de la banque déjà remplis.</p>`;
+      }
+    } else {
+      h += `<div class="gestes" style="margin-top:9px"><button class="plein">J'ai reçu le paiement</button><button class="leger gris">J'ai reçu une partie</button></div>`;
+    }
+    h += `</li>`;
+  }
+  return h + `</ul></section></div>`;
+}
+
+function rendre(anime){
+  document.getElementById("accueil").innerHTML = accueil(anime);
+  document.getElementById("tva").innerHTML = tva(anime);
+  document.getElementById("p1").hidden = !!reponse;
+  document.getElementById("p2").hidden = !!reponse;
+}
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (!b || b.disabled) return;
+  if (b.dataset.cas) { cas = b.dataset.cas; reponse = null; document.querySelectorAll("[data-cas]").forEach(x => x.setAttribute("aria-pressed", x === b)); rendre(true); return; }
+  if (b.dataset.var) { variante = b.dataset.var; document.querySelectorAll("[data-var]").forEach(x => x.setAttribute("aria-pressed", x === b)); rendre(false); return; }
+  if (b.dataset.charte) { document.body.classList.toggle("nuit", b.dataset.charte === "nuit"); document.querySelectorAll("[data-charte]").forEach(x => x.setAttribute("aria-pressed", x === b)); return; }
+  if (b.dataset.oui) { reponse = b.dataset.oui; rendre(true); return; }
+  if ("non" in b.dataset) { reponse = "non"; rendre(true); return; }
+  if ("defaire" in b.dataset) { reponse = null; rendre(true); }
+});
+rendre(false);
+</script>
+</body>
+</html>

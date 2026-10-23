@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le virement qui saute aux yeux</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  LE VIREMENT QUI SAUTE AUX YEUX — 23 octobre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  SA DEMANDE : « est-ce que dans les notifs, on pourrait mettre une sorte de
+  code couleur pour que lorsqu'un virement a été payé, ça saute à l'œil de
+  l'utilisateur et qu'il aille regarder tout de suite ? »
+
+  DEUX CONTRAINTES DU DÉPÔT :
+    · le fil de l'accueil n'a qu'UN ordre, la date (ARCHITECTURE §477) : on ne
+      peut pas épingler le virement en haut, c'est la couleur qui le signale ;
+    · la teinte « papier » (rustTint) dit déjà « urgent » : devis qui traîne,
+      impayé. Le virement est une BONNE nouvelle, il prend le vert « plein »,
+      celui des boutons d'action, en voile : jamais une couleur en clair
+      (CLAUDE.md §3, sept chartes dont deux sombres).
+
+  TROIS FAÇONS : A le fond vert pâle, B le montant dans une pastille verte,
+  C les deux, plus le point vert sur l'onglet Chantiers.
+
+  AUCUNE LIGNE DE L'APPLICATION N'A BOUGÉ (CLAUDE.md §3 bis). Carte recopiée
+  de src/app/Notifications.tsx. Noms et montants d'exemple.
+*/
+:root{
+  --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --plein:#7d9a6d;
+  --or:#B98B47; --trait:rgba(28,28,26,.12); --filet:rgba(28,28,26,.07);
+  --scene:#e6e3dc; --alerte:#a8552f;
+  --serif:"Playfair Display",ui-serif,Georgia,serif;
+  --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+body.nuit{
+  --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --pin:#8fae86; --papier:#20241f; --plein:#8fae86;
+  --or:#c6a15b; --trait:rgba(233,232,222,.12); --filet:rgba(233,232,222,.08);
+  --scene:#070908; --alerte:#d38a63;
+}
+/* Le voile vert : la couleur « plein » de la charte, jamais un vert écrit en clair. */
+:root,body.nuit{
+  --vert-voile:color-mix(in srgb, var(--plein) 18%, var(--carte));
+  --vert-texte:color-mix(in srgb, var(--plein) 70%, var(--encre));
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+[hidden]{display:none!important}
+
+.bandeau{background:var(--encre);color:var(--fond);padding:16px 20px;font-size:14px;line-height:1.6}
+body.nuit .bandeau{background:#000;color:var(--encre)}
+.bandeau b{color:#fff}
+body.nuit .bandeau b{color:var(--encre)}
+.bandeau .dedans{max-width:1240px;margin:0 auto}
+.etats{position:sticky;top:0;z-index:20;background:var(--scene);border-bottom:1px solid var(--trait);padding:12px 16px}
+.etats .groupe{max-width:1240px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.etats .quoi{font:600 10px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--gris);margin-right:4px}
+.etats button{border:1px solid var(--trait);background:var(--carte);color:var(--encre-douce);border-radius:999px;padding:10px 14px;font-size:13px;min-height:44px}
+.etats button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+body.nuit .etats button[aria-pressed="true"]{color:#101210}
+
+.planches{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;max-width:1280px;margin:28px auto 0;padding:0 16px}
+.planche{width:380px;max-width:100%}
+.planche .nom{margin:0 0 4px;font:500 19px/1.2 var(--serif)}
+.planche .idee{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:var(--encre-douce);min-height:42px}
+.tel{width:380px;max-width:100%;border-radius:28px;overflow:hidden;box-shadow:0 16px 44px rgba(20,18,14,.22);background:var(--fond)}
+
+.entete{padding:28px 22px 0}
+.entete h1{margin:0;font:400 34px/1.1 var(--serif);letter-spacing:-.01em}
+.caps{font:600 11px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase}
+.fil{margin-top:22px;display:flex;flex-direction:column;gap:12px;padding:0 22px 26px}
+.carte{border-radius:18px;padding:16px 20px;background:var(--carte)}
+.carte.urgente{background:var(--papier)}
+.carte .caps{color:var(--gris);margin:0 0 6px}
+.carte.urgente .caps{color:var(--pin)}
+.carte .qui{margin:0;font:400 16px/1.3 var(--serif)}
+.carte .texte{margin:4px 0 0;font-size:13px;line-height:1.5;color:var(--gris)}
+.carte .montant{margin:8px 0 0;font:400 19px/1.2 var(--serif);font-variant-numeric:tabular-nums}
+.carte .question{margin:10px 0 0;font-size:14.5px;line-height:1.45}
+.gestes{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
+.plein{border:0;border-radius:999px;background:var(--plein);color:var(--carte);padding:10px 20px;font:500 14px/1 var(--sans);min-height:44px}
+body.nuit .plein{color:#101210}
+.leger{border:0;background:none;color:var(--encre-douce);padding:10px 8px;font:500 14px/1 var(--sans);min-height:44px}
+.lien{border:0;background:none;color:var(--pin);padding:10px 8px;font:500 14px/1 var(--sans);min-height:44px;margin-left:-8px}
+
+/* ── A : le fond vert pâle ── */
+.va .virement{background:var(--vert-voile)}
+.va .virement .caps{color:var(--vert-texte)}
+
+/* ── B : le montant dans une pastille verte ── */
+.pastille{display:inline-flex;align-items:center;gap:6px;margin-top:8px;border-radius:999px;background:var(--plein);color:var(--carte);
+          padding:6px 12px 6px 9px;font:500 17px/1 var(--serif);font-variant-numeric:tabular-nums}
+body.nuit .pastille{color:#101210}
+.pastille svg{width:15px;height:15px}
+.vb .virement .caps{color:var(--vert-texte)}
+
+/* ── C : les deux, et le point vert ── */
+.vc .virement{background:var(--vert-voile)}
+.vc .virement .caps{color:var(--vert-texte)}
+
+.barre{display:flex;justify-content:space-between;border-top:1px solid var(--trait);padding:14px 16px 20px}
+.barre span{font:500 9.5px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gris);position:relative}
+.barre span.ici{color:var(--encre)}
+.barre span.ici::after{content:"";position:absolute;left:-5px;right:-5px;bottom:-10px;height:2px;background:var(--or)}
+.point{display:inline-block;width:7px;height:7px;border-radius:50%;vertical-align:3px;margin-left:4px;background:var(--alerte)}
+.point.vert{background:var(--plein)}
+
+.arrive{animation:arrive .6s cubic-bezier(.16,1,.3,1)}
+@keyframes arrive{from{opacity:.2;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.arrive{animation:none}}
+
+.note{max-width:860px;margin:36px auto 0;padding:0 20px;font-size:13.5px;line-height:1.6;color:var(--encre-douce)}
+.note .t{display:block;font:500 15px/1.3 var(--serif);color:var(--encre);margin-bottom:6px}
+.note b{color:var(--encre)}
+.note + .note{margin-top:22px}
+</style>
+</head>
+<body>
+
+<div class="bandeau"><div class="dedans">
+  <b>Le virement qui saute aux yeux.</b> Votre demande du 23 octobre. Le même fil
+  d'accueil trois fois, avec le virement au milieu d'autres cartes, comme dans la
+  vraie vie. <b>Touchez « Un virement arrive »</b> pour le voir apparaître, et
+  <b>« Nuit »</b> pour le fond noir. <b>Rien n'est codé.</b>
+</div></div>
+
+<div class="etats">
+  <div class="groupe">
+    <button id="arrive">Un virement arrive</button>
+    <span class="quoi" style="margin-left:10px">Charte</span>
+    <button data-charte="jour" aria-pressed="true">Origine</button>
+    <button data-charte="nuit" aria-pressed="false">Nuit</button>
+  </div>
+</div>
+
+<div class="planches" id="planches"></div>
+
+<div class="note">
+  <span class="t">Pourquoi le vert</span>
+  Les cartes qui demandent d'agir vite, un devis qui traîne ou un impayé, ont
+  déjà leur fond <b>beige</b>. Un virement est une <b>bonne nouvelle</b> : il prend
+  le vert des boutons d'Atlas, celui qui dit « c'est par ici ». Ce vert suit la
+  charte choisie, en clair comme en nuit. Et le virement reste à <b>sa place</b>
+  dans le fil, à sa date : c'est la couleur qui le fait sortir du lot.
+</div>
+<div class="note">
+  <span class="t">Ce que je défends : C</span>
+  Le fond vert se voit en faisant défiler, la pastille dit le montant avant
+  même de lire, et le <b>point vert</b> sur « Chantiers » prévient quand on est
+  sur un autre écran. Le point rouge d'aujourd'hui reste pour ce qui est urgent.
+</div>
+
+<script>
+const OPTIONS = [
+  { cle:"va", nom:"A. Le fond vert pâle", idee:"La carte entière se teinte de vert. Discret, mais se repère en faisant défiler." },
+  { cle:"vb", nom:"B. Le montant en pastille", idee:"La carte reste blanche, le montant s'affiche dans une pastille verte." },
+  { cle:"vc", nom:"C. Les deux, et le point vert", idee:"Fond vert, montant en pastille, et un point vert sur l'onglet Chantiers." },
+];
+const euro = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 8h8M8 4v8"/></svg>';
+let virement = true;
+
+function carteVirement(cle){
+  const montant = cle === "va"
+    ? `<p class="montant">120,00 €</p>`
+    : `<span class="pastille">${euro}120,00 €</span>`;
+  return `<div class="carte virement arrive"><p class="caps">Virement reçu</p><p class="qui">M. Lala</p>${montant}
+    <p class="texte">Le 23 octobre. Le numéro de la facture est écrit sur le virement.</p>
+    <p class="question">C'est la facture F2026-000028 ?</p>
+    <div class="gestes"><button class="plein">Oui</button><button class="leger">Non</button></div></div>`;
+}
+
+function fil(cle){
+  return `${virement ? carteVirement(cle) : ""}
+    <div class="carte urgente"><p class="caps">Devis sans réponse</p><p class="qui">Taille de la haie</p>
+      <p class="texte">Envoyé à M. Martins depuis 12 jours.</p>
+      <div class="gestes"><button class="lien">Relancer</button><button class="leger">J'ai vu</button></div></div>
+    <div class="carte"><p class="caps">Devis accepté</p><p class="qui">Massif devant la maison</p>
+      <p class="texte">M. Durand a choisi le 4 novembre.</p>
+      <div class="gestes"><button class="lien">Voir le devis</button><button class="leger">J'ai vu</button></div></div>`;
+}
+
+function rendre(){
+  document.getElementById("planches").innerHTML = OPTIONS.map(o => `
+    <section class="planche ${o.cle}"><p class="nom">${o.nom}</p><p class="idee">${o.idee}</p>
+      <div class="tel"><div class="entete"><h1>Chantiers</h1></div><div class="fil">${fil(o.cle)}</div>
+      <nav class="barre" aria-hidden="true"><span class="ici">Chantiers${virement ? `<i class="point${o.cle === "vc" ? " vert" : ""}"></i>` : ""}</span><span>Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></nav></div>
+    </section>`).join("");
+}
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  if (b.id === "arrive") { virement = false; rendre(); setTimeout(() => { virement = true; rendre(); }, 500); return; }
+  if (b.dataset.charte) { document.body.classList.toggle("nuit", b.dataset.charte === "nuit"); document.querySelectorAll("[data-charte]").forEach(x => x.setAttribute("aria-pressed", x === b)); }
+});
+rendre();
+</script>
+</body>
+</html>

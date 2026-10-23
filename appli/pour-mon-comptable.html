@@ -251,7 +251,7 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
 .pdf{width:30px;height:38px;border-radius:4px;flex:none;background:var(--carte);box-shadow:0 0 0 1px var(--trait);
      display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;font:700 8.5px/1 var(--sans);color:var(--rust);letter-spacing:.04em}
 .lignes .gestes{margin-top:6px}
-.lignes .gestes .lien{border:0;background:none;color:var(--pin);font:500 13.5px/1 var(--sans);padding:8px 10px 8px 0;min-height:40px}
+.lignes .gestes .lien{border:0;background:none;color:var(--pin);font:500 13.5px/1 var(--sans);padding:8px 10px 8px 0;min-height:40px;text-decoration:none;display:inline-flex;align-items:center}
 .lecture{display:flex;flex-direction:column;gap:6px;margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--fond);font-size:13.5px}
 .lecture .r{display:flex;justify-content:space-between;gap:10px}
 .lecture .r span:last-child{font-variant-numeric:tabular-nums}
@@ -339,6 +339,7 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
 
       <div class="checkup"><button class="plein" type="button" data-checkup>Check up</button></div>
       <p style="margin:8px 24px 0;font-size:12.5px;color:var(--gris);text-align:center" data-dernier>Dernier Check up le 16 octobre</p>
+      <div data-valider-annee></div>
 
       <div class="legende">
         <span><i class="pastille" style="background:var(--c-carburant)"></i>Carburant</span>
@@ -416,7 +417,7 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
         </button></li>
       </ul>
 
-      <div class="dossier"><button class="contour" type="button">Mes dossiers justifiés</button></div>
+      <div class="dossier"><button class="contour" type="button" data-aller-dossiers>Mes dossiers justifiés</button></div>
     </div>
   </section>
 
@@ -465,7 +466,7 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
 
   <!-- 6. Les dossiers gardés -->
   <section class="planche">
-    <h2 class="nom">5. Mes dossiers justifiés</h2>
+    <h2 class="nom" id="ecran-dossiers">5. Mes dossiers justifiés</h2>
     <p class="idee">Quand tout est justifié, vous validez l'année : Atlas en fait un PDF, mois par mois, chaque ligne de banque suivie de sa photo. Il est gardé dix ans, et un dossier validé ne s'efface pas.</p>
     <div class="tel">
       <button class="retour" type="button">Année 2026</button>
@@ -509,6 +510,203 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
 
 </div>
 
+<!-- 7. Le comptable vérifie
+     Sa demande du 23 octobre au soir : le justificatif s'ouvre d'un appui, à
+     droite pour garder le montant visible, ou en plein écran ; et un bouton
+     vert ou rouge par ligne pour que le comptable revalide.
+     Ce n'est PAS dans le PDF : un PDF ne garde pas un bouton qu'on touche
+     (Aperçu, l'iPhone et la plupart des lecteurs l'ignorent), et le dossier
+     gardé dix ans ne doit plus changer. C'est une page à lui, ouverte par un
+     lien privé, comme la page du devis pour un client. Les lignes sont celles
+     de janvier 2025 du PDF d'exemple, recopiées telles quelles. -->
+<style>
+.compta-zone{max-width:1180px;margin:56px auto 0;padding:0 16px}
+.compta-zone .nom{margin:0 0 4px;font:500 19px/1.2 var(--serif)}
+.compta-zone .idee{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:var(--encre-douce);max-width:760px}
+.compta-zone .format{display:flex;gap:7px;margin:0 0 14px}
+.compta-zone .format button{border:1px solid var(--trait);background:var(--carte);color:var(--encre-douce);border-radius:999px;padding:10px 14px;font:400 13px/1 var(--sans);min-height:44px}
+.compta-zone .format button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+body.nuit .compta-zone .format button[aria-pressed="true"]{color:#101210}
+
+.ecran-c{background:var(--fond);border-radius:14px;box-shadow:0 16px 44px rgba(20,18,14,.22);overflow:hidden;position:relative;margin:0 auto}
+.ecran-c.pc{width:100%;height:680px}
+.ecran-c.tel-c{width:390px;max-width:100%;height:760px;border-radius:26px}
+.ecran-c .barre-nav{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--papier);border-bottom:1px solid var(--trait);font-size:12px;color:var(--gris)}
+.ecran-c .barre-nav i{width:9px;height:9px;border-radius:50%;background:var(--trait);display:inline-block}
+.ecran-c .barre-nav span{margin-left:10px;background:var(--carte);border-radius:999px;padding:4px 12px;flex:1;max-width:420px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-corps{display:flex;height:calc(100% - 37px)}
+.c-gauche{flex:1;min-width:0;overflow:auto;padding:22px 24px 30px}
+.c-droite{width:400px;flex:none;border-left:1px solid var(--trait);background:var(--carte);overflow:auto;padding:20px 22px 28px;display:none}
+.ecran-c.pc.ouvert .c-droite{display:block}
+.ecran-c.tel-c .c-droite{position:absolute;inset:37px 0 0 0;width:auto;border:0;z-index:4;background:var(--fond)}
+.ecran-c.tel-c.ouvert .c-droite{display:block}
+.c-titre{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px 16px}
+.c-titre h3{margin:0;font:400 26px/1.15 var(--serif)}
+.c-titre .caps{color:var(--or)}
+.c-avance{margin:14px 0 0}
+.c-avance .txt{display:flex;justify-content:space-between;font-size:13px;color:var(--encre-douce)}
+.c-avance .txt b{font-weight:500;color:var(--encre)}
+.c-avance .jauge{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--filet);margin-top:7px}
+.c-avance .jauge i{display:block;height:100%;transition:width .25s}
+.c-mois{display:flex;gap:6px;overflow-x:auto;margin:16px 0 0;scrollbar-width:none}
+.c-mois button{flex:none;border:1px solid var(--trait);background:var(--carte);border-radius:999px;padding:7px 12px;font-size:13px;color:var(--gris);min-height:36px}
+.c-mois button[aria-pressed="true"]{border-color:var(--encre);color:var(--encre)}
+.c-mois button:disabled{opacity:.45;cursor:default}
+
+.c-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13.5px}
+.c-table th{text-align:left;font:600 10px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gris);padding:8px 8px;border-bottom:1px solid var(--trait)}
+.c-table td{padding:9px 8px;border-bottom:1px solid var(--filet);vertical-align:middle}
+.c-table tr.actif td{background:color-mix(in srgb,var(--plein) 13%,transparent)}
+.c-table td.coul{width:4px;padding:0}
+.c-table .lib{font:12.5px/1.3 ui-monospace,Consolas,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:230px}
+.c-table .cat{font-size:12px}
+.c-table .d{text-align:right;font:400 15px/1 var(--serif);font-variant-numeric:tabular-nums;white-space:nowrap}
+.c-table .plus{color:var(--pin)}
+.piece-btn{border:1px solid var(--trait);background:var(--carte);border-radius:999px;padding:7px 12px;font-size:12.5px;min-height:36px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;color:var(--encre)}
+.piece-btn b{font-weight:600}
+.piece-btn.perdu{color:var(--alerte);font-style:italic;border-style:dashed}
+.verdict{display:flex;gap:6px;justify-content:flex-end}
+.verdict button{width:40px;height:40px;border-radius:50%;border:1.5px solid var(--trait);background:var(--carte);font:600 17px/1 var(--sans);color:var(--gris);display:inline-flex;align-items:center;justify-content:center;padding:0}
+.verdict .vert[aria-pressed="true"]{background:#3f8a4a;border-color:#3f8a4a;color:#fff}
+.verdict .rouge[aria-pressed="true"]{background:#b8432f;border-color:#b8432f;color:#fff}
+body.nuit .verdict .vert[aria-pressed="true"]{background:#7cc488;border-color:#7cc488;color:#101210}
+body.nuit .verdict .rouge[aria-pressed="true"]{background:#e58a74;border-color:#e58a74;color:#101210}
+.c-note{display:block;font-size:12px;color:#b8432f;margin-top:3px}
+body.nuit .c-note{color:#e58a74}
+
+/* téléphone : une ligne sur deux étages */
+.ecran-c.tel-c .c-gauche{padding:20px 16px 30px}
+.ecran-c.tel-c .c-table thead{display:none}
+.ecran-c.tel-c .c-table tr{display:grid;grid-template-columns:4px 1fr auto;grid-template-areas:"c lib m" "c p v";column-gap:12px;row-gap:8px;padding:12px 0;border-bottom:1px solid var(--filet)}
+.ecran-c.tel-c .c-table td{border:0;padding:0}
+.ecran-c.tel-c .c-table td.coul{grid-area:c;width:4px;border-radius:2px}
+.ecran-c.tel-c .c-table td.t-lib{grid-area:lib;min-width:0}
+.ecran-c.tel-c .c-table td.d{grid-area:m}
+.ecran-c.tel-c .c-table td.t-piece{grid-area:p}
+.ecran-c.tel-c .c-table td.t-v{grid-area:v}
+.ecran-c.tel-c .c-table td.t-date,.ecran-c.tel-c .c-table td.t-cat{display:none}
+.ecran-c.tel-c .c-table .lib{max-width:none}
+
+/* le panneau du justificatif */
+.c-droite .fermer-c{border:0;background:none;font-size:15px;color:var(--encre-douce);padding:4px 0;min-height:40px}
+.c-droite .rappel{margin:6px 0 0;padding:12px 14px;border-radius:12px;background:var(--papier)}
+.c-droite .rappel .l{font:12.5px/1.3 ui-monospace,Consolas,monospace}
+.c-droite .rappel .m{font:400 24px/1.2 var(--serif);font-variant-numeric:tabular-nums;margin-top:4px}
+.c-droite .rappel .s{font-size:12px;color:var(--gris);margin-top:2px}
+.c-droite .accord{margin:10px 0 0;font-size:13px}
+.c-droite .accord.oui{color:var(--pin)}
+.c-droite .accord.non{color:#b8432f}
+.c-piece{margin:16px auto 0;width:260px;max-width:100%}
+.c-piece .papier-ticket{margin:0 auto;transform:none}
+.c-facture{background:#fff;color:#2a2a26;padding:16px;font-size:12px;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.c-facture .g{font:700 14px/1.2 Georgia,serif}
+.c-facture .r{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px solid #eee}
+.c-facture .tot{font-weight:700;border:0;margin-top:4px}
+.c-perdu{margin:18px 0 0;padding:16px;border-radius:12px;border:1.5px dashed var(--trait);font-size:14px;color:var(--encre-douce)}
+.c-gestes{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.c-gestes .bon{border:0;border-radius:999px;background:#3f8a4a;color:#fff;padding:12px 20px;font:500 14.5px/1 var(--sans);min-height:46px}
+.c-gestes .pasbon{border:0;border-radius:999px;background:#b8432f;color:#fff;padding:12px 20px;font:500 14.5px/1 var(--sans);min-height:46px}
+body.nuit .c-gestes .bon{background:#7cc488;color:#101210}
+body.nuit .c-gestes .pasbon{background:#e58a74;color:#101210}
+.c-gestes .suiv{border:1px solid var(--trait);background:var(--carte);border-radius:999px;padding:12px 18px;font:500 14px/1 var(--sans);min-height:46px;color:var(--encre)}
+.c-pourquoi{margin-top:14px}
+.c-pourquoi label{font-size:12.5px;color:var(--gris)}
+.c-pourquoi textarea{display:block;width:100%;margin-top:6px;border:1px solid var(--trait);border-radius:10px;background:var(--fond);color:var(--encre);padding:10px 12px;font:15px/1.4 var(--sans);min-height:70px;resize:vertical}
+.c-fini{margin:18px 0 0;padding:14px 16px;border-radius:12px;background:var(--papier);font-size:14px}
+.c-fini b{font-weight:500}
+</style>
+
+<section class="compta-zone">
+  <h2 class="nom">7. Le comptable vérifie</h2>
+  <p class="idee">Vous lui envoyez un lien. Il voit le montant à gauche ; il touche le justificatif, la pièce s'ouvre à droite, il appuie sur vert ou rouge, puis Suivant. Un rouge demande pourquoi, et vous arrive dans Atlas. Sur téléphone, la pièce s'ouvre en plein écran. Seul janvier est rempli dans cet essai.</p>
+  <div class="format" role="group" aria-label="Format">
+    <button type="button" data-format="pc" aria-pressed="true">Ordinateur</button>
+    <button type="button" data-format="tel-c" aria-pressed="false">Téléphone</button>
+  </div>
+  <div class="ecran-c pc" data-ecran-c>
+    <div class="barre-nav"><i></i><i></i><i></i><span>atlas.app/comptable/jardins-exemple-2025</span></div>
+    <div class="c-corps">
+      <div class="c-gauche">
+        <div class="c-titre"><h3>Dossier justifié 2025, Jardins Exemple</h3><span class="caps">Envoyé le 12 février 2026</span></div>
+        <div class="c-avance"><div class="txt"><span data-c-compte></span><span data-c-rouges></span></div><div class="jauge"><i data-c-vert style="background:#3f8a4a"></i><i data-c-rouge style="background:#b8432f"></i></div></div>
+        <div class="c-mois">
+          <button type="button" aria-pressed="true">Janvier</button>
+          <button type="button" disabled>Février</button><button type="button" disabled>Mars</button><button type="button" disabled>Avril</button><button type="button" disabled>Mai</button><button type="button" disabled>Juin</button><button type="button" disabled>Juillet</button><button type="button" disabled>Août</button><button type="button" disabled>Septembre</button><button type="button" disabled>Octobre</button><button type="button" disabled>Novembre</button><button type="button" disabled>Décembre</button>
+        </div>
+        <table class="c-table"><thead><tr><th></th><th>Date</th><th>Ce qu’écrit la banque</th><th>Catégorie</th><th style="text-align:right">Montant</th><th>Justificatif</th><th style="text-align:right">Vérifié</th></tr></thead><tbody data-c-lignes></tbody></table>
+      </div>
+      <aside class="c-droite" data-c-droite></aside>
+    </div>
+  </div>
+</section>
+
+<script>
+(() => {
+const JANV = [{"j":2,"cat":"recu","lib":"VIR ROUX FACTURE F2025-07","m":563,"ref":null,"numF":"F2025-000007","client":"Roux"},{"j":2,"cat":"recu","lib":"VIR DURAND FACTURE F2025-03","m":2501,"ref":null,"numF":"F2025-000003","client":"Durand"},{"j":5,"cat":"recu","lib":"VIR MARTINS FACTURE F2025-06","m":757,"ref":null,"numF":"F2025-000006","client":"Martins"},{"j":7,"cat":"autre","lib":"CB LA POSTE AUBAGNE","m":-12.55,"ref":"T-01-01","tk":{"nom":"LA POSTE","adr":"Aubagne","jour":6,"heure":"16:16","art":[["Lettre recommandée AR",6.55],["Enveloppes x50",6]],"total":12.55,"taux":20}},{"j":9,"cat":"carburant","lib":"CB ITM STATION LA CIOTAT","m":-48.11,"ref":"T-01-02","tk":{"nom":"INTERMARCHE","adr":"Station La Ciotat","jour":9,"heure":"14:45","art":[["Gazole 26,70 L",48.11]],"total":48.11,"taux":20}},{"j":11,"cat":"repas","lib":"CB CHEZ PAULETTE","m":-18.82,"ref":"T-01-03","tk":{"nom":"CHEZ PAULETTE","adr":"Roquefort","jour":10,"heure":"07:22","art":[["Menu du jour",14.82],["Boisson",4]],"total":18.82,"taux":10}},{"j":13,"cat":"virement","lib":"VIR SEPA PEPINIERES DU SUD","m":-1605.6,"ref":"F-01-01","fa":{"f":"Pépinières du Sud","quoi":"Végétaux pour chantier","ht":1338,"num":"2025-101"}},{"j":18,"cat":"repas","lib":"CB BOUL MAURIN CASSIS","m":-17.13,"ref":"T-01-04","tk":{"nom":"BOULANGERIE MAURIN","adr":"Cassis","jour":17,"heure":"11:10","art":[["Menu du jour",14.45],["Boisson",2.68]],"total":17.13,"taux":10}},{"j":21,"cat":"materiel","lib":"CB KILOUTOU MARSEILLE","m":-389.65,"ref":"T-01-05","tk":{"nom":"KILOUTOU","adr":"Marseille 11e","jour":19,"heure":"18:27","art":[["Mini-pelle 2,5 t, 1 j",339.65],["Transport A/R",50]],"total":389.65,"taux":20}},{"j":21,"cat":"recu","lib":"VIR PETIT FACTURE F2025-04","m":1582,"ref":null,"numF":"F2025-000004","client":"Petit"},{"j":22,"cat":"carburant","lib":"CB ESSO AUBAGNE","m":-85.16,"ref":"T-01-06","tk":{"nom":"ESSO","adr":"Aubagne Est","jour":21,"heure":"12:06","art":[["Gazole 47,44 L",85.16]],"total":85.16,"taux":20}},{"j":23,"cat":"repas","lib":"CB LE RELAIS DES PINS","m":-22.11,"ref":"T-01-07","tk":{"nom":"LE RELAIS DES PINS","adr":"Gémenos","jour":22,"heure":"18:12","art":[["Menu du jour",17.72],["Boisson",4.39]],"total":22.11,"taux":10}},{"j":24,"cat":"recu","lib":"VIR BERNARD FACTURE F2025-05","m":1250,"ref":null,"numF":"F2025-000005","client":"Bernard"},{"j":25,"cat":"virement","lib":"VIR SEPA PEPINIERES DU SUD","m":-1615.2,"ref":"F-01-02","fa":{"f":"Pépinières du Sud","quoi":"Végétaux pour chantier","ht":1346,"num":"2025-100"}},{"j":25,"cat":"repas","lib":"CB CHEZ PAULETTE","m":-18.55,"ref":"T-01-08","tk":{"nom":"CHEZ PAULETTE","adr":"Roquefort","jour":24,"heure":"10:54","art":[["Menu du jour",15.08],["Boisson",3.47]],"total":18.55,"taux":10}},{"j":28,"cat":"carburant","lib":"CB ITM STATION LA CIOTAT","m":-64.06,"ref":"T-01-09","tk":{"nom":"INTERMARCHE","adr":"Station La Ciotat","jour":26,"heure":"17:21","art":[["Gazole 35,84 L",64.06]],"total":64.06,"taux":20}}];
+const NOMC = { carburant:"Carburant", repas:"Repas", materiel:"Matériel", hotel:"Hôtel", transport:"Train, taxi", autre:"Autre", virement:"Virement envoyé", recu:"Virement reçu" };
+const VERT = "#3f8a4a", ROUGE = "#b8432f";
+const d2 = n => String(n).padStart(2, "0");
+const e = v => Math.abs(v).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/ | /g, " ") + " €";
+const sg = v => (v > 0 ? "+" : "−") + e(v);
+// verdict : null (à vérifier), "vert", "rouge" ; note : pourquoi le rouge.
+const etatC = JANV.map(() => ({ verdict: null, note: "" }));
+let ouvert = -1, demandeRouge = false;
+
+function piece(l){
+  if (l.tk) { const t = l.tk, tva = t.total - t.total / (1 + t.taux / 100);
+    return `<div class="c-piece"><div class="papier-ticket"><div class="c g">${t.nom}</div><div class="c">${t.adr}</div><div class="c">${d2(t.jour)}/01/2025 ${t.heure}</div><hr>${t.art.map(([a, v]) => `<div class="r"><span>${a}</span><span>${e(v).replace(" €", "")}</span></div>`).join("")}<hr><div class="r t"><span>TOTAL TTC</span><span>${e(t.total)}</span></div><div class="r"><span>dont TVA ${t.taux} %</span><span>${e(tva).replace(" €", "")}</span></div><hr><div class="c">CARTE BANCAIRE</div><div class="c">**** **** **** 4821</div></div></div>`; }
+  if (l.fa) { const f = l.fa;
+    return `<div class="c-piece" style="width:300px"><div class="c-facture"><div class="r" style="border:0"><span class="g">${f.f}</span><span>n° ${f.num}</span></div><div style="margin:6px 0 10px;color:#777">Client : Jardins Exemple</div><div class="r"><span>${f.quoi}</span><span>${e(f.ht)}</span></div><div class="r"><span>TVA 20 %</span><span>${e(f.ht * .2)}</span></div><div class="r tot"><span>Total TTC</span><span>${e(f.ht * 1.2)}</span></div><div style="margin-top:8px;color:#777">Réglée par virement</div></div></div>`; }
+  if (l.numF) return `<div class="c-piece" style="width:300px"><div class="c-facture"><div class="r" style="border:0"><span class="g">Jardins Exemple</span><span>${l.numF}</span></div><div style="margin:6px 0 10px;color:#777">Client : ${l.client}</div><div class="r"><span>Prestation d’entretien</span><span>${e(l.m / 1.2)}</span></div><div class="r"><span>TVA 20 %</span><span>${e(l.m - l.m / 1.2)}</span></div><div class="r tot"><span>Total TTC</span><span>${e(l.m)}</span></div><div style="margin-top:8px;color:#777">Facture émise par Atlas</div></div></div>`;
+  return `<div class="c-perdu">Ticket perdu. La ligne a été validée avec cette mention, et sa TVA n’a pas été déduite.</div>`;
+}
+const etiquette = l => l.tk ? `<b>${l.ref}</b> Ticket` : l.fa ? `<b>${l.ref}</b> Facture` : l.numF ? `Facture ${l.numF.replace("F2025-0000", "F2025-")}` : "Ticket perdu";
+
+function rendre(){
+  const ec = document.querySelector("[data-ecran-c]");
+  ec.classList.toggle("ouvert", ouvert >= 0);
+  document.querySelector("[data-c-lignes]").innerHTML = JANV.map((l, i) => { const s = etatC[i];
+    return `<tr class="${i === ouvert ? "actif" : ""}"><td class="coul" style="background:var(--c-${l.cat})"></td><td class="t-date">${d2(l.j)}/01</td><td class="t-lib"><div class="lib">${l.lib}</div>${s.verdict === "rouge" && s.note ? `<span class="c-note">${s.note}</span>` : ""}</td><td class="t-cat cat" style="color:var(--c-${l.cat})">${NOMC[l.cat]}</td><td class="d${l.m > 0 ? " plus" : ""}">${sg(l.m)}</td><td class="t-piece"><button type="button" class="piece-btn${l.perdu ? " perdu" : ""}" data-c-ouvrir="${i}">${etiquette(l)}</button></td><td class="t-v"><div class="verdict"><button type="button" class="vert" aria-label="Bon" aria-pressed="${s.verdict === "vert"}" data-c-v="${i}:vert">✓</button><button type="button" class="rouge" aria-label="Pas bon" aria-pressed="${s.verdict === "rouge"}" data-c-v="${i}:rouge">✕</button></div></td></tr>`; }).join("");
+  const nv = etatC.filter(s => s.verdict === "vert").length, nr = etatC.filter(s => s.verdict === "rouge").length;
+  document.querySelector("[data-c-compte]").innerHTML = `<b>${nv + nr} sur ${JANV.length}</b> lignes vérifiées en janvier`;
+  document.querySelector("[data-c-rouges]").innerHTML = nr ? `<span style="color:${ROUGE}">${nr} pas bonne${nr > 1 ? "s" : ""}</span>` : "";
+  document.querySelector("[data-c-vert]").style.width = `${nv / JANV.length * 100}%`;
+  document.querySelector("[data-c-rouge]").style.width = `${nr / JANV.length * 100}%`;
+  const dr = document.querySelector("[data-c-droite]");
+  if (ouvert < 0) { dr.innerHTML = ""; return; }
+  const l = JANV[ouvert], s = etatC[ouvert];
+  const suivant = etatC.findIndex((x, k) => k > ouvert && !x.verdict);
+  dr.innerHTML = `<button class="fermer-c" type="button" data-c-fermer>Fermer</button>
+    <div class="rappel"><div class="l">${l.lib}</div><div class="m${l.m > 0 ? " plus" : ""}">${sg(l.m)}</div><div class="s">${d2(l.j)}/01/2025 à la banque, ${NOMC[l.cat].toLowerCase()}</div></div>
+    ${piece(l)}
+    ${s.verdict === "vert" ? `<p class="accord oui">Vous l’avez marquée bonne.</p>` : s.verdict === "rouge" && !demandeRouge ? `<p class="accord non">Pas bonne : ${s.note || "sans raison écrite"}</p>` : ""}
+    ${demandeRouge ? `<div class="c-pourquoi"><label for="c-pq">Pourquoi ? Le patron le lira.</label><textarea id="c-pq" data-c-pq>${s.note}</textarea></div><div class="c-gestes"><button class="pasbon" type="button" data-c-confirmer-rouge>Marquer pas bonne</button><button class="suiv" type="button" data-c-annuler-rouge>Annuler</button></div>`
+      : `<div class="c-gestes"><button class="bon" type="button" data-c-v="${ouvert}:vert">Bon</button><button class="pasbon" type="button" data-c-v="${ouvert}:rouge">Pas bon</button>${suivant >= 0 ? `<button class="suiv" type="button" data-c-ouvrir="${suivant}">Suivant</button>` : ""}</div>`}
+    ${etatC.every(x => x.verdict) ? `<div class="c-fini"><b>Janvier est vérifié.</b> ${etatC.filter(x => x.verdict === "rouge").length ? "Le patron reçoit vos rouges dans Atlas." : "Tout est bon."}</div>` : ""}`;
+  if (demandeRouge) dr.querySelector("[data-c-pq]").focus();
+}
+
+document.addEventListener("click", ev => {
+  const f = ev.target.closest("[data-format]");
+  if (f){ document.querySelectorAll("[data-format]").forEach(x => x.setAttribute("aria-pressed", x === f)); const ec = document.querySelector("[data-ecran-c]"); ec.classList.remove("pc", "tel-c"); ec.classList.add(f.dataset.format); return; }
+  const o = ev.target.closest("[data-c-ouvrir]");
+  if (o){ ouvert = Number(o.dataset.cOuvrir); demandeRouge = false; rendre(); return; }
+  if (ev.target.closest("[data-c-fermer]")){ ouvert = -1; demandeRouge = false; rendre(); return; }
+  const v = ev.target.closest("[data-c-v]");
+  if (v){ const [i, c] = v.dataset.cV.split(":"); const k = Number(i), s = etatC[k];
+    // Un second appui sur le même rond l'enlève : une erreur se défait.
+    if (s.verdict === c && !ev.target.closest(".c-gestes")) { s.verdict = null; s.note = ""; rendre(); return; }
+    if (c === "rouge"){ ouvert = k; demandeRouge = true; rendre(); return; }
+    s.verdict = "vert"; s.note = "";
+    if (ev.target.closest(".c-gestes")) { const n = etatC.findIndex((x, j) => j > k && !x.verdict); if (n >= 0) ouvert = n; }
+    rendre(); return; }
+  if (ev.target.closest("[data-c-confirmer-rouge]")){ const s = etatC[ouvert]; s.verdict = "rouge"; s.note = document.querySelector("[data-c-pq]").value.trim(); demandeRouge = false; rendre(); return; }
+  if (ev.target.closest("[data-c-annuler-rouge]")){ demandeRouge = false; rendre(); return; }
+});
+rendre();
+})();
+</script>
+
 <div class="note">
   <h2>Ce qu'il faut savoir avant de choisir</h2>
   <table>
@@ -517,6 +715,8 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
     <tr><td>Ticket perdu</td><td>La ligne est validée avec la mention, et votre comptable la voit. Mais sans ticket, la TVA de cette dépense ne se récupère pas : l'écran le dit avant que vous validiez.</td></tr>
     <tr><td>Les couleurs</td><td>Une proposition. Dites celle qui ne vous va pas, et elle change. Il y a aussi une version Nuit, en haut.</td></tr>
     <tr><td>Mes dossiers justifiés</td><td>Quand l’année est justifiée, vous la validez : un PDF mois par mois, chaque ligne de banque suivie de la photo de son ticket. Gardé dix ans, comme la loi le demande pour les pièces comptables, et un dossier validé ne s’efface pas.</td></tr>
+    <tr><td>Le PDF</td><td>« Ouvrir » sur le dossier 2025 montre un vrai dossier fini, en exemple : 35 pages, l’année entière. Dans l’appli, il se range ici tout seul quand vous validez l’année ; « Enregistrer sur le téléphone » en garde une copie dans vos fichiers.</td></tr>
+    <tr><td>Le comptable</td><td>Il ne coche rien dans le PDF : un PDF ne garde pas un bouton qu’on touche, et le dossier gardé dix ans ne doit plus changer. Il reçoit un lien privé vers la page de l’écran 7. Ses rouges vous arrivent dans Atlas, avec sa raison.</td></tr>
     <tr><td>Ce qui marche derrière</td><td>Rien pour l’instant : c’est un dessin. Une fois choisi, il se code dans l’appli, et « Photographier » ouvre l’appareil photo du téléphone, comme le scan des tickets dans Ma TVA.</td></tr>
   </table>
 </div>
@@ -585,11 +785,16 @@ function rendreVisionneuse(){
 let dossier2026 = false;
 function rendreDossiers(reste){
   const enc = document.querySelector("[data-dossier-encours]");
-  if (dossier2026) enc.innerHTML = `<p class="qui" style="margin:0">Dossier 2026 validé.</p><p class="texte">Il est rangé ci-dessous, et votre comptable peut le recevoir.</p>`;
+  if (dossier2026) enc.innerHTML = `<p class="qui" style="margin:0">Dossier 2026 validé.</p><p class="texte">Rangé ci-dessous, tout seul.</p>`;
   else if (reste) enc.innerHTML = `<p class="qui" style="margin:0">Dossier 2026</p><p class="texte alerte">${reste} ${reste>1?"lignes attendent":"ligne attend"} encore un justificatif. Il se valide quand tout est justifié.</p>`;
   else enc.innerHTML = `<p class="qui" style="margin:0">Dossier 2026</p><p class="texte" style="color:var(--pin)">Tout est justifié.</p><div class="gestes"><button class="plein" type="button" data-valider-dossier>Valider le dossier 2026</button></div>`;
   const ans = (dossier2026 ? [["2026","23 octobre 2026","2036","4,1 Mo"]] : []).concat([["2025","12 février 2026","2035","5,8 Mo"],["2024","3 mars 2025","2034","5,2 Mo"],["2023","20 février 2024","2033","4,7 Mo"]]);
-  document.querySelector("[data-dossiers]").innerHTML = ans.map(([a,v,g,t]) => `<li class="ligne"><span class="pdf">PDF</span><span class="milieu"><div class="lib">Dossier justifié ${a}</div><div class="cat" style="color:var(--gris)">Validé le ${v}, gardé jusqu’en ${g}, ${t}</div><div class="gestes"><button class="lien" type="button">Ouvrir</button><button class="lien" type="button">Envoyer au comptable</button></div></span></li>`).join("");
+  document.querySelector("[data-dossiers]").innerHTML = ans.map(([a,v,g,t]) => `<li class="ligne"><span class="pdf">PDF</span><span class="milieu"><div class="lib">Dossier justifié ${a}</div><div class="cat" style="color:var(--gris)">Validé le ${v}, gardé jusqu’en ${g}, ${t}</div><div class="gestes"><a class="lien" href="dossier-justifie-exemple.pdf" target="_blank" rel="noopener">Ouvrir</a>${a === "2025" ? `<a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" target="_blank" rel="noopener">Ouvrir côte à côte</a>` : ""}<a class="lien" href="dossier-justifie-exemple.pdf" download="Dossier justifié ${a}.pdf">Enregistrer sur le téléphone</a><button class="lien" type="button">Envoyer au comptable</button></div></span></li>`).join("");
+  // Sur l'écran de l'année aussi : c'est là qu'il voit que tout est justifié,
+  // et c'est là qu'il cherchait le bouton (sa question du 23 octobre).
+  const va = document.querySelector("[data-valider-annee]");
+  va.innerHTML = dossier2026 ? `<article class="carte" style="margin:16px 24px 0"><p class="qui" style="margin:0">Dossier 2026 validé.</p><p class="texte">Il est dans Mes dossiers justifiés.</p></article>`
+    : reste ? "" : `<article class="carte" style="margin:16px 24px 0"><p class="qui" style="margin:0">Toute l’année 2026 est justifiée.</p><div class="gestes"><button class="plein" type="button" data-valider-dossier>Valider le dossier 2026</button></div></article>`;
 }
 
 function rendreRelies(){
@@ -657,6 +862,7 @@ document.addEventListener("click", e => {
   const g = e.target.closest("[data-g]");
   if (g){ const [id, s] = g.dataset.g.split(":"); etat[id] = s; rendreCartes(); return; }
   if (e.target.closest("[data-valider-dossier]")){ dossier2026 = true; rendreCartes(); return; }
+  if (e.target.closest("[data-aller-dossiers]")){ document.getElementById("ecran-dossiers").scrollIntoView({ behavior:"smooth", block:"start" }); return; }
   const vo = e.target.closest("[data-voir]");
   if (vo){ vu = vo.dataset.voir; rendreVisionneuse(); vo.closest(".tel").scrollIntoView({ behavior:"smooth", block:"start" }); return; }
   if (e.target.closest("[data-fermer]")){ vu = null; rendreVisionneuse(); return; }
