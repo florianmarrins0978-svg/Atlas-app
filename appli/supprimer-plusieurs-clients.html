@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Supprimer plusieurs clients</title>
+<style>
+  /*
+    SUPPRIMER PLUSIEURS CLIENTS : proposition pour /clients.
+    Sa demande du 23 octobre 2026 : « rajouter la possibilité de supprimer
+    plusieurs clients à la fois en cochant ; fais une planche avec la même
+    mention de sécurité que pour un client ».
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI EST DESSINÉ PART DE L'ÉCRAN CODÉ.
+
+    La liste : src/app/clients/ListeClients.tsx (recherche collante, « Filtre »
+    à droite sous le champ depuis le 22 octobre, bandes de lettres, ligne =
+    nom, lieu + dernière trace, reste dû en rouge).
+
+    La feuille : src/app/clients/[id]/SupprimerCeClient.tsx, MOT POUR MOT.
+    « Suppression définitive » en capitales d'alerte, « Conservé par la loi »
+    avec les numéros, la phrase de prévention qui ne parle que s'il y a des
+    documents, et la case « J'ai sauvegardé ces documents ailleurs » qui
+    déverrouille. Seul le pluriel change (« Ses » devient « Leurs »).
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI NE CHANGE PAS CÔTÉ SERVEUR.
+
+    La suppression reste celle d'un client, jouée une fois par client coché
+    (supprimerClientAction, garde exigerMontants : Patron et Facturation
+    seulement). Un refus pour l'un n'empêche pas les autres, et se nomme.
+  */
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
+    --or:#B98B47; --alerte:#9C3B2E; --plein:#7d9a6d;
+    --line:rgba(28,28,26,.12); --lineSoft:rgba(28,28,26,.07);
+    --chevron:rgba(28,28,26,.28); --surPlein:#faf9f5;
+  }
+  body[data-charte="nuit"]{
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e;
+    --or:#B98B47; --alerte:#cd6456; --plein:#a9c39a;
+    --line:rgba(233,232,222,.12); --lineSoft:rgba(233,232,222,.07);
+    --chevron:rgba(233,232,222,.28); --surPlein:#101210;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  [hidden]{display:none !important}
+  html,body{margin:0}
+  body{background:#e7e4dd;color:#1c1c1a;
+       font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:20px 16px 56px}
+  body[data-charte="nuit"]{background:#070806;color:#e9e8de}
+  ::selection{background:rgba(185,139,71,.28);color:inherit}
+  button{font:inherit;color:inherit}
+  button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+  /* ══ Le banc, hors de l'écran ═════════════════════════════════════════ */
+  .banc{max-width:390px;margin:0 auto 14px}
+  .banc h2{margin:0;font-size:10px;font-weight:500;letter-spacing:.26em;
+           text-transform:uppercase;color:#8a8578}
+  .boutons{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .boutons button{font-size:12px;padding:8px 12px;border-radius:6px;
+                  border:1px solid rgba(28,28,26,.18);background:#faf9f5;
+                  color:#1c1c1a;cursor:pointer;min-height:36px}
+  body[data-charte="nuit"] .boutons button{background:#1a1d19;color:#e9e8de;
+                  border-color:rgba(233,232,222,.2)}
+  .boutons button[aria-pressed="true"]{background:#2f3b2f;color:#faf9f5;border-color:#2f3b2f}
+  body[data-charte="nuit"] .boutons button[aria-pressed="true"]{
+                  background:#e9e8de;color:#101210;border-color:#e9e8de}
+
+  /* ══ L'écran ═══════════════════════════════════════════════════════════ */
+  .tel{max-width:390px;margin:0 auto;background:var(--cream);color:var(--ink);
+       height:700px;position:relative;overflow:hidden;
+       border:1px solid rgba(28,28,26,.14);border-radius:14px}
+  body[data-charte="nuit"] .tel{border-color:rgba(233,232,222,.14)}
+  .defile{height:100%;overflow-y:auto;overscroll-behavior:contain;padding-bottom:170px;
+          scrollbar-width:thin;scrollbar-color:var(--chevron) transparent}
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;
+         font-weight:400;letter-spacing:-.01em}
+  .haut{display:flex;align-items:center;padding:26px 26px 0}
+  .rond{width:40px;height:40px;border-radius:50%;background:var(--rustTint);
+        display:flex;align-items:center;justify-content:center}
+  .titre-ligne{padding:20px 26px 0}
+  h1{margin:0;font-size:36px;line-height:1.02;letter-spacing:-.018em}
+  .compte{display:block;margin-top:10px;min-height:14px;font-size:9.5px;
+          font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+  .compte.choix{color:var(--ink)}
+
+  .cherche-zone{position:sticky;top:0;z-index:4;background:var(--cream);padding:18px 26px 14px}
+  .cherche{position:relative;display:flex;align-items:center;background:var(--rustTint);
+           border-radius:10px;min-height:50px;padding:0 16px 0 44px;color:var(--inkSoft);
+           font-size:16px;opacity:.72}
+  .loupe{position:absolute;left:16px;top:50%;margin-top:-8px;width:14px;height:14px;
+         border:1.6px solid var(--muted);border-radius:50%}
+  .loupe::after{content:"";position:absolute;right:-5px;bottom:-3px;width:7px;
+                height:1.6px;background:var(--muted);transform:rotate(45deg)}
+  .sous{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+  .pastille{display:flex;align-items:center;gap:7px;min-height:44px;padding:0 13px;
+            border:0;border-radius:999px;background:var(--card);color:var(--inkSoft);
+            box-shadow:inset 0 0 0 1px var(--line);font-size:12.5px;cursor:pointer;white-space:nowrap}
+  .pastille[aria-pressed="true"]{background:var(--plein);color:var(--surPlein);box-shadow:none}
+  .pastille.vide{visibility:hidden}
+
+  .bande{margin:24px 26px 2px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+         text-transform:uppercase;color:var(--muted)}
+  .liste .bande:first-child{margin-top:14px}
+  .ligne{display:flex;align-items:center;gap:14px;margin:0 26px;padding:13px 0;min-height:64px;
+         border-bottom:1px solid var(--line);width:calc(100% - 52px);background:none;border-left:0;
+         border-right:0;border-top:0;text-align:left;cursor:pointer}
+  .ligne.dernier{border-bottom:0}
+  /* La case : la même que « J'ai sauvegardé ces documents ailleurs », pour
+     que cocher se lise partout de la même façon. */
+  .case{flex:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);
+        display:none;align-items:center;justify-content:center;
+        transition:background-color 140ms ease-out,border-color 140ms ease-out}
+  .tel.choisir .case{display:flex}
+  .ligne[aria-pressed="true"] .case{background:var(--rust);border-color:var(--rust)}
+  .case svg{opacity:0;transition:opacity 120ms ease-out}
+  .ligne[aria-pressed="true"] .case svg{opacity:1}
+  .gauche{flex:1;min-width:0}
+  .nom{display:block;font-size:17.5px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dit{display:block;margin-top:3px;font-size:12.5px;line-height:1.45;color:var(--inkSoft);
+       overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .droite{flex:none;text-align:right}
+  .montant{display:block;font-size:16px;line-height:1.15;font-weight:500;color:var(--alerte);
+           font-variant-numeric:tabular-nums;white-space:nowrap}
+  .etiq{display:block;margin-top:3px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+        text-transform:uppercase;color:var(--alerte)}
+  .chev{flex:none;width:8px;height:8px;transform:rotate(45deg);
+        border-right:1.5px solid var(--chevron);border-top:1.5px solid var(--chevron)}
+  .tel.choisir .chev{display:none}
+
+  /* La barre du geste, au-dessus des onglets, seulement pendant le choix. */
+  .geste{position:absolute;left:0;right:0;bottom:62px;z-index:6;background:var(--cream);
+         border-top:1px solid var(--line);padding:12px 26px 10px;
+         transform:translateY(110%);transition:transform 220ms cubic-bezier(.2,.8,.2,1)}
+  .tel.choisir .geste{transform:none}
+  .geste .supprimer{display:block;width:100%;height:52px;border:0;border-radius:999px;
+                    font-size:15px;font-weight:600;cursor:pointer;
+                    background:var(--alerte);color:var(--surPlein)}
+  .geste .supprimer:disabled{background:var(--line);color:var(--muted);cursor:default}
+
+  .barre{position:absolute;left:0;right:0;bottom:0;z-index:7;background:var(--cream);
+         border-top:1px solid var(--line);padding:18px 14px 10px}
+  .onglets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:relative}
+  .onglets span{text-align:center;font-size:8.5px;font-weight:500;letter-spacing:.14em;
+                text-transform:uppercase;color:var(--muted);padding-bottom:8px}
+  .onglets span.actif{color:var(--ink)}
+  .filet-onglet{position:absolute;bottom:0;left:0;height:1px;background:var(--or);width:20%}
+
+  .apres{margin:14px 26px 0;font-size:13.5px;line-height:1.5;color:var(--inkSoft)}
+  .apres b{color:var(--ink);font-weight:500}
+  .apres .refus{color:var(--alerte)}
+
+  /* ══ La feuille : SupprimerCeClient.tsx, à l'identique ═════════════════ */
+  .voile{position:absolute;inset:0;z-index:19;background:rgba(20,18,14,.42);
+         opacity:0;transition:opacity 200ms ease-out;pointer-events:none}
+  .voile.vu{opacity:1;pointer-events:auto}
+  .feuille{position:absolute;left:0;right:0;bottom:0;z-index:20;background:var(--cream);
+           border-radius:22px 22px 0 0;padding:12px 24px 22px;max-height:88%;overflow-y:auto;
+           box-shadow:0 -12px 34px rgba(20,18,14,.24);
+           transform:translateY(105%);transition:transform 260ms cubic-bezier(.2,.8,.2,1)}
+  .feuille.vu{transform:none}
+  .poignee{width:38px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 14px}
+  .caps{margin:4px 0 0;font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+  .feuille h2{margin:11px 0 0;font-size:26px;line-height:1.15;color:var(--ink)}
+  .noms{margin:8px 0 0;font-size:14.5px;line-height:1.55;color:var(--ink)}
+  .filet{height:1px;background:var(--lineSoft);margin-top:18px}
+  .loi p{margin:8px 0 0;font-size:13.5px;line-height:1.55;color:var(--ink)}
+  .prevention{margin:18px 0 0;font-size:14.5px;line-height:1.55;color:var(--inkSoft)}
+  .sauve{margin-top:16px;display:flex;width:100%;align-items:center;gap:12px;
+         padding:13px 18px;border-radius:999px;background:transparent;
+         border:1px solid var(--line);text-align:left;cursor:pointer}
+  .sauve[aria-pressed="true"]{background:var(--rustTint);border-color:var(--rust)}
+  .sauve .case{display:flex}
+  .sauve[aria-pressed="true"] .case{background:var(--rust);border-color:var(--rust)}
+  .sauve[aria-pressed="true"] .case svg{opacity:1}
+  .sauve span:last-child{font-size:14px;line-height:1.4;color:var(--ink)}
+  .confirmer{margin-top:20px;display:block;width:100%;height:52px;border:0;border-radius:999px;
+             font-size:15px;font-weight:600;background:var(--alerte);color:var(--surPlein);cursor:pointer}
+  .confirmer:disabled{background:var(--line);color:var(--muted);cursor:default}
+  .annuler{margin-top:6px;display:block;width:100%;height:46px;border:0;background:transparent;
+           color:var(--muted);font-size:14px;cursor:pointer}
+
+  /* ══ Les notes, sous l'écran ═══════════════════════════════════════════ */
+  .notes{max-width:390px;margin:20px auto 0;font-size:13.5px;line-height:1.6;color:#3a3a34}
+  body[data-charte="nuit"] .notes{color:#c1c2b6}
+  .notes h3{margin:22px 0 8px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+            text-transform:uppercase;color:#8a8578}
+  .notes ul{margin:0;padding-left:18px}
+  .notes li{margin-bottom:7px}
+  .notes b{font-weight:600}
+</style>
+</head>
+<body data-charte="origine">
+
+<div class="banc">
+  <h2>Supprimer plusieurs clients</h2>
+  <div class="boutons">
+    <button type="button" data-cas="docs" aria-pressed="true">Cocher Martins, Aubry, Bernard</button>
+    <button type="button" data-cas="vides" aria-pressed="false">Cocher deux clients sans document</button>
+    <button type="button" id="remettre">Tout remettre</button>
+    <button type="button" id="nuit" aria-pressed="false">Nuit</button>
+  </div>
+</div>
+
+<div class="tel" id="tel">
+  <div class="defile">
+    <div class="haut">
+      <span class="rond" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" stroke-width="2.4">
+          <path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </div>
+    <div class="titre-ligne">
+      <h1 class="serif">Vos clients</h1>
+      <span class="compte" id="compte"></span>
+    </div>
+    <div class="cherche-zone">
+      <div class="cherche"><span class="loupe" aria-hidden="true"></span>Chercher un client</div>
+      <div class="sous">
+        <button type="button" class="pastille" id="choisir" aria-pressed="false">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M5.4 8.2l1.8 1.8 3.5-3.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span id="choisir-mot">Choisir</span>
+        </button>
+        <button type="button" class="pastille" id="filtre">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M2 4h12M4.5 8h7M7 12h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          Filtre
+        </button>
+      </div>
+    </div>
+    <p class="apres" id="apres" hidden></p>
+    <div class="liste" id="liste"></div>
+  </div>
+
+  <div class="geste">
+    <button type="button" class="supprimer" id="supprimer" disabled>Supprimer</button>
+  </div>
+
+  <nav class="barre" aria-hidden="true">
+    <div class="onglets">
+      <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span>
+      <span>Paysage</span><span>Réglages</span>
+      <i class="filet-onglet"></i>
+    </div>
+  </nav>
+
+  <div class="voile" id="voile"></div>
+  <div class="feuille" id="feuille" role="dialog" aria-modal="true" aria-labelledby="f-titre">
+    <div class="poignee" aria-hidden="true"></div>
+    <p class="caps" style="color:var(--alerte)">Suppression définitive</p>
+    <h2 class="serif" id="f-titre"></h2>
+    <p class="noms" id="f-noms"></p>
+    <div id="f-loi" class="loi">
+      <div class="filet"></div>
+      <p class="caps" style="color:var(--or);margin-top:18px">Conservé par la loi</p>
+      <div id="f-loi-lignes"></div>
+      <div class="filet"></div>
+    </div>
+    <p class="prevention" id="f-prevention"></p>
+    <button type="button" class="sauve" id="f-sauve" aria-pressed="false">
+      <span class="case">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--surPlein)" stroke-width="3">
+          <path d="M4 12l6 6L20 6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span>J’ai sauvegardé ces documents ailleurs</span>
+    </button>
+    <button type="button" class="confirmer" id="f-confirmer"></button>
+    <button type="button" class="annuler" id="f-annuler">Annuler</button>
+  </div>
+</div>
+
+<div class="notes">
+  <h3>Le geste</h3>
+  <ul>
+    <li><b>« Choisir »</b> se pose à gauche de « Filtre », sur la même ligne. Rien d’autre ne bouge.</li>
+    <li>Touché : une case devant chaque client, et le bouton rouge en bas. Toucher une ligne la coche, elle n’ouvre plus la fiche.</li>
+    <li>« Choisir » devient <b>« Fini »</b> pour sortir sans rien supprimer.</li>
+  </ul>
+  <h3>La mention de sécurité</h3>
+  <ul>
+    <li><b>La même feuille qu’un client seul</b>, mot pour mot : « Suppression définitive », les factures gardées avec leur numéro, la phrase de prévention, et la case à cocher qui déverrouille.</li>
+    <li>La phrase et la case n’apparaissent <b>que si un des clients a des documents</b>. Essayez « deux clients sans document ».</li>
+    <li>Les noms cochés sont tous écrits dans la feuille : on relit qui part avant d’appuyer.</li>
+  </ul>
+  <h3>Ce que j’ai refusé, et pourquoi</h3>
+  <ul>
+    <li><b>« Tout cocher »</b> : un doigt pour vider votre liste entière. Il faut toucher chaque client.</li>
+    <li><b>L’appui long sur une ligne</b> pour entrer dans le choix : invisible, vous le chercheriez.</li>
+  </ul>
+  <h3>Bon à savoir</h3>
+  <ul>
+    <li>Si un client ne peut pas partir, les autres partent quand même, et l’écran nomme celui qui reste.</li>
+    <li>« Choisir » n’existe que pour le Patron et la Facturation, comme « Supprimer ce client » aujourd’hui.</li>
+    <li><b>Rien n’est codé</b> : dites oui, ou ce qui ne va pas.</li>
+  </ul>
+</div>
+
+<script>
+/* Les clients de `appli/clients-a-a-z.html`. `docs` : combien de documents il
+   porte ; `loi` : ce que la loi garde, déjà nommé (SupprimerCeClient). Un
+   client sans document n'a rien à perdre, la prévention se tait. */
+const DEPART = [
+  {id:"aubry",   b:"A", nom:"Mme Aubry",    dit:"Orvault, Facture 29 juil.",        du:null,       docs:3, loi:[{numero:"F2026-0007", pourquoi:"une facture émise se conserve dix ans."}]},
+  {id:"bernard", b:"B", nom:"Mr. Bernard",  dit:"Rezé",                             du:null,       docs:0, loi:[]},
+  {id:"chauvin", b:"C", nom:"Mme Chauvin",  dit:"Bouguenais, Devis 1 sept.",        du:null,       docs:2, loi:[]},
+  {id:"costa",   b:"C", nom:"Mme Costa",    dit:"Sainte-Luce-sur-Loire, Devis 6 août", du:null,    docs:1, loi:[]},
+  {id:"delaun",  b:"D", nom:"Mr. Delaunay", dit:"",                                 du:null,       docs:0, loi:[]},
+  {id:"faucher", b:"F", nom:"Mr. Faucher",  dit:"Carquefou, Facture 2 août",        du:"480,00 €", docs:4, loi:[{numero:"F2026-0011", pourquoi:"une facture émise se conserve dix ans."}]},
+  {id:"felicie", b:"F", nom:"Mme Félicie",  dit:"Vertou",                           du:null,       docs:0, loi:[]},
+  {id:"martins", b:"M", nom:"Mr. Martins",  dit:"10 rue d'Enfer, Nantes, Facture 28 août", du:"740,00 €", docs:5, loi:[{numero:"F2026-0009", pourquoi:"une facture émise se conserve dix ans."}]},
+  {id:"moreau",  b:"M", nom:"Mme Moreau",   dit:"Saint-Herblain, Devis 24 août",    du:null,       docs:1, loi:[]},
+  {id:"pichon",  b:"P", nom:"Mr. Pichon",   dit:"Couëron",                          du:null,       docs:0, loi:[]}
+];
+const CAS = { docs:["martins","aubry","bernard"], vides:["pichon","felicie"] };
+
+let clients = DEPART.slice();
+let choisir = false;
+let coches = new Set();
+let sauvegarde = false;
+
+const $ = (id) => document.getElementById(id);
+const $tel = $("tel"), $liste = $("liste");
+
+function esc(t){ return t.replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
+function pluriel(n, un, des){ return n === 1 ? `1 ${un}` : `${n} ${des}`; }
+
+function dessiner(){
+  $tel.classList.toggle("choisir", choisir);
+  $("choisir").setAttribute("aria-pressed", String(choisir));
+  $("choisir-mot").textContent = choisir ? "Fini" : "Choisir";
+  // Pendant le choix, le compte dit ce qui est coché : c'est la seule chose
+  // qu'on a besoin de lire en haut.
+  const $c = $("compte");
+  $c.textContent = choisir
+    ? (coches.size ? `${pluriel(coches.size, "choisi", "choisis")}` : "Touchez les clients")
+    : pluriel(clients.length, "client", "clients");
+  $c.classList.toggle("choix", choisir && coches.size > 0);
+
+  const n = coches.size;
+  const $s = $("supprimer");
+  $s.disabled = n === 0;
+  $s.textContent = n === 0 ? "Supprimer" : n === 1 ? "Supprimer 1 client" : `Supprimer ${n} clients`;
+
+  let html = "", bande = "";
+  clients.forEach((c, i) => {
+    if (c.b !== bande){ bande = c.b; html += `<p class="bande">${bande}</p>`; }
+    html += `<button type="button" class="ligne${i === clients.length - 1 ? " dernier" : ""}" data-id="${c.id}" aria-pressed="${coches.has(c.id)}">
+      <span class="case"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--surPlein)" stroke-width="3"><path d="M4 12l6 6L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="gauche"><span class="nom serif">${esc(c.nom)}</span>${c.dit ? `<span class="dit">${esc(c.dit)}</span>` : ""}</span>
+      ${c.du ? `<span class="droite"><span class="montant">${c.du}</span><span class="etiq">dus</span></span>` : ""}
+      <span class="chev" aria-hidden="true"></span>
+    </button>`;
+  });
+  $liste.innerHTML = html;
+}
+
+$liste.addEventListener("click", (e) => {
+  const l = e.target.closest(".ligne");
+  if (!l) return;
+  // Hors du choix, la ligne ouvrirait la fiche : la planche ne la simule pas.
+  if (!choisir) return;
+  const id = l.dataset.id;
+  coches.has(id) ? coches.delete(id) : coches.add(id);
+  dessiner();
+});
+
+$("choisir").addEventListener("click", () => {
+  choisir = !choisir;
+  if (!choisir) coches.clear();
+  $("apres").hidden = true;
+  dessiner();
+});
+
+/* ── La feuille ─────────────────────────────────────────────────────────── */
+function ouvrir(){
+  const vises = clients.filter((c) => coches.has(c.id));
+  const docs = vises.reduce((s, c) => s + c.docs, 0);
+  sauvegarde = false;
+
+  $("f-titre").textContent = pluriel(vises.length, "client", "clients");
+  $("f-noms").textContent = vises.map((c) => c.nom).join(", ") + ".";
+
+  // Ce que la loi garde, avec son numéro et à qui il appartient : sur trois
+  // clients, « n° F2026-0009 » seul ne dirait pas de qui c'est la facture.
+  const loi = vises.flatMap((c) => c.loi.map((p) => ({ ...p, nom: c.nom })));
+  $("f-loi").hidden = loi.length === 0;
+  const raisons = [...new Set(loi.map((p) => p.pourquoi))];
+  $("f-loi-lignes").innerHTML = raisons.map((r) => {
+    const nums = loi.filter((p) => p.pourquoi === r).map((p) => `n° ${p.numero} (${esc(p.nom)})`).join(", ");
+    return `<p>${nums} : ${r}</p>`;
+  }).join("");
+
+  $("f-prevention").textContent = docs > 0
+    ? "Leurs devis, leurs photos et leurs notes seront détruits. C’est définitif."
+    : (vises.length === 1 ? "Il n’a aucun document. C’est définitif." : "Aucun n’a de document. C’est définitif.");
+  $("f-sauve").hidden = docs === 0;
+  $("f-sauve").setAttribute("aria-pressed", "false");
+  $("f-confirmer").dataset.docs = String(docs);
+  majConfirmer();
+
+  $("voile").classList.add("vu");
+  $("feuille").classList.add("vu");
+}
+function majConfirmer(){
+  const docs = Number($("f-confirmer").dataset.docs);
+  const n = coches.size;
+  const b = $("f-confirmer");
+  b.disabled = docs > 0 && !sauvegarde;
+  b.textContent = n === 1 ? "Supprimer" : `Supprimer les ${n}`;
+}
+function fermer(){
+  $("voile").classList.remove("vu");
+  $("feuille").classList.remove("vu");
+}
+
+$("supprimer").addEventListener("click", ouvrir);
+$("f-annuler").addEventListener("click", fermer);
+$("voile").addEventListener("click", fermer);
+$("f-sauve").addEventListener("click", () => {
+  sauvegarde = !sauvegarde;
+  $("f-sauve").setAttribute("aria-pressed", String(sauvegarde));
+  majConfirmer();
+});
+$("f-confirmer").addEventListener("click", () => {
+  const n = coches.size;
+  clients = clients.filter((c) => !coches.has(c.id));
+  coches.clear();
+  choisir = false;
+  fermer();
+  $("apres").innerHTML = `<b>${pluriel(n, "client supprimé", "clients supprimés")}.</b>`;
+  $("apres").hidden = false;
+  dessiner();
+});
+
+/* ── Le banc ────────────────────────────────────────────────────────────── */
+for (const b of document.querySelectorAll("[data-cas]")){
+  b.addEventListener("click", () => {
+    for (const a of document.querySelectorAll("[data-cas]")) a.setAttribute("aria-pressed", String(a === b));
+    clients = DEPART.slice();
+    choisir = true;
+    coches = new Set(CAS[b.dataset.cas]);
+    $("apres").hidden = true;
+    dessiner();
+    ouvrir();
+  });
+}
+$("remettre").addEventListener("click", () => {
+  clients = DEPART.slice(); choisir = false; coches.clear(); fermer();
+  $("apres").hidden = true; dessiner();
+});
+$("nuit").addEventListener("click", () => {
+  const nuit = document.body.dataset.charte !== "nuit";
+  document.body.dataset.charte = nuit ? "nuit" : "origine";
+  $("nuit").setAttribute("aria-pressed", String(nuit));
+});
+
+dessiner();
+</script>
+</body>
+</html>
