@@ -172,9 +172,9 @@ const APLATS_DECLARES: { fichier: string; motif: RegExp; pourquoi: string }[] = 
     pourquoi: "la barre d'avancement de l'envoi",
   },
   {
-    fichier: "src/app/clients/[id]/SupprimerCeClient.tsx",
-    motif: /sauvegarde \? colors\.rust/,
-    pourquoi: "la coche de « j'ai sauvegardé ailleurs » — une marque, pas un aplat de bouton",
+    fichier: "src/components/atlas/FeuilleSuppressionClients.tsx",
+    motif: /cochee \? colors\.rust/,
+    pourquoi: "la coche ronde (sauvegardé ailleurs, un client, « Tout ») : une marque, pas un aplat de bouton",
   },
   {
     fichier: "src/app/paysage/fiche/[id]/FicheChantierClient.tsx",

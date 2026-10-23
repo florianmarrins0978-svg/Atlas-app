@@ -614,7 +614,29 @@ export const FICHES_PAYSAGE: FicheModeEmploi[] = [
     reserve:
       "C'est définitif : ses devis, photos et notes sont détruits. Les factures que la loi oblige à garder restent, sous « Conservé par la loi ».",
     source: "src/app/clients/[id]/SupprimerCeClient.tsx",
-    preuves: ["Supprimer ce client", "J’ai sauvegardé ces documents ailleurs", '"Supprimer"', "Conservé par la loi", "C’est définitif."],
+    preuves: ["Supprimer ce client", '"Supprimer"'],
+    // La feuille est partagée avec la liste depuis le 23 octobre 2026.
+    ailleurs: [
+      {
+        source: "src/components/atlas/FeuilleSuppressionClients.tsx",
+        preuves: ["J’ai sauvegardé ces documents ailleurs", "Conservé par la loi", "C’est définitif."],
+      },
+    ],
+  },
+  {
+    // **Le geste ne s'annonce pas à l'écran** (sa correction du 23 octobre
+    // 2026 : pas de bouton « Choisir »). C'est donc ici qu'il s'apprend.
+    id: "clients-supprimer-plusieurs",
+    ecran: "Vos clients",
+    ou: "« Chantiers », puis « Vos clients »",
+    intitule: "Supprimer plusieurs clients à la fois",
+    motsCles: ["plusieurs", "tous", "cocher", "selectionner", "supprimer", "effacer", "clients", "appui", "long", "appuye"],
+    geste:
+      "Dans « Vos clients », restez appuyé sur un client : il se coche. Touchez les autres, ou « Tout » en haut, puis le bouton rouge en bas.",
+    reserve:
+      "La même question qu'un client seul : s'ils ont des documents, cochez « J’ai sauvegardé ces documents ailleurs ». « Annuler » ressort sans rien supprimer.",
+    source: "src/app/clients/ListeClients.tsx",
+    preuves: ["DUREE_APPUI_LONG", "<CaseCochee cochee={toutCoche} />", "Supprimer ${n} clients", "Annuler"],
   },
   // --- Catalogue ------------------------------------------------------------
   {

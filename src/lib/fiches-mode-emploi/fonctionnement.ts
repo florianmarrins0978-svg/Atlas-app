@@ -42,7 +42,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     preuves: ["tant que le planificateur de purge n'est pas branché"],
     ailleurs: [
       { source: "src/server/retention.ts", preuves: ["facturesAns: 10"] },
-      { source: "src/app/clients/[id]/SupprimerCeClient.tsx", preuves: ["Conservé par la loi"] },
+      { source: "src/components/atlas/FeuilleSuppressionClients.tsx", preuves: ["Conservé par la loi"] },
       { source: "src/app/reglages/donnees/BoutonTelecharger.tsx", preuves: ["Télécharger mes données"] },
     ],
   },
@@ -383,7 +383,7 @@ export const FICHES_FONCTIONNEMENT: FicheModeEmploi[] = [
     preuves: ["document distinct, à faire rédiger]", "est transmis aux fournisseurs listés"],
     ailleurs: [
       { source: "src/app/reglages/donnees/BoutonTelecharger.tsx", preuves: ["Télécharger mes données"] },
-      { source: "src/app/clients/[id]/SupprimerCeClient.tsx", preuves: ["Conservé par la loi"] },
+      { source: "src/components/atlas/FeuilleSuppressionClients.tsx", preuves: ["Conservé par la loi"] },
     ],
   },
   {

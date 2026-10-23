@@ -272,6 +272,7 @@ export const QUESTIONS_PAR_ZONE: Record<string, [string, string][]> = {
     ["qu'est ce qu'on lui a fait la derniere fois", "clients-derniere-prestation"],
     ["partager une facture par whatsapp", "clients-document"],
     ["supprimer un client", "clients-supprimer"],
+    ["supprimer plusieurs clients d'un coup", "clients-supprimer-plusieurs"],
     ["apprendre un mot a atlas", "catalogue-mots"],
     ["ou est le catalogue", "catalogue-ouvrir"],
     ["ajouter un materiel au catalogue", "catalogue-nouvelle-entree"],

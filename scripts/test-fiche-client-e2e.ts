@@ -1023,8 +1023,9 @@ async function main() {
     await page.waitForTimeout(200);
     assert.strictEqual(await confirmer.isDisabled(), false, "« J'ai sauvegardé » ne déverrouille rien");
 
-    // On referme sans rien supprimer : ce client sert encore.
-    await page.getByRole("button", { name: "Annuler" }).first().click();
+    // On referme sans rien supprimer : ce client sert encore. L'« Annuler »
+    // de la FEUILLE, pas celui de la barre du choix qu'elle recouvre.
+    await page.locator(".atlas-feuille").getByRole("button", { name: "Annuler" }).click();
     await page.waitForTimeout(300);
     await page.locator('[data-atlas="sortir-du-choix"]').click();
     await page.waitForTimeout(200);
