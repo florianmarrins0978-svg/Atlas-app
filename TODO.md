@@ -1,6 +1,20 @@
 # Prochaines tâches
 
 
+## ⏳ UNE PLANCHE À REGARDER : SUPPRIMER PLUSIEURS CLIENTS (23 octobre 2026)
+
+Sa demande : cocher plusieurs clients et les supprimer d'un coup, avec la même
+mention de sécurité qu'un client seul. Planche
+`appli/supprimer-plusieurs-clients.html`, rien de codé.
+
+**À coder seulement après son oui :** « Choisir » à gauche de `BoutonFiltre`
+dans `ListeClients.tsx` (Patron et Facturation seulement, comme
+`exigerMontants`) ; la feuille reprend `SupprimerCeClient.tsx` mot pour mot,
+au pluriel, en une pièce partagée plutôt qu'une copie (`CLAUDE.md` §3) ; le
+serveur rejoue `effacerClient` client par client et nomme ceux qui restent.
+Refusés sur la planche, et dit : « Tout cocher » et l'appui long. Niveau 3
+(suppression de données, gravité).
+
 ## ⏳ UNE PLANCHE À REGARDER : LA TVA D'UNE VOITURE, A OU B (23 octobre 2026)
 
 `appli/tva-voiture-80.html`. À coder dans `TableauCalculette` (page TVA déductible) avec `tvaTicket`, déjà en base, dès qu'il a choisi.
@@ -16040,3 +16054,4 @@ et c'est déjà arrivé.
 
 - ~~**SÉCURITÉ : une requête en vol peut RESSUSCITER une session fermée**~~ **CORRIGÉ LE 23 OCTOBRE 2026** : la sortie révoque la session (`sessions_fermees`, `getCurrentCtx`), la suite joue la course à coup sûr et n'attend plus que la page se pose (`ARCHITECTURE.md` §488, `docs/session-revoquee.md`). Texte d'origine : (trouvé le 22 octobre 2026 par la batterie commune, `test-se-deconnecter-e2e`). Chaque réponse qui passe par la garde de session repose le cookie `authjs.session-token` (session prolongée à chaque requête). Si une réponse partie AVANT la déconnexion revient APRÈS, elle repose le cookie que la déconnexion venait d’effacer : préchargement des Réglages, sondage du bandeau du banc. Hors d’atteinte d’un doigt (il faut confirmer moins de 100 ms après l’ouverture de la feuille), mais réel. Racine à traiter dans un lot de niveau 3 (authentification) : une session révoquée côté serveur à la déconnexion, et non seulement un cookie effacé. La suite reproduit désormais sa séquence (attendre que la page se pose avant de confirmer) et exige la mort du cookie.
 - **SÉCURITÉ, reste du 23 octobre : huit lectures d’`auth()` ne passent pas par `getCurrentCtx`** (`GardeDocumentsLegaux`, `GardeVerificationEmail`, `src/server/repositories/charte-personne.ts`, `src/app/documents-legaux/page.tsx` et `src/app/documents-legaux/actions.ts`, `src/app/verifier-email/page.tsx` et `src/app/verifier-email/actions.ts`). Elles ne consultent ni la coupure de « me déconnecter partout » ni la fermeture de « se déconnecter ». Ce qu’un cookie révoqué y obtient : lire sa charte, accepter les documents légaux, saisir ou renvoyer le code de l’adresse. Rien qui touche aux données de l’entreprise (celles-ci passent toutes par `getCurrentCtx`), mais la règle « une session fermée n’ouvre rien » n’y tient pas. Racine : une seule fonction qui rend la session VALIDE (coupure et fermeture lues), que ces huit appels emploient à la place d’`auth()`. Niveau 3, lot à part.
+- **OUTILLAGE : `verifier-ce-qui-a-bouge.ts` ne sait pas rattraper un verdict de niveau 2** (trouvé le 23 octobre 2026). Après un `verifier:avant-fusion` rouge sur « Écrans atteints (/clients) », il répond « ne correspond à aucune étape connue » et renvoie à la batterie entière, alors que le lot est de niveau 2. Le rouge venait d'un `node_modules` lié par un lien symbolique (Turbopack refuse un lien qui sort du dossier) : rien du lot. Racine : faire connaître à l'outil les étapes nommées par écran du niveau 2.

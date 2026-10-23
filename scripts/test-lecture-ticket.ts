@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { lireReponseTicket } from "../src/server/ai/services/lire-ticket";
+import { consigneDeLecture, lireReponseTicket as lireAuJour } from "../src/server/ai/services/lire-ticket";
 
 // Ce que le modèle répond, et ce qu'on en tire.
 //
@@ -19,6 +19,11 @@ function cas(nom: string, f: () => void) {
 }
 
 console.log("=== Lire la réponse d'un ticket ===\n");
+
+// Le jour de la lecture est FIXÉ : un contrôle qui lirait l'horloge rougirait
+// tout seul dans deux ans, sur des tickets de 2026 devenus trop vieux.
+const AUJOURDHUI = "2026-10-26";
+const lireReponseTicket = (texte: string) => lireAuJour(texte, AUJOURDHUI);
 
 const BON = `{"fournisseur":"Station Total Pessac","date":"2026-08-12","total_ttc":96,"taux_tva":20,"tva":16}`;
 
@@ -135,6 +140,60 @@ cas("la nature lue se propose, une nature inventée ne coche rien", () => {
   assert.equal(invente.ok && invente.ticket.nature, null);
   const absent = lireReponseTicket(`{"fournisseur":"Total","tva":16}`);
   assert.equal(absent.ok && absent.ticket.nature, null);
+});
+
+// **Le 26 octobre 2026, un ticket du jour a été rangé en « Octobre 2023 ».**
+// Le modèle ne sait pas quel jour on est : devant « 26/10/26 » ou une date
+// sans année, il complète avec l'année de ses souvenirs. Deux défenses : la
+// consigne lui donne le jour, et la lecture refuse une date qui ne peut pas
+// être celle d'un ticket qu'on scanne pour sa TVA.
+cas("la consigne donne au modèle le jour de la lecture", () => {
+  const c = consigneDeLecture(AUJOURDHUI);
+  assert.ok(c.includes("2026-10-26"), c);
+  assert.ok(/deux chiffres/.test(c), "l'année sur deux chiffres doit être dite");
+});
+
+// **Sa correction du 23 octobre 2026 : « il y a une date sur le ticket,
+// utilise celle-ci ! »** Le modèle recopie la date telle qu'imprimée ; c'est
+// le code qui la lit, jamais le modèle qui la complète.
+cas("la date imprimée sur le ticket l'emporte sur celle que le modèle déduit", () => {
+  for (const [ecrite, attendue] of [
+    ["26/10/26", "2026-10-26"],
+    ["26/10/2026", "2026-10-26"],
+    ["26.10.26", "2026-10-26"],
+    ["26-10-2026 07:31", "2026-10-26"],
+    ["LE 05/09/26 A 18H02", "2026-09-05"],
+  ]) {
+    const r = lireReponseTicket(`{"fournisseur":"TotalEnergies","date_ecrite":"${ecrite}","date":"2023-10-26","total_ttc":50,"taux_tva":20,"tva":8.33}`);
+    assert.equal(r.ok && r.ticket.date, attendue, `« ${ecrite} »`);
+  }
+});
+
+cas("une date imprimée impossible ne se corrige pas en silence", () => {
+  const r = lireReponseTicket(`{"fournisseur":"X","date_ecrite":"31/02/26","date":"2026-02-28","total_ttc":50,"taux_tva":20,"tva":8.33}`);
+  assert.equal(r.ok && r.ticket.date, null);
+});
+
+cas("une date trop ancienne pour sa TVA est écartée, et le dit", () => {
+  const r = lireReponseTicket(`{"fournisseur":"TotalEnergies","date":"2023-10-26","total_ttc":50,"taux_tva":20,"tva":8.33}`);
+  assert.equal(r.ok, true);
+  if (!r.ok) return;
+  assert.equal(r.ticket.date, null, "2023 lu le 26 octobre 2026 : la TVA n'est plus récupérable, c'est une lecture fautive");
+  assert.ok(r.ticket.reserve && /date/.test(r.ticket.reserve), r.ticket.reserve ?? "aucune réserve");
+});
+
+cas("une date dans le futur est écartée", () => {
+  const r = lireReponseTicket(`{"fournisseur":"X","date":"2026-10-27","total_ttc":50,"taux_tva":20,"tva":8.33}`);
+  assert.equal(r.ok && r.ticket.date, null);
+});
+
+cas("le délai de récupération se tient jusqu'au 1er janvier d'il y a deux ans", () => {
+  const limite = lireReponseTicket(`{"fournisseur":"X","date":"2024-01-01","total_ttc":50,"taux_tva":20,"tva":8.33}`);
+  assert.equal(limite.ok && limite.ticket.date, "2024-01-01");
+  const avant = lireReponseTicket(`{"fournisseur":"X","date":"2023-12-31","total_ttc":50,"taux_tva":20,"tva":8.33}`);
+  assert.equal(avant.ok && avant.ticket.date, null);
+  const duJour = lireReponseTicket(`{"fournisseur":"X","date":"2026-10-26","total_ttc":50,"taux_tva":20,"tva":8.33}`);
+  assert.equal(duJour.ok && duJour.ticket.date, "2026-10-26");
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Lecture d'un ticket — ${echecs} échec(s).`);
