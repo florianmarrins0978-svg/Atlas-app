@@ -206,6 +206,45 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
 .natures{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .natures button{border:1px solid var(--trait);background:var(--fond);border-radius:999px;padding:9px 13px;font-size:13.5px;min-height:42px}
 
+/* ── Mois ou trimestre ── */
+.bascule{display:flex;margin:22px 24px 0;padding:3px;border-radius:999px;background:var(--papier)}
+.bascule button{flex:1;border:0;background:none;border-radius:999px;padding:10px;font:500 14px/1 var(--sans);min-height:40px;color:var(--encre-douce)}
+.bascule button[aria-pressed="true"]{background:var(--carte);color:var(--encre);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.mois .dates{display:block;font-size:12px;color:var(--gris);margin-top:2px}
+
+/* ── Une ligne qui porte une photo se touche ── */
+.ligne.touche{cursor:pointer}
+.ligne.touche:active{background:var(--filet)}
+.ligne .voir{color:var(--pin);font-weight:500}
+
+/* ── La photo du ticket ── */
+.tel{position:relative}
+.visionneuse{position:absolute;inset:0;z-index:5;background:var(--fond);display:flex;flex-direction:column;padding:18px 22px 24px;overflow:auto}
+.visionneuse .fermer{align-self:flex-start;border:0;background:none;font-size:15px;color:var(--encre-douce);padding:4px 0;min-height:44px}
+.visionneuse .info{margin:6px 0 0;font:400 18px/1.3 var(--serif)}
+.visionneuse .info small{display:block;font:400 13px/1.4 var(--sans);color:var(--gris);margin-top:2px}
+.papier-ticket{margin:16px auto 0;width:250px;background:#fdfcf8;color:#2a2a26;padding:20px 18px 26px;
+  font:12.5px/1.55 ui-monospace,"SF Mono",Menlo,Consolas,monospace;box-shadow:0 10px 30px rgba(0,0,0,.22);transform:rotate(-1.2deg);
+  -webkit-mask:linear-gradient(#000 0 0) top/100% calc(100% - 8px) no-repeat,radial-gradient(circle at 6px 100%,transparent 5px,#000 5.5px) bottom/12px 8px repeat-x;
+          mask:linear-gradient(#000 0 0) top/100% calc(100% - 8px) no-repeat,radial-gradient(circle at 6px 100%,transparent 5px,#000 5.5px) bottom/12px 8px repeat-x}
+.papier-ticket .c{text-align:center}
+.papier-ticket .g{font-weight:700;font-size:14px}
+.papier-ticket hr{border:0;border-top:1px dashed #aaa69a;margin:9px 0}
+.papier-ticket .r{display:flex;justify-content:space-between;gap:8px}
+.papier-ticket .t{font-weight:700;font-size:14px}
+.visionneuse .qui-relie{margin:20px 0 0;font-size:13px;color:var(--gris);text-align:center}
+.visionneuse .gestes{justify-content:center}
+
+/* ── Ce que le Check up a relié seul ── */
+.bilan .voir-relies{border:0;background:none;padding:8px 0 0;font:500 14px/1 var(--sans);color:var(--pin);min-height:36px}
+.relies{list-style:none;margin:10px 0 0;padding:0}
+.relies li{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--filet);font-size:14px}
+.relies li .q{flex:1;min-width:0}
+.relies li .q small{display:block;font-size:12px;color:var(--gris)}
+.relies li .m{font:400 15px/1 var(--serif);font-variant-numeric:tabular-nums;white-space:nowrap}
+.relies .leger{padding:8px 4px;font-size:13px;color:var(--alerte)}
+.relies .annule{font-size:12.5px;color:var(--alerte)}
+
 /* ── La feuille à la main ── */
 .depot{margin:20px 24px 0;padding:18px;border-radius:18px;border:1.5px dashed var(--trait);text-align:center}
 .depot p{margin:0 0 12px;font-size:14px;color:var(--encre-douce)}
@@ -279,7 +318,7 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
   <!-- 2. L'année -->
   <section class="planche">
     <h2 class="nom">2. L'année, mois par mois</h2>
-    <p class="idee">Chaque mois montre ses couleurs : la barre dit où est parti l'argent, la phrase dit ce qui manque. Le Check up est le seul bouton plein.</p>
+    <p class="idee">Par mois ou par trimestre, d’un appui. La barre dit où est parti l’argent, la phrase dit ce qui manque.</p>
     <div class="tel">
       <button class="retour" type="button">Terminés</button>
       <header class="entete" style="padding-top:8px"><h1>Pour mon comptable</h1><span class="caps sous">Année 2026</span></header>
@@ -300,7 +339,35 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
         <span><i class="pastille" style="background:var(--c-autre)"></i>Autre</span>
       </div>
 
-      <ul class="mois">
+      <div class="bascule" role="group" aria-label="Découpage">
+        <button type="button" aria-pressed="true" data-vue="mois">Mois</button>
+        <button type="button" aria-pressed="false" data-vue="trim">Trimestre</button>
+      </div>
+
+      <ul class="mois" data-liste="trim" hidden>
+        <li><button type="button">
+          <span class="haut"><span class="nom-m">4ᵉ trimestre</span><span class="etat manque" data-reste-trim>3 sans ticket</span></span>
+          <span class="dates">Octobre à décembre, en cours</span>
+          <span class="barre"><i style="width:24%;background:var(--c-carburant)"></i><i style="width:9%;background:var(--c-repas)"></i><i style="width:31%;background:var(--c-materiel)"></i><i style="width:36%;background:var(--c-virement)"></i></span>
+        </button></li>
+        <li><button type="button">
+          <span class="haut"><span class="nom-m">3ᵉ trimestre</span><span class="etat">Tout est justifié, 1 ticket perdu</span></span>
+          <span class="dates">Juillet à septembre</span>
+          <span class="barre"><i style="width:35%;background:var(--c-carburant)"></i><i style="width:12%;background:var(--c-repas)"></i><i style="width:17%;background:var(--c-materiel)"></i><i style="width:2%;background:var(--c-hotel)"></i><i style="width:3%;background:var(--c-transport)"></i><i style="width:31%;background:var(--c-virement)"></i></span>
+        </button></li>
+        <li><button type="button">
+          <span class="haut"><span class="nom-m">2ᵉ trimestre</span><span class="etat">Tout est justifié</span></span>
+          <span class="dates">Avril à juin</span>
+          <span class="barre"><i style="width:28%;background:var(--c-carburant)"></i><i style="width:10%;background:var(--c-repas)"></i><i style="width:30%;background:var(--c-materiel)"></i><i style="width:32%;background:var(--c-virement)"></i></span>
+        </button></li>
+        <li><button type="button">
+          <span class="haut"><span class="nom-m">1ᵉʳ trimestre</span><span class="etat">Tout est justifié, 2 tickets perdus</span></span>
+          <span class="dates">Janvier à mars</span>
+          <span class="barre"><i style="width:33%;background:var(--c-carburant)"></i><i style="width:8%;background:var(--c-repas)"></i><i style="width:21%;background:var(--c-materiel)"></i><i style="width:4%;background:var(--c-hotel)"></i><i style="width:34%;background:var(--c-virement)"></i></span>
+        </button></li>
+      </ul>
+
+      <ul class="mois" data-liste="mois">
         <li><button type="button" data-aller="mois">
           <span class="haut"><span class="nom-m">Octobre</span><span class="etat manque" data-reste-mois>3 sans ticket</span></span>
           <span class="barre"><i style="width:24%;background:var(--c-carburant)"></i><i style="width:9%;background:var(--c-repas)"></i><i style="width:31%;background:var(--c-materiel)"></i><i style="width:36%;background:var(--c-virement)"></i></span>
@@ -326,7 +393,7 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
   <!-- 3. Le mois -->
   <section class="planche">
     <h2 class="nom">3. Le relevé d'octobre</h2>
-    <p class="idee">Chaque ligne de la banque, sa couleur à gauche, sa preuve dessous. Les virements reçus montrent leur facture Atlas. Touchez une couleur pour ne voir qu'elle.</p>
+    <p class="idee">Chaque ligne de la banque, sa couleur à gauche, sa preuve dessous. Les virements reçus montrent leur facture Atlas. Touchez une ligne avec ticket pour voir sa photo, ou une couleur pour ne voir qu’elle.</p>
     <div class="tel">
       <button class="retour" type="button">Année 2026</button>
       <header class="entete" style="padding-top:8px"><h1>Octobre</h1></header>
@@ -344,20 +411,23 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
         <button type="button" aria-pressed="false" data-filtre="virement"><i class="pastille" style="background:var(--c-virement)"></i>Virement</button>
       </div>
       <div data-releve></div>
+      <div class="visionneuse" data-visionneuse hidden></div>
     </div>
   </section>
 
   <!-- 4. Check up -->
   <section class="planche">
     <h2 class="nom">4. Le Check up</h2>
-    <p class="idee">Il passe chaque nouvelle ligne. Un seul ticket tombe juste : il le relie seul. Deux : il demande. Aucun : il prévient, et vous choisissez.</p>
+    <p class="idee">Il passe chaque nouvelle ligne. Un seul ticket tombe juste : il le relie seul, et vous pouvez l’annuler. Deux : il demande. Aucun : il prévient.</p>
     <div class="tel">
       <button class="retour" type="button">Année 2026</button>
       <header class="entete" style="padding-top:8px"><h1>Check up</h1><span class="caps sous">Depuis le 16 octobre</span></header>
       <div class="bilan">
         <p class="caps">11 nouvelles lignes</p>
-        <p>8 ont trouvé leur ticket.</p>
+        <p data-bilan-trouves>8 ont trouvé leur ticket.</p>
         <p class="manque" data-bilan-reste>3 attendent votre réponse.</p>
+        <button class="voir-relies" type="button" data-voir-relies>Voir ce qu'Atlas a relié</button>
+        <ul class="relies" data-relies hidden></ul>
       </div>
       <div class="cartes" data-cartes></div>
     </div>
@@ -406,22 +476,36 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
 </div>
 
 <script>
+// tk : ce que porte la photo du ticket. auto : relié seul par le Check up,
+// donc détachable d'un appui s'il s'est trompé.
 const LIGNES = [
   { j:"24 octobre", lib:"VIR SEPA PEPINIERES DURAND", cat:"virement", m:-1740.00, preuve:"manque-virement", id:"durand" },
   { j:"21 octobre", lib:"VIR LALA FACTURE F2026-28", cat:"recu", m:+1200.00, preuve:"facture", texte:"Facture F2026-000028, Lala" },
-  { j:"18 octobre", lib:"CB INTERMARCHE LA CIOTAT", cat:"repas", m:-23.80, preuve:"choix", id:"inter" },
-  { j:"16 octobre", lib:"CB KILOUTOU MARSEILLE", cat:"materiel", m:-1194.00, preuve:"ticket", texte:"Ticket du 15 octobre, relié par Atlas" },
-  { j:"14 octobre", lib:"CB TOTALENERGIES ST JEAN", cat:"carburant", m:-62.40, preuve:"manque", id:"total" },
-  { j:"14 octobre", lib:"CB TOTALENERGIES ST JEAN", cat:"carburant", m:-81.15, preuve:"ticket", texte:"Ticket du 13 octobre" },
-  { j:"12 octobre", lib:"CB POINT P AUBAGNE", cat:"materiel", m:-318.90, preuve:"ticket", texte:"Ticket du 12 octobre" },
-  { j:"9 octobre", lib:"CB LE RELAIS DES PINS", cat:"repas", m:-24.50, preuve:"ticket", texte:"Ticket du 9 octobre, repas d’affaires" },
+  { j:"18 octobre", lib:"CB INTERMARCHE LA CIOTAT", cat:"repas", m:-23.80, preuve:"choix", id:"inter",
+    tk:{ nom:"INTERMARCHE", adr:"La Ciotat", date:"17/10/2026 12:41", l:[["Sandwichs x2","13,80"],["Boissons x2","4,20"],["Fruits","5,80"]], tva:"2,16", total:"23,80" } },
+  { j:"16 octobre", lib:"CB KILOUTOU MARSEILLE", cat:"materiel", m:-1194.00, preuve:"ticket", texte:"Ticket du 15 octobre", id:"kilou", auto:true,
+    tk:{ nom:"KILOUTOU", adr:"Marseille 11e", date:"15/10/2026 07:58", l:[["Mini-pelle 2,5 t, 3 j","945,00"],["Transport A/R","50,00"]], tva:"199,00", total:"1 194,00" } },
+  { j:"14 octobre", lib:"CB TOTALENERGIES ST JEAN", cat:"carburant", m:-62.40, preuve:"manque", id:"total",
+    tk:{ nom:"TOTALENERGIES", adr:"Relais Saint Jean", date:"23/10/2026 16:20", l:[["Gazole 34,48 L","62,40"]], tva:"10,40", total:"62,40" } },
+  { j:"14 octobre", lib:"CB TOTALENERGIES ST JEAN", cat:"carburant", m:-81.15, preuve:"ticket", texte:"Ticket du 13 octobre", id:"total2", auto:true,
+    tk:{ nom:"TOTALENERGIES", adr:"Relais Saint Jean", date:"13/10/2026 18:05", l:[["Gazole 44,83 L","81,15"]], tva:"13,53", total:"81,15" } },
+  { j:"12 octobre", lib:"CB POINT P AUBAGNE", cat:"materiel", m:-318.90, preuve:"ticket", texte:"Ticket du 12 octobre", id:"pointp", auto:true,
+    tk:{ nom:"POINT P", adr:"Aubagne", date:"12/10/2026 08:12", l:[["Bordures béton x12","187,20"],["Sable 0/4, 1 t","78,95"]], tva:"52,75", total:"318,90" } },
+  { j:"9 octobre", lib:"CB LE RELAIS DES PINS", cat:"repas", m:-24.50, preuve:"ticket", texte:"Ticket du 9 octobre, repas d’affaires", id:"relais",
+    tk:{ nom:"LE RELAIS DES PINS", adr:"Gémenos", date:"09/10/2026 13:30", l:[["Menu du jour","18,50"],["Café","2,50"],["Eau","3,50"]], tva:"2,23", total:"24,50" } },
   { j:"6 octobre", lib:"VIR MARTINS ACOMPTE", cat:"recu", m:+4920.00, preuve:"facture", texte:"Acompte, facture F2026-000025, Martins" },
 ];
+const detaches = new Set();
+let vu = null;
 const NOMS = { carburant:"Carburant", repas:"Repas", materiel:"Matériel", hotel:"Hôtel", transport:"Train, taxi", virement:"Virement envoyé", recu:"Virement reçu", autre:"Autre" };
 const etat = { total:"ouvert", inter:"ouvert", durand:"ouvert", filtre:"tout" };
 const eur = v => (v<0?"−":"+") + Math.abs(v).toLocaleString("fr-FR",{minimumFractionDigits:2}).replace(/ | /g," ") + " €";
 
+const aUnePhoto = l => l.tk && !detaches.has(l.id) && (l.preuve === "ticket" || ["ticket","inter"].includes(etat[l.id]));
+
 function preuveDe(l){
+  if (detaches.has(l.id)) return `<div class="preuve manque">Sans ticket, détaché le 23 octobre</div>`;
+  if (l.preuve === "ticket") return `<div class="preuve"><span class="vignette"></span>${l.texte}${l.auto?", relié par Atlas":""}</div>`;
   const s = l.id ? etat[l.id] : null;
   if (s === "perdu") return `<div class="preuve perdu">Ticket perdu, validé le 23 octobre</div>`;
   if (s === "ticket") return `<div class="preuve"><span class="vignette"></span>Ticket ajouté le 23 octobre</div>`;
@@ -432,7 +516,31 @@ function preuveDe(l){
   if (l.preuve === "choix") return `<div class="preuve manque">Deux tickets possibles</div>`;
   return `<div class="preuve">${l.preuve==="ticket"?'<span class="vignette"></span>':""}${l.texte}</div>`;
 }
-const enAttente = l => l.id && etat[l.id] === "ouvert";
+const enAttente = l => l.id && (etat[l.id] === "ouvert" || detaches.has(l.id));
+
+function ticketEnPapier(t){
+  return `<div class="papier-ticket"><div class="c g">${t.nom}</div><div class="c">${t.adr}</div><div class="c">${t.date}</div><hr>`
+    + t.l.map(([a,b]) => `<div class="r"><span>${a}</span><span>${b}</span></div>`).join("")
+    + `<hr><div class="r t"><span>TOTAL TTC</span><span>${t.total} €</span></div><div class="r"><span>dont TVA 20 %</span><span>${t.tva}</span></div><hr><div class="c">CARTE BANCAIRE</div><div class="c">MERCI DE VOTRE VISITE</div></div>`;
+}
+
+function rendreVisionneuse(){
+  const v = document.querySelector("[data-visionneuse]");
+  const l = LIGNES.find(x => x.id === vu);
+  if (!l || !aUnePhoto(l)){ v.hidden = true; return; }
+  v.hidden = false;
+  v.innerHTML = `<button class="fermer" type="button" data-fermer>Fermer</button>
+    <p class="info">${l.lib}<small>${l.j}, ${eur(l.m)}</small></p>
+    ${ticketEnPapier(l.tk)}
+    <p class="qui-relie">${l.auto ? "Relié par Atlas au Check up du 23 octobre." : "Relié par vous."}</p>
+    <div class="gestes"><button class="contour" type="button" data-detacher="${l.id}">Ce n’est pas le bon ticket</button></div>`;
+}
+
+function rendreRelies(){
+  document.querySelector("[data-relies]").innerHTML = LIGNES.filter(l => l.auto).map(l => detaches.has(l.id)
+    ? `<li><span class="q">${l.tk.nom}<small class="annule">Détaché, la ligne attend son ticket</small></span><button class="leger" type="button" data-rattacher="${l.id}" style="color:var(--encre-douce)">Défaire</button></li>`
+    : `<li><span class="vignette"></span><span class="q">${l.tk.nom}<small>${l.texte}, ${l.j} à la banque</small></span><span class="m">${eur(l.m).replace("−","")}</span><button class="leger" type="button" data-detacher="${l.id}">Annuler</button></li>`).join("");
+}
 
 function rendreReleve(){
   const f = etat.filtre;
@@ -440,7 +548,7 @@ function rendreReleve(){
   let html = "", jour = "";
   vis.forEach(l => {
     if (l.j !== jour){ if (jour) html += "</ul>"; html += `<p class="jour">${l.j}</p><ul class="lignes">`; jour = l.j; }
-    html += `<li class="ligne"><span class="trait" style="background:var(--c-${l.cat})"></span><span class="milieu"><div class="lib">${l.lib}</div><div class="cat" style="color:var(--c-${l.cat})">${NOMS[l.cat]}</div>${preuveDe(l)}</span><span class="m${l.m>0?" plus":""}">${eur(l.m)}</span></li>`;
+    html += `<li class="ligne${aUnePhoto(l)?" touche":""}"${aUnePhoto(l)?` data-voir="${l.id}" role="button" tabindex="0"`:""}><span class="trait" style="background:var(--c-${l.cat})"></span><span class="milieu"><div class="lib">${l.lib}</div><div class="cat" style="color:var(--c-${l.cat})">${NOMS[l.cat]}</div>${preuveDe(l)}</span><span class="m${l.m>0?" plus":""}">${eur(l.m)}</span></li>`;
   });
   if (jour) html += "</ul>";
   if (!vis.length) html = `<p style="margin:26px 24px;color:var(--pin);font-size:15px">Rien ne manque.</p>`;
@@ -472,13 +580,15 @@ function carte(id){
 
 function rendreCartes(){
   document.querySelector("[data-cartes]").innerHTML = ["total","inter","durand"].map(id => `<article class="carte">${carte(id)}</article>`).join("");
-  const reste = ["total","inter","durand"].filter(id => ["ouvert","demande"].includes(etat[id])).length;
+  const reste = ["total","inter","durand"].filter(id => ["ouvert","demande"].includes(etat[id])).length + detaches.size;
+  document.querySelector("[data-bilan-trouves]").textContent = `${8 - detaches.size} ont trouvé leur ticket.`;
+  rendreRelies(); rendreVisionneuse();
   const b = document.querySelector("[data-bilan-reste]");
   b.textContent = reste ? `${reste} ${reste>1?"attendent":"attend"} votre réponse.` : "Tout est justifié.";
   b.className = reste ? "manque" : "";
   b.style.color = reste ? "" : "var(--pin)";
   const txt = reste ? `${reste} sans ticket` : "Tout est justifié";
-  document.querySelectorAll("[data-reste-carte],[data-reste-mois]").forEach(e => { e.textContent = txt; e.classList.toggle("ok", !reste); e.classList.toggle("manque", !!reste && e.hasAttribute("data-reste-mois")); });
+  document.querySelectorAll("[data-reste-carte],[data-reste-mois],[data-reste-trim]").forEach(e => { e.textContent = txt; e.classList.toggle("ok", !reste); e.classList.toggle("manque", !!reste && !e.hasAttribute("data-reste-carte")); });
   document.querySelector("[data-reste-chiffre]").textContent = reste;
   rendreReleve();
 }
@@ -486,6 +596,17 @@ function rendreCartes(){
 document.addEventListener("click", e => {
   const g = e.target.closest("[data-g]");
   if (g){ const [id, s] = g.dataset.g.split(":"); etat[id] = s; rendreCartes(); return; }
+  const vo = e.target.closest("[data-voir]");
+  if (vo){ vu = vo.dataset.voir; rendreVisionneuse(); vo.closest(".tel").scrollIntoView({ behavior:"smooth", block:"start" }); return; }
+  if (e.target.closest("[data-fermer]")){ vu = null; rendreVisionneuse(); return; }
+  const de = e.target.closest("[data-detacher]");
+  if (de){ detaches.add(de.dataset.detacher); vu = null; rendreCartes(); return; }
+  const ra = e.target.closest("[data-rattacher]");
+  if (ra){ detaches.delete(ra.dataset.rattacher); rendreCartes(); return; }
+  const vr = e.target.closest("[data-voir-relies]");
+  if (vr){ const ul = document.querySelector("[data-relies]"); ul.hidden = !ul.hidden; vr.textContent = ul.hidden ? "Voir ce qu’Atlas a relié" : "Masquer"; return; }
+  const vue = e.target.closest("[data-vue]");
+  if (vue){ document.querySelectorAll("[data-vue]").forEach(x => x.setAttribute("aria-pressed", x===vue)); document.querySelectorAll("[data-liste]").forEach(x => x.hidden = x.dataset.liste !== vue.dataset.vue); return; }
   const f = e.target.closest("[data-filtre]");
   if (f){ etat.filtre = f.dataset.filtre; document.querySelectorAll("[data-filtre]").forEach(x => x.setAttribute("aria-pressed", x===f)); rendreReleve(); return; }
   const c = e.target.closest("[data-charte]");
