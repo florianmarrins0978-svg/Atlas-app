@@ -1,6 +1,7 @@
 "use server";
 
-import { signIn, signOut } from "@/auth";
+import { auth, signIn, signOut } from "@/auth";
+import { fermerLaSession } from "@/server/repositories/compte";
 import { accueilPourCleAppareil, accueilPourEmail } from "@/server/accueil-apres-connexion";
 import { AuthError, type CredentialsSignin } from "next-auth";
 import { redirect } from "next/navigation";
@@ -392,6 +393,36 @@ function identifiantDeLaCle(reponse: string): string {
  * lui envoie, et un chemin libre en ferait une redirection ouverte.
  */
 export async function deconnexionAction(vers: "connexion" | "entree" = "connexion") {
+  /**
+   * **LA SESSION EST FERMÉE AVANT QUE SON COOKIE PARTE — 23 octobre 2026.**
+   *
+   * Effacer le cookie ne fermait rien : une réponse partie avant la sortie et
+   * revenue après le reposait, et la session revivait (`fermerLaSession`).
+   *
+   * **Dans cet ordre, et l'ordre se défend.** Si l'écriture échoue, la levée
+   * arrête tout : le cookie reste, l'écran aussi, et la sortie se refait. Dans
+   * l'autre sens, l'artisan se croirait sorti d'une session qu'un cookie revenu
+   * rouvrirait.
+   *
+   * **`auth()` et non `getCurrentCtx`** : on sort aussi de la création de
+   * compte ou de la double vérification, où il n'y a pas encore d'entreprise.
+   */
+  const session = await auth();
+  const utilisateurId = session?.user?.id;
+  const sessionId = session?.user?.sessionId;
+  if (utilisateurId && sessionId) {
+    try {
+      await fermerLaSession(utilisateurId, sessionId);
+    } catch (erreur) {
+      // Le message d'une levée n'atteint jamais l'écran (`AGENTS.md`) : le
+      // journal est le seul endroit où la panne se lira.
+      logger.error("[connexion] session impossible à fermer", {
+        utilisateurId,
+        erreur: erreur instanceof Error ? erreur.message : String(erreur),
+      });
+      throw erreur;
+    }
+  }
   await signOut({ redirect: false });
   // Deux `redirect` écrits en toutes lettres, pas un chemin calculé :
   // `test-sortie-sans-hote` lit cette fonction et exige un chemin RELATIF

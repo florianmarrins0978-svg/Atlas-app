@@ -9,6 +9,10 @@
 
 Codé : appui long sur une ligne de `ListeClients.tsx`, « Tout », barre rouge au-dessus des onglets, feuille partagée `src/components/atlas/FeuilleSuppressionClients.tsx` (aussi montée par `SupprimerCeClient`), aperçu `src/app/clients/actions.ts`. Contrôle : `test-fiche-client-e2e.ts`, deux cas.
 
+## SE DÉCONNECTER RÉVOQUE LA SESSION (23 octobre 2026)
+
+Codé, branche `claude/session-revocation-security-b8ulo7`. Migration `drizzle/0138_sessions_fermees.sql` (table neuve, expand seul). `deconnexionAction` ferme la session (`fermerLaSession`, `src/server/repositories/compte.ts`) avant d'effacer le cookie ; `getCurrentCtx` refuse une session fermée. Suites : `test-se-deconnecter-e2e` (cas 6), `test-compte-db`. Détail : `docs/session-revoquee.md`.
+
 ## MA BANQUE, L'ESSAI (22 octobre 2026)
 
 Codé : `/reglages/banque` (patron seul, hors du sommaire), retour `/api/banque/retour`, client Enable Banking `src/server/banque/enable-banking.ts`, règle pure `src/lib/rapprochement-bancaire.ts`. Lecture seule. À jouer sur son espace avec sa clé : `docs/banque-essai.md`. Le reste de la planche `appli/banque-qui-previent.html` n'est pas codé.

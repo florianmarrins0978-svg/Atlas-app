@@ -9,6 +9,19 @@ Format : le plus récent en tête.
 ## 2026-10-23
 
 - **Supprimer plusieurs clients à la fois, codé** (sa demande du 23 octobre, planche `appli/supprimer-plusieurs-clients.html`). Rester appuyé sur un client de la liste ouvre le choix (pas de bouton « Choisir », sa correction) ; « Tout », avec le même rond que les clients, coche et décoche ce qui est à l'écran ; le bouton rouge ouvre **la même feuille de sécurité qu'un client seul**, désormais partagée (`FeuilleSuppressionClients.tsx`) : factures gardées par la loi avec leur numéro et leur client, prévention, case « J'ai sauvegardé ces documents ailleurs ». La suppression rejoue `supprimerClientAction` client par client : un refus pour l'un n'arrête pas les autres et se nomme. Évite deux copies de la prévention qui divergeraient. Sur la fiche d'un client, la ligne des pièces gardées passe de « … — raison » à « … : raison » (sa règle des tirets). Appui long non éprouvé sur un vrai téléphone, seulement au navigateur (`test-fiche-client-e2e.ts`).
+- **Se déconnecter RÉVOQUE la session, la course du 22 octobre est fermée.**
+  Une réponse partie avant la sortie et revenue après (un préchargement des
+  Réglages) reposait le cookie que la sortie venait d'effacer : la session
+  revivait, et un cookie relevé avant la sortie restait valable après. La
+  sortie pose désormais l'identité de la session dans `sessions_fermees`
+  (`drizzle/0138_sessions_fermees.sql`, expand seul) et `getCurrentCtx` refuse
+  ce jeton comme une session coupée : effacement du cookie, retour à la
+  connexion. Les autres appareils du compte restent ouverts, Face ID reste
+  posé. `atlas_app` ne peut ni effacer ni modifier une ligne : la migration
+  retire les droits que les privilèges par défaut lui donnaient
+  (`test-compte-db` l'a vu). `test-se-deconnecter-e2e` joue la course à coup
+  sûr (réponse tenue en vol, cookie rejoué) et n'attend plus que la page se
+  pose. `ARCHITECTURE.md` §488, `docs/session-revoquee.md`.
 - **Un ticket du jour n'est plus rangé en 2023.** Sa capture : un ticket TotalEnergies scanné le jour même, « il ira dans Octobre 2023 ». Le modèle ne savait pas quel jour on est, et complétait une année sur deux chiffres ou absente avec celle de ses souvenirs. **Sa correction : « il y a une date sur le ticket, utilise celle-ci ! »** Le modèle recopie désormais la date telle qu'imprimée (`date_ecrite`, « 26/10/26 ») et c'est le code qui la lit (`dateImprimee`) ; une date impossible (31/02) reste vide au lieu d'être corrigée. La consigne lui donne aussi le jour, et la lecture écarte une date future ou antérieure au 1er janvier d'il y a deux ans (CGI, annexe II, art. 208 : la TVA ne se récupère plus), avec la réserve « la date lue ne tenait pas debout ». `lire-ticket.ts`, `test-lecture-ticket.ts` vu rouge avant. **Non vérifié avec le vrai modèle** : pas de clé ici.
 - **Planche « La TVA d'une voiture, dite au comptable »** (`appli/tva-voiture-80.html`) : la ligne d'un carburant de voiture dit « 80 % de 8,33 € », sous le nom (A) ou sous la TVA (B). Sa remarque : le comptable lit 8,33 € sur le ticket et 6,66 € au relevé, sans explication. Rien dans `src/`.
 - **Les zones lues sur la photo se glissent au doigt, et la feuille d'une zone a sa poignée** (« Dessiner le plan », sa capture du jour). Le dessin devinait la sorte d'un objet tenu d'après la première lettre de son identifiant : les zones lues, nommées `lu1`, passaient pour des dalles et ne bougeaient pas ; il la cherche désormais dans ses listes. La poignée en haut de la feuille la referme sans valider, touchée ou tirée : le fond valide, et sur une zone sans cotes il refusait, la feuille restait coincée. Évite aussi qu'un appui long sur le nom d'une zone sélectionne le texte sous Safari. Tenu par `scripts/test-dessin-glisser-zone-lue.ts`, qui monte le composant avec un plan lu (la suite navigateur ne peut pas lire une photo ici).
