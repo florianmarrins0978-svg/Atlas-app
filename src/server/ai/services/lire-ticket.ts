@@ -1,6 +1,7 @@
 import { getFournisseurLLM } from "../providers/llm/fabrique";
 import { METIER_ATLAS_COURT } from "../../../lib/metier-atlas";
 import { estNatureAchat, tvaDepuisTtc, type NatureAchat } from "@/lib/achat-tva";
+import { jourIso } from "@/lib/jour";
 
 /**
  * Lire un ticket de caisse photographié.
@@ -50,7 +51,8 @@ const SYSTEME = `${METIER_ATLAS_COURT}
 
 Tu lis ses tickets de caisse et ses factures d'achat.
 Tu réponds UNIQUEMENT par un objet JSON, sans phrase avant ni après, sans balises de code.
-Champs attendus : fournisseur (string|null), date (string|null au format AAAA-MM-JJ),
+Champs attendus : fournisseur (string|null), date_ecrite (string|null : la date recopiée EXACTEMENT comme elle est imprimée, par exemple "26/10/26"),
+date (string|null au format AAAA-MM-JJ),
 total_ttc (number|null), taux_tva (number|null, en pour-cent), tva (number|null),
 nature (string|null) : "carburant", "materiel", "repas", "hotel", "transport" (train, taxi, avion) ou "autre".
 Règles :
@@ -58,7 +60,47 @@ Règles :
 - « tva » est le montant de TVA écrit sur le ticket. S'il n'y figure pas, rends null : ne le calcule pas.
 - Les montants sont en euros, en nombre décimal à point (12.34), sans symbole.`;
 
-const CONSIGNE = "Lis ce ticket et rends l'objet JSON demandé.";
+/**
+ * **Le jour de la lecture est dit au modèle.** Le 26 octobre 2026, un ticket
+ * du jour a été rangé en « Octobre 2023 » : le modèle ne sait pas quel jour on
+ * est, et devant une année sur deux chiffres ou absente, il complétait avec
+ * celle de ses souvenirs.
+ */
+export function consigneDeLecture(aujourdHui: string): string {
+  return `Nous sommes le ${aujourdHui}. Une année écrite sur deux chiffres (26) se lit 2026. Un ticket sans année est de l'année en cours, ou de la précédente si son jour et son mois tombent après aujourd'hui. Lis ce ticket et rends l'objet JSON demandé.`;
+}
+
+/**
+ * La date IMPRIMÉE, lue par le code et non par le modèle.
+ *
+ * *Sa correction du 23 octobre 2026 : « il y a une date sur le ticket, utilise
+ * celle-ci ! »*. Le modèle recopie ce qu'il voit ; c'est ici qu'on la lit, au
+ * format français jour, mois, année. Une année sur deux chiffres est de ce
+ * siècle. Une date qui n'existe pas (31/02) rend `null` : la corriger en
+ * silence serait inventer.
+ *
+ * `undefined` : rien de reconnaissable, on se rabat sur la date du modèle.
+ */
+export function dateImprimee(ecrite: string): string | null | undefined {
+  const m = ecrite.match(/(?<!\d)(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{4}|\d{2})(?!\d)/);
+  if (!m) return undefined;
+  const jour = Number(m[1]);
+  const mois = Number(m[2]);
+  const annee = m[3].length === 2 ? 2000 + Number(m[3]) : Number(m[3]);
+  const reel = new Date(Date.UTC(annee, mois - 1, jour));
+  if (reel.getUTCFullYear() !== annee || reel.getUTCMonth() !== mois - 1 || reel.getUTCDate() !== jour) return null;
+  return `${annee}-${String(mois).padStart(2, "0")}-${String(jour).padStart(2, "0")}`;
+}
+
+/**
+ * Le plus ancien jour dont la TVA se récupère encore : le 1er janvier d'il y a
+ * deux ans (CGI, annexe II, art. 208 : jusqu'au 31 décembre de la deuxième
+ * année qui suit). Un ticket plus vieux qu'on scanne aujourd'hui est une
+ * lecture fautive bien plus souvent qu'un vrai ticket, et il ne compterait pas.
+ */
+function premierJourRecuperable(aujourdHui: string): string {
+  return `${Number(aujourdHui.slice(0, 4)) - 2}-01-01`;
+}
 
 /**
  * Ce que le modèle a répondu, transformé en champs — ou refusé.
@@ -74,7 +116,7 @@ const CONSIGNE = "Lis ce ticket et rends l'objet JSON demandé.";
  *     négatif, une date de l'an 3000 : refusés, et le champ retombe à `null`.
  *     C'est la règle du dépôt — sans source fiable, on n'écrit pas.
  */
-export function lireReponseTicket(texte: string): ResultatLecture {
+export function lireReponseTicket(texte: string, aujourdHui: string): ResultatLecture {
   const debut = texte.indexOf("{");
   const fin = texte.lastIndexOf("}");
   if (debut === -1 || fin <= debut) {
@@ -106,12 +148,17 @@ export function lireReponseTicket(texte: string): ResultatLecture {
   const positif = (n: number | null): number | null => (n === null || n < 0 ? null : Math.round(n * 100) / 100);
 
   const fournisseur = chaine(brut.fournisseur);
-  const dateBrute = chaine(brut.date);
-  // Une date doit avoir la forme ET être plausible : un ticket de l'an 3000
-  // rangerait l'achat dans une période que le patron ne consultera jamais.
+  const ecrite = chaine(brut.date_ecrite);
+  const imprimee = ecrite === null ? undefined : dateImprimee(ecrite);
+  const dateBrute = imprimee === undefined ? chaine(brut.date) : imprimee;
+  const dateBienFormee = dateBrute && /^\d{4}-\d{2}-\d{2}$/.test(dateBrute) ? dateBrute : null;
+  // Une date doit avoir la forme ET être plausible : un ticket de demain
+  // n'existe pas, et un ticket trop vieux pour sa TVA est une année mal lue
+  // (« 2023 » pour un ticket du jour). Les deux rangeraient l'achat dans une
+  // période que le patron ne consultera jamais.
   const date =
-    dateBrute && /^\d{4}-\d{2}-\d{2}$/.test(dateBrute) && Number(dateBrute.slice(0, 4)) >= 2000 && Number(dateBrute.slice(0, 4)) <= 2100
-      ? dateBrute
+    dateBienFormee && dateBienFormee <= aujourdHui && dateBienFormee >= premierJourRecuperable(aujourdHui)
+      ? dateBienFormee
       : null;
 
   const totalTtc = positif(nombre(brut.total_ttc));
@@ -139,7 +186,7 @@ export function lireReponseTicket(texte: string): ResultatLecture {
 
   if (tva === null) reserves.push("le montant de TVA n’a pas pu être lu");
   if (fournisseur === null) reserves.push("le nom du fournisseur n’a pas pu être lu");
-  if (date === null) reserves.push("la date n’a pas pu être lue");
+  if (date === null) reserves.push(dateBienFormee ? "la date lue ne tenait pas debout" : "la date n’a pas pu être lue");
 
   return {
     ok: true,
@@ -169,12 +216,13 @@ export async function lireTicket(base64: string, mimeType: string): Promise<Resu
   if (!fournisseur.lireImage) {
     return { ok: false, raison: "La lecture automatique n’est pas disponible ici." };
   }
-  const r = await fournisseur.lireImage(SYSTEME, CONSIGNE, { base64, mimeType });
+  const aujourdHui = jourIso(new Date());
+  const r = await fournisseur.lireImage(SYSTEME, consigneDeLecture(aujourdHui), { base64, mimeType });
   if (!r.succes) {
     // Le message du fournisseur est repris tel quel : « clé refusée » et
     // « quota dépassé » ne se réparent pas de la même façon, et une seule
     // phrase pour les deux ferait chercher au mauvais endroit.
     return { ok: false, raison: r.erreur.message };
   }
-  return lireReponseTicket(r.texte);
+  return lireReponseTicket(r.texte, aujourdHui);
 }
