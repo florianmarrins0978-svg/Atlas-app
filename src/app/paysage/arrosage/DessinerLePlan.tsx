@@ -244,12 +244,24 @@ export default function DessinerLePlan({
     if (id === "piquage") return piquagePlace;
     return zones.find((z) => z.id === id) ?? arbres.find((a) => a.id === id) ?? dalles.find((d) => d.id === id) ?? null;
   }
+  /**
+   * À quelle liste appartient un objet. Elle se CHERCHE : la première lettre de
+   * l'identifiant la devinait (« z » une zone, « a » un arbre), et les zones
+   * lues sur la photo, nommées « lu1 », passaient pour des dalles et ne
+   * suivaient plus le doigt (sa capture du 23 octobre 2026).
+   */
+  function sorteDe(id: string): "nourrice" | "piquage" | "zone" | "arbre" | "dalles" {
+    if (id === "nourrice" || id === "piquage") return id;
+    if (zones.some((z) => z.id === id)) return "zone";
+    return arbres.some((a) => a.id === id) ? "arbre" : "dalles";
+  }
   /** Remet un objet tel qu'il était : ce que le premier doigt tenait, quand le second arrive. */
   function remettre(id: string, o: Zone | Arbre | Dalles | PointMetres) {
-    if (id === "nourrice") setNourrice(o as PointMetres);
-    else if (id === "piquage") setPiquagePlace(o as PointMetres);
-    else if (id.startsWith("z")) setZones((zs) => zs.map((x) => (x.id === id ? (o as Zone) : x)));
-    else if (id.startsWith("a")) setArbres((as) => as.map((x) => (x.id === id ? (o as Arbre) : x)));
+    const sorte = sorteDe(id);
+    if (sorte === "nourrice") setNourrice(o as PointMetres);
+    else if (sorte === "piquage") setPiquagePlace(o as PointMetres);
+    else if (sorte === "zone") setZones((zs) => zs.map((x) => (x.id === id ? (o as Zone) : x)));
+    else if (sorte === "arbre") setArbres((as) => as.map((x) => (x.id === id ? (o as Arbre) : x)));
     else setDalles((ds) => ds.map((x) => (x.id === id ? (o as Dalles) : x)));
   }
 
@@ -342,12 +354,13 @@ export default function DessinerLePlan({
     // Le doigt avance par pas, pour que les cotes tombent juste.
     const pas = (v: number) => auPas(v, loupe);
     const point = (q: PointMetres) => ({ x: borne(pas(q.x + dx), cadre.L), y: borne(pas(q.y + dy), cadre.l) });
-    if (pr.id === "nourrice") setNourrice(point(a as PointMetres));
-    else if (pr.id === "piquage") setPiquagePlace(point(a as PointMetres));
-    else if (pr.id.startsWith("z")) {
+    const sorte = sorteDe(pr.id);
+    if (sorte === "nourrice") setNourrice(point(a as PointMetres));
+    else if (sorte === "piquage") setPiquagePlace(point(a as PointMetres));
+    else if (sorte === "zone") {
       const z = a as Zone;
       setZones((zs) => zs.map((x) => (x.id === pr.id ? { ...x, x: borne(pas(z.x + dx), Math.max(0, cadre.L - z.L)), y: borne(pas(z.y + dy), Math.max(0, cadre.l - z.l)) } : x)));
-    } else if (pr.id.startsWith("a")) {
+    } else if (sorte === "arbre") {
       const ar = a as Arbre;
       setArbres((as) => as.map((x) => (x.id === pr.id ? { ...x, ...point(ar) } : x)));
     } else {
@@ -690,7 +703,9 @@ export default function DessinerLePlan({
           role="img"
           aria-label="Le terrain et ses zones"
           viewBox={`${-m} ${-m} ${vue.L + 2 * m} ${vue.l + 2 * m}`}
-          style={{ display: "block", width: agrandi ? Math.round((vue.L + 2 * m) * parM) : "100%", height: "auto", touchAction: "none", userSelect: "none" }}
+          // Safari ne lit que la forme préfixée : sans elle, un appui long sur le
+          // nom d'une zone sélectionne le texte et lui reprend le doigt.
+          style={{ display: "block", width: agrandi ? Math.round((vue.L + 2 * m) * parM) : "100%", height: "auto", touchAction: "none", userSelect: "none", WebkitUserSelect: "none", WebkitTouchCallout: "none" }}
           onPointerDown={doigtPose}
           onPointerMove={doigtGlisse}
           onPointerUp={doigtLeve}
@@ -1244,9 +1259,28 @@ function FeuilleDuDessin({
         aria-label={titre}
         onClick={(ev) => ev.stopPropagation()}
         onKeyDown={(ev) => { if (ev.key === "Escape") fermer(); if (ev.key === "Enter" && (ev.target as HTMLElement).tagName === "INPUT") { ev.preventDefault(); valider(); } }}
-        className="atlas-feuille max-w-[430px] overflow-auto px-4 pt-[18px]"
+        className="atlas-feuille max-w-[430px] overflow-auto px-4 pt-[2px]"
         style={{ maxHeight: "86vh", backgroundColor: colors.cream, borderRadius: "18px 18px 0 0", paddingBottom: "calc(24px + env(safe-area-inset-bottom, 0px))" }}
       >
+        {/* **LA POIGNÉE REFERME, SANS RIEN VALIDER** — sa demande du 23 octobre
+            2026 : *« rajoute le trait en haut pour pouvoir refermer la
+            page »*. Le fond, lui, valide : sur une zone lue sans cotes, il
+            refuse, et la feuille restait ouverte sans autre issue que de
+            taper des chiffres. La poignée se touche ou se tire vers le bas
+            (le doigt est capturé, il peut sortir du trait), et reste en haut
+            quand la feuille défile. Même dessin que `BottomSheet`. */}
+        <button
+          type="button"
+          aria-label="Refermer"
+          data-atlas="feuille-poignee"
+          onPointerDown={(ev) => ev.currentTarget.setPointerCapture(ev.pointerId)}
+          onPointerUp={onFermer}
+          onClick={(ev) => { if (ev.detail === 0) onFermer(); }}
+          className="sticky top-0 z-10 -mx-4 mb-1 flex h-7 w-[calc(100%+2rem)] items-center justify-center"
+          style={{ backgroundColor: colors.cream, touchAction: "none" }}
+        >
+          <span className="h-1 w-10 rounded-full" style={{ backgroundColor: colors.line }} />
+        </button>
         <h2 className="m-0" style={{ fontFamily: font.display, fontWeight: 400, fontSize: 21, lineHeight: 1.2 }}>{titre}</h2>
 
         {feuille.sorte !== "point" && (
