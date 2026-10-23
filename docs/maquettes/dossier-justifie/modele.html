@@ -82,6 +82,7 @@ h3{font-size:12.5pt;margin:6mm 0 1mm}
 .releve .just .ref{font-weight:600}
 .releve .just .p{color:var(--gris);text-decoration:underline}
 .releve a.vers{color:inherit;text-decoration:none}
+.piece a.retour{display:block;margin-top:2mm;padding:1.6mm 0;font-size:7.8pt;font-weight:600;color:var(--pin);text-decoration:none;border:.6pt solid var(--filet);border-radius:4mm;text-align:center}
 .releve .perdu{color:var(--alerte);font-style:italic}
 .releve .plus{color:var(--pin)}
 .releve td.coul{width:1.4mm;padding:0}
@@ -94,13 +95,13 @@ h3{font-size:12.5pt;margin:6mm 0 1mm}
 .piece .ent{display:flex;justify-content:space-between;align-items:baseline;font-size:8pt;margin-bottom:2mm;border-top:1.5pt solid var(--gris);padding-top:1.5mm}
 .piece .ent .ref{font-weight:600}
 .piece .sous{font-size:7.4pt;color:var(--doux);margin-bottom:2mm}
-.ticket{background:#fff;border:.6pt solid #d8d4c9;padding:3.5mm 3mm 4mm;font:7pt/1.45 "Consolas","SF Mono",Menlo,monospace;color:#2a2a26;height:56mm;overflow:hidden;box-shadow:0 .6mm 1.6mm rgba(0,0,0,.12)}
+.ticket{background:#fff;border:.6pt solid #d8d4c9;padding:3.5mm 3mm 4mm;font:7pt/1.45 "Consolas","SF Mono",Menlo,monospace;color:#2a2a26;height:49mm;overflow:hidden;box-shadow:0 .6mm 1.6mm rgba(0,0,0,.12)}
 .ticket .c{text-align:center}
 .ticket .g{font-weight:700;font-size:8pt}
 .ticket hr{border:0;border-top:.6pt dashed #aaa69a;margin:1.6mm 0}
 .ticket .r{display:flex;justify-content:space-between;gap:2mm}
 .ticket .t{font-weight:700;font-size:8pt}
-.facture{background:#fff;border:.6pt solid #d8d4c9;padding:4mm;height:56mm;font-size:6.6pt;line-height:1.4;color:#2a2a26;overflow:hidden;box-shadow:0 .6mm 1.6mm rgba(0,0,0,.12)}
+.facture{background:#fff;border:.6pt solid #d8d4c9;padding:4mm;height:49mm;font-size:6.6pt;line-height:1.4;color:#2a2a26;overflow:hidden;box-shadow:0 .6mm 1.6mm rgba(0,0,0,.12)}
 .facture .g{font:700 8.5pt/1.2 Georgia,serif}
 .facture .r{display:flex;justify-content:space-between;gap:2mm}
 .facture table td{padding:1mm 0;font-size:6.4pt;border-bottom:.4pt solid #eee}
@@ -240,7 +241,7 @@ tout.forEach((L, m) => {
     <div class="titre-page"><h2>${MOIS_M[m]} 2025</h2><span class="caps">Relevé de banque</span></div>
     <div class="resume-mois"><span>Sorties<b class="num">${eur(-sum(L.filter(l => l.montant < 0), l => l.montant))}</b></span><span>Entrées<b class="num">${eur(sum(L.filter(l => l.montant > 0), l => l.montant))}</b></span><span>Lignes<b>${L.length}</b></span></div>
     <table class="releve"><thead><tr><th></th><th>Date</th><th>Ce qu’écrit la banque</th><th>Catégorie</th><th class="d">Montant</th><th>Justificatif</th></tr></thead><tbody>
-    ${L.map(l => `<tr><td class="coul" style="background:${COUL[l.cat]}"></td><td class="num">${deux(l.jour)}/${deux(m + 1)}</td><td class="lib">${l.lib}</td><td class="cat">${NOM[l.cat]}</td><td class="d num${l.montant > 0 ? " plus" : ""}">${l.montant > 0 ? "+" : "−"}${eur(l.montant)}</td><td class="just">${
+    ${L.map(l => `<tr><td class="coul" style="background:${COUL[l.cat]}"></td><td class="num">${l.ref ? `<span id="ligne-${l.ref}">` : ""}${deux(l.jour)}/${deux(m + 1)}${l.ref ? "</span>" : ""}</td><td class="lib">${l.lib}</td><td class="cat">${NOM[l.cat]}</td><td class="d num${l.montant > 0 ? " plus" : ""}">${l.montant > 0 ? "+" : "−"}${eur(l.montant)}</td><td class="just">${
       l.perdu ? `<span class="perdu">Ticket perdu, mention validée</span>`
       : l.ticket ? `<a class="vers" href="#piece-${l.ref}"><span class="ref">${l.ref}</span> Ticket du ${deux(l.ticket.jour)}/${deux(m + 1)} <span class="p">p. ${ouEst(m, l.ref)}</span></a>`
       : l.facture ? `<a class="vers" href="#piece-${l.ref}"><span class="ref">${l.ref}</span> Facture ${l.facture.f} <span class="p">p. ${ouEst(m, l.ref)}</span></a>`
@@ -256,7 +257,7 @@ tout.forEach((L, m) => {
         h += `<div class="ticket"><div class="c g">${t.nom}</div><div class="c">${t.adr}</div><div class="c">${deux(t.jour)}/${deux(m + 1)}/2025 ${t.heure}</div><hr>${t.art.map(([a, v]) => `<div class="r"><span>${a}</span><span>${eur(v).replace(" €", "")}</span></div>`).join("")}<hr><div class="r t"><span>TOTAL TTC</span><span>${eur(t.total)}</span></div><div class="r"><span>dont TVA ${t.taux} %</span><span>${eur(tva).replace(" €", "")}</span></div><hr><div class="c">CARTE BANCAIRE</div><div class="c">**** **** **** 4821</div><div class="c">MERCI DE VOTRE VISITE</div></div>`;
       } else { const f = l.facture;
         h += `<div class="facture"><div class="r"><span class="g">${f.f}</span><span>Facture n° ${f.num}</span></div><div style="margin-top:2mm">Zone d’activité des Paluds, 13400 Aubagne</div><div style="margin:3mm 0 2mm">Client : Jardins Exemple</div><table><tr><td>${f.quoi}</td><td style="text-align:right">${eur(f.ht)}</td></tr><tr><td>TVA 20 %</td><td style="text-align:right">${eur(f.ht * .2)}</td></tr></table><div class="r tot"><span>Total TTC</span><span>${eur(f.ht * 1.2)}</span></div><div style="margin-top:3mm;color:#777">Réglée par virement</div></div>`; }
-      h += `</div>`;
+      h += `<a class="retour" href="#ligne-${l.ref}">Retour au relevé, ligne du ${deux(l.jour)}/${deux(m + 1)}</a></div>`;
     });
     h += `</div></section>`;
   }
