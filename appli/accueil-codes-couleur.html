@@ -25,12 +25,14 @@
   (titres relevés dans src/app/Notifications.tsx, rappels dans
   src/lib/rappels.ts) :
     vert   bonne nouvelle : virement reçu, devis accepté, facture reçue ;
-    ambre  à vous de répondre : autre date proposée, correction demandée,
-           chantier sans devis ;
+    ambre  à vous de répondre : correction demandée, chantier sans devis ;
     rouge  ça peut coûter : devis retourné, devis caduc, facture impayée ;
+    bleu   une date qui bouge : autre date proposée (sa demande du même soir,
+           « autre date proposée, mais en bleu ») ; le bleu n'existe dans
+           aucune charte : il deviendra un jeton au moment du code ;
     blanc  pour mémoire : devis sans réponse, chantier non facturé, retour
            pas reçu, contrôle technique.
-  Quatre familles et pas treize couleurs : au delà de quatre, on ne retient
+  Cinq familles et pas treize couleurs : au delà de cinq, on ne retient
   plus laquelle veut dire quoi, et l'œil ne trie plus rien.
 
   LA COULEUR N'EST JAMAIS SEULE : le titre de la carte reste, et un point de
@@ -46,7 +48,7 @@
 :root{
   --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
   --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --plein:#7d9a6d;
-  --or:#B98B47; --alerte:#9C3B2E; --trait:rgba(28,28,26,.12); --filet:rgba(28,28,26,.07);
+  --or:#B98B47; --alerte:#9C3B2E; --bleu:#3d6fa3; --trait:rgba(28,28,26,.12); --filet:rgba(28,28,26,.07);
   --scene:#e6e3dc;
   --serif:"Playfair Display",ui-serif,Georgia,serif;
   --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
@@ -54,7 +56,7 @@
 body.nuit{
   --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
   --gris:#84887b; --pin:#8fae86; --papier:#20241f; --plein:#8fae86;
-  --or:#c6a15b; --alerte:#d9826b; --trait:rgba(233,232,222,.12); --filet:rgba(233,232,222,.08);
+  --or:#c6a15b; --alerte:#d9826b; --bleu:#86b4e0; --trait:rgba(233,232,222,.12); --filet:rgba(233,232,222,.08);
   --scene:#070908;
 }
 /* Les quatre familles : un voile du jeton, et le jeton mêlé à l'encre pour le titre. */
@@ -62,6 +64,7 @@ body.nuit{
   --vert-fond:color-mix(in srgb,var(--plein) 18%,var(--carte));  --vert:color-mix(in srgb,var(--plein) 72%,var(--encre));
   --ambre-fond:color-mix(in srgb,var(--or) 20%,var(--carte));    --ambre:color-mix(in srgb,var(--or) 75%,var(--encre));
   --rouge-fond:color-mix(in srgb,var(--alerte) 14%,var(--carte));--rouge:color-mix(in srgb,var(--alerte) 85%,var(--encre));
+  --bleu-fond:color-mix(in srgb,var(--bleu) 24%,var(--carte));  --bleu-t:color-mix(in srgb,var(--bleu) 82%,var(--encre));
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--scene)}
@@ -109,6 +112,7 @@ body.nuit .plein{color:#101210}
 .coul .vert{background:var(--vert-fond)}   .coul .vert .caps{color:var(--vert)}   .coul .vert .pt{background:var(--plein)}
 .coul .ambre{background:var(--ambre-fond)} .coul .ambre .caps{color:var(--ambre)} .coul .ambre .pt{background:var(--or)}
 .coul .rouge{background:var(--rouge-fond)} .coul .rouge .caps{color:var(--rouge)} .coul .rouge .pt{background:var(--alerte)}
+.coul .bleu{background:var(--bleu-fond)}  .coul .bleu .caps{color:var(--bleu-t)}  .coul .bleu .pt{background:var(--bleu)}
 .coul .blanc .pt{background:var(--trait)}
 
 .barre{display:flex;justify-content:space-between;border-top:1px solid var(--trait);padding:14px 16px 20px}
@@ -120,6 +124,7 @@ body.nuit .plein{color:#101210}
 .legende h2{margin:0 0 6px;font:500 20px/1.25 var(--serif)}
 .legende .chapo{margin:0 0 18px;font-size:13.5px;line-height:1.55;color:var(--encre-douce)}
 .famille{border-radius:16px;padding:14px 16px;margin-bottom:12px;background:var(--carte)}
+.famille.bleu{background:var(--bleu-fond)} .famille.bleu .pt{background:var(--bleu)}
 .famille.vert{background:var(--vert-fond)} .famille.ambre{background:var(--ambre-fond)} .famille.rouge{background:var(--rouge-fond)}
 .famille .tete{display:flex;align-items:center;gap:9px;font:500 16px/1.3 var(--serif)}
 .famille .tete .pt{display:inline-block;width:10px;height:10px}
@@ -135,7 +140,7 @@ body.nuit .plein{color:#101210}
 
 <div class="bandeau"><div class="dedans">
   <b>Les couleurs de l'accueil.</b> Votre demande du 23 octobre : savoir d'un coup
-  d'œil ce qui est arrivé. Quatre couleurs, selon <b>ce que vous avez à faire</b>.
+  d'œil ce qui est arrivé. Cinq couleurs, selon <b>ce que vous avez à faire</b>.
   Touchez <b>« Aujourd'hui »</b> pour comparer avec l'accueil actuel, et
   <b>« Nuit »</b> pour le fond noir. <b>Rien n'est codé.</b>
 </div></div>
@@ -168,7 +173,7 @@ body.nuit .plein{color:#101210}
       <div class="carte blanc"><p class="caps"><i class="pt"></i>Devis sans réponse</p><p class="qui">Taille de la haie</p>
         <p class="texte">Envoyé à M. Martins depuis 12 jours.</p>
         <div class="gestes"><button class="lien">Relancer</button><button class="leger">J'ai vu</button></div></div>
-      <div class="carte ambre"><p class="caps"><i class="pt"></i>Autre date proposée</p><p class="qui">Tonte de printemps</p>
+      <div class="carte bleu"><p class="caps"><i class="pt"></i>Autre date proposée</p><p class="qui">Tonte de printemps</p>
         <p class="texte">Le client a accepté sur une date qu'il a proposée lui-même.</p>
         <div class="gestes"><button class="lien">Voir sa date</button><button class="leger">J'ai vu</button></div></div>
       <div class="carte rouge urgent"><p class="caps"><i class="pt"></i>Devis caduc</p><p class="qui">Abattage du pin</p>
@@ -182,17 +187,19 @@ body.nuit .plein{color:#101210}
   </div>
 
   <aside class="legende">
-    <h2>Quatre couleurs, quatre gestes</h2>
+    <h2>Cinq couleurs, cinq gestes</h2>
     <p class="chapo">Rangées par ce que vous avez à faire, pas par sujet. Cette légende est pour vous : l'écran, lui, ne l'affiche pas, la couleur et le titre suffisent.</p>
     <div class="famille vert"><div class="tete"><i class="pt"></i>Vert, bonne nouvelle</div><p class="sens">De l'argent ou un chantier qui arrive. À confirmer, rien à craindre.</p>
       <ul><li>Virement reçu</li><li>Devis accepté</li><li>Facture reçue</li></ul></div>
     <div class="famille ambre"><div class="tete"><i class="pt"></i>Ambre, à vous de répondre</div><p class="sens">Quelqu'un attend votre réponse pour avancer.</p>
-      <ul><li>Autre date proposée</li><li>Correction demandée</li><li>Chantier sans devis</li></ul></div>
+      <ul><li>Correction demandée</li><li>Chantier sans devis</li></ul></div>
+    <div class="famille bleu"><div class="tete"><i class="pt"></i>Bleu, une date qui bouge</div><p class="sens">Le client propose un autre jour. Le planning est à regarder.</p>
+      <ul><li>Autre date proposée</li></ul></div>
     <div class="famille rouge"><div class="tete"><i class="pt"></i>Rouge, ça peut coûter</div><p class="sens">De l'argent ou un chantier en train de partir.</p>
       <ul><li>Facture impayée</li><li>Devis retourné</li><li>Devis caduc</li></ul></div>
     <div class="famille blanc"><div class="tete"><i class="pt"></i>Blanc, pour mémoire</div><p class="sens">Un rappel, rien ne presse aujourd'hui.</p>
       <ul><li>Devis sans réponse</li><li>Chantier non facturé</li><li>Retour pas reçu</li><li>Contrôle technique</li></ul></div>
-    <p class="note"><b>Pourquoi quatre et pas treize.</b> Au delà de quatre, on ne retient plus quelle couleur veut dire quoi, et l'œil ne trie plus rien.
+    <p class="note"><b>Pourquoi cinq et pas treize.</b> Au delà de cinq, on ne retient plus quelle couleur veut dire quoi, et l'œil ne trie plus rien.
     <b>Et le titre reste</b> sur chaque carte, avec un point de la même couleur : la couleur fait voir, le titre fait comprendre.
     <b>Le beige d'aujourd'hui disparaît</b> : il disait « urgent » sans dire si c'était à répondre ou à rattraper.</p>
   </aside>

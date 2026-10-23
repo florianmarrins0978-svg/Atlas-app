@@ -48,7 +48,7 @@ Ce que l'essai a appris, et qui servira au parcours de ses clients :
 - `appli/banque-a-essayer.html` : le parcours entier, plus de case pro ou perso (la porte « particulier » par défaut, l'accès entreprise en lien discret), le nom du payeur au lieu du libellé brut.
 - `appli/banque-numero-et-termines.html` : **le numéro de facture lu dans le libellé passe avant le montant et le nom** (`F2026-000028`, `F2026000028`, `2026-000028`, jamais un nombre court seul), à ajouter à `src/lib/rapprochement-bancaire.ts`. Dans Terminés, Ma TVA : **variante A**, « Oui / Non » à la place des deux boutons de la ligne ; une réponse sur l'accueil ou dans Terminés vaut pour les deux.
 - `appli/banque-virement-en-couleur.html` : **variante A**, le fond vert pâle (voile de `plein`).
-- `appli/accueil-codes-couleur.html` : quatre couleurs pour toutes les cartes de l'accueil, par ce qu'il a à faire. **En attente de sa réponse.**
+- `appli/accueil-codes-couleur.html` : cinq couleurs pour toutes les cartes de l'accueil, par ce qu'il a à faire ; **« Autre date proposée » en bleu, sa demande du 23 octobre** (le bleu n'est dans aucune charte : un jeton à créer). En attente de son accord sur le reste.
 
 **Ce qui vient après, seulement s'il le décide** : la carte sur l'accueil, le « Oui » qui note le paiement par `noterPaiement`, l'alerte avant la coupure (planche `appli/banque-qui-previent.html`), une table des liaisons sous RLS au lieu du témoin du navigateur, et le contrat pour ses clients (`docs/A-FAIRE.md` §13).
 
