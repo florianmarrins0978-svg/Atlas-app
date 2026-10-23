@@ -14,7 +14,7 @@ long (480 ms, annulé si le doigt glisse) sur `LigneClient` dans
 seulement, comme `exigerMontants`) ; la feuille reprend `SupprimerCeClient.tsx` mot pour mot,
 au pluriel, en une pièce partagée plutôt qu'une copie (`CLAUDE.md` §3) ; le
 serveur rejoue `effacerClient` client par client et nomme ceux qui restent.
-« Tout cocher » ajouté à sa demande, visible seulement pendant le choix. Niveau 3
+« Tout » (le même rond que les clients) ajouté à sa demande, visible seulement pendant le choix. Niveau 3
 (suppression de données, gravité).
 
 ## ⏳ UNE PLANCHE À REGARDER : LA TVA D'UNE VOITURE, A OU B (23 octobre 2026)
