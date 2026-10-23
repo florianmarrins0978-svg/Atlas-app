@@ -48,7 +48,9 @@
     · « Ticket perdu » : la dépense reste justifiée par sa mention, mais sa TVA
       n'est pas déduite. Sans facture, la TVA ne se récupère pas (CGI art. 271).
       L'écran le dit AVANT qu'il valide.
-    · ajouté, et pas demandé : « Préparer le dossier ». Un PDF par année, mois
+    · MES DOSSIERS JUSTIFIÉS, sa demande du 23 octobre au soir : le PDF de
+      l.année validée, gardé DIX ANS (Code de commerce, art. L123-22, pièces
+      justificatives) et non effaçable une fois validé. Le dossier, un PDF mois
       par mois, chaque ligne de la banque suivie de son ticket. C'est ce qu'il
       porte au comptable aujourd'hui en papier.
 
@@ -245,6 +247,15 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
 .relies .leger{padding:8px 4px;font-size:13px;color:var(--alerte)}
 .relies .annule{font-size:12.5px;color:var(--alerte)}
 
+/* ── Les dossiers ── */
+.pdf{width:30px;height:38px;border-radius:4px;flex:none;background:var(--carte);box-shadow:0 0 0 1px var(--trait);
+     display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;font:700 8.5px/1 var(--sans);color:var(--rust);letter-spacing:.04em}
+.lignes .gestes{margin-top:6px}
+.lignes .gestes .lien{border:0;background:none;color:var(--pin);font:500 13.5px/1 var(--sans);padding:8px 10px 8px 0;min-height:40px}
+.lecture{display:flex;flex-direction:column;gap:6px;margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--fond);font-size:13.5px}
+.lecture .r{display:flex;justify-content:space-between;gap:10px}
+.lecture .r span:last-child{font-variant-numeric:tabular-nums}
+
 /* ── La feuille à la main ── */
 .depot{margin:20px 24px 0;padding:18px;border-radius:18px;border:1.5px dashed var(--trait);text-align:center}
 .depot p{margin:0 0 12px;font-size:14px;color:var(--encre-douce)}
@@ -342,6 +353,25 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
       <div class="bascule" role="group" aria-label="Découpage">
         <button type="button" aria-pressed="true" data-vue="mois">Mois</button>
         <button type="button" aria-pressed="false" data-vue="trim">Trimestre</button>
+        <button type="button" aria-pressed="false" data-vue="annee">Année</button>
+      </div>
+
+      <div data-liste="annee" hidden>
+        <div class="resume" style="margin-top:20px">
+          <span>Sorties<b>48 216,40 €</b></span>
+          <span>Entrées<b>71 480,00 €</b></span>
+          <span>Sans ticket<b style="color:var(--alerte)" data-reste-chiffre-annee>3</b></span>
+        </div>
+        <span class="barre" style="margin:14px 24px 0;height:10px;border-radius:5px"><i style="width:31%;background:var(--c-carburant)"></i><i style="width:11%;background:var(--c-repas)"></i><i style="width:22%;background:var(--c-materiel)"></i><i style="width:2%;background:var(--c-hotel)"></i><i style="width:1%;background:var(--c-transport)"></i><i style="width:31%;background:var(--c-virement)"></i><i style="width:2%;background:var(--c-autre)"></i></span>
+        <ul class="lignes" style="margin-top:12px">
+          <li class="ligne"><span class="trait" style="background:var(--c-carburant)"></span><span class="milieu"><div class="lib">Carburant</div><div class="cat" style="color:var(--gris)">142 tickets, 1 perdu</div></span><span class="m">14 947,10 €</span></li>
+          <li class="ligne"><span class="trait" style="background:var(--c-repas)"></span><span class="milieu"><div class="lib">Repas</div><div class="cat" style="color:var(--gris)">96 tickets, 2 perdus</div></span><span class="m">5 303,80 €</span></li>
+          <li class="ligne"><span class="trait" style="background:var(--c-materiel)"></span><span class="milieu"><div class="lib">Matériel</div><div class="cat" style="color:var(--gris)">38 tickets</div></span><span class="m">10 607,60 €</span></li>
+          <li class="ligne"><span class="trait" style="background:var(--c-hotel)"></span><span class="milieu"><div class="lib">Hôtel</div><div class="cat" style="color:var(--gris)">3 tickets</div></span><span class="m">964,30 €</span></li>
+          <li class="ligne"><span class="trait" style="background:var(--c-transport)"></span><span class="milieu"><div class="lib">Train, taxi</div><div class="cat" style="color:var(--gris)">2 tickets</div></span><span class="m">482,10 €</span></li>
+          <li class="ligne"><span class="trait" style="background:var(--c-virement)"></span><span class="milieu"><div class="lib">Virements envoyés</div><div class="cat" style="color:var(--gris)">24 factures jointes</div></span><span class="m">15 012,40 €</span></li>
+          <li class="ligne"><span class="trait" style="background:var(--c-autre)"></span><span class="milieu"><div class="lib">Autre</div><div class="cat" style="color:var(--gris)">7 tickets</div></span><span class="m">964,40 €</span></li>
+        </ul>
       </div>
 
       <ul class="mois" data-liste="trim" hidden>
@@ -386,7 +416,7 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
         </button></li>
       </ul>
 
-      <div class="dossier"><button class="contour" type="button">Préparer le dossier 2026</button></div>
+      <div class="dossier"><button class="contour" type="button">Mes dossiers justifiés</button></div>
     </div>
   </section>
 
@@ -433,9 +463,24 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
     </div>
   </section>
 
+  <!-- 6. Les dossiers gardés -->
+  <section class="planche">
+    <h2 class="nom">5. Mes dossiers justifiés</h2>
+    <p class="idee">Quand tout est justifié, vous validez l'année : Atlas en fait un PDF, mois par mois, chaque ligne de banque suivie de sa photo. Il est gardé dix ans, et un dossier validé ne s'efface pas.</p>
+    <div class="tel">
+      <button class="retour" type="button">Année 2026</button>
+      <header class="entete" style="padding-top:8px"><h1>Mes dossiers justifiés</h1><span class="caps sous">Gardés dix ans</span></header>
+      <div class="cartes" style="margin-top:20px">
+        <article class="carte" data-dossier-encours></article>
+      </div>
+      <p class="jour" style="margin-top:24px">Validés</p>
+      <ul class="lignes" data-dossiers></ul>
+    </div>
+  </section>
+
   <!-- 5. Sans banque -->
   <section class="planche">
-    <h2 class="nom">5. Sans banque reliée</h2>
+    <h2 class="nom">6. Sans banque reliée</h2>
     <p class="idee">La feuille du mois. Le plus court : déposer le relevé que la banque envoie, Atlas en lit les lignes. Sinon, une ligne à la fois.</p>
     <div class="tel">
       <button class="retour" type="button">Année 2026</button>
@@ -471,7 +516,8 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
     <tr><td>La banque</td><td>L'essai avec votre Crédit Mutuel lit déjà vos virements reçus ; les sorties viennent du même relevé. Pour vos futurs clients, il faut toujours le contrat (document à faire, point 13).</td></tr>
     <tr><td>Ticket perdu</td><td>La ligne est validée avec la mention, et votre comptable la voit. Mais sans ticket, la TVA de cette dépense ne se récupère pas : l'écran le dit avant que vous validiez.</td></tr>
     <tr><td>Les couleurs</td><td>Une proposition. Dites celle qui ne vous va pas, et elle change. Il y a aussi une version Nuit, en haut.</td></tr>
-    <tr><td>Ajouté, pas demandé</td><td>« Préparer le dossier 2026 » : un PDF mois par mois, chaque ligne de banque suivie de la photo de son ticket. C'est ce que vous apportez aujourd'hui en papier.</td></tr>
+    <tr><td>Mes dossiers justifiés</td><td>Quand l’année est justifiée, vous la validez : un PDF mois par mois, chaque ligne de banque suivie de la photo de son ticket. Gardé dix ans, comme la loi le demande pour les pièces comptables, et un dossier validé ne s’efface pas.</td></tr>
+    <tr><td>Ce qui marche derrière</td><td>Rien pour l’instant : c’est un dessin. Une fois choisi, il se code dans l’appli, et « Photographier » ouvre l’appareil photo du téléphone, comme le scan des tickets dans Ma TVA.</td></tr>
   </table>
 </div>
 
@@ -536,6 +582,16 @@ function rendreVisionneuse(){
     <div class="gestes"><button class="contour" type="button" data-detacher="${l.id}">Ce n’est pas le bon ticket</button></div>`;
 }
 
+let dossier2026 = false;
+function rendreDossiers(reste){
+  const enc = document.querySelector("[data-dossier-encours]");
+  if (dossier2026) enc.innerHTML = `<p class="qui" style="margin:0">Dossier 2026 validé.</p><p class="texte">Il est rangé ci-dessous, et votre comptable peut le recevoir.</p>`;
+  else if (reste) enc.innerHTML = `<p class="qui" style="margin:0">Dossier 2026</p><p class="texte alerte">${reste} ${reste>1?"lignes attendent":"ligne attend"} encore un justificatif. Il se valide quand tout est justifié.</p>`;
+  else enc.innerHTML = `<p class="qui" style="margin:0">Dossier 2026</p><p class="texte" style="color:var(--pin)">Tout est justifié.</p><div class="gestes"><button class="plein" type="button" data-valider-dossier>Valider le dossier 2026</button></div>`;
+  const ans = (dossier2026 ? [["2026","23 octobre 2026","2036","4,1 Mo"]] : []).concat([["2025","12 février 2026","2035","5,8 Mo"],["2024","3 mars 2025","2034","5,2 Mo"],["2023","20 février 2024","2033","4,7 Mo"]]);
+  document.querySelector("[data-dossiers]").innerHTML = ans.map(([a,v,g,t]) => `<li class="ligne"><span class="pdf">PDF</span><span class="milieu"><div class="lib">Dossier justifié ${a}</div><div class="cat" style="color:var(--gris)">Validé le ${v}, gardé jusqu’en ${g}, ${t}</div><div class="gestes"><button class="lien" type="button">Ouvrir</button><button class="lien" type="button">Envoyer au comptable</button></div></span></li>`).join("");
+}
+
 function rendreRelies(){
   document.querySelector("[data-relies]").innerHTML = LIGNES.filter(l => l.auto).map(l => detaches.has(l.id)
     ? `<li><span class="q">${l.tk.nom}<small class="annule">Détaché, la ligne attend son ticket</small></span><button class="leger" type="button" data-rattacher="${l.id}" style="color:var(--encre-douce)">Défaire</button></li>`
@@ -572,7 +628,9 @@ function carte(id){
     return tete + `<p class="fait">Ticket relié.</p>`;
   }
   const tete = `<div class="tete"><i class="pastille" style="background:var(--c-virement)"></i><span style="color:var(--c-virement)">Virement envoyé</span></div><p class="qui">Pépinières Durand, le 24 octobre</p><p class="montant">1 740,00 €</p>`;
-  if (s === "ouvert") return tete + `<p class="texte alerte">Aucune facture jointe.</p><div class="gestes"><button class="plein" data-g="durand:facture">Joindre la facture</button><button class="leger" data-g="durand:demande">C'est autre chose</button></div>`;
+  if (s === "ouvert") return tete + `<p class="texte alerte">Aucune facture jointe.</p><div class="gestes"><button class="plein" data-g="durand:joindre">Joindre la facture</button><button class="leger" data-g="durand:demande">C'est autre chose</button></div>`;
+  if (s === "joindre") return tete + `<div class="choix"><button data-g="durand:lu"><span>Photographier<span class="n">Une facture papier, l’appareil photo s’ouvre</span></span></button><button data-g="durand:lu"><span>Choisir un fichier<span class="n">Un PDF reçu par e-mail</span></span></button><button data-g="durand:lu"><span>Prendre dans Ma TVA<span class="n">Déjà photographiée</span></span></button></div><div class="gestes"><button class="leger" data-g="durand:ouvert">Annuler</button></div>`;
+  if (s === "lu") return tete + `<p class="texte">Atlas a lu la facture.</p><div class="lecture"><div class="r"><span>Pépinières Durand, n° 2026-418</span><span></span></div><div class="r"><span>Total TTC</span><span>1 740,00 €</span></div><div class="r"><span>dont TVA</span><span>290,00 €</span></div></div><p class="texte" style="color:var(--pin)">Le montant tombe juste avec le virement.</p><p class="texte">Elle n’est pas dans Ma TVA. L’y ajouter ?</p><div class="gestes"><button class="plein" data-g="durand:facture">Oui, l’ajouter</button><button class="leger" data-g="durand:facture">Non</button></div>`;
   if (s === "demande") return tete + `<p class="texte">C'est :</p><div class="natures"><button data-g="durand:fournisseur">Un fournisseur</button><button data-g="durand:fournisseur">Un salaire</button><button data-g="durand:fournisseur">Un loyer</button><button data-g="durand:fournisseur">Impôts, cotisations</button><button data-g="durand:fournisseur">Un prêt</button><button data-g="durand:fournisseur">Pour moi</button></div><div class="gestes"><button class="leger" data-g="durand:ouvert">Annuler</button></div>`;
   if (s === "fournisseur") return tete + `<p class="fait">Noté. Vous pourrez joindre la pièce plus tard.</p>`;
   return tete + `<p class="fait">Facture jointe.</p>`;
@@ -580,7 +638,9 @@ function carte(id){
 
 function rendreCartes(){
   document.querySelector("[data-cartes]").innerHTML = ["total","inter","durand"].map(id => `<article class="carte">${carte(id)}</article>`).join("");
-  const reste = ["total","inter","durand"].filter(id => ["ouvert","demande"].includes(etat[id])).length + detaches.size;
+  const reste = ["total","inter","durand"].filter(id => ["ouvert","demande","joindre","lu"].includes(etat[id])).length + detaches.size;
+  document.querySelector("[data-reste-chiffre-annee]").textContent = reste;
+  rendreDossiers(reste);
   document.querySelector("[data-bilan-trouves]").textContent = `${8 - detaches.size} ont trouvé leur ticket.`;
   rendreRelies(); rendreVisionneuse();
   const b = document.querySelector("[data-bilan-reste]");
@@ -596,6 +656,7 @@ function rendreCartes(){
 document.addEventListener("click", e => {
   const g = e.target.closest("[data-g]");
   if (g){ const [id, s] = g.dataset.g.split(":"); etat[id] = s; rendreCartes(); return; }
+  if (e.target.closest("[data-valider-dossier]")){ dossier2026 = true; rendreCartes(); return; }
   const vo = e.target.closest("[data-voir]");
   if (vo){ vu = vo.dataset.voir; rendreVisionneuse(); vo.closest(".tel").scrollIntoView({ behavior:"smooth", block:"start" }); return; }
   if (e.target.closest("[data-fermer]")){ vu = null; rendreVisionneuse(); return; }
