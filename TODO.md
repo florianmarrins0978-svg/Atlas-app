@@ -32,11 +32,18 @@ un second PDF archivé, à part, l'original restant intouché. Niveau 3 (argent,
 probablement une migration pour ranger le second fichier).
 
 
-## ⏳ MA BANQUE : L'ESSAI EST CODÉ, À JOUER PAR LUI (22 octobre 2026)
+## ⏳ MA BANQUE : L'ESSAI A RÉPONDU SUR SA BANQUE (23 octobre 2026)
 
-`/reglages/banque` lit ses virements reçus par Enable Banking et propose une facture pour chacun. **Ce qui reste, et c'est lui** : créer l'application chez Enable Banking, y relier son Crédit Mutuel, déposer le `.pem` dans `cles-banque/` (`docs/banque-essai.md`). **On ne sait pas encore si le Crédit Mutuel est couvert** : la liste ne se lit qu'avec un compte.
+`/reglages/banque` lit ses virements reçus par Enable Banking et propose une facture pour chacun. **Joué par lui le 23 octobre 2026, de bout en bout** : application « Atlas » active en production restreinte, Crédit Mutuel relié, « Votre banque est reliée », deux virements reçus listés. **Le Crédit Mutuel est couvert.**
 
-**Ce qui vient après, seulement si l'essai répond** : la carte sur l'accueil, le « Oui » qui note le paiement par `noterPaiement`, l'alerte avant la coupure (planche `appli/banque-qui-previent.html`), une table des liaisons sous RLS au lieu du témoin du navigateur, et le contrat pour ses clients (`docs/A-FAIRE.md` §13).
+Ce que l'essai a appris, et qui servira au parcours de ses clients :
+
+- **Son identifiant passe par la porte « Vie personnelle » (`psu_type: personal`)**, pas « Affaires » : la porte « Affaires » mène à l'entrée des grandes entreprises du Crédit Mutuel (page anglaise, module SConnect de carte à puce) qui refuse son identifiant. L'écran coche « Compte pro » par défaut : à revoir avant de l'ouvrir à d'autres artisans, qui auront le même cas.
+- **L'identifiant Crédit Mutuel est un numéro, pas l'e-mail** que le navigateur propose de lui-même : c'est ce qui a fait échouer ses premiers essais.
+- **Le compte relié semble être son compte personnel** (salaire, MSA) : aucune facture ne pouvait correspondre. Sur quel compte ses clients le paient : à lui demander.
+- Sa clé `.pem` a été montrée en partie sur une capture : lui proposer d'en refaire une neuve chez Enable Banking après l'essai.
+
+**Ce qui vient après, seulement s'il le décide** : la carte sur l'accueil, le « Oui » qui note le paiement par `noterPaiement`, l'alerte avant la coupure (planche `appli/banque-qui-previent.html`), une table des liaisons sous RLS au lieu du témoin du navigateur, et le contrat pour ses clients (`docs/A-FAIRE.md` §13).
 
 ## ARROSAGE : LES PLANCHES DES 21 ET 22 OCTOBRE, CODÉES ET SUR `main`
 
