@@ -5,8 +5,8 @@ au défaut trouvé par la batterie commune du 22 octobre
 (`docs/batterie-commune-22-octobre.md` §3). Chaque affirmation porte le fichier
 qui la fonde.
 
-**État :** codé, éprouvé, batterie jouée (§6). Branche
-`claude/session-revocation-security-b8ulo7`.
+**État :** sur `main` le 23 octobre 2026, après que sa fiche d'espace a dit
+« Base : à jour » jusqu'à 0137 (§7). Batterie : §6.
 
 ---
 
