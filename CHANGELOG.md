@@ -6,6 +6,11 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-23
+
+- **Un ticket du jour n'est plus rangé en 2023.** Sa capture : un ticket TotalEnergies scanné le jour même, « il ira dans Octobre 2023 ». Le modèle ne savait pas quel jour on est, et complétait une année sur deux chiffres ou absente avec celle de ses souvenirs. **Sa correction : « il y a une date sur le ticket, utilise celle-ci ! »** Le modèle recopie désormais la date telle qu'imprimée (`date_ecrite`, « 26/10/26 ») et c'est le code qui la lit (`dateImprimee`) ; une date impossible (31/02) reste vide au lieu d'être corrigée. La consigne lui donne aussi le jour, et la lecture écarte une date future ou antérieure au 1er janvier d'il y a deux ans (CGI, annexe II, art. 208 : la TVA ne se récupère plus), avec la réserve « la date lue ne tenait pas debout ». `lire-ticket.ts`, `test-lecture-ticket.ts` vu rouge avant. **Non vérifié avec le vrai modèle** : pas de clé ici.
+- **Planche « La TVA d'une voiture, dite au comptable »** (`appli/tva-voiture-80.html`) : la ligne d'un carburant de voiture dit « 80 % de 8,33 € », sous le nom (A) ou sous la TVA (B). Sa remarque : le comptable lit 8,33 € sur le ticket et 6,66 € au relevé, sans explication. Rien dans `src/`.
+
 ## 2026-10-22
 
 - **Batterie commune des sept lots du 22 octobre** : les rouges trouvés entre les lots sont corrigés (boutons, routes et actions gardées, PDF, objets stockés, zip relu sous Windows, questions de chiffrage comptées par sorte, déconnexion jouée à sa vitesse). Trouvé et noté dans `TODO.md` : une requête en vol peut ressusciter une session fermée.
