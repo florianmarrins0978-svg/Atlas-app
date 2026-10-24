@@ -252,6 +252,9 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
      display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;font:700 8.5px/1 var(--sans);color:var(--rust);letter-spacing:.04em}
 .lignes .gestes{margin-top:6px}
 .lignes .gestes .lien{border:0;background:none;color:var(--pin);font:500 13.5px/1 var(--sans);padding:8px 10px 8px 0;min-height:40px;text-decoration:none;display:inline-flex;align-items:center}
+.bilan-c{display:flex;gap:10px;align-items:center;margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--papier);font-size:13px;line-height:1.4;color:var(--encre-douce)}
+.bilan-c b{font-weight:500;color:var(--encre)}
+.bilan-c .pdf{width:40px;font-size:7.5px}
 .lecture{display:flex;flex-direction:column;gap:6px;margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--fond);font-size:13.5px}
 .lecture .r{display:flex;justify-content:space-between;gap:10px}
 .lecture .r span:last-child{font-variant-numeric:tabular-nums}
@@ -467,7 +470,7 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
   <!-- 6. Les dossiers gardés -->
   <section class="planche">
     <h2 class="nom" id="ecran-dossiers">5. Mes dossiers justifiés</h2>
-    <p class="idee">Vous arrêtez le dossier quand vous voulez, à la date de votre exercice. Atlas en fait le PDF côte à côte et le range ici, gardé dix ans, sans pouvoir l'effacer. Le menu Année retrouve un dossier.</p>
+    <p class="idee">Vous arrêtez le dossier quand vous voulez, à la date de votre exercice. Atlas en fait le PDF côte à côte et le range ici, gardé dix ans, sans pouvoir l'effacer. Le menu Année retrouve un dossier. Le bilan que le comptable vous rend se range avec lui, gardé dix ans aussi.</p>
     <div class="tel">
       <button class="retour" type="button">Année 2026</button>
       <header class="entete" style="padding-top:8px"><h1>Mes dossiers justifiés</h1><span class="caps sous">Gardés dix ans</span></header>
@@ -836,6 +839,15 @@ function carteArret(reste, ou){
       : `<p class="texte">Le dossier ira du 1ᵉʳ janvier au ${enMots(dateArret)}.</p><div class="gestes"><button class="plein" type="button" data-arret-confirmer>Arrêter et ranger</button><button class="leger" type="button" data-arret-annuler>Annuler</button></div>`}`;
   return `<p class="qui" style="margin:0">Dossier en cours, depuis le 1ᵉʳ janvier 2026</p>${ou === "dossiers" && reste ? `<p class="texte alerte">${reste} ${reste > 1 ? "lignes attendent" : "ligne attend"} encore un justificatif.</p>` : ""}<div class="gestes"><button class="contour" type="button" data-arreter>Arrêter mon dossier ici</button></div>`;
 }
+// Le bilan que le comptable rend, rangé avec son dossier et gardé dix ans
+// comme lui (sa demande du 24 octobre). Il arrive par e-mail ou sur papier.
+const bilans = { 2024: "15 avril 2025", 2023: "9 avril 2024" };
+let bilanEnCours = null;
+function blocBilan(an){
+  if (bilans[an]) return `<div class="bilan-c"><span class="pdf" style="color:var(--pin)">BILAN</span><span><b>Bilan du comptable</b><br>Ajouté le ${bilans[an]}, gardé jusqu’en ${an + 10}</span></div><div class="gestes"><button class="lien" type="button">Ouvrir le bilan</button><button class="lien" type="button">Télécharger</button></div>`;
+  if (bilanEnCours === an) return `<div class="choix" style="margin-top:10px"><button type="button" data-bilan-ajoute="${an}"><span>Photographier les pages<span class="n">Le bilan reçu sur papier, page par page</span></span></button><button type="button" data-bilan-ajoute="${an}"><span>Choisir le fichier<span class="n">Le PDF reçu par e-mail</span></span></button></div><div class="gestes"><button class="leger" type="button" data-bilan-annuler>Annuler</button></div>`;
+  return `<div class="gestes"><button class="contour" type="button" data-bilan-ajouter="${an}">Ajouter le bilan du comptable</button></div>`;
+}
 function rendreDossiers(reste){
   document.querySelector("[data-dossier-encours]").innerHTML = carteArret(reste, "dossiers");
   document.querySelector("[data-valider-annee]").innerHTML = `<article class="carte" style="margin:16px 24px 0">${carteArret(reste, "annee")}</article>`;
@@ -844,7 +856,7 @@ function rendreDossiers(reste){
   const ans = [...new Set(tous.map(d => d.an))];
   if (filtreAn === null || !ans.includes(filtreAn)) filtreAn = ans[0];
   document.querySelector("[data-filtre-an]").innerHTML = ans.map(a => `<option value="${a}"${a === filtreAn ? " selected" : ""}>${a}</option>`).join("");
-  document.querySelector("[data-dossiers]").innerHTML = tous.filter(d => d.an === filtreAn).map(d => `<li class="ligne"><span class="pdf">PDF</span><span class="milieu"><div class="lib">Du ${d.du} au ${d.au}</div><div class="cat" style="color:var(--gris)">Rangé le ${d.v}, gardé jusqu’en ${d.g}, ${d.t}</div><div class="gestes"><a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" target="_blank" rel="noopener">Ouvrir</a><a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" download="Dossier justifié ${d.an}.pdf">Télécharger</a><button class="lien" type="button">Envoyer au comptable</button></div></span></li>`).join("");
+  document.querySelector("[data-dossiers]").innerHTML = tous.filter(d => d.an === filtreAn).map(d => `<li class="ligne"><span class="pdf">PDF</span><span class="milieu"><div class="lib">Du ${d.du} au ${d.au}</div><div class="cat" style="color:var(--gris)">Rangé le ${d.v}, gardé jusqu’en ${d.g}, ${d.t}</div><div class="gestes"><a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" target="_blank" rel="noopener">Ouvrir</a><a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" download="Dossier justifié ${d.an}.pdf">Télécharger</a><button class="lien" type="button">Envoyer au comptable</button></div>${blocBilan(d.an)}</span></li>`).join("");
 }
 
 function rendreRelies(){
@@ -911,6 +923,11 @@ function rendreCartes(){
 document.addEventListener("click", e => {
   const g = e.target.closest("[data-g]");
   if (g){ const [id, s] = g.dataset.g.split(":"); etat[id] = s; rendreCartes(); return; }
+  const ba = e.target.closest("[data-bilan-ajouter]");
+  if (ba){ bilanEnCours = Number(ba.dataset.bilanAjouter); rendreCartes(); return; }
+  const bf = e.target.closest("[data-bilan-ajoute]");
+  if (bf){ bilans[bf.dataset.bilanAjoute] = "24 octobre 2026"; bilanEnCours = null; rendreCartes(); return; }
+  if (e.target.closest("[data-bilan-annuler]")){ bilanEnCours = null; rendreCartes(); return; }
   if (e.target.closest("[data-arreter]")){ arret = "choix"; rendreCartes(); return; }
   if (e.target.closest("[data-arret-annuler]")){ arret = null; rendreCartes(); return; }
   if (e.target.closest("[data-arret-confirmer]")){ arrete = true; arret = null; filtreAn = Number(dateArret.slice(0,4)); rendreCartes(); return; }

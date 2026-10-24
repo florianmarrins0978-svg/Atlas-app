@@ -16,6 +16,7 @@ d'exemple : `appli/dossier-justifie-exemple.pdf`, imprimé par
 |---|---|---|
 | 1 | Le PDF du comptable | **côte à côte** (il a changé d’avis le 24 octobre) : la ligne et sa pièce réécrite à droite, un bouton « Voir la photo » vers les vraies photos rangées TOUT AU BOUT du PDF, et sous chaque photo « Retour à la ligne ». Pas la photo sous la pièce : deux tickets à la suite « feraient bizarre » |
 | — | Retrouver un dossier | dans Mes dossiers justifiés, un menu déroulant **Année** ; il montre les dossiers de cette année-là |
+| — | Le bilan du comptable | rangé avec SON dossier, dans Mes dossiers justifiés : « Ajouter le bilan du comptable », par photo des pages (papier) ou par le PDF reçu par e-mail. Gardé dix ans comme le dossier (24 octobre) |
 | — | Arrêter le dossier | sur l’écran du dossier en cours et dans Mes dossiers : « Arrêter mon dossier ici », puis la date (aujourd’hui par défaut), puis « Arrêter et ranger ». Refusé tant qu’une ligne avant cette date attend un justificatif |
 | 2 | Les couleurs des catégories | gardées (carburant bleu, repas vert, matériel orange, hôtel violet, train et taxi turquoise, virement prune, autre gris) |
 | 3 | La place | une carte « Pour mon comptable » dans Terminés, sous Ma TVA |
