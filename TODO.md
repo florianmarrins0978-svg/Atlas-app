@@ -14,11 +14,13 @@ d'exemple : `appli/dossier-justifie-exemple.pdf`, imprimé par
 
 | # | Question | Sa réponse |
 |---|---|---|
-| 1 | Le PDF du comptable | **avec renvois** : le justificatif mène au ticket, le ticket ramène à SA ligne du relevé. Pas le côte à côte |
+| 1 | Le PDF du comptable | **côte à côte** (il a changé d’avis le 24 octobre) : la ligne et sa pièce réécrite à droite, un bouton « Voir la photo » vers les vraies photos rangées TOUT AU BOUT du PDF, et sous chaque photo « Retour à la ligne ». Pas la photo sous la pièce : deux tickets à la suite « feraient bizarre » |
+| — | Retrouver un dossier | dans Mes dossiers justifiés, un menu déroulant **Année** ; il montre les dossiers de cette année-là |
+| — | Arrêter le dossier | sur l’écran du dossier en cours et dans Mes dossiers : « Arrêter mon dossier ici », puis la date (aujourd’hui par défaut), puis « Arrêter et ranger ». Refusé tant qu’une ligne avant cette date attend un justificatif |
 | 2 | Les couleurs des catégories | gardées (carburant bleu, repas vert, matériel orange, hôtel violet, train et taxi turquoise, virement prune, autre gris) |
 | 3 | La place | une carte « Pour mon comptable » dans Terminés, sous Ma TVA |
 | 4 | Le Check up relie seul un ticket quand un seul correspond | oui, et cela se défait (depuis la photo ou la liste « ce qu'Atlas a relié ») |
-| 5 | La page du comptable | oui : lien privé, justificatif cliquable, un bouton vert et un rouge par ligne ; un rouge demande pourquoi et revient au patron |
+| 5 | La page du comptable | oui : lien privé, justificatif cliquable, **Valider** (vert) et **Rejeter** (rouge) par ligne, avec **Suivant**, trois boutons de même largeur ; un rejet demande pourquoi et revient au patron. La pièce ouverte montre d’abord le ticket **reconstitué**, puis la **photo** en glissant, deux points dessous (24 octobre) |
 | 6 | Les tickets | le ticket réécrit dans le format du dossier, **complet, ligne par ligne comme imprimé** (rien de regroupé : sa remarque devant un essai qui fusionnait les doublons), avec la vignette de la vraie photo, qui reste la preuve |
 | 7 | Quand valider l’année | **quand il veut**, par une touche qui arrête le dossier au jour choisi : son exercice peut tomber à n’importe quelle date. Pas de règle du 1ᵉʳ janvier |
 | — | Entrées et sorties | **B** : deux colonnes, sorties en rouge, entrées en vert, total du mois et soldes de la banque en bas |

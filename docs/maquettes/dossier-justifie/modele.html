@@ -87,7 +87,7 @@ h3{font-size:12.5pt;margin:6mm 0 1mm}
 /* Toute la case se touche, pas trois mots de dix points de haut : sur un
    téléphone, un lien plus petit que le doigt ne s.ouvre pas. */
 .releve a.vers{color:inherit;text-decoration:none;display:block;padding:1.6mm 0;margin:-1.6mm 0}
-.piece a.retour{display:block;margin-top:2mm;padding:1.6mm 0;font-size:7.8pt;font-weight:600;color:var(--pin);text-decoration:none;border:.6pt solid var(--filet);border-radius:4mm;text-align:center}
+.piece a.retour,.photo-c a.retour{display:block;margin-top:2mm;padding:1.6mm 0;font-size:7.8pt;font-weight:600;color:var(--pin);text-decoration:none;border:.6pt solid var(--filet);border-radius:4mm;text-align:center}
 .releve .perdu{color:var(--alerte);font-style:italic}
 .releve .plus{color:var(--pin)}
 .releve td.coul{width:1.4mm;padding:0}
@@ -140,7 +140,18 @@ th.s{color:var(--sortie)}th.e{color:var(--entree)}
 .rang-c .mt.plus{color:var(--entree)}
 .rang-c .mt.moins{color:var(--sortie)}
 .rang-c .cd{width:72mm;flex:none}
-.rang-c .cd .ticket,.rang-c .cd .facture{height:58mm}
+.rang-c .cd .ticket,.rang-c .cd .facture{height:52mm}
+.rang-c a.vers-photo{display:block;margin-top:1.5mm;padding:1.4mm 0;font-size:7.8pt;font-weight:600;color:var(--pin);text-decoration:none;border:.6pt solid var(--filet);border-radius:4mm;text-align:center}
+/* Les vraies photos, en fin de dossier : sans surlignage, puisque c est la preuve
+   telle que prise. Ici dessinées, faute de vraies photos dans un exemple. */
+.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:6mm}
+.photo-c .ent{display:flex;justify-content:space-between;font-size:8pt;border-top:1.5pt solid var(--gris);padding-top:1.5mm;margin-bottom:1.5mm}
+.photo-c .ent .ref{font-weight:600}
+.photo-c .sous{font-size:7.4pt;color:var(--doux);margin-bottom:2mm}
+.photo{background:#ddd9d0;height:86mm;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.photo .ticket,.photo .facture{transform:rotate(-1.6deg);filter:grayscale(1) contrast(1.08);height:auto;max-height:80mm;width:86%;border-color:#c9c5bb}
+.photo .ticket .t,.photo .facture .tot{background:none}
+.photo-c a.retour{margin-top:2mm}
 
 /* ── Tickets perdus ── */
 .perdus td{font-size:8.8pt}
@@ -254,6 +265,15 @@ if (MISE === "cote") {
   decoupe.forEach((pages, m) => { pagesMois[m] = { releve: page, pieces: page, np: 0 }; page += pages.length; });
 }
 const pagePerdusFinal = MISE === "cote" ? page : pagePerdus;
+// Le côte à côte, son choix du 24 octobre : la pièce réécrite à droite de sa
+// ligne, et les vraies photos rangées TOUT AU BOUT, chacune avec son retour.
+const PHOTOS_PAR_PAGE = 6;
+const avecPhoto = tout.flatMap((L, m) => L.filter(l => l.ticket || l.facture).map(l => ({ l, m })));
+const pageAnnexe = pagePerdusFinal + 1;
+const pagePhoto = ref => pageAnnexe + Math.floor(avecPhoto.findIndex(x => x.l.ref === ref) / PHOTOS_PAR_PAGE);
+const pageDeLigne = new Map();
+if (MISE === "cote") { let pg = 3; decoupe.forEach(pages => pages.forEach(lignes => { lignes.forEach(l => l.ref && pageDeLigne.set(l.ref, pg)); pg++; })); }
+const pageFinale = MISE === "cote" ? pageAnnexe + Math.ceil(avecPhoto.length / PHOTOS_PAR_PAGE) - 1 : pagePerdusFinal;
 
 function pieceDe(l, m) {
   if (l.ticket) { const t = l.ticket, tva = t.total - t.total / (1 + t.taux / 100);
@@ -300,7 +320,7 @@ h += `<section class="page">
   <table class="serre"><thead><tr><th>Mois</th><th class="d s">Sorties</th><th class="d e">Entrées</th><th class="d">Lignes</th><th>Justification</th><th class="d">Page</th></tr></thead><tbody>
   ${tout.map((L, m) => { const p = L.filter(l => l.perdu).length; return `<tr><td>${MOIS_M[m]}</td><td class="d num s">−${eur(-sum(L.filter(l => l.montant < 0), l => l.montant))}</td><td class="d num e">+${eur(sum(L.filter(l => l.montant > 0), l => l.montant))}</td><td class="d num">${L.length}</td><td>${p ? `<span style="color:var(--alerte)">Justifié, ${p} ticket perdu</span>` : "Justifié"}</td><td class="d num">${pagesMois[m].releve}</td></tr>`; }).join("")}
   </tbody></table>
-  <p class="note">Les tickets perdus sont listés page ${pagePerdusFinal}. Leur TVA n’a pas été déduite.</p>
+  <p class="note">Les tickets perdus sont listés page ${pagePerdusFinal}. Leur TVA n’a pas été déduite.${MISE === "cote" ? ` Les photos des justificatifs sont à partir de la page ${pageAnnexe}.` : ""}</p>
 </section>`;
 
 // Les mois, côte à côte
@@ -310,7 +330,7 @@ if (MISE === "cote") decoupe.forEach((pages, m) => { const L = tout[m];
     if (ip === 0) h += `${resumeMois(L, m)}`;
     lignes.forEach(l => {
       const gauche = `<div class="cg"><span class="coul-c" style="background:${COUL[l.cat]}"></span><div><div class="dt num">${deux(l.jour)}/${deux(m + 1)}/2025</div><div class="lib">${l.lib}</div><div class="cat" style="color:${COUL[l.cat]}">${NOM[l.cat]}</div>${l.ref ? `<div class="refc">${l.ref}</div>` : ""}${l.perdu ? `<div class="perdu">Ticket perdu, mention validée</div>` : ""}${l.numF ? `<div class="just-c">Facture ${l.numF}, ${l.client}</div>` : ""}</div><div class="mt num${l.montant > 0 ? " plus" : " moins"}">${l.montant > 0 ? "+" : "−"}${eur(l.montant)}</div></div>`;
-      h += l.ref ? `<div class="rang-c haut-c">${gauche}<div class="cd">${pieceDe(l, m)}</div></div>` : `<div class="rang-c">${gauche}</div>`;
+      h += l.ref ? `<div class="rang-c haut-c" id="ligne-${l.ref}">${gauche}<div class="cd">${pieceDe(l, m)}${l.numF ? "" : `<a class="vers-photo" href="#photo-${l.ref}">Voir la photo, p. ${pagePhoto(l.ref)}</a>`}</div></div>` : `<div class="rang-c">${gauche}</div>`;
     });
     h += `</section>`;
   });
@@ -321,7 +341,7 @@ if (MISE === "renvoi") tout.forEach((L, m) => {
   h += `<section class="page">
     <div class="titre-page"><h2>${MOIS_M[m]} 2025</h2><span class="caps">Relevé de banque</span></div>
     ${resumeMois(L, m)}
-    <table class="releve"><thead><tr><th></th><th>Date</th><th>Ce qu’écrit la banque</th><th>Catégorie</th><th class="d s">Sorties</th><th class="d e">Entrées</th><th>Justificatif</th></tr></thead><tbody>
+    <table class="releve"><thead><tr><th></th><th>Date</th><th>Libellé</th><th>Catégorie</th><th class="d s">Sorties</th><th class="d e">Entrées</th><th>Justificatif</th></tr></thead><tbody>
     ${L.map(l => `<tr><td class="coul" style="background:${COUL[l.cat]}"></td><td class="num">${l.ref ? `<span id="ligne-${l.ref}">` : ""}${deux(l.jour)}/${deux(m + 1)}${l.ref ? "</span>" : ""}</td><td class="lib">${l.lib}</td><td class="cat">${NOM[l.cat]}</td><td class="d num s">${l.montant < 0 ? eur(l.montant) : ""}</td><td class="d num e">${l.montant > 0 ? eur(l.montant) : ""}</td><td class="just">${
       l.perdu ? `<span class="perdu">Ticket perdu, mention validée</span>`
       : l.ticket ? `<a class="vers" href="#piece-${l.ref}"><span class="ref">${l.ref}</span> Ticket du ${deux(l.ticket.jour)}/${deux(m + 1)} <span class="p">p. ${ouEst(m, l.ref)}</span></a>`
@@ -344,15 +364,24 @@ if (MISE === "renvoi") tout.forEach((L, m) => {
 // Les tickets perdus
 h += `<section class="page">
   <div class="titre-page"><h2>Les tickets perdus</h2><span class="caps">2025</span></div>
-  <table class="perdus"><thead><tr><th>Date</th><th>Ce qu’écrit la banque</th><th>Catégorie</th><th class="d">Montant</th><th>Mention</th></tr></thead><tbody>
+  <table class="perdus"><thead><tr><th>Date</th><th>Libellé</th><th>Catégorie</th><th class="d">Montant</th><th>Mention</th></tr></thead><tbody>
   ${tout.flatMap((L, m) => L.filter(l => l.perdu).map(l => `<tr><td class="num">${deux(l.jour)}/${deux(m + 1)}/2025</td><td style="font-family:Consolas,monospace;font-size:8pt">${l.lib}</td><td><span class="pastille" style="background:${COUL[l.cat]}"></span>${NOM[l.cat]}</td><td class="d num">${eur(l.montant)}</td><td>Ticket perdu, validé au Check up</td></tr>`)).join("")}
   </tbody></table>
   <div class="encadre">Ces ${perdus.length} dépenses restent dans le relevé, avec leur mention. Leur TVA n’a pas été déduite, soit <b class="num">${eur(tvaPerdue)}</b> au total, faute de ticket.</div>
 </section>`;
 
+// Les photos, tout au bout
+if (MISE === "cote") for (let i = 0; i < avecPhoto.length; i += PHOTOS_PAR_PAGE) {
+  h += `<section class="page"><div class="titre-page"><h2>Les photos des justificatifs</h2><span class="caps">${i / PHOTOS_PAR_PAGE + 1} sur ${Math.ceil(avecPhoto.length / PHOTOS_PAR_PAGE)}</span></div><div class="photos">`;
+  avecPhoto.slice(i, i + PHOTOS_PAR_PAGE).forEach(({ l, m }) => {
+    h += `<div class="photo-c" id="photo-${l.ref}"><div class="ent"><span class="ref">${l.ref}</span><span class="num">${eur(l.montant)}</span></div><div class="sous">${deux(l.jour)}/${deux(m + 1)} à la banque, ${NOM[l.cat].toLowerCase()}</div><div class="photo">${pieceDe(l, m)}</div><a class="retour" href="#ligne-${l.ref}">Retour à la ligne du ${deux(l.jour)}/${deux(m + 1)}, p. ${pageDeLigne.get(l.ref)}</a></div>`;
+  });
+  h += `</div></section>`;
+}
+
 document.getElementById("doc").innerHTML = h;
 document.title = "Dossier justifié 2025";
-document.body.dataset.pages = pagePerdusFinal;
+document.body.dataset.pages = pageFinale;
 </script>
 </body>
 </html>

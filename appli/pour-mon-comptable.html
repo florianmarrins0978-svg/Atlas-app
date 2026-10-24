@@ -332,7 +332,7 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
     <p class="idee">Par mois ou par trimestre, d’un appui. La barre dit où est parti l’argent, la phrase dit ce qui manque.</p>
     <div class="tel">
       <button class="retour" type="button">Terminés</button>
-      <header class="entete" style="padding-top:8px"><h1>Pour mon comptable</h1><span class="caps sous">Année 2026</span></header>
+      <header class="entete" style="padding-top:8px"><h1>Pour mon comptable</h1><span class="caps sous">Dossier en cours</span></header>
 
       <div class="source" data-si="reliee"><span class="pastille" style="background:var(--plein)"></span>Crédit Mutuel relié, lu ce matin<button class="lien" type="button">Ma banque</button></div>
       <div class="source" data-si="main" hidden><span class="pastille" style="background:var(--gris)"></span>Relevé tenu à la main<button class="lien" type="button">Relier ma banque</button></div>
@@ -467,14 +467,14 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
   <!-- 6. Les dossiers gardés -->
   <section class="planche">
     <h2 class="nom" id="ecran-dossiers">5. Mes dossiers justifiés</h2>
-    <p class="idee">Quand tout est justifié, vous validez l'année : Atlas en fait un PDF, mois par mois, chaque ligne de banque suivie de sa photo. Il est gardé dix ans, et un dossier validé ne s'efface pas.</p>
+    <p class="idee">Vous arrêtez le dossier quand vous voulez, à la date de votre exercice. Atlas en fait le PDF côte à côte et le range ici, gardé dix ans, sans pouvoir l'effacer. Le menu Année retrouve un dossier.</p>
     <div class="tel">
       <button class="retour" type="button">Année 2026</button>
       <header class="entete" style="padding-top:8px"><h1>Mes dossiers justifiés</h1><span class="caps sous">Gardés dix ans</span></header>
       <div class="cartes" style="margin-top:20px">
         <article class="carte" data-dossier-encours></article>
       </div>
-      <p class="jour" style="margin-top:24px">Validés</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin:24px 24px 0"><p class="jour" style="margin:0">Rangés</p><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--encre-douce)">Année<select data-filtre-an style="border:1px solid var(--trait);border-radius:999px;background:var(--carte);color:var(--encre);padding:8px 14px;font:500 14px var(--sans);min-height:40px"></select></label></div>
       <ul class="lignes" data-dossiers></ul>
     </div>
   </section>
@@ -496,7 +496,7 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
           <label>Date<div class="champ">14/10/2026</div></label>
           <label>Montant<div class="champ">62,40 €</div></label>
         </div>
-        <label style="margin-top:12px">Ce qu'écrit la banque<div class="champ">CB TOTALENERGIES ST JEAN</div></label>
+        <label style="margin-top:12px">Libellé<div class="champ">CB TOTALENERGIES ST JEAN</div></label>
         <label style="margin-top:12px">Sens<div class="sens"><span class="oui">Sortie</span><span>Entrée</span></div></label>
         <div class="gestes"><button class="plein" type="button">Ajouter la ligne</button></div>
       </div>
@@ -528,17 +528,19 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
 .compta-zone .format button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
 body.nuit .compta-zone .format button[aria-pressed="true"]{color:#101210}
 
-.ecran-c{background:var(--fond);border-radius:14px;box-shadow:0 16px 44px rgba(20,18,14,.22);overflow:hidden;position:relative;margin:0 auto}
-.ecran-c.pc{width:100%;height:680px}
-.ecran-c.tel-c{width:390px;max-width:100%;height:760px;border-radius:26px}
+.ecran-c{background:var(--fond);border-radius:14px;box-shadow:0 16px 44px rgba(20,18,14,.22);overflow:clip;position:relative;margin:0 auto}
+/* Sa demande du 24 octobre : tout voir d un coup, sans défiler DANS l écran. */
+.ecran-c.pc{width:100%}
+.ecran-c.tel-c{width:390px;max-width:100%;border-radius:26px}
 .ecran-c .barre-nav{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--papier);border-bottom:1px solid var(--trait);font-size:12px;color:var(--gris)}
 .ecran-c .barre-nav i{width:9px;height:9px;border-radius:50%;background:var(--trait);display:inline-block}
 .ecran-c .barre-nav span{margin-left:10px;background:var(--carte);border-radius:999px;padding:4px 12px;flex:1;max-width:420px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.c-corps{display:flex;height:calc(100% - 37px)}
-.c-gauche{flex:1;min-width:0;overflow:auto;padding:22px 24px 30px}
-.c-droite{width:400px;flex:none;border-left:1px solid var(--trait);background:var(--carte);overflow:auto;padding:20px 22px 28px;display:none}
+.c-corps{display:flex;align-items:flex-start}
+.c-gauche{flex:1;min-width:0;padding:22px 24px 30px}
+.c-droite{width:400px;flex:none;border-left:1px solid var(--trait);background:var(--carte);padding:20px 22px 28px;display:none;position:sticky;top:96px;max-height:calc(100vh - 110px);overflow:auto}
 .ecran-c.pc.ouvert .c-droite{display:block}
-.ecran-c.tel-c .c-droite{position:absolute;inset:37px 0 0 0;width:auto;border:0;z-index:4;background:var(--fond)}
+/* Sur téléphone, la pièce prend vraiment tout l écran. */
+.ecran-c.tel-c .c-droite{position:fixed;inset:0;width:auto;max-height:none;border:0;z-index:50;background:var(--fond);padding-top:max(20px,env(safe-area-inset-top))}
 .ecran-c.tel-c.ouvert .c-droite{display:block}
 .c-titre{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px 16px}
 .c-titre h3{margin:0;font:400 26px/1.15 var(--serif)}
@@ -603,9 +605,25 @@ body.nuit .c-note{color:#e58a74}
 .c-facture .r{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px solid #eee}
 .c-facture .tot{font-weight:700;border:0;margin-top:4px;background:#ebf0f4;padding:4px 6px;margin-left:-6px;margin-right:-6px;border-radius:3px}
 .c-perdu{margin:18px 0 0;padding:16px;border-radius:12px;border:1.5px dashed var(--trait);font-size:14px;color:var(--encre-douce)}
-.c-gestes{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
-.c-gestes .bon{border:0;border-radius:999px;background:#3f8a4a;color:#fff;padding:12px 20px;font:500 14.5px/1 var(--sans);min-height:46px}
-.c-gestes .pasbon{border:0;border-radius:999px;background:#b8432f;color:#fff;padding:12px 20px;font:500 14.5px/1 var(--sans);min-height:46px}
+/* Trois boutons de la même largeur, sa demande du 24 octobre. */
+.c-gestes{display:flex;gap:8px;margin-top:18px}
+.c-gestes > button{flex:1 1 0;min-width:0;box-sizing:border-box;justify-content:center;text-align:center;padding-left:8px!important;padding-right:8px!important}
+/* La pièce reconstituée d abord, la vraie photo en glissant : deux points dessous. */
+.carrousel{margin-top:14px}
+.pistes{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.pistes::-webkit-scrollbar{display:none}
+.diapo{flex:0 0 100%;scroll-snap-align:center;display:flex;flex-direction:column;align-items:center}
+.diapo .quoi{font:600 10px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--gris);margin:4px 0 10px}
+.diapo .c-piece{margin-top:0}
+.photo-sim{background:#ddd9d0;padding:18px 0;width:100%;display:flex;justify-content:center}
+.photo-sim .c-piece{transform:rotate(-1.6deg);filter:grayscale(1) contrast(1.08)}
+.photo-sim .papier-ticket .t,.photo-sim .c-facture .tot{background:none}
+.points{display:flex;justify-content:center;gap:10px;margin-top:12px}
+.points button{width:22px;height:22px;border:0;background:none;padding:0;display:inline-flex;align-items:center;justify-content:center}
+.points button::after{content:"";width:9px;height:9px;border-radius:50%;border:1.5px solid var(--encre-douce)}
+.points button[aria-current="true"]::after{background:var(--encre-douce)}
+.c-gestes .bon{border:1px solid transparent;border-radius:999px;background:#3f8a4a;color:#fff;padding:12px 20px;font:500 14.5px/1 var(--sans);min-height:46px}
+.c-gestes .pasbon{border:1px solid transparent;border-radius:999px;background:#b8432f;color:#fff;padding:12px 20px;font:500 14.5px/1 var(--sans);min-height:46px}
 body.nuit .c-gestes .bon{background:#7cc488;color:#101210}
 body.nuit .c-gestes .pasbon{background:#e58a74;color:#101210}
 .c-gestes .suiv{border:1px solid var(--trait);background:var(--carte);border-radius:999px;padding:12px 18px;font:500 14px/1 var(--sans);min-height:46px;color:var(--encre)}
@@ -618,7 +636,7 @@ body.nuit .c-gestes .pasbon{background:#e58a74;color:#101210}
 
 <section class="compta-zone">
   <h2 class="nom">7. Le comptable vérifie</h2>
-  <p class="idee">Vous lui envoyez un lien. Il voit le montant à gauche ; il touche le justificatif, la pièce s'ouvre à droite, il appuie sur vert ou rouge, puis Suivant. Un rouge demande pourquoi, et vous arrive dans Atlas. Sur téléphone, la pièce s'ouvre en plein écran. Seul janvier est rempli dans cet essai.</p>
+  <p class="idee">Vous lui envoyez un lien. Il voit le montant à gauche ; il touche le justificatif, la pièce s'ouvre à droite, il touche Valider ou Rejeter, puis Suivant. Un rejet demande pourquoi, et vous arrive dans Atlas. Sur téléphone, la pièce s'ouvre en plein écran. Seul janvier est rempli dans cet essai.</p>
   <div class="format" role="group" aria-label="Format">
     <button type="button" data-format="pc" aria-pressed="true">Ordinateur</button>
     <button type="button" data-format="tel-c" aria-pressed="false">Téléphone</button>
@@ -633,7 +651,7 @@ body.nuit .c-gestes .pasbon{background:#e58a74;color:#101210}
           <button type="button" aria-pressed="true">Janvier</button>
           <button type="button" disabled>Février</button><button type="button" disabled>Mars</button><button type="button" disabled>Avril</button><button type="button" disabled>Mai</button><button type="button" disabled>Juin</button><button type="button" disabled>Juillet</button><button type="button" disabled>Août</button><button type="button" disabled>Septembre</button><button type="button" disabled>Octobre</button><button type="button" disabled>Novembre</button><button type="button" disabled>Décembre</button>
         </div>
-        <table class="c-table"><thead><tr><th></th><th>Date</th><th>Ce qu’écrit la banque</th><th>Catégorie</th><th style="text-align:right">Montant</th><th>Justificatif</th><th style="text-align:right">Vérifié</th></tr></thead><tbody data-c-lignes></tbody></table>
+        <table class="c-table"><thead><tr><th></th><th>Date</th><th>Libellé</th><th>Catégorie</th><th style="text-align:right">Montant</th><th>Justificatif</th><th style="text-align:right">Vérifié</th></tr></thead><tbody data-c-lignes></tbody></table>
       </div>
       <aside class="c-droite" data-c-droite></aside>
     </div>
@@ -666,10 +684,10 @@ function rendre(){
   const ec = document.querySelector("[data-ecran-c]");
   ec.classList.toggle("ouvert", ouvert >= 0);
   document.querySelector("[data-c-lignes]").innerHTML = JANV.map((l, i) => { const s = etatC[i];
-    return `<tr class="${i === ouvert ? "actif" : ""}"><td class="coul" style="background:var(--c-${l.cat})"></td><td class="t-date">${d2(l.j)}/01</td><td class="t-lib"><div class="lib">${l.lib}</div>${s.verdict === "rouge" && s.note ? `<span class="c-note">${s.note}</span>` : ""}</td><td class="t-cat cat" style="color:var(--c-${l.cat})">${NOMC[l.cat]}</td><td class="d${l.m > 0 ? " plus" : ""}">${sg(l.m)}</td><td class="t-piece"><button type="button" class="piece-btn${l.perdu ? " perdu" : ""}" data-c-ouvrir="${i}">${etiquette(l)}</button></td><td class="t-v"><div class="verdict"><button type="button" class="vert" aria-label="Bon" aria-pressed="${s.verdict === "vert"}" data-c-v="${i}:vert">✓</button><button type="button" class="rouge" aria-label="Pas bon" aria-pressed="${s.verdict === "rouge"}" data-c-v="${i}:rouge">✕</button></div></td></tr>`; }).join("");
+    return `<tr class="${i === ouvert ? "actif" : ""}"><td class="coul" style="background:var(--c-${l.cat})"></td><td class="t-date">${d2(l.j)}/01</td><td class="t-lib"><div class="lib">${l.lib}</div>${s.verdict === "rouge" && s.note ? `<span class="c-note">${s.note}</span>` : ""}</td><td class="t-cat cat" style="color:var(--c-${l.cat})">${NOMC[l.cat]}</td><td class="d${l.m > 0 ? " plus" : ""}">${sg(l.m)}</td><td class="t-piece"><button type="button" class="piece-btn${l.perdu ? " perdu" : ""}" data-c-ouvrir="${i}">${etiquette(l)}</button></td><td class="t-v"><div class="verdict"><button type="button" class="vert" aria-label="Valider" aria-pressed="${s.verdict === "vert"}" data-c-v="${i}:vert">✓</button><button type="button" class="rouge" aria-label="Rejeter" aria-pressed="${s.verdict === "rouge"}" data-c-v="${i}:rouge">✕</button></div></td></tr>`; }).join("");
   const nv = etatC.filter(s => s.verdict === "vert").length, nr = etatC.filter(s => s.verdict === "rouge").length;
   document.querySelector("[data-c-compte]").innerHTML = `<b>${nv + nr} sur ${JANV.length}</b> lignes vérifiées en janvier`;
-  document.querySelector("[data-c-rouges]").innerHTML = nr ? `<span style="color:${ROUGE}">${nr} pas bonne${nr > 1 ? "s" : ""}</span>` : "";
+  document.querySelector("[data-c-rouges]").innerHTML = nr ? `<span style="color:${ROUGE}">${nr} rejetée${nr > 1 ? "s" : ""}</span>` : "";
   document.querySelector("[data-c-vert]").style.width = `${nv / JANV.length * 100}%`;
   document.querySelector("[data-c-rouge]").style.width = `${nr / JANV.length * 100}%`;
   const dr = document.querySelector("[data-c-droite]");
@@ -678,17 +696,21 @@ function rendre(){
   const suivant = etatC.findIndex((x, k) => k > ouvert && !x.verdict);
   dr.innerHTML = `<button class="fermer-c" type="button" data-c-fermer>Fermer</button>
     <div class="rappel"><div class="l">${l.lib}</div><div class="m${l.m > 0 ? " plus" : ""}">${sg(l.m)}</div><div class="s">${d2(l.j)}/01/2025 à la banque, ${NOMC[l.cat].toLowerCase()}</div></div>
-    ${piece(l)}
-    ${s.verdict === "vert" ? `<p class="accord oui">Vous l’avez marquée bonne.</p>` : s.verdict === "rouge" && !demandeRouge ? `<p class="accord non">Pas bonne : ${s.note || "sans raison écrite"}</p>` : ""}
-    ${demandeRouge ? `<div class="c-pourquoi"><label for="c-pq">Pourquoi ? Le patron le lira.</label><textarea id="c-pq" data-c-pq>${s.note}</textarea></div><div class="c-gestes"><button class="pasbon" type="button" data-c-confirmer-rouge>Marquer pas bonne</button><button class="suiv" type="button" data-c-annuler-rouge>Annuler</button></div>`
-      : `<div class="c-gestes"><button class="bon" type="button" data-c-v="${ouvert}:vert">Bon</button><button class="pasbon" type="button" data-c-v="${ouvert}:rouge">Pas bon</button>${suivant >= 0 ? `<button class="suiv" type="button" data-c-ouvrir="${suivant}">Suivant</button>` : ""}</div>`}
-    ${etatC.every(x => x.verdict) ? `<div class="c-fini"><b>Janvier est vérifié.</b> ${etatC.filter(x => x.verdict === "rouge").length ? "Le patron reçoit vos rouges dans Atlas." : "Tout est bon."}</div>` : ""}`;
+    ${l.tk || l.fa ? `<div class="carrousel"><div class="pistes" data-pistes><div class="diapo"><span class="quoi">Reconstitué par Atlas</span>${piece(l)}</div><div class="diapo"><span class="quoi">Photo d’origine</span><div class="photo-sim">${piece(l)}</div></div></div><div class="points"><button type="button" aria-label="Reconstitué" aria-current="true" data-point="0"></button><button type="button" aria-label="Photo" aria-current="false" data-point="1"></button></div></div>` : piece(l)}
+    ${s.verdict === "vert" && demandeRouge ? `<p class="accord oui">Vous l’aviez validée.</p>` : s.verdict === "vert" ? `<p class="accord oui">Validée.</p>` : s.verdict === "rouge" && !demandeRouge ? `<p class="accord non">Rejetée : ${s.note || "sans raison écrite"}</p>` : ""}
+    ${demandeRouge ? `<div class="c-pourquoi"><label for="c-pq">${s.verdict === "vert" ? "Expliquez ce changement" : "Pourquoi ? Le patron le lira."}</label><textarea id="c-pq" data-c-pq>${s.note}</textarea></div><div class="c-gestes"><button class="pasbon" type="button" data-c-confirmer-rouge>Rejeter</button><button class="suiv" type="button" data-c-annuler-rouge>Annuler</button></div>`
+      : `<div class="c-gestes"><button class="bon" type="button" data-c-v="${ouvert}:vert">Valider</button><button class="pasbon" type="button" data-c-v="${ouvert}:rouge">Rejeter</button>${suivant >= 0 ? `<button class="suiv" type="button" data-c-ouvrir="${suivant}">Suivant</button>` : ""}</div>`}
+    ${etatC.every(x => x.verdict) ? `<div class="c-fini"><b>Janvier est vérifié.</b> ${etatC.filter(x => x.verdict === "rouge").length ? "Le patron reçoit vos rejets dans Atlas." : "Tout est validé."}</div>` : ""}`;
   if (demandeRouge) dr.querySelector("[data-c-pq]").focus();
+  const pi = dr.querySelector("[data-pistes]");
+  if (pi) pi.addEventListener("scroll", () => { const k = Math.round(pi.scrollLeft / pi.clientWidth); dr.querySelectorAll("[data-point]").forEach(b => b.setAttribute("aria-current", String(Number(b.dataset.point) === k))); });
 }
 
 document.addEventListener("click", ev => {
   const f = ev.target.closest("[data-format]");
   if (f){ document.querySelectorAll("[data-format]").forEach(x => x.setAttribute("aria-pressed", x === f)); const ec = document.querySelector("[data-ecran-c]"); ec.classList.remove("pc", "tel-c"); ec.classList.add(f.dataset.format); return; }
+  const pt = ev.target.closest("[data-point]");
+  if (pt){ const pi = pt.closest(".carrousel").querySelector("[data-pistes]"); pi.scrollTo({ left: pi.clientWidth * Number(pt.dataset.point), behavior: "smooth" }); return; }
   const o = ev.target.closest("[data-c-ouvrir]");
   if (o){ ouvert = Number(o.dataset.cOuvrir); demandeRouge = false; rendre(); return; }
   if (ev.target.closest("[data-c-fermer]")){ ouvert = -1; demandeRouge = false; rendre(); return; }
@@ -703,6 +725,8 @@ document.addEventListener("click", ev => {
   if (ev.target.closest("[data-c-confirmer-rouge]")){ const s = etatC[ouvert]; s.verdict = "rouge"; s.note = document.querySelector("[data-c-pq]").value.trim(); demandeRouge = false; rendre(); return; }
   if (ev.target.closest("[data-c-annuler-rouge]")){ demandeRouge = false; rendre(); return; }
 });
+// Sur un écran étroit, on part du format téléphone : celui d un ordinateur n y tiendrait pas.
+if (window.innerWidth < 760) document.querySelector("[data-format=tel-c]").click();
 rendre();
 })();
 </script>
@@ -715,7 +739,7 @@ rendre();
     <tr><td>Ticket perdu</td><td>La ligne est validée avec la mention, et votre comptable la voit. Mais sans ticket, la TVA de cette dépense ne se récupère pas : l'écran le dit avant que vous validiez.</td></tr>
     <tr><td>Les couleurs</td><td>Une proposition. Dites celle qui ne vous va pas, et elle change. Il y a aussi une version Nuit, en haut.</td></tr>
     <tr><td>Mes dossiers justifiés</td><td>Quand l’année est justifiée, vous la validez : un PDF mois par mois, chaque ligne de banque suivie de la photo de son ticket. Gardé dix ans, comme la loi le demande pour les pièces comptables, et un dossier validé ne s’efface pas.</td></tr>
-    <tr><td>Le PDF</td><td>« Ouvrir » sur le dossier 2025 montre un vrai dossier fini, en exemple : 35 pages, l’année entière. Dans l’appli, il se range ici tout seul quand vous validez l’année ; « Enregistrer sur le téléphone » en garde une copie dans vos fichiers.</td></tr>
+    <tr><td>Le PDF</td><td>« Ouvrir » sur le dossier 2025 montre un vrai dossier fini, en exemple : 35 pages, l’année entière. Dans l’appli, il se range ici tout seul quand vous validez l’année ; « Télécharger » en garde une copie sur le téléphone.</td></tr>
     <tr><td>Le comptable</td><td>Il ne coche rien dans le PDF : un PDF ne garde pas un bouton qu’on touche, et le dossier gardé dix ans ne doit plus changer. Il reçoit un lien privé vers la page de l’écran 7. Ses rouges vous arrivent dans Atlas, avec sa raison.</td></tr>
     <tr><td>Ce qui marche derrière</td><td>Rien pour l’instant : c’est un dessin. Une fois choisi, il se code dans l’appli, et « Photographier » ouvre l’appareil photo du téléphone, comme le scan des tickets dans Ma TVA.</td></tr>
   </table>
@@ -782,19 +806,29 @@ function rendreVisionneuse(){
     <div class="gestes"><button class="contour" type="button" data-detacher="${l.id}">Ce n’est pas le bon ticket</button></div>`;
 }
 
-let dossier2026 = false;
+// Le dossier s arrête quand IL le décide (24 octobre 2026) : son exercice peut
+// tomber à n importe quelle date. Le suivant commence le lendemain, tout seul.
+let arret = null, arrete = false, dateArret = "2026-10-24", filtreAn = null;
+const MOIS_N = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const enMots = iso => { const [a, m, j] = iso.split("-").map(Number); return `${j === 1 ? "1ᵉʳ" : j} ${MOIS_N[m - 1]} ${a}`; };
+const lendemain = iso => { const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10); };
+function carteArret(reste, ou){
+  if (arrete) return `<p class="qui" style="margin:0">Dossier rangé, du 1ᵉʳ janvier au ${enMots(dateArret)}.</p><p class="texte">Le suivant a commencé le ${enMots(lendemain(dateArret))}.</p>`;
+  if (arret === "choix") return `<p class="qui" style="margin:0">Arrêter le dossier</p>
+    <label class="texte" style="display:block;margin-top:10px">Au<input type="date" value="${dateArret}" min="2026-01-01" data-date-arret style="display:block;margin-top:6px;width:100%;border:1px solid var(--trait);border-radius:10px;padding:10px 12px;font:15px var(--sans);background:var(--fond);color:var(--encre);min-height:44px"></label>
+    ${reste ? `<p class="texte alerte">${reste} ${reste > 1 ? "lignes attendent" : "ligne attend"} encore un justificatif avant cette date. Réglez-les d’abord au Check up.</p><div class="gestes"><button class="leger" type="button" data-arret-annuler>Annuler</button></div>`
+      : `<p class="texte">Le dossier ira du 1ᵉʳ janvier au ${enMots(dateArret)}.</p><div class="gestes"><button class="plein" type="button" data-arret-confirmer>Arrêter et ranger</button><button class="leger" type="button" data-arret-annuler>Annuler</button></div>`}`;
+  return `<p class="qui" style="margin:0">Dossier en cours, depuis le 1ᵉʳ janvier 2026</p>${ou === "dossiers" && reste ? `<p class="texte alerte">${reste} ${reste > 1 ? "lignes attendent" : "ligne attend"} encore un justificatif.</p>` : ""}<div class="gestes"><button class="contour" type="button" data-arreter>Arrêter mon dossier ici</button></div>`;
+}
 function rendreDossiers(reste){
-  const enc = document.querySelector("[data-dossier-encours]");
-  if (dossier2026) enc.innerHTML = `<p class="qui" style="margin:0">Dossier 2026 validé.</p><p class="texte">Rangé ci-dessous, tout seul.</p>`;
-  else if (reste) enc.innerHTML = `<p class="qui" style="margin:0">Dossier 2026</p><p class="texte alerte">${reste} ${reste>1?"lignes attendent":"ligne attend"} encore un justificatif. Il se valide quand tout est justifié.</p>`;
-  else enc.innerHTML = `<p class="qui" style="margin:0">Dossier 2026</p><p class="texte" style="color:var(--pin)">Tout est justifié.</p><div class="gestes"><button class="plein" type="button" data-valider-dossier>Valider le dossier 2026</button></div>`;
-  const ans = (dossier2026 ? [["2026","23 octobre 2026","2036","4,1 Mo"]] : []).concat([["2025","12 février 2026","2035","5,8 Mo"],["2024","3 mars 2025","2034","5,2 Mo"],["2023","20 février 2024","2033","4,7 Mo"]]);
-  document.querySelector("[data-dossiers]").innerHTML = ans.map(([a,v,g,t]) => `<li class="ligne"><span class="pdf">PDF</span><span class="milieu"><div class="lib">Dossier justifié ${a}</div><div class="cat" style="color:var(--gris)">Validé le ${v}, gardé jusqu’en ${g}, ${t}</div><div class="gestes"><a class="lien" href="dossier-justifie-exemple.pdf" target="_blank" rel="noopener">Ouvrir</a>${a === "2025" ? `<a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" target="_blank" rel="noopener">Ouvrir côte à côte</a>` : ""}<a class="lien" href="dossier-justifie-exemple.pdf" download="Dossier justifié ${a}.pdf">Enregistrer sur le téléphone</a><button class="lien" type="button">Envoyer au comptable</button></div></span></li>`).join("");
-  // Sur l'écran de l'année aussi : c'est là qu'il voit que tout est justifié,
-  // et c'est là qu'il cherchait le bouton (sa question du 23 octobre).
-  const va = document.querySelector("[data-valider-annee]");
-  va.innerHTML = dossier2026 ? `<article class="carte" style="margin:16px 24px 0"><p class="qui" style="margin:0">Dossier 2026 validé.</p><p class="texte">Il est dans Mes dossiers justifiés.</p></article>`
-    : reste ? "" : `<article class="carte" style="margin:16px 24px 0"><p class="qui" style="margin:0">Toute l’année 2026 est justifiée.</p><div class="gestes"><button class="plein" type="button" data-valider-dossier>Valider le dossier 2026</button></div></article>`;
+  document.querySelector("[data-dossier-encours]").innerHTML = carteArret(reste, "dossiers");
+  document.querySelector("[data-valider-annee]").innerHTML = `<article class="carte" style="margin:16px 24px 0">${carteArret(reste, "annee")}</article>`;
+  const tous = (arrete ? [{ du:"1ᵉʳ janvier", au:enMots(dateArret), an:Number(dateArret.slice(0,4)), v:"24 octobre 2026", g:Number(dateArret.slice(0,4)) + 10, t:"4,1 Mo" }] : [])
+    .concat([{ du:"1ᵉʳ janvier", au:"31 décembre 2025", an:2025, v:"12 février 2026", g:2035, t:"5,8 Mo" }, { du:"1ᵉʳ janvier", au:"31 décembre 2024", an:2024, v:"3 mars 2025", g:2034, t:"5,2 Mo" }, { du:"1ᵉʳ janvier", au:"31 décembre 2023", an:2023, v:"20 février 2024", g:2033, t:"4,7 Mo" }]);
+  const ans = [...new Set(tous.map(d => d.an))];
+  if (filtreAn === null || !ans.includes(filtreAn)) filtreAn = ans[0];
+  document.querySelector("[data-filtre-an]").innerHTML = ans.map(a => `<option value="${a}"${a === filtreAn ? " selected" : ""}>${a}</option>`).join("");
+  document.querySelector("[data-dossiers]").innerHTML = tous.filter(d => d.an === filtreAn).map(d => `<li class="ligne"><span class="pdf">PDF</span><span class="milieu"><div class="lib">Du ${d.du} au ${d.au}</div><div class="cat" style="color:var(--gris)">Rangé le ${d.v}, gardé jusqu’en ${d.g}, ${d.t}</div><div class="gestes"><a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" target="_blank" rel="noopener">Ouvrir</a><a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" download="Dossier justifié ${d.an}.pdf">Télécharger</a><button class="lien" type="button">Envoyer au comptable</button></div></span></li>`).join("");
 }
 
 function rendreRelies(){
@@ -861,7 +895,9 @@ function rendreCartes(){
 document.addEventListener("click", e => {
   const g = e.target.closest("[data-g]");
   if (g){ const [id, s] = g.dataset.g.split(":"); etat[id] = s; rendreCartes(); return; }
-  if (e.target.closest("[data-valider-dossier]")){ dossier2026 = true; rendreCartes(); return; }
+  if (e.target.closest("[data-arreter]")){ arret = "choix"; rendreCartes(); return; }
+  if (e.target.closest("[data-arret-annuler]")){ arret = null; rendreCartes(); return; }
+  if (e.target.closest("[data-arret-confirmer]")){ arrete = true; arret = null; filtreAn = Number(dateArret.slice(0,4)); rendreCartes(); return; }
   if (e.target.closest("[data-aller-dossiers]")){ document.getElementById("ecran-dossiers").scrollIntoView({ behavior:"smooth", block:"start" }); return; }
   const vo = e.target.closest("[data-voir]");
   if (vo){ vu = vo.dataset.voir; rendreVisionneuse(); vo.closest(".tel").scrollIntoView({ behavior:"smooth", block:"start" }); return; }
@@ -883,6 +919,10 @@ document.addEventListener("click", e => {
   const k = e.target.closest("[data-checkup]");
   if (k){ k.textContent = "Vérifié, 3 à regarder"; document.querySelector("[data-dernier]").textContent = "Dernier Check up à l’instant"; return; }
   if (e.target.closest("a[href='#']")) e.preventDefault();
+});
+document.addEventListener("change", e => {
+  if (e.target.matches("[data-filtre-an]")){ filtreAn = Number(e.target.value); rendreCartes(); }
+  if (e.target.matches("[data-date-arret]") && e.target.value){ dateArret = e.target.value; rendreCartes(); }
 });
 rendreCartes();
 </script>
