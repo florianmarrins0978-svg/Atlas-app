@@ -1,5 +1,6 @@
 import { colors, font } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
+import { ligneDuTotal } from "@/lib/ticket-imprime";
 import { LIBELLE_MOTIF, categorieDeLaLigne, jourComplet, jourEnMots } from "@/lib/pour-mon-comptable";
 import { dossierParJeton, type LignePourLeComptable } from "@/server/repositories/verification-comptable";
 import Verification, { type LigneAVerifier, type PieceAffichee } from "./Verification";
@@ -19,6 +20,8 @@ export const metadata = { title: "Dossier justifié", robots: { index: false, fo
  */
 function piece(l: LignePourLeComptable): PieceAffichee {
   if (l.justification === "ticket" && l.ticket) {
+    const recopie = l.ticket.lignesImprimees;
+    const total = recopie ? ligneDuTotal(recopie, l.ticket.totalTtc ? Number(l.ticket.totalTtc) : null) : -1;
     return {
       genre: "ticket",
       nom: l.ticket.fournisseur,
@@ -26,6 +29,8 @@ function piece(l: LignePourLeComptable): PieceAffichee {
       total: l.ticket.totalTtc ? enEuros(l.ticket.totalTtc) : null,
       tva: enEuros(l.ticket.tvaDeductible),
       original: l.ticket.photoCle ? "photo" : null,
+      lignes: recopie ? recopie.map((x, k) => ({ g: x.gauche, d: x.droite, surligne: k === total })) : null,
+      totalSurUneLigne: total >= 0,
     };
   }
   if (l.justification === "facture" && l.factureRecue) {

@@ -7,7 +7,18 @@ import { avancementDeLaVerification, libellePeriode, type Categorie, type EtatDe
 import { poserVerdictAction } from "./actions";
 
 export type PieceAffichee =
-  | { genre: "ticket"; nom: string; date: string; total: string | null; tva: string; original: "photo" | null }
+  | {
+      genre: "ticket";
+      nom: string;
+      date: string;
+      total: string | null;
+      tva: string;
+      original: "photo" | null;
+      /** Le ticket recopié ligne par ligne (lot 5), ou rien pour un ticket d'avant. */
+      lignes: { g: string; d: string | null; surligne: boolean }[] | null;
+      /** Une des lignes porte le total : il ne s'ajoute pas à part. */
+      totalSurUneLigne: boolean;
+    }
   | { genre: "facture"; nom: string; detail: string; total: string | null; original: "photo" | "pdf" | null }
   | { genre: "emise"; numero: string }
   | { genre: "perdu" }
@@ -420,6 +431,19 @@ function Reconstituee({ piece: p, entreprise, montant }: { piece: PieceAffichee;
   );
   switch (p.genre) {
     case "ticket":
+      if (p.lignes) {
+        return (
+          <div className="w-[280px] max-w-full px-3.5 py-4 text-[11.5px] leading-[1.45]" style={{ ...papier, fontFamily: "ui-monospace, Consolas, monospace" }} data-atlas="reconstituee">
+            {p.lignes.map((l, k) => (
+              <div key={k} className="flex justify-between gap-2 rounded-[3px] px-1" style={l.surligne ? { backgroundColor: couleursDocument.surligne, fontWeight: 700 } : undefined}>
+                <span className="min-w-0 break-words">{l.g}</span>
+                {l.d && <span className="flex-none">{l.d}</span>}
+              </div>
+            ))}
+            {!p.totalSurUneLigne && total("TOTAL TTC", p.total)}
+          </div>
+        );
+      }
       return (
         <div className="w-[260px] max-w-full px-4 py-4 text-[12px] leading-[1.5]" style={{ ...papier, fontFamily: "ui-monospace, Consolas, monospace" }} data-atlas="reconstituee">
           <div className="text-center font-bold">{p.nom}</div>

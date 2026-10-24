@@ -12,6 +12,7 @@ import type { LigneAvoirStockee } from "../../lib/avoir";
 import type { AttestationLue } from "../../lib/attestation-lue";
 import type { PrestationContrat } from "../../lib/contrats-entretien";
 import type { SourcesVehicule } from "../../lib/vehicules";
+import type { LigneImprimee } from "../../lib/ticket-imprime";
 
 import {
   pgTable,
@@ -3065,6 +3066,8 @@ export const achatsTva = pgTable("achats_tva", {
   tvaDeductible: numeric("tva_deductible", { precision: 12, scale: 2 }).notNull(),
   /** Le ticket photographié, dans le stockage. `null` pour une saisie à la main. */
   photoCle: text("photo_cle"),
+  /** Chaque ligne imprimée du ticket (migration 0146), `null` pour les tickets d'avant. */
+  lignesImprimees: jsonb("lignes_imprimees").$type<LigneImprimee[]>(),
   /** Par où il est entré. Sert le jour où une lecture automatique se révèle
    *  fautive : il faut pouvoir retrouver ce qui vient de la machine sans
    *  toucher à ce que le patron a écrit lui-même. */

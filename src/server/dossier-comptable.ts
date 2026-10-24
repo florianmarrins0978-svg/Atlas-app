@@ -44,6 +44,7 @@ async function pourLeDossier(l: LigneDuReleve): Promise<LignePourLeDossier> {
           totalTtc: l.ticket.totalTtc,
           tva: l.ticket.tvaDeductible,
           photo: await lire(l.ticket.photoCle, "image"),
+          lignes: l.ticket.lignesImprimees,
         }
       : l.justification === "facture" && l.factureRecue
         ? {

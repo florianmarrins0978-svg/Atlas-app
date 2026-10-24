@@ -196,5 +196,16 @@ cas("le délai de récupération se tient jusqu'au 1er janvier d'il y a deux ans
   assert.equal(duJour.ok && duJour.ticket.date, "2026-10-26");
 });
 
+cas("les lignes imprimées se recopient telles quelles, doublons compris", () => {
+  const r = lireReponseTicket(
+    `{"fournisseur":"INTERMARCHE","date":"2026-10-22","total_ttc":30.12,"taux_tva":5.5,"tva":1.57,"lignes":[{"g":"REAL THAI LAIT COCO","d":"1,66 EUR A"},{"g":"REAL THAI LAIT COCO","d":"1,66 EUR A"},{"g":"MONTANT DU","d":"30,12 EUR"}]}`
+  );
+  assert.ok(r.ok);
+  assert.equal(r.ticket.lignes?.length, 3);
+  assert.deepEqual(r.ticket.lignes?.[2], { gauche: "MONTANT DU", droite: "30,12 EUR" });
+  const sans = lireReponseTicket(`{"fournisseur":"X","date":"2026-10-22","total_ttc":5,"taux_tva":20,"tva":0.83}`);
+  assert.equal(sans.ok && sans.ticket.lignes, null);
+});
+
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Lecture d'un ticket — ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);

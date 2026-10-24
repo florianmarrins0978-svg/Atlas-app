@@ -21,7 +21,8 @@ import {
 } from "@/server/repositories/paiements-facture";
 import { preparerPhotoEntrante } from "@/server/photo-entrante";
 import { dossierEnCours } from "@/server/repositories/dossiers-comptables";
-import { appliquerCheckUp } from "@/server/repositories/pour-mon-comptable";
+import { appliquerCheckUp, relierTicket } from "@/server/repositories/pour-mon-comptable";
+import { lignesImprimees } from "@/lib/ticket-imprime";
 
 /**
  * Enregistrer un achat, et le retirer.
@@ -42,6 +43,13 @@ export async function ajouterAchatAction(formData: FormData): Promise<ResultatAc
   const dateAchat = String(formData.get("dateAchat") ?? "").trim();
   const saisie = String(formData.get("saisie") ?? "main") as SaisieAchat;
   const photoCle = String(formData.get("photoCle") ?? "").trim() || null;
+  // Les lignes lues reviennent du navigateur : relues par la MÊME règle que la
+  // lecture, jamais crues telles quelles (`ticket-imprime.ts`).
+  const lignes = lignesDuFormulaire(formData.get("lignes"));
+  // La ligne de banque que ce ticket vient justifier, quand il a été pris
+  // depuis le Check up (lot 5 de « Pour mon comptable »).
+  const mouvementId = String(formData.get("mouvementId") ?? "").trim() || null;
+  if (mouvementId && !/^[0-9a-f-]{36}$/i.test(mouvementId)) return { ok: false, raison: "Cette ligne n'existe pas." };
 
   const totalTtc = montantSaisi(String(formData.get("totalTtc") ?? ""));
   const tauxTva = montantSaisi(String(formData.get("tauxTva") ?? ""));
@@ -127,9 +135,16 @@ export async function ajouterAchatAction(formData: FormData): Promise<ResultatAc
     pourquoi: String(formData.get("pourquoi") ?? ""),
     justificatif: formData.get("justificatif") === "oui",
     photoCle,
+    lignesImprimees: lignes,
     saisie,
   });
   if (!ligne) return { ok: false, raison: "L'achat n'a pas pu être enregistré." };
+  // **Pris pour une ligne, il la justifie, par le geste du patron** : le Check
+  // up ne relierait que s'il tombait juste et seul, et il a montré lequel.
+  if (mouvementId) {
+    const relie = await relierTicket(ctx, mouvementId, ligne.id, "patron");
+    if (!relie.ok) return { ok: false, raison: `Le ticket est rangé dans Ma TVA, mais n'a pas rejoint sa ligne : ${relie.raison}` };
+  }
   // **Le ticket rejoint sa ligne de banque dès qu'il arrive** (« Pour mon
   // comptable », 24 octobre 2026) : le Check up ne relie que le ticket qui
   // tombe juste et seul, et le lien se défait d'un appui. Le faire ICI, à
@@ -353,4 +368,16 @@ export async function remettrePaiementAction(reglementId: string): Promise<Resul
   const r = await sansPanneMuette("Règlement remis", ECHEC_REMISE, () => remettrePaiement(ctx, reglementId));
   if (r.ok) revalidatePath("/termines/tva");
   return r;
+}
+
+/** Les lignes imprimées renvoyées par le formulaire, en JSON ; rien quand elles sont illisibles. */
+function lignesDuFormulaire(valeur: FormDataEntryValue | null) {
+  if (typeof valeur !== "string" || valeur === "") return null;
+  try {
+    return lignesImprimees(JSON.parse(valeur));
+  } catch {
+    // Un JSON abîmé ne se répare pas : le ticket s'enregistre avec son résumé,
+    // et la pièce réécrite ne montre que lui. Le montant, lui, est intact.
+    return null;
+  }
 }

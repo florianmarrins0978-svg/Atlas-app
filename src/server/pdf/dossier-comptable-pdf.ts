@@ -5,6 +5,7 @@ import { logger } from "../logger";
 import { enEuros } from "@/lib/euros";
 import { texteDuPapier } from "@/lib/texte-pdf";
 import { NOM_CATEGORIE, ORDRE_CATEGORIES } from "@/lib/couleurs-comptable";
+import { ligneDuTotal, type LigneImprimee } from "@/lib/ticket-imprime";
 import {
   LIBELLE_MOTIF,
   libellePeriode,
@@ -36,7 +37,16 @@ import {
  */
 
 export type PieceDeLaLigne =
-  | { genre: "ticket"; fournisseur: string; date: string; totalTtc: string | null; tva: string | null; photo: Fichier | null }
+  | {
+      genre: "ticket";
+      fournisseur: string;
+      date: string;
+      totalTtc: string | null;
+      tva: string | null;
+      photo: Fichier | null;
+      /** Le ticket recopié ligne par ligne (lot 5), ou `null` pour un ticket d'avant : il garde alors son résumé. */
+      lignes: LigneImprimee[] | null;
+    }
   | { genre: "facture"; societe: string; nom: string; totalTtc: string | null; fichier: Fichier | null }
   | { genre: "facture-emise"; numero: string };
 
@@ -184,6 +194,47 @@ function dessinerPiece(page: PDFPage, p: Polices, piece: PieceDeLaLigne, x: numb
   return h;
 }
 
+/** L'interligne d'un ticket recopié : celui d'un ticket de caisse, serré mais lisible. */
+const PAS_TICKET = 9.5;
+/** Le bas utile d'une page du relevé. */
+const BAS = MARGE + 20;
+/** Le haut d'une page du relevé, sous son en-tête. */
+const HAUT = HAUTEUR - MARGE - 52;
+
+type LigneDePiece = { g: string; d: string | null; surligne: boolean };
+
+/**
+ * Les lignes d'un ticket recopié, celle du total surlignée (`ligneDuTotal`).
+ * Quand aucune ligne ne tombe juste sur le total, il s'ajoute à part, surligné :
+ * jamais une ligne prise au hasard.
+ */
+function lignesDuTicket(piece: Extract<PieceDeLaLigne, { genre: "ticket" }>): LigneDePiece[] | null {
+  if (!piece.lignes || piece.lignes.length === 0) return null;
+  const total = ligneDuTotal(piece.lignes, piece.totalTtc ? Number(piece.totalTtc) : null);
+  const lignes = piece.lignes.map((l, k) => ({ g: l.gauche, d: l.droite, surligne: k === total }));
+  if (total < 0) lignes.push({ g: "TOTAL TTC", d: piece.totalTtc ? enEuros(piece.totalTtc) : "non lu", surligne: true });
+  return lignes;
+}
+
+const hauteurRecopie = (n: number) => 20 + n * PAS_TICKET;
+
+/** Un morceau de ticket recopié, dans son cadre. Rend la hauteur prise. */
+function dessinerTicketRecopie(page: PDFPage, p: Polices, lignes: LigneDePiece[], x: number, yHaut: number, largeur: number): number {
+  const h = hauteurRecopie(lignes.length);
+  page.drawRectangle({ x, y: yHaut - h, width: largeur, height: h, color: rgb(1, 1, 1), borderColor: FILET, borderWidth: 0.6 });
+  let y = yHaut - 14;
+  for (const l of lignes) {
+    const police = l.surligne ? p.monoGras : p.mono;
+    if (l.surligne) page.drawRectangle({ x: x + 5, y: y - 3, width: largeur - 10, height: PAS_TICKET + 1, color: SURLIGNE });
+    const droite = l.d ? papier(l.d) : "";
+    const place = largeur - 18 - (droite ? police.widthOfTextAtSize(droite, 7) + 6 : 0);
+    if (l.g) ecrire(page, l.g, x + 9, y, police, 7, ENCRE, place);
+    if (droite) ecrireADroite(page, droite, x + largeur - 9, y, police, 7);
+    y -= PAS_TICKET;
+  }
+  return h;
+}
+
 type Embarque = { genre: "image"; objet: PDFImage } | { genre: "page"; objet: PDFEmbeddedPage };
 
 /** Une image, ou la première page d'un PDF, prête à poser. */
@@ -326,21 +377,27 @@ export async function composerDossierComptable(d: DonneesDossier): Promise<Uint8
     pageDuMois.set(m, page);
     enTete(page, p, libellePeriode(m), "Relevé et justificatifs");
     const L = d.lignes.filter((l) => l.jour.startsWith(m));
-    y = HAUTEUR - MARGE - 52;
+    y = HAUT;
     ecrire(page, `Sorties ${"-" + enEuros(L.filter((l) => l.sens === "sortie").reduce((s, l) => s + centimes(l.montant), 0) / 100)}`, MARGE, y, p.sans, 9, SORTIE);
     ecrire(page, `Entrées ${"+" + enEuros(L.filter((l) => l.sens === "entree").reduce((s, l) => s + centimes(l.montant), 0) / 100)}`, MARGE + 170, y, p.sans, 9, ENTREE);
     ecrire(page, `${L.length} lignes`, MARGE + 340, y, p.sans, 9, DOUX);
     y -= 16;
     for (const l of [...L].sort((a, b) => b.jour.localeCompare(a.jour))) {
       const haute = l.piece?.genre === "ticket" || l.piece?.genre === "facture";
-      const h = haute ? 136 : 34;
-      if (y - h < MARGE + 20) {
+      const recopie = l.piece?.genre === "ticket" ? lignesDuTicket(l.piece) : null;
+      const fichier = l.piece?.genre === "ticket" ? l.piece.photo : l.piece?.genre === "facture" ? l.piece.fichier : null;
+      const sousLaPiece = fichier ? 22 : 0;
+      const hPiece = recopie ? hauteurRecopie(recopie.length) : 118;
+      const h = haute ? Math.max(136, 6 + hPiece + sousLaPiece + 8) : 34;
+      // Un long ticket commence là où il reste une vraie place, et continue
+      // sur la page suivante : il n'est jamais coupé, ni réduit à un résumé.
+      if (y - h < BAS && !(recopie && y - BAS >= 220)) {
         page = doc.addPage([LARGEUR, HAUTEUR]);
         enTete(page, p, libellePeriode(m), "Relevé et justificatifs, suite");
-        y = HAUTEUR - MARGE - 52;
+        y = HAUT;
       }
       const haut = y;
-      page.drawRectangle({ x: MARGE, y: haut - h + 8, width: 3, height: h - 16, color: COULEUR_CAT[l.categorie] });
+      const pageDeLaLigne = page;
       const yt = haute ? haut - 42 : haut - 16;
       ecrire(page, jourComplet(l.jour), MARGE + 12, yt + 13, p.sans, 8, DOUX, 200);
       ecrire(page, l.libelle, MARGE + 12, yt, p.mono, 8.2, ENCRE, haute ? xPiece - MARGE - 110 : 260);
@@ -354,19 +411,41 @@ export async function composerDossierComptable(d: DonneesDossier): Promise<Uint8
             : null;
       if (mention) ecrire(page, mention, MARGE + 170, yt - 12, p.sans, 8, l.ticketPerdu ? SORTIE : DOUX, 230);
       ecrireADroite(page, signe(l), haute ? xPiece - 12 : LARGEUR - MARGE, yt, p.serif, haute ? 13 : 11, l.sens === "entree" ? ENTREE : SORTIE);
+
+      let bas = haut - h;
       if (haute && l.piece) {
-        dessinerPiece(page, p, l.piece, xPiece, haut - 6, 190);
         lignePhoto.set(l, { page, y: haut });
-        const fichier = l.piece.genre === "ticket" ? l.piece.photo : l.piece.genre === "facture" ? l.piece.fichier : null;
+        let yPiece = haut - 6;
+        if (recopie) {
+          let reste = recopie;
+          while (reste.length > 0) {
+            const tiennent = Math.max(1, Math.floor((yPiece - BAS - sousLaPiece - 8 - 20) / PAS_TICKET));
+            const morceau = reste.slice(0, tiennent);
+            reste = reste.slice(tiennent);
+            yPiece -= dessinerTicketRecopie(page, p, morceau, xPiece, yPiece, 190);
+            if (reste.length > 0) {
+              page = doc.addPage([LARGEUR, HAUTEUR]);
+              enTete(page, p, libellePeriode(m), "Relevé et justificatifs, suite");
+              ecrire(page, `Suite du ticket du ${jourComplet(l.jour)}`, MARGE + 12, HAUT - 16, p.sans, 8, DOUX, 200);
+              ecrire(page, l.libelle, MARGE + 12, HAUT - 29, p.mono, 8.2, ENCRE, xPiece - MARGE - 30);
+              yPiece = HAUT - 6;
+            }
+          }
+        } else {
+          yPiece -= dessinerPiece(page, p, l.piece, xPiece, yPiece, 190);
+        }
         if (fichier) {
-          const yb = haut - 6 - 118 - 14;
+          const yb = yPiece - 14;
           ecrire(page, "Voir la photo", xPiece + 62, yb + 3, p.gras, 8, couleur("#2f3b2f"));
           page.drawRectangle({ x: xPiece, y: yb - 2, width: 190, height: 14, borderColor: FILET, borderWidth: 0.6 });
           liens.push({ page, x: xPiece, y: yb - 2, l: 190, h: 14, vers: () => photoDeLaLigne.get(l)! });
         }
+        const basPiece = yPiece - sousLaPiece - 8;
+        bas = page === pageDeLaLigne ? Math.min(haut - h, basPiece) : basPiece;
       }
-      page.drawLine({ start: { x: MARGE, y: haut - h }, end: { x: LARGEUR - MARGE, y: haut - h }, thickness: 0.5, color: FILET });
-      y = haut - h;
+      if (page === pageDeLaLigne) page.drawRectangle({ x: MARGE, y: bas + 8, width: 3, height: haut - bas - 16, color: COULEUR_CAT[l.categorie] });
+      page.drawLine({ start: { x: MARGE, y: bas }, end: { x: LARGEUR - MARGE, y: bas }, thickness: 0.5, color: FILET });
+      y = bas;
     }
   }
 

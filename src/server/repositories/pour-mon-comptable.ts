@@ -3,6 +3,7 @@ import { withEntreprise } from "../db/with-entreprise";
 import type { DbOrTx } from "../db/client";
 import { achatsTva, devisRecus, factures, mouvementsBancaires, societesAchat, virementsRecus } from "../db/schema";
 import type { NatureAchat } from "@/lib/achat-tva";
+import type { LigneImprimee } from "@/lib/ticket-imprime";
 import { checkUp, type Justification, type MotifVirement, type Verdict } from "@/lib/pour-mon-comptable";
 import type { Ctx } from "./context";
 
@@ -24,6 +25,8 @@ export type TicketDeLaLigne = {
   nature: NatureAchat | null;
   photoCle: string | null;
   tvaDeductible: string;
+  /** Le ticket recopié ligne par ligne (migration 0146), `null` pour un ticket d'avant. */
+  lignesImprimees: LigneImprimee[] | null;
 };
 
 export type LigneDuReleve = {
@@ -114,7 +117,7 @@ export async function lireLesLignes(tx: DbOrTx, du: string, au: string): Promise
       reliePar: tient ? l.reliePar : null,
       motif: tient ? l.motif : null,
       ticket: t
-        ? { id: t.id, dateAchat: t.dateAchat, fournisseur: t.fournisseur, totalTtc: t.totalTtc, nature: t.nature, photoCle: t.photoCle, tvaDeductible: t.tvaDeductible }
+        ? { id: t.id, dateAchat: t.dateAchat, fournisseur: t.fournisseur, totalTtc: t.totalTtc, nature: t.nature, photoCle: t.photoCle, tvaDeductible: t.tvaDeductible, lignesImprimees: t.lignesImprimees ?? null }
         : null,
       factureRecue: f ? { id: f.id, nom: f.nom, societe: f.societe, totalTtc: f.totalTtc, fichierCle: f.fichierCle, nature: f.nature } : null,
       factureEmise: parCle.has(l.cle) ? { numero: parCle.get(l.cle)! } : null,
@@ -141,7 +144,7 @@ export async function ticketsLibres(ctx: Ctx, du: string, au: string): Promise<T
       .orderBy(asc(achatsTva.dateAchat));
     return lignes
       .filter((t) => !dejaPris.has(t.id))
-      .map((t) => ({ id: t.id, dateAchat: t.dateAchat, fournisseur: t.fournisseur, totalTtc: t.totalTtc, nature: t.nature, photoCle: t.photoCle, tvaDeductible: t.tvaDeductible }));
+      .map((t) => ({ id: t.id, dateAchat: t.dateAchat, fournisseur: t.fournisseur, totalTtc: t.totalTtc, nature: t.nature, photoCle: t.photoCle, tvaDeductible: t.tvaDeductible, lignesImprimees: t.lignesImprimees ?? null }));
   });
 }
 

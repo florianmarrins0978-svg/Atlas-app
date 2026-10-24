@@ -2,6 +2,7 @@ import { getFournisseurLLM } from "../providers/llm/fabrique";
 import { METIER_ATLAS_COURT } from "../../../lib/metier-atlas";
 import { estNatureAchat, tvaDepuisTtc, type NatureAchat } from "@/lib/achat-tva";
 import { jourIso } from "@/lib/jour";
+import { lignesImprimees, type LigneImprimee } from "@/lib/ticket-imprime";
 
 /**
  * Lire un ticket de caisse photographié.
@@ -39,6 +40,12 @@ export type TicketLu = {
    *  doigt. `null` si la lecture ne sait pas ; aucune puce n'est alors
    *  cochée à sa place. */
   nature: NatureAchat | null;
+  /**
+   * Chaque ligne imprimée, recopiée dans l'ordre (lot 5 de « Pour mon
+   * comptable ») : la pièce réécrite du dossier est le ticket ENTIER, pas un
+   * résumé. `null` quand la lecture ne les a pas rendues.
+   */
+  lignes: LigneImprimee[] | null;
   /** Ce que la lecture n'a pas su faire, dit en français au patron. */
   reserve: string | null;
 };
@@ -54,11 +61,13 @@ Tu réponds UNIQUEMENT par un objet JSON, sans phrase avant ni après, sans bali
 Champs attendus : fournisseur (string|null), date_ecrite (string|null : la date recopiée EXACTEMENT comme elle est imprimée, par exemple "26/10/26"),
 date (string|null au format AAAA-MM-JJ),
 total_ttc (number|null), taux_tva (number|null, en pour-cent), tva (number|null),
-nature (string|null) : "carburant", "materiel", "repas", "hotel", "transport" (train, taxi, avion) ou "autre".
+nature (string|null) : "carburant", "materiel", "repas", "hotel", "transport" (train, taxi, avion) ou "autre",
+lignes (tableau) : CHAQUE ligne imprimée, du haut en bas, sous la forme {"g": "texte de gauche", "d": "ce qui est à droite, ou null"}.
 Règles :
 - Tu ne DEVINES jamais. Un champ illisible vaut null.
 - « tva » est le montant de TVA écrit sur le ticket. S'il n'y figure pas, rends null : ne le calcule pas.
-- Les montants sont en euros, en nombre décimal à point (12.34), sans symbole.`;
+- Les montants sont en euros, en nombre décimal à point (12.34), sans symbole.
+- Dans « lignes », tu recopies EXACTEMENT ce qui est imprimé, montants compris, tels qu'écrits (« 1,66 EUR A ») : rien de regroupé, même deux lignes identiques, rien de corrigé, rien d'ajouté.`;
 
 /**
  * **Le jour de la lecture est dit au modèle.** Le 26 octobre 2026, un ticket
@@ -199,6 +208,7 @@ export function lireReponseTicket(texte: string, aujourdHui: string): ResultatLe
       // Une nature hors de la liste est une invention : elle retombe à null,
       // et il choisit lui-même.
       nature: estNatureAchat(chaine(brut.nature)) ? (chaine(brut.nature) as NatureAchat) : null,
+      lignes: lignesImprimees(brut.lignes),
       reserve: reserves.length === 0 ? null : `${reserves.join(", ")}. Vérifiez avant d’ajouter.`,
     },
   };

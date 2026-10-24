@@ -1,3 +1,4 @@
+import type { LigneImprimee } from "@/lib/ticket-imprime";
 import { and, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { achatsTva } from "../db/schema";
@@ -126,6 +127,7 @@ export async function creerAchatTva(
     pourquoi?: string | null;
     justificatif?: boolean;
     photoCle?: string | null;
+    lignesImprimees?: LigneImprimee[] | null;
     saisie: SaisieAchat;
   }
 ) {
@@ -169,6 +171,7 @@ export async function creerAchatTva(
         pourquoi,
         justificatif,
         photoCle: data.photoCle ?? null,
+        lignesImprimees: data.lignesImprimees ?? null,
         saisie: data.saisie,
         createdBy: ctx.utilisateurId,
       })

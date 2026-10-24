@@ -1,13 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
 import { COULEUR_CATEGORIE, NOM_CATEGORIE, ORDRE_CATEGORIES } from "@/lib/couleurs-comptable";
 import { LIBELLE_MOTIF, MOTIFS_VIREMENT, type Categorie, type Decoupage } from "@/lib/pour-mon-comptable";
 import { checkUpAction, joindreFactureAction, motifAction, relierTicketAction, ticketPerduAction } from "./actions";
 import ArretDuDossier from "./ArretDuDossier";
+import FeuilleAchat, { type DepartDeLaFeuille } from "../tva/FeuilleAchat";
+import { rangerTicketAction } from "../tva/actions";
+import { nettoyerPhotoDuTicket } from "@/components/atlas/nettoyer-photo";
+import { ACCEPT_PHOTOS } from "@/lib/exif";
 
 /**
  * L'ÉCRAN DU DOSSIER EN COURS — écrans 2 et 4 de `appli/pour-mon-comptable.html`.
@@ -203,6 +207,21 @@ export function CarteARegarder({ a, factures }: { a: ARegarder; factures: Factur
   const [enCours, demarrer] = useTransition();
   const [etape, setEtape] = useState<"ouvert" | "perdu" | "facture" | "motif">("ouvert");
   const [refus, setRefus] = useState<string | null>(null);
+  const objectif = useRef<HTMLInputElement>(null);
+  // **La photo se prend ICI, pour CETTE ligne** (lot 5, 24 octobre 2026) :
+  // la même feuille que Ma TVA, et le ticket rejoint sa ligne à l'enregistrement.
+  const [feuille, setFeuille] = useState<(DepartDeLaFeuille & { aujourdHui: string }) | null>(null);
+
+  function photographier(fichier: File) {
+    setRefus(null);
+    demarrer(async () => {
+      const fd = new FormData();
+      fd.set("ticket", await nettoyerPhotoDuTicket(fichier));
+      const r = await rangerTicketAction(fd);
+      const aujourdHui = new Date().toISOString().slice(0, 10);
+      setFeuille(r.ok ? { photoCle: r.cle, lu: r.lu, lecture: r.lecture, refus: null, aujourdHui } : { photoCle: null, lu: null, lecture: null, refus: r.raison, aujourdHui });
+    });
+  }
 
   function jouer(geste: () => Promise<{ ok: true } | { ok: false; raison: string }>) {
     setRefus(null);
@@ -341,9 +360,9 @@ export function CarteARegarder({ a, factures }: { a: ARegarder; factures: Factur
               </>
             ) : (
               <>
-                <Link href="/termines/tva" className={`atlas-plein inline-flex items-center ${bouton}`} style={{ backgroundColor: colors.plein, color: colors.card }} data-atlas="photographier-ticket">
-                  Photographier le ticket
-                </Link>
+                <button type="button" disabled={enCours} onClick={() => objectif.current?.click()} className={`atlas-plein inline-flex items-center ${bouton}`} style={{ backgroundColor: colors.plein, color: colors.card }} data-atlas="photographier-ticket">
+                  {enCours ? "Envoi…" : "Photographier le ticket"}
+                </button>
                 <button type="button" disabled={enCours} onClick={() => setEtape("perdu")} className={leger} style={{ color: colors.inkSoft }} data-atlas="ticket-perdu">
                   Ticket perdu
                 </button>
@@ -351,6 +370,34 @@ export function CarteARegarder({ a, factures }: { a: ARegarder; factures: Factur
             )}
           </div>
         </>
+      )}
+
+      {/* Sans `capture` : le téléphone propose l'appareil ET la photothèque, un
+          ticket photographié la veille reste atteignable (comme Ma TVA). */}
+      <input
+        ref={objectif}
+        type="file"
+        accept={ACCEPT_PHOTOS}
+        className="hidden"
+        data-atlas="photo-du-ticket-entree"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          e.target.value = "";
+          if (f) photographier(f);
+        }}
+      />
+      {feuille && (
+        <FeuilleAchat
+          ouverte
+          onFermer={() => setFeuille(null)}
+          depart={feuille}
+          aujourdHui={feuille.aujourdHui}
+          mouvementId={a.id}
+          onEnregistre={() => {
+            setFeuille(null);
+            router.refresh();
+          }}
+        />
       )}
 
       {refus && (
