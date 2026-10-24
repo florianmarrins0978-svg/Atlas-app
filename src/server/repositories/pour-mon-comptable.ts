@@ -1,5 +1,6 @@
 import { and, asc, eq, gte, inArray, isNull, lte } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
+import type { DbOrTx } from "../db/client";
 import { achatsTva, devisRecus, factures, mouvementsBancaires, societesAchat, virementsRecus } from "../db/schema";
 import type { NatureAchat } from "@/lib/achat-tva";
 import { checkUp, type Justification, type MotifVirement, type Verdict } from "@/lib/pour-mon-comptable";
@@ -43,6 +44,8 @@ export type LigneDuReleve = {
   factureRecue: { id: string; nom: string; societe: string; totalTtc: string | null; fichierCle: string; nature: "photo" | "pdf" | "tableur" } | null;
   /** Pour une entrée : la facture d'Atlas qu'il a confirmée sur l'accueil. */
   factureEmise: { numero: string } | null;
+  /** Quand sa justification a été posée : le verdict du comptable s'y rapporte. */
+  justifieLe: Date | null;
 };
 
 /** Une entrée est justifiée par la facture d'Atlas confirmée ; une sortie, par ce qu'on lui a relié. */
@@ -52,62 +55,71 @@ export function ligneAJustifier(l: Pick<LigneDuReleve, "sens" | "justification" 
 
 /** Les lignes du relevé entre deux jours compris, dans l'ordre du relevé, avec leurs pièces. */
 export async function lignesDuReleve(ctx: Ctx, du: string, au: string): Promise<LigneDuReleve[]> {
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const lignes = await tx
-      .select()
-      .from(mouvementsBancaires)
-      .where(and(gte(mouvementsBancaires.jour, du), lte(mouvementsBancaires.jour, au)))
-      .orderBy(asc(mouvementsBancaires.jour), asc(mouvementsBancaires.createdAt));
-    if (lignes.length === 0) return [];
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) => lireLesLignes(tx, du, au));
+}
 
-    const idsAchats = lignes.flatMap((l) => (l.achatId ? [l.achatId] : []));
-    const tickets = idsAchats.length
-      ? await tx.select().from(achatsTva).where(and(inArray(achatsTva.id, idsAchats), isNull(achatsTva.deletedAt)))
-      : [];
-    const parTicket = new Map(tickets.map((t) => [t.id, t]));
+/**
+ * La lecture elle-même, dans une transaction dont l'entreprise est DÉJÀ posée :
+ * par `withEntreprise` pour le patron, par le jeton pour la page du comptable
+ * (`verification-comptable.ts`). Une seule lecture : le comptable voit
+ * exactement ce que le patron a justifié.
+ */
+export async function lireLesLignes(tx: DbOrTx, du: string, au: string): Promise<LigneDuReleve[]> {
+  const lignes = await tx
+    .select()
+    .from(mouvementsBancaires)
+    .where(and(gte(mouvementsBancaires.jour, du), lte(mouvementsBancaires.jour, au)))
+    .orderBy(asc(mouvementsBancaires.jour), asc(mouvementsBancaires.createdAt));
+  if (lignes.length === 0) return [];
 
-    const idsFactures = lignes.flatMap((l) => (l.factureRecueId ? [l.factureRecueId] : []));
-    const recues = idsFactures.length
-      ? await tx
-          .select({ id: devisRecus.id, nom: devisRecus.nom, totalTtc: devisRecus.totalTtc, societe: societesAchat.nom, fichierCle: devisRecus.fichierCle, nature: devisRecus.nature })
-          .from(devisRecus)
-          .innerJoin(societesAchat, eq(societesAchat.id, devisRecus.societeId))
-          .where(and(inArray(devisRecus.id, idsFactures), isNull(devisRecus.deletedAt)))
-      : [];
-    const parFacture = new Map(recues.map((f) => [f.id, f]));
+  const idsAchats = lignes.flatMap((l) => (l.achatId ? [l.achatId] : []));
+  const tickets = idsAchats.length
+    ? await tx.select().from(achatsTva).where(and(inArray(achatsTva.id, idsAchats), isNull(achatsTva.deletedAt)))
+    : [];
+  const parTicket = new Map(tickets.map((t) => [t.id, t]));
 
-    const cles = lignes.filter((l) => l.sens === "entree").map((l) => l.cle);
-    const confirmes = cles.length
-      ? await tx
-          .select({ cle: virementsRecus.cle, numero: factures.numeroCommercial })
-          .from(virementsRecus)
-          .innerJoin(factures, eq(factures.id, virementsRecus.factureId))
-          .where(and(inArray(virementsRecus.cle, cles), eq(virementsRecus.etat, "confirme")))
-      : [];
-    const parCle = new Map(confirmes.map((c) => [c.cle, c.numero]));
+  const idsFactures = lignes.flatMap((l) => (l.factureRecueId ? [l.factureRecueId] : []));
+  const recues = idsFactures.length
+    ? await tx
+        .select({ id: devisRecus.id, nom: devisRecus.nom, totalTtc: devisRecus.totalTtc, societe: societesAchat.nom, fichierCle: devisRecus.fichierCle, nature: devisRecus.nature })
+        .from(devisRecus)
+        .innerJoin(societesAchat, eq(societesAchat.id, devisRecus.societeId))
+        .where(and(inArray(devisRecus.id, idsFactures), isNull(devisRecus.deletedAt)))
+    : [];
+  const parFacture = new Map(recues.map((f) => [f.id, f]));
 
-    return lignes.map((l) => {
-      const t = l.achatId ? parTicket.get(l.achatId) : undefined;
-      const f = l.factureRecueId ? parFacture.get(l.factureRecueId) : undefined;
-      const tient =
-        l.justification === "ticket" ? Boolean(t) : l.justification === "facture" ? Boolean(f) : l.justification !== null;
-      return {
-        id: l.id,
-        jour: l.jour,
-        montant: l.montant,
-        sens: l.sens,
-        contrepartie: l.contrepartie,
-        libelle: l.libelle,
-        justification: tient ? l.justification : null,
-        reliePar: tient ? l.reliePar : null,
-        motif: tient ? l.motif : null,
-        ticket: t
-          ? { id: t.id, dateAchat: t.dateAchat, fournisseur: t.fournisseur, totalTtc: t.totalTtc, nature: t.nature, photoCle: t.photoCle, tvaDeductible: t.tvaDeductible }
-          : null,
-        factureRecue: f ? { id: f.id, nom: f.nom, societe: f.societe, totalTtc: f.totalTtc, fichierCle: f.fichierCle, nature: f.nature } : null,
-        factureEmise: parCle.has(l.cle) ? { numero: parCle.get(l.cle)! } : null,
-      };
-    });
+  const cles = lignes.filter((l) => l.sens === "entree").map((l) => l.cle);
+  const confirmes = cles.length
+    ? await tx
+        .select({ cle: virementsRecus.cle, numero: factures.numeroCommercial })
+        .from(virementsRecus)
+        .innerJoin(factures, eq(factures.id, virementsRecus.factureId))
+        .where(and(inArray(virementsRecus.cle, cles), eq(virementsRecus.etat, "confirme")))
+    : [];
+  const parCle = new Map(confirmes.map((c) => [c.cle, c.numero]));
+
+  return lignes.map((l) => {
+    const t = l.achatId ? parTicket.get(l.achatId) : undefined;
+    const f = l.factureRecueId ? parFacture.get(l.factureRecueId) : undefined;
+    const tient =
+      l.justification === "ticket" ? Boolean(t) : l.justification === "facture" ? Boolean(f) : l.justification !== null;
+    return {
+      id: l.id,
+      jour: l.jour,
+      montant: l.montant,
+      sens: l.sens,
+      contrepartie: l.contrepartie,
+      libelle: l.libelle,
+      justification: tient ? l.justification : null,
+      reliePar: tient ? l.reliePar : null,
+      motif: tient ? l.motif : null,
+      ticket: t
+        ? { id: t.id, dateAchat: t.dateAchat, fournisseur: t.fournisseur, totalTtc: t.totalTtc, nature: t.nature, photoCle: t.photoCle, tvaDeductible: t.tvaDeductible }
+        : null,
+      factureRecue: f ? { id: f.id, nom: f.nom, societe: f.societe, totalTtc: f.totalTtc, fichierCle: f.fichierCle, nature: f.nature } : null,
+      factureEmise: parCle.has(l.cle) ? { numero: parCle.get(l.cle)! } : null,
+      justifieLe: tient ? l.justifieLe : null,
+    };
   });
 }
 

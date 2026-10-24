@@ -1,9 +1,13 @@
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import { colors, font } from "@/lib/design-tokens";
-import { echeanceProche, jourComplet, tailleLisible } from "@/lib/pour-mon-comptable";
+import { enEuros } from "@/lib/euros";
+import { categorieDeLaLigne, checkUp, echeanceProche, jourComplet, jourEnMots, ressembleAUnVirement, tailleLisible } from "@/lib/pour-mon-comptable";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerDossiers } from "@/server/repositories/dossiers-comptables";
+import { facturesRecuesLibres, ticketsLibres, type TicketDeLaLigne } from "@/server/repositories/pour-mon-comptable";
+import { verificationsDesDossiers, type VerificationDuDossier } from "@/server/repositories/verification-comptable";
+import type { ARegarder } from "../DossierEnCours";
 import MesDossiers, { type DossierAffiche } from "./MesDossiers";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +22,12 @@ export const dynamic = "force-dynamic";
 export default async function PageMesDossiers() {
   const ctx = await getCurrentCtx();
   const aujourdhui = new Date().toISOString().slice(0, 10);
-  const dossiers = await listerDossiers(ctx);
+  const [dossiers, verifications, factures] = await Promise.all([listerDossiers(ctx), verificationsDesDossiers(ctx), facturesRecuesLibres(ctx)]);
+  const verificationDe = new Map(verifications.map((v) => [v.dossierId, v]));
+  // Les tickets encore libres, pour proposer celui du même montant à côté d'un
+  // rejet : seulement s'il y a des rejets, la lecture couvre toute la garde.
+  const avecRejets = verifications.filter((v) => v.rejets.length > 0);
+  const tickets: TicketDeLaLigne[] = avecRejets.length ? await ticketsLibres(ctx, "2000-01-01", aujourdhui) : [];
 
   const affiches: DossierAffiche[] = dossiers.map((d) => ({
     id: d.id,
@@ -26,6 +35,7 @@ export default async function PageMesDossiers() {
     annee: Number(d.au.slice(0, 4)),
     detail: `Rangé le ${jourComplet(d.arreteLe.toISOString().slice(0, 10))}, gardé jusqu’au ${jourComplet(d.gardeJusquAu)}, ${tailleLisible(d.tailleOctets)}`,
     echeance: echeanceProche(d.gardeJusquAu, aujourdhui) ? jourComplet(d.gardeJusquAu) : null,
+    verification: verificationAffichee(verificationDe.get(d.id), tickets),
     bilans: d.bilans.map((b) => ({ id: b.id, nom: b.fichierNom ?? (b.nature === "pdf" ? "Bilan, PDF" : "Bilan, photo"), ajoute: jourComplet(b.ajouteLe.toISOString().slice(0, 10)) })),
   }));
 
@@ -43,8 +53,32 @@ export default async function PageMesDossiers() {
         <p className="mx-6 mt-3 text-[13.5px] leading-[1.45]" style={{ color: colors.inkSoft }}>
           Atlas garde chaque dossier et son bilan dix ans, puis les efface. Téléchargez-les pour les garder plus longtemps.
         </p>
-        <MesDossiers dossiers={affiches} />
+        <MesDossiers dossiers={affiches} factures={factures.map((f) => ({ id: f.id, nom: f.nom, societe: f.societe, montant: f.totalTtc ? enEuros(f.totalTtc) : null }))} />
       </div>
     </div>
   );
+}
+
+/**
+ * Où en est son comptable, et ses rejets en cartes de réponse : les mêmes
+ * gestes que dans le dossier en cours. Un rejet auquel il répond change la
+ * justification de la ligne, qui revient au comptable « corrigée ».
+ */
+function verificationAffichee(v: VerificationDuDossier | undefined, tickets: TicketDeLaLigne[]): DossierAffiche["verification"] {
+  if (!v || !v.envoye) return { texte: null, rejets: [] };
+  const rejets = v.rejets.map(({ ligne: l, note }): ARegarder => {
+    const choix = checkUp([{ id: l.id, jour: l.jour, montant: l.montant }], tickets.map((t) => ({ id: t.id, dateAchat: t.dateAchat, totalTtc: t.totalTtc }))).get(l.id);
+    const ids = choix?.genre === "relie" ? [choix.ticketId] : choix?.genre === "choix" ? choix.ticketIds : [];
+    return {
+      id: l.id,
+      genre: l.sens === "entree" ? "entree" : ressembleAUnVirement(l.libelle) || l.justification === "facture" || l.justification === "motif" ? "virement" : "carte",
+      qui: l.contrepartie ?? l.libelle,
+      jour: jourEnMots(l.jour),
+      montant: enEuros(l.montant),
+      categorie: categorieDeLaLigne({ sens: l.sens, libelle: l.libelle, natureDuTicket: l.ticket?.nature ?? null, justification: l.justification }),
+      tickets: l.sens === "sortie" ? ids.flatMap((id) => tickets.filter((t) => t.id === id).map((t) => ({ id, fournisseur: t.fournisseur, jour: `Ticket du ${jourEnMots(t.dateAchat)}` }))) : [],
+      rejet: note,
+    };
+  });
+  return { texte: `Vérifié par votre comptable : ${v.verifiees} sur ${v.total}`, rejets };
 }

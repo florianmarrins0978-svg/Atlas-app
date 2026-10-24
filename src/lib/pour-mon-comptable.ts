@@ -330,3 +330,50 @@ export function tailleLisible(octets: number): string {
 export function jourComplet(jour: string): string {
   return `${jourEnMots(jour)} ${jour.slice(0, 4)}`;
 }
+
+// ─── Lot 4 : le comptable vérifie, par un lien privé ─────────────────────────
+
+/** Combien de temps vit le lien donné au comptable : le temps d'un bilan, large. */
+export const VALIDITE_LIEN_COMPTABLE_JOURS = 365;
+
+export type VerdictDuComptable = "valide" | "rejete";
+
+/** Ce que la ligne montre au comptable, et au patron. */
+export type EtatDeVerification =
+  | { etat: "a_verifier" }
+  | { etat: "valide" }
+  | { etat: "rejete"; note: string | null; avaitValide: boolean }
+  /** Rejetée, puis justifiée à nouveau par le patron : à revoir. */
+  | { etat: "corrigee"; note: string | null };
+
+/**
+ * Le verdict qui TIENT. Il se rapporte à la justification de la ligne au
+ * moment où il a été posé : si le patron l'a changée depuis (il a relié un
+ * autre ticket après un rejet), la ligne revient au comptable. Un verdict
+ * resté sur une pièce qui n'est plus la même dirait « validée » d'une pièce
+ * que personne n'a regardée.
+ */
+export function etatDeVerification(
+  verdict: { verdict: VerdictDuComptable; note: string | null; avaitValide: boolean; ligneJustifieeLe: Date | null } | null,
+  ligneJustifieeLe: Date | null
+): EtatDeVerification {
+  if (!verdict) return { etat: "a_verifier" };
+  const meme = (verdict.ligneJustifieeLe?.getTime() ?? null) === (ligneJustifieeLe?.getTime() ?? null);
+  if (!meme) return verdict.verdict === "rejete" ? { etat: "corrigee", note: verdict.note } : { etat: "a_verifier" };
+  return verdict.verdict === "valide" ? { etat: "valide" } : { etat: "rejete", note: verdict.note, avaitValide: verdict.avaitValide };
+}
+
+/** La raison d'un rejet, propre : rien d'écrit reste rien, jamais une chaîne vide. */
+export function noteDuRejet(texte: string | null | undefined): string | null {
+  const propre = (texte ?? "").replace(/\s+/g, " ").trim().slice(0, 1000);
+  return propre === "" ? null : propre;
+}
+
+/** Combien de lignes sont vérifiées, et combien rejetées. */
+export function avancementDeLaVerification(etats: EtatDeVerification[]): { verifiees: number; rejetees: number; total: number } {
+  return {
+    verifiees: etats.filter((e) => e.etat === "valide" || e.etat === "rejete").length,
+    rejetees: etats.filter((e) => e.etat === "rejete").length,
+    total: etats.length,
+  };
+}

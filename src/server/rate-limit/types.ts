@@ -111,6 +111,13 @@ export const LIMITES = {
    */
   receptionFacture: { max: 20, fenetreMs: 60 * 1000 },
   receptionFactureParSource: { max: 120, fenetreMs: 60 * 1000 },
+  /**
+   * LE VERDICT DU COMPTABLE, depuis son lien (24 octobre 2026). Même famille :
+   * une écriture sans session, qu'on borne pour son coût. Large, parce qu'un
+   * comptable enchaîne Valider et Suivant sur des centaines de lignes.
+   */
+  verdictComptable: { max: 120, fenetreMs: 60 * 1000 },
+  verdictComptableParSource: { max: 600, fenetreMs: 60 * 1000 },
   assistant: { max: 20, fenetreMs: 60 * 1000 }, // 20 requêtes IA / minute / entreprise
   confirmationProposition: { max: 30, fenetreMs: 60 * 1000 },
   televersementFichier: { max: 20, fenetreMs: 60 * 1000 },

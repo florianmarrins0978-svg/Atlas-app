@@ -35926,3 +35926,19 @@ retirée, et `test-papier-facture-db.ts` avec elle.
 **Ni réécrit ni effacé, et c'est la base qui le refuse.** `atlas_app` n'a que SELECT et INSERT sur `dossiers_comptables`, SELECT, INSERT et DELETE sur `bilans_comptables`. Les privilèges par défaut donnent les quatre droits à toute table neuve (§0081) : la migration les RETIRE (comme 0123). Sa première version ne faisait qu'un GRANT, et `test-dossiers-comptables-db.ts` a vu passer l'UPDATE et le DELETE : corrigée en place, la migration n'ayant jamais quitté cette branche.
 
 **Dix ans, puis l'effacement, annoncé trois mois avant** (`gardeJusquAu`, Code de commerce L123-22 ; `echeanceProche`, 92 jours). « J'ai compris » ne range la carte que sur ce téléphone ; l'échéance reste écrite sur le dossier. **L'effacement réel n'est pas codé** : il se décidera avec lui, la garde n'étant aujourd'hui qu'une date. La sauvegarde complète emporte les dossiers et les bilans, fichiers compris, sous « Pour mon comptable ».
+
+## §496 : Le comptable vérifie par un lien dont la base ne garde que l'empreinte, et son verdict se rapporte à la pièce qu'il a vue
+
+*24 octobre 2026, lot 4 de « Pour mon comptable » (écran 7 de `appli/pour-mon-comptable.html`).*
+
+**Une page sans compte, sur le modèle du devis** (`/comptable/[jeton]`, chemin public et page « du client » : pas de barre d'Atlas). La transaction pose l'empreinte du jeton, qui ouvre SA ligne d'`envois_comptable` par une politique dédiée, puis l'entreprise lue sur cette ligne ; tout le reste se lit sous l'isolation ordinaire. **Contrairement au devis, la base ne garde que l'empreinte SHA-256** (comme le mot de passe oublié) : un lien ne se remontre donc pas, et chaque appui sur « Envoyer au comptable » en fait un neuf, valable un an. La page ne lit pas les lignes à sa façon : `lireLesLignes(tx, du, au)` est la lecture même du dossier du patron, sortie de `lignesDuReleve` pour servir aux deux.
+
+**Un jeton n'ouvre que la période de SON dossier** : un verdict ou une pièce demandés pour une ligne hors de la période sont refusés comme « pas dans le dossier ». La pièce d'origine se sert par le jeton et l'identifiant de la ligne, jamais par une clé de stockage.
+
+**Le verdict se rapporte à la justification qu'il a vue** (`verdicts_comptable.ligne_justifiee_le`, `etatDeVerification`). Le patron qui répond à un rejet change la justification : la ligne revient au comptable « corrigée », avec la raison d'avant. Une validation restée sur une pièce changée dirait « validée » d'une pièce que personne n'a regardée ; elle repart donc à vérifier. Un verdict par ligne et par dossier, quel que soit le lien qui l'a posé.
+
+**Le rejet revient au patron là où il range ses dossiers** : sous le dossier, la carte de réponse du dossier en cours (`CarteARegarder`, exportée), avec la raison du comptable et, s'il y en a, le ticket libre du même montant. Une seule carte, deux endroits : pas de second jeu de gestes.
+
+**Bornes** : l'écriture du comptable passe par le limiteur central (`verdictComptable`, 120 par minute et par lien ; par source seulement si elle est établie, la leçon de F9) ; `atlas_app` n'a ni UPDATE ni DELETE sur les liens (retirés comme en 0144). `test-verification-comptable-db.ts` éprouve tout cela sous `atlas_app`, vu rouge sans le contrôle d'expiration.
+
+**Ce qui reste au lot 5** : la pièce reconstituée ne porte que ce qu'Atlas a lu (fournisseur, date, total, TVA). Le ticket recopié ligne par ligne, comme il l'a demandé, vient avec la lecture complète des tickets.

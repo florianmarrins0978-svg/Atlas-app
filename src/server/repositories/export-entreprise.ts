@@ -78,6 +78,8 @@ import {
   mouvementsBancaires,
   dossiersComptables,
   bilansComptables,
+  envoisComptable,
+  verdictsComptable,
 } from "../db/schema";
 import type { Ctx } from "./context";
 import { rangerLesFichiers, type FichierARanger } from "@/lib/rangement-sauvegarde";
@@ -226,6 +228,8 @@ export async function exporterEntreprise(
       sesMouvementsBancaires,
       sesDossiersComptables,
       sesBilansComptables,
+      sesEnvoisAuComptable,
+      sesVerdictsDuComptable,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -456,6 +460,10 @@ export async function exporterEntreprise(
       // les garder plus longtemps.
       tx.select().from(dossiersComptables).where(eq(dossiersComptables.entrepriseId, e)),
       tx.select().from(bilansComptables).where(eq(bilansComptables.entrepriseId, e)),
+      // Les liens donnés au comptable et ses verdicts (migration 0145). Le
+      // lien part par son empreinte seule : elle ne rouvre rien.
+      tx.select().from(envoisComptable).where(eq(envoisComptable.entrepriseId, e)),
+      tx.select().from(verdictsComptable).where(eq(verdictsComptable.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -569,6 +577,8 @@ export async function exporterEntreprise(
       mouvements_bancaires: sesMouvementsBancaires,
       dossiers_comptables: sesDossiersComptables,
       bilans_comptables: sesBilansComptables,
+      envois_comptable: sesEnvoisAuComptable,
+      verdicts_comptable: sesVerdictsDuComptable,
     };
 
     const compte: Record<string, number> = {};

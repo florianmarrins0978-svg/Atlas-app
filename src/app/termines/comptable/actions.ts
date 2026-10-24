@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { estMotifVirement } from "@/lib/pour-mon-comptable";
 import { ajouterBilan, dossierEnCours, retirerBilan } from "@/server/repositories/dossiers-comptables";
 import { arreterLeDossier } from "@/server/dossier-comptable";
+import { creerLienComptable } from "@/server/repositories/verification-comptable";
 import { enregistrerObjet, supprimerObjet } from "@/server/storage";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerPhotoEntrante } from "@/server/photo-entrante";
@@ -169,4 +170,18 @@ export async function retirerBilanAction(id: string): Promise<Fait> {
   await supprimerObjet(cle);
   revalidatePath("/termines/comptable", "layout");
   return { ok: true };
+}
+
+/**
+ * « Envoyer au comptable » (lot 4) : un lien privé vers sa page de
+ * vérification. Le jeton n'est rendu qu'ici, la base n'en garde que
+ * l'empreinte : chaque appui fait un lien neuf.
+ */
+export async function envoyerAuComptableAction(dossierId: string): Promise<{ ok: true; chemin: string } | { ok: false; raison: string }> {
+  if (!UUID.test(dossierId)) return { ok: false, raison: "Ce dossier n'existe pas." };
+  const ctx = await contexte("envoyer un dossier au comptable");
+  const r = await creerLienComptable(ctx, dossierId, new Date());
+  if (!r.ok) return r;
+  revalidatePath("/termines/comptable/dossiers");
+  return { ok: true, chemin: `/comptable/${r.jeton}` };
 }

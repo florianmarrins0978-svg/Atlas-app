@@ -69,6 +69,10 @@ export const CHEMINS_PUBLICS = [
   // (26 septembre 2026), puis les dates de ses passages du mois
   // (`/contrat/dates`, 27 septembre) : la mécanique du devis, par jeton exact.
   "/contrat",
+  // La page du comptable (24 octobre 2026) : il vérifie le dossier sans
+  // compte. Même garde-fou, un jeton exact, dont la base ne garde que
+  // l'empreinte (migration 0145).
+  "/comptable",
 ] as const;
 
 /** Ce chemin est-il atteignable sans compte ? */
@@ -97,7 +101,7 @@ export function estCheminPublic(chemin: string): boolean {
  * futur chemin public — une page d'aide, un mode d'emploi — deviendrait
  * « page client » sans que personne l'ait décidé.
  */
-export const CHEMINS_DU_CLIENT = ["/devis", "/factures", "/entretien", "/contrat"] as const;
+export const CHEMINS_DU_CLIENT = ["/devis", "/factures", "/entretien", "/contrat", "/comptable"] as const;
 
 /** Cette page est-elle celle que le client de l'artisan reçoit ? */
 export function estPageDuClient(chemin: string | null): boolean {

@@ -4254,3 +4254,31 @@ export const bilansComptables = pgTable("bilans_comptables", {
   ajoutePar: uuid("ajoute_par").references(() => users.id),
   ajouteLe: timestamp("ajoute_le", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/** Les liens privés donnés au comptable, par empreinte de jeton (migration 0145). */
+export const envoisComptable = pgTable("envois_comptable", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  dossierId: uuid("dossier_id").notNull(),
+  jetonEmpreinte: text("jeton_empreinte").notNull().unique(),
+  creePar: uuid("cree_par").references(() => users.id),
+  creeLe: timestamp("cree_le", { withTimezone: true }).notNull().defaultNow(),
+  expireLe: timestamp("expire_le", { withTimezone: true }).notNull(),
+});
+
+/** Valider ou rejeter, ligne par ligne, posé par le comptable (migration 0145). */
+export const verdictsComptable = pgTable("verdicts_comptable", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  dossierId: uuid("dossier_id").notNull(),
+  mouvementId: uuid("mouvement_id").notNull(),
+  verdict: text("verdict", { enum: ["valide", "rejete"] }).notNull(),
+  note: text("note"),
+  avaitValide: boolean("avait_valide").notNull().default(false),
+  ligneJustifieeLe: timestamp("ligne_justifiee_le", { withTimezone: true }),
+  poseLe: timestamp("pose_le", { withTimezone: true }).notNull().defaultNow(),
+});

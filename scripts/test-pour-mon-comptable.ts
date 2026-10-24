@@ -15,6 +15,9 @@ import {
   echeanceProche,
   jourComplet,
   tailleLisible,
+  etatDeVerification,
+  noteDuRejet,
+  avancementDeLaVerification,
   type LigneDuDossier,
 } from "../src/lib/pour-mon-comptable";
 import { CHARTES, contraste } from "../src/lib/chartes";
@@ -270,6 +273,40 @@ test("le nom d'un dossier et sa taille se lisent", () => {
   assert.equal(tailleLisible(42_000), "42 Ko");
   assert.equal(tailleLisible(300), "1 Ko", "un fichier n'a jamais l'air vide");
   assert.equal(tailleLisible(3_450_000), "3,5 Mo");
+});
+
+// ─── Lot 4 : le verdict du comptable ─────────────────────────────────────────
+
+test("le verdict tient tant que la justification de la ligne n'a pas bougé", () => {
+  const le = new Date("2026-10-20T10:00:00Z");
+  assert.deepEqual(etatDeVerification(null, le), { etat: "a_verifier" });
+  assert.deepEqual(etatDeVerification({ verdict: "valide", note: null, avaitValide: false, ligneJustifieeLe: le }, new Date(le)), { etat: "valide" });
+  assert.deepEqual(
+    etatDeVerification({ verdict: "rejete", note: "Pas le bon", avaitValide: true, ligneJustifieeLe: le }, new Date(le)),
+    { etat: "rejete", note: "Pas le bon", avaitValide: true }
+  );
+});
+
+test("le patron re-justifie : un rejet devient « corrigée », une validation repart à vérifier", () => {
+  const avant = new Date("2026-10-20T10:00:00Z");
+  const apres = new Date("2026-10-21T10:00:00Z");
+  assert.deepEqual(etatDeVerification({ verdict: "rejete", note: "x", avaitValide: false, ligneJustifieeLe: avant }, apres), { etat: "corrigee", note: "x" });
+  assert.deepEqual(etatDeVerification({ verdict: "valide", note: null, avaitValide: false, ligneJustifieeLe: avant }, apres), { etat: "a_verifier" });
+  assert.deepEqual(etatDeVerification({ verdict: "valide", note: null, avaitValide: false, ligneJustifieeLe: avant }, null), { etat: "a_verifier" });
+});
+
+test("la raison d'un rejet se nettoie, et rien d'écrit reste rien", () => {
+  assert.equal(noteDuRejet("  Pas   le bon\n ticket "), "Pas le bon ticket");
+  assert.equal(noteDuRejet("   "), null);
+  assert.equal(noteDuRejet(null), null);
+  assert.equal(noteDuRejet("x".repeat(1500))?.length, 1000);
+});
+
+test("l'avancement compte les validées et les rejetées, jamais les corrigées", () => {
+  assert.deepEqual(
+    avancementDeLaVerification([{ etat: "valide" }, { etat: "rejete", note: null, avaitValide: false }, { etat: "corrigee", note: null }, { etat: "a_verifier" }]),
+    { verifiees: 2, rejetees: 1, total: 4 }
+  );
 });
 
 console.log(`\n${passed} réussi(s), ${failed} échoué(s)`);

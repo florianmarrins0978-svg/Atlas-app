@@ -5,7 +5,9 @@ import { useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
 import { ACCEPT_PHOTOS } from "@/lib/exif";
-import { ajouterBilanAction, retirerBilanAction } from "../actions";
+import { adressePourLeClient } from "@/lib/adresse-du-client";
+import { ajouterBilanAction, envoyerAuComptableAction, retirerBilanAction } from "../actions";
+import { CarteARegarder, type ARegarder, type Facture } from "../DossierEnCours";
 
 export type DossierAffiche = {
   id: string;
@@ -15,9 +17,11 @@ export type DossierAffiche = {
   /** Le jour de son effacement, quand il approche (trois mois). */
   echeance: string | null;
   bilans: { id: string; nom: string; ajoute: string }[];
+  /** Où en est son comptable (rien tant qu'aucun lien n'est parti), et ce qu'il a rejeté. */
+  verification: { texte: string | null; rejets: ARegarder[] };
 };
 
-const lien = "inline-flex min-h-[40px] items-center pr-3 text-[13.5px] font-medium";
+const classeLien = "inline-flex min-h-[40px] items-center pr-3 text-[13.5px] font-medium";
 
 const CLE_DES_VUES = "atlas-echeances-vues";
 const AUCUNE: string[] = [];
@@ -61,7 +65,7 @@ function vu(id: string) {
  * ce téléphone : c'est une commodité, l'échéance, elle, reste écrite sur le
  * dossier.
  */
-export default function MesDossiers({ dossiers }: { dossiers: DossierAffiche[] }) {
+export default function MesDossiers({ dossiers, factures }: { dossiers: DossierAffiche[]; factures: Facture[] }) {
   const annees = [...new Set(dossiers.map((d) => d.annee))];
   const [annee, setAnnee] = useState<number | null>(annees[0] ?? null);
   // Le serveur ne connaît pas ce téléphone : il rend la carte, et
@@ -126,7 +130,7 @@ export default function MesDossiers({ dossiers }: { dossiers: DossierAffiche[] }
             {dossiers
               .filter((d) => d.annee === annee)
               .map((d) => (
-                <Dossier key={d.id} d={d} />
+                <Dossier key={d.id} d={d} factures={factures} />
               ))}
           </ul>
         </>
@@ -135,11 +139,33 @@ export default function MesDossiers({ dossiers }: { dossiers: DossierAffiche[] }
   );
 }
 
-function Dossier({ d }: { d: DossierAffiche }) {
+function Dossier({ d, factures }: { d: DossierAffiche; factures: Facture[] }) {
   const router = useRouter();
   const [enCours, demarrer] = useTransition();
   const [ajout, setAjout] = useState(false);
   const [refus, setRefus] = useState<string | null>(null);
+  const [lien, setLien] = useState<string | null>(null);
+  const [copie, setCopie] = useState(false);
+
+  function envoyer() {
+    setRefus(null);
+    demarrer(async () => {
+      const r = await envoyerAuComptableAction(d.id);
+      if (!r.ok) setRefus(r.raison);
+      else setLien(adressePourLeClient(window.location.origin) + r.chemin);
+    });
+  }
+
+  async function copier(texte: string) {
+    try {
+      await navigator.clipboard.writeText(texte);
+      setCopie(true);
+    } catch {
+      // Le presse-papiers refusé (page non sécurisée) : le lien reste affiché,
+      // il se sélectionne à la main.
+      setCopie(false);
+    }
+  }
   const photo = useRef<HTMLInputElement>(null);
   const pdf = useRef<HTMLInputElement>(null);
 
@@ -175,13 +201,47 @@ function Dossier({ d }: { d: DossierAffiche }) {
         {d.echeance ? `Sera effacé le ${d.echeance}` : d.detail}
       </p>
       <div className="mt-1 flex flex-wrap">
-        <a href={`/termines/comptable/dossiers/${d.id}`} target="_blank" rel="noopener" className={lien} style={{ color: colors.rust }} data-atlas="ouvrir-dossier">
+        <a href={`/termines/comptable/dossiers/${d.id}`} target="_blank" rel="noopener" className={classeLien} style={{ color: colors.rust }} data-atlas="ouvrir-dossier">
           Ouvrir
         </a>
-        <a href={`/termines/comptable/dossiers/${d.id}?telecharger=1`} className={lien} style={{ color: colors.rust }}>
+        <a href={`/termines/comptable/dossiers/${d.id}?telecharger=1`} className={classeLien} style={{ color: colors.rust }}>
           Télécharger
         </a>
+        <button type="button" disabled={enCours} onClick={envoyer} className={classeLien} style={{ color: colors.rust }} data-atlas="envoyer-au-comptable">
+          Envoyer au comptable
+        </button>
       </div>
+      {lien && (
+        <div className="mt-2 rounded-[12px] px-3.5 py-3" style={{ backgroundColor: colors.card }} data-atlas="lien-du-comptable">
+          <p className="m-0 break-all text-[12.5px]" style={{ color: colors.inkSoft, fontFamily: "ui-monospace, Consolas, monospace" }}>
+            {lien}
+          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <a
+              href={`mailto:?subject=${encodeURIComponent(`Dossier justifié, ${d.nom.toLowerCase()}`)}&body=${encodeURIComponent(`Bonjour,\n\nVoici mon dossier justifié, à vérifier ligne par ligne :\n${lien}\n\nBonne journée`)}`}
+              className="atlas-plein inline-flex min-h-[44px] items-center rounded-full px-5 text-[14px] font-medium"
+              style={{ backgroundColor: colors.plein, color: colors.card }}
+            >
+              Envoyer par e-mail
+            </a>
+            <button type="button" onClick={() => copier(lien)} className="min-h-[44px] px-2 text-[14px] font-medium" style={{ color: colors.inkSoft }} data-atlas="copier-lien">
+              {copie ? "Lien copié" : "Copier le lien"}
+            </button>
+          </div>
+        </div>
+      )}
+      {d.verification.texte && (
+        <p className="mt-1 text-[12.5px]" style={{ color: colors.muted }} data-atlas="verification-du-comptable">
+          {d.verification.texte}
+        </p>
+      )}
+      {d.verification.rejets.length > 0 && (
+        <div className="mt-2 flex flex-col gap-2" data-atlas="rejets-du-comptable">
+          {d.verification.rejets.map((a) => (
+            <CarteARegarder key={a.id} a={a} factures={factures} />
+          ))}
+        </div>
+      )}
 
       {d.bilans.map((b) => (
         <div key={b.id} className="mt-2 flex items-center gap-3 rounded-[12px] px-3 py-2.5" style={{ backgroundColor: colors.rustTint }} data-atlas="bilan-range">

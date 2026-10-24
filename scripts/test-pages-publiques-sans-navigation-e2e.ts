@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
+import { createHash, randomBytes } from "node:crypto";
 import { CHEMINS_PUBLICS, estPageDuClient } from "../src/lib/chemins-publics";
 import { ADRESSE } from "./_adresse";
 
@@ -49,6 +50,8 @@ async function cas(nom: string, verifier: () => Promise<void>) {
  * dont la mise en page peut différer de celle d'une facture réelle. C'est
  * exactement le genre de contrôle vert sur du vide que ce dépôt a déjà payé.
  */
+let dossierDEssai: string | null = null;
+
 async function adressesPubliques(): Promise<Array<[string, string]>> {
   const liste: Array<[string, string]> = [
     ["la page de connexion", "/login"],
@@ -86,6 +89,25 @@ async function adressesPubliques(): Promise<Array<[string, string]>> {
   if (contrat.rows[0]) liste.push(["le contrat vu par le client", `/contrat/${contrat.rows[0].jeton}`]);
   const dates = await pool.query(`select jeton from envois_dates_contrat limit 1`);
   if (dates.rows[0]) liste.push(["les dates du mois vues par le client", `/contrat/dates/${dates.rows[0].jeton}`]);
+
+  // La page du comptable (24 octobre 2026). La base ne garde que l'empreinte
+  // de son jeton : on en pose un, sur un dossier d'essai retiré à la fin.
+  const entreprise = await pool.query(`select id from entreprises order by created_at limit 1`);
+  if (entreprise.rows[0]) {
+    const e = entreprise.rows[0].id;
+    const dossier = await pool.query(
+      `insert into dossiers_comptables (entreprise_id, du, au, fichier_cle, taille_octets, empreinte, garde_jusqu_au)
+       values ($1, '1999-01-01', '1999-12-31', 'essai-pages-publiques', 1, repeat('0', 64), '2009-12-31') returning id`,
+      [e]
+    );
+    dossierDEssai = dossier.rows[0].id;
+    const jeton = randomBytes(32).toString("base64url");
+    await pool.query(
+      `insert into envois_comptable (entreprise_id, dossier_id, jeton_empreinte, expire_le) values ($1, $2, $3, now() + interval '1 day')`,
+      [e, dossierDEssai, createHash("sha256").update(jeton).digest("hex")]
+    );
+    liste.push(["la page du comptable", `/comptable/${jeton}`]);
+  }
 
   return liste;
 }
@@ -209,6 +231,7 @@ async function main() {
       "/factures",
       "/entretien",
       "/contrat",
+      "/comptable",
       "/api/auth",
       "/api/cron",
       "/api/session-perimee",
@@ -257,6 +280,7 @@ async function main() {
   });
 
   await navigateur.close();
+  if (dossierDEssai) await pool.query(`delete from dossiers_comptables where id = $1`, [dossierDEssai]);
   await pool.end();
 
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Pages publiques — ${echecs} échec(s).`);

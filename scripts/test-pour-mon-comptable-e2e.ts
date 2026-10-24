@@ -156,11 +156,16 @@ async function main() {
   });
 
   await test("le filtre « Sans ticket » ne garde que ce qui manque", async () => {
+    // Une ligne À ELLE qui manque : sans elle, la suite dépendait des restes
+    // d'autres suites, et une base fraîche affichait « Rien ne manque. ».
+    await mouvement("MANQUE", aujourdhui, "9.99", "CB SANS PIECE E2E");
+    await page.reload({ waitUntil: "networkidle" });
     await page.click('[data-atlas="filtre-sans-ticket"]');
     // La LISTE, et elle seule : le texte de toute la page porte aussi les
     // données que Next.js range au bas du document, où les lignes filtrées
     // figurent encore sans être affichées.
     const texte = (await page.locator('[data-atlas="releve"]').innerText()) ?? "";
+    assert.match(texte, /CB SANS PIECE E2E/);
     assert.doesNotMatch(texte, /CB STATION E2E/);
     assert.doesNotMatch(texte, /CB BOULANGERIE E2E/);
   });

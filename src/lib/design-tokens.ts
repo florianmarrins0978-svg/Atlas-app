@@ -214,6 +214,10 @@ export const couleursDocument = {
   papier: "#faf9f5",
   encre: "#1c1c1a",
   etiquette: "#6b6b5c",
+  // Le total d'un ticket ou d'une facture RÉÉCRITS (24 octobre 2026) : bleu
+  // gris, son choix, le jaune lui piquait les yeux. Sur la pièce réécrite
+  // seulement, jamais sur la photo, dans le PDF comme sur la page du comptable.
+  surligne: "#ebf0f4",
 } as const;
 
 // ═══ CE QU'ON ÉCRIT SUR UN APLAT — le défaut du 22 août 2026 ════════════════

@@ -38,9 +38,15 @@ export type ARegarder = {
   categorie: Categorie;
   /** Les tickets possibles quand il y en a plusieurs. */
   tickets: { id: string; fournisseur: string; jour: string }[];
+  /**
+   * La raison du comptable, quand il a rejeté la ligne (lot 4) : la carte
+   * vit alors dans Mes dossiers, et propose aussi un ticket unique du même
+   * montant, puisque celui qu'Atlas avait relié ne lui convenait pas.
+   */
+  rejet?: string | null;
 };
 
-type Facture = { id: string; nom: string; societe: string; montant: string | null };
+export type Facture = { id: string; nom: string; societe: string; montant: string | null };
 
 const DECOUPAGES: { cle: Decoupage; nom: string }[] = [
   { cle: "mois", nom: "Mois" },
@@ -192,7 +198,7 @@ export default function DossierEnCours({
  * perdu », annoncé AVANT d'être validé ; pour un virement, joindre une facture
  * de fournisseur ou dire ce que c'est.
  */
-function CarteARegarder({ a, factures }: { a: ARegarder; factures: Facture[] }) {
+export function CarteARegarder({ a, factures }: { a: ARegarder; factures: Facture[] }) {
   const router = useRouter();
   const [enCours, demarrer] = useTransition();
   const [etape, setEtape] = useState<"ouvert" | "perdu" | "facture" | "motif">("ouvert");
@@ -222,6 +228,11 @@ function CarteARegarder({ a, factures }: { a: ARegarder; factures: Facture[] }) 
       <p className="mt-0.5 text-[20px] tabular-nums" style={{ fontFamily: font.display }}>
         {a.montant}
       </p>
+      {a.rejet !== undefined && (
+        <p className="mt-1.5 text-[13.5px] leading-[1.45]" style={{ color: colors.carteRougeTexte }} data-atlas="raison-du-comptable">
+          Votre comptable l’a rejetée : {a.rejet ?? "sans raison écrite"}.
+        </p>
+      )}
 
       {a.genre === "entree" ? (
         <p className="mt-1.5 text-[13.5px]" style={{ color: colors.inkSoft }}>
@@ -292,10 +303,10 @@ function CarteARegarder({ a, factures }: { a: ARegarder; factures: Facture[] }) 
             </button>
           </div>
         </>
-      ) : a.tickets.length > 1 ? (
+      ) : a.tickets.length > 1 || (a.rejet !== undefined && a.tickets.length > 0) ? (
         <>
           <p className="mt-1.5 text-[13.5px]" style={{ color: colors.inkSoft }}>
-            Plusieurs tickets du même montant. Lequel ?
+            {a.tickets.length > 1 ? "Plusieurs tickets du même montant. Lequel ?" : "Un ticket du même montant :"}
           </p>
           <div className="mt-3 flex flex-col overflow-hidden rounded-[12px]" style={{ gap: 1, backgroundColor: colors.lineSoft }}>
             {a.tickets.map((t) => (
@@ -309,7 +320,7 @@ function CarteARegarder({ a, factures }: { a: ARegarder; factures: Facture[] }) 
           </div>
           <div className="mt-2 flex items-center">
             <button type="button" disabled={enCours} onClick={() => setEtape("perdu")} className={`-mx-2 ${leger}`} style={{ color: colors.inkSoft }}>
-              Aucun des deux
+              {a.tickets.length > 1 ? "Aucun des deux" : "Ce n’est pas lui"}
             </button>
           </div>
         </>

@@ -18,8 +18,16 @@ cinq (sa consigne du 24 octobre) :**
 | 1 | la banque lue dans les deux sens, chaque ligne gardée (0142, §493) | codé, éprouvé, sur la branche `banque-deux-sens` |
 | 2 | le dossier en cours, le Check up, le relevé du mois (0143, §494) | codé, éprouvé, sur la branche |
 | 3 | arrêter le dossier, le PDF côte à côte, Mes dossiers, le bilan (0144, §495) | codé, éprouvé, sur la branche |
-| 4 | la page du comptable par lien privé : Valider, Rejeter, Suivant | à coder |
+| 4 | la page du comptable par lien privé : Valider, Rejeter, Suivant (0145, §496) | codé, éprouvé, sur la branche |
 | 5 | la photo prise sur place, redressée, le ticket recopié ligne par ligne | à coder |
+
+**Le garde-fou des pansements ne voit pas un fichier NON SUIVI** (trouvé le
+24 octobre 2026) : `scripts/_lignes-ajoutees.ts` lit `git diff <base>`, qui
+ignore les fichiers neufs tant qu'ils ne sont pas ajoutés. Un `eslint-disable`
+posé dans un fichier neuf est passé au vert. La batterie et le garde de `main`
+lisent un arbre commité, donc le voient ; la mesure pendant l'écriture, non.
+Racine : ajouter `git ls-files --others --exclude-standard`. Hors du lot du
+comptable, à faire à part.
 
 **Les soldes de la banque ne sont pas lus** : la lecture ne rend que les
 opérations. Le PDF et l'écran Entrées et sorties montrent les totaux du mois,

@@ -1,5 +1,6 @@
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFImage, type PDFPage, type PDFEmbeddedPage } from "pdf-lib";
 import { charte } from "@/lib/chartes";
+import { couleursDocument } from "@/lib/design-tokens";
 import { logger } from "../logger";
 import { enEuros } from "@/lib/euros";
 import { texteDuPapier } from "@/lib/texte-pdf";
@@ -78,7 +79,7 @@ const GRIS = couleur("#8a8578");
 const FILET = couleur("#e4e0d6");
 const PAPIER = couleur("#f3f1eb");
 const OR = couleur("#B98B47");
-const SURLIGNE = couleur("#ebf0f4");
+const SURLIGNE = couleur(couleursDocument.surligne);
 const SORTIE = couleur(ORIGINE.montantSortie);
 const ENTREE = couleur(ORIGINE.montantEntree);
 const COULEUR_CAT: Record<Categorie, ReturnType<typeof rgb>> = {
