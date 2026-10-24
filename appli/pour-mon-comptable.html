@@ -474,6 +474,8 @@ body.nuit .vignette{background:linear-gradient(180deg,#d9d6cc 0 30%,#aaa69a 30% 
     <div class="tel">
       <button class="retour" type="button">Année 2026</button>
       <header class="entete" style="padding-top:8px"><h1>Mes dossiers justifiés</h1><span class="caps sous">Gardés dix ans</span></header>
+      <p style="margin:10px 24px 0;font-size:13.5px;line-height:1.45;color:var(--encre-douce)">Atlas garde chaque dossier et son bilan dix ans, puis les efface. Téléchargez-les pour les garder plus longtemps.</p>
+      <div class="cartes" data-echeance style="margin-top:14px"></div>
       <div class="cartes" style="margin-top:20px">
         <article class="carte" data-dossier-encours></article>
       </div>
@@ -842,9 +844,10 @@ function carteArret(reste, ou){
 // Le bilan que le comptable rend, rangé avec son dossier et gardé dix ans
 // comme lui (sa demande du 24 octobre). Il arrive par e-mail ou sur papier.
 const bilans = { 2024: "15 avril 2025", 2023: "9 avril 2024" };
-let bilanEnCours = null;
+let bilanEnCours = null, echeanceVue = false;
+bilans[2016] = "20 avril 2017";
 function blocBilan(an){
-  if (bilans[an]) return `<div class="bilan-c"><span class="pdf" style="color:var(--pin)">BILAN</span><span><b>Bilan du comptable</b><br>Ajouté le ${bilans[an]}, gardé jusqu’en ${an + 10}</span></div><div class="gestes"><button class="lien" type="button">Ouvrir le bilan</button><button class="lien" type="button">Télécharger</button></div>`;
+  if (bilans[an]) return `<div class="bilan-c"><span class="pdf" style="color:var(--pin)">BILAN</span><span><b>Bilan du comptable</b><br>Ajouté le ${bilans[an]}, ${an + 10 <= 2026 ? `sera effacé le 31 décembre ${an + 10}` : `gardé jusqu’en ${an + 10}`}</span></div><div class="gestes"><button class="lien" type="button">Ouvrir le bilan</button><button class="lien" type="button">Télécharger</button></div>`;
   if (bilanEnCours === an) return `<div class="choix" style="margin-top:10px"><button type="button" data-bilan-ajoute="${an}"><span>Photographier les pages<span class="n">Le bilan reçu sur papier, page par page</span></span></button><button type="button" data-bilan-ajoute="${an}"><span>Choisir le fichier<span class="n">Le PDF reçu par e-mail</span></span></button></div><div class="gestes"><button class="leger" type="button" data-bilan-annuler>Annuler</button></div>`;
   return `<div class="gestes"><button class="contour" type="button" data-bilan-ajouter="${an}">Ajouter le bilan du comptable</button></div>`;
 }
@@ -852,11 +855,15 @@ function rendreDossiers(reste){
   document.querySelector("[data-dossier-encours]").innerHTML = carteArret(reste, "dossiers");
   document.querySelector("[data-valider-annee]").innerHTML = `<article class="carte" style="margin:16px 24px 0">${carteArret(reste, "annee")}</article>`;
   const tous = (arrete ? [{ du:"1ᵉʳ janvier", au:enMots(dateArret), an:Number(dateArret.slice(0,4)), v:"24 octobre 2026", g:Number(dateArret.slice(0,4)) + 10, t:"4,1 Mo" }] : [])
-    .concat([{ du:"1ᵉʳ janvier", au:"31 décembre 2025", an:2025, v:"12 février 2026", g:2035, t:"5,8 Mo" }, { du:"1ᵉʳ janvier", au:"31 décembre 2024", an:2024, v:"3 mars 2025", g:2034, t:"5,2 Mo" }, { du:"1ᵉʳ janvier", au:"31 décembre 2023", an:2023, v:"20 février 2024", g:2033, t:"4,7 Mo" }]);
+    .concat([{ du:"1ᵉʳ janvier", au:"31 décembre 2016", an:2016, v:"2 mars 2017", g:2026, t:"3,9 Mo", efface:"31 décembre 2026" }]).concat([{ du:"1ᵉʳ janvier", au:"31 décembre 2025", an:2025, v:"12 février 2026", g:2035, t:"5,8 Mo" }, { du:"1ᵉʳ janvier", au:"31 décembre 2024", an:2024, v:"3 mars 2025", g:2034, t:"5,2 Mo" }, { du:"1ᵉʳ janvier", au:"31 décembre 2023", an:2023, v:"20 février 2024", g:2033, t:"4,7 Mo" }]);
+  tous.sort((x, y) => y.an - x.an);
+  // Sa demande du 24 octobre : prévenir avant que dix ans ne soient passés,
+  // trois mois avant, avec de quoi garder une copie.
+  document.querySelector("[data-echeance]").innerHTML = tous.filter(d => d.efface && !echeanceVue).map(d => `<article class="carte" style="background:var(--papier)"><p class="qui" style="margin:0">Le dossier ${d.an} et son bilan seront effacés le ${d.efface}.</p><p class="texte">Dix ans sont passés. Téléchargez-les si vous voulez les garder.</p><div class="gestes"><a class="plein" style="text-decoration:none;display:inline-flex;align-items:center" href="dossier-justifie-exemple-cote-a-cote.pdf" download="Dossier justifié ${d.an}.pdf">Télécharger</a><button class="leger" type="button" data-echeance-vue>J’ai compris</button></div></article>`).join("");
   const ans = [...new Set(tous.map(d => d.an))];
   if (filtreAn === null || !ans.includes(filtreAn)) filtreAn = ans[0];
   document.querySelector("[data-filtre-an]").innerHTML = ans.map(a => `<option value="${a}"${a === filtreAn ? " selected" : ""}>${a}</option>`).join("");
-  document.querySelector("[data-dossiers]").innerHTML = tous.filter(d => d.an === filtreAn).map(d => `<li class="ligne"><span class="pdf">PDF</span><span class="milieu"><div class="lib">Du ${d.du} au ${d.au}</div><div class="cat" style="color:var(--gris)">Rangé le ${d.v}, gardé jusqu’en ${d.g}, ${d.t}</div><div class="gestes"><a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" target="_blank" rel="noopener">Ouvrir</a><a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" download="Dossier justifié ${d.an}.pdf">Télécharger</a><button class="lien" type="button">Envoyer au comptable</button></div>${blocBilan(d.an)}</span></li>`).join("");
+  document.querySelector("[data-dossiers]").innerHTML = tous.filter(d => d.an === filtreAn).map(d => `<li class="ligne"><span class="pdf">PDF</span><span class="milieu"><div class="lib">Du ${d.du} au ${d.au}</div><div class="cat" style="color:${d.efface ? "var(--alerte)" : "var(--gris)"}">${d.efface ? `Sera effacé le ${d.efface}, ${d.t}` : `Rangé le ${d.v}, gardé jusqu’en ${d.g}, ${d.t}`}</div><div class="gestes"><a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" target="_blank" rel="noopener">Ouvrir</a><a class="lien" href="dossier-justifie-exemple-cote-a-cote.pdf" download="Dossier justifié ${d.an}.pdf">Télécharger</a><button class="lien" type="button">Envoyer au comptable</button></div>${blocBilan(d.an)}</span></li>`).join("");
 }
 
 function rendreRelies(){
@@ -927,6 +934,7 @@ document.addEventListener("click", e => {
   if (ba){ bilanEnCours = Number(ba.dataset.bilanAjouter); rendreCartes(); return; }
   const bf = e.target.closest("[data-bilan-ajoute]");
   if (bf){ bilans[bf.dataset.bilanAjoute] = "24 octobre 2026"; bilanEnCours = null; rendreCartes(); return; }
+  if (e.target.closest("[data-echeance-vue]")){ echeanceVue = true; rendreCartes(); return; }
   if (e.target.closest("[data-bilan-annuler]")){ bilanEnCours = null; rendreCartes(); return; }
   if (e.target.closest("[data-arreter]")){ arret = "choix"; rendreCartes(); return; }
   if (e.target.closest("[data-arret-annuler]")){ arret = null; rendreCartes(); return; }
