@@ -59,10 +59,16 @@ const jour = (decalage: number) => {
   return d.toISOString().slice(0, 10);
 };
 
+/**
+ * Un bilan de DOUZE pages : un vrai bilan en compte vingt à soixante. Un
+ * bilan d'une page a laissé passer, le 24 octobre 2026, le plafond de
+ * l'attestation décennale (quatre pages) appliqué au bilan ; la simulation
+ * de l'année l'a trouvé.
+ */
 async function unPdf(): Promise<Buffer> {
   const doc = await PDFDocument.create();
-  const page = doc.addPage([595, 842]);
-  page.drawText("Bilan 2026", { x: 60, y: 760, size: 24, font: await doc.embedFont(StandardFonts.Helvetica) });
+  const police = await doc.embedFont(StandardFonts.Helvetica);
+  for (let i = 1; i <= 12; i++) doc.addPage([595, 842]).drawText(`Bilan 2026, page ${i}`, { x: 60, y: 760, size: 24, font: police });
   return Buffer.from(await doc.save());
 }
 

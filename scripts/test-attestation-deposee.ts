@@ -84,6 +84,11 @@ async function main() {
     assert.match((await refusDuPdfDepose(await pdfDe(5))) ?? "", /5 pages/);
   });
 
+  await cas("sans plafond, un bilan de trente pages passe, et la vérification du PDF reste", async () => {
+    assert.equal(await refusDuPdfDepose(await pdfDe(30), null), null);
+    assert.match((await refusDuPdfDepose(new TextEncoder().encode("<html>bilan</html>"), null)) ?? "", /pas un PDF/);
+  });
+
   await cas("ce qui n'est pas un PDF se refuse, quel que soit le type annoncé", async () => {
     assert.match((await refusDuPdfDepose(new TextEncoder().encode("<html>bonjour</html>"))) ?? "", /pas un PDF/);
   });

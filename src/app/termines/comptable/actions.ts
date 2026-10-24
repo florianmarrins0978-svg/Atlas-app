@@ -133,7 +133,8 @@ export async function ajouterBilanAction(formData: FormData): Promise<Fait> {
   let nature: "photo" | "pdf";
   if (mime === "application/pdf") {
     const brut = new Uint8Array(await fichier.arrayBuffer());
-    const refusPdf = await refusDuPdfDepose(brut);
+    // Sans plafond de pages : un bilan en compte vingt à soixante.
+    const refusPdf = await refusDuPdfDepose(brut, null);
     if (refusPdf) return { ok: false, raison: refusPdf };
     octets = Buffer.from(brut);
     extension = ".pdf";

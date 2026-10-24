@@ -15,7 +15,14 @@ import { ATTESTATION_MAX_PAGES } from "@/lib/attestation-decennale";
  * | il est protégé par un mot de passe | ses pages ne se recopient pas |
  * | il a plus de quatre pages | ce n'est plus une attestation, et chaque devis gonflerait d'autant |
  */
-export async function refusDuPdfDepose(octets: Uint8Array): Promise<string | null> {
+/**
+ * `pagesMax` : le plafond de pages, celui de l'attestation par défaut.
+ * **`null` pour un document qui ne se mesure pas en pages** : le bilan du
+ * comptable en compte vingt à soixante (24 octobre 2026), et le plafond de
+ * l'attestation le refusait en le prenant pour une attestation. La taille du
+ * fichier, elle, reste bornée à l'entrée (`verifierTailleFichier`).
+ */
+export async function refusDuPdfDepose(octets: Uint8Array, pagesMax: number | null = ATTESTATION_MAX_PAGES): Promise<string | null> {
   const entete = new TextDecoder().decode(octets.slice(0, 5));
   if (entete !== "%PDF-") return "Ce fichier n'est pas un PDF lisible.";
   let doc: PDFDocument;
@@ -29,7 +36,7 @@ export async function refusDuPdfDepose(octets: Uint8Array): Promise<string | nul
   }
   const pages = doc.getPageCount();
   if (pages === 0) return "Ce PDF n'a aucune page.";
-  if (pages > ATTESTATION_MAX_PAGES) {
+  if (pagesMax !== null && pages > pagesMax) {
     return `Ce PDF a ${pages} pages : une attestation en tient une ou deux. Déposez-la seule.`;
   }
   return null;

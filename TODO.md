@@ -21,6 +21,14 @@ cinq (sa consigne du 24 octobre) :**
 | 4 | la page du comptable par lien privé : Valider, Rejeter, Suivant (0145, §496) | codé, éprouvé, sur la branche |
 | 5 | la photo prise sur place, redressée, le ticket recopié ligne par ligne (0146, §497) | codé, éprouvé, sur la branche ; **la lecture des lignes par l'IA, à essayer sur son espace avec un vrai ticket** |
 
+**Le plafond de QUATRE PAGES de l'attestation décennale s'applique encore aux
+factures et devis de fournisseurs, et aux papiers des véhicules** (trouvé le
+24 octobre 2026 par la simulation du comptable) : `refusDuPdfDepose` le pose par
+défaut. Une facture de fournisseur de cinq pages y est refusée avec « une
+attestation en tient une ou deux ». Le bilan du comptable passe désormais
+`null` ; pour les trois autres écrans, la décision (quel plafond, ou aucun) est
+hors du lot du comptable, à faire à part.
+
 **Le garde-fou des pansements ne voit pas un fichier NON SUIVI** (trouvé le
 24 octobre 2026) : `scripts/_lignes-ajoutees.ts` lit `git diff <base>`, qui
 ignore les fichiers neufs tant qu'ils ne sont pas ajoutés. Un `eslint-disable`
