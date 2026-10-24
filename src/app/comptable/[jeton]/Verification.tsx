@@ -258,7 +258,7 @@ export default function Verification({
             {demandeRouge ? (
               <>
                 <label className="mt-3.5 block text-[12.5px]" style={{ color: colors.muted }}>
-                  {ligne.verification.etat === "valide" ? "Expliquez ce changement" : `Pourquoi ? ${entreprise} le lira.`}
+                  {ligne.verification.etat === "valide" ? "Expliquez ce changement" : "Justifier le rejet"}
                   <textarea
                     autoFocus
                     value={note}

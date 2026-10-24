@@ -146,7 +146,7 @@ async function main() {
 
   await test("Rejeter demande pourquoi, et la raison s'écrit sur la ligne", async () => {
     await lui.click('[data-atlas="rejeter"]');
-    assert.match(await lui.locator('[data-atlas="panneau-justificatif"]').innerText(), new RegExp(`Pourquoi \\? ${nom} le lira\\.`));
+    assert.match(await lui.locator('[data-atlas="panneau-justificatif"]').innerText(), /Justifier le rejet/);
     await lui.fill('[data-atlas="raison-du-rejet"]', "Ce ticket se retrouve, cherchez-le");
     await lui.click('[data-atlas="confirmer-rejet"]');
     assert.match(await lui.locator('[data-atlas="accord"]').innerText(), /Rejetée : Ce ticket se retrouve, cherchez-le/);
