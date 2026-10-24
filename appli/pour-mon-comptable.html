@@ -539,6 +539,11 @@ body.nuit .compta-zone .format button[aria-pressed="true"]{color:#101210}
 .c-gauche{flex:1;min-width:0;padding:22px 24px 30px}
 .c-droite{width:400px;flex:none;border-left:1px solid var(--trait);background:var(--carte);padding:20px 22px 28px;display:none;position:sticky;top:96px;max-height:calc(100vh - 110px);overflow:auto}
 .ecran-c.pc.ouvert .c-droite{display:block}
+/* Pièce ouverte : Valider et Rejeter sont dans le panneau, la colonne des ronds
+   laisse sa place pour que le tableau tienne à côté. */
+.ecran-c.pc.ouvert .c-table th:last-child,.ecran-c.pc.ouvert .c-table td.t-v{display:none}
+.c-gauche{overflow:hidden}
+.ecran-c.pc.ouvert .c-table .lib{max-width:180px}
 /* Sur téléphone, la pièce prend vraiment tout l écran. */
 .ecran-c.tel-c .c-droite{position:fixed;inset:0;width:auto;max-height:none;border:0;z-index:50;background:var(--fond);padding-top:max(20px,env(safe-area-inset-top))}
 .ecran-c.tel-c.ouvert .c-droite{display:block}
@@ -725,8 +730,19 @@ document.addEventListener("click", ev => {
   if (ev.target.closest("[data-c-confirmer-rouge]")){ const s = etatC[ouvert]; s.verdict = "rouge"; s.note = document.querySelector("[data-c-pq]").value.trim(); demandeRouge = false; rendre(); return; }
   if (ev.target.closest("[data-c-annuler-rouge]")){ demandeRouge = false; rendre(); return; }
 });
-// Sur un écran étroit, on part du format téléphone : celui d un ordinateur n y tiendrait pas.
-if (window.innerWidth < 760) document.querySelector("[data-format=tel-c]").click();
+// Sa demande du 24 octobre : garder la vue Ordinateur sur son téléphone, mais
+// RESSERRÉE pour la voir en entier. On la dessine à sa largeur d ordinateur et
+// on la réduit d un bloc à la largeur de l écran ; deux doigts pour lire.
+const LARGEUR_PC = 1000;
+function ajuster(){
+  const ec = document.querySelector("[data-ecran-c]"), zone = ec.parentElement;
+  const dispo = zone.clientWidth - 32;
+  if (ec.classList.contains("pc") && dispo < LARGEUR_PC) { ec.style.width = LARGEUR_PC + "px"; ec.style.zoom = String(dispo / LARGEUR_PC); }
+  else { ec.style.width = ""; ec.style.zoom = ""; }
+}
+window.addEventListener("resize", ajuster);
+document.addEventListener("click", ev => { if (ev.target.closest("[data-format]")) ajuster(); });
+ajuster();
 rendre();
 })();
 </script>
