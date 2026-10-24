@@ -4,11 +4,13 @@ import { exigerOuverture } from "@/server/garde-route";
 import { peutOuvrir } from "@/server/autorisation";
 import { fichierDuDossier } from "@/server/repositories/dossiers-comptables";
 import { lireObjet } from "@/server/storage";
+import { enTetesDeRemise, veutTelecharger } from "@/lib/remise-de-fichier";
 
 /**
- * LE PDF D'UN DOSSIER RANGÉ — « Ouvrir » et « Télécharger » de Mes dossiers
- * justifiés. Relu sous la RLS par son identifiant, jamais par une clé de
- * stockage ; réservé à qui ouvre le dossier.
+ * LE PDF D'UN DOSSIER RANGÉ — « Ouvrir » (dans la visionneuse, d'où son
+ * `/pdf` final) et « Télécharger » de Mes dossiers justifiés. Relu sous la RLS
+ * par son identifiant, jamais par une clé de stockage ; réservé à qui ouvre le
+ * dossier.
  */
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -21,11 +23,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const d = await fichierDuDossier(ctx, id);
   if (!d) return NextResponse.json({ error: "Introuvable" }, { status: 404 });
   const contenu = await lireObjet(d.cle);
-  const telecharger = new URL(req.url).searchParams.has("telecharger");
   return new NextResponse(new Uint8Array(contenu), {
     headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": telecharger ? `attachment; filename="Dossier justifie ${d.du} au ${d.au}.pdf"` : "inline",
+      ...enTetesDeRemise({ telecharger: veutTelecharger(req.url), nom: `Dossier justifié du ${d.du} au ${d.au}.pdf`, type: "application/pdf" }),
       "Cache-Control": "private, no-store",
       "X-Content-Type-Options": "nosniff",
     },

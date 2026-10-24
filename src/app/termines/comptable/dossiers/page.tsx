@@ -9,6 +9,7 @@ import { facturesRecuesLibres, ticketsLibres, type TicketDeLaLigne } from "@/ser
 import { verificationsDesDossiers, type VerificationDuDossier } from "@/server/repositories/verification-comptable";
 import type { ARegarder } from "../DossierEnCours";
 import MesDossiers, { type DossierAffiche } from "./MesDossiers";
+import { jourIso } from "@/lib/jour";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function PageMesDossiers() {
   const ctx = await getCurrentCtx();
-  const aujourdhui = new Date().toISOString().slice(0, 10);
+  const aujourdhui = jourIso(new Date());
   const [dossiers, verifications, factures] = await Promise.all([listerDossiers(ctx), verificationsDesDossiers(ctx), facturesRecuesLibres(ctx)]);
   const verificationDe = new Map(verifications.map((v) => [v.dossierId, v]));
   // Les tickets encore libres, pour proposer celui du même montant à côté d'un
@@ -33,10 +34,10 @@ export default async function PageMesDossiers() {
     id: d.id,
     nom: `Du ${jourComplet(d.du)} au ${jourComplet(d.au)}`,
     annee: Number(d.au.slice(0, 4)),
-    detail: `Rangé le ${jourComplet(d.arreteLe.toISOString().slice(0, 10))}, gardé jusqu’au ${jourComplet(d.gardeJusquAu)}, ${tailleLisible(d.tailleOctets)}`,
+    detail: `Rangé le ${jourComplet(jourIso(d.arreteLe))}, gardé jusqu’au ${jourComplet(d.gardeJusquAu)}, ${tailleLisible(d.tailleOctets)}`,
     echeance: echeanceProche(d.gardeJusquAu, aujourdhui) ? jourComplet(d.gardeJusquAu) : null,
     verification: verificationAffichee(verificationDe.get(d.id), tickets),
-    bilans: d.bilans.map((b) => ({ id: b.id, nom: b.fichierNom ?? (b.nature === "pdf" ? "Bilan, PDF" : "Bilan, photo"), ajoute: jourComplet(b.ajouteLe.toISOString().slice(0, 10)) })),
+    bilans: d.bilans.map((b) => ({ id: b.id, nature: b.nature, nom: b.fichierNom ?? (b.nature === "pdf" ? "Bilan, PDF" : "Bilan, photo"), ajoute: jourComplet(jourIso(b.ajouteLe)) })),
   }));
 
   return (

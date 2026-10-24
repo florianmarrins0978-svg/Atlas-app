@@ -4,6 +4,7 @@ import type { BrowserContext, Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { ADRESSE } from "./_adresse";
+import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
 
 /**
  * POUR MON COMPTABLE, LOT 3 — arrêter le dossier, et « Mes dossiers justifiés ».
@@ -145,17 +146,23 @@ async function main() {
     assert.equal(await carte.locator('[data-atlas="date-debut"]').count(), 0);
   });
 
-  await test("Ouvrir sert le PDF, Télécharger le donne à garder", async () => {
+  await test("Ouvrir mène à la visionneuse d'Atlas, Télécharger fait descendre le PDF", async () => {
     await page.goto(`${BASE}/termines/comptable/dossiers`, { waitUntil: "networkidle" });
+    // « Ouvrir » ne remet pas le PDF au navigateur : il mène à la visionneuse,
+    // avec sa flèche (`test-tous-les-pdf.ts`). On va chercher le fichier qu'elle peint.
     const href = await page.locator('[data-atlas="ouvrir-dossier"]').getAttribute("href");
-    assert.ok(href);
-    const vu = await page.request.get(`${BASE}${href}`);
+    const fichier = href ? fichierDemandeALaVisionneuse(href) : null;
+    assert.ok(fichier, `« Ouvrir » ne mène pas à la visionneuse : ${href}`);
+    const vu = await page.request.get(`${BASE}${fichier}`);
     assert.equal(vu.status(), 200);
     assert.match(vu.headers()["content-type"] ?? "", /application\/pdf/);
     assert.equal((await vu.body()).subarray(0, 5).toString("latin1"), "%PDF-");
-    const garde = await page.request.get(`${BASE}${href}?telecharger=1`);
-    assert.match(garde.headers()["content-disposition"] ?? "", /attachment/);
-    const inconnu = await page.request.get(`${BASE}/termines/comptable/dossiers/00000000-0000-0000-0000-000000000000`);
+    const descend = page.waitForEvent("download", { timeout: 30_000 });
+    await page.click('[data-atlas="telecharger-dossier"]');
+    const descendu = await descend.catch(() => null);
+    assert.ok(descendu, "« Télécharger » n'a fait descendre aucun fichier");
+    assert.match(descendu.suggestedFilename(), /\.pdf$/);
+    const inconnu = await page.request.get(`${BASE}/termines/comptable/dossiers/00000000-0000-0000-0000-000000000000/pdf`);
     assert.equal(inconnu.status(), 404);
   });
 
@@ -163,7 +170,11 @@ async function main() {
     await page.click('[data-atlas="ajouter-bilan"]');
     await page.locator('[data-atlas="fichier-bilan"]').setInputFiles({ name: "Bilan 2026.pdf", mimeType: "application/pdf", buffer: await unPdf() });
     await page.waitForSelector('[data-atlas="bilan-range"]', { timeout: 30_000 });
-    const lien = await page.locator('[data-atlas="bilan-range"] a').getAttribute("href");
+    const href = await page.locator('[data-atlas="ouvrir-bilan"]').getAttribute("href");
+    const lien = href ? fichierDemandeALaVisionneuse(href) : null;
+    assert.ok(lien, `le bilan PDF ne s'ouvre pas dans la visionneuse : ${href}`);
+    // Une adresse qui ment sur sa nature ne sert rien.
+    assert.equal((await page.request.get(`${BASE}${lien.replace(/\/pdf$/, "/photo")}`)).status(), 404);
     const vu = await page.request.get(`${BASE}${lien}`);
     assert.equal(vu.status(), 200);
     assert.equal((await vu.body()).subarray(0, 5).toString("latin1"), "%PDF-");

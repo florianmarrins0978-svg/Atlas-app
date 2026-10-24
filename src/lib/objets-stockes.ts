@@ -217,6 +217,21 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
     // Une pièce importée naît avec son fichier (NOT NULL) : son absence est une perte.
     absenceNormale: false,
   },
+  // Le dossier du comptable rangé et son bilan (migration 0144, 24 octobre
+  // 2026). Gardés dix ans, ils naissent avec leur fichier (NOT NULL) : leur
+  // absence est une perte, et c'est le dossier même qu'on remet au comptable.
+  {
+    table: "dossiers_comptables",
+    colonne: "fichier_cle",
+    quoi: "le dossier justifié remis au comptable, en PDF",
+    absenceNormale: false,
+  },
+  {
+    table: "bilans_comptables",
+    colonne: "fichier_cle",
+    quoi: "le bilan rendu par le comptable",
+    absenceNormale: false,
+  },
   {
     table: "images_phyto",
     colonne: "storage_key",

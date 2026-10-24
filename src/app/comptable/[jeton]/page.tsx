@@ -4,6 +4,7 @@ import { ligneDuTotal } from "@/lib/ticket-imprime";
 import { LIBELLE_MOTIF, categorieDeLaLigne, jourComplet, jourEnMots } from "@/lib/pour-mon-comptable";
 import { dossierParJeton, type LignePourLeComptable } from "@/server/repositories/verification-comptable";
 import Verification, { type LigneAVerifier, type PieceAffichee } from "./Verification";
+import { jourIso } from "@/lib/jour";
 
 export const dynamic = "force-dynamic";
 
@@ -106,7 +107,7 @@ export default async function PageDuComptable({ params }: { params: Promise<{ je
       jeton={jeton}
       titre={`Dossier justifié, ${dossier.entreprise}`}
       periode={`Du ${jourComplet(dossier.du)} au ${jourComplet(dossier.au)}`}
-      envoye={`Envoyé le ${jourEnMots(dossier.envoyeLe.toISOString().slice(0, 10))}`}
+      envoye={`Envoyé le ${jourEnMots(jourIso(dossier.envoyeLe))}`}
       entreprise={dossier.entreprise}
       lignes={lignes}
     />

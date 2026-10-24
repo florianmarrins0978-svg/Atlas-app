@@ -6,6 +6,7 @@ import type { BrowserContext, Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { ADRESSE } from "./_adresse";
+import { jourIso } from "../src/lib/jour";
 
 /**
  * POUR MON COMPTABLE, LOT 5 — la photo prise depuis la ligne, et le ticket
@@ -90,7 +91,7 @@ async function main() {
     await pool.query(`DELETE FROM achats_tva WHERE entreprise_id = $1 AND fournisseur LIKE $2`, [entreprise, `${MARQUE}%`]);
   };
   await nettoyer();
-  const aujourdhui = new Date().toISOString().slice(0, 10);
+  const aujourdhui = jourIso(new Date());
   const { rows: ligne } = await pool.query(
     `INSERT INTO mouvements_bancaires (entreprise_id, cle, jour, montant, sens, libelle) VALUES ($1, $2, $3, 37.40, 'sortie', 'CB QUINCAILLERIE PHOTO') RETURNING id`,
     [entreprise, `${MARQUE}-QUINCAILLERIE`, aujourdhui]

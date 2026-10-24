@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
 import { ACCEPT_PHOTOS } from "@/lib/exif";
 import { adressePourLeClient } from "@/lib/adresse-du-client";
+import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
+import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 import { ajouterBilanAction, envoyerAuComptableAction, retirerBilanAction } from "../actions";
 import { CarteARegarder, type ARegarder, type Facture } from "../DossierEnCours";
 
@@ -16,12 +18,20 @@ export type DossierAffiche = {
   detail: string;
   /** Le jour de son effacement, quand il approche (trois mois). */
   echeance: string | null;
-  bilans: { id: string; nom: string; ajoute: string }[];
+  bilans: { id: string; nature: "photo" | "pdf"; nom: string; ajoute: string }[];
   /** Où en est son comptable (rien tant qu'aucun lien n'est parti), et ce qu'il a rejeté. */
   verification: { texte: string | null; rejets: ARegarder[] };
 };
 
 const classeLien = "inline-flex min-h-[40px] items-center pr-3 text-[13.5px] font-medium";
+
+/**
+ * Le PDF d'un dossier : regardé dans la visionneuse d'Atlas (avec sa flèche),
+ * gardé par `BoutonTelechargerDocument` — les deux seules portes vers un PDF
+ * (`test-tous-les-pdf.ts`). Un lien posé à la main s'ouvrait sur iPhone au
+ * lieu de se ranger.
+ */
+const pdfDuDossier = (id: string) => `/termines/comptable/dossiers/${id}/pdf`;
 
 const CLE_DES_VUES = "atlas-echeances-vues";
 const AUCUNE: string[] = [];
@@ -86,9 +96,9 @@ export default function MesDossiers({ dossiers, factures }: { dossiers: DossierA
             Dix ans sont passés. Téléchargez-les si vous voulez les garder.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <a href={`/termines/comptable/dossiers/${d.id}?telecharger=1`} className="atlas-plein inline-flex min-h-[44px] items-center rounded-full px-5 text-[14px] font-medium" style={{ backgroundColor: colors.plein, color: colors.card }}>
+            <BoutonTelechargerDocument fichier={pdfDuDossier(d.id)} nom={`Dossier justifié, ${d.nom}.pdf`} className="atlas-plein inline-flex min-h-[44px] items-center rounded-full px-5 text-[14px] font-medium" style={{ backgroundColor: colors.plein, color: colors.card }}>
               Télécharger
-            </a>
+            </BoutonTelechargerDocument>
             <button type="button" onClick={() => vu(d.id)} className="min-h-[44px] px-2 text-[14px] font-medium" style={{ color: colors.inkSoft }}>
               J’ai compris
             </button>
@@ -201,12 +211,12 @@ function Dossier({ d, factures }: { d: DossierAffiche; factures: Facture[] }) {
         {d.echeance ? `Sera effacé le ${d.echeance}` : d.detail}
       </p>
       <div className="mt-1 flex flex-wrap">
-        <a href={`/termines/comptable/dossiers/${d.id}`} target="_blank" rel="noopener" className={classeLien} style={{ color: colors.rust }} data-atlas="ouvrir-dossier">
+        <Link href={adresseDeLaVisionneuse(pdfDuDossier(d.id), { surtitre: "Dossier justifié", titre: d.nom })} className={classeLien} style={{ color: colors.rust }} data-atlas="ouvrir-dossier">
           Ouvrir
-        </a>
-        <a href={`/termines/comptable/dossiers/${d.id}?telecharger=1`} className={classeLien} style={{ color: colors.rust }}>
+        </Link>
+        <BoutonTelechargerDocument fichier={pdfDuDossier(d.id)} nom={`Dossier justifié, ${d.nom}.pdf`} className={classeLien} style={{ color: colors.rust }} dataAtlas="telecharger-dossier">
           Télécharger
-        </a>
+        </BoutonTelechargerDocument>
         <button type="button" disabled={enCours} onClick={envoyer} className={classeLien} style={{ color: colors.rust }} data-atlas="envoyer-au-comptable">
           Envoyer au comptable
         </button>
@@ -251,9 +261,15 @@ function Dossier({ d, factures }: { d: DossierAffiche; factures: Facture[] }) {
             </b>
             Ajouté le {b.ajoute}
           </span>
-          <a href={`/termines/comptable/bilans/${b.id}`} target="_blank" rel="noopener" className="text-[13px] font-medium" style={{ color: colors.rust }}>
-            Ouvrir
-          </a>
+          {b.nature === "pdf" ? (
+            <Link href={adresseDeLaVisionneuse(`/termines/comptable/bilans/${b.id}/pdf`, { surtitre: "Bilan du comptable", titre: d.nom })} className="text-[13px] font-medium" style={{ color: colors.rust }} data-atlas="ouvrir-bilan">
+              Ouvrir
+            </Link>
+          ) : (
+            <a href={`/termines/comptable/bilans/${b.id}/photo`} target="_blank" rel="noopener" className="text-[13px] font-medium" style={{ color: colors.rust }} data-atlas="ouvrir-bilan">
+              Ouvrir
+            </a>
+          )}
           <button type="button" disabled={enCours} onClick={() => retirer(b.id)} className="min-h-[40px] text-[13px]" style={{ color: colors.inkSoft }}>
             Retirer
           </button>

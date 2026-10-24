@@ -138,10 +138,15 @@ const HORS_CHARTE: Array<{
      * **L'exception est bornée au repère de cette carte** : tout autre bouton
      * carré de `termines/page.tsx` fait toujours rougir, et c'est vérifié plus
      * bas contre un bouton voisin.
+     *
+     * **La carte « Pour mon comptable », juste dessous, depuis le 24 octobre
+     * 2026** : son choix sur la planche (`appli/pour-mon-comptable.html`,
+     * écran 1), « la même forme que la carte de la TVA ». Même nature, même
+     * raison, et le même repère borné.
      */
     motif: /^src[/\\]app[/\\]termines[/\\]page\.tsx$/,
-    pourquoi: "carte pleine largeur qu'on parcourt, plage à 4 px et non geste en capsule",
-    seulement: /data-atlas="carte-tva"/,
+    pourquoi: "cartes pleine largeur qu'on parcourt (TVA, comptable), plages à 4 px et non gestes en capsule",
+    seulement: /data-atlas="carte-(?:tva|comptable)"/,
   },
   {
     /**

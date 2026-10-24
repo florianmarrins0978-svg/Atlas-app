@@ -267,6 +267,10 @@ const EXEMPTIONS: Record<string, string> = {
     "d'écriture qui l'exige mot pour mot (migration 0081), et une cadence bornée " +
     "(LIMITES.receptionFacture). L'écriture est de surcroît idempotente : elle ne pose " +
     "la date que si elle est absente, donc la marteler ne change rien après le premier appel.",
+  "src/app/comptable/[jeton]/actions.ts#poserVerdictAction":
+    "La page du comptable s'ouvre par un jeton, sans compte (24 octobre 2026) : le comptable n'a pas de rôle. " +
+    "Le jeton EST la garde — 256 bits, dont la base ne garde que l'empreinte (migration 0145), et qui n'ouvre " +
+    "que les lignes de SON dossier (`poserVerdictParJeton`). La cadence est bornée (LIMITES.verdictComptable).",
   "src/app/factures/[jeton]/actions.ts#accuserReceptionAction":
     "Même raison, et même serrure. Un porteur du jeton ne peut poser QUE la confirmation " +
     "de SA facture, une seule fois : le garde IS NULL en base refuse d'écraser la première date.",

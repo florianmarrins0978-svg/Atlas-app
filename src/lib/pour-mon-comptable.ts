@@ -1,5 +1,6 @@
 import type { NatureAchat } from "./achat-tva";
 import { enCentimes } from "./rapprochement-bancaire";
+import { jourIso } from "./jour";
 
 /**
  * POUR MON COMPTABLE — les règles pures du dossier : quelle pièce justifie
@@ -281,7 +282,9 @@ export function lendemain(jour: string): string {
  * date ; le suivant commence le lendemain, tout seul.
  */
 export function periodeDuDossierEnCours(maintenant: Date, dernierAu: string | null): { du: string; au: string } {
-  const au = maintenant.toISOString().slice(0, 10);
+  // Le jour du PATRON, pas celui de Greenwich : à minuit et demi le 1er janvier,
+  // le dossier en cours est déjà celui de la nouvelle année.
+  const au = jourIso(maintenant);
   return { du: dernierAu ? lendemain(dernierAu) : `${au.slice(0, 4)}-01-01`, au };
 }
 

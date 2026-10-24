@@ -7,6 +7,7 @@ import { ligneAJustifier, lignesDuReleve, type LigneDuReleve } from "./repositor
 import { dossierEnCours, rangerDossier } from "./repositories/dossiers-comptables";
 import { composerDossierComptable, type Fichier, type LignePourLeDossier } from "./pdf/dossier-comptable-pdf";
 import type { Ctx } from "./repositories/context";
+import { jourIso } from "@/lib/jour";
 
 /**
  * ARRÊTER LE DOSSIER — lot 3 de « Pour mon comptable ».
@@ -76,7 +77,7 @@ export async function arreterLeDossier(ctx: Ctx, demande: { du: string | null; a
   // Le début ne se choisit qu'au PREMIER dossier ; ensuite, c'est le lendemain
   // du précédent, et rien d'autre : deux dossiers ne couvrent jamais un même jour.
   const du = enCours.premier && demande.du ? demande.du : enCours.du;
-  const aujourdhui = demande.maintenant.toISOString().slice(0, 10);
+  const aujourdhui = jourIso(demande.maintenant);
   const refus = refusDArret({ du, au: demande.au, aujourdhui });
   if (refus) return { ok: false, raison: refus };
 

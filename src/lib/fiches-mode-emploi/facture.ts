@@ -15,6 +15,8 @@ const RET = "src/app/termines/retours/ListeDesRetours.tsx";
 const TVA = "src/app/termines/tva/page.tsx";
 const ATT = "src/app/termines/tva/EnAttenteDePaiement.tsx";
 const ACH = "src/app/termines/tva/AchatsTva.tsx";
+/** La feuille de saisie d'un achat, sortie d'AchatsTva le 24 octobre 2026 pour servir aussi au Check up. */
+const FEUILLE = "src/app/termines/tva/FeuilleAchat.tsx";
 const PUB = "src/app/factures/[jeton]/page.tsx";
 
 const OU_FACTURE = "« Terminés » dans la barre du bas, puis la ligne du chantier, écran Facture";
@@ -460,7 +462,8 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
       "Sous « TVA à payer », appuyez sur « Scanner un ticket », prenez la photo ou choisissez-la, vérifiez les montants lus, puis « Ajouter aux achats ».",
     reserve: "Gardez le papier, la photo ne le remplace pas. Un ticket d'une autre période y part, et l'écran le dit avant.",
     source: ACH,
-    preuves: ['"Scanner un ticket"', '"Ajouter aux achats"', "Gardez le papier, la photo ne le remplace pas."],
+    preuves: ['"Scanner un ticket"'],
+    ailleurs: [{ source: FEUILLE, preuves: ['"Ajouter aux achats"', "Gardez le papier, la photo ne le remplace pas."] }],
   },
   {
     id: "tva-achat-main",
@@ -472,7 +475,8 @@ export const FICHES_FACTURE: FicheModeEmploi[] = [
       "Appuyez sur « Écrire à la main », remplissez Où, Date, Total payé et Taux : la TVA se calcule. Puis « Ajouter aux achats ».",
     reserve: "Si le ticket affiche une autre TVA, écrivez la sienne : c'est elle qui compte.",
     source: ACH,
-    preuves: ["Écrire à la main", 'libelle="Où"', 'libelle="Total payé"', 'libelle="Taux"', '"Ajouter aux achats"'],
+    preuves: ["Écrire à la main"],
+    ailleurs: [{ source: FEUILLE, preuves: ['libelle="Où"', 'libelle="Total payé"', 'libelle="Taux"', '"Ajouter aux achats"'] }],
   },
   {
     id: "tva-detail",

@@ -5,10 +5,16 @@ import { peutOuvrir } from "@/server/autorisation";
 import { fichierDuBilan } from "@/server/repositories/dossiers-comptables";
 import { lireObjet } from "@/server/storage";
 import { typeDepuisCle } from "@/lib/type-de-fichier";
+import { enTetesDeRemise, veutTelecharger } from "@/lib/remise-de-fichier";
 
-/** LE BILAN DU COMPTABLE, rangé avec son dossier : relu sous la RLS par son identifiant. */
-export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+/**
+ * LE BILAN DU COMPTABLE, rangé avec son dossier : relu sous la RLS par son
+ * identifiant. Une route, deux adresses, selon ce qu'il est : `…/pdf` (que la
+ * visionneuse accepte, ses routes finissant toutes par `/pdf`) ou `…/photo`.
+ * Une adresse qui ne dit pas la vraie nature du fichier répond « introuvable ».
+ */
+export async function GET(req: Request, { params }: { params: Promise<{ id: string; forme: string }> }) {
+  const { id, forme } = await params;
   const ctx = await getCurrentCtx();
   const refus = await exigerOuverture(ctx);
   if (refus) return refus;
@@ -16,14 +22,16 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: "Introuvable" }, { status: 404 });
 
   const b = await fichierDuBilan(ctx, id);
-  if (!b) return NextResponse.json({ error: "Introuvable" }, { status: 404 });
+  if (!b || forme !== b.nature) return NextResponse.json({ error: "Introuvable" }, { status: 404 });
   const contenu = await lireObjet(b.cle);
-  const telecharger = new URL(req.url).searchParams.has("telecharger");
   const extension = b.cle.slice(b.cle.lastIndexOf("."));
   return new NextResponse(new Uint8Array(contenu), {
     headers: {
-      "Content-Type": b.nature === "pdf" ? "application/pdf" : typeDepuisCle(b.cle),
-      "Content-Disposition": telecharger ? `attachment; filename="Bilan du comptable${extension}"` : "inline",
+      ...enTetesDeRemise({
+        telecharger: veutTelecharger(req.url),
+        nom: `Bilan du comptable${extension}`,
+        type: b.nature === "pdf" ? "application/pdf" : typeDepuisCle(b.cle),
+      }),
       "Cache-Control": "private, no-store",
       "X-Content-Type-Options": "nosniff",
     },

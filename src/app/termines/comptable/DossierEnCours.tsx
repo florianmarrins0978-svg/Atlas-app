@@ -12,6 +12,7 @@ import FeuilleAchat, { type DepartDeLaFeuille } from "../tva/FeuilleAchat";
 import { rangerTicketAction } from "../tva/actions";
 import { nettoyerPhotoDuTicket } from "@/components/atlas/nettoyer-photo";
 import { ACCEPT_PHOTOS } from "@/lib/exif";
+import { jourIso } from "@/lib/jour";
 
 /**
  * L'ÉCRAN DU DOSSIER EN COURS — écrans 2 et 4 de `appli/pour-mon-comptable.html`.
@@ -218,7 +219,7 @@ export function CarteARegarder({ a, factures }: { a: ARegarder; factures: Factur
       const fd = new FormData();
       fd.set("ticket", await nettoyerPhotoDuTicket(fichier));
       const r = await rangerTicketAction(fd);
-      const aujourdHui = new Date().toISOString().slice(0, 10);
+      const aujourdHui = jourIso(new Date());
       setFeuille(r.ok ? { photoCle: r.cle, lu: r.lu, lecture: r.lecture, refus: null, aujourdHui } : { photoCle: null, lu: null, lecture: null, refus: r.raison, aujourdHui });
     });
   }

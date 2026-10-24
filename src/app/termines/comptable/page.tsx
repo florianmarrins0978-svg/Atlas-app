@@ -3,7 +3,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import { colors, font } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
-import { jourLisible } from "@/lib/jour";
+import { jourIso, jourLisible } from "@/lib/jour";
 import {
   categorieDeLaLigne,
   checkUp,
@@ -141,7 +141,7 @@ export default async function PageDossierEnCours() {
         />
         <DossierEnCours
           dossier={{ du, premier, aujourdhui: au }}
-          banque={liaison ? { nom: liaison.banque || "Banque reliée", lue: liaison.luLe ? jourLisible(liaison.luLe.toISOString().slice(0, 10)) : null } : null}
+          banque={liaison ? { nom: liaison.banque || "Banque reliée", lue: liaison.luLe ? jourLisible(jourIso(liaison.luLe)) : null } : null}
           periodes={periodes}
           aRegarder={aRegarder}
           factures={factures.map((f) => ({ id: f.id, nom: f.nom, societe: f.societe, montant: f.totalTtc ? enEuros(f.totalTtc) : null }))}
