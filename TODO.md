@@ -29,6 +29,18 @@ d'exemple : `appli/dossier-justifie-exemple.pdf`, imprimé par
 | — | Le total d’un ticket ou d’une facture | **surligné en bleu gris** (`#ebf0f4`) sur la pièce RÉÉCRITE seulement, jamais sur la photo. Le vert et le rouge disent entrée et sortie ; le jaune lui piquait les yeux |
 | — | Les virements reçus | leur facture émise par Atlas entre parmi les pièces (`R-mois-n`), avec le même aller et retour |
 
+**LA BANQUE EST DÉJÀ BRANCHÉE, NE PAS EN REFAIRE UNE (24 octobre 2026).** La
+connexion bancaire est sur `main` (`ARCHITECTURE.md` §492, migration 0140) :
+liaison en base (`liaisons_bancaires`), lecture par Enable Banking
+(`src/server/banque/enable-banking.ts`, `virementsRecus`), lecture une fois par
+demi-heure à l'ouverture des écrans (`src/server/banque/lecture.ts`). **Elle lit
+déjà toutes les opérations, et n'en garde que les crédits** (le filtre
+`credit_debit_indicator !== "CRDT"`). Le Check up a besoin des DÉBITS : les garder
+dans ce même module, dans une table à part ou un champ de sens, plutôt qu'une
+seconde connexion. Le patron l'a demandé le 24 octobre (*« est-ce qu'elle
+permet aussi de lire tout ce qu'on paye ? »*). Rappel de la règle déjà écrite
+plus haut : une ligne de banque ne justifie pas une TVA, elle réclame le ticket.
+
 **Ce que ses deux vrais tickets ont appris (Intermarché, Uber Eats) :** un
 ticket payé en espèces n'a pas de ligne de banque, le Check up ne la cherche
 pas ; un bon Uber Eats ne porte aucune TVA, la facture est dans l'appli Uber
