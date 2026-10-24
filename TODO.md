@@ -61,16 +61,14 @@ Reste : éprouver l'appui long sur son téléphone, ce poste n'a qu'un navigateu
 
 `appli/tva-voiture-80.html`. À coder dans `TableauCalculette` (page TVA déductible) avec `tvaTicket`, déjà en base, dès qu'il a choisi.
 
-## LA FACTURE ACQUITTÉE APRÈS L'ENVOI : CODÉE LE 23 OCTOBRE 2026, PAS SUR `main`
+## LA FACTURE ACQUITTÉE APRÈS L'ENVOI : CODÉE LE 23 OCTOBRE 2026, SUR `main` LE 24 OCTOBRE 2026
 
-## ⏳ UNE PLANCHE À REGARDER : RENVOYER LA FACTURE ACQUITTÉE (23 octobre 2026)
+Planche `appli/facture-acquittee.html`, son « code ça » du 23 octobre. Livrée
+par la batterie commune des quatre lots (migration 0141). Reste à jouer sur
+son espace : le bouton « Envoyer la facture acquittée », refusé sur adresse
+locale ici. `ARCHITECTURE.md` §490, `docs/facture-acquittee.md`.
 
-Planche `appli/facture-acquittee.html`, son « code ça » du 23 octobre. Branche
-`claude/facture-acquittee`, sans batterie (sa consigne). **Reste : la batterie
-entière** (niveau 3, argent et migration 0141), puis `main`. `ARCHITECTURE.md`
-§490, `docs/facture-acquittee.md`.
-
-## ⏳ MA BANQUE : LA SUITE EST CODÉE, PAS ENCORE SUR `main` (23 octobre 2026)
+## ⏳ MA BANQUE : LA SUITE EST CODÉE, SUR `main` LE 24 OCTOBRE 2026 (batterie commune)
 
 `/reglages/banque` lit ses virements reçus par Enable Banking et propose une facture pour chacun. **Joué par lui le 23 octobre 2026, de bout en bout** : application « Atlas » active en production restreinte, Crédit Mutuel relié, « Votre banque est reliée », deux virements reçus listés. **Le Crédit Mutuel est couvert.**
 

@@ -5,9 +5,9 @@
 `drizzle/0116_modele_de_fiche_d_office.sql`
 
 ---
-## LES FACTURES DES FOURNISSEURS, CODÉ (23 octobre 2026), PAS ENCORE SUR `main`
+## LES FACTURES DES FOURNISSEURS, CODÉ (23 octobre 2026), SUR `main` LE 24 OCTOBRE 2026 (batterie commune)
 
-Codé : onglet Factures de la fiche (`FournisseursPartenaires.tsx`), dépôt photo, PDF, Excel ou CSV (`deposerDevisRecuAction`), remplacement d'un prix par une facture (`accepterLignesDuDevisAction`, `remplacerPrixAchat`), règle pure `rapprocherDuPrix` (`src/lib/devis-fournisseur-lu.ts`), migration `0139_factures_recues.sql`. Reste : la batterie de livraison (niveau 3, migration), puis `main`.
+Codé : onglet Factures de la fiche (`FournisseursPartenaires.tsx`), dépôt photo, PDF, Excel ou CSV (`deposerDevisRecuAction`), remplacement d'un prix par une facture (`accepterLignesDuDevisAction`, `remplacerPrixAchat`), règle pure `rapprocherDuPrix` (`src/lib/devis-fournisseur-lu.ts`), migration `0139_factures_recues.sql`. Livré par la batterie commune du 24 octobre, avec la facture acquittée, la banque et le ticket : 496 suites base, 191 navigateur vertes. Elle a trouvé deux défauts, corrigés : la sauvegarde oubliait la banque reliée et les virements, et les cartes teintées de l'accueil perdaient en lisibilité en Nuit.
 
 ## SUPPRIMER PLUSIEURS CLIENTS (23 octobre 2026)
 
@@ -17,7 +17,7 @@ Codé : appui long sur une ligne de `ListeClients.tsx`, « Tout », barre rouge 
 
 Codé, branche `claude/session-revocation-security-b8ulo7`. Migration `drizzle/0138_sessions_fermees.sql` (table neuve, expand seul). `deconnexionAction` ferme la session (`fermerLaSession`, `src/server/repositories/compte.ts`) avant d'effacer le cookie ; `getCurrentCtx` refuse une session fermée. Suites : `test-se-deconnecter-e2e` (cas 6), `test-compte-db`. Détail : `docs/session-revoquee.md`.
 
-## LA FACTURE ACQUITTÉE APRÈS L'ENVOI, CODÉE (23 octobre 2026), PAS ENCORE SUR `main`
+## LA FACTURE ACQUITTÉE APRÈS L'ENVOI, CODÉE (23 octobre 2026), SUR `main` LE 24 OCTOBRE 2026 (batterie commune)
 
 L'interrupteur « Facture acquittée » s'offre sur la facture partie (moyen touché, solde noté par la porte de Terminés), et l'envoi devient « Envoyer la facture acquittée » : un second PDF archivé, même numéro, le tampon en plus, sur un lien à lui (migration 0141). L'original n'est jamais réécrit. `ARCHITECTURE.md` §490.
 

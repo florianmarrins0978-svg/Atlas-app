@@ -24,7 +24,7 @@ Pour reprendre : `ARCHITECTURE.md` §488. Le piège à connaître : **un JWT d'A
 
 ## LA FACTURE ACQUITTÉE APRÈS L'ENVOI : branche `claude/facture-acquittee` (23 octobre 2026)
 
-Codé sans batterie, sur sa consigne. **Avant `main` : la batterie entière** (niveau 3 : argent, migration 0141). Vert ici : types, lint, `test-facture-acquittee-db.ts` (vu rouge sans la correction), les suites voisines. `test-papier-facture-db.ts` a été adapté : il défendait la règle « sur un brouillon seulement », retirée à sa demande. `ARCHITECTURE.md` §490, `docs/facture-acquittee.md`.
+Sur `main` le 24 octobre 2026, par la batterie commune des quatre lots (factures fournisseurs, facture acquittée, banque, ticket). Vert ici : types, lint, `test-facture-acquittee-db.ts` (vu rouge sans la correction), les suites voisines. `test-papier-facture-db.ts` a été adapté : il défendait la règle « sur un brouillon seulement », retirée à sa demande. `ARCHITECTURE.md` §490, `docs/facture-acquittee.md`.
 
 ## MA BANQUE, L'ESSAI (22 octobre 2026)
 
