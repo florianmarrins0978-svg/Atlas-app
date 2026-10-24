@@ -46,6 +46,20 @@ Aucun réglage d'exercice à saisir.
 numéros de caisse, horaires, conditions et code-barre. Il a demandé « il faut
 toutes les infos non ? » : Atlas ne trie pas à sa place ce qui compte.
 
+**La banque ne lit aujourd'hui que les virements REÇUS — à étendre, il l'a
+relevé le 24 octobre.** `virementsRecus` (`src/server/banque/enable-banking.ts`)
+écarte tout ce qui n'est pas `CRDT` ; les débits arrivent pourtant dans la même
+réponse d'Enable Banking. Il faut une lecture des mouvements dans les deux sens
+(sens, montant, date, libellé, et le bénéficiaire, `creditor`, pour un débit),
+sans toucher à ce que la carte « virement reçu » fait déjà.
+
+**Et la lire SOUVENT, en gardant chaque ligne.** Les banques ne rendent
+d'ordinaire que quatre-vingt-dix jours d'historique : un dossier d'un an ne se
+reconstitue pas au moment de l'arrêter. Chaque lecture (Check up, et une lecture
+automatique, par exemple quotidienne) range les lignes nouvelles dans une table
+à lui, dédoublonnées par la clé de `cleDuVirement` ; c'est cette table, pas la
+banque, que le dossier lit.
+
 **Ce qui reste un contrat, pas du code :** la banque pour ses futurs clients
 (`docs/A-FAIRE.md` §13). Pour lui, l'essai Enable Banking suffit.
 
