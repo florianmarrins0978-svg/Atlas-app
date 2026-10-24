@@ -76,6 +76,8 @@ import {
   liaisonsBancaires,
   virementsRecus,
   mouvementsBancaires,
+  dossiersComptables,
+  bilansComptables,
 } from "../db/schema";
 import type { Ctx } from "./context";
 import { rangerLesFichiers, type FichierARanger } from "@/lib/rangement-sauvegarde";
@@ -222,6 +224,8 @@ export async function exporterEntreprise(
       saBanqueReliee,
       sesVirementsRecus,
       sesMouvementsBancaires,
+      sesDossiersComptables,
+      sesBilansComptables,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -447,6 +451,11 @@ export async function exporterEntreprise(
       // fond du dossier du comptable, et la banque ne les rend plus après
       // quatre-vingt-dix jours.
       tx.select().from(mouvementsBancaires).where(eq(mouvementsBancaires.entrepriseId, e)),
+      // Les dossiers rangés pour le comptable et leurs bilans (migration
+      // 0144) : gardés dix ans par Atlas, et c'est la sauvegarde qui permet de
+      // les garder plus longtemps.
+      tx.select().from(dossiersComptables).where(eq(dossiersComptables.entrepriseId, e)),
+      tx.select().from(bilansComptables).where(eq(bilansComptables.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -558,6 +567,8 @@ export async function exporterEntreprise(
       liaisons_bancaires: saBanqueReliee,
       virements_recus: sesVirementsRecus,
       mouvements_bancaires: sesMouvementsBancaires,
+      dossiers_comptables: sesDossiersComptables,
+      bilans_comptables: sesBilansComptables,
     };
 
     const compte: Record<string, number> = {};
@@ -646,6 +657,9 @@ export async function exporterEntreprise(
       const client = p.clientId ? (nomDuClient.get(p.clientId) ?? p.nomLu) : p.nomLu;
       ajouter(p.fichierCle, p.genre === "facture" ? "facture-pdf" : "devis-pdf", null, [client, p.numero].filter(Boolean).join(" "), p.jour);
     }
+    for (const d of sesDossiersComptables) ajouter(d.fichierCle, "dossier-comptable", null, `du ${d.du} au ${d.au}`, null);
+    const auDossier = new Map(sesDossiersComptables.map((d) => [d.id, `du ${d.du} au ${d.au}`]));
+    for (const b of sesBilansComptables) ajouter(b.fichierCle, "bilan-comptable", null, auDossier.get(b.dossierId) ?? null, null);
     const chantiersDeRangement = new Map(
       lesChantiers.map((c) => [c.id, { nom: c.nom, client: c.clientId ? nomDuClient.get(c.clientId) ?? null : null }])
     );

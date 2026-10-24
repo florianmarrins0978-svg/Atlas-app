@@ -234,6 +234,9 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     // dossier montre chaque ligne de banque et ses montants. La photo d'un
     // ticket se sert par sa propre route, fermée de même.
     "/termines/comptable",
+    "/termines/comptable/bilans/xxxx",
+    "/termines/comptable/dossiers",
+    "/termines/comptable/dossiers/xxxx",
     "/termines/comptable/ticket/xxxx",
     "/termines/comptable/xxxx",
     // La catégorie « Non payées » (24 septembre 2026), fermée comme Terminés.

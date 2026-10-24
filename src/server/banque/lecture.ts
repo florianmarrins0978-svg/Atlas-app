@@ -1,5 +1,5 @@
 import { fenetresDeLecture, virementsDesMouvements } from "@/lib/releve-bancaire";
-import { periodeDuDossierEnCours } from "@/lib/pour-mon-comptable";
+import { dossierEnCours } from "../repositories/dossiers-comptables";
 import { appliquerCheckUp } from "../repositories/pour-mon-comptable";
 import { logger } from "../logger";
 import type { Ctx } from "../repositories/context";
@@ -61,7 +61,7 @@ export async function lireLaBanque(
   await ajouterMouvements(ctx, r.mouvements);
   // Les lignes nouvelles retrouvent leur ticket dès qu'elles arrivent : c'est
   // ici, à l'arrivée de la donnée, que le Check up silencieux a sa place.
-  const dossier = periodeDuDossierEnCours(maintenant);
+  const dossier = await dossierEnCours(ctx, maintenant);
   await appliquerCheckUp(ctx, dossier.du, dossier.au);
   const nouveaux = await ajouterVirements(
     ctx,

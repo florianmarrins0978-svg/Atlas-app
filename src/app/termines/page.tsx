@@ -12,7 +12,7 @@ import ListeTermines from "./ListeTermines";
 import { listerFacturesNonPayees } from "@/server/repositories/factures-non-payees";
 import { facturesAvecPaiements } from "@/server/repositories/paiements-facture";
 import { tvaDeLaPeriodeCourante } from "@/server/tva-courante";
-import { periodeDuDossierEnCours } from "@/lib/pour-mon-comptable";
+import { dossierEnCours as periodeEnCours } from "@/server/repositories/dossiers-comptables";
 import { ligneAJustifier, lignesDuReleve } from "@/server/repositories/pour-mon-comptable";
 
 export const dynamic = "force-dynamic";
@@ -73,7 +73,7 @@ export default async function TerminesPage({ searchParams }: { searchParams: Pro
   const tva = await tvaDeLaPeriodeCourante(ctx);
   // Le dossier du comptable, sous la carte de la TVA (sa planche du 23 octobre
   // 2026, écran 1) : combien de lignes de banque attendent leur pièce.
-  const dossierEnCours = periodeDuDossierEnCours(new Date());
+  const dossierEnCours = await periodeEnCours(ctx, new Date());
   const sansTicket = (await lignesDuReleve(ctx, dossierEnCours.du, dossierEnCours.au)).filter(ligneAJustifier).length;
 
   // **Le compte des retours, TOUS mois confondus** — sa règle du 8 septembre

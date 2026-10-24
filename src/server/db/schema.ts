@@ -4216,3 +4216,41 @@ export const mouvementsBancaires = pgTable("mouvements_bancaires", {
   justifieLe: timestamp("justifie_le", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// ─── Pour mon comptable — migration 0144, ses choix du 24 octobre 2026 ───────
+
+/**
+ * Un dossier arrêté par le patron, à la date qu'il a choisie : son PDF, son
+ * empreinte, et jusqu'à quand il est gardé. **L'application ne peut ni le
+ * réécrire ni l'effacer** : la base ne lui donne que SELECT et INSERT.
+ */
+export const dossiersComptables = pgTable("dossiers_comptables", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  du: date("du").notNull(),
+  au: date("au").notNull(),
+  fichierCle: text("fichier_cle").notNull(),
+  tailleOctets: integer("taille_octets").notNull(),
+  empreinte: text("empreinte").notNull(),
+  gardeJusquAu: date("garde_jusqu_au").notNull(),
+  arretePar: uuid("arrete_par").references(() => users.id),
+  arreteLe: timestamp("arrete_le", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Le bilan rendu par le comptable, rangé avec son dossier. */
+export const bilansComptables = pgTable("bilans_comptables", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  dossierId: uuid("dossier_id").notNull(),
+  fichierCle: text("fichier_cle").notNull(),
+  fichierNom: text("fichier_nom"),
+  nature: text("nature", { enum: ["photo", "pdf"] }).notNull(),
+  tailleOctets: integer("taille_octets").notNull(),
+  empreinte: text("empreinte").notNull(),
+  ajoutePar: uuid("ajoute_par").references(() => users.id),
+  ajouteLe: timestamp("ajoute_le", { withTimezone: true }).notNull().defaultNow(),
+});

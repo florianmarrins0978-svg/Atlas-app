@@ -10,7 +10,6 @@ import {
   etatDeLaPeriode,
   jourEnMots,
   libellePeriode,
-  periodeDuDossierEnCours,
   resumerPeriodes,
   ressembleAUnVirement,
   type Decoupage,
@@ -18,6 +17,7 @@ import {
 import { getCurrentCtx } from "@/server/session-ctx";
 import { lireLaBanque } from "@/server/banque/lecture";
 import { liaisonDeLEntreprise } from "@/server/repositories/banque";
+import { dossierEnCours } from "@/server/repositories/dossiers-comptables";
 import {
   facturesRecuesLibres,
   ligneAJustifier,
@@ -44,7 +44,7 @@ export const dynamic = "force-dynamic";
 export default async function PageDossierEnCours() {
   const ctx = await getCurrentCtx();
   const maintenant = new Date();
-  const { du, au } = periodeDuDossierEnCours(maintenant);
+  const { du, au, premier } = await dossierEnCours(ctx, maintenant);
 
   const liaison = await liaisonDeLEntreprise(ctx);
   if (liaison) after(() => lireLaBanque(ctx, { maintenant }).then(() => undefined));
@@ -140,6 +140,7 @@ export default async function PageDossierEnCours() {
           titre="Pour mon comptable"
         />
         <DossierEnCours
+          dossier={{ du, premier, aujourdhui: au }}
           banque={liaison ? { nom: liaison.banque || "Banque reliée", lue: liaison.luLe ? jourLisible(liaison.luLe.toISOString().slice(0, 10)) : null } : null}
           periodes={periodes}
           aRegarder={aRegarder}

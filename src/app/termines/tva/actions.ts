@@ -20,7 +20,7 @@ import {
   type ResultatPaiement,
 } from "@/server/repositories/paiements-facture";
 import { preparerPhotoEntrante } from "@/server/photo-entrante";
-import { periodeDuDossierEnCours } from "@/lib/pour-mon-comptable";
+import { dossierEnCours } from "@/server/repositories/dossiers-comptables";
 import { appliquerCheckUp } from "@/server/repositories/pour-mon-comptable";
 
 /**
@@ -135,7 +135,7 @@ export async function ajouterAchatAction(formData: FormData): Promise<ResultatAc
   // tombe juste et seul, et le lien se défait d'un appui. Le faire ICI, à
   // l'arrivée de la donnée, et non à l'ouverture d'un écran : deux écrans
   // diraient sinon deux comptes différents.
-  const dossier = periodeDuDossierEnCours(new Date());
+  const dossier = await dossierEnCours(ctx, new Date());
   await appliquerCheckUp(ctx, dossier.du, dossier.au);
   return { ok: true, id: ligne.id };
 }

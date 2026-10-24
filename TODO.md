@@ -10,6 +10,24 @@ dit ce qui manque, la mention « ticket perdu ». Planches :
 d'exemple : `appli/dossier-justifie-exemple.pdf`, imprimé par
 `docs/maquettes/dossier-justifie/engendrer.mjs`.
 
+**OÙ EN EST LE CODE (24 octobre 2026), cinq lots, une seule batterie pour les
+cinq (sa consigne du 24 octobre) :**
+
+| Lot | Ce qu'il porte | État |
+|---|---|---|
+| 1 | la banque lue dans les deux sens, chaque ligne gardée (0142, §493) | codé, éprouvé, sur la branche `banque-deux-sens` |
+| 2 | le dossier en cours, le Check up, le relevé du mois (0143, §494) | codé, éprouvé, sur la branche |
+| 3 | arrêter le dossier, le PDF côte à côte, Mes dossiers, le bilan (0144, §495) | codé, éprouvé, sur la branche |
+| 4 | la page du comptable par lien privé : Valider, Rejeter, Suivant | à coder |
+| 5 | la photo prise sur place, redressée, le ticket recopié ligne par ligne | à coder |
+
+**Les soldes de la banque ne sont pas lus** : la lecture ne rend que les
+opérations. Le PDF et l'écran Entrées et sorties montrent les totaux du mois,
+sans solde. À reprendre si la banque les rend (appel `balances` d'Enable
+Banking), jamais reconstitués à la main. **L'effacement au bout de dix ans
+n'est pas codé** : la garde est une date et la carte prévient ; le geste qui
+efface se décide avec lui.
+
 **Ce qu'il a tranché, le 23 octobre au soir. Ne pas le lui redemander :**
 
 | # | Question | Sa réponse |

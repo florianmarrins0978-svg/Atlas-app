@@ -7,6 +7,7 @@ import { colors, font } from "@/lib/design-tokens";
 import { COULEUR_CATEGORIE, NOM_CATEGORIE, ORDRE_CATEGORIES } from "@/lib/couleurs-comptable";
 import { LIBELLE_MOTIF, MOTIFS_VIREMENT, type Categorie, type Decoupage } from "@/lib/pour-mon-comptable";
 import { checkUpAction, joindreFactureAction, motifAction, relierTicketAction, ticketPerduAction } from "./actions";
+import ArretDuDossier from "./ArretDuDossier";
 
 /**
  * L'ÉCRAN DU DOSSIER EN COURS — écrans 2 et 4 de `appli/pour-mon-comptable.html`.
@@ -48,11 +49,13 @@ const DECOUPAGES: { cle: Decoupage; nom: string }[] = [
 ];
 
 export default function DossierEnCours({
+  dossier,
   banque,
   periodes,
   aRegarder,
   factures,
 }: {
+  dossier: { du: string; premier: boolean; aujourdhui: string };
   banque: { nom: string; lue: string | null } | null;
   periodes: Record<Decoupage, Periode[]>;
   aRegarder: ARegarder[];
@@ -115,6 +118,8 @@ export default function DossierEnCours({
           </p>
         )}
       </div>
+
+      <ArretDuDossier du={dossier.du} premier={dossier.premier} aujourdhui={dossier.aujourdhui} aJustifier={aRegarder.length} />
 
       {aRegarder.length > 0 && (
         <div className="mx-6 mt-5 flex flex-col gap-3" data-atlas="a-regarder">

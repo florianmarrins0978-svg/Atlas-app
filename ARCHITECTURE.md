@@ -35912,3 +35912,17 @@ retirée, et `test-papier-facture-db.ts` avec elle.
 **La photo d'un ticket a sa propre route** (`src/app/termines/comptable/ticket/[id]/route.ts`) : aucune ne servait `achats_tva.photo_cle`. Elle prend l'identifiant du TICKET, relu sous la RLS, jamais une clé de stockage, et vérifie le rôle (`peutOuvrir`), une route s'appelant sans passer par l'écran gardé.
 
 **Ce qui reste au lot 5** : « Photographier le ticket » mène aujourd'hui à Ma TVA, qui sait déjà photographier et lire ; le ticket rejoint sa ligne à l'enregistrement. La prise de vue sur place, le redressement de la photo et le ticket recopié en entier viennent avec le lot des photos.
+
+## §495 : Un dossier arrêté se range en PDF, ne se réécrit plus, et se garde dix ans avec son bilan
+
+*24 octobre 2026, lot 3 de « Pour mon comptable » (`appli/pour-mon-comptable.html`, écrans 2 et 5). Sa règle : « l'utilisateur décide quand il veut l'arrêter, avec une touche ».*
+
+**La période se déduit, elle ne se stocke pas.** Le dossier en cours va du lendemain du dernier dossier arrêté jusqu'à aujourd'hui (`periodeDuDossierEnCours`, `dossierEnCours`) ; sans dossier arrêté, du 1ᵉʳ janvier, et ce début-là seul se choisit. Ensuite, `arreterLeDossier` ignore tout début demandé : deux dossiers ne couvrent jamais un même jour, et un index unique (`entreprise_id`, `du`) refuse le second appui rapproché. Tous les écrans qui parlaient de « l'année en cours » (Terminés, le dossier, le Check up après une lecture de banque ou un ticket) lisent désormais cette période.
+
+**Un dossier ne s'arrête pas tant qu'une ligne attend sa pièce.** L'écran ne propose pas « Arrêter et ranger » et dit combien attendent ; le serveur recompte et refuse de même, l'écran n'étant qu'une commodité.
+
+**Le PDF se compose une fois, à l'arrêt, et se range avec son empreinte** (`composerDossierComptable`, migration 0144). Côte à côte : la ligne à gauche, la pièce réécrite à droite avec son total surligné bleu-gris (jamais sur la photo), « Voir la photo » vers les vraies photos rangées à la fin, chacune avec « Retour à la ligne ». Les liens visent des pages explicites, pas des destinations nommées, que des lecteurs de téléphone ignorent. Un PDF de facture illisible ne fait pas tomber le dossier : il est d'abord essayé sur un document jetable, puis remplacé par « Photo non lisible ici, gardée dans Atlas » et journalisé. **Pas de soldes** : la banque ne les rend pas par cette lecture, et un solde reconstitué serait faux dès la première ligne manquante.
+
+**Ni réécrit ni effacé, et c'est la base qui le refuse.** `atlas_app` n'a que SELECT et INSERT sur `dossiers_comptables`, SELECT, INSERT et DELETE sur `bilans_comptables`. Les privilèges par défaut donnent les quatre droits à toute table neuve (§0081) : la migration les RETIRE (comme 0123). Sa première version ne faisait qu'un GRANT, et `test-dossiers-comptables-db.ts` a vu passer l'UPDATE et le DELETE : corrigée en place, la migration n'ayant jamais quitté cette branche.
+
+**Dix ans, puis l'effacement, annoncé trois mois avant** (`gardeJusquAu`, Code de commerce L123-22 ; `echeanceProche`, 92 jours). « J'ai compris » ne range la carte que sur ce téléphone ; l'échéance reste écrite sur le dossier. **L'effacement réel n'est pas codé** : il se décidera avec lui, la garde n'étant aujourd'hui qu'une date. La sauvegarde complète emporte les dossiers et les bilans, fichiers compris, sous « Pour mon comptable ».

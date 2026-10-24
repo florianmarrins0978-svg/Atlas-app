@@ -22,6 +22,7 @@ export type TicketDeLaLigne = {
   totalTtc: string | null;
   nature: NatureAchat | null;
   photoCle: string | null;
+  tvaDeductible: string;
 };
 
 export type LigneDuReleve = {
@@ -39,7 +40,7 @@ export type LigneDuReleve = {
   reliePar: "atlas" | "patron" | null;
   motif: MotifVirement | null;
   ticket: TicketDeLaLigne | null;
-  factureRecue: { id: string; nom: string; societe: string; totalTtc: string | null } | null;
+  factureRecue: { id: string; nom: string; societe: string; totalTtc: string | null; fichierCle: string; nature: "photo" | "pdf" | "tableur" } | null;
   /** Pour une entrée : la facture d'Atlas qu'il a confirmée sur l'accueil. */
   factureEmise: { numero: string } | null;
 };
@@ -68,7 +69,7 @@ export async function lignesDuReleve(ctx: Ctx, du: string, au: string): Promise<
     const idsFactures = lignes.flatMap((l) => (l.factureRecueId ? [l.factureRecueId] : []));
     const recues = idsFactures.length
       ? await tx
-          .select({ id: devisRecus.id, nom: devisRecus.nom, totalTtc: devisRecus.totalTtc, societe: societesAchat.nom })
+          .select({ id: devisRecus.id, nom: devisRecus.nom, totalTtc: devisRecus.totalTtc, societe: societesAchat.nom, fichierCle: devisRecus.fichierCle, nature: devisRecus.nature })
           .from(devisRecus)
           .innerJoin(societesAchat, eq(societesAchat.id, devisRecus.societeId))
           .where(and(inArray(devisRecus.id, idsFactures), isNull(devisRecus.deletedAt)))
@@ -101,9 +102,9 @@ export async function lignesDuReleve(ctx: Ctx, du: string, au: string): Promise<
         reliePar: tient ? l.reliePar : null,
         motif: tient ? l.motif : null,
         ticket: t
-          ? { id: t.id, dateAchat: t.dateAchat, fournisseur: t.fournisseur, totalTtc: t.totalTtc, nature: t.nature, photoCle: t.photoCle }
+          ? { id: t.id, dateAchat: t.dateAchat, fournisseur: t.fournisseur, totalTtc: t.totalTtc, nature: t.nature, photoCle: t.photoCle, tvaDeductible: t.tvaDeductible }
           : null,
-        factureRecue: f ? { id: f.id, nom: f.nom, societe: f.societe, totalTtc: f.totalTtc } : null,
+        factureRecue: f ? { id: f.id, nom: f.nom, societe: f.societe, totalTtc: f.totalTtc, fichierCle: f.fichierCle, nature: f.nature } : null,
         factureEmise: parCle.has(l.cle) ? { numero: parCle.get(l.cle)! } : null,
       };
     });
@@ -128,7 +129,7 @@ export async function ticketsLibres(ctx: Ctx, du: string, au: string): Promise<T
       .orderBy(asc(achatsTva.dateAchat));
     return lignes
       .filter((t) => !dejaPris.has(t.id))
-      .map((t) => ({ id: t.id, dateAchat: t.dateAchat, fournisseur: t.fournisseur, totalTtc: t.totalTtc, nature: t.nature, photoCle: t.photoCle }));
+      .map((t) => ({ id: t.id, dateAchat: t.dateAchat, fournisseur: t.fournisseur, totalTtc: t.totalTtc, nature: t.nature, photoCle: t.photoCle, tvaDeductible: t.tvaDeductible }));
   });
 }
 

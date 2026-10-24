@@ -9,6 +9,12 @@ import {
   etatDeLaPeriode,
   resumerPeriodes,
   ressembleAUnVirement,
+  periodeDuDossierEnCours,
+  refusDArret,
+  gardeJusquAu,
+  echeanceProche,
+  jourComplet,
+  tailleLisible,
   type LigneDuDossier,
 } from "../src/lib/pour-mon-comptable";
 import { CHARTES, contraste } from "../src/lib/chartes";
@@ -225,6 +231,45 @@ test("les catégories restent distinctes l'une de l'autre en Nuit", () => {
   const nuit = CHARTES.find((c) => c.nom === "nuit")!;
   const cles = ["catCarburant", "catRepas", "catMateriel", "catHotel", "catTransport", "catVirement"] as const;
   assert.equal(new Set(cles.map((k) => nuit.jetons[k])).size, cles.length);
+});
+
+// ─── Lot 3 : le dossier en cours, son arrêt, sa garde ───────────────────────
+
+test("sans dossier arrêté, le dossier en cours part du 1ᵉʳ janvier", () => {
+  assert.deepEqual(periodeDuDossierEnCours(new Date("2026-10-24T10:00:00Z"), null), { du: "2026-01-01", au: "2026-10-24" });
+});
+
+test("après un arrêt, le dossier suivant part du lendemain, même en fin d'année", () => {
+  assert.equal(periodeDuDossierEnCours(new Date("2027-02-01T10:00:00Z"), "2026-12-31").du, "2027-01-01");
+  assert.equal(periodeDuDossierEnCours(new Date("2026-10-24T10:00:00Z"), "2026-06-30").du, "2026-07-01");
+});
+
+test("un arrêt dans le futur, avant le début, ou illisible est refusé", () => {
+  const aujourdhui = "2026-10-24";
+  assert.equal(refusDArret({ du: "2026-01-01", au: "2026-10-24", aujourdhui }), null);
+  assert.match(refusDArret({ du: "2026-01-01", au: "2026-10-25", aujourdhui }) ?? "", /pas encore passée/);
+  assert.match(refusDArret({ du: "2026-05-01", au: "2026-04-30", aujourdhui }) ?? "", /avant le début/);
+  assert.match(refusDArret({ du: "2026-01-01", au: "24/10/2026", aujourdhui }) ?? "", /pas lisible/);
+  assert.match(refusDArret({ du: "2026-01-01", au: "2026-10-24x", aujourdhui }) ?? "", /pas lisible/);
+});
+
+test("un dossier est gardé dix ans, et un 29 février devient le 28", () => {
+  assert.equal(gardeJusquAu("2026-12-31"), "2036-12-31");
+  assert.equal(gardeJusquAu("2028-02-29"), "2038-02-28");
+});
+
+test("la carte prévient dans les trois mois avant l'effacement, ni avant, ni après", () => {
+  assert.equal(echeanceProche("2036-12-31", "2036-10-01"), true);
+  assert.equal(echeanceProche("2036-12-31", "2036-12-31"), true);
+  assert.equal(echeanceProche("2036-12-31", "2036-09-29"), false);
+  assert.equal(echeanceProche("2036-12-31", "2037-01-01"), false);
+});
+
+test("le nom d'un dossier et sa taille se lisent", () => {
+  assert.equal(jourComplet("2026-01-01"), "1ᵉʳ janvier 2026");
+  assert.equal(tailleLisible(42_000), "42 Ko");
+  assert.equal(tailleLisible(300), "1 Ko", "un fichier n'a jamais l'air vide");
+  assert.equal(tailleLisible(3_450_000), "3,5 Mo");
 });
 
 console.log(`\n${passed} réussi(s), ${failed} échoué(s)`);

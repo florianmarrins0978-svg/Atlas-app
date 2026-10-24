@@ -262,12 +262,71 @@ export function jourEnMots(jour: string): string {
   return `${j === 1 ? "1ᵉʳ" : j} ${MOIS[Number(jour.slice(5, 7)) - 1] ?? ""}`;
 }
 
+// ─── Le dossier en cours, son arrêt, sa garde ────────────────────────────────
+
+/** Le jour d'après, au format `AAAA-MM-JJ`. */
+export function lendemain(jour: string): string {
+  const d = new Date(`${jour}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
 /**
- * La période du dossier en cours : du 1ᵉʳ janvier de l'année jusqu'à
- * aujourd'hui. Le lot 3 la fera partir du lendemain du dernier dossier
- * arrêté, à la date qu'il choisit (`TODO.md`, « Arrêter le dossier »).
+ * La période du dossier en cours : du lendemain du dernier dossier arrêté
+ * jusqu'à aujourd'hui. Sans dossier arrêté, du 1ᵉʳ janvier de l'année : c'est
+ * la date que propose le premier arrêt, et il la change s'il veut.
+ *
+ * Sa règle du 24 octobre 2026 : *« l'utilisateur décide quand il veut
+ * l'arrêter, avec une touche »*. Son exercice peut tomber à n'importe quelle
+ * date ; le suivant commence le lendemain, tout seul.
  */
-export function periodeDuDossierEnCours(maintenant: Date): { du: string; au: string } {
+export function periodeDuDossierEnCours(maintenant: Date, dernierAu: string | null): { du: string; au: string } {
   const au = maintenant.toISOString().slice(0, 10);
-  return { du: `${au.slice(0, 4)}-01-01`, au };
+  return { du: dernierAu ? lendemain(dernierAu) : `${au.slice(0, 4)}-01-01`, au };
+}
+
+/**
+ * Pourquoi un arrêt est refusé, ou `null`. Les lignes qui attendent encore
+ * leur pièce se comptent à part, sur la base : celle-ci ne regarde que les
+ * dates.
+ */
+export function refusDArret(a: { du: string; au: string; aujourdhui: string }): string | null {
+  const jour = /^\d{4}-\d{2}-\d{2}$/;
+  if (!jour.test(a.du) || !jour.test(a.au)) return "La date n'est pas lisible.";
+  if (a.au < a.du) return "La date d'arrêt est avant le début du dossier.";
+  if (a.au > a.aujourdhui) return "Un dossier ne s'arrête pas à une date qui n'est pas encore passée.";
+  return null;
+}
+
+/**
+ * Jusqu'à quand le dossier est gardé : dix ans après la fin de l'exercice
+ * (Code de commerce, art. L123-22). Un 29 février devient le 28.
+ */
+export function gardeJusquAu(au: string): string {
+  const annee = Number(au.slice(0, 4)) + 10;
+  const mmjj = au.slice(5) === "02-29" ? "02-28" : au.slice(5);
+  return `${annee}-${mmjj}`;
+}
+
+/** Combien de jours avant son effacement un dossier est annoncé : trois mois. */
+export const PREVENIR_JOURS_AVANT = 92;
+
+/** Le dossier arrive-t-il au bout de ses dix ans ? Sa demande du 24 octobre : prévenir avant. */
+export function echeanceProche(garde: string, aujourdhui: string): boolean {
+  const ecart = (Date.UTC(+garde.slice(0, 4), +garde.slice(5, 7) - 1, +garde.slice(8, 10)) - Date.UTC(+aujourdhui.slice(0, 4), +aujourdhui.slice(5, 7) - 1, +aujourdhui.slice(8, 10))) / 86_400_000;
+  return ecart >= 0 && ecart <= PREVENIR_JOURS_AVANT;
+}
+
+/**
+ * La taille d'un fichier, lisible : « 0 Mo » pour un dossier de quarante
+ * kilo-octets laisserait croire qu'il est vide.
+ */
+export function tailleLisible(octets: number): string {
+  if (octets < 1_000_000) return `${Math.max(1, Math.round(octets / 1000))} Ko`;
+  return `${(octets / 1_000_000).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} Mo`;
+}
+
+/** « 1ᵉʳ janvier 2026 » : le jour avec son année, pour le nom d'un dossier. */
+export function jourComplet(jour: string): string {
+  return `${jourEnMots(jour)} ${jour.slice(0, 4)}`;
 }
