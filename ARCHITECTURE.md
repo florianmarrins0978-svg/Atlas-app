@@ -35880,3 +35880,17 @@ retirée, et `test-papier-facture-db.ts` avec elle.
 **Les écrans de la réponse** : `ReponseVirement` (dans `src/app`, parce qu'il appelle des actions serveur et qu'un composant n'importe pas un écran, `test-couches`). L'accueil garde la phrase « La facture est payée » et « Annuler » sous les yeux ; Ma TVA se relit pour que la facture quitte l'attente. Les actions ne font pas de `revalidatePath`, qui aurait effacé la carte avant qu'il ait lu.
 
 **Ce que l'essai du 23 octobre a corrigé** : la porte « particulier » (`psu_type: personal`) par défaut, la porte « Affaires » du Crédit Mutuel menant à l'entrée des grandes entreprises qui refusait son identifiant ; le nom du payeur avant le libellé brut, qui débordait.
+
+## §493 : Le relevé se lit dans les deux sens et se garde ligne à ligne, à part des virements reçus
+
+*24 octobre 2026, lot 1 de « Pour mon comptable » (`appli/pour-mon-comptable.html`). Sa remarque : « e-banking permet de lire les virements entrants, mais pas les sortants ».*
+
+**La banque envoyait déjà les deux sens** ; la lecture gardait seulement les crédits. Elle garde désormais chaque ligne inscrite (`BOOK`, euro), une sortie avec celui qui a été payé (`creditor`), une entrée avec celui qui a payé (`debtor`). La règle est pure (`src/lib/releve-bancaire.ts`, `lireTransactions`) ; `src/server/banque/enable-banking.ts` ne fait plus qu'appeler la banque et lui passer les pages.
+
+**Une table à part, `mouvements_bancaires` (migration 0142), et non `virements_recus` élargie.** Un virement reçu porte une question au patron et son « oui » note un règlement ; une sortie n'a ni question ni réponse. Les virements reçus se DÉDUISENT des lignes lues (`virementsDesMouvements`) : une seule lecture, une seule façon de lire.
+
+**La clé n'a pas bougé** (`cleDuMouvement`, ex `cleDuVirement`) : la référence de la banque, ou l'empreinte du compte, du jour, du montant, de la contrepartie et du libellé. Changer la formule aurait fait reposer au patron des questions déjà répondues ; `test-mouvements-bancaires.ts` recopie la formule d'avant et la compare.
+
+**Gardée au fil des lectures, deux fenêtres à la première.** Les banques ne rendent d'ordinaire que quatre-vingt-dix jours : un dossier d'un an ne se reconstitue pas le jour où on l'arrête. La première lecture prend 90 jours de relevé mais seulement 30 de virements reçus (trois mois de vieux virements feraient trois mois de cartes sur l'accueil). Ensuite, les deux repartent de la dernière lecture moins trois jours (`fenetresDeLecture`). **Ce qui n'est pas tenu** : un espace resté fermé plus de quatre-vingt-dix jours perd les lignes d'entre-temps ; l'écran du dossier devra le dire (lot 2).
+
+**La sauvegarde complète emporte les lignes** (`export-entreprise.ts`) : `test-export-entreprise` refuse une table d'entreprise oubliée, et il l'a refusée.

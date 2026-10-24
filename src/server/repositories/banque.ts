@@ -1,6 +1,6 @@
-import { and, desc, eq, gte } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { liaisonsBancaires, virementsRecus } from "../db/schema";
+import { liaisonsBancaires, mouvementsBancaires, virementsRecus } from "../db/schema";
 import type { Ctx } from "./context";
 import { noterPaiementDans, retirerPaiementDans } from "./paiements-facture";
 
@@ -198,5 +198,67 @@ export async function defaireReponse(ctx: Ctx, virementId: string): Promise<Resu
       .set({ etat: "nouveau", factureId: null, paiementId: null, reponduAt: null })
       .where(eq(virementsRecus.id, virementId));
     return { ok: true as const };
+  });
+}
+
+// ─── Pour mon comptable — chaque ligne du relevé (migration 0142) ────────────
+
+export type MouvementEnBase = {
+  cle: string;
+  date: string;
+  montant: string;
+  sens: "entree" | "sortie";
+  contrepartie: string | null;
+  libelle: string;
+};
+
+/**
+ * Range les lignes du relevé lues. Une clé déjà connue ne double rien.
+ * Rend combien sont nouvelles.
+ *
+ * **Rangées à CHAQUE lecture**, et pas le jour où le dossier s'arrête : les
+ * banques ne rendent d'ordinaire que quatre-vingt-dix jours d'historique.
+ */
+export async function ajouterMouvements(ctx: Ctx, mouvements: readonly MouvementEnBase[]): Promise<number> {
+  if (mouvements.length === 0) return 0;
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const nouveaux = await tx
+      .insert(mouvementsBancaires)
+      .values(
+        mouvements.map((m) => ({
+          entrepriseId: ctx.entrepriseId,
+          cle: m.cle,
+          jour: m.date,
+          montant: m.montant,
+          sens: m.sens,
+          contrepartie: m.contrepartie,
+          libelle: m.libelle,
+        }))
+      )
+      .onConflictDoNothing({ target: [mouvementsBancaires.entrepriseId, mouvementsBancaires.cle] })
+      .returning({ id: mouvementsBancaires.id });
+    return nouveaux.length;
+  });
+}
+
+export type MouvementLuEnBase = MouvementEnBase & { id: string };
+
+/** Les lignes du relevé entre deux jours compris, dans l'ordre du relevé. */
+export async function mouvementsEntre(ctx: Ctx, du: string, au: string): Promise<MouvementLuEnBase[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const lignes = await tx
+      .select()
+      .from(mouvementsBancaires)
+      .where(and(gte(mouvementsBancaires.jour, du), lte(mouvementsBancaires.jour, au)))
+      .orderBy(asc(mouvementsBancaires.jour), asc(mouvementsBancaires.createdAt));
+    return lignes.map((m) => ({
+      id: m.id,
+      cle: m.cle,
+      date: m.jour,
+      montant: m.montant,
+      sens: m.sens,
+      contrepartie: m.contrepartie,
+      libelle: m.libelle,
+    }));
   });
 }

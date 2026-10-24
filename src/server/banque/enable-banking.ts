@@ -1,8 +1,8 @@
-import { createHash, createSign } from "node:crypto";
+import { createSign } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { logger } from "../logger";
-import type { VirementRecu } from "@/lib/rapprochement-bancaire";
+import { lireTransactions, type MouvementLu, type Transaction } from "@/lib/releve-bancaire";
 
 /**
  * LIRE LES VIREMENTS REÇUS, PAR ENABLE BANKING — l'essai du 22 octobre 2026.
@@ -176,42 +176,9 @@ export async function ouvrirSession(code: string): Promise<({ ok: true } & Liais
   };
 }
 
-type Transaction = {
-  entry_reference?: string | null;
-  transaction_id?: string | null;
-  transaction_amount?: { amount?: string; currency?: string };
-  credit_debit_indicator?: string;
-  status?: string;
-  booking_date?: string;
-  value_date?: string;
-  debtor?: { name?: string } | null;
-  remittance_information?: string[] | null;
-};
-
-/**
- * Les virements REÇUS depuis `depuis`, sur tous les comptes reliés.
- *
- * Seulement les crédits inscrits (`CRDT`, `BOOK`) : un débit n'est pas un
- * paiement de client, et une opération en attente peut encore disparaître.
- * Seulement l'euro : une facture d'Atlas n'existe pas dans une autre monnaie.
- */
-/**
- * Un virement lu, et ce qui le reconnaîtra à la lecture suivante.
- *
- * **La référence de la banque d'abord** ; à défaut, une empreinte de ce
- * qu'elle montre, compte compris. Sans clé stable, chaque lecture doublerait
- * les cartes de l'accueil.
- */
-export type VirementLu = VirementRecu & { cle: string };
-
-function cleDuVirement(compte: string, t: Transaction, v: VirementRecu): string {
-  const reference = t.entry_reference?.trim() || t.transaction_id?.trim();
-  if (reference) return `${compte}:${reference}`;
-  return createHash("sha256").update([compte, v.date, v.montant, v.payeur ?? "", v.libelle].join("|")).digest("hex");
-}
-
-export async function virementsRecus(liaison: Liaison, depuis: string): Promise<({ ok: true; virements: VirementLu[] }) | Refus> {
-  const virements: VirementLu[] = [];
+/** Toutes les lignes du relevé depuis `depuis`, sur tous les comptes reliés, la plus récente d'abord. */
+export async function mouvementsBancaires(liaison: Liaison, depuis: string): Promise<({ ok: true; mouvements: MouvementLu[] }) | Refus> {
+  const mouvements: MouvementLu[] = [];
   for (const compte of liaison.comptes) {
     let suite: string | undefined;
     // Dix pages au plus : une banque qui renverrait toujours une suite ne doit
@@ -224,24 +191,11 @@ export async function virementsRecus(liaison: Liaison, depuis: string): Promise<
         `/accounts/${encodeURIComponent(compte)}/transactions?${parametres}`
       );
       if (!r.ok) return r;
-      for (const t of r.donnees.transactions) {
-        if (t.credit_debit_indicator !== "CRDT" || t.status !== "BOOK") continue;
-        if (t.transaction_amount?.currency && t.transaction_amount.currency !== "EUR") continue;
-        const montant = t.transaction_amount?.amount;
-        const date = t.booking_date ?? t.value_date;
-        if (!montant || !date) continue;
-        const lu: VirementRecu = {
-          date,
-          montant,
-          payeur: t.debtor?.name?.trim() || null,
-          libelle: (t.remittance_information ?? []).join(" ").trim(),
-        };
-        virements.push({ ...lu, cle: cleDuVirement(compte, t, lu) });
-      }
+      mouvements.push(...lireTransactions(compte, r.donnees.transactions));
       suite = r.donnees.continuation_key ?? undefined;
       if (!suite) break;
     }
   }
-  virements.sort((a, b) => b.date.localeCompare(a.date));
-  return { ok: true, virements };
+  mouvements.sort((a, b) => b.date.localeCompare(a.date));
+  return { ok: true, mouvements };
 }

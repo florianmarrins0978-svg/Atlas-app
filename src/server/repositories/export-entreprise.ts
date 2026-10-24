@@ -75,6 +75,7 @@ import {
   piecesImportees,
   liaisonsBancaires,
   virementsRecus,
+  mouvementsBancaires,
 } from "../db/schema";
 import type { Ctx } from "./context";
 import { rangerLesFichiers, type FichierARanger } from "@/lib/rangement-sauvegarde";
@@ -220,6 +221,7 @@ export async function exporterEntreprise(
       sesPiecesImportees,
       saBanqueReliee,
       sesVirementsRecus,
+      sesMouvementsBancaires,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -441,6 +443,10 @@ export async function exporterEntreprise(
       // banque est reliée et jusqu'à quand, jamais de quoi la relire.
       tx.select(liaisonSansSession).from(liaisonsBancaires).where(eq(liaisonsBancaires.entrepriseId, e)),
       tx.select().from(virementsRecus).where(eq(virementsRecus.entrepriseId, e)),
+      // Chaque ligne du relevé, entrées et sorties (migration 0142) : c'est le
+      // fond du dossier du comptable, et la banque ne les rend plus après
+      // quatre-vingt-dix jours.
+      tx.select().from(mouvementsBancaires).where(eq(mouvementsBancaires.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -551,6 +557,7 @@ export async function exporterEntreprise(
       pieces_importees: sesPiecesImportees,
       liaisons_bancaires: saBanqueReliee,
       virements_recus: sesVirementsRecus,
+      mouvements_bancaires: sesMouvementsBancaires,
     };
 
     const compte: Record<string, number> = {};

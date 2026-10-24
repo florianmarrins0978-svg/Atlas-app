@@ -6,6 +6,11 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-10-24
+
+- **La banque se lit dans les deux sens, et chaque ligne du relevé se garde** (lot 1 de « Pour mon comptable »). Sa remarque : la lecture ne gardait que les virements reçus. Les sorties arrivent désormais avec celui qui a été payé, rangées dans `mouvements_bancaires` (migration 0142) à chaque lecture, puisque les banques ne rendent que quatre-vingt-dix jours. Ce que ça évite : un dossier du comptable sans ses dépenses, et la banque rappelée trop tard. Les virements reçus se déduisent de la même lecture, avec la même clé qu'avant : aucune question déjà répondue ne revient.
+
+---
 ## 2026-10-23
 
 - **Les cartes teintées de l'accueil se lisent aussi bien en Nuit qu'en Origine**, trouvé par la batterie commune : à 18 %, le vert éclaircissait le fond sombre et ramenait le nom du client de 13,6 à 10,6 (`test-mode-sombre-lisible-e2e`). La part de teinte se réduit charte par charte jusqu'à ce que l'encre garde sur la carte la même proportion de son contraste qu'en Origine (`famillesDesCartes`, `src/lib/chartes.ts`) ; Origine ne bouge pas d'un caractère.

@@ -4182,3 +4182,26 @@ export const virementsRecus = pgTable("virements_recus", {
   reponduAt: timestamp("repondu_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// ─── Pour mon comptable — migration 0142, sa remarque du 24 octobre 2026 ─────
+
+/**
+ * Chaque ligne du relevé, entrées ET sorties, gardée au fil des lectures.
+ *
+ * Distincte de `virementsRecus`, qui porte une question au patron et son
+ * « oui » ; une sortie n'a pas de réponse. Le montant est toujours positif,
+ * `sens` dit de quel côté il va (`drizzle/0142_mouvements_bancaires.sql`).
+ */
+export const mouvementsBancaires = pgTable("mouvements_bancaires", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  entrepriseId: uuid("entreprise_id")
+    .notNull()
+    .references(() => entreprises.id, { onDelete: "cascade" }),
+  cle: text("cle").notNull(),
+  jour: date("jour").notNull(),
+  montant: numeric("montant", { precision: 12, scale: 2 }).notNull(),
+  sens: text("sens", { enum: ["entree", "sortie"] }).notNull(),
+  contrepartie: text("contrepartie"),
+  libelle: text("libelle").notNull().default(""),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
