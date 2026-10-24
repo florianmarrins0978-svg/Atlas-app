@@ -230,6 +230,12 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     "/reglages/equipe/nouveau",
     "/reglages/identite",
     "/termines",
+    // **Pour mon comptable (24 octobre 2026)**, fermé comme Terminés : le
+    // dossier montre chaque ligne de banque et ses montants. La photo d'un
+    // ticket se sert par sa propre route, fermée de même.
+    "/termines/comptable",
+    "/termines/comptable/ticket/xxxx",
+    "/termines/comptable/xxxx",
     // La catégorie « Non payées » (24 septembre 2026), fermée comme Terminés.
     "/termines/non-payees",
     // **Ajoutée le 8 septembre 2026 par ce contrôle**, comme

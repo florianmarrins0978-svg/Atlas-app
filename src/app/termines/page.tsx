@@ -12,6 +12,8 @@ import ListeTermines from "./ListeTermines";
 import { listerFacturesNonPayees } from "@/server/repositories/factures-non-payees";
 import { facturesAvecPaiements } from "@/server/repositories/paiements-facture";
 import { tvaDeLaPeriodeCourante } from "@/server/tva-courante";
+import { periodeDuDossierEnCours } from "@/lib/pour-mon-comptable";
+import { ligneAJustifier, lignesDuReleve } from "@/server/repositories/pour-mon-comptable";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +71,10 @@ export default async function TerminesPage({ searchParams }: { searchParams: Pro
   // recomposer ces chiffres ici aurait donné deux additions de la même somme,
   // et deux montants possiblement différents à deux écrans d'intervalle.
   const tva = await tvaDeLaPeriodeCourante(ctx);
+  // Le dossier du comptable, sous la carte de la TVA (sa planche du 23 octobre
+  // 2026, écran 1) : combien de lignes de banque attendent leur pièce.
+  const dossierEnCours = periodeDuDossierEnCours(new Date());
+  const sansTicket = (await lignesDuReleve(ctx, dossierEnCours.du, dossierEnCours.au)).filter(ligneAJustifier).length;
 
   // **Le compte des retours, TOUS mois confondus** — sa règle du 8 septembre
   // 2026 : « il faut pouvoir les garder longtemps ». Le limiter au mois affiché
@@ -175,6 +181,34 @@ export default async function TerminesPage({ searchParams }: { searchParams: Pro
             style={{ fontFamily: font.display, color: colors.rust, fontVariantNumeric: "tabular-nums" }}
           >
             {formatEuros.format(tva.reste)}
+          </span>
+        </Link>
+        {/* **La même forme que la carte de la TVA, juste dessous** — son choix du
+            23 octobre 2026 (`appli/pour-mon-comptable.html`, écran 1) : la barre
+            du bas garde ses cinq onglets. Le mot de droite dit ce qui manque, en
+            rouille, ou que tout est justifié. */}
+        <Link
+          href="/termines/comptable"
+          data-atlas="carte-comptable"
+          className="mx-[26px] mt-3 flex items-center justify-between gap-3 rounded-[4px] px-[18px] py-5"
+          style={{
+            backgroundColor: colors.card,
+            boxShadow: `inset 0 0 0 1.5px ${voile(colors.or, 0.55)}`,
+          }}
+        >
+          <span className="min-w-0">
+            <span className={`block ${libelleCaps} font-bold`} style={{ color: colors.or }}>
+              Pour mon comptable
+            </span>
+            <span className="mt-[5px] block truncate text-[17px]" style={{ fontFamily: font.display }}>
+              Dossier en cours
+            </span>
+          </span>
+          <span
+            className="shrink-0 text-[16px]"
+            style={{ fontFamily: font.display, color: sansTicket > 0 ? colors.rust : colors.inkSoft }}
+          >
+            {sansTicket > 0 ? `${sansTicket} sans ticket` : "Tout est justifié"}
           </span>
         </Link>
         {/* **La mention grise sous la carte est partie le 23 août 2026**, à sa

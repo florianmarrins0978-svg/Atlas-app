@@ -35894,3 +35894,21 @@ retirée, et `test-papier-facture-db.ts` avec elle.
 **Gardée au fil des lectures, deux fenêtres à la première.** Les banques ne rendent d'ordinaire que quatre-vingt-dix jours : un dossier d'un an ne se reconstitue pas le jour où on l'arrête. La première lecture prend 90 jours de relevé mais seulement 30 de virements reçus (trois mois de vieux virements feraient trois mois de cartes sur l'accueil). Ensuite, les deux repartent de la dernière lecture moins trois jours (`fenetresDeLecture`). **Ce qui n'est pas tenu** : un espace resté fermé plus de quatre-vingt-dix jours perd les lignes d'entre-temps ; l'écran du dossier devra le dire (lot 2).
 
 **La sauvegarde complète emporte les lignes** (`export-entreprise.ts`) : `test-export-entreprise` refuse une table d'entreprise oubliée, et il l'a refusée.
+
+## §494 : Le dossier du comptable lit, le Check up relie à l'arrivée des données, une pièce justifie une seule ligne
+
+*24 octobre 2026, lot 2 de « Pour mon comptable » (`appli/pour-mon-comptable.html`, ses choix dans `TODO.md`).*
+
+**Ce qui justifie une ligne vit SUR la ligne** (migration 0143, `mouvements_bancaires`) : `justification` (ticket, facture, ticket perdu, motif), la pièce par clé double vers `achats_tva` ou `devis_recus`, qui a relié (`atlas` ou `patron`) et quand. Un index unique fait qu'un ticket ne justifie qu'une ligne : relié deux fois, la même dépense compterait deux fois chez le comptable. `achats_tva` reçoit la contrainte (`id`, `entreprise_id`) qui lui manquait ; elle ne peut pas échouer sur une base habitée, `id` étant déjà unique.
+
+**La contrainte de cohérence n'exige pas la pièce, et c'est voulu.** Un ticket effacé délie sa ligne (`ON DELETE SET NULL`) sans réécrire `justification` ; exiger la pièce aurait fait refuser l'effacement. La ligne se lit alors « à justifier » (`lignesDuReleve` ne garde que la justification qui tient).
+
+**Le Check up est une règle pure** (`checkUp`, `src/lib/pour-mon-comptable.ts`) : le montant au centime, un ticket daté du jour de la banque ou des cinq jours d'avant, jamais après. Un seul ticket : relié par Atlas, défaisable. Plusieurs, ou un ticket que deux lignes pourraient prendre : le patron choisit. Aucun : il répond (photographier, ticket perdu, facture, nature). Un lien posé par le patron n'est jamais réécrit par Atlas (`relierTicket(…, "atlas")` n'écrit que sur une ligne libre).
+
+**Le Check up silencieux passe à l'ARRIVÉE des données** (après une lecture de la banque, `lireLaBanque` ; après un ticket enregistré dans Ma TVA, `ajouterAchatAction`), jamais à l'ouverture d'un écran. La première version le faisait à l'ouverture du dossier : Terminés disait « 12 sans ticket » et le dossier « 3 », selon celui qu'on ouvrait d'abord. Les écrans ne font plus que lire.
+
+**La couleur vient de la pièce, pas du libellé** (`categorieDeLaLigne`) : un ticket de carburant fait une ligne bleue. Sans pièce, un libellé qui commence par VIR ou PRLV se voit en virement ; le reste est « autre » jusqu'à ce qu'un ticket arrive : aucune catégorie ne se devine. Les dix couleurs (huit catégories, entrées, sorties) sont des jetons de charte (`couleursDuComptable`, `chartes.ts`), détachés à 4,5 du fond et de la plage : elles colorent des mots, et `test-pour-mon-comptable.ts` les mesure sur les huit chartes.
+
+**La photo d'un ticket a sa propre route** (`src/app/termines/comptable/ticket/[id]/route.ts`) : aucune ne servait `achats_tva.photo_cle`. Elle prend l'identifiant du TICKET, relu sous la RLS, jamais une clé de stockage, et vérifie le rôle (`peutOuvrir`), une route s'appelant sans passer par l'écran gardé.
+
+**Ce qui reste au lot 5** : « Photographier le ticket » mène aujourd'hui à Ma TVA, qui sait déjà photographier et lire ; le ticket rejoint sa ligne à l'enregistrement. La prise de vue sur place, le redressement de la photo et le ticket recopié en entier viennent avec le lot des photos.

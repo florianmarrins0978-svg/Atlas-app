@@ -4203,5 +4203,16 @@ export const mouvementsBancaires = pgTable("mouvements_bancaires", {
   sens: text("sens", { enum: ["entree", "sortie"] }).notNull(),
   contrepartie: text("contrepartie"),
   libelle: text("libelle").notNull().default(""),
+  /**
+   * Ce qui justifie la ligne (migration 0143). Vide : elle attend sa pièce.
+   * Une ligne « ticket » dont le ticket a été effacé se lit « à justifier » :
+   * l'effacement délie sans réécrire la justification.
+   */
+  justification: text("justification", { enum: ["ticket", "facture", "ticket_perdu", "motif"] }),
+  achatId: uuid("achat_id"),
+  factureRecueId: uuid("facture_recue_id"),
+  motif: text("motif", { enum: ["fournisseur", "salaire", "loyer", "impots", "pret", "perso"] }),
+  reliePar: text("relie_par", { enum: ["atlas", "patron"] }),
+  justifieLe: timestamp("justifie_le", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

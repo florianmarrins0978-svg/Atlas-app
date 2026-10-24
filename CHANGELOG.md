@@ -8,6 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-10-24
 
+- **« Pour mon comptable » arrive dans Terminés** (lot 2). Le dossier en cours mois par mois, par trimestre ou à l'année, une couleur par catégorie, le relevé de chaque mois avec la pièce de chaque ligne, et le Check up : il relie seul le ticket qui tombe juste au centime (défaisable), demande entre deux, et laisse répondre « ticket perdu » (annoncé avant, la TVA ne se déduit pas), une facture de fournisseur ou la nature d'un virement. Ce que ça évite : chercher en fin d'année quel ticket va avec quelle ligne, et un même ticket compté deux fois. La photo d'un ticket se sert enfin, par une route qui relit la RLS.
 - **La banque se lit dans les deux sens, et chaque ligne du relevé se garde** (lot 1 de « Pour mon comptable »). Sa remarque : la lecture ne gardait que les virements reçus. Les sorties arrivent désormais avec celui qui a été payé, rangées dans `mouvements_bancaires` (migration 0142) à chaque lecture, puisque les banques ne rendent que quatre-vingt-dix jours. Ce que ça évite : un dossier du comptable sans ses dépenses, et la banque rappelée trop tard. Les virements reçus se déduisent de la même lecture, avec la même clé qu'avant : aucune question déjà répondue ne revient.
 
 ---

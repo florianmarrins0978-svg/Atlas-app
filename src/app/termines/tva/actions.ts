@@ -20,6 +20,8 @@ import {
   type ResultatPaiement,
 } from "@/server/repositories/paiements-facture";
 import { preparerPhotoEntrante } from "@/server/photo-entrante";
+import { periodeDuDossierEnCours } from "@/lib/pour-mon-comptable";
+import { appliquerCheckUp } from "@/server/repositories/pour-mon-comptable";
 
 /**
  * Enregistrer un achat, et le retirer.
@@ -128,6 +130,13 @@ export async function ajouterAchatAction(formData: FormData): Promise<ResultatAc
     saisie,
   });
   if (!ligne) return { ok: false, raison: "L'achat n'a pas pu être enregistré." };
+  // **Le ticket rejoint sa ligne de banque dès qu'il arrive** (« Pour mon
+  // comptable », 24 octobre 2026) : le Check up ne relie que le ticket qui
+  // tombe juste et seul, et le lien se défait d'un appui. Le faire ICI, à
+  // l'arrivée de la donnée, et non à l'ouverture d'un écran : deux écrans
+  // diraient sinon deux comptes différents.
+  const dossier = periodeDuDossierEnCours(new Date());
+  await appliquerCheckUp(ctx, dossier.du, dossier.au);
   return { ok: true, id: ligne.id };
 }
 

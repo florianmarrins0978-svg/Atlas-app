@@ -119,6 +119,18 @@ export const colors = {
   carteBleuTexte: "var(--atlas-carteBleuTexte, #35608d)",
   carteRougeFond: "var(--atlas-carteRougeFond, #edded9)",
   carteRougeTexte: "var(--atlas-carteRougeTexte, #9c3b2e)",
+  // Le dossier du comptable (24 octobre 2026) : une couleur par catégorie,
+  // le vert des entrées et le rouge des sorties. Dérivées par `chartes.ts`.
+  catCarburant: "var(--atlas-catCarburant, #3d6e9e)",
+  catRepas: "var(--atlas-catRepas, #4f8a3c)",
+  catMateriel: "var(--atlas-catMateriel, #b9732a)",
+  catHotel: "var(--atlas-catHotel, #7a5aa6)",
+  catTransport: "var(--atlas-catTransport, #2b8586)",
+  catAutre: "var(--atlas-catAutre, #8a8578)",
+  catVirement: "var(--atlas-catVirement, #a3506b)",
+  catRecu: "var(--atlas-catRecu, #2f3b2f)",
+  montantEntree: "var(--atlas-montantEntree, #1f7a45)",
+  montantSortie: "var(--atlas-montantSortie, #b3392b)",
   // `bordeaux` : le dépassement — plus de chantiers que d'équipes. **Son choix
   // du 21 août, après l'or puis l'ardoise**, tous deux écartés par lui. L'or
   // sert partout ailleurs à ce qu'on LIT, il ne signalait donc plus rien ; et

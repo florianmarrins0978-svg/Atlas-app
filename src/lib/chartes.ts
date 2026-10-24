@@ -128,6 +128,25 @@ export type JetonsCharte = {
   carteBleuTexte: string;
   carteRougeFond: string;
   carteRougeTexte: string;
+  /**
+   * ─── LES COULEURS DU DOSSIER DU COMPTABLE — sa planche du 23 octobre 2026 ──
+   *
+   * Une couleur par catégorie de dépense (`appli/pour-mon-comptable.html`,
+   * gardées le 24 octobre), et le vert des entrées et le rouge des sorties de
+   * son choix B (`appli/comptable-entrees-sorties.html`). **Une teinte FIXE
+   * par catégorie, comme l'alerte** : le bleu du carburant reste bleu sur
+   * toutes les chartes, seule sa clarté s'accorde au fond pour se lire.
+   */
+  catCarburant: string;
+  catRepas: string;
+  catMateriel: string;
+  catHotel: string;
+  catTransport: string;
+  catAutre: string;
+  catVirement: string;
+  catRecu: string;
+  montantEntree: string;
+  montantSortie: string;
 };
 
 export type NomCharte =
@@ -330,6 +349,7 @@ function depuisPlanche(p: {
     // et « complet » deviennent deux blancs, et le mois cesse de se lire d'un
     // coup d'œil — sa seule raison d'être.
     ...famillesDesCartes(p.plage, p.encre, sens),
+    ...couleursDuComptable(p.fond, p.plage, sens),
     bordeaux: detacher(BORDEAUX_ORIGINE, [p.fond, p.plage, p.plein], 3, sens),
     // Elle descend là où les autres montent : sur un écran sombre, plus la
     // demi-journée est pleine, plus la barre est claire. C'est l'inverse exact
@@ -449,6 +469,33 @@ function famillesDesCartes(plage: string, encre: string, sens: 1 | -1) {
 }
 
 /**
+ * Les couleurs du dossier du comptable, chacune détachée du fond et de la
+ * plage à 4,5 : elles colorent des MOTS (« Carburant », « −62,40 € »), pas
+ * seulement des traits. Sur les claires, la teinte de la planche ne bouge que
+ * si elle ne se lit pas ; sur Nuit et Sylve, elle remonte.
+ */
+const COULEURS_DU_COMPTABLE = {
+  catCarburant: "#3d6e9e",
+  catRepas: "#4f8a3c",
+  catMateriel: "#b9732a",
+  catHotel: "#7a5aa6",
+  catTransport: "#2b8586",
+  catAutre: "#8a8578",
+  catVirement: "#a3506b",
+  catRecu: "#2f3b2f",
+  montantEntree: "#1f7a45",
+  montantSortie: "#b3392b",
+} as const;
+
+function couleursDuComptable(fond: string, plage: string, sens: 1 | -1) {
+  const sortie = {} as Record<keyof typeof COULEURS_DU_COMPTABLE, string>;
+  for (const cle of Object.keys(COULEURS_DU_COMPTABLE) as (keyof typeof COULEURS_DU_COMPTABLE)[]) {
+    sortie[cle] = detacher(COULEURS_DU_COMPTABLE[cle], [fond, plage], 4.5, sens);
+  }
+  return sortie;
+}
+
+/**
  * ─── CE QU'UNE CHARTE PEUT CHANGER EN PLUS DE LA COULEUR ────────────────────
  *
  * **Sa demande du 24 août 2026, planche 92 en main :** *« ajoute-moi le Brume
@@ -535,6 +582,7 @@ export const CHARTES: Charte[] = [
       // Dérivées, comme `orTexte` : elles n'existaient pas avant, il n'y a
       // rien à recopier, et les poser à la main ferait un second calcul.
       ...famillesDesCartes("#faf9f5", "#1c1c1a", -1),
+      ...couleursDuComptable("#f5f3ee", "#faf9f5", -1),
     },
   },
   {
