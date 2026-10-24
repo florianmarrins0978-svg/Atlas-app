@@ -329,7 +329,7 @@ function depuisPlanche(p: {
     // côté dans le calendrier. Sans cela, sur une charte sombre, « incomplet »
     // et « complet » deviennent deux blancs, et le mois cesse de se lire d'un
     // coup d'œil — sa seule raison d'être.
-    ...famillesDesCartes(p.plage, sens),
+    ...famillesDesCartes(p.plage, p.encre, sens),
     bordeaux: detacher(BORDEAUX_ORIGINE, [p.fond, p.plage, p.plein], 3, sens),
     // Elle descend là où les autres montent : sur un écran sombre, plus la
     // demi-journée est pleine, plus la barre est claire. C'est l'inverse exact
@@ -410,9 +410,25 @@ const BLEU_DATE_QUI_BOUGE = "#3d6fa3";
  * crier ; le bleu en prend 24, parce qu'à 18 il se confondait avec le gris
  * (vu sur la planche, le 23 octobre). **Le titre se détache de CE fond-là**,
  * pas de la page : c'est sur lui qu'il se lit.
+ *
+ * **Une carte teintée ne coûte pas plus de lisibilité qu'en Origine.** Sur une
+ * plage SOMBRE, la teinte ÉCLAIRCIT le fond, et la phrase claire perd plus
+ * qu'elle ne perd en Origine : à 18 %, le vert ramenait le nom du client de
+ * 13,6 à 10,6 en Nuit (`test-mode-sombre-lisible-e2e`, batterie commune du
+ * 23 octobre 2026). La part se réduit donc, charte par charte, jusqu'à ce que
+ * l'encre garde sur la carte la même proportion de son contraste sur la plage
+ * qu'en Origine. Origine garde la part de la planche, au caractère près ;
+ * Brume perd un point, Nuit et Sylve davantage.
  */
-function famillesDesCartes(plage: string, sens: 1 | -1) {
-  const famille = (teinte: string, part: number) => {
+const PLAGE_ORIGINE = "#faf9f5";
+const ENCRE_ORIGINE = "#1c1c1a";
+
+function famillesDesCartes(plage: string, encre: string, sens: 1 | -1) {
+  const famille = (teinte: string, partDeLaPlanche: number) => {
+    const garde = (pl: string, en: string, part: number) => contraste(en, meler(pl, teinte, part)) / contraste(en, pl);
+    const enOrigine = garde(PLAGE_ORIGINE, ENCRE_ORIGINE, partDeLaPlanche);
+    let part = partDeLaPlanche;
+    while (part > 0.02 && garde(plage, encre, part) < enOrigine) part -= 0.01;
     const fond = meler(plage, teinte, part);
     return { fond, texte: detacher(teinte, [fond], 4.5, sens) };
   };
@@ -518,7 +534,7 @@ export const CHARTES: Charte[] = [
       vertPale: VERT_PALE_ORIGINE,
       // Dérivées, comme `orTexte` : elles n'existaient pas avant, il n'y a
       // rien à recopier, et les poser à la main ferait un second calcul.
-      ...famillesDesCartes("#faf9f5", -1),
+      ...famillesDesCartes("#faf9f5", "#1c1c1a", -1),
     },
   },
   {
