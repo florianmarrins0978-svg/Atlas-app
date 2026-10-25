@@ -7,6 +7,7 @@ import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import { LIBELLE_AVANT, LIBELLE_APRES, phraseDuCheque } from "@/lib/modalites-paiement";
 import PastilleACopier from "./PastilleACopier";
 import AccuseDeReception from "./AccuseDeReception";
+import { garderLaPage } from "@/server/garde-page";
 
 /**
  * LA PAGE QUE VOIT SON CLIENT — refaite le 8 septembre 2026, sur sa capture.
@@ -98,6 +99,7 @@ function Cadre({ titre, texte }: { titre: string; texte: string }) {
 }
 
 export default async function PageFactureClient({ params }: { params: Promise<{ jeton: string }> }) {
+  await garderLaPage();
   const { jeton } = await params;
   const facture = await factureParJeton(jeton);
 

@@ -5,6 +5,7 @@ import { cardShadow, colors, font, libelleCaps, radius, texteSituation } from "@
 import { fonctionOuverte, type FonctionReservee } from "@/lib/abonnements";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
+import { garderLaPage } from "@/server/garde-page";
 
 /**
  * « Paysage » — les outils de calcul du métier, derrière le cinquième onglet.
@@ -127,6 +128,7 @@ const OUTILS: Outil[] = [
 ];
 
 export default async function PaysagePage() {
+  await garderLaPage();
   // L'artisan découvrait la fermeture APRÈS avoir appuyé (la planche, état
   // « Formule Artisan »). La liste la dit désormais, mais ne décide de rien :
   // la règle reste `fonctionOuverte`, la même que lit `OuvertParLaFormule`.

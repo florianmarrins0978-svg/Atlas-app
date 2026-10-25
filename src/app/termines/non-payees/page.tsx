@@ -5,6 +5,7 @@ import { listerFacturesNonPayees } from "@/server/repositories/factures-non-paye
 import { formatEuros } from "@/lib/termines-par-mois";
 import { jourIso, jourLisible } from "@/lib/jour";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
+import { garderLaPage } from "@/server/garde-page";
 
 /**
  * LES FACTURES NON PAYÉES — la catégorie que Terminés ouvre.
@@ -18,6 +19,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 export const dynamic = "force-dynamic";
 
 export default async function PageNonPayees() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   const factures = await listerFacturesNonPayees(ctx);
   return (

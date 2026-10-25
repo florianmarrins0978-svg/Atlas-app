@@ -116,8 +116,8 @@
 <tr>
 <td><strong>E8</strong></td>
 <td>La garde des rôles des PAGES vit dans le gabarit racine, que Next.js ne rejoue pas à la navigation interne : un commercial pourrait recevoir les données d'une page qui lui est fermée</td>
-<td>à mesurer</td>
-<td>à reproduire avant de conclure</td>
+<td><strong>élevée</strong> (reproduit : un commercial lisait Ma TVA en passant par Chantiers)</td>
+<td><strong>corrigé le 25 octobre</strong> : chaque écran pose sa garde lui-même</td>
 </tr>
 <tr>
 <td><strong>E9</strong></td>
@@ -217,6 +217,11 @@
 <li>la protection de la branche <code>main</code> sur GitHub ;</li>
 <li>tout ce qui dépend de l'hébergeur de production, qui n'existe pas encore.</li>
 </ul>
+<h2 id="e8-fait-le-25-octobre">E8, fait le 25 octobre</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>La garde des rôles vivait dans le gabarit commun à tous les écrans. Next.js ne le rejoue pas quand on passe d'un écran à l'autre par un clic : un commercial connecté, parti de Chantiers, recevait l'écran Ma TVA avec la TVA collectée et déductible. L'adresse tapée à la main, elle, était bien refusée ; c'est pourquoi rien ne l'avait montré.</p>
+<p>Chaque écran pose désormais sa garde en première ligne (90 écrans). <code>scripts/test-garde-des-pages-e2e.ts</code> refait le geste dans un vrai navigateur (commercial vers Ma TVA, salarié vers Clients, et le patron qui y arrive toujours), rouge avant, vert après. <code>scripts/test-pages-gardees.ts</code> refuse tout écran neuf qui oublierait la garde ou la poserait après une lecture.</p>
+<p>Même faiblesse, moins grave, pour la vérification de l'adresse et l'acceptation des conditions : ces deux gardes restent dans le gabarit, notées dans <code>TODO.md</code>.</p>
 <h2 id="la-vague-2-faite-le-25-octobre">La vague 2, faite le 25 octobre</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p>E2 à E7 sont corrigés. Chaque faille a été reproduite sous le vrai rôle (commercial, salarié réglé sur son équipe), avec la requête qu'un attaquant écrirait, vue rouge, corrigée là où la donnée s'écrit, puis vue verte : <code>scripts/test-roles-dans-l-entreprise-db.ts</code>, onze cas. Sur l'écran du devis, un commercial lit l'en-tête de l'entreprise sans pouvoir l'écrire (vérifié à l'écran). Le contrôle des gardes refuse désormais une garde qui vit dans une seule branche.</p>

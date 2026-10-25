@@ -6,6 +6,7 @@ import { getRole } from "@/server/autorisation";
 import { horsProductionReelle } from "@/server/source-visiteur";
 import { etatDoubleVerification } from "@/server/repositories/double-verification";
 import SectionDoubleVerification from "../SectionDoubleVerification";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,7 @@ export const dynamic = "force-dynamic";
  * la personne, comme le mot de passe.
  */
 export default async function DoubleVerificationReglagesPage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   const etat = await etatDoubleVerification(ctx.utilisateurId);
   const obligatoire = doubleVerificationObligatoire((await getRole(ctx)) ?? "", !horsProductionReelle());

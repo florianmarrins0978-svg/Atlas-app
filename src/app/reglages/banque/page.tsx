@@ -14,6 +14,7 @@ import { adresseDeRetour, retourConfigure } from "@/server/paiement/retour";
 import RubriqueReservee from "../RubriqueReservee";
 import ReponseVirement from "../../ReponseVirement";
 import { delierBanqueAction, relierBanqueAction } from "./actions";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +54,7 @@ export default async function BanquePage({
 }: {
   searchParams: Promise<{ issue?: string; raison?: string }>;
 }) {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   // Avant toute lecture : un salarié qui tape l'adresse ne déclenche rien.
   if (!(await estProprietaire(ctx))) {

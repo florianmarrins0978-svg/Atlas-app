@@ -2,6 +2,7 @@ import { mockChantiers, ChantierStatut } from "@/lib/mock-data";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import AtlasBottomNav from "@/components/atlas/AtlasBottomNav";
+import { garderLaPage } from "@/server/garde-page";
 
 // Maquette isolée — n'affecte aucune route existante.
 // Logique de démonstration : détermine l'action principale à partir de l'état du chantier.
@@ -27,7 +28,8 @@ const secondarySteps = [
   { label: "Devis", meta: "En attente du prix", done: false, href: "/chantiers/1/export" },
 ];
 
-export default function HubMockupPage() {
+export default async function HubMockupPage() {
+  await garderLaPage();
   return (
     <div
       className="mx-auto flex min-h-dvh max-w-md flex-col"

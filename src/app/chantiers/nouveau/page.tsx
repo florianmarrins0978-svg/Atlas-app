@@ -5,6 +5,7 @@ import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
 import { etatDeLAcces, phraseLectureSeule } from "@/lib/abonnements";
 import EcranLectureSeule from "@/components/atlas/EcranLectureSeule";
 import FormulaireNouveauChantier, { type ClientDeDepart } from "./FormulaireNouveauChantier";
+import { garderLaPage } from "@/server/garde-page";
 
 // La route reste, et c'est délibéré : les suites de bout en bout y vont
 // directement, et un lien profond — celui d'un signet, celui d'une invitation —
@@ -31,6 +32,7 @@ export default async function NouveauChantierPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await garderLaPage();
   const parametres = await searchParams;
   // Essai terminé ou abonnement résilié : cet écran est la porte que l'accueil vient d'éteindre. Un
   // formulaire qu'on remplit en entier pour un refus au bout serait une panne

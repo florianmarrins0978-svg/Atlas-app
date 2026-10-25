@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import ConnexionClient from "./ConnexionClient";
 import { listerCles } from "@/server/repositories/cles-appareil";
 import { lireCompte } from "@/server/repositories/compte";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,7 @@ export const dynamic = "force-dynamic";
  * session n'atteint pas cet écran.
  */
 export default async function ConnexionPage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   // Lues au serveur plutôt qu'appelées depuis l'écran : la rubrique doit être
   // juste au premier rendu, sinon un artisan qui vient de perdre son téléphone

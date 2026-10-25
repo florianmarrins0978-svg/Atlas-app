@@ -19,6 +19,7 @@ import FactureClient from "./FactureClient";
 import SuiteDeLaFacture from "./SuiteDeLaFacture";
 import { avoirsDeLaFacture } from "@/server/repositories/avoirs";
 import { PARAM_PROVENANCE, retourDepuisLePlanning } from "@/lib/retour-au-planning";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,7 @@ export default async function FacturePage({
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await garderLaPage();
   const { id } = await params;
   // **D'où il vient, et donc où le ramener** — son signalement du 7 septembre
   // 2026. Venu des terminés, on y retourne : le repli ne bouge pas.

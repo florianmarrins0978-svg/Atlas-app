@@ -97,7 +97,7 @@ export async function exigerProprietaire(ctx: Ctx, action: string): Promise<void
 
 /**
  * **Ce compte a-t-il le droit d'ouvrir cette adresse ?** — la question que
- * `GardeAcces` pose à chaque écran, et que les routes d'API posent aussi.
+ * `garderLaPage` pose à chaque écran, et que les routes d'API posent aussi.
  *
  * Un rôle absent (adhésion retirée entre deux requêtes) répond NON. Ne rien
  * décider dans ce cas serait ouvrir l'application à un compte qu'on vient
@@ -115,7 +115,7 @@ export async function peutOuvrir(ctx: Ctx, chemin: string): Promise<boolean> {
  *
  * **Ne lève jamais.** Il sert à DESSINER : la barre du bas, le sommaire. Une
  * exception y ferait tomber l'écran entier pour un onglet. Ce qui REFUSE, c'est
- * `GardeAcces` et `exigerOuverture` — et eux ne se contentent pas d'un `null`.
+ * `garderLaPage` et `exigerOuverture` — et eux ne se contentent pas d'un `null`.
  *
  * **Sauf une redirection**, qui n'est pas une panne : `getCurrentCtx` renvoie à
  * `/api/session-perimee` quand le compte a disparu, et `redirect()` lève par

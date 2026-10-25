@@ -1,4 +1,5 @@
 import { mockChantiers, ChantierStatut } from "@/lib/mock-data";
+import { garderLaPage } from "@/server/garde-page";
 
 // Aperçu isolé — n'affecte aucune route existante, aucune logique métier modifiée.
 // Signature Atlas : trait vertical fin ("fil à plomb") réservé aux chantiers qui
@@ -22,7 +23,8 @@ const label: Record<ChantierStatut, string> = {
 
 const needsAttention: ChantierStatut[] = ["a_verifier"];
 
-export default function DesignCPage() {
+export default async function DesignCPage() {
+  await garderLaPage();
   return (
     <div
       className="mx-auto flex min-h-dvh max-w-md flex-col bg-[#FAF9F7] text-[#17140F]"

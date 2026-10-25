@@ -25,6 +25,7 @@ import {
   ticketsLibres,
 } from "@/server/repositories/pour-mon-comptable";
 import DossierEnCours, { type ARegarder, type Periode } from "./DossierEnCours";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,7 @@ export const dynamic = "force-dynamic";
  * APRÈS l'affichage, une fois par demi-heure au plus (`lireLaBanque`).
  */
 export default async function PageDossierEnCours() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   const maintenant = new Date();
   const { du, au, premier } = await dossierEnCours(ctx, maintenant);

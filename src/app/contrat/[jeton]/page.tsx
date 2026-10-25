@@ -12,6 +12,7 @@ import {
 } from "@/lib/contrats-entretien";
 import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 import ReponseContrat from "./ReponseContrat";
+import { garderLaPage } from "@/server/garde-page";
 
 // LA PAGE DU CONTRAT, telle que le CLIENT la reçoit par son lien.
 //
@@ -29,6 +30,7 @@ const ETIQUETTE = couleursDocument.etiquette;
 const OR = couleursDocument.accent;
 
 export default async function PageContratClient({ params }: { params: Promise<{ jeton: string }> }) {
+  await garderLaPage();
   const { jeton } = await params;
   const lu = await lireContratParJeton(jeton);
 

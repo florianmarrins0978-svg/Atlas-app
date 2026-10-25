@@ -3,6 +3,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import RapportEntretien from "@/components/atlas/RapportEntretien";
 import { colors, font } from "@/lib/design-tokens";
 import { lireRapportParJeton } from "@/server/repositories/passages-entretien";
+import { garderLaPage } from "@/server/garde-page";
 
 // Un rapport ne se met jamais en cache : il appartient à un seul client.
 export const dynamic = "force-dynamic";
@@ -22,6 +23,7 @@ export default async function RapportDansLAppliPage({
 }: {
   params: Promise<{ jeton: string }>;
 }) {
+  await garderLaPage();
   const { jeton } = await params;
   const rapport = await lireRapportParJeton(jeton);
   if (!rapport) notFound();

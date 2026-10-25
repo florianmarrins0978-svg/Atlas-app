@@ -18,7 +18,7 @@ import { supprimerObjet } from "@/server/storage";
 /**
  * LES QUATRE GESTES DES ACCÈS — et les quatre commencent par la même ligne.
  *
- * **`exigerProprietaire` n'est pas une redite de `GardeAcces`.** La garde de la
+ * **`exigerProprietaire` n'est pas une redite de `garderLaPage`.** La garde de la
  * mise en page refuse une ADRESSE ; une action serveur, elle, se poste à
  * l'adresse de la page qui l'a rendue. Se garder par le chemin seul reviendrait
  * donc à garder une action par l'écran d'où l'on croit qu'elle vient — et

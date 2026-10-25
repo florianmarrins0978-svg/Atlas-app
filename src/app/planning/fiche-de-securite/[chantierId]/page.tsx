@@ -5,6 +5,7 @@ import { cheminAutorise } from "@/lib/acces-roles";
 import { colors, font } from "@/lib/design-tokens";
 import { ouvrirLaFicheAction } from "../../fiche-securite-actions";
 import FormulaireFicheDeSecurite from "./FormulaireFicheDeSecurite";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Fiche de sécurité, Atlas" };
@@ -19,6 +20,7 @@ export default async function FicheDeSecuritePage({
 }: {
   params: Promise<{ chantierId: string }>;
 }) {
+  await garderLaPage();
   const { chantierId } = await params;
   const ouverte = await ouvrirLaFicheAction(chantierId);
   const ctx = await getCurrentCtx();

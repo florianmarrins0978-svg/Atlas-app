@@ -5,6 +5,7 @@ import { estProprietaire } from "@/server/autorisation";
 import { lireOrganigramme } from "@/server/repositories/organigramme";
 import { construireOrganigramme } from "@/lib/organigramme";
 import Organigramme from "./Organigramme";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,7 @@ export const dynamic = "force-dynamic";
  * pour le patron, et leurs actions l'exigent au serveur.
  */
 export default async function OrganigrammePage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   const [donnees, patron] = await Promise.all([lireOrganigramme(ctx), estProprietaire(ctx)]);
   const organigramme = construireOrganigramme(donnees.comptes, donnees.salaries, donnees.nombreSalaries);

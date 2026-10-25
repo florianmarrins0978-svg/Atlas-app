@@ -3,6 +3,7 @@ import { estProprietaire } from "@/server/autorisation";
 import { listerPrestations } from "@/server/repositories/prestations-entretien";
 import RubriqueReservee from "../../../reglages/RubriqueReservee";
 import ComposerMaFiche from "./ComposerMaFiche";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,7 @@ export const dynamic = "force-dynamic";
  * pas ouverte aux salariés — l'écran de Paysage le savait déjà.
  */
 export default async function ComposerMaFichePage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   if (!(await estProprietaire(ctx))) {
     return (

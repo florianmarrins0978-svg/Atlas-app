@@ -5,6 +5,7 @@ import { enEuros } from "@/lib/euros";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { facturesAvecPaiements } from "@/server/repositories/paiements-facture";
 import NoterNonPayee from "./NoterNonPayee";
+import { garderLaPage } from "@/server/garde-page";
 
 /**
  * « Il ne me paiera pas » — planche `appli/il-ne-paiera-pas.html`, écran 3.
@@ -14,6 +15,7 @@ import NoterNonPayee from "./NoterNonPayee";
 export const dynamic = "force-dynamic";
 
 export default async function PageNonPayee({ params }: { params: Promise<{ id: string }> }) {
+  await garderLaPage();
   const { id } = await params;
   const ctx = await getCurrentCtx();
   const f = (await facturesAvecPaiements(ctx)).find((x) => x.chantierId === id);

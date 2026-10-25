@@ -1,8 +1,8 @@
 // AUCUNE ROUTE D'API NE DOIT OUBLIER SA GARDE DE RÔLE.
 //
 // **Pourquoi cette suite existe, et pourquoi elle n'a pas d'équivalent pour les
-// écrans.** Un écran traverse `layout.tsx`, donc `GardeAcces` : il ne peut pas
-// oublier. Une route d'API ne traverse aucune mise en page — elle doit appeler
+// écrans.** Un écran appelle `garderLaPage` en tête, et
+// `test-pages-gardees.ts` refuse celui qui l'oublie. Une route d'API ne traverse aucune mise en page — elle doit appeler
 // `exigerOuverture()` elle-même, et un oubli ne se VOIT PAS : la route marche,
 // elle marche même trop bien. C'est exactement par là qu'un PDF de devis sort du
 // serveur, prix compris (`docs/QUESTIONS.md` §10).
@@ -135,11 +135,13 @@ essai("la garde passe AVANT la lecture", () => {
   }
 });
 
-essai("la garde des écrans est bien montée dans la mise en page racine", () => {
-  // Elle n'est appelée nulle part ailleurs : si quelqu'un la retire du layout,
-  // TOUS les écrans s'ouvrent d'un coup, et rien à l'écran ne le montre.
+essai("chaque écran joue sa garde lui-même, et le gabarit racine n'en porte plus", () => {
+  // Audit du 25 octobre 2026, E8 : une garde dans le gabarit racine ne se
+  // rejouait pas à la navigation interne. Elle vit dans chaque page
+  // (`garderLaPage`, tenu par `test-pages-gardees.ts`) ; la remettre au gabarit
+  // redonnerait l'illusion d'une garde.
   const layout = readFileSync(path.join(__dirname, "..", "src", "app", "layout.tsx"), "utf8");
-  assert.ok(layout.includes("<GardeAcces />"), "GardeAcces n'est plus rendue dans layout.tsx");
+  assert.ok(!layout.includes("GardeAcces"), "le gabarit racine porte de nouveau une garde qui ne se rejoue pas");
 });
 
 console.log("");

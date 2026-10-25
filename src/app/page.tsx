@@ -40,6 +40,7 @@ import AnnonceTransmission from "@/components/atlas/AnnonceTransmission";
 import EcranChantiers from "./EcranChantiers";
 import VeilleDesNouvelles from "@/components/atlas/VeilleDesNouvelles";
 import type { BrinChantier } from "./ListeChantiers";
+import { garderLaPage } from "@/server/garde-page";
 
 // Données réelles, propres à l'entreprise courante : jamais de pré-rendu statique.
 export const dynamic = "force-dynamic";
@@ -64,6 +65,7 @@ function jourEtMois(date: Date): { jour: string; mois: string } {
 }
 
 export default async function ChantiersPage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   // **L'instant est pris UNE FOIS, ici, et passé plus bas.** Deux appels à
   // `new Date()` dans la même page donnent deux instants, et un rappel « depuis

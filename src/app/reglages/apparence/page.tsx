@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { lireCharte } from "@/server/repositories/charte-personne";
 import { CHARTE_PAR_DEFAUT } from "@/lib/chartes";
 import ApparenceClient from "./ApparenceClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,7 @@ export const dynamic = "force-dynamic";
  * d'entreprise — la rubrique vit dans l'ensemble « Moi » du sommaire.
  */
 export default async function ApparencePage() {
+  await garderLaPage();
   await getCurrentCtx();
   const choisie = (await lireCharte()) ?? CHARTE_PAR_DEFAUT;
 

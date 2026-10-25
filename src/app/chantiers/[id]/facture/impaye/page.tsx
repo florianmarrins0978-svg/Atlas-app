@@ -1,6 +1,7 @@
 import Link from "next/link";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font } from "@/lib/design-tokens";
+import { garderLaPage } from "@/server/garde-page";
 
 /**
  * « Que voulez-vous faire ? » — la question du lien doré de la facture. Ses
@@ -8,6 +9,7 @@ import { colors, font } from "@/lib/design-tokens";
  * sans explication dessous.
  */
 export default async function PageImpaye({ params }: { params: Promise<{ id: string }> }) {
+  await garderLaPage();
   const { id } = await params;
   const reponse = (href: string, cle: string, mot: string) => (
     <Link

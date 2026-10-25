@@ -3,6 +3,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font } from "@/lib/design-tokens";
 import { fichierAccepteParLaVisionneuse } from "@/lib/visionneuse-pdf";
 import VisionneusePdf from "./VisionneusePdf";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,7 @@ export default async function VisionneusePdfPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await garderLaPage();
   const params = await searchParams;
   const fichier = fichierAccepteParLaVisionneuse(
     typeof params.fichier === "string" ? params.fichier : undefined

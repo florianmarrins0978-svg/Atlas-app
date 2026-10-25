@@ -2,6 +2,7 @@ import PorteDeNuit from "@/components/atlas/PorteDeNuit";
 import { fournisseursAAfficher } from "@/lib/fournisseurs-connexion";
 import { clesFournisseurs } from "@/server/cles-fournisseurs";
 import FormulaireConnexion from "./FormulaireConnexion";
+import { garderLaPage } from "@/server/garde-page";
 
 /**
  * LA PORTE D'ATLAS — écran 3 de `appli/la-porte-en-plein-air.html`.
@@ -20,7 +21,8 @@ import FormulaireConnexion from "./FormulaireConnexion";
  * mais l'écran doit savoir LESQUELLES sont branchées : une qui ne l'est pas
  * refuse, en le disant, au lieu de sortir d'Atlas.
  */
-export default function LoginPage() {
+export default async function LoginPage() {
+  await garderLaPage();
   const fournisseurs = fournisseursAAfficher(clesFournisseurs());
 
   return (

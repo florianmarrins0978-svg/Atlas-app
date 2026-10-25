@@ -5,6 +5,7 @@ import { LIBELLE_MOTIF, categorieDeLaLigne, jourComplet, jourEnMots } from "@/li
 import { dossierParJeton, type LignePourLeComptable } from "@/server/repositories/verification-comptable";
 import Verification, { type LigneAVerifier, type PieceAffichee } from "./Verification";
 import { jourIso } from "@/lib/jour";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -67,6 +68,7 @@ function etiquette(p: PieceAffichee): string {
 }
 
 export default async function PageDuComptable({ params }: { params: Promise<{ jeton: string }> }) {
+  await garderLaPage();
   const { jeton } = await params;
   const dossier = await dossierParJeton(jeton);
 

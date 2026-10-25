@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { listerCartes, motsAProposer } from "@/server/repositories/mots-catalogue";
 import MotsProposes from "./MotsProposes";
 import MesMots from "./MesMots";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,7 @@ export const dynamic = "force-dynamic";
  *     désormais : « Aussi appelé ».
  */
 export default async function CataloguePage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   const [prestations, materiels, proposes] = await Promise.all([
     listerCartes(ctx, "prestation"),
