@@ -14,6 +14,7 @@ import { enEuros } from "@/lib/euros";
 import VoirUnExemple from "../VoirUnExemple";
 import { remarquesSurLAttestation } from "@/lib/attestation-lue";
 import { jourIso } from "@/lib/jour";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,7 @@ export const dynamic = "force-dynamic";
  * lues du tout.
  */
 export default async function IdentitePage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   if (!(await estProprietaire(ctx))) {
     return (

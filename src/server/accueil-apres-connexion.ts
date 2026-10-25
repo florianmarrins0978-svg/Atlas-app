@@ -47,7 +47,7 @@ import { verificationEnAttente } from "./repositories/verification-email";
  * **CE QUE CES FONCTIONS NE SONT PAS : une autorisation.**
  *
  * Elles choisissent une DESTINATION, elles n'ouvrent rien. Ce qui refuse reste
- * `GardeAcces` et `exigerOuverture`, sur la requête suivante. Une valeur
+ * `garderLaPage` et `exigerOuverture`, sur la requête suivante. Une valeur
  * inattendue ne peut donc rien donner de plus qu'un écran que le rôle aurait de
  * toute façon eu le droit d'ouvrir — d'où le repli sur `/`, qui est gardé comme
  * les autres.

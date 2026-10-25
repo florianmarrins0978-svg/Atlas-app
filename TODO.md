@@ -31,7 +31,7 @@ qui sert de modèle. Le jeu de démonstration ne pose aucun chantier au planning
 
 ## AUDIT DE SÉCURITÉ : LE LOT 0 EST FAIT, LA SUITE ATTEND SON PROMPT (25 octobre 2026)
 
-Le prompt renforcé est au §6 de `docs/audit-securite-prompt-renforce.md`. Étape 2 faite (`docs/audit-2026-10-etape-2.md`) ; R1, R2, R3, l'empreinte des e-mails et les protections fragiles faits (vague 1, `ARCHITECTURE.md` §500 et §501). Étape 3 faite (`docs/audit-2026-10-etape-3-inventaire.md`), vague 2 faite (E2 à E7, `ARCHITECTURE.md` §502). E1, E9 et E17 faits (`ARCHITECTURE.md` §503) ; E16 refusé (§503). Restent : E8 (garde des pages dans le gabarit racine, à reproduire), E10 à E15, `CRON_SECRET` lui aussi public dans `docker-compose.yml` (même remède que E1), et la rétention du journal chez l'hébergeur. Restent hors du lot 0 : poser `min-release-age` (npm 11.10+, à vérifier sur son espace et en CI), épingler les actions GitHub par empreinte, passer `@simplewebauthn/server` en 13.x dans son propre lot (`ARCHITECTURE.md` §499).
+Le prompt renforcé est au §6 de `docs/audit-securite-prompt-renforce.md`. Étape 2 faite (`docs/audit-2026-10-etape-2.md`) ; R1, R2, R3, l'empreinte des e-mails et les protections fragiles faits (vague 1, `ARCHITECTURE.md` §500 et §501). Étape 3 faite (`docs/audit-2026-10-etape-3-inventaire.md`), vague 2 faite (E2 à E7, `ARCHITECTURE.md` §502). E1, E9 et E17 faits (`ARCHITECTURE.md` §503) ; E16 refusé (§503). E8 fait (`ARCHITECTURE.md` §504). Restent : E10 à E15, `CRON_SECRET` lui aussi public dans `docker-compose.yml` (même remède que E1), et la rétention du journal chez l'hébergeur. Restent hors du lot 0 : poser `min-release-age` (npm 11.10+, à vérifier sur son espace et en CI), épingler les actions GitHub par empreinte, passer `@simplewebauthn/server` en 13.x dans son propre lot (`ARCHITECTURE.md` §499).
 
 ## ~~LE SEED LANCÉ À LA MAIN VIDE ENCORE SA BASE HABITÉE~~ corrigé le 25 octobre 2026
 
@@ -3353,8 +3353,9 @@ lieu de `CURRENT_DATE`, dans cette suite et dans toute suite qui écrit
 
 **Le défaut, vu par lui le 14 septembre 2026 :** compte créé, « Entrer dans
 Atlas », une heure de travail, et les conditions générales ne lui sont parvenues
-qu'en rechargeant la page. `GardeVerificationEmail`, `GardeDocumentsLegaux` et
-`GardeAcces` vivent dans `layout.tsx`, que Next.js ne rejoue pas sur une
+qu'en rechargeant la page. `GardeVerificationEmail` et `GardeDocumentsLegaux` vivent
+dans `layout.tsx` (`GardeAcces` en est sortie le 25 octobre 2026 : chaque
+écran appelle `garderLaPage`, `ARCHITECTURE.md` §504), que Next.js ne rejoue pas sur une
 navigation côté client : elles ne s'exécutent qu'au premier chargement.
 
 **Ce qui tient aujourd'hui, et c'est un bouchon avoué :** les deux chemins

@@ -2,6 +2,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getConfigIA } from "@/server/ai/config";
 import { etatVision } from "@/lib/etat-ia";
 import ArrosageClient from "./ArrosageClient";
+import { garderLaPage } from "@/server/garde-page";
 
 /**
  * « Plan d'arrosage » — l'outil, DANS l'application.
@@ -19,6 +20,7 @@ export const metadata = { title: "Plan d'arrosage, Atlas" };
 export const dynamic = "force-dynamic";
 
 export default async function ArrosagePage() {
+  await garderLaPage();
   const ia = getConfigIA();
   // **La bonne question n'est pas « une clé existe-t-elle », mais « celui qui
   // va LIRE l'image a-t-il la sienne ».** L'ancienne version répondait vrai dès

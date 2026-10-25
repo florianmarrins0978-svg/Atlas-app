@@ -6,6 +6,7 @@ import RubriqueReservee from "../RubriqueReservee";
 import { lireGrillePrix } from "@/server/repositories/grille-prix";
 import { lireGrilles } from "@/server/repositories/grilles-reglables";
 import GrillesPrixClient from "./GrillesPrixClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,7 @@ export const dynamic = "force-dynamic";
  * (`docs/QUESTIONS.md` §10).
  */
 export default async function GrillesPrixPage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
 
   /**

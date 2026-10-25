@@ -4,6 +4,7 @@ import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { preparerAvoir } from "@/server/repositories/avoirs";
 import AvoirClient from "./AvoirClient";
+import { garderLaPage } from "@/server/garde-page";
 
 /**
  * « Je fais un avoir » — planche `appli/avoir.html`, ses décisions du 24
@@ -14,6 +15,7 @@ import AvoirClient from "./AvoirClient";
 export const dynamic = "force-dynamic";
 
 export default async function PageAvoir({ params }: { params: Promise<{ id: string }> }) {
+  await garderLaPage();
   const { id } = await params;
   const ctx = await getCurrentCtx();
   const prep = await preparerAvoir(ctx, id);

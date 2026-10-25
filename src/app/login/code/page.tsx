@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import PorteDeNuit from "@/components/atlas/PorteDeNuit";
 import { connexionEnAttente } from "@/server/double-verification-connexion";
 import FormulaireCode from "./FormulaireCode";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,7 @@ export const dynamic = "force-dynamic";
  * porte, plutôt qu'un champ dont la saisie mènerait à « délai passé ».
  */
 export default async function CodePage() {
+  await garderLaPage();
   if (!(await connexionEnAttente())) redirect("/login");
   return (
     <PorteDeNuit className="atlas-bas-sans-barre flex min-h-[100dvh] flex-col px-[22px] pb-5">

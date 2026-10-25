@@ -6,6 +6,7 @@ import RubriqueReservee from "../RubriqueReservee";
 import { etatAgenda } from "@/server/repositories/agendas-externes";
 import { etatAgendaApple } from "@/server/repositories/agenda-apple";
 import MonAgendaClient from "./MonAgendaClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ export default async function AgendaPage({
 }: {
   searchParams: Promise<{ issue?: string }>;
 }) {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
 
   /**

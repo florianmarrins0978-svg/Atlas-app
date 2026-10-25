@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { adresseDuCompte, verificationEnAttente } from "@/server/repositories/verification-email";
 import EcranDuCode from "./EcranDuCode";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,7 @@ export const dynamic = "force-dynamic";
  * l'accueil quand ils sont acceptés.
  */
 export default async function VerifierEmailPage() {
+  await garderLaPage();
   const session = await auth();
   const utilisateurId = session?.user?.id;
   if (!utilisateurId) redirect("/login");

@@ -5,11 +5,13 @@ import { estProprietaire } from "@/server/autorisation";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import RubriqueReservee from "../../RubriqueReservee";
 import NumeroClient from "./NumeroClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
 /** « Le numéro de mes documents » — sa demande du 26 août 2026, écran à part. */
 export default async function NumeroPage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   if (!(await estProprietaire(ctx))) {
     return (

@@ -6,6 +6,7 @@ import { jourIso } from "@/lib/jour";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { facturesAvecPaiements } from "@/server/repositories/paiements-facture";
 import { miseEnDemeure } from "@/server/repositories/factures-non-payees";
+import { garderLaPage } from "@/server/garde-page";
 
 /**
  * « Mise en demeure » — planche `appli/mise-en-demeure.html`, dernier écran :
@@ -17,6 +18,7 @@ import { miseEnDemeure } from "@/server/repositories/factures-non-payees";
 export const dynamic = "force-dynamic";
 
 export default async function PageMiseEnDemeure({ params }: { params: Promise<{ id: string }> }) {
+  await garderLaPage();
   const { id } = await params;
   const ctx = await getCurrentCtx();
   const f = (await facturesAvecPaiements(ctx)).find((x) => x.chantierId === id);

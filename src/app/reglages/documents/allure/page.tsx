@@ -6,11 +6,13 @@ import { getEntreprise } from "@/server/repositories/entreprises";
 import { normaliserAllure, ALLURE_PAR_DEFAUT } from "@/lib/allure-documents";
 import RubriqueReservee from "../../RubriqueReservee";
 import AllureClient from "./AllureClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
 /** « L'allure de mes devis » — sa demande du 23 août 2026, écran à part. */
 export default async function AllurePage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   if (!(await estProprietaire(ctx))) {
     return (

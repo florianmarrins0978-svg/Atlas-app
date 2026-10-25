@@ -7,6 +7,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { documentsDuVehicule, getVehicule } from "@/server/repositories/vehicules";
 import FicheVehicule from "./FicheVehicule";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,7 @@ export default async function VehiculePage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ ajouter?: string }>;
 }) {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   const [{ id }, { ajouter }, patron] = await Promise.all([params, searchParams, estProprietaire(ctx)]);
   if (!patron) redirect("/reglages/vehicules");

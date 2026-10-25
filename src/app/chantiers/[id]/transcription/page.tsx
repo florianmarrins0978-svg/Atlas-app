@@ -11,6 +11,7 @@ import { estTranscriptionSimulee } from "@/server/ai/providers/transcription/dev
 import TexteDicte from "./TexteDicte";
 import RafraichirPendantTranscription from "./RafraichirPendantTranscription";
 import DevisDepuisDictee from "../DevisDepuisDictee";
+import { garderLaPage } from "@/server/garde-page";
 
 // Consultation seule : le lancement et la relance de la transcription vivent sur
 // l'écran Note vocale, jamais en double ici. Le modèle ne porte qu'une
@@ -40,6 +41,7 @@ export const dynamic = "force-dynamic";
  * endroits pour le même geste, c'est un de trop — l'écran Note vocale le tient.
  */
 export default async function TranscriptionPage({ params }: { params: Promise<{ id: string }> }) {
+  await garderLaPage();
   const { id } = await params;
 
   const ctx = await getCurrentCtx();

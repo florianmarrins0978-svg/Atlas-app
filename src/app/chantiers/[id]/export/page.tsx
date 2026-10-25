@@ -14,6 +14,7 @@ import { dernierEnvoi } from "@/server/repositories/envois-devis";
 import { etatEnvoi } from "@/lib/etat-envoi";
 import ExportClient from "./ExportClient";
 import { PARAM_PROVENANCE, retourDepuisLePlanning } from "@/lib/retour-au-planning";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ export default async function ExportPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await garderLaPage();
   const { id } = await params;
   // **D'où il vient, et donc où le ramener** — son signalement du 7 septembre
   // 2026. Sans provenance, rien ne change : c'est la liste, comme depuis le

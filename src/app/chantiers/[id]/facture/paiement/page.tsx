@@ -5,6 +5,7 @@ import { jourIso } from "@/lib/jour";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { facturesAvecPaiements } from "@/server/repositories/paiements-facture";
 import PaiementClient from "./PaiementClient";
+import { garderLaPage } from "@/server/garde-page";
 
 /**
  * « Il vous a payé » — planche `appli/il-ne-paiera-pas.html`, écran 8 : le
@@ -15,6 +16,7 @@ import PaiementClient from "./PaiementClient";
 export const dynamic = "force-dynamic";
 
 export default async function PagePaiement({ params }: { params: Promise<{ id: string }> }) {
+  await garderLaPage();
   const { id } = await params;
   const ctx = await getCurrentCtx();
   const f = (await facturesAvecPaiements(ctx)).find((x) => x.chantierId === id);

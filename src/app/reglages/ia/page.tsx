@@ -7,6 +7,7 @@ import { estProprietaire } from "@/server/autorisation";
 import { getConfigIA } from "@/server/ai/config";
 import { estEditeur } from "@/server/editeur";
 import RubriqueReservee from "../RubriqueReservee";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ export const dynamic = "force-dynamic";
  * rendu, ni leurs valeurs.
  */
 export default async function IAPage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   if (!(await estProprietaire(ctx))) {
     return (

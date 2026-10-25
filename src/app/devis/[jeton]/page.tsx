@@ -7,6 +7,7 @@ import { avecCivilite } from "@/lib/civilite";
 import { colors, font, surPlein } from "@/lib/design-tokens";
 import BoutonTelechargerDevis from "./BoutonTelechargerDevis";
 import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
+import { garderLaPage } from "@/server/garde-page";
 
 // Seule page publique du produit avec celle de la facture : consultée sans
 // compte, depuis un lien reçu par SMS ou e-mail (docs/AGENT.md §2.2 bis).
@@ -78,6 +79,7 @@ function Cadre({
 }
 
 export default async function PageDevisClient({ params }: { params: Promise<{ jeton: string }> }) {
+  await garderLaPage();
   const { jeton } = await params;
   const envoi = await lireParJeton(jeton);
 

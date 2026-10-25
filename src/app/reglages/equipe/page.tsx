@@ -21,6 +21,7 @@ import AbsencesEquipe from "../AbsencesEquipe";
 import FonctionReservee from "@/components/atlas/FonctionReservee";
 import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
 import { fonctionOuverte } from "@/lib/abonnements";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,7 @@ export const dynamic = "force-dynamic";
  * (`docs/QUESTIONS.md` §10).
  */
 export default async function EquipePage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   if (!(await estProprietaire(ctx))) {
     return (

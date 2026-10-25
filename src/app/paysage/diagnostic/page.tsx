@@ -1,6 +1,7 @@
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font } from "@/lib/design-tokens";
 import PrendreUnePhoto from "./PrendreUnePhoto";
+import { garderLaPage } from "@/server/garde-page";
 
 /**
  * « Diagnostic végétal » — l'écran d'entrée, et il tient en trois lignes.
@@ -22,7 +23,8 @@ import PrendreUnePhoto from "./PrendreUnePhoto";
  */
 export const metadata = { title: "Diagnostic végétal, Atlas" };
 
-export default function DiagnosticPage() {
+export default async function DiagnosticPage() {
+  await garderLaPage();
   return (
     <div
       style={{

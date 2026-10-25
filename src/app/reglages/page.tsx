@@ -13,6 +13,7 @@ import Sommaire from "./Sommaire";
 import { derniereIssueMiseAJour } from "./actions";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { estBancDEssai } from "@/profil-banc";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +40,7 @@ export const dynamic = "force-dynamic";
  * cacher derrière une rubrique reviendrait à la perdre (`CLAUDE.md` §6).
  */
 export default async function ReglagesPage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   // **Le nom de l'entreprise ne sert QU'À la feuille de déconnexion**, qui
   // nomme d'où l'on sort. Lu ici plutôt que dans le composant : un écran

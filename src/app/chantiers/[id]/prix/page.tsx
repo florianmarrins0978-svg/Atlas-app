@@ -6,6 +6,7 @@ import { getChantier } from "@/server/repositories/chantiers";
 import { listerLignesPrix } from "@/server/repositories/lignes-prix";
 import { preparerPropositionPrix } from "@/server/chiffrage/proposition-prix";
 import PrixClient from "./PrixClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export default async function PrixPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ saisie?: string }>;
 }) {
+  await garderLaPage();
   const { id } = await params;
 
   // Arrivée par « Écrire le devis » depuis l'écran Informations.

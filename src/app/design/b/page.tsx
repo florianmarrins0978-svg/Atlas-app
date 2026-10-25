@@ -1,4 +1,5 @@
 import { mockChantiers, ChantierStatut } from "@/lib/mock-data";
+import { garderLaPage } from "@/server/garde-page";
 
 // Aperçu isolé — n'affecte aucune route existante, aucune logique métier modifiée.
 // Statuts simplifiés visuellement via une icône d'anneau de progression (inspiration Linear).
@@ -40,7 +41,8 @@ const label: Record<ChantierStatut, string> = {
   planifie: "Planifié",
 };
 
-export default function DesignBPage() {
+export default async function DesignBPage() {
+  await garderLaPage();
   return (
     <div
       className="mx-auto flex min-h-dvh max-w-md flex-col bg-[#FCFCFD] text-[#16161A]"

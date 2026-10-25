@@ -6,6 +6,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { documentsDuVehicule, listerVehicules } from "@/server/repositories/vehicules";
 import ListeVehicules from "./ListeVehicules";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,7 @@ export const dynamic = "force-dynamic";
  * voient, par camion, ce qu'il faut au constat : « En cas d'accident ».
  */
 export default async function VehiculesPage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   const [patron, liste] = await Promise.all([estProprietaire(ctx), listerVehicules(ctx)]);
   const rappels = rappelsDesVehicules(

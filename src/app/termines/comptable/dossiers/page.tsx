@@ -10,6 +10,7 @@ import { verificationsDesDossiers, type VerificationDuDossier } from "@/server/r
 import type { ARegarder } from "../DossierEnCours";
 import MesDossiers, { type DossierAffiche } from "./MesDossiers";
 import { jourIso } from "@/lib/jour";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,7 @@ export const dynamic = "force-dynamic";
  * prévenir trois mois avant qu'un dossier ne soit effacé.
  */
 export default async function PageMesDossiers() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   const aujourdhui = jourIso(new Date());
   const [dossiers, verifications, factures] = await Promise.all([listerDossiers(ctx), verificationsDesDossiers(ctx), facturesRecuesLibres(ctx)]);
