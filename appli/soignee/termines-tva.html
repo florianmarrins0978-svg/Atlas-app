@@ -119,6 +119,126 @@
 .pave-point::after { content: ""; position: absolute; left: 50%; bottom: 8px; width: 5px; height: 5px; margin-left: -2.5px;
                      border-radius: 50%; background: var(--atlas-or); }
 .pave[aria-current="true"].pave-point::after { background: var(--sur-plein); }
+
+/*
+  PLUS LOIN, sa demande du 25 octobre au soir : « je veux la rendre plus jolie,
+  propose-moi quelque chose ». Le même monde (les chartes, la serif des
+  chiffres, le doré de la TVA, aucune ombre), et tout ce que Proposé change.
+  En plus :
+    le total se pose sur une bande dorée, d'un bord à l'autre de l'écran. Le
+      mot et le chiffre y sont à l'encre : de l'or écrit sur un lavis d'or ne
+      se lit plus au soleil ;
+    le mois regardé se pose sur une pastille du même lavis : le doré dit
+      « c'est ici, maintenant » ;
+    une facture, un achat : deux lignes. La TVA en doré à droite, le TTC
+      dessous. Les TVA forment une colonne qui tombe sur son total ;
+    « Payé par virement » se lit comme « Déclaration mensuelle » : une phrase,
+      et le mot qui change se touche ;
+    les factures en attente perdent leur plage : un trait les sépare, comme
+      les preuves ;
+    un paiement reçu fait monter le chiffre, et sa ligne entre dans la preuve.
+      C'est le seul mouvement de l'écran, et il dit ce qui vient de se passer.
+*/
+#ecran-loin { --lavis-or: color-mix(in srgb, var(--atlas-or) 17%, var(--atlas-cream)); }
+
+.loin-frise { display: flex; align-items: center; gap: 6px; margin: 0 calc(var(--gouttiere) * -1); padding-left: var(--gouttiere); }
+.loin-mois { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; padding-right: var(--gouttiere);
+             mask-image: linear-gradient(to right, transparent 0, var(--atlas-ink) 14px, var(--atlas-ink) calc(100% - 28px), transparent 100%); }
+.loin-mois::-webkit-scrollbar { display: none; }
+.loin-mois button { flex: none; min-height: 44px; padding: 0 15px; border-radius: 22px; font-size: 16px; font-weight: 500;
+                    color: var(--atlas-inkSoft); transition: background-color 200ms var(--courbe); }
+.loin-mois button[aria-current="true"] { background: var(--lavis-or); color: var(--atlas-ink); font-weight: 700; }
+
+.loin-addition { margin-top: 14px; }
+.loin-terme { display: flex; align-items: center; gap: 10px; min-height: 56px; }
+.loin-mot { flex: 1; min-width: 0; font-size: 16px; font-weight: 600; color: var(--atlas-ink); text-decoration: underline;
+            text-decoration-color: var(--atlas-or); text-underline-offset: 6px; text-decoration-thickness: 1.5px; }
+.loin-chiffre { display: inline-flex; align-items: center; gap: 2px; min-height: 48px; white-space: nowrap; }
+.loin-chiffre .valeur { font: 400 24px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); }
+.loin-chiffre .moins { margin-right: 6px; color: var(--atlas-inkSoft); }
+.loin-copie { width: 40px; display: grid; place-items: center; color: var(--atlas-or); }
+.loin-copie .ico { width: 18px; height: 18px; }
+.loin-copie .dit { display: none; font: 700 13px/1 var(--sans); }
+.copiee .loin-copie .ico { display: none; }
+.copiee .loin-copie .dit { display: block; }
+
+.loin-bande { display: flex; align-items: center; gap: 10px; margin: 10px calc(var(--gouttiere) * -1) 0;
+              padding: 16px var(--gouttiere) 16px; background: var(--lavis-or);
+              box-shadow: inset 0 1.5px 0 var(--atlas-ink); transition: background-color 300ms var(--courbe); }
+.loin-bande-mot { flex: 1; min-width: 0; font-size: 17px; font-weight: 700; line-height: 1.2; color: var(--atlas-ink); }
+.loin-bande .valeur { font-size: 38px; letter-spacing: -0.02em; }
+.loin-bande.credit { background: var(--atlas-carteVertFond); }
+.loin-bande.credit .loin-bande-mot { color: var(--atlas-carteVertTexte); }
+.loin-bande.credit .loin-copie { color: var(--atlas-carteVertTexte); }
+
+.loin-gestes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+.loin-gestes .bouton { flex-direction: column; min-height: 68px; padding: 8px; gap: 4px; font-size: 15.5px; line-height: 1.2; }
+.loin-gestes .ico { width: 22px; height: 22px; color: var(--atlas-rust); }
+
+.loin-titre { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 44px 0 6px; }
+.loin-titre h2 { margin: 0; font: 400 23px/1.2 var(--serif); letter-spacing: -0.005em; }
+.loin-titre span { font-size: 14.5px; color: var(--atlas-inkSoft); white-space: nowrap; }
+
+.loin-l1 { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.loin-nom { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 400 18px/1.3 var(--serif); }
+.loin-l2 { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 3px;
+           font-size: 14px; line-height: 1.4; color: var(--atlas-inkSoft); }
+.loin-l2 > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.loin-ttc { flex: none; white-space: nowrap; font-variant-numeric: tabular-nums lining-nums; }
+
+.loin-attente { padding: 16px 0 12px; box-shadow: inset 0 1px 0 var(--atlas-line); overflow: hidden;
+                transition: height 280ms var(--courbe), opacity 200ms var(--courbe), padding 280ms var(--courbe); }
+.loin-du { flex: none; font: 400 19px/1.2 var(--serif); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.loin-reste { flex: none; text-align: right; }
+.loin-reste small { display: block; font: 400 13.5px/1.3 var(--sans); color: var(--atlas-inkSoft); }
+.loin-reste em { display: block; margin-top: 2px; font: 600 13.5px/1.3 var(--sans); font-style: normal; color: var(--atlas-or); }
+.loin-detail { margin: 4px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.loin-detail b { color: var(--atlas-ink); font-weight: 600; }
+.loin-paye-rang { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
+.loin-paye { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 15px; color: var(--atlas-inkSoft); }
+.loin-moyen { position: relative; display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; color: var(--atlas-ink);
+              text-decoration: underline; text-decoration-color: var(--atlas-or); text-underline-offset: 5px; text-decoration-thickness: 1.5px; }
+.loin-moyen select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; font-size: 16px; cursor: pointer; }
+.loin-moyen:focus-within { outline: 2px solid var(--atlas-or); outline-offset: 2px; border-radius: 4px; }
+.loin-partie { font-size: 15px; }
+.loin-recu { min-height: 52px; font-size: 16px; color: var(--atlas-rust); box-shadow: inset 0 0 0 1.5px var(--atlas-rust); }
+.loin-acompte { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px;
+                font-size: 14px; color: var(--atlas-inkSoft); }
+.loin-acompte b { color: var(--atlas-ink); font-weight: 600; white-space: nowrap; }
+.loin-acompte.retire > span, .loin-acompte.retire > b { text-decoration: line-through; }
+.loin-retirer { width: 44px; height: 44px; flex: none; display: grid; place-items: center; color: var(--atlas-inkSoft); }
+.loin-saisie { margin-top: 12px; padding-top: 12px; box-shadow: inset 0 1px 0 var(--atlas-line); }
+
+.loin-preuves { margin: 0; padding: 0; list-style: none; }
+.loin-preuve { display: block; padding: 13px 0 12px; text-decoration: none; color: inherit; box-shadow: inset 0 1px 0 var(--atlas-line); }
+.loin-preuve .loin-nom { font-size: 17.5px; }
+.loin-tva { flex: none; white-space: nowrap; font: 700 18px/1.2 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-or); }
+.loin-tva small { margin-right: 5px; font: 600 13px/1 var(--sans); letter-spacing: 0.02em; }
+.loin-tva.nulle { font-weight: 400; color: var(--atlas-inkSoft); }
+.loin-pas-encore { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px;
+                   font-size: 14px; color: var(--atlas-inkSoft); }
+.loin-total { display: flex; justify-content: flex-end; align-items: baseline; gap: 14px; padding-top: 13px;
+              box-shadow: inset 0 1.5px 0 var(--atlas-ink); }
+.loin-total span { font-size: 15px; font-weight: 700; }
+.loin-total b { font: 700 23px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-or); }
+.loin-preuve.arrivee { animation: loin-arrivee 1800ms var(--courbe); }
+@keyframes loin-arrivee { from { background: var(--lavis-or); } to { background: transparent; } }
+
+#ecran-loin .pave[aria-current="true"] { background: var(--lavis-or); color: var(--atlas-ink); font-weight: 700; }
+#ecran-loin .pave[aria-current="true"].pave-point::after { background: var(--atlas-or); }
+
+/* Trois onglets au lieu de deux : sur un téléphone, ils tiennent sur une ligne
+   et la charte garde sa pastille, sans son nom, plutôt que de sortir de l'écran. */
+@media (max-width: 480px) {
+  .pl-onglets button { padding: 0 11px; white-space: nowrap; }
+  .pl-charte-bouton { gap: 0; padding: 0 11px; }
+  .pl-charte-nom { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loin-attente, .loin-bande, .loin-mois button { transition: none; }
+  .loin-preuve.arrivee { animation: none; }
+}
 </style>
 </head>
 <body class="pl">
@@ -126,7 +246,7 @@
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">Ma TVA</h1>
-  <p class="pl-verdict">L'écran qui s'ouvre quand on touche Ma TVA, dans Terminés. <b>Même dessin, des mots qui se lisent</b>, et les trois boutons verts à la suite deviennent plus calmes.</p>
+  <p class="pl-verdict">L'écran qui s'ouvre quand on touche Ma TVA, dans Terminés. Deux propositions. <b>Proposé</b> garde le dessin et rend les mots lisibles. <b>Plus loin</b> pose le total sur une bande dorée et resserre chaque ligne.</p>
 </header>
 
 <main class="pl-scene">
@@ -364,6 +484,240 @@
       </div>
     </div>
 
+    <div data-vue-panneau="plus-loin">
+      <p class="pl-legende">Plus loin</p>
+      <div class="pl-etats" data-ecran="#ecran-loin">
+        <button type="button" data-etat="payer" aria-pressed="true">Mois ordinaire</button>
+        <button type="button" data-etat="credit">Mois de gros achat</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" id="ecran-loin" data-etat="payer">
+          <div class="defile">
+            <div class="rang-espace" style="margin-top:4px">
+              <a class="rond-creux" href="termines.html" aria-label="Retour aux chantiers terminés"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <header class="tete" style="margin-bottom:14px">
+              <h1 class="tete-titre">Octobre 2026</h1>
+            </header>
+            <p class="ligne-ma-tva">Ma TVA</p>
+
+            <div class="loin-frise">
+              <button class="frise-annee" type="button" data-ouvre="loin-feuille-annee"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>2026<span class="pastille-rouge" aria-label="1 facture oubliée">1</span></button>
+              <div class="loin-mois" id="loin-mois">
+                <button type="button" data-loin-autre-mois>Juillet</button>
+                <button type="button" data-loin-autre-mois>Août</button>
+                <button type="button" data-loin-autre-mois>Septembre</button>
+                <button type="button" aria-current="true">Octobre</button>
+                <button type="button" data-loin-autre-mois>Novembre</button>
+                <button type="button" data-loin-autre-mois>Décembre</button>
+              </div>
+            </div>
+
+            <div class="rythme">
+              Déclaration <button class="mot-souligne" type="button" id="loin-rythme-mot" aria-expanded="false">mensuelle</button>
+              <button class="mot-souligne rythme-autre" type="button" id="loin-rythme-autre" hidden>trimestrielle</button>
+            </div>
+
+            <section class="loin-addition" aria-label="Le relevé du mois">
+              <div class="loin-terme">
+                <a class="loin-mot" href="termines-tva-collectee.html">TVA collectée</a>
+                <button class="loin-chiffre" type="button" data-loin-copie aria-label="Copier la TVA collectée"><span class="valeur" id="loin-m-collectee">1 392,00 €</span><span class="loin-copie"><svg class="ico" aria-hidden="true"><use href="#i-copier"/></svg><span class="dit">Copié</span></span></button>
+              </div>
+              <div class="loin-terme">
+                <a class="loin-mot" href="termines-tva-deductible.html">TVA déductible</a>
+                <button class="loin-chiffre" type="button" data-loin-copie aria-label="Copier la TVA déductible"><span class="valeur"><span class="moins">−</span><span id="loin-m-deductible">50,00 €</span></span><span class="loin-copie"><svg class="ico" aria-hidden="true"><use href="#i-copier"/></svg><span class="dit">Copié</span></span></button>
+              </div>
+              <div class="loin-bande" id="loin-bande">
+                <span class="loin-bande-mot" id="loin-bande-mot">TVA à payer</span>
+                <button class="loin-chiffre" type="button" data-loin-copie id="loin-bande-copie" aria-label="Copier la TVA à payer"><span class="valeur" id="loin-m-reste">1 342,00 €</span><span class="loin-copie"><svg class="ico" aria-hidden="true"><use href="#i-copier"/></svg><span class="dit">Copié</span></span></button>
+              </div>
+            </section>
+
+            <div class="loin-gestes">
+              <button class="bouton bouton-creux" type="button" data-ouvre="loin-feuille-achat" data-loin-achat="scan"><svg class="ico" aria-hidden="true"><use href="#i-scanner"/></svg>Scanner un ticket</button>
+              <button class="bouton bouton-creux" type="button" data-ouvre="loin-feuille-achat" data-loin-achat="main"><svg class="ico" aria-hidden="true"><use href="#i-crayon"/></svg>Écrire à la main</button>
+            </div>
+
+            <div class="loin-titre"><h2>Factures en attente</h2><span id="loin-compte-attente">3 factures</span></div>
+
+            <article class="loin-attente" data-loin-tva="52.00" data-loin-ttc="312,00 €" data-loin-nom="M. Bernard" data-loin-num="F2026-000013">
+              <div class="loin-l1"><span class="loin-nom">M. Bernard</span><span class="loin-du">312,00 €</span></div>
+              <p class="loin-detail">F2026-000013, émise le 17/10. Ouverte le <b>18/10</b>.</p>
+              <div class="loin-paye-rang">
+                <label class="loin-paye">Payé par <span class="loin-moyen"><span class="mot">virement</span><select aria-label="Moyen de paiement"><option value="virement">Virement</option><option value="chèque">Chèque</option><option value="espèces">Espèces</option><option value="carte">Carte</option></select></span></label>
+                <button class="bouton-texte loin-partie" type="button" data-loin-partie>J'ai reçu une partie</button>
+              </div>
+              <div class="loin-saisie" hidden>
+                <div class="deux-colonnes">
+                  <label class="champ" style="margin:0"><span class="champ-libelle">Payé le</span><input class="champ-saisie" value="25/10/2026" inputmode="numeric"></label>
+                  <label class="champ" style="margin:0"><span class="champ-libelle">Montant reçu</span><input class="champ-saisie" placeholder="0,00 €" inputmode="decimal"></label>
+                </div>
+                <button class="bouton bouton-creux mt-16" type="button" data-loin-partie-ok>Enregistrer ce règlement</button>
+                <p class="discret centre" style="margin:8px 0 0">Seule la part reçue entre au relevé.</p>
+              </div>
+              <button class="bouton bouton-creux loin-recu" type="button" data-loin-recu><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>J'ai reçu le paiement</button>
+            </article>
+
+            <article class="loin-attente" data-loin-tva="246.00" data-loin-ttc="1 476,00 €" data-loin-nom="Mme Garnier" data-loin-num="F2026-000012">
+              <div class="loin-l1"><span class="loin-nom">Mme Garnier</span><span class="loin-reste"><small>Reste à payer</small><span class="loin-du">1 476,00 €</span><em>Sur les 1 776,00 €</em></span></div>
+              <p class="loin-detail">F2026-000012, émise le 14/10. Ouverte le <b>15/10</b>.</p>
+              <div class="loin-acompte"><span>Acompte payé le 09/10/2026 par virement</span><b>300,00 €</b><button class="loin-retirer" type="button" data-loin-retirer aria-label="Retirer cet acompte"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button></div>
+              <div class="loin-paye-rang">
+                <label class="loin-paye">Payé par <span class="loin-moyen"><span class="mot">virement</span><select aria-label="Moyen de paiement"><option value="virement">Virement</option><option value="chèque">Chèque</option><option value="espèces">Espèces</option><option value="carte">Carte</option></select></span></label>
+                <button class="bouton-texte loin-partie" type="button" data-loin-partie>J'ai reçu une partie</button>
+              </div>
+              <div class="loin-saisie" hidden>
+                <div class="deux-colonnes">
+                  <label class="champ" style="margin:0"><span class="champ-libelle">Payé le</span><input class="champ-saisie" value="25/10/2026" inputmode="numeric"></label>
+                  <label class="champ" style="margin:0"><span class="champ-libelle">Montant reçu</span><input class="champ-saisie" placeholder="0,00 €" inputmode="decimal"></label>
+                </div>
+                <button class="bouton bouton-creux mt-16" type="button" data-loin-partie-ok>Enregistrer ce règlement</button>
+                <p class="discret centre" style="margin:8px 0 0">Seule la part reçue entre au relevé.</p>
+              </div>
+              <button class="bouton bouton-creux loin-recu" type="button" data-loin-recu><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>J'ai reçu le paiement</button>
+            </article>
+
+            <article class="loin-attente" data-loin-tva="90.00" data-loin-ttc="540,00 €" data-loin-nom="Mme Garnier" data-loin-num="F2026-000007">
+              <div class="loin-l1"><span class="loin-nom">Mme Garnier</span><span class="loin-du">540,00 €</span></div>
+              <p class="loin-detail">F2026-000007, émise le 28/08. Pas encore ouverte.</p>
+              <div class="loin-paye-rang">
+                <label class="loin-paye">Payé par <span class="loin-moyen"><span class="mot">virement</span><select aria-label="Moyen de paiement"><option value="virement">Virement</option><option value="chèque">Chèque</option><option value="espèces">Espèces</option><option value="carte">Carte</option></select></span></label>
+                <button class="bouton-texte loin-partie" type="button" data-loin-partie>J'ai reçu une partie</button>
+              </div>
+              <div class="loin-saisie" hidden>
+                <div class="deux-colonnes">
+                  <label class="champ" style="margin:0"><span class="champ-libelle">Payé le</span><input class="champ-saisie" value="25/10/2026" inputmode="numeric"></label>
+                  <label class="champ" style="margin:0"><span class="champ-libelle">Montant reçu</span><input class="champ-saisie" placeholder="0,00 €" inputmode="decimal"></label>
+                </div>
+                <button class="bouton bouton-creux mt-16" type="button" data-loin-partie-ok>Enregistrer ce règlement</button>
+                <p class="discret centre" style="margin:8px 0 0">Seule la part reçue entre au relevé.</p>
+              </div>
+              <button class="bouton bouton-creux loin-recu" type="button" data-loin-recu><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>J'ai reçu le paiement</button>
+            </article>
+            <div id="loin-rentrees"></div>
+            <p class="second" id="loin-tout-regle" hidden>Tout est réglé. Rien n'attend son paiement.</p>
+
+            <div class="loin-titre"><h2>TVA collectée</h2><span id="loin-compte-collectee">5 règlements</span></div>
+            <ul class="loin-preuves" id="loin-preuves-collectee">
+              <li><a class="loin-preuve" href="client-recoit-facture.html">
+                <span class="loin-l1"><span class="loin-nom">Mme Costa</span><span class="loin-tva"><small>TVA</small>144,00 €</span></span>
+                <span class="loin-l2"><span>F2026-000014, reçu le 23/10</span><span class="loin-ttc">864,00 € TTC</span></span>
+              </a></li>
+              <li><a class="loin-preuve" href="client-recoit-facture.html">
+                <span class="loin-l1"><span class="loin-nom">M. Faucher</span><span class="loin-tva"><small>TVA</small>490,00 €</span></span>
+                <span class="loin-l2"><span>F2026-000011, reçu le 15/10</span><span class="loin-ttc">2 940,00 € TTC</span></span>
+              </a></li>
+              <li><a class="loin-preuve" href="client-recoit-facture.html">
+                <span class="loin-l1"><span class="loin-nom">Mme Garnier</span><span class="loin-tva"><small>TVA</small>50,00 €</span></span>
+                <span class="loin-l2"><span>F2026-000012, reçu le 09/10</span><span class="loin-ttc">300,00 € TTC</span></span>
+              </a></li>
+              <li><a class="loin-preuve" href="client-recoit-facture.html">
+                <span class="loin-l1"><span class="loin-nom">M. et Mme Roux</span><span class="loin-tva"><small>TVA</small>70,00 €</span></span>
+                <span class="loin-l2"><span>F2026-000010, reçu le 08/10</span><span class="loin-ttc">420,00 € TTC</span></span>
+              </a></li>
+              <li><a class="loin-preuve" href="client-recoit-facture.html">
+                <span class="loin-l1"><span class="loin-nom">Mairie de Saint-Sylvain</span><span class="loin-tva"><small>TVA</small>638,00 €</span></span>
+                <span class="loin-l2"><span>F2026-000009, reçu le 02/10</span><span class="loin-ttc">3 828,00 € TTC</span></span>
+              </a></li>
+            </ul>
+            <div class="loin-total"><span>Total collectée</span><b id="loin-total-collectee">1 392,00 €</b></div>
+
+            <div class="loin-titre"><h2>TVA déductible</h2><span id="loin-compte-achats">3 achats</span></div>
+            <ul class="loin-preuves">
+              <li data-si-etat="credit" hidden><div class="loin-preuve">
+                <span class="loin-l1"><span class="loin-nom">Motoculture du Maine</span><span class="loin-tva"><small>TVA</small>1 650,00 €</span></span>
+                <span class="loin-l2"><span>16 octobre, matériel</span><span class="loin-ttc">9 900,00 € TTC</span></span>
+              </div></li>
+              <li><div class="loin-preuve">
+                <span class="loin-l1"><span class="loin-nom">Le Relais du Lac</span><span class="loin-tva nulle"><small>TVA</small>12,00 €</span></span>
+                <span class="loin-l2"><span>22 octobre, repas d'affaires</span><span class="loin-ttc">72,00 € TTC</span></span>
+                <span class="loin-pas-encore"><span>Pas encore comptée</span><button class="bouton bouton-creux bouton-petit or" type="button" data-ouvre="loin-feuille-repas">Compléter</button></span>
+              </div></li>
+              <li><div class="loin-preuve">
+                <span class="loin-l1"><span class="loin-nom">Jardinerie du Centre</span><span class="loin-tva"><small>TVA</small>40,00 €</span></span>
+                <span class="loin-l2"><span>19 octobre, matériel</span><span class="loin-ttc">240,00 € TTC</span></span>
+              </div></li>
+              <li><div class="loin-preuve">
+                <span class="loin-l1"><span class="loin-nom">Station Total, Angers</span><span class="loin-tva"><small>TVA</small>10,00 €</span></span>
+                <span class="loin-l2"><span>12 octobre, carburant d'un utilitaire</span><span class="loin-ttc">60,00 € TTC</span></span>
+              </div></li>
+            </ul>
+            <div class="loin-total"><span>Total déductible</span><b id="loin-total-deductible">50,00 €</b></div>
+
+            <p class="mention">Ce relevé est préparé par Atlas à partir de vos règlements. Il ne vaut pas déclaration : celle-ci reste à faire par votre outil comptable.</p>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html" aria-current="page">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+
+          <section class="feuille" id="loin-feuille-annee" aria-hidden="true" aria-label="Choisir le mois">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <div class="annee-tete">
+                <button class="mois-fleche rond-creux" type="button" aria-label="Année précédente"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                <strong>2026</strong>
+                <button class="rond-creux" type="button" aria-label="Année suivante" disabled style="opacity:.35"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>
+              </div>
+              <div class="paves">
+                <button class="pave" type="button" data-ferme>Janvier</button><button class="pave" type="button" data-ferme>Février</button><button class="pave" type="button" data-ferme>Mars</button>
+                <button class="pave" type="button" data-ferme>Avril</button><button class="pave" type="button" data-ferme>Mai</button><button class="pave" type="button" data-ferme>Juin</button>
+                <button class="pave" type="button" data-ferme>Juillet</button><button class="pave" type="button" data-ferme>Août<span class="pastille-rouge" aria-label="1 facture en attente">1</span></button><button class="pave" type="button" data-ferme>Septembre</button>
+                <button class="pave pave-point" type="button" aria-current="true" data-ferme>Octobre</button><button class="pave" type="button" data-ferme>Novembre</button><button class="pave" type="button" data-ferme>Décembre</button>
+              </div>
+              <button class="bouton bouton-texte mt-16" type="button" data-ferme style="width:100%;justify-content:center">Revenir à la période en cours</button>
+              <button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+            </div>
+          </section>
+
+          <section class="feuille" id="loin-feuille-achat" aria-hidden="true" aria-label="Un achat">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre" id="loin-achat-titre">Écrire un achat</h2>
+              <label class="champ"><span class="champ-libelle">Où</span><input class="champ-saisie" id="loin-achat-ou" placeholder="Station, magasin…"></label>
+              <label class="champ"><span class="champ-libelle">Date</span><input class="champ-saisie" value="25/10/2026" inputmode="numeric"></label>
+              <div class="champ"><span class="champ-libelle">Quoi</span>
+                <div class="puces" id="loin-achat-quoi"><button type="button" aria-pressed="false">Carburant</button><button type="button" aria-pressed="false">Matériel</button><button type="button" aria-pressed="false">Repas</button><button type="button" aria-pressed="false">Hôtel</button><button type="button" aria-pressed="false">Train, taxi</button><button type="button" aria-pressed="false">Autre</button></div>
+              </div>
+              <div class="deux-colonnes">
+                <label class="champ"><span class="champ-libelle">Total payé</span><input class="champ-saisie" id="loin-achat-total" placeholder="0,00 €" inputmode="decimal"></label>
+                <label class="champ"><span class="champ-libelle">Taux</span><input class="champ-saisie" value="20 %" inputmode="decimal"></label>
+              </div>
+              <label class="champ"><span class="champ-libelle">TVA du ticket</span><input class="champ-saisie" id="loin-achat-tva" placeholder="calculée"></label>
+              <p class="encadre-or" id="loin-achat-lu" hidden>Ticket lu. Vérifiez les montants avant d'ajouter. Gardez le papier, la photo ne le remplace pas.</p>
+              <div class="pile mt-24">
+                <button class="bouton bouton-plein" type="button" data-ferme>Ajouter aux achats</button>
+                <button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="feuille" id="loin-feuille-repas" aria-hidden="true" aria-label="Repas d'affaires">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Repas d'affaires</h2>
+              <label class="champ"><span class="champ-libelle">Avec qui</span><input class="champ-saisie" placeholder="M. Durand, Durand Immobilier"></label>
+              <label class="champ"><span class="champ-libelle">Pourquoi</span><input class="champ-saisie" placeholder="Devis du jardin"></label>
+              <label class="coche"><input type="checkbox">Le nom et l'adresse de mon entreprise sont écrits sur la note.</label>
+              <p class="second mt-16">Tant qu'il manque une preuve, sa TVA ne compte pas.</p>
+              <div class="pile mt-16">
+                <button class="bouton bouton-plein" type="button" data-ferme>Enregistrer</button>
+                <button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
     <div data-vue-panneau="aujourdhui">
       <p class="pl-legende">Aujourd'hui</p>
       <div class="cadre">
@@ -387,6 +741,15 @@
       <li>Le mois en titre, la frise, l'addition alignée à droite et le total le plus grand.</li>
       <li>Scanner un ticket et Écrire à la main sous le total, les factures en attente avant les preuves.</li>
       <li>Payé par, J'ai reçu une partie, l'acompte et sa croix, et la phrase du bas.</li>
+    </ul>
+    <h2>Plus loin, en plus</h2>
+    <ul>
+      <li>Le total se lit sur une bande dorée, d'un bord à l'autre. Un mois de gros achat, elle passe au vert et dit « Crédit de TVA ».</li>
+      <li>Le mois regardé se pose sur une pastille dorée.</li>
+      <li>Une facture ou un achat tient en deux lignes : le nom et sa TVA, puis le numéro et le TTC. Les TVA dorées tombent en colonne sur leur total.</li>
+      <li>« Payé par virement » se lit comme une phrase, et le mot se touche.</li>
+      <li>Plus de cadre autour des factures en attente : un trait les sépare.</li>
+      <li>Un paiement reçu fait monter le chiffre, et sa ligne entre dans TVA collectée.</li>
     </ul>
   </section>
 </main>
@@ -478,6 +841,159 @@
     document.querySelectorAll("#achat-quoi button").forEach(function (b) {
       b.addEventListener("click", function () {
         document.querySelectorAll("#achat-quoi button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      });
+    });
+  })();
+</script>
+<script>
+  /* PLUS LOIN : ses propres gestes, rangés sous son écran, pour ne jamais
+     toucher à ceux de Proposé, qui vivent dans la même page. */
+  (function () {
+    var ecran = document.getElementById("ecran-loin");
+    var $ = function (id) { return document.getElementById(id); };
+    var euros = function (n) {
+      return n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/[  ]/g, " ") + " €";
+    };
+    var calme = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var collectee = 1392, achats = 50, grosAchat = 1650, etat = "payer";
+    var affiches = { collectee: 1392, reste: 1342 };
+
+    /* Le seul mouvement de l'écran : le chiffre monte jusqu'à sa valeur, vite,
+       et se pose. Il dit qu'un paiement vient d'entrer, rien de plus. */
+    function monter(cle, el, vers) {
+      var depuis = affiches[cle];
+      affiches[cle] = vers;
+      if (calme || depuis === vers) { el.textContent = euros(Math.abs(vers)); return; }
+      var t0 = performance.now(), duree = 650;
+      (function pas(t) {
+        var k = Math.min(1, (t - t0) / duree), e = 1 - Math.pow(2, -10 * k);
+        el.textContent = euros(Math.abs(depuis + (vers - depuis) * (k === 1 ? 1 : e)));
+        if (k < 1) requestAnimationFrame(pas);
+      })(t0);
+    }
+
+    function poser(anime) {
+      var deductible = achats + (etat === "credit" ? grosAchat : 0);
+      var reste = collectee - deductible;
+      if (anime) monter("collectee", $("loin-m-collectee"), collectee);
+      else { affiches.collectee = collectee; $("loin-m-collectee").textContent = euros(collectee); }
+      $("loin-m-deductible").textContent = euros(deductible);
+      $("loin-total-collectee").textContent = euros(collectee);
+      $("loin-total-deductible").textContent = euros(deductible);
+      $("loin-compte-achats").textContent = (etat === "credit" ? 4 : 3) + " achats";
+      /* Le reste peut passer sous zéro : c'est le MOT qui change, jamais un
+         moins devant le chiffre (sa planche du 12 septembre). */
+      var credit = reste < 0;
+      $("loin-bande").classList.toggle("credit", credit);
+      $("loin-bande-mot").textContent = credit ? "Crédit de TVA" : "TVA à payer";
+      $("loin-bande-copie").setAttribute("aria-label", credit ? "Copier le crédit de TVA" : "Copier la TVA à payer");
+      if (anime) monter("reste", $("loin-m-reste"), reste);
+      else { affiches.reste = reste; $("loin-m-reste").textContent = euros(Math.abs(reste)); }
+    }
+
+    /* Les deux mois de la planche : un mois ordinaire, un mois de gros achat. */
+    document.querySelectorAll(".pl-etats[data-ecran='#ecran-loin'] button[data-etat]").forEach(function (b) {
+      b.addEventListener("click", function () { etat = b.getAttribute("data-etat"); poser(false); });
+    });
+
+    /* La frise se pose sur le mois regardé. */
+    var frise = $("loin-mois");
+    var courant = frise.querySelector("[aria-current='true']");
+    var a = frise.getBoundingClientRect(), c = courant.getBoundingClientRect();
+    frise.scrollLeft += (c.left + c.width / 2) - (a.left + a.width / 2);
+    frise.querySelectorAll("[data-loin-autre-mois]").forEach(function (b) {
+      b.addEventListener("click", function () { Kit.note(ecran, "Sur la planche, seul octobre est rempli."); });
+    });
+
+    var mot = $("loin-rythme-mot"), autre = $("loin-rythme-autre");
+    mot.addEventListener("click", function () { autre.hidden = !autre.hidden; mot.setAttribute("aria-expanded", String(!autre.hidden)); });
+    autre.addEventListener("click", function () {
+      var x = mot.textContent; mot.textContent = autre.textContent; autre.textContent = x; autre.hidden = true;
+      mot.setAttribute("aria-expanded", "false");
+    });
+
+    /* Toucher un chiffre le copie, et l'écran dit « Copié » à la place du signe. */
+    ecran.querySelectorAll("[data-loin-copie]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var texte = b.querySelector(".valeur").textContent.replace("−", "").trim();
+        /* La planche n'a pas toujours le droit d'écrire dans le presse-papiers : le refus ne casse rien. */
+        if (navigator.clipboard) navigator.clipboard.writeText(texte).catch(function () { return null; });
+        b.classList.add("copiee");
+        setTimeout(function () { b.classList.remove("copiee"); }, 1600);
+      });
+    });
+
+    /* Payé par : le mot suit le choix fait dans la roue du téléphone. */
+    ecran.querySelectorAll(".loin-moyen select").forEach(function (s) {
+      s.addEventListener("change", function () { s.parentNode.querySelector(".mot").textContent = s.value; });
+    });
+
+    /* J'ai reçu le paiement : la facture se referme, sa TVA monte dans le
+       relevé, et sa ligne entre en tête de TVA collectée. */
+    ecran.querySelectorAll("[data-loin-recu]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var f = b.closest(".loin-attente");
+        var tva = parseFloat(f.getAttribute("data-loin-tva"));
+        var nom = f.getAttribute("data-loin-nom"), ttc = f.getAttribute("data-loin-ttc");
+        collectee += tva;
+        poser(true);
+
+        var li = document.createElement("li");
+        li.innerHTML = '<a class="loin-preuve arrivee" href="client-recoit-facture.html">' +
+          '<span class="loin-l1"><span class="loin-nom"></span><span class="loin-tva"><small>TVA</small>' + euros(tva) + '</span></span>' +
+          '<span class="loin-l2"><span>' + f.getAttribute("data-loin-num") + ', reçu le 25/10</span><span class="loin-ttc">' + ttc + ' TTC</span></span></a>';
+        li.querySelector(".loin-nom").textContent = nom;
+        $("loin-preuves-collectee").insertBefore(li, $("loin-preuves-collectee").firstChild);
+        var n = $("loin-preuves-collectee").children.length;
+        $("loin-compte-collectee").textContent = n + " règlements";
+
+        var p = document.createElement("p");
+        p.className = "rentree";
+        p.textContent = nom + ", " + ttc + " est rentrée au relevé.";
+        $("loin-rentrees").appendChild(p);
+
+        f.style.height = f.offsetHeight + "px";
+        requestAnimationFrame(function () {
+          f.style.height = "0px"; f.style.paddingTop = "0px"; f.style.paddingBottom = "0px"; f.style.opacity = "0";
+        });
+        setTimeout(function () {
+          f.remove();
+          var reste = ecran.querySelectorAll(".loin-attente").length;
+          $("loin-compte-attente").textContent = reste ? reste + (reste > 1 ? " factures" : " facture") : "rien";
+          $("loin-tout-regle").hidden = reste > 0;
+        }, calme ? 0 : 300);
+      });
+    });
+    ecran.querySelectorAll("[data-loin-partie]").forEach(function (b) {
+      b.addEventListener("click", function () { var s = b.closest(".loin-attente").querySelector(".loin-saisie"); s.hidden = !s.hidden; });
+    });
+    ecran.querySelectorAll("[data-loin-partie-ok]").forEach(function (b) {
+      b.addEventListener("click", function () { b.closest(".loin-saisie").hidden = true; Kit.note(ecran, "Règlement noté."); });
+    });
+    ecran.querySelectorAll("[data-loin-retirer]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var ligne = b.closest(".loin-acompte");
+        var retire = ligne.classList.toggle("retire");
+        b.setAttribute("aria-label", retire ? "Remettre cet acompte" : "Retirer cet acompte");
+        if (retire) Kit.note(ecran, "Acompte retiré. Touchez la croix pour le remettre.");
+      });
+    });
+
+    /* Scanner pré-remplit la feuille ; à la main, elle s'ouvre vide. */
+    ecran.querySelectorAll("[data-loin-achat]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var scan = b.getAttribute("data-loin-achat") === "scan";
+        $("loin-achat-titre").textContent = scan ? "Ticket photographié" : "Écrire un achat";
+        $("loin-achat-ou").value = scan ? "Station Total, Angers" : "";
+        $("loin-achat-total").value = scan ? "48,00 €" : "";
+        $("loin-achat-tva").value = scan ? "8,00 €" : "";
+        $("loin-achat-lu").hidden = !scan;
+        $("loin-achat-quoi").querySelectorAll("button").forEach(function (x, i) { x.setAttribute("aria-pressed", scan && i === 0 ? "true" : "false"); });
+      });
+    });
+    $("loin-achat-quoi").querySelectorAll("button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        $("loin-achat-quoi").querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
       });
     });
   })();
