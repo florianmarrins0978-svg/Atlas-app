@@ -55,6 +55,14 @@ essai("le croquis : la cadence passe AVANT la porte des images et l'appel de vis
   cadenceAvant("src/app/paysage/arrosage/actions.ts", "croquis:", "preparerPhotoEntrante(");
 });
 
+// **Audit du 25 octobre 2026, E17** : choisir le nouveau mot de passe hachait
+// (bcrypt, le geste le plus coûteux du serveur) avant de vérifier le jeton, et
+// rien ne bornait les essais. Une adresse connue et un jeton inventé suffisaient
+// à faire travailler le serveur en boucle.
+essai("mot de passe oublié : la cadence passe AVANT le hachage du nouveau mot de passe", () => {
+  cadenceAvant("src/app/mot-de-passe-oublie/actions.ts", "mot-de-passe-oublie:choisir:", "poserLeNouveauMotDePasse(");
+});
+
 essai("réponse au devis, source ÉTABLIE : le seuil du lien ET celui de la source", () => {
   const seuils = seuilsDeLaReponseAuDevis("jeton-a", "ip:203.0.113.7");
   assert.deepEqual(seuils.map((s) => s.quel), ["jeton", "source"]);

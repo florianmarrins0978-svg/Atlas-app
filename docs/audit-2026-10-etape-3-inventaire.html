@@ -75,7 +75,7 @@
 <td><strong>E1</strong></td>
 <td>La clé qui signe les sessions de ton espace (<code>AUTH_SECRET</code>) est écrite dans le dépôt public (<code>.devcontainer/docker-compose.yml</code>). Avec elle, on fabrique un cookie de connexion ; elle chiffre aussi les mots de passe d'agenda Apple et les codes de double vérification. Il faut en plus l'identifiant interne d'un compte, impossible à deviner, et l'adresse de ton espace, qui figure dans chaque lien de devis envoyé</td>
 <td><strong>élevée</strong></td>
-<td>confirmé, lot à part (te déconnecte une fois)</td>
+<td><strong>corrigé le 25 octobre</strong> : une clé propre à ton espace, tes secrets re-chiffrés. Une déconnexion au prochain allumage</td>
 </tr>
 <tr>
 <td><strong>E2</strong></td>
@@ -123,7 +123,7 @@
 <td><strong>E9</strong></td>
 <td>Droits de la base plus larges que le besoin : l'application peut écrire le registre des migrations, les conditions générales, supprimer une entreprise entière</td>
 <td>moyenne (défense en profondeur)</td>
-<td>vague 3</td>
+<td><strong>corrigé le 25 octobre</strong> (migration 0147)</td>
 </tr>
 <tr>
 <td><strong>E10</strong></td>
@@ -165,13 +165,13 @@
 <td><strong>E16</strong></td>
 <td><code>/api/health/diagnostic</code> et <code>/api/health/banc</code> répondent sans compte (en-têtes reçus, version servie)</td>
 <td>faible</td>
-<td>vague 3</td>
+<td><strong>gardé tel quel, délibérément</strong> : la page sert quand on ne peut pas se connecter, et ne porte aucun secret</td>
 </tr>
 <tr>
 <td><strong>E17</strong></td>
 <td>Petits défauts : <code>choisirLeMotDePasse</code> sans cadence, une adresse e-mail se devine par le mot de passe oublié, un GET qui écrit, un 500 au lieu d'un refus</td>
 <td>faible</td>
-<td>vague 3</td>
+<td><strong>mot de passe oublié borné le 25 octobre</strong> ; le reste en vague 3</td>
 </tr>
 </tbody></table></div>
 <h2 id="ce-qui-a-été-vérifié-et-qui-tient">Ce qui a été vérifié et qui tient</h2>

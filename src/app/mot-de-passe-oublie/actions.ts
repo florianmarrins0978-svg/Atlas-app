@@ -50,6 +50,13 @@ export async function choisirLeMotDePasseAction(
   confirmation: string
 ): Promise<{ ok: false; refus: string; recommencer: boolean }> {
   const email = adresse(saisie);
+  // **Bornée PAR ADRESSE, avant le hachage** (audit du 25 octobre 2026, E17) :
+  // le nouveau mot de passe se hache avant que le jeton soit vérifié en base,
+  // et le hachage est le geste le plus coûteux du serveur. Par adresse et non
+  // par source : sans source établie, un seuil par source serait commun à
+  // tous, et un inconnu bloquerait le mot de passe oublié du monde entier.
+  const limite = await verifierLimite(`mot-de-passe-oublie:choisir:${email}`, LIMITES.motDePasseOublie);
+  if (!limite.autorise) return { ok: false, refus: limite.message, recommencer: false };
   const pose = await poserLeNouveauMotDePasse(email, jeton, nouveau, confirmation);
   if (!pose.ok) {
     return pose.refus === "jeton-mort"

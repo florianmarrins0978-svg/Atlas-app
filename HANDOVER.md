@@ -10,6 +10,11 @@ qui propose le client, et les suites d'outillage qui se taisent sur son PC
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## LA CLÉ DE SESSION DE SON ESPACE LUI EST PROPRE (25 octobre 2026)
+
+`banc.mjs` lance le serveur avec la clé de `/workspaces/.atlas-secrets/auth-secret`, créée et re-chiffrée par `scripts/secret-de-l-espace.ts`. **Les pièges :** ne jamais effacer un fichier de ce dossier (une clé perdue rend ses secrets illisibles) ; un `npm run dev` lancé à la main sur son espace tourne encore sous l'ancienne clé du dépôt. `ARCHITECTURE.md` §503.
+
+---
 ## UNE ÉCRITURE NE PREND QUE LES CHAMPS QU'ELLE NOMME (25 octobre 2026)
 
 **Le piège :** un `.set({ ...data })` sur un objet venu d'une action serveur écrit toute colonne dont la clé porte le nom. Passer par `seulement(data, [...])` (`src/lib/champs-permis.ts`). Et la garde d'une action passe avant tout aiguillage (`test-actions-gardees-db.ts`). `ARCHITECTURE.md` §502 ; l'inventaire complet est dans `docs/audit-2026-10-etape-3-inventaire.md`.

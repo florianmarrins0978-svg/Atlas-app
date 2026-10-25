@@ -36018,3 +36018,19 @@ retirée, et `test-papier-facture-db.ts` avec elle.
 
 **Ce qui le tient** : `test-roles-dans-l-entreprise-db.ts`, onze cas sous le vrai rôle, chacun vu rouge contre l'ancien code. **Reste à mesurer** : la garde des pages, posée dans le gabarit racine que Next.js ne rejoue pas à la navigation interne (E8).
 
+## §503 : La clé de session de son espace lui est propre, et ses secrets la suivent
+
+*25 octobre 2026, audit de sécurité, vague 3 (E1, E9, E17).*
+
+**E1. La clé.** `AUTH_SECRET` signe les cookies de session et dérive la clé qui chiffre les secrets au repos (jetons Google, mot de passe d'agenda Apple, secret de double vérification). Sur son espace, elle venait de `.devcontainer/docker-compose.yml`, dans un dépôt public, et le port 3000 est public. `scripts/secret-de-l-espace.ts` crée une clé de 48 octets aléatoires dans le dossier parent du dépôt principal (`/workspaces/.atlas-secrets/auth-secret`, mode 600 : commune à ses dossiers de session, hors de tout `git`), et `banc.mjs` la pose dans `AUTH_SECRET` avant de lancer le serveur. Le serveur bâti la lit au démarrage, pas à la construction (vérifié : connexion réussie sous une clé différente de celle de la construction).
+
+**L'ordre protège ses données.** La clé neuve s'écrit d'abord à côté (`.en-cours`) ; tout se re-chiffre dans une transaction, sous l'ancienne et la neuve (`src/lib/chiffre-au-repos.ts`, la règle sortie du serveur pour prendre la clé en paramètre) ; puis le fichier prend sa place. Une panne entre les deux est tranchée au passage suivant en essayant TOUS les secrets (le premier venu peut être un secret déjà illisible, et jeter la bonne clé rendrait le reste illisible pour toujours : défaut trouvé par le test pendant ce lot). Une clé écartée est mise de côté (`.ecartee-…`), jamais effacée. Base injoignable : rien ne change, nouvel essai au prochain allumage.
+
+**Ce qui reste vrai.** `docker-compose.yml` porte toujours l'ancienne valeur : elle ne sert plus qu'aux processus lancés à la main (`npm run dev`), qui liraient alors ses secrets comme absents sans les détruire. `CRON_SECRET` y est aussi public (`TODO.md`). Un ancien serveur encore debout pendant la rotation pourrait réécrire un jeton sous l'ancienne clé : l'agenda se rebrancherait d'un geste.
+
+**E9. Les droits.** Migration 0147 : `atlas_app` ne peut plus écrire `_migrations` ni `documents_legaux`, ni supprimer une `entreprises` (cascade sur soixante-dix tables que la RLS ne retient pas). Le code n'en faisait aucun usage. `test-droits-de-l-application-db.ts`.
+
+**E17.** `choisirLeMotDePasseAction` hache avant que le jeton soit vérifié en base : il est borné par adresse, avant le hachage (`test-cadences-gardees.ts`).
+
+**E16, refusé.** `/api/health/diagnostic` reste ouvert sans compte : il sert justement quand on ne peut pas se connecter, et `test-diagnostic-sans-secret.ts` vérifie déjà qu'il ne porte aucun secret.
+

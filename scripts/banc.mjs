@@ -932,6 +932,25 @@ async function annoncerDesQueCaRepond(bati, davant = false) {
 // Ne coûte rien quand tout va bien : deux `package.json` lus, aucune commande.
 await reinstallerSiDesaccordees();
 
+// **La clé de session DE SON ESPACE, jamais celle du dépôt** (audit du
+// 25 octobre 2026, E1). `AUTH_SECRET` venait de `docker-compose.yml`, écrit en
+// clair dans un dépôt public, sur un port public : la connaître suffisait à
+// fabriquer un cookie de session. `secret-de-l-espace.ts` crée une clé propre à
+// l'espace et re-chiffre ses secrets avant qu'elle serve ; il rend le chemin du
+// fichier, jamais la clé. S'il échoue (base pas encore debout), l'ancienne clé
+// continue de servir et l'on retentera au prochain allumage : un banc qui ne
+// démarre plus ferait pire que la faille.
+try {
+  const chemin = execFileSync(process.execPath, ["node_modules/tsx/dist/cli.mjs", "scripts/secret-de-l-espace.ts", "--chemin"], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "inherit"],
+  }).trim();
+  const cle = chemin && existsSync(chemin) ? readFileSync(chemin, "utf8").trim() : "";
+  if (cle) process.env.AUTH_SECRET = cle;
+} catch (erreur) {
+  console.error(`⚠ Clé de l'espace non posée (${erreur instanceof Error ? erreur.message.split("\n")[0] : erreur}) : l'ancienne sert encore.`);
+}
+
 let serveur = modeDeveloppement ? lancerDev() : lancerBati();
 let enBascule = false;
 // Ce qui SERT réellement, à cet instant — pas ce qu'on espérait servir. La

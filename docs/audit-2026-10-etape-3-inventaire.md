@@ -12,7 +12,7 @@
 
 | # | Faille | Gravité | État |
 |---|---|---|---|
-| **E1** | La clé qui signe les sessions de ton espace (`AUTH_SECRET`) est écrite dans le dépôt public (`.devcontainer/docker-compose.yml`). Avec elle, on fabrique un cookie de connexion ; elle chiffre aussi les mots de passe d'agenda Apple et les codes de double vérification. Il faut en plus l'identifiant interne d'un compte, impossible à deviner, et l'adresse de ton espace, qui figure dans chaque lien de devis envoyé | **élevée** | confirmé, lot à part (te déconnecte une fois) |
+| **E1** | La clé qui signe les sessions de ton espace (`AUTH_SECRET`) est écrite dans le dépôt public (`.devcontainer/docker-compose.yml`). Avec elle, on fabrique un cookie de connexion ; elle chiffre aussi les mots de passe d'agenda Apple et les codes de double vérification. Il faut en plus l'identifiant interne d'un compte, impossible à deviner, et l'adresse de ton espace, qui figure dans chaque lien de devis envoyé | **élevée** | **corrigé le 25 octobre** : une clé propre à ton espace, tes secrets re-chiffrés. Une déconnexion au prochain allumage |
 | **E2** | Un commercial ou la facturation réécrit l'identité de l'entreprise et son **IBAN** depuis l'écran du devis : l'action accepte n'importe quel champ, et la preuve d'identité se fait avec SON propre mot de passe | **élevée** | **corrigé le 25 octobre** |
 | **E3** | N'importe quel rôle, salarié compris, pose une **remise** sur le devis de n'importe quel chantier : la branche « réduction » des retouches n'a aucune garde | **élevée** | **corrigé le 25 octobre** |
 | **E4** | « Durée et équipe » d'un chantier accepte n'importe quelle colonne du chantier (date planifiée, autoliquidation, dates de facture…) | **élevée** | **reproduit, corrigé le 25 octobre** |
@@ -20,15 +20,15 @@
 | **E6** | Un salarié peut effacer une photo d'un chantier qui n'est pas le sien, par la fiche de sécurité | moyenne | **reproduit, corrigé le 25 octobre** |
 | **E7** | Deux autres écritures acceptent des champs en trop (client du devis, lignes de prix : déplacer une ligne vers un autre chantier) | moyenne | **corrigé le 25 octobre** |
 | **E8** | La garde des rôles des PAGES vit dans le gabarit racine, que Next.js ne rejoue pas à la navigation interne : un commercial pourrait recevoir les données d'une page qui lui est fermée | à mesurer | à reproduire avant de conclure |
-| **E9** | Droits de la base plus larges que le besoin : l'application peut écrire le registre des migrations, les conditions générales, supprimer une entreprise entière | moyenne (défense en profondeur) | vague 3 |
+| **E9** | Droits de la base plus larges que le besoin : l'application peut écrire le registre des migrations, les conditions générales, supprimer une entreprise entière | moyenne (défense en profondeur) | **corrigé le 25 octobre** (migration 0147) |
 | **E10** | Liens entre tables non composites (paiement et facture, acompte et devis…) : la base n'empêche pas de rattacher un élément à une autre entreprise | moyenne (défense en profondeur) | vague 3 |
 | **E11** | Donner un accès, changer un rôle (jusqu'à créer un second patron), résilier : sans redemander le mot de passe | moyenne | vague 3 |
 | **E12** | Liens clients en clair en base, certains sans expiration (contrat, passages) ; lien du comptable valable un an | moyenne | vague 3 |
 | **E13** | Les libellés des lignes de devis entrent dans la consigne système de l'IA (retouches) ; aucun plafond de dépense d'IA par mois | moyenne | vague 3 |
 | **E14** | Sans `ATLAS_PROXY_SAUTS`, les seuils par source deviennent communs à tous : un inconnu peut bloquer les inscriptions ou le mot de passe oublié de tout le monde, ou verrouiller un compte dont il connaît l'adresse | moyenne | dépend du déploiement |
 | **E15** | Chaîne logicielle : actions GitHub épinglées par étiquette, `pages.yml` donne ses droits de publication à l'étape qui installe les paquets, aucun délai avant d'installer une version neuve, `demarrer.sh` retombe sur `npm install` | moyenne | vague 3 |
-| **E16** | `/api/health/diagnostic` et `/api/health/banc` répondent sans compte (en-têtes reçus, version servie) | faible | vague 3 |
-| **E17** | Petits défauts : `choisirLeMotDePasse` sans cadence, une adresse e-mail se devine par le mot de passe oublié, un GET qui écrit, un 500 au lieu d'un refus | faible | vague 3 |
+| **E16** | `/api/health/diagnostic` et `/api/health/banc` répondent sans compte (en-têtes reçus, version servie) | faible | **gardé tel quel, délibérément** : la page sert quand on ne peut pas se connecter, et ne porte aucun secret |
+| **E17** | Petits défauts : `choisirLeMotDePasse` sans cadence, une adresse e-mail se devine par le mot de passe oublié, un GET qui écrit, un 500 au lieu d'un refus | faible | **mot de passe oublié borné le 25 octobre** ; le reste en vague 3 |
 
 ## Ce qui a été vérifié et qui tient
 

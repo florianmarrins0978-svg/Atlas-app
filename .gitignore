@@ -112,3 +112,6 @@ sauvegarde-atlas-*.json
 # jamais jouee — le pire des faux positifs, puisqu'il frapperait celui qui
 # arrive (voir scripts/_dernier-verdict.ts).
 .atlas-dernier-verdict.json
+
+# La clé de session propre à son espace (audit du 25 octobre 2026, E1)
+.atlas-secrets/
