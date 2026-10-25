@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La fiche d'un client, soignée</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LA FICHE D'UN CLIENT (src/app/clients/[id]/page.tsx, RegistresDuDossier,
+  PieceDuDossier, RepartirDeCeClient, SupprimerCeClient).
+
+  Sa demande du 25 octobre : « fais-moi la planche aussi lorsque l'on clique sur
+  un client qui a des devis, des factures et des fiches », avec le doré de
+  l'appli (#B98B47) comme il l'a demandé.
+
+  Tout y est : « Client » en or au-dessus du nom (« je veux garder le client en
+  doré »), l'adresse et le téléphone espacé, Modifier ses coordonnées, Tout
+  télécharger, la dernière prestation, Dernier devis, Nouveau devis et Contrat
+  d'entretien sur une seule rangée, les onglets et leur trait d'or qui glisse,
+  la réception sous chaque facture, la feuille d'une pièce, Supprimer ce client.
+
+  Ce qui change, ses réponses du même soir : plus d'encadré doré autour du
+  client, plus d'encadré autour des trois gestes (ils restent à leur place, avec
+  leur dessin et leur mot, et rien n'est souligné) ; ni icône devant les pièces,
+  ni chiffre sur les onglets ; le téléphone appelle et l'adresse ouvre le plan.
+  Le numéro est pris dans la plage que l'ARCEP réserve aux fictions (06 39 98),
+  pour qu'un appel d'essai ne tombe chez personne.
+*/
+.carte-visite { padding: 16px 16px 4px; }
+.client-mot { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--atlas-or); }
+.client-nom { margin: 2px 0 8px; font: 400 31px/1.05 var(--serif); letter-spacing: -0.012em; }
+.coordonnee { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 40px; text-align: left; font-size: 16px; color: var(--atlas-ink); }
+.coordonnee .ico { color: var(--atlas-or); width: 22px; height: 22px; }
+.coordonnee-tel { font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+a.coordonnee { text-decoration: none; }
+.carte-gestes { display: grid; grid-template-columns: 1fr 1fr; margin-top: 8px; box-shadow: inset 0 1px 0 var(--atlas-line); }
+.carte-gestes > * { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; font-size: 14.5px; font-weight: 700;
+                    color: var(--atlas-or); text-decoration: none; }
+.carte-gestes > * { border-radius: 0; }
+.carte-gestes > * + * { border-left: 1px solid var(--atlas-line); }
+.carte-gestes .ico { width: 20px; height: 20px; flex: none; }
+.carte-gestes > * { padding: 6px 8px; text-align: left; line-height: 1.2; }
+.ecran[data-etat="neuf"] .carte-gestes { grid-template-columns: 1fr; }
+
+.repartir { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+.tuile-geste { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-height: 76px; padding: 8px 6px;
+               border-radius: 14px; text-align: center; text-decoration: none; font-size: 14.5px; font-weight: 700; line-height: 1.2; }
+.tuile-geste .ico { width: 26px; height: 26px; }
+.tuile-pleine { color: var(--atlas-plein); }
+.tuile-or { color: var(--atlas-or); }
+.repartir.deux { grid-template-columns: 1fr 1fr; }
+
+.prestation { margin-top: 12px; padding: 12px 16px; }
+.prestation-titre { margin: 0; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.prestation-titre b { color: var(--atlas-ink); font-weight: 700; }
+.prestation ul { margin: 8px 0 0; padding: 0; list-style: none; }
+.prestation li { position: relative; padding: 3px 0 3px 18px; font: 400 17px/1.3 var(--serif); }
+.prestation li::before { content: ""; position: absolute; left: 2px; top: 11px; width: 7px; height: 7px; border-radius: 50%; background: var(--atlas-or); }
+
+.dossier { margin-top: 16px; }
+.onglets-dossier { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); box-shadow: inset 0 -1px 0 var(--atlas-line); }
+.onglets-dossier button { min-height: 52px; display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 16px; font-weight: 600;
+                          color: var(--atlas-inkSoft); transition: color 300ms var(--courbe); }
+.onglets-dossier button[aria-selected="true"] { color: var(--atlas-ink); font-weight: 700; }
+.onglets-dossier .nb { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; display: inline-grid; place-items: center; font-size: 13px; font-weight: 700;
+                       background: color-mix(in srgb, var(--atlas-ink) 7%, transparent); color: var(--atlas-inkSoft); }
+.onglets-dossier button[aria-selected="true"] .nb { background: var(--atlas-or); color: var(--atlas-card); }
+.trait-dossier { position: absolute; left: 0; bottom: 0; width: calc(100% / 3); height: 2px; transform: translateX(calc(var(--rang, 0) * 100%));
+                 transition: transform 540ms var(--courbe-g); pointer-events: none; }
+.trait-dossier span { display: block; height: 100%; margin: 0 18%; border-radius: 2px; background: var(--atlas-or); }
+.registre { padding-top: 4px; }
+.piece { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 68px; padding: 10px 0; text-align: left; }
+.piece { position: relative; }
+.piece + .piece::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.piece-ico { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 10px; color: var(--atlas-or);
+             box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--atlas-or) 45%, transparent); }
+.piece-corps { flex: 1; min-width: 0; }
+.piece-titre { display: block; font: 400 18.5px/1.25 var(--serif); font-variant-numeric: lining-nums; }
+.piece-date { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); }
+.piece-reception { display: flex; align-items: center; gap: 5px; margin-top: 3px; font-size: 14px; color: var(--atlas-inkSoft); }
+.piece-reception b { color: var(--atlas-ink); }
+.piece-reception .ico { width: 16px; height: 16px; color: var(--atlas-carteVertTexte); stroke-width: 2.2; }
+.piece > .ico { width: 20px; height: 20px; color: var(--atlas-chevron); stroke-width: 2; flex: none; }
+.registre-vide { padding: 22px 0; text-align: center; font-size: 15px; color: var(--atlas-inkSoft); }
+
+.supprimer-client { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; margin-top: 34px;
+                    font-size: 15.5px; font-weight: 700; color: var(--atlas-alerte); }
+.feuille-sous { margin: -10px 0 18px; font-size: 15px; color: var(--atlas-inkSoft); }
+.bouton-supprimer { background: var(--atlas-alerte); color: var(--atlas-card); }
+.bouton-supprimer[aria-disabled="true"] { background: var(--atlas-line); color: var(--atlas-inkSoft); }
+.suppression-titre { margin: 0 0 6px; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--atlas-alerte); }
+.garde-loi { margin: 14px 0 0; padding: 12px 0; box-shadow: inset 0 1px 0 var(--atlas-line), inset 0 -1px 0 var(--atlas-line); font-size: 14.5px; color: var(--atlas-ink); }
+.garde-loi strong { display: block; margin-bottom: 4px; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--atlas-or); }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">La fiche d'un client</h1>
+  <p class="pl-verdict">Mme Costa, qui a des devis, des factures et des fiches. Tout y est, à la même place : <b>sans encadré</b> autour du client ni autour des trois gestes.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="complet" aria-pressed="true">Mme Costa</button>
+        <button type="button" data-etat="neuf">Un client tout neuf</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" data-etat="complet" id="ecran-client">
+          <div class="defile">
+            <div class="rang-espace" style="margin:0 0 10px">
+              <a class="rond-creux" href="clients.html" aria-label="Retour à vos clients"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+
+            <div class="plage carte-visite">
+              <p class="client-mot">Client</p>
+              <h1 class="client-nom" data-si-etat="complet">Mme Costa</h1>
+              <h1 class="client-nom" data-si-etat="neuf">M. Morin</h1>
+              <div data-si-etat="complet">
+                <a class="coordonnee touche" href="https://www.google.com/maps/search/?api=1&amp;query=12%20chemin%20des%20Vignes%2049800%20Tr%C3%A9laz%C3%A9" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-lieu"/></svg>12 chemin des Vignes, 49800 Trélazé</a>
+                <a class="coordonnee touche" href="tel:+33639984514"><svg class="ico" aria-hidden="true"><use href="#i-telephone"/></svg><span class="coordonnee-tel">06 39 98 45 14</span></a>
+              </div>
+              <div data-si-etat="neuf">
+                <a class="coordonnee touche" href="tel:+33639982763"><svg class="ico" aria-hidden="true"><use href="#i-telephone"/></svg><span class="coordonnee-tel">06 39 98 27 63</span></a>
+              </div>
+              <div class="carte-gestes">
+                <a class="touche" href="client-coordonnees.html"><svg class="ico" aria-hidden="true"><use href="#i-crayon"/></svg>Modifier ses coordonnées</a>
+                <button class="touche" type="button" data-si-etat="complet" data-note="Sur la planche, rien ne se télécharge."><svg class="ico" aria-hidden="true"><use href="#i-telecharger"/></svg>Tout télécharger</button>
+              </div>
+            </div>
+
+            <div class="repartir" data-si-etat="complet">
+              <a class="tuile-geste tuile-pleine touche" href="chantier-devis-complet.html"><svg class="ico" aria-hidden="true"><use href="#i-annuler"/></svg>Dernier devis</a>
+              <a class="tuile-geste tuile-or touche" href="chantier-nouveau.html"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Nouveau devis</a>
+              <a class="tuile-geste tuile-or touche" href="client-contrat.html"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>Contrat d'entretien</a>
+            </div>
+            <div class="repartir deux" data-si-etat="neuf">
+              <a class="tuile-geste tuile-or touche" href="chantier-nouveau.html"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Nouveau devis</a>
+              <a class="tuile-geste tuile-or touche" href="client-contrat.html"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>Contrat d'entretien</a>
+            </div>
+
+            <div class="plage prestation" data-si-etat="complet">
+              <p class="prestation-titre"><b>Dernière prestation</b>, le 22 octobre 2026</p>
+              <ul>
+                <li>Taille de haie de thuyas sur trois faces</li>
+                <li>Évacuation des déchets verts</li>
+              </ul>
+            </div>
+
+            <section class="dossier" aria-label="Son dossier">
+              <div class="onglets-dossier" role="tablist">
+                <button type="button" role="tab" aria-selected="true" data-registre="0">Devis</button>
+                <button type="button" role="tab" aria-selected="false" data-registre="1">Factures</button>
+                <button type="button" role="tab" aria-selected="false" data-registre="2">Fiches</button>
+                <span class="trait-dossier" aria-hidden="true"><span></span></span>
+              </div>
+
+              <div class="registre" data-registre-panneau="0">
+                <div data-si-etat="complet">
+                  <button class="piece touche" type="button" data-ouvre="feuille-piece" data-titre="n° 2026-000024" data-jour="3 octobre 2026">
+                    <span class="piece-corps"><span class="piece-titre">n° 2026-000024</span><span class="piece-date">3 octobre 2026</span></span>
+                    <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
+                  </button>
+                  <button class="piece touche" type="button" data-ouvre="feuille-piece" data-titre="n° 2026-000012" data-jour="2 juin 2026">
+                    <span class="piece-corps"><span class="piece-titre">n° 2026-000012</span><span class="piece-date">2 juin 2026</span></span>
+                    <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
+                  </button>
+                </div>
+                <p class="registre-vide" data-si-etat="neuf">Aucun devis parti</p>
+              </div>
+
+              <div class="registre" data-registre-panneau="1" hidden>
+                <div data-si-etat="complet">
+                  <button class="piece touche" type="button" data-ouvre="feuille-piece" data-titre="n° F2026-000014" data-jour="22 octobre 2026">
+                    <span class="piece-corps"><span class="piece-titre">n° F2026-000014</span><span class="piece-date">22 octobre 2026</span>
+                      <span class="piece-reception"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>Réception confirmée le <b>22/10</b></span></span>
+                    <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
+                  </button>
+                  <button class="piece touche" type="button" data-ouvre="feuille-piece" data-titre="n° F2026-000004" data-jour="19 juin 2026">
+                    <span class="piece-corps"><span class="piece-titre">n° F2026-000004</span><span class="piece-date">19 juin 2026</span>
+                      <span class="piece-reception">Ouverte le <b>20/06</b></span></span>
+                    <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
+                  </button>
+                </div>
+                <p class="registre-vide" data-si-etat="neuf">Aucune facture émise</p>
+              </div>
+
+              <div class="registre" data-registre-panneau="2" hidden>
+                <div data-si-etat="complet">
+                  <button class="piece touche" type="button" data-ouvre="feuille-fiche" data-titre="8 octobre 2026" data-jour="6 prestations">
+                    <span class="piece-corps"><span class="piece-titre">8 octobre 2026</span><span class="piece-date">6 prestations</span></span>
+                    <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
+                  </button>
+                  <button class="piece touche" type="button" data-ouvre="feuille-fiche" data-titre="10 septembre 2026" data-jour="4 prestations">
+                    <span class="piece-corps"><span class="piece-titre">10 septembre 2026</span><span class="piece-date">4 prestations</span></span>
+                    <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
+                  </button>
+                </div>
+                <p class="registre-vide" data-si-etat="neuf">Aucune fiche envoyée</p>
+              </div>
+            </section>
+
+            <button class="supprimer-client touche" type="button" data-ouvre="feuille-suppression"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg>Supprimer ce client</button>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+
+          <section class="feuille" id="feuille-piece" aria-hidden="true" aria-label="Une pièce du dossier">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre" id="piece-titre">n° 2026-000024</h2>
+              <p class="feuille-sous" id="piece-jour">3 octobre 2026</p>
+              <div class="pile">
+                <button class="bouton bouton-plein" type="button" data-fait="Sur la planche, rien ne se télécharge."><svg class="ico" aria-hidden="true"><use href="#i-telecharger"/></svg>Télécharger</button>
+                <div class="rang-boutons">
+                  <button class="bouton bouton-creux" type="button" data-fait="Sur la planche, le document ne s'ouvre pas."><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg>Ouvrir</button>
+                  <button class="bouton bouton-creux" type="button" data-fait="Sur la planche, rien ne se partage."><svg class="ico" aria-hidden="true"><use href="#i-partager"/></svg>Partager</button>
+                </div>
+                <button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="feuille" id="feuille-fiche" aria-hidden="true" aria-label="Une fiche d'entretien">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre" id="fiche-titre">8 octobre 2026</h2>
+              <p class="feuille-sous" id="fiche-jour">6 prestations</p>
+              <div class="pile">
+                <a class="bouton bouton-plein" href="client-recoit-entretien.html"><svg class="ico" aria-hidden="true"><use href="#i-oeil"/></svg>Ouvrir</a>
+                <button class="bouton bouton-creux" type="button" data-fait="Sur la planche, rien ne se partage."><svg class="ico" aria-hidden="true"><use href="#i-partager"/></svg>Partager</button>
+                <button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="feuille" id="feuille-suppression" aria-hidden="true" aria-label="Suppression définitive">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <p class="suppression-titre">Suppression définitive</p>
+              <h2 class="feuille-titre">Mme Costa</h2>
+              <div class="garde-loi"><strong>Conservé par la loi</strong>n° F2026-000014 : une facture émise se conserve dix ans.</div>
+              <p class="second mt-16">Ses devis, ses photos et ses notes seront détruits. C'est définitif.</p>
+              <label class="champ" style="display:flex;gap:12px;align-items:center;font-size:15px"><input type="checkbox" id="sauvegarde" style="width:24px;height:24px;accent-color:var(--atlas-alerte)">J'ai sauvegardé ces documents ailleurs</label>
+              <div class="pile mt-24">
+                <button class="bouton bouton-supprimer" type="button" id="confirmer" aria-disabled="true">Supprimer</button>
+                <button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/client.jpg" alt="La fiche de Mme Costa telle qu'elle est aujourd'hui"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Plus d'encadré doré autour du client.</li>
+      <li>Dernier devis, Nouveau devis et Contrat d'entretien restent à leur place, avec leur dessin et leur mot, sans encadré : le premier en vert, les deux autres en doré.</li>
+      <li>Toucher le téléphone lance l'appel, toucher l'adresse ouvre le plan.</li>
+      <li>Les pièces n'ont plus d'icône, les onglets plus de chiffre.</li>
+      <li>Supprimer ce client s'écrit en toutes lettres, au lieu de petites capitales.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>« Client » en doré au-dessus du nom, le doré de l'appli partout, le vert plein pour Dernier devis seulement.</li>
+      <li>Les trois gestes sur une rangée, les onglets et leur trait d'or qui glisse, la réception sous chaque facture.</li>
+      <li>La feuille d'une pièce (Télécharger, Ouvrir, Partager) et la feuille de suppression avec sa case.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="clients.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Vos clients</a>
+  <a href="termines.html">Terminés<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+  (function () {
+    var ecran = document.getElementById("ecran-client");
+    /* Les onglets du dossier : un registre à la fois, le trait d'or glisse. */
+    var onglets = document.querySelectorAll(".onglets-dossier [data-registre]");
+    var trait = document.querySelector(".trait-dossier");
+    onglets.forEach(function (o) {
+      o.addEventListener("click", function () {
+        var rang = o.getAttribute("data-registre");
+        onglets.forEach(function (x) { x.setAttribute("aria-selected", x === o ? "true" : "false"); });
+        trait.style.setProperty("--rang", rang);
+        document.querySelectorAll("[data-registre-panneau]").forEach(function (p) { p.hidden = p.getAttribute("data-registre-panneau") !== rang; });
+      });
+    });
+    /* La feuille rappelle la pièce touchée. */
+    document.querySelectorAll(".piece").forEach(function (p) {
+      p.addEventListener("click", function () {
+        var fiche = p.getAttribute("data-ouvre") === "feuille-fiche";
+        document.getElementById(fiche ? "fiche-titre" : "piece-titre").textContent = p.getAttribute("data-titre");
+        document.getElementById(fiche ? "fiche-jour" : "piece-jour").textContent = p.getAttribute("data-jour");
+      });
+    });
+    document.querySelectorAll("[data-note]").forEach(function (b) {
+      b.addEventListener("click", function () { Kit.note(ecran, b.getAttribute("data-note")); });
+    });
+    document.querySelectorAll("[data-fait]").forEach(function (b) {
+      b.addEventListener("click", function () { Kit.fermerFeuilles(ecran); Kit.note(ecran, b.getAttribute("data-fait")); });
+    });
+    var sauvegarde = document.getElementById("sauvegarde"), confirmer = document.getElementById("confirmer");
+    sauvegarde.addEventListener("change", function () { confirmer.setAttribute("aria-disabled", sauvegarde.checked ? "false" : "true"); });
+    confirmer.addEventListener("click", function () {
+      if (confirmer.getAttribute("aria-disabled") === "true") return;
+      Kit.fermerFeuilles(ecran);
+      Kit.note(ecran, "Sur la planche, rien n'est supprimé.");
+    });
+  })();
+</script>
+</body>
+</html>

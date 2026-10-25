@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vos clients, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  VOS CLIENTS, REFAIT (src/app/clients/page.tsx, ListeClients.tsx).
+
+  Sa demande du 25 octobre : « améliore-la visuellement ; conserve le code
+  couleur de la page pour le doré si tu l'utilises, pour le reste fais ce que
+  tu veux ». Sur sa page, l'or ne fait qu'une chose : ce qui MÈNE AILLEURS (les
+  deux portes, l'import, la loupe et ce que la recherche trouve). Il garde ce
+  rôle-là ici, et aucun autre. Le rouge reste le reste dû.
+
+  Tout ce qui est sur la page y est : la flèche, le titre et le compte,
+  l'assistant, les deux portes, la recherche, le Filtre et son volet, l'import,
+  les lettres, chaque client avec sa dernière pièce et son dû, l'appui long qui
+  ouvre le choix, « Tout », « Supprimer », « Annuler ».
+
+  Ce qui change : les deux portes deviennent deux cartes côte à côte avec leur
+  nombre ; le Filtre rejoint la recherche sur sa ligne ; chaque lettre range ses
+  clients dans une plage, chacun avec ses initiales ; le dû s'écrit « 312,00 €
+  dus » d'un seul tenant ; l'import, geste rare, descend au bout de la liste.
+*/
+.recherche { display: flex; align-items: center; gap: 10px; }
+.champ-recherche { flex: 1; display: flex; align-items: center; gap: 10px; min-height: 52px;
+                   box-shadow: inset 0 -1.5px 0 var(--atlas-line); transition: box-shadow 200ms var(--courbe); }
+.champ-recherche:focus-within { box-shadow: inset 0 -2px 0 var(--atlas-or); }
+.champ-recherche .ico { color: var(--atlas-or); }
+.champ-recherche input { flex: 1; min-width: 0; height: 48px; border: 0; background: transparent; outline: none;
+                         font: 400 17px/1 var(--sans); color: var(--atlas-ink); }
+.champ-recherche input::placeholder { color: var(--atlas-muted); }
+.effacer { width: 40px; height: 40px; display: grid; place-items: center; color: var(--atlas-inkSoft); }
+.filtre { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 22px; flex: none;
+          font-size: 15px; font-weight: 600; color: var(--atlas-ink); background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.filtre .ico { width: 20px; height: 20px; }
+
+.portes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+.sous-portes { margin-top: 14px; }
+.ecran[data-etat="publics"] .sous-portes { margin-top: 0; }
+.ecran[data-etat="choix"] .sous-portes, .ecran[data-etat="mois"] .sous-portes { margin-top: 0; }
+.porte { display: flex; align-items: center; gap: 10px; min-height: 64px; padding: 10px 12px; border-radius: 10px; text-decoration: none;
+         color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
+.porte .ico { color: var(--atlas-or); flex: none; width: 22px; height: 22px; }
+.porte .ico-p { width: 18px; height: 18px; }
+.porte-texte { flex: 1; min-width: 0; }
+.porte-nom { display: block; font-size: 15px; font-weight: 700; line-height: 1.2; }
+.porte-compte { display: block; margin-top: 2px; font-size: 13.5px; font-weight: 500; color: var(--atlas-inkSoft); }
+
+.liste-une { margin-top: 18px; }
+.lettre { margin: 0; padding: 14px 0 2px; font: 400 17px/1 var(--serif); color: var(--atlas-inkSoft); }
+.bloc-lettre + .bloc-lettre { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.bloc-lettre .client + .client { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.bloc-lettre .client { min-height: 66px; padding: 8px 0 12px; }
+.groupe { padding: 2px 16px; }
+.client { display: flex; align-items: center; gap: 12px; min-height: 72px; padding: 12px 0; text-decoration: none; color: inherit; width: 100%;
+          text-align: left; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.client + .client { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.initiales { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%;
+             font: 400 17px/1 var(--serif); background: var(--atlas-rustTint); color: var(--atlas-rust); }
+.client-corps { flex: 1; min-width: 0; }
+.client-nom { display: block; font: 400 18.5px/1.25 var(--serif); }
+.client-nom mark { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); color: inherit; border-radius: 3px; }
+.client-lieu { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.client-bas { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 8px; margin-top: 4px; }
+.client-piece { font-size: 14px; color: var(--atlas-inkSoft); white-space: nowrap; }
+.du { flex: none; display: inline-flex; align-items: center; min-height: 26px; padding: 0 10px; border-radius: 13px; font-size: 14px; font-weight: 700;
+      font-variant-numeric: tabular-nums lining-nums; background: var(--atlas-carteRougeFond); color: var(--atlas-carteRougeTexte); white-space: nowrap; }
+.client > .ico { width: 20px; height: 20px; color: var(--atlas-chevron); stroke-width: 2; flex: none; }
+.coche-ronde { display: none; width: 28px; height: 28px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--atlas-line); }
+.ecran[data-etat="choix"] .coche-ronde { display: grid; place-items: center; }
+.ecran[data-etat="choix"] .client > .ico { display: none; }
+.client[aria-checked="true"] .coche-ronde { background: var(--atlas-alerte); box-shadow: none; }
+.client[aria-checked="true"] .coche-ronde::after { content: ""; width: 12px; height: 7px; margin-top: -3px; border-left: 2.5px solid var(--atlas-card);
+                                                   border-bottom: 2.5px solid var(--atlas-card); transform: rotate(-45deg); }
+.tout { display: none; align-items: center; gap: 8px; min-height: 44px; padding: 0 6px; font-size: 15px; font-weight: 600; }
+.ecran[data-etat="choix"] .tout { display: inline-flex; }
+.tout .coche-ronde { display: grid; place-items: center; width: 24px; height: 24px; }
+
+.importer { margin-top: 28px; color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
+.importer .ico { color: var(--atlas-or); }
+.rien { padding: 26px 4px; text-align: center; font-size: 15.5px; color: var(--atlas-inkSoft); }
+
+.barre-choix { position: absolute; left: 0; right: 0; bottom: 66px; z-index: 7; padding: 12px var(--gouttiere) 6px;
+               background: linear-gradient(to top, var(--atlas-cream) 80%, color-mix(in srgb, var(--atlas-cream) 0%, transparent)); }
+.bouton-supprimer { background: var(--atlas-alerte); color: var(--atlas-card); }
+.bouton-supprimer[aria-disabled="true"] { background: var(--atlas-line); color: var(--atlas-inkSoft); }
+.ecran[data-etat="choix"] .defile { padding-bottom: 200px; }
+
+.volet-choix { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; padding: 0 16px; border-radius: 12px; text-align: left;
+               font: 400 19px/1 var(--serif); background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.volet-choix + .volet-choix { margin-top: 10px; }
+.volet-choix .ico { margin-left: auto; color: var(--atlas-inkSoft); }
+.volet-choix[aria-pressed="true"] { background: var(--atlas-plein); color: var(--sur-plein); box-shadow: none; }
+.volet-choix[aria-pressed="true"] .ico { color: var(--sur-plein); }
+.mois-filtre { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 18px 0 0; font: 400 22px/1.2 var(--serif); }
+.mois-filtre .ico { color: var(--atlas-or); }
+.mois-filtre button { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-inkSoft); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.suppression-titre { margin: 0 0 6px; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--atlas-alerte); }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Vos clients</h1>
+  <p class="pl-verdict">Tout ce qui est sur la page y est, rangé autrement : <b>le premier client se voit tout de suite</b>, les portes deviennent deux cartes, et chaque client a ses initiales.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="rempli" aria-pressed="true">La liste</button>
+        <button type="button" data-etat="choix">Choisir pour supprimer</button>
+        <button type="button" data-etat="mois">Filtré par mois</button>
+        <button type="button" data-etat="vide">Au début</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" data-etat="rempli" id="ecran-clients">
+          <div class="defile">
+            <div class="rang-espace" style="margin-top:4px">
+              <a class="rond-creux" href="accueil.html" aria-label="Retour à la liste des chantiers" data-si-etat="rempli choix mois vide"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond-creux" type="button" aria-label="Retour à vos clients" data-va-etat="rempli" data-si-etat="partenaires publics"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+            </div>
+            <header class="tete" style="margin:12px 0 0">
+              <h1 class="tete-titre" data-si-etat="rempli choix mois vide">Vos clients</h1><h1 class="tete-titre" data-si-etat="partenaires">Vos partenaires</h1><h1 class="tete-titre" data-si-etat="publics">Services publics</h1>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </header>
+            <p class="tete-situation" style="margin:4px 0 18px" id="compte">7 clients</p>
+
+
+            <div class="portes" data-si-etat="rempli vide">
+              <a class="porte touche" href="#" data-va-etat="partenaires"><svg class="ico" aria-hidden="true"><use href="#i-entreprise"/></svg><span class="porte-texte"><span class="porte-nom">Vos partenaires</span><span class="porte-compte">Aucun</span></span><svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+              <a class="porte touche" href="#" data-va-etat="publics"><svg class="ico" aria-hidden="true"><use href="#i-banque"/></svg><span class="porte-texte"><span class="porte-nom">Services publics</span><span class="porte-compte">1</span></span><svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+            </div>
+            <div data-si-etat="rempli choix mois publics" class="sous-portes">
+              <div class="recherche">
+                <label class="champ-recherche">
+                  <svg class="ico" aria-hidden="true"><use href="#i-recherche"/></svg>
+                  <input type="search" id="cherche" placeholder="Chercher un client" autocomplete="off" aria-label="Chercher un client">
+                  <button class="effacer" type="button" id="effacer" hidden aria-label="Effacer la recherche"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button>
+                </label>
+                <button class="tout" type="button" id="tout"><span class="coche-ronde"></span>Tout</button>
+                <button class="filtre touche" type="button" data-ouvre="feuille-tri"><svg class="ico" aria-hidden="true"><use href="#i-filtre"/></svg>Filtre</button>
+              </div>
+            </div>
+
+            <p class="rien" data-si-etat="vide">Aucun client pour l'instant. Ils naissent avec vos chantiers.</p>
+            <p class="rien" data-si-etat="partenaires">Aucun partenaire pour l'instant.</p>
+
+            <div id="liste-publics" class="plage groupe liste-une" data-si-etat="publics">
+              <div class="bloc-lettre"><p class="lettre">M</p>
+                <a class="client touche" href="#" data-nom="Mairie de Saint-Sylvain" data-pas-encore><span class="coche-ronde"></span><span class="initiales">MS</span><span class="client-corps"><span class="client-nom">Mairie de Saint-Sylvain</span><span class="client-lieu">Place de la Mairie, 49480 Saint-Sylvain-d'Anjou</span><span class="client-bas"><span class="client-piece">Facture du 19 sept.</span></span></span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+              </div>
+            </div>
+
+            <div class="mois-filtre" data-si-etat="mois">
+              <svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>Factures d'octobre 2026
+              <button type="button" data-va-etat="rempli" aria-label="Revenir de A à Z"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button>
+            </div>
+
+            <div id="liste" class="plage groupe liste-une" data-si-etat="rempli choix">
+              <div class="bloc-lettre"><p class="lettre">A</p>
+                <a class="client touche" href="client.html" data-nom="Mme Aubry"><span class="coche-ronde"></span><span class="initiales">MA</span><span class="client-corps"><span class="client-nom">Mme Aubry</span></span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+              </div>
+              <div class="bloc-lettre"><p class="lettre">B</p>
+                <a class="client touche" href="client.html" data-nom="M. Bernard"><span class="coche-ronde"></span><span class="initiales">MB</span><span class="client-corps"><span class="client-nom">M. Bernard</span><span class="client-bas"><span class="client-piece">Facture du 17 oct.</span><span class="du">312,00 € dus</span></span></span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+              </div>
+              <div class="bloc-lettre"><p class="lettre">C</p>
+                <a class="client touche" href="client.html" data-nom="Mme Costa"><span class="coche-ronde"></span><span class="initiales">MC</span><span class="client-corps"><span class="client-nom">Mme Costa</span><span class="client-bas"><span class="client-piece">Facture du 22 oct.</span></span></span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+              </div>
+              <div class="bloc-lettre"><p class="lettre">F</p>
+                <a class="client touche" href="client.html" data-nom="M. Faucher"><span class="coche-ronde"></span><span class="initiales">MF</span><span class="client-corps"><span class="client-nom">M. Faucher</span><span class="client-bas"><span class="client-piece">Facture du 10 oct.</span></span></span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+              </div>
+              <div class="bloc-lettre"><p class="lettre">G</p>
+                <a class="client touche" href="client.html" data-nom="Mme Garnier"><span class="coche-ronde"></span><span class="initiales">MG</span><span class="client-corps"><span class="client-nom">Mme Garnier</span><span class="client-lieu">18 rue des Lilas, 49100 Angers</span><span class="client-bas"><span class="client-piece">Facture du 14 oct.</span><span class="du">2 016,00 € dus</span></span></span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+              </div>
+              <div class="bloc-lettre"><p class="lettre">L</p>
+                <a class="client touche" href="client.html" data-nom="M. Lefèvre"><span class="coche-ronde"></span><span class="initiales">ML</span><span class="client-corps"><span class="client-nom">M. Lefèvre</span><span class="client-lieu">7 allée du Parc, 49130 Les Ponts-de-Cé</span><span class="client-bas"><span class="client-piece">Devis du 2 oct.</span></span></span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+              </div>
+              <div class="bloc-lettre"><p class="lettre">R</p>
+                <a class="client touche" href="client.html" data-nom="M. et Mme Roux"><span class="coche-ronde"></span><span class="initiales">R</span><span class="client-corps"><span class="client-nom">M. et Mme Roux</span><span class="client-lieu">3 impasse des Saules, 49070 Beaucouzé</span><span class="client-bas"><span class="client-piece">Facture du 7 oct.</span></span></span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+              </div>
+              <p class="rien" id="aucun" hidden></p>
+            </div>
+
+            <div data-si-etat="mois">
+              <div class="plage groupe" style="margin-top:14px">
+                <a class="client touche" href="client.html"><span class="initiales">MC</span><span class="client-corps"><span class="client-nom">Mme Costa</span><span class="client-bas"><span class="client-piece">Facture du 22 oct.</span></span></span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+                <a class="client touche" href="client.html"><span class="initiales">MB</span><span class="client-corps"><span class="client-nom">M. Bernard</span><span class="client-bas"><span class="client-piece">Facture du 17 oct.</span><span class="du">312,00 € dus</span></span></span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+                <a class="client touche" href="client.html"><span class="initiales">MG</span><span class="client-corps"><span class="client-nom">Mme Garnier</span><span class="client-bas"><span class="client-piece">Facture du 14 oct.</span><span class="du">2 016,00 € dus</span></span></span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+                <a class="client touche" href="client.html"><span class="initiales">MF</span><span class="client-corps"><span class="client-nom">M. Faucher</span><span class="client-bas"><span class="client-piece">Facture du 10 oct.</span></span></span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+                <a class="client touche" href="client.html"><span class="initiales">R</span><span class="client-corps"><span class="client-nom">M. et Mme Roux</span><span class="client-bas"><span class="client-piece">Facture du 7 oct.</span></span></span><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+              </div>
+            </div>
+
+            <a class="bouton bouton-creux importer touche" href="clients-importer.html" data-si-etat="rempli vide"><svg class="ico" aria-hidden="true"><use href="#i-importer"/></svg>Importer devis / facture</a>
+          </div>
+
+          <div class="barre-choix" data-si-etat="choix">
+            <button class="bouton bouton-supprimer" type="button" id="supprimer" aria-disabled="true" data-ouvre="feuille-suppression">Supprimer</button>
+            <button class="bouton bouton-texte" type="button" data-va-etat="rempli" style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+
+          <section class="feuille" id="feuille-tri" aria-hidden="true" aria-label="Trier par">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Trier par</h2>
+              <button class="volet-choix" type="button" aria-pressed="true" data-va-etat="rempli">Nom du client</button>
+              <button class="volet-choix" type="button" aria-pressed="false" data-va-etat="mois">Date du devis<svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg></button>
+              <button class="volet-choix" type="button" aria-pressed="false" data-va-etat="mois">Date de facturation<svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg></button>
+              <button class="bouton bouton-texte mt-8" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Fermer</button>
+            </div>
+          </section>
+
+          <section class="feuille" id="feuille-suppression" aria-hidden="true" aria-label="Suppression définitive">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <p class="suppression-titre">Suppression définitive</p>
+              <h2 class="feuille-titre" id="suppression-nom">2 clients</h2>
+              <p class="second">Leurs devis, leurs photos et leurs notes seront détruits. C'est définitif.</p>
+              <label class="champ" style="display:flex;gap:12px;align-items:center;font-size:15px"><input type="checkbox" id="sauvegarde" style="width:24px;height:24px;accent-color:var(--atlas-alerte)">J'ai sauvegardé ces documents ailleurs</label>
+              <div class="pile mt-24">
+                <button class="bouton bouton-supprimer" type="button" id="confirmer" aria-disabled="true">Supprimer</button>
+                <button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/clients.jpg" alt="L'écran Vos clients tel qu'il est aujourd'hui"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Le Filtre rejoint la recherche sur sa ligne, juste sous Vos partenaires et Services publics.</li>
+      <li>Vos partenaires et Services publics sont le même écran, avec la même allure : touche les deux cartes pour les voir.</li>
+      <li>Vos entreprises s'appelle Vos partenaires. Avec Services publics, ce sont deux cartes dorées côte à côte, chacune avec son nombre.</li>
+      <li>Chaque lettre range ses clients dans une plage ; chaque client a ses initiales, son adresse, sa dernière pièce, et « 312,00 € dus » d'un seul tenant, en rouge.</li>
+      <li>La recherche trouve à chaque lettre tapée (essaie « gar »). Rester appuyé sur un client ouvre le choix pour en supprimer plusieurs.</li>
+      <li>Importer devis / facture, geste rare, descend au bout de la liste.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Le doré de l'appli, à la même place que sur ta page : ce qui mène ailleurs (les portes, l'import, la loupe). Le rouge reste le dû.</li>
+      <li>De A à Z, les lettres, la recherche soulignée, le Filtre et ses trois choix, la feuille de suppression et sa case.</li>
+    </ul>
+    <h2>À noter</h2>
+    <ul class="a-trancher">
+      <li>Dans l'appli, « M. et Mme Roux » est rangé sous la lettre E : le « et » est pris pour son initiale. Sur la planche, il est sous R. C'est un défaut à corriger, que je n'ai pas touché.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <a href="termines.html">Terminés<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+  (function () {
+    var ecran = document.getElementById("ecran-clients");
+    var champ = document.getElementById("cherche");
+    var effacer = document.getElementById("effacer");
+    var compte = document.getElementById("compte");
+    var aucun = document.getElementById("aucun");
+    var clients = Array.prototype.slice.call(document.querySelectorAll("#liste .client, #liste-publics .client"));
+    var VUES = { publics: { compte: "1 service public", cherche: "Chercher un service public", seul: "service public trouvé", plusieurs: "services publics trouvés" },
+                 partenaires: { compte: "", cherche: "Chercher un partenaire" },
+                 vide: { compte: "" } };
+    var vue = function () { return VUES[ecran.getAttribute("data-etat")] || { compte: "7 clients", cherche: "Chercher un client", seul: "client trouvé", plusieurs: "clients trouvés" }; };
+    var sansAccent = function (s) { return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); };
+    var echapper = function (s) { return s.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+
+    /* La recherche : à chaque lettre, sans accents ni majuscules, les mots dans
+       n'importe quel ordre ; ce qui répond s'éclaire d'or. */
+    function chercher() {
+      var mots = sansAccent(champ.value.trim()).split(/\s+/).filter(Boolean);
+      effacer.hidden = !champ.value;
+      var vus = 0;
+      clients.forEach(function (c) {
+        var nom = c.getAttribute("data-nom");
+        var ok = mots.every(function (m) { return sansAccent(nom).indexOf(m) >= 0; });
+        c.hidden = !ok;
+        /* Seule la liste regardée compte : la mairie ne se trouve pas dans Vos clients. */
+        if (ok && !c.closest("#liste, #liste-publics").hidden) vus++;
+        var html = echapper(nom);
+        if (mots.length && ok) {
+          var brut = sansAccent(nom), m = mots[0], i = brut.indexOf(m);
+          html = echapper(nom.slice(0, i)) + "<mark>" + echapper(nom.slice(i, i + m.length)) + "</mark>" + echapper(nom.slice(i + m.length));
+        }
+        c.querySelector(".client-nom").innerHTML = html;
+      });
+      document.querySelectorAll("#liste .bloc-lettre, #liste-publics .bloc-lettre").forEach(function (b) {
+        b.hidden = !b.querySelector(".client:not([hidden])");
+        b.querySelector(".lettre").hidden = mots.length > 0;
+      });
+      var v = vue();
+      compte.textContent = mots.length ? (vus ? vus + " " + (vus > 1 ? v.plusieurs : v.seul) : "") : v.compte;
+      aucun.hidden = vus > 0;
+      aucun.textContent = "Aucun client ne s'appelle « " + champ.value.trim() + " ».";
+    }
+    champ.addEventListener("input", chercher);
+    effacer.addEventListener("click", function (e) { e.preventDefault(); champ.value = ""; chercher(); champ.focus(); });
+
+    /* Le choix : rester appuyé un demi-temps sur un client l'ouvre ; ensuite,
+       toucher coche au lieu d'ouvrir la fiche. */
+    var supprimer = document.getElementById("supprimer");
+    /* Le doigt qui se relève après l'appui long ne doit rien toucher : la barre
+       « Supprimer » vient d'apparaître, et elle peut être juste sous lui. */
+    var ignorerJusqua = 0;
+    ecran.addEventListener("click", function (e) {
+      if (Date.now() < ignorerJusqua) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+    function majChoix() {
+      var n = clients.filter(function (c) { return c.getAttribute("aria-checked") === "true"; }).length;
+      compte.textContent = n ? n + (n > 1 ? " choisis" : " choisi") : "Aucun choisi";
+      supprimer.textContent = n ? "Supprimer " + n + (n > 1 ? " clients" : " client") : "Supprimer";
+      supprimer.setAttribute("aria-disabled", n ? "false" : "true");
+      document.getElementById("suppression-nom").textContent = n === 1 ? clients.filter(function (c) { return c.getAttribute("aria-checked") === "true"; })[0].getAttribute("data-nom") : n + " clients";
+    }
+    clients.forEach(function (c) {
+      var minuteur = null, x0 = 0;
+      c.addEventListener("pointerdown", function (e) {
+        x0 = e.clientX;
+        minuteur = setTimeout(function () {
+          minuteur = "fait";
+          ignorerJusqua = Date.now() + 400;
+          Kit.appliquerEtat(ecran, "choix");
+          document.querySelectorAll(".pl-etats button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-etat") === "choix" ? "true" : "false"); });
+          c.setAttribute("aria-checked", "true");
+          majChoix();
+        }, 480);
+      });
+      c.addEventListener("pointermove", function (e) { if (Math.abs(e.clientX - x0) > 10 && minuteur && minuteur !== "fait") { clearTimeout(minuteur); minuteur = null; } });
+      ["pointerup", "pointercancel", "pointerleave"].forEach(function (t) { c.addEventListener(t, function () { if (minuteur !== "fait") clearTimeout(minuteur); }); });
+      c.addEventListener("click", function (e) {
+        if (minuteur === "fait") { e.preventDefault(); e.stopPropagation(); minuteur = null; return; }
+        if (ecran.getAttribute("data-etat") === "choix") {
+          e.preventDefault();
+          e.stopPropagation();
+          c.setAttribute("aria-checked", c.getAttribute("aria-checked") === "true" ? "false" : "true");
+          majChoix();
+        }
+      });
+      c.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+    });
+    document.getElementById("tout").addEventListener("click", function () {
+      var tous = clients.every(function (c) { return c.getAttribute("aria-checked") === "true"; });
+      clients.forEach(function (c) { c.setAttribute("aria-checked", tous ? "false" : "true"); });
+      majChoix();
+    });
+    supprimer.addEventListener("click", function (e) { if (supprimer.getAttribute("aria-disabled") === "true") { e.stopImmediatePropagation(); } }, true);
+    var sauvegarde = document.getElementById("sauvegarde"), confirmer = document.getElementById("confirmer");
+    sauvegarde.addEventListener("change", function () { confirmer.setAttribute("aria-disabled", sauvegarde.checked ? "false" : "true"); });
+    confirmer.addEventListener("click", function () {
+      if (confirmer.getAttribute("aria-disabled") === "true") return;
+      Kit.fermerFeuilles(ecran);
+      Kit.note(ecran, "Sur la planche, rien n'est supprimé.");
+    });
+
+    /* Changer d'état remet le choix à zéro et le compte d'origine. */
+    var observateur = new MutationObserver(function () {
+      if (ecran.getAttribute("data-etat") !== "choix") {
+        clients.forEach(function (c) { c.removeAttribute("aria-checked"); });
+        champ.value = ""; chercher();
+        champ.placeholder = vue().cherche || "Chercher un client";
+        compte.textContent = vue().compte;
+        supprimer.textContent = "Supprimer"; supprimer.setAttribute("aria-disabled", "true");
+      } else if (!clients.some(function (c) { return c.getAttribute("aria-checked") === "true"; })) { majChoix(); }
+      document.querySelectorAll("#feuille-tri .volet-choix").forEach(function (b, i) { b.setAttribute("aria-pressed", (ecran.getAttribute("data-etat") === "mois" ? i === 2 : i === 0) ? "true" : "false"); });
+    });
+    observateur.observe(ecran, { attributes: true, attributeFilter: ["data-etat"] });
+
+    /* Les deux portes mènent à la même liste, pour l'autre catégorie : pas encore dessinée. */
+    document.querySelectorAll("[data-pas-encore]").forEach(function (a) {
+      a.addEventListener("click", function (e) { e.preventDefault(); Kit.note(ecran, "Cette planche arrive bientôt."); });
+    });
+  })();
+</script>
+</body>
+</html>

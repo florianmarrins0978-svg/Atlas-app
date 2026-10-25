@@ -12,8 +12,8 @@
 
   CE QUE « SOIGNER » VEUT DIRE ICI, et rien de plus :
     lire sans plisser les yeux : rien sous 13 px, le texte de second plan en
-      encre douce (8,0 de contraste) et non plus en gris (3,3) ; l'or ne fait
-      plus que des traits et des chiffres, ses mots passent par orTexte (4,6) ;
+      encre douce (8,0 de contraste) et non plus en gris (3,3) ; l'or reste
+      celui de l'appli (#B98B47) partout, sa demande du 25 octobre ;
     un geste par écran : un seul bouton plein, à la même place partout ;
     des cibles pour le pouce : 56 px le bouton, 64 px la ligne, 48 px un rond ;
     un seul rythme d'espaces : 4, 8, 12, 16, 20, 24, 32, 40, 56.
@@ -203,7 +203,7 @@ body.pl ::selection { background: rgba(185,139,71,0.28); }
          font: 400 var(--t-corps)/1.45 var(--sans); overflow: hidden;
          -webkit-font-smoothing: antialiased; }
 .ecran ::selection { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); }
-.ecran :focus-visible { outline: 2px solid var(--atlas-orTexte); outline-offset: 2px; border-radius: 6px; }
+.ecran :focus-visible { outline: 2px solid var(--atlas-or); outline-offset: 2px; border-radius: 6px; }
 .ecran input, .ecran textarea, .ecran select { caret-color: var(--atlas-rust); }
 
 .defile { flex: 1; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
@@ -235,7 +235,7 @@ body.pl ::selection { background: rgba(185,139,71,0.28); }
 .titre-carte { margin: 0; font: 400 var(--t-carte)/1.2 var(--serif); letter-spacing: -0.005em; }
 .second { font-size: var(--t-second); line-height: 1.45; color: var(--atlas-inkSoft); }
 .discret { font-size: var(--t-mini); color: var(--atlas-inkSoft); }
-.or-texte { color: var(--atlas-orTexte); }
+.or-texte { color: var(--atlas-or); }
 .chiffre { font-variant-numeric: tabular-nums lining-nums; }
 .montant { font: 400 26px/1.1 var(--serif); font-variant-numeric: tabular-nums lining-nums;
            letter-spacing: -0.01em; }
@@ -268,7 +268,7 @@ body.pl ::selection { background: rgba(185,139,71,0.28); }
 .ligne-fin .ico { width: 20px; height: 20px; color: var(--atlas-chevron); stroke-width: 2; }
 .ligne-icone { width: 44px; height: 44px; flex: none; display: grid; place-items: center;
                border-radius: 50%; background: var(--atlas-rustTint); color: var(--atlas-rust); }
-.ligne-icone.or { background: transparent; color: var(--atlas-orTexte); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.ligne-icone.or { background: transparent; color: var(--atlas-or); box-shadow: inset 0 0 0 1px var(--atlas-line); }
 
 /* La date d'une ligne : le jour en grand, le mois dessous. */
 .jour { width: 48px; flex: none; text-align: center; line-height: 1; }
@@ -285,7 +285,7 @@ body.pl ::selection { background: rgba(185,139,71,0.28); }
 .etat[data-ton="ambre"] { background: var(--atlas-carteAmbreFond); color: var(--atlas-carteAmbreTexte); }
 .etat[data-ton="bleu"] { background: var(--atlas-carteBleuFond); color: var(--atlas-carteBleuTexte); }
 .etat[data-ton="rouge"] { background: var(--atlas-carteRougeFond); color: var(--atlas-carteRougeTexte); }
-.etat[data-ton="or"] { background: transparent; color: var(--atlas-orTexte);
+.etat[data-ton="or"] { background: transparent; color: var(--atlas-or);
                        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--atlas-or) 60%, transparent); }
 
 /* Les cartes de l'accueil, une famille par ce qu'il a à faire (23 octobre 2026). */
@@ -313,10 +313,10 @@ body.pl ::selection { background: rgba(185,139,71,0.28); }
 .bouton:active { transform: scale(0.985); }
 .bouton-plein { background: var(--atlas-plein); color: var(--sur-plein); }
 .bouton-creux { color: var(--atlas-ink); box-shadow: inset 0 0 0 1.5px var(--atlas-line); background: transparent; }
-.bouton-creux.or { color: var(--atlas-orTexte); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
+.bouton-creux.or { color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
 .bouton-texte { display: inline-flex; align-items: center; gap: 6px; min-height: 48px; padding: 0 4px;
                 font-size: 16px; font-weight: 600; color: var(--atlas-rust); text-decoration: none; }
-.bouton-texte.or { color: var(--atlas-orTexte); }
+.bouton-texte.or { color: var(--atlas-or); }
 .bouton-texte.alerte { color: var(--atlas-alerte); }
 .bouton[disabled], .bouton[aria-disabled="true"] { background: var(--atlas-line); color: var(--atlas-inkSoft);
           box-shadow: none; cursor: default; }
@@ -401,7 +401,7 @@ textarea.champ-saisie { min-height: 110px; resize: vertical; }
 
 /* ─── L'écran vide : une phrase, un geste ─────────────────────────────────── */
 .vide { padding: 44px 8px 24px; text-align: center; }
-.vide .ico { width: 40px; height: 40px; color: var(--atlas-orTexte); stroke-width: 1.4; margin: 0 auto 14px; }
+.vide .ico { width: 40px; height: 40px; color: var(--atlas-or); stroke-width: 1.4; margin: 0 auto 14px; }
 .vide-titre { margin: 0; font: 400 22px/1.25 var(--serif); }
 .vide-texte { margin: 8px auto 20px; max-width: 26em; font-size: 15px; color: var(--atlas-inkSoft); }
 

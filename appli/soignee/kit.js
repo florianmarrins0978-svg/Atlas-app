@@ -242,7 +242,10 @@
         ecrans.forEach(function (e) { appliquerEtat(e, etat); });
       }
       boutons.forEach(function (b) { b.addEventListener("click", function () { choisir(b.getAttribute("data-etat")); }); });
-      var premier = groupe.querySelector("button[aria-pressed='true']") || boutons[0];
+      /* Seuls les boutons d'état comptent : un autre choix posé dans la même rangée
+         (les couleurs d'une planche) ne doit pas vider l'écran. */
+      if (!boutons.length) return;
+      var premier = groupe.querySelector("button[data-etat][aria-pressed='true']") || boutons[0];
       if (premier) choisir(premier.getAttribute("data-etat"));
     });
   }
@@ -286,7 +289,7 @@
   /* ─── Les planches pas encore dessinées ─────────────────────────────────
      Elles arrivent une par une : un lien vers l'une d'elles ne mène pas à une
      page d'erreur, il le dit. La liste grandit à chaque planche publiée. */
-  var PRETES = ["index", "fondations", "reglages", "termines", "termines-tva"];
+  var PRETES = ["index", "fondations", "reglages", "termines", "termines-tva", "clients", "client", "planning"];
 
   function planchePrete(href) {
     if (!href || /^(https?:|#|mailto:|tel:|\.\.\/)/.test(href)) return true;
