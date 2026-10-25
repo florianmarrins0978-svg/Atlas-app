@@ -20,32 +20,35 @@
   d'entretien sur une seule rangée, les onglets et leur trait d'or qui glisse,
   la réception sous chaque facture, la feuille d'une pièce, Supprimer ce client.
 
-  Ce qui change : le nom et ses coordonnées forment une carte de visite qui porte
-  ses deux gestes ; les trois boutons deviennent trois tuiles d'égale taille,
-  leur dessin au-dessus du mot ; chaque onglet dit combien il range.
+  Ce qui change, sa réponse du même soir : ni encadré autour du client, ni
+  bouton pour les trois gestes (« juste les mots », le premier en vert, les
+  autres en doré, ou une couleur chacun) ; ni icône devant les pièces, ni chiffre
+  sur les onglets ; le téléphone appelle et l'adresse ouvre le plan. Le numéro
+  est pris dans la plage que l'ARCEP réserve aux fictions (06 39 98), pour
+  qu'un appel d'essai ne tombe chez personne.
 */
-.carte-visite { padding: 16px 16px 4px; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
+.carte-visite { padding: 0; background: transparent; }
 .client-mot { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--atlas-or); }
-.client-nom { margin: 2px 0 8px; font: 400 31px/1.05 var(--serif); letter-spacing: -0.012em; }
+.client-nom { margin: 2px 0 10px; font: 400 36px/1.05 var(--serif); letter-spacing: -0.012em; }
 .coordonnee { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 40px; text-align: left; font-size: 16px; color: var(--atlas-ink); }
 .coordonnee .ico { color: var(--atlas-or); width: 22px; height: 22px; }
 .coordonnee-tel { font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
-.carte-gestes { display: grid; grid-template-columns: 1fr 1fr; margin-top: 8px; box-shadow: inset 0 1px 0 var(--atlas-line); }
-.carte-gestes > * { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; font-size: 14.5px; font-weight: 700;
+a.coordonnee { text-decoration: none; }
+a.coordonnee span { text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--atlas-or) 60%, transparent); text-underline-offset: 5px; text-decoration-thickness: 1.5px; }
+.carte-gestes { display: flex; flex-wrap: wrap; gap: 0 26px; margin-top: 6px; }
+.carte-gestes > * { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 14.5px; font-weight: 700;
                     color: var(--atlas-or); text-decoration: none; }
 .carte-gestes > * { border-radius: 0; }
-.carte-gestes > * + * { border-left: 1px solid var(--atlas-line); }
 .carte-gestes .ico { width: 20px; height: 20px; flex: none; }
-.carte-gestes > * { padding: 6px 8px; text-align: left; line-height: 1.2; }
-.ecran[data-etat="neuf"] .carte-gestes { grid-template-columns: 1fr; }
+.carte-gestes > * { padding: 0; text-align: left; line-height: 1.2; white-space: nowrap; }
 
-.repartir { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
-.tuile-geste { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-height: 76px; padding: 8px 6px;
-               border-radius: 14px; text-align: center; text-decoration: none; font-size: 14.5px; font-weight: 700; line-height: 1.2; }
-.tuile-geste .ico { width: 26px; height: 26px; }
-.tuile-pleine { background: var(--atlas-plein); color: var(--sur-plein); }
-.tuile-or { color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px var(--atlas-or); }
-.repartir.deux { grid-template-columns: 1fr 1fr; }
+.repartir { display: flex; flex-wrap: wrap; align-items: center; gap: 0 28px; margin-top: 8px; }
+.mot-geste { display: inline-flex; align-items: center; min-height: 46px; font-size: 16px; font-weight: 700; text-decoration: underline;
+             text-underline-offset: 6px; text-decoration-thickness: 2px; white-space: nowrap; line-height: 1.3; }
+.mot-vert { color: var(--atlas-plein); }
+.mot-or { color: var(--atlas-or); }
+.ecran[data-couleurs="trois"] .mot-contrat { color: var(--atlas-carteBleuTexte); }
+.repartir.deux { gap: 0 28px; }
 
 .prestation { margin-top: 12px; padding: 12px 16px; }
 .prestation-titre { margin: 0; font-size: 14.5px; color: var(--atlas-inkSoft); }
@@ -68,7 +71,7 @@
 .registre { padding-top: 4px; }
 .piece { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 68px; padding: 10px 0; text-align: left; }
 .piece { position: relative; }
-.piece + .piece::before { content: ""; position: absolute; left: 52px; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.piece + .piece::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
 .piece-ico { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 10px; color: var(--atlas-or);
              box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--atlas-or) 45%, transparent); }
 .piece-corps { flex: 1; min-width: 0; }
@@ -95,7 +98,7 @@
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">La fiche d'un client</h1>
-  <p class="pl-verdict">Mme Costa, qui a des devis, des factures et des fiches. Tout y est, avec <b>son nom en carte de visite</b> et ses trois gestes en grandes tuiles.</p>
+  <p class="pl-verdict">Mme Costa, qui a des devis, des factures et des fiches. Tout y est, en plus léger : <b>ni cadre ni bouton</b>, des mots qu'on touche.</p>
 </header>
 
 <main class="pl-scene">
@@ -107,6 +110,10 @@
         <button type="button" data-etat="complet" aria-pressed="true">Mme Costa</button>
         <button type="button" data-etat="neuf">Un client tout neuf</button>
       </div>
+      <div class="pl-etats" id="choix-couleurs">
+        <button type="button" data-couleurs="deux" aria-pressed="true">Vert et doré</button>
+        <button type="button" data-couleurs="trois" aria-pressed="false">Une couleur chacun</button>
+      </div>
       <div class="cadre">
         <div class="ecran avec-barre" data-etat="complet" id="ecran-client">
           <div class="defile">
@@ -115,16 +122,16 @@
               <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
             </div>
 
-            <div class="plage carte-visite">
+            <div class="carte-visite">
               <p class="client-mot">Client</p>
               <h1 class="client-nom" data-si-etat="complet">Mme Costa</h1>
               <h1 class="client-nom" data-si-etat="neuf">M. Morin</h1>
               <div data-si-etat="complet">
-                <button class="coordonnee touche" type="button" data-note="Sur la planche, l'adresse ne s'ouvre pas dans les cartes."><svg class="ico" aria-hidden="true"><use href="#i-lieu"/></svg>12 chemin des Vignes, 49800 Trélazé</button>
-                <button class="coordonnee touche" type="button" data-note="Sur la planche, l'appel ne part pas."><svg class="ico" aria-hidden="true"><use href="#i-telephone"/></svg><span class="coordonnee-tel">06 21 43 65 87</span></button>
+                <a class="coordonnee touche" href="https://www.google.com/maps/search/?api=1&amp;query=12%20chemin%20des%20Vignes%2049800%20Tr%C3%A9laz%C3%A9" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-lieu"/></svg><span>12 chemin des Vignes, 49800 Trélazé</span></a>
+                <a class="coordonnee touche" href="tel:+33639984514"><svg class="ico" aria-hidden="true"><use href="#i-telephone"/></svg><span class="coordonnee-tel">06 39 98 45 14</span></a>
               </div>
               <div data-si-etat="neuf">
-                <button class="coordonnee touche" type="button" data-note="Sur la planche, l'appel ne part pas."><svg class="ico" aria-hidden="true"><use href="#i-telephone"/></svg><span class="coordonnee-tel">06 45 18 27 63</span></button>
+                <a class="coordonnee touche" href="tel:+33639982763"><svg class="ico" aria-hidden="true"><use href="#i-telephone"/></svg><span class="coordonnee-tel">06 39 98 27 63</span></a>
               </div>
               <div class="carte-gestes">
                 <a class="touche" href="client-coordonnees.html"><svg class="ico" aria-hidden="true"><use href="#i-crayon"/></svg>Modifier ses coordonnées</a>
@@ -133,13 +140,13 @@
             </div>
 
             <div class="repartir" data-si-etat="complet">
-              <a class="tuile-geste tuile-pleine touche" href="chantier-devis-complet.html"><svg class="ico" aria-hidden="true"><use href="#i-annuler"/></svg>Dernier devis</a>
-              <a class="tuile-geste tuile-or touche" href="chantier-nouveau.html"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Nouveau devis</a>
-              <a class="tuile-geste tuile-or touche" href="client-contrat.html"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>Contrat d'entretien</a>
+              <a class="mot-geste mot-vert" href="chantier-devis-complet.html">Dernier devis</a>
+              <a class="mot-geste mot-or" href="chantier-nouveau.html">Nouveau devis</a>
+              <a class="mot-geste mot-or mot-contrat" href="client-contrat.html">Contrat d'entretien</a>
             </div>
             <div class="repartir deux" data-si-etat="neuf">
-              <a class="tuile-geste tuile-or touche" href="chantier-nouveau.html"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Nouveau devis</a>
-              <a class="tuile-geste tuile-or touche" href="client-contrat.html"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>Contrat d'entretien</a>
+              <a class="mot-geste mot-or" href="chantier-nouveau.html">Nouveau devis</a>
+              <a class="mot-geste mot-or mot-contrat" href="client-contrat.html">Contrat d'entretien</a>
             </div>
 
             <div class="plage prestation" data-si-etat="complet">
@@ -152,21 +159,19 @@
 
             <section class="dossier" aria-label="Son dossier">
               <div class="onglets-dossier" role="tablist">
-                <button type="button" role="tab" aria-selected="true" data-registre="0">Devis<span class="nb" data-si-etat="complet">2</span></button>
-                <button type="button" role="tab" aria-selected="false" data-registre="1">Factures<span class="nb" data-si-etat="complet">2</span></button>
-                <button type="button" role="tab" aria-selected="false" data-registre="2">Fiches<span class="nb" data-si-etat="complet">2</span></button>
+                <button type="button" role="tab" aria-selected="true" data-registre="0">Devis</button>
+                <button type="button" role="tab" aria-selected="false" data-registre="1">Factures</button>
+                <button type="button" role="tab" aria-selected="false" data-registre="2">Fiches</button>
                 <span class="trait-dossier" aria-hidden="true"><span></span></span>
               </div>
 
               <div class="registre" data-registre-panneau="0">
                 <div data-si-etat="complet">
                   <button class="piece touche" type="button" data-ouvre="feuille-piece" data-titre="n° 2026-000024" data-jour="3 octobre 2026">
-                    <span class="piece-ico"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg></span>
                     <span class="piece-corps"><span class="piece-titre">n° 2026-000024</span><span class="piece-date">3 octobre 2026</span></span>
                     <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
                   </button>
                   <button class="piece touche" type="button" data-ouvre="feuille-piece" data-titre="n° 2026-000012" data-jour="2 juin 2026">
-                    <span class="piece-ico"><svg class="ico" aria-hidden="true"><use href="#i-document"/></svg></span>
                     <span class="piece-corps"><span class="piece-titre">n° 2026-000012</span><span class="piece-date">2 juin 2026</span></span>
                     <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
                   </button>
@@ -177,13 +182,11 @@
               <div class="registre" data-registre-panneau="1" hidden>
                 <div data-si-etat="complet">
                   <button class="piece touche" type="button" data-ouvre="feuille-piece" data-titre="n° F2026-000014" data-jour="22 octobre 2026">
-                    <span class="piece-ico"><svg class="ico" aria-hidden="true"><use href="#i-facture"/></svg></span>
                     <span class="piece-corps"><span class="piece-titre">n° F2026-000014</span><span class="piece-date">22 octobre 2026</span>
                       <span class="piece-reception"><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>Réception confirmée le <b>22/10</b></span></span>
                     <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
                   </button>
                   <button class="piece touche" type="button" data-ouvre="feuille-piece" data-titre="n° F2026-000004" data-jour="19 juin 2026">
-                    <span class="piece-ico"><svg class="ico" aria-hidden="true"><use href="#i-facture"/></svg></span>
                     <span class="piece-corps"><span class="piece-titre">n° F2026-000004</span><span class="piece-date">19 juin 2026</span>
                       <span class="piece-reception">Ouverte le <b>20/06</b></span></span>
                     <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
@@ -195,12 +198,10 @@
               <div class="registre" data-registre-panneau="2" hidden>
                 <div data-si-etat="complet">
                   <button class="piece touche" type="button" data-ouvre="feuille-fiche" data-titre="8 octobre 2026" data-jour="6 prestations">
-                    <span class="piece-ico"><svg class="ico" aria-hidden="true"><use href="#i-feuille"/></svg></span>
                     <span class="piece-corps"><span class="piece-titre">8 octobre 2026</span><span class="piece-date">6 prestations</span></span>
                     <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
                   </button>
                   <button class="piece touche" type="button" data-ouvre="feuille-fiche" data-titre="10 septembre 2026" data-jour="4 prestations">
-                    <span class="piece-ico"><svg class="ico" aria-hidden="true"><use href="#i-feuille"/></svg></span>
                     <span class="piece-corps"><span class="piece-titre">10 septembre 2026</span><span class="piece-date">4 prestations</span></span>
                     <svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg>
                   </button>
@@ -282,15 +283,16 @@
   <section class="pl-notes">
     <h2>Ce qui change</h2>
     <ul>
-      <li>Le nom, l'adresse et le téléphone forment une carte de visite dorée, avec ses deux gestes en bas : Modifier ses coordonnées et Tout télécharger.</li>
-      <li>Dernier devis, Nouveau devis et Contrat d'entretien deviennent trois grandes tuiles égales, leur dessin au-dessus du mot. Les mots ne sont plus coupés.</li>
-      <li>Chaque onglet dit combien il range (Devis 2, Factures 2, Fiches 2), et chaque pièce a son dessin.</li>
+      <li>Plus d'encadré : le nom, l'adresse et le téléphone se posent sur le fond.</li>
+      <li>Toucher le téléphone lance l'appel, toucher l'adresse ouvre le plan.</li>
+      <li>Dernier devis, Nouveau devis et Contrat d'entretien sont de simples mots soulignés : Dernier devis en vert, les deux autres en doré. Essaie aussi « Une couleur chacun », au-dessus du téléphone.</li>
+      <li>Les pièces n'ont plus d'icône, les onglets plus de chiffre.</li>
       <li>Supprimer ce client s'écrit en toutes lettres, au lieu de petites capitales.</li>
-      <li>Toucher l'adresse ou le téléphone pourrait ouvrir les cartes ou appeler : à dire si tu le veux.</li>
+      <li>Écrits assez grand pour se lire, les trois mots ne tiennent plus sur une seule ligne : Contrat d'entretien passe dessous.</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
     <ul class="garde">
-      <li>« Client » en doré au-dessus du nom, le doré de l'appli partout, le vert plein pour Dernier devis seulement.</li>
+      <li>« Client » en doré au-dessus du nom, et le doré de l'appli partout.</li>
       <li>Les trois gestes sur une rangée, les onglets et leur trait d'or qui glisse, la réception sous chaque facture.</li>
       <li>La feuille d'une pièce (Télécharger, Ouvrir, Partager) et la feuille de suppression avec sa case.</li>
     </ul>
@@ -323,6 +325,13 @@
         var fiche = p.getAttribute("data-ouvre") === "feuille-fiche";
         document.getElementById(fiche ? "fiche-titre" : "piece-titre").textContent = p.getAttribute("data-titre");
         document.getElementById(fiche ? "fiche-jour" : "piece-jour").textContent = p.getAttribute("data-jour");
+      });
+    });
+    /* Les couleurs des trois mots : vert et doré, ou une couleur chacun. */
+    document.querySelectorAll("#choix-couleurs [data-couleurs]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        ecran.setAttribute("data-couleurs", b.getAttribute("data-couleurs"));
+        document.querySelectorAll("#choix-couleurs [data-couleurs]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
       });
     });
     document.querySelectorAll("[data-note]").forEach(function (b) {
