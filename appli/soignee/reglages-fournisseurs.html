@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ce que je paie, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  FOURNISSEURS ET PARTENAIRES, l'écran « Ce que je paie »
+  (src/app/reglages/fournisseurs/page.tsx, FournisseursPartenaires.tsx,
+  src/lib/prix-achat.ts, src/lib/devis-fournisseur-lu.ts).
+
+  Sa planche du 18 et du 19 octobre (appli/reglages-fournisseurs-partenaires.html,
+  validée) fait la règle : ses fournisseurs et leurs prix, ses partenaires et le
+  prix de leur main d'œuvre, deux marges en coefficient, refusées au delà de
+  × 3, la recherche et le rangement de A à Z des clients, la fiche de chaque
+  société (Prix, Devis, Factures, Demandes), rien d'écrit avant son appui.
+
+  Ce qui change : les deux onglets deviennent un choix à pastille, le vert plein
+  restant à un seul geste ; la marge passe en tête sur une bande dorée, le
+  signe × devant la case ; chaque société a ses initiales comme un client et sa
+  marge dans une pastille ; la fiche met sa marge et son adresse en tête, puis
+  ses quatre parties ; le prix d'achat s'écrit « 8,00 € par sac » comme Mes
+  tarifs.
+
+  Les sociétés sont fictives (Pépinières Rivière et Jardinerie du Centre sont
+  déjà celles des planches des Terminés). Les montants sont ceux du code (le
+  sac de ciment à 8 €, ses marges × 1,30 et × 1,20, la pose de clôture à 10 €
+  le mètre, scripts/test-prix-achat.ts), ou des montants ronds d'exemple.
+*/
+.tete-situation { margin: -12px 0 18px; font-size: 15px; color: var(--atlas-inkSoft); }
+
+/* La marge : la bande dorée, le signe × devant la case. */
+.plage-marge { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 12px; margin-top: 14px;
+               padding: 12px 14px 12px 16px; border-radius: var(--r-plage); background: color-mix(in srgb, var(--atlas-or) 13%, transparent); }
+.marge-mot { font-size: 16.5px; font-weight: 600; line-height: 1.3; color: var(--atlas-ink); }
+.coef { display: inline-flex; align-items: center; gap: 8px; }
+.fois { font: 400 22px/1 var(--serif); color: var(--atlas-inkSoft); }
+.coef input { width: 86px; height: 50px; padding: 0 12px; border: 0; border-radius: 10px; outline: none; text-align: right;
+              background: var(--atlas-card); color: var(--atlas-ink); font: 400 20px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums;
+              box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.coef input:focus { box-shadow: inset 0 0 0 2px var(--atlas-or); }
+/* Le trait doré suffit à dire où l'on tape : pas de second cadre par-dessus. */
+.coef input:focus-visible, .champ-recherche input:focus-visible { outline: none; }
+.conseil { grid-column: 1 / -1; margin: 6px 0 0; font-size: 14px; font-weight: 600; line-height: 1.4; color: var(--atlas-alerte); }
+.marge-phrase { grid-column: 1 / -1; margin: 4px 0 0; font-size: 14px; line-height: 1.4; color: var(--atlas-inkSoft); }
+
+/* La recherche des clients : la loupe dorée, un trait dessous. */
+.champ-recherche { display: flex; align-items: center; gap: 10px; min-height: 52px; margin-top: 10px;
+                   box-shadow: inset 0 -1.5px 0 var(--atlas-line); transition: box-shadow 200ms var(--courbe); }
+.champ-recherche:focus-within { box-shadow: inset 0 -2px 0 var(--atlas-or); }
+.champ-recherche .ico { color: var(--atlas-or); }
+.champ-recherche input { flex: 1; min-width: 0; height: 48px; border: 0; background: transparent; outline: none;
+                         font: 400 17px/1 var(--sans); color: var(--atlas-ink); }
+.champ-recherche input::placeholder { color: var(--atlas-muted); }
+.champ-recherche input::-webkit-search-cancel-button { display: none; }
+mark { background: color-mix(in srgb, var(--atlas-or) 30%, transparent); color: inherit; border-radius: 3px; }
+
+/* La liste : de A à Z sous sa lettre, comme les clients. */
+.groupe { margin-top: 10px; padding: 2px 16px; }
+.lettre { margin: 0; padding: 14px 0 2px; font: 400 17px/1 var(--serif); color: var(--atlas-inkSoft); }
+.bloc-lettre + .bloc-lettre { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.societe { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 76px; padding: 10px 0 12px; text-align: left; }
+.societe + .societe::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.initiales { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%;
+             font: 400 17px/1 var(--serif); background: var(--atlas-rustTint); color: var(--atlas-rust); }
+.societe-corps { flex: 1; min-width: 0; }
+.societe-nom { display: block; font: 400 18.5px/1.25 var(--serif); overflow-wrap: anywhere; }
+.societe-resume { display: block; margin-top: 2px; font-size: 14px; line-height: 1.4; color: var(--atlas-inkSoft); }
+.societe .etat { margin-top: 7px; }
+.societe > .ico { width: 20px; height: 20px; color: var(--atlas-or); stroke-width: 2; }
+.vide-societes { margin-top: 14px; padding: 26px 18px 22px; text-align: center; }
+.vide-societes .ico { display: block; width: 36px; height: 36px; margin: 0 auto 10px; color: var(--atlas-or); stroke-width: 1.5; }
+.vide-societes p { margin: 0 auto; max-width: 18em; font-size: 15.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.rien { margin: 0; padding: 22px 4px; text-align: center; font-size: 15px; color: var(--atlas-inkSoft); }
+
+.ajout { display: flex; gap: 10px; margin-top: 12px; }
+.ajout .champ-saisie { flex: 1; min-width: 0; }
+.ajout .bouton { flex: none; width: auto; min-height: 52px; padding: 0 20px; }
+.refus { margin: 8px 2px 0; font-size: 14px; font-weight: 600; line-height: 1.4; color: var(--atlas-alerte); }
+
+.reserve { display: flex; align-items: flex-start; gap: 14px; }
+.reserve p { margin: 2px 0 0; font-size: 16px; line-height: 1.5; }
+
+/* ─── La fiche d'une société ─────────────────────────────────────────────── */
+.feuille-dedans { padding-bottom: 28px; }
+.fiche-tete { display: flex; align-items: center; gap: 12px; margin: 4px 0 2px; }
+.fiche-tete .feuille-titre { flex: 1; min-width: 0; margin: 0; }
+.fermer-fiche { min-height: 44px; font-size: 16px; font-weight: 600; color: var(--atlas-rust); }
+.plage.mail { display: block; margin-top: 10px; padding: 12px 16px 13px; }
+.plage.mail .reglage-valeur { margin-top: 4px; }
+.parties { margin-top: 16px; }
+.parties button { padding: 0 4px; }
+.filtre-date { display: flex; align-items: center; justify-content: center; gap: 2px; margin-top: 12px; }
+.chevron-or { width: 44px; height: 48px; display: grid; place-items: center; color: var(--atlas-or); }
+.chevron-or[disabled] { color: var(--atlas-line); cursor: default; }
+.mois-titre { min-height: 48px; padding: 0 6px; font: 400 25px/1.2 var(--serif); color: var(--atlas-ink); }
+.fiche-liste { margin-top: 10px; padding: 2px 16px; }
+.fiche-liste .lettre { padding-top: 12px; }
+.prix-ligne { position: relative; display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; }
+.prix-ligne + .prix-ligne::before, .recu-ligne + .recu-ligne::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.prix-corps { flex: 1; min-width: 0; }
+.prix-nom { display: block; font: 400 17.5px/1.3 var(--serif); overflow-wrap: anywhere; }
+.prix-corps small { text-wrap: pretty; display: block; margin-top: 3px; font-size: 13.5px; line-height: 1.35; color: var(--atlas-inkSoft); }
+.prix-montant { flex: none; display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+.prix-montant b { font-size: 16.5px; font-weight: 700; line-height: 1.25; font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.prix-montant s { margin-right: 6px; font-size: 14px; font-weight: 400; color: var(--atlas-inkSoft); }
+.prix-montant small { margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); white-space: nowrap; }
+.retirer-prix { min-height: 40px; margin-top: 2px; padding-left: 10px; font-size: 15px; font-weight: 600; color: var(--atlas-alerte); }
+.ajout-prix { display: grid; grid-template-columns: minmax(0, 1fr) 96px 92px; gap: 8px; margin-top: 14px; }
+.ajout-prix .champ-saisie { min-height: 50px; padding: 12px; }
+.ajout-prix .prix-ht { text-align: right; }
+.ajout-prix + .bouton { margin-top: 10px; }
+.recu-ligne { position: relative; display: flex; align-items: center; gap: 12px; min-height: 66px; padding: 10px 0; }
+.recu-corps { flex: 1; min-width: 0; }
+.recu-corps b { display: block; font: 400 17.5px/1.3 var(--serif); }
+.recu-corps small { text-wrap: pretty; display: block; margin-top: 2px; font-size: 14px; line-height: 1.35; color: var(--atlas-inkSoft); }
+.voir { flex: none; min-height: 44px; padding: 0 2px 0 8px; font-size: 15.5px; font-weight: 600; color: var(--atlas-or); }
+/* La photo d'un devis en miniature : une feuille de papier blanc. */
+.vignette { width: 44px; height: 44px; flex: none; display: flex; flex-direction: column; gap: 4px; padding: 8px 7px; border-radius: 6px;
+            background: #fff; box-shadow: 0 1px 2px rgba(28,28,26,0.12), inset 0 0 0 1px rgba(28,28,26,0.06); }
+.ecran[data-sombre] .vignette { background: #f6f4ee; }
+.vignette i { display: block; height: 3px; border-radius: 2px; background: rgba(28,28,26,0.18); }
+.vignette i:first-child { width: 62%; background: rgba(28,28,26,0.5); }
+.vignette i:nth-child(3) { width: 72%; }
+.nom-recu { margin-top: 12px; }
+.fiche-gestes .bouton + .bouton { margin-top: 10px; }
+.fiche-gestes { margin-top: 10px; }
+.lecture { display: flex; align-items: center; gap: 10px; margin: 14px 2px 0; font-size: 15px; color: var(--atlas-inkSoft); }
+.lecture::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--atlas-or); animation: battre 900ms var(--courbe) infinite alternate; }
+@keyframes battre { from { opacity: 0.25; } to { opacity: 1; } }
+
+/* Ce qu'Atlas a lu : chaque ligne se décoche, rien n'est écrit avant l'appui. */
+.lu { margin-top: 12px; padding: 4px 16px 12px; }
+.lu-ligne { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 62px; padding: 10px 0; text-align: left; }
+.lu-ligne + .lu-ligne::before { content: ""; position: absolute; left: 34px; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.lu-corps { flex: 1; min-width: 0; }
+.lu-corps b { display: block; font: 400 17px/1.3 var(--serif); }
+.lu-corps small { display: block; margin-top: 2px; font-size: 13.5px; color: var(--atlas-inkSoft); }
+.lu-corps small.hausse { color: var(--atlas-carteRougeTexte); font-weight: 600; }
+.lu-prix { flex: none; text-align: right; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lu-prix.hausse { color: var(--atlas-carteRougeTexte); }
+.lu-prix s { display: block; font-size: 13.5px; font-weight: 400; color: var(--atlas-inkSoft); }
+.lu-ecartees { margin: 4px 0 0; padding: 8px 0 0; font-size: 14px; color: var(--atlas-carteAmbreTexte); font-weight: 600; box-shadow: inset 0 1px 0 var(--atlas-line); }
+.lu-total { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px; margin-top: 8px; padding-top: 10px; font-size: 14.5px; color: var(--atlas-inkSoft);
+            box-shadow: inset 0 1px 0 var(--atlas-line); font-variant-numeric: tabular-nums; }
+.lu-total b { margin-left: auto; color: var(--atlas-ink); text-align: right; white-space: nowrap; }
+.lu .bouton-plein { margin-top: 12px; }
+.lu .bouton-texte { width: 100%; justify-content: center; color: var(--atlas-inkSoft); }
+.tiroir-fiche { margin-top: 12px; }
+.note-fiche { position: sticky; bottom: 0; z-index: 2; margin-top: 12px; }
+.cadre-capture .sans-capture { margin: 0; padding: 120px 32px; text-align: center; font-size: 15px; color: #4a4a44; }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="reglages.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Réglages</a>
+  <h1 class="pl-titre">Fournisseurs et partenaires</h1>
+  <p class="pl-verdict">Tout ce qu'il a validé le 19 octobre, à la même place sauf un geste : <b>la marge passe en tête</b>, sur une bande dorée, le signe × devant la case. Chaque société a ses initiales et sa marge en pastille, et sa fiche met <b>sa marge et son adresse</b> avant ses prix.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- ═══ PROPOSÉ ═══ -->
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats" data-ecran="#ecran-paie, #capture-paie">
+        <button type="button" data-etat="rempli" aria-pressed="true">Trois fournisseurs</button>
+        <button type="button" data-etat="fiche">Une fiche ouverte</button>
+        <button type="button" data-etat="vide">Un compte neuf</button>
+        <button type="button" data-etat="salarie">Un salarié</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" data-etat="rempli" id="ecran-paie">
+          <div class="defile">
+            <div class="tete-ronds">
+              <a class="rond-creux" href="reglages.html" aria-label="Retour aux réglages"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <header class="tete" style="margin-top:0"><h1 class="tete-titre">Ce que je paie</h1></header>
+
+            <div class="plage reserve" data-si-etat="salarie">
+              <span class="pastille-ico" data-ton="bleu"><svg class="ico" aria-hidden="true"><use href="#i-cadenas"/></svg></span>
+              <p>Les prix d’achat ne se consultent pas depuis ce compte. Ces réglages appartiennent au patron de l'entreprise.</p>
+            </div>
+
+            <div data-si-etat="rempli fiche vide">
+              <p class="tete-situation">Prix d’achat, à part de vos prix de vente.</p>
+              <div class="choix" role="group" aria-label="Rubrique">
+                <button type="button" aria-pressed="true" data-rubrique="fournisseur">Mes fournisseurs</button>
+                <button type="button" aria-pressed="false" data-rubrique="partenaire">Mes partenaires</button>
+              </div>
+
+              <!-- Une marge par onglet : le matériel chez les fournisseurs, la main d'œuvre chez les partenaires. -->
+              <div class="plage-marge">
+                <label class="marge-mot" for="marge-generale" id="marge-mot">Ma marge sur le matériel</label>
+                <span class="coef"><span class="fois" aria-hidden="true">×</span><input id="marge-generale" inputmode="decimal" autocomplete="off" aria-label="Marge sur le matériel"></span>
+                <p class="conseil" id="conseil" hidden></p>
+              </div>
+
+              <label class="champ-recherche" id="recherche-zone">
+                <svg class="ico" aria-hidden="true"><use href="#i-recherche"/></svg>
+                <input type="search" id="chercher" placeholder="Chercher un fournisseur" autocomplete="off" aria-label="Chercher">
+              </label>
+
+              <div id="liste-zone"></div>
+
+              <div class="ajout">
+                <input class="champ-saisie" id="nom-nouveau" placeholder="Un autre fournisseur" aria-label="Nom" autocomplete="off">
+                <button class="bouton bouton-creux" type="button" id="ajouter-societe">Ajouter</button>
+              </div>
+              <p class="refus" id="refus-liste" hidden></p>
+            </div>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+
+          <!-- La fiche d'une société : sa marge, son adresse, puis Prix, Devis, Factures, Demandes. -->
+          <section class="feuille" id="feuille-societe" aria-hidden="true" aria-label="La fiche d'une société">
+            <div class="feuille-poignee" data-ferme></div>
+            <div class="feuille-dedans" id="fiche"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AUJOURD'HUI : la capture suit l'état choisi ═══ -->
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture" id="capture-paie">
+          <img data-si-etat="rempli" src="aujourdhui/reglages-fournisseurs-rempli.jpg" alt="L'écran Ce que je paie aujourd'hui, avec trois fournisseurs entrés dans la base d'essai par l'appli">
+          <img data-si-etat="fiche" src="aujourdhui/reglages-fournisseurs-fiche.jpg" alt="La fiche de Matériaux Martin telle qu'elle s'ouvre aujourd'hui">
+          <img data-si-etat="vide" src="aujourdhui/reglages-fournisseurs.jpg" alt="L'écran Ce que je paie aujourd'hui, sans aucun fournisseur">
+          <p class="sans-capture" data-si-etat="salarie">Pas de capture ici : le jeu d'essai n'a pas de compte salarié.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Mes fournisseurs et Mes partenaires deviennent un choix à deux mots où la pastille glisse : le vert plein n'est plus un onglet.</li>
+      <li>La marge passe en tête, sur une bande dorée, avec le signe × devant la case : on lit « × 1,30 » avant la liste qu'elle couvre. Aujourd'hui elle attend sous la liste, et descendrait hors de l'écran avec une dizaine de fournisseurs.</li>
+      <li>Chaque société a ses initiales, comme un client, et sa marge dans une pastille dorée. « Marge à donner » se lit en ambre, ce qui reste à faire (videz la case de la marge pour la voir).</li>
+      <li>La phrase et les onglets s'alignent sur le titre : aujourd'hui ils dépassent de 10 px à gauche.</li>
+      <li>Sur un compte neuf, la recherche se cache tant qu'il n'y a personne à chercher.</li>
+      <li>La fiche met sa marge et son adresse mail en tête, puis Prix, Devis, Factures, Demandes dans le même choix à pastille. Aujourd'hui la recherche passe au-dessus de la marge.</li>
+      <li>Un prix d'achat s'écrit « 8,00 € par sac », l'ancien barré devant, comme dans Mes tarifs.</li>
+      <li>Retirer un prix d'achat ouvre le tiroir Annuler, comme un tarif. C'est une proposition : aujourd'hui il part sans retour.</li>
+      <li>Ce qu'Atlas a lu sur un devis ou une facture : chaque ligne se coche d'un rond doré, une hausse se dit en rouge avec l'ancien prix barré. Tant que la lecture attend sa réponse, les boutons de photo s'effacent : un seul bouton plein à la fois.</li>
+      <li>Le bouton dit « Ajouter ces 3 prix » au lieu de « Mettre 3 prix dans « Mes prix » » : l'onglet s'appelle Prix, et « Mes prix » est l'écran des grilles de vente, sous Tarifs &amp; catalogue.</li>
+      <li>Le libellé doré « RÉGLAGES » sous le titre part, comme sur le sommaire.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Le titre Ce que je paie et sa phrase, les deux onglets, une marge par onglet en coefficient. Au delà de × 3 elle est refusée, avec ce qu'il fallait taper : essayez 20.</li>
+      <li>La recherche des clients, de A à Z sous leur lettre. Une société se trouve aussi par ce qu'elle porte : essayez « ciment ».</li>
+      <li>Une marge propre par société (Pépinières Rivière a la sienne, × 1,50). Vide, la générale reprend.</li>
+      <li>Les unités de la planche du 19 octobre, la photo ou le fichier d'un devis et d'une facture, le mois qui se feuillette entre deux chevrons dorés, les listes envoyées et leur date.</li>
+      <li>Rien n'est écrit avant son appui. Son prix de vente passe toujours avant un prix d'achat.</li>
+      <li>Le patron seul ouvre la rubrique.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>La marge en tête de la liste (proposé), ou dessous comme aujourd'hui.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="reglages-documents.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Devis &amp; factures</a>
+  <a href="reglages-ia.html">Atlas IA<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var ecran = $("ecran-paie");
+  var AUJOURDHUI = "2026-10-25";
+  var MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+  var UNITES = { fournisseur: ["pièce", "sac", "m", "m²", "m³", "kg", "palette"], partenaire: ["heure", "journée", "m", "m²", "forfait"] };
+
+  /* Les sociétés de la planche : fictives, et des montants du code ou ronds. */
+  function demo() {
+    return {
+      marges: { fournisseur: "1.30", partenaire: "1.20" },
+      fournisseur: [
+        { nom: "Jardinerie du Centre", marge: null, email: "", prix: [], devis: [], factures: [], demandes: [] },
+        { nom: "Matériaux Martin", marge: null, email: "",
+          prix: [
+            { nom: "Bordure béton", unite: "pièce", prix: "10.00", avant: null, source: "Tapé le 12/10/2026" },
+            { nom: "Gravier", unite: "m³", prix: "20.00", avant: null, source: "Tapé le 12/10/2026" },
+            { nom: "Sac de ciment", unite: "sac", prix: "8.00", avant: "7.50", source: "Lu sur le devis « Chantier Costa » du 14/10/2026" }
+          ],
+          devis: [{ nom: "Chantier Costa", jour: "2026-10-14", nature: "photo" }],
+          factures: [],
+          demandes: [{ nom: "Chantier Costa", jour: "2026-10-14", lignes: 6 }] },
+        { nom: "Pépinières Rivière", marge: "1.50", email: "",
+          prix: [
+            { nom: "Charme en godet", unite: "pièce", prix: "10.00", avant: null, source: "Lu sur la facture « Plants d’automne » du 01/10/2026" },
+            { nom: "Terreau", unite: "sac", prix: "10.00", avant: null, source: "Tapé le 12/10/2026" }
+          ],
+          devis: [],
+          factures: [{ nom: "Plants d’automne", jour: "2026-10-01", nature: "pdf", ttc: "1284.00" }],
+          demandes: [] }
+      ],
+      partenaire: [
+        { nom: "Pilou", marge: null, email: "",
+          prix: [{ nom: "Pose de clôture", unite: "m", prix: "10.00", avant: null, source: "Tapé le 12/10/2026" }],
+          devis: [], factures: [], demandes: [] }
+      ]
+    };
+  }
+  function neuf() { return { marges: { fournisseur: null, partenaire: null }, fournisseur: [], partenaire: [] }; }
+
+  var D = demo();
+  var rubrique = "fournisseur";
+  var ouverte = null, partie = "prix", periode = AUJOURDHUI.slice(0, 7), lu = null;
+
+  // ─── Les règles de src/lib/prix-achat.ts, recopiées telles quelles ───────
+  var virgule = function (n) { return String(n).replace(".", ","); };
+  function nombreLu(brut) { var t = String(brut).replace(/\s/g, "").replace(",", "."); return t === "" || !/^\d+(\.\d+)?$/.test(t) ? null : Number(t); }
+  function conseilDeMarge(n) { return "« " + virgule(n) + " » ferait × " + virgule(n) + ". Pour " + virgule(n) + " % de marge, tapez " + virgule((1 + n / 100).toFixed(2)) + "."; }
+  function lireMarge(brut) {
+    if (String(brut).trim() === "") return { ok: true, marge: null };
+    var n = nombreLu(brut);
+    if (n === null || n <= 0) return { ok: false, raison: "Tapez un coefficient : 1,30 pour 30 % de marge." };
+    if (n > 3) return { ok: false, raison: conseilDeMarge(n) };
+    return { ok: true, marge: n.toFixed(2) };
+  }
+  function lireAdresseMail(brut) {
+    var e = String(brut).trim();
+    if (e === "") return { ok: true };
+    if (e.length > 200 || /\s/.test(e) || !/^[^@]+@[^@]+$/.test(e)) return { ok: false, raison: "Tapez une adresse comme commande@fournisseur.fr." };
+    return { ok: true };
+  }
+  var enCoefficient = function (m) { return "× " + virgule(Number(m).toFixed(2)); };
+  function ligneDeMarge(propre, generale) {
+    var vaut = propre !== null ? propre : generale;
+    if (vaut === null) return null;
+    return "Marge " + enCoefficient(vaut) + (propre !== null ? ", la sienne" : "");
+  }
+  function phraseDeLaMargePropre(propre, generale) {
+    if (propre !== null) return "La sienne. Videz la case pour reprendre la marge générale" + (generale !== null ? " (" + enCoefficient(generale) + ")" : "") + ".";
+    if (generale !== null) return "Votre marge générale, " + enCoefficient(generale) + ". Tapez-en une autre pour lui seul.";
+    return "Pas encore donnée.";
+  }
+  var pluriel = function (n, un, plusieurs) { return n + " " + (n > 1 ? plusieurs : un); };
+  function resume(s) { return [pluriel(s.prix.length, "prix", "prix"), pluriel(s.devis.length, "devis reçu", "devis reçus"), pluriel(s.demandes.length, "demande", "demandes")].join(", "); }
+  function euros(p) { return Number(p).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "\u00a0€"; }
+  var jourFr = function (iso) { return iso.split("-").reverse().join("/"); };
+
+  // ─── La recherche et le rangement des clients (recherche-client.ts) ─────
+  function texte(s) { var e = document.createElement("span"); e.textContent = s == null ? "" : String(s); return e.innerHTML; }
+  var plat = function (s) { return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim(); };
+  function trouve(nom, saisie) { var mots = plat(saisie).split(" ").filter(Boolean); var n = plat(nom); return mots.every(function (m) { return n.indexOf(m) >= 0; }); }
+  function surligner(nom, saisie) {
+    var mots = plat(saisie).split(" ").filter(Boolean);
+    if (!mots.length) return texte(nom);
+    var base = String(nom).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    var marque = new Array(nom.length).fill(false);
+    mots.forEach(function (m) { var i = base.indexOf(m); while (i >= 0) { for (var k = i; k < i + m.length; k++) marque[k] = true; i = base.indexOf(m, i + 1); } });
+    var h = "", ouvert = false;
+    for (var i = 0; i < nom.length; i++) {
+      if (marque[i] && !ouvert) { h += "<mark>"; ouvert = true; }
+      if (!marque[i] && ouvert) { h += "</mark>"; ouvert = false; }
+      h += texte(nom[i]);
+    }
+    return h + (ouvert ? "</mark>" : "");
+  }
+  var lettre = function (nom) { var c = plat(nom).charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; };
+  var deAaZ = function (l) { return l.slice().sort(function (a, b) { return plat(a.nom).localeCompare(plat(b.nom), "fr"); }); };
+  function enBandes(lignes, saisie, ligne) {
+    var cherche = !!plat(saisie), h = "", avant = null;
+    deAaZ(lignes).forEach(function (x) {
+      var b = lettre(x.nom);
+      if (!cherche && b !== avant) h += (avant !== null ? "</div>" : "") + '<div class="bloc-lettre"><p class="lettre">' + b + "</p>";
+      else if (cherche && avant === null) h += '<div class="bloc-lettre">';
+      avant = b;
+      h += ligne(x);
+    });
+    return h + (avant !== null ? "</div>" : "");
+  }
+  function initiales(nom) {
+    var mots = nom.split(/\s+/).filter(function (m) { return /^[A-ZÀ-Ý]/.test(m); });
+    return (mots[0] ? mots[0][0] : nom[0]) + (mots[1] ? mots[1][0] : "");
+  }
+  var contenu = function (s) { return [].concat(s.prix, s.devis, s.factures, s.demandes).map(function (x) { return x.nom; }); };
+  var ico = function (n, c) { return '<svg class="ico' + (c ? " " + c : "") + '" aria-hidden="true"><use href="#i-' + n + '"/></svg>'; };
+
+  // ─── La liste des sociétés ──────────────────────────────────────────────
+  function rendreMarge() {
+    var g = D.marges[rubrique];
+    $("marge-mot").textContent = rubrique === "fournisseur" ? "Ma marge sur le matériel" : "Ma marge sur la main d’œuvre";
+    $("marge-generale").setAttribute("aria-label", rubrique === "fournisseur" ? "Marge sur le matériel" : "Marge sur la main d’œuvre");
+    $("marge-generale").value = g === null ? "" : virgule(g);
+    $("conseil").hidden = true;
+    $("chercher").value = "";
+    $("chercher").placeholder = rubrique === "fournisseur" ? "Chercher un fournisseur" : "Chercher un partenaire";
+    $("nom-nouveau").placeholder = rubrique === "fournisseur" ? "Un autre fournisseur" : "Une société partenaire";
+    $("refus-liste").hidden = true;
+  }
+  function rendreListe() {
+    var liste = D[rubrique], g = D.marges[rubrique], saisie = $("chercher").value, zone = $("liste-zone");
+    $("recherche-zone").hidden = liste.length === 0;
+    if (!liste.length) {
+      zone.innerHTML = '<div class="plage vide-societes">' + ico("carton") + "<p>" +
+        (rubrique === "fournisseur" ? "Aucun fournisseur. Ajoutez la société chez qui vous achetez." : "Aucun partenaire. Ajoutez la société avec qui vous travaillez.") + "</p></div>";
+      return;
+    }
+    var montrees = liste.filter(function (s) { return trouve([s.nom].concat(contenu(s)).join(" "), saisie); });
+    if (!montrees.length) {
+      zone.innerHTML = '<p class="rien">' + (rubrique === "fournisseur" ? "Aucun fournisseur" : "Aucun partenaire") + " ne s’appelle « " + texte(saisie.trim()) + " ».</p>";
+      return;
+    }
+    zone.innerHTML = '<div class="plage groupe">' + enBandes(montrees, saisie, function (s) {
+      var i = liste.indexOf(s);
+      var aussi = plat(saisie) && !trouve(s.nom, saisie) ? contenu(s).filter(function (c) { return trouve(c, saisie); }) : [];
+      var marge = ligneDeMarge(s.marge, g);
+      return '<button class="societe touche" type="button" data-ouvrir="' + i + '"><span class="initiales" aria-hidden="true">' + texte(initiales(s.nom)) + "</span>" +
+        '<span class="societe-corps"><span class="societe-nom">' + surligner(s.nom, saisie) + "</span>" +
+        '<span class="societe-resume">' + (aussi.length ? aussi.map(function (t) { return surligner(t, saisie); }).join(", ") : texte(resume(s))) + "</span>" +
+        (marge ? '<span class="etat" data-ton="or">' + texte(marge) + "</span>" : '<span class="etat" data-ton="ambre">Marge à donner</span>') +
+        "</span>" + ico("suivant") + "</button>";
+    }) + "</div>";
+  }
+
+  // ─── La fiche ───────────────────────────────────────────────────────────
+  function titrePeriode(p) { var a = p.split("-").map(Number); var m = MOIS[a[1] - 1] + " " + a[0]; return m.charAt(0).toUpperCase() + m.slice(1); }
+  function moisVoisin(p, dec) { var a = p.split("-").map(Number), r = a[0] * 12 + (a[1] - 1) + dec; return Math.floor(r / 12) + "-" + String((r % 12) + 1).padStart(2, "0"); }
+  var datee = function () { return partie !== "prix"; };
+
+  function rendreFiche() {
+    var s = ouverte, g = D.marges[rubrique];
+    var noms = [["prix", "Prix"], ["devis", "Devis"], ["factures", "Factures"], ["demandes", "Demandes"]];
+    var place = { prix: rubrique === "fournisseur" ? "Chercher une fourniture" : "Chercher une prestation", devis: "Chercher un devis", factures: "Chercher une facture", demandes: "Chercher une demande" };
+    var h = '<div class="fiche-tete"><h2 class="feuille-titre">' + texte(s.nom) + '</h2><button class="fermer-fiche" type="button" data-ferme>Fermer</button></div>' +
+      '<div class="plage-marge"><label class="marge-mot" for="marge-propre">Ma marge chez ' + texte(s.nom) + "</label>" +
+      '<span class="coef"><span class="fois" aria-hidden="true">×</span><input id="marge-propre" inputmode="decimal" autocomplete="off" value="' + (s.marge === null ? "" : virgule(s.marge)) + '" aria-label="Marge chez ' + texte(s.nom) + '"></span>' +
+      '<p class="conseil" id="alerte-marge" hidden></p><p class="marge-phrase" id="phrase-marge">' + texte(phraseDeLaMargePropre(s.marge, g)) + "</p></div>";
+    if (rubrique === "fournisseur") {
+      h += '<label class="plage mail"><span class="reglage-libelle">Adresse mail</span><input class="reglage-valeur" id="adresse" type="email" inputmode="email" autocomplete="off" placeholder="commande@…" value="' + texte(s.email) + '" aria-label="Adresse mail de ' + texte(s.nom) + '"><span class="refus" id="refus-adresse" hidden></span></label>';
+    }
+    h += '<div class="choix parties" role="group" aria-label="Partie de la fiche">' + noms.map(function (n) {
+      return '<button type="button" data-partie="' + n[0] + '" aria-pressed="' + (n[0] === partie) + '">' + n[1] + "</button>";
+    }).join("") + "</div>";
+    if (datee()) h += '<div class="filtre-date" id="filtre-date"></div>';
+    h += '<label class="champ-recherche">' + ico("recherche") + '<input type="search" id="chercher-fiche" placeholder="' + place[partie] + '" autocomplete="off" aria-label="Chercher dans la fiche"></label>';
+    if (partie === "prix") {
+      h += '<div id="partie-liste"></div><div id="tiroir-fiche"></div>' +
+        '<div class="ajout-prix"><input class="champ-saisie" id="art-nom" placeholder="' + (rubrique === "fournisseur" ? "Fourniture" : "Prestation") + '" aria-label="Nom" autocomplete="off">' +
+        '<select class="champ-saisie" id="art-unite" aria-label="Unité">' + UNITES[rubrique].map(function (u) { return "<option>" + u + "</option>"; }).join("") + "</select>" +
+        '<input class="champ-saisie prix-ht" id="art-prix" inputmode="decimal" placeholder="Prix HT" aria-label="Prix HT" autocomplete="off"></div>' +
+        '<button class="bouton bouton-creux" type="button" id="ajouter-prix">Ajouter ce prix</button>';
+    } else if (partie === "devis" || partie === "factures") {
+      var f = partie === "factures";
+      h += '<div id="fiche-gestes"><input class="champ-saisie nom-recu" id="nom-recu" placeholder="' + (f ? "Nom de la facture, chantier ou client" : "Nom du devis, chantier ou client") + '" aria-label="' + (f ? "Nom de la facture" : "Nom du devis") + '" autocomplete="off">' +
+        '<div class="fiche-gestes"><button class="bouton bouton-plein" type="button" id="photo">' + ico("photo") + (f ? "Prendre une facture en photo" : "Prendre un devis en photo") + "</button>" +
+        '<button class="bouton bouton-creux" type="button" id="fichier">' + ico("document") + "PDF, photo ou Excel</button></div></div>" +
+        '<div id="lecture"></div><div id="partie-liste"></div>';
+    } else {
+      h += '<div id="partie-liste"></div>';
+    }
+    h += '<p class="refus" id="refus-fiche" hidden></p><div class="note-fiche" id="note-fiche"></div>';
+    $("fiche").innerHTML = h;
+    rendreFiltre();
+    rendrePartie();
+    rendreLu();
+  }
+
+  function rendreFiltre() {
+    var z = $("filtre-date");
+    if (!z) return;
+    var dernier = periode >= AUJOURDHUI.slice(0, 7);
+    z.innerHTML = '<button class="chevron-or" type="button" data-mois="-1" aria-label="Mois précédent">' + ico("retour") + "</button>" +
+      '<button class="mois-titre" type="button" id="mois-titre">' + titrePeriode(periode) + "</button>" +
+      '<button class="chevron-or" type="button" data-mois="1" aria-label="Mois suivant"' + (dernier ? " disabled" : "") + ">" + ico("suivant") + "</button>";
+  }
+
+  function rendrePartie() {
+    var s = ouverte, z = $("partie-liste"), q = $("chercher-fiche").value, cherche = !!plat(q);
+    var rien = function (quoi) { return '<p class="rien">' + quoi + " ne s’appelle « " + texte(q.trim()) + " ».</p>"; };
+    var enLettres = "en " + MOIS[Number(periode.slice(5, 7)) - 1] + " " + periode.slice(0, 4);
+    if (partie === "prix") {
+      var prix = s.prix.filter(function (p) { return trouve(p.nom, q); });
+      z.innerHTML = !s.prix.length ? '<p class="rien">' + (rubrique === "fournisseur" ? "Aucune fourniture encore. Ajoutez-en, ou prenez un de ses devis en photo." : "Aucun prix de main d’œuvre encore.") + "</p>" :
+        !prix.length ? rien(rubrique === "fournisseur" ? "Aucune fourniture" : "Aucune prestation") :
+        '<div class="plage fiche-liste">' + enBandes(prix, q, function (p) {
+          return '<div class="prix-ligne"><span class="prix-corps"><span class="prix-nom">' + surligner(p.nom, q) + "</span><small>" + texte(p.source) + "</small></span>" +
+            '<span class="prix-montant"><b>' + (p.avant ? "<s>" + euros(p.avant) + "</s>" : "") + euros(p.prix) + "</b><small>par " + texte(p.unite) + "</small>" +
+            '<button class="retirer-prix" type="button" data-retirer="' + s.prix.indexOf(p) + '" aria-label="Retirer ' + texte(p.nom) + '">Retirer</button></span></div>';
+        }) + "</div>";
+      return;
+    }
+    var f = partie === "factures";
+    var tous = partie === "devis" ? s.devis : f ? s.factures : s.demandes;
+    var montres = tous.filter(function (d) { return cherche ? trouve(d.nom, q) : d.jour.indexOf(periode) === 0; });
+    if (partie === "demandes") {
+      z.innerHTML = !tous.length ? '<p class="rien">Aucune demande envoyée à ' + texte(s.nom) + ". Les listes que vous lui envoyez depuis un devis ou le plan d’arrosage s’enregistrent ici, avec leur date.</p>" :
+        !montres.length ? (cherche ? rien("Aucune demande") : '<p class="rien">Aucune demande envoyée ' + enLettres + ".</p>") :
+        '<div class="plage fiche-liste">' + enBandes(montres, q, function (d) {
+          return '<div class="recu-ligne"><span class="pastille-ico">' + ico("envoyer") + '</span><span class="recu-corps"><b>' + surligner(d.nom, q) + "</b><small>Envoyée le " + jourFr(d.jour) + ", " + pluriel(d.lignes, "ligne", "lignes") + "</small></span></div>";
+        }) + "</div>";
+      return;
+    }
+    z.innerHTML = !tous.length ? '<p class="rien">' + (f ? "Aucune facture reçue" : "Aucun devis reçu") + " de " + texte(s.nom) + ".</p>" :
+      !montres.length ? (cherche ? rien(f ? "Aucune facture" : "Aucun devis") : '<p class="rien">' + (f ? "Aucune facture reçue" : "Aucun devis reçu") + " " + enLettres + ".</p>") :
+      '<div class="plage fiche-liste">' + enBandes(montres, q, function (d) {
+        var dit = f ? "Reçue le " + jourFr(d.jour) + (d.ttc ? ", " + euros(d.ttc) + "\u00a0TTC" : "") : "Reçu le " + jourFr(d.jour) + ", " + (d.nature === "photo" ? "Photo" : "PDF");
+        var image = d.nature === "photo" ? '<span class="vignette" aria-hidden="true"><i></i><i></i><i></i><i></i></span>' : '<span class="pastille-ico">' + ico("document") + "</span>";
+        return '<div class="recu-ligne">' + image + '<span class="recu-corps"><b>' + surligner(d.nom, q) + "</b><small>" + dit + '</small></span><button class="voir" type="button" data-voir>Voir</button></div>';
+      }) + "</div>";
+  }
+
+  /* Ce qu'Atlas a lu. Une facture se confronte à ses prix : même nom, même unité. */
+  function rapprocher(l, connus) {
+    var ancien = connus.filter(function (p) { return p.unite === l.unite && plat(p.nom) === plat(l.designation); })[0];
+    if (!ancien) return { etat: "nouveau" };
+    var e = Number(l.prix) - Number(ancien.prix);
+    return { etat: e === 0 ? "inchangé" : e > 0 ? "plus cher" : "moins cher", ancien: ancien };
+  }
+  function lire(genre) {
+    var four = rubrique === "fournisseur";
+    var lignes = genre === "facture"
+      ? (four ? [{ designation: "Sac de ciment", unite: "sac", prix: "8.00" }, { designation: "Gravier", unite: "m³", prix: "22.00" }] : [{ designation: "Pose de clôture", unite: "m", prix: "10.00" }])
+      : (four ? [{ designation: "Sac de ciment", unite: "sac", prix: "8.00" }, { designation: "Bordure béton", unite: "pièce", prix: "10.00" }, { designation: "Géotextile", unite: "m²", prix: "1.00" }] : [{ designation: "Pose de grillage", unite: "m", prix: "10.00" }]);
+    lignes.forEach(function (l) { l.garde = true; l.r = genre === "facture" ? rapprocher(l, ouverte.prix) : null; });
+    return { genre: genre, lignes: lignes, ecartees: genre === "facture" ? 0 : 1, total: genre === "facture" && four ? "84,00 € HT, 100,80 € TTC" : null, nom: ($("nom-recu").value.trim()) };
+  }
+  function rendreLu() {
+    var z = $("lecture");
+    if (!z) return;
+    var gestes = $("fiche-gestes");
+    if (gestes) gestes.hidden = !!lu;
+    if (!lu || lu.genre !== (partie === "factures" ? "facture" : "devis")) { z.innerHTML = ""; if (gestes) gestes.hidden = false; return; }
+    if (lu.lecture) { z.innerHTML = '<p class="lecture">' + (lu.genre === "facture" ? "Atlas lit la facture" : "Atlas lit le devis") + "</p>"; return; }
+    var n = lu.lignes.filter(function (l) { return l.garde; }).length;
+    var etiquette = function (r) { return r.etat === "nouveau" ? (rubrique === "fournisseur" ? "Nouvelle fourniture" : "Nouvelle prestation") : r.etat === "inchangé" ? "Prix inchangé" : r.etat.charAt(0).toUpperCase() + r.etat.slice(1); };
+    z.innerHTML = '<div class="plage lu">' + lu.lignes.map(function (l, i) {
+      var hausse = l.r && l.r.etat === "plus cher";
+      var change = l.r && (l.r.etat === "plus cher" || l.r.etat === "moins cher");
+      return '<button class="lu-ligne" type="button" data-cocher="' + i + '" aria-pressed="' + l.garde + '"><span class="coche-ronde" aria-hidden="true"></span>' +
+        '<span class="lu-corps"><b>' + texte(l.designation) + "</b>" + (l.r ? '<small class="' + (hausse ? "hausse" : "") + '">' + etiquette(l.r) + "</small>" : "") + "</span>" +
+        '<span class="lu-prix' + (hausse ? " hausse" : "") + '">' + euros(l.prix) + " par " + texte(l.unite) + (change ? "<s>" + euros(l.r.ancien.prix) + "</s>" : "") + "</span></button>";
+    }).join("") +
+      (lu.ecartees ? '<p class="lu-ecartees">' + lu.ecartees + " ligne sans prix lisible, à taper.</p>" : "") +
+      (lu.total ? '<p class="lu-total"><span>Total de la facture</span><b>' + lu.total + "</b></p>" : "") +
+      '<button class="bouton bouton-plein" type="button" id="prendre"' + (n ? "" : " disabled") + ">" + ico("coche") + (n > 1 ? "Ajouter ces " + n + " prix" : n === 1 ? "Ajouter ce prix" : "Aucun prix coché") + "</button>" +
+      '<button class="bouton-texte" type="button" id="laisser">' + (lu.genre === "facture" ? "Garder la facture sans les prix" : "Laisser") + "</button></div>";
+  }
+
+  function noteFiche(t) {
+    var z = $("note-fiche");
+    if (!z) return;
+    z.innerHTML = '<div class="tiroir" role="status"><span>' + texte(t) + "</span></div>";
+    clearTimeout(noteFiche.m);
+    noteFiche.m = setTimeout(function () { if ($("note-fiche")) $("note-fiche").innerHTML = ""; }, 2600);
+  }
+
+  // ─── Les gestes ─────────────────────────────────────────────────────────
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    var r = t.closest("[data-rubrique]");
+    if (r) { rubrique = r.getAttribute("data-rubrique"); rendreMarge(); rendreListe(); return; }
+    var o = t.closest("[data-ouvrir]");
+    if (o) {
+      ouverte = D[rubrique][Number(o.getAttribute("data-ouvrir"))];
+      partie = "prix"; periode = AUJOURDHUI.slice(0, 7); lu = null;
+      rendreFiche();
+      Kit.ouvrirFeuille("feuille-societe", o);
+      $("fiche").scrollTop = 0;
+      return;
+    }
+    if (t.closest("#ajouter-societe")) {
+      var nom = $("nom-nouveau").value.trim();
+      if (!nom) { $("refus-liste").textContent = "Donnez son nom."; $("refus-liste").hidden = false; return; }
+      D[rubrique].push({ nom: nom, marge: null, email: "", prix: [], devis: [], factures: [], demandes: [] });
+      $("nom-nouveau").value = ""; $("refus-liste").hidden = true;
+      rendreListe();
+      return;
+    }
+    if (!ouverte || !t.closest("#feuille-societe")) return;
+    var p = t.closest("[data-partie]");
+    if (p) { partie = p.getAttribute("data-partie"); lu = null; rendreFiche(); return; }
+    var m = t.closest("[data-mois]");
+    if (m && !m.disabled) { periode = moisVoisin(periode, Number(m.getAttribute("data-mois"))); rendreFiltre(); rendrePartie(); return; }
+    if (t.closest("#mois-titre")) { noteFiche("Sur la planche, le choix d'un jour ne s'ouvre pas."); return; }
+    if (t.closest("[data-voir]")) { noteFiche("Sur la planche, le document ne s'ouvre pas."); return; }
+    var ret = t.closest("[data-retirer]");
+    if (ret) {
+      var i = Number(ret.getAttribute("data-retirer")), retire = ouverte.prix.splice(i, 1)[0], chez = ouverte;
+      rendrePartie(); rendreListe();
+      var z = $("tiroir-fiche");
+      z.innerHTML = '<div class="tiroir tiroir-fiche" role="status"><span>Retiré à l’instant.</span><button type="button" class="bouton-texte" id="annuler-retrait">Annuler</button></div>';
+      $("annuler-retrait").onclick = function () { chez.prix.splice(i, 0, retire); z.innerHTML = ""; rendrePartie(); rendreListe(); };
+      clearTimeout(noteFiche.r);
+      noteFiche.r = setTimeout(function () { if ($("tiroir-fiche")) $("tiroir-fiche").innerHTML = ""; }, 6000);
+      return;
+    }
+    if (t.closest("#ajouter-prix")) {
+      var n = $("art-nom").value.trim(), px = nombreLu($("art-prix").value);
+      var refus = !n ? "Donnez son nom." : px === null ? "Tapez son prix hors taxes." : null;
+      $("refus-fiche").textContent = refus || ""; $("refus-fiche").hidden = !refus;
+      if (refus) return;
+      ouverte.prix.push({ nom: n, unite: $("art-unite").value, prix: px.toFixed(2), avant: null, source: "Tapé le " + jourFr(AUJOURDHUI) });
+      $("art-nom").value = ""; $("art-prix").value = "";
+      rendrePartie(); rendreListe();
+      return;
+    }
+    if (t.closest("#photo") || t.closest("#fichier")) {
+      var genre = partie === "factures" ? "facture" : "devis";
+      var recu = { nom: $("nom-recu").value.trim() || (genre === "facture" ? "Facture" : "Devis") + " du " + jourFr(AUJOURDHUI), jour: AUJOURDHUI, nature: t.closest("#photo") ? "photo" : "pdf" };
+      lu = lire(genre);
+      if (genre === "facture") { recu.ttc = lu.total ? "100.80" : null; ouverte.factures.push(recu); } else ouverte.devis.push(recu);
+      lu.source = recu.nom;
+      lu.lecture = true;
+      $("nom-recu").value = "";
+      periode = AUJOURDHUI.slice(0, 7); rendreFiltre();
+      rendreLu(); rendrePartie(); rendreListe();
+      setTimeout(function () { if (lu) { lu.lecture = false; rendreLu(); } }, 1100);
+      return;
+    }
+    var c = t.closest("[data-cocher]");
+    if (c && lu) { var l = lu.lignes[Number(c.getAttribute("data-cocher"))]; l.garde = !l.garde; rendreLu(); return; }
+    if (t.closest("#prendre") && lu) {
+      var source = (lu.genre === "facture" ? "Lu sur la facture « " : "Lu sur le devis « ") + lu.source + " » du " + jourFr(AUJOURDHUI);
+      lu.lignes.filter(function (x) { return x.garde; }).forEach(function (x) {
+        var deja = ouverte.prix.filter(function (q) { return q.unite === x.unite && plat(q.nom) === plat(x.designation); })[0];
+        if (deja) { if (deja.prix !== x.prix) { deja.avant = deja.prix; deja.prix = x.prix; } deja.source = source; }
+        else ouverte.prix.push({ nom: x.designation, unite: x.unite, prix: x.prix, avant: null, source: source });
+      });
+      lu = null; rendreLu(); rendreListe();
+      return;
+    }
+    if (t.closest("#laisser")) { lu = null; rendreLu(); return; }
+  });
+
+  document.addEventListener("input", function (e) {
+    if (e.target.id === "chercher") { rendreListe(); return; }
+    if (e.target.id === "chercher-fiche") { rendrePartie(); return; }
+    if (e.target.id === "marge-generale") {
+      var l = lireMarge(e.target.value);
+      $("conseil").hidden = l.ok;
+      if (!l.ok) { $("conseil").textContent = l.raison; return; }
+      D.marges[rubrique] = l.marge;
+      rendreListe();
+    }
+  });
+  /* La marge d'une société et son adresse : lues en quittant la case. */
+  document.addEventListener("change", function (e) {
+    if (e.target.id === "marge-propre") {
+      var l = lireMarge(e.target.value), alerte = $("alerte-marge");
+      alerte.hidden = l.ok;
+      if (!l.ok) { alerte.textContent = l.raison; return; }
+      ouverte.marge = l.marge;
+      $("phrase-marge").textContent = phraseDeLaMargePropre(ouverte.marge, D.marges[rubrique]);
+      rendreListe();
+    }
+    if (e.target.id === "adresse") {
+      var a = lireAdresseMail(e.target.value), refus = $("refus-adresse");
+      refus.hidden = a.ok;
+      if (!a.ok) refus.textContent = a.raison; else ouverte.email = e.target.value.trim();
+    }
+  });
+
+  /* Les états de la planche : la liste repart de ses données, la fiche s'ouvre. */
+  var dernier = null;
+  function synchroniser() {
+    var etat = ecran.getAttribute("data-etat");
+    if (etat === dernier) return;
+    dernier = etat;
+    Kit.fermerFeuilles(ecran);
+    D = etat === "vide" ? neuf() : demo();
+    rubrique = "fournisseur";
+    document.querySelectorAll("[data-rubrique]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-rubrique") === rubrique ? "true" : "false"); });
+    rendreMarge(); rendreListe();
+    ecran.querySelector(".defile").scrollTop = 0;
+    if (etat === "fiche") {
+      ouverte = D.fournisseur[1]; partie = "prix"; periode = AUJOURDHUI.slice(0, 7); lu = null;
+      rendreFiche();
+      setTimeout(function () { Kit.ouvrirFeuille("feuille-societe"); }, 60);
+    }
+  }
+  document.addEventListener("click", function (e) { if (e.target.closest(".pl-etats button")) setTimeout(synchroniser, 0); });
+  document.addEventListener("DOMContentLoaded", function () { setTimeout(synchroniser, 0); });
+})();
+</script>
+</body>
+</html>

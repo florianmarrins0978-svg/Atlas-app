@@ -224,6 +224,15 @@
         ],
         "createdAt": "2026-10-25T23:25:06.627Z",
         "reason": "Fond commun des planches, tiré de la charte Origine de l'appli (PRODUCT.md, palette relevée sur Arborea) : l'identité existante qu'il a demandé de garder"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "appli/soignee/reglages-fournisseurs.html"
+        ],
+        "createdAt": "2026-10-25T23:50:45.834Z",
+        "reason": "Le point bat pendant qu'Atlas lit vraiment la photo d'un devis ou d'une facture : un état de chargement réel, pas une décoration"
       }
     ]
   }
