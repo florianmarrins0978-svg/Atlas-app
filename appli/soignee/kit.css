@@ -191,6 +191,15 @@ body.pl ::selection { background: rgba(185,139,71,0.28); }
   .pl-notes { padding: 0 var(--gouttiere); }
 }
 
+/* Trois onglets (Proposé, Plus loin, Aujourd'hui) : sur un téléphone, ils
+   tiennent sur une ligne et la charte garde sa pastille sans son nom, plutôt
+   que de sortir de l'écran. Deux onglets gardent le nom de la charte. */
+@media (max-width: 480px) {
+  .pl-barre-dedans:has(.pl-onglets button:nth-child(3)) .pl-onglets button { padding: 0 11px; white-space: nowrap; }
+  .pl-barre-dedans:has(.pl-onglets button:nth-child(3)) .pl-charte-bouton { gap: 0; padding: 0 11px; }
+  .pl-barre-dedans:has(.pl-onglets button:nth-child(3)) .pl-charte-nom { display: none; }
+}
+
 /* ═══ L'ÉCRAN DE L'APPLI, soigné ═════════════════════════════════════════════ */
 
 /* Les deux variables dérivées se REcalculent ici : posées sur :root, elles
