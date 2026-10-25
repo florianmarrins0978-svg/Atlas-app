@@ -21,7 +21,7 @@ boutons, le sien (#7d9a6d, 3,0 de contraste sous le crème) ou un cran plus
 sombre (#587a4c, 4,6), sur `fondations.html`. **Codés dans `src/` le
 25 octobre, par la batterie commune des cinq lots :** la fiche d'un client
 (`client.html`, sa réponse « code ça »), Réglages en paquets, Terminés (plages
-teintées et carré du jour). Le reste n'est pas codé. **Branche morte laissée :** l'allure « ample » de
+teintées et carré du jour), Vos chantiers. Le reste n'est pas codé. **Branche morte laissée :** l'allure « ample » de
 `EnTeteEcran` n'a plus d'utilisateur depuis que la fiche client ne l'emploie
 plus ; à retirer dans le prochain lot qui touche `EnTeteEcran` (niveau 3).
 
