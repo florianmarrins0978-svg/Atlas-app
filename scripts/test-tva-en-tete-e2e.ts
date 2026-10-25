@@ -132,45 +132,42 @@ async function main() {
     );
   });
 
-  await cas("ELLE SE VOIT CLIQUABLE — son contour doré, sa proposition 3", async () => {
-    // **Ce cas mesure ce dont il DOUTAIT**, et rien d'autre : « on ne comprend
-    // pas trop qu'on peut cliquer dessus ». Les trois cas au-dessus resteraient
-    // verts sur une carte parfaitement muette.
-    const bord = await page.locator('[data-atlas="carte-tva"]').first().evaluate((el) => {
-      const s = getComputedStyle(el);
-      return { ombre: s.boxShadow, rayon: s.borderRadius, hauteur: el.getBoundingClientRect().height };
+  await cas("ELLE SE VOIT CLIQUABLE — sa plage teintée, sa planche du 25 octobre 2026", async () => {
+    // **Ce cas mesure ce dont il DOUTAIT le 26 août** : « on ne comprend pas
+    // trop qu'on peut cliquer dessus ». Le contour doré y répondait jusqu'au
+    // 25 octobre 2026 ; il a choisi ensuite les deux plages teintées
+    // (`appli/soignee/termines.html`), et c'est le FOND qui détache désormais
+    // la carte de l'écran. On mesure donc ce fond contre celui de l'écran.
+    const mesure = await page.locator('[data-atlas="carte-tva"]').first().evaluate((el) => {
+      const ecran = el.closest('[data-atlas="ecran-termines"]')?.parentElement ?? document.body;
+      return {
+        carte: getComputedStyle(el).backgroundColor,
+        ecran: getComputedStyle(ecran).backgroundColor,
+        hauteur: el.getBoundingClientRect().height,
+      };
     });
 
-    // **Une carte de zéro pixel ne mesure rien** (`CLAUDE.md` §5) : sans cette
-    // borne, une carte non rendue rendrait un vert qui ne prouve rien.
-    assert.ok(bord.hauteur > 20, `La carte fait ${Math.round(bord.hauteur)} px : rien n'est mesurable ici.`);
+    // **Une carte de zéro pixel ne mesure rien** (`CLAUDE.md` §5).
+    assert.ok(mesure.hauteur > 20, `La carte fait ${Math.round(mesure.hauteur)} px : rien n'est mesurable ici.`);
 
+    const canaux = (c: string) => c.match(/\d+(\.\d+)?/g)?.map(Number) ?? [];
+    const [r, v, b2, a = 1] = canaux(mesure.carte);
+    const [r0, v0, b0] = canaux(mesure.ecran);
+    assert.ok(a >= 0.9, `Le fond de la carte est « ${mesure.carte} » : transparent, elle redevient un bandeau.`);
+    const ecart = Math.abs(r - r0) + Math.abs(v - v0) + Math.abs(b2 - b0);
     assert.ok(
-      bord.ombre && bord.ombre !== "none",
-      "La carte n'a plus aucun contour : elle redevient un aplat sur un fond de la même " +
-        "couleur (#faf9f5 sur #f5f3ee), donc un bandeau d'information — exactement ce dont " +
-        "il disait « on ne comprend pas trop qu'on peut cliquer dessus »."
+      ecart >= 18,
+      `La carte (${mesure.carte}) se confond avec l'écran (${mesure.ecran}) : c'est exactement ` +
+        `ce dont il disait « on ne comprend pas trop qu'on peut cliquer dessus ».`
     );
-
-    // **Doré, et pas gris.** Le vérifier sur les canaux plutôt que sur la
-    // chaîne : `color-mix` est résolu par le navigateur, et la forme du rgba
-    // rendu n'est pas garantie d'une version à l'autre.
-    const canaux = bord.ombre.match(/\d+(\.\d+)?/g)?.map(Number) ?? [];
-    const [r, v, b2] = canaux;
-    assert.ok(
-      canaux.length >= 3 && r > v && v > b2,
-      `Le contour est « ${bord.ombre} » : ce n'est pas l'or. Un bord gris ferait deux ` +
-        `objets — un cadre, et un contenu sans rapport — d'une carte qui n'en est qu'un.`
-    );
-    // Et il doit se VOIR : un or transparent ne vaut pas mieux que rien.
-    const alpha = canaux.length >= 4 ? canaux[3] : 1;
-    assert.ok(alpha >= 0.3, `Le contour est à ${alpha} d'opacité : il ne se voit pas.`);
+    // **Dorée, et pas grise** : la plage de la TVA est l'or pâle qu'il a choisi.
+    assert.ok(r > v && v > b2, `La carte est « ${mesure.carte} » : ce n'est plus l'or pâle de sa planche.`);
   });
 
   await cas("SA FORME N'A PAS BOUGÉ — « garde ce style et cette forme »", async () => {
-    // La capsule lui avait été proposée aussi ; il a choisi le contour
-    // précisément pour que la carte reste une carte. Un rayon qui s'arrondirait
-    // en capsule serait la proposition 2, pas la 3.
+    // La capsule lui avait été proposée aussi ; il l'a écartée pour que la
+    // carte reste une carte. Un rayon qui s'arrondirait en capsule serait la
+    // proposition qu'il n'a pas prise.
     const rayon = await page
       .locator('[data-atlas="carte-tva"]')
       .first()
@@ -178,7 +175,7 @@ async function main() {
     assert.ok(
       rayon > 0 && rayon <= 10,
       `Le rayon de la carte est passé à ${rayon} px. Au-delà c'est une capsule : ` +
-        `il a écarté cette proposition-là en choisissant la 3.`
+        `il a écarté cette proposition-là.`
     );
   });
 
