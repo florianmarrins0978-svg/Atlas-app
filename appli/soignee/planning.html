@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Planning, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  LE PLANNING, SOIGNÉ (src/app/planning/PlanningClient.tsx, MoisCharge.tsx,
+  CarteDuJour.tsx, FeuilleChantier.tsx, AjoutAuJour.tsx, TiroirDuBas.tsx).
+
+  Sa demande du 25 octobre 2026 : « reprends la page du planning et propose
+  moi une planche plus jolie ; réorganise si tu penses que tu peux mieux faire,
+  modifie ce que tu veux ; je veux que ça soit joli ».
+
+  CE QUI A ÉTÉ VU SUR L'ÉCRAN D'AUJOURD'HUI (capture du 25 octobre, base
+  d'essai remplie d'une semaine de paysagiste) :
+    au repos, sous le mois, un grand blanc puis trois mots qui flottent seuls :
+      la légende en 13 px gris, COULEURS en capitales espacées, La semaine ;
+      et rien de ce qu'il vient lire le matin ;
+    le conseil de relier l'agenda passe AVANT le mois, sur deux lignes ;
+    « Vos journées » en 9,5 px sous le titre ;
+    la ville en serif gris de 12,5 px, la durée en serif doré de 12,5 px,
+      l'équipe en sans 15 px : trois écritures pour une ligne ;
+    « Ajouter » centré sous chaque jour, cinq fois de suite ;
+    la fiche du jour redit le nom du client sous « FICHE D'INTERVENTION »,
+      et ses quatre gestes sur place cassent sur deux lignes.
+
+  CE QUI CHANGE DE PLACE, et pourquoi :
+    les sept jours se lisent d'office sous le mois, Aujourd'hui en or d'abord :
+      c'est la question du matin, et elle demandait un geste (à trancher par
+      lui, c'est revenir sur sa réponse du 15 octobre) ;
+    la légende se range sous le mois, Couleurs à côté d'elle : c'est elle
+      qu'il change ;
+    le conseil de l'agenda descend en bas de page ; la panne reste en haut ;
+    « Ajouter » vit au bout de la plage de son jour, à gauche, sous les noms.
+
+  CE QUI NE BOUGE PAS (ses décisions relevées dans le code) : le mois au-dessus
+  et la semaine dessous ; deux barres par jour, le matin en haut ; les quatre
+  états et leurs couleurs choisies ; les carrés du week-end ; « rien » en blanc ;
+  aujourd'hui cerné d'or ; la fiche qui s'ouvre sous la semaine de son jour,
+  sa pointe sur la case, et qui retire la liste ; le nom qui ouvre, le chevron
+  qui mène au devis ; une seule fiche ouverte d'office quand le jour n'a qu'un
+  chantier ; « Salarié absent ? » sans contour ; Déplacer, Retirer, Supprimer
+  en bas à droite ; Client en attente, Un client, Autre chose ; le tiroir du
+  bas et sa phrase « À poser le… » ; un salarié lit sans un geste d'écriture.
+*/
+
+/* Les couleurs des quatre états : celles de la charte, sauf choix aux Couleurs
+   (couleurDApparence, src/lib/couleurs-planning.ts). */
+.ecran { --etat-libre: var(--atlas-card); --etat-dispo: var(--atlas-vertPale);
+         --etat-plein: var(--atlas-rust); --etat-dela: var(--atlas-bordeaux); }
+.ecran.avec-attente .defile { padding-bottom: 176px; }
+
+/* ─── L'agenda en panne, en haut ──────────────────────────────────────── */
+.panne { display: flex; align-items: flex-start; gap: 12px; width: 100%; margin: -4px 0 22px; padding: 14px 16px;
+         border-radius: var(--r-plage); text-align: left; background: var(--atlas-carteRougeFond); color: var(--atlas-ink); }
+.panne .ico { margin-top: 1px; color: var(--atlas-carteRougeTexte); }
+.panne-corps { flex: 1; min-width: 0; }
+.panne-titre { display: block; font-size: 16px; font-weight: 700; color: var(--atlas-carteRougeTexte); }
+.panne-texte { display: block; margin-top: 3px; font-size: var(--t-second); line-height: 1.4; color: var(--atlas-ink); }
+.panne-ouvrir { flex: none; align-self: center; font-size: 15px; font-weight: 700; color: var(--atlas-carteRougeTexte); }
+
+/* ─── Le mois ─────────────────────────────────────────────────────────── */
+.mois-tete { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.mois-nom { flex: 1; margin: 0; text-align: center; font: 400 27px/1.1 var(--serif); letter-spacing: -0.01em; }
+.mois-fleche { width: 48px; height: 48px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
+.mois-fleche .ico { width: 22px; height: 22px; stroke-width: 2; }
+.mois-retour { display: flex; justify-content: center; margin-top: -4px; }
+.mois-retour .bouton-texte { min-height: 40px; font-size: 15px; }
+
+.noms-jours { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin: 8px 0 6px; }
+.noms-jours span { text-align: center; font-size: 12.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+                   color: var(--atlas-inkSoft); }
+.noms-jours span.we { color: var(--atlas-muted); }
+
+.semaine-rang { border-radius: 12px; transition: background-color 260ms var(--courbe); }
+.semaine-rang + .semaine-rang { margin-top: 4px; }
+.semaine-rang.lue { background: color-mix(in srgb, var(--atlas-rustTint) 72%, transparent); }
+.cases { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.case { position: relative; height: 52px; display: flex; flex-direction: column; align-items: center; padding-top: 8px;
+        border-radius: 10px; font: 400 19px/1 var(--serif); font-variant-numeric: lining-nums tabular-nums;
+        color: var(--atlas-ink); -webkit-tap-highlight-color: transparent;
+        transition: box-shadow 200ms var(--courbe), background-color 200ms var(--courbe); }
+.case.vide { pointer-events: none; }
+.case.we { background: var(--atlas-rustTint); color: var(--atlas-inkSoft); }
+.case.passe { color: var(--atlas-muted); }
+.case.passe .demis { opacity: 0.5; }
+.case.auj { box-shadow: inset 0 0 0 1.5px var(--atlas-or); color: var(--atlas-or); font-weight: 600; }
+.case.ouverte { background: var(--atlas-card); box-shadow: inset 0 0 0 1.5px var(--atlas-ink); }
+.case.auj.ouverte { box-shadow: inset 0 0 0 2px var(--atlas-or); }
+.case:active { transform: scale(0.97); }
+
+/* Deux barres : le matin en haut, l'après-midi en bas, remplies de la charge. */
+.demis { display: grid; gap: 3px; width: 26px; margin-top: auto; margin-bottom: 9px; }
+.demi { display: block; height: 5px; border-radius: 3px; overflow: hidden; background: var(--etat-libre);
+        box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.demi i { display: block; height: 100%; border-radius: 3px; transition: width 320ms var(--courbe); }
+
+/* La légende, et Couleurs à côté : c'est elle qu'il change. */
+.legende { margin: 14px 2px 0; }
+.legende-etats { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; font-size: 13px; color: var(--atlas-inkSoft); }
+.legende-etat { display: inline-flex; align-items: center; gap: 6px; }
+.legende-etat i { width: 12px; height: 12px; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.legende-pied { display: flex; align-items: center; justify-content: center; gap: 22px; margin-top: 2px; }
+.legende-demis { display: inline-flex; align-items: center; gap: 8px; }
+.legende-demis .demis { margin: 0; width: 22px; }
+.legende-mots { display: grid; font-size: 12.5px; line-height: 1.15; font-weight: 600; color: var(--atlas-inkSoft); }
+.legende .bouton-texte { min-height: 44px; font-size: 15px; }
+
+/* ─── La fiche du jour, ouverte sous la semaine de sa case ─────────────── */
+.volet { position: relative; margin: 12px 0 10px; padding: 16px 16px 6px; border-radius: 8px; background: var(--atlas-card);
+         animation: volet-ouvre 300ms var(--courbe) both; }
+.volet::before { content: ""; position: absolute; top: -6px; left: calc(var(--pointe) - 7px); width: 14px; height: 14px;
+                 border-radius: 2px; background: var(--atlas-card); transform: rotate(45deg); }
+@keyframes volet-ouvre { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.volet-tete { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+.volet-tete .jour-titre { margin: 0; }
+.absent { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; flex: none; font-size: 15px; font-weight: 600; color: var(--atlas-or); }
+.absent .ico { stroke-width: 2.2; }
+.volet-rien { margin: 6px 0 14px; font-size: var(--t-second); color: var(--atlas-inkSoft); }
+
+/* Le titre d'un jour, partout le même : la date en serif, Aujourd'hui en or. */
+.jour-titre { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 10px; margin: 30px 2px 10px; font-weight: 400; }
+.jour-titre b { font: 400 21px/1.2 var(--serif); letter-spacing: -0.005em; }
+.jour-titre span { font-size: 15px; color: var(--atlas-inkSoft); }
+.jour-titre.auj b { font-size: 24px; color: var(--atlas-or); }
+.jour-titre.passe b { color: var(--atlas-muted); }
+
+/* Un chantier dans la fiche du jour : son nom, et la fiche qui se déplie. */
+.bloc + .bloc { margin-top: 6px; padding-top: 8px; box-shadow: inset 0 1px 0 var(--atlas-line); }
+.bloc-tete { display: flex; align-items: center; gap: 10px; }
+.bloc-nom { flex: 1; min-width: 0; min-height: 64px; padding: 8px 0; text-align: left; }
+.rond-deplier { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                background: var(--atlas-carteAmbreFond); color: var(--atlas-or); }
+.rond-deplier .ico { width: 20px; height: 20px; stroke-width: 2.2; }
+
+.chantier-nom { display: block; font: 400 19px/1.25 var(--serif); letter-spacing: -0.005em; overflow-wrap: anywhere; }
+.chantier-situation { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 14px; margin-top: 4px; font-size: var(--t-second); line-height: 1.35;
+                      color: var(--atlas-inkSoft); }
+.duree { font-weight: 600; color: var(--atlas-or); }
+.lieu { display: inline-flex; align-items: center; gap: 4px; }
+.lieu .ico { width: 16px; height: 16px; color: var(--atlas-inkSoft); }
+.passe .chantier-nom, .passe .duree { color: var(--atlas-muted); }
+
+.moments { margin: 2px 0 0; }
+.moment { display: flex; align-items: center; gap: 12px; min-height: 48px; }
+.moment-etat { width: 12px; height: 12px; flex: none; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.moment-nom { width: 88px; flex: none; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; color: var(--atlas-inkSoft); }
+.moment-qui { flex: 1; min-width: 0; font-size: 16px; color: var(--atlas-ink); }
+.moment-plus { width: 44px; height: 44px; margin-right: -10px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
+.moment-plus .ico { width: 22px; height: 22px; stroke-width: 2.2; }
+
+.gestes { display: flex; justify-content: flex-end; gap: 4px; margin: 2px -8px 4px 0; }
+.gestes button { min-height: 44px; padding: 0 8px; font-size: 15.5px; font-weight: 700; color: var(--atlas-ink); }
+.gestes button.alerte { color: var(--atlas-alerte); }
+
+/* La fiche d'intervention : le cadre d'or qu'il connaît, sans redire le nom. */
+.intervention { margin: 8px 0 12px; padding: 16px 14px 14px; border-radius: 8px;
+                box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 80%, transparent); }
+.intervention-titre { margin: 0 2px 12px; font: 400 19px/1.2 var(--serif); }
+.sur-place { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sur-place button { display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 12px; border-radius: 12px;
+                    text-align: left; font-size: 15px; font-weight: 600; line-height: 1.2; background: var(--atlas-rustTint); color: var(--atlas-ink); }
+.sur-place .ico { color: var(--atlas-or); }
+.intervention .champ { margin-top: 16px; }
+.intervention .champ-saisie { min-height: 76px; background: var(--atlas-cream); }
+.teinte { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 54px; margin-top: 10px; padding: 0 14px 0 16px;
+          border-radius: 12px; text-align: left; font: 400 17px/1.2 var(--serif); color: var(--atlas-ink); }
+.teinte span { margin-left: auto; font: 700 14px/1 var(--sans); }
+.teinte .ico { stroke-width: 2.2; }
+.teinte.ambre { background: var(--atlas-carteAmbreFond); }
+.teinte.ambre span, .teinte.ambre .ico { color: var(--atlas-carteAmbreTexte); }
+.teinte.vert { background: var(--atlas-carteVertFond); }
+.teinte.vert span, .teinte.vert .ico { color: var(--atlas-carteVertTexte); }
+
+/* Ajouter : au bout de son jour, sous les noms. */
+.ajouter { display: inline-flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 2px; font-size: 16px; font-weight: 600; color: var(--atlas-or); }
+.ajouter .ico { stroke-width: 2.2; }
+.ajout.ouvert { padding: 6px 0 0; }
+.voies { display: flex; flex-wrap: wrap; gap: 8px; }
+.voie { min-height: 44px; padding: 0 16px; border-radius: 22px; font-size: 15px; font-weight: 600; color: var(--atlas-or);
+        box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
+
+/* ─── Les sept jours ──────────────────────────────────────────────────── */
+.sept-jours { margin-top: 26px; }
+.planning-tete { margin-bottom: 8px; }
+.liste-tete { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.liste-titre { flex: 1; margin: 0; text-align: center; font-size: 16.5px; font-weight: 700; }
+.liste-rien { margin: 18px 0 0; text-align: center; font-size: 15px; color: var(--atlas-inkSoft); }
+.sept-jours .jour-titre:first-of-type { margin-top: 14px; }
+.jour-plage { border-radius: var(--r-plage); background: var(--atlas-card); padding: 0 16px; }
+.jour-plage .ajouter { margin-top: -4px; }
+.chantier + .chantier { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.chantier-rang { display: flex; align-items: center; gap: 4px; margin-right: -12px; }
+.chantier-corps { flex: 1; min-width: 0; min-height: 76px; padding: 14px 0; text-align: left; border-radius: 0; }
+.chantier-haut { display: flex; align-items: baseline; gap: 12px; }
+.chantier-haut .chantier-nom { flex: 1; min-width: 0; }
+.chantier-qui { flex: none; max-width: 48%; text-align: right; font-size: 15.5px; font-weight: 600; color: var(--atlas-ink); }
+.chantier-qui.personne, .moment-qui.personne { font-weight: 400; color: var(--atlas-inkSoft); }
+.chantier-portes { width: 44px; height: 56px; flex: none; display: grid; place-items: center; color: var(--atlas-chevron); }
+.chantier-portes .ico { width: 20px; height: 20px; stroke-width: 2.2; }
+.chantier.ouvert .chantier-corps .chantier-nom { color: var(--atlas-or); }
+.chantier-dedans { padding-bottom: 4px; animation: volet-ouvre 260ms var(--courbe) both; }
+.chantier-dedans .moments { margin-top: -6px; }
+
+/* Le conseil de l'agenda, en bas : il se lit, il ne passe pas devant le mois. */
+.conseil { display: flex; align-items: center; gap: 8px; margin-top: 40px; padding-top: 6px; box-shadow: inset 0 1px 0 var(--atlas-line); }
+.conseil-lien { flex: 1; display: flex; align-items: center; gap: 12px; min-height: 56px; text-align: left; font-size: 16px; color: var(--atlas-ink); }
+.conseil-lien .ico { color: var(--atlas-or); }
+.conseil-masquer { min-height: 48px; padding: 0 4px; font-size: 15px; color: var(--atlas-inkSoft); }
+
+/* ─── Le tiroir du bas : ce qui attend un jour, au-dessus de la barre ──── */
+.attente { position: absolute; left: 0; right: 0; bottom: 66px; z-index: 5; display: flex; align-items: center; gap: 12px;
+           width: 100%; min-height: 58px; padding: 0 var(--gouttiere); border-radius: 20px 20px 0 0; text-align: left;
+           background: var(--atlas-card); box-shadow: inset 0 1.5px 0 color-mix(in srgb, var(--atlas-or) 85%, transparent);
+           -webkit-tap-highlight-color: transparent; }
+.attente-texte { flex: 1; min-width: 0; font-size: 16.5px; font-weight: 700; color: var(--atlas-ink); }
+.attente-texte.pour-un-jour { color: var(--atlas-or); }
+.attente .pastille { min-width: 26px; height: 26px; padding: 0 8px; border-radius: 13px; display: inline-grid; place-items: center;
+                     font: 700 13.5px/1 var(--sans); background: var(--atlas-or); color: var(--sur-plein); }
+.attente .ico { width: 22px; height: 22px; color: var(--atlas-inkSoft); }
+
+.consigne { margin: -6px 0 10px; font-size: 15.5px; color: var(--atlas-inkSoft); }
+.feuille .rubrique { margin-top: 22px; }
+.feuille .ligne { min-height: 64px; }
+.feuille .ligne .bouton-petit { flex: none; }
+
+/* Les portes du chantier, les couleurs, l'absence. */
+.porte-ligne { display: flex; align-items: center; gap: 12px; min-height: 60px; text-decoration: none; color: inherit; font-size: 16.5px; }
+/* Le filet est un trait droit : une ombre suivrait l'arrondi de l'appui. */
+.porte-ligne { position: relative; }
+.porte-ligne + .porte-ligne::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--atlas-line); }
+.porte-ligne .ico { color: var(--atlas-or); }
+.porte-ligne span { flex: 1; }
+.porte-ligne small { font-size: 14.5px; color: var(--atlas-inkSoft); }
+.porte-ligne .ico-p { color: var(--atlas-chevron); }
+.couleur-rang { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; }
+.couleur-rang + .couleur-rang { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.couleur-nom { font: 400 18px/1.2 var(--serif); }
+.couleur-choix { display: flex; gap: 8px; }
+.pastille-couleur { width: 40px; height: 40px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.pastille-couleur[aria-pressed="true"] { box-shadow: inset 0 0 0 1px var(--atlas-line), 0 0 0 2px var(--atlas-cream), 0 0 0 4px var(--atlas-or); }
+.absent-rang { display: flex; align-items: center; gap: 14px; min-height: 64px; }
+.absent-rang + .absent-rang { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.absent-rang .ligne-nom { flex: 1; }
+.absent-rang .second { min-width: 58px; text-align: right; }
+.question { text-align: center; }
+.question .feuille-titre { margin-bottom: 8px; }
+.question p { margin: 0 0 22px; font-size: 15px; color: var(--atlas-inkSoft); }
+.bouton-alerte { background: var(--atlas-alerte); color: var(--sur-plein); }
+
+@media (prefers-reduced-motion: reduce) { .volet, .chantier-dedans { animation: none; } }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Planning</h1>
+  <p class="pl-verdict">Le mois en haut, et dessous <b>la semaine qui se lit d'office</b>, Aujourd'hui en or d'abord. Chaque jour range ses chantiers dans une plage claire ; la légende et Couleurs se rangent sous le mois.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="matin" aria-pressed="true">Lundi matin</button>
+        <button type="button" data-etat="jour">Un jour touché</button>
+        <button type="button" data-etat="panne">Agenda en panne</button>
+        <button type="button" data-etat="salarie">Un salarié</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre avec-attente" id="planning" data-etat="matin">
+          <div class="defile">
+            <header class="tete planning-tete">
+              <h1 class="tete-titre">Planning</h1>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </header>
+            <div id="haut"></div>
+            <section id="mois" aria-label="Le mois"></section>
+            <section id="liste" class="sept-jours" aria-label="Les sept jours"></section>
+            <div id="bas"></div>
+          </div>
+
+          <button class="attente" type="button" id="attente" data-action="attente"></button>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html" aria-current="page">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+
+          <section class="feuille" id="feuille-attente" aria-hidden="true" aria-label="Ce qui attend un jour">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans"></div>
+          </section>
+          <section class="feuille" id="feuille-portes" aria-hidden="true" aria-label="Le devis, la facture et la fiche client">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans"></div>
+          </section>
+          <section class="feuille" id="feuille-couleurs" aria-hidden="true" aria-label="Couleurs du planning">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans"></div>
+          </section>
+          <section class="feuille" id="feuille-absent" aria-hidden="true" aria-label="Salarié absent">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans"></div>
+          </section>
+          <section class="feuille" id="feuille-supprimer" aria-hidden="true" aria-label="Supprimer le chantier">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans question"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/planning.jpg" alt="L'écran Planning tel qu'il est aujourd'hui, la semaine ouverte"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>La semaine se lit d'office sous le mois, Aujourd'hui en or d'abord. Plus besoin de toucher La semaine pour savoir qui part où.</li>
+      <li>Chaque jour range ses chantiers dans une plage claire : le nom en grand, l'équipe à droite, la durée en or et la ville dessous, dans la même écriture.</li>
+      <li>Ajouter vit au bout de son jour, sous les noms, au lieu de flotter au milieu cinq fois de suite.</li>
+      <li>La légende se range sous le mois, et Couleurs vient à côté d'elle, puisque c'est elle qu'il change.</li>
+      <li>Le conseil de relier l'agenda descend en bas de page. Une panne, elle, reste en haut, en rouge.</li>
+      <li>La fiche du jour écrit la date en toutes lettres ; la fiche d'intervention ne redit plus le nom, et Maps, Waze, Copier l'adresse, Appeler le client tiennent en deux rangées.</li>
+      <li>Plus de petit titre doré de 9,5 px sous Planning.</li>
+    </ul>
+    <h2>Ce qui reste comme dans l'appli</h2>
+    <ul class="garde">
+      <li>Le mois au-dessus, deux barres par jour (le matin en haut), les quatre états et vos couleurs, les carrés du week-end, rien en blanc, aujourd'hui cerné d'or.</li>
+      <li>Toucher un jour ouvre sa fiche sous sa semaine, la pointe sur la case, et retire la liste. Un jour d'un seul chantier ouvre sa fiche d'office.</li>
+      <li>Le nom ouvre, le chevron mène au devis et à la fiche client.</li>
+      <li>Salarié absent ? sans contour ; Déplacer, Retirer, Supprimer en bas à droite ; Ajouter propose Client en attente, Un client, Autre chose.</li>
+      <li>Le tiroir du bas garde sa place et sa phrase : 2 clients sans date, puis À poser le mardi 27 octobre quand un jour est touché.</li>
+      <li>Un salarié lit tout, sans un seul geste d'écriture.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>La semaine visible d'office revient sur votre réponse du 15 octobre (au repos, rien sous le mois). Je la propose parce que c'est la première chose qu'on vient lire le matin. Si vous préférez le mot La semaine, il revient tel quel, et le reste de la planche ne bouge pas.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <a href="termines.html">Terminés<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+/*
+  Le planning de la planche : une semaine de paysagiste, deux équipes (Julien,
+  Kévin), aujourd'hui le lundi 26 octobre 2026. La charge d'une demi-journée
+  est le nombre d'équipes posées sur le nombre d'équipes, comme occupationDemi
+  (src/lib/planning-jour.ts) : rien, incomplet, complet, au-delà.
+*/
+document.addEventListener("DOMContentLoaded", function () {
+  "use strict";
+  var ecran = document.getElementById("planning");
+  var AUJ = "2026-10-26";
+  var EQUIPES = { 1: "Julien", 2: "Kévin" };
+  var NB_EQUIPES = 2;
+  var JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
+  var MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+  var MOT = { libre: "rien", dispo: "incomplet", plein: "complet", dela: "au-delà" };
+
+  function jd(m, a) { return { matin: m || null, apres_midi: a || null }; }
+  var chantiers = [
+    { id: "henry", nom: "M. Henry", lieu: "Nantes", duree: "Une journée", jours: { "2026-10-06": jd([1, 2], [1, 2]) } },
+    { id: "blanc", nom: "Mme Blanc", lieu: "Rezé", duree: "Une demi-journée", jours: { "2026-10-08": jd([2]) } },
+    { id: "perrin", nom: "M. Perrin", lieu: "Vertou", duree: "Une journée", jours: { "2026-10-09": jd([1], [1]) } },
+    { id: "dumas", nom: "Mme Dumas", lieu: "Bouguenais", duree: "2 jours", jours: { "2026-10-13": jd([1, 2], [1, 2]), "2026-10-14": jd([1, 2], [1, 2]) } },
+    { id: "leroy", nom: "M. Leroy", lieu: "Nantes", duree: "Une journée", jours: { "2026-10-15": jd([2], [2]) } },
+    { id: "aubert", nom: "Mme Aubert", lieu: "Saint-Herblain", duree: "Une journée", jours: { "2026-10-16": jd([1, 2], [1]) } },
+    { id: "petit", nom: "M. Petit", lieu: "Nantes", duree: "Une journée", jours: { "2026-10-20": jd([1], [1]) } },
+    { id: "caron", nom: "Mme Caron", lieu: "Vertou", duree: "Une journée", jours: { "2026-10-21": jd([1, 2], [1, 2]) } },
+    { id: "lefevre", nom: "M. Lefèvre", lieu: "Rezé", duree: "Une journée", jours: { "2026-10-22": jd([2], [2]) } },
+    { id: "linotte", nom: "Mme Linotte", lieu: "Rezé", duree: "Une journée", jours: { "2026-10-26": jd([1], [1]) } },
+    { id: "martins", nom: "M. Martins", lieu: "Vertou", duree: "Une demi-journée", jours: { "2026-10-26": jd(null, [2]) } },
+    { id: "roux", nom: "M. et Mme Roux", lieu: "Bouguenais", duree: "2 jours", jours: { "2026-10-27": jd([1, 2], [1, 2]), "2026-10-28": jd([1, 2], [1, 2]) } },
+    { id: "vertou", nom: "Mairie de Vertou", lieu: "Vertou", duree: "Une journée", jours: { "2026-10-29": jd([2], [2]) } },
+    { id: "garnier", nom: "M. Garnier", lieu: "Saint-Sébastien", duree: "Une demi-journée", jours: { "2026-10-30": jd([1]) } },
+    { id: "berthier", nom: "Mme Berthier", lieu: "Rezé", duree: "Une demi-journée", jours: { "2026-10-30": jd(null, [1]) } },
+    { id: "morel", nom: "M. Morel", lieu: "Basse-Goulaine", duree: "Une journée", jours: { "2026-11-03": jd([1, 2], [1, 2]) } },
+    { id: "roy", nom: "Mme Roy", lieu: "Nantes", duree: "Une demi-journée", jours: { "2026-11-03": jd([1]) } },
+    { id: "fontaine", nom: "Mme Fontaine", lieu: "Nantes", duree: "2 jours", jours: { "2026-11-05": jd([1], [1]), "2026-11-06": jd([1], [1]) } }
+  ];
+  var enAttente = [
+    { id: "toiture", nom: "Reprise de toiture", lieu: "Rezé" },
+    { id: "girard", nom: "M. Girard", lieu: "Les Sorinières" }
+  ];
+  var chezLeClient = [{ nom: "Mme Dupuis", detail: "Devis parti le 20 octobre" }];
+
+  var etat = { a: 2026, m: 9, touche: null, debut: AUJ, deplies: {}, ajout: null, panne: false, ecriture: true, conseil: true };
+
+  /* ─── Les dates ─────────────────────────────────────────────────────── */
+  function enDate(j) { return new Date(j + "T12:00:00Z"); }
+  function enIso(x) { return x.toISOString().slice(0, 10); }
+  function plus(j, n) { var x = enDate(j); x.setUTCDate(x.getUTCDate() + n); return enIso(x); }
+  function rang(j) { return (enDate(j).getUTCDay() + 6) % 7; }
+  function lundiDe(j) { return plus(j, -rang(j)); }
+  function quantieme(j) { var n = enDate(j).getUTCDate(); return n === 1 ? "1er" : String(n); }
+  function moisDe(j) { return MOIS[enDate(j).getUTCMonth()]; }
+  function dateLongue(j) { return JOURS[rang(j)] + " " + quantieme(j) + " " + moisDe(j); }
+  function capitale(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  function ico(nom, cls) { return '<svg class="ico' + (cls ? " " + cls : "") + '" aria-hidden="true"><use href="#i-' + nom + '"/></svg>'; }
+  function qui(rangs) {
+    var noms = (rangs || []).map(function (r) { return EQUIPES[r]; });
+    if (!noms.length) return "Personne";
+    return noms.length === 1 ? noms[0] : noms.slice(0, -1).join(", ") + " et " + noms[noms.length - 1];
+  }
+
+  /* ─── La charge, comme occupationDemi ───────────────────────────────── */
+  function surLeJour(j) { return chantiers.filter(function (c) { return c.jours[j]; }); }
+  function charge(j, demi) {
+    var total = 0, pose = false;
+    surLeJour(j).forEach(function (c) { var p = c.jours[j][demi]; if (p) { pose = true; total += p.length; } });
+    if (pose && total === 0) total = 0.5;
+    return total / NB_EQUIPES;
+  }
+  function etatDe(ch) { return ch === 0 ? "libre" : ch < 1 ? "dispo" : ch === 1 ? "plein" : "dela"; }
+  function equipesDuJour(c, j) {
+    var p = c.jours[j], vu = {};
+    (p.matin || []).concat(p.apres_midi || []).forEach(function (r) { vu[r] = true; });
+    return Object.keys(vu).map(Number).sort();
+  }
+
+  /* ─── Le haut : la panne de l'agenda ────────────────────────────────── */
+  function rendreHaut() {
+    document.getElementById("haut").innerHTML = etat.panne
+      ? '<button type="button" class="panne" data-action="note">' + ico("alerte") +
+        '<span class="panne-corps"><span class="panne-titre">Votre agenda n\'est plus lu</span>' +
+        '<span class="panne-texte">Un client peut retenir un jour où vous êtes déjà pris.</span></span>' +
+        '<span class="panne-ouvrir">Ouvrir</span></button>'
+      : "";
+  }
+
+  /* ─── Le mois ───────────────────────────────────────────────────────── */
+  function rendreCase(j, col) {
+    if (!j) return '<span class="case vide" aria-hidden="true"></span>';
+    var we = col > 4, passe = j < AUJ, auj = j === AUJ, ouverte = j === etat.touche;
+    var m = charge(j, "matin"), a = charge(j, "apres_midi");
+    var cls = "case" + (we ? " we" : "") + (passe ? " passe" : "") + (auj ? " auj" : "") + (ouverte ? " ouverte" : "");
+    var barres = we && m === 0 && a === 0 ? "" :
+      '<span class="demis" aria-hidden="true">' + [m, a].map(function (ch) {
+        return '<span class="demi"><i style="width:' + Math.round(Math.min(ch, 1) * 100) + '%;background:var(--etat-' + etatDe(ch) + ')"></i></span>';
+      }).join("") + "</span>";
+    var dit = capitale(dateLongue(j)) + (barres ? ", matin " + MOT[etatDe(m)] + ", après-midi " + MOT[etatDe(a)] : "");
+    return '<button type="button" class="' + cls + '" data-action="jour" data-jour="' + j + '" aria-pressed="' + ouverte +
+      '" aria-label="' + dit + '"><span>' + enDate(j).getUTCDate() + "</span>" + barres + "</button>";
+  }
+
+  function rendreMois() {
+    var premier = enIso(new Date(Date.UTC(etat.a, etat.m, 1, 12)));
+    var nb = new Date(Date.UTC(etat.a, etat.m + 1, 0, 12)).getUTCDate();
+    var cases = [];
+    for (var i = 0; i < rang(premier); i++) cases.push(null);
+    for (var k = 1; k <= nb; k++) cases.push(enIso(new Date(Date.UTC(etat.a, etat.m, k, 12))));
+    while (cases.length % 7) cases.push(null);
+    var lundiLu = etat.touche === null ? lundiDe(etat.debut) : null;
+
+    var h = '<div class="mois-tete">' +
+      '<button type="button" class="mois-fleche" data-action="mois" data-pas="-1" aria-label="Mois précédent">' + ico("retour") + "</button>" +
+      '<h2 class="mois-nom">' + capitale(MOIS[etat.m]) + " " + etat.a + "</h2>" +
+      '<button type="button" class="mois-fleche" data-action="mois" data-pas="1" aria-label="Mois suivant">' + ico("suivant") + "</button></div>";
+    if (!(etat.a === 2026 && etat.m === 9)) h += '<div class="mois-retour"><button type="button" class="bouton-texte or" data-action="revenir">Revenir à aujourd\'hui</button></div>';
+    h += '<div class="noms-jours" aria-hidden="true">' + ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map(function (n, i) {
+      return "<span" + (i > 4 ? ' class="we"' : "") + ">" + n + "</span>";
+    }).join("") + "</div>";
+    for (var s = 0; s < cases.length; s += 7) {
+      var semaine = cases.slice(s, s + 7);
+      var lue = lundiLu !== null && semaine.indexOf(lundiLu) >= 0;
+      h += '<div class="semaine-rang' + (lue ? " lue" : "") + '"><div class="cases">' + semaine.map(rendreCase).join("") + "</div></div>";
+      var col = etat.touche ? semaine.indexOf(etat.touche) : -1;
+      if (col >= 0) h += rendreVolet(etat.touche, col);
+    }
+    h += '<div class="legende"><div class="legende-etats">' + ["libre", "dispo", "plein", "dela"].map(function (e) {
+      return '<span class="legende-etat"><i style="background:var(--etat-' + e + ')"></i>' + MOT[e] + "</span>";
+    }).join("") + '</div><div class="legende-pied"><span class="legende-demis"><span class="demis"><span class="demi"></span><span class="demi"></span></span>' +
+      '<span class="legende-mots"><span>matin</span><span>après-midi</span></span></span>' +
+      (etat.ecriture ? '<button type="button" class="bouton-texte or" data-action="couleurs">Couleurs</button>' : "") + "</div></div>";
+    document.getElementById("mois").innerHTML = h;
+  }
+
+  /* ─── La fiche d'un jour, et ce qu'un chantier y porte ──────────────── */
+  function titreDuJour(j, balise) {
+    var b = balise || "h3";
+    if (j === AUJ) return "<" + b + ' class="jour-titre auj"><b>Aujourd\'hui</b><span>' + dateLongue(j) + "</span></" + b + ">";
+    return "<" + b + ' class="jour-titre' + (j < AUJ ? " passe" : "") + '"><b>' + capitale(dateLongue(j)) + "</b></" + b + ">";
+  }
+  function situation(c) {
+    return '<span class="chantier-situation"><span class="duree">' + c.duree + '</span><span class="lieu">' + ico("lieu") + c.lieu + "</span></span>";
+  }
+
+  function rendreVolet(j, col) {
+    var liste = surLeJour(j);
+    var seul = liste.length === 1 ? liste[0].id : null;
+    var ecrit = etat.ecriture && j >= AUJ;
+    var h = '<div class="volet" style="--pointe:' + ((col + 0.5) / 7 * 100).toFixed(2) + '%">' +
+      '<div class="volet-tete">' + titreDuJour(j) +
+      (ecrit ? '<button type="button" class="absent" data-action="absent" data-jour="' + j + '">' + ico("plus", "ico-p") + "Salarié absent ?</button>" : "") +
+      "</div>";
+    if (!liste.length) h += '<p class="volet-rien">Rien de posé ce jour-là.</p>';
+    liste.forEach(function (c) {
+      var cle = "v:" + j + ":" + c.id;
+      var ouvert = cle in etat.deplies ? etat.deplies[cle] : c.id === seul;
+      h += '<div class="bloc' + (j < AUJ ? " passe" : "") + '"><div class="bloc-tete">' +
+        '<button type="button" class="bloc-nom" data-action="deplier" data-cle="' + cle + '" data-ouvert="' + ouvert + '" aria-expanded="' + ouvert + '">' +
+        '<span class="chantier-nom">' + c.nom + "</span>" + situation(c) + "</button>" +
+        '<button type="button" class="rond-deplier" data-action="deplier" data-cle="' + cle + '" data-ouvert="' + ouvert + '" aria-expanded="' + ouvert +
+        '" aria-label="' + (ouvert ? "Refermer" : "Ouvrir") + ' la fiche d\'intervention">' + ico(ouvert ? "haut" : "bas") + "</button></div>" +
+        rendreDedans(c, j, ouvert) + "</div>";
+    });
+    if (ecrit) h += rendreAjout(j);
+    return h + "</div>";
+  }
+
+  function rendreDedans(c, j, ouvert) {
+    var p = c.jours[j], ecrit = etat.ecriture && j >= AUJ;
+    var h = '<div class="moments">';
+    [["matin", "Matin"], ["apres_midi", "Après-midi"]].forEach(function (dm) {
+      if (!p[dm[0]]) return;
+      var e = etatDe(charge(j, dm[0]));
+      h += '<div class="moment"><i class="moment-etat" style="background:var(--etat-' + e + ')" aria-hidden="true"></i>' +
+        '<span class="moment-nom">' + dm[1] + '</span><span class="moment-qui' + (p[dm[0]].length ? "" : " personne") + '">' + qui(p[dm[0]]) + "</span>" +
+        (ecrit ? '<button type="button" class="moment-plus" data-action="plus" data-id="' + c.id + '" data-jour="' + j + '" data-demi="' + dm[0] +
+          '" aria-label="Ajouter quelqu\'un ' + (dm[0] === "matin" ? "le matin" : "l'après-midi") + '">' + ico("plus") + "</button>" : "") + "</div>";
+    });
+    h += "</div>";
+    if (ecrit) h += '<div class="gestes"><button type="button" data-action="note" data-texte="Touchez le jour où le poser.">Déplacer</button>' +
+      '<button type="button" data-action="retirer" data-id="' + c.id + '" data-jour="' + j + '">Retirer</button>' +
+      '<button type="button" class="alerte" data-action="supprimer" data-id="' + c.id + '">Supprimer</button></div>';
+    if (ouvert) h += '<div class="intervention"><h4 class="intervention-titre">Fiche d\'intervention</h4><div class="sur-place">' +
+      '<button type="button" data-action="note">' + ico("lieu") + "Maps</button>" +
+      '<button type="button" data-action="note">' + ico("envoyer") + "Waze</button>" +
+      '<button type="button" data-action="note" data-texte="Adresse copiée.">' + ico("copier") + "Copier l'adresse</button>" +
+      '<button type="button" data-action="note">' + ico("telephone") + "Appeler le client</button></div>" +
+      '<label class="champ"><span class="champ-libelle">Ma note</span><textarea class="champ-saisie" rows="2" placeholder="Penser à prendre le broyeur."></textarea></label>' +
+      '<button type="button" class="teinte ambre" data-action="note">Fiche de sécurité<span>à remplir</span>' + ico("bas", "ico-p") + "</button>" +
+      '<button type="button" class="teinte vert" data-action="note">Travaux à faire<span>aucune ligne</span>' + ico("bas", "ico-p") + "</button></div>";
+    return h;
+  }
+
+  function rendreAjout(j) {
+    if (etat.ajout === j) return '<div class="ajout ouvert"><div class="voies">' +
+      '<button type="button" class="voie" data-action="attente" data-jour="' + j + '">Client en attente</button>' +
+      '<button type="button" class="voie" data-action="note">Un client</button>' +
+      '<button type="button" class="voie" data-action="note">Autre chose</button></div>' +
+      '<button type="button" class="ajouter" data-action="ajout" data-jour="' + j + '">' + ico("croix", "ico-p") + "Fermer</button></div>";
+    return '<button type="button" class="ajouter" data-action="ajout" data-jour="' + j + '">' + ico("plus", "ico-p") + "Ajouter</button>";
+  }
+
+  /* ─── Les sept jours ────────────────────────────────────────────────── */
+  function rendreListe() {
+    var zone = document.getElementById("liste");
+    zone.hidden = etat.touche !== null;
+    if (zone.hidden) { zone.innerHTML = ""; return; }
+    /* Sept jours à partir d'un lundi : une semaine, et son titre tient sur une ligne. */
+    var titre = "Semaine du " + quantieme(etat.debut) + " " + moisDe(etat.debut);
+    var h = '<div class="liste-tete"><button type="button" class="mois-fleche" data-action="semaine" data-pas="-7" aria-label="Sept jours avant">' + ico("retour") + "</button>" +
+      '<h2 class="liste-titre">' + titre + "</h2>" +
+      '<button type="button" class="mois-fleche" data-action="semaine" data-pas="7" aria-label="Sept jours après">' + ico("suivant") + "</button></div>";
+    var jours = [];
+    for (var i = 0; i < 7; i++) { var j = plus(etat.debut, i); if (surLeJour(j).length) jours.push(j); }
+    if (!jours.length) h += '<p class="liste-rien">Aucun chantier posé sur ces sept jours.</p>';
+    jours.forEach(function (j) {
+      h += titreDuJour(j) + '<div class="jour-plage' + (j < AUJ ? " passe" : "") + '">';
+      surLeJour(j).forEach(function (c) {
+        var cle = "l:" + j + ":" + c.id, ouvert = !!etat.deplies[cle];
+        h += '<div class="chantier' + (ouvert ? " ouvert" : "") + '"><div class="chantier-rang">' +
+          '<button type="button" class="chantier-corps touche" data-action="deplier" data-cle="' + cle + '" data-ouvert="' + ouvert + '" aria-expanded="' + ouvert + '">' +
+          '<span class="chantier-haut"><span class="chantier-nom">' + c.nom + '</span><span class="chantier-qui' + (equipesDuJour(c, j).length ? "" : " personne") + '">' + qui(equipesDuJour(c, j)) + "</span></span>" +
+          situation(c) + "</button>" +
+          '<button type="button" class="chantier-portes" data-action="portes" data-id="' + c.id + '" aria-label="Le devis et la fiche de ' + c.nom + '">' + ico("suivant") + "</button></div>" +
+          (ouvert ? '<div class="chantier-dedans">' + rendreDedans(c, j, true) + "</div>" : "") + "</div>";
+      });
+      if (etat.ecriture && j >= AUJ) h += rendreAjout(j);
+      h += "</div>";
+    });
+    zone.innerHTML = h;
+  }
+
+  /* ─── Le bas : le conseil de l'agenda, et le tiroir ─────────────────── */
+  function rendreBas() {
+    document.getElementById("bas").innerHTML = !etat.panne && etat.ecriture && etat.conseil
+      ? '<div class="conseil"><button type="button" class="conseil-lien" data-action="note">' + ico("calendrier") + "Relier votre agenda</button>" +
+        '<button type="button" class="conseil-masquer" data-action="masquer">Masquer</button></div>'
+      : "";
+    var t = document.getElementById("attente");
+    t.hidden = !etat.ecriture;
+    ecran.classList.toggle("avec-attente", etat.ecriture);
+    var pourUnJour = etat.touche && etat.touche >= AUJ;
+    var n = enAttente.length;
+    t.innerHTML = '<span class="attente-texte' + (pourUnJour ? " pour-un-jour" : "") + '">' +
+      (pourUnJour ? "À poser le " + dateLongue(etat.touche) : n + (n > 1 ? " clients sans date" : " client sans date")) + "</span>" +
+      (pourUnJour && n ? '<span class="pastille">' + n + "</span>" : "") + ico("haut");
+  }
+
+  function rendre() { rendreHaut(); rendreMois(); rendreListe(); rendreBas(); }
+
+  /* ─── Les feuilles ──────────────────────────────────────────────────── */
+  function dedans(id) { return document.querySelector("#" + id + " .feuille-dedans"); }
+
+  function feuilleAttente(depuis) {
+    var jour = etat.touche && etat.touche >= AUJ ? etat.touche : depuis && depuis.getAttribute("data-jour");
+    var n = enAttente.length;
+    var h = '<h2 class="feuille-titre">' + (jour ? "À poser le " + dateLongue(jour) : n + (n > 1 ? " clients sans date" : " client sans date")) + "</h2>";
+    if (!jour) h += '<p class="consigne">Touchez d\'abord un jour du calendrier.</p>';
+    if (!n) h += '<p class="consigne">Aucun client n\'attend de jour.</p>';
+    h += '<p class="rubrique">Sans date</p><ul class="liste">' + enAttente.map(function (c) {
+      /* Un jour choisi, la ligne pose ; sans jour, elle se retire en glissant.
+         Les deux à la fois mettraient « Retirer » sous le doigt qui vise « Poser ». */
+      return '<li><div class="ligne"' + (jour ? "" : " data-retirable") + '><span class="ligne-glisse ligne-corps"><span class="ligne-nom">' + c.nom + '</span><span class="ligne-situation">' + c.lieu + ", en attente d'un jour</span></span>" +
+        (jour ? '<button type="button" class="bouton bouton-plein bouton-petit" data-action="poser" data-id="' + c.id + '" data-jour="' + jour + '">Poser</button>' : "") + "</div></li>";
+    }).join("") + '</ul><p class="rubrique">En attente du client</p><ul class="liste">' + chezLeClient.map(function (c) {
+      return '<li><div class="ligne"><span class="ligne-corps"><span class="ligne-nom">' + c.nom + '</span><span class="ligne-situation">' + c.detail + "</span></span></div></li>";
+    }).join("") + "</ul>";
+    dedans("feuille-attente").innerHTML = h;
+    Kit.brancher(document.getElementById("feuille-attente"));
+    Kit.ouvrirFeuille("feuille-attente", depuis);
+  }
+
+  function feuillePortes(id, depuis) {
+    var c = chantiers.filter(function (x) { return x.id === id; })[0];
+    var fait = Object.keys(c.jours).every(function (j) { return j < AUJ; });
+    dedans("feuille-portes").innerHTML = '<h2 class="feuille-titre">' + c.nom + "</h2>" +
+      (fait ? '<a class="bouton bouton-plein" href="chantier-facture.html">Créer la facture</a><div class="mt-8"></div>' : "") +
+      '<a class="porte-ligne touche" href="chantier-devis.html">' + ico("document") + "<span>Le devis</span><small>accepté</small>" + ico("suivant", "ico-p") + "</a>" +
+      '<a class="porte-ligne touche" href="client.html">' + ico("client") + "<span>La fiche client</span>" + ico("suivant", "ico-p") + "</a>" +
+      '<button type="button" class="bouton bouton-texte mt-8" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Fermer</button>';
+    Kit.ouvrirFeuille("feuille-portes", depuis);
+  }
+
+  /* Ses choix rapides, recopiés de RACCOURCIS_DU_PLANNING : ce sont des
+     valeurs qu'il choisit, pas des couleurs de l'écran. */
+  var RACCOURCIS = {
+    libre: [["#ffffff", "Blanc"], ["#e3eadf", "Vert très pâle"], ["#e8e8e6", "Gris clair"]],
+    dispo: [["#7d9a6d", "Vert"], ["#b98b47", "Doré"], ["#d0782a", "Orange"]],
+    plein: [["#22456d", "Bleu nuit"], ["#1c1c1a", "Noir"], ["#7d9a6d", "Vert"]],
+    dela: [["#b8322a", "Rouge"], ["#d0782a", "Orange"], ["#1c1c1a", "Noir"]]
+  };
+  var DE_LA_CHARTE = { libre: "var(--atlas-card)", dispo: "var(--atlas-vertPale)", plein: "var(--atlas-rust)", dela: "var(--atlas-bordeaux)" };
+  var choisies = {};
+  function feuilleCouleurs(depuis) {
+    var h = '<h2 class="feuille-titre">Couleurs</h2>';
+    ["libre", "dispo", "plein", "dela"].forEach(function (e) {
+      var options = [["", "Celle d'aujourd'hui"]].concat(RACCOURCIS[e]);
+      h += '<div class="couleur-rang"><span class="couleur-nom">' + capitale(MOT[e]) + '</span><span class="couleur-choix">' + options.map(function (o) {
+        return '<button type="button" class="pastille-couleur" data-action="couleur" data-quoi="' + e + '" data-valeur="' + o[0] + '" aria-label="' + o[1] +
+          '" aria-pressed="' + ((choisies[e] || "") === o[0]) + '" style="background:' + (o[0] || DE_LA_CHARTE[e]) + '"></button>';
+      }).join("") + "</span></div>";
+    });
+    h += '<p class="discret mt-16">Enregistré au fur et à mesure.</p>';
+    dedans("feuille-couleurs").innerHTML = h;
+    Kit.ouvrirFeuille("feuille-couleurs", depuis);
+  }
+
+  function feuilleAbsent(j, depuis) {
+    dedans("feuille-absent").innerHTML = '<h2 class="feuille-titre">Absent le ' + dateLongue(j) + " ?</h2>" +
+      [1, 2].map(function (r) {
+        return '<div class="absent-rang"><span class="ligne-nom">' + EQUIPES[r] + '</span><span class="second" id="absent-' + r + '">Présent</span>' +
+          '<button type="button" class="bascule" role="switch" aria-checked="false" aria-label="' + EQUIPES[r] + ' absent" aria-describedby="absent-' + r + '" data-oui="Absent" data-non="Présent"></button></div>';
+      }).join("") + '<button type="button" class="bouton bouton-texte mt-8" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Fermer</button>';
+    Kit.ouvrirFeuille("feuille-absent", depuis);
+  }
+
+  function feuilleSupprimer(id, depuis) {
+    var c = chantiers.filter(function (x) { return x.id === id; })[0];
+    dedans("feuille-supprimer").innerHTML = '<h2 class="feuille-titre">Supprimer ' + c.nom + " ?</h2><p>" + c.nom + " quitte le planning. Il reste dans vos clients.</p>" +
+      '<button type="button" class="bouton bouton-alerte" data-action="confirmer-suppression" data-id="' + id + '">Supprimer</button>' +
+      '<button type="button" class="bouton bouton-texte mt-8" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>';
+    Kit.ouvrirFeuille("feuille-supprimer", depuis);
+  }
+
+  /* ─── Les gestes ────────────────────────────────────────────────────── */
+  function retirerDuPlanning(id, texte, versLeTiroir) {
+    var i = -1;
+    chantiers.forEach(function (c, k) { if (c.id === id) i = k; });
+    if (i < 0) return;
+    var c = chantiers.splice(i, 1)[0];
+    if (versLeTiroir) enAttente.push({ id: c.id, nom: c.nom, lieu: c.lieu });
+    rendre();
+    Kit.tiroir(ecran, texte, function () {
+      chantiers.splice(i, 0, c);
+      if (versLeTiroir) enAttente.pop();
+      rendre();
+    });
+  }
+
+  ecran.addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-action]");
+    if (!b || !ecran.contains(b)) return;
+    var quoi = b.getAttribute("data-action");
+    var j = b.getAttribute("data-jour");
+    if (quoi === "jour") {
+      etat.touche = etat.touche === j ? null : j;
+      etat.ajout = null;
+      if (etat.touche) etat.debut = lundiDe(etat.touche);
+      rendre();
+    } else if (quoi === "mois") {
+      var m = etat.m + Number(b.getAttribute("data-pas"));
+      etat.a += Math.floor(m / 12); etat.m = (m + 12) % 12; etat.touche = null;
+      rendre();
+    } else if (quoi === "revenir") {
+      etat.a = 2026; etat.m = 9; etat.touche = null; etat.debut = AUJ;
+      rendre();
+    } else if (quoi === "semaine") {
+      etat.debut = plus(etat.debut, Number(b.getAttribute("data-pas")));
+      rendreMois(); rendreListe();
+    } else if (quoi === "deplier") {
+      etat.deplies[b.getAttribute("data-cle")] = b.getAttribute("data-ouvert") !== "true";
+      rendreMois(); rendreListe();
+    } else if (quoi === "ajout") {
+      etat.ajout = etat.ajout === j ? null : j;
+      rendreMois(); rendreListe();
+    } else if (quoi === "plus") {
+      var c = chantiers.filter(function (x) { return x.id === b.getAttribute("data-id"); })[0];
+      var demi = c.jours[j][b.getAttribute("data-demi")];
+      var manque = [1, 2].filter(function (r) { return demi.indexOf(r) < 0; });
+      if (!manque.length) { Kit.note(b, "Toute l'équipe est déjà là."); return; }
+      demi.push(manque[0]); demi.sort();
+      rendreMois(); rendreListe();
+    } else if (quoi === "retirer") {
+      /* Retirer rend le chantier au tiroir : il attend un autre jour. */
+      retirerDuPlanning(b.getAttribute("data-id"), "Retiré à l'instant.", true);
+    } else if (quoi === "supprimer") {
+      feuilleSupprimer(b.getAttribute("data-id"), b);
+    } else if (quoi === "confirmer-suppression") {
+      Kit.fermerFeuilles(ecran);
+      retirerDuPlanning(b.getAttribute("data-id"), "Supprimé à l'instant.");
+    } else if (quoi === "attente") {
+      feuilleAttente(b);
+    } else if (quoi === "poser") {
+      var k = -1;
+      enAttente.forEach(function (x, n) { if (x.id === b.getAttribute("data-id")) k = n; });
+      var pris = enAttente.splice(k, 1)[0];
+      var neuf = { id: pris.id, nom: pris.nom, lieu: pris.lieu, duree: "Une journée", jours: {} };
+      neuf.jours[j] = jd([], []);
+      chantiers.push(neuf);
+      etat.ajout = null;
+      Kit.fermerFeuilles(ecran);
+      rendre();
+      Kit.tiroir(ecran, "Posé le " + dateLongue(j) + ".", function () {
+        chantiers.splice(chantiers.indexOf(neuf), 1); enAttente.splice(k, 0, pris); rendre();
+      });
+    } else if (quoi === "portes") {
+      feuillePortes(b.getAttribute("data-id"), b);
+    } else if (quoi === "couleurs") {
+      feuilleCouleurs(b);
+    } else if (quoi === "couleur") {
+      var e = b.getAttribute("data-quoi"), v = b.getAttribute("data-valeur");
+      choisies[e] = v;
+      if (v) ecran.style.setProperty("--etat-" + e, v); else ecran.style.removeProperty("--etat-" + e);
+      b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+    } else if (quoi === "absent") {
+      feuilleAbsent(j, b);
+    } else if (quoi === "masquer") {
+      etat.conseil = false; rendreBas();
+      Kit.tiroir(ecran, "Masqué.", function () { etat.conseil = true; rendreBas(); });
+    } else if (quoi === "note") {
+      Kit.note(b, b.getAttribute("data-texte") || undefined);
+    }
+  });
+
+  /* Les états de la planche : posés après ceux du kit, qui a déjà écrit data-etat. */
+  function poserEtat(nom) {
+    etat.touche = nom === "jour" ? "2026-10-27" : null;
+    etat.debut = AUJ; etat.ajout = null; etat.deplies = {};
+    etat.panne = nom === "panne";
+    etat.ecriture = nom !== "salarie";
+    Kit.fermerFeuilles(ecran);
+    rendre();
+    ecran.querySelector(".defile").scrollTop = 0;
+  }
+  document.querySelectorAll(".pl-etats button[data-etat]").forEach(function (b) {
+    b.addEventListener("click", function () { poserEtat(b.getAttribute("data-etat")); });
+  });
+  poserEtat("matin");
+});
+</script>
+</body>
+</html>
