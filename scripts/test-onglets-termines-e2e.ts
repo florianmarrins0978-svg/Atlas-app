@@ -283,15 +283,26 @@ async function main() {
       // dans les 44 px du pouce et que `scrollWidth` ne voit rien d’un
       // débordement visible.
       //
-      // Les pastilles portent donc `whitespace-nowrap` ET `shrink-0` : ni
-      // repli ni écrasement ne sont plus possibles, et le manque de place
-      // devient un DÉBORDEMENT que la mesure ci-dessous voit. Un défaut
-      // visible vaut mieux qu’un défaut absorbé en silence.
+      // **Depuis sa planche du 25 octobre 2026** (`appli/soignee/termines.html`),
+      // les deux portes sont deux boutons de même largeur, 56 px de haut, et
+      // « Retours d’intervention » y passe sur deux lignes à toutes les
+      // largeurs : c’est le dessin qu’il a validé. La borne suit donc ce dessin
+      // (56 px, deux lignes au plus) ; une troisième ligne, ou un bouton qui
+      // grandit, reste un défaut.
       const hauts = await rangee.evaluate((r) =>
-        Array.from(r.children).map((e) => Math.round(e.getBoundingClientRect().height))
+        Array.from(r.children).map((e) => {
+          const intervalle = document.createRange();
+          intervalle.selectNodeContents(e);
+          const ligne = parseFloat(getComputedStyle(e as HTMLElement).lineHeight) || 18;
+          return {
+            boite: Math.round(e.getBoundingClientRect().height),
+            lignes: Math.round(intervalle.getBoundingClientRect().height / ligne),
+          };
+        })
       );
       for (const h of hauts) {
-        assert.ok(h <= 48, `une porte fait ${h} px de haut à ${large} px : son libellé s’est replié`);
+        assert.ok(h.boite <= 56, `une porte fait ${h.boite} px de haut à ${large} px : elle a grandi`);
+        assert.ok(h.lignes <= 2, `un libellé tient sur ${h.lignes} lignes à ${large} px`);
       }
       for (const x of serres) {
         assert.ok(x.voulu > 0, `« ${x.mot} » ne mesure rien : la mise en page n’est pas faite`);
