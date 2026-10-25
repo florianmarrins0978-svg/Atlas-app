@@ -83,7 +83,9 @@
 .reponses { padding: 12px var(--gouttiere) 0; }
 
 /* La réponse d'un client : le titre, le chantier, ses mots à lui, deux gestes. */
-.reponse { padding: 14px 18px 4px; transition: opacity 220ms var(--courbe); }
+/* Les coins de l'appli (rounded-[18px], Notifications.tsx) : sa demande du
+   25 octobre, « remets l'encadré avec les bords arrondis comme aujourd'hui ». */
+.reponse { border-radius: 18px; padding: 14px 20px 4px; transition: opacity 220ms var(--courbe); }
 .reponse p { margin: 0; }
 .reponse + .reponse { margin-top: 10px; }
 .reponse .carte-ton-texte { margin-top: 6px; font-size: 20px; }
@@ -234,6 +236,7 @@
       <li>Vos chantiers en grand avec 44 px d'air au-dessus, l'assistant à côté. Ni Bonjour, ni ATLAS, ni trait gris.</li>
       <li>Créer un devis en lettres de titre, son signe d'or qui se trace, et ses grains qui partent à l'appui.</li>
       <li>Le fil, la date à gauche, aucune boîte autour d'un chantier, la perle à mi-hauteur.</li>
+      <li>L'encadré des réponses et ses coins arrondis, comme aujourd'hui.</li>
       <li>L'état toujours en or, et la date seule sous Devis envoyé.</li>
       <li>Adresse non renseignée en rouge mène à la fiche ; glisser une ligne vers la gauche la retire, et le tiroir rend la main.</li>
       <li>En cours et son chiffre, une seule fois. Au début, Créer un devis au tiers haut, sans phrase.</li>
