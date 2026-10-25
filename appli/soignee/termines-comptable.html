@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pour mon comptable, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  POUR MON COMPTABLE, la page entière : src/app/termines/comptable/page.tsx
+  (DossierEnCours.tsx, ArretDuDossier.tsx), le relevé d'une période
+  ([periode]/Releve.tsx) et Mes dossiers justifiés (dossiers/MesDossiers.tsx).
+
+  Sa demande du 25 octobre : « une planche améliorée de la page pour mon
+  comptable ; modifie ce que tu veux si tu estimes que c'est mieux ; la vraie
+  page sans modification à côté, pour comparer point par point ».
+
+  À CÔTÉ, LA VRAIE PAGE : treize captures prises sur le poste, jeu d'essai
+  dans atlas_test (aujourdhui/comptable*.jpg). Chaque état et chaque carte
+  ouverte de la proposition affiche la capture du même état dans l'appli.
+
+  CE QUI CHANGE, et pourquoi :
+    l'ordre suit le geste : ce qui attend, puis les mois, puis le dossier à
+      ranger. Aujourd'hui « Arrêter mon dossier » coupe la page entre le Check
+      up et les lignes qu'il annonce ;
+    le point en tête dit combien de lignes attendent, sur la plage rouge de
+      l'appli, ou « Tout est justifié » en vert ; la banque et sa lecture vivent
+      dessous, puisque c'est d'elle que vient le compte ;
+    Check up devient le seul bouton plein, collé en bas (fondations.html) ;
+      les boutons des cartes passent cernés : quatre aplats verts à la suite
+      ne disaient plus lequel compte ;
+    les mois montrent ce qui sort et ce qui entre, déjà calculé par
+      page.tsx (sorties, entrees) et jamais affiché ; la barre de couleurs
+      passe de 6 à 10 px, segments séparés, pour qu'un repas se voie à côté
+      d'un loyer ;
+    « Arrêter mon dossier ici » dit d'avance pourquoi il attend, au lieu de
+      s'ouvrir sur un refus ;
+    le relevé perd sa barre de couleur à gauche (un point suffit, la règle du
+      kit refuse les bordures de couleur) et chaque pièce porte son signe ;
+    rien sous 13 px : les 10,5 px en capitales grises des jours et le
+      surtitre doré « Dossier en cours » partent, ce dernier redisait la carte.
+
+  RIEN N'EST CODÉ DANS src/. Les noms et montants sont ceux du jeu d'essai,
+  les mêmes des deux côtés.
+*/
+
+.haut { display: flex; align-items: center; justify-content: space-between; margin: 0 0 10px; }
+.titre-page { margin: 4px 0 0; font: 400 var(--t-titre)/1.06 var(--serif); letter-spacing: -0.012em; }
+.sous-titre { margin: 8px 0 20px; font-size: 15px; line-height: 1.45; color: var(--atlas-inkSoft); }
+
+/* ─── Le point : combien attendent, et d'où vient le compte ──────────────── */
+.point { border-radius: var(--r-plage); padding: 16px 18px 6px; background: var(--atlas-card); }
+.point[data-ton="rouge"] { background: var(--atlas-carteRougeFond); }
+.point[data-ton="vert"] { background: var(--atlas-carteVertFond); }
+.point-titre { display: flex; align-items: center; gap: 10px; margin: 0; font: 400 23px/1.2 var(--serif); }
+.point[data-ton="rouge"] .point-titre { color: var(--atlas-carteRougeTexte); }
+.point[data-ton="vert"] .point-titre { color: var(--atlas-carteVertTexte); }
+.point-titre .ico { width: 24px; height: 24px; stroke-width: 2; }
+.point-sous { margin: 6px 0 0; font-size: 15px; line-height: 1.45; color: var(--atlas-ink); }
+.point-banque { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding-top: 4px;
+                box-shadow: inset 0 1px 0 var(--atlas-line); font-size: 14.5px; color: var(--atlas-ink); }
+.point-banque > span:first-of-type { flex: 1; min-width: 0; padding: 10px 0; }
+.point-banque .rond-banque { width: 9px; height: 9px; flex: none; border-radius: 50%; background: var(--atlas-plein); }
+.point-banque .bouton-texte { min-height: 44px; font-size: 15px; white-space: nowrap; }
+
+/* ─── Les lignes qui attendent ───────────────────────────────────────────── */
+.cartes > .plage { padding: 16px 18px; }
+.cartes > .plage + .plage { margin-top: 10px; }
+.carte-cat { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--atlas-inkSoft); }
+.carte-cat i, .legende i, .rel-point, .filtres i { display: inline-block; width: 10px; height: 10px; flex: none; border-radius: 50%; }
+.carte-jour { margin-left: auto; font-weight: 400; color: var(--atlas-inkSoft); }
+.carte-ligne { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 8px; }
+.carte-qui { min-width: 0; font: 400 19px/1.25 var(--serif); overflow-wrap: anywhere; }
+.carte-montant { flex: none; font: 400 22px/1.1 var(--serif); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.carte-manque { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; font-size: 15px; font-weight: 600; color: var(--atlas-alerte); }
+.carte-manque .ico { width: 19px; height: 19px; stroke-width: 2; }
+.carte-texte { margin: 10px 0 0; font-size: 15px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.carte-texte b { color: var(--atlas-ink); font-weight: 600; }
+.carte-attention { margin: 10px 0 0; padding: 12px 14px; border-radius: var(--r-plage); font-size: 15px; line-height: 1.45;
+                   background: var(--atlas-carteAmbreFond); color: var(--atlas-ink); }
+/* Le geste de la carte en entier, l'autre réponse centrée dessous : côte à
+   côte, « C'est autre chose » passait à la ligne sur un écran de 390. */
+.carte-gestes { display: flex; flex-direction: column; align-items: stretch; gap: 2px; margin-top: 14px; }
+.carte-gestes .bouton { min-height: 52px; font-size: 16px; }
+.carte-gestes .bouton .ico { width: 21px; height: 21px; }
+.carte-gestes .bouton-texte { justify-content: center; padding: 0 10px; color: var(--atlas-inkSoft); }
+.carte-gestes .bouton-texte.vert { color: var(--atlas-rust); }
+
+/* Choisir parmi des pièces : des rangs, pas des cartes dans la carte. */
+.pieces { margin: 12px 0 0; padding: 0; list-style: none; }
+.piece { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 62px; padding: 10px 0; text-align: left;
+         box-shadow: inset 0 1px 0 var(--atlas-line); }
+.piece-rond { width: 22px; height: 22px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--atlas-chevron); }
+.piece-corps { flex: 1; min-width: 0; }
+.piece-nom { display: block; font-size: 16px; font-weight: 500; }
+.piece-sous { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); }
+.piece-montant { flex: none; font: 400 17px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
+.motifs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.motifs button { min-height: 50px; padding: 0 10px; border-radius: 12px; font-size: 15px; font-weight: 500;
+                 box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+
+/* ─── Les mois ───────────────────────────────────────────────────────────── */
+.legende { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 14px 0 2px; font-size: 14px; color: var(--atlas-inkSoft); }
+.legende span { display: inline-flex; align-items: center; gap: 7px; }
+.periodes { margin: 4px 0 0; padding: 0; list-style: none; }
+.periodes li + li .periode { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.periode { display: block; width: 100%; padding: 14px 0 12px; text-align: left; }
+.periode-haut { display: flex; align-items: center; gap: 10px; }
+.periode-nom { flex: 1; min-width: 0; font: 400 19px/1.25 var(--serif); }
+.periode-etat { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; white-space: nowrap; }
+.periode-etat::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.periode-etat[data-ton="rouge"] { color: var(--atlas-carteRougeTexte); }
+.periode-etat[data-ton="vert"] { color: var(--atlas-carteVertTexte); }
+.periode-haut .ico { width: 20px; height: 20px; color: var(--atlas-chevron); stroke-width: 2; margin-right: -4px; }
+.barre-cat { display: flex; gap: 2px; height: 10px; margin-top: 10px; }
+.barre-cat i { display: block; min-width: 3px; border-radius: 2px; }
+.barre-cat i:first-child { border-radius: 5px 2px 2px 5px; }
+.barre-cat i:last-child { border-radius: 2px 5px 5px 2px; }
+.barre-cat i:only-child { border-radius: 5px; }
+.periode-bas { display: flex; align-items: baseline; gap: 14px; margin-top: 8px; font-size: 15px; font-variant-numeric: tabular-nums lining-nums; }
+.periode-bas .perdus { margin-left: auto; font-size: 14px; color: var(--atlas-inkSoft); }
+
+/* ─── Le dossier ─────────────────────────────────────────────────────────── */
+.arret .bouton { font-size: 16px; }
+.arret-pourquoi { margin: 10px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.arret-phrase { margin: 12px 0 0; font-size: 15px; line-height: 1.45; color: var(--atlas-ink); }
+.arret .rang-boutons { margin-top: 14px; align-items: center; }
+.arret .rang-boutons .bouton-texte { flex: none; color: var(--atlas-inkSoft); padding: 0 12px; }
+.ecran[data-arret] .action-bas { display: none; }
+.liste-dossier { margin-top: 6px; }
+
+/* ─── Le relevé d'un mois ────────────────────────────────────────────────── */
+.totaux { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 14px 16px; }
+.totaux span { display: block; font-size: 14px; color: var(--atlas-inkSoft); }
+.totaux b { display: block; margin-top: 4px; font: 400 21px/1.1 var(--serif); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.totaux .manque { color: var(--atlas-alerte); }
+.filtres { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 14px calc(var(--gouttiere) * -1) 0;
+           padding: 0 var(--gouttiere) 2px; }
+.filtres::-webkit-scrollbar { display: none; }
+.filtres button { flex: none; display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 15px; border-radius: 22px;
+                  font-size: 15px; color: var(--atlas-inkSoft); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.filtres button[aria-pressed="true"] { color: var(--atlas-ink); font-weight: 600; box-shadow: inset 0 0 0 2px var(--atlas-ink); }
+.jour-titre { margin: 22px 0 2px; font-size: 15px; font-weight: 700; color: var(--atlas-ink); }
+.rel { display: flex; align-items: flex-start; gap: 12px; width: 100%; padding: 12px 0; text-align: left; }
+.jour-titre + .rel { padding-top: 6px; }
+.rel + .rel { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.rel-point { margin-top: 6px; }
+.rel-corps { flex: 1; min-width: 0; }
+.rel-libelle { display: block; font-size: 16px; font-weight: 500; overflow-wrap: anywhere; }
+.rel-cat { display: block; margin-top: 1px; font-size: 14px; color: var(--atlas-inkSoft); }
+.rel-preuve { display: flex; align-items: center; gap: 6px; margin-top: 5px; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.rel-preuve .ico { width: 17px; height: 17px; stroke-width: 2; }
+.rel-preuve[data-genre="ok"] .ico { color: var(--atlas-carteVertTexte); }
+.rel-preuve[data-genre="ticket"] { color: var(--atlas-rust); font-weight: 600; }
+.rel-preuve[data-genre="perdu"] { font-style: italic; }
+.rel-preuve[data-genre="manque"] { color: var(--atlas-alerte); font-weight: 600; }
+.rel-montant { flex: none; font: 400 17px/1.3 var(--serif); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.rien { margin: 24px 0 0; font-size: 15.5px; color: var(--atlas-inkSoft); }
+
+/* La photo du ticket : du papier photographié, le même sous toutes les chartes. */
+.ticket-photo { margin: 6px auto 0; padding: 22px 0; border-radius: var(--r-plage); background: #d8d4cb; display: grid; place-items: center; }
+.ticket-papier { width: 210px; padding: 18px 16px; background: #fbfaf6; color: #222; font: 12.5px/1.55 ui-monospace, "Courier New", monospace;
+                 box-shadow: 0 2px 8px rgba(0,0,0,0.18); transform: rotate(-1.2deg); }
+.ticket-papier b { display: block; text-align: center; font-size: 14px; }
+.ticket-papier .t-rang { display: flex; justify-content: space-between; }
+.ticket-papier hr { border: 0; border-top: 1px dashed #999; margin: 6px 0; }
+.feuille-sous { margin: -10px 0 14px; font-size: 15px; color: var(--atlas-inkSoft); }
+.feuille-preuve { margin: 14px 0 12px; text-align: center; font-size: 15px; color: var(--atlas-inkSoft); }
+
+/* ─── Mes dossiers ───────────────────────────────────────────────────────── */
+/* L'année se change comme le mois de Terminés : deux flèches d'or autour d'elle (sa demande du 25 octobre). */
+.annee-choix { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; padding: 6px;
+               border-radius: var(--r-plage); background: var(--atlas-card); }
+.annee-fleche { width: 56px; height: 56px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
+.annee-fleche .ico { width: 26px; height: 26px; stroke-width: 2; }
+.annee-fleche[disabled] { color: color-mix(in srgb, var(--atlas-or) 28%, transparent); cursor: default; }
+.annee-nom { font: 400 32px/1 var(--serif); font-variant-numeric: lining-nums; }
+.annee-resume { margin: 10px 0 0; text-align: center; font-size: 15px; color: var(--atlas-inkSoft); }
+.dossier .bilan { margin-top: 12px; }
+.dossier .ajout-bilan { margin-top: 10px; }
+.dossier { padding: 18px 0 20px; }
+.dossier + .dossier { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.dossier-nom { margin: 0; font: 400 20px/1.25 var(--serif); }
+.dossier-detail { margin: 6px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--atlas-inkSoft); }
+.dossier-detail.alerte { color: var(--atlas-alerte); font-weight: 600; }
+.dossier .etat { margin-top: 10px; }
+.dossier-gestes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+.dossier-gestes button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 76px;
+                         padding: 8px 6px; border-radius: 12px; font-size: 14px; font-weight: 600; line-height: 1.2; text-align: center;
+                         color: var(--atlas-ink); box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
+.dossier-gestes .ico { color: var(--atlas-or); }
+.lien-pret { margin-top: 12px; }
+.lien-pret p { margin: 0 0 12px; font-size: 15px; line-height: 1.45; }
+.lien-pret .bouton-texte { justify-content: center; width: 100%; color: var(--atlas-inkSoft); }
+.rejet { margin-top: 14px; }
+.rejet .carte-ligne { margin-top: 6px; }
+.rejet-note { margin: 8px 0 0; font-size: 15px; line-height: 1.45; color: var(--atlas-ink); }
+.bilan { display: flex; align-items: center; gap: 4px; min-height: 64px; margin-top: 14px; padding: 8px 4px 8px 16px; border-radius: var(--r-plage);
+         background: var(--atlas-card); }
+.bilan-corps { flex: 1; min-width: 0; }
+.bilan-corps b { display: block; font-size: 15.5px; font-weight: 600; }
+.bilan-corps span { display: block; font-size: 14px; color: var(--atlas-inkSoft); }
+.bilan .bouton-texte { min-height: 44px; padding: 0 8px; font-size: 15px; }
+.bilan .bouton-texte.doux { color: var(--atlas-inkSoft); }
+.ajout-bilan { margin-top: 12px; }
+.ajout-bilan .bouton { font-size: 16px; }
+
+/* ─── Le message qui passe ───────────────────────────────────────────────── */
+.passe { position: absolute; left: var(--gouttiere); right: var(--gouttiere); z-index: 9; display: flex; align-items: center; min-height: 52px;
+         padding: 0 16px; border-radius: var(--r-plage); background: var(--atlas-ink); color: var(--atlas-cream); font-size: 15px;
+         animation: passe-entre 260ms var(--courbe); }
+@keyframes passe-entre { from { opacity: 0; transform: translateY(8px); } }
+
+/* ─── La vraie page, à côté ──────────────────────────────────────────────── */
+.etats-communs { grid-column: 1 / -1; margin-bottom: 0; }
+.capture-quoi { margin: 0 auto 10px; max-width: 390px; text-align: center; font-size: 14px; color: #4a4a44; }
+.capture-quoi b { color: #1c1c1a; }
+.cadre-capture img { min-height: 200px; }
+@media (max-width: 480px) { .capture-quoi { padding: 10px var(--gouttiere) 0; } }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Pour mon comptable</h1>
+  <p class="pl-verdict">La page rangée dans l'ordre du geste : <b>ce qui attend, puis les mois, puis le dossier à ranger</b>. Mêmes mots, mêmes couleurs, Check up seul bouton plein. À côté, la vraie page dans le même état.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <!-- Au-dessus des deux écrans : sur le téléphone, l'état se choisit aussi depuis Aujourd'hui. -->
+    <div class="pl-etats etats-communs" id="etats">
+      <button type="button" data-etat="a-justifier" aria-pressed="true">4 à justifier</button>
+      <button type="button" data-etat="tout-justifie">Tout est justifié</button>
+      <button type="button" data-etat="sans-banque">Sans banque</button>
+      <button type="button" data-etat="releve">Le relevé d'octobre</button>
+      <button type="button" data-etat="dossiers">Mes dossiers</button>
+    </div>
+
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <p class="capture-quoi">Touchez les cartes : la vraie page suit.</p>
+      <div class="cadre">
+        <div class="ecran avec-barre" id="ecran" data-etat="a-justifier">
+          <div class="defile" data-vue="dossier" id="vue-dossier"></div>
+          <div class="defile" data-vue="releve" id="vue-releve" hidden></div>
+          <div class="defile" data-vue="dossiers" id="vue-dossiers" hidden></div>
+
+          <div class="action-bas" id="action-check-up">
+            <button class="bouton bouton-plein" type="button" data-geste="check-up"><svg class="ico" aria-hidden="true"><use href="#i-scanner"/></svg><span>Check up</span></button>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html" aria-current="page">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+
+          <section class="feuille" id="feuille-ticket" aria-hidden="true" aria-label="Photo du ticket">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans" id="feuille-ticket-dedans"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <p class="capture-quoi" id="capture-quoi"></p>
+      <div class="cadre">
+        <div class="cadre-capture" id="cadre-capture"><img id="capture" src="aujourdhui/comptable.jpg" alt="La page Pour mon comptable telle qu'elle est aujourd'hui"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>En tête, le point : combien de lignes attendent, sur une plage rouge, ou Tout est justifié en vert. La banque et sa lecture sont dessous.</li>
+      <li>Check up est le seul bouton plein, collé en bas. Les boutons des cartes sont cernés.</li>
+      <li>Chaque carte montre en grand le nom et le montant ; ce qui manque est écrit en rouge, avec son signe.</li>
+      <li>Sous chaque mois, ce qui sort en rouge et ce qui entre en vert. La barre de couleurs est plus épaisse.</li>
+      <li>Arrêter mon dossier vient après les mois, et dit d'avance pourquoi il attend.</li>
+      <li>Le relevé : les totaux en grand, un point de couleur par ligne, un signe par pièce.</li>
+      <li>Mes dossiers : l'année se change avec deux flèches, comme le mois de Terminés, et le bilan du comptable est juste sous le nom du dossier. Trois vrais boutons, et le lien du comptable sans sa longue adresse.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Les mots de l'appli, les couleurs des catégories, Ticket perdu annoncé avant de valider.</li>
+      <li>Rien ne se range tant qu'une ligne attend. Un ticket se délie d'un appui. Les dossiers sont gardés dix ans.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Le filtre Sans ticket s'appelle À justifier : il compte aussi le virement reçu et le virement sans facture.</li>
+      <li>Sans banque, Check up disparaît (il n'aurait rien à vérifier) et Relier ma banque devient le bouton plein.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="termines.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Terminés</a>
+  <a href="comptable-dossier.html">Le dossier PDF<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ═══ Les données : celles du jeu d'essai photographié à côté ══════════ */
+  var CAT = {
+    carburant: ["Carburant", "--atlas-catCarburant"], repas: ["Repas", "--atlas-catRepas"],
+    materiel: ["Matériel", "--atlas-catMateriel"], hotel: ["Hôtel", "--atlas-catHotel"],
+    transport: ["Train, taxi", "--atlas-catTransport"], virement: ["Virement envoyé", "--atlas-catVirement"],
+    autre: ["Autre", "--atlas-catAutre"], recu: ["Virement reçu", "--atlas-catRecu"]
+  };
+  var ORDRE = ["carburant", "repas", "materiel", "hotel", "transport", "virement", "autre"];
+  var NOMS_MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+
+  /* Chaque mois de 2026 : sorties par catégorie, entrées, à justifier, tickets perdus. */
+  var MOIS = {
+    "2026-10": { c: { autre: 135.29, carburant: 72.40, hotel: 89, materiel: 412.30, repas: 56, virement: 4504 }, e: 3804, aj: 4, p: 1 },
+    "2026-09": { c: { autre: 53.13, carburant: 124.77, materiel: 510.05, repas: 106.99, transport: 32.40, virement: 1793.56 }, e: 2792.85, aj: 0, p: 0 },
+    "2026-08": { c: { carburant: 162.69, materiel: 368.90, repas: 88.08, virement: 650 }, e: 2212.99, aj: 0, p: 0 },
+    "2026-07": { c: { autre: 346.51, carburant: 89.44, materiel: 232.65, transport: 56.33, virement: 1770 }, e: 1649.42, aj: 0, p: 1 },
+    "2026-06": { c: { autre: 84.82, carburant: 95.95, hotel: 88.96, materiel: 49.52, repas: 63.43, virement: 1327.48 }, e: 1414.90, aj: 0, p: 0 },
+    "2026-05": { c: { carburant: 149.94, materiel: 172.86, transport: 35.60, virement: 650 }, e: 1351.82, aj: 0, p: 0 },
+    "2026-04": { c: { autre: 66.40, carburant: 122.73, materiel: 508.08, repas: 88.41, transport: 23.68, virement: 1770 }, e: 1624.02, aj: 0, p: 0 },
+    "2026-03": { c: { autre: 94.55, carburant: 33.10, hotel: 118.88, materiel: 231.11, repas: 45.24, virement: 650 }, e: 3269.27, aj: 0, p: 1 },
+    "2026-02": { c: { carburant: 22.57, materiel: 282.81, transport: 79.91, virement: 1340.81 }, e: 1126.78, aj: 0, p: 0 },
+    "2026-01": { c: { autre: 97.41, carburant: 57.51, materiel: 54.36, repas: 36.40, transport: 83.38, virement: 1770 }, e: 1814.22, aj: 0, p: 0 }
+  };
+  /* Octobre une fois tout justifié : les trois lignes ont leur pièce, Mme Costa n'est pas encore arrivée. */
+  var OCTOBRE_JUSTIFIE = { c: { autre: 18.50, carburant: 140.29, hotel: 89, materiel: 461.20, repas: 56, virement: 4504 }, e: 2940, aj: 0, p: 1 };
+
+  var CARTES = [
+    { id: "moto", genre: "virement", cat: "virement", qui: "Motoculture Ouest", jour: "24 octobre", montant: 1450 },
+    { id: "leroy", genre: "carte", cat: "autre", qui: "CB LEROY MERLIN", jour: "23 octobre", montant: 48.90, vers: "materiel",
+      tickets: [{ nom: "Leroy Merlin Angers", jour: "Ticket du 21 octobre" }, { nom: "Leroy Merlin Cholet", jour: "Ticket du 23 octobre" }] },
+    { id: "total", genre: "carte", cat: "autre", qui: "CB TOTAL ENERGIES CHOLET", jour: "22 octobre", montant: 67.89 },
+    { id: "costa", genre: "entree", cat: "recu", qui: "Mme Costa", jour: "24 octobre", montant: 864 }
+  ];
+  var FACTURES = [{ societe: "Point P Angers", nom: "Facture bordures", montant: 386.40 }, { societe: "Motoculture Ouest", nom: "Facture débroussailleuse", montant: 1450 }];
+  var MOTIFS = ["Un fournisseur", "Un salaire", "Un loyer", "Impôts, cotisations", "Un prêt", "Pour moi"];
+
+  /* Le relevé d'octobre, la plus récente en haut (Releve.tsx). */
+  var RELEVE = [
+    { jour: "24 octobre", lib: "VIR MME COSTA", cat: "recu", m: 864, entree: true, g: "manque", t: "Facture à confirmer" },
+    { jour: "24 octobre", lib: "VIR SARL MOTOCULTURE OUEST", cat: "virement", m: 1450, g: "manque", t: "Sans ticket" },
+    { jour: "23 octobre", lib: "CB LEROY MERLIN", cat: "autre", m: 48.90, g: "manque", t: "Sans ticket" },
+    { jour: "22 octobre", lib: "CB TOTAL ENERGIES CHOLET", cat: "autre", m: 67.89, g: "manque", t: "Sans ticket" },
+    { jour: "21 octobre", lib: "CB IBIS BUDGET NANTES", cat: "hotel", m: 89, g: "ticket", t: "Ticket du 21 octobre, relié par Atlas", four: "IBIS BUDGET", achat: "21/10/2026" },
+    { jour: "20 octobre", lib: "VIR SCI DU PARC", cat: "recu", m: 2940, entree: true, g: "ok", t: "Facture F-2026-010" },
+    { jour: "16 octobre", lib: "PRLV URSSAF PAYS DE LA LOIRE", cat: "virement", m: 1120, g: "ok", t: "Impôts, cotisations" },
+    { jour: "15 octobre", lib: "CB RESTAURANT LE RELAIS", cat: "repas", m: 56, g: "ticket", t: "Ticket du 15 octobre, relié par Atlas", four: "LE RELAIS", achat: "15/10/2026" },
+    { jour: "13 octobre", lib: "CB POINT P ANGERS", cat: "materiel", m: 412.30, g: "ticket", t: "Ticket du 13 octobre", four: "POINT P", achat: "13/10/2026" },
+    { jour: "9 octobre", lib: "CB LA MIE CALINE", cat: "autre", m: 18.50, g: "perdu", t: "Ticket perdu, mention validée" },
+    { jour: "6 octobre", lib: "CB TOTAL ENERGIES ANGERS", cat: "carburant", m: 72.40, g: "ticket", t: "Ticket du 5 octobre, relié par Atlas", four: "TOTAL ENERGIES", achat: "05/10/2026" },
+    { jour: "5 octobre", lib: "PRLV SEPA SCI LES HAUTS", cat: "virement", m: 650, g: "ok", t: "Un loyer" },
+    { jour: "2 octobre", lib: "VIR PEPINIERES RIVIERE", cat: "virement", m: 1284, g: "ok", t: "Facture Pépinières Rivière" }
+  ];
+
+  var DOSSIERS = [
+    { id: "d2025", annee: 2025, nom: "Du 1ᵉʳ janvier 2025 au 31 décembre 2025", detail: "Rangé le 12 janvier 2026, gardé jusqu’au 31 décembre 2035, 2,4 Mo",
+      verif: "Vérifié par votre comptable : 6 sur 6", rejet: true, bilan: "Ajouté le 18 mars 2026" },
+    { id: "d2016", annee: 2016, nom: "Du 1ᵉʳ janvier 2016 au 31 décembre 2016", efface: "31 décembre 2026", detail: "Rangé le 20 janvier 2017, gardé jusqu’au 31 décembre 2026, 1,2 Mo" }
+  ];
+
+  /* La vraie page, photographiée dans chaque état ; y : où regarder dans la capture. */
+  var CAPTURES = {
+    "comptable": ["4 lignes à justifier", 0],
+    "comptable-ticket-perdu": ["Ticket perdu touché, sur la carte de 67,89 €", 968],
+    "comptable-joindre-facture": ["Joindre la facture touché, sur le virement de 1 450,00 €", 416],
+    "comptable-autre-chose": ["C’est autre chose touché, sur le virement de 1 450,00 €", 416],
+    "comptable-check-up": ["Après un appui sur Check up", 0],
+    "comptable-tout-justifie": ["Tout est justifié", 0],
+    "comptable-arret-ouvert": ["Arrêter mon dossier ici touché", 200],
+    "comptable-sans-banque": ["Sans banque reliée", 0],
+    "comptable-releve": ["Le relevé d’octobre", 0],
+    "comptable-releve-sans-ticket": ["Le relevé d’octobre, filtre Sans ticket", 0],
+    "comptable-releve-photo": ["Le relevé d’octobre, un ticket touché", 0],
+    "comptable-dossiers": ["Mes dossiers justifiés", 0],
+    "comptable-dossiers-lien": ["Mes dossiers, Envoyer au comptable touché", 470]
+  };
+
+  /* ═══ Les outils ══════════════════════════════════════════════════════ */
+  var euros = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
+  function eur(n) { return euros.format(n); }
+  function ico(nom) { return '<svg class="ico" aria-hidden="true"><use href="#i-' + nom + '"/></svg>'; }
+  function point(cat) { return '<i style="background:var(' + CAT[cat][1] + ')"></i>'; }
+  function cloner(o) { return JSON.parse(JSON.stringify(o)); }
+  function somme(c) { var s = 0; for (var k in c) s += c[k]; return s; }
+  var ecran = document.getElementById("ecran");
+  var vues = { dossier: document.getElementById("vue-dossier"), releve: document.getElementById("vue-releve"), dossiers: document.getElementById("vue-dossiers") };
+
+  function passe(texte) {
+    var ancien = ecran.querySelector(".passe");
+    if (ancien) ancien.remove();
+    var t = document.createElement("div");
+    t.className = "passe";
+    t.setAttribute("role", "status");
+    t.textContent = texte;
+    var basVisible = !document.getElementById("action-check-up").hidden && !ecran.hasAttribute("data-arret") && etat.vue === "dossier";
+    t.style.bottom = (basVisible ? 160 : 80) + "px";
+    ecran.appendChild(t);
+    setTimeout(function () { if (t.isConnected) t.remove(); }, 2600);
+  }
+
+  /* ═══ L'état de la planche ════════════════════════════════════════════ */
+  var etat;
+  function etatInitial(nom) {
+    var mois = nom === "sans-banque" ? {} : cloner(MOIS);
+    if (nom === "tout-justifie") mois["2026-10"] = cloner(OCTOBRE_JUSTIFIE);
+    return {
+      nom: nom, vue: nom === "releve" ? "releve" : nom === "dossiers" ? "dossiers" : "dossier",
+      banque: nom !== "sans-banque",
+      cartes: nom === "tout-justifie" || nom === "sans-banque" ? [] : cloner(CARTES),
+      ouvertes: {}, mois: mois, decoupage: "mois", bilanCheckUp: null, arret: false,
+      releve: cloner(RELEVE), filtre: "tout",
+      dossiers: cloner(DOSSIERS), annee: 2025, vus: {}, lien: {}, ajout: {},
+      dossierRange: false
+    };
+  }
+
+  function montrerCapture(nom) {
+    var c = CAPTURES[nom];
+    var img = document.getElementById("capture");
+    var cadre = document.getElementById("cadre-capture");
+    document.getElementById("capture-quoi").innerHTML = "La vraie page : <b>" + c[0] + "</b>";
+    var nouveau = "aujourdhui/" + nom + ".jpg";
+    if (img.getAttribute("src") === nouveau) { cadre.scrollTop = c[1]; return; }
+    img.onload = function () { cadre.scrollTop = c[1]; };
+    img.setAttribute("src", nouveau);
+  }
+
+  function captureDuMoment() {
+    if (etat.vue === "releve") {
+      if (ecran.getAttribute("data-feuille") === "feuille-ticket") return "comptable-releve-photo";
+      return etat.filtre === "manque" ? "comptable-releve-sans-ticket" : "comptable-releve";
+    }
+    if (etat.vue === "dossiers") return etat.lien.d2025 ? "comptable-dossiers-lien" : "comptable-dossiers";
+    if (etat.nom === "sans-banque") return "comptable-sans-banque";
+    if (etat.arret && etat.cartes.length === 0) return "comptable-arret-ouvert";
+    if (etat.nom === "tout-justifie") return "comptable-tout-justifie";
+    if (etat.ouvertes.total === "perdu") return "comptable-ticket-perdu";
+    if (etat.ouvertes.moto === "facture") return "comptable-joindre-facture";
+    if (etat.ouvertes.moto === "motif") return "comptable-autre-chose";
+    if (etat.bilanCheckUp) return "comptable-check-up";
+    return "comptable";
+  }
+
+  /* ═══ Le dossier en cours ═════════════════════════════════════════════ */
+  function htmlHaut(retour) {
+    return '<div class="haut">' +
+      (retour ? '<button class="rond-creux" type="button" data-geste="' + retour + '" aria-label="Retour">' + ico("retour") + "</button>"
+              : '<a class="rond-creux" href="termines.html" aria-label="Retour aux chantiers terminés">' + ico("retour") + "</a>") +
+      '<button class="rond" type="button" aria-label="Ouvrir l’assistant" data-note="L’assistant, comme aujourd’hui.">' + ico("assistant") + "</button></div>";
+  }
+
+  function htmlPoint() {
+    var n = etat.cartes.length;
+    if (!etat.banque) {
+      return '<div class="plage vide" style="padding:28px 18px 22px">' + ico("banque") +
+        '<p class="vide-titre">Aucune banque reliée</p><p class="vide-texte">Aucune ligne de banque pour l’instant.</p>' +
+        '<a class="bouton bouton-plein" href="reglages-banque.html">Relier ma banque</a></div>';
+    }
+    var perdus = 0;
+    for (var k in etat.mois) perdus += etat.mois[k].p;
+    var titre = n > 0 ? ico("alerte") + n + (n > 1 ? " lignes à justifier" : " ligne à justifier")
+                      : ico("coche") + "Tout est justifié";
+    var sous = etat.bilanCheckUp ? etat.bilanCheckUp
+             : n === 0 && perdus > 0 ? perdus + (perdus > 1 ? " tickets perdus" : " ticket perdu") + " depuis le 1ᵉʳ janvier." : "";
+    return '<div class="point" data-ton="' + (n > 0 ? "rouge" : "vert") + '">' +
+      '<p class="point-titre">' + titre + "</p>" + (sous ? '<p class="point-sous">' + sous + "</p>" : "") +
+      '<div class="point-banque"><span class="rond-banque" aria-hidden="true"></span><span>Crédit Agricole, lue le 25 octobre</span>' +
+      '<a class="bouton-texte" href="reglages-banque.html">Ma banque</a></div></div>';
+  }
+
+  function htmlCarte(c) {
+    var ouvert = etat.ouvertes[c.id] || "";
+    var h = '<article class="plage" data-carte="' + c.id + '">' +
+      '<div class="carte-cat">' + point(c.cat) + CAT[c.cat][0] + '<span class="carte-jour">' + c.jour + "</span></div>" +
+      '<div class="carte-ligne"><span class="carte-qui">' + c.qui + '</span><span class="carte-montant">' + eur(c.montant) + "</span></div>";
+    if (c.genre === "entree") {
+      return h + '<p class="carte-texte">Sa facture se confirme sur l’accueil.</p>' +
+        '<div class="carte-gestes"><a class="bouton bouton-creux" href="accueil.html">' + ico("facture") + "Ouvrir l’accueil</a></div></article>";
+    }
+    if (ouvert === "perdu") {
+      return h + '<p class="carte-attention">Validée sans ticket, la ligne porte la mention « ticket perdu ». <b>Sa TVA ne sera pas déduite.</b></p>' +
+        '<div class="carte-gestes"><button class="bouton bouton-creux" type="button" data-geste="valider-perdu" data-c="' + c.id + '">' + ico("coche") + "Valider</button>" +
+        '<button class="bouton-texte" type="button" data-geste="fermer-carte" data-c="' + c.id + '">Annuler</button></div></article>';
+    }
+    if (ouvert === "facture") {
+      var f = FACTURES.map(function (x, i) {
+        return '<li><button class="piece touche" type="button" data-geste="joindre" data-c="' + c.id + '" data-i="' + i + '"><span class="piece-rond"></span>' +
+          '<span class="piece-corps"><span class="piece-nom">' + x.societe + '</span><span class="piece-sous">' + x.nom + "</span></span>" +
+          '<span class="piece-montant">' + eur(x.montant) + "</span></button></li>";
+      }).join("");
+      return h + '<p class="carte-texte">Laquelle\u202f?</p><ul class="pieces">' + f + "</ul>" +
+        '<div class="carte-gestes" style="margin-top:4px"><button class="bouton-texte" type="button" data-geste="fermer-carte" data-c="' + c.id + '">Annuler</button></div></article>';
+    }
+    if (ouvert === "motif") {
+      var m = MOTIFS.map(function (x) { return '<button type="button" class="touche" data-geste="motif" data-c="' + c.id + '">' + x + "</button>"; }).join("");
+      return h + '<p class="carte-texte">C’est :</p><div class="motifs">' + m + "</div>" +
+        '<div class="carte-gestes" style="margin-top:6px"><button class="bouton-texte" type="button" data-geste="fermer-carte" data-c="' + c.id + '">Annuler</button></div></article>';
+    }
+    if (c.tickets && c.tickets.length > 1) {
+      var t = c.tickets.map(function (x, i) {
+        return '<li><button class="piece touche" type="button" data-geste="relier" data-c="' + c.id + '" data-i="' + i + '"><span class="piece-rond"></span>' +
+          '<span class="piece-corps"><span class="piece-nom">' + x.nom + '</span><span class="piece-sous">' + x.jour + "</span></span></button></li>";
+      }).join("");
+      return h + '<p class="carte-texte">Plusieurs tickets du même montant. Lequel\u202f?</p><ul class="pieces">' + t + "</ul>" +
+        '<div class="carte-gestes" style="margin-top:4px"><button class="bouton-texte" type="button" data-geste="ouvrir-perdu" data-c="' + c.id + '">Aucun des deux</button></div></article>';
+    }
+    if (c.genre === "virement") {
+      return h + '<p class="carte-manque">' + ico("alerte") + "Aucune facture jointe.</p>" +
+        '<div class="carte-gestes"><button class="bouton bouton-creux" type="button" data-geste="ouvrir-facture" data-c="' + c.id + '">' + ico("facture") + "Joindre la facture</button>" +
+        '<button class="bouton-texte" type="button" data-geste="ouvrir-motif" data-c="' + c.id + '">C’est autre chose</button></div></article>';
+    }
+    return h + '<p class="carte-manque">' + ico("alerte") + "Aucun ticket ne correspond.</p>" +
+      '<div class="carte-gestes"><button class="bouton bouton-creux" type="button" data-geste="photographier">' + ico("photo") + "Photographier le ticket</button>" +
+      '<button class="bouton-texte" type="button" data-geste="ouvrir-perdu" data-c="' + c.id + '">Ticket perdu</button></div></article>';
+  }
+
+  function periodes() {
+    var cles = Object.keys(etat.mois).sort().reverse();
+    if (etat.decoupage === "mois") {
+      return cles.map(function (k) {
+        var nom = NOMS_MOIS[Number(k.slice(5)) - 1];
+        return { cle: k, nom: nom.charAt(0).toUpperCase() + nom.slice(1) + " " + k.slice(0, 4), d: etat.mois[k] };
+      });
+    }
+    var groupes = {};
+    cles.forEach(function (k) {
+      var g = etat.decoupage === "annee" ? k.slice(0, 4) : k.slice(0, 4) + "-T" + Math.ceil(Number(k.slice(5)) / 3);
+      var s = groupes[g] || (groupes[g] = { c: {}, e: 0, aj: 0, p: 0 });
+      var d = etat.mois[k];
+      for (var c in d.c) s.c[c] = (s.c[c] || 0) + d.c[c];
+      s.e += d.e; s.aj += d.aj; s.p += d.p;
+    });
+    return Object.keys(groupes).sort().reverse().map(function (g) {
+      var nom = g.length === 4 ? "Année " + g : (g.slice(-1) === "1" ? "1ᵉʳ" : g.slice(-1) + "ᵉ") + " trimestre " + g.slice(0, 4);
+      return { cle: g, nom: nom, d: groupes[g] };
+    });
+  }
+
+  function htmlPeriode(p) {
+    var d = p.d, total = somme(d.c);
+    var barre = ORDRE.filter(function (c) { return d.c[c]; }).map(function (c) {
+      return '<i style="flex:' + d.c[c].toFixed(2) + ' 1 0;background:var(' + CAT[c][1] + ')"></i>';
+    }).join("");
+    var etatP = d.aj > 0 ? '<span class="periode-etat" data-ton="rouge">' + d.aj + " sans ticket</span>"
+                         : '<span class="periode-etat" data-ton="vert">Tout est justifié</span>';
+    return '<li><button class="periode touche" type="button" data-geste="periode" data-cle="' + p.cle + '">' +
+      '<span class="periode-haut"><span class="periode-nom">' + p.nom + "</span>" + etatP + ico("suivant") + "</span>" +
+      '<span class="barre-cat" aria-hidden="true">' + barre + "</span>" +
+      '<span class="periode-bas"><span class="sortie">−' + eur(total) + '</span><span class="entree">+' + eur(d.e) + "</span>" +
+      (d.p ? '<span class="perdus">' + d.p + (d.p > 1 ? " tickets perdus" : " ticket perdu") + "</span>" : "") + "</span></button></li>";
+  }
+
+  function rendreDossier() {
+    var n = etat.cartes.length;
+    var h = htmlHaut(null) + '<h1 class="titre-page">Pour mon comptable</h1>' +
+      '<p class="sous-titre">Dossier en cours depuis le 1ᵉʳ janvier 2026</p>' + htmlPoint();
+
+    if (n > 0) {
+      h += '<h2 class="rubrique">À justifier</h2><div class="cartes">' + etat.cartes.map(htmlCarte).join("") + "</div>";
+    }
+    if (Object.keys(etat.mois).length) {
+      h += '<h2 class="rubrique">Mes relevés</h2>' +
+        '<div class="choix" role="group" aria-label="Découpage">' +
+        [["mois", "Mois"], ["trimestre", "Trimestre"], ["annee", "Année"]].map(function (x) {
+          return '<button type="button" data-geste="decoupage" data-d="' + x[0] + '" aria-pressed="' + (etat.decoupage === x[0]) + '">' + x[1] + "</button>";
+        }).join("") + "</div>" +
+        '<div class="legende">' + ORDRE.map(function (c) { return "<span>" + point(c) + (c === "virement" ? "Virement" : CAT[c][0]) + "</span>"; }).join("") + "</div>" +
+        '<ul class="periodes">' + periodes().map(htmlPeriode).join("") + "</ul>";
+    }
+
+    h += '<h2 class="rubrique">Le dossier</h2><div class="plage arret">';
+    if (!etat.arret) {
+      h += '<button class="bouton bouton-creux" type="button" data-geste="ouvrir-arret"' + (n > 0 ? ' aria-disabled="true"' : "") + ">" + ico("cadenas") + "Arrêter mon dossier ici</button>";
+      if (n > 0) h += '<p class="arret-pourquoi">Possible une fois ' + (n > 1 ? "les " + n + " lignes justifiées." : "la dernière ligne justifiée.") + "</p>";
+    } else {
+      h += '<label class="champ"><span class="champ-libelle">Au</span><input class="champ-saisie" type="date" value="2026-10-25" max="2026-10-25" id="date-arret"></label>' +
+        '<p class="arret-phrase" id="phrase-arret">Le dossier ira du 1ᵉʳ janvier 2026 au 25 octobre 2026.</p>' +
+        '<div class="rang-boutons"><button class="bouton bouton-plein" type="button" data-geste="ranger">' + ico("cadenas") + "Arrêter et ranger</button>" +
+        '<button class="bouton-texte" type="button" data-geste="fermer-arret">Annuler</button></div>';
+    }
+    h += "</div>" +
+      '<div class="liste liste-dossier"><button class="ligne touche" type="button" data-geste="aller-dossiers">' +
+      '<span class="ligne-icone or">' + ico("document") + '</span><span class="ligne-corps"><span class="ligne-nom">Mes dossiers justifiés</span>' +
+      '<span class="ligne-situation">Gardés dix ans</span></span><span class="ligne-fin">' + ico("suivant") + "</span></button></div>";
+
+    vues.dossier.innerHTML = h;
+    ecran.toggleAttribute("data-arret", etat.arret);
+    document.getElementById("action-check-up").hidden = !etat.banque;
+    var champ = document.getElementById("date-arret");
+    if (champ) champ.addEventListener("change", function () {
+      var v = champ.value;
+      if (!v) return;
+      var j = Number(v.slice(8)), m = NOMS_MOIS[Number(v.slice(5, 7)) - 1];
+      document.getElementById("phrase-arret").textContent = "Le dossier ira du 1ᵉʳ janvier 2026 au " + (j === 1 ? "1ᵉʳ" : j) + " " + m + " " + v.slice(0, 4) + ".";
+    });
+  }
+
+  /* ═══ Le relevé d'octobre ═════════════════════════════════════════════ */
+  function rendreReleve() {
+    var lignes = etat.releve;
+    var sorties = 0, entrees = 0, manque = 0, presentes = {};
+    lignes.forEach(function (l) {
+      if (l.entree) entrees += l.m; else { sorties += l.m; presentes[l.cat] = true; }
+      if (l.g === "manque") manque++;
+    });
+    var visibles = lignes.filter(function (l) {
+      return etat.filtre === "tout" ? true : etat.filtre === "manque" ? l.g === "manque" : l.cat === etat.filtre && !l.entree;
+    });
+    var filtres = [["tout", "Tout", null], ["manque", "À justifier", "alerte"]].concat(ORDRE.filter(function (c) { return presentes[c]; }).map(function (c) { return [c, c === "virement" ? "Virement" : CAT[c][0], c]; }));
+    var h = htmlHaut("retour-dossier") + '<h1 class="titre-page">Octobre 2026</h1><p class="sous-titre">Pour mon comptable</p>' +
+      '<div class="plage totaux"><div><span>Sorties</span><b class="sortie">' + eur(sorties) + '</b></div><div><span>Entrées</span><b class="entree">' + eur(entrees) +
+      '</b></div><div><span>À justifier</span><b class="manque">' + manque + "</b></div></div>" +
+      '<div class="filtres" role="group" aria-label="Filtrer">' + filtres.map(function (f) {
+        var pt = f[2] === "alerte" ? '<i style="background:var(--atlas-alerte)"></i>' : f[2] ? point(f[2]) : "";
+        return '<button type="button" data-geste="filtre" data-f="' + f[0] + '" aria-pressed="' + (etat.filtre === f[0]) + '">' + pt + f[1] + "</button>";
+      }).join("") + "</div>";
+    if (!visibles.length) {
+      h += '<p class="rien">Rien ne manque.</p>';
+    } else {
+      var jour = null;
+      visibles.forEach(function (l) {
+        var i = lignes.indexOf(l);
+        if (l.jour !== jour) { h += '<h3 class="jour-titre">' + l.jour + "</h3>"; jour = l.jour; }
+        var signe = { ok: "coche", ticket: "photo", perdu: "info", manque: "alerte" }[l.g];
+        var corps = '<span class="rel-point" style="background:var(' + CAT[l.cat][1] + ')"></span>' +
+          '<span class="rel-corps"><span class="rel-libelle">' + l.lib + '</span><span class="rel-cat">' + CAT[l.cat][0] + "</span>" +
+          '<span class="rel-preuve" data-genre="' + l.g + '">' + ico(signe) + "<span>" + l.t + "</span></span></span>" +
+          '<span class="rel-montant ' + (l.entree ? "entree" : "sortie") + '">' + (l.entree ? "+" : "−") + eur(l.m) + "</span>";
+        h += l.g === "ticket" ? '<button class="rel touche" type="button" data-geste="voir-ticket" data-i="' + i + '">' + corps + "</button>" : '<div class="rel">' + corps + "</div>";
+      });
+    }
+    vues.releve.innerHTML = h;
+  }
+
+  function ouvrirTicket(i) {
+    var l = etat.releve[i];
+    document.getElementById("feuille-ticket-dedans").innerHTML =
+      '<h2 class="feuille-titre">' + l.lib + '</h2><p class="feuille-sous">' + l.jour + ", −" + eur(l.m) + "</p>" +
+      '<div class="ticket-photo"><div class="ticket-papier"><b>' + l.four + '</b><div style="text-align:center">Angers</div><hr>' +
+      "<div>" + l.achat + ' 10:42</div><hr><div class="t-rang"><span>ARTICLES</span><span>' + l.m.toFixed(2).replace(".", ",") + "</span></div><hr>" +
+      '<div class="t-rang" style="font-weight:700"><span>TOTAL TTC</span><span>' + l.m.toFixed(2).replace(".", ",") + " EUR</span></div>" +
+      '<div>CB SANS CONTACT</div></div></div>' +
+      '<p class="feuille-preuve">' + l.t + "</p>" +
+      '<button class="bouton bouton-creux" type="button" data-geste="delier" data-i="' + i + '">' + ico("annuler") + "Ce n’est pas le bon ticket</button>" +
+      '<button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Fermer</button>';
+    Kit.ouvrirFeuille("feuille-ticket");
+    montrerCapture(captureDuMoment());
+  }
+
+  /* ═══ Mes dossiers justifiés ══════════════════════════════════════════ */
+  function rendreDossiers() {
+    var annees = [];
+    etat.dossiers.forEach(function (d) { if (annees.indexOf(d.annee) < 0) annees.push(d.annee); });
+    var h = htmlHaut("retour-dossier") + '<h1 class="titre-page">Mes dossiers justifiés</h1>' +
+      '<p class="sous-titre">Gardés dix ans avec leur bilan, puis effacés.</p>';
+    etat.dossiers.forEach(function (d) {
+      if (!d.efface || etat.vus[d.id]) return;
+      h += '<div class="carte-ton" data-ton="ambre"><span class="carte-ton-titre">Dix ans sont passés</span>' +
+        '<p class="carte-ton-texte" style="margin:6px 0 0">' + d.nom + " et son bilan seront effacés le " + d.efface + ".</p>" +
+        '<div class="carte-gestes"><button class="bouton bouton-creux" type="button" data-note="Le PDF du dossier se range sur le téléphone.">' + ico("telecharger") + "Télécharger</button>" +
+        '<button class="bouton-texte" type="button" data-geste="compris" data-id="' + d.id + '">J’ai compris</button></div></div>';
+    });
+    annees.sort(function (a, b) { return b - a; });
+    var rang = annees.indexOf(etat.annee);
+    var plusVieille = annees[rang + 1], plusRecente = annees[rang - 1];
+    var deLAnnee = etat.dossiers.filter(function (d) { return d.annee === etat.annee; });
+    var bilans = deLAnnee.filter(function (d) { return d.bilan; }).length;
+    h += '<h2 class="rubrique">Rangés</h2><div class="annee-choix">' +
+      '<button class="annee-fleche" type="button" data-geste="annee" data-a="' + (plusVieille || "") + '" aria-label="Année d’avant"' + (plusVieille ? "" : " disabled") + ">" + ico("retour") + "</button>" +
+      '<span class="annee-nom">' + etat.annee + "</span>" +
+      '<button class="annee-fleche" type="button" data-geste="annee" data-a="' + (plusRecente || "") + '" aria-label="Année d’après"' + (plusRecente ? "" : " disabled") + ">" + ico("suivant") + "</button></div>" +
+      '<p class="annee-resume">' + (deLAnnee.length > 1 ? deLAnnee.length + " dossiers" : "1 dossier") + ", " +
+      (bilans ? (bilans > 1 ? bilans + " bilans du comptable" : "son bilan du comptable") : "aucun bilan du comptable") + "</p>";
+    etat.dossiers.filter(function (d) { return d.annee === etat.annee; }).forEach(function (d) {
+      h += '<section class="dossier"><h3 class="dossier-nom">' + d.nom + "</h3>" +
+        (d.efface ? '<p class="dossier-detail alerte">Sera effacé le ' + d.efface + "</p>" : '<p class="dossier-detail">' + d.detail + "</p>");
+      if (d.bilan) {
+        h += '<div class="bilan"><span class="bilan-corps"><b>Bilan du comptable</b><span>' + d.bilan + "</span></span>" +
+          '<button class="bouton-texte" type="button" data-note="Le bilan s’ouvre dans la visionneuse d’Atlas.">Ouvrir</button>' +
+          '<button class="bouton-texte doux" type="button" data-geste="retirer-bilan" data-id="' + d.id + '">Retirer</button></div>';
+      }
+      if (etat.ajout[d.id]) {
+        h += '<ul class="pieces ajout-bilan"><li><button class="piece touche" type="button" data-note="L’appareil photo s’ouvre, page après page.">' +
+          '<span class="ligne-icone or" style="width:40px;height:40px">' + ico("photo") + '</span><span class="piece-corps"><span class="piece-nom">Photographier les pages</span><span class="piece-sous">Le bilan reçu sur papier</span></span></button></li>' +
+          '<li><button class="piece touche" type="button" data-note="Les fichiers du téléphone s’ouvrent.">' +
+          '<span class="ligne-icone or" style="width:40px;height:40px">' + ico("document") + '</span><span class="piece-corps"><span class="piece-nom">Choisir le fichier</span><span class="piece-sous">Le PDF reçu par e-mail</span></span></button></li></ul>';
+      } else {
+        h += '<div class="ajout-bilan"><button class="bouton bouton-creux" type="button" data-geste="ajout-bilan" data-id="' + d.id + '">' + ico("plus") + "Ajouter le bilan du comptable</button></div>";
+      }
+      h += (d.verif ? '<span class="etat" data-ton="vert">' + d.verif + "</span>" : "") +
+        '<div class="dossier-gestes"><button type="button" class="touche" data-note="Le PDF s’ouvre dans la visionneuse d’Atlas.">' + ico("document") + "Ouvrir</button>" +
+        '<button type="button" class="touche" data-note="Le PDF se range sur le téléphone.">' + ico("telecharger") + "Télécharger</button>" +
+        '<button type="button" class="touche" data-geste="envoyer" data-id="' + d.id + '">' + ico("envoyer") + "Envoyer au comptable</button></div>";
+      if (etat.lien[d.id]) {
+        h += '<div class="plage lien-pret"><p>Le lien privé de votre comptable est prêt. Il marche un an.</p>' +
+          '<button class="bouton bouton-plein" type="button" data-note="Votre messagerie s’ouvre, le lien déjà écrit.">' + ico("email") + "Envoyer par e-mail</button>" +
+          '<button class="bouton-texte" type="button" data-geste="copier">' + (etat.lien[d.id] === "copie" ? "Lien copié" : "Copier le lien") + "</button></div>";
+      }
+      if (d.rejet) {
+        var r = etat.ouvertes.rejet || "";
+        h += '<div class="carte-ton rejet" data-ton="rouge"><span class="carte-ton-titre">Rejetée par votre comptable</span>' +
+          '<div class="carte-ligne"><span class="carte-qui">CB LEROY MERLIN</span><span class="carte-montant">' + eur(129.90) + "</span></div>" +
+          '<p class="piece-sous" style="margin:2px 0 0">15 décembre</p>' +
+          '<p class="rejet-note">« le ticket est illisible, montant coupé »</p>';
+        if (r === "perdu") {
+          h += '<p class="carte-attention">Validée sans ticket, la ligne porte la mention « ticket perdu ». <b>Sa TVA ne sera pas déduite.</b></p>' +
+            '<div class="carte-gestes"><button class="bouton bouton-creux" type="button" data-geste="valider-rejet">' + ico("coche") + "Valider</button>" +
+            '<button class="bouton-texte" type="button" data-geste="fermer-rejet">Annuler</button></div>';
+        } else {
+          h += '<div class="carte-gestes"><button class="bouton bouton-creux" type="button" data-geste="photographier">' + ico("photo") + "Photographier le ticket</button>" +
+            '<button class="bouton-texte" type="button" data-geste="ouvrir-rejet">Ticket perdu</button></div>';
+        }
+        h += "</div>";
+      }
+      h += "</section>";
+    });
+    vues.dossiers.innerHTML = h;
+  }
+
+  /* ═══ Aller d'une vue à l'autre ═══════════════════════════════════════ */
+  function rendre() {
+    for (var v in vues) vues[v].hidden = v !== etat.vue;
+    document.getElementById("action-check-up").style.display = etat.vue === "dossier" ? "" : "none";
+    if (etat.vue === "dossier") rendreDossier();
+    else if (etat.vue === "releve") rendreReleve();
+    else rendreDossiers();
+    montrerCapture(captureDuMoment());
+  }
+
+  function choisirEtat(nom) {
+    etat = etatInitial(nom);
+    Kit.fermerFeuilles(ecran);
+    document.querySelectorAll("#etats button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-etat") === nom ? "true" : "false"); });
+    rendre();
+    vues[etat.vue].scrollTop = 0;
+  }
+
+  function allerVue(v) {
+    etat.vue = v;
+    var chip = v === "releve" ? "releve" : v === "dossiers" ? "dossiers" : etat.nom;
+    document.querySelectorAll("#etats button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-etat") === chip ? "true" : "false"); });
+    rendre();
+    vues[v].scrollTop = 0;
+  }
+
+  function oterCarte(id, texte, versCat) {
+    var c = etat.cartes.filter(function (x) { return x.id === id; })[0];
+    etat.cartes = etat.cartes.filter(function (x) { return x.id !== id; });
+    delete etat.ouvertes[id];
+    var oct = etat.mois["2026-10"];
+    if (oct) {
+      oct.aj = Math.max(0, oct.aj - 1);
+      if (versCat && c && c.cat !== versCat) {
+        oct.c[c.cat] -= c.montant;
+        if (oct.c[c.cat] < 0.005) delete oct.c[c.cat];
+        oct.c[versCat] = (oct.c[versCat] || 0) + c.montant;
+      }
+    }
+    etat.bilanCheckUp = null;
+    rendre();
+    passe(texte);
+  }
+
+  /* ═══ Les gestes ══════════════════════════════════════════════════════ */
+  document.querySelectorAll("#etats button").forEach(function (b) {
+    b.addEventListener("click", function () { choisirEtat(b.getAttribute("data-etat")); });
+  });
+
+  ecran.addEventListener("click", function (e) {
+    var note = e.target.closest("[data-note]");
+    if (note) { passe(note.getAttribute("data-note")); return; }
+    var g = e.target.closest("[data-geste]");
+    if (!g) return;
+    var geste = g.getAttribute("data-geste"), c = g.getAttribute("data-c");
+    switch (geste) {
+      case "check-up": {
+        var bouton = g;
+        bouton.querySelector("span").textContent = "Vérification…";
+        bouton.setAttribute("aria-disabled", "true");
+        setTimeout(function () {
+          bouton.querySelector("span").textContent = "Check up";
+          bouton.removeAttribute("aria-disabled");
+          var sorties = etat.cartes.filter(function (x) { return x.genre !== "entree"; }).length;
+          etat.bilanCheckUp = sorties === 0 ? "Rien à vérifier."
+            : sorties + (sorties > 1 ? " lignes vues" : " ligne vue") + ", 0 reliée. " + sorties + (sorties > 1 ? " attendent" : " attend") + " votre réponse.";
+          etat.ouvertes = {};
+          rendre();
+          vues.dossier.scrollTop = 0;
+        }, 900);
+        break;
+      }
+      case "ouvrir-perdu": etat.ouvertes = {}; etat.ouvertes[c] = "perdu"; rendre(); break;
+      case "ouvrir-facture": etat.ouvertes = {}; etat.ouvertes[c] = "facture"; rendre(); break;
+      case "ouvrir-motif": etat.ouvertes = {}; etat.ouvertes[c] = "motif"; rendre(); break;
+      case "fermer-carte": delete etat.ouvertes[c]; rendre(); break;
+      case "valider-perdu":
+        if (etat.mois["2026-10"]) etat.mois["2026-10"].p += 1;
+        oterCarte(c, "Ligne justifiée, ticket perdu.");
+        break;
+      case "relier": oterCarte(c, "Ticket relié.", "materiel"); break;
+      case "joindre": oterCarte(c, "Facture jointe."); break;
+      case "motif": oterCarte(c, "Ligne justifiée : " + g.textContent.toLowerCase() + "."); break;
+      case "photographier": passe("L’appareil photo s’ouvre, puis la feuille de Ma TVA."); break;
+      case "decoupage": etat.decoupage = g.getAttribute("data-d"); rendre(); break;
+      case "periode":
+        if (g.getAttribute("data-cle") === "2026-10") allerVue("releve");
+        else passe("Le relevé de ce mois, dessiné comme celui d’octobre.");
+        break;
+      case "ouvrir-arret":
+        if (g.getAttribute("aria-disabled") === "true") { passe("Justifiez d’abord les lignes du dessus."); break; }
+        etat.arret = true; rendre(); break;
+      case "fermer-arret": etat.arret = false; rendre(); break;
+      case "ranger":
+        etat.arret = false;
+        etat.dossiers.unshift({ id: "d2026", annee: 2026, nom: "Du 1ᵉʳ janvier 2026 au 25 octobre 2026", detail: "Rangé le 25 octobre 2026, gardé jusqu’au 25 octobre 2036, 1,9 Mo" });
+        etat.annee = 2026;
+        etat.dossierRange = true;
+        allerVue("dossiers");
+        passe("Dossier rangé.");
+        break;
+      case "aller-dossiers": allerVue("dossiers"); break;
+      case "retour-dossier": Kit.fermerFeuilles(ecran); allerVue("dossier"); break;
+      case "filtre": etat.filtre = g.getAttribute("data-f"); rendre(); break;
+      case "voir-ticket": ouvrirTicket(Number(g.getAttribute("data-i"))); break;
+      case "delier": {
+        var l = etat.releve[Number(g.getAttribute("data-i"))];
+        l.g = "manque"; l.t = "Sans ticket"; l.cat = "autre";
+        Kit.fermerFeuilles(ecran);
+        rendre();
+        passe("Le ticket n’est plus relié.");
+        break;
+      }
+      case "annee": etat.annee = Number(g.getAttribute("data-a")); rendre(); break;
+      case "compris": etat.vus[g.getAttribute("data-id")] = true; rendre(); break;
+      case "envoyer": etat.lien[g.getAttribute("data-id")] = "pret"; rendre(); break;
+      case "copier": for (var k in etat.lien) etat.lien[k] = "copie"; rendre(); break;
+      case "ajout-bilan": etat.ajout[g.getAttribute("data-id")] = true; rendre(); break;
+      case "retirer-bilan":
+        etat.dossiers.forEach(function (d) { if (d.id === g.getAttribute("data-id")) d.bilan = null; });
+        rendre(); passe("Bilan retiré.");
+        break;
+      case "ouvrir-rejet": etat.ouvertes.rejet = "perdu"; rendre(); break;
+      case "fermer-rejet": delete etat.ouvertes.rejet; rendre(); break;
+      case "valider-rejet":
+        etat.dossiers.forEach(function (d) { if (d.rejet) d.rejet = false; });
+        delete etat.ouvertes.rejet;
+        rendre(); passe("Ligne corrigée, elle repart à votre comptable.");
+        break;
+    }
+  });
+
+  /* La feuille du ticket se ferme par le voile ou Fermer : la capture suit. */
+  new MutationObserver(function () { if (etat) montrerCapture(captureDuMoment()); })
+    .observe(ecran, { attributes: true, attributeFilter: ["data-feuille"] });
+
+  choisirEtat("a-justifier");
+})();
+</script>
+</body>
+</html>

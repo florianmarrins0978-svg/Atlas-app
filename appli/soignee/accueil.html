@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vos chantiers, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  VOS CHANTIERS, SOIGNÉ (src/app/page.tsx, EcranChantiers.tsx,
+  ListeChantiers.tsx, Notifications.tsx, globals.css « Le bouton Créer un
+  devis » et « .atlas-fil-defile »).
+
+  Sa demande du 25 octobre 2026, après le planning : « fais la même chose pour
+  la première page de l'application, la page chantier ».
+
+  CE QUI A ÉTÉ VU SUR L'ÉCRAN D'AUJOURD'HUI (capture du 25 octobre, base
+  d'essai, une réponse de client et cinq chantiers) :
+    un matin où un client a répondu, AUCUN chantier n'entre dans le premier
+      écran : la carte de la réponse prend 270 px, dont une phrase qui redit
+      son titre et un trait noir devant la citation ;
+    « VOS CLIENTS » en 11 px, capitales espacées : le seul chemin vers ses
+      clients se lit mal ;
+    l'état de chaque chantier en 11 px, capitales espacées de 0,28 em ;
+    120 px par chantier, et les lignes loin du milieu tombent à 45 % : une
+      adresse grise s'y lit à 2,5 de contraste ;
+    la barre du bas en 8,5 px.
+
+  CE QUI NE BOUGE PAS (ses décisions relevées dans le code) : « Vos chantiers »
+  en 40 px avec 44 px d'air au-dessus et l'assistant à côté ; ni Bonjour, ni
+  ATLAS, ni trait gris ; « Vos clients » sous le titre ; « Créer un devis » en
+  lettres de titre et son signe d'or (la B du 6 octobre), avec ses onze grains
+  et ses trois tours à l'appui ; le fil, la date à gauche, aucune boîte autour
+  d'un chantier, la perle d'or à mi-hauteur ; l'état en or, toujours (sa
+  consigne du 16 août) ; la date d'envoi seule sous « Devis envoyé » ;
+  « Adresse non renseignée » qui mène à la fiche ; glisser pour retirer, et le
+  tiroir ; « En cours » et son chiffre, une seule fois ; au début, le bouton au
+  tiers haut et aucune phrase.
+*/
+
+/* ─── Le haut, qui ne défile pas ──────────────────────────────────────── */
+.haut { flex: none; padding: 44px var(--gouttiere) 0; }
+.haut .tete { margin: 0; min-height: 0; align-items: flex-start; }
+.haut .tete-titre { margin-top: 2px; font-size: 40px; line-height: 1.02; letter-spacing: -0.018em; white-space: nowrap; }
+.vos-clients { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin: 0 0 -6px -2px; padding: 0 2px;
+               text-decoration: none; font-size: 15.5px; font-weight: 600; color: var(--atlas-or); }
+.vos-clients .ico { width: 18px; height: 18px; stroke-width: 2.2; }
+
+/* Créer un devis : sa signature, au caractère près de globals.css. */
+.creer-rang { flex: none; display: flex; justify-content: center; padding: 8px var(--gouttiere) 0; }
+.geste-nouveau { display: flex; align-items: center; justify-content: center; gap: 14px; min-height: 56px; padding: 4px 10px;
+                 text-decoration: none; color: var(--atlas-ink); -webkit-tap-highlight-color: transparent; }
+.geste-nouveau .phrase { font: 400 27px/1.1 var(--serif); letter-spacing: -0.014em; white-space: nowrap;
+                         transition: letter-spacing 0.62s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.3s; }
+[data-geste="part"] .phrase { letter-spacing: 0; transform: translateY(-1px); }
+.plume { position: relative; display: grid; place-items: center; width: 30px; height: 30px; }
+.plume .signe { position: relative; z-index: 4; display: block; width: 22px; height: 22px; }
+.plume path { stroke: var(--atlas-or); stroke-width: 1.6; stroke-linecap: round; fill: none;
+              stroke-dasharray: 24; animation: trace 3.4s cubic-bezier(0.3, 0.6, 0.2, 1) infinite; }
+.plume .trait-v { animation-delay: 0.32s; }
+@keyframes trace {
+  0% { stroke-dashoffset: 24; opacity: 0; } 4% { opacity: 1; } 22% { stroke-dashoffset: 0; opacity: 1; }
+  72% { stroke-dashoffset: 0; opacity: 1; } 86% { opacity: 0; stroke-dashoffset: 0; } 100% { stroke-dashoffset: 24; opacity: 0; }
+}
+[data-geste="part"] .plume path { animation: none; stroke-dashoffset: 0; opacity: 1; }
+[data-geste="part"] .signe { animation: tour 0.56s cubic-bezier(0.16, 0.74, 0.22, 1) both; }
+@keyframes tour { 0% { transform: rotate(0); } 14% { transform: rotate(120deg); } 100% { transform: rotate(1080deg); } }
+.gerbe { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.gerbe i { position: absolute; left: 50%; top: 50%; width: var(--l); height: var(--l); margin: calc(var(--l) / -2) 0 0 calc(var(--l) / -2);
+           border-radius: 50%; background: var(--atlas-or); opacity: 0; }
+[data-geste="part"] .gerbe i { animation: grain 0.56s cubic-bezier(0.16, 0.68, 0.3, 1) both; animation-delay: var(--t); }
+@keyframes grain {
+  0% { transform: translate(calc(var(--x) * 0.46), calc(var(--y) * 0.46)) scale(0.4); opacity: 0; }
+  16% { opacity: 1; } 64% { opacity: 1; } 100% { transform: translate(var(--x), var(--y)) scale(0.7); opacity: 0; }
+}
+
+/* ─── Ce qui défile : les réponses, En cours, le fil ──────────────────── */
+/* Sans aimant au défilement : il recentrait une ligne au chargement et coupait
+   la réponse du client en haut du premier écran (vu à la capture). */
+.fil { padding: 0 0 96px;
+       -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 10px, #000 calc(100% - 18px), transparent 100%);
+       mask-image: linear-gradient(180deg, transparent 0, #000 10px, #000 calc(100% - 18px), transparent 100%); }
+.reponses { padding: 12px var(--gouttiere) 0; }
+
+/* La réponse d'un client : le titre, le chantier, ses mots à lui, deux gestes. */
+/* Les coins de l'appli (rounded-[18px], Notifications.tsx) : sa demande du
+   25 octobre, « remets l'encadré avec les bords arrondis comme aujourd'hui ». */
+.reponse { border-radius: 18px; padding: 14px 20px 4px; transition: opacity 220ms var(--courbe); }
+.reponse p { margin: 0; }
+.reponse + .reponse { margin-top: 10px; }
+.reponse .carte-ton-texte { margin-top: 6px; font-size: 20px; }
+.reponse-texte { margin: 4px 0 0; font-size: 15px; line-height: 1.45; color: var(--atlas-ink); }
+.reponse-citation { margin: 8px 0 0; font: italic 400 17px/1.4 var(--serif); color: var(--atlas-ink); }
+.reponse-gestes { display: flex; flex-wrap: wrap; gap: 0 22px; margin-top: 4px; }
+.reponse-gestes a, .reponse-gestes button { display: inline-flex; align-items: center; min-height: 48px; text-decoration: none;
+                                            font-size: 16px; font-weight: 700; color: var(--atlas-ink); }
+.reponse-gestes .reponse-vu { font-weight: 500; color: var(--atlas-inkSoft); }
+.reponse[data-ton="ambre"] .reponse-suite { color: var(--atlas-carteAmbreTexte); }
+.reponse[data-ton="vert"] .reponse-suite { color: var(--atlas-carteVertTexte); }
+.reponse[data-ton="bleu"] .reponse-suite { color: var(--atlas-carteBleuTexte); }
+.reponse[data-ton="rouge"] .reponse-suite { color: var(--atlas-carteRougeTexte); }
+.reponse:not([data-ton]) .carte-ton-titre { color: var(--atlas-or); }
+.autres { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 48px; margin-top: 4px;
+          font-size: 15.5px; font-weight: 600; color: var(--atlas-ink); }
+.autres .ico { width: 18px; height: 18px; stroke-width: 2.2; color: var(--atlas-inkSoft); transition: transform 260ms var(--courbe); }
+.autres[aria-expanded="true"] .ico { transform: rotate(180deg); }
+
+/* En cours et son chiffre, collé en haut quand la liste défile. */
+.en-cours { position: sticky; top: 0; z-index: 3; display: flex; align-items: baseline; gap: 10px; margin-top: 2px;
+            padding: 12px var(--gouttiere) 4px; background: var(--atlas-cream);
+            font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--atlas-inkSoft); }
+.en-cours b { font-size: 16px; letter-spacing: 0.02em; color: var(--atlas-ink); font-variant-numeric: tabular-nums; }
+
+/* Le fil : la date à gauche, un trait qui traverse, et la perle à mi-hauteur. */
+.tige { position: relative; margin: 0 var(--gouttiere); }
+.tige::before { content: ""; position: absolute; top: 0; bottom: 0; left: 63px; width: 1px; background: var(--atlas-line); }
+.perle { position: sticky; top: 50%; z-index: 2; display: block; height: 0; pointer-events: none; }
+.perle::after { content: ""; position: absolute; left: 63px; top: 28px; width: 7px; height: 7px; border-radius: 50%; transform: translate(-50%, -50%);
+                background: var(--atlas-or); box-shadow: 0 0 0 4px var(--atlas-cream); }
+.brin { position: relative; display: grid; grid-template-columns: 50px minmax(0, 1fr); column-gap: 26px; overflow: hidden; }
+.brin-jour { padding-top: 16px; text-align: right; line-height: 1; }
+.brin-jour b { display: block; font: 400 22px/1 var(--serif); font-variant-numeric: lining-nums; }
+.brin-jour span { display: block; margin-top: 5px; font-size: 12.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+                  color: var(--atlas-inkSoft); }
+.brin-corps { display: block; min-width: 0; padding: 14px 0 16px; text-decoration: none; color: inherit; background: var(--atlas-cream);
+              -webkit-tap-highlight-color: transparent; }
+.brin-nom { display: block; font: 400 20px/1.2 var(--serif); letter-spacing: -0.005em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.brin-lieu { display: block; margin-top: 4px; font-size: 15px; line-height: 1.35; color: var(--atlas-inkSoft); }
+.brin-lieu.manque { display: inline-flex; align-items: center; min-height: 44px; margin: -8px 0 -10px; color: var(--atlas-alerte); }
+.brin-lieu.manque span { border-bottom: 1px solid currentColor; padding-bottom: 1px; }
+.brin-etat { display: block; margin-top: 6px; font-size: 15px; font-weight: 600; line-height: 1.3; color: var(--atlas-or); }
+.brin-precision { display: block; margin-top: 3px; font-size: 14.5px; color: var(--atlas-inkSoft); }
+.ligne-retirer { background: var(--atlas-cream); }
+
+/* Au début : le bouton au tiers haut, et rien d'autre (ses ressorts 2 et 13). */
+.ressort { display: none; }
+.ecran.sans-chantier .ressort { display: block; }
+.ecran.sans-chantier .ressort-haut { flex: 2; }
+.ecran.sans-chantier .ressort-bas { flex: 13; }
+.ecran.sans-chantier .fil { flex: 0 1 auto; padding-bottom: 0; -webkit-mask-image: none; mask-image: none; }
+.ecran.sans-chantier .creer-rang { padding-top: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .plume path, [data-geste="part"] .signe, [data-geste="part"] .gerbe i { animation: none; }
+  .gerbe { display: none; }
+}
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Vos chantiers</h1>
+  <p class="pl-verdict">Même écran, même fil, même Créer un devis. <b>La réponse d'un client tient en moins de place</b>, chaque chantier se lit en entier : un matin chargé, le premier chantier se voit sans glisser.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="pl-etats">
+        <button type="button" data-etat="matin" aria-pressed="true">Un client a répondu</button>
+        <button type="button" data-etat="calme">Rien de neuf</button>
+        <button type="button" data-etat="debut">Au début</button>
+      </div>
+      <div class="cadre">
+        <div class="ecran avec-barre" id="accueil" data-etat="matin">
+          <div class="haut">
+            <header class="tete">
+              <h1 class="tete-titre">Vos chantiers</h1>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </header>
+            <a class="vos-clients" href="clients.html">Vos clients<svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+          </div>
+          <div class="ressort ressort-haut" aria-hidden="true"></div>
+          <div class="creer-rang">
+            <a class="geste-nouveau" href="chantier-nouveau.html" id="creer">
+              <span class="phrase">Créer un devis</span>
+              <span class="plume">
+                <span class="gerbe" aria-hidden="true">
+                  <i style="--x:7.7px;--y:-36.9px;--l:2.3px;--t:9ms"></i><i style="--x:17px;--y:-44.8px;--l:1.6px;--t:43ms"></i>
+                  <i style="--x:34.9px;--y:-22.6px;--l:1.7px;--t:22ms"></i><i style="--x:35.2px;--y:2.1px;--l:1.8px;--t:0ms"></i>
+                  <i style="--x:35px;--y:29px;--l:1.9px;--t:34ms"></i><i style="--x:9.5px;--y:38px;--l:2px;--t:13ms"></i>
+                  <i style="--x:-18.7px;--y:45.7px;--l:2.2px;--t:47ms"></i><i style="--x:-36.7px;--y:22.4px;--l:2.3px;--t:26ms"></i>
+                  <i style="--x:-36.5px;--y:-3.1px;--l:2.4px;--t:5ms"></i><i style="--x:-45.5px;--y:-11.3px;--l:1.6px;--t:39ms"></i>
+                  <i style="--x:-25.9px;--y:-31.2px;--l:1.8px;--t:18ms"></i>
+                </span>
+                <svg class="signe" viewBox="0 0 24 24" aria-hidden="true"><path class="trait-h" d="M3 12h18"/><path class="trait-v" d="M12 3v18"/></svg>
+              </span>
+            </a>
+          </div>
+          <div class="defile fil" id="fil">
+            <div class="reponses" id="reponses"></div>
+            <div class="en-cours" id="en-cours"></div>
+            <div class="tige" id="tige"></div>
+          </div>
+          <div class="ressort ressort-bas" aria-hidden="true"></div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html" aria-current="page">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/accueil.jpg" alt="L'écran Vos chantiers tel qu'il est aujourd'hui, une réponse de client et cinq chantiers"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>La réponse d'un client tient en moins de place : ce qu'il a fait, le chantier, ses mots à lui, deux gestes. La phrase qui redisait le titre part, le trait noir devant la citation aussi. Une phrase qui porte une date reste.</li>
+      <li>3 autres devis à regarder s'ouvre sur place, et se replie.</li>
+      <li>Chaque chantier se lit en entier : le nom, l'adresse, l'état en or dans une phrase au lieu de capitales espacées de 11 px, la date plus grande.</li>
+      <li>Les lignes sont plus serrées : un matin où un client a répondu, le premier chantier entre dans l'écran.</li>
+      <li>Vos clients se lit : 15 px en or, avec son chevron, à la même place.</li>
+      <li>Les chantiers loin du milieu ne pâlissent plus. La perle d'or dit déjà lequel on regarde.</li>
+      <li>La barre du bas en mots de 12,5 px.</li>
+    </ul>
+    <h2>Ce qui reste comme dans l'appli</h2>
+    <ul class="garde">
+      <li>Vos chantiers en grand avec 44 px d'air au-dessus, l'assistant à côté. Ni Bonjour, ni ATLAS, ni trait gris.</li>
+      <li>Créer un devis en lettres de titre, son signe d'or qui se trace, et ses grains qui partent à l'appui.</li>
+      <li>Le fil, la date à gauche, aucune boîte autour d'un chantier, la perle à mi-hauteur.</li>
+      <li>L'encadré des réponses et ses coins arrondis, comme aujourd'hui.</li>
+      <li>L'état toujours en or, et la date seule sous Devis envoyé.</li>
+      <li>Adresse non renseignée en rouge mène à la fiche ; glisser une ligne vers la gauche la retire, et le tiroir rend la main.</li>
+      <li>En cours et son chiffre, une seule fois. Au début, Créer un devis au tiers haut, sans phrase.</li>
+    </ul>
+    <h2>À trancher</h2>
+    <ul class="a-trancher">
+      <li>Le chantier du milieu net et les autres à moitié effacés, c'était votre fil du 10 août. Au soleil, une adresse grise à moitié effacée ne se lit plus, d'où la proposition de tout laisser net. Si vous tenez à l'effet, il revient, plus léger.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <a href="planning.html">Planning<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+/*
+  L'accueil de la planche : les réponses de ses clients d'abord (la plus
+  récente seule, les autres derrière « N autres devis à regarder »,
+  Notifications.tsx), puis En cours et le fil, du plus récent au plus ancien.
+  Les mots des états sont ceux de ligneEtatChantier (src/lib/chantier-etat.ts).
+*/
+document.addEventListener("DOMContentLoaded", function () {
+  "use strict";
+  var ecran = document.getElementById("accueil");
+
+  var REPONSES = [
+    { ton: "ambre", titre: "Correction demandée", nom: "Reprise de toiture",
+      citation: "« Pouvez-vous retirer l'évacuation des gravats ? Je m'en occupe. »", suite: "Corriger le devis" },
+    { ton: "vert", titre: "Devis accepté", nom: "Mme Linotte",
+      texte: "Le client a accepté, et retenu le lundi 26 octobre.", suite: "Ouvrir le devis validé" },
+    { ton: "bleu", titre: "Autre date proposée", nom: "M. et Mme Roux",
+      texte: "Le client a accepté sur une date qu'il a proposée lui-même.", suite: "Ouvrir le devis validé" },
+    { titre: "Devis sans réponse", nom: "M. Girard",
+      texte: "Parti il y a 12 jours, sans un mot du client. Vous pouvez le relancer vous-même.", suite: "Ouvrir le chantier" }
+  ];
+  var CHANTIERS = [
+    { nom: "Mme Faure", jour: "24", mois: "oct.", lieu: null, etat: "Brouillon, 2 photos" },
+    { nom: "Mme Leclerc", jour: "22", mois: "oct.", lieu: "12 rue des Lilas, Nantes", etat: "À vérifier, 6 photos" },
+    { nom: "M. Bonnet", jour: "20", mois: "oct.", lieu: "5 allée des Tilleuls, Nantes", etat: "Devis prêt à envoyer, 3 photos" },
+    { nom: "Reprise de toiture", jour: "16", mois: "oct.", lieu: "8 impasse du Moulin, Rezé", etat: "Correction demandée, 9 photos" },
+    { nom: "M. Girard", jour: "13", mois: "oct.", lieu: "2 chemin des Prés, Les Sorinières", etat: "Devis envoyé, sans réponse", precision: "Mercredi 14 octobre" }
+  ];
+
+  var etat = { reponses: [], chantiers: [], deplie: false };
+
+  function ico(nom) { return '<svg class="ico" aria-hidden="true"><use href="#i-' + nom + '"/></svg>'; }
+
+  function carte(r, i) {
+    return '<article class="carte-ton reponse"' + (r.ton ? ' data-ton="' + r.ton + '"' : "") + '>' +
+      '<p class="carte-ton-titre">' + r.titre + "</p>" +
+      '<p class="carte-ton-texte">' + r.nom + "</p>" +
+      (r.texte ? '<p class="reponse-texte">' + r.texte + "</p>" : "") +
+      (r.citation ? '<p class="reponse-citation">' + r.citation + "</p>" : "") +
+      '<div class="reponse-gestes"><a class="reponse-suite" href="chantier-devis.html">' + r.suite + "</a>" +
+      '<button type="button" class="reponse-vu" data-action="vu" data-rang="' + i + '">J\'ai vu</button></div></article>';
+  }
+
+  function rendreReponses() {
+    var liste = etat.reponses;
+    var montrees = etat.deplie ? liste : liste.slice(0, 1);
+    var reste = liste.length - 1;
+    var h = montrees.map(carte).join("");
+    if (reste > 0) h += '<button type="button" class="autres" data-action="autres" aria-expanded="' + etat.deplie + '">' +
+      (etat.deplie ? "Replier" : reste === 1 ? "1 autre devis à regarder" : reste + " autres devis à regarder") + ico("bas") + "</button>";
+    var zone = document.getElementById("reponses");
+    zone.innerHTML = h;
+    zone.hidden = !liste.length;
+  }
+
+  function rendreFil() {
+    document.getElementById("en-cours").innerHTML = "En cours <b>" + etat.chantiers.length + "</b>";
+    var tige = document.getElementById("tige");
+    tige.innerHTML = '<span class="perle" aria-hidden="true"></span>' + etat.chantiers.map(function (c) {
+      var lieu = c.lieu
+        ? '<span class="brin-lieu">' + c.lieu + "</span>"
+        : '<span class="brin-lieu manque" role="link" tabindex="0" data-action="adresse"><span>Adresse non renseignée</span></span>';
+      return '<div class="brin" data-retirable>' +
+        '<span class="brin-jour"><b>' + c.jour + "</b><span>" + c.mois + "</span></span>" +
+        '<a class="brin-corps ligne-glisse" href="chantier.html"><span class="brin-nom">' + c.nom + "</span>" + lieu +
+        '<span class="brin-etat">' + c.etat + "</span>" +
+        (c.precision ? '<span class="brin-precision">' + c.precision + "</span>" : "") + "</a></div>";
+    }).join("");
+    tige.hidden = !etat.chantiers.length;
+    Kit.brancher(tige);
+  }
+
+  function poserEtat(nom) {
+    etat.reponses = nom === "matin" ? REPONSES.slice() : [];
+    etat.chantiers = nom === "debut" ? [] : CHANTIERS.slice();
+    etat.deplie = false;
+    ecran.classList.toggle("sans-chantier", !etat.chantiers.length);
+    rendreReponses(); rendreFil();
+    document.getElementById("fil").scrollTop = 0;
+  }
+
+  ecran.addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-action]");
+    if (!b || !ecran.contains(b)) return;
+    var quoi = b.getAttribute("data-action");
+    if (quoi === "autres") {
+      etat.deplie = !etat.deplie; rendreReponses();
+    } else if (quoi === "vu") {
+      var article = b.closest(".reponse");
+      article.style.opacity = "0";
+      setTimeout(function () { etat.reponses.splice(Number(b.getAttribute("data-rang")), 1); rendreReponses(); }, 220);
+    } else if (quoi === "adresse") {
+      /* La mention mène à la fiche du client, pas à la reprise du chantier. */
+      ev.preventDefault(); ev.stopPropagation();
+      Kit.note(b, "La fiche du client s'ouvre ici, sur sa propre planche.");
+    }
+  });
+
+  /* Créer un devis : trois tours et onze grains, puis la feuille une demi-seconde
+     plus tard (520 ms, EcranChantiers.tsx). La feuille a sa propre planche. */
+  var creer = document.getElementById("creer");
+  var enCours = false;
+  creer.addEventListener("click", function (ev) {
+    ev.preventDefault(); ev.stopPropagation();
+    if (enCours) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { Kit.note(creer, "La fiche du nouveau chantier a sa propre planche."); return; }
+    enCours = true;
+    creer.setAttribute("data-geste", "part");
+    setTimeout(function () { Kit.note(creer, "La fiche du nouveau chantier a sa propre planche."); }, 520);
+    setTimeout(function () { creer.removeAttribute("data-geste"); enCours = false; }, 940);
+  }, true);
+
+  document.querySelectorAll(".pl-etats button[data-etat]").forEach(function (b) {
+    b.addEventListener("click", function () { poserEtat(b.getAttribute("data-etat")); });
+  });
+  poserEtat("matin");
+});
+</script>
+</body>
+</html>

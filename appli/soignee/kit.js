@@ -178,12 +178,17 @@
       var v = p.getAttribute("data-vue-panneau");
       if (vues.indexOf(v) < 0) vues.push(v);
     });
-    vues.forEach(function (v, i) {
+    /* Une adresse peut ouvrir la planche sur une vue (« …html#plus-loin ») :
+       l'adresse qu'on lui donne mène à ce qu'on veut qu'il regarde, sans
+       qu'il ait à trouver l'onglet. */
+    var demandee = (window.location.hash || "").slice(1);
+    var depart = vues.indexOf(demandee) >= 0 ? demandee : vues[0];
+    vues.forEach(function (v) {
       var b = document.createElement("button");
       b.type = "button";
       b.setAttribute("role", "tab");
       b.setAttribute("data-vue", v);
-      b.setAttribute("aria-selected", i === 0 ? "true" : "false");
+      b.setAttribute("aria-selected", v === depart ? "true" : "false");
       b.textContent = NOMS_VUES[v] || v;
       b.addEventListener("click", function () { montrerVue(v); });
       onglets.appendChild(b);
@@ -219,7 +224,7 @@
     if (tete && tete.nextSibling) tete.parentNode.insertBefore(barre, tete.nextSibling);
     else document.body.insertBefore(barre, document.body.firstChild);
     if (!vues.length) onglets.remove();
-    else montrerVue(vues[0]);
+    else montrerVue(depart);
   }
 
   function montrerVue(v) {
@@ -289,7 +294,7 @@
   /* ─── Les planches pas encore dessinées ─────────────────────────────────
      Elles arrivent une par une : un lien vers l'une d'elles ne mène pas à une
      page d'erreur, il le dit. La liste grandit à chaque planche publiée. */
-  var PRETES = ["index", "fondations", "reglages", "termines", "termines-tva", "clients", "client", "planning"];
+  var PRETES = ["index", "fondations", "reglages", "termines", "termines-tva", "tva-bouton-paiement", "termines-comptable", "comptable-dossier", "comptable-verification", "clients", "client", "planning", "accueil"];
 
   function planchePrete(href) {
     if (!href || /^(https?:|#|mailto:|tel:|\.\.\/)/.test(href)) return true;
