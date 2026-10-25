@@ -294,7 +294,10 @@
   /* ─── Les planches pas encore dessinées ─────────────────────────────────
      Elles arrivent une par une : un lien vers l'une d'elles ne mène pas à une
      page d'erreur, il le dit. La liste grandit à chaque planche publiée. */
-  var PRETES = ["index", "fondations", "reglages", "termines", "termines-tva", "tva-bouton-paiement", "termines-comptable", "comptable-dossier", "comptable-verification", "clients", "client", "planning", "accueil"];
+  var PRETES = ["index", "fondations", "reglages", "termines", "termines-tva", "tva-bouton-paiement", "termines-comptable", "comptable-dossier", "comptable-verification", "clients", "client", "planning", "accueil",
+    "reglages-identite", "reglages-equipe", "reglages-vehicules", "reglages-organigramme", "reglages-tarifs", "reglages-documents",
+    "reglages-fournisseurs", "reglages-ia", "reglages-agenda", "reglages-abonnement", "reglages-donnees", "reglages-compte",
+    "reglages-notifications", "reglages-connexion", "reglages-connexion-double-verification", "reglages-apparence"];
 
   function planchePrete(href) {
     if (!href || /^(https?:|#|mailto:|tel:|\.\.\/)/.test(href)) return true;

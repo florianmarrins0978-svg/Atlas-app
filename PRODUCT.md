@@ -128,9 +128,15 @@ aucune clé : ce qui en dépend se vérifie sur son espace, jamais ici.
   n'est pas calculé se dit à l'écran.
 - **Rien n'est envoyé, validé ni facturé sans un geste du patron.**
 
-**Explicitement non décidé, à ne pas inventer :** le prix et le contenu de
-l'abonnement (l'écran `reglages/abonnement` le dit lui-même) ; le nom du produit
-et sa marque (voir ci-dessous) ; le fonctionnement hors réseau.
+**Explicitement non décidé, à ne pas inventer :** le nom du produit et sa
+marque (voir ci-dessous) ; le fonctionnement hors réseau.
+
+**L'abonnement, lui, est tranché** (corrigé le 25 octobre 2026 : cette ligne le
+disait encore indécis) : la grille vient de ses planches du 9 et du
+24 septembre 2026 et vit dans `src/lib/abonnements.ts`, Artisan 39 €,
+Entreprise 59 €, Illimité 159 € HT par mois, quinze jours d'essai. Le paiement
+en ligne dépend du prestataire branché sur l'espace ; l'écran dit quand il ne
+l'est pas.
 
 ## Brand Commitments
 
