@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Réglages, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  RÉGLAGES, LE SOMMAIRE (src/app/reglages/page.tsx, src/lib/rubriques-reglages.ts).
+
+  Les seize rubriques gardent leur nom et leur ordre. Ce qui change :
+    onze rubriques d'entreprise d'affilée se lisaient mal ; elles vont en trois
+    paquets, sans un mot de plus (une plage par paquet) ;
+    le libellé doré sous le titre part, le titre suffit ;
+    les icônes passent de l'or (2,8 de contraste) à l'or foncé (4,6) ;
+    Se déconnecter s'écrit en toutes lettres et non plus en petites capitales.
+*/
+.identite { display: flex; align-items: center; gap: 14px; }
+.identite-sceau { width: 52px; height: 52px; flex: none; display: grid; place-items: center; border-radius: 50%;
+                  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent);
+                  font: 400 22px/1 var(--serif); color: var(--atlas-orTexte); }
+.identite .ligne-nom { font-size: 21px; }
+.paquet { padding: 0 18px; }
+.paquet .ligne { min-height: 60px; }
+.paquet .ligne .ico.rubrique-ico { color: var(--atlas-orTexte); }
+.deconnexion { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; margin-top: 28px;
+               padding: 0 18px; border-radius: var(--r-plage); background: var(--atlas-card);
+               font-size: 17px; font-weight: 600; color: var(--atlas-alerte); }
+.version { margin: 22px 0 0; text-align: center; }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Réglages</h1>
+  <p class="pl-verdict">Les mêmes rubriques, rangées en <b>petits paquets</b> qui se lisent d'un coup d'œil.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="cadre">
+        <div class="ecran avec-barre">
+          <div class="defile">
+            <header class="tete">
+              <h1 class="tete-titre">Réglages</h1>
+              <button class="rond" type="button" aria-label="L'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </header>
+
+            <a class="plage identite touche" href="reglages-identite.html" style="text-decoration:none;color:inherit">
+              <span class="identite-sceau" aria-hidden="true">J</span>
+              <span class="ligne-corps">
+                <span class="ligne-nom">Jardins Démo</span>
+                <span class="ligne-situation">Mon entreprise</span>
+              </span>
+              <span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span>
+            </a>
+
+            <p class="rubrique">L'entreprise</p>
+            <div class="plage paquet">
+              <ul class="liste">
+                <li><a class="ligne touche" href="reglages-equipe.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-equipe"/></svg><span class="ligne-corps"><span class="ligne-nom">Équipe</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-vehicules.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-vehicule"/></svg><span class="ligne-corps"><span class="ligne-nom">Véhicules</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-organigramme.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-organigramme"/></svg><span class="ligne-corps"><span class="ligne-nom">Organigramme</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+              </ul>
+            </div>
+            <div class="plage paquet">
+              <ul class="liste">
+                <li><a class="ligne touche" href="reglages-tarifs.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-etiquette"/></svg><span class="ligne-corps"><span class="ligne-nom">Tarifs &amp; catalogue</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-documents.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-document"/></svg><span class="ligne-corps"><span class="ligne-nom">Devis &amp; factures</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-fournisseurs.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-carton"/></svg><span class="ligne-corps"><span class="ligne-nom">Fournisseurs et partenaires</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+              </ul>
+            </div>
+            <div class="plage paquet">
+              <ul class="liste">
+                <li><a class="ligne touche" href="reglages-ia.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-etincelle"/></svg><span class="ligne-corps"><span class="ligne-nom">Atlas IA</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-agenda.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-calendrier"/></svg><span class="ligne-corps"><span class="ligne-nom">Mon agenda</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-abonnement.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-couronne"/></svg><span class="ligne-corps"><span class="ligne-nom">Abonnement</span><span class="ligne-situation">Essai, encore 12 jours</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-donnees.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-bouclier-coche"/></svg><span class="ligne-corps"><span class="ligne-nom">Mes données</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+              </ul>
+            </div>
+
+            <p class="rubrique">Moi</p>
+            <div class="plage paquet">
+              <ul class="liste">
+                <li><a class="ligne touche" href="reglages-compte.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-personne"/></svg><span class="ligne-corps"><span class="ligne-nom">Mon compte</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-notifications.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-cloche"/></svg><span class="ligne-corps"><span class="ligne-nom">Notifications</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-connexion.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-cadenas"/></svg><span class="ligne-corps"><span class="ligne-nom">Mot de passe</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-connexion-double-verification.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-cle"/></svg><span class="ligne-corps"><span class="ligne-nom">Double vérification</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+                <li><a class="ligne touche" href="reglages-apparence.html"><svg class="ico rubrique-ico" aria-hidden="true"><use href="#i-apparence"/></svg><span class="ligne-corps"><span class="ligne-nom">Couleurs</span></span><span class="ligne-fin"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></span></a></li>
+              </ul>
+            </div>
+
+            <a class="deconnexion touche" href="bienvenue.html" style="text-decoration:none">
+              <svg class="ico" aria-hidden="true"><use href="#i-deconnexion"/></svg>Se déconnecter
+            </a>
+            <p class="version discret">Version du 25 octobre 2026</p>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html" aria-current="page">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+
+        </div>
+      </div>
+    </div>
+
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/reglages.jpg" alt="L'écran Réglages tel qu'il est aujourd'hui"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>Le nom de l'entreprise ouvre la page, en grand : on sait où l'on est.</li>
+      <li>Onze rubriques d'affilée deviennent trois paquets, sans un mot de plus. Les voisines se rangent ensemble : Véhicules et Organigramme avec Équipe, Fournisseurs avec Tarifs.</li>
+      <li>Les icônes passent à l'or foncé, qui se voit au soleil.</li>
+      <li>Se déconnecter s'écrit en toutes lettres, au bout de la liste.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Les noms des rubriques, et l'ordre de Moi.</li>
+      <li>Le rond de l'assistant, en haut à droite.</li>
+      <li>La barre du bas : cinq mots, sans icône, et le trait d'or qui glisse.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="paysage.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Paysage</a>
+  <a href="reglages-identite.html">Mon entreprise<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+</body>
+</html>

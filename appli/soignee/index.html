@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>L'appli soignée</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/* LE SOMMAIRE DES PLANCHES SOIGNÉES : une ligne par écran, rangées comme l'appli. */
+.sommaire { max-width: 760px; margin: 0 auto; padding: 0 var(--gouttiere); }
+.chiffres { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0 0; }
+.famille { margin: 34px 0 10px; font: 400 23px/1.2 var(--serif); }
+.entree { display: flex; align-items: center; gap: 14px; min-height: 68px; padding: 12px 16px; margin-bottom: 8px;
+          border-radius: 12px; background: #faf9f5; text-decoration: none; color: #1c1c1a;
+          box-shadow: inset 0 0 0 1px rgba(28,28,26,0.08); }
+.entree:focus-visible { outline: 2px solid #8b6835; outline-offset: 2px; }
+.entree-corps { flex: 1; min-width: 0; }
+.entree-titre { display: block; font: 400 18.5px/1.25 var(--serif); }
+.entree-resume { display: block; margin-top: 3px; font-size: 14px; line-height: 1.45; color: #4a4a44; }
+.entree .ico { color: rgba(28,28,26,0.35); }
+.en-tete-lien { display: flex; align-items: center; gap: 14px; min-height: 76px; padding: 14px 16px; margin-top: 20px;
+                border-radius: 12px; background: #2f3b2f; color: #faf9f5; text-decoration: none; }
+.en-tete-lien b { display: block; font: 400 20px/1.2 var(--serif); }
+.en-tete-lien span span { display: block; margin-top: 2px; font-size: 14px; opacity: .85; }
+</style>
+</head>
+<body class="pl">
+<header class="pl-tete">
+  <a class="pl-sommaire" href="../essais.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>À essayer</a>
+  <h1 class="pl-titre">L'appli soignée</h1>
+  <p class="pl-verdict">Chaque écran, tel qu'il est aujourd'hui et tel que je le propose. <b>Mêmes couleurs, même écriture</b> : plus lisible, plus simple.</p>
+  <div class="chiffres"><span class="etat" data-ton="or">1 écran sur 86 pour l'instant</span></div>
+</header>
+<main class="sommaire">
+  <a class="en-tete-lien" href="fondations.html">
+    <svg class="ico" aria-hidden="true"><use href="#i-etincelle"/></svg>
+    <span><b>Ce qui change partout</b><span>Cinq retouches communes, et le vert des boutons à choisir.</span></span>
+  </a>
+  <h2 class="famille">Réglages</h2>
+  <a class="entree" href="reglages.html">
+    <span class="entree-corps"><span class="entree-titre">Réglages</span><span class="entree-resume">Les mêmes rubriques, rangées en petits paquets qui se lisent d'un coup d'œil.</span></span>
+    <span class="etat" data-ton="ambre">Retouché</span>
+    <svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg>
+  </a>
+</main>
+<script src="kit.js"></script>
+</body>
+</html>
