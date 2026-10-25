@@ -15,7 +15,7 @@ import {
   marquerRappelVuAction,
 } from "./actions";
 import type { GenreRappel, GenreVu } from "@/lib/rappels";
-import { couleursDuTon, type TonCarte } from "@/lib/ton-des-cartes";
+import { couleurDuGeste, couleursDuTon, type TonCarte } from "@/lib/ton-des-cartes";
 import TitreDeCarte from "@/components/atlas/TitreDeCarte";
 import type { QuestionDeVirement } from "@/lib/virement-en-mots";
 import ReponseVirement from "./ReponseVirement";
@@ -123,7 +123,16 @@ type Carte = {
    */
   ton: TonCarte;
   titre: string;
-  texte: string;
+  /**
+   * La phrase de la carte, ou rien quand le titre dit déjà tout.
+   *
+   * **`null` sur une correction sans date — sa planche du 25 octobre 2026**
+   * (`appli/soignee/accueil.html`). « Le client veut ce devis corrigé avant de
+   * l'accepter. » redisait « Correction demandée » juste au-dessus, et la carte
+   * coûtait alors un chantier de moins dans le premier écran. Ses dates, elles,
+   * restent : elles ne sont écrites nulle part ailleurs.
+   */
+  texte: string | null;
   /**
    * Ce que le client a écrit, mot pour mot.
    *
@@ -189,8 +198,8 @@ function versCarte(n: NotificationPatron): Carte {
   // 27 septembre 2026, « je veux voir ses dates ». La carte ne bouge pas.
   const texte = correction
     ? n.joursSouhaites && n.joursSouhaites.length > 0
-      ? `Le client veut ce devis corrigé avant de l'accepter. ${n.joursSouhaites.length > 1 ? "Ses dates" : "Sa date"} : ${joursEnToutesLettres(n.joursSouhaites)}.`
-      : "Le client veut ce devis corrigé avant de l'accepter."
+      ? `${n.joursSouhaites.length > 1 ? "Ses dates" : "Sa date"} : ${joursEnToutesLettres(n.joursSouhaites)}.`
+      : null
     : refus
       ? "Le client n'a pas donné suite. Le devis peut être repris et renvoyé."
       : n.dateRetenue
@@ -604,7 +613,10 @@ export default function Notifications({
   }
 
   return (
-    <div className="mt-7 flex flex-col gap-3 px-6">
+    // **8 px sous « Créer un devis », et non 28** — sa planche du 25 octobre
+    // 2026 : un matin où un client a répondu, le premier chantier doit entrer
+    // dans l'écran.
+    <div className="mt-2 flex flex-col gap-2.5 px-6">
       {visibles.map((e) => {
         if (e.sorte === "virement") return <CarteVirement key={`virement-${e.question.virementId}`} question={e.question} />;
         if (e.sorte === "accord") return <CarteAccord key="accord-bancaire" accord={e.accord} />;
@@ -623,16 +635,18 @@ export default function Notifications({
             // (`test-devis-qui-tarde-e2e`).
             data-atlas-ton={n.ton}
             data-chantier={n.chantierId}
-            className="rounded-[18px] px-5 py-4"
+            className="rounded-[18px] px-5 pb-1 pt-3.5"
             style={{ backgroundColor: couleurs.fond }}
           >
             <TitreDeCarte ton={n.ton}>{n.titre}</TitreDeCarte>
-            <p className="text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
+            <p className="mt-1 text-[20px] leading-[1.2]" style={{ fontFamily: font.display, color: colors.ink }}>
               {n.chantierNom}
             </p>
-            <p className="mt-1 text-[13px]" style={{ color: couleurs.texte }}>
-              {n.texte}
-            </p>
+            {n.texte && (
+              <p className="mt-1 text-[15px] leading-[1.45]" style={{ color: couleurs.texte }}>
+                {n.texte}
+              </p>
+            )}
 
             {/* **Le montant est ce qu'il cherche, et il est écrit gros.** Sur
                 une facture partiellement réglée c'est le RESTE dû — réclamer le
@@ -650,12 +664,14 @@ export default function Notifications({
             )}
 
             {/* Le message du client, tel qu'il l'a écrit — jamais résumé, jamais
-                reformulé. C'est une citation : les guillemets et le filet de
-                gauche disent que ces mots ne sont pas ceux de l'application. */}
+                reformulé. C'est une citation : les guillemets et l'italique
+                disent que ces mots ne sont pas ceux de l'application. **Le filet
+                de gauche est parti** avec sa planche du 25 octobre 2026 : un
+                trait noir devant une phrase se lisait comme une alerte. */}
             {n.messageClient && (
               <blockquote
-                className="mt-3 whitespace-pre-wrap break-words pl-3 text-[14px] leading-relaxed"
-                style={{ borderLeft: `2px solid ${colors.rust}`, color: colors.ink }}
+                className="mt-2 whitespace-pre-wrap break-words text-[17px] italic leading-[1.4]"
+                style={{ fontFamily: font.display, color: colors.ink }}
               >
                 « {n.messageClient} »
               </blockquote>
@@ -667,7 +683,7 @@ export default function Notifications({
                 doigt épais. Le remboursement intérieur donne la cible, la marge
                 négative la reprend à l'affichage — les deux mots restent où ils
                 étaient, et l'écart entre eux ne bouge pas. */}
-            <div className="-mx-2 mt-2 flex items-center gap-2">
+            <div className="-mx-2 mt-1 flex flex-wrap items-center gap-x-3">
               {/* **Le lien mène là où est le geste**, et l'annonce. Voir
                   `suite-de-la-reponse.ts` : un devis accepté s'ouvre figé, tel
                   que le client l'a reçu ; un devis à corriger mène à l'écran
@@ -680,16 +696,16 @@ export default function Notifications({
                   type="button"
                   onClick={() => corriger(n)}
                   disabled={enCours !== null}
-                  className="min-h-[44px] px-2 text-[14px] font-medium disabled:opacity-60"
-                  style={{ color: colors.rust }}
+                  className="min-h-[48px] px-2 text-[16px] font-bold disabled:opacity-60"
+                  style={{ color: couleurDuGeste(n.ton) }}
                 >
                   {enCours === n.chantierId ? "Ouverture…" : n.suite.libelle}
                 </button>
               ) : (
                 <Link
                   href={n.suite.href}
-                  className="inline-flex min-h-[44px] items-center px-2 text-[14px] font-medium"
-                  style={{ color: colors.rust }}
+                  className="inline-flex min-h-[48px] items-center px-2 text-[16px] font-bold"
+                  style={{ color: couleurDuGeste(n.ton) }}
                 >
                   {n.suite.libelle}
                 </Link>
@@ -724,7 +740,7 @@ export default function Notifications({
                         : marquerVue(n.envoiId)
                 }
                 disabled={enCours !== null}
-                className="min-h-[44px] px-2 text-[14px] font-medium disabled:opacity-60"
+                className="min-h-[48px] px-2 text-[16px] font-medium disabled:opacity-60"
                 style={{ color: colors.inkSoft }}
               >
                 J&apos;ai vu
@@ -762,10 +778,11 @@ export default function Notifications({
         <button
           type="button"
           onClick={() => setToutVoir(true)}
-          className="min-h-[44px] text-center text-[14px] font-medium"
-          style={{ color: colors.rust }}
+          className="flex min-h-[48px] items-center justify-center gap-1.5 text-[15.5px] font-semibold"
+          style={{ color: colors.ink }}
         >
           {enPlus === 1 ? "1 autre devis à regarder" : `${enPlus} autres devis à regarder`}
+          <ChevronDuPli ouvert={false} />
         </button>
       ) : (
         toutVoir &&
@@ -773,14 +790,38 @@ export default function Notifications({
           <button
             type="button"
             onClick={() => setToutVoir(false)}
-            className="min-h-[44px] text-center text-[14px] font-medium"
-            style={{ color: colors.rust }}
+            className="flex min-h-[48px] items-center justify-center gap-1.5 text-[15.5px] font-semibold"
+            style={{ color: colors.ink }}
           >
             Replier
+            <ChevronDuPli ouvert />
           </button>
         )
       )}
     </div>
+  );
+}
+
+/**
+ * Le chevron de « N autres devis à regarder » : il dit que la pile se déplie,
+ * et il se retourne sur « Replier ». Dessiné, et non un caractère : il porte
+ * un geste, pas un ornement de libellé.
+ */
+function ChevronDuPli({ ouvert }: { ouvert: boolean }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-[18px] w-[18px]"
+      style={{ transform: ouvert ? "rotate(180deg)" : undefined }}
+      fill="none"
+      stroke={colors.inkSoft}
+      strokeWidth={2.2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5.5 9l6.5 6.5L18.5 9" />
+    </svg>
   );
 }
 
@@ -796,13 +837,13 @@ function CarteVirement({ question }: { question: QuestionDeVirement }) {
   return (
     <div data-atlas="carte-virement" data-atlas-ton="vert" className="rounded-[18px] px-5 py-4" style={{ backgroundColor: couleurs.fond }}>
       <TitreDeCarte ton="vert">Virement reçu</TitreDeCarte>
-      <p className="text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
+      <p className="mt-1 text-[20px] leading-[1.2]" style={{ fontFamily: font.display, color: colors.ink }}>
         {question.qui}
       </p>
       <p className="mt-2 tabular-nums" style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2, color: colors.ink }}>
         {question.montant}
       </p>
-      <p className="mt-1 text-[13px] leading-[1.5]" style={{ color: couleurs.texte }}>
+      <p className="mt-1 text-[15px] leading-[1.45]" style={{ color: couleurs.texte }}>
         {question.quandEtLibelle} {question.raison}
       </p>
       <ReponseVirement virementId={question.virementId} question={question.question} oui={question.oui} choix={question.choix} />
@@ -814,16 +855,16 @@ function CarteVirement({ question }: { question: QuestionDeVirement }) {
 function CarteAccord({ accord }: { accord: AccordBancaireAffiche }) {
   const couleurs = couleursDuTon("ambre");
   return (
-    <div data-atlas="carte-accord-bancaire" data-atlas-ton="ambre" className="rounded-[18px] px-5 py-4" style={{ backgroundColor: couleurs.fond }}>
+    <div data-atlas="carte-accord-bancaire" data-atlas-ton="ambre" className="rounded-[18px] px-5 pb-1 pt-3.5" style={{ backgroundColor: couleurs.fond }}>
       <TitreDeCarte ton="ambre">Votre banque</TitreDeCarte>
-      <p className="text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
+      <p className="mt-1 text-[20px] leading-[1.2]" style={{ fontFamily: font.display, color: colors.ink }}>
         {accord.titre}
       </p>
-      <p className="mt-1 text-[13px] leading-[1.5]" style={{ color: couleurs.texte }}>
+      <p className="mt-1 text-[15px] leading-[1.45]" style={{ color: couleurs.texte }}>
         {accord.texte}
       </p>
-      <div className="-mx-2 mt-2 flex items-center gap-2">
-        <Link href="/reglages/banque" className="inline-flex min-h-[44px] items-center px-2 text-[14px] font-medium" style={{ color: colors.rust }}>
+      <div className="-mx-2 mt-1 flex items-center gap-2">
+        <Link href="/reglages/banque" className="inline-flex min-h-[48px] items-center px-2 text-[16px] font-bold" style={{ color: couleurDuGeste("ambre") }}>
           Renouveler
         </Link>
       </div>
