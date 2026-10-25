@@ -296,6 +296,10 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
         <button type="button" data-etat="vert-bleu">Vert et bleu</button>
         <button type="button" data-etat="ambre-vert">Ambre et vert</button>
       </div>
+      <div class="pl-etats" id="formes-recu">
+        <button type="button" data-forme="arrondi" aria-pressed="true">Coins arrondis</button>
+        <button type="button" data-forme="pilule" aria-pressed="false">Bouts ronds</button>
+      </div>
       <div class="cadre">
         <div class="ecran avec-barre">
           <div class="defile">
@@ -884,6 +888,21 @@ body.seul .cadre { height: 100svh; min-height: 0; margin: 0; border-radius: 0; b
     document.querySelectorAll("#achat-quoi button").forEach(function (b) {
       b.addEventListener("click", function () {
         document.querySelectorAll("#achat-quoi button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      });
+    });
+  })();
+</script>
+<script>
+  /* La forme de « J'ai reçu le paiement », à essayer sur l'écran même : les
+     coins arrondis de la planche, ou les bouts ronds de l'appli. */
+  (function () {
+    var ecran = document.querySelector("[data-vue-panneau='propose'] .ecran");
+    var boutons = document.querySelectorAll("#formes-recu [data-forme]");
+    boutons.forEach(function (b) {
+      b.addEventListener("click", function () {
+        var pilule = b.getAttribute("data-forme") === "pilule";
+        ecran.classList.toggle("bouton-pilule", pilule);
+        boutons.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
       });
     });
   })();
