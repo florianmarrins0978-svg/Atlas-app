@@ -14,18 +14,17 @@
     paquets, chacun sous son titre (une plage par paquet) ;
     le libellé doré sous le titre part, le titre suffit ;
     sa réponse du 25 octobre : les couleurs de l'appli, le doré partout. Les
-    icônes restent dans l'or d'aujourd'hui, les titres de paquet et le filet
-    des plages le prennent aussi ;
+    icônes restent dans l'or d'aujourd'hui, les titres de paquet le prennent
+    aussi ; les plages, elles, restent sans encadré (sa réponse suivante) ;
     Se déconnecter s'écrit en toutes lettres et non plus en petites capitales.
 */
 .identite { display: flex; align-items: center; gap: 14px; }
 .identite-sceau { width: 52px; height: 52px; flex: none; display: grid; place-items: center; border-radius: 50%;
                   box-shadow: inset 0 0 0 1.5px var(--atlas-or);
                   font: 400 22px/1 var(--serif); color: var(--atlas-or); }
-.identite { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
 .rubrique { color: var(--atlas-or); }
 .identite .ligne-nom { font-size: 21px; }
-.paquet { padding: 0 18px; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
+.paquet { padding: 0 18px; }
 .paquet .ligne { min-height: 60px; }
 .paquet .ligne .ico.rubrique-ico { color: var(--atlas-or); }
 .paquet .ligne-fin .ico, .identite .ligne-fin .ico { color: var(--atlas-or); }
@@ -137,7 +136,7 @@
     <ul>
       <li>Le nom de l'entreprise ouvre la page, en grand : on sait où l'on est.</li>
       <li>Onze rubriques d'affilée deviennent trois paquets, chacun sous son titre : L'entreprise, Pour les devis, L'application. Les voisines se rangent ensemble : Véhicules et Organigramme avec Équipe, Fournisseurs avec Tarifs.</li>
-      <li>Le doré de l'appli partout : les titres, les icônes, les flèches, le filet de chaque paquet.</li>
+      <li>Le doré de l'appli partout : les titres, les icônes, les flèches. Les paquets restent sans encadré.</li>
       <li>Se déconnecter s'écrit en toutes lettres, au bout de la liste.</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
