@@ -36,6 +36,10 @@ partir de la capture d'aujourd'hui, du code de l'écran et de `reglages.html`,
 qui sert de modèle. Le jeu de démonstration ne pose aucun chantier au planning : sa capture du 25 octobre a été prise après avoir posé une semaine de paysagiste à la main dans la base d'essai du poste (`atlas_test`), jamais dans la sienne. Celles de Pour mon comptable aussi : une année de lignes de banque, des tickets, deux dossiers rangés, posés à la main dans `atlas_test`.
 
 
+## `mesurer-porte-accueil-vide.mts` NE SAIT PLUS S'EFFACER (25 octobre 2026)
+
+Il mesure bien (33,8 % le 25 octobre), puis son nettoyage tombe : `DELETE FROM entreprises` sous `atlas_app`, droit retiré par la migration 0147 le même jour (§503). Le compte de mesure reste dans la base. À faire effacer par le rôle propriétaire, avec le contexte d'entreprise.
+
 ## AUDIT DE SÉCURITÉ : LE LOT 0 EST FAIT, LA SUITE ATTEND SON PROMPT (25 octobre 2026)
 
 Le prompt renforcé est au §6 de `docs/audit-securite-prompt-renforce.md`. Étape 2 faite (`docs/audit-2026-10-etape-2.md`) ; R1, R2, R3, l'empreinte des e-mails et les protections fragiles faits (vague 1, `ARCHITECTURE.md` §500 et §501). Étape 3 faite (`docs/audit-2026-10-etape-3-inventaire.md`), vague 2 faite (E2 à E7, `ARCHITECTURE.md` §502). E1, E9 et E17 faits (`ARCHITECTURE.md` §503) ; E16 refusé (§503). Restent : E8 (garde des pages dans le gabarit racine, à reproduire), E10 à E15, `CRON_SECRET` lui aussi public dans `docker-compose.yml` (même remède que E1), et la rétention du journal chez l'hébergeur. Restent hors du lot 0 : poser `min-release-age` (npm 11.10+, à vérifier sur son espace et en CI), épingler les actions GitHub par empreinte, passer `@simplewebauthn/server` en 13.x dans son propre lot (`ARCHITECTURE.md` §499).

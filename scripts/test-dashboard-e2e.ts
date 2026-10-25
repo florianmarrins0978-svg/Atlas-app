@@ -87,10 +87,11 @@ async function main() {
   const OR = "rgb(185, 139, 71)";
   const teintes = await page.evaluate(() =>
     [...document.querySelectorAll("a.atlas-brin")].map((a) => {
-      // La ligne d'état est la seule en petites capitales de la carte.
-      const etat = [...a.querySelectorAll("p")].find(
-        (e) => getComputedStyle(e).textTransform === "uppercase"
-      );
+      // La ligne d'état porte son repère. Elle se cherchait à ses petites
+      // capitales jusqu'au 25 octobre 2026 : l'état s'écrit depuis en phrase
+      // (sa planche `appli/soignee/accueil.html`), et un contrôle qui vise la
+      // façon d'écrire rougit sur un écran juste (`CLAUDE.md` §5 bis).
+      const etat = a.querySelector<HTMLElement>('[data-atlas="etat-chantier"]');
       return {
         texte: etat?.textContent?.trim() ?? null,
         couleur: etat ? getComputedStyle(etat).color : null,
