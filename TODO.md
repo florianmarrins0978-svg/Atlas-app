@@ -25,6 +25,8 @@ teintées et carré du jour). Le reste n'est pas codé. **Branche morte laissée
 `EnTeteEcran` n'a plus d'utilisateur depuis que la fiche client ne l'emploie
 plus ; à retirer dans le prochain lot qui touche `EnTeteEcran` (niveau 3).
 
+**Ma TVA, « Plus loin » (25 octobre au soir) :** sa demande, *« je veux la rendre plus jolie, propose-moi quelque chose »*. Un troisième onglet dans `termines-tva.html` (adresse directe `…/soignee/termines-tva.html#plus-loin`, le kit ouvre désormais l'onglet nommé dans l'adresse) : le total sur une bande dorée d'un bord à l'autre (verte et « Crédit de TVA » un mois de gros achat), le mois sur une pastille dorée, chaque facture et chaque achat en deux lignes avec la TVA en colonne dorée, « Payé par virement » en phrase, plus de plage autour des factures en attente. **À trancher par lui :** Proposé, Plus loin, ou un mélange. Rien dans `src/`.
+
 **Le doré, sa consigne du 25 octobre :** le doré de l'appli (#B98B47, `--atlas-or`) partout dans les planches, jamais l'or foncé (`orTexte`). « Vos entreprises » s'appelle « Vos partenaires » sur la planche des clients.
 
 **Pour reprendre :** l'inventaire de 48 écrans (décisions du patron relevées
