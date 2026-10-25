@@ -6,6 +6,7 @@ import RubriqueReservee from "../../RubriqueReservee";
 import { lireGrilles, prixParTranche } from "@/server/repositories/grilles-reglables";
 import type { NomAxe } from "@/lib/grille-prix";
 import MesMesuresClient from "./MesMesuresClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,7 @@ export const dynamic = "force-dynamic";
  * dessoucher, et la régler trois fois n'aurait aucun sens.
  */
 export default async function MesMesuresPage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
 
   // **Réservée au propriétaire, comme « Mes prix »** (audit du 23 août 2026,

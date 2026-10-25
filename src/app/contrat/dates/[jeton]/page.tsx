@@ -4,6 +4,7 @@ import { avecCivilite } from "@/lib/civilite";
 import { duMois, fenetreDuMois } from "@/lib/dates-du-mois";
 import { jourIso } from "@/lib/jour";
 import ValiderLesDates from "./ValiderLesDates";
+import { garderLaPage } from "@/server/garde-page";
 
 // LA PAGE DES DATES DU MOIS, telle que le CLIENT la reçoit par son lien
 // (planche 130, sa demande du 27 septembre 2026).
@@ -19,6 +20,7 @@ const ETIQUETTE = couleursDocument.etiquette;
 const OR = couleursDocument.accent;
 
 export default async function PageDatesDuMois({ params }: { params: Promise<{ jeton: string }> }) {
+  await garderLaPage();
   const { jeton } = await params;
   const aujourdhui = jourIso(new Date());
   const lu = await lireDatesParJeton(jeton, aujourdhui);

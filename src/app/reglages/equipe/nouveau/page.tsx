@@ -5,6 +5,7 @@ import { estProprietaire } from "@/server/autorisation";
 import RubriqueReservee from "../../RubriqueReservee";
 import NouveauCompte from "./NouveauCompte";
 import { estRole } from "@/lib/acces-roles";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ export const dynamic = "force-dynamic";
  * **Ce que cela donne en plus, sans qu'il l'ait demandé** : le bouton « retour »
  * du téléphone ramène à la liste, et le geste s'annule sans rien toucher.
  *
- * **La garde est ici ET dans la mise en page.** `GardeAcces` refuse déjà
+ * **La garde est ici ET en tête de page.** `garderLaPage` refuse déjà
  * `/reglages/equipe/…` à tout ce qui n'est pas patron ; ce contrôle-ci ne fait
  * pas double emploi, il fait le même travail à un cran plus près des données —
  * le jour où quelqu'un servira cette page autrement, elle se défendra seule.
@@ -32,6 +33,7 @@ export default async function NouveauComptePage({
 }: {
   searchParams: Promise<{ role?: string; retour?: string }>;
 }) {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   // **Venu de l'organigramme** (27 septembre 2026) : le rôle y est déjà choisi,
   // et l'on y revient. Une valeur inconnue retombe sur le défaut de l'écran,

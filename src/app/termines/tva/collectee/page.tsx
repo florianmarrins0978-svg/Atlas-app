@@ -10,6 +10,7 @@ import { lirePeriode, periodeCourante, libellePeriode, PERIODICITE_TVA_PAR_DEFAU
 import { jourCourt, jourIso } from "@/lib/jour";
 import { visionneuseDeLaFacture } from "@/lib/visionneuse-pdf";
 import TableauCalculette from "../TableauCalculette";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,7 @@ export default async function TvaCollecteePage({
 }: {
   searchParams: Promise<{ annee?: string; t?: string }>;
 }) {
+  await garderLaPage();
   const { annee, t } = await searchParams;
   const ctx = await getCurrentCtx();
   const entreprise = await getEntreprise(ctx);

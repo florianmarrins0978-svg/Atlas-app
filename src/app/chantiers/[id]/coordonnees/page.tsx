@@ -5,6 +5,7 @@ import FormulaireNouveauChantier from "../../nouveau/FormulaireNouveauChantier";
 import { provenanceDesCoordonnees } from "@/lib/retour-du-devis";
 import { listerPhotosHorsFicheDeSecurite } from "@/server/repositories/photos";
 import { getNoteVocale } from "@/server/repositories/notes-vocales";
+import { garderLaPage } from "@/server/garde-page";
 
 // Données réelles, propres à l'entreprise courante : jamais de pré-rendu statique.
 export const dynamic = "force-dynamic";
@@ -36,6 +37,7 @@ export default async function CoordonneesDuChantierPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await garderLaPage();
   const { id } = await params;
   // **D'où il vient, et donc où le ramener** — sa demande du 31 août 2026.
   // Entré depuis un devis sans client, il doit y retourner une fois la fiche

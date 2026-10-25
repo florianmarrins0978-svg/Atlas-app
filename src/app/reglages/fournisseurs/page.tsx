@@ -6,6 +6,7 @@ import { estProprietaire } from "@/server/autorisation";
 import { lireMarges, listerSocietes, type SocieteComplete } from "@/server/repositories/fournisseurs-partenaires";
 import RubriqueReservee from "../RubriqueReservee";
 import FournisseursPartenaires, { type SocieteVue } from "./FournisseursPartenaires";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +55,7 @@ function vue(s: SocieteComplete): SocieteVue {
  * comme « Mes tarifs » : ce sont ses prix d'achat et ses marges.
  */
 export default async function FournisseursPage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   if (!(await estProprietaire(ctx))) {
     return (

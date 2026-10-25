@@ -1,6 +1,7 @@
 import { lireRapportParJeton } from "@/server/repositories/passages-entretien";
 import { couleursDocument } from "@/lib/design-tokens";
 import RapportEntretien from "@/components/atlas/RapportEntretien";
+import { garderLaPage } from "@/server/garde-page";
 
 // Le compte rendu de passage, tel que le CLIENT le reçoit.
 //
@@ -49,6 +50,7 @@ export default async function PageRapportClient({
 }: {
   params: Promise<{ jeton: string }>;
 }) {
+  await garderLaPage();
   const { jeton } = await params;
   const rapport = await lireRapportParJeton(jeton);
 

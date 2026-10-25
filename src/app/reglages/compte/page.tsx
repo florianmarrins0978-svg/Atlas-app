@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { lireCompte } from "@/server/repositories/compte";
 import { lireMaPhoto } from "@/server/repositories/photo-des-personnes";
 import CompteClient from "./CompteClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ export const dynamic = "force-dynamic";
  * l'entreprise : un salarié la garde entière.
  */
 export default async function ComptePage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   const [compte, maPhoto] = await Promise.all([lireCompte(ctx), lireMaPhoto(ctx)]);
 

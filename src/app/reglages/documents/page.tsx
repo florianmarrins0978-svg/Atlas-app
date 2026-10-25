@@ -6,6 +6,7 @@ import RubriqueReservee from "../RubriqueReservee";
 import Sommaire from "../Sommaire";
 import VoirUnExemple from "../VoirUnExemple";
 import { SOUS_RUBRIQUES_DOCUMENTS } from "@/lib/rubriques-reglages";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,7 @@ export const dynamic = "force-dynamic";
  * a son adresse, et une adresse se tape.
  */
 export default async function DocumentsPage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   if (!(await estProprietaire(ctx))) {
     return (

@@ -11,10 +11,12 @@ import { nomFichierSauvegarde } from "@/lib/nom-sauvegarde";
 import PorteDeNuit, { SERIF } from "@/components/atlas/PorteDeNuit";
 import { colors } from "@/lib/design-tokens";
 import FormulaireAcceptation, { type OptionRefus } from "./formulaire";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
 export default async function DocumentsLegauxPage() {
+  await garderLaPage();
   const session = await auth();
   const utilisateurId = session?.user?.id;
   if (!utilisateurId) redirect("/login");

@@ -14,6 +14,7 @@ import { facturesAvecPaiements } from "@/server/repositories/paiements-facture";
 import { tvaDeLaPeriodeCourante } from "@/server/tva-courante";
 import { dossierEnCours as periodeEnCours } from "@/server/repositories/dossiers-comptables";
 import { ligneAJustifier, lignesDuReleve } from "@/server/repositories/pour-mon-comptable";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +53,7 @@ const formatEuros = new Intl.NumberFormat("fr-FR", {
 });
 
 export default async function TerminesPage({ searchParams }: { searchParams: Promise<{ chantier?: string }> }) {
+  await garderLaPage();
   // La ligne devant laquelle revenir, quand un écran nous y renvoie (le
   // paiement noté, sa demande du 25 septembre 2026).
   const { chantier: chantierDemande } = await searchParams;

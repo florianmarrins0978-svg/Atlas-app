@@ -21,6 +21,7 @@ import { PARAM_PROVENANCE, PARAM_RELANCE, jourDeRelecture, lienRetourDeRelecture
 import { retourDuDevis } from "@/lib/retour-du-devis";
 import { estUneEntreprise } from "@/lib/civilite";
 import PreparationDictee from "./PreparationDictee";
+import { garderLaPage } from "@/server/garde-page";
 
 // **Une page où il n'y a que le devis.**
 //
@@ -55,6 +56,7 @@ export default async function DevisCompletPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await garderLaPage();
   const { id } = await params;
   const lus = await searchParams;
   const de = lus[PARAM_PROVENANCE];

@@ -7,6 +7,7 @@ import { LIBELLE_MOTIF, bornesDePeriode, categorieDeLaLigne, jourEnMots, libelle
 import { getCurrentCtx } from "@/server/session-ctx";
 import { ligneAJustifier, lignesDuReleve } from "@/server/repositories/pour-mon-comptable";
 import Releve, { type LigneAffichee } from "./Releve";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,7 @@ export const dynamic = "force-dynamic";
  * dossier : l'écran ne décide de rien.
  */
 export default async function PageReleve({ params }: { params: Promise<{ periode: string }> }) {
+  await garderLaPage();
   const { periode } = await params;
   const bornes = bornesDePeriode(periode);
   if (!bornes) notFound();

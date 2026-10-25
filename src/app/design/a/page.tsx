@@ -1,4 +1,5 @@
 import { mockChantiers, ChantierStatut } from "@/lib/mock-data";
+import { garderLaPage } from "@/server/garde-page";
 
 // Aperçu isolé — n'affecte aucune route existante, aucune logique métier modifiée.
 // Statuts simplifiés visuellement : point de couleur + libellé, sans pastille.
@@ -19,7 +20,8 @@ const label: Record<ChantierStatut, string> = {
   planifie: "Planifié",
 };
 
-export default function DesignAPage() {
+export default async function DesignAPage() {
+  await garderLaPage();
   return (
     <div
       className="mx-auto flex min-h-dvh max-w-md flex-col bg-white text-[#1D1D1F]"

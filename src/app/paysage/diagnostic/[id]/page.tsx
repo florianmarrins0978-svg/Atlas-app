@@ -23,6 +23,7 @@ import { dateCitee } from "@/lib/mois";
 import PrendreUnePhoto from "../PrendreUnePhoto";
 import RattacherAUnChantier from "./RattacherAUnChantier";
 import Reessayer from "./Reessayer";
+import { garderLaPage } from "@/server/garde-page";
 
 /**
  * L'écran de résultat — **quatre issues, et pas une de plus**.
@@ -53,6 +54,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Diagnostic, Atlas" };
 
 export default async function ResultatPage({ params }: { params: Promise<{ id: string }> }) {
+  await garderLaPage();
   const { id } = await params;
   const ctx = await getCurrentCtx();
   const diagnostic = await lireDiagnostic(ctx, id);

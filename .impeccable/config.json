@@ -179,6 +179,42 @@
         ],
         "createdAt": "2026-10-25T22:29:57.296Z",
         "reason": "agent: fond de planche et crème de l'écran viennent de la charte Origine du produit (PRODUCT.md, palette relevée sur Arborea), recopiée par kit.js"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/comptable-dossier.html"
+        ],
+        "createdAt": "2026-10-25T23:00:17.976Z",
+        "reason": "Claude: fond des planches soignées (kit.css), commun à toutes ; le document lui-même est blanc ou crème d'Origine comme le vrai"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/comptable-verification.html"
+        ],
+        "createdAt": "2026-10-25T23:00:17.992Z",
+        "reason": "Claude: fond des planches soignées (kit.css), commun à toutes ; le document lui-même est blanc ou crème d'Origine comme le vrai"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "appli/soignee/tva-bouton-paiement.html"
+        ],
+        "createdAt": "2026-10-25T23:03:26.388Z",
+        "reason": "agent: fond des planches soignées (kit.css, #ebe8e1) et crème de la charte Origine du produit, recopiés tels quels comme sur les planches voisines"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "appli/soignee/tva-bouton-paiement.html"
+        ],
+        "createdAt": "2026-10-25T23:11:58.941Z",
+        "reason": "agent: seule occurrence, le crème sur le vert des boutons #7d9a6d choisi par le patron (src/lib/chartes.ts) ; le cran plus sombre lui est proposé sur appli/soignee/fondations.html, à trancher par lui (TODO.md)"
       }
     ]
   }

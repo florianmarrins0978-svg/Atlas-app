@@ -9,6 +9,7 @@ import { retourConfigure } from "@/server/paiement/retour";
 import { etatAffiche, formuleChoisie } from "@/lib/abonnements";
 import { logger } from "@/server/logger";
 import AbonnementClient from "./AbonnementClient";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,7 @@ export default async function AbonnementPage({
 }: {
   searchParams: Promise<{ paiement?: string }>;
 }) {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
 
   if (!(await estProprietaire(ctx))) {

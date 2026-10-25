@@ -8,6 +8,7 @@ import { MOTS_DE_LA_CATEGORIE, type CategorieClient } from "@/lib/civilite";
 import ListeClients, { CompteClients, FournisseurClients } from "./ListeClients";
 import BandeImport from "./BandeImport";
 import { estProprietaire } from "@/server/autorisation";
+import { garderLaPage } from "@/server/garde-page";
 
 // **La liste de ses clients — sa remarque du 17 août 2026 au soir.**
 //
@@ -76,6 +77,7 @@ export default async function ClientsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   const vue = (await searchParams).vue;
   const categorie: CategorieClient = (typeof vue === "string" && VUES[vue]) || "particulier";

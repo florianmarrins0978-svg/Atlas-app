@@ -9,6 +9,7 @@ import { listerPrestations } from "@/server/repositories/prestations-entretien";
 import OuvrirFiche from "./OuvrirFiche";
 import FichesEnCours from "./FichesEnCours";
 import RapportsEnvoyes from "./RapportsEnvoyes";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Fiche de chantier, Atlas" };
@@ -27,6 +28,7 @@ export const metadata = { title: "Fiche de chantier, Atlas" };
  * 24 août 2026, ils se retirent : `FichesEnCours` porte le geste.
  */
 export default async function FichesPage() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   const [passages, modele, proprietaire] = await Promise.all([
     listerPassages(ctx),

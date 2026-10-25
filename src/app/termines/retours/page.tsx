@@ -6,6 +6,7 @@ import { fonctionOuverte } from "@/lib/abonnements";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import FonctionReservee from "@/components/atlas/FonctionReservee";
 import ListeDesRetours from "./ListeDesRetours";
+import { garderLaPage } from "@/server/garde-page";
 
 /**
  * LES RETOURS D'INTERVENTION — la page que l'onglet de Terminés ouvre.
@@ -29,6 +30,7 @@ import ListeDesRetours from "./ListeDesRetours";
 export const dynamic = "force-dynamic";
 
 export default async function PageDesRetours() {
+  await garderLaPage();
   const ctx = await getCurrentCtx();
   // Un plus d'« Entreprise » (10 septembre 2026) : l'écran reste atteignable,
   // même en-tête, même retour — ce qui change, c'est ce qu'il y a dedans. Et

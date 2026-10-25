@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { listerLesFichesSignees } from "@/server/repositories/fiches-securite";
 import { moisEnCours, periodeValide } from "@/lib/periode";
 import ListeDesFiches from "./ListeDesFiches";
+import { garderLaPage } from "@/server/garde-page";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Fiches de sécurité, Atlas" };
@@ -18,6 +19,7 @@ export const metadata = { title: "Fiches de sécurité, Atlas" };
  * Un nom tapé passe par-dessus le mois (`fichesAMontrer`).
  */
 export default async function FichesDeSecuritePage({ searchParams }: { searchParams: Promise<{ periode?: string; mois?: string; jour?: string }> }) {
+  await garderLaPage();
   const { periode, mois, jour } = await searchParams;
   const choisi = periodeValide(periode) ?? periodeValide(jour) ?? periodeValide(mois) ?? moisEnCours();
   const ctx = await getCurrentCtx();

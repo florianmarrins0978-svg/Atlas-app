@@ -6,7 +6,7 @@ import { getCurrentCtx } from "./session-ctx";
 import type { Ctx } from "./repositories/context";
 
 /**
- * LA GARDE DES ROUTES D'API — celles que `GardeAcces` ne peut pas voir.
+ * LA GARDE DES ROUTES D'API — celles que `garderLaPage` ne peut pas voir.
  *
  * **Pourquoi elle existe.** Une route d'API ne traverse aucune mise en page :
  * la garde posée dans `layout.tsx` ne la protège pas. Or c'est exactement par là
@@ -35,7 +35,7 @@ import type { Ctx } from "./repositories/context";
 export async function exigerOuverture(ctx?: Ctx): Promise<NextResponse | null> {
   const chemin = (await headers()).get("x-atlas-pathname");
   // Sans chemin, on ne sait pas de quoi on parle. **On refuse**, ici, à
-  // l'inverse de `GardeAcces` : une route d'API sert une donnée, et un doute
+  // l'inverse de `garderLaPage` : une route d'API sert une donnée, et un doute
   // sur une donnée se tranche du côté fermé.
   if (!chemin) return NextResponse.json({ error: "Introuvable" }, { status: 404 });
 

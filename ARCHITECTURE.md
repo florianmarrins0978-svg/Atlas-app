@@ -36034,7 +36034,19 @@ retirée, et `test-papier-facture-db.ts` avec elle.
 
 **E16, refusé.** `/api/health/diagnostic` reste ouvert sans compte : il sert justement quand on ne peut pas se connecter, et `test-diagnostic-sans-secret.ts` vérifie déjà qu'il ne porte aucun secret.
 
-## §504 : Terminés, le jour du chantier passe dans un carré qui dit l'état
+## §504 : Chaque écran pose sa garde de rôle lui-même, et en premier
+
+*25 octobre 2026, audit de sécurité (E8, `docs/audit-2026-10-etape-3-inventaire.md`).*
+
+**Le constat, reproduit.** `GardeAcces` vivait dans `src/app/layout.tsx` pour ne jamais s'oublier. Un gabarit partagé ne se rejoue pas à la navigation interne, et il n'empêche pas l'écran demandé d'être rendu dans la même réponse (`node_modules/next/dist/docs/01-app/02-guides/authentication.md`, « Layouts and auth checks »). Un commercial passé par `/chantiers` recevait `/termines/tva` par un `router.push` ; le chargement complet, lui, était refusé.
+
+**La règle.** `garderLaPage()` (`src/server/garde-page.ts`) reprend la logique de `GardeAcces` (adresse demandée par `x-atlas-pathname`, posée par le middleware à chaque requête, navigations internes comprises ; `cheminAutorise` ; renvoi vers l'accueil du rôle) et se pose en PREMIÈRE instruction de chaque écran serveur. `GardeAcces.tsx` est supprimé : deux gardes pour la même question divergeraient.
+
+**Ce qui tient l'oubli que le gabarit évitait** : `scripts/test-pages-gardees.ts` lit chaque `page.tsx` et refuse celui qui n'appelle pas la garde en premier. Il n'a pas de liste d'exceptions : un écran client n'est admis que s'il est public (`chemins-publics.ts`) ou sous `/design`, que son gabarit refuse en production. `scripts/test-garde-des-pages-e2e.ts` rejoue le geste (commercial, salarié, patron).
+
+**Ce qui reste dans le gabarit**, avec la même faiblesse : `GardeVerificationEmail` et `GardeDocumentsLegaux` (`TODO.md`). Elles ne protègent pas une donnée d'un rôle, elles orientent vers une étape ; moins grave, mais à déplacer de la même façon.
+
+## §505 : Terminés, le jour du chantier passe dans un carré qui dit l'état
 
 Sa planche du 25 octobre 2026 (`appli/soignee/termines.html`), codée le soir
 même. Le jour du chantier quitte la ligne d'état pour un carré à gauche de la
@@ -36050,7 +36062,7 @@ La carte de TVA perd son contour doré du 26 août : il disait « on peut appuye
 à une carte du même blanc que l'écran, et c'est désormais le fond teinté qui la
 détache. `test-tva-en-tete-e2e` mesure donc l'écart entre ce fond et celui de
 l'écran, plus le contour.
-## §505 : Vos chantiers se lit d'un coup d'œil, et le premier chantier entre dans l'écran
+## §506 : Vos chantiers se lit d'un coup d'œil, et le premier chantier entre dans l'écran
 
 **Sa demande du 25 octobre 2026**, devant la planche `appli/soignee/accueil.html` : *« tu peux coder ça, ne lance pas de batterie »*, puis *« seulement la page chantier, pas la page planning »*. L'écran d'aujourd'hui, regardé avec une réponse de client et cinq chantiers, n'en montrait aucun dans le premier écran.
 

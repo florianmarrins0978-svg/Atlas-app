@@ -1,5 +1,6 @@
 import PorteDeNuit from "@/components/atlas/PorteDeNuit";
 import EcranMotDePasseOublie from "./EcranMotDePasseOublie";
+import { garderLaPage } from "@/server/garde-page";
 
 /**
  * MOT DE PASSE OUBLIÉ — `appli/mot-de-passe-oublie.html`, validée le
@@ -14,6 +15,7 @@ export default async function MotDePasseOubliePage({
 }: {
   searchParams: Promise<{ adresse?: string }>;
 }) {
+  await garderLaPage();
   const { adresse } = await searchParams;
   return (
     <PorteDeNuit className="atlas-bas-sans-barre flex min-h-[100dvh] flex-col px-[22px] pb-5">
