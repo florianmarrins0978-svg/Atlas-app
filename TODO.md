@@ -16,7 +16,7 @@ planche « Ce qui change partout » (`fondations.html`), puis une planche par
 proposition, à essayer au pouce. Un lien vers une planche pas encore faite dit
 « Cette planche arrive bientôt » : la liste des prêtes est `PRETES` dans `kit.js`.
 
-**Livrées :** Réglages (le sommaire), Vos clients et la fiche d'un client, Terminés et Ma TVA (avec des chantiers terminés et des factures de démonstration), le Planning (25 octobre, `planning.html`). **À trancher par lui sur le Planning :** la semaine lue d'office sous le mois, au lieu du mot « La semaine » à toucher (c'est revenir sur sa réponse du 15 octobre, « au repos, rien dessous ») ; si non, le mot revient tel quel et le reste de la planche ne bouge pas. **À trancher par lui :** le vert des
+**Livrées :** Réglages (le sommaire), Vos clients et la fiche d'un client, Terminés et Ma TVA (avec des chantiers terminés et des factures de démonstration), le Planning (25 octobre, `planning.html`), Pour mon comptable en entier (25 octobre, `termines-comptable.html` : dossier en cours, relevé du mois, Mes dossiers ; treize captures `aujourdhui/comptable*.jpg`, une par état, que la planche affiche à côté du geste touché). **À trancher par lui sur Pour mon comptable :** le filtre « Sans ticket » renommé « À justifier » (il compte aussi les virements) ; sans banque, Check up retiré et « Relier ma banque » en bouton plein. **À trancher par lui sur le Planning :** la semaine lue d'office sous le mois, au lieu du mot « La semaine » à toucher (c'est revenir sur sa réponse du 15 octobre, « au repos, rien dessous ») ; si non, le mot revient tel quel et le reste de la planche ne bouge pas. **À trancher par lui :** le vert des
 boutons, le sien (#7d9a6d, 3,0 de contraste sous le crème) ou un cran plus
 sombre (#587a4c, 4,6), sur `fondations.html`. Rien n'est codé dans `src/`.
 
@@ -26,7 +26,7 @@ sombre (#587a4c, 4,6), sur `fondations.html`. Rien n'est codé dans `src/`.
 écran par écran) a été fait dans la session du 25 octobre, hors dépôt ; il
 manque celui des Réglages et des pages du client. Une planche se dessine à
 partir de la capture d'aujourd'hui, du code de l'écran et de `reglages.html`,
-qui sert de modèle. Le jeu de démonstration ne pose aucun chantier au planning : sa capture du 25 octobre a été prise après avoir posé une semaine de paysagiste à la main dans la base d'essai du poste (`atlas_test`), jamais dans la sienne.
+qui sert de modèle. Le jeu de démonstration ne pose aucun chantier au planning : sa capture du 25 octobre a été prise après avoir posé une semaine de paysagiste à la main dans la base d'essai du poste (`atlas_test`), jamais dans la sienne. Celles de Pour mon comptable aussi : une année de lignes de banque, des tickets, deux dossiers rangés, posés à la main dans `atlas_test`.
 
 
 ## AUDIT DE SÉCURITÉ : LE LOT 0 EST FAIT, LA SUITE ATTEND SON PROMPT (25 octobre 2026)
