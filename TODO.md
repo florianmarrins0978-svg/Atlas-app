@@ -21,6 +21,14 @@ cinq (sa consigne du 24 octobre) :**
 | 4 | la page du comptable par lien privé : Valider, Rejeter, Suivant (0145, §496) | codé, éprouvé, sur la branche |
 | 5 | la photo prise sur place, redressée, le ticket recopié ligne par ligne (0146, §497) | codé, éprouvé, sur la branche ; **la lecture des lignes par l'IA, à essayer sur son espace avec un vrai ticket** |
 
+**`test-tva-au-paiement-e2e` court après sa propre ligne de prix** (trouvé le
+25 octobre 2026, batterie des cinq lots du comptable) : `chantierRealise` remplit
+le prix, quitte le champ, puis attend 500 ms au lieu d'attendre que la ligne soit
+enregistrée. Sous la charge d'une batterie, la facture naît sans prix et
+« Envoyer la facture » reste grisé (`peutPreparerLaPiece`) : rouge une fois sur
+deux, sur une étape différente à chaque fois, vert seul. Attendre la confirmation
+de l'enregistrement, pas un délai. Hors du lot du comptable, à faire à part.
+
 **Le plafond de QUATRE PAGES de l'attestation décennale s'applique encore aux
 factures et devis de fournisseurs, et aux papiers des véhicules** (trouvé le
 24 octobre 2026 par la simulation du comptable) : `refusDuPdfDepose` le pose par
