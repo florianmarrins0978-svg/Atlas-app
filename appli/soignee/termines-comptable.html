@@ -299,6 +299,8 @@
     </ul>
     <h2>À trancher</h2>
     <ul class="a-trancher">
+      <li>Un virement reçu se règle dans sa carte : choisir la facture (même payée en partie), joindre une facture faite hors d’Atlas, ou dire ce que c’est. Aujourd’hui la carte envoie vers l’accueil, où rien n’apparaît quand aucune facture ne fait le montant : le dossier ne peut plus se ranger.</li>
+      <li>Les cinq réponses d’un virement reçu : un remboursement, mon argent perso, un prêt, une aide ou une subvention, entre mes comptes.</li>
       <li>Le filtre Sans ticket s'appelle À justifier : il compte aussi le virement reçu et le virement sans facture.</li>
       <li>Sans banque, Check up disparaît (il n'aurait rien à vérifier) et Relier ma banque devient le bouton plein.</li>
     </ul>
@@ -350,6 +352,10 @@
   ];
   var FACTURES = [{ societe: "Point P Angers", nom: "Facture bordures", montant: 386.40 }, { societe: "Motoculture Ouest", nom: "Facture débroussailleuse", montant: 1450 }];
   var MOTIFS = ["Un fournisseur", "Un salaire", "Un loyer", "Impôts, cotisations", "Un prêt", "Pour moi"];
+  /* Un virement reçu sans facture d'Atlas qui lui corresponde : l'accueil ne pose aucune question (questionsDesVirements
+     ne garde que ceux qu'une facture explique), la carte se règle donc ici. Les factures en attente sont des exemples. */
+  var FACTURES_EN_ATTENTE = [{ qui: "Mme Costa", numero: "F-2026-012", reste: 1728 }, { qui: "M. Morin", numero: "F-2026-013", reste: 540 }];
+  var MOTIFS_RECUS = ["Un remboursement", "Mon argent perso", "Un prêt", "Une aide, une subvention", "Entre mes comptes"];
 
   /* Le relevé d'octobre, la plus récente en haut (Releve.tsx). */
   var RELEVE = [
@@ -489,9 +495,24 @@
     var h = '<article class="plage" data-carte="' + c.id + '">' +
       '<div class="carte-cat">' + point(c.cat) + CAT[c.cat][0] + '<span class="carte-jour">' + c.jour + "</span></div>" +
       '<div class="carte-ligne"><span class="carte-qui">' + c.qui + '</span><span class="carte-montant">' + eur(c.montant) + "</span></div>";
+    if (c.genre === "entree" && ouvert === "facture") {
+      var fa = FACTURES_EN_ATTENTE.map(function (x, i) {
+        return '<li><button class="piece touche" type="button" data-geste="confirmer-recu" data-c="' + c.id + '" data-i="' + i + '"><span class="piece-rond"></span>' +
+          '<span class="piece-corps"><span class="piece-nom">' + x.qui + '</span><span class="piece-sous">Facture ' + x.numero + ", reste " + eur(x.reste) + "</span></span></button></li>";
+      }).join("") + '<li><button class="piece touche" type="button" data-geste="hors-atlas" data-c="' + c.id + '"><span class="piece-rond"></span>' +
+        '<span class="piece-corps"><span class="piece-nom">Une facture faite hors d’Atlas</span><span class="piece-sous">La photographier ou choisir le PDF</span></span></button></li>';
+      return h + '<p class="carte-texte">Laquelle\u202f? Les factures qui attendent leur paiement :</p><ul class="pieces">' + fa + "</ul>" +
+        '<div class="carte-gestes" style="margin-top:4px"><button class="bouton-texte" type="button" data-geste="fermer-carte" data-c="' + c.id + '">Annuler</button></div></article>';
+    }
+    if (c.genre === "entree" && ouvert === "motif") {
+      var mr = MOTIFS_RECUS.map(function (x) { return '<button type="button" class="touche" data-geste="motif" data-c="' + c.id + '">' + x + "</button>"; }).join("");
+      return h + '<p class="carte-texte">C’est :</p><div class="motifs">' + mr + "</div>" +
+        '<div class="carte-gestes" style="margin-top:6px"><button class="bouton-texte" type="button" data-geste="fermer-carte" data-c="' + c.id + '">Annuler</button></div></article>';
+    }
     if (c.genre === "entree") {
-      return h + '<p class="carte-texte">Sa facture se confirme sur l’accueil.</p>' +
-        '<div class="carte-gestes"><a class="bouton bouton-creux" href="accueil.html">' + ico("facture") + "Ouvrir l’accueil</a></div></article>";
+      return h + '<p class="carte-manque">' + ico("alerte") + "Aucune facture d’Atlas ne fait ce montant.</p>" +
+        '<div class="carte-gestes"><button class="bouton bouton-creux" type="button" data-geste="ouvrir-facture" data-c="' + c.id + '">' + ico("facture") + "Choisir la facture</button>" +
+        '<button class="bouton-texte" type="button" data-geste="ouvrir-motif" data-c="' + c.id + '">C’est autre chose</button></div></article>';
     }
     if (ouvert === "perdu") {
       return h + '<p class="carte-attention">Validée sans ticket, la ligne porte la mention « ticket perdu ». <b>Sa TVA ne sera pas déduite.</b></p>' +
@@ -816,6 +837,14 @@
       case "relier": oterCarte(c, "Ticket relié.", "materiel"); break;
       case "joindre": oterCarte(c, "Facture jointe."); break;
       case "motif": oterCarte(c, "Ligne justifiée : " + g.textContent.toLowerCase() + "."); break;
+      case "confirmer-recu": {
+        var f = FACTURES_EN_ATTENTE[Number(g.getAttribute("data-i"))];
+        var carte = etat.cartes.filter(function (x) { return x.id === c; })[0];
+        var reste = f.reste - carte.montant;
+        oterCarte(c, eur(carte.montant) + " notés sur la facture " + f.numero + (reste > 0 ? ", il reste " + eur(reste) + "." : ", elle est payée."));
+        break;
+      }
+      case "hors-atlas": oterCarte(c, "Facture jointe."); break;
       case "photographier": passe("L’appareil photo s’ouvre, puis la feuille de Ma TVA."); break;
       case "decoupage": etat.decoupage = g.getAttribute("data-d"); rendre(); break;
       case "periode":
