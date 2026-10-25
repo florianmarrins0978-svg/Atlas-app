@@ -16,7 +16,9 @@
     les couleurs sont celles de l'écran d'aujourd'hui : titres des cases en or
       espacé, montants en or, pastille or, À facturer en vert plein, Créer une
       facture au contour or ; plus de dessins vert foncé ni de gris ajoutés ;
-    les deux cases ont trois propositions, au choix au-dessus du téléphone ;
+    les deux cases : trois propositions, il a pris les plages teintées, avec
+      l'or de l'appli (--atlas-or) pour tout ce qui est doré, jamais l'or
+      foncé du kit (sa réponse du même soir) ;
     la liste redevient UNE liste sous le mois, comme dans l'appli : le mois et
       ses flèches, « 2 à facturer », l'œil, « 8 facturés », le Filtre, puis les
       chantiers du mois mêlés, à facturer et facturés ; l'œil ne montre que ce
@@ -25,41 +27,32 @@
       Non payées en rouge sous les deux boutons.
 */
 
-/* ─── Les deux cases : trois propositions ─────────────────────────────── */
+/* ─── Les deux cases ─────────────────────────────────────────────────── */
 .argent { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .case { display: flex; flex-direction: column; min-height: 140px; padding: 16px 14px; border-radius: var(--r-plage);
         text-decoration: none; color: inherit; background: var(--atlas-card);
         box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
-.case-titre { font-size: 13px; font-weight: 700; line-height: 1.35; letter-spacing: 0.1em; text-wrap: balance; text-transform: uppercase; color: var(--atlas-orTexte); }
+.case-titre { font-size: 13px; font-weight: 700; line-height: 1.35; letter-spacing: 0.1em; text-wrap: balance; text-transform: uppercase; color: var(--atlas-or); }
 .case-sous { margin-top: 6px; font: 400 17px/1.2 var(--serif); color: var(--atlas-ink); }
 .case-pied { margin-top: auto; padding-top: 14px; }
 .case-valeur { font: 400 26px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; letter-spacing: -0.01em; white-space: nowrap; color: var(--atlas-ink); }
 .case-bien { display: flex; align-items: center; gap: 6px; font: 400 18px/1.15 var(--serif); color: var(--atlas-ink); }
 .case-bien .ico { width: 20px; height: 20px; stroke-width: 2; color: var(--atlas-or); }
 
-/* 2 : une seule carte, coupée en deux par un filet d'or. */
-.argent[data-prop="2"] { gap: 0; border-radius: var(--r-plage); background: var(--atlas-card);
-                         box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--atlas-or) 70%, transparent); }
-.argent[data-prop="2"] .case { background: transparent; box-shadow: none; min-height: 150px; padding: 18px 16px; }
-.argent[data-prop="2"] .case + .case { position: relative; }
-.argent[data-prop="2"] .case + .case::before { content: ""; position: absolute; left: 0; top: 18px; bottom: 18px; width: 1px;
-                                               background: color-mix(in srgb, var(--atlas-or) 55%, transparent); }
-.argent[data-prop="2"] .case-valeur { font-size: 28px; }
 
-/* 3 : deux plages teintées, l'or pour ce qu'on doit, le vert pour ce qui est en ordre. */
-.argent[data-prop="3"] .case { box-shadow: none; }
-.argent[data-prop="3"] .case-tva { background: var(--atlas-carteAmbreFond); }
-.argent[data-prop="3"] .case-tva .case-titre { color: var(--atlas-carteAmbreTexte); }
-.argent[data-prop="3"] .case-compta { background: var(--atlas-carteVertFond); }
-.argent[data-prop="3"] .case-compta .case-titre,
-.argent[data-prop="3"] .case-compta .case-bien .ico { color: var(--atlas-carteVertTexte); }
+/* Ses deux plages teintées, retenues le 25 octobre : l'or pour ce qu'on doit, le vert pour ce qui est en ordre. */
+.argent .case { box-shadow: none; }
+.argent .case-tva { background: var(--atlas-carteAmbreFond); }
+.argent .case-compta { background: var(--atlas-carteVertFond); }
+.argent .case-compta .case-titre,
+.argent .case-compta .case-bien .ico { color: var(--atlas-carteVertTexte); }
 
 /* ─── Les deux boutons, aux couleurs de l'appli ───────────────────────── */
 .portes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
 .porte { position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; padding: 0 14px;
          border-radius: 28px; font-size: 15px; font-weight: 500; line-height: 1.2; text-align: center; text-decoration: none;
          color: var(--atlas-ink); background: var(--atlas-card); box-shadow: inset 0 0 0 1px var(--atlas-line); }
-.porte-or { color: var(--atlas-orTexte); background: transparent; box-shadow: inset 0 0 0 1.5px var(--atlas-or); }
+.porte-or { color: var(--atlas-or); background: transparent; box-shadow: inset 0 0 0 1.5px var(--atlas-or); }
 .pastille { min-width: 24px; height: 24px; padding: 0 7px; border-radius: 12px; display: inline-grid; place-items: center; flex: none;
             font: 700 13px/1 var(--sans); background: var(--atlas-or); color: var(--sur-plein); }
 .non-payees { display: flex; align-items: center; gap: 10px; min-height: 56px; margin-top: 10px; padding: 0 16px; border-radius: 28px;
@@ -75,7 +68,7 @@
 .ecran.attente .mois-fleche { color: color-mix(in srgb, var(--atlas-or) 30%, transparent); pointer-events: none; }
 
 .comptes { display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 18px; font-weight: 700; }
-.comptes .or { color: var(--atlas-orTexte); }
+.comptes .or { color: var(--atlas-or); }
 .oeil { width: 44px; height: 44px; margin: -10px -2px; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-or); }
 .oeil .ico { width: 24px; height: 24px; }
 .oeil .ouvert { display: none; }
@@ -102,7 +95,7 @@
 .ligne-nom { flex: 1; min-width: 0; font: 400 19px/1.25 var(--serif); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ligne-montant { flex: none; font: 700 19px/1.25 var(--serif); color: var(--atlas-or); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
 .ligne-etat { display: block; margin-top: 4px; font-size: 15px; line-height: 1.4; color: var(--atlas-inkSoft); }
-.ligne-etat b { color: var(--atlas-orTexte); }
+.ligne-etat b { color: var(--atlas-or); }
 .ligne-attend { align-items: center; }
 .ligne-attend .jour-bloc { align-self: center; }
 .ligne-attend .ligne-nom { white-space: normal; }
@@ -125,12 +118,7 @@
 .tri-sens { display: flex; gap: 10px; margin-top: 14px; }
 .tri-sens button { flex: 1; min-height: 48px; border-radius: 12px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft);
                    box-shadow: inset 0 0 0 1px var(--atlas-line); }
-.tri-sens button[aria-pressed="true"] { color: var(--atlas-orTexte); box-shadow: inset 0 0 0 1.5px var(--atlas-or); }
-.pl-props { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 0 0 18px; }
-.pl-props button { min-height: 40px; padding: 0 14px; border-radius: 20px; font-size: 14px; color: #4a4a44; background: rgba(28,28,26,0.06); }
-.pl-props button[aria-pressed="true"] { background: #8b6835; color: #faf9f5; font-weight: 600; }
-@media (max-width: 760px) { .pl-props, .pl-props-titre { padding: 0 var(--gouttiere); } }
-.pl-props-titre { margin: 0 0 6px; text-align: center; font-size: 14px; font-weight: 600; color: #4a4a44; }
+.tri-sens button[aria-pressed="true"] { color: var(--atlas-or); box-shadow: inset 0 0 0 1.5px var(--atlas-or); }
 </style>
 </head>
 <body class="pl">
@@ -138,7 +126,7 @@
 <header class="pl-tete">
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">Terminés</h1>
-  <p class="pl-verdict">Les couleurs de l'appli, <b>trois propositions pour Ma TVA et le comptable</b>, et la liste sous le mois comme avant, avec le jour en grand à gauche.</p>
+  <p class="pl-verdict">Les couleurs de l'appli, <b>Ma TVA et le comptable en deux plages teintées</b>, et la liste sous le mois comme avant, avec le jour en grand à gauche.</p>
 </header>
 
 <main class="pl-scene">
@@ -151,12 +139,6 @@
         <button type="button" data-etat="nonpayee">Une facture non payée</button>
         <button type="button" data-etat="vide">Au début</button>
       </div>
-      <p class="pl-props-titre">Les deux cases</p>
-      <div class="pl-props">
-        <button type="button" data-prop="1" aria-pressed="true">Deux cartes</button>
-        <button type="button" data-prop="2">Une carte en deux</button>
-        <button type="button" data-prop="3">Deux plages teintées</button>
-      </div>
       <div class="cadre">
         <div class="ecran avec-barre" data-etat="rempli">
           <div class="defile">
@@ -165,7 +147,7 @@
               <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
             </header>
 
-            <div class="argent" data-prop="1">
+            <div class="argent">
               <a class="case case-tva touche" href="termines-tva.html">
                 <span class="case-titre">Ma TVA à déclarer</span>
                 <span class="case-sous">Octobre 2026</span>
@@ -333,13 +315,13 @@
   <section class="pl-notes">
     <h2>Ce qui change</h2>
     <ul>
-      <li>Ma TVA et Pour mon comptable côte à côte : trois propositions, à choisir au-dessus du téléphone.</li>
+      <li>Ma TVA sur une plage dorée, Pour mon comptable sur une plage verte, côte à côte.</li>
       <li>Chaque chantier porte son jour en grand à gauche.</li>
       <li>Non payées, quand elle existe, s'écrit en rouge sous les deux boutons.</li>
     </ul>
     <h2>Ce qui revient comme dans l'appli</h2>
     <ul class="garde">
-      <li>Les couleurs : titres en or espacé, montants en or, pastille or, À facturer en vert plein, Créer une facture au contour or.</li>
+      <li>Les couleurs : l'or de l'appli pour tout ce qui est doré, titres en or espacé, montants en or, pastille or, À facturer en vert plein, Créer une facture au contour or.</li>
       <li>Sous le mois et ses flèches : 2 à facturer, l'œil, 8 facturés, puis le Filtre, et les chantiers du mois mêlés.</li>
       <li>L'œil ne montre que ce qui attend sa facture, tous mois confondus.</li>
       <li>Toucher un chantier à facturer ouvre la facture ; toucher une facture partie ouvre ses trois choix.</li>
@@ -361,14 +343,6 @@
       document.getElementById("volet-titre").textContent = r.getAttribute("data-chantier");
       document.getElementById("volet-sous").textContent = r.getAttribute("data-detail");
       document.getElementById("volet-non-payee").hidden = r.hasAttribute("data-payee");
-    });
-  });
-  /* Les deux cases : la proposition choisie au-dessus du téléphone. */
-  var props = document.querySelectorAll(".pl-props button");
-  props.forEach(function (b) {
-    b.addEventListener("click", function () {
-      props.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
-      document.querySelector(".argent").setAttribute("data-prop", b.getAttribute("data-prop"));
     });
   });
   /* L'œil : seulement ce qui attend sa facture, tous mois confondus, et les
