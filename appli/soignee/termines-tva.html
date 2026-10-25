@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ma TVA, soigné</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/*
+  MA TVA (src/app/termines/tva/page.tsx et ses pièces).
+
+  Sa planche du 3 septembre (« code exactement ça ») et celle du 12 (« une
+  seule logique ») gardent tout leur dessin : le mois en titre, la frise,
+  l'addition alignée à droite avec le total le plus grand, le mot qui ouvre et
+  le chiffre qui copie, les deux gestes d'achat sous le total, les factures en
+  attente avant les preuves, la mention du bas. Ce qui change :
+    « Ma TVA » passe de 9,5 px or en capitales à une ligne lisible ;
+    les libellés de l'addition passent de 9,5 px à 15 px, soulignés d'or parce
+      qu'ils s'ouvrent ;
+    la copie dit « Copié » en mots, au lieu d'un carré de 14 px ;
+    les trois boutons verts pleins à la suite deviennent des boutons cernés :
+      ils restent les mêmes mots, « J'ai reçu le paiement » ;
+    la TVA de chaque pièce passe de l'or (2,8) à l'or foncé (4,6).
+*/
+.ligne-ma-tva { margin: -8px 0 18px; font-size: 15px; font-weight: 700; color: var(--atlas-orTexte); }
+
+.frise { display: flex; align-items: center; gap: 4px; margin: 0 calc(var(--gouttiere) * -1); padding-left: var(--gouttiere); }
+.frise-annee { flex: none; display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 12px 0 8px;
+               border-radius: 22px; font: 400 17px/1 var(--serif); box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.frise-annee .ico { color: var(--atlas-orTexte); width: 20px; height: 20px; }
+.pastille-rouge { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; display: inline-grid; place-items: center;
+                  font: 700 12.5px/1 var(--sans); background: var(--atlas-alerte); color: var(--atlas-card); }
+.frise-mois { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; padding-right: var(--gouttiere);
+              mask-image: linear-gradient(to right, transparent 0, var(--atlas-ink) 18px, var(--atlas-ink) calc(100% - 28px), transparent 100%); }
+.frise-mois::-webkit-scrollbar { display: none; }
+.frise-mois button { flex: none; min-height: 44px; padding: 0 12px; font-size: 15.5px; font-weight: 500; color: var(--atlas-inkSoft);
+                     box-shadow: inset 0 -2px 0 transparent; }
+.frise-mois button[aria-current="true"] { color: var(--atlas-ink); font-weight: 700; box-shadow: inset 0 -2px 0 var(--atlas-or); }
+
+.rythme { margin-top: 10px; font-size: 15px; color: var(--atlas-inkSoft); }
+.mot-souligne { min-height: 44px; padding: 0 2px; font-size: 15px; font-weight: 600; color: var(--atlas-ink);
+                text-decoration: underline; text-decoration-color: var(--atlas-or); text-underline-offset: 5px; text-decoration-thickness: 1.5px; }
+.rythme-autre { display: block; margin-left: 92px; font-size: 15px; }
+
+.addition { margin-top: 18px; }
+.add-ligne { display: flex; align-items: center; gap: 8px; min-height: 56px; }
+.add-mot { flex: 1; min-width: 0; font-size: 15.5px; font-weight: 600; color: var(--atlas-ink); text-decoration: underline;
+           text-decoration-color: color-mix(in srgb, var(--atlas-or) 80%, transparent); text-underline-offset: 5px;
+           text-decoration-thickness: 1.5px; }
+.add-montant { font: 400 23px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; color: var(--atlas-ink); white-space: nowrap; }
+.add-moins { color: var(--atlas-inkSoft); margin-right: 6px; }
+.copier { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--atlas-orTexte); }
+.copier .copie-mot { display: none; font-size: 12.5px; font-weight: 700; }
+.copier.copie .ico { display: none; }
+.copier.copie .copie-mot { display: block; }
+.add-trait { height: 1px; background: var(--atlas-line); margin: 6px 0; }
+.add-total .add-mot { text-decoration: none; color: var(--atlas-orTexte); font-weight: 700; }
+.add-total .add-montant { font-size: 40px; letter-spacing: -0.02em; }
+
+.gestes-achat { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.gestes-achat .bouton { min-height: 60px; flex-direction: column; gap: 4px; font-size: 15px; }
+.gestes-achat .ico { color: var(--atlas-rust); }
+
+.section-titre { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 36px 0 12px; }
+.section-titre h2 { margin: 0; font: 400 22px/1.2 var(--serif); }
+.section-titre span { font-size: 14px; color: var(--atlas-inkSoft); }
+
+.facture-attente + .facture-attente { margin-top: 10px; }
+.fa-tete { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.fa-droite { text-align: right; }
+.fa-montant { font: 400 19px/1.2 var(--serif); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.fa-petit { display: block; font-size: 13.5px; color: var(--atlas-inkSoft); }
+.fa-sur { display: block; margin-top: 2px; font-size: 13.5px; font-weight: 600; color: var(--atlas-orTexte); }
+.fa-trace b { color: var(--atlas-ink); }
+.fa-paye { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; margin-top: 14px; }
+.fa-paye span { font-size: 14.5px; font-weight: 600; color: var(--atlas-inkSoft); }
+.fa-paye select { appearance: none; min-height: 48px; padding: 0 14px; }
+.bouton-recu { margin-top: 10px; color: var(--atlas-rust); box-shadow: inset 0 0 0 1.5px var(--atlas-rust); }
+.fa-partie { display: block; margin: 4px auto 0; }
+.acompte { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; padding-top: 10px;
+           box-shadow: inset 0 1px 0 var(--atlas-line); font-size: 14px; color: var(--atlas-inkSoft); }
+.acompte b { color: var(--atlas-ink); font-weight: 600; white-space: nowrap; }
+.retirer-acompte { width: 44px; height: 44px; flex: none; display: grid; place-items: center; color: var(--atlas-inkSoft); }
+.saisie-partie { margin-top: 12px; padding-top: 12px; box-shadow: inset 0 1px 0 var(--atlas-line); }
+.rentree { margin: 10px 0 0; padding: 12px 14px; border-radius: var(--r-plage); font-size: 15px;
+           background: var(--atlas-carteVertFond); color: var(--atlas-carteVertTexte); font-weight: 600; }
+
+.preuve { padding: 14px 0; }
+.preuve + .preuve { box-shadow: inset 0 1px 0 var(--atlas-line); }
+.preuve-nom { font: 400 18px/1.25 var(--serif); }
+.preuve-detail { margin-top: 3px; font-size: 14px; color: var(--atlas-inkSoft); }
+.paire { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-top: 8px; font-size: 15px; color: var(--atlas-inkSoft); }
+.paire b { font: 400 17px/1.2 var(--serif); color: var(--atlas-ink); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.paire.or, .paire.or b { color: var(--atlas-orTexte); }
+.paire.or b { font-weight: 700; }
+.total-preuve { display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px; padding-top: 12px;
+                box-shadow: inset 0 1.5px 0 var(--atlas-ink); }
+.total-preuve span { font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.total-preuve b { font: 700 21px/1 var(--serif); color: var(--atlas-orTexte); font-variant-numeric: tabular-nums lining-nums; }
+.pas-encore { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
+.mention { margin: 36px 4px 8px; text-align: center; font-size: 14px; line-height: 1.5; color: var(--atlas-inkSoft); }
+
+.puces { display: flex; flex-wrap: wrap; gap: 8px; }
+.puces button { min-height: 44px; padding: 0 14px; border-radius: 22px; font-size: 15px; font-weight: 600; color: var(--atlas-inkSoft);
+                box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.puces button[aria-pressed="true"] { background: var(--atlas-plein); color: var(--sur-plein); box-shadow: none; }
+.encadre-or { margin-top: 14px; padding: 12px 14px; border-radius: var(--r-plage); font-size: 14.5px; line-height: 1.45;
+              background: color-mix(in srgb, var(--atlas-or) 12%, transparent); color: var(--atlas-ink); }
+.coche { display: flex; gap: 12px; align-items: flex-start; margin-top: 14px; font-size: 15px; line-height: 1.4; }
+.coche input { width: 24px; height: 24px; flex: none; accent-color: var(--atlas-rust); margin: 0; }
+
+.annee-tete { display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; margin-bottom: 14px; }
+.annee-tete strong { text-align: center; font: 400 26px/1 var(--serif); }
+.paves { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pave { position: relative; min-height: 54px; border-radius: 14px; font: 400 16.5px/1 var(--serif); background: var(--atlas-card);
+        box-shadow: inset 0 0 0 1px var(--atlas-line); }
+.pave[aria-current="true"] { background: var(--atlas-plein); color: var(--sur-plein); box-shadow: none; }
+.pave .pastille-rouge { position: absolute; top: -6px; right: -4px; }
+.pave-point::after { content: ""; position: absolute; left: 50%; bottom: 8px; width: 5px; height: 5px; margin-left: -2.5px;
+                     border-radius: 50%; background: var(--atlas-or); }
+.pave[aria-current="true"].pave-point::after { background: var(--sur-plein); }
+</style>
+</head>
+<body class="pl">
+
+<header class="pl-tete">
+  <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
+  <h1 class="pl-titre">Ma TVA</h1>
+  <p class="pl-verdict">L'écran qui s'ouvre quand on touche Ma TVA, dans Terminés. <b>Même dessin, des mots qui se lisent</b>, et les trois boutons verts à la suite deviennent plus calmes.</p>
+</header>
+
+<main class="pl-scene">
+  <div class="pl-ecrans">
+
+    <div data-vue-panneau="propose">
+      <p class="pl-legende">Proposé</p>
+      <div class="cadre">
+        <div class="ecran avec-barre">
+          <div class="defile">
+            <div class="rang-espace" style="margin-top:4px">
+              <a class="rond-creux" href="termines.html" aria-label="Retour aux chantiers terminés"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></a>
+              <button class="rond" type="button" aria-label="Ouvrir l'assistant"><svg class="ico" aria-hidden="true"><use href="#i-assistant"/></svg></button>
+            </div>
+            <header class="tete" style="margin-bottom:14px">
+              <h1 class="tete-titre">Octobre 2026</h1>
+            </header>
+            <p class="ligne-ma-tva">Ma TVA</p>
+
+            <div class="frise">
+              <button class="frise-annee" type="button" data-ouvre="feuille-annee"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>2026<span class="pastille-rouge" aria-label="1 facture oubliée">1</span></button>
+              <div class="frise-mois" id="frise-mois">
+                <button type="button" data-autre-mois>Juillet</button>
+                <button type="button" data-autre-mois>Août</button>
+                <button type="button" data-autre-mois>Septembre</button>
+                <button type="button" aria-current="true">Octobre</button>
+                <button type="button" data-autre-mois>Novembre</button>
+                <button type="button" data-autre-mois>Décembre</button>
+              </div>
+            </div>
+
+            <div class="rythme">
+              Déclaration <button class="mot-souligne" type="button" id="rythme-mot" aria-expanded="false">mensuelle</button>
+              <button class="mot-souligne rythme-autre" type="button" id="rythme-autre" hidden>trimestrielle</button>
+            </div>
+
+            <div class="addition">
+              <div class="add-ligne">
+                <a class="add-mot" href="termines-tva-collectee.html">TVA collectée</a>
+                <button class="add-montant" type="button" data-copie="collectee"><span id="m-collectee">1 392,00 €</span></button>
+                <button class="copier" type="button" data-copie="collectee" aria-label="Copier la TVA collectée"><svg class="ico ico-p" aria-hidden="true"><use href="#i-copier"/></svg><span class="copie-mot">Copié</span></button>
+              </div>
+              <div class="add-ligne">
+                <a class="add-mot" href="termines-tva-deductible.html">TVA déductible</a>
+                <button class="add-montant" type="button" data-copie="deductible"><span class="add-moins">−</span>50,00 €</button>
+                <button class="copier" type="button" data-copie="deductible" aria-label="Copier la TVA déductible"><svg class="ico ico-p" aria-hidden="true"><use href="#i-copier"/></svg><span class="copie-mot">Copié</span></button>
+              </div>
+              <div class="add-trait"></div>
+              <div class="add-ligne add-total">
+                <span class="add-mot">TVA à payer</span>
+                <button class="add-montant" type="button" data-copie="payer"><span id="m-payer">1 342,00 €</span></button>
+                <button class="copier" type="button" data-copie="payer" aria-label="Copier la TVA à payer"><svg class="ico ico-p" aria-hidden="true"><use href="#i-copier"/></svg><span class="copie-mot">Copié</span></button>
+              </div>
+            </div>
+
+            <div class="gestes-achat">
+              <button class="bouton bouton-creux" type="button" data-ouvre="feuille-achat" data-achat="scan"><svg class="ico" aria-hidden="true"><use href="#i-scanner"/></svg>Scanner un ticket</button>
+              <button class="bouton bouton-creux" type="button" data-ouvre="feuille-achat" data-achat="main"><svg class="ico" aria-hidden="true"><use href="#i-crayon"/></svg>Écrire à la main</button>
+            </div>
+
+            <div class="section-titre"><h2>Factures en attente</h2><span id="compte-attente">3 factures</span></div>
+
+            <div class="plage facture-attente" data-tva="52.00" data-qui="M. Bernard, 312,00 €">
+              <div class="fa-tete">
+                <div><div class="ligne-nom">M. Bernard</div><div class="second">F2026-000013, émise le 17/10</div><div class="second fa-trace">Ouverte le <b>18/10</b></div></div>
+                <div class="fa-droite"><span class="fa-montant">312,00 €</span></div>
+              </div>
+              <label class="fa-paye"><span>Payé par</span><select class="champ-saisie"><option>Virement</option><option>Chèque</option><option>Espèces</option><option>Carte</option></select></label>
+              <button class="bouton bouton-creux bouton-recu" type="button" data-recu><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>J'ai reçu le paiement</button>
+              <button class="bouton-texte fa-partie" type="button" data-partie>J'ai reçu une partie</button>
+              <div class="saisie-partie" hidden>
+                <div class="deux-colonnes">
+                  <label class="champ" style="margin:0"><span class="champ-libelle">Payé le</span><input class="champ-saisie" value="25/10/2026" inputmode="numeric"></label>
+                  <label class="champ" style="margin:0"><span class="champ-libelle">Montant reçu</span><input class="champ-saisie" placeholder="0,00 €" inputmode="decimal"></label>
+                </div>
+                <button class="bouton bouton-creux mt-16" type="button" data-partie-ok>Enregistrer ce règlement</button>
+                <p class="discret centre" style="margin:8px 0 0">Seule la part reçue entre au relevé.</p>
+              </div>
+            </div>
+
+            <div class="plage facture-attente" data-tva="246.00" data-qui="Mme Garnier, 1 476,00 €">
+              <div class="fa-tete">
+                <div><div class="ligne-nom">Mme Garnier</div><div class="second">F2026-000012, émise le 14/10</div><div class="second fa-trace">Ouverte le <b>15/10</b></div></div>
+                <div class="fa-droite"><span class="fa-petit">Reste à payer</span><span class="fa-montant">1 476,00 €</span><span class="fa-sur">Sur les 1 776,00 €</span></div>
+              </div>
+              <div class="acompte"><span>Acompte payé le 09/10/2026 par virement</span><b>300,00 €</b><button class="retirer-acompte" type="button" aria-label="Retirer cet acompte"><svg class="ico ico-p" aria-hidden="true"><use href="#i-croix"/></svg></button></div>
+              <label class="fa-paye"><span>Payé par</span><select class="champ-saisie"><option>Virement</option><option>Chèque</option><option>Espèces</option><option>Carte</option></select></label>
+              <button class="bouton bouton-creux bouton-recu" type="button" data-recu><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>J'ai reçu le paiement</button>
+              <button class="bouton-texte fa-partie" type="button" data-partie>J'ai reçu une partie</button>
+              <div class="saisie-partie" hidden>
+                <div class="deux-colonnes">
+                  <label class="champ" style="margin:0"><span class="champ-libelle">Payé le</span><input class="champ-saisie" value="25/10/2026" inputmode="numeric"></label>
+                  <label class="champ" style="margin:0"><span class="champ-libelle">Montant reçu</span><input class="champ-saisie" placeholder="0,00 €" inputmode="decimal"></label>
+                </div>
+                <button class="bouton bouton-creux mt-16" type="button" data-partie-ok>Enregistrer ce règlement</button>
+                <p class="discret centre" style="margin:8px 0 0">Seule la part reçue entre au relevé.</p>
+              </div>
+            </div>
+
+            <div class="plage facture-attente" data-tva="90.00" data-qui="Mme Garnier, 540,00 €">
+              <div class="fa-tete">
+                <div><div class="ligne-nom">Mme Garnier</div><div class="second">F2026-000007, émise le 28/08</div><div class="second">Pas encore ouverte.</div></div>
+                <div class="fa-droite"><span class="fa-montant">540,00 €</span></div>
+              </div>
+              <label class="fa-paye"><span>Payé par</span><select class="champ-saisie"><option>Virement</option><option>Chèque</option><option>Espèces</option><option>Carte</option></select></label>
+              <button class="bouton bouton-creux bouton-recu" type="button" data-recu><svg class="ico" aria-hidden="true"><use href="#i-coche"/></svg>J'ai reçu le paiement</button>
+              <button class="bouton-texte fa-partie" type="button" data-partie>J'ai reçu une partie</button>
+              <div class="saisie-partie" hidden>
+                <div class="deux-colonnes">
+                  <label class="champ" style="margin:0"><span class="champ-libelle">Payé le</span><input class="champ-saisie" value="25/10/2026" inputmode="numeric"></label>
+                  <label class="champ" style="margin:0"><span class="champ-libelle">Montant reçu</span><input class="champ-saisie" placeholder="0,00 €" inputmode="decimal"></label>
+                </div>
+                <button class="bouton bouton-creux mt-16" type="button" data-partie-ok>Enregistrer ce règlement</button>
+                <p class="discret centre" style="margin:8px 0 0">Seule la part reçue entre au relevé.</p>
+              </div>
+            </div>
+            <div id="rentrees"></div>
+            <p class="second" id="tout-regle" hidden>Tout est réglé. Rien n'attend son paiement.</p>
+
+            <div class="section-titre"><h2>TVA collectée</h2><span>5 règlements</span></div>
+            <p class="rubrique" style="margin-top:0">Vos factures</p>
+            <div>
+              <a class="preuve touche" href="client-recoit-facture.html" style="display:block;text-decoration:none;color:inherit">
+                <div class="preuve-nom">Mme Costa</div><div class="preuve-detail">Facture n° F2026-000014, règlement du vendredi 23 octobre</div>
+                <div class="paire"><span>Règlement encaissé</span><b>864,00 € TTC</b></div><div class="paire or"><span>TVA collectée</span><b>144,00 €</b></div>
+              </a>
+              <a class="preuve touche" href="client-recoit-facture.html" style="display:block;text-decoration:none;color:inherit">
+                <div class="preuve-nom">M. Faucher</div><div class="preuve-detail">Facture n° F2026-000011, règlement du jeudi 15 octobre</div>
+                <div class="paire"><span>Règlement encaissé</span><b>2 940,00 € TTC</b></div><div class="paire or"><span>TVA collectée</span><b>490,00 €</b></div>
+              </a>
+              <a class="preuve touche" href="client-recoit-facture.html" style="display:block;text-decoration:none;color:inherit">
+                <div class="preuve-nom">Mme Garnier</div><div class="preuve-detail">Facture n° F2026-000012, règlement du vendredi 9 octobre</div>
+                <div class="paire"><span>Règlement encaissé</span><b>300,00 € TTC</b></div><div class="paire or"><span>TVA collectée</span><b>50,00 €</b></div>
+              </a>
+              <a class="preuve touche" href="client-recoit-facture.html" style="display:block;text-decoration:none;color:inherit">
+                <div class="preuve-nom">M. et Mme Roux</div><div class="preuve-detail">Facture n° F2026-000010, règlement du jeudi 8 octobre</div>
+                <div class="paire"><span>Règlement encaissé</span><b>420,00 € TTC</b></div><div class="paire or"><span>TVA collectée</span><b>70,00 €</b></div>
+              </a>
+              <a class="preuve touche" href="client-recoit-facture.html" style="display:block;text-decoration:none;color:inherit">
+                <div class="preuve-nom">Mairie de Saint-Sylvain</div><div class="preuve-detail">Facture n° F2026-000009, règlement du vendredi 2 octobre</div>
+                <div class="paire"><span>Règlement encaissé</span><b>3 828,00 € TTC</b></div><div class="paire or"><span>TVA collectée</span><b>638,00 €</b></div>
+              </a>
+            </div>
+            <div class="total-preuve"><span>Total collectée</span><b>1 392,00 €</b></div>
+
+            <div class="section-titre"><h2>TVA déductible</h2><span>3 achats</span></div>
+            <p class="rubrique" style="margin-top:0">Vos achats</p>
+            <div>
+              <div class="preuve">
+                <div class="preuve-nom">Le Relais du Lac</div><div class="preuve-detail">22 octobre. Repas d'affaires.</div>
+                <div class="paire"><span>Montant</span><b>72,00 € TTC</b></div>
+                <div class="pas-encore"><span class="second">TVA 12,00 €, pas encore comptée</span><button class="bouton bouton-creux bouton-petit or" type="button" data-ouvre="feuille-repas">Compléter</button></div>
+              </div>
+              <div class="preuve">
+                <div class="preuve-nom">Jardinerie du Centre</div><div class="preuve-detail">19 octobre. Matériel.</div>
+                <div class="paire"><span>Montant</span><b>240,00 € TTC</b></div><div class="paire or"><span>TVA récupérée</span><b>40,00 €</b></div>
+              </div>
+              <div class="preuve">
+                <div class="preuve-nom">Station Total, Angers</div><div class="preuve-detail">12 octobre. Carburant d'un utilitaire.</div>
+                <div class="paire"><span>Montant</span><b>60,00 € TTC</b></div><div class="paire or"><span>TVA récupérée</span><b>10,00 €</b></div>
+              </div>
+            </div>
+            <div class="total-preuve"><span>Total déductible</span><b>50,00 €</b></div>
+
+            <p class="mention">Ce relevé est préparé par Atlas à partir de vos règlements. Il ne vaut pas déclaration : celle-ci reste à faire par votre outil comptable.</p>
+          </div>
+
+          <nav class="barre" aria-label="Navigation principale">
+            <div class="barre-onglets">
+              <a class="barre-onglet" href="accueil.html">Chantiers</a>
+              <a class="barre-onglet" href="planning.html">Planning</a>
+              <a class="barre-onglet" href="termines.html" aria-current="page">Terminés</a>
+              <a class="barre-onglet" href="paysage.html">Paysage</a>
+              <a class="barre-onglet" href="reglages.html">Réglages</a>
+              <span class="barre-trait" aria-hidden="true"><span></span></span>
+            </div>
+          </nav>
+
+          <section class="feuille" id="feuille-annee" aria-hidden="true" aria-label="Choisir le mois">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <div class="annee-tete">
+                <button class="mois-fleche rond-creux" type="button" aria-label="Année précédente"><svg class="ico" aria-hidden="true"><use href="#i-retour"/></svg></button>
+                <strong>2026</strong>
+                <button class="rond-creux" type="button" aria-label="Année suivante" disabled style="opacity:.35"><svg class="ico" aria-hidden="true"><use href="#i-suivant"/></svg></button>
+              </div>
+              <div class="paves">
+                <button class="pave" type="button" data-ferme>Janvier</button><button class="pave" type="button" data-ferme>Février</button><button class="pave" type="button" data-ferme>Mars</button>
+                <button class="pave" type="button" data-ferme>Avril</button><button class="pave" type="button" data-ferme>Mai</button><button class="pave" type="button" data-ferme>Juin</button>
+                <button class="pave" type="button" data-ferme>Juillet</button><button class="pave" type="button" data-ferme>Août<span class="pastille-rouge" aria-label="1 facture en attente">1</span></button><button class="pave" type="button" data-ferme>Septembre</button>
+                <button class="pave pave-point" type="button" aria-current="true" data-ferme>Octobre</button><button class="pave" type="button" data-ferme>Novembre</button><button class="pave" type="button" data-ferme>Décembre</button>
+              </div>
+              <button class="bouton bouton-texte mt-16" type="button" data-ferme style="width:100%;justify-content:center">Revenir à la période en cours</button>
+              <button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+            </div>
+          </section>
+
+          <section class="feuille" id="feuille-achat" aria-hidden="true" aria-label="Un achat">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre" id="achat-titre">Écrire un achat</h2>
+              <label class="champ"><span class="champ-libelle">Où</span><input class="champ-saisie" id="achat-ou" placeholder="Station, magasin…"></label>
+              <label class="champ"><span class="champ-libelle">Date</span><input class="champ-saisie" id="achat-date" value="25/10/2026" inputmode="numeric"></label>
+              <div class="champ"><span class="champ-libelle">Quoi</span>
+                <div class="puces" id="achat-quoi"><button type="button" aria-pressed="false">Carburant</button><button type="button" aria-pressed="false">Matériel</button><button type="button" aria-pressed="false">Repas</button><button type="button" aria-pressed="false">Hôtel</button><button type="button" aria-pressed="false">Train, taxi</button><button type="button" aria-pressed="false">Autre</button></div>
+              </div>
+              <div class="deux-colonnes">
+                <label class="champ"><span class="champ-libelle">Total payé</span><input class="champ-saisie" id="achat-total" placeholder="0,00 €" inputmode="decimal"></label>
+                <label class="champ"><span class="champ-libelle">Taux</span><input class="champ-saisie" id="achat-taux" value="20 %" inputmode="decimal"></label>
+              </div>
+              <label class="champ"><span class="champ-libelle">TVA du ticket</span><input class="champ-saisie" id="achat-tva" placeholder="calculée"></label>
+              <p class="encadre-or" id="achat-lu" hidden>Ticket lu. Vérifiez les montants avant d'ajouter. Gardez le papier, la photo ne le remplace pas.</p>
+              <div class="pile mt-24">
+                <button class="bouton bouton-plein" type="button" data-ferme>Ajouter aux achats</button>
+                <button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="feuille" id="feuille-repas" aria-hidden="true" aria-label="Repas d'affaires">
+            <div class="feuille-poignee"></div>
+            <div class="feuille-dedans">
+              <h2 class="feuille-titre">Repas d'affaires</h2>
+              <label class="champ"><span class="champ-libelle">Avec qui</span><input class="champ-saisie" placeholder="M. Durand, Durand Immobilier"></label>
+              <label class="champ"><span class="champ-libelle">Pourquoi</span><input class="champ-saisie" placeholder="Devis du jardin"></label>
+              <label class="coche"><input type="checkbox">Le nom et l'adresse de mon entreprise sont écrits sur la note.</label>
+              <p class="second mt-16">Tant qu'il manque une preuve, sa TVA ne compte pas.</p>
+              <div class="pile mt-16">
+                <button class="bouton bouton-plein" type="button" data-ferme>Enregistrer</button>
+                <button class="bouton bouton-texte" type="button" data-ferme style="width:100%;justify-content:center;color:var(--atlas-inkSoft)">Annuler</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div data-vue-panneau="aujourdhui">
+      <p class="pl-legende">Aujourd'hui</p>
+      <div class="cadre">
+        <div class="cadre-capture"><img src="aujourdhui/termines-tva.jpg" alt="L'écran Ma TVA tel qu'il est aujourd'hui"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="pl-notes">
+    <h2>Ce qui change</h2>
+    <ul>
+      <li>« Ma TVA » s'écrit en clair sous le mois, et les mois de la frise se lisent en entier.</li>
+      <li>TVA collectée et TVA déductible sont soulignés d'or : on voit qu'ils s'ouvrent. Toucher un chiffre le copie, et l'écran dit « Copié ».</li>
+      <li>Les trois boutons verts pleins à la suite deviennent des boutons cernés de vert. Les mots restent : J'ai reçu le paiement.</li>
+      <li>La TVA de chaque pièce passe à l'or foncé, lisible au soleil.</li>
+      <li>Après un paiement, « M. Bernard, 312,00 € est rentrée au relevé. » : une virgule à la place du point.</li>
+    </ul>
+    <h2>Ce qui ne bouge pas</h2>
+    <ul class="garde">
+      <li>Le mois en titre, la frise, l'addition alignée à droite et le total le plus grand.</li>
+      <li>Scanner un ticket et Écrire à la main sous le total, les factures en attente avant les preuves.</li>
+      <li>Payé par, J'ai reçu une partie, l'acompte et sa croix, et la phrase du bas.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="pl-pied">
+  <a href="termines.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Terminés</a>
+  <a href="reglages.html">Réglages<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
+</footer>
+
+<script src="kit.js"></script>
+<script>
+  (function () {
+    var ecran = document.querySelector("[data-vue-panneau='propose'] .ecran");
+    var euros = function (n) { return n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/ /g, " ") + " €"; };
+    var collectee = 1392, deductible = 50;
+
+    /* La frise se pose sur le mois regardé, comme dans l'appli. */
+    var frise = document.getElementById("frise-mois");
+    var courant = frise.querySelector("[aria-current='true']");
+    var a = frise.getBoundingClientRect(), b = courant.getBoundingClientRect();
+    frise.scrollLeft += (b.left + b.width / 2) - (a.left + a.width / 2);
+    frise.querySelectorAll("[data-autre-mois]").forEach(function (b) {
+      b.addEventListener("click", function () { Kit.note(ecran, "Sur la planche, seul octobre est rempli."); });
+    });
+
+    /* Le rythme : l'autre mot flotte dessous. */
+    var mot = document.getElementById("rythme-mot"), autre = document.getElementById("rythme-autre");
+    mot.addEventListener("click", function () { autre.hidden = !autre.hidden; mot.setAttribute("aria-expanded", String(!autre.hidden)); });
+    autre.addEventListener("click", function () {
+      var a = mot.textContent; mot.textContent = autre.textContent; autre.textContent = a; autre.hidden = true;
+    });
+
+    /* Le chiffre se copie, et le dit. */
+    document.querySelectorAll("[data-copie]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var rond = b.closest(".add-ligne").querySelector(".copier");
+        /* La planche n'a pas toujours le droit de copier : le refus ne doit rien casser. */
+        var texte = b.closest(".add-ligne").querySelector(".add-montant").textContent.replace("−", "").trim();
+        if (navigator.clipboard) navigator.clipboard.writeText(texte).catch(function () { return null; });
+        rond.classList.add("copie");
+        setTimeout(function () { rond.classList.remove("copie"); }, 1600);
+      });
+    });
+
+    /* J'ai reçu le paiement : la facture quitte la liste, sa TVA entre au relevé. */
+    document.querySelectorAll("[data-recu]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var f = b.closest(".facture-attente");
+        collectee += parseFloat(f.getAttribute("data-tva"));
+        document.getElementById("m-collectee").textContent = euros(collectee);
+        document.getElementById("m-payer").textContent = euros(collectee - deductible);
+        var p = document.createElement("p");
+        p.className = "rentree";
+        p.textContent = f.getAttribute("data-qui") + " est rentrée au relevé.";
+        document.getElementById("rentrees").appendChild(p);
+        f.remove();
+        var reste = document.querySelectorAll(".facture-attente").length;
+        document.getElementById("compte-attente").textContent = reste ? reste + (reste > 1 ? " factures" : " facture") : "rien";
+        document.getElementById("tout-regle").hidden = reste > 0;
+      });
+    });
+    document.querySelectorAll("[data-partie]").forEach(function (b) {
+      b.addEventListener("click", function () { var s = b.parentNode.querySelector(".saisie-partie"); s.hidden = !s.hidden; });
+    });
+    document.querySelectorAll("[data-partie-ok]").forEach(function (b) {
+      b.addEventListener("click", function () { b.closest(".saisie-partie").hidden = true; Kit.note(ecran, "Règlement noté."); });
+    });
+    document.querySelectorAll(".retirer-acompte").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var ligne = b.closest(".acompte");
+        ligne.style.textDecoration = "line-through";
+        b.outerHTML = '<button class="bouton-texte or" type="button">Remettre</button>';
+        ligne.querySelector(".bouton-texte").addEventListener("click", function () { location.reload(); });
+      });
+    });
+
+    /* Scanner pré-remplit la feuille ; à la main, elle s'ouvre vide. */
+    document.querySelectorAll("[data-achat]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var scan = b.getAttribute("data-achat") === "scan";
+        document.getElementById("achat-titre").textContent = scan ? "Ticket photographié" : "Écrire un achat";
+        document.getElementById("achat-ou").value = scan ? "Station Total, Angers" : "";
+        document.getElementById("achat-total").value = scan ? "48,00 €" : "";
+        document.getElementById("achat-tva").value = scan ? "8,00 €" : "";
+        document.getElementById("achat-lu").hidden = !scan;
+        document.querySelectorAll("#achat-quoi button").forEach(function (x, i) { x.setAttribute("aria-pressed", scan && i === 0 ? "true" : "false"); });
+      });
+    });
+    document.querySelectorAll("#achat-quoi button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        document.querySelectorAll("#achat-quoi button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      });
+    });
+  })();
+</script>
+</body>
+</html>

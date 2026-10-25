@@ -92,6 +92,8 @@
     "lune": '<path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/>',
     "horloge-sable": '<path d="M7 3.5h10M7 20.5h10M8 3.5c0 5 8 5 8 8.5s-8 3.5-8 8.5M16 3.5c0 5-8 5-8 8.5"/>',
     "carton": '<path d="M12 3.5l8 4.2v8.6l-8 4.2-8-4.2V7.7z"/><path d="M4 7.7l8 4.3 8-4.3M12 12v8.5"/>',
+    "oeil-barre": '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/><path d="M4.5 19.5l15-15"/>',
+    "scanner": '<path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16M7 12h10"/>',
     "points": '<circle cx="6" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18" cy="12" r="1.3"/>'
   };
 
@@ -284,7 +286,7 @@
   /* ─── Les planches pas encore dessinées ─────────────────────────────────
      Elles arrivent une par une : un lien vers l'une d'elles ne mène pas à une
      page d'erreur, il le dit. La liste grandit à chaque planche publiée. */
-  var PRETES = ["index", "fondations", "reglages"];
+  var PRETES = ["index", "fondations", "reglages", "termines", "termines-tva"];
 
   function planchePrete(href) {
     if (!href || /^(https?:|#|mailto:|tel:|\.\.\/)/.test(href)) return true;
@@ -292,12 +294,12 @@
     return !m || PRETES.indexOf(m[1]) >= 0;
   }
 
-  function pasEncore(depuis) {
+  function pasEncore(depuis, texte) {
     var ecran = depuis.closest(".ecran");
     var t = document.createElement("div");
     t.className = "tiroir tiroir-flottant";
     t.setAttribute("role", "status");
-    t.textContent = "Cette planche arrive bientôt.";
+    t.textContent = texte || "Cette planche arrive bientôt.";
     if (ecran) {
       var ancien = ecran.querySelector(".tiroir-flottant");
       if (ancien) ancien.remove();
@@ -467,6 +469,7 @@
     ouvrirFeuille: ouvrirFeuille,
     fermerFeuilles: fermerFeuilles,
     tiroir: tiroir,
+    note: function (ecran, texte) { pasEncore(ecran, texte); },
     appliquerEtat: appliquerEtat,
     brancher: function (racine) { brancherRetraits(racine || document); brancherBarres(racine || document); }
   };
