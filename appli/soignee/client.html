@@ -44,13 +44,9 @@ a.coordonnee { text-decoration: none; }
 .ecran[data-etat="neuf"] .carte-gestes { grid-template-columns: 1fr; }
 
 .repartir { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
-.tuile-geste { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 0; min-height: 76px; padding: 8px 6px;
+.tuile-geste { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-height: 76px; padding: 8px 6px;
                border-radius: 14px; text-align: center; text-decoration: none; font-size: 14.5px; font-weight: 700; line-height: 1.2; }
-.tuile-geste .ico { width: 26px; height: 26px; flex: none; margin-bottom: 6px; }
-/* Les trois mots sur deux lignes, toujours : selon la largeur du téléphone,
-   « Contrat d'entretien » passait seul à la ligne et les trois ne
-   s'alignaient plus (sa remarque du 25 octobre). */
-.tuile-geste span { display: block; white-space: nowrap; }
+.tuile-geste .ico { width: 26px; height: 26px; }
 .tuile-pleine { color: var(--atlas-plein); }
 .tuile-or { color: var(--atlas-or); }
 .repartir.deux { grid-template-columns: 1fr 1fr; }
@@ -141,13 +137,13 @@ a.coordonnee { text-decoration: none; }
             </div>
 
             <div class="repartir" data-si-etat="complet">
-              <a class="tuile-geste tuile-pleine touche" href="chantier-devis-complet.html"><svg class="ico" aria-hidden="true"><use href="#i-annuler"/></svg><span>Dernier</span><span>devis</span></a>
-              <a class="tuile-geste tuile-or touche" href="chantier-nouveau.html"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg><span>Nouveau</span><span>devis</span></a>
-              <a class="tuile-geste tuile-or touche" href="client-contrat.html"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg><span>Contrat</span><span>d'entretien</span></a>
+              <a class="tuile-geste tuile-pleine touche" href="chantier-devis-complet.html"><svg class="ico" aria-hidden="true"><use href="#i-annuler"/></svg>Dernier devis</a>
+              <a class="tuile-geste tuile-or touche" href="chantier-nouveau.html"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Nouveau devis</a>
+              <a class="tuile-geste tuile-or touche" href="client-contrat.html"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>Contrat d'entretien</a>
             </div>
             <div class="repartir deux" data-si-etat="neuf">
-              <a class="tuile-geste tuile-or touche" href="chantier-nouveau.html"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg><span>Nouveau</span><span>devis</span></a>
-              <a class="tuile-geste tuile-or touche" href="client-contrat.html"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg><span>Contrat</span><span>d'entretien</span></a>
+              <a class="tuile-geste tuile-or touche" href="chantier-nouveau.html"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Nouveau devis</a>
+              <a class="tuile-geste tuile-or touche" href="client-contrat.html"><svg class="ico" aria-hidden="true"><use href="#i-calendrier"/></svg>Contrat d'entretien</a>
             </div>
 
             <div class="plage prestation" data-si-etat="complet">
