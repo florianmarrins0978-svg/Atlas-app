@@ -47,6 +47,14 @@ Le seed refuse lui-même `atlas_dev` qui porte du travail (`ARCHITECTURE.md` §4
 
 **Proposé sur la planche `appli/soignee/termines-comptable.html`, à trancher par lui avant d'y toucher :** la carte du virement reçu se règle sur place, comme une sortie : choisir la facture qui attend (même en partie), joindre une facture faite hors d'Atlas, ou dire ce que c'est (un remboursement, mon argent perso, un prêt, une aide ou une subvention, entre mes comptes). Une fois choisi, le correctif se code avec son test rouge d'abord (`.claude/rules/testing.md`) : une entrée sans facture correspondante doit pouvoir être justifiée, et le dossier rangé.
 
+## ⏳ UNE FACTURE OU UN TICKET D'UN AUTRE MONTANT SE JOINT SANS RIEN DIRE (25 octobre 2026)
+
+**Son signalement :** *« je pouvais valider une facture qui n'était pas du montant de la facture quand je joignais la photo ou le PDF »*.
+
+**Vrai dans l'appli, lu dans le code :** `joindreFactureRecue` et `relierTicket` (`src/server/repositories/pour-mon-comptable.ts`) posent la justification sans comparer le total de la pièce au montant de la ligne ; la liste « Joindre la facture » montre toutes les factures libres, quel que soit leur montant ; un ticket photographié depuis la carte rejoint sa ligne quel que soit le total lu (`rangerTicketAction`, `mouvementId`).
+
+**Proposé sur la planche `appli/soignee/termines-comptable.html`, à trancher par lui :** chaque pièce montre son montant, vert s'il tombe juste ; une pièce qui ne tombe pas juste montre l'écart avant d'être jointe (« Pas le même montant », les deux montants, ce qui manque) ; la joindre quand même reste possible (un acompte, deux factures pour un virement) et l'écart reste écrit sur le relevé et chez le comptable. Sa seconde adresse, `termines-comptable.html?forme=arrondi`, est la même planche avec chaque bouton en pilule, comme l'appli d'aujourd'hui : il choisit entre les deux.
+
 ## POUR MON COMPTABLE : SES CHOIX SONT DONNÉS, À CODER (23 octobre 2026)
 
 **Sa demande :** préparer la visite annuelle au comptable. Chaque sortie de la

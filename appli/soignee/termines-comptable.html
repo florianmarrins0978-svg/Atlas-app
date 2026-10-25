@@ -95,6 +95,16 @@
 .piece-nom { display: block; font-size: 16px; font-weight: 500; }
 .piece-sous { display: block; margin-top: 2px; font-size: 14px; color: var(--atlas-inkSoft); }
 .piece-montant { flex: none; font: 400 17px/1 var(--serif); font-variant-numeric: tabular-nums lining-nums; }
+.piece-montant.juste { color: var(--atlas-carteVertTexte); font-weight: 400; }
+.piece-montant.pas-juste { color: var(--atlas-alerte); }
+.ecart { margin-top: 12px; padding: 14px 16px; border-radius: var(--r-plage); background: var(--atlas-carteAmbreFond); }
+.ecart-titre { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 15px; font-weight: 700; color: var(--atlas-carteAmbreTexte); }
+.ecart-titre .ico { width: 19px; height: 19px; stroke-width: 2; }
+.ecart-chiffres { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; margin-top: 10px; font-size: 15px; color: var(--atlas-ink); }
+.ecart-chiffres b { font: 400 18px/1.2 var(--serif); font-variant-numeric: tabular-nums lining-nums; text-align: right; }
+.ecart-phrase { margin: 10px 0 0; font-size: 15px; line-height: 1.45; color: var(--atlas-ink); }
+.lecture { display: flex; align-items: center; gap: 8px; }
+.lecture .ico { width: 20px; height: 20px; color: var(--atlas-or); }
 .motifs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
 .motifs button { min-height: 50px; padding: 0 10px; border-radius: 12px; font-size: 15px; font-weight: 500;
                  box-shadow: inset 0 0 0 1.5px var(--atlas-line); }
@@ -154,6 +164,7 @@
 .rel-preuve[data-genre="ticket"] { color: var(--atlas-rust); font-weight: 600; }
 .rel-preuve[data-genre="perdu"] { font-style: italic; }
 .rel-preuve[data-genre="manque"] { color: var(--atlas-alerte); font-weight: 600; }
+.rel-preuve[data-genre="ecart"] { color: var(--atlas-carteAmbreTexte); font-weight: 600; }
 .rel-montant { flex: none; font: 400 17px/1.3 var(--serif); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
 .rien { margin: 24px 0 0; font-size: 15.5px; color: var(--atlas-inkSoft); }
 
@@ -211,6 +222,15 @@
          animation: passe-entre 260ms var(--courbe); }
 @keyframes passe-entre { from { opacity: 0; transform: translateY(8px); } }
 
+/* ─── La seconde adresse, ?forme=arrondi : sa demande du 25 octobre, « tous les boutons arrondis, comme ceux
+   qu'on a déjà dans l'application » (rounded-full partout dans DossierEnCours.tsx). Seule la forme change. ── */
+body.forme-arrondie .ecran .bouton,
+body.forme-arrondie .ecran .motifs button,
+body.forme-arrondie .ecran .dossier-gestes button,
+body.forme-arrondie .ecran .choix,
+body.forme-arrondie .ecran .choix button { border-radius: 999px; }
+.autre-forme { margin-top: 6px; }
+
 /* ─── La vraie page, à côté ──────────────────────────────────────────────── */
 .etats-communs { grid-column: 1 / -1; margin-bottom: 0; }
 .capture-quoi { margin: 0 auto 10px; max-width: 390px; text-align: center; font-size: 14px; color: #4a4a44; }
@@ -225,6 +245,7 @@
   <a class="pl-sommaire" href="index.html"><svg class="ico ico-p" aria-hidden="true"><use href="#i-retour"/></svg>Sommaire</a>
   <h1 class="pl-titre">Pour mon comptable</h1>
   <p class="pl-verdict">La page rangée dans l'ordre du geste : <b>ce qui attend, puis les mois, puis le dossier à ranger</b>. Mêmes mots, mêmes couleurs, Check up seul bouton plein. À côté, la vraie page dans le même état.</p>
+  <a class="pl-sommaire autre-forme" id="autre-forme" href="termines-comptable.html?forme=arrondi">Voir la même planche, boutons arrondis<svg class="ico ico-p" aria-hidden="true"><use href="#i-suivant"/></svg></a>
 </header>
 
 <main class="pl-scene">
@@ -290,6 +311,7 @@
       <li>Sous chaque mois, ce qui sort en rouge et ce qui entre en vert. La barre de couleurs est plus épaisse.</li>
       <li>Arrêter mon dossier vient après les mois, et dit d'avance pourquoi il attend.</li>
       <li>Le relevé : les totaux en grand, un point de couleur par ligne, un signe par pièce.</li>
+      <li>Une facture ou un ticket qui ne tombe pas sur le montant de la ligne montre l'écart avant d'être joint. Aujourd'hui, l'appli le joint sans rien dire.</li>
       <li>Mes dossiers : l'année se change avec deux flèches, comme le mois de Terminés, et le bilan du comptable est juste sous le nom du dossier. Trois vrais boutons, et le lien du comptable sans sa longue adresse.</li>
     </ul>
     <h2>Ce qui ne bouge pas</h2>
@@ -300,6 +322,7 @@
     <h2>À trancher</h2>
     <ul class="a-trancher">
       <li>Un virement reçu se règle dans sa carte : choisir la facture (même payée en partie), joindre une facture faite hors d’Atlas, ou dire ce que c’est. Aujourd’hui la carte envoie vers l’accueil, où rien n’apparaît quand aucune facture ne fait le montant : le dossier ne peut plus se ranger.</li>
+      <li>Une pièce qui ne tombe pas juste peut se joindre quand même (un acompte, deux factures pour un virement) : l'écart reste écrit sur le relevé et chez le comptable.</li>
       <li>Les cinq réponses d’un virement reçu : un remboursement, mon argent perso, un prêt, une aide ou une subvention, entre mes comptes.</li>
       <li>Le filtre Sans ticket s'appelle À justifier : il compte aussi le virement reçu et le virement sans facture.</li>
       <li>Sans banque, Check up disparaît (il n'aurait rien à vérifier) et Relier ma banque devient le bouton plein.</li>
@@ -316,6 +339,16 @@
 <script>
 (function () {
   "use strict";
+
+  /* La même planche à deux adresses : la forme des boutons se lit dans l'adresse. */
+  if (/(?:^|[?&])forme=arrondi(?:&|$)/.test(window.location.search)) {
+    document.body.classList.add("forme-arrondie");
+    document.title = "Pour mon comptable, boutons arrondis";
+    document.querySelector(".pl-titre").textContent = "Pour mon comptable, boutons arrondis";
+    var lienForme = document.getElementById("autre-forme");
+    lienForme.setAttribute("href", "termines-comptable.html");
+    lienForme.firstChild.textContent = "Voir la même planche, coins doux";
+  }
 
   /* ═══ Les données : celles du jeu d'essai photographié à côté ══════════ */
   var CAT = {
@@ -344,11 +377,11 @@
   var OCTOBRE_JUSTIFIE = { c: { autre: 18.50, carburant: 140.29, hotel: 89, materiel: 461.20, repas: 56, virement: 4504 }, e: 2940, aj: 0, p: 1 };
 
   var CARTES = [
-    { id: "moto", genre: "virement", cat: "virement", qui: "Motoculture Ouest", jour: "24 octobre", montant: 1450 },
-    { id: "leroy", genre: "carte", cat: "autre", qui: "CB LEROY MERLIN", jour: "23 octobre", montant: 48.90, vers: "materiel",
+    { id: "moto", lib: "VIR SARL MOTOCULTURE OUEST", genre: "virement", cat: "virement", qui: "Motoculture Ouest", jour: "24 octobre", montant: 1450 },
+    { id: "leroy", lib: "CB LEROY MERLIN", genre: "carte", cat: "autre", qui: "CB LEROY MERLIN", jour: "23 octobre", montant: 48.90, vers: "materiel",
       tickets: [{ nom: "Leroy Merlin Angers", jour: "Ticket du 21 octobre" }, { nom: "Leroy Merlin Cholet", jour: "Ticket du 23 octobre" }] },
-    { id: "total", genre: "carte", cat: "autre", qui: "CB TOTAL ENERGIES CHOLET", jour: "22 octobre", montant: 67.89 },
-    { id: "costa", genre: "entree", cat: "recu", qui: "Mme Costa", jour: "24 octobre", montant: 864 }
+    { id: "total", lib: "CB TOTAL ENERGIES CHOLET", genre: "carte", cat: "autre", qui: "CB TOTAL ENERGIES CHOLET", jour: "22 octobre", montant: 67.89 },
+    { id: "costa", lib: "VIR MME COSTA", genre: "entree", cat: "recu", qui: "Mme Costa", jour: "24 octobre", montant: 864 }
   ];
   var FACTURES = [{ societe: "Point P Angers", nom: "Facture bordures", montant: 386.40 }, { societe: "Motoculture Ouest", nom: "Facture débroussailleuse", montant: 1450 }];
   var MOTIFS = ["Un fournisseur", "Un salaire", "Un loyer", "Impôts, cotisations", "Un prêt", "Pour moi"];
@@ -429,7 +462,7 @@
       nom: nom, vue: nom === "releve" ? "releve" : nom === "dossiers" ? "dossiers" : "dossier",
       banque: nom !== "sans-banque",
       cartes: nom === "tout-justifie" || nom === "sans-banque" ? [] : cloner(CARTES),
-      ouvertes: {}, mois: mois, decoupage: "mois", bilanCheckUp: null, arret: false,
+      ouvertes: {}, ecarts: {}, mois: mois, decoupage: "mois", bilanCheckUp: null, arret: false,
       releve: cloner(RELEVE), filtre: "tout",
       dossiers: cloner(DOSSIERS), annee: 2025, vus: {}, lien: {}, ajout: {},
       dossierRange: false
@@ -490,15 +523,45 @@
       '<a class="bouton-texte" href="reglages-banque.html">Ma banque</a></div></div>';
   }
 
+  /* SA REMARQUE DU 25 OCTOBRE : « je pouvais valider une facture qui n'était pas du montant ». Dans l'appli,
+     joindreFactureRecue et relierTicket ne comparent aucun montant. Ici, une pièce qui ne tombe pas juste
+     montre l'écart avant d'être jointe ; la joindre quand même reste possible (un acompte, deux factures pour
+     un virement), et l'écart se voit alors sur le relevé et chez le comptable. */
+  function marqueMontant(montant, attendu) {
+    return Math.abs(montant - attendu) < 0.005 ? '<span class="piece-montant juste">' + eur(montant) + "</span>"
+                                               : '<span class="piece-montant pas-juste">' + eur(montant) + "</span>";
+  }
+  function htmlEcart(c, e) {
+    var diff = Math.abs(e.montant - c.montant);
+    var phrase = c.genre === "entree"
+      ? (e.montant > c.montant ? (e.source === "recu" ? "Elle attend " : "Elle fait ") + eur(e.montant) + " : ce virement en paie une partie, il restera " + eur(diff) + "."
+                               : "Le virement dépasse ce qu’elle attend de " + eur(diff) + ".")
+      : e.montant < c.montant ? "Il manque une pièce de " + eur(diff) + "." : "La pièce dépasse la ligne de " + eur(diff) + ".";
+    var oui = e.source === "recu" && e.montant > c.montant ? "Oui, une partie" : e.source === "hors-atlas" ? "Elle paie une partie" : null;
+    return '<div class="ecart"><p class="ecart-titre">' + ico("alerte") + "Pas le même montant</p>" +
+      '<div class="ecart-chiffres"><span>La ligne de banque</span><b>' + eur(c.montant) + "</b><span>" + e.piece + "</span><b>" + eur(e.montant) + "</b></div>" +
+      '<p class="ecart-phrase">' + phrase + "</p></div>" +
+      '<div class="carte-gestes">' +
+      (oui ? '<button class="bouton bouton-creux" type="button" data-geste="ecart-oui" data-c="' + c.id + '">' + ico("coche") + oui + "</button>"
+           : '<button class="bouton bouton-creux" type="button" data-geste="ecart-autre" data-c="' + c.id + '">' + ico("facture") + (e.source === "hors-atlas" ? "Reprendre la photo" : "Choisir une autre pièce") + "</button>") +
+      (oui ? '<button class="bouton-texte" type="button" data-geste="ecart-autre" data-c="' + c.id + '">' + (e.source === "hors-atlas" ? "Reprendre la photo" : "Choisir une autre facture") + "</button>"
+           : '<button class="bouton-texte" type="button" data-geste="ecart-oui" data-c="' + c.id + '">La joindre quand même</button>') +
+      "</div></article>";
+  }
+
   function htmlCarte(c) {
     var ouvert = etat.ouvertes[c.id] || "";
     var h = '<article class="plage" data-carte="' + c.id + '">' +
       '<div class="carte-cat">' + point(c.cat) + CAT[c.cat][0] + '<span class="carte-jour">' + c.jour + "</span></div>" +
       '<div class="carte-ligne"><span class="carte-qui">' + c.qui + '</span><span class="carte-montant">' + eur(c.montant) + "</span></div>";
+    if (ouvert === "ecart") return h + htmlEcart(c, etat.ecarts[c.id]);
+    if (ouvert === "lecture") {
+      return h + '<p class="carte-texte lecture">' + ico("horloge-sable") + (c.genre === "entree" ? "Lecture de la facture…" : "Lecture du ticket…") + "</p></article>";
+    }
     if (c.genre === "entree" && ouvert === "facture") {
       var fa = FACTURES_EN_ATTENTE.map(function (x, i) {
         return '<li><button class="piece touche" type="button" data-geste="confirmer-recu" data-c="' + c.id + '" data-i="' + i + '"><span class="piece-rond"></span>' +
-          '<span class="piece-corps"><span class="piece-nom">' + x.qui + '</span><span class="piece-sous">Facture ' + x.numero + ", reste " + eur(x.reste) + "</span></span></button></li>";
+          '<span class="piece-corps"><span class="piece-nom">' + x.qui + '</span><span class="piece-sous">Facture ' + x.numero + ", reste à payer</span></span>" + marqueMontant(x.reste, c.montant) + "</button></li>";
       }).join("") + '<li><button class="piece touche" type="button" data-geste="hors-atlas" data-c="' + c.id + '"><span class="piece-rond"></span>' +
         '<span class="piece-corps"><span class="piece-nom">Une facture faite hors d’Atlas</span><span class="piece-sous">La photographier ou choisir le PDF</span></span></button></li>';
       return h + '<p class="carte-texte">Laquelle\u202f? Les factures qui attendent leur paiement :</p><ul class="pieces">' + fa + "</ul>" +
@@ -520,10 +583,15 @@
         '<button class="bouton-texte" type="button" data-geste="fermer-carte" data-c="' + c.id + '">Annuler</button></div></article>';
     }
     if (ouvert === "facture") {
-      var f = FACTURES.map(function (x, i) {
+      // Celles du même montant d'abord : c'est presque toujours l'une d'elles.
+      var ordre = FACTURES.map(function (x, i) { return i; }).sort(function (a, b) {
+        return (Math.abs(FACTURES[a].montant - c.montant) < 0.005 ? 0 : 1) - (Math.abs(FACTURES[b].montant - c.montant) < 0.005 ? 0 : 1);
+      });
+      var f = ordre.map(function (i) {
+        var x = FACTURES[i];
         return '<li><button class="piece touche" type="button" data-geste="joindre" data-c="' + c.id + '" data-i="' + i + '"><span class="piece-rond"></span>' +
           '<span class="piece-corps"><span class="piece-nom">' + x.societe + '</span><span class="piece-sous">' + x.nom + "</span></span>" +
-          '<span class="piece-montant">' + eur(x.montant) + "</span></button></li>";
+          marqueMontant(x.montant, c.montant) + "</button></li>";
       }).join("");
       return h + '<p class="carte-texte">Laquelle\u202f?</p><ul class="pieces">' + f + "</ul>" +
         '<div class="carte-gestes" style="margin-top:4px"><button class="bouton-texte" type="button" data-geste="fermer-carte" data-c="' + c.id + '">Annuler</button></div></article>';
@@ -547,7 +615,7 @@
         '<button class="bouton-texte" type="button" data-geste="ouvrir-motif" data-c="' + c.id + '">C’est autre chose</button></div></article>';
     }
     return h + '<p class="carte-manque">' + ico("alerte") + "Aucun ticket ne correspond.</p>" +
-      '<div class="carte-gestes"><button class="bouton bouton-creux" type="button" data-geste="photographier">' + ico("photo") + "Photographier le ticket</button>" +
+      '<div class="carte-gestes"><button class="bouton bouton-creux" type="button" data-geste="photographier" data-c="' + c.id + '">' + ico("photo") + "Photographier le ticket</button>" +
       '<button class="bouton-texte" type="button" data-geste="ouvrir-perdu" data-c="' + c.id + '">Ticket perdu</button></div></article>';
   }
 
@@ -658,7 +726,7 @@
       visibles.forEach(function (l) {
         var i = lignes.indexOf(l);
         if (l.jour !== jour) { h += '<h3 class="jour-titre">' + l.jour + "</h3>"; jour = l.jour; }
-        var signe = { ok: "coche", ticket: "photo", perdu: "info", manque: "alerte" }[l.g];
+        var signe = { ok: "coche", ticket: "photo", perdu: "info", manque: "alerte", ecart: "alerte" }[l.g];
         var corps = '<span class="rel-point" style="background:var(' + CAT[l.cat][1] + ')"></span>' +
           '<span class="rel-corps"><span class="rel-libelle">' + l.lib + '</span><span class="rel-cat">' + CAT[l.cat][0] + "</span>" +
           '<span class="rel-preuve" data-genre="' + l.g + '">' + ico(signe) + "<span>" + l.t + "</span></span></span>" +
@@ -780,8 +848,11 @@
     vues[v].scrollTop = 0;
   }
 
-  function oterCarte(id, texte, versCat) {
-    var c = etat.cartes.filter(function (x) { return x.id === id; })[0];
+  function carteDe(id) { return etat.cartes.filter(function (x) { return x.id === id; })[0]; }
+
+  function oterCarte(id, texte, versCat, preuve) {
+    var c = carteDe(id);
+    if (c && preuve) etat.releve.forEach(function (l) { if (l.lib === c.lib) { l.g = preuve.g; l.t = preuve.t; if (versCat) l.cat = versCat; } });
     etat.cartes = etat.cartes.filter(function (x) { return x.id !== id; });
     delete etat.ouvertes[id];
     var oct = etat.mois["2026-10"];
@@ -832,20 +903,57 @@
       case "fermer-carte": delete etat.ouvertes[c]; rendre(); break;
       case "valider-perdu":
         if (etat.mois["2026-10"]) etat.mois["2026-10"].p += 1;
-        oterCarte(c, "Ligne justifiée, ticket perdu.");
+        oterCarte(c, "Ligne justifiée, ticket perdu.", null, { g: "perdu", t: "Ticket perdu, mention validée" });
         break;
-      case "relier": oterCarte(c, "Ticket relié.", "materiel"); break;
-      case "joindre": oterCarte(c, "Facture jointe."); break;
-      case "motif": oterCarte(c, "Ligne justifiée : " + g.textContent.toLowerCase() + "."); break;
-      case "confirmer-recu": {
-        var f = FACTURES_EN_ATTENTE[Number(g.getAttribute("data-i"))];
-        var carte = etat.cartes.filter(function (x) { return x.id === c; })[0];
-        var reste = f.reste - carte.montant;
-        oterCarte(c, eur(carte.montant) + " notés sur la facture " + f.numero + (reste > 0 ? ", il reste " + eur(reste) + "." : ", elle est payée."));
+      case "relier": oterCarte(c, "Ticket relié.", "materiel", { g: "ok", t: carteDe(c).tickets[Number(g.getAttribute("data-i"))].jour }); break;
+      case "joindre": {
+        var fj = FACTURES[Number(g.getAttribute("data-i"))];
+        var cj = carteDe(c);
+        if (Math.abs(fj.montant - cj.montant) < 0.005) { oterCarte(c, "Facture jointe, le montant tombe juste.", null, { g: "ok", t: "Facture " + fj.societe }); break; }
+        etat.ecarts[c] = { source: "joindre", piece: "La facture " + fj.societe, montant: fj.montant, nom: fj.societe };
+        etat.ouvertes = {}; etat.ouvertes[c] = "ecart"; rendre();
         break;
       }
-      case "hors-atlas": oterCarte(c, "Facture jointe."); break;
-      case "photographier": passe("L’appareil photo s’ouvre, puis la feuille de Ma TVA."); break;
+      case "ecart-oui": {
+        var e = etat.ecarts[c], ce = carteDe(c);
+        if (e.source === "recu") {
+          oterCarte(c, eur(ce.montant) + " notés sur la facture " + e.numero + (e.montant > ce.montant ? ", il reste " + eur(e.montant - ce.montant) + "." : "."), null, { g: "ok", t: "Facture " + e.numero + ", payée en partie" });
+        } else if (e.source === "hors-atlas") {
+          oterCarte(c, "Facture jointe, payée en partie : " + eur(ce.montant) + " sur " + eur(e.montant) + ".", null, { g: "ok", t: "Facture jointe, payée en partie" });
+        } else {
+          oterCarte(c, "Facture jointe, l’écart est signalé à votre comptable.", null, { g: "ecart", t: "Facture " + e.nom + " de " + eur(e.montant) + ", pas le montant" });
+        }
+        break;
+      }
+      case "ecart-autre":
+        etat.ouvertes = {}; etat.ouvertes[c] = etat.ecarts[c].source === "hors-atlas" ? "" : "facture";
+        if (etat.ecarts[c].source === "hors-atlas") { rendre(); passe("L’appareil photo s’ouvre à nouveau."); break; }
+        rendre(); break;
+      case "motif": oterCarte(c, "Ligne justifiée : " + g.textContent.toLowerCase() + ".", null, { g: "ok", t: g.textContent }); break;
+      case "confirmer-recu": {
+        var f = FACTURES_EN_ATTENTE[Number(g.getAttribute("data-i"))];
+        var carte = carteDe(c);
+        if (Math.abs(f.reste - carte.montant) < 0.005) { oterCarte(c, eur(carte.montant) + " notés sur la facture " + f.numero + ", elle est payée.", null, { g: "ok", t: "Facture " + f.numero }); break; }
+        etat.ecarts[c] = { source: "recu", piece: "La facture " + f.numero + " attend", montant: f.reste, numero: f.numero };
+        etat.ouvertes = {}; etat.ouvertes[c] = "ecart"; rendre();
+        break;
+      }
+      // La photo ou le PDF se LISENT, comme un ticket (lire-ticket.ts) ; le montant lu se compare à la ligne.
+      // Les montants lus sont ceux de la planche : la facture de Mme Costa porte le chantier entier.
+      case "hors-atlas":
+        etat.ouvertes = {}; etat.ouvertes[c] = "lecture"; rendre();
+        setTimeout(function () {
+          etat.ecarts[c] = { source: "hors-atlas", piece: "La facture lue", montant: 1728 };
+          etat.ouvertes[c] = "ecart"; rendre();
+        }, 1100);
+        break;
+      case "photographier": {
+        var cp = carteDe(c);
+        if (!cp) { passe("L’appareil photo s’ouvre, puis la feuille de Ma TVA."); break; }
+        etat.ouvertes = {}; etat.ouvertes[c] = "lecture"; rendre();
+        setTimeout(function () { oterCarte(c, "Ticket lu, " + eur(cp.montant) + " : le montant tombe juste, il rejoint sa ligne.", "carburant", { g: "ok", t: "Ticket du 22 octobre, lu à l’instant" }); }, 1100);
+        break;
+      }
       case "decoupage": etat.decoupage = g.getAttribute("data-d"); rendre(); break;
       case "periode":
         if (g.getAttribute("data-cle") === "2026-10") allerVue("releve");
